@@ -4080,7 +4080,7 @@ static void ResetColumnDisplay(BOOL first_time)
 	}
 
 	ListView_SetExtendedListViewStyle(hwndList,LVS_EX_FULLROWSELECT | LVS_EX_HEADERDRAGDROP |
-								  LVS_EX_UNDERLINEHOT | LVS_EX_UNDERLINECOLD | LVS_EX_LABELTIP);
+								  LVS_EX_UNDERLINEHOT | LVS_EX_UNDERLINECOLD/* | LVS_EX_LABELTIP*/);
 
 
 	nColumn = 0;
