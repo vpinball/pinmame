@@ -945,11 +945,11 @@ void i4004_set_TEST(int state)
  ****************************************************************************/
 const char *i4004_info(void *context, int regnum)
 {
-	static char buffer[16][47+1];
+	static char buffer[17][47+1];
 	static int which = 0;
 	i4004_Regs *r = context;
 
-	which = (which+1) % 16;
+	which = (which+1) % 17;
 	buffer[which][0] = '\0';
 	if( !context )
 		r = &I;
