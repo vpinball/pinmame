@@ -108,7 +108,7 @@
 
 #define GTS1_COMINPORT       CORE_COREINPORT
 
-#define GTS1_SOLSMOOTH       1 /* Smooth the Solenoids over this number of VBLANKS */
+#define GTS1_SOLSMOOTH       6 /* Smooth the Solenoids over this number of VBLANKS */
 #define GTS1_LAMPSMOOTH      1 /* Smooth the lamps over this number of VBLANKS */
 #define GTS1_DISPLAYSMOOTH   1 /* Smooth the display over this number of VBLANKS */
 
@@ -127,10 +127,7 @@
 #define GTS1_1_ROMSTART(name, n1, chk1) \
    ROM_START(name) \
      NORMALREGION(0x10000, GTS1_MEMREG_CPU) \
-       ROM_LOAD(n1, 0x0000, 0x0400, chk1) \
-         ROM_RELOAD(0x0400, 0x0400) \
-         ROM_RELOAD(0x0800, 0x0400) \
-         ROM_RELOAD(0x0c00, 0x0400)
+       ROM_LOAD(n1, 0x0100, 0x0400, chk1)
 
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(GTS1);

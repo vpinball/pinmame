@@ -8,11 +8,36 @@
 		IO:      PPS/4 Ports
 		DISPLAY: 4 x 6 Digit 9 segment panels, 1 x 4 Digit 7 segment panels
 		SOUND:	 Chimes & System80 sound only board on later games
+
+WARNING: This driver is currently nothing but a huge, gigantic hack!
+
+We weren't able to get a read off the integrated ROMs inside the A1752 and A1753 chips,
+so I tried and reverse-engineered the PGOL language. It only consists of 16 opcodes,
+a few of which are still unknown in purpose (treated as NOP instructions right now).
+The entire game logic is provided by a single PROM only 1024 x 4bit in size!
+To overcome this pretty slim codebase, Rockwell came up with an interesting language
+called "PGOL" (Pinball Game Oriented Language).
+It basically does only very few things, like: check if lamp x-y is on or off, and set a flag
+depending on the lamp state. The actions taken based on this are conditional, so every lamp
+that's supposed to be become lit or unlit after this check will check the flag if it's
+supposed to be executed at all.
+Also, the game identification PROM will only apply to the current player, and the current
+ball, and it is unknown how data (like bonus lamps and such) is being stored for all players,
+because of the missing basic PPS4 code.
+PGOL interpretation is based on assumptions *only*, so it's pretty surely still way off!
+But in time, we'll iron out as many bugs as possible...
 ************************************************************************************************/
+
 #include <stdarg.h>
 #include "driver.h"
 #include "core.h"
 #include "gts1.h"
+
+#if 0
+#define TRACE(x) printf x
+#else
+#define TRACE(x) logerror x
+#endif
 
 #define GTS1_VBLANKFREQ  60 /* VBLANK frequency in HZ*/
 
@@ -21,6 +46,7 @@
 /-----------------*/
 static struct {
   int    vblankCount;
+  int    solCount;
   int    diagnosticLed;
   int    tmpSwCol;
   UINT32 solenoids;
@@ -28,6 +54,7 @@ static struct {
   UINT8  swMatrix[CORE_MAXSWCOL];
   UINT8  lampMatrix[CORE_MAXLAMPCOL];
   core_tSeg segments, pseg;
+  mame_timer* sleepTimer;
 } locals;
 
 /*-------------------------------
@@ -41,14 +68,13 @@ static INTERRUPT_GEN(GTS1_vblank) {
   }
   /*-- solenoids --*/
   coreGlobals.solenoids = locals.solenoids;
-  if ((locals.vblankCount % GTS1_SOLSMOOTH) == 0)
+  if ((++locals.solCount % GTS1_SOLSMOOTH) == 0)
   	locals.solenoids = 0;
 
   /*-- display --*/
   if ((locals.vblankCount % GTS1_DISPLAYSMOOTH) == 0)
   {
     memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
-	memset(locals.segments, 0x00, sizeof locals.segments);
   }
 
   /*update leds*/
@@ -57,10 +83,146 @@ static INTERRUPT_GEN(GTS1_vblank) {
   core_updateSw(1);
 }
 
+static int codeOffset;
+
+/* enable the execution timer */
+static void exec_pgol(int address) {
+  codeOffset = address;
+  timer_adjust(locals.sleepTimer, 0.005, 0, 0.005);
+}
+
+/* This routine will be called whenever the execution timer is active */
+static void sleepTimer(int data) {
+  static int accu;
+  static int ifActive;
+  static int score;
+  UINT8* mem = memory_region(GTS1_MEMREG_CPU);
+  int data0 = mem[codeOffset] & 0x0f;
+  int data1 = mem[codeOffset+1] & 0x0f;
+  int data2 = mem[codeOffset+2] & 0x0f;
+  int data3 = mem[codeOffset+3] & 0x0f;
+  switch (data0) {
+    case 0x00: // check lamp and increment
+      if (!ifActive) accu = 1;
+      ifActive = 1;
+      accu &= ((locals.lampMatrix[data2] & (1 << (7 & data1))) > 0 == (data1 >> 3));
+      TRACE(("%03x: 0%x%x   andif %s %x-%x  (ac=%x)\n", codeOffset, data1, data2, (data1 & 8 ? "on ":"off"), data2, (data1 & 7), accu));
+      exec_pgol(codeOffset + 3);
+      break;
+    case 0x01: // score (should be called in its own timed subroutine, as it's also producing sound FX)
+      TRACE(("%03x: 1%x%x   score %x + %x  (if=%x,ac=%x)\n", codeOffset, data1, data2, data1, data2, ifActive, accu));
+      if (!ifActive || accu) {
+        int i, mult = 1;
+        for (i=data1; i < 0x0d; i++)
+          mult *= 10;
+        score += mult * data2;
+        score %= 1000000;
+        locals.segments[0].w = core_bcd2seg7[score / 100000];
+        locals.segments[1].w = core_bcd2seg7[(score % 100000) / 10000];
+        locals.segments[2].w = core_bcd2seg7[(score % 10000) / 1000];
+        locals.segments[3].w = core_bcd2seg7[(score % 1000) / 100];
+        locals.segments[4].w = core_bcd2seg7[(score % 100) / 10];
+        locals.segments[5].w = core_bcd2seg7[score %10];
+      }
+      exec_pgol(codeOffset + 3);
+      break;
+    case 0x02: // lamps & solenoids
+      TRACE(("%03x: 2%x%x   data  %s %x-%x  (if=%x,ac=%x)\n", codeOffset, data1, data2, (data1 & 8 ? "on ":"off"), data2, (data1 & 7), ifActive, accu));
+      if (!ifActive || accu) {
+        if (8 & data1) {
+          if (data2 > 0xb) {
+            locals.solenoids |= (1 << (7 & data1)) << (4 * (data2 - 0x0c));
+            locals.solCount = 0;
+          } else
+            locals.lampMatrix[data2] |= 1 << (7 & data1);
+        } else
+          if (data2 < 0xc) locals.lampMatrix[data2] &= ~(1 << (7 & data1));
+      }
+      exec_pgol(codeOffset + 3);
+      break;
+    case 0x03: // conditional jump
+      TRACE(("%03x: 3%x%x%x  jcs   %x%x%x  (ac=%x)\n", codeOffset, data1, data2, data3, data1, data2, data3, accu));
+      if (accu)
+        exec_pgol((data1 << 8) | (data2 << 4) | data3);
+      else
+        exec_pgol(codeOffset + 4);
+      break;
+    case 0x06: // pause
+      TRACE(("%03x: 6     pause\n", codeOffset));
+      timer_adjust(locals.sleepTimer, 0.05, 0, 0.05);
+      exec_pgol(codeOffset + 1);
+      break;
+    case 0x07: // setif?
+      TRACE(("%03x: 7%x    setif %x  (ac=%x)\n", codeOffset, data1, data1, accu));
+      ifActive = 1;
+      if (accu == data1)
+        accu = 1;
+      else
+        accu = 0;
+      exec_pgol(codeOffset + 2);
+      break;
+    case 0x0a: // check lamp and decrement
+      if (!ifActive) accu = 1;
+      ifActive = 1;
+      accu |= ((locals.lampMatrix[data2] & (1 << (7 & data1))) > 0 == (data1 >> 3));
+      TRACE(("%03x: a%x%x   orif  %s %x-%x  (ac=%x)\n", codeOffset, data1, data2, (data1 & 8 ? "on ":"off"), data2, (data1 & 7), accu));
+      exec_pgol(codeOffset + 3);
+      break;
+    case 0x0b: // turn off ifActive
+      TRACE(("%03x: b     noif\n", codeOffset));
+      ifActive = accu = 0;
+      exec_pgol(codeOffset + 1);
+      break;
+    case 0x0c: // return to switch scanning
+      TRACE(("%03x: c     ret\n", codeOffset));
+      ifActive = accu = 0;
+      timer_adjust(locals.sleepTimer, TIME_NEVER, 0, TIME_NEVER);
+      break;
+    case 0x0d: // inverse accu
+      TRACE(("%03x: d     not\n", codeOffset));
+      accu = accu ? 0 : 1;
+      exec_pgol(codeOffset + 1);
+      break;
+    case 0x0e: // unconditional jump
+      TRACE(("%03x: e%x%x%x  jump  %x%x%x\n", codeOffset, data1, data2, data3, data1, data2, data3));
+      exec_pgol((data1 << 8) | (data2 << 4) | data3);
+      break;
+    case 0x0f: // do nothing (small delay)
+      TRACE(("%03x: f     nop\n", codeOffset));
+      exec_pgol(codeOffset + 1);
+      break;
+    default: // no idea so far
+      TRACE(("%03x: %x     opc   #%x\n", codeOffset, data1, data1));
+      exec_pgol(codeOffset + 1);
+  }
+}
+
 static SWITCH_UPDATE(GTS1) {
-	if (inports) {
-		coreGlobals.swMatrix[0] = inports[GTS1_COMINPORT] & 0xff;
-	}
+  if (inports) {
+    coreGlobals.swMatrix[0] = inports[GTS1_COMINPORT] & 0xff;
+  }
+  if (!locals.swMatrix[0] && coreGlobals.swMatrix[0] & 0x03)
+    exec_pgol(0x100 + 4 * core_BitColToNum(coreGlobals.swMatrix[0] & 0x03));
+  if (!locals.swMatrix[0] && coreGlobals.swMatrix[0] & 0x04)
+    locals.lampMatrix[6]++;
+  if (!locals.swMatrix[0] && coreGlobals.swMatrix[0] & 0x08)
+    locals.lampMatrix[6] = 2;
+  if (!locals.swMatrix[1] && coreGlobals.swMatrix[1] & 0x1f)
+    exec_pgol(0x120 + 4 * core_BitColToNum(coreGlobals.swMatrix[1] & 0x1f));
+  if (!locals.swMatrix[2] && coreGlobals.swMatrix[2] & 0x1f)
+    exec_pgol(0x140 + 4 * core_BitColToNum(coreGlobals.swMatrix[2] & 0x1f));
+  if (!locals.swMatrix[3] && coreGlobals.swMatrix[3] & 0x1f)
+    exec_pgol(0x160 + 4 * core_BitColToNum(coreGlobals.swMatrix[3] & 0x1f));
+  if (!locals.swMatrix[4] && coreGlobals.swMatrix[4] & 0x1f)
+    exec_pgol(0x180 + 4 * core_BitColToNum(coreGlobals.swMatrix[4] & 0x1f));
+  if (!locals.swMatrix[5] && coreGlobals.swMatrix[5] & 0x1f)
+    exec_pgol(0x1a0 + 4 * core_BitColToNum(coreGlobals.swMatrix[5] & 0x1f));
+  if (!locals.swMatrix[6] && coreGlobals.swMatrix[6] & 0x1f)
+    exec_pgol(0x1c0 + 4 * core_BitColToNum(coreGlobals.swMatrix[6] & 0x1f));
+  if (!locals.swMatrix[7] && coreGlobals.swMatrix[7] & 0x1f)
+    exec_pgol(0x1e0 + 4 * core_BitColToNum(coreGlobals.swMatrix[7] & 0x1f));
+  // manually performing switch debouncing
+  memcpy(locals.swMatrix, coreGlobals.swMatrix, sizeof(coreGlobals.swMatrix));
 }
 
 static int GTS1_sw2m(int no) {
@@ -142,32 +304,34 @@ static NVRAM_HANDLER(GTS1) {
 
 /*-----------------------------------------
 /  Memory map for System1 CPU board
-/------------------------------------------
-0000-0fff  ROM
-1000-10ff  RAM
-*/
+/------------------------------------------*/
+static READ_HANDLER(boot_r) {
+  return 0x80; // Jump into an endless loop to keep the CPU busy
+}
+
 static MEMORY_READ_START(GTS1_readmem)
-{0x0000,0x0fff,	MRA_ROM},	/* ROM */
-{0x1000,0x10ff, MRA_RAM},   /* RAM */
+  {0x0000,0x00ff,	boot_r},	/* hack */
+  {0x0100,0x04ff,	MRA_ROM},	/* game PROM */
 MEMORY_END
 
 static MEMORY_WRITE_START(GTS1_writemem)
-{0x0000,0x0fff,	MWA_ROM},	/* ROM */
-{0x1000,0x10ff, MWA_RAM},   /* RAM */
 MEMORY_END
 
 static MACHINE_INIT(GTS1) {
   memset(&locals, 0, sizeof locals);
+  locals.sleepTimer = timer_alloc(sleepTimer);
+  timer_adjust(locals.sleepTimer, TIME_NEVER, 0, TIME_NEVER);
 }
 
 static MACHINE_STOP(GTS1) {
+  timer_adjust(locals.sleepTimer, TIME_NEVER, 0, TIME_NEVER);
 }
 
 MACHINE_DRIVER_START(GTS1)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CPU_ADD_TAG("mcpu", PPS4, 198864)
   MDRV_CPU_MEMORY(GTS1_readmem, GTS1_writemem)
-  MDRV_CPU_PORTS(GTS1_readport,GTS1_writeport)
+//  MDRV_CPU_PORTS(GTS1_readport,GTS1_writeport)
   MDRV_CPU_VBLANK_INT(GTS1_vblank, 1)
   MDRV_CORE_INIT_RESET_STOP(GTS1,NULL,GTS1)
 //  MDRV_NVRAM_HANDLER(GTS1)

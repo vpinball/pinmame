@@ -314,22 +314,24 @@ DRIVERNV(cyclopes)      //Cyclopes (November 1985)
 // GOTTLIEB GAMES
 // ------------------
 //System 1
-                        //S1-409    11/77 Cleopatra
-                        //S1-412    05/78 Sinbad
-                        //S1-417    08/78 Joker Poker
-                        //S1-419    10/78 Dragon
-                        //S1-424    10/78 Close Encounters of the Third Kind
-                        //S1-425    11/78 Charlie's Angels
-                        //S1-421    02/79 Solar Ride
-                        //S1-422    05/79 Count-Down
-                        //S1-427    08/79 Pinball Pool
-                        //S1-429    10/79 Totem
-                        //S1-433    10/79 Incredible Hulk
-                        //S1-435    11/79 Genie
-                        //S1-437    01/80 Buck Rogers
-                        //S1-438    02/80 Torch
-                        //S1-440    02/80 Roller Disco
-                        //S1-442    12/80 Asteroid Annie and the Aliens
+DRIVERNV(cleoptra)      //S1-409    11/77 Cleopatra
+DRIVERNV(sinbad)        //S1-412    05/78 Sinbad
+DRIVERNV(sinbadn)       //S1-412NO1 05/78 Sinbad (Norway)
+DRIVERNV(jokrpokr)      //S1-417    08/78 Joker Poker
+DRIVERNV(dragon)        //S1-419    10/78 Dragon
+DRIVERNV(closeenc)      //S1-424    10/78 Close Encounters of the Third Kind
+DRIVERNV(charlies)      //S1-425    11/78 Charlie's Angels
+DRIVERNV(solaride)      //S1-421    02/79 Solar Ride
+DRIVERNV(countdwn)      //S1-422    05/79 Count-Down
+DRIVERNV(pinpool)       //S1-427    08/79 Pinball Pool
+DRIVERNV(totem)         //S1-429    10/79 Totem
+DRIVERNV(hulk)          //S1-433    10/79 Incredible Hulk
+DRIVERNV(genie)         //S1-435    11/79 Genie
+DRIVERNV(buckrgrs)      //S1-437    01/80 Buck Rogers
+DRIVERNV(torch)         //S1-438    02/80 Torch
+DRIVERNV(roldisco)      //S1-440    02/80 Roller Disco
+DRIVERNV(astannie)      //S1-442    12/80 Asteroid Annie and the Aliens
+DRIVERNV(sys1test)      //S1-T      ??    System1 test prom
 //System 80
 DRIVERNV(spidermn)      //S80-653:  05/80 The Amazing Spider-man
 DRIVERNV(circus)        //S80-654:  06/80 Circus
