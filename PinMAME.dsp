@@ -1455,42 +1455,6 @@ SOURCE=src\wpc\dcs.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\de.c
-# End Source File
-# Begin Source File
-
-SOURCE=src\wpc\de.h
-# End Source File
-# Begin Source File
-
-SOURCE=src\wpc\de1sound.c
-# End Source File
-# Begin Source File
-
-SOURCE=src\wpc\de1sound.h
-# End Source File
-# Begin Source File
-
-SOURCE=src\wpc\de2.c
-# End Source File
-# Begin Source File
-
-SOURCE=src\wpc\de2.h
-# End Source File
-# Begin Source File
-
-SOURCE=src\wpc\de2sound.c
-# End Source File
-# Begin Source File
-
-SOURCE=src\wpc\de2sound.h
-# End Source File
-# Begin Source File
-
-SOURCE=src\wpc\de3.c
-# End Source File
-# Begin Source File
-
 SOURCE=src\wpc\dedmd.c
 # End Source File
 # Begin Source File
