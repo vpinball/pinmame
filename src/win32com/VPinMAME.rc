@@ -27,18 +27,18 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE MOVEABLE PURE 
+1 TEXTINCLUDE MOVEABLE PURE
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE MOVEABLE PURE 
+2 TEXTINCLUDE MOVEABLE PURE
 BEGIN
     "#include ""winres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE MOVEABLE PURE 
+3 TEXTINCLUDE MOVEABLE PURE
 BEGIN
     "1 TYPELIB ""VPINMAME.tlb""\r\n"
     "\0"
@@ -114,7 +114,7 @@ END
 //
 
 IDD_OPTIONSDLG DIALOGEX 0, 0, 237, 175
-STYLE DS_ABSALIGN | DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | DS_CENTER | 
+STYLE DS_ABSALIGN | DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | DS_CENTER |
     WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Game Options"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
@@ -122,13 +122,13 @@ BEGIN
     GROUPBOX        "Default Options",IDC_STATIC,7,7,217,140
     CONTROL         "Skip Pinball Startup &Test",IDC_USECHEAT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,20,18,97,10
-    CONTROL         "Use &Sound",IDC_USESOUND,"Button",BS_AUTOCHECKBOX | 
+    CONTROL         "Use &Sound",IDC_USESOUND,"Button",BS_AUTOCHECKBOX |
                     WS_TABSTOP,20,29,55,10
-    CONTROL         "Use S&amples",IDC_USESAMPLES,"Button",BS_AUTOCHECKBOX | 
+    CONTROL         "Use S&amples",IDC_USESAMPLES,"Button",BS_AUTOCHECKBOX |
                     WS_TABSTOP,20,40,61,10
     CONTROL         "&Compact Display",IDC_COMPACTSIZE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,20,51,73,10
-    CONTROL         "&Double Size",IDC_DOUBLESIZE,"Button",BS_AUTOCHECKBOX | 
+    CONTROL         "&Double Size",IDC_DOUBLESIZE,"Button",BS_AUTOCHECKBOX |
                     WS_TABSTOP,20,62,54,10
     LTEXT           "Sample&rate:",IDC_STATIC,127,18,38,8
     EDITTEXT        IDC_SAMPLERATE,171,18,49,12,ES_AUTOHSCROLL
@@ -150,13 +150,13 @@ BEGIN
     EDITTEXT        IDC_DMDPERC33,77,121,17,12,ES_AUTOHSCROLL | ES_NUMBER
     GROUPBOX        "Results",IDC_STATIC,151,82,58,62
     RTEXT           "100%",IDC_STATIC,159,92,18,8
-    EDITTEXT        IDC_DMDSHOW1,179,90,12,12,WS_DISABLED | NOT WS_BORDER | 
+    EDITTEXT        IDC_DMDSHOW1,179,90,12,12,WS_DISABLED | NOT WS_BORDER |
                     NOT WS_TABSTOP,WS_EX_STATICEDGE
     RTEXT           "66%",IDC_STATIC,159,105,18,8
-    EDITTEXT        IDC_DMDSHOW2,179,103,12,12,WS_DISABLED | NOT WS_BORDER | 
+    EDITTEXT        IDC_DMDSHOW2,179,103,12,12,WS_DISABLED | NOT WS_BORDER |
                     NOT WS_TABSTOP,WS_EX_STATICEDGE
     RTEXT           "33%",IDC_STATIC,159,117,18,8
-    EDITTEXT        IDC_DMDSHOW3,179,116,12,12,WS_DISABLED | NOT WS_BORDER | 
+    EDITTEXT        IDC_DMDSHOW3,179,116,12,12,WS_DISABLED | NOT WS_BORDER |
                     NOT WS_TABSTOP,WS_EX_STATICEDGE
     PUSHBUTTON      "&Info...",IDABOUT,7,154,50,14
     PUSHBUTTON      "R&eset ",IDRESETTODEFAULT,61,154,50,14
@@ -165,7 +165,7 @@ BEGIN
     LTEXT           "Off",IDC_STATIC,96,123,16,8
     EDITTEXT        IDC_DMDPERC0,113,121,17,12,ES_AUTOHSCROLL | ES_NUMBER
     RTEXT           "Off",IDC_STATIC,159,130,18,8
-    EDITTEXT        IDC_DMDSHOW4,179,130,12,12,WS_DISABLED | NOT WS_BORDER | 
+    EDITTEXT        IDC_DMDSHOW4,179,130,12,12,WS_DISABLED | NOT WS_BORDER |
                     NOT WS_TABSTOP,WS_EX_STATICEDGE
 END
 
@@ -179,16 +179,16 @@ BEGIN
     CTEXT           "Visual PinMAME\n",IDC_STATIC,150,6,160,8
     CTEXT           "Version %s",IDC_VERSION,150,16,160,8
     CTEXT           "Based on MAME and PinMAME",IDC_STATIC,150,42,160,8
-    CTEXT           "Portions taken from PINMAME32",IDC_STATIC,150,52,160,8
-    CTEXT           "Visual PinMAME written by\nSteve Ellenoff, Tom Haukap\n and the author of WPCMAME",
+    CTEXT           "Portions taken from MAME32",IDC_STATIC,150,52,160,8
+    CTEXT           "Visual PinMAME written by\nSteve Ellenoff, Tom Haukap\n and Martin Adrian",
                     IDC_STATIC,150,87,160,24
-    CTEXT           "Copyright© 1997-2001 by the authors of MAME, PINMAME and PINMAME32",
+    CTEXT           "Copyright© 1997-2001 by the authors of MAME, MAME32 and PINMAME",
                     IDC_STATIC,150,63,160,16
     CTEXT           "Visual PinMAME is a COM class, designed to use the functionality of PinMAME in scripting languages.",
                     IDC_STATIC,7,137,134,24
     CTEXT           "Copyright © 2001 by the authors.",IDC_STATIC,150,116,
                     160,8
-    CTEXT           "Thanks goes to all people involved producing MAME, PINMAME and PINMAME32 for their GREAT work!!!",
+    CTEXT           "Thanks goes to all people involved producing MAME, MAME32 and PINMAME for their GREAT work!!!",
                     IDC_STATIC,150,137,160,24
     CTEXT           "Build Date %s",IDC_BUILDDATE,150,27,160,8
     CONTROL         "",IDC_STATIC,"Static",SS_GRAYRECT | SS_SUNKEN,148,38,
@@ -207,7 +207,7 @@ CAPTION "Please answer and press OK..."
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,78,90,50,14,WS_GROUP
-    CONTROL         "Yes, I am",IDC_YESIAM,"Button",BS_AUTORADIOBUTTON | 
+    CONTROL         "Yes, I am",IDC_YESIAM,"Button",BS_AUTORADIOBUTTON |
                     WS_GROUP | WS_TABSTOP,46,73,45,10
     CONTROL         "No, I am not",IDC_NOIAMNOT,"Button",BS_AUTORADIOBUTTON,
                     101,73,55,10
@@ -232,7 +232,7 @@ BEGIN
     LTEXT           "",IDC_ROMDIRS,7,64,379,18,SS_SUNKEN
     LTEXT           "VPinMAME is looking in the ROM directory(s) for a zip file or a subdirectory with the name of the ROM set. Inside there the following files are expected to be found:",
                     IDC_STATIC,7,87,379,16
-    LISTBOX         IDC_ROMLIST,7,115,379,77,LBS_USETABSTOPS | 
+    LISTBOX         IDC_ROMLIST,7,115,379,77,LBS_USETABSTOPS |
                     LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Name",IDC_STATIC,9,105,20,8
     LTEXT           "Type",IDC_STATIC,79,105,17,8
@@ -280,7 +280,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO MOVEABLE PURE 
+GUIDELINES DESIGNINFO MOVEABLE PURE
 BEGIN
     IDD_OPTIONSDLG, DIALOG
     BEGIN
@@ -330,7 +330,7 @@ END
 // Menu
 //
 
-IDR_CTXMENU MENU DISCARDABLE 
+IDR_CTXMENU MENU DISCARDABLE
 BEGIN
     POPUP "CTRL_CTX_MENU"
     BEGIN
@@ -357,7 +357,7 @@ END
 // String Table
 //
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE DISCARDABLE
 BEGIN
     IDS_PROJNAME            "VPinMAME"
     IDS_CONTROLLER_DESC     "Controller Class"
