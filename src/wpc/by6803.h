@@ -49,7 +49,9 @@
     COREPORT_BIT   (0x1000, "Ball Tilt",        KEYCODE_INSERT) \
     /* These are put in switch column 0 */ \
     COREPORT_BIT   (0x2000, "Self Test",        KEYCODE_7) \
-    COREPORT_BIT   (0x4000, "Sound Diagnostic", KEYCODE_0)
+    COREPORT_BIT   (0x4000, "Sound Diagnostic", KEYCODE_0) \
+  PORT_START /* 3 */ \
+    /* No dips but keep an empty port so all 6803 got the same size */
 
 /*-- Standard input ports --*/
 #define BY6803_INPUT_PORTS_START(name,balls) \
