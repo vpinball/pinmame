@@ -66,10 +66,12 @@ static void wave_close(void);
 /*-- init manual sound commands  --*/
 /*---------------------------------*/
 void snd_cmd_init(mem_write_handler soundCmd, char *head) {
+  int ii;
   memset(&locals, 0, sizeof(locals));
   locals.currCmd = &cmds;
   locals.soundCmd = soundCmd;
   if (soundCmd) readCmds(head);
+  for (ii = 0; ii < MAX_CMD_LENGTH*2; ii++) locals.digits[ii] = 0x10;
 }
 
 /*----------------------------------------*/
