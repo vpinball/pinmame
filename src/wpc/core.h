@@ -67,6 +67,8 @@
   GAMEX(year,name##_##ver,name##_##clonever,machine,name,name,ROT0,manuf,longname,flag)
 #define CORE_CLONEDEFNV(name, cl, longname, year, manuf, machine,flag) \
   GAMEX(year,name,cl,machine,name,name,ROT0,manuf,longname,flag)
+#define CORE_GAMEDEFNVR90(name, longname, year, manuf, machine, flag) \
+  GAMEX(year,name,0,machine,name,name,ROT90,manuf,longname,flag)
 
 
 /*--------------
