@@ -35,12 +35,12 @@ extern "C" {
 
 void riot_unconfig(void);
 void riot_config(int which, const struct riot6532_interface *intf);
+void riot_set_clock(int which, int clock);
 void riot_reset(void);
 int  riot_read(int which, int offset);
 void riot_write(int which, int offset, int data);
 void riot_set_input_a(int which, int data);
 void riot_set_input_b(int which, int data);
-void riot_clk(int which);
 
 /******************* Standard 8-bit CPU interfaces, D0-D7 *******************/
 

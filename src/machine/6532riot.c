@@ -35,16 +35,24 @@ struct riot6532
 	UINT8 out_b;
 	UINT8 ddr_b;
 
-	UINT8 timer_value;
+	UINT8 timer_start;
 	UINT16 timer_divider;
-	UINT8 timer;
 	UINT8 timer_irq_enabled;
 
 	UINT8 edge_detect_ctrl;
 
 	UINT8 irq_state;
 	UINT8 irq;
+
+	void *t;
+	double time;
+
+	double cycles_to_sec;
+	double sec_to_cycles;
 };
+
+#define V_CYCLES_TO_TIME(c) ((double)(c) * p->cycles_to_sec)
+#define V_TIME_TO_CYCLES(t) ((int)((t) * p->sec_to_cycles))
 
 
 /******************* convenince macros and defines *******************/
@@ -71,6 +79,7 @@ struct riot6532
 #define C2_OUTPUT(c)			(c & 0x20)
 #define C2_INPUT(c)				(!(c & 0x20))
 
+#define IFR_DELAY 3
 
 /******************* static variables *******************/
 
@@ -86,10 +95,22 @@ void riot_unconfig(void)
 
 /******************* configuration *******************/
 
+void riot_set_clock(int which, int clock)
+{
+	riot[which].sec_to_cycles = clock;
+	riot[which].cycles_to_sec = 1.0 / riot[which].sec_to_cycles;
+}
+
 void riot_config(int which, const struct riot6532_interface *intf)
 {
 	if (which >= MAX_RIOT) return;
 	riot[which].intf = intf;
+	riot[which].t = NULL;
+
+	riot[which].time = timer_get_time();
+
+	/* Default clock is from CPU1 */
+	riot_set_clock(which, Machine->drv->cpu[0].cpu_clock);
 }
 
 
@@ -104,14 +125,9 @@ void riot_reset(void)
 	{
 		const struct riot6532_interface *intf = riot[i].intf;
 
-		memset(&riot[i], 0, sizeof(riot[i]));
-
-		riot[i].intf = intf;
-
 		riot[i].timer_divider = 1;
-		riot[i].timer_value   = 0x00;
+		riot[i].timer_start   = 0x00;
 		riot[i].timer_irq_enabled = 0;
-		riot[i].timer = riot[i].timer_divider;
 	}
 }
 
@@ -172,12 +188,29 @@ static void check_pa7_interrupt(struct riot6532 *p, int old_porta, int new_porta
 		update_6532_interrupts(p);
 }
 
+static void riot_timeout(int which)
+{
+	struct riot6532 *p = riot + which;
+
+	if ( p->irq_state & RIOT_TIMERIRQ ) {
+		p->t = 0;
+	}
+	else {
+		timer_reset(p->t, V_CYCLES_TO_TIME(255));
+		p->time = timer_get_time();
+
+		p->irq_state |= RIOT_TIMERIRQ;
+		update_6532_interrupts(p);
+	}
+}
+
 /******************* CPU interface for RIOT read *******************/
 
 int riot_read(int which, int offset)
 {
 	struct riot6532 *p = riot + which;
 	int val = 0;
+	int help = 0;
 
 	/* adjust offset for 16-bit */
 	offset &= 0x1f;
@@ -218,7 +251,17 @@ int riot_read(int which, int offset)
 	else {
 		switch ( offset & 0x01 ) {
 		case RIOT_TIMER:
-			val = p->timer_value;
+			if ( p->t ) {
+				if ( p->irq_state & RIOT_TIMERIRQ ) {
+					val = 255 - V_TIME_TO_CYCLES(timer_get_time() - p->time);
+					timer_remove(p->t);
+					p->t = 0;
+				}
+				else
+					val = p->timer_start - V_TIME_TO_CYCLES(timer_get_time() - p->time) / p->timer_divider;
+			}
+			else
+				val = 0;
 
 			p->irq_state &= ~RIOT_TIMERIRQ;
 			p->timer_irq_enabled = offset&0x08;
@@ -311,7 +354,7 @@ void riot_write(int which, int offset, int data)
 			LOG(("RIOT%d write timer = %02X, %02X\n", which, data, offset&0x08));
 
 			p->timer_irq_enabled = offset&0x08;
-			p->timer_value = offset;
+			p->timer_start = data;
 
 			switch ( offset & 0x03 ) {
 			case 0:
@@ -332,6 +375,15 @@ void riot_write(int which, int offset, int data)
 			}
 			p->irq_state &= ~RIOT_TIMERIRQ;
 			update_6532_interrupts(p);
+
+			if ( p->timer_irq_enabled ) {
+				if ( p->t )
+					timer_reset(p->t, V_CYCLES_TO_TIME(p->timer_divider * p->timer_start + IFR_DELAY));
+				else
+					p->t = timer_set(V_CYCLES_TO_TIME(p->timer_divider * p->timer_start + IFR_DELAY), which, riot_timeout);
+				
+				p->time = timer_get_time();
+			}
 		}
 		else {
 			// edge control (PA7) stuff */
@@ -365,28 +417,6 @@ void riot_set_input_b(int which, int data)
 
 	/* set the input, what could be easier? */
 	p->in_b = data;
-}
-
-void riot_clk(int which)
-{
-	struct riot6532 *p = riot + which;
-
-	if ( p->irq_state & RIOT_TIMERIRQ ) {
-		if ( p->timer_value )
-			p->timer_value--;
-	}
-	else {
-		p->timer--;
-		if ( !p->timer ) {
-			p->timer = p->timer_divider;
-
-			p->timer_value--;
-			if ( p->timer_value==0xff ) {
-				p->irq_state |= RIOT_TIMERIRQ;
-				update_6532_interrupts(p);
-			}
-		}
-	}
 }
 
 /******************* Standard 8-bit CPU interfaces, D0-D7 *******************/
