@@ -1,6 +1,11 @@
 What's new:
 -----------
 
+Version 1.xx (Month x, 2002)
+----------------------------
+- Sound on Gottlieb System 80 games is now working fine, except for some minor games (thanks goes to Peter Hall
+  for providing very helpfully infos)
+
 Version 1.11 (February 3, 2002)
 ------------------
 A good sized new release with working support from 2 new manufacturers (Hankin & Gameplan), as 
