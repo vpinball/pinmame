@@ -209,11 +209,8 @@ static PORT_WRITE_START( alvgdmd_writeport )
 	{ 0x00,0xff, port_w },
 PORT_END
 
-#define AVERAGE_CYCLES	12
-
 MACHINE_DRIVER_START(alvgdmd)
-  //MDRV_CPU_ADD(I8051, 12000000)	/*12 Mhz*/
-  MDRV_CPU_ADD(I8051, 12000000/AVERAGE_CYCLES)	//This is required due to MAME core problems with wait states
+  MDRV_CPU_ADD(I8051, 12000000)	/*12 Mhz*/
   MDRV_CPU_MEMORY(alvgdmd_readmem, alvgdmd_writemem)
   MDRV_CPU_PORTS(alvgdmd_readport, alvgdmd_writeport)
   MDRV_CPU_PERIODIC_INT(dmd32_firq, DMD32_FIRQFREQ)
@@ -223,7 +220,7 @@ MACHINE_DRIVER_END
 //Use only for testing the 8031 core emulation
 #ifdef MAME_DEBUG
 MACHINE_DRIVER_START(test8031)
-  MDRV_CPU_ADD(I8051, 1000000)		/*12 Mhz*/
+  MDRV_CPU_ADD(I8051, 12000000)	/*12 Mhz*/
   MDRV_CPU_MEMORY(alvgdmd_readmem, alvgdmd_writemem)
   MDRV_CPU_PORTS(alvgdmd_readport, alvgdmd_writeport)
   MDRV_CPU_PERIODIC_INT(dmd32_firq, DMD32_FIRQFREQ)
