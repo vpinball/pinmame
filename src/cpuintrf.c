@@ -22,7 +22,9 @@
  *	Include headers from all CPUs
  *
  *************************************/
-
+#if defined(PINMAME) && (HAS_ARM7)
+#include "cpu/arm7/arm7.h"
+#endif
 #if defined(PINMAME) && (HAS_AT91)
 #include "cpu/at91/at91.h"
 #endif
@@ -407,6 +409,9 @@ static unsigned dummy_dasm(char *buffer, unsigned pc);
 const struct cpu_interface cpuintrf[] =
 {
 	CPU0(DUMMY,    dummy,	 1,  0,1.00, 8, 16,	  0,16,LE,1, 1	),
+#if defined(PINMAME) && (HAS_ARM7)
+	CPU0(ARM7,	   arm7, 	 2,  0,1.00,32,32ledw, 0,32,LE,4, 4	),
+#endif
 #if defined(PINMAME) && (HAS_AT91)
 	CPU0(AT91,	   at91, 	 2,  0,1.00,32,32ledw, 0,32,LE,4, 4	),
 #endif

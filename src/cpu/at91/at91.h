@@ -73,17 +73,4 @@ extern void at91_cs_callback_r(offs_t start, offs_t end, READ32_HANDLER((*callba
 extern void at91_cs_callback_w(offs_t start, offs_t end, WRITE32_HANDLER((*callback)));
 extern void at91_ready_irq_callback_w(WRITE32_HANDLER((*callback)));
 
-#ifdef MAME_DEBUG
-extern void at91_disasm( char *pBuf, data32_t pc, data32_t opcode );
-#endif
-
-enum
-{
-	AT9132_R0=1, AT9132_R1, AT9132_R2, AT9132_R3, AT9132_R4, AT9132_R5, AT9132_R6, AT9132_R7,
-	AT9132_R8, AT9132_R9, AT9132_R10, AT9132_R11, AT9132_R12, AT9132_R13, AT9132_R14, AT9132_R15,
-	AT9132_FR8, AT9132_FR9, AT9132_FR10, AT9132_FR11, AT9132_FR12, AT9132_FR13, AT9132_FR14,
-	AT9132_IR13, AT9132_IR14, AT9132_SR13, AT9132_SR14, AT9132_FSPSR, AT9132_ISPSR, AT9132_SSPSR,
-	AT9132_CPSR
-};
-
 #endif /* AT91_H */
