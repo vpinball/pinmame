@@ -40,12 +40,12 @@ tPMoptions pmoptions;
 
 #define drawChar(bm,r,c,b,t) drawChar1(bm,r,c,*((UINT32 *)&b),t)
 static void drawChar1(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, int type);
-static UINT32 core_initDisplaySize(core_ptLCDLayout layout);
+static UINT32 core_initDisplaySize(const core_tLCDLayout *layout);
 
 core_tGlobals     coreGlobals;
 core_tData        coreData;
 core_tGlobals_dmd coreGlobals_dmd;
-core_tGameData   *core_gameData = NULL;  /* data about the running game */
+const core_tGameData *core_gameData = NULL;  /* data about the running game */
 const int core_bcd2seg7[16] = {
 /* 0    1    2    3    4    5    6    7    8    9  */
   0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f
@@ -167,7 +167,7 @@ void core_initpalette(unsigned char *game_palette, unsigned short *game_colortab
 /*-----------------------------------
 /  Generic DMD display handler
 /------------------------------------*/
-void dmd_draw(struct mame_bitmap *bitmap, tDMDDot dotCol, core_ptLCDLayout layout) {
+void dmd_draw(struct mame_bitmap *bitmap, tDMDDot dotCol, const core_tLCDLayout *layout) {
   UINT32 *dmdColor = &CORE_COLOR(DMD_DOTOFF);
   UINT32 *aaColor  = &CORE_COLOR(START_ANTIALIAS);
   BMTYPE **lines = ((BMTYPE **)bitmap->line) + layout->top;
@@ -203,7 +203,7 @@ void dmd_draw(struct mame_bitmap *bitmap, tDMDDot dotCol, core_ptLCDLayout layou
 /  Generic segement display handler
 /------------------------------------*/
 void gen_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
-  core_ptLCDLayout layout = core_gameData->lcdLayout;
+  const core_tLCDLayout *layout = core_gameData->lcdLayout;
   if (layout == NULL) { DBGLOG(("gen_refresh without LCD layout\n")); return; }
 
   /* Drawing is not optimised so just clear everything */
@@ -213,15 +213,17 @@ void gen_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
   }
   while (layout->length) {
     int zeros = layout->type/32; // dummy zeros
-    int left  = layout->left * (locals.segData[layout->type & 0x0f].cols + 1) / 2;
+    int left  = layout->left * (locals.segData[layout->type & CORE_SEGMASK].cols + 1) / 2;
     int top   = layout->top  * (locals.segData[0].rows + 1) / 2;
     int ii    = layout->length + zeros;
     int *seg     = ((int *)coreGlobals.segments) + layout->start;
     int *lastSeg = ((int *)locals.lastSeg)       + layout->start;
+    int step     = (layout->type & CORE_SEGREV) ? -1 : 1;
 
+    if (step < 0) { seg += ii-1; lastSeg += ii-1; }
     while (ii--) {
       int tmpSeg = (ii < zeros) ? ((core_bcd2seg7[0]<<8) | (core_bcd2seg7[0])) : *seg;
-      int tmpType = layout->type & 0x0f;
+      int tmpType = layout->type & CORE_SEGMASK;
 
       if (tmpSeg != *lastSeg) {
         tmpSeg >>= (layout->type & CORE_SEGHIBIT) ? 8 : 0;
@@ -238,7 +240,7 @@ void gen_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
         drawChar1(bitmap,  top, left, tmpSeg, tmpType);
       }
       left += locals.segData[layout->type & 0x0f].cols+1;
-      seg += 1; lastSeg += 1;
+      seg += step; lastSeg += step;
     }
     layout += 1;
   }
@@ -901,7 +903,7 @@ static void drawChar1(struct mame_bitmap *bitmap, int row, int col, UINT32 bits,
   osd_mark_dirty(col,row,col+s->cols,row+s->rows);
 }
 
-int core_init(core_tData *cd) {
+int core_init(const core_tData *cd) {
   UINT32 size;
   /*-- init variables --*/
   memset(&coreGlobals, 0, sizeof(coreGlobals));
@@ -958,7 +960,7 @@ void core_exit(void) {
   snd_cmd_exit();
 //  mech_exit();
 }
-static UINT32 core_initDisplaySize(core_ptLCDLayout layout) {
+static UINT32 core_initDisplaySize(const core_tLCDLayout *layout) {
   int maxX = 0, maxY = 0;
 
   locals.segData = &segData[coreGlobals_dmd.DMDsize == 1][0];
