@@ -13,8 +13,12 @@
 /*-- Common Inports for ATARIGames --*/
 #define ATARI_COMPORTS \
   PORT_START /* 0 */ \
-    /* switch column 0 */ \
-    COREPORT_BIT(     0x0001, "Test", KEYCODE_7)  \
+    /* switch column 1 */ \
+    COREPORT_BIT(     0x0001, "Slam Tilt", KEYCODE_HOME)  \
+    COREPORT_BIT(     0x0004, "Game", KEYCODE_1)  \
+    COREPORT_BIT(     0x0008, "Right Coin", KEYCODE_5)  \
+    COREPORT_BIT(     0x0010, "Left Coin", KEYCODE_3)  \
+    COREPORT_BIT(     0x0080, "Test", KEYCODE_7)  \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
       COREPORT_DIPSET(0x0000, "0" ) \
@@ -144,9 +148,12 @@
 #define ATARI_3_ROMSTART(name, n1, chk1, n2, chk2, n3, chk3) \
    ROM_START(name) \
      NORMALREGION(0x10000, ATARI_MEMREG_CPU) \
-       ROM_LOAD(n1, 0x3000, 0x0800, chk1) \
-       ROM_LOAD(n2, 0x3800, 0x0800, chk2) \
-       ROM_LOAD(n3, 0xa800, 0x0800, chk3) \
+       ROM_LOAD(n1, 0x2800, 0x0800, chk1) \
+         ROM_RELOAD(0xa800, 0x0800) \
+       ROM_LOAD(n2, 0x3000, 0x0800, chk2) \
+         ROM_RELOAD(0xb000, 0x0800) \
+       ROM_LOAD(n3, 0x3800, 0x0800, chk3) \
+         ROM_RELOAD(0xb800, 0x0800) \
          ROM_RELOAD(0xf800, 0x0800)
 
 /*-- ATARI CPU regions and ROM, 2 game PROM version --*/
@@ -154,7 +161,9 @@
    ROM_START(name) \
      NORMALREGION(0x10000, ATARI_MEMREG_CPU) \
        ROM_LOAD(n1, 0x0000, 0x0800, chk1) \
+         ROM_RELOAD(0x1000, 0x0800) \
        ROM_LOAD(n2, 0x0800, 0x0800, chk2) \
+         ROM_RELOAD(0x1800, 0x0800) \
          ROM_RELOAD(0xf800, 0x0800)
 
 /*-- These are only here so the game structure can be in the game file --*/
