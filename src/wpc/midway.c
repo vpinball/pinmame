@@ -241,7 +241,7 @@ static INTERRUPT_GEN(MIDWAYP_vblank) {
 static SWITCH_UPDATE(MIDWAYP) {
   if (inports) {
     coreGlobals.swMatrix[5] = (coreGlobals.swMatrix[5] & ~0xe2) | (inports[MIDWAY_COMINPORT] & 0xff);
-    coreGlobals.swMatrix[6] = (coreGlobals.swMatrix[6] & ~0x1f) | (inports[MIDWAY_COMINPORT] >> 8);
+    coreGlobals.swMatrix[6] = (coreGlobals.swMatrix[6] & ~0x9f) | (inports[MIDWAY_COMINPORT] >> 8);
   }
 }
 
@@ -258,11 +258,6 @@ static READ_HANDLER(rom2_r) {
 /* display (16 digits) */
 static WRITE_HANDLER(rom1_w) {
   locals.segments[15 - offset].w = core_bcd2seg[data];
-  // Fake an extra "0" for the single match units.
-  // The board uses 2 digits for the match display,
-  // so they must have come up with something like this too.
-  if (locals.segments[13].w)
-    locals.segments[16].w = core_bcd2seg[0];
   // These next lines make up for a flaw in the rom code:
   // when you first make a 10 pt target in the game, and a
   // 1000 pt target thereafter, the 100s digit in between
@@ -281,6 +276,9 @@ static WRITE_HANDLER(rom2_w) {
   locals.lampMatrix[offset/2] = (offset % 2) ? (lamp & 0x0f) | (data << 4) : (lamp & 0xf0) | data;
   // map game on to solenoid #16
   locals.solenoids = (locals.solenoids & 0x7fff) | (((locals.lampMatrix[0] & 0x05) == 0x05) << 15);
+  // Display the "0" at the single match units.
+  if (locals.lampMatrix[5] & 0x01)
+    locals.segments[16].w = core_bcd2seg[0];
 }
 
 /* solenoids 1-15 & test switch reading */
