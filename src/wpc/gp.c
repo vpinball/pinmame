@@ -14,6 +14,8 @@
 		a) Sometimes the display seems to not get erased properly, ie, it retains displayed data
 		   (at startup (for vegasgp), notice how credit display = 0 while others are blank)
 		   (occurs especially in the ball/credit areas, but also occurs during lamp test for other digits)
+		   Update TomB Feb'05: That's the roms. The display buffers are located in nvram and
+		   aren't always initialized.
 		b) No idea how solenoids 17 & 18 (display on/off) get triggered. Not at all, perhaps?
 		c) Solenoid ordering not adjusted for all games. But then, Bally suffers from the same problem...
 */
@@ -28,7 +30,7 @@
 #include "gp.h"
 #include "gpsnd.h"
 
-#define GP_ZCFREQ        85 /* Zero cross frequency (guessed; but anything above 85 will cause strange effects) */
+#define GP_ZCFREQ   120
 
 static WRITE_HANDLER(GP_soundCmd)  { }
 
@@ -321,7 +323,7 @@ PORT C WRITE
 (out) P0-P2 : 3-8 Demultiplexed Digit Selects (1-7)
 (out) P3 : LED
 (out) P4 : Display Enable (Active Low)
-(out) P5 : Spare output (J7-7) - Mapped as solenoid #31 as it's used on some games!
+(out) P5 : Spare output (J7-7) - Mapped as solenoid #31 ==> Coin Lockout
 (out) P6 : Chuck-a-luck (J7-9) - What is this? (mapped as solenoid #32 now);
 (out) P7 : Flipper enable (J7-8) - Mapped as solenoid #16
 */
