@@ -1,5 +1,14 @@
 What's new:
 
+Version 1.20
+-------------------------------
+-Built with MAME core 0.59
+-Mechs can now handle active low solenoids. Use negative number to specify.
+-new options "-dmd_only" "-dmd_compact" "-dmd_antialias xx"
+ (replaces the old MAME options translucency,antialias,flicker)
+-Fixed dying sound in DCS games (e.g. STTNG, Shadow)
+ [Martin Adrian]
+
 Version 1.12.1 (April 14, 2002)
 -------------------------------
 This is just considered a bugfix release for some issues that became apparent
