@@ -109,6 +109,7 @@ extern WRITE_HANDLER(des_soundCmd_w);
 
 extern void DES_init(void);
 extern int des_irq(void);
+extern int des_init(void);
 
 #define DES_SOUNDCPU ,{ \
   CPU_M6809 | CPU_AUDIO_CPU, \

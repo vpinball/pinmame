@@ -57,10 +57,6 @@ static unsigned char dmdRAM[0x2000] = {0};
 
 static int UsingSound = 0;
 
-//Sound Ddeclarations
-extern int des_init();
-
-
 /*----------------
 /  Local varibles
 /-----------------*/
