@@ -3513,6 +3513,10 @@ SOURCE=.\src\wpc\atarisnd.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\bowlgames.c
+# End Source File
+# Begin Source File
+
 SOURCE=src\wpc\by35.c
 
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
