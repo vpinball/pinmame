@@ -211,14 +211,14 @@ static void de2s_init(struct sndbrdData *brdData) {
 static WRITE_HANDLER(de2s_bsmtcmdHi_w) { de2slocals.bsmtData = data; }
 static WRITE_HANDLER(de2s_bsmtcmdLo_w) {
   BSMT2000_data_0_w((~offset & 0xff), ((de2slocals.bsmtData<<8)|data), 0);
-  cpu_set_irq_line(de2slocals.brdData.cpuNo, M6809_IRQ_LINE, PULSE_LINE);
+  cpu_set_irq_line(de2slocals.brdData.cpuNo, M6809_IRQ_LINE, HOLD_LINE);
 }
 
 static READ_HANDLER(de2s_bsmtready_r) { return 0x80; } // BSMT is always ready
 static WRITE_HANDLER(de2s_bsmtreset_w) { /* Writing 0x80 here resets BSMT ?*/ }
 
 int de2s_irq(void) {
-  cpu_set_irq_line(de2slocals.brdData.cpuNo, M6809_FIRQ_LINE, PULSE_LINE);
+  cpu_set_irq_line(de2slocals.brdData.cpuNo, M6809_FIRQ_LINE, HOLD_LINE);
   return 0;
 }
 

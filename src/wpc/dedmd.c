@@ -252,7 +252,7 @@ void de_dmd64refresh(struct mame_bitmap *bitmap, int fullRefresh) {
 // Steve said he measured this to 2000 on his game
 // but that sometimes causes a new NMI to be triggered before the
 // previous one is finished and it leads to stack overflow
-#define DMD16_NMIFREQ 1000
+#define DMD16_NMIFREQ 2000
 /* HC74 bits */
 #define BUSY_CLR      0x01
 #define BUSY_SET      0x02
@@ -454,8 +454,9 @@ void de_dmd16refresh(struct mame_bitmap *bitmap, int fullRefresh) {
       UINT32 tmp2 = frame[2];
       UINT32 tmp3 = frame[3];
       for (kk = 0; kk < 32; kk++) {
-        *line++ = 2*(tmp2 & 0x01) + (tmp0 & 0x01);
-        *line++ = 2*(tmp3 & 0x01) + (tmp1 & 0x01);
+		//If both dots are lit, we use color 3, but if only 1, we use 1.
+        *line++ = (tmp2 & 0x01) + (tmp0 & 0x01) + 1*(tmp2 & tmp0 & 0x01);
+        *line++ = (tmp3 & 0x01) + (tmp1 & 0x01) + 1*(tmp3 & tmp1 & 0x01);
         tmp0 >>= 1; tmp1 >>= 1; tmp2 >>= 1; tmp3 >>= 1;
       }
       frame += 4;

@@ -58,7 +58,7 @@ extern const struct IO_WritePort        de_dmd16writeport[];
 #define DE_DMD16DMDREGION (REGION_USER1 + DE_DMD16CPUNO)
 
 #define DE_DMD16CPU { \
-  CPU_Z80, 2000000, /* 4 Mhz */ \
+  CPU_Z80, 4000000, /* 4 Mhz */ \
   de_dmd16readmem, de_dmd16writemem, de_dmd16readport, de_dmd16writeport \
 }
 #define DE_DMD16VIDEO  NULL, NULL, de_dmd16refresh
