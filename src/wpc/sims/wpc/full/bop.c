@@ -453,7 +453,7 @@ WPCS_SOUNDROM222("mach_u18.l1",CRC(f3f53896) SHA1(4be5a8a27c5ac4718713c05ff2ddf5
                  "mach_u14.l1", CRC(be2a736a) SHA1(ebf7b26a86d3ffcc35eaa1da8e4f432bd281fe15))
 WPC_ROMEND
 
-WPC_ROMSTART(bop,l4,"tmbopl_4.rom",0x40000,CRC(95aac511) SHA1(55fe3ef8d22347e82efb26d31c41242f45ec0dd0))
+WPC_ROMSTART(bop,l4,"tmbopl_4.rom",0x20000,CRC(eea14ecd) SHA1(afd670bdc3680f12360561a1a5e5854718c099f7))
 WPCS_SOUNDROM222("mach_u18.l1",CRC(f3f53896) SHA1(4be5a8a27c5ac4718713c05ff2ddf51658a1be27),
                  "mach_u15.l1", CRC(fb49513b) SHA1(01f5243ff258adce3a28b24859eba3f465444bdf),
                  "mach_u14.l1", CRC(be2a736a) SHA1(ebf7b26a86d3ffcc35eaa1da8e4f432bd281fe15))
