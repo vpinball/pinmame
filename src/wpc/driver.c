@@ -658,6 +658,11 @@ DRIVERNV(monopoll)      //Whitestar: 09/01 Monopoly (Spanish display)
 DRIVERNV(monopolf)      //Whitestar: 09/01 Monopoly (French display)
 DRIVERNV(monopoli)      //Whitestar: 09/01 Monopoly (Italian display)
 DRIVERNV(nfl)			//Whitestar: 11/01 NFL
+DRIVERNV(playboys)      //Whitestar: 02/02 Playboy
+DRIVERNV(playboyg)      //Whitestar: 02/02 Playboy (German display)
+DRIVERNV(playboyl)      //Whitestar: 02/02 Playboy (Spanish display)
+DRIVERNV(playboyf)      //Whitestar: 02/02 Playboy (French display)
+DRIVERNV(playboyi)      //Whitestar: 02/02 Playboy (Italian display)
 
 #ifdef INCLUDE_NEW_STERN
 DRIVER  (harl,a18)      //Whitestar: 07/03 Harley Davidson (1.08)
@@ -670,11 +675,6 @@ DRIVER  (harl,f30)      //Whitestar: 10/04 Harley Davidson (3.00 France)
 DRIVER  (harl,g30)      //Whitestar: 10/04 Harley Davidson (3.00 Germany)
 DRIVER  (harl,i30)      //Whitestar: 10/04 Harley Davidson (3.00 Italy)
 DRIVER  (harl,l30)      //Whitestar: 10/04 Harley Davidson (3.00 Spain)
-DRIVERNV(playboys)      //Whitestar: 02/02 Playboy
-DRIVERNV(playboyg)      //Whitestar: 02/02 Playboy (German display)
-DRIVERNV(playboyl)      //Whitestar: 02/02 Playboy (Spanish display)
-DRIVERNV(playboyf)      //Whitestar: 02/02 Playboy (French display)
-DRIVERNV(playboyi)      //Whitestar: 02/02 Playboy (Italian display)
 DRIVERNV(rctycn)        //Whitestar: 09/02 Roller Coaster Tycoon
 DRIVERNV(rctycng)       //Whitestar: 09/02 Roller Coaster Tycoon (German display)
 DRIVERNV(rctycnl)       //Whitestar: 09/02 Roller Coaster Tycoon (Spanish display)
@@ -723,10 +723,12 @@ DRIVERNV(elvisg)        //Whitestar: 10/04 Elvis (Germany)
 DRIVERNV(elvisl)        //Whitestar: 10/04 Elvis (Spain)
 DRIVERNV(elvisf)        //Whitestar: 10/04 Elvis (France)
 DRIVERNV(elvisi)        //Whitestar: 10/04 Elvis (Italy)
+DRIVERNV(sopranos)      //Whitestar: 02/05 The Sopranos
+DRIVERNV(sopranog)      //Whitestar: 02/05 The Sopranos (Germany)
+DRIVERNV(sopranol)      //Whitestar: 02/05 The Sopranos (Spain)
+DRIVERNV(sopranof)      //Whitestar: 02/05 The Sopranos (France)
+DRIVERNV(sopranoi)      //Whitestar: 02/05 The Sopranos (Italy)
 #endif /* INCLUDE_NEW_STERN */
-#ifdef MAME_DEBUG
-DRIVERNV(sopranos)      //Whitestar: ??/05 The Sopranos
-#endif
 
 // ---------------
 // TAITO GAMES
