@@ -10,13 +10,15 @@ TODO:	remove the 1 analog device per port limitation
 
 ***************************************************************************/
 
-#include "driver.h"
 #include <math.h>
+#include "driver.h"
+#include "config.h"
 
 #ifdef MESS
 #include "inputx.h"
 #endif
 
+/* MAMEnet support */
 #if defined MAME_NET || defined XMAME_NET
 #include "network.h"
 
@@ -25,22 +27,13 @@ static int default_player;
 static int analog_player_port[MAX_INPUT_PORTS];
 #endif /* MAME_NET */
 
-/* header identifying the version of the game.cfg file */
-/* mame 0.36b11 */
-#define MAMECFGSTRING_V5 "MAMECFG\5"
-#define MAMEDEFSTRING_V5 "MAMEDEF\4"
 
-/* mame 0.36b12 with multi key/joy extension */
-#define MAMECFGSTRING_V6 "MAMECFG\6"
-#define MAMEDEFSTRING_V6 "MAMEDEF\5"
 
-/* mame 0.36b13 with and/or/not combination */
-#define MAMECFGSTRING_V7 "MAMECFG\7"
-#define MAMEDEFSTRING_V7 "MAMEDEF\6"
+/***************************************************************************
 
-/* mame 0.36b16 with key/joy merge */
-#define MAMECFGSTRING_V8 "MAMECFG\x8"
-#define MAMEDEFSTRING_V8 "MAMEDEF\7"
+	Extern declarations
+
+***************************************************************************/
 
 extern void *record;
 extern void *playback;
@@ -52,6 +45,14 @@ extern unsigned int coinlockedout[COIN_COUNTERS];
 
 static unsigned short input_port_value[MAX_INPUT_PORTS];
 static unsigned short input_vblank[MAX_INPUT_PORTS];
+
+
+
+/***************************************************************************
+
+	Local variables
+
+***************************************************************************/
 
 /* Assuming a maxium of one analog input device per port BW 101297 */
 static struct InputPort *input_analog[MAX_INPUT_PORTS];
@@ -432,7 +433,7 @@ struct ipd inputport_defaults[] =
 	{ IPT_JOYSTICKLEFT_LEFT   | IPF_PLAYER8, "P8 Left/Left",   SEQ_DEF_0 },
 	{ IPT_JOYSTICKLEFT_RIGHT  | IPF_PLAYER8, "P8 Left/Right",  SEQ_DEF_0 },
 
-	{ IPT_PEDAL	                | IPF_PLAYER1, "P1 Pedal 1",     SEQ_DEF_3(KEYCODE_LCONTROL, CODE_OR, JOYCODE_1_BUTTON1) },
+	{ IPT_PEDAL                 | IPF_PLAYER1, "P1 Pedal 1",     SEQ_DEF_3(KEYCODE_LCONTROL, CODE_OR, JOYCODE_1_BUTTON1) },
 	{ (IPT_PEDAL+IPT_EXTENSION) | IPF_PLAYER1, "P1 Auto Release <Y/N>", SEQ_DEF_1(KEYCODE_Y) },
 	{ IPT_PEDAL                 | IPF_PLAYER2, "P2 Pedal 1",     SEQ_DEF_3(KEYCODE_A, CODE_OR, JOYCODE_2_BUTTON1) },
 	{ (IPT_PEDAL+IPT_EXTENSION) | IPF_PLAYER2, "P2 Auto Release <Y/N>", SEQ_DEF_1(KEYCODE_Y) },
@@ -449,7 +450,7 @@ struct ipd inputport_defaults[] =
 	{ IPT_PEDAL                 | IPF_PLAYER8, "P8 Pedal 1",     SEQ_DEF_1(JOYCODE_8_BUTTON1) },
 	{ (IPT_PEDAL+IPT_EXTENSION) | IPF_PLAYER8, "P8 Auto Release <Y/N>", SEQ_DEF_1(KEYCODE_Y) },
 
-	{ IPT_PEDAL2	             | IPF_PLAYER1, "P1 Pedal 2",     SEQ_DEF_1(JOYCODE_1_DOWN) },
+	{ IPT_PEDAL2                 | IPF_PLAYER1, "P1 Pedal 2",     SEQ_DEF_1(JOYCODE_1_DOWN) },
 	{ (IPT_PEDAL2+IPT_EXTENSION) | IPF_PLAYER1, "P1 Auto Release <Y/N>", SEQ_DEF_1(KEYCODE_Y) },
 	{ IPT_PEDAL2                 | IPF_PLAYER2, "P2 Pedal 2",     SEQ_DEF_1(JOYCODE_2_DOWN) },
 	{ (IPT_PEDAL2+IPT_EXTENSION) | IPF_PLAYER2, "P2 Auto Release <Y/N>", SEQ_DEF_1(KEYCODE_Y) },
@@ -457,13 +458,13 @@ struct ipd inputport_defaults[] =
 	{ (IPT_PEDAL2+IPT_EXTENSION) | IPF_PLAYER3, "P3 Auto Release <Y/N>", SEQ_DEF_1(KEYCODE_Y) },
 	{ IPT_PEDAL2                 | IPF_PLAYER4, "P4 Pedal 2",     SEQ_DEF_1(JOYCODE_4_DOWN) },
 	{ (IPT_PEDAL2+IPT_EXTENSION) | IPF_PLAYER4, "P4 Auto Release <Y/N>", SEQ_DEF_1(KEYCODE_Y) },
-	{ IPT_PEDAL                  | IPF_PLAYER5, "P5 Pedal 2",     SEQ_DEF_1(JOYCODE_5_DOWN) },
+	{ IPT_PEDAL2                 | IPF_PLAYER5, "P5 Pedal 2",     SEQ_DEF_1(JOYCODE_5_DOWN) },
 	{ (IPT_PEDAL2+IPT_EXTENSION) | IPF_PLAYER5, "P5 Auto Release <Y/N>", SEQ_DEF_1(KEYCODE_Y) },
-	{ IPT_PEDAL                  | IPF_PLAYER6, "P6 Pedal 2",     SEQ_DEF_1(JOYCODE_6_DOWN) },
+	{ IPT_PEDAL2                 | IPF_PLAYER6, "P6 Pedal 2",     SEQ_DEF_1(JOYCODE_6_DOWN) },
 	{ (IPT_PEDAL2+IPT_EXTENSION) | IPF_PLAYER6, "P6 Auto Release <Y/N>", SEQ_DEF_1(KEYCODE_Y) },
-	{ IPT_PEDAL                  | IPF_PLAYER7, "P7 Pedal 2",     SEQ_DEF_1(JOYCODE_7_DOWN) },
+	{ IPT_PEDAL2                 | IPF_PLAYER7, "P7 Pedal 2",     SEQ_DEF_1(JOYCODE_7_DOWN) },
 	{ (IPT_PEDAL2+IPT_EXTENSION) | IPF_PLAYER7, "P7 Auto Release <Y/N>", SEQ_DEF_1(KEYCODE_Y) },
-	{ IPT_PEDAL                  | IPF_PLAYER8, "P8 Pedal 2",     SEQ_DEF_1(JOYCODE_8_DOWN) },
+	{ IPT_PEDAL2                 | IPF_PLAYER8, "P8 Pedal 2",     SEQ_DEF_1(JOYCODE_8_DOWN) },
 	{ (IPT_PEDAL2+IPT_EXTENSION) | IPF_PLAYER8, "P8 Auto Release <Y/N>", SEQ_DEF_1(KEYCODE_Y) },
 
 	{ IPT_PADDLE | IPF_PLAYER1,  "Paddle",        SEQ_DEF_3(KEYCODE_LEFT, CODE_OR, JOYCODE_1_LEFT) },
@@ -1570,205 +1571,46 @@ static void writeword(mame_file *f,UINT16 num)
 	}
 }
 
-#ifndef NOLEGACY
-#include "legacy.h"
-#endif
 
-static int seq_read_ver_8(void* f, InputSeq* seq)
-{
-	int j,len;
-	UINT32 i;
-	UINT16 w;
-
-	if (readword(f,&w) != 0)
-		return -1;
-
-	len = w;
-	seq_set_0(seq);
-	for(j=0;j<len;++j)
-	{
-		if (readint(f,&i) != 0)
- 			return -1;
-		(*seq)[j] = savecode_to_code(i);
- 	}
-
- 	return 0;
-  }
-
-static int seq_read(void* f, InputSeq* seq, int ver)
-  {
-#ifdef NOLEGACY
-	if (ver==8)
-		return seq_read_ver_8(f,seq);
-#else
-	switch (ver) {
-		case 5 : return seq_read_ver_5(f,seq);
-		case 6 : return seq_read_ver_6(f,seq);
-		case 7 : return seq_read_ver_7(f,seq);
-		case 8 : return seq_read_ver_8(f,seq);
-	}
-#endif
-	return -1;
-  }
-
-static void seq_write(void* f, InputSeq* seq)
-  {
-	int j,len;
-        for(len=0;len<SEQ_MAX;++len)
-		if ((*seq)[len] == CODE_NONE)
-			break;
-	writeword(f,len);
-	for(j=0;j<len;++j)
-		writeint(f, code_to_savecode( (*seq)[j] ));
-  }
 
 /***************************************************************************/
 /* Load */
 
 static void load_default_keys(void)
 {
-	mame_file *f;
-
+	config_file *cfg;
 
 	osd_customize_inputport_defaults(inputport_defaults);
 	memcpy(inputport_defaults_backup,inputport_defaults,sizeof(inputport_defaults));
 
-	if ((f = mame_fopen("default",0,FILETYPE_CONFIG,0)) != 0)
+	cfg = config_open(NULL);
+	if (cfg)
 	{
-		char buf[8];
-		int version;
-
-		/* read header */
-		if (mame_fread(f,buf,8) != 8)
-			goto getout;
-
-		if (memcmp(buf,MAMEDEFSTRING_V5,8) == 0)
-			version = 5;
-		else if (memcmp(buf,MAMEDEFSTRING_V6,8) == 0)
-			version = 6;
-		else if (memcmp(buf,MAMEDEFSTRING_V7,8) == 0)
-			version = 7;
-		else if (memcmp(buf,MAMEDEFSTRING_V8,8) == 0)
-			version = 8;
-		else
-			goto getout;	/* header invalid */
-
-		for (;;)
-		{
-			UINT32 type;
-			InputSeq def_seq;
-			InputSeq seq;
-			int i;
-
-			if (readint(f,&type) != 0)
-				goto getout;
-
-			if (seq_read(f,&def_seq,version)!=0)
-				goto getout;
-			if (seq_read(f,&seq,version)!=0)
-				goto getout;
-
-			i = 0;
-			while (inputport_defaults[i].type != IPT_END)
-			{
-				if (inputport_defaults[i].type == type)
-				{
-					/* load stored settings only if the default hasn't changed */
-					if (seq_cmp(&inputport_defaults[i].seq,&def_seq)==0)
-						seq_copy(&inputport_defaults[i].seq,&seq);
-				}
-
-				i++;
-			}
-		}
-
-getout:
-		mame_fclose(f);
+		config_read_default_ports(cfg, inputport_defaults);
+		config_close(cfg);
 	}
 }
 
 static void save_default_keys(void)
 {
-	mame_file *f;
+	config_file *cfg;
 
-
-	if ((f = mame_fopen("default",0,FILETYPE_CONFIG,1)) != 0)
+	cfg = config_open(NULL);
+	if (cfg)
 	{
-		int i;
-
-
-		/* write header */
-		mame_fwrite(f,MAMEDEFSTRING_V8,8);
-
-		i = 0;
-		while (inputport_defaults[i].type != IPT_END)
-		{
-			if (inputport_defaults[i].type != IPT_OSD_RESERVED)
-			{
-				writeint(f,inputport_defaults[i].type);
-
-				seq_write(f,&inputport_defaults_backup[i].seq);
-				seq_write(f,&inputport_defaults[i].seq);
+		config_write_default_ports(cfg, inputport_defaults_backup, inputport_defaults);
+		config_close(cfg);
 			}
 
-			i++;
-		}
-
-		mame_fclose(f);
-	}
 	memcpy(inputport_defaults,inputport_defaults_backup,sizeof(inputport_defaults_backup));
-}
-
-static int input_port_read_ver_8(void *f,struct InputPort *in)
-{
-	UINT32 i;
-	UINT16 w;
-	if (readint(f,&i) != 0)
-		return -1;
-	in->type = i;
-
-	if (readword(f,&w) != 0)
-		return -1;
-	in->mask = w;
-
-	if (readword(f,&w) != 0)
-		return -1;
-	in->default_value = w;
-
-	if (seq_read_ver_8(f,&in->seq) != 0)
-		return -1;
-
-	return 0;
-}
-
-static int input_port_read(void *f,struct InputPort *in, int ver)
-{
-#ifdef NOLEGACY
-	if (ver==8)
-		return input_port_read_ver_8(f,in);
-#else
-	switch (ver) {
-		case 5 : return	input_port_read_ver_5(f,in);
-		case 6 : return	input_port_read_ver_6(f,in);
-		case 7 : return	input_port_read_ver_7(f,in);
-		case 8 : return	input_port_read_ver_8(f,in);
-	}
-#endif
-	return -1;
-}
-
-static void input_port_write(void *f,struct InputPort *in)
-{
-	writeint(f,in->type);
-	writeword(f,in->mask);
-	writeword(f,in->default_value);
-	seq_write(f,&in->seq);
 }
 
 
 int load_input_port_settings(void)
 {
-	mame_file *f;
+	config_file *cfg;
+	int err;
+	struct mixer_config mixercfg;
 #ifdef MAME_NET
     struct InputPort *in;
     int port, player;
@@ -1777,92 +1619,25 @@ int load_input_port_settings(void)
 
 	load_default_keys();
 
-	if ((f = mame_fopen(Machine->gamedrv->name,0,FILETYPE_CONFIG,0)) != 0)
-	{
-#ifndef MAME_NET
-		struct InputPort *in;
-#endif
-		unsigned int total,savedtotal;
-		char buf[8];
-		int i;
-		int version;
-
-		in = Machine->input_ports_default;
-
-		/* calculate the size of the array */
-		total = 0;
-		while (in->type != IPT_END)
+	cfg = config_open(Machine->gamedrv->name);
+	if (cfg)
 		{
-			total++;
-			in++;
-		}
-
-		/* read header */
-		if (mame_fread(f,buf,8) != 8)
-			goto getout;
-
-		if (memcmp(buf,MAMECFGSTRING_V5,8) == 0)
-			version = 5;
-		else if (memcmp(buf,MAMECFGSTRING_V6,8) == 0)
-			version = 6;
-		else if (memcmp(buf,MAMECFGSTRING_V7,8) == 0)
-			version = 7;
-		else if (memcmp(buf,MAMECFGSTRING_V8,8) == 0)
-			version = 8;
-		else
-			goto getout;	/* header invalid */
-
-		/* read array size */
-		if (readint(f,&savedtotal) != 0)
-			goto getout;
-		if (total != savedtotal)
-			goto getout;	/* different size */
-
-		/* read the original settings and compare them with the ones defined in the driver */
-		in = Machine->input_ports_default;
-		while (in->type != IPT_END)
-		{
-			struct InputPort saved;
-
-			if (input_port_read(f,&saved,version) != 0)
+		err = config_read_ports(cfg, Machine->input_ports_default, Machine->input_ports);
+		if (err)
 				goto getout;
 
-			if (in->mask != saved.mask ||
-				in->default_value != saved.default_value ||
-				in->type != saved.type ||
-				seq_cmp(&in->seq,&saved.seq) !=0 )
-			goto getout;	/* the default values are different */
-
-			in++;
-		}
-
-		/* read the current settings */
-		in = Machine->input_ports;
-		while (in->type != IPT_END)
-		{
-			if (input_port_read(f,in,version) != 0)
+		err = config_read_coin_and_ticket_counters(cfg, coins, lastcoin, coinlockedout, &dispensed_tickets);
+		if (err)
 				goto getout;
-			in++;
-		}
 
-		/* Clear the coin & ticket counters/flags - LBO 042898 */
-		for (i = 0; i < COIN_COUNTERS; i ++)
-			coins[i] = lastcoin[i] = coinlockedout[i] = 0;
-		dispensed_tickets = 0;
-
-		/* read in the coin/ticket counters */
-		for (i = 0; i < COIN_COUNTERS; i ++)
-		{
-			if (readint(f,&coins[i]) != 0)
-				goto getout;
-		}
-		if (readint(f,&dispensed_tickets) != 0)
+		err = config_read_mixer_config(cfg, &mixercfg);
+		if (err)
 			goto getout;
 
-		mixer_read_config(f);
+		mixer_load_config(&mixercfg);
 
 getout:
-		mame_fclose(f);
+		config_close(cfg);
 	}
 
 	/* All analog ports need initialization */
@@ -1998,8 +1773,7 @@ getout:
 
 	/* if we didn't find a saved config, return 0 so the main core knows that it */
 	/* is the first time the game is run and it should diplay the disclaimer. */
-	if (f) return 1;
-	else return 0;
+	return cfg ? 1 : 0;
 }
 
 /***************************************************************************/
@@ -2007,7 +1781,8 @@ getout:
 
 void save_input_port_settings(void)
 {
-	mame_file *f;
+	config_file *cfg;
+	struct mixer_config mixercfg;
 #ifdef MAME_NET
 	struct InputPort *in;
 	int port, player;
@@ -2132,52 +1907,15 @@ void save_input_port_settings(void)
 
 	save_default_keys();
 
-	if ((f = mame_fopen(Machine->gamedrv->name,0,FILETYPE_CONFIG,1)) != 0)
-	{
-#ifndef MAME_NET
-		struct InputPort *in;
-#endif /* MAME_NET */
-		int total;
-		int i;
-
-
-		in = Machine->input_ports_default;
-
-		/* calculate the size of the array */
-		total = 0;
-		while (in->type != IPT_END)
+	cfg = config_create(Machine->gamedrv->name);
+	if (cfg)
 		{
-			total++;
-			in++;
-		}
+		mixer_save_config(&mixercfg);
 
-		/* write header */
-		mame_fwrite(f,MAMECFGSTRING_V8,8);
-		/* write array size */
-		writeint(f,total);
-		/* write the original settings as defined in the driver */
-		in = Machine->input_ports_default;
-		while (in->type != IPT_END)
-		{
-			input_port_write(f,in);
-			in++;
-		}
-		/* write the current settings */
-		in = Machine->input_ports;
-		while (in->type != IPT_END)
-		{
-			input_port_write(f,in);
-			in++;
-		}
-
-		/* write out the coin/ticket counters for this machine - LBO 042898 */
-		for (i = 0; i < COIN_COUNTERS; i ++)
-			writeint(f,coins[i]);
-		writeint(f,dispensed_tickets);
-
-		mixer_write_config(f);
-
-		mame_fclose(f);
+		config_write_ports(cfg, Machine->input_ports_default, Machine->input_ports);
+		config_write_coin_and_ticket_counters(cfg, coins, lastcoin, coinlockedout, dispensed_tickets);
+		config_write_mixer_config(cfg, &mixercfg);
+		config_close(cfg);
 	}
 }
 

@@ -98,6 +98,14 @@ struct hard_disk_header
 	UINT8	md5[16];			/* MD5 checksum for this drive */
 	UINT8	parentmd5[16];		/* MD5 checksum for parent drive */
 };
+/* DUPE BLOCK */
+/* this struct is only used in the unique blocks array */
+struct hard_disk_block
+{
+	int ptr; /* pointer to the block this hash represents */
+	UINT8 hash[16]; /* hash for this particular block */
+};
+/* END DUPE BLOCK */
 
 
 struct hard_disk_interface
@@ -133,3 +141,9 @@ int hard_disk_set_header(const char *filename, const struct hard_disk_header *he
 
 int hard_disk_compress(const char *rawfile, UINT32 offset, const char *newfile, const struct hard_disk_header *header, const char *difffile, void (*progress)(const char *, ...));
 int hard_disk_verify(const char *hdfile, void (*progress)(const char *, ...), UINT8 headermd5[16], UINT8 actualmd5[16]);
+
+/* DUPE BLOCK */
+/* these two methods are helper methods for duplicate block compression */
+int hard_disk_binary_search(struct hard_disk_block *blocks, UINT8 hash[16], int low, int high);
+int hard_disk_compare_hash(const UINT8 one[16], const UINT8 two[16]);
+/* END DUPE BLOCK */

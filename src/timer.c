@@ -96,8 +96,19 @@ static int callback_timer_modified;
 
 INLINE double get_relative_time(void)
 {
-	int activecpu = cpu_getactivecpu();
-	return (activecpu >= 0) ? cpunum_get_localtime(activecpu) : 0;
+	int activecpu;
+
+	/* if we're executing as a particular CPU, use its local time as a base */
+	activecpu = cpu_getactivecpu();
+	if (activecpu >= 0)
+		return cpunum_get_localtime(activecpu);
+	
+	/* if we're currently in a callback, use the timer's expiration time as a base */
+	if (callback_timer)
+		return callback_timer->expire;
+	
+	/* otherwise, return 0 */
+	return 0;
 }
 
 

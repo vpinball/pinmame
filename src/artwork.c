@@ -1,3 +1,4 @@
+
 /*********************************************************************
 
 	artwork.c
@@ -845,10 +846,12 @@ void artwork_update_video_and_audio(struct mame_display *display)
 	certain parameters when saving a screenshot
 -------------------------------------------------*/
 
-void artwork_override_screenshot_params(struct mame_bitmap **bitmap, UINT32 *rgb_components)
+void artwork_override_screenshot_params(struct mame_bitmap **bitmap, struct rectangle *rect, UINT32 *rgb_components)
 {
 	if ((*bitmap == Machine->scrbitmap || *bitmap == uioverlay) && artwork_list)
 	{
+		*rect = screenrect;
+
 		/* snapshots require correct direct_rgb_components */
 		rgb_components[0] = 0xff << rshift;
 		rgb_components[1] = 0xff << gshift;

@@ -103,11 +103,17 @@ static void rc_free_stuff(struct rc_option *option)
             break;
          case rc_string:
             if(*(char **)option[i].dest)
+			{
                free(*(char **)option[i].dest);
+			   *(char **)option[i].dest = NULL;
+			}
             break;
          case rc_file:
             if(*(FILE **)option[i].dest)
+			{
                fclose(*(FILE **)option[i].dest);
+			   *(FILE **)option[i].dest = NULL;
+			}
             break;
       }
    }
