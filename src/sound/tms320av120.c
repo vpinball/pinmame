@@ -8,8 +8,8 @@
 *    "The Programmer's Guide to Sound" by Tim Kientzle (see copyright below)
  **********************************************************************************************/ 
 /**********************************************************************************************
- *   NOTE: Supports ONLY MPEG1 Layer 2 data @ 32KHz/32kbps at this time!
- *         Not configurable to anything else, for speed purposes at this time!
+ *   NOTE: Supports ONLY MPEG1 Layer 2 Mono data @ 32KHz/32kbps at this time!
+ *         Not configurable to anything else, for speed purposes and coding simplicity at this time!
  *
  *   TODO:
  *         1) Redo buffers
@@ -222,6 +222,9 @@ static int bitmasks[] = {0,1,3,7,0xF,0x1F,0x3F,0x7F,0xFF};		// Bit reading masks
 static const double MYPI=3.14159265358979323846;
 static const char order[] = {0,16,8,24,4,20,12,28,2,18,10,26,6,22,14,30,
                              1,17,9,25,5,21,13,29,3,19,11,27,7,23,15,31};
+static long phaseShiftsR[32], phaseShiftsI[32]; // 1.14
+static long vShiftR[64], vShiftI[64]; // 1.13
+static long D[512];
 
 /**********************************************************************************************
      MPEG DATA HANDLING
@@ -237,8 +240,6 @@ static void Matrix(long *V, long *subbandSamples, int numSamples) {
    int i,n,size,fftStep;
    long *workR=V; // Re-use V as work storage
    long workI[64]; // Imaginary part
-   static long phaseShiftsR[32], phaseShiftsI[32]; // 1.14
-   static int initializedPhaseShifts = 0;
    long *pWorkR;
    long *pWorkI;
    const char *next = order;
@@ -268,15 +269,6 @@ static void Matrix(long *V, long *subbandSamples, int numSamples) {
    // This is a fast version of the transform in the ISO standard.
    // It's derived using the same principles as the FFT,
    // but it's NOT a Fourier Transform. 
-
-   // For speed, precompute all of the phase shift values
-   if (!initializedPhaseShifts) { // Initialize it only once
-      for(i=0;i<32;i++) { // 1.14
-         phaseShiftsR[i] = (long)(16384.0*cos(i*(MYPI/32.0)));
-         phaseShiftsI[i] = (long)(16384.0*sin(i*(MYPI/32.0)));
-      }
-      initializedPhaseShifts = 1;
-   }
 
    // In each iteration, I throw out one bit of accuracy
    // This gives me an extra bit of headroom to avoid overflow
@@ -312,18 +304,6 @@ static void Matrix(long *V, long *subbandSamples, int numSamples) {
 
    // Build final V values by massaging transform output
    {
-      static long vShiftR[64], vShiftI[64]; // 1.13
-      static int initializedVshift = 0;
-      int n;
-  
-      if (!initializedVshift) { // Initialize it only once
-         for(n=0;n<32;n++) { // 1.14
-            vShiftR[n] = (long)(16384.0*cos((32+n)*(MYPI/64.0)));
-            vShiftI[n] = (long)(16384.0*sin((32+n)*(MYPI/64.0)));
-         }
-         initializedVshift = 1;
-      }
-
       // Now build V values from the complex transform output
       pcmR = workR+33; // 6.12
       pcmI = workI+33; // 6.12
@@ -347,8 +327,6 @@ void Layer12Synthesis(  int num,
    INT16 *pcmSamples = &(tms320av120[num].pcmbuffer[tms320av120[num].pcm_pos]);
    int i,j;
    long *t = V[15];
-   static long D[512];
-   static int initializedD = 0;
    long *nextD;
 
    for(i=15;i>0;i--) // Shift V buffers over
@@ -357,19 +335,6 @@ void Layer12Synthesis(  int num,
 
    // Convert subband samples into PCM samples in V[0]
    Matrix(V[0],subbandSamples,numSubbandSamples);
-
-   // Rearrange synthesis window coefficients into a more
-   // useful order, and scale them to 3.12
-   if (!initializedD) {
-	  int i,j;
-      long *nextD = D;
-      for(j=0;j<32;j++)
-         for(i=0;i<16;i+=2) {
-            *nextD++ = SynthesisWindowCoefficients[j+32*i]>>4;
-            *nextD++ = SynthesisWindowCoefficients[j+32*i+32]>>4;
-         }
-      initializedD = 1;
-   }
 
    // D is 3.12, V is 6.9, want 16 bit output
    nextD = D;
@@ -686,6 +651,7 @@ int TMS320AV120_sh_start(const struct MachineSound *msound)
 {
 	int i, j, vi, failed=0;
 	char stream_name[40];
+	long *nextD = D;
 
 	//Get reference to the interface
 	intf = msound->sound_interface;
@@ -732,6 +698,20 @@ int TMS320AV120_sh_start(const struct MachineSound *msound)
 		//Create Scale Factor values
 		for(i=0;i<63;i++)
 			layer1ScaleFactors[i] = (long)(32767.0 * pow(2.0, 1.0 - i/3.0));
+		// For speed, precompute all of the phase shift values
+	    for(i=0;i<32;i++) { // 1.14
+         phaseShiftsR[i] = (long)(16384.0*cos(i*(MYPI/32.0)));
+         phaseShiftsI[i] = (long)(16384.0*sin(i*(MYPI/32.0)));
+         vShiftR[i] = (long)(16384.0*cos((32+i)*(MYPI/64.0)));
+         vShiftI[i] = (long)(16384.0*sin((32+i)*(MYPI/64.0)));
+		}
+		// Rearrange synthesis window coefficients into a more
+		// useful order, and scale them to 3.12
+		for(j=0;j<32;j++)
+         for(i=0;i<16;i+=2) {
+            *nextD++ = SynthesisWindowCoefficients[j+32*i]>>4;
+            *nextD++ = SynthesisWindowCoefficients[j+32*i+32]>>4;
+		 }
 	}
 	return failed;
 }
@@ -770,9 +750,6 @@ void TMS320AV120_sh_stop(void)
 
 void TMS320AV120_sh_reset(void)
 {
-	//int i;
-	//for (i = 0; i < MAX_TMS320AV120; i++)
-		//init_all_voices(&bsmt2000[i]);
 }
 
 /**********************************************************************************************

@@ -16,8 +16,8 @@ struct TMS320AV120interface
 {
         int num;											/* total number of chips */
         int mixing_level[MAX_TMS320AV120];					/* master volume */
-		void (*bof_line[MAX_TMS320AV120])(int state);		/* BOF Line */
-		void (*sreq_line[MAX_TMS320AV120])(int state);		/* SREQ Line */
+		void (*bof_line[MAX_TMS320AV120])(int state);		/* BOF Line Callback */
+		void (*sreq_line[MAX_TMS320AV120])(int state);		/* SREQ Line Callback */
 };
 
 int TMS320AV120_sh_start(const struct MachineSound *msound);
