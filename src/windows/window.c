@@ -1053,6 +1053,10 @@ void win_constrain_to_aspect_ratio(RECT *rect, int adjustment, int constraints)
 //	adjust_window_for_visible
 //============================================================
 
+#ifdef VPINMAME
+void VPM_ShowVideoWindow();
+#endif
+
 void win_adjust_window_for_visible(int min_x, int max_x, int min_y, int max_y)
 {
 	int old_visible_width = win_visible_rect.right - win_visible_rect.left;
@@ -1093,18 +1097,15 @@ void win_adjust_window_for_visible(int min_x, int max_x, int min_y, int max_y)
  				r.bottom - r.top,
  				SWP_NOZORDER | SWP_NOMOVE);
  	}
-#ifndef VPINMAME
  	else
  	{
 		// adjust the window
 		win_adjust_window();
  	}
-#endif
 
 	// first time through here, we need to show the window
 	if (!visible_area_set)
 	{
-#ifndef VPINMAME
 		// let's also win_start_maximized the window
 		if (win_window_mode)
 		{
@@ -1129,7 +1130,6 @@ void win_adjust_window_for_visible(int min_x, int max_x, int min_y, int max_y)
 						non_maximized_bounds.bottom - non_maximized_bounds.top,
 						SWP_NOZORDER);
 		}
-#endif
 		// kludge to fix full screen mode for the non-ddraw case
 		if (!win_use_directx && !win_window_mode)
 		{
@@ -1138,8 +1138,10 @@ void win_adjust_window_for_visible(int min_x, int max_x, int min_y, int max_y)
 			memset(&non_fullscreen_bounds, 0, sizeof(non_fullscreen_bounds));
 		}
 
-#ifndef VPINMAME
 		// show the result
+#ifdef VPINMAME
+		VPM_ShowVideoWindow();
+#else 
 		ShowWindow(win_video_window, SW_SHOW);
 		SetForegroundWindow(win_video_window);
 #endif
@@ -1153,8 +1155,6 @@ void win_adjust_window_for_visible(int min_x, int max_x, int min_y, int max_y)
 		visible_area_set = 1;
 	}
 }
-
-
 
 //============================================================
 //	win_toggle_maximize
