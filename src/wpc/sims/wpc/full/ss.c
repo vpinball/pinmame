@@ -1,13 +1,13 @@
 /*******************************************************************************
  Scared Stiff (Bally, 1996) Pinball Simulator
 
- by Tom Haukap (tom@rattle.de)
+ by Tom Haukap (Tom.Haukap@t-online.de)
 
  301200 First version
  050301 Removed unused getsol function (propably copy/paste error)
  Known issues:
  - the spider wheel turns, but the calculated result is in most cases not equal to
-   the result the machine gets
+   the result the machine gets. There is a +/-1 step difference all the time...
 
  ******************************************************************************/
 
@@ -47,14 +47,6 @@ static void ss_drawMech(BMTYPE **line);
 static void ss_drawStatic(BMTYPE **line);
 static int ss_getMech(int mechNo);
 static void init_ss(void);
-
-/*-----------------------
-  local static variables
- ------------------------*/
-static struct {
-  int spiderWheelPos;		/* holds the position of the spider wheel */
-  int spiderWheelState;		/* holds the last state spider wheel sols */
-} locals;
 
 /*--------------------------
 / Game specific input ports
@@ -282,9 +274,6 @@ static sim_tState ss_stateDef[] = {
 
 static void ss_initSim(sim_tBallStatus *balls, int *inports, int noOfBalls)
 {
-    locals.spiderWheelPos = 0;
-	locals.spiderWheelState = 0;
-
 	core_setSw(swWheelIndex, TRUE);
 }
 
@@ -429,8 +418,8 @@ static core_tGameData ssGameData = {
 };
 
 static mech_tInitData ss_wheelMech = {
-  39,40, MECH_LINEAR|MECH_CIRCLE|MECH_TWOSTEPSOL|MECH_FAST, 256, 64,
-  {{swWheelIndex, 0,31}}
+  39,40, MECH_LINEAR|MECH_CIRCLE|MECH_TWOSTEPSOL|MECH_FAST, 384, 384,
+  {{swWheelIndex, 24, 383}}
 };
 /*---------------
 /  Game handling
@@ -442,32 +431,10 @@ static void init_ss(void) {
 
 
 static void ss_handleMech(int mech) {
-#if 1
-  DBGLOG(("pulsedSol=%8x sol39=%08x sol40=%08x\n",coreGlobals.pulsedSolState,core_getPulsedSol(39),core_getPulsedSol(40)));
-
 //  if (mech & 0x01) mech_update(0);
-#else
-  if (mech & 0x01) {
-    /* we need the pulsed solenoid state to turn the wheel */
-   int spiderWheelState = core_getPulsedSol(31)+2*core_getPulsedSol(32);
-
-   if (locals.spiderWheelState!=spiderWheelState) {
-     locals.spiderWheelState = spiderWheelState;
-     locals.spiderWheelPos++;
-
-     if (locals.spiderWheelPos == 64)
-       locals.spiderWheelPos = 0;
-   }
-   core_setSw(swWheelIndex, (locals.spiderWheelPos<3));
- }
-#endif
 }
 static int ss_getMech(int mechNo) {
-#if 1
   return mech_getPos(0);
-#else
-  return locals.spiderWheelPos;
-#endif
 }
 static const char *spiderWheelText[] =
   {"Top Eyeball    ", "Right Skull    ", "Jackpot        ", "Double Trouble ",
@@ -478,11 +445,10 @@ static const char *spiderWheelText[] =
   Drawing information
   --------------------*/
 static void ss_drawMech(BMTYPE **line) {
-//        core_textOutf(30,10,BLACK,"Wheel Pos   : %2d",  locals.spiderWheelPos);
-        core_textOutf(30,10,BLACK,"Wheel Pos   : %2d",  mech_getPos(0));
+        core_textOutf(30,10,BLACK,"Wheel Pos   : %3d",  mech_getPos(0));
         core_textOutf(30,20,BLACK,"Coffin Door : %-6s", core_getSol(sCoffinDoor)?"Open":"Closed");
         core_textOutf(30,30,BLACK,"Loop Gate   : %-6s", core_getSol(sLoopGate) ? "Open":"Closed");
         core_textOutf(30,40,BLACK,"Coin Door   : %-6s", core_getSw(swCoinDoor) ? "Closed":"Open");
-        core_textOutf(30,50,BLACK,"Spider Wheel: %s", spiderWheelText[(mech_getPos(0)/4)]);
+        core_textOutf(30,50,BLACK,"Spider Wheel: %s",   spiderWheelText[mech_getPos(0)/24]);
 }
 
