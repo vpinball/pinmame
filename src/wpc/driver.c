@@ -222,7 +222,7 @@ DRIVERNV(atlantis)      //6803-2006: 03/89 Atlantis
 // GOTTLIEB GAMES BELOW
 // ---------------------
 //System 1
-                        //S1-409    11/77 Cleopatra
+DRIVERNV(cleoptra)      //S1-409    11/77 Cleopatra
                         //S1-412    05/78 Sinbad
                         //S1-417    08/78 Joker Poker
                         //S1-419    10/78 Dragon
