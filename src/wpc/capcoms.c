@@ -68,6 +68,7 @@ static struct {
   int bof_line[2];		//Track status of bof line for each tms chip
   int sreq_line[2];		//Track status of sreq line for each tms chip
   int cbof_line[2];		//Clear BOF Line (8752 controlled)
+  UINT8 from_8752;		//Data from the 8752
 #ifdef TEST_FROM_ROM
   int curr[2];			//Current position we've read from the rom
 #endif
@@ -86,6 +87,24 @@ static struct {
   int nextbit;		//Which bit to store next
   int nextram;		//Which position in ram to store next
 } x9241;
+
+//Data From 8752 (Transmitted from 8752 Serial UART TX line)
+void data_from_8752(int data)
+{
+	locals.from_8752 = data;
+//	printf("data from 8751 = %x\n",data);
+
+//	//Send the data back in!
+//	cpu_set_irq_line(locals.brdData.cpuNo, I8051_RX_LINE, ASSERT_LINE);
+}
+
+//Data To 8752 (Transmitted To 8752 Serial UART RX line)
+int data_to_8752(void)
+{
+	int data = locals.from_8752+1;//0xff;
+//	printf("data to 8751 = %x\n",data);
+	return data;
+}
 
 //Track state of BOF 
 void cap_bof(int chipnum,int state)
@@ -486,6 +505,10 @@ static void capcoms_init(struct sndbrdData *brdData) {
   memset(&locals, 0, sizeof(locals));
   locals.brdData = *brdData;
   memset(&x9241, 0, sizeof(x9241));
+
+  //Setup 8752 serial line call backs
+  i8752_set_serial_tx_callback(data_from_8752);
+  i8752_set_serial_rx_callback(data_to_8752);
 
   //patch over tests that are failing
   #ifdef TEST_BYPASS
