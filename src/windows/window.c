@@ -495,7 +495,14 @@ int win_init_window(void)
 	return 0;
 }
 
+#ifdef PINMAME
+// moved them here (from local static vars in draw_video_contents and 
+// draw_debug_contents) so they can be initialized in win_create_window
+// (th, vpm team)
 
+static struct mame_bitmap *last_video_bitmap = NULL;
+static struct mame_bitmap *last_debug_bitmap = NULL;
+#endif
 
 //============================================================
 //	win_create_window
@@ -504,6 +511,12 @@ int win_init_window(void)
 int win_create_window(int width, int height, int depth, int attributes, double aspect)
 {
 	int i, result = 0;
+
+#ifdef PINMAME
+	// clear the last drawn bitmaps
+	last_video_bitmap  = NULL;
+	last_debug_bitmap = NULL;
+#endif
 
 	// clear the initial state
 	visible_area_set = 0;
@@ -693,7 +706,12 @@ void win_update_video_window(struct mame_bitmap *bitmap, const struct rectangle 
 
 static void draw_video_contents(HDC dc, struct mame_bitmap *bitmap, const struct rectangle *bounds, void *vector_dirty_pixels, int update)
 {
+#ifndef PINMAME
 	static struct mame_bitmap *last;
+#else 
+	struct mame_bitmap *last;
+	last = last_video_bitmap;
+#endif
 
 	// if no bitmap, use the last one we got
 	if (bitmap == NULL)
@@ -1667,9 +1685,16 @@ void win_update_debug_window(struct mame_bitmap *bitmap, const rgb_t *palette)
 
 static void draw_debug_contents(HDC dc, struct mame_bitmap *bitmap, const rgb_t *palette)
 {
+#ifndef PINMAME
 	static struct mame_bitmap *last_bitmap;
+#endif
 	static const rgb_t *last_palette;
 	int i;
+
+#ifdef PINMAME
+	struct mame_bitmap *last_bitmap;
+	last_bitmap = last_debug_bitmap;
+#endif
 
 	// if no bitmap, use the last one we got
 	if (bitmap == NULL)
