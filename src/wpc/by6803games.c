@@ -113,7 +113,7 @@ CORE_GAMEDEFNV(blackblt,"Black Belt",1986,"Bally",by_mBY6803_TCSS,0)
 / Special Force (6803-0E47: 08/86)
 /------------------------------------*/
 //CPU & Sound Works?
-INITGAME6803(specforc,GEN_BY6803,dispBy104,FLIP6803,4,SNDBRD_BYSD, BY6803_DISPALPHA)
+INITGAME6803(specforc,GEN_BY6803,dispBy104,FLIP_SW(FLIP_L),4,SNDBRD_BYSD, BY6803_DISPALPHA)
 BY6803_ROMSTART44(specforc,"u2_revc.128",0xd042af04,
                            "u3_revc.128",0xd48a5eaf)
 BYSD_SOUNDROM0000(         "u12_snd.512",0x4f48a490,
@@ -128,7 +128,7 @@ CORE_GAMEDEFNV(specforc,"Special Force",1986,"Bally",by_mBY6803_SDS,0)
 / Strange Science (6803-0E35: 10/86)
 /------------------------------------*/
 //CPU & Sound Works?
-INITGAME6803(strngsci,GEN_BY6803,dispBy104,FLIP6803,4,SNDBRD_BYTCS, BY6803_DISPALPHA)
+INITGAME6803(strngsci,GEN_BY6803,dispBy104,FLIP_SW(FLIP_L),4,SNDBRD_BYTCS, BY6803_DISPALPHA)
 BY6803_ROMSTART44(strngsci, "cpu_u2.128",  0x2ffcf284,
                             "cpu_u3.128",  0x35257931)
 BYTCS_SOUNDROM8(            "sound_u7.256",0xbc33901e)
@@ -152,7 +152,7 @@ CORE_GAMEDEFNV(cityslck,"City Slicker",1987,"Bally",by_mBY6803_TCSS,0)
 / Hardbody (6803-0E94: 03/87)
 /------------------------------------*/
 //CPU & Sound Works?
-INITGAME6803(hardbody,GEN_BY6803,dispBy104,FLIP6803,4,SNDBRD_BYTCS, BY6803_DISPALPHA)
+INITGAME6803(hardbody,GEN_BY6803,dispBy104,FLIP_SW(FLIP_L),4,SNDBRD_BYTCS, BY6803_DISPALPHA)
 BY6803_ROMSTART44(hardbody,"cpu_u2.128",  0xc9248b47,
                            "cpu_u3.128",  0x31c255d0)
 BYTCS_SOUNDROM0(           "sound_u7.512",0xc96f91af)
@@ -228,7 +228,7 @@ CORE_GAMEDEFNV(esclwrld,"Escape from the Lost World",1987,"Bally",by_mBY6803_SDS
 / Blackwater 100 (6803-0H07: 03/88)
 /------------------------------------*/
 //CPU & Sound Works?
-INITGAME6803(black100,GEN_BY6803A,dispBy104,FLIP6803,4,SNDBRD_BYSD, BY6803_DISPALPHA)
+INITGAME6803(black100,GEN_BY6803A,dispBy104,FLIP_SW(FLIP_L),4,SNDBRD_BYSD, BY6803_DISPALPHA)
 BY6803_ROMSTART44(black100, "u2.cpu", 0x411fa773,
                             "u3.cpu", 0xd6f6f890)
 BYSD_SOUNDROM0000(          "u12.bin",0xa0ecb282,
@@ -244,7 +244,7 @@ CORE_GAMEDEFNV(black100,"Blackwater 100",1988,"Bally",by_mBY6803_SDS,0)
 / Truck Stop (6803-2001: 12/88) - These are ProtoType ROMS?
 /-------------------------------------------------------------*/
 //CPU & Sound Works?
-INITGAME6803(truckstp,GEN_BY6803A,dispBy104,FLIP6803,4,SNDBRD_S11CS, BY6803_DISPALPHA)
+INITGAME6803(truckstp,GEN_BY6803A,dispBy104,FLIP_SW(FLIP_L),4,SNDBRD_S11CS, BY6803_DISPALPHA)
 BY6803_ROMSTART44(truckstp,"u2_p2.128",   0x3c397dec,
                            "u3_p2.128",   0xd7ac519a)
 S11CS_SOUNDROM888(         "u4sndp1.256", 0x120a386f,
