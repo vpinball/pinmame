@@ -356,6 +356,7 @@ static SWITCH_UPDATE(s7) {
 
 static MACHINE_INIT(s7) {
   if (core_gameData == NULL) return;
+  memset(&s7locals,0,sizeof(s7locals));
   pia_config(S7_PIA0, PIA_STANDARD_ORDERING, &s7_pia[0]);
   pia_config(S7_PIA1, PIA_STANDARD_ORDERING, &s7_pia[1]);
   pia_config(S7_PIA2, PIA_STANDARD_ORDERING, &s7_pia[2]);
@@ -462,7 +463,7 @@ static WRITE_HANDLER(rr_sol_w) {
 }
 
 static MEMORY_READ_START(rr_readmem)
-  { 0x0000, 0x07ff, MRA_RAM},
+  { 0x0000, 0x07ff, MRA_RAM },
   { 0x2100, 0x2103, pia_r(S7_PIA0)},
   { 0x2400, 0x2403, pia_r(S7_PIA2)},
   { 0x2800, 0x2803, pia_r(S7_PIA3)},
@@ -471,7 +472,8 @@ static MEMORY_READ_START(rr_readmem)
 MEMORY_END
 
 static MEMORY_WRITE_START(rr_writemem)
-  { 0x0000, 0x07ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
+  { 0x0000, 0x06ff, MWA_RAM },
+  { 0x0700, 0x07ff, MWA_RAM, &s7_CMOS},
   { 0x2100, 0x2103, pia_w(S7_PIA0)},
   { 0x2200, 0x2200, rr_sol_w},
   { 0x2400, 0x2403, pia_w(S7_PIA2)},
@@ -482,6 +484,7 @@ MEMORY_END
 
 static MACHINE_INIT(rr) {
   if (core_gameData == NULL) return;
+  memset(&s7locals,0,sizeof(s7locals));
   pia_config(S7_PIA0, PIA_STANDARD_ORDERING, &s7_pia[0]);
   pia_config(S7_PIA2, PIA_STANDARD_ORDERING, &s7_pia[2]);
   pia_config(S7_PIA3, PIA_STANDARD_ORDERING, &s7_pia[3]);
@@ -496,7 +499,8 @@ MACHINE_DRIVER_START(s7RR)
   MDRV_CPU_MODIFY("mcpu")
   MDRV_CPU_MEMORY(rr_readmem, rr_writemem)
   MDRV_CORE_INIT_RESET_STOP(rr,s7,s7)
-  MDRV_NVRAM_HANDLER(generic_1fill)
+  MDRV_DIPS(8)
+  MDRV_NVRAM_HANDLER(s7)
 MACHINE_DRIVER_END
 
 /*-----------------------------------------------
