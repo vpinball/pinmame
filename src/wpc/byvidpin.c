@@ -4,10 +4,10 @@
    Games: Baby Pacman (1982)
           Granny & The Gators (1984)
 
-   Hardware: 
+   Hardware:
    (Both Games)
    MPU Board: MPU-133 (Equivalent of MPU-35 except for 1 resistor to diode change) - See note below
-   
+
    (BabyPacman Only):
    VIDIOT Board: Handles Video/Joystick Switchs/Sound Board
    Chips:		(1 x TMS9928 Video Chip), 6809 CPU (Video), 6803 (Sound), 6821 PIA
@@ -22,14 +22,14 @@
 
    G & G: Color blending is not accurately emulated, but transparency is simulated
 
-   Interesting Tech Note: 
-   
+   Interesting Tech Note:
+
    The sound board integrated into the vidiot, appears to be
    identical to what later became the separate Cheap Squeak board used on later model
    bally MPU-35 games, as well as Granny & Gators!
 
    Note from RGP:
-   
+
 		Bally video pins use an AS-2518-133 mpu.
 		I believe that some late games such as Grand Slam
 		may have also used the AS-2518-133 mpu.
@@ -63,7 +63,7 @@
   Rsvd: FFF0-1 (8010) *Valid Code?
 
   6803 vectors:
-  RES: FFFE-F 
+  RES: FFFE-F
   SWI: FFFA-B Software Interrupt (Not Used)
   NMI: FFFC-D (Used)
   IRQ: FFF8-9 (Not Used)
@@ -105,7 +105,6 @@ static struct {
   int diagnosticLed;
   int diagnosticLedV;		//Diagnostic LED for Vidiot Board
   int vblankCount;
-  int initDone;
   int enable_output;		//Enable Output to Main CPU Flag
   int enable_input;			//Enable Input From Main CPU Flag
   int status_enable;		//Enable Reading of Status Flag
@@ -119,12 +118,10 @@ static struct {
   int snddata_hi;			//Hi Nibble Sound Command
   int lasttin;				//Track Last TIN IRQ Edge
   int phase_a;				//Track Phase A status
-  void *zctimer;
   void (*SwitchMapping)(int *);		//Pointer to Switch Mapping
 } locals;
 
-static void byVP_exit(void);
-static void byVP_nvram(void *file, int write);
+extern tPMoptions pmoptions;
 
 static void piaIrq(int state) { cpu_set_irq_line(0, M6800_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE); }
 
@@ -157,7 +154,7 @@ static WRITE_HANDLER(pia0a_w) {
 	/*For some reason, code inverts lower nibble*/
 	data = (data&0xf0) | (~data & 0x0f);
 	locals.vidiot_u2_latch = data;
-	//logerror("%x: Writing %x to vidiot u2 buffers: enable_input = %x\n",cpu_getpreviouspc(),data, locals.enable_input);
+	//logerror("%x: Writing %x to vidiot u2 buffers: enable_input = %x\n",activecpu_get_previouspc(),data, locals.enable_input);
   }
   byVP_lampStrobe(!locals.phase_a,locals.lampadr1);
 }
@@ -169,19 +166,19 @@ static WRITE_HANDLER(pia0a_w) {
 (out) PA3:   Video Status Enable	(Active Low)
 (out) PA4-7: N/A*/
 static WRITE_HANDLER(pia1a_w) {
-int tmp_input = locals.enable_input;
-locals.enable_output = (data>>1)&1;
-locals.enable_input  = (data>>2)&1;
-locals.status_enable = (data>>3)&1;
+  int tmp_input = locals.enable_input;
+  locals.enable_output = (data>>1)&1;
+  locals.enable_input  = (data>>2)&1;
+  locals.status_enable = (data>>3)&1;
 
-//Latch data from pre-buffer to U2 on positive edge (We don't need to code this)
-if(locals.enable_input & ~tmp_input) {
-	logerror("%x: Latching data to Vidiot U2: data = %x\n",cpu_getpreviouspc(),locals.vidiot_u2_latch);
-}
+  //Latch data from pre-buffer to U2 on positive edge (We don't need to code this)
+  if(locals.enable_input & ~tmp_input) {
+    logerror("%x: Latching data to Vidiot U2: data = %x\n",activecpu_get_previouspc(),locals.vidiot_u2_latch);
+  }
 
-//Update Vidiot PIA - This will trigger an IRQ also, depending on how the ca lines are configured
-pia_set_input_ca1(2, locals.enable_output);
-pia_set_input_ca2(2, locals.enable_input);
+  //Update Vidiot PIA - This will trigger an IRQ also, depending on how the ca lines are configured
+  pia_set_input_ca1(2, locals.enable_output);
+  pia_set_input_ca2(2, locals.enable_input);
 }
 
 /* PIA0:B-R  Get Data depending on PIA0:A
@@ -192,13 +189,13 @@ pia_set_input_ca2(2, locals.enable_input);
 static READ_HANDLER(pia0b_r) {
   //Enable Status must be low to return data..
   if (!locals.status_enable) {
-	    //logerror("%x: MPU: reading vidiot status %x\n",cpu_getpreviouspc(),locals.vidiot_status);
+	    //logerror("%x: MPU: reading vidiot status %x\n",activecpu_get_previouspc(),locals.vidiot_status);
 		return locals.vidiot_status;
-		
+
   }
   //Enable Output must be low to return data..
   if (!locals.enable_output) {
-	    //logerror("%x: MPU: reading vidiot data %x\n",cpu_getpreviouspc(),locals.vidiot_u1_latch);
+	    //logerror("%x: MPU: reading vidiot data %x\n",activecpu_get_previouspc(),locals.vidiot_u1_latch);
 		return locals.vidiot_u1_latch;
   }
 
@@ -239,7 +236,7 @@ static WRITE_HANDLER(pia1cb2_w) {
   locals.p1_cb2 = data;
 }
 
-static int byVP_vblank(void) {
+static INTERRUPT_GEN(byVP_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
@@ -266,10 +263,9 @@ static int byVP_vblank(void) {
 	locals.diagnosticLedV = 0;
   }
   core_updateSw(core_getSol(19));
-  return 0;
 }
 
-static void byVP_updSw(int *inports) {
+static SWITCH_UPDATE(byVP) {
   /*Call game specific switch mappings*/
   if (inports) locals.SwitchMapping(inports);
 
@@ -325,7 +321,7 @@ static void GrannySwitch(int *inports) {
 
 /* PIA2:B Read */
 // Video Switch Returns (Bits 5-7 not connected)
-static READ_HANDLER(pia2b_r) { 
+static READ_HANDLER(pia2b_r) {
 	//logerror("VID: Reading Switch Returns from %x\n",locals.p2_a);
 	if(locals.p2_a & 0x80)
 		return coreGlobals.swMatrix[0]&0xf0;
@@ -340,8 +336,8 @@ static READ_HANDLER(pia2b_r) {
 static WRITE_HANDLER(pia2a_w) {
 	locals.p2_a = data;
 	locals.vidiot_status = (~data) & 0x03;
-	//logerror("%x:VID: Setting status to %4x\n",cpu_getpreviouspc(),locals.vidiot_status);
-	//logerror("%x:Setting Video Switch Strobe to %x\n",cpu_getpreviouspc(),data>>4);
+	//logerror("%x:VID: Setting status to %4x\n",activecpu_get_previouspc(),locals.vidiot_status);
+	//logerror("%x:Setting Video Switch Strobe to %x\n",activecpu_get_previouspc(),data>>4);
 }
 
 /* PIA2:B Write*/
@@ -354,7 +350,7 @@ static WRITE_HANDLER(pia2b_w) {
 
 /* PIA2:CB2 Write */
 // Diagnostic LED & Sound Strobe to 6803
-static WRITE_HANDLER(pia2cb2_w) { 
+static WRITE_HANDLER(pia2cb2_w) {
 	locals.diagnosticLedV = data;
 
 	if(data & ~locals.lasttin) {	//Rising Edge Triggers the IRQ
@@ -365,15 +361,15 @@ static WRITE_HANDLER(pia2cb2_w) {
 		//Although the real hardware sets the line here, we need to wait for the 2nd nibble
 	}
 	else {
-			//Hi Nibble was written just prior to clearing the TIN_IRQ line
-			locals.snddata_hi = locals.snddata;
+		//Hi Nibble was written just prior to clearing the TIN_IRQ line
+		locals.snddata_hi = locals.snddata;
 
-			//Log the full command
-			snd_cmd_log((locals.snddata_hi<<4) | (locals.snddata_lo));
+		//Log the full command
+		snd_cmd_log((locals.snddata_hi<<4) | (locals.snddata_lo));
 
-			//Although the real hardware clears the line here, we pulse it, since
-			//we've now collected both lo & hi nibbles!
-			cpu_set_irq_line(BYVP_SCPUNO, M6800_TIN_LINE, PULSE_LINE);
+		//Although the real hardware clears the line here, we pulse it, since
+		//we've now collected both lo & hi nibbles!
+		cpu_set_irq_line(BYVP_SCPUNO, M6800_TIN_LINE, PULSE_LINE);
 	}
 	locals.lasttin = data;
 }
@@ -387,14 +383,14 @@ static void pia2Irq(int state) {
 static READ_HANDLER(latch_r)
 {
 	int data = locals.vidiot_u2_latch;
-	//logerror("%x: LATCH_R: offset=%x, data=%x\n",cpu_getpreviouspc(),offset,data);
+	//logerror("%x: LATCH_R: offset=%x, data=%x\n",activecpu_get_previouspc(),offset,data);
 	return data;
 }
 //Vidiot Writes to U1 Latch (Data going to CPU)
 static WRITE_HANDLER(latch_w)
 {
 	locals.vidiot_u1_latch = data;
-	//logerror("%x: LATCH_W: offset=%x, data=%x\n",cpu_getpreviouspc(),offset,data);
+	//logerror("%x: LATCH_W: offset=%x, data=%x\n",activecpu_get_previouspc(),offset,data);
 }
 
 /*PIA 0*/
@@ -471,10 +467,9 @@ static struct pia6821_interface piaIntf[] = {{
 }};
 
 //Read Display Interrupt Generator
-static int byVP_irq(void) {
+static INTERRUPT_GEN(byVP_irq) {
   static int last = 0;
   pia_set_input_ca1(1, last = !last);
-  return 0;
 }
 
 //Send a command manually
@@ -490,22 +485,15 @@ static WRITE_HANDLER(byVP_soundCmd) {
 	}
 }
 
-static core_tData byVPData = {
-  32, /* 32 Dips */
-  byVP_updSw, 2 | DIAGLED_VERTICAL, byVP_soundCmd, "byVP",
-  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
-};
-
 /* I read on a post in rgp, that they used both ends of the zero cross, so we emulate it */
 static void byVP_zeroCross(int data) {
   locals.phase_a = !locals.phase_a;
   /*- toggle zero/detection circuit-*/
   pia_set_input_cb1(0,locals.phase_a);
 }
-static void byVP_common(void) {
-  if (locals.initDone) CORE_DOEXIT(byVP_exit);
 
-  if (core_init(&byVPData)) return;
+static void byVP_common(void) {
+//  if (core_init(&byVPData)) return;
   memset(&locals, 0, sizeof(locals));
 
   /* init PIAs */
@@ -514,40 +502,43 @@ static void byVP_common(void) {
   pia_config(2, PIA_STANDARD_ORDERING, &piaIntf[2]);
   pia_reset();
   locals.vblankCount = 1;
-  locals.zctimer = timer_pulse(TIME_IN_HZ(BYVP_ZCFREQ),0,byVP_zeroCross);
-  locals.initDone = TRUE;
 }
-
-static void byVP_init1(void) {
+static MACHINE_INIT(byVP1) {
 	byVP_common();
 	locals.SwitchMapping = BabySwitch;
 }
-static void byVP_init2(void) {
+static MACHINE_INIT(byVP2) {
 	byVP_common();
 	locals.SwitchMapping = GrannySwitch;
 }
 
-
-static void byVP_exit(void) {
-#ifdef PINMAME_EXIT
-  if (locals.zctimer) { timer_remove(locals.zctimer); locals.zctimer = NULL; }
-#endif
-  core_exit();
+static MACHINE_STOP(byVP) {
+//	core_exit();
 }
+
+
+/*-----------------------------------------------
+/ Load/Save static ram
+/-------------------------------------------------*/
 static UINT8 *byVP_CMOS;
+
 static WRITE_HANDLER(byVP_CMOS_w) { byVP_CMOS[offset] = data; }
 
+static NVRAM_HANDLER(byVP) {
+  core_nvram(file, read_or_write, byVP_CMOS, 0x100,0xff);
+}
+
 /* P10-P17 = What is this for? Only used in G&G*/
-static READ_HANDLER(sound_port1_r) { 
+static READ_HANDLER(sound_port1_r) {
 	return 0;
 }
 
-/* P21-24 = Video U7(PB0-PB3) 
+/* P21-24 = Video U7(PB0-PB3)
    NOTE: Sound commands are sent as 2 nibbles, first low byte, then high
          However, it reads the first low nibble 2x, then reads the high nibble
-         Since Port 2 begins with P20, we must << 1 the sound commands! 
+         Since Port 2 begins with P20, we must << 1 the sound commands!
 */
-static READ_HANDLER(sound_port2_r) { 
+static READ_HANDLER(sound_port2_r) {
 	cmdnum++;
 	if( cmdnum < 3) //If it's the 1st or 2nd time reading the port..
 		return locals.snddata_lo<<1;
@@ -582,25 +573,6 @@ static WRITE_HANDLER(sound_port2_w) {
 
 ***************************************************************************/
 
-static int by_interrupt(void)
-{
-    TMS9928A_interrupt(0);
-	//The IRQ must be triggered constantly for the video cpu to read/write to the latch
-	//I'm not sure why doing it the way it was coded from MESS does not work.
-	return M6809_INT_IRQ;
-	//return ignore_interrupt ();
-}
-
-static int by1_interrupt(void)
-{
-    TMS9928A_interrupt(0);
-	TMS9928A_interrupt(1);
-	//The IRQ must be triggered constantly for the video cpu to read/write to the latch
-	//I'm not sure why doing it the way it was coded from MESS does not work.
-	return M6809_INT_IRQ;
-	//return ignore_interrupt ();
-}
-
 static void by_vdp_interrupt (int state)
 {
 	static int last_state = 0;
@@ -616,8 +588,20 @@ static void by_vdp_interrupt (int state)
 }
 
 //Video CPU Vertical Blank
-static int byVP_vvblank(void) { return by_interrupt(); }
-static int byVP1_vvblank(void) { return by1_interrupt(); }
+static INTERRUPT_GEN(byVP_vvblank) {
+    TMS9928A_interrupt(0);
+	//The IRQ must be triggered constantly for the video cpu to read/write to the latch
+	//I'm not sure why doing it the way it was coded from MESS does not work.
+//	return M6809_INT_IRQ;
+}
+
+static INTERRUPT_GEN(byVP1_vvblank) {
+    TMS9928A_interrupt(0);
+	TMS9928A_interrupt(1);
+	//The IRQ must be triggered constantly for the video cpu to read/write to the latch
+	//I'm not sure why doing it the way it was coded from MESS does not work.
+//	return M6809_INT_IRQ;
+}
 
 static READ_HANDLER(vdp0_r) {
 	//logerror("vdp0_r: offset=%x\n",offset);
@@ -628,7 +612,7 @@ static READ_HANDLER(vdp0_r) {
 }
 
 static WRITE_HANDLER(vdp0_w) {
-	//logerror("%x:vdp0_w: offset=%x, data=%x\n",cpu_getpreviouspc(),offset,data);
+	//logerror("%x:vdp0_w: offset=%x, data=%x\n",activecpu_get_previouspc(),offset,data);
 	if(offset==0)
 		TMS9928A_vram_0_w(offset,data);
 	else
@@ -644,7 +628,7 @@ static READ_HANDLER(vdp1_r) {
 }
 
 static WRITE_HANDLER(vdp1_w) {
-	//logerror("%x:vdp1_w: offset=%x, data=%x\n",cpu_getpreviouspc(),offset,data);
+	//logerror("%x:vdp1_w: offset=%x, data=%x\n",activecpu_get_previouspc(),offset,data);
 	if(offset==0)
 		TMS9928A_vram_1_w(offset,data);
 	else
@@ -652,7 +636,7 @@ static WRITE_HANDLER(vdp1_w) {
 }
 
 static WRITE_HANDLER(both_w) {
-	//logerror("%x:vdp1_w: offset=%x, data=%x\n",cpu_getpreviouspc(),offset,data);
+	//logerror("%x:vdp1_w: offset=%x, data=%x\n",activecpu_get_previouspc(),offset,data);
 	if(offset==0) {
 		TMS9928A_vram_0_w(offset,data);
 		TMS9928A_vram_1_w(offset,data);
@@ -660,18 +644,18 @@ static WRITE_HANDLER(both_w) {
 	else {
 		TMS9928A_register_0_w(offset,data);
 		TMS9928A_register_1_w(offset,data);
-		}
+	}
 }
 
 
-static int by_vh_start(void)
+static VIDEO_START(by)
 {
 	if (TMS9928A_start(0,TMS99x8A, 0x4000)) return 1;
 	TMS9928A_int_callback(0,by_vdp_interrupt);
 	return 0;
 }
 
-static int by1_vh_start(void)
+static VIDEO_START(by1)
 {
 	if (TMS9928A_start(0,TMS99x8A, 0x4000)) return 1;
 	if (TMS9928A_start(1,TMS99x8A, 0x4000)) return 1;
@@ -680,60 +664,51 @@ static int by1_vh_start(void)
 	return 0;
 }
 
-static void by_vh_stop(void)
+static VIDEO_STOP(by)
 {
   TMS9928A_stop(1);
 }
 
-static void by1_vh_stop(void)
+static VIDEO_STOP(by1)
 {
   TMS9928A_stop(2);
 }
 
-static void by_drawStatus (struct mame_bitmap *bmp, int full_refresh);
-static void by_vh_refresh (struct mame_bitmap *bmp, int full_refresh)
+static void by_drawStatus (struct mame_bitmap *bmp);
+
+static VIDEO_UPDATE(by)
 {
-		TMS9928A_refresh(1, bmp,full_refresh);
-		if(!coreGlobals_dmd.dmdOnly)
-			by_drawStatus(bmp, full_refresh);
+	TMS9928A_refresh(1, bitmap, 1);
+	if(!pmoptions.dmd_only)
+		by_drawStatus(bitmap);
 }
 
 //#define TESTGRANNY 1
 
+static VIDEO_UPDATE(by1)
+{
 #ifndef TESTGRANNY
 
-	static void by1_vh_refresh (struct mame_bitmap *bmp, int full_refresh)
-	{
-			TMS9928A_refresh(2, bmp,full_refresh);
-			if(!coreGlobals_dmd.dmdOnly)
-				by_drawStatus(bmp, full_refresh);
-	}
+	TMS9928A_refresh(2, bitmap, 1);
+	if(!pmoptions.dmd_only)
+		by_drawStatus(bitmap);
 
+#define GRAPHICSETUP \
+		MDRV_SCREEN_SIZE(256, 192) \
+		MDRV_VISIBLE_AREA(0, 255, 0, 191)
 
-	#define GRAPHICSETUP \
-		  256, 192, { 0, 255, 0, 191 }, \
-		  0, /* gfxdecodeinfo */\
-		  TMS9928A_PALETTE_SIZE,\
-		  TMS9928A_COLORTABLE_SIZE,\
-		  tms9928A_init_palette,\
-		  VIDEO_TYPE_RASTER | VIDEO_MODIFIES_PALETTE,
-#else
+#else /* TESTGRANNY */
 
-	static void by1_vh_refresh (struct mame_bitmap *bmp, int full_refresh)
-	{
-			TMS9928A_refresh_test(bmp,full_refresh);
-			if(!coreGlobals_dmd.dmdOnly)
-				by_drawStatus(bmp, full_refresh);
-	}
+	TMS9928A_refresh_test(bitmap, 1);
+	if(!pmoptions.dmd_only)
+		by_drawStatus(bitmap);
 
-	#define GRAPHICSETUP \
-		  256*3, 192, { 0, 255*3, 0, 191 }, \
-		  0, /* gfxdecodeinfo */\
-		  TMS9928A_PALETTE_SIZE,\
-		  TMS9928A_COLORTABLE_SIZE,\
-		  tms9928A_init_palette,\
-		  VIDEO_TYPE_RASTER | VIDEO_MODIFIES_PALETTE,
-#endif
+#define GRAPHICSETUP \
+  		MDRV_SCREEN_SIZE(256*3, 192) \
+  		MDRV_VISIBLE_AREA(0, 256*3-1, 0, 191)
+
+#endif /* TESTGRANY */
+}
 
 static struct DACinterface by_dacInt =
   { 1, { 50 }};
@@ -767,7 +742,7 @@ MEMORY_END
 /  Memory map for VIDEO CPU (Located on Vidiot Board)
 /----------------------------------------------------*/
 static MEMORY_READ_START(byVP_video_readmem)
-	{ 0x0000, 0x1fff, latch_r },  
+	{ 0x0000, 0x1fff, latch_r },
 	{ 0x2000, 0x2003, pia_2_r }, /* U7 PIA */
 	{ 0x4000, 0x4001, vdp0_r },  /* U16 VDP*/
 	{ 0x6000, 0x6400, MRA_RAM }, /* U13&U14 1024x4 Byte Ram*/
@@ -775,7 +750,7 @@ static MEMORY_READ_START(byVP_video_readmem)
 MEMORY_END
 
 static MEMORY_WRITE_START(byVP_video_writemem)
-	{ 0x0000, 0x1fff, latch_w },  
+	{ 0x0000, 0x1fff, latch_w },
 	{ 0x2000, 0x2003, pia_2_w }, /* U7 PIA */
 	{ 0x4000, 0x4001, vdp0_w },  /* U16 VDP*/
 	{ 0x6000, 0x6400, MWA_RAM }, /* U13&U14 1024x4 Byte Ram*/
@@ -852,80 +827,141 @@ static PORT_WRITE_START( byVP_sound_writeport )
 	{ M6803_PORT2, M6803_PORT2, sound_port2_w },
 PORT_END
 
+#if 0
+static core_tData byVPData = {
+  32, /* 32 Dips */
+  byVP_updSw, 2 | DIAGLED_VERTICAL, byVP_soundCmd, "byVP",
+  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
+};
+#endif
+
 /*--------------------*/
 /* Machine Definition */
 /*--------------------*/
 /*BABYPAC HARDWARE*/
-struct MachineDriver machine_driver_byVP = {
-  {{  CPU_M6800, 3580000/4, /* 3.58/4 = 900Hz */
+MACHINE_DRIVER_START(byVP)
+  MDRV_IMPORT_FROM(PinMAME)
+
+  MDRV_CPU_ADD_TAG("mcpu", M6800, 3580000/4)
+  MDRV_CPU_MEMORY(byVP_readmem, byVP_writemem)
+  MDRV_CPU_VBLANK_INT(byVP_vblank, 1)
+  MDRV_CPU_PERIODIC_INT(byVP_irq, BYVP_IRQFREQ)
+
+  MDRV_CPU_ADD_TAG("vcpu", M6809, 3580000/4)
+  MDRV_CPU_MEMORY(byVP_video_readmem, byVP_video_writemem)
+  MDRV_CPU_VBLANK_INT(byVP_vvblank, 1)
+
+  MDRV_CPU_ADD_TAG("scpu", M6803, 3580000/4)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(byVP_sound_readmem, byVP_sound_writemem)
+  MDRV_CPU_PORTS(byVP_sound_readport,byVP_sound_writeport)
+
+  MDRV_TIMER_ADD(byVP_zeroCross, BYVP_ZCFREQ)
+  MDRV_FRAMES_PER_SECOND(BYVP_VBLANKFREQ)
+  MDRV_VBLANK_DURATION(DEFAULT_60HZ_VBLANK_DURATION)
+  MDRV_INTERLEAVE(50)
+  MDRV_CORE_INIT_RESET_STOP(byVP1,NULL,byVP)
+  MDRV_DIPS(32)
+  MDRV_DIAGNOSTIC_LEDV(2)
+  MDRV_SWITCH_UPDATE(byVP)
+  MDRV_NVRAM_HANDLER(byVP)
+
+  /* video hardware */
+  GRAPHICSETUP
+  MDRV_GFXDECODE(0)
+  MDRV_PALETTE_LENGTH(TMS9928A_PALETTE_SIZE)
+  MDRV_COLORTABLE_LENGTH(TMS9928A_COLORTABLE_SIZE)
+  MDRV_PALETTE_INIT(TMS9928A)
+  MDRV_VIDEO_ATTRIBUTES(VIDEO_TYPE_RASTER | VIDEO_MODIFIES_PALETTE)
+  MDRV_VIDEO_START(by)
+  MDRV_VIDEO_STOP(by)
+  MDRV_VIDEO_UPDATE(by)
+
+  /* sound hardware */
+  MDRV_SOUND_CMD(byVP_soundCmd)
+  MDRV_SOUND_CMDHEADING("byVP")
+  MDRV_SOUND_ADD(DAC, by_dacInt)
+MACHINE_DRIVER_END
+
+#if 0
+ {{  CPU_M6800, 3580000/4, /* 3.58/4 = 900kHz */
       byVP_readmem, byVP_writemem, NULL, NULL,
       byVP_vblank, 1, byVP_irq, BYVP_IRQFREQ
-   },
-  {  CPU_M6809, 3580000/4, /* 3.58/4 = 900Hz */
+  },
+  {  CPU_M6809, 3580000/4, /* 3.58/4 = 900kHz */
       byVP_video_readmem, byVP_video_writemem, NULL, NULL,
       byVP_vvblank, 1
   },
-  {  CPU_M6803 | CPU_AUDIO_CPU, 3580000/4, /* 3.58/4 = 900Hz */
+  {  CPU_M6803 | CPU_AUDIO_CPU, 3580000/4, /* 3.58/4 = 900kHz */
       byVP_sound_readmem, byVP_sound_writemem, byVP_sound_readport, byVP_sound_writeport,
       NULL, 1, NULL, 1
-  }
-  },
+  }},
   BYVP_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, byVP_init1, CORE_EXITFUNC(byVP_exit)
-  GRAPHICSETUP
+  50, byVP_init1, CORE_EXITFUNC(byVP_exit),
+  256, 192, { 0, 255, 0, 191 }, \
+  0, /* gfxdecodeinfo */\
+  TMS9928A_PALETTE_SIZE,\
+  TMS9928A_COLORTABLE_SIZE,\
+  tms9928A_init_palette,\
+  VIDEO_TYPE_RASTER | VIDEO_MODIFIES_PALETTE,
   0,
   by_vh_start,by_vh_stop, by_vh_refresh,
   0,0,0,0, {{SOUND_DAC,&by_dacInt}},
   byVP_nvram
-};
+#endif
 
 /*GRANNY & THE GATORS HARDWARE*/
-struct MachineDriver machine_driver_byVP2 = {
-  {{  CPU_M6800, 3580000/4, /* 3.58/4 = 900Hz */
+MACHINE_DRIVER_START(byVP2)
+  MDRV_IMPORT_FROM(byVP)
+
+  MDRV_CPU_REPLACE("vcpu", M6809, 8000000/4)
+  MDRV_CPU_MEMORY(byVP2_video_readmem, byVP2_video_writemem)
+  MDRV_CPU_VBLANK_INT(byVP1_vvblank, 1)
+
+  MDRV_CORE_INIT_RESET_STOP(byVP2,NULL,byVP)
+
+  /* video hardware */
+  MDRV_VIDEO_START(by1)
+  MDRV_VIDEO_STOP(by1)
+  MDRV_VIDEO_UPDATE(by1)
+MACHINE_DRIVER_END
+
+#if 0
+ {{  CPU_M6800, 3580000/4, /* 3.58/4 = 900kHz */
       byVP_readmem, byVP_writemem, NULL, NULL,
       byVP_vblank, 1, byVP_irq, BYVP_IRQFREQ
-   },
+  },
   {  CPU_M6809, 8000000/4, /* 2MHz */
       byVP2_video_readmem, byVP2_video_writemem, NULL, NULL,
       byVP1_vvblank, 1
   },
-  {  CPU_M6803 | CPU_AUDIO_CPU, 3580000/4, /* 3.58/4 = 900Hz */
+  {  CPU_M6803 | CPU_AUDIO_CPU, 3580000/4, /* 3.58/4 = 900kHz */
       byVP_sound_readmem, byVP_sound_writemem, byVP_sound_readport, byVP_sound_writeport,
       NULL, 1, NULL, 1
-  }
-  },
+  }},
   BYVP_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, byVP_init2, CORE_EXITFUNC(byVP_exit)
-  GRAPHICSETUP
+  50, byVP_init2, CORE_EXITFUNC(byVP_exit),
+  256, 192, { 0, 255, 0, 191 }, \
+  0, /* gfxdecodeinfo */\
+  TMS9928A_PALETTE_SIZE,\
+  TMS9928A_COLORTABLE_SIZE,\
+  tms9928A_init_palette,\
+  VIDEO_TYPE_RASTER | VIDEO_MODIFIES_PALETTE,
   0,
   by1_vh_start,by1_vh_stop, by1_vh_refresh,
   0,0,0,0, {{SOUND_DAC,&by_dacInt}},
   byVP_nvram
-};
-
-
-/*-----------------------------------------------
-/ Load/Save static ram
-/-------------------------------------------------*/
-static void byVP_nvram(void *file, int write) {
-  core_nvram(file, write, byVP_CMOS, 0x100,0xff);
-}
+#endif
 
 /*--------------------------------------------
 / Draw status display
 / Lamps, Switches, Solenoids, Diagnostic LEDs
 /---------------------------------------------*/
-void by_drawStatus(struct mame_bitmap *bitmap, int fullRefresh) {
+void by_drawStatus(struct mame_bitmap *bitmap) {
   BMTYPE **lines = (BMTYPE **)bitmap->line;
   int firstRow = 0;
   int ii, jj, bits;
   BMTYPE dotColor[2];
-
-
-  /*-- anything to do ? --*/
-  //if ((coreGlobals_dmd.dmdOnly) ||
-  //    (coreGlobals.soundEn && (!manual_sound_commands(bitmap, &fullRefresh))))
-  //  return;
 
   dotColor[0] = CORE_COLOR(6); dotColor[1] = CORE_COLOR(10);
   /*-----------------
@@ -983,14 +1019,14 @@ void by_drawStatus(struct mame_bitmap *bitmap, int fullRefresh) {
     bits = coreGlobals.diagnosticLed;
 
     // Draw LEDS Vertically
-    if (coreData.diagLEDs & DIAGLED_VERTICAL) {
-       for (ii = 0; ii < (coreData.diagLEDs & ~DIAGLED_VERTICAL); ii++) {
+    if (coreData->diagLEDs & DIAGLED_VERTICAL) {
+       for (ii = 0; ii < (coreData->diagLEDs & ~DIAGLED_VERTICAL); ii++) {
 	   	  line[0][5] = dotColor[bits & 0x01];
 		  line += 2; bits >>= 1;
 	   }
     }
     else { // Draw LEDS Horizontally
-		for (ii = 0; ii < coreData.diagLEDs; ii++) {
+		for (ii = 0; ii < coreData->diagLEDs; ii++) {
 			line[0][5+ii*2] = dotColor[bits & 0x01];
 			bits >>= 1;
 			}
@@ -1004,7 +1040,7 @@ void by_drawStatus(struct mame_bitmap *bitmap, int fullRefresh) {
       lines[firstRow][ii*2] = dotColor[coreGlobals.gi[ii]>0];
     osd_mark_dirty(0, firstRow, 2*CORE_MAXGI+1, firstRow+2);
   }
-  if (coreGlobals.simAvail) sim_draw(fullRefresh, firstRow);
+  if (coreGlobals.simAvail) sim_draw(firstRow);
   /*-- draw game specific mechanics --*/
   if (core_gameData->hw.drawMech) core_gameData->hw.drawMech((void *)&bitmap->line[firstRow]);
 }
