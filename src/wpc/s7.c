@@ -373,7 +373,7 @@ MEMORY_END
 MACHINE_DRIVER_START(s7)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(s7,s7,s7)
-  MDRV_CPU_ADD(M6808, 3580000/4)
+  MDRV_CPU_ADD_TAG("mcpu", M6808, 3580000/4)
   MDRV_CPU_MEMORY(s7_readmem, s7_writemem)
   MDRV_CPU_VBLANK_INT(s7_vblank, 1)
   MDRV_CPU_PERIODIC_INT(s7_irq, S7_IRQFREQ)
@@ -396,6 +396,36 @@ MACHINE_DRIVER_START(s7S6)
   MDRV_IMPORT_FROM(wmssnd_s67s)
   MDRV_SOUND_CMD(sndbrd_0_data_w)
   MDRV_SOUND_CMDHEADING("s7")
+MACHINE_DRIVER_END
+
+static MEMORY_READ_START(rr_readmem)
+  { 0x0000, 0x07ff, MRA_RAM},
+  { 0x2100, 0x2103, pia_r(S7_PIA0)},
+  { 0x2200, 0x2203, pia_r(S7_PIA1)},
+  { 0x2400, 0x2403, pia_r(S7_PIA2)},
+  { 0x2800, 0x2803, pia_r(S7_PIA3)},
+  { 0x3000, 0x3003, pia_r(S7_PIA4)},
+  { 0x4000, 0x4003, pia_r(S7_PIA5)},
+  { 0x5000, 0xffff, MRA_ROM },
+MEMORY_END
+
+static MEMORY_WRITE_START(rr_writemem)
+  { 0x0000, 0x07ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
+  { 0x0fff, 0x0fff, MWA_RAM, &s7_rambankptr }, /* unused on this game */
+  { 0x2100, 0x2103, pia_w(S7_PIA0)},
+  { 0x2200, 0x2203, pia_w(S7_PIA1)},
+  { 0x2400, 0x2403, pia_w(S7_PIA2)},
+  { 0x2800, 0x2803, pia_w(S7_PIA3)},
+  { 0x3000, 0x3003, pia_w(S7_PIA4)},
+  { 0x4000, 0x4003, pia_w(S7_PIA5)},
+  { 0x5000, 0xffff, MWA_ROM },
+MEMORY_END
+
+MACHINE_DRIVER_START(s7RR)
+  MDRV_IMPORT_FROM(s7S)
+  MDRV_CPU_MODIFY("mcpu")
+  MDRV_CPU_MEMORY(rr_readmem, rr_writemem)
+  MDRV_NVRAM_HANDLER(generic_1fill)
 MACHINE_DRIVER_END
 
 /*-----------------------------------------------

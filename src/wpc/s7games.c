@@ -245,14 +245,15 @@ CORE_GAMEDEF(fpwr2,l2,"Firepower II (L-2)",1983,"Williams",s7_mS7S,0)
 /*-----------------------------
 / Rat Race - Sys.7 (Game #5??)
 /-----------------------------*/
-INITGAMEFULL(ratrc,s7_dispS7,0,0,50,51,41,42,43,0)
+static core_tGameData ratrcGameData = { GEN_S7, s7_dispS7, {FLIP_SWNO(0,0)}, NULL, {"",{0,0,0xff,0xff,0,0xf0,0xff,0x3f}},{0,{0,0,0,0,0,0}}};
+static void init_ratrc(void) { core_gameData = &ratrcGameData; }
 S7_ROMSTART000x(ratrc,l1,"ic14.532",   CRC(c6f4bcf4) SHA1(d71c86299139abe3dd376a324315a039be82875c),
                          "ic17.532",   CRC(0800c214) SHA1(3343c07fd550bb0759032628e01bb750135dab15),
                          "ic20.532",   CRC(0c5c7c09) SHA1(c93b39ba1460feee5850fcd3ca7cacb72c4c8ff3))
-S67S_SOUNDROMS8(         "sound3.716", CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
+S67S_SOUNDROMS8(         "sound12.716",NO_DUMP)
 S7_ROMEND
 #define input_ports_ratrc input_ports_s7
-CORE_GAMEDEF(ratrc,l1,"Rat Race (L-1)",1983,"Williams",s7_mS7S,0)
+CORE_GAMEDEF(ratrc,l1,"Rat Race (L-1)",1983,"Williams",s7_mS7RR,0)
 
 /*-----------------------------
 / Star Light - Sys.7 (Game #530)

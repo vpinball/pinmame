@@ -142,9 +142,11 @@
 extern MACHINE_DRIVER_EXTERN(s7);
 extern MACHINE_DRIVER_EXTERN(s7S);
 extern MACHINE_DRIVER_EXTERN(s7S6);
+extern MACHINE_DRIVER_EXTERN(s7RR);
 #define s7_mS7         s7
 #define s7_mS7S        s7S
 #define s7_mS7S6       s7S6
+#define s7_mS7RR       s7RR
 extern const core_tLCDLayout s7_dispS7[];
 #endif /* INC_S7 */
 
