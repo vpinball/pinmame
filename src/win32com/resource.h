@@ -42,7 +42,9 @@
 #define IDDIRBUTTONNVRAM                204
 #define IDDIRBUTTONSAMPLE               205
 #define IDDIRBUTTONIMG                  206
-#define IDB_SPLASH                      206
+#define IDB_SPLASH                      200
+#define IDB_SPLASH2			201
+#define IDB_SPLASH3			202
 #define IDGETCOLOR                      207
 #define IDD_DISCLAIMERDLG               208
 #define IDD_GAMEINFODLG                 209
