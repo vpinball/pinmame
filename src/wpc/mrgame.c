@@ -41,6 +41,7 @@
 #include "cpu/z80/z80.h"
 #include "machine/8255ppi.h"
 #include "sound/5220intf.h"
+#include "sound/m114s.h"
 #include "vidhrdw/generic.h"
 #include "core.h"
 #include "sim.h"
@@ -52,6 +53,9 @@
 //#define TEST_MAIN_CPU
 //#define TEST_MOTORSHOW
 //#define NOSOUND
+
+//Define Total # of Mixing Channels Used ( 2 for the DAC, 1 for the TMS5220, and whatever else for the M114S )
+#define MRGAME_TOTCHANNELS 3 + M114S_OUTPUT_CHANNELS
 
 #define MRGAME_CPUFREQ 6000000
 
@@ -516,10 +520,13 @@ static WRITE_HANDLER(soundg1_1_port_w) {
 	switch(offset)
 	{
 		case 0:
-			mixer_set_volume(0,data);
-			mixer_set_volume(1,data);
-			mixer_set_volume(2,data);
+		{
+			//Adjust volume on all channels
+			int i;
+			for(i=0;i<MRGAME_TOTCHANNELS;i++)
+				mixer_set_volume(i,data);
 			break;
+		}
 		case 2:
 			locals.ackspk = GET_BIT0;
 			break;
