@@ -30,8 +30,8 @@ static NVRAM_HANDLER(s11);
 static NVRAM_HANDLER(de);
 
 const struct core_dispLayout s11_dispS9[] = {
-  {0, 0,21,7, CORE_SEG87F}, {0,16,29,7, CORE_SEG87F},
-  {4, 0, 1,7, CORE_SEG87F}, {4,16, 9,7, CORE_SEG87F},
+  {4, 0, 1,7, CORE_SEG87}, {4,16, 9,7, CORE_SEG87},
+  {0, 0,21,7, CORE_SEG87}, {0,16,29,7, CORE_SEG87},
   DISP_SEG_CREDIT(0,8,CORE_SEG7S),DISP_SEG_BALLS(20,28,CORE_SEG7S),{0}
 };
 const struct core_dispLayout s11_dispS11[] = {
@@ -212,14 +212,24 @@ static READ_HANDLER(pia3b_dmd_r) {
 //NOTE: Unusued in Data East Alpha Games
 static WRITE_HANDLER(pia2ca2_w) {
   data = data ? 0x80 : 0x00;
-  locals.segments[20+locals.digSel].b.lo |= data;
-  locals.pseg[20+locals.digSel].b.lo = (locals.pseg[locals.digSel].b.lo & 0x7f) | data;
+  if (core_gameData->gen & GEN_S9) {
+    locals.segments[1+locals.digSel].b.lo |= data;
+    locals.pseg[1+locals.digSel].b.lo = (locals.pseg[1+locals.digSel].b.lo & 0x7f) | data;
+  } else {
+    locals.segments[20+locals.digSel].b.lo |= data;
+    locals.pseg[20+locals.digSel].b.lo = (locals.pseg[20+locals.digSel].b.lo & 0x7f) | data;
+  }
 }
 //NOTE: Pin 10 of CN3 for Data East DMD Games (Currently we don't need to read this value)
 static WRITE_HANDLER(pia2cb2_w) {
   data = data ? 0x80 : 0x00;
-  locals.segments[locals.digSel].b.lo |= data;
-  locals.pseg[locals.digSel].b.lo = (locals.pseg[locals.digSel].b.lo & 0x7f) | data;
+  if (core_gameData->gen & GEN_S9) {
+    locals.segments[21+locals.digSel].b.lo |= data;
+    locals.pseg[21+locals.digSel].b.lo = (locals.pseg[21+locals.digSel].b.lo & 0x7f) | data;
+  } else {
+    locals.segments[locals.digSel].b.lo |= data;
+    locals.pseg[locals.digSel].b.lo = (locals.pseg[locals.digSel].b.lo & 0x7f) | data;
+  }
 }
 
 static READ_HANDLER(pia5a_r) {
