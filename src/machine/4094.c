@@ -228,7 +228,7 @@ WRITE_HANDLER( HC4094_strobe_w )
 ***********************************************************************************************/
 void HC4094_init(HC4094interface *intf)
 {
-	int i, numchips;
+	int i;
 
 	numchips = intf->num;
 
