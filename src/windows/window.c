@@ -191,7 +191,11 @@ INLINE int wnd_extra_width(void)
 	RECT window = { 100, 100, 200, 200 };
 	if (!win_window_mode)
 		return 0;
+#ifdef VPINMAME
+	AdjustWindowRectEx(&window, GetWindowLong(win_video_window, GWL_STYLE), FALSE, GetWindowLong(win_video_window, GWL_EXSTYLE));
+#else
 	AdjustWindowRectEx(&window, WINDOW_STYLE, FALSE, WINDOW_STYLE_EX);
+#endif
 	return (window.right - window.left) - 100;
 }
 
@@ -206,7 +210,11 @@ INLINE int wnd_extra_height(void)
 	RECT window = { 100, 100, 200, 200 };
 	if (!win_window_mode)
 		return 0;
+#ifdef VPINMAME
+	AdjustWindowRectEx(&window, GetWindowLong(win_video_window, GWL_STYLE), FALSE, GetWindowLong(win_video_window, GWL_EXSTYLE));
+#else
 	AdjustWindowRectEx(&window, WINDOW_STYLE, FALSE, WINDOW_STYLE_EX);
+#endif
 	return (window.bottom - window.top) - 100;
 }
 
