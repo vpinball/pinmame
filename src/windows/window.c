@@ -45,7 +45,11 @@ extern UINT8 win_trying_to_quit;
 //============================================================
 
 // window styles
+#ifdef VPINMAME
+#define WINDOW_STYLE			WS_OVERLAPPED|WS_THICKFRAME
+#else
 #define WINDOW_STYLE			WS_OVERLAPPEDWINDOW
+#endif
 #define WINDOW_STYLE_EX			0
 
 // debugger window styles
@@ -1007,12 +1011,10 @@ void win_adjust_window_for_visible(int min_x, int max_x, int min_y, int max_y)
 			memset(&non_fullscreen_bounds, 0, sizeof(non_fullscreen_bounds));
 		}
 
-		// show the result
 #ifndef VPINMAME
+		// show the result
 		ShowWindow(win_video_window, SW_SHOW);
 		SetForegroundWindow(win_video_window);
-#else
-		ShowWindow(win_video_window, SW_SHOWNOACTIVATE);
 #endif
 		win_update_video_window(NULL);
 
