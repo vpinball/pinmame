@@ -343,6 +343,7 @@ INLINE void exg( void )
 		case 10: CC = t1; break;
 		case 11: DP = t1; break;
 	}
+	if (((tb>>4) == 10) || ((tb & 0x0f) == 10)) { CHECK_IRQ_LINES; } // WPCMAME
 }
 
 /* $1F TFR inherent ----- */
@@ -385,6 +386,7 @@ INLINE void tfr( void )
 		case 10: CC = t; break;
 		case 11: DP = t; break;
     }
+	if ((tb & 0x0f) == 10) { CHECK_IRQ_LINES; } // WPCMAME
 }
 
 #ifdef macintosh
