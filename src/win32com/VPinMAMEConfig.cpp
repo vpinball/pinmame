@@ -54,8 +54,6 @@ static char *gamename;
 static float f_beam;
 static float f_flicker;
 
-static int enable_sound = 1;
-
 static int video_set_beam(struct rc_option *option, const char *arg, int priority)
 {
 	options.beam = (int)(f_beam * 0x00010000);
@@ -128,6 +126,14 @@ static int init_errorlog(struct rc_option *option, const char *arg, int priority
 	return 0;
 }
 
+static int enable_sound = 1;
+static int sound_enable_sound(struct rc_option *option, const char *arg, int priority)
+{
+	if ( !enable_sound )
+		options.samplerate = 0;
+
+	return 0;
+}
 
 /* struct definitions */
 static struct rc_option opts[] = {
@@ -176,7 +182,7 @@ static struct rc_option opts[] = {
 	{ "samplerate", "sr", rc_int, &options.samplerate, "44100", 5000, 50000, NULL, "set samplerate" },
 	{ "samples", NULL, rc_bool, &options.use_samples, "1", 0, 0, NULL, "use samples" },
 	{ "resamplefilter", NULL, rc_bool, &options.use_filter, "1", 0, 0, NULL, "resample if samplerate does not match" },
-	{ "sound", NULL, rc_bool, &enable_sound, "1", 0, 0, NULL, "enable/disable sound and sound CPUs" },
+	{ "sound", NULL, rc_bool, &enable_sound, "1", 0, 0, sound_enable_sound, "enable/disable sound and sound CPUs" },
 	{ "volume", "vol", rc_int, &attenuation, "0", -32, 0, NULL, "volume (range [-32,0])" },
 
 	/* misc */
@@ -362,6 +368,8 @@ void cli_frontend_init()
 		options.debug_width = 640;
 	if (options.debug_height == 0)
 		options.debug_height = 480;
+
+	options.gui_host = 1;
 }
 
 void cli_frontend_exit(void)
