@@ -2,7 +2,7 @@
 #include "machine/6821pia.h"
 #include "cpu/m6800/m6800.h"
 #include "core.h"
-#include "hnk.h"
+#include "by35.h"
 #include "snd_cmd.h"
 #include "sndbrd.h"
 #include "hnks.h"
