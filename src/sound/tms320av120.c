@@ -496,136 +496,6 @@ for(sf=0;sf<3;sf++) { // Diff't scale factors for each 1/3
 }		//# of scale factors
 }
 
-
-//Get One Byte - Reads a single byte from the rom stream, returns 0 if unable to read the byte
-static int get_one_byte(int num, UINT8* byte, UINT32 pos)
-{
-	//If reached end of memory region, abort
-	if(pos>0x300000) return 0;
-	*byte = (UINT8)tms320av120[num].start_region[pos];
-	return 1;
-}
-
-//Read current frame data into our frame buffer (assumes rom positioned at start of frame) - return 0 if unable to read entire frame
-static int Read_Frame(int num)
-{	
-	UINT8 onebyte;
-	int i;
-
-	//clear current frame buffer
-	memset(tms320av120[num].framebuff,0,sizeof(tms320av120[num].framebuff));
-
-	//Fill entire frame buffer if we can
-	for(i=0; i<MPG_FRAMESIZE; i++) {
-		if(!get_one_byte(num,&onebyte,tms320av120[num].curr)) 
-			return 0;
-		tms320av120[num].framebuff[i] = onebyte;
-		tms320av120[num].curr++;
-	}
-	//Reset position
-	tms320av120[num].fb_pos = 0;
-	return 1;
-}
-
-//Find next MPG Header in rom stream, return 0 if not found - current position will be at start of frame if found
-static int Find_MPG_Header(int num)
-{	
-	UINT8 onebyte;
-	int quit = 0;
-	while(!quit) {
-		//Find start of possible syncword (begins with 0xff)
-		do {
-			//Grab 1 byte
-			if(!get_one_byte(num,&onebyte,tms320av120[num].curr)) 
-				quit=1;
-			else
-				tms320av120[num].curr++;
-		}while(onebyte!=0xff && !quit);
-
-		//Found 0xff?
-		if(onebyte==0xff) {
-			//Next byte must be 0xfd (note: already positioned on it from above while() code)
-			if(get_one_byte(num, &onebyte,tms320av120[num].curr) && onebyte==0xfd) {
-				//Next byte must be 0x18 or 0x19
-				if(get_one_byte(num,&onebyte,tms320av120[num].curr+1) && (onebyte==0x18 || onebyte==0x19)) {
-					//Next byte must be 0xc0
-					if(get_one_byte(num,&onebyte,tms320av120[num].curr+2) && onebyte==0xc0) {
-						tms320av120[num].curr+=3;
-						return 1;
-					}
-				}
-			}
-		}
-	}
-	return 0;
-}
-
-//Return Next Decoded Word (16 Bit Signed Data) from ROM Stream
-static INT16 cap_GetNextWord(int num)
-{
-#if LOOP_MPG_SAMPLE
-   //If reached end of memory region, start again
-   if (tms320av120[num].curr>0x300000)
-	   tms320av120[num].curr=0;
-#else
-   //If reached end of memory region, we're done..
-   if (tms320av120[num].curr>0x300000)
-	   return 0;
-#endif
-
-   //Do we need more data to be decoded?
-   if (tms320av120[num].pcm_pos+1 > CAP_PCMBUFFER_SIZE) {
-
-		//Find Next Valid Header - Abort if not found
-		if(!Find_MPG_Header(num))
-				return 0;
-		//Read Frame Data
-		if(!Read_Frame(num))
-			return 0;
-
-		//Reset position for writing the pcm data
-		tms320av120[num].pcm_pos = 0;
-
-		//Decode the frame
-		DecodeLayer2(num);
-
-		//Reset position for reading the pcm data
-		tms320av120[num].pcm_pos = 0;
-   }
-
-   //Return the next word from pcm buffer
-   return (INT16)tms320av120[num].pcmbuffer[tms320av120[num].pcm_pos++];
-}
-
-//Fill our pcm buffer with decoded data until buffer is full or until we catch up to last sample output from buffer
-void tms_FillBuff(int num) {
-  int length = CAP_OUTBUFFER_SIZE-10;
-  int ii;
-  INT16 word;
-  UINT32 tmpN;
-
-  //Safety check
-  if(num > intf->num - 1) return;
-
-  /* fill in with bytes until we hit the end or run out */
-  for (ii = 0; ii < length; ii++) {
-
-    tmpN = (tms320av120[num].sIn + 1) & CAP_BUFFER_MASK;
-
-    //Abort if we're about to pass output samples..
-	if (tmpN == tms320av120[num].sOut) break;
-
-	//Grab next word from decoded pcm stream
-	word = cap_GetNextWord(num);
- 
-	//Update our buffer
-    tms320av120[num].buffer[tms320av120[num].sIn] = word;
-
-	//Increment next sample in position
-	tms320av120[num].sIn = (tms320av120[num].sIn + 1) & CAP_BUFFER_MASK;
-  }
-}
-
 /**********************************************************************************************
      set_bof_line -- set's the state of the /BOF line
 ***********************************************************************************************/
@@ -857,4 +727,138 @@ WRITE_HANDLER( TMS320AV120_data_w )
 	if(offset==0)
 		if(fp) fputc(data,fp);
 	#endif
+}
+
+
+
+
+
+
+//Get One Byte - Reads a single byte from the rom stream, returns 0 if unable to read the byte
+static int get_one_byte(int num, UINT8* byte, UINT32 pos)
+{
+	//If reached end of memory region, abort
+	if(pos>0x300000) return 0;
+	*byte = (UINT8)tms320av120[num].start_region[pos];
+	return 1;
+}
+
+//Read current frame data into our frame buffer (assumes rom positioned at start of frame) - return 0 if unable to read entire frame
+static int Read_Frame(int num)
+{	
+	UINT8 onebyte;
+	int i;
+
+	//clear current frame buffer
+	memset(tms320av120[num].framebuff,0,sizeof(tms320av120[num].framebuff));
+
+	//Fill entire frame buffer if we can
+	for(i=0; i<MPG_FRAMESIZE; i++) {
+		if(!get_one_byte(num,&onebyte,tms320av120[num].curr)) 
+			return 0;
+		tms320av120[num].framebuff[i] = onebyte;
+		tms320av120[num].curr++;
+	}
+	//Reset position
+	tms320av120[num].fb_pos = 0;
+	return 1;
+}
+
+//Find next MPG Header in rom stream, return 0 if not found - current position will be at start of frame if found
+static int Find_MPG_Header(int num)
+{	
+	UINT8 onebyte;
+	int quit = 0;
+	while(!quit) {
+		//Find start of possible syncword (begins with 0xff)
+		do {
+			//Grab 1 byte
+			if(!get_one_byte(num,&onebyte,tms320av120[num].curr)) 
+				quit=1;
+			else
+				tms320av120[num].curr++;
+		}while(onebyte!=0xff && !quit);
+
+		//Found 0xff?
+		if(onebyte==0xff) {
+			//Next byte must be 0xfd (note: already positioned on it from above while() code)
+			if(get_one_byte(num, &onebyte,tms320av120[num].curr) && onebyte==0xfd) {
+				//Next byte must be 0x18 or 0x19
+				if(get_one_byte(num,&onebyte,tms320av120[num].curr+1) && (onebyte==0x18 || onebyte==0x19)) {
+					//Next byte must be 0xc0
+					if(get_one_byte(num,&onebyte,tms320av120[num].curr+2) && onebyte==0xc0) {
+						tms320av120[num].curr+=3;
+						return 1;
+					}
+				}
+			}
+		}
+	}
+	return 0;
+}
+
+//Return Next Decoded Word (16 Bit Signed Data) from ROM Stream
+static INT16 cap_GetNextWord(int num)
+{
+#if LOOP_MPG_SAMPLE
+   //If reached end of memory region, start again
+   if (tms320av120[num].curr>0x300000)
+	   tms320av120[num].curr=0;
+#else
+   //If reached end of memory region, we're done..
+   if (tms320av120[num].curr>0x300000)
+	   return 0;
+#endif
+
+   //Do we need more data to be decoded?
+   if (tms320av120[num].pcm_pos+1 > CAP_PCMBUFFER_SIZE) {
+
+		//Find Next Valid Header - Abort if not found
+		if(!Find_MPG_Header(num))
+				return 0;
+		//Read Frame Data
+		if(!Read_Frame(num))
+			return 0;
+
+		//Reset position for writing the pcm data
+		tms320av120[num].pcm_pos = 0;
+
+		//Decode the frame
+		DecodeLayer2(num);
+
+		//Reset position for reading the pcm data
+		tms320av120[num].pcm_pos = 0;
+   }
+
+   //Return the next word from pcm buffer
+   return (INT16)tms320av120[num].pcmbuffer[tms320av120[num].pcm_pos++];
+}
+
+//Fill our pcm buffer with decoded data until buffer is full or until we catch up to last sample output from buffer
+void tms_FillBuff(int num) {
+  int length = CAP_OUTBUFFER_SIZE-10;
+  int ii;
+  INT16 word;
+  UINT32 tmpN;
+
+  //Safety check
+  if(num > intf->num - 1) return;
+
+  /* fill in with bytes until we hit the end or run out */
+  for (ii = 0; ii < length; ii++) {
+
+    tmpN = (tms320av120[num].sIn + 1) & CAP_BUFFER_MASK;
+
+    //Abort if we're about to pass output samples..
+	if (tmpN == tms320av120[num].sOut) break;
+
+	//Grab next word from decoded pcm stream
+	word = cap_GetNextWord(num);
+ 
+	//Update our buffer
+    tms320av120[num].buffer[tms320av120[num].sIn] = word;
+
+	//Increment next sample in position
+	tms320av120[num].sIn = (tms320av120[num].sIn + 1) & CAP_BUFFER_MASK;
+  }
 }
