@@ -24,7 +24,7 @@
 #include "gts3sound.h"
 
 UINT8 DMDFrames[GTS3DMD_FRAMES][0x200];
-#define GTS3_VBLANKDIV	   (GTS3DMD_FRAMES/AVAIL_INTENSITY+1) /* Break VBLANK into pieces*/
+#define GTS3_VBLANKDIV	   6 /* Break VBLANK into pieces*/
 
 #define GTS3_VBLANKFREQ      60 /* VBLANK frequency*/
 #define GTS3_IRQFREQ        976 /* IRQ Frequency (Guessed)*/
@@ -574,7 +574,7 @@ static void GTS3_init2(void) {
   GTS3locals.VBLANK_PROC = dmd_vblank;
 
   //Manually call the DMD NMI at the specified rate
-  timer_pulse(TIME_IN_HZ(GTS3_DMDNMIFREQ), 0, dmdnmi);
+//  timer_pulse(TIME_IN_HZ(GTS3_DMDNMIFREQ), 0, dmdnmi);
 
   /*Init Sound if Sound Enabled?*/
   if (((Machine->gamedrv->flags & GAME_NO_SOUND) == 0) && Machine->sample_rate)
@@ -781,6 +781,7 @@ void dmd_vblank(void){
   int offset = (crtc6845_start_addr>>2);
   memcpy(DMDFrames[coreGlobals_dmd.nextDMDFrame],memory_region(GTS3_MEMREG_DCPU1)+0x1000+offset,0x200);
   coreGlobals_dmd.nextDMDFrame = (coreGlobals_dmd.nextDMDFrame + 1) % GTS3DMD_FRAMES;
+  dmdnmi(0);
 }
 
 /*---------------------------
