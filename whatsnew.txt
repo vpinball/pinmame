@@ -21,6 +21,14 @@ Bugs Fixed
 -Added missing end markers "{0}" for some s11 custom display layouts.
  [WPCMAME Author] 
 
+-Dip switches working now on Gottlieb games
+ [Tom Haukap]
+
+-Corrected Grand Lizard to use the working romset
+-Fixed 7th digit on Gottlieb System80a games
+ [Gerrit Volkenborn]
+
+
 New Features
 ------------
 -BSMT 2000 Emulation
@@ -35,14 +43,17 @@ New Features
 -Added support for Sound Roms for remaining Data East/Sega/Stern(Post 1998) Games!
  [Steve Ellenoff]
 
--Added support for foreign language versions of Data East/Sega/Stern(Post 1998) Games!
- [Gerrit Volkenborn]
-
 -New option to set the intensity of segments when they are off.
 -Changed mech handler to be asynchronous to the vblank and increased
   polling rate by a factor 8. Riverboat Gambler wheel can now be handled.
 -Added aux solenoid board to Whirlwind
  [WPCMAME Author] 
+
+-Added missing Gottlieb System 80/a/b sets and clones
+-Added Pennant Fever to S9 games (sound not working)
+-Added Strike Master to WPC games (no sound)
+-Added a lot of clones for existing WPC/DataEast/Sega/new Stern games!
+ [Gerrit Volkenborn]
 
 
 
