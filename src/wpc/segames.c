@@ -903,18 +903,18 @@ SE_ROMEND
 #define init_term3i init_term3
 CORE_CLONEDEFNV(term3i,term3,"Terminator 3: Rise of the Machines (Italy)",2003,"Stern",de_mSES2,GAME_NOCRC)
 
-// Using 16-bit samples (not support by a regular BSMT2000) from now on!
+// Using 16-bit samples (not supported by a regular BSMT2000) from now on!
 /*-------------------------------------------------------------------
 / Lord Of The Rings (4.01)
 /-------------------------------------------------------------------*/
 INITGAME(lotr,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(lotr,	 "lotrcpu.401", CRC(b69cdecc) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
 DE_DMD32ROM8x(           "lotrdspa.403",CRC(2630cef1) SHA1(1dfd929e7eb57983f2fd9184d471f2e919359de0))
-DE2S_SOUNDROM18888(      "lotr101.u7",  CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56a6ac29fce1c7082e470),
-                         "lotr100.u17", CRC(d503969d) SHA1(65a4313ca1b93391260c65fef6f878d264f9c8ab),
-                         "lotr100.u21", CRC(8b3f41af) SHA1(9b2d04144edeb499b4ae68a97c65ccb8ef4d26c0),
-                         "lotr100.u36", CRC(9575981e) SHA1(38083fd923c4a168a94d998ec3c4db42c1e2a2da),
-                         "lotr100.u37", CRC(8e637a6f) SHA1(8087744ce36fc143381d49a312c98cf38b2f9854))
+DE2S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56a6ac29fce1c7082e470),
+                         "lotr-u17.100",CRC(d503969d) SHA1(65a4313ca1b93391260c65fef6f878d264f9c8ab),
+                         "lotr-u21.100",CRC(8b3f41af) SHA1(9b2d04144edeb499b4ae68a97c65ccb8ef4d26c0),
+                         "lotr-u36.100",CRC(9575981e) SHA1(38083fd923c4a168a94d998ec3c4db42c1e2a2da),
+                         "lotr-u37.100",CRC(8e637a6f) SHA1(8087744ce36fc143381d49a312c98cf38b2f9854))
 SE_ROMEND
 #define input_ports_lotr input_ports_se
 CORE_GAMEDEFNV(lotr,"Lord Of The Rings",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_IMPERFECT_SOUND|GAME_NOCRC)
@@ -924,11 +924,11 @@ CORE_GAMEDEFNV(lotr,"Lord Of The Rings",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRA
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(lotr_sp,	 "lotrcpul.401",CRC(a9571728) SHA1(f21dd77003f42fafd9293fab3a077c5abf6d572a))
 DE_DMD32ROM8x(           "lotrdspl.403",CRC(6d4075c9) SHA1(7944ba597cb476c33060cead4feaf6dcad4f4b16))
-DE2S_SOUNDROM18888(      "lotr101l.u7", CRC(980d970a) SHA1(cf70deddcc146ef9eaa64baec74ae800bebf8715),
-                         "lotr100l.u17",CRC(c16d3e20) SHA1(43d9f186db361abb3aa119a7252f1bb13bbbbe39),
-                         "lotr100l.u21",CRC(f956a1be) SHA1(2980e85463704a154ed81d3241f866442d1ea2e6),
-                         "lotr100l.u36",CRC(502c3d93) SHA1(4ee42d70bccb9253fe1f8f441de6b5018257f107),
-                         "lotr100l.u37",CRC(61f21c6d) SHA1(3e9781b4981bd18cdb8c59c55b9942de6ae286db))
+DE2S_SOUNDROM18888(      "lotrlu7.100", CRC(980d970a) SHA1(cf70deddcc146ef9eaa64baec74ae800bebf8715),
+                         "lotrlu17.100",CRC(c16d3e20) SHA1(43d9f186db361abb3aa119a7252f1bb13bbbbe39),
+                         "lotrlu21.100",CRC(f956a1be) SHA1(2980e85463704a154ed81d3241f866442d1ea2e6),
+                         "lotrlu36.100",CRC(502c3d93) SHA1(4ee42d70bccb9253fe1f8f441de6b5018257f107),
+                         "lotrlu37.100",CRC(61f21c6d) SHA1(3e9781b4981bd18cdb8c59c55b9942de6ae286db))
 SE_ROMEND
 #define input_ports_lotr_sp input_ports_lotr
 #define init_lotr_sp init_lotr
@@ -939,11 +939,11 @@ CORE_CLONEDEFNV(lotr_sp,lotr,"Lord Of The Rings (Spain)",2003,"Stern",de_mSES2,G
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(lotr_gr,	 "lotrcpu.401", CRC(b69cdecc) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
 DE_DMD32ROM8x(           "lotrdspg.403",CRC(74e925cb) SHA1(2edc8666d53f212a053b7a356d2bf6e3180d7bfb))
-DE2S_SOUNDROM18888(      "lotr101.u7",  CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56a6ac29fce1c7082e470),
-                         "lotr100.u17", CRC(d503969d) SHA1(65a4313ca1b93391260c65fef6f878d264f9c8ab),
-                         "lotr100.u21", CRC(8b3f41af) SHA1(9b2d04144edeb499b4ae68a97c65ccb8ef4d26c0),
-                         "lotr100.u36", CRC(9575981e) SHA1(38083fd923c4a168a94d998ec3c4db42c1e2a2da),
-                         "lotr100.u37", CRC(8e637a6f) SHA1(8087744ce36fc143381d49a312c98cf38b2f9854))
+DE2S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56a6ac29fce1c7082e470),
+                         "lotr-u17.100",CRC(d503969d) SHA1(65a4313ca1b93391260c65fef6f878d264f9c8ab),
+                         "lotr-u21.100",CRC(8b3f41af) SHA1(9b2d04144edeb499b4ae68a97c65ccb8ef4d26c0),
+                         "lotr-u36.100",CRC(9575981e) SHA1(38083fd923c4a168a94d998ec3c4db42c1e2a2da),
+                         "lotr-u37.100",CRC(8e637a6f) SHA1(8087744ce36fc143381d49a312c98cf38b2f9854))
 SE_ROMEND
 #define input_ports_lotr_gr input_ports_lotr
 #define init_lotr_gr init_lotr
@@ -954,11 +954,11 @@ CORE_CLONEDEFNV(lotr_gr,lotr,"Lord Of The Rings (Germany)",2003,"Stern",de_mSES2
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(lotr_fr,	 "lotrcpu.401", CRC(b69cdecc) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
 DE_DMD32ROM8x(           "lotrdspf.403",CRC(d02a77cf) SHA1(8cf4312a04ad486714de5c0041cacb1eb475478f))
-DE2S_SOUNDROM18888(      "lotr101.u7",  CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56a6ac29fce1c7082e470),
-                         "lotr100.u17", CRC(d503969d) SHA1(65a4313ca1b93391260c65fef6f878d264f9c8ab),
-                         "lotr100.u21", CRC(8b3f41af) SHA1(9b2d04144edeb499b4ae68a97c65ccb8ef4d26c0),
-                         "lotr100.u36", CRC(9575981e) SHA1(38083fd923c4a168a94d998ec3c4db42c1e2a2da),
-                         "lotr100.u37", CRC(8e637a6f) SHA1(8087744ce36fc143381d49a312c98cf38b2f9854))
+DE2S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56a6ac29fce1c7082e470),
+                         "lotr-u17.100",CRC(d503969d) SHA1(65a4313ca1b93391260c65fef6f878d264f9c8ab),
+                         "lotr-u21.100",CRC(8b3f41af) SHA1(9b2d04144edeb499b4ae68a97c65ccb8ef4d26c0),
+                         "lotr-u36.100",CRC(9575981e) SHA1(38083fd923c4a168a94d998ec3c4db42c1e2a2da),
+                         "lotr-u37.100",CRC(8e637a6f) SHA1(8087744ce36fc143381d49a312c98cf38b2f9854))
 SE_ROMEND
 #define input_ports_lotr_fr input_ports_lotr
 #define init_lotr_fr init_lotr
@@ -969,11 +969,11 @@ CORE_CLONEDEFNV(lotr_fr,lotr,"Lord Of The Rings (France)",2003,"Stern",de_mSES2,
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(lotr_it,	 "lotrcpu.401", CRC(b69cdecc) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
 DE_DMD32ROM8x(           "lotrdspi.403",CRC(5922ce10) SHA1(c57f2de4e3344f16056405d71510c0c0b60ef86d))
-DE2S_SOUNDROM18888(      "lotr101.u7",  CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56a6ac29fce1c7082e470),
-                         "lotr100.u17", CRC(d503969d) SHA1(65a4313ca1b93391260c65fef6f878d264f9c8ab),
-                         "lotr100.u21", CRC(8b3f41af) SHA1(9b2d04144edeb499b4ae68a97c65ccb8ef4d26c0),
-                         "lotr100.u36", CRC(9575981e) SHA1(38083fd923c4a168a94d998ec3c4db42c1e2a2da),
-                         "lotr100.u37", CRC(8e637a6f) SHA1(8087744ce36fc143381d49a312c98cf38b2f9854))
+DE2S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56a6ac29fce1c7082e470),
+                         "lotr-u17.100",CRC(d503969d) SHA1(65a4313ca1b93391260c65fef6f878d264f9c8ab),
+                         "lotr-u21.100",CRC(8b3f41af) SHA1(9b2d04144edeb499b4ae68a97c65ccb8ef4d26c0),
+                         "lotr-u36.100",CRC(9575981e) SHA1(38083fd923c4a168a94d998ec3c4db42c1e2a2da),
+                         "lotr-u37.100",CRC(8e637a6f) SHA1(8087744ce36fc143381d49a312c98cf38b2f9854))
 SE_ROMEND
 #define input_ports_lotr_it input_ports_lotr
 #define init_lotr_it init_lotr
