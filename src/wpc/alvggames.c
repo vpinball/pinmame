@@ -14,9 +14,9 @@ static struct core_dispLayout alvg_dispDMD[] = {
   {0,0,32,128,CORE_DMD,(void *)alvgdmd_update}, {0}
 };
 
-static const core_tLCDLayout disp_socr[] = {
-  { 0, 0, 0, 16, CORE_SEG8 }, { 2, 0,16, 16, CORE_SEG8 },
-  { 4, 0,32, 16, CORE_SEG8 }, {0}
+static const core_tLCDLayout disp_led[] = {
+  {0, 0, 0,16, CORE_SEG16}, {3, 0,16,16, CORE_SEG16},
+  {0}
 };
 
 #define INITGAME(name, disptype, flippers, balls, sb, db, lamps) \
@@ -29,14 +29,14 @@ static const core_tLCDLayout disp_socr[] = {
 /* GAMES APPEAR IN PRODUCTION ORDER (MORE OR LESS) */
 
 /*-------------------------------------------------------------------
-/ Soccer Ball
+/ A.G. Soccer Ball
 /-------------------------------------------------------------------*/
-INITGAME(socrball, disp_socr, FLIP78, 3/*?*/, SNDBRD_ALVGS, 0, 0)
-ALVGROMSTART(socrball,	"agscpu1r.18u", CRC(37affcf4) SHA1(017d47f54d5b34a4b71c2f5b84ba9bdb1c924299))
+INITGAME(agsoccer, disp_led, FLIP78, 3/*?*/, SNDBRD_ALVGS, 0, 0)
+ALVGROMSTART(agsoccer,	"agscpu1r.18u", CRC(37affcf4) SHA1(017d47f54d5b34a4b71c2f5b84ba9bdb1c924299))
 ALVGS_SOUNDROM11(		"ags_snd.v21",  CRC(aa30bfe4) SHA1(518f7019639a0284461e83ad849bee0be5371580),
 						"ags_voic.v12", CRC(bac70b18) SHA1(0a699eb95d7d6b071b2cd9d0bf73df355e2ffce8))
 ALVG_ROMEND
-CORE_GAMEDEFNV(socrball,"Soccer Ball",1991,"Alvin G",mALVGS0,0)
+CORE_GAMEDEFNV(agsoccer,"A.G. Soccer Ball",1991,"Alvin G",mALVGS0,0)
 
 /*-------------------------------------------------------------------
 / Al's Garage Band Goes On A World Tour
@@ -85,10 +85,15 @@ ALVGDMD_ROM(			"p_peteu4.512", CRC(caa0cabd) SHA1(caff6ca4a9cce4e3d846502696c883
 ALVG_ROMEND
 CORE_GAMEDEFNV(pstlpkr,"Pistol Poker",1993,"Alvin G",mALVGS,0)
 
-
-
-
-
+/*-------------------------------------------------------------------
+/ Punchy The Clown
+/-------------------------------------------------------------------*/
+INITGAME(punchy, disp_led, FLIP78, 3/*?*/, SNDBRD_ALVGS, 0, 0)
+ALVGROMSTART(punchy,	"epc061r2.bin", CRC(732fca88) SHA1(dff0aa4b856bafb95b08dae675dd2ad59e1860e1))
+ALVGS_SOUNDROM11(		"eps061r2.bin", CRC(cfde1b9a) SHA1(cbf9e67df6a6762843272493c2caa1413f70fb27),
+						"eps062r2.bin", CRC(7462a5cd) SHA1(05141bcc91b1a786444bff7fa8ba2a785dc0d376))
+ALVG_ROMEND
+CORE_GAMEDEFNV(punchy,"Punchy The Clown",1993,"Alvin G",mALVGS0,0)
 
 //Use only for testing the 8031 core emulation
 #ifdef MAME_DEBUG
