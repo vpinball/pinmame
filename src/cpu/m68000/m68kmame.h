@@ -80,7 +80,12 @@ INLINE void m68k_write_memory_32_pd(unsigned int address, unsigned int value);
 
 INLINE unsigned int m68kx_read_immediate_16(unsigned int address)
 {
+//SJE: Fixes crash in capcom
+#ifdef PINMAME
+	return m68k_read_memory_16(address ^ m68k_memory_intf.opcode_xor);
+#else
 	return cpu_readop16((address) ^ m68k_memory_intf.opcode_xor);
+#endif
 }
 
 INLINE unsigned int m68kx_read_immediate_32(unsigned int address)
