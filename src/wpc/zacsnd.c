@@ -16,19 +16,19 @@ extern void UpdateZACSoundACT(int data);
 / 4 simple tone generators, solenoid-controlled
 /-----------------------------------------*/
 DISCRETE_SOUND_START(zac1311_discInt)
-	DISCRETE_INPUT(NODE_01,1,0x000f,0)									// Input handlers, mostly for enable
+	DISCRETE_INPUT(NODE_01,1,0x000f,0)                         // Input handlers, mostly for enable
 	DISCRETE_INPUT(NODE_02,2,0x000f,0)
 	DISCRETE_INPUT(NODE_04,4,0x000f,0)
 	DISCRETE_INPUT(NODE_08,8,0x000f,0)
 
-	DISCRETE_SINEWAVE(NODE_10,NODE_01,349,(((1.0/8.0)*32768.0)),0)		// F note amplitude 1/8 * 32768
-	DISCRETE_SINEWAVE(NODE_20,NODE_02,440,(((1.0/8.0)*32768.0)),0)		// A note amplitude 1/8 * 32768
-	DISCRETE_SINEWAVE(NODE_30,NODE_04,523,(((1.0/8.0)*32768.0)),0)		// C' note amplitude 1/8 * 32768
-	DISCRETE_SINEWAVE(NODE_40,NODE_08,698,(((1.0/8.0)*32768.0)),0)		// F' note amplitude 1/8 * 32768
+	DISCRETE_SAWTOOTHWAVE(NODE_10,NODE_01,349,50000,10000,0,0) // F note
+	DISCRETE_SAWTOOTHWAVE(NODE_20,NODE_02,440,50000,10000,0,0) // A note
+	DISCRETE_SAWTOOTHWAVE(NODE_30,NODE_04,523,50000,10000,0,0) // C' note
+	DISCRETE_SAWTOOTHWAVE(NODE_40,NODE_08,698,50000,10000,0,0) // F' note
 
-	DISCRETE_ADDER4(NODE_50,1,NODE_10,NODE_20,NODE_30,NODE_40)			// Mix all four sound sources
+	DISCRETE_ADDER4(NODE_50,1,NODE_10,NODE_20,NODE_30,NODE_40) // Mix all four sound sources
 
-	DISCRETE_OUTPUT(NODE_50)											// Take the output from the mixer
+	DISCRETE_OUTPUT(NODE_50, 50)                               // Take the output from the mixer
 DISCRETE_SOUND_END
 
 MACHINE_DRIVER_START(zac1311)
