@@ -107,6 +107,7 @@ struct {
   int    swEnter;
   int    swAvail1;
   int    swAvail2;
+  int    swTicket;
   int	 via_1_b;
   int    sound_strobe;
   int    dispCol;
@@ -180,6 +181,7 @@ READ_HANDLER(CoinDoorSwitches_Read)
 //Seems to work
 	int data = 0;
 	data |= (alvglocals.DMDAck   << 7);	 //DMD Ack		(?)				(8)
+	data |= (alvglocals.swTicket << 5);	 //Ticket Sw.	(Inverted)		(6)
 	data |= (alvglocals.swEnter  << 4);  //Enter Sw.	(Not Inverted)	(5)
 	data |= (alvglocals.swAvail2 << 3);  //Avail2		(Not Inverted)	(4)
 	data |= (alvglocals.swTest   << 2);	 //Test Sw.		(Not Inverted)	(3)
@@ -561,12 +563,13 @@ static SWITCH_UPDATE(alvg) {
   xvia_0_cb2_w(0,1);	//Force an NMI call - fixes lamps in Pistol Poker & sending data to DMD
 
   if (inports) {
-    coreGlobals.swMatrix[0] = (inports[ALVG_COMINPORT] & 0x0300)>>8;								 	    //Column 0 Switches
+    coreGlobals.swMatrix[0] = (inports[ALVG_COMINPORT] & 0x0700)>>8;								 	    //Column 0 Switches
 	coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0xe0) | (inports[ALVG_COMINPORT] & 0x1f);		    //Column 1 Switches
 	coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0x3c) | ((inports[ALVG_COMINPORT] & 0x1860)>>5);	//Column 2 Switches
   }
   alvglocals.swTest = (core_getSw(ALVG_SWTEST)>0?1:0);
   alvglocals.swEnter = (core_getSw(ALVG_SWENTER)>0?1:0);
+  alvglocals.swTicket = (core_getSw(ALVG_SWTICKET)?0:1);
 
   //Update Flasher Relay
   {
