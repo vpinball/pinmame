@@ -54,7 +54,7 @@ CORE_GAMEDEF(wldcp,l1,"World Cup Soccer (L-1)",1978,"Williams",s3_mS3S,0)
 /*-------------------------------------
 / Contact - Sys.3 (Game #482)
 /-------------------------------------*/
-INITGAME(cntct, GEN_S3,s4_disp)
+INITGAMEFULL(cntct, GEN_S3, s4_disp,0,0,33,34,35,0,0,0)
 S4_ROMSTART(cntct,l1,"gamerom.716",CRC(35359b60) SHA1(ab4c3328d93bdb4c952090b327c91b0ded36152c),
                      "white1.716", CRC(9bbbf14f) SHA1(b0542ffdd683fa0ea4a9819576f3789cd5a4b2eb),
                      "white2.716", CRC(4d4010dd) SHA1(11221124fef3b7bf82d353d65ce851495f6946a7))
