@@ -113,9 +113,9 @@ static SWITCH_UPDATE(MIDWAYP) {
 		coreGlobals.swMatrix[0] = inports[MIDWAY_COMINPORT] & 0x40;
 		if (coreGlobals.swMatrix[0] & 0x40) {
 			i4004_set_TEST(1);
-			locals.vblankCount = 0;
+			locals.vblankCount = 1;
 		/* test line has to be held longer than a few milliseconds */
-		} else if (locals.vblankCount % 10 == 0)
+		} else if (locals.vblankCount % 30 == 0)
 			i4004_set_TEST(0);
 	}
 }
@@ -140,17 +140,10 @@ static READ_HANDLER(port_2x_r) {
 
 /* lamps & solenoids */
 static WRITE_HANDLER(port_0x_w) {
-	switch (offset) {
-		case 0:
-			locals.tmpLampData = data; // latch lamp data for strobe_w call
-			break;
-		case 1:
-			locals.solenoids |= data;
-			break;
-		case 2:
-			locals.solenoids |= (data << 8);
-			break;
-	}
+	if (offset == 0)
+		locals.tmpLampData = data; // latch lamp data for strobe_w call
+	else
+		locals.solenoids |= (data << ((offset-1) * 8));
 }
 
 /* sound maybe? */
@@ -170,16 +163,22 @@ static WRITE_HANDLER(disp_w) {
 }
 
 /* this handler updates lamps, switch columns & displays - all at the same time!!! */
-static WRITE_HANDLER(strobe_w) {
-	if (data < 7) { // only 7 columns are used
-		int ii;
-		for (ii = 0; ii < 6; ii++) {
-			locals.segments[ii*7 + data].w = locals.pseg[ii].w;
-		}
-		locals.lampMatrix[data] = locals.tmpLampData;
-		locals.tmpSwCol = data + 1;
-	} else
-		locals.tmpSwCol = 8;
+static WRITE_HANDLER(port_2x_w) {
+	switch (offset) {
+		case 3:
+			if (data < 7) { // only 7 columns are used
+				int ii;
+				for (ii = 0; ii < 6; ii++) {
+					locals.segments[ii*7 + data].w = locals.pseg[ii].w;
+				}
+				locals.lampMatrix[data] = locals.tmpLampData;
+				locals.tmpSwCol = data + 1;
+			} else
+				locals.tmpSwCol = 8;
+			break;
+		default:
+			logerror("Write to port 2%x = %02x\n", offset, data);
+	}
 }
 
 /* port read / write for Rotation VIII */
@@ -189,9 +188,9 @@ PORT_END
 
 PORT_WRITE_START( midway_writeport )
 	{ 0x00, 0x02, disp_w },
-	{ 0x03, 0x05, port_0x_w },
+	{ 0x03, 0x07, port_0x_w },
 	{ 0x10, 0x17, port_1x_w },
-	{ 0x23, 0x23, strobe_w },
+	{ 0x20, 0x25, port_2x_w },
 PORT_END
 
 static READ_HANDLER(rom_r) {
