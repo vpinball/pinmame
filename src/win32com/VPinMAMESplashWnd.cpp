@@ -4,6 +4,7 @@
 #include "resource.h"
 
 #include <atlwin.h>
+#include <time.h>
 
 #define CLOSE_TIMER			1
 #define SPLASH_WND_VISIBLE	5000 // ms
@@ -64,7 +65,8 @@ private:
 	LRESULT OnCreate(UINT, WPARAM, LPARAM lParam, BOOL&) {
 		m_pszCredits = (char*) ((LPCREATESTRUCT) lParam)->lpCreateParams;
 
-		m_hBitmap = LoadBitmap(_Module.m_hInst, MAKEINTRESOURCE(IDB_SPLASH));
+		srand( (unsigned)time(NULL));
+		m_hBitmap = LoadBitmap(_Module.m_hInst, MAKEINTRESOURCE(IDB_SPLASH)+int(rand()%3));
 		if ( m_hBitmap ) {
 			GetObject(m_hBitmap, sizeof m_Bitmap, &m_Bitmap);
 

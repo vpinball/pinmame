@@ -54,6 +54,8 @@ END
 
 IDB_LOGO                BITMAP  MOVEABLE PURE   "Res\\VPinMAMELogo.bmp"
 IDB_SPLASH              BITMAP  MOVEABLE PURE   "Res\\VPinMAMESplash.bmp"
+IDB_SPLASH2             BITMAP  MOVEABLE PURE   "Res\\VPinMAMESplash2.bmp"
+IDB_SPLASH3             BITMAP  MOVEABLE PURE   "Res\\VPinMAMESplash3.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
