@@ -137,6 +137,12 @@
      NORMALREGION(0x10000, GTS3_MEMREG_CPU) \
        ROM_LOAD(n1, 0x0000, 0x10000, chk1)
 
+/*-- unknown CPU ROM --*/
+#define GTS3ROMSTARTX(name, n1, chk1) \
+   ROM_START(name) \
+     NORMALREGION(0x10000, GTS3_MEMREG_CPU) \
+       ROM_LOAD(n1, 0x0000, 0, chk1)
+
 /**************************************/
 /** DMD (128x32) ROM 256K            **/
 /**************************************/
@@ -153,6 +159,14 @@
 	 NORMALREGION(0x10000, GTS3_MEMREG_DCPU1)\
      NORMALREGION(0x80000, GTS3_MEMREG_DROM1) \
        ROM_LOAD(n1, 0x00000, 0x80000, chk1)
+
+/**************************************/
+/** DMD (128x32) unknown ROM         **/
+/**************************************/
+#define GTS3_DMD_ROMSTARTX(n1,chk1) \
+	 NORMALREGION(0x10000, GTS3_MEMREG_DCPU1)\
+     NORMALREGION(0x80000, GTS3_MEMREG_DROM1) \
+       ROM_LOAD(n1, 0x00000, 0, chk1)
 
 extern void UpdateSoundLEDS(int num,int data);
 extern PINMAME_VIDEO_UPDATE(gts3_dmd128x32);
