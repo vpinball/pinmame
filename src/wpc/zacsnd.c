@@ -219,6 +219,8 @@ static READ_HANDLER(sns_data_r)
 /*--------------------------------------------
 / Zaccaria Sound & Speech Board 1B13136
 / (like 2 x BY61, but only 1 x TMS5220 speech)
+//It's reported that the sound board is half populated, so in reality it acts exactly like the older
+//1370 board, but with a larger eprom capacity and of course a slightly different memory map
 /---------------------------------------------*/
 #define ZAC_PIA0 2
 
@@ -234,6 +236,7 @@ const struct sndbrdIntf zac13136Intf = {
 static struct DACinterface     zac_dacInt = {2, {20, 20}};
 static struct AY8910interface  zac_ay8910Int = {2, 3580000/4, {25, 25}, {sns_8910a_r, zac_8910a_r}};
 
+//Seems only difference in memory map from 1370 board is the sound latch read!
 static MEMORY_READ_START(zac_readmem)
   { 0x0000, 0x007f, MRA_RAM },
   { 0x0080, 0x0083, pia_r(SNS_PIA0) },
@@ -251,10 +254,6 @@ static MEMORY_WRITE_START(zac_writemem)
 MEMORY_END
 
 MACHINE_DRIVER_START(zac13136)
-  MDRV_CPU_ADD(M6802, 3580000/4)
-  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
-  MDRV_CPU_MEMORY(sns_readmem, sns_writemem)
-
   MDRV_CPU_ADD(M6802, 3580000/4)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(zac_readmem, zac_writemem)
@@ -285,7 +284,9 @@ static const struct pia6821_interface zac_pia[] = {{
 
 static void zac_init(struct sndbrdData *brdData) {
   locals.brdData = *brdData;
-  pia_config(ZAC_PIA0, PIA_STANDARD_ORDERING, &zac_pia[0]);
+  //pia_config(ZAC_PIA0, PIA_STANDARD_ORDERING, &zac_pia[0]);
+  pia_config(SNS_PIA0, PIA_STANDARD_ORDERING, &sns_pia[0]);
+  pia_config(SNS_PIA1, PIA_STANDARD_ORDERING, &sns_pia[1]);
 }
 
 static void zac_diag(int button) {
