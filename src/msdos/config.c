@@ -499,21 +499,21 @@ void parse_cmdline (int argc, char **argv, int game_index, char *override_defaul
         pmoptions.dmd_red   = get_int("config", "dmd_red",   NULL, 225);
         pmoptions.dmd_green = get_int("config", "dmd_green", NULL, 224);
         pmoptions.dmd_blue  = get_int("config", "dmd_blue",  NULL, 32);
-        pmoptions.dmd_perc1 = get_int("config", "dmd_perc1", NULL, 20);
-        pmoptions.dmd_perc2 = get_int("config", "dmd_perc2", NULL, 34);
-        pmoptions.dmd_perc3 = get_int("config", "dmd_perc3", NULL, 67);
+        pmoptions.dmd_perc0 = get_int("config", "dmd_perc0", NULL, 20);
+        pmoptions.dmd_perc33 = get_int("config", "dmd_perc33", NULL, 34);
+        pmoptions.dmd_perc66 = get_int("config", "dmd_perc66", NULL, 67);
         if(pmoptions.dmd_red   < 0)   pmoptions.dmd_red   = 0;
         if(pmoptions.dmd_red   > 255) pmoptions.dmd_red   = 255;
         if(pmoptions.dmd_green < 0)   pmoptions.dmd_green = 0;
         if(pmoptions.dmd_green > 255) pmoptions.dmd_green = 255;
         if(pmoptions.dmd_blue  < 0)   pmoptions.dmd_blue  = 0;
         if(pmoptions.dmd_blue  > 255) pmoptions.dmd_blue  = 255;
-        if(pmoptions.dmd_perc1 < 0)   pmoptions.dmd_perc1 = 0;
-        if(pmoptions.dmd_perc1 > 100) pmoptions.dmd_perc1 = 100;
-        if(pmoptions.dmd_perc2 < 0)   pmoptions.dmd_perc2 = 0;
-        if(pmoptions.dmd_perc2 > 100) pmoptions.dmd_perc2 = 100;
-        if(pmoptions.dmd_perc3 < 0)   pmoptions.dmd_perc3 = 0;
-        if(pmoptions.dmd_perc3 > 100) pmoptions.dmd_perc3 = 100;
+        if(pmoptions.dmd_perc0 < 0)   pmoptions.dmd_perc0 = 0;
+        if(pmoptions.dmd_perc0 > 100) pmoptions.dmd_perc0 = 100;
+        if(pmoptions.dmd_perc33 < 0)   pmoptions.dmd_perc33 = 0;
+        if(pmoptions.dmd_perc33 > 100) pmoptions.dmd_perc33 = 100;
+        if(pmoptions.dmd_perc66 < 0)   pmoptions.dmd_perc66 = 0;
+        if(pmoptions.dmd_perc66 > 100) pmoptions.dmd_perc66 = 100;
 #endif /* PINMAME_EXT *
 
 	logerror("cheatfile = %s - cheatdir = %s\n",cheatfile,cheatdir);
