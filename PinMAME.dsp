@@ -1152,6 +1152,32 @@ SOURCE=src\sound\dac.h
 # End Source File
 # Begin Source File
 
+SOURCE=src\sound\discrete.c
+
+!IF  "$(CFG)" == "PinMAME - Win32 Release"
+
+# PROP Intermediate_Dir "obj/PinMAME/Release"
+
+!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=src\sound\discrete.h
+
+!IF  "$(CFG)" == "PinMAME - Win32 Release"
+
+# PROP Intermediate_Dir "obj/PinMAME/Release"
+
+!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
 SOURCE=src\sound\fm.c
 
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
@@ -1282,7 +1308,20 @@ SOURCE=src\sound\samples.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\streams.c
+SOURCE=src\sound\sn76477.c
+
+!IF  "$(CFG)" == "PinMAME - Win32 Release"
+
+# PROP Intermediate_Dir "obj/PinMAME/Release"
+
+!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+sn76477.c# Begin Source File
+
+SOURCE=src\sound\sn76477.h
 
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
 
