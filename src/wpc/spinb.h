@@ -150,7 +150,7 @@
 #define SPINB_DMDROM2(n1, chk1, n2, chk2) \
   NORMALREGION(0x32001, SPINB_MEMREG_DMD) \
    ROM_LOAD(n1, 0x00000, 0x10000, chk1) \
-   ROM_LOAD(n2, 0x12000, 0x20000, chk2) 
+   ROM_LOAD(n2, 0x12000, 0x20000, chk2)
 
 /*-- SOUND ROMS --*/
 #define SPINB_SNDROM23(n1, chk1, n2, chk2, n3, chk3, n4, chk4, n5, chk5, n6, chk6, n7, chk7) \
@@ -182,9 +182,11 @@ NORMALREGION(0x10000, SPINB_MEMREG_SND2) \
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(spinb);
 extern MACHINE_DRIVER_EXTERN(spinbs1);
+extern MACHINE_DRIVER_EXTERN(spinbs1n);
 
 #define mSPINB        spinb
 #define mSPINBS		  spinbs1
+#define mSPINBSNMI	  spinbs1n
 
 extern PINMAME_VIDEO_UPDATE(SPINBdmd_update);
 
