@@ -11,13 +11,15 @@
 #define NEOFREE
 
 
-#if MAMEVER >= 6800
+#if (MAMEVER >= 6800) && (MAMEVER < 7100)
 #  ifndef INVALID_FILE_ATTRIBUTES
 #    define INVALID_FILE_ATTRIBUTES 0xffffffff
 #  endif
 #  ifndef INVALID_SET_FILE_POINTER
 #    define INVALID_SET_FILE_POINTER 0xffffffff
 #  endif
+#endif // MAMEVER
+#if (MAMEVER >= 6800)
 #  ifndef PI
 #    define PI 3.14159265354
 #  endif
@@ -90,7 +92,6 @@
 #define HAS_DAC        1
 #if MAMEVER > 3716
 #define HAS_YM2151_ALT 1
-//#define HAS_YM2610     1 // To avoid compile errors in fm.c
 #else /* MAMEVER */
 #define HAS_YM2151     1
 #endif /* MAMEVER */
@@ -118,17 +119,12 @@
 #endif
 
 #define INLINE static __inline
-
 #pragma warning(disable:4018)		// "signed/unsigned mismatch"
-#pragma warning(disable:4022)		// "pointer mismatch for actual parameter"
-#pragma warning(disable:4090)		// "different 'const' qualifiers"
-#pragma warning(disable:4142)		// "benign redefinition of type"
 #pragma warning(disable:4146)		// "unary minus operator applied to unsigned type"
 #pragma warning(disable:4244)		// "possible loss of data"
-#pragma warning(disable:4305)		// "truncation from 'type' to 'type'
 #pragma warning(disable:4761)		// "integral size mismatch in argument"
-#pragma warning(disable:4068)
-#pragma warning(disable:4005)
+#pragma warning(disable:4550)		// "expression evaluates to a function which is missing an argument list"
+#pragma warning(disable:4090)		// "different 'const' qualifiers"
 #define M_PI 3.14159265358
 #define strcasecmp stricmp
 #define snprintf _snprintf
