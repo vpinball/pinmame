@@ -250,23 +250,33 @@ static sim_tInportData sc_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(sc,18,"safe_18g.rom",0x80000,CRC(aeb4b669) SHA1(2925eb11133526ddff8ae92bb53f9b45c6ed8134))
-DCS_SOUNDROM3m(	"safsnds2.rom",CRC(20e14c63) SHA1(61b1c000a7afe5d0e9c31093e3fa963d6a594d54),
-		"safsnds3.rom",CRC(99e318e7) SHA1(918f9013da82b29a559cb474bce93fb4ce88b731),
-		"safsnds4.rom",CRC(9c8a23eb) SHA1(a0ee1174c8af0f262f9bec950da588cc9eb8747d))
+#define SC_SOUND \
+DCS_SOUNDROM3m(	"safsnds2.rom",CRC(20e14c63) SHA1(61b1c000a7afe5d0e9c31093e3fa963d6a594d54), \
+				"safsnds3.rom",CRC(99e318e7) SHA1(918f9013da82b29a559cb474bce93fb4ce88b731), \
+				"safsnds4.rom",CRC(9c8a23eb) SHA1(a0ee1174c8af0f262f9bec950da588cc9eb8747d))
+
+WPC_ROMSTART(sc,18,  "safe_18g.rom",0x80000,CRC(aeb4b669) SHA1(2925eb11133526ddff8ae92bb53f9b45c6ed8134)) SC_SOUND WPC_ROMEND
+WPC_ROMSTART(sc,18n, "safe_18n.rom",0x80000,CRC(4d5d5626) SHA1(2d6f201d47f24df2195f10267ec1426cf0a087c9)) SC_SOUND WPC_ROMEND
+
+WPC_ROMSTART(sc,18s2,"safe_18g.rom",0x80000,CRC(aeb4b669) SHA1(2925eb11133526ddff8ae92bb53f9b45c6ed8134))
+DCS_SOUNDROM3m(	"su2-24g.rom", CRC(712ce42e) SHA1(5d3b8e3eccdd1bc09a92de610161dd51293181b1),
+				"safsnds3.rom",CRC(99e318e7) SHA1(918f9013da82b29a559cb474bce93fb4ce88b731),
+				"safsnds4.rom",CRC(9c8a23eb) SHA1(a0ee1174c8af0f262f9bec950da588cc9eb8747d))
 WPC_ROMEND
 
-WPC_ROMSTART(sc,18n,"safe_18n.rom",0x80000,CRC(4d5d5626) SHA1(2d6f201d47f24df2195f10267ec1426cf0a087c9))
-DCS_SOUNDROM3m(	"safsnds2.rom",CRC(20e14c63) SHA1(61b1c000a7afe5d0e9c31093e3fa963d6a594d54),
-		"safsnds3.rom",CRC(99e318e7) SHA1(918f9013da82b29a559cb474bce93fb4ce88b731),
-		"safsnds4.rom",CRC(9c8a23eb) SHA1(a0ee1174c8af0f262f9bec950da588cc9eb8747d))
-WPC_ROMEND
+WPC_ROMSTART(sc,17,  "g11-17g.rom", 0x80000,CRC(f3d64156) SHA1(9226664b59c7b65ac39e2f32597efc45672cf505)) SC_SOUND WPC_ROMEND
+WPC_ROMSTART(sc,17n, "g11-17n.rom", 0x80000,CRC(97628907) SHA1(3435f496e1850bf433add1bc403e3148de05c13a)) SC_SOUND WPC_ROMEND
+WPC_ROMSTART(sc,14,  "g11-14.rom",  0x80000,CRC(1103f976) SHA1(6d6d23af1cd03f63b94a0ceb9711be51dce202f8)) SC_SOUND WPC_ROMEND
 
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF(sc,18,"Safe Cracker (1.8)",1996,"Bally",wpc_m95S,0)
-CORE_CLONEDEF(sc,18n,18,"Safe Cracker (1.8N)",1996,"Bally",wpc_m95S,0)
+CORE_GAMEDEF(sc,18,"Safe Cracker (1.8)",1998,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(sc,18n,18,"Safe Cracker (1.8N)",1998,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(sc,18s2,18,"Safe Cracker (1.8, alternate sound)",1998,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(sc,17,18,"Safe Cracker (1.7)",1996,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(sc,17n,18,"Safe Cracker (1.7N)",1996,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(sc,14,18,"Safe Cracker (1.4)",1996,"Bally",wpc_m95S,0)
 
 /*-----------------------
 / Simulation Definitions

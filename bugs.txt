@@ -1,4 +1,4 @@
-******  As of Version 1.33 (????, 2004) ******
+******  As of Version 1.50 (November 1, 2004) ******
 
 Bugs in Pinmame that we are aware of:
 -------------------------------------
@@ -15,10 +15,12 @@ Bugs in Pinmame that we are aware of:
  #3) The WPC printer function is only tested with default settings.
      The printout will probably not work with other settings.
 
- #4) Saucer LEDs not implemented in AFM.
+ #4) Some games have no sound emulated, but the core prevents us from using the GAME_NO_SOUND flag.
 
  #5) The name and year for each game were taken from the Internet Pinball Database
      (http://www.lysator.liu.se/pinball/IPD), and may not be 100% accurate!
+
+ #6) Occasional pops/clicks on Capcom sound
 
  #7) Data East/Sega/Stern DMD timing is not 100% accurate.
 
@@ -29,9 +31,3 @@ Bugs in Pinmame that we are aware of:
 #10) Gottlieb System 3 percussive sounds might still have some timing issues
 
 #11) Sound gets cut off in Alvin G games sometimes, and some weird notes in World Tour occasionally
-
-#13) Switch problems with Dataeast Playboy and the Grotto/VUK
-
-#14) Occasional pops/clicks on Capcom sound
-
-#15) Some games have no sound emulated, but the core prevents us from using the GAME_NO_SOUND flag.

@@ -1,8 +1,8 @@
 **************************************************************************************
 		                       PinMAME
 		      (Pinball Multiple Arcade Machine Emulator)
-		                     Version 1.32
-		                    (May 1, 2004)
+		                     Version 1.50
+		                  (November 1, 2004)
 		                http://www.pinmame.com
 **************************************************************************************
 
@@ -21,11 +21,11 @@ What is it?
   Data East/Sega 192x64 DMD, Sega/Stern Whitestar System, Stern MPU-100, Stern MPU-200,
   Bally MPU-17 & MPU-35, Bally Video/Pinball, Bally 6803,
   Gottlieb System 80, 80a, 80b, System 3, Hankin, Gameplan MPU-1 & MPU-2, Atari,
-  Zaccaria, Taito of Brazil, Midway, Capcom, Alvin G. and Co., Technoplay
+  Zaccaria, Taito of Brazil, Midway, Capcom, Alvin G. and Co., Technoplay, Mr.Game, Spinball.
 
   *Note: Emulation is not 100% working on all hardware.
 
-  PinMAME is built as an add-on to the MAME 0.75 Source Code.
+  PinMAME is built as an add-on to the MAME 0.76 Source Code.
 
   All the MAME readme file with all disclaimers, credits and instructions are included for
   info on using MAME related functions.
@@ -77,6 +77,8 @@ Games supported
   Capcom Pinball: All games from Pinball Magic (1995) to Kingpin (1996)
   Alvin G. and Co: All games from World Tour (1992) to Pistol Poker (1993)
   Technoplay: Scramble (1987)
+  Mr. Game: Dakar and Motor Show (1988)
+  Spinball: Jolly Park (1996)
   Prototype games: Dave Nutting's Flicker (Sep 1974), and Bally's Bow & Arrow (Jan 1976)
 
   Supported means that the game loads and the display starts up with lamps etc. All games

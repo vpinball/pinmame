@@ -1,6 +1,13 @@
 What's new in Visual PinMAME:
 -----------------------------
 
+Version 1.50 (November 1, 2004)
+-------------------------------
+- Updated Visual PinMAME to 1.50 release of PinMAME Source Code.
+- Please see "whatsnew.txt" for PinMAME version 1.50 enhancements!
+- It's now possible to run sets with missing roms as well, just as if you were running PinMAME.
+  Note this will *not* work on newer Stern games which have been released in the last 3 years!
+
 Version 1.32 (May 1, 2004)
 --------------------------
 - Updated Visual PinMAME to 1.32 release of PinMAME Source Code.
@@ -9,15 +16,8 @@ Version 1.32 (May 1, 2004)
 - added Controller.Hidden (bool) property to hide the controller window. The value is not persitent, hence
   will not stored in the registry and resets to 'visible' on every call to Controller.GameName (set only)
 
-Version 1.31 (December 23, 2003)
---------------------------------
-- Updated Visual PinMAME to 1.31 release of PinMAME Source Code.
-- Please see "whatsnew.txt" for PinMAME version 1.31 enhancements!
-
 Version 1.30 (October 1, 2003)
 -----------------------------
-- Updated Visual PinMAME to 1.30 release of PinMAME Source Code.
-- Please see "whatsnew.txt" for PinMAME version 1.30 enhancements!
 - Fixed the bug in the VPM-Setup-Program where the "Test" feature crashed under w9x
 - Default synclevel is now 0 since many people are getting newer faster computers.
 - Rom Aliasing: Older romset names will internally be converted to new romset names for backward compatibility

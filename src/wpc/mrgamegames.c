@@ -82,14 +82,8 @@ CORE_GAMEDEFNV(macattck,"Mac Attack",1989,"Mr. Game (Italy)",mMRGAME1,GAME_IMPER
 / World Cup 90 (1988?)
 /-------------------------------------------------------------------*/
 INITGAME(wcup90, mrgame_disp, FLIP_SWNO(65,64), 4/*?*/, SNDBRD_MRGAME, 0)
-#if 0
-MRGAME_ROMSTART(wcup90,		"cpu_ic13.rom", NO_DUMP,
-							"cpu_ic14.rom", NO_DUMP)
-#else
-//Use dakar roms to test wcup90
-MRGAME_ROMSTART(wcup90,	"cpu_ic13.rom", CRC(83183929) SHA1(977ac10a1e78c759eb0550794f2639fe0e2d1507),
-						"cpu_ic14.rom", CRC(2010d28d) SHA1(d262dabd9298566df43df298cf71c974bee1434a))
-#endif
+MRGAME_ROMSTART(wcup90,	"cpu_ic13.rom", NO_DUMP,
+						"cpu_ic14.rom", NO_DUMP)
 MRGAME_VIDEOROM2(		"vid_ic91.rom", CRC(3287ad20) SHA1(d5a453efc7292670073f157dca04897be857b8ed),
 						"vid_ic14.rom", CRC(a101d562) SHA1(ad9ad3968f13169572ec60e22e84acf43382b51e),
 						"vid_ic15.rom", CRC(40791e7a) SHA1(788760b8527df48d1825be88099491b6e94f0a19),

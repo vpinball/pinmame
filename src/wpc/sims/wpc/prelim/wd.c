@@ -277,16 +277,31 @@ static void wd_drawMech(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(wd,12,"whod1_2.rom",0x80000,CRC(d49be363) SHA1(a265110170e1debf4a566d91c12e0e4c93838d08))
-DCS_SOUNDROM6x("wdu2_10.rom",CRC(2fd534be) SHA1(9fcbcfb9bc6fc410398413dea71a6fcbe69f761f),
-               "wdu3_10.rom",CRC(be9b312f) SHA1(53038a8a264da4e62455240f2016309462c28275),
+#define WD_SOUND \
+DCS_SOUNDROM6x("wdu2_10.rom",CRC(2fd534be) SHA1(9fcbcfb9bc6fc410398413dea71a6fcbe69f761f), \
+               "wdu3_10.rom",CRC(be9b312f) SHA1(53038a8a264da4e62455240f2016309462c28275), \
+               "wdu4_10.rom",CRC(46965682) SHA1(b12c21a17090480c0960aec808908f2d37c4b498), \
+               "wdu5_10.rom",CRC(0a787015) SHA1(e01a19ac0a1b674e2b348d77e584275ef1359cd7), \
+               "wdu6_10.rom",CRC(d2e05659) SHA1(3f926dac710adadc38afd70618a84c9f049ebfd0), \
+               "wdu7_10.rom",CRC(36285ca2) SHA1(d42f04aa62b9859ce2452fa05da2049fe39e9411))
+
+WPC_ROMSTART(wd,12,"whod1_2.rom",0x80000,CRC(d49be363) SHA1(a265110170e1debf4a566d91c12e0e4c93838d08)) WD_SOUND WPC_ROMEND
+
+WPC_ROMSTART(wd,12g,"whod1_2.rom",0x80000,CRC(d49be363) SHA1(a265110170e1debf4a566d91c12e0e4c93838d08))
+DCS_SOUNDROM6x("wdu2_20g.rom",CRC(2fe0ce7e) SHA1(ae148809b8f8925376bc6b6b0478176cae490a2b),
+               "wdu3_20g.rom",CRC(f01142ab) SHA1(ee2620b6238df0069c9b10d1fee3ea0607b022da),
                "wdu4_10.rom",CRC(46965682) SHA1(b12c21a17090480c0960aec808908f2d37c4b498),
                "wdu5_10.rom",CRC(0a787015) SHA1(e01a19ac0a1b674e2b348d77e584275ef1359cd7),
                "wdu6_10.rom",CRC(d2e05659) SHA1(3f926dac710adadc38afd70618a84c9f049ebfd0),
                "wdu7_10.rom",CRC(36285ca2) SHA1(d42f04aa62b9859ce2452fa05da2049fe39e9411))
 WPC_ROMEND
 
-WPC_ROMSTART(wd,12g,"whod1_2.rom",0x80000,CRC(d49be363) SHA1(a265110170e1debf4a566d91c12e0e4c93838d08))
+WPC_ROMSTART(wd,10,"whod1_0.rom",0x80000,CRC(85c29cfe) SHA1(5156d3699f16ac366c063149113ec78232ba787b)) WD_SOUND WPC_ROMEND
+WPC_ROMSTART(wd,11,"whod1_1.rom",0x80000,CRC(85cab586) SHA1(3940bff8dfa240f8c0ed96c96f58ab66effbdea5)) WD_SOUND WPC_ROMEND
+WPC_ROMSTART(wd,10f,"u6_10f.rom",0x80000,CRC(86ca3749) SHA1(fa011a39c260f9c3fd8c6f5d18f803f6f0bfe7a0)) WD_SOUND WPC_ROMEND
+WPC_ROMSTART(wd,10r,"u6_10r.rom",0x80000,CRC(d49be363) SHA1(a265110170e1debf4a566d91c12e0e4c93838d08)) WD_SOUND WPC_ROMEND
+
+WPC_ROMSTART(wd,10g,"u6_10g.rom",0x80000,CRC(fbc17e3f) SHA1(7d9a8c7dda06bb4353517417fdc65d87b6c94167))
 DCS_SOUNDROM6x("wdu2_20g.rom",CRC(2fe0ce7e) SHA1(ae148809b8f8925376bc6b6b0478176cae490a2b),
                "wdu3_20g.rom",CRC(f01142ab) SHA1(ee2620b6238df0069c9b10d1fee3ea0607b022da),
                "wdu4_10.rom",CRC(46965682) SHA1(b12c21a17090480c0960aec808908f2d37c4b498),
@@ -298,8 +313,12 @@ WPC_ROMEND
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF(wd,12,"Who Dunnit (1.2)",1995,"Bally",wpc_m95DCSS,0)
+CORE_GAMEDEF (wd,12,    "Who Dunnit (1.2)",1995,"Bally",wpc_m95DCSS,0)
 CORE_CLONEDEF(wd,12g,12,"Who Dunnit (1.2 Germany)",1995,"Bally",wpc_m95DCSS,0)
+CORE_CLONEDEF(wd,11,12, "Who Dunnit (1.1)",1995,"Bally",wpc_m95DCSS,0)
+CORE_CLONEDEF(wd,10,12, "Who Dunnit (1.0)",1995,"Bally",wpc_m95DCSS,0)
+CORE_CLONEDEF(wd,10g,12,"Who Dunnit (1.0 Germany)",1995,"Bally",wpc_m95DCSS,0)
+CORE_CLONEDEF(wd,10f,12,"Who Dunnit (1.0 French)",1995,"Bally",wpc_m95DCSS,0)
 
 /*-----------------------
 / Simulation Definitions

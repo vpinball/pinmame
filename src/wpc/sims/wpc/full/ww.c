@@ -397,16 +397,37 @@ static wpc_tSamSolMap ww_samsolmap[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(ww,l5,"wwatr_l5.rom",0x80000,CRC(4eb1d233) SHA1(b4eda04221e11697a7c5924c37622221fe4a47d0))
-WPCS_SOUNDROM248("ww_u18.l1",CRC(6f483215) SHA1(03053a16c106ccc7aa5a1206eb1da3f5f05ed38f),
-                 "ww_u15.l1",CRC(fe1ae71b) SHA1(8898a56866448728e7f81338ce8ad2e8cc6c7370),
+#define WW_SOUND \
+WPCS_SOUNDROM248("ww_u18.l1",CRC(6f483215) SHA1(03053a16c106ccc7aa5a1206eb1da3f5f05ed38f), \
+                 "ww_u15.l1",CRC(fe1ae71b) SHA1(8898a56866448728e7f81338ce8ad2e8cc6c7370), \
+                 "ww_u14.l1",CRC(f3faa427) SHA1(fb0a266b80571b4717caa69f078b7e73e2866b6b))
+
+WPC_ROMSTART(ww,l5,"wwatr_l5.rom",0x80000,CRC(4eb1d233) SHA1(b4eda04221e11697a7c5924c37622221fe4a47d0)) WW_SOUND WPC_ROMEND
+WPC_ROMSTART(ww,l4,"u6-l4.rom",   0x80000,CRC(59c2def3) SHA1(99fe53f228d3e4047958ec263e92926891ea7594)) WW_SOUND WPC_ROMEND
+WPC_ROMSTART(ww,l3,"u6-l3.rom",   0x80000,CRC(b8ff04d9) SHA1(a7b16306bf050ee961490abfaf904b1800bfbc3e)) WW_SOUND WPC_ROMEND
+WPC_ROMSTART(ww,l2,"ww_l2.u6",    0x80000,CRC(9ddecb0d) SHA1(b53f155fb12311e5eb37c77cd64d558bbff9c4bd)) WW_SOUND WPC_ROMEND
+
+WPC_ROMSTART(ww,p2,"ww_l2.u6",    0x80000,CRC(9ddecb0d) SHA1(b53f155fb12311e5eb37c77cd64d558bbff9c4bd))
+WPCS_SOUNDROM248("ww_u18.p2",CRC(7a9ace30) SHA1(996cb73504ef73675c596e6f811047f16fbff0dd), \
+                 "ww_u15.p2",CRC(8eb9033f) SHA1(9a4e269733d6ae58bf30b8b293ecb0b10dbcc8b3), \
+                 "ww_u14.l1",CRC(f3faa427) SHA1(fb0a266b80571b4717caa69f078b7e73e2866b6b))
+WPC_ROMEND
+
+WPC_ROMSTART(ww,p1,"ww_l2.u6",    0x80000,CRC(9ddecb0d) SHA1(b53f155fb12311e5eb37c77cd64d558bbff9c4bd))
+WPCS_SOUNDROM248("ww_u18.p1",CRC(e0e51ea6) SHA1(819133d55a48ea84b6d8d0dfd1316f28919361cc), \
+                 "ww_u15.p1",CRC(a2a8e005) SHA1(bdbfc3f6c403d1ebef822a6381574f4a7bd19897), \
                  "ww_u14.l1",CRC(f3faa427) SHA1(fb0a266b80571b4717caa69f078b7e73e2866b6b))
 WPC_ROMEND
 
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF(ww,l5,"White Water (L-5)",1993,"Williams",wpc_mFliptronS,0)
+CORE_GAMEDEF (ww,l5,   "White Water (L-5)",1993,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,l4,l5,"White Water (L-4)",1993,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,l3,l5,"White Water (L-3)",1993,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,l2,l5,"White Water (L-2)",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,p2,l5,"White Water (L-2, P-2 sound)",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,p1,l5,"White Water (L-2, P-1 sound)",1992,"Williams",wpc_mFliptronS,0)
 
 /*-----------------------
 / Simulation Definitions
