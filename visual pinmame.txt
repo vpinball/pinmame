@@ -1,7 +1,7 @@
 **************************************************************************************
 		                     Visual PinMAME
-			             Version 1.12.1
-			            (April 14, 2002)
+			            Version 1.20 Beta
+			           (September 29, 2002)
                                   http://www.pinmame.com
 **************************************************************************************
 
@@ -72,8 +72,4 @@ The Visual PinMAME Development Team
 Steve Ellenoff     (sellenoff@hotmail.com)
 Tom Haukap         (Tom.Haukap@t-online.de)
 Martin Adrian      (wpcmame@hotmail.com)
-Gerrit Volkenborn  (volkenborn@yahoo.com)
-
-
-
-
+Gerrit Volkenborn  (gaston@yomail.de)

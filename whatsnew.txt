@@ -1,32 +1,104 @@
 What's new:
 
-Version 1.20
--------------------------------
--Built with MAME core 0.59
--Mechs can now handle active low solenoids. Use negative number to specify.
--new options "-dmd_only" "-dmd_compact" "-dmd_antialias xx"
- (replaces the old MAME options translucency,antialias,flicker)
+Version 1.20 Beta (September 29, 2002)
+--------------------------------------
+The 1.20 version was destined to be the first one to use the new MAME core
+and the new driver architecture introduced with MAME 0.58.
+We used the MAME 0.59 sources to start with and aligned our own code
+to fit this new architecture. This, however, led to massive code changes,
+and also to some problems not easily solved!
+
+One of the most prominent setbacks was the new way to trigger interrupts.
+Whereas you could simply say "cpu_cause_interrupt()" in the old core, you'd
+now have to use "cpu_set_irq_line(HOLD_LINE|ASSERT_LINE|PULSE_LINE)",
+followed by "cpu_set_irq_line(CLEAR_LINE)" in case of HOLD_LINE or
+ASSERT_LINE, yet not in every single case!
+Also there seems to be no distinction between MACHINE_RESET and MACHINE_INIT
+as MACHINE_INIT is called every time you press F3 on your keyboard!
+Confused? Well, so were we...
+On the other hand, the new driver structure is just marvellous when it comes
+to include new machine drivers, and we also still want to stick close to the
+original MAME code...
+
+Now the end result of all our changes was good, but not perfect!
+Some emulations will just freeze when reset (eg. GTS3), others will kill the
+task without warning, others will just exit if you reset once too often.
+To shorten a long story: we decided to release the new version, most notably
+not to deprive you of all the nice new and improved drivers we did! :)
+But be advised, we didn't call it a beta version without a good reason!
+We'll probably switch to the (more stable and maybe faster?) 0.61 core soon
+to see if it helps with some of the troubles we're currently experiencing.
+So stay tuned, and enjoy the new stuff!
+
+Bugs Fixed
+----------
 -Fixed dying sound in DCS games (e.g. STTNG, Shadow)
--Added mini DMD support to the whitestar hardware (monopoly)
--Handles pulsed switches better in mech handler and increased size to 20 switches
 -Fixed missing flashers in IJ
 -Inverted flipper switches now work as they should (IJ and NBA)
  [Martin Adrian]
 
-- Fixed Gottlieb Sys80B games with 4K game PROMS (i.e. Bone Buster, Badgirls, etc.)
+-Fixed Gottlieb Sys80B games with 4K game PROMS (i.e. Bone Buster, Badgirls, etc.)
  [Tom Haukap]
 
-- Added support for Taito games
- (Thanks goes to Alexandre Souza and Newton Pessoa for providing very helpful info (sound) on these machines)
- [Tom Haukap, Gerrit Volkenborn]
+-Fixed displays & key reading on alphanumeric GTS3 games (Vegas, Silver Slugger et al.)
+-Improved GTS3 DMD brightness & speed
+ [Gerrit Volkenborn]
 
-- Added support for early Atari games (Atarians to Space Riders)
-  (Atarians isn't working first time due to a strange bug. The roms can be patched to work...)
-- Added Gottlieb Caveman Video Emulation.
-- Added Intel 4004 and Rockwell PPS-4 CPU cores to the code.
-- Added support for "Flicker" prototype by Dave Nutting Associates (Septemper 1974!)
-- Added Midway's Rotation VIII (working AFAICS, but where's the game start button?)
-- Added Astro's Black Sheep Squadron (not working yet)
+New Features
+------------
+-new options "-dmd_only" "-dmd_compact" "-dmd_antialias xx"
+ (replaces the old MAME options translucency,antialias,flicker)
+-Mechs can now handle active low solenoids. Use negative number to specify.
+-Handles pulsed switches better in mech handler and increased size to 20 switches
+-Added mini DMD support to the whitestar hardware (monopoly)
+ [Martin Adrian]
+
+-Added support for Taito games, including sound
+ (Thanks goes to Alexandre Souza and Newton Pessoa for providing very helpful info (sound) on these machines)
+ [Tom Haukap]
+
+-Added support for early Atari games (Atarians to Space Riders), including sound
+ (Atarians isn't working first time due to a strange bug. The roms can be patched to work though...)
+-Added Gottlieb "Caveman" Video Emulation
+ (Thanks to Jean-Rene Karr, who provided me with the video board schematics)
+-Found the 10 sound solenoids on old Stern games. Assigned to Sols. 23 - 32
+-Provided Access to GTS3 aux driver / LED outputs by adding a lamp column
+-Commas work on Bally 6803 alphanumeric games
+-Old Stern games have their nvram files initialized properly now
+-Added Intel 4004 and Rockwell PPS-4 CPU cores to the code
+-Added support for "Flicker" prototype by Dave Nutting Associates (Septemper 1974!)
+-Added Midway's "Rotation VIII"
+ [Gerrit Volkenborn]
+
+-Added support for Zaccaria games (no sound yet)
+ [Steve Ellenoff, Gerrit Volkenborn]
+
+-Added preliminary support for Capcom games (not working yet)
+ [Martin Adrian, Steve Ellenoff]
+
+
+Version 1.12.2 (September 29, 2002)
+-----------------------------------
+This is a refreshed version of 1.12.1 WITHOUT any new features or games
+(with the exception of Tag-Team Wrestling, which arrived late for the 1.12.1
+release). Only the CRCs for bad and newly released ROMs have been corrected.
+The 4 Zaccaria games supported by 1.12.1 have been removed, as they weren't
+working at all! They will, however, inside PinMAME 1.20 beta and above!
+
+This is a "safety" release to keep everybody up and running, as there are
+some unsolved problems with the new M.A.M.E. 0.59 core implementation as
+used by the 1.20 beta version. Read the "whatsnew.txt" of 1.20 beta for
+closer details!
+
+Bugs Fixed
+----------
+-Forced commas are back on all games that use them
+
+New Features
+------------
+-Added support for Gottlieb's "Tag-Team Wrestling"
+-Updated all ROM checksums to known good (or bad) values
+-Added missing display on Bally's "Medusa"
  [Gerrit Volkenborn]
 
 
