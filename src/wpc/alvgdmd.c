@@ -40,14 +40,14 @@ static READ_HANDLER(port_r);
 
 /*Interface*/
 const struct sndbrdIntf alvgdmdIntf = {
-  NULL, dmd32_init, NULL, NULL,NULL, 
+  NULL, dmd32_init, NULL, NULL,NULL,
   dmd32_data_w, NULL, dmd32_ctrl_w, NULL, SNDBRD_NOTSOUND
 };
 
 
 /*Main CPU sends command to DMD*/
 static WRITE_HANDLER(dmd32_data_w)  {
-	dmdlocals.cmd = data; 
+	dmdlocals.cmd = data;
 }
 
 static WRITE_HANDLER(control_w)
@@ -261,12 +261,13 @@ static INTERRUPT_GEN(dmd32_firq) {
 }
 
 PINMAME_VIDEO_UPDATE(alvgdmd_update) {
-
+#ifdef MAME_DEBUG
+  static int offset = 0;
+#endif
   UINT8 *RAM  = ((UINT8 *)dmd32RAM);
   UINT8 *RAM2;
   tDMDDot dotCol;
   int ii,jj;
-  static int offset = 0;
   RAM = RAM + vid_page;
   RAM2 = RAM + (dmdlocals.planenable*0x200);
 
