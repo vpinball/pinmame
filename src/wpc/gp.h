@@ -1,6 +1,54 @@
 #ifndef INC_GP
 #define INC_GP
 
+/* DIP SWITCH SETTINGS: 
+
+ 05 04 03 02 01 (Coin Chute #1)		Credits Per Coin
+ 21 20 19 18 17 (Coin Chute #3)
+ --------------
+  0  0  0  0  0  3/2 Coins
+  0  0  0  0  1  3/2 Coins (Typo in manual?)
+  0  0  0  1  0  1/1 Coins
+  ....
+  1  1  1  1  0  15/1 Coins
+  1  1  1  1  1  15/2 Coins
+
+ 12 11 10 09 (Coin Chute #2)		Credits Per Coin
+ -----------
+  0  0  0  0 Same As Coin Chute #1
+  0  0  0  1 1/1 Coin
+  .....
+  1  1  1  1 15/1 Coin
+
+  01 - 05 (See Coin Settings Above)
+  08 =    FREE PLAY (On = YES, OFF = NO)
+  09 - 12 (See Coin Settings Above)
+  13 - 15 ??
+  16 =	  TUNE OPTION (On = Play Tune for credit, Off = Play Chime?)
+  17 - 21 (See Coin Settings Above)
+  22 - 24 ??
+  
+  27 26 25 (MAX # of Credits)
+  --------
+   0  0  0  5 Credits
+   0  0  1 10 Credits
+   ....
+   1  1  1 40 Credits
+
+  28 =	  BALLS PER GAME (On = 5, Off = 3)
+  29 =	  SPECIAL AWARD (On = REPLAY, Off = Extra Ball)
+  30 =    MATCH FEATURE (On = YES, Off = NO)
+
+  32 31 (Credits awarded for beating high score)
+  -----
+  0   0  0 Credits
+  0   1  1 Credits
+  1   0  2 Credits
+  1   1  3 Credits
+*/
+
+
+
 #include "core.h"
 #include "wpcsam.h"
 #include "sim.h"
@@ -8,8 +56,6 @@
 #define GP_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
 #define GP_LAMPSMOOTH      4 /* Smooth the lamps over this number of VBLANKS */
 #define GP_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKS */
-
-//TODO: Switches need to be updated to what GP actually has.
 
 /*-- Common Inports for GP Games --*/
 #define GP_COMPORTS \
@@ -30,7 +76,7 @@
     COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0001, "1" ) \
-    COREPORT_DIPNAME( 0x0002, 0x0000, "S2") \
+    COREPORT_DIPNAME( 0x0002, 0x0002, "S2") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0002, "1" ) \
     COREPORT_DIPNAME( 0x0004, 0x0000, "S3") \
@@ -48,7 +94,7 @@
     COREPORT_DIPNAME( 0x0040, 0x0000, "S7") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0040, "1" ) \
-    COREPORT_DIPNAME( 0x0080, 0x0080, "S8") \
+    COREPORT_DIPNAME( 0x0080, 0x0000, "S8") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0080, "1" ) \
     COREPORT_DIPNAME( 0x0100, 0x0000, "S9") \
@@ -72,20 +118,20 @@
     COREPORT_DIPNAME( 0x4000, 0x0000, "S15") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x4000, "1" ) \
-    COREPORT_DIPNAME( 0x8000, 0x0000, "S16") \
+    COREPORT_DIPNAME( 0x8000, 0x8000, "S16") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x8000, "1" ) \
   PORT_START /* 2 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S17") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0001, "1" ) \
-    COREPORT_DIPNAME( 0x0002, 0x0000, "S18") \
+    COREPORT_DIPNAME( 0x0002, 0x0002, "S18") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0002, "1" ) \
     COREPORT_DIPNAME( 0x0004, 0x0000, "S19") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0004, "1" ) \
-    COREPORT_DIPNAME( 0x0008, 0x0008, "S20") \
+    COREPORT_DIPNAME( 0x0008, 0x0000, "S20") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0008, "1" ) \
     COREPORT_DIPNAME( 0x0010, 0x0000, "S21") \
@@ -124,10 +170,6 @@
     COREPORT_DIPNAME( 0x8000, 0x0000, "S32") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x8000, "1" ) \
-  PORT_START /* 3 */ \
-    COREPORT_DIPNAME( 0x0001, 0x0000, "S33") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0001, "1" ) 
 
 /*-- Standard input ports --*/
 #define GP_INPUT_PORTS_START(name,balls) \

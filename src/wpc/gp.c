@@ -1,11 +1,22 @@
 /* Game Plan Pinball
    -----------------
+   by Steve Ellenoff (01/22/2002)
 
    Hardware: 
 
    CPU: Z80 & Z80CTC (Controls Interrupt Generation & Zero Cross Detection)
    I/O: 8255
 
+   Note: Although the mpu schematics indicate a 33rd Dip switch, it's actually the
+         Accounting Reset Switch, which is read as Switch 1 in the matrix.
+
+   Issues:
+		a) Sometimes the display seems to not get erased properly, ie, it retains displayed data
+		   (at startup (for vegasgp), notice how credit display = 0 while others are blank)
+		   (occurs especially in the ball/credit areas, but also occurs during lamp test for other digits)
+		b) No idea how solenoids 16-18 get triggered
+		c) Sound commands not hooked in
+		d) Current emulation only accurate/implemented for Cocktail Models 140 and lower.
 */
 #include <stdarg.h>
 #include <time.h>
@@ -16,7 +27,7 @@
 #include "core.h"
 #include "gp.h"
 
-#if 0
+#if 1
 #define mlogerror printf
 #else
 #define mlogerror logerror
@@ -26,11 +37,17 @@
 #define GP_IRQFREQ      150 /* IRQ (via PIA) frequency*/
 #define GP_ZCFREQ        85 /* Zero cross frequency */
 
-static WRITE_HANDLER(GP_soundCmd) {}
+/* Adjustment Table for Strange Solenoid Ordering used 
+   --Sols 16,17,18 are not working yet - so order here is wrong */
+static const int sol_adjust[] = 
+//00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17
+{  3, 4, 1, 8,12, 5, 2, 0,14,13, 6,11, 7,10, 9,20,20,20};
+
+static WRITE_HANDLER(GP_soundCmd)  { };
 
 static struct {
-  int p0_a,p0_c;
-  int bcd[6];
+  int p0_a;
+  int bcd[5];
   int lampaddr;
   UINT32 solenoids;
   core_tSeg segments,pseg;
@@ -39,9 +56,9 @@ static struct {
   int initDone;
   void *zctimer;
   int swCol;
-  int disp_enable;
-  int disp_col;
-  int last_clk;
+  int disp_enable;		//Is Display Enabled
+  int disp_col;			//Current Display Column/Digit Selected
+  int last_clk;			//Last Digit Clock Line to go low
 } locals;
 
 static void GP_exit(void);
@@ -51,7 +68,7 @@ static void GP_nvram(void *file, int write);
 static void GP_dispStrobe(int mask) {
   int digit = locals.disp_col;
   int ii,jj;
-  logerror("mask = %x, digit = %x (%x,%x,%x,%x,%x,%x)\n",mask, digit,locals.bcd[0],locals.bcd[1],locals.bcd[2],locals.bcd[3],locals.bcd[4],locals.bcd[5]);
+  logerror("mask = %x, digit = %x (%x,%x,%x,%x,%x)\n",mask, digit,locals.bcd[0],locals.bcd[1],locals.bcd[2],locals.bcd[3],locals.bcd[4]);
   ii = digit;
   jj = mask;
   ((int *)locals.segments)[jj*8+ii] |= ((int *)locals.pseg)[jj*8+ii] = core_bcd2seg[locals.bcd[jj]];
@@ -74,12 +91,15 @@ static void GP_lampStrobe(int lampadr, int lampdata) {
 
 
 static void GP_UpdateSolenoids (int bank, int soldata) {
-  coreGlobals.pulsedSolState = 0;
-  if (!bank)
-    locals.solenoids |= coreGlobals.pulsedSolState = (1<<(soldata & 0x0f)) & 0x7fff;
-  soldata ^= 0xf0;
-  coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xfff0ffff) | ((soldata & 0xf0)<<12);
-  locals.solenoids |= (soldata & 0xf0)<<12;
+  UINT16 mask = ~(0xffff);
+  UINT16 sols = 0;
+  logerror("soldata = %x\n",soldata);
+  soldata = sol_adjust[soldata];
+  logerror("soldata2 = %x\n",soldata);
+  //Solenoids 1-16
+  sols = (1<<(soldata & 0xffff)) & 0xffff;
+  coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & mask) | sols;
+  locals.solenoids |= sols;
 }
 
 static int GP_vblank(void) {
@@ -129,17 +149,12 @@ PORT B READ
 (in) P0-P7: Switch & Dip Returns
 */
 static READ_HANDLER(ppi0_pb_r) {
-	logerror("PB_R: \n");
-	if (locals.p0_a == 0x0c) return core_getDip(0); // DIP#1 1-8
-	if (locals.p0_a == 0x0d) return core_getDip(1); // DIP#2 9-16
-	if (locals.p0_a == 0x0e) return core_getDip(2); // DIP#3 17-24
-	if (locals.p0_a == 0x0f) return core_getDip(3); // DIP#4 25-32
-	//If Strobe 0 - Return switches plus Dip #5 - #33
-//	if (locals.p0_a == 0x07) 
-//		return ~(core_getSwCol(locals.swCol) | (core_getDip(4) & 1)); // DIP#5 33
-//	else
-		logerror("(%x): read sw col: %x = %x\n",cpu_getpreviouspc(),locals.swCol, core_getSwCol(locals.swCol));
-		return core_getSwCol(locals.swCol);
+	int dipstrobe = locals.p0_a>>4;
+	if (dipstrobe == 12) return core_getDip(0); // DIP#1 1-8
+	if (dipstrobe == 13) return core_getDip(1); // DIP#2 9-16
+	if (dipstrobe == 14) return core_getDip(2); // DIP#3 17-24
+	if (dipstrobe == 15) return core_getDip(3); // DIP#4 25-32
+	return core_getSwCol(locals.swCol);
 }
 
 /*
@@ -148,7 +163,7 @@ PORT A WRITE
 	a) Lamp Address 1-4
 	b) Display BCD Data? (Shared with Lamp Address 1-4)
 	c) Solenoid Address 1-4 (must be enabled from above)
-	d) Solenoid Address 5-8 (must be enabled from above)
+	d) Solenoid Address 5-8 (must be enabled from above)??? Not sure
 
 (out) P4-P7P: Address Data 
   (1-16 Demultiplexed - Output are all active low)
@@ -156,7 +171,7 @@ PORT A WRITE
 	1) = Solenoid Address 1-4 Enable
 	2) = Solenoid Address 5-8 Enable
 	3-6) = Lamp Data 1-4
-	7) = Switch Strobe 0 AND Dip Switch #33 Enable
+	7) = Switch Strobe 0
 	8) = Switch Strobe 1 AND Display Clock 1
 	9) = Switch Strobe 2 AND Display Clock 2
 	10) = Switch Strobe 3 AND Display Clock 3
@@ -169,11 +184,23 @@ static WRITE_HANDLER(ppi0_pa_w) {
 	int disp_clk = tmpdata - 8;	//Track Display Clock line
 	locals.p0_a = data;
 
+	/*Pin 1 not connected, but is used after a display clock line goes low
+	  to trigger the lo->hi transition, and load in bcd data*/
+	if(tmpdata == 0 && (locals.last_clk ^ 0x80)) {
+		if(locals.disp_enable) {
+				locals.bcd[locals.last_clk] = addrdata;
+				GP_dispStrobe(locals.last_clk);
+				locals.last_clk = 0x80;		//Set flag so that this routine only runs AFTER a valid display clock line was set!
+		}
+	}
+
 	/*Enabling Solenoids?*/
 	if(tmpdata>0 && tmpdata<3) {
-		if(addrdata !=0xf)
-			mlogerror("sol en: %x addr %x \n",tmpdata-1,addrdata);
-		GP_UpdateSolenoids(tmpdata-1,~addrdata);
+		//No solenoid is wired for 15
+		if(addrdata !=0xf) {
+			logerror("%x: sol en: %x addr %x \n",cpu_getpreviouspc(),tmpdata-1,addrdata);
+			GP_UpdateSolenoids(tmpdata-1,addrdata);
+		}
 	}
 
 	/*Updating Lamps?*/
@@ -186,22 +213,16 @@ static WRITE_HANDLER(ppi0_pa_w) {
 		locals.swCol = 1<<(tmpdata-7);
 	}
 
-#if 1
 	/*Strobing Digit Displays?
 	  ------------------------
-	  Clock lines go low on selection, but are clock data in, on lo->hi transition
+	  Clock lines go low on selection, but are clocked in on lo->hi transition...
 	  So we track the last clock line to go lo, and when it changes, we write in bcd data
 	*/
-	if(disp_clk != locals.last_clk) {
-		locals.bcd[locals.last_clk] = addrdata;
-		if(locals.disp_enable)
-			GP_dispStrobe(locals.last_clk);
-		//locals.last_clk = disp_clk;
-	}
-#endif
-
 	if(tmpdata>7 && tmpdata<12) {
-		locals.last_clk = disp_clk;
+		if(locals.disp_enable) {
+			locals.last_clk = disp_clk;
+			logerror("%x: disp clock #%x, data=%x\n",cpu_getpreviouspc(),disp_clk,addrdata);
+		}
 	}
 
 	logerror("PA_W: P4-7 %x = %d\n",tmpdata,tmpdata);
@@ -214,27 +235,21 @@ PORT C WRITE
 (out) P3 : LED
 (out) P4 : Display Enable (Active Low)
 (out) P5 : NA (J7-7)
-(out) P6 : Chuck-a-luck? (J7-9)
-(out) P7 : Flipper? (J7-8)
+(out) P6 : Chuck-a-luck? (J7-9) - What is this?
+(out) P7 : Flipper? (J7-8) - What does this do?
 */
-static int ct = 0;
 static WRITE_HANDLER(ppi0_pc_w) {
-	int tmp = locals.disp_enable;
-	int col = locals.p0_c & 0x07;
-	locals.p0_c = data;
+	int col = data & 0x07;			//Display column in bits 0-2
+	locals.diagnosticLed = (data>>3)&1;
+	//Display Enabled only when this value is 0
 	locals.disp_enable = !((data>>4)&1);
 	//Active Display Digit Select not changed when value is 111 (0x07).
 	if(col < 7)
-		locals.disp_col = 6-col;
+		locals.disp_col = 6-col;	//Reverse the ordering
+
 	logerror("disp_enable = %x\n",locals.disp_enable);
 	logerror("col: %x \n",col);
 	logerror("PC_W: %x\n",data);
-	locals.diagnosticLed = (data>>3)&1;
-	if((data>>3)&1) 
-	{	
-		ct++;
-		logerror("LED #%x\n",ct);
-	}
 }
 
 /*
@@ -255,7 +270,7 @@ Port A:
 	1) = Solenoid Address 1-4 Enable
 	2) = Solenoid Address 5-8 Enable
 	3-6) = Lamp Data 1-4
-	7) = Swicht Strobe 0 AND Dip Switch #33 Enable
+	7) = Swicht Strobe 0
 	8) = Switch Strobe 1 AND Display Clock 1
 	9) = Switch Strobe 2 AND Display Clock 2
 	10) = Switch Strobe 3 AND Display Clock 3
@@ -308,7 +323,7 @@ static int GP_irq(void) {
 }
 
 static core_tData GPData = {
-  33, /* 33 Dips */
+  32, /* 32 Dips */
   GP_updSw, 1, GP_soundCmd, "GP",
   core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
 };
@@ -359,12 +374,14 @@ static Z80_DaisyChain GP_DaisyChain[] =
 /------------------------------------*/
 static MEMORY_READ_START(GP_readmem)
 	{ 0x0000, 0x1fff, MRA_ROM },
-	{ 0x8000, 0xffff, MRA_RAM }, /*256K RAM - BUT MIRRORED ALL OVER THE PLACE*/
+	{ 0x8c00, 0x8cff, MRA_RAM }, /*256K CMOS RAM - Battery Backed*/
+	{ 0x8d00, 0x8dff, MRA_RAM }, /*128K NMOS RAM*/
 MEMORY_END
 
 static MEMORY_WRITE_START(GP_writemem)
 	{ 0x0000, 0x1fff, MWA_ROM },
-	{ 0x8000, 0xffff, MWA_RAM }, /*256K RAM - BUT MIRRORED ALL OVER THE PLACE*/
+	{ 0x8c00, 0x8cff, MWA_RAM }, /*256K CMOS RAM - Battery Backed*/
+	{ 0x8d00, 0x8dff, MWA_RAM }, /*128K NMOS RAM*/
 MEMORY_END
 
 static PORT_READ_START( GP_readport )
@@ -415,5 +432,10 @@ struct MachineDriver machine_driver_GP2 = {
 / Load/Save static ram
 /-------------------------------------------------*/
 static void GP_nvram(void *file, int write) {
-  //core_nvram(file, write, GP_CMOS, 0x100,0xff);
+  if (write)  /* save nvram */
+    osd_fwrite(file, memory_region(GP_MEMREG_CPU)+0x8c00, 0xff);
+  else if (file) /* load nvram */
+    osd_fread(file, memory_region(GP_MEMREG_CPU)+0x8c00, 0xff);
+  else        /* first time */
+    memset(memory_region(GP_MEMREG_CPU)+0x8c00, 0x00, 0xff);	//Must be 0 initially for it to work!
 }

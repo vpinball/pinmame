@@ -2,18 +2,14 @@
 #include "sim.h"
 #include "gp.h"
 
+#define TEST 0
+//#define TEST GAME_NOT_WORKING
+
 //Display: 4 X 7 Segment, 6 Digit Displays, 2 x 2 Digit 7 Segment
 //Display: 4 X 7 Segment, 7 Digit Displays, 2 x 2 Digit 7 Segment
 
-/*Ordering:
-  --------
-  Player 1/2
-  (06)(05)(04)(03)(02)(01)
-							(00)(00)
-  (06)(05)(04)(03)(02)(01)
-*/
-
 #if 0
+//Use for testing segments only
 static core_tLCDLayout dispGP[] = {
  {0, 0, 00,16,CORE_SEG87},
  {2, 0, 16,16,CORE_SEG87}, 
@@ -22,11 +18,22 @@ static core_tLCDLayout dispGP[] = {
 
 #else
 
+/*Ordering for DDU-1:
+  --------
+  Player 1/2 (or 3/4)
+  (06)(05)(04)(03)(02)(01)
+							(00)
+  (06)(05)(04)(03)(02)(01)
+
+  For balls/credits - left side displays [pb], right side [cc]
+	p = # of players in game, b = which ball is in play
+	cc = # of credits, up to 99
+    pb might be reversed as bp, need confirmation from real game*/
 static core_tLCDLayout dispGP[] = {
  {0, 0,0, 6,CORE_SEG87}, {0,16,8, 6,CORE_SEG87},
  {4, 0,16, 6,CORE_SEG87}, {4,16,24, 6,CORE_SEG87},
- {2, 4,22, 1, CORE_SEG87}, {2, 6,6, 1, CORE_SEG87},
- {2,20,30,1, CORE_SEG87}, {2,22,14, 1, CORE_SEG87},{0}
+ {2, 4,6, 1, CORE_SEG87}, {2, 6,14, 1, CORE_SEG87},
+ {2,20,30,1, CORE_SEG87}, {2,22,22, 1, CORE_SEG87},{0}
 };
 #endif
 
@@ -39,9 +46,6 @@ GP_INPUT_PORTS_START(name, 1) GP_INPUT_PORTS_END
 
 //Games in rough production order
 
-#define TEST 0
-//#define TEST GAME_NOT_WORKING
-
 /*Games below are Cocktail #110 Model*/
 
 /*-------------------------------------------------------------------
@@ -51,7 +55,7 @@ INITGAME(foxylady, 0,dispGP,FLIP_SW(FLIP_L),0)
 GP_ROMSTART88(foxylady,	"a-110.u12",0xed0d518b,
 						"b1-110.u13",0xa223f2e8)
 GP_ROMEND
-CORE_GAMEDEFNV(foxylady,"Foxy Lady",1978,"Game Plan",mGP1,TEST)
+CORE_GAMEDEFNV(foxylady,"Foxy Lady",1978,"Game Plan",mGP1,GAME_NO_SOUND)
 
 //Black Velvet (May 1978) (Same as Foxy Lady)
 //Camel Lights (May 1978) (Same as Foxy Lady)
@@ -69,11 +73,11 @@ INITGAME(startrip, 0,dispGP,FLIP_SW(FLIP_L),0)
 GP_ROMSTART88(startrip,	"startrip.u12",0x98f27fdf,
 						"startrip.u13",0xb941a1a8)
 GP_ROMEND
-CORE_GAMEDEFNV(startrip,"Star Trip",1979,"Game Plan",mGP1,TEST)
+CORE_GAMEDEFNV(startrip,"Star Trip",1979,"Game Plan",mGP1,GAME_NO_SOUND)
 
 //Family Fun! (April 1979) (Same as Star Trip)
 
-/*Games below are regular standup pinball games*/
+/*Games below are regular standup pinball games except where noted*/
 
 /*-------------------------------------------------------------------
 / Sharpshooter (May 1979)
@@ -86,13 +90,13 @@ GP_ROMEND
 CORE_GAMEDEFNV(sshooter,"Sharpshooter",1979,"Game Plan",mGP1,TEST)
 
 /*-------------------------------------------------------------------
-/ Vegas (August 1979)
+/ Vegas (August 1979) - Cocktail Model 140
 /-------------------------------------------------------------------*/
 INITGAME(vegasgp, 0,dispGP,FLIP_SW(FLIP_L),0)
 GP_ROMSTART88(vegasgp,	"vegas.u12",0x98f27fdf,
 						"vegas.u13",0xb941a1a8)
 GP_ROMEND
-CORE_GAMEDEFNV(vegasgp,"Vegas (Game Plan)",1979,"Game Plan",mGP1,TEST)
+CORE_GAMEDEFNV(vegasgp,"Vegas (Game Plan)",1979,"Game Plan",mGP1,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
 / Coney Island! (December 1979)
@@ -117,6 +121,8 @@ GP_ROMSTART888(lizard,	"lizard.u12",0xdc402b37,
 GP_ROMEND
 CORE_GAMEDEFNV(lizard,"(Pinball) Lizard",1980,"Game Plan",mGP1,TEST)
 
+/* Games below believed to use 7 digits for scoring */
+
 /*-------------------------------------------------------------------
 / Global Warfare (June 1981)
 /-------------------------------------------------------------------*/
@@ -128,10 +134,9 @@ GP_ROMEND
 CORE_GAMEDEFNV(gwarfare,"Global Warfare",1981,"Game Plan",mGP1,TEST)
 
 //Mike Bossy (January 1982)
-//The Scoring Machine (January 1982)
 
 /*-------------------------------------------------------------------
-/ Super Nova (May 1982)
+/ Super Nova (May 1982) - Flyer suggests 6 digits for scoring
 /-------------------------------------------------------------------*/
 INITGAME(suprnova, 0,dispGP,FLIP_SW(FLIP_L),0)
 GP_ROMSTART888(suprnova,"150a.716",0xdc402b37,
