@@ -11,6 +11,8 @@
 #include "wpc.h"
 #include "s11.h"
 #include "s4.h"
+#include "gts3.h"
+#include "gts80s.h"
 
 #define INITGAME(name, gen, disp) \
 static core_tGameData name##GameData = { gen, disp }; \
@@ -23,17 +25,31 @@ static void init_##name(void) { core_gameData = &name##GameData; }
 
 S4_INPUT_PORTS_START(bowl, 1) S4_INPUT_PORTS_END
 
-static const core_tLCDLayout bowl_disp[] = {
+static const core_tLCDLayout dispS5[] = {
   { 0, 0, 0, 4, CORE_SEG7 }, { 0,12, 4, 4, CORE_SEG7 },
   { 2, 0, 8, 4, CORE_SEG7 }, { 2,12,20, 4, CORE_SEG7 },
   { 4, 0,24, 4, CORE_SEG7 }, { 4,12,28, 4, CORE_SEG7 },
   { 6, 4,12, 2, CORE_SEG7 }, { 6,12,14, 2, CORE_SEG7 }, {0}
 };
 
+static const core_tLCDLayout dispS10[] = {
+  { 0, 0,22, 4, CORE_SEG7 }, { 0,12,30, 4, CORE_SEG7 },
+  { 2, 0, 2, 4, CORE_SEG7 }, { 2,12,10, 4, CORE_SEG7 },
+  { 4, 0,26, 2, CORE_SEG7 }, { 4, 4,34, 2, CORE_SEG7 }, { 4,12, 6, 2, CORE_SEG7 }, { 4,16,14, 2, CORE_SEG7 },
+  { 6, 4, 0, 1, CORE_SEG7 }, { 6, 6, 8, 1, CORE_SEG7 }, { 6,12,20, 1, CORE_SEG7 }, { 6,14,28, 1, CORE_SEG7 }, {0}
+};
+
+static const core_tLCDLayout dispBowl[] = {
+  { 0, 0, 4, 4, CORE_SEG7 }, { 0,12,12, 4, CORE_SEG7 },
+  { 2, 0,20, 4, CORE_SEG7 }, { 2,12,28, 4, CORE_SEG7 },
+  { 4, 0,36, 4, CORE_SEG7 }, { 4,12,44, 4, CORE_SEG7 },
+  { 6, 4,54, 2, CORE_SEG7 }, { 6,12,52, 2, CORE_SEG7 }, {0}
+};
+
 /*----------------------------
 / Topaz
 /----------------------------*/
-INITGAME(topaz, GEN_S3, bowl_disp)
+INITGAME(topaz, GEN_S3, dispS5)
 S4_ROMSTART(topaz,l1,"gamerom.716",CRC(cb287b10) SHA1(7fb6b6a26237cf85d5e02cf35271231267f90fc1),
                      "b_ic20.716", CRC(c6f8e3b1) SHA1(cb78d42e1265162132a1ab2320148b6857106b0e),
                      "b_ic17.716", CRC(cfc2518a) SHA1(5e99e40dcb7e178137db8d7d7d6da82ba87130fa))
@@ -45,7 +61,7 @@ CORE_GAMEDEF(topaz,l1,"Topaz (Shuffle) (L-1)",1978,"Williams",s4_mS4S,0)
 /*----------------------------
 / Taurus
 /----------------------------*/
-INITGAME(taurs, GEN_S4, bowl_disp)
+INITGAME(taurs, GEN_S4, dispS5)
 S4_ROMSTART(taurs,l1,"gamerom.716",CRC(3246e285) SHA1(4f76784ecb5063a49c24795ae61db043a51e2c89),
                      "b_ic20.716", CRC(c6f8e3b1) SHA1(cb78d42e1265162132a1ab2320148b6857106b0e),
                      "b_ic17.716", CRC(cfc2518a) SHA1(5e99e40dcb7e178137db8d7d7d6da82ba87130fa))
@@ -57,12 +73,6 @@ CORE_GAMEDEF(taurs,l1,"Taurus (Shuffle) (L-1)",1979,"Williams",s4_mS4S,0)
 /*--------------------------------
 / Big Ball Bowling (United game?)
 /-------------------------------*/
-static const core_tLCDLayout dispBowl[] = {
-  { 0, 0, 4, 4, CORE_SEG7 }, { 0,12,12, 4, CORE_SEG7 },
-  { 2, 0,20, 4, CORE_SEG7 }, { 2,12,28, 4, CORE_SEG7 },
-  { 4, 0,36, 4, CORE_SEG7 }, { 4,12,44, 4, CORE_SEG7 },
-  { 6, 4,54, 2, CORE_SEG7 }, { 6,12,52, 2, CORE_SEG7 }, {0}
-};
 static core_tGameData bbbowlinGameData = {GEN_BOWLING,dispBowl,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_ST100B,0}};
 static void init_bbbowlin(void) { core_gameData = &bbbowlinGameData; }
 BY17_ROMSTARTx88(bbbowlin,"cpu_u2.716",CRC(179e0c69) SHA1(7921839d2014a00b99ce7c44b325ea4403df9eea),
@@ -74,7 +84,7 @@ CORE_GAMEDEFNV(bbbowlin,"Big Ball Bowling",19??,"United(?)",by35_mBowling,GAME_N
 /*----------------------------
 / Stars & Strikes
 /----------------------------*/
-static core_tGameData monrobwlGameData = {GEN_BOWLING,dispBowl,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_ST100,0}};
+static core_tGameData monrobwlGameData = {GEN_BOWLING,dispBowl,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_ST100B,0}};
 static void init_monrobwl(void) { core_gameData = &monrobwlGameData; }
 ST200_ROMSTART8888(monrobwl,"cpu_u1.716",CRC(42592cc9) SHA1(22452072199c4b82a413065f8dfe235a39fe3825),
                             "cpu_u5.716",CRC(78e2dcd2) SHA1(7fbe9f7adc69af5afa489d9fd953640f3466de3f),
@@ -85,9 +95,22 @@ BY35_INPUT_PORTS_START(monrobwl, 1) BY35_INPUT_PORTS_END
 CORE_GAMEDEFNV(monrobwl,"Stars & Strikes (Bowler)",198?,"Monroe Bowling Co.",by35_mST200,GAME_NO_SOUND)
 
 /*----------------------------
+/ Black Beauty
+/----------------------------*/
+static core_tGameData blbeautyGameData = {GEN_BOWLING,dispBowl,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_ST100B,0}};
+static void init_blbeauty(void) { core_gameData = &blbeautyGameData; }
+ST200_ROMSTART8888(blbeauty,"cpu_u1.716",CRC(e2550957) SHA1(e445548b650fec5d593ca7da587300799ef94991),
+                            "cpu_u5.716",CRC(70fcd9f7) SHA1(ca5c2ea09f45f5ba50526880c158aaac61f007d5),
+                            "cpu_u2.716",CRC(3f55d17f) SHA1(e6333e53570fb05a841a7f141872c8bd14143f9c),
+                            "cpu_u6.716",CRC(842cd307) SHA1(8429d84e8bc4343b437801d0236150e04de79b75))
+BY35_ROMEND
+BY35_INPUT_PORTS_START(blbeauty, 1) BY35_INPUT_PORTS_END
+CORE_GAMEDEFNV(blbeauty,"Black Beauty (Bowler)",198?,"Stern",by35_mST200,GAME_NO_SOUND)
+
+/*----------------------------
 / Big Strike
 /----------------------------*/
-INITGAME(bstrk, GEN_S4, bowl_disp)
+INITGAME(bstrk, GEN_S4, dispS5)
 S4_ROMSTART(bstrk,l1,"gamerom.716",CRC(323dbcde) SHA1(a75cbb5de97cb9afc1d36e9b6ff593bb482fcf8b),
                      "b_ic20.716", CRC(c6f8e3b1) SHA1(cb78d42e1265162132a1ab2320148b6857106b0e),
                      "b_ic17.716", CRC(cfc2518a) SHA1(5e99e40dcb7e178137db8d7d7d6da82ba87130fa))
@@ -99,7 +122,7 @@ CORE_GAMEDEF(bstrk,l1,"Big Strike (Bowler) (L-1)",1983,"Williams",s4_mS4S,0)
 /*----------------------------
 / Triple Strike
 /----------------------------*/
-INITGAME(tstrk, GEN_S4, bowl_disp)
+INITGAME(tstrk, GEN_S4, dispS5)
 S4_ROMSTART(tstrk,l1,"gamerom.716",CRC(b034c059) SHA1(76b3926b87b3c137fcaf33021a586827e3c030af),
                      "ic20.716",   CRC(f163fc88) SHA1(988b60626f3d4dc8f4a1dbd0c99282418bc53aae),
                      "b_ic17.716", CRC(cfc2518a) SHA1(5e99e40dcb7e178137db8d7d7d6da82ba87130fa))
@@ -107,19 +130,6 @@ S67S_SOUNDROMS8("sound.716",NO_DUMP)
 S4_ROMEND
 #define input_ports_tstrk input_ports_bowl
 CORE_GAMEDEF(tstrk,l1,"Triple Strike (Bowler) (L-1)",1983,"Williams",s4_mS4S,0)
-
-/*----------------------------
-/ Black Beauty
-/----------------------------*/
-static core_tGameData blbeautyGameData = {GEN_BOWLING,dispBowl,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_ST100,0}};
-static void init_blbeauty(void) { core_gameData = &blbeautyGameData; }
-ST200_ROMSTART8888(blbeauty,"cpu_u1.716",CRC(e2550957) SHA1(e445548b650fec5d593ca7da587300799ef94991),
-                            "cpu_u5.716",CRC(70fcd9f7) SHA1(ca5c2ea09f45f5ba50526880c158aaac61f007d5),
-                            "cpu_u2.716",CRC(3f55d17f) SHA1(e6333e53570fb05a841a7f141872c8bd14143f9c),
-                            "cpu_u6.716",CRC(842cd307) SHA1(8429d84e8bc4343b437801d0236150e04de79b75))
-BY35_ROMEND
-BY35_INPUT_PORTS_START(blbeauty, 1) BY35_INPUT_PORTS_END
-CORE_GAMEDEFNV(blbeauty,"Black Beauty (Bowler)",1984,"Stern",by35_mST200,GAME_NO_SOUND)
 
 /*--------------------
 / Pennant Fever (#526)
@@ -155,12 +165,6 @@ S9_ROMEND
 S11_INPUT_PORTS_START(szone, 1) S11_INPUT_PORTS_END
 CORE_GAMEDEF(szone, l5, "Strike Zone (Shuffle) (L-5)", 198?, "Williams", s9_mS9S,0)
 
-static core_tLCDLayout dispS10[] = {
-  { 0, 0,22, 4, CORE_SEG7 }, { 0,12,30, 4, CORE_SEG7 },
-  { 2, 0, 2, 4, CORE_SEG7 }, { 2,12,10, 4, CORE_SEG7 },
-  { 4, 0,26, 2, CORE_SEG7 }, { 4, 4,34, 2, CORE_SEG7 }, { 4,12, 6, 2, CORE_SEG7 }, { 4,16,14, 2, CORE_SEG7 },
-  { 6, 4, 0, 1, CORE_SEG7 }, { 6, 6, 8, 1, CORE_SEG7 }, { 6,12,20, 1, CORE_SEG7 }, { 6,14,28, 1, CORE_SEG7 }, {0}
-};
 /*--------------------
 / Gold Mine (#920)
 /--------------------*/
@@ -219,9 +223,29 @@ static core_tGameData strikGameData = {
 };
 static void init_strik(void) { core_gameData = &strikGameData; }
 WPC_ROMSTART(strik,l4,"strik_l4.rom",0x40000,CRC(c99ea24c) SHA1(f8b083adcbabdc70a1bf7c87c9b488eca7b1c788))
+WPCS_SOUNDROM222("lc_u18.l1",CRC(beb84fd9) SHA1(b1d5472af5e3c0f5c67e7d636122eb79e02494ba),
+                 "lc_u15.l1",CRC(25fe0be3) SHA1(a784b99daab1255487d4cb05d008a8aee0c39b30),
+                 "lc_u14.l1",CRC(7b6dd395) SHA1(fdb01f70bb5f1a4ada9805770e544c4a191ddf26))
 WPC_ROMEND
 WPC_INPUT_PORTS_START(strik, 0) WPC_INPUT_PORTS_END
-CORE_GAMEDEF(strik,l4,"Strike Master (L-4)",1992,"Williams",wpc_mFliptron,GAME_NO_SOUND)
+CORE_GAMEDEF(strik,l4,"Strike Master (L-4)",1992,"Williams",wpc_mFliptronS,0)
+
+/*-------------------------------------------------------------------
+/ Strikes n' Spares (#N111)
+/-------------------------------------------------------------------*/
+static struct core_dispLayout GTS3_dispDMD[] = {
+  {0,0,32,128,CORE_DMD,(void *)gts3_dmd128x32}, {0}
+};
+static core_tGameData snsparesGameData = {GEN_GTS3,GTS3_dispDMD,{FLIP_SWNO(21,22),4,4,0,SNDBRD_GTS3,0}};
+static void init_snspares(void) { core_gameData = &snsparesGameData; }
+GTS3ROMSTART(snspares,	"gprom.bin", CRC(9e018496) SHA1(a4995f153ba2179198cfc56b7011707328e4ec89))
+GTS3_DMD256_ROMSTART(	"dsprom.bin",CRC(5c901899) SHA1(d106561b2e382afdb16e938072c9c8f1d1ccdae6))
+GTS3SOUND32512A(		"yrom1.bin",NO_DUMP,
+						"drom1.bin",NO_DUMP,
+						"arom1.bin",CRC(e248574a) SHA1(d2bdc2b9a330bb81556d25d464f617e0934995eb))
+GTS3_ROMEND
+GTS32_INPUT_PORTS_START(snspares, 4) GTS3_INPUT_PORTS_END
+CORE_GAMEDEFNV(snspares,"Strikes n' Spares",1995,"Gottlieb",mGTS3DMDSA, 0)
 
 /*-----------------------------
 / League Champ (Shuffle Alley)
@@ -238,6 +262,9 @@ static core_tGameData lcGameData = {
 };
 static void init_lc(void) { core_gameData = &lcGameData; }
 WPC_ROMSTART(lc,11,"lchmp1_1.rom",0x80000,CRC(60ab944c) SHA1(d2369b0a864e864b269de1765121e4534fa8fa59))
+WPCS_SOUNDROM222("lc_u18.l1",CRC(beb84fd9) SHA1(b1d5472af5e3c0f5c67e7d636122eb79e02494ba),
+                 "lc_u15.l1",CRC(25fe0be3) SHA1(a784b99daab1255487d4cb05d008a8aee0c39b30),
+                 "lc_u14.l1",CRC(7b6dd395) SHA1(fdb01f70bb5f1a4ada9805770e544c4a191ddf26))
 WPC_ROMEND
 WPC_INPUT_PORTS_START(lc, 0) WPC_INPUT_PORTS_END
-CORE_GAMEDEF(lc,11,"League Champ (1.1)",1996,"Bally",wpc_mFliptron,GAME_NO_SOUND)
+CORE_GAMEDEF(lc,11,"League Champ (1.1)",1996,"Bally",wpc_mFliptronS,0)
