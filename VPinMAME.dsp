@@ -132,7 +132,7 @@ SOURCE=.\src\zlib\zconf.h
 SOURCE=.\src\zlib\zlib.h
 # End Source File
 # End Group
-# Begin Group "COM"
+# Begin Group "Win32COM"
 
 # PROP Default_Filter ""
 # Begin Source File
@@ -145,19 +145,19 @@ SOURCE=.\src\win32com\Controller.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\win32com\ControllerDisclaimerDlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\ControllerDisclaimerDlg.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\win32com\ControllerGame.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\win32com\ControllerGame.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\ControllerGameInfo.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\ControllerGameInfo.h
 # End Source File
 # Begin Source File
 
@@ -169,27 +169,11 @@ SOURCE=.\src\win32com\ControllerGames.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\win32com\ControllerGlobals.cpp
+SOURCE=.\src\win32com\ControllerGameSettings.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\win32com\ControllerGlobals.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\ControllerOptions.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\ControllerOptions.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\ControllerOptionsDlg.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\ControllerOptionsDlg.h
+SOURCE=.\src\win32com\ControllerGameSettings.h
 # End Source File
 # Begin Source File
 
@@ -217,7 +201,19 @@ SOURCE=.\src\win32com\ControllerRun.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\win32com\ControllerRun.h
+SOURCE=.\src\win32com\ControllerSettings.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\ControllerSettings.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\ControllerSplashWnd.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\ControllerSplashWnd.h
 # End Source File
 # Begin Source File
 
@@ -275,22 +271,6 @@ SOURCE=.\src\win32com\VPinMAMEConfig.h
 # Begin Source File
 
 SOURCE=.\src\win32com\VPinMAMECP.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\VPinMAMEDisclaimerDlg.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\VPinMAMEDisclaimerDlg.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\VPinMAMESplashWnd.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\VPinMAMESplashWnd.h
 # End Source File
 # Begin Source File
 
