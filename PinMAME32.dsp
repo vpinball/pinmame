@@ -79,7 +79,7 @@ LINK32=link.exe
 # ADD LINK32 htmlhelp.lib kernel32.lib user32.lib gdi32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib advapi32.lib comdlg32.lib comctl32.lib shell32.lib zlibstatmtd.lib /nologo /subsystem:windows /debug /machine:I386 /out:"PinMAME32d.exe" /pdbtype:sept /libpath:"src/htmlhelp/lib" /libpath:"zlib"
 # SUBTRACT LINK32 /pdb:none
 # Begin Custom Build - Generating gamelist.txt
-TargetDir=\Project\pinmame
+TargetDir=\Martin\mame\CVSPinMAME\pinmame
 TargetPath=.\PinMAME32d.exe
 InputPath=.\PinMAME32d.exe
 SOURCE="$(InputPath)"
@@ -2091,32 +2091,6 @@ SOURCE=.\src\memory.c
 # Begin Source File
 
 SOURCE=.\src\memory.h
-
-!IF  "$(CFG)" == "PinMAME32 - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\network.c
-
-!IF  "$(CFG)" == "PinMAME32 - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\network.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
@@ -4829,10 +4803,6 @@ SOURCE=.\src\ui\dxdecode.c
 # Begin Source File
 
 SOURCE=.\src\ui\dxdecode.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\ui\file.h
 # End Source File
 # Begin Source File
 

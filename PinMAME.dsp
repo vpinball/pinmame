@@ -51,7 +51,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib zlibstatmt.lib /nologo /subsystem:console /machine:I386 /out:"obj/PinMAME/Release/PinMAMEVC.exe" /pdbtype:sept /libpath:"zlib"
+# ADD LINK32 zlibstatmt.lib kernel32.lib user32.lib gdi32.lib shell32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib /nologo /subsystem:console /machine:I386 /out:"obj/PinMAME/Release/PinMAMEVC.exe" /pdbtype:sept /libpath:"zlib"
 # Begin Custom Build - Copying...
 ProjDir=.
 TargetPath=.\obj\PinMAME\Release\PinMAMEVC.exe
@@ -87,7 +87,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib zlibstatmtd.lib /nologo /subsystem:console /debug /machine:I386 /out:"obj/PinMAME/Debug/PinMAMEVCd.exe" /pdbtype:sept /libpath:"zlib"
+# ADD LINK32 zlibstatmtd.lib kernel32.lib user32.lib gdi32.lib shell32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib /nologo /subsystem:console /debug /machine:I386 /out:"obj/PinMAME/Debug/PinMAMEVCd.exe" /pdbtype:sept /libpath:"zlib"
 # Begin Custom Build - Copying...
 ProjDir=.
 TargetPath=.\obj\PinMAME\Debug\PinMAMEVCd.exe
@@ -2102,32 +2102,6 @@ SOURCE=src\memory.c
 # Begin Source File
 
 SOURCE=src\memory.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=src\network.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=src\network.h
 
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
 
