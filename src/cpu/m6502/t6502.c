@@ -238,7 +238,7 @@ OP(cb) {		  m6502_ICount -= 2;		 ILL;		  } /* 2 ILL */
 OP(eb) {		  m6502_ICount -= 2;		 ILL;		  } /* 2 ILL */
 
 OP(1b) {		  m6502_ICount -= 2;		 ILL;		  } /* 2 ILL */
-OP(3b) {		  m6502_ICount -= 2;		 ILL;		  } /* 2 ILL */
+OP(3b) { int tmp; m6502_ICount -= 2; RD_ABY; ASL; ORA;    } /* RLA, an illegal opcode, timing might be icorrect */
 OP(5b) {		  m6502_ICount -= 2;		 ILL;		  } /* 2 ILL */
 OP(7b) {		  m6502_ICount -= 2;		 ILL;		  } /* 2 ILL */
 OP(9b) {		  m6502_ICount -= 2;		 ILL;		  } /* 2 ILL */
