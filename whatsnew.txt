@@ -11,12 +11,31 @@ Bugs Fixed
 - Adjusted CPU & FIRQ frequency on the Alvin G games
   (Sounds much better to me now, but still need access to real machine to confirm)
   [Steve Ellenoff]
+- WMS System 3 to 7: Fixed/Added support for game adjustment dip switches.
+  With proper scripting support, these can now be used to adjust game settings as
+  described in the manuals.
+  [Thomas Behrens]
+- WMS System 3 to 7: Improved solenoid smoothing method. This gives more accurate
+  flashers (e.g. on Firepower) and knockers.
+  [Martin Adrian]
+- Bally 6803: improved display/lamp operation and fixed a problem with switches
+  41 to 48 for all games of this family. These games should run fine now.
+  Also flipper keys can now be used to navigate the service menue on Blackwater
+  and Truckstop.
+  [Gerrit Volkenborn, Thomas Behrens]
+- WMS System 11 and Data East: Fixed code to remove erraneous solenoid "spikes".
+  While this primarily fixes DE Playboy 35th Anniversary, all Sys11/DE games
+  will show more precise solenoid operation now.
+  [Martin Adrian, Thomas Behrens]
+- Stern Colden Cue and Sharkey's Shootout: These games are now working. Emulation
+  support for the upper left flipper is still missing.
+  [Thomas Behrens]
 
 New Features
 ------------
 
 - Spinball emulation including full Sound and DMD support
-  (Big thanks to inkochnito for posting links to both the manual and rom on the 
+  (Big thanks to inkochnito for posting links to both the manual and rom on the
   forum so we could access them)
   [Steve Ellenoff, Gerrit Volkenborn]
 
@@ -67,7 +86,7 @@ Bugs Fixed
 
 - Added the 4 missing lamp columns for Williams Firepower
   [Brian Smith, Gerrit Volkenborn]
-  
+
 New Features
 ------------
 - new CPU: National Semiconductor SC/MP, needed for early Zaccaria games
@@ -80,14 +99,14 @@ New Features
 
 Version 1.31 (December 23, 2003) - Happy 32nd Birthday Steve
 -------------------------------------------------------------
-They say that history repeats itself, and we would have to agree! 
+They say that history repeats itself, and we would have to agree!
 It was exactly 2 years ago to the day that PinMAME was released with a major new breakthrough in sound
 emulation, namely BSMT emulation, at the time.
 
-Today, the major new breakthough is fully working Capcom sound, which will no doubt make this release 
+Today, the major new breakthough is fully working Capcom sound, which will no doubt make this release
 one of the best releases in the history of the project. This achievement was without question the most
 difficult challenge ever faced (even more than the original capcom emulation itself). Along with the new
-sound support, additional improvements in the capcom emulation, and a major speed increase bring 
+sound support, additional improvements in the capcom emulation, and a major speed increase bring
 the reality of capcom pinball emulation to life like never before.
 
 We also worked around the bug preventing the Gottlieb System 80A games from working introduced with
@@ -100,13 +119,13 @@ Maybe it's also sounding a bit closer to the original chip now, but that's not c
 
 On a bittersweet note, project leader Steve Ellenoff will be retiring from the project as of this release.
 With a new child on the way, and massive new real life job committments to meet, he simply doesn't see
-much time in his future for contributing to PinMAME. Steve would like to personally thank everyone he's 
-worked with over the years who've contributed their time and effort into making PinMAME such a 
+much time in his future for contributing to PinMAME. Steve would like to personally thank everyone he's
+worked with over the years who've contributed their time and effort into making PinMAME such a
 great success. He further would like to add that it's been an honor for him to have been at the healm of
 one of the coolest software projects ever, and he is thankful to have had the opportunity to help make the
 incredible advances the software has made over the years.
 
-Gerrit Volkenborn will be taking over the project lead position and will no doubt continue to 
+Gerrit Volkenborn will be taking over the project lead position and will no doubt continue to
 improve this great project! Not without serious help from Tom & Brian, however... ;)
 
 Happy holidays to everyone and we hope you enjoy our latest release!
@@ -146,14 +165,14 @@ New Features
 Version 1.30 (October 1, 2003)
 ------------------------------
 This release is probably one of the most significant releases we've ever had!
-With newly added fully working support for Alvin G & Co. and playable Capcom emulation 
+With newly added fully working support for Alvin G & Co. and playable Capcom emulation
 we finally have support for all the "well known" manufacturers. Most of the remaining
 manufacturers games are very rare or hard to find info on, so in a sense we have pretty
 much as complete support for all games as we can get.. Sure some information may pop
 up for some of the more obscure manufacturers, and we'll be sure to add them, but most
 likely, the current supported hardware is pretty much final.
 
-Additionally, several bugs that have plaqued PinMAME for a very very long time have 
+Additionally, several bugs that have plaqued PinMAME for a very very long time have
 been fixed or worked around, such as the infamous Black Knight sound issues
 which are now fully working!
 
@@ -167,8 +186,8 @@ Please see the enclosed "alias.txt" file for details, and use the included "romu
 file to update the names of all affected rom zip files which you are legally entitled to have.
 
 Unfortunately, the switch to the MAME 74 core has created a number of new bugs which we did not have
-time to correct before the release (although we tried really hard!). 
-We apologize for the inconvenience and will try to correct them as quickly as possible. 
+time to correct before the release (although we tried really hard!).
+We apologize for the inconvenience and will try to correct them as quickly as possible.
 If you find any we're unaware of, please let us know immediately.
 
 One we're very well aware of - and it's driving us crazy - is all of the Gottlieb
