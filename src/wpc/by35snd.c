@@ -276,7 +276,7 @@ static READ_HANDLER(snt_8910a_r);
 const struct sndbrdIntf by61Intf = {
   "BYSNT", snt_init, NULL, snt_diag, snt_manCmd_w, snt_data_w, NULL, snt_ctrl_w, NULL, 0//SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
-static struct TMS5220interface snt_tms5220Int = { 640000, 50, snt_5220Irq };
+static struct TMS5220interface snt_tms5220Int = { 640000, 100, snt_5220Irq };
 static struct DACinterface     snt_dacInt = { 1, { 20 }};
 static struct AY8910interface  snt_ay8910Int = { 1, 3580000/4, {25}, {snt_8910a_r}};
 
@@ -308,7 +308,6 @@ MACHINE_DRIVER_END
 static READ_HANDLER(snt_pia0a_r);
 static WRITE_HANDLER(snt_pia0a_w);
 static WRITE_HANDLER(snt_pia0b_w);
-static READ_HANDLER(snt_pia1a_r);
 static READ_HANDLER(snt_pia1ca2_r);
 static READ_HANDLER(snt_pia1cb1_r);
 static WRITE_HANDLER(snt_pia1a_w);
@@ -318,7 +317,7 @@ static void snt_irq(int state);
 
 static struct {
   struct sndbrdData brdData;
-  int pia0a, pia0b, pia1a_r, pia1a_w, pia1b;
+  int pia0a, pia0b, pia1a, pia1b;
   int cmd[2], lastcmd, cmdin, cmdout, lastctrl;
 } sntlocals;
 static const struct pia6821_interface snt_pia[] = {{
@@ -326,7 +325,7 @@ static const struct pia6821_interface snt_pia[] = {{
   /*o: A/B,CA/B2       */ snt_pia0a_w, snt_pia0b_w, snt_pia0ca2_w, 0,
   /*irq: A/B           */ snt_irq, snt_irq
 },{
-  /*i: A/B,CA/B1,CA/B2 */ snt_pia1a_r, 0, PIA_UNUSED_VAL(1), snt_pia1cb1_r, snt_pia1ca2_r, PIA_UNUSED_VAL(0),
+  /*i: A/B,CA/B1,CA/B2 */ 0, 0, PIA_UNUSED_VAL(1), snt_pia1cb1_r, snt_pia1ca2_r, PIA_UNUSED_VAL(0),
   /*o: A/B,CA/B2       */ snt_pia1a_w, snt_pia1b_w, 0, 0,
   /*irq: A/B           */ snt_irq, snt_irq
 }};
@@ -352,13 +351,16 @@ static WRITE_HANDLER(snt_pia0b_w) {
   sntlocals.pia0b = data;
   if (sntlocals.pia0b & 0x02) AY8910Write(0, sntlocals.pia0b ^ 0x01, sntlocals.pia0a);
 }
-static READ_HANDLER(snt_pia1a_r) { return sntlocals.pia1a_r; }
-static WRITE_HANDLER(snt_pia1a_w) { sntlocals.pia1a_w = data; }
+static WRITE_HANDLER(snt_pia1a_w) { sntlocals.pia1a = data; }
 static WRITE_HANDLER(snt_pia1b_w) {
-  if (~data & 0x02) // write out data to speech chip
-    tms5220_data_w(0, sntlocals.pia1a_w);
-  sntlocals.pia1a_r = tms5220_status_r(0);
-  pia_set_input_ca2(SNT_PIA1, 1); // enable
+  if (sntlocals.pia1b & ~data & 0x02) { // write
+    tms5220_data_w(0, sntlocals.pia1a);
+    pia_set_input_ca2(SNT_PIA1, 1); pia_set_input_ca2(SNT_PIA1, 0);
+  }
+  else /* if (sntlocals.pia1b & ~data & 0x01) */ { // read
+    pia_set_input_a(SNT_PIA1, tms5220_status_r(0));
+    pia_set_input_ca2(SNT_PIA1, 1); pia_set_input_ca2(SNT_PIA1, 0);
+  }
   sntlocals.pia1b = data;
 }
 static READ_HANDLER(snt_pia1ca2_r) {
@@ -383,7 +385,6 @@ static READ_HANDLER(snt_8910a_r) { return ~sntlocals.lastcmd; }
 static WRITE_HANDLER(snt_pia0ca2_w) { sndbrd_ctrl_cb(sntlocals.brdData.boardNo,data); } // diag led
 
 static void snt_irq(int state) {
-  if (core_gameData->gen & GEN_ALLBY35) tms5220_reset();
   cpu_set_irq_line(sntlocals.brdData.cpuNo, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
 static void snt_5220Irq(int state) { pia_set_input_cb1(SNT_PIA1, !state); }
