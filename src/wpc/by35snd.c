@@ -376,6 +376,7 @@ static void cs_init(struct sndbrdData *brdData);
 static WRITE_HANDLER(cs_cmd_w);
 static WRITE_HANDLER(cs_ctrl_w);
 static READ_HANDLER(cs_port1_r);
+static WRITE_HANDLER(cs_port2_w);
 
 const struct sndbrdIntf by45Intf = {
   cs_init, NULL, NULL, cs_cmd_w, NULL, cs_ctrl_w, NULL, 0
@@ -398,6 +399,7 @@ static PORT_READ_START(cs_readport)
 PORT_END
 static PORT_WRITE_START(cs_writeport)
   { M6803_PORT1, M6803_PORT1, DAC_0_data_w },
+  { M6803_PORT2, M6803_PORT2, cs_port2_w },
 PORT_END
 
 MACHINE_DRIVER_START(by45)
@@ -420,10 +422,11 @@ static void cs_init(struct sndbrdData *brdData) {
 
 static WRITE_HANDLER(cs_cmd_w) { cslocals.cmd = data; }
 static WRITE_HANDLER(cs_ctrl_w) {
-  cslocals.ctrl = (data != 0);
-  cpu_set_irq_line(cslocals.brdData.cpuNo, M6803_TIN_LINE, data ? ASSERT_LINE : CLEAR_LINE);
+  cslocals.ctrl = ((data & 1) == 0);
+  cpu_set_irq_line(cslocals.brdData.cpuNo, M6803_TIN_LINE, (data & 1) ? ASSERT_LINE : CLEAR_LINE);
 }
 static READ_HANDLER(cs_port1_r) { return cslocals.ctrl | (cslocals.cmd << 1); }
+static WRITE_HANDLER(cs_port2_w) { sndbrd_ctrl_cb(sntlocals.brdData.boardNo,data & 0x01); } // diag led
 
 /*----------------------------------------
 /    Turbo Cheap Squalk
