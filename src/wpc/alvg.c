@@ -10,7 +10,7 @@
 	I/O: 2 x 6522 VIA, 3 X 8255
 
   SOUND BOARD:
-	CPU: 68B09 @ 8 Mhz?
+	CPU: 68B09 @ 2 Mhz?
 	I/O: buffers
 	SND: BSMT2000 @ 24Mhz
 
@@ -38,12 +38,15 @@
 #include "core.h"
 #include "sndbrd.h"
 #include "alvg.h"
+#include "alvgs.h"
 
 #define ALVG_VBLANKFREQ      60 /* VBLANK frequency*/
 
 #define ALVG_CPUNO	0
 //#define ALVG_DCPUNO 1
 //#define ALVG_SCPUNO 2
+
+WRITE_HANDLER(alvg_sndCmd_w);
 
 /*----------------
 / Local variables
@@ -53,6 +56,8 @@ struct {
   UINT32 solenoids;
   int    lampRow, lampColumn;
   int    diagnosticLed;
+  int    diagnosticLeds1;
+  int    diagnosticLeds2;
   int    swCol;
   int    ssEn;
   int    mainIrq;
@@ -62,7 +67,9 @@ struct {
   int    swVolUp;
   int    swVolDn;
   int	 via_1_b;
-} ALVGlocals;
+  int    sound_strobe;
+  int    sound_data;
+} alvglocals;
 
 struct {
   int    version;
@@ -79,7 +86,7 @@ struct {
   int    dstrb;
   UINT8  dmd_visible_addr;
   int    nextDMDFrame;
-} ALVG_dmdlocals;
+} alvg_dmdlocals;
 
 
 /*Solenoids - Need to verify correct solenoid # here!*/
@@ -107,8 +114,8 @@ static WRITE_HANDLER(solenoid_w)
 
 //PA0-7 (IN) - Switch Return (Switches are inverted!)
 static READ_HANDLER( xvia_0_a_r ) { 
-	int data = core_getSwCol(ALVGlocals.swCol)^0xff;
-	logerror("%x: SWITCH READ: U7-PA-R = %x\n",activecpu_get_previouspc(),data); 
+	int data = core_getSwCol(alvglocals.swCol)^0xff;
+	//logerror("%x: SWITCH READ: U7-PA-R = %x\n",activecpu_get_previouspc(),data); 
 	return data;
 }
 //PB0-7 (IN)
@@ -124,13 +131,13 @@ PB0  (In)  = NU
 */
 static READ_HANDLER( xvia_0_b_r ) { 
 	int data = 0;
-	//ALVGlocals.DMDAck = !ALVGlocals.DMDAck;
-	data |= (ALVGlocals.DMDAck  << 7);	 //DMD Ack?
-	data |= (ALVGlocals.swTest  << 5);	 //Test Sw.		(Not Inverted)
-	data |= (ALVGlocals.swEnter << 4);   //Enter Sw.	(Not Inverted)
-	data |= (ALVGlocals.swVolUp << 3);   //Vol Up Sw.	(Not Inverted)
-	data |= (ALVGlocals.swVolDn << 2);   //Vol Down Sw.	(Not Inverted)
-	logerror("%x: COIN DOOR SWITCH: U7-PB-R - reading data=%x\n",activecpu_get_previouspc(),data); 
+	//alvglocals.DMDAck = !alvglocals.DMDAck;
+	data |= (alvglocals.DMDAck  << 7);	 //DMD Ack?
+	data |= (alvglocals.swTest  << 5);	 //Test Sw.		(Not Inverted)
+	data |= (alvglocals.swEnter << 4);   //Enter Sw.	(Not Inverted)
+	data |= (alvglocals.swVolUp << 3);   //Vol Up Sw.	(Not Inverted)
+	data |= (alvglocals.swVolDn << 2);   //Vol Down Sw.	(Not Inverted)
+	//logerror("%x: COIN DOOR SWITCH: U7-PB-R - reading data=%x\n",activecpu_get_previouspc(),data); 
 	return data;
 }
 //CA1: (IN) - N.C.
@@ -167,14 +174,14 @@ static WRITE_HANDLER( xvia_0_ca2_w ) { logerror("%x:WARNING: N.C.: U7-CA2-W: dat
 //CB2: (OUT) - NMI TO MAIN 65C02
 static WRITE_HANDLER( xvia_0_cb2_w ) 
 { 
-	logerror("NMI: U7-CB2-W: data=%x\n",data); 
+	//logerror("NMI: U7-CB2-W: data=%x\n",data); 
 	cpu_set_nmi_line(ALVG_CPUNO, PULSE_LINE);
 }
 
 /* U8 - 6522 */
 
-//PA0-7 (IN) - Sound Data From Soundboard??
-static READ_HANDLER( xvia_1_a_r ) { logerror("SOUND DATA IN??: U8-PA-R\n"); return 0; }
+//PA0-7 (IN) - N/C
+static READ_HANDLER( xvia_1_a_r ) { logerror("WARNING: U8-PA-R\n"); return 0; }
 
 //PB0-7 (IN)
 /*
@@ -184,14 +191,14 @@ PB5  (I?)  = DMD Data
 PB4  (O?)  = DMD Clock
 PB3  (O?)  = DMD Enable?
 PB2        = N/C
-PB1  (Out) = Sound Clock
+PB1        = N/C
 PB0        = N/C*/
 static READ_HANDLER( xvia_1_b_r ) { 
-	logerror("%x:U8-PB-R\n",activecpu_get_previouspc());
-	return ALVGlocals.via_1_b; 
+	//logerror("%x:U8-PB-R\n",activecpu_get_previouspc());
+	return alvglocals.via_1_b; 
 }
 //CA1: (IN) - Sound Control
-static READ_HANDLER( xvia_1_ca1_r ) { logerror("SOUND CONTROL: U8-CA1-R\n"); return 0; }
+static READ_HANDLER( xvia_1_ca1_r ) { return 0; }//logerror("SOUND CONTROL: U8-CA1-R\n"); return 0; }
 //CB1: (IN) - N.C.
 static READ_HANDLER( xvia_1_cb1_r ) { logerror("WARNING: N.C.: U8-CB1-R\n"); return 0; }
 //CA2:  (IN) - N.C.
@@ -200,7 +207,10 @@ static READ_HANDLER( xvia_1_ca2_r ) { logerror("WARNING: N.C.: U8-CA2-R\n"); ret
 static READ_HANDLER( xvia_1_cb2_r ) { logerror("WARNING: U8-CB2-R\n"); return 0; }
 
 //PA0-7: (OUT) - Sound Data
-static WRITE_HANDLER( xvia_1_a_w ) { logerror("SOUND DATA: U8-A-W: data=%x\n",data); }
+static WRITE_HANDLER( xvia_1_a_w ) { 
+	alvglocals.sound_data = data;
+	//logerror("SOUND DATA: U8-A-W: data=%x\n",data); 
+}
 
 //PB0-7: (OUT)
 /*
@@ -214,11 +224,22 @@ PB1  (Out) = Sound Clock
 PB0        = N/C
 */
 static WRITE_HANDLER( xvia_1_b_w ) { 
-	logerror("U8-B-W: data=%x\n",data);
-	ALVGlocals.via_1_b = data;
+	//logerror("U8-B-W: data=%x\n",data);
+	alvglocals.via_1_b = data;
+
+	//On clock transition - write to sound latch
+	if(!alvglocals.sound_strobe && (data & 0x02))
+	{
+		if(alvglocals.sound_data)
+			alvg_sndCmd_w(0,alvglocals.sound_data);
+	}
+	alvglocals.sound_strobe = data&0x02;
+
+	//if(alvglocals.sound_strobe) logerror("SOUND CLOCK!\n");
+	//else logerror("SOUND CLOCK RESET\n");
 }
 //CA2: (OUT) - CPU DIAG LED
-static WRITE_HANDLER( xvia_1_ca2_w ) { 	ALVGlocals.diagnosticLed = data; }
+static WRITE_HANDLER( xvia_1_ca2_w ) { 	alvglocals.diagnosticLed = data; }
 //CB2: (OUT) - N.C.
 static WRITE_HANDLER( xvia_1_cb2_w ) { logerror("WARNING: N.C.: U8-CB2-W: data=%x\n",data); }
 
@@ -245,17 +266,17 @@ PB0-PB7 (out)  = Switch Strobe 1-8
 PC0-PC7 (out)  = Switch Strobe 9-12	(bits 4-7 nc)
 */
 WRITE_HANDLER(u13_porta_w) { solenoid_w(3,data); }
-WRITE_HANDLER(u13_portb_w) { logerror("SWITCH_STROBE(1-8): data = %x\n",data^0xff); }
-WRITE_HANDLER(u13_portc_w) { logerror("SWITCH_STROBE(9-12): data = %x\n",data^0xff); }
+WRITE_HANDLER(u13_portb_w) { } //logerror("SWITCH_STROBE(1-8): data = %x\n",data^0xff); }
+WRITE_HANDLER(u13_portc_w) { } //logerror("SWITCH_STROBE(9-12): data = %x\n",data^0xff); }
 /*U14 - 8255*/
 /*
 PA0-PA7 (out) = Lamp Strobe 1-7  (bits 7 nc)
 PB0-PB7 (out) = Lamp Strobe 8-12 (bits 5-7 nc)
 PC0-PC7 (out) = Lamp Return 1-8
 */
-WRITE_HANDLER(u14_porta_w) { logerror("LAMP STROBE(1-7):  data = %x\n",data^0xff); }
-WRITE_HANDLER(u14_portb_w) { logerror("LAMP STROBE(8-12): data = %x\n",data^0xff); }
-WRITE_HANDLER(u14_portc_w) { logerror("LAMP RETURN: data = %x\n",data^0xff); }
+WRITE_HANDLER(u14_porta_w) {} //logerror("LAMP STROBE(1-7):  data = %x\n",data^0xff); }
+WRITE_HANDLER(u14_portb_w) {}//logerror("LAMP STROBE(8-12): data = %x\n",data^0xff); }
+WRITE_HANDLER(u14_portc_w) {}//logerror("LAMP RETURN: data = %x\n",data^0xff); }
 
 
 
@@ -283,7 +304,7 @@ IRQ        = 65C02 IRQ
 
 U8 - 6522
 
-PA0-7(I & O?) = Sound Data
+PA0-7(O)   = Sound Data
 PB7        = N/C
 PB6        = N/C
 PB5  (I?)  = DMD Data
@@ -346,20 +367,20 @@ static ppi8255_interface ppi8255_intf =
 };
 
 
-static INTERRUPT_GEN(ALVG_vblank) {
+static INTERRUPT_GEN(alvg_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
-  ALVGlocals.vblankCount += 1;
+  alvglocals.vblankCount += 1;
 
   /*-- lamps --*/
-  if ((ALVGlocals.vblankCount % ALVG_LAMPSMOOTH) == 0) {
+  if ((alvglocals.vblankCount % ALVG_LAMPSMOOTH) == 0) {
 	memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   }
   /*-- solenoids --*/
-  coreGlobals.solenoids = ALVGlocals.solenoids;
-  if ((ALVGlocals.vblankCount % ALVG_SOLSMOOTH) == 0) {
-	if (ALVGlocals.ssEn) {
+  coreGlobals.solenoids = alvglocals.solenoids;
+  if ((alvglocals.vblankCount % ALVG_SOLSMOOTH) == 0) {
+	if (alvglocals.ssEn) {
 	  int ii;
 	  coreGlobals.solenoids |= CORE_SOLBIT(CORE_SSFLIPENSOL);
 	  /*-- special solenoids updated based on switches --*/
@@ -367,48 +388,77 @@ static INTERRUPT_GEN(ALVG_vblank) {
 		if (core_gameData->sxx.ssSw[ii] && core_getSw(core_gameData->sxx.ssSw[ii]))
 		  coreGlobals.solenoids |= CORE_SOLBIT(CORE_FIRSTSSSOL+ii);
 	}
-	ALVGlocals.solenoids = coreGlobals.pulsedSolState;
+	alvglocals.solenoids = coreGlobals.pulsedSolState;
   }
   /*-- display --*/
-  if ((ALVGlocals.vblankCount % ALVG_DISPLAYSMOOTH) == 0) {
+  if ((alvglocals.vblankCount % ALVG_DISPLAYSMOOTH) == 0) {
 	/*update leds*/
-	coreGlobals.diagnosticLed = ALVGlocals.diagnosticLed;
-	//	ALVGlocals.diagnosticLed = 0;	//For some reason, LED won't work with this line in
+	//coreGlobals.diagnosticLed = alvglocals.diagnosticLed;
+    //alvglocals.diagnosticLed = 0;	//For some reason, LED won't work with this line in
+	coreGlobals.diagnosticLed = (alvglocals.diagnosticLeds2<<2) |
+								(alvglocals.diagnosticLeds1<<1) |
+								alvglocals.diagnosticLed;
+	//alvglocals.diagnosticLed = 0;	//For some reason, LED won't work with this line in
+	alvglocals.diagnosticLeds1 = 0;
+	alvglocals.diagnosticLeds2 = 0;
   }
-  core_updateSw(ALVGlocals.solenoids & 0x80000000);
+  core_updateSw(alvglocals.solenoids & 0x80000000);
 }
 
-static SWITCH_UPDATE(ALVG) {
+static SWITCH_UPDATE(alvg) {
+	static int sndcmd=0;
+
 //  via_irq(1);
   if (inports) {
     coreGlobals.swMatrix[0] = (inports[ALVG_COMINPORT] & 0x0f00)>>8;									//Column 0 Switches
 	coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0xe0) | (inports[ALVG_COMINPORT] & 0x1f);		//Column 1 Switches
 	coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0xfc) | ((inports[ALVG_COMINPORT] & 0x60)>>5);	//Column 2 Switches
   }
-  ALVGlocals.swTest = (core_getSw(ALVG_SWTEST)>0?1:0);
-  ALVGlocals.swEnter = (core_getSw(ALVG_SWENTER)>0?1:0);
-  ALVGlocals.swVolUp = (core_getSw(ALVG_SWVOLUP)>0?1:0);
-  ALVGlocals.swVolDn = (core_getSw(ALVG_SWVOLDN)>0?1:0);
+  alvglocals.swTest = (core_getSw(ALVG_SWTEST)>0?1:0);
+  alvglocals.swEnter = (core_getSw(ALVG_SWENTER)>0?1:0);
+  alvglocals.swVolUp = (core_getSw(ALVG_SWVOLUP)>0?1:0);
+  alvglocals.swVolDn = (core_getSw(ALVG_SWVOLDN)>0?1:0);
+
+#if 0
+  //handle my own fake sound command mode
+
+  if ((keyboard_pressed_memory_repeat(KEYCODE_SPACE, 200))) {
+    alvg_sndCmd_w(0,sndcmd);
+  }
+  if ((keyboard_pressed_memory_repeat(KEYCODE_S, 200))) {
+    alvg_sndCmd_w(0,--sndcmd);
+  }
+  if ((keyboard_pressed_memory_repeat(KEYCODE_A, 200))) {
+    alvg_sndCmd_w(0,++sndcmd);
+  }
+  if ((keyboard_pressed_memory_repeat(KEYCODE_D, 75))) {
+    alvg_sndCmd_w(0,0);
+  }
+#endif 
 
 }
 
-static WRITE_HANDLER(ALVG_sndCmd_w)
+WRITE_HANDLER(alvg_sndCmd_w)
 {
-	sndbrd_0_data_w(0, data^0xff);
+	//printf("SOUND COMMAND: %x\n",data);
+	soundlatch_w(0,data);
+	cpu_set_irq_line(ALVGS_CPUNO, 0, PULSE_LINE);
+	//cpu_set_irq_line(ALVGS_CPUNO, 0, HOLD_LINE);
+//	sndbrd_0_data_w(0, data^0xff);
 }
 
-static int ALVG_sw2m(int no) {
+static int alvg_sw2m(int no) {
   if (no % 10 > 7) return -1;
   return (no / 10 + 1) * 8 + (no % 10);
 }
 
-static int ALVG_m2sw(int col, int row) {
+static int alvg_m2sw(int col, int row) {
   return (col - 1) * 10 + row;
 }
 
 /*Alpha Numeric First Generation Init*/
-static MACHINE_INIT(ALVG) {
-  memset(&ALVGlocals, 0, sizeof(ALVGlocals));
+static MACHINE_INIT(alvg) {
+  memset(&alvglocals, 0, sizeof(alvglocals));
   
   /* init VIA */
   via_config(0, &via_0_interface);
@@ -418,29 +468,30 @@ static MACHINE_INIT(ALVG) {
   /* init PPI */
   ppi8255_init(&ppi8255_intf);
 
+  /* Init the sound board */
+  sndbrd_0_init(core_gameData->hw.soundBoard, ALVGS_CPUNO, memory_region(ALVGS_ROMREGION), NULL, NULL);
+
 }
 
-static MACHINE_STOP(ALVG) {
-//  sndbrd_0_exit();
+static MACHINE_STOP(alvg) {
+  sndbrd_0_exit();
 }
 //Show Sound Diagnostic LEDS
-void ALVG_UpdateSoundLEDS(int num,int data)
+void alvg_UpdateSoundLEDS(int num,int data)
 {
-#if 0
 	if(num==0)
-		ALVGlocals.diagnosticLeds1 = data;
+		alvglocals.diagnosticLeds1 = data;
 	else
-		ALVGlocals.diagnosticLeds2 = data;
-#endif
+		alvglocals.diagnosticLeds2 = data;
 }
 
-static WRITE_HANDLER(DMD_LATCH) { logerror("DMD_LATCH: data=%x\n",data); }
+static WRITE_HANDLER(DMD_LATCH) {} //logerror("DMD_LATCH: data=%x\n",data); }
 
 /*-----------------------------------------------
 / Load/Save static ram
 / Save RAM & CMOS Information
 /-------------------------------------------------*/
-static NVRAM_HANDLER(ALVG) {
+static NVRAM_HANDLER(alvg) {
   core_nvram(file, read_or_write, memory_region(ALVG_MEMREG_CPU), 0x2000, 0x00);
 }
 
@@ -456,7 +507,7 @@ static NVRAM_HANDLER(ALVG) {
 1  1  0  = Y6 = 0x3800 = U8 - 6255 Enable
 1  1  1  = Y7 = 0x3C00 = U7 - 6255 Enable
 */
-static MEMORY_READ_START(ALVG_readmem)
+static MEMORY_READ_START(alvg_readmem)
 {0x0000,0x1fff,MRA_RAM},
 {0x2000,0x2003,ppi8255_0_r},
 {0x2400,0x2403,ppi8255_1_r},
@@ -466,7 +517,7 @@ static MEMORY_READ_START(ALVG_readmem)
 {0x4000,0xffff,MRA_ROM},
 MEMORY_END
 
-static MEMORY_WRITE_START(ALVG_writemem)
+static MEMORY_WRITE_START(alvg_writemem)
 {0x0000,0x1fff,MWA_RAM},
 {0x2000,0x2003,ppi8255_0_w},
 {0x2400,0x2403,ppi8255_1_w},
@@ -477,18 +528,25 @@ static MEMORY_WRITE_START(ALVG_writemem)
 {0x4000,0xffff,MWA_ROM},
 MEMORY_END
 
-MACHINE_DRIVER_START(ALVG)
+MACHINE_DRIVER_START(alvg)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CORE_INIT_RESET_STOP(ALVG,NULL,ALVG)
+  MDRV_CORE_INIT_RESET_STOP(alvg,NULL,alvg)
   MDRV_CPU_ADD(M65C02, 2000000)
-  MDRV_CPU_MEMORY(ALVG_readmem, ALVG_writemem)
-  MDRV_CPU_VBLANK_INT(ALVG_vblank, ALVG_VBLANKFREQ)
-  MDRV_NVRAM_HANDLER(ALVG)
+  MDRV_CPU_MEMORY(alvg_readmem, alvg_writemem)
+  MDRV_CPU_VBLANK_INT(alvg_vblank, ALVG_VBLANKFREQ)
+  MDRV_NVRAM_HANDLER(alvg)
 
-  MDRV_SWITCH_UPDATE(ALVG)
+  MDRV_SWITCH_UPDATE(alvg)
   MDRV_DIAGNOSTIC_LEDH(3)
-  MDRV_SWITCH_CONV(ALVG_sw2m,ALVG_m2sw)
-  MDRV_LAMP_CONV(ALVG_sw2m,ALVG_m2sw)
-  MDRV_SOUND_CMD(ALVG_sndCmd_w)
-  MDRV_SOUND_CMDHEADING("ALVG")
+  MDRV_SWITCH_CONV(alvg_sw2m,alvg_m2sw)
+  MDRV_LAMP_CONV(alvg_sw2m,alvg_m2sw)
 MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(alvgs1)
+  MDRV_IMPORT_FROM(alvg)
+  MDRV_IMPORT_FROM(alvgs)
+  MDRV_SOUND_CMD(alvg_sndCmd_w)
+  MDRV_SOUND_CMDHEADING("alvg")
+MACHINE_DRIVER_END
+
+

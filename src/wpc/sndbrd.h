@@ -116,5 +116,6 @@ struct sndbrdIntf {
 #define SNDBRD_GPSSU2  SNDBRD_TYPE(33,0)
 #define SNDBRD_GPSSU3  SNDBRD_TYPE(33,1)
 #define SNDBRD_GPMSU1  SNDBRD_TYPE(34,0)
+#define SNDBRD_ALVGS   SNDBRD_TYPE(35,0)
 
 #endif /* INC_SNDBRD */
