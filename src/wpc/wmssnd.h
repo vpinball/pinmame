@@ -148,21 +148,19 @@ extern struct hc55516_interface s67s_hc55516Int;
      ROM_RELOAD(0x4000, 0x4000) \
      ROM_RELOAD(0x0000, 0x4000)
 
-/*-- Jokerz sound on CPU board --*/
-#define S11B3S_CPUNO 1
-#define S11B3S_CPUREGION (REGION_CPU1+S11B3S_CPUNO)
-#define S11B3S_ROMREGION (REGION_SOUND1)
+/*-- Jokerz! sound --*/
+#define S11JS_CPUNO 1
+#define S11JS_CPUREGION (REGION_CPU1+S11JS_CPUNO)
+#define S11JS_ROMREGION (REGION_SOUND1)
 
-#define S11B3S_STDREG \
-  SOUNDREGION(0x10000, S11B3S_CPUREGION) \
-  SOUNDREGION(0x10000, S11B3S_ROMREGION)
-
-#define S11B3S_SOUNDROM881(n1, chk1, n2, chk2, n3, chk3) \
-  S11B3S_STDREG \
-    ROM_LOAD(n1, 0x0000, 0x8000, chk1) \
-    ROM_LOAD(n2, 0x8000, 0x8000, chk2)
+#define S11JS_SOUNDROM(n1, chk1) \
+  SOUNDREGION(0x10000, S11JS_CPUREGION) \
+  SOUNDREGION(0x10000, S11JS_ROMREGION) \
+    ROM_LOAD(n1, 0x0000, 0x10000, chk1)
 
 /*-- Machine structure externals --*/
+extern const struct Memory_ReadAddress  s11js_readmem[];
+extern const struct Memory_WriteAddress s11js_writemem[];
 extern const struct Memory_ReadAddress  s11cs_readmem[];
 extern const struct Memory_WriteAddress s11cs_writemem[];
 extern const struct Memory_ReadAddress  s11s_readmem[];
@@ -172,12 +170,19 @@ extern const struct Memory_WriteAddress s9s_writemem[];
 
 extern struct DACinterface      s11_dacInt, s11_dacInt2;
 extern struct YM2151interface   s11cs_ym2151Int;
+extern struct YM2151interface   s11js_ym2151Int;
 extern struct hc55516_interface s11_hc55516Int, s11_hc55516Int2;
 
 /*-- Sound interface communications --*/
 #define S11C_SOUNDCPU { \
   CPU_M6809 | CPU_AUDIO_CPU, 2000000, /* 2 MHz ? */ \
   s11cs_readmem, s11cs_writemem, 0, 0, \
+  ignore_interrupt, 0 \
+}
+
+#define S11J_SOUNDCPU { \
+  CPU_M6809 | CPU_AUDIO_CPU, 2000000, /* 2 MHz ? */ \
+  s11js_readmem, s11js_writemem, 0, 0, \
   ignore_interrupt, 0 \
 }
 
@@ -191,6 +196,12 @@ extern struct hc55516_interface s11_hc55516Int, s11_hc55516Int2;
   s9s_readmem, s9s_writemem, NULL, NULL, \
   NULL, 0, NULL, 0 \
 }
+
+#define S11J_SOUND \
+  { SOUND_YM2151,  &s11js_ym2151Int }, \
+  { SOUND_DAC,     &s11_dacInt2 }, \
+  { SOUND_HC55516, &s11_hc55516Int }, \
+  SAMPLESINTERFACE
 
 #define S11C_SOUND \
   { SOUND_YM2151,  &s11cs_ym2151Int }, \
@@ -209,7 +220,6 @@ extern struct hc55516_interface s11_hc55516Int, s11_hc55516Int2;
   { SOUND_HC55516, &s11_hc55516Int }, \
   SAMPLESINTERFACE
 
-#define S11B3_SOUND S9_SOUND
 
 #define WPCS_CPUNO 1
 #define WPCS_CPUREGION (REGION_CPU1+WPCS_CPUNO)

@@ -303,9 +303,9 @@ CORE_CLONEDEF(taxi , l3, l4, "Taxi (Marylin) (L-3)", 1988, "Williams", s11_mS11B
 INITGAME(jokrz, GEN_S11B2, s11_dispS11b2,12, FLIP_SW(FLIP_L),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
 S11_ROMSTART48(jokrz,l6,"jokeru26.l6", 0xc748c1ba,
                         "jokeru27.l6", 0x612d0ea7)
-S11B3S_SOUNDROM881(      "jokeru21.l1", 0x9e2be4f6,
-                        "jokeru22.l1", 0x2f67160c,
-                        "jokeru5.l2" , 0xe9dc0095)
+S11S_SOUNDROM88(        "jokeru21.l1", 0x9e2be4f6,
+                        "jokeru22.l1", 0x2f67160c)
+S11JS_SOUNDROM(         "jokeru5.l2" , 0xe9dc0095)
 S11_ROMEND
 #define input_ports_jokrz input_ports_s11
 CORE_GAMEDEF(jokrz, l6, "Jokerz (L-6)", 1989, "Williams", s11_mS11B2S,GAME_IMPERFECT_SOUND)
