@@ -55,6 +55,7 @@
 #define HAS_BSMT2000   1
 #define HAS_OKIM6295   1
 #define HAS_ADPCM      1
+#define HAS_VOTRAXSC01 1
 #endif /* _MSC_VER */
 
 #ifdef _MSC_VER // Disable some VC++ warnings

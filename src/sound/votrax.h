@@ -1,14 +1,24 @@
 #ifndef VOTRAX_H
 #define VOTRAX_H
 
-extern struct CustomSound_interface votrax_custInt;
+#define MAX_VOTRAXSC01 1
 
-#define VOTRAXINTERFACE {SOUND_CUSTOM, &votrax_custInt}
+typedef void (*VOTRAXSC01_BUSYCALLBACK)(int);
 
-void votrax_w(int data);
-int votrax_status_r(void);
-void votrax_repeat_w(int dummy);
-void votrax_set_busy_func(void (*busy_func)(int state));
-void votrax_set_base_freqency(int baseFrequency);
+struct VOTRAXSC01interface
+{
+        int num;												/* total number of chips */
+        int mixing_level[MAX_VOTRAXSC01];						/* master volume */
+		int baseFrequency[MAX_VOTRAXSC01];						/* base frequency */
+		VOTRAXSC01_BUSYCALLBACK BusyCallback[MAX_VOTRAXSC01];	/* callback function when busy signal changes */
+};
+
+int VOTRAXSC01_sh_start(const struct MachineSound *msound);
+void VOTRAXSC01_sh_stop(void);
+
+WRITE_HANDLER(votraxsc01_w);
+READ_HANDLER(votraxsc01_status_r);
+
+void votraxsc01_set_base_freqency(int baseFrequency);
 
 #endif

@@ -3,10 +3,11 @@
 	Votrax SC-01 Emulator
 
  	Mike@Dissfulfils.co.uk
+	Tom.Haukap@t-online.de
 
 **************************************************************************
 
-sh_votrax_start  - Start emulation, load samples from Votrax subdirectory
+VOTRAXSC01_sh_start  - Start emulation, load samples from Votrax subdirectory
 sh_votrax_stop   - End emulation, free memory used for samples
 votrax_w		 - Write data to votrax port
 votrax_status    - Return busy status (-1 = busy)
@@ -27,19 +28,21 @@ the variable VotraxBaseFrequency, this is defaulted to 8000
 #include "driver.h"
 #include "votrax.h"
 
-int		VotraxBaseFrequency;
-int     VotraxBusy;
-int 	VotraxChannel;
+static struct {
+	int	baseFrequency;
+	int busy;
+	int channel;
 
-void (*busy_callback)(int state);
+	struct VOTRAXSC01interface *intf;
 
-unsigned char* pActPos;
-int	iRemainingSamples;
+	unsigned char* pActPos;
+	int	iRemainingSamples;
 
-unsigned char* pActPos1;
-int	iRemainingSamples1;
+	unsigned char* pActPos1;
+	int	iRemainingSamples1;
 
-int iLastValue;
+	int iLastValue;
+} votraxsc01_locals;
 
 #include "vtxsmpls.inc"
 
@@ -56,110 +59,110 @@ static const char *PhonemeNames[65] =
  0
 };
 
-int votrax_status_r(void)
-{
-    return VotraxBusy;
-}
-
-void votrax_set_busy_func(void (*busy_func)(int state))
-{
-	busy_callback = busy_func;
-}
-
-void votrax_set_base_freqency(int baseFrequency)
-{
-	VotraxBaseFrequency = baseFrequency;
-}
-
-void votrax_repeat_w(int dummy)
-{
-	votrax_w(-1);
-}
-
-void votrax_w(int data)
+WRITE_HANDLER(votraxsc01_w)
 {
 	int Phoneme,Intonation;
 
 	Phoneme = data & 0x3F;
 	Intonation = data >> 6;
-	LOG(("Speech : %s at intonation %d\n",PhonemeNames[Phoneme],Intonation));
+	LOG(("Votrax SC-01: %s at intonation %d\n",PhonemeNames[Phoneme],Intonation));
 
 	if ( Phoneme==0x3f ) {
-		iRemainingSamples = 0;
-		iRemainingSamples1 = 0;
+		votraxsc01_locals.iRemainingSamples = 0;
+		votraxsc01_locals.iRemainingSamples1 = 0;
 		return;
 	}
 
-	if ( iRemainingSamples ) {
-		pActPos1           = PhonemeData[Phoneme].pStart;
-		iRemainingSamples1 = PhonemeData[Phoneme].iLength;
+	if ( votraxsc01_locals.iRemainingSamples ) {
+		votraxsc01_locals.pActPos1           = PhonemeData[Phoneme].pStart;
+		votraxsc01_locals.iRemainingSamples1 = PhonemeData[Phoneme].iLength;
 	}
 	else {
-		pActPos           = PhonemeData[Phoneme].pStart;
-		iRemainingSamples = PhonemeData[Phoneme].iLength;
+		votraxsc01_locals.pActPos           = PhonemeData[Phoneme].pStart;
+		votraxsc01_locals.iRemainingSamples = PhonemeData[Phoneme].iLength;
 	}
 
-	if ( !VotraxBusy ) {
-		VotraxBusy = 1;
-		if ( busy_callback )
-			(*busy_callback)(VotraxBusy);
+	if ( !votraxsc01_locals.busy ) {
+		votraxsc01_locals.busy = 1;
+		if ( votraxsc01_locals.intf->BusyCallback[0] )
+			(*votraxsc01_locals.intf->BusyCallback[0])(votraxsc01_locals.busy);
 	}
+}
+
+READ_HANDLER(votraxsc01_status_r)
+{
+    return votraxsc01_locals.busy;
+}
+
+void votraxsc01_set_base_freqency(int baseFrequency)
+{
+	if ( baseFrequency>=0 )
+		votraxsc01_locals.baseFrequency = baseFrequency;
 }
 
 static void Votrax_Update(int num, INT16 *buffer, int length)
 {
-	if ( iRemainingSamples<length && pActPos )
-		iLastValue = (0x80-*(pActPos+iRemainingSamples-1))*0x00f0;
+	if ( votraxsc01_locals.iRemainingSamples<length && votraxsc01_locals.pActPos )
+		votraxsc01_locals.iLastValue = (0x80-*(votraxsc01_locals.pActPos+votraxsc01_locals.iRemainingSamples-1))*0x00f0;
 
-	while ( length && iRemainingSamples ) {
-		*buffer++ = (0x80-*pActPos++)*0x0f0;
+	while ( length && votraxsc01_locals.iRemainingSamples ) {
+		*buffer++ = (0x80-*votraxsc01_locals.pActPos++)*0x0f0;
 		length--;
-		iRemainingSamples--;
+		votraxsc01_locals.iRemainingSamples--;
 	}
 
-	if ( !iRemainingSamples && iRemainingSamples1 ) {
-		iRemainingSamples = iRemainingSamples1;
-		pActPos = pActPos1;
+	if ( !votraxsc01_locals.iRemainingSamples && votraxsc01_locals.iRemainingSamples1 ) {
+		votraxsc01_locals.iRemainingSamples = votraxsc01_locals.iRemainingSamples1;
+		votraxsc01_locals.pActPos = votraxsc01_locals.pActPos1;
 
-		iRemainingSamples1 = 0;
+		votraxsc01_locals.iRemainingSamples1 = 0;
 	}
 
-	while ( length && iRemainingSamples ) {
-		*buffer++ = (0x80-*pActPos++)*0x0f0;
+	while ( length && votraxsc01_locals.iRemainingSamples ) {
+		*buffer++ = (0x80-*votraxsc01_locals.pActPos++)*0x0f0;
 		length--;
-		iRemainingSamples--;
+		votraxsc01_locals.iRemainingSamples--;
 	}
 
 	while ( length ) {
-		*buffer++ = iLastValue;
+		*buffer++ = votraxsc01_locals.iLastValue;
 		length--;
 	}
 
-	if ( (iRemainingSamples<=200) && (!iRemainingSamples1) ) {
-		if ( VotraxBusy ) {
-			VotraxBusy = 0;
-			if ( busy_callback )
-				(*busy_callback)(VotraxBusy);
+	if ( (votraxsc01_locals.iRemainingSamples<=200) && (!votraxsc01_locals.iRemainingSamples1) ) {
+		if ( votraxsc01_locals.busy ) {
+			votraxsc01_locals.busy = 0;
+			if ( votraxsc01_locals.intf->BusyCallback[0] )
+				(*votraxsc01_locals.intf->BusyCallback[0])(votraxsc01_locals.busy);
 		}
 	}
 }
 
-static int votrax_sh_start(const struct MachineSound *msound) {
-    VotraxBaseFrequency = 7000;
-	VotraxBusy = 0;
+int VOTRAXSC01_sh_start(const struct MachineSound *msound)
+{
+	memset(&votraxsc01_locals, 0x00, sizeof votraxsc01_locals);
 
-	iRemainingSamples  = 0;
-	iRemainingSamples1 = 0;
+	votraxsc01_locals.intf = msound->sound_interface;
 
-	iLastValue = 0x0000;
+    votraxsc01_locals.baseFrequency = votraxsc01_locals.intf->baseFrequency[0];
+	if ( votraxsc01_locals.baseFrequency<=0 )
+		votraxsc01_locals.baseFrequency = 8000;
 
-	VotraxChannel = stream_init("SND DAC", 100, VotraxBaseFrequency, 0, Votrax_Update);
-    set_RC_filter(VotraxChannel, 270000, 15000, 0, 10000);
+	votraxsc01_locals.busy = 0;
+
+	votraxsc01_locals.iRemainingSamples  = 0;
+	votraxsc01_locals.iRemainingSamples1 = 0;
+	votraxsc01_locals.iLastValue = 0x0000;
+
+	votraxsc01_locals.channel = stream_init("SND VOTRAX-SC01", votraxsc01_locals.intf->mixing_level[0], votraxsc01_locals.baseFrequency, 0, Votrax_Update);
+    set_RC_filter(votraxsc01_locals.channel, 270000, 15000, 0, 10000);
+
+		if ( votraxsc01_locals.intf->BusyCallback[0] )
+			(*votraxsc01_locals.intf->BusyCallback[0])(votraxsc01_locals.busy);
+
 	return 0;
 }
 
-static void votrax_sh_stop(void)
+void VOTRAXSC01_sh_stop(void)
 {
 }
-
-struct CustomSound_interface votrax_custInt = {votrax_sh_start, votrax_sh_stop};
