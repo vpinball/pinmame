@@ -4,8 +4,6 @@
 #include "gts80.h"
 #include "gts80s.h"
 
-//      static core_tGameData name##GameData = {gen, disptype, {FLIP_SWNO(GTS80_SWNO(8), GTS80_SWNO(18))}};
-
 #define INITGAME(name, gen, flip, disptype, sb, disp, inv) \
   static core_tGameData name##GameData = {gen, disptype, {flip,0,0,0,sb,disp},NULL,{{0},{inv}}}; \
   static void init_##name(void) { core_gameData = &name##GameData; }
@@ -15,28 +13,26 @@ GTS80VID_INPUT_PORTS_START(gts80vid, 1) GTS80_INPUT_PORTS_END
 
 /* 4 x 6 BCD + Ball,Credit */
 static core_tLCDLayout dispNumeric1[] = {
-  {0, 0, 10,6, CORE_SEG9}, {0,16,  4,6, CORE_SEG9 },
-  {4, 0, 30,6, CORE_SEG9}, {4,16, 24,6, CORE_SEG9 },
+  {0, 0, 2, 6,CORE_SEG98F}, {0,16, 9,6,CORE_SEG98F},
+  {4, 0,22, 6,CORE_SEG98F}, {4,16,29,6,CORE_SEG98F},
   DISP_SEG_CREDIT(40,41,CORE_SEG9),DISP_SEG_BALLS(42,43,CORE_SEG9), {0}
 };
 /* 5 x 6 BCD + Ball, Credit */
 static core_tLCDLayout dispNumeric2[] = {
-  {0, 0, 10,6, CORE_SEG9}, {0,16,  4,6, CORE_SEG9 },
-  {4, 0, 30,6, CORE_SEG9}, {4,16, 24,6, CORE_SEG9 },
+  {0, 0, 2, 6,CORE_SEG98F}, {0,16, 9, 6,CORE_SEG98F},
+  {4, 0,22, 6,CORE_SEG98F}, {4,16,29, 6,CORE_SEG98F},
   DISP_SEG_CREDIT(40,41,CORE_SEG9),DISP_SEG_BALLS(42,43,CORE_SEG9),
   {6, 8, 50, 6, CORE_SEG9}, {0}
 };
 /* 4 x 7 BCD + Ball,Credit */
 static core_tLCDLayout dispNumeric3[] = {
-  {0, 0,10,6,CORE_SEG9}, {0,12, 0,1,CORE_SEG9},
-  {0,16, 4,6,CORE_SEG9}, {0,28, 3,1,CORE_SEG9},
-  {4, 0,30,6,CORE_SEG9}, {4,12,20,1,CORE_SEG9},
-  {4,16,24,6,CORE_SEG9}, {4,28,23,1,CORE_SEG9},
+  {0, 0, 2, 7,CORE_SEG98F}, {0,16, 9, 7,CORE_SEG98F},
+  {4, 0,22, 7,CORE_SEG98F}, {4,16,29, 7,CORE_SEG98F},
   DISP_SEG_CREDIT(40,41,CORE_SEG9), DISP_SEG_BALLS(42,43,CORE_SEG9), {0}
 };
 
 static core_tLCDLayout dispAlpha[] = {
-  {0,0,  0,20, CORE_SEG16}, {2,0, 20,20, CORE_SEG16},{0}
+  {0, 0, 0,20,CORE_SEG16},  {2, 0,20,20,CORE_SEG16}, {0}
 };
 
 /* GAMES APPEAR IN PRODUCTION ORDER (MORE OR LESS) */
@@ -418,8 +414,8 @@ CORE_GAMEDEFNV(spirit,"Spirit",1982,"Gottlieb",gl_mGTS80SS,0)
 /-------------------------------------------------------------------*/
 static core_tLCDLayout dispStriker[] = {
   DISP_SEG_IMPORT(dispNumeric3),
-  {0,15,52,2,CORE_SEG9}, {0,36,48,2,CORE_SEG9},
-  {4,15,50,2,CORE_SEG9}, {4,36,46,2,CORE_SEG9}, {0}
+  {0,32,52, 2,CORE_SEG9}, {0,38,50, 2,CORE_SEG9},
+  {4,32,48, 2,CORE_SEG9}, {4,38,46, 2,CORE_SEG9}, {0}
 };
 INITGAME(striker, GEN_GTS80A,0, dispStriker, SNDBRD_GTS80SS,0,0)
 GTS80_1_ROMSTART(striker, "675.cpu",    0x06b66ce8,
@@ -825,7 +821,7 @@ CORE_GAMEDEFNV(robowars, "Robo-War",1988,"Gottlieb",gl_mGTS80BS2,0)
 /*-------------------------------------------------------------------
 / Excalibur
 /-------------------------------------------------------------------*/
-INITGAME(excalibr, GEN_GTS80B, 0, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x81)
+INITGAME(excalibr, GEN_GTS80B, 0, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
 GTS80B_4K_ROMSTART(excalibr, "prom2.cpu", 0x499e2e41,
                              "prom1.cpu", 0xed1083d7)
 GTS80BSSOUND3232(            "drom1.snd", 0xa4368cd0,
