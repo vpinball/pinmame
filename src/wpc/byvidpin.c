@@ -20,9 +20,7 @@
    *EMULATION ISSUES*
    Baby Pac: Start up sounds during test flashes is wrong.. should play pac tune?
 
-   G & G: Transparency for Slave VDP is any color drawn in black. Seems like
-          palette #0 & #1 (Press F4 to see it) are black. I don't know how to make this
-		  work with copybitmap() code in tms9928.c. I can make it work for either 1 or the other!
+   G & G: Color blending is not accurately emulated, but transparency is simulated
 
    Interesting Tech Note: 
    
@@ -44,9 +42,6 @@
 		change R113 from a resistor to a 1N4148 diode.
 		The cathode (ie: stripe end ) connects to capacitor C1
 		(it is the end away from J4).
-
-   For simplicity sake, I just copied all code from by35 and modified where needed
-   -but maybe someday we should merge common routines for easier maintenance
 
   *All addresses are shown for baby pac
   -------------------------------------
@@ -125,6 +120,7 @@ static struct {
   int lasttin;				//Track Last TIN IRQ Edge
   int phase_a;				//Track Phase A status
   void *zctimer;
+  void (*SwitchMapping)(int *);		//Pointer to Switch Mapping
 } locals;
 
 static void byVP_exit(void);
@@ -274,8 +270,19 @@ static int byVP_vblank(void) {
 }
 
 static void byVP_updSw(int *inports) {
-  if (inports) {
+  /*Call game specific switch mappings*/
+  if (inports) locals.SwitchMapping(inports);
 
+  /*-- Diagnostic buttons on CPU board --*/
+  if (core_getSw(BYVP_SWCPUDIAG))  cpu_set_nmi_line(0, PULSE_LINE);
+  if (core_getSw(BYVP_SWSOUNDDIAG)) cpu_set_nmi_line(BYVP_SCPUNO, PULSE_LINE);
+  if (core_getSw(BYVP_SWVIDEODIAG)) cpu_set_nmi_line(BYVP_VCPUNO, PULSE_LINE);
+
+  /*-- coin door switches --*/
+  pia_set_input_ca1(0, !core_getSw(BYVP_SWSELFTEST));
+}
+
+static void BabySwitch(int *inports) {
 	//Load switches that don't belong in matrix (Diagnostics, Joystick, etc)
 	coreGlobals.swMatrix[0] = inports[BYVP_COMINPORT] & 0xff;
 
@@ -291,15 +298,30 @@ static void byVP_updSw(int *inports) {
     coreGlobals.swMatrix[2] |= (inports[BYVP_COMINPORT]>>10) & 0x03;
 	//Ball Tilt/Slam Tilt
 	coreGlobals.swMatrix[2] |= (inports[BYVP_COMINPORT]>>6) & 0xc0;
- }
-  /*-- Diagnostic buttons on CPU board --*/
-  if (core_getSw(BYVP_SWCPUDIAG))  cpu_set_nmi_line(0, PULSE_LINE);
-  if (core_getSw(BYVP_SWSOUNDDIAG)) cpu_set_nmi_line(BYVP_SCPUNO, PULSE_LINE);
-  if (core_getSw(BYVP_SWVIDEODIAG)) cpu_set_nmi_line(BYVP_VCPUNO, PULSE_LINE);
-
-  /*-- coin door switches --*/
-  pia_set_input_ca1(0, !core_getSw(BYVP_SWSELFTEST));
 }
+
+static void GrannySwitch(int *inports) {
+	//Load switches that don't belong in matrix (Diagnostics, Joystick, etc)
+	coreGlobals.swMatrix[0] = inports[BYVP_COMINPORT] & 0xff;
+
+	//Clear only bits we're using
+	coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & (~0xf3));
+
+	//Start Player 2
+    coreGlobals.swMatrix[2] |= (inports[BYVP_COMINPORT]>>4) & 0x10;
+	//Start Player 1
+    coreGlobals.swMatrix[2] |= (inports[BYVP_COMINPORT]>>4) & 0x20;
+	//Coin Chute #1 & #2
+    coreGlobals.swMatrix[2] |= (inports[BYVP_COMINPORT]>>10) & 0x03;
+	//Ball Tilt/Slam Tilt
+	coreGlobals.swMatrix[2] |= (inports[BYVP_COMINPORT]>>6) & 0xc0;
+	//Power (Does not belong in the matrix, so we start at switch #41, since 40 is last used switch)
+	coreGlobals.swMatrix[6] &= ~(0x1);
+	coreGlobals.swMatrix[6] |= (inports[BYVP_COMINPORT]>>14) & 0x1;
+}
+
+
+
 
 /* PIA2:B Read */
 // Video Switch Returns (Bits 5-7 not connected)
@@ -307,8 +329,9 @@ static READ_HANDLER(pia2b_r) {
 	//logerror("VID: Reading Switch Returns from %x\n",locals.p2_a);
 	if(locals.p2_a & 0x80)
 		return coreGlobals.swMatrix[0]&0xf0;
-	else
-		return 0;
+	if(locals.p2_a & 0x40)
+		return (coreGlobals.swMatrix[6]&0x1)<<7;	//Power Button for Granny - Mapped to switch #41, since only 40 switches are used in the game.
+	return 0;
 }
 
 /* PIA2:A Write */
@@ -479,7 +502,7 @@ static void byVP_zeroCross(int data) {
   /*- toggle zero/detection circuit-*/
   pia_set_input_cb1(0,locals.phase_a);
 }
-static void byVP_init(void) {
+static void byVP_common(void) {
   if (locals.initDone) CORE_DOEXIT(byVP_exit);
 
   if (core_init(&byVPData)) return;
@@ -494,6 +517,16 @@ static void byVP_init(void) {
   locals.zctimer = timer_pulse(TIME_IN_HZ(BYVP_ZCFREQ),0,byVP_zeroCross);
   locals.initDone = TRUE;
 }
+
+static void byVP_init1(void) {
+	byVP_common();
+	locals.SwitchMapping = BabySwitch;
+}
+static void byVP_init2(void) {
+	byVP_common();
+	locals.SwitchMapping = GrannySwitch;
+}
+
 
 static void byVP_exit(void) {
 #ifdef PINMAME_EXIT
@@ -838,7 +871,7 @@ struct MachineDriver machine_driver_byVP = {
   }
   },
   BYVP_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, byVP_init, CORE_EXITFUNC(byVP_exit)
+  50, byVP_init1, CORE_EXITFUNC(byVP_exit)
   GRAPHICSETUP
   0,
   by_vh_start,by_vh_stop, by_vh_refresh,
@@ -862,7 +895,7 @@ struct MachineDriver machine_driver_byVP2 = {
   }
   },
   BYVP_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, byVP_init, CORE_EXITFUNC(byVP_exit)
+  50, byVP_init2, CORE_EXITFUNC(byVP_exit)
   GRAPHICSETUP
   0,
   by1_vh_start,by1_vh_stop, by1_vh_refresh,
