@@ -1,0 +1,484 @@
+Description of the -listinfo output
+-----------------------------------
+
+Grammar
+-------
+	start -> ENTRY*
+	ENTRY -> ENTRYNAME ENTRYVALUE
+	ENTRYNAME -> SYMBOL
+	ENTRYVALUE -> SYMBOL | STRING | ENTRYLIST
+	ENTRYLIST -> '(' ENTRY* ')'
+	SYMBOL -> any char except separator, '"', '(', ')'
+	STRING -> default C string in double quote ""
+
+Any space (specifically any char that the C function ispace() tells is a
+space) is considered a separator and must be ignored.
+
+
+Semantic
+--------
+game (...)
+Definition of a game emulated.
+
+resource (...)
+Definition of a resource. For example the NeoGeo BIOS rom 'neogeo'.
+
+
+Entries common for 'game' and 'resource'
+----------------------------------------
+name NAME
+Name of the game or resource. This is the only required item.
+The specified NAME is unique in all file.
+
+description DESCRIPTION
+Generic description.
+
+manufacturer MANUFACTURER
+Manufacturer of the game or resource.
+
+year YEAR
+Year of the game or resource.
+
+romof NAME
+The game or resource use rom of another game or resource named NAME.
+[Equal to cloneof entry in GameDriver specification.]
+
+sampleof NAME
+The game or resource use sample of another game or resource named NAME.
+[Is the first element with starting * in the samplenames array.]
+
+rom '(' name NAME size SIZE crc CRC ')'
+Rom specification his name, size and crc.
+
+sample NAME
+Sample specification.
+
+
+Entries specific for 'game'
+---------------------------
+cloneof NAME
+Clone-of relathionship. This is intended to express an abstract
+clone-of relathionship. It's equal to the cloneof entry in gamedriver
+specification with the exception of the special NOT_DRIVER games
+(neogeo, cvs, decocass, playch10).
+
+chip '(' ... ')'
+List of hardware chips used by the game. A MAME cpu used ONLY for sound
+has the 'flags audio'.
+
+video '(' ... ')'
+Informations of the game video hardware.
+
+input '(' ... ')'
+Informations of the game input hardware.
+
+driver '(' status (preliminary | good) color (preliminary | imperfect | good)
+  hiscore (preliminary | good) ... ')'
+Informations of the MAME driver status and requirements.
+
+sound '(' ... ')'
+Number of the sound channels.
+
+
+How to read the file
+--------------------
+If you need to read the output of -listinfo option you must take care
+of these issues:
+
+1) You can't do any assumption of space indentation.
+2) You can't do any assumption of max line length. All output can be
+   in a very long line.
+3) You can't do any assumption of order of the entries.
+4) You can't do any assumption of the presence of any entry except the
+   game.name and resource.name which are mandatory and unique.
+5) You must ignore any entry unknow.
+6) Spaces are required only for separing SYMBOLs.
+7) Lists of entry empty are valid.
+
+For example:
+
+	game(description"Pac Man (Midway)"unknowentry()name pacman rom(size 4096 name pacman.6e crc c1e6ab10))
+
+is a valid output.
+
+Example
+-------
+This is a complete module for reading info files.
+
+info.h Library header
+info.c Library module
+test.c Example of use
+
+-- info.h --------------------------------------------------------------------
+#ifndef __INFO_H
+#define __INFO_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <stdio.h>
+
+enum info_t {
+	info_error,      /* generic error in reading */
+	info_eof,        /* end of file got at valid position */
+	info_symbol,     /* symbol */
+	info_open,       /* ( */
+	info_close,      /* ) */
+	info_string      /* c string automatically converted */
+};
+
+const char* info_text_get(void);
+enum info_t info_token_get(FILE* f);
+enum info_t info_skip_value(FILE* f);
+
+void info_init(void);
+void info_done(void);
+unsigned info_row_get(void);
+unsigned info_col_get(void);
+unsigned info_pos_get(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
+------------------------------------------------------------------------------
+
+-- info.c --------------------------------------------------------------------
+#include "info.h"
+
+#include <ctype.h>
+#include <string.h>
+#include <malloc.h>
+#include <assert.h>
+
+/* Start size of buffer */
+#define INFO_BUF_MIN 64
+
+/* Buffer used for storing last token */
+static unsigned info_buf_mac = 0;
+static unsigned info_buf_max = 0;
+static char* info_buf_map = 0;
+
+/* Position in the stream */
+static unsigned info_pos = 0; /* Char */
+static unsigned info_row = 0; /* Row */
+static unsigned info_col = 0; /* Column */
+
+/* Init */
+void info_init(void) {
+	assert(!info_buf_map);
+
+	info_buf_max = 0;
+	info_buf_map = 0;
+	info_pos = 0;
+	info_row = 0;
+	info_col = 0;
+}
+
+/* Done */
+void info_done(void) {
+	free(info_buf_map);
+	info_buf_map = 0;
+}
+
+/* Get information of file position */
+unsigned info_row_get(void) {
+	return info_row;
+}
+
+unsigned info_col_get(void) {
+	return info_col;
+}
+
+unsigned info_pos_get(void) {
+	return info_pos;
+}
+
+/* Resize the buffer */
+static void info_buf_resize(unsigned size) {
+	if (!info_buf_max)
+		info_buf_max = INFO_BUF_MIN;
+	else
+		info_buf_max *= 2;
+	if (size > info_buf_max)
+		info_buf_max = size;
+	info_buf_map = realloc(info_buf_map, info_buf_max );
+	assert( info_buf_map );
+}
+
+/* Add a char to the buffer end */
+static inline void info_buf_add(char c) {
+	if (info_buf_mac >= info_buf_max)
+		info_buf_resize(info_buf_mac + 1);
+	info_buf_map[info_buf_mac++] = c;
+}
+
+/* Reset the buffer */
+static void info_buf_reset() {
+	info_buf_mac = 0;
+}
+
+/* Return last token text */
+const char* info_text_get(void) {
+	/* ensure the buffer end with zero */
+	if (info_buf_mac==0 || info_buf_map[info_buf_mac-1]!=0)
+		info_buf_add(0);
+	return info_buf_map;
+}
+
+/* Read a char from file */
+static int info_getc(FILE* f) {
+	int c = fgetc(f);
+	switch (c) {
+		case EOF:
+			break;
+		case '\n':
+			info_col = 0;
+			++info_row;
+			++info_pos;
+			break;
+		default:
+			++info_col;
+			++info_pos;
+			break;
+	}
+	return c;
+}
+
+/* Unget a char from file */
+static void info_ungetc(int c, FILE* f) {
+	--info_pos;
+	--info_col;
+	ungetc(c,f);
+}
+
+static enum info_t get_symbol(FILE* f,int c) {
+	while (c!=EOF && !isspace(c) && c!='(' && c!=')' && c!='\"') {
+		info_buf_add(c);
+		c = info_getc(f);
+	}
+	/* no reason to unget space or EOF */
+	if (c!=EOF && !isspace(c))
+		info_ungetc(c,f);
+	return info_symbol;
+}
+
+static unsigned hexdigit(char c) {
+	if (isdigit(c))
+		return c - '0';
+	return toupper(c) - 'A' + 10;
+}
+
+static enum info_t get_string(FILE* f) {
+	int c = info_getc(f);
+	while (c!=EOF && c!='\"') {
+		if (c=='\\') {
+			c = info_getc(f);
+			switch (c) {
+				case 'a' : info_buf_add('\a'); break;
+				case 'b' : info_buf_add('\b'); break;
+				case 'f' : info_buf_add('\f'); break;
+				case 'n' : info_buf_add('\n'); break;
+				case 'r' : info_buf_add('\r'); break;
+				case 't' : info_buf_add('\t'); break;
+				case 'v' : info_buf_add('\v'); break;
+				case '\\' : info_buf_add('\\'); break;
+				case '?' : info_buf_add('\?'); break;
+				case '\'' : info_buf_add('\''); break;
+				case '\"' : info_buf_add('\"'); break;
+				case 'x' : {
+					int d0,d1;
+					unsigned char cc;
+					d0 = info_getc(f);
+					if (!isxdigit(d0))
+						return info_error;
+					d1 = info_getc(f);
+					if (!isxdigit(d1))
+						return info_error;
+					cc = hexdigit(d0) * 16 + hexdigit(d1);
+					info_buf_add(cc);
+				}
+				break;
+				default:
+					return info_error;
+			}
+		} else {
+			info_buf_add(c);
+		}
+		c = info_getc(f);
+	}
+	if (c!='\"')
+		return info_error;
+	return info_string;
+}
+
+/* Extract a token */
+enum info_t info_token_get(FILE* f) {
+	int c = info_getc(f);
+	/* reset the buffer */
+	info_buf_reset();
+	/* skip space */
+	while (c!=EOF && isspace(c)) {
+		c = info_getc(f);
+	}
+	/* get token */
+	switch (c) {
+		case EOF:
+			return info_eof;
+		case '(':
+			return info_open;
+		case ')':
+			return info_close;
+		case '\"':
+			return get_string(f);
+		default:
+			return get_symbol(f,c);
+	}
+}
+
+/* Skip a value token
+ * note:
+ *   Skip recusively any info_open and info_close
+ * return:
+ *   info_error error
+ *   otherwise last token skipped
+ */
+enum info_t info_skip_value(FILE* f) {
+	/* read value token */
+	enum info_t t = info_token_get(f);
+	switch (t) {
+		case info_open:
+			t = info_token_get(f);
+			if (t==info_error)
+				return info_error;
+			while (t!=info_close) {
+				/* first read type as a symbol */
+				if (t!=info_symbol)
+					return info_error;
+				/* second skip the value */
+				t = info_skip_value(f);
+				/* two value required */
+				if (t==info_error)
+					return info_error;
+				/* read next token, a type or a info_close */
+				t = info_token_get(f);
+				if (t==info_error)
+					return info_error;
+			}
+		break;
+		case info_symbol:
+		case info_string:
+		break;
+		default:
+			return info_error;
+	}
+	return t;
+}
+------------------------------------------------------------------------------
+
+-- test.c --------------------------------------------------------------------
+#include "info.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define true 1
+#define false 0
+
+int info_load(FILE* f) {
+	enum info_t token = info_token_get(f);
+	while (token!=info_eof) {
+		if (token != info_symbol) return false;
+		if (strcmp(info_text_get(),"game")==0) {
+			if (info_token_get(f) != info_open) return false;
+			token =	info_token_get(f);
+			while (token != info_close) {
+				if (token != info_symbol)
+					return false;
+				if (strcmp(info_text_get(),"name")==0) {
+					if (info_token_get(f) != info_symbol) return false;
+					printf("name %s\n", info_text_get() );
+				} else if (strcmp(info_text_get(),"description")==0) {
+					if (info_token_get(f) != info_string) return false;
+					printf("description %s\n", info_text_get() );
+				} else if (strcmp(info_text_get(),"manufacturer")==0) {
+					if (info_token_get(f) != info_string) return false;
+					printf("manufacturer %s\n", info_text_get() );
+				} else if (strcmp(info_text_get(),"year")==0) {
+					if (info_token_get(f) != info_symbol) return false;
+					printf("year %s\n", info_text_get() );
+				} else if (strcmp(info_text_get(),"cloneof")==0) {
+					if (info_token_get(f) != info_symbol) return false;
+					printf("cloneof %s\n", info_text_get() );
+				} else if (strcmp(info_text_get(),"romof")==0) {
+					if (info_token_get(f) != info_symbol) return false;
+					printf("romof %s\n", info_text_get() );
+				} else if (strcmp(info_text_get(),"sampleof")==0) {
+					if (info_token_get(f) != info_symbol) return false;
+					printf("sampleof %s\n", info_text_get() );
+				} else if (strcmp(info_text_get(),"rom")==0) {
+					if (info_token_get(f) != info_open)  return false;
+					token =	info_token_get(f);
+					while (token != info_close) {
+						if (token != info_symbol) return false;
+						if (strcmp(info_text_get(),"name")==0) {
+							if (info_token_get(f) != info_symbol) return false;
+							printf("romname %s\n", info_text_get() );
+						} else if (strcmp(info_text_get(),"size")==0) {
+							if (info_token_get(f) != info_symbol) return false;
+							printf("romsize %s\n", info_text_get() );
+						} else if (strcmp(info_text_get(),"crc")==0) {
+							if (info_token_get(f) != info_symbol) return false;
+							printf("romcrc %s\n", info_text_get() );
+						} else {
+							if (info_skip_value(f) == info_error) return false;
+						}
+						token = info_token_get(f);
+					}
+				} else if (strcmp(info_text_get(),"driver")==0) {
+					if (info_token_get(f) != info_open)  return false;
+					token =	info_token_get(f);
+					while (token != info_close) {
+						if (token != info_symbol) return false;
+						if (strcmp(info_text_get(),"status")==0) {
+							if (info_token_get(f) != info_symbol) return false;
+							printf("driverstatus %s\n", info_text_get() );
+						} else {
+							if (info_skip_value(f) == info_error) return false;
+						}
+						token = info_token_get(f);
+					}
+				} else if (strcmp(info_text_get(),"sample")==0) {
+					if (info_token_get(f) != info_symbol) return false;
+					printf("samplenames %s\n", info_text_get() );
+				} else {
+					if (info_skip_value(f) == info_error) return false;
+				}
+				token = info_token_get(f);
+			}
+		} else {
+			if (info_skip_value(f) == info_error) return false;
+		}
+		token = info_token_get(f);
+	}
+
+	return true;
+}
+
+int main() {
+	info_init();
+
+	if (!info_load(stdin)) {
+		info_done();
+		fprintf(stderr,"Error reading at row %d column %d\n",info_row_get()+1,info_col_get()+1);
+		exit(EXIT_FAILURE);
+	}
+
+	info_done();
+
+	return EXIT_SUCCESS;
+}
+------------------------------------------------------------------------------
+
