@@ -40,3 +40,8 @@ Bugs in Pinmame that we are aware of:
 
 #15) Switch problems with Dataeast Playboy and the Grotto/VUK
 
+#16) Occasional pops/clicks on Capcom sound
+
+#17) Some games have no sound emulated, but the core prevents us from using the GAME_NO_SOUND flag.
+
+#18) Gottlieb System80A games hang after performing a slam tilt
