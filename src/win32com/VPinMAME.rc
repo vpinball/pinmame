@@ -342,23 +342,19 @@ IDR_CTXMENU MENU DISCARDABLE
 BEGIN
     POPUP "CTRL_CTX_MENU"
     BEGIN
-        MENUITEM "&Game Settings...",           ID_CTRLCTXMENU_GAMEOPTIONS
-        MENUITEM "&Global Settings...",         ID_CTRLCTXMENU_PATHES
-        POPUP "&Display"
-        BEGIN
-            MENUITEM "&Title and Border",           ID_CTRLCTXMENU_DISPLAY_TITLE
+        MENUITEM "&Restore window size",        ID_CTRLCTXMENU_DISPLAY_RESTORESIZE
 
-            MENUITEM "&Border without title",       ID_CTRLCTXMENU_DISPLAY_BORDER
-
-            MENUITEM "Border&less",                 ID_CTRLCTXMENU_DISPLAY_DMDONLY
-
-            MENUITEM SEPARATOR
-            MENUITEM "Restore window size",         ID_CTRLCTXMENU_DISPLAY_RESTORESIZE
-
-        END
         MENUITEM SEPARATOR
-        MENUITEM "In&fo...",                    ID_CTRLCTXMENU_INFO
-        MENUITEM "&Stop Emulation",             ID_CTRLCTXMENU_STOPEMULATION
+        MENUITEM "Show window &title",          ID_CTRLCTXMENU_DISPLAY_TITLE
+        MENUITEM "&Show window &border",        ID_CTRLCTXMENU_DISPLAY_BORDER
+
+        MENUITEM SEPARATOR
+        MENUITEM "Game &settings...",           ID_CTRLCTXMENU_GAMEOPTIONS
+        MENUITEM "&Paths...",                   ID_CTRLCTXMENU_PATHES
+        MENUITEM SEPARATOR
+        MENUITEM "Stop &emulation",             ID_CTRLCTXMENU_STOPEMULATION
+        MENUITEM SEPARATOR
+        MENUITEM "&About Visual PinMAME...",    ID_CTRLCTXMENU_INFO
     END
 END
 
