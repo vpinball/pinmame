@@ -60,7 +60,7 @@ static struct {
   core_tSeg segments,pseg;
   int    seg1, seg2, seg3;
   int    segPos1, segPos2;
-  int    vidCmd;
+  int    vidCmd, vidPlayer;
   struct rectangle vidClip;
   int    buf8212int;
 } GTS80locals;
@@ -233,8 +233,8 @@ static WRITE_HANDLER(riot6532_2b_w) {
       coreGlobals.lampMatrix[column/2] = (coreGlobals.lampMatrix[column/2] & 0xf0) | data;
     if (column == 11) coreGlobals.lampMatrix[6] = data ^ 0x0f;
     if (core_gameData->hw.display & GTS80_DISPVIDEO) {
-      if (column == 1)      GTS80locals.vidCmd = (GTS80locals.vidCmd & 0x0f) | (data<<4);
-      else if (column == 3) GTS80locals.vidCmd = (GTS80locals.vidCmd & 0xf0) | data;
+      if (column == 1)      GTS80locals.vidPlayer = data;
+      else if (column == 3) GTS80locals.vidCmd = data;
       else if ((column == 4) && (data & 0x01)) {
         soundlatch_w(0,GTS80locals.vidCmd); pic8259_0_issue_irq(0);
       }
@@ -553,26 +553,6 @@ static PINMAME_VIDEO_UPDATE(caveman_update) {
   return 0;
 }
 
-/* we'll need a screenshot from the actual game to set the palette right! */
-static const int rgb[16*3] = {
-    0,   0,   0,
-  127, 255, 127,
-  255, 127, 127,
-  255, 255, 127,
-  127, 127, 255,
-  127, 255, 255,
-  255, 127, 255,
-  255, 255, 255,
-    0,   0,   0,
-    0, 255,   0,
-  255,   0,   0,
-  255, 255,   0,
-    0,   0, 255,
-    0, 255, 255,
-  255,   0, 255,
-  255, 255, 255
-};
-
 /* port 0xx = Interrupt Controller */
 static WRITE_HANDLER(port00xw) { pic8259_0_w(offset>>1,data);   }
 static READ_HANDLER(port002r)  { return pic8259_0_r(offset>>1); }
@@ -610,12 +590,20 @@ static READ_HANDLER(port200r) {
   return stat;
 }
 
-/* joystick inports */
-static READ_HANDLER(port400r) { return coreGlobals.swMatrix[0] & 0x0f; }
+/* joystick + player */
+static READ_HANDLER(port400r) {
+  return (coreGlobals.swMatrix[0] & 0x0f) | (GTS80locals.vidPlayer<<4);
+}
 
 /* set up game colors. 4 colors at a time only, out of 16 possible! */
 static WRITE_HANDLER(port50xw) {
-  palette_set_color(5+offset/2, rgb[data*3], rgb[data*3+1], rgb[data*3+2]);
+/* we'll need a screenshot from the actual game to set the palette right! */
+  static const UINT32 rgb[16] = {       // R G B
+    0x000000,0x7f0000,0x007f00,0x7f7f00,0x00007f,0x7f007f,0x007f7f,0x7f7f7f,
+    0x000000,0xff0000,0x00ff00,0xffff00,0x0000ff,0xff00ff,0x00ffff,0xffffff
+  };
+  const UINT32 color = rgb[data];
+  palette_set_color(5 + offset/2, color>>16, color>>8, color);
 }
 
 static READ_HANDLER(in_1cb_r) { DBGLOG(("read Caveman input 1CB\n")); return 0; }
