@@ -15,6 +15,7 @@
 #include "cpu/m6502/m6502.h"
 #include "machine/6532riot.h"
 #include "core.h"
+#include "sndbrd.h"
 #include "gts80.h"
 #include "gts80s.h"
 
@@ -145,22 +146,11 @@ static void GTS80_updSw(int *inports) {
 }
 
 static WRITE_HANDLER(GTS80_sndCmd_w) {
+	// logerror("sound cmd: 0x%02x\n", data);
 	if ( Machine->gamedrv->flags & GAME_NO_SOUND )
 		return;
 
-	if ( core_gameData->gen & (GEN_GTS80S|GEN_GTS80B) ) {
-		// GTS80 sound board
-		GTS80S_sound_latch(data);
-	}
-	if ( core_gameData->gen & GEN_GTS80SS ) {
-		// syGTS80 sound & speech board
-		GTS80SS_sound_latch(data|((GTS80locals.lampMatrix[1]&0x02)?0x10:0x00));
-	}
-	if ( core_gameData->gen & (GEN_GTS80B2K|GEN_GTS80B4K) ) {
-		// syGTS80b sound board (all generations)
-		GTS80BS_sound_latch(data);
-	}
-	// logerror("sound cmd: 0x%02x\n", data);
+	sndbrd_0_data_w(0, data);
 }
 
 /* GTS80 switch numbering, row and column is swapped */
@@ -765,14 +755,7 @@ static void GTS80_init(void) {
 
   /* Sound Enabled? */
   if (((Machine->gamedrv->flags & GAME_NO_SOUND)==0) && Machine->sample_rate)
-  {
-	  if ( core_gameData->gen & (GEN_GTS80S|GEN_GTS80B) )
-		GTS80S_init();
-	  else if ( core_gameData->gen & GEN_GTS80SS )
-		GTS80SS_init();
-	  else if ( core_gameData->gen & (GEN_GTS80B2K|GEN_GTS80B4K) )
-	    GTS80BS_init();
-  }
+	  sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(GTS80_MEMREG_SCPU1), NULL, NULL);
 
   riot6532_reset();
   
@@ -782,14 +765,7 @@ static void GTS80_init(void) {
 static void GTS80_exit(void) {
   /* Sound Enabled? */
   if (((Machine->gamedrv->flags & GAME_NO_SOUND)==0) && Machine->sample_rate)
-  {
-	  if ( core_gameData->gen & (GEN_GTS80S|GEN_GTS80B) )
-		GTS80S_exit();
-	  else if ( core_gameData->gen & GEN_GTS80SS )
-		GTS80SS_exit();
-	  else if ( core_gameData->gen & (GEN_GTS80B2K|GEN_GTS80B4K) )
-	    GTS80BS_exit();
-  }
+	  sndbrd_0_exit();
 
   riot6532_unconfig();
   core_exit();
