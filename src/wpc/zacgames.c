@@ -63,8 +63,18 @@ ZAC_ROMSTART44444(wsports,	"ws1.bin",CRC(58feb058) SHA1(50216bba5be28284e63d8265
 ZAC_ROMEND
 CORE_GAMEDEFNV(wsports,"Winter Sports",1978,"Zaccaria",mZAC1311,SOUNDFLAG)
 
-//07/78 House of Diamonds
-//09/78 Strike
+/*--------------------------------
+// House of Diamonds (07/78)
+/-------------------------------*/
+INITGAME1(hod,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1311,100)
+ZAC_ROMSTART44444(hod,		"hod_1.bin",CRC(b666af0e) SHA1(e6a96ed30733e7b011ba35d1a628cefd073f29a1),
+							"hod_4.bin",CRC(25b6be1f) SHA1(351138404865d69ccb3ad450deda0776e987fdd2),
+							"hod_3.bin",CRC(88b05360) SHA1(44992a01eaa8f58296d6fb003da8dad528f2b937),
+							"hod_2.bin",NO_DUMP,
+							"hod_5.bin",CRC(7adff5a2) SHA1(63359e564b05720c55905be0a1045fcf41850f53))
+ZAC_ROMEND
+CORE_GAMEDEFNV(hod,"House of Diamonds",1978,"Zaccaria",mZAC1311,SOUNDFLAG)
+
 //10/78 Ski Jump
 
 /*--------------------------------
