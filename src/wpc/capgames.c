@@ -30,6 +30,7 @@ const core_tLCDLayout cc_dispDMD256x64[] = {
 #define capInvSw9  {0, 0x0f, 0x0f, 0x8c, 0x80}
 #define capInvSw10 {0, 0x00, 0x01, 0x78, 0x00, 0x00, 0x01}
 #define capInvSw11 {0, 0x01, 0x00, 0x78, 0x88, 0x08, 0x10}
+#define capInvSw12 {0, 0x00, 0x00, 0x38, 0x00, 0x30, 0x00, 0x01}
 
 #define INITGAME(name, gameno, disp, balls, sb, lamps) \
 	CC_INPUT_PORTS_START(name, balls) CC_INPUT_PORTS_END \
@@ -173,7 +174,24 @@ CAPCOMS_SOUNDROM4a("u24_v11.bin",  CRC(d46212f4) SHA1(50f1279d995b597c468805b323
 				   "u30_v101.bin", CRC(f5432518) SHA1(8c26a267335289145f29db822bf7dfcb4730b208), \
 				   "u31_v101.bin", CRC(2b14e032) SHA1(c423ae5ed2fcc582201606bac3e766ec332b395a))
 CC_ROMEND
-CORE_GAMEDEFNV(ffv104,"Flipper Football",1996,"Capcom",cc2,0)
+CORE_GAMEDEFNV(ffv104,"Flipper Football (v1.04)",1996,"Capcom",cc2,0)
+//Version 1.01
+INITGAME(ffv101, 12, cc_dispDMD256x64, 3, SNDBRD_CAPCOMS, 8)
+CC_ROMSTART_8(ffv101,  "u1l_v100.bin",CRC(1c0b776f) SHA1(a1cabe9646973a97000a8f42295dfcfbed3691fa),
+                       "u1h_v100.bin",CRC(13590a38) SHA1(04cb048677b725a2563a12f18853372d5280d464),
+                       "u2l_v100.bin",CRC(ee373854) SHA1(cf4814c8c18ab5ca6bf3f134e3c3f95e6f8fe870),
+                       "u2h_v100.bin",CRC(8ebe3530) SHA1(903f38111482860eae44d5e601bbf26b50a40e2b),
+                       "u4l_v100.bin",CRC(55982601) SHA1(150c22e200855041746ac08f4817dd8d3a04f64d),
+                       "u4h_v100.bin",CRC(35b60875) SHA1(e3bc752f77cc6baeb7010e9e95bd10d4935e44da),
+                       "u3l_v101.bin",CRC(03319c15) SHA1(dbbdcfe5baab3ec654ddf4b331d1332ec3e47c76),
+                       "u3h_v101.bin",CRC(b55532cb) SHA1(b539a62d33eaa43057249450c40905b2d6fe1e1f))
+CAPCOMS_SOUNDROM4a("u24_v11.bin",  CRC(d46212f4) SHA1(50f1279d995b597c468805b323e0252800b28274),\
+				   "u28_v100.bin", CRC(78c60574) SHA1(399a98b707b32096da5dc6c902ac10feca371433), \
+				   "u29_v100.bin", CRC(8c37fbca) SHA1(5c3a3e1cc076e7a2732f3546005961d191040912), \
+				   "u30_v100.bin", CRC(a92885a1) SHA1(b06453c710fd86e97567e70ab7558b0c2fd54c72), \
+				   "u31_v100.bin", CRC(358c2727) SHA1(73ac6cc51a6ceb27934607909a0fff369a47ba7d))
+CC_ROMEND
+CORE_CLONEDEFNV(ffv101,ffv104,"Flipper Football (v1.01)",1996,"Capcom",cc2,0)
 
 /*-------------------------------------------------------------------
 / Big Bang Bar - Beta (11/96)
@@ -190,7 +208,7 @@ CAPCOMS_SOUNDROM4b("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e
 				   "u30_b17.bin", CRC(b4b6011b) SHA1(362c11353390f9ed2ee788847e6a2078b29c8806), \
 				   "u31_b17.bin", CRC(3016563f) SHA1(432e89dd975559017771da3543e9fe36e425a32b))
 CC_ROMEND
-CORE_GAMEDEFNV(bbb109,"Big Bang Bar (v1.09 Beta)",1996,"Capcom",cc2,0)
+CORE_GAMEDEFNV(bbb109,"Big Bang Bar (Beta 1.9 US)",1996,"Capcom",cc2,0)
 
 INITGAME(bbb108, 10, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 8)
 CC_ROMSTART_4(bbb108,  "u1l_b18.bin", CRC(60a02e1e) SHA1(c2967b4ba0ce01cb9f4ed5ceb4ca5f16596fc75b),
@@ -203,7 +221,7 @@ CAPCOMS_SOUNDROM4b("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e
 				   "u30_b17.bin", CRC(b4b6011b) SHA1(362c11353390f9ed2ee788847e6a2078b29c8806), \
 				   "u31_b17.bin", CRC(3016563f) SHA1(432e89dd975559017771da3543e9fe36e425a32b))
 CC_ROMEND
-CORE_CLONEDEFNV(bbb108,bbb109,"Big Bang Bar (v1.08 Beta)",1996,"Capcom",cc2,0)
+CORE_CLONEDEFNV(bbb108,bbb109,"Big Bang Bar (Beta 1.8 US)",1996,"Capcom",cc2,0)
 
 /*-------------------------------------------------------------------
 / Kingpin (12/96)
