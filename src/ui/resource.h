@@ -288,6 +288,7 @@
 #define IDC_CYCLETIME                   1210
 #define IDC_CYCLETIMESEC                1211
 #define IDC_AUDIO_LATENCY_TEXT          1212
+#define IDC_STRETCH_SCREENSHOT_LARGER   1213
 #define ID_CONTEXT_SHOW_FOLDER_START    39000
 #define ID_CONTEXT_SHOW_FOLDER_END      39200
 #define IDC_DMD_ONLY                    1230

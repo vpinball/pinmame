@@ -64,6 +64,7 @@
 #include "help.h"
 #include "history.h"
 #include "options.h"
+#include "dialogs.h"
 
 #include "DirectDraw.h"
 #include "DirectInput.h"
@@ -183,8 +184,6 @@ static void             SetRandomPickItem(void);
 static LRESULT CALLBACK HistoryWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 static LRESULT CALLBACK PictureFrameWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 static LRESULT CALLBACK PictureWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-static INT_PTR CALLBACK AboutDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam);
-static INT_PTR CALLBACK DirectXDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam);
 static INT_PTR CALLBACK LanguageDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam);
 
 static BOOL             SelectLanguageFile(HWND hWnd, TCHAR* filename);
@@ -249,7 +248,6 @@ static LRESULT          Statusbar_MenuSelect (HWND hwnd, WPARAM wParam, LPARAM l
 
 static void             UpdateHistory(void);
 
-INT_PTR CALLBACK AddCustomFileDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam);
 void RemoveCurrentGameCustomFolder(void);
 void RemoveGameCustomFolder(int driver_index);
 
@@ -573,7 +571,6 @@ struct GameDriver driver_neogeo =
 	0,
 	0,
 	0,
-	0,
         NOT_A_DRIVER,
 };
 #else
@@ -833,12 +830,14 @@ static int RunMAME(int nGameIndex)
 						&si,		  /* STARTUPINFO */
 						&pi))		  /* PROCESS_INFORMATION */
 	{
-		OutputDebugString("CreateProcess failed.");
+		dprintf("CreateProcess failed.");
 		dwExitCode = GetLastError();
 	}
 	else
 	{
-		SendIconToProcess(&pi, nGameIndex);
+		// this icon message sending causes our app to lose its foreground status
+		// so commented out until we have a solution
+		//SendIconToProcess(&pi, nGameIndex);
 
 		ShowWindow(hMain, SW_HIDE);
 
@@ -856,7 +855,10 @@ static int RunMAME(int nGameIndex)
 
 		ShowWindow(hMain, SW_SHOW);
 
-		SetForegroundWindow(hMain);
+		// workaround for losing foreground status with icon sending
+		// neither works yet
+		//SetForegroundWindow(hMain);
+		//SetActiveWindow(hMain);
 
 		// Close process and thread handles.
 		CloseHandle(pi.hProcess);
@@ -892,17 +894,17 @@ int Mame32Main(HINSTANCE    hInstance,
 	*/
 	for (;;)
 	{
-		/* phase1: check to see if we can do idle work */
+		// phase1: check to see if we can do idle work
 		while (idle_work && !PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
 		{
-			/* call OnIdle while idle_work */
+			// call OnIdle while idle_work
 			OnIdle();
 		}
 
-		/* phase2: pump messages while available */
+		// phase2: pump messages while available
 		do
 		{
-			/* pump message, but quit on WM_QUIT */
+			// pump message, but quit on WM_QUIT
 			if (!PumpMessage())
 			{
 				Win32UI_exit();
@@ -2218,7 +2220,6 @@ static void SortListView(void)
 {
 	LV_FINDINFO lvfi;
 
-	dprintf("in sort list view");
 	ListView_SortItems(hwndList, ListCompareFunc, GetSortColumn());
 
 	ResetHeaderSortIcon();
@@ -2328,15 +2329,18 @@ static void OnSize(HWND hWnd, UINT nState, int nWidth, int nHeight)
 	ResizeProgressBar();
 	if (firstTime == FALSE)
 		OnSizeSplitter(hMain);
-	firstTime = FALSE;
+	//firstTime = FALSE;
 	/* Update the splitters structures as appropriate */
 	RecalcSplitters();
+	if (firstTime == FALSE)
+		ResizePickerControls(hMain);
+	firstTime = FALSE;
 	UpdateScreenShot();
 }
 
 static void ResizeWindow(HWND hParent, Resize *r)
 {
-	int cmkindex = 0, dx, dy;
+	int cmkindex = 0, dx, dy, dx1, dtempx;
 	HWND hControl;
 	RECT parent_rect, rect;
 	ResizeItem *ri;
@@ -2347,8 +2351,11 @@ static void ResizeWindow(HWND hParent, Resize *r)
 
 	/* Calculate change in width and height of parent window */
 	GetClientRect(hParent, &parent_rect);
-	dx = parent_rect.right	- r->rect.right;
+	//dx = parent_rect.right - r->rect.right;
+	dtempx = parent_rect.right - r->rect.right;
 	dy = parent_rect.bottom - r->rect.bottom;
+	dx = dtempx/2;
+	dx1 = dtempx - dx;
 	ClientToScreen(hParent, &p);
 
 	while (r->items[cmkindex].type != RA_END)
@@ -3663,10 +3670,8 @@ static BOOL MameCommand(HWND hwnd,int id, HWND hwndCtl, UINT codeNotify)
 	{
 	    int  nResult;
 
-		nResult = DialogBox(GetModuleHandle(NULL),
-							MAKEINTRESOURCE(IDD_CUSTOM_FILE),
-							hMain,
-							AddCustomFileDialogProc);
+		nResult = DialogBoxParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_CUSTOM_FILE),
+								 hMain,AddCustomFileDialogProc,GetSelectedPickItem());
 		SetFocus(hwndList);
 		break;
 	}
@@ -4626,58 +4631,6 @@ static void SetRandomPickItem()
 	{
 		SetSelectedPick(rand() % nListCount);
 	}
-}
-
-static INT_PTR CALLBACK AboutDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
-{
-	switch (Msg)
-	{
-	case WM_INITDIALOG:
-		{
-			HBITMAP hBmp;
-			hBmp = (HBITMAP)LoadImage(GetModuleHandle(NULL),
-									  MAKEINTRESOURCE(IDB_ABOUT),
-									  IMAGE_BITMAP, 0, 0, LR_SHARED);
-			SendMessage(GetDlgItem(hDlg, IDC_ABOUT), STM_SETIMAGE, (WPARAM)IMAGE_BITMAP, (LPARAM)hBmp);
-			Static_SetText(GetDlgItem(hDlg, IDC_VERSION), GetVersionString());
-		}
-		return 1;
-
-	case WM_COMMAND:
-		EndDialog(hDlg, 0);
-		return 1;
-	}
-	return 0;
-}
-
-
-static INT_PTR CALLBACK DirectXDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
-{
-	HWND hEdit;
-
-	const char *directx_help =
-		MAME32NAME " requires DirectX version 3 or later, which is a set of operating\r\n"
-		"system extensions by Microsoft for Windows 9x, NT and 2000.\r\n\r\n"
-		"Visit Microsoft's DirectX web page at http://www.microsoft.com/directx\r\n"
-		"download DirectX, install it, and then run " MAME32NAME " again.\r\n";
-
-	switch (Msg)
-	{
-	case WM_INITDIALOG:
-		hEdit = GetDlgItem(hDlg, IDC_DIRECTX_HELP);
-		Edit_SetSel(hEdit, Edit_GetTextLength(hEdit), Edit_GetTextLength(hEdit));
-		Edit_ReplaceSel(hEdit, directx_help);
-		return 1;
-
-	case WM_COMMAND:
-		if (LOWORD(wParam) == IDB_WEB_PAGE)
-			ShellExecute(hMain, NULL, "http://www.microsoft.com/directx", NULL, NULL, SW_SHOWNORMAL);
-
-		if (LOWORD(wParam) == IDCANCEL || LOWORD(wParam) == IDB_WEB_PAGE)
-			EndDialog(hDlg, 0);
-		return 1;
-	}
-	return 0;
 }
 
 static BOOL CommonFileDialog(common_file_dialog_proc cfd, char *filename, BOOL bZip)
@@ -6301,126 +6254,6 @@ int UpdateLoadProgress(const char* name, const struct rom_load_data *romdata)
 	return 0;
 }
 
-INT_PTR CALLBACK AddCustomFileDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
-{
-    static LPTREEFOLDER default_selection = NULL;
-
-	switch (Msg)
-	{
-	case WM_INITDIALOG:
-	{
-	    /* init the combo box */
-	    TREEFOLDER **folders;
-		int num_folders;
-		int i;
-		TVINSERTSTRUCT tvis;
-		TVITEM tvi;
-		BOOL first_entry = TRUE;
-		HIMAGELIST treeview_icons = GetTreeViewIconList();
-
-		TreeView_SetImageList(GetDlgItem(hDlg,IDC_CUSTOM_TREE), treeview_icons, LVSIL_NORMAL);
-
-		GetFolders(&folders,&num_folders);
-
-		/* should add "New..." */
-
-		/* insert custom folders into our tree view */
-		for (i=0;i<num_folders;i++)
-		{
-		    if (folders[i]->m_dwFlags & F_CUSTOM)
-			{
-			    HTREEITEM hti;
-				int jj;
-
-				if (folders[i]->m_nParent == -1)
-				{
-				    tvis.hParent = TVI_ROOT;
-					tvis.hInsertAfter = TVI_SORT;
-					tvi.mask = TVIF_TEXT | TVIF_PARAM | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
-					tvi.pszText = folders[i]->m_lpTitle;
-					tvi.lParam = (LPARAM)folders[i];
-					tvi.iImage = GetTreeViewIconIndex(folders[i]->m_nIconId);
-					tvi.iSelectedImage = 0;
-#if defined(__GNUC__) /* bug in commctrl.h */
-					tvis.item = tvi;
-#else
-					tvis.DUMMYUNIONNAME.item = tvi;
-#endif
-					
-					hti = TreeView_InsertItem(GetDlgItem(hDlg,IDC_CUSTOM_TREE),&tvis);
-
-					/* look for children of this custom folder */
-					for (jj=0;jj<num_folders;jj++)
-					{
-					    if (folders[jj]->m_nParent == i)
-						{
-						    HTREEITEM hti_child;
-						    tvis.hParent = hti;
-							tvis.hInsertAfter = TVI_SORT;
-							tvi.mask = TVIF_TEXT | TVIF_PARAM | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
-							tvi.pszText = folders[jj]->m_lpTitle;
-							tvi.lParam = (LPARAM)folders[jj];
-							tvi.iImage = GetTreeViewIconIndex(folders[jj]->m_nIconId);
-							tvi.iSelectedImage = 0;
-#if defined(__GNUC__) /* bug in commctrl.h */
-					        tvis.item = tvi;
-#else
-					        tvis.DUMMYUNIONNAME.item = tvi;
-#endif							
-							hti_child = TreeView_InsertItem(GetDlgItem(hDlg,IDC_CUSTOM_TREE),&tvis);
-							if (folders[jj] == default_selection)
-							    TreeView_SelectItem(GetDlgItem(hDlg,IDC_CUSTOM_TREE),hti_child);
-						}
-					}
-
-					/*TreeView_Expand(GetDlgItem(hDlg,IDC_CUSTOM_TREE),hti,TVE_EXPAND);*/
-					if (first_entry || folders[i] == default_selection)
-					{
-					    TreeView_SelectItem(GetDlgItem(hDlg,IDC_CUSTOM_TREE),hti);
-						first_entry = FALSE;
-					}
-
-				}
-				
-			}
-		}
-		
-      	SetWindowText(GetDlgItem(hDlg,IDC_CUSTOMFILE_GAME),ModifyThe(drivers[GetSelectedPickItem()]->description));
-
-		return TRUE;
-	}
-	case WM_COMMAND:
-		switch (GET_WM_COMMAND_ID(wParam, lParam))
-		{
-		case IDOK:
-		{
-		   TVITEM tvi;
-		   tvi.hItem = TreeView_GetSelection(GetDlgItem(hDlg,IDC_CUSTOM_TREE));
-		   tvi.mask = TVIF_PARAM;
-		   if (TreeView_GetItem(GetDlgItem(hDlg,IDC_CUSTOM_TREE),&tvi) == TRUE)
-		   {
-			  /* should look for New... */
-		
-			  default_selection = (LPTREEFOLDER)tvi.lParam; /* start here next time */
-
-			  AddToCustomFolder((LPTREEFOLDER)tvi.lParam,GetSelectedPickItem());
-		   }
-
-		   EndDialog(hDlg, 0);
-		   return TRUE;
-
-		   break;
-		}
-		case IDCANCEL:
-			EndDialog(hDlg, 0);
-			return TRUE;
-
-		}
-		break;
-	}
-	return 0;
-}
-
 void RemoveCurrentGameCustomFolder(void)
 {
     RemoveGameCustomFolder(GetSelectedPickItem());
@@ -6662,9 +6495,42 @@ void CalculateBestScreenShotRect(HWND hWnd, RECT *pRect, BOOL restrict_height)
 	}
 	else
 	{
-		/* Use the bitmaps size if it fits */
+		if (GetStretchScreenShotLarger())
+		{
+			rect.right	-= 10;
+			rect.bottom -= 10;
+			rWidth	-= 10;
+			rHeight -= 10;
+			bReduce = TRUE;
+			// Try to scale it properly
+			// assumes square pixels, doesn't consider aspect ratio
+			if (x < y)
+				scale = (double)rWidth / x;
+			else
+				scale = (double)rHeight / y;
+			
+			destW = (int)(x * scale);
+			destH = (int)(y * scale);
+			
+			// If it's too big, scale again
+			if (destW > rWidth || destH > rHeight)
+			{
+				if (destW > rWidth)
+					scale = (double)rWidth	/ destW;
+				else
+					scale = (double)rHeight / destH;
+				
+				destW = (int)(destW * scale);
+				destH = (int)(destH * scale);
+			}
+		}
+		else
+		{
+			// Use the bitmaps size if it fits
 		destW = x;
 		destH = y;
+		}
+
 	}
 
 

@@ -263,6 +263,8 @@ typedef struct
     BOOL     broadcast;
     BOOL     random_bg;
     int      cycle_screenshot;
+	BOOL stretch_screenshot_larger;
+
     char     *default_game;
     int      column_width[COLUMN_MAX];
     int      column_order[COLUMN_MAX];
@@ -377,6 +379,9 @@ BOOL GetJoyGUI(void);
 
 void SetCycleScreenshot(int cycle_screenshot);
 int GetCycleScreenshot(void);
+
+void SetStretchScreenShotLarger(BOOL stretch);
+BOOL GetStretchScreenShotLarger(void);
 
 void SetBroadcast(BOOL broadcast);
 BOOL GetBroadcast(void);

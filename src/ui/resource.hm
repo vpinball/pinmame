@@ -83,6 +83,7 @@
 #define HIDC_SLEEP                      0x809e03f8    // IDD_PROP_MISC
 #define HIDC_START_GAME_CHECK           0x80ad045b    // IDD_INTERFACE_OPTIONS
 #define HIDC_STEADYKEY                  0x809d0480    // IDD_PROP_INPUT
+#define HIDC_STRETCH_SCREENSHOT_LARGER  0x80ad04bd    // IDD_INTERFACE_OPTIONS
 #define HIDC_SWITCHBPP                  0x809c04de    // IDD_PROP_ADVANCED
 #define HIDC_SWITCHRES                  0x809c04dd    // IDD_PROP_ADVANCED
 #define HIDC_SYNCREFRESH                0x809c04e2    // IDD_PROP_ADVANCED

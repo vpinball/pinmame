@@ -278,6 +278,7 @@ void StopTracking(HWND hWnd)
 		// Redraw the screen area
 		ResizePickerControls(hWnd);
 		UpdateScreenShot();
+		InvalidateRect(GetMainWindow(),NULL,TRUE);
 	}
 }
 
