@@ -18,6 +18,7 @@ static struct intfData {
   WRITE_HANDLER((*data_cb));
   WRITE_HANDLER((*ctrl_cb));
   int type;
+  int manCmdBuf; // if board requires 2 sound commands, keep last value here.
 } intf[2];
 
 void sndbrd_init(int brdNo, int brdType, int cpuNo, UINT8 *romRegion,
@@ -25,13 +26,14 @@ void sndbrd_init(int brdNo, int brdType, int cpuNo, UINT8 *romRegion,
   const struct sndbrdIntf *b = allsndboards[brdType>>8];
   struct intfData *i = &intf[brdNo];
   struct sndbrdData brdData;
-  if (Machine->drv->sound[0].sound_type) {
+  if ((b->flags & SNDBRD_NOTSOUND) || Machine->drv->sound[0].sound_type) {
     brdData.boardNo = brdNo; brdData.subType = brdType & 0xff;
     brdData.cpuNo   = cpuNo; brdData.romRegion = romRegion;
     i->brdIntf = b;
     i->type    = brdType;
     i->data_cb = data_cb;
     i->ctrl_cb = ctrl_cb;
+    i->manCmdBuf = -1;
     if (b && (coreGlobals.soundEn || b->flags & SNDBRD_NOTSOUND) && b->init)
       b->init(&brdData);
   }
@@ -106,8 +108,11 @@ void sndbrd_data_cb(int board, int data) {
 }
 void sndbrd_manCmd(int board, int cmd) {
   const struct sndbrdIntf *b = intf[board].brdIntf;
-  if (b && (coreGlobals.soundEn || (b->flags & SNDBRD_NOTSOUND)) && b->manCmd_w)
-    b->manCmd_w(0, cmd);
+  if (b && (coreGlobals.soundEn || (b->flags & SNDBRD_NOTSOUND)) && b->manCmd_w) {
+    if ((b->flags & SNDBRD_DOUBLECMD) && (intf[board].manCmdBuf < 0))
+      { intf[board].manCmdBuf = cmd; return; }
+    b->manCmd_w(intf[board].manCmdBuf, cmd); intf[board].manCmdBuf = -1;
+  }
 }
 void sndbrd_0_init(int brdType, int cpuNo, UINT8 *romRegion,
                    WRITE_HANDLER((*data_cb)),WRITE_HANDLER((*ctrl_cb))) {
