@@ -319,20 +319,28 @@ CORE_CLONEDEFNV(mcastleg,mcastle,"Magic Castle (german speech)",1984,"Zaccaria",
 /*--------------------------------
 / Robot (01/85)
 /-------------------------------*/
-// Either there's a bad rom on this one, or the IRQ timing is incredibly critical!
 MACHINE_DRIVER_START(ZAC_robot)
   MDRV_IMPORT_FROM(ZAC2X)
   MDRV_CPU_MODIFY("mcpu")
-  MDRV_CPU_PERIODIC_INT(ZAC_ownirq, 49999)
+  MDRV_CPU_PERIODIC_INT(ZAC_ownirq, 470)
 MACHINE_DRIVER_END
 INITGAME(robot,GEN_ZAC2,dispZAC3,SNDBRD_ZAC13136)
-ZAC_ROMSTART020(robot,	"robot_1.lgc",CRC(96a87432) SHA1(d6a7e4fa6221bea0ab3bb6e7dc46d1732b29d53e),
+ZAC_ROMSTART020(robot,	"robot_1.lgc",CRC(5e754418) SHA1(81a25ef85147d8c043b7d243d9d0d3e8bf90f852),
 						"robot_2.lgc",CRC(28ba9687) SHA1(8e99834328783361856fa9632b2c6e3a5a05d49b))
-ZAC_SOUNDROM_de2g(		"robot_d.snd",CRC(88685b1e) SHA1(7d49a1d42f3e07948390a00a562aeba9dd4ddeeb),
-						"robot_e.snd",CRC(e326a851) SHA1(c2bb5e329803922fa1c1ca30be6e3ae3d292135a),
-						"robot_g.snd",CRC(7ed5da55) SHA1(d70f1f470cf9d300375600352f9625b4e34f5ed3))
+ZAC_SOUNDROM_de2g(		"robot_d.snd",CRC(ab5e5524) SHA1(9aae2560bccf64daeab0514c8934c55f77fe240d),
+						"robot_e.snd",CRC(2f314e33) SHA1(1f92aff3d99c2e86820720a3290285b9f36cb15b),
+						"robot_g.snd",CRC(6fb1caf5) SHA1(0bc6a6edaa9589b7d171f96fa74855a022c2b050))
 ZAC_ROMEND
 CORE_GAMEDEFNV(robot,"Robot",1985,"Zaccaria",ZAC_robot,GAME_NOT_WORKING)
+
+INITGAME(robotg,GEN_ZAC2,dispZAC3,SNDBRD_ZAC13136)
+ZAC_ROMSTART020(robotg,	"robot_1.lgc", CRC(5e754418) SHA1(81a25ef85147d8c043b7d243d9d0d3e8bf90f852),
+						"robot_2.lgc", CRC(28ba9687) SHA1(8e99834328783361856fa9632b2c6e3a5a05d49b))
+ZAC_SOUNDROM_de2g(		"robot_dg.snd",CRC(88685b1e) SHA1(7d49a1d42f3e07948390a00a562aeba9dd4ddeeb),
+						"robot_eg.snd",CRC(e326a851) SHA1(c2bb5e329803922fa1c1ca30be6e3ae3d292135a),
+						"robot_gg.snd",CRC(7ed5da55) SHA1(d70f1f470cf9d300375600352f9625b4e34f5ed3))
+ZAC_ROMEND
+CORE_CLONEDEFNV(robotg,robot,"Robot (german speech)",1985,"Zaccaria",ZAC_robot,GAME_NOT_WORKING)
 
 /*--------------------------------
 / Clown (07/85)
