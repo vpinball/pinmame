@@ -15,7 +15,7 @@ N = No Lead, L = Have a Lead on Rom
 ??Strikes 'N Spares 1995 (????????)
 */
 static struct core_dispLayout gts_128x32DMD[] = {
-  {0,0,32,128,CORE_DMD,gts3_dmd128x32}, {0}
+  {0,0,32,128,CORE_DMD,(void *)gts3_dmd128x32}, {0}
 };
 
 #define ALPHA	 GTS3_dispAlpha
