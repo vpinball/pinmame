@@ -80,7 +80,7 @@ SOURCE="$(InputPath)"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_ATL_STATIC_REGISTRY" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /G5 /MT /W3 /O2 /I "src" /I "src\zlib" /I "src\wpc" /I "src\vc" /I "src\win32c" /I "src\win32com" /I "src\win32com\autogen" /I "src\windows" /D "NDEBUG" /D "_ATL_STATIC_REGISTRY" /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE="static __inline" /D inline=__inline /D __inline__=__inline /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D "ZLIB_DLL" /D "VPINMAME" /D "PINMAME" /D MAMEVER=5900 /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /YX /FD /c
+# ADD CPP /nologo /G5 /MT /w /W0 /O2 /I "src" /I "src\zlib" /I "src\wpc" /I "src\vc" /I "src\win32c" /I "src\win32com" /I "src\win32com\autogen" /I "src\windows" /D "NDEBUG" /D "_ATL_STATIC_REGISTRY" /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE="static __inline" /D inline=__inline /D __inline__=__inline /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D "ZLIB_DLL" /D "VPINMAME" /D "PINMAME" /D MAMEVER=5900 /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /YX /FD /c
 # ADD MTL /out ".\src\win32com\autogen"
 # ADD BASE RSC /l 0x407 /d "NDEBUG"
 # ADD RSC /l 0x409 /i ".\src\win32com\autogen" /d "NDEBUG"
@@ -89,7 +89,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 kernel32.lib user32.lib shell32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zlibstatmt.lib winmm.lib dsound.lib version.lib dxguid.lib ddraw.lib dinput.lib /nologo /version:4.0 /subsystem:windows /dll /machine:I386 /libpath:"zlib"
+# ADD LINK32 kernel32.lib user32.lib shell32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zlibstatmt.lib winmm.lib dsound.lib version.lib dxguid.lib ddraw.lib dinput.lib /nologo /version:20.0 /subsystem:windows /dll /machine:I386 /libpath:"zlib"
 # Begin Custom Build - Copying and performing registration
 IntDir=.\obj/VPinMAME/Release
 ProjDir=.
@@ -691,25 +691,14 @@ SOURCE=.\src\wpc\gen.h
 # Begin Source File
 
 SOURCE=.\src\wpc\gp.c
-# PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\gp.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-# PROP Exclude_From_Build 1
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\gpgames.c
-# PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
@@ -796,6 +785,18 @@ SOURCE=.\src\wpc\mech.c
 # Begin Source File
 
 SOURCE=.\src\wpc\mech.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\midgames.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\midway.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\midway.h
 # End Source File
 # Begin Source File
 
@@ -1173,6 +1174,66 @@ SOURCE=.\src\cpu\i8085\i8085cpu.h
 # Begin Source File
 
 SOURCE=.\src\cpu\i8085\i8085daa.h
+# End Source File
+# End Group
+# Begin Group "I86"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\cpu\i86\ea.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i86\host.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i86\i86.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i86\i86.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i86\i86dasm.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i86\i86intf.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i86\modrm.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i86\table86.h
+# End Source File
+# End Group
+# Begin Group "I4004"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\cpu\i4004\4004dasm.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i4004\i4004.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i4004\i4004.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i4004\i4004cpu.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i4004\i4004daa.h
 # End Source File
 # End Group
 # End Group
