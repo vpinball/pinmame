@@ -110,7 +110,7 @@ TAITO_SOUNDROMS22("cn_s1.bin", CRC(aec5069a),
                   "cn_s2.bin", CRC(a0508863))
 TAITO_ROMEND
 #define input_ports_cavnegro input_ports_taito
-CORE_GAMEDEFNV(cavnegro,"Cavaleiro Negro",1981,"Taito",taito_sintevox,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(cavnegro,"Cavaleiro Negro",1981,"Taito",taito_sintevox,0)
 
 /*--------------------------------
 / Sure Shot
@@ -195,7 +195,7 @@ TAITO_SOUNDROMS22("titan_s1.bin", CRC(36b5c196),
                   "titan_s2.bin", CRC(3bd0e6ab))
 TAITO_ROMEND
 #define input_ports_titan input_ports_taito
-CORE_GAMEDEFNV(titan,"Titan",1982,"Taito",taito_sintevox,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(titan,"Titan",1982,"Taito",taito_sintevox,0)
 
 /*--------------------------------
 / Zarza
@@ -236,7 +236,7 @@ TAITO_SOUNDROMS22("hawk_s1.bin", CRC(47549394),
                   "hawk_s2.bin", CRC(29bef82f))
 TAITO_ROMEND
 #define input_ports_hawkman input_ports_taito
-CORE_GAMEDEFNV(hawkman,"Hawkman",1982,"Taito",taito_sintevox,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(hawkman,"Hawkman",1982,"Taito",taito_sintevox,0)
 
 /*--------------------------------
 / Speed Test
@@ -277,12 +277,11 @@ TAITO_ROMSTART2222(snake,"snake1.bin",CRC(7bb79585),
                          "snake3.bin",CRC(6f054bc0),
                          "snake4.bin",CRC(ed231064))
 // NOT AVAILABLE
-TAITO_SOUNDROMS444("snake_s1.bin", NO_DUMP,
-                   "snake_s2.bin", NO_DUMP,
-                   "snake_s3.bin", NO_DUMP)
+TAITO_SOUNDROMS44("snake_s1.bin", CRC(f7c1623c),
+                  "snake_s2.bin", CRC(18316d73))
 TAITO_ROMEND
 #define input_ports_snake input_ports_taito
-CORE_GAMEDEFNV(snake,"Snake Machine",1982,"Taito",taito_sintetizadorpp,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(snake,"Snake Machine",1982,"Taito",taito_sintetizadorpp,0)
 
 //??/82 Gork
 //??/8? Ogar
@@ -334,7 +333,7 @@ TAITO_SOUNDROMS444("sshtl_s1.bin", NO_DUMP,
                    "sshtl_s3.bin", NO_DUMP)
 TAITO_ROMEND
 #define input_ports_sshuttle input_ports_taito
-CORE_GAMEDEFNV(sshuttle,"Space Shuttle (Taito)",1985,"Taito",taito_sintetizadorpp,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(sshuttle,"Space Shuttle (Taito)",1985,"Taito",taito_sintetizadorpp,0)
 
 /*--------------------------------
 / Polar Explorer
@@ -349,4 +348,4 @@ TAITO_SOUNDROMS444("polar_s1.bin", CRC(baff1a67),
 				   "polar_s3.bin", CRC(d574bc94))
 TAITO_ROMEND
 #define input_ports_polar input_ports_taito
-CORE_GAMEDEFNV(polar,"Polar Explorer",198?,"Taito",taito_sintetizadorpp,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(polar,"Polar Explorer",198?,"Taito",taito_sintetizadorpp,0)

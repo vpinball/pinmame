@@ -226,7 +226,7 @@ MEMORY_READ_START(taitospp_readmem)
   { 0x0400, 0x0403, pia_r(SP_PIA0) },
   { 0x1007, 0x1007, unknown1007 },
   { 0x100d, 0x100d, unknown100d },
-  { 0x5000, 0x7fff, MRA_ROM },
+  { 0x2000, 0x7fff, MRA_ROM },
   { 0xf000, 0xffff, MRA_ROM }, /* reset vector */
 MEMORY_END
 
@@ -240,7 +240,7 @@ MEMORY_WRITE_START(taitospp_writemem)
   { 0x100c, 0x100c, ay8910_1_ctrl_port },
   { 0x100e, 0x100e, ay8910_1_data_port },
   { 0x2000, 0x2000, unknown2000 },
-  { 0x5000, 0x7fff, MWA_ROM },
+  { 0x2001, 0x7fff, MWA_ROM },
   { 0xf000, 0xffff, MWA_ROM }, /* reset vector */
 MEMORY_END
 
