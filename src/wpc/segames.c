@@ -415,16 +415,16 @@ SE_ROMEND
 CORE_GAMEDEFNV(monopoly,"Monopoly",2001,"Stern",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ Playboy 2.03
+/ Playboy 3.02
 /-------------------------------------------------------------------*/
 INITGAME(playboys,GEN_WS,se_dmd128x32,0)
-SE128_ROMSTART(playboys,"pbcpu.203",   0x50eb01b0)
-DE_DMD32ROM8x(          "pbdisp-a.201",0x78ec6af8)
-DE2S_SOUNDROM18888(     "pbsndu7.102", 0x12a68f34,
-                        "pbsndu17.100",0xf5502fec,
-                        "pbsndu21.100",0x7869d34f,
-                        "pbsndu36.100",0xd10f14a3,
-                        "pbsndu37.100",0x6642524a)
+SE128_ROMSTART(playboys, "pbcpu302.bin", 0x206285ed)
+DE_DMD32ROM8x(           "pbdisp-a.300", 0x2dbb372a)
+DE2S_SOUNDROM18888(      "pbsndu7.102",  0x12a68f34,
+                         "pbsndu17.100", 0xf5502fec,
+                         "pbsndu21.100", 0x7869d34f,
+                         "pbsndu36.100", 0xd10f14a3,
+                         "pbsndu37.100", 0x6642524a)
 SE_ROMEND
 #define input_ports_playboys input_ports_se
 CORE_GAMEDEFNV(playboys,"Playboy (Stern)",2002,"Stern",de_mSES2,GAME_NOCRC)
@@ -432,13 +432,13 @@ CORE_GAMEDEFNV(playboys,"Playboy (Stern)",2002,"Stern",de_mSES2,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / Playboy (France)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(playboyf,"pbcpu.203",   0x50eb01b0)
-DE_DMD32ROM8x(          "pbdisp-f.201",0xeedea4f4)
-DE2S_SOUNDROM18888(     "pbsndu7.102", 0x12a68f34,
-                        "pbsndu17.100",0xf5502fec,
-                        "pbsndu21.100",0x7869d34f,
-                        "pbsndu36.100",0xd10f14a3,
-                        "pbsndu37.100",0x6642524a)
+SE128_ROMSTART(playboyf, "pbcpu302.bin", 0x206285ed)
+DE_DMD32ROM8x(           "pbdisp-f.300", 0x69ab3bb2)
+DE2S_SOUNDROM18888(      "pbsndu7.102",  0x12a68f34,
+                         "pbsndu17.100", 0xf5502fec,
+                         "pbsndu21.100", 0x7869d34f,
+                         "pbsndu36.100", 0xd10f14a3,
+                         "pbsndu37.100", 0x6642524a)
 SE_ROMEND
 #define input_ports_playboyf input_ports_se
 #define init_playboyf init_playboys
@@ -447,13 +447,13 @@ CORE_CLONEDEFNV(playboyf,playboys,"Playboy (France)",2002,"Stern",de_mSES2,GAME_
 /*-------------------------------------------------------------------
 / Playboy (Germany)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(playboyd,"pbcpu.203",   0x50eb01b0)
-DE_DMD32ROM8x(          "pbdisp-g.201",0xff525cc7)
-DE2S_SOUNDROM18888(     "pbsndu7.102", 0x12a68f34,
-                        "pbsndu17.100",0xf5502fec,
-                        "pbsndu21.100",0x7869d34f,
-                        "pbsndu36.100",0xd10f14a3,
-                        "pbsndu37.100",0x6642524a)
+SE128_ROMSTART(playboyd, "pbcpu302.bin", 0x206285ed)
+DE_DMD32ROM8x(           "pbdisp-g.300", 0xed7b7c62)
+DE2S_SOUNDROM18888(      "pbsndu7.102",  0x12a68f34,
+                         "pbsndu17.100", 0xf5502fec,
+                         "pbsndu21.100", 0x7869d34f,
+                         "pbsndu36.100", 0xd10f14a3,
+                         "pbsndu37.100", 0x6642524a)
 SE_ROMEND
 #define input_ports_playboyd input_ports_se
 #define init_playboyd init_playboys
@@ -462,13 +462,13 @@ CORE_CLONEDEFNV(playboyd,playboys,"Playboy (Germany)",2002,"Stern",de_mSES2,GAME
 /*-------------------------------------------------------------------
 / Playboy (Italy)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(playboyi,"pbcpu.203",   0x50eb01b0)
-DE_DMD32ROM8x(          "pbdisp-i.201",0x48f190dc)
-DE2S_SOUNDROM18888(     "pbsndu7.102", 0x12a68f34,
-                        "pbsndu17.100",0xf5502fec,
-                        "pbsndu21.100",0x7869d34f,
-                        "pbsndu36.100",0xd10f14a3,
-                        "pbsndu37.100",0x6642524a)
+SE128_ROMSTART(playboyi, "pbcpu302.bin", 0x206285ed)
+DE_DMD32ROM8x(           "pbdisp-i.300", 0x74c8cedf)
+DE2S_SOUNDROM18888(      "pbsndu7.102",  0x12a68f34,
+                         "pbsndu17.100", 0xf5502fec,
+                         "pbsndu21.100", 0x7869d34f,
+                         "pbsndu36.100", 0xd10f14a3,
+                         "pbsndu37.100", 0x6642524a)
 SE_ROMEND
 #define input_ports_playboyi input_ports_se
 #define init_playboyi init_playboys
@@ -477,13 +477,13 @@ CORE_CLONEDEFNV(playboyi,playboys,"Playboy (Italy)",2002,"Stern",de_mSES2,GAME_N
 /*-------------------------------------------------------------------
 / Playboy (Spain)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(playboye,"pbcpu.203",   0x50eb01b0)
-DE_DMD32ROM8x(          "pbdisp-l.201",0xeaa65c45)
-DE2S_SOUNDROM18888(     "pbsndu7.102", 0x12a68f34,
-                        "pbsndu17.100",0xf5502fec,
-                        "pbsndu21.100",0x7869d34f,
-                        "pbsndu36.100",0xd10f14a3,
-                        "pbsndu37.100",0x6642524a)
+SE128_ROMSTART(playboye, "pbcpu302.bin", 0x206285ed)
+DE_DMD32ROM8x(           "pbdisp-l.300", 0xe7697fc3)
+DE2S_SOUNDROM18888(      "pbsndu7.102",  0x12a68f34,
+                         "pbsndu17.100", 0xf5502fec,
+                         "pbsndu21.100", 0x7869d34f,
+                         "pbsndu36.100", 0xd10f14a3,
+                         "pbsndu37.100", 0x6642524a)
 SE_ROMEND
 #define input_ports_playboye input_ports_se
 #define init_playboye init_playboys
