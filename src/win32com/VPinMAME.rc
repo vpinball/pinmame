@@ -73,8 +73,8 @@ IDR_WSHDLG              REGISTRY MOVEABLE PURE  "WSHDlg.rgs"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,12,0,0
- PRODUCTVERSION 1,12,0,0
+ FILEVERSION 1,12,1,0
+ PRODUCTVERSION 1,12,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -92,14 +92,14 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "COM class for PinMAME\0"
-            VALUE "FileVersion", "1, 12, 0, 0\0"
+            VALUE "FileVersion", "1, 12, 1, 0\0"
             VALUE "InternalName", "VPinMAME\0"
             VALUE "LegalCopyright", "© 2000-2002 by the Authors\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "VPinMAME.DLL\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Visual PinMAME\0"
-            VALUE "ProductVersion", "1.12\0"
+            VALUE "ProductVersion", "1.12.1 Beta\0"
             VALUE "SpecialBuild", "\0"
         END
     END
@@ -179,7 +179,7 @@ END
 IDD_ABOUTDLG DIALOGEX 0, 0, 317, 188
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "About Visual PinMAME..."
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,200,167,50,14
     CONTROL         100,IDC_STATIC,"Static",SS_BITMAP,7,7,133,123
