@@ -146,7 +146,7 @@ BY6803_ROMSTART44(cityslck, "u2.128",    0x94bcf162,
 BYTCS_SOUNDROM0(            "u7_snd.512",0x6941d68a)
 BY6803_ROMEND
 #define input_ports_cityslck input_ports_by6803
-CORE_GAMEDEFNV(cityslck,"City Slicker",1987,"Bally",by_mBY6803_TCSS,0)
+CORE_GAMEDEFNV(cityslck,"City Slicker",1987,"Bally",by_mBY6803_TCS2S,0)
 
 /*------------------------------------
 / Hardbody (6803-0E94: 03/87)
@@ -158,7 +158,7 @@ BY6803_ROMSTART44(hardbody,"cpu_u2.128",  0xc9248b47,
 BYTCS_SOUNDROM0(           "sound_u7.512",0xc96f91af)
 BY6803_ROMEND
 #define input_ports_hardbody input_ports_by6803
-CORE_GAMEDEFNV(hardbody,"Hardbody",1987,"Bally",by_mBY6803_TCSS,0)
+CORE_GAMEDEFNV(hardbody,"Hardbody",1987,"Bally",by_mBY6803_TCS2S,0)
 
 // Games below use Sounds Deluxe Sound Hardware
 

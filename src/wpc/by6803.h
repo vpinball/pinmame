@@ -110,6 +110,7 @@ extern MACHINE_DRIVER_EXTERN(by6803_S11CS);
 #define by_mBY6803_61S   by6803_61S
 #define by_mBY6803_45S   by6803_45S
 #define by_mBY6803_TCSS  by6803_TCSS
+#define by_mBY6803_TCS2S by6803_TCS2S
 #define by_mBY6803_SDS   by6803_SDS
 #define by_mBY6803_S11CS by6803_S11CS
 
