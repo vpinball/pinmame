@@ -6,7 +6,7 @@
 #include "sim.h"
 
 #define BY6803_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
-#define BY6803_LAMPSMOOTH      4 /* Smooth the lamps over this number of VBLANKS */
+#define BY6803_LAMPSMOOTH      6 /* Smooth the lamps over this number of VBLANKS */
 #define BY6803_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKS */
 
 /*-- Common Inports for BY6803 Games --*/

@@ -43,6 +43,29 @@
   Sounds Deluxe (68000,6821,PAL,DAC) (Special Forces -> Black Water 100)
   Williams System 11C (Truck Stop & Atlantis)
 
+  Lamp numbering:
+  Could not find a relationship between the lamp number and the connector
+  so here is connector to pinmame number conversion Phase A/C. (Phase C/D = x+48)
+  Conn. PinMAME
+  J10-01  1     J11-01 43     J12-01 40    J13-01 12
+  J10-02  2     J11-02 42     J12-02 41    J13-02 13
+  J10-03  3     J11-03 41     J12-03 42    J13-03 14
+  J10-04  4     J11-04 40     J12-04 43    J13-04 15
+  J10-05  5     J11-05 key    J12-05 key   J13-05 45
+  J10-06  6     J11-06 39     J12-06 24    J13-06 44
+  J10-07 17     J11-07 27     J12-07 25    J13-07 48
+  J10-08 18     J11-08  7     J12-08 26    J13-08 28
+  J10-09 19     J11-09 26     J12-09 27    J13-09 key
+  J10-10 22     J11-10 25     J12-10 39    J13-10 46
+  J10-11 20     J11-11 24     J12-11 11    J13-11 31
+  J10-12 21     J11-12  8     J12-12 10    J13-12 30
+  J10-13 38     J11-13  9     J12-13  9    J13-13 29
+  J10-14 37     J11-14 10     J12-14  8          
+  J10-15 key    J11-15 11     J12-15 28          
+  J10-16 33     J11-16 23     J12-16 44          
+  J10-17 34                   J12-17 12          
+  J10-18 35                                          
+  J10-19 36                                          
 */
 #include <stdarg.h>
 #include <time.h>
@@ -54,9 +77,9 @@
 #include "by6803snd.h"
 #include "by35snd.h"
 
-#define BY6803_VBLANKFREQ    60 /* VBLANK frequency */
-#define BY6803_IRQFREQ      150 /* IRQ (via PIA) frequency*/
-#define BY6803_ZCFREQ       240 /* Zero cross frequency (PHASE A is 1/2 this value)*/
+#define BY6803_VBLANKFREQ     60 /* VBLANK frequency */
+#define BY6803_IRQFREQ       150 /* IRQ (via PIA) frequency*/
+#define BY6803_ZCFREQ        240/* Zero cross frequency (PHASE A is 1/2 this value)*/
 
 //#define mlogerror printf
 #define mlogerror logerror
@@ -203,8 +226,8 @@ static void by6803_dispStrobe2(int mask) {
 
 static void by6803_lampStrobe(int board, int lampadr) {
   if (lampadr != 0x0f) {
-    int lampdata = ((locals.p0_a>>4)^0x0f) & 0x07;
-    UINT8 *matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)+8*board];
+    int lampdata = (locals.p0_a>>5)^0x07;
+    UINT8 *matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)+6*board];
     int bit = 1<<(lampadr & 0x07);
 
     DBGLOG(("adr=%x data=%x\n",lampadr,lampdata));
@@ -223,7 +246,7 @@ static void by6803_lampStrobe(int board, int lampadr) {
 static WRITE_HANDLER(pia0a_w) {
   locals.DISPDATA(offset,data);
   locals.p0_a = data;
-  by6803_lampStrobe(locals.phase_a<2,locals.lampadr1);
+  by6803_lampStrobe(locals.phase_a>1,locals.lampadr1);
 }
 
 /* PIA1:A-W  0,2-7 Display handling:
@@ -413,27 +436,9 @@ static core_tData by6803aData = {
 static void by6803_zeroCross(int data) {
   /*- toggle zero/detection circuit-*/
   locals.phase_a = (locals.phase_a + 1) & 3;
-  pia_set_input_cb1(0, (locals.phase_a == 1) || (locals.phase_a == 2));
+  pia_set_input_cb1(0, !((locals.phase_a == 1) || (locals.phase_a == 2)));
   cpu_set_irq_line(0, M6800_TIN_LINE, (locals.phase_a<2 && !locals.p21) ? ASSERT_LINE : CLEAR_LINE);
   DBGLOG(("phase=%d\n",locals.phase_a));
-#if 0
-  int state = locals.phase_a;
-
-  /*toggle phase_a*/
-  locals.phase_a = !locals.phase_a;
-
-  /*Make sure to update the lamps - doesn't seem to help*/
-  by6803_lampStrobe(!locals.phase_a,locals.lampadr1);
-
-  //printf("setting phase a to %x, lampadr1=%x\n",locals.phase_a,locals.lampadr1);
-
-  /*set phase b - opposite of phase a*/
-  pia_set_input_cb1(0,!locals.phase_a);
-  //pia_set_input_cb1(0, 0); pia_set_input_cb1(0, 1);
-
-  /*set 6803 P20 line*/
-  cpu_set_irq_line(0, M6800_TIN_LINE, state ? ASSERT_LINE : CLEAR_LINE);
-#endif
 }
 
 static void by6803_init_common(int hasKeypad) {
