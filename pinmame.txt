@@ -79,6 +79,7 @@ Games supported
   Technoplay: Scramble (1987)
   Mr. Game: Dakar and Motor Show (1988)
   Spinball: Jolly Park (1996)
+  Nuova Bell: F1 Grand Prix (1987) - Not working yet
   Prototype games: Dave Nutting's Flicker (Sep 1974), and Bally's Bow & Arrow (Jan 1976)
 
   Supported means that the game loads and the display starts up with lamps etc. All games

@@ -1,15 +1,19 @@
-Version 1.50 (November 1, 2004) - "PlasmaSound"
------------------------------------------------
-The future of PinMAME has never looked better! With new team members Thomas Behrens and Oliver O? making huge
-and immediate contributions, and Steve's temporary break from retirement, this release is destined to be one
-of the largest and most significant yet. Many often requested features and bug fixes are included, as well as
+Version 1.50 (November 1, 2004) - "Sound of the future"
+-------------------------------------------------------
+
+The future of PinMAME has never looked or sounded better! 
+
+With new team members Thomas Behrens and Oliver Kaegi making huge and immediate contributions, 
+and Steve's temporary break from retirement, this release is destined to be one of the largest and 
+most significant yet. Many often requested features and bug fixes are included, as well as
 several new hardware systems. Pinball fans will definitely be pleased with this release. 
 It's so much stuff, we cannot guarantee we listed all the items contained... :)
 
 Amazingly, Steve wrote an Atmel AT91 core ready to emulate the new Stern sound,
 as used on Stern's LOTR and later games. There still are some issues with it, so
-for instance, Elvis is not working correctly yet, and it's also running too slow.
-But still this is a major breakthrough, so we chose to add it for you to check out.
+for instance, Elvis is not working correctly yet, and it's also running too slow, seems
+anything less than 3-4Ghz won't get 60 FPS. But still this is a major breakthrough, 
+so we chose to add it for you to check out.
 
 BTW, this should really be the final version being built on the MAME 0.76 basis,
 but it's proven to be rather stable so far, so who knows? ;)
@@ -30,6 +34,9 @@ Bugs Fixed
 - Corrected IRQ value for all games based on Bally hardware
   [Oliver Kaegi, Gerrit Volkenborn]
 
+- Corrected half byte ram bug in Bally Video/Pin driver. (Baby Pacman attract mode lamps now working properly)
+  [Oliver Kaegi]
+
 - Fixed some bugs in 8051 cpu core
 - Adjusted CPU & FIRQ frequency on the Alvin G games
   (Sounds much better to me now, but still need access to real machine to confirm)
@@ -49,16 +56,15 @@ Bugs Fixed
 New Features
 ------------
 - Spinball hardware emulation including full Sound and DMD support (some strobing issues left)
-  (Big thanks to inkochnito for posting links to both the manual and rom on the
-  forum so we could access them)
+  (Big thanks to inkochnito for posting links to both the manual and rom so we could access them)
 - Mr. Game hardware emulation including sound and video support (still some video & sound issues)
+  (Thanks to Steve, who acquired two Mr.Game machines just so work on the emulation could begin)
   [Steve Ellenoff, Gerrit Volkenborn]
 
 - Added tons of new games and clones
   [Brian Smith, Gerrit Volkenborn]
 
 - Emulation of Stern Pinball's new Sound board - Used on LOTR and newer games.
-  Unfortunately the emulated 40Mhz cpu cannot run full speed with < 3-4 Ghz machine thus far.
   (HUGE THANK YOU TO DESTRUK FOR DONATING HIS OWN $ TO BUY AN EXTREMELY EXPENSIVE
    LOTR SOUND BOARD WITHOUT WHICH THE EMULATION COULD HAVE NEVER BEEN ACHIEVED!!)
 - Working Technoplay driver (X-Force) including display, lamps, solenoids, switches.
