@@ -1,3 +1,6 @@
+#undef  DIRECTINPUT_VERSION
+#define DIRECTINPUT_VERSION 0x0700
+
 //============================================================
 //
 //	input.c - Win32 implementation of MAME input routines
