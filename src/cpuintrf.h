@@ -28,6 +28,9 @@ extern "C" {
 enum
 {
 	CPU_DUMMY,
+#if (HAS_PPS4)
+	CPU_PPS4,
+#endif
 #if (HAS_Z80)
 	CPU_Z80,
 #endif

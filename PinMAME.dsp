@@ -724,6 +724,26 @@ SOURCE=.\src\cpu\i4004\i4004cpu.h
 SOURCE=.\src\cpu\i4004\i4004daa.h
 # End Source File
 # End Group
+# Begin Group "PPS4"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\cpu\pps4\pps4.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\pps4\pps4.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\pps4\pps4cpu.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\pps4\pps4dasm.c
+# End Source File
+# End Group
 # End Group
 # Begin Group "Machine"
 
@@ -3765,6 +3785,18 @@ SOURCE=.\src\wpc\gp.h
 # Begin Source File
 
 SOURCE=.\src\wpc\gpgames.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\gts1.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\gts1.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\gts1games.c
 # End Source File
 # Begin Source File
 
