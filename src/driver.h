@@ -22,9 +22,6 @@
 #include "network.h"
 #endif /* MAME_NET */
 
-#ifdef PINMAME
-  #define GAME_NOCRC 0x1000	/* ROM Not allowed to run if CRC is bad*/
-#endif
 #ifdef PINMAME_EXT
 typedef struct {
   int dmd_red, dmd_green, dmd_blue;
