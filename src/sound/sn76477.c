@@ -27,7 +27,7 @@
 
 #include "driver.h"
 
-#define VERBOSE 1
+#define VERBOSE 0
 
 #if VERBOSE >= 0
 #define LOG(n,x) if( VERBOSE >= (n) ) logerror x
@@ -175,7 +175,9 @@ void SN76477_mixer_w(int chip, int data)
 		return;
 	stream_update(sn->channel, 0);
 	sn->mixer = data;
+#if VERBOSE
 	LOG(1,("SN76477 #%d: MIXER mode %d [%s]\n", chip, sn->mixer, mixer_mode[sn->mixer]));
+#endif
 }
 
 void SN76477_mixer_a_w(int chip, int data)
@@ -189,7 +191,9 @@ void SN76477_mixer_a_w(int chip, int data)
 		return;
 	stream_update(sn->channel, 0);
 	sn->mixer = (sn->mixer & ~1) | data;
+#if VERBOSE
 	LOG(1,("SN76477 #%d: MIXER mode %d [%s]\n", chip, sn->mixer, mixer_mode[sn->mixer]));
+#endif
 }
 
 void SN76477_mixer_b_w(int chip, int data)
@@ -203,7 +207,9 @@ void SN76477_mixer_b_w(int chip, int data)
 		return;
 	stream_update(sn->channel, 0);
 	sn->mixer = (sn->mixer & ~2) | data;
+#if VERBOSE
 	LOG(1,("SN76477 #%d: MIXER mode %d [%s]\n", chip, sn->mixer, mixer_mode[sn->mixer]));
+#endif
 }
 
 void SN76477_mixer_c_w(int chip, int data)
@@ -217,7 +223,9 @@ void SN76477_mixer_c_w(int chip, int data)
 		return;
 	stream_update(sn->channel, 0);
 	sn->mixer = (sn->mixer & ~4) | data;
+#if VERBOSE
 	LOG(1,("SN76477 #%d: MIXER mode %d [%s]\n", chip, sn->mixer, mixer_mode[sn->mixer]));
+#endif
 }
 
 #if VERBOSE
@@ -242,7 +250,9 @@ void SN76477_envelope_w(int chip, int data)
 		return;
 	stream_update(sn->channel, 0);
 	sn->envelope = data;
+#if VERBOSE
 	LOG(1,("SN76477 #%d: ENVELOPE mode %d [%s]\n", chip, sn->envelope, envelope_mode[sn->envelope]));
+#endif
 }
 
 void SN76477_envelope_1_w(int chip, int data)
@@ -255,7 +265,9 @@ void SN76477_envelope_1_w(int chip, int data)
 		return;
 	stream_update(sn->channel, 0);
 	sn->envelope = (sn->envelope & ~1) | data;
+#if VERBOSE
 	LOG(1,("SN76477 #%d: ENVELOPE mode %d [%s]\n", chip, sn->envelope, envelope_mode[sn->envelope]));
+#endif
 }
 
 void SN76477_envelope_2_w(int chip, int data)
@@ -270,7 +282,9 @@ void SN76477_envelope_2_w(int chip, int data)
 		return;
 	stream_update(sn->channel, 0);
 	sn->envelope = (sn->envelope & ~2) | data;
+#if VERBOSE
 	LOG(1,("SN76477 #%d: ENVELOPE mode %d [%s]\n", chip, sn->envelope, envelope_mode[sn->envelope]));
+#endif
 }
 
 /*****************************************************************************
@@ -523,7 +537,9 @@ void SN76477_set_amplitude_res(int chip, double res)
 			if( vol > 32767 ) vol = 32767;
 			sn->vol_lookup[i] = vol * intf->mixing_level[chip] / 100;
 		}
+#if VERBOSE
 		LOG(1,("SN76477 #%d: volume range from -%d to +%d (clip at %d%%)\n", chip, sn->vol_lookup[VMAX-VMIN], sn->vol_lookup[VMAX-VMIN], clip * 100 / 256));
+#endif
 	}
 	else
 	{
@@ -559,7 +575,9 @@ void SN76477_set_feedback_res(int chip, double res)
 			if( vol > 32767 ) vol = 32767;
 			sn->vol_lookup[i] = vol * intf->mixing_level[chip] / 100;
 		}
+#if VERBOSE
 		LOG(1,("SN76477 #%d: volume range from -%d to +%d (clip at %d%%)\n", chip, sn->vol_lookup[VMAX-VMIN], sn->vol_lookup[VMAX-VMIN], clip * 100 / 256));
+#endif
 	}
 	else
 	{
