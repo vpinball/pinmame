@@ -323,15 +323,57 @@ CORE_CLONEDEFNV(strxt_sp,strikext,"Striker Extreme (Spain)",1999,"Stern",de_mSES
 / Sharkey's Shootout (2.11)
 /-------------------------------------------------------------------*/
 INITGAME(shrkysht,GEN_WS_1,se_dmd128x32,0)
-SE128_ROMSTART(shrkysht,"sscpu.211",   0x66a0e5ce)
-DE_DMD32ROM8x(          "ssdispa.201", 0x3360300b)
-DE2S_SOUNDROM1888(      "sssndu7.101", 0xfbc6267b,
-                        "sssndu17.100",0xdae78d8d,
-                        "sssndu21.100",0xe1fa3f2a,
-                        "sssndu36.100",0xd22fcfa3)
+SE128_ROMSTART(shrkysht,"sscpu.211",0x66a0e5ce)
+DE_DMD32ROM8x(        "ssdispa.201",0x3360300b)
+DE2S_SOUNDROM1888(    "sssndu7.101",0xfbc6267b,
+                     "sssndu17.100",0xdae78d8d,
+                     "sssndu21.100",0xe1fa3f2a,
+                     "sssndu36.100",0xd22fcfa3)
 SE_ROMEND
 #define input_ports_shrkysht input_ports_se
 CORE_GAMEDEFNV(shrkysht,"Sharkey's Shootout",2000,"Stern",de_mSES1,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Sharkey's Shootout (Germany)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(shrky_gr,"sscpu.211",0x66a0e5ce)
+DE_DMD32ROM8x(        "ssdispg.201",0x0)
+DE2S_SOUNDROM1888(    "sssndu7.101",0xfbc6267b,
+                     "sssndu17.100",0xdae78d8d,
+                     "sssndu21.100",0xe1fa3f2a,
+                     "sssndu36.100",0xd22fcfa3)
+SE_ROMEND
+#define input_ports_shrky_gr input_ports_se
+#define init_shrky_gr init_shrkysht
+CORE_CLONEDEFNV(shrky_gr,shrkysht,"Sharkey's Shootout (Germany)",2001,"Stern",de_mSES1,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Sharkey's Shootout (France)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(shrky_fr,"sscpu.211",0x66a0e5ce)
+DE_DMD32ROM8x(        "ssdispf.201",0x0)
+DE2S_SOUNDROM1888(    "sssndu7.101",0xfbc6267b,
+                     "sssndu17.100",0xdae78d8d,
+                     "sssndu21.100",0xe1fa3f2a,
+                     "sssndu36.100",0xd22fcfa3)
+SE_ROMEND
+#define input_ports_shrky_fr input_ports_se
+#define init_shrky_fr init_shrkysht
+CORE_CLONEDEFNV(shrky_fr,shrkysht,"Sharkey's Shootout (France)",2001,"Stern",de_mSES1,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Sharkey's Shootout (Italy)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(shrky_it,"sscpu.211",0x66a0e5ce)
+DE_DMD32ROM8x(        "ssdispi.201",0x0)
+DE2S_SOUNDROM1888(    "sssndu7.101",0xfbc6267b,
+                     "sssndu17.100",0xdae78d8d,
+                     "sssndu21.100",0xe1fa3f2a,
+                     "sssndu36.100",0xd22fcfa3)
+SE_ROMEND
+#define input_ports_shrky_it input_ports_se
+#define init_shrky_it init_shrkysht
+CORE_CLONEDEFNV(shrky_it,shrkysht,"Sharkey's Shootout (Italy)",2001,"Stern",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / High Roller Casino (3.0)
@@ -340,54 +382,126 @@ static struct core_dispLayout dispHRC[] = {
   DISP_SEG_IMPORT(se_dmd128x32),
   {34,10, 7, 15, CORE_DMD, (void *)seminidmd1_update}, {0}
 };
-
 INITGAME(hirolcas,GEN_WS,dispHRC,SE_MINIDMD)
 SE128_ROMSTART(hirolcas,"hrccpu.300",0x0d1117fa)
-DE_DMD32ROM8x(      "hrcdispa.300",0x099ccaf0)
-DE2S_SOUNDROM18888("hrcu7.dat"   ,0xc41f91a7,
-                  "casinou1.dat",0x5858dfd0,
-                  "casinou2.dat",0xc653de96,
-                  "casinou3.dat",0x5634eb4e,
-                  "casino4s.dat",0xd4d23c00)
+DE_DMD32ROM8x(        "hrcdispa.300",0x099ccaf0)
+DE2S_SOUNDROM18888(    "hrsndu7.100",0xc41f91a7,
+                      "hrsndu17.100",0x5858dfd0,
+                      "hrsndu21.100",0xc653de96,
+                      "hrsndu36.100",0x5634eb4e,
+                      "hrsndu37.100",0xd4d23c00)
 SE_ROMEND
 #define input_ports_hirolcas input_ports_se
 CORE_GAMEDEFNV(hirolcas,"High Roller Casino",2001,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
+/ High Roller Casino (France)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(hirol_fr,"hrccpu.300",0x0d1117fa)
+DE_DMD32ROM8x(        "hrcdispf.300",0x0)
+DE2S_SOUNDROM18888(    "hrsndu7.100",0xc41f91a7,
+                      "hrsndu17.100",0x5858dfd0,
+                      "hrsndu21.100",0xc653de96,
+                      "hrsndu36.100",0x5634eb4e,
+                      "hrsndu37.100",0xd4d23c00)
+SE_ROMEND
+#define input_ports_hirol_fr input_ports_se
+#define init_hirol_fr init_hirolcas
+CORE_CLONEDEFNV(hirol_fr,hirolcas,"High Roller Casino (France)",2001,"Stern",de_mSES2,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
 / High Roller Casino (Germany)
 /-------------------------------------------------------------------*/
-//INITGAME(hirol_gr,GEN_WS,se_dmd128x32,0)
-SE128_ROMSTART(hirol_gr,"hrccpu.210",  0x2e3c682a)
-DE_DMD32ROM8x(  "hrcdg201.bin",0x57b95712)
-DE2S_SOUNDROM18888("hrcu7.dat"   ,0xc41f91a7,
-                  "casinou1.dat",0x5858dfd0,
-                  "casinou2.dat",0xc653de96,
-                  "casinou3.dat",0x5634eb4e,
-                  "casino4s.dat",0xd4d23c00)
+SE128_ROMSTART(hirol_gr,"hrccpu.300",0x0d1117fa)
+DE_DMD32ROM8x(        "hrcdispg.300",0x0)
+DE2S_SOUNDROM18888(    "hrsndu7.100",0xc41f91a7,
+                      "hrsndu17.100",0x5858dfd0,
+                      "hrsndu21.100",0xc653de96,
+                      "hrsndu36.100",0x5634eb4e,
+                      "hrsndu37.100",0xd4d23c00)
 SE_ROMEND
 #define input_ports_hirol_gr input_ports_se
 #define init_hirol_gr init_hirolcas
 CORE_CLONEDEFNV(hirol_gr,hirolcas,"High Roller Casino (Germany)",2001,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
+/ High Roller Casino (Italy)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(hirol_it,"hrccpu.300",0x0d1117fa)
+DE_DMD32ROM8x(        "hrcdispi.300",0x0)
+DE2S_SOUNDROM18888(    "hrsndu7.100",0xc41f91a7,
+                      "hrsndu17.100",0x5858dfd0,
+                      "hrsndu21.100",0xc653de96,
+                      "hrsndu36.100",0x5634eb4e,
+                      "hrsndu37.100",0xd4d23c00)
+SE_ROMEND
+#define input_ports_hirol_it input_ports_se
+#define init_hirol_it init_hirolcas
+CORE_CLONEDEFNV(hirol_it,hirolcas,"High Roller Casino (Italy)",2001,"Stern",de_mSES2,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
 / Austin Powers (3.02)
 /-------------------------------------------------------------------*/
 INITGAME(austin,GEN_WS,se_dmd128x32,0)
-SE128_ROMSTART(austin, "apcpu.302",0x2920b59b)
-DE_DMD32ROM8x(       "apdsp-a.300",0xecf2c3bb)
+SE128_ROMSTART(austin,"apcpu.302",0x2920b59b)
+DE_DMD32ROM8x(      "apdsp-a.300",0xecf2c3bb)
+DE2S_SOUNDROM18888( "apsndu7.100",0xd0e79d59,
+                   "apsndu17.100",0xc1e33fee,
+                   "apsndu21.100",0x07c3e077,
+                   "apsndu36.100",0xf70f2828,
+                   "apsndu37.100",0xddf0144b)
+SE_ROMEND
+#define input_ports_austin input_ports_se
+CORE_GAMEDEFNV(austin,"Austin Powers (3.0)",2001,"Stern",de_mSES2,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Austin Powers (France)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(austinf,"apcpu.302",0x2920b59b)
+DE_DMD32ROM8x(       "apdsp-f.300",0x0)
 DE2S_SOUNDROM18888(  "apsndu7.100",0xd0e79d59,
                     "apsndu17.100",0xc1e33fee,
                     "apsndu21.100",0x07c3e077,
                     "apsndu36.100",0xf70f2828,
                     "apsndu37.100",0xddf0144b)
 SE_ROMEND
-#define input_ports_austin input_ports_se
-CORE_GAMEDEFNV(austin,"Austin Powers (3.0)",2001,"Stern",de_mSES2,GAME_NOCRC)
+#define input_ports_austinf input_ports_se
+#define init_austinf init_austin
+CORE_CLONEDEFNV(austinf,austin,"Austin Powers (France)",2001,"Stern",de_mSES2,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Austin Powers (Germany)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(austind,"apcpu.302",0x2920b59b)
+DE_DMD32ROM8x(       "apdsp-g.300",0x0)
+DE2S_SOUNDROM18888(  "apsndu7.100",0xd0e79d59,
+                    "apsndu17.100",0xc1e33fee,
+                    "apsndu21.100",0x07c3e077,
+                    "apsndu36.100",0xf70f2828,
+                    "apsndu37.100",0xddf0144b)
+SE_ROMEND
+#define input_ports_austind input_ports_se
+#define init_austind init_austin
+CORE_CLONEDEFNV(austind,austin,"Austin Powers (Germany)",2001,"Stern",de_mSES2,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Austin Powers (Italy)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(austini,"apcpu.302",0x2920b59b)
+DE_DMD32ROM8x(       "apdsp-i.300",0x0)
+DE2S_SOUNDROM18888(  "apsndu7.100",0xd0e79d59,
+                    "apsndu17.100",0xc1e33fee,
+                    "apsndu21.100",0x07c3e077,
+                    "apsndu36.100",0xf70f2828,
+                    "apsndu37.100",0xddf0144b)
+SE_ROMEND
+#define input_ports_austini input_ports_se
+#define init_austini init_austin
+CORE_CLONEDEFNV(austini,austin,"Austin Powers (Italy)",2001,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Austin Powers (2.01)
 /-------------------------------------------------------------------*/
-//INITGAME(austin2,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(austin2,"apcpu.201",0xa4ddcdca)
 DE_DMD32ROM8x(      "apdisp-a.200",0xf3ca7fca)
 DE2S_SOUNDROM18888(  "apsndu7.100",0xd0e79d59,
@@ -464,16 +578,16 @@ CORE_CLONEDEFNV(monopoli,monopoly,"Monopoly (Italy)",2002,"Stern",de_mSES1,GAME_
 /*-------------------------------------------------------------------
 / Monopoly (Spain)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(monopols,"moncpu.303",0x4a66c9e4)
+SE128_ROMSTART(monopole,"moncpu.303",0x4a66c9e4)
 DE_DMD32ROM8x(        "mondsp-s.301",0x0)
 DE2S_SOUNDROM1888(     "mnsndu7.100",0x400442e7,
                       "mnsndu17.100",0x595f23ab,
                       "mnsndu21.100",0xe0727e1f,
                       "mnsndu36.100",0xd66c71a9)
 SE_ROMEND
-#define input_ports_monopols input_ports_se
-#define init_monopols init_monopoly
-CORE_CLONEDEFNV(monopols,monopoly,"Monopoly (Spain)",2002,"Stern",de_mSES1,GAME_NOCRC)
+#define input_ports_monopole input_ports_se
+#define init_monopole init_monopoly
+CORE_CLONEDEFNV(monopole,monopoly,"Monopoly (Spain)",2002,"Stern",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Playboy (4.01)
