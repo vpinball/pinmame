@@ -165,10 +165,11 @@ void dmd_draw(struct mame_bitmap *bitmap, tDMDDot dotCol, core_ptLCDLayout layou
   BMTYPE **lines = ((BMTYPE **)bitmap->line) + layout->top;
   int ii, jj;
 
-  memset(&dotCol[layout->start+1][0], 0, sizeof(UINT8)*layout->length);
-  memset(&dotCol[0][0], 0, sizeof(UINT8)*layout->length);
+  memset(&dotCol[layout->start+1][0], 0, sizeof(dotCol[0][0])*layout->length+1);
+  memset(&dotCol[0][0], 0, sizeof(dotCol[0][0])*layout->length+1); // clear above
   for (ii = 0; ii < layout->start+1; ii++) {
     BMTYPE *line = (*lines++) + layout->left;
+	dotCol[ii][layout->length] = 0;
     if (ii > 0) {
       for (jj = 0; jj < layout->length; jj++) {
         *line++ = dmdColor[dotCol[ii][jj]];
