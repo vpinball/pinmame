@@ -285,7 +285,7 @@ static core_tGameData dhGameData = {
   {
     "530 123456 12345 123",
     /*Coin    1     2     3     4     5     6     7     8     9    10   Cab.  Cust */
-    { 0x00, 0x00, 0x00, 0xff, 0x7d, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, /* inverted switches */
+    { 0x00, 0x00, 0x00, 0xff, 0x7f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, /* inverted switches */
     /*Start    Tilt    SlamTilt    CoinDoor    Shooter */
     { swStart, swTilt, swSlamTilt, swCoinDoor, swLaunch},
   }
