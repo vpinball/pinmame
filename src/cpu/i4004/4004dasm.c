@@ -30,41 +30,41 @@ unsigned Dasm4004(char *buff, unsigned pc)
 		case 0x1e: sprintf (buff,"jcn (A~C),$%X%02X", (pc-1)>>8, ARG(pc)); pc++; break;
 		case 0x1f: sprintf (buff,"jcn (AT~C),$%X%02X", (pc-1)>>8, ARG(pc)); pc++; break;
 
-		case 0x20: sprintf (buff,"fim [10],#$%02x", ARG(pc)); pc++;  break;
-		case 0x22: sprintf (buff,"fim [32],#$%02x", ARG(pc)); pc++;  break;
-		case 0x24: sprintf (buff,"fim [54],#$%02x", ARG(pc)); pc++;  break;
-		case 0x26: sprintf (buff,"fim [76],#$%02x", ARG(pc)); pc++;  break;
-		case 0x28: sprintf (buff,"fim [98],#$%02x", ARG(pc)); pc++;  break;
-		case 0x2a: sprintf (buff,"fim [BA],#$%02x", ARG(pc)); pc++;  break;
-		case 0x2c: sprintf (buff,"fim [DC],#$%02x", ARG(pc)); pc++;  break;
-		case 0x2e: sprintf (buff,"fim [FE],#$%02x", ARG(pc)); pc++;  break;
+		case 0x20: sprintf (buff,"fim [01],#$%02x", ARG(pc)); pc++;  break;
+		case 0x22: sprintf (buff,"fim [23],#$%02x", ARG(pc)); pc++;  break;
+		case 0x24: sprintf (buff,"fim [45],#$%02x", ARG(pc)); pc++;  break;
+		case 0x26: sprintf (buff,"fim [67],#$%02x", ARG(pc)); pc++;  break;
+		case 0x28: sprintf (buff,"fim [89],#$%02x", ARG(pc)); pc++;  break;
+		case 0x2a: sprintf (buff,"fim [AB],#$%02x", ARG(pc)); pc++;  break;
+		case 0x2c: sprintf (buff,"fim [CD],#$%02x", ARG(pc)); pc++;  break;
+		case 0x2e: sprintf (buff,"fim [EF],#$%02x", ARG(pc)); pc++;  break;
 
-		case 0x21: sprintf (buff,"src [10]");                        break;
-		case 0x23: sprintf (buff,"src [32]");                        break;
-		case 0x25: sprintf (buff,"src [54]");                        break;
-		case 0x27: sprintf (buff,"src [76]");                        break;
-		case 0x29: sprintf (buff,"src [98]");                        break;
-		case 0x2b: sprintf (buff,"src [BA]");                        break;
-		case 0x2d: sprintf (buff,"src [DC]");                        break;
-		case 0x2f: sprintf (buff,"src [FE]");                        break;
+		case 0x21: sprintf (buff,"src [01]");                        break;
+		case 0x23: sprintf (buff,"src [23]");                        break;
+		case 0x25: sprintf (buff,"src [45]");                        break;
+		case 0x27: sprintf (buff,"src [67]");                        break;
+		case 0x29: sprintf (buff,"src [89]");                        break;
+		case 0x2b: sprintf (buff,"src [AB]");                        break;
+		case 0x2d: sprintf (buff,"src [CD]");                        break;
+		case 0x2f: sprintf (buff,"src [EF]");                        break;
 
-		case 0x30: sprintf (buff,"fin [10]");                        break;
-		case 0x32: sprintf (buff,"fin [32]");                        break;
-		case 0x34: sprintf (buff,"fin [54]");                        break;
-		case 0x36: sprintf (buff,"fin [76]");                        break;
-		case 0x38: sprintf (buff,"fin [98]");                        break;
-		case 0x3a: sprintf (buff,"fin [BA]");                        break;
-		case 0x3c: sprintf (buff,"fin [DC]");                        break;
-		case 0x3e: sprintf (buff,"fin [FE]");                        break;
+		case 0x30: sprintf (buff,"fin [01]");                        break;
+		case 0x32: sprintf (buff,"fin [23]");                        break;
+		case 0x34: sprintf (buff,"fin [45]");                        break;
+		case 0x36: sprintf (buff,"fin [67]");                        break;
+		case 0x38: sprintf (buff,"fin [89]");                        break;
+		case 0x3a: sprintf (buff,"fin [AB]");                        break;
+		case 0x3c: sprintf (buff,"fin [CD]");                        break;
+		case 0x3e: sprintf (buff,"fin [EF]");                        break;
 
-		case 0x31: sprintf (buff,"jin [10]");                        break;
-		case 0x33: sprintf (buff,"jin [32]");                        break;
-		case 0x35: sprintf (buff,"jin [54]");                        break;
-		case 0x37: sprintf (buff,"jin [76]");                        break;
-		case 0x39: sprintf (buff,"jin [98]");                        break;
-		case 0x3b: sprintf (buff,"jin [BA]");                        break;
-		case 0x3d: sprintf (buff,"jin [DC]");                        break;
-		case 0x3f: sprintf (buff,"jin [FE]");                        break;
+		case 0x31: sprintf (buff,"jin [01]");                        break;
+		case 0x33: sprintf (buff,"jin [23]");                        break;
+		case 0x35: sprintf (buff,"jin [45]");                        break;
+		case 0x37: sprintf (buff,"jin [67]");                        break;
+		case 0x39: sprintf (buff,"jin [89]");                        break;
+		case 0x3b: sprintf (buff,"jin [AB]");                        break;
+		case 0x3d: sprintf (buff,"jin [CD]");                        break;
+		case 0x3f: sprintf (buff,"jin [EF]");                        break;
 
 		case 0x40: case 0x41: case 0x42: case 0x43: case 0x44: case 0x45: case 0x46: case 0x47:
 		case 0x48: case 0x49: case 0x4a: case 0x4b: case 0x4c: case 0x4d: case 0x4e: case 0x4f:
@@ -109,18 +109,19 @@ unsigned Dasm4004(char *buff, unsigned pc)
 		case 0xe0: sprintf (buff,"wrm");                             break;
 		case 0xe1: sprintf (buff,"wmp");                             break;
 		case 0xe2: sprintf (buff,"wrr");                             break;
-		case 0xe4: sprintf (buff,"wr  -> 0");                        break;
-		case 0xe5: sprintf (buff,"wr  -> 1");                        break;
-		case 0xe6: sprintf (buff,"wr  -> 2");                        break;
-		case 0xe7: sprintf (buff,"wr  -> 3");                        break;
+		case 0xe3: sprintf (buff,"wpm");                             break; /* 4008 only opcode? */
+		case 0xe4: sprintf (buff,"wr0");                             break;
+		case 0xe5: sprintf (buff,"wr1");                             break;
+		case 0xe6: sprintf (buff,"wr2");                             break;
+		case 0xe7: sprintf (buff,"wr3");                             break;
 		case 0xe8: sprintf (buff,"sbm");                             break;
 		case 0xe9: sprintf (buff,"rdm");                             break;
 		case 0xea: sprintf (buff,"rdr");                             break;
 		case 0xeb: sprintf (buff,"adm");                             break;
-		case 0xec: sprintf (buff,"rd  <- 0");                        break;
-		case 0xed: sprintf (buff,"rd  <- 1");                        break;
-		case 0xee: sprintf (buff,"rd  <- 2");                        break;
-		case 0xef: sprintf (buff,"rd  <- 3");                        break;
+		case 0xec: sprintf (buff,"rd0");                             break;
+		case 0xed: sprintf (buff,"rd1");                             break;
+		case 0xee: sprintf (buff,"rd2");                             break;
+		case 0xef: sprintf (buff,"rd3");                             break;
 
 		case 0xf0: sprintf (buff,"clb");                             break;
 		case 0xf1: sprintf (buff,"clc");                             break;
