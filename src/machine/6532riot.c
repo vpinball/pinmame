@@ -12,10 +12,10 @@
 #include "driver.h"
 #include "6532riot.h"
 
-#define VERBOSE 0
+#define VERBOSE 1
 
 #if VERBOSE
-#define LOG(x)	logerror x
+#define LOG(x)	if (which==3) logerror x
 #else
 #define LOG(x)
 #endif
@@ -87,6 +87,8 @@ static struct riot6532 riot[MAX_RIOT];
 
 /******************* un-configuration *******************/
 
+static void riot_timeout(int which);
+
 void riot_unconfig(void)
 {
 	int i;
@@ -136,6 +138,9 @@ void riot_reset(void)
 		riot[i].timer_divider = 1;
 		riot[i].timer_start   = 0x00;
 		riot[i].timer_irq_enabled = 0;
+
+		riot[i].time = timer_get_time();
+		riot[i].t = timer_set(IFR_DELAY*riot[i].cycles_to_sec, i, riot_timeout);
 	}
 }
 
@@ -201,9 +206,11 @@ static void riot_timeout(int which)
 	struct riot6532 *p = riot + which;
 
 	if ( p->irq_state & RIOT_TIMERIRQ ) {
+		LOG(("RIOT%d: Timeout reached.\n", which));
 		p->t = 0;
 	}
 	else {
+		LOG(("RIOT%d: Timer IRQ.\n", which));
 		timer_reset(p->t, V_CYCLES_TO_TIME(255));
 		p->time = timer_get_time();
 
@@ -231,12 +238,12 @@ int riot_read(int which, int offset)
 			/* combine input and output values */
 			val = (p->out_a & p->ddr_a) + (p->in_a & ~p->ddr_a);
 
-			LOG(("RIOT%d read port A = %02X\n", which, val));
+			// LOG(("RIOT%d read port A = %02X\n", which, val));
 			break;
 
 		case RIOT_DDRA:
 			val = p->ddr_a;
-			LOG(("RIOT%d read DDR A = %02X\n", which, val));
+			// LOG(("RIOT%d read DDR A = %02X\n", which, val));
 			break;
 		
 		case RIOT_PORTB:
@@ -246,12 +253,12 @@ int riot_read(int which, int offset)
 			/* combine input and output values */
 			val = (p->out_b & p->ddr_b) + (p->in_b & ~p->ddr_b);
 
-			LOG(("RIOT%d read port B = %02X\n", which, val));
+			// LOG(("RIOT%d read port B = %02X\n", which, val));
 			break;
 
 		case RIOT_DDRB:
 			val = p->ddr_b;
-			LOG(("RIOT%d read DDR B = %02X\n", which, val));
+			//  LOG(("RIOT%d read DDR B = %02X\n", which, val));
 			break;
 		}
 	}
@@ -267,11 +274,8 @@ int riot_read(int which, int offset)
 				else
 					val = p->timer_start - V_TIME_TO_CYCLES(timer_get_time() - p->time) / p->timer_divider;
 			}
-			else {
-				val = p->timer_start - V_TIME_TO_CYCLES(timer_get_time() - p->time) / p->timer_divider;
-				if ( val<0 )
-					val = 0;
-			}
+			else
+				val = 0x01;
 
 			p->irq_state &= ~RIOT_TIMERIRQ;
 			p->timer_irq_enabled = offset&0x08;
@@ -361,8 +365,6 @@ void riot_write(int which, int offset, int data)
 		/* timer and interrupt releated stuff */
 		if ( offset & 0x10 ) {
 			/* timer stuff */
-			LOG(("RIOT%d write timer = %02X, %02X\n", which, data, offset&0x08));
-
 			p->timer_irq_enabled = offset&0x08;
 			p->timer_start = data;
 
@@ -386,13 +388,16 @@ void riot_write(int which, int offset, int data)
 			p->irq_state &= ~RIOT_TIMERIRQ;
 			update_6532_interrupts(p);
 
-			if ( p->timer_irq_enabled ) {
+//			if ( p->timer_irq_enabled )
+			{
 				if ( p->t )
 					timer_reset(p->t, V_CYCLES_TO_TIME(p->timer_divider * p->timer_start + IFR_DELAY));
 				else
 					p->t = timer_set(V_CYCLES_TO_TIME(p->timer_divider * p->timer_start + IFR_DELAY), which, riot_timeout);
 			}
 			p->time = timer_get_time();
+
+			LOG(("RIOT%d write timer = %02X * %04X, %04X\n", which, data, p->timer_divider, offset&0x08));
 		}
 		else {
 			// edge control (PA7) stuff */
