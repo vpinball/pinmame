@@ -3039,7 +3039,7 @@ static BOOL IsOptionEqual(int option_index,options_type *o1,options_type *o2)
 	}
 	case RO_ENCODE:
 	{
-		char a[500],b[500];
+		char a[1000],b[1000];
 		gOpts = *o1;
 		regGameOpts[option_index].encode(regGameOpts[option_index].m_vpData,a);
 		gOpts = *o2;
@@ -3062,7 +3062,7 @@ static void WriteOptionToFile(FILE *fptr,REG_OPTION *regOpt)
 	char*	pString;
 	double* pDouble;
 	const char *key = regOpt->ini_name;
-	char	cTemp[80];
+	char	cTemp[1000];
 	
 	switch (regOpt->m_iType)
 	{
