@@ -632,7 +632,8 @@ DRIVER(hurr,l2)         //WPC-512:  08/91 W Hurricane
 DRIVER(pz,f4)           //WPC:      08/91 B Party Zone
 DRIVER(gi,l9)           //WPC:      11/91 B Gilligan's Island
 DRIVER(strik,l4)        //WPC:      05/92 W Strike Master
-DRIVER(gw,l5)           //WPC-504:  02/92 W The Getaway: High Speed II
+DRIVER(gw,l5)           //WPC-504:  02/92 W The Getaway: High Speed II (L-5)
+DRIVER(gw,l2)           //WPC-504:  02/92 W The Getaway: High Speed II (L-2)
 DRIVER(taf,l5)          //WPC:      03/92 B The Addams Family (L-5)
 DRIVER(taf,l6)                            // (L-6)
 DRIVER(br,l4)           //WPC:      07/92 B Black Rose
