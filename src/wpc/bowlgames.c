@@ -72,6 +72,19 @@ BY35_INPUT_PORTS_START(bbbowlin,1) BY35_INPUT_PORTS_END
 CORE_GAMEDEFNV(bbbowlin,"Big Ball Bowling",19??,"United(?)",by35_mBowling,GAME_NO_SOUND)
 
 /*----------------------------
+/ Stars & Strikes
+/----------------------------*/
+static core_tGameData monrobwlGameData = {GEN_BOWLING,dispBowl,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_ST100,0}};
+static void init_monrobwl(void) { core_gameData = &monrobwlGameData; }
+ST200_ROMSTART8888(monrobwl,"cpu_u1.716",CRC(42592cc9) SHA1(22452072199c4b82a413065f8dfe235a39fe3825),
+                            "cpu_u5.716",CRC(78e2dcd2) SHA1(7fbe9f7adc69af5afa489d9fd953640f3466de3f),
+                            "cpu_u2.716",CRC(73534680) SHA1(d5233a9d4600fa28b767ee1a251ed1a1ffbaf9c4),
+                            "cpu_u6.716",CRC(ad77d719) SHA1(f8f8d0d183d639d19fea552d35a7be3aa7f07c17))
+BY35_ROMEND
+BY35_INPUT_PORTS_START(monrobwl, 1) BY35_INPUT_PORTS_END
+CORE_GAMEDEFNV(monrobwl,"Stars & Strikes (Bowler)",198?,"Monroe Bowling Co.",by35_mST200,GAME_NO_SOUND)
+
+/*----------------------------
 / Big Strike
 /----------------------------*/
 INITGAME(bstrk, GEN_S4, bowl_disp)

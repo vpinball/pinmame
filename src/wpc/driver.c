@@ -391,6 +391,11 @@ DRIVERNV(empsback)      //Star Wars - The Empire Strike Back
 DRIVERNV(flicker )      //Flicker (Prototype, September 1974)
 DRIVERNV(rotation)      //Rotation VIII (September 1978)
 
+// ----------------
+// MONROE BOWLING CO.
+// ----------------
+DRIVERNV(monrobwl)      //Stars & Strikes (1980??)
+
 // --------------
 // SEGA GAMES
 // --------------
