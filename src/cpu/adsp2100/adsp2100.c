@@ -13,6 +13,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "cpuintrf.h"
+#if defined(WPCDCSSPEEDUP) && (MAMEVER > 3716)
+#  include "cpuexec.h"
+#endif /* MAMEVER */
 #include "mamedbg.h"
 #include "adsp2100.h"
 

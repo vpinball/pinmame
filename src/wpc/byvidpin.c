@@ -3,7 +3,7 @@
 /* MPU Board: MPU-133 (Equivalent of MPU-35 except for 1 diode change)
    VIDIOT Board: Handles Video/Joystick Switchs/Sound Board
 
-   For simplicity sake, I just copied all code from by35 
+   For simplicity sake, I just copied all code from by35
    -but maybe someday we should merge common routines for easier maintenance
 
   Hardware:
@@ -250,23 +250,23 @@ static void byVP_updSw(int *inports) {
 
 /* PIA2:B Read */
 // Video Switch Returns (Bits 5-7 not connected)
-static READ_HANDLER(pia2b_r) { 
+static READ_HANDLER(pia2b_r) {
 	logerror("VID: Reading Switch Returns r\n");
-	return 0; 
+	return 0;
 }
 
 /* PIA2:CA1 Read */
 // Read Enable Data Output to Main CPU
-static READ_HANDLER(pia2ca1_r) { 
+static READ_HANDLER(pia2ca1_r) {
 	logerror("%x:VID: Reading output enable\n",cpu_getpreviouspc(),locals.enable_output);
 	return ~locals.enable_output; //Inverted
 }
 
 /* PIA2:CA2 Read */
 // Read Main CPU Latch Data Input
-static READ_HANDLER(pia2ca2_r) { 
+static READ_HANDLER(pia2ca2_r) {
 	logerror("%x:VID: Reading input enable\n",cpu_getpreviouspc(),locals.enable_input);
-	return locals.enable_input;   //Not Inverted 
+	return locals.enable_input;   //Not Inverted
 }
 
 /* PIA2:A Write */
@@ -288,7 +288,7 @@ static WRITE_HANDLER(pia2b_w) {
 
 /* PIA2:CB2 Write */
 // 6803 Data Strobe & LED
-static WRITE_HANDLER(pia2cb2_w) { 
+static WRITE_HANDLER(pia2cb2_w) {
 	locals.diagnosticLedV = data;
 	/*set 6803 P20 line*/
 	cpu_set_irq_line(BYVP_SCPUNO, M6800_TIN_LINE, data ? ASSERT_LINE : CLEAR_LINE);
@@ -470,23 +470,23 @@ static int byVP_vvblank(void) {
 }
 
 //Should never be called!
-static READ_HANDLER(sound_port1_r) { 
-	//logerror("sound port 1 read\n"); 
-	return 0; 
+static READ_HANDLER(sound_port1_r) {
+	//logerror("sound port 1 read\n");
+	return 0;
 }
 
 //P20(Bit 0) = U7(CB2)
 //P21-24 = Video U7(PB0-PB3)
 static int last=0;
-static READ_HANDLER(sound_port2_r) { 
+static READ_HANDLER(sound_port2_r) {
 	int data = (locals.snddata<<1);
 	if(last) { last = 0; data = 0;}
 	//mlogerror("sound port 2 read: %x\n",data);
-	return data; 
+	return data;
 }
 
 //The data might need to be swapped.. P10(Bit 0)->Pin 8 of DAC
-static WRITE_HANDLER(sound_port1_w) { 
+static WRITE_HANDLER(sound_port1_w) {
 	//DAC_0_data_w(offset,core_revbyte(data));
 	DAC_0_data_w(offset,data);
 	//logerror("DAC: sound port 1 write = %x\n",data);
@@ -563,8 +563,8 @@ static void by_vh_stop(void)
 
 
 #if 1
-static void by_drawStatus (struct osd_bitmap *bmp, int full_refresh);
-static void by_vh_refresh (struct osd_bitmap *bmp, int full_refresh)
+static void by_drawStatus (struct mame_bitmap *bmp, int full_refresh);
+static void by_vh_refresh (struct mame_bitmap *bmp, int full_refresh)
 {
   TMS9928A_refresh(bmp,full_refresh);
   by_drawStatus(bmp, full_refresh);
@@ -618,7 +618,7 @@ MEMORY_END
 /  Memory map for VIDEO CPU (Located on Vidiot Board)
 /----------------------------------------------------*/
 static MEMORY_READ_START(byVP_video_readmem)
-	{ 0x0000, 0x1fff, misc_r },  
+	{ 0x0000, 0x1fff, misc_r },
 	{ 0x2000, 0x2003, pia_2_r }, /* U7 PIA */
 	{ 0x4000, 0x4001, vdp_r },   /* U16 VDP*/
 	{ 0x6000, 0x6400, MRA_RAM }, /* U13&U14 1024x4 Byte Ram*/
@@ -626,7 +626,7 @@ static MEMORY_READ_START(byVP_video_readmem)
 MEMORY_END
 
 static MEMORY_WRITE_START(byVP_video_writemem)
-	{ 0x0000, 0x1fff, misc_w },  
+	{ 0x0000, 0x1fff, misc_w },
 	{ 0x2000, 0x2003, pia_2_w }, /* U7 PIA */
 	{ 0x4000, 0x4001, vdp_w },   /* U16 VDP*/
 	{ 0x6000, 0x6400, MWA_RAM }, /* U13&U14 1024x4 Byte Ram*/
@@ -637,7 +637,7 @@ MEMORY_END
 /  Memory map for VIDEO CPU (Located on Vidiot Board) - G&G
 /---------------------------------------------------------*/
 static MEMORY_READ_START(byVP2_video_readmem)
-//	{ 0x0000, 0x1fff, misc_r },  
+//	{ 0x0000, 0x1fff, misc_r },
 	{ 0x0002, 0x0003, vdp_r },   /* U16 VDP*/
 	{ 0x0008, 0x000b, pia_2_r }, /* U7 PIA */
 	{ 0x2400, 0x2800, MRA_RAM }, /* U13&U14 1024x4 Byte Ram*/
@@ -645,7 +645,7 @@ static MEMORY_READ_START(byVP2_video_readmem)
 MEMORY_END
 
 static MEMORY_WRITE_START(byVP2_video_writemem)
-//	{ 0x0000, 0x1fff, misc_w },  
+//	{ 0x0000, 0x1fff, misc_w },
 	{ 0x0002, 0x0003, vdp_w },   /* U16 VDP*/
 	{ 0x0008, 0x000b, pia_2_w }, /* U7 PIA */
 	{ 0x2400, 0x2800, MWA_RAM }, /* U13&U14 1024x4 Byte Ram*/
@@ -657,7 +657,7 @@ MEMORY_END
 /-----------------------------------------------------*/
 /*
   6803 vectors:
-  RES: FFFE-F 
+  RES: FFFE-F
   SWI: FFFA-B Software Interrupt (Not Used)
   NMI: FFFC-D (Used)
   IRQ: FFF8-9 (Not Used)
@@ -711,7 +711,7 @@ static PORT_WRITE_START( byVP_sound_writeport )
 PORT_END
 
 
-//32*8, 24*8, { 0*8, 32*8-1, 0*8, 24*8-1 }, 
+//32*8, 24*8, { 0*8, 32*8-1, 0*8, 24*8-1 },
 
 #define GRAPHICSETUP \
   32*8, 32*8, { 0*8, 32*8-1, 0*8, 32*8-1 }, \
