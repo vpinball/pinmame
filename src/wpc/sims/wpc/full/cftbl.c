@@ -380,7 +380,7 @@ WPCS_SOUNDROM288("bl_u18.l1",CRC(87267bcc) SHA1(3e733437bce3491c216a8627810897f6
                  "bl_u14.l1",CRC(6b02bee4) SHA1(4f852b897dbf0ec2d5b17eed2ff70d9360b12213))
 WPC_ROMEND
 
-WPC_ROMSTART(cftbl,sp1,"creat_l4.rom",0x80000,CRC(b8778cb6) SHA1(a5dcc1ebedbd62d81e2e56fb8aebdc33fa6ba70c))
+WPC_ROMSTART(cftbl,l4s,"creat_l4.rom",0x80000,CRC(b8778cb6) SHA1(a5dcc1ebedbd62d81e2e56fb8aebdc33fa6ba70c))
 WPCS_SOUNDROM288("u18-sp1.rom",CRC(07198d93) SHA1(d91eb7ae7bd11340b0daf4edd2cd2e87acadeda4),
                  "bl_u15.l1",CRC(15477d6f) SHA1(3ed7942828630bc9111d2e602fee931ef67db2ce),
                  "bl_u14.l1",CRC(6b02bee4) SHA1(4f852b897dbf0ec2d5b17eed2ff70d9360b12213))
