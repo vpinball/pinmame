@@ -37,3 +37,5 @@ Bugs in Pinmame that we are aware of:
 #14) All Gottlieb System80a games are not working correctly right now. We're on it!!!
 
 #15) No sound on some Hankin games.
+
+#16) Switch problems with Dataeast Playboy and the Grotto/VUK
