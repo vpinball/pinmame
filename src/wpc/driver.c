@@ -563,7 +563,7 @@ DRIVER(comet,l4)        //S9-540:   06/85 W Comet
 DRIVER(hs,l4)           //S11-541:  01/86 W High Speed
                         //S11:      02/86 W Alley Cats (Bowler)
 DRIVER(grand,l4)        //S11-523:  04/86 W Grand Lizard
-DRIVER(rdkng,l5)        //S11-542:  07/86 W Road Kings
+DRIVER(rdkng,l4)        //S11-542:  07/86 W Road Kings
 DRIVER(pb,l5)           //S11-549:  10/86 W Pin-bot
                         //S11:      10/86 W Strike Force
 DRIVER(milln,l3)        //S11-555:  01/87 W Millionaire

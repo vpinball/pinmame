@@ -5,7 +5,6 @@
 
 /*
 Issues:
-Road Kings: Main CPU
 Pool: Sound loops on startup
 */
 #define INITGAME(name, gen, disp, mux, flip, db, gs1) \
@@ -131,14 +130,14 @@ CORE_GAMEDEF(grand, l4, "Grand Lizard (L-4)", 1986, "Williams", s11_mS11S,0)
 / Road Kings 07/86
 /--------------------*/
 INITGAME(rdkng, GEN_S11, s11_dispS11, 0, FLIP_SWNO(47,48),S11_BCDDIAG,0)
-S11_ROMSTART28(rdkng,l5,"road_u26.l5", 0x22bcc70e,
-                        "road_u27.l5", 0x3dcad794)
+S11_ROMSTART48(rdkng,l4,"road_u26.l4", 0x4ea27d67,
+                        "road_u27.l4", 0x5b88e755)
 S11S_SOUNDROM88(        "road_u21.l1", 0xf34efbf4,
                         "road_u22.l1", 0xa9803804)
 S11CS_SOUNDROM8(        "road_u4.l1",  0x4395b48f)
 S11_ROMEND
 #define input_ports_rdkng input_ports_s11
-CORE_GAMEDEF(rdkng, l5, "Road Kings (L-5)", 1986, "Williams", s11_mS11S,GAME_NOT_WORKING)
+CORE_GAMEDEF(rdkng, l4, "Road Kings (L-4)", 1986, "Williams", s11_mS11S,0)
 
 /*--------------------
 / Pinbot 10/86
@@ -152,7 +151,7 @@ static void init_pb(void) { core_gameData = &pbGameData; }
 S11_ROMSTART48(pb,l5,"pbot_u26.l5", 0xdaa0c8e4,
                      "pbot_u27.l5", 0xe625d6ce)
 S11S_SOUNDROM88(     "pbot_u21.l1", 0x3eab88d9,
-                     "pbot_u22.l1", 0xf8f7c965)
+                     "pbot_u22.l1", 0xa2d2c9cb)
 S11CS_SOUNDROM88(    "pbot_u4.l1",  0xde5926bd,
                      "pbot_u19.l1", 0x40eb4e9f)
 S11_ROMEND
