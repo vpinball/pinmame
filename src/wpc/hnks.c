@@ -82,8 +82,10 @@ void start_samples(void)
 	// looks strange? (cond?32:1), thats ok!
 	mixer_play_sample(
 		hnks_locals.channel, 
-		samples[iBuffer], 
-		(hnks_locals.counterEnabled && !hnks_locals.counterReset)?0x20:1, 
+		samples[iBuffer],
+		(
+		// hnks_locals.counterEnabled &&
+		!hnks_locals.counterReset)?0x20:1, 
 		(BASE_FREQUENCY/(hnks_locals.counterSpeed+1)), 
 		1
 	);
@@ -94,13 +96,13 @@ void start_samples(void)
 */
 static WRITE_HANDLER(pia0a_w)
 {
-  // logerror("pia0a_w: %02x\n", data);
   int samp = (data&0xf0)>>4;
+  // logerror("pia0a_w: %02x\n", data);
+
   if ( samp == hnks_locals.actSamples )
 	  return;
 
   hnks_locals.actSamples = samp;
-  // logerror("samples: %02x\n", samples);
   start_samples();
 }
 
@@ -119,7 +121,7 @@ static WRITE_HANDLER(pia0b_w)
   hnks_locals.volume = ((data&0xf0)>>4) / 15.0;
   
   // logerror("counter speed : %02x\n", hnks_locals.counterSpeed);
-  // logerror("volume: %d\n", hnks_locals.volume);
+  // logerror("volume: %f\n", hnks_locals.volume);
   start_samples();
 }
 
@@ -170,7 +172,7 @@ static const struct pia6821_interface sp_pia = {
 /* sound data */
 static WRITE_HANDLER(hnks_data_w)
 {
-  // logerror("hnks_data_w: 0x%02d\r\n", data);
+  // logerror("hnks_data_w: 0x%02x\r\n", data);
   hnks_locals.pia0a_r = data&0x0f;
 }
 
