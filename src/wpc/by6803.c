@@ -86,7 +86,7 @@
 #define BY6803_ZCFREQ        240/* Zero cross frequency (PHASE A is 1/2 this value)*/
 
 #define BY6803_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
-#define BY6803_LAMPSMOOTH      4 /* Smooth the lamps over this number of VBLANKS */
+#define BY6803_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
 #define BY6803_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKS */
 
 //#define mlogerror printf
@@ -354,7 +354,7 @@ static INTERRUPT_GEN(by6803_vblank) {
 }
 
 static INTERRUPT_GEN(by6803_vblank_alpha) {
-  /*-- display --*/
+  /*-- display (no smoothing needed) --*/
   memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
   vblank_all();
 }
@@ -551,7 +551,7 @@ PORT_END
 static MACHINE_DRIVER_START(by6803)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(by6803,by6803,by6803)
-  MDRV_CPU_ADD(M6803, 3580000/4)
+  MDRV_CPU_ADD_TAG("mcpu", M6803, 3580000/4)
   MDRV_CPU_MEMORY(by6803_readmem, by6803_writemem)
   MDRV_CPU_PORTS(by6803_readport, by6803_writeport)
   MDRV_CPU_VBLANK_INT(by6803_vblank, 1)
@@ -578,6 +578,7 @@ MACHINE_DRIVER_END
 //6803 - Generation 2 Sound (Turbo Cheap Squeak)
 MACHINE_DRIVER_START(by6803_TCSS)
   MDRV_IMPORT_FROM(by6803)
+  MDRV_CPU_MODIFY("mcpu")
   MDRV_CPU_VBLANK_INT(by6803_vblank_alpha, 1)
   MDRV_SCREEN_SIZE(640,400)
   MDRV_VISIBLE_AREA(0, 639, 0, 399)
@@ -586,6 +587,7 @@ MACHINE_DRIVER_END
 //6803 - Generation 2A Sound (Turbo Cheap Squeak 2)
 MACHINE_DRIVER_START(by6803_TCS2S)
   MDRV_IMPORT_FROM(by6803)
+  MDRV_CPU_MODIFY("mcpu")
   MDRV_CPU_VBLANK_INT(by6803_vblank_alpha, 1)
   MDRV_SCREEN_SIZE(640,400)
   MDRV_VISIBLE_AREA(0, 639, 0, 399)
@@ -594,6 +596,7 @@ MACHINE_DRIVER_END
 //6803 - Generation 3 Sound (Sounds Deluxe) with keypad
 MACHINE_DRIVER_START(by6803_SDS)
   MDRV_IMPORT_FROM(by6803)
+  MDRV_CPU_MODIFY("mcpu")
   MDRV_CPU_VBLANK_INT(by6803_vblank_alpha, 1)
   MDRV_SCREEN_SIZE(640,400)
   MDRV_VISIBLE_AREA(0, 639, 0, 399)
@@ -602,6 +605,7 @@ MACHINE_DRIVER_END
 //6803 - Generation 4 Sound (Williams System 11C) without keypad
 MACHINE_DRIVER_START(by6803_S11CS)
   MDRV_IMPORT_FROM(by6803)
+  MDRV_CPU_MODIFY("mcpu")
   MDRV_CPU_VBLANK_INT(by6803_vblank_alpha, 1)
   MDRV_SCREEN_SIZE(640,400)
   MDRV_VISIBLE_AREA(0, 639, 0, 399)
