@@ -22,18 +22,12 @@
     /* These are put in switch column 2 */ \
     COREPORT_BIT   (0x8000, "Test Mode", KEYCODE_END) \
   PORT_START /* 1 */ \
-    COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
+    COREPORT_DIPNAME( 0x0001, 0x0001, "Sound 1") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0001, "1" ) \
-    COREPORT_DIPNAME( 0x0002, 0x0000, "S2") \
+    COREPORT_DIPNAME( 0x0002, 0x0002, "Sound 2") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0002, "1" ) \
-    COREPORT_DIPNAME( 0x0004, 0x0000, "S3") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0004, "1" ) \
-    COREPORT_DIPNAME( 0x0008, 0x0000, "S4") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0008, "1" )
 
 #define ZAC_COMPORTS \
   PORT_START /* 0 */ \

@@ -132,7 +132,7 @@ CORE_GAMEDEFNV(firemntn,"Fire Mountain",1980,"Zaccaria",mZAC1125,SOUNDFLAG)
 / Star God (05/80)
 /-------------------------------*/
 // This game needs ROM #4 duplicated in slot #5?
-INITGAME1(stargod,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1125,125)
+INITGAME1(stargod,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1346,125)
 ZAC_ROMSTART84444(stargod,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6c0fda6fa0d1fea8257cb15),
 							"stargod2.lgc",CRC(7a784b03) SHA1(bc3490b69913f52e3e9db5c3de5617ab89efe073),
 							"stargod3.lgc",CRC(95492ac0) SHA1(992ad53efc5b53020e3939dfca5431fd50b6571c),
@@ -141,7 +141,7 @@ ZAC_ROMSTART84444(stargod,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6c
 //							"stargod5.lgc",CRC(03cd4e24) SHA1(b73d383dc71e44277de9116a702b899a54ce32b9))
 ZAC_SOUNDROM_0(				"stargod.snd", CRC(5079e493) SHA1(51d366cdd09ad00b8b016b0ea1c85ac95ef94d71))
 ZAC_ROMEND
-CORE_GAMEDEFNV(stargod,"Star God",1980,"Zaccaria",mZAC1125,SOUNDFLAG)
+CORE_GAMEDEFNV(stargod,"Star God",1980,"Zaccaria",mZAC1346,0)
 
 /*--------------------------------
 / Space Shuttle (09/80)
@@ -154,7 +154,7 @@ ZAC_ROMSTART84444(sshtlzac,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6
 							"spcshtl5.lgc",CRC(d1dabd9b) SHA1(0d28336764f43fa4d1b23d849b6ec0f60b2b4ecf))
 ZAC_SOUNDROM_0(				"spcshtl.snd", CRC(9a61781c) SHA1(0293640653d8cc9532debd31bbb70f025b4e6d03))
 ZAC_ROMEND
-CORE_GAMEDEFNV(sshtlzac,"Space Shuttle (Zaccaria)",1980,"Zaccaria",mZAC1346,SOUNDFLAG)
+CORE_GAMEDEFNV(sshtlzac,"Space Shuttle (Zaccaria)",1980,"Zaccaria",mZAC1346,0)
 
 /*--------------------------------
 / Earth, Wind & Fire (04/81)
@@ -167,7 +167,7 @@ ZAC_ROMSTART84444(ewf,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6c0fda
 						"ewf_5.lgc",   CRC(f695dab6) SHA1(48ca60718cea40baa5052f690c8d69eb7ab32b0e))
 ZAC_SOUNDROM_0(			"stargod.snd", CRC(5079e493) SHA1(51d366cdd09ad00b8b016b0ea1c85ac95ef94d71))
 ZAC_ROMEND
-CORE_GAMEDEFNV(ewf,"Earth, Wind & Fire",1981,"Zaccaria",mZAC1346,SOUNDFLAG)
+CORE_GAMEDEFNV(ewf,"Earth, Wind & Fire",1981,"Zaccaria",mZAC1346,0)
 
 /*--------------------------------
 / Locomotion (09/81)
