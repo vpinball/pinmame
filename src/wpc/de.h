@@ -104,9 +104,6 @@
 /*-- DE switch numbers --*/
 #define DE_SWADVANCE     -7
 #define DE_SWUPDN        -6
-#define DE_SWCPUDIAG     -5
-#define DE_SWSOUNDDIAG   -8
-
 
 /*-- Memory regions --*/
 #define DE_MEMREG_CPU		REGION_CPU1
