@@ -176,8 +176,11 @@ extern unsigned m68020_dasm(char *buffer, unsigned pc);
 #define MC68306_IRQ_7					MC68000_IRQ_7
 #define MC68306_INT_ACK_AUTOVECTOR		MC68000_INT_ACK_AUTOVECTOR
 #define MC68306_INT_ACK_SPURIOUS		MC68000_INT_ACK_SPURIOUS
-#define M68306_PORTA  0
-#define M68306_PORTB  1
+#define M68306_PORTA_START  0
+#define M68306_PORTA_END    1
+#define M68306_PORTB_START  2
+#define M68306_PORTB_END    3
+
 #define m68306_ICount                   m68k_ICount
 extern void m68306_init(void);
 extern void m68306_reset(void *param);
