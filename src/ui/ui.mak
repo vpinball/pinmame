@@ -32,8 +32,8 @@ OSOBJS += \
         $(OBJ)/ui/options.o \
         $(OBJ)/ui/help.o \
         $(OBJ)/ui/layout.o \
-        $(OBJ)/ui/history.o
-
+        $(OBJ)/ui/history.o \
+        $(OBJ)/ui/dialogs.o
 
 # add resource file
 OSOBJS += $(OBJ)/ui/PinMAME32.res

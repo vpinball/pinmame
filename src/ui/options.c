@@ -185,6 +185,7 @@ static REG_OPTION regSettings[] =
 	{"hide_mouse",         RO_BOOL,    &settings.hide_mouse,  0, 0},
 	{"full_screen",        RO_BOOL,    &settings.full_screen,  0, 0},
 	{"cycle_screenshot",   RO_INT,     &settings.cycle_screenshot,  0, 0},
+	{"stretch_screenshot_larger", RO_BOOL, &settings.stretch_screenshot_larger,  0, 0},
 
 	{"language",           RO_STRING,  &settings.language,         0, 0},
 	{"flyer_directory",    RO_STRING,  &settings.flyerdir,         0, 0},
@@ -618,6 +619,8 @@ BOOL OptionsInit()
 	settings.exec_wait                = 0;
 	settings.hide_mouse               = FALSE;
 	settings.full_screen              = FALSE;
+	settings.cycle_screenshot = 0;
+	settings.stretch_screenshot_larger = TRUE;
 
 	settings.language          = strdup("english");
 	settings.flyerdir          = strdup("flyers");
@@ -1050,6 +1053,16 @@ void SetCycleScreenshot(int cycle_screenshot)
 int GetCycleScreenshot(void)
 {
 	return settings.cycle_screenshot;
+}
+
+void SetStretchScreenShotLarger(BOOL stretch)
+{
+	settings.stretch_screenshot_larger = stretch;
+}
+
+BOOL GetStretchScreenShotLarger(void)
+{
+	return settings.stretch_screenshot_larger;
 }
 
 void SetBroadcast(BOOL broadcast)

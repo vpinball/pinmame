@@ -149,7 +149,8 @@ typedef struct
 } EXFOLDERDATA, *LPEXFOLDERDATA;
 
 void FreeFolders(void);
-
+void ResetFilters(void);
+void InitTree(LPFOLDERDATA lpFolderData, LPFILTER_ITEM lpFilterList);
 void SetCurrentFolder(LPTREEFOLDER lpFolder);
 UINT GetCurrentFolderID(void);
 
@@ -162,14 +163,13 @@ void AddGame(LPTREEFOLDER lpFolder, UINT nGame);
 void RemoveGame(LPTREEFOLDER lpFolder, UINT nGame);
 int  FindGame(LPTREEFOLDER lpFolder, int nGame);
 
-void InitTree(LPFOLDERDATA lpFolderData, LPFILTER_ITEM lpFilterList);
 void ResetWhichGamesInFolders(void);
+
+LPFOLDERDATA FindFilter(DWORD folderID);
 
 BOOL GameFiltered(int nGame, DWORD dwFlags);
 
-INT_PTR CALLBACK ResetDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam);
-INT_PTR CALLBACK FilterDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam);
-INT_PTR CALLBACK InterfaceDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam);
+LPFILTER_ITEM GetFilterList(void);
 
 void SetTreeIconSize(HWND hWnd, BOOL bLarge);
 BOOL GetTreeIconSize(void);
