@@ -21,7 +21,7 @@ static WRITE_HANDLER(sp1346_ctrl_w);
 / exported interface
 /--------------------*/
 const struct sndbrdIntf zac1346Intf = {
-  sp_init, NULL, NULL, sp1346_data_w, NULL, sp1346_ctrl_w, NULL,
+  sp_init, NULL, NULL, sp1346_data_w, NULL, sp1346_ctrl_w, NULL, 0
 };
 
 static struct {
@@ -85,7 +85,7 @@ static void sns_5220Irq(int state);
 static READ_HANDLER(sns_8910a_r);
 
 const struct sndbrdIntf zac1370Intf = {
-  sns_init, NULL, sns_diag, sns_data_w, NULL, sns_ctrl_w, NULL, 0//SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  sns_init, NULL, sns_diag, sns_data_w, NULL, sns_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 static struct TMS5220interface sns_tms5220Int = { 640000, 50, sns_5220Irq };
 static struct DACinterface     sns_dacInt = { 1, { 20 }};
@@ -213,7 +213,7 @@ static WRITE_HANDLER(zac_ctrl_w);
 static READ_HANDLER(zac_8910a_r);
 
 const struct sndbrdIntf zac13136Intf = {
-  zac_init, NULL, zac_diag, zac_data_w, NULL, zac_ctrl_w, NULL, 0 //SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  zac_init, NULL, zac_diag, zac_data_w, NULL, zac_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 static struct DACinterface     zac_dacInt = {2, {20, 20}};
 static struct AY8910interface  zac_ay8910Int = {2, 3580000/4, {25, 25}, {sns_8910a_r, zac_8910a_r}};

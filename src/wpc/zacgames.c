@@ -29,7 +29,7 @@ static core_tLCDLayout dispZAC3[] = {
 #ifdef MAME_DEBUG
 #define SOUNDFLAG 0
 #else
-#define SOUNDFLAG GAME_NO_SOUND
+#define SOUNDFLAG GAME_IMPERFECT_SOUND
 #endif
 
 #define INITGAME1(name, gen, disp, sb) \

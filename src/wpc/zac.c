@@ -97,7 +97,6 @@ static int ZAC_m2sw(int col, int row) {
 }
 
 static int irq_callback(int int_level) {
-//	logerror("callback!\n");
 	return 0xbf;
 }
 
@@ -145,7 +144,6 @@ static MACHINE_INIT(ZAC1) {
 	  }
   }
 
-// if (coreGlobals.soundEn)
   ZAC_soundInit();
 }
 
@@ -156,7 +154,6 @@ static MACHINE_INIT(ZAC2) {
   /* Set IRQ Vector Routine */
   cpu_set_irq_callback(0, irq_callback);
 
-// if (coreGlobals.soundEn)
   ZAC_soundInit();
 }
 
@@ -167,7 +164,6 @@ static MACHINE_INIT(ZAC2A) {
   /* Set IRQ Vector Routine */
   cpu_set_irq_callback(0, irq_callback);
 
-// if (coreGlobals.soundEn)
   ZAC_soundInit();
 }
 
@@ -176,7 +172,7 @@ static MACHINE_STOP(ZAC) {
     osd_fclose(locals.printfile);
     locals.printfile = NULL;
   }
-// if (coreGlobals.soundEn)
+
   ZAC_soundExit();
 }
 
@@ -193,8 +189,8 @@ static READ_HANDLER(ctrl_port_r)
 */
 static READ_HANDLER(data_port_r)
 {
-	logerror("%x: Dip & ActSnd/Spk Read - Dips=%x\n",activecpu_get_previouspc(),core_getDip(0)&0x0f);
 	//logerror("%x: Data Port Read\n",activecpu_get_previouspc());
+//	logerror("%x: Dip & ActSnd/Spk Read - Dips=%x\n",activecpu_get_previouspc(),core_getDip(0)&0x0f);
 	return ~(core_getDip(0)&0x0f); // 4Bit Dip Switch;
 }
 
@@ -208,7 +204,7 @@ static READ_HANDLER(sense_port_r)
 	if (++bitno > 7) {
 		byte++;
 		bitno = 0;
-		logerror("%x: Sense Port Read=%02x\n",activecpu_get_previouspc(),byte);
+//		logerror("%x: Sense Port Read=%02x\n",activecpu_get_previouspc(),byte);
 	}
 	return (byte >> bitno) & 1;
 }
@@ -240,6 +236,7 @@ static WRITE_HANDLER(ctrl_port_w)
 	}
 	locals.swCol+=1;
 #endif
+	logerror("%x: Sound Ctrl Write=%x\n",activecpu_get_previouspc(),data);
 	sndbrd_0_ctrl_w(ZACSND_CPUA, data);
 //	logerror("strobe data = %x, swcol = %x\n",data&0x07,locals.swCol);
 //	logerror("refresh=%x\n",locals.refresh);
@@ -277,7 +274,7 @@ static WRITE_HANDLER(sense_port_w)
 		bitno = 0;
 		startbit = 0;
 	}
-	logerror("%x: Sense Port Write=%x\n",activecpu_get_previouspc(),data);
+//	logerror("%x: Sense Port Write=%x\n",activecpu_get_previouspc(),data);
 }
 
 static READ_HANDLER(ram_r) {
@@ -327,7 +324,7 @@ static WRITE_HANDLER(ram_w) {
 			coreGlobals.tmpLampMatrix[offset/8] &= ~(1 << (offset%8));
 	} else if (offset > 0x4bf && offset < 0x4e8)
 		locals.segments[0x4e7 - offset].w = core_bcd2seg7[data & 0x0f];
-//	else logerror("ram_w: offset = %4x, data = %02x\n", offset, data);
+	else if (offset < 0x500) logerror("ram_w: offset = %4x, data = %02x\n", offset, data);
 }
 
 static WRITE_HANDLER(ram1_w) {
