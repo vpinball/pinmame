@@ -17,24 +17,24 @@ N = No Lead, L = Have a Lead on Rom
 Cactus Jacks 1991
 Class of 1812 1991
 Surf'n Safari 1991
-Operation: Thunderstorm (OT) /No. 1721/ Premier Technology , March 1992, 4 players 
-Super Mario Bros. (SMB) /No. 2435/ Premier Technology , April 25, 1992, 4 players 
-(N*)Super Mario Bros. Mushroom World (MW) /No. 3427/ Premier Technology , June 1992, 4 players 
-Cue Ball Wizard (CBW) /No. 610/ Premier Technology , October 1992, 4 players 
-Street Fighter II (SF2, SFII) /No. 2403/ Premier Technology , March 1993, 4 players 
-Tee'd Off (TO) /No. 2508/ Premier Technology , May 1993, 4 players 
-Wipe Out (WO) /No. 2799/ Premier Technology , October 1993, 4 players 
-Gladiators /No. 1011/ Premier Technology , November 1993, 4 players 
-World Challenge Soccer (WCS) /No. 2808/ Premier Technology , February 1994, 4 players 
-Rescue 911 (R911) /No. 1951/ Premier Technology , May 1994, 4 players 
-Freddy: a Nightmare on Elm Street (Freddy) /No. 948/ Premier Technology , October 1994, 4 
-Shaq Attaq (SA) /No. 2874/ Premier Technology , February 1995, 4 players 
-Stargate (SG) /No. 2847/ Premier Technology , March 1995, 4 players 
-Big Hurt /No. 3591/ Premier Technology , June 1995, 4 players 
+Operation: Thunderstorm (OT) /No. 1721/ Premier Technology , March 1992, 4 players
+Super Mario Bros. (SMB) /No. 2435/ Premier Technology , April 25, 1992, 4 players
+(N*)Super Mario Bros. Mushroom World (MW) /No. 3427/ Premier Technology , June 1992, 4 players
+Cue Ball Wizard (CBW) /No. 610/ Premier Technology , October 1992, 4 players
+Street Fighter II (SF2, SFII) /No. 2403/ Premier Technology , March 1993, 4 players
+Tee'd Off (TO) /No. 2508/ Premier Technology , May 1993, 4 players
+Wipe Out (WO) /No. 2799/ Premier Technology , October 1993, 4 players
+Gladiators /No. 1011/ Premier Technology , November 1993, 4 players
+World Challenge Soccer (WCS) /No. 2808/ Premier Technology , February 1994, 4 players
+Rescue 911 (R911) /No. 1951/ Premier Technology , May 1994, 4 players
+Freddy: a Nightmare on Elm Street (Freddy) /No. 948/ Premier Technology , October 1994, 4
+Shaq Attaq (SA) /No. 2874/ Premier Technology , February 1995, 4 players
+Stargate (SG) /No. 2847/ Premier Technology , March 1995, 4 players
+Big Hurt /No. 3591/ Premier Technology , June 1995, 4 players
 Strikes 'N Spares 1995 (????????)
-Waterworld (WW) /No. 3793/ Premier Technology , October 1995, 4 players 
-Mario Andretti (MA) /No. 3794/ Premier Technology , December 1995, 4 players 
-Barb Wire /No. 3795/ Premier Technology , April 1996, 4 players 
+Waterworld (WW) /No. 3793/ Premier Technology , October 1995, 4 players
+Mario Andretti (MA) /No. 3794/ Premier Technology , December 1995, 4 players
+Barb Wire /No. 3795/ Premier Technology , April 1996, 4 players
 */
 
 #define ALPHA	 GTS3_dispAlpha
@@ -59,21 +59,21 @@ core_tLCDLayout GTS3_dispAlpha1[] = {
 
 
 #define INITGAME(name, disptype, flippers, balls) \
-	static core_tGameData name##GameData = {0,disptype,{flippers}}; \
+	static core_tGameData name##GameData = {0,disptype,{flippers,4,4}}; \
 static void init_##name(void) { \
   core_gameData = &name##GameData; \
 } \
 GTS3_INPUT_PORTS_START(name, balls) GTS3_INPUT_PORTS_END
 
 #define INITGAME2(name, disptype, flippers, balls) \
-	static core_tGameData name##GameData = {0,disptype,{flippers}}; \
+	static core_tGameData name##GameData = {0,disptype,{flippers,4,4}}; \
 static void init_##name(void) { \
   core_gameData = &name##GameData; \
 } \
 GTS32_INPUT_PORTS_START(name, balls) GTS3_INPUT_PORTS_END
 
 #define INITGAME3(name, disptype, flippers, balls) \
-	static core_tGameData name##GameData = {0,disptype,{flippers}}; \
+	static core_tGameData name##GameData = {0,disptype,{flippers,4,4}}; \
 static void init_##name(void) { \
   core_gameData = &name##GameData; \
 } \
@@ -238,7 +238,7 @@ GTS3_ROMEND
 CORE_GAMEDEFNV(wipeout,"Wipeout",1993,"Gottlieb",mGTS3DMD, GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
-/ Gladiators 
+/ Gladiators
 /-------------------------------------------------------------------*/
 INITGAME2(gladiatr, DMD, FLIP8283, 3/*?*/)
 GTS3ROMSTART(gladiatr,	"gprom.bin", 0x40386cf5)
@@ -323,7 +323,7 @@ GTS3_ROMEND
 CORE_GAMEDEFNV(andretti,"Mario Andretti",1995,"Gottlieb",mGTS3DMD, GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
-/ Barb Wire 
+/ Barb Wire
 /-------------------------------------------------------------------*/
 INITGAME2(barbwire, DMD, FLIP4243, 3/*?*/)
 GTS3ROMSTART(barbwire,	"gprom.bin", 0x2e130835)

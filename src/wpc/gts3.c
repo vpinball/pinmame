@@ -6,7 +6,7 @@
 
   65c02: Vectors: FFFE&F = IRQ, FFFA&B = NMI, FFFC&D = RESET
   //Cueball: CPU0: RST = FEF0, IRQ=462F, NMI=477A
-  
+
   Cannot use Column 11 for switches! Must move them to 12.
   S: When fetching the colums you need to shift the last bits 1 step. column = column<<(column>=0x0400)
   s: the only thing is that in the game driver you cant do segment[row][column]=xxx. You must do ((UINT8 *)segment)[20*row+column]=xxx
@@ -88,14 +88,8 @@ struct {
   int    mainIrq;
   int	 swDiag;
   int    swTilt;
-  int	 ldata;
-  int	 lstrb;
-  int	 lclr;
-  UINT8	 adata;
-  int	 astrb;
-  int	 ablank;
-  UINT32 digSel;
   int    acol;
+  int    u4pb;
   WRITE_HANDLER((*U4_PB_W));
   READ_HANDLER((*U4_PB_R));
   WRITE_HANDLER((*U5_PB_W));
@@ -124,8 +118,7 @@ struct {
 /* U4 */
 
 //PA0-7 Switch Rows/Returns (Switches are inverted)
-//static READ_HANDLER( xvia_0_a_r ) { return ~core_getSwCol(GTS3locals.swCol); }
-static READ_HANDLER( xvia_0_a_r ) { return ~core_getSwCol(GTS3locals.swCol<<(GTS3locals.swCol>=0x0800)); }
+static READ_HANDLER( xvia_0_a_r ) { return ~core_getSwCol(GTS3locals.lampColumn<<(GTS3locals.lampColumn>=0x0400)); }
 
 //PB0-7 Varies on Alpha or DMD Generation!
 static READ_HANDLER( xvia_0_b_r ) { return GTS3locals.U4_PB_R(offset); }
@@ -170,7 +163,7 @@ static READ_HANDLER(dmd_u4_pb_r)
 static READ_HANDLER( xvia_0_ca1_r )
 {
 	logerror1("READ: SLAM: via_0_ca1_r\n");
-	return (core_getSwSeq(GTS3_SWSLAM)>0?1:0);
+	return core_getSwSeq(GTS3_SWSLAM) != 0;
 }
 
 //CA2:  To A1P6-12 & A1P7-6 Auxiliary (INPUT???)
@@ -207,37 +200,25 @@ static WRITE_HANDLER( xvia_0_b_w ) { GTS3locals.U4_PB_W(offset,data); }
   PB6:  Display Strobe (DSTRB)
   PB7:  Display Blank  (DBLNK)
 */
+#define LDATA 0x01
+#define LSTRB 0x02
+#define LCLR  0x04
+#define DDATA 0x20
+#define DSTRB 0x40
+#define DBLNK 0x80
+
 static WRITE_HANDLER(alpha_u4_pb_w) {
-	int i;
-	//Grab LDATA value
-	GTS3locals.ldata = (data>>0)&1;
-
-	//Strobe in new data - Only on positive edge? (Keep only 12 Bits for the 12 columns)
-	if( ((data>>1)&1) && !GTS3locals.lstrb){
-		GTS3locals.lampColumn = ((GTS3locals.lampColumn<<1) | GTS3locals.ldata) & 0x1fff;
-		GTS3locals.swCol = GTS3locals.lampColumn;	//Switches use Lamp Column Also!
+	logerror("lampcolumn=%4x STRB=%d LCLR=%d\n",GTS3locals.lampColumn,data&LSTRB,data&LCLR);
+//	if (GTS3locals.u4pb & LCLR)  GTS3locals.lampColumn = 0; // Negative edge
+	if (data & ~GTS3locals.u4pb & LSTRB) { // Positive edge
+		GTS3locals.lampColumn = ((GTS3locals.lampColumn<<1) | (data & LDATA)) & 0x0fff;
 	}
-	GTS3locals.lstrb =		(data>>1)&1;
-	GTS3locals.lclr =		(data>>2)&1;
-
-	//Grab ADATA value
-	GTS3locals.adata =	    (data>>5)&1;
-
-	//Strobe in new data - Only on positive edge (Keep only 20 bits for the 20 columns)
-	if( ((data>>6)&1) && !GTS3locals.astrb){
-		GTS3locals.digSel = ((GTS3locals.digSel<<1) | GTS3locals.adata) & 0x1fffff;
-		//Convert to actual column #
-		for(i = 0; i<20; i++){
-			if((GTS3locals.digSel>>i) & 1){
-				GTS3locals.acol = i;
-				break;
-			}
-		}
+//	if (data & ~GTS3locals.u4pb & DBLNK) GTS3.digSel = 0; // Positive edge
+	if (data & ~GTS3locals.u4pb & DSTRB) { // Positive edge
+		if (data & DDATA) GTS3locals.acol = 0;
+		else if (GTS3locals.acol < 20) GTS3locals.acol += 1;
 	}
-	GTS3locals.astrb =	    (data>>6)&1;
-	GTS3locals.ablank =     (data>>7)&1;
-
-	//Update matrix
+	GTS3locals.u4pb = data;
 	core_setLamp(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
 }
 
@@ -249,19 +230,11 @@ static WRITE_HANDLER(alpha_u4_pb_w) {
   PB6:  Display Strobe (DSTRB)
 */
 static WRITE_HANDLER(dmd_u4_pb_w) {
-	//Grab LDATA value
-	GTS3locals.ldata = (data>>0)&1;
-
-	//Strobe in new data - Only on positive edge? (Keep only 12 Bits for the 12 columns)
-	if( ((data>>1)&1) && !GTS3locals.lstrb){
-		GTS3locals.lampColumn = ((GTS3locals.lampColumn<<1) | GTS3locals.ldata) & 0x1fff;
-		GTS3locals.swCol = GTS3locals.lampColumn;	//Switches use Lamp Column Also!
-	}
-	GTS3locals.lstrb =		(data>>1)&1;
-	GTS3locals.lclr =		(data>>2)&1;
-	GTS3_dmdlocals.dstrb =	(data>>6)&1;
-
-	//Update matrix
+//	if (~data & GTS3locals.u4pb & LCLR)  GTS3locals.lampColumn = 0; // Negative edge
+	if (data & ~GTS3locals.u4pb & LSTRB) // Positive edge
+		GTS3locals.lampColumn = ((GTS3locals.lampColumn<<1) | (data & LDATA)) & 0x0fff;
+	GTS3_dmdlocals.dstrb = (data & DSTRB) != 0;
+	GTS3locals.u4pb = data;
 	core_setLamp(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
 }
 
@@ -339,8 +312,8 @@ static WRITE_HANDLER( xvia_1_b_w ) { GTS3locals.U4_PB_W(offset,data); }
 		DX4-DX6 = Column
 		AX4(DX7?) = Latch the Data
 */
-static WRITE_HANDLER(alpha_u5_pb_w) { 
-	logerror1("ALPHA DATA: %x\n",data); 
+static WRITE_HANDLER(alpha_u5_pb_w) {
+	logerror1("ALPHA DATA: %x\n",data);
 }
 
 /* DMD GENERATION
@@ -473,12 +446,12 @@ static int GTS3_vblank(void) {
     /*update leds*/
     coreGlobals.diagnosticLed = (GTS3locals.diagnosticLeds2<<3) |
 								(GTS3locals.diagnosticLeds1<<2) |
-								(GTS3_dmdlocals.diagnosticLed<<1) | 
+								(GTS3_dmdlocals.diagnosticLed<<1) |
 								GTS3locals.diagnosticLed;
     GTS3locals.diagnosticLed = 0;
 	GTS3_dmdlocals.diagnosticLed = 0;
   }
-  core_updateSw(TRUE); /* assume flipper enabled */
+  core_updateSw(GTS3locals.solenoids & 0x10000000); /* assume flipper enabled */
   return 0;
 }
 
@@ -488,7 +461,7 @@ static void GTS3_updSw(int *inports) {
 
   if (inports) {
     coreGlobals.swMatrix[0] = (inports[GTS3_COMINPORT] & 0x7f00)>>8;
-    coreGlobals.swMatrix[1] = inports[GTS3_COMINPORT];
+    coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0xc0) | (inports[GTS3_COMINPORT] & 0x3f);
   }
   GTS3locals.swDiag = (core_getSwSeq(GTS3_SWDIAG)>0?1:0);
   GTS3locals.swTilt = (core_getSwSeq(GTS3_SWTILT)>0?1:0);
@@ -559,7 +532,7 @@ static void GTS3_init2(void) {
   if(memory_region(GTS3_MEMREG_DCPU1))
   {
   memcpy(memory_region(GTS3_MEMREG_DCPU1)+0x8000,
-  memory_region(GTS3_MEMREG_DROM1) + 
+  memory_region(GTS3_MEMREG_DROM1) +
   (memory_region_length(GTS3_MEMREG_DROM1) - 0x8000), 0x8000);
   }
   GTS3_dmdlocals.pa0 = GTS3_dmdlocals.pa1 = GTS3_dmdlocals.pa2 = GTS3_dmdlocals.pa3 = 0;
@@ -622,7 +595,7 @@ static WRITE_HANDLER(solenoid_w)
 static void dmdswitchbank(void)
 {
 	int	addr =	(GTS3_dmdlocals.pa0 *0x04000)+
-				(GTS3_dmdlocals.pa1 *0x08000)+ 
+				(GTS3_dmdlocals.pa1 *0x08000)+
 				(GTS3_dmdlocals.pa2 *0x10000)+
  				(GTS3_dmdlocals.pa3 *0x20000)+
 				(GTS3_dmdlocals.a18 *0x40000);
@@ -637,14 +610,14 @@ static WRITE_HANDLER(display_control) { GTS3locals.DISPLAY_CONTROL(offset,data);
 
 /* ALPHA GENERATION
    ----------------
-   Alpha Strobe: 
+   Alpha Strobe:
 		DS0 = enable a,b,c,d,e,f,g,h of Bottom Segment
 		DS1 = enable i,j,k,l,m,n,dot,comma of Bottom Segment
 		DS2 = enable a,b,c,d,e,f,g,h of Top Segment
 		DS3 = enable i,j,k,l,m,n,dot,comma of Top Segment
 */
 static WRITE_HANDLER(alpha_display){
-	if(GTS3locals.ablank) {
+	if ((GTS3locals.u4pb & DBLNK) && (GTS3locals.acol < 20)) {
 		if(offset == 0) GTS3locals.segments[1][GTS3locals.acol].hi |= GTS3locals.pseg[1][GTS3locals.acol].hi = data;
 		else
 		if(offset == 1) GTS3locals.segments[1][GTS3locals.acol].lo |= GTS3locals.pseg[1][GTS3locals.acol].lo = data;
@@ -683,7 +656,7 @@ static void dmdnmi(int data){ cpu_cause_interrupt(1,M65C02_INT_NMI); }
   D3=Q3=PA3=A17 of DMD Eprom (Incorrectly identified as D4,Q4 on the schematic!)
   D4=Q4=Fed to GAL16V8(A18?) (Incorrectly identified as D3,Q3 on the schematic!)
   D5=Q5=PB5(U4)=DMD Status 1 (Incorrectly identified as D2,Q2 on the schematic!)
-  D6=Q6=PB7(U4)=DMD Status 2 
+  D6=Q6=PB7(U4)=DMD Status 2
   D7=DMD LED
 */
 static WRITE_HANDLER(dmdoport)
@@ -740,7 +713,7 @@ static void alphanmi(int data) { xvia_0_cb2_w(0,0); }
 
 static void alpha_update(){
     /* FORCE The 16 Segment Layout to match the output order expected by core.c */
-	// There's got to be a better way than this junky code! 
+	// There's got to be a better way than this junky code!
 	UINT16 segbits, tempbits;
 	int i,j,k, pos;
 	for(i=0;i<2;i++) {
