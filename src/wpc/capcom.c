@@ -18,8 +18,12 @@ static struct {
   int diagnosticLed;
   int visible_page;
   int zero_cross;
+  int blanking;
+  int lampb_only;
   UINT8 lastb;
 } locals;
+
+static UINT32 fixaddr = 0;
 
 static NVRAM_HANDLER(cc);
 
@@ -56,44 +60,13 @@ static SWITCH_UPDATE(cc) {
   }
 }
 
+/********************/
+/* IRQ & ZERO CROSS */
+/********************/
 static void cc_zeroCross(int data) {
  locals.zero_cross = !locals.zero_cross;
  cpu_set_irq_line(0,MC68306_IRQ_2,ASSERT_LINE);
 }
-static READ16_HANDLER(cc_porta_r) { DBGLOG(("Port A read\n")); return 0; }
-static READ16_HANDLER(cc_portb_r) { 
-	int data = 0;
-	data |= locals.zero_cross<<4;
-	DBGLOG(("Port B read = %x\n",data));
-	return data; 
-}
-static WRITE16_HANDLER(cc_porta_w) {
-  DBGLOG(("Port A write %04x\n",data));
-  locals.diagnosticLed = ((~data)&0x08>>3);
-}
-static WRITE16_HANDLER(cc_portb_w) {
-  locals.lastb = data;
-  DBGLOG(("Port B write %04x\n",data));
-  if (data & ~locals.lastb & 0x01) cpu_set_irq_line(0,MC68306_IRQ_2,CLEAR_LINE);
-}
-static WRITE16_HANDLER(u16_w) {
-  offset &= 0x203;
-  DBGLOG(("U16w [%03x]=%04x (%04x)\n",offset,data,mem_mask));
-
-  //Visible Page offset
-  if(offset==3) {
-	locals.visible_page = data >> 12;
-	//printf("U16w [%03x]=%04x (%04x)\n",offset,data,mem_mask);
-  }
-
-  switch (offset) {
-    case 0x000: case 0x001: case 0x002: case 0x003:
-      locals.u16a[offset] = (locals.u16a[offset] & mem_mask) | data; break;
-    case 0x200: case 0x201: case 0x202: case 0x203:
-      locals.u16b[offset&3] = (locals.u16b[offset&3] & mem_mask) | data; break;
-  }
-}
-
 static void cc_u16irq1(int data) {
   locals.u16irqcount += 1;
   if (locals.u16irqcount == (0x08>>((locals.u16b[0] & 0xc0)>>6))) {
@@ -101,13 +74,53 @@ static void cc_u16irq1(int data) {
     locals.u16irqcount = 0;
   }
 }
-
 static void cc_u16irq4(int data) {
 	cpu_set_irq_line(0,MC68306_IRQ_4,PULSE_LINE);
 }
 
-static UINT32 fixaddr = 0;
+/***************/
+/* PORT A READ */
+/***************/
+static READ16_HANDLER(cc_porta_r) { 
+	DBGLOG(("Port A read\n")); 
+	return 0; 
+}
+/***************/
+/* PORT B READ */
+/***************/
+static READ16_HANDLER(cc_portb_r) { 
+	int data = 0;
+	data |= locals.zero_cross<<4;
+	DBGLOG(("Port B read = %x\n",data));
+	return data; 
+}
 
+/****************/
+/* PORT A WRITE */
+/****************/
+//PA0-2 - N/A?
+//PA3   - LED
+//PA4   - LINE_5 (Input only?)
+//PA5   - LINE_V (Input only?)
+//PA6   - VSET   
+//PA7   - GRESET (to soundboard? inverted)
+static WRITE16_HANDLER(cc_porta_w) {
+  if(data !=0x0048 && data !=0x0040 && data !=0x0008)
+	DBGLOG(("Port A write %04x\n",data));
+  locals.diagnosticLed = ((~data)&0x08>>3);
+}
+/****************/
+/* PORT B WRITE */
+/****************/
+static WRITE16_HANDLER(cc_portb_w) {
+  locals.lastb = data;
+  DBGLOG(("Port B write %04x\n",data));
+  if (data & ~locals.lastb & 0x01) cpu_set_irq_line(0,MC68306_IRQ_2,CLEAR_LINE);
+}
+
+/************/
+/* U16 READ */
+/************/
 static READ16_HANDLER(u16_r) {
   static int readnum = 0;
   int numcheck;
@@ -122,8 +135,8 @@ static READ16_HANDLER(u16_r) {
   //
 
   offset &= 0x203;
-  DBGLOG(("U16r [%03x] (%04x)\n",offset,mem_mask));
-  printf("U16r [%03x] (%04x)\n",offset,mem_mask);
+  //DBGLOG(("U16r [%03x] (%04x)\n",offset,mem_mask));
+  //printf("U16r [%03x] (%04x)\n",offset,mem_mask);
   switch (offset) {
     case 0x000: case 0x001: case 0x002: case 0x003:
       return locals.u16a[offset];
@@ -133,40 +146,92 @@ static READ16_HANDLER(u16_r) {
   return 0;
 }
 
-static READ16_HANDLER(io_r) {
-  UINT16 sw = 0;
-  switch (offset) {
-    case 0x200008:
-      sw = coreGlobals.swMatrix[5] << 8 | coreGlobals.swMatrix[1];
-      break;
-    case 0x200009:
-      sw = coreGlobals.swMatrix[6] << 8 | coreGlobals.swMatrix[2];
-      break;
-    case 0x20000a:
-      sw = coreGlobals.swMatrix[7] << 8 | coreGlobals.swMatrix[3];
-      break;
-    case 0x20000b:
-      sw = coreGlobals.swMatrix[8] << 8 | coreGlobals.swMatrix[4];
-      break;
-    case 0x400000:
-      sw = coreGlobals.swMatrix[0] << 8 | coreGlobals.swMatrix[9];
+/*************/
+/* U16 WRITE */
+/*************/
+static WRITE16_HANDLER(u16_w) {
+  offset &= 0x203;
+ 
+  // DBGLOG(("U16w [%03x]=%04x (%04x)\n",offset,data,mem_mask));
+
+  //Visible Page offset
+  if(offset==3) {
+	locals.visible_page = data >> 12;
   }
-  return sw^0xffff;		//Switches are inverted
+#if 0
+  else
+	printf("U16w [%03x]=%04x (%04x)\n",offset,data,mem_mask);
+#endif
+
+  switch (offset) {
+    case 0x000: case 0x001: case 0x002: case 0x003:
+      locals.u16a[offset] = (locals.u16a[offset] & mem_mask) | data; break;
+    case 0x200: case 0x201: case 0x202: case 0x203:
+      locals.u16b[offset&3] = (locals.u16b[offset&3] & mem_mask) | data; break;
+  }
 }
 
-static WRITE16_HANDLER(io_w) {
-  static int on = 1;
-  UINT16 soldata;
-#ifdef MAME_DEBUG
-	if(keyboard_pressed_memory_repeat(KEYCODE_Z,2))
-		printf("io_w [%03x]=%04x (%04x)\n",offset,data,mem_mask);
-#endif
+/*************/
+/* I/O READ  */
+/*************/
+static READ16_HANDLER(io_r) {
+  UINT16 data = 0;
+
   switch (offset) {
-    case 0x08:
-      on = data & 0x0c;
+    //Lamp A Matrix Row Status?
+	case 0x00000c:
+		if(locals.blanking)
+			data = 0;
+		else
+			data = 0xffff;
+		break;
+	//Lamp B Matrix Row Status?
+	case 0x00000d:
+		if(locals.blanking)
+			data = 0;
+		else
+			data = 0xffff;
+		break;
+	//Playfield Switches
+    case 0x200008:
+      data = coreGlobals.swMatrix[5] << 8 | coreGlobals.swMatrix[1];
       break;
-    case 0x0c:
-      if (!on) {
+	//Playfield Switches
+    case 0x200009:
+      data = coreGlobals.swMatrix[6] << 8 | coreGlobals.swMatrix[2];
+      break;
+    //Playfield Switches
+    case 0x20000a:
+      data = coreGlobals.swMatrix[7] << 8 | coreGlobals.swMatrix[3];
+      break;
+    //Playfield Switches
+    case 0x20000b:
+      data = coreGlobals.swMatrix[8] << 8 | coreGlobals.swMatrix[4];
+      break;
+    //Cabinet/Coin Door Switches
+    case 0x400000:
+      data = coreGlobals.swMatrix[0] << 8 | coreGlobals.swMatrix[9];
+	  break;
+	default:
+		printf("io_r: [%08x] (%04x)\n",offset,mem_mask);
+  }
+  return data^0xffff;		//Switches are inverted
+}
+
+/*************/
+/* I/O WRITE */
+/*************/
+static WRITE16_HANDLER(io_w) {
+  UINT16 soldata;
+
+  switch (offset) {
+    //Blanking (for lamps & solenoids?)
+    case 0x00000008:
+		locals.blanking = (data & 0x0c)?1:0;
+        break;
+	//Lamp A Matrix
+    case 0x0000000c:
+      if (!locals.blanking) {
         if (data & 0x0100) coreGlobals.tmpLampMatrix[0] = (~data & 0xff);
         if (data & 0x0200) coreGlobals.tmpLampMatrix[1] = (~data & 0xff);
         if (data & 0x0400) coreGlobals.tmpLampMatrix[2] = (~data & 0xff);
@@ -177,32 +242,41 @@ static WRITE16_HANDLER(io_w) {
         if (data & 0x8000) coreGlobals.tmpLampMatrix[7] = (~data & 0xff);
       }
       break;
-    case 0x0d:
-      if (!on) {
-        if (data & 0x0100) coreGlobals.tmpLampMatrix[8] = (~data & 0xff);
-        if (data & 0x0200) coreGlobals.tmpLampMatrix[9] = (~data & 0xff);
-        if (data & 0x0400) coreGlobals.tmpLampMatrix[10] = (~data & 0xff);
-        if (data & 0x0800) coreGlobals.tmpLampMatrix[11] = (~data & 0xff);
-        if (data & 0x1000) coreGlobals.tmpLampMatrix[12] = (~data & 0xff);
-        if (data & 0x2000) coreGlobals.tmpLampMatrix[13] = (~data & 0xff);
-        if (data & 0x4000) coreGlobals.tmpLampMatrix[14] = (~data & 0xff);
-        if (data & 0x8000) coreGlobals.tmpLampMatrix[15] = (~data & 0xff);
+    //Lamp B Matrix (for games that only have lamp b, shift to lower half of our lamp matrix for easier numbering)
+    case 0x0000000d:
+      if (!locals.blanking) {
+        if (data & 0x0100) coreGlobals.tmpLampMatrix[8-(8*locals.lampb_only)] = (~data & 0xff);
+        if (data & 0x0200) coreGlobals.tmpLampMatrix[9-(8*locals.lampb_only)] = (~data & 0xff);
+        if (data & 0x0400) coreGlobals.tmpLampMatrix[10-(8*locals.lampb_only)] = (~data & 0xff);
+        if (data & 0x0800) coreGlobals.tmpLampMatrix[11-(8*locals.lampb_only)] = (~data & 0xff);
+        if (data & 0x1000) coreGlobals.tmpLampMatrix[12-(8*locals.lampb_only)] = (~data & 0xff);
+        if (data & 0x2000) coreGlobals.tmpLampMatrix[13-(8*locals.lampb_only)] = (~data & 0xff);
+        if (data & 0x4000) coreGlobals.tmpLampMatrix[14-(8*locals.lampb_only)] = (~data & 0xff);
+        if (data & 0x8000) coreGlobals.tmpLampMatrix[15-(8*locals.lampb_only)] = (~data & 0xff);
       }
       break;
+
+    //??
+	case 0x00200008:
+		break;
+
     //Sols: 1-8 (hi byte) & 17-24 (lo byte)
-    case 0x20000c:
+    case 0x0020000c:
 	  soldata = core_revword(data^0xffff);
 	  coreGlobals.pulsedSolState |= (soldata & 0x00ff)<<16;
 	  coreGlobals.pulsedSolState |= (soldata & 0xff00)>>8;
       locals.solenoids = coreGlobals.pulsedSolState;
       break;
-    case 0x20000d:
 	//Sols: 9-16 (hi byte) & 24-32 (lo byte)
+	case 0x0020000d:
 	  soldata = core_revword(data^0xffff);
 	  coreGlobals.pulsedSolState |= (soldata & 0x00ff)<<24;
 	  coreGlobals.pulsedSolState |= (soldata & 0xff00)>>0;
       locals.solenoids = coreGlobals.pulsedSolState;
       break;
+
+	default:
+		printf("io_w: [%08x] (%04x) = %x\n",offset,mem_mask,data);
   }
 }
 
@@ -230,6 +304,7 @@ static MACHINE_INIT(cc) {
 			break;
 		case 5:
 			fixaddr = 0x0008b198; //BS
+			locals.lampb_only = 1;
 			break;
 		case 6:
 		case 7:
@@ -364,18 +439,18 @@ static int cc_m2sw(int col, int row) {
 static data16_t *ramptr;
 static MEMORY_READ16_START(cc_readmem)
   { 0x00000000, 0x00ffffff, MRA16_ROM },
-  { 0x01000000, 0x0107ffff, MRA16_RAM },
-  { 0x02000000, 0x02bfffff, io_r }, 
-  { 0x02C00000, 0x02C007ff, u16_r },     /* U16 (A10,A2,A1)*/
-  { 0x03000000, 0x0300ffff, MRA16_RAM }, /* NVRAM */
+  { 0x01000000, 0x0107ffff, MRA16_RAM },			/* DRAM */
+  { 0x02000000, 0x02bfffff, io_r },					/* I/O */
+  { 0x02C00000, 0x02C007ff, u16_r },				/* U16 (A10,A2,A1)*/
+  { 0x03000000, 0x0300ffff, MRA16_RAM },			/* NVRAM */
 MEMORY_END
 
 static MEMORY_WRITE16_START(cc_writemem)
   { 0x00000000, 0x00ffffbf, MWA16_ROM },
-  { 0x01000000, 0x0107ffff, MWA16_RAM, &ramptr },
-  { 0x02000000, 0x02bfffff, io_w },		
-  { 0x02C00000, 0x02C007ff, u16_w },    /* U16 (A10,A2,A1)*/
-  { 0x03000000, 0x0300ffff, MWA16_RAM, &CMOS }, /* NVRAM */
+  { 0x01000000, 0x0107ffff, MWA16_RAM, &ramptr },	/* DRAM */
+  { 0x02000000, 0x02bfffff, io_w },					/* I/O */
+  { 0x02C00000, 0x02C007ff, u16_w },				/* U16 (A10,A2,A1)*/
+  { 0x03000000, 0x0300ffff, MWA16_RAM, &CMOS },		/* NVRAM */
 MEMORY_END
 
 static PORT_READ16_START(cc_readport)
@@ -450,34 +525,22 @@ PINMAME_VIDEO_UPDATE(cc_dmd256x64) {
   core_textOutf(50,20,1,"offset=%4x", offset);
   memset(dotCol,0,sizeof(dotCol));
 #endif
-  //Draw Left Side of DMD (0-128)
+
   RAM = ramptr+offset;
   for (ii = 0; ii <= 64; ii++) {
-    UINT8 *line = &dotCol[ii][0];
+    UINT8 *linel = &dotCol[ii][0];
+	UINT8 *liner = &dotCol[ii][128];
       for (kk = 0; kk < 16; kk++) {
-		UINT16 intens1 = RAM[0];
+		UINT16 intensl = RAM[0];
+		UINT16 intensr = RAM[0x10];
 		for(jj=0;jj<8;jj++) {
-			*line++ = (intens1&0xc000)>>14;
-			intens1 = intens1<<2;
+			*linel++ = (intensl&0xc000)>>14;
+			intensl = intensl<<2;
+			*liner++ = (intensr&0xc000)>>14;
+			intensr = intensr<<2;
 		}
 		RAM+=1;
 	  }
-    *line++ = 0;
-	RAM+=16;
-  }
-  //Draw Right Side of DMD (129-256)
-  RAM = ramptr+offset+0x10;
-  for (ii = 0; ii <= 64; ii++) {
-    UINT8 *line = &dotCol[ii][128];
-      for (kk = 0; kk < 16; kk++) {
-		UINT16 intens1 = RAM[0];
-		for(jj=0;jj<8;jj++) {
-			*line++ = (intens1&0xc000)>>14;
-			intens1 = intens1<<2;
-		}
-		RAM+=1;
-	  }
-    *line++ = 0;
 	RAM+=16;
   }
   video_update_core_dmd(bitmap, cliprect, dotCol, layout);
