@@ -199,41 +199,43 @@ static WRITE_HANDLER(by6803_dispdata2) {
 	if(!locals.p0_ca2) {
 		//Store Row for later
 		int row = data & 0x0f;
-		//Digit Column/Select is 1-16 Demultiplexed!
-		int col = 16 - (data >> 4);
 		// very odd row / column assignment, but it works!
 		if (row == 14) {			//1110 ~= 0001
 			locals.disprow = 0;
-			locals.dispcol = col-1;
+			//Column Select is demultiplexed!
+			locals.dispcol = 15 - (data >> 4);
+			locals.DISPSTROBE(0);
 		} else if (row == 13) {		//1101 ~= 0010
 			locals.disprow = 1;
-		} else if (row == 1) {		//0001 ~= 1110
-			locals.dispcol = col;
-		} else if (row == 15) {
+			locals.DISPSTROBE(0);
+		} else if (row == 15) { // activate comma segments when PIA0 CA2 line goes low.
 			locals.disprow = 2;
-			locals.commacol = col-1;
 		}
-		if (row != 12) locals.DISPSTROBE(0);
 	}
 }
 
 static void by6803_dispStrobe2(int mask) {
-	//Segments H&J is inverted bit 0 (but it's bit 8 in core.c) - Not sure why it's inverted, this is not shown on the schematic
-	int data = (locals.p1_a >> 1) | (((locals.p1_a & 1)<<8)^0x100);
+	int data;
 	if (locals.disprow > 1) {
-/* There is some blanking going on that corrupts the commas. Needs more work!
-		if (locals.commacol > 7) {
-			locals.segments[0][locals.commacol].hi = (data & 0x40) >> 5;
-			locals.segments[1][locals.commacol].hi = (data & 0x10) >> 3;
+/* The commas still need more work, I guess! */
+		data = locals.p1_a;
+		if (locals.dispcol > 7) {
+			locals.pseg[0][9].hi |= ((data & 0x80) >> 6);
+			locals.pseg[0][12].hi |= ((data & 0x80) >> 6);
+			locals.pseg[1][8].hi |= ((data & 0x20) >> 4);
+			locals.pseg[1][11].hi |= ((data & 0x20) >> 4);
 		} else {
-			locals.segments[0][locals.commacol].hi = (data & 0x20) >> 4;
-			locals.segments[1][locals.commacol].hi = (data & 0x08) >> 2;
+			locals.pseg[0][2].hi |= ((data & 0x40) >> 5);
+			locals.pseg[0][5].hi |= ((data & 0x40) >> 5);
+			locals.pseg[1][15].hi |= ((data & 0x10) >> 3);
+			locals.pseg[1][4].hi |= ((data & 0x10) >> 3);
 		}
-*/
 	} else {
-		locals.segments[locals.disprow][locals.dispcol].lo |= locals.pseg[locals.disprow][locals.dispcol].lo = data;
-		locals.segments[locals.disprow][locals.dispcol].hi |= locals.pseg[locals.disprow][locals.dispcol].hi = data>>8;
-        }
+		//Segments H&J is inverted bit 0 (but it's bit 8 in core.c) - Not sure why it's inverted, this is not shown on the schematic
+		data = (locals.p1_a >> 1) | ((locals.p1_a & 1) ? 0 : 0x180);
+		locals.pseg[locals.disprow][locals.dispcol].lo |= data & 0xff;
+		locals.pseg[locals.disprow][locals.dispcol].hi |= data >> 8;
+	}
 }
 
 static void by6803_lampStrobe(int board, int lampadr) {
