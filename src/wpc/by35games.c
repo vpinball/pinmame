@@ -40,13 +40,11 @@ static core_tLCDLayout dispBy104[] = {
 };
 
 /*Use for Video/Pinball Combinations*/
-core_tLCDLayout VIDEO[] = {
+static core_tLCDLayout VIDEO[] = {
 	{0,0,0,0,CORE_VIDEO}, {0}
 };
 
 #endif /* DISPLAYALL */
-
-static core_tLCDLayout by_NoOutput[] = {{0}};
 
 #define INITGAME(name, gen, disp, flip, lamps) \
 static core_tGameData name##GameData = {gen,disp,{flip,0,lamps}}; \
@@ -165,7 +163,13 @@ CORE_GAMEDEFNV(lostwrld,"Lost World",1978,"Bally",by35_mBY35_32S,0)
 /*--------------------------------
 / 6million$man
 /-------------------------------*/
-INITGAME(smman,GEN_BY35_32,dispBy6,FLIP_SW(FLIP_L),0)
+static core_tLCDLayout smmanDisp[] = {
+  {0, 0, 2,6,CORE_SEG7}, {0,14,10,6,CORE_SEG7},
+  {2, 0,18,6,CORE_SEG7}, {2,14,26,6,CORE_SEG7},
+  {4, 0,50,6,CORE_SEG7}, {4,14,42,6,CORE_SEG7},
+  {6, 4,35,2,CORE_SEG7}, {6,10,38,2,CORE_SEG7}, {0}
+};
+INITGAME(smman,GEN_BY35_32,smmanDisp,FLIP_SW(FLIP_L),0)
 BY35_ROMSTART888(smman,"742-20_1.716", 0x33e55a75,
 		       "742-18_2.716", 0x5365d36c,
 		       "720-30_6.716", 0x4be8aab0)
