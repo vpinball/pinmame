@@ -41,11 +41,11 @@
 #define GEN_BY35_45     U64(0x00040000000) /* Cheap Squeak */
 #define GEN_STMPU100	U64(0x00080000000) /* Stern MPU - 100*/
 #define GEN_STMPU200	U64(0x00100000000) /* Stern MPU - 200*/
-#define GEN_S80		U64(0x00200000000) /* S80 - Sound Board */
-#define GEN_S80SS	U64(0x00400000000) /* S80 - Sound & Speech Board */
-#define GEN_S80B	U64(0x00800000000) /* Sys80B, Sys80 Sound Board */
-#define GEN_S80B2K	U64(0x01000000000) /* Sys80B, 2KROM */
-#define GEN_S80B4K	U64(0x02000000000) /* Sys80B, 4KROM, slam switch is reversed */
+#define GEN_GTS80S		U64(0x00200000000) /* GTS80 - Sound Board */
+#define GEN_GTS80SS		U64(0x00400000000) /* GTS80 - Sound & Speech Board */
+#define GEN_GTS80B		U64(0x00800000000) /* GTS80B, GTS80B Sound Board */
+#define GEN_GTS80B2K	U64(0x01000000000) /* GTS80B, 2KROM */
+#define GEN_GTS80B4K	U64(0x02000000000) /* GTS80B, 4KROM, slam switch is reversed */
 #define GEN_WS          U64(0x04000000000) /* Whitestar */
 #define GEN_WS_1        U64(0x08000000000) /* Whitestar with extra RAM */
 #define GEN_WS_2        U64(0x10000000000) /* Whitestar with extra DMD */
@@ -53,7 +53,7 @@
 #define GEN_ALLWPC      U64(0x000000000ff)
 #define GEN_ALLS11      U64(0x00000007f00)
 #define GEN_ALLBY35     U64(0x0007fe00000)
-#define GEN_ALLS80	U64(0x03e00000000)
+#define GEN_ALLS80		U64(0x03e00000000)
 
 
 #endif /* INC_GEN */

@@ -32,7 +32,7 @@ DRVLIBS += $(PINOBJ)/de.o $(PINOBJ)/de1sound.o $(PINOBJ)/de2sound.o
 DRVLIBS += $(PINOBJ)/de2.o $(PINOBJ)/de3.o $(PINOBJ)/dedmd.o
 DRVLIBS += $(PINOBJ)/gts3.o $(PINOBJ)/gts3dmd.o $(PINOBJ)/gts3sound.o
 DRVLIBS += $(PINOBJ)/se.o $(PINOBJ)/sesound.o
-DRVLIBS += $(PINOBJ)/s80.o $(PINOBJ)/s80sound0.o $(PINOBJ)/s80sound1.o $(PINOBJ)/s80sound2.o
+DRVLIBS += $(PINOBJ)/gts80.o $(PINOBJ)/gts80s.o $(PINOBJ)/gts80ss.o $(PINOBJ)/gts80bs.o
 DRVLIBS += $(PINOBJ)/by35.o $(PINOBJ)/by35snd.o $(PINOBJ)/byvidpin.o
 DRVLIBS += $(PINOBJ)/by6803.o $(PINOBJ)/by6803snd.o
 DRVLIBS += $(PINOBJ)/hnk.o $(PINOBJ)/zac.o $(PINOBJ)/gp.o
@@ -42,7 +42,7 @@ DRVLIBS += $(PINOBJ)/hnk.o $(PINOBJ)/zac.o $(PINOBJ)/gp.o
 PINGAMES  = $(PINOBJ)/by35games.o
 PINGAMES += $(PINOBJ)/s3games.o $(PINOBJ)/s4games.o $(PINOBJ)/s6games.o
 PINGAMES += $(PINOBJ)/s7games.o $(PINOBJ)/s11games.o
-PINGAMES += $(PINOBJ)/degames.o $(PINOBJ)/gts3games.o $(PINOBJ)/s80games.o
+PINGAMES += $(PINOBJ)/degames.o $(PINOBJ)/gts3games.o $(PINOBJ)/gts80games.o
 PINGAMES += $(PINOBJ)/segames.o $(PINOBJ)/wpcgames.o
 PINGAMES += $(PINOBJ)/hnkgames.o $(PINOBJ)/zacgames.o $(PINOBJ)/gpgames.o
 #

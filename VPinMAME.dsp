@@ -1197,6 +1197,42 @@ SOURCE=.\src\wpc\gts3sound.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\gts80.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\gts80.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\gts80bs.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\gts80bs.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\gts80games.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\gts80s.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\gts80s.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\gts80ss.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\gts80ss.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\hnk.c
 # End Source File
 # Begin Source File
@@ -1286,38 +1322,6 @@ SOURCE=.\src\wpc\s7.h
 # Begin Source File
 
 SOURCE=.\src\wpc\s7games.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\wpc\s80.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\wpc\s80.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\wpc\s80games.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\wpc\s80sound0.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\wpc\s80sound0.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\wpc\s80sound1.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\wpc\S80SOUND1.H
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\wpc\s80sound2.c
 # End Source File
 # Begin Source File
 
