@@ -17,6 +17,7 @@ TOOLS=
 DRVLIBS = $(PINOBJ)/sim.o $(PINOBJ)/core.o $(OBJ)/allgames.a
 DRVLIBS += $(PINOBJ)/vpintf.o $(PINOBJ)/snd_cmd.o $(PINOBJ)/wpcsam.o
 DRVLIBS += $(PINOBJ)/sndbrd.o
+DRVLIBS += $(OBJ)/machine/4094.o
 
 COREOBJS += $(PINOBJ)/driver.o $(OBJ)/cheat.o $(PINOBJ)/mech.o
 
