@@ -120,34 +120,14 @@ typedef HRESULT (WINAPI *dsc_proc)(GUID FAR *lpGUID,LPDIRECTSOUND FAR *lplpDS,
 
 static int DirectSound_init(PCONTROLLEROPTIONS pControllerOptions)
 {
-    HRESULT hr;
-    UINT error_mode;
-    dsc_proc dsc;
-
-    /* Turn off error dialog for this call */
-    error_mode = SetErrorMode(0);
-    hDLL = LoadLibrary("dsound.dll");
-    SetErrorMode(error_mode);
-
-    if (hDLL == NULL)
-        return 1;
-
-    dsc = (dsc_proc)GetProcAddress(hDLL,"DirectSoundCreate");
-    if (dsc == NULL)
-        return 1;
-
-    hr = dsc(NULL, &ds, NULL);
-
-    if (FAILED(hr))
-    {
+	// now attempt to create it
+	if ( FAILED(DirectSoundCreate(NULL, &ds, NULL)) ) {
         ErrorMsg("Unable to initialize DirectSound");
         return 1;
-    }
+	}
 
 	attenuation = 0;
-
     new_sound_data = FALSE;
-
 	return 0;
 }
 
