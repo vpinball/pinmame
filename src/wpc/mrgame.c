@@ -4,9 +4,9 @@
   by Steve Ellenoff (08/23/2004)
   
   Huge Thanks to Gerrit for:
-  a) helping out with Solenoid smoothing (better now) and getting those damn matrix out of the way of the video display..
+  a) helping out with Solenoid smoothing (better now)
   b) Fixing switches and enabling the flippers to work
-  c) SCROLLING! Just ask him why the code works?!
+  c) SCROLLING! Tracking why the scrolling was so much off was hell!
 
  ************************************************************************************************
   Main CPU Board:
@@ -431,8 +431,8 @@ static WRITE_HANDLER(soundg1_2_port_w) {
 
 static struct mame_bitmap *tmpbitmap2;
 static VIDEO_START(mrgame) {
-  tmpbitmap = auto_bitmap_alloc(Machine->drv->screen_width,256);
-  tmpbitmap2 = auto_bitmap_alloc(Machine->drv->screen_width, 240);
+  tmpbitmap =  auto_bitmap_alloc(256, 256);
+  tmpbitmap2 = auto_bitmap_alloc(256, 240);
   return (tmpbitmap == 0);
 }
 
@@ -448,11 +448,11 @@ static const struct rectangle screen_all_area =
 static const struct rectangle screen_visible_area =
 {
 	0, 255,
-	0, 239,
+	8, 247,
 };
 
 PINMAME_VIDEO_UPDATE(mrgame_update) {
-    static int scrollers[256];
+    static int scrollers[32];
 	int offs = 0;
 	int color = 0;
 	int colorindex = 0;
@@ -494,8 +494,8 @@ if(1 || !debugger_focus) {
 			colorindex = (colorindex+2);
 			if(sx==0) colorindex=1;
 			color = mrgame_objectram[colorindex];
-			scrollers[offs % 256] = -mrgame_objectram[colorindex-1];
-//printf("%d:%d ", sx, scrollers[sx]);
+			scrollers[sx] = -mrgame_objectram[colorindex-1];
+
 			tile = mrgame_videoram[offs]+
                    (locals.vid_a11<<8)+(locals.vid_a12<<9)+(locals.vid_a13<<10);
 
@@ -508,13 +508,13 @@ if(1 || !debugger_focus) {
 		}
 	}
 	/* copy the temporary bitmap to the screen with scolling */
-	copyscrollbitmap(tmpbitmap2,tmpbitmap,0,0,72,scrollers,&screen_all_area,TRANSPARENCY_NONE,0);
+	copyscrollbitmap(tmpbitmap2,tmpbitmap,0,0,32,scrollers,&screen_all_area,TRANSPARENCY_NONE,0);
 
 	/* Draw Sprites - Not sure of total size here (this memory size allows 8 sprites on screen at once ) */
 	for (offs = 0x40; offs < 0x60; offs += 4)
 	{
 		sx = mrgame_objectram[offs + 3] + 1;
-		sy = 242 - mrgame_objectram[offs];
+		sy = 240 - mrgame_objectram[offs];
 		flipx = mrgame_objectram[offs + 1] & 0x40;
 		flipy = mrgame_objectram[offs + 1] & 0x80;
 		tile = (mrgame_objectram[offs + 1] & 0x3f) +
