@@ -492,7 +492,7 @@ void parse_cmdline (int argc, char **argv, int game_index, char *override_defaul
 	cfgdir		= get_string ("directory", "cfg",     NULL, "CFG");
 	screenshotdir = get_string ("directory", "snap", NULL, "SNAP");
 #ifdef PINMAME_EXT
-        { extern char *wavedir;
+        { extern const char *wavedir;
 	wavedir 	= get_string ("directory", "wavefile", NULL, "WAVEFILE");
 
 	/* read palette info */
@@ -520,7 +520,8 @@ void parse_cmdline (int argc, char **argv, int game_index, char *override_defaul
         if(pmoptions.dmd_perc66 > 100) pmoptions.dmd_perc66 = 100;
         if(pmoptions.dmd_antialias < 0)   pmoptions.dmd_antialias = 0;
         if(pmoptions.dmd_antialias > 100) pmoptions.dmd_antialias = 100;
-#endif /* PINMAME_EXT *
+        }
+#endif /* PINMAME_EXT */
 
 	logerror("cheatfile = %s - cheatdir = %s\n",cheatfile,cheatdir);
 
