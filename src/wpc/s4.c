@@ -300,7 +300,6 @@ static SWITCH_UPDATE(s4) {
   else
     cpu_set_nmi_line(0, CLEAR_LINE);
 
-  cpu_set_nmi_line(0, core_getSw(S4_SWCPUDIAG) ? ASSERT_LINE : CLEAR_LINE);
   sndbrd_0_diag(core_getSw(S4_SWSOUNDDIAG));
 
   /* Show Status of Auto/Manual Switch */
