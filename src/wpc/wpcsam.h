@@ -15,6 +15,12 @@ typedef struct {
   UINT8 flags;		/*When and how low to play*/
 } wpc_tSamSolMap;
 
+#ifdef PINMAME_SAMPLES
+  extern const struct Samplesinterface samples_interface;
+  #define SAMPLESINTERFACE {SOUND_SAMPLES, &samples_interface}
+#else
+  #define SAMPLESINTERFACE {0}
+#endif
 
 #define WPCSAM_F_OFFON		 0	/* play sample if sol is activated (default) */
 #define WPCSAM_F_ONOFF		 1	/* play samples if sol is deactivated */
