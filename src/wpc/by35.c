@@ -97,11 +97,11 @@ static WRITE_HANDLER(pia1a_w) {
   if (!locals.ca20) {
     if (locals.hw & BY35HW_INVDISP4) {
       if (core_gameData->gen & GEN_BOWLING) {
-		if (data & 0x02) {
+        if (data & 0x02) {
           locals.bcd[5] = locals.a0>>4;
           by35_dispStrobe(0x20);
         }
-		if (data & 0x04) {
+        if (data & 0x04) {
           locals.bcd[6] = locals.a0>>4;
           by35_dispStrobe(0x40);
         }
@@ -474,7 +474,8 @@ static MACHINE_INIT(by35) {
 
   pia_config(BY35_PIA0, PIA_STANDARD_ORDERING, &by35_pia[0]);
   pia_config(BY35_PIA1, PIA_STANDARD_ORDERING, &by35_pia[1]);
-  sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(REGION_SOUND1), NULL, NULL);
+  if ((sb & 0xff00) != SNDBRD_ST300)
+    sndbrd_0_init(sb, 1, memory_region(REGION_SOUND1), NULL, NULL);
   locals.vblankCount = 1;
   // set up hardware
   if (core_gameData->gen & (GEN_BY17|GEN_BOWLING)) {
@@ -526,7 +527,10 @@ static MACHINE_INIT(by35Proto) {
 }
 
 static MACHINE_RESET(by35) { pia_reset(); }
-static MACHINE_STOP(by35) { sndbrd_0_exit(); }
+static MACHINE_STOP(by35) {
+  if ((core_gameData->hw.soundBoard & 0xff00) != SNDBRD_ST300)
+    sndbrd_0_exit();
+}
 
 /*-----------------------------------
 /  Memory map for CPU board
