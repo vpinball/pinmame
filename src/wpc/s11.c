@@ -52,7 +52,7 @@ const struct core_dispLayout s11_dispS11b2[] = {
 };
 
 /*----------------
-/  Local varibles
+/  Local variables
 /-----------------*/
 static struct {
   int    vblankCount;
@@ -116,15 +116,6 @@ static INTERRUPT_GEN(s11_vblank) {
       if (core_gameData->sxx.ssSw[ii] && core_getSw(core_gameData->sxx.ssSw[ii]))
         locals.solenoids |= CORE_SOLBIT(CORE_FIRSTSSSOL+ii);
     }
-  }
-  if ((core_gameData->sxx.muxSol) &&
-      (locals.solenoids & CORE_SOLBIT(core_gameData->sxx.muxSol))) {
-    if (core_gameData->hw.gameSpecific1 & S11_RKMUX)
-      locals.solenoids = (locals.solenoids & 0x00ff8fef) |
-                         ((locals.solenoids & 0x00000010)<<20) |
-                         ((locals.solenoids & 0x00007000)<<13);
-    else
-      locals.solenoids = (locals.solenoids & 0x00ffff00) | (locals.solenoids<<24);
   }
   locals.solsmooth[locals.vblankCount % S11_SOLSMOOTH] = locals.solenoids;
 #if S11_SOLSMOOTH != 2
@@ -262,14 +253,31 @@ static void setSSSol(int data, int solNo) {
     coreGlobals.pulsedSolState &= ~bit;
 }
 
+static void updsol(UINT32 mask,UINT32 data)
+{
+  UINT32 newsol = (coreGlobals.pulsedSolState & mask) | data;
+  coreGlobals.pulsedSolState  = newsol;
+  locals.solenoids           |= newsol;
+
+  if ((core_gameData->sxx.muxSol) &&
+      (locals.solenoids & CORE_SOLBIT(core_gameData->sxx.muxSol))) {
+    if (core_gameData->hw.gameSpecific1 & S11_RKMUX)
+      locals.solenoids = (locals.solenoids & 0x00ff8fef) |
+                         ((locals.solenoids & 0x00000010)<<20) |
+                         ((locals.solenoids & 0x00007000)<<13);
+    else
+      locals.solenoids = (locals.solenoids & 0x00ffff00) | (locals.solenoids<<24);
+  }
+}
+
 static WRITE_HANDLER(pia0b_w) {
-  coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffff00ff) | (data<<8);
-  locals.solenoids |= (data<<8);
+  updsol(0xFFFF00FF,data<<8);
 }
+
 static WRITE_HANDLER(latch2200) {
-  coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffffff00) | data;
-  locals.solenoids |= data;
+  updsol(0xFFFFFF00,data);
 }
+
 static WRITE_HANDLER(pia0cb2_w) { locals.ssEn = !data;}
 
 static WRITE_HANDLER(pia1ca2_w) { setSSSol(data, 0); }
