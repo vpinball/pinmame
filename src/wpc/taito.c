@@ -7,12 +7,24 @@
 #include "taito.h"
 #include "taitos.h"
 
+// Taito Pinball System
+// cpu: 8080 @ 4 MHz (???)
+//
+// Switch matrix: (D0-D7)*10 + V0-V7
+// Lamp matrix:   (ST0-ST15)*10 + L3-L0
+// Solenoids:     1-6 (first column), 7-12 (second column)
+//                17: mux relay, 18: game play relay
+//			      7-12 are automatically activated by sol 17
+//				  flip sols as usual: right 45-46, left 47-48, active if sol 18 is on
+//
+// Many thanks to Aleandre Souza and Newton Pessoa
+
 #define TAITO_VBLANKFREQ     60  // VBLANK frequency
 #define TAITO_IRQFREQ        0.2
 
-#define TAITO_SOLSMOOTH      2 /* Smooth the Solenoids over this numer of VBLANKS */
-#define TAITO_DISPLAYSMOOTH  2 /* Smooth the display over this number of VBLANKS */
-#define TAITO_LAMPSMOOTH	 2 /* Smooth the display over this number of VBLANKS */
+#define TAITO_SOLSMOOTH      2 // Smooth the sols over this number of VBLANKS 
+#define TAITO_DISPLAYSMOOTH  2 // Smooth the display over this number of VBLANKS 
+#define TAITO_LAMPSMOOTH	 2 // Smooth the display over this number of VBLANKS 
 
 static struct {
   int vblankCount;
@@ -29,37 +41,39 @@ static struct {
 static NVRAM_HANDLER(taito);
 
 static int segMap[] = {
-  4,0,-4,4,0,-4,4,0,-4,4,0,-4,0,0
+	4,0,-4,4,0,-4,4,0,-4,4,0,-4,0,0
 };
 
 static INTERRUPT_GEN(taito_vblank) {
-	/*-------------------------------
-	/  copy local data to interface
-	/--------------------------------*/
+	//-------------------------------
+	//  copy local data to interface
+	//-------------------------------
 	TAITOlocals.vblankCount += 1;
 
-	/*-- solenoids --*/
+	// -- solenoids --
 	if ((TAITOlocals.vblankCount % TAITO_SOLSMOOTH) == 0) {
 		coreGlobals.solenoids = TAITOlocals.solenoids;
 	}
 
-	/*-- lamps --*/
+	// -- lamps --
  	if ((TAITOlocals.vblankCount % TAITO_LAMPSMOOTH) == 0) {
  		memcpy(coreGlobals.lampMatrix, TAITOlocals.lampMatrix, sizeof(coreGlobals.lampMatrix));
  	}
 
-  /*-- display --*/
-  if ((TAITOlocals.vblankCount % TAITO_DISPLAYSMOOTH) == 0) {
-	memcpy(coreGlobals.segments, TAITOlocals.segments, sizeof coreGlobals.segments);
-  }
+    // -- display --
+	if ((TAITOlocals.vblankCount % TAITO_DISPLAYSMOOTH) == 0) {
+		memcpy(coreGlobals.segments, TAITOlocals.segments, sizeof coreGlobals.segments);
+	}
 
-  core_updateSw(core_getSol(18));
+	// sol 18 is the play relay 
+	core_updateSw(core_getSol(18));
 }
 
 static SWITCH_UPDATE(taito) {
-  if (inports) {
-	coreGlobals.swMatrix[1] = (inports[TAITO_COMINPORT]&0xff)^0x40;
-  }
+	if (inports) {
+		coreGlobals.swMatrix[1] = (inports[TAITO_COMINPORT]&0xff);
+		coreGlobals.swMatrix[8] = (coreGlobals.swMatrix[8]&0xe0) | ((inports[TAITO_COMINPORT]>>8)&0x1f);
+	}
 }
 
 static INTERRUPT_GEN(taito_irq) {
@@ -67,30 +81,28 @@ static INTERRUPT_GEN(taito_irq) {
 	cpu_set_irq_line(TAITO_CPU, 0, HOLD_LINE);
 }
 
-static void timer_irq(int data) {
-	taito_irq();
-}
+static void timer_irq(int data) { taito_irq(); }
 
 static MACHINE_INIT(taito) {
-  memset(&TAITOlocals, 0, sizeof(TAITOlocals));
+	memset(&TAITOlocals, 0, sizeof(TAITOlocals));
 
-  TAITOlocals.pDisplayRAM  = memory_region(TAITO_MEMREG_CPU) + 0x4080;
-  TAITOlocals.pCommandsDMA = memory_region(TAITO_MEMREG_CPU) + 0x4090;
+	TAITOlocals.pDisplayRAM  = memory_region(TAITO_MEMREG_CPU) + 0x4080;
+	TAITOlocals.pCommandsDMA = memory_region(TAITO_MEMREG_CPU) + 0x4090;
 
-  TAITOlocals.timer_irq = timer_alloc(timer_irq);
-  timer_adjust(TAITOlocals.timer_irq, TIME_IN_HZ(TAITO_IRQFREQ), 0, TIME_IN_HZ(TAITO_IRQFREQ));
+	TAITOlocals.timer_irq = timer_alloc(timer_irq);
+	timer_adjust(TAITOlocals.timer_irq, TIME_IN_HZ(TAITO_IRQFREQ), 0, TIME_IN_HZ(TAITO_IRQFREQ));
 
-  sndbrd_0_init(core_gameData->hw.soundBoard, TAITO_SCPU, memory_region(TAITO_MEMREG_SCPU), NULL, NULL);
+	sndbrd_0_init(core_gameData->hw.soundBoard, TAITO_SCPU, memory_region(TAITO_MEMREG_SCPU), NULL, NULL);
 
-  TAITOlocals.vblankCount = 1;
+	TAITOlocals.vblankCount = 1;
 }
 
 static MACHINE_STOP(taito) {
-  if ( TAITOlocals.timer_irq ) {
-	  timer_remove(TAITOlocals.timer_irq);
-	  TAITOlocals.timer_irq = NULL;
-  }
-  sndbrd_0_exit();
+	if ( TAITOlocals.timer_irq ) {
+		timer_remove(TAITOlocals.timer_irq);
+		TAITOlocals.timer_irq = NULL;
+	}
+	sndbrd_0_exit();
 }
 
 static WRITE_HANDLER(taito_sndCmd_w) {
@@ -122,24 +134,29 @@ static WRITE_HANDLER(dma_display)
 	TAITOlocals.pDisplayRAM[offset] = data;
 
 	if ( offset<12 ) {
+		// player 1-4, 6 digits per player
 		((int*) TAITOlocals.segments)[2*offset+segMap[offset]]   = core_bcd2seg[(data>>4)&0x0f];
 		((int*) TAITOlocals.segments)[2*offset+segMap[offset]+1] = core_bcd2seg[data&0x0f];
 	}
 	else {
 		switch ( offset ) {
 		case 12:
+			// active player
 			((int*) TAITOlocals.segments)[2*12+segMap[12]] = core_bcd2seg[data&0x0f];
 			break;
 		
 		case 13:
+			// credits
 			((int*) TAITOlocals.segments)[2*12+segMap[12]+1] = core_bcd2seg[data&0x0f];
 			break;
 		
 		case 14:
+			// match
 			((int*) TAITOlocals.segments)[2*13+segMap[13]] = core_bcd2seg[data&0x0f];
 			break;
 
 		case 15:
+			// ball in play
 			((int*) TAITOlocals.segments)[2*13+segMap[13]+1] = core_bcd2seg[data&0x0f];
 			break;
 		}
@@ -196,12 +213,24 @@ static WRITE_HANDLER(dma_commands)
 
 	// lower nibbles: lamps, offset 0-f
 	// Taito uses 16 rows and 4 cols, rows 9-16 are mapped to row 1-8, cols 5-8
-	if ( offset<8 )
-		TAITOlocals.lampMatrix[offset] = (TAITOlocals.lampMatrix[offset]&0xf0) | (data&0x0f);
-	else
-		TAITOlocals.lampMatrix[offset-8] = (TAITOlocals.lampMatrix[offset-8]&0x0f) | ((data&0x0f)<<4);
+
+	{
+		int col = (offset<8)?0:4;
+		int rowBit  = (1 << (offset%8));
+		int rowMask = rowBit^0xff;
+		int i = 0;
+
+		for (i=0;i<4;i++) {
+			TAITOlocals.lampMatrix[col] = (TAITOlocals.lampMatrix[col]&rowMask) | ((data&0x08)?rowBit:0);
+			col++;
+			data <<= 1;
+		}
+	}
 }
 
+// strobe (0-15)*10 + L3-L0
+// example: 123 is strobe 12, L3 is the first lamp in row number 12
+// 
 static int TAITO_lamp2m(int no) { 
 	if ( (no/10)<8 )
 		return (4-(no%10))*8 + (no/10);
@@ -210,10 +239,18 @@ static int TAITO_lamp2m(int no) {
 }
 
 static int TAITO_m2lamp(int col, int row) { 
-	if ( row<8 )
-		return (4-col)*8 + row;
+	if ( col<4 )
+		return (row*10) + (3-col);
 	else
-		return (8-col)*8 + (row-8);
+		return ((row+8)*10) + (7-col);
+}
+
+static int TAITO_sw2m(int no) {
+	return ((no%10)+1)*8 + (no/10);
+}
+
+static int TAITO_m2sw(int col, int row) {
+	return (row*10) + (col-1);
 }
 
 static MEMORY_READ_START(taito_readmem)
@@ -236,12 +273,13 @@ MEMORY_END
 MACHINE_DRIVER_START(taito)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(taito,NULL,taito)
-  MDRV_CPU_ADD_TAG("mcpu", 8080, 4000000)
+  MDRV_CPU_ADD_TAG("mcpu", 8080, 4000000) // ??
   MDRV_CPU_MEMORY(taito_readmem, taito_writemem)
   MDRV_CPU_VBLANK_INT(taito_vblank, TAITO_VBLANKFREQ)
   MDRV_NVRAM_HANDLER(taito)
   MDRV_DIPS(8)
   MDRV_SWITCH_UPDATE(taito)
+  MDRV_SWITCH_CONV(TAITO_sw2m,TAITO_m2sw)
   MDRV_LAMP_CONV(TAITO_lamp2m,TAITO_m2lamp)
   MDRV_DIAGNOSTIC_LEDH(1)
 MACHINE_DRIVER_END
@@ -270,9 +308,9 @@ MACHINE_DRIVER_START(taito_sintevoxpp)
   MDRV_SOUND_CMDHEADING("taito")
 MACHINE_DRIVER_END
 
-/*-----------------------------------------------
-/ Load/Save static ram
-/-------------------------------------------------*/
+//-----------------------------------------------
+// Load/Save static ram
+//-----------------------------------------------
 static NVRAM_HANDLER(taito) {
   core_nvram(file, read_or_write, memory_region(TAITO_MEMREG_CPU)+0x4000, 0x100, 0xff);
 }
