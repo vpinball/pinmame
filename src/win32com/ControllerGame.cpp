@@ -143,7 +143,7 @@ private:
 
 		pEnumRoms->Release();
 
-		BOOL fAvailable;
+		VARIANT_BOOL fAvailable;
 		pRoms->get_Available(&fAvailable);
 		if ( fAvailable==VARIANT_FALSE ) {
 			strcpy(szLine, "The ROM set was not found, but this should be the contents:");
@@ -151,7 +151,7 @@ private:
 			iError = 2;
 		}
 
-		BOOL fIsSupported;
+		VARIANT_BOOL fIsSupported;
 		pGame->get_IsSupported(&fIsSupported);
 		if ( fIsSupported==VARIANT_FALSE ) {
 			fMaybeOK = false;
@@ -353,6 +353,7 @@ STDMETHODIMP CGame::get_Settings(IGameSettings **pVal)
 	if ( FAILED(hr) ) 
 		return hr;
 
+	pGameSettings->AddRef();
 	pGameSettings->Init(this);
 
 	*pVal = pGameSettings;
@@ -362,7 +363,7 @@ STDMETHODIMP CGame::get_Settings(IGameSettings **pVal)
 
 /* some helper functions */
 
-  /*Determine Game # from Given GameName String*/
+/* Determine Game # from Given GameName String */
 int GetGameNumFromString(char *name)
 {
 	int gamenum = 0;
@@ -437,7 +438,7 @@ void SetGameWasStarted(char* pszROMName)
 	WriteRegistry(szKey, "", 1);
 }
 
-STDMETHODIMP CGame::ShowInfoDlg(int nShowOptions, long hParentWnd, BOOL *pVal)
+STDMETHODIMP CGame::ShowInfoDlg(int nShowOptions, long hParentWnd, VARIANT_BOOL *pVal)
 {
 	if ( !pVal )
 		return S_FALSE;
@@ -457,7 +458,7 @@ int CRCSOFGAMESNOTSUPPORRTED[] = {
 	0x0
 };
 
-STDMETHODIMP CGame::get_IsSupported(BOOL *pVal)
+STDMETHODIMP CGame::get_IsSupported(VARIANT_BOOL *pVal)
 {
 	if ( !pVal )
 		return S_FALSE;
