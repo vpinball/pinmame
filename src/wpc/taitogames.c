@@ -91,9 +91,8 @@ TAITO_ROMSTART2222(fireact,"fire1.bin",CRC(3059876d) SHA1(1ea214b592adb156c8e9df
                            "fire2.bin",CRC(7906a193) SHA1(9555233f24f044972fd7267ba970108695f52fb1),
                            "fire3.bin",CRC(92135de4) SHA1(28b3b496ae8a404542fc2b0128f3f88229d91cba),
                            "fire4.bin",CRC(68de7753) SHA1(b829ddc7e94d00b854e9290acc034038a60a8c1d))
-// not available
-TAITO_SOUNDROMS22("fire_s1.bin", NO_DUMP,
-				  "fire_s2.bin", NO_DUMP)
+TAITO_SOUNDROMS22("fire_s1.bin", CRC(13bdd72a) SHA1(f271bfe61617293b28b1a8ea7da9035127870d6c),
+				  "fire_s2.bin", CRC(b76bda3f) SHA1(be5dfa3caa3b29a40287d535d158599587af8c05))
 TAITO_ROMEND
 #define input_ports_fireact input_ports_taito
 CORE_GAMEDEFNV(fireact,"Fire Action",1981,"Taito",taito_sintevox,0)
@@ -140,6 +139,20 @@ TAITO_SOUNDROMS22("vegas_s1.bin", CRC(740bdd3e) SHA1(ed86bd65ac4b6d43f91a95d44d4
 TAITO_ROMEND
 #define input_ports_vegast input_ports_taito
 CORE_GAMEDEFNV(vegast,"Vegas (Taito)",1981,"Taito",taito_sintetizador,0)
+
+/*--------------------------------
+/ Lady Luck
+/-------------------------------*/
+TAITO_ROMSTART2222(ladylukt,"vegas1.bin",CRC(be242895) SHA1(0528e9049e44b5ae7bba4a21ca5c0a2e5ffa4ca5),
+                            "vegas2.bin",CRC(48169726) SHA1(282a322178e007df1183620dfcf3411bc67d8a0a),
+                            "lluck3.bin",CRC(f22666f6) SHA1(2b92007cc4c91a2804d9f6229fa68be35be849ce),
+                            "lluck4.bin",CRC(1715ee7e) SHA1(45677053f501d687d7482e70b7902a67d277eee9))
+TAITO_SOUNDROMS22("vegas_s1.bin", CRC(740bdd3e) SHA1(ed86bd65ac4b6d43f91a95d44d48b04adb631ee3),
+                  "vegas_s2.bin", CRC(4250e02e) SHA1(5a67aac55728e6661d85e31b01a5263b9d4a22db))
+TAITO_ROMEND
+#define init_ladylukt init_vegast
+#define input_ports_ladylukt input_ports_vegast
+CORE_CLONEDEFNV(ladylukt,vegast,"Lady Luck (Taito)",1981,"Taito",taito_sintetizador,0)
 
 /*--------------------------------
 / Cosmic
@@ -252,7 +265,19 @@ TAITO_ROMEND
 #define input_ports_stest input_ports_taito
 CORE_GAMEDEFNV(stest,"Speed Test",1982,"Taito",taito_sintetizador,0)
 
-//??/82 Lunelle (W Alien Poker, 10/80)
+/*--------------------------------
+/ Lunelle
+/-------------------------------*/
+INITGAME(lunelle,SNDBRD_TAITO_SINTETIZADOR)
+TAITO_ROMSTART2222(lunelle,"lunelle1.bin",CRC(d471349a) SHA1(fb43daa94035dc3abe0e0b16cbb239d7f97437ea),
+                           "lunelle2.bin",CRC(83b132a3) SHA1(ab52f7ae20a823a9bc2986a32ef4e32a3ec2acd4),
+                           "lunelle3.bin",CRC(69ec6079) SHA1(df36daa221d27f97f69231c19cbbb80347f51dd3),
+                           "lunelle4.bin",CRC(492f5de7) SHA1(5bfa0a7b1e3612baebc4c598b43121e7846ae0ff))
+TAITO_SOUNDROMS22("lunel_s1.bin", NO_DUMP,
+                  "lunel_s2.bin", NO_DUMP)
+TAITO_ROMEND
+#define input_ports_lunelle input_ports_taito
+CORE_GAMEDEFNV(lunelle,"Lunelle",1982,"Taito",taito_sintetizador,0)
 
 /*--------------------------------
 / Rally
