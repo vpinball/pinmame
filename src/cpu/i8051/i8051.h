@@ -67,7 +67,7 @@ enum {
 #define		P3		0xb0
 #define		IP		0xb8
 //8052 Only registers
-#if (HAS_I8052)
+#if (HAS_I8052 || HAS_I8752)
  #define		T2CON	0xc8
  #define		RCAP2L	0xca
  #define		RCAP2H	0xcb
@@ -113,6 +113,31 @@ READ_HANDLER( i8051_internal_r );
 #ifdef MAME_DEBUG
 extern unsigned Dasm8051( char *dst, unsigned pc );
 #endif
+
+/****************************************************************************
+ * 8752 Section
+ ****************************************************************************/
+#if (HAS_I8752)
+#define i8752_icount							i8051_icount
+
+extern void i8752_init (void);					/* Initialize save states */
+extern void i8752_reset (void *param);			/* Reset registers to the initial values */
+extern void i8752_exit	(void); 				/* Shut down CPU core */
+extern int	i8752_execute(int cycles);			/* Execute cycles - returns number of cycles actually run */
+extern unsigned i8752_get_context (void *dst);	/* Get registers, return context size */
+extern void i8752_set_context (void *src);		/* Set registers */
+extern unsigned i8752_get_reg (int regnum);
+extern void i8752_set_reg (int regnum, unsigned val);
+extern void i8752_set_irq_line(int irqline, int state);
+extern void i8752_set_irq_callback(int (*callback)(int irqline));
+extern void i8752_state_save(void *file);
+extern void i8752_state_load(void *file);
+extern const char *i8752_info(void *context, int regnum);
+extern unsigned i8752_dasm(char *buffer, unsigned pc);
+WRITE_HANDLER( i8752_internal_w );
+READ_HANDLER( i8752_internal_r );
+#endif	//(HAS_8752)
+
 
 #endif /* _I8051_H */
 

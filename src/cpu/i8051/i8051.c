@@ -39,6 +39,7 @@
  *		  actually takes 12 oscilations.
  *
  *        August 27,2003: Currently support for only 8031/8051/8751 chips (ie 128 RAM)
+ *		  October 14,2003: Added initial support for the 8752 (ie 256 RAM)
  *
  *		  Todo: Full Timer support, Serial Data support, Setting Interrupt Priority
  *
@@ -77,10 +78,17 @@ INLINE void update_timer(int cyc);
 INLINE void	update_serial(int cyc);
 static READ_HANDLER(internal_ram_read);
 static WRITE_HANDLER(internal_ram_write);
+static READ_HANDLER(internal_ram_iread);
+static WRITE_HANDLER(internal_ram_iwrite);
 static READ_HANDLER(sfr_read);
 static WRITE_HANDLER(sfr_write);
 static WRITE_HANDLER( bit_address_w );
 static READ_HANDLER( bit_address_r );
+
+#if (HAS_I8052 || HAS_I8752)
+static READ_HANDLER(i8052_internal_ram_iread);
+static WRITE_HANDLER(i8052_internal_ram_iwrite);
+#endif
 //
 
 typedef struct {
@@ -112,7 +120,7 @@ typedef struct {
 	UINT8	p3;				//Port 3
 	UINT8	ip;				//Interrupt Priority
 	//8052 Only registers
-	#if (HAS_I8052)
+	#if (HAS_I8052 || HAS_I8752)
 		UINT8	t2con;		//Timer/Counter 2 Control
 		UINT8	rcap2l;		//Timer/Counter 2 Capture Register Lo
 		UINT8	rcap2h;		//Timer/Counter 2 Capture Register Hi
@@ -124,10 +132,15 @@ typedef struct {
 	UINT8	b;				//Register B
 
 	//Internal Ram
-	UINT8	IntRam[0xff];	//Max 256 Bytes of Internal RAM (8031/51 have 128, 8032/52 have 256)
+	UINT8	IntRam[0xff+1];	//Max 256 Bytes of Internal RAM (8031/51 have 128, 8032/52 have 256)
 
 	//Interrupt Callback
 	int 	(*irq_callback)(int irqline);
+
+	//Internal Indirect Read/Write Handlers
+	READ_HANDLER((*iram_iread));
+	WRITE_HANDLER((*iram_iwrite));
+
 }	I8051;
 
 int i8051_icount;
@@ -179,6 +192,11 @@ static UINT8 i8051_win_layout[] = {
 #define IRAM_R(a)		internal_ram_read(a)
 #define IRAM_W(a,v)		internal_ram_write(a,v)
 /***************************************************************
+ * Read/Write a byte from/to the Internal RAM indirectly (called from indirect addressing)
+ ***************************************************************/
+#define IRAM_IR(a)		internal_ram_iread(a)
+#define IRAM_IW(a,v)	internal_ram_iwrite(a,v)
+/***************************************************************
  * Read/Write a byte from/to the SFR Registers
  ***************************************************************/
 #define SFR_R(a)		sfr_read(a)
@@ -215,7 +233,7 @@ static UINT8 i8051_win_layout[] = {
 #define SET_P(n)		R_PSW = (R_PSW & 0xfe) | (n<<0);	//Parity Flag
 /*IE Flags*/
 #define SET_EA(n)		R_IE = (R_IE & 0x7f) | (n<<7);		//Global Interrupt Enable/Disable
-#if (HAS_I8052)
+#if (HAS_I8052 || HAS_I8752)
    #define SET_ET2(n)		R_IE = (R_IE & 0xdf) | (n<<5);	//Timer 2 Interrupt Enable/Disable
 #endif
 #define SET_ES(n)		R_IE = (R_IE & 0xef) | (n<<4);		//Serial Interrupt Enable/Disable
@@ -224,7 +242,7 @@ static UINT8 i8051_win_layout[] = {
 #define SET_ET0(n)		R_IE = (R_IE & 0xfd) | (n<<1);		//Timer 0 Interrupt Enable/Disable	
 #define SET_EX0(n)		R_IE = (R_IE & 0xfe) | (n<<0);		//External Int 0 Interrupt Enable/Disable
 /*IP Flags*/
-#if (HAS_I8052)
+#if (HAS_I8052 || HAS_I8752)
    #define SET_PT2(n)		R_IP = (R_IP & 0xdf) | (n<<5);	//Set Timer 2 Priority Level
 #endif
 #define SET_PS0(n)		R_IP = (R_IP & 0xef) | (n<<4);		//Set Serial Priority Level
@@ -260,7 +278,7 @@ static UINT8 i8051_win_layout[] = {
 #define SET_M0_1(n)		R_TMOD = (R_TMOD & 0xfd) | (n<<1);  //Timer 0 Timer Mode Bit 1
 #define SET_M0_0(n)		R_TMOD = (R_TMOD & 0xfe) | (n<<0);  //Timer 0 Timer Mode Bit 0
 
-#if (HAS_I8052)
+#if (HAS_I8052 || HAS_I8752)
   /*T2CON Flags*/
   #define SET_TF2(n)		R_T2CON = (R_T2CON & 0x7f) | (n<<7);	//Indicated Timer 2 Overflow Int Triggered
   #define SET_EXF2(n)		R_T2CON = (R_T2CON & 0xbf) | (n<<6);	//IndicateS Timer 2 External Flag
@@ -291,7 +309,7 @@ static UINT8 i8051_win_layout[] = {
 #define GET_ET0			((R_IE & 0x02)>>1)
 #define GET_EX0			((R_IE & 0x01)>>0)
 /*IP Flags*/
-#if (HAS_I8052)
+#if (HAS_I8052 || HAS_I8752)
   #define GET_PT2			((R_IP & 0x20)>>5)
 #endif
 #define GET_PS			((R_IP & 0x10)>>4)
@@ -327,7 +345,7 @@ static UINT8 i8051_win_layout[] = {
 #define GET_M0_1		((R_TMOD & 0x02)>>1)
 #define GET_M0_0		((R_TMOD & 0x01)>>0)
 
-#if (HAS_I8052)
+#if (HAS_I8052 || HAS_I8752)
   /*T2CON Flags*/
   #define GET_TF2			((R_T2CON & 0x80)>>7)
   #define GET_EXF2			((R_T2CON & 0x40)>>6) 
@@ -354,7 +372,10 @@ static UINT8 i8051_win_layout[] = {
 #define V_IE1	0x013	/* External Interrupt 1 */
 #define V_TF1	0x01b	/* Timer 1 Overflow */
 #define V_RITI	0x023	/* Serial Receive/Transmit */
+
+#if (HAS_I8052 || HAS_I8752)
 #define V_TF2	0x02b	/* Timer 2 Overflow */
+#endif
 
 /* Clear IRQ Flags */
 #define	CLEAR_PENDING_IRQS	R_TCON&=0x55; R_SCON&=0xfc;
@@ -387,7 +408,7 @@ static UINT8 i8051_win_layout[] = {
 #define R_P3	i8051.p3
 #define R_IP	i8051.ip
 //8052 Only registers
-#if (HAS_I8052)
+#if (HAS_I8052 || HAS_I8752)
   #define R_T2CON	i8051.t2con
   #define R_RCAP2L	i8051.rcap2l
   #define R_RCAP2H	i8051.rcap2h
@@ -451,7 +472,7 @@ void i8051_init(void)
 	state_save_register_UINT8 ("i8051", cpu, "P3",        &i8051.p3,     1);
 	state_save_register_UINT8 ("i8051", cpu, "IP",        &i8051.ip,     1);
 	//8052 Only registers
-	#if (HAS_I8052)
+	#if (HAS_I8052 || HAS_I8752)
 		state_save_register_UINT8 ("i8051", cpu, "T2CON", &i8051.tcon,   1);
 		state_save_register_UINT8 ("i8051", cpu, "RCAP2L",&i8051.rcap2l, 1);
 		state_save_register_UINT8 ("i8051", cpu, "RCAP2H",&i8051.rcap2h, 1);
@@ -468,6 +489,10 @@ void i8051_reset(void *param)
 {
 	memset(&i8051, 0, sizeof(I8051));
 	i8051.subtype = 8051;
+
+	//Set up 8051 specific internal read/write (indirect) handlers..
+	i8051.iram_iread = internal_ram_read;		//Indirect ram read/write handled the same as direct for 8051!
+	i8051.iram_iwrite = internal_ram_write;		//Indirect ram read/write handled the same as direct for 8051!
 
 	//Clear Ram (w/0xff)
 	memset(&i8051.IntRam,0xff,sizeof(i8051.IntRam));
@@ -489,14 +514,6 @@ void i8051_reset(void *param)
 	SFR_W(TH0, 0);
 	SFR_W(TL1, 0);
 	SFR_W(TL0, 0);
-	//8052 Only registers
-	#if (HAS_I8052)
-		SFR_W(T2CON, 0);
-		SFR_W(RCAP2L, 0);
-		SFR_W(RCAP2H, 0);
-		SFR_W(TL2, 0);
-		SFR_W(TH2, 0);
-	#endif
 	/* set the port configurations to all 1's */
 	SFR_W(P3, 0xff);
 	SFR_W(P2, 0xff);
@@ -1344,7 +1361,7 @@ INLINE UINT8 check_interrupts(void)
 
 	//If All Inerrupts Disabled or no pending abort..
 	if(!GET_EA) {
-		LOG(("Skipping Interrupts\n"));
+		//LOG(("Skipping Interrupts\n"));
 		return 0;
 	}
 
@@ -1405,7 +1422,7 @@ INLINE UINT8 check_interrupts(void)
 		//remove this line when support is added
 		return 0;
 	}
-#if (HAS_I8052)
+#if (HAS_I8052 || HAS_I8752)
 	//Timer 2 overflow
 	if(!int_vec && GET_TF2) {
 		//Set vector and clear pending flag
@@ -1516,10 +1533,10 @@ static WRITE_HANDLER(sfr_write)
 			break;
 
 		case SP: 
-			if(offset > 0x127)
-				LOG(("i8051 #%d: attemping to write value to SP past 128 bytes at 0x%04x\n", cpu_getactivecpu(), PC));
-			else
-				R_SP = data; 
+//			if(offset > 0x127)
+//				LOG(("i8051 #%d: attemping to write value to SP past 128 bytes at 0x%04x\n", cpu_getactivecpu(), PC));
+//			else
+			R_SP = data&0xff; //keep sp w/in 256 bytes
 			break;
 
 		case DPL:		R_DPL = data; break;
@@ -1568,7 +1585,7 @@ static WRITE_HANDLER(sfr_write)
 		case IP:		R_IP  = data; break;
 
 	//8052 Only registers
-	#if (HAS_I8052)
+	#if (HAS_I8052 || HAS_I8752)
 		case T2CON:		R_T2CON = data; break;
 		case RCAP2L:	R_RCAP2L = data; break;
 		case RCAP2H:	R_RCAP2H = data; break;
@@ -1626,7 +1643,7 @@ static READ_HANDLER(sfr_read)
 			//return IN(3);					//Read from actual port
 		case IP:		return R_IP;
 	//8052 Only registers
-	#if (HAS_I8052)
+	#if (HAS_I8052 || HAS_I8752)
 		case T2CON:		return R_T2CON;
 		case RCAP2L:	return R_RCAP2L;
 		case RCAP2H:	return R_RCAP2H;
@@ -1648,10 +1665,10 @@ static READ_HANDLER(sfr_read)
 /* Anything above 0x7f is a sfr/register */
 static READ_HANDLER(internal_ram_read)
 {
-	if (offset < 128)
+	if (offset < 0x80)
 		return i8051.IntRam[offset];
 	else {
-		if (offset < 256)
+		if (offset < 0x100)
 			return SFR_R(offset);
 		else
 			LOG(("i8051 #%d: attemping to read from an invalid Internal Ram address: %x at 0x%04x\n", cpu_getactivecpu(), offset,PC));
@@ -1664,14 +1681,28 @@ static READ_HANDLER(internal_ram_read)
 static WRITE_HANDLER(internal_ram_write)
 {
 	data &= 0xff;				//Ensure it's only 8 bits
-	if (offset < 128)
+	if (offset < 0x80)
 		i8051.IntRam[offset] = data;
 	else {
-		if (offset < 256)
+		if (offset < 0x100)
 			SFR_W(offset,data);
 		else
 			LOG(("i8051 #%d: attemping to write to invalid Internal Ram address: %x at 0x%04x\n", cpu_getactivecpu(), offset,PC));
 	}
+}
+
+/* Reads the contents of the Internal RAM memory (BUT CALLED FROM AN INDIRECT ADDRESSING MODE)   */
+/* Different chip types handle differently, for speed, simply call the chip's handler */
+static READ_HANDLER(internal_ram_iread)
+{
+	return i8051.iram_iread(offset);
+}
+
+/* Writes the contents of the Internal RAM memory (BUT CALLED FROM AN INDIRECT ADDRESSING MODE)   */
+/* Different chip types handle differently, for speed, simply call the chip's handler */
+static WRITE_HANDLER(internal_ram_iwrite)
+{
+	i8051.iram_iwrite(offset,data);
 }
 
 /*Push the current PC to the stack*/
@@ -1681,23 +1712,23 @@ INLINE void push_pc()
 	tmpSP++;									// ""
 	SFR_W(SP,tmpSP);							// ""
     if (tmpSP == R_SP)							//Ensure it was able to write to new stack location
-		IRAM_W(tmpSP, (PC & 0xff));				//Store low byte of PC to Internal Ram
+		IRAM_IW(tmpSP, (PC & 0xff));			//Store low byte of PC to Internal Ram
 	tmpSP = R_SP;								//Increment Stack Pointer
 	tmpSP++;									// ""
 	SFR_W(SP,tmpSP);							// ""
 	if (tmpSP == R_SP)							//Ensure it was able to write to new stack location
-		IRAM_W(tmpSP, ( (PC & 0xff00) >> 8));	//Store hi byte of PC to next address in Internal Ram
+		IRAM_IW(tmpSP, ( (PC & 0xff00) >> 8));	//Store hi byte of PC to next address in Internal Ram
 }
 
 /*Pop the current PC off the stack and into the pc*/
 INLINE void pop_pc()
 {
 	UINT8 tmpSP = R_SP;							//Grab Stack Pointer
-	PC = (IRAM_R(tmpSP) & 0xff) << 8;			//Store hi byte to PC
+	PC = (IRAM_IR(tmpSP) & 0xff) << 8;			//Store hi byte to PC
 	tmpSP = R_SP-1;								//Decrement Stack Pointer
 	SFR_W(SP,tmpSP);							// ""
 	if (tmpSP == R_SP)							//Ensure it was able to write to new stack location
-		PC = PC | IRAM_R(tmpSP);				//Store lo byte to PC
+		PC = PC | IRAM_IR(tmpSP);				//Store lo byte to PC
 	SFR_W(SP,tmpSP-1);							//Decrement Stack Pointer
 }
 
@@ -1740,7 +1771,7 @@ static READ_HANDLER(bit_address_r)
 	word = ( (offset & 0x78) >> 3) * distance + base;
 	bit_pos = offset & 0x7;
 	mask = 0x1 << bit_pos;
-	return((IRAM_R(word) & mask) >> bit_pos);
+	return((IRAM_R(word) & mask) >> bit_pos);			//Do not use IRAM_IR
 }
 
 
@@ -1770,10 +1801,10 @@ static WRITE_HANDLER(bit_address_w)
 	data = (data & 0x1) << bit_pos;
 	mask = ~(1 << bit_pos) & 0xff;
 	//rwinst = TRUE;
-	result = IRAM_R(word) & mask;
+	result = IRAM_R(word) & mask;	//Do not use IRAM_IR
 	//rwinst = FALSE;
 	result = result | data;
-	IRAM_W(word, result);
+	IRAM_W(word, result);			//Do not use IRAM_IW
 }
 
 /* The following to handlers are used by the MAME Debugger Memory Window...
@@ -1786,12 +1817,10 @@ static WRITE_HANDLER(bit_address_w)
 READ_HANDLER(i8051_internal_r) 
 {
 	//Restrict internal ram to 256 Bytes max
-	//Todo, eventually we'll need a way to manage the 8052's upper 128 bytes of RAM since it 
-	//it lives at the same address space as the SFR's (0x80-0xFF)
-	if(offset > 0xff)
-		return 0;
-	else
+	if(offset < 0x100)
 		return IRAM_R(offset);
+	else
+		return 0;
 }
 WRITE_HANDLER(i8051_internal_w) 
 {
@@ -1883,3 +1912,148 @@ INLINE void update_serial(int cyc)
 
 
 
+/****************************************************************************
+ * 8752 Section
+ ****************************************************************************/
+#if (HAS_I8752)
+void i8752_init (void)										{ i8051_init(); }
+void i8752_reset (void *param)
+{ 
+	memset(&i8051, 0, sizeof(I8051));
+	i8051.subtype = 8752;
+
+	//Set up 8052 specific internal read/write (indirect) handlers..
+	i8051.iram_iread  = i8052_internal_ram_iread;
+	i8051.iram_iwrite = i8052_internal_ram_iwrite;
+
+	//Clear Ram (w/0xff)
+	memset(&i8051.IntRam,0xff,sizeof(i8051.IntRam));
+	
+	/* these are all defined reset states */
+	PC = 0;
+	SFR_W(SP, 0x7);
+	SFR_W(PSW, 0);
+	SFR_W(DPH, 0);
+	SFR_W(DPL, 0);
+	SFR_W(ACC, 0);
+	SFR_W(B, 0);
+	SFR_W(IP, 0);
+	SFR_W(IE, 0);
+	SFR_W(SCON, 0);
+	SFR_W(TCON, 0);
+	SFR_W(TMOD, 0);
+	SFR_W(TH1, 0);
+	SFR_W(TH0, 0);
+	SFR_W(TL1, 0);
+	SFR_W(TL0, 0);
+	//8052 Only registers
+	#if (HAS_I8052 || HAS_I8752)
+		SFR_W(T2CON, 0);
+		SFR_W(RCAP2L, 0);
+		SFR_W(RCAP2H, 0);
+		SFR_W(TL2, 0);
+		SFR_W(TH2, 0);
+	#endif
+	/* set the port configurations to all 1's */
+	SFR_W(P3, 0xff);
+	SFR_W(P2, 0xff);
+	SFR_W(P1, 0xff);
+	SFR_W(P0, 0xff);
+
+	i8051.cur_irq = 0xff;
+
+#if 0
+	/* as part of the reset process, indicate that no interrupts are */
+	/* in progress */
+	low_int = FALSE;
+	high_int = FALSE;
+
+	/* clear up the serial port I/O as well */
+	sbufset = FALSE;
+	serocnt = 0;
+	servar = FALSE;
+#endif
+}
+
+void i8752_exit	(void)										{ i8051_exit(); }
+int	i8752_execute(int cycles)								{ return i8051_execute(cycles); }
+unsigned i8752_get_context (void *dst)						{ return i8051_get_context(dst); }
+void i8752_set_context (void *src)							{ i8051_set_context(src); }		
+unsigned i8752_get_reg (int regnum)							{ return i8051_get_reg(regnum); }
+void i8752_set_reg (int regnum, unsigned val)				{ i8051_set_reg(regnum,val); }
+void i8752_set_irq_line(int irqline, int state)				{ i8051_set_irq_line(irqline,state); }
+void i8752_set_irq_callback(int (*callback)(int irqline))	{ i8051_set_irq_callback(callback); }
+void i8752_state_save(void *file)							{ i8051_state_save(file); }
+void i8752_state_load(void *file)							{ i8051_state_load(file); }
+const char *i8752_info(void *context, int regnum)
+{
+	switch( regnum )
+	{
+		case CPU_INFO_NAME: return "I8752";
+	}
+	return i8051_info(context,regnum);
+}
+
+unsigned i8752_dasm(char *buffer, unsigned pc)
+{
+#ifdef MAME_DEBUG
+	return Dasm8051(buffer,pc);
+#else
+	sprintf( buffer, "$%02X", cpu_readop(pc) );
+	return 1;
+#endif
+}
+
+/* The following to handlers are used by the MAME Debugger Memory Window...
+   By keeping these functions separate from the internally used IRAM_W/IRAM_R functions,
+   we can manipulate and display internal memory in the debugger memory window in a layout
+   that is not necessarily how the real memory is.. this will be especially useful for
+   the 8052 chip where both the SFR and the upper 128 bytes of ram are mapped to the same
+   address, so we can handle that here by mapping the sfr to a different address */
+
+READ_HANDLER(i8752_internal_r) 
+{
+	//USE INDIRECT READ TO ALLOW FULL 256 Bytes of RAM to show in the debugger	
+	if(offset < 0x100)
+		return IRAM_IR(offset);
+	else
+	//MAP SFR registers starting at 256 (they are only 128 bytes in size)
+	if(offset < 0x100+0x80)
+		return SFR_R(offset-0x80);
+	else
+	//Everything else is 0 (and invalid)
+		return 0;
+}
+WRITE_HANDLER(i8752_internal_w) 
+{
+	//USE INDIRECT WRITE TO ALLOW FULL 256 Bytes of RAM to show in the debugger
+	if(offset < 0x100)
+		IRAM_IW(offset,data);
+	else
+		if(offset < 0x100+0x80)
+			SFR_W(offset-0x80,data);
+}
+
+/* Reads the contents of the Internal RAM memory INDIRECTLY  */
+/* Anything above 0x7f is NOT sfr/register, but rather UPPER 128K OF INTERNAL RAM */
+static READ_HANDLER(i8052_internal_ram_iread)
+{
+	if (offset < 0x100)
+		return i8051.IntRam[offset];
+	else
+		LOG(("i8051 #%d: attemping to read from an invalid Internal Ram address: %x at 0x%04x\n", cpu_getactivecpu(), offset,PC));
+	return 0xff;
+}
+
+/* Writes the contents of the Internal RAM memory INDIRECTLY */
+/* Anything above 0x7f is NOT sfr/register, but rather UPPER 128K OF INTERNAL RAM */
+static WRITE_HANDLER(i8052_internal_ram_iwrite)
+{
+	data &= 0xff;				//Ensure it's only 8 bits
+	if (offset < 0x100)
+		i8051.IntRam[offset] = data;
+	else
+		LOG(("i8051 #%d: attemping to write to an invalid Internal Ram address: %x at 0x%04x\n", cpu_getactivecpu(), offset,PC));
+}
+
+#endif	//(HAS_8752)
