@@ -387,7 +387,7 @@ CORE_GAMEDEFNV(shaqattq,"Shaq Attaq",1995,"Gottlieb",mGTS3DMDS, GAME_IMPERFECT_S
 INITGAME2(stargate, DMD, FLIP8182, 4, SNDBRD_GTS3, 5)
 GTS3ROMSTART(stargate,	"gprom.bin",0x567ecd88)
 GTS3_DMD512_ROMSTART(	"dsprom.bin",0x91c1b01a)
-GTS3SOUND32512256A(		"yrom1.bin",0x53123fd4,
+GTS3SOUND32512A(		"yrom1.bin",0x53123fd4,
 						"drom1.bin",0x781b2b27,
 						"arom1.bin",0xa0f62605)
 GTS3_ROMEND
@@ -396,7 +396,7 @@ CORE_GAMEDEFNV(stargate,"Stargate",1995,"Gottlieb",mGTS3DMDS, GAME_IMPERFECT_SOU
 INITGAME2(stargat2, DMD, FLIP8182, 4, SNDBRD_GTS3, 5)
 GTS3ROMSTART(stargat2,	"gprom2.bin",0x862920f8)
 GTS3_DMD512_ROMSTART(	"dsprom2.bin",0xd0205e03)
-GTS3SOUND32512256A(		"yrom1.bin",0x53123fd4,
+GTS3SOUND32512A(		"yrom1.bin",0x53123fd4,
 						"drom1.bin",0x781b2b27,
 						"arom1.bin",0xa0f62605)
 GTS3_ROMEND
@@ -421,10 +421,9 @@ CORE_GAMEDEFNV(bighurt,"Big Hurt",1995,"Gottlieb",mGTS3DMDS, GAME_IMPERFECT_SOUN
 INITGAME2(snspares, DMD, FLIP2122, 4, SNDBRD_GTS3, 4)
 GTS3ROMSTART(snspares,	"gprom.bin", 0x9e018496)
 GTS3_DMD256_ROMSTART(	"dsprom.bin",0x5c901899)
-GTS3SOUND32256(			"yrom1.bin",0x0,
+GTS3SOUND32512A(		"yrom1.bin",0x0,
 						"drom1.bin",0x0,
-						"arom1.bin",0x4db05a2f,
-						"arom2.bin",0x775b20bc)
+						"arom1.bin",0xe248574a)
 GTS3_ROMEND
 CORE_GAMEDEFNV(snspares,"Strikes n' Spares",1995,"Gottlieb",mGTS3DMDSA, GAME_IMPERFECT_SOUND)
 
