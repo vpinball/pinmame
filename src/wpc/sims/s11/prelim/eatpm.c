@@ -209,7 +209,7 @@ S11_ROMEND
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF(eatpm, l4, "Elvira and the Party Monsters (L-4)", 1989, "Bally", s11_mS11B_2S,0)
+CORE_GAMEDEF(eatpm, l4, "Elvira and the Party Monsters (L-4)", 1989, "Bally", s11_mS11B2S,0)
 
 /*-----------------------
 / Simulation Definitions
@@ -230,17 +230,13 @@ static sim_tSimData eatpmSimData = {
 / Game Data Information
 /----------------------*/
 static core_tLCDLayout dispeatpm[] = { \
-	{0,0,0,16,CORE_SEG16},{0,33,20,16,CORE_SEG16}, {0}
+  {0,0,0,16,CORE_SEG16},{0,33,20,16,CORE_SEG16}, {0}
 };
 
 static core_tGameData eatpmGameData = {
-  GEN_S11B_2, dispeatpm,
-  {
-    FLIP_SWNO(swLFlip,swRFlip)
-  },
-  &eatpmSimData,
-  {{0}},
-  {12}
+  GEN_S11B, dispeatpm,
+  { FLIP_SWNO(swLFlip,swRFlip),0,0,0,0,S11_LOWALPHA|S11_DISPINV,S11_MUXSW2},
+  &eatpmSimData, {{0}}, {12}
 };
 
 /*---------------
