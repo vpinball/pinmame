@@ -194,7 +194,7 @@ static int i500_getMech(int mechNo) {
   return mechNo ? locals.turboPos : locals.speed;
 }
 static void i500_drawMech(BMTYPE **line) {
-  static char *speedText[] = {"Stopped","Slow","Fast"};
+  static const char *speedText[] = {"Stopped","Slow","Fast"};
   core_textOutf(50, 0,BLACK,"Turbo Speed:%-8s", speedText[locals.speed]);
   core_textOutf(50,10,BLACK,"Turbo Pos:%2d", locals.turboPos);
 }

@@ -50,7 +50,7 @@ static void ngg_drawMech(BMTYPE **line);
 static void ngg_drawStatic(BMTYPE **line);
 static int ngg_getSol(int solNo);
 static void init_ngg(void);
-static char* showramp(int lr);
+static const char* showramp(int lr);
 
 /*-----------------------
   local static variables
@@ -525,13 +525,13 @@ static core_tLampDisplay ngg_lampPos = {
 /**********************************
  Wheel Position
  *********************************/
-static char* WheelText[] =
+static const char* WheelText[] =
 {"Lite Extra    ", "Cart Attack   ", "Attack        ", "Q Jackpot     ",
  "Warp          ", "Pop-A-Gofer   ", "Outlanes      ", "Players Choice",
  "Free Lock     ", "Speed Golf    ", "Ripoff        ", "Bad Shot      ",
  "Hole In One   ", "Kickback      ", "Big Spinners  ", "Gofers Choice "};
 
-static char* SlamText[] = {"Down","Up"};
+static const char* SlamText[] = {"Down","Up"};
 
   static void ngg_drawMech(BMTYPE **line) {
 
@@ -749,7 +749,7 @@ static int ngg_getSol(int solNo) {
 /**********************************
  Display Status of Ramp Entries
  *********************************/
-static char* showramp(int lr)
+static const char* showramp(int lr)
 {
   if (locals.ramppos[lr]==UP )
     if (locals.goferpos[lr]==UP)

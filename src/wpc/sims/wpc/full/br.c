@@ -56,7 +56,7 @@ static void br_drawMech(BMTYPE **line);
 static int br_getMech(int mechNo);
 static void br_drawStatic(BMTYPE **line);
 static void init_br(void);
-static char* showcannonpos(void);
+static const char* showcannonpos(void);
 
 /*-----------------------
   local static variables
@@ -499,7 +499,7 @@ static int br_getMech(int mechNo) {
 /*---------------------------------
     Display the Cannon's Position
   ---------------------------------*/
-static char* showcannonpos(void)
+static const char* showcannonpos(void)
 {
   if (locals.cannonPos >= 0 && locals.cannonPos <= 50)
 	return "Lock Lane";

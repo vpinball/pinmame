@@ -49,7 +49,7 @@ static void ft_drawMech(BMTYPE **line);
 static void ft_drawStatic(BMTYPE **line);
 static void init_ft(void);
 static int  ft_getSol(int solNo);
-static char * showReelPos(void);
+static const char * showReelPos(void);
 static int ft_getMech(int mechNo);
 
 /*-----------------------
@@ -587,7 +587,7 @@ static void ft_handleMech(int mech) {
 
 }
 
-static char * showReelPos(void)
+static const char * showReelPos(void)
 {
   if(locals.reelPos>=BALL1UP && locals.reelPos<=BALL1UP+ERROR_RANGE)
 	return "Ball 1 Up";

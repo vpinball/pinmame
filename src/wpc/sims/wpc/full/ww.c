@@ -48,7 +48,7 @@ static int ww_getMech(int mechNo);
 static void ww_drawMech(BMTYPE **line);
 static void ww_drawStatic(BMTYPE **line);
 static void init_ww(void);
-static char* showbigfootpos(void);
+static const char* showbigfootpos(void);
 
 /*-----------------------
   local static variables
@@ -470,7 +470,7 @@ static int ww_getMech(int mechNo) {
 /*-----------------------------------
  Display Status of the BigFoot's Head
  ------------------------------------*/
-static char* showbigfootpos(void)
+static const char* showbigfootpos(void)
 {
   if(locals.bigfootPos == 56 && !core_getSol(sMotor))
 	return "   Up   ";

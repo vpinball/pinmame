@@ -348,8 +348,8 @@ static sim_tInportData wcs_inportData[] = {
 / Drawing information
 /---------------------*/
 static void wcs_drawMech(BMTYPE **line) {
-  static char *goalie[] = {" * ", "*  ", "  *"};
-  static char ball[] = {'|','/','-','\\'};
+  static const char *goalie[] = {" * ", "*  ", "  *"};
+  static const char ball[] = {'|','/','-','\\'};
   core_textOutf(50, 0,BLACK,"Goalie: [%s]",
                goalie[core_getSw(swGoalieL) ? 1 : (core_getSw(swGoalieR) ? 2 : 0)]);
   core_textOutf(50,10,BLACK,"Ball: %c %3d", ball[mech_getPos(1)], mech_getSpeed(1));

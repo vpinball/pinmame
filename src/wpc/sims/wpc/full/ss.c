@@ -457,7 +457,7 @@ static int ss_getMech(int mechNo) {
   return locals.spiderWheelPos;
 #endif
 }
-static char* spiderWheelText[] =
+static const char *spiderWheelText[] =
   {"Top Eyeball    ", "Right Skull    ", "Jackpot        ", "Double Trouble ",
    "Right Eyeball  ", "Beat The Crate ", "Coffin Lock    ", "Right T. Power ",
    "Monster's Lab  ", "Left T. Power  ", "Boogie Man     ", "Crate Multiball",
