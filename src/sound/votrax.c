@@ -16,13 +16,22 @@ the variable VotraxBaseFrequency, this is defaulted to 8000
 
 **************************************************************************/
 
+#define VERBOSE 1
+
+#if VERBOSE
+#define LOG(x) logerror x
+#else
+#define LOG(x)
+#endif
+
 #include "driver.h"
+#include "votrax.h"
 
 int		VotraxBaseFrequency;
 int     VotraxBusy;
 int 	VotraxChannel;
 
-void (*busy_func)(int state);
+void (*busy_callback)(int state);
 
 unsigned char* pActPos;
 int	iRemainingSamples;
@@ -47,18 +56,48 @@ static const char *PhonemeNames[65] =
  0
 };
 
-struct  GameSamples *VotraxSamples;
-
-struct Samplesinterface votrax_interface = {
-  1, 100, 
-  NULL
-};
-
-void votrax_w(int data);
-
 int votrax_status_r(void)
 {
     return VotraxBusy;
+}
+
+void votrax_set_busy_func(void (*busy_func)(int state))
+{
+	busy_callback = busy_func;
+}
+
+void votrax_set_base_freqency(int baseFrequency)
+{
+	VotraxBaseFrequency = baseFrequency;
+}
+
+void votrax_repeat_w(int dummy)
+{
+	votrax_w(-1);
+}
+
+void votrax_w(int data)
+{
+	int Phoneme,Intonation;
+
+	Phoneme = data & 0x3F;
+	Intonation = data >> 6;
+	LOG(("Speech : %s at intonation %d\n",PhonemeNames[Phoneme],Intonation));
+
+	if ( iRemainingSamples ) {
+		pActPos1           = PhonemeData[Phoneme].pStart;
+		iRemainingSamples1 = PhonemeData[Phoneme].iLength;
+	}
+	else {
+		pActPos           = PhonemeData[Phoneme].pStart;
+		iRemainingSamples = PhonemeData[Phoneme].iLength;
+	}
+
+	if ( !VotraxBusy ) {
+		VotraxBusy = 1;
+		if ( busy_callback )
+			(*busy_callback)(VotraxBusy);
+	}
 }
 
 static void Votrax_Update(int num, INT16 *buffer, int length)
@@ -94,12 +133,16 @@ static void Votrax_Update(int num, INT16 *buffer, int length)
 		length--;
 	}
 
-	if ( iRemainingSamples<=0 )
-		VotraxBusy = 0;
+	if ( iRemainingSamples<=0 ) {
+		if ( VotraxBusy ) {
+			VotraxBusy = 0;
+			if ( busy_callback )
+				(*busy_callback)(VotraxBusy);
+		}
+	}
 }
 
-void sh_votrax_start(int Channel)
-{
+static int votrax_sh_start(const struct MachineSound *msound) {
     VotraxBaseFrequency = 8000;
 	VotraxBusy = 0;
 
@@ -108,36 +151,13 @@ void sh_votrax_start(int Channel)
 
 	iLastValue = 0x0000;
 
-    VotraxChannel = stream_init("SND DAC", 100, 8000, 0, Votrax_Update);
-	set_RC_filter(VotraxChannel, 270000, 15000, 0, 10000);
+	VotraxChannel = stream_init("SND DAC", 100, 8000, 0, Votrax_Update);
+    set_RC_filter(VotraxChannel, 270000, 15000, 0, 10000);
+	return 0;
 }
 
-void sh_votrax_stop(void)
+static void votrax_sh_stop(void)
 {
 }
 
-void repeat_votrax_w(int dummy)
-{
-	votrax_w(-1);
-}
-
-void votrax_w(int data)
-{
-	int Phoneme,Intonation;
-
-	Phoneme = data & 0x3F;
-	Intonation = data >> 6;
-	logerror("Speech : %s at intonation %d\n",PhonemeNames[Phoneme],Intonation);
-
-	if ( iRemainingSamples ) {
-		pActPos1           = PhonemeData[Phoneme].pStart;
-		iRemainingSamples1 = PhonemeData[Phoneme].iLength;
-	}
-	else {
-		pActPos           = PhonemeData[Phoneme].pStart;
-		iRemainingSamples = PhonemeData[Phoneme].iLength;
-	}
-
-	VotraxBusy = 1;
-}
-
+struct CustomSound_interface votrax_custInt = {votrax_sh_start, votrax_sh_stop};
