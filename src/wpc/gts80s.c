@@ -1045,7 +1045,7 @@ void gts80b_exit(int boardNo)
 }
 
 const struct sndbrdIntf gts80bIntf = {
-  "GTS80B", gts80b_init, gts80b_exit, gts80b_data_w, gts80b_data_w, NULL, NULL, NULL, 0 //SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "GTS80B", gts80b_init, gts80b_exit, NULL, gts80b_data_w, gts80b_data_w, NULL, NULL, NULL, 0 //SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
 MACHINE_DRIVER_START(gts80s_b1)
