@@ -37,7 +37,7 @@ INITGAME1(atarians, atari_disp, FLIPSW1920, 1)
 ATARI_2_ROMSTART(atarians,	"atarian.e0",	0x45cb0427,
 							"atarian.e00",	0x6066bd63)
 ATARI_ROMEND
-CORE_GAMEDEFNV(atarians,"The Atarians",1976,"Atari",gl_mATARI1,GAME_NO_SOUND)
+CORE_GAMEDEFNV(atarians,"The Atarians",1976,"Atari",gl_mATARI1,GAME_NOT_WORKING)
 
 /*-------------------------------------------------------------------
 / Time 2000 (06/1977)
@@ -46,7 +46,7 @@ INITGAME1(time2000, atari_disp, FLIPSW1920, 1)
 ATARI_2_ROMSTART(time2000,	"time.e0",	0x1e79c133,
 							"time.e00",	0xe380f35c)
 ATARI_ROMEND
-CORE_GAMEDEFNV(time2000,"Time 2000",1977,"Atari",gl_mATARI1,GAME_NO_SOUND)
+CORE_GAMEDEFNV(time2000,"Time 2000",1977,"Atari",gl_mATARI1,GAME_NOT_WORKING)
 
 /*-------------------------------------------------------------------
 / Airborne Avenger (09/1977)
@@ -55,7 +55,7 @@ INITGAME1(aavenger, atari_disp, FLIPSW1920, 1)
 ATARI_2_ROMSTART(aavenger,	"airborne.e0",	0x44e67c54,
 							"airborne.e00",	0x05ac26b8)
 ATARI_ROMEND
-CORE_GAMEDEFNV(aavenger,"Airborne Avenger",1977,"Atari",gl_mATARI1,GAME_NO_SOUND)
+CORE_GAMEDEFNV(aavenger,"Airborne Avenger",1977,"Atari",gl_mATARI1,GAME_NOT_WORKING)
 
 /*-------------------------------------------------------------------
 / Middle Earth (02/1978)
@@ -64,7 +64,7 @@ INITGAME1(midearth, atari_disp, FLIPSW1920, 1)
 ATARI_2_ROMSTART(midearth,	"608.bin",	0x28b92faf,
 							"609.bin",	0x589df745)
 ATARI_ROMEND
-CORE_GAMEDEFNV(midearth,"Middle Earth",1978,"Atari",gl_mATARI1,GAME_NO_SOUND)
+CORE_GAMEDEFNV(midearth,"Middle Earth",1978,"Atari",gl_mATARI1,GAME_NOT_WORKING)
 
 /*-------------------------------------------------------------------
 / Space Riders (09/1978)
@@ -73,7 +73,7 @@ INITGAME1(spcrider, atari_disp, FLIPSW1920, 1)
 ATARI_2_ROMSTART(spcrider,	"spacel.bin",	0x66ffb04e,
 							"spacer.bin",	0x3cf1cd73)
 ATARI_ROMEND
-CORE_GAMEDEFNV(spcrider,"Space Riders",1978,"Atari",gl_mATARI1,GAME_NO_SOUND)
+CORE_GAMEDEFNV(spcrider,"Space Riders",1978,"Atari",gl_mATARI1,GAME_NOT_WORKING)
 
 /*-------------------------------------------------------------------
 / Superman (03/1979)
