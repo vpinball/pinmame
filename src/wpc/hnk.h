@@ -22,7 +22,6 @@
     /* These are put in switch column 0 */ \
     COREPORT_BIT(     0x0020, "Self Test",        KEYCODE_8) \
     COREPORT_BIT(     0x0040, "CPU Diagnostic",   KEYCODE_9) \
-    COREPORT_BIT(     0x0080, "Sound Diagnostic", KEYCODE_0) \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
       COREPORT_DIPSET(0x0000, "0" ) \
@@ -112,18 +111,16 @@
 /*-- HNK switch numbers --*/
 #define HNK_SWSELFTEST   -7
 #define HNK_SWCPUDIAG    -6
-#define HNK_SWSOUNDDIAG  -5
 
 /*-------------------------
 / Machine driver constants
 /--------------------------*/
-#define HNK_CPUNO   0
-#define HNK_SCPU1NO 1
+#define HNK_CPU   0
+#define HNK_SCPU1 1
 
 /*-- Memory regions --*/
 #define HNK_MEMREG_CPU		REGION_CPU1
-#define HNK_MEMREG_S1CPU	REGION_CPU2
-#define HNK_MEMREG_SROM		REGION_SOUND1
+#define HNK_MEMREG_SCPU		REGION_CPU2
 
 /*-- Main CPU regions and ROM --*/
 #define HNK_ROMSTART(name,n1,chk1,n2,chk2) \
@@ -136,7 +133,7 @@
 #define HNK_ROMEND ROM_END
 
 /*-- These are only here so the game structure can be in the game file --*/
-extern struct MachineDriver machine_driver_HNK1;
-#define mHNK     HNK1
+extern struct MachineDriver machine_driver_HNK;
+#define mHNK     HNK
 #endif /* INC_HNK */
 
