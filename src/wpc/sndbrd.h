@@ -54,11 +54,11 @@ struct sndbrdIntf {
   UINT32 flags;
 };
 
-#define SNDBRD_NODATASYNC 0x0001
-#define SNDBRD_NOCTRLSYNC 0x0002
-#define SNDBRD_NOCBSYNC   0x0004
-#define SNDBRD_NOTSOUND   0x0100
-
+#define SNDBRD_NODATASYNC 0x0001 // Don't use cpu sync'ed data writes 
+#define SNDBRD_NOCTRLSYNC 0x0002 // Don't use cpu sync'ed ctrl writes
+#define SNDBRD_NOCBSYNC   0x0004 // Don't use cpu sync'ed callbacks
+#define SNDBRD_DOUBLECMD  0x0010 // Requires 2 bytes for each manual sound command
+#define SNDBRD_NOTSOUND   0x0100 // Board is available even if sound is disabled
 #define SNDBRD_TYPE(main,sub) (((main)<<8)|(sub))
 
 #define SNDBRD_NONE    SNDBRD_TYPE( 0,0)

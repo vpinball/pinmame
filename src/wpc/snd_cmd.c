@@ -48,6 +48,8 @@ static struct {
   mem_write_handler soundCmd;
   int boards; // 0 = none, 1 = board0, 2 = board1, 3 = both
   int rollover; 
+  int cmdIdx;
+  int nextCmd[MAX_CMD_LENGTH+1];
 } locals;
 
 static void wave_init(void);
@@ -122,13 +124,8 @@ int manual_sound_commands(struct mame_bitmap *bitmap) {
     fillbitmap(bitmap,Machine->uifont->colortable[0],NULL);
     /* start/stop all non-sound CPU(s) */
     for (ii = 0; ii < MAX_CPU; ii++)
-#if MAMEVER >= 6300
       if ((Machine->drv->cpu[ii].cpu_type) &&
           (Machine->drv->cpu[ii].cpu_flags == 0))
-#else
-      if ((Machine->drv->cpu[ii].cpu_type & ~CPU_FLAGS_MASK) &&
-          (Machine->drv->cpu[ii].cpu_type & CPU_AUDIO_CPU) == 0)
-#endif
         cpu_set_halt_line(ii, locals.soundMode);
   }
 
@@ -147,30 +144,24 @@ int manual_sound_commands(struct mame_bitmap *bitmap) {
       /*-- specific help --*/
       core_textOutf(SND_XROW, 65, BLACK, "LEFT/RIGHT  Move Left/Right");
       core_textOutf(SND_XROW, 75, BLACK, "UP/DOWN     Digit +1/-1");
-	  core_textOutf(SND_XROW, 85, BLACK, "INSERT      Turn Rollover %s",(locals.rollover)?"Off":"On ");
-	  if(locals.rollover) {
-		if      ((keyboard_pressed_memory_repeat(SMDCMD_UP, REPEATKEY)))
-			locals.digits[locals.currDigit] = (locals.digits[locals.currDigit]+1) % 0x11;
-		else if ((keyboard_pressed_memory_repeat(SMDCMD_DOWN, REPEATKEY))) {
-			locals.digits[locals.currDigit] = (locals.digits[locals.currDigit]-1) % 0x11;
-			if(locals.digits[locals.currDigit]<0) locals.digits[locals.currDigit] = 17;
-		}
-	  }
-	  else {
-			if      ((keyboard_pressed_memory_repeat(SMDCMD_UP, REPEATKEY)) &&
-				    (locals.digits[locals.currDigit] < 0x10))
-				locals.digits[locals.currDigit] += 1;       
-			else if ((keyboard_pressed_memory_repeat(SMDCMD_DOWN, REPEATKEY)) &&
-					(locals.digits[locals.currDigit] > 0x00))   
-					locals.digits[locals.currDigit] -= 1; 
-	  }
-      if ((keyboard_pressed_memory_repeat(SMDCMD_PREV, REPEATKEY)) &&
-               (locals.currDigit > 0))
-        locals.currDigit -= 1;
+      core_textOutf(SND_XROW, 85, BLACK, "INSERT      Turn Rollover %s",(locals.rollover)?"Off":"On ");
+      if      ((keyboard_pressed_memory_repeat(SMDCMD_UP, REPEATKEY)) &&
+               (locals.rollover || (locals.digits[locals.currDigit] < 0x10))) {
+        if (++locals.digits[locals.currDigit] > 0x10) locals.digits[locals.currDigit] = 0;
+      }
+      else if ((keyboard_pressed_memory_repeat(SMDCMD_DOWN, REPEATKEY)) &&
+               (locals.rollover || (locals.digits[locals.currDigit] > 0x00))) {
+        if (--locals.digits[locals.currDigit] < 0x00) locals.digits[locals.currDigit] = 0x10;
+      }
+      else if ((keyboard_pressed_memory_repeat(SMDCMD_PREV, REPEATKEY)) &&
+               (locals.rollover || (locals.currDigit > 0))) {
+        if (--locals.currDigit < 0) locals.currDigit = (MAX_CMD_LENGTH*2-1);
+      }
       else if ((keyboard_pressed_memory_repeat(SMDCMD_NEXT, REPEATKEY)) &&
-               (locals.currDigit < (MAX_CMD_LENGTH*2-1)))
-        locals.currDigit += 1;
-	  else if (keyboard_pressed_memory_repeat(SMDCMD_INSERT, REPEATKEY))
+               (locals.rollover || (locals.currDigit < (MAX_CMD_LENGTH*2-1)))) {
+        if (++locals.currDigit > (MAX_CMD_LENGTH*2-1)) locals.currDigit = 0;
+      }
+      else if (keyboard_pressed_memory_repeat(SMDCMD_INSERT, REPEATKEY))
         locals.rollover = !locals.rollover;
       else if (keyboard_pressed_memory_repeat(SMDCMD_PLAY, REPEATKEY)) {
         int command[MAX_CMD_LENGTH];
@@ -317,28 +308,25 @@ static void clrCmds(void) {
 }
 
 static int playCmd(int length, int *cmd) {
-  static int cmdIdx = 0;
-  static int nextCmd[MAX_CMD_LENGTH+1];
-
   /*-- send a new command --*/
   if (length >= 0) {
-    if (cmdIdx) return TRUE; /* Already playing */
-    memcpy(nextCmd, cmd, MAX_CMD_LENGTH*sizeof(nextCmd[0]));
-    nextCmd[length] = -1;
-    cmdIdx = 1;
+    if (locals.cmdIdx) return TRUE; /* Already playing */
+    memcpy(locals.nextCmd, cmd, MAX_CMD_LENGTH*sizeof(locals.nextCmd[0]));
+    locals.nextCmd[length] = -1;
+    locals.cmdIdx = 1;
     return FALSE;
   }
   /* currently sending a command ? */
-  if (cmdIdx > 0) {
-    cmdIdx += 1;
-    if ((cmdIdx % 4) == 2) { /* only send cmd every 4th frame */
-      if      (nextCmd[cmdIdx/4] == -1)
-        cmdIdx = 0;
-      else if (locals.boards == 3) {
-        sndbrd_manCmd(nextCmd[cmdIdx/4], nextCmd[cmdIdx/4+1]); cmdIdx += 4;
+  if (locals.cmdIdx > 0) {
+    locals.cmdIdx += 1;
+    if ((locals.cmdIdx % 4) == 2) { /* only send cmd every 4th frame */
+      if      (locals.nextCmd[locals.cmdIdx/4] == -1)
+        locals.cmdIdx = 0;
+      else if (locals.boards == 3) { // if we have 2 sound boards we need to send board no as well
+        sndbrd_manCmd(locals.nextCmd[locals.cmdIdx/4], locals.nextCmd[locals.cmdIdx/4+1]); locals.cmdIdx += 4;
       }
       else
-        sndbrd_manCmd(locals.boards - 1, nextCmd[cmdIdx/4]);
+        sndbrd_manCmd(locals.boards - 1, locals.nextCmd[locals.cmdIdx/4]);
     }
   }
   return FALSE;
