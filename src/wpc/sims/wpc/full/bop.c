@@ -459,11 +459,18 @@ WPCS_SOUNDROM222("mach_u18.l1",CRC(f3f53896) SHA1(4be5a8a27c5ac4718713c05ff2ddf5
                  "mach_u14.l1", CRC(be2a736a) SHA1(ebf7b26a86d3ffcc35eaa1da8e4f432bd281fe15))
 WPC_ROMEND
 
+WPC_ROMSTART(bop,l5,"u6-la5.rom",0x20000,CRC(fd5c426d) SHA1(e006f8e39cf382249db0b969cf966fd8deaa344a))
+WPCS_SOUNDROM222("mach_u18.l1",CRC(f3f53896) SHA1(4be5a8a27c5ac4718713c05ff2ddf51658a1be27),
+                 "mach_u15.l1", CRC(fb49513b) SHA1(01f5243ff258adce3a28b24859eba3f465444bdf),
+                 "mach_u14.l1", CRC(be2a736a) SHA1(ebf7b26a86d3ffcc35eaa1da8e4f432bd281fe15))
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(bop,l7,"The Machine: Bride of Pinbot (L-7)",1991,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(bop,l4,l7,"The Machine: Bride of Pinbot (L-4)",1991,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(bop,l5,l7,"The Machine: Bride of Pinbot (L-5)",1991,"Williams",wpc_mAlpha2S,0)
 
 /*-----------------------
 / Simulation Definitions
