@@ -29,7 +29,7 @@ static INTERRUPT_GEN(vblank) {
   if ((locals.vblankCount % 4) == 0)
     coreGlobals.solenoids = locals.solenoids;
 
-  core_updateSw(coreGlobals.lampMatrix[0] & 0x01);
+  core_updateSw(core_getSol(17));
 }
 
 static MACHINE_INIT(zacProto) {
@@ -70,23 +70,21 @@ static WRITE_HANDLER(sol_w) {
 }
 
 static WRITE_HANDLER(sound_w) {
-  if (!offset)
-    locals.solenoids = (locals.solenoids & 0xff00ffff) | data << 16;
-  else
-    locals.solenoids = (locals.solenoids & 0x00ffffff) | (data << 24);
+  if (data) logerror("sound byte #%d: %02x, %02x inversed\n", offset, data, data^0xff);
 }
 
 static WRITE_HANDLER(lamp_w) {
   coreGlobals.tmpLampMatrix[offset] = data;
+  if (!offset)
+    locals.solenoids = (locals.solenoids & 0xfffeffff) | ((data & 0x01) << 16);
+  if (offset > 7) logerror("lamp write to col. %d: %02x\n", offset, data);
 }
 
 static MEMORY_READ_START(readmem)
   { 0x0000, 0x0bff, MRA_ROM },
-  { 0x0c00, 0x0cff, MRA_NOP },
   { 0x0d00, 0x0dff, MRA_RAM },
   { 0x0e00, 0x0e03, sw_r },
   { 0x0e04, 0x0e07, dip_r },
-  { 0x0e08, 0x13fe, MRA_NOP },
   { 0x13ff, 0x17ff, MRA_ROM },
 MEMORY_END
 
@@ -119,7 +117,7 @@ MACHINE_DRIVER_START(zacProto)
   MDRV_NVRAM_HANDLER(generic_0fill)
 MACHINE_DRIVER_END
 
-INPUT_PORTS_START(zacProto) \
+INPUT_PORTS_START(strike) \
   CORE_PORTS \
   SIM_PORTS(1) \
   PORT_START /* 0 */ \
@@ -179,9 +177,9 @@ INPUT_PORTS_START(zacProto) \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x8000, "1" ) \
   PORT_START /* 2 */ \
-    COREPORT_DIPNAME( 0x0001, 0x0000, "S17") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0001, "1" ) \
+    COREPORT_DIPNAME( 0x0001, 0x0000, "Show High Score") \
+      COREPORT_DIPSET(0x0000, " off" ) \
+      COREPORT_DIPSET(0x0001, " on" ) \
     COREPORT_DIPNAME( 0x0002, 0x0000, "S18") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0002, "1" ) \
@@ -203,9 +201,9 @@ INPUT_PORTS_START(zacProto) \
     COREPORT_DIPNAME( 0x0080, 0x0000, "S24") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0080, "1" ) \
-    COREPORT_DIPNAME( 0x0100, 0x0000, "S25") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0100, "1" ) \
+    COREPORT_DIPNAME( 0x0100, 0x0000, "Roulette Feature") \
+      COREPORT_DIPSET(0x0000, " on" ) \
+      COREPORT_DIPSET(0x0100, " off" ) \
     COREPORT_DIPNAME( 0x0600, 0x0200, "Balls in Play") \
       COREPORT_DIPSET(0x0000, "1" ) \
       COREPORT_DIPSET(0x0200, "3" ) \
@@ -235,7 +233,5 @@ ROM_START(strike) \
     ROM_LOAD("strike3.bin", 0x0800, 0x0400, CRC(ebbbf315) SHA1(c87e961c8e5e99b0672cd632c5e104ea52088b5d)) \
     ROM_LOAD("strike4.bin", 0x1400, 0x0400, CRC(ca0eddd0) SHA1(52f9faf791c56b68b1806e685d0479ea67aba019))
 ROM_END
-
-#define input_ports_strike input_ports_zacProto
 
 CORE_GAMEDEFNV(strike, "Strike", 1978, "Zaccaria", zacProto, GAME_NO_SOUND)
