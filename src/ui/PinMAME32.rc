@@ -236,8 +236,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,30,0,0
- PRODUCTVERSION 1,30,0,0
+ FILEVERSION 1,32,0,0
+ PRODUCTVERSION 1,32,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -256,13 +256,13 @@ BEGIN
             VALUE "Comments", "Based on MAME32 by Christopher Kirmse and Michael Soderstrom\0"
             VALUE "CompanyName", "PinMAME Team\0"
             VALUE "FileDescription", "Multiple Pinball Machine Emulator for Win32\0"
-            VALUE "FileVersion", "1, 30, 0, 0\0"
+            VALUE "FileVersion", "1, 32, 0, 0\0"
             VALUE "InternalName", "PinMAME32\0"
-            VALUE "LegalCopyright", "Copyright 2001-2003 by the PinMAME team\0"
+            VALUE "LegalCopyright", "Copyright 2001-2004 by the PinMAME team\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "PinMAME32.exe\0"
             VALUE "ProductName", "PinMAME32\0"
-            VALUE "ProductVersion", "1, 30, 0, 0\0"
+            VALUE "ProductVersion", "1, 32, 0, 0\0"
         END
     END
     BLOCK "VarFileInfo"
@@ -323,7 +323,7 @@ BEGIN
     CTEXT           "Multiple Pinball Machine Emulator",IDC_STATIC,147,7,142,
                     11,NOT WS_GROUP
     CTEXT           "Version 0",IDC_VERSION,147,18,142,11,NOT WS_GROUP
-    CTEXT           "Copyright (C) 2001-2003 PinMAME Team",IDC_STATIC,147,29,
+    CTEXT           "Copyright (C) 2001-2004 PinMAME Team",IDC_STATIC,147,29,
                     142,10,NOT WS_GROUP
     CTEXT           "PinMAME32 version by Martin Adrian",IDC_STATIC,147,51,
                     142,10,NOT WS_GROUP
