@@ -75,7 +75,7 @@ BEGIN
             VALUE "FileDescription", "InstallVPinMAME\0"
             VALUE "FileVersion", "1.4\0"
             VALUE "InternalName", "InstallVPinMAME\0"
-            VALUE "LegalCopyright", "Copyright © 2001-02 Steve Ellenoff, Tom Haukap, Martin Adrian\0"
+            VALUE "LegalCopyright", "Copyright © 2001-02 Steve Ellenoff, Tom Haukap, Martin Adrian, Gerrit Volkenborn\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "InstallVPinMAME.exe\0"
             VALUE "PrivateBuild", "\0"
