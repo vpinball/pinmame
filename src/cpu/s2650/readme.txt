@@ -1,0 +1,1 @@
+This folder will contain the emulator for the Zaccaria S2650 CPU.
