@@ -34,7 +34,7 @@
   16-21 =	Player 3
   24-29 =	Player 4
 */
-const core_tLCDLayout s6_6digit_disp[] = {
+const struct core_dispLayout s6_6digit_disp[] = {
   // Player 1            Player 2
   {0, 0, 0,6,CORE_SEG7}, {0,18, 8,6,CORE_SEG7},
   // Player 3            Player 4
@@ -61,7 +61,7 @@ const core_tLCDLayout s6_6digit_disp[] = {
   24 =		Right Side Right Digit
   25-31 =	Player 4 (Digits 1-7) */
 
-const core_tLCDLayout s6_7digit_disp[] = {
+const struct core_dispLayout s6_7digit_disp[] = {
   // Player 1 Segment    Player 2 Segment
   {0, 0, 1,7,CORE_SEG7},{0,18, 9,7,CORE_SEG7},
   // Player 3 Segment    Player 4 Segment
@@ -323,7 +323,6 @@ MACHINE_DRIVER_START(s6)
   MDRV_CPU_MEMORY(s6_readmem, s6_writemem)
   MDRV_CPU_VBLANK_INT(s6_vblank, 1)
   MDRV_CPU_PERIODIC_INT(s6_irq, S6_IRQFREQ)
-  MDRV_VIDEO_UPDATE(core_led)
   MDRV_NVRAM_HANDLER(s6)
   MDRV_DIPS(8+16)
   MDRV_SWITCH_UPDATE(s6)

@@ -670,7 +670,6 @@ MACHINE_DRIVER_START(gts80)
   MDRV_CPU_MEMORY(GTS80_readmem, GTS80_writemem)
   MDRV_CPU_VBLANK_INT(GTS80_vblank, 1)
   MDRV_NVRAM_HANDLER(gts80)
-  MDRV_VIDEO_UPDATE(core_led)
   MDRV_DIPS(42) /* 42 DIPs (32 for the controller board, 8 for the SS- and 2 for the S-Board*/
   MDRV_SWITCH_UPDATE(GTS80)
   MDRV_DIAGNOSTIC_LEDH(1)
