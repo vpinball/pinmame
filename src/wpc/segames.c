@@ -191,7 +191,7 @@ DE2S_SOUNDROM1444(   "gc_sound.u7", CRC(8b559e39) SHA1(59c33615b53864cd542c8bd3b
                      "gc_sound.u36",CRC(81f27955) SHA1(eba4250898f6de96111232e49d965b78fc6ee2e2))
 SE_ROMEND
 #define input_ports_goldcue input_ports_se
-CORE_GAMEDEFNV(goldcue,"Golden Cue",1998,"Sega",de_mSES1,GAME_NOCRC)
+CORE_GAMEDEFNV(goldcue,"Golden Cue",1998,"Sega",de_mSES1,GAME_NOT_WORKING|GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Godzilla
@@ -267,7 +267,7 @@ DE2S_SOUNDROM18888("sxsounda.u7" ,CRC(e7e1a0cb) SHA1(be8b3e4d4232519db8344ae9e75
                   "sxvoicea.u37",CRC(4c08c33c) SHA1(36bfad0c59fd228db76a6ff36698edd929c11336))
 SE_ROMEND
 #define input_ports_strikext input_ports_se
-CORE_GAMEDEFNV(strikext,"Striker Xtreme",1999,"Stern",de_mSES2,GAME_NOCRC)
+CORE_GAMEDEFNV(strikext,"Striker Xtreme (1.02)",1999,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Striker Extreme (UK)
@@ -356,7 +356,7 @@ DE2S_SOUNDROM1888(    "sssndu7.101",CRC(fbc6267b) SHA1(e6e70662031e5209385f8b9c5
                      "sssndu36.100",CRC(d22fcfa3) SHA1(3fa407f72ecc64f9d00b92122c4e4d85022e4202))
 SE_ROMEND
 #define input_ports_shrkysht input_ports_se
-CORE_GAMEDEFNV(shrkysht,"Sharkey's Shootout",2000,"Stern",de_mSES1,GAME_NOCRC)
+CORE_GAMEDEFNV(shrkysht,"Sharkey's Shootout (2.11)",2000,"Stern",de_mSES1,GAME_NOT_WORKING|GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Sharkey's Shootout (Germany)
@@ -370,7 +370,7 @@ DE2S_SOUNDROM1888(    "sssndu7.101",CRC(fbc6267b) SHA1(e6e70662031e5209385f8b9c5
 SE_ROMEND
 #define input_ports_shrky_gr input_ports_se
 #define init_shrky_gr init_shrkysht
-CORE_CLONEDEFNV(shrky_gr,shrkysht,"Sharkey's Shootout (Germany)",2001,"Stern",de_mSES1,GAME_NOCRC)
+CORE_CLONEDEFNV(shrky_gr,shrkysht,"Sharkey's Shootout (Germany)",2001,"Stern",de_mSES1,GAME_NOT_WORKING|GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Sharkey's Shootout (France)
@@ -384,7 +384,7 @@ DE2S_SOUNDROM1888(    "sssndu7.101",CRC(fbc6267b) SHA1(e6e70662031e5209385f8b9c5
 SE_ROMEND
 #define input_ports_shrky_fr input_ports_se
 #define init_shrky_fr init_shrkysht
-CORE_CLONEDEFNV(shrky_fr,shrkysht,"Sharkey's Shootout (France)",2001,"Stern",de_mSES1,GAME_NOCRC)
+CORE_CLONEDEFNV(shrky_fr,shrkysht,"Sharkey's Shootout (France)",2001,"Stern",de_mSES1,GAME_NOT_WORKING|GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Sharkey's Shootout (Italy)
@@ -398,7 +398,7 @@ DE2S_SOUNDROM1888(    "sssndu7.101",CRC(fbc6267b) SHA1(e6e70662031e5209385f8b9c5
 SE_ROMEND
 #define input_ports_shrky_it input_ports_se
 #define init_shrky_it init_shrkysht
-CORE_CLONEDEFNV(shrky_it,shrkysht,"Sharkey's Shootout (Italy)",2001,"Stern",de_mSES1,GAME_NOCRC)
+CORE_CLONEDEFNV(shrky_it,shrkysht,"Sharkey's Shootout (Italy)",2001,"Stern",de_mSES1,GAME_NOT_WORKING|GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / High Roller Casino (3.0)
@@ -417,7 +417,7 @@ DE2S_SOUNDROM18888(    "hrsndu7.100",CRC(c41f91a7) SHA1(2af3be10754ea633558bdbed
                       "hrsndu37.100",CRC(d4d23c00) SHA1(c574dc4553bff693d9216229ce38a55f69e7368a))
 SE_ROMEND
 #define input_ports_hirolcas input_ports_se
-CORE_GAMEDEFNV(hirolcas,"High Roller Casino",2001,"Stern",de_mSES2,GAME_NOCRC)
+CORE_GAMEDEFNV(hirolcas,"High Roller Casino (3.00)",2001,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / High Roller Casino (France)
@@ -477,7 +477,7 @@ DE2S_SOUNDROM18888( "apsndu7.100",CRC(d0e79d59) SHA1(7c3f1fa79ff193a976986339a55
                    "apsndu37.100",CRC(ddf0144b) SHA1(c2a56703a41ee31841993d63385491259d5a13f8))
 SE_ROMEND
 #define input_ports_austin input_ports_se
-CORE_GAMEDEFNV(austin,"Austin Powers (3.0)",2001,"Stern",de_mSES2,GAME_NOCRC)
+CORE_GAMEDEFNV(austin,"Austin Powers (3.02)",2001,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Austin Powers (France)
@@ -497,7 +497,7 @@ CORE_CLONEDEFNV(austinf,austin,"Austin Powers (France)",2001,"Stern",de_mSES2,GA
 /*-------------------------------------------------------------------
 / Austin Powers (Germany)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(austind,"apcpu.302",CRC(2920b59b) SHA1(280cebbb39980fbcfd91fc1cf87a40ad926ffecb))
+SE128_ROMSTART(austing,"apcpu.302",CRC(2920b59b) SHA1(280cebbb39980fbcfd91fc1cf87a40ad926ffecb))
 DE_DMD32ROM8x(       "apdsp-g.300",NO_DUMP)
 DE2S_SOUNDROM18888(  "apsndu7.100",CRC(d0e79d59) SHA1(7c3f1fa79ff193a976986339a551e3d03208550f),
                     "apsndu17.100",CRC(c1e33fee) SHA1(5a3581584cc1a841d884de4628f7b65d8670f96a),
@@ -505,9 +505,9 @@ DE2S_SOUNDROM18888(  "apsndu7.100",CRC(d0e79d59) SHA1(7c3f1fa79ff193a976986339a5
                     "apsndu36.100",CRC(f70f2828) SHA1(9efbed4f68c22eb26e9100afaca5ebe85a97b605),
                     "apsndu37.100",CRC(ddf0144b) SHA1(c2a56703a41ee31841993d63385491259d5a13f8))
 SE_ROMEND
-#define input_ports_austind input_ports_se
-#define init_austind init_austin
-CORE_CLONEDEFNV(austind,austin,"Austin Powers (Germany)",2001,"Stern",de_mSES2,GAME_NOCRC)
+#define input_ports_austing input_ports_se
+#define init_austing init_austin
+CORE_CLONEDEFNV(austing,austin,"Austin Powers (Germany)",2001,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Austin Powers (Italy)
@@ -523,21 +523,6 @@ SE_ROMEND
 #define input_ports_austini input_ports_se
 #define init_austini init_austin
 CORE_CLONEDEFNV(austini,austin,"Austin Powers (Italy)",2001,"Stern",de_mSES2,GAME_NOCRC)
-
-/*-------------------------------------------------------------------
-/ Austin Powers (2.01)
-/-------------------------------------------------------------------*/
-SE128_ROMSTART(austin2,"apcpu.201",CRC(a4ddcdca) SHA1(c1eb1ae3b9c9b10410d107165f3bddaa514c2113))
-DE_DMD32ROM8x(      "apdisp-a.200",CRC(f3ca7fca) SHA1(b6b702ad7af75b3010a280adb99e4ee484a03242))
-DE2S_SOUNDROM18888(  "apsndu7.100",CRC(d0e79d59) SHA1(7c3f1fa79ff193a976986339a551e3d03208550f),
-                    "apsndu17.100",CRC(c1e33fee) SHA1(5a3581584cc1a841d884de4628f7b65d8670f96a),
-                    "apsndu21.100",CRC(07c3e077) SHA1(d48020f7da400c3682035d537289ce9a30732d74),
-                    "apsndu36.100",CRC(f70f2828) SHA1(9efbed4f68c22eb26e9100afaca5ebe85a97b605),
-                    "apsndu37.100",CRC(ddf0144b) SHA1(c2a56703a41ee31841993d63385491259d5a13f8))
-SE_ROMEND
-#define input_ports_austin2 input_ports_se
-#define init_austin2 init_austin
-CORE_CLONEDEFNV(austin2,austin,"Austin Powers (2.0)",2001,"Stern",de_mSES2,GAME_NOCRC)
 
 //Strange that they went back to the 11 voice model here!
 /*-------------------------------------------------------------------
@@ -556,7 +541,7 @@ DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5
                       "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
 SE_ROMEND
 #define input_ports_monopoly input_ports_se
-CORE_GAMEDEFNV(monopoly,"Monopoly",2001,"Stern",de_mSES1,GAME_NOCRC)
+CORE_GAMEDEFNV(monopoly,"Monopoly (3.03)",2001,"Stern",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Monopoly (France)
@@ -575,16 +560,16 @@ CORE_CLONEDEFNV(monopolf,monopoly,"Monopoly (France)",2002,"Stern",de_mSES1,GAME
 /*-------------------------------------------------------------------
 / Monopoly (Germany)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(monopold,"moncpu.303",CRC(4a66c9e4) SHA1(a368b0ced32f1017e781a59108670b979b50c9d7))
+SE128_ROMSTART(monopolg,"moncpu.303",CRC(4a66c9e4) SHA1(a368b0ced32f1017e781a59108670b979b50c9d7))
 DE_DMD32ROM8x(        "mondsp-g.301",NO_DUMP)
 DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
                       "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
                       "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
                       "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
 SE_ROMEND
-#define input_ports_monopold input_ports_se
-#define init_monopold init_monopoly
-CORE_CLONEDEFNV(monopold,monopoly,"Monopoly (Germany)",2002,"Stern",de_mSES1,GAME_NOCRC)
+#define input_ports_monopolg input_ports_se
+#define init_monopolg init_monopoly
+CORE_CLONEDEFNV(monopolg,monopoly,"Monopoly (Germany)",2002,"Stern",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Monopoly (Italy)
@@ -603,16 +588,16 @@ CORE_CLONEDEFNV(monopoli,monopoly,"Monopoly (Italy)",2002,"Stern",de_mSES1,GAME_
 /*-------------------------------------------------------------------
 / Monopoly (Spain)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(monopole,"moncpu.303",CRC(4a66c9e4) SHA1(a368b0ced32f1017e781a59108670b979b50c9d7))
+SE128_ROMSTART(monopoll,"moncpu.303",CRC(4a66c9e4) SHA1(a368b0ced32f1017e781a59108670b979b50c9d7))
 DE_DMD32ROM8x(        "mondsp-s.301",NO_DUMP)
 DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
                       "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
                       "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
                       "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
 SE_ROMEND
-#define input_ports_monopole input_ports_se
-#define init_monopole init_monopoly
-CORE_CLONEDEFNV(monopole,monopoly,"Monopoly (Spain)",2002,"Stern",de_mSES1,GAME_NOCRC)
+#define input_ports_monopoll input_ports_se
+#define init_monopoll init_monopoly
+CORE_CLONEDEFNV(monopoll,monopoly,"Monopoly (Spain)",2002,"Stern",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Playboy (5.0)
@@ -627,7 +612,7 @@ DE2S_SOUNDROM18888(      "pbsndu7.102",  CRC(12a68f34) SHA1(f2cd42918dec353883bc
                          "pbsndu37.100", CRC(6642524a) SHA1(9d0c0be5887cf4510c11243ee47b11c08cbae17c))
 SE_ROMEND
 #define input_ports_playboys input_ports_se
-CORE_GAMEDEFNV(playboys,"Playboy (Stern)",2002,"Stern",de_mSES2,GAME_NOCRC)
+CORE_GAMEDEFNV(playboys,"Playboy (5.00)",2002,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Playboy (France)
@@ -647,7 +632,7 @@ CORE_CLONEDEFNV(playboyf,playboys,"Playboy (France)",2002,"Stern",de_mSES2,GAME_
 /*-------------------------------------------------------------------
 / Playboy (Germany)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(playboyd, "pbcpu.500",    CRC(e4d924ae) SHA1(2aab64eee57e9569c3cc1bde28cda69ff4cacc69))
+SE128_ROMSTART(playboyg, "pbcpu.500",    CRC(e4d924ae) SHA1(2aab64eee57e9569c3cc1bde28cda69ff4cacc69))
 DE_DMD32ROM8x(           "pbdispg.500",  CRC(681392fe) SHA1(23011d538282da144b8ff9cbb7c5655567017e5e))
 DE2S_SOUNDROM18888(      "pbsndu7.102",  CRC(12a68f34) SHA1(f2cd42918dec353883bc465f6302c2d94dcd6b87),
                          "pbsndu17.100", CRC(f5502fec) SHA1(c8edd56e0c4365dd6b4bef0f1c7cc83ea5fd73d6),
@@ -655,9 +640,9 @@ DE2S_SOUNDROM18888(      "pbsndu7.102",  CRC(12a68f34) SHA1(f2cd42918dec353883bc
                          "pbsndu36.100", CRC(d10f14a3) SHA1(972b480c23d484b627ecdce0322c08fe760a127f),
                          "pbsndu37.100", CRC(6642524a) SHA1(9d0c0be5887cf4510c11243ee47b11c08cbae17c))
 SE_ROMEND
-#define input_ports_playboyd input_ports_se
-#define init_playboyd init_playboys
-CORE_CLONEDEFNV(playboyd,playboys,"Playboy (Germany)",2002,"Stern",de_mSES2,GAME_NOCRC)
+#define input_ports_playboyg input_ports_se
+#define init_playboyg init_playboys
+CORE_CLONEDEFNV(playboyg,playboys,"Playboy (Germany)",2002,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Playboy (Italy)
@@ -677,7 +662,7 @@ CORE_CLONEDEFNV(playboyi,playboys,"Playboy (Italy)",2002,"Stern",de_mSES2,GAME_N
 /*-------------------------------------------------------------------
 / Playboy (Spain)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(playboye, "pbcpu.500",    CRC(e4d924ae) SHA1(2aab64eee57e9569c3cc1bde28cda69ff4cacc69))
+SE128_ROMSTART(playboyl, "pbcpu.500",    CRC(e4d924ae) SHA1(2aab64eee57e9569c3cc1bde28cda69ff4cacc69))
 DE_DMD32ROM8x(           "pbdispl.500",  CRC(b019f0f6) SHA1(184a9905cd3af9d272577e43666aed5e5a8a5281))
 DE2S_SOUNDROM18888(      "pbsndu7.102",  CRC(12a68f34) SHA1(f2cd42918dec353883bc465f6302c2d94dcd6b87),
                          "pbsndu17.100", CRC(f5502fec) SHA1(c8edd56e0c4365dd6b4bef0f1c7cc83ea5fd73d6),
@@ -685,9 +670,9 @@ DE2S_SOUNDROM18888(      "pbsndu7.102",  CRC(12a68f34) SHA1(f2cd42918dec353883bc
                          "pbsndu36.100", CRC(d10f14a3) SHA1(972b480c23d484b627ecdce0322c08fe760a127f),
                          "pbsndu37.100", CRC(6642524a) SHA1(9d0c0be5887cf4510c11243ee47b11c08cbae17c))
 SE_ROMEND
-#define input_ports_playboye input_ports_se
-#define init_playboye init_playboys
-CORE_CLONEDEFNV(playboye,playboys,"Playboy (Spain)",2002,"Stern",de_mSES2,GAME_NOCRC)
+#define input_ports_playboyl input_ports_se
+#define init_playboyl init_playboys
+CORE_CLONEDEFNV(playboyl,playboys,"Playboy (Spain)",2002,"Stern",de_mSES2,GAME_NOCRC)
 
 //Strange that they went back to the 11 voice model here!
 /*-------------------------------------------------------------------
@@ -706,21 +691,21 @@ DE2S_SOUNDROM1888(    "rcsndu7.100",CRC(e6cde9b1) SHA1(cbaadafd18ad9c0338bf2cce9
                      "rcsndu36.100",CRC(05c8bac9) SHA1(0771a393d5361c9a35d42a18b6c6a105b7752e03))
 SE_ROMEND
 #define input_ports_rctycn input_ports_se
-CORE_GAMEDEFNV(rctycn,"Roller Coaster Tycoon",2002,"Stern",de_mSES1,GAME_NOCRC)
+CORE_GAMEDEFNV(rctycn,"Roller Coaster Tycoon (7.01)",2002,"Stern",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Roller Coaster Tycoon (Germany)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(rctycnd,"rctcpu.701",CRC(e1fe89f6) SHA1(9a76a5c267e055fcf0418394762bcea758da02d6))
+SE128_ROMSTART(rctycng,"rctcpu.701",CRC(e1fe89f6) SHA1(9a76a5c267e055fcf0418394762bcea758da02d6))
 DE_DMD32ROM8x(       "rctdispg.700",CRC(0babf1ed) SHA1(db683aa392968d255d355d4a1b0c9d8d4fb9e799))
 DE2S_SOUNDROM1888(    "rcsndu7.100",CRC(e6cde9b1) SHA1(cbaadafd18ad9c0338bf2cce94b2c2a89e734778),
                      "rcsndu17.100",CRC(18ba20ec) SHA1(c6e7a8a5fd6029b8e884a6eeb779a10d819e8c7c),
                      "rcsndu21.100",CRC(64b19c11) SHA1(9ac714d372437cf1d8c4e01512c0647f13e40ddb),
                      "rcsndu36.100",CRC(05c8bac9) SHA1(0771a393d5361c9a35d42a18b6c6a105b7752e03))
 SE_ROMEND
-#define input_ports_rctycnd input_ports_se
-#define init_rctycnd init_rctycn
-CORE_CLONEDEFNV(rctycnd,rctycn,"Roller Coaster Tycoon (Germany)",2002,"Stern",de_mSES1,GAME_NOCRC)
+#define input_ports_rctycng input_ports_se
+#define init_rctycng init_rctycn
+CORE_CLONEDEFNV(rctycng,rctycn,"Roller Coaster Tycoon (Germany)",2002,"Stern",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Roller Coaster Tycoon (France)
@@ -735,7 +720,6 @@ SE_ROMEND
 #define input_ports_rctycnf input_ports_se
 #define init_rctycnf init_rctycn
 CORE_CLONEDEFNV(rctycnf,rctycn,"Roller Coaster Tycoon (France)",2002,"Stern",de_mSES1,GAME_NOCRC)
-
 
 /*-------------------------------------------------------------------
 / Roller Coaster Tycoon (Italy)
@@ -754,18 +738,17 @@ CORE_CLONEDEFNV(rctycni,rctycn,"Roller Coaster Tycoon (Italy)",2002,"Stern",de_m
 /*-------------------------------------------------------------------
 / Roller Coaster Tycoon (Spain)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(rctycne,"rctcpu.701",CRC(e1fe89f6) SHA1(9a76a5c267e055fcf0418394762bcea758da02d6))
+SE128_ROMSTART(rctycnl,"rctcpu.701",CRC(e1fe89f6) SHA1(9a76a5c267e055fcf0418394762bcea758da02d6))
 DE_DMD32ROM8x(       "rctdisps.700",CRC(6921d8cc) SHA1(1ada415af8e949829ceac75da507982ea2091f4d))
 DE2S_SOUNDROM1888(    "rcsndu7.100",CRC(e6cde9b1) SHA1(cbaadafd18ad9c0338bf2cce94b2c2a89e734778),
                      "rcsndu17.100",CRC(18ba20ec) SHA1(c6e7a8a5fd6029b8e884a6eeb779a10d819e8c7c),
                      "rcsndu21.100",CRC(64b19c11) SHA1(9ac714d372437cf1d8c4e01512c0647f13e40ddb),
                      "rcsndu36.100",CRC(05c8bac9) SHA1(0771a393d5361c9a35d42a18b6c6a105b7752e03))
 SE_ROMEND
-#define input_ports_rctycne input_ports_se
-#define init_rctycne init_rctycn
-CORE_CLONEDEFNV(rctycne,rctycn,"Roller Coaster Tycoon (Spain)",2002,"Stern",de_mSES1,GAME_NOCRC)
+#define input_ports_rctycnl input_ports_se
+#define init_rctycnl init_rctycn
+CORE_CLONEDEFNV(rctycnl,rctycn,"Roller Coaster Tycoon (Spain)",2002,"Stern",de_mSES1,GAME_NOCRC)
 
-//And back to the 12 voice model here!
 /*-------------------------------------------------------------------
 / The Simpsons Pinball Party (4.00)
 /-------------------------------------------------------------------*/
@@ -785,12 +768,12 @@ DE2S_SOUNDROM18888(      "spp101.u7",  CRC(32efcdf6) SHA1(1d437e8649408be91e0dd1
                          "spp100.u37", CRC(0738e1fc) SHA1(268462c06e5c1f286e5faaee1c0815448cc2eafa))
 SE_ROMEND
 #define input_ports_simpprty input_ports_se
-CORE_GAMEDEFNV(simpprty,"The Simpsons Pinball Party",2003,"Stern",de_mSES2,GAME_NOCRC)
+CORE_GAMEDEFNV(simpprty,"The Simpsons Pinball Party (4.00)",2003,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / The Simpsons Pinball Party (Germany)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(simpprtd, "spp-cpu.400",CRC(530b9782) SHA1(573b20cac205b7989cdefceb2c31cb7d88c2951a))
+SE128_ROMSTART(simpprtg, "spp-cpu.400",CRC(530b9782) SHA1(573b20cac205b7989cdefceb2c31cb7d88c2951a))
 DE_DMD32ROM8x(           "sppdspg.400",NO_DUMP)
 DE2S_SOUNDROM18888(      "spp101.u7",  CRC(32efcdf6) SHA1(1d437e8649408be91e0dd10598cc67336203077f),
                          "spp100.u17", CRC(65e9344e) SHA1(fe4797ccb71b31aa39d6a5d373a01fc22f9d055c),
@@ -798,14 +781,14 @@ DE2S_SOUNDROM18888(      "spp101.u7",  CRC(32efcdf6) SHA1(1d437e8649408be91e0dd1
                          "spp100.u36", CRC(ffb957b0) SHA1(d6876ec63525099a7073c196867c17111272c69a),
                          "spp100.u37", CRC(0738e1fc) SHA1(268462c06e5c1f286e5faaee1c0815448cc2eafa))
 SE_ROMEND
-#define input_ports_simpprtd input_ports_se
-#define init_simpprtd init_simpprty
-CORE_CLONEDEFNV(simpprtd,simpprty,"The Simpsons Pinball Party (Germany)",2003,"Stern",de_mSES2,GAME_NOCRC)
+#define input_ports_simpprtg input_ports_se
+#define init_simpprtg init_simpprty
+CORE_CLONEDEFNV(simpprtg,simpprty,"The Simpsons Pinball Party (Germany)",2003,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / The Simpsons Pinball Party (Spain)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(simpprte, "spp-cpu.400",CRC(530b9782) SHA1(573b20cac205b7989cdefceb2c31cb7d88c2951a))
+SE128_ROMSTART(simpprtl, "spp-cpu.400",CRC(530b9782) SHA1(573b20cac205b7989cdefceb2c31cb7d88c2951a))
 DE_DMD32ROM8x(           "sppdspl.400",CRC(a0bf567e) SHA1(ce6eb65da6bff15aeb787fd2cdac7cf6b4300108))
 DE2S_SOUNDROM18888(      "spp101.u7",  CRC(32efcdf6) SHA1(1d437e8649408be91e0dd10598cc67336203077f),
                          "spp100.u17", CRC(65e9344e) SHA1(fe4797ccb71b31aa39d6a5d373a01fc22f9d055c),
@@ -813,9 +796,9 @@ DE2S_SOUNDROM18888(      "spp101.u7",  CRC(32efcdf6) SHA1(1d437e8649408be91e0dd1
                          "spp100.u36", CRC(ffb957b0) SHA1(d6876ec63525099a7073c196867c17111272c69a),
                          "spp100.u37", CRC(0738e1fc) SHA1(268462c06e5c1f286e5faaee1c0815448cc2eafa))
 SE_ROMEND
-#define input_ports_simpprte input_ports_se
-#define init_simpprte init_simpprty
-CORE_CLONEDEFNV(simpprte,simpprty,"The Simpsons Pinball Party (Spain)",2003,"Stern",de_mSES2,GAME_NOCRC)
+#define input_ports_simpprtl input_ports_se
+#define init_simpprtl init_simpprty
+CORE_CLONEDEFNV(simpprtl,simpprty,"The Simpsons Pinball Party (Spain)",2003,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / The Simpsons Pinball Party (France)
@@ -848,11 +831,11 @@ SE_ROMEND
 CORE_CLONEDEFNV(simpprti,simpprty,"The Simpsons Pinball Party (Italy)",2003,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ Terminator 3: Rise of the Machines (2.05)
+/ Terminator 3: Rise of the Machines (4.00)
 /-------------------------------------------------------------------*/
 INITGAME(term3,GEN_WS,se_dmd128x32,0)
-SE128_ROMSTART(term3,	 "t3cpu.205",  CRC(219d8155) SHA1(dac3c390d238872703a0ec65cb3dddc89630359c))
-DE_DMD32ROM8x(           "t3dispa.201",CRC(a314acd1) SHA1(4d5072e65f8041d24c1bab2985ef5b30e1895bf3))
+SE128_ROMSTART(term3, "t3cpu.400", CRC(872f9351) SHA1(8fa8b503d8c3dbac66df1cb0ba400dbd58ee28ee))
+DE_DMD32ROM8x(      "t3dispa.400", CRC(6b7cc4f8) SHA1(214e9b3e45b778841fc166acf4ff5fd634ae2670))
 DE2S_SOUNDROM18888(      "t3100.u7",  CRC(7f99e3af) SHA1(4916c074e2a4c947d1a658300f9f9629da1a8bb8),
                          "t3100.u17", CRC(f0c71b5d) SHA1(e9f726a232fbd4f34b8b07069f337dbb3daf394a),
                          "t3100.u21", CRC(694331f7) SHA1(e9ae8c5db2e59c0f9df923c98f6e75896e150807),
@@ -860,14 +843,13 @@ DE2S_SOUNDROM18888(      "t3100.u7",  CRC(7f99e3af) SHA1(4916c074e2a4c947d1a6583
                          "t3100.u37", CRC(3efb0c19) SHA1(6894295eef05891d64c7274512ba27f2b63ca3ec))
 SE_ROMEND
 #define input_ports_term3 input_ports_se
-CORE_GAMEDEFNV(term3,"Terminator 3: Rise of the Machines",2003,"Stern",de_mSES2,GAME_NOCRC)
+CORE_GAMEDEFNV(term3,"Terminator 3: Rise of the Machines (4.00)",2003,"Stern",de_mSES2,GAME_NOCRC)
 
-//What happened to the German Version? It's not in the rom!
 /*-------------------------------------------------------------------
 / Terminator 3: Rise of the Machines (Germany)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(term3g,	 "t3cpu.205",  CRC(219d8155) SHA1(dac3c390d238872703a0ec65cb3dddc89630359c))
-DE_DMD32ROM8x(           "t3dispg.201",NO_DUMP)
+SE128_ROMSTART(term3g, "t3cpu.400", CRC(872f9351) SHA1(8fa8b503d8c3dbac66df1cb0ba400dbd58ee28ee))
+DE_DMD32ROM8x(       "t3dispg.400", CRC(20da21b2) SHA1(9115aef55d9ac36a49ae5c5fd423f05c669b0335))
 DE2S_SOUNDROM18888(      "t3100.u7",  CRC(7f99e3af) SHA1(4916c074e2a4c947d1a658300f9f9629da1a8bb8),
                          "t3100.u17", CRC(f0c71b5d) SHA1(e9f726a232fbd4f34b8b07069f337dbb3daf394a),
                          "t3100.u21", CRC(694331f7) SHA1(e9ae8c5db2e59c0f9df923c98f6e75896e150807),
@@ -881,8 +863,8 @@ CORE_CLONEDEFNV(term3g,term3,"Terminator 3: Rise of the Machines (Germany)",2003
 /*-------------------------------------------------------------------
 / Terminator 3: Rise of the Machines (Spain)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(term3l,	 "t3cpu.205",  CRC(219d8155) SHA1(dac3c390d238872703a0ec65cb3dddc89630359c))
-DE_DMD32ROM8x(           "t3displ.201",CRC(180b55a2) SHA1(1d8161fc806804e0712ee8a07a2cac0561949f0c))
+SE128_ROMSTART(term3l, "t3cpu.400", CRC(872f9351) SHA1(8fa8b503d8c3dbac66df1cb0ba400dbd58ee28ee))
+DE_DMD32ROM8x(       "t3displ.400", CRC(2e21caba) SHA1(d29afa05d68484c762799c799bd1ccd1aad252b7))
 DE2S_SOUNDROM18888(      "t3100.u7",  CRC(7f99e3af) SHA1(4916c074e2a4c947d1a658300f9f9629da1a8bb8),
                          "t3100.u17", CRC(f0c71b5d) SHA1(e9f726a232fbd4f34b8b07069f337dbb3daf394a),
                          "t3100.u21", CRC(694331f7) SHA1(e9ae8c5db2e59c0f9df923c98f6e75896e150807),
@@ -896,8 +878,8 @@ CORE_CLONEDEFNV(term3l,term3,"Terminator 3: Rise of the Machines (Spain)",2003,"
 /*-------------------------------------------------------------------
 / Terminator 3: Rise of the Machines (France)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(term3f,	 "t3cpu.205",  CRC(219d8155) SHA1(dac3c390d238872703a0ec65cb3dddc89630359c))
-DE_DMD32ROM8x(           "t3dispf.201",CRC(ced87154) SHA1(893c071bb2427429ca45f4d2088b015c5f638207))
+SE128_ROMSTART(term3f, "t3cpu.400", CRC(872f9351) SHA1(8fa8b503d8c3dbac66df1cb0ba400dbd58ee28ee))
+DE_DMD32ROM8x(       "t3dispf.400", CRC(0645fe6d) SHA1(1a7dfa160ba6cc1335a59b018289982f2a46a7bb))
 DE2S_SOUNDROM18888(      "t3100.u7",  CRC(7f99e3af) SHA1(4916c074e2a4c947d1a658300f9f9629da1a8bb8),
                          "t3100.u17", CRC(f0c71b5d) SHA1(e9f726a232fbd4f34b8b07069f337dbb3daf394a),
                          "t3100.u21", CRC(694331f7) SHA1(e9ae8c5db2e59c0f9df923c98f6e75896e150807),
@@ -911,8 +893,8 @@ CORE_CLONEDEFNV(term3f,term3,"Terminator 3: Rise of the Machines (France)",2003,
 /*-------------------------------------------------------------------
 / Terminator 3: Rise of the Machines (Italy)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(term3i,	 "t3cpu.205",  CRC(219d8155) SHA1(dac3c390d238872703a0ec65cb3dddc89630359c))
-DE_DMD32ROM8x(           "t3dispi.201",CRC(c1f3604f) SHA1(8a391e6471ced52662aa69261ac29a279c7b8a7d))
+SE128_ROMSTART(term3i, "t3cpu.400", CRC(872f9351) SHA1(8fa8b503d8c3dbac66df1cb0ba400dbd58ee28ee))
+DE_DMD32ROM8x(       "t3dispi.400", CRC(e8ea9ab8) SHA1(7b25bb7d3095e6bd2d94342d0e078590cb75074b))
 DE2S_SOUNDROM18888(      "t3100.u7",  CRC(7f99e3af) SHA1(4916c074e2a4c947d1a658300f9f9629da1a8bb8),
                          "t3100.u17", CRC(f0c71b5d) SHA1(e9f726a232fbd4f34b8b07069f337dbb3daf394a),
                          "t3100.u21", CRC(694331f7) SHA1(e9ae8c5db2e59c0f9df923c98f6e75896e150807),
@@ -925,13 +907,13 @@ CORE_CLONEDEFNV(term3i,term3,"Terminator 3: Rise of the Machines (Italy)",2003,"
 
 // Using 16-bit samples (and a new sound CPU: ARM-7 type) from now on!
 /*-------------------------------------------------------------------
-/ Lord Of The Rings (4.01)
+/ The Lord Of The Rings (7.00)
 /-------------------------------------------------------------------*/
 static core_tGameData lotrGameData = { \
   GEN_WS, se_dmd128x32, {FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L), 0, 5, 0, 0, SE_LED}}; \
 static void init_lotr(void) { core_gameData = &lotrGameData; }
-SE128_ROMSTART(lotr,	 "lotrcpu.401", CRC(b69cdecc) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
-DE_DMD32ROM8x(           "lotrdspa.403",CRC(2630cef1) SHA1(1dfd929e7eb57983f2fd9184d471f2e919359de0))
+SE128_ROMSTART(lotr, "lotrcpu.700", CRC(208a4653) SHA1(570f3070c6b0f128d451f3dea01e41a9944081f2))
+DE_DMD32ROM8x(      "lotrdspa.700", CRC(233ef0ad) SHA1(1564ae806639dac49add0c464f4499f46b5589ab))
 DE2S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56a6ac29fce1c7082e470),
                          "lotr-u17.100",CRC(d503969d) SHA1(65a4313ca1b93391260c65fef6f878d264f9c8ab),
                          "lotr-u21.100",CRC(8b3f41af) SHA1(9b2d04144edeb499b4ae68a97c65ccb8ef4d26c0),
@@ -939,13 +921,13 @@ DE2S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56
                          "lotr-u37.100",CRC(8e637a6f) SHA1(8087744ce36fc143381d49a312c98cf38b2f9854))
 SE_ROMEND
 #define input_ports_lotr input_ports_se
-CORE_GAMEDEFNV(lotr,"Lord Of The Rings",2003,"Stern",de_mSES2,GAME_IMPERFECT_SOUND|GAME_NOCRC)
+CORE_GAMEDEFNV(lotr,"Lord Of The Rings, The (7.00)",2003,"Stern",de_mSES2,GAME_NO_SOUND|GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ Lord Of The Rings (Spain)
+/ The Lord Of The Rings (Spain)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(lotr_sp,	 "lotrcpul.401",CRC(a9571728) SHA1(f21dd77003f42fafd9293fab3a077c5abf6d572a))
-DE_DMD32ROM8x(           "lotrdspl.403",CRC(6d4075c9) SHA1(7944ba597cb476c33060cead4feaf6dcad4f4b16))
+SE128_ROMSTART(lotr_sp, "lotrcpul.700", CRC(58d8611b) SHA1(ff1e1668993c7c31f04efc22f04ae53112219a1d))
+DE_DMD32ROM8x(          "lotrdspl.700", CRC(3be0283d) SHA1(e019c69cd452b67d6427ddda12b5c3f341afb414))
 DE2S_SOUNDROM18888(      "lotrlu7.100", CRC(980d970a) SHA1(cf70deddcc146ef9eaa64baec74ae800bebf8715),
                          "lotrlu17.100",CRC(c16d3e20) SHA1(43d9f186db361abb3aa119a7252f1bb13bbbbe39),
                          "lotrlu21.100",CRC(f956a1be) SHA1(2980e85463704a154ed81d3241f866442d1ea2e6),
@@ -954,13 +936,13 @@ DE2S_SOUNDROM18888(      "lotrlu7.100", CRC(980d970a) SHA1(cf70deddcc146ef9eaa64
 SE_ROMEND
 #define input_ports_lotr_sp input_ports_lotr
 #define init_lotr_sp init_lotr
-CORE_CLONEDEFNV(lotr_sp,lotr,"Lord Of The Rings (Spain)",2003,"Stern",de_mSES2,GAME_IMPERFECT_SOUND|GAME_NOCRC)
+CORE_CLONEDEFNV(lotr_sp,lotr,"Lord Of The Rings, The (Spain)",2003,"Stern",de_mSES2,GAME_NO_SOUND|GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ Lord Of The Rings (Germany)
+/ The Lord Of The Rings (Germany)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(lotr_gr,	 "lotrcpu.401", CRC(b69cdecc) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
-DE_DMD32ROM8x(           "lotrdspg.403",CRC(74e925cb) SHA1(2edc8666d53f212a053b7a356d2bf6e3180d7bfb))
+SE128_ROMSTART(lotr_gr, "lotrcpu.700", CRC(208a4653) SHA1(570f3070c6b0f128d451f3dea01e41a9944081f2))
+DE_DMD32ROM8x(         "lotrdspg.700", CRC(137f223c) SHA1(bb06a6f587bf86555aea85bc1c0402e2137e1c76))
 DE2S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56a6ac29fce1c7082e470),
                          "lotr-u17.100",CRC(d503969d) SHA1(65a4313ca1b93391260c65fef6f878d264f9c8ab),
                          "lotr-u21.100",CRC(8b3f41af) SHA1(9b2d04144edeb499b4ae68a97c65ccb8ef4d26c0),
@@ -969,13 +951,13 @@ DE2S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56
 SE_ROMEND
 #define input_ports_lotr_gr input_ports_lotr
 #define init_lotr_gr init_lotr
-CORE_CLONEDEFNV(lotr_gr,lotr,"Lord Of The Rings (Germany)",2003,"Stern",de_mSES2,GAME_IMPERFECT_SOUND|GAME_NOCRC)
+CORE_CLONEDEFNV(lotr_gr,lotr,"Lord Of The Rings, The (Germany)",2003,"Stern",de_mSES2,GAME_NO_SOUND|GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ Lord Of The Rings (France)
+/ The Lord Of The Rings (France)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(lotr_fr,	 "lotrcpu.401", CRC(b69cdecc) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
-DE_DMD32ROM8x(           "lotrdspf.403",CRC(d02a77cf) SHA1(8cf4312a04ad486714de5c0041cacb1eb475478f))
+SE128_ROMSTART(lotr_fr, "lotrcpu.700", CRC(208a4653) SHA1(570f3070c6b0f128d451f3dea01e41a9944081f2))
+DE_DMD32ROM8x(         "lotrdspf.700", CRC(c98aeb30) SHA1(16b0ae41db8b4083121cc5ebf2706320d554dd08))
 DE2S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56a6ac29fce1c7082e470),
                          "lotr-u17.100",CRC(d503969d) SHA1(65a4313ca1b93391260c65fef6f878d264f9c8ab),
                          "lotr-u21.100",CRC(8b3f41af) SHA1(9b2d04144edeb499b4ae68a97c65ccb8ef4d26c0),
@@ -984,13 +966,13 @@ DE2S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56
 SE_ROMEND
 #define input_ports_lotr_fr input_ports_lotr
 #define init_lotr_fr init_lotr
-CORE_CLONEDEFNV(lotr_fr,lotr,"Lord Of The Rings (France)",2003,"Stern",de_mSES2,GAME_IMPERFECT_SOUND|GAME_NOCRC)
+CORE_CLONEDEFNV(lotr_fr,lotr,"Lord Of The Rings, The (France)",2003,"Stern",de_mSES2,GAME_NO_SOUND|GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ Lord Of The Rings (Italy)
+/ The Lord Of The Rings (Italy)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(lotr_it,	 "lotrcpu.401", CRC(b69cdecc) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
-DE_DMD32ROM8x(           "lotrdspi.403",CRC(5922ce10) SHA1(c57f2de4e3344f16056405d71510c0c0b60ef86d))
+SE128_ROMSTART(lotr_it, "lotrcpu.700", CRC(208a4653) SHA1(570f3070c6b0f128d451f3dea01e41a9944081f2))
+DE_DMD32ROM8x(         "lotrdspi.700", CRC(6a0d2a6d) SHA1(2b3ca8b26d79919b7102c60515972ab142d1cbf1))
 DE2S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56a6ac29fce1c7082e470),
                          "lotr-u17.100",CRC(d503969d) SHA1(65a4313ca1b93391260c65fef6f878d264f9c8ab),
                          "lotr-u21.100",CRC(8b3f41af) SHA1(9b2d04144edeb499b4ae68a97c65ccb8ef4d26c0),
@@ -999,4 +981,85 @@ DE2S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56
 SE_ROMEND
 #define input_ports_lotr_it input_ports_lotr
 #define init_lotr_it init_lotr
-CORE_CLONEDEFNV(lotr_it,lotr,"Lord Of The Rings (Italy)",2003,"Stern",de_mSES2,GAME_IMPERFECT_SOUND|GAME_NOCRC)
+CORE_CLONEDEFNV(lotr_it,lotr,"Lord Of The Rings, The (Italy)",2003,"Stern",de_mSES2,GAME_NO_SOUND|GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Ripley's Believe It or Not! (3.00)
+/-------------------------------------------------------------------*/
+static struct core_dispLayout dispBION[] = {
+  DISP_SEG_IMPORT(se_dmd128x32),
+  {34,10, 7, 5, CORE_DMD, (void *)seminidmd1a_update},
+  {34,18, 7, 5, CORE_DMD, (void *)seminidmd1b_update},
+  {34,26, 7, 5, CORE_DMD, (void *)seminidmd1c_update}, {0}
+};
+INITGAME(ripleys,GEN_WS,dispBION,SE_MINIDMD)
+SE128_ROMSTART(ripleys, "ripcpu.300",CRC(8c4bf2a9) SHA1(260dd5a99a36de541b5f852047ae4166afc621cc))
+DE_DMD32ROM8x(        "ripdispa.300",CRC(016907c9) SHA1(d37f1ca5ebe089fca879339cdaffc3fabf09c15c))
+DE2S_SOUNDROM18888(      "ripsnd.u7",CRC(e5c7edea) SHA1(c0075fb35c746afe54808d4901ddb61ba396f36d),
+                        "ripsnd.u17",CRC(d518f2da) SHA1(e7d75c6b7b45571ae6d39ed7405b1457e475b52a),
+                        "ripsnd.u21",CRC(3d8680d7) SHA1(1368965106094d78be6540eb87a478f853ba774f),
+                        "ripsnd.u36",CRC(b697b5cb) SHA1(b5cb426201287a6d1c40db8c81a58e2c656d1d81),
+                        "ripsnd.u37",CRC(01b9f20e) SHA1(cffb6a0136d7d17ab4450b3bfd97632d8b669d39))
+SE_ROMEND
+#define input_ports_ripleys input_ports_se
+CORE_GAMEDEFNV(ripleys,"Ripley's Believe It or Not! (3.00)",2004,"Stern",de_mSES2,GAME_NO_SOUND|GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Ripley's Believe It or Not! (France)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(ripleysf,"ripcpu.300",CRC(8c4bf2a9) SHA1(260dd5a99a36de541b5f852047ae4166afc621cc))
+DE_DMD32ROM8x(        "ripdispf.300",CRC(b9901941) SHA1(653997ff5d63e7ee0270db08cad952ac8293a8cd))
+DE2S_SOUNDROM18888(     "ripsndf.u7",CRC(00fc94de) SHA1(207ceea5ccd39a99c5b5ed1f945dce3f1fc076d7),
+                       "ripsndf.u17",CRC(a6793b85) SHA1(96058777346be6e9ea7b1340d9aaf945ac3c853a),
+                       "ripsndf.u21",CRC(60c02170) SHA1(900d9de3ccb541019e5f1528e01c57ad96dac262),
+                       "ripsndf.u36",CRC(0a57f2fd) SHA1(9dd057888294ee8abeb582e8f6650fd6e32cc9ff),
+                       "ripsndf.u37",CRC(5c858958) SHA1(f4a9833b8aee033ed381e3bdf9f801b935d6186a))
+SE_ROMEND
+#define input_ports_ripleysf input_ports_ripleys
+#define init_ripleysf init_ripleys
+CORE_CLONEDEFNV(ripleysf,ripleys,"Ripley's Believe It or Not! (France)",2004,"Stern",de_mSES2,GAME_NO_SOUND|GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Ripley's Believe It or Not! (Germany)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(ripleysg,"ripcpu.300",CRC(8c4bf2a9) SHA1(260dd5a99a36de541b5f852047ae4166afc621cc))
+DE_DMD32ROM8x(        "ripdispg.300",CRC(1a75883b) SHA1(0ef2f4af72e435e5be9d3d8a6b69c66ae18271a1))
+DE2S_SOUNDROM18888(     "ripsndg.u7",CRC(ff7b6b55) SHA1(e2e0e1f6cfae0fbcb5151bf2cb17fbb52f2d9f23),
+                       "ripsndg.u17",CRC(c387dcf0) SHA1(d4ef65d3f33ab82b63bf2782f335858ab4ad210a),
+                       "ripsndg.u21",CRC(6388ae8d) SHA1(a39c7977194daabf3f5b10d0269dcd4118a939bc),
+                       "ripsndg.u36",CRC(3143f9d3) SHA1(bd4ce64b245b5fcb9b9694bd8f71a9cd98303cae),
+                       "ripsndg.u37",CRC(2167617b) SHA1(62b55a39e2677eec9d56b10e8cc3e5d7c0d3bea5))
+SE_ROMEND
+#define input_ports_ripleysg input_ports_ripleys
+#define init_ripleysg init_ripleys
+CORE_CLONEDEFNV(ripleysg,ripleys,"Ripley's Believe It or Not! (Germany)",2004,"Stern",de_mSES2,GAME_NO_SOUND|GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Ripley's Believe It or Not! (Italy)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(ripleysi,"ripcpu.300",CRC(8c4bf2a9) SHA1(260dd5a99a36de541b5f852047ae4166afc621cc))
+DE_DMD32ROM8x(        "ripdispi.300",CRC(c3541c04) SHA1(26256e8dee77bcfa96326d2e3f67b6fd3696c0c7))
+DE2S_SOUNDROM18888(     "ripsndi.u7",CRC(b966a2c1) SHA1(1aa83dc5b87fc16fc4281f577e61eb2661cfad09),
+                       "ripsndi.u17",CRC(a2911df4) SHA1(acb7956a6a30142c8da905b04778a074cb335807),
+                       "ripsndi.u21",CRC(1467eaff) SHA1(c6c4ea2abdad4334efbe3a084693e9e4d0dd0fd2),
+                       "ripsndi.u36",CRC(6a124fa6) SHA1(752c3d227b9a98dd859e4778ddd527edaa3cf512),
+                       "ripsndi.u37",CRC(7933c102) SHA1(f736ee86d7c67dab82c634d125d73a2453249706))
+SE_ROMEND
+#define input_ports_ripleysi input_ports_ripleys
+#define init_ripleysi init_ripleys
+CORE_CLONEDEFNV(ripleysi,ripleys,"Ripley's Believe It or Not! (Italy)",2004,"Stern",de_mSES2,GAME_NO_SOUND|GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Ripley's Believe It or Not! (Spain)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(ripleysl,"ripcpu.300",CRC(8c4bf2a9) SHA1(260dd5a99a36de541b5f852047ae4166afc621cc))
+DE_DMD32ROM8x(        "ripdispl.300",CRC(d2f496bb) SHA1(48622e25171030b83d8d1736735e97a13c5f47c6))
+DE2S_SOUNDROM18888(     "ripsndl.u7",CRC(66bfcb7c) SHA1(8bdfaf01f367de8ccf15da59000ecff5268e0a4f),
+                       "ripsndl.u17",CRC(a98f4514) SHA1(e87ee8f5a87a8ae9ec996473bf9bc745105ea334),
+                       "ripsndl.u21",CRC(141f2b77) SHA1(15bab623beda8ae7ed9908f492ff2baab0a7954e),
+                       "ripsndl.u36",CRC(c5461b63) SHA1(fc574d44ad88ce1db590ea371225092c03fc6f80),
+                       "ripsndl.u37",CRC(2a58f491) SHA1(1c33f419420b3165ef18598560007ef612b24814))
+SE_ROMEND
+#define input_ports_ripleysl input_ports_ripleys
+#define init_ripleysl init_ripleys
+CORE_CLONEDEFNV(ripleysl,ripleys,"Ripley's Believe It or Not! (Spain)",2004,"Stern",de_mSES2,GAME_NO_SOUND|GAME_NOCRC)

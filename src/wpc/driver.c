@@ -506,54 +506,58 @@ DRIVERNV(blbeauty)      //MPU-200: ??/84 Black Beauty (Bowler)
 DRIVERNV(strikext)      //Whitestar: 03/00 Striker Extreme
 DRIVERNV(strxt_uk)      //Whitestar: 03/00 Striker Extreme (UK)
 DRIVERNV(strxt_gr)      //Whitestar: 03/00 Striker Extreme (Germany)
+DRIVERNV(strxt_sp)      //Whitestar: 03/00 Striker Extreme (Spain)
 DRIVERNV(strxt_fr)      //Whitestar: 03/00 Striker Extreme (France)
 DRIVERNV(strxt_it)      //Whitestar: 03/00 Striker Extreme (Italy)
-DRIVERNV(strxt_sp)      //Whitestar: 03/00 Striker Extreme (Spain)
 DRIVERNV(shrkysht)      //Whitestar: 09/00 Sharkey's Shootout (2.11)
 DRIVERNV(shrky_gr)      //Whitestar: 09/00 Sharkey's Shootout (German display)
 DRIVERNV(shrky_fr)      //Whitestar: 09/00 Sharkey's Shootout (French display)
 DRIVERNV(shrky_it)      //Whitestar: 09/00 Sharkey's Shootout (Italian display)
 DRIVERNV(hirolcas)      //Whitestar: 01/01 High Roller Casino (3.0)
-DRIVERNV(hirol_fr)      //Whitestar: 01/01 High Roller Casino (German display)
-DRIVERNV(hirol_gr)      //Whitestar: 01/01 High Roller Casino (French display)
+DRIVERNV(hirol_gr)      //Whitestar: 01/01 High Roller Casino (Germany, 2.10)
+DRIVERNV(hirol_fr)      //Whitestar: 01/01 High Roller Casino (French display)
 DRIVERNV(hirol_it)      //Whitestar: 01/01 High Roller Casino (Italian display)
-//
-#ifdef INCLUDE_NEW_STERN
 DRIVERNV(austin)        //Whitestar: 05/01 Austin Powers
-DRIVERNV(austind)       //Whitestar: 05/01 Austin Powers (German display)
+DRIVERNV(austing)       //Whitestar: 05/01 Austin Powers (German display)
 DRIVERNV(austinf)       //Whitestar: 05/01 Austin Powers (French display)
 DRIVERNV(austini)       //Whitestar: 05/01 Austin Powers (Italian display)
-DRIVERNV(austin2)       //Whitestar: 05/01 Austin Powers (2.0 - With "White House" scenes)
+#ifdef INCLUDE_NEW_STERN
 DRIVERNV(monopoly)      //Whitestar: 09/01 Monopoly
-DRIVERNV(monopold)      //Whitestar: 09/01 Monopoly (German display)
-DRIVERNV(monopole)      //Whitestar: 09/01 Monopoly (Spanish display)
+DRIVERNV(monopolg)      //Whitestar: 09/01 Monopoly (German display)
+DRIVERNV(monopoll)      //Whitestar: 09/01 Monopoly (Spanish display)
 DRIVERNV(monopolf)      //Whitestar: 09/01 Monopoly (French display)
 DRIVERNV(monopoli)      //Whitestar: 09/01 Monopoly (Italian display)
 DRIVERNV(playboys)      //Whitestar: 02/02 Playboy
-DRIVERNV(playboyd)      //Whitestar: 02/02 Playboy (German display)
-DRIVERNV(playboye)      //Whitestar: 02/02 Playboy (Spanish display)
+DRIVERNV(playboyg)      //Whitestar: 02/02 Playboy (German display)
+DRIVERNV(playboyl)      //Whitestar: 02/02 Playboy (Spanish display)
 DRIVERNV(playboyf)      //Whitestar: 02/02 Playboy (French display)
 DRIVERNV(playboyi)      //Whitestar: 02/02 Playboy (Italian display)
 DRIVERNV(rctycn)        //Whitestar: 09/02 Roller Coaster Tycoon
-DRIVERNV(rctycnd)       //Whitestar: 09/02 Roller Coaster Tycoon (German display)
-DRIVERNV(rctycne)       //Whitestar: 09/02 Roller Coaster Tycoon (Spanish display)
+DRIVERNV(rctycng)       //Whitestar: 09/02 Roller Coaster Tycoon (German display)
+DRIVERNV(rctycnl)       //Whitestar: 09/02 Roller Coaster Tycoon (Spanish display)
 DRIVERNV(rctycnf)       //Whitestar: 09/02 Roller Coaster Tycoon (French display)
 DRIVERNV(rctycni)       //Whitestar: 09/02 Roller Coaster Tycoon (Italian display)
 DRIVERNV(simpprty)      //Whitestar: 01/03 The Simpsons Pinball Party
-DRIVERNV(simpprtd)      //Whitestar: 01/03 The Simpsons Pinball Party (German display)
-DRIVERNV(simpprte)      //Whitestar: 01/03 The Simpsons Pinball Party (Spanish display)
+DRIVERNV(simpprtg)      //Whitestar: 01/03 The Simpsons Pinball Party (German display)
+DRIVERNV(simpprtl)      //Whitestar: 01/03 The Simpsons Pinball Party (Spanish display)
 DRIVERNV(simpprtf)      //Whitestar: 01/03 The Simpsons Pinball Party (French display)
 DRIVERNV(simpprti)      //Whitestar: 01/03 The Simpsons Pinball Party (Italian display)
 DRIVERNV(term3)         //Whitestar: 06/03 Terminator 3: Rise of the Machines
-DRIVERNV(term3g)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (German)
+DRIVERNV(term3g)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (Germany)
 DRIVERNV(term3l)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (Spain)
 DRIVERNV(term3f)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (France)
 DRIVERNV(term3i)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (Italy)
+// new sound board with ARM7 CPU
 DRIVERNV(lotr)          //Whitestar: 11/03 Lord Of The Rings
 DRIVERNV(lotr_gr)       //Whitestar: 11/03 Lord Of The Rings (Germany)
 DRIVERNV(lotr_sp)       //Whitestar: 11/03 Lord Of The Rings (Spain)
 DRIVERNV(lotr_fr)       //Whitestar: 11/03 Lord Of The Rings (France)
 DRIVERNV(lotr_it)       //Whitestar: 11/03 Lord Of The Rings (Italy)
+DRIVERNV(ripleys)       //Whitestar: 03/04 Ripley's Believe It or Not!
+DRIVERNV(ripleysg)      //Whitestar: 03/04 Ripley's Believe It or Not! (Germany)
+DRIVERNV(ripleysl)      //Whitestar: 03/04 Ripley's Believe It or Not! (Spain)
+DRIVERNV(ripleysf)      //Whitestar: 03/04 Ripley's Believe It or Not! (France)
+DRIVERNV(ripleysi)      //Whitestar: 03/04 Ripley's Believe It or Not! (Italy)
 #endif /* INCLUDE_NEW_STERN */
 
 // ---------------
