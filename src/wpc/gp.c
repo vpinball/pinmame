@@ -92,21 +92,27 @@ static void GP_UpdateSolenoids (int bank, int soldata) {
   soldata &= 0x0f;
   if (bank == 0) { // solenoids 1-15
     if (soldata != 0x0f) {
-	  if (core_gameData->hw.soundBoard == SNDBRD_GPSSU1 && (soldata < 2 || (soldata > 4 && soldata < 7)))
+      if (core_gameData->hw.soundBoard == SNDBRD_GPSSU1 && (soldata < 2 || (soldata > 4 && soldata < 7)))
         sndbrd_0_data_w(GP_SCPUNO, soldata);
-      else {
-        sols = 1 << soldata;
-        coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & mask) | sols;
-        locals.solenoids |= sols;
-      }
+      sols = 1 << soldata;
+      coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & mask) | sols;
+      locals.solenoids |= sols;
     } else { // until we find another way to turn the solenoids back off...
 	  if (core_gameData->hw.soundBoard == SNDBRD_GPSSU1) sndbrd_0_data_w(0, soldata);
       coreGlobals.pulsedSolState &= mask;
       locals.solenoids &= mask;
     }
-  } else { // sound commands
+  } else { // sound commands, solenoids 17-30
     if (core_gameData->hw.soundBoard != SNDBRD_GPSSU1)
       sndbrd_0_data_w(GP_SCPUNO, soldata);
+    if (soldata != 0x0f) {
+      sols = 0x10000 << soldata;
+      coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & mask) | sols;
+      locals.solenoids |= sols;
+    } else { // until we find another way to turn the solenoids back off...
+      coreGlobals.pulsedSolState &= mask;
+      locals.solenoids &= mask;
+    }
   }
 }
 
