@@ -87,7 +87,7 @@
 
 #define BY6803_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
 #define BY6803_LAMPSMOOTH      6 /* Smooth the lamps over this number of VBLANKS */
-#define BY6803_DISPLAYSMOOTH   3 /* Smooth the display over this number of VBLANKS */
+#define BY6803_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKS */
 
 //#define mlogerror printf
 #define mlogerror logerror
@@ -112,7 +112,7 @@ static struct {
   int bcd[6];
   int lampadr1, lampadr2;
   UINT32 solenoids;
-  core_tSeg segments,pseg;
+  core_tSeg segments, pseg;
   int dispcol, disprow, commacol;
   int diagnosticLed;
   int sounddiagnosticLed;
@@ -217,32 +217,23 @@ static WRITE_HANDLER(by6803_dispdata2) {
 static void by6803_dispStrobe2(int mask) {
 	int data;
 	if (locals.disprow > 1) {
-	/* The commas still need work, I guess. But it looks quite good now. */
+		// Comma segments
 		data = locals.p1_a;
-		if (locals.dispcol > 7) {
-			if (locals.segments[9].w)
-				locals.segments[9].w |= (data & 0x80);
-			if (locals.segments[12].w)
-				locals.segments[12].w |= (data & 0x80);
-			if (locals.segments[28].w)
-				locals.segments[28].w |= ((data & 0x20) << 2);
-			if (locals.segments[31].w)
-				locals.segments[31].w |= ((data & 0x20) << 2);
-		} else {
-			if (locals.segments[2].w)
-				locals.segments[2].w |= ((data & 0x40) << 1);
-			if (locals.segments[5].w)
-				locals.segments[5].w |= ((data & 0x40) << 1);
-			if (locals.segments[35].w)
-				locals.segments[35].w |= ((data & 0x10) << 3);
-			if (locals.segments[24].w)
-				locals.segments[24].w |= ((data & 0x10) << 3);
-		}
+		locals.pseg[9].w  = (data & 0x80) ? 0x80 : 0;
+		locals.pseg[12].w = (data & 0x80) ? 0x80 : 0;
+		locals.pseg[28].w = (data & 0x20) ? 0x80 : 0;
+		locals.pseg[31].w = (data & 0x20) ? 0x80 : 0;
+		locals.pseg[2].w  = (data & 0x40) ? 0x80 : 0;
+		locals.pseg[5].w  = (data & 0x40) ? 0x80 : 0;
+		locals.pseg[35].w = (data & 0x10) ? 0x80 : 0;
+		locals.pseg[24].w = (data & 0x10) ? 0x80 : 0;
 	} else {
 		//Segments H&J is inverted bit 0 (but it's bit 9 in core.c) - Not sure why it's inverted, this is not shown on the schematic
 		data = (locals.p1_a >> 1) | ((locals.p1_a & 1) ? 0 : 0x300);
-		locals.pseg[locals.disprow*20+locals.dispcol].w = data;
-		locals.segments[locals.disprow*20+locals.dispcol].w |= locals.pseg[locals.disprow*20+locals.dispcol].w;
+		if (data)
+			locals.segments[locals.disprow*20+locals.dispcol].w = data | locals.pseg[locals.disprow*20+locals.dispcol].w;
+		else
+			locals.segments[locals.disprow*20+locals.dispcol].w = 0;
 	}
 }
 
@@ -327,7 +318,7 @@ static WRITE_HANDLER(pia1cb2_w) {
   locals.p1_cb2 = data;
 }
 
-static INTERRUPT_GEN(by6803_vblank) {
+static void vblank_all(void) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
@@ -344,17 +335,28 @@ static INTERRUPT_GEN(by6803_vblank) {
     coreGlobals.solenoids = locals.solenoids;
     locals.solenoids = coreGlobals.pulsedSolState;
   }
+
+  /*update leds*/
+  coreGlobals.diagnosticLed = locals.diagnosticLed | (locals.sounddiagnosticLed<<1);
+  locals.diagnosticLed = locals.sounddiagnosticLed = 0;
+
+  core_updateSw(core_getSol(19));
+}
+
+static INTERRUPT_GEN(by6803_vblank) {
   /*-- display --*/
   if ((locals.vblankCount % BY6803_DISPLAYSMOOTH) == 0) {
     memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
     memcpy(locals.segments, locals.pseg, sizeof(locals.segments));
     memset(locals.pseg,0,sizeof(locals.pseg));
   }
-  /*update leds*/
-  coreGlobals.diagnosticLed = locals.diagnosticLed | (locals.sounddiagnosticLed<<1);
-  locals.diagnosticLed = locals.sounddiagnosticLed = 0;
+  vblank_all();
+}
 
-  core_updateSw(core_getSol(19));
+static INTERRUPT_GEN(by6803_vblank_alpha) {
+  /*-- display --*/
+  memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
+  vblank_all();
 }
 
 static SWITCH_UPDATE(by6803) {
@@ -576,6 +578,7 @@ MACHINE_DRIVER_END
 //6803 - Generation 2 Sound (Turbo Cheap Squeak)
 MACHINE_DRIVER_START(by6803_TCSS)
   MDRV_IMPORT_FROM(by6803)
+  MDRV_CPU_VBLANK_INT(by6803_vblank_alpha, 1)
   MDRV_SCREEN_SIZE(640,400)
   MDRV_VISIBLE_AREA(0, 639, 0, 399)
   MDRV_IMPORT_FROM(byTCS)
@@ -583,6 +586,7 @@ MACHINE_DRIVER_END
 //6803 - Generation 2A Sound (Turbo Cheap Squeak 2)
 MACHINE_DRIVER_START(by6803_TCS2S)
   MDRV_IMPORT_FROM(by6803)
+  MDRV_CPU_VBLANK_INT(by6803_vblank_alpha, 1)
   MDRV_SCREEN_SIZE(640,400)
   MDRV_VISIBLE_AREA(0, 639, 0, 399)
   MDRV_IMPORT_FROM(byTCS2)
@@ -590,6 +594,7 @@ MACHINE_DRIVER_END
 //6803 - Generation 3 Sound (Sounds Deluxe) with keypad
 MACHINE_DRIVER_START(by6803_SDS)
   MDRV_IMPORT_FROM(by6803)
+  MDRV_CPU_VBLANK_INT(by6803_vblank_alpha, 1)
   MDRV_SCREEN_SIZE(640,400)
   MDRV_VISIBLE_AREA(0, 639, 0, 399)
   MDRV_IMPORT_FROM(bySD)
@@ -597,6 +602,7 @@ MACHINE_DRIVER_END
 //6803 - Generation 4 Sound (Williams System 11C) without keypad
 MACHINE_DRIVER_START(by6803_S11CS)
   MDRV_IMPORT_FROM(by6803)
+  MDRV_CPU_VBLANK_INT(by6803_vblank_alpha, 1)
   MDRV_SCREEN_SIZE(640,400)
   MDRV_VISIBLE_AREA(0, 639, 0, 399)
   MDRV_IMPORT_FROM(wmssnd_s11cs)

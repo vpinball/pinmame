@@ -446,8 +446,8 @@ static void corv_handleMech(int mech) {
 	/* ZR-1 engine */
 	if (mech & 0x04) {
 		locals.enginePos = (int)wpc_data[WPC_EXTBOARD2];
-		core_setSw(71, locals.enginePos < 3 ? 1 : 0);
-		core_setSw(72, locals.enginePos > 252 ? 1 : 0);
+		core_setSw(71, locals.enginePos < 64 ? 1 : 0);
+		core_setSw(72, locals.enginePos > 191 ? 1 : 0);
 	}
 }
 

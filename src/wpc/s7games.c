@@ -20,7 +20,7 @@ static void init_##name(void) { core_gameData = &name##GameData; }
 S7_INPUT_PORTS_START(s7, 1) S7_INPUT_PORTS_END
 
 /*-------------------------------
-/ Firepower - Sys.7 7-Digit Bootleg
+/ Firepower - Sys.7 7-Digit conversion
 /------------------------------*/
 static const struct core_dispLayout fp_7digit_disp[] = {
   // Player 1            Player 2
@@ -40,7 +40,7 @@ S67S_SPEECHROMS000x(     "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c3319
                          "v_ic6.532",   CRC(e56f7aa2) SHA1(cb922c3f4d91285dda4ccae880c2d798a82fd51b))
 S7_ROMEND
 #define input_ports_frpwr input_ports_s7
-CORE_CLONEDEF(frpwr,b7,l2,"Firepower (Sys.7 7-digit bootleg)",2003,"Williams / Oliver",s7_mS7S6,0)
+CORE_CLONEDEF(frpwr,b7,l2,"Firepower (Sys.7 7-digit conversion)",2003,"Williams / Oliver",s7_mS7S6,0)
 
 /*-----------------------------------
 / Cosmic Gunfight - Sys.7 (Game #502)
@@ -64,10 +64,10 @@ S7_ROMSTART8088(jngld,l2, "ic14.716",   CRC(6e5a6374) SHA1(738ecef807de9fee6fd1e
                           "ic17.532",   CRC(bb571a17) SHA1(fb0b7f247673dae0744d4188e1a03749a2237165),
                           "ic20.716",   CRC(dfb4b75a) SHA1(bcf017b01236f755cee419e398bbd8955ae3576a),
                           "ic26.716",   CRC(4714b1f1) SHA1(01f8593a926df69fb8ae79260f11c5f6b868cd51))
-S67S_SOUNDROMS8(          "sound12.716",CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
+S67S_SOUNDROMS8(          "sound3.716", CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
 S67S_SPEECHROMS000x(      "speech7.532",CRC(83ffb695) SHA1(f9151bdfdefd5c178ca7eb5122f62b700d64f41a),
-			  "speech5.532",CRC(754bd474) SHA1(c05f48bb07085683de469603880eafd28dffd9f5),
-			  "speech6.532",CRC(f2ac6a52) SHA1(5b3e743eac382d571fd049f92ea9955342b9ffa0))
+                          "speech5.532",CRC(754bd474) SHA1(c05f48bb07085683de469603880eafd28dffd9f5),
+                          "speech6.532",CRC(f2ac6a52) SHA1(5b3e743eac382d571fd049f92ea9955342b9ffa0))
 S7_ROMEND
 #define input_ports_jngld input_ports_s7
 CORE_GAMEDEF(jngld,l2,"Jungle Lord (L-2)",1981,"Williams",s7_mS7S,0)
@@ -143,7 +143,7 @@ S7_ROMSTART000x(hypbl,l5, "ic14.532",    CRC(8090fe71) SHA1(0f1f40c0ee8da5b2fd51
                           "ic20_fix.532",    CRC(48958d77) SHA1(ddfec991ef99606b866ced08b59e205a0b2cadd1))
 S67S_SOUNDROMS0(          "sound12.532", CRC(06051e5e) SHA1(f0ab4be812ceaf771829dd549f2a612156102a93))
 S7_ROMEND
-CORE_CLONEDEF(hypbl,l5,l4,"HyperBall (L-5)",1998,"Williams (High score bootleg)",s7_mS7S,0)
+CORE_CLONEDEF(hypbl,l5,l4,"HyperBall (L-5)",1998,"Unknown (High score bootleg)",s7_mS7S,0)
 
 
 /*----------------------------
@@ -154,7 +154,7 @@ S7_ROMSTART8088(barra,l1, "ic14.716",   CRC(522e944e) SHA1(0fa17b7912f8129e40de5
                           "ic17.532",   CRC(bb571a17) SHA1(fb0b7f247673dae0744d4188e1a03749a2237165),
                           "ic20.716",   CRC(dfb4b75a) SHA1(bcf017b01236f755cee419e398bbd8955ae3576a),
                           "ic26.716",   CRC(2a0e0171) SHA1(f1f2d4c1baed698d3b7cf2e88a2c28056e859920))
-S67S_SOUNDROMS8(          "sound12.716",CRC(67ea12e7) SHA1(f81e97183442736d5766a7e5e074bc6539e8ced0))
+S67S_SOUNDROMS8(          "sound4.716", CRC(67ea12e7) SHA1(f81e97183442736d5766a7e5e074bc6539e8ced0))
 S7_ROMEND
 #define input_ports_barra input_ports_s7
 CORE_GAMEDEF(barra,l1,"Barracora (L-1)",1981,"Williams",s7_mS7S,0)
@@ -237,7 +237,7 @@ S7_ROMSTART8088(fpwr2,l2, "ic14.716",   CRC(a29688dd) SHA1(83815154bbaf51dd78911
                           "ic17.532",   CRC(bb571a17) SHA1(fb0b7f247673dae0744d4188e1a03749a2237165),
                           "ic20.716",   CRC(dfb4b75a) SHA1(bcf017b01236f755cee419e398bbd8955ae3576a),
                           "ic26.716",   CRC(1068939d) SHA1(f15c3a149bafee6d74e359399de88fd122b93441))
-S67S_SOUNDROMS8(          "sound12.716",CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
+S67S_SOUNDROMS8(          "sound3.716", CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
 S7_ROMEND
 #define input_ports_fpwr2 input_ports_s7
 CORE_GAMEDEF(fpwr2,l2,"Firepower II (L-2)",1983,"Williams",s7_mS7S,0)
@@ -249,7 +249,7 @@ INITGAMEFULL(strlt,s7_dispS7,0,0,50,51,41,42,43,0)
 S7_ROMSTART000x(strlt,l1,"ic14.532",   CRC(292f1c4a) SHA1(0b5d50331364655672be16236d38d72b28f6dec2),
                          "ic17.532",   CRC(a43d8518) SHA1(fb2289bb7380838d0d817e78c39e5bcb2709373f),
                          "ic20.532",   CRC(66876b56) SHA1(6fab43fbb67c7b602ca595c20a41fc1553afdb65))
-S67S_SOUNDROMS8(         "sound12.716",CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
+S67S_SOUNDROMS8(         "sound3.716", CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
 S7_ROMEND
 #define input_ports_strlt input_ports_s7
 CORE_GAMEDEF(strlt,l1,"Star Light (L-1)",1984,"Williams",s7_mS7S,0)

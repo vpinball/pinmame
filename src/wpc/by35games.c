@@ -40,6 +40,10 @@ static void init_##name(void) { core_gameData = &name##GameData; }
 static core_tGameData name##GameData = {gen,disp,{flip,0,lamps,0,sb,db,BY35GD_PHASE}}; \
 static void init_##name(void) { core_gameData = &name##GameData; }
 
+#define INITGAMENB(name, gen, disp, flip, lamps, sb, db) \
+static core_tGameData name##GameData = {gen,disp,{flip,0,lamps,0,sb,db,BY35GD_FAKEZERO}}; \
+static void init_##name(void) { core_gameData = &name##GameData; }
+
 /* -------------------------------------------------------------*/
 /* All games below use CHIMES for sound - ie, no sound hardware */
 /* -------------------------------------------------------------*/
@@ -238,16 +242,14 @@ BY50_SOUNDROM(            "729-51_3.123",CRC(6e7d3e8b) SHA1(7a93d82a05213ffa6eac
 BY35_ROMEND
 #define input_ports_hglbtrtr input_ports_by35
 CORE_GAMEDEFNV(hglbtrtr,"Harlem Globetrotters",1979,"Bally",by35_mBY35_50S,0)
-/*--------------------------------
-/ Harlem Globetrotters (7-digit bootleg)
-/-------------------------------*/
+
 INITGAME(hglbtrtb,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY50,0)
 BY35_ROMSTARTx00(hglbtrtb,"harl2732.u2", CRC(f70a2981) SHA1(dd3e6448efa0dff49ed84c1f586d3b817598fa31),
                           "720-3532.u6b",CRC(cb4243e7) SHA1(a4224ff3c7ef81a8adfb1af4e2d2c8b7f5b2f488))
 BY50_SOUNDROM(            "729-51_3.123",CRC(6e7d3e8b) SHA1(7a93d82a05213ffa6eacfa318051414f872a701d))
 BY35_ROMEND
 #define input_ports_hglbtrtb input_ports_hglbtrtr
-CORE_CLONEDEFNV(hglbtrtb,hglbtrtr,"Harlem Globetrotters (7-digit bootleg)",2002,"Bally / Oliver",by35_mBY35_50S,0)
+CORE_CLONEDEFNV(hglbtrtb,hglbtrtr,"Harlem Globetrotters (7-digit conversion)",2002,"Bally / Oliver",by35_mBY35_50S,0)
 /*--------------------------------
 / Dolly Parton
 /-------------------------------*/
@@ -259,16 +261,14 @@ BY50_SOUNDROM(            "729-51_3.123",CRC(6e7d3e8b) SHA1(7a93d82a05213ffa6eac
 BY35_ROMEND
 #define input_ports_dollyptn input_ports_by35
 CORE_GAMEDEFNV(dollyptn,"Dolly Parton",1979,"Bally",by35_mBY35_50S,0)
-/*--------------------------------
-/ Dolly Parton (7-digit bootleg)
-/-------------------------------*/
+
 INITGAME(dollyptb,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY50,0)
 BY35_ROMSTARTx00(dollyptb,"doll2732.u2", CRC(cd649da3) SHA1(10fbffa0dc620d8bc35b8236b1d55fbf3338b6b7),
                           "720-3532.u6b",CRC(cb4243e7) SHA1(a4224ff3c7ef81a8adfb1af4e2d2c8b7f5b2f488))
 BY50_SOUNDROM(            "729-51_3.123",CRC(6e7d3e8b) SHA1(7a93d82a05213ffa6eacfa318051414f872a701d))
 BY35_ROMEND
 #define input_ports_dollyptb input_ports_dollyptn
-CORE_CLONEDEFNV(dollyptb,dollyptn,"Dolly Parton (7-digit bootleg)",2002,"Bally / Oliver",by35_mBY35_50S,0)
+CORE_CLONEDEFNV(dollyptb,dollyptn,"Dolly Parton (7-digit conversion)",2002,"Bally / Oliver",by35_mBY35_50S,0)
 /*--------------------------------
 / Kiss
 /-------------------------------*/
@@ -295,16 +295,14 @@ BY51_SOUNDROM8(           "781-02_4.716",CRC(364f7c9a) SHA1(e6a3d425317eaeba4109
 BY35_ROMEND
 #define input_ports_futurspa input_ports_by35
 CORE_GAMEDEFNV(futurspa,"Future Spa",1979,"Bally",by35_mBY35_51S,0)
-/*--------------------------------
-/ Future Spa (7-digit bootleg)
-/-------------------------------*/
+
 INITGAME(futurspb,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY51,0)
 BY35_ROMSTARTx00(futurspb,"fspa2732.u2", CRC(8c4bf58f) SHA1(7235b205b9817d6e227683b26779d3fd4f1df11b),
                           "720-3532.u6b",CRC(cb4243e7) SHA1(a4224ff3c7ef81a8adfb1af4e2d2c8b7f5b2f488))
 BY51_SOUNDROM8(           "781-02_4.716",CRC(364f7c9a) SHA1(e6a3d425317eaeba4109712c6949f11c50b82892))
 BY35_ROMEND
 #define input_ports_futurspb input_ports_futurspa
-CORE_CLONEDEFNV(futurspb,futurspa,"Future Spa (7-digit bootleg)",2002,"Bally / Oliver",by35_mBY35_51S,0)
+CORE_CLONEDEFNV(futurspb,futurspa,"Future Spa (7-digit conversion)",2002,"Bally / Oliver",by35_mBY35_51S,0)
 /*--------------------------------
 / Space invaders
 /-------------------------------*/
@@ -316,16 +314,14 @@ BY51_SOUNDROM8(           "792-07_4.716",CRC(787ffd5e) SHA1(4dadad7095de27622c21
 BY35_ROMEND
 #define input_ports_spaceinv input_ports_by35
 CORE_GAMEDEFNV(spaceinv,"Space Invaders",1980,"Bally",by35_mBY35_51S,0)
-/*--------------------------------
-/ Space invaders (7-digit bootleg)
-/-------------------------------*/
+
 INITGAME(spaceinb,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY51,0)
 BY35_ROMSTARTx00(spaceinb,"inva2732.u2", CRC(3d21bb0c) SHA1(b361adc3f0d83b873101ff5354d2d3b876128f4a),
                           "720-3532.u6b",CRC(cb4243e7) SHA1(a4224ff3c7ef81a8adfb1af4e2d2c8b7f5b2f488))
 BY51_SOUNDROM8(           "792-07_4.716",CRC(787ffd5e) SHA1(4dadad7095de27622c2120311a84555dacdc3364))
 BY35_ROMEND
 #define input_ports_spaceinb input_ports_spaceinv
-CORE_CLONEDEFNV(spaceinb,spaceinv,"Space Invaders (7-digit bootleg)",2002,"Bally / Oliver",by35_mBY35_51S,0)
+CORE_CLONEDEFNV(spaceinb,spaceinv,"Space Invaders (7-digit conversion)",2002,"Bally / Oliver",by35_mBY35_51S,0)
 /*--------------------------------
 / Nitro Groundshaker
 /-------------------------------*/
@@ -337,16 +333,14 @@ BY51_SOUNDROM8(           "776-15_4.716",CRC(63c80c52) SHA1(3350919fce237b308b8f
 BY35_ROMEND
 #define input_ports_ngndshkr input_ports_by35
 CORE_GAMEDEFNV(ngndshkr,"Nitro Groundshaker",1980,"Bally",by35_mBY35_51S,0)
-/*--------------------------------
-/ Nitro Groundshaker (7-digit bootleg)
-/-------------------------------*/
+
 INITGAME(ngndshkb,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
 BY35_ROMSTARTx00(ngndshkb,"nitr2732.u2", CRC(3b8d62ef) SHA1(da9652de8930bdd092928775a886252798ce6bf8),
                           "720-3532.u6b",CRC(cb4243e7) SHA1(a4224ff3c7ef81a8adfb1af4e2d2c8b7f5b2f488))
 BY51_SOUNDROM8(           "776-15_4.716",CRC(63c80c52) SHA1(3350919fce237b308b8f960948f70d01d312e9c0))
 BY35_ROMEND
 #define input_ports_ngndshkb input_ports_ngndshkr
-CORE_CLONEDEFNV(ngndshkb,ngndshkr,"Nitro Groundshaker (7-digit bootleg)",2002,"Bally / Oliver",by35_mBY35_51S,0)
+CORE_CLONEDEFNV(ngndshkb,ngndshkr,"Nitro Groundshaker (7-digit conversion)",2002,"Bally / Oliver",by35_mBY35_51S,0)
 /*--------------------------------
 / Silverball Mania
 /-------------------------------*/
@@ -358,16 +352,14 @@ BY51_SOUNDROM8(           "786-11_4.716",CRC(2a3641e6) SHA1(64693d424277e2aaf5fd
 BY35_ROMEND
 #define input_ports_slbmania input_ports_by35
 CORE_GAMEDEFNV(slbmania,"Silverball Mania",1980,"Bally",by35_mBY35_51S,0)
-/*--------------------------------
-/ Silverball Mania (7-digit bootleg)
-/-------------------------------*/
+
 INITGAME(slbmanib,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
 BY35_ROMSTARTx00(slbmanib,"silv2732.u2", CRC(2687a4bc) SHA1(88eb8f793d44b820a0e79789db8cd48eec451c73),
                           "720-3532.u6b",CRC(cb4243e7) SHA1(a4224ff3c7ef81a8adfb1af4e2d2c8b7f5b2f488))
 BY51_SOUNDROM8(           "786-11_4.716",CRC(2a3641e6) SHA1(64693d424277e2aaf5fd4af33b2d348a8a455448))
 BY35_ROMEND
 #define input_ports_slbmanib input_ports_slbmania
-CORE_CLONEDEFNV(slbmanib,slbmania,"Silverball Mania (7-digit bootleg)",2002,"Bally / Oliver",by35_mBY35_51S,0)
+CORE_CLONEDEFNV(slbmanib,slbmania,"Silverball Mania (7-digit conversion)",2002,"Bally / Oliver",by35_mBY35_51S,0)
 /*--------------------------------
 / Rolling Stones
 /-------------------------------*/
@@ -379,16 +371,14 @@ BY51_SOUNDROM8(           "796-19_4.716",CRC(b740d047) SHA1(710edb6bbba0a03e4f51
 BY35_ROMEND
 #define input_ports_rollston input_ports_by35
 CORE_GAMEDEFNV(rollston,"Rolling Stones",1980,"Bally",by35_mBY35_51S,0)
-/*--------------------------------
-/ Rolling Stones (7-digit bootleg)
-/-------------------------------*/
+
 INITGAME(rollstob,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
 BY35_ROMSTARTx00(rollstob,"roll2732.u2", CRC(28c48275) SHA1(578f774bbeca228ef381531563d1d56dc9b612e5),
                           "720-3532.u6b",CRC(cb4243e7) SHA1(a4224ff3c7ef81a8adfb1af4e2d2c8b7f5b2f488))
 BY51_SOUNDROM8(           "796-19_4.716",CRC(b740d047) SHA1(710edb6bbba0a03e4f516b501f019493a3a4033e))
 BY35_ROMEND
 #define input_ports_rollstob input_ports_rollston
-CORE_CLONEDEFNV(rollstob,rollston,"Rolling Stones (7-digit bootleg)",2002,"Bally / Oliver",by35_mBY35_51S,0)
+CORE_CLONEDEFNV(rollstob,rollston,"Rolling Stones (7-digit conversion)",2002,"Bally / Oliver",by35_mBY35_51S,0)
 /*--------------------------------
 / Mystic
 /-------------------------------*/
@@ -400,16 +390,14 @@ BY51_SOUNDROM8(           "798-05_4.716",CRC(e759e093) SHA1(e635dac4aa925804ec65
 BY35_ROMEND
 #define input_ports_mystic input_ports_by35
 CORE_GAMEDEFNV(mystic  ,"Mystic",1980,"Bally",by35_mBY35_51S,0)
-/*--------------------------------
-/ Mystic (7-digit bootleg)
-/-------------------------------*/
+
 INITGAME(mysticb ,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
 BY35_ROMSTARTx00(mysticb, "myst2732.u2", CRC(ee743ef9) SHA1(121d3d912983c70d967e9f9fc2230faa59fd37cd),
                           "720-3532.u6b",CRC(cb4243e7) SHA1(a4224ff3c7ef81a8adfb1af4e2d2c8b7f5b2f488))
 BY51_SOUNDROM8(           "798-05_4.716",CRC(e759e093) SHA1(e635dac4aa925804ec658e856f7830290bfbc7b8))
 BY35_ROMEND
 #define input_ports_mysticb input_ports_mystic
-CORE_CLONEDEFNV(mysticb,mystic,"Mystic (7-digit bootleg)",2002,"Bally / Oliver",by35_mBY35_51S,0)
+CORE_CLONEDEFNV(mysticb,mystic,"Mystic (7-digit conversion)",2002,"Bally / Oliver",by35_mBY35_51S,0)
 /*--------------------------------
 / Hot Doggin
 /-------------------------------*/
@@ -421,16 +409,14 @@ BY51_SOUNDROM8(           "809-07_4.716",CRC(43f28d7f) SHA1(01fca0ee0137a0715421
 BY35_ROMEND
 #define input_ports_hotdoggn input_ports_by35
 CORE_GAMEDEFNV(hotdoggn,"Hot Doggin",1980,"Bally",by35_mBY35_51S,0)
-/*--------------------------------
-/ Hot Doggin (7-digit bootleg)
-/-------------------------------*/
+
 INITGAME(hotdoggb,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
 BY35_ROMSTARTx00(hotdoggb,"hotd2732.u2", CRC(709305ee) SHA1(37d5e681a1a2b8b2782dae3007db3e5036003e00),
                           "720-3532.u6b",CRC(cb4243e7) SHA1(a4224ff3c7ef81a8adfb1af4e2d2c8b7f5b2f488))
 BY51_SOUNDROM8(           "809-07_4.716",CRC(43f28d7f) SHA1(01fca0ee0137a0715421eaa3582ff8d324340ecf))
 BY35_ROMEND
 #define input_ports_hotdoggb input_ports_hotdoggn
-CORE_CLONEDEFNV(hotdoggb,hotdoggn,"Hot Doggin (7-digit bootleg)",2002,"Bally / Oliver",by35_mBY35_51S,0)
+CORE_CLONEDEFNV(hotdoggb,hotdoggn,"Hot Doggin (7-digit conversion)",2002,"Bally / Oliver",by35_mBY35_51S,0)
 /*--------------------------------
 / Viking
 /-------------------------------*/
@@ -442,16 +428,14 @@ BY51_SOUNDROM8(           "802-07-4.716",CRC(62bc5030) SHA1(5a696f784a415d5b16ee
 BY35_ROMEND
 #define input_ports_viking input_ports_by35
 CORE_GAMEDEFNV(viking  ,"Viking",1980,"Bally",by35_mBY35_51S,0)
-/*--------------------------------
-/ Viking (7-digit bootleg)
-/-------------------------------*/
+
 INITGAME(vikingb ,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
 BY35_ROMSTARTx00(vikingb, "vikg2732.u2", CRC(7a5c24e6) SHA1(073b16eb6d77684ba99e3bf340a3bc9dfb537560),
                           "720-3532.u6b",CRC(cb4243e7) SHA1(a4224ff3c7ef81a8adfb1af4e2d2c8b7f5b2f488))
 BY51_SOUNDROM8(           "802-07-4.716",CRC(62bc5030) SHA1(5a696f784a415d5b16ee23cd72a905264a2bbeac))
 BY35_ROMEND
 #define input_ports_vikingb input_ports_viking
-CORE_CLONEDEFNV(vikingb,viking,"Viking (7-digit bootleg)",2002,"Bally / Oliver",by35_mBY35_51S,0)
+CORE_CLONEDEFNV(vikingb,viking,"Viking (7-digit conversion)",2002,"Bally / Oliver",by35_mBY35_51S,0)
 /*--------------------------------
 / Skateball
 /-------------------------------*/
@@ -514,6 +498,23 @@ BY57_SOUNDROM(          "811-22_1.532",CRC(c49a968e) SHA1(86680e8cbb82e69c232313
                         "811-32_7.532",CRC(987e6118) SHA1(4cded4ff715494f762d043dbcb0298111f327311))
 BY35_ROMEND
 CORE_CLONEDEFNV(xenonf,xenon,"Xenon (French)",1980,"Bally",by35_mBY35_56S,0)
+/*--------------------------------
+/ Flash Gordon (Vocalizer sound)
+/-------------------------------*/
+INITGAME2(flashgdv,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY56,0)
+BY35_ROMSTARTx00(flashgdv,"834-23_2.732",CRC(0c7a0d91) SHA1(1f79be15817975acbc35cb08591e2289e2eca938),
+                          "720-52_6.732",CRC(2a43d9fb) SHA1(9ff903c32b80780383578a9abaa3ef9d3bcecbc7))
+BY56_SOUNDROM(            "834-02_4.532",CRC(f1eb0a12) SHA1(a58567665547aacf9a1b2c39295d963527ef8696))
+BY57_SOUNDROM(            "834-03_1.532",CRC(88bef6f4) SHA1(561e0bde04661b700552e4fbb6141c39f2789c99),
+                          "834-04_2.532",CRC(bce91475) SHA1(482b424977d73b36e2014617e3bd3deb51091c28),
+                          "834-05_3.532",CRC(1a4dbd99) SHA1(fa9ae0bde118a40ba9a0e9a085b30298cac0ea93),
+                          "834-06_4.532",CRC(983c9e9d) SHA1(aae323a39b0ec987e6b9b98e5d9b2c58b1eea1a4),
+                          "834-07_5.532",CRC(697f5333) SHA1(39bbff8790e394a20ef5ba3239fb1d9359be0fe5),
+                          "834-08_6.532",CRC(684452c9) SHA1(95bb5f6a004f52f0842dfb7266efdf43563b8b7d),
+                          "834-09_7.532",CRC(19ceabd1) SHA1(37e7780f2ba3e06462e775547278dcba1b6d2ac8))
+BY35_ROMEND
+#define input_ports_flashgdv input_ports_by35
+CORE_CLONEDEFNV(flashgdv,flashgdn,"Flash Gordon (Vocalizer sound)",1981,"Bally",by35_mBY35_56S,0)
 
 /* -----------------------------------------------------------*/
 /* All games below use Squalk N Talk -61 (except where noted) */
@@ -574,9 +575,7 @@ BY61_SOUNDROMxx80(       "841-01_4.716",CRC(e8b234e3) SHA1(584e553748b1c65714911
 BY35_ROMEND
 #define input_ports_embryon input_ports_by35
 CORE_GAMEDEFNV(embryon ,"Embryon",1981,"Bally",by35_mBY35_61BS,0)
-/*--------------------------------
-/ Embryon (7-digit bootleg)
-/-------------------------------*/
+
 INITGAME2(embryonb,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY61B,0)
 BY35_ROMSTARTx00(embryonb,"embd71u2.bin",CRC(8a25d7e9) SHA1(3f60007fae4f911b88d0642f50604c74dc45bed4),
                           "embd71u6.bin",CRC(20a3b3ce) SHA1(2304620d56a8ce5769e541aa29c2c6a3e81661c2))
@@ -584,7 +583,7 @@ BY61_SOUNDROMxx80(        "841-01_4.716",CRC(e8b234e3) SHA1(584e553748b1c6571491
                           "841-02_5.532",CRC(9cd8c04e) SHA1(7d74d8f33a98c9832fda1054187eb7300dbf5f5e))
 BY35_ROMEND
 #define input_ports_embryonb input_ports_embryon
-CORE_CLONEDEFNV(embryonb,embryon ,"Embryon (7-digit bootleg)",2002,"Bally / Oliver",by35_mBY35_61BS,0)
+CORE_CLONEDEFNV(embryonb,embryon ,"Embryon (7-digit conversion)",2002,"Bally / Oliver",by35_mBY35_61BS,0)
 /*--------------------------------
 / Fathom
 /-------------------------------*/
@@ -596,6 +595,15 @@ BY61_SOUNDROMxx00(      "842-01_4.532",CRC(2ac02093) SHA1(a89c1d24f4f3e1f58ca4e4
 BY35_ROMEND
 #define input_ports_fathom input_ports_by35
 CORE_GAMEDEFNV(fathom  ,"Fathom",1981,"Bally",by35_mBY35_61BS,0)
+
+#define init_fathomb init_fathom
+BY35_ROMSTARTx00(fathomb,"fathomu2.732",CRC(e964af0d) SHA1(f7282767db1eba9b5cf12e1c064376c0fdda5505),
+                         "fathomu6.732",CRC(4fcf467e) SHA1(97686cf3495e3a4175ff5d16e0dc8d158c124910))
+BY61_SOUNDROMxx00(       "842-01_4.532",CRC(2ac02093) SHA1(a89c1d24f4f3e1f58ca4e476f408835efb368a90),
+                         "842-02_5.532",CRC(736800bc) SHA1(2679d4d76e7258ad18ffe05cf333f21c35adfe0e))
+BY35_ROMEND
+#define input_ports_fathomb input_ports_fathom
+CORE_CLONEDEFNV(fathomb,fathom,"Fathom (modified rules)",2004,"Bally / Oliver",by35_mBY35_61BS,0)
 /*--------------------------------
 / Medusa
 /-------------------------------*/
@@ -657,6 +665,17 @@ BY61_SOUNDROM0000(      "858-01_2.532",CRC(bd2edef9) SHA1(8f129016440bad5e78d4b0
 BY35_ROMEND
 #define input_ports_vector input_ports_by35
 CORE_GAMEDEFNV(vector ,"Vector",1982,"Bally",by35_mBY35_61S,0)
+
+#define init_vectorb init_vector
+BY35_ROMSTARTx00(vectorb,"vectoru2.732",CRC(1b1740d5) SHA1(0e4e932bcdf37ac033fa1f9fe5ead4073a6280f0),
+                         "vectoru6.732",CRC(42d7f176) SHA1(93460c46b3cf033ff23d063e8160cc2c18d00458))
+BY61_SOUNDROM0000(       "858-01_2.532",CRC(bd2edef9) SHA1(8f129016440bad5e78d4b073268e76e542b61684),
+                         "858-02_3.532",CRC(c592fb35) SHA1(5201824f129812c907e7d8a4600de23d95fd1eb0),
+                         "858-03_4.532",CRC(8661d312) SHA1(36d04d875382ff5387991d660d031c662b414698),
+                         "858-06_5.532",CRC(3050edf6) SHA1(e028192d9a8c17123b07566c6d73302cec07b440))
+BY35_ROMEND
+#define input_ports_vectorb input_ports_vector
+CORE_CLONEDEFNV(vectorb,vector,"Vector (modified rules)",2004,"Bally / Oliver",by35_mBY35_61S,0)
 /*--------------------------------
 / Spectrum
 /-------------------------------*/
@@ -769,16 +788,21 @@ BY35_ROMEND
 #define input_ports_goldball input_ports_by35
 CORE_GAMEDEFNV(goldball,"Gold Ball",1983,"Bally",by35_mBY35_51S,0)
 
-/*--------------------------------
-/ Gold Ball (Alternate Gold Set)
-/-------------------------------*/
-INITGAME3(goldbaln,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
+INITGAME3(goldbalb,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
+BY35_ROMSTARTx00(goldbalb,"gold2732.u2", CRC(3169493c) SHA1(1335fcdfb2d6970d78c636748ff419baf85ef78b),
+                          "goldd7u6.bin",CRC(a34d3d8c) SHA1(ccd416d6453936982be52abefdd462f0cf6cf05e))
+BY51_SOUNDROM0(           "gb_u4.532",   CRC(2dcb0315) SHA1(8cb9c9f627f0c8420d3b3d9f0d10d77a82c8be56))
+BY35_ROMEND
+#define input_ports_goldbalb input_ports_goldball
+CORE_CLONEDEFNV(goldbalb,goldball,"Gold Ball (7-digit conversion)",2004,"Bally / Oliver",by35_mBY35_51S,0)
+
+#define init_goldbaln init_goldball
 BY35_ROMSTARTx00(goldbaln,"u2.532",CRC(aa6eb9d6) SHA1(a73cc832450e718d9b8484e409a1f8093d91d786),
                           "goldball.u6",CRC(9b6e79d0) SHA1(4fcda91bbe930e6131d94964a08459e395f841af))
 BY51_SOUNDROM0(           "gb_u4.532",  CRC(2dcb0315) SHA1(8cb9c9f627f0c8420d3b3d9f0d10d77a82c8be56))
 BY35_ROMEND
-#define input_ports_goldbaln input_ports_by35
-CORE_CLONEDEFNV(goldbaln,goldball ,"Gold Ball (Alternate)",1983,"Bally",by35_mBY35_51S,0)
+#define input_ports_goldbaln input_ports_goldball
+CORE_CLONEDEFNV(goldbaln,goldball ,"Gold Ball (alternate set)",1983,"Bally",by35_mBY35_51S,0)
 
 /********************************************************/
 /******* Games Below use Cheap Squeak Sound Board *******/
@@ -853,11 +877,18 @@ BY35_ROMEND
 #define input_ports_cybrnaut input_ports_by35
 CORE_GAMEDEFNV(cybrnaut,"Cybernaut",1985,"Bally",by35_mBY35_45S,0)
 
+/******************************************************/
+/******* Games below by different manufacturers *******/
+/******************************************************/
 /*--------------------------------
-/ Space Hawks (Cybernaut Clone) Nuova Bell Italy (BY35-???: 05/85)
+/ Space Hawks (Cybernaut Clone) Nuova Bell, Italy
 /-------------------------------*/
-
-INITGAME2(spacehaw,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY45,0)
+static core_tLCDLayout dispSH[] = {
+  {0, 0, 2,7,CORE_SEG87F}, {0,16,10,7,CORE_SEG87F},
+  {2, 0,18,7,CORE_SEG87F}, {2,16,26,7,CORE_SEG87F},
+  {4, 4,35,2,CORE_SEG7},   {4,10,38,2,CORE_SEG7},{0}
+};
+INITGAMENB(spacehaw,GEN_BY35,dispSH,FLIP_SW(FLIP_L),8,SNDBRD_BY45,0)
 BY35_ROMSTARTx00(spacehaw,"spacehaw.u2",CRC(d4a5e2f6) SHA1(841e940632993919a68c905546f533ff38a0ce31),
                           "spacehaw.u6",CRC(b154a3a3) SHA1(d632c5eddd0582ba2ca778ab03e11ca3f6f4e1ed))
 BY45_SOUNDROMx2(          "cybu3.snd",  CRC(a3c1f6e7) SHA1(35a5e828a6f2dd9009e165328a005fa079bad6cb))

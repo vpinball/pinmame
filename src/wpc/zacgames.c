@@ -202,7 +202,7 @@ ZAC_SOUNDROM_cefg0(			"pbc_1c.snd",  CRC(6e2defe5) SHA1(fcb62da1aed23d9fb9a22286
 							"pbc_1f.snd",  CRC(f3f4b950) SHA1(ed5c02f701530d2d6255cc72d695e24d4df40fc3),
 							"pbc_1g.snd",  CRC(44adae13) SHA1(0d8d538704db62b41ad5781ec53c34e482342025))
 ZAC_ROMEND
-CORE_CLONEDEFNV(pinchp82,pinchamp,"Pinball Champ '82 (german speech)",1982,"Zaccaria",ZAC2A,GAME_NOT_WORKING)
+CORE_CLONEDEFNV(pinchp82,pinchamp,"Pinball Champ '82 (German speech)",1982,"Zaccaria",ZAC2A,GAME_NOT_WORKING)
 
 /*--------------------------------
 / Soccer Kings (09/82)
@@ -256,6 +256,15 @@ ZAC_SOUNDROM_de1g(			"rom1.snd",   CRC(aca09674) SHA1(8e1edc25c7fe2189215f73da8f
 ZAC_ROMEND
 CORE_GAMEDEFNV(farfalla,"Farfalla",1983,"Zaccaria",mZAC2X,0)
 
+INITGAME(farfalli,GEN_ZAC2,dispZAC2,SNDBRD_ZAC13136,430)
+ZAC_ROMSTART1820(farfalli,	"cpurom1.bin",CRC(ac249150) SHA1(9eac1bf6119cd1fa6cc823faf02b9bf153519a77),
+							"cpurom2.bin",CRC(6edc823f) SHA1(b10fcbc308ec06762a2eb35921a7e6a68fd5c9b1))
+ZAC_SOUNDROM_de1g(			"farsnd1.bin",CRC(fd80040d) SHA1(122c99627d944b253e091b56d32336367df615c1),
+							"rom2.snd",   CRC(76da384d) SHA1(0e4616bf2fb2c21270aecfc04ad9e68ce9390bfb),
+							"farsnd3.bin",CRC(b58618c2) SHA1(89330ee928b5a5f99d50f1150c94732775907fd8))
+ZAC_ROMEND
+CORE_CLONEDEFNV(farfalli,farfalla,"Farfalla (Italian speech)",1983,"Zaccaria",mZAC2X,0)
+
 /*--------------------------------
 / Devil Riders (04/84)
 /-------------------------------*/
@@ -275,7 +284,7 @@ ZAC_SOUNDROM_de2g(	"g_snd_1.bin",CRC(77d042dc) SHA1(78e056468887a315e29c913803e3
 					"g_snd_2.bin",CRC(31e35fd4) SHA1(2eeefbd831159d975fe9cac99db99dfdca04b0dc),
 					"g_snd_3.bin",CRC(2e64a401) SHA1(694808963d6e6a02ddeb9228073825ff16f91d49))
 ZAC_ROMEND
-CORE_CLONEDEFNV(dvlrideg,dvlrider,"Devil Riders (german speech)",1984,"Zaccaria",ZAC2X,0)
+CORE_CLONEDEFNV(dvlrideg,dvlrider,"Devil Riders (German speech)",1984,"Zaccaria",ZAC2X,0)
 
 /*--------------------------------
 / Magic Castle (09/84)
@@ -296,7 +305,7 @@ ZAC_SOUNDROM_de2g(	"magic1d.snd",CRC(1f1a1140) SHA1(fed351c78e4c46c05e910f184435
 					"magic1e.snd",CRC(a8787011) SHA1(16da0b40e24346f4e90d553c7c3e68daa4d4a656),
 					"magic1g.snd",CRC(313fb216) SHA1(1065f057654dd41cdac0553e1c315edf141f1d19))
 ZAC_ROMEND
-CORE_CLONEDEFNV(mcastleg,mcastle,"Magic Castle (german speech)",1984,"Zaccaria",ZAC2X,0)
+CORE_CLONEDEFNV(mcastleg,mcastle,"Magic Castle (German speech)",1984,"Zaccaria",ZAC2X,0)
 
 /*--------------------------------
 / Robot (01/85)
@@ -317,7 +326,7 @@ ZAC_SOUNDROM_de2g(		"robot_dg.snd",CRC(88685b1e) SHA1(7d49a1d42f3e07948390a00a56
 						"robot_eg.snd",CRC(e326a851) SHA1(c2bb5e329803922fa1c1ca30be6e3ae3d292135a),
 						"robot_gg.snd",CRC(7ed5da55) SHA1(d70f1f470cf9d300375600352f9625b4e34f5ed3))
 ZAC_ROMEND
-CORE_CLONEDEFNV(robotg,robot,"Robot (german speech)",1985,"Zaccaria",ZAC2X,0)
+CORE_CLONEDEFNV(robotg,robot,"Robot (German speech)",1985,"Zaccaria",ZAC2X,0)
 
 /*--------------------------------
 / Clown (07/85)

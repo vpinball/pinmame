@@ -88,41 +88,44 @@ DRIVERNV(startrek)      //BY35-745: 01/78 Star Trek
                         //??        02/78 Skateball (Prototype)
 DRIVERNV(kiss    )      //BY35-746: 04/78 Kiss
 DRIVERNV(ngndshkr)      //BY35-776: 05/78 Nitro Ground Shaker
-DRIVERNV(ngndshkb)      //BY35:     11/02 Nitro Ground Shaker (7-digit bootleg)
+DRIVERNV(ngndshkb)      //BY35:     11/02 Nitro Ground Shaker (7-digit conversion)
 DRIVERNV(slbmania)      //BY35-786: 06/78 Silverball Mania
-DRIVERNV(slbmanib)      //BY35:     11/02 Silverball Mania (7-digit bootleg)
+DRIVERNV(slbmanib)      //BY35:     11/02 Silverball Mania (7-digit conversion)
 DRIVERNV(hglbtrtr)      //BY35-750: 08/78 Harlem Globetrotters On Tour
-DRIVERNV(hglbtrtb)      //BY35:     11/02 Harlem Globetrotters On Tour (7-digit bootleg)
+DRIVERNV(hglbtrtb)      //BY35:     11/02 Harlem Globetrotters On Tour (7-digit conversion)
 DRIVERNV(dollyptn)      //BY35-777: 10/78 Dolly Parton
-DRIVERNV(dollyptb)      //BY35:     11/02 Dolly Parton (7-digit bootleg)
+DRIVERNV(dollyptb)      //BY35:     11/02 Dolly Parton (7-digit conversion)
 DRIVERNV(paragon )      //BY35-748: 12/78 Paragon
 DRIVERNV(futurspa)      //BY35-781: 03/79 Future Spa
-DRIVERNV(futurspb)      //BY35:     11/02 Future Spa (7-digit bootleg)
+DRIVERNV(futurspb)      //BY35:     11/02 Future Spa (7-digit conversion)
 DRIVERNV(spaceinv)      //BY35-792: 05/79 Space Invaders
-DRIVERNV(spaceinb)      //BY35:     11/02 Space Invaders (7-digit bootleg)
+DRIVERNV(spaceinb)      //BY35:     11/02 Space Invaders (7-digit conversion)
 DRIVERNV(rollston)      //BY35-796: 06/79 Rolling Stones
-DRIVERNV(rollstob)      //BY35:     11/02 Rolling Stones (7-digit bootleg)
+DRIVERNV(rollstob)      //BY35:     11/02 Rolling Stones (7-digit conversion)
 DRIVERNV(mystic  )      //BY35-798: 08/79 Mystic
-DRIVERNV(mysticb )      //BY35:     11/02 Mystic (7-digit bootleg)
+DRIVERNV(mysticb )      //BY35:     11/02 Mystic (7-digit conversion)
 DRIVERNV(xenon   )      //BY35-811: 11/79 Xenon
 DRIVERNV(xenonf  )      //BY35-811: 11/79 Xenon (French)
 DRIVERNV(hotdoggn)      //BY35-809: 12/79 Hotdoggin'
-DRIVERNV(hotdoggb)      //BY35:     11/02 Hotdoggin' (7-digit bootleg)
+DRIVERNV(hotdoggb)      //BY35:     11/02 Hotdoggin' (7-digit conversion)
 DRIVERNV(viking  )      //BY35-802: 12/79 Viking
-DRIVERNV(vikingb )      //BY35:     11/02 Viking (7-digit bootleg)
+DRIVERNV(vikingb )      //BY35:     11/02 Viking (7-digit conversion)
 DRIVERNV(skatebll)      //BY35-823: 04/80 Skateball
 DRIVERNV(frontier)      //BY35-819: 05/80 Frontier
 DRIVERNV(flashgdn)      //BY35-834: 05/80 Flash Gordon
+DRIVERNV(flashgdv)      //BY35-834: 05/80 Flash Gordon (Vocalizer sound)
 DRIVERNV(flashgdf)      //BY35-834: 05/80 Flash Gordon (French)
 DRIVERNV(eballdlx)      //BY35-838: 09/80 Eight Ball Deluxe
 DRIVERNV(fball_ii)      //BY35-839: 09/80 Fireball II
 DRIVERNV(embryon )      //BY35-841: 09/80 Embryon
-DRIVERNV(embryonb)      //BY35:     10/02 Embryon (7-digit bootleg)
+DRIVERNV(embryonb)      //BY35:     10/02 Embryon (7-digit conversion)
 DRIVERNV(fathom  )      //BY35-842: 12/80 Fathom
+DRIVERNV(fathomb )      //BY35-842: 08/04 Fathom (modified rules)
 DRIVERNV(medusa  )      //BY35-845: 02/81 Medusa
 DRIVERNV(centaur )      //BY35-848: 02/81 Centaur
 DRIVERNV(elektra )      //BY35-857: 03/81 Elektra
 DRIVERNV(vector  )      //BY35-858: 03/81 Vector
+DRIVERNV(vectorb )      //BY35-858: 04/04 Vector (modified rules)
 DRIVERNV(spectrum)      //BY35-868: 04/81 Spectrum
 DRIVERNV(spectru4)      //BY35-868: 04/81 Spectrum (rel 4)
 DRIVERNV(speakesy)      //BY35-877: 08/82 Speakeasy
@@ -135,7 +138,8 @@ DRIVERNV(bmx     )      //BY35-888: 11/82 BMX
 DRIVERNV(granslam)      //BY35-     01/83 Grand Slam
 /*same as cenatur*/     //BY35      06/83 Centaur II
 DRIVERNV(goldball)      //BY35-     10/83 Gold Ball
-DRIVERNV(goldbaln)      //BY35-     10/83 Gold Ball Alternate
+DRIVERNV(goldbalb)      //BY35-     03/04 Gold Ball (7-digit conversion)
+DRIVERNV(goldbaln)      //BY35-     10/83 Gold Ball (alternate)
 DRIVERNV(xsandos )      //BY35-     12/83 X's & O's
                         //??        ??/84 Mysterian
 DRIVERNV(granny )       //BY35-     01/84 Granny and the Gators
@@ -204,6 +208,7 @@ DRIVER(robo,a34)        //Data East MPU: 11/89 Robo Cop
 DRIVER(poto,a32)        //Data East MPU: 01/90 Phantom of the Opera
 DRIVER(bttf,a20)        //Data East MPU: 06/90 Back to the Future (2.0)
 DRIVER(bttf,a21)        //Data East MPU: ??/90 Back to the Future (2.1)
+DRIVER(bttf,g27)        //Data East MPU: ??/9? Back to the Future (2.7 Germany)
 DRIVER(simp,a27)        //Data East MPU: 09/90 The Simpsons
 //DMD 128 x 16
 DRIVER(ckpt,a17)        //Data East MPU: 02/91 Checkpoint
@@ -211,15 +216,18 @@ DRIVER(tmnt,104)        //Data East MPU: 05/91 Teenage Mutant Ninja Turtles
 //BSMT2000 Sound chip
 DRIVER(btmn,101)        //Data East MPU: 07/91 Batman (1.01)
 DRIVER(btmn,103)        //Data East MPU: ??/91 Batman (1.03)
+DRIVER(btmn,g13)        //Data East MPU: ??/91 Batman (1.03 Germany)
 DRIVER(trek,201)        //Data East MPU: 10/91 Star Trek 25th Anniversary
 DRIVER(hook,401)        //Data East MPU: 01/92 Hook (4.01)
 DRIVER(hook,404)        //Data East MPU: 01/92 Hook (4.04)
 DRIVER(hook,408)        //Data East MPU: 01/92 Hook (4.08)
 //DMD 128 x 32
 DRIVER(lw3,208)         //Data East MPU: 06/92 Lethal Weapon
-DRIVER(stwr,103)        //Data East MPU: 10/92 Star Wars
+DRIVER(stwr,103)        //Data East MPU: 10/92 Star Wars (1.03)
+DRIVER(stwr,g11)        //Data East MPU: 10/92 Star Wars (1.01 Germany)
 DRIVER(rab,130)         //Data East MPU: 02/93 Rocky & Bullwinkle
-DRIVER(jupk,513)        //Data East MPU: 04/93 Jurasic Park
+DRIVER(jupk,513)        //Data East MPU: 04/93 Jurassic Park (5.13)
+DRIVER(jupk,g51)        //Data East MPU: 06/93 Jurassic Park (5.13 Germany)
 DRIVER(lah,l104)        //Data East MPU: 08/93 Last Action Hero (1.04 Spain)
 DRIVER(lah,l108)        //Data East MPU: 08/93 Last Action Hero (1.08 Spain)
 DRIVER(lah,110)         //Data East MPU: 08/93 Last Action Hero (1.10)
@@ -427,6 +435,7 @@ DRIVERNV(monrobwl)      //Stars & Strikes (1980??)
 //Data East Hardare, DMD 192x64
 DRIVERNV(maverick)      //DE/Sega MPU: 09/94 Maverick
 DRIVERNV(frankst)       //DE/Sega MPU: 12/94 Frankenstein
+DRIVERNV(frankstg)      //DE/Sega MPU: 01/95 Frankenstein (Germany)
 DRIVERNV(baywatch)      //DE/Sega MPU: 03/95 Baywatch
 DRIVERNV(batmanf)       //DE/Sega MPU: 07/95 Batman Forever (4.0)
 DRIVERNV(batmanf3)      //DE/Sega MPU: 07/95 Batman Forever (3.0)
@@ -487,7 +496,7 @@ DRIVERNV(magic)         //MPU-100: 08/79 Magic
 DRIVERNV(princess)      //MPU-100: 08/79 Cosmic Princess
 // MPU-200 - Sound Board: SB-300
 DRIVERNV(meteor)        //MPU-200: 09/79 Meteor
-DRIVERNV(meteorb)       //MPU-200: 09/79 Meteor (7-Digit Bootleg)
+DRIVERNV(meteorb)       //MPU-200: 09/79 Meteor (7-Digit conversion)
 DRIVERNV(galaxy)        //MPU-200: 01/80 Galaxy
 DRIVERNV(ali)           //MPU-200: 03/80 Ali
 DRIVERNV(biggame)       //MPU-200: 03/80 Big Game
@@ -652,15 +661,16 @@ DRIVER(tmwrp,l2)        //S6-489:   09/79 W Time Warp
 DRIVER(grgar,l1)        //S6-496:   11/79 W Gorgar
 DRIVER(lzbal,l2)        //S6-493:   12/79 W Laser Ball
 DRIVER(frpwr,l2)        //S6-497:   02/80 W Firepower
-DRIVER(frpwr,b6)        //S6:       12/03 W Firepower (Sys.6 7-digit bootleg)
+DRIVER(frpwr,b6)        //S6:       12/03 W Firepower (Sys.6 7-digit conversion)
 DRIVER(blkou,l1)        //S6-495:   06/80 W Blackout
 DRIVER(scrpn,l1)        //S6-494:   07/80 W Scorpion
 DRIVER(algar,l1)        //S6-499:   09/80 W Algar
 DRIVER(alpok,l2)        //S6-501:   10/80 W Alien Poker L-2
 DRIVER(alpok,l6)        //S6-501:   10/80 W Alien Poker L-6
 DRIVER(alpok,f6)        //S6-501:   10/80 W Alien Poker L-6, French speech
+DRIVER(alpok,b6)        //S6-501:   08/04 W Alien Poker Multiball mod
 //System 7
-DRIVER(frpwr,b7)        //S7:       12/03 W Firepower (Sys.7 7-digit bootleg)
+DRIVER(frpwr,b7)        //S7:       12/03 W Firepower (Sys.7 7-digit conversion)
 DRIVER(bk,l4)           //S7-500:   11/80 W Black Knight
 DRIVER(jngld,l2)        //S7-503:   02/81 W Jungle Lord
 DRIVER(pharo,l2)        //S7-504:   05/81 W Pharoah
@@ -864,18 +874,19 @@ DRIVERNV(stargod)       //05/80 Star God
 DRIVERNV(sshtlzac)      //09/80 Space Shuttle
 DRIVERNV(ewf)           //04/81 Earth, Wind & Fire
 DRIVERNV(locomotn)      //09/81 Locomotion
-DRIVERNV(pinchp82)      //04/82 Pinball Champ '82 (Is this really different from the '83?)
-DRIVERNV(socrking)      //09/82 Soccer King
+DRIVERNV(pinchp82)      //04/82 Pinball Champ '82 (German speech - is this really different from the '83?)
+DRIVERNV(socrking)      //09/82 Soccer Kings
 DRIVERNV(pinchamp)      //??/83 Pinball Champ
 DRIVERNV(tmachzac)      //04/83 Time Machine
 DRIVERNV(farfalla)      //09/83 Farfalla
+DRIVERNV(farfalli)      //09/83 Farfalla (Italian speech)
 DRIVERNV(dvlrider)      //04/84 Devil Riders
-DRIVERNV(dvlrideg)      //04/84 Devil Riders (german speech)
+DRIVERNV(dvlrideg)      //04/84 Devil Riders (German speech)
 DRIVERNV(mcastle)       //09/84 Magic Castle
-DRIVERNV(mcastleg)      //09/84 Magic Castle (german speech)
+DRIVERNV(mcastleg)      //09/84 Magic Castle (German speech)
 DRIVERNV(myststar)      //??/84 Mystic Star
 DRIVERNV(robot)         //01/85 Robot
-DRIVERNV(robotg)        //01/85 Robot (german speech)
+DRIVERNV(robotg)        //01/85 Robot (German speech)
 DRIVERNV(clown)         //07/85 Clown
 DRIVERNV(poolcham)      //12/85 Pool Champion
 DRIVERNV(bbeltzac)      //??/86 Blackbelt

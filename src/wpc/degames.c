@@ -247,6 +247,14 @@ DE1S_SOUNDROM244(  "bttfsf7.rom",CRC(7673146e) SHA1(d6bd7cf39c78c8aff0b1a0b6cfd4
 DE_ROMEND
 CORE_CLONEDEF(bttf,a20,a21,"Back To the Future (2.0)",1990,"Data East",de_mDEAS1,0)
 
+DE_ROMSTART48(bttf_g27,"bttfb5g.2-7",CRC(5e3e3cfa) SHA1(2d489c48463c7d28614d56aa566ffbc745bf6a8b),
+                   "bttfc5g.2-7",CRC(31dec6d0) SHA1(b0f9323ace3f6d96790be7fe2df67b974c291a29))
+DE1S_SOUNDROM244(  "bttfsf7.rom",CRC(7673146e) SHA1(d6bd7cf39c78c8aff0b1a0b6cfd46a2a8ce9e086),      //7f
+                   "bttfsf6.rom",CRC(468a8d9c) SHA1(713cf84cc5f0531e2e9f7aaa58ebeb53c28ba395),      //6f
+                   "bttfsf5.rom",CRC(37a6f6b8) SHA1(ebd603d36527a2af25dcda1fde5cdf9a34d1f9cd))      //4f
+DE_ROMEND
+CORE_CLONEDEF(bttf,g27,a21,"Back To the Future (2.7, Germany)",199?,"Data East",de_mDEAS1,0)
+
 /*------------------------------------------------------------------------
 / The Simpsons - CPU Rev 3 /Alpha Type 3 16/32K Roms - 32/128K Sound Roms
 /------------------------------------------------------------------------*/
@@ -321,6 +329,15 @@ DE2S_SOUNDROM021(   "batman.u7" ,CRC(b2e88bf5) SHA1(28f814ea73f8eefd1bb5499a599e
 DE_ROMEND
 CORE_CLONEDEF(btmn,101,103,"Batman (1.01)",1992,"Data East",de_mDEDMD16S2A,0)
 
+DE_ROMSTART48(btmn_g13,"batbcpug.103",CRC(6f160581) SHA1(0f2d6c396324fbf116309a872cf95d9a05446cea),
+                    "batccpug.103",CRC(a199ab0f) SHA1(729dab10fee708a18b7be5a2b9b904aa211b233a))
+DE_DMD16ROM2(       "bat_dspg.104",CRC(1581819f) SHA1(88facfad2e74dd44b71fd19df685a4c2378d26de))
+DE2S_SOUNDROM021(   "batman.u7" ,CRC(b2e88bf5) SHA1(28f814ea73f8eefd1bb5499a599e67a6850c92c0),
+                    "batman.u17" ,CRC(b84914dd) SHA1(333d88033428705cbd0a40d70d938c0021bb0015),
+                    "batman.u21" ,CRC(42dab6ac) SHA1(facf993db2ce240c9e825ca9a21ac65a0fbba188))
+DE_ROMEND
+CORE_CLONEDEF(btmn,g13,103,"Batman (1.03, Germany)",1992,"Data East",de_mDEDMD16S2A,0)
+
 /*-------------------------------------------------------------
 / Star Trek - CPU Rev 3 /DMD Type 1 128K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
@@ -394,6 +411,14 @@ DE_ROMEND
 #define input_ports_stwr input_ports_des11
 CORE_GAMEDEF(stwr,103,"Star Wars (1.03)",1992,"Data East",de_mDEDMD32S2A,0)
 
+DE_ROMSTARTx0(stwr_g11,"starcpug.101",CRC(c74b4576) SHA1(67db9294cd802be8d62102fe756648f750821960))
+DE_DMD32ROM8x(        "swdsp_g.102",CRC(afdfbfc4) SHA1(1c3cd90b9cd4f88ee2b556abef863a0ae9a10056))
+DE2S_SOUNDROM042(     "s-wars.u7"  ,CRC(cefa19d5) SHA1(7ddf9cc85ab601514305bc46083a07a3d087b286),
+                      "s-wars.u17" ,CRC(7950a147) SHA1(f5bcd5cf6b35f9e4f14d62b084495c3a743d92a1),
+                      "s-wars.u21" ,CRC(7b08fdf1) SHA1(489d21a10e97e886f948d81dedd7f8de3acecd2b))
+DE_ROMEND
+CORE_CLONEDEF(stwr,g11,103,"Star Wars (1.01, Germany)",1992,"Data East",de_mDEDMD32S2A,0)
+
 /*-------------------------------------------------------------
 / Rocky & Bullwinkle - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
@@ -419,6 +444,14 @@ DE2S_SOUNDROM142(     "jpu7.dat"  ,CRC(f3afcf13) SHA1(64e12f9d42c00ae08a4584b2eb
 DE_ROMEND
 #define input_ports_jupk input_ports_des11
 CORE_GAMEDEF(jupk,513,"Jurassic Park (5.13)",1993,"Data East",de_mDEDMD32S2A,0)
+
+DE_ROMSTARTx0(jupk_g51,"jpcpua.513",CRC(9f70a937) SHA1(cdea6c6e852982eb5e800db138f7660d51b6fdc8))
+DE_DMD32ROM8x(        "jpdspg.501",CRC(3b524bfe) SHA1(ea6ae6f8fc8379f311fd7ef456f0d6711c4e35c5))
+DE2S_SOUNDROM142(     "jpu7.dat"  ,CRC(f3afcf13) SHA1(64e12f9d42c00ae08a4584b2ebea475566b90c13),
+                      "jpu17.dat" ,CRC(38135a23) SHA1(7c284c17783269824a3d3e83c4cd8ead27133309),
+                      "jpu21.dat" ,CRC(6ac1554c) SHA1(9a91ce836c089f96ad9c809bb66fcddda1f3e456))
+DE_ROMEND
+CORE_CLONEDEF(jupk,g51,513,"Jurassic Park (5.13, Germany)",1993,"Data East",de_mDEDMD32S2A,0)
 
 /*-------------------------------------------------------------
 / Last Action Hero - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
@@ -599,6 +632,18 @@ DE2S_SOUNDROM1444(    "frsnd.u7"  ,  CRC(084f856c) SHA1(c91331a32b565c2ed3f96156
 DE_ROMEND
 #define input_ports_frankst input_ports_des11
 CORE_GAMEDEFNV(frankst,"Mary Shelley's Frankenstein",1994,"Sega",de_mDEDMD64S2A,0)
+
+#define init_frankstg init_frankst
+DE_ROMSTARTx0(frankstg,"franka.103",  CRC(a9aba9be) SHA1(1cc22fcbc0f51a17037637c04e606579956c9cba))
+DE_DMD64ROM88(         "frdspr0g.101",CRC(5e27ec02) SHA1(351d6f1b7d72e415f2bf5780b6533dbd67579261),
+                       "frdspr3g.101",CRC(d6c607b5) SHA1(876d4bd2a5b89f1a28ff7cd45494c7245f147d27))
+DE2S_SOUNDROM1444(     "frsnd.u7"  ,  CRC(084f856c) SHA1(c91331a32b565c2ed3f96156f44143dc22009e8e),
+                       "frsnd.u17" ,  CRC(0da904d6) SHA1(e190f1a35147b2f39224832969ca7b1d4a30f6cc),
+                       "frsnd.u21" ,  CRC(14d4bc12) SHA1(9e7005c5bd0afe7f9c9215b39878496640cdea77),
+                       "frsnd.u36" ,  CRC(9964d721) SHA1(5ea0bc051d1909bee80d3feb6b7350b6307b6dcb))
+DE_ROMEND
+#define input_ports_frankstg input_ports_frankst
+CORE_CLONEDEFNV(frankstg,frankst,"Mary Shelley's Frankenstein (Germany)",1995,"Sega",de_mDEDMD64S2A,0)
 
 //Start of the Portals Diagnostic Menu System
 /*-------------------------------------------------------------

@@ -481,6 +481,7 @@ extern MACHINE_DRIVER_EXTERN(hnk);
 /* gameSpecific1 values */
 #define BY35GD_NOSOUNDE 0x01 // doesn't use SOUNDE
 #define BY35GD_PHASE    0x02 // phased lamps
+#define BY35GD_FAKEZERO 0x04 // fake some zero digits for Nuova Bell games
 
 #endif /* INC_BY35 */
 

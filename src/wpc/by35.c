@@ -54,7 +54,8 @@ static void by35_dispStrobe(int mask) {
   int digit = locals.a1 & 0xfe;
   int ii,jj;
 
-  if (locals.hw & BY35HW_SOUNDE)
+  /* This handles O. Kaegi's 7-digit mod wiring */
+  if (locals.hw & BY35HW_SOUNDE && !(core_gameData->hw.gameSpecific1 & BY35GD_PHASE))
     digit = (digit & 0xf0) | ((digit & 0x0c) == 0x0c ? 0x02 : (digit & 0x0d));
 
   for (ii = 0; digit; ii++, digit>>=1)
@@ -64,6 +65,14 @@ static void by35_dispStrobe(int mask) {
         if (dispMask & 0x01)
           locals.segments[jj*8+ii].w |= locals.pseg[jj*8+ii].w = locals.bcd2seg[locals.bcd[jj] & 0x0f];
     }
+
+  /* This handles the fake zero for Nuova Bell games */
+  if (core_gameData->hw.gameSpecific1 & BY35GD_FAKEZERO) {
+	if (locals.segments[7].w) locals.segments[8].w = locals.pseg[8].w = locals.bcd2seg[0];
+	if (locals.segments[15].w) locals.segments[16].w = locals.pseg[16].w = locals.bcd2seg[0];
+	if (locals.segments[23].w) locals.segments[24].w = locals.pseg[24].w = locals.bcd2seg[0];
+	if (locals.segments[31].w) locals.segments[32].w = locals.pseg[32].w = locals.bcd2seg[0];
+  }
 }
 
 static void by35_lampStrobe(int board, int lampadr) {
