@@ -528,8 +528,11 @@ int win32_init_window(void)
 	}
 
 	// make the window title
+#ifdef PINMAME
+	sprintf(title, "PINMAME: %s [%s]", Machine->gamedrv->description, Machine->gamedrv->name);
+#else
 	sprintf(title, "MAME: %s [%s]", Machine->gamedrv->description, Machine->gamedrv->name);
-
+#endif
 	// create the window, but don't show it yet
 	video_window = CreateWindowEx(window_mode ? WINDOW_STYLE_EX : FULLSCREEN_STYLE_EX,
 			"MAME", title, window_mode ? WINDOW_STYLE : FULLSCREEN_STYLE,
