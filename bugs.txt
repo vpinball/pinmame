@@ -15,21 +15,20 @@ Bugs in Pinmame that we are aware of:
 
  #4) Saucer LEDs not implemented in AFM.
 
- #5) The Williams/Bally WPC CVSD speech seems to have a different pitch
-     than the real game. A strange thing is that the speech works better
-     when background music is playing.
-
- #6) The name and year for each game were taken from the Internet Pinball Database
+ #5) The name and year for each game were taken from the Internet Pinball Database
      (http://www.lysator.liu.se/pinball/IPD), and may not be 100% accurate!
 
- #7) A few games have custom AlphaNumeric layouts which may not yet be supported.
+ #6) Comma issues with Williams System 9.
 
- #8) Comma issues with Williams System 9.
+ #7) Dip switches do not work for Williams System 3-6.
 
- #9) Dip switches do not work for Williams System 3-6.
+ #8) Data East/Sega/Stern DMD timing is not 100% accurate.
 
-#10) System 7 games using a speech board do not work properly.
+ #9) Volume issues with BSMT games; most of them are too low.
 
-#11) Data East/Sega/Stern DMD support is not 100% accurate.
+#10) Extremely poor performance on multiprocessor systems.
 
-#12) Volume issues with BSMT games; most of them are too low.
+#11) Gottlieb SYstem 3 percussive sounds might still have some timing issues
+
+#12) Sound gets cut off in Alvin G games sometimes, and some weird notes in World Tour occasionally
+
