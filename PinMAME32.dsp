@@ -2782,21 +2782,6 @@ SOURCE=.\src\windows\ticker.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\windows\ticker.h
-
-!IF  "$(CFG)" == "PinMAME32 - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME32/Release/Windows"
-
-!ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/PinMAME32/Debug/Windows"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\windows\video.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
@@ -4803,6 +4788,10 @@ SOURCE=.\src\ui\dxdecode.c
 # Begin Source File
 
 SOURCE=.\src\ui\dxdecode.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ui\file.h
 # End Source File
 # Begin Source File
 

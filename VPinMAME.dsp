@@ -1398,11 +1398,24 @@ SOURCE=.\src\cpu\m6502\m6502.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\cpu\m6502\m65ce02.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\cpu\m6502\ops02.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\cpu\m6502\opsc02.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m6502\opsn2a03.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m6502\t65c02.c
+# PROP Exclude_From_Build 1
 # End Source File
 # End Group
 # Begin Group "M68000"
@@ -1463,6 +1476,10 @@ SOURCE=.\src\cpu\m68000\m68kopnz.c
 # Begin Source File
 
 SOURCE=.\src\cpu\m68000\m68kops.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m68000\m68kops.h
 # End Source File
 # End Group
 # Begin Group "S2650"
@@ -1535,6 +1552,20 @@ SOURCE=.\src\cpu\i86\i86dasm.c
 # Begin Source File
 
 SOURCE=.\src\cpu\i86\i86intf.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i86\i86time.c
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i86\instr86.c
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i86\instr86.h
 # End Source File
 # Begin Source File
 
@@ -1727,6 +1758,36 @@ SOURCE=.\src\sound\dac.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\sound\disc_dev.c
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\disc_flt.c
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\disc_inp.c
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\disc_mth.c
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\disc_out.c
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\disc_wav.c
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\sound\discrete.c
 # End Source File
 # Begin Source File
@@ -1799,11 +1860,20 @@ SOURCE=.\src\sound\tms5220.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\sound\tms5220r.c
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\sound\votrax.c
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\sound\votrax.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\vtxsmpls.inc
 # End Source File
 # Begin Source File
 
@@ -1940,6 +2010,10 @@ SOURCE=.\src\fileio.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\fileio.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\sound\filter.c
 # End Source File
 # Begin Source File
@@ -1961,6 +2035,10 @@ SOURCE=.\src\harddisk.h
 # Begin Source File
 
 SOURCE=.\src\hash.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\hash.h
 # End Source File
 # Begin Source File
 
@@ -2041,6 +2119,10 @@ SOURCE=.\src\palette.c
 # Begin Source File
 
 SOURCE=.\src\palette.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\windows\pattern.h
 # End Source File
 # Begin Source File
 
@@ -2612,29 +2694,6 @@ SOURCE=.\src\windows\sound.c
 # Begin Source File
 
 SOURCE=.\src\windows\ticker.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
-
-# PROP Intermediate_Dir "obj/VPinMAME/MDebug/Windows"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
-
-# PROP Intermediate_Dir "obj/VPinMAME/VCMDebug/Windows"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\windows\ticker.h
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
 
