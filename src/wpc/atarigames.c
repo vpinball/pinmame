@@ -2,11 +2,11 @@
 #include "sim.h"
 #include "atari.h"
 
-#define FLIPSW FLIP_SWNO(6,6/*?*/)
+#define FLIPSW FLIP_SWNO(66,67)
 
 #define INITGAME(name, disptype, flippers, balls) \
 	ATARI_INPUT_PORTS_START(name, balls) ATARI_INPUT_PORTS_END \
-	static core_tGameData name##GameData = {0,disptype/*,{flippers,0,0}*/}; \
+	static core_tGameData name##GameData = {0,disptype,{flippers,0,0}}; \
 	static void init_##name(void) { \
 		core_gameData = &name##GameData; \
 	}
