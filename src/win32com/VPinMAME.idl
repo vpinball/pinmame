@@ -78,8 +78,7 @@ import "ocidl.idl";
 		[id(2), helpstring("method Clear")] HRESULT Clear();
 		[propget, id(3), helpstring("property Value")] HRESULT Value([in] BSTR sName, [out, retval] VARIANT *pVal);
 		[propput, id(3), helpstring("property Value")] HRESULT Value([in] BSTR sName, [in] VARIANT newVal);
-		[id(4), helpstring("method DisplayPositionX")] HRESULT DisplayPositionX([in] VARIANT newVal, [in,defaultvalue(0)] long hParentWnd);
-		[id(5), helpstring("method DisplayPositionY")] HRESULT DisplayPositionY([in] VARIANT newVal, [in,defaultvalue(0)] long hParentWnd);
+		[id(4), helpstring("method SetDisplayPosition")] HRESULT SetDisplayPosition([in] VARIANT newValX, [in] VARIANT newValY, [in,defaultvalue(0)] long hWnd);
 	};
 
 	[
@@ -243,6 +242,8 @@ import "ocidl.idl";
 		[propget, id(55), helpstring("property Game")] HRESULT Game([out, retval] IGame * *pVal);
 		[propget, id(56), helpstring("property MechSamples")] HRESULT MechSamples([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(56), helpstring("property MechSamples")] HRESULT MechSamples([in] VARIANT_BOOL newVal);
+		[id(57), helpstring("method GetWindowRect")] HRESULT GetWindowRect([in,defaultvalue(0)] long hWnd, [out, retval] VARIANT *pVal);
+		[id(58), helpstring("method GetClientRect")] HRESULT GetClientRect([in,defaultvalue(0)] long hWnd, [out, retval] VARIANT *pVal);
 	};
 
 	// WSHDlg and related interfaces
