@@ -104,7 +104,7 @@ static const core_tLCDLayout dispHypbl[] = {
   { 2,16, 0, 1,CORE_SEG87 }, { 2,18, 8, 1,CORE_SEG87 },
   { 4, 3,43, 5,CORE_SEG16 }, { 4,13,49, 7,CORE_SEG16 }, {0}
 };
-static core_tGameData hypblGameData = { GEN_S7, dispHypbl, {FLIP_SWNO(33,34)}, NULL, {"", {0,0,0,0xf8,0x0f}, {0} } };
+static core_tGameData hypblGameData = { GEN_S7, dispHypbl, {FLIP_SWNO(33,34), 0, 4}, NULL, {"", {0,0,0,0xf8,0x0f}, {0} } };
 static void init_hypbl(void) { core_gameData = &hypblGameData; }
 #define input_ports_hypbl input_ports_s7
 
