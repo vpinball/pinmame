@@ -46,8 +46,8 @@ struct {
   UINT8 *ram8000;
   int    auxdata;
   /* Mini DMD stuff */
-  int    lastgiaux, miniidx;
-  int    minidata[4], minidmd[3][5];
+  int    lastgiaux, miniidx, miniframe;
+  int    minidata[4], minidmd[4][3][8];
 } selocals;
 
 static INTERRUPT_GEN(se_vblank) {
@@ -78,13 +78,12 @@ static INTERRUPT_GEN(se_vblank) {
 static SWITCH_UPDATE(se) {
   if (inports) {
     /*Switch Col 0 = Dedicated Switches - Coin Door Only - Begin at 6th Spot*/
-    coreGlobals.swMatrix[0] = (inports[SE_COMINPORT] & 0x000f)<<4;
+    CORE_SETKEYSW(inports[SE_COMINPORT]<<4, 0xf0, 0);
     /*Switch Col 1 = Coin Switches - (Switches begin at 4th Spot)*/
-    coreGlobals.swMatrix[1] = ((inports[SE_COMINPORT] & 0x0f00)>>5); //>>5 = >>8 + <<3
+    CORE_SETKEYSW(inports[SE_COMINPORT]>>5, 0x78, 1);
     /*Copy Start, Tilt, and Slam Tilt to proper position in Matrix: Switchs 66,67,68*/
     /*Clear bits 6,7,8 first*/
-    coreGlobals.swMatrix[7] &= ~0xe0;
-    coreGlobals.swMatrix[7] |= (inports[SE_COMINPORT] & 0x00f0)<<1;	//<<1 = >>4 + <<5
+    CORE_SETKEYSW(inports[SE_COMINPORT]<<1, 0xe0, 7);
   }
 }
 
@@ -183,31 +182,66 @@ static WRITE_HANDLER(auxboard_w) { selocals.auxdata = data; }
 static WRITE_HANDLER(giaux_w) {
   if (core_gameData->hw.display & SE_MINIDMD) {
     if (data & ~selocals.lastgiaux & 0x80) { /* clock in data to minidmd */
-       selocals.minidata[selocals.miniidx] = selocals.auxdata;
-       selocals.miniidx = (selocals.miniidx + 1) % 4;
-    }
-    if ((selocals.auxdata & 0x80) == 0) { /* enabled column? */
-      int tmp = selocals.minidata[selocals.miniidx] & 0x1f;
-      if (tmp) {
-        int col = 1;
-        while (tmp >>= 1) col += 1;
-        selocals.minidmd[0][col-1] = selocals.minidata[(selocals.miniidx + 1) % 4];
-        selocals.minidmd[1][col-1] = selocals.minidata[(selocals.miniidx + 2) % 4];
-        selocals.minidmd[2][col-1] = selocals.minidata[(selocals.miniidx + 3) % 4];
+      selocals.minidata[selocals.miniidx] = selocals.auxdata & 0x7f;
+      selocals.miniidx = (selocals.miniidx + 1) % 4;
+      if ((selocals.auxdata & 0x80) == 0) { /* enabled column? */
+        int tmp = selocals.minidata[selocals.miniidx] & 0x1f;
+        if (tmp) {
+          int col = 1;
+          while (tmp >>= 1) col += 1;
+          selocals.minidmd[selocals.miniframe][0][col-1] = selocals.minidata[(selocals.miniidx + 1) % 4];
+          selocals.minidmd[selocals.miniframe][1][col-1] = selocals.minidata[(selocals.miniidx + 2) % 4];
+          selocals.minidmd[selocals.miniframe][2][col-1] = selocals.minidata[(selocals.miniidx + 3) % 4];
+          // Should find a better way to detect different frames but columns seem
+          // to always be updated in order 1-5 so this works
+          if (col == 5) selocals.miniframe = (selocals.miniframe + 1) % 3;
+        }
       }
     }
     selocals.lastgiaux = data;
   }
 }
-
-PINMAME_VIDEO_UPDATE(seminidmd_update) {
+  
+// MINI DMD Type 1 (HRC) (15x7)
+PINMAME_VIDEO_UPDATE(seminidmd1_update) {
   tDMDDot dotCol;
-  int ii,jj,kk;
-  for (ii = 0; ii < 7; ii++) {
+  int ii,jj,kk,bits;
+     
+  for (ii = 0, bits = 0x40; ii < 7; ii++, bits >>= 1) {
+    UINT8 *line = &dotCol[ii+1][0];
+    for (jj = 2; jj >= 0; jj--)
+      for (kk = 0; kk < 5; kk++)
+        *line++ = ((selocals.minidmd[0][jj][kk] & bits) + (selocals.minidmd[1][jj][kk] & bits) +
+                   (selocals.minidmd[2][jj][kk] & bits))/bits;
+  }
+  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+  return 0;
+}
+// MINI DMD Type 2 (Monopoly) (15x7)
+PINMAME_VIDEO_UPDATE(seminidmd2_update) {
+  tDMDDot dotCol;
+  int ii,jj,kk,bits;
+  for (ii = 0, bits = 0x01; ii < 7; ii++, bits <<= 1) {
     UINT8 *line = &dotCol[ii+1][0];
     for (jj = 0; jj < 3; jj++)
       for (kk = 0; kk < 5; kk++)
-        *line++ = (selocals.minidmd[jj][4-kk] & (1<<ii)) ? 3 : 0;
+        *line++ = ((selocals.minidmd[0][jj][kk] & bits) + (selocals.minidmd[1][jj][kk] & bits) +
+                   (selocals.minidmd[2][jj][kk] & bits))/bits;
+  }
+  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+  return 0;
+}
+// MINI DMD Type 3 (RCT) (21x5)
+PINMAME_VIDEO_UPDATE(seminidmd3_update) {
+  tDMDDot dotCol;
+  int ii,jj,kk,bits;
+  memset(&dotCol,0,sizeof(dotCol));
+  for (kk = 0; kk < 5; kk++) {
+    UINT8 *line = &dotCol[kk+1][0];
+    for (jj = 0; jj < 3; jj++) 
+      for (ii = 0, bits = 0x01; ii < 7; ii++, bits <<= 1)
+        *line++ = ((selocals.minidmd[0][jj][kk] & bits) + (selocals.minidmd[1][jj][kk] & bits) +
+                   (selocals.minidmd[2][jj][kk] & bits))/bits;
   }
   video_update_core_dmd(bitmap, cliprect, dotCol, layout);
   return 0;
