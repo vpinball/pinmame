@@ -16,6 +16,9 @@ Bugs Fixed
 
 -Rewrote Data East 128x16 DMD Emulation. (Now much more accurate than previous version)
 -Corrected early Stern MPU-100 CPU timing
+-Various sound fixes (e.g Firepower startup speech, Dr. Dude WPC version)
+-Bally games are back to 85Hz zero-cross frequency
+-Corrected coin door button handling for WMS S3-S11 and DE
  [Martin Adrian]
 
 -Corrected Bally MPU-17/35 CPU timing. (Squalk N Talk games now greatly improved)
@@ -31,13 +34,13 @@ New Features
 
 -Hankin: Full working Sound Support (Orbit 1 and FJ Holden only particially working)
 -Gottlieb System 80: Sound (not speech!) for Sound-only games now fully working
--Gottlieb System 80: Sound & Speech board is now working 
--Gottlieb System 80: Added support for sound only PiggyBack board 
+-Gottlieb System 80: Sound & Speech board is now working
+-Gottlieb System 80: Added support for sound only PiggyBack board
  (Thanks goes to Peter Hall for providing very helpfully info on these sound boards)
 -Gottlieb System 80: Added dips for the sound & speech board (33-40) & sound-board (41-42)
  [Tom Haukap]
 
--Working Atari Emulation (Including Sound - may not be perfect yet) 
+-Working Atari Emulation (Including Sound - may not be perfect yet)
  (Generation #1 not working yet)
  [Gerrit Volkenborn]
  [Steve Ellenoff]
@@ -49,26 +52,30 @@ New Features
 
 -Combined Williams System 9&11 drivers with Data East for cleaner code/easier maintenance
 -Combined Data East sound hardware drivers for cleaner code/easier maintenance
+-VPM now supports up to 48 dip switches (needed for SYS80)
  [Martin Adrian]
  [Steve Ellenoff]
 
+-Added preliminary support for Jokerz! sound board.
+-Added extra displays to 6M$MAN
+ [Martin Adrian]
 
 Version 1.11 (February 3, 2002)
 ------------------
-A good sized new release with working support from 2 new manufacturers (Hankin & Gameplan), as 
-well as preliminary support for 1 more (Zaccaria). Of course, we're thrilled to be able to 
-add working fully working Baby Pacman emulation, which has been a long standing request going back to the 
-very first few versions of PinMAME. 
-Finally, we close the book on missing Bally support, by adding working 6803 emulation. 
+A good sized new release with working support from 2 new manufacturers (Hankin & Gameplan), as
+well as preliminary support for 1 more (Zaccaria). Of course, we're thrilled to be able to
+add working fully working Baby Pacman emulation, which has been a long standing request going back to the
+very first few versions of PinMAME.
+Finally, we close the book on missing Bally support, by adding working 6803 emulation.
 Last but not least, we hope to have solved the sound stuttering/scratchy issues introduced
 in version 1.10, but with so many possible configurations, it's hard to know for sure.
 So please post on the forum if you still have trouble, and be sure to include your setup.
 
-*IMPORTANT NOTE: 
-  This release has not been beta tested and may contain many bugs! 
+*IMPORTANT NOTE:
+  This release has not been beta tested and may contain many bugs!
   We wanted to get a release out now, because for the next month or so, we won't have time,
   and we thought we should at least get the bugs from last version fixed and out the door.
-                 
+
 Bugs Fixed
 ----------
 -Fixed reversed diag & slam tilt switches in earlier Gottlieb System 3 Alphanumeric games
