@@ -80,7 +80,7 @@ struct riot6530_interface GTS80S_riot6530_intf = {
 /  Memory map
 /---------------*/
 MEMORY_READ_START(GTS80S_readmem)
-{ 0x0000, 0x01ff, riot6530_0_ram_r},
+{ 0x0000, 0x01ff, MRA_RAM},
 { 0x0200, 0x02ff, riot6530_0_r},
 { 0x0400, 0x07ff, MRA_ROM},
 { 0x0800, 0x0bff, MRA_ROM},
@@ -89,7 +89,7 @@ MEMORY_READ_START(GTS80S_readmem)
 MEMORY_END
 
 MEMORY_WRITE_START(GTS80S_writemem)
-{ 0x0000, 0x01ff, riot6530_0_ram_w},
+{ 0x0000, 0x01ff, MWA_RAM},
 { 0x0200, 0x02ff, riot6530_0_w},
 { 0x0400, 0x07ff, MWA_ROM},
 { 0x0800, 0x0bff, MWA_ROM},
