@@ -57,7 +57,6 @@
 
 /*-- Memory regions --*/
 #define ZAC_MEMREG_CPU		REGION_CPU1
-#define ZAC_MEMREG_S1CPU	REGION_CPU2
 #define ZAC_MEMREG_SROM		REGION_SOUND1
 
 /*-- Main CPU regions and ROM --*/
@@ -68,7 +67,6 @@
 	NORMALREGION(0x8000, ZAC_MEMREG_CPU) \
       ROM_LOAD ( n1, 0x0000, 0x0400, chk1) \
       ROM_LOAD ( n2, 0x0400, 0x0400, chk2) \
-       ROM_RELOAD   (0x1c00, 0x0400) \
       ROM_LOAD ( n3, 0x0800, 0x0400, chk3) \
       ROM_LOAD ( n4, 0x0c00, 0x0400, chk4) \
       ROM_LOAD ( n5, 0x1000, 0x0400, chk5)
@@ -82,6 +80,25 @@
       ROM_LOAD ( n3, 0x0800, 0x0400, chk3) \
       ROM_LOAD ( n4, 0x0c00, 0x0400, chk4) \
       ROM_LOAD ( n5, 0x1000, 0x0400, chk5)
+
+#define ZAC_ROMSTART84444A(name,n1,chk1,n2,chk2,n3,chk3,n4,chk4,n5,chk5) \
+  ROM_START(name) \
+	NORMALREGION(0x8000, ZAC_MEMREG_CPU) \
+      ROM_LOAD ( n1, 0x0000, 0x0800, chk1) \
+      ROM_LOAD ( n2, 0x1400, 0x0400, chk2) \
+      ROM_LOAD ( n3, 0x0800, 0x0400, chk3) \
+       ROM_RELOAD   (0x1c00, 0x0400) \
+      ROM_LOAD ( n4, 0x0c00, 0x0400, chk4) \
+      ROM_LOAD ( n5, 0x1000, 0x0400, chk5)
+
+#define ZAC_ROMSTART84444B(name,n1,chk1,n2,chk2,n3,chk3,n4,chk4,n5,chk5) \
+  ROM_START(name) \
+	NORMALREGION(0x8000, ZAC_MEMREG_CPU) \
+      ROM_LOAD ( n1, 0x0000, 0x0800, chk1) \
+       ROM_RELOAD   (0x1c00, 0x0400) \
+      ROM_LOAD ( n3, 0x0800, 0x0400, chk3) \
+      ROM_LOAD ( n4, 0x0c00, 0x0400, chk4) \
+      ROM_LOAD ( n5, 0x1000, 0x0400, chk5) \
 
 /* 2 X 2716, 3 X 2708 ROMS */
 #define ZAC_ROMSTART84844(name,n1,chk1,n2,chk2,n3,chk3,n4,chk4,n5,chk5) \
