@@ -19,15 +19,21 @@
 
 /*Declarations*/
 static void capcoms_init(struct sndbrdData *brdData);
+static void cap_bof(int chipnum,int state);
+static void cap_sreq(int chipnum,int state);
 
 /*Interfaces*/
 static struct TMS320AV120interface capcoms_TMS320AV120Int1 = {
   1,		//# of chips
-  {100}		//Volume levels
+  {100},	//Volume levels
+  cap_bof,	//BOF Line Callback
+  cap_sreq	//SREQ Line Callback
 };
 static struct TMS320AV120interface capcoms_TMS320AV120Int2 = {
   2,		//# of chips
-  {50,50}	//Volume levels
+  {50,50},	//Volume levels
+  cap_bof,	//BOF Line Callback
+  cap_sreq	//SREQ Line Callback
 };
 
 /* Sound board */
@@ -43,6 +49,8 @@ static struct {
   UINT8 ram[0x8000+1];	//External 32K Ram
   int rombase_offset;	//Offset into current rom
   int rombase;			//Points to current rom
+  int bof_line[2];		//Track status of bof line for each tms chip
+  int sreq_line[2];		//Track status of sreq line for each tms chip
 } locals;
 
 //Digital Volume Pot (x9241)
@@ -58,6 +66,17 @@ static struct {
   int nextbit;		//Which bit to store next
   int nextram;		//Which position in ram to store next
 } x9241;
+
+void cap_bof(int chipnum,int state)
+{
+	locals.bof_line[chipnum]=state;
+	LOG(("MPG#%d: BOF Set to %d\n",chipnum,state));
+}
+void cap_sreq(int chipnum,int state)
+{
+	locals.sreq_line[chipnum]=state;
+	LOG(("MPG#%d: SREQ Set to %d\n",chipnum,state));
+}
 
 
 /***********************************************************************************
@@ -143,9 +162,44 @@ void data_to_x9241(int scl, int sda)
 
 static READ_HANDLER(port_r)
 {
-	LOG(("port read @ %x\n",offset));
-	//printf("port read @ %x\n",offset);
-	return 0;
+	int data = 0;
+	switch(offset) {
+		case 0:
+		case 2:
+			break;
+		/*PORT 1:
+			P1.0    (O) = LED (Inverted?)
+			P1.1    (X) = NC
+			P1.2    (I) = /CTS = CLEAR TO SEND   - From Main CPU(Active low)
+			P1.3    (I) = /RTS = REQEUST TO SEND - From Main CPU(Active low)
+			P1.4    (O) = SCL = U10 - Pin 14 - EPOT CLOCK
+			P1.5    (O) = SDA = U10 - Pin  9 - EPOT SERIAL DATA
+			P1.6    (O) = /CBOF1 = CLEAR BOF1 IRQ
+			P1.7    (O) = /CBOF2 = CLEAR BOF2 IRQ */
+		case 1:
+			LOG(("%4x:port read @ %x data = %x\n",activecpu_get_pc(),offset,data));
+			//Todo: return cts/rts lines..
+			return data;
+		/*PORT 3:
+			P3.0/RXD(I) = Serial Receive -  RXD
+			P3.1/TXD(O) = Serial Transmit - TXD
+			INT0    (I) = /BOF1  = BEG OF FRAME FOR MPG1
+			INT1    (I) = /BOF2  = BEG OF FRAME FOR MPG2
+			T0/P3.4 (I) = /SREQ1 = SOUND REQUEST MPG1
+			T1/P3.5 (I) = /SREQ2 = SOUND REQUEST MPG2
+			P3.6    (O) = /WR
+			P3.7    (O) = /RD*/
+		case 3:
+			LOG(("%4x:port read @ %x data = %x\n",activecpu_get_pc(),offset,data));
+			//Todo: return RXD line
+			data |= (locals.bof_line[0])<<2;
+			data |= (locals.bof_line[1])<<3;
+			data |= (locals.sreq_line[0])<<4;
+			data |= (locals.sreq_line[1])<<5;
+			return data;
+	}
+	LOG(("%4x:port read @ %x data = %x\n",activecpu_get_pc(),offset,data));
+	return data;
 }
 
 static WRITE_HANDLER(port_w)
@@ -158,8 +212,8 @@ static WRITE_HANDLER(port_w)
 		/*PORT 1:
 			P1.0    (O) = LED (Inverted?)
 			P1.1    (X) = NC
-			P1.2    (?) = /CTS = ??
-			P1.3    (?) = /RTS = ??
+			P1.2    (I) = /CTS = CLEAR TO SEND   - From Main CPU(Active low)
+			P1.3    (I) = /RTS = REQEUST TO SEND - From Main CPU(Active low)
 			P1.4    (O) = SCL = U10 - Pin 14 - EPOT CLOCK
 			P1.5    (O) = SDA = U10 - Pin  9 - EPOT SERIAL DATA
 			P1.6    (O) = /CBOF1 = CLEAR BOF1 IRQ
@@ -184,8 +238,8 @@ static WRITE_HANDLER(port_w)
 			LOG(("writing to port %x data = %x\n",offset,data));
 			break;
 		/*PORT 3:
-			P3.0/RXD(?) = RXD
-			P3.1/TXD(?) = TXD
+			P3.0/RXD(I) = Serial Receive -  RXD
+			P3.1/TXD(O) = Serial Transmit - TXD
 			INT0    (I) = /BOF1  = BEG OF FRAME FOR MPG1
 			INT1    (I) = /BOF2  = BEG OF FRAME FOR MPG2
 			T0/P3.4 (I) = /SREQ1 = SOUND REQUEST MPG1
@@ -214,14 +268,13 @@ READ_HANDLER(rom_rd)
 	offset&=0xffff;	//strip off top bit
 	//Is a valid rom set for reading?
 	if(locals.rombase < 0) {
-		LOG(("error from rom_rd - no ROM selected!\n"));
+		//LOG(("error from rom_rd - no ROM selected!\n"));
 		return 0;
 	}
 	else {
 		base+=(locals.rombase+locals.rombase_offset+offset);//Do bankswitching
 		data = (int)*base;
-		LOG(("%4x: rom_r[%4x] = %2x (rombase=%8x,base_offset=%8x)\n",activecpu_get_pc(),offset,data,locals.rombase,locals.rombase_offset));
-		//printf("%4x: rom_r[%4x] = %2x (rombase=%8x,base_offset=%8x)\n",activecpu_get_pc(),offset,data,locals.rombase,locals.rombase_offset);
+		//LOG(("%4x: rom_r[%4x] = %2x (rombase=%8x,base_offset=%8x)\n",activecpu_get_pc(),offset,data,locals.rombase,locals.rombase_offset));
 		return data;
 	}
 }
@@ -229,7 +282,6 @@ READ_HANDLER(rom_rd)
 READ_HANDLER(ram_r)
 {
 	//LOG(("ram_r %x data = %x\n",offset,locals.ram[offset]));
-	//printf("ram_r %x data = %x\n",offset,locals.ram[offset]);
 
 	//Shift mirrored ram from it's current address range of 0x18000-0x1ffff to actual address range of 0-0x7fff
 	if(offset > 0xffff)
@@ -242,18 +294,17 @@ WRITE_HANDLER(ram_w)
 {
 	offset&=0xffff;	//strip off top bit
 	locals.ram[offset] = data;
-	//printf("ram_w %x data = %x\n",offset,data);
+
 	//LOG(("ram_w %x data = %x\n",offset,data));
 	
 	/* 8752 CAN EXECUTE CODE FROM RAM - SO WE MUST COPY TO CPU REGION STARTING @ 0x8000 */
-	//printf("setting rom code @ %8x to %2x\n",offset,data);
 	*((UINT8 *)(memory_region(CAPCOMS_CPUREGION) + offset +0x8000)) = data;
 }
 
 //Set the /MPEG1 or /MPEG2 lines (active low) - clocks data into each of the tms320av120 chips
 WRITE_HANDLER(mpeg_clock)
 {
-	LOG(("mpeg_clock %x data = %x\n",offset,data));
+	TMS320AV120_data_w(offset,data);
 }
 
 /*
