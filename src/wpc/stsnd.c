@@ -661,6 +661,7 @@ static WRITE_HANDLER(st300_data_w) {
 	w1 = ST300_INTCLOCK / (2 * (snddatst300.timer1 + 1));
 	st300loc.tfre1 = w1;
 //	logerror("%04x: st300_data_w timlat1 loaded %04x  \n", activecpu_get_previouspc(), st300loc.timlat1);
+  	if (st300loc.timlat1 == 0) mixer_stop_sample(st300loc.channel+1);
   }
   if (data == 5) {
 	st300loc.timlat2 = snddatst300.ax[data] + snddatst300.ax[(data-1)] * 256;
