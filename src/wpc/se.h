@@ -84,7 +84,8 @@ extern PINMAME_VIDEO_UPDATE(seminidmd3_update);
 extern PINMAME_VIDEO_UPDATE(seminidmd4_update);
 #define de_mSES1 se2aS
 #define de_mSES2 se2bS
-#define de_mSES3 se2cS
+#define de_mSES2C se2cS
+#define de_mSES3 se2bS
 
 /* Hardware variants */
 #define SE_MINIDMD    0x01
