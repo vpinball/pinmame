@@ -1639,6 +1639,14 @@ SOURCE=.\src\machine\mathbox.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\machine\pic8259.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\machine\pic8259.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\machine\ticket.c
 # End Source File
 # Begin Source File
