@@ -10,8 +10,9 @@
 
 */
 
-extern MACHINE_DRIVER_EXTERN(taitos_sintevox);
 extern MACHINE_DRIVER_EXTERN(taitos_sintetizador);
+extern MACHINE_DRIVER_EXTERN(taitos_sintetizadorpp);
+extern MACHINE_DRIVER_EXTERN(taitos_sintevox);
 extern MACHINE_DRIVER_EXTERN(taitos_sintevoxpp);
 
 #define TAITO_SOUNDROMS2(rom1,chk1) \

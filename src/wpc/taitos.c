@@ -9,9 +9,10 @@
 
 /*----------------------------------------
 / Taito Sound System
-/ Taito uses three different sound board:
-/ - sintevox
-/ - sintetizator (sitevox with an additonal SC-01)
+/ Taito uses four different sound boards:
+/ - sintetizador
+/ - sintevox (sintetizador with an additonal SC-01)
+/ - sintetizador with a daugher board installed
 / - sintevox with a daugher board installed
 /
 / cpu: 6802
@@ -20,17 +21,19 @@
 / 0x1000 - 0x17FF: ROM 2
 / 0x1800 - 0x1fff: ROM 1
 /
-/ sintetizator:
+/ sintevox:
 / SC-01 connected to output of PIA Port B
 /
 /-----------------------------------------*/
 
-#define SINTEVOX		0
-#define SINTETIZADOR	1
-#define SITEVOX_PP		2
+#define SINTETIZADOR	0
+#define SINTEVOX		1
+#define SINTETIZADOR_PP	2
+#define SINTEVOX_PP		3
 
 static struct {
   struct sndbrdData brdData;
+  UINT8 votrax_data;
 } taitos_locals;
 
 #define SP_PIA0  0
@@ -48,8 +51,13 @@ MEMORY_WRITE_START(taitos_writemem)
 MEMORY_END
 
 static void taitos_irq(int state) {
-	logerror("sound irq\n");
+//	logerror("sound irq\n");
 	cpu_set_irq_line(taitos_locals.brdData.cpuNo, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
+}
+
+static void taitos_nmi(int state) {
+//	logerror("sound nmi\n");
+	cpu_set_nmi_line(taitos_locals.brdData.cpuNo, PULSE_LINE);
 }
 
 static WRITE_HANDLER(pia0a_w)
@@ -61,50 +69,44 @@ static WRITE_HANDLER(pia0a_w)
 static WRITE_HANDLER(pia0b_w)
 {
 //	logerror("pia0b_w: %02x\n", data);
-
-	if ( taitos_locals.brdData.subType!=SINTEVOX )
-		votraxsc01_w(0, data);
+	taitos_locals.votrax_data = data;
 }
 
 static WRITE_HANDLER(pia0ca2_w)
 {
-	logerror("pia0ca2_w: %02x\n", data);
+//	logerror("pia0ca2_w: %02x\n", data);
+	coreGlobals.diagnosticLed = data;
 }
 
 /* enable diagnostic led */
 static WRITE_HANDLER(pia0cb2_w)
 {
-	logerror("pia0cb2_w: %02x\n", data);
-
-	coreGlobals.diagnosticLed = data?0x01:0x00;
-}
-
-static READ_HANDLER(pia0ca1_r)
-{
-	logerror("pia0ca1_r\n");
-
-	return votraxsc01_status_r(0);
+//	logerror("pia0cb2_w: %02x\n", data);
+	if ((taitos_locals.brdData.subType & 0x01) == SINTEVOX) {
+	    if (!votraxsc01_status_r(0))
+			votraxsc01_w(0, taitos_locals.votrax_data);
+	}
 }
 
 static void votrax_busy(int state)
 {
 //	logerror("votrax busy: %i\n", state);
-
-	if ( taitos_locals.brdData.subType!=SINTEVOX )
+	if ((taitos_locals.brdData.subType & 0x01) == SINTEVOX) {
 		pia_set_input_ca1(SP_PIA0, state);
+		pia_set_input_ca1(SP_PIA0, ~state);
+	}
 }
 
 static const struct pia6821_interface sp_pia = {
   /*i: A/B,CA/B1,CA/B2 */ 0, 0, 0, 0, 0, 0,
   /*o: A/B,CA/B2       */ pia0a_w, pia0b_w, pia0ca2_w, pia0cb2_w,
-  /*irq: A/B           */ taitos_irq,taitos_irq
+  /*irq: A/B           */ taitos_nmi, taitos_irq
 };
 
 /* sound strobe */
 static WRITE_HANDLER(taitos_ctrl_w)
 {
 	// logerror("taitos_ctrl_w: %i\n", data);
-
 	pia_set_input_cb1(SP_PIA0, data?0x01:0x00);
 }
 
@@ -112,7 +114,10 @@ static WRITE_HANDLER(taitos_ctrl_w)
 static WRITE_HANDLER(taitos_data_w)
 {
     // logerror("taitos_data_w: %i\n", data);
-
+	if ((taitos_locals.brdData.subType & 0x01) == SINTEVOX) {
+		pia_set_input_ca1(SP_PIA0, 1);
+		pia_set_input_ca1(SP_PIA0, 0);
+	}
     pia_set_input_b(SP_PIA0, data^0xff);
 	sndbrd_ctrl_w(0, data);
 }
@@ -145,8 +150,8 @@ const struct sndbrdIntf taitoIntf = {
   taitos_init, NULL, NULL, taitos_data_w, NULL, taitos_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
-MACHINE_DRIVER_START(taitos_sintevox)
-  MDRV_CPU_ADD_TAG("scpu", M6802, 500000) // 0.5 MHz ??? */
+MACHINE_DRIVER_START(taitos_sintetizador)
+  MDRV_CPU_ADD_TAG("scpu", M6802, 400000) // 0.4 MHz ??? */
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(taitos_readmem, taitos_writemem)
   MDRV_INTERLEAVE(50)
@@ -154,8 +159,8 @@ MACHINE_DRIVER_START(taitos_sintevox)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END
 
-MACHINE_DRIVER_START(taitos_sintetizador)
-  MDRV_IMPORT_FROM(taitos_sintevox)
+MACHINE_DRIVER_START(taitos_sintevox)
+  MDRV_IMPORT_FROM(taitos_sintetizador)
 
   MDRV_SOUND_ADD(VOTRAXSC01, TAITO_votrax_sc01_interface)
 MACHINE_DRIVER_END
@@ -233,13 +238,18 @@ MEMORY_WRITE_START(taitospp_writemem)
   { 0xf000, 0xffff, MWA_ROM }, /* reset vector */
 MEMORY_END
 
-MACHINE_DRIVER_START(taitos_sintevoxpp)
-  MDRV_CPU_ADD_TAG("scpu", M6802, 1000000) // 0.5 MHz ??? */
+MACHINE_DRIVER_START(taitos_sintetizadorpp)
+  MDRV_CPU_ADD_TAG("scpu", M6802, 400000) // 0.4 MHz ??? */
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(taitospp_readmem, taitospp_writemem)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(DAC, TAITO_dacInt)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
-  MDRV_SOUND_ADD(VOTRAXSC01, TAITO_votrax_sc01_interface)
   MDRV_SOUND_ADD(AY8910, TAITO_ay8910Int)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(taitos_sintevoxpp)
+  MDRV_IMPORT_FROM(taitos_sintetizadorpp)
+
+  MDRV_SOUND_ADD(VOTRAXSC01, TAITO_votrax_sc01_interface)
 MACHINE_DRIVER_END
