@@ -3,7 +3,7 @@
 
 #ifdef PINMAME
 /* PinMAME needs 17 channels for some games with SC-01 support. */
-#define MIXER_MAX_CHANNELS 20
+#define MIXER_MAX_CHANNELS 25
 #else
 #define MIXER_MAX_CHANNELS 16
 #endif
