@@ -7,6 +7,9 @@
     - System 80/80A Sound Board 
    
     - System 80/80A Sound & Speech Board
+
+    - System 80A Sound Board with a PiggyPack installed
+	  (thanks goes to Peter Hall for providing some very usefull information)
    
     - System 80B Sound Board (3 generations)
 
@@ -23,12 +26,10 @@
     ROM_RELOAD(  0xfc00,  0x0400) /* reset vector */
 
 /*-- Sound Board, 1 X 2K Sound Rom --*/
-#define GTS80S2K_ROMSTART(n1,chk1,n2,chk2) \
+#define GTS80S2K_ROMSTART(n1,chk1) \
   SOUNDREGION(0x10000, GTS80_MEMREG_SCPU1) \
-    ROM_LOAD(n1, 0x0400,  0x0800, chk1) \
-    ROM_RELOAD(  0xf400,  0x0800) \
-    ROM_LOAD(n2, 0x0c00,  0x0400, chk2) \
-    ROM_RELOAD(  0xfc00,  0x0400) /* reset vector */
+    ROM_LOAD(n1, 0x0800,  0x0800, chk1) \
+    ROM_RELOAD(  0xf800,  0x0800)
 
 /*-- Machine structure externals --*/
 extern const struct Memory_ReadAddress  GTS80S_readmem[];

@@ -15,8 +15,11 @@
     Gottlieb System 80 Sound Boards
    
     - System 80/80A Sound Board 
-   
+
     - System 80/80A Sound & Speech Board
+
+    - System 80A Sound Board with a PiggyPack installed
+	  (thanks goes to Peter Hall for providing some very usefull information)
    
     - System 80B Sound Board (3 generations)
 
@@ -30,18 +33,27 @@
 #define GTS80S_BUFFER_SIZE 8192
 
 struct {
-  int   stream;
-  INT16 buffer[GTS80S_BUFFER_SIZE+1];
-  double clock[GTS80S_BUFFER_SIZE+1];
-  int   buf_pos;
+	struct sndbrdData boardData;
 
-  int   dips;
+	int   stream;
+	INT16 buffer[GTS80S_BUFFER_SIZE+1];
+	double clock[GTS80S_BUFFER_SIZE+1];
+	int   buf_pos;
+
+	int   dips;
+	int	IRQEnabled;
 } GTS80S_locals;
 
 WRITE_HANDLER(gts80s_data_w)
 {
 //	logerror("sound latch: 0x%02x\n", data);
-	riot6530_set_input_b(0, GTS80S_locals.dips | 0x20 | (data&0x0f));
+	data &= 0x0f;
+	riot6530_set_input_b(0, GTS80S_locals.dips | 0x20 | data);
+
+	/* the PiggyPack board is really firing an interrupt; sound board layout
+	   for theses game is different, because the IRQ line is connected */
+	if ( (GTS80S_locals.boardData.subType==1) && data && GTS80S_locals.IRQEnabled )
+		cpu_set_irq_line(GTS80S_locals.boardData.cpuNo, M6502_INT_IRQ, PULSE_LINE);
 }
 
 /* configured as output, shouldn't be read at all */
@@ -61,9 +73,11 @@ WRITE_HANDLER(riot6530_0a_w) {
 	GTS80S_locals.buffer[GTS80S_locals.buf_pos++] = (0x80-data)<<8;
 }
 
-/* configured as input, shouldn't be read at all */
 WRITE_HANDLER(riot6530_0b_w) { 
-	logerror("riot6530_0b_w: 0x%02x\n", data);
+//	logerror("riot6530_0b_w: 0x%02x\n", data);
+	/* reset the interupt on the PiggyPack board */
+	if ( GTS80S_locals.boardData.subType==1 )
+		GTS80S_locals.IRQEnabled = data&0x40;
 }
 
 static UINT8 RIOT6532_RAM[0x0200]; 
@@ -92,19 +106,15 @@ struct riot6530_interface GTS80S_riot6530_intf = {
 MEMORY_READ_START(GTS80S_readmem)
 { 0x0000, 0x01ff, MRA_RAM},
 { 0x0200, 0x02ff, riot6530_0_r},
-{ 0x0400, 0x07ff, MRA_ROM},
-{ 0x0800, 0x0bff, MRA_ROM},
-{ 0x0c00, 0x0fff, MRA_ROM},
-{ 0xfc00, 0xffff, MRA_ROM},
+{ 0x0400, 0x0fff, MRA_ROM},
+{ 0xf800, 0xffff, MRA_ROM},
 MEMORY_END
 
 MEMORY_WRITE_START(GTS80S_writemem)
 { 0x0000, 0x01ff, MWA_RAM},
 { 0x0200, 0x02ff, riot6530_0_w},
-{ 0x0400, 0x07ff, MWA_ROM},
-{ 0x0800, 0x0bff, MWA_ROM},
-{ 0x0c00, 0x0fff, MWA_ROM},
-{ 0xfc00, 0xffff, MWA_ROM},
+{ 0x0400, 0x0fff, MWA_ROM},
+{ 0xf800, 0xffff, MWA_ROM},
 MEMORY_END
 
 static void GTS80S_Update(int num, INT16 *buffer, int length)
@@ -143,6 +153,8 @@ void gts80s_init(struct sndbrdData *brdData) {
 
 	memset(&GTS80S_locals, 0x00, sizeof GTS80S_locals);
 
+	GTS80S_locals.boardData = *brdData;
+
 	/* init dips */
 	GTS80S_locals.dips =
 		((core_getDip(5)&0x01) ? 0x00:0x80) | /* S1: Sound/Tones        */
@@ -156,16 +168,17 @@ void gts80s_init(struct sndbrdData *brdData) {
 	/* init RAM */
 	memset(RIOT6532_RAM, 0x00, sizeof RIOT6532_RAM);
 
-	pMem = memory_region(GTS80_MEMREG_SCPU1)+0x0400;
-	for(i=0x0400; i<0x0bff; i++) {
-		*pMem = (*pMem&0x0f)|0xf0;
-		pMem++;
-		i++;
+	if ( GTS80S_locals.boardData.subType==0 ) {
+		/* clear the upper 4 bits, some ROM images aren't 0 */ 
+		/* the 6530 RIOT ROM is not used by the boards which have a PiggyPack installed */
+		pMem = memory_region(GTS80S_locals.boardData.cpuNo)+0x0400;
+		for(i=0x0400; i<0x0bff; i++)
+			*pMem++ = (*pMem&0x0f);
 	}
 
 	/* init the RIOT */
     riot6530_config(0, &GTS80S_riot6530_intf);
-	riot6530_set_clock(0, Machine->drv->cpu[GTS80_SCPU1].cpu_clock);
+	riot6530_set_clock(0, Machine->drv->cpu[GTS80S_locals.boardData.cpuNo].cpu_clock);
 	riot6530_reset();
 
 	GTS80S_locals.stream = stream_init("SND DAC", 100, 11025, 0, GTS80S_Update);
@@ -178,7 +191,7 @@ void gts80s_exit(int boardNo)
 }
 
 const struct sndbrdIntf gts80sIntf = {
-  gts80s_init, gts80s_exit, NULL, gts80s_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+	gts80s_init, gts80s_exit, NULL, gts80s_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
 
@@ -189,8 +202,10 @@ const struct sndbrdIntf gts80sIntf = {
 #define GTS80SS_BUFFER_SIZE 4096
 
 struct {
+	struct sndbrdData boardData;
+
 	int dips;
-	int	NMIState;
+	int NMIState;
 
 	int stream;
 	INT16  buffer[GTS80SS_BUFFER_SIZE+1];
@@ -201,15 +216,16 @@ struct {
 } GTS80SS_locals;
 
 void GTS80SS_irq(int state) {
-	logerror("IRQ: %i\n",state);
-	cpu_set_irq_line(GTS80_SCPU1, M6502_INT_IRQ, state ? ASSERT_LINE : CLEAR_LINE);
+//	logerror("IRQ: %i\n",state);
+	cpu_set_irq_line(GTS80SS_locals.boardData.cpuNo, M6502_INT_IRQ, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
 void GTS80SS_nmi(int state)
 {
 	if ( !GTS80SS_locals.NMIState && state ) {
-		logerror("NMI: %i\n",state);
-/*		cpu_set_irq_line(GTS80_SCPU1, M6502_INT_NMI, PULSE_LINE); */
+//		logerror("NMI: %i\n",state);
+/*		at last Devils Dare isn't working if the NMI is really fired */
+/*		cpu_set_irq_line(GTS80SS_locals.boardData.cpuNo, M6502_INT_NMI, PULSE_LINE); */
 	}
 	GTS80SS_locals.NMIState = state;
 }
@@ -238,7 +254,7 @@ WRITE_HANDLER(riot3b_w) { logerror("riot3b_w: 0x%02x\n", data);}
 
 /* D/A converters */
 WRITE_HANDLER(da1_latch_w) {
-	/* logerror("da1_w: 0x%02x\n", data); */
+//	logerror("da1_w: 0x%02x\n", data);
 	if ( GTS80SS_locals.buf_pos>=GTS80SS_BUFFER_SIZE )
 		return;
 
@@ -307,7 +323,7 @@ static const int PhonemeDurationMS[65] =
 
 void GTS80SS_speachtimeout(int state)
 {
-	logerror("votrax timer timeout\n");
+//	logerror("votrax timer timeout\n");
 	GTS80SS_locals.timer = 0;
 	GTS80SS_nmi(1);
 }
@@ -320,7 +336,7 @@ WRITE_HANDLER(vs_latch_w) {
 	if ( pos<100 )
 		queue[pos++] = data;
 
-	logerror("Votrax: intonation %d, phoneme %02x %s\n",data >> 6,data & 0x3f,PhonemeTable[data & 0x3f]);
+//	logerror("Votrax: intonation %d, phoneme %02x %s\n",data >> 6,data & 0x3f,PhonemeTable[data & 0x3f]);
 
 	if ( data==0x3f ) {
 		if ( pos>1 ) {
@@ -424,6 +440,8 @@ void gts80ss_init(struct sndbrdData *brdData) {
 
 	memset(&GTS80SS_locals, 0x00, sizeof GTS80SS_locals);
 
+	GTS80SS_locals.boardData = *brdData;
+
 	/* int dips */
 	GTS80SS_locals.dips =
 		  ((core_getDip(4)&0x01) ? 0x08:0x00) /* S1: Self-Test */
@@ -442,14 +460,14 @@ void gts80ss_init(struct sndbrdData *brdData) {
 	
 	/* init RIOT */
     riot6532_config(3, &GTS80SS_riot6532_intf);
-	riot6532_set_clock(3, Machine->drv->cpu[GTS80_SCPU1].cpu_clock);
+	riot6532_set_clock(3, Machine->drv->cpu[GTS80S_locals.boardData.cpuNo].cpu_clock);
 
 	GTS80SS_locals.clock[0]  = 0;
 	GTS80SS_locals.buffer[0] = 0;
 	GTS80SS_locals.buf_pos   = 1;
 
 	for(i = 0; i<8; i++)
-		memcpy(memory_region(GTS80_MEMREG_SCPU1)+0x8000+0x1000*i, memory_region(GTS80_MEMREG_SCPU1)+0x7000, 0x1000);
+		memcpy(memory_region(GTS80SS_locals.boardData.cpuNo)+0x8000+0x1000*i, memory_region(GTS80SS_locals.boardData.cpuNo)+0x7000, 0x1000);
 
 	GTS80SS_nmi(1);
 	GTS80SS_locals.stream = stream_init("SND DAC", 100, 11025, 0, GTS80_ss_Update); 
