@@ -15,7 +15,7 @@ running in the same graphical environment will update its view...
 need I say more?
 
 - Added "SyncLevel" feature:
-  "Controller.Games(Controller.GameName).Settings.Value("synclevel")
+  'Controller.Games(Controller.GameName).Settings.Value("synclevel")'
   This will help to keep the Emulation in sync with any other thread
   running at the same time (like your favorite Pinball simulation software) ;)
   This should boost game performance even on lower-end PCs...

@@ -104,12 +104,20 @@ z:      xxxx address bits a19 .. a16 for memory accesses with a15 1 ?
 #include "driver.h"
 #include "state.h"
 #include "mamedbg.h"
+#include "m6502.h"
 #include "m4510.h"
 
 #include "ops02.h"
 #include "opsc02.h"
 #include "opsce02.h"
 #include "ops4510.h"
+
+#define M6502_NMI_VEC	0xfffa
+#define M6502_RST_VEC	0xfffc
+#define M6502_IRQ_VEC	0xfffe
+#define M4510_RST_VEC	M6502_RST_VEC
+#define M4510_IRQ_VEC	M6502_IRQ_VEC
+#define M4510_NMI_VEC	M6502_NMI_VEC
 
 #define VERBOSE 0
 

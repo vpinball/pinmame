@@ -39,15 +39,11 @@
 #define strcasecmp stricmp
 #endif
 
-#ifndef VPINMAME
-int index;	/* avoid a common "shadows global declaration" warning in the DOS build */
-#endif
-
-
 typedef unsigned char						UINT8;
 typedef signed char 						INT8;
 typedef unsigned short						UINT16;
 typedef signed short						INT16;
+
 #ifndef _WINDOWS_H
 typedef unsigned int						UINT32;
 typedef signed int							INT32;

@@ -91,7 +91,7 @@ struct EEPROM_interface eeprom_interface_93C46 =
 };
 
 
-void nvram_handler_93C46(void *file,int read_or_write)
+void nvram_handler_93C46(mame_file *file,int read_or_write)
 {
 	if (read_or_write)
 		EEPROM_save(file);
@@ -251,7 +251,7 @@ if (serial_count)
 
 	serial_count = 0;
 	sending = 0;
-	reset_delay = 5;	/* delay a little before returning setting data to 1 (needed by wbeachvl) */
+	reset_delay = intf->reset_delay;	/* delay a little before returning setting data to 1 (needed by wbeachvl) */
 }
 
 
@@ -332,14 +332,14 @@ logerror("EEPROM read %04x from address %02x\n",eeprom_data_bits,eeprom_read_add
 }
 
 
-void EEPROM_load(void *f)
+void EEPROM_load(mame_file *f)
 {
-	osd_fread(f,eeprom_data,(1 << intf->address_bits) * intf->data_bits / 8);
+	mame_fread(f,eeprom_data,(1 << intf->address_bits) * intf->data_bits / 8);
 }
 
-void EEPROM_save(void *f)
+void EEPROM_save(mame_file *f)
 {
-	osd_fwrite(f,eeprom_data,(1 << intf->address_bits) * intf->data_bits / 8);
+	mame_fwrite(f,eeprom_data,(1 << intf->address_bits) * intf->data_bits / 8);
 }
 
 void EEPROM_set_data(UINT8 *data, int length)

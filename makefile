@@ -1,13 +1,14 @@
 # set this to mame, mess or the destination you want to build
-TARGET=pinmame
 # TARGET = mame
 # TARGET = mess
 # TARGET = neomame
 # TARGET = cpmame
+# TARGET = pinmame
+# TARGET = mmsnd
 # example for a tiny compile
 # TARGET = tiny
 ifeq ($(TARGET),)
-TARGET = mame
+TARGET = pinmame
 endif
 
 # uncomment next line to include the debugger
@@ -24,6 +25,13 @@ endif
 
 # uncomment next line to use Assembler 68020 engine
 # X86_ASM_68020 = 1
+
+# uncomment next line to use DRC MIPS3 engine
+X86_MIPS3_DRC = 1
+
+# uncomment next line to use cygwin compiler
+# COMPILESYSTEM_CYGWIN	= 1
+
 
 # set this the operating system you're building for
 # MAMEOS = msdos
@@ -42,8 +50,7 @@ VPATH=src $(wildcard src/cpu/*)
 AR = @ar
 CC = @gcc
 LD = @gcc
-#ASM = @nasm
-ASM = @nasmw
+ASM = @nasm
 ASMFLAGS = -f coff
 MD = -mkdir
 RM = @rm -f
@@ -59,6 +66,10 @@ endif
 ifdef DEBUG
 NAME = $(PREFIX)$(TARGET)$(SUFFIX)d
 else
+ifdef ATHLON
+NAME = $(PREFIX)$(TARGET)$(SUFFIX)at
+ARCH = -march=athlon
+else
 ifdef K6
 NAME = $(PREFIX)$(TARGET)$(SUFFIX)k6
 ARCH = -march=k6
@@ -67,8 +78,14 @@ ifdef I686
 NAME = $(PREFIX)$(TARGET)$(SUFFIX)pp
 ARCH = -march=pentiumpro
 else
+ifdef P4
+NAME = $(PREFIX)$(TARGET)$(SUFFIX)p4
+ARCH = -march=pentium4
+else
 NAME = $(PREFIX)$(TARGET)$(SUFFIX)
 ARCH = -march=pentium
+endif
+endif
 endif
 endif
 endif
@@ -81,17 +98,21 @@ EMULATOR = $(NAME)$(EXE)
 
 DEFS = -DX86_ASM -DLSB_FIRST -DINLINE="static __inline__" -Dasm=__asm__
 
+CFLAGS = -std=gnu99 -Isrc -Isrc/includes -Isrc/$(MAMEOS) -I$(OBJ)/cpu/m68000 -Isrc/cpu/m68000
+
 ifdef SYMBOLS
-CFLAGS = -Isrc -Isrc/includes -Isrc/$(MAMEOS) -I$(OBJ)/cpu/m68000 -Isrc/cpu/m68000 \
-	-O0 -Wall -Werror -Wno-unused -g
+CFLAGS += -O0 -Wall -Werror -Wno-unused -g
 else
-CFLAGS = -Isrc -Isrc/includes -Isrc/$(MAMEOS) -I$(OBJ)/cpu/m68000 -Isrc/cpu/m68000 \
-	-DNDEBUG \
+CFLAGS += -DNDEBUG \
 	$(ARCH) -O3 -fomit-frame-pointer -fstrict-aliasing \
 	-Werror -Wall -Wno-sign-compare -Wunused \
 	-Wpointer-arith -Wbad-function-cast -Wcast-align -Waggregate-return \
 	-Wshadow -Wstrict-prototypes -Wundef \
-#	try with gcc 3.0 -Wpadded -Wunreachable-code -Wdisabled-optimization
+	-Wformat-security -Wwrite-strings \
+	-Wdisabled-optimization \
+#	-Wredundant-decls
+#	-Wfloat-equal
+#	-Wunreachable-code -Wpadded
 #	-W had to remove because of the "missing initializer" warning
 #	-Wlarger-than-262144  \
 #	-Wcast-qual \
@@ -126,6 +147,10 @@ OBJDIRS += $(OBJ)/mess $(OBJ)/mess/systems $(OBJ)/mess/machine \
 	$(OBJ)/mess/vidhrdw $(OBJ)/mess/sndhrdw $(OBJ)/mess/tools
 endif
 
+ifeq ($(TARGET),mmsnd)
+OBJDIRS	+= $(OBJ)/mmsnd $(OBJ)/mmsnd/machine $(OBJ)/mmsnd/drivers $(OBJ)/mmsnd/sndhrdw
+endif
+
 all:	maketree $(EMULATOR) extra
 
 # include the various .mak files
@@ -141,6 +166,11 @@ DBGDEFS =
 DBGOBJS =
 endif
 
+ifdef COMPILESYSTEM_CYGWIN
+CFLAGS	+= -mno-cygwin
+LDFLAGS	+= -mno-cygwin
+endif
+
 extra:	$(TOOLS) $(TEXTS)
 
 # combine the various definitions to one
@@ -152,9 +182,6 @@ $(EMULATOR): $(OBJS) $(COREOBJS) $(OSOBJS) $(DRVLIBS)
 	$(CC) $(CDEFS) $(CFLAGS) -c src/version.c -o $(OBJ)/version.o
 	@echo Linking $@...
 	$(LD) $(LDFLAGS) $(OBJS) $(COREOBJS) $(OSOBJS) $(LIBS) $(DRVLIBS) -o $@ $(MAPFLAGS)
-ifndef DEBUG
-	upx -9 $(EMULATOR)
-endif
 
 romcmp$(EXE): $(OBJ)/romcmp.o $(OBJ)/unzip.o
 	@echo Linking $@...
@@ -163,6 +190,10 @@ romcmp$(EXE): $(OBJ)/romcmp.o $(OBJ)/unzip.o
 hdcomp$(EXE): $(OBJ)/hdcomp.o $(OBJ)/harddisk.o $(OBJ)/md5.o
 	@echo Linking $@...
 	$(LD) $(LDFLAGS) $^ -lz -o $@
+
+xml2info$(EXE): src/xml2info/xml2info.c
+	@echo Compiling $@...
+	$(CC) -O1 -o xml2info$(EXE) $<
 
 ifdef PERL
 $(OBJ)/cpuintrf.o: src/cpuintrf.c rules.mak
@@ -241,3 +272,10 @@ clean68k:
 	$(RM) -r $(OBJ)/cpuintrf.o
 	$(RM) -r $(OBJ)/drivers/cps2.o
 	$(RM) -r $(OBJ)/cpu/m68000
+
+check: $(EMULATOR) xml2info$(EXE)
+	./$(EMULATOR) -listxml > $(NAME).xml
+	./xml2info < $(NAME).xml > $(NAME).lst
+	./xmllint --valid --noout $(NAME).xml
+
+

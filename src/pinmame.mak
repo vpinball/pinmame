@@ -1,4 +1,4 @@
-MAMEVER=5900
+MAMEVER=6900
 PINMAMESRC=wpc
 ISVER$(MAMEVER)=1
 #
@@ -20,7 +20,7 @@ DRVLIBS += $(PINOBJ)/sndbrd.o
 COREOBJS += $(PINOBJ)/driver.o $(OBJ)/cheat.o $(PINOBJ)/mech.o
 
 # taken from MESS
-DRVLIBS += $(OBJ)/vidhrdw/crtc6845.o $(OBJ)/machine/6532riot.o $(OBJ)/machine/6530riot.o
+DRVLIBS += $(OBJ)/vidhrdw/crtc6845.o $(OBJ)/machine/6530riot.o
 DRVLIBS += $(OBJ)/vidhrdw/tms9928a.o $(OBJ)/machine/pic8259.o
 
 #

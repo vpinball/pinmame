@@ -66,10 +66,10 @@ static const char *do_condition[] =
 	"FOREVER"
 };
 
-static const char *alumac_op[][2] = 
-{ 
-	{ "",                            "" }, 
-	{ "%s = %s * %s (RND)",          "%s = %s * %s (RND)" }, 
+static const char *alumac_op[][2] =
+{
+	{ "",                            "" },
+	{ "%s = %s * %s (RND)",          "%s = %s * %s (RND)" },
 	{ "%s = MR + %s * %s (RND)",     "%s = MR + %s * %s (RND)" },
 	{ "%s = MR - %s * %s (RND)",     "%s = MR - %s * %s (RND)" },
 	{ "%s = %s * %s (SS)",           "%s = 0" },
@@ -84,7 +84,7 @@ static const char *alumac_op[][2] =
 	{ "%s = MR - %s * %s (SS)",      "%s = MR - %s * %s (SS)" },
 	{ "%s = MR - %s * %s (US)",      "%s = MR - %s * %s (US)" },
 	{ "%s = MR - %s * %s (UU)",      "%s = MR - %s * %s (UU)" },
-	
+
 	{ "!%s = %s",                    "%s = 0" },
 	{ "!%s = %s + 1",                "%s = 1" },
 	{ "%s = %s + %s + C",            "%s = %s + %s + C" },
@@ -180,13 +180,13 @@ unsigned dasm2100(char *buffer, unsigned pc)
 	{
 		case 0x00:
 			/* 00000000 00000000 00000000  NOP */
-			sprintf(buffer, "NOP");
+			sprintf(buffer, "%s", "NOP");
 			break;
 		case 0x02:
 			/* 00000010 0000xxxx xxxxxxxx  modify flag out */
 			if ((op & 0x00f000) == 0x000000)
 			{
-				buffer += sprintf(buffer, condition[op & 15]);
+				buffer += sprintf(buffer, "%s", condition[op & 15]);
 				buffer += sprintf(buffer, flag_change[(op >> 4) & 3], "FLAG_OUT");
 				buffer += sprintf(buffer, flag_change[(op >> 6) & 3], "FL0");
 				buffer += sprintf(buffer, flag_change[(op >> 8) & 3], "FL1");
@@ -203,13 +203,13 @@ unsigned dasm2100(char *buffer, unsigned pc)
 		case 0x03:
 			/* 00000011 xxxxxxxx xxxxxxxx  call or jump on flag in */
 			if (op & 2)
-				buffer += sprintf(buffer, "IF FLAG_IN ");
+				buffer += sprintf(buffer, "%s", "IF FLAG_IN ");
 			else
-				buffer += sprintf(buffer, "IF NOT FLAG_IN ");
+				buffer += sprintf(buffer, "%s", "IF NOT FLAG_IN ");
 			if (op & 1)
-				buffer += sprintf(buffer, "CALL ");
+				buffer += sprintf(buffer, "%s", "CALL ");
 			else
-				buffer += sprintf(buffer, "JUMP ");
+				buffer += sprintf(buffer, "%s", "JUMP ");
 			temp = ((op >> 4) & 0x0fff) | ((op << 10) & 0x3000);
 			buffer += sprintf(buffer, "$%04X", temp);
 			break;
@@ -217,11 +217,11 @@ unsigned dasm2100(char *buffer, unsigned pc)
 			/* 00000100 00000000 000xxxxx  stack control */
 			if ((op & 0x00ffe0) == 0x000000)
 			{
-				if (op & 0x000010) buffer += sprintf(buffer, "POP PC ");
-				if (op & 0x000008) buffer += sprintf(buffer, "POP LOOP ");
-				if (op & 0x000004) buffer += sprintf(buffer, "POP CNTR ");
-				if ((op & 0x000003) == 0x000002) buffer += sprintf(buffer, "PUSH STAT ");
-				else if ((op & 0x000003) == 0x000003) buffer += sprintf(buffer, "POP STAT ");
+				if (op & 0x000010) buffer += sprintf(buffer, "%s", "POP PC ");
+				if (op & 0x000008) buffer += sprintf(buffer, "%s", "POP LOOP ");
+				if (op & 0x000004) buffer += sprintf(buffer, "%s", "POP CNTR ");
+				if ((op & 0x000003) == 0x000002) buffer += sprintf(buffer, "%s", "PUSH STAT ");
+				else if ((op & 0x000003) == 0x000003) buffer += sprintf(buffer, "%s", "POP STAT ");
 			}
 			else
 				buffer += sprintf(buffer, "??? (%06X)", op);
@@ -229,7 +229,7 @@ unsigned dasm2100(char *buffer, unsigned pc)
 		case 0x05:
 			/* 00000101 00000000 00000000  saturate MR */
 			if ((op & 0x00ffff) == 0x000000)
-				buffer += sprintf(buffer, "IF MV SAT MR");
+				buffer += sprintf(buffer, "%s", "IF MV SAT MR");
 			else
 				buffer += sprintf(buffer, "??? (%06X)", op);
 			break;
@@ -265,11 +265,11 @@ unsigned dasm2100(char *buffer, unsigned pc)
 			/* 00001010 00000000 0000xxxx  conditional return */
 			if ((op & 0x00ffe0) == 0x000000)
 			{
-				buffer += sprintf(buffer, condition[op & 15]);
+				buffer += sprintf(buffer, "%s", condition[op & 15]);
 				if (op & 0x000010)
-					buffer += sprintf(buffer, "RTI");
+					buffer += sprintf(buffer, "%s", "RTI");
 				else
-					buffer += sprintf(buffer, "RTS");
+					buffer += sprintf(buffer, "%s", "RTS");
 			}
 			else
 				buffer += sprintf(buffer, "??? (%06X)", op);
@@ -278,7 +278,7 @@ unsigned dasm2100(char *buffer, unsigned pc)
 			/* 00001011 00000000 xx00xxxx  conditional jump (indirect address) */
 			if ((op & 0x00ff00) == 0x000000)
 			{
-				buffer += sprintf(buffer, condition[op & 15]);
+				buffer += sprintf(buffer, "%s", condition[op & 15]);
 				if (op & 0x000010)
 					buffer += sprintf(buffer, "CALL (I%d)", 4 + ((op >> 6) & 3));
 				else
@@ -308,7 +308,7 @@ unsigned dasm2100(char *buffer, unsigned pc)
 			/* 00001110 0xxxxxxx xxxxxxxx  conditional shift */
 			if ((op & 0x0080f0) == 0x000000)
 			{
-				buffer += sprintf(buffer, condition[op & 15]);
+				buffer += sprintf(buffer, "%s", condition[op & 15]);
 				buffer += sprintf(buffer, shift_op[(op >> 11) & 15], shift_xop[(op >> 8) & 7]);
 			}
 			else
@@ -361,7 +361,7 @@ unsigned dasm2100(char *buffer, unsigned pc)
 			break;
 		case 0x20: case 0x21: case 0x22: case 0x23: case 0x24: case 0x25: case 0x26: case 0x27:
 			/* 00100xxx xxxxxxxx xxxxxxxx  conditional ALU/MAC */
-			buffer += sprintf(buffer, condition[op & 15]);
+			buffer += sprintf(buffer, "%s", condition[op & 15]);
 			buffer += alumac(buffer, (op >> 18) & 1, op);
 			break;
 		case 0x28: case 0x29: case 0x2a: case 0x2b: case 0x2c: case 0x2d: case 0x2e: case 0x2f:

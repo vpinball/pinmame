@@ -5,8 +5,11 @@
 #include <windows.h>
 #include <windowsx.h>
 #include <commctrl.h>
+#include <stdio.h>
+#include <math.h>
 
 #include "resource.h"
+#include "m32util.h"
 #include "options.h"
 #include "DataMap.h"
 
@@ -15,7 +18,9 @@ static int      numCtrls = 0;
 
 static BOOL validate(HWND hCtrl, DATA_MAP *lpDmap);
 
-void DataMapAdd(DWORD dwCtrlId, DataMapType dmType, CtrlType cType, void *var, int min, int max, void (*func)(HWND hWnd))
+void DataMapAdd(DWORD dwCtrlId, int dmType, int cType,
+				void *var, int encoded_type,void *encoded_var,
+				int min, int max, void (*func)(HWND hWnd))
 {
 	DATA_MAP	*lpDmap = 0;
 	int 		i;
@@ -41,8 +46,6 @@ void DataMapAdd(DWORD dwCtrlId, DataMapType dmType, CtrlType cType, void *var, i
 	case DM_BOOL:
 		lpDmap->bValue = *(BOOL*)var;
 		lpDmap->bVar   = (BOOL*)var;
-		if (ctrlNum == -1)
-			numCtrls++;
 		break;
 
 	case DM_INT:
@@ -50,13 +53,17 @@ void DataMapAdd(DWORD dwCtrlId, DataMapType dmType, CtrlType cType, void *var, i
 		lpDmap->nMin   = min;
 		lpDmap->nMax   = max;
 		lpDmap->nVar   = (int*)var;
-		if (ctrlNum == -1)
-			numCtrls++;
 		break;
 
 	case DM_NONE:
 		break;
 	}
+
+	lpDmap->encoded_type = encoded_type;
+	lpDmap->encoded_var = encoded_var;
+
+	if (ctrlNum == -1)
+		numCtrls++;
 }
 
 void PopulateControls(HWND hWnd)
@@ -89,6 +96,10 @@ void PopulateControls(HWND hWnd)
 		case CT_NONE:
 			break;
 		}
+
+		// we changed it, so it should totally redraw--might have a new
+		// background color
+		InvalidateRect(hCtrl,NULL,TRUE);
 	}
 }
 
@@ -103,7 +114,7 @@ void ReadControls(HWND hWnd)
 		lpDmap = &dataMap[i];
 
 		hCtrl = GetDlgItem(hWnd, lpDmap->dwCtrlId);
-		if (hCtrl == 0)
+		if (hCtrl == NULL)
 			continue;
 
 		switch (lpDmap->cType)
@@ -219,6 +230,86 @@ void InitDataMap(void)
 {
 	memset(&dataMap, '\0', sizeof(DATA_MAP) * 100);
 	numCtrls = 0;
+}
+
+int GetControlID(HWND hDlg,HWND hwnd)
+{
+	int i;
+
+	for (i=0;i<numCtrls;i++)
+	{
+		if (GetDlgItem(hDlg,dataMap[i].dwCtrlId) == hwnd)
+			return dataMap[i].dwCtrlId;
+	}
+	return -1;
+}
+
+int GetControlType(HWND hDlg,HWND hwnd)
+{
+	int i;
+
+	for (i=0;i<numCtrls;i++)
+	{
+		if (GetDlgItem(hDlg,dataMap[i].dwCtrlId) == hwnd)
+			return dataMap[i].cType;
+	}
+	return -1;
+}
+
+BOOL IsControlDifferent(HWND hDlg,HWND hwnd_ctrl,options_type *o,options_type *base)
+{
+	int i;
+	DATA_MAP *data_item;
+
+	for (i = 0; i < numCtrls; i++)
+	{
+		data_item = &dataMap[i];
+
+		if (GetDlgItem(hDlg,data_item->dwCtrlId) != hwnd_ctrl)
+			continue;
+
+		// found the item, now compare the value
+
+		switch (data_item->encoded_type)
+		{
+		case DM_BOOL :
+		{
+			BOOL value = *(BOOL *)data_item->encoded_var;
+			if (*(BOOL *)((char *)base + ((char *)data_item->encoded_var - (char *)o)) != value)
+				return TRUE;
+			return FALSE;
+		}
+			
+		case DM_INT :
+		{
+			int value = *(int *)data_item->encoded_var;
+			if (*(int *)((char *)base + ((char *)data_item->encoded_var - (char *)o)) != value)
+				return TRUE;
+			return FALSE;
+		}
+
+		case DM_DOUBLE :
+		{
+			double value = *(double *)data_item->encoded_var;
+			if (fabs(*(double *)((char *)base + ((char *)data_item->encoded_var - (char *)o)) - value) > 0.000001)
+				return TRUE;
+			return FALSE;
+		}
+
+		case DM_STRING :
+		{
+			char *value = *(char **)data_item->encoded_var;
+			if (strcmp(value,*(char **)((char *)base + ((char *)data_item->encoded_var - (char *)o)))
+				!= 0)
+				return TRUE;
+			return FALSE;
+		}
+
+		case DM_NONE:
+			break;
+		}
+	}
+	return FALSE;
 }
 
 /* End of source file */

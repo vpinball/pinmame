@@ -1,7 +1,7 @@
 /***************************************************************************
 
   M.A.M.E.32  -  Multiple Arcade Machine Emulator for Win32
-  Win32 Portions Copyright (C) 1997-2001 Michael Soderstrom and Chris Kirmse
+  Win32 Portions Copyright (C) 1997-2003 Michael Soderstrom and Chris Kirmse
 
   This file is part of MAME32, and may only be used, modified and
   distributed under the terms of the MAME license, in "readme.txt".
@@ -32,8 +32,6 @@
 	External variables
  ***************************************************************************/
 
-LPDIRECTINPUT di = NULL;
-
 /***************************************************************************
 	Internal structures
  ***************************************************************************/
@@ -41,6 +39,8 @@ LPDIRECTINPUT di = NULL;
 /***************************************************************************
 	Internal variables
  ***************************************************************************/
+
+static LPDIRECTINPUT di = NULL;
 
 static HANDLE hDLL = NULL;
 
@@ -150,6 +150,10 @@ HRESULT SetDIDwordProperty(LPDIRECTINPUTDEVICE2 pdev, REFGUID guidProperty,
 	return IDirectInputDevice2_SetProperty(pdev, guidProperty, &dipdw.diph);
 }
 
+LPDIRECTINPUT GetDirectInput(void)
+{
+	return di;
+}
 /***************************************************************************
 	Internal functions
  ***************************************************************************/

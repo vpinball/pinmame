@@ -158,6 +158,9 @@ INLINE void jmp_di( void )
 INLINE void clr_di( void )
 {
 	DIRECT;
+#ifdef MESS
+	RM(EAD);
+#endif
 	WM(EAD,0);
 	CLR_NZVC;
 	SEZ;
@@ -274,7 +277,8 @@ INLINE void sex( void )
 	UINT16 t;
 	t = SIGNED(B);
 	D = t;
-	CLR_NZV;
+//	CLR_NZV;	Tim Lindner 20020905: verified that V flag is not affected
+	CLR_NZ;
 	SET_NZ16(t);
 }
 
@@ -1181,7 +1185,10 @@ INLINE void jmp_ix( void )
 INLINE void clr_ix( void )
 {
 	fetch_effective_address();
-    WM(EAD,0);
+#ifdef MESS
+	RM(EAD);
+#endif
+	WM(EAD,0);
 	CLR_NZVC; SEZ;
 }
 
@@ -1299,6 +1306,9 @@ INLINE void jmp_ex( void )
 INLINE void clr_ex( void )
 {
 	EXTENDED;
+#ifdef MESS
+	RM(EAD);
+#endif
 	WM(EAD,0);
 	CLR_NZVC; SEZ;
 }

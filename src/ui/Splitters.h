@@ -46,8 +46,22 @@ void    AddSplitter(HWND hWnd, HWND hWndLeft, HWND hWndRight,
 void    RecalcSplitters(void);
 void    AdjustSplitter2Rect(HWND hWnd, LPRECT lpRect);
 void    AdjustSplitter1Rect(HWND hWnd, LPRECT lpRect);
-void    InitSplitters(void);
+BOOL    InitSplitters(void);
+void    SplittersExit(void);
+int     GetSplitterCount(void);
 
-extern int nSplitterOffset[];
+extern int *nSplitterOffset;
+
+typedef struct 
+{
+	double dPosition;
+	int nSplitterWindow;
+	int nLeftWindow;
+	int nRightWindow;
+	void (*pfnAdjust)(HWND hWnd,LPRECT lpRect);
+} SPLITTERINFO;
+
+extern const SPLITTERINFO g_splitterInfo[];
+
 
 #endif /* SPLITTER_H */

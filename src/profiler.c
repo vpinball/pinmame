@@ -1,7 +1,13 @@
 #include "driver.h"
 #include "osinline.h"
 
+
+/* in usrintf.c */
+extern int uirotcharwidth, uirotcharheight;
+
+
 static int use_profiler;
+
 
 /*
  * Versions of GNU C earlier that 2.7 have big problems with the UINT64
@@ -27,7 +33,7 @@ static int memory;
 
 
 static int FILO_type[10];
-static unsigned int FILO_start[10];
+static cycles_t FILO_start[10];
 static int FILO_length;
 
 void profiler_start(void)
@@ -43,7 +49,7 @@ void profiler_stop(void)
 
 void profiler__mark(int type)
 {
-	unsigned int curr_cycles;
+	cycles_t curr_cycles;
 
 
 	if (!use_profiler)
@@ -55,20 +61,20 @@ void profiler__mark(int type)
 	if (type >= PROFILER_CPU1 && type <= PROFILER_CPU8)
 		profile.cpu_context_switches[memory]++;
 
-	curr_cycles = osd_cycles();
+	curr_cycles = osd_profiling_ticks();
 
 	if (type != PROFILER_END)
 	{
-		if (FILO_length >= 10)
-		{
-logerror("Profiler error: FILO buffer overflow\n");
-			return;
-		}
-
 		if (FILO_length > 0)
 		{
+			if (FILO_length >= 10)
+			{
+logerror("Profiler error: FILO buffer overflow\n");
+				return;
+			}
+
 			/* handle nested calls */
-			profile.count[memory][FILO_type[FILO_length-1]] += (unsigned int)(curr_cycles - FILO_start[FILO_length-1]);
+			profile.count[memory][FILO_type[FILO_length-1]] += curr_cycles - FILO_start[FILO_length-1];
 		}
 		FILO_type[FILO_length] = type;
 		FILO_start[FILO_length] = curr_cycles;
@@ -82,8 +88,8 @@ logerror("Profiler error: FILO buffer underflow\n");
 			return;
 		}
 
-		profile.count[memory][FILO_type[FILO_length-1]] += (unsigned int)(curr_cycles - FILO_start[FILO_length-1]);
 		FILO_length--;
+		profile.count[memory][FILO_type[FILO_length]] += curr_cycles - FILO_start[FILO_length];
 		if (FILO_length > 0)
 		{
 			/* handle nested calls */
@@ -99,7 +105,7 @@ void profiler_show(struct mame_bitmap *bitmap)
 	UINT64 computed;
 	int line;
 	char buf[30];
-	static char *names[PROFILER_TOTAL] =
+	static const char *names[PROFILER_TOTAL] =
 	{
 		"CPU 1  ",
 		"CPU 2  ",
@@ -117,6 +123,7 @@ void profiler_show(struct mame_bitmap *bitmap)
 		"tmdraw ",
 		"tmdrroz",
 		"tmupdat",
+		"Artwork",
 		"Blit   ",
 		"Sound  ",
 		"Mixer  ",
@@ -177,7 +184,7 @@ void profiler_show(struct mame_bitmap *bitmap)
 			else
 				sprintf(buf,"%s%3d%%",names[i],
 						(int)((computed * 100 + total/2) / total));
-			ui_text(bitmap,buf,0,(line++)*Machine->uifontheight);
+			ui_text(bitmap,buf,0,(line++)*uirotcharheight);
 		}
 	}
 
@@ -185,7 +192,7 @@ void profiler_show(struct mame_bitmap *bitmap)
 	for (j = 0;j < MEMORY;j++)
 		i += profile.cpu_context_switches[j];
 	sprintf(buf,"CPU switches%4d",i / MEMORY);
-	ui_text(bitmap,buf,0,(line++)*Machine->uifontheight);
+	ui_text(bitmap,buf,0,(line++)*uirotcharheight);
 
 	/* reset the counters */
 	memory = (memory + 1) % MEMORY;

@@ -5,6 +5,7 @@
  *
  *	 Copyright (c) 1998,1999,2000 Juergen Buchmueller, all rights reserved.
  *	 65sc02 core Copyright (c) 2000 Peter Trauner.
+ *	 Deco16 portions Copyright (c) 2001 Bryan McPhail.
  *
  *	 - This source code is released as freeware for non-commercial purposes.
  *	 - You are free to use and redistribute this code in modified or
@@ -50,6 +51,9 @@
 #endif
 #if (HAS_M65SC02)
 #define SUBTYPE_65SC02	4
+#endif
+#if (HAS_DECO16)
+#define SUBTYPE_DECO16	5
 #endif
 
 enum {
@@ -321,6 +325,39 @@ extern void m65sc02_set_irq_line(int irqline, int state);
 extern void m65sc02_set_irq_callback(int (*callback)(int irqline));
 extern const char *m65sc02_info(void *context, int regnum);
 extern unsigned m65sc02_dasm(char *buffer, unsigned pc);
+#endif
+
+/****************************************************************************
+ * The DECO CPU16
+ ****************************************************************************/
+#if (HAS_DECO16)
+#define DECO16_A						M6502_A
+#define DECO16_X						M6502_X
+#define DECO16_Y						M6502_Y
+#define DECO16_S						M6502_S
+#define DECO16_PC						M6502_PC
+#define DECO16_P						M6502_P
+#define DECO16_EA						M6502_EA
+#define DECO16_ZP						M6502_ZP
+#define DECO16_NMI_STATE				M6502_NMI_STATE
+#define DECO16_IRQ_STATE				M6502_IRQ_STATE
+
+#define DECO16_IRQ_LINE					M6502_IRQ_LINE
+
+#define deco16_ICount					m6502_ICount
+
+extern void deco16_init(void);
+extern void deco16_reset(void *param);
+extern void deco16_exit(void);
+extern int	deco16_execute(int cycles);
+extern unsigned deco16_get_context(void *dst);
+extern void deco16_set_context(void *src);
+extern unsigned deco16_get_reg(int regnum);
+extern void deco16_set_reg(int regnum, unsigned val);
+extern void deco16_set_irq_line(int irqline, int state);
+extern void deco16_set_irq_callback(int (*callback)(int irqline));
+extern const char *deco16_info(void *context, int regnum);
+extern unsigned deco16_dasm(char *buffer, unsigned pc);
 #endif
 
 #ifdef MAME_DEBUG

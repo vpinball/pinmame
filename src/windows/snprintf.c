@@ -49,6 +49,9 @@
  *    fixed handling of %.0f
  *    added test for HAVE_LONG_DOUBLE
  *
+ *  Chris Kirmse (ckirmse@yahoo.com) May 2003
+ *    fixed handling of leading zeros in the fractional part of a float.
+ *
  **************************************************************/
 
 /* #include "config.h" */
@@ -100,7 +103,7 @@ int vsnprintf (char *str, size_t count, const char *fmt, va_list arg);
 static void dopr (char *buffer, size_t maxlen, const char *format,
                   va_list args);
 static void fmtstr (char *buffer, size_t *currlen, size_t maxlen,
-		    char *value, int flags, int min, int max);
+		    const char *value, int flags, int min, int max);
 static void fmtint (char *buffer, size_t *currlen, size_t maxlen,
 		    long value, int base, int min, int max, int flags);
 static void fmtfp (char *buffer, size_t *currlen, size_t maxlen,
@@ -266,7 +269,7 @@ static void dopr (char *buffer, size_t maxlen, const char *format, va_list args)
       case 'd':
       case 'i':
 	if (cflags == DP_C_SHORT)
-	  value = va_arg (args, short int);
+	  value = va_arg (args, /*short*/ int);
 	else if (cflags == DP_C_LONG)
 	  value = va_arg (args, long int);
 	else
@@ -276,7 +279,7 @@ static void dopr (char *buffer, size_t maxlen, const char *format, va_list args)
       case 'o':
 	flags |= DP_F_UNSIGNED;
 	if (cflags == DP_C_SHORT)
-	  value = va_arg (args, unsigned short int);
+	  value = va_arg (args, unsigned /*short*/ int);
 	else if (cflags == DP_C_LONG)
 	  value = va_arg (args, unsigned long int);
 	else
@@ -286,7 +289,7 @@ static void dopr (char *buffer, size_t maxlen, const char *format, va_list args)
       case 'u':
 	flags |= DP_F_UNSIGNED;
 	if (cflags == DP_C_SHORT)
-	  value = va_arg (args, unsigned short int);
+	  value = va_arg (args, unsigned /*short*/ int);
 	else if (cflags == DP_C_LONG)
 	  value = va_arg (args, unsigned long int);
 	else
@@ -298,7 +301,7 @@ static void dopr (char *buffer, size_t maxlen, const char *format, va_list args)
       case 'x':
 	flags |= DP_F_UNSIGNED;
 	if (cflags == DP_C_SHORT)
-	  value = va_arg (args, unsigned short int);
+	  value = va_arg (args, unsigned /*short*/ int);
 	else if (cflags == DP_C_LONG)
 	  value = va_arg (args, unsigned long int);
 	else
@@ -330,7 +333,7 @@ static void dopr (char *buffer, size_t maxlen, const char *format, va_list args)
 	  fvalue = va_arg (args, double);
 	break;
       case 'c':
-	dopr_outch (buffer, &currlen, maxlen, (char) va_arg (args, int));
+	dopr_outch (buffer, &currlen, maxlen, va_arg (args, int));
 	break;
       case 's':
 	strvalue = va_arg (args, char *);
@@ -392,7 +395,7 @@ static void dopr (char *buffer, size_t maxlen, const char *format, va_list args)
 }
 
 static void fmtstr (char *buffer, size_t *currlen, size_t maxlen,
-		    char *value, int flags, int min, int max)
+		    const char *value, int flags, int min, int max)
 {
   int padlen, strln;     /* amount to pad */
   int cnt = 0;
@@ -497,7 +500,7 @@ static void fmtint (char *buffer, size_t *currlen, size_t maxlen,
 
   /* Sign */
   if (signvalue)
-    dopr_outch (buffer, currlen, maxlen, (char) signvalue);
+    dopr_outch (buffer, currlen, maxlen, signvalue);
 
   /* Zeros */
   if (zpadlen > 0)
@@ -547,7 +550,7 @@ static long round (LDOUBLE value)
 {
   long intpart;
 
-  intpart = (long) value;
+  intpart = value;
   value = value - intpart;
   if (value >= 0.5)
     intpart++;
@@ -592,7 +595,7 @@ static void fmtfp (char *buffer, size_t *currlen, size_t maxlen,
   if (flags & DP_F_UP) caps = 1; /* Should characters be upper case? */
 #endif
 
-  intpart = (long) ufvalue;
+  intpart = ufvalue;
 
   /*
    * Sorry, we only support 9 digits past the decimal because of our
@@ -609,7 +612,7 @@ static void fmtfp (char *buffer, size_t *currlen, size_t maxlen,
   if (fracpart >= pow10 (max))
   {
     intpart++;
-    fracpart -= round(pow10(max));
+    fracpart -= pow10 (max);
   }
 
 #ifdef DEBUG_SNPRINTF
@@ -648,7 +651,7 @@ static void fmtfp (char *buffer, size_t *currlen, size_t maxlen,
   {
     if (signvalue)
     {
-      dopr_outch (buffer, currlen, maxlen, (char) signvalue);
+      dopr_outch (buffer, currlen, maxlen, signvalue);
       --padlen;
       signvalue = 0;
     }
@@ -664,7 +667,7 @@ static void fmtfp (char *buffer, size_t *currlen, size_t maxlen,
     --padlen;
   }
   if (signvalue)
-    dopr_outch (buffer, currlen, maxlen, (char) signvalue);
+    dopr_outch (buffer, currlen, maxlen, signvalue);
 
   while (iplace > 0)
     dopr_outch (buffer, currlen, maxlen, iconvert[--iplace]);
@@ -675,7 +678,15 @@ static void fmtfp (char *buffer, size_t *currlen, size_t maxlen,
    */
   if (max > 0)
   {
+    int i;
     dopr_outch (buffer, currlen, maxlen, '.');
+
+    /* print leading zeros of the fractional part */
+    for (i=0;i<max - fplace;i++)
+    {
+      dopr_outch(buffer,currlen,maxlen,'0');
+	  zpadlen--;
+    }
 
     while (fplace > 0)
       dopr_outch (buffer, currlen, maxlen, fconvert[--fplace]);
@@ -759,7 +770,7 @@ int main (void)
     NULL
   };
   double fp_nums[] = { -1.5, 134.21, 91340.2, 341.1234, 0203.9, 0.96, 0.996,
-    0.9996, 1.996, 4.136, 0};
+    0.9996, 1.996, 4.136, 1.05, 0};
   char *int_fmt[] = {
     "%-1.5d",
     "%1.5d",

@@ -1,7 +1,7 @@
 #ifndef _8255PPI_H_
 #define _8255PPI_H_
 
-#define MAX_8255 4
+#define MAX_8255 8
 
 typedef struct
 {
@@ -40,8 +40,16 @@ READ_HANDLER( ppi8255_0_r );
 READ_HANDLER( ppi8255_1_r );
 READ_HANDLER( ppi8255_2_r );
 READ_HANDLER( ppi8255_3_r );
+READ_HANDLER( ppi8255_4_r );
+READ_HANDLER( ppi8255_5_r );
+READ_HANDLER( ppi8255_6_r );
+READ_HANDLER( ppi8255_7_r );
 WRITE_HANDLER( ppi8255_0_w );
 WRITE_HANDLER( ppi8255_1_w );
 WRITE_HANDLER( ppi8255_2_w );
 WRITE_HANDLER( ppi8255_3_w );
+WRITE_HANDLER( ppi8255_4_w );
+WRITE_HANDLER( ppi8255_5_w );
+WRITE_HANDLER( ppi8255_6_w );
+WRITE_HANDLER( ppi8255_7_w );
 #endif

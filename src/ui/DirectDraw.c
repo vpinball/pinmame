@@ -1,7 +1,7 @@
 /***************************************************************************
 
   M.A.M.E.32  -  Multiple Arcade Machine Emulator for Win32
-  Win32 Portions Copyright (C) 1997-2001 Michael Soderstrom and Chris Kirmse
+  Win32 Portions Copyright (C) 1997-2003 Michael Soderstrom and Chris Kirmse
 
   This file is part of MAME32, and may only be used, modified and
   distributed under the terms of the MAME license, in "readme.txt".
@@ -20,7 +20,10 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#if !defined(__GNUC__)
+
+#ifdef __GNUC__
+#define NONAMELESSUNION
+#else
 #include <multimon.h>
 #endif
 #include <ddraw.h>
@@ -45,7 +48,7 @@ static BOOL WINAPI DDEnumOldInfo(GUID FAR *lpGUID,
 								 LPVOID    lpContext);
 
 static void CalculateDisplayModes(void);
-static HRESULT CALLBACK EnumDisplayModesCallback(DDSURFACEDESC* pddsd, LPVOID Context);
+static HRESULT CALLBACK EnumDisplayModesCallback(LPDDSURFACEDESC pddsd, LPVOID Context);
 static HRESULT CALLBACK EnumDisplayModesCallback2(DDSURFACEDESC2* pddsd, LPVOID Context);
 
 /***************************************************************************
@@ -344,11 +347,11 @@ static BOOL WINAPI DDEnumOldInfo(GUID FAR *lpGUID,
 	return DDEnumInfo(lpGUID, lpDriverDescription, lpDriverName, lpContext, NULL);
 }
 
-static HRESULT CALLBACK EnumDisplayModesCallback(DDSURFACEDESC* pddsd, LPVOID Context)
+static HRESULT CALLBACK EnumDisplayModesCallback(LPDDSURFACEDESC pddsd, LPVOID Context)
 {
-	struct tDisplayModes* pDisplayModes = (struct tDisplayModes*)Context;
 	DWORD dwDepth = pddsd->ddpfPixelFormat.DUMMYUNIONNAMEN(1).dwRGBBitCount;
 
+	struct tDisplayModes* pDisplayModes = (struct tDisplayModes*)Context;
 	if (dwDepth == 16
 	||	dwDepth == 24
 	||	dwDepth == 32)
@@ -370,11 +373,7 @@ static HRESULT CALLBACK EnumDisplayModesCallback2(DDSURFACEDESC2* pddsd2, LPVOID
 {
 	struct tDisplayModes* pDisplayModes = (struct tDisplayModes*)Context;
 
-#if (!defined(DX_SDK) || (DX_SDK <= 6)) && !defined(_MSC_VER)
-	DWORD dwDepth = pddsd2->ddpfPixelFormat.DUMMYUNIONNAMEN(1).dwRGBBitCount;
-#else
 	DWORD dwDepth = pddsd2->DUMMYUNIONNAMEN(4).ddpfPixelFormat.DUMMYUNIONNAMEN(1).dwRGBBitCount;
-#endif
 
 	if (dwDepth == 16
 	||	dwDepth == 24

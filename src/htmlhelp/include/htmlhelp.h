@@ -5,11 +5,11 @@
 * Copyright (c) 1996-1997, Microsoft Corp. All rights reserved.             *
 *                                                                           *
 ****************************************************************************/
-
+#ifdef _MSC_VER
 #if _MSC_VER > 1000
 #pragma once
 #endif
-
+#endif
 #ifndef __HTMLHELP_H__
 #define __HTMLHELP_H__
 
@@ -26,9 +26,9 @@ extern "C" {
 
 #define HH_DISPLAY_TOPIC        0x0000
 #define HH_HELP_FINDER          0x0000  // WinHelp equivalent
-#define HH_DISPLAY_TOC          0x0001  
-#define HH_DISPLAY_INDEX        0x0002  
-#define HH_DISPLAY_SEARCH       0x0003  
+#define HH_DISPLAY_TOC          0x0001
+#define HH_DISPLAY_INDEX        0x0002
+#define HH_DISPLAY_SEARCH       0x0003
 #define HH_SET_WIN_TYPE         0x0004
 #define HH_GET_WIN_TYPE         0x0005
 #define HH_GET_WIN_HANDLE       0x0006
@@ -53,7 +53,7 @@ extern "C" {
 #define HH_SET_EXCLUSIVE_FILTER 0x0019  // set exclusive filtering method for untyped topics to be excluded from display
 #define HH_INITIALIZE            0x001C  // Initializes the help system.
 #define HH_UNINITIALIZE          0x001D  // Uninitializes the help system.
-#define HH_PRETRANSLATEMESSAGE  0x00fd  // Pumps messages. (NULL, NULL, MSG*). 
+#define HH_PRETRANSLATEMESSAGE  0x00fd  // Pumps messages. (NULL, NULL, MSG*).
 #define HH_SET_GLOBAL_PROPERTY  0x00fc  // Set a global property. (NULL, NULL, HH_GPROP)
 
 #define HHWIN_PROP_TAB_AUTOHIDESHOW (1 << 0)    // Automatically hide/show tri-pane window
@@ -391,7 +391,7 @@ HtmlHelpW(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Global Control Properties. 
+// Global Control Properties.
 //
 typedef enum tagHH_GPROPID
 {

@@ -345,29 +345,12 @@ static WRITE_HANDLER(sound1_w) {
 	sndbrd_0_data_w(0, data);
 }
 
-/*-----------------------------------------------
-/ Load/Save static ram
-/ Save RAM & CMOS Information
-/-------------------------------------------------*/
-static UINT8 *ATARI_CMOS;
-
-static WRITE_HANDLER(ATARI_CMOS_w) {
-  ATARI_CMOS[offset] = data;
-}
-
-static READ_HANDLER(ATARI_CMOS_r) {
-  return ATARI_CMOS[offset];
-}
-
-static NVRAM_HANDLER(ATARI2) {
-	core_nvram(file, read_or_write, ATARI_CMOS, 256, 0x00);
-}
-
 /*-----------------------------------------
 /  Memory map for CPU board (GENERATION 1)
 /------------------------------------------*/
 static MEMORY_READ_START(ATARI1_readmem)
 {0x0000,0x01ff, ram_r},			/* RAM */
+{0x0200,0x0200,	MRA_ROM},		/* fake NVRAM */
 {0x1080,0x1080,	latch1080_r},	/* read latches */
 {0x1084,0x1084,	latch1084_r},	/* read latches */
 {0x1088,0x1088,	latch1088_r},	/* read latches */
@@ -380,6 +363,7 @@ MEMORY_END
 
 static MEMORY_WRITE_START(ATARI1_writemem)
 {0x0000,0x01ff, ram_w, &ram},	/* RAM */
+{0x0200,0x0200,	MWA_RAM, &generic_nvram, &generic_nvram_size},	/* fake NVRAM */
 {0x1000,0x107f, ram_w},			/* RAM mirror, on Middle Earth only */
 {0x1080,0x1080,	latch1080_w},	/* solenoids */
 {0x1081,0x1083, ram_w1},		/* RAM mirror, on Middle Earth only */
@@ -404,7 +388,7 @@ MEMORY_END
 static MEMORY_READ_START(ATARI2_readmem)
 {0x0000,0x00ff,	MRA_RAM},	/* RAM */
 {0x0100,0x01ff,	MRA_NOP},	/* unmapped RAM */
-{0x0800,0x08ff,	ATARI_CMOS_r},	/* NVRAM */
+{0x0800,0x08ff,	MRA_RAM},	/* NVRAM */
 {0x0900,0x09ff,	MRA_NOP},	/* unmapped RAM */
 {0x1000,0x1007,	sw_r},		/* inputs */
 {0x2000,0x2003,	dip_r},		/* dip switches */
@@ -417,7 +401,7 @@ static MEMORY_WRITE_START(ATARI2_writemem)
 {0x0000,0x00ff,	MWA_RAM},	/* RAM */
 {0x0100,0x0100,	MWA_NOP},	/* unmapped RAM */
 {0x0700,0x07ff,	MWA_NOP},	/* unmapped RAM */
-{0x0800,0x08ff,	ATARI_CMOS_w, &ATARI_CMOS},	/* NVRAM */
+{0x0800,0x08ff,	MWA_RAM, &generic_nvram, &generic_nvram_size},	/* NVRAM */
 {0x1800,0x1800,	sound0_w},	/* sound */
 {0x1820,0x1820,	sound1_w},	/* sound */
 {0x1840,0x1846,	disp0_w},	/* display data output */
@@ -462,6 +446,7 @@ MACHINE_DRIVER_START(ATARI1)
   MDRV_CPU_VBLANK_INT(ATARI1_vblank, 1)
   MDRV_CPU_PERIODIC_INT(ATARI1_nmihi, ATARI_NMIFREQ)
   MDRV_CORE_INIT_RESET_STOP(ATARI1,NULL,ATARI)
+  MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_DIPS(20)
   MDRV_SWITCH_UPDATE(ATARI1)
 
@@ -487,7 +472,7 @@ MACHINE_DRIVER_START(ATARI2)
   MDRV_CPU_VBLANK_INT(ATARI2_vblank, 1)
   MDRV_CPU_PERIODIC_INT(ATARI2_irqhi, ATARI_IRQFREQ)
   MDRV_CORE_INIT_RESET_STOP(ATARI2,NULL,ATARI)
-  MDRV_NVRAM_HANDLER(ATARI2)
+  MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_DIPS(32)
   MDRV_SWITCH_UPDATE(ATARI2)
   MDRV_DIAGNOSTIC_LEDH(4)

@@ -41,17 +41,52 @@
 static BOOL         bTracking = 0;
 static int          numSplitters = 0;
 static int          currentSplitter = 0;
-static HZSPLITTER   splitter[SPLITTER_MAX];
+static HZSPLITTER   *splitter;
 static LPHZSPLITTER lpCurSpltr = 0;
 static HCURSOR      hSplitterCursor = 0;
 
-int nSplitterOffset[SPLITTER_MAX];
+int *nSplitterOffset;
 
-void InitSplitters(void)
+BOOL InitSplitters(void)
 {
+	int nSplitterCount;
+
 	/* load the cursor for the splitter */
 	hSplitterCursor = LoadCursor(GetModuleHandle(0), MAKEINTRESOURCE(IDC_CURSOR_HSPLIT));
+
+	nSplitterCount = GetSplitterCount();
+
+	splitter = malloc(sizeof(HZSPLITTER) * nSplitterCount);
+	if (!splitter)
+		goto error;		
+	memset(splitter, 0, sizeof(HZSPLITTER) * nSplitterCount);
+
+	nSplitterOffset = malloc(sizeof(int) * nSplitterCount);
+	if (!nSplitterOffset)
+		goto error;		
+	memset(nSplitterOffset, 0, sizeof(int) * nSplitterCount);	
+
+	return TRUE;
+
+error:
+	SplittersExit();
+	return FALSE;
 }
+
+void SplittersExit(void)
+{
+	if (splitter)
+	{
+		free(splitter);
+		splitter = NULL;
+	}
+	if (nSplitterOffset)
+	{
+		free(nSplitterOffset);
+		nSplitterOffset = NULL;
+	}
+}
+
 
 /* Called with hWnd = Parent Window */
 void CalcSplitter(HWND hWnd, LPHZSPLITTER lpSplitter)
@@ -90,15 +125,14 @@ void CalcSplitter(HWND hWnd, LPHZSPLITTER lpSplitter)
 
 void AdjustSplitter2Rect(HWND hWnd, LPRECT lpRect)
 {
-	RECT rect;
 	RECT pRect;
 
 	GetClientRect(hWnd, &pRect);
-	GetClientRect(GetDlgItem(hWnd, IDC_SSDEFPIC), &rect);
+
 	if (lpRect->right > pRect.right)
 		lpRect->right = pRect.right;
 
-	lpRect->right = MIN(lpRect->right - (rect.right - rect.left), lpRect->right);
+	lpRect->right = MIN(lpRect->right - GetMinimumScreenShotWindowWidth(), lpRect->right);
 
 	lpRect->left = MAX((pRect.right - (pRect.right - pRect.left)) / 2, lpRect->left);
 }
@@ -129,32 +163,48 @@ void OnSizeSplitter(HWND hWnd)
 {
 	static int firstTime = TRUE;
 	int changed = FALSE;
-	RECT pRect;
+	RECT rWindowRect;
 	POINT p = {0,0};
+	int i;
+	int nSplitterCount;
+	BOOL bMustChange;
+
+	nSplitterCount = GetSplitterCount();
 
 	if (firstTime)
 	{
-		nSplitterOffset[0] = GetSplitterPos(SPLITTER_LEFT);
-		nSplitterOffset[1] = GetSplitterPos(SPLITTER_RIGHT);
+		for (i = 0; i < nSplitterCount; i++)
+			nSplitterOffset[i] = GetSplitterPos(i);
 		changed = TRUE;
 		firstTime = FALSE;
 	}
 
-	ClientToScreen(splitter[0].m_hWnd, &p);
-	GetWindowRect(hWnd, &pRect);
-	if (!PtInRect(&pRect, p) || nSplitterOffset[0] >= nSplitterOffset[1])
+	GetWindowRect(hWnd, &rWindowRect);
+
+	for (i = 0; i < nSplitterCount; i++)
 	{
-		nSplitterOffset[0] = (pRect.right - pRect.left) / 4;
-		changed = TRUE;
+		p.x = 0;
+		p.y = 0;
+		ClientToScreen(splitter[i].m_hWnd, &p);
+
+		/* We must change if our window is not in the window rect */
+		bMustChange = !PtInRect(&rWindowRect, p);
+
+		/* We should also change if we are ahead the next splitter */
+		if ((i < nSplitterCount-1) && (nSplitterOffset[i] >= nSplitterOffset[i+1]))
+			bMustChange = TRUE;
+
+		/* ...or if we are behind the previous splitter */
+		if ((i > 0) && (nSplitterOffset[i] <= nSplitterOffset[i-1]))
+			bMustChange = TRUE;
+
+		if (bMustChange)
+		{
+			nSplitterOffset[i] = (rWindowRect.right - rWindowRect.left) * g_splitterInfo[i].dPosition;
+			changed = TRUE;
+		}
 	}
-	p.x = 0;
-	p.y = 0;
-	ClientToScreen(splitter[1].m_hWnd, &p);
-	if (!PtInRect(&pRect, p) || nSplitterOffset[1] <= nSplitterOffset[0])
-	{
-		nSplitterOffset[1] = (pRect.right - pRect.left) / 2;
-		changed = TRUE;
-	}
+
 	if (changed)
 	{
 		ResizePickerControls(hWnd);
@@ -167,7 +217,7 @@ void AddSplitter(HWND hWnd, HWND hWndLeft, HWND hWndRight, void (*func)(HWND hWn
 {
 	LPHZSPLITTER lpSpltr = &splitter[numSplitters];
 
-	if (numSplitters >= SPLITTER_MAX)
+	if (numSplitters >= GetSplitterCount())
 		return;
 
 	lpSpltr->m_hWnd = hWnd;
@@ -331,5 +381,12 @@ void OnLButtonUp(HWND hWnd, UINT nFlags, POINTS p)
 	}
 }
 
+int GetSplitterCount(void)
+{
+	int nSplitterCount = 0;
+	while(g_splitterInfo[nSplitterCount].dPosition > 0)
+		nSplitterCount++;
+	return nSplitterCount;
+}
 
 /* End of file */

@@ -198,3 +198,4 @@ WRITE_HANDLER( hc55516_1_clock_clear_w )	{ hc55516_clock_clear_w(1,data); }
 WRITE_HANDLER( hc55516_1_clock_set_w )		{ hc55516_clock_set_w(1,data); }
 WRITE_HANDLER( hc55516_1_digit_clock_clear_w )	{ hc55516_digit_clock_clear_w(1,data); }
 #endif /* PINMAME */
+

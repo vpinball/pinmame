@@ -29,7 +29,7 @@
   (no program to test, all illegal opcodes not using adc/sbc should
   be the same as in nmos6502/6510!?)
 
-  b flag handling might be changed, 
+  b flag handling might be changed,
   although only nmos series b-flag handling is quite sure
 */
 

@@ -167,8 +167,8 @@ static int addr32bit=0;
 
 /* watch out for aad && aam with odd operands */
 
-static char *(*opmap1)[256];
-static char *op86map1[256] = {
+static const char *(*opmap1)[256];
+static const char *op86map1[256] = {
 /* 0 */
   "add %Eb,%Gb",      "add %Ev,%Gv",     "add %Gb,%Eb",    "add %Gv,%Ev",
   "add al,%Ib",       "add %eax,%Iv",    "push es",        "pop es",
@@ -257,7 +257,7 @@ static char *op86map1[256] = {
   "cld",              "std",             "%g3",            "%g4"
 };
 
-static char *op186map1[256] = {
+static const char *op186map1[256] = {
 /* 0 */
   "add %Eb,%Gb",      "add %Ev,%Gv",     "add %Gb,%Eb",    "add %Gv,%Ev",
   "add al,%Ib",       "add %eax,%Iv",    "push es",        "pop es",
@@ -346,7 +346,7 @@ static char *op186map1[256] = {
   "cld",              "std",             "%g3",            "%g4"
 };
 
-static char *opv30map1[256] = {
+static const char *opv30map1[256] = {
 /* 0 */
   "add %Eb,%Gb",      "add %Ev,%Gv",     "add %Gb,%Eb",    "add %Gv,%Ev",
   "add al,%Ib",       "add %eax,%Iv",    "push es",        "pop es",
@@ -436,7 +436,7 @@ static char *opv30map1[256] = {
 };
 
 #if (HAS_I286)
-static char *op286map1[256] = {
+static const char *op286map1[256] = {
 /* 0 */
   "add %Eb,%Gb",      "add %Ev,%Gv",     "add %Gb,%Eb",    "add %Gv,%Ev",
   "add al,%Ib",       "add %eax,%Iv",    "push es",        "pop es",
@@ -526,7 +526,7 @@ static char *op286map1[256] = {
 };
 #endif
 
-static char *op386map1[256] = {
+static const char *op386map1[256] = {
 /* 0 */
   "add %Eb,%Gb",      "add %Ev,%Gv",     "add %Gb,%Eb",    "add %Gv,%Ev",
   "add al,%Ib",       "add %eax,%Iv",    "push es",        "pop es",
@@ -615,7 +615,7 @@ static char *op386map1[256] = {
   "cld",              "std",             "%g3",            "%g4"
 };
 
-static char *second[] = {
+static const char *second[] = {
 /* 0 */
   "%g5",              "%g6",             "lar %Gv,%Ew",    "lsl %Gv,%Ew",
   0,                  "loadall",         "clts",           "loadall",
@@ -682,7 +682,7 @@ static char *second[] = {
   0, 0, 0, 0, 0, 0, 0, 0,
 };
 
-static char *groups[][8] = {   /* group 0 is group 3 for %Ev set */
+static const char *groups[][8] = {   /* group 0 is group 3 for %Ev set */
 /* 0 */
   { "add",            "or",              "adc",            "sbb",
     "and",            "sub",             "xor",            "cmp"           },
@@ -711,39 +711,39 @@ static char *groups[][8] = {   /* group 0 is group 3 for %Ev set */
 
 /* zero here means invalid.  If first entry starts with '*', use st(i) */
 /* no assumed %EFs here.  Indexed by RM(modrm())                       */
-static char *f0[]     = { 0, 0, 0, 0, 0, 0, 0, 0};
-static char *fop_9[]  = { "*fxch st,%GF" };
-static char *fop_10[] = { "fnop", 0, 0, 0, 0, 0, 0, 0 };
-static char *fop_12[] = { "fchs", "fabs", 0, 0, "ftst", "fxam", 0, 0 };
-static char *fop_13[] = { "fld1", "fldl2t", "fldl2e", "fldpi",
+static const char *f0[]     = { 0, 0, 0, 0, 0, 0, 0, 0};
+static const char *fop_9[]  = { "*fxch st,%GF" };
+static const char *fop_10[] = { "fnop", 0, 0, 0, 0, 0, 0, 0 };
+static const char *fop_12[] = { "fchs", "fabs", 0, 0, "ftst", "fxam", 0, 0 };
+static const char *fop_13[] = { "fld1", "fldl2t", "fldl2e", "fldpi",
                    "fldlg2", "fldln2", "fldz", 0 };
-static char *fop_14[] = { "f2xm1", "fyl2x", "fptan", "fpatan",
+static const char *fop_14[] = { "f2xm1", "fyl2x", "fptan", "fpatan",
                    "fxtract", "fprem1", "fdecstp", "fincstp" };
-static char *fop_15[] = { "fprem", "fyl2xp1", "fsqrt", "fsincos",
+static const char *fop_15[] = { "fprem", "fyl2xp1", "fsqrt", "fsincos",
                    "frndint", "fscale", "fsin", "fcos" };
-static char *fop_21[] = { 0, "fucompp", 0, 0, 0, 0, 0, 0 };
-static char *fop_28[] = { 0, 0, "fclex", "finit", 0, 0, 0, 0 };
-static char *fop_32[] = { "*fadd %GF,st" };
-static char *fop_33[] = { "*fmul %GF,st" };
-static char *fop_36[] = { "*fsubr %GF,st" };
-static char *fop_37[] = { "*fsub %GF,st" };
-static char *fop_38[] = { "*fdivr %GF,st" };
-static char *fop_39[] = { "*fdiv %GF,st" };
-static char *fop_40[] = { "*ffree %GF" };
-static char *fop_42[] = { "*fst %GF" };
-static char *fop_43[] = { "*fstp %GF" };
-static char *fop_44[] = { "*fucom %GF" };
-static char *fop_45[] = { "*fucomp %GF" };
-static char *fop_48[] = { "*faddp %GF,st" };
-static char *fop_49[] = { "*fmulp %GF,st" };
-static char *fop_51[] = { 0, "fcompp", 0, 0, 0, 0, 0, 0 };
-static char *fop_52[] = { "*fsubrp %GF,st" };
-static char *fop_53[] = { "*fsubp %GF,st" };
-static char *fop_54[] = { "*fdivrp %GF,st" };
-static char *fop_55[] = { "*fdivp %GF,st" };
-static char *fop_60[] = { "fstsw ax", 0, 0, 0, 0, 0, 0, 0 };
+static const char *fop_21[] = { 0, "fucompp", 0, 0, 0, 0, 0, 0 };
+static const char *fop_28[] = { 0, 0, "fclex", "finit", 0, 0, 0, 0 };
+static const char *fop_32[] = { "*fadd %GF,st" };
+static const char *fop_33[] = { "*fmul %GF,st" };
+static const char *fop_36[] = { "*fsubr %GF,st" };
+static const char *fop_37[] = { "*fsub %GF,st" };
+static const char *fop_38[] = { "*fdivr %GF,st" };
+static const char *fop_39[] = { "*fdiv %GF,st" };
+static const char *fop_40[] = { "*ffree %GF" };
+static const char *fop_42[] = { "*fst %GF" };
+static const char *fop_43[] = { "*fstp %GF" };
+static const char *fop_44[] = { "*fucom %GF" };
+static const char *fop_45[] = { "*fucomp %GF" };
+static const char *fop_48[] = { "*faddp %GF,st" };
+static const char *fop_49[] = { "*fmulp %GF,st" };
+static const char *fop_51[] = { 0, "fcompp", 0, 0, 0, 0, 0, 0 };
+static const char *fop_52[] = { "*fsubrp %GF,st" };
+static const char *fop_53[] = { "*fsubp %GF,st" };
+static const char *fop_54[] = { "*fdivrp %GF,st" };
+static const char *fop_55[] = { "*fdivp %GF,st" };
+static const char *fop_60[] = { "fstsw ax", 0, 0, 0, 0, 0, 0, 0 };
 
-static char **fspecial[] = { /* 0=use st(i), 1=undefined 0 in fop_* means undefined */
+static const char **fspecial[] = { /* 0=use st(i), 1=undefined 0 in fop_* means undefined */
   0, 0, 0, 0, 0, 0, 0, 0,
   0, fop_9, fop_10, 0, fop_12, fop_13, fop_14, fop_15,
   f0, f0, f0, f0, f0, fop_21, f0, f0,
@@ -754,7 +754,7 @@ static char **fspecial[] = { /* 0=use st(i), 1=undefined 0 in fop_* means undefi
   f0, f0, f0, f0, fop_60, f0, f0, f0,
 };
 
-static char *floatops[] = { /* assumed " %EF" at end of each.  mod != 3 only */
+static const char *floatops[] = { /* assumed " %EF" at end of each.  mod != 3 only */
 /*00*/ "fadd", "fmul", "fcom", "fcomp",
        "fsub", "fsubr", "fdiv", "fdivr",
 /*08*/ "fld", 0, "fst", "fstp",
@@ -832,7 +832,7 @@ static int sib(void)
 
 /*------------------------------------------------------------------------*/
 
-static void CLIB_DECL uprintf(char *s, ...)
+static void CLIB_DECL uprintf(const char *s, ...)
 {
 	va_list	arg_ptr;
 	va_start (arg_ptr, s);
@@ -1024,7 +1024,7 @@ static void reg_name(int regnum, char size)
 
 /*------------------------------------------------------------------------*/
 
-static void ua_str(char *str);
+static void ua_str(const char *str);
 
 static void do_sib(int m)
 {
@@ -1385,7 +1385,7 @@ static void percent(char type, char subtype)
 }
 
 
-static void ua_str(char *str)
+static void ua_str(const char *str)
 {
   char c;
 
@@ -1420,13 +1420,23 @@ static void ua_str(char *str)
 unsigned DasmI86(char* buffer, unsigned pc)
 {
   	unsigned c;
+	static UINT8 map[20];
 
 	instruction_offset = pc;
 	instruction_segment = i86_get_reg(I86_CS);
 
 	/* input buffer */
-	getbyte_map = &OP_ROM[pc];
+	getbyte_map = map;
 	getbyte_mac = 0;
+
+	/* kludge to avoid crashes with e.g. qbert */
+	for (c = 0;c < 20;c++)
+	{
+		int pc_masked = (pc+c)&0xfffff;
+		change_pc20(pc_masked);
+		map[c] = OP_ROM[pc_masked];
+	}
+	change_pc20(i86_get_reg(REG_PC));
 
 	/* output buffer */
 	ubufs = buffer;
@@ -1445,7 +1455,7 @@ unsigned DasmI86(char* buffer, unsigned pc)
 	opmap1=&op86map1;
 	ua_str(op86map1[c]);
 
-  	if (invalid_opcode) {
+	if (invalid_opcode) {
 		/* restart output buffer */
 		ubufp = buffer;
 		/* invalid instruction, use db xx */

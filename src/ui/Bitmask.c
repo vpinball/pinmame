@@ -16,10 +16,7 @@ static UCHAR maskTable[8] = {
 LPBITS NewBits(UINT nLength)
 {
 	LPBITS lpBits = 0;
-	UINT   nSize = (nLength / 8);
-
-	if (nLength % 8)
-		nSize += 1;
+	UINT   nSize = (nLength+7) / 8;
 
 	lpBits = (LPBITS)malloc(sizeof(BITS));
 	if (lpBits)

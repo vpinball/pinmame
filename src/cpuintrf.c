@@ -23,7 +23,7 @@
  *
  *************************************/
 
-#if (HAS_PPS4)
+#if defined(PINMAME) && (HAS_PPS4)
 #include "cpu/pps4/pps4.h"
 #endif
 #if (HAS_Z80)
@@ -32,13 +32,13 @@
 #if (HAS_Z180)
 #include "cpu/z180/z180.h"
 #endif
-#if (HAS_4004)
+#if defined(PINMAME) && (HAS_4004)
 #include "cpu/i4004/i4004.h"
 #endif
 #if (HAS_8080 || HAS_8085A)
 #include "cpu/i8085/i8085.h"
 #endif
-#if (HAS_M6502 || HAS_M65C02 || HAS_M65SC02 || HAS_M6510 || HAS_M6510T || HAS_M7501 || HAS_M8502 || HAS_N2A03)
+#if (HAS_M6502 || HAS_M65C02 || HAS_M65SC02 || HAS_M6510 || HAS_M6510T || HAS_M7501 || HAS_M8502 || HAS_N2A03 || HAS_DECO16)
 #include "cpu/m6502/m6502.h"
 #endif
 #if (HAS_M4510)
@@ -71,7 +71,7 @@
 #if (HAS_V20 || HAS_V30 || HAS_V33)
 #include "cpu/nec/necintrf.h"
 #endif
-#if (HAS_V60)
+#if (HAS_V60 || HAS_V70)
 #include "cpu/v60/v60.h"
 #endif
 #if (HAS_I8035 || HAS_I8039 || HAS_I8048 || HAS_N7751)
@@ -113,13 +113,19 @@
 #if (HAS_Z8000)
 #include "cpu/z8000/z8000.h"
 #endif
-#if (HAS_TMS320C10)
+#if (HAS_TMS32010)
 #include "cpu/tms32010/tms32010.h"
+#endif
+#if (HAS_TMS32025)
+#include "cpu/tms32025/tms32025.h"
+#endif
+#if (HAS_TMS32031)
+#include "cpu/tms32031/tms32031.h"
 #endif
 #if (HAS_CCPU)
 #include "cpu/ccpu/ccpu.h"
 #endif
-#if (HAS_ADSP2100 || HAS_ADSP2105)
+#if (HAS_ADSP2100 || HAS_ADSP2101 || HAS_ADSP2105 || HAS_ADSP2115)
 #include "cpu/adsp2100/adsp2100.h"
 #endif
 #if (HAS_PSXCPU)
@@ -128,7 +134,7 @@
 #if (HAS_ASAP)
 #include "cpu/asap/asap.h"
 #endif
-#if (HAS_UPD7810)
+#if (HAS_UPD7810 || HAS_UPD7807)
 #include "cpu/upd7810/upd7810.h"
 #endif
 #if (HAS_JAGUAR)
@@ -137,8 +143,8 @@
 #if (HAS_R3000)
 #include "cpu/mips/r3000.h"
 #endif
-#if (HAS_TMS320C31)
-#include "cpu/tms32031/tms32031.h"
+#if (HAS_R4600 || HAS_R5000)
+#include "cpu/mips/mips3.h"
 #endif
 #if (HAS_ARM)
 #include "cpu/arm/arm.h"
@@ -146,42 +152,48 @@
 #if (HAS_SH2)
 #include "cpu/sh2/sh2.h"
 #endif
+#if (HAS_DSP32C)
+#include "cpu/dsp32/dsp32.h"
+#endif
+#if (HAS_PIC16C54 || HAS_PIC16C55 || HAS_PIC16C56 || HAS_PIC16C57 || HAS_PIC16C58)
+#include "cpu/pic16c5x/pic16c5x.h"
+#endif
 
 
 #ifdef MESS
 
 #if (HAS_APEXC)
-#include "mess/cpu/apexc/apexc.h"
+#include "cpu/apexc/apexc.h"
 #endif
 #if (HAS_CDP1802)
-#include "mess/cpu/cdp1802/cdp1802.h"
+#include "cpu/cdp1802/cdp1802.h"
 #endif
 #if (HAS_CP1600)
-#include "mess/cpu/cp1600/cp1600.h"
+#include "cpu/cp1600/cp1600.h"
 #endif
 #if (HAS_F8)
-#include "mess/cpu/f8/f8.h"
+#include "cpu/f8/f8.h"
 #endif
 #if (HAS_G65816)
-#include "mess/cpu/g65816/g65816.h"
+#include "cpu/g65816/g65816.h"
 #endif
 #if (HAS_LH5801)
-#include "mess/cpu/lh5801/lh5801.h"
+#include "cpu/lh5801/lh5801.h"
 #endif
 #if (HAS_PDP1)
-#include "mess/cpu/pdp1/pdp1.h"
+#include "cpu/pdp1/pdp1.h"
 #endif
 #if (HAS_SATURN)
-#include "mess/cpu/saturn/saturn.h"
+#include "cpu/saturn/saturn.h"
 #endif
 #if (HAS_SC61860)
-#include "mess/cpu/sc61860/sc61860.h"
+#include "cpu/sc61860/sc61860.h"
 #endif
 #if (HAS_SPC700)
-#include "mess/cpu/spc700/spc700.h"
+#include "cpu/spc700/spc700.h"
 #endif
 #if (HAS_Z80GB)
-#include "mess/cpu/z80gb/z80gb.h"
+#include "cpu/z80gb/z80gb.h"
 #endif
 #if (HAS_Z80_MSX)
 #include "cpu/z80/z80_msx.h"
@@ -277,7 +289,6 @@ static void dummy_init(void);
 static void dummy_reset(void *param);
 static void dummy_exit(void);
 static int dummy_execute(int cycles);
-static void dummy_burn(int cycles);
 static unsigned dummy_get_context(void *regs);
 static void dummy_set_context(void *regs);
 static unsigned dummy_get_reg(int regnum);
@@ -357,7 +368,7 @@ static unsigned dummy_dasm(char *buffer, unsigned pc);
 		name##_info, name##_dasm, 										   \
 		nirq, dirq, &name##_icount, oc, 							   \
 		datawidth,																   \
-		(mem_read_handler)cpu_readmem##mem, (mem_write_handler)cpu_writemem##mem, name##_internal_r, name##_internal_w, \
+		(mem_read_handler)cpu_readmem##mem, (mem_write_handler)cpu_writemem##mem, (mem_read_handler)name##_internal_r, (mem_write_handler)name##_internal_w, \
 		0, cpu_setopbase##mem,													   \
 		shift, bits, CPU_IS_##endian, align, maxinst							   \
 	}
@@ -373,7 +384,7 @@ static unsigned dummy_dasm(char *buffer, unsigned pc);
 const struct cpu_interface cpuintrf[] =
 {
 	CPU0(DUMMY,    dummy,	 1,  0,1.00, 8, 16,	  0,16,LE,1, 1	),
-#if (HAS_PPS4)
+#if defined(PINMAME) && (HAS_PPS4)
 	CPU0(PPS4,	   PPS4,	 4,255,1.00, 8, 16,	  0,16,LE,1, 3	),
 #endif
 #if (HAS_Z80)
@@ -382,7 +393,7 @@ const struct cpu_interface cpuintrf[] =
 #if (HAS_Z180)
 	CPU1(Z180,	   z180, 	 1,255,1.00, 8, 20,	  0,20,LE,1, 4	),
 #endif
-#if (HAS_4004)
+#if defined(PINMAME) && (HAS_4004)
 	CPU0(4004,	   i4004,	 4,255,1.00, 8, 16,	  0,16,LE,1, 3	),
 #endif
 #if (HAS_8080)
@@ -421,6 +432,9 @@ const struct cpu_interface cpuintrf[] =
 #if (HAS_N2A03)
 	CPU0(N2A03,    n2a03,	 1,  0,1.00, 8, 16,	  0,16,LE,1, 3	),
 #endif
+#if (HAS_DECO16)
+	CPU0(DECO16,   deco16,	 1,  0,1.00, 8, 16,	  0,16,LE,1, 3	),
+#endif
 #if (HAS_M4510)
 	CPU0(M4510,    m4510,	 1,  0,1.00, 8, 20,	  0,20,LE,1, 3	),
 #endif
@@ -453,6 +467,9 @@ const struct cpu_interface cpuintrf[] =
 #endif
 #if (HAS_V60)
 	CPU0(V60,	   v60, 	 1,  0,1.00,16, 24lew, 0,24,LE,1, 11	),
+#endif
+#if (HAS_V70)
+	CPU0(V70,	   v70, 	 1,  0,1.00,32, 32ledw,0,32,LE,1, 11	),
 #endif
 #if (HAS_I8035)
 	CPU0(I8035,    i8035,	 1,  0,1.00, 8, 16,	  0,16,LE,1, 2	),
@@ -535,6 +552,9 @@ const struct cpu_interface cpuintrf[] =
 #if (HAS_TMS34020)
 	CPU0(TMS34020, tms34020, 2,  0,1.00,16,29lew,  3,29,LE,2,10	),
 #endif
+#if (HAS_TI990_10)
+	/*CPU4*/CPU0(TI990_10, ti990_10, 1,  0,1.00,			   16,/*21*/24bew,  0,/*21*/24,BE,2, 6	),
+#endif
 #if (HAS_TMS9900)
 	CPU0(TMS9900,  tms9900,  1,  0,1.00,16,16bew,  0,16,BE,2, 6	),
 #endif
@@ -562,17 +582,30 @@ const struct cpu_interface cpuintrf[] =
 #if (HAS_Z8000)
 	CPU0(Z8000,    z8000,	 2,  0,1.00,16,16bew,  0,16,BE,2, 6	),
 #endif
-#if (HAS_TMS320C10)
-	CPU3(TMS320C10,tms320c10,2,  0,1.00,16,16bew, -1,16,BE,2, 4	),
+#if (HAS_TMS32010)
+	CPU3(TMS32010,tms32010,  1,  0,1.00,16,16bew, -1,16,BE,2, 4 ),
+#endif
+#if (HAS_TMS32025)
+	CPU3(TMS32025,tms32025,  3,  0,1.00,16,18bew, -1,18,BE,2, 4	),
+#endif
+#if (HAS_TMS32031)
+	#define tms32031_ICount tms32031_icount
+	CPU0(TMS32031,tms32031,  4,  0,1.00,32,26ledw,-2,26,LE,4, 4 ),
 #endif
 #if (HAS_CCPU)
 	CPU3(CCPU,	   ccpu,	 2,  0,1.00,16,16bew,  0,15,BE,2, 3	),
 #endif
 #if (HAS_ADSP2100)
-	CPU3(ADSP2100, adsp2100, 4,  0,1.00,16,17lew, -1,14,LE,2, 4	),
+	CPU3(ADSP2100, adsp2100, 4,  0,1.00,16,17lew, -1,15,LE,2, 4 ),
+#endif
+#if (HAS_ADSP2101)
+	CPU3(ADSP2101, adsp2101, 4,  0,1.00,16,17lew, -1,15,LE,2, 4 ),
 #endif
 #if (HAS_ADSP2105)
-	CPU3(ADSP2105, adsp2105, 4,  0,1.00,16,17lew, -1,14,LE,2, 4	),
+	CPU3(ADSP2105, adsp2105, 4,  0,1.00,16,17lew, -1,15,LE,2, 4 ),
+#endif
+#if (HAS_ADSP2115)
+	CPU3(ADSP2115, adsp2115, 4,  0,1.00,16,17lew, -1,15,LE,2, 4 ),
 #endif
 #if (HAS_PSXCPU)
 	CPU0(PSXCPU,   mips,	 8, -1,1.00,16,32lew,  0,32,LE,4, 4	),
@@ -585,11 +618,15 @@ const struct cpu_interface cpuintrf[] =
 #define upd7810_ICount upd7810_icount
 	CPU0(UPD7810,  upd7810,  2,  0,1.00, 8, 16,	  0,16,LE,1, 4	),
 #endif
+#if (HAS_UPD7807)
+#define upd7807_ICount upd7810_icount
+	CPU0(UPD7807,  upd7807,  2,  0,1.00, 8, 16,	  0,16,LE,1, 4	),
+#endif
 #if (HAS_JAGUAR)
-	#define jaguargp_ICount jaguar_icount
-	#define jaguards_ICount jaguar_icount
-	CPU0(JAGUARGPU,jaguargp, 6,  0,1.00,32,24bedw, 0,24,BE,4, 12 ),
-	CPU0(JAGUARDSP,jaguards, 6,  0,1.00,32,24bedw, 0,24,BE,4, 12 ),
+	#define jaguargpu_ICount jaguar_icount
+	#define jaguardsp_ICount jaguar_icount
+	CPU0(JAGUARGPU,jaguargpu,6,  0,1.00,32,24bedw, 0,24,BE,4, 12 ),
+	CPU0(JAGUARDSP,jaguardsp,6,  0,1.00,32,24bedw, 0,24,BE,4, 12 ),
 #endif
 #if (HAS_R3000)
 	#define r3000be_ICount r3000_icount
@@ -597,15 +634,42 @@ const struct cpu_interface cpuintrf[] =
 	CPU0(R3000BE,  r3000be,  1,  0,1.00,32,29bedw, 0,29,BE,4, 4 ),
 	CPU0(R3000LE,  r3000le,  1,  0,1.00,32,29ledw, 0,29,LE,4, 4 ),
 #endif
-#if (HAS_TMS320C31)
-	#define tms320c31_ICount tms320c31_icount
-	CPU0(TMS320C31,tms320c31,4,  0,1.00,32,26ledw,-2,26,LE,4, 4 ),
+#if (HAS_R4600)
+	#define r4600be_ICount mips3_icount
+	#define r4600le_ICount mips3_icount
+	CPU0(R4600BE,  r4600be,  1,  0,1.00,32,32bedw, 0,32,BE,4, 4 ),
+	CPU0(R4600LE,  r4600le,  1,  0,1.00,32,32ledw, 0,32,LE,4, 4 ),
+#endif
+#if (HAS_R5000)
+	#define r5000be_ICount mips3_icount
+	#define r5000le_ICount mips3_icount
+	CPU0(R5000BE,  r5000be,  1,  0,1.00,32,32bedw, 0,32,BE,4, 4 ),
+	CPU0(R5000LE,  r5000le,  1,  0,1.00,32,32ledw, 0,32,LE,4, 4 ),
 #endif
 #if (HAS_ARM)
 	CPU0(ARM,	   arm, 	 2,  0,1.00,32,26ledw, 0,26,LE,4, 4	),
 #endif
 #if (HAS_SH2)
 	CPU4(SH2,	   sh2, 	16,  0,1.00,32,32bedw,   0,32,BE,2, 2  ),
+#endif
+#if (HAS_DSP32C)
+	#define dsp32c_ICount dsp32_icount
+	CPU0(DSP32C,   dsp32c,   4,  0,1.00,32,24ledw, 0,24,LE,4, 4 ),
+#endif
+#if (HAS_PIC16C54)
+	CPU3(PIC16C54,pic16C54,  0,  0,1.00,8,16lew, 0,13,LE,1, 2 ),
+#endif
+#if (HAS_PIC16C55)
+	CPU3(PIC16C55,pic16C55,  0,  0,1.00,8,16lew, 0,13,LE,1, 2 ),
+#endif
+#if (HAS_PIC16C56)
+	CPU3(PIC16C56,pic16C56,  0,  0,1.00,8,16lew, 0,13,LE,1, 2 ),
+#endif
+#if (HAS_PIC16C57)
+	CPU3(PIC16C57,pic16C57,  0,  0,1.00,8,16lew, 0,13,LE,1, 2 ),
+#endif
+#if (HAS_PIC16C58)
+	CPU3(PIC16C58,pic16C58,  0,  0,1.00,8,16lew, 0,13,LE,1, 2 ),
 #endif
 
 #ifdef MESS
@@ -618,7 +682,7 @@ const struct cpu_interface cpuintrf[] =
 #endif
 #if (HAS_CP1600)
 #define cp1600_ICount cp1600_icount
-	CPU0(CP1600,   cp1600,	 0,  0,1.00, 8, 16,	  0,16,LE,1, 3	),
+	CPU0(CP1600,   cp1600,	 4,  0,1.00, 16, 24bew,  -1,17,BE,2,3	),
 #endif
 #if (HAS_F8)
 #define f8_ICount f8_icount
@@ -632,7 +696,8 @@ const struct cpu_interface cpuintrf[] =
 	CPU0(LH5801,   lh5801,	 1,  0,1.00, 8, 17,	  0,17,BE,1, 5	),
 #endif
 #if (HAS_PDP1)
-	CPU0(PDP1,	   pdp1,	 0,  0,1.00, 8, 16,	  0,18,LE,1, 3	),
+	//CPU0(PDP1,	   pdp1,	 0,  0,1.00, 8, 16,	  0,18,LE,1, 3	),
+	CPU0(PDP1,	   pdp1,	 0,  0,1.00,32,18bedw,0,18,LE,1, 3	),
 #endif
 #if (HAS_SATURN)
 #define saturn_ICount saturn_icount
@@ -680,6 +745,7 @@ UINT8 default_win_layout[] =
  *************************************/
 
 int activecpu;		/* index of active CPU (or -1) */
+int executingcpu;	/* index of executing CPU (or -1) */
 int totalcpu;		/* total number of CPUs */
 
 static struct cpuinfo cpu[MAX_CPU];
@@ -785,6 +851,10 @@ int cpuintrf_init(void)
 	/* reset the context stack */
 	memset(cpu_context_stack, -1, sizeof(cpu_context_stack));
 	cpu_context_stack_ptr = 0;
+
+	/* nothing active, nothing executing */
+	activecpu = -1;
+	executingcpu = -1;
 
 	return 0;
 }
@@ -1106,8 +1176,10 @@ int cpunum_execute(int cpunum, int cycles)
 	int ran;
 	VERIFY_CPUNUM(0, cpunum_execute);
 	cpuintrf_push_context(cpunum);
+	executingcpu = cpunum;
 	(*cpu[cpunum].intf.set_op_base)(activecpu_get_pc_byte());
 	ran = (*cpu[cpunum].intf.execute)(cycles);
+	executingcpu = -1;
 	cpuintrf_pop_context();
 	return ran;
 }
@@ -1338,7 +1410,6 @@ CPUNUM_FUNC(const char *, cpunum_win_layout,         "", (*cpu[cpunum].intf.cpu_
 #define CPUTYPE_FUNC(rettype, name, defresult, result)		\
 rettype name(int cputype)									\
 { 															\
-	cputype &= ~CPU_FLAGS_MASK;								\
 	if (cputype >= 0 && cputype < CPU_COUNT)				\
 		return result;										\
 	else													\
@@ -1391,7 +1462,6 @@ static void dummy_init(void) { }
 static void dummy_reset(void *param) { }
 static void dummy_exit(void) { }
 static int dummy_execute(int cycles) { return cycles; }
-static void dummy_burn(int cycles) { }
 static unsigned dummy_get_context(void *regs) { return 0; }
 static void dummy_set_context(void *regs) { }
 static unsigned dummy_get_reg(int regnum) { return 0; }
@@ -1430,6 +1500,8 @@ static unsigned dummy_dasm(char *buffer, unsigned pc)
 void cpu_set_m68k_reset(int cpunum, void (*resetfn)(void))
 {
 	void m68k_set_reset_instr_callback(void (*callback)(void));
+	void m68000_set_reset_callback(void (*callback)(void));
+	void m68020_set_reset_callback(void (*callback)(void));
 
 	if ( 1
 #if (HAS_M68000)
@@ -1454,7 +1526,30 @@ void cpu_set_m68k_reset(int cpunum, void (*resetfn)(void))
 	}
 
 	cpuintrf_push_context(cpunum);
-	m68k_set_reset_instr_callback(resetfn);
+
+	if ( 0
+#if (HAS_M68000)
+		|| cpu[cpunum].cputype == CPU_M68000
+#endif
+#if (HAS_M68010)
+		|| cpu[cpunum].cputype == CPU_M68010
+#endif
+	   )
+	{
+#ifdef A68K0
+		m68000_set_reset_callback(resetfn);
+#else
+		m68k_set_reset_instr_callback(resetfn);
+#endif
+	}
+	else
+	{
+#ifdef A68K2
+		m68020_set_reset_callback(resetfn);
+#else
+		m68k_set_reset_instr_callback(resetfn);
+#endif
+	}
 	cpuintrf_pop_context();
 }
 #endif

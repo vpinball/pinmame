@@ -60,8 +60,11 @@ struct win_blit_params
 	int			srcwidth;
 	int			srcheight;
 
-	void *		dirtydata;
-	int			dirtypitch;
+	void *		vecdirty;
+	
+	int			flipx;
+	int			flipy;
+	int			swapxy;
 };
 
 

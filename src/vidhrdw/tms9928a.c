@@ -181,9 +181,14 @@ static TMS9928A tms[MAX_VDP];
 /*
 ** initialize the palette
 */
-void palette_init_TMS9928A (unsigned char *palette,
-	unsigned short *colortable,const unsigned char *color_prom) {
-    memcpy (palette, &TMS9928A_palette, sizeof(TMS9928A_palette));
+PALETTE_INIT(TMS9928A) {
+#if MAMEVER < 6100
+  memcpy(palette,&TMS9928A_palette, sizeof(TMS9928A_palette));
+#else
+  int ii;
+  for (ii = 0; ii < TMS9928A_PALETTE_SIZE; ii++)
+    palette_set_color(ii,TMS9928A_palette[ii*3+0],TMS9928A_palette[ii*3+1],TMS9928A_palette[ii*3+2]);
+#endif /* MAMEVER */
 }
 
 
@@ -206,7 +211,7 @@ void TMS9928A_reset (int which) {
 	_TMS9928A_set_dirty (which,1);
 }
 
-int TMS9928A_start (int which, int model, unsigned int vram) {
+int TMS9928A_start(int which, int model, unsigned int vram) {
 	/* 4 or 16 kB vram please */
 	if (! ((vram == 0x1000) || (vram == 0x4000) || (vram == 0x2000)) )
 		return 1;
@@ -1092,3 +1097,14 @@ READ_HANDLER (TMS9928A_vram_1_r)		{ return TMS9928A_vram_r(1,offset); }
 WRITE_HANDLER (TMS9928A_vram_1_w)		{ TMS9928A_vram_w(1,offset,data); }
 READ_HANDLER (TMS9928A_register_1_r)	{ return TMS9928A_register_r(1,offset); }
 WRITE_HANDLER (TMS9928A_register_1_w)	{ TMS9928A_register_w(1,offset,data); }
+#if 0
+MACHINE_DRIVER_START(TMS9928A)
+  MDRV_SCREEN_SIZE(256, 192) \
+  MDRV_VISIBLE_AREA(0, 255, 0, 191)
+  MDRV_GFXDECODE(0)
+  MDRV_PALETTE_LENGTH(TMS9928A_PALETTE_SIZE)
+  MDRV_COLORTABLE_LENGTH(TMS9928A_COLORTABLE_SIZE)
+  MDRV_PALETTE_INIT(TMS9928A)
+  MDRV_VIDEO_ATTRIBUTES(VIDEO_TYPE_RASTER | VIDEO_MODIFIES_PALETTE)
+MACHINE_DRIVER_END
+#endif

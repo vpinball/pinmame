@@ -21,9 +21,9 @@ static int FMMode;
 #define CHIP_YM2151_ALT 5	/* use Jarek's YM2151.C */
 
 
-#if (HAS_YM2151)
-
 #define YM2151_NUMBUF 2
+
+#if (HAS_YM2151)
 
 static void *Timer[MAX_2151][2];
 
@@ -320,6 +320,22 @@ WRITE_HANDLER( YM2151_data_port_2_w )
 		break;
 #endif
 	}
+}
+
+WRITE_HANDLER( YM2151_word_0_w )
+{
+	if (offset)
+		YM2151_data_port_0_w(0,data);
+	else
+		YM2151_register_port_0_w(0,data);
+}
+
+WRITE_HANDLER( YM2151_word_1_w )
+{
+	if (offset)
+		YM2151_data_port_1_w(0,data);
+	else
+		YM2151_register_port_1_w(0,data);
 }
 
 READ16_HANDLER( YM2151_status_port_0_lsb_r )

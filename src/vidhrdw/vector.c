@@ -30,7 +30,7 @@
  **************************************************************************** */
 
 /* GLmame and FXmame provide their own vector implementations */
-#if !(defined xgl) && !(defined xfx) && !(defined svgafx)
+#if !(defined xgl)
 
 #include <math.h>
 #include "osinline.h"
@@ -42,6 +42,8 @@
 #define VCLEAN  0
 #define VDIRTY  1
 #define VCLIP   2
+
+#define MAX_DIRTY_PIXELS (2*MAX_PIXELS)
 
 unsigned char *vectorram;
 size_t vectorram_size;
@@ -79,7 +81,10 @@ static int new_index;
 static int old_index;
 
 /* coordinates of pixels are stored here for faster removal */
-static unsigned int *pixel;
+vector_pixel_t *vector_dirty_list;
+static int dirty_index;
+
+static vector_pixel_t *pixel;
 static int p_index=0;
 
 static UINT32 *pTcosin;            /* adjust line width */
@@ -201,6 +206,7 @@ VIDEO_START( vector )
 	antialias = options.antialias;
 	translucency = options.translucency;
 	vector_set_flicker(options.vector_flicker);
+	vector_set_intensity(options.vector_intensity);
 	beam = options.beam;
 
 
@@ -230,13 +236,14 @@ VIDEO_START( vector )
 	}
 
 	/* allocate memory for tables */
-	pTcosin = auto_malloc ( (2048+1) * sizeof(INT32));   /* yes! 2049 is correct */
-	pixel = auto_malloc (MAX_PIXELS * sizeof (UINT32));
-	old_list = auto_malloc (MAX_POINTS * sizeof (point));
-	new_list = auto_malloc (MAX_POINTS * sizeof (point));
+	pTcosin = auto_malloc ( (2048+1) * sizeof(pTcosin[0]));   /* yes! 2049 is correct */
+	pixel = auto_malloc (MAX_PIXELS * sizeof (pixel[0]));
+	vector_dirty_list = auto_malloc (MAX_DIRTY_PIXELS * sizeof (vector_dirty_list[0]));
+	old_list = auto_malloc (MAX_POINTS * sizeof (old_list[0]));
+	new_list = auto_malloc (MAX_POINTS * sizeof (new_list[0]));
 
 	/* did we get the requested memory? */
-	if (!(pTcosin && pixel && old_list && new_list))
+	if (!(pTcosin && pixel && old_list && new_list && vector_dirty_list))
 		return 1;
 
 	/* build cosine table for fixing line width in antialias */
@@ -296,15 +303,15 @@ void vector_set_shift (int shift)
  */
 static void vector_clear_pixels (void)
 {
+	vector_pixel_t coords;
 	int i;
-	int coords;
 
 	if (Machine->color_depth == 32)
 	{
 		for (i=p_index-1; i>=0; i--)
 		{
 			coords = pixel[i];
-			((UINT32 *)vecbitmap->line[coords & 0xffff])[coords >> 16] = 0;
+			((UINT32 *)vecbitmap->line[VECTOR_PIXEL_Y(coords)])[VECTOR_PIXEL_X(coords)] = 0;
 		}
 	}
 	else
@@ -312,7 +319,7 @@ static void vector_clear_pixels (void)
 		for (i=p_index-1; i>=0; i--)
 		{
 			coords = pixel[i];
-			((UINT16 *)vecbitmap->line[coords & 0xffff])[coords >> 16] = 0;
+			((UINT16 *)vecbitmap->line[VECTOR_PIXEL_Y(coords)])[VECTOR_PIXEL_X(coords)] = 0;
 		}
 	}
 	p_index=0;
@@ -326,6 +333,7 @@ static void vector_clear_pixels (void)
 
 static void vector_draw_aa_pixel_15 (int x, int y, rgb_t col, int dirty)
 {
+	vector_pixel_t coords;
 	UINT32 dst;
 
 	if (x < xmin || x >= xmax)
@@ -338,19 +346,18 @@ static void vector_draw_aa_pixel_15 (int x, int y, rgb_t col, int dirty)
 		| (LIMIT5((RGB_GREEN(col) >> 3) + ((dst >> 5) & 0x1f)) << 5)
 		| (LIMIT5((RGB_RED(col) >> 3) + (dst >> 10)) << 10);
 
+	coords = VECTOR_PIXEL(x,y);
 	if (p_index<MAX_PIXELS)
-	{
-		pixel[p_index] = y | (x << 16);
-		p_index++;
-	}
+		pixel[p_index++] = coords;
 
 	/* Mark this pixel as dirty */
-	if (dirty)
-		osd_mark_vector_dirty (x, y);
+	if (dirty_index<MAX_DIRTY_PIXELS)
+		vector_dirty_list[dirty_index++] = coords;
 }
 
 static void vector_draw_aa_pixel_32 (int x, int y, rgb_t col, int dirty)
 {
+	vector_pixel_t coords;
 	UINT32 dst;
 
 	if (x < xmin || x >= xmax)
@@ -363,15 +370,13 @@ static void vector_draw_aa_pixel_32 (int x, int y, rgb_t col, int dirty)
 		| (LIMIT8(RGB_GREEN(col) + ((dst >> 8) & 0xff)) << 8)
 		| (LIMIT8(RGB_RED(col) + (dst >> 16)) << 16);
 
+	coords = VECTOR_PIXEL(x,y);
 	if (p_index<MAX_PIXELS)
-	{
-		pixel[p_index] = y | (x << 16);
-		p_index++;
-	}
+		pixel[p_index++] = coords;
 
 	/* Mark this pixel as dirty */
-	if (dirty)
-		osd_mark_vector_dirty (x, y);
+	if (dirty_index<MAX_DIRTY_PIXELS)
+		vector_dirty_list[dirty_index++] = coords;
 }
 
 
@@ -762,8 +767,7 @@ void vector_clear_list (void)
  */
 static void clever_mark_dirty (void)
 {
-	int i, j, min_index, last_match = 0;
-	unsigned int *coords;
+	int i, min_index, last_match = 0;
 	point *new, *old;
 	point newclip, oldclip;
 	int clips_match = 1;
@@ -817,11 +821,10 @@ static void clever_mark_dirty (void)
 			last_match = 0;
 
 		/* mark the pixels of the old vector dirty */
-		coords = &pixel[old->arg1];
-		for (j = (old->arg2 - old->arg1); j > 0; j--)
+		if (dirty_index + old->arg2 - old->arg1 < MAX_DIRTY_PIXELS)
 		{
-			osd_mark_vector_dirty (*coords >> 16, *coords & 0x0000ffff);
-			coords++;
+			memcpy(&vector_dirty_list[dirty_index], &pixel[old->arg1], (old->arg2 - old->arg1) * sizeof(pixel[0]));
+			dirty_index += old->arg2 - old->arg1;
 		}
 	}
 
@@ -834,11 +837,10 @@ static void clever_mark_dirty (void)
 			continue;
 
 		/* mark the pixels of the old vector dirty */
-		coords = &pixel[old->arg1];
-		for (j = (old->arg2 - old->arg1); j > 0; j--)
+		if (dirty_index + old->arg2 - old->arg1 < MAX_DIRTY_PIXELS)
 		{
-			osd_mark_vector_dirty (*coords >> 16, *coords & 0x0000ffff);
-			coords++;
+			memcpy(&vector_dirty_list[dirty_index], &pixel[old->arg1], (old->arg2 - old->arg1) * sizeof(pixel[0]));
+			dirty_index += old->arg2 - old->arg1;
 		}
 	}
 }
@@ -881,7 +883,8 @@ VIDEO_UPDATE( vector )
 
 	/* mark pixels which are not idential in newlist and oldlist dirty */
 	/* the old pixels which get removed are marked dirty immediately,  */
-	/* new pixels are recognized by setting new->dirty                 */
+	/* new pixels are recognized by setting new->dirty */
+	dirty_index = 0;
 	clever_mark_dirty();
 
 	/* clear ALL pixels in the hidden map */
@@ -903,6 +906,8 @@ VIDEO_UPDATE( vector )
 		}
 		curpoint++;
 	}
+
+	vector_dirty_list[dirty_index] = VECTOR_PIXEL_END;
 }
 
-#endif /* if !(defined xgl) && !(defined xfx) && !(defined svgafx) */
+#endif /* if !(defined xgl) */

@@ -29,6 +29,7 @@
 
 #define STACK_ENTRIES		1024		/* 16-bit array size on stack */
 #define COOKIE_VALUE		0xbaadf00d
+#define MAX_ZLIB_ALLOCS		64
 
 #define END_OF_LIST_COOKIE	"EndOfListCookie"
 
@@ -42,7 +43,9 @@
 
 #define SET_ERROR_AND_CLEANUP(err) do { last_error = (err); goto cleanup; } while (0)
 
-
+#ifdef _MSC_VER
+#define interface interface_
+#endif
 
 /*************************************
  *
@@ -76,6 +79,7 @@ struct zlib_codec_data
 {
 	z_stream				inflater;
 	z_stream				deflater;
+	UINT32 *				allocptr[MAX_ZLIB_ALLOCS];
 };
 
 
@@ -86,7 +90,7 @@ struct zlib_codec_data
  *
  *************************************/
 
-static struct hard_disk_interface interface1;
+static struct hard_disk_interface interface;
 static struct hard_disk_info *first_disk;
 static int last_error;
 
@@ -166,9 +170,9 @@ INLINE void put_bigendian_uint32(UINT8 *base, UINT32 value)
 void hard_disk_set_interface(struct hard_disk_interface *_interface)
 {
 	if (_interface)
-		interface1 = *_interface;
+		interface = *_interface;
 	else
-		memset(&interface1, 0, sizeof(interface1));
+		memset(&interface, 0, sizeof(interface));
 }
 
 
@@ -182,9 +186,9 @@ void hard_disk_set_interface(struct hard_disk_interface *_interface)
 int hard_disk_create(const char *filename, const struct hard_disk_header *_header)
 {
 	static const UINT8 nullmd5[16] = { 0 };
-	struct hard_disk_header header = *_header;
 	mapentry_t blank_entries[STACK_ENTRIES];
 	int fullchunks, remainder, count;
+	struct hard_disk_header header;
 	UINT64 fileoffset;
 	void *file = NULL;
 	int i, err;
@@ -192,15 +196,16 @@ int hard_disk_create(const char *filename, const struct hard_disk_header *_heade
 	last_error = HDERR_NONE;
 
 	/* punt if no interface */
-	if (!interface1.open)
+	if (!interface.open)
 		SET_ERROR_AND_CLEANUP(HDERR_NO_INTERFACE);
 
 	/* verify parameters */
-	if (!filename)
+	if (!filename || !_header)
 		SET_ERROR_AND_CLEANUP(HDERR_FILE_NOT_FOUND);
 
 	/* sanity check the header, filling in missing info */
-	header.length = HARD_DISK_HEADER_SIZE;
+ 	header = *_header;
+ 	header.length = HARD_DISK_HEADER_SIZE;
 	header.version = HARD_DISK_HEADER_VERSION;
 
 	/* require a valid MD5 if we're using a parent */
@@ -223,7 +228,7 @@ int hard_disk_create(const char *filename, const struct hard_disk_header *_heade
 	header.totalblocks = ((header.cylinders * header.sectors * header.heads) + header.blocksize - 1) / header.blocksize;
 
 	/* attempt to create the file */
-	file = (*interface1.open)(filename, "wb");
+	file = (*interface.open)(filename, "wb");
 	if (!file)
 		SET_ERROR_AND_CLEANUP(HDERR_CANT_CREATE_FILE);
 
@@ -241,7 +246,7 @@ int hard_disk_create(const char *filename, const struct hard_disk_header *_heade
 	/* first write full chunks of blank entries */
 	for (i = 0; i < fullchunks; i++)
 	{
-		count = (*interface1.write)(file, fileoffset, sizeof(blank_entries), blank_entries);
+		count = (*interface.write)(file, fileoffset, sizeof(blank_entries), blank_entries);
 		if (count != sizeof(blank_entries))
 			SET_ERROR_AND_CLEANUP(HDERR_WRITE_ERROR);
 		fileoffset += sizeof(blank_entries);
@@ -250,7 +255,7 @@ int hard_disk_create(const char *filename, const struct hard_disk_header *_heade
 	/* then write the remainder */
 	if (remainder)
 	{
-		count = (*interface1.write)(file, fileoffset, remainder * sizeof(blank_entries[0]), blank_entries);
+		count = (*interface.write)(file, fileoffset, remainder * sizeof(blank_entries[0]), blank_entries);
 		if (count != remainder * sizeof(blank_entries[0]))
 			SET_ERROR_AND_CLEANUP(HDERR_WRITE_ERROR);
 		fileoffset += remainder * sizeof(blank_entries[0]);
@@ -258,17 +263,17 @@ int hard_disk_create(const char *filename, const struct hard_disk_header *_heade
 
 	/* then write a special end-of-list cookie */
 	memcpy(&blank_entries[0], END_OF_LIST_COOKIE, sizeof(blank_entries[0]));
-	count = (*interface1.write)(file, fileoffset, sizeof(blank_entries[0]), blank_entries);
+	count = (*interface.write)(file, fileoffset, sizeof(blank_entries[0]), blank_entries);
 	if (count != sizeof(blank_entries[0]))
 		SET_ERROR_AND_CLEANUP(HDERR_WRITE_ERROR);
 
 	/* all done */
-	(*interface1.close)(file);
+	(*interface.close)(file);
 	return HDERR_NONE;
 
 cleanup:
 	if (file)
-		(*interface1.close)(file);
+		(*interface.close)(file);
 	return last_error;
 }
 
@@ -289,7 +294,7 @@ void *hard_disk_open(const char *filename, int writeable, void *parent)
 	last_error = HDERR_NONE;
 
 	/* punt if no interface */
-	if (!interface1.open)
+	if (!interface.open)
 		SET_ERROR_AND_CLEANUP(HDERR_NO_INTERFACE);
 
 	/* verify parameters */
@@ -302,7 +307,7 @@ void *hard_disk_open(const char *filename, int writeable, void *parent)
 		SET_ERROR_AND_CLEANUP(HDERR_INVALID_PARAMETER);
 
 	/* first attempt to open the file */
-	info.file = (*interface1.open)(filename, writeable ? "rb+" : "rb");
+	info.file = (*interface.open)(filename, writeable ? "rb+" : "rb");
 	if (!info.file)
 		SET_ERROR_AND_CLEANUP(HDERR_FILE_NOT_FOUND);
 
@@ -364,7 +369,7 @@ cleanup:
 	if (info.map)
 		free(info.map);
 	if (info.file)
-		(*interface1.close)(info.file);
+		(*interface.close)(info.file);
 	return NULL;
 }
 
@@ -403,7 +408,7 @@ void hard_disk_close(void *disk)
 
 	/* close the file */
 	if (info->file)
-		(*interface1.close)(info->file);
+		(*interface.close)(info->file);
 
 	/* unlink ourselves */
 	for (prev = NULL, curr = first_disk; curr; prev = curr, curr = curr->next)
@@ -536,7 +541,7 @@ UINT32 hard_disk_write(void *disk, UINT32 lbasector, UINT32 numsectors, const vo
 	if (fileoffset != 0 && info->header.compression == HDCOMPRESSION_NONE)
 	{
 		/* do the write */
-		count = (*interface1.write)(info->file, fileoffset + offset * HARD_DISK_SECTOR_SIZE, HARD_DISK_SECTOR_SIZE, buffer);
+		count = (*interface.write)(info->file, fileoffset + offset * HARD_DISK_SECTOR_SIZE, HARD_DISK_SECTOR_SIZE, buffer);
 		if (count != HARD_DISK_SECTOR_SIZE)
 			SET_ERROR_AND_CLEANUP(HDERR_WRITE_ERROR);
 
@@ -608,6 +613,47 @@ cleanup:
 
 /*************************************
  *
+ *	Set the header
+ *
+ *************************************/
+
+int hard_disk_set_header(const char *filename, const struct hard_disk_header *header)
+{
+	void *file = NULL;
+	int err;
+
+	/* punt if no interface */
+	if (!interface.open)
+		SET_ERROR_AND_CLEANUP(HDERR_NO_INTERFACE);
+
+	/* punt if NULL or invalid */
+	if (!filename || !header)
+		SET_ERROR_AND_CLEANUP(HDERR_INVALID_PARAMETER);
+
+	/* first attempt to open the file */
+	file = (*interface.open)(filename, "rb+");
+	if (!file)
+		SET_ERROR_AND_CLEANUP(HDERR_FILE_NOT_FOUND);
+
+	/* write the header */
+	err = write_header(file, header);
+	if (err != HDERR_NONE)
+		SET_ERROR_AND_CLEANUP(err);
+
+	/* close the file and return */
+	(*interface.close)(file);
+	return HDERR_NONE;
+
+cleanup:
+	if (file)
+		(*interface.close)(file);
+	return last_error;
+}
+
+
+
+/*************************************
+ *
  *	All-in-one disk compressor
  *
  *************************************/
@@ -622,11 +668,12 @@ int hard_disk_compress(const char *rawfile, UINT32 offset, const char *newfile, 
 	void *sourcefile = NULL;
 	struct MD5Context md5;
 	UINT32 blocksizebytes;
+	int totalsectors;
 	int err, block = 0;
 	clock_t lastupdate;
 
 	/* punt if no interface */
-	if (!interface1.open)
+	if (!interface.open)
 		SET_ERROR_AND_CLEANUP(HDERR_NO_INTERFACE);
 
 	/* verify parameters */
@@ -634,7 +681,7 @@ int hard_disk_compress(const char *rawfile, UINT32 offset, const char *newfile, 
 		SET_ERROR_AND_CLEANUP(HDERR_INVALID_PARAMETER);
 
 	/* open the raw file */
-	sourcefile = (*interface1.open)(rawfile, "rb");
+	sourcefile = (*interface.open)(rawfile, "rb");
 	if (!sourcefile)
 		SET_ERROR_AND_CLEANUP(HDERR_FILE_NOT_FOUND);
 
@@ -663,25 +710,39 @@ int hard_disk_compress(const char *rawfile, UINT32 offset, const char *newfile, 
 	MD5Init(&md5);
 
 	/* loop over source blocks until we run out */
+	totalsectors = destfile->header.cylinders * destfile->header.heads * destfile->header.sectors;
 	blocksizebytes = destfile->header.blocksize * HARD_DISK_SECTOR_SIZE;
 	memset(destfile->cache, 0, blocksizebytes);
 	lastupdate = 0;
-	while (block < readbackheader->totalblocks && (*interface1.read)(sourcefile, sourceoffset, blocksizebytes, destfile->cache) != 0)
+	while (block < readbackheader->totalblocks)
 	{
 		int write_this_block = 1;
 		clock_t curtime = clock();
+		int bytestomd5;
+
+		/* read the data */
+		(*interface.read)(sourcefile, sourceoffset, blocksizebytes, destfile->cache);
 
 		/* progress */
 		if (curtime - lastupdate > CLOCKS_PER_SEC / 2)
 		{
 			UINT64 sourcepos = (UINT64)block * blocksizebytes;
 			if (progress && sourcepos)
-				(*progress)("Compressing block %d... (ratio=%d%%)  \r", block, 100 - destfile->eof * 100 / sourcepos);
+				(*progress)("Compressing sector %d/%d... (ratio=%d%%)  \r", block * destfile->header.blocksize, totalsectors, 100 - destfile->eof * 100 / sourcepos);
 			lastupdate = curtime;
 		}
 
+		/* determine how much to MD5 */
+		bytestomd5 = blocksizebytes;
+		if ((block + 1) * destfile->header.blocksize > totalsectors)
+		{
+			bytestomd5 = (totalsectors - block * destfile->header.blocksize) * HARD_DISK_SECTOR_SIZE;
+			if (bytestomd5 < 0)
+				bytestomd5 = 0;
+		}
+
 		/* update the MD5 */
-		MD5Update(&md5, destfile->cache, blocksizebytes);
+		MD5Update(&md5, destfile->cache, bytestomd5);
 
 		/* see if we have an exact match */
 		if (comparefile)
@@ -713,11 +774,19 @@ int hard_disk_compress(const char *rawfile, UINT32 offset, const char *newfile, 
 	if (err != HDERR_NONE)
 		SET_ERROR_AND_CLEANUP(err);
 
+	/* final progress update */
+	if (progress)
+	{
+		UINT64 sourcepos = (UINT64)block * blocksizebytes;
+		if (sourcepos)
+			(*progress)("Compression complete ... final ratio = %d%%            \n", 100 - destfile->eof * 100 / sourcepos);
+	}
+
 	/* close the drives */
 	hard_disk_close(destfile);
 	if (comparefile)
 		hard_disk_close(comparefile);
-	(*interface1.close)(sourcefile);
+	(*interface.close)(sourcefile);
 
 	return HDERR_NONE;
 
@@ -727,7 +796,102 @@ cleanup:
 	if (comparefile)
 		hard_disk_close(comparefile);
 	if (sourcefile)
-		(*interface1.close)(sourcefile);
+		(*interface.close)(sourcefile);
+	return last_error;
+}
+
+
+
+/*************************************
+ *
+ *	All-in-one disk verifier
+ *
+ *************************************/
+
+int hard_disk_verify(const char *hdfile, void (*progress)(const char *, ...), UINT8 headermd5[16], UINT8 actualmd5[16])
+{
+	struct hard_disk_info *sourcefile = NULL;
+	struct MD5Context md5;
+	UINT32 blocksizebytes;
+	int totalsectors;
+	int err, block = 0;
+	clock_t lastupdate;
+
+	/* punt if no interface */
+	if (!interface.open)
+		SET_ERROR_AND_CLEANUP(HDERR_NO_INTERFACE);
+
+	/* verify parameters */
+	if (!hdfile)
+		SET_ERROR_AND_CLEANUP(HDERR_INVALID_PARAMETER);
+
+	/* open the disk file */
+	sourcefile = hard_disk_open(hdfile, 0, NULL);
+	if (!sourcefile)
+		SET_ERROR_AND_CLEANUP(HDERR_FILE_NOT_FOUND);
+
+	/* if this is a writeable disk image, we can't verify */
+	if (sourcefile->header.flags & HDFLAGS_IS_WRITEABLE)
+		SET_ERROR_AND_CLEANUP(HDERR_CANT_VERIFY);
+
+	/* set the MD5 from the header */
+	memcpy(headermd5, sourcefile->header.md5, sizeof(sourcefile->header.md5));
+
+	/* init the MD5 computation */
+	MD5Init(&md5);
+
+	/* loop over source blocks until we run out */
+	totalsectors = sourcefile->header.cylinders * sourcefile->header.heads * sourcefile->header.sectors;
+	blocksizebytes = sourcefile->header.blocksize * HARD_DISK_SECTOR_SIZE;
+	lastupdate = 0;
+	while (block < sourcefile->header.totalblocks)
+	{
+		clock_t curtime = clock();
+		int bytestomd5;
+
+		/* progress */
+		if (curtime - lastupdate > CLOCKS_PER_SEC / 2)
+		{
+			if (progress)
+				(*progress)("Verifying sector %d/%d...\r", block * sourcefile->header.blocksize, totalsectors);
+			lastupdate = curtime;
+		}
+
+		/* read the block into the cache */
+		err = read_block_into_cache(sourcefile, block);
+		if (err != HDERR_NONE)
+			SET_ERROR_AND_CLEANUP(err);
+
+		/* determine how much to MD5 */
+		bytestomd5 = blocksizebytes;
+		if ((block + 1) * sourcefile->header.blocksize > totalsectors)
+		{
+			bytestomd5 = (totalsectors - block * sourcefile->header.blocksize) * HARD_DISK_SECTOR_SIZE;
+			if (bytestomd5 < 0)
+				bytestomd5 = 0;
+		}
+
+		/* update the MD5 */
+		MD5Update(&md5, sourcefile->cache, bytestomd5);
+
+		/* prepare for the next block */
+		block++;
+	}
+
+	/* compute the final MD5 */
+	MD5Final(actualmd5, &md5);
+
+	/* final progress update */
+	if (progress)
+		(*progress)("Verification complete                                  \n");
+
+	/* close the drive */
+	hard_disk_close(sourcefile);
+	return HDERR_NONE;
+
+cleanup:
+	if (sourcefile)
+		hard_disk_close(sourcefile);
 	return last_error;
 }
 
@@ -748,7 +912,7 @@ static int read_block_into_cache(struct hard_disk_info *info, UINT32 block)
 	/* if the data is uncompressed, just read it directly into the cache */
 	if (length == info->header.blocksize * HARD_DISK_SECTOR_SIZE)
 	{
-		bytes = (*interface1.read)(info->file, fileoffset, length, info->cache);
+		bytes = (*interface.read)(info->file, fileoffset, length, info->cache);
 		if (bytes != length)
 			return HDERR_READ_ERROR;
 		info->cacheblock = block;
@@ -756,7 +920,7 @@ static int read_block_into_cache(struct hard_disk_info *info, UINT32 block)
 	}
 
 	/* otherwise, read it into the decompression buffer */
-	bytes = (*interface1.read)(info->file, fileoffset, length, info->compressed);
+	bytes = (*interface.read)(info->file, fileoffset, length, info->compressed);
 	if (bytes != length)
 		return HDERR_READ_ERROR;
 
@@ -849,7 +1013,7 @@ static int write_block_from_cache(struct hard_disk_info *info, UINT32 block)
 	}
 
 	/* write the data */
-	bytes = (*interface1.write)(info->file, fileoffset, datalength, data);
+	bytes = (*interface.write)(info->file, fileoffset, datalength, data);
 	if (bytes != datalength)
 		return HDERR_WRITE_ERROR;
 
@@ -859,7 +1023,7 @@ static int write_block_from_cache(struct hard_disk_info *info, UINT32 block)
 	/* update the map on disk */
 	entry = info->map[block];
 	byteswap_mapentry(&entry);
-	bytes = (*interface1.write)(info->file, info->header.length + block * sizeof(info->map[0]), sizeof(entry), &entry);
+	bytes = (*interface.write)(info->file, info->header.length + block * sizeof(info->map[0]), sizeof(entry), &entry);
 	if (bytes != sizeof(entry))
 		return HDERR_WRITE_ERROR;
 
@@ -888,11 +1052,11 @@ static int read_header(void *file, struct hard_disk_header *header)
 		return HDERR_INVALID_FILE;
 
 	/* punt if no interface */
-	if (!interface1.read)
+	if (!interface.read)
 		return HDERR_NO_INTERFACE;
 
 	/* seek and read */
-	count = (*interface1.read)(file, 0, sizeof(rawheader), rawheader);
+	count = (*interface.read)(file, 0, sizeof(rawheader), rawheader);
 	if (count != sizeof(rawheader))
 		return HDERR_READ_ERROR;
 
@@ -938,7 +1102,7 @@ static int write_header(void *file, const struct hard_disk_header *header)
 		return HDERR_INVALID_FILE;
 
 	/* punt if no interface */
-	if (!interface1.write)
+	if (!interface.write)
 		return HDERR_NO_INTERFACE;
 
 	/* assemble the data */
@@ -957,7 +1121,7 @@ static int write_header(void *file, const struct hard_disk_header *header)
 	memcpy(&rawheader[60], header->parentmd5, 16);
 
 	/* seek and write */
-	count = (*interface1.write)(file, 0, sizeof(rawheader), rawheader);
+	count = (*interface.write)(file, 0, sizeof(rawheader), rawheader);
 	if (count != sizeof(rawheader))
 		return HDERR_WRITE_ERROR;
 
@@ -984,7 +1148,7 @@ static int read_sector_map(struct hard_disk_info *info)
 		return HDERR_OUT_OF_MEMORY;
 
 	/* read the entire sector map */
-	count = (*interface1.read)(info->file, info->header.length, sizeof(info->map[0]) * info->header.totalblocks, info->map);
+	count = (*interface.read)(info->file, info->header.length, sizeof(info->map[0]) * info->header.totalblocks, info->map);
 	if (count != sizeof(info->map[0]) * info->header.totalblocks)
 	{
 		err = HDERR_READ_ERROR;
@@ -992,7 +1156,7 @@ static int read_sector_map(struct hard_disk_info *info)
 	}
 
 	/* verify the cookie */
-	count = (*interface1.read)(info->file, info->header.length + sizeof(info->map[0]) * info->header.totalblocks, sizeof(cookie), &cookie);
+	count = (*interface.read)(info->file, info->header.length + sizeof(info->map[0]) * info->header.totalblocks, sizeof(cookie), &cookie);
 	if (count != sizeof(cookie) || memcmp(&cookie, END_OF_LIST_COOKIE, sizeof(cookie)))
 	{
 		err = HDERR_INVALID_FILE;
@@ -1022,6 +1186,75 @@ cleanup:
 		free(info->map);
 	info->map = NULL;
 	return err;
+}
+
+
+
+/*************************************
+ *
+ *	ZLIB memory hooks
+ *
+ *************************************/
+
+/*
+	Because ZLIB allocates and frees memory frequently (once per compression cycle),
+	we don't call malloc/free, but instead keep track of our own memory.
+*/
+
+static voidpf fast_alloc(voidpf opaque, uInt items, uInt size)
+{
+	struct zlib_codec_data *data = opaque;
+	UINT32 *ptr;
+	int i;
+
+	/* compute the size, rounding to the nearest 1k */
+	size = (size * items + 0x3ff) & ~0x3ff;
+
+	/* reuse a block if we can */
+	for (i = 0; i < MAX_ZLIB_ALLOCS; i++)
+	{
+		ptr = data->allocptr[i];
+		if (ptr && size == *ptr)
+		{
+			/* set the low bit of the size so we don't match next time */
+			*ptr |= 1;
+			return ptr + 1;
+		}
+	}
+
+	/* alloc a new one */
+	ptr = malloc(size + sizeof(UINT32));
+	if (!ptr)
+		return NULL;
+
+	/* put it into the list */
+	for (i = 0; i < MAX_ZLIB_ALLOCS; i++)
+		if (!data->allocptr[i])
+		{
+			data->allocptr[i] = ptr;
+			break;
+		}
+
+	/* set the low bit of the size so we don't match next time */
+	*ptr = size | 1;
+	return ptr + 1;
+}
+
+
+static void fast_free(voidpf opaque, voidpf address)
+{
+	struct zlib_codec_data *data = opaque;
+	UINT32 *ptr = (UINT32 *)address - 1;
+	int i;
+
+	/* find the block */
+	for (i = 0; i < MAX_ZLIB_ALLOCS; i++)
+		if (ptr == data->allocptr[i])
+		{
+			/* clear the low bit of the size to allow matches */
+			*ptr &= ~1;
+			return;
+		}
 }
 
 
@@ -1059,11 +1292,17 @@ static int init_codec(struct hard_disk_info *info)
 			/* init the first for decompression and the second for compression */
 			data->inflater.next_in = info->compressed;
 			data->inflater.avail_in = 0;
+			data->inflater.zalloc = fast_alloc;
+			data->inflater.zfree = fast_free;
+			data->inflater.opaque = data;
 			err = inflateInit2(&data->inflater, -MAX_WBITS);
 			if (err == Z_OK)
 			{
 				data->deflater.next_in = info->compressed;
 				data->deflater.avail_in = 0;
+				data->deflater.zalloc = fast_alloc;
+				data->deflater.zfree = fast_free;
+				data->deflater.opaque = data;
 				err = deflateInit2(&data->deflater, Z_BEST_COMPRESSION, Z_DEFLATED, -MAX_WBITS, 8, Z_DEFAULT_STRATEGY);
 			}
 
@@ -1110,8 +1349,15 @@ static void free_codec(struct hard_disk_info *info)
 			/* deinit the streams */
 			if (data)
 			{
+				int i;
+
 				inflateEnd(&data->inflater);
 				deflateEnd(&data->deflater);
+
+				/* free our fast memory */
+				for (i = 0; i < MAX_ZLIB_ALLOCS; i++)
+					if (data->allocptr[i])
+						free(data->allocptr[i]);
 				free(data);
 			}
 			break;

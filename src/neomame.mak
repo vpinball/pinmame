@@ -18,7 +18,7 @@ SOUNDS+=YM2610@
 DRVLIBS = $(OBJ)/neogeo.a
 
 $(OBJ)/neogeo.a: \
-	$(OBJ)/machine/neogeo.o $(OBJ)/machine/pd4990a.o $(OBJ)/vidhrdw/neogeo.o $(OBJ)/drivers/neogeo.o \
+	$(OBJ)/machine/neogeo.o $(OBJ)/machine/neocrypt.o $(OBJ)/machine/pd4990a.o $(OBJ)/vidhrdw/neogeo.o $(OBJ)/drivers/neogeo.o \
 
 # MAME specific core objs
 COREOBJS += $(OBJ)/driver.o $(OBJ)/cheat.o

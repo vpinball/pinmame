@@ -9,10 +9,11 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#include "hash.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 
 
 /***************************************************************************
@@ -44,7 +45,8 @@ struct RomModule
 	const char *_name;	/* name of the file to load */
 	UINT32 _offset;		/* offset to load it to */
 	UINT32 _length;		/* length of the file */
-	UINT32 _crc;		/* standard CRC-32 checksum */
+	UINT32 _flags;		/* flags */
+	const char *_hashdata; /* hashing informations (checksums) */
 };
 
 
@@ -54,6 +56,32 @@ struct GameSample
 	int smpfreq;
 	int resolution;
 	signed char data[1];	/* extendable */
+};
+
+
+struct SystemBios
+{
+	int value;			/* value of mask to apply to ROM_BIOSFLAGS is chosen */
+	const char *_name;	/* name of the bios, e.g "default","japan" */
+	const char *_description;	/* long name of the bios, e.g "Europe MVS (Ver. 2)" */
+};
+
+
+struct rom_load_data
+{
+	int warnings;				/* warning count during processing */
+	int errors;				/* error count during processing */
+
+	int romsloaded;				/* current ROMs loaded count */
+	int romstotal;				/* total number of ROMs to read */
+
+	void * file;				/* current file */
+
+	UINT8 *	regionbase;			/* base of current region */
+	UINT32 regionlength;			/* length of current region */
+
+	char errorbuf[4096];			/* accumulated errors */
+	UINT8 tempbuf[65536];			/* temporary buffer */
 };
 
 
@@ -107,10 +135,13 @@ enum
 	REGION_USER6,
 	REGION_USER7,
 	REGION_USER8,
+	REGION_DISKS,
 	REGION_MAX
 };
 
 #define BADCRC( crc ) (~(crc))
+
+#define ROMMD5(md5) ("MD5" #md5)
 
 
 
@@ -119,20 +150,6 @@ enum
 	Core macros for the ROM loading system
 
 ***************************************************************************/
-
-/* ----- length compaction macros ----- */
-#define INVALID_LENGTH 				0x7ff
-#define COMPACT_LENGTH(x)									\
-	((((x) & 0xffffff00) == 0) ? (0x000 | ((x) >> 0)) :		\
-	 (((x) & 0xfffff00f) == 0) ? (0x100 | ((x) >> 4)) :		\
-	 (((x) & 0xffff00ff) == 0) ? (0x200 | ((x) >> 8)) :		\
-	 (((x) & 0xfff00fff) == 0) ? (0x300 | ((x) >> 12)) : 	\
-	 (((x) & 0xff00ffff) == 0) ? (0x400 | ((x) >> 16)) : 	\
-	 (((x) & 0xf00fffff) == 0) ? (0x500 | ((x) >> 20)) : 	\
-	 (((x) & 0x00ffffff) == 0) ? (0x600 | ((x) >> 24)) : 	\
-	 INVALID_LENGTH)
-#define UNCOMPACT_LENGTH(x)	(((x) == INVALID_LENGTH) ? 0 : (((x) & 0xff) << (((x) & 0x700) >> 6)))
-
 
 /* ----- per-entry constants ----- */
 #define ROMENTRYTYPE_REGION			1					/* this entry marks the start of a region */
@@ -199,10 +216,14 @@ enum
 #define		ROMREGION_ERASE00		ROMREGION_ERASEVAL(0)
 #define		ROMREGION_ERASEFF		ROMREGION_ERASEVAL(0xff)
 
+#define ROMREGION_DATATYPEMASK		0x00010000			/* inherit all flags from previous definition */
+#define		ROMREGION_DATATYPEROM	0x00000000
+#define		ROMREGION_DATATYPEDISK	0x00010000
+
 /* ----- per-region macros ----- */
-#define ROMREGION_GETTYPE(r)		((r)->_crc)
+#define ROMREGION_GETTYPE(r)		((UINT32)(r)->_hashdata)
 #define ROMREGION_GETLENGTH(r)		((r)->_length)
-#define ROMREGION_GETFLAGS(r)		((r)->_offset)
+#define ROMREGION_GETFLAGS(r)		((r)->_flags)
 #define ROMREGION_GETWIDTH(r)		(8 << (ROMREGION_GETFLAGS(r) & ROMREGION_WIDTHMASK))
 #define ROMREGION_ISLITTLEENDIAN(r)	((ROMREGION_GETFLAGS(r) & ROMREGION_ENDIANMASK) == ROMREGION_LE)
 #define ROMREGION_ISBIGENDIAN(r)	((ROMREGION_GETFLAGS(r) & ROMREGION_ENDIANMASK) == ROMREGION_BE)
@@ -212,12 +233,12 @@ enum
 #define ROMREGION_ISLOADUPPER(r)	((ROMREGION_GETFLAGS(r) & ROMREGION_LOADUPPERMASK) == ROMREGION_LOADUPPER)
 #define ROMREGION_ISERASE(r)		((ROMREGION_GETFLAGS(r) & ROMREGION_ERASEMASK) == ROMREGION_ERASE)
 #define ROMREGION_GETERASEVAL(r)	((ROMREGION_GETFLAGS(r) & ROMREGION_ERASEVALMASK) >> 8)
+#define ROMREGION_GETDATATYPE(r)	(ROMREGION_GETFLAGS(r) & ROMREGION_DATATYPEMASK)
+#define ROMREGION_ISROMDATA(r)		(ROMREGION_GETDATATYPE(r) == ROMREGION_DATATYPEROM)
+#define ROMREGION_ISDISKDATA(r)		(ROMREGION_GETDATATYPE(r) == ROMREGION_DATATYPEDISK)
 
 
 /* ----- per-ROM constants ----- */
-#define ROM_LENGTHMASK				0x000007ff			/* the compacted length of the ROM */
-#define		ROM_INVALIDLENGTH		INVALID_LENGTH
-
 #define ROM_OPTIONALMASK			0x00000800			/* optional - won't hurt if it's not there */
 #define		ROM_REQUIRED			0x00000000
 #define		ROM_OPTIONAL			0x00000800
@@ -250,15 +271,18 @@ enum
 #define ROM_INHERITFLAGSMASK		0x08000000			/* inherit all flags from previous definition */
 #define		ROM_INHERITFLAGS		0x08000000
 
-#define ROM_INHERITEDFLAGS			(ROM_GROUPMASK | ROM_SKIPMASK | ROM_REVERSEMASK | ROM_BITWIDTHMASK | ROM_BITSHIFTMASK)
+#define ROM_BIOSFLAGSMASK			0xf0000000			/* only loaded if value matches global bios value */
+#define 	ROM_BIOS(n)				(((n) & 15) << 28)
+
+#define ROM_INHERITEDFLAGS			(ROM_GROUPMASK | ROM_SKIPMASK | ROM_REVERSEMASK | ROM_BITWIDTHMASK | ROM_BITSHIFTMASK | ROM_BIOSFLAGSMASK)
 
 /* ----- per-ROM macros ----- */
 #define ROM_GETNAME(r)				((r)->_name)
 #define ROM_SAFEGETNAME(r)			(ROMENTRY_ISFILL(r) ? "fill" : ROMENTRY_ISCOPY(r) ? "copy" : ROM_GETNAME(r))
 #define ROM_GETOFFSET(r)			((r)->_offset)
-#define ROM_GETCRC(r)				((r)->_crc)
-#define ROM_GETLENGTH(r)			(UNCOMPACT_LENGTH((r)->_length & ROM_LENGTHMASK))
-#define ROM_GETFLAGS(r)				((r)->_length & ~ROM_LENGTHMASK)
+#define ROM_GETLENGTH(r)			((r)->_length)
+#define ROM_GETFLAGS(r)				((r)->_flags)
+#define ROM_GETHASHDATA(r)          ((r)->_hashdata)
 #define ROM_ISOPTIONAL(r)			((ROM_GETFLAGS(r) & ROM_OPTIONALMASK) == ROM_OPTIONAL)
 #define ROM_GETGROUPSIZE(r)			(((ROM_GETFLAGS(r) & ROM_GROUPMASK) >> 12) + 1)
 #define ROM_GETSKIPCOUNT(r)			((ROM_GETFLAGS(r) & ROM_SKIPMASK) >> 16)
@@ -266,7 +290,11 @@ enum
 #define ROM_GETBITWIDTH(r)			(((ROM_GETFLAGS(r) & ROM_BITWIDTHMASK) >> 21) + 8 * ((ROM_GETFLAGS(r) & ROM_BITWIDTHMASK) == 0))
 #define ROM_GETBITSHIFT(r)			((ROM_GETFLAGS(r) & ROM_BITSHIFTMASK) >> 24)
 #define ROM_INHERITSFLAGS(r)		((ROM_GETFLAGS(r) & ROM_INHERITFLAGSMASK) == ROM_INHERITFLAGS)
-#define ROM_NOGOODDUMP(r)			(ROM_GETCRC(r) == 0)
+#define ROM_GETBIOSFLAGS(r)			((ROM_GETFLAGS(r) & ROM_BIOSFLAGSMASK) >> 28)
+#define ROM_NOGOODDUMP(r)			(hash_data_has_info((r)->_hashdata, HASH_INFO_NO_DUMP))
+
+/* ----- per-disk macros ----- */
+#define DISK_GETINDEX(r)			((r)->_offset)
 
 
 
@@ -278,38 +306,69 @@ enum
 
 /* ----- start/stop macros ----- */
 #define ROM_START(name)								static const struct RomModule rom_##name[] = {
-#define ROM_END										{ ROMENTRY_END, 0, 0, 0 } };
+#define ROM_END                                      { ROMENTRY_END, 0, 0, 0, NULL } };
 
 /* ----- ROM region macros ----- */
-#define ROM_REGION(length,type,flags)				{ ROMENTRY_REGION, flags, length, type },
+#define ROM_REGION(length,type,flags)                { ROMENTRY_REGION, 0, length, flags, (const char*)type },
 #define ROM_REGION16_LE(length,type,flags)			ROM_REGION(length, type, (flags) | ROMREGION_16BIT | ROMREGION_LE)
 #define ROM_REGION16_BE(length,type,flags)			ROM_REGION(length, type, (flags) | ROMREGION_16BIT | ROMREGION_BE)
 #define ROM_REGION32_LE(length,type,flags)			ROM_REGION(length, type, (flags) | ROMREGION_32BIT | ROMREGION_LE)
 #define ROM_REGION32_BE(length,type,flags)			ROM_REGION(length, type, (flags) | ROMREGION_32BIT | ROMREGION_BE)
 
 /* ----- core ROM loading macros ----- */
-#define ROMX_LOAD(name,offset,length,crc,flags)		{ name, offset, (flags) | COMPACT_LENGTH(length), crc },
-#define ROM_LOAD(name,offset,length,crc)			ROMX_LOAD(name, offset, length, crc, 0)
-#define ROM_LOAD_OPTIONAL(name,offset,length,crc)	ROMX_LOAD(name, offset, length, crc, ROM_OPTIONAL)
+#define ROMMD5_LOAD(name,offset,length,hash,flags)   { name, offset, length, flags, hash },
+#define ROMX_LOAD(name,offset,length,hash,flags)     { name, offset, length, flags, hash },
+#define ROM_LOAD(name,offset,length,hash)            ROMX_LOAD(name, offset, length, hash, 0)
+#define ROM_LOAD_OPTIONAL(name,offset,length,hash)   ROMX_LOAD(name, offset, length, hash, ROM_OPTIONAL)
 #define ROM_CONTINUE(offset,length)					ROMX_LOAD(ROMENTRY_CONTINUE, offset, length, 0, ROM_INHERITFLAGS)
 #define ROM_RELOAD(offset,length)					ROMX_LOAD(ROMENTRY_RELOAD, offset, length, 0, ROM_INHERITFLAGS)
-#define ROM_FILL(offset,length,value)				ROM_LOAD(ROMENTRY_FILL, offset, length, value)
-#define ROM_COPY(rgn,srcoffset,offset,length)		ROMX_LOAD(ROMENTRY_COPY, offset, length, srcoffset, (rgn) << 24)
+#define ROM_FILL(offset,length,value)                ROM_LOAD(ROMENTRY_FILL, offset, length, (const char*)value)
+#define ROM_COPY(rgn,srcoffset,offset,length)        ROMX_LOAD(ROMENTRY_COPY, offset, length, (const char*)srcoffset, (rgn) << 24)
 
 /* ----- nibble loading macros ----- */
-#define ROM_LOAD_NIB_HIGH(name,offset,length,crc)	ROMX_LOAD(name, offset, length, crc, ROM_NIBBLE | ROM_SHIFT_NIBBLE_HI)
-#define ROM_LOAD_NIB_LOW(name,offset,length,crc)	ROMX_LOAD(name, offset, length, crc, ROM_NIBBLE | ROM_SHIFT_NIBBLE_LO)
+#define ROM_LOAD_NIB_HIGH(name,offset,length,hash)   ROMX_LOAD(name, offset, length, hash, ROM_NIBBLE | ROM_SHIFT_NIBBLE_HI)
+#define ROM_LOAD_NIB_LOW(name,offset,length,hash)    ROMX_LOAD(name, offset, length, hash, ROM_NIBBLE | ROM_SHIFT_NIBBLE_LO)
 
 /* ----- new-style 16-bit loading macros ----- */
-#define ROM_LOAD16_BYTE(name,offset,length,crc)		ROMX_LOAD(name, offset, length, crc, ROM_SKIP(1))
-#define ROM_LOAD16_WORD(name,offset,length,crc)		ROM_LOAD(name, offset, length, crc)
-#define ROM_LOAD16_WORD_SWAP(name,offset,length,crc)ROMX_LOAD(name, offset, length, crc, ROM_GROUPWORD | ROM_REVERSE)
+#define ROM_LOAD16_BYTE(name,offset,length,hash)     ROMX_LOAD(name, offset, length, hash, ROM_SKIP(1))
+#define ROM_LOAD16_WORD(name,offset,length,hash)     ROM_LOAD(name, offset, length, hash)
+#define ROM_LOAD16_WORD_SWAP(name,offset,length,hash)ROMX_LOAD(name, offset, length, hash, ROM_GROUPWORD | ROM_REVERSE)
 
 /* ----- new-style 32-bit loading macros ----- */
-#define ROM_LOAD32_BYTE(name,offset,length,crc)		ROMX_LOAD(name, offset, length, crc, ROM_SKIP(3))
-#define ROM_LOAD32_WORD(name,offset,length,crc)		ROMX_LOAD(name, offset, length, crc, ROM_GROUPWORD | ROM_SKIP(2))
-#define ROM_LOAD32_WORD_SWAP(name,offset,length,crc)ROMX_LOAD(name, offset, length, crc, ROM_GROUPWORD | ROM_REVERSE | ROM_SKIP(2))
+#define ROM_LOAD32_BYTE(name,offset,length,hash)     ROMX_LOAD(name, offset, length, hash, ROM_SKIP(3))
+#define ROM_LOAD32_WORD(name,offset,length,hash)     ROMX_LOAD(name, offset, length, hash, ROM_GROUPWORD | ROM_SKIP(2))
+#define ROM_LOAD32_WORD_SWAP(name,offset,length,hash)ROMX_LOAD(name, offset, length, hash, ROM_GROUPWORD | ROM_REVERSE | ROM_SKIP(2))
 
+/* ----- disk loading macros ----- */
+#define DISK_REGION(type)							ROM_REGION(1, type, ROMREGION_DATATYPEDISK)
+#define DISK_IMAGE(name,idx,hash)                    ROMMD5_LOAD(name, idx, 0, hash, 0)
+
+/* ----- hash macros ----- */
+#define CRC(x)                                       "c:" #x "#"
+#define SHA1(x)                                      "s:" #x "#"
+#define MD5(x)                                       "m:" #x "#"
+#define NO_DUMP                                      "$ND$"
+#define BAD_DUMP                                     "$BD$"
+
+// @@@ FF: Remove this when we use the final SHA1Merger
+#define NOT_DUMPED NO_DUMP
+#define BADROM BAD_DUMP
+
+/***************************************************************************
+
+	Derived macros for the alternate BIOS loading system
+
+***************************************************************************/
+
+#define BIOSENTRY_ISEND(b)		((b)->_name == NULL)
+
+/* ----- start/stop macros ----- */
+#define SYSTEM_BIOS_START(name)			static const struct SystemBios system_bios_##name[] = {
+#define SYSTEM_BIOS_END					{ 0, NULL } };
+
+/* ----- ROM region macros ----- */
+#define SYSTEM_BIOS_ADD(value,name,description)		{ (int)value, (const char*)name, (const char*)description },
+#define BIOS_DEFAULT			"default"
 
 
 /***************************************************************************
@@ -344,11 +403,8 @@ void coin_lockout_global_w(int on);  /* Locks out all coin inputs */
 /* generic NVRAM handler */
 extern size_t generic_nvram_size;
 extern data8_t *generic_nvram;
-extern void nvram_handler_generic_0fill(void *file, int read_or_write);
-extern void nvram_handler_generic_1fill(void *file, int read_or_write);
-
-/* controls the global visible area */
-void set_visible_area(int min_x,int max_x,int min_y,int max_y);
+extern void nvram_handler_generic_0fill(mame_file *file, int read_or_write);
+extern void nvram_handler_generic_1fill(mame_file *file, int read_or_write);
 
 /* bitmap allocation */
 struct mame_bitmap *bitmap_alloc(int width,int height);
@@ -370,10 +426,14 @@ struct mame_bitmap *auto_bitmap_alloc(int width,int height);
 struct mame_bitmap *auto_bitmap_alloc_depth(int width,int height,int depth);
 
 /* screen snapshots */
-void save_screen_snapshot_as(void *fp,struct mame_bitmap *bitmap);
-void save_screen_snapshot(struct mame_bitmap *bitmap);
+void save_screen_snapshot_as(void *fp,struct mame_bitmap *bitmap,const struct rectangle *bounds);
+void save_screen_snapshot(struct mame_bitmap *bitmap,const struct rectangle *bounds);
+
+/* hard disk handling */
+void *get_disk_handle(int diskindex);
 
 /* ROM processing */
+int rom_load(const struct RomModule *romp);
 const struct RomModule *rom_first_region(const struct GameDriver *drv);
 const struct RomModule *rom_next_region(const struct RomModule *romp);
 const struct RomModule *rom_first_file(const struct RomModule *romp);
@@ -381,7 +441,6 @@ const struct RomModule *rom_next_file(const struct RomModule *romp);
 const struct RomModule *rom_first_chunk(const struct RomModule *romp);
 const struct RomModule *rom_next_chunk(const struct RomModule *romp);
 
-int readroms(void);
 void printromlist(const struct RomModule *romp,const char *name);
 
 
@@ -392,59 +451,61 @@ void printromlist(const struct RomModule *romp,const char *name);
 
 ***************************************************************************/
 
+#define BIT(x,n) (((x)>>(n))&1)
+
 #define BITSWAP8(val,B7,B6,B5,B4,B3,B2,B1,B0) \
-		(((((val) >> (B7)) & 1) << 7) | \
-		 ((((val) >> (B6)) & 1) << 6) | \
-		 ((((val) >> (B5)) & 1) << 5) | \
-		 ((((val) >> (B4)) & 1) << 4) | \
-		 ((((val) >> (B3)) & 1) << 3) | \
-		 ((((val) >> (B2)) & 1) << 2) | \
-		 ((((val) >> (B1)) & 1) << 1) | \
-		 ((((val) >> (B0)) & 1) << 0))
+		((BIT(val,B7) << 7) | \
+		 (BIT(val,B6) << 6) | \
+		 (BIT(val,B5) << 5) | \
+		 (BIT(val,B4) << 4) | \
+		 (BIT(val,B3) << 3) | \
+		 (BIT(val,B2) << 2) | \
+		 (BIT(val,B1) << 1) | \
+		 (BIT(val,B0) << 0))
 
 #define BITSWAP16(val,B15,B14,B13,B12,B11,B10,B9,B8,B7,B6,B5,B4,B3,B2,B1,B0) \
-		(((((val) >> (B15)) & 1) << 15) | \
-		 ((((val) >> (B14)) & 1) << 14) | \
-		 ((((val) >> (B13)) & 1) << 13) | \
-		 ((((val) >> (B12)) & 1) << 12) | \
-		 ((((val) >> (B11)) & 1) << 11) | \
-		 ((((val) >> (B10)) & 1) << 10) | \
-		 ((((val) >> ( B9)) & 1) <<  9) | \
-		 ((((val) >> ( B8)) & 1) <<  8) | \
-		 ((((val) >> ( B7)) & 1) <<  7) | \
-		 ((((val) >> ( B6)) & 1) <<  6) | \
-		 ((((val) >> ( B5)) & 1) <<  5) | \
-		 ((((val) >> ( B4)) & 1) <<  4) | \
-		 ((((val) >> ( B3)) & 1) <<  3) | \
-		 ((((val) >> ( B2)) & 1) <<  2) | \
-		 ((((val) >> ( B1)) & 1) <<  1) | \
-		 ((((val) >> ( B0)) & 1) <<  0))
+		((BIT(val,B15) << 15) | \
+		 (BIT(val,B14) << 14) | \
+		 (BIT(val,B13) << 13) | \
+		 (BIT(val,B12) << 12) | \
+		 (BIT(val,B11) << 11) | \
+		 (BIT(val,B10) << 10) | \
+		 (BIT(val, B9) <<  9) | \
+		 (BIT(val, B8) <<  8) | \
+		 (BIT(val, B7) <<  7) | \
+		 (BIT(val, B6) <<  6) | \
+		 (BIT(val, B5) <<  5) | \
+		 (BIT(val, B4) <<  4) | \
+		 (BIT(val, B3) <<  3) | \
+		 (BIT(val, B2) <<  2) | \
+		 (BIT(val, B1) <<  1) | \
+		 (BIT(val, B0) <<  0))
 
 #define BITSWAP24(val,B23,B22,B21,B20,B19,B18,B17,B16,B15,B14,B13,B12,B11,B10,B9,B8,B7,B6,B5,B4,B3,B2,B1,B0) \
-		(((((val) >> (B23)) & 1) << 23) | \
-		 ((((val) >> (B22)) & 1) << 22) | \
-		 ((((val) >> (B21)) & 1) << 21) | \
-		 ((((val) >> (B20)) & 1) << 20) | \
-		 ((((val) >> (B19)) & 1) << 19) | \
-		 ((((val) >> (B18)) & 1) << 18) | \
-		 ((((val) >> (B17)) & 1) << 17) | \
-		 ((((val) >> (B16)) & 1) << 16) | \
-		 ((((val) >> (B15)) & 1) << 15) | \
-		 ((((val) >> (B14)) & 1) << 14) | \
-		 ((((val) >> (B13)) & 1) << 13) | \
-		 ((((val) >> (B12)) & 1) << 12) | \
-		 ((((val) >> (B11)) & 1) << 11) | \
-		 ((((val) >> (B10)) & 1) << 10) | \
-		 ((((val) >> ( B9)) & 1) <<  9) | \
-		 ((((val) >> ( B8)) & 1) <<  8) | \
-		 ((((val) >> ( B7)) & 1) <<  7) | \
-		 ((((val) >> ( B6)) & 1) <<  6) | \
-		 ((((val) >> ( B5)) & 1) <<  5) | \
-		 ((((val) >> ( B4)) & 1) <<  4) | \
-		 ((((val) >> ( B3)) & 1) <<  3) | \
-		 ((((val) >> ( B2)) & 1) <<  2) | \
-		 ((((val) >> ( B1)) & 1) <<  1) | \
-		 ((((val) >> ( B0)) & 1) <<  0))
+		((BIT(val,B23) << 23) | \
+		 (BIT(val,B22) << 22) | \
+		 (BIT(val,B21) << 21) | \
+		 (BIT(val,B20) << 20) | \
+		 (BIT(val,B19) << 19) | \
+		 (BIT(val,B18) << 18) | \
+		 (BIT(val,B17) << 17) | \
+		 (BIT(val,B16) << 16) | \
+		 (BIT(val,B15) << 15) | \
+		 (BIT(val,B14) << 14) | \
+		 (BIT(val,B13) << 13) | \
+		 (BIT(val,B12) << 12) | \
+		 (BIT(val,B11) << 11) | \
+		 (BIT(val,B10) << 10) | \
+		 (BIT(val, B9) <<  9) | \
+		 (BIT(val, B8) <<  8) | \
+		 (BIT(val, B7) <<  7) | \
+		 (BIT(val, B6) <<  6) | \
+		 (BIT(val, B5) <<  5) | \
+		 (BIT(val, B4) <<  4) | \
+		 (BIT(val, B3) <<  3) | \
+		 (BIT(val, B2) <<  2) | \
+		 (BIT(val, B1) <<  1) | \
+		 (BIT(val, B0) <<  0))
 
 
 #ifdef __cplusplus

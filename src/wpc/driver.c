@@ -3,7 +3,7 @@
 #  include "driver.h"
 
 const struct GameDriver driver_0 = {
- __FILE__, 0, "", 0, 0, 0, 0, 0, 0, 0, NOT_A_DRIVER
+ __FILE__, 0, "", 0, 0, 0, 0, 0, 0, 0, 0, NOT_A_DRIVER
 };
 #  define DRIVER(name, ver) extern struct GameDriver driver_##name##_##ver;
 #  define DRIVERNV(name) extern struct GameDriver driver_##name;

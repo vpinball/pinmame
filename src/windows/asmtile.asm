@@ -1,5 +1,29 @@
 [BITS 32]
 
+;//============================================================
+;// ELF compatibility
+;//============================================================
+
+%ifdef NO_UNDERSCORE
+%macro CGLOBAL 1
+          GLOBAL %1
+%endmacro
+
+%macro cextern 1
+          extern %1
+%endmacro
+%else
+%macro CGLOBAL 1
+          GLOBAL _%1
+%define %1 _%1
+%endmacro
+
+%macro cextern 1
+          extern _%1
+%define %1 _%1
+%endmacro
+%endif
+
 
 ;//============================================================
 ;//	LOCAL VARIABLES
@@ -29,8 +53,8 @@ mmx_8to64_map:
 ;//	MMX cleanup
 ;//============================================================
 
-GLOBAL _osd_pend
-_osd_pend:
+CGLOBAL osd_pend
+osd_pend:
 	emms
 	ret
 
@@ -49,8 +73,8 @@ _osd_pend:
 ;//		esp+48	UINT8 *			pri
 ;//		esp+52	UINT32 			pcode
 
-GLOBAL _osd_pdo16
-_osd_pdo16:
+CGLOBAL osd_pdo16
+osd_pdo16:
 
 	pushad
 
@@ -128,8 +152,8 @@ _osd_pdo16:
 ;//		esp+60	UINT8 *			pri
 ;//		esp+64	UINT32 			pcode
 
-GLOBAL _osd_pdt16
-_osd_pdt16:
+CGLOBAL osd_pdt16
+osd_pdt16:
 
 	pushad
 
@@ -217,8 +241,8 @@ _osd_pdt16:
 ;//		esp+60	UINT8 *			pri
 ;//		esp+64	UINT32 			pcode
 
-GLOBAL _osd_pdt16np
-_osd_pdt16np:
+CGLOBAL osd_pdt16np
+osd_pdt16np:
 
 	pushad
 

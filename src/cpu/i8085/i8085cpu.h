@@ -21,9 +21,11 @@
 
 #define IM_SID          0x80
 #define IM_SOD          0x40
-#define IM_IEN          0x20
+//#define IM_IEN          0x20
+#define IM_INTR         0x20 //AT: the 8085 ignores bit 0x20. we move IM_INTR here for compatibility.
 #define IM_TRAP         0x10
-#define IM_INTR         0x08
+//#define IM_INTR         0x08
+#define IM_IEN          0x08 //AT: RIM returns IEN status on this bit. SIM checks this bit to allow masking RST55-75
 #define IM_RST75        0x04
 #define IM_RST65        0x02
 #define IM_RST55        0x01
@@ -73,8 +75,8 @@
  " shlb $2,%%al         \n" /* shift to P/V bit position */     \
  " andb $0xd1,%%ah      \n" /* sign, zero, half carry, carry */ \
  " orb %%ah,%%al        \n"                                     \
- :"=g" (I.AF.b.h), "=a" (I.AF.b.l)                              \
- :"r" (R), "0" (I.AF.b.h)                                       \
+ :"=mq" (I.AF.b.h), "=a" (I.AF.b.l)                              \
+ :"q" (R), "0" (I.AF.b.h)                                       \
  )
 #else
 #define M_ADD(R) {												\
@@ -96,8 +98,8 @@ int q = I.AF.b.h+R; 											\
  " shlb $2,%%al         \n" /* shift to P/V bit position */     \
  " andb $0xd1,%%ah      \n" /* sign, zero, half carry, carry */ \
  " orb %%ah,%%al        \n" /* combine with P/V */              \
- :"=g" (I.AF.b.h), "=a" (I.AF.b.l)                              \
- :"r" (R), "a" (I.AF.b.l), "0" (I.AF.b.h)                       \
+ :"=mq" (I.AF.b.h), "=a" (I.AF.b.l)                              \
+ :"q" (R), "a" (I.AF.b.l), "0" (I.AF.b.h)                       \
  )
 #else
 #define M_ADC(R) {												\
@@ -119,8 +121,8 @@ int q = I.AF.b.h+R; 											\
  " andb $0xd1,%%ah      \n" /* sign, zero, half carry, carry */ \
  " orb $2,%%al          \n" /* set N flag */                    \
  " orb %%ah,%%al        \n" /* combine with P/V */              \
- :"=g" (I.AF.b.h), "=a" (I.AF.b.l)                              \
- :"r" (R), "0" (I.AF.b.h)                                       \
+ :"=mq" (I.AF.b.h), "=a" (I.AF.b.l)                              \
+ :"q" (R), "0" (I.AF.b.h)                                       \
  )
 #else
 #define M_SUB(R) {												\
@@ -143,8 +145,8 @@ int q = I.AF.b.h+R; 											\
  " andb $0xd1,%%ah      \n" /* sign, zero, half carry, carry */ \
  " orb $2,%%al          \n" /* set N flag */                    \
  " orb %%ah,%%al        \n" /* combine with P/V */              \
- :"=g" (I.AF.b.h), "=a" (I.AF.b.l)                              \
- :"r" (R), "a" (I.AF.b.l), "0" (I.AF.b.h)                       \
+ :"=mq" (I.AF.b.h), "=a" (I.AF.b.l)                              \
+ :"q" (R), "a" (I.AF.b.l), "0" (I.AF.b.h)                       \
  )
 #else
 #define M_SBB(R) {                                              \
@@ -166,8 +168,8 @@ int q = I.AF.b.h+R; 											\
  " andb $0xd1,%%ah     \n" /* sign, zero, half carry, carry */  \
  " orb $2,%%al         \n" /* set N flag */                     \
  " orb %%ah,%%al       \n" /* combine with P/V */               \
- :"=g" (I.AF.b.h), "=a" (I.AF.b.l)                              \
- :"r" (R), "0" (I.AF.b.h)                                       \
+ :"=mq" (I.AF.b.h), "=a" (I.AF.b.l)                              \
+ :"q" (R), "0" (I.AF.b.h)                                       \
  )
 #else
 #define M_CMP(R) {                                              \
@@ -195,7 +197,7 @@ int q = I.AF.b.h+R; 											\
  " lahf                 \n"                                     \
  " andb $0x11,%%ah      \n"                                     \
  " orb %%ah,%1          \n"                                     \
- :"=c" (I.HL.d), "=g" (I.AF.b.l)                                \
+ :"=c" (I.HL.d), "=mq" (I.AF.b.l)                                \
  :"0" (I.HL.d), "1" (I.AF.b.l), "a" (I.R.d)                     \
  )
 #else

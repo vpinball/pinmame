@@ -28,7 +28,7 @@ extern "C" {
 enum
 {
 	CPU_DUMMY,
-#if (HAS_PPS4)
+#if defined(PINMAME) && (HAS_PPS4)
 	CPU_PPS4,
 #endif
 #if (HAS_Z80)
@@ -37,7 +37,7 @@ enum
 #if (HAS_Z180)
 	CPU_Z180,
 #endif
-#if (HAS_4004)
+#if defined(PINMAME) && (HAS_4004)
 	CPU_4004,
 #endif
 #if (HAS_8080)
@@ -76,6 +76,9 @@ enum
 #if (HAS_N2A03)
 	CPU_N2A03,
 #endif
+#if (HAS_DECO16)
+	CPU_DECO16,
+#endif
 #if (HAS_M4510)
 	CPU_M4510,
 #endif
@@ -108,6 +111,9 @@ enum
 #endif
 #if (HAS_V60)
 	CPU_V60,
+#endif
+#if (HAS_V70)
+	CPU_V70,
 #endif
 #if (HAS_I8035)
 	CPU_I8035,
@@ -190,6 +196,9 @@ enum
 #if (HAS_TMS34020)
 	CPU_TMS34020,
 #endif
+#if (HAS_TI990_10)
+	CPU_TI990_10,
+#endif
 #if (HAS_TMS9900)
 	CPU_TMS9900,
 #endif
@@ -217,8 +226,14 @@ enum
 #if (HAS_Z8000)
 	CPU_Z8000,
 #endif
-#if (HAS_TMS320C10)
-	CPU_TMS320C10,
+#if (HAS_TMS32010)
+	CPU_TMS32010,
+#endif
+#if (HAS_TMS32025)
+	CPU_TMS32025,
+#endif
+#if (HAS_TMS32031)
+	CPU_TMS32031,
 #endif
 #if (HAS_CCPU)
 	CPU_CCPU,
@@ -226,8 +241,14 @@ enum
 #if (HAS_ADSP2100)
 	CPU_ADSP2100,
 #endif
+#if (HAS_ADSP2101)
+ CPU_ADSP2101,
+#endif
 #if (HAS_ADSP2105)
 	CPU_ADSP2105,
+#endif
+#if (HAS_ADSP2115)
+	CPU_ADSP2115,
 #endif
 #if (HAS_PSXCPU)
 	CPU_PSXCPU,
@@ -238,6 +259,9 @@ enum
 #if (HAS_UPD7810)
 	CPU_UPD7810,
 #endif
+#if (HAS_UPD7807)
+	CPU_UPD7807,
+#endif
 #if (HAS_JAGUAR)
 	CPU_JAGUARGPU,
 	CPU_JAGUARDSP,
@@ -246,14 +270,37 @@ enum
 	CPU_R3000BE,
 	CPU_R3000LE,
 #endif
-#if (HAS_TMS320C31)
-	CPU_TMS320C31,
+#if (HAS_R4600)
+	CPU_R4600BE,
+	CPU_R4600LE,
+#endif
+#if (HAS_R5000)
+	CPU_R5000BE,
+	CPU_R5000LE,
 #endif
 #if (HAS_ARM)
 	CPU_ARM,
 #endif
 #if (HAS_SH2)
 	CPU_SH2,
+#endif
+#if (HAS_DSP32C)
+	CPU_DSP32C,
+#endif
+#if (HAS_PIC16C54)
+	CPU_PIC16C54,
+#endif
+#if (HAS_PIC16C55)
+	CPU_PIC16C55,
+#endif
+#if (HAS_PIC16C56)
+	CPU_PIC16C56,
+#endif
+#if (HAS_PIC16C57)
+	CPU_PIC16C57,
+#endif
+#if (HAS_PIC16C58)
+	CPU_PIC16C58,
 #endif
 
 #ifdef MESS
@@ -759,6 +806,14 @@ INLINE int cpu_getactivecpu(void)
 {
 	extern int activecpu;
 	return activecpu;
+}
+
+
+/* return a the index of the executing CPU */
+INLINE int cpu_getexecutingcpu(void)
+{
+	extern int executingcpu;
+	return executingcpu;
 }
 
 

@@ -128,8 +128,10 @@ extern int debug_trace_delay;	/* set to 0 to force a screen update */
 #define INVALID 0xffffffff
 #endif
 
+extern UINT8 debugger_bitmap_changed;
+extern UINT8 debugger_focus;
 
-extern UINT8 debugger_palette[DEBUGGER_TOTAL_COLORS*3];
+extern rgb_t debugger_palette[DEBUGGER_TOTAL_COLORS];
 extern UINT8 debugger_idle;
 struct GfxElement *build_debugger_font(void);
 void dbg_put_screen_char (int ch, int attr, int x, int y);

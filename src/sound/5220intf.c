@@ -5,6 +5,7 @@
      Written for MAME by Frank Palazzolo
      With help from Neill Corlett
      Additional tweaking by Aaron Giles
+     Speech ROM support and a few bug fixes by R Nabet
 
 ***********************************************************************************************/
 
@@ -61,6 +62,11 @@ int tms5220_sh_start(const struct MachineSound *msound)
 	if (stream == -1)
 		return 1;
 
+	/* init the speech ROM handlers */
+	tms5220_set_read(intf->read);
+	tms5220_set_load_address(intf->load_address);
+	tms5220_set_read_and_branch(intf->read_and_branch);
+
     /* request a sound channel */
     return 0;
 }
@@ -108,7 +114,7 @@ WRITE_HANDLER( tms5220_data_w )
 
 /**********************************************************************************************
 
-     tms5220_status_r -- read status from the sound chip
+     tms5220_status_r -- read status or data from the sound chip
 
 ***********************************************************************************************/
 
@@ -132,6 +138,24 @@ int tms5220_ready_r(void)
     /* bring up to date first */
     stream_update(stream, -1);
     return tms5220_ready_read();
+}
+
+
+
+/**********************************************************************************************
+
+     tms5220_ready_r -- return the time in seconds until the ready line is asserted
+
+***********************************************************************************************/
+
+double tms5220_time_to_ready(void)
+{
+	double cycles;
+
+	/* bring up to date first */
+	stream_update(stream, -1);
+	cycles = tms5220_cycles_to_ready();
+	return cycles * 80.0 / intf->baseclock;
 }
 
 

@@ -17,10 +17,29 @@
 // MAME headers
 #include "driver.h"
 #include "window.h"
+#include "input.h"
 
 // from config.c
 int  cli_frontend_init (int argc, char **argv);
 void cli_frontend_exit (void);
+
+
+#define ENABLE_PROFILER		0
+
+
+//============================================================
+//	TYPE DEFINITIONS
+//============================================================
+
+#define MAX_SYMBOLS		65536
+
+struct map_entry
+{
+	UINT32 start;
+	UINT32 end;
+	UINT32 hits;
+	char *name;
+};
 
 
 
@@ -42,7 +61,14 @@ int _CRT_glob = 0;
 static char mapfile_name[MAX_PATH];
 static LPTOP_LEVEL_EXCEPTION_FILTER pass_thru_filter;
 
-static int original_leds;
+static struct map_entry symbol_map[MAX_SYMBOLS];
+static int map_entries;
+
+#if ENABLE_PROFILER
+static HANDLE profiler_thread;
+static DWORD profiler_thread_id;
+static volatile UINT8 profiler_thread_exit;
+#endif
 
 
 
@@ -53,12 +79,21 @@ static int original_leds;
 static LONG CALLBACK exception_filter(struct _EXCEPTION_POINTERS *info);
 static const char *lookup_symbol(UINT32 address);
 static int get_code_base_size(UINT32 *base, UINT32 *size);
+static void parse_map_file(void);
+
+#if ENABLE_PROFILER
+static void output_symbol_list(FILE *f);
+static void increment_bucket(UINT32 addr);
+static void start_profiler(void);
+static void stop_profiler(void);
+#endif
 
 
 
 //============================================================
 //	main
 //============================================================
+
 #ifdef WINUI
 #define main main_
 #endif
@@ -69,20 +104,23 @@ int main(int argc, char **argv)
 	char *ext;
 	int res = 0;
 
-	// set up exception handling
+	// parse the map file, if present
 	strcpy(mapfile_name, argv[0]);
 	ext = strchr(mapfile_name, '.');
 	if (ext)
 		strcpy(ext, ".map");
 	else
 		strcat(mapfile_name, ".map");
-	pass_thru_filter = SetUnhandledExceptionFilter(exception_filter);
+	parse_map_file();
 
-	// remember the initial LED states
-	original_leds = osd_get_leds();
+	// set up exception handling
+	pass_thru_filter = SetUnhandledExceptionFilter(exception_filter);
 
 	// parse config and cmdline options
 	game_index = cli_frontend_init(argc, argv);
+
+	// remember the initial LED states and init keyboard handle
+	start_led();
 
 	// have we decided on a game?
 	if (game_index != -1)
@@ -96,20 +134,33 @@ int main(int argc, char **argv)
 		if (result == TIMERR_NOERROR)
 			timeBeginPeriod(caps.wPeriodMin);
 
+#if ENABLE_PROFILER
+		start_profiler();
+#endif
+
 		// run the game
 		res = run_game(game_index);
+
+#if ENABLE_PROFILER
+		stop_profiler();
+#endif
 
 		// restore the timer resolution
 		if (result == TIMERR_NOERROR)
 			timeEndPeriod(caps.wPeriodMin);
 	}
 
-	// restore the original LED state
-	osd_set_leds(original_leds);
+	// restore the original LED state and close keyboard handle
+	stop_led();
+
 	win_process_events();
 
 	// close errorlog, input and playback
 	cli_frontend_exit();
+
+#if ENABLE_PROFILER
+	output_symbol_list(stderr);
+#endif
 
 	exit(res);
 }
@@ -273,6 +324,8 @@ static LONG CALLBACK exception_filter(struct _EXCEPTION_POINTERS *info)
 		}
 	}
 
+	logerror("shutting down after exception\n");
+
 	cli_frontend_exit();
 
 	// exit
@@ -341,3 +394,201 @@ static int get_code_base_size(UINT32 *base, UINT32 *size)
 
 	return 0;
 }
+
+
+
+//============================================================
+//	compare_base
+//	compare_hits -- qsort callbacks to sort on
+//============================================================
+
+static int CLIB_DECL compare_start(const void *item1, const void *item2)
+{
+	return ((const struct map_entry *)item1)->start - ((const struct map_entry *)item2)->start;
+}
+
+
+#if ENABLE_PROFILER
+static int compare_hits(const void *item1, const void *item2)
+{
+	return ((const struct map_entry *)item2)->hits - ((const struct map_entry *)item1)->hits;
+}
+#endif
+
+
+
+//============================================================
+//	parse_map_file
+//============================================================
+
+static void parse_map_file(void)
+{
+	int got_text = 0;
+	char line[1024];
+	FILE *map;
+	int i;
+
+	// open the map file
+	map = fopen(mapfile_name, "r");
+	if (!map)
+		return;
+
+	// parse out the various symbols into map entries
+	map_entries = 0;
+	while (fgets(line, sizeof(line) - 1, map))
+	{
+		/* look for the code boundaries */
+		if (!got_text && !strncmp(line, ".text           0x", 18))
+		{
+			UINT32 base, size;
+			if (sscanf(line, ".text           0x%08x 0x%x", &base, &size) == 2)
+			{
+				symbol_map[map_entries].start = base;
+				symbol_map[map_entries].name = strcpy(malloc(strlen("Code start") + 1), "Code start");
+				map_entries++;
+				symbol_map[map_entries].start = base + size;
+				symbol_map[map_entries].name = strcpy(malloc(strlen("Other") + 1), "Other");
+				map_entries++;
+				got_text = 1;
+			}
+		}
+
+		/* look for symbols */
+		else if (!strncmp(line, "                0x", 18))
+		{
+			char symbol[1024];
+			UINT32 addr;
+			if (sscanf(line, "                0x%08x %s", &addr, symbol) == 2)
+			{
+				symbol_map[map_entries].start = addr;
+				symbol_map[map_entries].name = strcpy(malloc(strlen(symbol) + 1), symbol);
+				map_entries++;
+			}
+		}
+	}
+
+	/* add a symbol for end-of-memory */
+	symbol_map[map_entries].start = ~0;
+	symbol_map[map_entries].name = strcpy(malloc(strlen("<end>") + 1), "<end>");
+
+	/* close the file */
+	fclose(map);
+
+	/* sort by address */
+	qsort(symbol_map, map_entries, sizeof(symbol_map[0]), compare_start);
+
+	/* fill in the end of each bucket */
+	for (i = 0; i < map_entries; i++)
+		symbol_map[i].end = symbol_map[i+1].start ? (symbol_map[i+1].start - 1) : 0;
+}
+
+
+
+#if ENABLE_PROFILER
+//============================================================
+//	output_symbol_list
+//============================================================
+
+static void output_symbol_list(FILE *f)
+{
+	struct map_entry *entry;
+	int i;
+
+	/* sort by hits */
+	qsort(symbol_map, map_entries, sizeof(symbol_map[0]), compare_hits);
+
+	for (i = 0, entry = symbol_map; i < map_entries; i++, entry++)
+		if (entry->hits > 0)
+			fprintf(f, "%10d  %08X-%08X  %s\n", entry->hits, entry->start, entry->end, entry->name);
+}
+
+
+
+//============================================================
+//	increment_bucket
+//============================================================
+
+static void increment_bucket(UINT32 addr)
+{
+	int i;
+
+	for (i = 0; i < map_entries; i++)
+		if (addr <= symbol_map[i].end)
+		{
+			symbol_map[i].hits++;
+			return;
+		}
+}
+
+
+
+//============================================================
+//	profiler_thread
+//============================================================
+
+static DWORD WINAPI profiler_thread_entry(LPVOID lpParameter)
+{
+	HANDLE mainThread = (HANDLE)lpParameter;
+	CONTEXT context;
+
+	/* loop until done */
+	memset(&context, 0, sizeof(context));
+	while (!profiler_thread_exit)
+	{
+		/* pause the main thread and get its context */
+		SuspendThread(mainThread);
+		context.ContextFlags = CONTEXT_FULL;
+		GetThreadContext(mainThread, &context);
+		ResumeThread(mainThread);
+
+		/* add to the bucket */
+		increment_bucket(context.Eip);
+
+		/* sleep */
+		Sleep(1);
+	}
+
+	return 0;
+}
+
+
+
+//============================================================
+//	start_profiler
+//============================================================
+
+static void start_profiler(void)
+{
+	HANDLE currentThread;
+
+	/* do the dance to get a handle to ourself */
+	if (!DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &currentThread,
+			THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME | THREAD_QUERY_INFORMATION, FALSE, 0))
+	{
+		fprintf(stderr, "Failed to get thread handle for main thread\n");
+		exit(1);
+	}
+
+	profiler_thread_exit = 0;
+
+	/* start the thread */
+	profiler_thread = CreateThread(NULL, 0, profiler_thread_entry, (LPVOID)currentThread, 0, &profiler_thread_id);
+	if (!profiler_thread)
+		fprintf(stderr, "Failed to create profiler thread\n");
+
+	/* max out the priority */
+	SetThreadPriority(profiler_thread, THREAD_PRIORITY_TIME_CRITICAL);
+}
+
+
+
+//============================================================
+//	stop_profiler
+//============================================================
+
+static void stop_profiler(void)
+{
+	profiler_thread_exit = 1;
+	WaitForSingleObject(profiler_thread, 2000);
+}
+#endif

@@ -103,8 +103,8 @@ void mixer_set_mixing_level(int channel,int level);
 int mixer_get_mixing_level(int level);
 int mixer_get_default_mixing_level(int level);
 
-void mixer_read_config(void *f);
-void mixer_write_config(void *f);
+void mixer_read_config(mame_file *f);
+void mixer_write_config(mame_file *f);
 
 void mixer_set_stereo_volume(int ch, int l_vol, int r_vol );
 

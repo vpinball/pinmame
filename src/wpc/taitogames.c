@@ -34,14 +34,10 @@ static void init_##name(void) { core_gameData = &name##GameData; }
 / Meteor
 /-------------------------------*/
 INITGAME(meteort,SNDBRD_TAITO_SINTEVOX)
-// The third rom seems badly dumped, so it's marked as NOT AVAILABLE.
-TAITO_ROMSTART2222(meteort,"meteor1.bin",CRC(301a9f94),
+TAITO_ROMSTART22_2(meteort,"meteor1.bin",CRC(301a9f94),
                            "meteor2.bin",CRC(6d136853),
-                           "meteor4.bin",CRC(c818e889),
-                           "meteor4.bin",CRC(c818e889))
-// NOT AVAILABLE
-TAITO_SOUNDROMS22("meteo_s1.bin", CRC(23971d1e),
-                  "meteo_s1.bin", NO_DUMP)
+                           "meteor3.bin",CRC(c818e889))
+TAITO_SOUNDROMS2("meteo_s1.bin", CRC(23971d1e))
 TAITO_ROMEND
 #define input_ports_meteort input_ports_taito
 CORE_GAMEDEFNV(meteort,"Meteor (Taito)",198?,"Taito",taito_sintevox,GAME_NOT_WORKING)
@@ -124,9 +120,7 @@ TAITO_ROMSTART2222(sharkt,"shark1.bin",CRC(efe19b88),
                           "shark2.bin",CRC(ab11c287),
                           "shark3.bin",CRC(7ccf945b),
                           "shark4.bin",CRC(8ca33f37))
-// NOT AVAILABLE
-TAITO_SOUNDROMS22("shark_s1.bin", NO_DUMP,
-                  "shark_s2.bin", NO_DUMP)
+TAITO_SOUNDROMS4("shark_s1.bin",CRC(75969a7d))
 TAITO_ROMEND
 #define input_ports_sharkt input_ports_taito
 CORE_GAMEDEFNV(sharkt,"Shark (Taito)",1982,"Taito",taito_sintevox,0)
@@ -191,12 +185,10 @@ CORE_GAMEDEFNV(stest,"Speed Test",198?,"Taito",taito_sintetizador,GAME_IMPERFECT
 /*--------------------------------
 / Space Shuttle
 /-------------------------------*/
-// The 4th rom isn't available, so it's marked as NOT AVAILABLE
 INITGAME(sshuttle,SNDBRD_TAITO_SINTETIZADOR)
-TAITO_ROMSTART2222(sshuttle,"sshutle1.bin",CRC(ab67ed50),
+TAITO_ROMSTART22_2(sshuttle,"sshutle1.bin",CRC(ab67ed50),
                             "sshutle2.bin",CRC(ed5130a4),
-                            "sshutle3.bin",CRC(b1ddb78b),
-                            "sshutle4.bin",NO_DUMP)
+                            "sshutle3.bin",CRC(b1ddb78b))
 TAITO_SOUNDROMS22("sshtl_s1.bin", CRC(0c7ca1bc),
                   "sshtl_s2.bin", CRC(a409d9d1))
 TAITO_ROMEND
@@ -206,12 +198,11 @@ CORE_GAMEDEFNV(sshuttle,"Space Shuttle (Taito)",1985,"Taito",taito_sintetizador,
 /*--------------------------------
 / Drakor
 /-------------------------------*/
-// The 4th rom isn't available, so it's marked as NOT AVAILABLE
 INITGAME(drakor,SNDBRD_TAITO_SINTETIZADOR)
-TAITO_ROMSTART2222(drakor,"drakor1.bin",CRC(b0ba866e),
+// roms are reversed!
+TAITO_ROMSTART22_2(drakor,"drakor3.bin",CRC(7ecf377b),
                           "drakor2.bin",CRC(91dbb199),
-                          "drakor3.bin",CRC(7ecf377b),
-                          "drakor4.bin",NO_DUMP)
+                          "drakor1.bin",CRC(b0ba866e))
 TAITO_SOUNDROMS22("drakors1.bin", NO_DUMP,
                   "drakors2.bin", NO_DUMP)
 TAITO_ROMEND

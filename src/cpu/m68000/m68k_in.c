@@ -24,6 +24,11 @@ must fix:
  * http://kstenerud.cjb.net
  */
 
+/* Special thanks to Bart Trzynadlowski for his insight into the
+ * undocumented features of this chip:
+ *
+ * http://dynarec.com/~bart/files/68knotes.txt
+ */
 
 
 /* Input file for m68kmake
@@ -887,6 +892,8 @@ M68KMAKE_OP(abcd, 8, rr, .)
 	uint dst = *r_dst;
 	uint res = LOW_NIBBLE(src) + LOW_NIBBLE(dst) + XFLAG_AS_1();
 
+	FLAG_V = ~res; /* Undefined V behavior */
+
 	if(res > 9)
 		res += 6;
 	res += HIGH_NIBBLE(src) + HIGH_NIBBLE(dst);
@@ -894,7 +901,8 @@ M68KMAKE_OP(abcd, 8, rr, .)
 	if(FLAG_C)
 		res -= 0xa0;
 
-	FLAG_N = NFLAG_8(res); /* officially undefined */
+	FLAG_V &= res; /* Undefined V behavior part II */
+	FLAG_N = NFLAG_8(res); /* Undefined N behavior */
 
 	res = MASK_OUT_ABOVE_8(res);
 	FLAG_Z |= res;
@@ -910,6 +918,8 @@ M68KMAKE_OP(abcd, 8, mm, ax7)
 	uint dst = m68ki_read_8(ea);
 	uint res = LOW_NIBBLE(src) + LOW_NIBBLE(dst) + XFLAG_AS_1();
 
+	FLAG_V = ~res; /* Undefined V behavior */
+
 	if(res > 9)
 		res += 6;
 	res += HIGH_NIBBLE(src) + HIGH_NIBBLE(dst);
@@ -917,7 +927,8 @@ M68KMAKE_OP(abcd, 8, mm, ax7)
 	if(FLAG_C)
 		res -= 0xa0;
 
-	FLAG_N = NFLAG_8(res); /* officially undefined */
+	FLAG_V &= res; /* Undefined V behavior part II */
+	FLAG_N = NFLAG_8(res); /* Undefined N behavior */
 
 	res = MASK_OUT_ABOVE_8(res);
 	FLAG_Z |= res;
@@ -933,6 +944,8 @@ M68KMAKE_OP(abcd, 8, mm, ay7)
 	uint dst = m68ki_read_8(ea);
 	uint res = LOW_NIBBLE(src) + LOW_NIBBLE(dst) + XFLAG_AS_1();
 
+	FLAG_V = ~res; /* Undefined V behavior */
+
 	if(res > 9)
 		res += 6;
 	res += HIGH_NIBBLE(src) + HIGH_NIBBLE(dst);
@@ -940,7 +953,8 @@ M68KMAKE_OP(abcd, 8, mm, ay7)
 	if(FLAG_C)
 		res -= 0xa0;
 
-	FLAG_N = NFLAG_8(res); /* officially undefined */
+	FLAG_V &= res; /* Undefined V behavior part II */
+	FLAG_N = NFLAG_8(res); /* Undefined N behavior */
 
 	res = MASK_OUT_ABOVE_8(res);
 	FLAG_Z |= res;
@@ -956,6 +970,8 @@ M68KMAKE_OP(abcd, 8, mm, axy7)
 	uint dst = m68ki_read_8(ea);
 	uint res = LOW_NIBBLE(src) + LOW_NIBBLE(dst) + XFLAG_AS_1();
 
+	FLAG_V = ~res; /* Undefined V behavior */
+
 	if(res > 9)
 		res += 6;
 	res += HIGH_NIBBLE(src) + HIGH_NIBBLE(dst);
@@ -963,7 +979,8 @@ M68KMAKE_OP(abcd, 8, mm, axy7)
 	if(FLAG_C)
 		res -= 0xa0;
 
-	FLAG_N = NFLAG_8(res); /* officially undefined */
+	FLAG_V &= res; /* Undefined V behavior part II */
+	FLAG_N = NFLAG_8(res); /* Undefined N behavior */
 
 	res = MASK_OUT_ABOVE_8(res);
 	FLAG_Z |= res;
@@ -979,6 +996,8 @@ M68KMAKE_OP(abcd, 8, mm, .)
 	uint dst = m68ki_read_8(ea);
 	uint res = LOW_NIBBLE(src) + LOW_NIBBLE(dst) + XFLAG_AS_1();
 
+	FLAG_V = ~res; /* Undefined V behavior */
+
 	if(res > 9)
 		res += 6;
 	res += HIGH_NIBBLE(src) + HIGH_NIBBLE(dst);
@@ -986,7 +1005,8 @@ M68KMAKE_OP(abcd, 8, mm, .)
 	if(FLAG_C)
 		res -= 0xa0;
 
-	FLAG_N = NFLAG_8(res); /* officially undefined */
+	FLAG_V &= res; /* Undefined V behavior part II */
+	FLAG_N = NFLAG_8(res); /* Undefined N behavior */
 
 	res = MASK_OUT_ABOVE_8(res);
 	FLAG_Z |= res;
@@ -3387,6 +3407,10 @@ M68KMAKE_OP(chk, 16, ., d)
 	sint src = MAKE_INT_16(DX);
 	sint bound = MAKE_INT_16(DY);
 
+	FLAG_Z = ZFLAG_16(src); /* Undocumented */
+	FLAG_V = VFLAG_CLEAR;   /* Undocumented */
+	FLAG_C = CFLAG_CLEAR;   /* Undocumented */
+
 	if(src >= 0 && src <= bound)
 	{
 		return;
@@ -3401,6 +3425,10 @@ M68KMAKE_OP(chk, 16, ., .)
 	sint src = MAKE_INT_16(DX);
 	sint bound = MAKE_INT_16(M68KMAKE_GET_OPER_AY_16);
 
+	FLAG_Z = ZFLAG_16(src); /* Undocumented */
+	FLAG_V = VFLAG_CLEAR;   /* Undocumented */
+	FLAG_C = CFLAG_CLEAR;   /* Undocumented */
+
 	if(src >= 0 && src <= bound)
 	{
 		return;
@@ -3412,11 +3440,14 @@ M68KMAKE_OP(chk, 16, ., .)
 
 M68KMAKE_OP(chk, 32, ., d)
 {
-	logerror("%08x: Chk 32d\n",activecpu_get_pc());
 	if(CPU_TYPE_IS_EC020_PLUS(CPU_TYPE))
 	{
 		sint src = MAKE_INT_32(DX);
 		sint bound = MAKE_INT_32(DY);
+
+		FLAG_Z = ZFLAG_32(src); /* Undocumented */
+		FLAG_V = VFLAG_CLEAR;   /* Undocumented */
+		FLAG_C = CFLAG_CLEAR;   /* Undocumented */
 
 		if(src >= 0 && src <= bound)
 		{
@@ -3432,12 +3463,14 @@ M68KMAKE_OP(chk, 32, ., d)
 
 M68KMAKE_OP(chk, 32, ., .)
 {
-		logerror("%08x: Chk 32\n",activecpu_get_pc());
-
 	if(CPU_TYPE_IS_EC020_PLUS(CPU_TYPE))
 	{
 		sint src = MAKE_INT_32(DX);
 		sint bound = MAKE_INT_32(M68KMAKE_GET_OPER_AY_32);
+
+		FLAG_Z = ZFLAG_32(src); /* Undocumented */
+		FLAG_V = VFLAG_CLEAR;   /* Undocumented */
+		FLAG_C = CFLAG_CLEAR;   /* Undocumented */
 
 		if(src >= 0 && src <= bound)
 		{
@@ -7517,10 +7550,14 @@ M68KMAKE_OP(nbcd, 8, ., d)
 
 	if(res != 0x9a)
 	{
+		FLAG_V = ~res; /* Undefined V behavior */
+
 		if((res & 0x0f) == 0xa)
 			res = (res & 0xf0) + 0x10;
 
 		res = MASK_OUT_ABOVE_8(res);
+
+		FLAG_V &= res; /* Undefined V behavior part II */
 
 		*r_dst = MASK_OUT_BELOW_8(*r_dst) | res;
 
@@ -7530,10 +7567,11 @@ M68KMAKE_OP(nbcd, 8, ., d)
 	}
 	else
 	{
+		FLAG_V = VFLAG_CLEAR;
 		FLAG_C = CFLAG_CLEAR;
 		FLAG_X = XFLAG_CLEAR;
 	}
-	FLAG_N = NFLAG_8(res);	/* officially undefined */
+	FLAG_N = NFLAG_8(res);	/* Undefined N behavior */
 }
 
 
@@ -7545,10 +7583,14 @@ M68KMAKE_OP(nbcd, 8, ., .)
 
 	if(res != 0x9a)
 	{
+		FLAG_V = ~res; /* Undefined V behavior */
+
 		if((res & 0x0f) == 0xa)
 			res = (res & 0xf0) + 0x10;
 
 		res = MASK_OUT_ABOVE_8(res);
+
+		FLAG_V &= res; /* Undefined V behavior part II */
 
 		m68ki_write_8(ea, MASK_OUT_ABOVE_8(res));
 
@@ -7558,10 +7600,11 @@ M68KMAKE_OP(nbcd, 8, ., .)
 	}
 	else
 	{
+		FLAG_V = VFLAG_CLEAR;
 		FLAG_C = CFLAG_CLEAR;
 		FLAG_X = XFLAG_CLEAR;
 	}
-	FLAG_N = NFLAG_8(res);	/* officially undefined */
+	FLAG_N = NFLAG_8(res);	/* Undefined N behavior */
 }
 
 
@@ -8909,6 +8952,10 @@ M68KMAKE_OP(rte, 32, ., .)
 			new_pc = m68ki_pull_32();
 			m68ki_jump(new_pc);
 			m68ki_set_sr(new_sr);
+
+			CPU_INSTR_MODE = INSTRUCTION_YES;
+			CPU_RUN_MODE = RUN_MODE_NORMAL;
+
 			return;
 		}
 
@@ -8922,8 +8969,12 @@ M68KMAKE_OP(rte, 32, ., .)
 				m68ki_fake_pull_16();	/* format word */
 				m68ki_jump(new_pc);
 				m68ki_set_sr(new_sr);
+				CPU_INSTR_MODE = INSTRUCTION_YES;
+				CPU_RUN_MODE = RUN_MODE_NORMAL;
 				return;
 			}
+			CPU_INSTR_MODE = INSTRUCTION_YES;
+			CPU_RUN_MODE = RUN_MODE_NORMAL;
 			/* Not handling bus fault (9) */
 			m68ki_exception_format_error();
 			return;
@@ -8940,6 +8991,8 @@ rte_loop:
 				m68ki_fake_pull_16();	/* format word */
 				m68ki_jump(new_pc);
 				m68ki_set_sr(new_sr);
+				CPU_INSTR_MODE = INSTRUCTION_YES;
+				CPU_RUN_MODE = RUN_MODE_NORMAL;
 				return;
 			case 1: /* Throwaway */
 				new_sr = m68ki_pull_16();
@@ -8954,9 +9007,13 @@ rte_loop:
 				m68ki_fake_pull_32();	/* address */
 				m68ki_jump(new_pc);
 				m68ki_set_sr(new_sr);
+				CPU_INSTR_MODE = INSTRUCTION_YES;
+				CPU_RUN_MODE = RUN_MODE_NORMAL;
 				return;
 		}
 		/* Not handling long or short bus fault */
+		CPU_INSTR_MODE = INSTRUCTION_YES;
+		CPU_RUN_MODE = RUN_MODE_NORMAL;
 		m68ki_exception_format_error();
 		return;
 	}
@@ -9000,6 +9057,8 @@ M68KMAKE_OP(sbcd, 8, rr, .)
 	uint dst = *r_dst;
 	uint res = LOW_NIBBLE(dst) - LOW_NIBBLE(src) - XFLAG_AS_1();
 
+	FLAG_V = ~res; /* Undefined V behavior */
+
 	if(res > 9)
 		res -= 6;
 	res += HIGH_NIBBLE(dst) - HIGH_NIBBLE(src);
@@ -9009,7 +9068,8 @@ M68KMAKE_OP(sbcd, 8, rr, .)
 
 	res = MASK_OUT_ABOVE_8(res);
 
-	FLAG_N = NFLAG_8(res); /* officially undefined */
+	FLAG_V &= res; /* Undefined V behavior part II */
+	FLAG_N = NFLAG_8(res); /* Undefined N behavior */
 	FLAG_Z |= res;
 
 	*r_dst = MASK_OUT_BELOW_8(*r_dst) | res;
@@ -9023,6 +9083,8 @@ M68KMAKE_OP(sbcd, 8, mm, ax7)
 	uint dst = m68ki_read_8(ea);
 	uint res = LOW_NIBBLE(dst) - LOW_NIBBLE(src) - XFLAG_AS_1();
 
+	FLAG_V = ~res; /* Undefined V behavior */
+
 	if(res > 9)
 		res -= 6;
 	res += HIGH_NIBBLE(dst) - HIGH_NIBBLE(src);
@@ -9032,7 +9094,8 @@ M68KMAKE_OP(sbcd, 8, mm, ax7)
 
 	res = MASK_OUT_ABOVE_8(res);
 
-	FLAG_N = NFLAG_8(res); /* officially undefined */
+	FLAG_V &= res; /* Undefined V behavior part II */
+	FLAG_N = NFLAG_8(res); /* Undefined N behavior */
 	FLAG_Z |= res;
 
 	m68ki_write_8(ea, res);
@@ -9046,6 +9109,8 @@ M68KMAKE_OP(sbcd, 8, mm, ay7)
 	uint dst = m68ki_read_8(ea);
 	uint res = LOW_NIBBLE(dst) - LOW_NIBBLE(src) - XFLAG_AS_1();
 
+	FLAG_V = ~res; /* Undefined V behavior */
+
 	if(res > 9)
 		res -= 6;
 	res += HIGH_NIBBLE(dst) - HIGH_NIBBLE(src);
@@ -9055,7 +9120,8 @@ M68KMAKE_OP(sbcd, 8, mm, ay7)
 
 	res = MASK_OUT_ABOVE_8(res);
 
-	FLAG_N = NFLAG_8(res); /* officially undefined */
+	FLAG_V &= res; /* Undefined V behavior part II */
+	FLAG_N = NFLAG_8(res); /* Undefined N behavior */
 	FLAG_Z |= res;
 
 	m68ki_write_8(ea, res);
@@ -9069,6 +9135,8 @@ M68KMAKE_OP(sbcd, 8, mm, axy7)
 	uint dst = m68ki_read_8(ea);
 	uint res = LOW_NIBBLE(dst) - LOW_NIBBLE(src) - XFLAG_AS_1();
 
+	FLAG_V = ~res; /* Undefined V behavior */
+
 	if(res > 9)
 		res -= 6;
 	res += HIGH_NIBBLE(dst) - HIGH_NIBBLE(src);
@@ -9078,7 +9146,8 @@ M68KMAKE_OP(sbcd, 8, mm, axy7)
 
 	res = MASK_OUT_ABOVE_8(res);
 
-	FLAG_N = NFLAG_8(res); /* officially undefined */
+	FLAG_V &= res; /* Undefined V behavior part II */
+	FLAG_N = NFLAG_8(res); /* Undefined N behavior */
 	FLAG_Z |= res;
 
 	m68ki_write_8(ea, res);
@@ -9092,6 +9161,8 @@ M68KMAKE_OP(sbcd, 8, mm, .)
 	uint dst = m68ki_read_8(ea);
 	uint res = LOW_NIBBLE(dst) - LOW_NIBBLE(src) - XFLAG_AS_1();
 
+	FLAG_V = ~res; /* Undefined V behavior */
+
 	if(res > 9)
 		res -= 6;
 	res += HIGH_NIBBLE(dst) - HIGH_NIBBLE(src);
@@ -9101,7 +9172,8 @@ M68KMAKE_OP(sbcd, 8, mm, .)
 
 	res = MASK_OUT_ABOVE_8(res);
 
-	FLAG_N = NFLAG_8(res); /* officially undefined */
+	FLAG_V &= res; /* Undefined V behavior part II */
+	FLAG_N = NFLAG_8(res); /* Undefined N behavior */
 	FLAG_Z |= res;
 
 	m68ki_write_8(ea, res);

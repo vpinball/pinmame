@@ -1,84 +1,89 @@
 /*********************************************************************
 
-  artwork.h
+	artwork.h
 
-  Generic backdrop/overlay functions.
+	Second generation artwork implementation.
 
-  Be sure to include driver.h before including this file.
-
-  Created by Mike Balfour - 10/01/1998
 *********************************************************************/
 
 #ifndef ARTWORK_H
+#define ARTWORK_H
 
-#define ARTWORK_H 1
 
-/*********************************************************************
-  artwork
+/***************************************************************************
 
-  This structure is a generic structure used to hold both backdrops
-  and overlays.
-*********************************************************************/
-#ifdef __cplusplus
-extern "C" {
-#endif
+	Constants
 
-struct artwork_info
+***************************************************************************/
+
+/* the various types of built-in overlay primitives */
+#define OVERLAY_TYPE_END			0
+#define OVERLAY_TYPE_RECTANGLE		1
+#define OVERLAY_TYPE_DISK			2
+
+/* flags for the primitives */
+#define OVERLAY_FLAG_NOBLEND		0x10
+#define OVERLAY_FLAG_MASK			(OVERLAY_FLAG_NOBLEND)
+
+/* the tag assigned to all the internal overlays */
+#define OVERLAY_TAG					"overlay"
+
+
+
+/***************************************************************************
+
+	Macros
+
+***************************************************************************/
+
+#define OVERLAY_START(name)	\
+	static const struct overlay_piece name[] = {
+
+#define OVERLAY_END \
+	{ OVERLAY_TYPE_END } };
+
+#define OVERLAY_RECT(l,t,r,b,c) \
+	{ OVERLAY_TYPE_RECTANGLE, (c), (l), (t), (r), (b) },
+
+#define OVERLAY_DISK(x,y,r,c) \
+	{ OVERLAY_TYPE_DISK, (c), (x), (y), (r), 0 },
+
+#define OVERLAY_DISK_NOBLEND(x,y,r,c) \
+	{ OVERLAY_TYPE_DISK | OVERLAY_FLAG_NOBLEND, (c), (x), (y), (r), 0 },
+
+
+
+/***************************************************************************
+
+	Type definitions
+
+***************************************************************************/
+
+struct overlay_piece
 {
-	struct mame_bitmap *artwork;
-	struct mame_bitmap *artwork1;
-	struct mame_bitmap *alpha;
-	struct mame_bitmap *orig_artwork;   /* needed for palette recalcs */
-	int start_pen;
-	UINT32 *rgb;
+	UINT8 type;
+	rgb_t color;
+	float left, top, right, bottom;
 };
 
 
-struct artwork_element
-{
-	struct rectangle box;
-	UINT8 red,green,blue;
-	UINT16 alpha;   /* 0x00-0xff or OVERLAY_DEFAULT_OPACITY */
-};
 
-struct artwork_size_info
-{
-	int width, height;         /* widht and height of the artwork */
-	struct rectangle screen;   /* location of the screen relative to the artwork */
-};
+/***************************************************************************
 
-#define OVERLAY_DEFAULT_OPACITY         0xffff
+	Prototypes
 
-#ifndef MIN
-#define MIN(x,y) ((x)<(y)?(x):(y))
-#endif
-#ifndef MAX
-#define MAX(x,y) ((x)>(y)?(x):(y))
-#endif
+***************************************************************************/
 
-extern struct artwork_info *artwork_backdrop;
-extern struct artwork_info *artwork_overlay;
-extern struct mame_bitmap *artwork_real_scrbitmap;
+int artwork_create_display(struct osd_create_params *params, UINT32 *rgb_components);
+void artwork_update_video_and_audio(struct mame_display *display);
+void artwork_save_snapshot(struct mame_bitmap *bitmap);
 
-/*********************************************************************
-  functions that apply to backdrops AND overlays
-*********************************************************************/
-void overlay_load(const char *filename, unsigned int start_pen);
-void overlay_create(const struct artwork_element *ae, unsigned int start_pen);
-void backdrop_load(const char *filename, unsigned int start_pen);
-/*void backdrop_refresh(struct artwork_info *a); */
-void artwork_load(struct artwork_info **a,const char *filename, unsigned int start_pen);
-void artwork_load_size(struct artwork_info **a,const char *filename, unsigned int start_pen, int width, int height);
-void artwork_elements_scale(struct artwork_element *ae, int width, int height);
-void artwork_free(struct artwork_info **a);
-int artwork_get_size_info(const char *file_name, struct artwork_size_info *a);
+struct mame_bitmap *artwork_get_ui_bitmap(void);
+void artwork_mark_ui_dirty(int minx, int miny, int maxx, int maxy);
+void artwork_get_screensize(int *width, int *height);
+void artwork_enable(int enable);
 
-/* called by mame.c */
-void artwork_kill(void);
-void artwork_draw(struct mame_bitmap *dest,struct mame_bitmap *source, int full_refresh);
-
-#ifdef __cplusplus
-}
-#endif
+void artwork_set_overlay(const struct overlay_piece *overlist);
+void artwork_show(const char *tag, int show);
 
 #endif

@@ -119,7 +119,7 @@ int cpuint_init(void)
 {
 	int cpunum;
 	int irqline;
-	
+
 	/* loop over all CPUs */
 	for (cpunum = 0; cpunum < cpu_gettotalcpu(); cpunum++)
 	{
@@ -138,7 +138,7 @@ int cpuint_init(void)
 	state_save_register_INT32("cpu", 0, "irq vector",     &interrupt_vector[0][0],cpu_gettotalcpu() * MAX_IRQ_LINES);
 	state_save_register_UINT8("cpu", 0, "irqline state",  &irq_line_state[0][0],  cpu_gettotalcpu() * MAX_IRQ_LINES);
 	state_save_register_INT32("cpu", 0, "irqline vector", &irq_line_vector[0][0], cpu_gettotalcpu() * MAX_IRQ_LINES);
-	
+
 	return 0;
 }
 
@@ -153,7 +153,7 @@ int cpuint_init(void)
 void cpuint_reset_cpu(int cpunum)
 {
 	int irqline;
-	
+
 	/* start with interrupts enabled, so the generic routine will work even if */
 	/* the machine doesn't have an interrupt enable port */
 	interrupt_enable[cpunum] = 1;
@@ -194,7 +194,7 @@ INLINE int cpu_irq_callback(int cpunum, int irqline)
 {
 	int vector = irq_line_vector[cpunum][irqline];
 
-	LOG(("cpu_%d_irq_callback(%d) $%04xn", cpunum, irqline, vector));
+	LOG(("cpu_%d_irq_callback(%d) $%04x\n", cpunum, irqline, vector));
 
 	/* if the IRQ state is HOLD_LINE, clear it */
 	if (irq_line_state[cpunum][irqline] == HOLD_LINE)
@@ -313,17 +313,21 @@ void cpu_set_irq_line(int cpunum, int irqline, int state)
 
 	LOG(("cpu_set_irq_line(%d,%d,%d,%02x)\n", cpunum, irqline, state, vector));
 
-	/* set a timer to go off */
+	/* assemble all the current data into a parameter */
 	param = (cpunum & 0x0f) | ((state & 0x0f) << 4) | ((irqline & 0x7f) << 8) | (1 << 15) | (vector << 16);
-//	param = (cpunum & 0x0f) | ((state & 0x0f) << 4) | ((irqline & 0x7f) << 8);
-	timer_set(TIME_NOW, param, cpu_manualirqcallback);
+	
+	/* if this is a clear on the executing CPU, do it immediately; otherwise, use a timer */
+	if (state == CLEAR_LINE && cpunum == cpu_getexecutingcpu())
+		cpu_manualirqcallback(param);
+	else
+		timer_set(TIME_NOW, param, cpu_manualirqcallback);
 }
 
 
 void cpu_set_irq_line_and_vector(int cpunum, int irqline, int state, int vector)
 {
 	int param;
-	
+
 	/* don't trigger interrupts on suspended CPUs */
 	if (cpu_getstatus(cpunum) == 0)
 		return;
@@ -456,7 +460,7 @@ INTERRUPT_GEN( irq7_line_assert )	{ irqn_line_assert(7); }
 
 static void cpu_clearintcallback(int cpunum)
 {
-	int irqcount = cputype_get_interface(Machine->drv->cpu[cpunum].cpu_type & ~CPU_FLAGS_MASK)->num_irqs;
+	int irqcount = cputype_get_interface(Machine->drv->cpu[cpunum].cpu_type)->num_irqs;
 	int irqline;
 
 	cpuintrf_push_context(cpunum);

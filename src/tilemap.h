@@ -66,14 +66,12 @@ extern struct tile_info
 	tile_info.pen_usage = gfx->pen_usage?gfx->pen_usage[_code]:0; \
 	tile_info.flags = FLAGS; \
 	if (gfx->flags & GFX_PACKED) tile_info.flags |= TILE_4BPP; \
-	if (gfx->flags & GFX_SWAPXY) tile_info.flags |= TILE_SWAPXY; \
 }
 
 /* tile flags, set by get_tile_info callback */
 /* TILE_IGNORE_TRANSPARENCY is used if you need an opaque tile in a transparent layer. */
 #define TILE_FLIPX					0x01
 #define TILE_FLIPY					0x02
-#define TILE_SWAPXY					0x04
 #define TILE_IGNORE_TRANSPARENCY	0x08
 #define TILE_4BPP					0x10
 /*		TILE_SPLIT					0x60 */

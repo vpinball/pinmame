@@ -39,6 +39,7 @@ Version 0.3, Februari 2000
 #include "misc.h"
 
 #include "rc.h"
+#include "osdepend.h"
 
 #ifdef _MSC_VER
 #define snprintf _snprintf
@@ -216,6 +217,70 @@ int rc_save(struct rc_struct *rc, const char *name, int append)
    return rc_write(rc, f, name);
 }
 
+int osd_rc_read(struct rc_struct *rc, mame_file *f, const char *description,
+   int priority, int continue_on_errors)
+{
+   char buf[BUF_SIZE];
+   int line = 0;
+
+   while(mame_fgets(buf, BUF_SIZE, f))
+   {
+      struct rc_option *option;
+      char *name, *tmp, *arg = NULL;
+
+      line ++;
+
+      /* get option name */
+      if(!(name = strtok(buf, " \t\r\n")))
+         continue;
+      if(name[0] == '#')
+         continue;
+
+      /* get complete rest of line */
+      arg = strtok(NULL, "\r\n");
+
+      if (arg)
+      {
+      /* ignore white space */
+      for (; (*arg == '\t' || *arg == ' '); arg++) {}
+
+      /* deal with quotations */
+      if (arg[0] == '"')
+         arg = strtok (arg, "\"");
+      else if (arg[0] == '\'')
+         arg = strtok (arg, "'");
+      else
+         arg = strtok (arg, " \t\r\n");
+      }
+
+      if(!(option = rc_get_option2(rc->option, name)))
+      {
+         fprintf(stderr, "error: unknown option %s, on line %d of file: %s\n",
+            name, line, description);
+      }
+      else if (rc_requires_arg[option->type] && !arg)
+      {
+         fprintf(stderr,
+            "error: %s requires an argument, on line %d of file: %s\n",
+            name, line, description);
+      }
+      else if ( (tmp = strtok(NULL, " \t\r\n")) && (tmp[0] != '#') )
+      {
+         fprintf(stderr,
+            "error: trailing garbage: \"%s\" on line: %d of file: %s\n",
+            tmp, line, description);
+      }
+      else if (!rc_set_option3(option, arg, priority))
+         continue;
+
+      if (continue_on_errors)
+         fprintf(stderr, "   ignoring line\n");
+      else
+         return -1;
+   }
+   return 0;
+}
+
 int rc_read(struct rc_struct *rc, FILE *f, const char *description,
    int priority, int continue_on_errors)
 {
@@ -237,6 +302,12 @@ int rc_read(struct rc_struct *rc, FILE *f, const char *description,
 
       /* get complete rest of line */
       arg = strtok(NULL, "\r\n");
+	  if (!arg)
+	  {
+		  fprintf(stderr, "error: garbage \"%s\" on line %d of file: %s\n",
+			  buf, line, description);
+		  continue;
+	  }
 
       /* ignore white space */
       for (; (*arg == '\t' || *arg == ' '); arg++) {}
@@ -275,6 +346,64 @@ int rc_read(struct rc_struct *rc, FILE *f, const char *description,
          return -1;
    }
    return 0;
+}
+
+static int real_rc_write(struct rc_option *option, mame_file *f, const char *description)
+{
+	int i;
+
+	if (description)
+		mame_fprintf(f, "### %s ###\n", description);
+
+	for(i=0; option[i].type; i++)
+	{
+		switch (option[i].type)
+		{
+			case rc_seperator:
+				mame_fprintf(f, "\n### %s ###\n", option[i].name);
+				break;
+
+			case rc_link:
+				if (real_rc_write(option[i].dest, f, NULL))
+					return -1;
+				break;
+
+			case rc_string:
+				if(!*(char **)option[i].dest)
+				{
+					mame_fprintf(f, "# %-19s   <NULL> (not set)\n", option[i].name);
+					break;
+				}
+				/* fall through */
+
+			case rc_bool:
+			case rc_int:
+			case rc_float:
+				mame_fprintf(f, "%-21s   ", option[i].name);
+				switch(option[i].type)
+				{
+					case rc_bool:
+					case rc_int:
+						mame_fprintf(f, "%d\n", *(int *)option[i].dest);
+						break;
+					case rc_float:
+						mame_fprintf(f, "%f\n", *(float *)option[i].dest);
+						break;
+					case rc_string:
+						mame_fprintf(f, "%s\n", *(char **)option[i].dest);
+						break;
+				}
+				break;
+		}
+	}
+	if (description)
+		mame_fprintf(f, "\n");
+	return 0;
+}
+
+int osd_rc_write(struct rc_struct *rc, mame_file *f, const char *description)
+{
+	return real_rc_write(rc->option, f, description);
 }
 
 /* needed to walk the tree */
@@ -344,7 +473,7 @@ int rc_parse_commandline(struct rc_struct *rc, int argc, char *argv[],
       {
          int start = 1;
          struct rc_option *option;
-         char *arg = NULL;
+         const char *arg = NULL;
 
          if(argv[i][1] == '-')
             start = 2;
@@ -613,7 +742,7 @@ int rc_set_option3(struct rc_option *option, const char *arg, int priority)
          {
             int x;
             x = strtol(arg, &end, 0);
-            if (*end || rc_verify(option, (float) x))
+            if (*end || rc_verify(option, x))
             {
                fprintf(stderr, "error invalid value for %s: %s\n", option->name, arg);
                return -1;
@@ -624,7 +753,7 @@ int rc_set_option3(struct rc_option *option, const char *arg, int priority)
       case rc_float:
          {
             float x;
-            x = (float) strtod(arg, &end);
+            x = strtod(arg, &end);
             if (*end || rc_verify(option, x))
             {
                fprintf(stderr, "error invalid value for %s: %s\n", option->name, arg);
@@ -634,7 +763,7 @@ int rc_set_option3(struct rc_option *option, const char *arg, int priority)
          }
          break;
       case rc_set_int:
-         *(int*)option->dest = (int) option->min;
+         *(int*)option->dest = option->min;
          break;
       case rc_file:
          {

@@ -3,15 +3,20 @@
 #include <string.h>
 #include "unzip.h"
 #include "osdepend.h"	/* for CLIB_DECL */
+#include "fileio.h"
 #include <stdarg.h>
 #ifdef macintosh
 #	include "macromcmp.h"
 #else
-#ifndef WIN32
+#ifndef _WIN32
 #   include <dirent.h>
-#   include <sys/errno.h>
+#   ifdef __sgi
+#      include <errno.h>
+#   else
+#      include <sys/errno.h>
+#   endif
 #else
-#    include "dirent.h"
+#	include "dirent.h"
 #endif
 #include <sys/stat.h>
 #endif
@@ -33,6 +38,42 @@ void CLIB_DECL logerror(const char *text,...)
 {
 }
 
+osd_file *osd_fopen(int pathtype, int pathindex, const char *filename, const char *mode)
+{
+	return (osd_file *)fopen(filename, mode);
+}
+
+int osd_fseek(osd_file *file, INT64 offset, int whence)
+{
+	return fseek((FILE *)file, (INT32)offset, whence);
+}
+
+UINT64 osd_ftell(osd_file *file)
+{
+	return ftell((FILE *)file);
+}
+
+int osd_feof(osd_file *file)
+{
+	return feof((FILE *)file);
+}
+
+UINT32 osd_fread(osd_file *file, void *buffer, UINT32 length)
+{
+	return fread(buffer, 1, length, (FILE *)file);
+}
+
+UINT32 osd_fwrite(osd_file *file, const void *buffer, UINT32 length)
+{
+	return fwrite(buffer, 1, length, (FILE *)file);
+}
+
+void osd_fclose(osd_file *file)
+{
+	fclose((FILE *)file);
+}
+
+
 
 /* compare modes when one file is twice as long as the other */
 /* A = All file */
@@ -51,7 +92,7 @@ enum {	MODE_A,
 		MODE_E, MODE_O,
 		MODE_E12, MODE_O12, MODE_E22, MODE_O22,
 		TOTAL_MODES };
-char *modenames[] =
+const char *modenames[] =
 {
 	"          ",
 	"[bits 0-3]",
@@ -184,9 +225,19 @@ static void checkintegrity(const struct fileinfo *file,int side)
 	if (mask0)
 	{
 		if (mask0 == file->size/2)
-			printf("%-23s %-23s FIRST AND SECOND HALF IDENTICAL\n",side ? "" : file->name,side ? file->name : "");
+			printf("%-23s %-23s 1ST AND 2ND HALF IDENTICAL\n",side ? "" : file->name,side ? file->name : "");
 		else
-			printf("%-23s %-23s BAD ADDRESS LINES (mask=%06x)\n",side ? "" : file->name,side ? file->name : "",mask0);
+		{
+			printf("%-23s %-23s BADADDR",side ? "" : file->name,side ? file->name : "");
+			for (i = 0;i < 24;i++)
+			{
+				if (file->size <= (1<<(23-i))) printf(" ");
+				else if (mask0 & 0x800000) printf("-");
+				else printf("x");
+				mask0 <<= 1;
+			}
+			printf("\n");
+		}
 		return;
 	}
 
@@ -250,14 +301,27 @@ static void checkintegrity(const struct fileinfo *file,int side)
 	}
 
 
-	for (i = 0;i < file->size/4;i++)
+	mask0 = 0xff;
+	for (i = 0;i < file->size/4 && mask0;i++)
 	{
-		if (file->buf[file->size/2 + 2*i+1] != 0xff) break;
-		if (file->buf[2*i+1] != file->buf[file->size/2 + 2*i]) break;
+		if (file->buf[               2*i  ] != 0x00) mask0 &= ~0x01;
+		if (file->buf[               2*i  ] != 0xff) mask0 &= ~0x02;
+		if (file->buf[               2*i+1] != 0x00) mask0 &= ~0x04;
+		if (file->buf[               2*i+1] != 0xff) mask0 &= ~0x08;
+		if (file->buf[file->size/2 + 2*i  ] != 0x00) mask0 &= ~0x10;
+		if (file->buf[file->size/2 + 2*i  ] != 0xff) mask0 &= ~0x20;
+		if (file->buf[file->size/2 + 2*i+1] != 0x00) mask0 &= ~0x40;
+		if (file->buf[file->size/2 + 2*i+1] != 0xff) mask0 &= ~0x80;
 	}
 
-	if (i == file->size/4)
-		printf("%-23s %-23s BAD NEOGEO DUMP - CUT 2ND HALF\n",side ? "" : file->name,side ? file->name : "");
+	if (mask0 & 0x01) printf("%-23s %-23s 1ST HALF = 00xx\n",side ? "" : file->name,side ? file->name : "");
+	if (mask0 & 0x02) printf("%-23s %-23s 1ST HALF = FFxx\n",side ? "" : file->name,side ? file->name : "");
+	if (mask0 & 0x04) printf("%-23s %-23s 1ST HALF = xx00\n",side ? "" : file->name,side ? file->name : "");
+	if (mask0 & 0x08) printf("%-23s %-23s 1ST HALF = xxFF\n",side ? "" : file->name,side ? file->name : "");
+	if (mask0 & 0x10) printf("%-23s %-23s 2ND HALF = 00xx\n",side ? "" : file->name,side ? file->name : "");
+	if (mask0 & 0x20) printf("%-23s %-23s 2ND HALF = FFxx\n",side ? "" : file->name,side ? file->name : "");
+	if (mask0 & 0x40) printf("%-23s %-23s 2ND HALF = xx00\n",side ? "" : file->name,side ? file->name : "");
+	if (mask0 & 0x80) printf("%-23s %-23s 2ND HALF = xxFF\n",side ? "" : file->name,side ? file->name : "");
 }
 
 
@@ -422,7 +486,7 @@ static void printname(const struct fileinfo *file1,const struct fileinfo *file2,
 	printf("%-12s %s %-12s %s ",file1 ? file1->name : "",modenames[mode1],file2 ? file2->name : "",modenames[mode2]);
 	if (score == 0.0) printf("NO MATCH\n");
 	else if (score == 1.0) printf("IDENTICAL\n");
-	else printf("%3.3f%%\n",score*100);
+	else printf("%3.6f%%\n",score*100);
 }
 
 
@@ -482,7 +546,7 @@ static int load_files(int i, int *found, const char *path)
 		struct zipent* zipent;
 
 		/* wasn't a directory, so try to open it as a zip file */
-		if ((zip = openzip(path)) == 0)
+		if ((zip = openzip(0, 0, path)) == 0)
 		{
 			printf("Error, cannot open zip file '%s' !\n", path);
 			return 1;
@@ -640,7 +704,8 @@ int CLIB_DECL main(int argc,char **argv)
 						{
 							for (j = 0;j < found[1];j++)
 							{
-								if (matchscore[i][j][mode1][mode2] > bestscore)
+								if (matchscore[i][j][mode1][mode2] > bestscore
+									|| (matchscore[i][j][mode1][mode2] == 1.0 && mode2 == 0 && bestmode2 > 0))
 								{
 									bestscore = matchscore[i][j][mode1][mode2];
 									besti = i;

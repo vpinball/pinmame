@@ -29,6 +29,9 @@ WRITE_HANDLER( YM2151_data_port_0_w );
 WRITE_HANDLER( YM2151_data_port_1_w );
 WRITE_HANDLER( YM2151_data_port_2_w );
 
+WRITE_HANDLER( YM2151_word_0_w );
+WRITE_HANDLER( YM2151_word_1_w );
+
 READ16_HANDLER( YM2151_status_port_0_lsb_r );
 READ16_HANDLER( YM2151_status_port_1_lsb_r );
 READ16_HANDLER( YM2151_status_port_2_lsb_r );

@@ -21,10 +21,10 @@
 /*
 ** The init, reset and shutdown functions
 */
-int TMS9928A_start (int which, int model, unsigned int vram);
-void TMS9928A_reset (int which);
-void TMS9928A_stop (int num_chips);
-void palette_init_TMS9928A(unsigned char *palette, unsigned short *colortable,const unsigned char *color_prom);
+int TMS9928A_start(int which, int model, unsigned int vram);
+void TMS9928A_reset(int which);
+void TMS9928A_stop(int num_chips);
+extern PALETTE_INIT(TMS9928A);
 
 /*
 ** The I/O functions
@@ -46,8 +46,8 @@ WRITE_HANDLER (TMS9928A_register_1_w);
 /*
 ** Call this function to render the screen.
 */
-void TMS9928A_refresh (int num_chips, struct mame_bitmap *, int full_refresh);
-void TMS9928A_refresh_test (int num_chips, struct mame_bitmap *, int full_refresh);
+void TMS9928A_refresh(int num_chips, struct mame_bitmap *, int full_refresh);
+void TMS9928A_refresh_test(int num_chips, struct mame_bitmap *, int full_refresh);
 
 /*
 ** This next function must be called 50 or 60 times per second,

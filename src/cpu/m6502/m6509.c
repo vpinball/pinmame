@@ -42,6 +42,7 @@ addresses take place.
 #include "state.h"
 #include "mamedbg.h"
 #include "m6509.h"
+#include "m6502.h"
 
 #include "ops02.h"
 #include "ill02.h"
@@ -49,6 +50,12 @@ addresses take place.
 
 #define CORE_M6509
 
+#define M6502_NMI_VEC	0xfffa
+#define M6502_RST_VEC	0xfffc
+#define M6502_IRQ_VEC	0xfffe
+#define M6509_RST_VEC	M6502_RST_VEC
+#define M6509_IRQ_VEC	M6502_IRQ_VEC
+#define M6509_NMI_VEC	M6502_NMI_VEC
 
 #define VERBOSE 0
 

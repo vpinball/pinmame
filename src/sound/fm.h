@@ -11,13 +11,12 @@
 #define BUILD_YM2610  (HAS_YM2610)		/* build YM2610(OPNB)  emulator */
 #define BUILD_YM2610B (HAS_YM2610B)		/* build YM2610B(OPNB?)emulator */
 #define BUILD_YM2612  (HAS_YM2612 || HAS_YM3438)		/* build YM2612(OPN2)  emulator */
-#define BUILD_YM2151  (HAS_YM2151)		/* build YM2151(OPM)   emulator */
 
-/* --- system optimize --- */
-/* select stereo output buffer : 1=mixing / 0=separate */
-#define FM_STEREO_MIX 0
+//#define BUILD_YM2151  (HAS_YM2151)		/* build YM2151(OPM)   emulator */
+
 /* select bit size of output : 8 or 16 */
 #define FM_SAMPLE_BITS 16
+
 /* select timer system internal or external */
 #define FM_INTERNAL_TIMER 0
 
@@ -51,8 +50,8 @@
 
 /* --- external callback funstions for realtime update --- */
 
-/* for busy flag emulation , function FM_GET_TIME_NOW() should be */
-/* return the present time in second unit with (double) value     */
+/* for busy flag emulation , function FM_GET_TIME_NOW() should */
+/* return present time in seconds with "double" precision  */
   /* in timer.c */
   #define FM_GET_TIME_NOW() timer_get_time()
 
@@ -72,7 +71,7 @@
   /* in 2612intf.c */
   #define YM2612UpdateReq(chip) YM2612UpdateRequest(chip);
 #endif
-#if BUILD_YM2151
+#if 0 //BUILD_YM2151
   /* in 2151intf.c */
   #define YM2151UpdateReq(chip) YM2151UpdateRequest(chip);
 #endif
@@ -97,26 +96,12 @@ typedef signed int		INT32;   /* signed 32bit   */
 
 
 
-#define YM2203_NUMBUF 1
-#if FM_STEREO_MIX
-  #define YM2151_NUMBUF 1
-  #define YM2608_NUMBUF 1
-  #define YM2612_NUMBUF 1
-  #define YM2610_NUMBUF 1
-#else
-  #define YM2151_NUMBUF 2    /* FM L+R */
-  #define YM2608_NUMBUF 2    /* FM L+R+ADPCM+RYTHM */
-  #define YM2610_NUMBUF 2    /* FM L+R+ADPCMA+ADPCMB */
-  #define YM2612_NUMBUF 2    /* FM L+R */
-#endif
 
 #if (FM_SAMPLE_BITS==16)
 typedef INT16 FMSAMPLE;
-typedef unsigned long FMSAMPLE_MIX;
 #endif
 #if (FM_SAMPLE_BITS==8)
 typedef unsigned char  FMSAMPLE;
-typedef unsigned short FMSAMPLE_MIX;
 #endif
 
 typedef void (*FM_TIMERHANDLER)(int n,int c,int cnt,double stepTime);
@@ -148,8 +133,7 @@ int YM2203Init(int num, int baseclock, int rate,
                FM_TIMERHANDLER TimerHandler,FM_IRQHANDLER IRQHandler);
 
 /*
-** shutdown the YM2203 emulators .. make sure that no sound system stuff
-** is touching our audio buffers ...
+** shutdown the YM2203 emulators
 */
 void YM2203Shutdown(void);
 
@@ -157,10 +141,10 @@ void YM2203Shutdown(void);
 ** reset all chip registers for YM2203 number 'num'
 */
 void YM2203ResetChip(int num);
+
 /*
 ** update one of chip
 */
-
 void YM2203UpdateOne(int num, INT16 *buffer, int length);
 
 /*
@@ -168,6 +152,7 @@ void YM2203UpdateOne(int num, INT16 *buffer, int length);
 ** return : InterruptLevel
 */
 int YM2203Write(int n,int a,unsigned char v);
+
 /*
 ** Read
 ** return : InterruptLevel
@@ -184,7 +169,7 @@ int YM2203TimerOver(int n, int c);
 #if BUILD_YM2608
 /* -------------------- YM2608(OPNA) Interface -------------------- */
 int YM2608Init(int num, int baseclock, int rate,
-               void **pcmroma,int *pcmsizea,short *rhythmrom,int *rhythmpos,
+               void **pcmroma,int *pcmsizea,
                FM_TIMERHANDLER TimerHandler,FM_IRQHANDLER IRQHandler);
 void YM2608Shutdown(void);
 void YM2608ResetChip(int num);
@@ -210,7 +195,6 @@ void YM2610BUpdateOne(int num, INT16 **buffer, int length);
 int YM2610Write(int n, int a,unsigned char v);
 unsigned char YM2610Read(int n,int a);
 int YM2610TimerOver(int n, int c );
-
 #endif /* BUILD_YM2610 */
 
 #if BUILD_YM2612
@@ -219,13 +203,13 @@ int YM2612Init(int num, int baseclock, int rate,
 void YM2612Shutdown(void);
 void YM2612ResetChip(int num);
 void YM2612UpdateOne(int num, INT16 **buffer, int length);
+
 int YM2612Write(int n, int a,unsigned char v);
 unsigned char YM2612Read(int n,int a);
 int YM2612TimerOver(int n, int c );
-
 #endif /* BUILD_YM2612 */
 
-#if BUILD_YM2151
+#if 0 //BUILD_YM2151
 /* -------------------- YM2151(OPM) Interface -------------------- */
 int OPMInit(int num, int baseclock, int rate,
                FM_TIMERHANDLER TimerHandler,FM_IRQHANDLER IRQHandler);

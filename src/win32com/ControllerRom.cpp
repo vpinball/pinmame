@@ -61,7 +61,7 @@ HRESULT CRom::Init(const struct GameDriver *gamedrv, const struct RomModule *reg
 		m_dwExpLength += ROM_GETLENGTH(chunk);
 
 	m_dwChecksum = 0;
-	m_dwExpChecksum = ROM_GETCRC(m_rom);
+	m_dwExpChecksum = 0;//ROM_GETCRC(m_rom);
 	m_dwRegionFlags = ROMREGION_GETFLAGS(m_region);
 
 	return S_OK;
@@ -137,13 +137,13 @@ STDMETHODIMP CRom::Audit(VARIANT_BOOL fStrict)
 {
 	int err;
 
-	m_dwChecksum = fStrict?0xffffffff:ROM_GETCRC(m_rom);
+	m_dwChecksum = fStrict?0xffffffff:0;//ROM_GETCRC(m_rom);
 
 	/* obtain CRC-32 and length of ROM file */
 	const struct GameDriver *drv = m_gamedrv;
 	do
 	{
-		err = osd_fchecksum (drv->name, m_pszName, (unsigned int*) &m_dwLength, (unsigned int*) &m_dwChecksum);
+		err = 0;//osd_fchecksum (drv->name, m_pszName, (unsigned int*) &m_dwLength, (unsigned int*) &m_dwChecksum);
 		drv = drv->clone_of;
 	} while (err && drv);
 
