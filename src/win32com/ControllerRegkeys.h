@@ -47,18 +47,6 @@
 #define REG_DWWINDOWPOSY				"WindowPosY"
 #define REG_DWWINDOWPOSYDEF				0
 
-// global values
-#define REG_SZROMDIRS					"RomDirs"
-#define REG_SZROMDIRS_DEF				"\\roms"
-#define REG_SZCFGDIR					"CfgDir"
-#define REG_SZCFGDIR_DEF				"\\cfg"
-#define REG_SZNVRAMDIR					"NVRamDir"
-#define REG_SZNVRAMDIR_DEF				"\\nvram"
-#define REG_SZSAMPLEDIRS				"SampleDirs"
-#define	REG_SZSAMPLEDIRS_DEF			"\\samples"
-#define REG_SZIMGDIRDIR					"ImgDir"
-#define REG_SZIMGDIRDIR_DEF				"\\img"
-
 // this one is the only which can't set by a property
 #define REG_DWALLOWWRITEACCESS			"AllowWriteAccess"
 #define REG_DWALLOWWRITEACCESSDEF		1
