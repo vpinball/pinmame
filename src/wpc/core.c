@@ -275,8 +275,9 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
             tmpSeg |= (tmpSeg & 0x100)<<1;
           }
           drawChar(bitmap,  top, left, tmpSeg, tmpType);
+          coreGlobals.drawSeg[*pos] = tmpSeg;
         }
-        coreGlobals.drawSeg[(*pos)++] = tmpSeg;
+		(*pos)++;
         left += locals.segData[layout->type & 0x0f].cols+1;
         seg += step; lastSeg += step;
       }
