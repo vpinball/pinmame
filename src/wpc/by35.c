@@ -165,7 +165,7 @@ static WRITE_HANDLER(pia1b_w) {
     { locals.bcd[5] = locals.a0>>4; by35_dispStrobe(0x20); }
   locals.b1 = data;
 
-  sndbrd_0_data_w(0, data & 0x0f);
+  if (!(core_gameData->gen & GEN_BY17)) sndbrd_0_data_w(0, data & 0x0f);
   coreGlobals.pulsedSolState = 0;
   if (!locals.cb21)
     locals.solenoids |= coreGlobals.pulsedSolState = (1<<(data & 0x0f)) & 0x7fff;
@@ -177,7 +177,8 @@ static WRITE_HANDLER(pia1b_w) {
 /* PIA1:CB2-W Solenoid/Sound select */
 static WRITE_HANDLER(pia1cb2_w) {
   locals.cb21 = data;
-  if ((locals.hw & BY35HW_SCTRL) == 0) sndbrd_0_ctrl_w(1, (data ? 1 : 0) | (locals.a1 & 0x02));
+  if ((locals.hw & BY35HW_SCTRL) == 0)
+    if (!(core_gameData->gen & GEN_BY17)) sndbrd_0_ctrl_w(1, (data ? 1 : 0) | (locals.a1 & 0x02));
 }
 
 static INTERRUPT_GEN(by35_vblank) {
@@ -244,7 +245,7 @@ static SWITCH_UPDATE(by35) {
   if ((core_gameData->gen & GEN_BYPROTO) == 0) {
     /*-- Diagnostic buttons on CPU board --*/
     cpu_set_nmi_line(0, core_getSw(BY35_SWCPUDIAG) ? ASSERT_LINE : CLEAR_LINE);
-    sndbrd_0_diag(core_getSw(BY35_SWSOUNDDIAG));
+    if (!(core_gameData->gen & GEN_BY17)) sndbrd_0_diag(core_getSw(BY35_SWSOUNDDIAG));
     /*-- coin door switches --*/
     pia_set_input_ca1(BY35_PIA0, !core_getSw(BY35_SWSELFTEST));
   }
@@ -486,7 +487,7 @@ static MACHINE_INIT(by35) {
   pia_config(BY35_PIA0, PIA_STANDARD_ORDERING, &by35_pia[0]);
   pia_config(BY35_PIA1, PIA_STANDARD_ORDERING, &by35_pia[1]);
   if ((sb & 0xff00) != SNDBRD_ST300)
-    sndbrd_0_init(sb, 1, memory_region(REGION_SOUND1), NULL, NULL);
+    if (!(core_gameData->gen & GEN_BY17)) sndbrd_0_init(sb, 1, memory_region(REGION_SOUND1), NULL, NULL);
   locals.vblankCount = 1;
   // set up hardware
   if (core_gameData->gen & (GEN_BY17|GEN_BOWLING)) {
@@ -542,7 +543,7 @@ static MACHINE_INIT(by35Proto) {
 static MACHINE_RESET(by35) { pia_reset(); }
 static MACHINE_STOP(by35) {
   if ((core_gameData->hw.soundBoard & 0xff00) != SNDBRD_ST300)
-    sndbrd_0_exit();
+    if (!(core_gameData->gen & GEN_BY17)) sndbrd_0_exit();
 }
 
 /*-----------------------------------
