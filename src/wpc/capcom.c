@@ -16,8 +16,7 @@ static struct {
   int vblankCount;
   int u16irqcount;
   int diagnosticLed;
-  int visible_page;
-  int visible_block;
+  UINT8 visible_page;
   int zero_cross;
   int blanking;
   int lampb_only;
@@ -156,10 +155,10 @@ static WRITE16_HANDLER(u16_w) {
   offset &= 0x203;
    // DBGLOG(("U16w [%03x]=%04x (%04x)\n",offset,data,mem_mask));
 
-  if(offset==2)
-	  locals.visible_block = data & 0x0f;
-  if(offset==3)
-	  locals.visible_page = data >> 12;
+  if (offset==2)
+	locals.visible_page = (locals.visible_page & 0x0f) | (data << 4);
+  if (offset==3)
+	locals.visible_page = (locals.visible_page & 0xf0) | (data >> 12);
 
   switch (offset) {
     case 0x000: case 0x001: case 0x002: case 0x003:
@@ -430,11 +429,15 @@ static NVRAM_HANDLER(cc) {
 }
 
 static int cc_sw2m(int no) {
-	return no + 7;
+  if (no < 9)
+    return no + 71;
+  return no - 9;
 }
 
 static int cc_m2sw(int col, int row) {
-	return col*8 + row - 9;
+  if (col == 9)
+    return row + 1;
+  return col*8 + row + 9;
 }
 
 static data16_t *ramptr;
@@ -481,13 +484,11 @@ MACHINE_DRIVER_END
 /*** 128 X 32 NORMAL SIZE DMD ***/
 /********************************/
 PINMAME_VIDEO_UPDATE(cc_dmd128x32) {
-  static UINT32 offset;
   tDMDDot dotCol;
   int ii, jj, kk;
   UINT16 *RAM;
 
-  offset = (0x8000*locals.visible_block)+(0x800*locals.visible_page)-0x10;
-
+  UINT32 offset = 0x800*locals.visible_page-0x10;
   RAM = ramptr+offset;
   for (ii = 0; ii <= 32; ii++) {
     UINT8 *line = &dotCol[ii][0];
@@ -510,13 +511,11 @@ PINMAME_VIDEO_UPDATE(cc_dmd128x32) {
 /*** 256 X 64 SUPER HUGE DMD ***/
 /*******************************/
 PINMAME_VIDEO_UPDATE(cc_dmd256x64) {
-  static UINT32 offset=0x38fe0;
   tDMDDot dotCol;
   int ii, jj, kk;
   UINT16 *RAM;
 
-  offset = (0x8000*locals.visible_block)+(0x800*locals.visible_page)-0x20;
-
+  UINT32 offset = 0x800*locals.visible_page-0x20;
   RAM = ramptr+offset;
   for (ii = 0; ii <= 64; ii++) {
     UINT8 *linel = &dotCol[ii][0];
