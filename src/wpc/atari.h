@@ -144,16 +144,18 @@
 #define ATARI_3_ROMSTART(name, n1, chk1, n2, chk2, n3, chk3) \
    ROM_START(name) \
      NORMALREGION(0x10000, ATARI_MEMREG_CPU) \
-       ROM_LOAD(n2, 0xa800, 0x0800, chk2) \
        ROM_LOAD(n1, 0x3000, 0x0800, chk1) \
-       ROM_LOAD(n3, 0x3800, 0x0800, chk3)
+       ROM_LOAD(n2, 0x3800, 0x0800, chk2) \
+       ROM_LOAD(n3, 0xa800, 0x0800, chk3) \
+         ROM_RELOAD(0xf800, 0x0800)
 
 /*-- ATARI CPU regions and ROM, 2 game PROM version --*/
 #define ATARI_2_ROMSTART(name, n1, chk1, n2, chk2) \
    ROM_START(name) \
      NORMALREGION(0x10000, ATARI_MEMREG_CPU) \
        ROM_LOAD(n1, 0x0000, 0x0800, chk1) \
-       ROM_LOAD(n2, 0x0800, 0x0800, chk2)
+       ROM_LOAD(n2, 0x0800, 0x0800, chk2) \
+         ROM_RELOAD(0xf800, 0x0800)
 
 /*-- These are only here so the game structure can be in the game file --*/
 extern struct MachineDriver machine_driver_ATARI1;

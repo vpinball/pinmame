@@ -69,9 +69,9 @@ CORE_GAMEDEFNV(spcrider,"Space Riders",1978,"Atari",gl_mATARI1,GAME_NO_SOUND)
 / Superman (03/1979)
 /-------------------------------------------------------------------*/
 INITGAME(superman,0,atari_disp, 1)
-ATARI_3_ROMSTART(superman,	"supmn_j.rom",	0x26521779,
-							"supmn_k.rom",	0xa28091c2,
-							"supmn_m.rom",	0x1bb6b72c)
+ATARI_3_ROMSTART(superman,	"supmn_k.rom",	0xa28091c2,
+							"supmn_m.rom",	0x1bb6b72c,
+							"supmn_j.rom",	0x26521779)
 ATARI_ROMEND
 CORE_GAMEDEFNV(superman,"Superman",1979,"Atari",gl_mATARI2,GAME_NO_SOUND)
 
@@ -79,9 +79,9 @@ CORE_GAMEDEFNV(superman,"Superman",1979,"Atari",gl_mATARI2,GAME_NO_SOUND)
 / Hercules (05/1979)
 /-------------------------------------------------------------------*/
 INITGAME(hercules,0,atari_disp, 1)
-ATARI_3_ROMSTART(hercules,	"supmn_j.rom",	0x26521779,
-							"herc_k.rom",	0x07443d38,
-							"supmn_m.rom",	0x1bb6b72c)
+ATARI_3_ROMSTART(hercules,	"herc_k.rom",	0x07443d38,
+							"supmn_m.rom",	0x1bb6b72c,
+							"supmn_j.rom",	0x26521779)
 ATARI_ROMEND
 CORE_CLONEDEFNV(hercules,superman,"Hercules",1979,"Atari",gl_mATARI2,GAME_NO_SOUND)
 
