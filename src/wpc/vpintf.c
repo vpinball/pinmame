@@ -10,6 +10,7 @@ static struct {
   UINT32 solMask[2];
   int    lastGI[CORE_MAXGI];
   UINT8  dips[VP_MAXDIPBANKS];
+  UINT16 lastLED[60];
   int    lastSoundCommandIndex;
   mech_tInitData md;
 } locals;
@@ -183,3 +184,50 @@ int vp_getNewSoundCommands(vp_tChgSound chgSound) {
   return numcmd;
 }
 
+static int vp_getAllLED(UINT16 *ledArray) {
+  const core_tLCDLayout *layout = core_gameData->lcdLayout;
+  int idx = 0;
+  if (layout == NULL) return 0;
+
+  while (layout->length) {
+    int zeros = layout->type/32; // dummy zeros
+    int ii    = layout->length + zeros;
+    int *seg     = ((int *)coreGlobals.segments) + layout->start;
+    int step  = (layout->type & CORE_SEGREV) ? -1 : 1;
+
+    if (step < 0) seg += ii-1;
+    while (ii--) {
+      int tmpSeg = (ii < zeros) ? ((core_bcd2seg7[0]<<8) | (core_bcd2seg7[0])) : *seg;
+      int tmpType = layout->type & CORE_SEGMASK;
+
+      tmpSeg >>= (layout->type & CORE_SEGHIBIT) ? 8 : 0;
+      if ((tmpType == CORE_SEG87F) && (ii > 0) && (ii % 3 == 0) && tmpSeg)
+        tmpSeg |= 0x80; // add comma
+      else if (tmpType == CORE_SEG9)
+        tmpSeg |= (tmpSeg & 0x80)<<1; // duplicate 9th segment
+      ledArray[idx++] = tmpSeg;
+      seg += step;
+    }
+    layout += 1;
+  }
+  return idx;
+}
+
+int vp_getChangedLEDs(vp_tChgLED chgStat, UINT64 mask) {
+  UINT16 ledArray[60];
+  int count = vp_getAllLED(ledArray);
+  int idx = 0;
+  int ii;
+
+  for (ii = 0; ii < count; ii++, mask >>= 1) {
+    int chgLED = ledArray[ii] ^ locals.lastLED[ii];
+    if ((mask & 0x01) && chgLED) {
+      chgStat[idx].ledNo = ii;
+      chgStat[idx].chgSeg = chgLED;
+      chgStat[idx].currStat = ledArray[ii] & chgLED;
+      idx += 1;
+    }
+  }
+  memcpy(locals.lastLED, ledArray, sizeof(ledArray));
+  return idx;
+}
