@@ -606,7 +606,7 @@ const struct cpu_interface cpuintrf[] =
 	CPU0(Z8000,    z8000,	 2,  0,1.00,16,16bew,  0,16,BE,2, 6	),
 #endif
 #if defined(PINMAME) && (HAS_TMS7000)
-	CPU0(TMS7000,  tms7000,	 3,  0,1.00,8 ,16lew,  0,16,LE,1, 3	),
+	CPU4(TMS7000,  tms7000,	 3,  0,1.00,8 ,16lew,  0,16,LE,1, 3	),
 #endif
 #if (HAS_TMS32010)
 	CPU3(TMS32010,tms32010,  1,  0,1.00,16,16bew, -1,16,BE,2, 4 ),
