@@ -8,12 +8,20 @@
 #include "taitos.h"
 
 /*----------------------------------------
-/ Taito Sound System (brazil: sintevox)
+/ Taito Sound System 
+/ Taito uses three different sound board:
+/ - sintevox
+/ - sintetizator (sitevox with an additonal SC-01)
+/ - sintevox with a daugher board installed
+/
 / cpu: 6802
 / 
 / 0x0000 - 0x0000: PIA 
 / 0x1000 - 0x17FF: ROM 2
 / 0x1800 - 0x1fff: ROM 1
+/ 
+/ sintetizator:
+/ SC-01 connected to output of PIA Port B
 / 
 /-----------------------------------------*/
 
@@ -39,12 +47,6 @@ MEMORY_WRITE_START(taitos_writemem)
   { 0xf000, 0xffff, MWA_ROM }, /* reset vector */
 MEMORY_END
 
-struct DACinterface TAITO_dacInt =
-{ 
-  1,			/* 1 Chip */
-  {100}		    /* Volume */
-};
-
 static void taitos_irq(int state) {
 	logerror("sound irq\n");
 	cpu_set_irq_line(taitos_locals.brdData.cpuNo, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
@@ -59,6 +61,7 @@ static WRITE_HANDLER(pia0a_w)
 static WRITE_HANDLER(pia0b_w)
 {
   logerror("pia0b_w: %02x\n", data);
+  votraxsc01_w(0, data);
 }
 
 static WRITE_HANDLER(pia0ca2_w)
@@ -72,6 +75,20 @@ static WRITE_HANDLER(pia0cb2_w)
   logerror("pia0cb2_w: %02x\n", data);
 
   coreGlobals.diagnosticLed = data?0x01:0x00;
+}
+
+static READ_HANDLER(pia0ca1_r)
+{
+  logerror("pia0ca1_r\n");
+
+  return votraxsc01_status_r(0);
+}
+
+static void votrax_busy(int state)
+{
+	logerror("votrax busy: %i\n", state);
+
+	pia_set_input_ca1(SP_PIA0, state);
 }
 
 static const struct pia6821_interface sp_pia = {
@@ -108,6 +125,19 @@ static void taitos_init(struct sndbrdData *brdData)
   pia_config(SP_PIA0, PIA_STANDARD_ORDERING, &sp_pia);
 }
 
+struct DACinterface TAITO_dacInt =
+{ 
+  1,			/* 1 Chip */
+  {100}		    /* Volume */
+};
+
+struct VOTRAXSC01interface TAITO_votrax_sc01_interface = {															
+	1,						/* 1 chip */
+	{ 100 },				/* master volume */
+	{ 8000 },				/* dynamically changing this is currently not supported */
+	{ &votrax_busy }		/* set NMI when busy signal get's low */
+};
+
 /*-------------------
 / exported interface
 /--------------------*/
@@ -116,10 +146,12 @@ const struct sndbrdIntf taitoIntf = {
 };
 
 MACHINE_DRIVER_START(taitos)
-  MDRV_CPU_ADD_TAG("scpu", M6802, 1000000) // 1 MHz ??? */
+  MDRV_CPU_ADD_TAG("scpu", M6802, 500000) // 0.5 MHz ??? */
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(taitos_readmem, taitos_writemem)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(DAC, TAITO_dacInt)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+
+  MDRV_SOUND_ADD(VOTRAXSC01, TAITO_votrax_sc01_interface)
 MACHINE_DRIVER_END
