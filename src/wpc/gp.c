@@ -24,7 +24,9 @@
 #include "machine/z80fmly.h"
 #include "machine/8255ppi.h"
 #include "core.h"
+#include "sndbrd.h"
 #include "gp.h"
+#include "gpsnd.h"
 
 #define GP_VBLANKFREQ    60 /* VBLANK frequency */
 #define GP_IRQFREQ      150 /* IRQ (via PIA) frequency*/
@@ -139,7 +141,7 @@ static SWITCH_UPDATE(GP) {
                               ((inports[GP_COMINPORT]>>7) & 0x02);
   }
   /*-- Diagnostic buttons on CPU board --*/
-  //if (core_getSw(GP_SWSOUNDDIAG)) cpu_set_nmi_line(GP_SCPU1NO, PULSE_LINE);
+  if (core_getSw(GP_SWSOUNDDIAG)) cpu_set_nmi_line(GP_SCPUNO, PULSE_LINE);
 }
 
 /*
@@ -418,6 +420,10 @@ static void GP_zeroCross(int data) {
 }
 
 static void GP_common_init(void) {
+  /* init sound */
+  int sb = core_gameData->hw.soundBoard;
+  if (sb) sndbrd_0_init(sb, GP_SCPUNO, memory_region(GP_MEMREG_SCPU), NULL, NULL);
+
   memset(&locals, 0, sizeof(locals));
 
   /* init PPI */
@@ -427,7 +433,6 @@ static void GP_common_init(void) {
   ctc_intf.baseclock[0] = Machine->drv->cpu[0].cpu_clock;
   z80ctc_init(&ctc_intf);
 
-  //if (coreGlobals.soundEn) GP_soundInit();
   locals.vblankCount = 1;
 }
 
@@ -443,8 +448,8 @@ static MACHINE_INIT(GP2) {
 }
 
 static MACHINE_STOP(GP) {
-//  if (coreGlobals.soundEn) GP_soundExit();
-//  core_exit();
+  /* exit sound */
+  if (core_gameData->hw.soundBoard) sndbrd_0_exit();
 }
 
 static Z80_DaisyChain GP_DaisyChain[] =
@@ -453,32 +458,19 @@ static Z80_DaisyChain GP_DaisyChain[] =
     {0,0,0,-1}
 };
 
-/*-----------------------------------------------
-/ Load/Save static ram
-/-------------------------------------------------*/
-static UINT8 *GP_CMOS;
-
-static NVRAM_HANDLER(GP) {
-  core_nvram(file, read_or_write, GP_CMOS, 0xff, 0x00);
-}
-
-static WRITE_HANDLER(GP_CMOS_w) {
-  GP_CMOS[offset] = data;
-}
-
 /*-----------------------------------
 /  Memory map for CPU board
 /------------------------------------*/
 static MEMORY_READ_START(GP_readmem)
 	{ 0x0000, 0x2fff, MRA_ROM },
-	{ 0x8c00, 0x8cff, MRA_RAM }, /*256K CMOS RAM - Battery Backed*/
-	{ 0x8d00, 0x8dff, MRA_RAM }, /*128K NMOS RAM*/
+	{ 0x8c00, 0x8cff, MRA_RAM }, /*256B CMOS RAM - Battery Backed*/
+	{ 0x8d00, 0x8dff, MRA_RAM }, /*256B NMOS RAM*/
 MEMORY_END
 
 static MEMORY_WRITE_START(GP_writemem)
 	{ 0x0000, 0x2fff, MWA_ROM },
-	{ 0x8c00, 0x8cff, GP_CMOS_w, &GP_CMOS }, /*256K CMOS RAM - Battery Backed*/
-	{ 0x8d00, 0x8dff, MWA_RAM }, /*128K NMOS RAM*/
+	{ 0x8c00, 0x8cff, MWA_RAM, &generic_nvram, &generic_nvram_size}, /*256B CMOS RAM - Battery Backed*/
+	{ 0x8d00, 0x8dff, MWA_RAM }, /*256B NMOS RAM*/
 MEMORY_END
 
 static PORT_READ_START( GP_readport )
@@ -501,7 +493,7 @@ MACHINE_DRIVER_START(GP1)
   MDRV_CPU_PERIODIC_INT(GP_irq, GP_IRQFREQ)
   MDRV_TIMER_ADD(GP_zeroCross, GP_ZCFREQ)
   MDRV_CORE_INIT_RESET_STOP(GP1,NULL,GP)
-  MDRV_NVRAM_HANDLER(GP)
+  MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_DIPS(32)
   MDRV_SWITCH_UPDATE(GP)
   MDRV_DIAGNOSTIC_LEDH(1)
@@ -514,42 +506,7 @@ MACHINE_DRIVER_START(GP2)
   MDRV_CORE_INIT_RESET_STOP(GP2,NULL,GP)
 MACHINE_DRIVER_END
 
-#if 0
-static core_tData GPData = {
-  32, /* 32 Dips */
-  GP_updSw, 1, GP_soundCmd, "GP",
-  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
-};
-
-/*MPU-1*/
-struct MachineDriver machine_driver_GP1 = {
-  {{  CPU_Z80, 2000000, /* 2Mhz */
-      GP_readmem, GP_writemem, GP_readport, GP_writeport,
-      GP_vblank, 1, GP_irq, GP_IRQFREQ, GP_DaisyChain
-  }},
-  GP_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, GP1_init, CORE_EXITFUNC(GP_exit)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
-  NULL, NULL, gen_refresh,
-  0,0,0,0, {{0}},
-  GP_nvram
-};
-
-/*MPU-2*/
-struct MachineDriver machine_driver_GP2 = {
-  {{  CPU_Z80, 2000000, /* 2Mhz */
-      GP_readmem, GP_writemem, GP_readport, GP_writeport,
-      GP_vblank, 1, GP_irq, GP_IRQFREQ, GP_DaisyChain
-  }},
-  GP_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, GP2_init, CORE_EXITFUNC(GP_exit)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
-  NULL, NULL, gen_refresh,
-  0,0,0,0, {{0}},
-  GP_nvram
-};
-#endif
+MACHINE_DRIVER_START(GP2S)
+  MDRV_IMPORT_FROM(GP2)
+  MDRV_IMPORT_FROM(gpMSU1)
+MACHINE_DRIVER_END

@@ -35,6 +35,8 @@ MACHINE_DRIVER_START(zac1311)
   MDRV_SOUND_ADD(DISCRETE, zac1311_discInt)
 MACHINE_DRIVER_END
 
+const struct sndbrdIntf zac1311Intf = {0};
+
 /*----------------------------------------
 / Zaccaria Sound Board 1125
 / SN76477 sound chip, no CPU
