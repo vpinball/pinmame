@@ -46,7 +46,9 @@ static MEMORY_READ_START(dmd32_readmem)
   { 0x0000, 0x1fff, MRA_RAM },
   { 0x2000, 0x2fff, MRA_RAM }, /* DMD RAM PAGE 0-7 512 bytes each */
   { 0x3000, 0x3000, crtc6845_register_0_r },
+  { 0x3001, 0x3002, MRA_NOP },
   { 0x3003, 0x3003, dmd32_latch_r },
+  { 0x3004, 0x3fff, MRA_NOP },
   { 0x4000, 0x7fff, MRA_BANKNO(DMD32_BANK0) }, /* Banked ROM */
   { 0x8000, 0xffff, MRA_ROM },
 MEMORY_END
@@ -57,8 +59,9 @@ static MEMORY_WRITE_START(dmd32_writemem)
   { 0x3000, 0x3000, crtc6845_address_0_w },
   { 0x3001, 0x3001, crtc6845_register_0_w },
   { 0x3002, 0x3002, dmd32_bank_w }, /* DMD Bank Switching*/
+  { 0x3003, 0x3fff, MWA_NOP },
   { 0x4000, 0x4000, dmd32_status_w },   /* DMD Status*/
-  { 0x8000, 0xffff, MWA_ROM },
+  { 0x4001, 0xffff, MWA_NOP },
 MEMORY_END
 
 MACHINE_DRIVER_START(de_dmd32)
