@@ -46,7 +46,7 @@ DRIVERNV(pstlpkr)		//Pistol Poker (1993)
 DRIVERNV(blkshpsq)      //Black Sheep Squadron (1979) - using Bally hardware
 
 // ---------------
-// ATARI GAMES 
+// ATARI GAMES
 // ---------------
                         //Triangle (Prototype, 1976?)
 DRIVERNV(atarians)      //The Atarians (November 1976)
@@ -63,7 +63,7 @@ DRIVERNV(hercules)      //Hercules (May 1979)
                         //4x4 (Prototype, 1983)
 
 // ---------------
-// BALLY GAMES 
+// BALLY GAMES
 // ---------------
 //MPU-17
 DRIVERNV(bowarrow)      //BY17-720: 08/76 Bow & Arrow (Prototype)
@@ -166,7 +166,7 @@ DRIVERNV(atlantis)      //6803-2006: 03/89 Atlantis
                         //??         05/89 Ice Castle
 
 // ----------------
-// CAPCOM GAMES 
+// CAPCOM GAMES
 // ----------------
 DRIVERNV(ghv101)        // ??/95    Goofy Hoops (Romstar license)
 DRIVERNV(pmv112)        // 10/95    Pinball Magic
@@ -182,40 +182,40 @@ DRIVERNV(bbb109)        // 11/96    Big Bang Bar (Beta, 1.9)
 DRIVERNV(kpv106)        // 12/96    Kingpin
 
 // -------------------
-// DATA EAST GAMES 
+// DATA EAST GAMES
 // -------------------
 //4 x 2 x 7 (mixed) + credits A/N Display
-DRIVERNV(lwar)          //Data East MPU: 05/87 Laser War
+DRIVER(lwar,a83)        //Data East MPU: 05/87 Laser War
 //4 x 2 x 7 (mixed) A/N Display
-DRIVERNV(ssvc)          //Data East MPU: 03/88 Secret Service
-DRIVERNV(torpe)         //Data East MPU: 08/88 Torpedo Alley
-DRIVERNV(tmach)         //Data East MPU: 12/88 Time Machine
-DRIVERNV(play)          //Data East MPU: 05/89 Playboy 35th Anniversary
+DRIVER(ssvc,a26)        //Data East MPU: 03/88 Secret Service
+DRIVER(torp,e21)        //Data East MPU: 08/88 Torpedo Alley
+DRIVER(tmac,a24)        //Data East MPU: 12/88 Time Machine
+DRIVER(play,a24)        //Data East MPU: 05/89 Playboy 35th Anniversary
 //2 x 16 A/N Display
-DRIVERNV(mnfb)          //Data East MPU: 09/89 ABC Monday Night Football
-DRIVERNV(robo)          //Data East MPU: 11/89 Robo Cop
-DRIVERNV(poto)          //Data East MPU: 01/90 Phantom of the Opera
-DRIVERNV(bttf)          //Data East MPU: 06/90 Back to the Future
-DRIVERNV(simp)          //Data East MPU: 09/90 The Simpsons
+DRIVER(mnfb,c27)        //Data East MPU: 09/89 ABC Monday Night Football
+DRIVER(robo,a34)        //Data East MPU: 11/89 Robo Cop
+DRIVER(poto,a32)        //Data East MPU: 01/90 Phantom of the Opera
+DRIVER(bttf,a20)        //Data East MPU: 06/90 Back to the Future (2.0)
+DRIVER(bttf,a21)        //Data East MPU: ??/90 Back to the Future (2.1)
+DRIVER(simp,a27)        //Data East MPU: 09/90 The Simpsons
 //DMD 128 x 16
-DRIVERNV(chkpnt)        //Data East MPU: 02/91 Checkpoint
-DRIVERNV(tmnt)          //Data East MPU: 05/91 Teenage Mutant Ninja Turtles
+DRIVER(ckpt,a17)        //Data East MPU: 02/91 Checkpoint
+DRIVER(tmnt,104)        //Data East MPU: 05/91 Teenage Mutant Ninja Turtles
 //BSMT2000 Sound chip
-DRIVERNV(batmn)         //Data East MPU: 07/91 Batman
-DRIVERNV(trek)          //Data East MPU: 10/91 Star Trek 25th Anniversary
-DRIVERNV(hook)          //Data East MPU: 01/92 Hook
+DRIVER(btmn,101)        //Data East MPU: 07/91 Batman
+DRIVER(trek,201)        //Data East MPU: 10/91 Star Trek 25th Anniversary
+DRIVER(hook,408)        //Data East MPU: 01/92 Hook
 //DMD 128 x 32
-DRIVERNV(lw3)           //Data East MPU: 06/92 Lethal Weapon
-DRIVERNV(stwarde)       //Data East MPU: 10/92 Star Wars
-DRIVERNV(rab)           //Data East MPU: 02/93 Rocky & Bullwinkle
-DRIVERNV(jurpark)       //Data East MPU: 04/93 Jurasic Park
-DRIVERNV(lah)           //Data East MPU: 08/93 Last Action Hero
-DRIVERNV(tftc)          //Data East MPU: 11/93 Tales From the Crypt
-DRIVERNV(tommy)         //Data East MPU: 02/94 Tommy
-DRIVERNV(wwfrumb)       //Data East MPU: 05/94 WWF Royal Rumble
-DRIVERNV(gnr)           //Data East MPU: 07/94 Guns N Roses
-//DMD 192 x 64
-DRIVERNV(maverick)      //Data East MPU: 09/94 Maverick
+DRIVER(lw3,208)         //Data East MPU: 06/92 Lethal Weapon
+DRIVER(stwr,103)        //Data East MPU: 10/92 Star Wars
+DRIVER(rab,130)         //Data East MPU: 02/93 Rocky & Bullwinkle
+DRIVER(jupk,513)        //Data East MPU: 04/93 Jurasic Park
+DRIVER(lah,112)         //Data East MPU: 08/93 Last Action Hero
+DRIVER(tftc,303)        //Data East MPU: 11/93 Tales From the Crypt
+DRIVER(tomy,400)        //Data East MPU: 02/94 Tommy
+DRIVER(wwfr,103)        //Data East MPU: 05/94 WWF Royal Rumble (1.03)
+DRIVER(wwfr,106)        //Data East MPU: 08/94 WWF Royal Rumble (1.06)
+DRIVER(gnr,300)         //Data East MPU: 07/94 Guns N Roses
 //MISC
 DRIVERNV(detest)        //Data East MPU: ??/?? DE Test Chip
 
@@ -376,7 +376,7 @@ DRIVERNV(barbwire)      //S3-748:   04/96 Barb Wire
 DRIVERNV(brooks)        //S3-749:   08/96 Brooks & Dunn (never produced)
 
 // ----------------
-// HANKIN GAMES 
+// HANKIN GAMES
 // ----------------
 DRIVERNV(fjholden)      //FJ Holden
 DRIVERNV(orbit1)        //Orbit 1
@@ -391,9 +391,10 @@ DRIVERNV(flicker )      //Flicker (Prototype, September 1974)
 DRIVERNV(rotation)      //Rotation VIII (September 1978)
 
 // --------------
-// SEGA GAMES 
+// SEGA GAMES
 // --------------
 //Data East Hardare, DMD 192x64
+DRIVERNV(maverick)      //DE/Sega MPU: 09/94 Maverick
 DRIVERNV(frankst)       //DE/Sega MPU: 12/94 Frankenstein
 DRIVERNV(baywatch)      //DE/Sega MPU: 03/95 Baywatch
 DRIVERNV(batmanf)       //DE/Sega MPU: 07/95 Batman Forever (4.0)
@@ -430,7 +431,7 @@ DRIVERNV(southpk)       //Whitestar: 01/99 South Park
 DRIVERNV(harley)        //Whitestar: 08/99 Harley Davidson
 
 // ---------------
-// STERN GAMES 
+// STERN GAMES
 // ---------------
 // MPU-100 - Chime Sound
 DRIVERNV(stingray)      //MPU-100: 03/77 Stingray
@@ -518,7 +519,7 @@ DRIVERNV(term3i)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (I
 #endif /* INCLUDE_NEW_STERN */
 
 // ---------------
-// TAITO GAMES 
+// TAITO GAMES
 // ---------------
                         //??/?? Criterium 77
                         //??/?? Apache!
@@ -762,7 +763,7 @@ DRIVER(tfa,13)          //WPC:              Test fixture Alphanumeric
 DRIVER(tf95,12)         //WPC-648:          Test fixture WPC95
 
 // ------------------
-// ZACCARIA GAMES 
+// ZACCARIA GAMES
 // ------------------
 //Other games created earlier by Zaccaria are EM
                         //10/77 Combat
