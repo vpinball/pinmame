@@ -5,8 +5,8 @@
 #include "wpcsam.h"
 #include "sim.h"
 
-#define BY35_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
-#define BY35_LAMPSMOOTH      4 /* Smooth the lamps over this number of VBLANKS */
+#define BY35_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
+#define BY35_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
 #define BY35_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKS */
 
 /*-- Common Inports for BY35 Games --*/
