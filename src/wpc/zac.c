@@ -12,6 +12,7 @@
 #include "sndbrd.h"
 #include "zac.h"
 #include "zacsnd.h"
+#include "wmssnd.h"
 
 #define ZAC_VBLANKFREQ    60 /* VBLANK frequency */
 
@@ -371,8 +372,13 @@ static WRITE_HANDLER(ram1_w) {
 
 	if (offset < 0x2e) {
 		locals.segments[0x2f - offset].w = core_bcd2seg7[data & 0x0f];
-		if ((core_gameData->hw.soundBoard & (SNDBRD_ZAC1125 | SNDBRD_ZAC1346)) && offset == 0x16)
-			sndbrd_data_w(0, data);
+		if (offset == 0x16) {
+			if (core_gameData->hw.soundBoard == SNDBRD_ZAC1125 || core_gameData->hw.soundBoard == SNDBRD_ZAC1346)
+				sndbrd_data_w(0, data);
+			else if (core_gameData->hw.soundBoard == SNDBRD_S67S) {
+				sndbrd_data_w(0, ~data);
+			}
+		}
 	} else if (offset > 0x3f && offset < 0x60) {
 		UINT32 sol;
 		offset -= 0x40;
@@ -562,14 +568,19 @@ MACHINE_DRIVER_START(ZAC1125)
   MDRV_IMPORT_FROM(zac1125)
 MACHINE_DRIVER_END
 
+MACHINE_DRIVER_START(ZAC1144)
+  MDRV_IMPORT_FROM(ZAC0)
+  MDRV_IMPORT_FROM(wmssnd_s67s)
+MACHINE_DRIVER_END
+
 MACHINE_DRIVER_START(ZAC1346)
   MDRV_IMPORT_FROM(ZAC0)
   MDRV_IMPORT_FROM(zac1346)
 MACHINE_DRIVER_END
 
-MACHINE_DRIVER_START(ZAC1)
+MACHINE_DRIVER_START(ZAC1146)
   MDRV_IMPORT_FROM(ZAC)
-  MDRV_IMPORT_FROM(zac1346)
+  MDRV_IMPORT_FROM(zac1146)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(ZAC2)

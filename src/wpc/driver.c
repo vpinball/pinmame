@@ -882,6 +882,7 @@ DRIVERNV(hotwheel)      //09/79 Hot Wheels
                         //09/79 Space City
 DRIVERNV(firemntn)      //01/80 Fire Mountain
 DRIVERNV(stargod)       //05/80 Star God
+DRIVERNV(stargoda)      //05/80 Star God (alternate sound)
 DRIVERNV(sshtlzac)      //09/80 Space Shuttle
 DRIVERNV(ewf)           //04/81 Earth, Wind & Fire
 DRIVERNV(locomotn)      //09/81 Locomotion

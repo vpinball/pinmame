@@ -4,6 +4,8 @@
 #include "zac.h"
 #include "zacsnd.h"
 #include "sndbrd.h"
+#include "wmssnd.h"
+#include "s4.h"
 
 //Display: 5 X 6 Digit, 2 X 2 Digit, 7 Segment Displays without commas
 static core_tLCDLayout dispZAC1[] = {
@@ -143,6 +145,17 @@ ZAC_SOUNDROM_0(				"stargod.snd", CRC(5079e493) SHA1(51d366cdd09ad00b8b016b0ea1c
 ZAC_ROMEND
 CORE_GAMEDEFNV(stargod,"Star God",1980,"Zaccaria",mZAC1346,0)
 
+INITGAME1(stargoda,GEN_ZAC1,dispZAC1,SNDBRD_S67S,125)
+ZAC_ROMSTART84444(stargoda,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6c0fda6fa0d1fea8257cb15),
+							"stargod2.lgc",CRC(7a784b03) SHA1(bc3490b69913f52e3e9db5c3de5617ab89efe073),
+							"stargod3.lgc",CRC(95492ac0) SHA1(992ad53efc5b53020e3939dfca5431fd50b6571c),
+							"stargod4.lgc",CRC(09e5682a) SHA1(c9fcad4f55ee005e204a49fa65e7d77ecfde9680),
+							"stargod4.lgc",CRC(09e5682a) SHA1(c9fcad4f55ee005e204a49fa65e7d77ecfde9680))
+//							"stargod5.lgc",CRC(03cd4e24) SHA1(b73d383dc71e44277de9116a702b899a54ce32b9))
+S67S_SOUNDROMS8(			"stargod2.snd",CRC(c9103a68) SHA1(cc77af54fdb192f0b334d9d1028210618c3f1d95))
+ZAC_ROMEND
+CORE_CLONEDEFNV(stargoda,stargod,"Star God (alternate sound)",1980,"Zaccaria",mZAC1144,0)
+
 /*--------------------------------
 / Space Shuttle (09/80)
 /-------------------------------*/
@@ -180,7 +193,7 @@ ZAC_ROMSTART84844(locomotn,	"loc-1.fil",  CRC(8d0252a2) SHA1(964dca642fb26eef2c1
 							"loc-5.fil",  CRC(cad4122a) SHA1(df29914adeb9675abbd9f43dbef23adf2fe96c81))
 ZAC_SOUNDROM_0(				"loc-snd.fil",CRC(51ea9d2a) SHA1(9a68687af2c1cad2a261f61a67a625d906c502e1))
 ZAC_ROMEND
-CORE_GAMEDEFNV(locomotn,"Locomotion",1981,"Zaccaria",mZAC1,SOUNDFLAG)
+CORE_GAMEDEFNV(locomotn,"Locomotion",1981,"Zaccaria",mZAC1146,SOUNDFLAG)
 
 /*
    It seems each and every generation 2 machine uses a different IRQ frequency.
