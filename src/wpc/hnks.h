@@ -14,7 +14,7 @@ extern const struct Memory_ReadAddress  hnks_readmem[];
 extern const struct Memory_WriteAddress hnks_writemem[];
 
 #define HNK_SOUND_CPU { \
-  CPU_M6802 | CPU_AUDIO_CPU, 327680*2,	/* 0.327680 MHz */					\
+  CPU_M6802 | CPU_AUDIO_CPU, 900000,	/* 0.9 MHz */					\
   hnks_readmem, hnks_writemem, 0, 0, \
   0,1 \
 }
