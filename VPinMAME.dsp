@@ -583,13 +583,6 @@ SOURCE=.\src\wpc\sims\s7\full\tmfnt.c
 # Begin Source File
 
 SOURCE=.\src\wpc\atari.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -607,112 +600,42 @@ SOURCE=.\src\wpc\atari.h
 # Begin Source File
 
 SOURCE=.\src\wpc\atarigames.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\atarisnd.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\by35.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\by35.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\by35games.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\by35snd.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\by35snd.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\by6803.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\by6803.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\by6803games.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -739,102 +662,43 @@ SOURCE=.\src\wpc\byvidpin.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\capcom.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\core.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\core.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\dedmd.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\dedmd.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\degames.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\desound.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\desound.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\driver.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\gen.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -900,530 +764,194 @@ SOURCE=.\src\wpc\gts3games.c
 # Begin Source File
 
 SOURCE=.\src\wpc\gts80.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\gts80.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\gts80games.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\gts80s.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\gts80s.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\hnk.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\hnk.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\hnkgames.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\hnks.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\hnks.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\mech.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\mech.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\pinmame.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\s11.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\s11.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\s11games.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\s3games.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\s4.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\s4.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\s4games.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\s6.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\s6.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\s6games.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\s7.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\s7.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\s7games.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\se.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\se.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\segames.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\sim.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\sim.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\snd_cmd.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\snd_cmd.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\sndbrd.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\sndbrd.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\stgames.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\taito.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\taito.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\taitogames.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\vpintf.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\vpintf.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\wmssnd.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\wmssnd.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\wpc.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\wpc.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\wpcgames.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\wpcsam.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\wpcsam.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
