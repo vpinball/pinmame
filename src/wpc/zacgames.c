@@ -186,7 +186,14 @@ ZAC_ROMSTART1820(bbeltzac,	"bbz-1.fil",0x2e7e1575,
 ZAC_ROMEND
 CORE_GAMEDEFNV(bbeltzac,"Blackbelt (Zaccaria)",1986,"Zaccaria",mZAC2,TEST)
 
-//??/86 Mexico
+/*--------------------------------
+/ Mexico '86 (??/86)
+/-------------------------------*/
+INITGAME(mexico,0,dispZAC,FLIP_SW(FLIP_L),2)
+ZAC_ROMSTART1820(mexico,	"mex86_1.lgc",0x60d559b1,
+							"mex86_2.lgc",0x5c984c15)
+ZAC_ROMEND
+CORE_GAMEDEFNV(mexico,"Mexico '86",1986,"Zaccaria",mZAC2,TEST)
 
 /*--------------------------------
 / Zankor (??/86)
