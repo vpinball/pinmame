@@ -9,6 +9,111 @@ import "ocidl.idl";
 
 	[
 		object,
+		uuid(AF29EADA-63C3-4CB9-89AB-1A8D2F280710),
+		dual,
+		helpstring("IRom Interface"),
+		pointer_default(unique),
+		hidden
+	]
+	interface IRom : IDispatch
+	{
+		[propget, id(1), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
+		[propget, id(2), helpstring("property State")] HRESULT State([out, retval] long *pVal);
+		[propget, id(3), helpstring("property StateDescription")] HRESULT StateDescription([out, retval] BSTR *pVal);
+		[id(4), helpstring("method Audit")] HRESULT Audit();
+		[propget, id(5), helpstring("property Length")] HRESULT Length([out, retval] long *pVal);
+		[propget, id(6), helpstring("property ExpLength")] HRESULT ExpLength([out, retval] long *pVal);
+		[propget, id(7), helpstring("property Checksum")] HRESULT Checksum([out, retval] long *pVal);
+		[propget, id(8), helpstring("property ExpChecksum")] HRESULT ExpChecksum([out, retval] long *pVal);
+		[propget, id(9), helpstring("property Flags")] HRESULT Flags([out, retval] long *pVal);
+	};
+
+	[
+		object,
+		uuid(FDAD01BA-CE74-46AA-A1BC-6A176AB22902),
+		dual,
+		helpstring("IRoms Interface"),
+		pointer_default(unique),
+		hidden
+	]
+	interface IRoms : IDispatch
+	{
+		[propget] HRESULT Count([out, retval] long* pnCount);
+		[propget, id(DISPID_VALUE)] HRESULT Item([in] VARIANT *pKey, [out, retval] IRom* *ppGame);
+		[propget, id(DISPID_NEWENUM)] HRESULT _NewEnum([out, retval] IUnknown** ppunkEnum);
+		[propget, id(1), helpstring("property Available")] HRESULT Available([out, retval] BOOL *pVal);
+		[propget, id(2), helpstring("property State")] HRESULT State([out, retval] long *pVal);
+		[propget, id(3), helpstring("property StateDescription")] HRESULT StateDescription([out, retval] BSTR *pVal);
+		[id(4), helpstring("method Audit")] HRESULT Audit();
+	};
+
+	[
+		object,
+		uuid(821A5916-A71F-4AE0-B48E-DA6ffC0AF6CD),
+		dual,
+		helpstring("IEnumRoms Interface"),
+		pointer_default(unique),
+		hidden
+	]
+	interface IEnumRoms : IDispatch
+	{
+		[local] HRESULT Next([in] ULONG celt, [out] VARIANT* rgVar, [out] ULONG *pCeltFetched);
+		HRESULT Skip([in] ULONG celt);
+		HRESULT Reset();
+		HRESULT Clone([out] IUnknown **ppEnum);
+	};
+
+	[
+		object,
+		uuid(BD262BEE-902B-47D2-8CC4-54890BB7DC1C),
+		dual,
+		helpstring("IGame Interface"),
+		pointer_default(unique),
+		hidden
+	]
+	interface IGame : IDispatch
+	{
+		[propget, id(1), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
+		[propget, id(2), helpstring("property Description")] HRESULT Description([out, retval] BSTR *pVal);
+		[propget, id(3), helpstring("property Year")] HRESULT Year([out, retval] BSTR *pVal);
+		[propget, id(4), helpstring("property Manufacturer")] HRESULT Manufacturer([out, retval] BSTR *pVal);
+		[propget, id(5), helpstring("property CloneOf")] HRESULT CloneOf([out, retval] BSTR *pVal);
+		[propget, id(6), helpstring("property Roms")] HRESULT Roms([out, retval] IRoms* *pVal);
+	};
+
+	[
+		object,
+		uuid(0F7B0EC8-343F-48D3-B3B8-98BA4AC621E9),
+		dual,
+		helpstring("IGames Interface"),
+		pointer_default(unique),
+		hidden
+	]
+	interface IGames : IDispatch
+	{
+		[propget] HRESULT Count([out, retval] long* pnCount);
+		[propget, id(DISPID_VALUE)] HRESULT Item([in] VARIANT *pKey, [out, retval] IGame* *ppGame);
+		[propget, id(DISPID_NEWENUM)] HRESULT _NewEnum([out, retval] IUnknown** ppunkEnum);
+	};
+
+	[
+		object,
+		uuid(6A4DAE2F-2FEE-4E6F-86BA-5A93742E584C),
+		dual,
+		helpstring("IEnumGames Interface"),
+		pointer_default(unique),
+		hidden
+	]
+	interface IEnumGames : IDispatch
+	{
+		[local] HRESULT Next([in] ULONG celt, [out] VARIANT* rgVar, [out] ULONG *pCeltFetched);
+		HRESULT Skip([in] ULONG celt);
+		HRESULT Reset();
+		HRESULT Clone([out] IUnknown **ppEnum);
+	};
+
+	[
+		object,
 		uuid(CE9ECC7C-960F-407E-B27B-62E39AB1E30F),
 		dual,
 		helpstring("IController Interface"),
@@ -92,6 +197,7 @@ import "ocidl.idl";
 		[propget, id(48), helpstring("property Version")] HRESULT Version([out, retval] BSTR *pVal);
 		[propput, id(49), helpstring("property Mech")] HRESULT Mech([in] int param, [in] int newVal);
 		[propget, id(50), helpstring("property NewSoundCommands")] HRESULT NewSoundCommands([out, retval] VARIANT *pVal);
+		[propget, id(51), helpstring("property Games")] HRESULT Games([out, retval] IGames* *pVal);
 	};
 [
 	uuid(57270B76-C846-4B1E-88D4-53C8337A0623),
@@ -102,6 +208,65 @@ library VPinMAMELib
 {
 	importlib("stdole32.tlb");
 	importlib("stdole2.tlb");
+
+	[
+		uuid(75D6FFF0-21E5-4B71-90B4-59409A27297C),
+		helpstring("Game Class"),
+		hidden
+	]
+	coclass Game
+	{
+		[default] interface IGame;
+	};
+
+	[
+		uuid(B31AD191-C0C5-4E44-AF24-BD0459EDA52F),
+		helpstring("Visual PinMAME Games"),
+		hidden
+	]
+	coclass Games
+	{
+		[default] interface IGames;
+	};
+
+	[
+		uuid(D1FAB4A1-F9E6-4FEF-A02F-BD218EC5B792),
+		helpstring("EnumGames Class"),
+		hidden
+	]
+	coclass EnumGames
+	{
+		[default] interface IEnumGames;
+	};
+
+	[
+		uuid(CCBAD9CC-CC5A-4DD3-BA51-391f3744D815),
+		helpstring("Rom Class"),
+		hidden
+	]
+	coclass Rom
+	{
+		[default] interface IRom;
+	};
+
+	[
+		uuid(C983A522-7DC2-4153-BF78-5DD5A2DADE01),
+		helpstring("Roms Class"),
+		hidden
+	]
+	coclass Roms
+	{
+		[default] interface IRoms;
+	};
+	[
+		uuid(EF1F6336-7983-4CC4-8FA2-1CE9EDFC964F),
+		helpstring("EnumRoms Class"),
+		hidden
+	]
+	coclass EnumRoms
+	{
+		[default] interface IEnumRoms;
+	};
 
 	[
 		uuid(2CE80EC7-AC05-4087-83E7-414DE4F0F545),
