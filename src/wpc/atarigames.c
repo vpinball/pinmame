@@ -114,7 +114,16 @@ ATARI_3_ROMSTART(hercules,	"herc_k.rom",	CRC(65e099b1) SHA1(83a06bc82e0f8f4c0655
 ATARI_ROMEND
 CORE_GAMEDEFNV(hercules,"Hercules",1979,"Atari",gl_mATARI2,0)
 
-//Road Runner (1979)
+/*-------------------------------------------------------------------
+/ Road Runner (??/1979)
+/-------------------------------------------------------------------*/
+INITGAME2(roadrunr, atari_disp2, FLIPSW6667, 1)
+ATARI_3_ROMSTART(roadrunr,	"0000.716",	CRC(62f5f394) SHA1(ff91066d43d788119e3337788abd86e5c0bf2d92),
+							"3000.716",	CRC(2fc01359) SHA1(d3df20c764bb68a5316367bb18d34a03293e7fa6),
+							"3800.716",	CRC(77262408) SHA1(3045a732c39c96002f495f64ed752279f7d43ee7))
+ATARI_ROMEND
+CORE_GAMEDEFNV(roadrunr,"Road Runner",1979,"Atari",gl_mATARI2,0)
+
 //Monza (1980)
 //Neutron Star (1981)
 //4x4 (1983)

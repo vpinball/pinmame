@@ -243,6 +243,18 @@ S7_ROMEND
 CORE_GAMEDEF(fpwr2,l2,"Firepower II (L-2)",1983,"Williams",s7_mS7S,0)
 
 /*-----------------------------
+/ Rat Race - Sys.7 (Game #5??)
+/-----------------------------*/
+INITGAMEFULL(ratrc,s7_dispS7,0,0,50,51,41,42,43,0)
+S7_ROMSTART000x(ratrc,l1,"ic14.532",   CRC(292f1c4a) SHA1(0b5d50331364655672be16236d38d72b28f6dec2),
+                         "ic17.532",   CRC(a43d8518) SHA1(fb2289bb7380838d0d817e78c39e5bcb2709373f),
+                         "ic20.532",   CRC(66876b56) SHA1(6fab43fbb67c7b602ca595c20a41fc1553afdb65))
+S67S_SOUNDROMS8(         "sound3.716", CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
+S7_ROMEND
+#define input_ports_ratrc input_ports_s7
+CORE_GAMEDEF(ratrc,l1,"Rat Race (L-1)",1983,"Williams",s7_mS7S,0)
+
+/*-----------------------------
 / Star Light - Sys.7 (Game #530)
 /-----------------------------*/
 INITGAMEFULL(strlt,s7_dispS7,0,0,50,51,41,42,43,0)

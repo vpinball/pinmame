@@ -59,7 +59,7 @@ DRIVERNV(midearth)      //Middle Earth (February 1978)
 DRIVERNV(spcrider)      //Space Riders (September 1978)
 DRIVERNV(superman)      //Superman (March 1979)
 DRIVERNV(hercules)      //Hercules (May 1979)
-                        //Road Runner (Prototype, 1979)
+DRIVERNV(roadrunr)      //Road Runner (Prototype, 1979)
                         //Monza (Prototype, 1980)
                         //Neutron Star (Prototype, 1981)
                         //4x4 (Prototype, 1983)
@@ -786,7 +786,7 @@ DRIVER(csmic,l1)        //S7-502:   06/82 W Cosmic Gunfight
 DRIVER(vrkon,l1)        //S7-512:   09/82 W Varkon
 DRIVER(wrlok,l3)        //S7-516:   10/82 W Warlok
 DRIVER(dfndr,l4)        //S7-517:   12/82 W Defender
-                        //S?-527:   01/83 W Rat Race (never produced)
+DRIVER(ratrc,l1)        //S7-5??:   01/83 W Rat Race (never produced)
 DRIVER(tmfnt,l5)        //S7-515:   03/83 W Time Fantasy
 DRIVER(jst,l2)          //S7-519:   04/83 W Joust
 DRIVER(fpwr2,l2)        //S7-521:   08/83 W Firepower II
