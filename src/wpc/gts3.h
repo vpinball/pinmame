@@ -14,72 +14,69 @@
 #define GTS3_COMPORTS \
   PORT_START /* 0 */ \
       /* Switch Column 1 */ \
-    COREPORT_BITDEF(  0x0001, IPT_COIN1,          IP_KEY_DEFAULT) \
-    COREPORT_BITDEF(  0x0002, IPT_COIN2,          IP_KEY_DEFAULT)  \
-    COREPORT_BITDEF(  0x0004, IPT_COIN3,          KEYCODE_3) \
+    COREPORT_BITDEF(  0x0001, IPT_COIN2,          KEYCODE_3) \
+    COREPORT_BITDEF(  0x0002, IPT_COIN1,          IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(  0x0004, IPT_COIN3,          KEYCODE_4) \
     COREPORT_BITDEF(  0x0008, IPT_START1,         IP_KEY_DEFAULT) \
-    COREPORT_BIT(     0x0010, "Left Advance",     KEYCODE_7) \
+	/* Defining the flipper keys the usual way won't work for 4 & 5 */ \
+	COREPORT_BIT(     0x0010, "Left Flipper",     KEYCODE_LCONTROL) \
+    COREPORT_BIT(     0x0020, "Right Flipper",	  KEYCODE_RCONTROL) \
+	COREPORT_BIT(     0x0010, "Left Advance",     KEYCODE_7) \
 	COREPORT_BIT(     0x0020, "Right Advance",    KEYCODE_8) \
     /* These are put in switch column 0 since they are not read in the regular switch matrix */ \
     COREPORT_BIT(     0x0100, "Diagnostic",       KEYCODE_0) \
     COREPORT_BITTOG(  0x0200, "Ball Tilt",        KEYCODE_INSERT) \
-    COREPORT_BIT(     0x0400, "Slam Tilt",        KEYCODE_HOME) \
+    COREPORT_BIT(     0x0400, "Slam Tilt",        KEYCODE_HOME)
 
 /*-- Standard input ports --*/
 #define GTS3_INPUT_PORTS_START(name,balls) \
   INPUT_PORTS_START(name) \
     CORE_PORTS \
-    SIM_PORTS(balls)\
+    SIM_PORTS(balls) \
     GTS3_COMPORTS
 
 #define GTS3_INPUT_PORTS_END INPUT_PORTS_END
 
-/*-- Common Inports for System 3 --*/
+#define GTS31_COMPORTS \
+  PORT_START /* 0 */ \
+      /* Switch Column 1 */ \
+    COREPORT_BITDEF(  0x0001, IPT_COIN2,          KEYCODE_3) \
+    COREPORT_BITDEF(  0x0002, IPT_COIN3,          KEYCODE_4) \
+    COREPORT_BITDEF(  0x0004, IPT_COIN1,          IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(  0x0008, IPT_COIN4,          KEYCODE_6) \
+    COREPORT_BITDEF(  0x0010, IPT_START1,         IP_KEY_DEFAULT) \
+    /* These are put in switch column 0 since they are not read in the regular switch matrix */ \
+    COREPORT_BIT(     0x0100, "Diagnostic",       KEYCODE_0) \
+    COREPORT_BITTOG(  0x0200, "Ball Tilt",        KEYCODE_INSERT) \
+    COREPORT_BIT(     0x0400, "Slam Tilt",        KEYCODE_HOME)
+
+#define GTS31_INPUT_PORTS_START(name,balls) \
+  INPUT_PORTS_START(name) \
+    CORE_PORTS \
+    SIM_PORTS(balls) \
+    GTS31_COMPORTS
+
 #define GTS32_COMPORTS \
   PORT_START /* 0 */ \
       /* Switch Column 1 */ \
-    COREPORT_BITDEF(  0x0001, IPT_COIN1,          IP_KEY_DEFAULT) \
-    COREPORT_BITDEF(  0x0002, IPT_COIN2,          IP_KEY_DEFAULT)  \
-    COREPORT_BITDEF(  0x0004, IPT_COIN3,          KEYCODE_3) \
-	COREPORT_BITDEF(  0x0008, IPT_COIN4,          KEYCODE_4) \
+    COREPORT_BITDEF(  0x0001, IPT_COIN2,          KEYCODE_3) \
+    COREPORT_BITDEF(  0x0002, IPT_COIN3,          KEYCODE_4) \
+    COREPORT_BITDEF(  0x0004, IPT_COIN1,          IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(  0x0008, IPT_COIN4,          KEYCODE_6) \
     COREPORT_BITDEF(  0x0010, IPT_START1,         IP_KEY_DEFAULT) \
-	COREPORT_BIT(     0x0020, "Tournament",       KEYCODE_7) \
+	COREPORT_BIT(     0x0020, "Tournament",       KEYCODE_2) \
 	COREPORT_BIT(     0x0040, "Coin Door",        KEYCODE_END) \
     /* These are put in switch column 0 since they are not read in the regular switch matrix */ \
     COREPORT_BIT(     0x0100, "Diagnostic",       KEYCODE_0) \
     COREPORT_BITTOG(  0x0200, "Ball Tilt",        KEYCODE_INSERT) \
-    COREPORT_BIT(     0x0400, "Slam Tilt",        KEYCODE_HOME) \
+    COREPORT_BIT(     0x0400, "Slam Tilt",        KEYCODE_HOME)
 
-
-/*-- Standard input ports --*/
 #define GTS32_INPUT_PORTS_START(name,balls) \
   INPUT_PORTS_START(name) \
     CORE_PORTS \
     SIM_PORTS(balls)\
     GTS32_COMPORTS
 
-
-/*-- Common Inports for System 3 --*/
-#define GTS33_COMPORTS \
-  PORT_START /* 0 */ \
-      /* Switch Column 1 */ \
-    COREPORT_BITDEF(  0x0001, IPT_COIN1,          IP_KEY_DEFAULT) \
-    COREPORT_BITDEF(  0x0002, IPT_COIN2,          IP_KEY_DEFAULT)  \
-    COREPORT_BITDEF(  0x0004, IPT_COIN3,          KEYCODE_3) \
-	COREPORT_BITDEF(  0x0008, IPT_COIN4,          KEYCODE_4) \
-    COREPORT_BITDEF(  0x0010, IPT_START1,         IP_KEY_DEFAULT) \
-    /* These are put in switch column 0 since they are not read in the regular switch matrix */ \
-    COREPORT_BIT(     0x0100, "Diagnostic",       KEYCODE_0) \
-    COREPORT_BITTOG(  0x0200, "Ball Tilt",        KEYCODE_INSERT) \
-    COREPORT_BIT(     0x0400, "Slam Tilt",        KEYCODE_HOME) \
-
-
-/*-- Standard input ports --*/
-#define GTS33_INPUT_PORTS_START(name,balls) \
-  INPUT_PORTS_START(name) \
-    CORE_PORTS \
-    SIM_PORTS(balls)\
-    GTS33_COMPORTS
 
 #define GTS3_COMINPORT       CORE_COREINPORT
 
@@ -159,4 +156,3 @@ extern void UpdateSoundLEDS(int num,int data);
 #define mGTS3DMDS     GTS3_2S
 
 #endif /* INC_GTS3 */
-
