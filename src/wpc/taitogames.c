@@ -1,7 +1,9 @@
 #include "driver.h"
+#include "sndbrd.h"
 #include "core.h"
 #include "sim.h"
 #include "taito.h"
+#include "taitos.h"
 
 static const core_tLCDLayout dispTaito[] = {
   { 0, 0,  0, 3, CORE_SEG87 }, { 0, 6,  3, 3, CORE_SEG87 },
@@ -15,7 +17,7 @@ static const core_tLCDLayout dispTaito[] = {
 TAITO_INPUT_PORTS_START(taito,1)        TAITO_INPUT_PORTS_END
 
 #define INITGAME(name) \
-static core_tGameData name##GameData = {0,dispTaito,{FLIP_SW(FLIP_L),0,0,0,0,0}}; \
+static core_tGameData name##GameData = {0,dispTaito,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_TAITO,0}}; \
 static void init_##name(void) { core_gameData = &name##GameData; }
 
 /*--------------------------------
@@ -39,9 +41,11 @@ TAITO_ROMSTART4444(zarza,"zarza1.bin",0x81a35f85,
                          "zarza2.bin",0xcbf88eee,
                          "zarza3.bin",0xa5faf4d5,
                          "zarza4.bin",0xddfcdd20)
+TAITO_SOUNDROMS("zarza_s1.bin", 0xf076c2a8,
+                "zarza_s2.bin", 0xa98e13b7)
 TAITO_ROMEND
 #define input_ports_zarza input_ports_taito
-CORE_GAMEDEFNV(zarza,"Zarza",198?,"Taito",taito,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(zarza,"Zarza",198?,"Taito",taito,GAME_IMPERFECT_SOUND)
 
 /*--------------------------------
 / Gemini 2000
