@@ -1,53 +1,28 @@
-/*DE3.C - Includes support for
-          DMD 128x16 Games And DMD 192x64 Games */
+/*DE3.C - Includes support for DMD 128x16 Games And DMD 192x64 Games */
 
 /************************************************************************************************
-  Data East Pinball -
-  Hardware from 1987-1994
-  CPU hardware is very similar to Williams System 11 Hardware!
+  Covers the following: (see de.h for full history)
 
   CPU Boards:
-	1) CPU Rev 1 : Ram size = 2k (0x0800)	(Early Laser War Only)
-	2) CPU Rev 2 : Ram size = 8k (0x2000)	(Later Laser War to Phantom of the Opera)
 	3) CPU Rev 3 : CPU Controlled solenoids	(Back to the Future to Jurassic Park)
 	4) CPU Rev 3b: Printer option			(Last Action Hero to Batman Forever)
 
   Display Boards:
-	1) 520-5004-00: 2 X 7 Digit (16 Seg. Alphanumeric), 2 X 7 Digit (7 Seg. Numeric), 1 X 4 Digit (7 Seg. Numeric)
-	   (Used in Laser War Only)
-
-	2) 520-5014-01: 2 X 7 Digit (16 Seg. Alphanumeric), 2 X 7 Digit (7 Seg. Alphanumeric)
-	   (Secret Service to Playboy)
-	
-	3) 520-5030-00: 2 X 16 Digit (16 Seg Alphanumeric)
-		(MNF to Simpsons)
-	
-	4) 520-5042-00: 128X16 DMD - z80 CPU + integrated controller.
-	   (Checkpoint to Hook)
-
 	5) 520-5505 Series: 128X32 DMD - m6809 CPU + separate controller board
 		a) -00 generation: (Lethal Weapon to Last Action Hero)
 		b) -01 generation: (Tales From the Crypt to Guns N Roses)
 
-	6) 520-5092-01: 192X64 DMD - 68000 CPU + separate controller board
+  6) 520-5092-01: 192X64 DMD - 68000 CPU + separate controller board
 	   (Maveric to Batman Forever)
 
    Sound Board Revisions: 
-	1) 520-5002 Series: M6809 cpu, YM2151, MSM5205, hc4020 for stereo decoding.
-		a) -00 generation, used 27256 eproms (only Laser War)
-	    b) -02 generation, used 27256 & 27512 eproms (Laser War - Back to the Future)
-		c) -03 generation, used 27010 voice eproms (Simpsons - Checkpoint)
-
 	2) 520-5050-01 Series:	M6809 cpu, BSMT2000 16 bit stereo synth+dac, 2 custom PALS
-		a) -01 generation,	used 27020 voice eproms (Batman - Lethal Weapon 3)
 		b) -02 generation,	used 27040 voice eproms (Star Wars - J.Park)
 		c) -03 generation,	similar to 02, no more info known (LAH - Maverick)
 	3) 520-5077-00 Series:	??  (Tommy to Frankenstein)
 	4) 520-5126-xx Series:	??	(Baywatch to Batman Forever)
 
 *************************************************************************************************/
-
-/*#include <windows.h>*/
 #include <stdarg.h>
 #include "driver.h"
 #include "cpu/m6800/m6800.h"
@@ -56,11 +31,13 @@
 #include "machine/6821pia.h"
 #include "core.h"
 #include "de1sound.h"
+#include "de2sound.h"
 #include "dedmd.h"
 #include "de.h"
 #include "de2.h"
 #include "vidhrdw/crtc6845.h"
 #include "snd_cmd.h"
+
 
 #define DE_DCPU1			1	/*DMD CPU IS #1*/
 #define DE_SDCPU1			2   /*DMD SOUND GEN 1 CPU IS #2*/
@@ -93,6 +70,9 @@ static void init_dmd2locals(void);
 static void de_exit(void);
 static void de_nvram(void *file, int write);
 static int UsingSound = 0;
+
+//Sound Ddeclarations
+extern int des_init();
 
 /*----------------
 /  Global varibles
@@ -140,13 +120,13 @@ static void de_piaMainIrq(int state) {
   delocals.mainIrq = state;
   cpu_set_irq_line(DE_CPUNO, M6808_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 
-  pia_set_input_ca1(2, state?0:!core_getSwSeq(DE_SWADVANCE));
-  pia_set_input_cb1(2, state?0:!core_getSwSeq(DE_SWUPDN));
+  //pia_set_input_ca1(2, state?0:!core_getSwSeq(DE_SWADVANCE));
+  //pia_set_input_cb1(2, state?0:!core_getSwSeq(DE_SWUPDN));
 }
 
 static int de_irq(void) {
-  pia_set_input_ca1(2, 1);
-  pia_set_input_cb1(2, 1);
+  //pia_set_input_ca1(2, 1);
+  //pia_set_input_cb1(2, 1);
 
   if (delocals.mainIrq == 0) /* Don't send IRQ if already active */
     cpu_set_irq_line(DE_CPUNO, M6808_IRQ_LINE, PULSE_LINE);
@@ -256,32 +236,32 @@ static WRITE_HANDLER(pia5a_w) {} // logerror("pia5a_w\n"); }
 /Sound Commands
 /-----------------*/
 static WRITE_HANDLER(pia5b_w)  {
-	//logerror("soundlatch_w %x\n",data);
-	//if(UsingSound)
+	if(UsingSound)
 	{
-	//	soundlatch_w(0,data);
-		snd_cmd_log(data);
+//                soundlatch_w(0,data);
+            if(1 || data==149)
+                des_soundCmd_w(0,data);
 	}
 }
 static WRITE_HANDLER(pia5cb2_w) {
 //	logerror("FIRQ Enable?:pia5cb2_w %x\n",data);
-	if(UsingSound)
-		if((data&0x01)==0)
-			cpu_cause_interrupt(DE_SDCPU1,M6809_INT_FIRQ);
+//	if(UsingSound)
 }
 
 /*SHOULD be Unsused*/
-static WRITE_HANDLER(pia0ca2_w) {logerror("pia0ca2_w\n");}
+static WRITE_HANDLER(pia0ca2_w) {
+//logerror("pia0ca2_w\n");
+}
 static READ_HANDLER (pia3ca1_r) {return 0x00;}
 static READ_HANDLER (pia3cb1_r) {return 0x00;}
 static READ_HANDLER (pia3ca2_r) {return 0x00;}
 static READ_HANDLER (pia3cb2_r) {return 0x00;}
-static WRITE_HANDLER(pia2ca2_w) { logerror("Comma 3+4 %d\n",data); }
-static WRITE_HANDLER(pia2cb2_w) { logerror("Comma 1+2 %d\n",data); }
-static WRITE_HANDLER(pia5ca2_w) { logerror("pia5ca2_w %x\n",data); }
+static WRITE_HANDLER(pia2ca2_w) {/*logerror("Comma 3+4 %d\n",data);*/}
+static WRITE_HANDLER(pia2cb2_w) {/*logerror("Comma 1+2 %d\n",data);*/}
+static WRITE_HANDLER(pia5ca2_w) {/*logerror("pia5ca2_w %x\n",data);*/}
 
-static READ_HANDLER (pia2ca1_r) { return cpu_get_reg(M6808_IRQ_STATE) ? 0:!core_getSwSeq(DE_SWADVANCE); }
-static READ_HANDLER (pia2cb1_r) { return cpu_get_reg(M6808_IRQ_STATE) ? 0:!core_getSwSeq(DE_SWUPDN); }
+static READ_HANDLER (pia2ca1_r) { return cpu_get_reg(M6808_IRQ_STATE) ? !0:core_getSwSeq(DE_SWADVANCE); }
+static READ_HANDLER (pia2cb1_r) { return cpu_get_reg(M6808_IRQ_STATE) ? !0:core_getSwSeq(DE_SWUPDN); }
 
 /************************************************/
 /*********** DMD HANDLING BELOW *****************/
@@ -320,7 +300,7 @@ static WRITE_HANDLER(bank_w)
 /*********************************/
 static WRITE_HANDLER(pia3a_w) {
   de_dmdlocals.dmd_latch = data;
-  logerror("dmd_latch written (%x)\n", data);
+//  logerror("dmd_latch written (%x)\n", data);
 }
 
 /***********************************************/
@@ -344,14 +324,14 @@ static void DMDClockAndReset(int data)
 	/*PB0 - DMD Clock Triggers an IRQ!*/
 	if(data&1) {
 		de_dmdlocals.busy = 1;
-		logerror("dmd clock - trigger irq\n");
+//                logerror("dmd clock - trigger irq\n");
 		cpu_set_irq_line(DE_DCPU1, M6809_IRQ_LINE, HOLD_LINE);
 	}
 
 	/*PB1 - Trigger a Reset*/
 	if((data>>1)&1)
 	{
-		logerror("dmd reset\n");
+//                logerror("dmd reset\n");
 		cpu_set_reset_line(DE_DCPU1, PULSE_LINE);
 		init_dmdlocals();
 		switchbank();
@@ -366,14 +346,14 @@ static void DMD2ClockAndReset(int data)
 	/*PB0 - DMD Clock Trigger IPL0 (Level 1) Interrupt!*/
 	if(data&1) {
 		de_dmdlocals.busy = 1;
-		logerror("dmd clock - trigger irq\n");
+//                logerror("dmd clock - trigger irq\n");
 		cpu_set_irq_line(DE_DCPU1, MC68000_IRQ_1, HOLD_LINE);
 	}
 
 	/*PB1 - Trigger a Reset*/
 	if((data>>1)&1)
 	{
-		logerror("dmd reset\n");
+//                logerror("dmd reset\n");
 		cpu_set_reset_line(DE_DCPU1, PULSE_LINE);
 		init_dmd2locals();
 	}
@@ -384,7 +364,7 @@ static void DMD2ClockAndReset(int data)
 /*************************************/
 static int DMDBusyStatus(void)
 {
-	logerror("cpu read dmd status %x\n",(de_dmdlocals.busy?0x80:0x00) + (de_dmdlocals.status<<3));
+//        logerror("cpu read dmd status %x\n",(de_dmdlocals.busy?0x80:0x00) + (de_dmdlocals.status<<3));
 	return (de_dmdlocals.busy?0x80:0x00) + (de_dmdlocals.status<<3);
 }
 
@@ -394,7 +374,7 @@ static int DMDBusyStatus(void)
 //NOTE: DE changed this to return only busy flag for 192x64, and uses SW1 Read for status!
 static int DMD2BusyStatus(void)
 {
-	logerror("cpu read dmd busy line %x\n",(de_dmdlocals.busy?0x80:0x00));
+//        logerror("cpu read dmd busy line %x\n",(de_dmdlocals.busy?0x80:0x00));
 	return de_dmdlocals.busy?0x80:0x00;
 }
 
@@ -403,7 +383,7 @@ static int DMD2BusyStatus(void)
 /*************************************/
 static int DMDSW1Read(void)
 {
-    logerror("pia5a_r\n");
+//    logerror("pia5a_r\n");
 	return 0;			//Dips not implemented yet! (No Idea what they do!)
 }
 
@@ -505,8 +485,8 @@ static void de_updSw(int *inports) {
 	if (core_getSwSeq(DE_SWSOUNDDIAG)) cpu_set_nmi_line(DE_SDCPU1, PULSE_LINE);
 
   /*-- coin door switches --*/
-  pia_set_input_ca1(2, !core_getSwSeq(DE_SWADVANCE));
-  pia_set_input_cb1(2, !core_getSwSeq(DE_SWUPDN));
+  //pia_set_input_ca1(2, !core_getSwSeq(DE_SWADVANCE));
+  //pia_set_input_cb1(2, !core_getSwSeq(DE_SWUPDN));
 
   if(core_getSwSeq(DE_SWADVANCE))
           core_textOutf(40, 20, BLACK, "%-7s","A-Up");
@@ -569,17 +549,16 @@ static void de_init(void) {
 	     (memory_region_length(DE_MEMREG_DROM1) - 0x8000), 0x8000);
   }
 
-  /*Sound Enabled?*/
+   /*Init Sound if Sound Enabled?*/
   if (((Machine->gamedrv->flags & GAME_NO_SOUND) == 0) && Machine->sample_rate)
   {
 	  UsingSound=1;
-	  DE_sinit(DE_SDCPU1);
+	  des_init();
   }
   else
 	  UsingSound=0;
 
-  logerror("Using Sound = %s\n",UsingSound?"Yes":"No");
-
+  //Reset PIA
   pia_reset();
 
   //Init DMD Locals
@@ -605,7 +584,7 @@ static void init_dmdlocals(void)
 /*****************************/
 static READ_HANDLER(dmdlatch_r)
 {
-	logerror("%x: Reading dmdlatch %x\n",cpu_get_pc(),de_dmdlocals.dmd_latch);
+//        logerror("%x: Reading dmdlatch %x\n",cpu_get_pc(),de_dmdlocals.dmd_latch);
 	de_dmdlocals.busy = 0;
 	cpu_set_irq_line(DE_DCPU1, M6809_IRQ_LINE, CLEAR_LINE);
 	return de_dmdlocals.dmd_latch;
@@ -616,7 +595,7 @@ static READ_HANDLER(dmdlatch_r)
 static WRITE_HANDLER(status_w)
 {
 	de_dmdlocals.status = data;
-	logerror("Status Write %x\n",data);
+//        logerror("Status Write %x\n",data);
 }
 /****************************/
 /*DMD 128x32 - Fire an FIRQ */
@@ -624,7 +603,7 @@ static WRITE_HANDLER(status_w)
 static void dmdfirq(int data)
 {
 cpu_set_irq_line(DE_DCPU1, M6809_FIRQ_LINE,PULSE_LINE);
-logerror("dmd firq\n");
+//logerror("dmd firq\n");
 }
 
 /*************************************/
@@ -646,17 +625,16 @@ static void de2_init(void) {
   if (core_init(&deData))
 	  return;
 
-  /*Sound Enabled?*/
+  /*Init Sound if Sound Enabled?*/
   if (((Machine->gamedrv->flags & GAME_NO_SOUND) == 0) && Machine->sample_rate)
   {
 	  UsingSound=1;
-	  DE_sinit(DE_SDCPU1);
+	  des_init();
   }
   else
 	  UsingSound=0;
 
-  logerror("Using Sound = %s\n",UsingSound?"Yes":"No");
-
+  //Reset PIA
   pia_reset();
 
   //Init DMD Locals
@@ -684,11 +662,11 @@ static void init_dmd2locals(void)
 /*****************************/
 static READ16_HANDLER(dmd2latch_r)
 {
-	logerror("%x: Reading dmdlatch %x\n",cpu_get_pc(),de_dmdlocals.dmd_latch);
+//        logerror("%x: Reading dmdlatch %x\n",cpu_get_pc(),de_dmdlocals.dmd_latch);
 	de_dmdlocals.busy = 0;
 	//Clear M68000 IRQ
 	cpu_set_irq_line(DE_DCPU1, MC68000_IRQ_1, CLEAR_LINE);
-	logerror("dmd latch read - clear irq\n");
+//        logerror("dmd latch read - clear irq\n");
 	return de_dmdlocals.dmd_latch;
 }
 /******************************/
@@ -696,7 +674,7 @@ static READ16_HANDLER(dmd2latch_r)
 /******************************/
 static WRITE16_HANDLER(status2_w)
 {
-	logerror("Status Write %x\n",data);
+//        logerror("Status Write %x\n",data);
 	de_dmdlocals.status = data;
 }
 /****************************/
@@ -706,7 +684,7 @@ static void dmd2firq(int data)
 {
 //M68000 DMD - Trigger IPL1 (Level 2) Interrupt!
 cpu_set_irq_line(DE_DCPU1, MC68000_IRQ_2, PULSE_LINE);
-logerror("dmd firq\n");
+//logerror("dmd firq\n");
 }
 /******************************************************/
 /*DMD 192x64 - CRTC 6845 Functions (Convert to 8-Bit) */
@@ -793,25 +771,10 @@ static MEMORY_WRITE16_START(de2_dmdwritemem)
 {0x00c00020,0x00c00021, status2_w},		/*Set the Status Line*/
 MEMORY_END
 
-/*------------------------------------
-/  Memory map for BSMT2000 SOUN BOARD
-/------------------------------------*/
-static MEMORY_READ_START(de_snd2readmem)
-//	{ 0x0000, 0x1fff, MRA_RAM},			
-//	{ 0x4000, 0x7fff, MRA_BANK2},		
-    { 0x8000, 0xffff, MRA_ROM},
-MEMORY_END
-
-static MEMORY_WRITE_START(de_snd2writemem)
-// 	{ 0x0000, 0x1fff, MWA_RAM},			
-//	{ 0x4000, 0x7fff, MWA_ROM},			
-    { 0x8000, 0xffff, MWA_ROM},
-MEMORY_END
-
 /*******************************/
 /*DMD 128x32 Machine Definition*/
 /*******************************/
-struct MachineDriver machine_driver_DE_DMD2 = {
+struct MachineDriver machine_driver_DE_DMD2S1 = {
   {
     {
       CPU_M6808, 1000000, /* 1 Mhz */
@@ -823,7 +786,7 @@ struct MachineDriver machine_driver_DE_DMD2 = {
       CPU_M6809, 2000000, /* 4 Mhz (according to schem), but 2 Mhz measured on real game! */
       de_dmdreadmem, de_dmdwritemem, NULL, NULL, NULL, 0
     }
-  },
+	DES_SOUNDCPU},
   DE_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50,
   de_init,CORE_EXITFUNC(NULL)
@@ -832,48 +795,14 @@ struct MachineDriver machine_driver_DE_DMD2 = {
   VIDEO_TYPE_RASTER,
   0,
   NULL, NULL, de_dmd128x32_refresh,
-  0,0,0,0, {{0}},
+  0,0,0,0, {DES_SOUND},
   de_nvram
 };
 
-#if 0
-/*******************************/
-/*DMD 128x32 Machine Definition*/
-/*******************************/
-struct MachineDriver machine_driver_DE_DMD2 = {
-  {
-    {
-      CPU_M6808, 1000000, /* 1 Mhz */
-      de_readmem, de_writemem, NULL, NULL,
-      de_vblank, 1,
-      de_irq, DE_IRQFREQ
-    },
-	{
-      CPU_M6809, 2000000, /* 4 Mhz (according to schem), but 2 Mhz measured on real game! */
-      de_dmdreadmem, de_dmdwritemem, NULL, NULL, NULL, 0
-    },
-	{
-      CPU_M6809 | CPU_AUDIO_CPU, 2000000, /* 2 Mhz*/
-      de_snd2readmem, de_snd2writemem, 0,0,
-      NULL, 0,0,0
-	}
-  },
-  DE_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50,
-  de_init,CORE_EXITFUNC(NULL)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_TYPE_RASTER,
-  0,
-  NULL, NULL, de_dmd128x32_refresh,
-  0,0,0,0, {{0}},
-  de_nvram
-};
-#endif
 /*******************************/
 /*DMD 192x64 Machine Definition*/
 /*******************************/
-struct MachineDriver machine_driver_DE_DMD3 = {
+struct MachineDriver machine_driver_DE_DMD3S1 = {
   {
     {
       CPU_M6808, 1000000, /* 1 Mhz */
@@ -885,7 +814,7 @@ struct MachineDriver machine_driver_DE_DMD3 = {
       CPU_M68000, 6000000, /* 12 Mhz*/
       de2_dmdreadmem, de2_dmdwritemem, NULL, NULL, NULL, 0
     }
-  },
+  DES_SOUNDCPU},
   DE_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50,
   de2_init,CORE_EXITFUNC(NULL)
@@ -894,7 +823,7 @@ struct MachineDriver machine_driver_DE_DMD3 = {
   VIDEO_TYPE_RASTER,
   0,
   NULL, NULL, de_dmd192x64_refresh,
-  0,0,0,0, {{0}},
+  0,0,0,0, {DES_SOUND},
   de_nvram
 };
 

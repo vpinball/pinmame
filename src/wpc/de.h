@@ -1,6 +1,51 @@
 #ifndef INC_DE
 #define INC_DE
 
+/**************************************************************************************
+  Data East Pinball -
+  Hardware from 1987-1994
+  CPU hardware is very similar to Williams System 11 Hardware!
+
+  CPU Boards:
+	1) CPU Rev 1 : Ram size = 2k (0x0800)	(Early Laser War Only)
+	2) CPU Rev 2 : Ram size = 8k (0x2000)	(Later Laser War to Phantom of the Opera)
+	3) CPU Rev 3 : CPU Controlled solenoids	(Back to the Future to Jurassic Park)
+	4) CPU Rev 3b: Printer option			(Last Action Hero to Batman Forever)
+
+  Display Boards:
+	1) 520-5004-00: 2 X 7 Digit (16 Seg. Alphanumeric), 2 X 7 Digit (7 Seg. Numeric), 1 X 4 Digit (7 Seg. Numeric)
+	   (Used in Laser War Only)
+
+	2) 520-5014-01: 2 X 7 Digit (16 Seg. Alphanumeric), 2 X 7 Digit (7 Seg. Alphanumeric)
+	   (Secret Service to Playboy)
+	
+	3) 520-5030-00: 2 X 16 Digit (16 Seg Alphanumeric)
+		(MNF to Simpsons)
+	
+	4) 520-5042-00: 128X16 DMD - z80 CPU + integrated controller.
+	   (Checkpoint to Hook)
+
+	5) 520-5505 Series: 128X32 DMD - m6809 CPU + separate controller board
+		a) -00 generation: (Lethal Weapon to Last Action Hero)
+		b) -01 generation: (Tales From the Crypt to Guns N Roses)
+
+	6) 520-5092-01: 192X64 DMD - 68000 CPU + separate controller board
+	   (Maveric to Batman Forever)
+
+   Sound Board Revisions: 
+	1) 520-5002 Series: M6809 cpu, YM2151, MSM5205, hc4020 for stereo decoding.
+		a) -00 generation, used 27256 eproms (only Laser War)
+	    b) -02 generation, used 27256 & 27512 eproms (Laser War - Back to the Future)
+		c) -03 generation, used 27010 voice eproms (Simpsons - Checkpoint)
+
+	2) 520-5050-01 Series:	M6809 cpu, BSMT2000 16 bit stereo synth+dac, 2 custom PALS
+		a) -01 generation,	used 27020 voice eproms (Batman - Lethal Weapon 3)
+		b) -02 generation,	used 27040 voice eproms (Star Wars - J.Park)
+		c) -03 generation,	similar to 02, no more info known (LAH - Maverick)
+	3) 520-5077-00 Series:	??  (Tommy to Frankenstein)
+	4) 520-5126-xx Series:	??	(Baywatch to Batman Forever)
+*************************************************************************************/
+
 #include "core.h"
 #include "wpcsam.h"
 #include "sim.h"

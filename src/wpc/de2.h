@@ -34,20 +34,6 @@
     DE2_COMPORTS
 
 /******************************************/
-/** BSMT2000 ROM 32K                     **/
-/******************************************/
-#define DE_BSMT2K_32_ROMSTART(n1,chk1) \
-     SOUNDREGION(0x10000, DE_MEMREG_SDCPU1)\
-       ROM_LOAD(n1, 0x08000, 0x8000, chk1)
-
-/******************************************/
-/** BSMT2000 ROM 64K                     **/
-/******************************************/
-#define DE_BSMT2K_64_ROMSTART(n1,chk1) \
-     SOUNDREGION(0x10000, DE_MEMREG_SDCPU1)\
-       ROM_LOAD(n1, 0x00000, 0x10000, chk1)
-
-/******************************************/
 /** DMD (128x16) ROM 64K                 **/
 /******************************************/
 #define DE_DMD64_ROMSTART(n1,chk1) \
@@ -99,14 +85,15 @@
 
 /*-- These are only here so the game structure can be in the game file --*/
 extern struct MachineDriver machine_driver_DE_DMD1;
-extern struct MachineDriver machine_driver_DE_DMD1S;
-extern struct MachineDriver machine_driver_DE_DMD2;
-extern struct MachineDriver machine_driver_DE_DMD3;
+extern struct MachineDriver machine_driver_DE_DMD1S1;
+extern struct MachineDriver machine_driver_DE_DMD1S2;
+extern struct MachineDriver machine_driver_DE_DMD2S1;
+extern struct MachineDriver machine_driver_DE_DMD3S1;
 
-#define de_mDE_DMD1		DE_DMD1
-#define de_mDE_DMD1S	DE_DMD1S
-#define de_mDE_DMD2		DE_DMD2
-#define de_mDE_DMD3		DE_DMD3
+#define de_mDE_DMD1S1	DE_DMD1S1
+#define de_mDE_DMD1S2	DE_DMD1S2
+#define de_mDE_DMD2S1	DE_DMD2S1
+#define de_mDE_DMD3S1	DE_DMD3S1
 
 #endif /* INC_DE2 */
 

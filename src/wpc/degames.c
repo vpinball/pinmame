@@ -3,8 +3,7 @@
 #include "de.h"
 #include "de2.h"
 #include "de1sound.h"
-
-#define TESTBSMT 0
+#include "de2sound.h"
 
 #define INITGAME(name, gen, disptype, flippers, balls) \
 	static core_tGameData name##GameData = { gen, disptype, {flippers}}; \
@@ -204,7 +203,7 @@ DESOUND32128D_ROMSTART(	"chkpntf7.rom",0xe6f6d716,	//7f
 						"chkpntf5.rom",0x167daa2c)	//4f
 
 DE_ROMEND
-CORE_GAMEDEFNV(chkpnt,"Checkpoint",1991,"Data East",de_mDE_DMD1S,0)
+CORE_GAMEDEFNV(chkpnt,"Checkpoint",1991,"Data East",de_mDE_DMD1S1,0)
 
 
 /*-----------------------------------------------------------------------------
@@ -219,7 +218,7 @@ DESOUND32128D_ROMSTART(	"tmntf7.rom",0x59ba0153,	//7f
 						"tmntf4.rom",0xf96b0539)	//4f
 
 DE_ROMEND
-CORE_GAMEDEFNV(tmnt,"Teenage Mutant Ninja Turtles",1991,"Data East",de_mDE_DMD1S,0)
+CORE_GAMEDEFNV(tmnt,"Teenage Mutant Ninja Turtles",1991,"Data East",de_mDE_DMD1S1,0)
 
 
 /***************************************************************************/
@@ -233,11 +232,11 @@ INITGAME(batmn,DE_CPUREV3, de_128x16DMD, FLIP1516, 3/*?*/)
 DE3232_ROMSTART(batmn,	"batcpub5.101",0xa7f5754e,
 						"batcpuc5.101",0x1fcb85ca)
 DE_DMD128_ROMSTART(		"batdsp.106",0x4c4120e7)
-#if TESTBSMT
-DE_BSMT2K_32_ROMSTART(	"batman.u7" ,0xb2e88bf5)
-#endif
+DES_SOUNDROM021(		"batman.u7" ,0xb2e88bf5,
+						"batman.u17" ,0xb84914dd,
+						"batman.u21" ,0x42dab6ac)
 DE_ROMEND
-CORE_GAMEDEFNV(batmn,"Batman",1992,"Data East",de_mDE_DMD1,GAME_NO_SOUND)
+CORE_GAMEDEFNV(batmn,"Batman",1992,"Data East",de_mDE_DMD1S2,0)
 
 /*-------------------------------------------------------------
 / Star Trek - CPU Rev 3 /DMD Type 1 128K Rom - 64K CPU Rom
@@ -245,11 +244,11 @@ CORE_GAMEDEFNV(batmn,"Batman",1992,"Data East",de_mDE_DMD1,GAME_NO_SOUND)
 INITGAME(trek,DE_CPUREV3, de_128x16DMD, FLIP1516, 3/*?*/)
 DE64_ROMSTART(trek,		"trekcpuu.201",0xea0681fe)
 DE_DMD128_ROMSTART(		"trekdspa.109",0xa7e7d44d)
-#if TESTBSMT
-DE_BSMT2K_32_ROMSTART(  "treksnd.u7" ,0x642f45b3)
-#endif
+DES_SOUNDROM022(		"trek.u7"  ,0xf137abbb,
+						"trek.u17" ,0x531545da,
+						"trek.u21" ,0x6107b004)
 DE_ROMEND
-CORE_GAMEDEFNV(trek,"Star Trek 25th Anniversary",1992,"Data East",de_mDE_DMD1,GAME_NO_SOUND)
+CORE_GAMEDEFNV(trek,"Star Trek 25th Anniversary",1992,"Data East",de_mDE_DMD1S2,0)
 
 /*-------------------------------------------------------------
 / Hook - CPU Rev 3 /DMD  Type 1 128K Rom - CPU Rom
@@ -257,11 +256,11 @@ CORE_GAMEDEFNV(trek,"Star Trek 25th Anniversary",1992,"Data East",de_mDE_DMD1,GA
 INITGAME(hook,DE_CPUREV3, de_128x16DMD, FLIP1516, 3/*?*/)
 DE64_ROMSTART(hook,		"hokcpua.408",0x46477fc7)
 DE_DMD128_ROMSTART(		"hokdspa.401",0x59a07eb5)
-#if TESTBSMT
-DE_BSMT2K_32_ROMSTART(  "hooksnd.u7" ,0x642f45b3)
-#endif
+DES_SOUNDROM022(		"hooksnd.u7" ,0x642f45b3,
+						"hook-voi.u17" ,0x6ea9fcd2,
+						"hook-voi.u21" ,0xb5c275e2)
 DE_ROMEND
-CORE_GAMEDEFNV(hook,"Hook",1992,"Data East",de_mDE_DMD1,GAME_NO_SOUND)
+CORE_GAMEDEFNV(hook,"Hook",1992,"Data East",de_mDE_DMD1S2,0)
 
 
 /***********************************************************************/
@@ -275,11 +274,11 @@ INITGAME(lw3,DE_CPUREV3, 0, FLIP1516, 3)
 DE64_ROMSTART(lw3,		"lw3cpuu.208",0xa3041f8a)
 DE_DMD256_ROMSTART(		"lw3drom1.a26",0x44a4cf81,
 						"lw3drom0.a26",0x22932ed5)
-#if TESTBSMT
-DE_BSMT2K_32_ROMSTART(  "lw3snd.u7" ,0x642f45b3)
-#endif
+DES_SOUNDROM022(		"lw3u7.dat"  ,0xba845ac3,
+						"lw3u17.dat" ,0xe34cf2fc,
+						"lw3u21.dat" ,0x82bed051)
 DE_ROMEND
-CORE_GAMEDEFNV(lw3,"Lethal Weapon 3",1992,"Data East",de_mDE_DMD2,GAME_NO_SOUND)
+CORE_GAMEDEFNV(lw3,"Lethal Weapon 3",1992,"Data East",de_mDE_DMD2S1,0)
 
 /*-------------------------------------------------------------
 / Star Wars - CPU Rev 3 /DMD  Type 2 512K Rom - 64K CPU Rom
@@ -287,11 +286,11 @@ CORE_GAMEDEFNV(lw3,"Lethal Weapon 3",1992,"Data East",de_mDE_DMD2,GAME_NO_SOUND)
 INITGAME(stwarde,DE_CPUREV3, 0, FLIP1516, 3)
 DE64_ROMSTART(stwarde,	"starcpua.103",0x318085ca)
 DE_DMD512_ROMSTART(		"sw4mrom.a15",0x00c87952)
-#if TESTBSMT
-DE_BSMT2K_32_ROMSTART(  "stwarsnd.u7" ,0x642f45b3)
-#endif
+DES_SOUNDROM042(		"s-wars.u7"  ,0xcefa19d5,
+						"s-wars.u17" ,0x7950a147,
+						"s-wars.u21" ,0x7b08fdf1)
 DE_ROMEND
-CORE_GAMEDEFNV(stwarde,"Star Wars",1992,"Data East",de_mDE_DMD2,GAME_NO_SOUND)
+CORE_GAMEDEFNV(stwarde,"Star Wars",1992,"Data East",de_mDE_DMD2S1,0)
 
 /*-------------------------------------------------------------
 / Rocky & Bullwinkle - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
@@ -299,8 +298,11 @@ CORE_GAMEDEFNV(stwarde,"Star Wars",1992,"Data East",de_mDE_DMD2,GAME_NO_SOUND)
 INITGAME(rab,DE_CPUREV3b, 0, FLIP1516, 3)
 DE64_ROMSTART(rab,	"rabcpua.130",0xf59b1a53)
 DE_DMD512_ROMSTART(	"rbdspa.130",0xb6e2176e)
+DES_SOUNDROM142(	"rab.u7"  ,0xb232e630,
+					"rab.u17" ,0x7f2b53b8,
+					"rab.u21" ,0x3de1b375)
 DE_ROMEND
-CORE_GAMEDEFNV(rab,"Rocky & Bullwinkle",1993,"Data East",de_mDE_DMD2,GAME_NO_SOUND)
+CORE_GAMEDEFNV(rab,"Rocky & Bullwinkle",1993,"Data East",de_mDE_DMD2S1,0)
 
 /*-------------------------------------------------------------
 / Jurassic Park - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
@@ -308,11 +310,11 @@ CORE_GAMEDEFNV(rab,"Rocky & Bullwinkle",1993,"Data East",de_mDE_DMD2,GAME_NO_SOU
 INITGAME(jurpark,DE_CPUREV3b, 0, FLIP6364, 3)
 DE64_ROMSTART(jurpark,"jpcpua.513",0x9f70a937)
 DE_DMD512_ROMSTART(	  "jpdspa.510",0x9ca61e3c)
-#if TESTBSMT
-DE_BSMT2K_64_ROMSTART(  "jpcpua.513" ,0x642f45b3)
-#endif
+DES_SOUNDROM142(	"jp.u7"  ,0xf3afcf13,
+					"jp.u17" ,0x38135a23,
+					"jp.u21" ,0x6ac1554c)
 DE_ROMEND
-CORE_GAMEDEFNV(jurpark,"Jurassic Park",1993,"Data East",de_mDE_DMD2,GAME_NO_SOUND)
+CORE_GAMEDEFNV(jurpark,"Jurassic Park",1993,"Data East",de_mDE_DMD2S1,0)
 
 /*-------------------------------------------------------------
 / Last Action Hero - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
@@ -320,8 +322,11 @@ CORE_GAMEDEFNV(jurpark,"Jurassic Park",1993,"Data East",de_mDE_DMD2,GAME_NO_SOUN
 INITGAME(lah,DE_CPUREV3b, 0, FLIP6364, 3)
 DE64_ROMSTART(lah,	"lahcpua.112",0xe7422236)
 DE_DMD512_ROMSTART(	"lahdispa.106",0xca6cfec5)
+DES_SOUNDROM142(	"snd_u7.512"  ,0x0279c45b,
+					"snd_u17.040" ,0xd0c15fa6,
+					"snd_u21.020" ,0x4571dc2e)
 DE_ROMEND
-CORE_GAMEDEFNV(lah,"Last Action Hero",1993,"Data East",de_mDE_DMD2,GAME_NO_SOUND)
+CORE_GAMEDEFNV(lah,"Last Action Hero",1993,"Data East",de_mDE_DMD2S1,0)
 
 /*-------------------------------------------------------------
 / Tales From the Crypt - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
@@ -329,8 +334,11 @@ CORE_GAMEDEFNV(lah,"Last Action Hero",1993,"Data East",de_mDE_DMD2,GAME_NO_SOUND
 INITGAME(tftc,DE_CPUREV3b, 0, FLIP6364, 3)
 DE64_ROMSTART(tftc,	"tftccpua.303",0xe9bec98e)
 DE_DMD512_ROMSTART(	"tftcdspa.301",0x3888d06f)
+DES_SOUNDROM144(	"tftc.u7"    ,0x7963740e,
+					"sndu17.dat" ,0x5c5d009a,
+					"sndu21.dat" ,0xa0ae61f7)
 DE_ROMEND
-CORE_GAMEDEFNV(tftc,"Tales From the Crypt",1993,"Data East",de_mDE_DMD2,GAME_NO_SOUND)
+CORE_GAMEDEFNV(tftc,"Tales From the Crypt",1993,"Data East",de_mDE_DMD2S1,0)
 
 /*-------------------------------------------------------------
 / Tommy - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
@@ -338,17 +346,26 @@ CORE_GAMEDEFNV(tftc,"Tales From the Crypt",1993,"Data East",de_mDE_DMD2,GAME_NO_
 INITGAME(tommy,DE_CPUREV3b, 0, FLIP6364, 3)
 DE64_ROMSTART(tommy,"tomcpua.400",0xd0310a1a)
 DE_DMD512_ROMSTART(	"tommydva.400",0x9e640d09)
+DES_SOUNDROM14444(		"tommyu7.dat"  ,0xab0b4626,
+                        "tommysnd.u17" ,0x11bb2aa7,
+                        "tommysnd.u21" ,0xbb4aeec3,
+                        "tommysnd.u36" ,0x208d7aeb,
+                        "tommysnd.u37" ,0x46180085)
 DE_ROMEND
-CORE_GAMEDEFNV(tommy,"Tommy",1994,"Data East",de_mDE_DMD2,GAME_NO_SOUND)
+CORE_GAMEDEFNV(tommy,"Tommy",1994,"Data East",de_mDE_DMD2S1,0)
 
 /*-------------------------------------------------------------
 / WWF Royal Rumble - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
 INITGAME(wwfrumb,DE_CPUREV3b, 0, FLIP6364, 3)
-DE64_ROMSTART(wwfrumb,	"wwfcpua.106",0x5f1c7da2)
-DE_DMD512_ROMSTART(		"wwfdspa.102",0x4b629a4f)
+DE64_ROMSTART(wwfrumb,	"wfcpuc5.512"  ,0x7e9ead89)
+DE_DMD512_ROMSTART(		"wfdisp0.400"  ,0xe190b90f)
+DES_SOUNDROM1444(		"wfsndu7.512"  ,0xeb01745c,
+                        "wfsndu17.400" ,0x7d9c2ca8,
+                        "wfsndu21.400" ,0x242dcdcb,
+                        "wfsndu36.400" ,0x39db8d85)
 DE_ROMEND
-CORE_GAMEDEFNV(wwfrumb,"WWF Royal Rumble",1994,"Data East",de_mDE_DMD2,GAME_NO_SOUND)
+CORE_GAMEDEFNV(wwfrumb,"WWF Royal Rumble",1994,"Data East",de_mDE_DMD2S1,0)
 
 /*-------------------------------------------------------------
 / Guns N Roses - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
@@ -386,11 +403,13 @@ static void init_gnr(void) {
 DE_INPUT_PORTS_START(gnr, 6) DE_INPUT_PORTS_END
 DE64_ROMSTART(gnr,		"gnrcpua.300",0xfaf0cc8c)
 DE_DMD512_ROMSTART(		"gnrdispa.300",0x4abf29e3)
-#if TESTBSMT
-DE_BSMT2K_64_ROMSTART(  "gnrsnd.u7" ,0x642f45b3)
-#endif
+DES_SOUNDROM14444(		"gnrsnd.u7"  ,0x3b9de915,
+                        "g&ru17.snd" ,0x3d3219d6,
+                        "g&ru21.snd" ,0xd2ca17ab,
+                        "g&ru36.snd" ,0x5b32396e,
+                        "g&ru37.snd" ,0x4930e1f2)
 DE_ROMEND
-CORE_GAMEDEFNV(gnr,"Guns N Roses",1994,"Data East",de_mDE_DMD2,GAME_NO_SOUND)
+CORE_GAMEDEFNV(gnr,"Guns N Roses",1994,"Data East",de_mDE_DMD2S1,0)
 
 
 
@@ -398,6 +417,7 @@ CORE_GAMEDEFNV(gnr,"Guns N Roses",1994,"Data East",de_mDE_DMD2,GAME_NO_SOUND)
 /*************** GAMES USING 192X64 DMD DISPLAY ************************/
 /***********************************************************************/
 
+//Snd Works (Voices might be messed not sure)
 /*-------------------------------------------------------------
 / Maverick - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
@@ -405,12 +425,16 @@ INITGAME(maverick,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
 DE64_ROMSTART(maverick,	"mavcpua.404",0x9f06bd8d)
 DE_DMD1024_ROMSTART(	"mavdsar0.401",0x35b811af,
 						"mavdsar3.401",0xc4c126ae)
+DES_SOUNDROM144(		"u7_c512.snd"  ,0xcc7f45b9,
+                        "u17_c040.snd" ,0xcba377b8,
+                        "u21c4001.snd" ,0xbe0c6a6f)
 DE_ROMEND
-CORE_GAMEDEFNV(maverick,"Maverick",1994,"Data East",de_mDE_DMD3,GAME_NO_SOUND)
+CORE_GAMEDEFNV(maverick,"Maverick",1994,"Data East",de_mDE_DMD3S1,0)
 
 /*****************************************************************************************************************************/
 /* NOTE: SEGA Began Distribution of the following games, although they run on Data East Hardware, so they stay in this file! */
 /*****************************************************************************************************************************/
+
 
 /*-------------------------------------------------------------
 / Frankenstein - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
@@ -419,9 +443,15 @@ INITGAME(frankst,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
 DE64_ROMSTART(frankst,	"franka.103",0xa9aba9be)
 DE_DMD1024_ROMSTART(	"frdspr0a.103",0x9dd09c7d,
 						"frdspr3a.103",0x73b538bb)
+DES_SOUNDROM1444(		"frsnd.u7"  ,0x084f856c,
+                        "frsnd.u17" ,0x0da904d6,
+                        "frsnd.u21" ,0x14d4bc12,
+                        "frsnd.u36" ,0x9964d721)
 DE_ROMEND
-CORE_GAMEDEFNV(frankst,"Mary Shelley's Frankenstein",1994,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
+CORE_GAMEDEFNV(frankst,"Mary Shelley's Frankenstein",1994,"Sega",de_mDE_DMD3S1,0)
 
+
+//Start of the Portals Diagnostic Menu System
 
 /*-------------------------------------------------------------
 / Baywatch - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
@@ -430,172 +460,26 @@ INITGAME2(baywatch,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
 DE64_ROMSTART(baywatch,	"baycpua.400",0x89facfda)
 DE_DMD1024_ROMSTART(	"bayrom0a.400",0x43d615c6,
 						"bayrom3a.400",0x41bcb66b)
-#if TESTBSMT
-DE_BSMT2K_64_ROMSTART(  "baywsnd.u7" ,0x642f45b3)
-#endif
+DES_SOUNDROM144(		"bayw.u7"  ,0x90d6d8a8,
+                        "bayw.u17" ,0xb20fde56,
+                        "bayw.u21" ,0xb7598881)
 DE_ROMEND
-CORE_GAMEDEFNV(baywatch,"Baywatch",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
+CORE_GAMEDEFNV(baywatch,"Baywatch",1995,"Sega",de_mDE_DMD3S1,0)
 
 
 /*-------------------------------------------------------------
-/ Batman Forever 4.0 - CPU Rev 3b / DMD Type 3 2x512K Rom - 64K CPU Rom
+/ Batman Forever - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
 INITGAME2(batmanf,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
-DE64_ROMSTART(batmanf, "batnova.401", 0x4e62df4e)
-DE_DMD1024_ROMSTART(   "bfdrom0a.401",0x8a3c20ad,
-                       "bfdrom3a.401",0x5ef46847)
+DE64_ROMSTART(batmanf,	"batcpua.302",0x5ae7ce69)
+DE_DMD1024_ROMSTART(	"bmfrom0a.300",0x764bb217,
+						"bmfrom3a.300",0xb4e3b515)
+DES_SOUNDROM144(		"bmfu7.bin"  ,0x58c0d144,
+                        "bmfu17.bin" ,0xedcd5c10,
+                        "bmfu21.bin" ,0xe41a516d)
 DE_ROMEND
-CORE_GAMEDEFNV(batmanf,"Batman Forever (4.0)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
+CORE_GAMEDEFNV(batmanf,"Batman Forever",1995,"Sega",de_mDE_DMD3S1,0)
 
-/*-------------------------------------------------------------
-/ Batman Forever 3.0 - CPU Rev 3b / DMD Type 3 2x512K Rom - 64K CPU Rom
-/------------------------------------------------------------*/
-INITGAME2(batmanf3,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
-DE64_ROMSTART(batmanf3, "batcpua.302", 0x5ae7ce69)
-DE_DMD1024_ROMSTART(    "bmfrom0a.300",0x764bb217,
-                        "bmfrom3a.300",0xb4e3b515)
-DE_ROMEND
-CORE_CLONEDEFNV(batmanf3,batmanf,"Batman Forever (3.0)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
-
-/*-------------------------------------------------------------
-/ Batman Forever (UK) - CPU Rev 3b / DMD Type 3 2x512K Rom - 64K CPU Rom
-/------------------------------------------------------------*/
-INITGAME2(bmf_uk,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
-DE64_ROMSTART(bmf_uk, "batnove.401",0x80f6e4af)
-DE_DMD1024_ROMSTART(  "bfdrom0a.401",0x8a3c20ad,
-                      "bfdrom3a.401",0x5ef46847)
-DE_ROMEND
-CORE_CLONEDEFNV(bmf_uk,batmanf,"Batman Forever (English)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
-
-/*-------------------------------------------------------------
-/ Batman Forever (CN) - CPU Rev 3b / DMD Type 3 2x512K Rom - 64K CPU Rom
-/------------------------------------------------------------*/
-INITGAME2(bmf_cn,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
-DE64_ROMSTART(bmf_cn, "batnovc.401",0x99936537)
-DE_DMD1024_ROMSTART(  "bfdrom0a.401",0x8a3c20ad,
-                      "bfdrom3a.401",0x5ef46847)
-DE_ROMEND
-CORE_CLONEDEFNV(bmf_cn,batmanf,"Batman Forever (Canadian)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
-
-/*-------------------------------------------------------------
-/ Batman Forever (NO) - CPU Rev 3b / DMD Type 3 2x512K Rom - 64K CPU Rom
-/------------------------------------------------------------*/
-INITGAME2(bmf_no,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
-DE64_ROMSTART(bmf_no, "batnovn.401",0x79dd48b4)
-DE_DMD1024_ROMSTART(  "bfdrom0a.401",0x8a3c20ad,
-                      "bfdrom3a.401",0x5ef46847)
-DE_ROMEND
-CORE_CLONEDEFNV(bmf_no,batmanf,"Batman Forever (Norwegian)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
-
-/*-------------------------------------------------------------
-/ Batman Forever (SV) - CPU Rev 3b / DMD Type 3 2x512K Rom - 64K CPU Rom
-/------------------------------------------------------------*/
-INITGAME2(bmf_sv,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
-DE64_ROMSTART(bmf_sv, "batnovt.401",0x854029ab)
-DE_DMD1024_ROMSTART(  "bfdrom0a.401",0x8a3c20ad,
-                      "bfdrom3a.401",0x5ef46847)
-DE_ROMEND
-CORE_CLONEDEFNV(bmf_sv,batmanf,"Batman Forever (Swedish)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
-
-/*-------------------------------------------------------------
-/ Batman Forever (AT) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
-/------------------------------------------------------------*/
-INITGAME2(bmf_at,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
-DE64_ROMSTART(bmf_at, "batnovh.401",0xacba13d7)
-DE_DMD1024_ROMSTART(  "bfdrom0g.401",0x3a2d7d53,
-                      "bfdrom3g.401",0x94e424f1)
-DE_ROMEND
-CORE_CLONEDEFNV(bmf_at,batmanf,"Batman Forever (Austrian)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
-
-/*-------------------------------------------------------------
-/ Batman Forever (CH) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
-/------------------------------------------------------------*/
-INITGAME2(bmf_ch,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
-DE64_ROMSTART(bmf_ch, "batnovs.401",0x4999d5f9)
-DE_DMD1024_ROMSTART(  "bfdrom0g.401",0x3a2d7d53,
-                      "bfdrom3g.401",0x94e424f1)
-DE_ROMEND
-CORE_CLONEDEFNV(bmf_ch,batmanf,"Batman Forever (Swiss)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
-
-/*-------------------------------------------------------------
-/ Batman Forever (DE) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
-/------------------------------------------------------------*/
-INITGAME2(bmf_de,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
-DE64_ROMSTART(bmf_de, "batnovg.401",0xdd37e99a)
-DE_DMD1024_ROMSTART(  "bfdrom0g.401",0x3a2d7d53,
-                      "bfdrom3g.401",0x94e424f1)
-DE_ROMEND
-CORE_CLONEDEFNV(bmf_de,batmanf,"Batman Forever (German)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
-
-/*-------------------------------------------------------------
-/ Batman Forever (BE) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
-/------------------------------------------------------------*/
-INITGAME2(bmf_be,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
-DE64_ROMSTART(bmf_be, "batnovb.401",0x21309873)
-DE_DMD1024_ROMSTART(  "bfdrom0f.401",0xe7473f6f,
-                      "bfdrom3f.401",0xf7951709)
-DE_ROMEND
-CORE_CLONEDEFNV(bmf_be,batmanf,"Batman Forever (Belgian)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
-
-/*-------------------------------------------------------------
-/ Batman Forever (FR) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
-/------------------------------------------------------------*/
-INITGAME2(bmf_fr,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
-DE64_ROMSTART(bmf_fr, "batnovf.401",0x4baa793d)
-DE_DMD1024_ROMSTART(  "bfdrom0f.401",0xe7473f6f,
-                      "bfdrom3f.401",0xf7951709)
-DE_ROMEND
-CORE_CLONEDEFNV(bmf_fr,batmanf,"Batman Forever (French)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
-
-/*-------------------------------------------------------------
-/ Batman Forever (NL) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
-/------------------------------------------------------------*/
-INITGAME2(bmf_nl,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
-DE64_ROMSTART(bmf_nl, "batnovd.401",0x6ae4570c)
-DE_DMD1024_ROMSTART(  "bfdrom0f.401",0xe7473f6f,
-                      "bfdrom3f.401",0xf7951709)
-DE_ROMEND
-CORE_CLONEDEFNV(bmf_nl,batmanf,"Batman Forever (Dutch)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
-
-/*-------------------------------------------------------------
-/ Batman Forever (IT) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
-/------------------------------------------------------------*/
-INITGAME2(bmf_it,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
-DE64_ROMSTART(bmf_it, "batnovi.401",0x7053ef9e)
-DE_DMD1024_ROMSTART(  "bfdrom0i.401",0x23051253,
-                      "bfdrom3i.401",0x82b61a41)
-DE_ROMEND
-CORE_CLONEDEFNV(bmf_it,batmanf,"Batman Forever (Italian)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
-
-/*-------------------------------------------------------------
-/ Batman Forever (SP) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
-/------------------------------------------------------------*/
-INITGAME2(bmf_sp,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
-DE64_ROMSTART(bmf_sp, "batnova.401",0x4e62df4e)
-DE_DMD1024_ROMSTART(  "bfdrom0l.401",0xb22b10d9,
-                      "bfdrom3l.401",0x016b8666)
-DE_ROMEND
-CORE_CLONEDEFNV(bmf_sp,batmanf,"Batman Forever (Spanish)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
-
-/*-------------------------------------------------------------
-/ Batman Forever (JP) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
-/------------------------------------------------------------*/
-INITGAME2(bmf_jp,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
-DE64_ROMSTART(bmf_jp, "batnovj.401",0xeef9bef0)
-DE_DMD1024_ROMSTART(  "bfdrom0a.401",0x8a3c20ad,
-                      "bfdrom3a.401",0x5ef46847)
-DE_ROMEND
-CORE_CLONEDEFNV(bmf_jp,batmanf,"Batman Forever (Japanese)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
-
-/*-------------------------------------------------------------
-/ Batman Forever (Timed Version) - CPU Rev 3b / DMD Type 3 2x512K Rom - 64K CPU Rom
-/------------------------------------------------------------*/
-INITGAME2(bmf_time,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
-DE64_ROMSTART(bmf_time, "batnova.401", 0x4e62df4e)
-DE_DMD1024_ROMSTART(    "bfdrom0t.401",0xb83b8d28,
-                        "bfdrom3t.401",0xa024b1a5)
-DE_ROMEND
-CORE_CLONEDEFNV(bmf_time,batmanf,"Batman Forever (Timed Play)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
 
 
 /***********************************************************************/
@@ -607,5 +491,5 @@ CORE_CLONEDEFNV(bmf_time,batmanf,"Batman Forever (Timed Play)",1995,"Sega",de_mD
 INITGAME(detest,DE_CPUREV3, de_NoOutput, FLIP1516, 3/*?*/)
 DE64_ROMSTART(detest,"de_test.512",0xbade8ca8)
 DE_ROMEND
-CORE_GAMEDEFNV(detest,"Data East Test Chip",1998,"Data East",de_mDE_NO,GAME_NO_SOUND)
+CORE_GAMEDEFNV(detest,"Data East Test Chip",1998,"Data East",de_mDE_NO,0)
 
