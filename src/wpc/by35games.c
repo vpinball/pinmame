@@ -841,6 +841,15 @@ BY35_ROMEND
 #define input_ports_goldbalb input_ports_goldball
 CORE_CLONEDEFNV(goldbalb,goldball,"Gold Ball (7-digit conversion)",2004,"Bally / Oliver",by35_mBY35_51S,0)
 
+
+INITGAME3(goldbalc,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
+BY35_ROMSTARTx00(goldbalc,"go102732.u2", CRC(3d2dadb0) SHA1(3f53cbd33e4e039eddd1d3dc682964206acee77a),
+                          "gold10u6.bin",CRC(1bc222d7) SHA1(7cd36d2b276dc2cf9efa593a1058b45657f2c2bd))
+BY51_SOUNDROM0(           "gb_u4.532",   CRC(2dcb0315) SHA1(8cb9c9f627f0c8420d3b3d9f0d10d77a82c8be56))
+BY35_ROMEND
+#define input_ports_goldbalc input_ports_goldball
+CORE_CLONEDEFNV(goldbalc,goldball,"Gold Ball (6/7-digit alternate set rev.10)",2005,"Bally / Oliver",by35_mBY35_51S,0)
+
 #define init_goldbaln init_goldball
 BY35_ROMSTARTx00(goldbaln,"u2.532",CRC(aa6eb9d6) SHA1(a73cc832450e718d9b8484e409a1f8093d91d786),
                           "goldball.u6",CRC(9b6e79d0) SHA1(4fcda91bbe930e6131d94964a08459e395f841af))

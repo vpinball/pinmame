@@ -156,6 +156,7 @@ DRIVERNV(gransla4)      //BY35-1311:01/83 Grand Slam (4 player)
 /*same as cenatur*/     //BY35      06/83 Centaur II
 DRIVERNV(goldball)      //BY35-1371:10/83 Gold Ball
 DRIVERNV(goldbalb)      //BY35:     03/04 Gold Ball (7-digit conversion)
+DRIVERNV(goldbalc)      //BY35:     03/05 Gold Ball (6/7-digit alternate set rev.10)
 DRIVERNV(goldbaln)      //BY35-1371:10/83 Gold Ball (alternate)
 DRIVERNV(xsandos )      //BY35-1391:12/83 X's & O's
                         //??        ??/84 Mysterian
