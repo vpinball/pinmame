@@ -38,6 +38,13 @@
  *		  The term cycles is used here to really refer to clock oscilations, because 1 machine cycle
  *		  actually takes 12 oscilations.
  *
+ *		  Read/Write/Modify Instruction - 
+ *			Data is read from the Port Latch (not the Port Pin!), possibly modified, and 
+ *          written back to (the pin? and) the latch!
+ *
+ *		    The following all perform this on a port address..
+ *		    (anl, orl, xrl, jbc, cpl, inc, dec, djnz, mov px.y,c, clr px.y, setb px.y)
+ *
  *        August 27,2003: Currently support for only 8031/8051/8751 chips (ie 128 RAM)
  *		  October 14,2003: Added initial support for the 8752 (ie 256 RAM)
  *
@@ -47,9 +54,10 @@
  *                         the "MOVX a,@R0/R1" and "MOVX @R0/R1,a" commands can use any of the other ports
  *						   to output a page offset into ram, but it is totally based on the hardware setup.
  *
- *		  Not sure how to deal with Port Reads, ie, reading from the latch versus the pin (see more notes in ops file)
- *
  *		  Timing needs to be implemented via MAME timers
+ *
+ *		  Need to implement proper Read/Modify/Write support
+ *
  *****************************************************************************/
 
 #include <stdio.h>
@@ -99,6 +107,7 @@ typedef struct {
 	UINT16	subtype;		//specific version of the cpu, ie 8031, or 8051 for example
 	UINT8   executing;		//Flag to determine if an instruction is executing (might be needed for proper port operation)
 	UINT8	cur_irq;		//Holds value of any current IRQ being serviced
+	int		rwm;			//Signals that the current instruction is a read/write/modify instruction
 
 	//SFR Registers			(Note: Appear in order as they do in memory)
 	UINT8	po;				//Port 0
@@ -387,6 +396,7 @@ static UINT8 i8051_win_layout[] = {
 #define PC		i8051.pc
 #define TYPE	i8051.subtype
 #define EXEC	i8051.executing
+#define RWM		i8051.rwm
 
 //SFR Registers
 #define R_P0	i8051.po
@@ -587,7 +597,9 @@ int i8051_execute(int cycles)
 				break;
 			//INC data addr
 			case 0x05:						/* 1: 0000 0101 */
+				RWM=1;
 				inc_mem();
+				RWM=0;
 			break;
 			//INC @R0/@R1					/* 1: 0000 011i */
 			case 0x06:
@@ -607,7 +619,9 @@ int i8051_execute(int cycles)
 				break;
 			//JBC bit addr, code addr
 			case 0x10:						/* 1: 0001 0000 */
+				RWM=1;
 				jbc();
+				RWM=0;
 				break;
 			//ACALL code addr				/* 1: aaa1 0001 */
 			case 0x11:
@@ -627,7 +641,9 @@ int i8051_execute(int cycles)
 				break;
 			//DEC data addr
 			case 0x15:						/* 1: 0001 0101 */
+				RWM=1;
 				dec_mem();
+				RWM=0;
 				break;
 			//DEC @R0/@R1					/* 1: 0001 011i */
 			case 0x16: 
@@ -735,11 +751,15 @@ int i8051_execute(int cycles)
 				break;
 			//ORL data addr, A
 			case 0x42:						/* 1: 0100 0010 */
+				RWM=1;
 				orl_mem_a();
+				RWM=0;
 				break;
 			//ORL data addr, #data	
 			case 0x43:						/* 1: 0100 0011 */
+				RWM=1;
 				orl_mem_byte();
+				RWM=0;
 				break;
 			//ORL A, #data
 			case 0x44:						/* 1: 0100 0100 */
@@ -775,11 +795,15 @@ int i8051_execute(int cycles)
 				break;
 			//ANL data addr, A
 			case 0x52:						/* 1: 0101 0010 */
+				RWM=1;
 				anl_mem_a();
+				RWM=0;
 				break;
 			//ANL data addr, #data
 			case 0x53:						/* 1: 0101 0011 */
+				RWM=1;
 				anl_mem_byte();
+				RWM=0;
 				break;
 			//ANL A, #data
 			case 0x54:						/* 1: 0101 0100 */
@@ -815,11 +839,15 @@ int i8051_execute(int cycles)
 				break;
 			//XRL data addr, A
 			case 0x62:						/* 1: 0110 0010 */
+				RWM=1;
 				xrl_mem_a();
+				RWM=0;
 				break;
 			//XRL data addr, #data
 			case 0x63:						/* 1: 0110 0011 */
+				RWM=1;
 				xrl_mem_byte();
+				RWM=0;
 				break;
 			//XRL A, #data
 			case 0x64:						/* 1: 0110 0100 */
@@ -935,7 +963,9 @@ int i8051_execute(int cycles)
 				break;
 			//MOV bit addr, C
 			case 0x92:						/* 1: 1001 0010 */
+				RWM = 1;
 				mov_bitaddr_c();
+				RWM = 0;
 				break;
 			//MOVC A, @A + DPTR
 			case 0x93:						/* 1: 1001 0011 */
@@ -1015,7 +1045,9 @@ int i8051_execute(int cycles)
 				break;
 			//CPL bit addr
 			case 0xb2:						/* 1: 1011 0010 */
+				RWM=1;
 				cpl_bitaddr();
+				RWM=0;
 				break;
 			//CPL C
 			case 0xb3:						/* 1: 1011 0011 */
@@ -1055,7 +1087,9 @@ int i8051_execute(int cycles)
 				break;
 			//CLR bit addr
 			case 0xc2:						/* 1: 1100 0010 */
+				RWM=1;
 				clr_bitaddr();
+				RWM=0;
 				break;
 			//CLR C
 			case 0xc3:						/* 1: 1100 0011 */
@@ -1095,7 +1129,9 @@ int i8051_execute(int cycles)
 				break;
 			//SETB bit addr
 			case 0xd2:						/* 1: 1101 0010 */
+				RWM=1;
 				setb_bitaddr();
+				RWM=0;
 				break;
 			//SETB C
 			case 0xd3:						/* 1: 1101 0011 */
@@ -1107,7 +1143,9 @@ int i8051_execute(int cycles)
 				break;
 			//DJNZ data addr, code addr
 			case 0xd5:						/* 1: 1101 0101 */
+				RWM=1;
 				djnz_mem();
+				RWM=0;
 				break;
 			//XCHD A, @R0/@R1				/* 1: 1101 011i */
 			case 0xd6:

@@ -267,7 +267,7 @@ unsigned Dasm8051(char *dst, unsigned pc)
 		case 0xa1:
 		case 0xc1:
 		case 0xe1:
-			sym = set_ea_info(EA_DST, ( (op<<3) & 0x700) | cpu_readop_arg(PC++), EA_UINT16, EA_ABS_PC);
+			sym = set_ea_info(EA_DST, (PC & 0xf800) | ((op & 0xe0) << 3) | cpu_readop_arg(PC++), EA_UINT16, EA_ABS_PC);
 			sprintf(dst, "ajmp  %s", sym);
 			break;
 
@@ -338,7 +338,7 @@ unsigned Dasm8051(char *dst, unsigned pc)
 		case 0xb1:
 		case 0xd1:
 		case 0xf1:
-			sym = set_ea_info(EA_DST, ( (op<<3) & 0x700) | cpu_readop_arg(PC++), EA_UINT16, EA_ABS_PC);
+			sym = set_ea_info(EA_DST, (PC & 0xf800) | ((op & 0xe0) << 3) | cpu_readop_arg(PC++), EA_UINT16, EA_ABS_PC);
 			sprintf(dst, "acall %s", sym);
 			break;
 
