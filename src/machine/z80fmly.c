@@ -346,7 +346,12 @@ static void z80ctc_timercallback (int param)
 	/* down counter has reached zero - see if we should interrupt */
 	if ((ctc->mode[ch] & INTERRUPT) == INTERRUPT_ON)
 	{
+#ifdef PINMAME
+		/* don't reenter interrupt on Z80_INT_IEO either */
+		if( !(ctc->int_state[ch] & (Z80_INT_REQ | Z80_INT_IEO)) )
+#else
 		if( !(ctc->int_state[ch] & Z80_INT_REQ) )
+#endif /* PINMAME */
 		{
 			ctc->int_state[ch] |= Z80_INT_REQ;
 			z80ctc_interrupt_check( ctc );
