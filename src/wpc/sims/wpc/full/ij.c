@@ -601,6 +601,16 @@ DCS_SOUNDROM7x("ijsnd_l3.u2",CRC(fbd91a0d) SHA1(8d9a74f04f6088f18dfbb578893410ab
                "ijsnd_l3.u8",CRC(45e35bd7) SHA1(782b406be341d55d22a96acb8c2459f3058940df))
 WPC_ROMEND
 
+WPC_ROMSTART(ij,lg7,"u6-lg7.rom",0x80000,CRC(c168a9f7) SHA1(732cc0863da06bce3d9793d57d67ba03c4c2f4d7))
+DCS_SOUNDROM7x("ijsnd_l3.u2",CRC(fbd91a0d) SHA1(8d9a74f04f6088f18dfbb578893410abc21a0e42),
+               "ijsnd_l3.u3",CRC(3f12a996) SHA1(5f5d2853e671d13fafdb2972f52a823e18f27643),
+               "ijsnd_l3.u4",CRC(05a92937) SHA1(e4e53e2899a7e7cbcd6ce7e3331bb8aa13321aa6),
+               "ijsnd_l3.u5",CRC(e6fe417c) SHA1(d990ed218fe296ad9a015d77519b8d954d252035),
+               "ijsnd_l3.u6",CRC(975f3e48) SHA1(16c56500b18e551bcd2e0c7e4c55ddab4791ac84),
+               "ijsnd_l3.u7",CRC(2d9cd098) SHA1(8d26c84cbd4ab2a5c9f4be3ea95a79fd125248e3),
+               "ijsnd_l3.u8",CRC(45e35bd7) SHA1(782b406be341d55d22a96acb8c2459f3058940df))
+WPC_ROMEND
+
 WPC_ROMSTART(ij,l6,"ijone_l6.rom",0x80000,CRC(8c44b880) SHA1(9bc2cd91ea4d98e6509d6c1e2e34622e83c5a4d7))
 DCS_SOUNDROM7x("ijsnd_l3.u2",CRC(fbd91a0d) SHA1(8d9a74f04f6088f18dfbb578893410abc21a0e42),
                "ijsnd_l3.u3",CRC(3f12a996) SHA1(5f5d2853e671d13fafdb2972f52a823e18f27643),
@@ -645,6 +655,7 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(ij,l7,"Indiana Jones (L-7)",1993,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(ij,lg7,l7,"Indiana Jones (LG-7)",1993,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(ij,l6,l7,"Indiana Jones (L-6)",1993,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(ij,l5,l7,"Indiana Jones (L-5)",1993,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(ij,l4,l7,"Indiana Jones (L-4)",1993,"Williams",wpc_mDCSS,0)
