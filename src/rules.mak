@@ -1566,6 +1566,17 @@ else
 CPUDEFS += -DHAS_4004=0
 endif
 
+CPU=$(strip $(findstring SCAMP@,$(CPUS)))
+ifneq ($(CPU),)
+OBJDIRS += $(OBJ)/cpu/scamp
+CPUDEFS += -DHAS_SCAMP=1
+CPUOBJS += $(OBJ)/cpu/scamp/scamp.o
+DBGOBJS += $(OBJ)/cpu/scamp/scampdsm.o
+$(OBJ)/cpu/scamp/scamp.o: scamp.c scamp.h scampcpu.h
+else
+CPUDEFS += -DHAS_SCAMP=0
+endif
+
 CPU=$(strip $(findstring M68306@,$(CPUS)))
 ifneq ($(CPU),)
 OBJDIRS += $(OBJ)/cpu/m68000

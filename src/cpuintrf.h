@@ -31,6 +31,9 @@ enum
 #if defined(PINMAME) && (HAS_PPS4)
 	CPU_PPS4,
 #endif
+#if defined(PINMAME) && (HAS_SCAMP)
+	CPU_SCAMP,
+#endif
 #if (HAS_Z80)
 	CPU_Z80,
 #endif
@@ -130,7 +133,7 @@ enum
 #if (HAS_I8X41)
 	CPU_I8X41,
 #endif
-	
+
 #if defined(PINMAME) && (HAS_I8051)
 	CPU_I8051,
 #endif

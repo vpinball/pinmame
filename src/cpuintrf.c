@@ -26,6 +26,9 @@
 #if defined(PINMAME) && (HAS_PPS4)
 #include "cpu/pps4/pps4.h"
 #endif
+#if defined(PINMAME) && (HAS_SCAMP)
+#include "cpu/scamp/scamp.h"
+#endif
 #if (HAS_Z80)
 #include "cpu/z80/z80.h"
 #endif
@@ -403,6 +406,9 @@ const struct cpu_interface cpuintrf[] =
 	CPU0(DUMMY,    dummy,	 1,  0,1.00, 8, 16,	  0,16,LE,1, 1	),
 #if defined(PINMAME) && (HAS_PPS4)
 	CPU0(PPS4,	   PPS4,	 4,255,1.00, 8, 16,	  0,16,LE,1, 3	),
+#endif
+#if defined(PINMAME) && (HAS_SCAMP)
+	CPU0(SCAMP,	   SCAMP,	 4,255,1.00, 8, 16,	  0,16,LE,1, 3	),
 #endif
 #if (HAS_Z80)
 	CPU1(Z80,	   z80, 	 1,255,1.00, 8, 16,	  0,16,LE,1, 4	),

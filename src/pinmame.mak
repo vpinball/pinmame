@@ -38,13 +38,14 @@ DRVLIBS += $(PINOBJ)/by6803.o
 DRVLIBS += $(PINOBJ)/byvidpin.o
 DRVLIBS += $(PINOBJ)/capcom.o $(PINOBJ)/capcoms.o
 DRVLIBS += $(PINOBJ)/hnks.o
-DRVLIBS += $(PINOBJ)/zac.o $(PINOBJ)/zacsnd.o
+DRVLIBS += $(PINOBJ)/zac.o $(PINOBJ)/zacproto.o $(PINOBJ)/zacsnd.o
 DRVLIBS += $(PINOBJ)/gp.o $(PINOBJ)/gpsnd.o
 DRVLIBS += $(PINOBJ)/atari.o $(PINOBJ)/atarisnd.o
 DRVLIBS += $(PINOBJ)/taito.o $(PINOBJ)/taitos.o
 DRVLIBS += $(PINOBJ)/midway.o
 DRVLIBS += $(PINOBJ)/gts1.o
 DRVLIBS += $(PINOBJ)/alvg.o $(PINOBJ)/alvgdmd.o $(PINOBJ)/alvgs.o
+DRVLIBS += $(PINOBJ)/bingo.o
 #
 # Games
 #
@@ -147,6 +148,7 @@ CPUS += PPS4@
 CPUS += I8051@
 CPUS += I8752@
 CPUS += TMS7000@
+CPUS += SCAMP@
 
 SOUNDS += DAC@
 SOUNDS += YM2151_ALT@
