@@ -38,9 +38,6 @@ DRIVERNV(hercules)      //Hercules (May 1979)
                         //Neutron Star (Prototype, 1981)
                         //4x4 (Prototype, 1983)
 
-// LTD System III games
-DRIVERNV(bhol_ltd)      //Black Hole
-
 // MIDWAY GAMES
 DRIVERNV(flicker )      //Flicker (Prototype, September 1974)
 DRIVERNV(rotation)      //Rotation VIII (September 1978)
