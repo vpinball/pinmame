@@ -397,7 +397,7 @@ WRITE_HANDLER(wpc_w) {
         wpclocals.solFlip |= wpclocals.solFlipPulse = data;
       }
       else if (core_gameData->gen & (GEN_WPCALPHA_1|GEN_WPCALPHA_2))
-        wpclocals.alphaSeg[1][wpc_data[WPC_ALPHAPOS]].hi |= data;
+        wpclocals.alphaSeg[20+wpc_data[WPC_ALPHAPOS]].b.lo |= data;
       break;
     /*-----------------------------
     /  Lamp handling
@@ -424,16 +424,16 @@ WRITE_HANDLER(wpc_w) {
       break; /* just save position */
     case WPC_EXTBOARD2: /* WPC_ALPHA1 */
       if (core_gameData->gen & (GEN_WPCALPHA_1|GEN_WPCALPHA_2))
-        wpclocals.alphaSeg[0][wpc_data[WPC_ALPHAPOS]].hi |= data;
+        wpclocals.alphaSeg[wpc_data[WPC_ALPHAPOS]].b.lo |= data;
       break;
     case WPC_EXTBOARD3:
       if (core_gameData->gen & (GEN_WPCALPHA_1|GEN_WPCALPHA_2))
-        wpclocals.alphaSeg[0][wpc_data[WPC_ALPHAPOS]].lo |= data;
+        wpclocals.alphaSeg[wpc_data[WPC_ALPHAPOS]].b.hi |= data;
       break;
     /* case WPC_EXTBOARD4: */
     case WPC_EXTBOARD5:
       if (core_gameData->gen & (GEN_WPCALPHA_1|GEN_WPCALPHA_2))
-        wpclocals.alphaSeg[1][wpc_data[WPC_ALPHAPOS]].lo |= data;
+        wpclocals.alphaSeg[20+wpc_data[WPC_ALPHAPOS]].b.hi |= data;
       break;
     case WPC_SHIFTADRH:
     case WPC_SHIFTADRL:

@@ -164,7 +164,7 @@ static void by6803_dispStrobe1(int mask) {
       UINT8 dispMask = mask;
       for (jj = 0; dispMask; jj++, dispMask>>=1)
         if (dispMask & 0x01)
-          ((int *)locals.segments)[jj*8+ii] |= ((int *)locals.pseg)[jj*8+ii] = core_bcd2seg[locals.bcd[jj]];
+          locals.segments[jj*8+ii].w |= locals.pseg[jj*8+ii].w = core_bcd2seg[locals.bcd[jj]];
     }
 }
 
@@ -220,31 +220,31 @@ static void by6803_dispStrobe2(int mask) {
 	/* The commas still need work, I guess. But it looks quite good now. */
 		data = locals.p1_a;
 		if (locals.dispcol > 7) {
-			if (locals.segments[0][9].lo)
-				locals.segments[0][9].hi |= ((data & 0x80) >> 6);
-			if (locals.segments[0][12].lo)
-				locals.segments[0][12].hi |= ((data & 0x80) >> 6);
-			if (locals.segments[1][8].lo)
-				locals.segments[1][8].hi |= ((data & 0x20) >> 4);
-			if (locals.segments[1][11].lo)
-				locals.segments[1][11].hi |= ((data & 0x20) >> 4);
+			if (locals.segments[9].b.hi)
+				locals.segments[9].b.lo |= ((data & 0x80) >> 6);
+			if (locals.segments[12].b.hi)
+				locals.segments[12].b.lo |= ((data & 0x80) >> 6);
+			if (locals.segments[28].b.hi)
+				locals.segments[28].b.lo |= ((data & 0x20) >> 4);
+			if (locals.segments[31].b.hi)
+				locals.segments[31].b.lo |= ((data & 0x20) >> 4);
 		} else {
-			if (locals.segments[0][2].lo)
-				locals.segments[0][2].hi |= ((data & 0x40) >> 5);
-			if (locals.segments[0][5].lo)
-				locals.segments[0][5].hi |= ((data & 0x40) >> 5);
-			if (locals.segments[1][15].lo)
-				locals.segments[1][15].hi |= ((data & 0x10) >> 3);
-			if (locals.segments[1][4].lo)
-				locals.segments[1][4].hi |= ((data & 0x10) >> 3);
+			if (locals.segments[2].b.hi)
+				locals.segments[2].b.lo |= ((data & 0x40) >> 5);
+			if (locals.segments[5].b.hi)
+				locals.segments[5].b.lo |= ((data & 0x40) >> 5);
+			if (locals.segments[35].b.hi)
+				locals.segments[35].b.lo |= ((data & 0x10) >> 3);
+			if (locals.segments[24].b.hi)
+				locals.segments[24].b.lo |= ((data & 0x10) >> 3);
 		}
 	} else {
-		//Segments H&J is inverted bit 0 (but it's bit 8 in core.c) - Not sure why it's inverted, this is not shown on the schematic
-		data = (locals.p1_a >> 1) | ((locals.p1_a & 1) ? 0 : 0x180);
-		locals.pseg[locals.disprow][locals.dispcol].lo = data & 0xff;
-		locals.pseg[locals.disprow][locals.dispcol].hi = data >> 8;
-		locals.segments[locals.disprow][locals.dispcol].lo |= locals.pseg[locals.disprow][locals.dispcol].lo;
-		locals.segments[locals.disprow][locals.dispcol].hi |= locals.pseg[locals.disprow][locals.dispcol].hi;
+		//Segments H&J is inverted bit 0 (but it's bit 9 in core.c) - Not sure why it's inverted, this is not shown on the schematic
+		data = (locals.p1_a >> 1) | ((locals.p1_a & 1) ? 0 : 0x300);
+		locals.pseg[locals.disprow*20+locals.dispcol].b.hi = data & 0xff;
+		locals.pseg[locals.disprow*20+locals.dispcol].b.lo = data >> 8;
+		locals.segments[locals.disprow*20+locals.dispcol].b.hi |= locals.pseg[locals.disprow*20+locals.dispcol].b.hi;
+		locals.segments[locals.disprow*20+locals.dispcol].b.lo |= locals.pseg[locals.disprow*20+locals.dispcol].b.lo;
 	}
 }
 

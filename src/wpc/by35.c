@@ -43,7 +43,7 @@ static void by35_dispStrobe(int mask) {
       UINT8 dispMask = mask;
       for (jj = 0; dispMask; jj++, dispMask>>=1)
         if (dispMask & 0x01)
-          ((int *)locals.segments)[jj*8+ii] |= ((int *)locals.pseg)[jj*8+ii] = core_bcd2seg[locals.bcd[jj]];
+          locals.segments[jj*8+ii].w |= locals.pseg[jj*8+ii].w = core_bcd2seg[locals.bcd[jj]];
 //Hnk: core_bcd2seg9
     }
 }

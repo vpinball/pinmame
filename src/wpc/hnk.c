@@ -38,8 +38,8 @@ static void hnk_dispStrobe(int mask) {
     if (digit & 0x01) {
       UINT8 dispMask = mask;
       for (jj = 0; dispMask; jj++, dispMask>>=1)
-		if (dispMask & 0x01)
-          ((int *)locals.segments)[jj*8+ii] = core_bcd2seg9[locals.bcd[jj]];
+	if (dispMask & 0x01)
+          locals.segments[jj*8+ii].w = core_bcd2seg9[locals.bcd[jj]];
     }
 }
 
