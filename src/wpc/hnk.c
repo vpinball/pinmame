@@ -8,15 +8,13 @@
 #include "cpu/m6800/m6800.h"
 #include "machine/6821pia.h"
 #include "core.h"
+#include "sndbrd.h"
 #include "hnk.h"
+#include "hnks.h"
 
 #define HNK_VBLANKFREQ    60 /* VBLANK frequency */
 #define HNK_IRQFREQ      150 /* IRQ (via PIA) frequency*/
 #define HNK_ZCFREQ        85 /* Zero cross frequency */
-
-static WRITE_HANDLER(hnk_soundCmd) { logerror("sound cmd = 0x%02x\n",data); }
-static void hnk_soundInit(void) {}
-static void hnk_soundExit(void) {}
 
 static struct {
   int p0_a, p1_a, p1_b, p0_ca2, p1_ca2, p0_cb2, p1_cb2;
@@ -64,6 +62,14 @@ static void hnk_lampStrobe(int board, int lampadr) {
       lampdata >>= 1; matrix += 2;
     }
   }
+}
+
+static WRITE_HANDLER(hnk_sndCmd_w) {
+	// logerror("sound cmd: 0x%02x\n", data);
+	if ( Machine->gamedrv->flags & GAME_NO_SOUND )
+		return;
+
+    sndbrd_0_data_w(0, data);
 }
 
 /* PIA0:A-W  Control what is read from PIA0:B 
@@ -124,10 +130,11 @@ static WRITE_HANDLER(pia0cb2_w) {
   if (locals.p0_cb2 & ~data) locals.lampadr1 = locals.p0_a & 0x0f;
   locals.p0_cb2 = data;
 }
+
 /* PIA1:CA2-W Diagnostic LED & Audio Strobe */
 static WRITE_HANDLER(pia1ca2_w) {
   locals.diagnosticLed = data;
-  hnk_soundCmd(0, locals.p1_b & 0x0f);
+  hnk_sndCmd_w(0, locals.p1_b & 0x0f);
 }
 
 /* PIA0:CA2-W Display Blanking */
@@ -203,7 +210,6 @@ static void hnk_updSw(int *inports) {
   }
   /*-- Diagnostic buttons on CPU board --*/
   if (core_getSw(HNK_SWCPUDIAG))  cpu_set_nmi_line(0, PULSE_LINE);
-  if (core_getSw(HNK_SWSOUNDDIAG)) cpu_set_nmi_line(HNK_SCPU1NO, PULSE_LINE);
   /*-- coin door switches --*/
   pia_set_input_ca1(0, !core_getSw(HNK_SWSELFTEST));
 }
@@ -256,7 +262,7 @@ static int hnk_irq(void) { return 0; }
 
 static core_tData hnkData = {
   24, /* 24 Dips */
-  hnk_updSw, 1, hnk_soundCmd, "hnk",
+  hnk_updSw, 1, hnk_sndCmd_w, "hnk",
   core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
 };
 
@@ -273,7 +279,10 @@ static void hnk_init(void) {
   /* init PIAs */
   pia_config(0, PIA_STANDARD_ORDERING, &piaIntf[0]);
   pia_config(1, PIA_STANDARD_ORDERING, &piaIntf[1]);
-  if (coreGlobals.soundEn) hnk_soundInit();
+  
+  if (coreGlobals.soundEn) 
+	  sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(HNK_MEMREG_SCPU), NULL, NULL);
+
   pia_reset();
   locals.vblankCount = 1;
   locals.zctimer = timer_pulse(TIME_IN_HZ(HNK_ZCFREQ),0,hnk_zeroCross);
@@ -285,7 +294,9 @@ static void hnk_exit(void) {
 #ifdef PINMAME_EXIT
   if (locals.zctimer) { timer_remove(locals.zctimer); locals.zctimer = NULL; }
 #endif
-  if (coreGlobals.soundEn) hnk_soundExit();
+  if (coreGlobals.soundEn) 
+    sndbrd_0_exit();
+
   core_exit();
 }
 static UINT8 *hnk_CMOS;
@@ -314,18 +325,22 @@ static MEMORY_WRITE_START(hnk_writemem)
 { 0x1000, 0x1fff, MWA_ROM },
 MEMORY_END
 
-struct MachineDriver machine_driver_HNK1 = {
-  {{  CPU_M6800, 3580000/4, /* 3.58/4 = 900hz */
+struct MachineDriver machine_driver_HNK = {
+  {
+    {
+	  CPU_M6800, 3580000/4, /* 3.58/4 = 900hz */
       hnk_readmem, hnk_writemem, NULL, NULL,
       hnk_vblank, 1, hnk_irq, HNK_IRQFREQ
-  }},
+	},
+	HNK_SOUND_CPU
+  },
   HNK_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50, hnk_init, CORE_EXITFUNC(hnk_exit)
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
   NULL, NULL, gen_refresh,
-  0,0,0,0, {{0}},
+  0,0,0,0, {HNK_SOUND},
   hnk_nvram
 };
 
