@@ -220,31 +220,29 @@ static void by6803_dispStrobe2(int mask) {
 	/* The commas still need work, I guess. But it looks quite good now. */
 		data = locals.p1_a;
 		if (locals.dispcol > 7) {
-			if (locals.segments[9].b.hi)
-				locals.segments[9].b.lo |= ((data & 0x80) >> 6);
-			if (locals.segments[12].b.hi)
-				locals.segments[12].b.lo |= ((data & 0x80) >> 6);
-			if (locals.segments[28].b.hi)
-				locals.segments[28].b.lo |= ((data & 0x20) >> 4);
-			if (locals.segments[31].b.hi)
-				locals.segments[31].b.lo |= ((data & 0x20) >> 4);
+			if (locals.segments[9].w)
+				locals.segments[9].w |= (data & 0x80);
+			if (locals.segments[12].w)
+				locals.segments[12].w |= (data & 0x80);
+			if (locals.segments[28].w)
+				locals.segments[28].w |= ((data & 0x20) << 2);
+			if (locals.segments[31].w)
+				locals.segments[31].w |= ((data & 0x20) << 2);
 		} else {
-			if (locals.segments[2].b.hi)
-				locals.segments[2].b.lo |= ((data & 0x40) >> 5);
-			if (locals.segments[5].b.hi)
-				locals.segments[5].b.lo |= ((data & 0x40) >> 5);
-			if (locals.segments[35].b.hi)
-				locals.segments[35].b.lo |= ((data & 0x10) >> 3);
-			if (locals.segments[24].b.hi)
-				locals.segments[24].b.lo |= ((data & 0x10) >> 3);
+			if (locals.segments[2].w)
+				locals.segments[2].w |= ((data & 0x40) << 1);
+			if (locals.segments[5].w)
+				locals.segments[5].w |= ((data & 0x40) << 1);
+			if (locals.segments[35].w)
+				locals.segments[35].w |= ((data & 0x10) << 3);
+			if (locals.segments[24].w)
+				locals.segments[24].w |= ((data & 0x10) << 3);
 		}
 	} else {
 		//Segments H&J is inverted bit 0 (but it's bit 9 in core.c) - Not sure why it's inverted, this is not shown on the schematic
 		data = (locals.p1_a >> 1) | ((locals.p1_a & 1) ? 0 : 0x300);
-		locals.pseg[locals.disprow*20+locals.dispcol].b.hi = data & 0xff;
-		locals.pseg[locals.disprow*20+locals.dispcol].b.lo = data >> 8;
-		locals.segments[locals.disprow*20+locals.dispcol].b.hi |= locals.pseg[locals.disprow*20+locals.dispcol].b.hi;
-		locals.segments[locals.disprow*20+locals.dispcol].b.lo |= locals.pseg[locals.disprow*20+locals.dispcol].b.lo;
+		locals.pseg[locals.disprow*20+locals.dispcol].w = data;
+		locals.segments[locals.disprow*20+locals.dispcol].w |= locals.pseg[locals.disprow*20+locals.dispcol].w;
 	}
 }
 

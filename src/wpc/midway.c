@@ -163,8 +163,8 @@ static WRITE_HANDLER(port_1x_w) {
 
 /* display data */
 static WRITE_HANDLER(disp_w) {
-	((int *)locals.pseg)[2*offset] = core_bcd2seg[data >> 4];
-	((int *)locals.pseg)[2*offset + 1] = core_bcd2seg[data & 0x0f];
+	locals.pseg[2*offset].w = core_bcd2seg[data >> 4];
+	locals.pseg[2*offset + 1].w = core_bcd2seg[data & 0x0f];
 }
 
 /* this handler updates lamps, switch columns & displays - all at the same time!!! */
@@ -172,7 +172,7 @@ static WRITE_HANDLER(strobe_w) {
 	if (data < 7) { // only 7 columns are used
 		int ii;
 		for (ii = 0; ii < 6; ii++) {
-			((int *)locals.segments)[ii*7 + data] = ((int *)locals.pseg)[ii];
+			locals.segments[ii*7 + data].w = locals.pseg[ii].w;
 		}
 		locals.lampMatrix[data] = locals.tmpLampData;
 		locals.tmpSwCol = data + 1;
@@ -200,7 +200,7 @@ static READ_HANDLER(rom_r) {
 }
 
 static void flicker_disp(int offset, UINT8 data) {
-	((int *)locals.segments)[offset] = core_bcd2seg[data];
+	locals.segments[offset].w = core_bcd2seg[data];
 }
 
 static WRITE_HANDLER(rom1_w) {

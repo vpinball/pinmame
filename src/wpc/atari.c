@@ -194,14 +194,14 @@ static WRITE_HANDLER(ram_w) {
 				coreGlobals.lampMatrix[16] &= ~(0x08 >> (offset/4));
 		} else {
 			/* player score displays */
-			((int *)locals.segments)[30 - offset*2] = core_bcd2seg[data >> 4];
-			((int *)locals.segments)[31 - offset*2] = core_bcd2seg[data & 0x0f];
+			locals.segments[30 - offset*2].w = core_bcd2seg[data >> 4];
+			locals.segments[31 - offset*2].w = core_bcd2seg[data & 0x0f];
 		}
 	} else if (offset == 0x1c || offset == 0x1d) {
 		/* match & credit display */
 		offset -= 0x1c;
-		((int *)locals.segments)[32 + offset*2] = core_bcd2seg[data >> 4];
-		((int *)locals.segments)[33 + offset*2] = core_bcd2seg[data & 0x0f];
+		locals.segments[32 + offset*2].w = core_bcd2seg[data >> 4];
+		locals.segments[33 + offset*2].w = core_bcd2seg[data & 0x0f];
 	} else if (offset > 0x2f && offset < 0x40) {
 		/* lamps (128 of them!) */
 		int col;
@@ -234,7 +234,7 @@ static READ_HANDLER(ram_r) {
 }
 // Gen 2
 static WRITE_HANDLER(disp0_w) {
-	((int *)locals.pseg)[offset] = core_bcd2seg[data & 0x0f];
+	locals.pseg[offset].w = core_bcd2seg[data & 0x0f];
 }
 
 static WRITE_HANDLER(disp1_w) {
@@ -242,7 +242,7 @@ static WRITE_HANDLER(disp1_w) {
 	int ii;
 	data &= 0x07;
 	for (ii = 0; ii < 7; ii++) {
-		((int *)locals.segments)[dispPos[ii]+data] = ((int *)locals.pseg)[ii];
+		locals.segments[dispPos[ii]+data].w = locals.pseg[ii].w;
 	}
 }
 
