@@ -143,14 +143,14 @@ static WRITE_HANDLER(pia0cb2_w) {
 
 /* PIA1:B-W Solenoid */
 static WRITE_HANDLER(pia1b_w) {
-  const UINT32 contsols = (~core_revnyb(data>>4) & 0x0f)<<16;
+  const UINT32 contsols = (~core_revnyb(data>>4) & 0x0f)<<6;
   locals.p1_b = data;
   coreGlobals.pulsedSolState = 0;
   // Momentary Solenoids 1-7
   if (!locals.p1_cb2)
     locals.solenoids |= coreGlobals.pulsedSolState = (1<<(data & 0x07)) & 0x7f;
-  // Continuos solenoids 17-20
-  coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xfff0ffff) | contsols;
+  // Continuos solenoids 8-11
+  coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xfffff87f) | contsols;
   locals.solenoids |= contsols;
 }
 
@@ -215,7 +215,7 @@ static INTERRUPT_GEN(byVP_vblank) {
   /* Generate VBLANK interrupt on TMS9928 */
   TMS9928A_interrupt(0); if (core_gameData->hw.display) TMS9928A_interrupt(1);
 
-  core_updateSw(coreGlobals.solenoids & 0x00020000);
+  core_updateSw(coreGlobals.solenoids & 0x00000080);
 }
 
 static SWITCH_UPDATE(byVP) {
@@ -457,8 +457,8 @@ MACHINE_DRIVER_START(byVP1)
   MDRV_NVRAM_HANDLER(byVP)
 
   /* video hardware */
-  MDRV_SCREEN_SIZE(256,256) // To view matrices and solno
-  MDRV_VISIBLE_AREA(0, 255, 0, 255)
+  MDRV_SCREEN_SIZE(320,256) // To view matrices and solno
+  MDRV_VISIBLE_AREA(0, 319, 0, 255)
   MDRV_GFXDECODE(0)
   MDRV_PALETTE_LENGTH(TMS9928A_PALETTE_SIZE)
   MDRV_COLORTABLE_LENGTH(TMS9928A_COLORTABLE_SIZE)
