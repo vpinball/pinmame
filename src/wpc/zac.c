@@ -151,13 +151,6 @@ static INTERRUPT_GEN(ZAC_irq) {
 }
 
 static MACHINE_INIT(ZAC1) {
-  static UINT8 presetRam[] = {
-    0,0x03, 2,0x01, 3,0x0f, 5,0x01, 6,0x01,
-    8,0x01, 10,0x02, 11,0x01, 12,0x01, 13,0x02, 15,0x03,
-    17,0x05, 19,0x06, 21,0x06, 55,0x05, 56,0x0a
-  };
-  int i;
-
   memset(&locals, 0, sizeof(locals));
   locals.gen = 1;
   locals.irqtimer = timer_alloc(timer_callback);
@@ -167,10 +160,11 @@ static MACHINE_INIT(ZAC1) {
   cpu_set_irq_callback(0, irq_callback_old);
 
   /* Preset RAM */
-  if (ram1[0xf7] != 0x05 && ram1[0xf8] != 0x0a) {
-	  for (i = 0; i < 16; i++) {
-		ram1[0xc0 + presetRam[2*i]] = presetRam[2*i+1];
-	  }
+  if (ram1[0xf7] != 0x05 && ram1[0xf8] != 0x0a) { // data is invalid
+    UINT8 i;
+    ram1[0xc0] = 0x03; // 3 balls
+    for (i=0xc1; i < 0xd1; i++) ram1[i] = 0x01; // enable match & coin slots
+    ram1[0xf7] = 0x05; ram1[0xf8] = 0x0a; // validate data
   }
 
   ZAC_soundInit();
@@ -409,7 +403,10 @@ static READ_HANDLER(ram1_r) {
 		g1keys[offset - 0x34] = ram1[offset];
 	} else
 		value = ram1[offset];
-
+	if (coreGlobals.swMatrix[7]) {
+		value &= ~coreGlobals.swMatrix[7]; // short data lines (enable settings!)
+		ram1[0xf7] = 0; ram1[0] = 0; // invalidate the NVRAM data
+	}
 	return value;
 }
 
