@@ -393,8 +393,6 @@ static WRITE_HANDLER(parallel_0_out) {
   static int lastValue = 0;
   coreGlobals.lampMatrix[8] = coreGlobals.tmpLampMatrix[8] = data;
   HC4094_data_w (1, lastValue);
-  HC4094_strobe_w(1, 1);
-  HC4094_oe_w(1, 1);
   lastValue = data >> 7;
 }
 static WRITE_HANDLER(parallel_1_out) {
@@ -412,8 +410,6 @@ static WRITE_HANDLER(afm_wpc_w) {
     HC4094_data_w (0, GET_BIT5);
     HC4094_clock_w(0, GET_BIT4);
     HC4094_clock_w(1, GET_BIT4);
-    HC4094_strobe_w(0, 1);
-    HC4094_oe_w(0, 1);
   }
 }
 
@@ -424,5 +420,9 @@ static void init_afm(void) {
   core_gameData = &afmGameData;
   install_mem_write_handler(0, 0x3fb0, 0x3fff, afm_wpc_w);
   HC4094_init(&hc4094afm);
+  HC4094_oe_w(0, 1);
+  HC4094_oe_w(1, 1);
+  HC4094_strobe_w(0, 1);
+  HC4094_strobe_w(1, 1);
 }
 

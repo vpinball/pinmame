@@ -335,18 +335,14 @@ static WRITE_HANDLER(cp_wpc_w) {
   if (offset == WPC_SOLENOID1) {
     HC4094_data_w (0, GET_BIT6);
     HC4094_data_w (1, GET_BIT7);
-    HC4094_clock_w(0, GET_BIT4);
-    HC4094_clock_w(1, GET_BIT4);
-    HC4094_clock_w(2, GET_BIT5);
-    HC4094_clock_w(3, GET_BIT5);
     HC4094_strobe_w(0, GET_BIT4);
     HC4094_strobe_w(1, GET_BIT4);
     HC4094_strobe_w(2, GET_BIT5);
     HC4094_strobe_w(3, GET_BIT5);
-    HC4094_oe_w(0, 1);
-    HC4094_oe_w(1, 1);
-    HC4094_oe_w(2, 1);
-    HC4094_oe_w(3, 1);
+    HC4094_clock_w(0, GET_BIT4);
+    HC4094_clock_w(1, GET_BIT4);
+    HC4094_clock_w(2, GET_BIT5);
+    HC4094_clock_w(3, GET_BIT5);
   }
 }
 
@@ -357,5 +353,9 @@ static void init_cp(void) {
   core_gameData = &cpGameData;
   install_mem_write_handler(0, 0x3fb0, 0x3fff, cp_wpc_w);
   HC4094_init(&hc4094cp);
+  HC4094_oe_w(0, 1);
+  HC4094_oe_w(1, 1);
+  HC4094_oe_w(2, 1);
+  HC4094_oe_w(3, 1);
 }
 
