@@ -89,6 +89,16 @@ static struct riot6532 riot[MAX_RIOT];
 
 void riot_unconfig(void)
 {
+	int i;
+
+	for (i = 0; i < MAX_RIOT; i++)
+	{
+		if ( riot[i].t ) {
+			timer_remove(riot[i].t);
+			riot[i].t = 0;
+		}
+	}
+
 	memset(&riot, 0, sizeof(riot));
 }
 
