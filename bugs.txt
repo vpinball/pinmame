@@ -1,4 +1,4 @@
-******  As of Version 1.31 (December 23, 2003) ******
+******  As of Version 1.32.001 (May 3, 2004) ******
 
 Bugs in Pinmame that we are aware of:
 -------------------------------------
@@ -20,24 +20,22 @@ Bugs in Pinmame that we are aware of:
  #5) The name and year for each game were taken from the Internet Pinball Database
      (http://www.lysator.liu.se/pinball/IPD), and may not be 100% accurate!
 
- #6) Comma issues with Williams System 9.
+ #6) Dip switches do not work for Williams System 3-6.
 
- #7) Dip switches do not work for Williams System 3-6.
+ #7) Data East/Sega/Stern DMD timing is not 100% accurate.
 
- #8) Data East/Sega/Stern DMD timing is not 100% accurate.
+ #8) Volume issues with BSMT games; most of them are too low.
 
- #9) Volume issues with BSMT games; most of them are too low.
+ #9) Extremely poor performance on multiprocessor systems.
 
-#10) Extremely poor performance on multiprocessor systems.
+#10) Gottlieb System 3 percussive sounds might still have some timing issues
 
-#11) Gottlieb System 3 percussive sounds might still have some timing issues
+#11) Sound gets cut off in Alvin G games sometimes, and some weird notes in World Tour occasionally
 
-#12) Sound gets cut off in Alvin G games sometimes, and some weird notes in World Tour occasionally
+#12) Some Bally games using the 6803 processor don't work correctly.
 
-#13) Some Bally games using the 6803 processor don't work correctly.
+#13) Switch problems with Dataeast Playboy and the Grotto/VUK
 
-#14) Switch problems with Dataeast Playboy and the Grotto/VUK
+#14) Occasional pops/clicks on Capcom sound
 
-#15) Occasional pops/clicks on Capcom sound
-
-#16) Some games have no sound emulated, but the core prevents us from using the GAME_NO_SOUND flag.
+#15) Some games have no sound emulated, but the core prevents us from using the GAME_NO_SOUND flag.
