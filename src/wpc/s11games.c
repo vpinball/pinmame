@@ -35,10 +35,10 @@ static core_tLCDLayout dispSshtl[] = { \
 };
 static core_tGameData sshtlGameData = {
   GEN_S9, dispSshtl,
-  {FLIP_SWNO(0,S11_SWNO(41))},
+  {FLIP_SWNO(0,41)},
   NULL,
   {{0}},
-  {0, {S11_SWNO(39),S11_SWNO(40), S11_SWNO(27), S11_SWNO(26), S11_SWNO(25), 0}}
+  {0, {39,40, 27, 26, 25, 0}}
 };
 static void init_sshtl(void) {
   core_gameData = &sshtlGameData;
@@ -55,7 +55,7 @@ CORE_GAMEDEF(sshtl, l7, "Space Shuttle (L-7)", 1984, "Williams", s9_mS9S,0)
 /*--------------------
 / Sorcerer (S9) 03/85
 /--------------------*/
-INITGAME(sorcr, GEN_S9, s11_dispS9, 0, FLIP_SWNO(0,S11_SWNO(44)),3/*?*/)
+INITGAME(sorcr, GEN_S9, s11_dispS9, 0, FLIP_SWNO(0,44),3/*?*/)
 S9_ROMSTART12(sorcr,l1,"cpu_u19.732", 0x88b6837d,
                        "cpu_u20.764", 0xc235b692)
 S9S_SOUNDROM41111(     "cpu_u49.128", 0xa0bae1e4,
@@ -105,10 +105,10 @@ static core_tLCDLayout dispComet[] = { \
 };
 static core_tGameData cometGameData = {
   GEN_S9, dispComet,
-  {FLIP_SWNO(0,S11_SWNO(30))},
+  {FLIP_SWNO(0,30)},
   NULL,
   {{0}},
-  {0, {S11_SWNO(47),S11_SWNO(48), S11_SWNO(40), S11_SWNO(41), S11_SWNO(42), 0}}
+  {0, {47,48, 40, 41, 42, 0}}
 };
 static void init_comet(void) {
   core_gameData = &cometGameData;
@@ -129,10 +129,10 @@ CORE_GAMEDEF(comet, l4, "Comet (L-4)", 1985, "Williams", s9_mS9S,0)
 /--------------------*/
 static core_tGameData hsGameData = {
   GEN_S11, s11_dispS11,
-  {FLIP_SWNO(S11_SWNO(37),S11_SWNO(38))},
+  {FLIP_SWNO(37,38)},
   NULL,
   {{0}},
-  {0, {S11_SWNO(49), S11_SWNO(50), S11_SWNO(35), S11_SWNO(34), S11_SWNO(33)}}
+  {0, {49, 50, 35, 34, 33}}
 };
 static void init_hs(void) {
   core_gameData = &hsGameData;
@@ -178,10 +178,10 @@ CORE_GAMEDEF(rdkng, l5, "Road Kings (L-5)", 1986, "Williams", s11_mS11S,0)
 /--------------------*/
 static core_tGameData pbGameData = {
   GEN_S11A, s11_dispS11,
-  {FLIP_SWNO(S11_SWNO(10),S11_SWNO(11))},
+  {FLIP_SWNO(10,11)},
   NULL,
   {{0}},
-  {14, {S11_SWNO(53), 0, S11_SWNO(48), S11_SWNO(54), S11_SWNO(55),S11_SWNO(52)}}
+  {14, {53, 0, 48, 54, 55,52}}
 };
 static void init_pb(void) {
   core_gameData = &pbGameData;
@@ -202,10 +202,10 @@ CORE_GAMEDEF(pb, l5, "Pinbot (L-5)", 1987, "Williams", s11_mS11AS,0)
 /--------------------*/
 static core_tGameData f14GameData = {
   GEN_S11A, s11_dispS11a,
-  {FLIP_SWNO(S11_SWNO(15),S11_SWNO(63))},
+  {FLIP_SWNO(15,63)},
   NULL,
   {{0}},
-  {14, {S11_SWNO(57), S11_SWNO(58), 0, S11_SWNO(28)}}
+  {14, {57, 58, 0, 28}}
 };
 static void init_f14(void) {
   core_gameData = &f14GameData;
@@ -227,10 +227,10 @@ CORE_GAMEDEF(f14, l1, "F14 Tomcat (L-1)", 1987, "Williams", s11_mS11AS,0)
 /--------------------*/
 static core_tGameData fireGameData = {
   GEN_S11A, s11_dispS11a,
-  {FLIP_SWNO(S11_SWNO(23),S11_SWNO(24))},
+  {FLIP_SWNO(23,24)},
   NULL,
   {{0}},
-  {12, {0,0, S11_SWNO(61), S11_SWNO(62), S11_SWNO(57), S11_SWNO(58)}}
+  {12, {0,0, 61, 62, 57, 58}}
 };
 static void init_fire(void) {
   core_gameData = &fireGameData;
@@ -366,7 +366,7 @@ CORE_GAMEDEF(jokrz, l6, "Jokerz (L-6)", 1989, "Williams", s11_mS11B_3S,GAME_IMPE
 /*--------------------
 / Earthshaker 4/89
 /--------------------*/
-INITGAME(eshak,GEN_S11B_2, s11_dispS11b_2,12, FLIP_SWNO(S11_SWNO(58),S11_SWNO(57)),3/*?*/)
+INITGAME(eshak,GEN_S11B_2, s11_dispS11b_2,12, FLIP_SWNO(58,57),3/*?*/)
 S11_ROMSTART48(eshak,l3,"eshk_u26.l3", 0x5350d132,
                         "eshk_u27.l3", 0x91389290)
 S11S_SOUNDROM88(        "eshk_u21.l1", 0xfeac68e5,
@@ -390,7 +390,7 @@ CORE_CLONEDEF(eshak, l3, f1, "Earthshaker (L-3)", 1988, "Williams", s11_mS11B_1S
 /*-----------------------
 / Black Knight 2000 6/89
 /-----------------------*/
-INITGAME(bk2k, GEN_S11B_2, s11_dispS11b_2,12, FLIP_SWNO(S11_SWNO(58),S11_SWNO(57)), 3/*?*/)
+INITGAME(bk2k, GEN_S11B_2, s11_dispS11b_2,12, FLIP_SWNO(58,57), 3/*?*/)
 S11_ROMSTART48(bk2k, l4,"bk2k_u26.l4", 0x16c7b9e7,
                         "bk2k_u27.l4", 0x5cf3ab40)
 S11S_SOUNDROM88(        "bk2k_u21.l1", 0x08be36ad,
@@ -441,37 +441,7 @@ CORE_GAMEDEF(tsptr,l3, "Transporter the Rescue (L-3)", 1989, "Bally", s11_mS11B_
 /*-----------------------
 / Bad Cats 12/89
 /-----------------------*/
-#define BCATS_WHEEL 16
-static int wheelPos;
-static void bcats_handleMech(int mech) {
-  switch (2*(core_getPulsedSol(15)>0)+(core_getPulsedSol(16)>0)) {
-    case 0:
-    case 2: break;
-    case 3: wheelPos += 1; if (wheelPos >= BCATS_WHEEL) wheelPos = 0; break;
-    case 4: wheelPos -= 1; if (wheelPos <= 0) wheelPos = BCATS_WHEEL; break;
-  }
-  core_setSw(44,wheelPos < 3);
-}
-static void bcats_drawMech(BMTYPE **line) {
-  core_textOutf(50, 0,BLACK,"wheel:%3d", wheelPos);
-}
-
-
-static core_tGameData bcatsGameData = {
-  GEN_S11B_2, s11_dispS11b_2, {
-    FLIP_SWNO(S11_SWNO(57),S11_SWNO(58)),
-    0,0,0,
-    NULL, bcats_handleMech,NULL,bcats_drawMech,
-    NULL,NULL
-  },
-  NULL,
-  {{0}},
-  {12}
-};
-static void init_bcats(void) {
-  core_gameData = &bcatsGameData;
-}
-S11_INPUT_PORTS_START(bcats, 1) S11_INPUT_PORTS_END
+INITGAME(bcats,GEN_S11B_2,s11_dispS11b_2,12,FLIP_SWNO(57,58),1)
 S11_ROMSTART48(bcats,l5,"cats_u26.l5", 0x32246d12,
                         "cats_u27.l5", 0xef842bbf)
 S11S_SOUNDROM88(        "cats_u21.l1", 0x04110d08,
@@ -501,7 +471,7 @@ CORE_GAMEDEF(mousn,l4, "Mousin' Around (L-4)", 1989, "Bally", s11_mS11B_2S,0)
 /*-----------------------
 / Whirlwind 4/90
 /-----------------------*/
-INITGAME(whirl,GEN_S11B_2x,s11_dispS11b_2,12, FLIP_SWNO(S11_SWNO(58),S11_SWNO(57)),3/*?*/)
+INITGAME(whirl,GEN_S11B_2x,s11_dispS11b_2,12, FLIP_SWNO(58,57),3/*?*/)
 S11_ROMSTART48(whirl,l3,"whir_u26.l3", 0x066b8fec,
                         "whir_u27.l3", 0x47fc033d)
 S11S_SOUNDROM88(        "whir_u21.l1", 0xfa3da322,
@@ -598,7 +568,7 @@ static void rvrbt_drawMech(BMTYPE **line) {
 static core_tGameData rvrbtGameData = {
   GEN_S11C, dispRvrbt, {
     FLIP_SW(FLIP_L),
-    0,0,0,
+    0,0,0,0,0,0,0,
     NULL, NULL,NULL,rvrbt_drawMech,
     NULL,NULL
   },
@@ -608,7 +578,7 @@ static core_tGameData rvrbtGameData = {
 };
 static mech_tInitData rvrbt_wheelMech = {
   14,15, MECH_LINEAR|MECH_CIRCLE|MECH_TWOSTEPSOL|MECH_FAST, 200,16,
-  {{S11_SWNO(59),15,15},{S11_SWNO(59),0,6}}
+  {{59,15,15},{59,0,6}}
 };
 static void init_rvrbt(void) {
   core_gameData = &rvrbtGameData;

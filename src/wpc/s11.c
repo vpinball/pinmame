@@ -354,22 +354,22 @@ static void s11_init(void) {
   }
   else if (core_gameData->gen & GEN_S11) {
     if (core_init(&s11Data)) return;
-    sndbrd_0_init(SNDBRD_S11S,  2, memory_region(S11_MEMREG_SROM2), NULL, NULL);
-    sndbrd_1_init(SNDBRD_S11CS, 1, memory_region(S11_MEMREG_SROM1), pia_5_cb1_w, NULL);
+    sndbrd_0_init(SNDBRD_S11S,  2, memory_region(S11S_ROMREGION), NULL, NULL);
+    sndbrd_1_init(SNDBRD_S11CS, 1, memory_region(S11CS_ROMREGION), pia_5_cb1_w, NULL);
   }
   else if (core_gameData->gen & GEN_S11B_3) {
     if (core_init(&s11AData)) return;
-    sndbrd_0_init(SNDBRD_S11S,  1, memory_region(S11_MEMREG_SROM1), NULL, NULL);
-//  sndbrd_1_init(SNDBRD_???,   2, memory_region(S11_MEMREG_SROM2), pia_5_cb1_w, NULL);
+    sndbrd_0_init(SNDBRD_S11S,  1, memory_region(S11B3S_ROMREGION), NULL, NULL);
+//  sndbrd_1_init(SNDBRD_???,   2, memory_region(S11_MEMREG_SROM), pia_5_cb1_w, NULL);
   }
   else if (core_gameData->gen & GEN_S11C) {
     if (core_init(&s11AData)) return;
-    sndbrd_1_init(SNDBRD_S11CS, 1, memory_region(S11_MEMREG_SROM1), pia_5_cb1_w, NULL);
+    sndbrd_1_init(SNDBRD_S11CS, 1, memory_region(S11CS_ROMREGION), pia_5_cb1_w, NULL);
   }
   else { /* all other S11 */
     if (core_init(&s11AData)) return;
-    sndbrd_0_init(SNDBRD_S11S,  2, memory_region(S11_MEMREG_SROM2), NULL, NULL);
-    sndbrd_1_init(SNDBRD_S11CS, 1, memory_region(S11_MEMREG_SROM1), pia_5_cb1_w, NULL);
+    sndbrd_0_init(SNDBRD_S11S,  2, memory_region(S11S_ROMREGION), NULL, NULL);
+    sndbrd_1_init(SNDBRD_S11CS, 1, memory_region(S11CS_ROMREGION), pia_5_cb1_w, NULL);
   }
   pia_reset();
 }
@@ -434,6 +434,21 @@ struct MachineDriver machine_driver_s11a_2_s = {
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
   NULL, NULL, gen_refresh,
   0,0,0,0, { S11_SOUND },
+  s11_nvram
+};
+
+struct MachineDriver machine_driver_s11b_3_s = {
+  {{  CPU_M6808, 1000000, /* 1 Mhz */
+      s11_readmem, s11_writemem, NULL, NULL,
+      s11_vblank, 1, s11_irq, S11_IRQFREQ
+  }, S11_SOUNDCPU },
+  S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  50, s11_init, CORE_EXITFUNC(s11_exit)
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
+  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
+  NULL, NULL, gen_refresh,
+  0,0,0,0, { S11B3_SOUND },
   s11_nvram
 };
 

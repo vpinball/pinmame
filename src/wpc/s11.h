@@ -42,9 +42,6 @@
 #define S11_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
 #define S11_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
 
-/*-- S11 switches are numbered from 1-64 (not column,row as WPC) --*/
-#define S11_SWNO(x) (x)
-
 /*-- To access C-side multiplexed solenoid/flasher --*/
 #define S11_CSOL(x) ((x)+(WPC_FIRSTFLIPPERSOL-1))
 
@@ -112,62 +109,6 @@ extern const core_tLCDLayout s11_dispS9[], s11_dispS11[], s11_dispS11a[], s11_di
       ROM_LOAD(n2, 0x8000, 0x4000, chk2) \
         ROM_RELOAD(  0xc000, 0x4000)
 
-/*-- Sound on CPU board --*/
-#define S11S_STDREG \
-  SOUNDREGION(0x10000, S11_MEMREG_SCPU2) \
-  SOUNDREGION(0x10000, S11_MEMREG_SROM2)
-
-#define S11S_SOUNDROM44(n1, chk1, n2, chk2) \
-  S11S_STDREG \
-    ROM_LOAD(n1, 0x4000, 0x4000, chk1) \
-    ROM_LOAD(n2, 0xc000, 0x4000, chk2) \
-      ROM_RELOAD(  0x8000, 0x4000)
-
-#define S11S_SOUNDROMx8(n2, chk2) \
-  S11S_STDREG \
-    ROM_LOAD(n2, 0x4000, 0x4000, chk2) \
-      ROM_CONTINUE(0xc000, 0x4000)
-
-#define S11S_SOUNDROM88(n1, chk1, n2, chk2) \
-  S11S_STDREG \
-    ROM_LOAD(n1, 0x0000, 0x8000, chk1) \
-    ROM_LOAD(n2, 0x8000, 0x8000, chk2)
-
-/*-- S9 Sound on CPU board --*/
-#define S9S_STDREG SOUNDREGION(0x10000, S11_MEMREG_SCPU1)
-
-#define S9S_SOUNDROM41111(u49,chk49, u4,chk4, u5,chk5, u6,chk6, u7,chk7) \
-   S9S_STDREG \
-     ROM_LOAD(u49, 0xc000, 0x4000, chk49)  \
-     ROM_LOAD(u7,  0x8000, 0x1000, chk7)  \
-     ROM_LOAD(u5,  0x9000, 0x1000, chk5)  \
-     ROM_LOAD(u6,  0xa000, 0x1000, chk6)  \
-     ROM_LOAD(u4,  0xb000, 0x1000, chk4)
-
-#define S9S_SOUNDROM4111(u49,chk49, u4,chk4, u5,chk5, u6,chk6) \
-   S9S_STDREG \
-     ROM_LOAD(u49, 0xc000, 0x4000, chk49)  \
-     ROM_LOAD(u5,  0x9000, 0x1000, chk5) \
-     ROM_LOAD(u6,  0xa000, 0x1000, chk6) \
-     ROM_LOAD(u4,  0xb000, 0x1000, chk4)
-
-#define S9S_SOUNDROM4(u49,chk49) \
-   S9S_STDREG \
-     ROM_LOAD(u49, 0xc000, 0x4000, chk49) \
-     ROM_RELOAD(0x8000, 0x4000) \
-     ROM_RELOAD(0x4000, 0x4000) \
-     ROM_RELOAD(0x0000, 0x4000)
-
-/*-- Jokerz sound on CPU board --*/
-#define S11B3S_STDREG \
-  SOUNDREGION(0x10000, S11_MEMREG_SCPU1) \
-  SOUNDREGION(0x10000, S11_MEMREG_SROM1)
-
-#define S11B3S_SOUNDROM881(n1, chk1, n2, chk2, n3, chk3) \
-  S11B3S_STDREG \
-    ROM_LOAD(n1, 0x0000, 0x8000, chk1) \
-    ROM_LOAD(n2, 0x8000, 0x8000, chk2)
-
 #define S11_ROMEND ROM_END
 #define S9_ROMEND ROM_END
 
@@ -191,7 +132,7 @@ extern struct MachineDriver machine_driver_s11c_s;
 #define s11_mS11AS       s11a_2_s
 #define s11_mS11B_1S     s11a_2_s
 #define s11_mS11B_2S     s11a_2_s
-#define s11_mS11B_3S     s11a_2_s
+#define s11_mS11B_3S     s11b_3_s
 #define s11_mS11CS       s11c_s
 
 #endif /* INC_S11 */

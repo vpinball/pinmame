@@ -1,20 +1,24 @@
 #ifndef INC_WPCSOUND
 #define INC_WPCSOUND
 
+#define WPCS_CPUNO 1
+#define WPCS_CPUREGION (REGION_CPU1+WPCS_CPUNO)
+#define WPCS_ROMREGION (REGION_SOUND1)
+
 /*-- Sound rom macros --*/
 #define WPCS_STDREG \
-  SOUNDREGION(0x010000, WPC_MEMREG_SCPU) \
-  SOUNDREGION(0x180000, WPC_MEMREG_SROM)
+  SOUNDREGION(0x010000, WPCS_CPUREGION) \
+  SOUNDREGION(0x180000, WPCS_ROMREGION)
 
 #define WPCS_ROMLOAD2(start, n, chk) \
   ROM_LOAD(n, start,  0x20000, chk) \
-  ROM_RELOAD( start + 0x20000, 0x20000) \
-  ROM_RELOAD( start + 0x40000, 0x20000) \
-  ROM_RELOAD( start + 0x60000, 0x20000)
+    ROM_RELOAD( start + 0x20000, 0x20000) \
+    ROM_RELOAD( start + 0x40000, 0x20000) \
+    ROM_RELOAD( start + 0x60000, 0x20000)
 
 #define WPCS_ROMLOAD4(start, n, chk) \
   ROM_LOAD(n, start,  0x40000, chk) \
-  ROM_RELOAD( start + 0x40000, 0x40000)
+    ROM_RELOAD( start + 0x40000, 0x40000)
 
 #define WPCS_ROMLOAD8(start, n, chk) \
   ROM_LOAD(n, start, 0x80000, chk)

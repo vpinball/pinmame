@@ -140,9 +140,6 @@
 #define GTS80_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
 #define GTS80_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
 
-/*-- GTS80 switches are numbers 0-7/0-7 but row and column reversed--*/
-#define GTS80_SWNO(x) (x)
-
 /*-- To access C-side multiplexed solenoid/flasher --*/
 #define GTS80_CSOL(x) ((x)+24)
 

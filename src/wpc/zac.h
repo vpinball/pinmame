@@ -50,9 +50,6 @@
 
 #define ZAC_COMINPORT       CORE_COREINPORT
 
-/*-- ZAC switches are numbered from 1-64 (not column,row as WPC) --*/
-#define ZAC_SWNO(x) (x)
-
 /*-- ZAC switch numbers --*/
 #define ZAC_SWSOUNDDIAG  -7
 

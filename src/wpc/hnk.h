@@ -111,9 +111,6 @@
 
 #define HNK_COMINPORT       CORE_COREINPORT
 
-/*-- HNK switches are numbered from 1-64 (not column,row as WPC) --*/
-#define HNK_SWNO(x) (x)
-
 /*-- HNK switch numbers --*/
 #define HNK_SWSELFTEST   -7
 #define HNK_SWCPUDIAG    -6
