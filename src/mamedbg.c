@@ -2879,8 +2879,8 @@ static void dump_mem_hex( int which, unsigned len_addr, unsigned len_data )
 		pedit++;
 
 #ifdef PINMAME
-		//If viewing internal ram - COLOR where STACK currently points!
-		if(DBGMEM[which].internal && (activecpu_get_sp()==DBGMEM[which].address) )
+		//COLOR where STACK currently points!
+		if(activecpu_get_sp()==DBGMEM[which].address)
 			color = cur_col[COLOR_PROMPT*16];
 #endif
 
