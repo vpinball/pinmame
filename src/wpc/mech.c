@@ -138,12 +138,15 @@ static void mech_update(int mechNo) {
     if ((md->type & MECH_LENGTHSW) == 0) currPos = md->pos;
     for (ii = 0; md->swPos[ii].swNo > 0; ii++)
       core_setSw(md->swPos[ii].swNo, FALSE);
-    for (ii = 0; md->swPos[ii].swNo > 0; ii++)
-      if (((md->swPos[ii].startPos < 0) &&
-           ((currPos % (-md->swPos[ii].startPos)) < md->swPos[ii].endPos)) ||
-          ((currPos >= md->swPos[ii].startPos) &&
-           (currPos <= md->swPos[ii].endPos)))
+    for (ii = 0; md->swPos[ii].swNo > 0; ii++) {
+	  if (md->swPos[ii].startPos < 0) {
+        if ((currPos % (-md->swPos[ii].startPos)) < md->swPos[ii].endPos)
+          core_setSw(md->swPos[ii].swNo, TRUE);
+	  }
+	  else if ((currPos >= md->swPos[ii].startPos) &&
+               (currPos <= md->swPos[ii].endPos))
         core_setSw(md->swPos[ii].swNo, TRUE);
+    }
   }
 }
 
