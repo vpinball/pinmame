@@ -8,14 +8,14 @@
 
 #define INITGAME(name, disptype, balls) \
 	JP_INPUT_PORTS_START(name, balls) JP_INPUT_PORTS_END \
-	static core_tGameData name##GameData = {GEN_JP,disptype,{FLIP_SW(FLIP_L), 0,7,0, SNDBRD_SPINB}}; \
+	static core_tGameData name##GameData = {GEN_JP,disptype,{FLIP_SW(FLIP_L), 0,8,0, SNDBRD_SPINB}}; \
 	static void init_##name(void) { \
 		core_gameData = &name##GameData; \
 	}
 
 static core_tLCDLayout jpDisp7[] = {
-  {0, 0, 0, 7,CORE_SEG8}, {0,22, 7, 7,CORE_SEG8},
-  {3, 0,14, 7,CORE_SEG8}, {3,22,21, 7,CORE_SEG8},
+  {0, 0, 0, 7,CORE_SEG87}, {0,22, 7, 7,CORE_SEG87},
+  {3, 0,14, 7,CORE_SEG87}, {3,22,21, 7,CORE_SEG87},
   {1,24,28, 2,CORE_SEG7S},{1,29,30, 2,CORE_SEG7S},
   {3,17,32, 1,CORE_SEG8},
   {0}
