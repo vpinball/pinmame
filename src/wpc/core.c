@@ -953,8 +953,8 @@ static UINT32 core_initDisplaySize(const struct core_dispLayout *layout) {
 }
 
 void core_nvram(void *file, int write, void *mem, int length, UINT8 init) {
-  if (write)     osd_fwrite(file, mem, length); /* save */
-  else if (file) osd_fread(file,  mem, length); /* load */
+  if (write)     mame_fwrite(file, mem, length); /* save */
+  else if (file) mame_fread(file,  mem, length); /* load */
   else           memset(mem, init, length);     /* first time */
   mech_nv(file, write); /* save mech positions */
   { /*-- Load/Save DIP settings --*/
@@ -963,7 +963,7 @@ void core_nvram(void *file, int write, void *mem, int length, UINT8 init) {
 
     if (write) {
       for (ii = 0; ii < 6; ii++) dips[ii] = core_getDip(ii);
-      osd_fwrite(file, dips, sizeof(dips));
+      mame_fwrite(file, dips, sizeof(dips));
     }
     else if (file) {
       /* set the defaults (for compabilty with older versions) */
@@ -974,7 +974,7 @@ void core_nvram(void *file, int write, void *mem, int length, UINT8 init) {
       dips[4] = readinputport(CORE_COREINPORT+3) & 0xff;
       dips[5] = readinputport(CORE_COREINPORT+3)>>8;
 
-      osd_fread(file, dips, sizeof(dips));
+      mame_fread(file, dips, sizeof(dips));
       for (ii = 0; ii < 6; ii++) vp_setDIP(ii, dips[ii]);
 
     }
