@@ -7,9 +7,9 @@
 
 
 /* 10' Color Video Monitor */
-#if 0
+#if 1
 core_tLCDLayout mrgame_disp[] = {
-  {70,0,240,256,CORE_VIDEO,(void *)mrgame_update},{0}
+  {0,0,256,256,CORE_VIDEO,(void *)mrgame_update},{0}
 };
 #else
 core_tLCDLayout mrgame_disp[] = {
