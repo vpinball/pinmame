@@ -421,8 +421,7 @@ static void GP_zeroCross(int data) {
 
 static void GP_common_init(void) {
   /* init sound */
-  int sb = core_gameData->hw.soundBoard;
-  if (sb) sndbrd_0_init(sb, GP_SCPUNO, memory_region(GP_MEMREG_SCPU), NULL, NULL);
+  sndbrd_0_init(core_gameData->hw.soundBoard, GP_SCPUNO, memory_region(GP_MEMREG_SCPU), NULL, NULL);
 
   memset(&locals, 0, sizeof(locals));
 
@@ -449,7 +448,7 @@ static MACHINE_INIT(GP2) {
 
 static MACHINE_STOP(GP) {
   /* exit sound */
-  if (core_gameData->hw.soundBoard) sndbrd_0_exit();
+  sndbrd_0_exit();
 }
 
 static Z80_DaisyChain GP_DaisyChain[] =
@@ -485,7 +484,7 @@ PORT_END
 
 MACHINE_DRIVER_START(GP1)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CPU_ADD_TAG("mcpu", Z80, 2000000)
+  MDRV_CPU_ADD_TAG("mcpu", Z80, 2457600)
   MDRV_CPU_CONFIG(GP_DaisyChain)
   MDRV_CPU_MEMORY(GP_readmem, GP_writemem)
   MDRV_CPU_PORTS(GP_readport,GP_writeport)

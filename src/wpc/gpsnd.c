@@ -101,36 +101,19 @@ static void gps_init(struct sndbrdData *brdData)
 	pia_config(GPS_PIA1, PIA_STANDARD_ORDERING, &gps_pia[1]);
 }
 
-static WRITE_HANDLER( m6840_1_w ) {
-    logerror("M6840 #1: offset %d = %02x\n", offset, data);
+static WRITE_HANDLER( m6840_w ) {
+    logerror("M6840: offset %d = %02x\n", offset, data);
 }
 
-static WRITE_HANDLER( m6840_2_w ) {
-    logerror("M6840 #2: offset %d = %02x\n", offset, data);
-}
-
-static WRITE_HANDLER( m6840_3_w ) {
-    logerror("M6840 #3: offset %d = %02x\n", offset, data);
-}
-
-static READ_HANDLER( m6840_2_r ) {
-    logerror("M6840 #2: offset %d READ\n", offset);
-    return 0;
-}
-
-static READ_HANDLER( m6840_3_r ) {
-    logerror("M6840 #3: offset %d READ\n", offset);
-    return 0;
+static WRITE_HANDLER( mem_3000_w ) {
+    logerror("Unknown output write = %02x\n", data);
 }
 
 MEMORY_READ_START(gps_readmem)
   { 0x0000, 0x00ff, MRA_RAM },
   { 0x0810, 0x0813, pia_r(GPS_PIA0) },
   { 0x3000, 0x3fff, MRA_ROM },
-  { 0x7000, 0x7fff, MRA_ROM },
-  { 0x8d00, 0x8dff, MRA_RAM },
-  { 0xbe30, 0xbe37, m6840_2_r }, // More M6840s???
-  { 0xbe38, 0xbe3f, m6840_3_r }, // More M6840s???
+  { 0x7800, 0x7fff, MRA_ROM },
   { 0xf000, 0xffff, MRA_ROM },
 MEMORY_END
 
@@ -138,12 +121,10 @@ MEMORY_WRITE_START(gps_writemem)
   { 0x0000, 0x00ff, MWA_RAM },
   { 0x0810, 0x0813, pia_w(GPS_PIA0) },
   { 0x0820, 0x0823, pia_w(GPS_PIA1) },
-  { 0x0840, 0x0847, m6840_1_w },
-  { 0x3000, 0x3fff, MWA_ROM },
-  { 0x7000, 0x7fff, MWA_ROM },
-  { 0x8d00, 0x8dff, MWA_RAM },
-  { 0xbe30, 0xbe37, m6840_2_w }, // More M6840s???
-  { 0xbe38, 0xbe3f, m6840_3_w }, // More M6840s???
+  { 0x0840, 0x0847, m6840_w },
+  { 0x3000, 0x3000, mem_3000_w }, // for Andromeda
+  { 0x3001, 0x3fff, MWA_ROM },
+  { 0x7800, 0x7fff, MWA_ROM },
   { 0xf000, 0xffff, MWA_ROM },
 MEMORY_END
 
