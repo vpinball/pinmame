@@ -147,7 +147,7 @@ DRIVERNV(stest   )      //??/?? Speed Test
                         //??/?? Sultan (G Sinbad, 05/78)
                         //??/?? Shock (W Flash, 01/79)
 DRIVERNV(meteort )      //??/?? Meteor (S Meteor, 09/79)
-                        //??/?? Drakor (W Gorgar, 11/79)
+DRIVERNV(drakor  )      //??/?? Drakor (W Gorgar, 11/79)
 DRIVERNV(zarza   )      //??/?? Zarza (B Xenon, 11/79)
 DRIVERNV(cosmic  )      //??/?? Cosmic (S Galaxy, 01/80)
                         //??/?? Fire Action (W Firepower, 02/80)
