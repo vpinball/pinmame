@@ -24,18 +24,10 @@
 
 static WRITE_HANDLER(ZAC_soundCmd) { }
 static void ZAC_soundInit(void) {
-  if (core_gameData->hw.soundBoard == SNDBRD_ZAC13136) {
-    sndbrd_0_init(SNDBRD_ZAC1370, ZACSND_CPUA, memory_region(ZACSND_CPUAREGION), NULL, NULL);
-    sndbrd_1_init(SNDBRD_ZAC13136, ZACSND_CPUB, memory_region(ZACSND_CPUBREGION), NULL, NULL);
-  } else {
-    sndbrd_0_init(core_gameData->hw.soundBoard, ZACSND_CPUA, memory_region(ZACSND_CPUAREGION), NULL, NULL);
-  }
+  sndbrd_0_init(core_gameData->hw.soundBoard, ZACSND_CPUA, memory_region(ZACSND_CPUAREGION), NULL, NULL);
 }
 static void ZAC_soundExit(void) {
   sndbrd_0_exit();
-  if (core_gameData->hw.soundBoard == SNDBRD_ZAC13136) {
-    sndbrd_1_exit();
-  }
 }
 
 static struct {
@@ -43,8 +35,6 @@ static struct {
   core_tSeg segments;
   UINT32 solenoids;
   UINT16 sols2;
-  int diagnosticLed;
-  int diagnosticSLed;
   int actsnd;
   int actspk;
   int refresh;
@@ -59,9 +49,6 @@ static INTERRUPT_GEN(ZAC_vblank_old) {
   memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
   coreGlobals.solenoids = locals.solenoids;
-  /*update leds*/
-    coreGlobals.diagnosticLed = locals.diagnosticLed;
-    //locals.diagnosticLed = 0;
   core_updateSw(!core_getSol(26));
 }
 
@@ -73,10 +60,6 @@ static INTERRUPT_GEN(ZAC_vblank) {
   memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
   coreGlobals.solenoids2 = locals.sols2;
   coreGlobals.solenoids = locals.solenoids;
-  /*update leds*/
-    //coreGlobals.diagnosticLed = locals.diagnosticLed;
-	coreGlobals.diagnosticLed = locals.diagnosticLed | (locals.diagnosticSLed<<1);
-    //locals.diagnosticLed = 0;
   core_updateSw(coreGlobals.lampMatrix[2] & 0x08);
 }
 
@@ -241,7 +224,7 @@ static WRITE_HANDLER(ctrl_port_w)
 	//logerror("%x: Ctrl Port Write=%x\n",activecpu_get_previouspc(),data);
 	//logerror("%x: Switch Strobe & LED Write=%x\n",activecpu_get_previouspc(),data);
 	locals.refresh = (data>>3)&1;
-	locals.diagnosticLed = (data>>5)&1;
+	coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 0x06) | ((data>>5) & 1);
 	locals.swCol = data & 0x07;
 #if 0
 	int tmp;
@@ -382,9 +365,9 @@ static READ_HANDLER(ram1_r) {
 	return ram1[offset];
 }
 
-void UpdateZACSoundLED(int data)
+WRITE_HANDLER(UpdateZACSoundLED)
 {
-	locals.diagnosticSLed = data;
+  coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & ~(1 << offset)) | (data << offset);
 }
 
 void UpdateZACSoundACT(int data)
@@ -588,6 +571,7 @@ MACHINE_DRIVER_END
 //Sound board 13136
 MACHINE_DRIVER_START(ZAC2X)
   MDRV_IMPORT_FROM(ZAC2NS)
+  MDRV_DIAGNOSTIC_LEDH(3)
   MDRV_IMPORT_FROM(zac13136)
 MACHINE_DRIVER_END
 

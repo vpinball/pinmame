@@ -8,7 +8,7 @@
 #include "sndbrd.h"
 #include "zacsnd.h"
 
-extern void UpdateZACSoundLED(int data);
+extern WRITE_HANDLER(UpdateZACSoundLED);
 extern void UpdateZACSoundACT(int data);
 
 /*----------------------------------------
@@ -168,9 +168,15 @@ MACHINE_DRIVER_END
 /*----------------------------------------
 / Zaccaria Sound & Speech Board 1B1370
 / (almost identical to BY61, TMS5200 chip)
+/ and Zaccaria Sound & Speech Board 1B13136
+/ (like 1B1370, with additional 6802 CPU and AY8910)
+/ It's reported that the sound board is missing the 2nd CPU & ROM chips,
+/ so in reality it acts exactly like the older 1370 board
+/ with a slightly different memory map (but it can be integrated).
 /-----------------------------------------*/
 #define SNS_PIA0 0
 #define SNS_PIA1 1
+#define SNS_PIA2 2
 
 static void sns_init(struct sndbrdData *brdData);
 static void sns_diag(int button);
@@ -178,29 +184,43 @@ static WRITE_HANDLER(sns_data_w);
 static WRITE_HANDLER(sns_ctrl_w);
 static void sns_5220Irq(int state);
 static READ_HANDLER(sns_8910a_r);
-static READ_HANDLER(sns_data_r);
+static READ_HANDLER(sns2_8910a_r);
 
 const struct sndbrdIntf zac1370Intf = {
+  sns_init, NULL, sns_diag, sns_data_w, NULL, sns_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+};
+const struct sndbrdIntf zac13136Intf = {
   sns_init, NULL, sns_diag, sns_data_w, NULL, sns_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 static struct TMS5220interface sns_tms5220Int = { 640000, 50, sns_5220Irq };
 static struct DACinterface     sns_dacInt = { 1, { 20 }};
 static struct AY8910interface  sns_ay8910Int = { 1, 3580000/4, {25}, {sns_8910a_r}};
+static struct AY8910interface  sns2_ay8910Int = { 2, 3580000/4, {25, 25}, {sns_8910a_r, sns2_8910a_r}};
 
 static MEMORY_READ_START(sns_readmem)
   { 0x0000, 0x007f, MRA_RAM },
   { 0x0080, 0x0083, pia_r(SNS_PIA0) },
   { 0x0090, 0x0093, pia_r(SNS_PIA1) },
-  { 0x2000, 0x2000, sns_data_r },
-  { 0x8000, 0xffff, MRA_ROM },
+  { 0x2000, 0x2000, sns_8910a_r },
+  { 0x4000, 0xffff, MRA_ROM },
+MEMORY_END
+
+static MEMORY_READ_START(sns2_readmem)
+  { 0x0000, 0x007f, MRA_RAM },
+  { 0x0080, 0x0083, pia_r(SNS_PIA0) },
+  { 0x0084, 0x0087, pia_r(SNS_PIA2) },
+  { 0x0090, 0x0093, pia_r(SNS_PIA1) },
+  { 0x1800, 0x1800, sns2_8910a_r },
+  { 0x4000, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(sns_writemem)
   { 0x0000, 0x007f, MWA_RAM },
   { 0x0080, 0x0083, pia_w(SNS_PIA0) },
+  { 0x0084, 0x0087, pia_w(SNS_PIA2) }, // 13136 only
   { 0x0090, 0x0093, pia_w(SNS_PIA1) },
   { 0x1000, 0x1000, DAC_0_data_w },
-  { 0x8000, 0xffff, MWA_ROM },
+  { 0x4000, 0xffff, MWA_ROM },
 MEMORY_END
 
 MACHINE_DRIVER_START(zac1370)
@@ -214,18 +234,33 @@ MACHINE_DRIVER_START(zac1370)
   MDRV_SOUND_ADD(AY8910,  sns_ay8910Int)
 MACHINE_DRIVER_END
 
+MACHINE_DRIVER_START(zac13136)
+  MDRV_CPU_ADD(M6802, 3580000/4)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(sns2_readmem, sns_writemem)
+
+  MDRV_INTERLEAVE(500)
+  MDRV_SOUND_ADD(TMS5220, sns_tms5220Int)
+  MDRV_SOUND_ADD(DAC,     sns_dacInt)
+  MDRV_SOUND_ADD(AY8910,  sns2_ay8910Int)
+MACHINE_DRIVER_END
+
 static READ_HANDLER(sns_pia0a_r);
 static WRITE_HANDLER(sns_pia0a_w);
 static WRITE_HANDLER(sns_pia0b_w);
+static WRITE_HANDLER(sns_pia0ca2_w);
 static WRITE_HANDLER(sns_pia1a_w);
 static WRITE_HANDLER(sns_pia1b_w);
-static WRITE_HANDLER(sns_pia0ca2_w);
+static READ_HANDLER(sns_pia2a_r);
+static WRITE_HANDLER(sns_pia2a_w);
+static WRITE_HANDLER(sns_pia2b_w);
+static WRITE_HANDLER(sns_pia2ca2_w);
 
 static void sns_irq(int state);
 
 static struct {
   struct sndbrdData brdData;
-  int pia0a, pia0b, pia1a, pia1b;
+  int pia0a, pia0b, pia1a, pia1b, pia2a, pia2b;
   int cmd[2], lastcmd, cmdin, cmdout, lastctrl;
 } snslocals;
 
@@ -237,17 +272,23 @@ static const struct pia6821_interface sns_pia[] = {{
   /*i: A/B,CA/B1,CA/B2 */ 0, 0, 0, 0, 0, 0,
   /*o: A/B,CA/B2       */ sns_pia1a_w, sns_pia1b_w, 0, 0,
   /*irq: A/B           */ sns_irq, sns_irq
+},{
+  /*i: A/B,CA/B1,CA/B2 */ sns_pia2a_r, 0, 0, 0, 0, 0,
+  /*o: A/B,CA/B2       */ sns_pia2a_w, sns_pia2b_w, sns_pia2ca2_w, 0,
+  /*irq: A/B           */ 0, 0
 }};
 
 static void sns_init(struct sndbrdData *brdData) {
   snslocals.brdData = *brdData;
   pia_config(SNS_PIA0, PIA_STANDARD_ORDERING, &sns_pia[0]);
   pia_config(SNS_PIA1, PIA_STANDARD_ORDERING, &sns_pia[1]);
+  if (brdData->boardNo == SNDBRD_ZAC13136)
+    pia_config(SNS_PIA2, PIA_STANDARD_ORDERING, &sns_pia[2]);
   snslocals.cmdin = snslocals.cmdout = 2;
 }
 
 static void sns_diag(int button) {
-  cpu_set_nmi_line(1, button ? ASSERT_LINE : CLEAR_LINE);
+  cpu_set_nmi_line(ZACSND_CPUA, button ? ASSERT_LINE : CLEAR_LINE);
 }
 
 static READ_HANDLER(sns_pia0a_r) {
@@ -262,6 +303,11 @@ static WRITE_HANDLER(sns_pia0b_w) {
   snslocals.pia0b = data;
   if (snslocals.pia0b & 0x02) AY8910Write(0, snslocals.pia0b ^ 0x01, snslocals.pia0a);
 }
+static WRITE_HANDLER(sns_pia0ca2_w) {
+  //sndbrd_ctrl_cb(snslocals.brdData.boardNo,data);
+  UpdateZACSoundLED(1, data);
+} // diag led
+
 static WRITE_HANDLER(sns_pia1a_w) { snslocals.pia1a = data; }
 static WRITE_HANDLER(sns_pia1b_w) {
   if (snslocals.pia1b & ~data & 0x02) { // write
@@ -276,143 +322,45 @@ static WRITE_HANDLER(sns_pia1b_w) {
   UpdateZACSoundACT((data>>2)&0x3);	//ACTSND & ACTSPK on bits 2 & 3
 }
 
+static READ_HANDLER(sns_pia2a_r) {
+  if ((snslocals.pia2b & 0x03) == 0x01) return AY8910Read(1);
+  return 0;
+}
+static WRITE_HANDLER(sns_pia2a_w) {
+  snslocals.pia2a = data;
+  if (snslocals.pia2b & 0x02) AY8910Write(1, snslocals.pia2b, snslocals.pia2a);
+}
+static WRITE_HANDLER(sns_pia2b_w) {
+  snslocals.pia2b = data;
+  if (snslocals.pia2b & 0x02) AY8910Write(1, snslocals.pia2b, snslocals.pia2a);
+}
+static WRITE_HANDLER(sns_pia2ca2_w) {
+    UpdateZACSoundLED(2, data);
+} // diag led
+
 static WRITE_HANDLER(sns_data_w) {
   //snslocals.lastcmd = (snslocals.lastcmd & 0x10) | (data & 0x0f);
-	snslocals.lastcmd = data & 0x7f;
-	pia_set_input_cb1(0, data & 0x80 ? 1 : 0);
-	//pia_set_input_cb1(SNS_PIA0, ~data & 0x01);
+  snslocals.lastcmd = data & 0x7f;
+  //pia_set_input_cb1(SNS_PIA0, ~data & 0x01);
+  pia_set_input_cb1(SNS_PIA0, data & 0x80 ? 1 : 0);
+  if (snslocals.brdData.boardNo == SNDBRD_ZAC13136)
+    pia_set_input_cb1(SNS_PIA2, data & 0x80 ? 1 : 0);
 }
 
 static WRITE_HANDLER(sns_ctrl_w) {
   snslocals.lastcmd = (snslocals.lastcmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00);
   pia_set_input_cb1(SNS_PIA0, ~data & 0x01);
+  if (snslocals.brdData.boardNo == SNDBRD_ZAC13136)
+    pia_set_input_cb1(SNS_PIA2, ~data & 0x01);
 }
 
 static READ_HANDLER(sns_8910a_r) { return ~snslocals.lastcmd; }
 
-static WRITE_HANDLER(sns_pia0ca2_w) {
-	//sndbrd_ctrl_cb(snslocals.brdData.boardNo,data);
-	UpdateZACSoundLED(data);
-} // diag led
+static READ_HANDLER(sns2_8910a_r) { return ~snslocals.lastcmd; }
 
 static void sns_irq(int state) {
   logerror("sns_irq: state=%x\n",state);
-  cpu_set_irq_line(1, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
+  cpu_set_irq_line(ZACSND_CPUA, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
 static void sns_5220Irq(int state) { pia_set_input_cb1(SNS_PIA1, !state); }
-
-static READ_HANDLER(sns_data_r)
-{
-	//logerror("%x: reading cmd = %x\n",activecpu_get_previouspc(),~snslocals.lastcmd);
-	return ~snslocals.lastcmd;
-}
-
-/*--------------------------------------------
-/ Zaccaria Sound & Speech Board 1B13136
-/ (like 2 x BY61, but only 1 x TMS5220 speech)
-//It's reported that the sound board is half populated, so in reality it acts exactly like the older
-//1370 board, but with a larger eprom capacity and of course a slightly different memory map
-/---------------------------------------------*/
-#define ZAC_PIA0 2
-
-static void zac_init(struct sndbrdData *brdData);
-static void zac_diag(int button);
-static WRITE_HANDLER(zac_data_w);
-static WRITE_HANDLER(zac_ctrl_w);
-static READ_HANDLER(zac_8910a_r);
-
-const struct sndbrdIntf zac13136Intf = {
-  zac_init, NULL, zac_diag, zac_data_w, NULL, zac_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
-};
-static struct DACinterface     zac_dacInt = {2, {20, 20}};
-static struct AY8910interface  zac_ay8910Int = {2, 3580000/4, {25, 25}, {sns_8910a_r, zac_8910a_r}};
-
-//Seems only difference in memory map from 1370 board is the sound latch read!
-static MEMORY_READ_START(zac_readmem)
-  { 0x0000, 0x007f, MRA_RAM },
-  { 0x0080, 0x0083, pia_r(SNS_PIA0) },
-  { 0x0084, 0x0087, pia_r(ZAC_PIA0) },
-  { 0x0090, 0x0093, pia_r(SNS_PIA1) },
-  { 0x1800, 0x1800, sns_data_r },
-  { 0x8000, 0xffff, MRA_ROM },
-MEMORY_END
-
-static MEMORY_WRITE_START(zac_writemem)
-  { 0x0000, 0x007f, MWA_RAM },
-  { 0x0080, 0x0083, pia_w(SNS_PIA0) },
-  { 0x0084, 0x0087, pia_w(ZAC_PIA0) },
-  { 0x0090, 0x0093, pia_w(SNS_PIA1) },
-  { 0x1000, 0x1000, DAC_1_data_w },
-  { 0x8000, 0xffff, MWA_ROM },
-MEMORY_END
-
-MACHINE_DRIVER_START(zac13136)
-  MDRV_CPU_ADD(M6802, 3580000/4)
-  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
-  MDRV_CPU_MEMORY(zac_readmem, zac_writemem)
-
-  MDRV_INTERLEAVE(500)
-  MDRV_SOUND_ADD(TMS5220, sns_tms5220Int)
-  MDRV_SOUND_ADD(DAC,     zac_dacInt)
-  MDRV_SOUND_ADD(AY8910,  zac_ay8910Int)
-MACHINE_DRIVER_END
-
-static READ_HANDLER(zac_pia0a_r);
-static WRITE_HANDLER(zac_pia0a_w);
-static WRITE_HANDLER(zac_pia0b_w);
-static WRITE_HANDLER(zac_pia0ca2_w);
-static void zac_irq(int state);
-
-static struct {
-  struct sndbrdData brdData;
-  int pia0a, pia0b;
-  int lastcmd, lastctrl;
-} locals;
-
-static const struct pia6821_interface zac_pia[] = {{
-  /*i: A/B,CA/B1,CA/B2 */ zac_pia0a_r, 0, 0, 0, 0, 0,
-  /*o: A/B,CA/B2       */ zac_pia0a_w, zac_pia0b_w, zac_pia0ca2_w, 0,
-  /*irq: A/B           */ zac_irq, zac_irq
-}};
-
-static void zac_init(struct sndbrdData *brdData) {
-  locals.brdData = *brdData;
-  pia_config(SNS_PIA0, PIA_STANDARD_ORDERING, &sns_pia[0]);
-  pia_config(SNS_PIA1, PIA_STANDARD_ORDERING, &sns_pia[1]);
-  pia_config(ZAC_PIA0, PIA_STANDARD_ORDERING, &zac_pia[0]);
-}
-
-static void zac_diag(int button) {
-  cpu_set_nmi_line(2, button ? ASSERT_LINE : CLEAR_LINE);
-}
-
-static READ_HANDLER(zac_pia0a_r) {
-  if ((locals.pia0b & 0x03) == 0x01) return AY8910Read(1);
-  return 0;
-}
-static WRITE_HANDLER(zac_pia0a_w) {
-  locals.pia0a = data;
-  if (locals.pia0b & 0x02) AY8910Write(1, locals.pia0b ^ 0x01, locals.pia0a);
-}
-static WRITE_HANDLER(zac_pia0b_w) {
-  locals.pia0b = data;
-  if (locals.pia0b & 0x02) AY8910Write(1, locals.pia0b ^ 0x01, locals.pia0a);
-}
-
-static WRITE_HANDLER(zac_data_w) {
-  locals.lastcmd = (locals.lastcmd & 0x10) | (data & 0x0f);
-}
-
-static WRITE_HANDLER(zac_ctrl_w) {
-  locals.lastcmd = (locals.lastcmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00);
-  pia_set_input_cb1(ZAC_PIA0, ~data & 0x01);
-}
-
-static READ_HANDLER(zac_8910a_r) { return ~locals.lastcmd; }
-
-static WRITE_HANDLER(zac_pia0ca2_w) { sndbrd_ctrl_cb(locals.brdData.boardNo,data); } // diag led
-
-static void zac_irq(int state) {
-  cpu_set_irq_line(2, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
-}
