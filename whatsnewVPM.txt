@@ -1,6 +1,26 @@
 What's new in Visual PinMAME:
 -----------------------------
 
+Version 1.51 (xxxx, 200x)
+-------------------------------
+- New properties for the controller object:
+    - Controller.Game: An abbreviation for Controller.Game(Controller.GameName). It returns the game object for the current game. It's now a bit
+      easier for a script to make game specific settings. You don't have to use the "GameName":
+      For example Controller.Game.Settings.Value("dmd_pos_x") = 20
+    - Controller.MechSamples (bool): Disables the samples for mechanical devices (mostly flippers). The samples used by sound boards
+      will still be played (if not disabled by dip switches for the game). The setting is not sticky and will be reset to "true" upon a new 
+      'GameName' is set. An assignment has only an effect if done before "Controller.Run".
+- New properties for Game.Settings:
+    - Game.Settings.DisplayPositionX x, hParentWnd: Moves the display to position "x" on the x-axis. If "hParentWnd" is present, the move is relative to
+      the position of the "parent window"
+    - Game.Settings.DisplayPositionY y, hParentWnd: Same as above only for the y-axis
+- Controller.SetDisplayPosition is fixed and works as wanted now. Nevertheless this method is depricated, so please use the above explained functions
+- The display window can be moved to every x position by now 
+- While moving the display it makes short jumps if it has a title and/or border before. This bug is gone now.
+- Changes the warning message on the "Game Info" dialog: Upon start of a game the sound processor(s) will be disabled if a rom is missing; the new
+  warning message will reflect this
+
+
 Version 1.50 (November 1, 2004)
 -------------------------------
 - Updated Visual PinMAME to 1.50 release of PinMAME Source Code.
