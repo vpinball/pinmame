@@ -39,6 +39,7 @@ static struct {
   int diagnosticLed;
   int refresh;
   int gen;
+  void *printfile;
 } locals;
 
 static INTERRUPT_GEN(ZAC_vblank_old) {
@@ -132,7 +133,7 @@ static MACHINE_INIT(ZAC1) {
   }
 
 // if (coreGlobals.soundEn)
-    ZAC_soundInit();
+  ZAC_soundInit();
 }
 
 static MACHINE_INIT(ZAC2) {
@@ -143,7 +144,7 @@ static MACHINE_INIT(ZAC2) {
   cpu_set_irq_callback(0, irq_callback);
 
 // if (coreGlobals.soundEn)
-    ZAC_soundInit();
+  ZAC_soundInit();
 }
 
 static MACHINE_INIT(ZAC2A) {
@@ -154,12 +155,16 @@ static MACHINE_INIT(ZAC2A) {
   cpu_set_irq_callback(0, irq_callback);
 
 // if (coreGlobals.soundEn)
-    ZAC_soundInit();
+  ZAC_soundInit();
 }
 
 static MACHINE_STOP(ZAC) {
+  if (locals.printfile) {
+    osd_fclose(locals.printfile);
+    locals.printfile = NULL;
+  }
 // if (coreGlobals.soundEn)
-    ZAC_soundExit();
+  ZAC_soundExit();
 }
 
 /*   CTRL PORT : READ = D0-D7 = Switch Returns 0-7 */
@@ -186,7 +191,7 @@ static READ_HANDLER(data_port_r)
 static READ_HANDLER(sense_port_r)
 {
 	UINT8 random = rand() % 256;
-	logerror("%x: Sense Port Read=%02x\n",activecpu_get_previouspc(),random);
+//	logerror("%x: Sense Port Read=%02x\n",activecpu_get_previouspc(),random);
 	return random;
 }
 
@@ -230,11 +235,15 @@ static WRITE_HANDLER(data_port_w)
 /*   SENSE PORT: WRITE = Write Serial Output (hooked to printer) */
 static WRITE_HANDLER(sense_port_w)
 {
-	logerror("%x: Sense Port Write=%02x\n",activecpu_get_previouspc(),data);
-	if (data == 0x0d)
-		printf("\r\n");
-	else
-		printf("%c", data);
+	static UINT8 printdata[] = {0};
+	printdata[0] = data;
+	if (locals.printfile == NULL) {
+	  char filename[13];
+	  sprintf(filename,"%s.prt", Machine->gamedrv->name);
+	  locals.printfile = osd_fopen(Machine->gamedrv->name,filename,OSD_FILETYPE_MEMCARD,2); // APPEND write mode
+	}
+    if (locals.printfile) osd_fwrite(locals.printfile, printdata, 1);
+//	logerror("%x: Sense Port Write=%02x\n",activecpu_get_previouspc(),data);
 }
 
 static READ_HANDLER(ram_r) {
