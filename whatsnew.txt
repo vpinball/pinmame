@@ -34,11 +34,18 @@ Bugs Fixed
 
 - adjusted the "6" and "9" numbers in Atari & Gottlieb games to look correct
   [Gerrit Volkenborn]
+
+- Added the 4 missing lamp columns for Williams Firepower
+  [Brian Smith, Gerrit Volkenborn]
   
 New Features
 ------------
 - new CPU: National Semiconductor SC/MP, needed for early Zaccaria games
   [Gerrit Volkenborn]
+
+- some new clones for Taito & Williams games
+- Added roms for Stern's "Ripley's Believe It or Not"
+  [Brian Smith, Gerrit Volkenborn]
 
 
 Version 1.31 (December 23, 2003) - Happy 32nd Birthday Steve
