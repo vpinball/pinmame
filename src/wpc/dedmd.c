@@ -3,7 +3,7 @@
 #include "cpu/m6809/m6809.h"
 #include "cpu/m68000/m68000.h"
 #include "core.h"
-#include "de.h"
+//#include "de.h"
 #include "sndbrd.h"
 #include "dedmd.h"
 
@@ -22,7 +22,7 @@ void de_dmd192x64_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
   int ii,jj,kk;
 
   if (fullRefresh) fillbitmap(bitmap,Machine->pens[0],NULL);
-
+  DBGLOG(("6845start=%x\n",crtc6845_start_addr));
   for (kk = 0, ii = 1; ii <= 64; ii++) {
     UINT8 *line = &dotCol[ii][0];
     for (jj = 0; jj < (192/16); jj++) {
@@ -91,7 +91,7 @@ void de_dmd128x32_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
   dmd_draw(bitmap, dotCol, de_128x32DMD);
   drawStatus(bitmap,fullRefresh);
 }
-
+#if 0
 /*------------------------------*/
 /*Data East 128x16 DMD Handling*/
 /*------------------------------*/
@@ -124,7 +124,7 @@ void de_dmd128x16_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
 
   drawStatus(bitmap,fullRefresh);
 }
-
+#endif
 /*DIFFERENT ATTEMPT AT DE 128x16 HANDLING*/
 /*------------------------------*/
 /*Data East 128x16 DMD Handling*/
@@ -174,17 +174,13 @@ static struct {
   int cmd, ncmd, busy, status, ctrl, bank;
 } dmdlocals;
 
-static WRITE_HANDLER(dmd_data_w) {
-  dmdlocals.cmd = data;
-  dmdlocals.busy = 1;
-  sndbrd_data_cb(dmdlocals.brdData.boardNo, dmdlocals.busy);
-}
+static WRITE_HANDLER(dmd_data_w)  { dmdlocals.ncmd = data; DBGLOG(("dmdcmd=%x\n",data));}
 static READ_HANDLER(dmd_status_r) { return dmdlocals.status; }
 static READ_HANDLER(dmd_busy_r)   { return dmdlocals.busy; }
 
 /*------------ DMD 128x32 -------------*/
 #define DMD32_BANK0    2
-#define DMD32_FIRQFREQ 120
+#define DMD32_FIRQFREQ 125
 
 static WRITE_HANDLER(dmd32_ctrl_w);
 static void dmd32_init(struct sndbrdData *brdData);
@@ -231,8 +227,13 @@ static void dmd32_init(struct sndbrdData *brdData) {
 }
 
 static WRITE_HANDLER(dmd32_ctrl_w) {
-  if ((data | dmdlocals.ctrl) & 0x01)
-    cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_IRQ_LINE, (data & 0x01) ? CLEAR_LINE : ASSERT_LINE);
+  if ((data | dmdlocals.ctrl) & 0x01) {
+    cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_IRQ_LINE, (data & 0x01) ? ASSERT_LINE : CLEAR_LINE);
+    if (data & 0x01) {
+      sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, dmdlocals.busy = 1);
+      dmdlocals.cmd = dmdlocals.ncmd;
+    }
+  }
   else if (~data & dmdlocals.ctrl & 0x02) {
     cpu_set_reset_line(dmdlocals.brdData.cpuNo, PULSE_LINE);
     cpu_setbank(DMD32_BANK0, dmdlocals.brdData.romRegion);
@@ -241,13 +242,14 @@ static WRITE_HANDLER(dmd32_ctrl_w) {
 }
 
 static WRITE_HANDLER(dmd32_status_w) {
-  sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, dmdlocals.status = ((data & 0x0f)<<3));
+  sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, dmdlocals.status = data & 0x0f);
 }
 
 static WRITE_HANDLER(dmd32_bank_w) {
   cpu_setbank(DMD32_BANK0, dmdlocals.brdData.romRegion + (data & 0x1f)*0x4000);
 }
 static READ_HANDLER(dmd32_latch_r) {
+  DBGLOG(("busy = 0\n"));
   sndbrd_data_cb(dmdlocals.brdData.boardNo, dmdlocals.busy = 0); // Clear Busy
   cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_IRQ_LINE, CLEAR_LINE);
   return dmdlocals.cmd;
@@ -265,7 +267,7 @@ static void dmd64_init(struct sndbrdData *brdData);
 
 const struct sndbrdIntf dedmd64Intf = {
   dmd64_init, NULL, NULL,
-  dmd_data_w, NULL,
+  dmd_data_w, dmd_busy_r,
   dmd64_ctrl_w, dmd_status_r
 };
 
@@ -299,23 +301,35 @@ static void dmd64_init(struct sndbrdData *brdData) {
 }
 
 static WRITE_HANDLER(dmd64_ctrl_w) {
-  if ((data | dmdlocals.ctrl) & 0x01)
-    cpu_set_irq_line(dmdlocals.brdData.cpuNo, MC68000_IRQ_1, (data & 0x01) ? CLEAR_LINE : ASSERT_LINE);
-  else if (~data & dmdlocals.ctrl & 0x02)
+  if (~data & dmdlocals.ctrl & 0x01) {
+    cpu_set_irq_line(dmdlocals.brdData.cpuNo, MC68000_IRQ_1, ASSERT_LINE);
+    sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, dmdlocals.busy = 1);
+    dmdlocals.cmd = dmdlocals.ncmd;
+    DBGLOG(("busy=1 cmd=%d\n",dmdlocals.ncmd));
+  }
+#if 0
+  if ((data | dmdlocals.ctrl) & 0x01) {
+    if ((data & 0x01) == 0) {
+      cpu_set_irq_line(dmdlocals.brdData.cpuNo, MC68000_IRQ_1, (data & 0x01) ? CLEAR_LINE : ASSERT_LINE);
+      DBGLOG(("busy=1 cmd=%d\n",dmdlocals.ncmd));
+      sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, dmdlocals.busy = 1);
+      dmdlocals.cmd = dmdlocals.ncmd;
+    }
+  }
+#endif
+  if (~data & dmdlocals.ctrl & 0x02)
     cpu_set_reset_line(dmdlocals.brdData.cpuNo, PULSE_LINE);
   dmdlocals.ctrl = data;
 }
 
 static WRITE16_HANDLER(dmd64_status_w) {
-  if (ACCESSING_LSB) {
-    dmdlocals.status = (data & 0x0f) << 3;
-    sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, dmdlocals.status = ((data & 0x0f)<<3));
-  }
+  if (ACCESSING_LSB) sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, dmdlocals.status = data & 0x0f);
 }
 
 static READ16_HANDLER(dmd64_latch_r) {
   sndbrd_data_cb(dmdlocals.brdData.boardNo, dmdlocals.busy = 0);
   cpu_set_irq_line(dmdlocals.brdData.cpuNo, MC68000_IRQ_1, CLEAR_LINE);
+  DBGLOG(("busy=0 cmd=%x\n",dmdlocals.cmd));
   return dmdlocals.cmd;
 }
 static void dmd64irq2(int data) {
@@ -323,7 +337,7 @@ static void dmd64irq2(int data) {
 }
 static WRITE16_HANDLER(crtc6845_msb_address_w)  { if (ACCESSING_MSB) crtc6845_address_w(offset,data>>8);  }
 static WRITE16_HANDLER(crtc6845_msb_register_w) { if (ACCESSING_MSB) crtc6845_register_w(offset,data>>8); }
-static READ16_HANDLER(crtc6845_msb_register_r) { return crtc6845_register_r(offset)<<8; }
+static READ16_HANDLER(crtc6845_msb_register_r)  { return crtc6845_register_r(offset)<<8; }
 
 /*------- DMD 128x16 -----------*/
 #define DMD16_BANK0 2
@@ -333,12 +347,11 @@ static READ16_HANDLER(crtc6845_msb_register_r) { return crtc6845_register_r(offs
 #define BUSY_CLK    0x04
 
 static void dmd16_init(struct sndbrdData *brdData);
-static WRITE_HANDLER(dmd16_data_w);
 static WRITE_HANDLER(dmd16_ctrl_w);
 
 const struct sndbrdIntf dedmd16Intf = {
   dmd16_init, NULL, NULL,
-  dmd16_data_w, dmd_busy_r,
+  dmd_data_w, dmd_busy_r,
   dmd16_ctrl_w, dmd_status_r
 };
 
@@ -411,11 +424,10 @@ static WRITE_HANDLER(dmd16_port_w) {
     case 0xbc: dmd16_setbusy(BUSY_SET, data); break;
   }
 }
-static WRITE_HANDLER(dmd16_data_w) { dmdlocals.ncmd = data; }
 static WRITE_HANDLER(dmd16_ctrl_w) {
   if ((data | dmdlocals.ctrl) & 0x01) {
     dmdlocals.cmd = dmdlocals.ncmd;
-    dmd16_setbusy(BUSY_CLK, data);
+    dmd16_setbusy(BUSY_CLK, data & 0x01);
   }
   if (~data & dmdlocals.ctrl & 0x02) {
     sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, dmdlocals.status = 0);
