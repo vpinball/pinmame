@@ -362,7 +362,6 @@ static void wr_px(INT32 val)    { adsp2100.px = val; }
 static void wr_ifc(INT32 val)
 {
 	adsp2100.ifc = val;
-#if HAS_ADSP2101 // PINMAME
 	if (val & 0x002) adsp2100.irq_latch[ADSP2101_IRQ0] = 0;
 	if (val & 0x004) adsp2100.irq_latch[ADSP2101_IRQ1] = 0;
 	if (val & 0x008) adsp2100.irq_latch[ADSP2101_SPORT0_RX] = 0;
@@ -373,7 +372,6 @@ static void wr_ifc(INT32 val)
 	if (val & 0x200) adsp2100.irq_latch[ADSP2101_SPORT0_RX] = 1;
 	if (val & 0x400) adsp2100.irq_latch[ADSP2101_SPORT0_TX] = 1;
 	if (val & 0x800) adsp2100.irq_latch[ADSP2101_IRQ2] = 1;
-#endif // HAS_ADSP2101
 	check_irqs();
 }
 static void wr_tx0(INT32 val)	{ if (sport_tx_callback) (*sport_tx_callback)(0, val); }

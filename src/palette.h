@@ -93,8 +93,8 @@ typedef UINT32 rgb_t;
 #define PALETTE_DEFAULT_SHADOW_FACTOR (0.6)
 #define PALETTE_DEFAULT_HIGHLIGHT_FACTOR (1/PALETTE_DEFAULT_SHADOW_FACTOR)
 
-#define PALETTE_DEFAULT_SHADOW_FACTOR32 (0.7)
-#define PALETTE_DEFAULT_HIGHLIGHT_FACTOR32 (1.4)
+#define PALETTE_DEFAULT_SHADOW_FACTOR32 (0.6)
+#define PALETTE_DEFAULT_HIGHLIGHT_FACTOR32 (1/PALETTE_DEFAULT_SHADOW_FACTOR32)
 
 
 
@@ -143,7 +143,27 @@ void palette_set_colors(pen_t color_base, const UINT8 *colors, int color_count);
 void palette_set_brightness(pen_t pen, double bright);
 void palette_set_shadow_factor(double factor);
 void palette_set_highlight_factor(double factor);
-void palette_set_shadow_mode(int mode); //* AAT 032803
+
+/*
+	Shadows(Highlights) Quick Reference
+	-----------------------------------
+
+	1) declare MDRV_VIDEO_ATTRIBUTES( ... VIDEO_HAS_SHADOWS | VIDEO_HAS_HIGHLIGHTS ... )
+
+	2) set gfx_drawmode_table[0-n] to DRAWMODE_NONE, DRAWMODE_SOURCE or DRAWMODE_SHADOW
+
+	3) (optional) set shadow darkness or highlight brightness by
+		palette_set_shadow_factor32(0.0-1.0) or
+		palette_set_highlight_factor32(1.0-n.n)
+
+	4) before calling drawgfx use
+		palette_set_shadow_mode(0) to arm shadows or
+		palette_set_shadow_mode(1) to arm highlights
+
+	5) call drawgfx with the TRANSPARENCY_PEN_TABLE flag
+		drawgfx( ..., cliprect, TRANSPARENCY_PEN_TABLE, transparent_color )
+*/
+void palette_set_shadow_mode(int mode);
 void palette_set_shadow_factor32(double factor);
 void palette_set_highlight_factor32(double factor);
 void palette_set_shadow_dRGB32(int mode, int dr, int dg, int db, int noclip);

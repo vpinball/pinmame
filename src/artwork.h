@@ -59,6 +59,15 @@
 
 ***************************************************************************/
 
+struct artwork_callbacks
+{
+	/* provides an additional way to activate artwork system; can be NULL */
+	int (*activate_artwork)(struct osd_create_params *params);
+
+	/* function to load an artwork file for a particular driver */
+	mame_file *(*load_artwork)(const struct GameDriver *driver);
+};
+
 struct overlay_piece
 {
 	UINT8 type;
@@ -74,7 +83,7 @@ struct overlay_piece
 
 ***************************************************************************/
 
-int artwork_create_display(struct osd_create_params *params, UINT32 *rgb_components);
+int artwork_create_display(struct osd_create_params *params, UINT32 *rgb_components, const struct artwork_callbacks *callbacks);
 void artwork_update_video_and_audio(struct mame_display *display);
 void artwork_override_screenshot_params(struct mame_bitmap **bitmap, UINT32 *rgb_components);
 
@@ -86,4 +95,7 @@ void artwork_enable(int enable);
 void artwork_set_overlay(const struct overlay_piece *overlist);
 void artwork_show(const char *tag, int show);
 
-#endif
+mame_file *artwork_load_artwork_file(const struct GameDriver *driver);
+
+#endif /* ARTWORK_H */
+

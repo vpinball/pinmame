@@ -163,7 +163,7 @@ static void generate_adpcm(struct ADPCMVoice *voice, INT16 *buffer, int samples)
 			samples--;
 
 			/* next! */
-			if (++sample > count)
+			if (++sample >= count)
 			{
 				voice->playing = 0;
 				break;
@@ -745,12 +745,8 @@ static void OKIM6295_data_w(int num, int data)
 
 				/* determine the start/stop positions */
 				base = &voice->region_base[ okim6295_base[num][i] + okim6295_command[num] * 8];
-				if ((int)base < 0x400) { // avoid access violations
-					start = stop = 0;
-				} else {
-					start = ((base[0] << 16) + (base[1] << 8) + base[2]) & 0x3ffff;
-					stop  = ((base[3] << 16) + (base[4] << 8) + base[5]) & 0x3ffff;
-				}
+				start = ((base[0] << 16) + (base[1] << 8) + base[2]) & 0x3ffff;
+				stop  = ((base[3] << 16) + (base[4] << 8) + base[5]) & 0x3ffff;
 
 				/* set up the voice to play this sample */
 				if (start < stop)

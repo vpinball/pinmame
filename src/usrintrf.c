@@ -1529,7 +1529,7 @@ static int setdipswitches(struct mame_bitmap *bitmap,int selected)
 	const char *menu_item[128];
 	const char *menu_subitem[128];
 	struct InputPort *entry[128];
-	char flag[40];
+	char flag[60];
 	int i,sel;
 	struct InputPort *in;
 	int total;

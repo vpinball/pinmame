@@ -49,14 +49,12 @@
 #endif
 
 
-
 /*************************************
  *
  *	Constants
  *
  *************************************/
 
-#define VEC_SHIFT	16
 #define BRIGHTNESS	12
 
 #define MAXSTACK	8		/* Tempest needs more than 4 */
@@ -99,6 +97,7 @@ static int xcenter, ycenter;
 static int xmin, xmax;
 static int ymin, ymax;
 
+static int flip_x, flip_y, swap_xy;
 
 int vector_updates; /* avgdvg_go_w()'s per Mame frame, should be 1 */
 
@@ -160,9 +159,9 @@ INLINE int vector_timer(int deltax, int deltay)
 	deltax = abs(deltax);
 	deltay = abs(deltay);
 	if (deltax > deltay)
-		return deltax >> VEC_SHIFT;
+		return deltax >> 16;
 	else
-		return deltay >> VEC_SHIFT;
+		return deltay >> 16;
 }
 
 
@@ -307,8 +306,8 @@ static int dvg_generate_vector_list(void)
 					temp = -1;
 
 				/* compute the deltas */
-	  			deltax = (x << VEC_SHIFT) >> (9-temp);
-				deltay = (y << VEC_SHIFT) >> (9-temp);
+	  			deltax = (x << 16) >> (9-temp);
+				deltay = (y << 16) >> (9-temp);
 
 				/* adjust the current position and compute timing */
 	  			currentx += deltax;
@@ -344,8 +343,8 @@ static int dvg_generate_vector_list(void)
 				VGLOG(("(%d,%d) z: %d scal: %d", x, y, z, temp));
 
 				/* compute the deltas */
-				deltax = (x << VEC_SHIFT) >> (9 - temp);
-				deltay = (y << VEC_SHIFT) >> (9 - temp);
+				deltax = (x << 16) >> (9 - temp);
+				deltay = (y << 16) >> (9 - temp);
 
 				/* adjust the current position and compute timing */
 	  			currentx += deltax;
@@ -367,8 +366,8 @@ static int dvg_generate_vector_list(void)
 	  			scale = secondwd >> 12;
 
 	  			/* set the current X,Y */
-				currentx = (x - xmin) << VEC_SHIFT;
-				currenty = (ymax - y) << VEC_SHIFT;
+				currentx = (x - xmin) << 16;
+				currenty = (ymax - y) << 16;
 				VGLOG(("(%d,%d) scal: %d", x, y, secondwd >> 12));
 				break;
 
@@ -446,7 +445,44 @@ static int dvg_generate_vector_list(void)
 	return total_length;
 }
 
+void avg_set_flip_x(int flip)
+{
+	if (flip)
+		flip_x = 1;
+}
 
+void avg_set_flip_y(int flip)
+{
+	if (flip)
+		flip_y = 1;
+}
+
+void avg_apply_flipping_and_swapping(int *x, int *y)
+{
+	if (flip_x)
+		*x += (xcenter-*x)<<1;
+	if (flip_y)
+		*y += (ycenter-*y)<<1;
+
+	if (swap_xy)
+	{
+		int temp = *x;
+		*x = *y - ycenter + xcenter;
+		*y = temp - xcenter + ycenter;
+	}
+}
+
+void avg_add_point(int x, int y, rgb_t color, int intensity)
+{
+	avg_apply_flipping_and_swapping(&x, &y);
+	vector_add_point(x, y, color, intensity);
+}
+
+void avg_add_point_callback(int x, int y, rgb_t (*color_callback)(void), int intensity)
+{
+	avg_apply_flipping_and_swapping(&x, &y);
+	vector_add_point_callback(x, y, color_callback, intensity);
+}
 
 /*************************************
  *
@@ -614,9 +650,9 @@ static int avg_generate_vector_list(void)
 
 				/* add the new point */
 				if (sparkle)
-					vector_add_point_callback(currentx, currenty, sparkle_callback, z);
+					avg_add_point_callback(currentx, currenty, sparkle_callback, z);
 				else
-					vector_add_point(currentx, currenty, colorram[color], z);
+					avg_add_point(currentx, currenty, colorram[color], z);
 				VGLOG(("VCTR x:%d y:%d z:%d statz:%d", x, y, z, statz));
 				break;
 
@@ -647,9 +683,9 @@ static int avg_generate_vector_list(void)
 
 				/* add the new point */
 				if (sparkle)
-					vector_add_point_callback(currentx, currenty, sparkle_callback, z);
+					avg_add_point_callback(currentx, currenty, sparkle_callback, z);
 				else
-					vector_add_point(currentx, currenty, colorram[color], z);
+					avg_add_point(currentx, currenty, colorram[color], z);
 				VGLOG(("SVEC x:%d y:%d z:%d statz:%d", x, y, z, statz));
 				break;
 
@@ -686,8 +722,8 @@ static int avg_generate_vector_list(void)
 				else if (vector_engine == USE_AVG_BZONE)
 				{
 					int newymin = (color == 0) ? 0x0050 : ymin;
-					vector_add_clip(xmin << VEC_SHIFT, newymin << VEC_SHIFT,
-									xmax << VEC_SHIFT, ymax << VEC_SHIFT);
+					vector_add_clip(xmin << 16, newymin << 16,
+									xmax << 16, ymax << 16);
 				}
 
 				/* debugging */
@@ -700,7 +736,7 @@ static int avg_generate_vector_list(void)
 			case SCAL:
 				b = ((firstwd >> 8) & 7) + 8;
 				l = ~firstwd & 0xff;
-				scale = (l << VEC_SHIFT) >> b;
+				scale = (l << 16) >> b;
 
 				/* Y-Window toggle for Major Havoc */
 				if (vector_engine == USE_AVG_MHAVOC || vector_engine == USE_AVG_ALPHAONE)
@@ -715,8 +751,8 @@ static int avg_generate_vector_list(void)
 						/* adjust accordingly */
 						if (ywindow)
 							newymin = (vector_engine == USE_AVG_MHAVOC) ? 0x0048 : 0x0083;
-						vector_add_clip(xmin << VEC_SHIFT, newymin << VEC_SHIFT,
-										xmax << VEC_SHIFT, ymax << VEC_SHIFT);
+						vector_add_clip(xmin << 16, newymin << 16,
+										xmax << 16, ymax << 16);
 					}
 
 				/* debugging */
@@ -725,7 +761,7 @@ static int avg_generate_vector_list(void)
 					VGLOG(("(%d?)", l));
 				else
 					VGLOG(("%d", l));
-				VGLOG((" scale: %f", (scale/(float)(1<<VEC_SHIFT))));
+				VGLOG((" scale: %f", (scale/(float)(1<<16))));
 				break;
 
 			/* CNTR: center the beam */
@@ -738,7 +774,7 @@ static int avg_generate_vector_list(void)
 				/* move back to the middle */
 				currentx = xcenter;
 				currenty = ycenter;
-				vector_add_point(currentx, currenty, 0, 0);
+				avg_add_point(currentx, currenty, 0, 0);
 				break;
 
 			/* RTSL: return from subroutine */
@@ -961,11 +997,19 @@ int avgdvg_init(int vector_type)
 	height = ymax - ymin;
 
 	/* determine the center points */
-	xcenter = ((xmax + xmin) / 2) << VEC_SHIFT;
-	ycenter = ((ymax + ymin) / 2) << VEC_SHIFT;
+	xcenter = ((xmax + xmin) / 2) << 16;
+	ycenter = ((ymax + ymin) / 2) << 16;
 
-	/* tell the common vector code our shift value */
-	vector_set_shift(VEC_SHIFT);
+	/* initialize to no avg flipping */
+	flip_x = flip_y = 0;
+
+	/* Tempest and Quantum have X and Y swapped */
+	if ((vector_type == USE_AVG_TEMPEST) ||
+		(vector_type == USE_AVG_QUANTUM))
+		swap_xy = 1;
+	else
+		swap_xy = 0;
+
 	return video_start_vector();
 }
 

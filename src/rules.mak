@@ -1554,3 +1554,11 @@ SOUNDOBJS += $(OBJ)/sound/c6280.o
 else
 SOUNDDEFS += -DHAS_C6280=0
 endif
+
+SOUND=$(strip $(findstring SP0250@,$(SOUNDS)))
+ifneq ($(SOUND),)
+SOUNDDEFS += -DHAS_SP0250=1
+SOUNDOBJS += $(OBJ)/sound/sp0250.o
+else
+SOUNDDEFS += -DHAS_SP0250=0
+endif

@@ -11,6 +11,7 @@
 #include "memory.h"
 #include "mamedbg.h"
 #include "mame.h"
+#include "state.h"
 
 #include "i86.h"
 #include "i86intf.h"
@@ -98,6 +99,32 @@ static struct i86_timing cycles;
 #undef I86
 
 /***************************************************************************/
+static void i86_state_register(void)
+{
+	int cpu = cpu_getactivecpu();
+	const char *type = "I86";
+	state_save_register_UINT16(type, cpu, "REGS",			I.regs.w, 8);
+	state_save_register_UINT32(type, cpu, "PC",				&I.pc, 1);
+	state_save_register_UINT32(type, cpu, "PREVPC",			&I.prevpc, 1);
+	state_save_register_UINT32(type, cpu, "BASE",			I.base, 4);
+	state_save_register_UINT16(type, cpu, "SREGS",			I.sregs, 4);
+	state_save_register_UINT16(type, cpu, "FLAGS",			&I.flags, 1);
+	state_save_register_int(   type, cpu, "AUXVAL",			&I.AuxVal);
+	state_save_register_int(   type, cpu, "OVERVAL",		&I.OverVal);
+	state_save_register_int(   type, cpu, "SIGNVAL",		&I.SignVal);
+	state_save_register_int(   type, cpu, "ZEROVAL",		&I.ZeroVal);
+	state_save_register_int(   type, cpu, "CARRYVAL",		&I.CarryVal);
+	state_save_register_int(   type, cpu, "DIRVAL",			&I.DirVal);
+	state_save_register_UINT8( type, cpu, "PARITYVAL",		&I.ParityVal, 1);
+	state_save_register_UINT8( type, cpu, "TF",				&I.TF, 1);
+	state_save_register_UINT8( type, cpu, "IF",				&I.IF, 1);
+	state_save_register_UINT8( type, cpu, "MF",				&I.MF, 1);
+	state_save_register_UINT8( type, cpu, "INT_VECTOR",		&I.int_vector, 1);
+	state_save_register_INT8(  type, cpu, "NMI_STATE",		&I.nmi_state, 1);
+	state_save_register_INT8(  type, cpu, "IRQ_STATE",		&I.irq_state, 1);
+	state_save_register_int(   type, cpu, "EXTRA_CYCLES",	&I.extra_cycles);
+}
+
 void i86_init(void)
 {
 	unsigned int i, j, c;
@@ -123,6 +150,7 @@ void i86_init(void)
 		Mod_RM.RM.b[i] = (BREGS) reg_name[i & 7];
 	}
 
+	i86_state_register();
 }
 
 void i86_reset(void *param)

@@ -39,16 +39,10 @@
 #include "vector.h"
 #include "artwork.h"
 
-#define VCLEAN  0
-#define VDIRTY  1
-#define VCLIP   2
-
 #define MAX_DIRTY_PIXELS (2*MAX_PIXELS)
 
 unsigned char *vectorram;
 size_t vectorram_size;
-
-static int vector_orientation;
 
 static int antialias;                            /* flag for anti-aliasing */
 static int beam;                                 /* size of vector beam    */
@@ -57,23 +51,14 @@ int translucency;
 
 static int beam_diameter_is_one;		  /* flag that beam is one pixel wide */
 
-static int vector_scale_x;                /* scaling to screen */
-static int vector_scale_y;                /* scaling to screen */
+static float vector_scale_x;              /* scaling to screen */
+static float vector_scale_y;              /* scaling to screen */
 
 static float gamma_correction = 1.2;
 static float flicker_correction = 0.0;
 static float intensity_correction = 1.5;
 
-/* The vectices are buffered here */
-typedef struct
-{
-	int x; int y;
-	rgb_t col;
-	int intensity;
-	int arg1; int arg2; /* start/end in pixel array or clipping info */
-	int status;         /* for dirty and clipping handling */
-	rgb_t (*callback)(void);
-} point;
+static int (*vector_aux_renderer)(point *start, int num_points) = NULL;
 
 static point *new_list;
 static point *old_list;
@@ -99,7 +84,6 @@ static UINT8 Tgammar[256];        /* same as above, reversed order */
 
 static struct mame_bitmap *vecbitmap;
 static int vecwidth, vecheight;
-static int vecshift;
 static int xmin, ymin, xmax, ymax; /* clipping area */
 
 static int vector_runs;	/* vector runs per refresh */
@@ -108,6 +92,11 @@ static void (*vector_draw_aa_pixel)(int x, int y, rgb_t col, int dirty);
 
 static void vector_draw_aa_pixel_15 (int x, int y, rgb_t col, int dirty);
 static void vector_draw_aa_pixel_32 (int x, int y, rgb_t col, int dirty);
+
+void vector_register_aux_renderer(int (*aux_renderer)(point *start, int num_points))
+{
+	vector_aux_renderer = aux_renderer;
+}
 
 /*
  * multiply and divide routines for drawing lines
@@ -149,9 +138,6 @@ INLINE int vec_div(int parm1, int parm2)
 	return( 0x00010000 );
 }
 #endif
-
-#define Tinten(intensity, col) \
-	MAKE_RGB((RGB_RED(col) * (intensity)) >> 8, (RGB_GREEN(col) * (intensity)) >> 8, (RGB_BLUE(col) * (intensity)) >> 8)
 
 /* MLR 990316 new gamma handling added */
 void vector_set_gamma(float _gamma)
@@ -252,51 +238,12 @@ VIDEO_START( vector )
 		Tcosin(i) = (int)((double)(1.0/cos(atan((double)(i)/2048.0)))*0x10000000 + 0.5);
 	}
 
-	vector_set_flip_x(0);
-	vector_set_flip_y(0);
-	vector_set_swap_xy(0);
-
 	/* build gamma correction table */
 	vector_set_gamma (gamma_correction);
 
 	return 0;
 }
 
-
-
-void vector_set_flip_x (int flip)
-{
-	if (flip)
-		vector_orientation |=  ORIENTATION_FLIP_X;
-	else
-		vector_orientation &= ~ORIENTATION_FLIP_X;
-}
-
-void vector_set_flip_y (int flip)
-{
-	if (flip)
-		vector_orientation |=  ORIENTATION_FLIP_Y;
-	else
-		vector_orientation &= ~ORIENTATION_FLIP_Y;
-}
-
-void vector_set_swap_xy (int swap)
-{
-	if (swap)
-		vector_orientation |=  ORIENTATION_SWAP_XY;
-	else
-		vector_orientation &= ~ORIENTATION_SWAP_XY;
-}
-
-
-/*
- * Setup scaling. Currently the Sega games are stuck at VECSHIFT 15
- * and the the AVG games at VECSHIFT 16
- */
-void vector_set_shift (int shift)
-{
-	vecshift = shift;
-}
 
 /*
  * Clear the old bitmap. Delete pixel for pixel, this is faster than memset.
@@ -398,48 +345,11 @@ void vector_draw_to(int x2, int y2, rgb_t col, int intensity, int dirty, rgb_t (
 	int dx,dy,sx,sy,cx,cy,width;
 	static int x1,yy1;
 	int xx,yy;
-	int xy_swap;
 
-	/* [1] scale coordinates to display */
+	x2 = (int)(vector_scale_x*x2);
+	y2 = (int)(vector_scale_y*y2);
 
-	x2 = vec_mult(x2<<4,vector_scale_x);
-	y2 = vec_mult(y2<<4,vector_scale_y);
-
-	/* [2] fix display orientation */
-
-	if ((Machine->orientation ^ vector_orientation) & ORIENTATION_SWAP_XY)
-		xy_swap = 1;
-	else
-		xy_swap = 0;
-
-	if (vector_orientation & ORIENTATION_FLIP_X)
-	{
-		if (xy_swap)
-			x2 = ((vecheight-1)<<16)-x2;
-		else
-			x2 = ((vecwidth-1)<<16)-x2;
-	}
-	if (vector_orientation & ORIENTATION_FLIP_Y)
-	{
-		if (xy_swap)
-			y2 = ((vecwidth-1)<<16)-y2;
-		else
-			y2 = ((vecheight-1)<<16)-y2;
-	}
-
-	if ((Machine->orientation ^ vector_orientation) & ORIENTATION_SWAP_XY)
-	{
-		int temp;
-		temp = x2;
-		x2 = y2;
-		y2 = temp;
-	}
-	if (Machine->orientation & ORIENTATION_FLIP_X)
-		x2 = ((vecwidth-1)<<16)-x2;
-	if (Machine->orientation & ORIENTATION_FLIP_Y)
-		y2 = ((vecheight-1)<<16)-y2;
-
-	/* [3] adjust cords if needed */
+	/* [2] adjust cords if needed */
 
 	if (antialias)
 	{
@@ -451,17 +361,17 @@ void vector_draw_to(int x2, int y2, rgb_t col, int intensity, int dirty, rgb_t (
 	}
 	else /* noantialiasing */
 	{
-		x2 >>= 16;
-		y2 >>= 16;
+		x2 = (x2 + 0x8000) >> 16;
+		y2 = (y2 + 0x8000) >> 16;
 	}
 
-	/* [4] handle color and intensity */
+	/* [3] handle color and intensity */
 
 	if (intensity == 0) goto end_draw;
 
 	col = Tinten(intensity, col);
 
-	/* [5] draw line */
+	/* [4] draw line */
 
 	if (antialias)
 	{
@@ -575,6 +485,7 @@ end_draw:
 	yy1 = y2;
 }
 
+int vector_logging = 0;
 
 /*
  * Adds a line end point to the vertices list. The vector processor emulation
@@ -672,8 +583,6 @@ void vector_add_clip (int x1, int yy1, int x2, int y2)
  */
 void vector_set_clip (int x1, int yy1, int x2, int y2)
 {
-	int tmp;
-
 	/* failsafe */
 	if ((x1 >= x2) || (yy1 >= y2))
 	{
@@ -686,52 +595,13 @@ void vector_set_clip (int x1, int yy1, int x2, int y2)
 	}
 
 	/* scale coordinates to display */
-	x1 = vec_mult(x1<<4,vector_scale_x);
-	yy1 = vec_mult(yy1<<4,vector_scale_y);
-	x2 = vec_mult(x2<<4,vector_scale_x);
-	y2 = vec_mult(y2<<4,vector_scale_y);
+	x2 = (int)(vector_scale_x*x2);
+	y2 = (int)(vector_scale_y*y2);
 
-	/* fix orientation */
-
-	/* don't forget to swap x1,x2, since x2 becomes the minimum */
-	if (vector_orientation & ORIENTATION_FLIP_X)
-	{
-		x1 = ((vecwidth-1)<<16)-x1;
-		x2 = ((vecwidth-1)<<16)-x2;
-		tmp = x1; x1 = x2; x2 = tmp;
-	}
-	/* don't forget to swap yy1,y2, since y2 becomes the minimum */
-	if (vector_orientation & ORIENTATION_FLIP_Y)
-	{
-		yy1 = ((vecheight-1)<<16)-yy1;
-		y2 = ((vecheight-1)<<16)-y2;
-		tmp = yy1; yy1 = y2; y2 = tmp;
-	}
-	/* swapping x/y coordinates will still have the minima in x1,yy1 */
-	if ((Machine->orientation ^ vector_orientation) & ORIENTATION_SWAP_XY)
-	{
-		tmp = x1; x1 = yy1; yy1 = tmp;
-		tmp = x2; x2 = y2; y2 = tmp;
-	}
-	/* don't forget to swap x1,x2, since x2 becomes the minimum */
-	if (Machine->orientation & ORIENTATION_FLIP_X)
-	{
-		x1 = ((vecwidth-1)<<16)-x1;
-		x2 = ((vecwidth-1)<<16)-x2;
-		tmp = x1; x1 = x2; x2 = tmp;
-	}
-	/* don't forget to swap yy1,y2, since y2 becomes the minimum */
-	if (Machine->orientation & ORIENTATION_FLIP_Y)
-	{
-		yy1 = ((vecheight-1)<<16)-yy1;
-		y2 = ((vecheight-1)<<16)-y2;
-		tmp = yy1; yy1 = y2; y2 = tmp;
-	}
-
-	xmin = x1 >> 16;
-	ymin = yy1 >> 16;
-	xmax = x2 >> 16;
-	ymax = y2 >> 16;
+	xmin = (x1 + 0x8000) >> 16;
+	ymin = (yy1 + 0x8000) >> 16;
+	xmax = (x2 + 0x8000) >> 16;
+	ymax = (y2 + 0x8000) >> 16;
 
 	/* Make it foolproof by trapping rounding errors */
 	if (xmin < 0) xmin = 0;
@@ -848,35 +718,36 @@ static void clever_mark_dirty (void)
 VIDEO_UPDATE( vector )
 {
 	int i;
-	int temp_x, temp_y;
 	point *curpoint;
 
+	int rv = 1;
+
+	/* if there is an auxiliary renderer set, let it run */
+	if (vector_aux_renderer)
+		rv = vector_aux_renderer(new_list, new_index);
+
+	/* if the aux renderer chooses, it can override the bitmap */
+	if (!rv)
+	{
+		/* This prevents a crash in the artwork system */
+		vector_dirty_list[0] = VECTOR_PIXEL_END;
+		return;
+	}
 
 	/* copy parameters */
 	vecbitmap = bitmap;
 	vecwidth  = bitmap->width;
 	vecheight = bitmap->height;
 
-	/* setup scaling */
-	temp_x = (1 << (44 - vecshift)) / (Machine->visible_area.max_x - Machine->visible_area.min_x);
-	temp_y = (1 << (44 - vecshift)) / (Machine->visible_area.max_y - Machine->visible_area.min_y);
-
-	if ((Machine->orientation ^ vector_orientation) & ORIENTATION_SWAP_XY)
-	{
-		vector_scale_x = temp_x * vecheight;
-		vector_scale_y = temp_y * vecwidth;
-	}
-	else
-	{
-		vector_scale_x = temp_x * vecwidth;
-		vector_scale_y = temp_y * vecheight;
-	}
-
 	/* reset clipping area */
 	xmin = 0;
 	xmax = vecwidth;
 	ymin = 0;
 	ymax = vecheight;
+
+	/* setup scaling */
+	vector_scale_x = ((float)vecwidth)/(Machine->visible_area.max_x - Machine->visible_area.min_x);
+	vector_scale_y = ((float)vecheight)/(Machine->visible_area.max_y - Machine->visible_area.min_y);
 
 	/* next call to vector_clear_list() is allowed to swap the lists */
 	vector_runs = 0;
@@ -893,10 +764,13 @@ VIDEO_UPDATE( vector )
 	/* Draw ALL lines into the hidden map. Mark only those lines with */
 	/* new->dirty = 1 as dirty. Remember the pixel start/end indices  */
 	curpoint = new_list;
+
 	for (i = 0; i < new_index; i++)
 	{
 		if (curpoint->status == VCLIP)
+		{
 			vector_set_clip(curpoint->x, curpoint->y, curpoint->arg1, curpoint->arg2);
+		}
 		else
 		{
 			curpoint->arg1 = p_index;

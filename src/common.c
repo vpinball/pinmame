@@ -765,9 +765,7 @@ void save_screen_snapshot_as(mame_file *fp, struct mame_bitmap *bitmap)
 	UINT32 saved_rgb_components[3];
 
 	/* allow the artwork system to override certain parameters */
-	bounds.min_x = bounds.min_y = 0;
-	bounds.max_x = bitmap->width - 1;
-	bounds.max_y = bitmap->height - 1;
+	bounds = Machine->visible_area;
 	memcpy(saved_rgb_components, direct_rgb_components, sizeof(direct_rgb_components));
 	artwork_override_screenshot_params(&bitmap, direct_rgb_components);
 
