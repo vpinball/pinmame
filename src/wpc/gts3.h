@@ -142,21 +142,21 @@
      NORMALREGION(0x80000, GTS3_MEMREG_DROM1) \
        ROM_LOAD(n1, 0x00000, 0x80000, chk1)
 
-/*-- These are only here so the game structure can be in the game file --*/
-extern struct MachineDriver machine_driver_GTS3_1A;
-extern struct MachineDriver machine_driver_GTS3_1B;
-extern struct MachineDriver machine_driver_GTS3_2;
-extern struct MachineDriver machine_driver_GTS3_1AS;
-extern struct MachineDriver machine_driver_GTS3_1BS;
-extern struct MachineDriver machine_driver_GTS3_2S;
-
 extern void UpdateSoundLEDS(int num,int data);
 
-#define mGTS3         GTS3_1A
-#define mGTS3S        GTS3_1AS
-#define mGTS3B        GTS3_1B
-#define mGTS3BS       GTS3_1BS
-#define mGTS3DMD      GTS3_2
-#define mGTS3DMDS     GTS3_2S
+/*-- These are only here so the game structure can be in the game file --*/
+extern MACHINE_DRIVER_EXTERN(gts3_1a);
+extern MACHINE_DRIVER_EXTERN(gts3_1b);
+extern MACHINE_DRIVER_EXTERN(gts3_1as);
+extern MACHINE_DRIVER_EXTERN(gts3_1bs);
+extern MACHINE_DRIVER_EXTERN(gts3_2);
+extern MACHINE_DRIVER_EXTERN(gts3_2s);
+
+#define mGTS3         gts3_1a
+#define mGTS3S        gts3_1as
+#define mGTS3B        gts3_1b
+#define mGTS3BS       gts3_1bs
+#define mGTS3DMD      gts3_2
+#define mGTS3DMDS     gts3_2s
 
 #endif /* INC_GTS3 */
