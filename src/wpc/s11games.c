@@ -185,7 +185,7 @@ CORE_GAMEDEF(pb, l5, "Pinbot (L-5)", 1987, "Williams", s11_mS11S,0)
 /*--------------------
 / F14 Tomcat 3/87
 /--------------------*/
-INITGAMEFULL(f14, GEN_S11A, s11_dispS11a, 0, FLIP_SWNO(15,63),
+INITGAMEFULL(f14, GEN_S11A, s11_dispS11a, 14, FLIP_SWNO(15,63),
              0,0, 57, 58, 0, 28, 0, 0)
 #if 0
 static core_tGameData f14GameData = {
