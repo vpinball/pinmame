@@ -955,7 +955,10 @@ static int render_to_blit(struct mame_bitmap *bitmap, int update)
 
 tryagain:
 	// attempt to lock the blit surface
-	result = IDirectDrawSurface_Lock(blit_surface, NULL, &blit_desc, (throttle || use_dirty) ? DDLOCK_WAIT : 0, NULL);
+	if ( blit_surface )
+		result = IDirectDrawSurface_Lock(blit_surface, NULL, &blit_desc, (throttle || use_dirty) ? DDLOCK_WAIT : 0, NULL);
+	else
+		goto surface_lost;
 
 	if (result == DDERR_SURFACELOST)
 		goto surface_lost;
