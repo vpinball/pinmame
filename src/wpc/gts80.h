@@ -192,7 +192,7 @@
 #define GTS80_CSOL(x) ((x)+24)
 
 /*-- GTS80 switch numbers --*/
-#define GTS80_SWSLAMTILT	  -1
+#define GTS80_SWSLAMTILT	  -8
 
 /*-- Memory regions --*/
 #define GTS80_MEMREG_CPU	REGION_CPU1
