@@ -17,6 +17,7 @@ static struct {
   int u16irqcount;
   int diagnosticLed;
   int visible_page;
+  int visible_block;
   int zero_cross;
   int blanking;
   int lampb_only;
@@ -136,10 +137,12 @@ static READ16_HANDLER(u16_r) {
 
   offset &= 0x203;
   //DBGLOG(("U16r [%03x] (%04x)\n",offset,mem_mask));
-  //printf("U16r [%03x] (%04x)\n",offset,mem_mask);
   switch (offset) {
-    case 0x000: case 0x001: case 0x002: case 0x003:
-      return locals.u16a[offset];
+    case 0x000: case 0x001: 
+		return locals.u16a[offset];	
+	case 0x002: case 0x003:
+		DBGLOG(("reading U16-%x\n",offset));
+		return locals.u16a[offset];
     case 0x200: case 0x201: case 0x202: case 0x203:
       return locals.u16b[offset&3];
   }
@@ -151,17 +154,12 @@ static READ16_HANDLER(u16_r) {
 /*************/
 static WRITE16_HANDLER(u16_w) {
   offset &= 0x203;
- 
-  // DBGLOG(("U16w [%03x]=%04x (%04x)\n",offset,data,mem_mask));
+   // DBGLOG(("U16w [%03x]=%04x (%04x)\n",offset,data,mem_mask));
 
-  //Visible Page offset
-  if(offset==3) {
-	locals.visible_page = data >> 12;
-  }
-#if 0
-  else
-	printf("U16w [%03x]=%04x (%04x)\n",offset,data,mem_mask);
-#endif
+  if(offset==2)
+	  locals.visible_block = data & 0x0f;
+  if(offset==3)
+	  locals.visible_page = data >> 12;
 
   switch (offset) {
     case 0x000: case 0x001: case 0x002: case 0x003:
@@ -213,7 +211,7 @@ static READ16_HANDLER(io_r) {
       data = coreGlobals.swMatrix[0] << 8 | coreGlobals.swMatrix[9];
 	  break;
 	default:
-		printf("io_r: [%08x] (%04x)\n",offset,mem_mask);
+		DBGLOG(("io_r: [%08x] (%04x)\n",offset,mem_mask));
   }
   return data^0xffff;		//Switches are inverted
 }
@@ -223,6 +221,8 @@ static READ16_HANDLER(io_r) {
 /*************/
 static WRITE16_HANDLER(io_w) {
   UINT16 soldata;
+
+  //DBGLOG(("io_w: [%08x] (%04x) = %x\n",offset,mem_mask,data));
 
   switch (offset) {
     //Blanking (for lamps & solenoids?)
@@ -258,6 +258,7 @@ static WRITE16_HANDLER(io_w) {
 
     //??
 	case 0x00200008:
+		DBGLOG(("io_w: [%08x] (%04x) = %x\n",offset,mem_mask,data));
 		break;
 
     //Sols: 1-8 (hi byte) & 17-24 (lo byte)
@@ -276,7 +277,7 @@ static WRITE16_HANDLER(io_w) {
       break;
 
 	default:
-		printf("io_w: [%08x] (%04x) = %x\n",offset,mem_mask,data);
+		DBGLOG(("io_w: [%08x] (%04x) = %x\n",offset,mem_mask,data));
   }
 }
 
@@ -286,7 +287,7 @@ static MACHINE_INIT(cc) {
   locals.vblankCount = 1;
   timer_pulse(TIME_IN_CYCLES(2811,0),0,cc_u16irq1);
   //IRQ4 doesn't seem to do anything?!!
-  //timer_pulse(TIME_IN_HZ(400),0,cc_u16irq4);
+  timer_pulse(TIME_IN_HZ(400),0,cc_u16irq4);
 
   //Force U16 Check to succeed
 	switch(core_gameData->gen){
@@ -485,12 +486,7 @@ PINMAME_VIDEO_UPDATE(cc_dmd128x32) {
   int ii, jj, kk;
   UINT16 *RAM;
 
-  offset = 0x37ff0+(0x800*locals.visible_page);
-
-#ifndef MAME_DEBUG
-  core_textOutf(50,20,1,"offset=%4x", offset);
-  memset(dotCol,0,sizeof(dotCol));
-#endif
+  offset = (0x8000*locals.visible_block)+(0x800*locals.visible_page)-0x10;
 
   RAM = ramptr+offset;
   for (ii = 0; ii <= 32; ii++) {
@@ -519,12 +515,7 @@ PINMAME_VIDEO_UPDATE(cc_dmd256x64) {
   int ii, jj, kk;
   UINT16 *RAM;
 
-  offset = 0x37fe0+(0x800*locals.visible_page);
-
-#ifndef MAME_DEBUG
-  core_textOutf(50,20,1,"offset=%4x", offset);
-  memset(dotCol,0,sizeof(dotCol));
-#endif
+  offset = (0x8000*locals.visible_block)+(0x800*locals.visible_page)-0x20;
 
   RAM = ramptr+offset;
   for (ii = 0; ii <= 64; ii++) {
