@@ -1,0 +1,31 @@
+intel 8086 and compatibles
+--------------------------
+
+this info is here, 
+to list and give some remarks on 8086 compatible processors
+
+excellent info in Hamarsoft's 86BUGS list
+(also distributed in ralf browns interrupt list)
+
+8086/8088
+---------
+20 bit adress bus, 16 bit data bus and registers
+many 8080 assembler sources should be compilable/reusable
+
+8086 
+----
+6 bytes prefetch queue
+
+8088
+----
+8086 with 8 bit data bus, 
+prefetch queue only 4 byte, and refilled when 1 byte empty
+
+early 8086/8088 revisions bug
+-----------------------------
+(copyright 1978 on package)
+mov sreg, doesnot disable until next operation is executed
+
+8086/8088
+---------
+"mov cs, " causes unconditional jump!
