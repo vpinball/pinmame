@@ -764,16 +764,58 @@ static WRITE32_HANDLER(arm_cs_w)
 #endif
 
 //Remove Delay from LED Flashing code to speed up the boot time of the cpu
-static void remove_led_code(void)
+static void remove_led_code()
 {
-  de3as_page0_ram[0xa854/4] = (UINT32)0;
-  de3as_page0_ram[0xa860/4] = (UINT32)0;
-  de3as_page0_ram[0xa86c/4] = (UINT32)0;
-  de3as_page0_ram[0xa878/4] = (UINT32)0;
-  de3as_page0_ram[0xa884/4] = (UINT32)0;
-  de3as_page0_ram[0xa890/4] = (UINT32)0;
-  de3as_page0_ram[0xa89c/4] = (UINT32)0;
-  de3as_page0_ram[0xa8a8/4] = (UINT32)0;
+
+  //LOTR OS Version -
+  if( 
+	  (de3as_page0_ram[(0x2854+0x8000)/4] == 0xeb000061) &&
+	  (de3as_page0_ram[(0x2860+0x8000)/4] == 0xeb00005e) &&
+	  (de3as_page0_ram[(0x286c+0x8000)/4] == 0xeb00005b) &&
+	  (de3as_page0_ram[(0x2878+0x8000)/4] == 0xeb000058) &&
+	  (de3as_page0_ram[(0x2884+0x8000)/4] == 0xeb000055) &&
+	  (de3as_page0_ram[(0x2890+0x8000)/4] == 0xeb000052) &&
+	  (de3as_page0_ram[(0x289c+0x8000)/4] == 0xeb00004f) &&
+	  (de3as_page0_ram[(0x28a8+0x8000)/4] == 0xeb00004c)
+	)
+		{
+			de3as_page0_ram[(0x2854+0x8000)/4] = (UINT32)0;
+			de3as_page0_ram[(0x2860+0x8000)/4] = (UINT32)0;
+			de3as_page0_ram[(0x286c+0x8000)/4] = (UINT32)0;
+			de3as_page0_ram[(0x2878+0x8000)/4] = (UINT32)0;
+			de3as_page0_ram[(0x2884+0x8000)/4] = (UINT32)0;
+			de3as_page0_ram[(0x2890+0x8000)/4] = (UINT32)0;
+			de3as_page0_ram[(0x289c+0x8000)/4] = (UINT32)0;
+			de3as_page0_ram[(0x28a8+0x8000)/4] = (UINT32)0;
+			LOG(("LOTR OS - LED Code Removed!\n"));
+		}
+
+  //ELVIS OS Version - 
+  if( 
+	  (de3as_page0_ram[(0x2d90+0x8000)/4] == 0xeb00004b) &&
+	  (de3as_page0_ram[(0x2d9c+0x8000)/4] == 0xeb000048) &&
+	  (de3as_page0_ram[(0x2da8+0x8000)/4] == 0xeb000045) &&
+	  (de3as_page0_ram[(0x2db4+0x8000)/4] == 0xeb000042) &&
+	  (de3as_page0_ram[(0x2dc0+0x8000)/4] == 0xeb00003f) &&
+	  (de3as_page0_ram[(0x2dcc+0x8000)/4] == 0xeb00003c) &&
+	  (de3as_page0_ram[(0x2dd8+0x8000)/4] == 0xeb000039) &&
+	  (de3as_page0_ram[(0x2de4+0x8000)/4] == 0xeb000036) &&
+	  (de3as_page0_ram[(0x2df0+0x8000)/4] == 0xeb000033) &&
+	  (de3as_page0_ram[(0x2dfc+0x8000)/4] == 0xeb000030)
+	)
+		{
+			de3as_page0_ram[(0x2d90+0x8000)/4] = (UINT32)0;
+			de3as_page0_ram[(0x2d9c+0x8000)/4] = (UINT32)0;
+			de3as_page0_ram[(0x2da8+0x8000)/4] = (UINT32)0;
+			de3as_page0_ram[(0x2db4+0x8000)/4] = (UINT32)0;
+			de3as_page0_ram[(0x2dc0+0x8000)/4] = (UINT32)0;
+			de3as_page0_ram[(0x2dcc+0x8000)/4] = (UINT32)0;
+			de3as_page0_ram[(0x2dd8+0x8000)/4] = (UINT32)0;
+			de3as_page0_ram[(0x2de4+0x8000)/4] = (UINT32)0;
+			de3as_page0_ram[(0x2df0+0x8000)/4] = (UINT32)0;
+			de3as_page0_ram[(0x2dfc+0x8000)/4] = (UINT32)0;
+			LOG(("ELVIS OS - LED Code Removed!\n"));
+		}
 }
 
 static void setup_at91(void)
@@ -945,6 +987,158 @@ ROM_START(lotrsnd) \
     ROM_LOAD("lotr-u7.101",0x0000,0x10000,CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56a6ac29fce1c7082e470)) \
 ROM_END
 
-CORE_GAMEDEFNV(lotrsnd, "LOTR Sound CPU Test", 1987, "Stern", lotrsnd, 0)
+CORE_GAMEDEFNV(lotrsnd, "LOTR Sound CPU Test", 2003, "Stern", lotrsnd, 0)
+
+
+/** FLASH BIOS SETUP **/
+#define FLASHU8_ADDRESS	0x40000
+#define FLASHU8_SIZE    0x20000
+static int readu8 = 0;
+static int read_devcode = 0;
+static int read_mancode = 0;
+
+static READ32_HANDLER(flashb_cs_r)
+{
+	data32_t data = 0;
+	if(offset < 0x10000000)
+	{
+		LOG(("%08x: reading from U7: %08x = %08x\n",activecpu_get_pc(),offset,data));
+	}
+	if(offset < 0x20000000)
+	{
+		if(readu8) {
+			offset &= 0xffffff;	//strip off top 8 bits
+			data = (data32_t)*(memory_region(REGION_CPU1) + offset + FLASHU8_ADDRESS);
+			data |= ((data32_t)*(memory_region(REGION_CPU1) + offset + FLASHU8_ADDRESS + 1)) << 8;
+			//LOG(("%08x: reading from U8: %08x = %08x\n",activecpu_get_pc(),offset,data));
+		}
+
+		if(read_mancode)
+			data = 0xc0;		//AT49BV1614 
+//			data = 0xc2;		//AT49BV1614T
+
+		//Devcode is read 1st, then Mancode is read next
+		if(read_devcode) {
+			data = 0x1f;		//Atmel manufacturer code
+			read_devcode = 0;
+			read_mancode = 1;
+		}
+	}
+	else
+	{
+		LOG(("%08x: reading from: %08x = %08x\n",activecpu_get_pc(),offset,data));
+	}
+	return data & mem_mask;
+}
+
+static UINT8 cb_read = 0;
+static WRITE32_HANDLER(flashb_cs_w)
+{
+	data &= mem_mask;
+	if(offset < 0x10000000)
+	{
+		LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));
+	}
+	if(offset < 0x20000000)
+	{
+		int cb_addr = (offset & 0xffff)>>1;
+		//LOG(("%08x: writing to: %08x (%08x) = %08x\n",activecpu_get_pc(),offset,cb_addr,data));
+
+		//Any commands left to read?
+		if(cb_read == 0)
+		{
+			//All commands begin at this address with this data byte!
+			if( cb_addr == 0x5555 && data == 0xaa)
+			{
+				cb_read = 2;	//read 2 more bytes
+				readu8 = read_devcode = read_mancode = 0;
+			}
+			//Store Byte to U8
+			if( readu8 )
+			{
+				offset &= 0xffffff;
+				*(memory_region(REGION_CPU1) + offset+FLASHU8_ADDRESS) = (UINT32)data;
+				*(memory_region(REGION_CPU1) + offset+FLASHU8_ADDRESS+1) = (UINT32)data>>8;
+				LOG(("%08x: Writing Data to U8 %08x = %08x\n",activecpu_get_pc(),offset,data));
+			}
+		}
+		else
+		{
+			cb_read--;
+			//Capture the 3rd command byte - since it identifies the command to perform!
+			if(cb_read == 0)
+			{
+				switch(data)
+				{
+					//Erase Chip
+					case 0x80:
+						break;
+					case 0x10:
+						{
+						UINT8  *u8 = (memory_region(REGION_CPU1) + FLASHU8_ADDRESS);
+						memset(u8, 0xff, FLASHU8_SIZE);
+						read_devcode = read_mancode = 0;
+						readu8 = 1;
+						break;
+						}
+					//Program Chip
+					case 0xA0:
+						readu8 = 1;
+						read_devcode = read_mancode = 0;
+						break;
+					//Software ID Start
+					case 0x90:
+						read_devcode = 1;
+						readu8 = read_mancode = 0;
+						break;
+					//Software ID End
+					case 0xF0:
+						readu8 = read_devcode = read_mancode = 0;
+						break;
+					default:
+						LOG(("%08x: Unknown Command Code! %08x = %08x\n",activecpu_get_pc(),offset,data));
+				}
+			}
+		}
+	}
+	else
+		LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));
+}
+
+static MACHINE_INIT(seflashb) {
+	de2slocals.brdData.cpuNo = 0;
+	//because the boot rom code gets written to ram, and then remapped to page 0, we need an interface to handle this.
+	at91_set_ram_pointers(de3as_reset_ram,de3as_page0_ram);
+    //this crap is needed because for some reason installing memory handlers fails to work properly
+    at91_cs_callback_r(0x00400000,0x8fffffff,flashb_cs_r);
+    at91_cs_callback_w(0x00400000,0x8fffffff,flashb_cs_w);
+	//Patch out the LED flashing routine
+	de3as_page0_ram[0x1170/4] = (UINT32)0xE12FFF1E;	//BX R14
+}
+
+static core_tGameData seflashbGameData = {0, 0};
+static void init_seflashb(void) {
+  core_gameData = &seflashbGameData;
+}
+
+MACHINE_DRIVER_START(seflashb)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CORE_INIT_RESET_STOP(seflashb, NULL, NULL)
+  MDRV_CPU_ADD(AT91, ARMCPU_FREQ)
+  MDRV_CPU_MEMORY(arm_readmem, arm_writemem)
+  MDRV_CPU_PERIODIC_INT(arm_irq, ARMIRQ_FREQ)
+  MDRV_SOUND_ADD(CUSTOM,  at91CustIntf)
+  MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
+MACHINE_DRIVER_END
+
+INPUT_PORTS_START(seflashb)
+INPUT_PORTS_END
+
+ROM_START(seflashb) \
+    ROM_REGION32_LE(0x600000, REGION_CPU1, ROMREGION_ERASEMASK) \
+    ROM_LOAD("flashv5.bin", 0, 0x10000, CRC(ad93688f))\
+ROM_END
+
+CORE_GAMEDEFNV(seflashb, "Stern Sound OS Flash Update", 2004, "Stern", seflashb, 0)
 
 #endif	//TEST_NEW_SOUND
