@@ -15,18 +15,17 @@
 #define GP_COMPORTS \
   PORT_START /* 0 */ \
     /* Switch Column 1*/ \
-    COREPORT_BIT(     0x0001, "Advance(Coin Door)", KEYCODE_8)  \
-	COREPORT_BIT(     0x0002, "Return(Coin Door)",  KEYCODE_7)  \
-    COREPORT_BIT(     0x0004, "Slam Tilt?",         KEYCODE_HOME)  \
-	COREPORT_BIT(     0x0008, "Credit(Service)",    KEYCODE_6)  \
-    COREPORT_BITDEF(  0x0010, IPT_COIN1,            KEYCODE_3) \
-    COREPORT_BITDEF(  0x0020, IPT_COIN2,            KEYCODE_4) \
-    COREPORT_BITDEF(  0x0040, IPT_COIN3,            KEYCODE_5) \
-	/* Switch Column 2 */ \
-	COREPORT_BITDEF(  0x0080, IPT_START1,			IP_KEY_DEFAULT)  \
-    COREPORT_BIT(     0x0100, "Ball Tilt",			KEYCODE_2)  \
+    COREPORT_BIT(     0x0001, "Accounting Reset",   KEYCODE_8)  \
+    COREPORT_BITDEF(  0x0002, IPT_START1,			IP_KEY_DEFAULT)\
+    COREPORT_BIT(     0x0004, "Slam Tilt",          KEYCODE_HOME)\
+    COREPORT_BITDEF(  0x0010, IPT_COIN2,            KEYCODE_4)\
+    COREPORT_BITDEF(  0x0020, IPT_COIN3,            KEYCODE_5)\
+    COREPORT_BITDEF(  0x0040, IPT_COIN1,            KEYCODE_3)\
+    COREPORT_BIT(     0x0080, "Ball Tilt",			KEYCODE_2)\
+	/* Switch Column 4 */ \
+	COREPORT_BIT(     0x0100, "Diagnostic Switch",  KEYCODE_7)\
     /* These are put in switch column 0 */ \
-    COREPORT_BIT(     0x0200, "Sound Diagnostic", KEYCODE_0) \
+    COREPORT_BIT(     0x0200, "Sound Diagnostic",   KEYCODE_0)\
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
       COREPORT_DIPSET(0x0000, "0" ) \
@@ -49,7 +48,7 @@
     COREPORT_DIPNAME( 0x0040, 0x0000, "S7") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0040, "1" ) \
-    COREPORT_DIPNAME( 0x0080, 0x0000, "S8") \
+    COREPORT_DIPNAME( 0x0080, 0x0080, "S8") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0080, "1" ) \
     COREPORT_DIPNAME( 0x0100, 0x0000, "S9") \

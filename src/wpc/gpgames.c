@@ -4,11 +4,31 @@
 
 //Display: 4 X 7 Segment, 6 Digit Displays, 2 x 2 Digit 7 Segment
 //Display: 4 X 7 Segment, 7 Digit Displays, 2 x 2 Digit 7 Segment
+
+/*Ordering:
+  --------
+  Player 1/2
+  (06)(05)(04)(03)(02)(01)
+							(00)(00)
+  (06)(05)(04)(03)(02)(01)
+*/
+
+#if 0
 static core_tLCDLayout dispGP[] = {
-  {0, 0, 2,7,CORE_SEG87}, {0,16,10,7,CORE_SEG87},
-  {2, 0,18,7,CORE_SEG87}, {2,16,26,7,CORE_SEG87},
-  {4, 4,34,7,CORE_SEG87}, {0}
+ {0, 0, 00,16,CORE_SEG87},
+ {2, 0, 16,16,CORE_SEG87}, 
+ {4, 0, 32,16,CORE_SEG87}, {0}
 };
+
+#else
+
+static core_tLCDLayout dispGP[] = {
+ {0, 0,0, 6,CORE_SEG87}, {0,16,8, 6,CORE_SEG87},
+ {4, 0,16, 6,CORE_SEG87}, {4,16,24, 6,CORE_SEG87},
+ {2, 4,22, 1, CORE_SEG87}, {2, 6,6, 1, CORE_SEG87},
+ {2,20,30,1, CORE_SEG87}, {2,22,14, 1, CORE_SEG87},{0}
+};
+#endif
 
 #define INITGAME(name, gen, disp, flip, lamps) \
 static core_tGameData name##GameData = {gen,disp,{flip,0,lamps}}; \
