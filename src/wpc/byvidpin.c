@@ -1,7 +1,27 @@
-/* Bally Video/Pinball Combination Hardware*/
+/* Bally Video/Pinball Combination Hardware Emulation
+   by Steve Ellenoff (01/16/2002)
 
-/* MPU Board: MPU-133 (Equivalent of MPU-35 except for 1 diode change)
+   Games: Baby Pacman (1982)
+          Granny & The Gators (1984)
+
+   Hardware: 
+   (Both Games)
+   MPU Board: MPU-133 (Equivalent of MPU-35 except for 1 diode change) - See note below
+   
+   (BabyPacman Only):
    VIDIOT Board: Handles Video/Joystick Switchs/Sound Board
+   Chips:		(1 x TMS9928 Video Chip), 6809 CPU (Video), 6803 (Sound), 6821 PIA
+
+   (Granny & Gators Only):
+   VIDIOT DELUXE:Handles Video/Joystick and Communication to Cheap Squeak board
+   Chips:		(2 x TMS9928 Video Chip - Master/Slave configuration), 6809 CPU, 6821 PIA
+   Cheap Squeak Sound Board
+
+   Interesting Tech Note: 
+   
+   The sound board integrated into the vidiot, appears to be
+   identical to what later became the separate Cheap Squeak board used on later model
+   bally MPU-35 games, as well as Granny & Gators!
 
    Note from RGP:
    
@@ -18,14 +38,11 @@
 		The cathode (ie: stripe end ) connects to capacitor C1
 		(it is the end away from J4).
 
-
-   For simplicity sake, I just copied all code from by35 
+   For simplicity sake, I just copied all code from by35 and modified where needed
    -but maybe someday we should merge common routines for easier maintenance
 
-  Hardware:
-	Baby Pac - Videot (1 x TMS9928 Video Chip)
-	Granny & Gators - Videot Deluxe (2 x TMS9928 Video Chip - Master/Slave configuration)
-
+  *All addresses are shown for baby pac
+  -------------------------------------
   6800 vectors:
   RES:  597d
   NMI:  5950
@@ -42,6 +59,16 @@
   SWI2: FFF4-5 (8016) Not Used
   SWI3: FFF2-3 (8013) *Valid Code?
   Rsvd: FFF0-1 (8010) *Valid Code?
+
+  6803 vectors:
+  RES: FFFE-F 
+  SWI: FFFA-B Software Interrupt (Not Used)
+  NMI: FFFC-D (Used)
+  IRQ: FFF8-9 (Not Used)
+  ICF: FFF6-7 (Input Capture)~IRQ2 (FA6F)
+  OCF: FFF4-5 (Output Compare)~IRQ2 (Not Used)
+  TOF: FFF2-3 (Timer Overflow)~IRQ2 (Not Used)
+  SCI: FFF0-1 (Input Capture)~IRQ2  (Not Used)
 */
 #include <stdarg.h>
 #include <time.h>
@@ -56,7 +83,7 @@
 
 static int cmdnum = 0;
 
-#if 1
+#if 0
 	#define mlogerror logerror
 #else
 	#define mlogerror printf
@@ -71,12 +98,10 @@ static int cmdnum = 0;
 
 static struct {
   int p0_a, p1_a, p1_b, p0_ca2, p1_ca2, p0_cb2, p1_cb2, p2_a;
-  int bcd[6];
-  int lampadr1, lampadr2;
+  int lampadr1;
   UINT32 solenoids;
-  core_tSeg segments,pseg;
   int diagnosticLed;
-  int diagnosticLedV;
+  int diagnosticLedV;		//Diagnostic LED for Vidiot Board
   int vblankCount;
   int initDone;
   int enable_output;		//Enable Output to Main CPU Flag
@@ -87,7 +112,9 @@ static struct {
   int vidiot_u2_latch;		//U2 Latch -> Data coming from Main CPU
   int u7_portb;				//U7 Port B data
   int u7_portcb2;			//U7 Port CB2
-  int snddata;				//Sound Latch
+  int snddata;				//Sound Data to 6803
+  int snddata_lo;			//Lo Nibble Sound Command
+  int snddata_hi;			//Hi Nibble Sound Command
   int lasttin;				//Track Last TIN IRQ Edge
   int vidswitches;			//Track Video switches, there's only 1 column
   void *zctimer;
@@ -96,18 +123,13 @@ static struct {
 static void byVP_exit(void);
 static void byVP_nvram(void *file, int write);
 
-static void piaIrq(int state) { 
-	//mlogerror("piaIrq state=%x\n",state);
-	cpu_set_irq_line(0, M6800_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
-}
+static void piaIrq(int state) { cpu_set_irq_line(0, M6800_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE); }
 
 static void byVP_lampStrobe(int board, int lampadr) {
   if (lampadr != 0x0f) {
     int lampdata = (locals.p0_a>>4)^0x0f;
     UINT8 *matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)+8*board];
     int bit = 1<<(lampadr & 0x07);
-
-    //DBGLOG(("adr=%x data=%x\n",lampadr,lampdata));
     while (lampdata) {
       if (lampdata & 0x01) *matrix |= bit;
       lampdata >>= 1; matrix += 2;
@@ -129,11 +151,11 @@ static WRITE_HANDLER(pia0a_w) {
 
   //Write Data To Vidiot Latch Pre-Buffers - Only When Latch Input is Low
   if(locals.enable_input == 0) {
-	mlogerror("original buffer data = %x : modded %x\n",*(memory_region(BYVP_MEMREG_CPU) + 0x51),data);
-	//For some reason, code inverts lower nibble
+	//logerror("original buffer data = %x : modded %x\n",*(memory_region(BYVP_MEMREG_CPU) + 0x51),data);
+	/*For some reason, code inverts lower nibble*/
 	data = (data&0xf0) | (~data & 0x0f);
 	locals.vidiot_u2_latch = data;
-	mlogerror("%x: Writing %x to vidiot u2 buffers: enable_input = %x\n",cpu_getpreviouspc(),data, locals.enable_input);
+	logerror("%x: Writing %x to vidiot u2 buffers: enable_input = %x\n",cpu_getpreviouspc(),data, locals.enable_input);
   }
 
   byVP_lampStrobe(0,locals.lampadr1);
@@ -150,8 +172,8 @@ int tmp_input = locals.enable_input;
 locals.enable_output = (data>>1)&1;
 locals.enable_input  = (data>>2)&1;
 locals.status_enable = (data>>3)&1;
-logerror("%x: Setting: e_out = %x, e_in = %x, s_enable = %x\n",cpu_getpreviouspc(),
-		 locals.enable_output,locals.enable_input,locals.status_enable);
+//logerror("%x: Setting: e_out = %x, e_in = %x, s_enable = %x\n",cpu_getpreviouspc(),
+//		 locals.enable_output,locals.enable_input,locals.status_enable);
 
 //Latch data from pre-buffer to U2 on positive edge (We don't need to code this)
 if(locals.enable_input & ~tmp_input) {
@@ -171,13 +193,13 @@ pia_set_input_ca2(2, locals.enable_input);
 static READ_HANDLER(pia0b_r) {
   //Enable Status must be low to return data..
   if (!locals.status_enable) {
-	    logerror("%x: MPU: reading vidiot status %x\n",cpu_getpreviouspc(),locals.vidiot_status);
+	    //logerror("%x: MPU: reading vidiot status %x\n",cpu_getpreviouspc(),locals.vidiot_status);
 		return locals.vidiot_status;
 		
   }
   //Enable Output must be low to return data..
   if (!locals.enable_output) {
-	    logerror("%x: MPU: reading vidiot data %x\n",cpu_getpreviouspc(),locals.vidiot_u1_latch);
+	    //logerror("%x: MPU: reading vidiot data %x\n",cpu_getpreviouspc(),locals.vidiot_u1_latch);
 		return locals.vidiot_u1_latch;
   }
 
@@ -201,13 +223,16 @@ static WRITE_HANDLER(pia1ca2_w) {
 
 /* PIA1:B-W Solenoid */
 static WRITE_HANDLER(pia1b_w) {
+  UINT16 mask = ~(0xffff);
+  UINT16 sols = 0;
   locals.p1_b = data;
-  coreGlobals.pulsedSolState = 0;
-  if (!locals.p1_cb2)
-    locals.solenoids |= coreGlobals.pulsedSolState = (1<<(data & 0x0f)) & 0x7fff;
-  data ^= 0xf0;
-  coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xfff0ffff) | ((data & 0xf0)<<12);
-  locals.solenoids |= (data & 0xf0)<<12;
+  //Solenoids 1-7 (same as by35)
+  sols = (1<<(data & 0x0f)) & 0xff;
+  //Solenoids 8-16 are weird (baby only uses 10, granny only 5!)
+  if((data & 0x0f) == 0x0f)
+	sols |= (((~core_revbyte(data))>>1) & 0x7f)<<7;
+  coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & mask) | sols;
+  locals.solenoids |= sols;
 }
 
 /* PIA1:CB2-W Solenoid Bank Select */
@@ -278,7 +303,7 @@ static void byVP_updSw(int *inports) {
 /* PIA2:B Read */
 // Video Switch Returns (Bits 5-7 not connected)
 static READ_HANDLER(pia2b_r) { 
-	logerror("VID: Reading Switch Returns from %x\n",locals.p2_a);
+	//logerror("VID: Reading Switch Returns from %x\n",locals.p2_a);
 	if(locals.p2_a & 0x80)
 		return locals.vidswitches; 
 	else
@@ -291,38 +316,61 @@ static READ_HANDLER(pia2b_r) {
 static WRITE_HANDLER(pia2a_w) {
 	locals.p2_a = data;
 	locals.vidiot_status = (~data) & 0x03;
-	logerror("%x:VID: Setting status to %4x\n",cpu_getpreviouspc(),locals.vidiot_status);
-	logerror("%x:Setting Video Switch Strobe to %x\n",cpu_getpreviouspc(),data>>4);
+	//logerror("%x:VID: Setting status to %4x\n",cpu_getpreviouspc(),locals.vidiot_status);
+	//logerror("%x:Setting Video Switch Strobe to %x\n",cpu_getpreviouspc(),data>>4);
 }
 
 /* PIA2:B Write*/
 //PB0-3: Output to 6803 CPU
 //PB4-7: N/A
 static WRITE_HANDLER(pia2b_w) {
-	locals.snddata = data<<1;	//Data from PB0-3 is connected to P21-24 but port 2 starts at P20!
+	//Store the data written here for later use
+	locals.snddata = data & 0x0f;
 }
 
 /* PIA2:CB2 Write */
-// Diagnostic LED & Data/Sound Strobe to 6803
+// Diagnostic LED & Sound Strobe to 6803
 static WRITE_HANDLER(pia2cb2_w) { 
 	locals.diagnosticLedV = data;
 
-	/*set 6803 P20 line - Thus triggering a sound command*/
-	if(data & ~locals.lasttin) {	//Rising Edge
+	if(data & ~locals.lasttin) {	//Rising Edge Triggers the IRQ
 		cmdnum = 0;
-		logerror("VID: Send Sound Command %x\n",locals.snddata);
-		snd_cmd_log(locals.snddata);
-		cpu_set_irq_line(BYVP_SCPUNO, M6800_TIN_LINE, ASSERT_LINE);
+		//Low Nibble was written just prior to raising the TIN_IRQ line
+		locals.snddata_lo = locals.snddata;
+
+		//Although the real hardware sets the line here, we need to wait for the 2nd nibble
 	}
-	else
-		cpu_set_irq_line(BYVP_SCPUNO, M6800_TIN_LINE, CLEAR_LINE);
+	else {
+			//Hi Nibble was written just prior to clearing the TIN_IRQ line
+			locals.snddata_hi = locals.snddata;
+
+			//Log the full command
+			snd_cmd_log((locals.snddata_hi<<4) | (locals.snddata_lo));
+
+			//Although the real hardware clears the line here, we pulse it, since
+			//we've now collected both lo & hi nibbles!
+			cpu_set_irq_line(BYVP_SCPUNO, M6800_TIN_LINE, PULSE_LINE);
+	}
 	locals.lasttin = data;
 }
 
 //VIDEO PIA IRQ - TRIGGER VIDEO CPU (6809) FIRQ
 static void pia2Irq(int state) {
-  logerror("VID: PIA IRQ - MPU CAUSED FIRQ\n");
   cpu_set_irq_line(BYVP_VCPUNO, M6809_FIRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
+}
+
+//Vidiot Reads from U2 Latch (Data coming from CPU)
+static READ_HANDLER(latch_r)
+{
+	int data = locals.vidiot_u2_latch;
+	//logerror("%x: LATCH_R: offset=%x, data=%x\n",cpu_getpreviouspc(),offset,data);
+	return data;
+}
+//Vidiot Writes to U1 Latch (Data going to CPU)
+static WRITE_HANDLER(latch_w)
+{
+	locals.vidiot_u1_latch = data;
+	//logerror("%x: LATCH_W: offset=%x, data=%x\n",cpu_getpreviouspc(),offset,data);
 }
 
 /*PIA 0*/
@@ -405,13 +453,14 @@ static int byVP_irq(void) {
   return 0;
 }
 
+//Send a command manually
 static WRITE_HANDLER(byVP_soundCmd) {
 	snd_cmd_log(data);
 	if(data) {
-		//printf("Sending..%x\n",data);
-		locals.snddata = data<<1;	//Data from PB0-3 is connected to P21-24 but port 2 starts at P20!
+		locals.snddata_lo = (data & 0x0f) << 1;
+		locals.snddata_hi = (data >> 4) << 1;
 		cmdnum = 0;
-		snd_cmd_log(locals.snddata);
+		snd_cmd_log(data);
 		/*set 6803 P20 line - Thus triggering a sound command*/
 		cpu_set_irq_line(BYVP_SCPUNO, M6800_TIN_LINE, PULSE_LINE);
 	}
@@ -455,45 +504,32 @@ static void byVP_exit(void) {
 static UINT8 *byVP_CMOS;
 static WRITE_HANDLER(byVP_CMOS_w) { byVP_CMOS[offset] = data; }
 
-//Should never be called!
-static READ_HANDLER(sound_port1_r) { 
-	//logerror("sound port 1 read\n"); 
-	return 0; 
-}
-
-//P20(Bit 0) = U7(CB2)
-//P21-24 = Video U7(PB0-PB3)
-
-/* NOTE: Sound commands are sent as 2 nibbles, first low byte, then high
-         However, it reads the first low nibble 2x, reads the high nibble*/
+/* P21-24 = Video U7(PB0-PB3) 
+   NOTE: Sound commands are sent as 2 nibbles, first low byte, then high
+         However, it reads the first low nibble 2x, then reads the high nibble
+         Since Port 2 begins with P20, we must << 1 the sound commands! 
+*/
 static READ_HANDLER(sound_port2_r) { 
 	cmdnum++;
-	if( cmdnum==1 || cmdnum==2 ) {
-		//printf("cmd = %x: return = %x\n",cmdnum,locals.snddata &0x0f);
-		return locals.snddata&0x0f;
-	}
+	if( cmdnum < 3) //If it's the 1st or 2nd time reading the port..
+		return locals.snddata_lo<<1;
 	else
 		{
-			//printf("cmd = %x: return = %x\n",cmdnum,(locals.snddata &0xf0)>>4);
 			cmdnum = 0;
-			return (locals.snddata & 0xf0)>>4;
+			return locals.snddata_hi<<1;
 		}
 }
 
+/* Port 1 = DAC Data*/
 static WRITE_HANDLER(sound_port1_w) { DAC_0_data_w(offset,data); }
 
-/*Is this ever used?
---------------------
-*/
-//P20(Bit 0) = LED & U7-CB2
-//P21-24 = Video U7(PB0-PB3)
+/* P20(Bit 0) = LED*/
 static WRITE_HANDLER(sound_port2_w) {
 	locals.diagnosticLedV = (data>>0)&1;
-	pia_set_input_cb2(2,locals.diagnosticLedV);
-	pia_set_input_b(2,data&0x1e);	//Keep only bits 1-4
-	//logerror("sound port 2 write = %x\n",data);
 }
 
+
+//COMMENTS BELOW are directly from MESS source code..
 /***************************************************************************
 
   The interrupts come from the vdp. The vdp (tms9928a) interrupt can go up
@@ -511,46 +547,28 @@ static WRITE_HANDLER(sound_port2_w) {
 static int by_interrupt(void)
 {
     TMS9928A_interrupt();
-    //return ignore_interrupt ();
-
 	//The IRQ must be triggered constantly for the video cpu to read/write to the latch
 	//I'm not sure why doing it the way it was coded from MESS does not work.
 	return M6809_INT_IRQ;
+	//return ignore_interrupt ();
 }
 
 static void by_vdp_interrupt (int state)
 {
 	static int last_state = 0;
 
-	logerror("vdp_int: state = %x\n",state);
+	//logerror("vdp_int: state = %x\n",state);
 
     /* only if it goes up */
 	if (state && !last_state) {
-		logerror("VDP Caused Vidiot CPU IRQ\n");
+		//logerror("VDP Caused Vidiot CPU IRQ\n");
 		cpu_set_irq_line(BYVP_VCPUNO, M6809_IRQ_LINE, PULSE_LINE);
 	}
 	last_state = state;
 }
 
 //Video CPU Vertical Blank
-static int byVP_vvblank(void) {
-	static int ct=0;
-	if(keyboard_pressed_memory_repeat(KEYCODE_B,2))
-	{
-		ct = 0xf0;
-		*(memory_region(BYVP_MEMREG_CPU) + 0x52) = 0xa0;
-	}
-	if(keyboard_pressed_memory_repeat(KEYCODE_A,2))
-	{
-	//locals.vidiot_u2_latch = ct++;
-	locals.vidiot_u1_latch = ct++;
-	locals.vidiot_status = 1;
-	mlogerror("sending %x\n",ct);
-	pia_set_input_ca2(2, 0);
-	pia_set_input_ca2(2, 1);
-	}
-	return by_interrupt();
-}
+static int byVP_vvblank(void) { return by_interrupt(); }
 
 static READ_HANDLER(vdp_r) {
 	//logerror("vdp_r\n");
@@ -561,7 +579,7 @@ static READ_HANDLER(vdp_r) {
 }
 
 static WRITE_HANDLER(vdp_w) {
-	logerror("%x:vdp_w=%x\n",cpu_getpreviouspc(),data);
+	//logerror("%x:vdp_w=%x\n",cpu_getpreviouspc(),data);
 	if(offset==0)
 		TMS9928A_vram_w(offset,data);
 	else
@@ -604,18 +622,6 @@ static void by_vh_refresh (struct mame_bitmap *bmp, int full_refresh)
 
 #endif
 
-static READ_HANDLER(misc_r)
-{
-	int data = locals.vidiot_u2_latch;
-	logerror("%x: MISC_R: offset=%x, data=%x\n",cpu_getpreviouspc(),offset,data);
-	return data;
-}
-static WRITE_HANDLER(misc_w)
-{
-	locals.vidiot_u1_latch = data;
-	logerror("%x: MISC_W: offset=%x, data=%x\n",cpu_getpreviouspc(),offset,data);
-}
-
 static struct DACinterface by_dacInt =
   { 1, { 50 }};
 
@@ -648,7 +654,7 @@ MEMORY_END
 /  Memory map for VIDEO CPU (Located on Vidiot Board)
 /----------------------------------------------------*/
 static MEMORY_READ_START(byVP_video_readmem)
-	{ 0x0000, 0x1fff, misc_r },  
+	{ 0x0000, 0x1fff, latch_r },  
 	{ 0x2000, 0x2003, pia_2_r }, /* U7 PIA */
 	{ 0x4000, 0x4001, vdp_r },   /* U16 VDP*/
 	{ 0x6000, 0x6400, MRA_RAM }, /* U13&U14 1024x4 Byte Ram*/
@@ -656,7 +662,7 @@ static MEMORY_READ_START(byVP_video_readmem)
 MEMORY_END
 
 static MEMORY_WRITE_START(byVP_video_writemem)
-	{ 0x0000, 0x1fff, misc_w },  
+	{ 0x0000, 0x1fff, latch_w },  
 	{ 0x2000, 0x2003, pia_2_w }, /* U7 PIA */
 	{ 0x4000, 0x4001, vdp_w },   /* U16 VDP*/
 	{ 0x6000, 0x6400, MWA_RAM }, /* U13&U14 1024x4 Byte Ram*/
@@ -667,7 +673,7 @@ MEMORY_END
 /  Memory map for VIDEO CPU (Located on Vidiot Board) - G&G
 /---------------------------------------------------------*/
 static MEMORY_READ_START(byVP2_video_readmem)
-	{ 0x0000, 0x0001, misc_r },
+	{ 0x0000, 0x0001, latch_r },
 	{ 0x0002, 0x0003, vdp_r },   /* VDP MASTER */
 		{ 0x0004, 0x0005, vdp_r },   /* VDP MASTER */
 //	{ 0x0004, 0x0005, vdp2_r },  /* VDP SLAVE  */
@@ -677,7 +683,7 @@ static MEMORY_READ_START(byVP2_video_readmem)
 MEMORY_END
 
 static MEMORY_WRITE_START(byVP2_video_writemem)
-	{ 0x0000, 0x0001, misc_w },
+	{ 0x0000, 0x0001, latch_w },
 	{ 0x0002, 0x0003, vdp_w },   /* VDP MASTER */
 		{ 0x0004, 0x0005, vdp_w },   /* VDP MASTER */
 //	{ 0x0004, 0x0005, vdp2_w },  /* VDP SLAVE  */
@@ -688,19 +694,7 @@ MEMORY_END
 
 /*-----------------------------------------------------
 /  Memory map for SOUND CPU (Located on Vidiot Board)
-/-----------------------------------------------------*/
-/*
-  6803 vectors:
-  RES: FFFE-F 
-  SWI: FFFA-B Software Interrupt (Not Used)
-  NMI: FFFC-D (Used)
-  IRQ: FFF8-9 (Not Used)
-  ICF: FFF6-7 (Input Capture)~IRQ2 (FA6F)
-  OCF: FFF4-5 (Output Compare)~IRQ2 (Not Used)
-  TOF: FFF2-3 (Timer Overflow)~IRQ2 (Not Used)
-  SCI: FFF0-1 (Input Capture)~IRQ2  (Not Used)
-*/
-/*
+/------------------------------------------------------
 NMI: = Sound Test Switch
 IRQ: = NA
 Port 1:
@@ -723,19 +717,16 @@ Port 2:
 static MEMORY_READ_START(byVP_sound_readmem)
 	{ 0x0000, 0x001f, m6803_internal_registers_r },
 	{ 0x0080, 0x00ff, MRA_RAM },	/*Internal 128K RAM*/
-	{ 0x0000, 0xdfff, MRA_NOP },
 	{ 0xe000, 0xffff, MRA_ROM },	/* U29 ROM */
 MEMORY_END
 
 static MEMORY_WRITE_START(byVP_sound_writemem)
 	{ 0x0000, 0x001f, m6803_internal_registers_w },
 	{ 0x0080, 0x00ff, MWA_RAM },	/*Internal 128K RAM*/
-	{ 0x0000, 0xdfff, MWA_NOP },
 	{ 0xe000, 0xffff, MWA_ROM },	/* U29 ROM */
 MEMORY_END
 
 static PORT_READ_START( byVP_sound_readport )
-	{ M6803_PORT1, M6803_PORT1, sound_port1_r },
 	{ M6803_PORT2, M6803_PORT2, sound_port2_r },
 PORT_END
 
