@@ -119,21 +119,40 @@ static WRITE_HANDLER(cmd_w) {
 	logerror("command (?) write: %i %i\n", offset, data);
 }
 
+// display
 static WRITE_HANDLER(dma_display)
 {
 	TAITOlocals.pDisplayRAM[offset] = data;
 
-	if ( offset<14 ) {
+	if ( offset<12 ) {
 		((int*) TAITOlocals.segments)[2*offset+segMap[offset]]   = core_bcd2seg[(data>>4)&0x0f];
 		((int*) TAITOlocals.segments)[2*offset+segMap[offset]+1] = core_bcd2seg[data&0x0f];
 	}
+	else {
+		switch ( offset ) {
+		case 12:
+			((int*) TAITOlocals.segments)[2*12+segMap[12]] = core_bcd2seg[data&0x0f];
+			break;
+		
+		case 13:
+			((int*) TAITOlocals.segments)[2*12+segMap[12]+1] = core_bcd2seg[data&0x0f];
+			break;
+		
+		case 14:
+			((int*) TAITOlocals.segments)[2*13+segMap[13]] = core_bcd2seg[data&0x0f];
+			break;
+
+		case 15:
+			((int*) TAITOlocals.segments)[2*13+segMap[13]+1] = core_bcd2seg[data&0x0f];
+			break;
+		}
+	}
 }
 
+// sols, sound and lamps
 static WRITE_HANDLER(dma_commands)
 {
 	// upper nibbles of offset 0-1: solenoids
-	// upper nibbles of offset 2-3: sound commands
-	// lower nibbles: lamps, offset 0-?
 	TAITOlocals.pCommandsDMA[offset] = data;
 
 	switch ( offset ) {
@@ -159,6 +178,7 @@ static WRITE_HANDLER(dma_commands)
 			TAITOlocals.solenoids = (TAITOlocals.solenoids & 0x3ff0) | ((data&0xf0)>>4);
 		break;
 
+	// upper nibbles of offset 2-3: sound commands
 	case 2:
 		// upper nibble: sound command 1-4
 		TAITOlocals.sndCmd = (TAITOlocals.sndCmd & 0xf0) | ((data&0xf0)>>4);
@@ -176,6 +196,13 @@ static WRITE_HANDLER(dma_commands)
 
 		taito_sndCmd_w(0, TAITOlocals.sndCmd);
 	}
+
+	// lower nibbles: lamps, offset 0-f
+	// Taito uses 16 rows and 4 cols, rows 9-16 are mapped to row 1-8, cols 5-8
+	if ( offset<8 )
+		TAITOlocals.lampMatrix[offset] = (TAITOlocals.lampMatrix[offset]&0xf0) | (data&0x0f);
+	else
+		TAITOlocals.lampMatrix[offset-8] = (TAITOlocals.lampMatrix[offset-8]&0x0f) | ((data&0x0f)<<4);
 }
 
 static MEMORY_READ_START(taito_readmem)
@@ -201,7 +228,6 @@ MACHINE_DRIVER_START(taito)
   MDRV_CPU_ADD_TAG("mcpu", 8080, 4000000)
   MDRV_CPU_MEMORY(taito_readmem, taito_writemem)
   MDRV_CPU_VBLANK_INT(taito_vblank, TAITO_VBLANKFREQ)
-  // MDRV_CPU_PERIODIC_INT(taito_irq, TAITO_IRQFREQ)
   MDRV_NVRAM_HANDLER(taito)
   MDRV_DIPS(8)
   MDRV_SWITCH_UPDATE(taito)
