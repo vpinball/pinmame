@@ -11,7 +11,8 @@
 #include "zac.h"
 
 #define ZAC_VBLANKFREQ    60 /* VBLANK frequency */
-#define ZAC_IRQFREQ      366 /* IRQ frequency (can someone confirm this?)*/
+#define ZAC_IRQFREQ       2150 /* IRQ frequency (can someone confirm this?) */
+#define ZAC_IRQFREQ_A     1850 /* IRQ frequency (can someone confirm this?) */
 
 static WRITE_HANDLER(ZAC_soundCmd) { }
 static void ZAC_soundInit(void) {}
@@ -19,61 +20,37 @@ static void ZAC_soundExit(void) {}
 
 static struct {
   int swCol;
-  UINT32 solenoids;
   core_tSeg segments;
+  UINT32 solenoids;
+  UINT16 sols2;
   int diagnosticLed;
-  int vblankCount;
-  int initDone;
   int refresh;
+  int gen;
 } locals;
-
-/*-----------------------------------------------
-/ Load/Save static ram
-/-------------------------------------------------*/
-static UINT8 *ram1;
-
-static NVRAM_HANDLER(ZAC) {
-  if (ram1)
-    core_nvram(file, read_or_write, ram1, 0x400, 0x0f);
-}
 
 static INTERRUPT_GEN(ZAC_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
-  locals.vblankCount += 1;
-
-  /*-- lamps --*/
-  if ((locals.vblankCount % ZAC_LAMPSMOOTH) == 0) {
-    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
-    //memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
-  }
-
-  /*-- solenoids --*/
-  if ((locals.vblankCount % ZAC_SOLSMOOTH) == 0) {
-    coreGlobals.solenoids = locals.solenoids;
-    locals.solenoids = coreGlobals.pulsedSolState;
-  }
-  /*-- display --*/
-  if ((locals.vblankCount % ZAC_DISPLAYSMOOTH) == 0) {
-    memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
+  memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+  memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
+  coreGlobals.solenoids2 = locals.sols2;
+  coreGlobals.solenoids = locals.solenoids;
   /*update leds*/
     coreGlobals.diagnosticLed = locals.diagnosticLed;
     //locals.diagnosticLed = 0;
-  }
-  core_updateSw(TRUE);
+  core_updateSw(core_getSol(8));
 }
 
 static SWITCH_UPDATE(ZAC) {
   if (inports) {
-    coreGlobals.swMatrix[0] = inports[ZAC_COMINPORT];
+    coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0x80) | (inports[ZAC_COMINPORT] & 0xff);
+    coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0xfd) | (inports[ZAC_COMINPORT] >> 8);
   }
-  /*-- Diagnostic buttons on CPU board --*/
-  //if (core_getSw(ZAC_SWSOUNDDIAG)) cpu_set_nmi_line(ZAC_SCPU1NO, PULSE_LINE);
 }
 
 static int irq_callback(int int_level) {
-	logerror("callback!\n");
+//	logerror("callback!\n");
 	cpu_set_irq_line(ZAC_CPUNO, 0, 0);
 	return 0xbf;
 }
@@ -81,29 +58,54 @@ static int irq_callback(int int_level) {
 //Generate the IRQ
 static INTERRUPT_GEN(ZAC_irq) {
 //	logerror("%x: IRQ\n",activecpu_get_previouspc());
-//	cpu_set_irq_line(ZAC_CPUNO, 0, PULSE_LINE);
+	cpu_set_irq_line(ZAC_CPUNO, 0, PULSE_LINE);
 //	return S2650_INT_IRQ;
 }
 
-static MACHINE_INIT(ZAC) {
-//  if (locals.initDone) CORE_DOEXIT(ZAC_exit);
+/*-----------------------------------------------
+/ Load/Save static ram
+/-------------------------------------------------*/
+static UINT8 *ram1;
 
-//  if (core_init(&ZACData)) return;
+static NVRAM_HANDLER(ZAC1) {
+    core_nvram(file, read_or_write, ram1, 0x400, 0x0f);
+}
+
+static UINT8 *ram;
+static NVRAM_HANDLER(ZAC2) {
+    core_nvram(file, read_or_write, ram, 0x800, 0x00);
+}
+
+static MACHINE_INIT(ZAC1) {
   memset(&locals, 0, sizeof(locals));
+  locals.gen = 1;
   memset(ram1, 0xff, 0x400);
+
+  if (coreGlobals.soundEn) ZAC_soundInit();
+}
+
+static MACHINE_INIT(ZAC2) {
+  memset(&locals, 0, sizeof(locals));
+  locals.gen = 2;
 
   /* Set IRQ Vector Routine */
   cpu_set_irq_callback(0, irq_callback);
 
   if (coreGlobals.soundEn) ZAC_soundInit();
+}
 
-  locals.vblankCount = 1;
-//  locals.initDone = TRUE;
+static MACHINE_INIT(ZAC2A) {
+  memset(&locals, 0, sizeof(locals));
+  locals.gen = 3;
+
+  /* Set IRQ Vector Routine */
+  cpu_set_irq_callback(0, irq_callback);
+
+  if (coreGlobals.soundEn) ZAC_soundInit();
 }
 
 static MACHINE_STOP(ZAC) {
   if (coreGlobals.soundEn) ZAC_soundExit();
-  // core_exit();
 }
 
 /*   CTRL PORT : READ = D0-D7 = Switch Returns 0-7 */
@@ -125,7 +127,7 @@ static READ_HANDLER(data_port_r)
 }
 
 /*
-   SENSE PORT: READ = Read Serial Input (What is this hooked to?)
+   SENSE PORT: READ = Read Serial Input (hooked to printer)
 */
 static READ_HANDLER(sense_port_r)
 {
@@ -171,29 +173,65 @@ static WRITE_HANDLER(data_port_w)
 	logerror("%x: Sound Data Write=%x\n",activecpu_get_previouspc(),data);
 }
 
-/*   SENSE PORT: WRITE = ??*/
+/*   SENSE PORT: WRITE = Write Serial Output (hooked to printer) */
 static WRITE_HANDLER(sense_port_w)
 {
 	logerror("%x: Sense Port Write=%x\n",activecpu_get_previouspc(),data);
 }
 
-static UINT8 *ram;
-
 static READ_HANDLER(ram_r) {
-//	if (offset > 0xff) logerror("ram_r: offset = %4x\n", offset);
 	if (offset == 0x05a6) // locks up some games if 0
 		ram[offset] = 0xff;
+	else {
+		if (locals.gen < 3) {
+			if (offset > 0x508 && offset < 0x549) {
+				offset -= 0x509;
+				ram[offset] = (coreGlobals.swMatrix[offset/8+1] & (1 << offset%8)) ? 0x0f : 0x00;
+			}
+		} else {
+			if (offset > 0x51c && offset < 0x55d) {
+				offset -= 0x51d;
+				ram[offset] = (coreGlobals.swMatrix[offset/8+1] & (1 << offset%8)) ? 0x0f : 0x00;
+			}
+		}
+	}
+//	else logerror("ram_r: offset = %4x\n", offset);
 	return ram[offset];
 }
 
 static WRITE_HANDLER(ram_w) {
 	ram[offset] = data;
-	if (offset > 0x46f && offset < 0x4c0) {
+	if (offset > 0x43f && offset < 0x460) {
+		UINT32 sol = 1 << (offset - 0x440);
 		if (data)
-			coreGlobals.tmpLampMatrix[(offset-0x470) / 8] |= 1 << (offset % 8);
+			locals.solenoids |= sol;
 		else
-			coreGlobals.tmpLampMatrix[(offset-0x470) / 8] &= ~(1 << (offset % 8));
-	} // else if (offset > 0xff) logerror("ram_w: offset = %4x, data = %02x\n", offset, data);
+			locals.solenoids &= ~sol;
+	} else if (offset > 0x45f && offset < 0x470) {
+		UINT16 sol2 = 1 << (offset - 0x460);
+		if (data)
+			locals.sols2 |= sol2;
+		else
+			locals.sols2 &= ~sol2;
+	} else if (offset > 0x46f && offset < 0x4c0) {
+		offset -= 0x470;
+		if (data)
+			coreGlobals.tmpLampMatrix[offset/8] |= 1 << (offset%8);
+		else
+			coreGlobals.tmpLampMatrix[offset/8] &= ~(1 << (offset%8));
+	} else if (offset > 0x4bf && offset < 0x4e8) {
+		locals.segments[0x4e7 - offset].w = core_bcd2seg7[data & 0x0f];
+		// handle comma in 5th display
+		if (locals.segments[4].w > 0)
+			locals.segments[4].w |= 0x80;
+		else
+			locals.segments[4].w &= 0x7f;
+		if (locals.segments[2].w > 0)
+			locals.segments[1].w |= 0x80;
+		else
+			locals.segments[1].w &= 0x7f;
+	}
+//	else logerror("ram_w: offset = %4x, data = %02x\n", offset, data);
 }
 
 static WRITE_HANDLER(ram1_w) {
@@ -211,9 +249,9 @@ static READ_HANDLER(ram1_r) {
 static WRITE_HANDLER(lamp_w) {
 	ram1[offset + 0x80] = data;
 	if (data)
-		coreGlobals.tmpLampMatrix[offset / 8] |= 1 << (offset % 8);
+		coreGlobals.tmpLampMatrix[offset/8] |= 1 << (offset%8);
 	else
-		coreGlobals.tmpLampMatrix[offset / 8] &= ~(1 << (offset % 8));
+		coreGlobals.tmpLampMatrix[offset/8] &= ~(1 << (offset%8));
 }
 
 static WRITE_HANDLER(ram11_w) {
@@ -274,7 +312,7 @@ static MEMORY_READ_START(ZAC_readmem2)
 { 0x0000, 0x17ff, MRA_ROM },
 { 0x1800, 0x1fff, ram_r },		/* RAM */
 { 0x2000, 0x37ff, MRA_ROM },
-{ 0x3800, 0x3fff, ram_r },		/* RAM Mirror  */
+{ 0x3800, 0x3fff, ram_r },		/* RAM Mirror */
 { 0x4000, 0x57ff, MRA_ROM },
 { 0x5800, 0x5fff, ram_r },		/* RAM Mirror  */
 { 0x6000, 0x77ff, MRA_ROM },
@@ -283,11 +321,11 @@ MEMORY_END
 
 static MEMORY_WRITE_START(ZAC_writemem2)
 { 0x0000, 0x17ff, MWA_ROM },
-{ 0x1800, 0x1fff, ram_w, &ram },/* RAM */
+{ 0x1800, 0x1fff, ram_w },		/* RAM */
 { 0x2000, 0x37ff, MWA_ROM },
-{ 0x3800, 0x3fff, ram_w },		/* RAM Mirror  */
+{ 0x3800, 0x3fff, ram_w, &ram },/* RAM Mirror */
 { 0x4000, 0x57ff, MWA_ROM },
-{ 0x5800, 0x5fff, ram_w },		/* RAM Mirror  */
+{ 0x5800, 0x5fff, ram_w },		/* RAM Mirror */
 { 0x6000, 0x77ff, MWA_ROM },
 { 0x7800, 0x7fff, ram_w },		/* RAM Mirror */
 MEMORY_END
@@ -315,7 +353,7 @@ MEMORY_END
    CTRL PORT : READ = D0-D7 = Switch Returns 0-7
    DATA PORT : READ = D0-D3 = Dip Switch Read D0-D3 & Program Switch 1 on D3
 					  D4-D7 = ActSnd & ActSpk? Pin 20,19,18,17 of CN?
-   SENSE PORT: READ = Read Serial Input (What is this hooked to?)
+   SENSE PORT: READ = Read Serial Input (hooked to printer)
    ------------------
    CTRL PORT : WRITE =	D0-D3 = Switch Strobes (4-8 Demultiplexed)
 						D4=Pin 5 of CN? & /RUNEN = !D4
@@ -323,7 +361,7 @@ MEMORY_END
 						D6=Pin 15 of CN?
 						D7=Pin 11 of CN?
    DATA PORT : WRITE = Sound Data 0-7
-   SENSE PORT: WRITE = ??
+   SENSE PORT: WRITE = Write Serial Output (hooked to printer)
 */
 static PORT_WRITE_START( ZAC_writeport )
 	{ S2650_CTRL_PORT,  S2650_CTRL_PORT,  ctrl_port_w },
@@ -339,24 +377,16 @@ PORT_END
 
 MACHINE_DRIVER_START(ZAC1)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CORE_INIT_RESET_STOP(ZAC,NULL,ZAC)
-  MDRV_CPU_ADD_TAG("mcpu", S2650, 600000/4)
+  MDRV_CORE_INIT_RESET_STOP(ZAC1,NULL,ZAC)
+  MDRV_CPU_ADD_TAG("mcpu", S2650, 6000000/4)
   MDRV_CPU_MEMORY(ZAC_readmem, ZAC_writemem)
   MDRV_CPU_PORTS(ZAC_readport, ZAC_writeport)
   MDRV_CPU_VBLANK_INT(ZAC_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(ZAC_irq, ZAC_IRQFREQ)
-  MDRV_NVRAM_HANDLER(ZAC)
+  MDRV_NVRAM_HANDLER(ZAC1)
   MDRV_DIPS(4)
-  MDRV_SWITCH_UPDATE(ZAC)
   MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_SOUND_CMD(ZAC_soundCmd)
   MDRV_SOUND_CMDHEADING("ZAC")
-MACHINE_DRIVER_END
-
-MACHINE_DRIVER_START(ZAC2)
-  MDRV_IMPORT_FROM(ZAC1)
-  MDRV_CPU_MODIFY("mcpu")
-  MDRV_CPU_MEMORY(ZAC_readmem2, ZAC_writemem2)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(ZAC0)
@@ -365,42 +395,25 @@ MACHINE_DRIVER_START(ZAC0)
   MDRV_CPU_MEMORY(ZAC_readmem0, ZAC_writemem0)
 MACHINE_DRIVER_END
 
-#if 0
-static core_tData ZACData = {
-  4, /* 4 Dips */
-  ZAC_updSw, 1, ZAC_soundCmd, "ZAC",
-  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
-};
+MACHINE_DRIVER_START(ZAC2)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CORE_INIT_RESET_STOP(ZAC2,NULL,ZAC)
+  MDRV_CPU_ADD_TAG("mcpu", S2650, 6000000/4)
+  MDRV_CPU_MEMORY(ZAC_readmem2, ZAC_writemem2)
+  MDRV_CPU_PORTS(ZAC_readport, ZAC_writeport)
+  MDRV_CPU_VBLANK_INT(ZAC_vblank, 1)
+  MDRV_CPU_PERIODIC_INT(ZAC_irq, ZAC_IRQFREQ)
+  MDRV_NVRAM_HANDLER(ZAC2)
+  MDRV_DIPS(4)
+  MDRV_SWITCH_UPDATE(ZAC)
+  MDRV_DIAGNOSTIC_LEDH(1)
+  MDRV_SOUND_CMD(ZAC_soundCmd)
+  MDRV_SOUND_CMDHEADING("ZAC")
+MACHINE_DRIVER_END
 
-/* 3 x 2532 EPROM Configuration */
-struct MachineDriver machine_driver_ZAC1 = {
-  {{  CPU_S2650, 6000000/4, /* 6.00/4 = 1.5Mhz */
-      ZAC_readmem, ZAC_writemem, ZAC_readport, ZAC_writeport,
-      ZAC_vblank, 1, ZAC_irq, ZAC_IRQFREQ
-  }},
-  ZAC_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, ZAC_init, CORE_EXITFUNC(ZAC_exit)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
-  NULL, NULL, gen_refresh,
-  0,0,0,0, {{0}},
-  ZAC_nvram
-};
-
-/* 2 x 2764 EPROM Configuration */
-struct MachineDriver machine_driver_ZAC2 = {
-  {{  CPU_S2650, 6000000/4, /* 6.00/4 = 1.5Mhz */
-      ZAC_readmem2, ZAC_writemem2, ZAC_readport, ZAC_writeport,
-      ZAC_vblank, 1, ZAC_irq, ZAC_IRQFREQ
-  }},
-  ZAC_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, ZAC_init2, CORE_EXITFUNC(ZAC_exit)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
-  NULL, NULL, gen_refresh,
-  0,0,0,0, {{0}},
-  ZAC_nvram
-};
-#endif
+MACHINE_DRIVER_START(ZAC2A)
+  MDRV_IMPORT_FROM(ZAC2)
+  MDRV_CORE_INIT_RESET_STOP(ZAC2A,NULL,ZAC)
+  MDRV_CPU_MODIFY("mcpu")
+  MDRV_CPU_PERIODIC_INT(ZAC_irq, ZAC_IRQFREQ_A)
+MACHINE_DRIVER_END

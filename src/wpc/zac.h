@@ -5,22 +5,18 @@
 #include "wpcsam.h"
 #include "sim.h"
 
-#define ZAC_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
-#define ZAC_LAMPSMOOTH      1 /* Smooth the lamps over this number of VBLANKS */
-#define ZAC_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKS */
-
 /*-- Common Inports for ZAC Games --*/
 #define ZAC_COMPORTS \
   PORT_START /* 0 */ \
-    /* These are put in switch column 0 */ \
-    COREPORT_BIT(     0x0001, "Key 1", KEYCODE_1) \
-    COREPORT_BIT(     0x0002, "Key 2", KEYCODE_2) \
-    COREPORT_BIT(     0x0004, "Key 3", KEYCODE_3) \
-    COREPORT_BIT(     0x0008, "Key 4", KEYCODE_4) \
-    COREPORT_BIT(     0x0010, "Key 5", KEYCODE_5) \
-    COREPORT_BIT(     0x0020, "Key 6", KEYCODE_6) \
-    COREPORT_BIT(     0x0040, "Key 7", KEYCODE_7) \
-    COREPORT_BIT(     0x0080, "Key 8", KEYCODE_8) \
+    /* These are put in switch column 1 */ \
+    COREPORT_BITIMP(  0x0001, "Up", KEYCODE_7) \
+    COREPORT_BITIMP(  0x0002, "Down", KEYCODE_8) \
+    COREPORT_BITIMP(  0x0004, "Reset", KEYCODE_0) \
+    COREPORT_BITIMP(  0x0008, "Coin 4 / Start", KEYCODE_1) \
+    COREPORT_BITIMP(  0x0010, "Coin 1", KEYCODE_3) \
+    COREPORT_BITIMP(  0x0020, "Coin 2", KEYCODE_4) \
+    COREPORT_BITIMP(  0x0040, "Coin 3", KEYCODE_5) \
+    COREPORT_BIT   (  0x0200, "Advance", KEYCODE_9) \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
       COREPORT_DIPSET(0x0000, "0" ) \
@@ -45,9 +41,6 @@
 #define ZAC_INPUT_PORTS_END INPUT_PORTS_END
 
 #define ZAC_COMINPORT       CORE_COREINPORT
-
-/*-- ZAC switch numbers --*/
-#define ZAC_SWSOUNDDIAG  -7
 
 /*-------------------------
 / Machine driver constants
@@ -220,9 +213,11 @@ setup mirrors
 extern MACHINE_DRIVER_EXTERN(ZAC0);
 extern MACHINE_DRIVER_EXTERN(ZAC1);
 extern MACHINE_DRIVER_EXTERN(ZAC2);
+extern MACHINE_DRIVER_EXTERN(ZAC2A);
 
 #define mZAC0     ZAC0
 #define mZAC1     ZAC1
 #define mZAC2     ZAC2
+#define mZAC2A    ZAC2A
 
 #endif /* INC_ZAC */
