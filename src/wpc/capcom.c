@@ -4,8 +4,7 @@
 #include "core.h"
 
 #define CC_VBLANKFREQ    60 /* VBLANK frequency */
-#define CC_IRQFREQ      150 /* IRQ (via PIA) frequency*/
-#define CC_ZCFREQ        85 /* Zero cross frequency */
+#define CC_ZCFREQ        60 /* Zero cross frequency */
 
 #define CC_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
 #define CC_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
@@ -18,6 +17,7 @@ static struct {
   int u16irqcount;
   int diagnosticLed;
   int visible_page;
+  int zero_cross;
   UINT8 lastb;
 } locals;
 
@@ -57,10 +57,16 @@ static SWITCH_UPDATE(cc) {
 }
 
 static void cc_zeroCross(int data) {
+ locals.zero_cross = !locals.zero_cross;
  cpu_set_irq_line(0,MC68306_IRQ_2,ASSERT_LINE);
 }
 static READ16_HANDLER(cc_porta_r) { DBGLOG(("Port A read\n")); return 0; }
-static READ16_HANDLER(cc_portb_r) { DBGLOG(("Port B read\n")); return 0; }
+static READ16_HANDLER(cc_portb_r) { 
+	int data = 0;
+	data |= locals.zero_cross<<4;
+	DBGLOG(("Port B read = %x\n",data));
+	return data; 
+}
 static WRITE16_HANDLER(cc_porta_w) {
   DBGLOG(("Port A write %04x\n",data));
   locals.diagnosticLed = ((~data)&0x08>>3);
@@ -106,7 +112,7 @@ static READ16_HANDLER(u16_r) {
   static int readnum = 0;
   int numcheck;
 
-  //Once we've read the U16 3 times, we can safely return the ROM data we changed back, so U1 ROM test won't fail
+  //Once we've read the U16 2 or 3 times(depending on the game), we can safely return the ROM data we changed back, so U1 ROM test won't fail
   if(offset==0)
 	readnum++;
   
@@ -121,8 +127,6 @@ static READ16_HANDLER(u16_r) {
   offset &= 0x203;
   DBGLOG(("U16r [%03x] (%04x)\n",offset,mem_mask));
   //printf("U16r [%03x] (%04x)\n",offset,mem_mask);
-  //force U16 test to succeed
-  //return 0x00bc;
   switch (offset) {
     case 0x000: case 0x001: case 0x002: case 0x003:
       return locals.u16a[offset];
@@ -150,11 +154,12 @@ static READ16_HANDLER(io_r) {
     case 0x400000:
       sw = coreGlobals.swMatrix[0] << 8 | coreGlobals.swMatrix[9];
   }
-  return ~sw;
+  return sw^0xffff;		//Switches are inverted
 }
 
 static WRITE16_HANDLER(io_w) {
   static int on = 1;
+  UINT16 soldata;
 #ifdef MAME_DEBUG
 	if(keyboard_pressed_memory_repeat(KEYCODE_Z,2))
 		printf("io_w [%03x]=%04x (%04x)\n",offset,data,mem_mask);
@@ -187,12 +192,18 @@ static WRITE16_HANDLER(io_w) {
         if (data & 0x8000) coreGlobals.tmpLampMatrix[15] = (~data & 0xff);
       }
       break;
+    //Sols: 1-8 (hi byte) & 17-24 (lo byte)
     case 0x20000c:
-      coreGlobals.pulsedSolState |= (~data & 0xffff);
+	  soldata = core_revword(data^0xffff);
+	  coreGlobals.pulsedSolState |= (soldata & 0x00ff)<<16;
+	  coreGlobals.pulsedSolState |= (soldata & 0xff00)>>8;
       locals.solenoids = coreGlobals.pulsedSolState;
       break;
     case 0x20000d:
-      coreGlobals.pulsedSolState |= ((~data & 0xffff) << 16);
+	//Sols: 9-16 (hi byte) & 24-32 (lo byte)
+	  soldata = core_revword(data^0xffff);
+	  coreGlobals.pulsedSolState |= (soldata & 0x00ff)<<24;
+	  coreGlobals.pulsedSolState |= (soldata & 0xff00)>>0;
       locals.solenoids = coreGlobals.pulsedSolState;
       break;
   }
@@ -203,7 +214,8 @@ static MACHINE_INIT(cc) {
   locals.u16a[0] = 0x00bc;
   locals.vblankCount = 1;
   timer_pulse(TIME_IN_CYCLES(2811,0),0,cc_u16irq1);
-  timer_pulse(TIME_IN_HZ(400),0,cc_u16irq4);
+  //IRQ4 doesn't seem to do anything?!!
+  //timer_pulse(TIME_IN_HZ(400),0,cc_u16irq4);
 
   //Force U16 Check to succeed
 	switch(core_gameData->gen){
@@ -332,9 +344,6 @@ static MEMORY_READ16_START(cc_readmem)
   { 0x00000000, 0x00ffffff, MRA16_ROM },
   { 0x01000000, 0x0107ffff, MRA16_RAM },
   { 0x02000000, 0x02bfffff, io_r }, 
-//{ 0x02000000, 0x02000001, MRA16_RAM }, /* AUX I/O */
-//{ 0x02400000, 0x02400001, MRA16_RAM }, /* EXT I/O */
-//{ 0x02800000, 0x02800001, MRA16_RAM }, /* SWITCH0 */
   { 0x02C00000, 0x02C007ff, u16_r },     /* U16 (A10,A2,A1)*/
   { 0x03000000, 0x0300ffff, MRA16_RAM }, /* NVRAM */
 MEMORY_END

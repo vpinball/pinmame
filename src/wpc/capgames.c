@@ -36,7 +36,7 @@ CC_ROMSTART_4(pmv112,  "u1l_v112.bin",CRC(c8362623),
                        "u2l_v10.bin", CRC(d3e4241d),
                        "u2h_v10.bin", CRC(9276fd62))
 CC_ROMEND
-CORE_GAMEDEFNV(pmv112,"Pinball Magic",1995,"Capcom",cc,GAME_NOT_WORKING|GAME_NO_SOUND)
+CORE_GAMEDEFNV(pmv112,"Pinball Magic",1995,"Capcom",cc,GAME_NO_SOUND)
 
 INITGAME(pmv112r, 2, 3)
 CC_ROMSTART_4(pmv112r, "u1lv112i.bin",CRC(28d35969),
@@ -55,7 +55,7 @@ CC_ROMSTART_4(abv106,  "u1l_v16.bin", CRC(59b258f1),
                        "u2l_v10.bin", CRC(a15b1ec0),
                        "u2h_v10.bin", CRC(c22e3338))
 CC_ROMEND
-CORE_GAMEDEFNV(abv106,"Airborne",1996,"Capcom",cc,GAME_NOT_WORKING|GAME_NO_SOUND)
+CORE_GAMEDEFNV(abv106,"Airborne",1996,"Capcom",cc,GAME_NO_SOUND)
 
 INITGAME(abv106r, 4, 3)
 CC_ROMSTART_4(abv106r, "u1l_v16i.bin",CRC(7d7d2d85),
@@ -72,7 +72,7 @@ INITGAME(bsv103, 5, 3)
 CC_ROMSTART_2(bsv103,  "u1l_v13.bin", CRC(f8932dcc),
                        "u1h_v13.bin", CRC(508c145d))
 CC_ROMEND
-CORE_GAMEDEFNV(bsv103,"Breakshot (1.3)",1996,"Capcom",cc,GAME_NOT_WORKING|GAME_NO_SOUND)
+CORE_GAMEDEFNV(bsv103,"Breakshot (1.3)",1996,"Capcom",cc,GAME_NO_SOUND)
 
 INITGAME(bsv100r, 6, 3)
 CC_ROMSTART_2(bsv100r, "u1l_v10i.bin",CRC(304b4da8),
@@ -117,7 +117,7 @@ CC_ROMSTART_4(bbb109,  "u1l_b19.bin", CRC(32be6cb0),
                        "u2l_b17.bin", CRC(9bebf271),
                        "u2h_b17.bin", CRC(afd36d9c))
 CC_ROMEND
-CORE_GAMEDEFNV(bbb109,"Big Bang Bar (Beta)",1996,"Capcom",cc,GAME_NOT_WORKING|GAME_NO_SOUND)
+CORE_GAMEDEFNV(bbb109,"Big Bang Bar (Beta)",1996,"Capcom",cc,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
 / Kingpin (12/96)
