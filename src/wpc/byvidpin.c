@@ -6,7 +6,7 @@
 
    Hardware: 
    (Both Games)
-   MPU Board: MPU-133 (Equivalent of MPU-35 except for 1 diode change) - See note below
+   MPU Board: MPU-133 (Equivalent of MPU-35 except for 1 resistor to diode change) - See note below
    
    (BabyPacman Only):
    VIDIOT Board: Handles Video/Joystick Switchs/Sound Board
@@ -16,6 +16,13 @@
    VIDIOT DELUXE:Handles Video/Joystick and Communication to Cheap Squeak board
    Chips:		(2 x TMS9928 Video Chip - Master/Slave configuration), 6809 CPU, 6821 PIA
    Cheap Squeak Sound Board
+
+   *EMULATION ISSUES*
+   Baby Pac: Start up sounds during test flashes is wrong.. should play pac tune?
+
+   G & G: Transparency for Slave VDP is any color drawn in black. Seems like
+          palette #0 & #1 (Press F4 to see it) are black. I don't know how to make this
+		  work with copybitmap() code in tms9928.c. I can make it work for either 1 or the other!
 
    Interesting Tech Note: 
    
@@ -611,6 +618,19 @@ static WRITE_HANDLER(vdp1_w) {
 		TMS9928A_register_1_w(offset,data);
 }
 
+static WRITE_HANDLER(both_w) {
+	//logerror("%x:vdp1_w: offset=%x, data=%x\n",cpu_getpreviouspc(),offset,data);
+	if(offset==0) {
+		TMS9928A_vram_0_w(offset,data);
+		TMS9928A_vram_1_w(offset,data);
+	}
+	else {
+		TMS9928A_register_0_w(offset,data);
+		TMS9928A_register_1_w(offset,data);
+		}
+}
+
+
 static int by_vh_start(void)
 {
 	if (TMS9928A_start(0,TMS99x8A, 0x4000)) return 1;
@@ -629,31 +649,58 @@ static int by1_vh_start(void)
 
 static void by_vh_stop(void)
 {
-  TMS9928A_stop();
+  TMS9928A_stop(1);
+}
+
+static void by1_vh_stop(void)
+{
+  TMS9928A_stop(2);
 }
 
 static void by_drawStatus (struct mame_bitmap *bmp, int full_refresh);
 static void by_vh_refresh (struct mame_bitmap *bmp, int full_refresh)
-	{
-		TMS9928A_refresh(0, bmp,full_refresh);
-		if(!coreGlobals_dmd.dmdOnly)
-			by_drawStatus(bmp, full_refresh);
-	}
-static void by1_vh_refresh (struct mame_bitmap *bmp, int full_refresh)
-	{
-		TMS9928A_refresh(0, bmp,full_refresh);
+{
 		TMS9928A_refresh(1, bmp,full_refresh);
 		if(!coreGlobals_dmd.dmdOnly)
 			by_drawStatus(bmp, full_refresh);
+}
+
+//#define TESTGRANNY 1
+
+#ifndef TESTGRANNY
+
+	static void by1_vh_refresh (struct mame_bitmap *bmp, int full_refresh)
+	{
+			TMS9928A_refresh(2, bmp,full_refresh);
+			if(!coreGlobals_dmd.dmdOnly)
+				by_drawStatus(bmp, full_refresh);
 	}
 
-#define GRAPHICSETUP \
-	  256, 192, { 0, 255, 0, 191 }, \
-	  0, /* gfxdecodeinfo */\
-	  TMS9928A_PALETTE_SIZE,\
-	  TMS9928A_COLORTABLE_SIZE,\
-	  tms9928A_init_palette,\
-	  VIDEO_TYPE_RASTER | VIDEO_MODIFIES_PALETTE,\
+
+	#define GRAPHICSETUP \
+		  256, 192, { 0, 255, 0, 191 }, \
+		  0, /* gfxdecodeinfo */\
+		  TMS9928A_PALETTE_SIZE,\
+		  TMS9928A_COLORTABLE_SIZE,\
+		  tms9928A_init_palette,\
+		  VIDEO_TYPE_RASTER | VIDEO_MODIFIES_PALETTE,
+#else
+
+	static void by1_vh_refresh (struct mame_bitmap *bmp, int full_refresh)
+	{
+			TMS9928A_refresh_test(bmp,full_refresh);
+			if(!coreGlobals_dmd.dmdOnly)
+				by_drawStatus(bmp, full_refresh);
+	}
+
+	#define GRAPHICSETUP \
+		  256*3, 192, { 0, 255*3, 0, 191 }, \
+		  0, /* gfxdecodeinfo */\
+		  TMS9928A_PALETTE_SIZE,\
+		  TMS9928A_COLORTABLE_SIZE,\
+		  tms9928A_init_palette,\
+		  VIDEO_TYPE_RASTER | VIDEO_MODIFIES_PALETTE,
+#endif
 
 static struct DACinterface by_dacInt =
   { 1, { 50 }};
@@ -707,9 +754,8 @@ MEMORY_END
 /------------------------------------------------------------------*/
 static MEMORY_READ_START(byVP2_video_readmem)
 	{ 0x0000, 0x0001, latch_r },
-	{ 0x0002, 0x0003, vdp0_r },  /* VDP MASTER? */
-	{ 0x0004, 0x0005, vdp1_r },  /* VDP SLAVE?  */
-	{ 0x0006, 0x0007, MRA_RAM }, /* ?????????  */
+	{ 0x0002, 0x0003, vdp0_r },  /* VDP MASTER */
+	{ 0x0004, 0x0005, vdp1_r },  /* VDP SLAVE  */
 	{ 0x0008, 0x000b, pia_2_r }, /* PIA */
 	{ 0x0300, 0x031c, MRA_RAM }, /* What is this? More CMOS? No 3rd Flash if commented as MWA_RAM */
 	{ 0x2000, 0x27ff, MRA_RAM }, /* 2K RAM */
@@ -719,9 +765,9 @@ MEMORY_END
 
 static MEMORY_WRITE_START(byVP2_video_writemem)
 	{ 0x0000, 0x0001, latch_w },
-	{ 0x0002, 0x0003, vdp0_w },  /* VDP MASTER? */
-	{ 0x0004, 0x0005, vdp1_w },  /* VDP SLAVE?  */
-	{ 0x0006, 0x0007, MWA_RAM }, /* ?????????  */
+	{ 0x0002, 0x0003, vdp0_w },  /* VDP MASTER */
+	{ 0x0004, 0x0005, vdp1_w },  /* VDP SLAVE  */
+	{ 0x0006, 0x0007, both_w },  /* WRITE TO BOTH  */
 	{ 0x0008, 0x000b, pia_2_w }, /* PIA */
 	{ 0x0300, 0x031c, MWA_RAM }, /* What is this? More CMOS? No 3rd Flash if commented as MWA_RAM */
 	{ 0x2000, 0x27ff, MWA_RAM }, /* 2K RAM*/
@@ -819,7 +865,7 @@ struct MachineDriver machine_driver_byVP2 = {
   50, byVP_init, CORE_EXITFUNC(byVP_exit)
   GRAPHICSETUP
   0,
-  by1_vh_start,by_vh_stop, by1_vh_refresh,
+  by1_vh_start,by1_vh_stop, by1_vh_refresh,
   0,0,0,0, {{SOUND_DAC,&by_dacInt}},
   byVP_nvram
 };
@@ -832,7 +878,6 @@ static void byVP_nvram(void *file, int write) {
   core_nvram(file, write, byVP_CMOS, 0x100,0xff);
 }
 
-#if 1
 /*--------------------------------------------
 / Draw status display
 / Lamps, Switches, Solenoids, Diagnostic LEDs
@@ -930,4 +975,3 @@ void by_drawStatus(struct mame_bitmap *bitmap, int fullRefresh) {
   /*-- draw game specific mechanics --*/
   if (core_gameData->hw.drawMech) core_gameData->hw.drawMech((void *)&bitmap->line[firstRow]);
 }
-#endif
