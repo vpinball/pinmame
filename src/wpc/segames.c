@@ -397,6 +397,23 @@ SE_ROMEND
 #define input_ports_strikext input_ports_se
 CORE_GAMEDEFNV(strikext,"Striker Xtreme (1.02)",1999,"Stern",de_mSES2,GAME_NOCRC)
 
+#ifdef TEST_NEW_SOUND
+/*-------------------------------------------------------------------
+/ Striker Extreme (ARM7 Sound Board)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(strknew,"sxcpua.102", CRC(5e5f0fb8) SHA1(1425d66064e59193ce7cacb496c12ae956670435))
+DE_DMD32ROM8x(     "sxdispa.103",CRC(e4cf849f) SHA1(27b61f1659762b396ca3af375e28f9c56500f79e))
+DE3S_SOUNDROM18888("sxsounda.u7" ,CRC(e7e1a0cb) SHA1(be8b3e4d4232519db8344ae9e75f77d159bb1911),
+                  "sxvoicea.u17",CRC(aeeed88f) SHA1(e150fd243feffcdc5d66487e840cefdfb50213da),
+                  "sxvoicea.u21",CRC(62c9bfe3) SHA1(14a65a673a33b7e3d3005f76acf3098dc37958f8),
+                  "sxvoicea.u36",CRC(a0bc0edb) SHA1(1025a28fe9a0e3681e8e99b513da29ec294da045),
+                  "sxvoicea.u37",CRC(4c08c33c) SHA1(36bfad0c59fd228db76a6ff36698edd929c11336))
+SE_ROMEND
+#define input_ports_strknew input_ports_se
+#define init_strknew init_strikext
+CORE_CLONEDEFNV(strknew,strikext,"Striker Xtreme (ARM7 Sound Board)",1999,"Stern",de_mSES3,GAME_NOCRC)
+#endif
+
 /*-------------------------------------------------------------------
 / Striker Extreme (UK)
 /-------------------------------------------------------------------*/
@@ -486,6 +503,22 @@ SE_ROMEND
 #define input_ports_shrkysht input_ports_se
 CORE_GAMEDEFNV(shrkysht,"Sharkey's Shootout (2.11)",2000,"Stern",de_mSES1,GAME_NOCRC)
 
+#ifdef TEST_NEW_SOUND
+/*-------------------------------------------------------------------
+/ Sharkey's Shootout (ARM7 Sound Board)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(shrknew,"sscpu.211",CRC(66a0e5ce) SHA1(d33615081cd8cdf8a17a44b389c6d9746e093510))
+DE_DMD32ROM8x(        "ssdispa.201",CRC(3360300b) SHA1(3169651a49bb7168fc04b2ae678b696ec6a21c85))
+DE3S_SOUNDROM1888(    "sssndu7.101",CRC(fbc6267b) SHA1(e6e70662031e5209385f8b9c59296d7423cc03b4),
+                     "sssndu17.100",CRC(dae78d8d) SHA1(a0e1722a19505e7d08266c490d27f772357722d3),
+                     "sssndu21.100",CRC(e1fa3f2a) SHA1(08731fd53ef81453a8f20602e76d435c6771bbb9),
+                     "sssndu36.100",CRC(d22fcfa3) SHA1(3fa407f72ecc64f9d00b92122c4e4d85022e4202))
+SE_ROMEND
+#define input_ports_shrknew input_ports_se
+#define init_shrknew init_shrkysht
+CORE_CLONEDEFNV(shrknew,shrkysht,"Sharkey's Shootout (ARM7 Sound Board)",2001,"Stern",de_mSES3,GAME_NOCRC)
+#endif
+
 /*-------------------------------------------------------------------
 / Sharkey's Shootout (Germany)
 /-------------------------------------------------------------------*/
@@ -547,6 +580,24 @@ SE_ROMEND
 #define input_ports_hirolcas input_ports_se
 CORE_GAMEDEFNV(hirolcas,"High Roller Casino (3.00)",2001,"Stern",de_mSES2,GAME_NOCRC)
 
+
+#ifdef TEST_NEW_SOUND
+/*-------------------------------------------------------------------
+/ High Roller Casino (ARM7 Sound Board)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(hironew,"hrccpu.300",CRC(0d1117fa) SHA1(a19f9dfc2288fc16cb8e992ffd7f13e70ef042c7))
+DE_DMD32ROM8x(        "hrcdispa.300",CRC(099ccaf0) SHA1(2e0c2706881208f08e8a1d30915424c8f9b1cf67))
+DE3S_SOUNDROM18888(    "hrsndu7.100",CRC(c41f91a7) SHA1(2af3be10754ea633558bdbeded21c6f82d85cd1d),
+                      "hrsndu17.100",CRC(5858dfd0) SHA1(0d88daf3b480f0e0a2653d9be37cafed79036a48),
+                      "hrsndu21.100",CRC(c653de96) SHA1(352567f4f4f973ed3d8c018c9bf37aeecdd101bf),
+                      "hrsndu36.100",CRC(5634eb4e) SHA1(8c76f49423fc0d7887aa5c57ad029b7371372739),
+                      "hrsndu37.100",CRC(d4d23c00) SHA1(c574dc4553bff693d9216229ce38a55f69e7368a))
+SE_ROMEND
+#define input_ports_hironew input_ports_se
+#define init_hironew init_hirolcas
+CORE_CLONEDEFNV(hironew,hirolcas,"High Roller Casino (ARM7 Sound Board)",2001,"Stern",de_mSES3,GAME_NOCRC)
+#endif
+
 /*-------------------------------------------------------------------
 / High Roller Casino (France)
 /-------------------------------------------------------------------*/
@@ -606,6 +657,23 @@ DE2S_SOUNDROM18888( "apsndu7.100",CRC(d0e79d59) SHA1(7c3f1fa79ff193a976986339a55
 SE_ROMEND
 #define input_ports_austin input_ports_se
 CORE_GAMEDEFNV(austin,"Austin Powers (3.02)",2001,"Stern",de_mSES2,GAME_NOCRC)
+
+#ifdef TEST_NEW_SOUND
+/*-------------------------------------------------------------------
+/ Austin Powers (3.02) - (ARM7 Sound Board)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(austnew,"apcpu.302",CRC(2920b59b) SHA1(280cebbb39980fbcfd91fc1cf87a40ad926ffecb))
+DE_DMD32ROM8x(      "apdsp-a.300",CRC(ecf2c3bb) SHA1(952a7873067b8c70043a38a39a8f65089103336b))
+DE3S_SOUNDROM18888( "apsndu7.100",CRC(d0e79d59) SHA1(7c3f1fa79ff193a976986339a551e3d03208550f),
+                   "apsndu17.100",CRC(c1e33fee) SHA1(5a3581584cc1a841d884de4628f7b65d8670f96a),
+                   "apsndu21.100",CRC(07c3e077) SHA1(d48020f7da400c3682035d537289ce9a30732d74),
+                   "apsndu36.100",CRC(f70f2828) SHA1(9efbed4f68c22eb26e9100afaca5ebe85a97b605),
+                   "apsndu37.100",CRC(ddf0144b) SHA1(c2a56703a41ee31841993d63385491259d5a13f8))
+SE_ROMEND
+#define input_ports_austnew input_ports_se
+#define init_austnew init_austin
+CORE_CLONEDEFNV(austnew,austin,"Austin Powers (ARM7 Sound Board)",2001,"Stern",de_mSES3,GAME_NOCRC)
+#endif
 
 /*-------------------------------------------------------------------
 / Austin Powers (France)
@@ -668,6 +736,23 @@ DE2S_SOUNDROM18888(      "pbsndu7.102",  CRC(12a68f34) SHA1(f2cd42918dec353883bc
 SE_ROMEND
 #define input_ports_playboys input_ports_se
 CORE_GAMEDEFNV(playboys,"Playboy (5.00)",2002,"Stern",de_mSES2,GAME_NOCRC)
+
+#ifdef TEST_NEW_SOUND
+/*-------------------------------------------------------------------
+/ Playboy (ARM7 Sound Board)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(playnew, "pbcpu.500",    CRC(e4d924ae) SHA1(2aab64eee57e9569c3cc1bde28cda69ff4cacc69))
+DE_DMD32ROM8x(           "pbdispa.500",  CRC(40450165) SHA1(80295466838cb08fe1499b19a98bf759fb7a306e))
+DE3S_SOUNDROM18888(      "pbsndu7.102",  CRC(12a68f34) SHA1(f2cd42918dec353883bc465f6302c2d94dcd6b87),
+                         "pbsndu17.100", CRC(f5502fec) SHA1(c8edd56e0c4365dd6b4bef0f1c7cc83ea5fd73d6),
+                         "pbsndu21.100", CRC(7869d34f) SHA1(48a051045523c14ca06a7227b34ed9e3818828d0),
+                         "pbsndu36.100", CRC(d10f14a3) SHA1(972b480c23d484b627ecdce0322c08fe760a127f),
+                         "pbsndu37.100", CRC(6642524a) SHA1(9d0c0be5887cf4510c11243ee47b11c08cbae17c))
+SE_ROMEND
+#define input_ports_playnew input_ports_se
+#define init_playnew init_playboys
+CORE_CLONEDEFNV(playnew,playboys,"Playboy (ARM7 Sound Board)",2002,"Stern",de_mSES3,GAME_NOCRC)
+#endif
 
 /*-------------------------------------------------------------------
 / Playboy (France)
@@ -748,6 +833,26 @@ SE_ROMEND
 #define input_ports_rctycn input_ports_se
 CORE_GAMEDEFNV(rctycn,"Roller Coaster Tycoon (7.01)",2002,"Stern",de_mSES1,GAME_NOCRC)
 
+
+#ifdef TEST_NEW_SOUND
+/*-------------------------------------------------------------------
+/ Roller Coaster Tycoon (ARM7 Sound Board)
+/-------------------------------------------------------------------*/
+
+SE128_ROMSTART(rctnew, "rctcpu.701",CRC(e1fe89f6) SHA1(9a76a5c267e055fcf0418394762bcea758da02d6))
+DE_DMD32ROM8x(       "rctdispa.700",CRC(6a8925d7) SHA1(82a6c069f1e8f8e053fec708f56c8ffe56d70fc8))
+DE3S_SOUNDROM1888(    "rcsndu7.100",CRC(e6cde9b1) SHA1(cbaadafd18ad9c0338bf2cce94b2c2a89e734778),
+                     "rcsndu17.100",CRC(18ba20ec) SHA1(c6e7a8a5fd6029b8e884a6eeb779a10d819e8c7c),
+                     "rcsndu21.100",CRC(64b19c11) SHA1(9ac714d372437cf1d8c4e01512c0647f13e40ddb),
+                     "rcsndu36.100",CRC(05c8bac9) SHA1(0771a393d5361c9a35d42a18b6c6a105b7752e03))
+SE_ROMEND
+
+#define input_ports_rctnew input_ports_se
+#define init_rctnew init_rctycn
+CORE_CLONEDEFNV(rctnew,rctycn,"Roller Coaster Tycoon (ARM7 Sound Board)",2002,"Stern",de_mSES3,GAME_NOCRC)
+
+#endif
+
 /*-------------------------------------------------------------------
 / Roller Coaster Tycoon (Germany)
 /-------------------------------------------------------------------*/
@@ -825,6 +930,23 @@ SE_ROMEND
 #define input_ports_simpprty input_ports_se
 CORE_GAMEDEFNV(simpprty,"The Simpsons Pinball Party (4.00)",2003,"Stern",de_mSES2,GAME_NOCRC)
 
+#ifdef TEST_NEW_SOUND
+/*-------------------------------------------------------------------
+/ The Simpsons Pinball Party (ARM7 Sound Board)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(simpnew, "spp-cpu.400",CRC(530b9782) SHA1(573b20cac205b7989cdefceb2c31cb7d88c2951a))
+DE_DMD32ROM8x(           "sppdspa.400",CRC(cd5eaab7) SHA1(a06bef6fc0e7f3c0616439cb0e0431a3d52cdfa1))
+DE3S_SOUNDROM18888(      "spp101.u7",  CRC(32efcdf6) SHA1(1d437e8649408be91e0dd10598cc67336203077f),
+                         "spp100.u17", CRC(65e9344e) SHA1(fe4797ccb71b31aa39d6a5d373a01fc22f9d055c),
+                         "spp100.u21", CRC(17fee0f9) SHA1(5b5ceb667f3bc9bde4ea08a1ef837e3b56c01977),
+                         "spp100.u36", CRC(ffb957b0) SHA1(d6876ec63525099a7073c196867c17111272c69a),
+                         "spp100.u37", CRC(0738e1fc) SHA1(268462c06e5c1f286e5faaee1c0815448cc2eafa))
+SE_ROMEND
+#define input_ports_simpnew input_ports_se
+#define init_simpnew init_simpprty
+CORE_CLONEDEFNV(simpnew,simpprty,"The Simpsons Pinball Party (ARM7 Sound Board)",2003,"Stern",de_mSES3,GAME_NOCRC)
+#endif
+
 /*-------------------------------------------------------------------
 / The Simpsons Pinball Party (Germany)
 /-------------------------------------------------------------------*/
@@ -899,6 +1021,25 @@ DE2S_SOUNDROM18888(      "t3100.u7",  CRC(7f99e3af) SHA1(4916c074e2a4c947d1a6583
 SE_ROMEND
 #define input_ports_term3 input_ports_se
 CORE_GAMEDEFNV(term3,"Terminator 3: Rise of the Machines (4.00)",2003,"Stern",de_mSES2,GAME_NOCRC)
+
+#ifdef TEST_NEW_SOUND
+/*-------------------------------------------------------------------
+/ Terminator 3: Rise of the Machines (4.00) (ARM7 Sound Board)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(t3new, "t3cpu.400", CRC(872f9351) SHA1(8fa8b503d8c3dbac66df1cb0ba400dbd58ee28ee))
+DE_DMD32ROM8x(      "t3dispa.400", CRC(6b7cc4f8) SHA1(214e9b3e45b778841fc166acf4ff5fd634ae2670))
+DE3S_SOUNDROM18888(      "t3100.u7",  CRC(7f99e3af) SHA1(4916c074e2a4c947d1a658300f9f9629da1a8bb8),
+                         "t3100.u17", CRC(f0c71b5d) SHA1(e9f726a232fbd4f34b8b07069f337dbb3daf394a),
+                         "t3100.u21", CRC(694331f7) SHA1(e9ae8c5db2e59c0f9df923c98f6e75896e150807),
+                         "t3100.u36", CRC(9eb512e9) SHA1(fa2fecf6cb0c1af3c6db244f9d94ba53d13e10fc),
+                         "t3100.u37", CRC(3efb0c19) SHA1(6894295eef05891d64c7274512ba27f2b63ca3ec))
+SE_ROMEND
+
+#define input_ports_t3new input_ports_se
+#define init_t3new init_term3
+CORE_CLONEDEFNV(t3new,term3,"Terminator 3: Rise of the Machines (ARM7 Sound Board)",2003,"Stern",de_mSES3,GAME_NOCRC)
+
+#endif
 
 /*-------------------------------------------------------------------
 / Terminator 3: Rise of the Machines (Germany)
@@ -977,7 +1118,7 @@ DE3S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56
                          "lotr-u37.100",CRC(8e637a6f) SHA1(8087744ce36fc143381d49a312c98cf38b2f9854))
 SE_ROMEND
 #define input_ports_lotr input_ports_se
-CORE_GAMEDEFNV(lotr,"Lord Of The Rings, The (8.00)",2003,"Stern",de_mSES3,GAME_NO_SOUND|GAME_NOCRC)
+CORE_GAMEDEFNV(lotr,"Lord Of The Rings, The (8.00)",2003,"Stern",de_mSES3,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / The Lord Of The Rings (Spain)
@@ -992,7 +1133,7 @@ DE3S_SOUNDROM18888(      "lotrlu7.100", CRC(980d970a) SHA1(cf70deddcc146ef9eaa64
 SE_ROMEND
 #define input_ports_lotr_sp input_ports_lotr
 #define init_lotr_sp init_lotr
-CORE_CLONEDEFNV(lotr_sp,lotr,"Lord Of The Rings, The (Spain)",2003,"Stern",de_mSES3,GAME_NO_SOUND|GAME_NOCRC)
+CORE_CLONEDEFNV(lotr_sp,lotr,"Lord Of The Rings, The (Spain)",2003,"Stern",de_mSES3,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / The Lord Of The Rings (Germany)
@@ -1007,7 +1148,7 @@ DE3S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56
 SE_ROMEND
 #define input_ports_lotr_gr input_ports_lotr
 #define init_lotr_gr init_lotr
-CORE_CLONEDEFNV(lotr_gr,lotr,"Lord Of The Rings, The (Germany)",2003,"Stern",de_mSES3,GAME_NO_SOUND|GAME_NOCRC)
+CORE_CLONEDEFNV(lotr_gr,lotr,"Lord Of The Rings, The (Germany)",2003,"Stern",de_mSES3,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / The Lord Of The Rings (France)
@@ -1022,7 +1163,7 @@ DE3S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56
 SE_ROMEND
 #define input_ports_lotr_fr input_ports_lotr
 #define init_lotr_fr init_lotr
-CORE_CLONEDEFNV(lotr_fr,lotr,"Lord Of The Rings, The (France)",2003,"Stern",de_mSES3,GAME_NO_SOUND|GAME_NOCRC)
+CORE_CLONEDEFNV(lotr_fr,lotr,"Lord Of The Rings, The (France)",2003,"Stern",de_mSES3,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / The Lord Of The Rings (Italy)
@@ -1037,7 +1178,7 @@ DE3S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56
 SE_ROMEND
 #define input_ports_lotr_it input_ports_lotr
 #define init_lotr_it init_lotr
-CORE_CLONEDEFNV(lotr_it,lotr,"Lord Of The Rings, The (Italy)",2003,"Stern",de_mSES3,GAME_NO_SOUND|GAME_NOCRC)
+CORE_CLONEDEFNV(lotr_it,lotr,"Lord Of The Rings, The (Italy)",2003,"Stern",de_mSES3,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Ripley's Believe It or Not! (3.02)
@@ -1058,7 +1199,7 @@ DE3S_SOUNDROM18888(      "ripsnd.u7",CRC(4573a759) SHA1(189c1a2eaf9d92c40a1bc145
                         "ripsnd.u37",CRC(01b9f20e) SHA1(cffb6a0136d7d17ab4450b3bfd97632d8b669d39))
 SE_ROMEND
 #define input_ports_ripleys input_ports_se
-CORE_GAMEDEFNV(ripleys,"Ripley's Believe It or Not! (3.02)",2004,"Stern",de_mSES3,GAME_NO_SOUND|GAME_NOCRC)
+CORE_GAMEDEFNV(ripleys,"Ripley's Believe It or Not! (3.02)",2004,"Stern",de_mSES3,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Ripley's Believe It or Not! (France)
@@ -1073,7 +1214,7 @@ DE3S_SOUNDROM18888(     "ripsndf.u7",CRC(5808e3fc) SHA1(0c83399e8dc846607c469b7d
 SE_ROMEND
 #define input_ports_ripleysf input_ports_ripleys
 #define init_ripleysf init_ripleys
-CORE_CLONEDEFNV(ripleysf,ripleys,"Ripley's Believe It or Not! (France)",2004,"Stern",de_mSES3,GAME_NO_SOUND|GAME_NOCRC)
+CORE_CLONEDEFNV(ripleysf,ripleys,"Ripley's Believe It or Not! (France)",2004,"Stern",de_mSES3,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Ripley's Believe It or Not! (Germany)
@@ -1088,7 +1229,7 @@ DE3S_SOUNDROM18888(     "ripsndg.u7",CRC(400b8a45) SHA1(62101995e632264df3c014b7
 SE_ROMEND
 #define input_ports_ripleysg input_ports_ripleys
 #define init_ripleysg init_ripleys
-CORE_CLONEDEFNV(ripleysg,ripleys,"Ripley's Believe It or Not! (Germany)",2004,"Stern",de_mSES3,GAME_NO_SOUND|GAME_NOCRC)
+CORE_CLONEDEFNV(ripleysg,ripleys,"Ripley's Believe It or Not! (Germany)",2004,"Stern",de_mSES3,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Ripley's Believe It or Not! (Italy)
@@ -1103,7 +1244,7 @@ DE3S_SOUNDROM18888(     "ripsndi.u7",CRC(86b1b2b2) SHA1(9e2cf7368b31531998d546a1
 SE_ROMEND
 #define input_ports_ripleysi input_ports_ripleys
 #define init_ripleysi init_ripleys
-CORE_CLONEDEFNV(ripleysi,ripleys,"Ripley's Believe It or Not! (Italy)",2004,"Stern",de_mSES3,GAME_NO_SOUND|GAME_NOCRC)
+CORE_CLONEDEFNV(ripleysi,ripleys,"Ripley's Believe It or Not! (Italy)",2004,"Stern",de_mSES3,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Ripley's Believe It or Not! (Spain)
@@ -1118,7 +1259,7 @@ DE3S_SOUNDROM18888(     "ripsndl.u7",CRC(25fb729a) SHA1(46b9ca8fd5fb5a692adbdb74
 SE_ROMEND
 #define input_ports_ripleysl input_ports_ripleys
 #define init_ripleysl init_ripleys
-CORE_CLONEDEFNV(ripleysl,ripleys,"Ripley's Believe It or Not! (Spain)",2004,"Stern",de_mSES3,GAME_NO_SOUND|GAME_NOCRC)
+CORE_CLONEDEFNV(ripleysl,ripleys,"Ripley's Believe It or Not! (Spain)",2004,"Stern",de_mSES3,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Elvis (3.02)
@@ -1135,7 +1276,7 @@ DE3S_SOUNDROM18888(   "elvis.u7", CRC(1df6c1b5) SHA1(7a9ebfc555e54ce92ad140ac6fc
                       "elvis.u37",CRC(88ba0966) SHA1(43ea198c9fcdc1c396d4180308042c6c08311829))
 SE_ROMEND
 #define input_ports_elvis input_ports_se
-CORE_GAMEDEFNV(elvis,"Elvis (3.02)",2004,"Stern",de_mSES3,GAME_NO_SOUND|GAME_NOCRC)
+CORE_GAMEDEFNV(elvis,"Elvis (3.02)",2004,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Elvis (Spain)
@@ -1150,7 +1291,7 @@ DE3S_SOUNDROM18888(    "elvisl.u7", CRC(f0d70ee6) SHA1(9fa2c9d7b3690ec0c17645be0
 SE_ROMEND
 #define input_ports_elvisl input_ports_elvis
 #define init_elvisl init_elvis
-CORE_CLONEDEFNV(elvisl,elvis,"Elvis (Spain)",2004,"Stern",de_mSES3,GAME_NO_SOUND|GAME_NOCRC)
+CORE_CLONEDEFNV(elvisl,elvis,"Elvis (Spain)",2004,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Elvis (Germany)
@@ -1165,7 +1306,7 @@ DE3S_SOUNDROM18888(    "elvisg.u7", CRC(1085bd7c) SHA1(2c34ee7d7c44906b0894c0c01
 SE_ROMEND
 #define input_ports_elvisg input_ports_elvis
 #define init_elvisg init_elvis
-CORE_CLONEDEFNV(elvisg,elvis,"Elvis (Germany)",2004,"Stern",de_mSES3,GAME_NO_SOUND|GAME_NOCRC)
+CORE_CLONEDEFNV(elvisg,elvis,"Elvis (Germany)",2004,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Elvis (France)
@@ -1180,7 +1321,7 @@ DE3S_SOUNDROM18888(    "elvisf.u7", CRC(84a057cd) SHA1(70e626f13a164df184dc5b0c7
 SE_ROMEND
 #define input_ports_elvisf input_ports_elvis
 #define init_elvisf init_elvis
-CORE_CLONEDEFNV(elvisf,elvis,"Elvis (France)",2004,"Stern",de_mSES3,GAME_NO_SOUND|GAME_NOCRC)
+CORE_CLONEDEFNV(elvisf,elvis,"Elvis (France)",2004,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Elvis (Italy)
@@ -1195,4 +1336,4 @@ DE3S_SOUNDROM18888(    "elvisi.u7", CRC(8c270da4) SHA1(6a21332fdd1f2714aa78a1730
 SE_ROMEND
 #define input_ports_elvisi input_ports_elvis
 #define init_elvisi init_elvis
-CORE_CLONEDEFNV(elvisi,elvis,"Elvis (Italy)",2004,"Stern",de_mSES3,GAME_NO_SOUND|GAME_NOCRC)
+CORE_CLONEDEFNV(elvisi,elvis,"Elvis (Italy)",2004,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
