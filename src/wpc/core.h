@@ -445,7 +445,7 @@ typedef struct {
 #define CORE_DIAG7SEG           0xff
 #define DIAGLED_VERTICAL	0x100	/*Flag indicated DIAG LEDS are Vertically Positioned*/
 extern core_tData coreData;
-extern int core_bcd2seg[]; /* BCD to 7 segment display */
+extern const int core_bcd2seg[]; /* BCD to 7 segment display */
 
 /*-- Exported Display handling functions--*/
 void core_initpalette(unsigned char *game_palette, unsigned short *game_colortable,

@@ -274,7 +274,7 @@ static WRITE_HANDLER(s11_sndCmd_w) {
   soundSys = -1;
 }
 
-struct pia6821_interface s11_pia_intf[] = {
+static struct pia6821_interface s11_pia_intf[] = {
 {/* PIA 0 (2100) */
  /* PA0 - PA7 Sound Select Outputs (sound latch) */
  /* PB0 - PB7 Solenoid 9-16 (12 is usually for multiplexing) */
