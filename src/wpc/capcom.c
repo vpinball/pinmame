@@ -431,7 +431,9 @@ static NVRAM_HANDLER(cc) {
 static int cc_sw2m(int no) {
   if (no < 9)
     return no + 71;
-  return no - 9;
+  else if (no < 81)
+    return no - 9;
+  return no + 7;
 }
 
 static int cc_m2sw(int col, int row) {
