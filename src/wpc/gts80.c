@@ -230,7 +230,7 @@ static WRITE_HANDLER(riot6532_2a_w) {
   if (core_gameData->hw.soundBoard == SNDBRD_GTS80B) {
     GTS80_sndCmd_w(0, (15 - (~data & 0x0f))|(coreGlobals.lampMatrix[0]&0x10));
   } else {
-    GTS80_sndCmd_w(0, data & 0x10 ? (data & 0x0f) : 0);
+    GTS80_sndCmd_w(0, (data&0x10)? ((data&0x0f)|((coreGlobals.lampMatrix[1]&0x02)?0x10:0x00)) : ((coreGlobals.lampMatrix[1]&0x02)?0x10:0x00));
   }
 }
 
