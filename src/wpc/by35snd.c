@@ -122,7 +122,7 @@ const struct sndbrdIntf by51Intf = {
   sp_init, NULL, NULL, sp51_data_w, NULL, sp51_ctrl_w, NULL,
 };
 
-struct AY8910interface sp_ay8910Int = { 1, 3580000/4, {10}, {sp_8910a_r} };
+struct AY8910interface sp_ay8910Int = { 1, 3580000/4, {20}, {sp_8910a_r} };
 struct hc55516_interface sp_hc55516Int = { 1, {100}};
 MEMORY_READ_START(sp51_readmem)
   { 0x0000, 0x007f, MRA_RAM },
