@@ -1,4 +1,5 @@
 Version 1.33 (??, 2004) - "??"
+------------------------------
 
 Steve took a quick break from retirement to whip together the spinball emulation and to get the
 technoplay x-force driver working.. (gerrit add more text here)
@@ -6,20 +7,23 @@ technoplay x-force driver working.. (gerrit add more text here)
 Bugs Fixed
 ----------
 
--Fixed some bugs in 8051 cpu core
+- Fixed some bugs in 8051 cpu core
+- Adjusted CPU & FIRQ frequency on the Alvin G games
+  (Sounds much better to me now, but still need access to real machine to confirm)
   [Steve Ellenoff]
 
 New Features
 ------------
 
-
 - Spinball emulation including full Sound and DMD support
-(Big thanks to inkochnito for posting links to both the manual and rom on the forum so we could access them)
+  (Big thanks to inkochnito for posting links to both the manual and rom on the 
+  forum so we could access them)
   [Steve Ellenoff, Gerrit Volkenborn]
 
 - Added External Hardware Addressing to 8051 cpu core
 - Added support for Serial UART mode 1 to 8051
 - Working Tecnoplay driver including display, lamps, solenoids, switches.
+  (Need sound roms to be able to begin work on sound emulation)
   [Steve Ellenoff]
 
 
