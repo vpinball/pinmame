@@ -638,8 +638,7 @@ static	int 	S2650_relative[0x100] =
  ***************************************************************/
 #define M_SPSU()												\
 {																\
-	R0 = S.psu & ~PSU34;										\
-	if (SI) R0 = (R0 & 0x7f) | (cpu_readport16(S2650_SENSE_PORT) & 0x80); \
+	R0 = (S.psu & ~SI)|(cpu_readport16(S2650_SENSE_PORT)?SI:0);	\
 	SET_CC(R0); 												\
 }
 
@@ -659,8 +658,9 @@ static	int 	S2650_relative[0x100] =
  ***************************************************************/
 #define M_CPSU()												\
 {																\
-	UINT8 cpsu = ARG(); 										\
+	UINT8 cpsu = ARG() & ~PSU34; 								\
 	S.psu = S.psu & ~cpsu;										\
+	cpu_writeport16(S2650_SENSE_PORT, 0);						\
 	CHECK_IRQ_LINE; 											\
 }
 
@@ -681,13 +681,13 @@ static	int 	S2650_relative[0x100] =
 /***************************************************************
  * M_PPSU
  * Preset processor status upper (PSU), selective
- * Unused bits 3 and 4 can't be set
+ * Unused bits 3 and 4 can't be set?
  ***************************************************************/
 #define M_PPSU()												\
 {																\
-	UINT8 ppsu = (ARG() & ~PSU34) & ~SI;						\
-	if (!S.reg[1]) cpu_writeport16(S2650_SENSE_PORT, S.reg[2]);	\
+	UINT8 ppsu = ARG() & ~PSU34/* & ~SI*/;						\
 	S.psu = S.psu | ppsu;										\
+	cpu_writeport16(S2650_SENSE_PORT, 1);						\
 }
 
 /***************************************************************
@@ -710,7 +710,7 @@ static	int 	S2650_relative[0x100] =
 #define M_TPSU()												\
 {																\
 	UINT8 tpsu = ARG(); 										\
-    UINT8 rpsu = (S.psu | (cpu_readport16(S2650_SENSE_PORT) & SI)); \
+    UINT8 rpsu = (S.psu & ~SI)|(cpu_readport16(S2650_SENSE_PORT)?SI:0);\
 	S.psl &= ~CC;												\
 	if( (rpsu & tpsu) != tpsu )									\
 		S.psl |= 0x80;											\
@@ -895,8 +895,7 @@ void s2650_set_sense(int state)
 int s2650_get_sense(void)
 {
 	/* OR'd with Input to allow for external connections */
-
-    return (((S.psu & SI) ? 1 : 0) | ((cpu_readport16(S2650_SENSE_PORT) & SI) ? 1 : 0));
+    return ((S.psu & SI) | cpu_readport16(S2650_SENSE_PORT) ? SI : 0) ? 1 : 0;
 }
 
 static  int S2650_Cycles[0x100] = {
@@ -1224,10 +1223,8 @@ int s2650_execute(int cycles)
 				break;
 			case 0x93:		/* LPSL */
 				/* change register set ? */
-/*
 				if ((S.psl ^ R0) & RS)
 					SWAP_REGS;
-*/
 				S.psl = R0;
 				break;
 
