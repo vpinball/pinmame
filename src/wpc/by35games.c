@@ -33,7 +33,11 @@ static core_tGameData name##GameData = {gen,disp,{flip,0,lamps,0,sb,db}}; \
 static void init_##name(void) { core_gameData = &name##GameData; }
 
 #define INITGAME2(name, gen, disp, flip, lamps, sb, db) \
-static core_tGameData name##GameData = {gen,disp,{flip,0,lamps,0,sb,db,1}}; \
+static core_tGameData name##GameData = {gen,disp,{flip,0,lamps,0,sb,db,BY35GD_NOSOUNDE}}; \
+static void init_##name(void) { core_gameData = &name##GameData; }
+
+#define INITGAME3(name, gen, disp, flip, lamps, sb, db) \
+static core_tGameData name##GameData = {gen,disp,{flip,0,lamps,0,sb,db,BY35GD_PHASE}}; \
 static void init_##name(void) { core_gameData = &name##GameData; }
 
 /* -------------------------------------------------------------*/
@@ -746,7 +750,7 @@ static core_tLCDLayout granslamDisp[] = {
   DISP_SEG_IMPORT(dispBy6),
   {4,14,42,2,CORE_SEG7}, {4,19,44,2,CORE_SEG7}, {4,24,46,2,CORE_SEG7}, {0}
 };
-INITGAME2(granslam ,GEN_BY35,granslamDisp,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0x80)
+INITGAME3(granslam ,GEN_BY35,granslamDisp,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0x80)
 BY35_ROMSTARTx00(granslam, "grndslam.u2",CRC(66aea9dc) SHA1(76c017dc83a63b7f1e6035e228370219eb9c0678),
                            "grndslam.u6",CRC(9e6ccea1) SHA1(5e158e021e0f3eed063577ae22cf5f1bc9655065))
 BY51_SOUNDROM0(            "grndslam.u4",CRC(ac34bc38) SHA1(376ceb53cb51d250b5bc222001291b0c85e42e8a))
