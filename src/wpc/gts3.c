@@ -258,7 +258,7 @@ static WRITE_HANDLER(dmd_u4_pb_w) {
 //AUX DATA? See ca2 above!
 static WRITE_HANDLER( xvia_0_ca2_w )
 {
-	// logerror1("WRITE:AUX W??:via_0_ca2_w: %x\n",data);
+	logerror("WRITE:AUX W??:via_0_ca2_w: %x\n",data);
 }
 
 //CB2:  NMI to Main CPU
@@ -332,7 +332,7 @@ static WRITE_HANDLER(alpha_u5_pb_w) {
    ----------------
    Data to A1P6 Auxilary
 */
-static WRITE_HANDLER(dmd_u5_pb_w){ /* logerror1("AUX: WRITE:via_1_b_w: %x\n",data); */ }
+static WRITE_HANDLER(dmd_u5_pb_w) { logerror1("AUX: WRITE:via_1_b_w: %x\n",data); }
 
 //Should be not used!
 static WRITE_HANDLER( xvia_1_ca1_w )
@@ -351,12 +351,12 @@ static WRITE_HANDLER( xvia_1_cb1_w ) { GTS3locals.U5_CB1_W(offset,data); }
    ----------------
    CB1:   CX1 - A1P6 Where Does this GO?
 */
-static WRITE_HANDLER(alpha_u5_cb1_w) { /* logerror1("WRITE:via_1_cb1_w: %x\n",data); */ }
+static WRITE_HANDLER(alpha_u5_cb1_w) { logerror1("WRITE:via_1_cb1_w: %x\n",data); }
 /* DMD GENERATION
    ----------------
    CB1:   CX1 - A1P6 (Auxilary)
 */
-static WRITE_HANDLER(dmd_u5_cb1_w) { /* logerror1("WRITE:via_1_cb1_w: %x\n",data); */ }
+static WRITE_HANDLER(dmd_u5_cb1_w) { logerror1("WRITE:via_1_cb1_w: %x\n",data); }
 
 //CB2 Varies on Alpha or DMD Generation!
 static WRITE_HANDLER( xvia_1_cb2_w ) { GTS3locals.U5_CB2_W(offset,data); }
@@ -364,12 +364,12 @@ static WRITE_HANDLER( xvia_1_cb2_w ) { GTS3locals.U5_CB2_W(offset,data); }
    ----------------
    CB2:   CX2 - A1P6 Where Does this GO?
 */
-static WRITE_HANDLER(alpha_u5_cb2_w){ /* logerror1("WRITE:via_1_cb2_w: %x\n",data); */ }
+static WRITE_HANDLER(alpha_u5_cb2_w) { logerror1("WRITE:via_1_cb2_w: %x\n",data); }
 /* DMD GENERATION
    ----------------
    CB2:   CX2 - A1P6 (Auxilary)
 */
-static WRITE_HANDLER(dmd_u5_cb2_w) { /* logerror1("WRITE:via_1_cb2_w: %x\n",data); */ }
+static WRITE_HANDLER(dmd_u5_cb2_w) { logerror1("WRITE:via_1_cb2_w: %x\n",data); }
 
 //IRQ:  IRQ to Main CPU
 static void via_irq(int state) { 
@@ -497,8 +497,15 @@ via_irq(1);
 #endif
 
   if (inports) {
-    coreGlobals.swMatrix[0] = (inports[GTS3_COMINPORT] & 0x7f00)>>8;
-    coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0x80) | (inports[GTS3_COMINPORT] & 0x7f);
+    coreGlobals.swMatrix[0] = (inports[GTS3_COMINPORT] & 0x0f00)>>8;
+	if (inports[GTS3_COMINPORT] & 0x8000) // DMD games with tournament mode
+	  coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0x80) | (inports[GTS3_COMINPORT] & 0x7f);
+    else if (inports[GTS3_COMINPORT] & 0x4000) // DMD games without tournament mode
+	  coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0xe0) | (inports[GTS3_COMINPORT] & 0x1f);
+	else if (inports[GTS3_COMINPORT] & 0x2000) // Flipper switches & diagnostic up/down keys are both at 4 & 5
+	  coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0xf0) | (inports[GTS3_COMINPORT] & 0x3f);
+    else // normal Alpha games
+	  coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0xc0) | (inports[GTS3_COMINPORT] & 0x3f);
   }
   GTS3locals.swDiag = (core_getSw(GTS3_SWDIAG)>0?1:0);
   GTS3locals.swTilt = (core_getSw(GTS3_SWTILT)>0?1:0);
@@ -761,7 +768,7 @@ static WRITE_HANDLER(lds_w)
 static WRITE_HANDLER(aux_w) {
 	if(offset==0) GTS3locals.AUX_W(offset,data);
 	else
-	   logerror("aux_w: %x %x\n",offset,data);
+	   logerror1("aux_w: %x %x\n",offset,data);
 }
 /* ALPHA GENERATION
    ----------------
@@ -769,7 +776,7 @@ static WRITE_HANDLER(aux_w) {
 */
 static WRITE_HANDLER(alpha_aux) {
 //	GTS3locals.ax4 = data;
-	logerror1("LED Strobe: %x\n",data);
+//	logerror1("LED Strobe: %x\n",data);
 }
 /* DMD GENERATION
    ----------------

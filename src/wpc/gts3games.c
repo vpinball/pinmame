@@ -17,7 +17,6 @@ N = No Lead, L = Have a Lead on Rom
 
 #define ALPHA	 GTS3_dispAlpha
 #define DMD		 0
-#define FLIP45   FLIP_SWNO(4,5)
 #define FLIP67   FLIP_SWNO(6,7)
 #define FLIP4142 FLIP_SWNO(41,42)
 #define FLIP4243 FLIP_SWNO(42,43)
@@ -43,6 +42,13 @@ core_tLCDLayout GTS3_dispAlpha1[] = {
 		core_gameData = &name##GameData; \
 	}
 
+#define INITGAME_FLIP45(name, disptype, balls, sb) \
+	static core_tGameData name##GameData = {GEN_GTS3,disptype,{FLIP_SWNO(4,5),4,4,0,sb,0}}; \
+	static void init_##name(void) { \
+		core_gameData = &name##GameData; \
+	} \
+	GTS3_INPUT_PORTS_45_START(name, balls) GTS3_INPUT_PORTS_END
+
 #define INITGAME1(name, disptype, flippers, balls, sb) \
 	static core_tGameData name##GameData = {GEN_GTS3,disptype,{flippers,4,4,0,sb,0}}; \
 	static void init_##name(void) { \
@@ -64,7 +70,7 @@ core_tLCDLayout GTS3_dispAlpha1[] = {
 /*-------------------------------------------------------------------
 / Lights, Camera, Action (#720)
 /-------------------------------------------------------------------*/
-INITGAME(lca, ALPHA, FLIP45, 3 /*?*/, SNDBRD_NONE)
+INITGAME_FLIP45(lca, ALPHA, 3 /*?*/, SNDBRD_NONE)
 GTS3ROMSTART32(lca,	"gprom.bin",0x937a8426)
 GTS3_ROMEND
 CORE_GAMEDEFNV(lca,"Lights, Camera, Action",1989,"Gottlieb",mGTS3,GAME_NO_SOUND)
@@ -74,7 +80,7 @@ CORE_GAMEDEFNV(lca,"Lights, Camera, Action",1989,"Gottlieb",mGTS3,GAME_NO_SOUND)
 /*-------------------------------------------------------------------
 / Bell Ringer
 /-------------------------------------------------------------------*/
-INITGAME(bellring, ALPHA, FLIP45, 3/*?*/, SNDBRD_NONE)
+INITGAME_FLIP45(bellring, ALPHA, 3/*?*/, SNDBRD_NONE)
 GTS3ROMSTART(bellring,	"gprom.bin",0x0)
 GTS3_ROMEND
 CORE_GAMEDEFNV(bellring,"Bell Ringer",1990,"Gottlieb",mGTS3,GAME_NO_SOUND)
@@ -82,7 +88,7 @@ CORE_GAMEDEFNV(bellring,"Bell Ringer",1990,"Gottlieb",mGTS3,GAME_NO_SOUND)
 /*-------------------------------------------------------------------
 / Silver Slugger (#722) - Display is messed up
 /-------------------------------------------------------------------*/
-INITGAME(silvslug, ALPHA, FLIP45, 3/*?*/, SNDBRD_GTS3)
+INITGAME_FLIP45(silvslug, ALPHA, 3/*?*/, SNDBRD_GTS3)
 GTS3ROMSTART(silvslug,	"gprom.bin",0xa6c524e2)
 GTS3SOUND3232(			"yrom1.bin",0x20bc9797,
 						"drom1.bin",0xeac3e1cc)
@@ -92,7 +98,7 @@ CORE_GAMEDEFNV(silvslug,"Silver Slugger",1990,"Gottlieb",mGTS3S,GAME_NOT_WORKING
 /*-------------------------------------------------------------------
 / Vegas (#723) (Switches are OFF by 1 column - weird, ie SW[11]=SW[1])
 /-------------------------------------------------------------------*/
-INITGAME(vegas, ALPHA, FLIP45, 3/*?*/, SNDBRD_GTS3)
+INITGAME_FLIP45(vegas, ALPHA, 3/*?*/, SNDBRD_GTS3)
 GTS3ROMSTART(vegas,	"gprom.bin",0x48189981)
 GTS3SOUND3232(		"yrom1.bin",0xaf1095f1,
 					"drom1.bin",0x46eb5755)
@@ -102,7 +108,7 @@ CORE_GAMEDEFNV(vegas,"Vegas",1990,"Gottlieb",mGTS3S,GAME_NOT_WORKING)
 /*-------------------------------------------------------------------
 / Deadly Weapon - Display is messed up
 /-------------------------------------------------------------------*/
-INITGAME(deadweap, ALPHA, FLIP45, 3/*?*/, SNDBRD_GTS3)
+INITGAME(deadweap, ALPHA, FLIP67, 3/*?*/, SNDBRD_GTS3)
 GTS3ROMSTART(deadweap,	"gprom.bin",0x07d84b32)
 GTS3SOUND3232(			"yrom1.bin",0x93369ed3,
 						"drom1.bin",0xf55dd7ec)
@@ -112,7 +118,7 @@ CORE_GAMEDEFNV(deadweap,"Deadly Weapon",1990,"Gottlieb",mGTS3S,GAME_NOT_WORKING)
 /*-------------------------------------------------------------------
 / Title Fight - Display is messed up
 /-------------------------------------------------------------------*/
-INITGAME(tfight, ALPHA, FLIP45, 3/*?*/, SNDBRD_GTS3)
+INITGAME(tfight, ALPHA, FLIP67, 3/*?*/, SNDBRD_GTS3)
 GTS3ROMSTART(tfight,	"gprom.bin",0x43b3193a)
 GTS3SOUND3232(			"yrom1.bin",0x8591d421,
 						"drom1.bin",0x9514739f)
@@ -122,7 +128,7 @@ CORE_GAMEDEFNV(tfight,"Title Fight",1990,"Gottlieb",mGTS3S,GAME_NOT_WORKING)
 /*-------------------------------------------------------------------
 / Nudge It
 /-------------------------------------------------------------------*/
-INITGAME(nudgeit, ALPHA, FLIP45, 3/*?*/, SNDBRD_NONE)
+INITGAME(nudgeit, ALPHA, FLIP67, 3/*?*/, SNDBRD_NONE)
 GTS3ROMSTART(nudgeit,	"gprom.bin",0x0)
 GTS3_ROMEND
 CORE_GAMEDEFNV(nudgeit,"Nudge It",1990,"Gottlieb",mGTS3,GAME_NO_SOUND)
@@ -130,7 +136,7 @@ CORE_GAMEDEFNV(nudgeit,"Nudge It",1990,"Gottlieb",mGTS3,GAME_NO_SOUND)
 /*-------------------------------------------------------------------
 / Car Hop (#725)
 /-------------------------------------------------------------------*/
-INITGAME(carhop, ALPHA, FLIP45, 3/*?*/, SNDBRD_GTS3)
+INITGAME(carhop, ALPHA, FLIP67, 3/*?*/, SNDBRD_GTS3)
 GTS3ROMSTART(carhop,	"gprom.bin",0x164b2c9c)
 GTS3SOUND3232(			"yrom1.bin",0x831ee812,
 						"drom1.bin",0x9dec74e7)
@@ -140,7 +146,7 @@ CORE_GAMEDEFNV(carhop,"Car Hop",1991,"Gottlieb",mGTS3S,GAME_IMPERFECT_SOUND)
 /*-------------------------------------------------------------------
 / Hoops
 /-------------------------------------------------------------------*/
-INITGAME(hoops, ALPHA, FLIP45, 3/*?*/, SNDBRD_GTS3)
+INITGAME(hoops, ALPHA, FLIP67, 3/*?*/, SNDBRD_GTS3)
 GTS3ROMSTART(hoops,	"gprom.bin",0x0)
 GTS3_ROMEND
 CORE_GAMEDEFNV(hoops,"Hoops",1991,"Gottlieb",mGTS3,GAME_NO_SOUND)
@@ -148,7 +154,7 @@ CORE_GAMEDEFNV(hoops,"Hoops",1991,"Gottlieb",mGTS3,GAME_NO_SOUND)
 /*-------------------------------------------------------------------
 / Cactus Jack (#729)
 /-------------------------------------------------------------------*/
-INITGAME(cactjack, ALPHA, FLIP45, 3/*?*/, SNDBRD_GTS3)
+INITGAME(cactjack, ALPHA, FLIP67, 3/*?*/, SNDBRD_GTS3)
 GTS3ROMSTART(cactjack,	"gprom.bin",0x5661ab06)
 GTS3SOUND32128(			"yrom1.bin",0x4554ed0d,
 						"drom1.bin",0x78c099e1,
@@ -160,7 +166,7 @@ CORE_GAMEDEFNV(cactjack,"Cactus Jack",1991,"Gottlieb",mGTS3S,GAME_IMPERFECT_SOUN
 /*-------------------------------------------------------------------
 / Class of 1812 (#730)
 /-------------------------------------------------------------------*/
-INITGAME(clas1812, ALPHA, FLIP45, 3/*?*/, SNDBRD_GTS3)
+INITGAME(clas1812, ALPHA, FLIP67, 3/*?*/, SNDBRD_GTS3)
 GTS3ROMSTART(clas1812,	"gprom.bin",0x564349bf)
 GTS3SOUND32128(			"yrom1.bin",0x4ecf6ecb,
 						"drom1.bin",0x3863a9df,
@@ -204,7 +210,7 @@ CORE_GAMEDEFNV(opthund,"Operation Thunder",1992,"Gottlieb",mGTS3BS,GAME_IMPERFEC
 /*-------------------------------------------------------------------
 / Super Mario Brothers
 /-------------------------------------------------------------------*/
-INITGAME2(smb, DMD, FLIP4547, 3/*?*/, SNDBRD_GTS3)
+INITGAME1(smb, DMD, FLIP4547, 3/*?*/, SNDBRD_GTS3)
 GTS3ROMSTART(smb,		"gprom.bin", 0xfa1f6e52)
 GTS3_DMD256_ROMSTART(	"dsprom.bin",0x59639112)
 GTS3SOUND32256(			"yrom1.bin",0xe1379106,
@@ -217,7 +223,7 @@ CORE_GAMEDEFNV(smb,"Super Mario Brothers",1992,"Gottlieb",mGTS3DMDS, GAME_IMPERF
 /*-------------------------------------------------------------------
 / Super Mario Brothers Mushroom World
 /-------------------------------------------------------------------*/
-INITGAME2(smbmush, DMD, FLIP8182, 3/*?*/, SNDBRD_GTS3)
+INITGAME1(smbmush, DMD, FLIP8182, 3/*?*/, SNDBRD_GTS3)
 GTS3ROMSTART(smbmush,	"gprom.bin", 0x45f6d0cc)
 GTS3_DMD256_ROMSTART(	"dsprom.bin",0xdda6c8be)
 GTS3SOUND32256(			"yrom1.bin",0x09712c37,
