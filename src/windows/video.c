@@ -822,7 +822,6 @@ static void check_inputs(void)
 extern HANDLE g_hEnterThrottle;
 extern int    g_iSyncFactor;
 int           iCurrentSyncValue = 512;
-extern HANDLE g_hEventHeartbeat;
 #endif
 
 static void throttle_speed(void)
@@ -831,19 +830,15 @@ static void throttle_speed(void)
 	TICKER target, curr;
 
 #ifdef VPINMAME
-	if ( g_hEventHeartbeat!=INVALID_HANDLE_VALUE ) {
-		SetEvent(g_hEnterThrottle);
-		if ( WaitForSingleObject(g_hEventHeartbeat, 0)==WAIT_OBJECT_0 ) {
-			Sleep(0);
-		}
-		else
-			WaitForSingleObject(g_hEventHeartbeat, INFINITE);
-	}
-	else if ( (g_hEnterThrottle!=INVALID_HANDLE_VALUE) && g_iSyncFactor ) {
-		iCurrentSyncValue += g_iSyncFactor;
-		if ( iCurrentSyncValue>=1024 ) {
+	if ( (g_hEnterThrottle!=INVALID_HANDLE_VALUE) && g_iSyncFactor ) {
+		if ( g_iSyncFactor>=1024 )
 			SetEvent(g_hEnterThrottle);
-			iCurrentSyncValue -= 1024;
+		else {
+			iCurrentSyncValue += g_iSyncFactor;
+			if ( iCurrentSyncValue>=1024 ) {
+				SetEvent(g_hEnterThrottle);
+				iCurrentSyncValue -= 1024;
+			}
 		}
 	}
 #endif
@@ -886,6 +881,8 @@ static void throttle_speed(void)
 			curr = ticker();
 		}
 	}
+	else
+		Sleep(1);
 
 	// idle time done
 	profiler_mark(PROFILER_END);
