@@ -437,11 +437,11 @@ static MACHINE_INIT(s11) {
       sndbrd_0_init(SNDBRD_S11S,  1, memory_region(S11S_ROMREGION), NULL, NULL);
       break;
     case GEN_S11X:
-      sndbrd_0_init(SNDBRD_S11XS, 2, memory_region(S11S_ROMREGION), NULL, NULL);
+      sndbrd_0_init(SNDBRD_S11XS, 2, memory_region(S11XS_ROMREGION), NULL, NULL);
       sndbrd_1_init(SNDBRD_S11CS, 1, memory_region(S11CS_ROMREGION), pia_5_cb1_w, NULL);
       break;
     case GEN_S11B2:
-      sndbrd_0_init(SNDBRD_S11BS, 2, memory_region(S11S_ROMREGION), NULL, NULL);
+      sndbrd_0_init(SNDBRD_S11BS, 2, memory_region(S11XS_ROMREGION), NULL, NULL);
       sndbrd_1_init(SNDBRD_S11JS, 1, memory_region(S11JS_ROMREGION), pia_5_cb1_w, NULL);
       break;
     case GEN_S11C:
@@ -518,22 +518,22 @@ MACHINE_DRIVER_START(s11_s9S)
   MDRV_SOUND_CMDHEADING("s11")
 MACHINE_DRIVER_END
 
-/* System 11 without external sound board*/
-MACHINE_DRIVER_START(s11_s11S)
-  MDRV_IMPORT_FROM(s11)
-  MDRV_IMPORT_FROM(wmssnd_s11s)
-  MDRV_NVRAM_HANDLER(s11)
-  MDRV_DIAGNOSTIC_LED7
-  MDRV_SOUND_CMD(s11_sndCmd_w)
-  MDRV_SOUND_CMDHEADING("s11")
-MACHINE_DRIVER_END
-
 /* System 11 with S11C sound board*/
 MACHINE_DRIVER_START(s11_s11XS)
   MDRV_IMPORT_FROM(s11)
   MDRV_IMPORT_FROM(wmssnd_s11xs)
   MDRV_NVRAM_HANDLER(s11)
   MDRV_DIAGNOSTIC_LED7
+  MDRV_SOUND_CMD(s11_sndCmd_w)
+  MDRV_SOUND_CMDHEADING("s11")
+MACHINE_DRIVER_END
+
+/* System 11a without external sound board*/
+MACHINE_DRIVER_START(s11_s11S)
+  MDRV_IMPORT_FROM(s11)
+  MDRV_IMPORT_FROM(wmssnd_s11s)
+  MDRV_NVRAM_HANDLER(s11)
+  MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_SOUND_CMD(s11_sndCmd_w)
   MDRV_SOUND_CMDHEADING("s11")
 MACHINE_DRIVER_END
@@ -638,153 +638,3 @@ static NVRAM_HANDLER(s11) {
 static NVRAM_HANDLER(de) {
   core_nvram(file, read_or_write, memory_region(S11_CPUREGION), 0x2000, 0xff);
 }
-#if 0
-#define S11_CPU { \
-  CPU_M6808, 1000000, /* 1 Mhz */ \
-  s11_readmem, s11_writemem, NULL, NULL, \
-  s11_vblank, 1, s11_irq, S11_IRQFREQ \
-}
-/* Williams System 9 */
-const struct MachineDriver machine_driver_s9_s = {
-  { S11_CPU, S9_SOUNDCPU },
-  S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, s11_init, s11_exit,
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  NULL, NULL, gen_refresh,
-  0,0,0,0, { S9_SOUND },
-  s11_nvram
-};
-
-/* Williams System 11 */
-const struct MachineDriver machine_driver_s11_s = {
-  { S11_CPU, S11C_SOUNDCPU, S11_SOUNDCPU },
-  S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, s11_init, s11_exit,
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  NULL, NULL, gen_refresh,
-  0,0,0,0, { S11_SOUND },
-  s11_nvram
-};
-
-/* Williams System 11b Jokerz */
-const struct MachineDriver machine_driver_s11b2_s = {
-  { S11_CPU, S11J_SOUNDCPU, S11_SOUNDCPU },
-  S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, s11_init, s11_exit,
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  NULL, NULL, gen_refresh,
-  SOUND_SUPPORTS_STEREO,0,0,0, { S11J_SOUND },
-  s11_nvram
-};
-
-/* Williams System 11c */
-const struct MachineDriver machine_driver_s11c_s = {
-  { S11_CPU, S11C_SOUNDCPU },
-  S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, s11_init, s11_exit,
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  NULL, NULL, gen_refresh,
-  0,0,0,0, { S11C_SOUND },
-  s11_nvram
-};
-
-/* Data East - Alpha Numeric */
-const struct MachineDriver machine_driver_deas1_s = {
-  { S11_CPU, DE1S_SOUNDCPU },
-  S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, s11_init, s11_exit,
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  NULL, NULL, gen_refresh,
-  SOUND_SUPPORTS_STEREO,0,0,0, { DE1S_SOUND },
-  de_nvram
-};
-
-/* Data East - DMD 128x16 - Generation #1 Sound Hardware */
-const struct MachineDriver machine_driver_dedmd16s1_s = {
-  { S11_CPU, DE1S_SOUNDCPU, DE_DMD16CPU },
-  S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, s11_init, s11_exit,
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  DE_DMD16VIDEO,
-  SOUND_SUPPORTS_STEREO,0,0,0, { DE1S_SOUND },
-  de_nvram
-};
-
-/* Data East - DMD 128x16 - Generation #2 Sound Hardware */
-const struct MachineDriver machine_driver_dedmd16s2a_s = {
-  { S11_CPU, DE2S_SOUNDCPU, DE_DMD16CPU },
-  S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, s11_init, s11_exit,
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  DE_DMD16VIDEO,
-  SOUND_SUPPORTS_STEREO,0,0,0, { DE2S_SOUNDA },
-  de_nvram
-};
-
-/* Data East/Sega - DMD 128x32 */
-const struct MachineDriver machine_driver_dedmd32s2a_s = {
-  { S11_CPU, DE2S_SOUNDCPU, DE_DMD32CPU },
-  S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, s11_init, s11_exit,
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  DE_DMD32VIDEO,
-  SOUND_SUPPORTS_STEREO,0,0,0, { DE2S_SOUNDA },
-  de_nvram
-};
-/* Data East/Sega - DMD 192x64 */
-const struct MachineDriver machine_driver_dedmd64s2a_s = {
-  { S11_CPU, DE2S_SOUNDCPU, DE_DMD64CPU },
-  S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, s11_init, s11_exit,
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  DE_DMD64VIDEO,
-  SOUND_SUPPORTS_STEREO,0,0,0, { DE2S_SOUNDA },
-  de_nvram
-};
-/* No Sound machine */
-const struct MachineDriver machine_driver_s11 = {
-  { S11_CPU },
-  S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, s11_init, CORE_EXITFUNC(s11_exit)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  NULL, NULL, gen_refresh,
-  0,0,0,0, {{0}},
-  de_nvram
-};
-static core_tData s11Data = {
-  1, /* 1 DIP (actually a jumper) */
-  s11_updSw, CORE_DIAG7SEG, s11_sndCmd_w, "s11",
-  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
-};
-static core_tData s11AData = {
-  1, /* 1 DIP (actually a jumper) */
-  s11_updSw, 1, s11_sndCmd_w, "s11",
-  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
-};
-static core_tData DEData = {
-  1, /* 1 DIP (actually a jumper) */
-  s11_updSw, 1, de_sndCmd_w, "DE",
-  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
-};
-
-#endif

@@ -87,30 +87,40 @@ extern MACHINE_DRIVER_EXTERN(wmssnd_s11cs);
 /*-------------------------
 /  S11 sound on CPU board
 /--------------------------*/
-#define S11S_CPUNO 2
+#define S11XS_CPUNO 2
+#define S11S_CPUNO  1
+#define S11XS_CPUREGION (REGION_CPU1+S11XS_CPUNO)
+#define S11XS_ROMREGION (REGION_SOUND2)
 #define S11S_CPUREGION (REGION_CPU1+S11S_CPUNO)
 #define S11S_ROMREGION (REGION_SOUND2)
 extern MACHINE_DRIVER_EXTERN(wmssnd_s11s);   /* without extra sound board */
 extern MACHINE_DRIVER_EXTERN(wmssnd_s11xs);  /* with s11c sound board */
 extern MACHINE_DRIVER_EXTERN(wmssnd_s11b2s); /* with jokerz sound board */
 
-#define S11S_STDREG \
-  SOUNDREGION(0x10000, S11S_CPUREGION) \
-  SOUNDREGION(0x10000, S11S_ROMREGION)
+#define S11XS_STDREG \
 
-#define S11S_SOUNDROM44(n1, chk1, n2, chk2) \
-  S11S_STDREG \
+#define S11XS_SOUNDROM44(n1, chk1, n2, chk2) \
+  SOUNDREGION(0x10000, S11XS_CPUREGION) \
+  SOUNDREGION(0x10000, S11XS_ROMREGION) \
     ROM_LOAD(n1, 0x4000, 0x4000, chk1) \
     ROM_LOAD(n2, 0xc000, 0x4000, chk2) \
       ROM_RELOAD(  0x8000, 0x4000)
 
-#define S11S_SOUNDROMx8(n2, chk2) \
-  S11S_STDREG \
+#define S11XS_SOUNDROMx8(n2, chk2) \
+  SOUNDREGION(0x10000, S11XS_CPUREGION) \
+  SOUNDREGION(0x10000, S11XS_ROMREGION) \
     ROM_LOAD(n2, 0x4000, 0x4000, chk2) \
       ROM_CONTINUE(0xc000, 0x4000)
 
+#define S11XS_SOUNDROM88(n1, chk1, n2, chk2) \
+  SOUNDREGION(0x10000, S11XS_CPUREGION) \
+  SOUNDREGION(0x10000, S11XS_ROMREGION) \
+    ROM_LOAD(n1, 0x0000, 0x8000, chk1) \
+    ROM_LOAD(n2, 0x8000, 0x8000, chk2)
+
 #define S11S_SOUNDROM88(n1, chk1, n2, chk2) \
-  S11S_STDREG \
+  SOUNDREGION(0x10000, S11S_CPUREGION) \
+  SOUNDREGION(0x10000, S11S_ROMREGION) \
     ROM_LOAD(n1, 0x0000, 0x8000, chk1) \
     ROM_LOAD(n2, 0x8000, 0x8000, chk2)
 
