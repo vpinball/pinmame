@@ -640,13 +640,13 @@ CORE_GAMEDEFNV(granslam,"Grand Slam",1983,"Bally",by35_mBY35_51,GAME_NO_SOUND)
 /****************************************************/
 
 /*--------------------------------
-/ Atlantis
+/ MotorDome
 /-------------------------------*/
-INITGAME(atlantis,0,dispBy7,FLIP_SW(FLIP_L),0)
-BY6803_ROMSTART(atlantis,	"cpu_u2.128", 0x66aea9dc,
-							"cpu_u3.128", 0x9e6ccea1)
+INITGAME(motrdome,0,dispBy7,FLIP_SW(FLIP_L),0)
+BY6803_ROMSTART(motrdome,	"cpu_u2.128", 0x820ca073,
+							"cpu_u3.128", 0xaae7c418)
 BY6803_ROMEND
-CORE_GAMEDEFNV(atlantis,"Atlantis",1989,"Bally",by_mBY6803,0)
+CORE_GAMEDEFNV(motrdome,"MotorDome",1986,"Bally",by_mBY6803,GAME_NOT_WORKING)
 
 /*--------------------------------
 / Party Animal
@@ -655,25 +655,34 @@ INITGAME(prtyanim,0,dispBy7,FLIP_SW(FLIP_L),0)
 BY6803_ROMSTART(prtyanim,	"cpu_u2.128", 0xabdc0b2d,
 							"cpu_u3.128", 0xe48b2d63)
 BY6803_ROMEND
-CORE_GAMEDEFNV(prtyanim,"Party Animal",1989,"Bally",by_mBY6803,0)
+CORE_GAMEDEFNV(prtyanim,"Party Animal",1987,"Bally",by_mBY6803,GAME_NOT_WORKING)
 
 /*--------------------------------
 / Heavy Metal Meltdown
 /-------------------------------*/
 INITGAME(hvymetal,0,dispBy7,FLIP_SW(FLIP_L),0)
-BY6803_ROMSTART(hvymetal,	"hvymt_u2.hex", 0x53466e4e,
-							"hvymt_u3.hex", 0x0a08ae7e)
+BY6803_ROMSTART(hvymetal,	"cpu_u2.128", 0x53466e4e,
+							"cpu_u3.128", 0x0a08ae7e)
 BY6803_ROMEND
-CORE_GAMEDEFNV(hvymetal,"Heavy Metal Meltdown",1989,"Bally",by_mBY6803,0)
+CORE_GAMEDEFNV(hvymetal,"Heavy Metal Meltdown",1987,"Bally",by_mBY6803,GAME_NOT_WORKING)
 
 /*--------------------------------
-/ MotorDome
+/ Blackwater 100
 /-------------------------------*/
-INITGAME(motrdome,0,dispBy7,FLIP_SW(FLIP_L),0)
-BY6803_ROMSTART(motrdome,	"cpu_u2.128", 0x66aea9dc,
-							"cpu_u3.128", 0x9e6ccea1)
+INITGAME(bw100,0,dispBy7,FLIP_SW(FLIP_L),0)
+BY6803_ROMSTART(bw100,	"cpu_u2.128", 0x411fa773,
+						"cpu_u3.128", 0xd6f6f890)
 BY6803_ROMEND
-CORE_GAMEDEFNV(motrdome,"MotorDome",1989,"Bally",by_mBY6803,0)
+CORE_GAMEDEFNV(bw100,"Blackwater 100",1988,"Bally",by_mBY6803,GAME_NOT_WORKING)
+
+/*--------------------------------
+/ Atlantis
+/-------------------------------*/
+INITGAME(atlantis,0,dispBy7,FLIP_SW(FLIP_L),0)
+BY6803_ROMSTART(atlantis,	"cpu_u2.128", 0xb98491e1,
+							"cpu_u3.128", 0x8ea2b4db)
+BY6803_ROMEND
+CORE_GAMEDEFNV(atlantis,"Atlantis",1989,"Bally",by_mBY6803,GAME_NOT_WORKING)
 
 
 /****************************************************/
