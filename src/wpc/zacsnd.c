@@ -170,8 +170,34 @@ static void sp_diag(int button) {
 
 static WRITE_HANDLER(sp1346_data_w) {
   logerror("Sound %x plays\n", data);
-  splocals.tc = data ? 1 : 0;
-  i8035_set_reg(I8035_TC, -splocals.tc);
+  splocals.tc = data ? -1 : 0;
+  i8035_set_reg(I8035_TC, splocals.tc);
+
+  if (Machine->drv->sound[1].sound_type) { // >0 means SN74677 & NE555 chips present
+    static double res[8] = { 0, RES_M(4.7), RES_M(2), RES_K(820), RES_K(680), RES_K(560), RES_K(470), RES_K(330) };
+    static int currentValue = 0;
+    switch (data) {
+    case 0:
+      if (splocals.lastcmd == 0) {
+        SN76477_mixer_w(0, 7);
+        currentValue = 0;
+      }
+      break;
+    case 1: // raise the frequency if value < 7
+      if (currentValue < 7) currentValue++;
+      break;
+    case 2: // lower the frequency if value > 1
+      if (currentValue > 1) currentValue--;
+      break;
+    }
+    if (currentValue > 0) {
+      SN76477_mixer_w(0, 4);
+      SN76477_set_slf_res(0, res[currentValue]);
+    }
+    SN76477_enable_w(0, !currentValue);
+    discrete_sound_w(1, data == 3); // enable the NE555 tone
+  }
+
   splocals.lastcmd = data;
 }
 
@@ -218,7 +244,7 @@ MACHINE_DRIVER_START(zac1346)
   MDRV_INTERLEAVE(500)
 MACHINE_DRIVER_END
 
-static struct SN76477interface  zac1146_sn76477Int = { 1, { 50 }, /* mixing level */
+static struct SN76477interface  zac1146_sn76477Int = { 1, { 30 }, /* mixing level */
 /*						   pin description		*/
 	{ RES_K(39)   },	/*	4  noise_res		*/
 	{ RES_K(100)  },	/*	5  filter_res		*/
@@ -238,9 +264,18 @@ static struct SN76477interface  zac1146_sn76477Int = { 1, { 50 }, /* mixing leve
 	{ RES_K(330)  }		/* 24  oneshot_res		*/
 };
 
+static int type[1] = {0};
+DISCRETE_SOUND_START(zac1146_discInt)
+  DISCRETE_INPUT(NODE_01,1,0x0003,0)
+  DISCRETE_555_ASTABLE(NODE_10,NODE_01,12.0,RES_K(1),RES_K(56),CAP_N(10),NODE_NC,type)
+  DISCRETE_GAIN(NODE_20,NODE_10,1250)
+  DISCRETE_OUTPUT(NODE_20, 50)
+DISCRETE_SOUND_END
+
 MACHINE_DRIVER_START(zac1146)
   MDRV_IMPORT_FROM(zac1346)
   MDRV_SOUND_ADD(SN76477, zac1146_sn76477Int)
+  MDRV_SOUND_ADD(DISCRETE, zac1146_discInt)
 MACHINE_DRIVER_END
 
 /*----------------------------------------
