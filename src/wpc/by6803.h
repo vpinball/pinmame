@@ -12,18 +12,34 @@
 /*-- Common Inports for BY6803 Games --*/
 #define BY6803_COMPORTS \
   PORT_START /* 0 */ \
-    /* Switch Column 1 (Switches #6 & #7) */ \
-    COREPORT_BITDEF(  0x0001, IPT_START1,         IP_KEY_DEFAULT)  \
-    COREPORT_BIT(     0x0002, "Ball Tilt",        KEYCODE_2)  \
-    /* Switch Column 2 (Switches #9 - #16) */ \
-    COREPORT_BITDEF(  0x0004, IPT_COIN1,          IP_KEY_DEFAULT) \
-    COREPORT_BITDEF(  0x0008, IPT_COIN2,          IP_KEY_DEFAULT) \
-    COREPORT_BITDEF(  0x0010, IPT_COIN3,          KEYCODE_3) \
-    COREPORT_BIT(     0x0200, "Slam Tilt",        KEYCODE_HOME)  \
+    /* Switch Column 1*/ \
+    COREPORT_BIT(	0x0001, "KP: Enter",        KEYCODE_ENTER_PAD)  \
+	COREPORT_BIT(	0x0002, "KP: 0",			KEYCODE_0_PAD)  \
+    COREPORT_BIT(	0x0004, "KP: Clear",        KEYCODE_DEL_PAD)  \
+	COREPORT_BIT(	0x0008, "KP: Game",         KEYCODE_PLUS_PAD)  \
+    COREPORT_BIT(	0x0020, "Credit",	        KEYCODE_3)  \
+    /* Switch Column 2*/ \
+    COREPORT_BIT(	0x0040, "KP: 3/Coin 3",     KEYCODE_3_PAD) \
+    COREPORT_BIT(	0x0080, "KP: 2/Coin 1",     KEYCODE_2_PAD) \
+    COREPORT_BIT(	0x0100, "KP: 1/Coin 2",     KEYCODE_1_PAD) \
+    COREPORT_BIT(	0x0200, "KP: A",            KEYCODE_A)  \
+    COREPORT_BIT(	0x0800, "Slam Tilt",        KEYCODE_HOME) \
+    COREPORT_BIT(	0x1000, "Ball Tilt",        KEYCODE_PGDN)  \
     /* These are put in switch column 0 */ \
-    COREPORT_BIT(     0x0400, "Self Test",        KEYCODE_7) \
-    COREPORT_BIT(     0x0800, "CPU Diagnostic",   KEYCODE_9) \
-    COREPORT_BIT(     0x1000, "Sound Diagnostic", KEYCODE_0)
+    COREPORT_BIT(   0x2000, "Self Test",        KEYCODE_7) \
+    COREPORT_BIT(   0x4000, "Sound Diagnostic", KEYCODE_0) \
+  PORT_START /* 1 */\
+	/* Switch Column 3 */ \
+    COREPORT_BIT(	0x0001, "KP: 6",        KEYCODE_6_PAD) \
+	COREPORT_BIT(	0x0002, "KP: 5",        KEYCODE_5_PAD) \
+	COREPORT_BIT(	0x0004, "KP: 4",        KEYCODE_4_PAD) \
+	COREPORT_BIT(	0x0008, "KP: B",        KEYCODE_B)  \
+	/* Switch Column 4 */ \
+    COREPORT_BIT(	0x0010, "KP: 9",        KEYCODE_9_PAD) \
+	COREPORT_BIT(	0x0020, "KP: 8",        KEYCODE_8_PAD) \
+	COREPORT_BIT(	0x0040, "KP: 7",        KEYCODE_7_PAD) \
+	COREPORT_BIT(	0x0080, "KP: C",        KEYCODE_C) 
+
 
 /*-- Standard input ports --*/
 #define BY6803_INPUT_PORTS_START(name,balls) \
@@ -41,8 +57,9 @@
 
 /*-- By6803 switch numbers --*/
 #define BY6803_SWSELFTEST   -7
-#define BY6803_SWCPUDIAG    -6
-#define BY6803_SWSOUNDDIAG  -5
+#define BY6803_SWSOUNDDIAG  -6
+//#define BY6803_SWCPUDIAG    -6
+//#define BY6803_SWSOUNDDIAG  -5
 #define BY6803_SWVIDEODIAG  -4
 
 /*-------------------------
@@ -88,3 +105,35 @@ extern void BY6803_UpdateSoundLED(int data);
 
 #endif /* INC_BY6803 */
 
+
+#if 0
+  PORT_START /* 0 */ \
+    /* Switch Column 1 */ \
+    COREPORT_BIT(	0x0001, "KP: Enter",        KEYCODE_ENTER_PAD)  \
+    COREPORT_BIT(	0x0004, "KP: Clear",        KEYCODE_DEL_PAD)  \
+	COREPORT_BIT(	0x0008, "KP: Game",			KEYCODE_PLUS_PAD)  \	     
+	COREPORT_BIT(	0x0020, "Credit",			KEYCODE_3) \
+    /* Switch Column 2 */ \
+    COREPORT_BIT(	0x0040, "KP: 3/Coin 3",     KEYCODE_3_PAD)  \
+    COREPORT_BIT(	0x0080, "KP: 2/Coin 1",     KEYCODE_2_PAD)  \
+	COREPORT_BIT(	0x0100, "KP: 1/Coin 2",		KEYCODE_1_PAD)  \	     
+	COREPORT_BIT(	0x0200, "KP: A",			KEYCODE_A)  \
+	COREPORT_BIT(	0x0800, "KP: 1/Coin 2",		KEYCODE_1_PAD)  \	     
+	COREPORT_BIT(	0x1000, "Slam Tilt",		KEYCODE_HOME)  \
+	COREPORT_BIT(	0x2000, "Ball Tilt",		KEYCODE_PGDN)  \
+    /* These are put in switch column 0 */ \
+    COREPORT_BIT(	0x4000, "Self Test",        KEYCODE_7) \
+    COREPORT_BIT(	0x8000, "Sound Diagnostic", KEYCODE_0) \
+  PORT_START /* 1 */\
+	/* Switch Column 3 */ \
+    COREPORT_BIT(	0x0001, "KP: 6",        KEYCODE_6_PAD)  \
+    COREPORT_BIT(	0x0002, "KP: 5",        KEYCODE_5_PAD)  \
+	COREPORT_BIT(	0x0004, "KP: 4",		KEYCODE_4_PAD)  \	     
+	COREPORT_BIT(	0x0008, "KP: B",		KEYCODE_B)  \
+	/* Switch Column 4 */ \
+    COREPORT_BIT(	0x0010, "KP: 9",        KEYCODE_9_PAD)  \
+    COREPORT_BIT(	0x0020, "KP: 8",        KEYCODE_8_PAD)  \
+	COREPORT_BIT(	0x0040, "KP: 7",		KEYCODE_7_PAD)  \	     
+	COREPORT_BIT(	0x0080, "KP: C",		KEYCODE_C)  
+#endif
+	

@@ -3,9 +3,9 @@
   RES: FFFE-F 
   SWI: FFFA-B Software Interrupt (Not Used)
   NMI: FFFC-D (Not Used)
-  IRQ: FFF8-9 C042
-  ICF: FFF6-7 (Input Capture)~IRQ2 (c06C)
-  OCF: FFF4-5 (Output Compare)~IRQ2 (C403)
+  IRQ: FFF8-9 (c042 in Party Animal)
+  ICF: FFF6-7 (Input Capture)~IRQ2 (c06C in Party Animal)
+  OCF: FFF4-5 (Output Compare)~IRQ2 (C403 in Party Animal)
   TOF: FFF2-3 (Timer Overflow)~IRQ2 (Not Used)
   SCI: FFF0-1 (Input Capture)~IRQ2  (Not Used)
 
@@ -59,7 +59,7 @@
 #define mlogerror printf
 
 static struct {
-  int a0, a1, b1, ca20, ca21, cb20, cb21;
+  int p0_a, p1_a, p1_b, p0_ca2, p1_ca2, p0_cb2, p1_cb2;
   int bcd[6];
   int lampadr1, lampadr2;
   UINT32 solenoids;
@@ -87,7 +87,7 @@ static void piaIrq(int state) {
 }
 
 static void by6803_dispStrobe(int mask) {
-  int digit = locals.a1 & 0xfe;
+  int digit = locals.p1_a & 0xfe;
   int ii,jj;
   //DBGLOG(("digit = %x (%x,%x,%x,%x,%x,%x)\n",digit,locals.bcd[0],locals.bcd[1],locals.bcd[2],locals.bcd[3],locals.bcd[4],locals.bcd[5]));
   for (ii = 0; digit; ii++, digit>>=1)
@@ -101,7 +101,7 @@ static void by6803_dispStrobe(int mask) {
 
 static void by6803_lampStrobe(int board, int lampadr) {
   if (lampadr != 0x0f) {
-    int lampdata = (locals.a0>>4)^0x0f;
+    int lampdata = (locals.p0_a>>4)^0x0f;
     UINT8 *matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)+8*board];
     int bit = 1<<(lampadr & 0x07);
 
@@ -115,25 +115,25 @@ static void by6803_lampStrobe(int board, int lampadr) {
 
 /* PIA0:A-W  Control what is read from PIA0:B */
 static WRITE_HANDLER(pia0a_w) {
-  if (!locals.ca20) {
-    int bcdLoad = locals.a0 & ~data & 0x0f;
+  if (!locals.p0_ca2) {
+    int bcdLoad = locals.p0_a & ~data & 0x0f;
     int ii;
 
     for (ii = 0; bcdLoad; ii++, bcdLoad>>=1)
       if (bcdLoad & 0x01) locals.bcd[ii] = data>>4;
   }
-  locals.a0 = data;
+  locals.p0_a = data;
   by6803_lampStrobe(0,locals.lampadr1);
   if (core_gameData->hw.lampCol > 0) by6803_lampStrobe(1,locals.lampadr2);
 }
 /* PIA1:A-W  0,2-7 Display handling */
 static WRITE_HANDLER(pia1a_w) {
-  int tmp = locals.a1;
+  int tmp = locals.p1_a;
   mlogerror("seg_w %x\n",data);
-  locals.a1 = data;
-  if (!locals.ca20) {
+  locals.p1_a = data;
+  if (!locals.p0_ca2) {
     if (tmp & ~data & 0x01) { // Positive edge
-      locals.bcd[4] = locals.a0>>4;
+      locals.bcd[4] = locals.p0_a>>4;
       by6803_dispStrobe(0x10);
     }
   }
@@ -141,35 +141,35 @@ static WRITE_HANDLER(pia1a_w) {
 
 /* PIA0:B-R  Switch & Cabinet Returns */
 static READ_HANDLER(pia0b_r) {
-  return core_getSwCol((locals.a0 & 0x1f) | ((locals.b1 & 0x80)>>2));
+  return core_getSwCol((locals.p0_a & 0x1f) | ((locals.p1_b & 0x80)>>2));
 }
 
 /* PIA0:CB2-W Lamp Strobe #1, DIPBank3 STROBE */
 static WRITE_HANDLER(pia0cb2_w) {
   //DBGLOG(("PIA0:CB2=%d PC=%4x\n",data,cpu_get_pc()));
-  if (locals.cb20 & ~data) locals.lampadr1 = locals.a0 & 0x0f;
-  locals.cb20 = data;
+  if (locals.p0_cb2 & ~data) locals.lampadr1 = locals.p0_a & 0x0f;
+  locals.p0_cb2 = data;
 }
 /* PIA1:CA2-W Lamp Strobe #2 */
 static WRITE_HANDLER(pia1ca2_w) {
   //DBGLOG(("PIA1:CA2=%d\n",data));
-  if (locals.ca21 & ~data) locals.lampadr2 = locals.a0 & 0x0f;
+  if (locals.p1_ca2 & ~data) locals.lampadr2 = locals.p0_a & 0x0f;
   locals.diagnosticLed = data;
-  locals.ca21 = data;
+  locals.p1_ca2 = data;
 }
 
 /* PIA0:CA2-W Display Strobe */
 static WRITE_HANDLER(pia0ca2_w) {
   //DBGLOG(("PIA0:CA2=%d\n",data));
-  locals.ca20 = data;
+  locals.p0_ca2 = data;
   if (!data) by6803_dispStrobe(0x1f);
 }
 
 /* PIA1:B-W Solenoid output */
 static WRITE_HANDLER(pia1b_w) {
-  locals.b1 = data;
+  locals.p1_b = data;
   coreGlobals.pulsedSolState = 0;
-  if (!locals.cb21)
+  if (!locals.p1_cb2)
     locals.solenoids |= coreGlobals.pulsedSolState = (1<<(data & 0x0f)) & 0x7fff;
   data ^= 0xf0;
   coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xfff0ffff) | ((data & 0xf0)<<12);
@@ -180,7 +180,7 @@ static WRITE_HANDLER(pia1b_w) {
 /* PIA1:CB2-W Solenoid Select */
 static WRITE_HANDLER(pia1cb2_w) {
   //DBGLOG(("PIA1:CB2=%d\n",data));
-  locals.cb21 = data;
+  locals.p1_cb2 = data;
 }
 
 static int by6803_vblank(void) {
@@ -215,19 +215,18 @@ static int by6803_vblank(void) {
 
 static void by6803_updSw(int *inports) {
   if (inports) {
-    coreGlobals.swMatrix[0] = (inports[BY6803_COMINPORT]>>10) & 0x07;
-    coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & (~0x60)) |
-                              ((inports[BY6803_COMINPORT]<<5) & 0x60);
-    // Adjust Coins, and Slam Tilt Switches for Stern MPU-200 Games!
-    if ((core_gameData->gen & GEN_STMPU200))
-      coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & (~0x87)) |
-                                ((inports[BY6803_COMINPORT]>>2) & 0x87);
-    else
-      coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & (~0x87)) |
-                                ((inports[BY6803_COMINPORT]>>2) & 0x87);
+    coreGlobals.swMatrix[0] = (inports[BY6803_COMINPORT]>>13) & 0x03;
+	coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & (~0x2f)) |
+                              ((inports[BY6803_COMINPORT]) & 0x2f);
+    coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & (~0x6f)) |
+                              ((inports[BY6803_COMINPORT]>>6) & 0x6f);
+	coreGlobals.swMatrix[3] = (coreGlobals.swMatrix[3] & (~0x0f)) |
+                              ((inports[BY6803_COMINPORT]>>16) & 0x0f);
+    coreGlobals.swMatrix[4] = (coreGlobals.swMatrix[4] & (~0x0f)) |
+                              ((inports[BY6803_COMINPORT]>>20) & 0x0f);
   }
   /*-- Diagnostic buttons on CPU board --*/
-  if (core_getSw(BY6803_SWCPUDIAG))  cpu_set_nmi_line(0, PULSE_LINE);
+  //if (core_getSw(BY6803_SWCPUDIAG))  cpu_set_nmi_line(0, PULSE_LINE);
   if (core_getSw(BY6803_SWSOUNDDIAG)) locals.SOUNDDIAG();
   /*-- coin door switches --*/
   pia_set_input_ca1(0, !core_getSw(BY6803_SWSELFTEST));
@@ -381,7 +380,7 @@ static READ_HANDLER(port2_r) {
 //Sound Data (PB0-3 only connected on schem, but later generations may use all 8 bits)
 static WRITE_HANDLER(port1_w) { 
 	locals.snddata = data;
-	//logerror("port 1 write = %x\n",data);
+	//printf("snddata: port 1 write = %x\n",data);
 }
 
 //Diagnostic LED & Sound Interrupt
@@ -391,6 +390,7 @@ static WRITE_HANDLER(port2_w) {
 	//Trigger Sound command on positive edge
 	if(!locals.sndint && sndint)
 		locals.SOUNDCOMMAND(0,locals.snddata);
+	locals.sndint = sndint;
 	//logerror("port 2 write = %x\n",data);
 }
 

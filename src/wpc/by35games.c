@@ -42,6 +42,12 @@ static void init_##name(void) { \
 } \
 BYVP_INPUT_PORTS_START(name, 1) BYVP_INPUT_PORTS_END
 
+#define INITGAME6803(name, gen, disp, flip, lamps) \
+static core_tGameData name##GameData = {gen,disp,{flip,0,lamps}}; \
+static void init_##name(void) { \
+  core_gameData = &name##GameData; \
+} \
+BY6803_INPUT_PORTS_START(name, 1) BY6803_INPUT_PORTS_END
 
 /* -------------------------------------------------------------*/
 /* All games below use CHIMES for sound - ie, no sound hardware */
@@ -700,7 +706,7 @@ CORE_GAMEDEFNV(cybrnaut,"Cybernaut",1985,"Bally",by35_mBY35_51,GAME_NO_SOUND)
 / Eight Ball Champ (6803-0B38: 09/85) - Manual says can work with Cheap Squeek also via operator setting
 /------------------------------------*/
 //CPU Works
-INITGAME(eballchp,0,dispBy7,FLIP_SW(FLIP_L),0)
+INITGAME6803(eballchp,0,dispBy7,FLIP_SW(FLIP_L),0)
 BY6803_ROMSTARTx4(eballchp, "u3_cpu.128", 0x025f3008)
 BY6803_SOUND_S1_x111(		"u3_snd.532", 0x4836d70d,
 							"u4_snd.532", 0x4b49d94d,
@@ -712,7 +718,7 @@ CORE_GAMEDEFNV(eballchp,"Eight Ball Champ",1985,"Bally",by_mBY6803S1,0)
 / Beat the Clock (6803-0C70: 11/85) - ??
 /------------------------------------*/
 //CPU Works
-INITGAME(beatclck,0,dispBy7,FLIP_SW(FLIP_L),0)
+INITGAME6803(beatclck,0,dispBy7,FLIP_SW(FLIP_L),0)
 BY6803_ROMSTARTx4(beatclck,	"btc_u3.cpu", 0x9ba822ab)
 BY6803_SOUND_S1_1111(		"btc_u2.snd", 0xfd22fd2a,
 							"btc_u3.snd", 0x22311a4a,
@@ -725,7 +731,7 @@ CORE_GAMEDEFNV(beatclck,"Beat the Clock",1985,"Bally",by_mBY6803S1,0)
 / Lady Luck (6803-0E34: 02/86) - Uses Cheap Squeek (Same as Last MPU-35 Line of games)
 /------------------------------------*/
 //CPU Works
-INITGAME(ladyluck,0,dispBy7,FLIP_SW(FLIP_L),0)
+INITGAME6803(ladyluck,0,dispBy7,FLIP_SW(FLIP_L),0)
 BY6803_ROMSTARTx4(ladyluck,	"u3.cpu", 0x129f41f5)
 BY35_SOUND45ROM00(			"u3_snd.532", 0x1bdd6e2b,
 							"u4_snd.532", 0xe9ef01e6)
@@ -738,7 +744,7 @@ CORE_GAMEDEFNV(ladyluck,"Lady Luck",1986,"Bally",by_mBY6803S1,GAME_NO_SOUND)
 / MotorDome (6803-0E14: 05/86)
 /-------------------------------*/
 //CPU & Sound Works?
-INITGAME(motrdome,0,dispBy7,FLIP_SW(FLIP_L),0)
+INITGAME6803(motrdome,0,dispBy7,FLIP_SW(FLIP_L),0)
 BY6803_ROMSTART44(motrdome,	"modm_u2.dat", 0x820ca073,
 							"modm_u3.dat", 0xaae7c418)
 BY6803_SOUND_S2_8(			"modm_u7.snd", 0x29ce4679)
@@ -753,7 +759,7 @@ CORE_GAMEDEFNV(motrdome,"MotorDome",1986,"Bally",by_mBY6803S2,0)
 / Black Belt (6803-0E52: 07/86)
 /------------------------------------*/
 //CPU & Sound DOES NOT WORK! - Bad rom?
-INITGAME(blackblt,0,dispBy7,FLIP_SW(FLIP_L),0)
+INITGAME6803(blackblt,0,dispBy7,FLIP_SW(FLIP_L),0)
 BY6803_ROMSTART44(blackblt,	"u2.cpu", 0x7c771910,
 							"u3.cpu", 0xbad0f4c3)
 BY6803_SOUND_S2_8(			"blck_u7.snd",0xdb8bce07)
@@ -766,7 +772,7 @@ CORE_GAMEDEFNV(blackblt,"Black Belt",1986,"Bally",by_mBY6803S2,0)
 / Special Force (6803-0E47: 08/86)
 /------------------------------------*/
 //CPU & Sound Works?
-INITGAME(specforc,0,dispBy7,FLIP_SW(FLIP_L),0)
+INITGAME6803(specforc,0,dispBy7,FLIP_SW(FLIP_L),0)
 BY6803_ROMSTART44(specforc,	"u2_revc.128", 0xd042af04,
 							"u3_revc.128", 0xd48a5eaf)
 BY6803_SOUND_S3_0000(		"u12_snd.512", 0x4f48a490,
@@ -780,7 +786,7 @@ CORE_GAMEDEFNV(specforc,"Special Force",1986,"Bally",by_mBY6803S3,0)
 / Strange Science (6803-0E35: 10/86)
 /------------------------------------*/
 //CPU & Sound Works?
-INITGAME(strngsci,0,dispBy7,FLIP_SW(FLIP_L),0)
+INITGAME6803(strngsci,0,dispBy7,FLIP_SWNO(5,8),0)
 BY6803_ROMSTART44(strngsci,	"cpu_u2.128", 0x2ffcf284,
 							"cpu_u3.128", 0x35257931)
 BY6803_SOUND_S2_8(			"sound_u7.256",0xbc33901e)
@@ -791,7 +797,7 @@ CORE_GAMEDEFNV(strngsci,"Strange Science",1986,"Bally",by_mBY6803S2,0)
 / City Slicker (6803-0E79: 03/87) 
 /------------------------------------*/
 //CPU & Sound Works?
-INITGAME(cityslck,0,dispBy7,FLIP_SW(FLIP_L),0)
+INITGAME6803(cityslck,0,dispBy7,FLIP_SW(FLIP_L),0)
 BY6803_ROMSTART44(cityslck,	"u2.128", 0x94bcf162,
 							"u3.128", 0x97cb2bca)
 BY6803_SOUND_S2_0(			"u7_snd.512",0x6941d68a)
@@ -804,7 +810,7 @@ CORE_GAMEDEFNV(cityslck,"City Slicker",1987,"Bally",by_mBY6803S2A,0)
 //CPU & Sound Works?
 //Switchs 8 in column 5 & Entire Column 6 must be closed for lamps to operate
 //(Might be less than switches listed, but haven't figured out which)
-INITGAME(hardbody,0,dispBy7,FLIP_SW(FLIP_L),0)
+INITGAME6803(hardbody,0,dispBy7,FLIP_SW(FLIP_L),0)
 BY6803_ROMSTART44(hardbody,	"cpu_u2.128", 0xc9248b47,
 							"cpu_u3.128", 0x31c255d0)
 BY6803_SOUND_S2_0(			"sound_u7.512",0xc96f91af)
@@ -817,7 +823,7 @@ CORE_GAMEDEFNV(hardbody,"Hardbody",1987,"Bally",by_mBY6803S2A,0)
 / Party Animal (6803-0H01: 05/87)
 /-------------------------------*/
 //CPU & Sound Works?
-INITGAME(prtyanim,0,dispBy7,FLIP_SW(FLIP_L),0)
+INITGAME6803(prtyanim,0,dispBy7,FLIP_SW(FLIP_L),0)
 BY6803_ROMSTART44(prtyanim,	"cpu_u2.128", 0xabdc0b2d,
 							"cpu_u3.128", 0xe48b2d63)
 BY6803_SOUND_S3_0000(		"snd_u12.512", 0x265a9494,
@@ -834,7 +840,7 @@ CORE_GAMEDEFNV(prtyanim,"Party Animal",1987,"Bally",by_mBY6803S3,0)
 //
 //3 Different Sources claim that this games only uses U11&U12..
 //Must be correct, as it DOES pass the start up test.
-INITGAME(hvymetal,0,dispBy7,FLIP_SW(FLIP_L),0)
+INITGAME6803(hvymetal,0,dispBy7,FLIP_SW(FLIP_L),0)
 BY6803_ROMSTART44(hvymetal,	"u2.rom", 0x53466e4e,
 							"u3.rom", 0x0a08ae7e)
 BY6803_SOUND_S3_00xx(		"u12.rom",0x77933258,
@@ -846,7 +852,7 @@ CORE_GAMEDEFNV(hvymetal,"Heavy Metal Meltdown",1987,"Bally",by_mBY6803S3,0)
 / Dungeons & Dragons (6803-0H06: 10/87)
 /------------------------------------*/
 //CPU & Sound Works?
-INITGAME(dungdrag,0,dispBy7,FLIP_SW(FLIP_L),0)
+INITGAME6803(dungdrag,0,dispBy7,FLIP_SW(FLIP_L),0)
 BY6803_ROMSTART44(dungdrag,	"cpu_u2.128", 0xcefd4330,
 							"cpu_u3.128", 0x4bacc7f5)
 BY6803_SOUND_S3_0000(		"snd_u12.512", 0xdd95f851,
@@ -860,7 +866,7 @@ CORE_GAMEDEFNV(dungdrag,"Dungeons & Dragons",1987,"Bally",by_mBY6803S3,0)
 / Escape from the Lost World (6803-0H05: 01/88)
 /-----------------------------------------------*/
 //CPU & Sound Works?
-INITGAME(esclwrld,0,dispBy7,FLIP_SW(FLIP_L),0)
+INITGAME6803(esclwrld,0,dispBy7,FLIP_SW(FLIP_L),0)
 BY6803_ROMSTART44(esclwrld,	"u2.128", 0xb11a97ea,
 							"u3.128", 0x5385a562)
 BY6803_SOUND_S3_0000(		"u12.512", 0x0c003473,
@@ -874,7 +880,7 @@ CORE_GAMEDEFNV(esclwrld,"Escape from the Lost World",1988,"Bally",by_mBY6803S3,0
 / Blackwater 100 (6803-0H07: 03/88)
 /------------------------------------*/
 //CPU & Sound Works?
-INITGAME(black100,0,dispBy7,FLIP_SW(FLIP_L),0)
+INITGAME6803(black100,0,dispBy7,FLIP_SW(FLIP_L),0)
 BY6803_ROMSTART44(black100,	"u2.cpu", 0x411fa773,
 							"u3.cpu", 0xd6f6f890)
 BY6803_SOUND_S3_0000(		"u12.bin", 0xa0ecb282,
@@ -890,7 +896,7 @@ CORE_GAMEDEFNV(black100,"Blackwater 100",1988,"Bally",by_mBY6803S3,0)
 / Truck Stop (6803-2001: 12/88) - These are ProtoType ROMS?
 /-------------------------------------------------------------*/
 //CPU & Sound Works?
-INITGAME(truckstp,0,dispBy7,FLIP_SW(FLIP_L),0)
+INITGAME6803(truckstp,0,dispBy7,FLIP_SW(FLIP_L),0)
 BY6803_ROMSTART44(truckstp,	"u2_p2.128", 0x3c397dec,
 							"u3_p2.128", 0xd7ac519a)
 BY6803_SOUND_S4_888(		"u4sndp1.256",0x120a386f,
@@ -904,7 +910,7 @@ CORE_GAMEDEFNV(truckstp,"Truck Stop",1988,"Bally",by_mBY6803S4,0)
 /-----------------------------------------------------------*/
 //CPU (No lights) & Sound Works?
 //Does NOT appear to be switch problem, but not sure what it is!
-INITGAME(atlantis,0,dispBy7,FLIP_SW(FLIP_L),0)
+INITGAME6803(atlantis,0,dispBy7,FLIP_SW(FLIP_L),0)
 BY6803_ROMSTART44(atlantis,	"u26_cpu.rom", 0xb98491e1,
 							"u27_cpu.rom", 0x8ea2b4db)
 BY6803_SOUND_S4_888(		"u4_snd.rom",0x6a48b588,
