@@ -44,7 +44,7 @@ extern const struct Memory_WriteAddress GTS80S_writemem[];
 
 /* Gottlieb System 80/80A Sound & Speech Board */
 
-/*-- Sound & Speek Board, 2 X 2K Voice/Sound Roms --*/
+/*-- Sound & Speeh Board, 2 X 2K Voice/Sound Roms --*/
 #define GTS80SS22_ROMSTART(n1,chk1,n2,chk2) \
   SOUNDREGION(0x10000, GTS80_MEMREG_SCPU1) \
 	ROM_LOAD(n1, 0x7000,  0x0800, chk1) \
@@ -179,6 +179,127 @@ extern struct Samplesinterface	samples_interface;
 #define GTS80BS3_SOUND \
 { SOUND_DAC,     &GTS80BS_dacInt }, \
 { SOUND_YM2151,  &GTS80BS_ym2151Int }, \
+{ SOUND_SAMPLES, &samples_interface}
+
+/*-- GTS3 --*/
+
+/* Load 1Mb Rom(128K) to fit into 4Meg Rom Space */
+#define GTS3S_ROMLOAD1(start, n, chk) \
+  ROM_LOAD(n, start,  0x20000, chk) \
+  ROM_RELOAD( start + 0x20000, 0x20000) \
+  ROM_RELOAD( start + 0x40000, 0x20000) \
+  ROM_RELOAD( start + 0x60000, 0x20000)
+
+/* Load 2Mb Rom(256K) to fit into 4Meg Rom Space */
+#define GTS3S_ROMLOAD2(start, n, chk) \
+  ROM_LOAD(n, start,  0x40000, chk) \
+  ROM_RELOAD( start + 0x40000, 0x40000)
+
+/* Load 4Mb Rom(512K) */
+#define GTS3S_ROMLOAD4(start, n, chk) \
+  ROM_LOAD(n, start,  0x80000, chk)
+
+/*-- 2 x 32K Sound CPU Roms --*/
+//Purposely load in n2 first!
+#define GTS3SOUND3232(n2,chk2,n1,chk1) \
+  SOUNDREGION(0x10000, GTS3_MEMREG_DCPU1) \
+    ROM_LOAD(n1, 0x8000,  0x8000, chk1) \
+  SOUNDREGION(0x10000, GTS3_MEMREG_SCPU1) \
+	ROM_LOAD(n2, 0x8000,  0x8000, chk2)
+
+/*-- 2 x 32K Sound CPU Roms, 2 x 128K Voice Roms --*/
+//Purposely load in n2 first!
+#define GTS3SOUND32128(n2,chk2,n1,chk1,n3,chk3, n4, chk4) \
+  SOUNDREGION(0x10000, GTS3_MEMREG_DCPU1) \
+    ROM_LOAD(n1, 0x8000,  0x8000, chk1) \
+  SOUNDREGION(0x80000, GTS3_MEMREG_SROM1) \
+	GTS3S_ROMLOAD1(0x0000, n3, chk3) \
+	GTS3S_ROMLOAD1(0x0000, n4, chk4) \
+  SOUNDREGION(0x10000, GTS3_MEMREG_SCPU1) \
+	ROM_LOAD(n2, 0x8000,  0x8000, chk2)
+
+/*-- 2 x 32K Sound CPU Roms, 2 x 256K Voice Roms --*/
+//Purposely load in n2 first!
+#define GTS3SOUND32256A(n2,chk2,n1,chk1,n3,chk3, n4, chk4) \
+  SOUNDREGION(0x10000, GTS3_MEMREG_DCPU1) \
+    ROM_LOAD(n1, 0x8000,  0x8000, chk1) \
+  SOUNDREGION(0x80000, GTS3_MEMREG_SROM1) \
+	GTS3S_ROMLOAD2(0x0000, n3, chk3) \
+	GTS3S_ROMLOAD2(0x0000, n4, chk4) \
+  SOUNDREGION(0x10000, GTS3_MEMREG_SCPU1) \
+	ROM_LOAD(n2, 0x8000,  0x8000, chk2)
+
+/*-- 2 x 32K Sound CPU Roms, 2 x 256K Voice Roms --*/
+//Purposely load in n2 first!
+#define GTS3SOUND32256(n2,chk2,n1,chk1,n3,chk3, n4, chk4) \
+  SOUNDREGION(0x10000, GTS3_MEMREG_SCPU1) \
+    ROM_LOAD(n1, 0x8000,  0x8000, chk1) \
+  SOUNDREGION(0x80000, GTS3_MEMREG_SROM1) \
+	GTS3S_ROMLOAD2(0x0000, n3, chk3) \
+	GTS3S_ROMLOAD2(0x0000, n4, chk4) \
+  SOUNDREGION(0x10000, GTS3_MEMREG_SCPU2) \
+	ROM_LOAD(n2, 0x8000,  0x8000, chk2)
+
+/*-- 2 x 32K Sound CPU Roms, 1 x 512K, 1 x 256K Voice Roms --*/
+//Purposely load in n2 first!
+#define GTS3SOUND32512256(n2,chk2,n1,chk1,n3,chk3, n4, chk4) \
+  SOUNDREGION(0x10000, GTS3_MEMREG_SCPU1) \
+    ROM_LOAD(n1, 0x8000,  0x8000, chk1) \
+  SOUNDREGION(0x80000, GTS3_MEMREG_SROM1) \
+	GTS3S_ROMLOAD4(0x0000, n3, chk3) \
+	GTS3S_ROMLOAD2(0x0000, n4, chk4) \
+  SOUNDREGION(0x10000, GTS3_MEMREG_SCPU2) \
+	ROM_LOAD(n2, 0x8000,  0x8000, chk2)
+
+/*-- 2 x 32K Sound CPU Roms, 2 x 512K Voice Roms --*/
+//Purposely load in n2 first!
+#define GTS3SOUND32512(n2,chk2,n1,chk1,n3,chk3, n4, chk4) \
+  SOUNDREGION(0x10000, GTS3_MEMREG_SCPU1) \
+    ROM_LOAD(n1, 0x8000,  0x8000, chk1) \
+  SOUNDREGION(0x80000, GTS3_MEMREG_SROM1) \
+	GTS3S_ROMLOAD4(0x0000, n3, chk3) \
+	GTS3S_ROMLOAD4(0x0000, n4, chk4) \
+  SOUNDREGION(0x10000, GTS3_MEMREG_SCPU2) \
+	ROM_LOAD(n2, 0x8000,  0x8000, chk2)
+
+#define GTS3_SOUND_ROMS_NOT_AVAILABLE \
+  SOUNDREGION(0x10000, GTS3_MEMREG_SCPU1) \
+  SOUNDREGION(0x80000, GTS3_MEMREG_SROM1) \
+  SOUNDREGION(0x10000, GTS3_MEMREG_SCPU2) 
+
+/*-- Machine structure externals --*/
+extern const struct Memory_ReadAddress  GTS3_sreadmem[];
+extern const struct Memory_WriteAddress GTS3_swritemem[];
+extern const struct Memory_ReadAddress  GTS3_sreadmem2[];
+extern const struct Memory_WriteAddress GTS3_swritemem2[];
+
+//Y-CPU
+#define GTS3_SOUNDCPU1 ,{ \
+  CPU_M65C02 | CPU_AUDIO_CPU, \
+  2000000, /* 2 MHz */ \
+  GTS3_sreadmem, GTS3_swritemem, 0, 0, \
+  ignore_interrupt, 0 \
+}
+
+//D-CPU
+#define GTS3_SOUNDCPU2 ,{ \
+  CPU_M65C02 | CPU_AUDIO_CPU, \
+  2000000, /* 2 MHz */ \
+  GTS3_sreadmem2, GTS3_swritemem2, 0, 0, \
+  ignore_interrupt, 0 \
+}
+
+extern struct OKIM6295interface GTS3_okim6295_interface;
+
+#define GTS3_SOUND \
+{ SOUND_YM2151,  &GTS80BS_ym2151Int }, \
+{ SOUND_DAC,     &GTS80BS_dacInt }, \
+{ SOUND_SAMPLES, &samples_interface}
+
+#define GTS3_2_SOUND \
+{ SOUND_YM2151,  &GTS80BS_ym2151Int }, \
+{ SOUND_DAC,     &GTS80BS_dacInt }, \
+{ SOUND_OKIM6295,&GTS3_okim6295_interface },\
 { SOUND_SAMPLES, &samples_interface}
 
 #endif /* GTSS80S_H */
