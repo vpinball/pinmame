@@ -42,6 +42,9 @@
   #6) Solenoid handling needs to be cleaned up (ie, remove unnecessary code)
   #7) Sound board FIRQ freq. is set by a jumper (don't know which is used) nor what the value of E is.
   #8) There's probably more I can't think of at the moment
+
+  ** DMD Support not implemented - waiting for 8031 emulation **
+
 **************************************************************************************/
 #include <stdarg.h>
 #include "driver.h"
@@ -52,6 +55,7 @@
 #include "sndbrd.h"
 #include "alvg.h"
 #include "alvgs.h"
+#include "alvgdmd.h"
 
 #define ALVG_VBLANKFREQ      60 /* VBLANK frequency*/
 
