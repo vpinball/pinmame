@@ -454,17 +454,20 @@ int CRCSOFGAMESNOTSUPPORRTED[] = {
 	// High Roller Casino (1st sound rom, game roms 210, 300)
 	0x5858dfd0, 0x0d1117fa, 0x2e3c682a,										
 
-	// Austin Powers (first sound rom, game roms 201, 300, 301, 302)
+	// Austin Powers (1st sound rom, game roms 201, 300, 301, 302)
 	0xc1e33fee, 0xa06b2b03, 0xa06b2b03, 0xa4ddcdca, 0x2920b59b,
 
-	// Monopoly (first sound rom, game roms 233, 251, 301, 303)
+	// Monopoly (1st sound rom, game roms 233, 251, 301, 303)
 	0xf9bc55e8, 0xf20a5ca6, 0x0645cfae, 0x24978872,0x4a66c9e4, 						
 
-	// Playboy (first sound rom, game roms 203, 300, 302, 303, 401)
+	// Playboy (1st sound rom, game roms 203, 300, 302, 303, 401)
 	0xf5502fec, 0x50eb01b0, 0xd7e5bada, 0x206285ed, 0x6a6f6aab, 0xcb2e2824,
 
-	// Roller Coaster Tycoon (first sound rom, game rom 400, 600, 701)
+	// Roller Coaster Tycoon (1st sound rom, game rom 400, 600, 701)
 	0x18ba20ec, 0x4691de23, 0x2ada30e5, 0xe1fe89f6,
+
+	// The Simpsons Pinball Party (1st sound rom, game rom 204)
+	0x32efcdf6, 0x5bc155f7,
 
 	// end of the list
 	0x0
