@@ -90,7 +90,7 @@ static WRITE_HANDLER(pia0a_w) {
     locals.lastbcd = (locals.lastbcd & 0x10) | (data & 0x0f);
   }
   locals.a0 = data;
-  if (core_gameData->hw.gameSpecific1 & BY35GD_PHASE) 
+  if (core_gameData->hw.gameSpecific1 & BY35GD_PHASE)
     by35_lampStrobe(locals.phaseA, locals.lampadr1);
   else {
     by35_lampStrobe(0, locals.lampadr1);
@@ -470,13 +470,11 @@ WRITE_HANDLER(stern100_sol_w) {
 
 // This game can work either with SB-100 OR SB-300!
 WRITE_HANDLER(astro_sol_w) {
-  if ((data & 0x0f) == 0x08)
-    coreGlobals.pulsedSolState = 0x00400000 | (1 << (23 + (data >> 4)));
-  else if ((data & 0xf0) == 0x30)
+  if ((data & 0xf0) == 0x30)
     coreGlobals.pulsedSolState = 0x00200000 | (1 << (16 + (data & 0x0f)));
   else if (data != 0) {
     if ((data & 0xf0) == 0xf0) data ^= 0xff;
-    coreGlobals.pulsedSolState = data << 24;
+    coreGlobals.pulsedSolState = data << 28;
   }
   locals.solenoids = (locals.solenoids & 0x001fffff) | coreGlobals.pulsedSolState;
 }
@@ -516,14 +514,15 @@ static MACHINE_INIT(by35) {
     locals.bcd2seg = core_bcd2seg9;
   }
 
-  if ((sb & 0xff00) == SNDBRD_ST300) {
+  if (sb == SNDBRD_ASTRO) {
     init_m6840();
     install_mem_write_handler(0,0x00a0, 0x00a7, m6840_w_common);
-    if (sb == SNDBRD_ASTRO) {
-      install_mem_read_handler (0,0x00a0, 0x00a7, astro_sol_r);
-      install_mem_write_handler(0,0x00c0, 0x00c0, astro_sol_w);
-    } else
-      install_mem_write_handler(0,0x00c0, 0x00c0, stern200_sol_w);
+    install_mem_read_handler (0,0x00a0, 0x00a7, astro_sol_r);
+    install_mem_write_handler(0,0x00c0, 0x00c0, astro_sol_w);
+  } else if ((sb & 0xff00) == SNDBRD_ST300) {
+    init_m6840();
+    install_mem_write_handler(0,0x00a0, 0x00a7, m6840_w_common);
+    install_mem_write_handler(0,0x00c0, 0x00c0, stern200_sol_w);
   } else if (sb == SNDBRD_ST100) {
     install_mem_write_handler(0,0x00a0, 0x00a0, extra_sol_w); // sounds on (DIP 23 = 1)
     install_mem_write_handler(0,0x00c0, 0x00c0, stern100_sol_w); // chimes on (DIP 23 = 0)
@@ -859,13 +858,20 @@ static WRITE_HANDLER( m6840_w_common )
 		/* changing the clock source? (needed for Zwackery) */
 		if (diffs & 0x02)
 			reload_count(counter);
-
+if (core_gameData->hw.soundBoard == SNDBRD_ASTRO && counter == 0 && data != 0x92) {
+  coreGlobals.pulsedSolState |= (data << 22);
+  locals.solenoids |= coreGlobals.pulsedSolState;
+}
 		logerror("%04X:Counter %d control = %02x\n", activecpu_get_previouspc(), counter, data);
 	}
 
 	/* offsets 2, 4, and 6 are MSB buffer registers */
 	else if ((offset & 1) == 0)
 	{
+if (core_gameData->hw.soundBoard == SNDBRD_ASTRO && (data & 0x0f) == 0x0f) {
+  coreGlobals.pulsedSolState |= ((data & 0xf0) << 20);
+  locals.solenoids |= coreGlobals.pulsedSolState;
+}
 		logerror("%04X:MSB = %02X\n", activecpu_get_previouspc(), data);
 		m6840_msb_buffer = data;
 	}
