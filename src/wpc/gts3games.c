@@ -24,6 +24,7 @@ static struct core_dispLayout gts_128x32DMD[] = {
 #define FLIP4142 FLIP_SWNO(41,42)
 #define FLIP4243 FLIP_SWNO(42,43)
 #define FLIP4547 FLIP_SWNO(45,47)
+#define FLIP5051 FLIP_SWNO(50,51)
 #define FLIP8182 FLIP_SWNO(81,82)
 #define FLIP8283 FLIP_SWNO(82,83)
 #define GDISP_SEG_20(row,type)    {2*row, 0, 20*row, 20, type}
@@ -39,13 +40,6 @@ static struct core_dispLayout GTS3_dispAlpha[] = {
 	static void init_##name(void) { \
 		core_gameData = &name##GameData; \
 	}
-
-#define INITGAME_FLIP45(name, disptype, balls, sb, lamps) \
-	static core_tGameData name##GameData = {GEN_GTS3,disptype,{FLIP_SWNO(4,5),4,lamps,0,sb,0}}; \
-	static void init_##name(void) { \
-		core_gameData = &name##GameData; \
-	} \
-	GTS3_INPUT_PORTS_45_START(name, balls) GTS3_INPUT_PORTS_END
 
 #define INITGAME1(name, disptype, flippers, balls, sb, lamps) \
 	static core_tGameData name##GameData = {GEN_GTS3,disptype,{flippers,4,lamps,0,sb,0}}; \
@@ -63,12 +57,10 @@ static struct core_dispLayout GTS3_dispAlpha[] = {
 
 /* GAMES APPEAR IN PRODUCTION ORDER (MORE OR LESS) */
 
-//ALL FLIPPER SWITCHES ARE CONFIRMED CORRECT!!!! (Except where roms are missing)
-
 /*-------------------------------------------------------------------
 / Lights, Camera, Action (#720)
 /-------------------------------------------------------------------*/
-INITGAME_FLIP45(lca, ALPHA, 3 /*?*/, SNDBRD_NONE, 4)
+INITGAME(lca, ALPHA, FLIP_SW(FLIP_L), 3 /*?*/, SNDBRD_NONE, 4)
 GTS3ROMSTART32(lca,	"gprom.bin",0x937a8426)
 GTS3_ROMEND
 CORE_GAMEDEFNV(lca,"Lights, Camera, Action",1989,"Gottlieb",mGTS3,GAME_NO_SOUND)
@@ -78,7 +70,7 @@ CORE_GAMEDEFNV(lca,"Lights, Camera, Action",1989,"Gottlieb",mGTS3,GAME_NO_SOUND)
 /*-------------------------------------------------------------------
 / Bell Ringer
 /-------------------------------------------------------------------*/
-INITGAME_FLIP45(bellring, ALPHA, 3/*?*/, SNDBRD_NONE, 5)
+INITGAME(bellring, ALPHA, FLIP_SW(FLIP_L), 3/*?*/, SNDBRD_NONE, 5)
 GTS3ROMSTART(bellring,	"gprom.bin",0x0)
 GTS3_ROMEND
 CORE_GAMEDEFNV(bellring,"Bell Ringer",1990,"Gottlieb",mGTS3,GAME_NO_SOUND)
@@ -86,7 +78,7 @@ CORE_GAMEDEFNV(bellring,"Bell Ringer",1990,"Gottlieb",mGTS3,GAME_NO_SOUND)
 /*-------------------------------------------------------------------
 / Silver Slugger (#722)
 /-------------------------------------------------------------------*/
-INITGAME_FLIP45(silvslug, ALPHA, 3/*?*/, SNDBRD_GTS3, 5)
+INITGAME(silvslug, ALPHA, FLIP67, 3/*?*/, SNDBRD_GTS3, 5)
 GTS3ROMSTART(silvslug,	"gprom.bin",0xa6c524e2)
 GTS3SOUND3232(			"yrom1.bin",0x20bc9797,
 						"drom1.bin",0xeac3e1cc)
@@ -96,7 +88,7 @@ CORE_GAMEDEFNV(silvslug,"Silver Slugger",1990,"Gottlieb",mGTS3S,GAME_IMPERFECT_S
 /*-------------------------------------------------------------------
 / Vegas (#723)
 /-------------------------------------------------------------------*/
-INITGAME_FLIP45(vegas, ALPHA, 3/*?*/, SNDBRD_GTS3, 5)
+INITGAME(vegas, ALPHA, FLIP5051, 3/*?*/, SNDBRD_GTS3, 5)
 GTS3ROMSTART(vegas,	"gprom.bin",0x48189981)
 GTS3SOUND3232(		"yrom1.bin",0xaf1095f1,
 					"drom1.bin",0x46eb5755)
@@ -126,7 +118,7 @@ CORE_GAMEDEFNV(tfight,"Title Fight",1990,"Gottlieb",mGTS3S,GAME_IMPERFECT_SOUND)
 /*-------------------------------------------------------------------
 / Nudge It
 /-------------------------------------------------------------------*/
-INITGAME(nudgeit, ALPHA, FLIP67, 3/*?*/, SNDBRD_NONE, 5)
+INITGAME(nudgeit, ALPHA, FLIP_SW(FLIP_L), 3/*?*/, SNDBRD_NONE, 5)
 GTS3ROMSTART(nudgeit,	"gprom.bin",0x0)
 GTS3_ROMEND
 CORE_GAMEDEFNV(nudgeit,"Nudge It",1990,"Gottlieb",mGTS3,GAME_NO_SOUND)
@@ -144,7 +136,7 @@ CORE_GAMEDEFNV(carhop,"Car Hop",1991,"Gottlieb",mGTS3S,GAME_IMPERFECT_SOUND)
 /*-------------------------------------------------------------------
 / Hoops
 /-------------------------------------------------------------------*/
-INITGAME(hoops, ALPHA, FLIP67, 3/*?*/, SNDBRD_GTS3, 5)
+INITGAME(hoops, ALPHA, FLIP_SW(FLIP_L), 3/*?*/, SNDBRD_GTS3, 5)
 GTS3ROMSTART(hoops,	"gprom.bin",0x0)
 GTS3_ROMEND
 CORE_GAMEDEFNV(hoops,"Hoops",1991,"Gottlieb",mGTS3,GAME_NO_SOUND)

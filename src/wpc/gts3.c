@@ -497,9 +497,7 @@ static SWITCH_UPDATE(GTS3) {
 	  coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0x80) | (inports[GTS3_COMINPORT] & 0x7f);
     else if (inports[GTS3_COMINPORT] & 0x4000) // DMD games without tournament mode
 	  coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0xe0) | (inports[GTS3_COMINPORT] & 0x1f);
-	else if (inports[GTS3_COMINPORT] & 0x2000) // Flipper switches & diagnostic up/down keys are both at 4 & 5
-	  coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0xf0) | (inports[GTS3_COMINPORT] & 0x3f);
-    else // normal Alpha games
+    else // alpha games
 	  coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0xc0) | (inports[GTS3_COMINPORT] & 0x3f);
   }
   GTS3locals.swDiag = (core_getSw(GTS3_SWDIAG)>0?1:0);
