@@ -534,9 +534,9 @@ static void wpcs_init(struct sndbrdData *brdData) {
 /  DCS sound board
 /---------------------*/
 /*-- ADSP core functions --*/
-static void adsp_init(UINT32 *(*getBootROM)(void),
+static void adsp_init(UINT32 *(*getBootROM)(int soft),
                void (*txData)(UINT16 start, UINT16 size, UINT16 memStep, int sRate));
-static void adsp_boot(void);
+static void adsp_boot(int soft);
 static void adsp_txCallback(int port, INT32 data);
 static WRITE16_HANDLER(adsp_control_w);
 
@@ -555,6 +555,8 @@ static WRITE16_HANDLER(dcs2_RAMbank_w);
 /* these can be static */
 /*static*/ READ16_HANDLER(dcs_latch_r);
 /*static*/ WRITE16_HANDLER(dcs_latch_w);
+/* ADSP patch need to know if we are using dcs95 soundboard */
+int WPC_gWPC95;
 
 /*-- sound generation --*/
 static int dcs_custStart(const struct MachineSound *msound);
@@ -695,8 +697,9 @@ static READ16_HANDLER(dcs2_RAMbank_r)  { return dcslocals.RAMbankPtr[offset]; }
 
 static WRITE16_HANDLER(dcs2_RAMbank_w) { dcslocals.RAMbankPtr[offset] = data; }
 
-static UINT32 *dcs_getBootROM(void) {
-  return (UINT32 *)(dcslocals.brdData.romRegion + ((dcslocals.ROMbank1 & 0xff)<<12));
+static UINT32 *dcs_getBootROM(int soft) {
+  return (UINT32 *)(dcslocals.brdData.romRegion +
+                    (soft ? ((dcslocals.ROMbank1 & 0xff)<<12) : 0));
 }
 
 /*----------------------
@@ -706,7 +709,7 @@ static UINT32 *dcs_getBootROM(void) {
 
 /*static*/ READ16_HANDLER(dcs_latch_r) {
   cpu_set_irq_line(dcslocals.brdData.cpuNo, ADSP2105_IRQ2, CLEAR_LINE);
-#if 0
+#if 1
   return soundlatch_r(0);
 #else
   { int x = soundlatch_r(0); DBGLOG(("Latch_r: %02x\n",x)); return x; }
@@ -772,8 +775,10 @@ static WRITE_HANDLER(dcs_data_w) {
 }
 
 static WRITE_HANDLER(dcs_ctrl_w) {
-  cpu_set_reset_line(dcslocals.brdData.cpuNo, PULSE_LINE);
-  adsp_boot();
+  if (dcslocals.brdData.subType == 0) {
+    cpu_set_reset_line(dcslocals.brdData.cpuNo, PULSE_LINE);
+    adsp_boot(0);
+  }
 }
 
 static READ_HANDLER(dcs_ctrl_r) {
@@ -801,6 +806,8 @@ static void dcs_init(struct sndbrdData *brdData) {
   dcslocals.ROMbankPtr = dcslocals.brdData.romRegion;
   dcslocals.RAMbankPtr = (UINT16 *)memory_region(DCS_BANKREGION);
 
+  WPC_gWPC95 = brdData->subType;
+
   adsp_init(dcs_getBootROM, dcs_txData);
 
   /*-- clear all interrupts --*/
@@ -818,7 +825,7 @@ static void dcs_init(struct sndbrdData *brdData) {
   }
 #endif
   /*-- boot ADSP2100 --*/
-  adsp_boot();
+  adsp_boot(0);
 }
 
 /*-----------------
@@ -871,12 +878,12 @@ enum {
 static struct {
  UINT16  ctrlRegs[32];
  void   *irqTimer;
- UINT32 *(*getBootROM)(void);
+ UINT32 *(*getBootROM)(int soft);
  void   (*txData)(UINT16 start, UINT16 size, UINT16 memStep, int sRate);
 } adsp; /* = {{0},NULL,dcs_getBootROM,dcs_txData};*/
 static void adsp_irqGen(int dummy);
 
-static void adsp_init(UINT32 *(*getBootROM)(void),
+static void adsp_init(UINT32 *(*getBootROM)(int soft),
                      void (*txData)(UINT16 start, UINT16 size, UINT16 memStep, int sRate)) {
   /* stupid timer/machine init handling in MAME */
   if (adsp.irqTimer) timer_remove(adsp.irqTimer);
@@ -889,8 +896,8 @@ static void adsp_init(UINT32 *(*getBootROM)(void),
   adsp2105_set_tx_callback(adsp_txCallback);
 }
 
-static void adsp_boot(void) {
-  UINT32 *src = adsp.getBootROM();
+static void adsp_boot(int soft) {
+  UINT32 *src = adsp.getBootROM(soft);
   UINT32 *dst = (UINT32 *)(dcslocals.cpuRegion + ADSP2100_PGM_OFFSET);
   UINT32  data = src[0];
   UINT32  size;
@@ -921,7 +928,7 @@ static WRITE16_HANDLER(adsp_control_w) {
         /* boot force */
         DBGLOG(("boot force\n"));
         cpu_set_reset_line(dcslocals.brdData.cpuNo, PULSE_LINE);
-        adsp_boot();
+        adsp_boot(1);
         adsp.ctrlRegs[SYSCONTROL_REG] &= ~0x0200;
       }
       /* see if SPORT1 got disabled */
