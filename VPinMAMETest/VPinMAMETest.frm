@@ -11,6 +11,14 @@ Begin VB.Form VPinMAMETest
    MinButton       =   0   'False
    ScaleHeight     =   8475
    ScaleWidth      =   5640
+   Begin VB.CommandButton Command1 
+      Caption         =   "Clear"
+      Height          =   375
+      Left            =   120
+      TabIndex        =   58
+      Top             =   2160
+      Width           =   555
+   End
    Begin VB.TextBox GName 
       Height          =   285
       Left            =   1320
@@ -345,7 +353,7 @@ Begin VB.Form VPinMAMETest
    Begin VB.CommandButton EscapeButton 
       Caption         =   "Escape"
       Height          =   375
-      Left            =   705
+      Left            =   1065
       TabIndex        =   5
       Top             =   2160
       Width           =   975
@@ -353,7 +361,7 @@ Begin VB.Form VPinMAMETest
    Begin VB.CommandButton DownButton 
       Caption         =   "Down"
       Height          =   375
-      Left            =   1785
+      Left            =   2145
       TabIndex        =   4
       Top             =   2160
       Width           =   975
@@ -361,7 +369,7 @@ Begin VB.Form VPinMAMETest
    Begin VB.CommandButton UpButton 
       Caption         =   "Up"
       Height          =   375
-      Left            =   2865
+      Left            =   3225
       TabIndex        =   3
       Top             =   2160
       Width           =   975
@@ -386,7 +394,7 @@ Begin VB.Form VPinMAMETest
    Begin VB.CommandButton EnterButton 
       Caption         =   "Enter"
       Height          =   375
-      Left            =   3945
+      Left            =   4305
       TabIndex        =   0
       Top             =   2160
       Width           =   975
@@ -528,6 +536,13 @@ Private Sub CheckRoms_Click()
     End If
 End Sub
 
+Private Sub Command1_Click()
+Dim x
+For x = 1 To SolenoidList.ListCount
+    SolenoidList.RemoveItem (0)
+Next
+End Sub
+
 Private Sub DebugBox_Click()
     If (Controller.Version < "01200000") Then Exit Sub
     Controller.Games(Controller.GameName).Settings.Value("debug") = DebugBox.Value
@@ -621,7 +636,7 @@ Private Sub ResumeButton_Click()
     ResumeButton.Enabled = False
 End Sub
 
-Private Sub EscapeButton_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub EscapeButton_MouseDown(Button As Integer, Shift As Integer, x As Single, Y As Single)
     If Controller.WPCNumbering Then
         Controller.Switch(WPC_Escape) = 1
     Else
@@ -633,7 +648,7 @@ Private Sub EscapeButton_MouseDown(Button As Integer, Shift As Integer, X As Sin
     End If
 End Sub
 
-Private Sub EscapeButton_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub EscapeButton_MouseUp(Button As Integer, Shift As Integer, x As Single, Y As Single)
     If Controller.WPCNumbering Then
         Controller.Switch(WPC_Escape) = 0
     Else
@@ -641,7 +656,7 @@ Private Sub EscapeButton_MouseUp(Button As Integer, Shift As Integer, X As Singl
 '        Controller.Switch(-6) = True
     End If
 End Sub
-Private Sub DownButton_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub DownButton_MouseDown(Button As Integer, Shift As Integer, x As Single, Y As Single)
     If Controller.WPCNumbering Then
         Controller.Switch(WPC_Down) = 1
     Else
@@ -649,7 +664,7 @@ Private Sub DownButton_MouseDown(Button As Integer, Shift As Integer, X As Singl
     End If
 End Sub
 
-Private Sub DownButton_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub DownButton_MouseUp(Button As Integer, Shift As Integer, x As Single, Y As Single)
     If Controller.WPCNumbering Then
         Controller.Switch(WPC_Down) = 0
     Else
@@ -695,7 +710,7 @@ Private Sub ShowTitle_Click()
     ShowFrame.Enabled = ShowTitle.Value = 0
 End Sub
 
-Private Sub UpButton_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub UpButton_MouseDown(Button As Integer, Shift As Integer, x As Single, Y As Single)
     If Controller.WPCNumbering Then
         Controller.Switch(WPC_Up) = 1
     Else
@@ -703,7 +718,7 @@ Private Sub UpButton_MouseDown(Button As Integer, Shift As Integer, X As Single,
     End If
 End Sub
 
-Private Sub UpButton_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub UpButton_MouseUp(Button As Integer, Shift As Integer, x As Single, Y As Single)
     If Controller.WPCNumbering Then
         Controller.Switch(WPC_Up) = 0
     Else
@@ -711,7 +726,7 @@ Private Sub UpButton_MouseUp(Button As Integer, Shift As Integer, X As Single, Y
     End If
 End Sub
 
-Private Sub EnterButton_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub EnterButton_MouseDown(Button As Integer, Shift As Integer, x As Single, Y As Single)
     If Controller.WPCNumbering Then
         Controller.Switch(WPC_Enter) = 1
     Else
@@ -719,7 +734,7 @@ Private Sub EnterButton_MouseDown(Button As Integer, Shift As Integer, X As Sing
     End If
 End Sub
 
-Private Sub EnterButton_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub EnterButton_MouseUp(Button As Integer, Shift As Integer, x As Single, Y As Single)
     If Controller.WPCNumbering Then
         Controller.Switch(WPC_Enter) = 0
     Else
