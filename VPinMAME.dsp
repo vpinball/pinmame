@@ -1796,14 +1796,6 @@ SOURCE=.\src\sound\discrete.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\fm.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\fm.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\sound\hc55516.c
 # End Source File
 # Begin Source File

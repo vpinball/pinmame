@@ -87,7 +87,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 zlibstatmtd.lib kernel32.lib user32.lib gdi32.lib shell32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib /nologo /subsystem:console /map /debug /machine:I386 /out:"obj/PinMAME/Debug/PinMAMEVCd.exe" /pdbtype:sept /libpath:"zlib"
+# ADD LINK32 zlibstatmtd.lib kernel32.lib user32.lib gdi32.lib shell32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib /nologo /subsystem:console /debug /machine:I386 /out:"obj/PinMAME/Debug/PinMAMEVCd.exe" /pdbtype:sept /libpath:"zlib"
+# SUBTRACT LINK32 /map
 # Begin Custom Build - Copying...
 ProjDir=.
 TargetPath=.\obj\PinMAME\Debug\PinMAMEVCd.exe
@@ -1248,32 +1249,6 @@ SOURCE=.\src\sound\discrete.c
 # Begin Source File
 
 SOURCE=.\src\sound\discrete.h
-# End Source File
-# Begin Source File
-
-SOURCE=src\sound\fm.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=src\sound\fm.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
