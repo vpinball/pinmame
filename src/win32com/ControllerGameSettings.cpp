@@ -2,6 +2,7 @@
 #include "stdafx.h"
 #include "VPinMAME.h"
 #include "VPinMAMEAboutDlg.h"
+#include "VPinMAMEConfig.h"
 #include "ControllerGameSettings.h"
 
 #include "ControllerRegKeys.h"
@@ -52,51 +53,49 @@ private:
 		IGameSettings *pGameSettings;
 		m_pGame->get_Settings((IGameSettings**) &pGameSettings);
 
-		// CheckBox Values
-		BOOL fVal;
+		VARIANT vValue;
+		VariantInit(&vValue);
 
-		pGameSettings->get_UseCheat(&fVal);
-		CheckDlgButton(IDC_USECHEAT, (fVal==VARIANT_TRUE)?BST_CHECKED:BST_UNCHECKED);
+		pGameSettings->get_Value(CComBSTR("cheat"), &vValue);
+		CheckDlgButton(IDC_USECHEAT, (vValue.boolVal==VARIANT_TRUE)?BST_CHECKED:BST_UNCHECKED);
 
-		pGameSettings->get_UseSound(&fVal);
-		CheckDlgButton(IDC_USESOUND, (fVal==VARIANT_TRUE)?BST_CHECKED:BST_UNCHECKED);
+		pGameSettings->get_Value(CComBSTR("sound"), &vValue);
+		CheckDlgButton(IDC_USESOUND, (vValue.boolVal==VARIANT_TRUE)?BST_CHECKED:BST_UNCHECKED);
 
-		pGameSettings->get_UseSamples(&fVal);
-		CheckDlgButton(IDC_USESAMPLES, (fVal==VARIANT_TRUE)?BST_CHECKED:BST_UNCHECKED);
+		pGameSettings->get_Value(CComBSTR("samples"), &vValue);
+		CheckDlgButton(IDC_USESAMPLES, (vValue.boolVal==VARIANT_TRUE)?BST_CHECKED:BST_UNCHECKED);
 
-		pGameSettings->get_CompactSize(&fVal);
-		CheckDlgButton(IDC_COMPACTSIZE, (fVal==VARIANT_TRUE)?BST_CHECKED:BST_UNCHECKED);
+		pGameSettings->get_Value(CComBSTR("dmd_compact"), &vValue);
+		CheckDlgButton(IDC_COMPACTSIZE, (vValue.boolVal==VARIANT_TRUE)?BST_CHECKED:BST_UNCHECKED);
 
-		pGameSettings->get_DoubleSize(&fVal);
-		CheckDlgButton(IDC_DOUBLESIZE, (fVal==VARIANT_TRUE)?BST_CHECKED:BST_UNCHECKED);
+		pGameSettings->get_Value(CComBSTR("dmd_doublesize"), &vValue);
+		CheckDlgButton(IDC_DOUBLESIZE, (vValue.boolVal==VARIANT_TRUE)?BST_CHECKED:BST_UNCHECKED);
 		
-		// Numeric Values
-		long lVal;
+		pGameSettings->get_Value(CComBSTR("dmd_antialias"), &vValue);
+		SetDlgItemInt(IDC_ANTIALIAS, vValue.lVal, FALSE);
 
-		pGameSettings->get_AntiAlias(&lVal);
-		SetDlgItemInt(IDC_ANTIALIAS, lVal, FALSE);
+		pGameSettings->get_Value(CComBSTR("samplerate"), &vValue);
+		SetDlgItemInt(IDC_SAMPLERATE, vValue.lVal, FALSE);
 
-		pGameSettings->get_SampleRate(&lVal);
-		SetDlgItemInt(IDC_SAMPLERATE, lVal, FALSE);
+		pGameSettings->get_Value(CComBSTR("dmd_red"), &vValue);
+		SetDlgItemInt(IDC_DMDRED, vValue.lVal, FALSE);
 
-		pGameSettings->get_DisplayColorRed(&lVal);
-		SetDlgItemInt(IDC_DMDRED, lVal, FALSE);
-
-		pGameSettings->get_DisplayColorGreen(&lVal);
-		SetDlgItemInt(IDC_DMDGREEN, lVal, FALSE);
+		pGameSettings->get_Value(CComBSTR("dmd_green"), &vValue);
+		SetDlgItemInt(IDC_DMDGREEN, vValue.lVal, FALSE);
 		
-		pGameSettings->get_DisplayColorBlue(&lVal);
-		SetDlgItemInt(IDC_DMDBLUE, lVal, FALSE);
+		pGameSettings->get_Value(CComBSTR("dmd_blue"), &vValue);
+		SetDlgItemInt(IDC_DMDBLUE, vValue.lVal, FALSE);
 
-		pGameSettings->get_DisplayIntensity66(&lVal);
-		SetDlgItemInt(IDC_DMDPERC66, lVal, FALSE);
+		pGameSettings->get_Value(CComBSTR("dmd_perc66"), &vValue);
+		SetDlgItemInt(IDC_DMDPERC66, vValue.lVal, FALSE);
 
-		pGameSettings->get_DisplayIntensity33(&lVal);
-		SetDlgItemInt(IDC_DMDPERC33, lVal ,FALSE);
+		pGameSettings->get_Value(CComBSTR("dmd_perc33"), &vValue);
+		SetDlgItemInt(IDC_DMDPERC33, vValue.lVal ,FALSE);
 		
-		pGameSettings->get_DisplayIntensityOff(&lVal);
-		SetDlgItemInt(IDC_DMDPERC0, lVal, FALSE);
+		pGameSettings->get_Value(CComBSTR("dmd_perc0"), &vValue);
+		SetDlgItemInt(IDC_DMDPERC0, vValue.lVal, FALSE);
 
+		VariantClear(&vValue);
 		pGameSettings->Release();
 	}
 
@@ -105,24 +104,22 @@ private:
 		IGameSettings *pGameSettings;
 		m_pGame->get_Settings((IGameSettings**) &pGameSettings);
 
-		pGameSettings->put_UseCheat(IsDlgButtonChecked(IDC_USECHEAT)?VARIANT_TRUE:VARIANT_FALSE);
-		pGameSettings->put_UseSound(IsDlgButtonChecked(IDC_USESOUND)?VARIANT_TRUE:VARIANT_FALSE);
-		pGameSettings->put_UseSamples(IsDlgButtonChecked(IDC_USESAMPLES)?VARIANT_TRUE:VARIANT_FALSE);
-		
-		pGameSettings->put_CompactSize(IsDlgButtonChecked(IDC_COMPACTSIZE)?VARIANT_TRUE:VARIANT_FALSE);
-		pGameSettings->put_DoubleSize(IsDlgButtonChecked(IDC_DOUBLESIZE)?VARIANT_TRUE:VARIANT_FALSE);
+		pGameSettings->put_Value(CComBSTR("cheat"), CComVariant((BOOL) IsDlgButtonChecked(IDC_USECHEAT)));
+		pGameSettings->put_Value(CComBSTR("sound"), CComVariant((BOOL) IsDlgButtonChecked(IDC_USESOUND)));
+		pGameSettings->put_Value(CComBSTR("samples"), CComVariant((BOOL) IsDlgButtonChecked(IDC_USESAMPLES)));
+		pGameSettings->put_Value(CComBSTR("dmd_compact"), CComVariant((BOOL) IsDlgButtonChecked(IDC_COMPACTSIZE)));
+		pGameSettings->put_Value(CComBSTR("dmd_doublesize"), CComVariant((BOOL) IsDlgButtonChecked(IDC_DOUBLESIZE)));
 
-		//Integer Values
-		pGameSettings->put_AntiAlias(GetDlgItemInt(IDC_ANTIALIAS,NULL,TRUE));
-		pGameSettings->put_SampleRate(GetDlgItemInt(IDC_SAMPLERATE,NULL,TRUE));
+		pGameSettings->put_Value(CComBSTR("dmd_antialias"), CComVariant((int) GetDlgItemInt(IDC_ANTIALIAS,NULL,TRUE)));
+		pGameSettings->put_Value(CComBSTR("samplerate"), CComVariant((int) GetDlgItemInt(IDC_SAMPLERATE,NULL,TRUE)));
 
-		pGameSettings->put_DisplayColorRed(GetDlgItemInt(IDC_DMDRED,NULL,TRUE));
-		pGameSettings->put_DisplayColorGreen(GetDlgItemInt(IDC_DMDGREEN,NULL,TRUE));
-		pGameSettings->put_DisplayColorBlue(GetDlgItemInt(IDC_DMDBLUE,NULL,TRUE));
+		pGameSettings->put_Value(CComBSTR("dmd_red"), CComVariant((int) GetDlgItemInt(IDC_DMDRED,NULL,TRUE)));
+		pGameSettings->put_Value(CComBSTR("dmd_green"), CComVariant((int) GetDlgItemInt(IDC_DMDGREEN,NULL,TRUE)));
+		pGameSettings->put_Value(CComBSTR("dmd_blue"), CComVariant((int) GetDlgItemInt(IDC_DMDBLUE,NULL,TRUE)));
 
-		pGameSettings->put_DisplayIntensity66(GetDlgItemInt(IDC_DMDPERC66,NULL,TRUE));
-		pGameSettings->put_DisplayIntensity33(GetDlgItemInt(IDC_DMDPERC33,NULL,TRUE));
-		pGameSettings->put_DisplayIntensityOff(GetDlgItemInt(IDC_DMDPERC0,NULL,TRUE));
+		pGameSettings->put_Value(CComBSTR("dmd_perc66"), CComVariant((int) GetDlgItemInt(IDC_DMDPERC66,NULL,TRUE)));
+		pGameSettings->put_Value(CComBSTR("dmd_perc33"), CComVariant((int) GetDlgItemInt(IDC_DMDPERC33,NULL,TRUE)));
+		pGameSettings->put_Value(CComBSTR("dmd_perc0"), CComVariant((int) GetDlgItemInt(IDC_DMDPERC0,NULL,TRUE)));
 
 		pGameSettings->Release();
 	}
@@ -402,362 +399,6 @@ void CGameSettings::Init(IGame *pGame)
 		strcat(m_szRegKey, REG_DEFAULT);
 }
 
-#define GET_BOOL_VALUE(name,defval) \
-{ \
-	*pVal = defval?VARIANT_TRUE:VARIANT_FALSE; \
-	DWORD dwValue; \
-	DWORD dwType = REG_DWORD; \
-	DWORD dwSize = sizeof dwValue; \
-	HKEY hKey = 0; \
-	long lResult = -1; \
-	if ( (lResult=RegOpenKeyEx(HKEY_CURRENT_USER, m_szRegKey, 0, KEY_QUERY_VALUE, &hKey))==ERROR_SUCCESS ) { \
-		lResult = RegQueryValueEx(hKey, name, 0, &dwType, (LPBYTE) &dwValue, &dwSize); \
-		if ( lResult==ERROR_SUCCESS ) \
-			*pVal = dwValue?VARIANT_TRUE:VARIANT_FALSE; \
-		RegCloseKey(hKey); \
-	} \
-	if ( (lResult!=ERROR_SUCCESS) && lstrcmpi(m_szRegKey,m_szRegKeyDef) ) { \
-		if ( RegOpenKeyEx(HKEY_CURRENT_USER, m_szRegKeyDef, 0, KEY_QUERY_VALUE, &hKey)==ERROR_SUCCESS ) { \
-			if ( RegQueryValueEx(hKey, name, 0, &dwType, (LPBYTE) &dwValue, &dwSize)==ERROR_SUCCESS ) \
-				*pVal = dwValue?VARIANT_TRUE:VARIANT_FALSE; \
-			RegCloseKey(hKey); \
-		} \
-	} \
-}
-
-#define SET_BOOL_VALUE(name) \
-{ \
-	if ( fAllowWriteAccess ) { \
-		HKEY hKey; \
-		DWORD dwDisposition; \
-   		if ( RegCreateKeyEx(HKEY_CURRENT_USER, m_szRegKey, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_SET_VALUE, NULL, &hKey, &dwDisposition)!=ERROR_SUCCESS ) \
-			return S_FALSE; \
-		DWORD dwValue = (newVal==VARIANT_TRUE)?1:0; \
-		RegSetValueEx(hKey, name, 0, REG_DWORD, (LPBYTE) &dwValue, sizeof dwValue); \
-		RegCloseKey(hKey); \
-	} \
-}
-
-#define GET_DW_VALUE(name,defval) \
-{ \
-	*pVal = defval; \
-	DWORD dwValue; \
-	DWORD dwType = REG_DWORD; \
-	DWORD dwSize = sizeof dwValue; \
-	HKEY hKey = 0; \
-	long lResult = -1; \
-	if ( (lResult=RegOpenKeyEx(HKEY_CURRENT_USER, m_szRegKey, 0, KEY_QUERY_VALUE, &hKey))==ERROR_SUCCESS ) { \
-		lResult = RegQueryValueEx(hKey, name, 0, &dwType, (LPBYTE) &dwValue, &dwSize); \
-		if ( lResult==ERROR_SUCCESS ) \
-			*pVal = (long) dwValue; \
-		RegCloseKey(hKey); \
-	} \
-	if ( (lResult!=ERROR_SUCCESS) && lstrcmpi(m_szRegKey,m_szRegKeyDef) ) { \
-		if ( RegOpenKeyEx(HKEY_CURRENT_USER, m_szRegKeyDef, 0, KEY_QUERY_VALUE, &hKey)==ERROR_SUCCESS ) { \
-			if ( RegQueryValueEx(hKey, name, 0, &dwType, (LPBYTE) &dwValue, &dwSize)==ERROR_SUCCESS ) \
-				*pVal = (long) dwValue; \
-			RegCloseKey(hKey); \
-		} \
-	} \
-}
-
-#define SET_DW_VALUE(name) \
-{ \
-	if ( fAllowWriteAccess ) { \
-		HKEY hKey; \
-		DWORD dwDisposition; \
-   		if ( RegCreateKeyEx(HKEY_CURRENT_USER, m_szRegKey, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_SET_VALUE, NULL, &hKey, &dwDisposition)!=ERROR_SUCCESS ) \
-			return S_FALSE; \
-		DWORD dwValue = (DWORD) newVal; \
-		RegSetValueEx(hKey, name, 0, REG_DWORD, (LPBYTE) &dwValue, sizeof dwValue); \
-		RegCloseKey(hKey); \
-	} \
-}
-
-
-STDMETHODIMP CGameSettings::get_UseSamples(BOOL *pVal)
-{
-	if ( ! pVal )
-		return S_FALSE;
-
-	GET_BOOL_VALUE(REG_DWUSESAMPLES, REG_DWUSESAMPLESDEF);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::put_UseSamples(BOOL newVal)
-{
-	SET_BOOL_VALUE(REG_DWUSESAMPLES);
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::get_UseCheat(BOOL *pVal)
-{
-	if ( ! pVal )
-		return S_FALSE;
-
-	GET_BOOL_VALUE(REG_DWUSECHEAT, REG_DWUSECHEATDEF);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::put_UseCheat(BOOL newVal)
-{
-	SET_BOOL_VALUE(REG_DWUSECHEAT);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::get_UseSound(BOOL *pVal)
-{
-	if ( ! pVal )
-		return S_FALSE;
-
-	GET_BOOL_VALUE(REG_DWUSESOUND, REG_DWUSESOUNDDEF);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::put_UseSound(BOOL newVal)
-{
-	SET_BOOL_VALUE(REG_DWUSESOUND);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::get_AntiAlias(long *pVal)
-{
-	if ( ! pVal )
-		return S_FALSE;
-
-	GET_DW_VALUE(REG_DWANTIALIAS, REG_DWANTIALIASDEF);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::put_AntiAlias(long newVal)
-{
-	SET_DW_VALUE(REG_DWANTIALIAS);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::get_DisplayIntensity66(long *pVal)
-{
-	if ( ! pVal )
-		return S_FALSE;
-
-	GET_DW_VALUE(REG_DWDMDPERC66, REG_DWDMDPERC66DEF);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::put_DisplayIntensity66(long newVal)
-{
-	SET_DW_VALUE(REG_DWDMDPERC66);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::get_DisplayIntensity33(long *pVal)
-{
-	if ( ! pVal )
-		return S_FALSE;
-
-	GET_DW_VALUE(REG_DWDMDPERC33, REG_DWDMDPERC33DEF);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::put_DisplayIntensity33(long newVal)
-{
-	SET_DW_VALUE(REG_DWDMDPERC33);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::get_DisplayIntensityOff(long *pVal)
-{
-	if ( ! pVal )
-		return S_FALSE;
-
-	GET_DW_VALUE(REG_DWDMDPERC0, REG_DWDMDPERC0DEF);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::put_DisplayIntensityOff(long newVal)
-{
-	SET_DW_VALUE(REG_DWDMDPERC0);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::get_DisplayColorRed(long *pVal)
-{
-	if ( ! pVal )
-		return S_FALSE;
-
-	GET_DW_VALUE(REG_DWDMDRED, REG_DWDMDREDDEF);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::put_DisplayColorRed(long newVal)
-{
-	SET_DW_VALUE(REG_DWDMDRED);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::get_DisplayColorGreen(long *pVal)
-{
-	if ( ! pVal )
-		return S_FALSE;
-
-	GET_DW_VALUE(REG_DWDMDGREEN, REG_DWDMDGREENDEF);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::put_DisplayColorGreen(long newVal)
-{
-	SET_DW_VALUE(REG_DWDMDGREEN);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::get_DisplayColorBlue(long *pVal)
-{
-	if ( ! pVal )
-		return S_FALSE;
-
-	GET_DW_VALUE(REG_DWDMDBLUE, REG_DWDMDBLUEDEF);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::put_DisplayColorBlue(long newVal)
-{
-	SET_DW_VALUE(REG_DWDMDBLUE);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::get_Title(BOOL *pVal)
-{
-	if ( ! pVal )
-		return S_FALSE;
-
-	GET_BOOL_VALUE(REG_DWTITLE, REG_DWTITLEDEF);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::put_Title(BOOL newVal)
-{
-	SET_BOOL_VALUE(REG_DWTITLE);
-
-	if ( IsWindow(win_video_window) )
-		PostMessage(win_video_window, RegisterWindowMessage(VPINMAMEADJUSTWINDOWMSG), 0, 0);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::get_Border(BOOL *pVal)
-{
-	if ( ! pVal )
-		return S_FALSE;
-
-	GET_BOOL_VALUE(REG_DWBORDER, REG_DWBORDERDEF);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::put_Border(BOOL newVal)
-{
-	SET_BOOL_VALUE(REG_DWBORDER);
-
-	if ( IsWindow(win_video_window) )
-		PostMessage(win_video_window, RegisterWindowMessage(VPINMAMEADJUSTWINDOWMSG), 0, 0);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::get_DisplayOnly(BOOL *pVal)
-{
-	if ( ! pVal )
-		return S_FALSE;
-
-	GET_BOOL_VALUE(REG_DWDISPLAYONLY, REG_DWDISPLAYONLYDEF);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::put_DisplayOnly(BOOL newVal)
-{
-	SET_BOOL_VALUE(REG_DWDISPLAYONLY);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::get_CompactSize(BOOL *pVal)
-{
-	if ( ! pVal )
-		return S_FALSE;
-
-	GET_BOOL_VALUE(REG_DWCOMPACTSIZE, REG_DWCOMPACTSIZEDEF);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::put_CompactSize(BOOL newVal)
-{
-	SET_BOOL_VALUE(REG_DWCOMPACTSIZE);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::get_DoubleSize(BOOL *pVal)
-{
-	if ( ! pVal )
-		return S_FALSE;
-
-	GET_BOOL_VALUE(REG_DWDOUBLESIZE, REG_DWDOUBLESIZEDEF);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::put_DoubleSize(BOOL newVal)
-{
-	SET_BOOL_VALUE(REG_DWDOUBLESIZE);
-
-	if ( IsWindow(win_video_window) )
-		PostMessage(win_video_window, RegisterWindowMessage(VPINMAMEADJUSTWINDOWMSG), 0, 0);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::get_SampleRate(long *pVal)
-{
-	if ( ! pVal )
-		return S_FALSE;
-
-	GET_DW_VALUE(REG_DWSAMPLERATE, REG_DWSAMPLERATEDEF);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::put_SampleRate(long newVal)
-{
-	if ( newVal<0 )
-		return S_FALSE;
-
-	SET_DW_VALUE(REG_DWSAMPLERATE);
-
-	return S_OK;
-}
-
 STDMETHODIMP CGameSettings::ShowSettingsDlg(long hParentWnd)
 {
 	switch ( hParentWnd ) {
@@ -793,80 +434,30 @@ STDMETHODIMP CGameSettings::Clear()
 	return S_OK;
 }
 
-STDMETHODIMP CGameSettings::get_DisplayPosX(long hParentWnd, long *pVal)
+STDMETHODIMP CGameSettings::get_Value(BSTR sName, VARIANT *pVal)
 {
-	if ( !pVal )
-		return S_FALSE;
+	char szName[4096];
+	WideCharToMultiByte(CP_ACP, 0, sName, -1, szName, sizeof szName, NULL, NULL);
 
-	if ( IsWindow(win_video_window) ) {
-		RECT Rect;
-		GetWindowRect(win_video_window, &Rect);
-		POINT point;
-		point.x = Rect.top;
-		point.y = Rect.left;
-		ScreenToClient(win_video_window, &point);
+	return GetGameSetting(m_szROM, szName, pVal)?S_OK:S_FALSE;
+}
 
-		*pVal = point.x;
+STDMETHODIMP CGameSettings::put_Value(BSTR sName, VARIANT newVal)
+{
+	char szName[4096];
+	WideCharToMultiByte(CP_ACP, 0, sName, -1, szName, sizeof szName, NULL, NULL);
+
+	HRESULT hr = PutGameSetting(m_szROM, szName, newVal)?S_OK:S_FALSE;
+	if ( SUCCEEDED(hr) ) {
+		if ( IsEmulationRunning() && SettingAffectsRunningGame(szName) ) {
+			VariantChangeType(&newVal, &newVal, 0, VT_BSTR);
+
+			char szValue[4096];
+			WideCharToMultiByte(CP_ACP, 0, newVal.bstrVal, -1, szValue, sizeof szName, NULL, NULL);
+			set_option(szName, szValue, 0);
+			PostMessage(win_video_window, RegisterWindowMessage(VPINMAMEADJUSTWINDOWMSG), 0, 0);
+		}
 	}
-	else
-		GET_DW_VALUE(REG_DWWINDOWPOSX, REG_DWWINDOWPOSXDEF);
 
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::put_DisplayPosX(long hParentWnd, long newVal)
-{
-	if ( !fAllowWriteAccess )
-		return S_OK;
-
-	POINT Pos = {newVal,0};
-	if ( IsWindow((HWND) hParentWnd) )
-		ClientToScreen((HWND) hParentWnd, &Pos);
-	newVal = Pos.x;
-
-	SET_DW_VALUE(REG_DWWINDOWPOSX);
-
-	if ( IsWindow(win_video_window) )
-		PostMessage(win_video_window, RegisterWindowMessage(VPINMAMEADJUSTWINDOWMSG), 0, 0);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::get_DisplayPosY(long hParentWnd, long *pVal)
-{
-	if ( !pVal )
-		return S_FALSE;
-
-	if ( IsWindow(win_video_window) ) {
-		RECT Rect;
-		GetWindowRect(win_video_window, &Rect);
-		POINT point;
-		point.x = Rect.top;
-		point.y = Rect.left;
-		ScreenToClient(win_video_window, &point);
-
-		*pVal = point.y;
-	}
-	else
-		GET_DW_VALUE(REG_DWWINDOWPOSY, REG_DWWINDOWPOSYDEF);
-
-	return S_OK;
-}
-
-STDMETHODIMP CGameSettings::put_DisplayPosY(long hParentWnd, long newVal)
-{
-	if ( !fAllowWriteAccess )
-		return S_OK;
-
-	POINT Pos = {0,newVal};
-	if ( IsWindow((HWND) hParentWnd) )
-		ClientToScreen((HWND) hParentWnd, &Pos);
-	newVal = Pos.y;
-
-	SET_DW_VALUE(REG_DWWINDOWPOSY);
-
-	if ( IsWindow(win_video_window) )
-		PostMessage(win_video_window, RegisterWindowMessage(VPINMAMEADJUSTWINDOWMSG), 0, 0);
-
-	return S_OK;
+	return hr;
 }
