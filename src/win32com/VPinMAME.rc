@@ -69,8 +69,8 @@ IDR_CONTROLLER          REGISTRY MOVEABLE PURE  "Controller.rgs"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,1,0,0
- PRODUCTVERSION 1,1,0,0
+ FILEVERSION 1,1,0,1
+ PRODUCTVERSION 1,1,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -88,14 +88,14 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "COM class for PinMame\0"
-            VALUE "FileVersion", "1, 1, 0, 0\0"
+            VALUE "FileVersion", "1, 1, 0, 1\0"
             VALUE "InternalName", "VPinMAME\0"
             VALUE "LegalCopyright", "© 2001 by the Authors\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "VPinMAME.DLL\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Visual PinMAME\0"
-            VALUE "ProductVersion", "1.10\0"
+            VALUE "ProductVersion", "1.10.1\0"
             VALUE "SpecialBuild", "\0"
         END
     END
@@ -117,7 +117,7 @@ IDD_OPTIONSDLG DIALOGEX 0, 0, 237, 175
 STYLE DS_ABSALIGN | DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | DS_CENTER | 
     WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Game Options"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Default Options",IDC_STATIC,7,7,217,142
     CONTROL         "Skip Pinball Startup &Test",IDC_USECHEAT,"Button",
