@@ -75,12 +75,12 @@
 #define S7_ROMSTART000x(name, ver, ic14,chk14, ic17,chk17, ic20,chk20) \
   ROM_START(name##_##ver) \
     NORMALREGION(0x10000,    S7_MEMREG_CPU) \
+      ROM_LOAD(ic20, 0xd000, 0x1000, chk20) \
+      ROM_RELOAD(    0x5000, 0x1000) \
       ROM_LOAD(ic14, 0xe000, 0x1000, chk14) \
       ROM_RELOAD(    0x6000, 0x1000) \
       ROM_LOAD(ic17, 0xf000, 0x1000, chk17) \
-      ROM_RELOAD(    0x7000, 0x1000) \
-      ROM_LOAD(ic20, 0xd000, 0x1000, chk20) \
-      ROM_RELOAD(    0x5000, 0x1000)
+      ROM_RELOAD(    0x7000, 0x1000)
 
 #define S7_ROMEND ROM_END
 /*-- These are only here so the game structure can be in the game file --*/

@@ -12,7 +12,7 @@
 
  Changes:
 
- 210201 - First version. 
+ 210201 - First version.
  220201 - Modified on-screen info, fixed non-working "C"(ash Held) key, added
           sample-to-solenoid handling.
 
@@ -49,8 +49,8 @@
 static void init_milln(void);
 static void milln_handleMech(int mech);
 static void milln_initSim(sim_tBallStatus *balls, int *inports, int noOfBalls);
-static void milln_drawMech(unsigned char **line);
-static void milln_drawStatic(unsigned char **line);
+static void milln_drawMech(BMTYPE **line);
+static void milln_drawStatic(BMTYPE **line);
 static int  milln_handleBallState(sim_tBallStatus *ball, int *inports);
 
 /*--------------------------
@@ -324,14 +324,14 @@ static sim_tInportData milln_inportData[] = {
 /*--------------------
   Drawing information
   --------------------*/
-static void milln_drawMech(unsigned char **line) {
+static void milln_drawMech(BMTYPE **line) {
   core_textOutf(30, 10,BLACK,"Drop T.:  2X / 3X");
   core_textOutf(30, 20,BLACK,"         %-4s/%-4s", core_getSw(swBotDrop) ? "Down":" Up", core_getSw(swTopDrop) ? "Down":" Up");
   core_textOutf(30, 30,BLACK,"Gates:  Left /Right");
   core_textOutf(30, 40,BLACK,"       %-6s/%-6s", core_getSol(sLeftGate) ? " Open":"Closed", core_getSol(sRightGate) ? "Open":"Closed");
 }
 /* Help */
-static void milln_drawStatic(unsigned char **line) {
+static void milln_drawStatic(BMTYPE **line) {
 
   core_textOutf(30, 60,BLACK,"Help on this Simulator:");
   core_textOutf(30, 70,BLACK,"L/R Shift+L = L/R Lock");
@@ -349,8 +349,8 @@ static void milln_drawStatic(unsigned char **line) {
 /* Solenoid-to-sample handling */
 static wpc_tSamSolMap milln_samsolmap[] = {
  /*Channel #0*/
- {sKnocker,0,SAM_KNOCKER}, {sTrough,0,SAM_BALLREL}, 
- {sOuthole,0,SAM_OUTHOLE}, 
+ {sKnocker,0,SAM_KNOCKER}, {sTrough,0,SAM_BALLREL},
+ {sOuthole,0,SAM_OUTHOLE},
 
  /*Channel #1*/
  {sLeftJet,1,SAM_JET1}, {sRightJet,1,SAM_JET2},

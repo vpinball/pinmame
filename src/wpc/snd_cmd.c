@@ -23,7 +23,8 @@
 #define MAX_NAME_LENGTH 30
 #define MAX_LINE_LENGTH 100
 #define SMDCMD_DIGITTOGGLE SMDCMD_ZERO
-
+/* Use memcard directory for wavefiles */
+#define OSD_FILETYPE_WAVEFILE OSD_FILETYPE_MEMCARD
 static int playCmd(int length, int *cmd);
 static int checkName(const char *buf, const char *name);
 static void readCmds(char *head);
@@ -94,7 +95,7 @@ int snd_get_cmd_log(int *last, int *buffer) {
 /*-----------------------------------*/
 /*-- handle manual command display --*/
 /*-----------------------------------*/
-int manual_sound_commands(struct osd_bitmap *bitmap, int *fullRefresh) {
+int manual_sound_commands(struct mame_bitmap *bitmap, int *fullRefresh) {
   int ii;
   /*-- we must have something to play with --*/
   if (!locals.soundCmd) return TRUE;
@@ -333,11 +334,11 @@ static void handle_recording(void) {
       char name[120];
       /* avoid overwriting existing files */
       /* first of all try with "gamename.wav" */
-      sprintf(name,"%.8s", Machine->gamedrv->name);
+      sprintf(name,"%.8s.wav", Machine->gamedrv->name);
       if (osd_faccess(name,OSD_FILETYPE_WAVEFILE)) {
         do {
           /* otherwise use "nameNNNN.wav" */
-          sprintf(name,"%.4s%04d",Machine->gamedrv->name,++nextWaveFileNo);
+          sprintf(name,"%.4s%04d.wav",Machine->gamedrv->name,++nextWaveFileNo);
         } while (osd_faccess(name, OSD_FILETYPE_WAVEFILE));
       }
       logerror("Using %s for wave filename!\n", name);
@@ -434,7 +435,7 @@ static int wave_open(char *filename) {
     return 1;
 }
 
-void wave_record(INT16 *buffer, int samples) {
+void pm_wave_record(INT16 *buffer, int samples) {
   if (wave_file) {
     int written = osd_fwrite_lsbfirst(wave_file, buffer, samples * 2);
     wave_offs += written;

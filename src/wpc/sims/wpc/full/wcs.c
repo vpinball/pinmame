@@ -2,6 +2,7 @@
 #include "wpc.h"
 #include "sim.h"
 #include "dcs.h"
+#include "mech.h"
 
 /* 120700  Upgraded the Lamp Matrix to the new format (ML) */
 /* 271100  Added Trough Stack state & increased assist hole - Goal delay */
@@ -45,8 +46,8 @@ static void init_wcs(void);
 static int  wcs_getSol(int solNo);
 static void wcs_handleMech(int mech);
 static int wcs_getMech(int mechNo);
-static void wcs_drawMech(unsigned char **line);
-static void wcs_drawStatic(unsigned char **line);
+static void wcs_drawMech(BMTYPE **line);
+static void wcs_drawStatic(BMTYPE **line);
 
 /*-----------------------
 / local static variables
@@ -275,6 +276,11 @@ static int wcs_getSol(int solNo) {
   return 0;
 }
 
+static mech_tInitData wcs_ballMech = {
+  sBallCW, sBallCCW, MECH_LINEAR|MECH_CIRCLE|MECH_TWODIRSOL|MECH_ACC(120)|MECH_RET(3), 20, 4,
+  {{0}}
+};
+
 static void wcs_handleMech(int mech) {
   /*---------------
   /  handle bank
@@ -285,17 +291,13 @@ static void wcs_handleMech(int mech) {
     core_setSw(swGoalieR, (locals.goaliePos >= WCS_GOALIETIME/2) &&
                           (locals.goaliePos <  WCS_GOALIETIME/2 + WCS_GOALIESLACK));
   }
-  if (mech & 0x02) {
-    if (core_getSol(sBallCW))  locals.ball += 1;
-    if (core_getSol(sBallCCW)) locals.ball -= 1;
-    locals.ball = locals.ball & 0x1f;
-  }
+  //if (mech & 0x02) mech_update(1);
 }
 
 /* 0 = goaliePos */
 /* 1 = ball */
 static int wcs_getMech(int mechNo) {
-  return mechNo ? locals.ball : locals.goaliePos;
+  return mechNo ? mech_getPos(1) : locals.goaliePos;
 }
 
 /*---------------------------
@@ -344,15 +346,15 @@ static sim_tInportData wcs_inportData[] = {
 /*--------------------
 / Drawing information
 /---------------------*/
-static void wcs_drawMech(unsigned char **line) {
+static void wcs_drawMech(BMTYPE **line) {
   static char *goalie[] = {" * ", "*  ", "  *"};
   static char ball[] = {'|','/','-','\\'};
   core_textOutf(50, 0,BLACK,"Goalie: [%s]",
                goalie[core_getSw(swGoalieL) ? 1 : (core_getSw(swGoalieR) ? 2 : 0)]);
-  core_textOutf(50,10,BLACK,"Ball: %c", ball[locals.ball/8]);
+  core_textOutf(50,10,BLACK,"Ball: %c %3d", ball[mech_getPos(1)], mech_getSpeed(1));
 }
   /* Help */
-static void wcs_drawStatic(unsigned char **line) {
+static void wcs_drawStatic(BMTYPE **line) {
   core_textOutf(30, 40,BLACK,"Help:");
   core_textOutf(30, 50,BLACK,"L/R Shift+R = L/R Ramp");
   core_textOutf(30, 60,BLACK,"L/R Shift+- = L/R Slingshot");
@@ -440,5 +442,6 @@ static core_tGameData wcsGameData = {
 /----------------*/
 static void init_wcs(void) {
   core_gameData = &wcsGameData;
+  mech_add(1, &wcs_ballMech);
 }
 

@@ -18,7 +18,7 @@
    WER  Jet Bumpers
 
    More to be added...
-                      
+
 ------------------------------------------------------------------------------*/
 
 #include "driver.h"
@@ -30,7 +30,7 @@
 /  Local functions
 /-------------------*/
 static int  cc_handleBallState(sim_tBallStatus *ball, int *inports);
-static void cc_drawStatic(unsigned char **line);
+static void cc_drawStatic(BMTYPE **line);
 static void init_cc(void);
 
 /*-----------------------
@@ -38,7 +38,7 @@ static void init_cc(void);
  ------------------------*/
 /* Uncomment if you wish to use locals. type variables */
 //static struct {
-//  int 
+//  int
 //} locals;
 
 /*--------------------------
@@ -171,7 +171,7 @@ static int cc_handleBallState(sim_tBallStatus *ball, int *inports) {
   switch (ball->state)
 	{
 	/* Ball in Shooter Lane */
-    	case stBallLane:  
+    	case stBallLane:
 		if (ball->speed < 25)
 			return setState(stNotEnough,25);	/*Ball not plunged hard enough*/
 		if (ball->speed < 51)
@@ -232,7 +232,7 @@ static sim_tInportData cc_inportData[] = {
   --------------------*/
 
 /* Help */
-  static void cc_drawStatic(unsigned char **line) {
+  static void cc_drawStatic(BMTYPE **line) {
 
   core_textOutf(30, 60,BLACK,"Help on this Simulator:");
   core_textOutf(30, 70,BLACK,"L/R Shift+- = L/R Slingshot");

@@ -18,7 +18,7 @@
    WER  Jet Bumpers
 
    More to be added...
-                      
+
 ------------------------------------------------------------------------------*/
 
 #include "driver.h"
@@ -30,7 +30,7 @@
 /  Local functions
 /-------------------*/
 static int  dh_handleBallState(sim_tBallStatus *ball, int *inports);
-static void dh_drawStatic(unsigned char **line);
+static void dh_drawStatic(BMTYPE **line);
 static void init_dh(void);
 
 /*-----------------------
@@ -38,7 +38,7 @@ static void init_dh(void);
  ------------------------*/
 /* Uncomment if you wish to use locals. type variables */
 //static struct {
-//  int 
+//  int
 //} locals;
 
 /*--------------------------
@@ -224,7 +224,7 @@ static sim_tInportData dh_inportData[] = {
 /*--------------------
   Drawing information
   --------------------*/
-  static void dh_drawStatic(unsigned char **line) {
+  static void dh_drawStatic(BMTYPE **line) {
 
 /* Help */
 
@@ -244,7 +244,7 @@ static sim_tInportData dh_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(dh,lx2,"harr_lx2.rom",0x80000,0xd92c2d35) 
+WPC_ROMSTART(dh,lx2,"harr_lx2.rom",0x80000,0xd92c2d35)
 DCS_SOUNDROM5x(	"dh_snd.u2",0xdce5339a,
 		"dh_snd.u3",0x27c30ada,
 		"dh_snd.u4",0x8bde0089,

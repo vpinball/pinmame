@@ -74,8 +74,8 @@ static int ij_getSol(int solNo);
 static void ij_handleMech(int mech);
 static void ij_initSim(sim_tBallStatus *balls, int *inports, int noOfBalls);
 static int ij_getMech(int mechNo);
-static void ij_drawMech(unsigned char **line);
-static void ij_drawStatic(unsigned char **line);
+static void ij_drawMech(BMTYPE **line);
+static void ij_drawStatic(BMTYPE **line);
 static void init_ij(void);
 
 /*-----------------------
@@ -150,7 +150,7 @@ WPC_INPUT_PORTS_END
 #define swAlwaysClosed	24
 #define swIndy		25
 #define swiNdy		26
-#define swinDy		27 
+#define swinDy		27
 #define	swindY		28
 
 #define swLEject	31
@@ -253,8 +253,8 @@ WPC_INPUT_PORTS_END
 /*---------------------
 /  Ball state handling
 /----------------------*/
-enum {stTrough1=SIM_FIRSTSTATE, stTrough2, stTrough3, stTrough4, stTrough5, stTrough6, stTTrough, 
-      stDrain, stDraining, stShooter, stBallLane, 
+enum {stTrough1=SIM_FIRSTSTATE, stTrough2, stTrough3, stTrough4, stTrough5, stTrough6, stTTrough,
+      stDrain, stDraining, stShooter, stBallLane,
 
       stRIn, stLIn, stLSling, stRSling, stLJet, stRJet, stBJet,
 
@@ -266,17 +266,17 @@ enum {stTrough1=SIM_FIRSTSTATE, stTrough2, stTrough3, stTrough4, stTrough5, stTr
 
       stLOut, stROut, stROut2, stRTOut,
 
-      stTopPost, 
-      stPoAT, stPoATL, stPoATR, 
+      stTopPost,
+      stPoAT, stPoATL, stPoATR,
       stPoAMT, stPoAMTL, stPoAMTR, stPitHole,
       stPoAMB, stPoAMBL, stPoAMBR,
       stPoAB, stPoABL, stPoABR, stEBHole,
 
-      stCenter, stSubway, stIdolPopper, stEnterIdol, 
+      stCenter, stSubway, stIdolPopper, stEnterIdol,
       stIdol1, stIdol2, stIdol3, stIdol4, stIdol5, stIdol6,
       stIdolExit,
 
-      stEDropDown, stNDropDown, stTDropDown, 
+      stEDropDown, stNDropDown, stTDropDown,
 
       stTotem, stTotemDropDown, stCapturedIdle, stCapturedF, stCapturedB,
 
@@ -402,7 +402,7 @@ static int ij_handleBallState(sim_tBallStatus *ball, int *inports) {
       */
       if ( !(locals.idolPos/60%2) )
         return setState(stIdol1, 1);
-    
+
     case stIdol4:
       if ( core_getSol(sIdolRelease) )
       	return setState(stIdolExit,2);
@@ -414,16 +414,16 @@ static int ij_handleBallState(sim_tBallStatus *ball, int *inports) {
     case stIdol5:
     case stIdol6:
       /* look to the future (for the idol pos if motor is running) */
-      if ( core_getSol(sWheelMotor) && ((locals.idolPos/60)!=((locals.idolPos+IJ_IDOLTICK)/60)) ) 
+      if ( core_getSol(sWheelMotor) && ((locals.idolPos/60)!=((locals.idolPos+IJ_IDOLTICK)/60)) )
         return setState(stIdol1 + (ball->state+1-stIdol1)%6, 0);
       break;
 
     case stTotem:
       if (core_getSw(swSDropTop)) {
-        locals.hitCaptiveBall = 1;   
+        locals.hitCaptiveBall = 1;
       	return setState(stFree,0);
       }
-      else 
+      else
         return setState(stTotemDropDown,0);
 
     case stCapturedIdle:
@@ -537,11 +537,11 @@ static core_tLampDisplay ij_lampPos = {
 static wpc_tSamSolMap ij_SamSolMap[] = {
  /*Channel #0*/
  {sKnocker,0,SAM_KNOCKER},
- {sBallRelease,0,SAM_BALLREL}, 
+ {sBallRelease,0,SAM_BALLREL},
  {sBallLaunch,0,SAM_SOLENOID},
 
  /*Channel #1*/
- {sDivPower,1,SAM_SOLENOID_ON}, {sDivHold,1,SAM_SOLENOID_OFF,WPCSAM_F_ONOFF}, 
+ {sDivPower,1,SAM_SOLENOID_ON}, {sDivHold,1,SAM_SOLENOID_OFF,WPCSAM_F_ONOFF},
  {sLSling,1,SAM_LSLING}, {sRSling,1,SAM_RSLING},
  {sBallPopper, 1, SAM_POPPER},
  {sLJet,1,SAM_JET1},
@@ -550,28 +550,28 @@ static wpc_tSamSolMap ij_SamSolMap[] = {
  {sTotemDropDown,2,SAM_SOLENOID}, {sTotemDropUp,2,SAM_SOLENOID},
  {sL_PoA,2,SAM_MOTOR_1, WPCSAM_F_CONT}, {sR_PoA,2,SAM_MOTOR_2, WPCSAM_F_CONT},
  {sSubwayRelease,2,SAM_SOLENOID},
- {sRJet,2,SAM_JET2}, 
+ {sRJet,2,SAM_JET2},
 
  /*Channel #3*/
  {sWheelMotor, 3, SAM_MOTOR_2, WPCSAM_F_CONT},
  {sLEject, 3, SAM_SOLENOID},
- {sBJet,3,SAM_JET3}, 
+ {sBJet,3,SAM_JET3},
 
  /*Channel #4*/
- {sTopPostPower,4,SAM_SOLENOID_ON}, {sTopPostHold,4,SAM_SOLENOID_OFF, WPCSAM_F_ONOFF}, 
- {sCenterDropUp,4,SAM_SOLENOID}, 
+ {sTopPostPower,4,SAM_SOLENOID_ON}, {sTopPostHold,4,SAM_SOLENOID_OFF, WPCSAM_F_ONOFF},
+ {sCenterDropUp,4,SAM_SOLENOID},
 
  {sIdolRelease, 4, SAM_SOLENOID_ON}, {sIdolRelease, 4, SAM_SOLENOID_OFF, WPCSAM_F_ONOFF},{-1}
 };
 
-static void ij_drawMech(unsigned char **line) {
+static void ij_drawMech(BMTYPE **line) {
   core_textOutf(30, 0,BLACK,"Idol Position: %3d",locals.idolPos);
   core_textOutf(30,10,BLACK,"PoA Degrees  : %3d",locals.PoAPos);
   core_textOutf(30,20,BLACK,"PoA Post     : %-4s", core_getSol(sTopPostHold) ? "Down":"Up");
   core_textOutf(30,30,BLACK,"Totem Drop T.: %-4s", core_getSw(swSDropTop) ? "Down":"Up");
 }
 /* Help */
-static void ij_drawStatic(unsigned char **line) {
+static void ij_drawStatic(BMTYPE **line) {
   core_textOutf(30, 40,BLACK,"Help:");
   core_textOutf(30, 50,BLACK,"L/R Shift+R = L/R Ramp");
   core_textOutf(30, 60,BLACK,"L/R Shift+L = L/R Loop");

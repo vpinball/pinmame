@@ -9,18 +9,18 @@
 
  Notes:
  ------
- I've tried to be very generous with comments so you could learn how I 
+ I've tried to be very generous with comments so you could learn how I
  created the logic for this simulator. I tried to use C code syntax that was
- easy to read, instead of using C code shortcuts, which make the code look 
+ easy to read, instead of using C code shortcuts, which make the code look
  better, but is harder to understand (especially if you didn't write it!)
- 
- This is my first shot at writing a simulator for PINMAME. At first I was very 
+
+ This is my first shot at writing a simulator for PINMAME. At first I was very
  intimidated. I thought it would be really hard, and I couldn't really follow the
  existing simulator code. What I did, however, was try to understand small pieces of
  it.. Eventually it all started to make perfect sense, and it became really easy to do
  after that!!
 
- Changes: 
+ Changes:
  --------
  12-05-2000: Modified custom playfield lamp layout to accomodate new structure.
              Added support for shared bulbs where necessary
@@ -50,20 +50,20 @@
  out of the manually, and in order, since it was easiest to do that way..
 
  You should also be thinking about what mechanical objects you want to show the user, so they know if
- a certain object is open or closed, or whatever.. 
+ a certain object is open or closed, or whatever..
 
  Once you've mapped all keys to switches and states, and have setup what mechanical objects to track,
  you're ready to define the ball states!!
-  
- Defining the ball states is probably the hardest part, but think of it like this.. you are saying 
+
+ Defining the ball states is probably the hardest part, but think of it like this.. you are saying
  where the ball will go next. Ultimately, you signify what switch is triggered, and what's the next
  state the ball goes too.. Use stFree to tell the simulator, that the ball is just rolling around the
- playfield, not touching anything. 
+ playfield, not touching anything.
 
- Check out the comments near the ball states code for more details on this process. Remember, 
+ Check out the comments near the ball states code for more details on this process. Remember,
  each ball state can only point to the next state. So if you have a ramp, that has
- 4 switches on it you need 3 states to define them. State 1 is where the ball enters the ramp, it points 
- to State 2 which points to 3, and then finally to 4.. For each state, you are telling the simulator 
+ 4 switches on it you need 3 states to define them. State 1 is where the ball enters the ramp, it points
+ to State 2 which points to 3, and then finally to 4.. For each state, you are telling the simulator
  what switch is activated for that state. It's hard to describe, but try and follow the examples found
  in this code.
 
@@ -93,7 +93,7 @@
      E  Steps Drop Hole
      U  Hidden Hall Way
    HJK  Jet Bumpers
-  XCVB  STEP Drop Targets 
+  XCVB  STEP Drop Targets
   NM,.  Left Ramp Award Frenzy, Extra Ball, 500,000 Pts, Start ,Super Hot Dog
    ASD  Hot Dog Drop Targets
      Z  Rudy's Hideout
@@ -113,8 +113,8 @@
 /*-- local state/ball handling functions --*/
 static int  fh_handleBallState(sim_tBallStatus *ball, int *inports);
 static void fh_handleMech(int mech);
-static void fh_drawMech(unsigned char **line);
-static void fh_drawStatic(unsigned char **line);
+static void fh_drawMech(BMTYPE **line);
+static void fh_drawStatic(BMTYPE **line);
 static void init_fh(void);
 static char* showeyepos(void);
 
@@ -122,7 +122,7 @@ static char* showeyepos(void);
   local static variables
  ------------------------
    I used this locals structure for setting up variables to track the state of mechanical objects
-   which needed to be displayed on screen 
+   which needed to be displayed on screen
 --------------------------------------------------------------------------------------------------*/
 static struct {
   int stepgatePos;    /* Steps Gate Position */
@@ -277,29 +277,29 @@ enum {EYES_ST=0,EYES_LEFT,EYES_RIGHT,EYES_CLOSED};
 
 /* ---------------------------------------------------------------------------------
    The following variables are used to refer to the state array!
-   These vars *must* be in the *exact* *same* *order* as each stateDef array entry! 
+   These vars *must* be in the *exact* *same* *order* as each stateDef array entry!
    -----------------------------------------------------------------------------------------*/
 enum {stRTrough=SIM_FIRSTSTATE, stCTrough, stLTrough, stOuthole, stDrain,
       stRShooter, stRBallLane, stRNotEnough, stROut, stLOut, stRIn, stRIn2, stLIn,
-      stLLoopUp, stLLoopDn, stRLoopUp, stRLoopDn, 
+      stLLoopUp, stLLoopDn, stRLoopUp, stRLoopDn,
       stMRampEnt, stMRamp, stMRampExit, stRampDiv, stURampEnt, stURampExit,
       stLShooter, stLBallLane, stLNotEnough, stAwardFrenzy, stAwardEB, stAwardPTS, stAwardDog,
-      stRudyHideout, stRudyHideout2, stWindTunnel, 
-      stDropHole, stDropKickout, stHiddenHallway, stLockL, stLockC, stLockR, 
-      stRudyHit, stTrapDoorLoop, stUpperLoop, stBallInTrap, stRudyGulp, stLOut2, stRudyJaw, 
+      stRudyHideout, stRudyHideout2, stWindTunnel,
+      stDropHole, stDropKickout, stHiddenHallway, stLockL, stLockC, stLockR,
+      stRudyHit, stTrapDoorLoop, stUpperLoop, stBallInTrap, stRudyGulp, stLOut2, stRudyJaw,
       stRudyJaw1, stJetLane, stJet1, stJet2, stJet3
       };
 
 /********************************************************************************************************
-   The following is a list of all possible game states..... 
+   The following is a list of all possible game states.....
    We start defining our own states at element #3, since 'Not Installed', 'Moving', and 'Playfield'
    are always defined the same!!
 
    Any state with all zeros, like the following example must be handled in the Handle Ball State function!
-   {"State Name",    1,0,    0,       0, 0}, 
+   {"State Name",    1,0,    0,       0, 0},
 
    Fields for each array element
-   ----------------------------- 
+   -----------------------------
    #1) Name to display on screen
    #2) Switch down time (minimum)
    #3) Switch to be triggered while in this state
@@ -320,7 +320,7 @@ static sim_tState fh_stateDef[] = {
   {"Not Installed",    0,0,           0,        stDrain,     0,0,0,SIM_STNOTEXCL},
   {"Moving"},
   {"Playfield",               0,0,           0,        0,           0,0,0,SIM_STNOTEXCL},
- 
+
   {"Right Trough",     1,swRTrough,   sBallRel, stRShooter,  5},
   {"Center Trough",    1,swCTrough,   0,        stRTrough,   1},
   {"Left Trough",      1,swLTrough,   0,        stCTrough,   1},
@@ -393,7 +393,7 @@ static int fh_handleBallState(sim_tBallStatus *ball, int *inports) {
 
 	/* Ball in RIGHT Shooter Lane */
         /* Note: Sim supports max of 50 speed for manual plunger */
-    	case stRBallLane:  
+    	case stRBallLane:
 		if (ball->speed < 20)
 			return setState(stRNotEnough,3);	/*Ball not plunged hard enough*/
 		if (ball->speed < 25)
@@ -410,7 +410,7 @@ static int fh_handleBallState(sim_tBallStatus *ball, int *inports) {
 
 	/* Ball in LEFT Shooter Lane */
         /* Note: Sim supports max of 50 speed for manual plunger */
-    	case stLBallLane:  
+    	case stLBallLane:
 		if (ball->speed < 25)
 			return setState(stLNotEnough,3);	/*Ball not plunged hard enough*/
 		if (ball->speed < 30)
@@ -424,7 +424,7 @@ static int fh_handleBallState(sim_tBallStatus *ball, int *inports) {
 		break;
 
 	/* Rudy Hit */
-    	case stRudyHit:  
+    	case stRudyHit:
 		/*Is Rudy's Mouth Open?*/
 		if (locals.rudymouthPos)
 			return setState(stRudyJaw1,10);		/*Yes, ball goes into rudy's mouth*/	
@@ -433,7 +433,7 @@ static int fh_handleBallState(sim_tBallStatus *ball, int *inports) {
 		break;
 
 	/* Trap Door */
-    	case stTrapDoorLoop:  
+    	case stTrapDoorLoop:
 		/*Is the Trap Door Open?*/
 		if (locals.trapdoorPos)
 			return setState(stBallInTrap,10);	/*Trap Door is Open, Ball Lands in Trap Door!*/
@@ -458,10 +458,10 @@ static int fh_handleBallState(sim_tBallStatus *ball, int *inports) {
 /*---------------------------
 /  Keyboard conversion table
 /----------------------------
-  Each entry maps a keypress to either begin a state or trigger a switch! 
-  The Inport #, and Bit Mask define which keypresses should be used - See code from 
+  Each entry maps a keypress to either begin a state or trigger a switch!
+  The Inport #, and Bit Mask define which keypresses should be used - See code from
   WPC_INPUT_PORTS_START to determine # and Mask for each key press
--------------------------------------------------------------------------------------------------- 
+--------------------------------------------------------------------------------------------------
   Layout of inportData array
    ----------------------------
    #1) Inport number
@@ -515,7 +515,7 @@ static sim_tInportData fh_inportData[] = {
 /*--------------------
   Drawing information
   --------------------------------------------------------
-  Code to draw the mechanical objects, and their states! 
+  Code to draw the mechanical objects, and their states!
 ---------------------------------------------------------*/
 static core_tLampDisplay fh_lampPos = {
 { 0, 0 }, /* top left */
@@ -537,9 +537,9 @@ static core_tLampDisplay fh_lampPos = {
  {1,{{10, 3,ORANGE}}},{1,{{ 8, 3,ORANGE}}},{1,{{ 6, 3,ORANGE}}},
  {1,{{10, 6,RED}}},{1,{{17,22,YELLOW}}},
 
- /*Lamp 41 - Matrix # 61 - Splits into 2 bulbs*/ 
+ /*Lamp 41 - Matrix # 61 - Splits into 2 bulbs*/
  {2,{{27,25,YELLOW},{27, 4,YELLOW}}},
- 
+
  {1,{{22, 5,LBLUE}}},{1,{{13,14,RED}}},{1,{{12, 9,ORANGE}}},
  {1,{{12, 7,LBLUE}}},{1,{{14, 3,YELLOW}}},{1,{{ 8,16,ORANGE}}},{1,{{ 6,17,YELLOW}}},
  {1,{{ 1,13,RED}}},{1,{{13,24,WHITE}}},{1,{{18,19,LBLUE}}},{1,{{ 2,13,YELLOW}}},
@@ -568,8 +568,8 @@ static core_tLampDisplay fh_lampPos = {
   *************************************************************/
 static wpc_tSamSolMap fh_samsolmap[] = {
  /*Channel #0*/
- {sKnocker,0,SAM_KNOCKER}, {sBallRel,0,SAM_BALLREL}, 
- {sOuthole,0,SAM_OUTHOLE}, 
+ {sKnocker,0,SAM_KNOCKER}, {sBallRel,0,SAM_BALLREL},
+ {sOuthole,0,SAM_OUTHOLE},
  {sLockRelease,0,SAM_SOLENOID}, {sDummyEject,0,SAM_POPPER},
 
 //Ramp Diverter needs special checking due to solenoid smoothing!
@@ -595,7 +595,7 @@ static wpc_tSamSolMap fh_samsolmap[] = {
 
 };
 
-static void fh_drawMech(unsigned char **line) {
+static void fh_drawMech(BMTYPE **line) {
   core_textOutf(30, 0,BLACK,"Trap Door: %-6s", locals.trapdoorPos?"Open":"Closed");
   core_textOutf(30, 10,BLACK,"Step Gate: %-6s", locals.stepgatePos?"Open":"Closed");
   core_textOutf(30, 20,BLACK,"Rudy Jaw : %-6s", locals.rudymouthPos?"Open":"Closed");
@@ -603,7 +603,7 @@ static void fh_drawMech(unsigned char **line) {
 }
   /* Help */
 
-static void fh_drawStatic(unsigned char **line) {
+static void fh_drawStatic(BMTYPE **line) {
   core_textOutf(30, 40,BLACK,"Help on this Simulator:");
   core_textOutf(30, 50,BLACK,"L/R Shift+I/O = L/R Inlane/Outlane");
   core_textOutf(30, 60,BLACK,"L/R Shift+- = L/R Slingshot");
@@ -671,10 +671,10 @@ static core_tGameData fhGameData = {
 };
 
 /* -----------------------------------------------------------------------------------------
-   Inverted Switch Values - 
+   Inverted Switch Values -
    -----------------------------------------------------------------------------------------
    How to handle inverted switches in the game...
-   
+
    Each Entry represents a Column in the Switch Matrix! (see below)
 
    Since there are 8 Rows per column, we use an 8-bit # to represent which of the switches

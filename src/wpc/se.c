@@ -31,9 +31,6 @@ static void SE_init(void);
 static void SE_exit(void);
 static void SE_nvram(void *file, int write);
 static WRITE_HANDLER(mcpu_ram8000_w);
-/* makes it easier to swap bits */
-                          // 0  1  2  3  4  5  6  7  8  9 10,11,12,13,14,15
-static const UINT8 swapNyb[16] = { 0, 8, 4,12, 2,10, 6,14, 1, 9, 5,13, 3,11, 7,15};
 /*----------------
 /  Local varibles
 /-----------------*/
@@ -41,8 +38,6 @@ struct {
   int    vblankCount;
   int    initDone;
   UINT32 solenoids;
-  UINT8  swMatrix[CORE_MAXSWCOL];
-  UINT8  lampMatrix[CORE_MAXLAMPCOL];
   int    lampRow, lampColumn;
   int    diagnosticLed;
   int    swCol;
@@ -68,8 +63,8 @@ static int SE_vblank(void) {
 
   /*-- lamps --*/
   if ((SElocals.vblankCount % SE_LAMPSMOOTH) == 0) {
-    memcpy(coreGlobals.lampMatrix, SElocals.lampMatrix, sizeof(SElocals.lampMatrix));
-    memset(SElocals.lampMatrix, 0, sizeof(SElocals.lampMatrix));
+    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+    memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
   /*-- solenoids --*/
   coreGlobals.solenoids2 = SElocals.flipsol; SElocals.flipsol = SElocals.flipsolPulse;
@@ -153,11 +148,11 @@ static WRITE_HANDLER(mcpu_ram8000_w) { SElocals.ram8000[offset] = data; }
 
 /*-- Lamps --*/
 static WRITE_HANDLER(lampdriv_w) {
-  SElocals.lampRow = (swapNyb[data&0x0f]<<4)|swapNyb[data>>4];
-  core_setLamp(SElocals.lampMatrix, SElocals.lampColumn, SElocals.lampRow);
+  SElocals.lampRow = CORE_SWAPBYTE(data);
+  core_setLamp(coreGlobals.tmpLampMatrix, SElocals.lampColumn, SElocals.lampRow);
 }
-static WRITE_HANDLER(lampstrb_w) { core_setLamp(SElocals.lampMatrix, SElocals.lampColumn = (SElocals.lampColumn & 0xff00) | data, SElocals.lampRow);}
-static WRITE_HANDLER(auxlamp_w) { core_setLamp(SElocals.lampMatrix, SElocals.lampColumn = (SElocals.lampColumn & 0x00ff) | (data<<8), SElocals.lampRow);}
+static WRITE_HANDLER(lampstrb_w) { core_setLamp(coreGlobals.tmpLampMatrix, SElocals.lampColumn = (SElocals.lampColumn & 0xff00) | data, SElocals.lampRow);}
+static WRITE_HANDLER(auxlamp_w) { core_setLamp(coreGlobals.tmpLampMatrix, SElocals.lampColumn = (SElocals.lampColumn & 0x00ff) | (data<<8), SElocals.lampRow);}
 
 /*-- Switches --*/
 static READ_HANDLER(switch_r)	{ return ~core_getSwCol(SElocals.swCol); }
@@ -177,7 +172,7 @@ static READ_HANDLER(dedswitch_r) {
   /* CORE Defines flippers in order as: RFlipEOS, RFlip, LFlipEOS, LFlip*/
   /* We need to adjust to: LFlip, LFlipEOS, RFlip, RFlipEOS*/
   /* Swap the 4 lowest bits*/
-  return ~((coreGlobals.swMatrix[0]) | swapNyb[coreGlobals.swMatrix[11] & 0x0f]);
+  return ~((coreGlobals.swMatrix[0]) | CORE_SWAPNYB(coreGlobals.swMatrix[11] & 0x0f));
 }
 
 /*-- Dip Switch SW300 - Country Settings --*/
@@ -305,6 +300,6 @@ struct MachineDriver machine_driver_SE_1 = {
 / Load/Save static ram
 / Save RAM & CMOS Information
 /-------------------------------------------------*/
-void SE_nvram(void *file, int write) {
+static void SE_nvram(void *file, int write) {
   core_nvram(file, write, memory_region(SE_MEMREG_CPU), 0x2000);
 }

@@ -130,6 +130,12 @@ int vp_getDIP(int dipBank) {
   return locals.dips[dipBank];
 }
 
+void vp_dipnv(void *file, int write) {
+  if (write)     osd_fwrite(file, locals.dips, sizeof(locals.dips));
+  else if (file) osd_fread(file, locals.dips, sizeof(locals.dips));
+  else           memset(locals.dips,0,sizeof(locals.dips));
+}
+
 /*-----------
 /  set Solenoid Mask
 /-----------*/
@@ -164,8 +170,8 @@ void vp_setMechData(int para, int data) {
   else if (para == 2) locals.md.sol2   = data;
   else if (para == 3) locals.md.length = data;
   else if (para == 4) locals.md.steps  = data;
-  else if (para == 5) locals.md.type   = (locals.md.type & 0xffffff00) | data;
-  else if (para == 6) locals.md.type   = (locals.md.type & 0xff0000ff) | (data<<8);
+  else if (para == 5) locals.md.type   = (locals.md.type & 0xfffffe00) | data;
+  else if (para == 6) locals.md.type   = (locals.md.type & 0xff0001ff) | (data<<9);
   else if (para == 7) locals.md.type   = (locals.md.type & 0x00ffffff) | (data<<24);
   else if (para % 10 == 0) locals.md.sw[para/10-1].swNo     = WPCNUMBERING ? data : ((((data)+7)/8)*10+(((data)-1)%8)+1);
   else if (para % 10 == 1) locals.md.sw[para/10-1].startPos = data;

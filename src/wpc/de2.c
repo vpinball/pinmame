@@ -32,7 +32,7 @@
 	6) 520-5092-01: 192X64 DMD - 68000 CPU + separate controller board
 	   (Maveric to Batman Forever)
 
-   Sound Board Revisions: 
+   Sound Board Revisions:
 	1) 520-5002 Series: M6809 cpu, YM2151, MSM5205, hc4020 for stereo decoding.
 		a) -00 generation, used 27256 eproms (only Laser War)
 	    b) -02 generation, used 27256 & 27512 eproms (Laser War - Back to the Future)
@@ -76,7 +76,7 @@ UINT32 hv5408_shift, hv5408_latch;
 UINT32 hv5308_shift, hv5308_latch;
 UINT32 hv5222;
 
-static unsigned char dmdRAM[0x2000] = {0};
+static UINT8 dmdRAM[0x2000] = {0};
 
 static int UsingSound = 0;
 
@@ -164,7 +164,7 @@ static int de_vblank(void) {
 	/*If Mux. Solenoid 10 is firing, adjust solenoid # to 24!*/
     if((delocals.solenoids & CORE_SOLBIT(10)))
       coreGlobals.solenoids = (delocals.solenoids & 0x00ffff00) | (delocals.solenoids<<24);
-   
+
 	if (delocals.ssEn) {
       int ii;
       coreGlobals.solenoids |= CORE_SOLBIT(CORE_SSFLIPENSOL);
@@ -306,11 +306,11 @@ static void HC7474Logic(int clock, int clear, int preset)
 	}
 	if ( nTemp!=de_dmdlocals.hc74_nq ) {
 		if ( !de_dmdlocals.hc74_nq ) {
-			cpu_set_irq_line(DE_DCPU1, Z80_INT_REQ, ASSERT_LINE); 
+			cpu_set_irq_line(DE_DCPU1, Z80_INT_REQ, ASSERT_LINE);
 			logerror("z80 int\n");
 		}
 		else {
-			cpu_set_irq_line(DE_DCPU1, Z80_INT_REQ, CLEAR_LINE); 
+			cpu_set_irq_line(DE_DCPU1, Z80_INT_REQ, CLEAR_LINE);
 		}
 	}
 	de_dmdlocals.busy = de_dmdlocals.hc74_q;
@@ -318,7 +318,7 @@ static void HC7474Logic(int clock, int clear, int preset)
 
 static void switchbank(void)
 {
-	int addr =   (de_dmdlocals.bs0 *0x04000) 
+	int addr =   (de_dmdlocals.bs0 *0x04000)
 			   + (de_dmdlocals.bs1 *0x08000)
  			   + (de_dmdlocals.bs2 *0x10000);
 
@@ -508,7 +508,7 @@ static void de_init(void) {
   if(memory_region(DE_MEMREG_DCPU1))
   {
   memcpy(memory_region(DE_MEMREG_DCPU1),
-         memory_region(DE_MEMREG_DROM1) + 
+         memory_region(DE_MEMREG_DROM1) +
 	     (memory_region_length(DE_MEMREG_DROM1) - 0x4000), 0x4000);
   }
 
@@ -820,19 +820,19 @@ static int dmd_portlogic(offs_t offset,data8_t data)
 		if (!a6) {		
 			if(!a4 & !a3){		//000		//SET BANK SWITCH BIT 0 (0x84)
 				de_dmdlocals.bs0 = !d0;
-				//logerror("*bs0=%x : bs1=%x: bs2=%x, data=%x, d0=%x\n", 
+				//logerror("*bs0=%x : bs1=%x: bs2=%x, data=%x, d0=%x\n",
 				//		  de_dmdlocals.bs0,de_dmdlocals.bs1,de_dmdlocals.bs2,data,d0);
 				switchbank();
 			}
 			if(!a4 & a3){		//001		//SET BANK SWITCH BIT 1	(0x8c)
 				de_dmdlocals.bs1 = !d0;
-				//logerror("bs0=%x : *bs1=%x: bs2=%x, data=%x, d0=%x\n", 
+				//logerror("bs0=%x : *bs1=%x: bs2=%x, data=%x, d0=%x\n",
 				//		  de_dmdlocals.bs0,de_dmdlocals.bs1,de_dmdlocals.bs2,data,d0);
 				switchbank();
 			}
 			if(a4 & !a3){		//010		//SET BANK SWITCH BIT 2	(0x94)
 				de_dmdlocals.bs2 = !d0;
-				//logerror("bs0=%x : bs1=%x: *bs2=%x, data=%x, d0=%x\n", 
+				//logerror("bs0=%x : bs1=%x: *bs2=%x, data=%x, d0=%x\n",
 				//		  de_dmdlocals.bs0,de_dmdlocals.bs1,de_dmdlocals.bs2,data,d0);
 				switchbank();
 			}
@@ -913,13 +913,13 @@ static MEMORY_WRITE_START(de_writemem)
   { 0x2400, 0x2403, pia_1_w},
   { 0x2800, 0x2803, pia_2_w},
   { 0x2c00, 0x2c03, pia_3_w},
-  { 0x3000, 0x3003, pia_4_w}, 
+  { 0x3000, 0x3003, pia_4_w},
   { 0x3400, 0x3403, pia_5_w},
 MEMORY_END
 
 /*We'll handle RAM ourselves*/
 static READ_HANDLER(de_dmdmemread) {
-	return dmdRAM[offset]; 
+	return dmdRAM[offset];
 }
 static WRITE_HANDLER(de_dmdmemwrite) {
 	if ( offset<0x2000 )

@@ -20,7 +20,7 @@
    WER  Jet Bumpers
 
    More to be added...
-                      
+
 ------------------------------------------------------------------------------*/
 
 #include "driver.h"
@@ -32,9 +32,9 @@
 /  Local functions
 /-------------------*/
 static int  corv_handleBallState(sim_tBallStatus *ball, int *inports);
-static void corv_drawStatic(unsigned char **line);
+static void corv_drawStatic(BMTYPE **line);
 static void init_corv(void);
-static void corv_drawMech(unsigned char **line);
+static void corv_drawMech(BMTYPE **line);
 static int corv_getMech(int mechNo);
 static void corv_handleMech(int mech);
 
@@ -226,7 +226,7 @@ static int corv_handleBallState(sim_tBallStatus *ball, int *inports) {
   switch (ball->state)
 	{
 	/* Ball in Shooter Lane */
-    	case stBallLane:  
+    	case stBallLane:
 		if (ball->speed < 25)
 			return setState(stNotEnough,25);	/*Ball not plunged hard enough*/
 		if (ball->speed < 51)
@@ -285,7 +285,7 @@ static sim_tInportData corv_inportData[] = {
 /*--------------------
   Drawing information
   --------------------*/
-  static void corv_drawStatic(unsigned char **line) {
+  static void corv_drawStatic(BMTYPE **line) {
 
 /* Help */
 
@@ -305,7 +305,7 @@ static sim_tInportData corv_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(corv,21,"corv_2_1.rom",0x80000,0x4fe64c6d) 
+WPC_ROMSTART(corv,21,"corv_2_1.rom",0x80000,0x4fe64c6d)
 DCS_SOUNDROM6x("corvsnd2",0x630d20a3,
                "corvsnd3",0x6ace0353,
                "corvsnd4",0x87807278,
@@ -366,7 +366,7 @@ static void init_corv(void) {
   locals.direction = FORWARD;
 }
 
-static void corv_drawMech(unsigned char **line) {
+static void corv_drawMech(BMTYPE **line) {
   core_textOutf(30,  0,BLACK,"Blue Car: %4d", corv_getMech(0));
   core_textOutf(30, 10,BLACK,"Red Car:  %4d", corv_getMech(1));
 }

@@ -69,8 +69,6 @@ static struct {
   int    vblankCount;
   int    initDone;
   UINT32 solenoids;
-  UINT8  swMatrix[CORE_MAXSWCOL];
-  UINT8  lampMatrix[CORE_MAXLAMPCOL];
   core_tSeg segments,pseg;
   int    lampRow, lampColumn;
   int    diagnosticLed;
@@ -131,9 +129,9 @@ static WRITE_HANDLER(s6_pia0ca2_w) {
 
 /*-- Lamp handling --*/
 static WRITE_HANDLER(s6_lampcol_w)
-{ core_setLamp(s6locals.lampMatrix, s6locals.lampColumn = data, s6locals.lampRow); }
+{ core_setLamp(coreGlobals.tmpLampMatrix, s6locals.lampColumn = data, s6locals.lampRow); }
 static WRITE_HANDLER(s6_lamprow_w)
-{ core_setLamp(s6locals.lampMatrix, s6locals.lampColumn, s6locals.lampRow = ~data); }
+{ core_setLamp(coreGlobals.tmpLampMatrix, s6locals.lampColumn, s6locals.lampRow = ~data); }
 
 /*-- Solenoid 1-8 --*/
 static WRITE_HANDLER(s6_sol1_8_w) {
@@ -225,8 +223,8 @@ static int s6_vblank(void) {
 
   /*-- lamps --*/
   if ((s6locals.vblankCount % S6_LAMPSMOOTH) == 0) {
-    memcpy(coreGlobals.lampMatrix, s6locals.lampMatrix, sizeof(s6locals.lampMatrix));
-    memset(s6locals.lampMatrix, 0, sizeof(s6locals.lampMatrix));
+    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+    memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
 
   /*-- solenoids --*/
@@ -361,10 +359,7 @@ struct MachineDriver machine_driver_s6s= {
 /*-----------------------------------------------
 / Load/Save static ram
 /-------------------------------------------------*/
-void s6_nvram(void *file, int write) {
-  UINT8 *mem = s6_CMOS;
-  if (write)     osd_fwrite(file, mem, 0x0100); /* save */
-  else if (file) osd_fread( file, mem, 0x0100); /* load */
-  else           memset(mem, 0xff, 0x0100);     /* first time */
+static void s6_nvram(void *file, int write) {
+  core_nvram(file, write, s6_CMOS, 0x0100);
 }
 

@@ -11,7 +11,8 @@ static struct pia6821_interface sp_pia;
 
 static void snt_cmd(int data);
 static void s32_cmd(int data);
-static void sp_cmd(int data);
+static void sp51_cmd(int data);
+static void sp56_cmd(int data);
 /*------ */
 void by35_soundInit(void) {
   if (coreGlobals.soundEn) {
@@ -20,6 +21,7 @@ void by35_soundInit(void) {
       case GEN_BY35_50:
         break;
       case GEN_BY35_61:
+      case GEN_BY35_61B:
       case GEN_BY35_81:
         pia_config(2, PIA_STANDARD_ORDERING, &snt_pia[0]);
         pia_config(3, PIA_STANDARD_ORDERING, &snt_pia[1]);
@@ -41,11 +43,13 @@ WRITE_HANDLER(by35_soundCmd) {
       case GEN_BY35_50:
         s32_cmd(data); break;
       case GEN_BY35_61:
+      case GEN_BY35_61B:
       case GEN_BY35_81:
         snt_cmd(data); break;
       case GEN_BY35_51:
+        sp51_cmd(data); break;
       case GEN_BY35_56:
-        sp_cmd(data); break;
+        sp56_cmd(data); break;
     }
   }
 }
@@ -57,7 +61,7 @@ WRITE_HANDLER(by35_soundCmd) {
 #define S32_EXPFACTOR   95   // %
 #define S32_PITCH      100   // 0-100%
 /* waveform for the audio hardware */
-static unsigned char sineWave[] = {
+static UINT8 sineWave[] = {
   204,188,163,214,252,188,115,125,136,63,0,37,88,63,47,125
 /*
 128,148,166,181,193,202,206,208,207,206,205,206,209,215,222,231,240,
@@ -143,15 +147,15 @@ struct CustomSound_interface s32_custInt = {s32_sh_start, s32_sh_stop};
 /  Vocalizer board
 */
 static struct {
-  int lastcmd, currcmd, a ,b;
+  int lastcmd, currcmd, a ,b, cmdout, cmd[2];
 } splocals;
-static READ_HANDLER(sp_cmd_r);
+static READ_HANDLER(sp_8910a_r);
 static WRITE_HANDLER(sp_pia2a_w);
 static WRITE_HANDLER(sp_pia2b_w);
 static void sp_irq(int state);
 
 struct AY8910interface sp_ay8910Int = {
-  1, 3580000/4, {100}, {sp_cmd_r}
+  1, 3580000/4, {100}, {sp_8910a_r}
 };
 struct hc55516_interface sp_hc55516Int = { 1, {100}};
 
@@ -182,15 +186,13 @@ static struct pia6821_interface sp_pia = {
   /*irq: A/B           */ sp_irq, sp_irq
 };
 static READ_HANDLER(sp_8910r) {
-  if ((splocals.b & 0x03) == 0x01)
-    return AY8910Read(0);
+  if ((splocals.b & 0x03) == 0x01) return AY8910Read(0);
   return 0;
 }
 
 static WRITE_HANDLER(sp_pia2a_w) {
   splocals.a = data;
   if (splocals.b & 0x02) {
-    DBGLOG(("8910w %d %x\n",splocals.b, splocals.a));
     AY8910Write(0, splocals.b ^ 0x01, splocals.a);
   }
 }
@@ -202,22 +204,46 @@ static WRITE_HANDLER(sp_pia2b_w) {
     hc55516_clock_w(0,(data & 0x40)>0);
   }
   if (splocals.b & 0x02) {
-    DBGLOG(("8910w %d %x\n",splocals.b, splocals.a));
     AY8910Write(0, splocals.b ^ 0x01, splocals.a);
   }
 }
 
-static void sp_cmd_sync(int data) {
+static void sp51_cmd_sync(int data) {
   pia_set_input_ca1(2, data & 0x20);
   splocals.currcmd = ~data & 0x1f;
 }
-static void sp_cmd(int data) {
+static void sp51_cmd(int data) {
   if ((data ^ splocals.lastcmd) & 0x20)
-    timer_set(TIME_NOW, data, sp_cmd_sync);
+    timer_set(TIME_NOW, data, sp51_cmd_sync);
   splocals.lastcmd = data;
 }
 
-static READ_HANDLER(sp_cmd_r) { return splocals.currcmd; }
+static void sp56_cmd_sync(int data) {
+  splocals.cmdout = 0;
+  pia_set_input_ca1(2, 0); pia_set_input_ca1(2, 1);
+}
+
+static void sp56_cmd(int data) {
+  if (data & ~splocals.lastcmd & 0x20)
+    splocals.currcmd = 0;
+  else if ((data & 0x20) && splocals.currcmd < 2) {
+    splocals.cmd[splocals.currcmd++] = ~data & 0x1f; snd_cmd_log(data);
+    if (splocals.currcmd == 2) /* two commands received */
+      timer_set(TIME_NOW, data, sp56_cmd_sync);
+  }
+  splocals.lastcmd = data;
+}
+
+static READ_HANDLER(sp_8910a_r) {
+  if (core_gameData->gen & GEN_BY35_56) {
+    switch (splocals.cmdout) {
+      case 1 : //pia_set_input_ca1(2, 0);
+      case 0 : return splocals.cmd[splocals.cmdout++];
+      default: return splocals.lastcmd;
+    }
+  }
+  return splocals.currcmd;
+}
 
 static void sp_irq(int state) {
   cpu_set_irq_line(BY35_SCPU1NO, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
@@ -292,22 +318,20 @@ static struct pia6821_interface snt_pia[] = {{
   /*irq: A/B           */ snt_irq, snt_irq
 }};
 static READ_HANDLER(snt_pia2a_r) {
-  if ((sntlocals.b2 & 0x03) == 0x01) {
-    DBGLOG(("8910r %d\n",cpu_get_reg(M6802_IRQ_STATE)));
-    return AY8910Read(0);
-  }
+  if (core_gameData->gen & GEN_BY35_61B) return snt_8910a_r(0);
+  if ((sntlocals.b2 & 0x03) == 0x01)     return AY8910Read(0);
   return 0;
 }
 static WRITE_HANDLER(snt_pia2a_w) {
   sntlocals.a2 = data;
-  DBGLOG(("8910w %d %x\n",sntlocals.b2, sntlocals.a2));
+  //DBGLOG(("8910w %d %x\n",sntlocals.b2, sntlocals.a2));
   if (sntlocals.b2 & 0x02) {
     AY8910Write(0, sntlocals.b2 ^ 0x01, sntlocals.a2);
   }
 }
 static WRITE_HANDLER(snt_pia2b_w) {
   sntlocals.b2 = data;
-  DBGLOG(("8910w %d %x\n",sntlocals.b2, sntlocals.a2));
+  //DBGLOG(("8910w %d %x\n",sntlocals.b2, sntlocals.a2));
   if (sntlocals.b2 & 0x02) {
     AY8910Write(0, sntlocals.b2 ^ 0x01, sntlocals.a2);
   }
@@ -317,12 +341,10 @@ static WRITE_HANDLER(snt_pia3a_w) {
 }
 static WRITE_HANDLER(snt_pia3b_w) {
   if (sntlocals.b3 & ~data & 0x02) { // write
-    DBGLOG(("tms5220:w %x\n",sntlocals.a3));
     tms5220_data_w(0, sntlocals.a3);
     pia_set_input_ca2(3, 1); pia_set_input_ca2(3, 0);
   }
   else if (sntlocals.b3 & ~data & 0x01) { // read
-    DBGLOG(("tms5220:r\n"));
     pia_set_input_a(3,tms5220_status_r(0));
     pia_set_input_ca2(3, 1); pia_set_input_ca2(3, 0);
   }
@@ -347,8 +369,7 @@ static void snt_cmd(int data) {
   if (data & ~sntlocals.lastcmd & 0x20)
     sntlocals.cmdsync = 0;
   else if ((data & 0x20) && sntlocals.cmdsync < 2) {
-    sntlocals.cmd[sntlocals.cmdsync++] = data;
-	snd_cmd_log(data);
+    sntlocals.cmd[sntlocals.cmdsync++] = data; snd_cmd_log(data);
     if (sntlocals.cmdsync == 2) /* two commands received */
       timer_set(TIME_NOW, data, snt_cmd_sync);
   }
@@ -358,18 +379,15 @@ static void snt_cmd(int data) {
 static READ_HANDLER(snt_8910a_r) {
   int tmp = (sntlocals.cmdout < 2) ? sntlocals.cmd[sntlocals.cmdout++] :
                                      sntlocals.lastcmd;
-  DBGLOG(("cmd_r: %x\n",tmp ^ 0x1f));
   return ~tmp & 0x1f;
 }
 
 static WRITE_HANDLER(snt_pia2ca2_w) { /* diagnostic LED */ }
 
 static void snt_irq(int state) {
-  DBGLOG(("IRQ (snt)%d\n",state));
   cpu_set_irq_line(BY35_SCPU1NO, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
 static void snt_5220Irq(int state) {
-  DBGLOG(("5220Irq %d\n",state));
   pia_set_input_cb1(3, !state);
 }
 

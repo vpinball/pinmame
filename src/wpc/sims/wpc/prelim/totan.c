@@ -30,7 +30,7 @@
 /  Local functions
 /-------------------*/
 static int  totan_handleBallState(sim_tBallStatus *ball, int *inports);
-static void totan_drawStatic(unsigned char **line);
+static void totan_drawStatic(BMTYPE **line);
 static void init_totan(void);
 
 /*-----------------------
@@ -38,7 +38,7 @@ static void init_totan(void);
  ------------------------*/
 /* Uncomment if you wish to use locals. type variables */
 //static struct {
-//  int 
+//  int
 //} locals;
 
 /*--------------------------
@@ -178,7 +178,7 @@ static int totan_handleBallState(sim_tBallStatus *ball, int *inports) {
   switch (ball->state)
 	{
 	/* Ball in Shooter Lane */
-    	case stBallLane:  
+    	case stBallLane:
 		if (ball->speed < 15)
 			return setState(stNotEnough,15);	/*Ball not plunged hard enough*/
 		if (ball->speed < 30)
@@ -241,7 +241,7 @@ static sim_tInportData totan_inportData[] = {
 /*--------------------
   Drawing information
   --------------------*/
-  static void totan_drawStatic(unsigned char **line) {
+  static void totan_drawStatic(BMTYPE **line) {
 
 /* Help */
 

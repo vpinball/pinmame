@@ -226,6 +226,7 @@ extern struct MachineDriver machine_driver_by35;
 #define by35_mBY35_50   by35
 #define by35_mBY35_51   by35
 #define by35_mBY35_61   by35
+#define by35_mBY35_61B  by35
 #define by35_mBY35_81   by35
 #define by35_mBY35_54   by35
 #define by35_mBY35_56   by35 // XENON
@@ -239,6 +240,7 @@ extern struct MachineDriver machine_driver_by35_56s;
 #define by35_mBY35_50S  by35_32s
 #define by35_mBY35_51S  by35_51s
 #define by35_mBY35_61S  by35_61s
+#define by35_mBY35_61BS by35_61s
 #define by35_mBY35_81S  by35_61s
 #define by35_mBY35_54S  by35
 #define by35_mBY35_56S  by35_56s // XENON

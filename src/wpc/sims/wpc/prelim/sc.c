@@ -18,7 +18,7 @@
    WER  Jet Bumpers
 
    More to be added...
-                      
+
 ------------------------------------------------------------------------------*/
 
 #include "driver.h"
@@ -30,7 +30,7 @@
 /  Local functions
 /-------------------*/
 static int  sc_handleBallState(sim_tBallStatus *ball, int *inports);
-static void sc_drawStatic(unsigned char **line);
+static void sc_drawStatic(BMTYPE **line);
 static void init_sc(void);
 
 /*-----------------------
@@ -170,7 +170,7 @@ static int sc_handleBallState(sim_tBallStatus *ball, int *inports) {
   switch (ball->state)
 	{
 	/* Ball in Shooter Lane */
-    	case stBallLane:  
+    	case stBallLane:
 		if (ball->speed < 25)
 			return setState(stNotEnough,25);	/*Ball not plunged hard enough*/
 		if (ball->speed < 51)
@@ -229,7 +229,7 @@ static sim_tInportData sc_inportData[] = {
 /*--------------------
   Drawing information
   --------------------*/
-  static void sc_drawStatic(unsigned char **line) {
+  static void sc_drawStatic(BMTYPE **line) {
 
 /* Help */
 
@@ -249,7 +249,13 @@ static sim_tInportData sc_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(sc,18,"safe_18g.rom",0x80000,0xaeb4b669) 
+WPC_ROMSTART(sc,18,"safe_18g.rom",0x80000,0xaeb4b669)
+DCS_SOUNDROM3m(	"safsnds2.rom",0x20e14c63,
+		"safsnds3.rom",0x99e318e7,
+		"safsnds4.rom",0x9c8a23eb)
+WPC_ROMEND
+
+WPC_ROMSTART(sc,18n,"safe_18n.rom",0x80000,0x4d5d5626)
 DCS_SOUNDROM3m(	"safsnds2.rom",0x20e14c63,
 		"safsnds3.rom",0x99e318e7,
 		"safsnds4.rom",0x9c8a23eb)
@@ -259,6 +265,7 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(sc,18,"Safe Cracker (1.8)",1996,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(sc,18n,18,"Safe Cracker (1.8N)",1996,"Bally",wpc_m95S,0)
 
 /*-----------------------
 / Simulation Definitions
@@ -296,12 +303,11 @@ static core_tGameData scGameData = {
   }
 };
 static WRITE_HANDLER(sc_auxLamp) {
-  extern UINT8 *explampmatrix;
   wpc_data[WPC_SOLENOID1] |= data;
   if (~sclocals.auxLast & data & 0x10) sclocals.auxClk = 0;
   if (~sclocals.auxLast & data & 0x20) {
-    if (data & 0x40) explampmatrix[8+sclocals.auxClk/8] |= (1<<(sclocals.auxClk%8));
-    if (data & 0x80) explampmatrix[11+sclocals.auxClk/8] |= (1<<(sclocals.auxClk%8));
+    if (data & 0x40) coreGlobals.tmpLampMatrix[8+sclocals.auxClk/8] |= (1<<(sclocals.auxClk%8));
+    if (data & 0x80) coreGlobals.tmpLampMatrix[11+sclocals.auxClk/8] |= (1<<(sclocals.auxClk%8));
     sclocals.auxClk += 1;
   }
   sclocals.auxLast = data;

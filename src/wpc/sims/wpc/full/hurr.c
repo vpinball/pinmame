@@ -41,7 +41,7 @@
 /-------------------*/
 static int  hurr_handleBallState(sim_tBallStatus *ball, int *inports);
 static void hurr_handleMech(int mech);
-static void hurr_drawStatic(unsigned char **line);
+static void hurr_drawStatic(BMTYPE **line);
 static void init_hurr(void);
 
 /*--------------------------
@@ -210,7 +210,7 @@ static int hurr_handleBallState(sim_tBallStatus *ball, int *inports) {
 	{
 
 	/* Ball in Shooter Lane */
-    	case stBallLane:  
+    	case stBallLane:
 		if (ball->speed < 25)
 			return setState(stNotEnough,25);	/*Ball not plunged hard enough*/
 		if (ball->speed < 35)
@@ -283,7 +283,7 @@ static core_tLampDisplay hurr_lampPos = {
 };
 
 /* Help */
-  static void hurr_drawStatic(unsigned char **line) {
+  static void hurr_drawStatic(BMTYPE **line) {
 
   core_textOutf(30, 50,BLACK,"Help on this Simulator:");
   core_textOutf(30, 60,BLACK,"L/R Shift+I = L/R Inlane");
@@ -301,8 +301,8 @@ static core_tLampDisplay hurr_lampPos = {
 /* Solenoid-to-sample handling */
 static wpc_tSamSolMap hurr_samsolmap[] = {
  /*Channel #0*/
- {sKnocker,0,SAM_KNOCKER}, {sTrough,0,SAM_BALLREL}, 
- {sOutHole,0,SAM_OUTHOLE}, 
+ {sKnocker,0,SAM_KNOCKER}, {sTrough,0,SAM_BALLREL},
+ {sOutHole,0,SAM_OUTHOLE},
 
  /*Channel #1*/
  {sLeftJet,1,SAM_JET1}, {sRightJet,1,SAM_JET2},

@@ -26,10 +26,17 @@ CORE_GAMEDEF(phnix,l1,"Phoenix (L-1)",1978,"Williams",s4_mS4S,0)
 /*--------------------------------
 / Flash - Sys.4 (Game #486)
 /-------------------------------*/
-INITGAME(flash,3/*?*/)
+static core_tGameData flashGameData = {
+  GEN_S4, s4_disp, {FLIP_SW(FLIP_L)},
+  NULL, {{0}},
+  {0, {SEQ_SWNO(19), SEQ_SWNO(18), SEQ_SWNO(20), SEQ_SWNO(42), SEQ_SWNO(41),0}}
+};
+static void init_flash(void) { core_gameData = &flashGameData; }
+S4_INPUT_PORTS_START(flash, 1) S4_INPUT_PORTS_END
+
 S6_ROMSTART(flash,l1,"gamerom.716", 0x287f12d6,
-					 "green1.716", 0x2145f8ab,
-					 "green2.716", 0x1c978a4a)
+                     "green1.716",  0x2145f8ab,
+                     "green2.716",  0x1c978a4a)
 S67S_SOUNDROMS8("sound1.716",0xf4190ca3)
 S6_ROMEND
 CORE_GAMEDEF(flash,l1,"Flash (L-1)",1979,"Williams",s4_mS4S,0)

@@ -42,8 +42,8 @@
 /-------------------*/
 static int  ss_handleBallState(sim_tBallStatus *ball, int *inports);
 static void ss_handleMech(int mech);
-static void ss_drawMech(unsigned char **line);
-static void ss_drawStatic(unsigned char **line);
+static void ss_drawMech(BMTYPE **line);
+static void ss_drawStatic(BMTYPE **line);
 static int ss_getMech(int mechNo);
 static void init_ss(void);
 
@@ -192,7 +192,7 @@ enum {stTrough4=SIM_FIRSTSTATE, stTrough3, stTrough2, stTrough1, stTrough, stDra
 	  stRRampEnter, stRRampDone,
 
 	  stLLoopEnter, stLLoopMiddle, stLLoopExit,
-	  stRLoopEnter, 
+	  stRLoopEnter,
 
 	  stHitCrate, stInsideCrate, stSkillHole,
 
@@ -352,7 +352,7 @@ static sim_tInportData ss_inportData[] = {
   {0}
 };
 	/* Help */
-static void ss_drawStatic(unsigned char **line) {
+static void ss_drawStatic(BMTYPE **line) {
 	core_textOutf(30, 70,BLACK,"Help on this Simulator:");
 	core_textOutf(30, 80,BLACK,"L/R Shift+-/- = L/R/Upper Slingshot");
 	core_textOutf(30, 90,BLACK,"L/R Shift+R = L/R Ramp");
@@ -416,8 +416,8 @@ static core_tGameData ssGameData = {
 };
 
 static mech_tInitData ss_wheelMech = {
-  39,40, MECH_LINEAR|MECH_CIRCLE|MECH_TWOSTEPSOL, 64, 64,
-  {{swWheelIndex, 0, 3}}
+  39,40, MECH_LINEAR|MECH_CIRCLE|MECH_TWOSTEPSOL|MECH_FAST, 256, 64,
+  {{swWheelIndex, 0,31}}
 };
 /*---------------
 /  Game handling
@@ -432,7 +432,7 @@ static void ss_handleMech(int mech) {
 #if 1
   DBGLOG(("pulsedSol=%8x sol39=%08x sol40=%08x\n",coreGlobals.pulsedSolState,core_getPulsedSol(39),core_getPulsedSol(40)));
 
-  if (mech & 0x01) mech_update(0);
+//  if (mech & 0x01) mech_update(0);
 #else
   if (mech & 0x01) {
     /* we need the pulsed solenoid state to turn the wheel */
@@ -456,7 +456,6 @@ static int ss_getMech(int mechNo) {
   return locals.spiderWheelPos;
 #endif
 }
-
 static char* spiderWheelText[] =
   {"Top Eyeball    ", "Right Skull    ", "Jackpot        ", "Double Trouble ",
    "Right Eyeball  ", "Beat The Crate ", "Coffin Lock    ", "Right T. Power ",
@@ -465,12 +464,12 @@ static char* spiderWheelText[] =
 /*--------------------
   Drawing information
   --------------------*/
-static void ss_drawMech(unsigned char **line) {
+static void ss_drawMech(BMTYPE **line) {
 //        core_textOutf(30,10,BLACK,"Wheel Pos   : %2d",  locals.spiderWheelPos);
         core_textOutf(30,10,BLACK,"Wheel Pos   : %2d",  mech_getPos(0));
         core_textOutf(30,20,BLACK,"Coffin Door : %-6s", core_getSol(sCoffinDoor)?"Open":"Closed");
         core_textOutf(30,30,BLACK,"Loop Gate   : %-6s", core_getSol(sLoopGate) ? "Open":"Closed");
         core_textOutf(30,40,BLACK,"Coin Door   : %-6s", core_getSw(swCoinDoor) ? "Closed":"Open");
-        core_textOutf(30,50,BLACK,"Spider Wheel: %s", spiderWheelText[(locals.spiderWheelPos/4)]);
+        core_textOutf(30,50,BLACK,"Spider Wheel: %s", spiderWheelText[(mech_getPos(0)/4)]);
 }
 

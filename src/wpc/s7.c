@@ -18,8 +18,6 @@ static struct {
   int    vblankCount;
   int    initDone;
   UINT32 solenoids;
-  UINT8  swMatrix[CORE_MAXSWCOL];
-  UINT8  lampMatrix[CORE_MAXLAMPCOL];
   core_tSeg segments, pseg;
   int    lampRow, lampColumn;
   int    digSel;
@@ -47,8 +45,8 @@ static int s7_vblank(void) {
   s7locals.vblankCount += 1;
   /*-- lamps --*/
   if ((s7locals.vblankCount % S7_LAMPSMOOTH) == 0) {
-    memcpy(coreGlobals.lampMatrix, s7locals.lampMatrix, sizeof(s7locals.lampMatrix));
-    memset(s7locals.lampMatrix, 0, sizeof(s7locals.lampMatrix));
+    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+    memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
   /*-- solenoids --*/
   if ((s7locals.vblankCount % S7_SOLSMOOTH) == 0) {
@@ -78,10 +76,10 @@ static int s7_vblank(void) {
 /  Lamp handling
 /----------------*/
 static WRITE_HANDLER(pia2a_w) {
-  core_setLamp(s7locals.lampMatrix, s7locals.lampColumn, s7locals.lampRow = ~data);
+  core_setLamp(coreGlobals.tmpLampMatrix, s7locals.lampColumn, s7locals.lampRow = ~data);
 }
 static WRITE_HANDLER(pia2b_w) {
-  core_setLamp(s7locals.lampMatrix, s7locals.lampColumn = data, s7locals.lampRow);
+  core_setLamp(coreGlobals.tmpLampMatrix, s7locals.lampColumn = data, s7locals.lampRow);
 }
 
 /*-----------------
@@ -329,11 +327,8 @@ struct MachineDriver machine_driver_s7 = {
 /*-----------------------------------------------
 / Load/Save static ram
 /-------------------------------------------------*/
-void s7_nvram(void *file, int write) {
-  UINT8 *mem = s7_CMOS;
-  if (write)     osd_fwrite(file, mem, 0x0100); /* save */
-  else if (file) osd_fread( file, mem, 0x0100); /* load */
-  else           memset(mem, 0xff, 0x0100);     /* first time */
+static void s7_nvram(void *file, int write) {
+  core_nvram(file, write, s7_CMOS, 0x0100);
 }
 
 

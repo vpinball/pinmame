@@ -14,11 +14,6 @@
   #include "vpintf.h"
 #endif /* VPINMAME */
 
-#define	SEG16		0
-#define SEG7C		1
-#define SEG7NC		2
-#define SEG7NC_SMALL	3
-
 /* stuff to test VPINMAME */
 #if 0
 #define VPINMAME
@@ -41,14 +36,19 @@ int vp_getDip(int bank) return 0;
   #define OnStateChange(nChange)
   #define vp_getSolMask64() ((UINT64)(-1))
   #define vp_updateMech()
+  #define vp_dipnv(x,y)
 #endif /* VPINMAME */
 
+/* PinMAME specific options */
+tPMoptions pmoptions;
+
 #define drawChar(bm,r,c,b,t) drawChar1(bm,r,c,*((UINT32 *)&b),t)
-static void drawChar1(struct osd_bitmap *bitmap, int row, int col, UINT32 bits, int type);
+static void drawChar1(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, int type);
 static UINT32 core_initDisplaySize(core_ptLCDLayout layout);
 
 core_tGlobals coreGlobals;
 core_tGlobals_dmd coreGlobals_dmd;
+core_tGameData *core_gameData = NULL;  /* data about the running game */
 int core_bcd2seg[16] = {
 /* 0    1    2    3    4    5    6    7    8    9  */
   0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7c,0x07,0x7f,0x67
@@ -58,6 +58,9 @@ int core_bcd2seg[16] = {
 #endif /* MAME_DEBUG */
 };
 static core_tData coreData;
+/* makes it easier to swap bits */
+                         // 0  1  2  3  4  5  6  7  8  9 10,11,12,13,14,15
+const UINT8 core_swapNyb[16] = { 0, 8, 4,12, 2,10, 6,14, 1, 9, 5,13, 3,11, 7,15};
 
 typedef UINT32 tSegRow[17];
 typedef struct { int rows, cols; tSegRow *segs; } tSegData;
@@ -97,28 +100,33 @@ void core_initpalette(unsigned char *game_palette, unsigned short *game_colortab
   int bStart = 0x20;
   int perc66 = 67;
   int perc33 = 33;
+  int perc0  = 20;
   int ii;
 #ifdef PINMAME_EXT
-  if ((options.dmd_red > 0) || (options.dmd_green > 0) || (options.dmd_blue > 0)) {
-    rStart = options.dmd_red;
-    gStart = options.dmd_green;
-    bStart = options.dmd_blue;
+  if ((pmoptions.dmd_red > 0) || (pmoptions.dmd_green > 0) || (pmoptions.dmd_blue > 0)) {
+    rStart = pmoptions.dmd_red;
+    gStart = pmoptions.dmd_green;
+    bStart = pmoptions.dmd_blue;
   }
-  if ((options.dmd_perc2 > 0) || (options.dmd_perc3 > 0)) {
-    perc66 = options.dmd_perc2;
-    perc33 = options.dmd_perc3;
+  if ((pmoptions.dmd_perc1 > 0) || (pmoptions.dmd_perc2 > 0) || (pmoptions.dmd_perc3 > 0)) {
+    perc66 = pmoptions.dmd_perc2;
+    perc33 = pmoptions.dmd_perc3;
+    perc0  = pmoptions.dmd_perc1;
   }
 #endif /* PINMAME_EXT */
   /*-- Autogenerate DMD Color Shades--*/
-  core_palette[DMD_DOT33][0] = rStart * perc33 / 100;
-  core_palette[DMD_DOT33][1] = gStart * perc33 / 100;
-  core_palette[DMD_DOT33][2] = bStart * perc33 / 100;
-  core_palette[DMD_DOT66][0] = rStart * perc66 / 100;
-  core_palette[DMD_DOT66][1] = gStart * perc66 / 100;
-  core_palette[DMD_DOT66][2] = bStart * perc66 / 100;
-  core_palette[DMD_DOTON][0] = rStart;
-  core_palette[DMD_DOTON][1] = gStart;
-  core_palette[DMD_DOTON][2] = bStart;
+  core_palette[DMD_DOTOFF][0] = rStart * perc0 / 100;
+  core_palette[DMD_DOTOFF][1] = gStart * perc0 / 100;
+  core_palette[DMD_DOTOFF][2] = bStart * perc0 / 100;
+  core_palette[DMD_DOT33][0]  = rStart * perc33 / 100;
+  core_palette[DMD_DOT33][1]  = gStart * perc33 / 100;
+  core_palette[DMD_DOT33][2]  = bStart * perc33 / 100;
+  core_palette[DMD_DOT66][0]  = rStart * perc66 / 100;
+  core_palette[DMD_DOT66][1]  = gStart * perc66 / 100;
+  core_palette[DMD_DOT66][2]  = bStart * perc66 / 100;
+  core_palette[DMD_DOTON][0]  = rStart;
+  core_palette[DMD_DOTON][1]  = gStart;
+  core_palette[DMD_DOTON][2]  = bStart;
 
   /*-- Autogenerate Dark Playfield Lamp Colors --*/
   for (ii = 0; ii < LAMP_COLORS; ii++) {
@@ -156,16 +164,16 @@ void core_initpalette(unsigned char *game_palette, unsigned short *game_colortab
 /*-----------------------------------
 /  Generic DMD display handler
 /------------------------------------*/
-void dmd_draw(UINT8 **lines, tDMDDot dotCol, core_ptLCDLayout layout) {
+void dmd_draw(struct mame_bitmap *bitmap, tDMDDot dotCol, core_ptLCDLayout layout) {
   UINT32 *dmdColor = &CORE_COLOR(DMD_DOTOFF);
   UINT32 *aaColor  = &CORE_COLOR(START_ANTIALIAS);
+  BMTYPE **lines = ((BMTYPE **)bitmap->line) + layout->top;
   int ii, jj;
 
-  memset(&dotCol[layout->start+1][0],0,sizeof(UINT8)*layout->length);
-  memset(&dotCol[0][0], 0,sizeof(UINT8)*layout->length);
-  lines += layout->top;
+  memset(&dotCol[layout->start+1][0], 0, sizeof(UINT8)*layout->length);
+  memset(&dotCol[0][0], 0, sizeof(UINT8)*layout->length);
   for (ii = 0; ii < layout->start+1; ii++) {
-    UINT8 *line = (*lines++) + layout->left;
+    BMTYPE *line = (*lines++) + layout->left;
     if (ii > 0) {
       for (jj = 0; jj < layout->length; jj++) {
         *line++ = dmdColor[dotCol[ii][jj]];
@@ -190,7 +198,7 @@ void dmd_draw(UINT8 **lines, tDMDDot dotCol, core_ptLCDLayout layout) {
 /*-----------------------------------
 /  Generic segement display handler
 /------------------------------------*/
-void gen_refresh(struct osd_bitmap *bitmap, int fullRefresh) {
+void gen_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
   core_ptLCDLayout layout = core_gameData->lcdLayout;
   if (layout == NULL) { DBGLOG(("gen_refresh without LCD layout\n")); return; }
 
@@ -305,11 +313,6 @@ void core_updateSw(int flipEn) {
   if (g_fHandleMechanics) {
     if (core_gameData->hw.handleMech) core_gameData->hw.handleMech(g_fHandleMechanics);
   }
-#ifdef VPINMAME
-  else
-    for (ii = MECH_MAXMECH/2; ii < MECH_MAXMECH; ii++)
-      mech_update(ii);
-#endif /* VPINMAME */
   /*-- Run simulator --*/
   if (coreGlobals.simAvail)
     sim_run(inports, CORE_COREINPORT+(coreData.coreDips+31)/16,
@@ -408,8 +411,8 @@ void CLIB_DECL core_textOutf(int x, int y, int color, char *text, ...) {
 / Draw status display
 / Lamps, Switches, Solenoids, Diagnostic LEDs
 /---------------------------------------------*/
-void drawStatus(struct osd_bitmap *bitmap, int fullRefresh) {
-  UINT8 **lines = bitmap->line;
+void drawStatus(struct mame_bitmap *bitmap, int fullRefresh) {
+  BMTYPE **lines = (BMTYPE **)bitmap->line;
   int firstRow = locals.firstSimRow;
   int ii, jj, bits;
 
@@ -427,7 +430,7 @@ void drawStatus(struct osd_bitmap *bitmap, int fullRefresh) {
     int starty = drawData->startpos.y;
     int sizex = drawData->size.x;
     int sizey = drawData->size.y;
-    UINT8 **line = &lines[locals.firstSimRow+startx];
+    BMTYPE **line = &lines[locals.firstSimRow+startx];
     int num = 0;
     int qq;
     /*For each lamp in the matrix*/
@@ -455,7 +458,7 @@ void drawStatus(struct osd_bitmap *bitmap, int fullRefresh) {
   /*-- Normal square lamp matrix layout --*/
   else {
     for (ii = 0; ii < CORE_CUSTLAMPCOL + core_gameData->hw.lampCol; ii++) {
-      UINT8 **line = &lines[firstRow];
+      BMTYPE **line = &lines[firstRow];
       bits = coreGlobals.lampMatrix[ii];
 
       for (jj = 0; jj < 8; jj++) {
@@ -472,7 +475,7 @@ void drawStatus(struct osd_bitmap *bitmap, int fullRefresh) {
   /  Draw the switches
   /--------------------*/
   for (ii = 0; ii < CORE_CUSTSWCOL+core_gameData->hw.swCol; ii++) {
-    UINT8 **line = &lines[firstRow];
+    BMTYPE **line = &lines[firstRow];
     bits = coreGlobals.swMatrix[ii];
 
     for (jj = 0; jj < 8; jj++) {
@@ -489,7 +492,7 @@ void drawStatus(struct osd_bitmap *bitmap, int fullRefresh) {
   /-------------------------------*/
   firstRow += 5;
   {
-    UINT8 **line = &lines[firstRow];
+    BMTYPE **line = &lines[firstRow];
     UINT64 allSol = core_getAllSol();
     for (ii = 0; ii < CORE_FIRSTCUSTSOL+core_gameData->hw.custSol; ii++) {
       line[(ii/8)*2][(ii%8)*2] = CORE_COLOR((allSol & 0x01) ? DMD_DOTON : DMD_DOTOFF);
@@ -504,7 +507,7 @@ void drawStatus(struct osd_bitmap *bitmap, int fullRefresh) {
   /*------------------------------*/
   firstRow += 20;
   {
-    UINT8 **line = &lines[firstRow];
+    BMTYPE **line = &lines[firstRow];
     if (coreData.diagLEDs == CORE_DIAG7SEG)
       drawChar1(bitmap, firstRow, 5, coreGlobals.diagnosticLed,2);
     else {
@@ -536,7 +539,7 @@ void drawStatus(struct osd_bitmap *bitmap, int fullRefresh) {
   }
   if (coreGlobals.simAvail) sim_draw(fullRefresh, locals.firstSimRow);
   /*-- draw game specific mechanics --*/
-  if (core_gameData->hw.drawMech) core_gameData->hw.drawMech(&bitmap->line[locals.firstSimRow]);
+  if (core_gameData->hw.drawMech) core_gameData->hw.drawMech((void *)&bitmap->line[locals.firstSimRow]);
 }
 
 /*-------------------
@@ -739,6 +742,8 @@ int core_getSol(int solNo) {
   else if (solNo <= CORE_LASTEXTSOL) {
     if (core_gameData->gen & GEN_WPC95)
       return coreGlobals.solenoids & (1<<((solNo - 13)|4));
+    if (core_gameData->gen & GEN_ALLS11)
+      return coreGlobals.solenoids2 & (1<<((solNo - CORE_FIRSTEXTSOL)+8));
   }
   else if (solNo <= CORE_LASTLFLIPSOL) {
     int mask = 1<<(solNo - CORE_FIRSTLFLIPSOL);
@@ -778,6 +783,7 @@ UINT64 core_getAllSol(void) {
     UINT64 tmp = coreGlobals.solenoids & 0xf0000000;
     sol |= (tmp<<12)|(tmp<<8);
   }
+  if (core_gameData->gen & GEN_ALLS11) sol |= ((UINT64)(coreGlobals.solenoids2 & 0xff00))<<28;
   { /*-- flipper solenoids --*/
     UINT8 lFlip = (coreGlobals.solenoids2 & (CORE_LRFLIPSOLBITS|CORE_LLFLIPSOLBITS));
     UINT8 uFlip = (coreGlobals.solenoids2 & (CORE_URFLIPSOLBITS|CORE_ULFLIPSOLBITS));
@@ -815,7 +821,7 @@ int core_getDip(int dipBank) {
 #endif /* VPINMAME */
 }
 
-static void drawChar1(struct osd_bitmap *bitmap, int row, int col, UINT32 bits, int type) {
+static void drawChar1(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, int type) {
   tSegData *s = &locals.segData[type];
   UINT32 pixel[20], pen[4];
   int kk,ll;
@@ -829,7 +835,7 @@ static void drawChar1(struct osd_bitmap *bitmap, int row, int col, UINT32 bits, 
         pixel[ll] += s->segs[ll][kk];
   }
   for (kk = 0; kk < s->rows; kk++) {
-    UINT8 *line = &bitmap->line[row+kk][col];
+    BMTYPE *line = &((BMTYPE **)(bitmap->line))[row+kk][col];
     UINT32 p = pixel[kk];
 
     for (ll = 0; ll < s->cols; ll++) {
@@ -889,6 +895,7 @@ int core_init(core_tData *cd) {
 
 void core_exit(void) {
   snd_cmd_exit();
+//  mech_exit();
 }
 static UINT32 core_initDisplaySize(core_ptLCDLayout layout) {
   int maxX = 0, maxY = 0;
@@ -924,4 +931,7 @@ void core_nvram(void *file, int write, void *mem, int length) {
   else if (file) osd_fread(file,  mem, length); /* load */
   else           memset(mem, 0xff, length);     /* first time */
   mech_nv(file, write); /* save mech positions */
+  vp_dipnv(file,write);
 }
+
+

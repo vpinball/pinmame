@@ -15,7 +15,7 @@
  F3 to fix it to position 1.
  This is not due to a simulator bug, it's just that I can't retrieve the
  NVRAM's face position flag out from the simulator.
- 
+
  The MiniPF exit is chosen by the Ball's speed, i.e. if you get an Skillshot
  of 50/75K, you'll exit by the Right (straight to the Shooter), if you get an
  Skillshot of 100K/200K, you'll land on LeftExit (to the Right Flipper) and for
@@ -60,8 +60,8 @@ static int  bop_handleBallState(sim_tBallStatus *ball, int *inports);
 static void bop_handleMech(int mech);
 static int bop_getMech(int mechNo);
 static void bop_initSim(sim_tBallStatus *balls, int *inports, int noOfBalls);
-static void bop_drawMech(unsigned char **line);
-static void bop_drawStatic(unsigned char **line);
+static void bop_drawMech(BMTYPE **line);
+static void bop_drawStatic(BMTYPE **line);
 static void init_bop(void);
 
 /*-----------------------
@@ -286,7 +286,7 @@ static int bop_handleBallState(sim_tBallStatus *ball, int *inports) {
 	{
 
 	/* Ball in Shooter Lane */
-    	case stBallLane:  
+    	case stBallLane:
 		if (ball->speed < 10)
 			return setState(stNotEnough,10);	/*Ball not plunged hard enough*/
 		if (ball->speed < 15)
@@ -330,7 +330,7 @@ static int bop_handleBallState(sim_tBallStatus *ball, int *inports) {
 		/*-----------------
 		    MiniPF Exit
 		-------------------*/
-    	case stMiniPFExit:  
+    	case stMiniPFExit:
 		if (ball->speed < 25)
 			return setState(stMiniPFRight,150);	/* Out MiniPF From Right */
 		if (ball->speed < 35)
@@ -404,12 +404,12 @@ static core_tLampDisplay bop_lampPos = {
 };
 
   /* On-Screen stuff */
-static void bop_drawMech(unsigned char **line) {
+static void bop_drawMech(BMTYPE **line) {
   core_textOutf(30, 10,BLACK,"Pinbot Gate  : %-6s", core_getSol(sControlledGate) ? "Open":"Closed");
   core_textOutf(30, 20,BLACK,"Face Position: %-3d", locals.headPos);
 }
 /* Help */
-static void bop_drawStatic(unsigned char **line) {
+static void bop_drawStatic(BMTYPE **line) {
   core_textOutf(30, 50,BLACK,"Help on this Simulator:");
   core_textOutf(30, 60,BLACK,"L/R Shift+-   = L/R Slingshot");
   core_textOutf(30, 70,BLACK,"L/R Shift+R   = Left Ramp (Fail/OK)");
@@ -426,8 +426,8 @@ static void bop_drawStatic(unsigned char **line) {
 /* Solenoid-to-sample handling */
 static wpc_tSamSolMap bop_samsolmap[] = {
  /*Channel #0*/
- {sKnocker,0,SAM_KNOCKER}, {sTrough,0,SAM_BALLREL}, 
- {sOutHole,0,SAM_OUTHOLE}, 
+ {sKnocker,0,SAM_KNOCKER}, {sTrough,0,SAM_BALLREL},
+ {sOutHole,0,SAM_OUTHOLE},
 
  /*Channel #1*/
  {sLeftJet,1,SAM_JET1}, {sRightJet,1,SAM_JET2},
@@ -437,7 +437,7 @@ static wpc_tSamSolMap bop_samsolmap[] = {
  {sWireBallHolder,2,SAM_SOLENOID_ON}, {sWireBallHolder,2,SAM_SOLENOID_OFF,WPCSAM_F_ONOFF},
  {sLeftSling,2,SAM_LSLING}, {sRightSling,2,SAM_RSLING},
  {sBumperSling,2,SAM_LSLING},
- 
+
  /*Channel #3*/
  {sSkillShot,3,SAM_SOLENOID}, {sUPKicker,3,SAM_POPPER},
  {sControlledGate,3,SAM_SOLENOID_ON}, {sControlledGate,3,SAM_SOLENOID_OFF,WPCSAM_F_ONOFF},
@@ -447,7 +447,7 @@ static wpc_tSamSolMap bop_samsolmap[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(bop,l7,"tmbopl_7.rom",0x40000,0x773e1488) 
+WPC_ROMSTART(bop,l7,"tmbopl_7.rom",0x40000,0x773e1488)
 WPCS_SOUNDROM222("mach_u18.l1",0xf3f53896,
                  "mach_u15.l1", 0xfb49513b,
                  "mach_u14.l1", 0xbe2a736a)

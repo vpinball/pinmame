@@ -23,11 +23,15 @@
 #endif
 
 #if defined(MAMEVER) && MAMEVER >= 3709
-  #define NORMALREGION(size, reg) ROM_REGION(size, reg, 0)
-  #define SOUNDREGION(size ,reg)  ROM_REGION(size, reg, ROMREGION_SOUNDONLY)
+  #define NORMALREGION(size, reg)  ROM_REGION(size, reg, 0)
+  #define NORMALREGIONE(size, reg) ROM_REGION(size, reg, ROMREGION_ERASE)
+  #define SOUNDREGION(size ,reg)   ROM_REGION(size, reg, ROMREGION_SOUNDONLY)
+  #define SOUNDREGIONE(size ,reg)  ROM_REGION(size, reg, ROMREGION_SOUNDONLY|ROMREGION_ERASE)
 #else /* MAMEVER */
-  #define NORMALREGION(size, reg) ROM_REGION(size, reg)
-  #define SOUNDREGION(size ,reg)  ROM_REGION(size, reg | REGIONFLAG_SOUNDONLY)
+  #define NORMALREGION(size, reg)  ROM_REGION(size, reg)
+  #define NORMALREGIONE(size, reg) ROM_REGION(size, reg)
+  #define SOUNDREGION(size ,reg)   ROM_REGION(size, reg | REGIONFLAG_SOUNDONLY)
+  #define SOUNDREGIONE(size ,reg)  ROM_REGION(size, reg | REGIONFLAG_SOUNDONLY)
   #define memory_set_opbase_handler(a,b) cpu_setOPbaseoverride(a,b)
 #endif /* MAMEVER */
 
@@ -222,9 +226,9 @@ typedef struct {
 } core_tLCDLayout, *core_ptLCDLayout;
 
 typedef UINT8 tDMDDot[DMD_MAXY+2][DMD_MAXX+2];
-void dmd_draw(UINT8 **lines, tDMDDot dotCol, core_ptLCDLayout layout);
+void dmd_draw(struct mame_bitmap *bitmap, tDMDDot dotCol, core_ptLCDLayout layout);
 /* Generic display handler. requires LCD layout in GameData structure */
-extern void gen_refresh(struct osd_bitmap *bitmap, int fullRefresh);
+extern void gen_refresh(struct mame_bitmap *bitmap, int fullRefresh);
 
 /*----------------------
 / WPC driver constants
@@ -243,7 +247,8 @@ extern void gen_refresh(struct osd_bitmap *bitmap, int fullRefresh);
 /*  9-16 Standard          */
 /* 17-22 Special           */
 /* 23    Flipper & SS Enabled Sol (fake) */
-/* 24-31 Standard 'C'-side */
+/* 25-32 Standard 'C'-side */
+/* 37-41 Sound overlay board */
 /*       S7 */
 /*  1-16 Standard */
 /* 17-24 Special */
@@ -327,6 +332,7 @@ extern void gen_refresh(struct osd_bitmap *bitmap, int fullRefresh);
 #define swULFlipEOS swF7
 #define swULFlip    swF8
 
+#define SEQ_SWNO(x) ((((x)+7)/8)*10+(((x)-1)%8)+1)
 
 #define CORE_FIRSTSIMROW   80 /* first free row on display */
 #define CORE_COLOR(x)      Machine->pens[(x)]
@@ -359,11 +365,11 @@ extern void gen_refresh(struct osd_bitmap *bitmap, int fullRefresh);
 /  in this way instead of a matrix
 /--------------------------------------------*/
 typedef struct {
-  unsigned char x,y, color;
+  UINT8 x,y, color;
 } core_tDrawData;
 
 typedef struct {
-  unsigned char totnum;	 	 /*Total # of lamp positions defined - Up to 4 Max*/
+  UINT8 totnum;	 	 /*Total # of lamp positions defined - Up to 4 Max*/
   core_tDrawData lamppos[4];      /*Can support up to 4 lamp positions for each lamp matrix entry!*/
 } core_tLampData;		 /*This means, one lamp matrix entry can share up to 4 bulbs on the playfield*/
 
@@ -390,7 +396,7 @@ typedef struct { UINT8 dmy2, dmy1, hi, lo; } core_tSeg[3][16];
 typedef struct {
   UINT8  swMatrix[CORE_MAXSWCOL];
   UINT8  invSw[CORE_MAXSWCOL];   /* Active low switches */
-  UINT8  lampMatrix[CORE_MAXLAMPCOL];
+  UINT8  lampMatrix[CORE_MAXLAMPCOL], tmpLampMatrix[CORE_MAXLAMPCOL];
   core_tSeg segments;
   UINT32 solenoids;       /* on power driver bord */
   UINT32 solenoids2;      /* flipper solenoids */
@@ -403,6 +409,8 @@ typedef struct {
   int    diagnosticLed;	  /* data relating to diagnostic led(s)*/
 } core_tGlobals;
 extern core_tGlobals coreGlobals;
+/* shortcut for coreGlobals */
+#define cg coreGlobals
 
 /*Exported variables*/
 
@@ -421,7 +429,7 @@ typedef struct {
     int  (*getSol)(int solNo);        /* get state of custom solenoid */
     void (*handleMech)(int mech);     /* update switches depending on playfield mechanics */
     int  (*getMech)(int mechNo);      /* get status of mechanics */
-    void (*drawMech)(unsigned char **line); /* draw game specific hardware */
+    void (*drawMech)(BMTYPE **line); /* draw game specific hardware */
     core_tLampDisplay *lampData;      /* lamp layout */
     wpc_tSamSolMap   *solsammap;      /* solenoids samples */
   } hw;
@@ -445,7 +453,7 @@ extern int core_bcd2seg[]; /* BCD to 7 segment display */
 /*-- Exported Display handling functions--*/
 void core_initpalette(unsigned char *game_palette, unsigned short *game_colortable,
                      const unsigned char *color_prom);
-void drawStatus(struct osd_bitmap *bitmap, int fullRefresh);
+void drawStatus(struct mame_bitmap *bitmap, int fullRefresh);
 void core_updateSw(int flipEn);
 
 /*-- text output functions --*/
@@ -477,6 +485,10 @@ extern UINT64 core_getAllSol(void);
 /*-- nvram handling --*/
 extern void core_nvram(void *file, int write, void *mem, int length);
 
+/* makes it easier to swap bits */
+extern const UINT8 core_swapNyb[16];
+#define CORE_SWAPBYTE(x) ((core_swapNyb[(x)&0xf]<<4)|(core_swapNyb[(x)>>4]))
+#define CORE_SWAPNYB(x)  core_swapNyb[(x)]
 /*-- core DIP handling --*/
 /*---------------------------------------
 /  Get the status of a DIP bank (8 dips)

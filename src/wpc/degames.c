@@ -438,15 +438,164 @@ CORE_GAMEDEFNV(baywatch,"Baywatch",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
 
 
 /*-------------------------------------------------------------
-/ Batman Forever - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
+/ Batman Forever 4.0 - CPU Rev 3b / DMD Type 3 2x512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
 INITGAME2(batmanf,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
-DE64_ROMSTART(batmanf,	"batcpua.302",0x5ae7ce69)
-DE_DMD1024_ROMSTART(	"bmfrom0a.300",0x764bb217,
-						"bmfrom3a.300",0xb4e3b515)
+DE64_ROMSTART(batmanf, "batnova.401", 0x4e62df4e)
+DE_DMD1024_ROMSTART(   "bfdrom0a.401",0x8a3c20ad,
+                       "bfdrom3a.401",0x5ef46847)
 DE_ROMEND
-CORE_GAMEDEFNV(batmanf,"Batman Forever",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
+CORE_GAMEDEFNV(batmanf,"Batman Forever (4.0)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
 
+/*-------------------------------------------------------------
+/ Batman Forever 3.0 - CPU Rev 3b / DMD Type 3 2x512K Rom - 64K CPU Rom
+/------------------------------------------------------------*/
+INITGAME2(batmanf3,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
+DE64_ROMSTART(batmanf3, "batcpua.302", 0x5ae7ce69)
+DE_DMD1024_ROMSTART(    "bmfrom0a.300",0x764bb217,
+                        "bmfrom3a.300",0xb4e3b515)
+DE_ROMEND
+CORE_CLONEDEFNV(batmanf3,batmanf,"Batman Forever (3.0)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
+
+/*-------------------------------------------------------------
+/ Batman Forever (UK) - CPU Rev 3b / DMD Type 3 2x512K Rom - 64K CPU Rom
+/------------------------------------------------------------*/
+INITGAME2(bmf_uk,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
+DE64_ROMSTART(bmf_uk, "batnove.401",0x80f6e4af)
+DE_DMD1024_ROMSTART(  "bfdrom0a.401",0x8a3c20ad,
+                      "bfdrom3a.401",0x5ef46847)
+DE_ROMEND
+CORE_CLONEDEFNV(bmf_uk,batmanf,"Batman Forever (English)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
+
+/*-------------------------------------------------------------
+/ Batman Forever (CN) - CPU Rev 3b / DMD Type 3 2x512K Rom - 64K CPU Rom
+/------------------------------------------------------------*/
+INITGAME2(bmf_cn,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
+DE64_ROMSTART(bmf_cn, "batnovc.401",0x99936537)
+DE_DMD1024_ROMSTART(  "bfdrom0a.401",0x8a3c20ad,
+                      "bfdrom3a.401",0x5ef46847)
+DE_ROMEND
+CORE_CLONEDEFNV(bmf_cn,batmanf,"Batman Forever (Canadian)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
+
+/*-------------------------------------------------------------
+/ Batman Forever (NO) - CPU Rev 3b / DMD Type 3 2x512K Rom - 64K CPU Rom
+/------------------------------------------------------------*/
+INITGAME2(bmf_no,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
+DE64_ROMSTART(bmf_no, "batnovn.401",0x79dd48b4)
+DE_DMD1024_ROMSTART(  "bfdrom0a.401",0x8a3c20ad,
+                      "bfdrom3a.401",0x5ef46847)
+DE_ROMEND
+CORE_CLONEDEFNV(bmf_no,batmanf,"Batman Forever (Norwegian)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
+
+/*-------------------------------------------------------------
+/ Batman Forever (SV) - CPU Rev 3b / DMD Type 3 2x512K Rom - 64K CPU Rom
+/------------------------------------------------------------*/
+INITGAME2(bmf_sv,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
+DE64_ROMSTART(bmf_sv, "batnovt.401",0x854029ab)
+DE_DMD1024_ROMSTART(  "bfdrom0a.401",0x8a3c20ad,
+                      "bfdrom3a.401",0x5ef46847)
+DE_ROMEND
+CORE_CLONEDEFNV(bmf_sv,batmanf,"Batman Forever (Swedish)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
+
+/*-------------------------------------------------------------
+/ Batman Forever (AT) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
+/------------------------------------------------------------*/
+INITGAME2(bmf_at,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
+DE64_ROMSTART(bmf_at, "batnovh.401",0xacba13d7)
+DE_DMD1024_ROMSTART(  "bfdrom0g.401",0x3a2d7d53,
+                      "bfdrom3g.401",0x94e424f1)
+DE_ROMEND
+CORE_CLONEDEFNV(bmf_at,batmanf,"Batman Forever (Austrian)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
+
+/*-------------------------------------------------------------
+/ Batman Forever (CH) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
+/------------------------------------------------------------*/
+INITGAME2(bmf_ch,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
+DE64_ROMSTART(bmf_ch, "batnovs.401",0x4999d5f9)
+DE_DMD1024_ROMSTART(  "bfdrom0g.401",0x3a2d7d53,
+                      "bfdrom3g.401",0x94e424f1)
+DE_ROMEND
+CORE_CLONEDEFNV(bmf_ch,batmanf,"Batman Forever (Swiss)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
+
+/*-------------------------------------------------------------
+/ Batman Forever (DE) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
+/------------------------------------------------------------*/
+INITGAME2(bmf_de,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
+DE64_ROMSTART(bmf_de, "batnovg.401",0xdd37e99a)
+DE_DMD1024_ROMSTART(  "bfdrom0g.401",0x3a2d7d53,
+                      "bfdrom3g.401",0x94e424f1)
+DE_ROMEND
+CORE_CLONEDEFNV(bmf_de,batmanf,"Batman Forever (German)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
+
+/*-------------------------------------------------------------
+/ Batman Forever (BE) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
+/------------------------------------------------------------*/
+INITGAME2(bmf_be,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
+DE64_ROMSTART(bmf_be, "batnovb.401",0x21309873)
+DE_DMD1024_ROMSTART(  "bfdrom0f.401",0xe7473f6f,
+                      "bfdrom3f.401",0xf7951709)
+DE_ROMEND
+CORE_CLONEDEFNV(bmf_be,batmanf,"Batman Forever (Belgian)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
+
+/*-------------------------------------------------------------
+/ Batman Forever (FR) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
+/------------------------------------------------------------*/
+INITGAME2(bmf_fr,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
+DE64_ROMSTART(bmf_fr, "batnovf.401",0x4baa793d)
+DE_DMD1024_ROMSTART(  "bfdrom0f.401",0xe7473f6f,
+                      "bfdrom3f.401",0xf7951709)
+DE_ROMEND
+CORE_CLONEDEFNV(bmf_fr,batmanf,"Batman Forever (French)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
+
+/*-------------------------------------------------------------
+/ Batman Forever (NL) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
+/------------------------------------------------------------*/
+INITGAME2(bmf_nl,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
+DE64_ROMSTART(bmf_nl, "batnovd.401",0x6ae4570c)
+DE_DMD1024_ROMSTART(  "bfdrom0f.401",0xe7473f6f,
+                      "bfdrom3f.401",0xf7951709)
+DE_ROMEND
+CORE_CLONEDEFNV(bmf_nl,batmanf,"Batman Forever (Dutch)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
+
+/*-------------------------------------------------------------
+/ Batman Forever (IT) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
+/------------------------------------------------------------*/
+INITGAME2(bmf_it,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
+DE64_ROMSTART(bmf_it, "batnovi.401",0x7053ef9e)
+DE_DMD1024_ROMSTART(  "bfdrom0i.401",0x23051253,
+                      "bfdrom3i.401",0x82b61a41)
+DE_ROMEND
+CORE_CLONEDEFNV(bmf_it,batmanf,"Batman Forever (Italian)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
+
+/*-------------------------------------------------------------
+/ Batman Forever (SP) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
+/------------------------------------------------------------*/
+INITGAME2(bmf_sp,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
+DE64_ROMSTART(bmf_sp, "batnova.401",0x4e62df4e)
+DE_DMD1024_ROMSTART(  "bfdrom0l.401",0xb22b10d9,
+                      "bfdrom3l.401",0x016b8666)
+DE_ROMEND
+CORE_CLONEDEFNV(bmf_sp,batmanf,"Batman Forever (Spanish)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
+
+/*-------------------------------------------------------------
+/ Batman Forever (JP) - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
+/------------------------------------------------------------*/
+INITGAME2(bmf_jp,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
+DE64_ROMSTART(bmf_jp, "batnovj.401",0xeef9bef0)
+DE_DMD1024_ROMSTART(  "bfdrom0a.401",0x8a3c20ad,
+                      "bfdrom3a.401",0x5ef46847)
+DE_ROMEND
+CORE_CLONEDEFNV(bmf_jp,batmanf,"Batman Forever (Japanese)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
+
+/*-------------------------------------------------------------
+/ Batman Forever (Timed Version) - CPU Rev 3b / DMD Type 3 2x512K Rom - 64K CPU Rom
+/------------------------------------------------------------*/
+INITGAME2(bmf_time,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
+DE64_ROMSTART(bmf_time, "batnova.401", 0x4e62df4e)
+DE_DMD1024_ROMSTART(    "bfdrom0t.401",0xb83b8d28,
+                        "bfdrom3t.401",0xa024b1a5)
+DE_ROMEND
+CORE_CLONEDEFNV(bmf_time,batmanf,"Batman Forever (Timed Play)",1995,"Sega",de_mDE_DMD3,GAME_NO_SOUND)
 
 
 /***********************************************************************/

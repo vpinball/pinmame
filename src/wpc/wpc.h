@@ -180,7 +180,7 @@ extern core_tLCDLayout wpc_dispDMD[];
 #define WPC_VBLANKFREQ    60 /* VBLANK frequency */
 
 /*-- the internal state of the WPC chip. Should only be used in memory handlers --*/
-extern unsigned char *wpc_data;
+extern UINT8 *wpc_data;
 
 /*---------------------
 /  Exported functions

@@ -56,6 +56,7 @@ DRIVERNV(viking  )      //BY35-802: 12/79 Viking
 DRIVERNV(skatebll)      //BY35-823: 04/80 Skateball
 DRIVERNV(frontier)      //BY35-819: 05/80 Frontier
 DRIVERNV(xenon   )      //BY35-811: 11/79 Xenon
+DRIVERNV(xenonf  )      //BY35-811: 11/79 Xenon (French)
 DRIVERNV(flashgdn)      //BY35-834: 05/80 Flash Gordon
 DRIVERNV(flashgdf)      //BY35-834: 05/80 Flash Gordon (French)
 DRIVERNV(eballdlx)      //BY35-838: 09/80 Eight Ball Deluxe
@@ -96,58 +97,63 @@ DRIVERNV(panthera)    //System 80: Panthera
 DRIVERNV(circus)      //System 80: Circus
 DRIVERNV(cntforce)    //System 80: Counterforce
 DRIVERNV(starrace)    //System 80: Star Race
-DRIVERNV(jamesb)      //System 80: James Bond
+DRIVERNV(jamesb)      //System 80: James Bond (Timed Play)
+DRIVERNV(jamesb2)     //System 80: James Bond (3/5 Ball)
 DRIVERNV(timeline)    //System 80: Time Line
-					  //System 80: Force II
+DRIVERNV(forceii)     //System 80: Force II
 DRIVERNV(pnkpnthr)    //System 80: Pink Panther
 DRIVERNV(mars)        //System 80: Mars God of War
 DRIVERNV(vlcno_ax)    //System 80: Volcano (Sound & Speech)
 DRIVERNV(vlcno_1b)    //System 80: Volcano (Sound Only)
-DRIVERNV(blckhole)    //System 80: BlackHole
-DRIVERNV(hh)          //System 80: Haunted House
-DRIVERNV(hh_2)        //System 80: Haunted House V2
+DRIVERNV(blckhole)    //System 80: Black Hole (Sound & Speech, Rev 4)
+DRIVERNV(blkhole2)    //System 80: Black Hole (Sound & Speech, Rev 2)
+DRIVERNV(blkholea)    //System 80: Black Hole (Sound Only)
+DRIVERNV(hh)          //System 80: Haunted House (Rev 2)
+DRIVERNV(hh_1)        //System 80: Haunted House (Rev 1)
 DRIVERNV(eclipse)     //System 80: Eclipse
+DRIVERNV(s80tst)      //System 80: Text Fixture
 
-DRIVERNV(dvlsdre)     //System 80a: Devils Dare
-                      //System 80a: Caveman
-                      //System 80a: Rocky
+DRIVERNV(dvlsdre)     //System 80a: Devils Dare (Sound & Speech)
+DRIVERNV(dvlsdre2)    //System 80a: Devils Dare (Sound Only)
+DRIVERNV(caveman)     //System 80a: Caveman
+DRIVERNV(rocky)       //System 80a: Rocky
 DRIVERNV(spirit)      //System 80a: Spirit
-                      //System 80a: Punk
-                      //System 80a: Striker
-                      //System 80a: Krull
-                      //System 80a: Q*bert's Quest
-                      //System 80a: Super Orbit
-                      //System 80a: Royal Flush Deluxe
-                      //System 80a: Goin Nuts
-                      //System 80a: Amazon Hunt
-                      //System 80a: Rack 'Em Up
-                      //System 80a: Ready Aim Fire
-                      //System 80a: Jacks to Open
-                      //System 80a: Alien Star
-DRIVERNV(thegames)	  //System 80a: The Games
-                      //System 80a: Touchdown
-                      //System 80a: El Dorado
-                      //System 80a: Ice Fever
+DRIVERNV(punk)        //System 80a: Punk
+DRIVERNV(striker)     //System 80a: Striker
+DRIVERNV(krull)       //System 80a: Krull
+DRIVERNV(qbquest)     //System 80a: Q*bert's Quest
+DRIVERNV(sorbit)      //System 80a: Super Orbit
+DRIVERNV(rflshdlx)    //System 80a: Royal Flush Deluxe
+DRIVERNV(goinnuts)    //System 80a: Goin' Nuts
+DRIVERNV(amazonh)     //System 80a: Amazon Hunt
+DRIVERNV(rackemup)    //System 80a: Rack 'Em Up
+DRIVERNV(raimfire)    //System 80a: Ready Aim Fire
+DRIVERNV(jack2opn)    //System 80a: Jacks to Open
+DRIVERNV(alienstr)    //System 80a: Alien Star
+DRIVERNV(thegames)    //System 80a: The Games
+DRIVERNV(touchdn)     //System 80a: Touchdown
+DRIVERNV(eldorado)    //System 80a: El Dorado
+DRIVERNV(icefever)    //System 80a: Ice Fever
 
-                      //System 80b: Chicago Cubs Triple Play
-                      //System 80b: Bounty Hunter
+DRIVERNV(triplay)     //System 80b: Chicago Cubs Triple Play
+DRIVERNV(bountyh)     //System 80b: Bounty Hunter
                       //System 80b: Tag Team
                       //System 80b: Rock
                       //System 80b: Rock Encore
 DRIVERNV(raven)       //System 80b: Raven
 DRIVERNV(hlywoodh)    //System 80b: Hollywood Heat
 DRIVERNV(genesis)     //System 80b: Genesis
-                      //System 80b: Gold Wings
+DRIVERNV(goldwing)    //System 80b: Gold Wings
 DRIVERNV(mntecrlo)    //System 80b: Monte Carlo
-                      //System 80b: Spring Break
+DRIVERNV(sprbreak)    //System 80b: Spring Break
                       //System 80b: Amazon Hunt II
-                      //System 80b: Arena
+DRIVERNV(arena)       //System 80b: Arena
 DRIVERNV(victory)     //System 80b: Victory
-                      //System 80b: Diamond Lady
+DRIVERNV(diamond)     //System 80b: Diamond Lady
 DRIVERNV(txsector)    //System 80b: TX Sector
                       //System 80b: Amazon Hunt III
 DRIVERNV(robowars)    //System 80b: Robo-War
-                      //System 80b: Excalibur
+DRIVERNV(excalibr)    //System 80b: Excalibur
 DRIVERNV(badgirls)    //System 80b: Bad Girls
                       //System 80b: Hot Shots
 DRIVERNV(bighouse)    //System 80b: Big House
@@ -213,9 +219,17 @@ DRIVERNV(lazrlord)		//MPU-200: 10/84 Lazer Lord	(Proto - Never released)
 
 // Whitestar System
 DRIVERNV(strikext)      //Whitestar: 03/00 Striker Extreme
+DRIVERNV(strxt_uk)      //Whitestar: 03/00 Striker Extreme (UK)
+DRIVERNV(strxt_gr)      //Whitestar: 03/00 Striker Extreme (Germany)
+DRIVERNV(strxt_fr)      //Whitestar: 03/00 Striker Extreme (France)
+DRIVERNV(strxt_it)      //Whitestar: 03/00 Striker Extreme (Italy)
+DRIVERNV(strxt_sp)      //Whitestar: 03/00 Striker Extreme (Spain)
 DRIVERNV(shrkysht)      //Whitestar: 09/00 Sharky's Shootout
 DRIVERNV(hirolcas)      //Whitestar: 01/01 High Roller Casino
-DRIVERNV(austin)        //Whitestar: 05/01 Austin Powers
+DRIVERNV(hirol_gr)      //Whitestar: 01/01 High Roller Casino (Germany)
+DRIVERNV(austin)        //Whitestar: 05/01 Austin Powers (3.0)
+DRIVERNV(austin2)       //Whitestar: 05/01 Austin Powers (2.0)
+DRIVERNV(monopoly)      //Whitestar: 09/01 Monopoly (2.33)
 
 // ---------------------
 // SEGA GAMES BELOW
@@ -223,7 +237,22 @@ DRIVERNV(austin)        //Whitestar: 05/01 Austin Powers
 //Data East Hardare, DMD 192x64
 DRIVERNV(frankst)       //DE/Sega MPU: 12/94 Frankenstein
 DRIVERNV(baywatch)      //DE/Sega MPU: 03/95 Baywatch
-DRIVERNV(batmanf)       //DE/Sega MPU: 07/95 Batman Forever
+DRIVERNV(batmanf)       //DE/Sega MPU: 07/95 Batman Forever (4.0)
+DRIVERNV(batmanf3)      //DE/Sega MPU: 07/95 Batman Forever (3.0)
+DRIVERNV(bmf_uk)        //DE/Sega MPU: 07/95 Batman Forever (UK)
+DRIVERNV(bmf_at)        //DE/Sega MPU: 07/95 Batman Forever (Austria)
+DRIVERNV(bmf_be)        //DE/Sega MPU: 07/95 Batman Forever (Belgium)
+DRIVERNV(bmf_ch)        //DE/Sega MPU: 07/95 Batman Forever (Switzerland)
+DRIVERNV(bmf_cn)        //DE/Sega MPU: 07/95 Batman Forever (Canada)
+DRIVERNV(bmf_de)        //DE/Sega MPU: 07/95 Batman Forever (Germany)
+DRIVERNV(bmf_fr)        //DE/Sega MPU: 07/95 Batman Forever (France)
+DRIVERNV(bmf_nl)        //DE/Sega MPU: 07/95 Batman Forever (Holland)
+DRIVERNV(bmf_it)        //DE/Sega MPU: 07/95 Batman Forever (Italy)
+DRIVERNV(bmf_sp)        //DE/Sega MPU: 07/95 Batman Forever (Spain)
+DRIVERNV(bmf_no)        //DE/Sega MPU: 07/95 Batman Forever (Norway)
+DRIVERNV(bmf_sv)        //DE/Sega MPU: 07/95 Batman Forever (Sweden)
+DRIVERNV(bmf_jp)        //DE/Sega MPU: 07/95 Batman Forever (Japan)
+DRIVERNV(bmf_time)      //DE/Sega MPU: 07/95 Batman Forever (Timed Version)
 //Whitestar Hardware DMD 128x32
 DRIVERNV(apollo13)      //Whitestar: 11/95 Apollo 13
 DRIVERNV(gldneye)       //Whitestar: 02/96 Golden Eye
@@ -234,7 +263,7 @@ DRIVERNV(swtril)        //Whitestar: 02/97 Star Wars Trilogy
 DRIVERNV(jplstwld)      //Whitestar: 06/97 The Lost World: Jurassic Park
 DRIVERNV(xfiles)        //Whitestar: 08/97 X-Files
 DRIVERNV(startrp)       //Whitestar: 11/97 Starship Troopers
-DRIVERNV(viprsega)		//Whitestar: 02/98 Viper Night Drivin'
+DRIVERNV(viprsega)	//Whitestar: 02/98 Viper Night Drivin'
 DRIVERNV(lostspc)       //Whitestar: 06/98 Lost in Space
 DRIVERNV(godzilla)      //Whitestar: 09/98 Godzilla
 DRIVERNV(southpk)       //Whitestar: 01/99 South Park
@@ -320,11 +349,11 @@ DRIVER(tmfnt,l5)    //S7-515:   03/83 W Time Fantasy
 DRIVER(jst,l2)      //S7-519:   04/83 W Joust
 DRIVER(fpwr2,l2)    //S7-521:   08/83 W Firepower II
 DRIVER(lsrcu,l2)    //S7-520:   02/84 W Laser Cue
-                    //S?-526:   05/84 W Pennat Fever (pitch & bat)
+DRIVER(pfevr,p3)    //S9-526:   05/84 W Pennant Fever (pitch & bat)
 DRIVER(strlt,l1)    //S7-530:   06/84 W Star Light
                     //S?-538:   10/84 W Gridiron
 DRIVER(sshtl,l7)    //S9-535:   12/84 W Space Shuttle
-DRIVER(sorcr,l1)    //S9-532:   03/85 W Sourcerer
+DRIVER(sorcr,l1)    //S9-532:   03/85 W Sorcerer
 DRIVER(comet,l4)    //S9-540:   06/85 W Comet
 DRIVER(hs,l4)       //S11-541:  01/86 W High Speed
                     //S11:      02/86 W Alley Cats (Bowler)
@@ -378,6 +407,7 @@ DRIVER(pz,f4)       //WPC:      08/91 B Party Zone
 DRIVER(gi,l9)       //WPC:      11/91 B Gilligan's Island
 DRIVER(gw,l5)       //WPC-504:  02/92 W The Getaway: High Speed II
 DRIVER(taf,l5)      //WPC:      03/92 B The Addams Family
+DRIVER(taf,l6)      //WPC:      03/92 B The Addams Family L-6
 DRIVER(br,l4)       //WPC:      07/92 B Black Rose
 DRIVER(dw,l2)       //WPC:      09/92 B Doctor Who
 DRIVER(ft,l5)       //WPC-505:  10/92 W Fish Tales
@@ -410,6 +440,7 @@ DRIVER(nf,23x)      //WPC-525:  05/95 W No Fear: Dangerous Sports
 DRIVER(i500,11r)    //WPC-526:  06/95 B Indianapolis 500
 DRIVER(jm,12r)      //WPC-542:  08/95 W Johnny Mnemonic
 DRIVER(wd,12)       //WPC-544:  09/95 B Who dunnit
+DRIVER(wd,12g)      //WPC-544:  09/95 B Who dunnit (Germany)
 DRIVER(jb,10r)      //WPC-551:  10/95 W Jack*Bot
 DRIVER(jb,10b)		//WPC-551:  10/95 W Jack*Bot (Belgium/Canada)
 DRIVER(congo,21)    //WPC-550:  11/95 W Congo
@@ -418,6 +449,7 @@ DRIVER(afm,113)
 DRIVER(lc,11)       //WPC:      ??/96 B League Champ (Shuffle Alley)
 DRIVER(ttt,10)      //WPC-905:  03/96 W Ticket Tac Toe
 DRIVER(sc,18)       //WPC-903:  03/96 B Safe Cracker
+DRIVER(sc,18n)      //WPC-903:  03/96 B Safe Cracker (New)
 DRIVER(totan,14)    //WPC-547:  05/96 W Tales of the Arabian Nights
 DRIVER(ss,15)       //WPC-548:  09/96 B Scared Stiff
 DRIVER(jy,12)       //WPC-552:  12/96 W Junk Yard

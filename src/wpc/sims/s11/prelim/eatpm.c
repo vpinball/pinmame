@@ -27,7 +27,7 @@
 /  Local functions
 /-------------------*/
 static void init_eatpm(void);
-static void eatpm_drawStatic(unsigned char **line);
+static void eatpm_drawStatic(BMTYPE **line);
 
 /*--------------------------
 / Game specific input ports
@@ -179,7 +179,7 @@ static sim_tInportData eatpm_inportData[] = {
 
 /* Help */
 
-static void eatpm_drawStatic(unsigned char **line) {
+static void eatpm_drawStatic(BMTYPE **line) {
   core_textOutf(30, 60,BLACK,"Help on this Simulator:");
   core_textOutf(30, 70,BLACK,"L/R Shift+- = L/R Slingshot");
   core_textOutf(30, 80,BLACK,"L/R Shift+I/O = L/R Inlane/Outlane");

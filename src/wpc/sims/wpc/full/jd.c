@@ -6,7 +6,7 @@
 
  Never played this game before, but it sounds really cool from the rulesheet! :)
  Much thanks goes to "ari 'apz' sovijärvi" <apz@nic.fi> for answering all my questions
- about the game, since he owns the machine! 
+ about the game, since he owns the machine!
 
  Known Issues-
  Well, I'm not sure if the arm and globe work 100% right, but they seem ok..
@@ -53,8 +53,8 @@
 
 
 static void init_jd(void);
-static void jd_drawMech(unsigned char **line);
-static void jd_drawStatic(unsigned char **line);
+static void jd_drawMech(BMTYPE **line);
+static void jd_drawStatic(BMTYPE **line);
 static int  jd_handleBallState(sim_tBallStatus *ball, int *inports);
 static void jd_handleMech(int mech);
 static int jd_getMech(int mechNo);
@@ -214,7 +214,7 @@ WPC_INPUT_PORTS_END
 
 enum {stTrough1=SIM_FIRSTSTATE, stTrough2, stTrough3, stTrough4, stTrough5, stTrough6, stTrough,
       stRShooter, stBallLane, stLShooter, stDrain, stLRampEnt,stRRampEnt, stCRampEnt, stLRampExit,
-      stLOut, stROut, stLIn, stRIn, stLLoopUp, stLLoopDn, stRLoopUp, stRLoopDn, 
+      stLOut, stROut, stLIn, stRIn, stLLoopUp, stLLoopDn, stRLoopUp, stRLoopDn,
       stIRIn, stSmallLoop, stSniper, stSniper2, stSubway, stSubway2, stSubway3, stSubway4,
       stARampEnt, stAHabit, stLRamp2, stPlanet, stPlanet2, stPlanet3,
       stEBLeft, stEBRight, stCaptiveBall, stCBall2, stCBall3, stMystery,
@@ -227,7 +227,7 @@ static sim_tState jd_stateDef[] =  {
   {"Moving"},
   {"Playfield",               0,0,           0,        0,           0,0,0,SIM_STNOTEXCL},
 
-  /*Line 1*/ 
+  /*Line 1*/
   {"Trough 1",          1,swTrough1,    sTrough,	stRShooter,  1},
   {"Trough 2",			1,swTrough2,	0,			stTrough1,   1},
   {"Trough 3",			1,swTrough3,	0,			stTrough2,   1},
@@ -278,7 +278,7 @@ static sim_tState jd_stateDef[] =  {
   {"EB Left Target",	1,swLPost,		0,			stFree,		5},
   {"EB Right Target",	1,swTRPost,		0,			stFree,		5},
   {"Captive Ball -",	1,swCapBall1,	0,			stCBall2,	5},
-  {"Captive Ball /",	1,swCapBall2,	0,			stCBall3,	5},  
+  {"Captive Ball /",	1,swCapBall2,	0,			stCBall3,	5},
   {"Captive Ball |",	1,swCapBall3,	0,			stFree,		5},
   {"'?' Target",		1,swLLTarget,	0,			stFree,		5},
 
@@ -355,7 +355,7 @@ static int jd_keyCond(int cond, int ballState, int *inports) {
 /*---------------------------
 /  Keyboard conversion table
 /----------------------------
--------------------------------------------------------------------------------------------------- 
+--------------------------------------------------------------------------------------------------
   Layout of inportData array
    ----------------------------
    #1) Inport number
@@ -407,13 +407,13 @@ static sim_tInportData jd_inportData[] = {
 /*--------------------
   Drawing information
   --------------------*/
-  static void jd_drawMech(unsigned char **line) {
+  static void jd_drawMech(BMTYPE **line) {
   core_textOutf(30,  0,BLACK,"Claw:%-25s",DispClaw());
   core_textOutf(30, 10,BLACK,"Planet:%-14s",DispPlanet());
   core_textOutf(30, 20,BLACK,"Drop Targets:%-5s",DispDT());
   }
   /* Help */
-  static void jd_drawStatic(unsigned char **line) {
+  static void jd_drawStatic(BMTYPE **line) {
   core_textOutf(30, 30, BLACK,"Help on this Simulator:");
   core_textOutf(30, 40, BLACK,"2/E=Buy-In,Super Game");
   core_textOutf(30, 50,BLACK,"L.Alt/Space=L/R FIRE");
@@ -495,7 +495,7 @@ static void init_jd(void){
 
 /*-- return status of custom solenoids --*/
 static int jd_getSol(int solNo) {
- /* Arm Magnet Must be Off for solenoid to fire! */ 
+ /* Arm Magnet Must be Off for solenoid to fire! */
  if (solNo == sFakeSol1)
   return (core_getSol(sArmMagnet)==0);
  return 0;
@@ -575,7 +575,7 @@ return buf;
 static char * DispPlanet()
 {
 static char buf[100];
-sprintf(buf,"%s%-3s",(core_getSol(sGlobeMotor))?"Spinning":"Not Moving", 
+sprintf(buf,"%s%-3s",(core_getSol(sGlobeMotor))?"Spinning":"Not Moving",
 		   ((locals.globePos>=0 && locals.globePos<=10))?"(*)":"   "
        );
 return buf;
@@ -584,7 +584,7 @@ return buf;
 static char * DispClaw()
 {
 static char buf[100];
-sprintf(buf,"%s%-13s",(core_getSol(sGlobeArm))?"Moving":"Not Moving", 
+sprintf(buf,"%s%-13s",(core_getSol(sGlobeArm))?"Moving":"Not Moving",
 		   ((locals.armPos>=0 && locals.armPos<=10))?"(Over Planet)":"(Over PF)"
        );
 return buf;

@@ -42,7 +42,7 @@ ZXCVBNM,  D/A/V/I/D/S/O/N Targets
 /-------------------*/
 static int  hd_handleBallState(sim_tBallStatus *ball, int *inports);
 static void hd_handleMech(int mech);
-static void hd_drawStatic(unsigned char **line);
+static void hd_drawStatic(BMTYPE **line);
 static void init_hd(void);
 
 /*--------------------------
@@ -244,7 +244,7 @@ static int hd_handleBallState(sim_tBallStatus *ball, int *inports) {
   switch (ball->state)
 	{
 	/* Ball in Shooter Lane */
-    	case stBallLane:  
+    	case stBallLane:
 		if (ball->speed < 15)
 			return setState(stNotEnough,15);	/*Ball not plunged hard enough*/
 		if (ball->speed < 30)
@@ -311,7 +311,7 @@ static sim_tInportData hd_inportData[] = {
   --------------------*/
 /* Help */
 
-  static void hd_drawStatic(unsigned char **line) {
+  static void hd_drawStatic(BMTYPE **line) {
   core_textOutf(30, 50,BLACK,"Help on this Simulator:");
   core_textOutf(30, 60,BLACK,"L/R Shift+L = L/R Loop");
   core_textOutf(30, 70,BLACK,"L/R Shift+- = L/R Slingshot");
@@ -340,7 +340,7 @@ static wpc_tSamSolMap hd_samsolmap[] = {
 
  /*Channel #2*/
  {sLeftSling,2,SAM_LSLING}, {sRightSling,2,SAM_RSLING},
- {sLDrop,2,SAM_SOLENOID}, {sCDrop,2,SAM_SOLENOID}, 
+ {sLDrop,2,SAM_SOLENOID}, {sCDrop,2,SAM_SOLENOID},
 
  /*Channel #3*/
  {sTLEject,3,SAM_POPPER}, {sTREject,3,SAM_POPPER},

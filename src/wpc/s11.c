@@ -54,14 +54,13 @@ static struct {
   int    initDone;
   int    sCPUNo; /* CPU number for sound CPU on CPU board */
   UINT32 solenoids;
-  UINT8  swMatrix[CORE_MAXSWCOL];
-  UINT8  lampMatrix[CORE_MAXLAMPCOL];
   core_tSeg segments, pseg;
   int    lampRow, lampColumn;
   int    digSel;
   int    diagnosticLed;
   int    swCol;
   int    ssEn; /* Special solenoids and flippers enabled ? */
+  int    sndCmd, extSol; /* external sound board cmd */
   int    mainIrq;
 } s11locals;
 
@@ -93,12 +92,13 @@ static int s11_vblank(void) {
   s11locals.vblankCount += 1;
   /*-- lamps --*/
   if ((s11locals.vblankCount % S11_LAMPSMOOTH) == 0) {
-    memcpy(coreGlobals.lampMatrix, s11locals.lampMatrix, sizeof(s11locals.lampMatrix));
-    memset(s11locals.lampMatrix, 0, sizeof(s11locals.lampMatrix));
+    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+    memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
   /*-- solenoids --*/
   if ((s11locals.vblankCount % S11_SOLSMOOTH) == 0) {
     coreGlobals.solenoids = s11locals.solenoids;
+    coreGlobals.solenoids2 = (s11locals.extSol<<8);
     if ((core_gameData->sxx.muxSol) &&
         (s11locals.solenoids & CORE_SOLBIT(core_gameData->sxx.muxSol)))
       coreGlobals.solenoids = (s11locals.solenoids & 0x00ffff00) | (s11locals.solenoids<<24);
@@ -127,10 +127,10 @@ static int s11_vblank(void) {
 /  Lamp handling
 /----------------*/
 static WRITE_HANDLER(pia1a_w) {
-  core_setLamp(s11locals.lampMatrix, s11locals.lampColumn, s11locals.lampRow = ~data);
+  core_setLamp(coreGlobals.tmpLampMatrix, s11locals.lampColumn, s11locals.lampRow = ~data);
 }
 static WRITE_HANDLER(pia1b_w) {
-  core_setLamp(s11locals.lampMatrix, s11locals.lampColumn = data, s11locals.lampRow);
+  core_setLamp(coreGlobals.tmpLampMatrix, s11locals.lampColumn = data, s11locals.lampRow);
 }
 
 /*-- Jumper W7 --*/
@@ -154,7 +154,7 @@ static WRITE_HANDLER(pia2b_w) {
     s11locals.segments[1][s11locals.digSel].lo |=
          s11locals.pseg[1][s11locals.digSel].lo = core_bcd2seg[data>>4];
   }
-  else if (core_gameData->gen & (GEN_S11B_2|GEN_S11B_3|GEN_S11C))
+  else if (core_gameData->gen & (GEN_S11B_2|GEN_S11B_2x|GEN_S11B_3|GEN_S11C))
     s11locals.segments[1][s11locals.digSel].hi |=
          s11locals.pseg[1][s11locals.digSel].hi = ~data;
   else
@@ -162,18 +162,18 @@ static WRITE_HANDLER(pia2b_w) {
          s11locals.pseg[1][s11locals.digSel].lo = data;
 }
 static WRITE_HANDLER(pia5a_w) {
-  if (core_gameData->gen & (GEN_S11B_2|GEN_S11B_3|GEN_S11C))
+  if (core_gameData->gen & (GEN_S11B_2|GEN_S11B_2x|GEN_S11B_3|GEN_S11C))
     s11locals.segments[1][s11locals.digSel].lo |=
          s11locals.pseg[1][s11locals.digSel].lo = ~data;
 }
 static WRITE_HANDLER(pia3a_w) {
-  if (core_gameData->gen & (GEN_S11B_2|GEN_S11B_3|GEN_S11C))
+  if (core_gameData->gen & (GEN_S11B_2|GEN_S11B_2x|GEN_S11B_3|GEN_S11C))
     data = ~data;
   s11locals.segments[0][s11locals.digSel].lo |=
        s11locals.pseg[0][s11locals.digSel].lo = data;
 }
 static WRITE_HANDLER(pia3b_w) {
-  if (core_gameData->gen & (GEN_S11B_2|GEN_S11B_3|GEN_S11C))
+  if (core_gameData->gen & (GEN_S11B_2|GEN_S11B_2x|GEN_S11B_3|GEN_S11C))
     data = ~data;
   s11locals.segments[0][s11locals.digSel].hi |=
        s11locals.pseg[0][s11locals.digSel].hi = data;
@@ -235,7 +235,9 @@ static READ_HANDLER(pia4a_r)  { return core_getSwCol(s11locals.swCol); }
 /*-- CPU board sound command --*/
 static WRITE_HANDLER(pia0a_w) { snd_cmd_log(0); snd_cmd_log(data); soundlatch_w(0,data); }
 /*-- Sound board sound command--*/
-static WRITE_HANDLER(pia5b_w) { snd_cmd_log(1); snd_cmd_log(data); soundlatch2_w(0,data); }
+static WRITE_HANDLER(pia5b_w) {
+  s11locals.sndCmd = data; snd_cmd_log(1); snd_cmd_log(data); soundlatch2_w(0,data);
+}
 
 /*-- CPU board sound command available --*/
 static void pia0ca2_sync(int data) { pia_set_input_ca1(6, data); }
@@ -245,7 +247,13 @@ static WRITE_HANDLER(pia0ca2_w) {
 /*-- Sound board sound command available --*/
 static void pia5cb2_sync(int data) {  pia_set_input_cb1(7, data); }
 static WRITE_HANDLER(pia5cb2_w) {
-  if (core_gameData->gen & ~(GEN_S11B_3|GEN_S9)) timer_set(TIME_NOW,data,pia5cb2_sync);
+  /* don't pass to sound board if a sound overlay board is available */
+  //printf("sndcmd:%2x avail=%d\n",s11locals.sndCmd,data);
+  if ((core_gameData->gen & GEN_S11B_2x) &&
+      ((s11locals.sndCmd & 0xe0) == 0)) {
+    if (!data) s11locals.extSol = (~s11locals.sndCmd) & 0x1f;
+  }
+  else if (core_gameData->gen & ~(GEN_S11B_3|GEN_S9)) timer_set(TIME_NOW,data,pia5cb2_sync);
 }
 /*-- reset sound baord CPU --*/
 static WRITE_HANDLER(pia5ca2_w) { /*
@@ -355,7 +363,7 @@ static void s11_updSw(int *inports) {
   /*-- Generate interupts for diganostic keys --*/
   if (core_getSwSeq(S11_SWCPUDIAG))   cpu_set_nmi_line(S11_CPUNO, PULSE_LINE);
   if (core_getSwSeq(S11_SWSOUNDDIAG)) cpu_set_nmi_line(s11locals.sCPUNo, PULSE_LINE);
-  if ((core_gameData->gen & (GEN_S11B_2|GEN_S11B_3|GEN_S11C)) && core_gameData->sxx.muxSol)
+  if ((core_gameData->gen & (GEN_S11B_2|GEN_S11B_2x|GEN_S11B_3|GEN_S11C)) && core_gameData->sxx.muxSol)
     core_setSwSeq(2, core_getSol(core_gameData->sxx.muxSol));
   pia_set_input_ca1(2, core_getSwSeq(S11_SWADVANCE));
   pia_set_input_cb1(2, core_getSwSeq(S11_SWUPDN));
@@ -573,11 +581,8 @@ struct MachineDriver machine_driver_s11a_2 = {
 /*-----------------------------------------------
 / Load/Save static ram
 /-------------------------------------------------*/
-void s11_nvram(void *file, int write) {
-  UINT8 *mem = memory_region(S11_MEMREG_CPU);
-  if (write)     osd_fwrite(file, mem, 0x0800); /* Save */
-  else if (file) osd_fread(file, mem, 0x0800);  /* Load */
-  else           memset(mem, 0xff, 0x0800);     /* First time */
+static void s11_nvram(void *file, int write) {
+  core_nvram(file, write, memory_region(S11_MEMREG_CPU), 0x0800);
 }
 
 

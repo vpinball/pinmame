@@ -35,7 +35,7 @@
    XCV  Right/Left/Top Jet Bumpers
      B  Bulldozer/Ted Hit (Depends on Bulldozer Status)
      M  Left MiniFlipper Loop
-     
+
 ------------------------------------------------------------------------------*/
 
 #include "driver.h"
@@ -48,8 +48,8 @@
 /-------------------*/
 static int  rs_handleBallState(sim_tBallStatus *ball, int *inports);
 static void rs_handleMech(int mech);
-static void rs_drawMech(unsigned char **line);
-static void rs_drawStatic(unsigned char **line);
+static void rs_drawMech(BMTYPE **line);
+static void rs_drawStatic(BMTYPE **line);
 static void init_rs(void);
 static int rs_getMech(int mechNo);
 static char* showtedeyepos(void);
@@ -337,7 +337,7 @@ static int rs_handleBallState(sim_tBallStatus *ball, int *inports) {
 	{
 
 	/* Ball in Right Shooter Lane */
-    	case stBallLane:  
+    	case stBallLane:
 		if (ball->speed < 10)
 			return setState(stNotEnough,10);	/*Ball not plunged hard enough*/
 		if (ball->speed < 20)
@@ -351,7 +351,7 @@ static int rs_handleBallState(sim_tBallStatus *ball, int *inports) {
 		break;
 
 	/* Ball in Left Shooter Lane */
-    	case stLBallLane:  
+    	case stLBallLane:
 		if (ball->speed < 15)
 			return setState(stNoStrength,30);	/*Ball not plunged hard enough*/
 		if (ball->speed < 25)
@@ -365,7 +365,7 @@ static int rs_handleBallState(sim_tBallStatus *ball, int *inports) {
 		break;
 
 	/* Red Hit */
-    	case stHitRed:  
+    	case stHitRed:
 		/*Is Red's Mouth Open?*/
 		if (locals.redmouthPos)
 			return setState(stRedMouth,10);		/*Ball hits Red's Jaw*/
@@ -383,7 +383,7 @@ static int rs_handleBallState(sim_tBallStatus *ball, int *inports) {
 			return setState(stHitTed,10);
 
 	/* Ted Hit */
-    	case stHitTed:  
+    	case stHitTed:
 		/*Is Ted's Mouth Open?*/
 		if (!locals.tedmouthPos)
 			return setState(stTedMouth,10);		/*Ball hits Ted's Jaw*/
@@ -476,7 +476,7 @@ static core_tLampDisplay rs_lampPos = {
 }
 };
 
-  static void rs_drawMech(unsigned char **line) {
+  static void rs_drawMech(BMTYPE **line) {
 //  core_textOutf(30,  0,BLACK,"Ted's /Red's Mouth:");
 //  core_textOutf(30, 10,BLACK,"%-6s/%-6s", locals.tedmouthPos?"Open":"Closed", locals.redmouthPos?"Closed":"Open");
 //  core_textOutf(30, 20,BLACK,"Ted's   /Red's Eyes:");
@@ -489,7 +489,7 @@ static core_tLampDisplay rs_lampPos = {
 }
 /* Help */
 
-  static void rs_drawStatic(unsigned char **line) {
+  static void rs_drawStatic(BMTYPE **line) {
   core_textOutf(30, 50,BLACK,"Help on this Simulator:");
   core_textOutf(30, 60,BLACK,"L/R Shift+R = L/R Ramp");
   core_textOutf(30, 70,BLACK,"L/R Shift+- = L/R Slingshot");
@@ -507,7 +507,7 @@ static core_tLampDisplay rs_lampPos = {
 /* Solenoid-to-sample handling */
 static wpc_tSamSolMap rs_samsolmap[] = {
  /*Channel #0*/
- {sKnocker,0,SAM_KNOCKER}, {sTrough,0,SAM_BALLREL}, 
+ {sKnocker,0,SAM_KNOCKER}, {sTrough,0,SAM_BALLREL},
 
  /*Channel #1*/
  {sLeftJet,1,SAM_JET1}, {sRightJet,1,SAM_JET2},
@@ -518,7 +518,7 @@ static wpc_tSamSolMap rs_samsolmap[] = {
  {sLeftSling,2,SAM_LSLING}, {sRightSling,2,SAM_RSLING},
  {sULDiverter,2,SAM_DIVERTER}, {sULDiverter,2,SAM_SOLENOID_ON,WPCSAM_F_ONOFF},
  {sURDiverter,2,SAM_DIVERTER}, {sURDiverter,2,SAM_SOLENOID_ON,WPCSAM_F_ONOFF},
- 
+
  /*Channel #3*/
  {sStartCity,3,SAM_POPPER}, {sLockKickout,3,SAM_POPPER},
  {sRedEject,3,SAM_SOLENOID_ON},
@@ -722,7 +722,7 @@ else
 }
 
 /*---------------------------------
-    Display Status of Red's Eyes 
+    Display Status of Red's Eyes
   ---------------------------------*/
 static char* showredeyepos(void)
 {

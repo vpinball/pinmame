@@ -162,7 +162,7 @@ typedef struct {
   int ballStart[SIM_MAXBALLS];   /* start positions of balls */
   void (*initSim)(sim_tBallStatus balls[], int *inports, int noOfBalls);
   int  (*handleBallState)(sim_tBallStatus *ball, int *inports);  /* ball state handler */
-  void (*drawStatic)(unsigned char **line);     /* draw game specific static data */
+  void (*drawStatic)(BMTYPE **line);     /* draw game specific static data */
   int manShooter; /* true if a manual shooter should be simulated */
   int (*keyCond)(int cond, int ballState, int *inports); /* advanced key conditions */
 } sim_tSimData;

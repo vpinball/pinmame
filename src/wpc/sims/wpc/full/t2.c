@@ -7,7 +7,7 @@
  Known Issues/Problems with Simulator:
  -Gun Position & Timing Totally guessed..
 	but seems ok!! (Sure is hard aiming the gun when you can't see it!)
- -Skull Target does not open when it should, 
+ -Skull Target does not open when it should,
     so a hack was used... For some reason, during
     game play, the knockdown solenoid *should* fire when the Drop Target is activated but it does
     not.. So I had to put in an extra check for the switch being active to pull down the drop target
@@ -25,7 +25,7 @@
   12-05-2000: Modified custom playfield lamp layout to accomodate new structure.
               Added support for shared bulbs where necessary
   12-30-2000: Added Sample Support
- 
+
  *********************************************************************************************************/
 
 
@@ -60,8 +60,8 @@
 /*-- local state/ball handling functions --*/
 static int  t2_handleBallState(sim_tBallStatus *ball, int *inports);
 static void t2_handleMech(int mech);
-static void t2_drawMech(unsigned char **line);
-static void t2_drawStatic(unsigned char **line);
+static void t2_drawMech(BMTYPE **line);
+static void t2_drawStatic(BMTYPE **line);
 static int t2_getMech(int mechNo);
 static void init_t2(void);
 static int GetGunPos(void);
@@ -73,7 +73,7 @@ static char * GetGunDescr(void);
   local static variables
  ------------------------
    I used this locals structure for setting up variables to track the state of mechanical objects
-   which needed to be displayed on screen 
+   which needed to be displayed on screen
 --------------------------------------------------------------------------------------------------*/
 static struct {
   int droptargetPos;    /* Skull Drop Target Position */
@@ -225,7 +225,7 @@ enum {GUNPOS_PF, GUNPOS_T1,GUNPOS_T2,GUNPOS_T3,GUNPOS_T4,GUNPOS_T5};
 enum {stRTrough=SIM_FIRSTSTATE, stCTrough, stLTrough, stOuthole, stDrain,
       stShooter, stBallLane, stROut, stLOut,stRIn, stLIn,
       stLLoopUp, stLLoopUp2, stTopLock, stLLoopDn, stLLoopDn2,
-	  stRLoopUp, stRLoopUp2, stRLoopDn, stRLoopDn2, 
+	  stRLoopUp, stRLoopUp2, stRLoopDn, stRLoopDn2,
 	  stLRampEnt, stLRamp, stLRampExit, stRRampEnt, stRRamp, stRRampExit,
 	  stLockLeft, stDropTarget, stDropTarget2, stBallPopper, stGunLoaded, stGunFire,
 	  stTarget1, stTarget2, stTarget3, stTarget4, stTarget5, stMultL, stJet1, stJet2, stJet3
@@ -237,10 +237,10 @@ enum {stRTrough=SIM_FIRSTSTATE, stCTrough, stLTrough, stOuthole, stDrain,
    are always defined the same!!
 
    Any state with all zeros, like the following example must be handled in the Handle Ball State function!
-   {"State Name",    1,0,    0,       0, 0}, 
+   {"State Name",    1,0,    0,       0, 0},
 
    Fields for each array element
-   ----------------------------- 
+   -----------------------------
    #1) Name to display on screen
    #2) Switch down time (minimum)
    #3) Switch to be triggered while in this state
@@ -318,7 +318,7 @@ static int t2_handleBallState(sim_tBallStatus *ball, int *inports) {
   switch (ball->state)
 	{
 		/*-----------------
-		  Skull Drop Target 
+		  Skull Drop Target
 		-------------------*/
 		case stDropTarget:
 		/* If Drop Target Is Down.. Shoot to Ball Popper*/
@@ -365,7 +365,7 @@ static int t2_handleBallState(sim_tBallStatus *ball, int *inports) {
 /*---------------------------
 /  Keyboard conversion table
 /----------------------------
-  Each entry maps a keypress to either begin a state or trigger a switch! 
+  Each entry maps a keypress to either begin a state or trigger a switch!
   The Inport #, and Bit Mask define which keypresses should be used - See code from
   WPC_INPUT_PORTS_START to determine # and Mask for each key press
 --------------------------------------------------------------------------------------------------
@@ -449,12 +449,12 @@ static core_tLampDisplay t2_lampPos = {
  {1,{{14, 3,GREEN}}},{1,{{15, 4,ORANGE}}},{1,{{17, 4,RED}}},
  {1,{{19, 5,RED}}},{1,{{21, 6,RED}}},{1,{{23, 7,RED}}},
  {1,{{25, 8,RED}}},{1,{{27, 9,RED}}},
- 
+
  /*Lamp 33 - Matrix # 51 - Splits into two bulbs*/
  {2,{{26,11,RED},{26,13,RED}}},
  /*Lamp 34 - Matrix # 52 - Splits into two bulbs*/
  {2,{{ 4, 5,RED},{ 4, 7,RED}}},
- 
+
  {1,{{17,21,RED}}},{1,{{19,20,RED}}},
  {1,{{21,19,RED}}},{1,{{23,18,RED}}},{1,{{25,17,RED}}},
  {1,{{27,16,RED}}},{1,{{19, 8,ORANGE}}},{1,{{20, 9,ORANGE}}},
@@ -471,13 +471,13 @@ static core_tLampDisplay t2_lampPos = {
 
 static wpc_tSamSolMap t2_SamSolMap[] = {
  /*Channel #0*/
- {sKnocker,0,SAM_KNOCKER}, {sBallRel,0,SAM_BALLREL}, 
+ {sKnocker,0,SAM_KNOCKER}, {sBallRel,0,SAM_BALLREL},
  {sOuthole,0,SAM_OUTHOLE}, {sBallPopper,0,SAM_POPPER},
 
  /*Channel #1*/
  {sLSling,1,SAM_LSLING}, {sRSling,1,SAM_RSLING},
  {sJet1,1,SAM_JET1}, {sJet2,1,SAM_JET2},
- {sJet3,1,SAM_JET3}, 
+ {sJet3,1,SAM_JET3},
 
  /*Channel #2*/
  {sGunKicker,2,SAM_SOLENOID}, {sKickBack,2,SAM_SOLENOID},
@@ -485,15 +485,16 @@ static wpc_tSamSolMap t2_SamSolMap[] = {
 
  /*Channel #3*/
  {sLeftLock,3,SAM_SOLENOID}, {sKnockDown,3,SAM_FLAPCLOSE},
- {sDropTarget,3,SAM_SOLENOID}
+ {sDropTarget,3,SAM_SOLENOID},
+ {-1}
 };
 
 /*--------------------------------------------------------
-  Code to draw the mechanical objects, and their states! 
+  Code to draw the mechanical objects, and their states!
 ---------------------------------------------------------*/
 
   /* Help */
-static void t2_drawStatic(unsigned char **line) {
+static void t2_drawStatic(BMTYPE **line) {
 
   core_textOutf(30, 40,BLACK,"Help on this Simulator:");
   core_textOutf(30, 50,BLACK,"L/R Shift+L = L/R Loop");
@@ -585,7 +586,7 @@ static mech_motorData t2_gunMech = {
   {{swGunHome, 0, 3},{swGunMark, 75, 85}},sGunMotor
 };
 #endif
-static void t2_drawMech(unsigned char **line) {
+static void t2_drawMech(BMTYPE **line) {
   core_textOutf(30, 0,BLACK,"Skull Target: %-6s", (locals.droptargetPos==DT_UP)?"Up":"Down");
   core_textOutf(30, 10,BLACK,"Gun Position:%3d", mech_getPos(0));
 }
@@ -611,12 +612,11 @@ static void t2_handleMech(int mech) {
       core_setSw(swDropTarget,0);		/*If Drop Target Down, Switch Must be InActive*/
     }
   }
-
   /* ----------------------------------
      --	Rotate the Gun?              --
      ---------------------------------- */
 //  if (mech & 0x02) mech_update(&t2_gunMech,core_getPulsedSol(sGunMotor),0);
-  if (mech & 0x02) mech_update(0);
+//  if (mech & 0x02) mech_update(0);
 }
 static int t2_getMech(int mechNo) {
   return mechNo ? mech_getPos(0) : locals.droptargetPos;

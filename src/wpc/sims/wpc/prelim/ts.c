@@ -31,8 +31,8 @@
 /-------------------*/
 static int  ts_handleBallState(sim_tBallStatus *ball, int *inports);
 static void ts_handleMech(int mech);
-static void ts_drawMech(unsigned char **line);
-static void ts_drawStatic(unsigned char **line);
+static void ts_drawMech(BMTYPE **line);
+static void ts_drawStatic(BMTYPE **line);
 static int ts_getSol(int solNo);
 static int ts_getMech(int mechNo);
 static void init_ts(void);
@@ -221,7 +221,7 @@ static sim_tInportData ts_inportData[] = {
 /*--------------------
   Drawing information
   --------------------*/
-  static void ts_drawStatic(unsigned char **line) {
+  static void ts_drawStatic(BMTYPE **line) {
 
 /* Help */
 
@@ -309,13 +309,13 @@ static mech_tInitData ts_paddleMech = {
 };
 
 static void ts_handleMech(int mech) {
-  if (mech & 0x01) mech_update(0);
+//  if (mech & 0x01) mech_update(0);
   if (mech & 0x02) {
     if (core_getSol(35)) locals.magnetCnt = 8;
     else if (locals.magnetCnt > 0) locals.magnetCnt -= 1;
   }
 }
-static void ts_drawMech(unsigned char **line) {
+static void ts_drawMech(BMTYPE **line) {
   core_textOutf(50, 0,BLACK,"MiniPF:%3d", mech_getPos(0));
 }
 static int ts_getSol(int solNo) {

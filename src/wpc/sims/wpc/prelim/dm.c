@@ -19,7 +19,7 @@
      Q  SDTM (Drain Ball)
 
    More to be added...
-                      
+
 ------------------------------------------------------------------------------*/
 
 #include "driver.h"
@@ -31,7 +31,7 @@
 /  Local functions
 /-------------------*/
 static int  dm_handleBallState(sim_tBallStatus *ball, int *inports);
-static void dm_drawStatic(unsigned char **line);
+static void dm_drawStatic(BMTYPE **line);
 static void init_dm(void);
 
 /*-----------------------
@@ -39,7 +39,7 @@ static void init_dm(void);
  ------------------------*/
 /* Uncomment if you wish to use locals. type variables */
 //static struct {
-//  int 
+//  int
 //} locals;
 
 /*--------------------------
@@ -226,7 +226,7 @@ static sim_tInportData dm_inportData[] = {
 /*--------------------
   Drawing information
   --------------------*/
-  static void dm_drawStatic(unsigned char **line) {
+  static void dm_drawStatic(BMTYPE **line) {
 
 /* Help */
 

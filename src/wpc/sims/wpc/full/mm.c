@@ -52,8 +52,8 @@
 /-------------------*/
 static int  mm_handleBallState(sim_tBallStatus *ball, int *inports);
 static void mm_handleMech(int mech);
-static void mm_drawMech(unsigned char **line);
-static void mm_drawStatic(unsigned char **line);
+static void mm_drawMech(BMTYPE **line);
+static void mm_drawStatic(BMTYPE **line);
 static int mm_getMech(int mechNo);
 static void init_mm(void);
 static char* showdrawbridgePos(void);
@@ -392,14 +392,14 @@ static core_tLampDisplay mm_lampPos = {
 
 
 
-static void mm_drawMech(unsigned char **line) {
+static void mm_drawMech(BMTYPE **line) {
   core_textOutf(30, 0,BLACK,"DrawBridge Pos.: %-17s",showdrawbridgePos());
   core_textOutf(30,10,BLACK,"Castle Gate: %-6s",core_getSol(sCastleGateH) ? "Open":"Closed");
   core_textOutf(30,20,BLACK,"L/R Troll  : %-4s/%-4s",core_getSol(sLTrollH) ? " Up ":"Down", core_getSol(sRTrollH) ? " Up ":"Down");
 }
 /* Help */
 
-static void mm_drawStatic(unsigned char **line) {
+static void mm_drawStatic(BMTYPE **line) {
   core_textOutf(30, 40,BLACK,"Help Keys:");
   core_textOutf(30, 50,BLACK,"L/R Shift+R = L/R Ramp");
   core_textOutf(30, 60,BLACK,"L/R Shift+R = L/R Loop");
@@ -428,7 +428,7 @@ static wpc_tSamSolMap mm_samsolmap[] = {
  /*Channel #2*/
  {sLaunch,2,SAM_SOLENOID},  {sLeftSling,2,SAM_LSLING},
  {sRightSling,2,SAM_RSLING},  {sCatapult,2,SAM_POPPER},
- 
+
  /*Channel #3*/
  {sLeftPopper,3,SAM_POPPER}, {sCastle,3,SAM_SOLENOID},
  {sCastleGateP,3,SAM_FLAPOPEN}, {sCastleGateH,3,SAM_FLAPCLOSE,WPCSAM_F_ONOFF},

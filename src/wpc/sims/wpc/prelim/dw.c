@@ -29,7 +29,7 @@
 /-------------------*/
 static int  dw_handleBallState(sim_tBallStatus *ball, int *inports);
 static void dw_handleMech(int mech);
-static void dw_drawStatic(unsigned char **line);
+static void dw_drawStatic(BMTYPE **line);
 static void init_dw(void);
 
 /*-----------------------
@@ -279,7 +279,7 @@ static sim_tInportData dw_inportData[] = {
 
 /* Help */
 
-  static void dw_drawStatic(unsigned char **line) {
+  static void dw_drawStatic(BMTYPE **line) {
   core_textOutf(30, 40,BLACK,"Help on this Simulator:");
   core_textOutf(30, 50,BLACK,"L/R Shift+- = L/R Slingshot");
   core_textOutf(30, 60,BLACK,"L/R Shift+I/O = L/R Inlane/Outlane");

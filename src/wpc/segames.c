@@ -21,11 +21,6 @@ static void init_##name(void) { \
 } \
 SE_INPUT_PORTS_START(name, balls) SE_INPUT_PORTS_END
 
-#ifndef VPINMAME
-   #define GAME_NOCRC 0
-#endif
-
-
 /* GAMES APPEAR IN PRODUCTION ORDER (MORE OR LESS) */
 
 /*-------------------------------------------------------------------
@@ -162,13 +157,58 @@ CORE_GAMEDEFNV(harley,"Harley Davidson",1998,"Sega",de_mSE,GAME_NOCRC)
 
 
 /*-------------------------------------------------------------------
-/ Striker Extreme
+/ Striker Extreme (USA)
 /-------------------------------------------------------------------*/
 INITGAME(strikext,GEN_WS,3/*?*/)
-SE128_ROMSTART(strikext,"sxcpue.101",0xeac29785)
-SE_DMD524_ROMSTART(		"sxdispa.101",0x01d2cb240)
+SE128_ROMSTART(strikext,"sxcpua.102", 0x5e5f0fb8)
+SE_DMD524_ROMSTART(     "sxdispa.103",0xe4cf849f)
 SE_ROMEND
 CORE_GAMEDEFNV(strikext,"Striker Extreme",1999,"Stern",de_mSE,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Striker Extreme (UK)
+/-------------------------------------------------------------------*/
+INITGAME(strxt_uk,GEN_WS,3/*?*/)
+SE128_ROMSTART(strxt_uk,"sxcpue.101", 0xeac29785)
+SE_DMD524_ROMSTART(     "sxdispa.101",0x1d2cb240)
+SE_ROMEND
+CORE_CLONEDEFNV(strxt_uk,strikext,"Striker Extreme (UK)",1999,"Stern",de_mSE,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Striker Extreme (DE)
+/-------------------------------------------------------------------*/
+INITGAME(strxt_gr,GEN_WS,3/*?*/)
+SE128_ROMSTART(strxt_gr,"sxcpug.102", 0x2686743b)
+SE_DMD524_ROMSTART(     "sxdispg.103",0xeb656489)
+SE_ROMEND
+CORE_CLONEDEFNV(strxt_gr,strikext,"Striker Extreme (Germany)",1999,"Stern",de_mSE,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Striker Extreme (FR)
+/-------------------------------------------------------------------*/
+INITGAME(strxt_fr,GEN_WS,3/*?*/)
+SE128_ROMSTART(strxt_fr,"sxcpuf.102", 0x2804bc9f)
+SE_DMD524_ROMSTART(     "sxdispf.103",0x4b4b5c19)
+SE_ROMEND
+CORE_CLONEDEFNV(strxt_fr,strikext,"Striker Extreme (France)",1999,"Stern",de_mSE,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Striker Extreme (IT)
+/-------------------------------------------------------------------*/
+INITGAME(strxt_it,GEN_WS,3/*?*/)
+SE128_ROMSTART(strxt_it,"sxcpui.102", 0xf955d0ef)
+SE_DMD524_ROMSTART(     "sxdispi.103",0x40be3fe2)
+SE_ROMEND
+CORE_CLONEDEFNV(strxt_it,strikext,"Striker Extreme (Italy)",1999,"Stern",de_mSE,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Striker Extreme (SP)
+/-------------------------------------------------------------------*/
+INITGAME(strxt_sp,GEN_WS,3/*?*/)
+SE128_ROMSTART(strxt_sp,"sxcpul.102", 0x6b1e417f)
+SE_DMD524_ROMSTART(     "sxdispl.103",0x3efd4a18)
+SE_ROMEND
+CORE_CLONEDEFNV(strxt_sp,strikext,"Striker Extreme (Spain)",1999,"Stern",de_mSE,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Sharkey's Shootout
@@ -179,21 +219,47 @@ SE_DMD524_ROMSTART(	"ssdispa.201",0x3360300b)
 SE_ROMEND
 CORE_GAMEDEFNV(shrkysht,"Sharkey's Shootout",2000,"Stern",de_mSE,GAME_NOCRC)
 
-
 /*-------------------------------------------------------------------
 / High Roller Casino
 /-------------------------------------------------------------------*/
 INITGAME(hirolcas,GEN_WS,3/*?*/)
-SE128_ROMSTART(hirolcas,"hrccpu.210",0x2e3c682a)
-SE_DMD524_ROMSTART(	    "hrcda200.bin",0x0642bdce7)
+SE128_ROMSTART(hirolcas,"hrccpu.210",  0x2e3c682a)
+SE_DMD524_ROMSTART(	"hrcda200.bin",0x0642bdce7)
 SE_ROMEND
 CORE_GAMEDEFNV(hirolcas,"High Roller Casino",2001,"Stern",de_mSE,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ Austin Powers
+/ High Roller Casino (DE)
+/-------------------------------------------------------------------*/
+INITGAME(hirol_gr,GEN_WS,3/*?*/)
+SE128_ROMSTART(hirol_gr,"hrccpu.210",  0x2e3c682a)
+SE_DMD524_ROMSTART(	"hrcdg201.bin",0x57b95712)
+SE_ROMEND
+CORE_CLONEDEFNV(hirol_gr,hirolcas,"High Roller Casino (Germany)",2001,"Stern",de_mSE,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Austin Powers (3.0)
 /-------------------------------------------------------------------*/
 INITGAME(austin,GEN_WS,3/*?*/)
-SE128_ROMSTART(austin,"apcpu.210",0xa4ddcdca)
-SE_DMD524_ROMSTART(  "apdisp-a.200",0xf3ca7fca)
+SE128_ROMSTART(austin,"apcpu.300",   0xa06b2b03)
+SE_DMD524_ROMSTART(   "apdsp-a.300", 0xecf2c3bb)
 SE_ROMEND
-CORE_GAMEDEFNV(austin,"Austin Powers",2001,"Stern",de_mSE,GAME_NOCRC)
+CORE_GAMEDEFNV(austin,"Austin Powers (3.0)",2001,"Stern",de_mSE,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Austin Powers (2.0)
+/-------------------------------------------------------------------*/
+INITGAME(austin2,GEN_WS,3/*?*/)
+SE128_ROMSTART(austin2,"apcpu.201",   0xa4ddcdca)
+SE_DMD524_ROMSTART(    "apdisp-a.200",0xf3ca7fca)
+SE_ROMEND
+CORE_CLONEDEFNV(austin2,austin,"Austin Powers (2.0)",2001,"Stern",de_mSE,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Monopoly (2.33)
+/-------------------------------------------------------------------*/
+INITGAME(monopoly,GEN_WS,3/*?*/)
+SE128_ROMSTART(monopoly,"moncpu.233",  0xf20a5ca6)
+SE_DMD524_ROMSTART(     "mondsp-a.206",0x6df6e158)
+SE_ROMEND
+CORE_GAMEDEFNV(monopoly,"Monopoly",2001,"Stern",de_mSE,GAME_NOCRC)

@@ -59,9 +59,9 @@
 static int  sttng_handleBallState(sim_tBallStatus *ball, int *inports);
 static void sttng_handleMech(int mech);
 static void init_sttng(void);
-static void sttng_drawMech(unsigned char **line);
+static void sttng_drawMech(BMTYPE **line);
 static int sttng_getMech(int mechNo);
-static void sttng_drawStatic(unsigned char **line);
+static void sttng_drawStatic(BMTYPE **line);
 static int sttng_getSol(int solNo);
 
 /*-----------------------
@@ -246,7 +246,7 @@ WPC_INPUT_PORTS_END
 
 
 #define GUN_HOME    (8*2)   /*End Position of Gun Home*/
-#define GUN_MARK    (8*7)   /* Where is Mark Switch Triggered*/ 
+#define GUN_MARK    (8*7)   /* Where is Mark Switch Triggered*/
 #define GUN_END	    (8*20)  /*# of Times to increment rotation until we stop and turnaround!*/
 #define GUN_LEFT    0
 #define GUN_RIGHT   1
@@ -267,7 +267,7 @@ WPC_INPUT_PORTS_END
 enum {stTrough1=SIM_FIRSTSTATE, stTrough2, stTrough3, stTrough4, stTrough5, stTrough6, stTrough,
 	  stShooter, stLaunchWire, stDrain,
 	  stLRampEnt,stLRampExit, stCRampExit, stRRampEnt, stRRampExit,
-	  stLOut, stROut, stLIn, stRIn, stLLoopUp1, stSpinner, stLLoopUp2, stRLoopDn, stRLoopUp, 
+	  stLOut, stROut, stLIn, stRIn, stLLoopUp1, stSpinner, stLLoopUp2, stRLoopDn, stRLoopUp,
 	  stTDropTarget, stTDropTarget2, stMultL, stMultC, stMultR,
       stJet1, stJet2, stJet3,
       stTopHole, stCenterHole, stLeftHole,  stTopDiverter, stBottDiverter, stDiverter,
@@ -277,15 +277,15 @@ enum {stTrough1=SIM_FIRSTSTATE, stTrough2, stTrough3, stTrough4, stTrough5, stTr
       };
 
 /********************************************************************************************************
-   The following is a list of all possible game states..... 
+   The following is a list of all possible game states.....
    We start defining our own states at element #3, since 'Not Installed', 'Moving', and 'Playfield'
    are always defined the same!!
 
    Any state with all zeros, like the following example must be handled in the Handle Ball State function!
-   {"State Name",    1,0,    0,       0, 0}, 
+   {"State Name",    1,0,    0,       0, 0},
 
    Fields for each array element
-   ----------------------------- 
+   -----------------------------
    #1) Name to display on screen
    #2) Switch down time (minimum)
    #3) Switch to be triggered while in this state
@@ -306,7 +306,7 @@ static sim_tState sttng_stateDef[] = {
   {"Not Installed",    0,0,           0,        stDrain,     0,0,0,SIM_STNOTEXCL},
   {"Moving"},
   {"Playfield",               0,0,           0,        0,           0,0,0,SIM_STNOTEXCL},
- 
+
   {"Trough 1",			1,swTrough1,	0,	  stTrough2,   1},
   {"Trough 2",			1,swTrough2,	0,        stTrough3,   1},
   {"Trough 3",			1,swTrough3,	0,        stTrough4,   1},
@@ -335,7 +335,7 @@ static sim_tState sttng_stateDef[] = {
   {"Left Loop",        1,swLOuterLoop,	0,	  stRLoopDn,	10},
   {"Right Loop",       1,swROuterLoop,	0,        stFree,	10},	/*Right Loop Coming Down*/
   {"Right Loop",       1,swROuterLoop,	0,        stTDropTarget,10},	/*Right Loop Going Up */
-  
+
   {"Top Drop Target",	1,0, 0, 0, 0},
   {"Top Drop Target",	1,swTDropTarget,0,	stMultL,	5},
   {"Rollover 1",	1,swMultL,	0,	stJet2,		5},
@@ -353,14 +353,14 @@ static sim_tState sttng_stateDef[] = {
   {"Center Hole",	1,swUBorgHole,	0,			stTopDiverter,   2},	/*Center Next goes to Top Diverter*/
   {"Left Hole",		1,swULeftHole,	0,			stTopDiverter,   2},	/*Left Next goes to Top Diverter*/
   {"U.Top Diverter",	1,0,		0,			0,	 0},
-  {"U.Bott Diverter",	1,0,		0,			0,	 0}, 
-  {"Top Diverter",	1,0,		0,			0,	 0}, 
+  {"U.Bott Diverter",	1,0,		0,			0,	 0},
+  {"Top Diverter",	1,0,		0,			0,	 0},
 
   {"L. Popper 4",	1, swULLock4,	0,			stTLPopper3,	 1},	/*TLPopper4*/
   {"L. Popper 3",	1, swULLock3,	0,			stTLPopper2,	 1},	/*TLPopper3*/
   {"L. Popper 2",	1, swULLock2,	0,			stTLPopper1,	 1},	/*TLPopper2*/
   {"L. Popper 1",	1, swULLock1,   sLPopper,		stRIn,			 1},	/*TLPopper1*/
-  
+
   {"L. Gun 2",		1, swULGun2,	0,			stBLPopper2,	1}, /*BLPopper*/
   {"L. Gun 1",		1, swULGun1,	sLGunPopper,		stLGunLoaded, 	1}, /*BLPopper2*/
   {"R. Gun 2",		1, swURGun2,	0,			stRPopper,	1}, /*RPopper2*/
@@ -377,7 +377,7 @@ static int sttng_handleBallState(sim_tBallStatus *ball, int *inports) {
   switch (ball->state)
 	{	
 		/*-----------------
-		  Top Drop Target 
+		  Top Drop Target
 		-------------------*/
 		case stTDropTarget:
 		/* If Drop Target Is Down.. Ball goes into Top Hole!*/
@@ -428,7 +428,7 @@ static int sttng_handleBallState(sim_tBallStatus *ball, int *inports) {
 /*---------------------------
 /  Keyboard conversion table
 /----------------------------
--------------------------------------------------------------------------------------------------- 
+--------------------------------------------------------------------------------------------------
   Layout of inportData array
    ----------------------------
    #1) Inport number
@@ -509,26 +509,26 @@ static core_tLampDisplay sttng_lampPos = {
 
 static wpc_tSamSolMap sttng_SamSolMap[] = {
  /*Channel #0*/
- {sKnocker,0,SAM_KNOCKER}, {sPlunger,0,SAM_SOLENOID}, 
- {sTrough,0,SAM_POPPER}, {sLPopper,3,SAM_POPPER}, 
+ {sKnocker,0,SAM_KNOCKER}, {sPlunger,0,SAM_SOLENOID},
+ {sTrough,0,SAM_POPPER}, {sLPopper,3,SAM_POPPER},
 
  /*Channel #1*/
  {sLSling,1,SAM_LSLING}, {sRSling,1,SAM_RSLING},
  {sJet1,1,SAM_JET1}, {sJet2,1,SAM_JET2},
- {sJet3,1,SAM_JET3}, 
+ {sJet3,1,SAM_JET3},
 
  /*Channel #2*/
  {sLGunKicker,2,SAM_SOLENOID}, {sLGunPopper,2,SAM_POPPER},
  {sKickBack,2,SAM_SOLENOID}, {sBorgKicker,2,SAM_SOLENOID},
 
  /*Channel #3*/
- {sRGunKicker,3,SAM_SOLENOID}, {sRGunPopper,3,SAM_POPPER}, 
-// {sTopDiverter,3,SAM_DIVERTER}, {sUDiverterTop,3,SAM_DIVERTER}, 
+ {sRGunKicker,3,SAM_SOLENOID}, {sRGunPopper,3,SAM_POPPER},
+// {sTopDiverter,3,SAM_DIVERTER}, {sUDiverterTop,3,SAM_DIVERTER},
  {sTopDiverter,3,SAM_SOLENOID_ON}, {sTopDiverter,3,SAM_SOLENOID_OFF,WPCSAM_F_ONOFF},
  {sUDiverterTop,3,SAM_SOLENOID_ON}, {sUDiverterTop,3,SAM_SOLENOID_OFF,WPCSAM_F_ONOFF},
 
  /*Channel #4*/
-// {sUDiverterBott,4,SAM_DIVERTER}, 
+// {sUDiverterBott,4,SAM_DIVERTER},
  {sUDiverterBott,3,SAM_SOLENOID_ON}, {sUDiverterBott,3,SAM_SOLENOID_OFF,WPCSAM_F_ONOFF},
  {sTopDropUp,4,SAM_FLAPOPEN}, {sTopDropDown,4,SAM_FLAPCLOSE},
 
@@ -537,16 +537,16 @@ static wpc_tSamSolMap sttng_SamSolMap[] = {
 };
 
 /*--------------------------------------------------------
-  Code to draw the mechanical objects, and their states! 
+  Code to draw the mechanical objects, and their states!
 ---------------------------------------------------------*/
-static void sttng_drawMech(unsigned char **line) {
+static void sttng_drawMech(BMTYPE **line) {
   core_textOutf(30, 0,BLACK,"Top Drop Target: %-6s", locals.TdroptargetPos==DT_UP?"Up":"Down");
   core_textOutf(30, 10,BLACK,"Left Gun: %3d", locals.LgunPos);
   core_textOutf(30, 20,BLACK,"Right Gun: %3d", locals.RgunPos);
 }
   /* Help */
 
-static void sttng_drawStatic(unsigned char **line) {
+static void sttng_drawStatic(BMTYPE **line) {
   core_textOutf(30, 40,BLACK,"Help:");
   core_textOutf(30, 50,BLACK,"L/R Shift+R = L/R Ramp");
   core_textOutf(30, 60,BLACK,"L/R Shift+L = L/R Loop");

@@ -824,8 +824,8 @@ void mixer_sh_update(void)
 	}
 #ifdef PINMAME_EXT
        {
-         extern void wave_record(INT16 *buffer, int samples);
-         wave_record(mix_buffer, samples_this_frame);
+         extern void pm_wave_record(INT16 *buffer, int samples);
+         pm_wave_record(mix_buffer, samples_this_frame);
        }
 #endif /* PINMAME_EXT */
 	/* play the result */

@@ -18,7 +18,7 @@
    WER  Jet Bumpers
 
    More to be added...
-                      
+
 ------------------------------------------------------------------------------*/
 
 #include "driver.h"
@@ -30,7 +30,7 @@
 /  Local functions
 /-------------------*/
 static int  pop_handleBallState(sim_tBallStatus *ball, int *inports);
-static void pop_drawStatic(unsigned char **line);
+static void pop_drawStatic(BMTYPE **line);
 static void init_pop(void);
 
 /*-----------------------
@@ -38,7 +38,7 @@ static void init_pop(void);
  ------------------------*/
 /* Uncomment if you wish to use locals. type variables */
 //static struct {
-//  int 
+//  int
 //} locals;
 
 /*--------------------------
@@ -230,7 +230,7 @@ static sim_tInportData pop_inportData[] = {
 /*--------------------
   Drawing information
   --------------------*/
-  static void pop_drawStatic(unsigned char **line) {
+  static void pop_drawStatic(BMTYPE **line) {
 
 /* Help */
 
@@ -248,7 +248,7 @@ static sim_tInportData pop_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(pop,lx5,"peye_lx5.rom",0x80000,0xee1f7a67) 
+WPC_ROMSTART(pop,lx5,"peye_lx5.rom",0x80000,0xee1f7a67)
 DCS_SOUNDROM6x(	"popsndl2.u2",0x00590f2d,
 		"popsndl2.u3",0x87032b27,
 		"popsndl2.u4",0xb0808aa8,

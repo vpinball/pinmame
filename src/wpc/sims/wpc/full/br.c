@@ -51,9 +51,9 @@
 /-------------------*/
 static int  br_handleBallState(sim_tBallStatus *ball, int *inports);
 static void br_handleMech(int mech);
-static void br_drawMech(unsigned char **line);
+static void br_drawMech(BMTYPE **line);
 static int br_getMech(int mechNo);
-static void br_drawStatic(unsigned char **line);
+static void br_drawStatic(BMTYPE **line);
 static void init_br(void);
 static char* showcannonpos(void);
 
@@ -272,7 +272,7 @@ static int br_handleBallState(sim_tBallStatus *ball, int *inports) {
 	{
 
 	/* Ball in Shooter Lane */
-    	case stBallLane:  
+    	case stBallLane:
 		if (ball->speed < 7)
 			return setState(stNotEnough,7);		/*Ball not plunged hard enough*/
 		if (ball->speed < 20)
@@ -364,13 +364,13 @@ static sim_tInportData br_inportData[] = {
 /*--------------------
   Drawing information
   --------------------*/
-static void br_drawMech(unsigned char **line) {
+static void br_drawMech(BMTYPE **line) {
   core_textOutf(30, 10,BLACK,"Ship Ramp  : %-4s", core_getSw(swRampDown) ? "Down":"Up");
   core_textOutf(30, 20,BLACK,"Cannon Pointing to:");
   core_textOutf(30, 30,BLACK,"%-11s (%3d)", showcannonpos(), locals.cannonPos);
 }
 /* Help */
-static void br_drawStatic(unsigned char **line) {
+static void br_drawStatic(BMTYPE **line) {
 
   core_textOutf(30, 50,BLACK,"Help on this Simulator:");
   core_textOutf(30, 60,BLACK,"L/R Shift+R = L/R Ramp");
@@ -400,7 +400,7 @@ static wpc_tSamSolMap br_samsolmap[] = {
  /*Channel #2*/
  {sCannonKicker,2,SAM_POPPER},  {sLeftSling,2,SAM_LSLING},
  {sRightSling,2,SAM_RSLING},  {sBallPopper,2,SAM_POPPER},
- 
+
  /*Channel #3*/
  {sBallLockup,3,SAM_SOLENOID_ON}, {sBallLockup,3,SAM_SOLENOID_OFF,WPCSAM_F_ONOFF},
  {sRampUp,3,SAM_FLAPOPEN}, {sRampDown,3,SAM_FLAPCLOSE},{-1}

@@ -15,7 +15,7 @@
 /* 231000 Now uses textOutf */
 /* 160401 Added GetMech */
 /* 020801 Added sample support (SJE)*/
-/*-------------- 
+/*--------------
 / Keys
 /   +R  L/R Ramp
 /   +I  L/R Inlane
@@ -48,8 +48,8 @@ static int taf_handleBallState(sim_tBallStatus *ball, int *inports);
 /*static int taf_getSol(int solNo);*/
 static void taf_handleMech(int mech);
 static int taf_getMech(int mechNo);
-static void taf_drawMech(unsigned char **line);
-static void taf_drawStatic(unsigned char **line);
+static void taf_drawMech(BMTYPE **line);
+static void taf_drawStatic(BMTYPE **line);
 static void init_taf(void);
 
 /*-----------------------
@@ -357,14 +357,14 @@ static core_tLampDisplay taf_lampPos = {
 //sSwampRel
 static wpc_tSamSolMap taf_SamSolMap[] = {
  /*Channel #0*/
- //{sKnocker,0,SAM_KNOCKER}, 
+ //{sKnocker,0,SAM_KNOCKER},
 
 {sBallRel,0,SAM_BALLREL},{sOuthole,0,SAM_OUTHOLE}, {sChair,0,SAM_POPPER},
 
 /*Channel #1*/
 {sLSling,1,SAM_LSLING}, {sRSling,1,SAM_RSLING},
 {sJet1,1,SAM_JET1}, {sJet2,1,SAM_JET2},
-{sJet3,1,SAM_JET3}, {sJet4,1,SAM_JET1}, {sJet5,1,SAM_JET2}, 
+{sJet3,1,SAM_JET3}, {sJet4,1,SAM_JET1}, {sJet5,1,SAM_JET2},
 
  /*Channel #2*/
 {sLKick,2,SAM_POPPER},{sRampDiv,2,SAM_SOLENOID},
@@ -374,13 +374,13 @@ static wpc_tSamSolMap taf_SamSolMap[] = {
 {-1}
 };
 
-static void taf_drawMech(unsigned char **line) {
+static void taf_drawMech(BMTYPE **line) {
   core_textOutf(50, 0,BLACK,"Book: %-6s", core_getSw(swBookOpen) ? "Open" : (core_getSw(swBookClose) ? "Closed" : ""));
   core_textOutf(50,10,BLACK,"Thing: %-4s", core_getSw(swThingUp) ? "Up" : (core_getSw(swThingDn) ? "Down" : ""));
 }
   /* Help */
 
-static void taf_drawStatic(unsigned char **line) {
+static void taf_drawStatic(BMTYPE **line) {
   core_textOutf(30, 40,BLACK,"Help on this Simulator:");
   core_textOutf(30, 50,BLACK,"L/R Shift+O = L/R Loop");
   core_textOutf(30, 60,BLACK,"L/R Shift+R = L/R Ramp");
@@ -404,6 +404,10 @@ WPC_ROMSTART(taf,l5,  "addam_l5.rom",0x80000,0x4c071564)
 WPCS_SOUNDROM8xx("tafu18l1.rom",0x131ae471)
 WPC_ROMEND
 
+WPC_ROMSTART(taf,l6,  "taf_l6.u6",0x80000,0x06b37e65)
+WPCS_SOUNDROM8xx("tafu18l1.rom",0x131ae471)
+WPC_ROMEND
+
 WPC_ROMSTART(tafg,lx3,"afgldlx3.rom",0x80000,0x0cc62fa5)
 WPCS_SOUNDROM84x("ag_u18_s.l1",0x02e824a9,
                  "ag_u15_s.l1",0xb8c88c75)
@@ -419,7 +423,8 @@ WPC_ROMEND
 #define input_ports_tafg input_ports_taf
 #define init_tafg        init_taf
 
-CORE_GAMEDEF(taf,l5,      "The Addams Family (L-5)",1992,"Bally",wpc_mFliptronS,0)
+CORE_GAMEDEF(taf,l5,       "The Addams Family (L-5)",1992,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(taf,l6,l5,    "The Addams Family (L-6)",1992,"Bally",wpc_mFliptronS,0)
 CORE_GAMEDEF(tafg,lx3,     "The Addams Family Special Collectors Edition Gold (LX-3)", 1994,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tafg,h3,lx3,"The Addams Family Special Collectors Edition (H-3)",1994,"Bally",wpc_mFliptronS,0)
 

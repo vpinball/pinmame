@@ -17,7 +17,7 @@
      Q  SDTM (Drain Ball)
 
    More to be added...
-                      
+
 ------------------------------------------------------------------------------*/
 
 #include "driver.h"
@@ -29,7 +29,7 @@
 /  Local functions
 /-------------------*/
 static int  cp_handleBallState(sim_tBallStatus *ball, int *inports);
-static void cp_drawStatic(unsigned char **line);
+static void cp_drawStatic(BMTYPE **line);
 static void init_cp(void);
 
 /*-----------------------
@@ -37,7 +37,7 @@ static void init_cp(void);
  ------------------------*/
 /* Uncomment if you wish to use locals. type variables */
 //static struct {
-//  int 
+//  int
 //} locals;
 
 /*--------------------------
@@ -214,7 +214,7 @@ static sim_tInportData cp_inportData[] = {
 /*--------------------
   Drawing information
   --------------------*/
-  static void cp_drawStatic(unsigned char **line) {
+  static void cp_drawStatic(BMTYPE **line) {
 
 /* Help */
 
@@ -234,7 +234,7 @@ static sim_tInportData cp_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(cp,16,"cp_g11.1_6",0x80000,0xd6d0b921) 
+WPC_ROMSTART(cp,16,"cp_g11.1_6",0x80000,0xd6d0b921)
 DCS_SOUNDROM6xm("cp_s2.bin",0xe0b67f6f,
 				"cp_s3.bin",0x68accf24,
 				"cp_s4.bin",0x50d1c920,

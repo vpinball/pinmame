@@ -45,8 +45,8 @@
 /-------------------*/
 static int  ngg_handleBallState(sim_tBallStatus *ball, int *inports);
 static void ngg_handleMech(int mech);
-static void ngg_drawMech(unsigned char **line);
-static void ngg_drawStatic(unsigned char **line);
+static void ngg_drawMech(BMTYPE **line);
+static void ngg_drawStatic(BMTYPE **line);
 static int ngg_getSol(int solNo);
 static void init_ngg(void);
 static char* showramp(int lr);
@@ -219,7 +219,7 @@ enum {stTrough6=SIM_FIRSTSTATE, stTrough5, stTrough4, stTrough3, stTrough2, stTr
       stAdvanceTrap, stSandTrap, stCaptiveBall, stAdvanceKick, stTopSkill, stMiddleSkill, stBottomSkill,
       stLCartPath, stRCartPath, stLCartPath1, stRCartPath1, stLeftLoop1, stRightLoop1,
       stUnderLRamp, stUGroundPass, stJetPopper, stUnderRRamp, stRPopper,
-      stCRampTest, stLGofer2L, stLGofer2R, stLGofer2H, stLGofer1L, stLGofer1R, stLGofer1H, stLGofer2a, 
+      stCRampTest, stLGofer2L, stLGofer2R, stLGofer2H, stLGofer1L, stLGofer1R, stLGofer1H, stLGofer2a,
       stRRampTest, stRGofer2L, stRGofer2R, stRGofer2H, stRGofer1L, stRGofer1R, stRGofer1H, stRGofer2a
     };
 
@@ -227,7 +227,7 @@ static sim_tState ngg_stateDef[] = {
   {"Not Installed",	0,0,		 0,		stDrain,	0,	0,	0,	SIM_STNOTEXCL},
   {"Moving"},
   {"Playfield",		0,0,		 0,		0,		0,	0,	0,	SIM_STNOTEXCL},
-             
+
   /*Line 1*/
   {"Trough 6",          1,swTrough6,    0,              stTrough5,      1},
   {"Trough 5",          1,swTrough5,    0,              stTrough4,      1},
@@ -262,7 +262,7 @@ static sim_tState ngg_stateDef[] = {
   {"Left Spinner",      1,swLeftSpinner, 0,             stLCartPath,    1,0,0,SIM_STSPINNER},
   {"Right Spinner",     1,swRightSpinner,0,             stRCartPath,    1,0,0,SIM_STSPINNER},
   {"Putt Out",          1,swPuttOut,     0,0,0},
-  
+
   /*Line 5*/
   {"Golf Cart",         1,swGolfCart,    0,             stFree,         1},
   {"Playfield",         1,0,0,0,0},
@@ -344,7 +344,7 @@ static int ngg_handleBallState(sim_tBallStatus *ball, int *inports) {
 		break;
 
 	/* Ball in Shooter Lane */
-    	case stBallLane:  
+    	case stBallLane:
                 if (ball->speed < 10)
                         return setState(stNotEnough,25);        /*Ball not plunged hard enough*/
                 if (ball->speed < 25)
@@ -364,7 +364,7 @@ static int ngg_handleBallState(sim_tBallStatus *ball, int *inports) {
         // Centre ramp, Gofer Hit or Lock
         // We have to test for this before we trigger any switches as the
         // software will drop the gofers for a lock, as soon as the first
-        // switch is made (relying on the mechanical delay of the mechanism). 
+        // switch is made (relying on the mechanical delay of the mechanism).
         // Without this test first we would lock the ball on every gofer hit!
         case stCRampTest:
                 if (locals.ramppos[0] == DOWN)
@@ -532,7 +532,7 @@ static char* WheelText[] =
 
 static char* SlamText[] = {"Down","Up"};
 
-  static void ngg_drawMech(unsigned char **line) {
+  static void ngg_drawMech(BMTYPE **line) {
 
 /* Help */
 
@@ -541,7 +541,7 @@ static char* SlamText[] = {"Down","Up"};
   core_textOutf(30, 50,BLACK,"Wheel: %s", WheelText[locals.wheelpos/4]);
   core_textOutf(30, 60,BLACK,"Slam Ramp: %s  ", SlamText[locals.slampos]);
 }
-  static void ngg_drawStatic(unsigned char **line) {
+  static void ngg_drawStatic(BMTYPE **line) {
   core_textOutf(30, 80,BLACK,"Help on this Simulator:");
   core_textOutf(30, 89,BLACK,"L/R Shift+- = L/R Slingshot");
   core_textOutf(30, 98,BLACK,"L/R Shift+L/O = L/R Loops/Outlane");
