@@ -18,6 +18,7 @@ DRVLIBS = $(PINOBJ)/sim.o $(PINOBJ)/core.o $(OBJ)/allgames.a
 DRVLIBS += $(PINOBJ)/vpintf.o $(PINOBJ)/snd_cmd.o $(PINOBJ)/wpcsam.o
 DRVLIBS += $(PINOBJ)/sndbrd.o
 DRVLIBS += $(OBJ)/machine/4094.o
+DRVLIBS += $(OBJ)/sound/wavwrite.o
 
 COREOBJS += $(PINOBJ)/driver.o $(OBJ)/cheat.o $(PINOBJ)/mech.o
 
@@ -50,6 +51,7 @@ DRVLIBS += $(PINOBJ)/bingo.o
 DRVLIBS += $(PINOBJ)/techno.o
 DRVLIBS += $(PINOBJ)/spinb.o
 DRVLIBS += $(PINOBJ)/mrgame.o
+DRVLIBS += $(PINOBJ)/nuova.o
 #
 # Games
 #
@@ -156,6 +158,7 @@ CPUS += I8051@
 CPUS += I8752@
 CPUS += TMS7000@
 CPUS += SCAMP@
+CPUS += AT91@
 
 SOUNDS += DAC@
 SOUNDS += YM2151_ALT@
