@@ -215,6 +215,7 @@ extern MACHINE_DRIVER_EXTERN(de_dmd642aS);
 #define S11_SNDOVERLAY   0x02 // Overlay solenoid board
 #define S11_PRINTERLINE  0x04 // Got printer lines
 #define S11_RKMUX        0x08 // Road Kings muxes different solenoids
+#define S11_MUXDELAY     0x10 // Delay mux solenoid by one IRQ
 #if 0
 GEN_S9      BCDDISP
 GEN_S11

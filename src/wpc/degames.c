@@ -177,7 +177,7 @@ CORE_CLONEDEF(tmac,a18,a24,"Time Machine (1.8)",1988,"Data East",de_mDEAS1, 0)
 /*-----------------------------------------------------------------------------------
 / Playboy 35th Anniversary - CPU Rev 2 /Alpha Type 2 - 32K Roms - 32/64K Sound Roms
 /-----------------------------------------------------------------------------------*/
-INITGAMES11(play, GEN_DE, de_dispAlpha2, FLIP1516, SNDBRD_DE1S, 0, 0)
+INITGAMES11(play, GEN_DE, de_dispAlpha2, FLIP1516, SNDBRD_DE1S, 0, S11_MUXDELAY)
 DE_ROMSTART88(play_a24,"play2-4.b5",CRC(bc8d7b32) SHA1(3b57dea2feb12315586283548e0bffdc8173b8fb),
                    "play2-4.c5",CRC(47c30bc2) SHA1(c62e192ec01f4884226e9628baa2cad10cc57bd9))
 DE1S_SOUNDROM244(  "pbsnd7.dat",CRC(c2cf2cc5) SHA1(1277704b1b38558c341b52da5e06ffa9f07942ad),       //F7 on schem (sound)
