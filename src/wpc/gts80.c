@@ -150,7 +150,7 @@ static WRITE_HANDLER(GTS80_sndCmd_w) {
 	if ( Machine->gamedrv->flags & GAME_NO_SOUND )
 		return;
 
-	sndbrd_0_data_w(0, data);
+	sndbrd_0_data_w(0, data|((GTS80locals.lampMatrix[1]&0x02)?0x10:0x00));
 }
 
 /* GTS80 switch numbering, row and column is swapped */
