@@ -66,12 +66,43 @@ INITGAME(foxylady, 0,dispGP_DDU1,FLIP_SW(FLIP_L),0)
 GP_ROMSTART88(foxylady,	"a-110.u12",0xed0d518b,
 						"b1-110.u13",0xa223f2e8)
 GP_ROMEND
-CORE_GAMEDEFNV(foxylady,"Foxy Lady",1978,"Game Plan",mGP1,GAME_NO_SOUND)
+CORE_GAMEDEFNV(foxylady,"Foxy Lady",1978,"Game Plan",mGP1,GAME_USES_CHIMES)
 
-//Black Velvet (May 1978) - Model: Cocktail #110 (Same as Foxy Lady)
-//Camel Lights (May 1978) - Model: Cocktail #110 (Same as Foxy Lady)
-//Real to Real (May 1978) - Model: Cocktail #110 (Same as Foxy Lady)
-//Rio          (??  1978) - Model: Cocktail #110 (Same as Foxy Lady)
+/*-------------------------------------------------------------------
+/ Black Velvet (May 1978) - Model: Cocktail #110
+/-------------------------------------------------------------------*/
+INITGAME(blvelvet, 0,dispGP_DDU1,FLIP_SW(FLIP_L),0)
+GP_ROMSTART88(blvelvet,	"a-110.u12",0xed0d518b,
+						"b1-110.u13",0xa223f2e8)
+GP_ROMEND
+CORE_GAMEDEFNV(blvelvet,"Black Velvet",1978,"Game Plan",mGP1,GAME_USES_CHIMES)
+
+/*-------------------------------------------------------------------
+/ Camel Lights (May 1978) - Model: Cocktail #110
+/-------------------------------------------------------------------*/
+INITGAME(camlight, 0,dispGP_DDU1,FLIP_SW(FLIP_L),0)
+GP_ROMSTART88(camlight,	"a-110.u12",0xed0d518b,
+						"b1-110.u13",0xa223f2e8)
+GP_ROMEND
+CORE_GAMEDEFNV(camlight,"Camel Lights",1978,"Game Plan",mGP1,GAME_USES_CHIMES)
+
+/*-------------------------------------------------------------------
+/ Real (to Real) (May 1978) - Model: Cocktail #110
+/-------------------------------------------------------------------*/
+INITGAME(real, 0,dispGP_DDU1,FLIP_SW(FLIP_L),0)
+GP_ROMSTART88(real,	"a-110.u12",0xed0d518b,
+						"b1-110.u13",0xa223f2e8)
+GP_ROMEND
+CORE_GAMEDEFNV(real,"Real (to Real)",1978,"Game Plan",mGP1,GAME_USES_CHIMES)
+
+/*-------------------------------------------------------------------
+/ Rio (May 1978) - Model: Cocktail #110
+/-------------------------------------------------------------------*/
+INITGAME(rio, 0,dispGP_DDU1,FLIP_SW(FLIP_L),0)
+GP_ROMSTART88(rio,	"a-110.u12",0xed0d518b,
+						"b1-110.u13",0xa223f2e8)
+GP_ROMEND
+CORE_GAMEDEFNV(rio,"Rio",1978,"Game Plan",mGP1,GAME_USES_CHIMES)
 
 //Chuck-A-Luck (October 1978)
 
@@ -84,7 +115,14 @@ GP_ROMSTART88(startrip,	"startrip.u12",0x98f27fdf,
 GP_ROMEND
 CORE_GAMEDEFNV(startrip,"Star Trip",1979,"Game Plan",mGP1,GAME_NO_SOUND)
 
-//Family Fun! (April 1979) - Model: Cocktail #120 (Same as Star Trip)
+/*-------------------------------------------------------------------
+/ Family Fun! (April 1979) - Model: Cocktail #120
+/-------------------------------------------------------------------*/
+INITGAME(famlyfun, 0,dispGP_DDU1,FLIP_SW(FLIP_L),0)
+GP_ROMSTART88(famlyfun,	"family.u12",0x98f27fdf,
+						"family.u13",0xb941a1a8)
+GP_ROMEND
+CORE_GAMEDEFNV(famlyfun,"Family Fun!",1979,"Game Plan",mGP1,GAME_NO_SOUND)
 
 /***************************************************************************
  *Games below are regular standup pinball games (except where noted)
