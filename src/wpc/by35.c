@@ -18,7 +18,6 @@
 static struct {
   int a0, a1, b1, ca20, ca21, cb20, cb21;
   int bcd[7];
-  int displays; // Number of display boards
   int lampadr1, lampadr2;
   UINT32 solenoids;
   core_tSeg segments,pseg;
@@ -78,7 +77,6 @@ static WRITE_HANDLER(pia1a_w) {
   int tmp = locals.a1;
   locals.a1 = data;
 
-//  sndbrd_0_data_w(0, (locals.cb21<<5) | ((locals.a1 & 0x02)<<3) | (locals.b1 & 0x0f));
   sndbrd_0_data_w(0, ((locals.a1 & 0x02)<<3) | (locals.b1 & 0x0f));
 
   if (!locals.ca20) {
@@ -107,7 +105,7 @@ static WRITE_HANDLER(pia0cb2_w) {
 static WRITE_HANDLER(pia1ca2_w) {
   if (locals.ca21 & ~data) {
     locals.lampadr2 = locals.a0 & 0x0f;
-    if (locals.displays > 6) { locals.bcd[6] = locals.a0>>4; by35_dispStrobe(0x40); }
+    if (core_gameData->hw.display & 0x01) { locals.bcd[6] = locals.a0>>4; by35_dispStrobe(0x40); }
   }
   locals.diagnosticLed = data;
   locals.ca21 = data;
@@ -122,11 +120,10 @@ static WRITE_HANDLER(pia0ca2_w) {
 /* PIA1:B-W Solenoid/Sound output */
 static WRITE_HANDLER(pia1b_w) {
   // m_mpac got a 6th display connected to solenoid 20
-  if ((locals.displays > 5) && (~locals.b1 & data & 0x80))
+  if ((core_gameData->hw.display & 0x02) && (~locals.b1 & data & 0x80))
     { locals.bcd[5] = locals.a0>>4; by35_dispStrobe(0x20); }
   locals.b1 = data;
 
-//  sndbrd_0_data_w(0, (locals.cb21<<5) | ((locals.a1 & 0x02)<<3) | (data & 0x0f));
   sndbrd_0_data_w(0, ((locals.a1 & 0x02)<<3) | (data & 0x0f));
   coreGlobals.pulsedSolState = 0;
   if (!locals.cb21)
@@ -260,26 +257,9 @@ static void by35_init(void) {
   if (core_init(&by35Data)) return;
   pia_config(BY35_PIA0, PIA_STANDARD_ORDERING, &by35_pia[0]);
   pia_config(BY35_PIA1, PIA_STANDARD_ORDERING, &by35_pia[1]);
-  { int sndType = SNDBRD_NONE;
-    switch (core_gameData->gen) {
-      case GEN_BY35_32: sndType = SNDBRD_BY32; break;
-      case GEN_BY35_50: sndType = SNDBRD_BY50; break;
-      case GEN_BY35_51: sndType = SNDBRD_BY51; break;
-      case GEN_BY35_61: sndType = SNDBRD_BY61; break;
-      case GEN_BY35_61B:sndType = SNDBRD_BY61B; break;
-      case GEN_BY35_81: sndType = SNDBRD_BY81; break;
-      case GEN_BY35_54: break;
-      case GEN_BY35_56: sndType = SNDBRD_BY56; break;
-      case GEN_BY35_45: sndType = SNDBRD_BY45; break;
-    }
-    sndbrd_0_init(sndType, 1, memory_region(BY35_MEMREG_SROM), NULL, NULL);
-  }
+  sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(BY35_MEMREG_SROM), NULL, NULL);
   locals.vblankCount = 1;
   locals.zctimer = timer_pulse(TIME_IN_HZ(BY35_ZCFREQ),0,by35_zeroCross);
-  /* not very pretty or flexible but I don't want to change the gameData structure now */
-  if (strcmp(Machine->gamedrv->name,"m_mpac") == 0) locals.displays = 6;
-  else if (strcmp(Machine->gamedrv->name,"smman") == 0) locals.displays = 7;
-  else locals.displays = 5;
 }
 
 static void by35_exit(void) {

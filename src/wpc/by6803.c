@@ -45,7 +45,7 @@
 
   Lamp numbering:
   Could not find a relationship between the lamp number and the connector
-  so here is connector to pinmame number conversion Phase A/C. (Phase C/D = x+48)
+  so here is connector to pinmame number conversion Phase A/C. (Phase B/D = x+48)
   Conn. PinMAME
   J10-01  1     J11-01 43     J12-01 40    J13-01 12
   J10-02  2     J11-02 42     J12-02 41    J13-02 13
@@ -60,12 +60,12 @@
   J10-11 20     J11-11 24     J12-11 11    J13-11 31
   J10-12 21     J11-12  8     J12-12 10    J13-12 30
   J10-13 38     J11-13  9     J12-13  9    J13-13 29
-  J10-14 37     J11-14 10     J12-14  8          
-  J10-15 key    J11-15 11     J12-15 28          
-  J10-16 33     J11-16 23     J12-16 44          
-  J10-17 34                   J12-17 12          
-  J10-18 35                                          
-  J10-19 36                                          
+  J10-14 37     J11-14 10     J12-14  8
+  J10-15 key    J11-15 11     J12-15 28
+  J10-16 33     J11-16 23     J12-16 44
+  J10-17 34                   J12-17 12
+  J10-18 35
+  J10-19 36
 */
 #include <stdarg.h>
 #include <time.h>
@@ -73,11 +73,13 @@
 #include "cpu/m6800/m6800.h"
 #include "machine/6821pia.h"
 #include "core.h"
-//#include "by6803snd.h"
 #include "sndbrd.h"
 #include "by35snd.h"
 #include "s11csoun.h"
 #include "by6803.h"
+
+#define BY6803_PIA0 0
+#define BY6803_PIA1 1
 
 #define BY6803_VBLANKFREQ     60 /* VBLANK frequency */
 #define BY6803_IRQFREQ       150 /* IRQ (via PIA) frequency*/
@@ -113,8 +115,6 @@ static struct {
   int vblankCount;
   int initDone;
   int phase_a, p21;
-  int sndint;
-  int snddata;
   void *zctimer;
   void (*SOUNDINIT)(void);
   void (*SOUNDEXIT)(void);
@@ -127,6 +127,7 @@ static struct {
 
 static void by6803_exit(void);
 static void by6803_nvram(void *file, int write);
+static WRITE_HANDLER(by6803_soundLED);
 
 static void piaIrq(int state) {
   cpu_set_irq_line(0, M6803_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
@@ -358,7 +359,7 @@ static void by6803_updSw(int *inports) {
 //  if (core_getSw(BY6803_SWSOUNDDIAG)) locals.SOUNDDIAG();
   sndbrd_0_diag(core_getSw(BY6803_SWSOUNDDIAG));
   /*-- coin door switches --*/
-  pia_set_input_ca1(0, !core_getSw(BY6803_SWSELFTEST));
+  pia_set_input_ca1(BY6803_PIA0, !core_getSw(BY6803_SWSELFTEST));
 }
 
 /*
@@ -413,13 +414,12 @@ static struct pia6821_interface piaIntf[] = {{
 
 static int by6803_irq(void) {
   static int last = 0;
-  pia_set_input_ca1(1, last = !last);
+  pia_set_input_ca1(BY6803_PIA1, last = !last);
 //  DBGLOG(("irq=%d\n",last));
   return 0;
 }
 
 static WRITE_HANDLER(by6803_soundCmd) {
-//  locals.SOUNDCOMMAND(offset,data);
   sndbrd_0_data_w(offset,data);  sndbrd_0_ctrl_w(0,0); sndbrd_0_ctrl_w(0,1);
 }
 
@@ -438,17 +438,17 @@ static core_tData by6803aData = {
 static void by6803_zeroCross(int data) {
   /*- toggle zero/detection circuit-*/
   locals.phase_a = (locals.phase_a + 1) & 3;
-  pia_set_input_cb1(0, !((locals.phase_a == 1) || (locals.phase_a == 2)));
+  pia_set_input_cb1(BY6803_PIA0, !((locals.phase_a == 1) || (locals.phase_a == 2)));
   cpu_set_irq_line(0, M6800_TIN_LINE, (locals.phase_a<2 && !locals.p21) ? ASSERT_LINE : CLEAR_LINE);
   DBGLOG(("phase=%d\n",locals.phase_a));
 }
 
-static void by6803_init_common(int hasKeypad) {
-//  if (hasKeypad?core_init(&by6803Data):core_init(&by6803aData)) return;
+static void by6803_init_common(void) {
+  if (core_init((core_gameData->gen & GEN_BY6803A) ? &by6803aData : &by6803Data)) return;
+  sndbrd_0_init(core_gameData->hw.soundBoard,1,memory_region(BY6803_MEMREG_SROM),NULL,by6803_soundLED);
   /* init PIAs */
-  pia_config(0, PIA_STANDARD_ORDERING, &piaIntf[0]);
-  pia_config(1, PIA_STANDARD_ORDERING, &piaIntf[1]);
-//  if (coreGlobals.soundEn) locals.SOUNDINIT();
+  pia_config(BY6803_PIA0, PIA_STANDARD_ORDERING, &piaIntf[0]);
+  pia_config(BY6803_PIA1, PIA_STANDARD_ORDERING, &piaIntf[1]);
   pia_reset();
   locals.vblankCount = 1;
   locals.zctimer = timer_pulse(TIME_IN_HZ(BY6803_ZCFREQ),0,by6803_zeroCross);
@@ -456,127 +456,68 @@ static void by6803_init_common(int hasKeypad) {
 
 static void by6803_init1(void) {
   memset(&locals, 0, sizeof(locals));
-  if (core_init(&by6803Data)) return;
-  sndbrd_0_init(SNDBRD_BY61,1,NULL,NULL,NULL);
-//  locals.SOUNDINIT = by6803_sndinit1;
-//  locals.SOUNDEXIT = by6803_sndexit1;
-//  locals.SOUNDCOMMAND = by6803_sndcmd1;
-//  locals.SOUNDDIAG = by6803_snddiag1;
   locals.DISPSTROBE = by6803_dispStrobe1;
   locals.SEGWRITE = by6803_segwrite1;
   locals.DISPDATA = by6803_dispdata1;
-  by6803_init_common(1);
+  by6803_init_common();
 }
 static void by6803_init1a(void) {
   memset(&locals, 0, sizeof(locals));
-  if (core_init(&by6803Data)) return;
-  sndbrd_0_init(SNDBRD_BY45,1,NULL,NULL,NULL);
-//locals.SOUNDINIT = by6803_sndinit1a;
-//locals.SOUNDEXIT = by6803_sndexit1;
-//locals.SOUNDCOMMAND = by6803_sndcmd1a;
-//locals.SOUNDDIAG = by6803_snddiag1;
   locals.DISPSTROBE = by6803_dispStrobe1;
   locals.SEGWRITE = by6803_segwrite1;
   locals.DISPDATA = by6803_dispdata1;
-  by6803_init_common(1);
+  by6803_init_common();
 }
 static void by6803_init2(void) {
   memset(&locals, 0, sizeof(locals));
-  if (core_init(&by6803Data)) return;
-  sndbrd_0_init(SNDBRD_BYTCS,1,NULL,NULL,NULL);
-//locals.SOUNDINIT = by6803_sndinit2;
-//locals.SOUNDEXIT = by6803_sndexit2;
-//locals.SOUNDCOMMAND = by6803_sndcmd2;
-//locals.SOUNDDIAG = by6803_snddiag2;
   locals.DISPSTROBE = by6803_dispStrobe2;
   locals.SEGWRITE = by6803_segwrite2;
   locals.DISPDATA = by6803_dispdata2;
-  by6803_init_common(1);
+  by6803_init_common();
 }
 static void by6803_init3(void) {
   memset(&locals, 0, sizeof(locals));
-  if (core_init(&by6803Data)) return;
-  sndbrd_0_init(SNDBRD_BYSD,1,NULL,NULL,NULL);
-//locals.SOUNDINIT = by6803_sndinit3;
-//locals.SOUNDEXIT = by6803_sndexit3;
-//locals.SOUNDCOMMAND = by6803_sndcmd3;
-//locals.SOUNDDIAG = by6803_snddiag3;
   locals.DISPSTROBE = by6803_dispStrobe2;
   locals.SEGWRITE = by6803_segwrite2;
   locals.DISPDATA = by6803_dispdata2;
-  by6803_init_common(1);
+  by6803_init_common();
 }
 static void by6803_init3a(void) {
   memset(&locals, 0, sizeof(locals));
-  if (core_init(&by6803aData)) return;
-  sndbrd_0_init(SNDBRD_BYSD,1,NULL,NULL,NULL);
-//locals.SOUNDINIT = by6803_sndinit3;
-//locals.SOUNDEXIT = by6803_sndexit3;
-//locals.SOUNDCOMMAND = by6803_sndcmd3;
-//locals.SOUNDDIAG = by6803_snddiag3;
   locals.DISPSTROBE = by6803_dispStrobe2;
   locals.SEGWRITE = by6803_segwrite2;
   locals.DISPDATA = by6803_dispdata2;
-  by6803_init_common(0);
+  by6803_init_common();
 }
 static void by6803_init4(void) {
   memset(&locals, 0, sizeof(locals));
-  if (core_init(&by6803Data)) return;
-  sndbrd_0_init(SNDBRD_S11CS,1,memory_region(BY6803_MEMREG_SROM),NULL,NULL);
-//locals.SOUNDINIT = by6803_sndinit4;
-//locals.SOUNDEXIT = by6803_sndexit4;
-//locals.SOUNDCOMMAND = by6803_sndcmd4;
-//locals.SOUNDDIAG = by6803_snddiag4;
   locals.DISPSTROBE = by6803_dispStrobe2;
   locals.SEGWRITE = by6803_segwrite2;
   locals.DISPDATA = by6803_dispdata2;
-  by6803_init_common(0);
+  by6803_init_common();
 }
 
 static void by6803_exit(void) {
   if (locals.zctimer) { timer_remove(locals.zctimer); locals.zctimer = NULL; }
-//  if (coreGlobals.soundEn) locals.SOUNDEXIT();
   sndbrd_0_exit(); core_exit();
 }
 
 //NA?
-static READ_HANDLER(port1_r) {
-	int data = 0;
-	//logerror("%x: port 1 read: %x\n",cpu_getpreviouspc(),data);
-	return data;
-}
+static READ_HANDLER(port1_r) { return 0; }
 
 //Read Phase A Status? (Not sure if this is used)
 //JW7 (PB3) should not be set, which breaks the gnd connection, so we set the line high.
-static READ_HANDLER(port2_r) {
-	//mlogerror("%x: port 2 read: %x\n",cpu_getpreviouspc(),data);
-	return (locals.phase_a && !locals.p21) | 0x18;
-}
-
-//Sound Data (PB0-3 only connected on schem, but later generations may use all 8 bits)
-static WRITE_HANDLER(port1_w) {
-  locals.snddata = data & 0x0f;
-  sndbrd_0_data_w(0,locals.snddata);
-	//printf("snddata: port 1 write = %x\n",data);
-}
+static READ_HANDLER(port2_r) { return (locals.phase_a && !locals.p21) | 0x18; }
 
 //Diagnostic LED & Sound Interrupt
 static WRITE_HANDLER(port2_w) {
-	int sndint = (data&0x10)<<1;
-	locals.diagnosticLed=((data>>2)&1);
-	//Trigger Sound command on positive edge
-//	if(!locals.sndint && sndint)
-//		locals.SOUNDCOMMAND(0,locals.snddata);
-	locals.sndint = sndint;
-        sndbrd_0_ctrl_w(0,locals.sndint);
-	//logerror("port 2 write = %x\n",data);
-	locals.p21 = data & 0x02;
-	cpu_set_irq_line(0, M6800_TIN_LINE, (locals.phase_a<2 && !locals.p21) ? ASSERT_LINE : CLEAR_LINE);
+  locals.diagnosticLed= ((data>>2)&1);
+  sndbrd_0_ctrl_w(0, data & 0x10);
+  locals.p21 = data & 0x02;
+  cpu_set_irq_line(0, M6800_TIN_LINE, (locals.phase_a<2 && !locals.p21) ? ASSERT_LINE : CLEAR_LINE);
 }
 
-void BY6803_UpdateSoundLED(int data){
-	locals.sounddiagnosticLed = data;
-}
+static WRITE_HANDLER(by6803_soundLED) { locals.sounddiagnosticLed = data; }
 
 /*-----------------------------------
 /  Memory map for CPU board
@@ -604,31 +545,31 @@ Port 2:
 (out)P24 = P24 = J5-15 -> SJ1-8 = Sound Interrupt
 */
 static MEMORY_READ_START(by6803_readmem)
-	{ 0x0000, 0x001f, m6803_internal_registers_r },
-	{ 0x0020, 0x0023, pia_0_r },
-	{ 0x0040, 0x0043, pia_1_r },
-	{ 0x0080, 0x00ff, MRA_RAM },	/*Internal 128K RAM*/
-	{ 0x1000, 0x17ff, MRA_RAM },	/*External RAM*/
-	{ 0x8000, 0xffff, MRA_ROM },	/*U2 & U3 ROM */
+  { 0x0000, 0x001f, m6803_internal_registers_r },
+  { 0x0020, 0x0023, pia_r(BY6803_PIA0) },
+  { 0x0040, 0x0043, pia_r(BY6803_PIA1) },
+  { 0x0080, 0x00ff, MRA_RAM },	/*Internal 128K RAM*/
+  { 0x1000, 0x17ff, MRA_RAM },	/*External RAM*/
+  { 0x8000, 0xffff, MRA_ROM },	/*U2 & U3 ROM */
 MEMORY_END
 
 static MEMORY_WRITE_START(by6803_writemem)
-	{ 0x0000, 0x001f, m6803_internal_registers_w },
-	{ 0x0020, 0x0023, pia_0_w },
-	{ 0x0040, 0x0043, pia_1_w },
-	{ 0x0080, 0x00ff, MWA_RAM },	/*Internal 128K RAM*/
-	{ 0x1000, 0x17ff, MWA_RAM },	/*External RAM*/
-	{ 0x8000, 0xffff, MWA_ROM },	/*U2 & U3 ROM */
+  { 0x0000, 0x001f, m6803_internal_registers_w },
+  { 0x0020, 0x0023, pia_w(BY6803_PIA0) },
+  { 0x0040, 0x0043, pia_w(BY6803_PIA1) },
+  { 0x0080, 0x00ff, MWA_RAM },	/*Internal 128K RAM*/
+  { 0x1000, 0x17ff, MWA_RAM },	/*External RAM*/
+  { 0x8000, 0xffff, MWA_ROM },	/*U2 & U3 ROM */
 MEMORY_END
 
 static PORT_READ_START( by6803_readport )
-	{ M6803_PORT1, M6803_PORT1, port1_r },
-	{ M6803_PORT2, M6803_PORT2, port2_r },
+  { M6803_PORT1, M6803_PORT1, port1_r },
+  { M6803_PORT2, M6803_PORT2, port2_r },
 PORT_END
 
 static PORT_WRITE_START( by6803_writeport )
-	{ M6803_PORT1, M6803_PORT1, port1_w },
-	{ M6803_PORT2, M6803_PORT2, port2_w },
+  { M6803_PORT1, M6803_PORT1, sndbrd_0_data_w }, // PB0-3 connected on schem
+  { M6803_PORT2, M6803_PORT2, port2_w },
 PORT_END
 
 //6803 - Generation 1 Sound (Squawk & Talk)
@@ -638,7 +579,7 @@ struct MachineDriver machine_driver_by6803S1 = {
       by6803_vblank, 1, by6803_irq, BY6803_IRQFREQ
   }, BY61_SOUND_CPU},
   BY6803_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, by6803_init1, CORE_EXITFUNC(by6803_exit)
+  50, by6803_init1, by6803_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
@@ -654,7 +595,7 @@ struct MachineDriver machine_driver_by6803S1a = {
       by6803_vblank, 1, by6803_irq, BY6803_IRQFREQ
   },  BY45_SOUND_CPU },
   BY6803_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, by6803_init1a, CORE_EXITFUNC(by6803_exit)
+  50, by6803_init1a, by6803_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
@@ -670,7 +611,7 @@ struct MachineDriver machine_driver_by6803S2 = {
       by6803_vblank, 1, by6803_irq, BY6803_IRQFREQ
   }, BYTCS_SOUND_CPU },
   BY6803_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, by6803_init2, CORE_EXITFUNC(by6803_exit)
+  50, by6803_init2, by6803_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
@@ -685,7 +626,7 @@ struct MachineDriver machine_driver_by6803S2a = {
       by6803_vblank, 1, by6803_irq, BY6803_IRQFREQ
   }, BYTCS2_SOUND_CPU},
   BY6803_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, by6803_init2, CORE_EXITFUNC(by6803_exit)
+  50, by6803_init2, by6803_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
@@ -700,7 +641,7 @@ struct MachineDriver machine_driver_by6803S3 = {
       by6803_vblank, 1, by6803_irq, BY6803_IRQFREQ
   }, BYSD_SOUND_CPU},
   BY6803_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, by6803_init3, CORE_EXITFUNC(by6803_exit)
+  50, by6803_init3, by6803_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
@@ -715,7 +656,7 @@ struct MachineDriver machine_driver_by6803S3a = {
       by6803_vblank, 1, by6803_irq, BY6803_IRQFREQ
   }, BYSD_SOUND_CPU},
   BY6803_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, by6803_init3a, CORE_EXITFUNC(by6803_exit)
+  50, by6803_init3a, by6803_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
@@ -730,7 +671,7 @@ struct MachineDriver machine_driver_by6803S4 = {
       by6803_vblank, 1, by6803_irq, BY6803_IRQFREQ
   }, S11C_SOUNDCPU},
   BY6803_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, by6803_init4, CORE_EXITFUNC(by6803_exit)
+  50, by6803_init4, by6803_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,

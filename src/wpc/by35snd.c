@@ -191,6 +191,7 @@ static WRITE_HANDLER(sp51_ctrl_w) { pia_set_input_ca1(SP_PIA0, data); }
 
 static WRITE_HANDLER(sp56_data_w) {
   splocals.lastcmd = ~data & 0x1f;
+  DBGLOG(("data_w [%d]=%x\n",splocals.cmdin,splocals.lastcmd));
   if (splocals.cmdin < 2) {
     splocals.cmd[splocals.cmdin++] = splocals.lastcmd;
     if (splocals.cmdin == 2) {
@@ -199,9 +200,11 @@ static WRITE_HANDLER(sp56_data_w) {
   }    
 }
 static WRITE_HANDLER(sp56_ctrl_w) {
-  if (!data) splocals.cmdin = 0;
+  DBGLOG(("ctrl_w %d\n",data));
+  if (data) splocals.cmdin = 0;
 }
 static READ_HANDLER(sp_8910a_r) {
+  DBGLOG(("cmd_r [%d]=%x\n",splocals.cmdout,splocals.cmd[splocals.cmdout]));
   if ((splocals.brdData.subType == 1) && (splocals.cmdout < 2)) // -56 board
     return splocals.cmd[splocals.cmdout++];
   else
@@ -570,51 +573,3 @@ static WRITE_HANDLER(sd_pia0b_w) {
 static void sd_pia0irq(int state) {
   cpu_set_irq_line(sdlocals.brdData.cpuNo, MC68000_IRQ_4, state ? ASSERT_LINE : CLEAR_LINE);
 }
-#if 0
-void by35_soundInit(void) {
-  if (coreGlobals.soundEn) {
-    switch (core_gameData->gen) {
-      case GEN_BY35_32:
-      case GEN_BY35_50:
-        sndbrd_1_init(SNDBRD_BY32, 0, memory_region(BY35_MEMREG_SROM),NULL,NULL);
-        break;
-      case GEN_BY35_61:
-      case GEN_BY35_61B:
-        sndbrd_1_init(SNDBRD_BY61, BY35_SCPU1NO, NULL, NULL, NULL);
-        break;
-      case GEN_BY35_45:
-        sndbrd_1_init(SNDBRD_BY45, BY35_SCPU1NO, NULL, NULL, NULL);
-        break;
-      case GEN_BY35_81:
-        sndbrd_1_init(SNDBRD_BY81, BY35_SCPU1NO, NULL, NULL, NULL);
-        break;
-      case GEN_BY35_51:
-        sndbrd_1_init(SNDBRD_BY51, BY35_SCPU1NO, NULL,NULL,NULL);
-        break;
-      case GEN_BY35_56:
-        sndbrd_1_init(SNDBRD_BY56, BY35_SCPU1NO, NULL,NULL,NULL);
-        break;
-    }
-  }
-}
-void by35_soundExit(void) {}
-
-/*-- note that the sound command includes the soundEnable (0x20) --*/
-WRITE_HANDLER(by35_soundCmd) {
-  if (coreGlobals.soundEn) {
-    switch (core_gameData->gen) {
-      case GEN_BY35_32:
-      case GEN_BY35_50:
-      case GEN_BY35_51:
-      case GEN_BY35_56:
-      case GEN_BY35_61:
-      case GEN_BY35_61B:
-      case GEN_BY35_81:
-      case GEN_BY35_45:
-        sndbrd_1_data_w(0,data); break;
-    }
-  }
-}
-
-#endif
-
