@@ -177,6 +177,9 @@ struct MachineSound
 #if (HAS_TMS320AV120)
 #include "sound/tms320av120.h"
 #endif
+#if (HAS_M114S)
+#include "sound/m114s.h"
+#endif
 #endif /* PINMAME */
 
 #ifdef MESS
@@ -381,6 +384,9 @@ enum
 #endif
 #if (HAS_TMS320AV120)
 	SOUND_TMS320AV120,
+#endif
+#if (HAS_M114S)
+	SOUND_M114S,
 #endif
 #endif /* PINMAME */
 

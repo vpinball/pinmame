@@ -1636,3 +1636,11 @@ else
 SOUNDDEFS += -DHAS_TMS320AV120=0
 endif
 
+SOUND=$(strip $(findstring M114S@,$(SOUNDS)))
+ifneq ($(SOUND),)
+SOUNDDEFS += -DHAS_M114S=1
+SOUNDOBJS += $(OBJ)/sound/m114s.o
+else
+SOUNDDEFS += -DHAS_M114S=0
+endif
+
