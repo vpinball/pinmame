@@ -69,7 +69,7 @@ static struct TMS320AV120interface capcoms_TMS320AV120Int1 = {
 };
 static struct TMS320AV120interface capcoms_TMS320AV120Int2 = {
   2,		//# of chips
-  {50,50},	//Volume levels
+  {75,75},	//Volume levels
   cap_bof,	//BOF Line Callback
   cap_sreq	//SREQ Line Callback
 };
