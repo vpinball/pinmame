@@ -432,7 +432,7 @@ static int by6803_irq(void) {
 }
 
 static WRITE_HANDLER(by6803_soundCmd) {
-  sndbrd_0_data_w(offset,data);  sndbrd_0_ctrl_w(0,0); sndbrd_0_ctrl_w(0,1);
+  sndbrd_0_data_w(0,data);  sndbrd_0_ctrl_w(0,0); sndbrd_0_ctrl_w(0,1);
 }
 
 static core_tData by6803Data = {
@@ -524,7 +524,7 @@ static READ_HANDLER(port2_r) { return (locals.phase_a && !locals.p21) | 0x18; }
 //Diagnostic LED & Sound Interrupt
 static WRITE_HANDLER(port2_w) {
   locals.diagnosticLed= ((data>>2)&1);
-  sndbrd_0_ctrl_w(0, data & 0x10);
+  sndbrd_0_ctrl_w(0, (data & 0x10) ? 1 : 0);
   locals.p21 = data & 0x02;
   cpu_set_irq_line(0, M6800_TIN_LINE, (locals.phase_a<2 && !locals.p21) ? ASSERT_LINE : CLEAR_LINE);
 }
