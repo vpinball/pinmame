@@ -46,8 +46,9 @@ static void hnk_dispStrobe(int mask) {
     if (digit & 0x01) {
       UINT8 dispMask = mask;
       for (jj = 0; dispMask; jj++, dispMask>>=1)
-        if (dispMask & 0x01)
-          ((int *)locals.segments)[jj*8+ii] |= ((int *)locals.pseg)[jj*8+ii] = core_bcd2seg[locals.bcd[jj]];
+		if (dispMask & 0x01) {
+          ((int *)locals.segments)[jj*8+ii] |= ((int *)locals.pseg)[jj*8+ii] = core_bcd2seg9[locals.bcd[jj]];
+		}
     }
 }
 
@@ -85,21 +86,26 @@ static WRITE_HANDLER(pia0a_w) {
     hnk_dispStrobe(data&0x0f);
   }
   locals.p0_a = data;
+  logerror("bcd data=%x\n",data);
   hnk_lampStrobe(0,locals.lampadr1);
 }
-/* PIA1:A-W  0,2-7 Display handling */
-/*        W  1     N/A*/
+/* PIA1:A-W  0   Display Latch #5
+			 1   N/A
+			 2-7 Display Digit Select 1-6
+*/
 static WRITE_HANDLER(pia1a_w) {
   int tmp = locals.p1_a;
+  logerror("digit_w: %x\n",data);
   locals.p1_a = data;
   logerror("setting digit to %x\n",locals.p1_a);
-
-  if (!locals.p0_ca2) {		  // If Display Blanking cleared
+  return;
+  //if (!locals.p0_ca2) {		  // If Display Blanking cleared
     if (tmp & ~data & 0x01) { // Positive Edge
+	  logerror("Latch #5: ca2 = %x, p0_a = %x\n",locals.p0_ca2,locals.p0_a);
       locals.bcd[4] = locals.p0_a>>4;
       hnk_dispStrobe(0x10);
     }
-  }
+//  }
 }
 
 /* PIA0:B-R  Get Data depending on PIA0:A */
@@ -192,7 +198,8 @@ static void hnk_updSw(int *inports) {
 
 /*PIA 1*/
 /*PIA U10:
-(in)  PB0-7: Switch Returns/Rows and Cabinet Switch Returns/Rows and Dip Returns
+(in)  PB0-7: Switch Returns/Rows and Cabinet Switch Returns/Rows 
+(in)  PB0-7: Dip Returns
 (in)  CA1:   Self Test Switch
 (in)  CB1:   Zero Cross Detection
 (in)  CA2:   N/A
