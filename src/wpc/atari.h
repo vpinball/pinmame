@@ -196,7 +196,7 @@
 #define ATARI_COMINPORT       CORE_COREINPORT
 
 #define ATARI_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
-#define ATARI_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
+#define ATARI_LAMPSMOOTH      3 /* Smooth the lamps over this number of VBLANKS */
 #define ATARI_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
 
 /*-- To access C-side multiplexed solenoid/flasher --*/
