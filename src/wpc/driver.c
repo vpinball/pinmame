@@ -264,7 +264,7 @@ DRIVERNV(icefever)    //S80a-695: 02/85 Ice Fever
 //System 80b
 DRIVERNV(triplay)     //S80b-696: 05/85 Chicago Cubs Triple Play
 DRIVERNV(bountyh)     //S80b-694: 07/85 Bounty Hunter
-                      //S80b-698: 09/85 Tag Team Pinball
+DRIVERNV(tagteam)     //S80b-698: 09/85 Tag Team Wrestling
 DRIVERNV(rock)        //S80b-697: 10/85 Rock
 DRIVERNV(raven)       //S80b-702: 03/86 Raven
                       //S80b-704: 04/86 Rock Encore
