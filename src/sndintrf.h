@@ -139,6 +139,9 @@ struct MachineSound
 #if (HAS_BSMT2000)
 #include "sound/bsmt2000.h"
 #endif
+#if (HAS_VOTRAXSC01)
+#include "sound/votrax.h"
+#endif
 #ifdef MESS
 #if (HAS_BEEP)
 #include "mess/sound/beep.h"
@@ -304,6 +307,9 @@ enum
 #endif
 #if (HAS_BSMT2000)
 	SOUND_BSMT2000,
+#endif
+#if (HAS_VOTRAXSC01)
+	SOUND_VOTRAXSC01,
 #endif
 #ifdef MESS
 #if (HAS_BEEP)

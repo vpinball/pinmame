@@ -365,6 +365,9 @@ int ES5506_num(const struct MachineSound *msound) { return ((struct ES5506interf
 int BSMT2000_num(const struct MachineSound *msound) { return ((struct BSMT2000interface*)msound->sound_interface)->num; }
 int BSMT2000_clock(const struct MachineSound *msound) { return ((struct BSMT2000interface*)msound->sound_interface)->baseclock[0]; }
 #endif
+#if (HAS_VOTRAXSC01)
+int VOTRAXSC01_num(const struct MachineSound *msound) { return ((struct VOTRAXSC01interface*)msound->sound_interface)->num; }
+#endif
 #ifdef MESS
 #if (HAS_BEEP)
 int beep_num(const struct MachineSound *msound) { return ((struct beep_interface*)msound->sound_interface)->num; }
@@ -955,7 +958,18 @@ struct snd_interface sndintf[] =
 		0
 	},
 #endif
-
+#if (HAS_VOTRAXSC01)
+	{
+		SOUND_VOTRAXSC01,
+		"Votrax SC-01",
+		VOTRAXSC01_num,
+		0,
+		VOTRAXSC01_sh_start,
+		VOTRAXSC01_sh_stop,
+		0,
+		0
+	}
+#endif
 #ifdef MESS
 #if (HAS_BEEP)
 	{
