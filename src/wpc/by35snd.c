@@ -308,6 +308,9 @@ MACHINE_DRIVER_END
 static READ_HANDLER(snt_pia0a_r);
 static WRITE_HANDLER(snt_pia0a_w);
 static WRITE_HANDLER(snt_pia0b_w);
+static READ_HANDLER(snt_pia1a_r);
+static READ_HANDLER(snt_pia1ca2_r);
+static READ_HANDLER(snt_pia1cb1_r);
 static WRITE_HANDLER(snt_pia1a_w);
 static WRITE_HANDLER(snt_pia1b_w);
 static WRITE_HANDLER(snt_pia0ca2_w);
@@ -323,7 +326,7 @@ static const struct pia6821_interface snt_pia[] = {{
   /*o: A/B,CA/B2       */ snt_pia0a_w, snt_pia0b_w, snt_pia0ca2_w, 0,
   /*irq: A/B           */ snt_irq, snt_irq
 },{
-  /*i: A/B,CA/B1,CA/B2 */ 0, 0, 0, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(1), 0,
+  /*i: A/B,CA/B1,CA/B2 */ snt_pia1a_r, 0, PIA_UNUSED_VAL(1), snt_pia1cb1_r, snt_pia1ca2_r, PIA_UNUSED_VAL(0),
   /*o: A/B,CA/B2       */ snt_pia1a_w, snt_pia1b_w, 0, 0,
   /*irq: A/B           */ snt_irq, snt_irq
 }};
@@ -349,17 +352,21 @@ static WRITE_HANDLER(snt_pia0b_w) {
   sntlocals.pia0b = data;
   if (sntlocals.pia0b & 0x02) AY8910Write(0, sntlocals.pia0b ^ 0x01, sntlocals.pia0a);
 }
+static READ_HANDLER(snt_pia1a_r) { return sntlocals.pia1a; }
 static WRITE_HANDLER(snt_pia1a_w) { sntlocals.pia1a = data; }
 static WRITE_HANDLER(snt_pia1b_w) {
-  if (sntlocals.pia1b & ~data & 0x02) { // write
+  if (~data & 0x02) // write
     tms5220_data_w(0, sntlocals.pia1a);
-    pia_set_input_ca2(SNT_PIA1, 1); pia_set_input_ca2(SNT_PIA1, 0);
-  }
-  else if (sntlocals.pia1b & ~data & 0x01) { // read
-    pia_set_input_a(SNT_PIA1, tms5220_status_r(0));
-    pia_set_input_ca2(SNT_PIA1, 1); pia_set_input_ca2(SNT_PIA1, 0);
-  }
+  if (~data & 0x01) // read
+    sntlocals.pia1a = tms5220_status_r(0);
+  pia_set_input_ca2(SNT_PIA1, 1);
   sntlocals.pia1b = data;
+}
+static READ_HANDLER(snt_pia1ca2_r) {
+  return !tms5220_ready_r();
+}
+static READ_HANDLER(snt_pia1cb1_r) {
+  return !tms5220_int_r();
 }
 
 static WRITE_HANDLER(snt_data_w) {
