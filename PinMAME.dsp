@@ -1423,19 +1423,11 @@ SOURCE=src\wpc\by35snd.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\by6803.c
+SOURCE=.\src\wpc\by6803.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\by6803.h
-# End Source File
-# Begin Source File
-
-SOURCE=src\wpc\by6803snd.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\wpc\by6803snd.h
+SOURCE=.\src\wpc\by6803.h
 # End Source File
 # Begin Source File
 
