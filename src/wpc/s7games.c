@@ -6,7 +6,7 @@
 const core_tLCDLayout s7_dispS7[] = {
   DISP_SEG_7(0,0,CORE_SEG87),DISP_SEG_7(0,1,CORE_SEG87),
   DISP_SEG_7(1,0,CORE_SEG87),DISP_SEG_7(1,1,CORE_SEG87),
-  DISP_SEG_CREDIT(0,8,CORE_SEG7S),DISP_SEG_BALLS(20,28,CORE_SEG7S),{0}
+  DISP_SEG_CREDIT(20,28,CORE_SEG7S),DISP_SEG_BALLS(0,8,CORE_SEG7S),{0}
 };
 #define INITGAME(name, disp) \
 static core_tGameData name##GameData = { GEN_S7, disp }; \
@@ -103,11 +103,11 @@ CORE_GAMEDEF(solar,l2,"Solar Fire (L-2)",1981,"Williams",s7_mS7S,0)
 /-------------------------------*/
 static const core_tLCDLayout dispHypbl[] = {
   { 0, 0, 1, 7,CORE_SEG87 }, { 0,16, 9, 7,CORE_SEG87 },
-  { 2,10, 0, 1,CORE_SEG87 }, { 2,12, 8, 1,CORE_SEG87 },
-  { 2,16,20, 1,CORE_SEG87 }, { 2,18,28, 1,CORE_SEG87 },
+  { 2,10,20, 1,CORE_SEG87 }, { 2,12,28, 1,CORE_SEG87 },
+  { 2,16, 0, 1,CORE_SEG87 }, { 2,18, 8, 1,CORE_SEG87 },
   { 4, 3,43, 5,CORE_SEG16 }, { 4,13,49, 7,CORE_SEG16 }, {0}
 };
-static core_tGameData hypblGameData = { GEN_S7, dispHypbl, {0}, NULL, {"", {0,0,0,0xf8,0x0f}, {0} } };
+static core_tGameData hypblGameData = { GEN_S7, dispHypbl, {FLIP_SWNO(33,34)}, NULL, {"", {0,0,0,0xf8,0x0f}, {0} } };
 static void init_hypbl(void) { core_gameData = &hypblGameData; }
 #define input_ports_hypbl input_ports_s7
 
