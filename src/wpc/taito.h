@@ -137,12 +137,14 @@
 / Machine driver constants
 /--------------------------*/
 /*-- Memory regions --*/
-#define TAITO_CPUREGION	REGION_CPU1
+#define TAITO_MEMREG_CPU REGION_CPU1
+
+#define TAITO_CPU		0
 
 /*-- Main CPU regions and ROM --*/
 #define TAITO_ROMSTART4444(name,n1,chk1,n2,chk2,n3,chk3,n4,chk4) \
   ROM_START(name) \
-    NORMALREGION(0x10000, TAITO_CPUREGION) \
+    NORMALREGION(0x10000, TAITO_MEMREG_CPU) \
       ROM_LOAD( n1, 0x0000, 0x0800, chk1) \
       ROM_LOAD( n2, 0x0800, 0x0800, chk2) \
       ROM_LOAD( n3, 0x1000, 0x0800, chk3) \

@@ -25,3 +25,15 @@ TAITO_ROMSTART4444(zarza,"zarza1.bin",0x81a35f85,
 TAITO_ROMEND
 #define input_ports_zarza input_ports_taito
 CORE_GAMEDEFNV(zarza,"Zarza",1985,"Taito",taito,0)
+
+/*--------------------------------
+/ Gemini
+/-------------------------------*/
+INITGAME(gemini)
+TAITO_ROMSTART4444(gemini,"gemini1.bin",0x4f952799,
+                          "gemini2.bin",0x8903ee53,
+                          "gemini3.bin",0x1f11b5e5,
+                          "gemini4.bin",0xcac64ea6)
+TAITO_ROMEND
+#define input_ports_gemini input_ports_taito
+CORE_GAMEDEFNV(gemini,"Gemini",1985,"Taito",taito,0)
