@@ -14,6 +14,10 @@
 #include "gts80s.h"
 #include "gts3.h"
 
+//SJE: 03/01/03 - This driver needs to be cleaned up, I just don't have time yet..
+
+//#define GTS80BS_DAC_SPEEDUP		//Use this to help speed up emulation (reduces fps to 50)
+
 /*
     Gottlieb System 80 Sound Boards
 
@@ -503,6 +507,7 @@ static struct {
   int u3_latch;				// GTS3 - Latch U3
   int enable_w;				// GTS3 - OKI6295 ~WR pin
   int rom_cs;				// GTS3 - OKI6295 Rom Bank Select
+  int nmi_enable;			// GTS3 - Enable NMI triggered by Programmable Circuit
 } GTS80BS_locals;
 
 // Latch data for AY chips
@@ -511,26 +516,43 @@ WRITE_HANDLER(s80bs_ay8910_latch_w)
 	GTS80BS_locals.ay_latch = data;
 }
 
-//Setup NMI timer and triggering code: Timed NMI occurs for the Y-CPU. Y-CPU triggers D-CPU NMI
-void nmi_generate(int param)
-{
-	cpu_set_nmi_line(cpu_gettotalcpu()-2, PULSE_LINE);
-}
-
+//NMI Timer - Setup the next frequency for the timer to fire, and Trigger an NMI if enabled
 static void nmi_callback(int param)
 {
-	cpu_set_nmi_line(cpu_gettotalcpu()-1, PULSE_LINE);
+	//Reset the timing frequency
+	double interval;
+	int cl1, cl2;
+	cl1 = 16-(GTS80BS_locals.nmi_rate&0x0f);
+	cl2 = 16-((GTS80BS_locals.nmi_rate&0xf0)>>4);
+	interval = (250000>>8);
+	if(cl1>0)	interval /= cl1;
+	if(cl2>0)	interval /= cl2;
+
+	//Set up timer to fire again
+	timer_set(TIME_IN_HZ(interval), 0, nmi_callback);
+
+	//If enabled, fire the NMI for the Y CPU
+	if(GTS80BS_locals.nmi_enable) {
+		//logerror("PULSING NMI for Y-CPU\n");
+		//timer_set(TIME_NOW, 1, NULL);
+		cpu_set_nmi_line(cpu_gettotalcpu()-1, PULSE_LINE);
+	}
 }
 
 WRITE_HANDLER(s80bs_nmi_rate_w)
 {
 	GTS80BS_locals.nmi_rate = data;
-//	logerror("NMI RATE SET TO %d\n",data);
+	logerror("NMI RATE SET TO %d\n",data);
 }
 
+//Fire the NMI for the D CPU
 WRITE_HANDLER(s80bs_cause_dac_nmi_w)
 {
+	//if(!keyboard_pressed_memory_repeat(KEYCODE_A,2)) {
+	//logerror("PULSING NMI for D-CPU\n");
+	//timer_set(TIME_NOW, 1, NULL);
 	cpu_set_nmi_line(cpu_gettotalcpu()-2, PULSE_LINE);
+//	}
 }
 
 READ_HANDLER(s80bs_cause_dac_nmi_r)
@@ -539,9 +561,19 @@ READ_HANDLER(s80bs_cause_dac_nmi_r)
 	return 0;
 }
 
+#define test1
+
 //Latch a command into the Sound Latch and generate the IRQ interrupts
 WRITE_HANDLER(s80bs_sh_w)
 {
+#ifdef test1
+	if(data != 0xff)
+	{
+		soundlatch_w(offset,data);
+		cpu_set_irq_line(cpu_gettotalcpu()-1, 0, HOLD_LINE);
+		cpu_set_irq_line(cpu_gettotalcpu()-2, 0, HOLD_LINE);
+	}
+#else
 	int clear_irq = 0;
 
 	/*GTS3 Specific stuff*/
@@ -564,6 +596,7 @@ WRITE_HANDLER(s80bs_sh_w)
 		cpu_set_irq_line(cpu_gettotalcpu()-1, 0, HOLD_LINE);
 		cpu_set_irq_line(cpu_gettotalcpu()-2, 0, HOLD_LINE);
 	}
+#endif
 }
 
 //Generation 1 Specific
@@ -576,31 +609,10 @@ READ_HANDLER(s80bs1_sound_input_r)
 	return 0xc0;
 }
 
-//Common to All Generations - Set NMI Timer parameters
+//Common to All Generations - Set NMI Timer Enable
 static WRITE_HANDLER( common_sound_control_w )
 {
-	/* Bit 0 enables and starts NMI timer */
-	if (data & 0x01)
-	{
-		/* base clock is 250kHz divided by 256 */
-		double interval;
-//		logerror("GTS80BS_locals.nmi_rate = %d\n",GTS80BS_locals.nmi_rate);
-
-		interval = TIME_IN_HZ(250000.0/256/(256-GTS80BS_locals.nmi_rate));
-//		logerror("interval = %f\n",interval);
-
-		if (GTS80BS_locals.nmi_timer)
-		{
-			timer_remove(GTS80BS_locals.nmi_timer);
-			GTS80BS_locals.nmi_timer = 0;
-		}
-
-		GTS80BS_locals.nmi_timer = timer_alloc(nmi_callback);
-
-		timer_adjust(GTS80BS_locals.nmi_timer, interval, 0, interval);
-	}
-
-	/* Bit 1 controls a LED on the sound board */
+	GTS80BS_locals.nmi_enable = data&0x01;
 }
 
 //Generation 1 sound control
@@ -665,14 +677,17 @@ WRITE_HANDLER( s80bs_ym2151_w )
 //DAC Handling.. Set volume
 WRITE_HANDLER( s80bs_dac_vol_w )
 {
-	GTS80BS_locals.dac_volume = data ^ 0xff;
+	GTS80BS_locals.dac_volume = data;
 	DAC_data_16_w(0, GTS80BS_locals.dac_volume * GTS80BS_locals.dac_data);
+	//logerror("volume = %x\n",data);
+	//DAC_data_w(0,data);
 }
 //DAC Handling.. Set data to send
 WRITE_HANDLER( s80bs_dac_data_w )
 {
 	GTS80BS_locals.dac_data = data;
 	DAC_data_16_w(0, GTS80BS_locals.dac_volume * GTS80BS_locals.dac_data);
+	//DAC_data_w(0,data);
 }
 
 //Process command from Main CPU
@@ -913,21 +928,21 @@ static WRITE_HANDLER(sound_control_w)
 	//if(GTS80BS_locals.enable_w != hold_enable_w)
 	  //logerror("~wr = %x\n", (data>>6)&1);
 
-/*
-	U3 - LS374 (Data is fed from the U2 Latch)
-   ----------
-	D0 = VUP/DOWN?? - Connects to optional U12 (volume control?)
-	D1 = VSTEP??    - Connects to optional U12 (volume control?)
-	D2 = 6295 Chip Select (Active Low)
-	D3 = ROM Select (0 = Rom1, 1 = Rom2)
-	D4 = 6295 - SS (Data = 1 = 8Khz; Data = 0 = 6.4Khz frequency)
-	D5 = LED (Active low?)
-	D6 = SRET1 (Where is this connected?)
-	D7 = SRET2 (Where is this connected?) + /PGM of roms, with optional jumper to +5 volts
-*/
-
 	//Handle U3 Latch - On Positive Edge
 	if(GTS80BS_locals.u3_latch && !hold_u3 ) {
+
+	/*
+		U3 - LS374 (Data is fed from the U2 Latch)
+	   ----------
+		D0 = VUP/DOWN?? - Connects to optional U12 (volume control?)
+		D1 = VSTEP??    - Connects to optional U12 (volume control?)
+		D2 = 6295 Chip Select (Active Low)
+		D3 = ROM Select (0 = Rom1, 1 = Rom2)
+		D4 = 6295 - SS (Data = 1 = 8Khz; Data = 0 = 6.4Khz frequency)
+		D5 = LED (Active low?)
+		D6 = SRET1 (Where is this connected?)
+		D7 = SRET2 (Where is this connected?) + /PGM of roms, with optional jumper to +5 volts
+	*/
 
 		//D2 = 6295 Chip Select (Active Low)
 		GTS80BS_locals.enable_cs = ((~GTS80BS_locals.u2_latch)>>2)&1;
@@ -954,12 +969,28 @@ static WRITE_HANDLER(sound_control_w)
 	if (GTS80BS_locals.enable_w && !hold_enable_w) oki6295_w();
 }
 
+READ_HANDLER(s80bs_soundlatch_y)
+{
+#ifdef test1
+	cpu_set_irq_line(cpu_gettotalcpu()-1, 0, CLEAR_LINE);
+#endif
+	return soundlatch_r(0);
+}
+
+READ_HANDLER(s80bs_soundlatch_d)
+{
+#ifdef test1
+	cpu_set_irq_line(cpu_gettotalcpu()-2, 0, CLEAR_LINE);
+#endif
+	return soundlatch_r(0);
+}
+
 /*********/
 /* Y-CPU */
 /*********/
 MEMORY_READ_START(GTS3_yreadmem)
 { 0x0000, 0x07ff, MRA_RAM },
-{ 0x6800, 0x6800, soundlatch_r},
+{ 0x6800, 0x6800, s80bs_soundlatch_y},
 { 0x7000, 0x7000, s80bs_cause_dac_nmi_r},
 { 0x8000, 0xffff, MRA_ROM },
 MEMORY_END
@@ -967,6 +998,7 @@ MEMORY_WRITE_START(GTS3_ywritemem)
 { 0x0000, 0x07ff, MWA_RAM },
 { 0x4000, 0x4000, s80bs_ym2151_w },
 { 0x6000, 0x6000, s80bs_nmi_rate_w},
+{ 0x7000, 0x7000, s80bs_cause_dac_nmi_w},
 { 0x7800, 0x7800, u2latch_w},
 { 0xa000, 0xa000, sound_control_w },
 MEMORY_END
@@ -975,7 +1007,7 @@ MEMORY_END
 /*********/
 MEMORY_READ_START(GTS3_dreadmem)
 { 0x0000, 0x07ff, MRA_RAM },
-{ 0x4000, 0x4000, soundlatch_r},
+{ 0x4000, 0x4000, s80bs_soundlatch_d},
 { 0x8000, 0xffff, MRA_ROM },
 MEMORY_END
 MEMORY_WRITE_START(GTS3_dwritemem)
@@ -987,20 +1019,22 @@ MEMORY_END
 struct DACinterface GTS3_dacInt =
 {
   2,			/*2 Chips - but it seems we only access 1?*/
- {60,60}		/* Volume */
+ {100,100}		/* Volume */
 };
 
 struct OKIM6295interface GTS3_okim6295_interface = {
 	1,						/* 1 chip */
 	{ 8000 },				/* 8000Hz frequency */
 	{ GTS3_MEMREG_SROM1 },	/* memory region */
-	{ 100 }
+	{ 50 }
 };
 
 // Init
 void gts80b_init(struct sndbrdData *brdData) {
-	GTS80BS_locals.nmi_timer = NULL;
+	//GTS80BS_locals.nmi_timer = NULL;
 	memset(&GTS80BS_locals, 0, sizeof(GTS80BS_locals));
+	//Start the programmable timer circuit
+	timer_set(TIME_IN_HZ(250000>>8), 0, nmi_callback);
 }
 
 // Cleanup
@@ -1012,7 +1046,7 @@ void gts80b_exit(int boardNo)
 }
 
 const struct sndbrdIntf gts80bIntf = {
-  gts80b_init, gts80b_exit, NULL, gts80b_data_w, NULL, NULL, NULL, /*SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC*/0
+  gts80b_init, gts80b_exit, NULL, gts80b_data_w, NULL, NULL, NULL, 0 //SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
 MACHINE_DRIVER_START(gts80s_b1)
@@ -1025,7 +1059,13 @@ MACHINE_DRIVER_START(gts80s_b1)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(GTS80BS1_readmem, GTS80BS1_writemem)
 
-  MDRV_INTERLEAVE(50)
+    //MDRV_INTERLEAVE(50)
+#ifdef GTS80BS_DAC_SPEEDUP
+  MDRV_FRAMES_PER_SECOND(50)
+  MDRV_INTERLEAVE(2200)		//Min. Value when 50FPS is used
+#else
+  MDRV_INTERLEAVE(1650)		//Min. Value when 60FPS is used
+#endif
   MDRV_SOUND_ADD(AY8910, GTS80BS_ay8910Int)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END
@@ -1040,7 +1080,13 @@ MACHINE_DRIVER_START(gts80s_b2)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(GTS80BS2_readmem, GTS80BS2_writemem)
 
-  MDRV_INTERLEAVE(50)
+  //MDRV_INTERLEAVE(50)
+#ifdef GTS80BS_DAC_SPEEDUP
+  MDRV_FRAMES_PER_SECOND(50)
+  MDRV_INTERLEAVE(2200)		//Min. Value when 50FPS is used
+#else
+  MDRV_INTERLEAVE(1650)		//Min. Value when 60FPS is used
+#endif
   MDRV_SOUND_ADD(AY8910, GTS80BS_ay8910Int)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END
@@ -1055,22 +1101,36 @@ MACHINE_DRIVER_START(gts80s_b3)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(GTS80BS3_readmem, GTS80BS3_writemem)
 
-  MDRV_INTERLEAVE(50)
+  //MDRV_INTERLEAVE(50)
+#ifdef GTS80BS_DAC_SPEEDUP
+  MDRV_FRAMES_PER_SECOND(50)
+  MDRV_INTERLEAVE(2200)		//Min. Value when 50FPS is used
+#else
+  MDRV_INTERLEAVE(1650)		//Min. Value when 60FPS is used
+#endif
+  MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
   MDRV_SOUND_ADD(YM2151, GTS80BS_ym2151Int)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(gts80s_s3)
-  MDRV_CPU_ADD_TAG("d-cpu", M65C02, 2000000)
+  MDRV_CPU_ADD_TAG("d-cpu", M6502, 2000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(GTS3_dreadmem, GTS3_dwritemem)
   MDRV_SOUND_ADD(DAC, GTS3_dacInt)
 
-  MDRV_CPU_ADD_TAG("y-cpu", M65C02, 2000000)
+  MDRV_CPU_ADD_TAG("y-cpu", M6502, 2000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(GTS3_yreadmem, GTS3_ywritemem)
 
-  MDRV_INTERLEAVE(50)
+#if 1
+#ifdef GTS80BS_DAC_SPEEDUP
+  MDRV_FRAMES_PER_SECOND(50)
+  MDRV_INTERLEAVE(2200)		//Min. Value when 50FPS is used
+#else
+  MDRV_INTERLEAVE(1650)		//Min. Value when 60FPS is used
+#endif
+#endif
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
   MDRV_SOUND_ADD(YM2151,  GTS80BS_ym2151Int)
   MDRV_SOUND_ADD(OKIM6295,GTS3_okim6295_interface)
