@@ -534,12 +534,31 @@ WPCS_SOUNDROM222(   "t2_u18.l3",   CRC(2280bdd0) SHA1(ea94265cb8291ee427e0a2119d
                     "u14-nsty.rom",CRC(b4d64152) SHA1(03a828cef8b067d4da058fd3a1e972265a72f10a))
 WPC_ROMEND
 
+WPC_ROMSTART(t2,l4,"u6-l4.rom",0x40000,CRC(4d8b894d) SHA1(218b3628e7709c329c2030a5391ded60301aad26))
+WPCS_SOUNDROM222("t2_u18.l3",CRC(2280bdd0) SHA1(ea94265cb8291ee427e0a2119d901ba1eb50d8ee),
+                 "t2_u15.l3",CRC(dad03ad1) SHA1(7c200f9a6564d751e5aa9b1ba84363b221502770),
+                 "t2_u14.l3",CRC(9addc9dc) SHA1(847bb027f6b9167cbbaa13f1af50d61e0c69f01f))
+WPC_ROMEND
+WPC_ROMSTART(t2,l3,"u6-l3.rom",0x40000,CRC(7520398a) SHA1(862881481dc7b617f3b14bbb35d48cffb0ce950e))
+WPCS_SOUNDROM222("t2_u18.l3",CRC(2280bdd0) SHA1(ea94265cb8291ee427e0a2119d901ba1eb50d8ee),
+                 "t2_u15.l3",CRC(dad03ad1) SHA1(7c200f9a6564d751e5aa9b1ba84363b221502770),
+                 "t2_u14.l3",CRC(9addc9dc) SHA1(847bb027f6b9167cbbaa13f1af50d61e0c69f01f))
+WPC_ROMEND
+WPC_ROMSTART(t2,l2,"u6-l2.rom",0x40000,CRC(efe49c18) SHA1(9f91081c384990eac6e3c57f318a2639626929f9))
+WPCS_SOUNDROM222("t2_u18.l3",CRC(2280bdd0) SHA1(ea94265cb8291ee427e0a2119d901ba1eb50d8ee),
+                 "t2_u15.l3",CRC(dad03ad1) SHA1(7c200f9a6564d751e5aa9b1ba84363b221502770),
+                 "t2_u14.l3",CRC(9addc9dc) SHA1(847bb027f6b9167cbbaa13f1af50d61e0c69f01f))
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(t2,l8,"Terminator 2: Judgement Day (L-8)",1991,"Williams",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,l6,l8,"Terminator 2: Judgement Day (L-6)",1991,"Williams",wpc_mDMDS,0)
 CORE_CLONEDEF(t2,p2f,l8,"Terminator 2: Judgement Day (P-2F) Profanity",1991,"Williams",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,l4,l8,"Terminator 2: Judgement Day (L-4)",1991,"Williams",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,l3,l8,"Terminator 2: Judgement Day (L-3)",1991,"Williams",wpc_mDMDS,0)
+CORE_CLONEDEF(t2,l2,l8,"Terminator 2: Judgement Day (L-2)",1991,"Williams",wpc_mDMDS,0)
 
 /*-----------------------
 / Simulation Definitions
