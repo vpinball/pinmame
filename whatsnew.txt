@@ -30,6 +30,7 @@ New Features
   (Big thanks to Joep for the manual and help in checking on his real machine)
 - Intel 8051 CPU Core emulation (required for Alvin G DMD)
   (Thanks to Gerrit for helping with those damn SUBB flags)
+- Added Rollover mode in Sound Commander
   [Steve Ellenoff]
 
 - Added VPM Lamp handling for Alvin G Games
