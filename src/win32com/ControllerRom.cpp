@@ -150,7 +150,7 @@ STDMETHODIMP CRom::Audit(VARIANT_BOOL fStrict)
 {
 	int err;
 	char szHash[256];
-	lstrcpy(szHash, "");
+	lstrcpy(szHash, fStrict?"":ROM_GETHASHDATA(m_rom));
 
 	/* obtain CRC-32 and length of ROM file */
 	const struct GameDriver *drv = m_gamedrv;
