@@ -90,7 +90,21 @@ struct {
   int    swAvail2;
   int	 via_1_b;
   int    sound_strobe;
+  int    dispCol;
 } alvglocals;
+
+static UINT16 segMapper(UINT16 value) {
+	UINT16 result = value & 0x047f;
+	result |= (value & 0x80) ? 0x800 : 0;
+	result |= (value & 0x100) ? 0x200 : 0;
+	result |= (value & 0x200) ? 0x2000 : 0;
+	result |= (value & 0x800) ? 0x1000 : 0;
+	result |= (value & 0x1000) ? 0x4000 : 0;
+	result |= (value & 0x2000) ? 0x100 : 0;
+	result |= (value & 0x4000) ? 0x8000 : 0;
+	result |= (value & 0x8000) ? 0x80 : 0;
+	return result;
+}
 
 /*Receive command from DMD
  Pins are wired as:
@@ -231,7 +245,7 @@ static READ_HANDLER( xvia_1_b_r ) {
 	data = ((data&0xf7) | alvglocals.DMDEnable) +
 		   ((data&0xef) | alvglocals.DMDClock)  +
 		   ((data&0xdf) | alvglocals.DMDData);
-//	printf("%x:U8-PB-R: data = %x\n",activecpu_get_previouspc(),data);
+//printf("%x:U8-PB-R: data = %x\n",activecpu_get_previouspc(),data);
 	return data;
 }
 //CA1: (IN) - Sound Control
@@ -258,12 +272,17 @@ PB1  (Out) = Sound Clock
 PB0        = NU
 */
 static WRITE_HANDLER( xvia_1_b_w ) {
-	alvglocals.via_1_b = data;			//Probably not necessary
 	//printf("%x:U8-PB-W: data = %x\n",activecpu_get_previouspc(),data);
 
 	//On clock transition - write to sound latch
 	if(!alvglocals.sound_strobe && (data & 0x02))	sndbrd_0_ctrl_w(0,0);
 	alvglocals.sound_strobe = data&0x02;
+
+	if (data & ~alvglocals.via_1_b & 0x10)
+		alvglocals.dispCol = (alvglocals.dispCol + 1) % 20;
+	if (data & 0x20)
+		alvglocals.dispCol = 0;
+	alvglocals.via_1_b = data;
 }
 //CA2: (OUT) - CPU DIAG LED
 static WRITE_HANDLER( xvia_1_ca2_w ) { 	alvglocals.diagnosticLed = data; }
@@ -446,15 +465,30 @@ PB0-PB7 (out) = Lamp Strobe 8-12 (bits 5-7 nc)
 PC0-PC7 (out) = Lamp Return 1-8
 */
 
+// Low seg row A
+static WRITE_HANDLER(disp_porta_w) {
+  coreGlobals.segments[alvglocals.dispCol].w |= segMapper(data);
+}
+
+// Hi seg row A
+static WRITE_HANDLER(disp_portb_w) {
+  coreGlobals.segments[alvglocals.dispCol].w = segMapper(data << 8);
+}
+
+// Low seg row B
+static WRITE_HANDLER(disp_portc_w) {
+  coreGlobals.segments[20+alvglocals.dispCol].w |= segMapper(data);
+}
+
 static ppi8255_interface ppi8255_intf =
 {
-	3, 												/* 3 chips */
-	{0, 0, 0},										/* Port A read */
-	{0, 0, 0},										/* Port B read */
-	{0, 0, 0},										/* Port C read */
-	{u12_porta_w, u13_porta_w, u14_porta_w},		/* Port A write */
-	{u12_portb_w, u13_portb_w, u14_portb_w},		/* Port B write */
-	{u12_portc_w, u13_portc_w, u14_portc_w},		/* Port C write */
+	4, 												/* 4 chips */
+	{0, 0, 0, 0},										/* Port A read */
+	{0, 0, 0, 0},										/* Port B read */
+	{0, 0, 0, 0},										/* Port C read */
+	{u12_porta_w, u13_porta_w, u14_porta_w, disp_porta_w},		/* Port A write */
+	{u12_portb_w, u13_portb_w, u14_portb_w, disp_portb_w},		/* Port B write */
+	{u12_portc_w, u13_portc_w, u14_portc_w, disp_portc_w},		/* Port C write */
 };
 
 
@@ -548,11 +582,12 @@ static WRITE_HANDLER(DMD_LATCH) {
 }
 
 //Send data to the display segments
+// Hi seg row B
 static WRITE_HANDLER(LED_LATCH) {
-  logerror("Write to 2c00: %02x\n", data);
+  coreGlobals.segments[20+alvglocals.dispCol].w = segMapper(data << 8);
 }
 static WRITE_HANDLER(LED_DATA) {
-  logerror("Write to %04x: %02x\n", 0x2c80 + offset, data);
+  ppi8255_3_w(3-offset, data);
 }
 
 /*Machine Init*/
