@@ -1009,11 +1009,11 @@ static UINT32 core_initDisplaySize(const struct core_dispLayout *layout) {
   if (layout) {
     while (layout->length) {
       int tmp;
-      if (layout->type >= CORE_DMD) tmp = (layout->left + layout->length) * locals.segData[layout->type & 0x07].cols + 1;
+	  if ((layout->type & CORE_SEGMASK) >= CORE_DMD) tmp = (layout->left + layout->length) * locals.segData[layout->type].cols + 1;
       else tmp = (layout->left + 2*layout->length) * (locals.segData[layout->type & 0x07].cols + 1) / 2;
       if (tmp > maxX) maxX = tmp;
-      if (layout->type >= CORE_DMD) tmp = (layout->top  + layout->start)  * locals.segData[layout->type & 0x07].rows + 1;
-      else tmp = (layout->top + 2) * (locals.segData[0].rows + 1) / 2;
+      if ((layout->type  & CORE_SEGMASK) >= CORE_DMD) tmp = (layout->top + layout->start)  * locals.segData[layout->type].rows + 1;
+	  else tmp = (layout->top + 2) * (locals.segData[0].rows + 1) / 2;
       if (tmp > maxY) maxY = tmp;
       layout += 1;
     }
