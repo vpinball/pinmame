@@ -83,6 +83,14 @@ static SWITCH_UPDATE(ZAC2) {
   }
 }
 
+static int ZAC_sw2m(int no) {
+	return no + 8;
+}
+
+static int ZAC_m2sw(int col, int row) {
+	return col*8 + row - 8;
+}
+
 static int irq_callback(int int_level) {
 //	logerror("callback!\n");
 	return 0xbf;
@@ -463,6 +471,7 @@ MACHINE_DRIVER_START(ZAC1)
   MDRV_DIPS(4)
   MDRV_SWITCH_UPDATE(ZAC1)
   MDRV_DIAGNOSTIC_LEDH(1)
+  MDRV_SWITCH_CONV(ZAC_sw2m,ZAC_m2sw)
   MDRV_SOUND_CMD(ZAC_soundCmd)
   MDRV_SOUND_CMDHEADING("ZAC")
 MACHINE_DRIVER_END
@@ -485,6 +494,7 @@ MACHINE_DRIVER_START(ZAC2)
   MDRV_DIPS(4)
   MDRV_SWITCH_UPDATE(ZAC2)
   MDRV_DIAGNOSTIC_LEDH(1)
+  MDRV_SWITCH_CONV(ZAC_sw2m,ZAC_m2sw)
   MDRV_SOUND_CMD(ZAC_soundCmd)
   MDRV_SOUND_CMDHEADING("ZAC")
 //  MDRV_IMPORT_FROM(zac)
