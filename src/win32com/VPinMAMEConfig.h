@@ -6,7 +6,6 @@ void cli_frontend_init();
 int set_option(const char *name, const char *arg, int priority);
 void *get_option(const char *name);
 
-
 BOOL  WriteRegistry(char* pszKey, char* pszName, DWORD dwValue);
 DWORD ReadRegistry(char* pszKey, char* pszName, DWORD dwDefault);
 

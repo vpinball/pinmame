@@ -37,10 +37,6 @@ public:
 	STDMETHOD(get_Item)(VARIANT *pKey, IGame **pGame);
 	STDMETHOD(get__NewEnum)(IUnknown** ppunkEnum);
 
-// Init and deinit
-	STDMETHOD(Init)(Controller* m_pController);
-	STDMETHOD(Deinit)();
-
 private:
 	CComObject<CGame>*  *m_pGamesList;
 	long				m_lGames;

@@ -21,7 +21,6 @@
 #define IDC_COMPACTSIZE                 103
 #define IDC_IMGDIR                      104
 #define IDC_DOUBLESIZE                  104
-#define IDC_SPEEDLIMIT			105
 #define IDC_SAMPLERATE                  110
 #define IDC_ANTIALIAS                   111
 #define IDC_DMDRED                      120
@@ -35,24 +34,23 @@
 #define IDC_DMDSHOW3                    128
 #define IDC_DMDSHOW4                    129
 #define IDRESETTODEFAULT                200
-#define IDD_OPTIONSDLG                  201
+#define IDB_SPLASH                      200
+#define IDD_GAMESETTINGSDLG             201
 #define IDABOUT                         201
+#define IDB_SPLASH2                     201
 #define IDDIRBUTTONROM                  202
+#define IDB_SPLASH3                     202
 #define IDDIRBUTTONCFG                  203
+#define IDB_SPLASH4                     203
 #define IDDIRBUTTONNVRAM                204
+#define IDB_SPLASH5                     204
 #define IDDIRBUTTONSAMPLE               205
 #define IDDIRBUTTONIMG                  206
-#define IDB_SPLASH                      200
-#define IDB_SPLASH2			201
-#define IDB_SPLASH3			202
-#define IDB_SPLASH4			203
-#define IDB_SPLASH5			204
 #define IDGETCOLOR                      207
 #define IDD_DISCLAIMERDLG               208
 #define IDD_GAMEINFODLG                 209
-#define IDD_PATHSDLG					210
+#define IDD_CONTROLLERSETTINGSDLG       210
 #define IDR_CTXMENU                     211
-#define IDD_DIALOG1                     212
 #define IDC_YESIAM                      228
 #define IDC_NOIAMNOT                    230
 #define IDC_DISGAMESPEC                 231
@@ -61,7 +59,8 @@
 #define IDC_STATE                       236
 #define IDC_ROMLIST                     237
 #define IDC_DONTCARE                    238
-#define IDR_WSHDLG			239
+#define IDC_ALLOWWRITEACCESS            238
+#define IDR_WSHDLG                      239
 #define ID_CTRLCTXMENU_GAMEOPTIONS      32771
 #define ID_CTRLCTXMENU_PATHES           32772
 #define ID_CTRLCTXMENU_DISPLAY_TITLE    32773
@@ -76,7 +75,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        213
 #define _APS_NEXT_COMMAND_VALUE         32778
-#define _APS_NEXT_CONTROL_VALUE         238
+#define _APS_NEXT_CONTROL_VALUE         239
 #define _APS_NEXT_SYMED_VALUE           106
 #endif
 #endif

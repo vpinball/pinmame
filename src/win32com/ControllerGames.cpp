@@ -11,6 +11,7 @@ extern "C" {
 
 /////////////////////////////////////////////////////////////////////////////
 // CEnumGames
+
 class ATL_NO_VTABLE CEnumGames : 
 	public CComObjectRootEx<CComMultiThreadModel>,
 	public CComCoClass<CEnumGames, &CLSID_EnumGames>,
@@ -158,33 +159,32 @@ public:
 CGames::CGames()
 {
 	m_lGames = 0;
-	m_pGamesList = NULL;
-}
-
-CGames::~CGames()
-{
-	Deinit();
-}
-
-STDMETHODIMP CGames::Init(Controller* m_pController)
-{
-	if ( !m_pController )
-		return S_FALSE;
-
 	while (drivers[m_lGames])
 		m_lGames++;
 
+	m_pGamesList = NULL;
 	if ( m_lGames ) {
-		m_pGamesList = new CComObject<CGame>*[m_lGames];
-		memset(m_pGamesList, 0x00, m_lGames * sizeof (CComObject<CGame>*));
+		m_pGamesList = new CComObject<CGame>*[m_lGames+1]; // [0] is the default game
+		memset(m_pGamesList, 0x00, (m_lGames+1) * sizeof (CComObject<CGame>*));
 
 		int i = 0;
-		while ( i<m_lGames ) {
-			HRESULT hr = CComObject<CGame>::CreateInstance(&m_pGamesList[i]);
+		HRESULT hr = CComObject<CGame>::CreateInstance(&m_pGamesList[i]);
+		if ( SUCCEEDED(hr) ) {
+			m_pGamesList[i]->AddRef();
+			hr = m_pGamesList[i]->Init(NULL);
+			if ( FAILED(hr) ) {
+				m_pGamesList[i]->Release();
+				m_pGamesList[i] = NULL;
+			}
+		}
+
+		i++;
+		while ( i<=m_lGames ) {
+			hr = CComObject<CGame>::CreateInstance(&m_pGamesList[i]);
 
 			if ( SUCCEEDED(hr) ) {
 				m_pGamesList[i]->AddRef();
-				hr = m_pGamesList[i]->Init(drivers[i]);
+				hr = m_pGamesList[i]->Init(drivers[i-1]);
 				if ( FAILED(hr) ) {
 					m_pGamesList[i]->Release();
 					m_pGamesList[i] = NULL;
@@ -193,11 +193,9 @@ STDMETHODIMP CGames::Init(Controller* m_pController)
 			i++;
 		}
 	}
-
-	return S_OK;
 }
 
-STDMETHODIMP CGames::Deinit()
+CGames::~CGames()
 {
 	if ( m_pGamesList ) {
 		int i = 0;
@@ -212,8 +210,6 @@ STDMETHODIMP CGames::Deinit()
 		delete m_pGamesList;
 		m_pGamesList = NULL;
 	}
-
-	return S_OK;
 }
 
 STDMETHODIMP CGames::InterfaceSupportsErrorInfo(REFIID riid)
@@ -261,10 +257,11 @@ STDMETHODIMP CGames::get_Item(VARIANT *pKey, IGame **pGame)
 			i++;
 		}
 
-		if ( i<m_lGames ) {
-			if ( m_pGamesList[i] )
-				hr = m_pGamesList[i]->QueryInterface(IID_IUnknown, (void**) pGame);
-		}
+		if ( i>=m_lGames )
+			i = 0; // return the "default" game
+
+		if ( m_pGamesList[i] )
+			hr = m_pGamesList[i]->QueryInterface(IID_IUnknown, (void**) pGame);
 	}
 	else {
 		VariantChangeType(pKey, pKey, 0, VT_I4);

@@ -25,4 +25,14 @@ extern CComModule _Module;
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
+// ATL doesn't define this
+#define COMMAND_CODE_RANGE_HANDLER(idFirst, idLast, code, func) \
+	if(uMsg == WM_COMMAND && code == HIWORD(wParam) && LOWORD(wParam) >= idFirst  && LOWORD(wParam) <= idLast) \
+	{ \
+		bHandled = TRUE; \
+		lResult = func(HIWORD(wParam), LOWORD(wParam), (HWND)lParam, bHandled); \
+		if(bHandled) \
+			return TRUE; \
+	}
+
 #endif // !defined(AFX_STDAFX_H__4432134E_5CC1_4D23_9A76_D334DA24C2EC__INCLUDED)

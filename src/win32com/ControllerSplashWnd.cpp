@@ -1,5 +1,5 @@
 #include "StdAfx.h"
-#include "VPinMAMESplashWnd.h"
+#include "ControllerSplashWnd.h"
 
 #include "resource.h"
 

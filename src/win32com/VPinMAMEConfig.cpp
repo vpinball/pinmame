@@ -20,7 +20,7 @@ extern struct rc_option input_opts[];
 extern struct rc_option sound_opts[];
 extern struct rc_option video_opts[];
 
-extern int verbose;
+int verbose					= 0;
 
 /* fix me - need to have the core call osd_set_gamma with this value */
 /* instead of relying on the name of an osd variable */
@@ -32,6 +32,8 @@ extern int attenuation;
 
 char *rompath_extra;
 }
+
+int fAllowWriteAccess = 1;
 
 static int config_handle_arg(char *arg);
 
@@ -365,7 +367,6 @@ void cli_frontend_init()
 void cli_frontend_exit(void)
 {
 	/* close open files */
-/*	if (logfile) fclose(logfile); */
 
 	if (options.playback) osd_fclose(options.playback);
 	if (options.record)   osd_fclose(options.record);
