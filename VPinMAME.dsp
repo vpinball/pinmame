@@ -1080,14 +1080,6 @@ SOURCE=.\src\wpc\gts80s.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\hnk.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\wpc\hnk.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\wpc\hnkgames.c
 # End Source File
 # Begin Source File

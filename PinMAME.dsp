@@ -3915,32 +3915,6 @@ SOURCE=.\src\wpc\gts80s.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\hnk.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=src\wpc\hnk.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
 SOURCE=src\wpc\hnkgames.c
 
 !IF  "$(CFG)" == "PinMAME - Win32 Release"

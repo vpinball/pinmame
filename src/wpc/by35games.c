@@ -1,6 +1,5 @@
 #include "driver.h"
 #include "core.h"
-#include "sim.h"
 #include "sndbrd.h"
 #include "by35snd.h"
 #include "wmssnd.h"
@@ -54,12 +53,12 @@ static void init_##name(void) { core_gameData = &name##GameData; }
 /*--------------------------------
 / Black Sheep Squadron (Astro game)
 /-------------------------------*/
-INITGAME(blkshpsq,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),0,0,0)
-ASTRO_ROMSTART44(blkshpsq,"blkshpsq.u2",0x39c478d3,
-                          "blkshpsq.u6",0x4b721953)
+INITGAME(blkshpsq,GEN_ASTRO,dispBy6,FLIP_SW(FLIP_L),0,0,0)
+ASTRO_ROMSTART48(blkshpsq,"blkshpsq.u2",0x39c478d3,
+                          "blkshpsq.u6",0x00000000)
 BY17_ROMEND
 #define input_ports_blkshpsq input_ports_by35
-CORE_GAMEDEFNV(blkshpsq,"Black Sheep Squadron",1979,"Astro",astro_mBY17,GAME_USES_CHIMES)
+CORE_GAMEDEFNV(blkshpsq,"Black Sheep Squadron",1979,"Astro",by35_mAstro,GAME_USES_CHIMES)
 
 /*--------------------------------
 / Freedom
