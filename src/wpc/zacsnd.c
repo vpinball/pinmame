@@ -141,11 +141,12 @@ static void sp_irq(int state) {
 }
 
 READ_HANDLER(rom_r) {
+  UINT16 address;
   UINT8 *rom = memory_region(ZACSND_CPUAREGION);
   splocals.p20 = i8035_get_reg(I8039_P2) & 0x01;
   splocals.p21 = (i8035_get_reg(I8039_P2) >> 1) & 0x01;
   splocals.p22 = (i8035_get_reg(I8039_P2) >> 2) & 0x01;
-  UINT16 address = (offset & 0x7f) | ((offset & 0x100) >> 1)
+  address = (offset & 0x7f) | ((offset & 0x100) >> 1)
    | (splocals.p20 << 8) | (splocals.p21 << 9) | (splocals.p22 << 10);
   splocals.wr = (offset & 0x80) ? 0 : 1;
   return rom[address];
