@@ -3,16 +3,13 @@
  *   Data East BSMT2000 driver
  *   by Aaron Giles
  *
+ *   Modifications for PINMAME by Steve Ellenoff & Martin Adrian	
  **********************************************************************************************/
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
 #include "driver.h"
-
-
 
 /**********************************************************************************************
 
@@ -21,7 +18,7 @@
 ***********************************************************************************************/
 
 #define BACKEND_INTERPOLATE		1
-#define LOG_COMMANDS			0
+#define LOG_COMMANDS			1
 #define MAKE_WAVS				0
 
 #if MAKE_WAVS
@@ -64,9 +61,6 @@ struct BSMT2000Voice
         UINT32          loop_start_position;            /* loop start position */
         UINT32          loop_stop_position;             /* loop stop position */
         UINT32          adjusted_rate;                  /* adjusted rate */
-#ifdef PINMAME
-        UINT32          bank;                           /* Makes rom banking easier */
-#endif
 };
 
 struct BSMT2000Chip
@@ -84,7 +78,8 @@ struct BSMT2000Chip
 	INT32		curr_lsample;			/* current sample target */
 	INT32		curr_rsample;			/* current sample target */
 #ifdef PINMAME
-        UINT16          voladj;                         /* Adjust Volume Command by this # */
+    UINT16      voladj;                 /* Adjust Volume Command by this # */
+	int         use_de_rom_banking;     /* Flag to turn on Rom Banking support for Data East Games */
 #endif
 	struct BSMT2000Voice *voice;		/* the voices */
  	struct BSMT2000Voice compressed;	/* the compressed voice */
@@ -160,17 +155,9 @@ static void generate_samples(struct BSMT2000Chip *chip, INT32 *left, INT32 *righ
 		voice = &chip->voice[v];
 		
 		/* compute the region base */
-#ifdef PINMAME
- 		if ((voice->bank < chip->total_banks) && (voice->adjusted_rate > 0))
-#else
 		if (voice->reg[REG_BANK] < chip->total_banks)
-#endif
 		{
-#ifdef PINMAME
-			INT8 *base = &chip->region_base[voice->bank * 0x10000];
-#else
 			INT8 *base = &chip->region_base[voice->reg[REG_BANK] * 0x10000];
-#endif
 			INT32 *lbuffer = left, *rbuffer = right;
 			UINT32 rate = voice->adjusted_rate;
 			UINT32 pos = voice->position;
@@ -205,19 +192,9 @@ static void generate_samples(struct BSMT2000Chip *chip, INT32 *left, INT32 *righ
 
   	/* compressed voice (11-voice model only) */
   	voice = &chip->compressed;
-logerror("chip->voices=%d voice->bank=%d\n", chip->voices, voice->bank);
-#ifdef PINMAME
-//	if (chip->voices == 11 && (voice->bank < chip->total_banks) && (voice->adjusted_rate > 0))
-	if (chip->voices == 11 && (voice->bank < chip->total_banks))
-#else
 	if (chip->voices == 11 && voice->reg[REG_BANK] < chip->total_banks)
-#endif
   	{
-	#ifdef PINMAME
-		INT8 *base = &chip->region_base[voice->bank * 0x10000];
-	#else
 		INT8 *base = &chip->region_base[voice->reg[REG_BANK] * 0x10000];
-	#endif
   		INT32 *lbuffer = left, *rbuffer = right;
   		UINT32 rate = voice->adjusted_rate;
   		UINT32 pos = voice->position;
@@ -225,7 +202,7 @@ logerror("chip->voices=%d voice->bank=%d\n", chip->voices, voice->bank);
   		INT32 rvol = voice->reg[REG_RIGHTVOL];
   		int remaining = samples;
 
-logerror("pos=%08X stop=%08X remaining=%d\n", pos, voice->loop_stop_position, remaining);
+//logerror("pos=%08X stop=%08X remaining=%d\n", pos, voice->loop_stop_position, remaining);
   
   		/* loop while we still have samples to generate */
   		while (remaining-- && pos < voice->loop_stop_position)
@@ -367,10 +344,6 @@ INLINE void init_voice(struct BSMT2000Voice *voice)
  	voice->adjusted_rate = 0;
  	voice->reg[REG_LEFTVOL] = 0x7fff;
  	voice->reg[REG_RIGHTVOL] = 0x7fff;
-#ifdef PINMAME
- 	voice->bank = 0;
-#endif
-
  }
  
  
@@ -428,7 +401,8 @@ int BSMT2000_sh_start(const struct MachineSound *msound)
 		bsmt2000[i].master_clock = (double)intf->baseclock[i];
 		bsmt2000[i].output_step = (int)((double)intf->baseclock[i] / 1024.0 * (double)(1 << FRAC_BITS) / (double)Machine->sample_rate);
 #ifdef PINMAME
-                bsmt2000[i].voladj = (UINT16)intf->voladj[i];
+        bsmt2000[i].voladj = (UINT16)intf->voladj[i];
+		bsmt2000[i].use_de_rom_banking = intf->use_de_rom_banking;
 #endif
 
 
@@ -512,6 +486,7 @@ static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_
 
 #if LOG_COMMANDS
 	logerror("BSMT#%d write: V%d R%d = %04X\n", chip - bsmt2000, offset % chip->voices, regindex, data);
+//	printf("BSMT#%d write: V%d R%d = %04X\n", chip - bsmt2000, offset % chip->voices, regindex, data);
 #endif
 	
 	/* update the register */
@@ -548,17 +523,28 @@ static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_
                         if(voice->reg[regindex] > 0)
                            voice->reg[regindex] += chip->voladj;
                         break;
-		#endif
+
+				case REG_ALT_RIGHTVOL:
+						voice->reg[REG_RIGHTVOL] = data;
+                        if(voice->reg[REG_RIGHTVOL] > 0)
+                           voice->reg[REG_RIGHTVOL] += chip->voladj;
+					break;
+		#else
 		
 		case REG_ALT_RIGHTVOL:
 			COMBINE_DATA(&voice->reg[REG_RIGHTVOL]);
 			break;
 
+		#endif
+
 		#ifdef PINMAME
 		case REG_BANK:
-			voice->bank = (voice->reg[REG_BANK] & 0x07) | 
-			              ((voice->reg[REG_BANK] & 0x18)<<1) |
-                          ((voice->reg[REG_BANK] & 0x20)>>2);
+			if(chip->use_de_rom_banking) {
+				int temp = (voice->reg[REG_BANK] & 0x07) | 
+					       ((voice->reg[REG_BANK] & 0x18)<<1) |
+						   ((voice->reg[REG_BANK] & 0x20)>>2);
+				voice->reg[REG_BANK] = temp;
+			}
 			break;
 		#endif
 	}
@@ -578,12 +564,14 @@ logerror("REG_LOOPEND=%04X voice->loop_stop_position=%08X\n", voice->reg[REG_LOO
  			case 0x6f:
  				COMBINE_DATA(&voice->reg[REG_BANK]);
 			#ifdef PINMAME
-				voice->bank = (voice->reg[REG_BANK] & 0x07) | 
-			              ((voice->reg[REG_BANK] & 0x18)<<1) |
-                          ((voice->reg[REG_BANK] & 0x20)>>2);
+				if(chip->use_de_rom_banking) {
+					int temp = (voice->reg[REG_BANK] & 0x07) | 
+								((voice->reg[REG_BANK] & 0x18)<<1) |
+								((voice->reg[REG_BANK] & 0x20)>>2);
+					voice->reg[REG_BANK] = temp;
+				}
 			#endif
-logerror("REG_BANK=%04X voice->bank=%08X\n", voice->reg[REG_BANK], voice->bank);
-				break;
+			break;
  			
  			case 0x74:
  				COMBINE_DATA(&voice->reg[REG_RIGHTVOL]);
