@@ -85,7 +85,7 @@ static void s32_decay(int param) {
 }
 
 static int s32_sh_start(const struct MachineSound *msound) {
-  s32locals.channel = mixer_allocate_channel(100);
+  s32locals.channel = mixer_allocate_channel(15);
   mixer_set_volume(s32locals.channel,0);
   mixer_play_sample(s32locals.channel, (signed char *)sineWave, sizeof(sineWave), 1, 1);
   s32locals.vTimer = timer_pulse(TIME_IN_HZ(S32_DECAYFREQ),0,s32_decay);
