@@ -2,9 +2,24 @@
 #include "sim.h"
 #include "capcom.h"
 
+#if 0
 #define INITGAME(name, balls) \
 	CC_INPUT_PORTS_START(name, balls) CC_INPUT_PORTS_END \
 	static core_tGameData name##GameData = {0}; \
+	static void init_##name(void) { \
+		core_gameData = &name##GameData; \
+	}
+#endif
+
+const core_tLCDLayout cc_dispDMD[] = {
+  {0,0,32,128,CORE_DMD,(void *)cc_dmd}, {0}
+};
+
+//name, gen, disptype, flippers, sb, db, gs1)
+
+#define INITGAME(name, balls) \
+	CC_INPUT_PORTS_START(name, balls) CC_INPUT_PORTS_END \
+	static core_tGameData name##GameData = {0,cc_dispDMD,{0,0,0}}; \
 	static void init_##name(void) { \
 		core_gameData = &name##GameData; \
 	}

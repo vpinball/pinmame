@@ -15,6 +15,7 @@ static struct {
   UINT16 u16a[4],u16b[4];
   int vblankCount;
   int u16irqcount;
+  int diagnosticLed;
 } locals;
 
 static NVRAM_HANDLER(cc);
@@ -24,28 +25,33 @@ static INTERRUPT_GEN(cc_vblank) {
   /  copy local data to interface
   /--------------------------------*/
   locals.vblankCount += 1;
-#if 0
+
   /*-- lamps --*/
   if ((locals.vblankCount % CC_LAMPSMOOTH) == 0) {
     memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
     memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
 
+#if 0
   /*-- solenoids --*/
   if ((locals.vblankCount % CC_SOLSMOOTH) == 0) {
     coreGlobals.solenoids = locals.solenoids;
     locals.solenoids = coreGlobals.pulsedSolState;
   }
+
+#endif
+
   /*-- display --*/
   if ((locals.vblankCount % CC_DISPLAYSMOOTH) == 0) {
+#if 0
     memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
     memcpy(locals.segments, locals.pseg, sizeof(locals.segments));
     memset(locals.pseg,0,sizeof(locals.pseg));
+#endif
     /*update leds*/
     coreGlobals.diagnosticLed = locals.diagnosticLed;
-    locals.diagnosticLed = 0;
+	locals.diagnosticLed = 0;
   }
-#endif
   core_updateSw(TRUE);
 }
 
@@ -55,20 +61,23 @@ static SWITCH_UPDATE(cc) {
 }
 
 static void cc_zeroCross(int data) {
-//  cpu_set_irq_line(0,MC68306_IRQ_2,ASSERT_LINE);
+  //cpu_set_irq_line(0,MC68306_IRQ_2,ASSERT_LINE);
+	cpu_set_irq_line(0,MC68306_IRQ_2,PULSE_LINE);
 }
 static READ16_HANDLER(cc_porta_r) { DBGLOG(("Port A read\n")); return 0; }
 static READ16_HANDLER(cc_portb_r) { DBGLOG(("Port B read\n")); return 0; }
 static WRITE16_HANDLER(cc_porta_w) {
   DBGLOG(("Port A write %04x\n",data));
+  locals.diagnosticLed = ((~data)&0x08>>3);
 }
 static WRITE16_HANDLER(cc_portb_w) {
   DBGLOG(("Port B write %04x\n",data));
-//  if (data & ~locals.lastb & 0x01) cpu_set_irq_line(0,MC68306_IRQ_2,CLEAR_LINE);
+  //if (data & ~locals.lastb & 0x01) cpu_set_irq_line(0,MC68306_IRQ_2,CLEAR_LINE);
 }
 static WRITE16_HANDLER(u16_w) {
   offset &= 0x203;
   DBGLOG(("U16w [%03x]=%04x (%04x)\n",offset,data,mem_mask));
+  //printf("U16w [%03x]=%04x (%04x)\n",offset,data,mem_mask);
   switch (offset) {
     case 0x000: case 0x001: case 0x002: case 0x003:
       locals.u16a[offset] = (locals.u16a[offset] & mem_mask) | data; break;
@@ -77,7 +86,7 @@ static WRITE16_HANDLER(u16_w) {
   }
 }
 
-static void cc_u16irq(int data) {
+static void cc_u16irq1(int data) {
   locals.u16irqcount += 1;
   if (locals.u16irqcount == (0x08>>((locals.u16b[0] & 0xc0)>>6))) {
     cpu_set_irq_line(0,MC68306_IRQ_1,PULSE_LINE);
@@ -85,9 +94,24 @@ static void cc_u16irq(int data) {
   }
 }
 
+static void cc_u16irq4(int data) {
+	cpu_set_irq_line(0,MC68306_IRQ_4,PULSE_LINE);
+}
+
+static int fixaddr = 0;
+
 static READ16_HANDLER(u16_r) {
+  static int readnum = 0;
+  //Once we've read the U16 3 times, we can safely return the ROM data we changed back, so U1 ROM test won't fail
+  readnum++;
+  if(readnum == 3)
+	  *((UINT16 *)(memory_region(REGION_CPU1) + fixaddr)) = 0x6600;
+
   offset &= 0x203;
   DBGLOG(("U16r [%03x] (%04x)\n",offset,mem_mask));
+  //printf("U16r [%03x] (%04x)\n",offset,mem_mask);
+  //force U16 test to succeed
+  return 0x00bc;
   switch (offset) {
     case 0x000: case 0x001: case 0x002: case 0x003:
       return locals.u16a[offset];
@@ -97,11 +121,27 @@ static READ16_HANDLER(u16_r) {
   return 0;
 }
 
+static READ16_HANDLER(io_r) {
+	if(keyboard_pressed_memory_repeat(KEYCODE_R,2))
+	   printf("io_r [%03x] (%04x)\n",offset,mem_mask);
+   return 0;
+}
+
+static WRITE16_HANDLER(io_w) {
+if(keyboard_pressed_memory_repeat(KEYCODE_W,2))
+   printf("io_w [%03x]=%04x (%04x)\n",offset,data,mem_mask);
+}
+
 static MACHINE_INIT(cc) {
   memset(&locals, 0, sizeof(locals));
   locals.u16a[0] = 0x00bc;
   locals.vblankCount = 1;
-  timer_pulse(TIME_IN_CYCLES(2811,0),0,cc_u16irq);
+  timer_pulse(TIME_IN_CYCLES(2811,0),0,cc_u16irq1);
+  timer_pulse(TIME_IN_HZ(400),0,cc_u16irq4);
+  //Force U16 Check to succeed
+  fixaddr = 0x0004dd1c;	//BBB
+  //fixaddr = 0x00091FD8; //PMV
+  *((UINT16 *)(memory_region(REGION_CPU1) + fixaddr)) = 0x6700;
 }
 
 /*-----------------------------------
@@ -165,6 +205,7 @@ static data16_t *ramptr;
 static MEMORY_READ16_START(cc_readmem)
   { 0x00000000, 0x00ffffff, MRA16_ROM },
   { 0x01000000, 0x0107ffff, MRA16_RAM },
+  { 0x02000000, 0x02bfffff, io_r },
 //{ 0x02000000, 0x02000001, MRA16_RAM }, /* AUX I/O */
 //{ 0x02400000, 0x02400001, MRA16_RAM }, /* EXT I/O */
 //{ 0x02800000, 0x02800001, MRA16_RAM }, /* SWITCH0 */
@@ -175,6 +216,7 @@ MEMORY_END
 static MEMORY_WRITE16_START(cc_writemem)
   { 0x00000000, 0x00ffffbf, MWA16_ROM },
   { 0x01000000, 0x0107ffff, MWA16_RAM, &ramptr },
+  { 0x02000000, 0x02bfffff, io_w },
   { 0x02C00000, 0x02C007ff, u16_w },    /* U16 (A10,A2,A1)*/
   { 0x03000000, 0x0300ffff, MWA16_RAM }, /* NVRAM */
 MEMORY_END
@@ -187,18 +229,18 @@ static PORT_WRITE16_START(cc_writeport)
   { M68306_PORTA, M68306_PORTA+1, cc_porta_w },
   { M68306_PORTB+1, M68306_PORTB+2, cc_portb_w },
 PORT_END
-static VIDEO_UPDATE(cc_dmd);
 
 MACHINE_DRIVER_START(cc)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(cc, NULL, NULL)
-  MDRV_CPU_ADD(M68306, 16670000/4)
+  MDRV_CPU_ADD(M68306, 16670000/1)
   MDRV_CPU_MEMORY(cc_readmem, cc_writemem)
   MDRV_CPU_PORTS(cc_readport, cc_writeport)
   MDRV_CPU_VBLANK_INT(cc_vblank, 1)
-  MDRV_VIDEO_UPDATE(cc_dmd)
+  //MDRV_VIDEO_UPDATE(cc_dmd)
   MDRV_NVRAM_HANDLER(cc)
   MDRV_SWITCH_UPDATE(cc)
+  MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_TIMER_ADD(cc_zeroCross, CC_ZCFREQ)
 MACHINE_DRIVER_END
 
@@ -208,10 +250,7 @@ MACHINE_DRIVER_END
 static NVRAM_HANDLER(cc) {
 }
 
-const core_tLCDLayout cc_dispDMD[] = {
-  {0,0,32,128,CORE_DMD}, {0}
-};
-static VIDEO_UPDATE(cc_dmd) {
+PINMAME_VIDEO_UPDATE(cc_dmd) {
   static UINT32 offset = 0x38000;
   tDMDDot dotCol;
   int ii, jj, kk, ll;
@@ -219,10 +258,12 @@ static VIDEO_UPDATE(cc_dmd) {
 
   core_textOutf(50,20,1,"offset=%4x", offset);
   memset(dotCol,0,sizeof(dotCol));
+#ifndef MAME_DEBUG
   if(keyboard_pressed_memory_repeat(KEYCODE_A,2))
-	  offset+=0x100;
+	 offset+=0x1;
   if(keyboard_pressed_memory_repeat(KEYCODE_B,2))
-	  offset-=0x100;
+	 offset-=0x1;
+#endif
   RAM = ramptr+offset;
   for (kk = 0, ii = 1; ii < 33; ii++, kk += 8) {
     UINT8 *line = (&dotCol[ii][0])-16;
@@ -233,6 +274,7 @@ static VIDEO_UPDATE(cc_dmd) {
         { *(--line) = d & 0x01; d>>=1; }
     }
   }
-  video_update_core_dmd(bitmap, cliprect, dotCol, core_gameData->lcdLayout ? core_gameData->lcdLayout : &cc_dispDMD[0]);
+  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+  return 0;
 }
 

@@ -4,6 +4,8 @@
 #include "core.h"
 #include "sim.h"
 
+extern PINMAME_VIDEO_UPDATE(cc_dmd);
+
 #define CC_COMPORTS \
   PORT_START /* 0 */ \
     /* Switch Column 1 (Switches #6 & #7) */ \
