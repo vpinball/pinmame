@@ -113,17 +113,19 @@ static int GTS80_lamp2m(int no)           { return no+8; }
 static int GTS80_m2lamp(int col, int row) { return (col-1)*8+row; }
 
 static SWITCH_UPDATE(GTS80) {
+  int isSlammed;
   if (inports) {
     CORE_SETKEYSW(inports[GTS80_COMINPORT], 0x3f, 8);
     // Set slam switch
-    core_setSw(GTS80_SWSLAMTILT, inports[GTS80_COMINPORT] & 0x8000);
+    coreGlobals.swMatrix[0] = (inports[GTS80_COMINPORT] & 0xf000) >> 8;
     if (core_gameData->hw.display & GTS80_DISPVIDEO)
       CORE_SETKEYSW(inports[GTS80_COMINPORT]>>8,0x0f,0);
   }
   /*-- slam tilt --*/
-  riot6532_set_input_a(1, (coreGlobals.swMatrix[0] & 0x80) ^ 0x80);
+  isSlammed = core_getSw(GTS80_SWSLAMTILT)? 0 : 0xff;
+  riot6532_set_input_a(1, isSlammed);
   if (core_gameData->hw.display & GTS80_DISPVIDEO) { // Also triggers NMI on video CPU
-    cpu_set_irq_line(GTS80_VIDCPU, IRQ_LINE_NMI, (coreGlobals.swMatrix[0] & 0x80) ? ASSERT_LINE : CLEAR_LINE);
+    cpu_set_irq_line(GTS80_VIDCPU, IRQ_LINE_NMI, isSlammed ? ASSERT_LINE : CLEAR_LINE);
   }
 }
 
@@ -159,6 +161,8 @@ static WRITE_HANDLER(riot6532_0b_w) {
 /----------------------------*/
 /* BCD version */
 static WRITE_HANDLER(riot6532_1aBCD_w) {
+  static int reorder[] = { 8, 0, 1, 15, 9, 10, 11, 12, 13, 14, 2, 3, 4, 5, 6, 7 };
+  int pos = reorder[15 - (data & 0xf)];
   // Load buffers on rising edge 0x10,0x20,0x40
   if (data & ~GTS80locals.riot1a & 0x10)
     GTS80locals.seg1 = core_bcd2seg9[GTS80locals.riot1b & 0x0f];
@@ -167,13 +171,13 @@ static WRITE_HANDLER(riot6532_1aBCD_w) {
   if (data & ~GTS80locals.riot1a & 0x40)
     GTS80locals.seg3 = core_bcd2seg9[GTS80locals.riot1b & 0x0f];
   // Set current digit to current value in buffers
-  GTS80locals.segments[15 - (data & 0xf)].w |= GTS80locals.seg1;
-  GTS80locals.segments[35 - (data & 0xf)].w |= GTS80locals.seg2;
+  GTS80locals.segments[pos].w |= GTS80locals.seg1;
+  GTS80locals.segments[20+pos].w |= GTS80locals.seg2;
   GTS80locals.segments[55 - (data & 0xf)].w |= GTS80locals.seg3;
   // Middle segments are controlled directly by portb 0x10,0x20,0x40
   // but digit is changed via porta so we set the segs here
-  if ((GTS80locals.riot1b & 0x10) == 0) GTS80locals.segments[15 - (data & 0xf)].w |= core_bcd2seg9[1];
-  if ((GTS80locals.riot1b & 0x20) == 0) GTS80locals.segments[35 - (data & 0xf)].w |= core_bcd2seg9[1];
+  if ((GTS80locals.riot1b & 0x10) == 0) GTS80locals.segments[pos].w |= core_bcd2seg9[1];
+  if ((GTS80locals.riot1b & 0x20) == 0) GTS80locals.segments[20+pos].w |= core_bcd2seg9[1];
   if ((GTS80locals.riot1b & 0x40) == 0) GTS80locals.segments[55 - (data & 0xf)].w |= core_bcd2seg9[1];
   GTS80locals.riot1a = data;
 }
@@ -190,18 +194,19 @@ static WRITE_HANDLER(riot6532_1a_w) {
 static WRITE_HANDLER(riot6532_1b_w) {
   const int alpha = GTS80locals.alphaData  & 0x7f; // shortcut
   if (data & ~GTS80locals.riot1b & 0x10) { // LD1 (falling edge)
+    GTS80locals.segments[GTS80locals.segPos1].w |= (GTS80locals.alphaData & 0x80);
     if (alpha == 0x01)
       GTS80locals.segPos1 = -2;
     else if (GTS80locals.segPos1 >= 0)
       GTS80locals.segments[GTS80locals.segPos1].w |= GTS80locals.pseg[GTS80locals.segPos1].w = core_ascii2seg[alpha];
-    if ((alpha != ',') && (alpha != '.') && (GTS80locals.segPos1 < 19)) GTS80locals.segPos1 = (GTS80locals.segPos1 + 1) % 0x14;
-  }
-  if (data & ~GTS80locals.riot1b & 0x20) { // LD2
+    if (GTS80locals.segPos1 < 19) GTS80locals.segPos1 = (GTS80locals.segPos1 + 1) % 0x14;
+  } else if (data & ~GTS80locals.riot1b & 0x20) { // LD2
+    GTS80locals.segments[20+GTS80locals.segPos2].w |= (GTS80locals.alphaData & 0x80);
     if (alpha == 0x01)
       GTS80locals.segPos2 = -2;
     else if (GTS80locals.segPos2 >= 0)
       GTS80locals.segments[20+GTS80locals.segPos2].w |= GTS80locals.pseg[20+GTS80locals.segPos2].w = core_ascii2seg[alpha];
-    if ((alpha != ',') && (alpha != '.')) GTS80locals.segPos2 = (GTS80locals.segPos2 + 1) % 0x14;
+    GTS80locals.segPos2 = (GTS80locals.segPos2 + 1) % 0x14;
   }
   GTS80locals.riot1b = data;
 }
