@@ -42,8 +42,8 @@
   #6) Solenoid handling needs to be cleaned up (ie, remove unnecessary code)
   #7) Sound board FIRQ freq. is set by a jumper (don't know which is used) nor what the value of E is.
   #8) There's probably more I can't think of at the moment
-
-  ** DMD Support not implemented - waiting for 8031 emulation **
+  #9) Look into error log message from VIA chip about no callback handler for Timer.
+  
 
 **************************************************************************************/
 #include <stdarg.h>
@@ -56,6 +56,12 @@
 #include "alvg.h"
 #include "alvgs.h"
 #include "alvgdmd.h"
+
+#if VERBOSE
+#define LOG(x)	logerror x
+#else
+#define LOG(x)
+#endif
 
 #define ALVG_VBLANKFREQ      60 /* VBLANK frequency*/
 
@@ -86,22 +92,23 @@ struct {
   int    sound_strobe;
 } alvglocals;
 
-struct {
-  int    version;
-  int	 pa0;
-  int	 pa1;
-  int	 pa2;
-  int	 pa3;
-  int	 a18;
-  int	 q3;
-  int	 dmd_latch;
-  int	 diagnosticLed;
-  int	 status1;
-  int	 status2;
-  int    dstrb;
-  UINT8  dmd_visible_addr;
-  int    nextDMDFrame;
-} alvg_dmdlocals;
+/*Receive command from DMD
+ Pins are wired as:
+    PIN   CPU  - DMD      - Data Bus
+	-----------------------------------
+	16 -  ENA  - ACK2     - D3 - OR D3?
+	17 -  ACK  - ACK1     - D0 - OR D2?
+	18 -  CLK  - TOGGLE?  - D2 - OR D1?
+	19 -  DATA - READY    - D1 - OR D0?
+ */
+static WRITE_HANDLER(fromdmd)
+{
+	data&=0x0f;
+	alvglocals.DMDAck    = ((data & 1) >> 0);
+	alvglocals.DMDData   = ((data & 2) >> 1);
+	alvglocals.DMDClock  = ((data & 4) >> 2);
+	alvglocals.DMDEnable = ((data & 8) >> 3);
+}
 
 
 /*Solenoids - Need to verify correct solenoid # here!*/
@@ -121,7 +128,7 @@ static WRITE_HANDLER(solenoid_w)
 			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x00FFFFFF) | (data<<24);
 			break;
 		default:
-			logerror("Solenoid_W Logic Error\n");
+			LOG(("Solenoid_W Logic Error\n"));
 	}
 }
 
@@ -166,16 +173,16 @@ PB0  (In)  = NU
 */
 static READ_HANDLER( xvia_0_b_r ) { return CoinDoorSwitches_Read(0); }
 //CA1: (IN) - N.C.
-static READ_HANDLER( xvia_0_ca1_r ) { logerror("WARNING: N.C.: U7-CA1-R\n"); return 0; }
+static READ_HANDLER( xvia_0_ca1_r ) { LOG(("WARNING: N.C.: U7-CA1-R\n")); return 0; }
 //CB1: (IN) - N.C.
-static READ_HANDLER( xvia_0_cb1_r ) { logerror("WARNING: N.C.: U7-CB1-R\n"); return 0; }
+static READ_HANDLER( xvia_0_cb1_r ) { LOG(("WARNING: N.C.: U7-CB1-R\n")); return 0; }
 //CA2:  (IN)
-static READ_HANDLER( xvia_0_ca2_r ) { logerror("U7-CA2-R\n"); return 0; }
+static READ_HANDLER( xvia_0_ca2_r ) { LOG(("U7-CA2-R\n")); return 0; }
 //CB2: (IN)
-static READ_HANDLER( xvia_0_cb2_r ) { logerror("U7-CB2-R\n"); return 0; }
+static READ_HANDLER( xvia_0_cb2_r ) { LOG(("U7-CB2-R\n")); return 0; }
 
 //PA0-7: (OUT) - N.C.
-static WRITE_HANDLER( xvia_0_a_w ) { logerror("WARNING - N.C.: U7-A-W: data=%x\n",data); }
+static WRITE_HANDLER( xvia_0_a_w ) { LOG(("WARNING - N.C.: U7-A-W: data=%x\n",data)); }
 
 //PB0-7: (OUT)
 /*
@@ -190,11 +197,11 @@ PB0  (out) = N/C
 */
 static WRITE_HANDLER( xvia_0_b_w ) { 
 	//if(data & 0x42) watchdog_reset_w(0,0);
-	if(data && !(data & 0x40 || data & 0x42)) logerror("WARNING: U7-B-W: data=%x\n",data); 
+	if(data && !(data & 0x40 || data & 0x42)) LOG(("WARNING: U7-B-W: data=%x\n",data)); 
 }
 
 //CA2: (OUT) - N.C.
-static WRITE_HANDLER( xvia_0_ca2_w ) { logerror("%x:WARNING: N.C.: U7-CA2-W: data=%x\n",activecpu_get_previouspc(),data); }
+static WRITE_HANDLER( xvia_0_ca2_w ) { LOG(("%x:WARNING: N.C.: U7-CA2-W: data=%x\n",activecpu_get_previouspc(),data)); }
 
 //CB2: (OUT) - NMI TO MAIN 65C02
 static WRITE_HANDLER( xvia_0_cb2_w ) 
@@ -206,7 +213,7 @@ static WRITE_HANDLER( xvia_0_cb2_w )
 /* U8 - 6522 */
 
 //PA0-7 (IN) - N/C
-static READ_HANDLER( xvia_1_a_r ) { logerror("WARNING: U8-PA-R\n"); return 0; }
+static READ_HANDLER( xvia_1_a_r ) { LOG(("WARNING: U8-PA-R\n")); return 0; }
 
 //PB0-7 (IN)
 /*
@@ -227,13 +234,13 @@ static READ_HANDLER( xvia_1_b_r ) {
 	return data; 
 }
 //CA1: (IN) - Sound Control
-static READ_HANDLER( xvia_1_ca1_r ) { return sndbrd_1_ctrl_r; }
+static READ_HANDLER( xvia_1_ca1_r ) { return sndbrd_1_ctrl_r(0); }
 //CB1: (IN) - N.C.
-static READ_HANDLER( xvia_1_cb1_r ) { logerror("WARNING: N.C.: U8-CB1-R\n"); return 0; }
+static READ_HANDLER( xvia_1_cb1_r ) { LOG(("WARNING: N.C.: U8-CB1-R\n")); return 0; }
 //CA2:  (IN) - N.C.
-static READ_HANDLER( xvia_1_ca2_r ) { logerror("WARNING: N.C.: U8-CA2-R\n"); return 0; }
+static READ_HANDLER( xvia_1_ca2_r ) { LOG(("WARNING: N.C.: U8-CA2-R\n")); return 0; }
 //CB2: (IN) - N.C.
-static READ_HANDLER( xvia_1_cb2_r ) { logerror("WARNING: U8-CB2-R\n"); return 0; }
+static READ_HANDLER( xvia_1_cb2_r ) { LOG(("WARNING: U8-CB2-R\n")); return 0; }
 
 //PA0-7: (OUT) - Sound Data
 static WRITE_HANDLER( xvia_1_a_w ) { sndbrd_1_data_w(0,data); }
@@ -259,7 +266,7 @@ static WRITE_HANDLER( xvia_1_b_w ) {
 //CA2: (OUT) - CPU DIAG LED
 static WRITE_HANDLER( xvia_1_ca2_w ) { 	alvglocals.diagnosticLed = data; }
 //CB2: (OUT) - N.C.
-static WRITE_HANDLER( xvia_1_cb2_w ) { logerror("WARNING: N.C.: U8-CB2-W: data=%x\n",data); }
+static WRITE_HANDLER( xvia_1_cb2_w ) { LOG(("WARNING: N.C.: U8-CB2-W: data=%x\n",data)); }
 
 //IRQ:  IRQ to Main CPU
 static void via_irq(int state) {
@@ -519,7 +526,6 @@ static int alvg_m2sw(int col, int row) {
 /*Alpha Numeric First Generation Init*/
 static MACHINE_INIT(alvg) {
   memset(&alvglocals, 0, sizeof(alvglocals));
-  memset(&alvg_dmdlocals, 0, sizeof(alvg_dmdlocals));
   
   /* init VIA */
   via_config(0, &via_0_interface);
@@ -533,7 +539,7 @@ static MACHINE_INIT(alvg) {
   //watchdog_reset_w(0,0);
 
   /* Init the dmd & sound board */
-  sndbrd_0_init(core_gameData->hw.display,    ALVGDMD_CPUNO, memory_region(ALVGDMD_ROMREGION),NULL,NULL);
+  sndbrd_0_init(core_gameData->hw.display,    ALVGDMD_CPUNO, memory_region(ALVGDMD_ROMREGION),fromdmd,NULL);
   sndbrd_1_init(core_gameData->hw.soundBoard, ALVGS_CPUNO,   memory_region(ALVGS_ROMREGION)  ,NULL,NULL);
 }
 
@@ -550,11 +556,10 @@ void alvg_UpdateSoundLEDS(int num,int data)
 		alvglocals.diagnosticLeds2 = data;
 }
 
+//Send data to the DMD CPU
 static WRITE_HANDLER(DMD_LATCH) {
-	alvg_dmdlocals.dmd_latch = data;
 	sndbrd_0_data_w(0,data);
 	sndbrd_0_ctrl_w(0,0);
-//	printf("DMD_LATCH: data=%x\n",data);
 }
 
 /*-----------------------------------------------
