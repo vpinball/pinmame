@@ -186,9 +186,6 @@ SND CPU #2 8255 PPI
 #define SPINB_INTFREQ        200 /* Z80 Interrupt frequency*/
 #define SPINB_NMIFREQ       2500 /* Z80 NMI frequency*/
 
-#define MATRIX_STROBE 0
-#define DIPCOL_STROBE 1
-
 /* Declarations */
 WRITE_HANDLER(spinb_sndCmd_w);
 READ_HANDLER(ci20_porta_r);
@@ -248,8 +245,7 @@ static void spinb_z80int(int data);
 struct {
   int    vblankCount;
   UINT32 solenoids;
-  UINT16 lampColumn, swColumn;
-  int    DipCol;
+  UINT16 lampColumn;
   int    lampRow, swCol;
   int    diagnosticLed;
   int    ssEn;
@@ -291,7 +287,6 @@ struct {
   int    SoundReady;
   int    SoundCmd;
   int    TestContactos;
-  int    LastStrobeType;
   UINT8  volume;
   mame_timer *irqtimer;
   int irqfreq;
@@ -438,14 +433,13 @@ READ_HANDLER(ci20_portb_r) { LOG(("UNDOCUMENTED: ci20_portb_r\n")); return 0; }
 
 //Switch Returns
 READ_HANDLER(ci20_portc_r) {
-	//Switch Column Strobe
-	if(SPINBlocals.LastStrobeType == MATRIX_STROBE)
-		return coreGlobals.swMatrix[SPINBlocals.swCol+1];	//+1 so we begin by reading column 1 of input matrix instead of 0 which is used for special switches in many drivers
-	else {
-	//Dip Column Strobe
- 		int dip = core_getDip(SPINBlocals.DipCol);
-		return (dip&0xf0) | (core_revnyb(dip&0x0f) & 0x0f);	//Lower nibble is reversed
-	}
+	UINT8 data = 0;
+	if (SPINBlocals.swCol > 2)	//Switch Column Strobe
+		data = coreGlobals.swMatrix[SPINBlocals.swCol-2];	//so we begin by reading column 1 of input matrix instead of 0 which is used for special switches in many drivers
+	else	//Dip Column Strobe
+ 		data = core_getDip(SPINBlocals.swCol);
+
+	return (data & 0xf0) | (core_revnyb(data & 0x0f));	//Lower nibble is reversed
 }
 READ_HANDLER(ci23_porta_r) { LOG(("UNDOCUMENTED: ci23_porta_r\n")); return 0; }
 READ_HANDLER(ci23_portb_r) { LOG(("UNDOCUMENTED: ci23_portb_r\n")); return 0; }
@@ -490,15 +484,7 @@ CI-20 8255 PPI
 (out) P3-P7: J2 - Pins 6 - 10 (Marked Nivel C03-C07) - Switch Strobe (5 lines)
 */
 WRITE_HANDLER(ci20_porta_w) {
-	if(data & 0x07) {
-		SPINBlocals.LastStrobeType = DIPCOL_STROBE;
-		SPINBlocals.DipCol = core_BitColToNum(data & 0x07);
-	}
-	else {
-		SPINBlocals.LastStrobeType = MATRIX_STROBE;
-		SPINBlocals.swColumn = (SPINBlocals.swColumn&0xff00) | (data ^ 0x07) >> 3;
-		SPINBlocals.swCol = core_BitColToNum(SPINBlocals.swColumn);
-	}
+	if (data) SPINBlocals.swCol = core_BitColToNum(data);
 }
 /*
 CI-20 8255 PPI
@@ -508,9 +494,7 @@ CI-20 8255 PPI
   (xxx) P4-P7: Not Used?
 */
 WRITE_HANDLER(ci20_portb_w) {
-	SPINBlocals.LastStrobeType = MATRIX_STROBE;
-	SPINBlocals.swColumn = (SPINBlocals.swColumn&0x00ff) | (data<<5);
-	SPINBlocals.swCol = core_BitColToNum(SPINBlocals.swColumn);
+	if (data) SPINBlocals.swCol = 8 + core_BitColToNum(data & 0x0f);
 }
 
 WRITE_HANDLER(ci20_portc_w) { LOG(("UNDOCUMENTED: ci20_portc_w = %x\n",data)); }
