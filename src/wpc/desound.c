@@ -764,7 +764,7 @@ static WRITE32_HANDLER(arm_cs_w)
 #endif
 
 //Remove Delay from LED Flashing code to speed up the boot time of the cpu
-static void remove_led_code()
+static void remove_led_code(void)
 {
   de3as_page0_ram[0xa854/4] = (UINT32)0;
   de3as_page0_ram[0xa860/4] = (UINT32)0;
