@@ -455,6 +455,8 @@ MEMORY_END
 /*-----------------
 /  Machine drivers
 /------------------*/
+
+/* Williams System 9 */
 const struct MachineDriver machine_driver_s9_s = {
   {{  CPU_M6808, 1000000, /* 1 Mhz */
       s11_readmem, s11_writemem, NULL, NULL,
@@ -470,6 +472,7 @@ const struct MachineDriver machine_driver_s9_s = {
   s11_nvram
 };
 
+/* Williams System 11 */
 const struct MachineDriver machine_driver_s11_s = {
   {{  CPU_M6808, 1000000, /* 1 Mhz */
       s11_readmem, s11_writemem, NULL, NULL,
@@ -485,6 +488,7 @@ const struct MachineDriver machine_driver_s11_s = {
   s11_nvram
 };
 
+/* Williams System 11b */
 const struct MachineDriver machine_driver_s11b2_s = {
   {{  CPU_M6808, 1000000, /* 1 Mhz */
       s11_readmem, s11_writemem, NULL, NULL,
@@ -500,6 +504,7 @@ const struct MachineDriver machine_driver_s11b2_s = {
   s11_nvram
 };
 
+/* Williams System 11c */
 const struct MachineDriver machine_driver_s11c_s = {
   {{  CPU_M6808, 1000000, /* 1 Mhz */
       s11_readmem, s11_writemem, NULL, NULL,
@@ -515,6 +520,7 @@ const struct MachineDriver machine_driver_s11c_s = {
   s11_nvram
 };
 
+/* Data East - Alpha Numeric */
 const struct MachineDriver machine_driver_deas1_s = {
   {{  CPU_M6808, 1000000, /* 1 Mhz */
       s11_readmem, s11_writemem, NULL, NULL,
@@ -526,9 +532,11 @@ const struct MachineDriver machine_driver_deas1_s = {
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
   NULL, NULL, gen_refresh,
-  0,0,0,0, { DE1S_SOUND },
+  SOUND_SUPPORTS_STEREO,0,0,0, { DE1S_SOUND },
   de_nvram
 };
+
+/* Data East - DMD 128x16 - Generation #1 Sound Hardware */
 const struct MachineDriver machine_driver_dedmd16s1_s = {
   {{  CPU_M6808, 1000000, /* 1 Mhz */
       s11_readmem, s11_writemem, NULL, NULL,
@@ -540,9 +548,11 @@ const struct MachineDriver machine_driver_dedmd16s1_s = {
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
   DE_DMD16VIDEO,
-  0,0,0,0, { DE1S_SOUND },
+  SOUND_SUPPORTS_STEREO,0,0,0, { DE1S_SOUND },
   de_nvram
 };
+
+/* Data East - Alpha Numeric - Generation #2 Sound Hardware */
 const struct MachineDriver machine_driver_dedmd16s2a_s = {
   {{  CPU_M6808, 1000000, /* 1 Mhz */
       s11_readmem, s11_writemem, NULL, NULL,
@@ -554,9 +564,11 @@ const struct MachineDriver machine_driver_dedmd16s2a_s = {
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
   DE_DMD16VIDEO,
-  0,0,0,0, { DE2S_SOUNDA },
+  SOUND_SUPPORTS_STEREO,0,0,0, { DE2S_SOUNDA },
   de_nvram
 };
+
+/* Data East/Sega - DMD 128x32 */
 const struct MachineDriver machine_driver_dedmd32s2a_s = {
   {{  CPU_M6808, 1000000, /* 1 Mhz */
       s11_readmem, s11_writemem, NULL, NULL,
@@ -568,9 +580,10 @@ const struct MachineDriver machine_driver_dedmd32s2a_s = {
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
   DE_DMD32VIDEO,
-  0,0,0,0, { DE2S_SOUNDA },
+  SOUND_SUPPORTS_STEREO,0,0,0, { DE2S_SOUNDA },
   de_nvram
 };
+/* Data East/Sega - DMD 192x64 */
 const struct MachineDriver machine_driver_dedmd64s2a_s = {
   {{  CPU_M6808, 1000000, /* 1 Mhz */
       s11_readmem, s11_writemem, NULL, NULL,
@@ -582,7 +595,7 @@ const struct MachineDriver machine_driver_dedmd64s2a_s = {
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
   DE_DMD64VIDEO,
-  0,0,0,0, { DE2S_SOUNDA },
+  SOUND_SUPPORTS_STEREO,0,0,0, { DE2S_SOUNDA },
   de_nvram
 };
 /* No Sound machine */
