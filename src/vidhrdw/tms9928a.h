@@ -8,8 +8,8 @@
 
 #define MAX_VDP 2
 
-#define TMS9928A_PALETTE_SIZE           16
-#define TMS9928A_COLORTABLE_SIZE        16
+#define TMS9928A_PALETTE_SIZE           32
+#define TMS9928A_COLORTABLE_SIZE        32
 
 /*
 ** The different models
