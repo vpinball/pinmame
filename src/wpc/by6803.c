@@ -56,7 +56,7 @@
 
 #define BY6803_VBLANKFREQ    60 /* VBLANK frequency */
 #define BY6803_IRQFREQ      150 /* IRQ (via PIA) frequency*/
-#define BY6803_ZCFREQ       120 /* Zero cross frequency (PHASE A is 1/2 this value)*/
+#define BY6803_ZCFREQ       240 /* Zero cross frequency (PHASE A is 1/2 this value)*/
 
 //#define mlogerror printf
 #define mlogerror logerror
@@ -203,8 +203,8 @@ static void by6803_dispStrobe2(int mask) {
 
 static void by6803_lampStrobe(int board, int lampadr) {
   if (lampadr != 0x0f) {
-    int lampdata = ((locals.p0_a>>4)^0x0f) & 0x03;
-    UINT8 *matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)+4*board];
+    int lampdata = ((locals.p0_a>>4)^0x0f) & 0x07;
+    UINT8 *matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)+8*board];
     int bit = 1<<(lampadr & 0x07);
 
     DBGLOG(("adr=%x data=%x\n",lampadr,lampdata));
@@ -223,7 +223,7 @@ static void by6803_lampStrobe(int board, int lampadr) {
 static WRITE_HANDLER(pia0a_w) {
   locals.DISPDATA(offset,data);
   locals.p0_a = data;
-  by6803_lampStrobe(locals.phase_a,locals.lampadr1);
+  by6803_lampStrobe(locals.phase_a<2,locals.lampadr1);
 }
 
 /* PIA1:A-W  0,2-7 Display handling:
@@ -412,9 +412,9 @@ static core_tData by6803aData = {
 
 static void by6803_zeroCross(int data) {
   /*- toggle zero/detection circuit-*/
-  locals.phase_a = !locals.phase_a;
-  pia_set_input_cb1(0, locals.phase_a);
-  cpu_set_irq_line(0, M6800_TIN_LINE, (locals.phase_a && !locals.p21) ? ASSERT_LINE : CLEAR_LINE);
+  locals.phase_a = (locals.phase_a + 1) & 3;
+  pia_set_input_cb1(0, (locals.phase_a == 1) || (locals.phase_a == 2));
+  cpu_set_irq_line(0, M6800_TIN_LINE, (locals.phase_a<2 && !locals.p21) ? ASSERT_LINE : CLEAR_LINE);
   DBGLOG(("phase=%d\n",locals.phase_a));
 #if 0
   int state = locals.phase_a;
@@ -560,7 +560,7 @@ static WRITE_HANDLER(port2_w) {
 	locals.sndint = sndint;
 	//logerror("port 2 write = %x\n",data);
 	locals.p21 = data & 0x02;
-	cpu_set_irq_line(0, M6800_TIN_LINE, (locals.phase_a && !locals.p21) ? ASSERT_LINE : CLEAR_LINE);
+	cpu_set_irq_line(0, M6800_TIN_LINE, (locals.phase_a<2 && !locals.p21) ? ASSERT_LINE : CLEAR_LINE);
 }
 
 void BY6803_UpdateSoundLED(int data){
