@@ -639,12 +639,33 @@ WPCS_SOUNDROM222("fh_u18.l2m",CRC(7f6c7045) SHA1(8c8d601e8e6598507d75b4955ccc516
                  "fh_u14.l2", CRC(3394b69b) SHA1(34690688f00106b725b27a6975cdbf1e077e3bb3))
 WPC_ROMEND
 
+WPC_ROMSTART(fh,l3,"u6-l3.rom",0x040000,CRC(7a74d702) SHA1(91540cdc62c855b4139b202aa6ad5440b2dee141))
+WPCS_SOUNDROM222("fh_u18.l2m",CRC(7f6c7045) SHA1(8c8d601e8e6598507d75b4955ccc51623124e8ab),
+                 "fh_u15.l2", CRC(0744b9f5) SHA1(b626601d82e6b1cf25f7fdcca31e623fc14a3f92),
+                 "fh_u14.l2", CRC(3394b69b) SHA1(34690688f00106b725b27a6975cdbf1e077e3bb3))
+WPC_ROMEND
+
+WPC_ROMSTART(fh,l4,"u6-l4.rom",0x040000,CRC(f438aaca) SHA1(42bf75325a0e85a4334a5a710c2eddf99160ffbf))
+WPCS_SOUNDROM222("fh_u18.l2m",CRC(7f6c7045) SHA1(8c8d601e8e6598507d75b4955ccc51623124e8ab),
+                 "fh_u15.l2", CRC(0744b9f5) SHA1(b626601d82e6b1cf25f7fdcca31e623fc14a3f92),
+                 "fh_u14.l2", CRC(3394b69b) SHA1(34690688f00106b725b27a6975cdbf1e077e3bb3))
+WPC_ROMEND
+
+WPC_ROMSTART(fh,l5,"u6-l5.rom",0x040000,CRC(a7a0a83e) SHA1(f6e5a352ccb114b682b49a168c6674a7d01e37a1))
+WPCS_SOUNDROM222("fh_u18.l2m",CRC(7f6c7045) SHA1(8c8d601e8e6598507d75b4955ccc51623124e8ab),
+                 "fh_u15.l2", CRC(0744b9f5) SHA1(b626601d82e6b1cf25f7fdcca31e623fc14a3f92),
+                 "fh_u14.l2", CRC(3394b69b) SHA1(34690688f00106b725b27a6975cdbf1e077e3bb3))
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
 
 CORE_GAMEDEF(fh,l9,"Funhouse L-9 (SL-2m)",1990,"Williams",wpc_mAlpha2S,0)
 CORE_CLONEDEF(fh,l9b,l9,"Funhouse L-9 (SL-2m) Bootleg Improved German translation",1990,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(fh,l3,l9,"Funhouse L-3",1990,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(fh,l4,l9,"Funhouse L-4",1990,"Williams",wpc_mAlpha2S,0)
+CORE_CLONEDEF(fh,l5,l9,"Funhouse L-5",1990,"Williams",wpc_mAlpha2S,0)
 
 /*-----------------------
 / Simulation Definitions
