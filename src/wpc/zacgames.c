@@ -133,26 +133,22 @@ CORE_GAMEDEFNV(firemntn,"Fire Mountain",1980,"Zaccaria",mZAC1125,SOUNDFLAG)
 /*--------------------------------
 / Star God (05/80)
 /-------------------------------*/
-// This game needs ROM #4 duplicated in slot #5?
-INITGAME1(stargod,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1346,125)
+INITGAME1(stargod,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1125,125)
 ZAC_ROMSTART84444(stargod,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6c0fda6fa0d1fea8257cb15),
 							"stargod2.lgc",CRC(7a784b03) SHA1(bc3490b69913f52e3e9db5c3de5617ab89efe073),
 							"stargod3.lgc",CRC(95492ac0) SHA1(992ad53efc5b53020e3939dfca5431fd50b6571c),
 							"stargod4.lgc",CRC(09e5682a) SHA1(c9fcad4f55ee005e204a49fa65e7d77ecfde9680),
-							"stargod4.lgc",CRC(09e5682a) SHA1(c9fcad4f55ee005e204a49fa65e7d77ecfde9680))
-//							"stargod5.lgc",CRC(03cd4e24) SHA1(b73d383dc71e44277de9116a702b899a54ce32b9))
-ZAC_SOUNDROM_0(				"stargod.snd", CRC(5079e493) SHA1(51d366cdd09ad00b8b016b0ea1c85ac95ef94d71))
+							"stargod5.lgc",CRC(43ba2462) SHA1(6749bdceca4a1dc2bc90d7ee3b671f52219e1af4))
 ZAC_ROMEND
-CORE_GAMEDEFNV(stargod,"Star God",1980,"Zaccaria",mZAC1346,0)
+CORE_GAMEDEFNV(stargod,"Star God",1980,"Zaccaria",mZAC1125,SOUNDFLAG)
 
 INITGAME1(stargoda,GEN_ZAC1,dispZAC1,SNDBRD_S67S,125)
 ZAC_ROMSTART84444(stargoda,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6c0fda6fa0d1fea8257cb15),
 							"stargod2.lgc",CRC(7a784b03) SHA1(bc3490b69913f52e3e9db5c3de5617ab89efe073),
 							"stargod3.lgc",CRC(95492ac0) SHA1(992ad53efc5b53020e3939dfca5431fd50b6571c),
 							"stargod4.lgc",CRC(09e5682a) SHA1(c9fcad4f55ee005e204a49fa65e7d77ecfde9680),
-							"stargod4.lgc",CRC(09e5682a) SHA1(c9fcad4f55ee005e204a49fa65e7d77ecfde9680))
-//							"stargod5.lgc",CRC(03cd4e24) SHA1(b73d383dc71e44277de9116a702b899a54ce32b9))
-S67S_SOUNDROMS8(			"stargod2.snd",CRC(c9103a68) SHA1(cc77af54fdb192f0b334d9d1028210618c3f1d95))
+							"stargod5.lgc",CRC(43ba2462) SHA1(6749bdceca4a1dc2bc90d7ee3b671f52219e1af4))
+S67S_SOUNDROMS8(			"stargod.snd", CRC(c9103a68) SHA1(cc77af54fdb192f0b334d9d1028210618c3f1d95))
 ZAC_ROMEND
 CORE_CLONEDEFNV(stargoda,stargod,"Star God (alternate sound)",1980,"Zaccaria",mZAC1144,0)
 
@@ -178,7 +174,7 @@ ZAC_ROMSTART84444(ewf,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6c0fda
 						"ewf_3.lgc",   CRC(b21bf015) SHA1(ecddfe1d6797c39e094a7f86efabf0abea0fa4af),
 						"ewf_4.lgc",   CRC(d110da3f) SHA1(88e27347d209fab5be924f95b0a001476ea92c1f),
 						"ewf_5.lgc",   CRC(f695dab6) SHA1(48ca60718cea40baa5052f690c8d69eb7ab32b0e))
-ZAC_SOUNDROM_0(			"stargod.snd", CRC(5079e493) SHA1(51d366cdd09ad00b8b016b0ea1c85ac95ef94d71))
+ZAC_SOUNDROM_0(			"ewf.snd",     CRC(5079e493) SHA1(51d366cdd09ad00b8b016b0ea1c85ac95ef94d71))
 ZAC_ROMEND
 CORE_GAMEDEFNV(ewf,"Earth, Wind & Fire",1981,"Zaccaria",mZAC1346,0)
 
