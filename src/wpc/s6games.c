@@ -17,7 +17,7 @@ S6_INPUT_PORTS_START(s6, 1) S6_INPUT_PORTS_END
 /*--------------------------------
 / Laser Ball - Sys.6 (Game #493)
 /-------------------------------*/
-INITGAME(lzbal,s6_6digit_disp)
+INITGAMEFULL(lzbal,s6_6digit_disp,0,0,45,46,47,44,0,13)
 S6_ROMSTART(lzbal,l2, "gamerom.716", CRC(9c5ffe2f) SHA1(f0db627abaeb8c023a3ccc75262e236c998a5d6f),
                       "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
                       "green2.716",  CRC(1c978a4a) SHA1(1959184764643d58f1740c54bb74c2aad7d667d2))

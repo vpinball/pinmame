@@ -91,17 +91,20 @@ static INTERRUPT_GEN(s4_irq) {
 }
 
 /*********************/
-/*DIPS SWITCHES?     */
+/*DIPS SWITCHES      */
 /*********************/
 /*Dips are returned to a4-7 and are read by pulsing of a0-3 (same as alpapos).
-  Dips are matrixed.. Column 0 = Data Switches 1-4, Column 1 = Data Switches 5-8..
-  		      Column 2 = Function Switches 1-4, Column 3 = Function Switches 5-8
- */
+  Dips are matrixed.. Column 0 = Function Switches 1-4, Column 1 = Function Switches 5-8..
+  		      Column 2 = Data Switches 1-4, Column 3 = Data Switches 5-8
+  Game expects on=0, off=1 from dip switches.
+  Game expects 0xFF for function dips when ENTER-key is not pressed.
+*/
 static READ_HANDLER(s4_dips_r) {
-  /* 0x01=0, 0x02=1, 0x04=2, 0x08=3 */
-  int dipcol = (s4locals.alphapos & 0x0c) ? ((s4locals.alphapos>>2)+1) :
-                                              s4locals.alphapos>>1;
-  return (core_getDip(dipcol/2+1)<<(4*(1-(dipcol&0x01)))) & 0xf0;
+  int val=0;
+  int dipcol = (s4locals.alphapos & 0x03);
+  if (core_getSw(S4_ENTER))  /* only while enter is pressed */
+    val = (core_getDip(dipcol/2+1) << (4*(1-(dipcol&0x01)))) & 0xf0;
+  return ~val; /* game wants bits inverted */
 }
 
 /************/

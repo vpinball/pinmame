@@ -11,6 +11,7 @@
  Changes:
 
  280201 - First version.
+ 110704 - Added special solenoids to game definition (TomB)
 
  Read PZ.c or FH.c if you like more help.
 
@@ -339,7 +340,7 @@ static core_tGameData tmfntGameData = {
   },
   &tmfntSimData,
   {{ 0 }},
-  {0,{0}}
+  {0,{33,34,37,38,35,0,0,0}}
 };
 
 
