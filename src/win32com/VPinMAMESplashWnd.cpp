@@ -6,7 +6,7 @@
 #include <atlwin.h>
 
 #define CLOSE_TIMER			1
-#define SPLASH_WND_VISIBLE	10000 // ms
+#define SPLASH_WND_VISIBLE	5000 // ms
 
 class CSplashWnd : public CWindowImpl<CSplashWnd> {
 public:
@@ -135,4 +135,21 @@ void DestroySplashWnd(void **ppData)
 	delete pSplashWnd;
 
 	*ppData = NULL;
+}
+
+void WaitForSplashWndToClose(void **ppData)
+{
+	if ( !ppData )
+		return;
+
+	// wait for the splash window until it closes
+	CSplashWnd* pSplashWnd = (CSplashWnd*) *ppData;
+
+	MSG msg;
+	do {
+		GetMessage(&msg,0,0,0);
+
+		TranslateMessage(&msg); 
+		DispatchMessage(&msg);
+	} while ( pSplashWnd->IsWindow() );
 }
