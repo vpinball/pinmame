@@ -156,7 +156,7 @@ struct rc_option core_opts[];
 struct rc_option pinmame_opts[] = {
 	/* PinMAME options */
 	{ "PinMAME options", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },
-	{ "dmd_red",    NULL, rc_int, &pmoptions.dmd_red,   "225", 0, 255, NULL, "DMD color: Red" },
+	{ "dmd_red",    NULL, rc_int, &pmoptions.dmd_red,   "255", 0, 255, NULL, "DMD color: Red" },
 	{ "dmd_green",  NULL, rc_int, &pmoptions.dmd_green, "224", 0, 255, NULL, "DMD color: Green" },
 	{ "dmd_blue",   NULL, rc_int, &pmoptions.dmd_blue,   "32", 0, 255, NULL, "DMD color: Blue" },
 	{ "dmd_perc0",	NULL, rc_int, &pmoptions.dmd_perc0,  "20", 0, 100, NULL, "DMD off intensity [%]" },
