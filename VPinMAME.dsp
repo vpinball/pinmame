@@ -794,6 +794,10 @@ SOURCE=.\src\wpc\by6803.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\by6803snd.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\byvidpin.c
 # End Source File
 # Begin Source File
