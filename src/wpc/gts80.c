@@ -634,13 +634,16 @@ static MACHINE_INIT(gts80) {
   memset(&GTS80locals, 0, sizeof GTS80locals);
 
   /* init ROM */
-  for(ii = 1; ii<4; ii++) {
-	memcpy(memory_region(GTS80_MEMREG_CPU)+0x1000+0x4000*ii, memory_region(GTS80_MEMREG_CPU)+0x1000, 0x0800);
+  for(ii = 1; ii<4; ii++) 
 	memcpy(memory_region(GTS80_MEMREG_CPU)+0x2000+0x4000*ii, memory_region(GTS80_MEMREG_CPU)+0x2000, 0x2000);
-	if ( core_gameData->gen & GEN_GTS80B4K ) {
-		memcpy(memory_region(GTS80_MEMREG_CPU)+0x9000, memory_region(GTS80_MEMREG_CPU)+0x1800, 0x800);
-		memcpy(memory_region(GTS80_MEMREG_CPU)+0xd000, memory_region(GTS80_MEMREG_CPU)+0x1800, 0x800);
-	}
+
+  if ( core_gameData->gen & GEN_GTS80B4K ) {
+	memcpy(memory_region(GTS80_MEMREG_CPU)+0x5000, memory_region(GTS80_MEMREG_CPU)+0x1000, 0x800);
+	memcpy(memory_region(GTS80_MEMREG_CPU)+0xd000, memory_region(GTS80_MEMREG_CPU)+0x9000, 0x800);
+  }
+  else {
+	for(ii = 1; ii<4; ii++) 
+	  memcpy(memory_region(GTS80_MEMREG_CPU)+0x1000+0x4000*ii, memory_region(GTS80_MEMREG_CPU)+0x1000, 0x0800);
   }
 
   /* init RAM pointer */
