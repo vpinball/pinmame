@@ -202,6 +202,7 @@ struct GameDriver
 #define	ORIENTATION_FLIP_Y			0x0002	/* mirror everything in the Y direction */
 #define ORIENTATION_SWAP_XY			0x0004	/* mirror along the top-left/bottom-right diagonal */
 
+#define GAME_USES_CHIMES            0x0000
 #define GAME_NOT_WORKING			0x0008
 #define GAME_WRONG_COLORS			0x0010	/* colors are totally wrong */
 #define GAME_IMPERFECT_COLORS		0x0020	/* colors are not 100% accurate, but close */
