@@ -30,6 +30,7 @@ const struct sndbrdIntf capcomsIntf = {
 /*-- local data --*/
 static struct {
   struct sndbrdData brdData;
+  void *buffTimer;
 } locals;
 
 static MEMORY_READ_START(capcoms_readmem)
@@ -54,7 +55,23 @@ MACHINE_DRIVER_START(capcom2s)
 MDRV_SOUND_ADD_TAG("tms320av120", TMS320AV120, capcoms_TMS320AV120Int2)
 MACHINE_DRIVER_END
 
+extern void tms_FillBuff(int);
+
+void cap_FillBuff(int dummy) {
+	tms_FillBuff(0);
+	tms_FillBuff(1);
+}
+
 static void capcoms_init(struct sndbrdData *brdData) {
   memset(&locals, 0, sizeof(locals));
   locals.brdData = *brdData;
+
+  /* stupid timer/machine init handling in MAME */
+  if (locals.buffTimer) timer_remove(locals.buffTimer);
+
+  /*-- Create timer to fill our buffer --*/
+  locals.buffTimer = timer_alloc(cap_FillBuff);
+
+  /*-- start the timer --*/
+  timer_adjust(locals.buffTimer, 0, 0, TIME_IN_HZ(10));		//Frequency is somewhat arbitrary but must be fast enough to work
 }
