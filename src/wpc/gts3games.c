@@ -10,8 +10,6 @@ N = No Lead, L = Have a Lead on Rom
 (N)Bell Ringer 1990
 (N)Nudge It 1990
 (N)Hoops 1991
-(N)Operation: Thunderstorm (Bad Sound Rom)
-(N)Super Mario Bros. Mushroom World (MW) /No. 3427/ Premier Technology , June 1992, 4 players
 (N)Stargate (Bad Soun rom)
 ??Strikes 'N Spares 1995 (????????)
 */
@@ -171,7 +169,7 @@ GTS3ROMSTART(surfnsaf,	"gprom.bin",0xac3393bd)
 GTS3SOUND32256A(		"yrom1.bin",0xa0480418,
 						"drom1.bin",0xec8fc963,
 						"arom1.bin",0x38b569b2,
-						"arom2.bin",0x0)
+						"arom2.bin",0x224c2021)
 GTS3_ROMEND
 CORE_GAMEDEFNV(surfnsaf,"Surf'n Safari",1991,"Gottlieb",mGTS3S,GAME_IMPERFECT_SOUND)
 
@@ -183,7 +181,7 @@ GTS3ROMSTART(opthund,	"gprom.bin",0x96a128c2)
 GTS3SOUND32256A(		"yrom1.bin",0x169816d1,
 						"drom1.bin",0xdb28be69,
 						"arom1.bin",0x0fbb130a,
-						"arom2.bin",0x0)
+						"arom2.bin",0x0f7632b3)
 GTS3_ROMEND
 CORE_GAMEDEFNV(opthund,"Operation Thunder",1992,"Gottlieb",mGTS3S,GAME_IMPERFECT_SOUND)
 
@@ -205,15 +203,15 @@ GTS3_ROMEND
 CORE_GAMEDEFNV(smb,"Super Mario Brothers",1992,"Gottlieb",mGTS3DMDS, GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
-/ Super Mario Brothers Mushroom World (NEED ROM)
+/ Super Mario Brothers Mushroom World
 /-------------------------------------------------------------------*/
-INITGAME2(smbmush, DMD, FLIP4547, 3/*?*/)
-GTS3ROMSTART(smbmush,	"gprom.bin", 0x0)
-GTS3_DMD256_ROMSTART(	"dsprom.bin",0x0)
-GTS3SOUND32256(			"yrom1.bin",0x0,
-						"drom1.bin",0x0,
-						"arom1.bin",0x0,
-						"arom2.bin",0x0)
+INITGAME2(smbmush, DMD, FLIP8182, 3/*?*/)
+GTS3ROMSTART(smbmush,	"gprom.bin", 0x45f6d0cc)
+GTS3_DMD256_ROMSTART(	"dsprom.bin",0xdda6c8be)
+GTS3SOUND32256(			"yrom1.bin",0x09712c37,
+						"drom1.bin",0x6f04a0ac,
+						"arom1.bin",0xedce7951,
+						"arom2.bin",0xdd7ea212)
 GTS3_ROMEND
 CORE_GAMEDEFNV(smbmush,"Super Mario Brothers Mushroom World",1992,"Gottlieb",mGTS3DMDS,GAME_IMPERFECT_SOUND)
 
