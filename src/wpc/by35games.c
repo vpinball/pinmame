@@ -283,7 +283,7 @@ BY35_ROMSTART888(futurspa,"781-07_1.716",0x4c716a6a,
 BY51_SOUNDROM8(           "781-02_4.716",0x364f7c9a)
 BY35_ROMEND
 #define input_ports_futurspa input_ports_by35
-CORE_GAMEDEFNV(futurspa,"Future Spa",1979,"Bally",by35_mBY35_51S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(futurspa,"Future Spa",1979,"Bally",by35_mBY35_51S,0)
 /*--------------------------------
 / Space invaders
 /-------------------------------*/
@@ -294,7 +294,7 @@ BY35_ROMSTART888(spaceinv,"792-10_1.716",0x075eba5a,
 BY51_SOUNDROM8(           "792-07_4.716",0x787ffd5e)
 BY35_ROMEND
 #define input_ports_spaceinv input_ports_by35
-CORE_GAMEDEFNV(spaceinv,"Space Invaders",1980,"Bally",by35_mBY35_51S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(spaceinv,"Space Invaders",1980,"Bally",by35_mBY35_51S,0)
 /*--------------------------------
 / Nitro Groundshaker
 /-------------------------------*/
@@ -305,7 +305,7 @@ BY35_ROMSTART888(ngndshkr,"776-17_1.716",0xf2d44235,
 BY51_SOUNDROM8(           "776-15_4.716",0x63c80c52)
 BY35_ROMEND
 #define input_ports_ngndshkr input_ports_by35
-CORE_GAMEDEFNV(ngndshkr,"Nitro Groundshaker",1980,"Bally",by35_mBY35_51S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(ngndshkr,"Nitro Groundshaker",1980,"Bally",by35_mBY35_51S,0)
 /*--------------------------------
 / Silverball Mania
 /-------------------------------*/
@@ -316,7 +316,7 @@ BY35_ROMSTART888(slbmania,"786-16_1.716",0xc054733f,
 BY51_SOUNDROM8(           "786-11_4.716",0x2a3641e6)
 BY35_ROMEND
 #define input_ports_slbmania input_ports_by35
-CORE_GAMEDEFNV(slbmania,"Silverball Mania",1980,"Bally",by35_mBY35_51S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(slbmania,"Silverball Mania",1980,"Bally",by35_mBY35_51S,0)
 /*--------------------------------
 / Rolling Stones
 /-------------------------------*/
@@ -327,7 +327,7 @@ BY35_ROMSTART888(rollston,"796-17_1.716",0x51a826d7,
 BY51_SOUNDROM8(           "796-19_4.716",0xb740d047)
 BY35_ROMEND
 #define input_ports_rollston input_ports_by35
-CORE_GAMEDEFNV(rollston,"Rolling Stones",1980,"Bally",by35_mBY35_51S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(rollston,"Rolling Stones",1980,"Bally",by35_mBY35_51S,0)
 /*--------------------------------
 / Mystic
 /-------------------------------*/
@@ -338,7 +338,7 @@ BY35_ROMSTART888(mystic  ,"798-03_1.716",0xf9c91e3b,
 BY51_SOUNDROM8(           "798-05_4.716",0xe759e093)
 BY35_ROMEND
 #define input_ports_mystic input_ports_by35
-CORE_GAMEDEFNV(mystic  ,"Mystic",1980,"Bally",by35_mBY35_51S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(mystic  ,"Mystic",1980,"Bally",by35_mBY35_51S,0)
 /*--------------------------------
 / Hot Doggin
 /-------------------------------*/
@@ -349,7 +349,7 @@ BY35_ROMSTART888(hotdoggn,"809-05_1.716",0x2744abcb,
 BY51_SOUNDROM8(           "809-07_4.716",0x43f28d7f)
 BY35_ROMEND
 #define input_ports_hotdoggn input_ports_by35
-CORE_GAMEDEFNV(hotdoggn,"Hot Doggin",1980,"Bally",by35_mBY35_51S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(hotdoggn,"Hot Doggin",1980,"Bally",by35_mBY35_51S,0)
 /*--------------------------------
 / Viking
 /-------------------------------*/
@@ -360,29 +360,29 @@ BY35_ROMSTART888(viking  ,"802-05_1.716",0xa5db0574,
 BY51_SOUNDROM8(           "802-07-4.716",0x62bc5030)
 BY35_ROMEND
 #define input_ports_viking input_ports_by35
-CORE_GAMEDEFNV(viking  ,"Viking",1980,"Bally",by35_mBY35_51S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(viking  ,"Viking",1980,"Bally",by35_mBY35_51S,0)
 /*--------------------------------
 / Skateball
 /-------------------------------*/
-INITGAME(skatebll,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
+INITGAME(skatebll,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
 BY35_ROMSTART880(skatebll,"823-24_1.716",0x46e797d1,
                           "823-25_2.716",0x960cb8c3,
                           "720-40_6.732",0xd7aaaa03)
 BY51_SOUNDROM8(           "823-02_4.716",0xd1037b20)
 BY35_ROMEND
 #define input_ports_skatebll input_ports_by35
-CORE_GAMEDEFNV(skatebll,"Skateball",1980,"Bally",by35_mBY35_51S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(skatebll,"Skateball",1980,"Bally",by35_mBY35_51S,0)
 /*--------------------------------
 / Frontier
 /-------------------------------*/
-INITGAME(frontier,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
+INITGAME(frontier,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
 BY35_ROMSTART880(frontier,"819-08_1.716",0xe2f8ce9d,
                           "819-07_2.716",0xaf023a85,
                           "720-40_6.732",0xd7aaaa03)
 BY51_SOUNDROM8(           "819-09_4.716",0xa62059ca)
 BY35_ROMEND
 #define input_ports_frontier input_ports_by35
-CORE_GAMEDEFNV(frontier,"Frontier",1980,"Bally",by35_mBY35_51S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(frontier,"Frontier",1980,"Bally",by35_mBY35_51S,0)
 
 /* -------------------------------------*/
 /* All games below use Sound Module -56 */
@@ -574,7 +574,7 @@ BY35_ROMSTARTx00(speakesy,"877-03_2.732",0x34b28bbc,
 BY51_SOUNDROM8(           "877-01_4.716",0x6534e826)
 BY35_ROMEND
 #define input_ports_speakesy input_ports_by35
-CORE_GAMEDEFNV(speakesy,"Speakeasy",1982,"Bally",by35_mBY35_51S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(speakesy,"Speakeasy",1982,"Bally",by35_mBY35_51S,0)
 
 /*-------------------------------------------------
 / Speak Easy 4 Player - Uses AS2518-51 Sound Board
@@ -585,7 +585,7 @@ BY35_ROMSTARTx00(speakes4,"877-04_2.732",0x8926f2bb,
                           "720-53_6.732",0xc2e92f80)
 BY51_SOUNDROM8(           "877-01_4.716",0x6534e826)
 BY35_ROMEND
-CORE_CLONEDEFNV(speakes4,speakesy,"Speakeasy 4 Player",1982,"Bally",by35_mBY35_51S,GAME_IMPERFECT_SOUND)
+CORE_CLONEDEFNV(speakes4,speakesy,"Speakeasy 4 Player",1982,"Bally",by35_mBY35_51S,0)
 
 /*--------------------------------
 / Rapid Fire
@@ -648,7 +648,7 @@ BY35_ROMSTARTx00(bmx,"888-03_2.732",0x038cf1be,
 BY51_SOUNDROM0(      "888-02_4.532",0x5692c679)
 BY35_ROMEND
 #define input_ports_bmx input_ports_by35
-CORE_GAMEDEFNV(bmx,"BMX",1983,"Bally",by35_mBY35_51S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(bmx,"BMX",1983,"Bally",by35_mBY35_51S,0)
 
 /*-----------------------------------------------------------
 / Grand Slam (BY35-???: 01/83) - Uses AS2888-51 Sound Board
@@ -659,7 +659,7 @@ BY35_ROMSTARTx00(granslam, "grndslam.u2",0x66aea9dc,
 BY51_SOUNDROM0(            "grndslam.u4",0xac34bc38)
 BY35_ROMEND
 #define input_ports_granslam input_ports_by35
-CORE_GAMEDEFNV(granslam,"Grand Slam",1983,"Bally",by35_mBY35_51S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(granslam,"Grand Slam",1983,"Bally",by35_mBY35_51S,0)
 
 /*same as cenatur*/     //BY35      06/83 Centaur II
 
@@ -786,8 +786,8 @@ CORE_GAMEDEFNV(eballchp,"Eight Ball Champ",1985,"Bally",by_mBY6803_61S,0)
 
 INITGAME6803(eballch2,GEN_BY6803,dispBy7C,FLIP6803,4,SNDBRD_BY45, BY6803_DISP7SEG)
 BY6803_ROMSTARTx4(eballch2,"u3_cpu.128",0x025f3008)
-BY45_SOUNDROM22(           "u3_snd.532",0x4836d70d,
-                           "u4_snd.532",0x4b49d94d)
+BY45_SOUNDROM22(           "ebcu3.snd", 0x00000000,
+                           "ebcu4.snd", 0x00000000)
 BY6803_ROMEND
 #define input_ports_eballch2 input_ports_by6803
 CORE_CLONEDEFNV(eballch2,eballchp,"Eight Ball Champ (Cheap Squeek)",1985,"Bally",by_mBY6803_45S,0)
@@ -1097,7 +1097,7 @@ BY35_ROMEND
 CORE_GAMEDEFNV(dracula,"Dracula",1979,"Stern",by35_mST100,GAME_NO_SOUND)
 
 /*--------------------------------
-/ Trident - Don't have!
+/ Trident
 /-------------------------------*/
 INITGAME(trident,GEN_STMPU100,dispBy6,FLIP_SW(FLIP_L),0,0,0)
 BY17_ROMSTARTx88(trident,"cpu_u2.716",0x934e49dd,
