@@ -18,30 +18,23 @@ static void ZAC_soundInit(void) {}
 static void ZAC_soundExit(void) {}
 
 static struct {
-  int p0_a, p1_a, p1_b, p0_ca2, p1_ca2, p0_cb2, p1_cb2;
   int swCol;
-  int bcd[5];	//There are 5 Displays
-  int lampadr1;
   UINT32 solenoids;
-  core_tSeg segments,pseg;
-  int    diagnosticLed;
+  core_tSeg segments;
+  int diagnosticLed;
   int vblankCount;
   int initDone;
   int refresh;
 } locals;
 
-static void ZAC_dispStrobe(int mask) {
-  int digit = locals.p1_a & 0xfc; //PA2-7 Selects Digits 1-6
-  int ii,jj;
-  logerror("digit = %x (%x,%x,%x,%x,%x)\n",digit,locals.bcd[0],locals.bcd[1],locals.bcd[2],locals.bcd[3],locals.bcd[4]);
-  for (ii = 0; digit; ii++, digit>>=1)
-    if (digit & 0x01) {
-      UINT8 dispMask = mask;
-      for (jj = 0; dispMask; jj++, dispMask>>=1)
-		if (dispMask & 0x01) {
-          ((int *)locals.segments)[jj*8+ii] |= ((int *)locals.pseg)[jj*8+ii] = core_bcd2seg9[locals.bcd[jj]];
-		}
-    }
+/*-----------------------------------------------
+/ Load/Save static ram
+/-------------------------------------------------*/
+static UINT8 *ram1;
+
+static NVRAM_HANDLER(ZAC) {
+  if (ram1)
+    core_nvram(file, read_or_write, ram1, 0x400, 0x0f);
 }
 
 static INTERRUPT_GEN(ZAC_vblank) {
@@ -64,9 +57,7 @@ static INTERRUPT_GEN(ZAC_vblank) {
   /*-- display --*/
   if ((locals.vblankCount % ZAC_DISPLAYSMOOTH) == 0) {
     memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
-    memcpy(locals.segments, locals.pseg, sizeof(locals.segments));
-    memset(locals.pseg,0,sizeof(locals.pseg));
-    /*update leds*/
+  /*update leds*/
     coreGlobals.diagnosticLed = locals.diagnosticLed;
     //locals.diagnosticLed = 0;
   }
@@ -89,8 +80,8 @@ static int irq_callback(int int_level) {
 
 //Generate the IRQ
 static INTERRUPT_GEN(ZAC_irq) {
-	logerror("%x: IRQ\n",activecpu_get_previouspc());
-	cpu_set_irq_line(ZAC_CPUNO, 0, 1);
+//	logerror("%x: IRQ\n",activecpu_get_previouspc());
+//	cpu_set_irq_line(ZAC_CPUNO, 0, PULSE_LINE);
 //	return S2650_INT_IRQ;
 }
 
@@ -99,6 +90,7 @@ static MACHINE_INIT(ZAC) {
 
 //  if (core_init(&ZACData)) return;
   memset(&locals, 0, sizeof(locals));
+  memset(ram1, 0xff, 0x400);
 
   /* Set IRQ Vector Routine */
   cpu_set_irq_callback(0, irq_callback);
@@ -113,22 +105,6 @@ static MACHINE_STOP(ZAC) {
   if (coreGlobals.soundEn) ZAC_soundExit();
   // core_exit();
 }
-
-/*-----------------------------------------------
-/ Load/Save static ram
-/-------------------------------------------------*/
-static UINT8 *ZAC_CMOS;
-
-static NVRAM_HANDLER(ZAC) {
-  //core_nvram(file, read_or_write, ZAC_CMOS, 0x100,0xff);
-}
-
-//4 top bits
-static WRITE_HANDLER(ZAC_CMOS_w) {
-  data |= 0x0f;
-  ZAC_CMOS[offset] = data;
-}
-
 
 /*   CTRL PORT : READ = D0-D7 = Switch Returns 0-7 */
 static READ_HANDLER(ctrl_port_r)
@@ -145,7 +121,7 @@ static READ_HANDLER(data_port_r)
 {
 	logerror("%x: Dip & ActSnd/Spk Read - Dips=%x\n",activecpu_get_previouspc(),core_getDip(0)&0x0f);
 	//logerror("%x: Data Port Read\n",activecpu_get_previouspc());
-	return core_getDip(0)&0x0f; // 4Bit Dip Switch;
+	return ~(core_getDip(0)&0x0f); // 4Bit Dip Switch;
 }
 
 /*
@@ -201,7 +177,7 @@ static WRITE_HANDLER(sense_port_w)
 	logerror("%x: Sense Port Write=%x\n",activecpu_get_previouspc(),data);
 }
 
-static UINT8 *ram, *ram1;
+static UINT8 *ram;
 
 static READ_HANDLER(ram_r) {
 //	if (offset > 0xff) logerror("ram_r: offset = %4x\n", offset);
@@ -222,6 +198,8 @@ static WRITE_HANDLER(ram_w) {
 
 static WRITE_HANDLER(ram1_w) {
 	ram1[offset] = data;
+	if (offset < 0x2e)
+		locals.segments[offset].w = core_bcd2seg7[data & 0x0f];
 }
 
 static READ_HANDLER(ram1_r) {
@@ -283,7 +261,7 @@ static MEMORY_READ_START(ZAC_readmem)
 MEMORY_END
 
 static MEMORY_WRITE_START(ZAC_writemem)
-{ 0x0000, 0x13ff, MWA_ROM },
+{ 0x0000, 0x17ff, MWA_ROM },
 { 0x1800, 0x187f, ram1_w },		/* RAM */
 { 0x1880, 0x18bf, lamp_w },
 { 0x18c0, 0x1bff, ram11_w },	/* RAM */
@@ -366,7 +344,7 @@ MACHINE_DRIVER_START(ZAC1)
   MDRV_CPU_MEMORY(ZAC_readmem, ZAC_writemem)
   MDRV_CPU_PORTS(ZAC_readport, ZAC_writeport)
   MDRV_CPU_VBLANK_INT(ZAC_vblank, 1)
-//  MDRV_CPU_PERIODIC_INT(ZAC_irq, ZAC_IRQFREQ)
+  MDRV_CPU_PERIODIC_INT(ZAC_irq, ZAC_IRQFREQ)
   MDRV_NVRAM_HANDLER(ZAC)
   MDRV_DIPS(4)
   MDRV_SWITCH_UPDATE(ZAC)
