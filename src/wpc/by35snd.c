@@ -8,6 +8,106 @@
 #include "by35.h"
 #include "by35snd.h"
 
+// sample support added for by32 / by50 by Oliver Kaegi (08/27/2004)
+//
+// sample table for both 82s123 prom from the by32 / by50 sound card...
+//
+static const char *u318_sample_names[] =
+{
+	"*s3250u3",
+  "knocker.wav",
+  "lsling.wav",
+  "rsling.wav",
+  "solenoid.wav",
+  "popper.wav",
+  "ballrel.wav",
+  "diverter.wav",
+  "flapopen.wav",
+  "flapclos.wav",
+  "lflipper.wav",
+  "rflipper.wav",
+  "jet1.wav",
+  "jet2.wav",
+  "jet3.wav",
+  "motor1.wav",
+  "motor2.wav",
+  "solon.wav",
+  "soloff.wav",
+	"w1801.wav",    
+	"w1802.wav",
+	"w1803.wav",
+	"w1804.wav",
+	"w1805.wav",
+	"w1806.wav",
+	"w1807.wav",
+	"w1808.wav",
+	"w1809.wav",
+	"w1810.wav",
+	"w1811.wav",
+	"w1812.wav",
+	"w1813.wav",
+	"w1814.wav",
+	"w1815.wav",
+	"w1815.wav",	
+	"w1817.wav",   
+	"w1818.wav",
+	"w1819.wav",
+	"w1820.wav",
+	"w1821.wav",
+	"w1822.wav",
+	"w1823.wav",
+	"w1824.wav",
+	"w1825.wav",
+	"w1826.wav",
+	"w1827.wav",
+	"w1828.wav",
+	"w1829.wav",
+	"w1830.wav",
+	"w1831.wav",	
+	"w1831.wav",	
+	"w5101.wav",    
+	"w5102.wav",
+	"w5103.wav",
+	"w5104.wav",
+	"w5105.wav",
+	"w5106.wav",
+	"w5107.wav",
+	"w5108.wav",
+	"w5109.wav",
+	"w5110.wav",
+	"w5111.wav",
+	"w5112.wav",
+	"w5113.wav",
+	"w5114.wav",
+	"w5115.wav",
+	"w5115.wav",	
+	"w5117.wav",   
+	"w5118.wav",
+	"w5119.wav",
+	"w5120.wav",
+	"w5121.wav",
+	"w5122.wav",
+	"w5123.wav",
+	"w5124.wav",
+	"w5125.wav",
+	"w5126.wav",
+	"w5127.wav",
+	"w5128.wav",
+	"w5129.wav",
+	"w5130.wav",
+	"w5131.wav",	
+	"w5131.wav",	
+	0   /* end of array */
+};
+
+struct Samplesinterface u318_samples_interface =
+{
+	7,	/* 6 internal for wpcsam, 1 progamm  */
+	100,	/* volume */
+	u318_sample_names
+};
+
+
 /*----------------------------------------
 /              -32, -50 sound
 /-----------------------------------------*/
@@ -28,66 +128,113 @@ static struct CustomSound_interface by32_custInt = {by32_sh_start, by32_sh_stop}
 
 MACHINE_DRIVER_START(by32)
   MDRV_SOUND_ADD(CUSTOM, by32_custInt)
+  MDRV_SOUND_ADD_TAG("BY_32_50", SAMPLES, u318_samples_interface)
 MACHINE_DRIVER_END
 
-#define BY32_DECAYFREQ   50
-#define BY32_EXPFACTOR   95   // %
-#define BY32_PITCH      100   // 0-100%
-
-/* waveform for the audio hardware */
-static const UINT8 sineWave[] = {
-  204,188,163,214,252,188,115,125,136,63,0,37,88,63,47,125
-};
 
 static struct {
   struct sndbrdData brdData;
-  int volume, lastCmd, channel, strobe;
+  int  startit, lastCmd,  strobe, sampleoff;
 } by32locals;
 
-static void by32_decay(int param) {
-  mixer_set_volume(by32locals.channel, by32locals.volume/10);
-  if (by32locals.volume < 100) by32locals.volume = 0;
-  else by32locals.volume = by32locals.volume * BY32_EXPFACTOR / 100;
-}
 
-static int by32_sh_start(const struct MachineSound *msound) {
-  by32locals.channel = mixer_allocate_channel(15);
-//  mixer_set_lowpass_frequency(by32locals.channel, 2000);
-  mixer_set_volume(by32locals.channel,0);
-  mixer_play_sample(by32locals.channel, (signed char *)sineWave, sizeof(sineWave), 1000, 1);
-  timer_pulse(TIME_IN_HZ(BY32_DECAYFREQ),0,by32_decay);
+static int by32_sh_start(const struct MachineSound *msound)  {
+
+
   return 0;
 }
 
+
 static void by32_sh_stop(void) {
-  mixer_stop_sample(by32locals.channel);
+	sample_stop(0);
+//	sample_stop(1);
 }
 
-static void setfreq(int cmd) {
-  UINT8 sData; int f;
+
+
+// table to play samples
+
+//by32_ctrl_w         	by32_data_w
+//    cb2 e  		a-d    		prev-cb2    prev-a-d   		result (dont play if 1111)
+// a) 0   X   		 		X		  		fill prev cb2
+// b) 1   X            			0        	0001      	play X0001
+// c)        		1100    	1       	0001       	play X1100 fill prev a-d
+// d)     		0001		0		XXXX 		fill prev a-d
+// e) 1   x                             1                               ignore
+// X -> dont care
+
+static void playsam(int cmd) {
   if ((cmd != by32locals.lastCmd) && ((cmd & 0x0f) != 0x0f)) {
-    sData = core_revbyte(*(by32locals.brdData.romRegion + (cmd ^ 0x10)));
-    f= sizeof(sineWave)/((1.1E-6+BY32_PITCH*1E-8)*sData)/8;
-    mixer_set_sample_frequency(by32locals.channel, f);
+
+       int samplex;
+        samplex = by32locals.sampleoff + (cmd & 0x1f);
+//  logerror("%04x: samplestart cmd %02x alstcmd %02x %d \n", activecpu_get_previouspc(), cmd,by32locals.lastCmd,samplex);
+ 	
+// 	if (by32locals.startit == 0) 
+// 	{
+// 		sample_start(0,samplex,0);
+// 		by32locals.startit = 1;
+// 	}
+// 	else
+// 	{
+  		sample_start(6,samplex,0);
+//  		by32locals.startit = 0;
+//	}
+//       sample_start(0,samplex,0);
   }
   by32locals.lastCmd = cmd;
 }
 
-static WRITE_HANDLER(by32_data_w) { setfreq((by32locals.lastCmd & 0x10) | (data & 0x0f)); }
-
-static WRITE_HANDLER(by32_ctrl_w) {
-  if (~by32locals.strobe & data & 0x01) by32locals.volume = 1000;
-  else if (~data & 0x01)                by32locals.volume = 0;
-  setfreq((by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00));
-  by32locals.strobe = data;
+static WRITE_HANDLER(by32_data_w) {
+//      	logerror("%04x: by_data_w data %02x \n", activecpu_get_previouspc(), data);
+      	if (~by32locals.strobe & 0x01)
+ 	{
+ 		by32locals.lastCmd =	(by32locals.lastCmd & 0x10) | (data & 0x0f); // case d
+ 	}
+ 	else
+ 	{
+       		playsam((by32locals.lastCmd & 0x10) | (data & 0x0f)); 		// case c
+       	}
 }
+static WRITE_HANDLER(by32_ctrl_w) {
+  if (~by32locals.strobe & 0x01) 	
+	{
+//        playsam((by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00)); // case b
+// sound e bit is swaped !!!!
+          playsam((by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x00 : 0x10)); // case b
+	}
+  else 
+    	if (~data & 0x01)
+           {
+//	   by32locals.lastCmd = (by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00); // case a
+ 	   by32locals.lastCmd = (by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x00 : 0x10); // case a
+
+	   sample_stop(6);
+           }
+            
+//  logerror("%04x: by_ctrl32_w data %02x startit %d\n", activecpu_get_previouspc(), data,by32locals.startit);
+  by32locals.strobe = data;	// case e
+}
+
 static WRITE_HANDLER(by32_manCmd_w) {
   by32_data_w(0, data); by32_ctrl_w(0,0); by32_ctrl_w(0,((data & 0x10)>>3)|0x01);
 }
 static void by32_init(struct sndbrdData *brdData) {
-  memset(&by32locals, 0, sizeof(by32locals));
+  int w;
+   memset(&by32locals, 0, sizeof(by32locals));
   by32locals.brdData = *brdData;
+  w = core_revbyte(*(by32locals.brdData.romRegion));
+    if (w == 0xfe)
+    {
+    	by32locals.sampleoff	= 1 + 18;		// 751-18 game rom detected (star trek,playboy...)
+    }
+    else 
+    {
+    	by32locals.sampleoff	= 33 + 18;		// 751-51 game rom detected (harlem, dolly...)
+    }
+//    logerror("%04x: by_ctrl32_int %02x \n", activecpu_get_previouspc(),w );
 }
+
 
 /*----------------------------------------
 /            Sounds Plus -51
