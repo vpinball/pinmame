@@ -477,6 +477,11 @@ DRIVERNV(simpprtd)      //Whitestar: 01/03 The Simpsons Pinball Party (German di
 DRIVERNV(simpprte)      //Whitestar: 01/03 The Simpsons Pinball Party (Spanish display)
 DRIVERNV(simpprtf)      //Whitestar: 01/03 The Simpsons Pinball Party (French display)
 DRIVERNV(simpprti)      //Whitestar: 01/03 The Simpsons Pinball Party (Italian display)
+DRIVERNV(term3)         //Whitestar: 06/03 Terminator 3: Rise of the Machines
+DRIVERNV(term3g)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (German)
+DRIVERNV(term3l)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (Spain)
+DRIVERNV(term3f)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (France)
+DRIVERNV(term3i)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (Italy)
 
 #endif /* VPINMAME */
 
@@ -722,6 +727,7 @@ DRIVER(mm,109)                            // Home version
 DRIVER(cv,14)           //WPC-562:  10/97 B Cirqus Voltaire
 DRIVER(cv,20h)                            // Home version
 DRIVER(ngg,13)          //WPC-561:  12/97 W No Good Gofers
+DRIVER(ngg,p06)                           // Prototype
 DRIVER(cp,16)           //WPC-563:  04/98 B The Champion Pub
 DRIVER(mb,10)           //WPC-565:  07/98 W Monster Bash
 DRIVER(mb,106)                            // Home version
