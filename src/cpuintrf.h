@@ -130,6 +130,11 @@ enum
 #if (HAS_I8X41)
 	CPU_I8X41,
 #endif
+	
+#if defined(PINMAME) && (HAS_I8051)
+	CPU_I8051,
+#endif
+
 #if (HAS_M6800)
 	CPU_M6800,
 #endif

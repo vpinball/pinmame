@@ -5,6 +5,8 @@
 #include "wpcsam.h"
 #include "sim.h"
 
+#define ALVG_CPUNO	0
+
 /*-------------------------
 / Machine driver constants
 /--------------------------*/
@@ -52,19 +54,16 @@
 
 /*-- Memory regions --*/
 #define ALVG_MEMREG_CPU		REGION_CPU1
-//#define ALVG_MEMREG_DCPU	REGION_CPU2
-//#define ALVG_MEMREG_DROM	REGION_USER1
 
 /*-- Main CPU regions and ROM --*/
 
 /*-- 64K CPU ROM --*/
 #define ALVGROMSTART(name, n1, chk1) \
    ROM_START(name) \
-     NORMALREGION(0x10000, ALVG_MEMREG_CPU) \
+   NORMALREGION(0x10000, ALVG_MEMREG_CPU) \
        ROM_LOAD(n1, 0x0000, 0x10000, chk1)
 
 extern void alvg_UpdateSoundLEDS(int num,int data);
-//extern PINMAME_VIDEO_UPDATE(ALVG_dmd128x32);
 
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(alvg);
@@ -72,5 +71,11 @@ extern MACHINE_DRIVER_EXTERN(alvgs1);
 
 #define mALVG         alvg
 #define mALVGS		  alvgs1
+
+//Use only for testing the 8031 core emulation
+#ifdef MAME_DEBUG
+  extern MACHINE_DRIVER_EXTERN(alvg_test8031);
+  #define mTEST8031	  alvg_test8031
+#endif
 
 #endif /* INC_ALVG */

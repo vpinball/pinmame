@@ -105,5 +105,5 @@ static void alvgs_init(struct sndbrdData *brdData) {
 }
 
 static INTERRUPT_GEN(alvgs_firq) {
-  cpu_set_irq_line(1, M6809_FIRQ_LINE, PULSE_LINE);
+  cpu_set_irq_line(ALVGS_CPUNO, M6809_FIRQ_LINE, PULSE_LINE);
 }

@@ -80,6 +80,9 @@
 #if (HAS_I8X41)
 #include "cpu/i8x41/i8x41.h"
 #endif
+#if defined(PINMAME) && (HAS_I8051)
+#include "cpu/i8051/i8051.h"
+#endif
 #if (HAS_M6800 || HAS_M6801 || HAS_M6802 || HAS_M6803 || HAS_M6808 || HAS_HD63701)
 #include "cpu/m6800/m6800.h"
 #endif
@@ -485,6 +488,9 @@ const struct cpu_interface cpuintrf[] =
 #endif
 #if (HAS_I8X41)
 	CPU0(I8X41,    i8x41,	 1,  0,1.00, 8, 16,	  0,16,LE,1, 2	),
+#endif
+#if defined(PINMAME)  &&  (HAS_I8051)
+	CPU0(I8051,    i8051,	 1,  0,1.00, 8, 16,	  0,16,LE,1, 3	),
 #endif
 #if (HAS_M6800)
 	CPU0(M6800,    m6800,	 1,  0,1.00, 8, 16,	  0,16,BE,1, 4	),

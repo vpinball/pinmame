@@ -59,10 +59,6 @@
 
 #define ALVG_VBLANKFREQ      60 /* VBLANK frequency*/
 
-#define ALVG_CPUNO	0
-//#define ALVG_DCPUNO 1
-//#define ALVG_SCPUNO 2
-
 WRITE_HANDLER(alvg_sndCmd_w);
 
 /*----------------
@@ -599,6 +595,7 @@ static MEMORY_WRITE_START(alvg_writemem)
 {0x4000,0xffff,MWA_ROM},
 MEMORY_END
 
+//Main Machine Driver (Main CPU Only)
 MACHINE_DRIVER_START(alvg)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(alvg,NULL,alvg)
@@ -613,11 +610,22 @@ MACHINE_DRIVER_START(alvg)
   MDRV_LAMP_CONV(alvg_sw2m,alvg_m2sw)
 MACHINE_DRIVER_END
 
+//Main CPU, DMD, Sound hardware Driver
 MACHINE_DRIVER_START(alvgs1)
   MDRV_IMPORT_FROM(alvg)
+  MDRV_IMPORT_FROM(alvgdmd)
   MDRV_IMPORT_FROM(alvgs)
   MDRV_SOUND_CMD(alvg_sndCmd_w)
   MDRV_SOUND_CMDHEADING("alvg")
 MACHINE_DRIVER_END
+
+//Use only to test 8031 core
+#ifdef MAME_DEBUG
+MACHINE_DRIVER_START(alvg_test8031)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_IMPORT_FROM(test8031)
+  MDRV_SWITCH_UPDATE(alvg)
+MACHINE_DRIVER_END
+#endif
 
 
