@@ -8,14 +8,14 @@
              The SS patent was sold to Midway in 1977, and a few home pinball models
              were built using the same hardware design)
 
-		CPU: I4004 @ 750 kHz
-		IO:      DMA
-		DISPLAY: 2 x 5 Digit, 2 x 2 Digit 7 Segment panels
+		CPU:     I4004 @ 750 kHz
+		IO:      4004 Ports
+		DISPLAY: 2 x 5 Digit, 3 x 2 Digit 7 Segment panels
 		SOUND:	 Chimes
 
    Rotation VIII:
-		CPU: Z80 @ 1.1 MHz ?
-			 INT: NMI @ 900Hz ?
+		CPU:     Z80 @ 1.1 MHz ?
+			INT: NMI @ 900Hz ?
 		IO:      Z80 Ports
 		DISPLAY: 4 x 6 Digit, 4 x 2 Digit 7 Segment panels
 		SOUND:	 ?
@@ -44,9 +44,6 @@ static struct {
   core_tSeg segments, pseg;
 } locals;
 
-const struct IO_ReadPort midway_readport[];
-const struct IO_WritePort midway_writeport[];
-
 static INTERRUPT_GEN(MIDWAY_nmihi) {
 	cpu_set_nmi_line(MIDWAY_CPU, PULSE_LINE);
 }
@@ -55,7 +52,7 @@ static INTERRUPT_GEN(MIDWAY_nmihi) {
 /  copy local data to interface
 /--------------------------------*/
 static INTERRUPT_GEN(MIDWAY_vblank) {
-  locals.vblankCount += 1;
+  locals.vblankCount++;
   /*-- lamps --*/
   if ((locals.vblankCount % MIDWAY_LAMPSMOOTH) == 0) {
     memcpy(coreGlobals.lampMatrix, locals.lampMatrix, sizeof(locals.lampMatrix));
@@ -76,6 +73,30 @@ static INTERRUPT_GEN(MIDWAY_vblank) {
   coreGlobals.diagnosticLed = locals.diagnosticLed;
 
   core_updateSw(core_getSol(12));
+}
+
+static INTERRUPT_GEN(MIDWAYP_vblank) {
+  locals.vblankCount++;
+  /*-- lamps --*/
+  if ((locals.vblankCount % MIDWAY_LAMPSMOOTH) == 0) {
+    memcpy(coreGlobals.lampMatrix, locals.lampMatrix, sizeof(locals.lampMatrix));
+  }
+  /*-- solenoids --*/
+  coreGlobals.solenoids = locals.solenoids;
+  if ((locals.vblankCount % (MIDWAY_SOLSMOOTH)) == 0)
+  	locals.solenoids = 0;
+
+  /*-- display --*/
+  if ((locals.vblankCount % MIDWAY_DISPLAYSMOOTH) == 0)
+  {
+    memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
+	memset(locals.segments, 0x00, sizeof locals.segments);
+  }
+
+  /*update leds*/
+  coreGlobals.diagnosticLed = locals.diagnosticLed;
+
+  core_updateSw(1); // flippers always enabled
 }
 
 static SWITCH_UPDATE(MIDWAY) {
@@ -168,9 +189,9 @@ PORT_END
 
 static READ_HANDLER(rom_r) {
 	if (offset%2)
-		return coreGlobals.swMatrix[offset/2] & 0x0f;
+		return coreGlobals.swMatrix[offset/2 + 1] >> 4;
 	else
-		return coreGlobals.swMatrix[offset/2] >> 4;
+		return coreGlobals.swMatrix[offset/2 + 1] & 0x0f;
 }
 
 static void flicker_disp(int offset, UINT8 data) {
@@ -191,7 +212,9 @@ static WRITE_HANDLER(rom2_w) {
 }
 
 static WRITE_HANDLER(ram_w) {
-	locals.solenoids |= (1 << data);
+	if (data != 0 && data != offset) {
+		locals.solenoids |= (1 << data);
+	}
 }
 
 /* port read / write for Flicker */
@@ -283,7 +306,7 @@ MACHINE_DRIVER_START(MIDWAYProto)
   MDRV_CPU_ADD_TAG("mcpu", 4004, 750000)
   MDRV_CPU_MEMORY(MIDWAYP_readmem, MIDWAYP_writemem)
   MDRV_CPU_PORTS(midway_readport2,midway_writeport2)
-  MDRV_CPU_VBLANK_INT(MIDWAY_vblank, 1)
+  MDRV_CPU_VBLANK_INT(MIDWAYP_vblank, 1)
   MDRV_CORE_INIT_RESET_STOP(MIDWAY,NULL,MIDWAY)
   MDRV_DIPS(0) // no dips!
   MDRV_SWITCH_UPDATE(MIDWAYP)
