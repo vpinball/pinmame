@@ -208,7 +208,7 @@ GTS3SOUND32256(			"yrom1.bin",0xe1379106,
 						"arom1.bin",0xe9cef116,
 						"arom2.bin",0x0acdfd49)
 GTS3_ROMEND
-CORE_GAMEDEFNV(smb,"Super Mario Brothers",1992,"Gottlieb",mGTS3DMDS, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(smb,"Super Mario Brothers",1992,"Gottlieb",mGTS3DMDSA, GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
 / Super Mario Brothers Mushroom World
@@ -234,7 +234,7 @@ GTS3SOUND32256(			"yrom1.bin",0xc22f5cc5,
 						"arom1.bin",0x476bb11c,
 						"arom2.bin",0x23708ad9)
 GTS3_ROMEND
-CORE_GAMEDEFNV(cueball,"Cue Ball Wizard",1992,"Gottlieb",mGTS3DMDS, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(cueball,"Cue Ball Wizard",1992,"Gottlieb",mGTS3DMDSA, GAME_IMPERFECT_SOUND)
 
 /************************************************/
 /* ALL GAMES BELOW HAD IMPROVED DIAGNOSTIC TEST */
@@ -274,7 +274,7 @@ GTS3SOUND32256(			"yrom1.bin",0xc51d98d8,
 						"arom1.bin",0x9e442b71,
 						"arom2.bin",0x3dad9508)
 GTS3_ROMEND
-CORE_GAMEDEFNV(teedoff,"Teed Off",1993,"Gottlieb",mGTS3DMDS, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(teedoff,"Teed Off",1993,"Gottlieb",mGTS3DMDSA, GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
 / Wipeout
@@ -287,7 +287,7 @@ GTS3SOUND32256(			"yrom1.bin",0xf08e6d7f,
 						"arom1.bin",0xcccdf23a,
 						"arom2.bin",0xd4cc44a1)
 GTS3_ROMEND
-CORE_GAMEDEFNV(wipeout,"Wipeout",1993,"Gottlieb",mGTS3DMDS, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(wipeout,"Wipeout",1993,"Gottlieb",mGTS3DMDSA, GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
 / Gladiators
@@ -300,7 +300,7 @@ GTS3SOUND32256(			"yrom1.bin",0xc5b72153,
 						"arom1.bin",0x85cbdda7,
 						"arom2.bin",0xda2c1073)
 GTS3_ROMEND
-CORE_GAMEDEFNV(gladiatr,"Gladiators",1993,"Gottlieb",mGTS3DMDS, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(gladiatr,"Gladiators",1993,"Gottlieb",mGTS3DMDSA, GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
 / World Challenge Soccer
@@ -339,7 +339,7 @@ GTS3SOUND32512256(		"yrom1.bin",0x4a748665,
 						"arom1.bin",0x6bec0567,
 						"arom2.bin",0xf0e9284d)
 GTS3_ROMEND
-CORE_GAMEDEFNV(freddy,"Freddy: A Nightmare on Elm Street",1994,"Gottlieb",mGTS3DMDS, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(freddy,"Freddy: A Nightmare on Elm Street",1994,"Gottlieb",mGTS3DMDSA, GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
 / Shaq Attaq
@@ -431,4 +431,4 @@ GTS3SOUND32512256(		"yrom1.bin",0x7c602a35,
 						"arom1.bin",0x7171bc86,
 						"arom2.bin",0xce83c6c3)
 GTS3_ROMEND
-CORE_GAMEDEFNV(barbwire,"Barb Wire",1996,"Gottlieb",mGTS3DMDS, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(barbwire,"Barb Wire",1996,"Gottlieb",mGTS3DMDSA, GAME_IMPERFECT_SOUND)

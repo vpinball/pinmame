@@ -48,7 +48,6 @@ static WRITE_HANDLER(alpha_u5_cb1_w);
 static WRITE_HANDLER(alpha_u5_cb2_w);
 static WRITE_HANDLER(alpha_display);
 static WRITE_HANDLER(alpha_aux);
-static void alpha_vblank(void);
 static void alpha_update(void);
 /*DMD Generation Specific*/
 static void dmdswitchbank(void);
@@ -63,7 +62,7 @@ static void dmd_vblank(void);
 static void dmd_update(void);
 
 /*----------------
-/  Local varibles
+/ Local variables
 /-----------------*/
 struct {
   int    alphagen;
@@ -90,10 +89,10 @@ struct {
   WRITE_HANDLER((*DISPLAY_CONTROL));
   WRITE_HANDLER((*AUX_W));
   void (*UPDATE_DISPLAY)(void);
-  void (*VBLANK_PROC)(void);
 } GTS3locals;
 
 struct {
+  int    version;
   int	 pa0;
   int	 pa1;
   int	 pa2;
@@ -261,14 +260,16 @@ static WRITE_HANDLER(dmd_u4_pb_w) {
 	}
 	if (lampBits == 0x06 && GTS3locals.u4pb == (0x02 | (data & 0xf0))) ledOK = 1;
 
-	if (data & DSTRB) {
-		bitSet++;
-		if (bitSet == 4)
-			cpu_set_nmi_line(GTS3_DCPUNO, PULSE_LINE);
-	} else
-		bitSet = 0;
-
 	GTS3_dmdlocals.dstrb = (data & DSTRB) != 0;
+	if (GTS3_dmdlocals.version) { // probably wrong, but the only way to show *any* display
+		if (GTS3_dmdlocals.dstrb) {
+			bitSet++;
+			if (bitSet == 4)
+				dmd_vblank();
+		} else
+			bitSet = 0;
+	}
+
 	GTS3locals.u4pb = data;
 }
 
@@ -453,9 +454,6 @@ static INTERRUPT_GEN(GTS3_vblank) {
   /--------------------------------*/
   GTS3locals.vblankCount += 1;
 
-  //Call the VBLANK Procedure which is meant to be called every time!!
-  GTS3locals.VBLANK_PROC();
-
   /*-- lamps --*/
   if ((GTS3locals.vblankCount % GTS3_LAMPSMOOTH) == 0) {
 	memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
@@ -545,7 +543,6 @@ static void GTS3_alpha_common_init(void) {
   GTS3locals.DISPLAY_CONTROL = alpha_display;
   GTS3locals.UPDATE_DISPLAY = alpha_update;
   GTS3locals.AUX_W = alpha_aux;
-  GTS3locals.VBLANK_PROC = alpha_vblank;
 
   /* Init the sound board */
   sndbrd_0_init(core_gameData->hw.soundBoard, GTS3_SCPUNO-1, memory_region(GTS3_MEMREG_SCPU1), NULL, NULL);
@@ -569,7 +566,7 @@ static MACHINE_INIT(gts3b) {
 }
 
 /*DMD Generation Init*/
-static MACHINE_INIT(gts3dmd) {
+static void gts3dmd_init(void) {
   memset(&GTS3locals, 0, sizeof(GTS3locals));
   memset(&GTS3_dmdlocals, 0, sizeof(GTS3_dmdlocals));
   memset(&DMDFrames, 0, sizeof(DMDFrames));
@@ -599,13 +596,22 @@ static MACHINE_INIT(gts3dmd) {
   GTS3locals.DISPLAY_CONTROL = dmd_display;
   GTS3locals.UPDATE_DISPLAY = dmd_update;
   GTS3locals.AUX_W = dmd_aux;
-  GTS3locals.VBLANK_PROC = dmd_vblank;
 
   /* Init the sound board */
   sndbrd_0_init(core_gameData->hw.soundBoard, GTS3_SCPUNO, memory_region(GTS3_MEMREG_SCPU1), NULL, NULL);
 
   // Manually call the DMD NMI at the specified rate  (Although the code simply returns rti in most cases, we should call the nmi anyway, incase a game uses it)
   // GTS3locals.timer_nmi = timer_pulse(TIME_IN_HZ(GTS3_DMDNMIFREQ), 0, dmdnmi);
+}
+
+/*DMD Generation Init*/
+static MACHINE_INIT(gts3dmd) {
+	gts3dmd_init();
+}
+
+static MACHINE_INIT(gts3dmda) {
+	gts3dmd_init();
+	GTS3_dmdlocals.version = 1;
 }
 
 static MACHINE_STOP(gts3) {
@@ -751,9 +757,19 @@ static WRITE_HANDLER(alpha_aux) {
 }
 /* DMD GENERATION
    ----------------
-   Auxilary Data (Not Used)
+   Auxilary Data
 */
-static WRITE_HANDLER(dmd_aux) { logerror1("AUX Write: Offset: %x Data: %x\n",offset,data); }
+static WRITE_HANDLER(dmd_aux) {
+//	logerror1("AUX Write: Offset: %x Data: %x\n",offset,data);
+	dmd_vblank();
+}
+//Update the DMD Frames
+static void dmd_vblank(void) {
+  int offset = (crtc6845_start_addr>>2);
+  memcpy(DMDFrames[GTS3_dmdlocals.nextDMDFrame],memory_region(GTS3_MEMREG_DCPU1)+0x1000+offset,0x200);
+  GTS3_dmdlocals.nextDMDFrame = (GTS3_dmdlocals.nextDMDFrame + 1) % GTS3DMD_FRAMES;
+  cpu_set_nmi_line(GTS3_DCPUNO, PULSE_LINE);
+}
 
 static WRITE_HANDLER(aux1_w)
 {
@@ -794,16 +810,6 @@ void UpdateSoundLEDS(int num,int data)
 		GTS3locals.diagnosticLeds1 = data;
 	else
 		GTS3locals.diagnosticLeds2 = data;
-}
-
-void alpha_vblank(void) { }
-
-//Update the DMD Frames
-void dmd_vblank(void){
-  int offset = (crtc6845_start_addr>>2);
-  memcpy(DMDFrames[GTS3_dmdlocals.nextDMDFrame],memory_region(GTS3_MEMREG_DCPU1)+0x1000+offset,0x200);
-  GTS3_dmdlocals.nextDMDFrame = (GTS3_dmdlocals.nextDMDFrame + 1) % GTS3DMD_FRAMES;
-//  cpu_set_nmi_line(GTS3_DCPUNO, PULSE_LINE);
 }
 
 /*-----------------------------------------------
@@ -902,4 +908,9 @@ MACHINE_DRIVER_START(gts3_2)
   MDRV_CPU_MEMORY(GTS3_dmdreadmem, GTS3_dmdwritemem)
   MDRV_CORE_INIT_RESET_STOP(gts3dmd,NULL,gts3)
   MDRV_IMPORT_FROM(gts80s_s3)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(gts3_2a)
+  MDRV_IMPORT_FROM(gts3_2)
+  MDRV_CORE_INIT_RESET_STOP(gts3dmda,NULL,gts3)
 MACHINE_DRIVER_END
