@@ -244,6 +244,18 @@ static UINT8 i8051_win_layout[] = {
 #define SET_M0_1(n)		R_TMOD = (R_TMOD & 0xfd) | (n<<1);  //Timer 0 Timer Mode Bit 1
 #define SET_M0_0(n)		R_TMOD = (R_TMOD & 0xfe) | (n<<0);  //Timer 0 Timer Mode Bit 0
 
+#if (HAS_I8052)
+  /*T2CON Flags*/
+  #define SET_TF2(n)		R_T2CON = (R_T2CON & 0x7f) | (n<<7);	//Indicated Timer 2 Overflow Int Triggered
+  #define SET_EXF2(n)		R_T2CON = (R_T2CON & 0xbf) | (n<<6);	//IndicateS Timer 2 External Flag
+  #define SET_RCLK(n)		R_T2CON = (R_T2CON & 0xdf) | (n<<5);	//Receive Clock
+  #define SET_TCLK(n)		R_T2CON = (R_T2CON & 0xef) | (n<<4);	//Transmit Clock
+  #define SET_EXEN2(n)		R_T2CON = (R_T2CON & 0xf7) | (n<<3);	//Timer 2 External Interrupt Enable
+  #define SET_TR2(n)		R_T2CON = (R_T2CON & 0xfb) | (n<<2);	//Indicates Timer 2 is running
+  #define SET_CT2(n)		R_T2CON = (R_T2CON & 0xfd) | (n<<1);	//Sets Timer 2 Counter/Timer Mode
+  #define SET_CP(n)			R_T2CON = (R_T2CON & 0xfe) | (n<<0);	//Sets Timer 2 Capture/Reload Mode
+#endif
+
 /***************************************************************
  * Easy macros for Getting Flags
  ***************************************************************/
@@ -298,6 +310,18 @@ static UINT8 i8051_win_layout[] = {
 #define GET_CT0			((R_TMOD & 0x04)>>2)
 #define GET_M0_1		((R_TMOD & 0x02)>>1)
 #define GET_M0_0		((R_TMOD & 0x01)>>0)
+
+#if (HAS_I8052)
+  /*T2CON Flags*/
+  #define GET_TF2			((R_T2CON & 0x80)>>7)
+  #define GET_EXF2			((R_T2CON & 0x40)>>6) 
+  #define GET_RCLK			((R_T2CON & 0x20)>>5)
+  #define GET_TCLK			((R_T2CON & 0x10)>>4)
+  #define GET_EXEN2			((R_T2CON & 0x08)>>3)
+  #define GET_TR2			((R_T2CON & 0x04)>>2)
+  #define GET_CT2			((R_T2CON & 0x02)>>1)
+  #define GET_CP			((R_T2CON & 0x01)>>0)
+#endif
 
 /*Add and Subtract Flag settings*/
 #define DO_ADD_FLAGS(a,d,c)	do_add_flags(a,d,c);
