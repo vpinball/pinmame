@@ -37,7 +37,7 @@ BY17_ROMSTART228(freedom,"720-08_1.474",0xb78bceeb,
 			 "720-10_2.474",0xca90c8a7,
 			 "720-07_6.716",0x0f4e8b83)
 BY17_ROMEND
-CORE_GAMEDEFNV(freedom,"Freedom",1977,"Bally",by35_mBY17,0)
+CORE_GAMEDEFNV(freedom,"Freedom",1977,"Bally",by35_mBY17,GAME_USES_CHIMES)
 /*--------------------------------
 / Night Rider
 /-------------------------------*/
@@ -45,7 +45,7 @@ INITGAME(nightrdr,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),0)
 BY17_ROMSTART8x8(nightrdr,"721-21_1.716",0x237c4060,
 			  "720-20_6.716",0x0c17aa4d)
 BY17_ROMEND
-CORE_GAMEDEFNV(nightrdr,"Night Rider",1977,"Bally",by35_mBY17,0)
+CORE_GAMEDEFNV(nightrdr,"Night Rider",1977,"Bally",by35_mBY17,GAME_USES_CHIMES)
 /*--------------------------------
 / EVEL KNIEVEL
 /-------------------------------*/
@@ -53,7 +53,7 @@ INITGAME(evelknie,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),0)
 BY17_ROMSTARTx88(evelknie,"722-17_2.716",0xb6d9a3fa,
 			  "720-20_6.716",0x0c17aa4d)
 BY17_ROMEND
-CORE_GAMEDEFNV(evelknie,"Evel Knievel",1977,"Bally",by35_mBY17,0)
+CORE_GAMEDEFNV(evelknie,"Evel Knievel",1977,"Bally",by35_mBY17,GAME_USES_CHIMES)
 /*--------------------------------
 / Eight Ball
 /-------------------------------*/
@@ -61,7 +61,7 @@ INITGAME(eightbll,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),0)
 BY17_ROMSTARTx88(eightbll,"723-20_2.716",0x33559e7b,
 			  "720-20_6.716",0x0c17aa4d)
 BY17_ROMEND
-CORE_GAMEDEFNV(eightbll,"Eight Ball",1977,"Bally",by35_mBY17,0)
+CORE_GAMEDEFNV(eightbll,"Eight Ball",1977,"Bally",by35_mBY17,GAME_USES_CHIMES)
 /*--------------------------------
 / Power Play
 /-------------------------------*/
@@ -69,7 +69,7 @@ INITGAME(pwerplay,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),0)
 BY17_ROMSTARTx88(pwerplay,"724-25_2.716",0x43012f35,
 			  "720-20_6.716",0x0c17aa4d)
 BY17_ROMEND
-CORE_GAMEDEFNV(pwerplay,"Power Play",1978,"Bally",by35_mBY17,0)
+CORE_GAMEDEFNV(pwerplay,"Power Play",1978,"Bally",by35_mBY17,GAME_USES_CHIMES)
 /*--------------------------------
 / Mata Hari
 /-------------------------------*/
@@ -77,7 +77,7 @@ INITGAME(matahari,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),0)
 BY17_ROMSTARTx88(matahari,"725-21_2.716",0x63acd9b0,
 			  "720-20_6.716",0x0c17aa4d)
 BY17_ROMEND
-CORE_GAMEDEFNV(matahari,"Mata Hari",1978,"Bally",by35_mBY17,0)
+CORE_GAMEDEFNV(matahari,"Mata Hari",1978,"Bally",by35_mBY17,GAME_USES_CHIMES)
 /*--------------------------------
 / Strikes and Spares
 /-------------------------------*/
@@ -85,7 +85,7 @@ INITGAME(stk_sprs,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),0)
 BY17_ROMSTARTx88(stk_sprs,"740-16_2.716",0x2be27024,
 			  "720-20_6.716",0x0c17aa4d)
 BY17_ROMEND
-CORE_GAMEDEFNV(stk_sprs,"Strikes and Spares",1978,"Bally",by35_mBY17,0)
+CORE_GAMEDEFNV(stk_sprs,"Strikes and Spares",1978,"Bally",by35_mBY17,GAME_USES_CHIMES)
 /*--------------------------------
 / Black Jack
 /-------------------------------*/
@@ -93,7 +93,7 @@ INITGAME(blackjck,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),0)
 BY17_ROMSTARTx88(blackjck,"728-32_2.716",0x1333c9d1,
 			  "720-20_6.716",0x0c17aa4d)
 BY17_ROMEND
-CORE_GAMEDEFNV(blackjck,"Black Jack",1978,"Bally",by35_mBY17,0)
+CORE_GAMEDEFNV(blackjck,"Black Jack",1978,"Bally",by35_mBY17,GAME_USES_CHIMES)
 /*--------------------------------
 / Lost World
 /-------------------------------*/
@@ -602,7 +602,7 @@ INITGAME(stingray,GEN_STMPU100,dispBy6,FLIP_SW(FLIP_L),0)
 BY17_ROMSTARTx88(stingray,  "cpu_u2.716",0x1db32a33,
 							"cpu_u6.716",0x432e9b9e)
 BY35_ROMEND
-CORE_GAMEDEFNV(stingray,"Stingray",1977,"Stern",by35_mBY17,GAME_NO_SOUND)
+CORE_GAMEDEFNV(stingray,"Stingray",1977,"Stern",by35_mBY17,GAME_USES_CHIMES)
 
 /*--------------------------------
 / Pinball
@@ -611,7 +611,7 @@ INITGAME(pinball,GEN_STMPU100,dispBy6,FLIP_SW(FLIP_L),0)
 BY17_ROMSTARTx88(pinball,   "cpu_u2.716",0x1db32a33,
 							"cpu_u6.716",0x432e9b9e)
 BY35_ROMEND
-CORE_GAMEDEFNV(pinball,"Pinball",1977,"Stern",by35_mBY17,GAME_NO_SOUND)
+CORE_GAMEDEFNV(pinball,"Pinball",1977,"Stern",by35_mBY17,GAME_USES_CHIMES)
 
 /*--------------------------------
 / Stars
@@ -620,7 +620,7 @@ INITGAME(stars,GEN_STMPU100,dispBy6,FLIP_SW(FLIP_L),0)
 BY17_ROMSTARTx88(stars,     "cpu_u2.716",0x630d05df,
 							"cpu_u6.716",0x57e63d42)
 BY35_ROMEND
-CORE_GAMEDEFNV(stars,"Stars",1978,"Stern",by35_mBY17,GAME_NO_SOUND)
+CORE_GAMEDEFNV(stars,"Stars",1978,"Stern",by35_mBY17,GAME_USES_CHIMES)
 
 /*--------------------------------
 / Memory Lane
@@ -629,7 +629,7 @@ INITGAME(memlane,GEN_STMPU100,dispBy6,FLIP_SW(FLIP_L),0)
 BY17_ROMSTARTx88(memlane,   "cpu_u2.716",0xaff1859d,
 							"cpu_u6.716",0x3e236e3c)
 BY35_ROMEND
-CORE_GAMEDEFNV(memlane,"Memory Lane",1978,"Stern",by35_mBY17,GAME_NO_SOUND)
+CORE_GAMEDEFNV(memlane,"Memory Lane",1978,"Stern",by35_mBY17,GAME_USES_CHIMES)
 
 /* ---------------------------------------------------*/
 /* All games below used MPU-100 - Sound Board: SB-100 */
