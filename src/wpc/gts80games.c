@@ -8,6 +8,8 @@
   static core_tGameData name##GameData = {gen, disptype, {flip,0,0,0,sb,disp},NULL,{{0},{inv}}}; \
   static void init_##name(void) { core_gameData = &name##GameData; }
 
+#define FLIP616   FLIP_SWNO(6,16)
+
 GTS80_INPUT_PORTS_START(gts80, 1)       GTS80_INPUT_PORTS_END
 GTS80VID_INPUT_PORTS_START(gts80vid, 1) GTS80_INPUT_PORTS_END
 
@@ -42,7 +44,7 @@ static core_tLCDLayout dispAlpha[] = {
 /*-------------------------------------------------------------------
 / Spiderman
 /-------------------------------------------------------------------*/
-INITGAME(spidermn,GEN_GTS80,0, dispNumeric1, SNDBRD_GTS80S, 0,0)
+INITGAME(spidermn,GEN_GTS80,0, dispNumeric1, SNDBRD_GTS80S,0,0)
 GTS80_2_ROMSTART(spidermn,"653-1.cpu",    0x674ddc58,
                           "653-2.cpu",    0xff1ddfd7,
                           "u2_80.bin",    0x4f0bc7b1,
@@ -632,7 +634,7 @@ CORE_GAMEDEFNV(icefever,"Ice Fever",1985,"Gottlieb",gl_mGTS80S,0)
 / Chicago Cubs' Triple Play (#696)
 /-------------------------------------------------------------------*/
 // using System80 sound only board
-INITGAME(triplay, GEN_GTS80B,0, dispAlpha, SNDBRD_GTS80SP,GTS80_DISPALPHA,0)
+INITGAME(triplay, GEN_GTS80B, FLIP616, dispAlpha,SNDBRD_GTS80SP,GTS80_DISPALPHA,0)
 GTS80B_8K_ROMSTART(triplay, "prom1.cpu", 0x42b29b01)
 GTS80S2K_ROMSTART(          "696-s.snd",0xdeedea61)
 GTS80_ROMEND
@@ -643,7 +645,7 @@ CORE_GAMEDEFNV(triplay, "Triple Play",1985,"Gottlieb",gl_mGTS80S,0)
 / Bounty Hunter (#694)
 /-------------------------------------------------------------------*/
 // using System80 sound only board
-INITGAME(bountyh, GEN_GTS80B,0, dispAlpha, SNDBRD_GTS80SP,GTS80_DISPALPHA,0)
+INITGAME(bountyh, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80SP,GTS80_DISPALPHA,0)
 GTS80B_8K_ROMSTART(bountyh, "prom1.cpu", 0xe8190df7)
 GTS80S2K_ROMSTART(          "694-s.snd", 0xa0383e41)
 GTS80_ROMEND
@@ -653,7 +655,7 @@ CORE_GAMEDEFNV(bountyh, "Bounty Hunter",1985,"Gottlieb",gl_mGTS80S,0)
 /*-------------------------------------------------------------------
 / Tag-Team Wrestling (#698)
 /-------------------------------------------------------------------*/
-INITGAME(tagteam, GEN_GTS80B, 0, dispAlpha, SNDBRD_GTS80SP,GTS80_DISPALPHA,0)
+INITGAME(tagteam, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80SP,GTS80_DISPALPHA,0)
 GTS80B_2K_ROMSTART(tagteam, "prom2.cpu", 0xfd1615ce,
                             "prom1.cpu", 0x65931038)
 GTS80S2K_ROMSTART("698-s.snd", 0x9c8191b7)
@@ -665,7 +667,7 @@ CORE_GAMEDEFNV(tagteam, "Tag-Team Wrestling",1985,"Gottlieb",gl_mGTS80S,0)
 / Rock (#697)
 /-------------------------------------------------------------------*/
 //(I assume these are using Gen.1 hardware, but there's 1 less rom, so who knows)
-INITGAME(rock, GEN_GTS80B,0, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+INITGAME(rock, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
 GTS80B_8K_ROMSTART(rock, "prom1.cpu", 0x1146c1d3)
 GTS80BSSOUND88(          "drom1.snd", 0x03830e81,
                          "yrom1.snd", 0xeffba2ad)
@@ -677,7 +679,7 @@ CORE_GAMEDEFNV(rock, "Rock",1985,"Gottlieb",gl_mGTS80BS1,0)
 / Raven
 /-------------------------------------------------------------------*/
 //(I assume these are using Gen.1 hardware, but there's 1 less rom, so who knows)
-INITGAME(raven, GEN_GTS80B,0, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+INITGAME(raven, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
 GTS80B_2K_ROMSTART(raven, "prom2.cpu", 0x481f3fb8,
                           "prom1.cpu", 0xedc88561)
 GTS80BSSOUND88(           "drom1.snd", 0xa04bf7d0,
@@ -689,7 +691,7 @@ CORE_GAMEDEFNV(raven, "Raven",1986,"Gottlieb",gl_mGTS80BS1,0)
 /*-------------------------------------------------------------------
 / Hollywood Heat
 /-------------------------------------------------------------------*/
-INITGAME(hlywoodh, GEN_GTS80B,0, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+INITGAME(hlywoodh, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
 GTS80B_2K_ROMSTART(hlywoodh, "prom2.cpu", 0xa465e5f3,
                              "prom1.cpu", 0x0493e27a)
 GTS80BSSOUND888(             "drom1.snd", 0xa698ec33,
@@ -702,7 +704,7 @@ CORE_GAMEDEFNV(hlywoodh, "Hollywood Heat",1986,"Gottlieb",gl_mGTS80BS1,0)
 /*-------------------------------------------------------------------
 / Genesis (#705)
 /-------------------------------------------------------------------*/
-INITGAME(genesis, GEN_GTS80B,0, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+INITGAME(genesis, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
 GTS80B_2K_ROMSTART(genesis, "prom2.cpu", 0xac9f3a0f,
                             "prom1.cpu", 0x4a2f185c)
 GTS80BSSOUND888(            "drom1.snd", 0x758e1743,
@@ -715,7 +717,7 @@ CORE_GAMEDEFNV(genesis, "Genesis",1986,"Gottlieb",gl_mGTS80BS1,0)
 /*-------------------------------------------------------------------
 / Gold Wings (#707)
 /-------------------------------------------------------------------*/
-INITGAME(goldwing, GEN_GTS80B,0, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+INITGAME(goldwing, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
 GTS80B_2K_ROMSTART(goldwing, "prom2.cpu", 0xa5318c20,
                              "prom1.cpu", 0xbf242185)
 GTS80BSSOUND888(             "drom1.snd", 0x892dbb21,
@@ -728,7 +730,7 @@ CORE_GAMEDEFNV(goldwing, "Gold Wings",1986,"Gottlieb",gl_mGTS80BS1,0)
 /*-------------------------------------------------------------------
 / Monte Carlo
 /-------------------------------------------------------------------*/
-INITGAME(mntecrlo, GEN_GTS80B,0, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+INITGAME(mntecrlo, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
 GTS80B_2K_ROMSTART(mntecrlo, "prom2.cpu", 0x6860e315,
                              "prom1.cpu", 0x0fbf15a3)
 GTS80BSSOUND888(             "drom1.snd", 0x1a53ac15,
@@ -741,7 +743,7 @@ CORE_GAMEDEFNV(mntecrlo, "Monte Carlo",1987,"Gottlieb",gl_mGTS80BS1,0)
 /*-------------------------------------------------------------------
 / Spring Break
 /-------------------------------------------------------------------*/
-INITGAME(sprbreak, GEN_GTS80B,0, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+INITGAME(sprbreak, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
 GTS80B_2K_ROMSTART(sprbreak, "prom2.cpu", 0x47171062,
                              "prom1.cpu", 0x53ed608b)
 GTS80BSSOUND888(             "drom1.snd", 0x0,
@@ -754,7 +756,7 @@ CORE_GAMEDEFNV(sprbreak, "Spring Break",1987,"Gottlieb",gl_mGTS80BS1,0)
 /*-------------------------------------------------------------------
 / Arena
 /-------------------------------------------------------------------*/
-INITGAME(arena,GEN_GTS80B,0,dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+INITGAME(arena, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
 GTS80B_2K_ROMSTART(arena, "prom2.cpu", 0x4783b689,
                           "prom1.cpu", 0x8c9f8ee9)
 GTS80BSSOUND888(          "drom1.snd", 0x78e6cbf1,
@@ -771,7 +773,7 @@ CORE_GAMEDEFNV(arena, "Arena",1987,"Gottlieb",gl_mGTS80BS1,0)
 /*-------------------------------------------------------------------
 / Victory
 /-------------------------------------------------------------------*/
-INITGAME(victory, GEN_GTS80B,0, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+INITGAME(victory, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
 GTS80B_2K_ROMSTART(victory, "prom2.cpu", 0x6a42eaf4,
                             "prom1.cpu", 0xe724db90)
 GTS80BSSOUND3232(           "drom1.snd", 0x4ab6dab7,
@@ -783,7 +785,7 @@ CORE_GAMEDEFNV(victory, "Victory",1987,"Gottlieb",gl_mGTS80BS2,0)
 /*-------------------------------------------------------------------
 / Diamond Lady
 /-------------------------------------------------------------------*/
-INITGAME(diamond, GEN_GTS80B,0, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+INITGAME(diamond, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
 GTS80B_2K_ROMSTART(diamond, "prom2.cpu", 0x862951dc,
                             "prom1.cpu", 0x7a011757)
 GTS80BSSOUND3232(           "drom1.snd", 0xc216d1e4,
@@ -795,7 +797,7 @@ CORE_GAMEDEFNV(diamond, "Diamond Lady",1988,"Gottlieb",gl_mGTS80BS2,0)
 /*-------------------------------------------------------------------
 / TX-Sector
 /-------------------------------------------------------------------*/
-INITGAME(txsector, GEN_GTS80B,0, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+INITGAME(txsector, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
 GTS80B_2K_ROMSTART(txsector, "prom2.cpu", 0xf12514e6,
                              "prom1.cpu", 0xe51d39da)
 GTS80BSSOUND3232(            "drom1.snd", 0x61d66ca1,
@@ -807,7 +809,7 @@ CORE_GAMEDEFNV(txsector, "TX-Sector",1988,"Gottlieb",gl_mGTS80BS2,0)
 /*-------------------------------------------------------------------
 / Robo-War
 /-------------------------------------------------------------------*/
-INITGAME(robowars, GEN_GTS80B,0, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+INITGAME(robowars, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
 GTS80B_2K_ROMSTART(robowars, "prom2.cpu", 0x893177ed,
                              "prom1.cpu", 0xcd1587d8)
 GTS80BSSOUND3232(            "drom1.snd", 0xea59b6a1,
@@ -823,7 +825,7 @@ CORE_GAMEDEFNV(robowars, "Robo-War",1988,"Gottlieb",gl_mGTS80BS2,0)
 /*-------------------------------------------------------------------
 / Excalibur
 /-------------------------------------------------------------------*/
-INITGAME(excalibr, GEN_GTS80B, 0, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+INITGAME(excalibr, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
 GTS80B_4K_ROMSTART(excalibr, "prom2.cpu", 0x499e2e41,
                              "prom1.cpu", 0xed1083d7)
 GTS80BSSOUND3232(            "drom1.snd", 0xa4368cd0,
@@ -835,7 +837,7 @@ CORE_GAMEDEFNV(excalibr, "Excalibur",1988,"Gottlieb",gl_mGTS80BS3,0)
 /*-------------------------------------------------------------------
 / Bad Girls
 /-------------------------------------------------------------------*/
-INITGAME(badgirls, GEN_GTS80B,0, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
+INITGAME(badgirls, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
 GTS80B_4K_ROMSTART(badgirls, "prom2.cpu", 0x583933ec,
                              "prom1.cpu", 0x956aeae0)
 GTS80BSSOUND3232(            "drom1.snd", 0x452dec20, //Should be labeled DROM!
@@ -847,7 +849,7 @@ CORE_GAMEDEFNV(badgirls, "Bad Girls",1988,"Gottlieb",gl_mGTS80BS3,0)
 /*-------------------------------------------------------------------
 / Big House
 /-------------------------------------------------------------------*/
-INITGAME(bighouse, GEN_GTS80B,0, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
+INITGAME(bighouse, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
 GTS80B_4K_ROMSTART(bighouse, "prom2.cpu", 0x047c8ef5,
                              "prom1.cpu", 0x0ecef900)
 GTS80BSSOUND3232(            "drom1.snd", 0xf330fd04,
@@ -859,7 +861,7 @@ CORE_GAMEDEFNV(bighouse, "Big House",1989,"Gottlieb",gl_mGTS80BS3,0)
 /*-------------------------------------------------------------------
 / Hot Shots
 /-------------------------------------------------------------------*/
-INITGAME(hotshots, GEN_GTS80B,0, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
+INITGAME(hotshots, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
 GTS80B_4K_ROMSTART(hotshots, "prom2.cpu", 0x7695c7db,
                              "prom1.cpu", 0x122ff4a8)
 GTS80BSSOUND3232(            "drom1.snd", 0x42c3cc3d,
@@ -871,7 +873,7 @@ CORE_GAMEDEFNV(hotshots, "Hot Shots",1989,"Gottlieb",gl_mGTS80BS3,0)
 /*-------------------------------------------------------------------
 / Bone Busters (Why is there an extra drom2 listed in the rom file? Could this use different hardware?)
 /-------------------------------------------------------------------*/
-INITGAME(bonebstr, GEN_GTS80B,0, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
+INITGAME(bonebstr, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
 GTS80B_4K_ROMSTART(bonebstr, "prom2.cpu", 0x681643df,
                              "prom1.cpu", 0x052f97be)
 GTS80BSSOUND3232(            "drom1.snd", 0xec43f4e9,
