@@ -254,10 +254,61 @@ static READ_HANDLER(dmdie_r) { /*What is this for?*/
   return 0x00;
 }
 
-static READ_HANDLER(auxboard_r) { return selocals.auxdata; }
+/* U203 - HC245 - Read Data from J3 (Aux In) - Pins 1-7 (D0-D6) - D7 from LST (Lamp Strobe?) Line) 
+
+   So far, it seems this port is only used when combined with the TOPS system for reading status
+   of the DUART found on the TSIB board.
+   -------------------------------------
+   Bit 1 = Byte received from TSIB DUART
+   Bit 6 = DUART Transmit Empty & Ready for Transmission
+*/
+static READ_HANDLER(auxboard_r) { 
+	int data = selocals.auxdata;
+	// Did D Strobe just go low? If so, TSIB board wants to read DUART status.
+	if((selocals.lastgiaux & 0x20) == 0) {
+		data = 0x40;						//signal that TOPS Duart is ready to receive
+		//printf("%04x: reading aux\n",activecpu_get_previouspc());
+	}
+	return data;
+}
+
+/* U201 - HC273 - Write Data to J2 (Aux Out) - Pins 1-9 (D0-D7) */
 static WRITE_HANDLER(auxboard_w) { selocals.auxdata = data; }
 
+/* U206 - HCT273
+   Bit 0 -> GI Relay Driver
+   Bit 1 -> NC
+   Bit 2 -> NC
+   Bit 3 -> BSTB -> J3 - 09 (Aux In)
+   Bit 4 -> CSTB -> J3 - 10 (Aux In)
+   Bit 5 -> DSTB -> J3 - 11 (Aux In)
+   Bit 6 -> ESTB -> J3 - 12 (Aux In)
+   Bit 7 -> ASTB -> J2 - 10 (Aux Out)
+*/
 static WRITE_HANDLER(giaux_w) {
+
+  /*     When Tournament Serial Board Interface connected -
+		 BSTB is the address data strobe of the TSIB: 
+		 Aux. Data previously written is as follows:
+		 
+		 Bit 0 - 2: Address of DUART Registers
+		 Bit 4 - 5: Address mapping (see below)
+		 Bit 7    : Reset of DUART (active low)
+
+		 Mapping:   Bit
+					5 4
+					---
+		            0 0 = (<0x10) DUART - Channel #1
+					0 1 = ( 0x10) DUART - Channel #2
+					1 0 = ( 0x20) AUXIN - To J3 Connector of TSBI
+					1 1 = ( 0x30) AUXOUT - To J4 Connector of TSBI ( To Mini DMD )
+  */
+
+#if 0
+  if(GET_BIT4 == 0)
+  printf("giaux = %x, (GI=%x A=%x B=%x C=%x D=%x E=%x), aux = %x (%c)\n",data,GET_BIT0,GET_BIT7,GET_BIT3,GET_BIT4,GET_BIT5,GET_BIT6,selocals.auxdata,selocals.auxdata);
+#endif
+
   if (core_gameData->hw.display & (SE_MINIDMD|SE_MINIDMD3)) {
     if (data & ~selocals.lastgiaux & 0x80) { /* clock in data to minidmd */
       selocals.minidata[selocals.miniidx] = selocals.auxdata & 0x7f;
@@ -275,11 +326,11 @@ static WRITE_HANDLER(giaux_w) {
           if (col == 5) selocals.miniframe = (selocals.miniframe + 1) % 3;
         }
       }
-    }
+	}
     if (core_gameData->hw.display & SE_MINIDMD3) {
-      if (data == 0xbe)
-        coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | (selocals.auxdata << 4);
-    } else
+      if (data == 0xbe)	coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | (selocals.auxdata << 4);
+	}
+	else
       coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | ((data & 0x38) << 1);
     selocals.lastgiaux = data;
   }
