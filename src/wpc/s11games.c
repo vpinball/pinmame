@@ -193,7 +193,7 @@ S11CS_SOUNDROM88(    "pbot_u4.l1",  CRC(de5926bd) SHA1(3d111e27c5f0c8c0afc5fe5cc
                      "pbot_u19.l1", CRC(40eb4e9f) SHA1(07b0557b35599a2dd5aa66a306fbbe8f50eed998))
 S11_ROMEND
 
-S11_ROMSTART48(pb,l3,"u26-l3.rom", CRC(e3b94ca4) SHA1(1db2acb025941cc165cc7ec70a160e07ab1eeb2e),
+S11_ROMSTART48(pb,l3,"u26-l2.rom", CRC(e3b94ca4) SHA1(1db2acb025941cc165cc7ec70a160e07ab1eeb2e),
                      "u27-l3.rom", CRC(6f40ee84) SHA1(85453137e3fdb1e422e3903dd053e04c9f2b9607))
 S11XS_SOUNDROM88(    "pbot_u21.l1", CRC(3eab88d9) SHA1(667e3b675e2ae8fec6a6faddb9b0dd5531d64f8f),
                      "pbot_u22.l1", CRC(a2d2c9cb) SHA1(46437dc54538f1626caf41a2818ddcf8000c44e4))
@@ -576,9 +576,8 @@ S11_ROMSTART48(mousn,l4,"mous_u26.l4", CRC(a540edc1) SHA1(c0b208369ac770f0d4cd7d
                         "mous_u27.l4", CRC(ff108148) SHA1(32b44286d43a39d5677c6582c5b09fc3b9833806))
 S11XS_SOUNDROM88(       "mous_u21.bin",CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7),
                         "mous_u22.l1", CRC(00ad198c) SHA1(4f15696909e1f3574ad20b28e31da2c155ed129f))
-S11CS_SOUNDROM888(      "mous_u4.l2",  CRC(643add1e) SHA1(45dea0f4c6f24d17e6f7dda75afaa7caefdc6b96),
-                        "mous_u19.l2", CRC(7b4941f7) SHA1(2b2fc8e7634b1885b020b2115126d6341172cc91),
-                        "mous_u20.l2", CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7))
+S11CS_SOUNDROM88(       "mous_u4.l2",  CRC(643add1e) SHA1(45dea0f4c6f24d17e6f7dda75afaa7caefdc6b96),
+                        "mous_u19.l2", CRC(7b4941f7) SHA1(2b2fc8e7634b1885b020b2115126d6341172cc91))
 S11_ROMEND
 #define input_ports_mousn input_ports_s11
 
@@ -586,18 +585,16 @@ S11_ROMSTART48(mousn,l1,"u26-la1.rom", CRC(0fff7946) SHA1(53bd68fd21218128f93110
                         "u27-la1.rom", CRC(a440192b) SHA1(837a9eb290f46d792f7307c569dfc627507420b8))
 S11XS_SOUNDROM88(       "mous_u21.bin",CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7),
                         "mous_u22.l1", CRC(00ad198c) SHA1(4f15696909e1f3574ad20b28e31da2c155ed129f))
-S11CS_SOUNDROM888(      "mous_u4.l2",  CRC(643add1e) SHA1(45dea0f4c6f24d17e6f7dda75afaa7caefdc6b96),
-                        "mous_u19.l2", CRC(7b4941f7) SHA1(2b2fc8e7634b1885b020b2115126d6341172cc91),
-                        "mous_u20.l2", CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7))
+S11CS_SOUNDROM88(       "mous_u4.l2",  CRC(643add1e) SHA1(45dea0f4c6f24d17e6f7dda75afaa7caefdc6b96),
+                        "mous_u19.l2", CRC(7b4941f7) SHA1(2b2fc8e7634b1885b020b2115126d6341172cc91))
 S11_ROMEND
 
 S11_ROMSTART48(mousn,lu,"u26-la1.rom", CRC(0fff7946) SHA1(53bd68fd21218128f9311047ac911cff7eea8b23),
                         "u27-lu1.rom", CRC(6e5b692c) SHA1(20c4b8d105d5df6e1b540c02c1c54bca08ec42e8))
 S11XS_SOUNDROM88(       "mous_u21.bin",CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7),
                         "mous_u22.l1", CRC(00ad198c) SHA1(4f15696909e1f3574ad20b28e31da2c155ed129f))
-S11CS_SOUNDROM888(      "mous_u4.l2",  CRC(643add1e) SHA1(45dea0f4c6f24d17e6f7dda75afaa7caefdc6b96),
-                        "mous_u19.l2", CRC(7b4941f7) SHA1(2b2fc8e7634b1885b020b2115126d6341172cc91),
-                        "mous_u20.l2", CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7))
+S11CS_SOUNDROM88(       "mous_u4.l2",  CRC(643add1e) SHA1(45dea0f4c6f24d17e6f7dda75afaa7caefdc6b96),
+                        "mous_u19.l2", CRC(7b4941f7) SHA1(2b2fc8e7634b1885b020b2115126d6341172cc91))
 S11_ROMEND
 
 CORE_GAMEDEF(mousn,l4,"Mousin' Around (L-4)", 1989, "Bally", s11a_one,0)
