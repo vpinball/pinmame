@@ -19,7 +19,7 @@ static int s80s_sndCPUNo;
 #define SOUND_ENABLED	1
 
 
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 4096
 
 typedef struct tagS80S0L {
   UINT8 timer_start;
@@ -40,7 +40,9 @@ typedef struct tagS80S0L {
   int soundLatch;
   
   int   stream;
-  UINT8 buffer[BUFFER_SIZE];
+  UINT16 buffer[BUFFER_SIZE+1];
+  double clock[BUFFER_SIZE+1];
+  
   int   buf_pos;
 } S80S0L;
 
@@ -158,7 +160,9 @@ static WRITE_HANDLER(riot6530_w) {
 			// logerror("write PA (0x%02x)\n", data);
 			if ( S80sound0_locals.buf_pos>=BUFFER_SIZE )
 				return;
-			S80sound0_locals.buffer[S80sound0_locals.buf_pos++] = data;
+
+			S80sound0_locals.clock[S80sound0_locals.buf_pos] = timer_get_time();
+			S80sound0_locals.buffer[S80sound0_locals.buf_pos++] = (0x80-data)*0x100;
 			break;
 
 		case 0x01:
@@ -244,21 +248,31 @@ MEMORY_END
 
 static void s80_s_Update(int num, INT16 *buffer, int length)
 {
-	int i = 0;
-	// logerror("%i  %i\n", length, S80sound0_locals.buf_pos);
-	memset (buffer,0,length*sizeof(INT16));
+	double dActClock, dInterval, dCurrentClock;
+	int i;
+		
+	dCurrentClock = S80sound0_locals.clock[0];
 
-	if ( S80sound0_locals.buf_pos ) {
-		if ( S80sound0_locals.buf_pos<length )
-			length = S80sound0_locals.buf_pos;
+	dActClock = timer_get_time();
+	dInterval = (dActClock-S80sound0_locals.clock[0]) / length;
 
-		while ( length ) {
-			*buffer++ = (0x80-S80sound0_locals.buffer[i++])*0x100;
-			length--;
-		}
+	if ( S80sound0_locals.buf_pos>1 )
+		S80sound0_locals.buf_pos = S80sound0_locals.buf_pos;
 
-		S80sound0_locals.buf_pos = 0;
+	i = 0;
+	S80sound0_locals.clock[S80sound0_locals.buf_pos] = 9e99;
+	while ( length ) {
+		*buffer++ = S80sound0_locals.buffer[i];
+		length--;
+		dCurrentClock += dInterval;
+
+		while ( (S80sound0_locals.clock[i+1]<=dCurrentClock) )
+			i++;
 	}
+
+	S80sound0_locals.clock[0] = dActClock;
+	S80sound0_locals.buffer[0] = S80sound0_locals.buffer[S80sound0_locals.buf_pos-1];
+	S80sound0_locals.buf_pos = 1;
 }
 
 /*--------------
@@ -279,5 +293,9 @@ void S80S_sinit(int num) {
 	S80sound0_locals.sec_to_cycles = Machine->drv->cpu[s80s_sndCPUNo].cpu_clock;
 	S80sound0_locals.cycles_to_sec = 1.0 / S80sound0_locals.sec_to_cycles;
 
-	S80sound0_locals.stream = stream_init("SND DAC", 100, 12000, 0, s80_s_Update);
+	S80sound0_locals.clock[0]  = 0;
+	S80sound0_locals.buffer[0] = 0;
+	S80sound0_locals.buf_pos   = 1;
+
+	S80sound0_locals.stream = stream_init("SND DAC", 100, 11025, 0, s80_s_Update);
 }
