@@ -1275,7 +1275,7 @@ static struct { offs_t addr, mask; UINT16 rw; } m68306cs[10];
 //#define DISABLE_68306_TX
 
 //#define VERBOSE
-#define DEBUGGING
+//#define DEBUGGING
 
 #ifdef VERBOSE
 //#define LOG(x)	logerror x
