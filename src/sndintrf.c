@@ -403,6 +403,9 @@ int TIA_clock(const struct MachineSound *msound) { return ((struct TIAinterface*
 #if (HAS_VOTRAXSC01)
 int VOTRAXSC01_num(const struct MachineSound *msound) { return ((struct VOTRAXSC01interface*)msound->sound_interface)->num; }
 #endif
+#if (HAS_TMS320AV120)
+int TMS320AV120_num(const struct MachineSound *msound) { return ((struct TMS320AV120interface*)msound->sound_interface)->num; }
+#endif
 #endif /* PINMAME */
 
 #ifdef MESS
@@ -1135,6 +1138,18 @@ struct snd_interface sndintf[] =
 		VOTRAXSC01_sh_stop,
 		0,
 		0
+	},
+#endif
+#if (HAS_TMS320AV120)
+	{
+		SOUND_TMS320AV120,
+		"TMS320AV120",
+		TMS320AV120_num,
+		0,
+		TMS320AV120_sh_start,
+		TMS320AV120_sh_stop,
+		TMS320AV120_sh_update,
+		TMS320AV120_sh_reset
 	},
 #endif
 #endif /* PINMAME */

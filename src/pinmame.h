@@ -110,6 +110,7 @@
 #define HAS_SN76477    1
 #define HAS_DISCRETE   1
 #define HAS_SP0250     1
+#define HAS_TMS320AV120 1
 #endif /* _MSC_VER */
 
 #ifdef _MSC_VER // Disable some VC++ warnings

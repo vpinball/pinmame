@@ -174,6 +174,9 @@ struct MachineSound
 #if (HAS_VOTRAXSC01)
 #include "sound/votrax.h"
 #endif
+#if (HAS_TMS320AV120)
+#include "sound/tms320av120.h"
+#endif
 #endif /* PINMAME */
 
 #ifdef MESS
@@ -375,6 +378,9 @@ enum
 #ifdef PINMAME
 #if (HAS_VOTRAXSC01)
 	SOUND_VOTRAXSC01,
+#endif
+#if (HAS_TMS320AV120)
+	SOUND_TMS320AV120,
 #endif
 #endif /* PINMAME */
 
