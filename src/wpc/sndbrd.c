@@ -171,5 +171,7 @@ const struct sndbrdIntf NULLIntf = { 0 }; // remove when all boards below works.
   SNDBRDINTF(atari1s)
   SNDBRDINTF(atari2s)
   SNDBRDINTF(taito)
-  SNDBRDINTF(zac)
+  SNDBRDINTF(zac1346)
+  SNDBRDINTF(zac1370)
+  SNDBRDINTF(zac13136)
 #endif /* SNDBRD_RECURSIVE */
