@@ -218,8 +218,9 @@ static WRITE_HANDLER(solenoid_w)
 		case 2:
 			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFF00FFFF) | (data<<16);
             break;
-		case 3:
-			coreGlobals.tmpLampMatrix[8] = data;
+		case 3: // solenoid #25 activates flippers, rest are "fixed" lamps.
+			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFEFFFFFF) | ((data & 0x80)<<17);
+			coreGlobals.tmpLampMatrix[8] = data & 0x7f;
 			break;
 		case 4:
 			coreGlobals.tmpLampMatrix[10] = data;
@@ -589,7 +590,7 @@ static INTERRUPT_GEN(spinb_vblank) {
 	}
 	SPINBlocals.solenoids = coreGlobals.pulsedSolState;
   }
-  core_updateSw(TRUE);
+  core_updateSw(core_getSol(25));
 }
 
 static SWITCH_UPDATE(spinb) {
