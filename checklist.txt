@@ -1,7 +1,7 @@
 Important steps to take before a release:
 
 - check out EVERYTHING again. Update the pinmame folder, remove sticky tags, create subfolders.
-- check whatsnew.txt" if nobody was forgotten concerning contributions, bugs fixes, and so on. Check the date in whatsnew.txt!
+- check whatsnew.txt" if nobody was forgotten concerning contributions, bugs fixes, and so on. Check the date in all .txt files!
 - remove the entire obj folder preferrably. Only this way you may ensure nothing was forgotten!
 - remove the DEBUG define in the makefile!
 - execute "make" to build pinmamew.
