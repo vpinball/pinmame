@@ -1093,15 +1093,18 @@ void win_adjust_window_for_visible(int min_x, int max_x, int min_y, int max_y)
  				r.bottom - r.top,
  				SWP_NOZORDER | SWP_NOMOVE);
  	}
+#ifndef VPINMAME
  	else
  	{
-	// adjust the window
-	win_adjust_window();
+		// adjust the window
+		win_adjust_window();
  	}
+#endif
 
 	// first time through here, we need to show the window
 	if (!visible_area_set)
 	{
+#ifndef VPINMAME
 		// let's also win_start_maximized the window
 		if (win_window_mode)
 		{
@@ -1119,16 +1122,14 @@ void win_adjust_window_for_visible(int min_x, int max_x, int min_y, int max_y)
 			if (win_start_maximized)
 				win_toggle_maximize();
 
-#ifndef VPINMAME
 			// otherwise, just enforce the bounds
 			else
 				set_aligned_window_pos(win_video_window, NULL, non_maximized_bounds.left, non_maximized_bounds.top,
 						non_maximized_bounds.right - non_maximized_bounds.left,
 						non_maximized_bounds.bottom - non_maximized_bounds.top,
 						SWP_NOZORDER);
-#endif
 		}
-
+#endif
 		// kludge to fix full screen mode for the non-ddraw case
 		if (!win_use_directx && !win_window_mode)
 		{
