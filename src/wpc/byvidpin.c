@@ -52,6 +52,7 @@
 #include "core.h"
 #include "byvidpin.h"
 #include "snd_cmd.h"
+#include "by35snd.h"
 #include "sndbrd.h"
 
 #define BYVP_VCPUNO 1		/* Video CPU # */
@@ -71,8 +72,6 @@ static struct {
   int diagnosticLed;
   int diagnosticLedV;		//Diagnostic LED for Vidiot Board
   int vblankCount;
-  int snddata;				//Sound Data to 6803
-  int sndcmdnum;
   int phase_a;
   int irqstate; // ??? Is this really a toggle
 } locals;
@@ -133,8 +132,6 @@ static WRITE_HANDLER(pia1a_w) {
   // Update Vidiot PIA - This will trigger an IRQ also, depending on how the ca lines are configured
   sndbrd_sync_w(CAT3(pia_,BYVP_PIA2,_ca1_w),0,data & 0x02);
   sndbrd_sync_w(CAT3(pia_,BYVP_PIA2,_ca2_w),0,data & 0x04);
-  //pia_set_input_ca1(BYVP_PIA2, data & 0x02);
-  //pia_set_input_ca2(BYVP_PIA2, data & 0x04);
   locals.p1_a = data;
 }
 
@@ -158,7 +155,7 @@ static WRITE_HANDLER(pia1b_w) {
 }
 
 /* PIA1:CA2-W Diagnostic LED */
-static WRITE_HANDLER(pia1ca2_w) { locals.diagnosticLed = data; }
+static WRITE_HANDLER(pia1ca2_w) { locals.diagnosticLed |= data; }
 
 /* PIA1:CB2-W Solenoid Bank Select */
 static WRITE_HANDLER(pia1cb2_w) { locals.p1_cb2 = data; }
@@ -175,10 +172,7 @@ static WRITE_HANDLER(pia2a_w) { locals.p2_a = data; }
 /* PIA2:B Write*/
 //PB0-3: Output to 6803 CPU
 //PB4-7: N/A
-static WRITE_HANDLER(pia2b_w) {
-  //Store the data written here for later use
-  locals.p2_b = data & 0x0f;
-}
+static WRITE_HANDLER(pia2b_w) { locals.p2_b = data & 0x0f; }
 
 /* PIA2:B Read */
 // Video Switch Returns (Bits 5-7 not connected)
@@ -188,28 +182,12 @@ static READ_HANDLER(pia2b_r) {
   return 0;
 }
 
-/* PIA2:CB2 Write */
-// Diagnostic LED & Sound Strobe to 6803
 static WRITE_HANDLER(pia2cb2_w) {
   locals.diagnosticLedV |= data;
-  if (data & ~locals.p2_cb2) {	//Rising Edge Triggers the IRQ
-    //Low Nibble was written just prior to raising the TIN_IRQ line
-    locals.snddata = locals.p2_b;
-    //Although the real hardware sets the line here, we need to wait for the 2nd nibble
-  }
-  else {
-    //Hi Nibble was written just prior to clearing the TIN_IRQ line
-    locals.snddata = (locals.snddata & 0x0f) | locals.p2_b<<4;
-    //Log the full command
-    snd_cmd_log(locals.snddata);
-
-    //Although the real hardware clears the line here, we pulse it, since
-    //we've now collected both lo & hi nibbles!
-    locals.sndcmdnum = 0;
-    cpu_set_irq_line(BYVP_SCPUNO, M6800_TIN_LINE, PULSE_LINE);
-  }
-  locals.p2_cb2 = data;
+  sndbrd_0_data_w(0, locals.p2_b);
+  sndbrd_0_ctrl_w(0,data);
 }
+
 // VIDEO PIA IRQ - TRIGGER VIDEO CPU FIRQ
 static void pia2Irq(int state) {
   cpu_set_irq_line(BYVP_VCPUNO, M6809_FIRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
@@ -272,8 +250,8 @@ static SWITCH_UPDATE(byVP) {
   }
   /*-- Diagnostic buttons on CPU board --*/
   if (core_getSw(BYVP_SWCPUDIAG))   cpu_set_nmi_line(0, PULSE_LINE);
-  if (core_getSw(BYVP_SWSOUNDDIAG)) cpu_set_nmi_line(BYVP_SCPUNO, PULSE_LINE);
   if (core_getSw(BYVP_SWVIDEODIAG)) cpu_set_nmi_line(BYVP_VCPUNO, PULSE_LINE);
+  sndbrd_0_diag(core_getSw(BYVP_SWSOUNDDIAG));
 
   /*-- coin door switches --*/
   pia_set_input_ca1(BYVP_PIA0, !core_getSw(BYVP_SWSELFTEST));
@@ -301,11 +279,9 @@ static INTERRUPT_GEN(byVP_irq) {
 //Send a command manually
 static WRITE_HANDLER(byVP_soundCmd) {
   if (data) {
-    locals.snddata = data;
-    locals.sndcmdnum = 0;
-    snd_cmd_log(data);
-    /* set 6803 P20 line - Thus triggering a sound command */
-    cpu_set_irq_line(BYVP_SCPUNO, M6800_TIN_LINE, PULSE_LINE);
+//    locals.snddata = data;
+//    locals.sndcmdnum = 0;
+//    snd_cmd_log(data);
   }
 }
 
@@ -316,14 +292,14 @@ static void byVP_zeroCross(int data) {
 
 static MACHINE_INIT(byVP) {
   memset(&locals, 0, sizeof(locals));
-
+  sndbrd_0_init(SNDBRD_BY45,BYVP_SCPUNO,NULL,NULL,NULL);
   /* init PIAs */
   pia_config(BYVP_PIA0, PIA_STANDARD_ORDERING, &piaIntf[0]);
   pia_config(BYVP_PIA1, PIA_STANDARD_ORDERING, &piaIntf[1]);
   pia_config(BYVP_PIA2, PIA_STANDARD_ORDERING, &piaIntf[2]);
   pia_reset();
 }
-
+static MACHINE_STOP(byVP) { sndbrd_0_exit(); }
 /*-----------------------------------------------
 / Load/Save static ram
 /-------------------------------------------------*/
@@ -331,28 +307,6 @@ static UINT8 *byVP_CMOS;
 static NVRAM_HANDLER(byVP) {
   core_nvram(file, read_or_write, byVP_CMOS, 0x100, 0xff);
 }
-/*---------------
-/ Sound Board
-/----------------*/
-/* P21-24 = Video U7(PB0-PB3)
-   NOTE: Sound commands are sent as 2 nibbles, first low byte, then high
-         However, it reads the first low nibble 2x, then reads the high nibble
-         Since Port 2 begins with P20, we must << 1 the sound commands!
-*/
-static READ_HANDLER(sound_port2_r) {
-  if (++locals.sndcmdnum < 3) // If it's the 1st or 2nd time reading the port..
-    return (locals.snddata & 0x0f)<<1;
-  else {
-    locals.sndcmdnum = 0;
-    return (locals.snddata & 0xf0)>>3;
-  }
-}
-
-/* P20(Bit 0) = LED*/
-static WRITE_HANDLER(sound_port2_w) { locals.diagnosticLedV |= data & 1; }
-
-/* P10-P17 = What is this for? Only used in G&G*/
-static READ_HANDLER(sound_port1_r) { return 0; }
 
 //COMMENTS BELOW are directly from MESS source code..
 /***************************************************************************
@@ -396,8 +350,6 @@ static PINMAME_VIDEO_UPDATE(byVP_update) {
   TMS9928A_refresh((core_gameData->hw.display ? 2 : 1), bitmap, 1);
   return 0;
 }
-
-static struct DACinterface byVP_dacInt = { 1, { 50 }};
 
 /*-----------------------------------
 /  Memory map for MAIN CPU board
@@ -476,31 +428,6 @@ static MEMORY_WRITE_START(byVPGG_video_writemem)
   { 0x4000, 0xffff, MWA_ROM },
 MEMORY_END
 
-/*-----------------------------------------------------
-/  Memory map for SOUND CPU (Located on Vidiot Board)
-/------------------------------------------------------*/
-static MEMORY_READ_START(byVP_sound_readmem)
-  { 0x0000, 0x001f, m6803_internal_registers_r },
-  { 0x0080, 0x00ff, MRA_RAM },	/*Internal 128K RAM*/
-  { 0xe000, 0xffff, MRA_ROM },	/* U29 ROM */
-MEMORY_END
-
-static MEMORY_WRITE_START(byVP_sound_writemem)
-  { 0x0000, 0x001f, m6803_internal_registers_w },
-  { 0x0080, 0x00ff, MWA_RAM },	/*Internal 128K RAM*/
-  { 0xe000, 0xffff, MWA_ROM },	/* U29 ROM */
-MEMORY_END
-
-static PORT_READ_START( byVP_sound_readport )
-  { M6803_PORT1, M6803_PORT1, sound_port1_r },
-  { M6803_PORT2, M6803_PORT2, sound_port2_r },
-PORT_END
-
-static PORT_WRITE_START( byVP_sound_writeport )
-  { M6803_PORT1, M6803_PORT1, DAC_0_data_w },
-  { M6803_PORT2, M6803_PORT2, sound_port2_w },
-PORT_END
-
 const struct core_dispLayout byVP_dispBabyPac[] = {
   {0,0,256,192,CORE_VIDEO,byVP_update}, {0}
 };
@@ -521,15 +448,10 @@ MACHINE_DRIVER_START(byVP1)
 
   MDRV_CPU_ADD_TAG("vcpu", M6809, 3580000/4)
   MDRV_CPU_MEMORY(byVP_video_readmem, byVP_video_writemem)
-
-  MDRV_CPU_ADD_TAG("scpu", M6803, 3580000/4)
-  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
-  MDRV_CPU_MEMORY(byVP_sound_readmem, byVP_sound_writemem)
-  MDRV_CPU_PORTS(byVP_sound_readport,byVP_sound_writeport)
-
+  MDRV_IMPORT_FROM(by45)
   MDRV_TIMER_ADD(byVP_zeroCross, BYVP_ZCFREQ)
-  MDRV_INTERLEAVE(50)
-  MDRV_CORE_INIT_RESET_STOP(byVP,NULL,NULL)
+  MDRV_INTERLEAVE(100)
+  MDRV_CORE_INIT_RESET_STOP(byVP,NULL,byVP)
   MDRV_DIPS(32)
   MDRV_DIAGNOSTIC_LEDV(2)
   MDRV_SWITCH_UPDATE(byVP)
@@ -540,7 +462,7 @@ MACHINE_DRIVER_START(byVP1)
   MDRV_SCREEN_SIZE(320,512) // To view matrices and solno
   MDRV_VISIBLE_AREA(0, 319, 0, 511)
 #else // MAME_DEBUG
-  MDRV_SCREEN_SIZE(256, 192) 
+  MDRV_SCREEN_SIZE(256, 192)
   MDRV_VISIBLE_AREA(0, 255, 0, 191)
 #endif // MAME_DEBUG
   MDRV_GFXDECODE(0)
@@ -554,7 +476,6 @@ MACHINE_DRIVER_START(byVP1)
   /* sound hardware */
   MDRV_SOUND_CMD(byVP_soundCmd)
   MDRV_SOUND_CMDHEADING("byVP")
-  MDRV_SOUND_ADD(DAC, byVP_dacInt)
 MACHINE_DRIVER_END
 
 /*GRANNY & THE GATORS HARDWARE*/
