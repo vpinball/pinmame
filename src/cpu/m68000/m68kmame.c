@@ -1273,6 +1273,10 @@ static struct { offs_t addr, mask; UINT16 rw; } m68306cs[10];
 //Comment out to enable the 68306 Receiver/Transmitter functions
 //#define DISABLE_68306_RX
 //#define DISABLE_68306_TX
+//#define DISABLE_68306_TIMER
+
+//This line causes Transmitted data to be sent immediately (not accurate, but useful for testing)
+//#define M68306_TX_SEND_IMMEDIATE
 
 //#define VERBOSE
 //#define DEBUGGING
@@ -1551,6 +1555,7 @@ static data16_t m68306_duart_reg_r(offs_t address, int word) {
 		//F7FD - START COUNTER COMMAND
 		case 0xf7fd:
 			LOG(("%8x:START COUNTER COMMAND Read = %x\n",activecpu_get_pc(),data));
+#ifndef DISABLE_68306_TIMER
 			//TIMER MODE?
 			if(m68306duartreg[dirDUACR] & 0x40) {
 				//Look for 1->0 transition in the output to trigger an interrupt!
@@ -1567,10 +1572,12 @@ static data16_t m68306_duart_reg_r(offs_t address, int word) {
 			else {
 				//Start count down from preloaded value
 			}
+#endif
 			break;
 		//F7FF - STOP COUNTER COMMAND
 		case 0xf7ff:
 			LOG(("%8x:STOP COUNTER COMMAND Read = %x\n",activecpu_get_pc(),data));
+#ifndef DISABLE_68306_TIMER
 			//Clear CTR/TMR RDY bit (3) in DUISR - BOTH TIMER & COUNTER MODE
 			m68306duartreg[dirDUISR] &= (~0x08);
 
@@ -1580,6 +1587,7 @@ static data16_t m68306_duart_reg_r(offs_t address, int word) {
 				m68306_duart.timer_output = 0;
 				//Stop the counter..
 			}
+#endif
 			break;
 
 		default:
@@ -1787,6 +1795,9 @@ static void m68306_tx_send_byte(int which)
 //Load Transmitter with data
 static void m68306_load_transmitter(int which, int data)
 {
+#ifdef M68306_TX_SEND_IMMEDIATE
+	if(which) send_data_to_8752(data);
+#else
 	//Load holding register with data
 	m68306_duart.channel[which].tx_hold_reg = data;
 	//Clear txEMP,txRDY bits (bits 3 & 2) in DUSR
@@ -1794,6 +1805,7 @@ static void m68306_load_transmitter(int which, int data)
 	//Try & Send Data 
 	m68306_duart.channel[which].tx_new_data = 1;
 	m68306_tx_send_byte(which);
+#endif
 }
 
 void send_data_to_68306(int data)
