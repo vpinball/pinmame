@@ -2,7 +2,7 @@
   Mr. Game (Italy)
   ----------------
   by Steve Ellenoff (08/23/2004)
-  
+
   Main CPU Board:
 
   CPU: Motorola M68000
@@ -11,9 +11,8 @@
   I/O: DMA
 
   Issues/Todo:
-  #1) Solenoids fire too fast to be detected - try the solenoid test, to see what I mean
-  #2) Sound & Video are 90% not done yet..
-  #3) Video commands to video board are treated as raw ascii and sent to pinmame display for debugging (remove when real video emulation done)
+  #1) Sound & Video are 90% not done yet..
+  #2) Video commands to video board are treated as raw ascii and sent to pinmame display for debugging (remove when real video emulation done)
 ************************************************************************************************/
 #include "driver.h"
 #include "cpu/m68000/m68000.h"
@@ -27,7 +26,7 @@
 #define TEST_MAIN_CPU
 
 #define MRGAME_DISPLAYSMOOTH 2
-#define MRGAME_SOLSMOOTH 1
+#define MRGAME_SOLSMOOTH 4
 #define MRGAME_CPUFREQ 6000000
 
 //Jumper on board shows 200Hz hard wired ( should double check it's actually 200Hz and not a divide by 200)
@@ -111,8 +110,9 @@ static INTERRUPT_GEN(vblank) {
 
 #if 1
   coreGlobals.solenoids = locals.solenoids;
+//  locals.solenoids = coreGlobals.pulsedSolState;
   if ((locals.vblankCount % MRGAME_SOLSMOOTH) == 0) {
-	locals.solenoids = coreGlobals.pulsedSolState;
+    locals.solenoids = 0;
   }
 #else
   coreGlobals.solenoids = coreGlobals.pulsedSolState;
@@ -146,7 +146,7 @@ static MACHINE_INIT(mrgame) {
 
 
 //Reads current switch column (really row) - Inverted
-static READ16_HANDLER(col_r) { 
+static READ16_HANDLER(col_r) {
 	UINT8 switches = coreGlobals.swMatrix[locals.SwCol+1];	//+1 so we begin by reading column 1 of input matrix instead of 0 which is used for special switches in many drivers
 	return switches^0xff;
 }
@@ -158,7 +158,7 @@ Bits 4   Ack Sound
 Bits 5   Ack Spk
 Bits 6-7 (Always 0?)
 */
-static READ16_HANDLER(rsw_ack_r) { 
+static READ16_HANDLER(rsw_ack_r) {
     int data = core_getDip(0) & 0x0f;
 	data |= (locals.acksnd << 4);
 	data |= (locals.ackspk << 5);
@@ -176,33 +176,37 @@ static WRITE_HANDLER(solenoid_w)
 	switch(offset){
 		case 0:
 			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFFFFFF00) | data;
+			locals.solenoids |= data;
 			break;
 		case 1:
 			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFFFF00FF) | (data<<8);
+			locals.solenoids |= data << 8;
             break;
 		case 2:
 			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFF00FFFF) | (data<<16);
+			locals.solenoids |= data << 16;
             break;
 		case 3:
 			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x00FFFFFF) | (data<<24);
+			locals.solenoids |= data << 24;
 			break;
 		default:
 			LOG(("Solenoid_W Logic Error\n"));
 	}
 }
 
-static WRITE16_HANDLER(sound_w) { 
-	//LOG(("%08x: sound_w = %04x\n",activecpu_get_pc(),data)); 
+static WRITE16_HANDLER(sound_w) {
+	//LOG(("%08x: sound_w = %04x\n",activecpu_get_pc(),data));
 }
 
 //8 bit data to this latch comes from D8-D15 (ie, upper bits only)
 //TEMP HACK TO DISPLAY SOME TEXT ON SCREEN
-static xpos = 0x20;
-static ypos = 0;
-static WRITE16_HANDLER(video_w) { 
+static int xpos = 0x20;
+static int ypos = 0;
+static WRITE16_HANDLER(video_w) {
 	char tmp[2];
 	int mdata = (data>>8)^0xff;
-	//LOG(("%08x: video_w = %04x (%c)\n",activecpu_get_pc(),mdata,mdata)); 
+	//LOG(("%08x: video_w = %04x (%c)\n",activecpu_get_pc(),mdata,mdata));
 #if 0
 	if(mdata == 0xef) printf("\n");
 	else	printf("%c",mdata);
@@ -238,8 +242,7 @@ IC37 - Data Bits 3 = 0, 4 = 1 -> S20,21,22,23,24 of CN12         (D0-D2 generate
 S9,S10,S11 = Solenoid bank 1,2,3 X 8 = 24 Sols
 S15-S24 = Lamp Col 1-10 = 80 Lamps
 */
-static last=0;
-static WRITE16_HANDLER(ic35b_w) { 
+static WRITE16_HANDLER(ic35b_w) {
 	int output = data & 0x07;
 	int bank = (data & 0x18)>>3;
 	int sol = locals.a0a2;
@@ -289,13 +292,13 @@ static WRITE16_HANDLER(ic35b_w) {
 Bits 0 - Bit 1 = D0-D1 to CN12 (i/o) AND CN14 (video)
 Bits 2 - Bit 7 = D2-D7 to CN14 (video board)
 */
-static WRITE16_HANDLER(data_w) { 
+static WRITE16_HANDLER(data_w) {
 	locals.d0d1 = data & 0x03;
 #if 0
 	if(locals.d0d1 > 0)
-		LOG(("* * * %08x: data_w = %04x, aoa2 = %x\n",activecpu_get_pc(),data,locals.a0a2)); 
+		LOG(("* * * %08x: data_w = %04x, aoa2 = %x\n",activecpu_get_pc(),data,locals.a0a2));
 //	else
-//		LOG(("%08x: data_w = %04x\n",activecpu_get_pc(),data)); 
+//		LOG(("%08x: data_w = %04x\n",activecpu_get_pc(),data));
 #endif
 }
 
@@ -303,11 +306,11 @@ static WRITE16_HANDLER(data_w) {
 Bits 0-2 = A0-A2 of CN12 & CN14
 Bits 3-7 = NC
 */
-static WRITE16_HANDLER(extadd_w) { 
+static WRITE16_HANDLER(extadd_w) {
 	locals.a0a2 = data & 0x07;
 #if 0
 	if(locals.d0d1)
-		LOG(("%08x: extadd_w = %04x\n",activecpu_get_pc(),data)); 
+		LOG(("%08x: extadd_w = %04x\n",activecpu_get_pc(),data));
 #endif
 }
 
@@ -319,15 +322,15 @@ Bit 5 = Pin 5 - CN10 & Pin 18 - CN11 (??)
 Bit 6 = NA
 Bit 7 = /RUNEN Line
 */
-static WRITE16_HANDLER(row_w) { 
+static WRITE16_HANDLER(row_w) {
 	locals.SwCol = core_BitColToNum(data & 0x7);
 	locals.diagnosticLED = GET_BIT4;
 	locals.row_pin5 = GET_BIT5;
-//	LOG(("%08x: row_w = %04x\n",activecpu_get_pc(),data)); 
+//	LOG(("%08x: row_w = %04x\n",activecpu_get_pc(),data));
 }
 
 //NVRAM
-static UINT16 *NVRAM;
+//static UINT16 *NVRAM;
 static NVRAM_HANDLER(mrgame_nvram) {
   //core_nvram(file, read_or_write, NVRAM, 0x2000, 0x00);
 }
@@ -547,7 +550,7 @@ MACHINE_DRIVER_START(mrgame_video_common)
 MACHINE_DRIVER_END
 
 
-//Generation 1 
+//Generation 1
 MACHINE_DRIVER_START(mrgame1)
 	MDRV_IMPORT_FROM(mrgame_cpu)
 #ifndef TEST_MAIN_CPU
