@@ -21,6 +21,7 @@ const struct GameDriver *drivers[] = {
 // -----------------
 // ATARI GAMES BELOW
 // -----------------
+                        //Triangle (Prototype, 1976?)
 DRIVERNV(atarians)      //The Atarians (November 1976)
 DRIVERNV(time2000)      //Time 2000 (June 1977)
 DRIVERNV(aavenger)      //Airborne Avenger (September 1977)
@@ -28,14 +29,13 @@ DRIVERNV(midearth)      //Middle Earth (February 1978)
 DRIVERNV(spcrider)      //Space Riders (September 1978)
 DRIVERNV(superman)      //Superman (March 1979)
 DRIVERNV(hercules)      //Hercules (May 1979)
-                        //Road Runner (1979)
-                        //Monza (1980)
-                        //Neutron Star (1981)
-                        //4x4 (1983)
-                        //Triangle (19??)
+                        //Road Runner (Prototype, 1979)
+                        //Monza (Prototype, 1980)
+                        //Neutron Star (Prototype, 1981)
+                        //4x4 (Prototype, 1983)
 
 // MIDWAY GAMES
-DRIVERNV(flicker )      //Flicker (Prototype, November 1974)
+DRIVERNV(flicker )      //Flicker (Prototype, September 1974)
 DRIVERNV(rotation)      //Rotation VIII (September 1978)
 
 // ASTRO GAMES
@@ -73,13 +73,12 @@ DRIVERNV(andromed)      //Andromeda (September 1985)
 DRIVERNV(cyclopes)      //Cyclopes (November 1985)
                         //Loch Ness Monster (November 1985)
 
-#if 0
 // ---------------------
 // ZACCARIA GAMES BELOW
 // ---------------------
 //Other games created earlier by Zaccaria are EM
                         //10/77 Combat
-                        //01/78 Winter Sports
+DRIVERNV(wsports)       //01/78 Winter Sports
                         //07/78 House of Diamonds
                         //09/78 Strike
                         //10/78 Ski Jump
@@ -88,28 +87,27 @@ DRIVERNV(cyclopes)      //Cyclopes (November 1985)
                         //09/79 Hot Wheels
                         //09/79 Space City
                         //01/80 Fire Mountain
-                        //05/80 Star God
-                        //09/80 Space Shuttle
-                        //04/81 Earth, Wind & Fire
-                        //09/81 Locomotion
-                        //04/82 Pinball Champ '82 (Is this really different than the '83?)
-                        //09/82 Soccer King
+DRIVERNV(stargod)       //05/80 Star God
+DRIVERNV(sshtlzac)      //09/80 Space Shuttle
+DRIVERNV(ewf)           //04/81 Earth, Wind & Fire
+DRIVERNV(locomotn)      //09/81 Locomotion
+                        //04/82 Pinball Champ '82 (Is this really different from the '83?)
+DRIVERNV(socrking)      //09/82 Soccer King
 DRIVERNV(pinchamp)      //??/83 Pinball Champ
 DRIVERNV(tmachzac)      //04/83 Time Machine
 DRIVERNV(farfalla)      //09/83 Farfalla
 DRIVERNV(dvlrider)      //04/84 Devil Riders
-                        //09/84 Magic Castle
-                        //01/85 Robot
-                        //07/85 Clown
-                        //12/85 Pool Champion
+DRIVERNV(mcastle)       //09/84 Magic Castle
+DRIVERNV(robot)         //01/85 Robot
+DRIVERNV(clown)         //07/85 Clown
+DRIVERNV(poolcham)      //12/85 Pool Champion
 DRIVERNV(bbeltzac)      //??/86 Blackbelt
                         //??/86 Mexico
                         //??/86 Zankor
                         //??/86 Mystic Star
-                        //??/87 Spooky
+DRIVERNV(spooky)        //??/87 Spooky
                         //??/87 Star's Phoenix
                         //??/86 New Star's Phoenix
-#endif
 
 // ---------------------
 // HANKIN GAMES BELOW

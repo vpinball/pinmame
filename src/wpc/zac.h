@@ -6,25 +6,21 @@
 #include "sim.h"
 
 #define ZAC_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
-#define ZAC_LAMPSMOOTH      4 /* Smooth the lamps over this number of VBLANKS */
+#define ZAC_LAMPSMOOTH      1 /* Smooth the lamps over this number of VBLANKS */
 #define ZAC_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKS */
 
 /*-- Common Inports for ZAC Games --*/
 #define ZAC_COMPORTS \
   PORT_START /* 0 */ \
-    /* Switch Column 1*/ \
-    COREPORT_BIT(     0x0001, "Advance(Coin Door)", KEYCODE_8)  \
-	COREPORT_BIT(     0x0002, "Return(Coin Door)",  KEYCODE_7)  \
-    COREPORT_BIT(     0x0004, "Slam Tilt?",         KEYCODE_HOME)  \
-	COREPORT_BIT(     0x0008, "Credit(Service)",    KEYCODE_6)  \
-    COREPORT_BITDEF(  0x0010, IPT_COIN1,            KEYCODE_3) \
-    COREPORT_BITDEF(  0x0020, IPT_COIN2,            KEYCODE_4) \
-    COREPORT_BITDEF(  0x0040, IPT_COIN3,            KEYCODE_5) \
-	/* Switch Column 2 */ \
-	COREPORT_BITDEF(  0x0080, IPT_START1,			IP_KEY_DEFAULT)  \
-    COREPORT_BIT(     0x0100, "Ball Tilt",			KEYCODE_2)  \
     /* These are put in switch column 0 */ \
-    COREPORT_BIT(     0x0200, "Sound Diagnostic", KEYCODE_0) \
+    COREPORT_BIT(     0x0001, "Key 1", KEYCODE_1) \
+    COREPORT_BIT(     0x0002, "Key 2", KEYCODE_2) \
+    COREPORT_BIT(     0x0004, "Key 3", KEYCODE_3) \
+    COREPORT_BIT(     0x0008, "Key 4", KEYCODE_4) \
+    COREPORT_BIT(     0x0010, "Key 5", KEYCODE_5) \
+    COREPORT_BIT(     0x0020, "Key 6", KEYCODE_6) \
+    COREPORT_BIT(     0x0040, "Key 7", KEYCODE_7) \
+    COREPORT_BIT(     0x0080, "Key 8", KEYCODE_8) \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
       COREPORT_DIPSET(0x0000, "0" ) \
@@ -37,7 +33,7 @@
       COREPORT_DIPSET(0x0004, "1" ) \
     COREPORT_DIPNAME( 0x0008, 0x0000, "S4") \
       COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0008, "1" ) 
+      COREPORT_DIPSET(0x0008, "1" )
 
 /*-- Standard input ports --*/
 #define ZAC_INPUT_PORTS_START(name,balls) \
@@ -63,36 +59,160 @@
 #define ZAC_MEMREG_CPU		REGION_CPU1
 #define ZAC_MEMREG_S1CPU	REGION_CPU2
 #define ZAC_MEMREG_SROM		REGION_SOUND1
-#define ZAC_MEMREG_CROM1	REGION_USER1 /*CPU ROMS Loaded Here*/
 
 /*-- Main CPU regions and ROM --*/
 
-/* 3 X 2532 ROMS */
-#define ZAC_ROMSTART(name,n1,chk1,n2,chk2,n3,chk3) \
+/* 5 X 2708 ROMS */
+#define ZAC_ROMSTART44444(name,n1,chk1,n2,chk2,n3,chk3,n4,chk4,n5,chk5) \
   ROM_START(name) \
 	NORMALREGION(0x8000, ZAC_MEMREG_CPU) \
-    NORMALREGION(0x8000, ZAC_MEMREG_CROM1) \
-      ROM_LOAD( n1, 0x0000, 0x1000, chk1) \
-	  ROM_RELOAD(0x1000,0x1000)\
-      ROM_LOAD( n2, 0x2000, 0x1000, chk2) \
-	  ROM_RELOAD(0x3000,0x1000)\
-      ROM_LOAD( n3, 0x4000, 0x1000, chk3) \
-	  ROM_RELOAD(0x5000,0x1000)
+      ROM_LOAD ( n1, 0x0000, 0x0400, chk1) \
+      ROM_LOAD ( n2, 0x0400, 0x0400, chk2) \
+      ROM_LOAD ( n3, 0x0800, 0x0400, chk3) \
+      ROM_LOAD ( n4, 0x0c00, 0x0400, chk4) \
+      ROM_LOAD ( n5, 0x1000, 0x0400, chk5)
+
+/* 1 X 2716, 4 X 2708 ROMS */
+#define ZAC_ROMSTART84444(name,n1,chk1,n2,chk2,n3,chk3,n4,chk4,n5,chk5) \
+  ROM_START(name) \
+	NORMALREGION(0x8000, ZAC_MEMREG_CPU) \
+      ROM_LOAD ( n1, 0x0000, 0x0800, chk1) \
+      ROM_LOAD ( n2, 0x1c00, 0x0400, chk2) \
+      ROM_LOAD ( n3, 0x0800, 0x0400, chk3) \
+      ROM_LOAD ( n4, 0x0c00, 0x0400, chk4) \
+      ROM_LOAD ( n5, 0x1000, 0x0400, chk5)
+
+/* 2 X 2716, 3 X 2708 ROMS */
+#define ZAC_ROMSTART84844(name,n1,chk1,n2,chk2,n3,chk3,n4,chk4,n5,chk5) \
+  ROM_START(name) \
+	NORMALREGION(0x8000, ZAC_MEMREG_CPU) \
+      ROM_LOAD ( n1, 0x0000, 0x0800, chk1) \
+      ROM_LOAD ( n2, 0x1c00, 0x0400, chk2) \
+      ROM_LOAD ( n3, 0x0800, 0x0400, chk3) \
+        ROM_CONTINUE(0x1400, 0x0400) \
+      ROM_LOAD ( n4, 0x0c00, 0x0400, chk4) \
+      ROM_LOAD ( n5, 0x1000, 0x0400, chk5)
+
+/* 3 X 2716 ROMS */
+#define ZAC_ROMSTART888(name,n1,chk1,n2,chk2,n3,chk3) \
+  ROM_START(name) \
+	NORMALREGION(0x8000, ZAC_MEMREG_CPU) \
+      ROM_LOAD( n1, 0x0000, 0x0800, chk1) \
+      ROM_LOAD( n2, 0x0800, 0x0800, chk2) \
+      ROM_LOAD( n3, 0x1000, 0x0800, chk3)
+
+/* 3 X 2532 ROMS */
+/*
+	  setup_rom(1,1,0x0000);	  //U1 - 1st 2K
+	  setup_rom(2,1,0x0800);	  //U2 - 1st 2K
+	  setup_rom(3,1,0x1000);	  //U3 - 1st 2K
+	  setup_rom(1,2,0x2000);	  //U1 - 2nd 2K
+	  setup_rom(2,2,0x2800);	  //U2 - 2nd 2K
+	  setup_rom(3,2,0x3000);	  //U3 - 2nd 2K
+setup mirrors
+	  setup_rom(1,1,0x4000);	  //U1 - 1st 2K
+	  setup_rom(2,1,0x4800);	  //U2 - 1st 2K
+	  setup_rom(3,1,0x5000);	  //U3 - 1st 2K
+	  setup_rom(1,2,0x6000);	  //U1 - 2nd 2K
+	  setup_rom(2,2,0x6800);	  //U2 - 2nd 2K
+	  setup_rom(3,2,0x7000);	  //U3 - 2nd 2K
+*/
+#define ZAC_ROMSTART000(name,n1,chk1,n2,chk2,n3,chk3) \
+  ROM_START(name) \
+	NORMALREGION(0x8000, ZAC_MEMREG_CPU) \
+      ROM_LOAD ( n1, 0x0000, 0x0800, chk1) \
+        ROM_CONTINUE(0x2000, 0x0800) \
+       ROM_RELOAD   (0x4000, 0x0800) \
+        ROM_CONTINUE(0x6000, 0x0800) \
+      ROM_LOAD ( n2, 0x0800, 0x0800, chk2) \
+        ROM_CONTINUE(0x2800, 0x0800) \
+       ROM_RELOAD   (0x4800, 0x0800) \
+        ROM_CONTINUE(0x6800, 0x0800) \
+      ROM_LOAD ( n3, 0x1000, 0x0800, chk3) \
+        ROM_CONTINUE(0x3000, 0x0800) \
+       ROM_RELOAD   (0x5000, 0x0800) \
+        ROM_CONTINUE(0x7000, 0x0800)
 
 /* 2 X 2764 ROMS */
-#define ZAC_ROMSTART2(name,n1,chk1,n2,chk2) \
+/*
+	  setup_rom(1,1,0x0000);	  //U1 - 1st 2K
+	  setup_rom(2,1,0x0800);	  //U2 - 1st 2K
+	  setup_rom(2,3,0x1000);	  //U2 - 3rd 2K
+	  setup_rom(1,2,0x2000);	  //U1 - 2nd 2K
+	  setup_rom(2,2,0x2800);	  //U2 - 2nd 2K
+	  setup_rom(2,4,0x3000);	  //U2 - 4th 2K
+???	  setup_rom(1,3,0x4000);	  //U1 - 3rd 2K
+???	  setup_rom(1,4,0x6000);	  //U1 - 4th 2K
+setup mirrors
+	  setup_rom(2,1,0x4800);	  //U2 - 1st 2K
+	  setup_rom(2,3,0x5000);	  //U2 - 3rd 2K
+	  setup_rom(2,2,0x6800);	  //U2 - 2nd 2K
+	  setup_rom(2,4,0x7000);	  //U2 - 4th 2K
+*/
+#if 1
+#define ZAC_ROMSTART1820(name,n1,chk1,n2,chk2) \
   ROM_START(name) \
 	NORMALREGION(0x8000, ZAC_MEMREG_CPU) \
-    NORMALREGION(0x8000, ZAC_MEMREG_CROM1) \
-      ROM_LOAD( n1, 0x0000, 0x2000, chk1) \
-      ROM_LOAD( n2, 0x2000, 0x2000, chk2)
-      
+      ROM_LOAD ( n1, 0x0000, 0x0800, chk1) \
+        ROM_CONTINUE(0x2000, 0x0800) \
+        ROM_CONTINUE(0x4000, 0x0800) \
+        ROM_CONTINUE(0x6000, 0x0800) \
+      ROM_LOAD ( n2, 0x0800, 0x0800, chk2) \
+        ROM_CONTINUE(0x2800, 0x0800) \
+        ROM_CONTINUE(0x1000, 0x0800) \
+        ROM_CONTINUE(0x3000, 0x0800) \
+       ROM_RELOAD   (0x4800, 0x0800) \
+        ROM_CONTINUE(0x6800, 0x0800) \
+        ROM_CONTINUE(0x5000, 0x0800) \
+        ROM_CONTINUE(0x7000, 0x0800)
+#else
+#define ZAC_ROMSTART1820(name,n1,chk1,n2,chk2) \
+  ROM_START(name) \
+	NORMALREGION(0x8000, ZAC_MEMREG_CPU) \
+      ROM_LOAD ( n1, 0x0000, 0x0800, chk1) \
+        ROM_CONTINUE(0x2000, 0x0800) \
+        ROM_CONTINUE(0x1800, 0x0800) \
+        ROM_CONTINUE(0x3800, 0x0800) \
+       ROM_RELOAD   (0x4000, 0x0800) \
+        ROM_CONTINUE(0x6000, 0x0800) \
+        ROM_CONTINUE(0x5800, 0x0800) \
+        ROM_CONTINUE(0x7800, 0x0800) \
+      ROM_LOAD ( n2, 0x0800, 0x0800, chk2) \
+        ROM_CONTINUE(0x2800, 0x0800) \
+        ROM_CONTINUE(0x1000, 0x0800) \
+        ROM_CONTINUE(0x3000, 0x0800) \
+       ROM_RELOAD   (0x4800, 0x0800) \
+        ROM_CONTINUE(0x6800, 0x0800) \
+        ROM_CONTINUE(0x5000, 0x0800) \
+        ROM_CONTINUE(0x7000, 0x0800)
+#endif
+
+/* 1 X 2532, 1 X 2564 ROMS */
+#define ZAC_ROMSTART020(name,n1,chk1,n2,chk2) \
+  ROM_START(name) \
+	NORMALREGION(0x8000, ZAC_MEMREG_CPU) \
+      ROM_LOAD ( n1, 0x0000, 0x0800, chk1) \
+        ROM_CONTINUE(0x2000, 0x0800) \
+       ROM_RELOAD   (0x4000, 0x0800) \
+        ROM_CONTINUE(0x6000, 0x0800) \
+      ROM_LOAD ( n2, 0x0800, 0x0800, chk2) \
+        ROM_CONTINUE(0x2800, 0x0800) \
+        ROM_CONTINUE(0x1000, 0x0800) \
+        ROM_CONTINUE(0x3000, 0x0800) \
+       ROM_RELOAD   (0x4800, 0x0800) \
+        ROM_CONTINUE(0x6800, 0x0800) \
+        ROM_CONTINUE(0x5000, 0x0800) \
+        ROM_CONTINUE(0x7000, 0x0800)
+
 #define ZAC_ROMEND ROM_END
 
 /*-- These are only here so the game structure can be in the game file --*/
-extern struct MachineDriver machine_driver_ZAC1;
-extern struct MachineDriver machine_driver_ZAC2;
+extern MACHINE_DRIVER_EXTERN(ZAC0);
+extern MACHINE_DRIVER_EXTERN(ZAC1);
+extern MACHINE_DRIVER_EXTERN(ZAC2);
+
+#define mZAC0     ZAC0
 #define mZAC1     ZAC1
 #define mZAC2     ZAC2
-#endif /* INC_ZAC */
 
+#endif /* INC_ZAC */
