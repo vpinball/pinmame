@@ -233,7 +233,7 @@ struct MachineDriver machine_driver_SE_1S = {
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  NULL, NULL, de_dmd128x32_refresh,
+  DE_DMD32VIDEO,
   SOUND_SUPPORTS_STEREO,0,0,0,{ DE2S_SOUNDA },
   SE_nvram
 };
@@ -249,7 +249,7 @@ struct MachineDriver machine_driver_SE_2S = {
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  NULL, NULL, de_dmd128x32_refresh,
+  DE_DMD32VIDEO,
   SOUND_SUPPORTS_STEREO,0,0,0,{ DE2S_SOUNDB },
   SE_nvram
 };
@@ -265,7 +265,7 @@ struct MachineDriver machine_driver_SE_3S = {
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  NULL, NULL, de_dmd128x32_refresh,
+  DE_DMD32VIDEO,
   SOUND_SUPPORTS_STEREO,0,0,0,{ DE2S_SOUNDC },
   SE_nvram
 };
