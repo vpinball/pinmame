@@ -8,9 +8,9 @@ static const core_tLCDLayout dispst6[] = {
   {4, 4,35,2,CORE_SEG7}, {4,10,38,2,CORE_SEG7},{0}
 };
 static const core_tLCDLayout dispst7[] = {
-  {0, 0, 1,7,CORE_SEG7}, {0,16, 9,7,CORE_SEG7},
-  {2, 0,17,7,CORE_SEG7}, {2,16,25,7,CORE_SEG7},
-  {4, 4,35,2,CORE_SEG7}, {4,10,38,2,CORE_SEG7},{0}
+  {0, 0, 1,7,CORE_SEG87F},{0,16, 9,7,CORE_SEG87F},
+  {2, 0,17,7,CORE_SEG87F},{2,16,25,7,CORE_SEG87F},
+  {4, 4,35,2,CORE_SEG87}, {4,10,38,2,CORE_SEG87}, {0}
 };
 
 BY35_INPUT_PORTS_START(st,1) BY35_INPUT_PORTS_END
@@ -303,9 +303,9 @@ CORE_GAMEDEFNV(viper,"Viper",1981,"Stern",by35_mST200,GAME_NO_SOUND)
 / Dragonfist
 /-------------------------------*/
 static core_tLCDLayout dispDragfist[] = {
-  {0, 0, 1,7,CORE_SEG7}, {0,16, 9,7,CORE_SEG7},
-  {2, 0,17,7,CORE_SEG7}, {2,16,25,7,CORE_SEG7},
-  {4, 4,36,2,CORE_SEG7}, {4,10,38,2,CORE_SEG7}, {4,20,34,2,CORE_SEG7},{0}
+  {0, 0, 1,7,CORE_SEG87F},{0,16, 9,7,CORE_SEG87F},
+  {2, 0,17,7,CORE_SEG87F},{2,16,25,7,CORE_SEG87F},
+  {4, 4,36,2,CORE_SEG87}, {4,10,38,2,CORE_SEG87}, {4,20,34,2,CORE_SEG87},{0}
 };
 INITGAME(dragfist,GEN_STMPU200,dispDragfist,FLIP_SW(FLIP_L),0,0,0)
 ST200_ROMSTART8888(dragfist,"cpu_u1.716",0x4cbd1a38,
@@ -348,9 +348,9 @@ CORE_GAMEDEFNV(stargzr,"Stargazer",1980,"Stern",by35_mST200,GAME_NO_SOUND)
 / Lightning
 /-------------------------------*/
 static core_tLCDLayout dispLightnin[] = {
-  {0, 0, 1,7,CORE_SEG7}, {0,16, 9,7,CORE_SEG7},
-  {2, 0,17,7,CORE_SEG7}, {2,16,25,7,CORE_SEG7},
-  {4, 4,34,2,CORE_SEG7}, {4,10,38,2,CORE_SEG7}, {4,20,36,2,CORE_SEG7},{0}
+  {0, 0, 1,7,CORE_SEG87F},{0,16, 9,7,CORE_SEG87F},
+  {2, 0,17,7,CORE_SEG87F},{2,16,25,7,CORE_SEG87F},
+  {4, 4,34,2,CORE_SEG87}, {4,10,38,2,CORE_SEG87}, {4,20,36,2,CORE_SEG87},{0}
 };
 INITGAME(lightnin,GEN_STMPU200,dispLightnin,FLIP_SW(FLIP_L),0,0,0)
 ST200_ROMSTART8888(lightnin,"cpu_u1.716",0xd3469d0a,
@@ -365,9 +365,9 @@ CORE_GAMEDEFNV(lightnin,"Lightning",1981,"Stern",by35_mST200,GAME_NO_SOUND)
 / Orbitor 1
 /-------------------------------*/
 static core_tLCDLayout dispOrbitor[] = {
-  {0, 0, 1,7,CORE_SEG7}, {0,16, 9,7,CORE_SEG7},
-  {2, 0,17,7,CORE_SEG7}, {2,16,25,7,CORE_SEG7},
-  {4, 4,36,2,CORE_SEG7}, {4,10,38,2,CORE_SEG7}, {4,20,34,2,CORE_SEG7},{0}
+  {0, 0, 1,7,CORE_SEG87F},{0,16, 9,7,CORE_SEG87F},
+  {2, 0,17,7,CORE_SEG87F},{2,16,25,7,CORE_SEG87F},
+  {4, 4,36,2,CORE_SEG87}, {4,10,38,2,CORE_SEG87}, {4,20,34,2,CORE_SEG87},{0}
 };
 INITGAME(orbitor1,GEN_STMPU200,dispOrbitor,FLIP_SW(FLIP_L),0,0,0)
 ST200_ROMSTART8888(orbitor1, "cpu_u1.716",0x575520e3,
