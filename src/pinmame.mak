@@ -49,6 +49,7 @@ DRVLIBS += $(PINOBJ)/gts1.o
 PINGAMES  = $(PINOBJ)/by35games.o $(PINOBJ)/stgames.o
 PINGAMES += $(PINOBJ)/s3games.o $(PINOBJ)/s4games.o $(PINOBJ)/s6games.o
 PINGAMES += $(PINOBJ)/s7games.o $(PINOBJ)/s11games.o
+PINGAMES += $(PINOBJ)/bowlgames.o
 PINGAMES += $(PINOBJ)/by6803games.o
 PINGAMES += $(PINOBJ)/byvidgames.o
 PINGAMES += $(PINOBJ)/gts3games.o
