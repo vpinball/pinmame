@@ -39,15 +39,16 @@ static struct {
 #define SP_PIA0  0
 
 MEMORY_READ_START(taitos_readmem)
-  { 0x0000, 0x00ff, MRA_RAM },
+  { 0x0000, 0x007f, MRA_RAM },
+  { 0x0080, 0x03ff, MRA_NOP },
   { 0x0400, 0x0403, pia_r(SP_PIA0) },
+  { 0x0404, 0x07ff, MRA_NOP },
   { 0x0800, 0xffff, MRA_ROM },
 MEMORY_END
 
 MEMORY_WRITE_START(taitos_writemem)
-  { 0x0000, 0x00ff, MWA_RAM },
+  { 0x0000, 0x007f, MWA_RAM },
   { 0x0400, 0x0403, pia_w(SP_PIA0) },
-  { 0x0800, 0xffff, MWA_ROM },
 MEMORY_END
 
 static void taitos_irq(int state) {
@@ -82,7 +83,7 @@ static WRITE_HANDLER(pia0ca2_w)
 static WRITE_HANDLER(pia0cb2_w)
 {
 //	logerror("pia0cb2_w: %02x\n", data);
-	if ((taitos_locals.brdData.subType & 0x01) == SINTEVOX) 
+	if (data && (taitos_locals.brdData.subType & 0x01) == SINTEVOX)
 		votraxsc01_w(0, taitos_locals.votrax_data);
 }
 
@@ -98,19 +99,12 @@ static const struct pia6821_interface sp_pia = {
   /*irq: A/B           */ taitos_nmi, taitos_irq
 };
 
-/* sound strobe */
-static WRITE_HANDLER(taitos_ctrl_w)
-{
-	// logerror("taitos_ctrl_w: %i\n", data);
-	pia_set_input_cb1(SP_PIA0, data?0x01:0x00);
-}
-
 /* sound input */
 static WRITE_HANDLER(taitos_data_w)
 {
-    // logerror("taitos_data_w: %i\n", data);
-    pia_set_input_b(SP_PIA0, data^0xff);
-	sndbrd_ctrl_w(0, data);
+//	logerror("taitos_data_w: %i\n", data);
+	pia_set_input_b(SP_PIA0, data^0xff);
+	pia_set_input_cb1(SP_PIA0, data?0x01:0x00);
 }
 
 static void taitos_init(struct sndbrdData *brdData)
@@ -138,7 +132,7 @@ struct VOTRAXSC01interface TAITO_votrax_sc01_interface = {
 / exported interface
 /--------------------*/
 const struct sndbrdIntf taitoIntf = {
-  "TAITO", taitos_init, NULL, NULL, taitos_data_w, taitos_data_w, NULL, taitos_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "TAITO", taitos_init, NULL, NULL, taitos_data_w, taitos_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
 MACHINE_DRIVER_START(taitos_sintetizador)
@@ -215,7 +209,9 @@ struct AY8910interface TAITO_ay8910Int = {
 
 MEMORY_READ_START(taitospp_readmem)
   { 0x0000, 0x007f, MRA_RAM },
+  { 0x0080, 0x03ff, MRA_NOP },
   { 0x0400, 0x0403, pia_r(SP_PIA0) },
+  { 0x0404, 0x0fff, MRA_NOP },
   { 0x1007, 0x1007, unknown1007 },
   { 0x100d, 0x100d, unknown100d },
   { 0x2000, 0x7fff, MRA_ROM },
@@ -232,8 +228,6 @@ MEMORY_WRITE_START(taitospp_writemem)
   { 0x100c, 0x100c, ay8910_1_ctrl_port },
   { 0x100e, 0x100e, ay8910_1_data_port },
   { 0x2000, 0x2000, unknown2000 },
-  { 0x2001, 0x7fff, MWA_ROM },
-  { 0xf000, 0xffff, MWA_ROM }, /* reset vector */
 MEMORY_END
 
 MACHINE_DRIVER_START(taitos_sintetizadorpp)
