@@ -39,12 +39,14 @@ int dmd_width = 0;
 int dmd_height = 0;
 
 int threadpriority = 1;
-int synclevel = 60;
+//int synclevel = 60;
+int synclevel = 0;		//SJE: Default synclevel is 0 now.. 10/01/03
 
 static FILE *logfile;
 
 static struct rc_option vpinmame_opts[] = {
 	// VPinMAME options
+	/* name, shortname, type, dest, deflt, min, max, func, help */
 	{ "dmd_border", NULL, rc_bool, &dmd_border, "1", 0, 0, NULL, "DMD display border" },
 	{ "dmd_title",  NULL, rc_bool, &dmd_title,  "1", 0, 0, NULL, "DMD display title" },
 	{ "dmd_pos_x",  NULL, rc_int,  &dmd_pos_x,  "0", 0, 10000, NULL, "DMD display position x" },
@@ -53,7 +55,7 @@ static struct rc_option vpinmame_opts[] = {
 	{ "dmd_height", NULL, rc_int,  &dmd_height, "0", 0, 10000, NULL, "DMD display height" },
 	{ "dmd_doublesize",  NULL, rc_bool,  &dmd_doublesize,  "0", 0, 0, NULL, "DMD display doublesize" },
 	{ "threadpriority",  NULL, rc_int,  &threadpriority,  "1", 0, 2, NULL, "priority of the worker thread" },
-	{ "synclevel",  NULL, rc_int,  &synclevel,  "60", -50, 60, NULL, "sync. of frame rate for external programs (fps)" },
+	{ "synclevel",  NULL, rc_int,  &synclevel,  "0", -50, 60, NULL, "Sync. of frame rate for external programs (fps)" },	//SJE: Default synclevel is 0 now.. 10/01/03
 	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
 };
 
