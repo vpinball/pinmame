@@ -46,7 +46,7 @@ static core_tLCDLayout dispSshtl[] = { \
   { 5,21,20,1, CORE_SEG7},  { 5,23,28,1,CORE_SEG7},{0}
 };
 INITGAMEFULL(sshtl, GEN_S9, dispSshtl, 0, FLIP_SWNO(0,41),
-             S11_BCDDIAG|S11_BCDDISP,0,39, 40, 27, 26, 25, 0)
+             S11_BCDDIAG|S11_BCDDISP , S9_SOUNDHACK , 39, 40, 27, 26, 25, 0)
 S9_ROMSTARTx4(sshtl,l7,"cpu_u20.128", CRC(848ad54c) SHA1(4e4ce5fb970da37706472f94a27fd912e1ecb1a0))
 S9S_SOUNDROM4111(      "cpu_u49.128", CRC(20e77990) SHA1(b9ec143526d7d152b653c7119e4d07945b6813eb),
                        "spch_u4.732", CRC(b0d03c5e) SHA1(46b952f71a7ecc03e22e427875f6e16a9d124067),
