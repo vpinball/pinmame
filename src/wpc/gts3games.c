@@ -11,7 +11,6 @@ N = No Lead, L = Have a Lead on Rom
 (N)Bell Ringer 1990
 (N)Nudge It 1990
 (N)Hoops 1991
-(N)Stargate (Bad sound rom)
 ??Strikes 'N Spares 1995 (????????)
 */
 static struct core_dispLayout gts_128x32DMD[] = {
@@ -364,20 +363,18 @@ CORE_GAMEDEFNV(shaqattq,"Shaq Attaq",1995,"Gottlieb",mGTS3DMDS, GAME_IMPERFECT_S
 INITGAME2(stargate, DMD, FLIP8182, 4, SNDBRD_GTS3, 5)
 GTS3ROMSTART(stargate,	"gprom.bin",0x567ecd88)
 GTS3_DMD512_ROMSTART(	"dsprom.bin",0x91c1b01a)
-GTS3SOUND32512256(		"yrom1.bin",0x53123fd4,
+GTS3SOUND32512256A(		"yrom1.bin",0x53123fd4,
 						"drom1.bin",0x781b2b27,
-						"arom1.bin",0xa0f62605,
-						"arom2.bin",0x00000000)
+						"arom1.bin",0xa0f62605)
 GTS3_ROMEND
 CORE_GAMEDEFNV(stargate,"Stargate",1995,"Gottlieb",mGTS3DMDS, GAME_IMPERFECT_SOUND)
 
 INITGAME2(stargat2, DMD, FLIP8182, 4, SNDBRD_GTS3, 5)
 GTS3ROMSTART(stargat2,	"gprom2.bin",0x862920f8)
 GTS3_DMD512_ROMSTART(	"dsprom2.bin",0xd0205e03)
-GTS3SOUND32512256(		"yrom1.bin",0x53123fd4,
+GTS3SOUND32512256A(		"yrom1.bin",0x53123fd4,
 						"drom1.bin",0x781b2b27,
-						"arom1.bin",0xa0f62605,
-						"arom2.bin",0x00000000)
+						"arom1.bin",0xa0f62605)
 GTS3_ROMEND
 CORE_CLONEDEFNV(stargat2,stargate,"Stargate (V.2)",1995,"Gottlieb",mGTS3DMDS, GAME_IMPERFECT_SOUND)
 
