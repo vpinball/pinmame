@@ -29,7 +29,7 @@ void S80SS_irq(int state) {
 void S80SS_nmi(int state)
 {
 	logerror("NMI: %i/n\n",state);
-	cpu_set_irq_line(s80ss_sndCPUNo, M6502_INT_NMI, state? ASSERT_LINE:PULSE_LINE);
+	cpu_set_irq_line(s80ss_sndCPUNo, M6502_INT_NMI, state? ASSERT_LINE:CLEAR_LINE);
 	S80sound1_locals.NMIState = state;
 	if ( state ) 
 		S80sound1_locals.timer = timer_set(TIME_IN_USEC(100),0,S80SS_nmi);
@@ -120,7 +120,7 @@ WRITE_HANDLER(vs_latch_w) {
 		}
 		pos = 0;
 	}
-	else if ( !S80sound1_locals.timer )
+	if ( !S80sound1_locals.timer )
 		S80sound1_locals.timer = timer_set(TIME_IN_USEC(50000),1,S80SS_nmi);
 }
 
