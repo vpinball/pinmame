@@ -59,7 +59,6 @@ static SWITCH_UPDATE(wpc);
 /  Global variables
 /---------------------*/
 UINT8 *wpc_data;     /* WPC registers */
-int WPC_gWPC95;      /* dcs95 sound, used in ADSP2100 patch ? */
 const struct core_dispLayout wpc_dispAlpha[] = {
   DISP_SEG_16(0,CORE_SEG16),DISP_SEG_16(1,CORE_SEG16),{0}
 };
