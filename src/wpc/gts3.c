@@ -23,6 +23,9 @@
 #include "gts3dmd.h"
 #include "gts3sound.h"
 
+UINT8 DMDFrames[GTS3DMD_FRAMES][0x200];
+#define GTS3_VBLANKDIV	   (GTS3DMD_FRAMES/AVAIL_INTENSITY+1) /* Break VBLANK into pieces*/
+
 #define GTS3_VBLANKFREQ      60 /* VBLANK frequency*/
 #define GTS3_IRQFREQ        976 /* IRQ Frequency (Guessed)*/
 #define GTS3_DMDNMIFREQ     175 /* DMD NMI Frequency (Guessed)*/
@@ -59,6 +62,7 @@ static WRITE_HANDLER(alpha_u5_cb1_w);
 static WRITE_HANDLER(alpha_u5_cb2_w);
 static WRITE_HANDLER(alpha_display);
 static WRITE_HANDLER(alpha_aux);
+static void alpha_vblank(void);
 static void alpha_update(void);
 /*DMD Generation Specific*/
 static void dmdswitchbank(void);
@@ -70,6 +74,7 @@ static WRITE_HANDLER(dmd_u5_cb1_w);
 static WRITE_HANDLER(dmd_u5_cb2_w);
 static WRITE_HANDLER(dmd_display);
 static WRITE_HANDLER(dmd_aux);
+static void dmd_vblank(void);
 static void dmd_update(void);
 
 /*----------------
@@ -99,6 +104,7 @@ struct {
   WRITE_HANDLER((*DISPLAY_CONTROL));
   WRITE_HANDLER((*AUX_W));
   void (*UPDATE_DISPLAY)(void);
+  void (*VBLANK_PROC)(void);
 } GTS3locals;
 
 struct {
@@ -416,39 +422,46 @@ static int GTS3_vblank(void) {
   /--------------------------------*/
   GTS3locals.vblankCount += 1;
 
-  /*-- lamps --*/
-  if ((GTS3locals.vblankCount % GTS3_LAMPSMOOTH) == 0) {
-    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
-    memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
-  }
-  /*-- solenoids --*/
-  if ((GTS3locals.vblankCount % GTS3_SOLSMOOTH) == 0) {
-    coreGlobals.solenoids = GTS3locals.solenoids;
-    if (GTS3locals.ssEn) {
-      int ii;
-      coreGlobals.solenoids |= CORE_SOLBIT(CORE_SSFLIPENSOL);
-      /*-- special solenoids updated based on switches --*/
-      for (ii = 0; ii < 6; ii++)
-        if (core_gameData->sxx.ssSw[ii] && core_getSw(core_gameData->sxx.ssSw[ii]))
-          coreGlobals.solenoids |= CORE_SOLBIT(CORE_FIRSTSSSOL+ii);
-    }
-    GTS3locals.solenoids = coreGlobals.pulsedSolState;
-  }
-  /*-- display --*/
-  if ((GTS3locals.vblankCount % GTS3_DISPLAYSMOOTH) == 0) {
+  //Call the VBLANK Procedure which is meant to be called every time!!
+  GTS3locals.VBLANK_PROC();
 
-    /*Update alpha or dmd display*/
-	GTS3locals.UPDATE_DISPLAY();
+  /*-- Process during the REAL VBLANK period only--*/
+  if ((GTS3locals.vblankCount % GTS3_VBLANKDIV) == 0) {
 
-    /*update leds*/
-    coreGlobals.diagnosticLed = (GTS3locals.diagnosticLeds2<<3) |
-								(GTS3locals.diagnosticLeds1<<2) |
-								(GTS3_dmdlocals.diagnosticLed<<1) |
-								GTS3locals.diagnosticLed;
-    GTS3locals.diagnosticLed = 0;
-	GTS3_dmdlocals.diagnosticLed = 0;
+	  /*-- lamps --*/
+	  if ((GTS3locals.vblankCount % GTS3_LAMPSMOOTH) == 0) {
+		memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+		memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
+	  }
+	  /*-- solenoids --*/
+	  if ((GTS3locals.vblankCount % GTS3_SOLSMOOTH) == 0) {
+		coreGlobals.solenoids = GTS3locals.solenoids;
+		if (GTS3locals.ssEn) {
+		  int ii;
+		  coreGlobals.solenoids |= CORE_SOLBIT(CORE_SSFLIPENSOL);
+		  /*-- special solenoids updated based on switches --*/
+		  for (ii = 0; ii < 6; ii++)
+			if (core_gameData->sxx.ssSw[ii] && core_getSw(core_gameData->sxx.ssSw[ii]))
+			  coreGlobals.solenoids |= CORE_SOLBIT(CORE_FIRSTSSSOL+ii);
+		}
+		GTS3locals.solenoids = coreGlobals.pulsedSolState;
+	  }
+	  /*-- display --*/
+	  if ((GTS3locals.vblankCount % GTS3_DISPLAYSMOOTH) == 0) {
+
+		/*Update alpha or dmd display*/
+		GTS3locals.UPDATE_DISPLAY();
+
+		/*update leds*/
+		coreGlobals.diagnosticLed = (GTS3locals.diagnosticLeds2<<3) |
+									(GTS3locals.diagnosticLeds1<<2) |
+									(GTS3_dmdlocals.diagnosticLed<<1) |
+									GTS3locals.diagnosticLed;
+		GTS3locals.diagnosticLed = 0;
+		GTS3_dmdlocals.diagnosticLed = 0;
+	  }
+	  core_updateSw(GTS3locals.solenoids & 0x10000000); /* assume flipper enabled */
   }
-  core_updateSw(GTS3locals.solenoids & 0x10000000); /* assume flipper enabled */
   return 0;
 }
 
@@ -505,6 +518,7 @@ static void GTS3_init(void) {
   GTS3locals.DISPLAY_CONTROL = alpha_display;
   GTS3locals.UPDATE_DISPLAY = alpha_update;
   GTS3locals.AUX_W = alpha_aux;
+  GTS3locals.VBLANK_PROC = alpha_vblank;
 
   //Manually call the CPU NMI at the specified rate
   timer_pulse(TIME_IN_HZ(GTS3_ALPHANMIFREQ), 0, alphanmi);
@@ -555,6 +569,7 @@ static void GTS3_init2(void) {
   GTS3locals.DISPLAY_CONTROL = dmd_display;
   GTS3locals.UPDATE_DISPLAY = dmd_update;
   GTS3locals.AUX_W = dmd_aux;
+  GTS3locals.VBLANK_PROC = dmd_vblank;
 
   //Manually call the DMD NMI at the specified rate
   timer_pulse(TIME_IN_HZ(GTS3_DMDNMIFREQ), 0, dmdnmi);
@@ -748,12 +763,22 @@ static void alpha_update(){
 }
 static void dmd_update() {}
 
+//Show Sound Diagnostic LEDS
 void UpdateSoundLEDS(int num,int data)
 {
 	if(num==0)
 		GTS3locals.diagnosticLeds1 = data;
 	else
 		GTS3locals.diagnosticLeds2 = data;
+}
+
+void alpha_vblank(void) { }
+
+//Update the DMD Frames
+void dmd_vblank(void){
+  int offset = (crtc6845_start_addr>>2);
+  memcpy(DMDFrames[coreGlobals_dmd.nextDMDFrame],memory_region(GTS3_MEMREG_DCPU1)+0x1000+offset,0x200);
+  coreGlobals_dmd.nextDMDFrame = (coreGlobals_dmd.nextDMDFrame + 1) % GTS3DMD_FRAMES;
 }
 
 /*---------------------------
@@ -806,7 +831,7 @@ struct MachineDriver machine_driver_GTS3_1 = {
     {
       CPU_M65C02, 2000000, /* 2 Mhz */
       GTS3_readmem, GTS3_writemem, NULL, NULL,
-      GTS3_vblank, 1,
+      GTS3_vblank, GTS3_VBLANKDIV,
       GTS3_irq, GTS3_IRQFREQ
     }
   },
@@ -827,7 +852,7 @@ struct MachineDriver machine_driver_GTS3_1S = {
     {
       CPU_M65C02, 2000000, /* 2 Mhz */
       GTS3_readmem, GTS3_writemem, NULL, NULL,
-      GTS3_vblank, 1,
+      GTS3_vblank, GTS3_VBLANKDIV,
       GTS3_irq, GTS3_IRQFREQ
     }
 	GTS3_SOUNDCPU2
@@ -849,7 +874,7 @@ struct MachineDriver machine_driver_GTS3_2 = {
     {
       CPU_M65C02, 2000000, /* 2 Mhz */
       GTS3_readmem, GTS3_writemem, NULL, NULL,
-      GTS3_vblank, 1,
+      GTS3_vblank, GTS3_VBLANKDIV,
       GTS3_irq, GTS3_IRQFREQ
     },
 	{
@@ -875,7 +900,7 @@ struct MachineDriver machine_driver_GTS3_2S = {
     {
       CPU_M65C02, 2000000, /* 2 Mhz */
       GTS3_readmem, GTS3_writemem, NULL, NULL,
-      GTS3_vblank, 1,
+      GTS3_vblank, GTS3_VBLANKDIV,
       GTS3_irq, GTS3_IRQFREQ
     },
 	{
