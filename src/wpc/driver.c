@@ -819,6 +819,7 @@ DRIVER(taf,l7)          //WPC:      10/92 B The Addams Family (L-7) (Prototype L
 DRIVER(taf,l5)          //WPC:      12/92 B The Addams Family (L-5)
 DRIVER(taf,l6)          //WPC:      03/93 B The Addams Family (L-6)
 DRIVER(taf,h4)          //WPC:      05/94 B The Addams Family (H-4)
+DRIVER(gw,pc)           //WPC-504:  12/92 W The Getaway: High Speed II (P-C)
 DRIVER(gw,l1)           //WPC-504:  04/92 W The Getaway: High Speed II (L-1)
 DRIVER(gw,l2)           //WPC-504:  06/92 W The Getaway: High Speed II (L-2)
 DRIVER(gw,l5)           //WPC-504:  12/92 W The Getaway: High Speed II (L-5)
