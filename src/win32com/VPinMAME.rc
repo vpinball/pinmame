@@ -197,7 +197,7 @@ BEGIN
     CONTROL         "For the latest info:",IDC_STATIC,"Static",
                     SS_LEFTNOWORDWRAP,8,168,55,9
     CONTROL         "http://www.pinmame.com",IDC_HOMEPAGELINK,"Static",
-                    SS_LEFTNOWORDWRAP,68,168,83,9
+                    SS_LEFTNOWORDWRAP | SS_NOTIFY,68,168,83,9
     CTEXT           "Steve Ellenoff, Tom Haukap,\n Martin Adrian and Gerrit Volkenborn",
                     IDC_STATIC,150,53,160,15
 END

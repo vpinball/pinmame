@@ -62,6 +62,7 @@
 #define IDC_DONTCARE                    238
 #define IDC_ALLOWWRITEACCESS            238
 #define IDR_WSHDLG                      239
+#define IDC_HOMEPAGELINK                240
 #define ID_CTRLCTXMENU_GAMEOPTIONS      32771
 #define ID_CTRLCTXMENU_PATHES           32772
 #define ID_CTRLCTXMENU_DISPLAY_TITLE    32773
@@ -77,7 +78,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        213
 #define _APS_NEXT_COMMAND_VALUE         32779
-#define _APS_NEXT_CONTROL_VALUE         240
+#define _APS_NEXT_CONTROL_VALUE         241
 #define _APS_NEXT_SYMED_VALUE           106
 #endif
 #endif
