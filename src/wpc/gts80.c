@@ -116,18 +116,19 @@ static int GTS80_m2lamp(int col, int row) { return (col-1)*8+row; }
 
 static SWITCH_UPDATE(GTS80) {
   int isSlammed;
+  int invPattern = coreGlobals.invSw[0];
   if (inports) {
     CORE_SETKEYSW(inports[GTS80_COMINPORT], 0x3f, 8);
     // Set slam switch
-    coreGlobals.swMatrix[0] = ((inports[GTS80_COMINPORT] & 0xf000) >> 8) ^ coreGlobals.invSw[0];
+    CORE_SETKEYSW((inports[GTS80_COMINPORT]>> 8) ^ invPattern ? 0x80 : 0,0x80,0);
     if (core_gameData->hw.display & GTS80_DISPVIDEO)
       CORE_SETKEYSW(inports[GTS80_COMINPORT]>>8,0x0f,0);
   }
   /*-- slam tilt --*/
-  isSlammed = core_getSw(GTS80_SWSLAMTILT)? 0 : 0xff;
-  riot6532_set_input_a(1, isSlammed);
+  isSlammed = core_getSw(GTS80_SWSLAMTILT);
+  riot6532_set_input_a(1, isSlammed ? invPattern : invPattern ^ 0xff);
   if (core_gameData->hw.display & GTS80_DISPVIDEO) { // Also triggers NMI on video CPU
-    cpu_set_irq_line(GTS80_VIDCPU, IRQ_LINE_NMI, isSlammed ? CLEAR_LINE : ASSERT_LINE);
+    cpu_set_irq_line(GTS80_VIDCPU, IRQ_LINE_NMI, isSlammed ? ASSERT_LINE : CLEAR_LINE);
   }
 }
 
@@ -226,7 +227,11 @@ static WRITE_HANDLER(riot6532_2a_w) {
   /* solenoid 9 */
   GTS80locals.solenoids |= coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xfffffeff) | ((data & 0x80)<<1);
 
-  GTS80_sndCmd_w(0,(data & 0x10) ? (data & 0x0f) : 0x00);
+  if (core_gameData->hw.soundBoard & SNDBRD_GTS80B) {
+    if (!(data & 0xe0)) { GTS80_sndCmd_w(0, data & 0x1f); }
+  } else {
+    GTS80_sndCmd_w(0, data & 0x10 ? (data & 0x0f) : 0);
+  }
 }
 
 static WRITE_HANDLER(riot6532_2b_w) {
@@ -606,7 +611,7 @@ static READ_HANDLER(port400r) {
 static WRITE_HANDLER(port50xw) {
 /* we'll need a screenshot from the actual game to set the palette right! */
   static const UINT32 rgb[16] = {       // R G B
-    0x000000,0x7f0000,0x007f00,0x7f7f00,0x00007f,0x7f007f,0x007f7f,0x7f7f7f,
+    0x000000,0x9f0000,0x009f00,0x9f9f00,0x00009f,0x9f009f,0x009f9f,0x9f9f9f,
     0x000000,0xff0000,0x00ff00,0xffff00,0x0000ff,0xff00ff,0x00ffff,0xffffff
   };
   const UINT32 color = rgb[data];
