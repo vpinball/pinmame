@@ -18,7 +18,7 @@
 ***********************************************************************************************/
 
 #define BACKEND_INTERPOLATE		1
-#define LOG_COMMANDS			1
+#define LOG_COMMANDS			0
 #define MAKE_WAVS				0
 
 #if MAKE_WAVS
@@ -80,6 +80,7 @@ struct BSMT2000Chip
 #ifdef PINMAME
     UINT16      voladj;                 /* Adjust Volume Command by this # */
 	int         use_de_rom_banking;     /* Flag to turn on Rom Banking support for Data East Games */
+	int			shift_data;				/* Special flag to determine if ROM data should be shifted for better quality */
 #endif
 	struct BSMT2000Voice *voice;		/* the voices */
  	struct BSMT2000Voice compressed;	/* the compressed voice */
@@ -173,6 +174,13 @@ static void generate_samples(struct BSMT2000Chip *chip, INT32 *left, INT32 *righ
 				INT32 val2 = base[(pos >> 16) + 1];
 				pos += rate;
 
+				//Shift ROM data if interface specifies this (Alvin G games)
+				if(chip->shift_data)
+				{
+					val1 = val1<<2;		//schematics (pistol poker) suggest an 8 bit shift (<<8), but sound is way too loud and clips
+					val2 = val2<<2;		//schematics (pistol poker) suggest an 8 bit shift (<<8), but sound is way too loud and clips
+				}
+				
 				/* interpolate */
 				val1 = interpolate(val1, val2, pos);
 
@@ -403,6 +411,7 @@ int BSMT2000_sh_start(const struct MachineSound *msound)
 #ifdef PINMAME
         bsmt2000[i].voladj = (UINT16)intf->voladj[i];
 		bsmt2000[i].use_de_rom_banking = intf->use_de_rom_banking;
+		bsmt2000[i].shift_data = intf->shift_data;
 #endif
 
 
