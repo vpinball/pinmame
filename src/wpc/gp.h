@@ -124,7 +124,7 @@
       COREPORT_DIPSET(0x4000, "1" ) \
     COREPORT_DIPNAME( 0x8000, 0x0000, "S32") \
       COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x8000, "1" )
+      COREPORT_DIPSET(0x8000, "1" ) \
   PORT_START /* 3 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S33") \
       COREPORT_DIPSET(0x0000, "0" ) \
@@ -198,4 +198,3 @@ extern struct MachineDriver machine_driver_GP2;
 #define mGP1     GP1
 #define mGP2     GP2
 #endif /* INC_GP */
-
