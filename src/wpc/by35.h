@@ -450,19 +450,12 @@ extern MACHINE_DRIVER_EXTERN(by35_51S);
 extern MACHINE_DRIVER_EXTERN(by35_56S);
 extern MACHINE_DRIVER_EXTERN(by35_61S);
 extern MACHINE_DRIVER_EXTERN(by35_45S);
+extern MACHINE_DRIVER_EXTERN(by6802_45S);
 extern MACHINE_DRIVER_EXTERN(st200);
 extern MACHINE_DRIVER_EXTERN(hnk);
 
 #define by35_mBYPROTO   byProto
 #define by35_mBY17      by35
-#define by35_mBY35_32   by35
-#define by35_mBY35_50   by35
-#define by35_mBY35_51   by35
-#define by35_mBY35_61   by35
-#define by35_mBY35_61B  by35
-#define by35_mBY35_81   by35
-#define by35_mBY35_54   by35
-#define by35_mBY35_56   by35 // XENON
 #define by35_mBY17S     by35
 #define by35_mBY35_32S  by35_32S
 #define by35_mBY35_50S  by35_32S
@@ -472,11 +465,17 @@ extern MACHINE_DRIVER_EXTERN(hnk);
 #define by35_mBY35_81S  by35_61S
 #define by35_mBY35_56S  by35_56S // XENON
 #define by35_mBY35_45S  by35_45S
+#define by35_m6802_45S  by6802_45S
 #define by35_mBowling   by35
 #define by35_mAstro     st200
 #define by35_mHNK       hnk
 #define by35_mST100     by35
 #define by35_mST200     st200
+
+#ifdef MAME_DEBUG
+extern MACHINE_DRIVER_EXTERN(by6802_61S);
+#define by35_m6802_61S  by6802_61S
+#endif
 
 /* gameSpecific1 values */
 #define BY35GD_NOSOUNDE 0x01 // doesn't use SOUNDE

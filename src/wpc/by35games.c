@@ -620,6 +620,18 @@ BY61_SOUNDROMx008(      "845-01_3.532",CRC(32200e02) SHA1(e75356a20f81a68e6b27d2
 BY35_ROMEND
 #define input_ports_medusa input_ports_by35
 CORE_GAMEDEFNV(medusa  ,"Medusa",1981,"Bally",by35_mBY35_61BS,0)
+
+#ifdef MAME_DEBUG
+#define init_medusaf init_medusa
+BY35_ROMSTARTx00(medusaf,"845-16_2.732",CRC(b0fbd1ac) SHA1(e876eced0c02a2b4b3c308494e8c453074d0e561),
+                         "720-53_6.732",CRC(c2e92f80) SHA1(61de956a4b6e9fb9ef2b25c01bff1fb5972284ad))
+BY61_SOUNDROMx008(       "845-01_3.532",CRC(32200e02) SHA1(e75356a20f81a68e6b27d2fa04b8cc9b17f3976a),
+                         "845-02_4.532",CRC(ab95885a) SHA1(fa91cef2a244d25d408585d1e14e1ed8fdc8c845),
+                         "845-05_5.716",CRC(3792a812) SHA1(5c7cc43e57d8e8ded1cc109aa65c4f08052899b9))
+BY35_ROMEND
+#define input_ports_medusaf input_ports_medusa
+CORE_CLONEDEFNV(medusaf,medusa,"Medusa (6802 board)",2004,"Bally / Oliver",by35_m6802_61S,0)
+#endif /* MAME_DEBUG */
 /*--------------------------------
 / Centaur
 /-------------------------------*/

@@ -38,7 +38,8 @@ static WRITE_HANDLER(snd300_wex) {
 #define BY35_PIA1 1
 
 #define BY35_VBLANKFREQ    60 /* VBLANK frequency */
-#define BY35_IRQFREQ      316 /* IRQ (via PIA) frequency*/
+#define BY35_IRQFREQ      317 /* IRQ (via PIA) frequency */
+#define BY35_6802IRQFREQ  431 /* IRQ (via PIA) frequency for games using 6802 cpu */
 #define BY35_ZCFREQ       120 /* Zero cross frequency */
 
 #define BY35_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
@@ -198,7 +199,7 @@ static WRITE_HANDLER(pia0ca2_w) {
 }
 
 /* PIA1:B-W Solenoid/Sound output */
-static WRITE_HANDLER(pia1b_w) {		
+static WRITE_HANDLER(pia1b_w) {
   int sb = core_gameData->hw.soundBoard;		// ok
   // check for extra display connected to solenoids
   if (~locals.b1 & data & core_gameData->hw.display & 0xf0)
@@ -438,53 +439,6 @@ static NVRAM_HANDLER(by35) {
 // Bally only uses top 4 bits
 static WRITE_HANDLER(by35_CMOS_w) { by35_CMOS[offset] = data | 0x0f; }
 
-/*--------------------------------------
-/ M6840 stuff (for Stern sound)
-/-------------------------------------*/
-static UINT8 m6840_status;
-static UINT8 m6840_status_read_since_int;
-static UINT8 m6840_msb_buffer;
-static UINT8 m6840_lsb_buffer;
-static struct counter_state
-{
-	UINT8	control;
-	UINT16	latch;
-	UINT16	count;
-	void *	timer;
-	UINT8	timer_active;
-	double	period;
-} m6840_state[3];
-
-static UINT8 m6840_irq_state;
-
-static const double m6840_counter_periods[3] = { 1.0 / 30.0, 1000000.0, 1.0 / (512.0 * 30.0) };
-static double m6840_internal_counter_period;
-
-static WRITE_HANDLER( m6840_w_common );
-static READ16_HANDLER( m6840_r_common );
-static void counter_fired_callback(int counter);
-
-void init_m6840(void) {
-	int i;
-
-	/* reset the 6840's */
-	m6840_status = 0x00;
-	m6840_status_read_since_int = 0x00;
-	m6840_msb_buffer = m6840_lsb_buffer = 0;
-	for (i = 0; i < 3; i++)
-	{
-		m6840_state[i].control = 0x00;
-		m6840_state[i].latch = 0xffff;
-		m6840_state[i].count = 0xffff;
-		m6840_state[i].timer = timer_alloc(counter_fired_callback);
-		m6840_state[i].timer_active = 0;
-		m6840_state[i].period = m6840_counter_periods[i];
-	}
-
-	/* initialize the clock */
-	m6840_internal_counter_period = TIME_IN_HZ(1000);
-}
-
 // These games use the A0 memory address for extra sound solenoids only.
 WRITE_HANDLER(extra_sol_w) {
   if (data != 0)
@@ -514,7 +468,7 @@ WRITE_HANDLER(astro_sol_w) {
   locals.solenoids = (locals.solenoids & 0x001fffff) | coreGlobals.pulsedSolState;
 }
 static READ_HANDLER(astro_sol_r) {
-  return m6840_r_common(offset, 0);
+  return 0;
 }
 
 static MACHINE_INIT(by35) {
@@ -550,13 +504,7 @@ static MACHINE_INIT(by35) {
   }
 
 
-  if (sb == SNDBRD_ASTRO) {
-    init_m6840();
-    install_mem_write_handler(0,0x00a0, 0x00a7, m6840_w_common);
-    install_mem_read_handler (0,0x00a0, 0x00a7, astro_sol_r);
-    install_mem_write_handler(0,0x00c0, 0x00c0, astro_sol_w);
-  } else if ((sb & 0xff00) == SNDBRD_ST300) {
-//    init_m6840();				// ok
+  if ((sb & 0xff00) == SNDBRD_ST300 || sb == SNDBRD_ASTRO) {
     install_mem_write_handler(0,0x00a0, 0x00a7, snd300_w);	// ok
     install_mem_read_handler (0,0x00a0, 0x00a7, snd300_r);    	// ok
     install_mem_write_handler(0,0x00c0, 0x00c0, snd300_wex);	// ok
@@ -622,7 +570,7 @@ MACHINE_DRIVER_START(by35)
   MDRV_CPU_ADD_TAG("mcpu", M6800, 500000)
   MDRV_CPU_MEMORY(by35_readmem, by35_writemem)
   MDRV_CPU_VBLANK_INT(by35_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(by35_irq, BY35_IRQFREQ)
+  MDRV_CPU_PERIODIC_INT(by35_irq, BY35_IRQFREQ*2) // the routine does the signal alternation!
   MDRV_NVRAM_HANDLER(by35)
   MDRV_DIPS(32)
   MDRV_SWITCH_UPDATE(by35)
@@ -669,6 +617,22 @@ MACHINE_DRIVER_START(by35_45S)
   MDRV_IMPORT_FROM(by45)
 MACHINE_DRIVER_END
 
+#ifdef MAME_DEBUG
+MACHINE_DRIVER_START(by6802_61S)
+  MDRV_IMPORT_FROM(by35)
+  MDRV_CPU_REPLACE("mcpu",M6802, 375000)
+  MDRV_CPU_PERIODIC_INT(by35_irq, BY35_6802IRQFREQ*2)
+  MDRV_IMPORT_FROM(by61)
+MACHINE_DRIVER_END
+#endif
+
+MACHINE_DRIVER_START(by6802_45S)
+  MDRV_IMPORT_FROM(by35)
+  MDRV_CPU_REPLACE("mcpu",M6802, 375000)
+  MDRV_CPU_PERIODIC_INT(by35_irq, BY35_6802IRQFREQ*2)
+  MDRV_IMPORT_FROM(by45)
+MACHINE_DRIVER_END
+
 MACHINE_DRIVER_START(st200)
   MDRV_IMPORT_FROM(by35)
   MDRV_CPU_REPLACE("mcpu",M6800, 1000000)
@@ -682,315 +646,3 @@ MACHINE_DRIVER_START(hnk)
   MDRV_DIPS(24)
   MDRV_IMPORT_FROM(hnks)
 MACHINE_DRIVER_END
-
-/*************************************
- *
- *	M6840 timer utilities
- *
- *************************************/
-
-INLINE void update_interrupts(void)
-{
-	m6840_status &= ~0x80;
-
-	if ((m6840_status & 0x01) && (m6840_state[0].control & 0x40)) m6840_status |= 0x80;
-	if ((m6840_status & 0x02) && (m6840_state[1].control & 0x40)) m6840_status |= 0x80;
-	if ((m6840_status & 0x04) && (m6840_state[2].control & 0x40)) m6840_status |= 0x80;
-
-	m6840_irq_state = m6840_status >> 7;
-}
-
-
-static void subtract_from_counter(int counter, int count)
-{
-	/* dual-byte mode */
-	if (m6840_state[counter].control & 0x04)
-	{
-		int lsb = m6840_state[counter].count & 0xff;
-		int msb = m6840_state[counter].count >> 8;
-
-		/* count the clocks */
-		lsb -= count;
-
-		/* loop while we're less than zero */
-		while (lsb < 0)
-		{
-			/* borrow from the MSB */
-			lsb += (m6840_state[counter].latch & 0xff) + 1;
-			msb--;
-
-			/* if MSB goes less than zero, we've expired */
-			if (msb < 0)
-			{
-				m6840_status |= 1 << counter;
-				m6840_status_read_since_int &= ~(1 << counter);
-				update_interrupts();
-				msb = (m6840_state[counter].latch >> 8) + 1;
-				logerror("** Counter %d fired\n", counter);
-			}
-		}
-
-		/* store the result */
-		m6840_state[counter].count = (msb << 8) | lsb;
-	}
-
-	/* word mode */
-	else
-	{
-		int word = m6840_state[counter].count;
-
-		/* count the clocks */
-		word -= count;
-
-		/* loop while we're less than zero */
-		while (word < 0)
-		{
-			/* borrow from the MSB */
-			word += m6840_state[counter].latch + 1;
-
-			/* we've expired */
-			m6840_status |= 1 << counter;
-			m6840_status_read_since_int &= ~(1 << counter);
-			update_interrupts();
-			logerror("** Counter %d fired\n", counter);
-coreGlobals.pulsedSolState = 1 << (counter + (counter < 2 ? 22 : 19));
-locals.solenoids |= coreGlobals.pulsedSolState;
-		}
-
-		/* store the result */
-		m6840_state[counter].count = word;
-	}
-}
-
-
-static void counter_fired_callback(int counter)
-{
-	int count = counter >> 2;
-	counter &= 3;
-
-	/* reset the timer */
-	m6840_state[counter].timer_active = 0;
-
-	/* subtract it all from the counter; this will generate an interrupt */
-	subtract_from_counter(counter, count);
-}
-
-
-static void reload_count(int counter)
-{
-	double period;
-	int count;
-
-	/* copy the latched value in */
-	m6840_state[counter].count = m6840_state[counter].latch;
-
-	/* counter 0 is self-updating if clocked externally */
-	if (counter == 0 && !(m6840_state[counter].control & 0x02))
-	{
-		timer_adjust(m6840_state[counter].timer, TIME_NEVER, 0, 0);
-		m6840_state[counter].timer_active = 0;
-		return;
-	}
-
-	/* determine the clock period for this timer */
-	if (m6840_state[counter].control & 0x02)
-		period = m6840_internal_counter_period;
-	else
-		period = m6840_counter_periods[counter];
-
-	/* determine the number of clock periods before we expire */
-	count = m6840_state[counter].count;
-	if (m6840_state[counter].control & 0x04)
-		count = ((count >> 8) + 1) * ((count & 0xff) + 1);
-	else
-		count = count + 1;
-
-	/* set the timer */
-	timer_adjust(m6840_state[counter].timer, period * (double)count, (count << 2) + counter, 0);
-	m6840_state[counter].timer_active = 1;
-}
-
-
-static UINT16 compute_counter(int counter)
-{
-	double period;
-	int remaining;
-
-	/* if there's no timer, return the count */
-	if (!m6840_state[counter].timer_active)
-		return m6840_state[counter].count;
-
-	/* determine the clock period for this timer */
-	if (m6840_state[counter].control & 0x02)
-		period = m6840_internal_counter_period;
-	else
-		period = m6840_counter_periods[counter];
-
-	/* see how many are left */
-	remaining = (int)(timer_timeleft(m6840_state[counter].timer) / period);
-
-	/* adjust the count for dual byte mode */
-	if (m6840_state[counter].control & 0x04)
-	{
-		int divisor = (m6840_state[counter].count & 0xff) + 1;
-		int msb = remaining / divisor;
-		int lsb = remaining % divisor;
-		remaining = (msb << 8) | lsb;
-	}
-
-	return remaining;
-}
-
-
-
-/*************************************
- *
- *	M6840 timer I/O
- *
- *************************************/
-
-INTERRUPT_GEN( m6840_interrupt )
-{
-	/* update the 6840 VBLANK clock */
-	if (!m6840_state[0].timer_active)
-		subtract_from_counter(0, 1);
-}
-
-
-static WRITE_HANDLER( m6840_w_common )
-{
-	int i;
-
-	/* offsets 0 and 1 are control registers */
-	if (offset < 2)
-	{
-		int counter = (offset == 1) ? 1 : (m6840_state[1].control & 0x01) ? 0 : 2;
-		UINT8 diffs = data ^ m6840_state[counter].control;
-
-		m6840_state[counter].control = data;
-
-		/* reset? */
-		if (counter == 0 && (diffs & 0x01))
-		{
-			/* holding reset down */
-			if (data & 0x01)
-			{
-				for (i = 0; i < 3; i++)
-				{
-					timer_adjust(m6840_state[i].timer, TIME_NEVER, 0, 0);
-					m6840_state[i].timer_active = 0;
-				}
-			}
-
-			/* releasing reset */
-			else
-			{
-				for (i = 0; i < 3; i++)
-					reload_count(i);
-			}
-
-			m6840_status = 0;
-			update_interrupts();
-		}
-
-		/* changing the clock source? (needed for Zwackery) */
-		if (diffs & 0x02)
-			reload_count(counter);
-if (core_gameData->hw.soundBoard == SNDBRD_ASTRO && counter == 0 && data != 0x92) {
-  coreGlobals.pulsedSolState |= (data << 22);
-  locals.solenoids |= coreGlobals.pulsedSolState;
-}
-		logerror("%04X:Counter %d control = %02x\n", activecpu_get_previouspc(), counter, data);
-	}
-
-	/* offsets 2, 4, and 6 are MSB buffer registers */
-	else if ((offset & 1) == 0)
-	{
-if (core_gameData->hw.soundBoard == SNDBRD_ASTRO && (data & 0x0f) == 0x0f) {
-  coreGlobals.pulsedSolState |= ((data & 0xf0) << 20);
-  locals.solenoids |= coreGlobals.pulsedSolState;
-}
-		logerror("%04X:MSB = %02X\n", activecpu_get_previouspc(), data);
-		m6840_msb_buffer = data;
-	}
-
-	/* offsets 3, 5, and 7 are Write Timer Latch commands */
-	else
-	{
-		int counter = (offset - 2) / 2;
-		m6840_state[counter].latch = (m6840_msb_buffer << 8) | (data & 0xff);
-
-		/* clear the interrupt */
-		m6840_status &= ~(1 << counter);
-		update_interrupts();
-
-		/* reload the count if in an appropriate mode */
-		if (!(m6840_state[counter].control & 0x10))
-			reload_count(counter);
-
-		logerror("%04X:Counter %d latch = %04x\n", activecpu_get_previouspc(), counter, m6840_state[counter].latch);
-	}
-}
-
-
-static READ16_HANDLER( m6840_r_common )
-{
-	/* offset 0 is a no-op */
-	if (offset == 0)
-		return 0;
-
-	/* offset 1 is the status register */
-	else if (offset == 1)
-	{
-		logerror("%04X:Status read = %02x\n", activecpu_get_previouspc(), m6840_status);
-		m6840_status_read_since_int |= m6840_status & 0x07;
-		return m6840_status;
-	}
-
-	/* offsets 2, 4, and 6 are Read Timer Counter commands */
-	else if ((offset & 1) == 0)
-	{
-		int counter = (offset - 2) / 2;
-		int result = compute_counter(counter);
-
-		/* clear the interrupt if the status has been read */
-		if (m6840_status_read_since_int & (1 << counter))
-			m6840_status &= ~(1 << counter);
-		update_interrupts();
-
-		m6840_lsb_buffer = result & 0xff;
-
-		logerror("%04X:Counter %d read = %04x\n", activecpu_get_previouspc(), counter, result);
-		return result >> 8;
-	}
-
-	/* offsets 3, 5, and 7 are LSB buffer registers */
-	else
-		return m6840_lsb_buffer;
-}
-
-
-WRITE16_HANDLER( m6840_upper_w )
-{
-	if (ACCESSING_MSB)
-		m6840_w_common(offset, (data >> 8) & 0xff);
-}
-
-
-WRITE16_HANDLER( m6840_lower_w )
-{
-	if (ACCESSING_LSB)
-		m6840_w_common(offset, data & 0xff);
-}
-
-
-READ16_HANDLER( m6840_upper_r )
-{
-	return (m6840_r_common(offset,0) << 8) | 0x00ff;
-}
-
-
-READ16_HANDLER( m6840_lower_r )
-{
-	return m6840_r_common(offset,0) | 0xff00;
-}
