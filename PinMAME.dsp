@@ -3736,11 +3736,8 @@ SOURCE=src\wpc\gts3.c
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
 
 # PROP Intermediate_Dir "obj/PinMAME/Release"
-# PROP Exclude_From_Build 1
 
 !ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Exclude_From_Build 1
 
 !ENDIF 
 
@@ -3767,11 +3764,8 @@ SOURCE=src\wpc\gts3dmd.c
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
 
 # PROP Intermediate_Dir "obj/PinMAME/Release"
-# PROP Exclude_From_Build 1
 
 !ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Exclude_From_Build 1
 
 !ENDIF 
 
@@ -3798,11 +3792,8 @@ SOURCE=src\wpc\gts3games.c
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
 
 # PROP Intermediate_Dir "obj/PinMAME/Release"
-# PROP Exclude_From_Build 1
 
 !ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Exclude_From_Build 1
 
 !ENDIF 
 
@@ -3885,8 +3876,6 @@ SOURCE=src\wpc\hnk.c
 # PROP Intermediate_Dir "obj/PinMAME/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Exclude_From_Build 1
 
 !ENDIF 
 
