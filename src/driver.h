@@ -26,6 +26,8 @@
 typedef struct {
   int dmd_red, dmd_green, dmd_blue;
   int dmd_perc66, dmd_perc33, dmd_perc0;
+  int dmd_only, dmd_compact, dmd_antialias;
+  int soundlimit;
 } tPMoptions;
 extern tPMoptions pmoptions;
 #endif /* PINMAME_EXT */
