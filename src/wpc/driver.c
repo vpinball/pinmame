@@ -773,7 +773,9 @@ DRIVER(eatpm,4g)        //S11-782:  10/89 B Elvira and the Party Monsters (L-4 G
 DRIVER(eatpm,p7)        //S11-782:  10/89 B Elvira and the Party Monsters (PA-7)
 DRIVER(bcats,l5)        //S11-575:  11/89 W Bad Cats
 DRIVER(rvrbt,l3)        //S11-1966: 11/89 W Riverboat Gambler
-DRIVER(mousn,l4)        //S11-1635: 12/89 B Mousin' Around!
+DRIVER(mousn,l1)        //S11-1635: 12/89 B Mousin' Around! (L-1)
+DRIVER(mousn,lu)        //S11-1635: 12/89 B Mousin' Around! (Europe)
+DRIVER(mousn,l4)        //S11-1635: 12/89 B Mousin' Around! (L-4)
                         //???:      ??/90 B Mazatron
                         //???:      ??/90 B Player's Choice
                         //???:      ??/90 B Ghost Gallery
