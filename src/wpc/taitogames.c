@@ -55,9 +55,11 @@ TAITO_ROMSTART4444(gemini,"gemini1.bin",0x4f952799,
                           "gemini2.bin",0x8903ee53,
                           "gemini3.bin",0x1f11b5e5,
                           "gemini4.bin",0xcac64ea6)
+TAITO_SOUNDROMS("gemin_s1.bin", 0xb9a80ab2,
+                "gemin_s2.bin", 0x312a5c35)
 TAITO_ROMEND
 #define input_ports_gemini input_ports_taito
-CORE_GAMEDEFNV(gemini,"Gemini 2000",198?,"Taito",taito,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(gemini,"Gemini 2000",198?,"Taito",taito,GAME_IMPERFECT_SOUND)
 
 /*--------------------------------
 / Cosmic
