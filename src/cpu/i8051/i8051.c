@@ -1396,7 +1396,7 @@ INLINE UINT8 check_interrupts(void)
 	}
 
 	//Any Interrupts Pending?
-	if(!(R_TCON & 0xaa) && !(R_SCON && 0x03))
+	if(!(R_TCON & 0xaa) && !(R_SCON & 0x03))
 		return 0;
 
 	//Check which interrupt(s) have occurred
@@ -1458,6 +1458,8 @@ INLINE UINT8 check_interrupts(void)
 		//Set vector and clear pending flag
 		int_vec = V_TF2;
 		SET_TF2(0);
+		//remove this line when support is added
+		return 0;
 	}
 #endif
 
