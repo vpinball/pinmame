@@ -286,8 +286,6 @@ struct Samplesinterface cat_samples_interface =
 	"TSI S14001A"
 };
 
-
-/* Unknown number of samples, so we expect the maximum count */
 static const char *fff_sample_names[] =
 {
 	"fff00.wav",
@@ -313,46 +311,6 @@ static const char *fff_sample_names[] =
 	"fff20.wav",
 	"fff21.wav",
 	"fff22.wav",
-	"fff23.wav",
-	"fff24.wav",
-	"fff25.wav",
-	"fff26.wav",
-	"fff27.wav",
-	"fff28.wav",
-	"fff29.wav",
-	"fff30.wav",
-	"fff31.wav",
-	"fff32.wav",
-	"fff33.wav",
-	"fff34.wav",
-	"fff35.wav",
-	"fff36.wav",
-	"fff37.wav",
-	"fff38.wav",
-	"fff39.wav",
-	"fff40.wav",
-	"fff41.wav",
-	"fff42.wav",
-	"fff43.wav",
-	"fff44.wav",
-	"fff45.wav",
-	"fff46.wav",
-	"fff47.wav",
-	"fff48.wav",
-	"fff49.wav",
-	"fff50.wav",
-	"fff51.wav",
-	"fff52.wav",
-	"fff53.wav",
-	"fff54.wav",
-	"fff55.wav",
-	"fff56.wav",
-	"fff57.wav",
-	"fff58.wav",
-	"fff59.wav",
-	"fff60.wav",
-	"fff61.wav",
-	"fff62.wav",
 	0   /* end of array */
 };
 

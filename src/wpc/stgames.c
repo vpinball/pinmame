@@ -331,8 +331,8 @@ ST200_ROMSTART8888(freefall,"cpu_u1.716",CRC(d13891ad) SHA1(afb40c51f2d5695c74ce
                             "cpu_u5.716",CRC(77bc7759) SHA1(3f739757180b3dcce5426935a51e4b615f157199),
                             "cpu_u2.716",CRC(82bda054) SHA1(32772e878d2a4bba8f67e419a68a81fec2a5f6d7),
                             "cpu_u6.716",CRC(68168b97) SHA1(defa4bba465182db22debddb4070c40c048c95e2))
-VSU100_SOUNDROM_U9U10(      "snd_u9.716",NO_DUMP,
-                           "snd_u10.716",NO_DUMP)
+VSU100_SOUNDROM_U9U10(      "snd_u9.716",CRC(ea8cf062) SHA1(55c840a9bea363fd436c00a115cb61d15a9f8c47),
+                           "snd_u10.716",CRC(dd681a79) SHA1(d954cae375fb0145e10536e43d1cb03902de2ea3))
 BY35_ROMEND
 #define input_ports_freefall input_ports_st
 CORE_GAMEDEFNV(freefall,"Free Fall",1981,"Stern",by35_mST200fal,0)
