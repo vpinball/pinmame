@@ -24,6 +24,9 @@
 
 #ifndef OSD_CPU_H
 #define OSD_CPU_H
+#ifdef PINMAME
+#include "pinmame.h"
+#endif /* PINMAME */
 
 
 typedef unsigned char						UINT8;
