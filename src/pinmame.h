@@ -42,6 +42,7 @@
 #define HAS_M68306   1
 #define HAS_S2650    1
 #define HAS_8080	 1
+#define HAS_8085A	 1
 #define HAS_I86      1
 #define HAS_4004     1
 #define HAS_PPS4     1
