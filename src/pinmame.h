@@ -17,6 +17,10 @@
 #else  /* MAMEVER */
 #define BMTYPE UINT8
 #define mame_bitmap osd_bitmap
+#define cpu_triggerint(x) cpu_trigger(-2000+(x))
+#define activecpu_get_reg(x) cpu_get_reg(x)
+#define activecpu_set_reg(x,y) cpu_set_reg((x),(y))
+#define activecpu_get_previouspc cpu_getpreviouspc
 #endif /* MAMEVER */
 
 #ifdef _MSC_VER // These must be in the makefile for WIN32 & DOS
@@ -76,9 +80,25 @@
 #define M_PI 3.14159265358
 #define strcasecmp stricmp
 #define snprintf _snprintf
+
 #ifndef DD_OK
 #define DD_OK DS_OK
 #endif /* DD_OK */
 #endif /* _MSC_VER */
-
+#ifndef CAT3
+  #define CAT3(x,y,z) _CAT3(x,y,z)
+  #define _CAT3(x,y,z) x##y##z
+#endif /* CAT3 */
+#ifndef CAT2
+  #define CAT2(x,y)   _CAT2(x,y)
+  #define _CAT2(x,y)   x##y
+#endif /* CAT2 */
+#define pia_r(no)     CAT3(pia_,no,_r)
+#define pia_w(no)     CAT3(pia_,no,_w)
+#define pia_msb_w(no) CAT3(pia_,no,_msb_w)
+#define pia_msb_r(no) CAT3(pia_,no,_msb_r)
+#define pia_lsb_w(no) CAT3(pia_,no,_lsb_w)
+#define pia_lsb_r(no) CAT3(pia_,no,_lsb_r)
+#define MWA_BANKNO(no) CAT2(MWA_BANK,no)
+#define MRA_BANKNO(no) CAT2(MRA_BANK,no)
 #endif /* INC_PINMAME */
