@@ -90,11 +90,21 @@ extern MACHINE_DRIVER_EXTERN(techno);
     ROM_LOAD(u4, 0x0000, 0x8000, chk4) \
     ROM_LOAD(u6, 0x8000, 0x8000, chk6)
 
-#define TECHNO_SOUNDROM(n1,chk1,n2,chk2) \
+#define TECHNO_SOUNDROM1(n1,chk1,n2,chk2) \
   SOUNDREGION(0x10000, ZACSND_CPUAREGION) \
-    ROM_LOAD(n1, 0x4000, 0x2000, chk1) \
-      ROM_RELOAD(0xc000, 0x2000) \
-    ROM_LOAD(n2, 0x2000, 0x2000, chk2) \
+    ROM_LOAD(n2, 0x6000, 0x2000, chk2) \
+    ROM_LOAD(n1, 0x2000, 0x2000, chk1) \
       ROM_RELOAD(0xe000, 0x2000)
+
+#define TECHNO_SOUNDROM2(n3,chk3,n4,chk4,n5,chk5) \
+  SOUNDREGION(0x40000, ZACSND_CPUBREGION) \
+    ROM_LOAD(n3, 0x10000, 0x8000, chk3) \
+      ROM_RELOAD(0x18000, 0x8000) \
+    ROM_LOAD(n4, 0x20000, 0x8000, chk4) \
+      ROM_RELOAD(0x28000, 0x8000) \
+    ROM_LOAD(n5, 0x0000, 0x8000, chk5) \
+      ROM_RELOAD(0x8000, 0x8000) \
+      ROM_RELOAD(0x30000, 0x8000) \
+      ROM_RELOAD(0x38000, 0x8000)
 
 #endif /* INC_ZACSND */
