@@ -14,7 +14,7 @@
 #include "zacsnd.h"
 
 #define ZAC_VBLANKFREQ    60 /* VBLANK frequency */
-#define ZAC_OLDIRQFREQ   133 /* IRQ frequencies (guessed) */
+#define ZAC_OLDIRQFREQ   130 /* IRQ frequencies (guessed) */
 #define ZAC_IRQFREQ     1466
 #define ZAC_IRQFREQ_A   1833
 #define ZAC_IRQFREQ_B   1933
@@ -70,7 +70,7 @@ static INTERRUPT_GEN(ZAC_vblank) {
 
 static SWITCH_UPDATE(ZAC1) {
   if (inports) {
-    coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0x80) | (inports[ZAC_COMINPORT] & 0xff);
+    coreGlobals.swMatrix[1] = inports[ZAC_COMINPORT] & 0xff;
     coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0x7f) | (inports[ZAC_COMINPORT] >> 8);
   }
 }
@@ -84,7 +84,6 @@ static SWITCH_UPDATE(ZAC2) {
 
 static int irq_callback(int int_level) {
 //	logerror("callback!\n");
-//	cpu_set_irq_line(ZAC_CPUNO, 0, PULSE_LINE);
 	return 0xbf;
 }
 
@@ -96,7 +95,6 @@ static int irq_callback_old(int int_level) {
 static INTERRUPT_GEN(ZAC_irq) {
 //	logerror("%x: IRQ\n",activecpu_get_previouspc());
 	cpu_set_irq_line(ZAC_CPUNO, 0, PULSE_LINE);
-//	return S2650_INT_IRQ;
 }
 
 /*-----------------------------------------------
@@ -187,10 +185,8 @@ static READ_HANDLER(data_port_r)
 */
 static READ_HANDLER(sense_port_r)
 {
-	UINT8 random = (UINT8)(rand() % 256);
-//	if (s2650_get_reg(S2650_SI))
-//		s2650_set_reg(S2650_PS, (s2650_get_reg(S2650_PS) & 0xff) | (random<<8));
-	logerror("%x: Sense Port Read\n",activecpu_get_previouspc());
+	UINT8 random = rand() % 256;
+	logerror("%x: Sense Port Read=%02x\n",activecpu_get_previouspc(),random);
 	return random;
 }
 
@@ -228,14 +224,17 @@ static WRITE_HANDLER(ctrl_port_w)
 /*   DATA PORT : WRITE = Sound Data 0-7 */
 static WRITE_HANDLER(data_port_w)
 {
-	//logerror("%x: Data Port Write=%x\n",activecpu_get_previouspc(),data);
 	logerror("%x: Sound Data Write=%x\n",activecpu_get_previouspc(),data);
 }
 
 /*   SENSE PORT: WRITE = Write Serial Output (hooked to printer) */
 static WRITE_HANDLER(sense_port_w)
 {
-	logerror("%x: Sense Port Write=%x\n",activecpu_get_previouspc(),data);
+	logerror("%x: Sense Port Write=%02x\n",activecpu_get_previouspc(),data);
+	if (data == 0x0d)
+		printf("\r\n");
+	else
+		printf("%c", data);
 }
 
 static READ_HANDLER(ram_r) {
