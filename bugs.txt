@@ -55,3 +55,5 @@ Bugs in Pinmame that we are aware of:
 #20) Numerous issues with Gottlieb System 3 AlphaNumeric games.
 
 #21) Some Gottlieb games do have sound problems.
+
+#22) Multiprocessor support does not work well/if at all.
