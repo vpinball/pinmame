@@ -5,12 +5,22 @@
 
 #include <atlwin.h>
 
+/* October 1,2003 - Added Hyperlink to About Box  (SJE) */
+
+
+//Sorry Tom, some day you'll show me how to make this work in the class interface instead!
+static 	HBRUSH hLinkBrush = 0;
+static	HFONT  hFont = 0;
+
 class CAboutDlg : public CDialogImpl<CAboutDlg> {
 public:
 	BEGIN_MSG_MAP(CAboutDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
+		MESSAGE_HANDLER(WM_DESTROY, OnDestroyDialog)
+		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, OnColorStaticDialog)
 		COMMAND_ID_HANDLER(IDOK, OnOK)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCancel)
+		COMMAND_ID_HANDLER(IDC_HOMEPAGELINK, OnHomePageLink)
 	END_MSG_MAP()
 
 	enum { IDD = IDD_ABOUTDLG };
@@ -69,6 +79,7 @@ private:
 		return 1;
 	}
 
+	/*Dialog Init*/
 	LRESULT OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
 		CenterWindow();
 
@@ -103,16 +114,60 @@ private:
 		SetDlgItemText(IDC_VERSION, szVersionText);
 		wsprintf(szBuildDateText,GetBuildDateString());
 		SetDlgItemText(IDC_BUILDDATE, szBuildDateText);
+
+		//Hyperlink stuff
+		{
+			HDC hDC;
+			UINT nHeight;
+			//Create a font for later use with hyperlink
+			hDC = GetDC();
+			nHeight = -MulDiv(8, GetDeviceCaps(hDC, LOGPIXELSY), 72);	//This line comes from the Win32API help for specifying point size!
+			hFont = CreateFont(nHeight, 0, 0, 0, FW_NORMAL, 0, TRUE, 0, ANSI_CHARSET, 0, 0, 0, FF_DONTCARE, "Tahoma");
+			ReleaseDC(hDC);
+			/*Create new brush of color of the background for later use*/
+			hLinkBrush = (HBRUSH) GetStockObject(HOLLOW_BRUSH);
+			//Set Cursor for Static Email Link to our Hyperlink Cursor
+			SetClassLong(GetDlgItem(IDC_HOMEPAGELINK),GCL_HCURSOR, (long)LoadCursor(NULL, IDC_HAND));
+		}
+		//MUST RETURN 1
 		return 1;
 	}
 
+	/*OK CLICKED*/
 	LRESULT OnOK(WORD, UINT, HWND, BOOL&) {
 		EndDialog(IDOK);
 		return 0;
 	}
 
+	/*CANCEL CLICKED*/
 	LRESULT OnCancel(WORD, UINT, HWND, BOOL&) {
 		EndDialog(IDCANCEL);
+		return 0;
+	}
+
+	/*HOMEPAGELINK CLICKED*/
+	LRESULT OnHomePageLink(WORD, UINT, HWND, BOOL&) {
+		ShellExecute(GetActiveWindow(),"open","http://www.pinmame.com",NULL,NULL,SW_SHOW);
+		return 0;
+	}
+	
+	/*Dialog Destroy*/
+	LRESULT OnDestroyDialog(UINT, WPARAM, LPARAM, BOOL&) {
+		DeleteObject(hLinkBrush);
+		DeleteObject(hFont);
+		return 0;
+	}
+
+	/*Coloring*/
+	LRESULT OnColorStaticDialog(UINT, WPARAM wParam, LPARAM lParam, BOOL&) {
+		int nID = (int)::GetDlgCtrlID((HWND)lParam);
+		if (nID == IDC_HOMEPAGELINK) {
+			/*Change the color of the text to blue*/
+			SetTextColor((HDC)wParam, RGB(0,0,255));
+			SetBkMode((HDC)wParam, TRANSPARENT);
+			SelectObject((HDC)wParam, hFont);
+			return (LRESULT) hLinkBrush;
+		}
 		return 0;
 	}
 };
