@@ -14,7 +14,7 @@
 	  core_gameData = &name##GameData; \
 	}
 
-#define DISP_SEG_6(row,col,type) {4*row,20*col,row*16+col*8+2,6,type}
+#define DISP_SEG_6(row,col,type) {4*row,16*col,row*20+col*8+2,6,type}
 
 /* 4 X 7 (6) AlphaNumeric Rows, 2 X 2 AlphaNumeric */
 core_tLCDLayout gottlieb_dispNumeric1[] = {
