@@ -366,8 +366,8 @@ static WRITE_HANDLER(riot1b_w)
 			}
 			else {
 				value = core_ascii2seg[S80locals.data&0x7f] | (S80locals.data&0x80?0x8080:0x0000);
-				S80locals.segments[1][S80locals.segPos2+4].lo = value&0x00ff;
-				S80locals.segments[1][S80locals.segPos2+4].hi = value>>8;
+				S80locals.segments[1][S80locals.segPos2].lo = value&0x00ff;
+				S80locals.segments[1][S80locals.segPos2].hi = value>>8;
 				S80locals.segPos2 = (S80locals.segPos2+1)%20;
 			}
 		}
