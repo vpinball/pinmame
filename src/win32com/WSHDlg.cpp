@@ -158,7 +158,7 @@ STDMETHODIMP CWSHDlg::get_Ctrls(IWSHDlgCtrls **ppVal)
 
 int _stdcall WSHDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-STDMETHODIMP CWSHDlg::Show(VARIANT *RetVal)
+STDMETHODIMP CWSHDlg::Show(long hParentWnd, VARIANT *RetVal)
 {
 	if ( !RetVal )
 		return S_FALSE;
@@ -190,7 +190,7 @@ STDMETHODIMP CWSHDlg::Show(VARIANT *RetVal)
 
 	VariantInit(RetVal);
 	RetVal->vt = VT_I4;
-	RetVal->lVal = DialogBoxIndirectParam(_Module.m_hInst, &Template.DlgTemplate, 0, WSHDlgProc, (LPARAM) this);
+	RetVal->lVal = DialogBoxIndirectParam(_Module.m_hInst, &Template.DlgTemplate, (HWND) hParentWnd, WSHDlgProc, (LPARAM) this);
 	DWORD dwLastError = GetLastError();
 
 	return S_OK;

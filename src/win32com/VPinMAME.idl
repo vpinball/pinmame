@@ -271,7 +271,7 @@ import "ocidl.idl";
 		[propget, id(5), helpstring("property Title")] HRESULT Title([out, retval] BSTR *pVal);
 		[propput, id(5), helpstring("property Title")] HRESULT Title([in] BSTR newVal);
 		[id(6), helpstring("method AddCtrl")] HRESULT AddCtrl([in] BSTR sType, [in] long x, [in] long y, [in] long w, [in] long h, [in] BSTR sTitle, [out,retval] IUnknown **pRetVal);
-		[id(7), helpstring("method Show")] HRESULT Show([out, retval] VARIANT *RetVal);
+		[id(7), helpstring("method Show")] HRESULT Show([in,defaultvalue(0)] long hParentWnd, [out, retval] VARIANT *RetVal);
 		[propget, id(8), helpstring("property get_Ctrls")] HRESULT Ctrls([out, retval] IWSHDlgCtrls **ppVal);
 	};
 
