@@ -224,6 +224,7 @@ extern const struct MachineDriver machine_driver_dedmd64s2a_s;
 #define S11_DISPINV      0x08 // Display signals are inverted
 #define S11_MUXSW2       0x01 // MUX Solenoid activates
 #define S11_SNDOVERLAY   0x02 // Overlay solenoid board
+#define S11_PRINTERLINE  0x04 // Got printer lines
 #if 0
 GEN_S9      BCDDIAG | BCDDISP
 GEN_S11     BCDDIAG

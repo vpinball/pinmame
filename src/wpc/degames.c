@@ -72,9 +72,9 @@
 #include "sndbrd.h"
 #include "s11.h"
 
-#define INITGAMES11(name, gen, disptype, flippers, sb, db) \
+#define INITGAMES11(name, gen, disptype, flippers, sb, db, gs1) \
 static core_tGameData name##GameData = { \
-  gen, disptype, {flippers,0,0,0,sb,db,0}, NULL, {{0}},{10}}; \
+  gen, disptype, {flippers,0,0,0,sb,db,gs1}, NULL, {{0}},{10}}; \
 static void init_##name(void) { core_gameData = &name##GameData; }
 
 DE_INPUT_PORTS_START(des11, 1) DE_INPUT_PORTS_END
@@ -123,7 +123,7 @@ core_tLCDLayout de_192x64DMD[] = {
 /*-------------------------------------------------------------------
 / Laser War - CPU Rev 1 /Alpha Type 1 - 32K ROM - 32/64K Sound Roms
 /-------------------------------------------------------------------*/
-INITGAMES11(lwar, GEN_DE, de_dispAlpha1, FLIP4746, SNDBRD_DE1S, 0)
+INITGAMES11(lwar, GEN_DE, de_dispAlpha1, FLIP4746, SNDBRD_DE1S, 0, 0)
 DE_ROMSTARTx8(lwar, "lwar.c5", 0xeee158ee)
 DE1S_SOUNDROM244(   "lwar_e9.snd",0x9a6c834d,   //F7 on schem (sound)
                     "lwar_e6.snd",0x7307d795,   //F6 on schem (voice1)
@@ -136,7 +136,7 @@ CORE_GAMEDEFNV(lwar,"Laser War",1987,"Data East",de_mDEAS1,0)
 /*-------------------------------------------------------------------------
 / Secret Service - CPU Rev 2 /Alpha Type 2 - 32K Roms - 32K/64K Sound Roms
 /-------------------------------------------------------------------------*/
-INITGAMES11(ssvc, GEN_DE, de_dispAlpha2, FLIP3031, SNDBRD_DE1S, 0)
+INITGAMES11(ssvc, GEN_DE, de_dispAlpha2, FLIP3031, SNDBRD_DE1S, 0, 0)
 DE_ROMSTART88(ssvc,"ssvc4-6.b5", 0xe5eab8cd,
                    "ssvc4-6.c5", 0x171b97ae)
 DE1S_SOUNDROM244(  "sssndf7.rom",0x980778d0,      //F7 on schem (sound)
@@ -144,12 +144,12 @@ DE1S_SOUNDROM244(  "sssndf7.rom",0x980778d0,      //F7 on schem (sound)
                    "ssv2f4.rom", 0x53832d16)       //F4 on schem (voice2)
 DE_ROMEND
 #define input_ports_ssvc input_ports_des11
-CORE_GAMEDEFNV(ssvc,"Secret Service",1988,"Data East",de_mDEAS1,0)
+CORE_GAMEDEFNV(ssvc,"Secret Service",1988,"Data East",de_mDEAS1, 0)
 
 /*-----------------------------------------------------------------------
 / Torpedo Alley - CPU Rev 2 /Alpha Type 2 - 32K Roms - 32/64K Sound Roms
 /------------------------------------------------------------------------*/
-INITGAMES11(torpe, GEN_DE, de_dispAlpha2, FLIP1516, SNDBRD_DE1S, 0)
+INITGAMES11(torpe, GEN_DE, de_dispAlpha2, FLIP1516, SNDBRD_DE1S, 0, 0)
 DE_ROMSTART88(torpe,"torpe2-1.b5",0xac0b03e3,
                     "torpe2-1.c5",0x9ad33882)
 DE1S_SOUNDROM244(   "torpef7.rom",0x26f4c33e,      //F7 on schem (sound)
@@ -157,12 +157,12 @@ DE1S_SOUNDROM244(   "torpef7.rom",0x26f4c33e,      //F7 on schem (sound)
                     "torpef4.rom",0x83a4e7f3)      //F4 on schem (voice2)
 DE_ROMEND
 #define input_ports_torpe input_ports_des11
-CORE_GAMEDEFNV(torpe,"Torpedo Alley",1988,"Data East",de_mDEAS1,0)
+CORE_GAMEDEFNV(torpe,"Torpedo Alley",1988,"Data East",de_mDEAS1, 0)
 
 /*--------------------------------------------------------------------------
 / Time Machine - CPU Rev 2 /Alpha Type 2 16/32K Roms - 32/64K Sound Roms
 /--------------------------------------------------------------------------*/
-INITGAMES11(tmach, GEN_DE, de_dispAlpha2, FLIP1516, SNDBRD_DE1S, 0)
+INITGAMES11(tmach, GEN_DE, de_dispAlpha2, FLIP1516, SNDBRD_DE1S, 0, 0)
 DE_ROMSTART48(tmach,"tmach2-4.b5",0x6ef3cf07,
                     "tmach2-4.c5",0xb61035f5)
 DE1S_SOUNDROM244(   "tmachf7.rom",0x5d4994bb,      //F7 on schem (sound)
@@ -170,13 +170,13 @@ DE1S_SOUNDROM244(   "tmachf7.rom",0x5d4994bb,      //F7 on schem (sound)
                     "tmachf4.rom",0x70f70888)      //F4 on schem (voice2)
 DE_ROMEND
 #define input_ports_tmach input_ports_des11
-CORE_GAMEDEFNV(tmach, "Time Machine",1988,"Data East",de_mDEAS1,0)
+CORE_GAMEDEFNV(tmach, "Time Machine",1988,"Data East",de_mDEAS1, 0)
 
 
 /*-----------------------------------------------------------------------------------
 / Playboy 35th Anniversary - CPU Rev 2 /Alpha Type 2 - 32K Roms - 32/64K Sound Roms
 /-----------------------------------------------------------------------------------*/
-INITGAMES11(play, GEN_DE, de_dispAlpha2, FLIP1516, SNDBRD_DE1S, 0)
+INITGAMES11(play, GEN_DE, de_dispAlpha2, FLIP1516, SNDBRD_DE1S, 0, 0)
 DE_ROMSTART88(play,"play2-4.b5",0xbc8d7b32,
                    "play2-4.c5",0x47c30bc2)
 DE1S_SOUNDROM244(  "pbsnd7.dat",0xc2cf2cc5,       //F7 on schem (sound)
@@ -189,7 +189,7 @@ CORE_GAMEDEFNV(play,"Playboy 35th Anniversary",1989,"Data East",de_mDEAS1,0)
 /*-----------------------------------------------------------------------------------
 / Monday Night Football - CPU Rev 2 /Alpha Type 3 16/32K Roms - 32/64K Sound Roms
 /----------------------------------------------------------------------------------*/
-INITGAMES11(mnfb,GEN_DE, de_dispAlpha3, FLIP1516, SNDBRD_DE1S, S11_LOWALPHA)
+INITGAMES11(mnfb,GEN_DE, de_dispAlpha3, FLIP1516, SNDBRD_DE1S, S11_LOWALPHA, 0)
 DE_ROMSTART48(mnfb,"mnfb2-7.b5",  0x995eb9b8,
                    "mnfb2-7.c5",  0x579d81df)
 DE1S_SOUNDROM244(  "mnf-f7.256",  0xfbc2d6f6,       //F7 on schem (sound)
@@ -201,7 +201,7 @@ CORE_GAMEDEFNV(mnfb,"Monday Night Football",1989,"Data East",de_mDEAS1,0)
 /*------------------------------------------------------------------
 / Robocop - CPU Rev 3 /Alpha Type 3 - 32K Roms - 32/64K Sound Roms
 /-----------------------------------------------------------------*/
-INITGAMES11(robo,GEN_DE, de_dispAlpha3, FLIP1516, SNDBRD_DE1S, S11_LOWALPHA)
+INITGAMES11(robo,GEN_DE, de_dispAlpha3, FLIP1516, SNDBRD_DE1S, S11_LOWALPHA, 0)
 DE_ROMSTART88(robo,"robob5.a34",0x5a611004,
                    "roboc5.a34",0xc8705f47)
 DE1S_SOUNDROM244(  "robof7.rom",0xfa0891bd,       //F7 on schem (sound)
@@ -214,7 +214,7 @@ CORE_GAMEDEFNV(robo,"Robocop",1989,"Data East",de_mDEAS1,0)
 /*-------------------------------------------------------------------------------
 / Phantom of the Opera - CPU Rev 3 /Alpha Type 3 16/32K Roms - 32/64K Sound Roms
 /-------------------------------------------------------------------------------*/
-INITGAMES11(poto,GEN_DE, de_dispAlpha3, FLIP1516, SNDBRD_DE1S, S11_LOWALPHA)
+INITGAMES11(poto,GEN_DE, de_dispAlpha3, FLIP1516, SNDBRD_DE1S, S11_LOWALPHA, 0)
 DE_ROMSTART48(poto,"potob5.3-2",0xbdc39205,
                    "potoc5.3-2",0xe6026455)
 DE1S_SOUNDROM244(  "potof7.rom",0x2e60b2e3,       //7f
@@ -227,7 +227,7 @@ CORE_GAMEDEFNV(poto,"The Phantom of the Opera",1990,"Data East",de_mDEAS1,0)
 /*--------------------------------------------------------------------------------
 / Back To the Future - CPU Rev 3 /Alpha Type 3 - 32K Roms - 32/64K Sound Roms
 /--------------------------------------------------------------------------------*/
-INITGAMES11(bttf,GEN_DE, de_dispAlpha3, FLIP1516, SNDBRD_DE1S, S11_LOWALPHA)
+INITGAMES11(bttf,GEN_DE, de_dispAlpha3, FLIP1516, SNDBRD_DE1S, S11_LOWALPHA, 0)
 DE_ROMSTART88(bttf,"bttfb5.2-0",0xc0d4df6b,
                    "bttfc5.2-0",0xa189a189)
 DE1S_SOUNDROM244(  "bttfsf7.rom",0x7673146e,      //7f
@@ -240,7 +240,7 @@ CORE_GAMEDEFNV(bttf,"Back To the Future",1990,"Data East",de_mDEAS1,0)
 /*------------------------------------------------------------------------
 / The Simpsons - CPU Rev 3 /Alpha Type 3 16/32K Roms - 32/128K Sound Roms
 /------------------------------------------------------------------------*/
-INITGAMES11(simp,GEN_DE, de_dispAlpha3, FLIP1516, SNDBRD_DE1S, S11_LOWALPHA)
+INITGAMES11(simp,GEN_DE, de_dispAlpha3, FLIP1516, SNDBRD_DE1S, S11_LOWALPHA, 0)
 DE_ROMSTART48(simp, "simpb5.2-7",0x701c4a4b,
                     "simpc5.2-7",0x400a98b2)
 DE1S_SOUNDROM288(   "simpf7.rom",0xa36febbc,       //7f
@@ -258,7 +258,7 @@ CORE_GAMEDEFNV(simp,"The Simpsons",1990,"Data East",de_mDEAS1,0)
 /*------------------------------------------------------------
 / Checkpoint - CPU Rev 3 /DMD Type 1 64K Rom 16/32K CPU Roms
 /------------------------------------------------------------*/
-INITGAMES11(chkpnt,GEN_DEDMD16, de_128x16DMD, FLIP1516, SNDBRD_DE1S, SNDBRD_DEDMD16)
+INITGAMES11(chkpnt,GEN_DEDMD16, de_128x16DMD, FLIP1516, SNDBRD_DE1S, SNDBRD_DEDMD16, 0)
 DE_ROMSTART48(chkpnt,"chkpntb5.107",0x9fbae8e3,
                      "chkpntc5.107",0x082dc283)
 DE_DMD16ROM1(        "chkpntds.512",0x14d9c6d6)
@@ -273,7 +273,7 @@ CORE_GAMEDEFNV(chkpnt,"Checkpoint",1991,"Data East",de_mDEDMD16S1,0)
 /*-----------------------------------------------------------------------------
 / Teenage Mutant Ninja Turtles - CPU Rev 3 /DMD Type 1 64K Rom 16/32K CPU Roms
 /-----------------------------------------------------------------------------*/
-INITGAMES11(tmnt,GEN_DEDMD16, de_128x16DMD, FLIP1516, SNDBRD_DE1S, SNDBRD_DEDMD16)
+INITGAMES11(tmnt,GEN_DEDMD16, de_128x16DMD, FLIP1516, SNDBRD_DE1S, SNDBRD_DEDMD16, 0)
 DE_ROMSTART48(tmnt,"tmntb5a.104",0xf508eeee,
                    "tmntc5a.104",0xa33d18d4)
 DE_DMD16ROM1(      "tmntdsp.104",0x545686b7)
@@ -292,7 +292,7 @@ CORE_GAMEDEFNV(tmnt,"Teenage Mutant Ninja Turtles",1991,"Data East",de_mDEDMD16S
 /*-------------------------------------------------------------
 / Batman - CPU Rev 3 /DMD Type 1 128K Rom 16/32K CPU Roms
 /------------------------------------------------------------*/
-INITGAMES11(batmn,GEN_DEDMD16, de_128x16DMD, FLIP1516, SNDBRD_DE2S, SNDBRD_DEDMD16)
+INITGAMES11(batmn,GEN_DEDMD16, de_128x16DMD, FLIP1516, SNDBRD_DE2S, SNDBRD_DEDMD16, 0)
 DE_ROMSTART88(batmn,"batcpub5.101",0xa7f5754e,
                     "batcpuc5.101",0x1fcb85ca)
 DE_DMD16ROM2(       "batdsp.106",0x4c4120e7)
@@ -306,7 +306,7 @@ CORE_GAMEDEFNV(batmn,"Batman",1992,"Data East",de_mDEDMD16S2A,0)
 /*-------------------------------------------------------------
 / Star Trek - CPU Rev 3 /DMD Type 1 128K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
-INITGAMES11(trek,GEN_DEDMD16, de_128x16DMD, FLIP1516, SNDBRD_DE2S, SNDBRD_DEDMD16)
+INITGAMES11(trek,GEN_DEDMD16, de_128x16DMD, FLIP1516, SNDBRD_DE2S, SNDBRD_DEDMD16, 0)
 DE_ROMSTARTx0(trek,"trekcpuu.201",0xea0681fe)
 DE_DMD16ROM2(      "trekdspa.109",0xa7e7d44d)
 DE2S_SOUNDROM022(  "trek.u7"  ,0xf137abbb,
@@ -319,7 +319,7 @@ CORE_GAMEDEFNV(trek,"Star Trek 25th Anniversary",1992,"Data East",de_mDEDMD16S2A
 /*-------------------------------------------------------------
 / Hook - CPU Rev 3 /DMD  Type 1 128K Rom - CPU Rom
 /------------------------------------------------------------*/
-INITGAMES11(hook,GEN_DEDMD16, de_128x16DMD, FLIP1516, SNDBRD_DE2S, SNDBRD_DEDMD16)
+INITGAMES11(hook,GEN_DEDMD16, de_128x16DMD, FLIP1516, SNDBRD_DE2S, SNDBRD_DEDMD16, 0)
 DE_ROMSTARTx0(hook, "hokcpua.408",0x46477fc7)
 DE_DMD16ROM2(       "hokdspa.401",0x59a07eb5)
 DE2S_SOUNDROM022(   "hooksnd.u7" ,0x642f45b3,
@@ -337,7 +337,7 @@ CORE_GAMEDEFNV(hook,"Hook",1992,"Data East",de_mDEDMD16S2A,0)
 /*----------------------------------------------------------------
 / Lethal Weapon 3 - CPU Rev 3 /DMD  Type 2 512K Rom - 64K CPU Rom
 /---------------------------------------------------------------*/
-INITGAMES11(lw3,GEN_DEDMD32, 0, FLIP1516, SNDBRD_DE2S, SNDBRD_DEDMD32)
+INITGAMES11(lw3,GEN_DEDMD32, 0, FLIP1516, SNDBRD_DE2S, SNDBRD_DEDMD32, 0)
 DE_ROMSTARTx0(lw3, "lw3cpuu.208",0xa3041f8a)
 DE_DMD32ROM44(     "lw3drom1.a26",0x44a4cf81,
                    "lw3drom0.a26",0x22932ed5)
@@ -351,7 +351,7 @@ CORE_GAMEDEFNV(lw3,"Lethal Weapon 3",1992,"Data East",de_mDEDMD32S2A,0)
 /*-------------------------------------------------------------
 / Star Wars - CPU Rev 3 /DMD  Type 2 512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
-INITGAMES11(stwarde,GEN_DEDMD32, 0, FLIP1516, SNDBRD_DE2S, SNDBRD_DEDMD32)
+INITGAMES11(stwarde,GEN_DEDMD32, 0, FLIP1516, SNDBRD_DE2S, SNDBRD_DEDMD32, 0)
 DE_ROMSTARTx0(stwarde,"starcpua.103",0x318085ca)
 DE_DMD32ROM8x(        "sw4mrom.a15",0x00c87952)
 DE2S_SOUNDROM042(     "s-wars.u7"  ,0xcefa19d5,
@@ -364,7 +364,7 @@ CORE_GAMEDEFNV(stwarde,"Star Wars",1992,"Data East",de_mDEDMD32S2A,0)
 /*-------------------------------------------------------------
 / Rocky & Bullwinkle - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
-INITGAMES11(rab,GEN_DEDMD32, 0, FLIP1516, SNDBRD_DE2S, SNDBRD_DEDMD32)
+INITGAMES11(rab,GEN_DEDMD32, 0, FLIP1516, SNDBRD_DE2S, SNDBRD_DEDMD32, S11_PRINTERLINE)
 DE_ROMSTARTx0(rab, "rabcpua.130",0xf59b1a53)
 DE_DMD32ROM8x(     "rbdspa.130",0xb6e2176e)
 DE2S_SOUNDROM142(  "rab.u7"  ,0xb232e630,
@@ -377,7 +377,7 @@ CORE_GAMEDEFNV(rab,"Rocky & Bullwinkle",1993,"Data East",de_mDEDMD32S2A,0)
 /*-------------------------------------------------------------
 / Jurassic Park - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
-INITGAMES11(jurpark,GEN_DEDMD32, 0, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD32)
+INITGAMES11(jurpark,GEN_DEDMD32, 0, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD32, S11_PRINTERLINE)
 DE_ROMSTARTx0(jurpark,"jpcpua.513",0x9f70a937)
 DE_DMD32ROM8x(        "jpdspa.510",0x9ca61e3c)
 DE2S_SOUNDROM142(     "jpu7.dat"  ,0xf3afcf13,
@@ -390,7 +390,7 @@ CORE_GAMEDEFNV(jurpark,"Jurassic Park",1993,"Data East",de_mDEDMD32S2A,0)
 /*-------------------------------------------------------------
 / Last Action Hero - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
-INITGAMES11(lah,GEN_DEDMD32, 0, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD32)
+INITGAMES11(lah,GEN_DEDMD32, 0, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD32, S11_PRINTERLINE)
 DE_ROMSTARTx0(lah,  "lahcpua.112",0xe7422236)
 DE_DMD32ROM8x(      "lahdispa.106",0xca6cfec5)
 DE2S_SOUNDROM142(   "lahsnd.u7"  ,0x0279c45b,
@@ -403,7 +403,7 @@ CORE_GAMEDEFNV(lah,"Last Action Hero",1993,"Data East",de_mDEDMD32S2A,0)
 /*-------------------------------------------------------------
 / Tales From the Crypt - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
-INITGAMES11(tftc,GEN_DEDMD32, 0, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD32)
+INITGAMES11(tftc,GEN_DEDMD32, 0, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD32, S11_PRINTERLINE)
 DE_ROMSTARTx0(tftc, "tftccpua.303",0xe9bec98e)
 DE_DMD32ROM8x(      "tftcdspa.301",0x3888d06f)
 DE2S_SOUNDROM144(   "sndu7.dat"    ,0x7963740e,
@@ -424,7 +424,7 @@ static int tommy_getSol(int solNo) { return (solNo == sBlinderMotor) ? (core_get
 static core_tGameData tommyGameData = {
   GEN_DEDMD32, 0,
   { FLIP6364, 0,0,1, // We need 1 custom solenoids!
-    SNDBRD_DE2S,SNDBRD_DEDMD32,0,0,
+    SNDBRD_DE2S,SNDBRD_DEDMD32,S11_PRINTERLINE,0,
     tommy_getSol
   }, NULL, {{0}}, {10}
 };
@@ -443,7 +443,7 @@ CORE_GAMEDEFNV(tommy,"Tommy",1994,"Data East",de_mDEDMD32S2A,0)
 /*-------------------------------------------------------------
 / WWF Royal Rumble - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
-INITGAMES11(wwfrumb,GEN_DEDMD32, 0, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD32)
+INITGAMES11(wwfrumb,GEN_DEDMD32, 0, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD32,S11_PRINTERLINE)
 DE_ROMSTARTx0(wwfrumb,  "wfcpuc5.512"  ,0x7e9ead89)
 DE_DMD32ROM8x(          "wfdisp0.400"  ,0xe190b90f)
 DE2S_SOUNDROM1444(      "wfsndu7.512"  ,0xeb01745c,
@@ -471,7 +471,7 @@ static int gnr_getSol(int solNo) {
 static core_tGameData gnrGameData = {
   GEN_DEDMD32, 0,
   { FLIP6364, 0,0,3, //We need 3 custom solenoids!
-    SNDBRD_DE2S,SNDBRD_DEDMD32,0,0, gnr_getSol
+    SNDBRD_DE2S,SNDBRD_DEDMD32,S11_PRINTERLINE,0, gnr_getSol
   }, NULL, {{0}}, {10}
 };
 static void init_gnr(void) { core_gameData = &gnrGameData; }
@@ -493,7 +493,7 @@ CORE_GAMEDEFNV(gnr,"Guns N Roses",1994,"Data East",de_mDEDMD32S2A,0)
 /*-------------------------------------------------------------
 / Maverick - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
-INITGAMES11(maverick, GEN_DEDMD64, de_192x64DMD, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD64)
+INITGAMES11(maverick, GEN_DEDMD64, de_192x64DMD, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD64,S11_PRINTERLINE)
 DE_ROMSTARTx0(maverick, "mavcpua.404",0x9f06bd8d)
 DE_DMD64ROM88(   "mavdsar0.401",0x35b811af,
                  "mavdsar3.401",0xc4c126ae)
@@ -510,7 +510,7 @@ CORE_GAMEDEFNV(maverick,"Maverick",1994,"Data East",de_mDEDMD64S2A,0)
 /*-------------------------------------------------------------
 / Frankenstein - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
-INITGAMES11(frankst,GEN_DEDMD64, de_192x64DMD, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD64)
+INITGAMES11(frankst,GEN_DEDMD64, de_192x64DMD, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD64,S11_PRINTERLINE)
 DE_ROMSTARTx0(frankst,"franka.103",  0xa9aba9be)
 DE_DMD64ROM88(        "frdspr0a.103",0x9dd09c7d,
                       "frdspr3a.103",0x73b538bb)
@@ -526,7 +526,7 @@ CORE_GAMEDEFNV(frankst,"Mary Shelley's Frankenstein",1994,"Sega",de_mDEDMD64S2A,
 /*-------------------------------------------------------------
 / Baywatch - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
-INITGAMES11(baywatch,GEN_DEDMD64, de_192x64DMD, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD64)
+INITGAMES11(baywatch,GEN_DEDMD64, de_192x64DMD, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD64,S11_PRINTERLINE)
 DE_ROMSTARTx0(baywatch, "baycpua.400", 0x89facfda)
 DE_DMD64ROM88(          "bayrom0a.400",0x43d615c6,
                         "bayrom3a.400",0x41bcb66b)
@@ -540,7 +540,7 @@ CORE_GAMEDEFNV(baywatch,"Baywatch",1995,"Sega",de_mDEDMD64S2A,0)
 /*-------------------------------------------------------------
 / Batman Forever 4.0 - CPU Rev 3b / DMD Type 3 2x512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
-INITGAMES11(batmanf, GEN_DEDMD64, de_192x64DMD, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD64)
+INITGAMES11(batmanf, GEN_DEDMD64, de_192x64DMD, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD64,S11_PRINTERLINE)
 DE_ROMSTARTx0(batmanf, "batnova.401", 0x4e62df4e)
 DE_DMD64ROM88(         "bfdrom0a.401",0x8a3c20ad,
                        "bfdrom3a.401",0x5ef46847)
@@ -770,7 +770,7 @@ static core_tLCDLayout de_NoOutput[] = {{0}};
 /*-------------------------------------------------------------
 / Data East Test Chip 64K ROM
 /------------------------------------------------------------*/
-INITGAMES11(detest, GEN_DE, de_NoOutput, FLIP1516, 0, 0)
+INITGAMES11(detest, GEN_DE, de_NoOutput, FLIP1516, 0, 0, 0)
 DE_ROMSTARTx0(detest,"de_test.512",0xbade8ca8)
 DE_ROMEND
 #define input_ports_detest input_ports_des11
