@@ -204,7 +204,7 @@ DE1S_SOUNDROM244(  "robof7.rom",0xfa0891bd,       //F7 on schem (sound)
                    "robof4.rom",0x27d31df3)       //F4 on schem (voice2)
 DE_ROMEND
 #define input_ports_robo input_ports_des11
-CORE_GAMEDEFNV(robo,"Robocop",1989,"Data East",de_mDEAS1H,0)
+CORE_GAMEDEFNV(robo,"Robocop",1989,"Data East",de_mDEAS1,0)
 
 /*-------------------------------------------------------------------------------
 / Phantom of the Opera - CPU Rev 3 /Alpha Type 3 16/32K Roms - 32/64K Sound Roms
