@@ -21,9 +21,33 @@ const struct GameDriver *test_drivers[] = { 0 };
 #endif
 #else /* DRIVER_RECURSIVE */
 
-// -----------------
-// ATARI GAMES BELOW
-// -----------------
+//Include New Stern Game Support if not running VPM or if Test New Stern Game flag found
+#ifdef VPINMAME
+	#ifdef TEST_NEW_STERN
+		#define INCLUDE_NEW_STERN 1
+	#endif
+#else
+	#define INCLUDE_NEW_STERN 1
+#endif
+
+// --------------------
+// ALVIN G. AND CO.
+// --------------------
+DRIVERNV(wrldtour)		//Al's Garage Band Goes On A World Tour (1992)
+DRIVERNV(mystcast)		//Mystery Castle (1993)
+DRIVERNV(pstlpkr)		//Pistol Poker (1993)
+#ifdef MAME_DEBUG
+  DRIVERNV(test8031)		//Test 8031 cpu core
+#endif
+
+// ---------------
+// ASTRO GAMES
+// ---------------
+DRIVERNV(blkshpsq)      //Black Sheep Squadron (1979) - using Bally hardware
+
+// ---------------
+// ATARI GAMES 
+// ---------------
                         //Triangle (Prototype, 1976?)
 DRIVERNV(atarians)      //The Atarians (November 1976)
 DRIVERNV(atarianb)      //The Atarians (2002 bootleg)
@@ -38,144 +62,9 @@ DRIVERNV(hercules)      //Hercules (May 1979)
                         //Neutron Star (Prototype, 1981)
                         //4x4 (Prototype, 1983)
 
-// MIDWAY GAMES
-DRIVERNV(flicker )      //Flicker (Prototype, September 1974)
-DRIVERNV(rotation)      //Rotation VIII (September 1978)
-
-// ASTRO GAMES
-DRIVERNV(blkshpsq)      //Black Sheep Squadron (1979) - using Bally hardware
-
-// UNITED GAMES
-DRIVERNV(bbbowlin)      //Big Ball Bowling - using Bally hardware
-
-// ALVIN G. AND CO.
-DRIVERNV(wtgband)		//World Tour Garage Band (1992)
-DRIVERNV(mystcast)		//Mystery Castle (1993)
-DRIVERNV(pstlpkr)		//Pistol Poker (1993)
-#ifdef MAME_DEBUG
-  DRIVERNV(test8031)		//Test 8031 cpu core
-#endif
-
-// ---------------------
-// GAME PLAN GAMES BELOW
-// ---------------------
-/*Games below are Cocktail #110 Model*/
-DRIVERNV(foxylady)      //Foxy Lady (May 1978)
-DRIVERNV(blvelvet)      //Black Velvet (May 1978)
-DRIVERNV(camlight)      //Camel Lights (May 1978)
-DRIVERNV(real)          //Real (to Real) (May 1978)
-DRIVERNV(rio)           //Rio (?? / 1978)
-                        //Chuck-A-Luck (October 1978)
-
-/*Games below are Cocktail #120 Model*/
-DRIVERNV(startrip)      //Star Trip (April 1979)
-DRIVERNV(famlyfun)      //Family Fun! (April 1979)
-
-/*Games below are regular standup pinball games*/
-DRIVERNV(sshooter)      //Sharpshooter (May 1979)
-DRIVERNV(vegasgp)       //Vegas (August 1979)
-DRIVERNV(coneyis)       //Coney Island! (December 1979)
-DRIVERNV(lizard)        //Lizard (July 1980)
-DRIVERNV(gwarfare)      //Global Warfare (June 1981)
-DRIVERNV(mbossy)        //Mike Bossy - The Scoring Machine (January 1982)
-DRIVERNV(suprnova)      //Super Nova (May 1982)
-DRIVERNV(sshootr2)      //Sharp Shooter II (November 1983)
-DRIVERNV(attila)        //Attila the Hun (April 1984)
-DRIVERNV(agent777)      //Agents 777 (November 1984)
-DRIVERNV(cpthook)       //Captain Hook (April 1985)
-DRIVERNV(ladyshot)      //Lady Sharpshooter (May 1985)
-DRIVERNV(andromed)      //Andromeda (September 1985)
-DRIVERNV(cyclopes)      //Cyclopes (November 1985)
-                        //Loch Ness Monster (November 1985)
-
-// ---------------------
-// ZACCARIA GAMES BELOW
-// ---------------------
-//Other games created earlier by Zaccaria are EM
-                        //10/77 Combat
-DRIVERNV(wsports)       //01/78 Winter Sports
-                        //07/78 House of Diamonds
-                        //09/78 Strike
-                        //10/78 Ski Jump
-DRIVERNV(futurwld)      //10/78 Future World
-DRIVERNV(strapids)      //04/79 Shooting the Rapids
-DRIVERNV(hotwheel)      //09/79 Hot Wheels
-                        //09/79 Space City
-DRIVERNV(firemntn)      //01/80 Fire Mountain
-DRIVERNV(stargod)       //05/80 Star God
-DRIVERNV(sshtlzac)      //09/80 Space Shuttle
-DRIVERNV(ewf)           //04/81 Earth, Wind & Fire
-DRIVERNV(locomotn)      //09/81 Locomotion
-DRIVERNV(pinchp82)      //04/82 Pinball Champ '82 (Is this really different from the '83?)
-DRIVERNV(socrking)      //09/82 Soccer King
-DRIVERNV(pinchamp)      //??/83 Pinball Champ
-DRIVERNV(tmachzac)      //04/83 Time Machine
-DRIVERNV(farfalla)      //09/83 Farfalla
-DRIVERNV(dvlrider)      //04/84 Devil Riders
-DRIVERNV(dvlrideg)      //04/84 Devil Riders (german speech)
-DRIVERNV(mcastle)       //09/84 Magic Castle
-DRIVERNV(mcastleg)      //09/84 Magic Castle (german speech)
-DRIVERNV(myststar)      //??/84 Mystic Star
-DRIVERNV(robot)         //01/85 Robot
-DRIVERNV(clown)         //07/85 Clown
-DRIVERNV(poolcham)      //12/85 Pool Champion
-DRIVERNV(bbeltzac)      //??/86 Blackbelt
-DRIVERNV(mexico)        //??/86 Mexico '86
-DRIVERNV(zankor)        //??/86 Zankor
-DRIVERNV(spooky)        //??/87 Spooky
-                        //??/87 Star's Phoenix
-                        //??/86 New Star's Phoenix
-
-// ---------------------
-// HANKIN GAMES BELOW
-// ---------------------
-DRIVERNV(fjholden)      //FJ Holden
-DRIVERNV(orbit1)        //Orbit 1
-DRIVERNV(howzat)        //Howzat
-DRIVERNV(shark)         //Shark
-DRIVERNV(empsback)      //Star Wars - The Empire Strike Back
-
-// ---------------------
-// TAITO GAMES BELOW
-// ---------------------
-                        //??/?? Criterium 77
-                        //??/?? Apache!
-                        //??/?? Football
-                        //??/79 Hot Ball (B Eight Ball, 01/77)
-                        //??/79 Shock (W Flash, 01/79)
-                        //??/?? Sultan (G Sinbad, 05/78)
-DRIVERNV(obaoba  )      //??/80 Oba Oba (B Playboy, 10/77)
-DRIVERNV(drakor  )      //??/80 Drakor (W Gorgar, 11/79)
-                        //??/?? Roman Victory
-                        //??/?? Space Patrol
-DRIVERNV(meteort )      //??/80 Meteor (S Meteor, 09/79)
-DRIVERNV(fireact )      //??/81 Fire Action (W Firepower, 02/80)
-DRIVERNV(cavnegro)      //??/81 Cavaleiro Negro (W Black Knight, 11/80)
-DRIVERNV(sureshot)      //??/81 Sure Shot (B Eight Ball Deluxe, 09/80)
-DRIVERNV(vegast  )      //??/81 Vegas / Lady Luck (B Mata Hari, 09/77)
-DRIVERNV(cosmic  )      //??/81 Cosmic (S Galaxy, 01/80)
-DRIVERNV(gemini  )      //??/82 Gemini 2000 (B Centaur, 02/81)
-DRIVERNV(vortex  )      //??/82 Vortex (W Blackout, 06/80)
-DRIVERNV(titan   )      //??/82 Titan (W Barracora, 09/81)
-DRIVERNV(zarza   )      //??/82 Zarza (B Xenon, 11/79)
-DRIVERNV(sharkt  )      //??/82 Shark
-DRIVERNV(hawkman )		//??/82 Hawkman (B Fathom, 12/80)
-DRIVERNV(stest   )      //??/82 Speed Test
-                        //??/82 Lunelle (W Alien Poker, 10/80)
-DRIVERNV(rally   )      //??/82 Rally (B Skateball, 04/80)
-DRIVERNV(snake   )      //??/82 Snake Machine
-DRIVERNV(voleybal)      //??/?? Voley Ball
-                        //??/82 Gork
-                        //??/8? Ogar
-DRIVERNV(mrblack )		//??/84 Mr. Black (W Defender, 12/82)
-DRIVERNV(fireactd)      //??/8? Fire Action De Luxe (W Firepower II, 08/83)
-DRIVERNV(sshuttle)      //??/85 Space Shuttle (W Space Shuttle, 12/84)
-DRIVERNV(polar   )      //??/8? Polar Explorer
-DRIVERNV(taitest )      //??/8? Test Fixture
-
-// ---------------------
-// BALLY GAMES BELOW
-// ---------------------
+// ---------------
+// BALLY GAMES 
+// ---------------
 //MPU-17
 DRIVERNV(bowarrow)      //BY17-720: 08/76 Bow & Arrow (Prototype)
 DRIVERNV(freedom )      //BY17-720: 08/76 Freedom
@@ -271,14 +160,98 @@ DRIVERNV(dungdrag)      //6803-0H06: 10/87 Dungeons & Dragons
 DRIVERNV(esclwrld)      //6803-0H05: 01/88 Escape from the Lost World
 DRIVERNV(black100)      //6803-0H07: 03/88 Blackwater 100
                         //??         06/88 Ramp Warrior (Became Truck Stop after Merger)
-//Williams Merger begins here..
+//Williams Merger begins here.. but these are still under the Bally name
 DRIVERNV(truckstp)      //6803-2001: 12/88 Truck Stop
 DRIVERNV(atlantis)      //6803-2006: 03/89 Atlantis
                         //??         05/89 Ice Castle
 
-// ---------------------
-// GOTTLIEB GAMES BELOW
-// ---------------------
+// ----------------
+// CAPCOM GAMES 
+// ----------------
+DRIVERNV(ghv101)        // ??/95    Goofy Hoops (Romstar license)
+DRIVERNV(pmv112)        // 10/95    Pinball Magic
+DRIVERNV(pmv112r)       // 10/95    Pinball Magic (Redemption)
+DRIVERNV(abv106)        // 03/96    Airborne
+DRIVERNV(abv106r)       // 03/96    Airborne (Redemption)
+DRIVERNV(bsv100r)       // 05/96    Breakshot (Redemption, 1.0)
+DRIVERNV(bsv102r)       // 05/96    Breakshot (Redemption, 1.2)
+DRIVERNV(bsv103)        // 05/96    Breakshot (1.3)
+DRIVERNV(bsb105)        // 05/96    Breakshot (Beta, 1.5)
+DRIVERNV(ffv104)        // 10/96    Flipper Football
+DRIVERNV(bbb109)        // 11/96    Big Bang Bar (Beta, 1.9)
+DRIVERNV(kpv106)        // 12/96    Kingpin
+
+// -------------------
+// DATA EAST GAMES 
+// -------------------
+//4 x 2 x 7 (mixed) + credits A/N Display
+DRIVERNV(lwar)          //Data East MPU: 05/87 Laser War
+//4 x 2 x 7 (mixed) A/N Display
+DRIVERNV(ssvc)          //Data East MPU: 03/88 Secret Service
+DRIVERNV(torpe)         //Data East MPU: 08/88 Torpedo Alley
+DRIVERNV(tmach)         //Data East MPU: 12/88 Time Machine
+DRIVERNV(play)          //Data East MPU: 05/89 Playboy 35th Anniversary
+//2 x 16 A/N Display
+DRIVERNV(mnfb)          //Data East MPU: 09/89 ABC Monday Night Football
+DRIVERNV(robo)          //Data East MPU: 11/89 Robo Cop
+DRIVERNV(poto)          //Data East MPU: 01/90 Phantom of the Opera
+DRIVERNV(bttf)          //Data East MPU: 06/90 Back to the Future
+DRIVERNV(simp)          //Data East MPU: 09/90 The Simpsons
+//DMD 128 x 16
+DRIVERNV(chkpnt)        //Data East MPU: 02/91 Checkpoint
+DRIVERNV(tmnt)          //Data East MPU: 05/91 Teenage Mutant Ninja Turtles
+//BSMT2000 Sound chip
+DRIVERNV(batmn)         //Data East MPU: 07/91 Batman
+DRIVERNV(trek)          //Data East MPU: 10/91 Star Trek 25th Anniversary
+DRIVERNV(hook)          //Data East MPU: 01/92 Hook
+//DMD 128 x 32
+DRIVERNV(lw3)           //Data East MPU: 06/92 Lethal Weapon
+DRIVERNV(stwarde)       //Data East MPU: 10/92 Star Wars
+DRIVERNV(rab)           //Data East MPU: 02/93 Rocky & Bullwinkle
+DRIVERNV(jurpark)       //Data East MPU: 04/93 Jurasic Park
+DRIVERNV(lah)           //Data East MPU: 08/93 Last Action Hero
+DRIVERNV(tftc)          //Data East MPU: 11/93 Tales From the Crypt
+DRIVERNV(tommy)         //Data East MPU: 02/94 Tommy
+DRIVERNV(wwfrumb)       //Data East MPU: 05/94 WWF Royal Rumble
+DRIVERNV(gnr)           //Data East MPU: 07/94 Guns N Roses
+//DMD 192 x 64
+DRIVERNV(maverick)      //Data East MPU: 09/94 Maverick
+//MISC
+DRIVERNV(detest)        //Data East MPU: ??/?? DE Test Chip
+
+// -------------------
+// GAME PLAN GAMES
+// -------------------
+/*Games below are Cocktail #110 Model*/
+DRIVERNV(foxylady)      //Foxy Lady (May 1978)
+DRIVERNV(blvelvet)      //Black Velvet (May 1978)
+DRIVERNV(camlight)      //Camel Lights (May 1978)
+DRIVERNV(real)          //Real (to Real) (May 1978)
+DRIVERNV(rio)           //Rio (?? / 1978)
+                        //Chuck-A-Luck (October 1978)
+/*Games below are Cocktail #120 Model*/
+DRIVERNV(startrip)      //Star Trip (April 1979)
+DRIVERNV(famlyfun)      //Family Fun! (April 1979)
+/*Games below are regular standup pinball games*/
+DRIVERNV(sshooter)      //Sharpshooter (May 1979)
+DRIVERNV(vegasgp)       //Vegas (August 1979)
+DRIVERNV(coneyis)       //Coney Island! (December 1979)
+DRIVERNV(lizard)        //Lizard (July 1980)
+DRIVERNV(gwarfare)      //Global Warfare (June 1981)
+DRIVERNV(mbossy)        //Mike Bossy - The Scoring Machine (January 1982)
+DRIVERNV(suprnova)      //Super Nova (May 1982)
+DRIVERNV(sshootr2)      //Sharp Shooter II (November 1983)
+DRIVERNV(attila)        //Attila the Hun (April 1984)
+DRIVERNV(agent777)      //Agents 777 (November 1984)
+DRIVERNV(cpthook)       //Captain Hook (April 1985)
+DRIVERNV(ladyshot)      //Lady Sharpshooter (May 1985)
+DRIVERNV(andromed)      //Andromeda (September 1985)
+DRIVERNV(cyclopes)      //Cyclopes (November 1985)
+                        //Loch Ness Monster (November 1985)
+
+// ------------------
+// GOTTLIEB GAMES
+// ------------------
 //System 1
                         //S1-409    11/77 Cleopatra
                         //S1-412    05/78 Sinbad
@@ -363,7 +336,6 @@ DRIVERNV(excalibr)      //S80b-715: 11/88 Excalibur
 DRIVERNV(bighouse)      //S80b-713: 04/89 Big House
 DRIVERNV(hotshots)      //S80b-718: 04/89 Hot Shots
 DRIVERNV(bonebstr)      //S80b-719: 08/89 Bone Busters Inc
-
 //System 3 Alphanumeric
 DRIVERNV(ccruise)       //C-102:    ??/89 Caribbean Cruise (for International Concepts)
                         //C-103?    ??/89 Night Moves (for International Concepts)
@@ -403,101 +375,24 @@ DRIVERNV(andretti)      //S3-747:   12/95 Mario Andretti
 DRIVERNV(barbwire)      //S3-748:   04/96 Barb Wire
 DRIVERNV(brooks)        //S3-749:   08/96 Brooks & Dunn (never produced)
 
-// ---------------------
-// STERN GAMES BELOW
-// ---------------------
-// MPU-100 - Chime Sound
-DRIVERNV(stingray)      //MPU-100: 03/77 Stingray
-DRIVERNV(pinball)       //MPU-100: 07/77 Pinball
-DRIVERNV(stars)         //MPU-100: 03/78 Stars
-DRIVERNV(memlane)       //MPU-100: 06/78 Memory Lane
-// MPU-100 - Sound Board: SB-100
-DRIVERNV(lectrono)      //MPU-100: 08/78 Lectronamo
-DRIVERNV(wildfyre)      //MPU-100: 10/78 Wildfyre
-DRIVERNV(nugent)        //MPU-100: 11/78 Nugent
-DRIVERNV(dracula)       //MPU-100: 01/79 Dracula
-DRIVERNV(trident)       //MPU-100: 03/79 Trident
-DRIVERNV(hothand)       //MPU-100: 06/79 Hot Hand
-DRIVERNV(magic)         //MPU-100: 08/79 Magic
-DRIVERNV(princess)      //MPU-100: 08/79 Cosmic Princess
-// MPU-200 - Sound Board: SB-300
-DRIVERNV(meteor)        //MPU-200: 09/79 Meteor
-DRIVERNV(galaxy)        //MPU-200: 01/80 Galaxy
-DRIVERNV(ali)           //MPU-200: 03/80 Ali
-DRIVERNV(biggame)       //MPU-200: 03/80 Big Game
-DRIVERNV(seawitch)      //MPU-200: 05/80 Seawitch
-DRIVERNV(cheetah)       //MPU-200: 06/80 Cheetah
-DRIVERNV(quicksil)      //MPU-200: 06/80 Quicksilver
-DRIVERNV(nineball)      //MPU-200: 12/80 Nineball
-DRIVERNV(freefall)      //MPU-200: 01/81 Free Fall
-DRIVERNV(splitsec)      //MPU-200: 08/81 Split Second
-DRIVERNV(catacomb)      //MPU-200: 10/81 Catacomb
-DRIVERNV(ironmaid)      //MPU-200: 10/81 Iron Maiden
-DRIVERNV(viper)         //MPU-200: 12/81 Viper
-DRIVERNV(dragfist)      //MPU-200: 01/82 Dragonfist
-// MPU-200 - Sound Board: SB-300, VS-100
-DRIVERNV(flight2k)      //MPU-200: 08/80 Flight 2000
-DRIVERNV(stargzr)       //MPU-200: 08/80 Stargazer
-DRIVERNV(lightnin)      //MPU-200: 03/81 Lightning
-DRIVERNV(orbitor1)      //MPU-200: 04/82 Orbitor One
-DRIVERNV(cue)           //MPU-200: ??/82 Cue            (Proto - Never released)
-DRIVERNV(lazrlord)      //MPU-200: 10/84 Lazer Lord     (Proto - Never released)
+// ----------------
+// HANKIN GAMES 
+// ----------------
+DRIVERNV(fjholden)      //FJ Holden
+DRIVERNV(orbit1)        //Orbit 1
+DRIVERNV(howzat)        //Howzat
+DRIVERNV(shark)         //Shark
+DRIVERNV(empsback)      //Star Wars - The Empire Strike Back
 
-// Whitestar System
-DRIVERNV(strikext)      //Whitestar: 03/00 Striker Extreme
-DRIVERNV(strxt_uk)      //Whitestar: 03/00 Striker Extreme (UK)
-DRIVERNV(strxt_gr)      //Whitestar: 03/00 Striker Extreme (Germany)
-DRIVERNV(strxt_fr)      //Whitestar: 03/00 Striker Extreme (France)
-DRIVERNV(strxt_it)      //Whitestar: 03/00 Striker Extreme (Italy)
-DRIVERNV(strxt_sp)      //Whitestar: 03/00 Striker Extreme (Spain)
-DRIVERNV(shrkysht)      //Whitestar: 09/00 Sharkey's Shootout (2.11)
-DRIVERNV(shrky_gr)      //Whitestar: 09/00 Sharkey's Shootout (German display)
-DRIVERNV(shrky_fr)      //Whitestar: 09/00 Sharkey's Shootout (French display)
-DRIVERNV(shrky_it)      //Whitestar: 09/00 Sharkey's Shootout (Italian display)
-DRIVERNV(hirolcas)      //Whitestar: 01/01 High Roller Casino (3.0)
-DRIVERNV(hirol_fr)      //Whitestar: 01/01 High Roller Casino (German display)
-DRIVERNV(hirol_gr)      //Whitestar: 01/01 High Roller Casino (French display)
-DRIVERNV(hirol_it)      //Whitestar: 01/01 High Roller Casino (Italian display)
+// ----------------
+// MIDWAY GAMES
+// ----------------
+DRIVERNV(flicker )      //Flicker (Prototype, September 1974)
+DRIVERNV(rotation)      //Rotation VIII (September 1978)
 
-#ifndef VPINMAME
-
-DRIVERNV(austin)        //Whitestar: 05/01 Austin Powers (3.01)
-DRIVERNV(austind)       //Whitestar: 05/01 Austin Powers (German display)
-DRIVERNV(austinf)       //Whitestar: 05/01 Austin Powers (French display)
-DRIVERNV(austini)       //Whitestar: 05/01 Austin Powers (Italian display)
-DRIVERNV(austin2)       //Whitestar: 05/01 Austin Powers (2.0 - With "White House" scenes)
-DRIVERNV(monopoly)      //Whitestar: 09/01 Monopoly (3.03)
-DRIVERNV(monopold)      //Whitestar: 09/01 Monopoly (German display)
-DRIVERNV(monopole)      //Whitestar: 09/01 Monopoly (Spanish display)
-DRIVERNV(monopolf)      //Whitestar: 09/01 Monopoly (French display)
-DRIVERNV(monopoli)      //Whitestar: 09/01 Monopoly (Italian display)
-DRIVERNV(playboys)      //Whitestar: 02/02 Playboy (5.0)
-DRIVERNV(playboyd)      //Whitestar: 02/02 Playboy (German display)
-DRIVERNV(playboye)      //Whitestar: 02/02 Playboy (Spanish display)
-DRIVERNV(playboyf)      //Whitestar: 02/02 Playboy (French display)
-DRIVERNV(playboyi)      //Whitestar: 02/02 Playboy (Italian display)
-DRIVERNV(rctycn)        //Whitestar: 09/02 Roller Coaster Tycoon (7.01)
-DRIVERNV(rctycnd)       //Whitestar: 09/02 Roller Coaster Tycoon (German display)
-DRIVERNV(rctycne)       //Whitestar: 09/02 Roller Coaster Tycoon (Spanish display)
-DRIVERNV(rctycnf)       //Whitestar: 09/02 Roller Coaster Tycoon (French display)
-DRIVERNV(rctycni)       //Whitestar: 09/02 Roller Coaster Tycoon (Italian display)
-DRIVERNV(simpprty)      //Whitestar: 01/03 The Simpsons Pinball Party (2.04)
-DRIVERNV(simpprtd)      //Whitestar: 01/03 The Simpsons Pinball Party (German display)
-DRIVERNV(simpprte)      //Whitestar: 01/03 The Simpsons Pinball Party (Spanish display)
-DRIVERNV(simpprtf)      //Whitestar: 01/03 The Simpsons Pinball Party (French display)
-DRIVERNV(simpprti)      //Whitestar: 01/03 The Simpsons Pinball Party (Italian display)
-DRIVERNV(term3)         //Whitestar: 06/03 Terminator 3: Rise of the Machines
-DRIVERNV(term3g)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (German)
-DRIVERNV(term3l)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (Spain)
-DRIVERNV(term3f)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (France)
-DRIVERNV(term3i)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (Italy)
-
-#endif /* VPINMAME */
-
-
-// ---------------------
-// SEGA GAMES BELOW
-// ---------------------
+// --------------
+// SEGA GAMES 
+// --------------
 //Data East Hardare, DMD 192x64
 DRIVERNV(frankst)       //DE/Sega MPU: 12/94 Frankenstein
 DRIVERNV(baywatch)      //DE/Sega MPU: 03/95 Baywatch
@@ -534,45 +429,140 @@ DRIVERNV(godzilla)      //Whitestar: 09/98 Godzilla
 DRIVERNV(southpk)       //Whitestar: 01/99 South Park
 DRIVERNV(harley)        //Whitestar: 08/99 Harley Davidson
 
-// ---------------------
-// DATA EAST GAMES BELOW
-// ---------------------
-DRIVERNV(lwar)          //Data East MPU: 05/87 Laser War
-DRIVERNV(ssvc)          //Data East MPU: 03/88 Secret Service
-DRIVERNV(torpe)         //Data East MPU: 08/88 Torpedo Alley
-DRIVERNV(tmach)         //Data East MPU: 12/88 Time Machine
-DRIVERNV(play)          //Data East MPU: 05/89 Playboy 35th Anniversary
-//2 x 16 A/N Display
-DRIVERNV(mnfb)          //Data East MPU: 09/89 ABC Monday Night Football
-DRIVERNV(robo)          //Data East MPU: 11/89 Robo Cop
-DRIVERNV(poto)          //Data East MPU: 01/90 Phantom of the Opera
-DRIVERNV(bttf)          //Data East MPU: 06/90 Back to the Future
-DRIVERNV(simp)          //Data East MPU: 09/90 The Simpsons
-//DMD 128 x 16
-DRIVERNV(chkpnt)        //Data East MPU: 02/91 Checkpoint
-DRIVERNV(tmnt)          //Data East MPU: 05/91 Teenage Mutant Ninja Turtles
-//BSMT2000 Sound chip
-DRIVERNV(batmn)         //Data East MPU: 07/91 Batman
-DRIVERNV(trek)          //Data East MPU: 10/91 Star Trek 25th Anniversary
-DRIVERNV(hook)          //Data East MPU: 01/92 Hook
-//DMD 128 x 32
-DRIVERNV(lw3)           //Data East MPU: 06/92 Lethal Weapon
-DRIVERNV(stwarde)       //Data East MPU: 10/92 Star Wars
-DRIVERNV(rab)           //Data East MPU: 02/93 Rocky & Bullwinkle
-DRIVERNV(jurpark)       //Data East MPU: 04/93 Jurasic Park
-DRIVERNV(lah)           //Data East MPU: 08/93 Last Action Hero
-DRIVERNV(tftc)          //Data East MPU: 11/93 Tales From the Crypt
-DRIVERNV(tommy)         //Data East MPU: 02/94 Tommy
-DRIVERNV(wwfrumb)       //Data East MPU: 05/94 WWF Royal Rumble
-DRIVERNV(gnr)           //Data East MPU: 07/94 Guns N Roses
-//DMD 192 x 64
-DRIVERNV(maverick)      //Data East MPU: 09/94 Maverick
-//MISC
-DRIVERNV(detest)        //Data East MPU: ??/?? DE Test Chip
+// ---------------
+// STERN GAMES 
+// ---------------
+// MPU-100 - Chime Sound
+DRIVERNV(stingray)      //MPU-100: 03/77 Stingray
+DRIVERNV(pinball)       //MPU-100: 07/77 Pinball
+DRIVERNV(stars)         //MPU-100: 03/78 Stars
+DRIVERNV(memlane)       //MPU-100: 06/78 Memory Lane
+// MPU-100 - Sound Board: SB-100
+DRIVERNV(lectrono)      //MPU-100: 08/78 Lectronamo
+DRIVERNV(wildfyre)      //MPU-100: 10/78 Wildfyre
+DRIVERNV(nugent)        //MPU-100: 11/78 Nugent
+DRIVERNV(dracula)       //MPU-100: 01/79 Dracula
+DRIVERNV(trident)       //MPU-100: 03/79 Trident
+DRIVERNV(hothand)       //MPU-100: 06/79 Hot Hand
+DRIVERNV(magic)         //MPU-100: 08/79 Magic
+DRIVERNV(princess)      //MPU-100: 08/79 Cosmic Princess
+// MPU-200 - Sound Board: SB-300
+DRIVERNV(meteor)        //MPU-200: 09/79 Meteor
+DRIVERNV(galaxy)        //MPU-200: 01/80 Galaxy
+DRIVERNV(ali)           //MPU-200: 03/80 Ali
+DRIVERNV(biggame)       //MPU-200: 03/80 Big Game
+DRIVERNV(seawitch)      //MPU-200: 05/80 Seawitch
+DRIVERNV(cheetah)       //MPU-200: 06/80 Cheetah
+DRIVERNV(quicksil)      //MPU-200: 06/80 Quicksilver
+DRIVERNV(nineball)      //MPU-200: 12/80 Nineball
+DRIVERNV(freefall)      //MPU-200: 01/81 Free Fall
+DRIVERNV(splitsec)      //MPU-200: 08/81 Split Second
+DRIVERNV(catacomb)      //MPU-200: 10/81 Catacomb
+DRIVERNV(ironmaid)      //MPU-200: 10/81 Iron Maiden
+DRIVERNV(viper)         //MPU-200: 12/81 Viper
+DRIVERNV(dragfist)      //MPU-200: 01/82 Dragonfist
+// MPU-200 - Sound Board: SB-300, VS-100
+DRIVERNV(flight2k)      //MPU-200: 08/80 Flight 2000
+DRIVERNV(stargzr)       //MPU-200: 08/80 Stargazer
+DRIVERNV(lightnin)      //MPU-200: 03/81 Lightning
+DRIVERNV(orbitor1)      //MPU-200: 04/82 Orbitor One
+DRIVERNV(cue)           //MPU-200: ??/82 Cue            (Proto - Never released)
+DRIVERNV(lazrlord)      //MPU-200: 10/84 Lazer Lord     (Proto - Never released)
+// Whitestar System
+DRIVERNV(strikext)      //Whitestar: 03/00 Striker Extreme
+DRIVERNV(strxt_uk)      //Whitestar: 03/00 Striker Extreme (UK)
+DRIVERNV(strxt_gr)      //Whitestar: 03/00 Striker Extreme (Germany)
+DRIVERNV(strxt_fr)      //Whitestar: 03/00 Striker Extreme (France)
+DRIVERNV(strxt_it)      //Whitestar: 03/00 Striker Extreme (Italy)
+DRIVERNV(strxt_sp)      //Whitestar: 03/00 Striker Extreme (Spain)
+DRIVERNV(shrkysht)      //Whitestar: 09/00 Sharkey's Shootout (2.11)
+DRIVERNV(shrky_gr)      //Whitestar: 09/00 Sharkey's Shootout (German display)
+DRIVERNV(shrky_fr)      //Whitestar: 09/00 Sharkey's Shootout (French display)
+DRIVERNV(shrky_it)      //Whitestar: 09/00 Sharkey's Shootout (Italian display)
+DRIVERNV(hirolcas)      //Whitestar: 01/01 High Roller Casino (3.0)
+DRIVERNV(hirol_fr)      //Whitestar: 01/01 High Roller Casino (German display)
+DRIVERNV(hirol_gr)      //Whitestar: 01/01 High Roller Casino (French display)
+DRIVERNV(hirol_it)      //Whitestar: 01/01 High Roller Casino (Italian display)
+//
+#ifdef INCLUDE_NEW_STERN
+DRIVERNV(austin)        //Whitestar: 05/01 Austin Powers (3.01)
+DRIVERNV(austind)       //Whitestar: 05/01 Austin Powers (German display)
+DRIVERNV(austinf)       //Whitestar: 05/01 Austin Powers (French display)
+DRIVERNV(austini)       //Whitestar: 05/01 Austin Powers (Italian display)
+DRIVERNV(austin2)       //Whitestar: 05/01 Austin Powers (2.0 - With "White House" scenes)
+DRIVERNV(monopoly)      //Whitestar: 09/01 Monopoly (3.03)
+DRIVERNV(monopold)      //Whitestar: 09/01 Monopoly (German display)
+DRIVERNV(monopole)      //Whitestar: 09/01 Monopoly (Spanish display)
+DRIVERNV(monopolf)      //Whitestar: 09/01 Monopoly (French display)
+DRIVERNV(monopoli)      //Whitestar: 09/01 Monopoly (Italian display)
+DRIVERNV(playboys)      //Whitestar: 02/02 Playboy (5.0)
+DRIVERNV(playboyd)      //Whitestar: 02/02 Playboy (German display)
+DRIVERNV(playboye)      //Whitestar: 02/02 Playboy (Spanish display)
+DRIVERNV(playboyf)      //Whitestar: 02/02 Playboy (French display)
+DRIVERNV(playboyi)      //Whitestar: 02/02 Playboy (Italian display)
+DRIVERNV(rctycn)        //Whitestar: 09/02 Roller Coaster Tycoon (7.01)
+DRIVERNV(rctycnd)       //Whitestar: 09/02 Roller Coaster Tycoon (German display)
+DRIVERNV(rctycne)       //Whitestar: 09/02 Roller Coaster Tycoon (Spanish display)
+DRIVERNV(rctycnf)       //Whitestar: 09/02 Roller Coaster Tycoon (French display)
+DRIVERNV(rctycni)       //Whitestar: 09/02 Roller Coaster Tycoon (Italian display)
+DRIVERNV(simpprty)      //Whitestar: 01/03 The Simpsons Pinball Party (2.04)
+DRIVERNV(simpprtd)      //Whitestar: 01/03 The Simpsons Pinball Party (German display)
+DRIVERNV(simpprte)      //Whitestar: 01/03 The Simpsons Pinball Party (Spanish display)
+DRIVERNV(simpprtf)      //Whitestar: 01/03 The Simpsons Pinball Party (French display)
+DRIVERNV(simpprti)      //Whitestar: 01/03 The Simpsons Pinball Party (Italian display)
+DRIVERNV(term3)         //Whitestar: 06/03 Terminator 3: Rise of the Machines
+DRIVERNV(term3g)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (German)
+DRIVERNV(term3l)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (Spain)
+DRIVERNV(term3f)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (France)
+DRIVERNV(term3i)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (Italy)
+#endif /* INCLUDE_NEW_STERN */
 
-// -------------------------------------
-// WILLIAMS & WILLIAMS/BALLY GAMES BELOW
-// -------------------------------------
+// ---------------
+// TAITO GAMES 
+// ---------------
+                        //??/?? Criterium 77
+                        //??/?? Apache!
+                        //??/?? Football
+                        //??/79 Hot Ball (B Eight Ball, 01/77)
+                        //??/79 Shock (W Flash, 01/79)
+                        //??/?? Sultan (G Sinbad, 05/78)
+DRIVERNV(obaoba  )      //??/80 Oba Oba (B Playboy, 10/77)
+DRIVERNV(drakor  )      //??/80 Drakor (W Gorgar, 11/79)
+                        //??/?? Roman Victory
+                        //??/?? Space Patrol
+DRIVERNV(meteort )      //??/80 Meteor (S Meteor, 09/79)
+DRIVERNV(fireact )      //??/81 Fire Action (W Firepower, 02/80)
+DRIVERNV(cavnegro)      //??/81 Cavaleiro Negro (W Black Knight, 11/80)
+DRIVERNV(sureshot)      //??/81 Sure Shot (B Eight Ball Deluxe, 09/80)
+DRIVERNV(vegast  )      //??/81 Vegas / Lady Luck (B Mata Hari, 09/77)
+DRIVERNV(cosmic  )      //??/81 Cosmic (S Galaxy, 01/80)
+DRIVERNV(gemini  )      //??/82 Gemini 2000 (B Centaur, 02/81)
+DRIVERNV(vortex  )      //??/82 Vortex (W Blackout, 06/80)
+DRIVERNV(titan   )      //??/82 Titan (W Barracora, 09/81)
+DRIVERNV(zarza   )      //??/82 Zarza (B Xenon, 11/79)
+DRIVERNV(sharkt  )      //??/82 Shark
+DRIVERNV(hawkman )		//??/82 Hawkman (B Fathom, 12/80)
+DRIVERNV(stest   )      //??/82 Speed Test
+                        //??/82 Lunelle (W Alien Poker, 10/80)
+DRIVERNV(rally   )      //??/82 Rally (B Skateball, 04/80)
+DRIVERNV(snake   )      //??/82 Snake Machine
+DRIVERNV(voleybal)      //??/?? Voley Ball
+                        //??/82 Gork
+                        //??/8? Ogar
+DRIVERNV(mrblack )		//??/84 Mr. Black (W Defender, 12/82)
+DRIVERNV(fireactd)      //??/8? Fire Action De Luxe (W Firepower II, 08/83)
+DRIVERNV(sshuttle)      //??/85 Space Shuttle (W Space Shuttle, 12/84)
+DRIVERNV(polar   )      //??/8? Polar Explorer
+DRIVERNV(taitest )      //??/8? Test Fixture
+
+// ----------------
+// UNITED GAMES
+// ----------------
+DRIVERNV(bbbowlin)      //Big Ball Bowling - using Bally hardware
+
+// -----------------------------------
+// WILLIAMS & WILLIAMS/BALLY GAMES
+// -----------------------------------
 DRIVER(topaz,l1)        //???       Topaz (Shuffle)
 DRIVER(taurs,l1)        //???       Taurus (Shuffle)
 DRIVER(bstrk,l1)        //???       Big Strike (Bowler)
@@ -580,16 +570,19 @@ DRIVER(tstrk,l1)        //???       Triple Strike (Bowler)
 
                         //??-466:   06/76 W Aztec
                         //??-470:   10/77 W Wild Card
+//System 3
 DRIVER(httip,l1)        //S3-477:   11/77 W Hot Tip
 DRIVER(lucky,l1)        //S3-480:   03/78 W Lucky Seven
 DRIVER(cntct,l1)        //S3-482:   05/78 W Contact
 DRIVER(wldcp,l1)        //S3-481:   05/78 W World Cup
 DRIVER(disco,l1)        //S3-483:   08/78 W Disco Fever
+//System 4
 DRIVER(pkrno,l1)        //S4-488:   10/78 W Pokerino
 DRIVER(phnix,l1)        //S4-485:   11/78 W Phoenix
 DRIVER(flash,l1)        //S4-486:   01/79 W Flash
 DRIVER(stlwr,l2)        //S4-490:   03/79 W Stellar Wars
                         //S?-491:   06/79 W Rock'N Roll
+//System 6
 DRIVER(trizn,l1)        //S6-487:   07/79 W TriZone
 DRIVER(tmwrp,l2)        //S6-489:   09/79 W Time Warp
 DRIVER(grgar,l1)        //S6-496:   11/79 W Gorgar
@@ -601,6 +594,7 @@ DRIVER(algar,l1)        //S6-499:   09/80 W Algar
 DRIVER(alpok,l2)        //S6-501:   10/80 W Alien Poker L-2
 DRIVER(alpok,l6)        //S6-501:   10/80 W Alien Poker L-6
 DRIVER(alpok,f6)        //S6-501:   10/80 W Alien Poker L-6, French speech
+//System 7
 DRIVER(bk,l4)           //S7-500:   11/80 W Black Knight
 DRIVER(jngld,l2)        //S7-503:   02/81 W Jungle Lord
 DRIVER(pharo,l2)        //S7-504:   05/81 W Pharoah
@@ -619,13 +613,15 @@ DRIVER(tmfnt,l5)        //S7-515:   03/83 W Time Fantasy
 DRIVER(jst,l2)          //S7-519:   04/83 W Joust
 DRIVER(fpwr2,l2)        //S7-521:   08/83 W Firepower II
 DRIVER(lsrcu,l2)        //S7-520:   02/84 W Laser Cue
+DRIVER(strlt,l1)        //S7-530:   06/84 W Star Light (Came out after System 9 produced)
+//System 9
 DRIVER(pfevr,p3)        //S9-526:   05/84 W Pennant Fever (pitch & bat)
-DRIVER(strlt,l1)        //S7-530:   06/84 W Star Light
                         //S?-538:   10/84 W Gridiron
 DRIVER(sshtl,l7)        //S9-535:   12/84 W Space Shuttle
 DRIVER(szone,l5)        //S9-916:   ??/8? W Strike Zone (Shuffle)
 DRIVER(sorcr,l1)        //S9-532:   03/85 W Sorcerer
 DRIVER(comet,l4)        //S9-540:   06/85 W Comet
+//System 11
 DRIVER(hs,l4)           //S11-541:  01/86 W High Speed
                         //S11:      02/86 W Alley Cats (Bowler)
 DRIVER(grand,l4)        //S11-523:  04/86 W Grand Lizard
@@ -666,6 +662,7 @@ DRIVER(pool,l7)         //S11-1848: 06/90 B Pool Sharks (Shark?)
 DRIVER(diner,l4)        //S11-571:  09/90 W Diner
 DRIVER(radcl,l1)        //S11-1904: 09/90 B Radical!
 DRIVER(dd,l2)           //S11-737:  11/90 B Dr. Dude
+//WPC
 DRIVER(dd,p7)           //WPC:      11/90 B Dr. Dude
 DRIVER(fh,l9)           //WPC-503:  12/90 W Funhouse
 DRIVER(fh,l9b)                            // bootleg with correct German translation
@@ -742,27 +739,48 @@ DRIVER(mb,10)           //WPC-565:  07/98 W Monster Bash
 DRIVER(mb,106)                            // Home version
 DRIVER(cc,12)           //WPC-566:  10/98 B Cactus Canyon
 DRIVER(cc,13)							  // 1.3 version
-
+//Test Fixtures
 DRIVER(tfdmd,l3)        //WPC:              Test fixture DMD
 DRIVER(tfs,12)          //WPC-648:          Test fixture Security
 DRIVER(tfa,13)          //WPC:              Test fixture Alphanumeric
 DRIVER(tf95,12)         //WPC-648:          Test fixture WPC95
 
 // ------------------
-// CAPCOM GAMES BELOW
+// ZACCARIA GAMES 
 // ------------------
-DRIVERNV(ghv101)        // ??/95    Goofy Hoops (Romstar license)
-
-DRIVERNV(pmv112)        // 10/95    Pinball Magic
-DRIVERNV(pmv112r)       // 10/95    Pinball Magic (Redemption)
-DRIVERNV(abv106)        // 03/96    Airborne
-DRIVERNV(abv106r)       // 03/96    Airborne (Redemption)
-DRIVERNV(bsv100r)       // 05/96    Breakshot (Redemption, 1.0)
-DRIVERNV(bsv102r)       // 05/96    Breakshot (Redemption, 1.2)
-DRIVERNV(bsv103)        // 05/96    Breakshot (1.3)
-DRIVERNV(bsb105)        // 05/96    Breakshot (Beta, 1.5)
-DRIVERNV(ffv104)        // 10/96    Flipper Football
-DRIVERNV(bbb109)        // 11/96    Big Bang Bar (Beta, 1.9)
-DRIVERNV(kpv106)        // 12/96    Kingpin
+//Other games created earlier by Zaccaria are EM
+                        //10/77 Combat
+DRIVERNV(wsports)       //01/78 Winter Sports
+                        //07/78 House of Diamonds
+                        //09/78 Strike
+                        //10/78 Ski Jump
+DRIVERNV(futurwld)      //10/78 Future World
+DRIVERNV(strapids)      //04/79 Shooting the Rapids
+DRIVERNV(hotwheel)      //09/79 Hot Wheels
+                        //09/79 Space City
+DRIVERNV(firemntn)      //01/80 Fire Mountain
+DRIVERNV(stargod)       //05/80 Star God
+DRIVERNV(sshtlzac)      //09/80 Space Shuttle
+DRIVERNV(ewf)           //04/81 Earth, Wind & Fire
+DRIVERNV(locomotn)      //09/81 Locomotion
+DRIVERNV(pinchp82)      //04/82 Pinball Champ '82 (Is this really different from the '83?)
+DRIVERNV(socrking)      //09/82 Soccer King
+DRIVERNV(pinchamp)      //??/83 Pinball Champ
+DRIVERNV(tmachzac)      //04/83 Time Machine
+DRIVERNV(farfalla)      //09/83 Farfalla
+DRIVERNV(dvlrider)      //04/84 Devil Riders
+DRIVERNV(dvlrideg)      //04/84 Devil Riders (german speech)
+DRIVERNV(mcastle)       //09/84 Magic Castle
+DRIVERNV(mcastleg)      //09/84 Magic Castle (german speech)
+DRIVERNV(myststar)      //??/84 Mystic Star
+DRIVERNV(robot)         //01/85 Robot
+DRIVERNV(clown)         //07/85 Clown
+DRIVERNV(poolcham)      //12/85 Pool Champion
+DRIVERNV(bbeltzac)      //??/86 Blackbelt
+DRIVERNV(mexico)        //??/86 Mexico '86
+DRIVERNV(zankor)        //??/86 Zankor
+DRIVERNV(spooky)        //??/87 Spooky
+                        //??/87 Star's Phoenix
+                        //??/86 New Star's Phoenix
 
 #endif /* DRIVER_RECURSIVE */
