@@ -7,7 +7,7 @@
 #include "taito.h"
 
 #define TAITO_VBLANKFREQ     60  // VBLANK frequency
-#define TAITO_IRQFREQ        0.2 
+#define TAITO_IRQFREQ        0.2
 
 #define TAITO_SOLSMOOTH      2 /* Smooth the Solenoids over this numer of VBLANKS */
 #define TAITO_DISPLAYSMOOTH  2 /* Smooth the display over this number of VBLANKS */
@@ -19,6 +19,10 @@ static struct {
 } locals;
 
 static NVRAM_HANDLER(taito);
+
+static int segMap[] = {
+  4,0,-4,4,0,-4,4,0,-4,4,0,-4,0,0
+};
 
 static INTERRUPT_GEN(taito_vblank) {
   /*-------------------------------
@@ -32,8 +36,8 @@ static INTERRUPT_GEN(taito_vblank) {
 
 	for (i=0; i<14; i++)
 	{
-		((int*) coreGlobals.segments)[2*i]   = core_bcd2seg[(*(locals.pDisplayRAM+i)>>4)&0x0f];
-		((int*) coreGlobals.segments)[2*i+1] = core_bcd2seg[*(locals.pDisplayRAM+i)&0x0f];
+		((int*) coreGlobals.segments)[2*i+segMap[i]]   = core_bcd2seg[(*(locals.pDisplayRAM+i)>>4)&0x0f];
+		((int*) coreGlobals.segments)[2*i+segMap[i]+1] = core_bcd2seg[*(locals.pDisplayRAM+i)&0x0f];
 	}
   }
 
