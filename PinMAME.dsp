@@ -4302,6 +4302,18 @@ SOURCE=.\src\wpc\jpgames.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\ltd.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\ltd.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\ltdgames.c
+# End Source File
+# Begin Source File
+
 SOURCE=src\wpc\mech.c
 
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
