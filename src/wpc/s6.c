@@ -28,7 +28,7 @@ core_tLCDLayout s6_6digit_disp[] = {
   // Player 1            Player 2
   {0, 0, 0,6,CORE_SEG7}, {0,18, 8,6,CORE_SEG7},
   // Player 3            Player 4
-  {2, 0,16,6,CORE_SEG7}, {2,18,24,6,CORE_SEG7},
+  {2, 0,20,6,CORE_SEG7}, {2,18,28,6,CORE_SEG7},
   // Right Side          Left Side
   {4, 9,14,2,CORE_SEG7}, {4,14, 6,2,CORE_SEG7}, {0}
 };
@@ -55,11 +55,11 @@ core_tLCDLayout s6_7digit_disp[] = {
   // Player 1 Segment    Player 2 Segment
   {0, 0, 1,7,CORE_SEG7},{0,18, 9,7,CORE_SEG7},
   // Player 3 Segment    Player 4 Segment
-  {2, 0,17,7,CORE_SEG7},{2,18,25,7,CORE_SEG7},
+  {2, 0,21,7,CORE_SEG7},{2,18,29,7,CORE_SEG7},
   // Credits (Left Side)
   {4,14, 0,1,CORE_SEG7},{4,16, 8,1,CORE_SEG7},
   // Balls (Right Side)
-  {4, 9,16,1,CORE_SEG7},{4,11,24,1,CORE_SEG7}, {0}
+  {4, 9,20,1,CORE_SEG7},{4,11,28,1,CORE_SEG7}, {0}
 };
 
 static void s6_exit(void);

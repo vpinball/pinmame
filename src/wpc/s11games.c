@@ -27,11 +27,11 @@ S11_INPUT_PORTS_START(name, balls) S11_INPUT_PORTS_END
 / Space Shuttle (S9) 12/84
 /--------------------*/
 static core_tLCDLayout dispSshtl[] = { \
-	{  0, 0,17,7, CORE_SEG87},
-	{  2, 0,25,7, CORE_SEG87},
-	{  4, 0, 1,7, CORE_SEG87}, { 4, 26,9,7,CORE_SEG87},
-	{  5,18, 0,1, CORE_SEG7},{5,20, 8,1,CORE_SEG7},
-	{  5,23,16,1, CORE_SEG7},{5,25,24,1,CORE_SEG7},{0}
+	{  0, 0,21,7, CORE_SEG87},
+	{  2, 0,29,7, CORE_SEG87},
+	{  4, 0, 1,7, CORE_SEG87}, { 4,26, 9,7,CORE_SEG87},
+	{  5,18, 0,1, CORE_SEG7},  { 5,20, 8,1,CORE_SEG7},
+	{  5,23,20,1, CORE_SEG7},  { 5,25,28,1,CORE_SEG7},{0}
 };
 static core_tGameData sshtlGameData = {
   GEN_S9, dispSshtl,
@@ -71,10 +71,10 @@ CORE_GAMEDEF(sorcr, l1, "Sorcerer (L-1)", 1985, "Williams", s9_mS9S,0)
 / Pennant Fever
 /--------------------*/
 static core_tLCDLayout dispPfever[] = { \
-  { 0, 0,17, 3, CORE_SEG7},  { 0, 8,21, 3, CORE_SEG7}, { 0,16,12, 4, CORE_SEG7},
+  { 0, 0,21, 3, CORE_SEG7},  { 0, 8,25, 3, CORE_SEG7}, { 0,16,12, 4, CORE_SEG7},
   { 2, 2, 0, 1, CORE_SEG7},  { 2, 4, 8, 1, CORE_SEG7},
-  { 2, 8,16, 1, CORE_SEG7},  { 2,10,24, 1, CORE_SEG7},
-  { 4, 4,29, 1, CORE_SEG7},  { 4, 8,31, 1, CORE_SEG7},
+  { 2, 8,20, 1, CORE_SEG7},  { 2,10,28, 1, CORE_SEG7},
+  { 4, 4,33, 1, CORE_SEG7},  { 4, 8,35, 1, CORE_SEG7},
   {0}
 };
 static core_tGameData PfevrGameData = {
@@ -98,9 +98,9 @@ CORE_GAMEDEF(pfevr, p3, "Pennant Fever Baseball (P-3)", 1984, "Williams", s9_mS9
 / Comet (S9) 06/85
 /--------------------*/
 static core_tLCDLayout dispComet[] = { \
-  {  0, 0,17, 7, CORE_SEG87}, {3, 0,25,7,CORE_SEG87},
+  {  0, 0,21, 7, CORE_SEG87}, {3, 0,29,7,CORE_SEG87},
   {  0,18, 1, 7, CORE_SEG87}, {3,18, 9,7,CORE_SEG87},
-  {  6, 3,16, 1, CORE_SEG7 }, {6, 5,24,1,CORE_SEG7},
+  {  6, 3,20, 1, CORE_SEG7 }, {6, 5,28,1,CORE_SEG7},
   {  6, 8, 0, 1, CORE_SEG7 }, {6,10, 8,1,CORE_SEG7}, {0}
 };
 static core_tGameData cometGameData = {
@@ -326,7 +326,7 @@ CORE_GAMEDEF(swrds, l2, "Swords of Fury (L-2)", 1988, "Williams", s11_mS11B_1S,0
 /--------------------*/
 static core_tLCDLayout dispTaxi[] = { \
   DISP_SEG_16(0,CORE_SEG16),DISP_SEG_16(1,CORE_SEG8H),\
-  { 2, 0,17,7,CORE_SEG7S},{0}
+  { 2, 0,21,7,CORE_SEG7S},{0}
 };
 
 INITGAME(taxi, GEN_S11B_2,dispTaxi,12, FLIP_SW(FLIP_L),3/*?*/)
@@ -406,9 +406,9 @@ CORE_GAMEDEF(bk2k, l4, "Black Knight 2000 (L-4)", 1989, "Williams", s11_mS11B_2S
 / Police Force 9/89
 /-----------------------*/
 static core_tLCDLayout dispPolic[] = {
-  { 0,8,16, 8,CORE_SEG8 },
+  { 0,8,20, 8,CORE_SEG8 },
   { 2,0, 0,16,CORE_SEG16 },
-  { 4,0,16,16,CORE_SEG8H},{0}
+  { 4,0,20,16,CORE_SEG8H},{0}
 };
 INITGAME(polic,GEN_S11B_2, dispPolic, 12, FLIP_SW(FLIP_L),3/*?*/)
 S11_ROMSTART48(polic,l4,"pfrc_u26.l4", 0x1a1409e9,
@@ -582,10 +582,10 @@ CORE_GAMEDEF(radcl, l1, "Radical (L-1)", 1990, "Bally", s11_mS11CS,0)
 / Riverboat Gambler 10/90
 /--------------------*/
 static core_tLCDLayout dispRvrbt[] = {
-  { 0,18,17, 7, CORE_SEG87 },
-  { 0, 4,28, 4, CORE_SEG7  },
+  { 0,18,21, 7, CORE_SEG87 },
+  { 0, 4,32, 4, CORE_SEG7  },
   { 2, 0, 0,16, CORE_SEG16 },
-  { 4, 0,16,16, CORE_SEG8H },{0}
+  { 4, 0,20,16, CORE_SEG8H },{0}
 };
 #if 1
 static char *wheel[] = {"Red","Green","Black","Red","Black","Red*","Black","Red",
@@ -630,7 +630,7 @@ CORE_GAMEDEF(rvrbt, l3, "Riverboat Gambler (L-3)", 1990, "Williams", s11_mS11CS,
 / Bugs Bunny Birthday Ball 11/90
 /--------------------*/
 static core_tLCDLayout dispbbb[] = { \
-	{0,0,0,16,CORE_SEG16},{0,33,16,16,CORE_SEG16}, {0}
+	{0,0,0,16,CORE_SEG16},{0,33,20,16,CORE_SEG16}, {0}
 };
 
 INITGAME(bbnny,GEN_S11C,dispbbb,12,FLIP_SW(FLIP_L),3/*?*/)

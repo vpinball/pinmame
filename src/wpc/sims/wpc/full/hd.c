@@ -379,7 +379,7 @@ static sim_tSimData hdSimData = {
 / Game Data Information
 /----------------------*/
 static core_tLCDLayout disphd[] = { \
-	{0,0,0,16,CORE_SEG16},{0,33,16,16,CORE_SEG16}, {0}
+	{0,0,0,16,CORE_SEG16},{0,33,20,16,CORE_SEG16}, {0}
 };
 
 static core_tGameData hdGameData = {
