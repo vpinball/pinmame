@@ -121,6 +121,8 @@ static INTERRUPT_GEN(GTS80_vblank) {
 static int GTS80_sw2m(int no) {
 	if ( no>=96 )
 		return (no/10)*8+(no%10-1);
+	else if (no < 0)
+		return no + 8;
 	else {
 		no += 1;
 		return (no%10)*8 + no/10;
@@ -130,6 +132,8 @@ static int GTS80_sw2m(int no) {
 static int GTS80_m2sw(int col, int row) {
 	if (col > 9 || (col == 9 && row >= 6))
 		return col*8+row;
+	else if (col < 1)
+		return -9 + row;
 	else
 		return row*10+col-1;
 }
