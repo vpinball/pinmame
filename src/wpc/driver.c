@@ -836,7 +836,7 @@ DRIVER(tf95,12)         //WPC-648:          Test fixture WPC95
                         //10/77 Combat
 DRIVERNV(wsports)       //01/78 Winter Sports
                         //07/78 House of Diamonds
-                        //09/78 Strike
+DRIVERNV(strike)        //09/78 Strike
                         //10/78 Ski Jump
 DRIVERNV(futurwld)      //10/78 Future World
 DRIVERNV(strapids)      //04/79 Shooting the Rapids
