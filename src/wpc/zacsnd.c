@@ -431,6 +431,8 @@ static struct {
   int nmi_enable;			// GTS3 - Enable NMI triggered by Programmable Circuit
   UINT8  dac_volume;
   UINT8  dac_data;
+  UINT8  speechboard_drq;	
+  UINT8  sp0250_latch;
 } techno_locals;
 
 // Latch data for AY chips
@@ -488,21 +490,23 @@ WRITE_HANDLER(techno_sh_w)
 	cpu_set_irq_line(ZACSND_CPUA, 0, HOLD_LINE);
 	cpu_set_irq_line(ZACSND_CPUB, 0, HOLD_LINE);
 	//Bit 6 if set, fires TMS IRQ 1, only on risiging (or is it falling?) edge?
-	if((last&0x40) && (data ^ 0x40)) {
-		printf("TMS IRQ1\n");
+	//if((last&0x40) && (data ^ 0x40)) {
+	if(data ^ 0x40) {
+		logerror("TMS IRQ1\n");
 		cpu_set_irq_line(ZACSND_CPUC, TMS7000_IRQ1_LINE, ASSERT_LINE);
 	}
 	last = data;
 }
 
-//Generation 1 Specific
+/* bits 0-3 are probably unused (future expansion) */
+/* bits 4 & 5 are two dip switches. Unused? */
+/* bit 6 is the test switch. When 0, the CPU plays a pulsing tone. */
+/* bit 7 comes from the speech chip DATA REQUEST pin */
 READ_HANDLER(techno_sound_input_r)
 {
-	/* bits 0-3 are probably unused (future expansion) */
-	/* bits 4 & 5 are two dip switches. Unused? */
-	/* bit 6 is the test switch. When 0, the CPU plays a pulsing tone. */
-	/* bit 7 comes from the speech chip DATA REQUEST pin */
-	return 0xc0;
+	int data = 0x40;
+	if(techno_locals.speechboard_drq)	data |= 0x80;
+	return data;
 }
 
 //Common to All Generations - Set NMI Timer Enable
@@ -541,14 +545,16 @@ WRITE_HANDLER( techno_sound_control_w )
 	}
 
 	/* bit 5 goes to the speech chip DIRECT DATA TEST pin */
+	//NO IDEA WHAT THIS DOES - No interface in the sp0250 emulation for it yet?
 
 	/* bit 6 = speech chip DATA PRESENT pin; high then low to make the chip read data */
 	if ((last & 0x40) == 0x40 && (data & 0x40) == 0x00)
 	{
+		sp0250_w(0,techno_locals.sp0250_latch);
 	}
 
 	/* bit 7 goes to the speech chip RESET pin */
-
+	//No interface in the sp0250 emulation for it yet?
 	last = data & 0x44;
 }
 
@@ -560,6 +566,8 @@ static void tsns_init(struct sndbrdData *brdData) {
 	timer_set(TIME_IN_HZ(250000>>8), 0, nmi_callback);
 	//Set bank
 	cpu_setbank(1, techno_locals.brdData.romRegion + 0x10000);
+	//Must be 1 to start or speechboard will never work
+	techno_locals.speechboard_drq = 1;
 }
 
 // Cleanup
@@ -572,11 +580,13 @@ void tsns_exit(int boardNo)
 
 static WRITE_HANDLER(tsns_data_w) {
   data ^= 0xff;	/*Data is inverted from main cpu*/
+  
   //Bit 7 is the strobe - so commands are sent 2x, once with strobe set, then again, with it cleared..
   //Doesn't seem to matter much if we put this in or leave it out..
   //if(data & 0x80)
 	//  return;
-  printf("tsns_data_w = %x\n",data);
+
+  logerror("tsns_data_w = %x\n",data);
   techno_sh_w(0,data);
 }
 
@@ -596,33 +606,33 @@ static READ_HANDLER(techno_b_snd_r)
 READ_HANDLER(tms_porta_r)
 {
 	int data = soundlatch_r(0) & 0x1f;	//Only bits 0-4 used
-	printf("reading porta =%x\n",data);
+	logerror("reading porta =%x\n",data);
 	return data;
 }
 
 //Should not be used for input
 READ_HANDLER(tms_portb_r)
 {
-	printf("reading portb\n");
+	logerror("reading portb\n");
 	return 0;
 }
 //Should not be used since it's used for address and data lines
 READ_HANDLER(tms_portc_r)
 {
-	printf("reading portc\n");
+	logerror("reading portc\n");
 	return 0;
 }
 //Should not be used since it's used for address and data lines
 READ_HANDLER(tms_portd_r)
 {
-	printf("reading portd\n");
+	logerror("reading portd\n");
 	return 0;
 }
 
 //Should not be used for output?
 WRITE_HANDLER(tms_porta_w)
 {
-	printf("writing port a = %x\n",data);
+	logerror("writing port a = %x\n",data);
 }
 
 /*
@@ -634,19 +644,31 @@ D4-D7 = Used for Bus Control
 */
 WRITE_HANDLER(tms_portb_w)
 {
-	printf("writing port b = %x\n",data);
+	//this doesn't seem to be working correctly
+	logerror("writing port b = %x\n",data);
 	cpu_setbank(1, techno_locals.brdData.romRegion + 0x10000 + (data&2*0x8000));
 }
 
 //should not be used since it's used for address and data lines
 WRITE_HANDLER(tms_portc_w)
 {
-	printf("writing port c = %x\n",data);
+	logerror("writing port c = %x\n",data);
 }
 //should not be used since it's used for address and data lines
 WRITE_HANDLER(tms_portd_w)
 {
-	printf("writing port d = %x\n",data);
+	logerror("writing port d = %x\n",data);
+}
+
+//Speechboard IRQ callback, will be set to 1 while speech is busy..
+static void speechboard_drq_w(int level)
+{
+	techno_locals.speechboard_drq = (level == ASSERT_LINE);
+}
+
+//Latch data to the SP0250
+static WRITE_HANDLER(sp0250_latch) {
+	techno_locals.sp0250_latch = data;
 }
 
 const struct sndbrdIntf technoIntf =
@@ -665,14 +687,14 @@ struct AY8910interface techno_ay8910Int = {
 
 struct DACinterface techno_6502dacInt =
 {
-  2,			/*2 Chips - but it seems we only access 1?*/
+  2,			/*2 Chips - really could be 3 as 1 of them is a dual chip, but we're not emulating it*/
  {50,50}		/* Volume */
 };
 
-struct DACinterface techno_7000dacInt =
+struct sp0250_interface techno_sp0250_interface =
 {
-  1,		/*1 Chip */
- {50}		/* Volume */
+	100,				/*Volume*/
+	speechboard_drq_w	/*IRQ Callback*/
 };
 
 //6502 #1 CPU
@@ -684,9 +706,9 @@ MEMORY_READ_START( m6502_readmem )
 MEMORY_END
 MEMORY_WRITE_START( m6502_writemem )
 	{ 0x0000, 0x03ff, MWA_RAM },
-	{ 0x2000, 0x2000, MWA_NOP },	/* speech chip. The game sends strings */
-									/* of 15 bytes (clocked by 4000). The chip also */
-									/* checks a DATA REQUEST bit in 6000. */
+	{ 0x2000, 0x2000, sp0250_latch },	/* speech chip. The game sends strings */
+										/* of 15 bytes (clocked by 4000). The chip also */
+										/* checks a DATA REQUEST bit in 6000. */
 	{ 0x4000, 0x4000, techno_sound_control_w },
 	{ 0x8000, 0x8000, techno_ay8910_latch_w },
 	{ 0xa000, 0xa000, techno_nmi_rate_w },	   /* set Y-CPU NMI rate */
@@ -713,7 +735,7 @@ MEMORY_END
 
 static MEMORY_WRITE_START(tms_writemem)
   { 0x0000, 0x7fff, MWA_ROM },
-  //{ 0x8000, 0xffff, DAC_1_data_w },		//not sure how to handle 2 different dac interfaces here
+  { 0x8000, 0xffff, DAC_1_data_w },
 MEMORY_END
 
 static PORT_READ_START(tms_readport)
@@ -730,20 +752,20 @@ static PORT_WRITE_START(tms_writeport)
 PORT_END
 
 MACHINE_DRIVER_START(techno)
-  MDRV_CPU_ADD(M6502, 2000000)
+  MDRV_CPU_ADD(M6502, 1000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(m6502_readmem, m6502_writemem)
   MDRV_SOUND_ADD(AY8910, techno_ay8910Int)
-  MDRV_SOUND_ADD(SAMPLES, samples_interface)		//don't remember what this is for, but gts80 uses it...
+  MDRV_SOUND_ADD(SP0250, techno_sp0250_interface)
 
-  MDRV_CPU_ADD(M6502, 2000000)
+  MDRV_CPU_ADD(M6502, 1000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(m6502_b_readmem, m6502_b_writemem)
   MDRV_SOUND_ADD(DAC, techno_6502dacInt)
 
-  MDRV_CPU_ADD(TMS7000, 6000000)
+  MDRV_CPU_ADD(TMS7000, 4000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(tms_readmem, tms_writemem)
   MDRV_CPU_PORTS(tms_readport, tms_writeport)
-  //MDRV_SOUND_ADD(DAC, techno_7000dacInt)
+
 MACHINE_DRIVER_END
