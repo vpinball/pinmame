@@ -8,6 +8,8 @@
 /*-- Common Inports for ZAC Games --*/
 #define ZAC_COMPORTS_OLD \
   PORT_START /* 0 */ \
+    /* These are put in switch column 0 */ \
+    COREPORT_BIT   (0x1000, "Sound Diag", KEYCODE_9) \
     /* These are put in switch column 1 */ \
     COREPORT_BIT   (0x0008, "Start", KEYCODE_1) \
     COREPORT_BIT   (0x0010, "Coin 1", KEYCODE_3) \
@@ -35,6 +37,8 @@
 
 #define ZAC_COMPORTS \
   PORT_START /* 0 */ \
+    /* These are put in switch column 0 */ \
+    COREPORT_BIT   (0x1000, "Sound Diag", KEYCODE_9) \
     /* These are put in switch column 1 */ \
     COREPORT_BIT   (0x0010, "Coin 1", KEYCODE_3) \
     COREPORT_BIT   (0x0020, "Coin 2", KEYCODE_4) \
@@ -89,6 +93,15 @@
 #define ZAC_MEMREG_SROM		REGION_SOUND1
 
 /*-- Main CPU regions and ROM --*/
+
+/* 5 X 2716 ROMS */
+#define ZAC_ROMSTART8888(name,n1,chk1,n2,chk2,n3,chk3,n4,chk4) \
+  ROM_START(name) \
+    NORMALREGION(0x8000, ZAC_MEMREG_CPU) \
+      ROM_LOAD ( n1, 0x0000, 0x0800, chk1) \
+      ROM_LOAD ( n2, 0x0800, 0x0800, chk2) \
+      ROM_LOAD ( n3, 0x1000, 0x0800, chk3) \
+      ROM_LOAD ( n4, 0x2000, 0x0800, chk4)
 
 /* 5 X 2708 ROMS */
 #define ZAC_ROMSTART44444(name,n1,chk1,n2,chk2,n3,chk3,n4,chk4,n5,chk5) \
