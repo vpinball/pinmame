@@ -29,7 +29,7 @@ void GTS80SS_irq(int state) {
 void GTS80SS_nmi(int state)
 {
 	if ( !GTS80SS_locals.NMIState && state ) {
-		logerror("NMI: %i/n\n",state);
+		logerror("NMI: %i\n",state);
 		cpu_set_irq_line(GTS80SS_CPUNo, M6502_INT_NMI, PULSE_LINE);
 	}
 	GTS80SS_locals.NMIState = state;
@@ -113,9 +113,21 @@ static const char *PhonemeTable[65] =
  0
 };
 
+static const int PhonemeDurationMS[65] =
+{
+  59,  71, 121,  47,  47,  71, 103,  90,  
+  71,  55,  80, 121, 103,  80,  71,  71,
+  71, 121,  71, 146, 121, 146, 103, 185,
+  103, 80,  47,  71,  71, 103,  55,  90,
+  185, 65,  80,  47, 250, 103, 185, 185,
+  185, 103, 71,  90, 185,  80, 185, 103,
+   90, 71, 103, 185,  80, 121,  59,  90,
+   80, 71, 146, 185, 121, 250, 185,  47
+};
+
 void GTS80SS_speachtimeout(int state)
 {
-	logerror("speack timer timeout\n");
+	logerror("votrax timer timeout\n");
 	GTS80SS_locals.timer = 0;
 	GTS80SS_nmi(1);
 }
@@ -124,13 +136,14 @@ void GTS80SS_speachtimeout(int state)
 WRITE_HANDLER(vs_latch_w) {
 	static int queue[100],pos;
 
-	data ^= 0xff;
-	if ( pos<100)
-		queue[pos++] = data & 0x3f;
+	data = (data^0xff) & 0x3f;
+	if ( pos<100 )
+		queue[pos++] = data;
 
 	logerror("Votrax: intonation %d, phoneme %02x %s\n",data >> 6,data & 0x3f,PhonemeTable[data & 0x3f]);
-	if ((data & 0x3f) == 0x3f) {
-		if (pos > 1) {
+
+	if ( data==0x3f ) {
+		if ( pos>1 ) {
 			int i;
 			char buf[200];
 
@@ -142,22 +155,21 @@ WRITE_HANDLER(vs_latch_w) {
 					strcat(buf,PhonemeTable[queue[i]]);
 			}
 			usrintf_showmessage(buf);
-			GTS80SS_nmi(1);
 		}
 		pos = 0;
 	}
-	else {
-		GTS80SS_nmi(0);
-		if ( GTS80SS_locals.timer ) {
-			timer_remove(GTS80SS_locals.timer);
-			GTS80SS_locals.timer = 0;
-		}
-		GTS80SS_locals.timer = timer_set(TIME_IN_USEC(5000),1,GTS80SS_speachtimeout);
+
+	/* start working and set a timer when output is done */
+	GTS80SS_nmi(0);
+	if ( GTS80SS_locals.timer ) {
+		timer_remove(GTS80SS_locals.timer);
+		GTS80SS_locals.timer = 0;
 	}
+	GTS80SS_locals.timer = timer_set(TIME_IN_USEC(PhonemeDurationMS[data]*1000),1,GTS80SS_speachtimeout);
 }
 
 struct riot6532_interface GTS80SS_riot6532_intf = {
- /* 6532RIOT 3: Sound/Speak board Chip U15 */
+ /* 6532RIOT 3: Sound/Speech board Chip U15 */
  /* in  : A/B, */ NULL, riot3b_r,
  /* out : A/B, */ riot3a_w, riot3b_w,
  /* irq :      */ GTS80SS_irq
@@ -194,7 +206,7 @@ void GTS80SS_sound_latch(int data)
 {
 	data = (data&0x3f);
 
-	logerror("sound_latch: 0x%02x\n", data);
+//	logerror("sound_latch: 0x%02x\n", data);
 	riot6532_set_input_a(3, (data&0x0f?0x80:0x00) | 0x40 | data);
 }
 
@@ -244,7 +256,7 @@ void GTS80SS_init(int num) {
 	riot6532_set_clock(3, Machine->drv->cpu[GTS80SS_CPUNo].cpu_clock);
 
 	GTS80SS_locals.clock[0]  = 0;
-	GTS80SS_locals.buffer[0] = 0;
+	GTS80SS_locals.buffer[0] = 0x8000;
 	GTS80SS_locals.buf_pos   = 1;
 
 	for(i = 0; i<8; i++)
@@ -252,6 +264,7 @@ void GTS80SS_init(int num) {
 
 	GTS80SS_nmi(1);
 	GTS80SS_locals.stream = stream_init("SND DAC", 100, 11025, 0, GTS80_ss_Update); 
+	set_RC_filter(GTS80SS_locals.stream, 270000, 15000, 0, 33000);
 }
 
 void GTS80SS_exit()
