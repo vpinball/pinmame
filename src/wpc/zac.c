@@ -199,7 +199,7 @@ static int irq_callback(int int_level) {
 static int ZAC_irq(void) { 
 #if 1
 	logerror("%x: IRQ\n",cpu_getpreviouspc());
-	printf("IRQ\n");
+	logerror("IRQ\n");
 	return S2650_INT_IRQ;
 #else
 	return 0;
