@@ -17,6 +17,7 @@ Version 1.20
  [Tom Haukap]
 
 - Added support for Taito games
+ (Thanks goes to Alexandre Souza and Newton Pessoa for providing very helpfully info on these sound machines)
 [Tom Haukap, Gerrit Volkenborn]
 
 
