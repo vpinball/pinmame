@@ -202,6 +202,7 @@ static MEMORY_READ_START(ATARI2_readmem)
 {0x3000,0x37ff,	MRA_ROM},	/* ROM #2 */
 {0x3800,0x3fff,	MRA_ROM},	/* ROM #3 */
 {0xa800,0xafff,	MRA_ROM},	/* ROM #1 */
+{0xf800,0xffff,	MRA_ROM},	/* ROM #3 */
 MEMORY_END
 
 static MEMORY_WRITE_START(ATARI2_writemem)
@@ -219,6 +220,7 @@ static MEMORY_WRITE_START(ATARI2_writemem)
 {0x3000,0x37ff,	MWA_ROM},	/* ROM #2 */
 {0x3800,0x3fff,	MWA_ROM},	/* ROM #3 */
 {0xa800,0xafff,	MWA_ROM},	/* ROM #1 */
+{0xf800,0xffff,	MWA_ROM},	/* ROM #3 */
 MEMORY_END
 
 struct MachineDriver machine_driver_ATARI1 = {
