@@ -13,10 +13,10 @@
 / Goofy Hoops (Romstar game) (??/95)
 /-------------------------------------------------------------------*/
 INITGAME(ghv101, 3)
-CC_ROMSTART_4(ghv101,  "u23_v11.bin", 0xf6cac3aa,
-                       "u06_v11.bin", 0x3b6ab802,
-                       "u17_v10.bin", 0xb6a39327,
-                       "u13_v10.bin", 0x1712f21f)
+CC_ROMSTART_4(ghv101,  "u06_v11.bin", 0x3b6ab802,
+                       "u23_v11.bin", 0xf6cac3aa,
+                       "u13_v10.bin", 0x1712f21f,
+                       "u17_v10.bin", 0xb6a39327)
 CC_ROMEND
 CORE_GAMEDEFNV(ghv101,"Goofy Hoops",1995,"Romstar",cc,GAME_NO_SOUND)
 
