@@ -25,7 +25,7 @@ PINMAME_VIDEO_UPDATE(gts3_dmd128x32) {
   // !!! if (fullRefresh) fillbitmap(bitmap,Machine->pens[0],NULL);
 
   memset(dotCol,0,sizeof(tDMDDot));
-  for (ii = 0; ii < GTS3DMD_FRAMES; ii++) { // 24 frames
+  for (ii = 0; ii < GTS3DMD_FRAMES; ii++) {
     for (jj = 1; jj <= 32; jj++) {           // 32 lines
       UINT8 *line = &dotCol[jj][0];
       for (kk = 0; kk < 16; kk++) {      // 16 columns/line
@@ -38,10 +38,10 @@ PINMAME_VIDEO_UPDATE(gts3_dmd128x32) {
   for (ii = 1; ii <= 32; ii++)               // 32 lines
     for (jj = 0; jj < 128; jj++) {          // 128 pixels/line
       UINT8 data = dotCol[ii][jj];
-      if (data > 18)     data = 3;
-      else if(data > 11) data = 2;
-      else if(data > 2)  data = 1;
-      else               data = 0;
+      if (data >= GTS3DMD_FRAMES)        data = 3; // 100%
+      else if (data >= GTS3DMD_FRAMES/2) data = 2; // 50% and more
+      else if (data > 0)                 data = 1; // anything at all?
+      else                               data = 0; // nothing.
       dotCol[ii][jj] = data;
   }
 

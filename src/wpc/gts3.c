@@ -25,13 +25,10 @@
 #include "gts80s.h"
 
 UINT8 DMDFrames[GTS3DMD_FRAMES][0x200];
-#define GTS3_VBLANKDIV	      6 /* Break VBLANK into pieces*/
-
 #define GTS3_VBLANKFREQ      60 /* VBLANK frequency*/
 #define GTS3_IRQFREQ        975 /* IRQ Frequency (Guessed)*/
-#define GTS3_DMDNMIFREQ     175 /* DMD NMI Frequency (Guessed)*/
+#define GTS3_DMDNMIFREQ     720 /* DMD NMI Frequency (Guessed, must be multiple of vblank freq.)*/
 #define GTS3_ALPHANMIFREQ   175 /* Alpha NMI Frequency (Guessed)*/
-#define GTS3_TRIGIRQ	   1875 /* HACK To Keep the IRQ Firing */
 
 #define GTS3_CPUNO	0
 #define GTS3_DCPUNO 1
@@ -46,14 +43,9 @@ UINT8 DMDFrames[GTS3DMD_FRAMES][0x200];
 /* FORCE The 16 Segment Layout to match the output order expected by core.c */
 static const int alpha_adjust[16] =   {0,1,2,3,4,5,9,10,11,12,13,14,6,8,15,7};
 
-//static void GTS3_init(void);
-//static void GTS3_init2(void);
-//static void GTS3_exit(void);
-//static void GTS3_nvram(void *file, int write);
 static WRITE_HANDLER(display_control);
 
 /*Alpha Display Generation Specific*/
-static void alphanmi(int data);
 static WRITE_HANDLER(alpha_u4_pb_w);
 static READ_HANDLER(alpha_u4_pb_r);
 static WRITE_HANDLER(alpha_u5_pb_w);
@@ -65,7 +57,6 @@ static void alpha_vblank(void);
 static void alpha_update(void);
 /*DMD Generation Specific*/
 static void dmdswitchbank(void);
-static void dmdnmi(int data);
 static WRITE_HANDLER(dmd_u4_pb_w);
 static READ_HANDLER(dmd_u4_pb_r);
 static WRITE_HANDLER(dmd_u5_pb_w);
@@ -83,7 +74,6 @@ struct {
   int    alphagen;
   core_tSeg segments, pseg;
   int    vblankCount;
-  int    initDone;
   UINT32 solenoids;
   int    lampRow, lampColumn;
   int    diagnosticLed;
@@ -106,10 +96,6 @@ struct {
   WRITE_HANDLER((*AUX_W));
   void (*UPDATE_DISPLAY)(void);
   void (*VBLANK_PROC)(void);
-
-  void* timer_nmi;
-  void* timer_irq;
-
 } GTS3locals;
 
 struct {
@@ -128,14 +114,6 @@ struct {
   int    nextDMDFrame;
 } GTS3_dmdlocals;
 
-
-/*Hack to keep IRQ going*/
-static void via_irq(int state);
-static void trigirq(int data) {
-	static int lastirq=0;
-	lastirq = !lastirq;
-	//via_irq(lastirq);
-}
 
 /* U4 */
 
@@ -227,17 +205,20 @@ static WRITE_HANDLER( xvia_0_b_w ) { GTS3locals.U4_PB_W(offset,data); }
 
 static WRITE_HANDLER(alpha_u4_pb_w) {
 	//logerror("lampcolumn=%4x STRB=%d LCLR=%d\n",GTS3locals.lampColumn,data&LSTRB,data&LCLR);
-//	if (GTS3locals.u4pb & LCLR)  GTS3locals.lampColumn = 0; // Negative edge
-	if (data & ~GTS3locals.u4pb & LSTRB) { // Positive edge
-		GTS3locals.lampColumn = ((GTS3locals.lampColumn<<1) | (data & LDATA)) & 0x0fff;
-	}
-//	if (data & ~GTS3locals.u4pb & DBLNK) GTS3.digSel = 0; // Positive edge
-	if (data & ~GTS3locals.u4pb & DSTRB) { // Positive edge
-		if (data & DDATA) GTS3locals.acol = 0;
-		else if (GTS3locals.acol < 20) GTS3locals.acol += 1;
-	}
-	GTS3locals.u4pb = data;
 	core_setLamp(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
+	if (data & ~GTS3locals.u4pb & LSTRB) { // Positive edge
+		if ((data & LCLR) && (data & LDATA))
+			GTS3locals.lampColumn = 1;
+		else
+			GTS3locals.lampColumn = ((GTS3locals.lampColumn << 1) & 0x0fff);
+	}
+
+	if ((data & ~GTS3locals.u4pb & DSTRB)) { // Positive edge
+		if ((data & DBLNK) && (data & DDATA)) { GTS3locals.acol = -1; }
+		if (GTS3locals.acol < 19) { GTS3locals.acol++; } else { GTS3locals.acol = 0; }
+	}
+
+	GTS3locals.u4pb = data;
 }
 
 /* DMD GENERATION
@@ -248,12 +229,16 @@ static WRITE_HANDLER(alpha_u4_pb_w) {
   PB6:  Display Strobe (DSTRB)
 */
 static WRITE_HANDLER(dmd_u4_pb_w) {
-//	if (~data & GTS3locals.u4pb & LCLR)  GTS3locals.lampColumn = 0; // Negative edge
-	if (data & ~GTS3locals.u4pb & LSTRB) // Positive edge
-		GTS3locals.lampColumn = ((GTS3locals.lampColumn<<1) | (data & LDATA)) & 0x0fff;
+	core_setLamp(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
+	if (data & ~GTS3locals.u4pb & LSTRB) { // Positive edge
+		if ((data & LCLR) && (data & LDATA))
+			GTS3locals.lampColumn = 1;
+		else
+			GTS3locals.lampColumn = ((GTS3locals.lampColumn << 1) & 0x0fff);
+	}
+
 	GTS3_dmdlocals.dstrb = (data & DSTRB) != 0;
 	GTS3locals.u4pb = data;
-	core_setLamp(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
 }
 
 //AUX DATA? See ca2 above!
@@ -375,13 +360,8 @@ static WRITE_HANDLER(dmd_u5_cb2_w) { logerror1("WRITE:via_1_cb2_w: %x\n",data); 
 //IRQ:  IRQ to Main CPU
 static void via_irq(int state) {
 	// logerror("IN VIA_IRQ - STATE = %x\n",state);
-#if 0
-	if(state)
-		printf("IRQ = 1\n");
-	else
-		printf("IRQ = 0\n");
-#endif
-	cpu_set_irq_line(GTS3_CPUNO, 0, PULSE_LINE);
+	cpu_set_irq_line(GTS3_CPUNO, 0, state?ASSERT_LINE:CLEAR_LINE);
+//	cpu_set_irq_line(GTS3_CPUNO, 0, PULSE_LINE);
 }
 
 /*
@@ -432,6 +412,10 @@ static struct via6522_interface via_1_interface =
 	/*irq                  */ via_irq
 };
 
+static void GTS3_irq(int data) {
+//	cpu_set_irq_line(GTS3_CPUNO, 0, PULSE_LINE);
+}
+
 static INTERRUPT_GEN(GTS3_vblank) {
   /*-------------------------------
   /  copy local data to interface
@@ -441,56 +425,42 @@ static INTERRUPT_GEN(GTS3_vblank) {
   //Call the VBLANK Procedure which is meant to be called every time!!
   GTS3locals.VBLANK_PROC();
 
-  /*-- Process during the REAL VBLANK period only--*/
-  if ((GTS3locals.vblankCount % GTS3_VBLANKDIV) == 0) {
-
-	  /*-- lamps --*/
-	  if ((GTS3locals.vblankCount % GTS3_LAMPSMOOTH) == 0) {
-		memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
-		memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
-	  }
-	  /*-- solenoids --*/
-	  if ((GTS3locals.vblankCount % GTS3_SOLSMOOTH) == 0) {
-		coreGlobals.solenoids = GTS3locals.solenoids;
-		if (GTS3locals.ssEn) {
-		  int ii;
-		  coreGlobals.solenoids |= CORE_SOLBIT(CORE_SSFLIPENSOL);
-		  /*-- special solenoids updated based on switches --*/
-		  for (ii = 0; ii < 6; ii++)
-			if (core_gameData->sxx.ssSw[ii] && core_getSw(core_gameData->sxx.ssSw[ii]))
-			  coreGlobals.solenoids |= CORE_SOLBIT(CORE_FIRSTSSSOL+ii);
-		}
-		GTS3locals.solenoids = coreGlobals.pulsedSolState;
-	  }
-	  /*-- display --*/
-	  if ((GTS3locals.vblankCount % GTS3_DISPLAYSMOOTH) == 0) {
-
-		/*Update alpha or dmd display*/
-		GTS3locals.UPDATE_DISPLAY();
-
-		/*update leds*/
-		coreGlobals.diagnosticLed = (GTS3locals.diagnosticLeds2<<3) |
-									(GTS3locals.diagnosticLeds1<<2) |
-									(GTS3_dmdlocals.diagnosticLed<<1) |
-									GTS3locals.diagnosticLed;
-		GTS3locals.diagnosticLed = 0;
-		GTS3_dmdlocals.diagnosticLed = 0;
-	  }
-	  core_updateSw(GTS3locals.solenoids & 0x80000000);
+  /*-- lamps --*/
+  memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+  if ((GTS3locals.vblankCount % GTS3_LAMPSMOOTH) == 0) {
+	memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
+  /*-- solenoids --*/
+  coreGlobals.solenoids = GTS3locals.solenoids;
+  if ((GTS3locals.vblankCount % GTS3_SOLSMOOTH) == 0) {
+	if (GTS3locals.ssEn) {
+	  int ii;
+	  coreGlobals.solenoids |= CORE_SOLBIT(CORE_SSFLIPENSOL);
+	  /*-- special solenoids updated based on switches --*/
+	  for (ii = 0; ii < 6; ii++)
+		if (core_gameData->sxx.ssSw[ii] && core_getSw(core_gameData->sxx.ssSw[ii]))
+		  coreGlobals.solenoids |= CORE_SOLBIT(CORE_FIRSTSSSOL+ii);
+	}
+	GTS3locals.solenoids = coreGlobals.pulsedSolState;
+  }
+  /*-- display --*/
+  if ((GTS3locals.vblankCount % GTS3_DISPLAYSMOOTH) == 0) {
+    /*Update alpha or dmd display*/
+    GTS3locals.UPDATE_DISPLAY();
+
+	/*update leds*/
+	coreGlobals.diagnosticLed = (GTS3locals.diagnosticLeds2<<3) |
+								(GTS3locals.diagnosticLeds1<<2) |
+								(GTS3_dmdlocals.diagnosticLed<<1) |
+								GTS3locals.diagnosticLed;
+	GTS3locals.diagnosticLed = 0;
+	GTS3_dmdlocals.diagnosticLed = 0;
+  }
+  core_updateSw(GTS3locals.solenoids & 0x80000000);
 }
 
 static SWITCH_UPDATE(GTS3) {
-via_irq(1);
-#if 0
-	//HACK to make the IRQ work. Must be a bug in the VIA code, since this shouldn't be necessary!
-	static int last=0;
-	if(keyboard_pressed_memory_repeat(KEYCODE_A,2)) {
-		via_irq(last);
-		last = !last;
-	}
-#endif
-
+  via_irq(1);
   if (inports) {
     coreGlobals.swMatrix[0] = (inports[GTS3_COMINPORT] & 0x0f00)>>8;
 	if (inports[GTS3_COMINPORT] & 0x8000) // DMD games with tournament mode
@@ -531,6 +501,7 @@ static int gts3_m2sw(int col, int row) {
 
 /*Alpha Numeric First Generation Init*/
 static void GTS3_alpha_common_init(void) {
+  memset(&GTS3locals, 0, sizeof(GTS3locals));
   memset(&GTS3_dmdlocals, 0, sizeof(GTS3_dmdlocals));
   memset(&DMDFrames, 0, sizeof(DMDFrames));
 
@@ -548,20 +519,13 @@ static void GTS3_alpha_common_init(void) {
   GTS3locals.AUX_W = alpha_aux;
   GTS3locals.VBLANK_PROC = alpha_vblank;
 
-  // Manually call the CPU NMI at the specified rate
-  // !!! GTS3locals.timer_nmi = timer_pulse(TIME_IN_HZ(GTS3_ALPHANMIFREQ), 0, alphanmi);
-  GTS3locals.timer_nmi = timer_alloc(alphanmi);
-  timer_adjust(GTS3locals.timer_nmi, TIME_IN_HZ(GTS3_ALPHANMIFREQ), 0, TIME_IN_HZ(GTS3_ALPHANMIFREQ));
-
-  // Manually call the CPU IRQ at the specified rate
-  // !!! GTS3locals.timer_irq = timer_pulse(TIME_IN_HZ(GTS3_TRIGIRQ), 0, trigirq);
-  GTS3locals.timer_irq = timer_alloc(trigirq);
-  timer_adjust(GTS3locals.timer_irq, TIME_IN_HZ(GTS3_TRIGIRQ), 0, TIME_IN_HZ(GTS3_TRIGIRQ));
-
   /* Init the sound board */
   sndbrd_0_init(core_gameData->hw.soundBoard, GTS3_SCPUNO-1, memory_region(GTS3_MEMREG_SCPU1), NULL, NULL);
 
-  GTS3locals.initDone = TRUE;
+// Manually call the CPU NMI at the specified rate
+// !!! GTS3locals.timer_nmi = timer_pulse(TIME_IN_HZ(GTS3_ALPHANMIFREQ), 0, alphanmi);
+//  GTS3locals.timer_nmi = timer_alloc(alphanmi);
+//  timer_adjust(GTS3locals.timer_nmi, TIME_IN_HZ(GTS3_ALPHANMIFREQ), 0, TIME_IN_HZ(GTS3_ALPHANMIFREQ));
 }
 
 /*Alpha Numeric First Generation Init*/
@@ -578,6 +542,7 @@ static MACHINE_INIT(gts3b) {
 
 /*DMD Generation Init*/
 static MACHINE_INIT(gts3dmd) {
+  memset(&GTS3locals, 0, sizeof(GTS3locals));
   memset(&GTS3_dmdlocals, 0, sizeof(GTS3_dmdlocals));
   memset(&DMDFrames, 0, sizeof(DMDFrames));
 
@@ -590,9 +555,9 @@ static MACHINE_INIT(gts3dmd) {
   /*Setup ROM Swap so opcode will work*/
   if(memory_region(GTS3_MEMREG_DCPU1))
   {
-  memcpy(memory_region(GTS3_MEMREG_DCPU1)+0x8000,
-  memory_region(GTS3_MEMREG_DROM1) +
-  (memory_region_length(GTS3_MEMREG_DROM1) - 0x8000), 0x8000);
+    memcpy(memory_region(GTS3_MEMREG_DCPU1)+0x8000,
+    memory_region(GTS3_MEMREG_DROM1) +
+     (memory_region_length(GTS3_MEMREG_DROM1) - 0x8000), 0x8000);
   }
   GTS3_dmdlocals.pa0 = GTS3_dmdlocals.pa1 = GTS3_dmdlocals.pa2 = GTS3_dmdlocals.pa3 = 0;
   GTS3_dmdlocals.a18 = 0;
@@ -608,31 +573,14 @@ static MACHINE_INIT(gts3dmd) {
   GTS3locals.AUX_W = dmd_aux;
   GTS3locals.VBLANK_PROC = dmd_vblank;
 
-  // Manually call the DMD NMI at the specified rate  (Although the code simply returns rti in most cases, we should call the nmi anyway, incase a game uses it)
-  // GTS3locals.timer_nmi = timer_pulse(TIME_IN_HZ(GTS3_DMDNMIFREQ), 0, dmdnmi);
-
-  // Manually call the CPU IRQ at the specified rate
-  // !!! GTS3locals.timer_irq = timer_pulse(TIME_IN_HZ(GTS3_TRIGIRQ), 0, trigirq);
-  GTS3locals.timer_irq = timer_alloc(trigirq);
-  timer_adjust(GTS3locals.timer_irq, TIME_IN_HZ(GTS3_TRIGIRQ), 0, TIME_IN_HZ(GTS3_TRIGIRQ));
-
   /* Init the sound board */
   sndbrd_0_init(core_gameData->hw.soundBoard, GTS3_SCPUNO, memory_region(GTS3_MEMREG_SCPU1), NULL, NULL);
 
-  GTS3locals.initDone = TRUE;
+  // Manually call the DMD NMI at the specified rate  (Although the code simply returns rti in most cases, we should call the nmi anyway, incase a game uses it)
+  // GTS3locals.timer_nmi = timer_pulse(TIME_IN_HZ(GTS3_DMDNMIFREQ), 0, dmdnmi);
 }
 
 static MACHINE_STOP(gts3) {
-  if ( GTS3locals.timer_nmi ) {
-	  timer_remove(GTS3locals.timer_nmi);
-	  GTS3locals.timer_nmi = NULL;
-  }
-
-  if ( GTS3locals.timer_irq ) {
-	  timer_remove(GTS3locals.timer_irq);
-	  GTS3locals.timer_irq = NULL;
-  }
-
   sndbrd_0_exit();
 }
 
@@ -716,16 +664,17 @@ static WRITE_HANDLER(alpha_display){
 static WRITE_HANDLER(dmd_display){
 	//Latch DMD Data from U7
     GTS3_dmdlocals.dmd_latch = data;
-	if (offset==0)
-		cpu_set_irq_line(GTS3_DCPUNO, 0, PULSE_LINE);
-	else
-		if(offset==1) cpu_set_reset_line(1, PULSE_LINE);
-		else
-			logerror("DMD Signal: Offset: %x Data: %x\n",offset,data);
+	if (offset == 0)
+		cpu_set_irq_line(GTS3_DCPUNO, 0, HOLD_LINE);
+	else if (offset == 1) {
+		cpu_set_irq_line(GTS3_DCPUNO, 0, CLEAR_LINE);
+		cpu_set_reset_line(GTS3_DCPUNO, PULSE_LINE);
+	} else
+		logerror("DMD Signal: Offset: %x Data: %x\n",offset,data);
 }
 
 //FIRE NMI FOR DMD!
-static void dmdnmi(int data){
+static INTERRUPT_GEN(dmdnmi) {
 	cpu_set_nmi_line(GTS3_DCPUNO, PULSE_LINE);
 }
 
@@ -761,7 +710,6 @@ static WRITE_HANDLER(lds_w)
 {
 	//logerror1("LDS Write: Data: %x\n",data);
     GTS3locals.lampRow = data;
-	core_setLamp(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
 }
 
 //PB0-7 Varies on Alpha or DMD Generation!
@@ -789,7 +737,9 @@ static WRITE_HANDLER(aux1_w)
 	logerror1("Aux1 Write: Offset: %x Data: %x\n",offset,data);
 }
 
-static void alphanmi(int data) { xvia_0_cb2_w(0,0); }
+static INTERRUPT_GEN(alphanmi) {
+	xvia_0_cb2_w(0,0);
+}
 
 static void alpha_update(){
     /* FORCE The 16 Segment Layout to match the output order expected by core.c */
@@ -830,7 +780,7 @@ void dmd_vblank(void){
   int offset = (crtc6845_start_addr>>2);
   memcpy(DMDFrames[GTS3_dmdlocals.nextDMDFrame],memory_region(GTS3_MEMREG_DCPU1)+0x1000+offset,0x200);
   GTS3_dmdlocals.nextDMDFrame = (GTS3_dmdlocals.nextDMDFrame + 1) % GTS3DMD_FRAMES;
-  dmdnmi(0);
+  cpu_set_nmi_line(GTS3_DCPUNO, CLEAR_LINE);
 }
 
 /*-----------------------------------------------
@@ -890,8 +840,9 @@ MACHINE_DRIVER_START(gts3)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CPU_ADD(M65C02, 2000000)
   MDRV_CPU_MEMORY(GTS3_readmem, GTS3_writemem)
-  MDRV_CPU_VBLANK_INT(GTS3_vblank, GTS3_VBLANKDIV)
-
+  MDRV_CPU_VBLANK_INT(GTS3_vblank, GTS3_VBLANKFREQ)
+  MDRV_CPU_PERIODIC_INT(alphanmi, GTS3_ALPHANMIFREQ)
+  MDRV_TIMER_ADD(GTS3_irq, GTS3_IRQFREQ)
   MDRV_NVRAM_HANDLER(gts3)
 
   MDRV_SWITCH_UPDATE(GTS3)
@@ -927,6 +878,7 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(gts3_dmd)
   MDRV_CPU_ADD(M65C02, 3579000/2)
   MDRV_CPU_MEMORY(GTS3_dmdreadmem, GTS3_dmdwritemem)
+  MDRV_CPU_PERIODIC_INT(dmdnmi, GTS3_DMDNMIFREQ)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(gts3_2)
