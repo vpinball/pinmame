@@ -1916,7 +1916,7 @@ void printromlist(const struct RomModule *romp,const char *basename)
 #endif
 
 	printf("This is the list of the ROMs required for driver \"%s\".\n"
-			"Name              Size       Checksum\n",basename);
+			"Name            Size Checksum\n",basename);
 
 	for (region = romp; region; region = rom_next_region(region))
 	{
