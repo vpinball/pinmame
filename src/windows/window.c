@@ -295,6 +295,7 @@ INLINE void get_screen_bounds(RECT *bounds)
 
 INLINE void set_aligned_window_pos(HWND wnd, HWND insert, int x, int y, int cx, int cy, UINT flags)
 {
+	flags |= SWP_NOACTIVATE;
 	SetWindowPos(wnd, insert, get_aligned_window_pos(x), y, cx, cy, flags);
 }
 
@@ -1004,8 +1005,12 @@ void win_adjust_window_for_visible(int min_x, int max_x, int min_y, int max_y)
 		}
 
 		// show the result
+#ifndef VPINMAME
 		ShowWindow(win_video_window, SW_SHOW);
 		SetForegroundWindow(win_video_window);
+#else
+		ShowWindow(win_video_window, SW_SHOWNOACTIVATE);
+#endif
 		win_update_video_window(NULL);
 
 		// update the cursor state
@@ -1246,11 +1251,6 @@ int win_process_events(void)
 		}
 	}
 
-#ifdef VPINMAME
-	// sometimes the Trottle() sub hasn't have enought time to call Sleep(0),
-	// so do it here in any case
-	Sleep(0);
-#endif
 	// return 1 if we slept this frame
 	return 0;
 }
