@@ -10,10 +10,11 @@
 static struct {
   struct sndbrdData brdData;
   int cmd, ncmd, busy, status, ctrl, bank;
+  UINT32 *framedata;
+  void *timer;
   // dmd16 stuff
   UINT32 hv5408, hv5408s, hv5308, hv5308s, hv5222, lasthv5222;
   int blnk, rowdata, rowclk, frame;
-  UINT32 *framedata;
 } dmdlocals;
 
 static UINT16 *dmd64RAM;
@@ -22,7 +23,9 @@ static UINT8  *dmd32RAM;
 static WRITE_HANDLER(dmd_data_w)  { dmdlocals.ncmd = data; }
 static READ_HANDLER(dmd_status_r) { return dmdlocals.status; }
 static READ_HANDLER(dmd_busy_r)   { return dmdlocals.busy; }
-
+static void dmd_exit(int brdNo) {
+  if (dmdlocals.timer) { timer_remove(dmdlocals.timer); dmdlocals.timer = NULL; }
+}
 /*------------------------------------------*/
 /*Data East, Sega, Stern 128x32 DMD Handling*/
 /*------------------------------------------*/
@@ -33,7 +36,7 @@ static WRITE_HANDLER(dmd32_ctrl_w);
 static void dmd32_init(struct sndbrdData *brdData);
 
 const struct sndbrdIntf dedmd32Intf = {
-  dmd32_init, NULL, NULL,
+  dmd32_init, dmd_exit, NULL,
   dmd_data_w, dmd_busy_r, dmd32_ctrl_w, dmd_status_r, SNDBRD_NOTSOUND
 };
 
@@ -69,7 +72,7 @@ static void dmd32_init(struct sndbrdData *brdData) {
   /* copy last 16K of ROM into last 16K of CPU region*/
   memcpy(memory_region(DE_DMD32CPUREGION) + 0x8000,
          memory_region(DE_DMD32ROMREGION) + memory_region_length(DE_DMD32ROMREGION)-0x8000,0x8000);
-  timer_pulse(TIME_IN_HZ(DMD32_FIRQFREQ), 0, dmd32_firq);
+  dmdlocals.timer = timer_pulse(TIME_IN_HZ(DMD32_FIRQFREQ), 0, dmd32_firq);
 }
 
 static WRITE_HANDLER(dmd32_ctrl_w) {
@@ -145,7 +148,7 @@ static WRITE_HANDLER(dmd64_ctrl_w);
 static void dmd64_init(struct sndbrdData *brdData);
 
 const struct sndbrdIntf dedmd64Intf = {
-  dmd64_init, NULL, NULL,
+  dmd64_init, dmd_exit, NULL,
   dmd_data_w, dmd_busy_r, dmd64_ctrl_w, dmd_status_r, SNDBRD_NOTSOUND
 };
 
@@ -175,7 +178,7 @@ static void dmd64_irq2(int data);
 static void dmd64_init(struct sndbrdData *brdData) {
   memset(&dmdlocals, 0, sizeof(dmdlocals));
   dmdlocals.brdData = *brdData;
-  timer_pulse(TIME_IN_HZ(DMD64_IRQ2FREQ), 0, dmd64_irq2);
+  dmdlocals.timer = timer_pulse(TIME_IN_HZ(DMD64_IRQ2FREQ), 0, dmd64_irq2);
 }
 
 static WRITE_HANDLER(dmd64_ctrl_w) {
@@ -262,7 +265,7 @@ static void dmd16_init(struct sndbrdData *brdData);
 static WRITE_HANDLER(dmd16_ctrl_w);
 
 const struct sndbrdIntf dedmd16Intf = {
-  dmd16_init, NULL, NULL,
+  dmd16_init, dmd_exit, NULL,
   dmd_data_w, dmd_busy_r, dmd16_ctrl_w, dmd_status_r, SNDBRD_NOTSOUND
 };
 
@@ -301,7 +304,7 @@ static void dmd16_init(struct sndbrdData *brdData) {
   dmdlocals.framedata = (UINT32 *)memory_region(DE_DMD16DMDREGION);
   dmd16_setbank(0x07, 0x07);
   dmd16_setbusy(BUSY_SET|BUSY_CLR,0);
-  timer_pulse(TIME_IN_HZ(DMD16_NMIFREQ), 0, dmd16_nmi);
+  dmdlocals.timer = timer_pulse(TIME_IN_HZ(DMD16_NMIFREQ), 0, dmd16_nmi);
 }
 /*--- Port decoding ----
   76543210
@@ -399,6 +402,8 @@ static WRITE_HANDLER(dmd16_ctrl_w) {
     dmd16_setbank(0x07, 0x07); dmd16_setbusy(BUSY_SET, 0);
     dmdlocals.rowdata = dmdlocals.rowdata = dmdlocals.blnk = 0;
     cpu_set_reset_line(dmdlocals.brdData.cpuNo, PULSE_LINE);
+    dmdlocals.hv5408 = dmdlocals.hv5408s = dmdlocals.hv5308 = dmdlocals.hv5308s =
+    dmdlocals.hv5222 = dmdlocals.lasthv5222 = dmdlocals.rowclk = dmdlocals.frame = 0;
   }
   dmdlocals.ctrl = data;
 }
