@@ -316,7 +316,8 @@ CORE_GAMEDEFNV(s80tst,"System 80 Test",1981,"Gottlieb",gl_mGTS80SS,0)
 / Devil's Dare (Sound and Speech) (#670)
 /-------------------------------------------------------------------*/
 static core_tLCDLayout dispDevilsdare[] = {
-  DISP_SEG_IMPORT(dispNumeric3), {6, 9,50,6,CORE_SEG9}, {0}
+  DISP_SEG_IMPORT(dispNumeric3),
+  {6, 1,50,6,CORE_SEG9}, {6,17,44,6,CORE_SEG9}, {0}
 };
 INITGAME(dvlsdre,GEN_GTS80A,0,dispDevilsdare, SNDBRD_GTS80SS,0,0)
 GTS80_1_ROMSTART(dvlsdre,"670-1.cpu", 0x6318bce2,
