@@ -5,9 +5,7 @@
 #define GTS80SS22_ROMSTART(n1,chk1,n2,chk2) \
   SOUNDREGION(0x10000, GTS80_MEMREG_SCPU1) \
 	ROM_LOAD(n1, 0x7000,  0x0800, chk1) \
-    ROM_RELOAD(  0xf000,  0x0800) \
-	ROM_LOAD(n2, 0x7800,  0x0800, chk2) \
-    ROM_RELOAD(  0xf800,  0x0800) 
+	ROM_LOAD(n2, 0x7800,  0x0800, chk2) 
 
 /*-- Machine structure externals --*/
 extern const struct Memory_ReadAddress  GTS80SS_readmem[];
