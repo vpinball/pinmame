@@ -86,6 +86,7 @@ DRIVERNV(eightbll)      //BY17-723: 01/77 Eight Ball
 DRIVERNV(pwerplay)      //BY17-724: 02/77 Power Play
 DRIVERNV(stk_sprs)      //BY17-740: 08/77 Strikes and Spares
 DRIVERNV(matahari)      //BY17-725: 09/77 Mata Hari
+DRIVERNV(matatest)      //BY17:     09/77 Mata Hari (new game rules)
 DRIVERNV(blackjck)      //BY17-728: 05/76 Black Jack  (EM release date)
 //MPU-35
 DRIVERNV(lostwrld)      //BY35-729: 02/77 Lost World
@@ -507,7 +508,13 @@ DRIVERNV(f1gp)			//F1 Grand Prix (1987)
 // ----------------
 // PEYPER
 // ----------------
-DRIVERNV(odisea)		//Odisea Paris-Dakar
+                        // Tally Hoo
+                        // Fantastic World (1985)
+                        // Odin (1985)
+                        // Nemesis (1986)
+                        // Wolfman (1987)
+DRIVERNV(odisea)		//Odisea Paris-Dakar (1987)
+                        // Sir Lancelot (1994)
 
 // --------------
 // SEGA GAMES

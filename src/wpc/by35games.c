@@ -122,6 +122,13 @@ BY17_ROMSTARTx88(matahari,"725-21_2.716",CRC(63acd9b0) SHA1(2347342f1281c097ea39
 BY17_ROMEND
 #define input_ports_matahari input_ports_by35
 CORE_GAMEDEFNV(matahari,"Mata Hari",1978,"Bally",by35_mBY17,GAME_USES_CHIMES)
+
+INITGAME(matatest,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),0,0,0)
+BY35_ROMSTARTx00(matatest,"matat0n.u2",CRC(64a6bb3c) SHA1(ced5fcd18009106ac3c7b42e36cdc10ce410eeeb),
+                          "ptestn.u6", CRC(ccb213ec) SHA1(8defbe8e11a75d26daf1351f439dd409f1efc608))
+BY35_ROMEND
+#define input_ports_matatest input_ports_matahari
+CORE_CLONEDEFNV(matatest,matahari,"Mata Hari (New game rules)",2005,"Oliver",by35_mBY17,GAME_USES_CHIMES)
 /*--------------------------------
 / Strikes and Spares
 /-------------------------------*/
