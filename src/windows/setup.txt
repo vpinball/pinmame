@@ -1,0 +1,106 @@
+-----------------
+Step 1: Downloads
+-----------------
+
+- make a directory for your tools, for example c:\mingw
+
+- go to http://sourceforge.net/project/showfiles.php?group_id=2435&release_id=15084
+  download the following packages into your c:\mingw directory:
+    - binutils-2.10.91-20010114.zip
+    - gcc-2.95.2-3.zip
+    - ld-2.10.91-20010126.zip
+    - libbfd-2.10.91-20010121.zip
+    - mingw-runtime-0.5-20010221.tar.gz
+    - w32api-0.5.1.tar.gz
+
+- go to ftp://ftp.franken.de/pub/win32/develop/gnuwin32/mingw32/porters/Mikey/
+  download the following packages into your c:\mingw directory:
+    - ming-selfhost.zip
+    - fileutils316-ming.tar.bz2
+    - textutils122-ming.tar.bz2
+    - sh-utils112-ming.tar.bz2
+
+- go to ftp://ftp.nanotech.wisc.edu/pub/khan/gnu-win32/mingw32/ports/
+  download the following packages:
+    - make-3.77-mingw32.zip
+
+- download this package into your c:\mingw directory:
+    - http://pws.prserv.net/thefortins/directx6_1-cyg.tar.gz
+
+- download this package into your c:\mingw directory:
+    - http://wildsau.idv.uni-linz.ac.at/mfx/download/upx/upx107w.zip
+
+- go to http://www.web-sites.co.uk/nasm/
+  follow the directions to the win32 binary and download it: nasm-0.98-win32.zip
+
+
+-------------
+Step 2: Setup
+-------------
+
+- extract these 5 .zip files into the mingw directory:
+    - binutils-2.10.91-20010114.zip
+    - gcc-2.95.2-3.zip
+    - ld-2.10.91-20010126.zip
+    - libbfd-2.10.91-20010121.zip
+    - make-3.77-mingw32.zip
+
+- extract these 3 .tar.gz files into the mingw directory as well, in this order:
+   (a few files will need to get overwritten in the process)
+     - mingw-runtime-0.5-20010221.tar.gz
+     - w32api-0.5-20010301.tar.gz
+     - directx6_1-cyg.tar.gz
+
+- change your environment variables to add c:\mingw\bin as a path
+
+- unzip ming-selfhost.zip to a temporary directory under your c:\mingw directory,
+  for example c:\mingw\selfhost
+    - IMPORTANT: do NOT unzip to your mingw directory, or else you will overwrite
+      important files!
+
+- copy these files into your c:\mingw\bin directory:
+    - c:\mingw\selfhost\bin\sh.exe 
+    - c:\mingw\selfhost\bin\bzip2.exe
+    - c:\mingw\selfhost\bin\tar.exe
+
+- from the command line, switch to your c:\mingw\selfhost directory and run:
+    - bzip2 -dc ../fileutils316-ming.tar.bz2 | tar x
+    - bzip2 -dc ../textutils122-ming.tar.bz2 | tar x
+    - bzip2 -dc ../sh-utils112-ming.tar.bz2 | tar x
+    - bzip2 -dc ../make377-ming.tar.bz2 | tar x
+    
+- copy these files into your c:\mingw\bin directory:
+    - c:\mingw\selfhost\bin\cp.exe
+    - c:\mingw\selfhost\bin\echo.exe
+    - c:\mingw\selfhost\bin\mkdir.exe
+    - c:\mingw\selfhost\bin\rm.exe
+    - c:\mingw\selfhost\bin\sort.exe
+
+- unzip upx107w.zip into a temporary directory, for example c:\mingw\upx107w
+
+- copy these files into your c:\mingw\bin directory:
+    - c:\mingw\upx107w\upx.exe
+
+- unzip nasm-0.98-win32.zip into a temporary directory, for example c:\mingw\nasm
+
+- copy these files into your c:\mingw\bin directory:
+    - c:\mingw\nasm\nasmw.exe
+
+
+-----------------
+Step 3: Libraries
+-----------------
+
+- go to ????
+
+- download the following packages:
+    - zlib-1.1.3.zip
+
+- change to the zlib directory and type make -f nt/makefile.gcc
+
+- copy the resulting libz.a to the lib directory in your c:\mingw directory
+  copy zlib.h and zconf.h to the include directory in your c:\mingw directory
+
+ 
+
+
