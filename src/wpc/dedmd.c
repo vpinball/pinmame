@@ -3,136 +3,29 @@
 #include "cpu/m6809/m6809.h"
 #include "cpu/m68000/m68000.h"
 #include "core.h"
-//#include "de.h"
 #include "sndbrd.h"
 #include "dedmd.h"
 
-//extern int crtc6845_start_addr;
-static UINT16 *dmd64RAM;
-static UINT8  *dmd32RAM;
-static UINT8  *dmd16RAM;
-static UINT32 dmd16frame[4][32][2];
 /*--------- Common DMD stuff ----------*/
 static struct {
   struct sndbrdData brdData;
   int cmd, ncmd, busy, status, ctrl, bank;
   // dmd16 stuff
-  UINT32 hv5408, hv5408s, hv5308, hv5308s, hv5222;
+  UINT32 hv5408, hv5408s, hv5308, hv5308s, hv5222, lasthv5222;
   int blnk, rowdata, rowclk, frame;
+  UINT32 *framedata;
 } dmdlocals;
-/*-----------------------------*/
-/*Data East 192x64 DMD Handling*/
-/*-----------------------------*/
-void de_dmd192x64_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
-//  UINT8 *RAM  = memory_region(DE_MEMREG_DCPU1) + 0x800000 + (crtc6845_start_addr&0x400)*4;
-  UINT8 *RAM  = (UINT8 *)(dmd64RAM) + ((crtc6845_start_addr & 0x400)<<2);
-  UINT8 *RAM2 = RAM + 0x800;
-  tDMDDot dotCol;
-  int ii,jj,kk;
 
-  if (fullRefresh) fillbitmap(bitmap,Machine->pens[0],NULL);
-  for (kk = 0, ii = 1; ii <= 64; ii++) {
-    UINT8 *line = &dotCol[ii][0];
-    for (jj = 0; jj < (192/16); jj++) {
-      UINT8 intens1 = 2*(RAM[kk+1] & 0x55) + (RAM2[kk+1] & 0x55);
-      UINT8 intens2 =   (RAM[kk+1] & 0xaa) + (RAM2[kk+1] & 0xaa)/2;
-      *line++ = (intens2>>6) & 0x03;
-      *line++ = (intens1>>6) & 0x03;
-      *line++ = (intens2>>4) & 0x03;
-      *line++ = (intens1>>4) & 0x03;
-      *line++ = (intens2>>2) & 0x03;
-      *line++ = (intens1>>2) & 0x03;
-      *line++ = (intens2)    & 0x03;
-      *line++ = (intens1)    & 0x03;
-      intens1 = 2*(RAM[kk] & 0x55) + (RAM2[kk] & 0x55);
-      intens2 =   (RAM[kk] & 0xaa) + (RAM2[kk] & 0xaa)/2;
-      *line++ = (intens2>>6) & 0x03;
-      *line++ = (intens1>>6) & 0x03;
-      *line++ = (intens2>>4) & 0x03;
-      *line++ = (intens1>>4) & 0x03;
-      *line++ = (intens2>>2) & 0x03;
-      *line++ = (intens1>>2) & 0x03;
-      *line++ = (intens2)    & 0x03;
-      *line++ = (intens1)    & 0x03;
-      kk += 2;
-    }
-    *line = 0;
-  }
-  dmd_draw(bitmap, dotCol, core_gameData->lcdLayout);
-  drawStatus(bitmap,fullRefresh);
-}
+static UINT16 *dmd64RAM;
+static UINT8  *dmd32RAM;
+
+static WRITE_HANDLER(dmd_data_w)  { dmdlocals.ncmd = data; }
+static READ_HANDLER(dmd_status_r) { return dmdlocals.status; }
+static READ_HANDLER(dmd_busy_r)   { return dmdlocals.busy; }
 
 /*------------------------------------------*/
 /*Data East, Sega, Stern 128x32 DMD Handling*/
 /*------------------------------------------*/
-static core_tLCDLayout de_128x32DMD[] = {
-  {0,0,32,128,CORE_DMD}, {0}
-};
-
-void de_dmd128x32_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
-//  UINT8 *RAM  = memory_region(DE_MEMREG_DCPU1) + 0x2000 + (crtc6845_start_addr&0x0100)*4;
-  UINT8 *RAM  = ((UINT8 *)dmd32RAM) + ((crtc6845_start_addr & 0x0100)<<2);
-  UINT8 *RAM2 = RAM + 0x200;
-  tDMDDot dotCol;
-  int ii,jj,kk;
-
-  if (fullRefresh) fillbitmap(bitmap,Machine->pens[0],NULL);
-
-  for (kk = 0, ii = 1; ii <= 32; ii++) {
-    UINT8 *line = &dotCol[ii][0];
-    for (jj = 0; jj < (128/8); jj++) {
-      UINT8 intens1 = 2*(RAM[kk] & 0x55) + (RAM2[kk] & 0x55);
-      UINT8 intens2 =   (RAM[kk] & 0xaa) + (RAM2[kk] & 0xaa)/2;
-      *line++ = (intens2>>6) & 0x03;
-      *line++ = (intens1>>6) & 0x03;
-      *line++ = (intens2>>4) & 0x03;
-      *line++ = (intens1>>4) & 0x03;
-      *line++ = (intens2>>2) & 0x03;
-      *line++ = (intens1>>2) & 0x03;
-      *line++ = (intens2)    & 0x03;
-      *line++ = (intens1)    & 0x03;
-      kk += 1;
-    }
-    *line = 0;
-  }
-  dmd_draw(bitmap, dotCol, de_128x32DMD);
-  drawStatus(bitmap,fullRefresh);
-}
-/*DIFFERENT ATTEMPT AT DE 128x16 HANDLING*/
-/*------------------------------*/
-/*Data East 128x16 DMD Handling*/
-/*------------------------------*/
-static core_tLCDLayout de_128x16DMD[] = {
-  {0,0,16,128,CORE_DMD}, {0}
-};
-void de2_dmd128x16_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
-  tDMDDot dotCol;
-  int ii,jj,kk,ll;
-  DBGLOG(("refresh\n"));
-  if (fullRefresh) fillbitmap(bitmap,Machine->pens[0],NULL);
-  memset(dotCol,0,sizeof(dotCol));
-  for (ll = 2; ll < 4; ll++) {
-    for (ii = 0; ii < 16; ii++) {
-      UINT8 *line = &dotCol[ii+1][0];
-      for (jj = 0; jj < 2; jj++) {
-        UINT32 tmp1 = dmd16frame[(dmdlocals.frame+ll)&3][ii*2+jj][0];
-        UINT32 tmp2 = dmd16frame[(dmdlocals.frame+ll)&3][ii*2+jj][1];
-        for (kk = 0; kk < 32; kk++) {
-          *line++ = (tmp2 & 0x80000000) ? 3 : 0; tmp2 <<= 1;
-          *line++ = (tmp1 & 0x80000000) ? 3 : 0; tmp1 <<= 1;
-        }
-      }
-    }
-  }
-  dmd_draw(bitmap, dotCol, de_128x16DMD);
-  drawStatus(bitmap,fullRefresh);
-}      
-      
-static WRITE_HANDLER(dmd_data_w)  { dmdlocals.ncmd = data; DBGLOG(("dmdcmd=%x\n",data));}
-static READ_HANDLER(dmd_status_r) { return dmdlocals.status; }
-static READ_HANDLER(dmd_busy_r)   { return dmdlocals.busy; }
-
-/*------------ DMD 128x32 -------------*/
 #define DMD32_BANK0    2
 #define DMD32_FIRQFREQ 125
 
@@ -167,7 +60,7 @@ MEMORY_WRITE_START(de_dmd32writemem)
   { 0x8000, 0xffff, MWA_ROM },
 MEMORY_END
 
-static void dmd32firq(int data);
+static void dmd32_firq(int data);
 
 static void dmd32_init(struct sndbrdData *brdData) {
   memset(&dmdlocals, 0, sizeof(dmdlocals));
@@ -176,7 +69,7 @@ static void dmd32_init(struct sndbrdData *brdData) {
   /* copy last 16K of ROM into last 16K of CPU region*/
   memcpy(memory_region(DE_DMD32CPUREGION) + 0x8000,
          memory_region(DE_DMD32ROMREGION) + memory_region_length(DE_DMD32ROMREGION)-0x8000,0x8000);
-  timer_pulse(TIME_IN_HZ(DMD32_FIRQFREQ), 0, dmd32firq);
+  timer_pulse(TIME_IN_HZ(DMD32_FIRQFREQ), 0, dmd32_firq);
 }
 
 static WRITE_HANDLER(dmd32_ctrl_w) {
@@ -207,12 +100,46 @@ static READ_HANDLER(dmd32_latch_r) {
   return dmdlocals.cmd;
 }
 
-static void dmd32firq(int data) {
+static void dmd32_firq(int data) {
   cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_FIRQ_LINE, HOLD_LINE);
 }
 
-/*------- DMD 192x64 -----------*/
-#define DMD64_FIRQFREQ 150
+void de_dmd32refresh(struct mame_bitmap *bitmap, int fullRefresh) {
+  UINT8 *RAM  = ((UINT8 *)dmd32RAM) + ((crtc6845_start_addr & 0x0100)<<2);
+  UINT8 *RAM2 = RAM + 0x200;
+  tDMDDot dotCol;
+  int ii,jj;
+
+  if (fullRefresh) fillbitmap(bitmap,Machine->pens[0],NULL);
+
+  for (ii = 1; ii <= 32; ii++) {
+    UINT8 *line = &dotCol[ii][0];
+    for (jj = 0; jj < (128/8); jj++) {
+      UINT8 intens1 = 2*(RAM[0] & 0x55) + (RAM2[0] & 0x55);
+      UINT8 intens2 =   (RAM[0] & 0xaa) + (RAM2[0] & 0xaa)/2;
+      *line++ = (intens2>>6) & 0x03;
+      *line++ = (intens1>>6) & 0x03;
+      *line++ = (intens2>>4) & 0x03;
+      *line++ = (intens1>>4) & 0x03;
+      *line++ = (intens2>>2) & 0x03;
+      *line++ = (intens1>>2) & 0x03;
+      *line++ = (intens2)    & 0x03;
+      *line++ = (intens1)    & 0x03;
+      RAM += 1; RAM2 += 1;
+    }
+    *line = 0;
+  }
+  {
+    static const core_tLCDLayout dmd32_disp[] = {{0,0,32,128,CORE_DMD}, {0}};
+    dmd_draw(bitmap, dotCol, core_gameData->lcdLayout ? core_gameData->lcdLayout : dmd32_disp);
+    drawStatus(bitmap,fullRefresh);
+  }
+}
+
+/*-----------------------------*/
+/*Data East 192x64 DMD Handling*/
+/*-----------------------------*/
+#define DMD64_IRQ2FREQ 150
 
 static WRITE_HANDLER(dmd64_ctrl_w);
 static void dmd64_init(struct sndbrdData *brdData);
@@ -243,12 +170,12 @@ MEMORY_WRITE16_START(de_dmd64writemem)
   { 0x00c00020, 0x00c00021, dmd64_status_w},/* Set the Status Line*/
 MEMORY_END
 
-static void dmd64irq2(int data);
+static void dmd64_irq2(int data);
 
 static void dmd64_init(struct sndbrdData *brdData) {
   memset(&dmdlocals, 0, sizeof(dmdlocals));
   dmdlocals.brdData = *brdData;
-  timer_pulse(TIME_IN_HZ(DMD64_FIRQFREQ), 0, dmd64irq2);
+  timer_pulse(TIME_IN_HZ(DMD64_IRQ2FREQ), 0, dmd64_irq2);
 }
 
 static WRITE_HANDLER(dmd64_ctrl_w) {
@@ -271,19 +198,65 @@ static READ16_HANDLER(dmd64_latch_r) {
   cpu_set_irq_line(dmdlocals.brdData.cpuNo, MC68000_IRQ_1, CLEAR_LINE);
   return dmdlocals.cmd;
 }
-static void dmd64irq2(int data) {
+static void dmd64_irq2(int data) {
   cpu_set_irq_line(dmdlocals.brdData.cpuNo, MC68000_IRQ_2, HOLD_LINE);
 }
 static WRITE16_HANDLER(crtc6845_msb_address_w)  { if (ACCESSING_MSB) crtc6845_address_w(offset,data>>8);  }
 static WRITE16_HANDLER(crtc6845_msb_register_w) { if (ACCESSING_MSB) crtc6845_register_w(offset,data>>8); }
 static READ16_HANDLER(crtc6845_msb_register_r)  { return crtc6845_register_r(offset)<<8; }
 
-/*------- DMD 128x16 -----------*/
+/*-- update display --*/
+void de_dmd64refresh(struct mame_bitmap *bitmap, int fullRefresh) {
+  UINT8 *RAM  = (UINT8 *)(dmd64RAM) + ((crtc6845_start_addr & 0x400)<<2);
+  UINT8 *RAM2 = RAM + 0x800;
+  tDMDDot dotCol;
+  int ii,jj;
+
+  if (fullRefresh) fillbitmap(bitmap,Machine->pens[0],NULL);
+
+  for (ii = 1; ii <= 64; ii++) {
+    UINT8 *line = &dotCol[ii][0];
+    for (jj = 0; jj < (192/16); jj++) {
+      UINT8 intens1 = 2*(RAM[1] & 0x55) + (RAM2[1] & 0x55);
+      UINT8 intens2 =   (RAM[1] & 0xaa) + (RAM2[1] & 0xaa)/2;
+      *line++ = (intens2>>6) & 0x03;
+      *line++ = (intens1>>6) & 0x03;
+      *line++ = (intens2>>4) & 0x03;
+      *line++ = (intens1>>4) & 0x03;
+      *line++ = (intens2>>2) & 0x03;
+      *line++ = (intens1>>2) & 0x03;
+      *line++ = (intens2)    & 0x03;
+      *line++ = (intens1)    & 0x03;
+      intens1 = 2*(RAM[0] & 0x55) + (RAM2[0] & 0x55);
+      intens2 =   (RAM[0] & 0xaa) + (RAM2[0] & 0xaa)/2;
+      *line++ = (intens2>>6) & 0x03;
+      *line++ = (intens1>>6) & 0x03;
+      *line++ = (intens2>>4) & 0x03;
+      *line++ = (intens1>>4) & 0x03;
+      *line++ = (intens2>>2) & 0x03;
+      *line++ = (intens1>>2) & 0x03;
+      *line++ = (intens2)    & 0x03;
+      *line++ = (intens1)    & 0x03;
+      RAM += 2; RAM2 += 2;
+    }
+    *line = 0;
+  }
+  dmd_draw(bitmap, dotCol, core_gameData->lcdLayout);
+  drawStatus(bitmap,fullRefresh);
+}
+
+/*------------------------------*/
+/*Data East 128x16 DMD Handling*/
+/*------------------------------*/
 #define DMD16_BANK0 2
-#define DMD16_FIRQFREQ 1000
-#define BUSY_CLR    0x01
-#define BUSY_SET    0x02
-#define BUSY_CLK    0x04
+// Steve said he measured this to 2000 on his game
+// but that sometimes causes a new NMI to be triggered before the
+// previous one is finished and it leads to stack overflow
+#define DMD16_NMIFREQ 1000
+/* HC74 bits */
+#define BUSY_CLR      0x01
+#define BUSY_SET      0x02
+#define BUSY_CLK      0x04
 
 static void dmd16_init(struct sndbrdData *brdData);
 static WRITE_HANDLER(dmd16_ctrl_w);
@@ -305,7 +278,7 @@ MEMORY_END
 MEMORY_WRITE_START(de_dmd16writemem)
   { 0x0000, 0x3fff, MWA_ROM },
   { 0x4000, 0x7fff, MWA_ROM },
-  { 0x8000, 0x9fff, MWA_RAM, &dmd16RAM },
+  { 0x8000, 0x9fff, MWA_RAM },
 MEMORY_END
 
 PORT_READ_START(de_dmd16readport)
@@ -318,31 +291,32 @@ PORT_END
 
 static void dmd16_setbusy(int bit, int value);
 static void dmd16_setbank(int bit, int value);
-static void de_dmd16nmi(int data);
+static void dmd16_nmi(int data);
 
 static void dmd16_init(struct sndbrdData *brdData) {
   memset(&dmdlocals, 0, sizeof(dmdlocals));
   dmdlocals.brdData = *brdData;
   memcpy(memory_region(DE_DMD16CPUREGION),
          memory_region(DE_DMD16ROMREGION) + memory_region_length(DE_DMD16ROMREGION)-0x4000,0x4000);
+  dmdlocals.framedata = (UINT32 *)memory_region(DE_DMD16DMDREGION);
   dmd16_setbank(0x07, 0x07);
   dmd16_setbusy(BUSY_SET|BUSY_CLR,0);
-  timer_pulse(TIME_IN_HZ(DMD16_FIRQFREQ), 0, de_dmd16nmi);
+  timer_pulse(TIME_IN_HZ(DMD16_NMIFREQ), 0, dmd16_nmi);
 }
 /*--- Port decoding ----
   76543210
-  10-001-- Bank0
-  10-011-- Bank1
-  10-101-- Bank2
-  11-001-- Status
-  11-111-- Test
-  1----0-- IDAT
+  10-001-- Bank0 (stat)
+  10-011-- Bank1 (stat)
+  10-101-- Bank2 (stat)
+  11-001-- Status (stat)
+  11-111-- Test (stat)
+  1----0-- IDAT (mom)
   ------
-  10-111-- Blanking
-  11-011-- Row Data
-  11-101-- Row Clock
-  0----1-- CLATCH
-  0----0-- COCLK
+  10-111-- Blanking (stat)
+  11-011-- Row Data (stat)
+  11-101-- Row Clock (stat)
+  0----1-- CLATCH (mom)
+  0----0-- COCLK (mom)
 
 --------------------*/
 static READ_HANDLER(dmd16_port_r) {
@@ -354,14 +328,38 @@ static READ_HANDLER(dmd16_port_r) {
   return 0xff;
 }
 
+static void dmd16_dmdout(void) {
+  UINT32 row = dmdlocals.hv5222;
+  const int same = (dmdlocals.lasthv5222 == dmdlocals.hv5222);
+  UINT32 *frame;
+
+  /* Swap frame when no row is selected */
+  if (dmdlocals.hv5222 == 0) dmdlocals.frame = !dmdlocals.frame;
+  frame = &dmdlocals.framedata[dmdlocals.frame*0x80];
+
+  while (row) {
+    if (row & 0x01) {
+      frame[0] = dmdlocals.hv5408; frame[1] = dmdlocals.hv5308;
+      // low intesity is created by unlighting the dots immediatly after lighting them
+      if (!same) { frame[2] = frame[0]; frame[3] = frame[1]; }
+    }
+    frame += 4; row >>= 1;
+  }
+  dmdlocals.lasthv5222 = dmdlocals.hv5222;
+}
+
 static WRITE_HANDLER(dmd16_port_w) {
   switch (offset & 0x84) {
     case 0x00: // COCLK
-      dmdlocals.hv5408s = (dmdlocals.hv5408s<<1) | ((data>>((offset & 0x03)*2))   & 0x01);
-      dmdlocals.hv5308s = (dmdlocals.hv5308s<<1) | ((data>>((offset & 0x03)*2+1)) & 0x01);
+      data = data>>((offset & 0x03)*2);
+      // switch in bits backwards to easy decoding
+      dmdlocals.hv5408s = (dmdlocals.hv5408s>>1) | ((data & 0x02)?0x80000000:0);
+      dmdlocals.hv5308s = (dmdlocals.hv5308s>>1) | ((data & 0x01)?0x80000000:0);
       break;
     case 0x04: // CLATCH
-      dmdlocals.hv5408 = dmdlocals.hv5408s; dmdlocals.hv5308 = dmdlocals.hv5308s; break;
+      dmdlocals.hv5408 = dmdlocals.hv5408s; dmdlocals.hv5308 = dmdlocals.hv5308s;
+      if (dmdlocals.blnk) dmd16_dmdout();
+      break;
     case 0x80: break; // IDAT (ignored on write)
     case 0x84:
       data &= 0x01;
@@ -372,30 +370,19 @@ static WRITE_HANDLER(dmd16_port_w) {
           dmd16_setbank(0x02, !data); break;
         case 0x94: // Bank2
           dmd16_setbank(0x04, !data); break;
-        case 0xc4: // status
+        case 0xc4: // Status
           sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, dmdlocals.status = data); break;
         case 0xdc: // Test
-          dmd16_setbusy(BUSY_SET, data); break; // Test
-        case 0x9c: // blanking
-          if (~data & dmdlocals.blnk) {
-            UINT32 row = dmdlocals.hv5222;
-            int ii;
-            for (ii = 0; row && (ii < 32); ii++, row >>= 1)
-              if (row & 0x01) { // Row is active copy column data
-                dmd16frame[dmdlocals.frame][ii][0] = dmdlocals.hv5408; // even dots
-                dmd16frame[dmdlocals.frame][ii][1] = dmdlocals.hv5308; // odd dots
-              }
-            DBGLOG(("Blanking row=%2d frame=%d data=(%08x,%08x)\n",ii,dmdlocals.frame,dmdlocals.hv5408,dmdlocals.hv5308));
-            if (ii == 32) dmdlocals.frame = (dmdlocals.frame + 1) & 3;
-          }
-          dmdlocals.blnk = data;
+          dmd16_setbusy(BUSY_SET, data); break;
+        case 0x9c: // Blanking
+          dmdlocals.blnk = data; if (data) dmd16_dmdout();
           break;
-        case 0xcc: // row data
-          dmdlocals.rowdata = data; break; // row data
-        case 0xd4: // row clock
+        case 0xcc: // Row data
+          dmdlocals.rowdata = data; break;
+        case 0xd4: // Row clock
           if (~data & dmdlocals.rowclk) // negative edge;
             dmdlocals.hv5222 = (dmdlocals.hv5222<<1) | (dmdlocals.rowdata);
-            dmdlocals.rowclk = data;
+          dmdlocals.rowclk = data;
           break;
       } // Switch
       break;
@@ -410,7 +397,7 @@ static WRITE_HANDLER(dmd16_ctrl_w) {
   if (~data & dmdlocals.ctrl & 0x02) {
     sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, dmdlocals.status = 0);
     dmd16_setbank(0x07, 0x07);
-    dmd16_setbusy(BUSY_CLR|BUSY_SET, 0); 
+    dmd16_setbusy(BUSY_CLR|BUSY_SET, 0);
     cpu_set_reset_line(dmdlocals.brdData.cpuNo, PULSE_LINE);
   }
   dmdlocals.ctrl = data;
@@ -421,7 +408,7 @@ static void dmd16_setbusy(int bit, int value) {
   int newstat = (laststat & ~bit) | (value ? bit : 0);
 #if 1
   /* In the data-sheet for the HC74 flip-flop is says that SET & CLR are _not_
-     edge triggered. For some strange reason doesn't the DMD work unless we
+     edge triggered. For some strange reason, the DMD doesn't work unless we
      treat the HC74 as edge-triggered.
   */
   if      (~newstat & laststat & BUSY_CLR) dmdlocals.busy = 0;
@@ -449,6 +436,36 @@ static void dmd16_setbank(int bit, int value) {
   dmdlocals.bank = (dmdlocals.bank & ~bit) | (value ? bit : 0);
   cpu_setbank(DMD16_BANK0, dmdlocals.brdData.romRegion + (dmdlocals.bank & 0x07)*0x4000);
 }
+static void dmd16_nmi(int data) { cpu_set_nmi_line(dmdlocals.brdData.cpuNo, PULSE_LINE); }
 
-static void de_dmd16nmi(int data) { DBGLOG(("DMD NMI\n")); cpu_set_nmi_line(dmdlocals.brdData.cpuNo, PULSE_LINE); }
+/*-- update display --*/
+void de_dmd16refresh(struct mame_bitmap *bitmap, int fullRefresh) {
+  UINT32 *frame = &dmdlocals.framedata[(!dmdlocals.frame)*0x80];
+  tDMDDot dotCol;
+  int ii,jj,kk;
+
+  if (fullRefresh) fillbitmap(bitmap,Machine->pens[0],NULL);
+
+  for (ii = 1; ii <= 16; ii++) {
+    UINT8 *line = &dotCol[ii][0];
+    for (jj = 0; jj < 2; jj++) {
+      UINT32 tmp0 = frame[0];
+      UINT32 tmp1 = frame[1];
+      UINT32 tmp2 = frame[2];
+      UINT32 tmp3 = frame[3];
+      for (kk = 0; kk < 32; kk++) {
+        *line++ = 2*(tmp2 & 0x01) + (tmp0 & 0x01);
+        *line++ = 2*(tmp3 & 0x01) + (tmp1 & 0x01);
+        tmp0 >>= 1; tmp1 >>= 1; tmp2 >>= 1; tmp3 >>= 1;
+      }
+      frame += 4;
+    }
+    *line++ = 0;
+  }
+  {
+    static const core_tLCDLayout dmd16_disp[] = {{0,0,16,128,CORE_DMD}, {0}};
+    dmd_draw(bitmap, dotCol, core_gameData->lcdLayout ? core_gameData->lcdLayout : dmd16_disp);
+    drawStatus(bitmap,fullRefresh);
+  }
+}
 
