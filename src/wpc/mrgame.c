@@ -2,6 +2,10 @@
   Mr. Game (Italy)
   ----------------
   by Steve Ellenoff (08/23/2004)
+  
+  Thanks to Gerrit for helping out with Solenoid smoothing (better now) and getting those damn matrix
+  out of the way of the video display..
+
 
   Main CPU Board:
 
@@ -11,8 +15,11 @@
   I/O: DMA
 
   Issues/Todo:
-  #1) Sound & Video are 90% not done yet..
-  #2) Video commands to video board are treated as raw ascii and sent to pinmame display for debugging (remove when real video emulation done)
+  #1) Motor show - get's caught in a loop @ 1a47 - 1a4e and stops reading cpu input
+  #2) The Mr. Game Logos do not appear during attract mode, unless you go into video test and exit, and
+      then only sometimes will it appear after a few seconds..
+  #3) Colors not impleneted
+  #4) Sound not done yet
 ************************************************************************************************/
 #include "driver.h"
 #include "cpu/m68000/m68000.h"
@@ -23,7 +30,8 @@
 #include "sim.h"
 
 //use this to comment out video and sound cpu for quicker debugging of main cpu
-#define TEST_MAIN_CPU
+//#define TEST_MAIN_CPU
+#define NOSOUND
 
 #define MRGAME_DISPLAYSMOOTH 2
 #define MRGAME_SOLSMOOTH 4
@@ -32,19 +40,20 @@
 //Jumper on board shows 200Hz hard wired ( should double check it's actually 200Hz and not a divide by 200)
 #define MRGAME_IRQ_FREQ TIME_IN_HZ(200)
 
-#if 1
+#if 0
 #define LOG(x) printf x
 #else
 #define LOG(x) logerror x
 #endif
 
 //Declarations
-READ_HANDLER(i8255_porta_r);
-READ_HANDLER(i8255_portb_r);
-READ_HANDLER(i8255_portc_r);
-WRITE_HANDLER(i8255_porta_w);
-WRITE_HANDLER(i8255_portb_w);
-WRITE_HANDLER(i8255_portc_w);
+static READ_HANDLER(i8255_porta_r);
+static READ_HANDLER(i8255_portb_r);
+static READ_HANDLER(i8255_portc_r);
+static WRITE_HANDLER(i8255_porta_w);
+static WRITE_HANDLER(i8255_portb_w);
+static WRITE_HANDLER(i8255_portc_w);
+static WRITE_HANDLER(vid_registers_w);
 
 static struct {
   int vblankCount;
@@ -60,7 +69,14 @@ static struct {
   int row_pin5;
   int a0a2;
   int d0d1;
+  int vid_data;
+  int vid_strb;
+  int vid_a11;
+  int vid_a12;
+  int vid_a13;
 } locals;
+
+data8_t *mrgame_videoram;
 
 /* -------------------*/
 /* --- Interfaces --- */
@@ -101,6 +117,10 @@ static void mrgame_irq(int data)
 }
 
 static INTERRUPT_GEN(vblank) {
+
+  //Gen #1 - needs to set IRQ (no idea @ what frequency)
+  cpu_set_irq_line(1, IRQ_LINE_NMI, ASSERT_LINE);
+
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
@@ -140,13 +160,16 @@ static MACHINE_INIT(mrgame) {
   /* init PPI */
   ppi8255_init(&ppi8255_intf);
 
-  //setup IRQ timer
+  //setup IRQ timer for Main CPU
   timer_pulse(MRGAME_IRQ_FREQ,0,mrgame_irq);
+
+  //pull video registers out of ram space
+  install_mem_write_handler(1,0x6800, 0x6805, vid_registers_w);
 }
 
 
 //Reads current switch column (really row) - Inverted
-static READ16_HANDLER(col_r) {
+static READ16_HANDLER(col_r) { 
 	UINT8 switches = coreGlobals.swMatrix[locals.SwCol+1];	//+1 so we begin by reading column 1 of input matrix instead of 0 which is used for special switches in many drivers
 	return switches^0xff;
 }
@@ -158,7 +181,7 @@ Bits 4   Ack Sound
 Bits 5   Ack Spk
 Bits 6-7 (Always 0?)
 */
-static READ16_HANDLER(rsw_ack_r) {
+static READ16_HANDLER(rsw_ack_r) { 
     int data = core_getDip(0) & 0x0f;
 	data |= (locals.acksnd << 4);
 	data |= (locals.ackspk << 5);
@@ -195,38 +218,14 @@ static WRITE_HANDLER(solenoid_w)
 	}
 }
 
-static WRITE16_HANDLER(sound_w) {
-	//LOG(("%08x: sound_w = %04x\n",activecpu_get_pc(),data));
+static WRITE16_HANDLER(sound_w) { 
+	//LOG(("%08x: sound_w = %04x\n",activecpu_get_pc(),data)); 
 }
 
 //8 bit data to this latch comes from D8-D15 (ie, upper bits only)
-//TEMP HACK TO DISPLAY SOME TEXT ON SCREEN
-static int xpos = 0x20;
-static int ypos = 0;
-static WRITE16_HANDLER(video_w) {
-	char tmp[2];
-	int mdata = (data>>8)^0xff;
-	//LOG(("%08x: video_w = %04x (%c)\n",activecpu_get_pc(),mdata,mdata));
-#if 0
-	if(mdata == 0xef) printf("\n");
-	else	printf("%c",mdata);
-#else
-	if(mdata == 0xef) {
-		xpos = 0x20;
-		ypos = (ypos + 10);
-		if(ypos > 350) {
-			fillbitmap(Machine->scrbitmap, get_black_pen(), NULL);
-			schedule_full_refresh();
-			ypos = 0;
-		}
-	}
-	else {
-	xpos = (xpos + 8);
-	if(xpos > 250) xpos = 0x20;
-	sprintf(tmp,"%c",mdata);
-	core_textOut(tmp, 1,xpos , ypos, 5);
-	}
-#endif
+static WRITE16_HANDLER(video_w) { 
+	locals.vid_data = (data>>8) & 0xff;
+//	LOG(("%08x: video_w = %04x = %02x (%c)\n",activecpu_get_pc(),data,locals.vid_data,locals.vid_data^0xff)); 
 }
 
 /*
@@ -242,7 +241,7 @@ IC37 - Data Bits 3 = 0, 4 = 1 -> S20,21,22,23,24 of CN12         (D0-D2 generate
 S9,S10,S11 = Solenoid bank 1,2,3 X 8 = 24 Sols
 S15-S24 = Lamp Col 1-10 = 80 Lamps
 */
-static WRITE16_HANDLER(ic35b_w) {
+static WRITE16_HANDLER(ic35b_w) { 
 	int output = data & 0x07;
 	int bank = (data & 0x18)>>3;
 	int sol = locals.a0a2;
@@ -250,7 +249,11 @@ static WRITE16_HANDLER(ic35b_w) {
 
 	switch(bank) {
 		//IC01 - Data Bits 3 = 0, 4 = 0 -> S0-S7 of CN14 & CN14A - Bit 7 is sent to S0-S7 via D0-D2
+		//S0-S5 = CN14 (Not Used!)
+		//S6-S7 = CN14A 
 		case 0:
+			locals.vid_strb = (data>>7);
+			//LOG(("S0-S7 = %04x\n",data));
 		break;
 		//IC36 - Data Bits 3 = 1, 4 = 0 -> S9,10,11,15,16,17,18,19 of CN12 (D0-D2 generate 0-7 bits)
 		case 1:
@@ -289,28 +292,29 @@ static WRITE16_HANDLER(ic35b_w) {
 }
 
 /*
-Bits 0 - Bit 1 = D0-D1 to CN12 (i/o) AND CN14 (video)
-Bits 2 - Bit 7 = D2-D7 to CN14 (video board)
+Bits 0 - Bit 1 = D0-D1 to CN12 (i/o) -- AND CN14 (video) - NOT USED!
+Bits 2 - Bit 3 = D0-D1 to CN14A (video board) - NOT USED?!
+Bits 4 - Bit 7 = D4-D7 to CN14A (video board) - NOT USED?!
 */
-static WRITE16_HANDLER(data_w) {
+static WRITE16_HANDLER(data_w) { 
 	locals.d0d1 = data & 0x03;
 #if 0
 	if(locals.d0d1 > 0)
-		LOG(("* * * %08x: data_w = %04x, aoa2 = %x\n",activecpu_get_pc(),data,locals.a0a2));
+		LOG(("* * * %08x: data_w = %04x, aoa2 = %x\n",activecpu_get_pc(),data,locals.a0a2)); 
 //	else
-//		LOG(("%08x: data_w = %04x\n",activecpu_get_pc(),data));
+//		LOG(("%08x: data_w = %04x\n",activecpu_get_pc(),data)); 
 #endif
 }
 
 /*
-Bits 0-2 = A0-A2 of CN12 & CN14
+Bits 0-2 = A0-A2 of CN12 --- AND CN14 (NOT USED!)
 Bits 3-7 = NC
 */
-static WRITE16_HANDLER(extadd_w) {
+static WRITE16_HANDLER(extadd_w) { 
 	locals.a0a2 = data & 0x07;
 #if 0
 	if(locals.d0d1)
-		LOG(("%08x: extadd_w = %04x\n",activecpu_get_pc(),data));
+		LOG(("%08x: extadd_w = %04x\n",activecpu_get_pc(),data)); 
 #endif
 }
 
@@ -322,11 +326,11 @@ Bit 5 = Pin 5 - CN10 & Pin 18 - CN11 (??)
 Bit 6 = NA
 Bit 7 = /RUNEN Line
 */
-static WRITE16_HANDLER(row_w) {
+static WRITE16_HANDLER(row_w) { 
 	locals.SwCol = core_BitColToNum(data & 0x7);
 	locals.diagnosticLED = GET_BIT4;
 	locals.row_pin5 = GET_BIT5;
-//	LOG(("%08x: row_w = %04x\n",activecpu_get_pc(),data));
+//	LOG(("%08x: row_w = %04x\n",activecpu_get_pc(),data)); 
 }
 
 //NVRAM
@@ -338,12 +342,47 @@ static NVRAM_HANDLER(mrgame_nvram) {
 /***************************************************************************/
 /************************** VIDEO HANDLING *********************************/
 /***************************************************************************/
-READ_HANDLER(i8255_porta_r) { LOG(("i8255_porta_r\n")); return 0; }
-READ_HANDLER(i8255_portb_r) { LOG(("i8255_portb_r\n")); return 0; }
-READ_HANDLER(i8255_portc_r) { LOG(("i8255_portc_r\n")); return 0; }
-WRITE_HANDLER(i8255_porta_w) { LOG(("i8255_porta_w=%x\n",data)); }
-WRITE_HANDLER(i8255_portb_w) { LOG(("i8255_portb_w=%x\n",data)); }
-WRITE_HANDLER(i8255_portc_w) { LOG(("i8255_portc_w=%x\n",data)); }
+
+//Read D0-D7 from cpu
+static READ_HANDLER(i8255_porta_r) { 
+	LOG(("i8255_porta_r=%x\n",locals.vid_data)); 
+	return locals.vid_data; 
+}
+static READ_HANDLER(i8255_portb_r) { LOG(("UNDOCUMENTED: i8255_portb_r\n")); return 0; }
+
+//Bits 0-3 = Video Dips (NOT INVERTED)
+//Bits   4 = Video Strobe from CPU
+static int lastr = 0;
+READ_HANDLER(i8255_portc_r) { 
+	int data = core_getDip(1) | (locals.vid_strb<<4);
+	if(lastr != data) {
+		LOG(("i8255_portc_r=%x\n",data));
+		lastr = data;
+	}
+	return data;
+}
+
+static WRITE_HANDLER(i8255_porta_w) { LOG(("i8255_porta_w=%x\n",data)); }
+static WRITE_HANDLER(i8255_portb_w) { LOG(("i8255_portb_w=%x\n",data)); }
+static WRITE_HANDLER(i8255_portc_w) { LOG(("i8255_portc_w=%x\n",data)); }
+
+static WRITE_HANDLER(vid_registers_w) {
+	switch(offset) {
+		//Graphics rom - address line 11 pin
+		case 0:
+			locals.vid_a11 = data & 1;
+			break;
+		//Graphics rom - address line 12 pin
+		case 3:
+			locals.vid_a12 = data & 1;
+			break;
+		//Graphics rom - address line 13 pin
+		case 4:
+			locals.vid_a13 = data & 1;
+			break;
+	}
+	LOG(("vid_register[%02x]_w=%x\n",offset,data)); 
+}
 
 static READ_HANDLER(soundg1_1_port_r) {
 	return 0;
@@ -371,12 +410,55 @@ static VIDEO_START(mrgame) {
   return (tmpbitmap == 0);
 }
 
-static WRITE_HANDLER(vram_w) {
-}
+static int charoff = 0;
 
 PINMAME_VIDEO_UPDATE(mrgame_update) {
-//  copybitmap(bitmap,tmpbitmap,0,0,0,0,&GTS80locals.vidClip,TRANSPARENCY_NONE,0);
-  return 0;
+	int offs;
+	int color = 1;
+	int tile = 0;
+
+#ifdef MAME_DEBUG
+  core_textOutf(10,300,1,"offset=%08x", charoff);
+
+  if(keyboard_pressed_memory_repeat(KEYCODE_Z,2))
+	  charoff+=0x100;
+  if(keyboard_pressed_memory_repeat(KEYCODE_X,2))
+	  charoff-=0x100;
+  if(keyboard_pressed_memory_repeat(KEYCODE_C,2))
+	  charoff++;
+  if(keyboard_pressed_memory_repeat(KEYCODE_V,2))
+	  charoff--;
+#endif
+
+	/* for every character in the Video RAM, check if it has been modified */
+	/* since last time and update it accordingly. */
+	for (offs = 0; offs < videoram_size - 1; offs++)
+	{
+		if (1) //dirtybuffer[offs])
+		{
+			int sx,sy;
+
+//			dirtybuffer[offs] = 0;
+
+			sx = offs % (256/8);
+			sy = offs / (256/8);
+
+			tile = mrgame_videoram[offs]+
+                   (locals.vid_a11*0x100)+(locals.vid_a12*0x200)+(locals.vid_a13*0x400)+
+			       charoff;
+
+			drawgfx(tmpbitmap,Machine->gfx[0],
+					tile,
+					color,
+					0,0,
+					8*sx,8*sy,
+					0,TRANSPARENCY_NONE,0);
+		}
+	}
+
+	/* copy the temporary bitmap to the screen */
+	copybitmap(bitmap,tmpbitmap,0,0,0,0,&Machine->visible_area,TRANSPARENCY_NONE,0);
+    return 0;
 }
 
 /***********************/
@@ -405,13 +487,13 @@ static MEMORY_READ_START(videog1_readmem)
   { 0x0000, 0x3fff, MRA_ROM },
   { 0x4000, 0x7fff, MRA_RAM },
   { 0x8100, 0x8103, ppi8255_0_r},
-  //{ 0xa800, 0xa805, misc_r},
 MEMORY_END
 static MEMORY_WRITE_START(videog1_writemem)
   { 0x0000, 0x3fff, MWA_ROM },
-  { 0x4000, 0x7fff, MWA_RAM },
+  { 0x4000, 0x47ff, MWA_RAM },
+  { 0x4800, 0x4be0, MWA_RAM, &mrgame_videoram, &videoram_size },
+  { 0x4be1, 0x7fff, MWA_RAM },
   { 0x8100, 0x8103, ppi8255_0_w},
-  //{ 0xa800, 0xa805, misc_w},
 MEMORY_END
 static PORT_READ_START(videog1_readport)
   { 0x00, 0xff, videog1_port_r },
@@ -431,7 +513,9 @@ static MEMORY_READ_START(videog2_readmem)
 MEMORY_END
 static MEMORY_WRITE_START(videog2_writemem)
   { 0x0000, 0x7fff, MWA_ROM },
-  { 0x8000, 0xbfff, MWA_RAM },
+  { 0x8000, 0x87ff, MWA_RAM },
+  { 0x8800, 0x8be7, MWA_RAM, &mrgame_videoram, &videoram_size },
+  { 0x8bef, 0xbfff, MWA_RAM },
   { 0xc000, 0xc003, ppi8255_0_w},
   //{ 0xa800, 0xa805, misc_w},
 MEMORY_END
@@ -484,7 +568,45 @@ MEMORY_END
 static int mrgame_sw2m(int no) { return no+7+1; }
 static int mrgame_m2sw(int col, int row) { return col*8+row-7-1; }
 
-/* MAIN CPU DRIVER */
+/*************************************
+ *
+ *	Graphics layouts
+ *
+ *************************************/
+
+static struct GfxLayout charlayout_g1 =
+{
+	8,8,						/* 8*8 characters */
+	4096,						/* 4096 characters = (32768 Bytes / 8 bits per byte)  */
+	2,							/* 2 bits per pixel */
+	{ 0, 0x8000*8 },			/* the bitplanes are separated across the 2 roms*/
+	{ 0, 1, 2, 3, 4, 5, 6, 7 },	/* pretty straightforward layout */
+	{ 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8 },
+	8*8	/* every char takes 8 consecutive bytes */
+};
+
+static struct GfxLayout charlayout_g2 =
+{
+	8,8,						/* 8*8 characters */
+	4096,						/* 4096 characters = (32768 Bytes / 8 bits per byte)  */
+	5,							/* 5 bits per pixel */
+	{ 0, 0x8000*8*1, 0x8000*8*2, 0x8000*8*3, 0x8000*8*4},		/* the bitplanes are separated across the 5 roms*/
+	{ 0, 1, 2, 3, 4, 5, 6, 7 },	/* pretty straightforward layout */
+	{ 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8 },
+	8*8	/* every char takes 8 consecutive bytes */
+};
+
+static struct GfxDecodeInfo gfxdecodeinfo_g1[] =
+{
+	{ REGION_GFX1, 0, &charlayout_g1,   0, 32 },
+	{ -1 } /* end of array */
+};
+
+static struct GfxDecodeInfo gfxdecodeinfo_g2[] =
+{
+	{ REGION_GFX1, 0, &charlayout_g2,   0, 32 },
+	{ -1 } /* end of array */
+};
 
 
 /* VIDEO GENERATION 1 DRIVER */
@@ -516,14 +638,18 @@ MACHINE_DRIVER_END
 /* Gen 1 - Vid & Sound */
 MACHINE_DRIVER_START(mrgame_vidsnd_g1)
   MDRV_IMPORT_FROM(mrgame_vid1)
+#ifndef NOSOUND
   MDRV_IMPORT_FROM(mrgame_snd1)
+#endif
   MDRV_INTERLEAVE(50)
 MACHINE_DRIVER_END
 
 /* Gen 2 - Vid & Sound */
 MACHINE_DRIVER_START(mrgame_vidsnd_g2)
   MDRV_IMPORT_FROM(mrgame_vid2)
+#ifndef NOSOUND
   MDRV_IMPORT_FROM(mrgame_snd1)
+#endif
   MDRV_INTERLEAVE(50)
 MACHINE_DRIVER_END
 
@@ -544,19 +670,19 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(mrgame_video_common)
   MDRV_SCREEN_SIZE(640, 400)
   MDRV_VISIBLE_AREA(0, 255, 0, 399)
-  MDRV_GFXDECODE(0)
   MDRV_VIDEO_ATTRIBUTES(VIDEO_TYPE_RASTER | VIDEO_MODIFIES_PALETTE)
   MDRV_VIDEO_START(mrgame)
 MACHINE_DRIVER_END
 
 
-//Generation 1
+//Generation 1 
 MACHINE_DRIVER_START(mrgame1)
 	MDRV_IMPORT_FROM(mrgame_cpu)
 #ifndef TEST_MAIN_CPU
 	MDRV_IMPORT_FROM(mrgame_vidsnd_g1)
 #endif
 	MDRV_IMPORT_FROM(mrgame_video_common)
+	MDRV_GFXDECODE(gfxdecodeinfo_g1)
 MACHINE_DRIVER_END
 
 //Generation 2
@@ -566,4 +692,5 @@ MACHINE_DRIVER_START(mrgame2)
   MDRV_IMPORT_FROM(mrgame_vidsnd_g2)
 #endif
   MDRV_IMPORT_FROM(mrgame_video_common)
+  MDRV_GFXDECODE(gfxdecodeinfo_g2)
 MACHINE_DRIVER_END
