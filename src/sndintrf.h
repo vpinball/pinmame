@@ -167,6 +167,9 @@ struct MachineSound
 #if (HAS_TIA)
 #include "sound/tiaintf.h"
 #endif
+#if (HAS_SP0250)
+#include "sound/sp0250.h"
+#endif
 #ifdef PINMAME
 #if (HAS_VOTRAXSC01)
 #include "sound/votrax.h"
@@ -365,6 +368,9 @@ enum
 #endif
 #if (HAS_TIA)
 	SOUND_TIA,
+#endif
+#if (HAS_SP0250)
+	SOUND_SP0250,
 #endif
 #ifdef PINMAME
 #if (HAS_VOTRAXSC01)

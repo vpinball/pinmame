@@ -2950,7 +2950,7 @@ static void edit_regs( void )
 		regs->base = pedit[ regs->idx ].y - win_get_h( win ) + regs->top + 1;
 		dump_regs();
 	}
-	win_set_curpos( win, pedit[regs->idx].x + pedit[regs->idx].n + regs->nibble, pedit[regs->idx].y - regs->base + regs->top );
+	win_set_curpos( win, pedit[regs->idx].x + pedit[regs->idx].n + regs->nibble, pedit[regs->idx].y - regs->base + regs->top + (dbg_show_scanline ? 1 : 0));
 	set_screen_curpos( win_get_cx_abs(win), win_get_cy_abs(win) );
 
 	i = readkey();

@@ -22,11 +22,11 @@
 
 enum
 {
-	PALETTIZED_16BIT,
-	DIRECT_15BIT,
-	DIRECT_32BIT
+	PALETTIZED_16BIT = 0,
+	DIRECT_15BIT = 1,
+	DIRECT_32BIT = 2,
+	DIRECT_RGB = DIRECT_15BIT | DIRECT_32BIT
 };
-
 
 /*-------------------------------------------------
 	GLOBAL VARIABLES
@@ -166,9 +166,9 @@ int palette_start(void)
 
 	/* compute the total colors, including shadows and highlights */
 	total_colors = Machine->drv->total_colors;
-	if (Machine->drv->video_attributes & VIDEO_HAS_SHADOWS)
+	if (Machine->drv->video_attributes & VIDEO_HAS_SHADOWS && !(colormode & DIRECT_RGB))
 		total_colors += Machine->drv->total_colors;
-	if (Machine->drv->video_attributes & VIDEO_HAS_HIGHLIGHTS)
+	if (Machine->drv->video_attributes & VIDEO_HAS_HIGHLIGHTS && !(colormode & DIRECT_RGB))
 		total_colors += Machine->drv->total_colors;
 	total_colors_with_ui = total_colors;
 
@@ -192,9 +192,9 @@ int palette_start(void)
 }
 
 
-
-//* AAT041603
+//* 072703AT (last update)
 /*-------------------------------------------------
+
 	palette_set_shadow_mode(mode)
 
 		mode: 0 = use preset 0 (default shadow)
@@ -211,21 +211,21 @@ int palette_start(void)
 
 	palette_set_shadow_factor32(factor)
 
-		factor: 1.0(normal) to 0.0(darker)
+		factor: 1.0(normal) to 0.0(pitch black)
 
 
 	palette_set_highlight_factor32(factor)
 
-		factor: 1.0(normal) to 2.0(brighter)
+		factor: 1.0(normal) and up(brighter)
 
 
 	palette_set_shadow_dRGB32(mode, dr, dg, db, noclip)
 
-		mode:    0 to   3, which preset to configure
+		mode:    0 to   3 (which preset to configure)
 
-		  dr: -255 to 255,   red displacement
-		  dg: -255 to 255, green displacement
-		  db: -255 to 255,  blue displacement
+		  dr: -255 to 255 ( red displacement )
+		  dg: -255 to 255 ( green displacement )
+		  db: -255 to 255 ( blue displacement )
 
 		noclip: 0 = resultant RGB clipped at 0x00/0xff
 		        1 = resultant RGB wraparound 0x00/0xff
@@ -241,10 +241,13 @@ int palette_start(void)
 	  should be used instead.
 
 	* 32-bit shadows are lossy. Even with zero RGB
-	  the affected area will still look slightly
-	  darkened. Drivers should ensure shadow pen
-	  entries in gfx_drawmode_table are set to
-	  DRAWMODE_NONE to avoid this side-effect.
+	  displacements the affected area will still look
+	  slightly darkened.
+
+	  Drivers should ensure all shadow pens in
+	  gfx_drawmode_table[] are set to DRAWMODE_NONE
+	  when RGB displacements are zero to avoid the
+	  darkening effect.
 
 -------------------------------------------------*/
 #define MAX_SHADOW_PRESETS 4
@@ -254,48 +257,103 @@ static UINT32 *shadow_table_base[MAX_SHADOW_PRESETS];
 
 static void internal_set_shadow_preset(int mode, double factor, int dr, int dg, int db, int noclip, int style, int init)
 {
-	static double oldfactor[MAX_SHADOW_PRESETS] = {0,0,0,0};
-	static int oldRGB[MAX_SHADOW_PRESETS][3] = {{0,0,0},{0,0,0},{0,0,0},{0,0,0}};
+#define FP 16
+#define FMAX (0x1f<<FP)
+
+	static double oldfactor[MAX_SHADOW_PRESETS] = {-1,-1,-1,-1};
+	static int oldRGB[MAX_SHADOW_PRESETS][3] = {{-1,-1,-1},{-1,-1,-1},{-1,-1,-1},{-1,-1,-1}};
 	static int oldclip;
 
 	UINT32 *table_ptr32;
-	int i, r, g, b;
+	int i, fl, ov, r, g, b, d32;
 
 	if (mode < 0 || mode >= MAX_SHADOW_PRESETS) return;
 
 	if ((table_ptr32 = shadow_table_base[mode]) == NULL) return;
 
-	if (style)
+	if (style) // monotone shadows(style 1) or highlights(style 2)
 	{
 		if (factor < 0) factor = 0;
 
 		if (!init && oldfactor[mode] == factor) return;
 
 		oldfactor[mode] = factor;
+		oldRGB[mode][2] = oldRGB[mode][1] = oldRGB[mode][0] = -1;
 
-		if (colormode != DIRECT_32BIT)
+		if (!(colormode & DIRECT_RGB))
 		{
-			if (style == 1) palette_set_shadow_factor(factor); else
-			if (style == 2) palette_set_highlight_factor(factor);
-			return;
+			switch (style)
+			{
+				// modify shadows(first upper palette)
+				case 1:
+					palette_set_shadow_factor(factor);
+				break;
+
+				// modify highlights(second upper palette)
+				case 2:
+					palette_set_highlight_factor(factor);
+				break;
+
+				default: return;
+			}
+		}
+		else
+		{
+			fl = (int)(factor * (1<<FP));
+			d32 = (colormode == DIRECT_32BIT);
+
+			if (factor <= 1.0)
+			{
+				for (i=0; i<32768; i++)
+				{
+					r = (i & 0x7c00) * fl;
+					g = (i & 0x03e0) * fl;
+					b = (i & 0x001f) * fl;
+
+					r = r>>FP & 0x7c00;
+					g = g>>FP & 0x03e0;
+					b = b>>FP & 0x001f;
+
+					if (d32)
+						table_ptr32[i] = (UINT32)(r<<9 | g<<6 | b<<3);
+					else
+						((UINT16*)table_ptr32)[i] = (UINT16)(r | g | b);
+				}
+			}
+			else
+			{
+				for (i=0; i<32768; i++)
+				{
+					r = (i>>10 & 0x1f) * fl;
+					g = (i>>5  & 0x1f) * fl;
+					b = (i     & 0x1f) * fl;
+					ov = 0;
+
+					if (r > FMAX) ov += r - FMAX;
+					if (g > FMAX) ov += g - FMAX;
+					if (b > FMAX) ov += b - FMAX;
+
+					r += ov;  g += ov;  b += ov;
+
+					if (r >= FMAX) r = 0x7c00; else r = r>>(FP-10) & 0x7c00;
+					if (g >= FMAX) g = 0x03e0; else g = g>>(FP-5)  & 0x03e0;
+					if (b >= FMAX) b = 0x001f; else b = b>>(FP);
+
+					if (d32)
+						table_ptr32[i] = (UINT32)(r<<9 | g<<6 | b<<3);
+					else
+						((UINT16*)table_ptr32)[i] = (UINT16)(r | g | b);
+				}
+			}
 		}
 
-		for (i=0; i<32768; i++)
-		{
-			r = (int)(factor * (i & 0x7c00));
-			g = (int)(factor * (i & 0x03e0));
-			b = (int)(factor * (i & 0x001f));
-
-			if (r < 0x7c00) r &= 0x7c00; else r = 0x7c00;
-			if (g < 0x03e0) g &= 0x03e0; else g = 0x03e0;
-			if (b < 0x001f) b &= 0x001f; else b = 0x001f;
-
-			table_ptr32[i] = (UINT32)(r<<9 | g<<6 | b<<3);
-		}
+		#if VERBOSE
+			usrintf_showmessage("shadow %d recalc factor:%1.2f style:%d", mode, factor, style);
+		#endif
 	}
-	else
+	else // color shadows or highlights(style 0)
 	{
-		if (colormode != DIRECT_32BIT) return;
+		if (!(colormode & DIRECT_RGB)) return;
 
 		if (dr < -0xff) dr = -0xff; else if (dr > 0xff) dr = 0xff;
 		if (dg < -0xff) dg = -0xff; else if (dg > 0xff) dg = 0xff;
@@ -304,14 +362,16 @@ static void internal_set_shadow_preset(int mode, double factor, int dr, int dg, 
 
 		if (!init && oldclip==noclip && oldRGB[mode][0]==dr && oldRGB[mode][1]==dg && oldRGB[mode][2]==db) return;
 
-		#ifdef MAME_DEBUG
-			//usrintf_showmessage("shadow %d recalc %d %d %d %02x", mode, dr, dg, db, noclip);
-		#endif
-
 		oldclip = noclip;
 		oldRGB[mode][0] = dr; oldRGB[mode][1] = dg; oldRGB[mode][2] = db;
+		oldfactor[mode] = -1;
+
+		#if VERBOSE
+			usrintf_showmessage("shadow %d recalc %d %d %d %02x", mode, dr, dg, db, noclip);
+		#endif
 
 		dr <<= 10; dg <<= 5;
+		d32 = (colormode == DIRECT_32BIT);
 
 		if (noclip)
 		{
@@ -325,7 +385,10 @@ static void internal_set_shadow_preset(int mode, double factor, int dr, int dg, 
 				g &= 0x03e0;
 				b &= 0x001f;
 
-				table_ptr32[i] = (UINT32)(r<<9 | g<<6 | b<<3);
+				if (d32)
+					table_ptr32[i] = (UINT32)(r<<9 | g<<6 | b<<3);
+				else
+					((UINT16*)table_ptr32)[i] = (UINT16)(r | g | b);
 			}
 		}
 		else
@@ -340,10 +403,15 @@ static void internal_set_shadow_preset(int mode, double factor, int dr, int dg, 
 				if (g < 0) g = 0; else if (g > 0x03e0) g = 0x03e0;
 				if (b < 0) b = 0; else if (b > 0x001f) b = 0x001f;
 
-				table_ptr32[i] = (UINT32)(r<<9 | g<<6 | b<<3);
+				if (d32)
+					table_ptr32[i] = (UINT32)(r<<9 | g<<6 | b<<3);
+				else
+					((UINT16*)table_ptr32)[i] = (UINT16)(r | g | b);
 			}
 		}
 	}
+#undef FP
+#undef FMAX
 }
 
 
@@ -457,7 +525,7 @@ static int palette_alloc(void)
 		Machine->debug_remapped_colortable[2*i+1] = i % DEBUGGER_TOTAL_COLORS;
 	}
 
-#if 0
+#if 0 //* for reference, do not remove
 	/* allocate the shadow lookup table for 16bpp modes */
 	palette_shadow_table = NULL;
 	if (colormode == PALETTIZED_16BIT)
@@ -480,21 +548,19 @@ static int palette_alloc(void)
 	}
 #else
 	{
-		//* AAT041603
 		UINT16 *table_ptr16;
 		UINT32 *table_ptr32;
 		int c = Machine->drv->total_colors;
 		int cx2 = c << 1;
 
 		for (i=0; i<MAX_SHADOW_PRESETS; i++) shadow_table_base[i] = NULL;
-		palette_shadow_table = NULL;
 
-		if (colormode != DIRECT_32BIT)
+		if (!(colormode & DIRECT_RGB))
 		{
 			if (Machine->drv->video_attributes & VIDEO_HAS_SHADOWS)
 			{
 				if (!(table_ptr16 = auto_malloc(65536 * sizeof(UINT16)))) return 1;
-				if (palette_shadow_table == NULL) palette_shadow_table = table_ptr16;
+
 				shadow_table_base[0] = shadow_table_base[2] = (UINT32*)table_ptr16;
 
 				for (i=0; i<c; i++) table_ptr16[i] = c + i;
@@ -506,7 +572,7 @@ static int palette_alloc(void)
 			if (Machine->drv->video_attributes & VIDEO_HAS_HIGHLIGHTS)
 			{
 				if (!(table_ptr16 = auto_malloc(65536 * sizeof(UINT16)))) return 1;
-				if (palette_shadow_table == NULL) palette_shadow_table = table_ptr16;
+
 				shadow_table_base[1] = shadow_table_base[3] = (UINT32*)table_ptr16;
 
 				for (i=0; i<c; i++) table_ptr16[i] = cx2 + i;
@@ -520,7 +586,6 @@ static int palette_alloc(void)
 			if (Machine->drv->video_attributes & VIDEO_HAS_SHADOWS)
 			{
 				if (!(table_ptr32 = auto_malloc(65536 * sizeof(UINT32)))) return 1;
-				if (palette_shadow_table == NULL) palette_shadow_table = (UINT16*)table_ptr32;
 
 				shadow_table_base[0] = table_ptr32;
 				shadow_table_base[2] = table_ptr32 + 32768;
@@ -531,7 +596,6 @@ static int palette_alloc(void)
 			if (Machine->drv->video_attributes & VIDEO_HAS_HIGHLIGHTS)
 			{
 				if (!(table_ptr32 = auto_malloc(65536 * sizeof(UINT32)))) return 1;
-				if (palette_shadow_table == NULL) palette_shadow_table = (UINT16*)table_ptr32;
 
 				shadow_table_base[1] = table_ptr32;
 				shadow_table_base[3] = table_ptr32 + 32768;
@@ -539,6 +603,7 @@ static int palette_alloc(void)
 				internal_set_shadow_preset(1, PALETTE_DEFAULT_HIGHLIGHT_FACTOR32, 0, 0, 0, 0, 2, 1);
 			}
 		}
+		palette_shadow_table = (UINT16*)shadow_table_base[0];
 	}
 #endif
 
@@ -645,9 +710,9 @@ int palette_init(void)
 int palette_get_total_colors_with_ui(void)
 {
 	int result = Machine->drv->total_colors;
-	if (Machine->drv->video_attributes & VIDEO_HAS_SHADOWS)
+	if (Machine->drv->video_attributes & VIDEO_HAS_SHADOWS && !(colormode & DIRECT_RGB))
 		result += Machine->drv->total_colors;
-	if (Machine->drv->video_attributes & VIDEO_HAS_HIGHLIGHTS)
+	if (Machine->drv->video_attributes & VIDEO_HAS_HIGHLIGHTS && !(colormode & DIRECT_RGB))
 		result += Machine->drv->total_colors;
 	if (result <= 65534)
 		result += 2;
@@ -750,28 +815,79 @@ static void internal_modify_single_pen(pen_t pen, rgb_t color, int pen_bright)
 	its corresponding shadow/highlight
 -------------------------------------------------*/
 
-static void internal_modify_pen(pen_t pen, rgb_t color, int pen_bright)
+static void internal_modify_pen(pen_t pen, rgb_t color, int pen_bright) //* new highlight operation
 {
+#define FMAX (0xff<<PEN_BRIGHTNESS_BITS)
+
+	int fr, fg, fb, fl, ov, r, g, b;
+
 	/* first modify the base pen */
 	internal_modify_single_pen(pen, color, pen_bright);
 
 	/* see if we need to handle shadow/highlight */
 	if (pen < Machine->drv->total_colors)
 	{
+		fr = color>>16 & 0xff;
+		fg = color>>8  & 0xff;
+		fb = color     & 0xff;
+
 		/* check for shadows */
 		if (Machine->drv->video_attributes & VIDEO_HAS_SHADOWS)
 		{
 			pen += Machine->drv->total_colors;
-			internal_modify_single_pen(pen, color, (pen_bright * shadow_factor) >> PEN_BRIGHTNESS_BITS);
+
+			if (shadow_factor > (1 << PEN_BRIGHTNESS_BITS)) // luminance > 1.0
+			{
+				fl = shadow_factor;
+
+				r = fr * fl;  g = fg * fl;  b = fb * fl;
+				ov = 0;
+
+				if (r > FMAX) ov += r - FMAX;
+				if (g > FMAX) ov += g - FMAX;
+				if (b > FMAX) ov += b - FMAX;
+
+				r += ov;  g += ov;  b += ov;
+
+				if (r >= FMAX) r = 0xff0000; else r = (r >> PEN_BRIGHTNESS_BITS) << 16;
+				if (g >= FMAX) g = 0x00ff00; else g = (g >> PEN_BRIGHTNESS_BITS) << 8;
+				if (b >= FMAX) b = 0x0000ff; else b = (b >> PEN_BRIGHTNESS_BITS);
+
+				internal_modify_single_pen(pen, r|g|b, pen_bright);
+			}
+			else // luminance <= 1.0
+				internal_modify_single_pen(pen, color, (pen_bright * shadow_factor) >> PEN_BRIGHTNESS_BITS);
 		}
 
 		/* check for highlights */
 		if (Machine->drv->video_attributes & VIDEO_HAS_HIGHLIGHTS)
 		{
 			pen += Machine->drv->total_colors;
-			internal_modify_single_pen(pen, color, (pen_bright * highlight_factor) >> PEN_BRIGHTNESS_BITS);
+
+			if (highlight_factor > (1 << PEN_BRIGHTNESS_BITS)) // luminance > 1.0
+			{
+				fl = highlight_factor;
+
+				r = fr * fl;  g = fg * fl;  b = fb * fl;
+				ov = 0;
+
+				if (r > FMAX) ov += r - FMAX;
+				if (g > FMAX) ov += g - FMAX;
+				if (b > FMAX) ov += b - FMAX;
+
+				r += ov;  g += ov;  b += ov;
+
+				if (r >= FMAX) r = 0xff0000; else r = (r >> PEN_BRIGHTNESS_BITS) << 16;
+				if (g >= FMAX) g = 0x00ff00; else g = (g >> PEN_BRIGHTNESS_BITS) << 8;
+				if (b >= FMAX) b = 0x0000ff; else b = (b >> PEN_BRIGHTNESS_BITS);
+
+				internal_modify_single_pen(pen, r|g|b, pen_bright);
+			}
+			else // luminance <= 1.0
+				internal_modify_single_pen(pen, color, (pen_bright * highlight_factor) >> PEN_BRIGHTNESS_BITS);
 		}
 	}
+#undef FMAX
 }
 
 

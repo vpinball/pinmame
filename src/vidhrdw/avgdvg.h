@@ -22,6 +22,10 @@ WRITE16_HANDLER( avgdvg_go_word_w );
 WRITE16_HANDLER( avgdvg_reset_word_w );
 int avgdvg_init(int vgType);
 
+/* Tempest and Quantum use this capability */
+void avg_set_flip_x(int flip);
+void avg_set_flip_y(int flip);
+
 /* Apart from the color mentioned below, the vector games will make additional
  * entries for translucency/antialiasing and for backdrop/overlay artwork */
 

@@ -70,7 +70,10 @@ enum { IPT_END=1,IPT_PORT,
 	IPT_SERVICE, IPT_TILT,
 	IPT_DIPSWITCH_NAME, IPT_DIPSWITCH_SETTING,
 #ifdef MESS
-	IPT_UCHAR,
+	IPT_KEYBOARD, IPT_UCHAR,
+	IPT_CONFIG_NAME, IPT_CONFIG_SETTING,
+	IPT_MOUSE_X, IPT_MOUSE_Y,
+	IPT_START, IPT_SELECT,
 #endif
 /* Many games poll an input bit to check for vertical blanks instead of using */
 /* interrupts. This special value allows you to handle that. If you set one of the */
@@ -366,7 +369,7 @@ enum { IKT_STD, IKT_IPT, IKT_IPT_EXT, IKT_OSD_KEY, IKT_OSD_JOY };
 
 #define DEF_STR(str_num) (ipdn_defaultstrings[STR_##str_num])
 
-#define MAX_INPUT_PORTS 20
+#define MAX_INPUT_PORTS 30
 
 
 int load_input_port_settings(void);
@@ -410,6 +413,16 @@ READ_HANDLER( input_port_16_r );
 READ_HANDLER( input_port_17_r );
 READ_HANDLER( input_port_18_r );
 READ_HANDLER( input_port_19_r );
+READ_HANDLER( input_port_20_r );
+READ_HANDLER( input_port_21_r );
+READ_HANDLER( input_port_22_r );
+READ_HANDLER( input_port_23_r );
+READ_HANDLER( input_port_24_r );
+READ_HANDLER( input_port_25_r );
+READ_HANDLER( input_port_26_r );
+READ_HANDLER( input_port_27_r );
+READ_HANDLER( input_port_28_r );
+READ_HANDLER( input_port_29_r );
 
 READ16_HANDLER( input_port_0_word_r );
 READ16_HANDLER( input_port_1_word_r );
@@ -431,6 +444,16 @@ READ16_HANDLER( input_port_16_word_r );
 READ16_HANDLER( input_port_17_word_r );
 READ16_HANDLER( input_port_18_word_r );
 READ16_HANDLER( input_port_19_word_r );
+READ16_HANDLER( input_port_20_word_r );
+READ16_HANDLER( input_port_21_word_r );
+READ16_HANDLER( input_port_22_word_r );
+READ16_HANDLER( input_port_23_word_r );
+READ16_HANDLER( input_port_24_word_r );
+READ16_HANDLER( input_port_25_word_r );
+READ16_HANDLER( input_port_26_word_r );
+READ16_HANDLER( input_port_27_word_r );
+READ16_HANDLER( input_port_28_word_r );
+READ16_HANDLER( input_port_29_word_r );
 
 struct ipd
 {

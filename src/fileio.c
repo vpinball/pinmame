@@ -470,7 +470,7 @@ const char* mame_fhash(mame_file *file)
 
 int mame_fgetc(mame_file *file)
 {
-	char buffer;
+	unsigned char buffer;
 
 	/* switch off the file type */
 	switch (file->type)

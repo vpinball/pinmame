@@ -19,6 +19,9 @@ int ide_controller_init_custom(int which, struct ide_interface *intf, void *disk
 void ide_controller_reset(int which);
 UINT8 *ide_get_features(int which);
 
+void ide_set_master_password(int which, UINT8 *password);
+void ide_set_user_password(int which, UINT8 *password);
+
 READ32_HANDLER( ide_controller32_0_r );
 WRITE32_HANDLER( ide_controller32_0_w );
 READ32_HANDLER( ide_bus_master32_0_r );

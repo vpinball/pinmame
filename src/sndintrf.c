@@ -1126,6 +1126,18 @@ struct snd_interface sndintf[] =
 		0
 	},
 #endif
+#if (HAS_SP0250)
+	{
+		SOUND_SP0250,
+		"GI SP0250",
+		0,
+		0,
+		sp0250_sh_start,
+		sp0250_sh_stop,
+		0,
+		0
+	},
+#endif
 
 
 #ifdef MESS

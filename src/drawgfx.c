@@ -5122,15 +5122,11 @@ DECLARE(drawgfx_core,(
 		const pen_t *paldata = &gfx->colortable[gfx->color_granularity * color];
 		UINT8 *pribuf = (pri_buffer) ? ((UINT8 *)pri_buffer->line[sy]) + sx : NULL;
 
-
-//		if (Machine->drv->color_table_len == 0 && gfx != Machine->uifont)
-
-		/* optimizations for 1:1 mapping (LVR 020703 add support for VIDEO_RGB_DIRECT drivers using 16-bit bitmaps) */
-		if (((Machine->drv->video_attributes & VIDEO_RGB_DIRECT) &&	dest->depth == 16) ||
-			(Machine->drv->color_table_len == 0 &&
-			 !(Machine->drv->video_attributes & VIDEO_RGB_DIRECT) &&
-			 paldata >= Machine->remapped_colortable &&
-			 paldata < Machine->remapped_colortable + Machine->drv->total_colors))
+		/* optimizations for 1:1 mapping */
+		if (Machine->drv->color_table_len == 0 &&
+			dest->depth == 16 &&
+			paldata >= Machine->remapped_colortable &&
+			paldata < Machine->remapped_colortable + Machine->drv->total_colors)
 		{
 			switch (transparency)
 			{

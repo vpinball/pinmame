@@ -127,13 +127,24 @@
 #include <stddef.h>
 #include <ctype.h>
 #include <string.h>
+#include <stdlib.h>
 #include <zlib.h>
 #include "hash.h"
 #include "md5.h"
 #include "sha1.h"
 #include "osd_cpu.h"
+#include "mame.h"
+#include "common.h"
 
 #define ASSERT(x)
+
+#ifndef TRUE
+#define TRUE    1
+#endif
+
+#ifndef FALSE
+#define FALSE   0
+#endif
 
 typedef struct 
 {
@@ -160,7 +171,7 @@ static void h_md5_begin(void);
 static void h_md5_buffer(const void* mem, unsigned long len);
 static void h_md5_end(UINT8* chksum);
 
-hash_function_desc hash_descs[HASH_NUM_FUNCTIONS] =
+static hash_function_desc hash_descs[HASH_NUM_FUNCTIONS] =
 {
 	{
 		"crc", 'c', 4,
@@ -577,6 +588,55 @@ void hash_data_print(const char* data, unsigned int functions, char* buffer)
 		}	
 	}
 }
+
+int hash_verify_string(const char *hash)
+{
+	int len, i;
+
+	if (!hash)
+		return FALSE;
+
+	while(*hash)
+	{
+		if (*hash == '$')
+		{
+			if (memcmp(hash, NO_DUMP, 4) && memcmp(hash, BAD_DUMP, 4))
+				return FALSE;
+			hash += 4;
+		}
+		else
+		{
+			/* first make sure that the next char is a colon */
+			if (hash[1] != ':')
+				return FALSE;
+
+			/* search for a hash function for this code */
+			for (i = 0; i < sizeof(hash_descs) / sizeof(hash_descs[0]); i++)
+			{
+				if (*hash == hash_descs[i].code)
+					break;
+			}
+			if (i >= sizeof(hash_descs) / sizeof(hash_descs[0]))
+				return FALSE;
+
+			/* we have a proper code */
+			len = hash_descs[i].size * 2;
+			hash += 2;
+			
+			for (i = 0; (hash[i] != '#') && (i < len); i++)
+			{
+				if (!isxdigit(hash[i]))
+					return FALSE;
+			}
+			if (hash[i] != '#')
+				return FALSE;
+
+			hash += i+1;
+		}
+	}
+	return TRUE;
+}
+
 
 
 /*********************************************************************

@@ -29,6 +29,8 @@
 #define VECTOR_COLOR444(c) \
 	MAKE_RGB((((c) >> 8) & 15) * 0x11, (((c) >> 4) & 15) * 0x11, (((c) >> 0) & 15) * 0x11)
 
+#define Tinten(intensity, col) \
+	MAKE_RGB((RGB_RED(col) * (intensity)) >> 8, (RGB_GREEN(col) * (intensity)) >> 8, (RGB_BLUE(col) * (intensity)) >> 8)
 
 typedef UINT32 vector_pixel_t;
 #define VECTOR_PIXEL_END	0xffffffff
@@ -46,15 +48,28 @@ extern size_t vectorram_size;
 VIDEO_START( vector );
 VIDEO_UPDATE( vector );
 
+#define VCLEAN  0
+#define VDIRTY  1
+#define VCLIP   2
+
+/* The vertices are buffered here */
+typedef struct
+{
+	int x; int y;
+	rgb_t col;
+	int intensity;
+	int arg1; int arg2; /* start/end in pixel array or clipping info */
+	int status;         /* for dirty and clipping handling */
+	rgb_t (*callback)(void);
+} point;
+
+void vector_register_aux_renderer(int (*aux_renderer)(point *start, int num_points));
+
 void vector_clear_list (void);
 void vector_draw_to (int x2, int y2, rgb_t col, int intensity, int dirty, rgb_t (*color_callback)(void));
 void vector_add_point (int x, int y, rgb_t color, int intensity);
 void vector_add_point_callback (int x, int y, rgb_t (*color_callback)(void), int intensity);
 void vector_add_clip (int minx, int miny, int maxx, int maxy);
-void vector_set_flip_x (int flip);
-void vector_set_flip_y (int flip);
-void vector_set_swap_xy (int swap);
-void vector_set_shift (int shift);
 void vector_set_intensity(float _intensity);
 float vector_get_intensity(void);
 void vector_set_flicker(float _flicker);

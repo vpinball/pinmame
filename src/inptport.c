@@ -446,6 +446,35 @@ struct ipd inputport_defaults[] =
 	{ IPT_LIGHTGUN_Y | IPF_PLAYER4, "Lightgun Y 4", SEQ_DEF_1(JOYCODE_4_UP) },
 	{ (IPT_LIGHTGUN_Y | IPF_PLAYER4)+IPT_EXTENSION,                "Lightgun Y 4", SEQ_DEF_1(JOYCODE_4_DOWN) },
 
+#ifdef MESS
+	{ IPT_MOUSE_X | IPF_PLAYER1, "MOUSE X",   SEQ_DEF_3(KEYCODE_LEFT, CODE_OR, JOYCODE_1_LEFT) },
+	{ (IPT_MOUSE_X | IPF_PLAYER1)+IPT_EXTENSION,                "MOUSE X",   SEQ_DEF_3(KEYCODE_RIGHT, CODE_OR, JOYCODE_1_RIGHT) },
+	{ IPT_MOUSE_X | IPF_PLAYER2, "MOUSE X 2", SEQ_DEF_3(KEYCODE_D, CODE_OR, JOYCODE_2_LEFT) },
+	{ (IPT_MOUSE_X | IPF_PLAYER2)+IPT_EXTENSION,                "MOUSE X 2", SEQ_DEF_3(KEYCODE_G, CODE_OR, JOYCODE_2_RIGHT) },
+	{ IPT_MOUSE_X | IPF_PLAYER3, "MOUSE X 3", SEQ_DEF_3(KEYCODE_J, CODE_OR, JOYCODE_3_LEFT) },
+	{ (IPT_MOUSE_X | IPF_PLAYER3)+IPT_EXTENSION,                "MOUSE X 3", SEQ_DEF_3(KEYCODE_L, CODE_OR, JOYCODE_3_RIGHT) },
+	{ IPT_MOUSE_X | IPF_PLAYER4, "MOUSE X 4", SEQ_DEF_1(JOYCODE_4_LEFT) },
+	{ (IPT_MOUSE_X | IPF_PLAYER4)+IPT_EXTENSION,                "MOUSE X 4", SEQ_DEF_1(JOYCODE_4_RIGHT) },
+
+	{ IPT_MOUSE_Y | IPF_PLAYER1, "MOUSE Y",   SEQ_DEF_3(KEYCODE_UP, CODE_OR, JOYCODE_1_UP) },
+	{ (IPT_MOUSE_Y | IPF_PLAYER1)+IPT_EXTENSION,                "MOUSE Y",   SEQ_DEF_3(KEYCODE_DOWN, CODE_OR, JOYCODE_1_DOWN) },
+	{ IPT_MOUSE_Y | IPF_PLAYER2, "MOUSE Y 2", SEQ_DEF_3(KEYCODE_R, CODE_OR, JOYCODE_2_UP) },
+	{ (IPT_MOUSE_Y | IPF_PLAYER2)+IPT_EXTENSION,                "MOUSE Y 2", SEQ_DEF_3(KEYCODE_F, CODE_OR, JOYCODE_2_DOWN) },
+	{ IPT_MOUSE_Y | IPF_PLAYER3, "MOUSE Y 3", SEQ_DEF_3(KEYCODE_I, CODE_OR, JOYCODE_3_UP) },
+	{ (IPT_MOUSE_Y | IPF_PLAYER3)+IPT_EXTENSION,                "MOUSE Y 3", SEQ_DEF_3(KEYCODE_K, CODE_OR, JOYCODE_3_DOWN) },
+	{ IPT_MOUSE_Y | IPF_PLAYER4, "MOUSE Y 4", SEQ_DEF_1(JOYCODE_4_UP) },
+	{ (IPT_MOUSE_Y | IPF_PLAYER4)+IPT_EXTENSION,                "MOUSE Y 4", SEQ_DEF_1(JOYCODE_4_DOWN) },
+
+	{ IPT_START | IPF_PLAYER1, "P1 Start",        SEQ_DEF_3(KEYCODE_1, CODE_OR, JOYCODE_1_START) },
+	{ IPT_START | IPF_PLAYER2, "P2 Start",        SEQ_DEF_3(KEYCODE_2, CODE_OR, JOYCODE_2_START) },
+	{ IPT_START | IPF_PLAYER3, "P3 Start",        SEQ_DEF_3(KEYCODE_3, CODE_OR, JOYCODE_3_START) },
+	{ IPT_START | IPF_PLAYER4, "P4 Start",        SEQ_DEF_3(KEYCODE_4, CODE_OR, JOYCODE_4_START) },
+	{ IPT_SELECT | IPF_PLAYER1, "P1 Select",      SEQ_DEF_3(KEYCODE_5, CODE_OR, JOYCODE_1_SELECT) },
+	{ IPT_SELECT | IPF_PLAYER2, "P2 Select",      SEQ_DEF_3(KEYCODE_6, CODE_OR, JOYCODE_2_SELECT) },
+	{ IPT_SELECT | IPF_PLAYER3, "P3 Select",      SEQ_DEF_3(KEYCODE_7, CODE_OR, JOYCODE_3_SELECT) },
+	{ IPT_SELECT | IPF_PLAYER4, "P4 Select",      SEQ_DEF_3(KEYCODE_8, CODE_OR, JOYCODE_4_SELECT) },
+#endif
+
 	{ IPT_UNKNOWN,             "UNKNOWN",         SEQ_DEF_0 },
 	{ IPT_OSD_RESERVED,        "",                SEQ_DEF_0 },
 	{ IPT_OSD_RESERVED,        "",                SEQ_DEF_0 },
@@ -2428,6 +2457,16 @@ READ_HANDLER( input_port_16_r ) { return readinputport(16); }
 READ_HANDLER( input_port_17_r ) { return readinputport(17); }
 READ_HANDLER( input_port_18_r ) { return readinputport(18); }
 READ_HANDLER( input_port_19_r ) { return readinputport(19); }
+READ_HANDLER( input_port_20_r ) { return readinputport(20); }
+READ_HANDLER( input_port_21_r ) { return readinputport(21); }
+READ_HANDLER( input_port_22_r ) { return readinputport(22); }
+READ_HANDLER( input_port_23_r ) { return readinputport(23); }
+READ_HANDLER( input_port_24_r ) { return readinputport(24); }
+READ_HANDLER( input_port_25_r ) { return readinputport(25); }
+READ_HANDLER( input_port_26_r ) { return readinputport(26); }
+READ_HANDLER( input_port_27_r ) { return readinputport(27); }
+READ_HANDLER( input_port_28_r ) { return readinputport(28); }
+READ_HANDLER( input_port_29_r ) { return readinputport(29); }
 
 READ16_HANDLER( input_port_0_word_r ) { return readinputport(0); }
 READ16_HANDLER( input_port_1_word_r ) { return readinputport(1); }
@@ -2449,6 +2488,16 @@ READ16_HANDLER( input_port_16_word_r ) { return readinputport(16); }
 READ16_HANDLER( input_port_17_word_r ) { return readinputport(17); }
 READ16_HANDLER( input_port_18_word_r ) { return readinputport(18); }
 READ16_HANDLER( input_port_19_word_r ) { return readinputport(19); }
+READ16_HANDLER( input_port_20_word_r ) { return readinputport(20); }
+READ16_HANDLER( input_port_21_word_r ) { return readinputport(21); }
+READ16_HANDLER( input_port_22_word_r ) { return readinputport(22); }
+READ16_HANDLER( input_port_23_word_r ) { return readinputport(23); }
+READ16_HANDLER( input_port_24_word_r ) { return readinputport(24); }
+READ16_HANDLER( input_port_25_word_r ) { return readinputport(25); }
+READ16_HANDLER( input_port_26_word_r ) { return readinputport(26); }
+READ16_HANDLER( input_port_27_word_r ) { return readinputport(27); }
+READ16_HANDLER( input_port_28_word_r ) { return readinputport(28); }
+READ16_HANDLER( input_port_29_word_r ) { return readinputport(29); }
 
 #ifdef MAME_NET
 void set_default_player_controls(int player)

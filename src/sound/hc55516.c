@@ -191,11 +191,9 @@ WRITE_HANDLER( hc55516_0_clock_w )	{ hc55516_clock_w(0,data); }
 WRITE_HANDLER( hc55516_0_clock_clear_w )	{ hc55516_clock_clear_w(0,data); }
 WRITE_HANDLER( hc55516_0_clock_set_w )		{ hc55516_clock_set_w(0,data); }
 WRITE_HANDLER( hc55516_0_digit_clock_clear_w )	{ hc55516_digit_clock_clear_w(0,data); }
-#ifdef PINMAME
-WRITE_HANDLER( hc55516_1_digit_w )	{ hc55516_digit_w(1,data); }
-WRITE_HANDLER( hc55516_1_clock_w )	{ hc55516_clock_w(1,data); }
-WRITE_HANDLER( hc55516_1_clock_clear_w )	{ hc55516_clock_clear_w(1,data); }
-WRITE_HANDLER( hc55516_1_clock_set_w )		{ hc55516_clock_set_w(1,data); }
-WRITE_HANDLER( hc55516_1_digit_clock_clear_w )	{ hc55516_digit_clock_clear_w(1,data); }
-#endif /* PINMAME */
 
+WRITE_HANDLER( hc55516_1_digit_w ) { hc55516_digit_w(1,data); }
+WRITE_HANDLER( hc55516_1_clock_w ) { hc55516_clock_w(1,data); }
+WRITE_HANDLER( hc55516_1_clock_clear_w ) { hc55516_clock_clear_w(1,data); }
+WRITE_HANDLER( hc55516_1_clock_set_w )  { hc55516_clock_set_w(1,data); }
+WRITE_HANDLER( hc55516_1_digit_clock_clear_w ) { hc55516_digit_clock_clear_w(1,data); }
