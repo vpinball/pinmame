@@ -137,20 +137,24 @@ static WRITE_HANDLER(pia2a_w) {
     s11locals.diagnosticLed |= (data & 0x10)>>4;
 }
 
-static WRITE_HANDLER(pia2b_w) { // Not used for DMD
-  if (core_gameData->hw.display & S11_DISPINV) data = ~data;
-  if (core_gameData->hw.display & S11_BCDDISP) {
-    s11locals.segments[0][s11locals.digSel].lo |=
-         s11locals.pseg[0][s11locals.digSel].lo = core_bcd2seg[data&0x0f];
-    s11locals.segments[1][s11locals.digSel].lo |=
-         s11locals.pseg[1][s11locals.digSel].lo = core_bcd2seg[data>>4];
+static WRITE_HANDLER(pia2b_w) {
+  if (core_gameData->gen & (GEN_DEDMD16|GEN_DEDMD32|GEN_DEDMD64))
+    s11locals.extSol = data;
+  else {
+    if (core_gameData->hw.display & S11_DISPINV) data = ~data;
+    if (core_gameData->hw.display & S11_BCDDISP) {
+      s11locals.segments[0][s11locals.digSel].lo |=
+           s11locals.pseg[0][s11locals.digSel].lo = core_bcd2seg[data&0x0f];
+      s11locals.segments[1][s11locals.digSel].lo |=
+           s11locals.pseg[1][s11locals.digSel].lo = core_bcd2seg[data>>4];
+    }
+    else if (core_gameData->hw.display & S11_LOWALPHA)
+      s11locals.segments[1][s11locals.digSel].hi |=
+          s11locals.pseg[1][s11locals.digSel].hi = data;
+    else
+      s11locals.segments[1][s11locals.digSel].lo |=
+          s11locals.pseg[1][s11locals.digSel].lo = data;
   }
-  else if (core_gameData->hw.display & S11_LOWALPHA)
-    s11locals.segments[1][s11locals.digSel].hi |=
-         s11locals.pseg[1][s11locals.digSel].hi = data;
-  else
-    s11locals.segments[1][s11locals.digSel].lo |=
-         s11locals.pseg[1][s11locals.digSel].lo = data;
 }
 static WRITE_HANDLER(pia5a_w) { // Not used for DMD
   if (core_gameData->hw.display & S11_DISPINV) data = ~data;
@@ -169,13 +173,23 @@ static WRITE_HANDLER(pia3a_w) {
 }
 static WRITE_HANDLER(pia3b_w) {
   if (core_gameData->gen & (GEN_DEDMD16|GEN_DEDMD32|GEN_DEDMD64))
-    sndbrd_0_ctrl_w(0, data);
+    { sndbrd_0_ctrl_w(0, data); DBGLOG(("ctrl_w=%x\n",data)); }
   else {
     if (core_gameData->hw.display & S11_DISPINV) data = ~data;
     s11locals.segments[0][s11locals.digSel].hi |=
         s11locals.pseg[0][s11locals.digSel].hi = data;
   }
 }
+static READ_HANDLER(pia3b_r) {
+  int data = 0;
+  if (core_gameData->gen & GEN_DEDMD32)
+    data = (sndbrd_0_data_r(0) ? 0x80 : 0x00) | (sndbrd_0_ctrl_r(0)<<3);
+  else if (core_gameData->gen & GEN_DEDMD64)
+    data = (sndbrd_0_data_r(0) ? 0x80 : 0x00);
+  DBGLOG(("DMDstatus=%x\n",data));
+  return data;
+}
+
 static WRITE_HANDLER(pia2ca2_w) {
   data = data ? 0x80 : 0x00;
   s11locals.segments[1][s11locals.digSel].lo |= data;
@@ -189,12 +203,11 @@ static WRITE_HANDLER(pia2cb2_w) {
 
 static READ_HANDLER(pia5a_r) {
   if (core_gameData->gen & GEN_DEDMD64)
-    return sndbrd_0_ctrl_r(0)<<3;
+    { int data = sndbrd_0_ctrl_r(0)<<3; DBGLOG(("status = %x\n",data)); return data;}
   else if (core_gameData->gen & GEN_DEDMD16)
-    return sndbrd_0_data_r(0) | (sndbrd_0_ctrl_r(0)<<1);
+    return (sndbrd_0_data_r(0) ? 0x80 : 0x00) | (sndbrd_0_ctrl_r(0)<<1);
   return 0;
 }
-
 
 /*--------------------
 /  Diagnostic buttons
@@ -205,7 +218,6 @@ static READ_HANDLER (pia2cb1_r) { return activecpu_get_reg(M6808_IRQ_STATE) ? co
 /*------------
 /  Solenoids
 /-------------*/
-
 static void setSSSol(int data, int solNo) {
                                     /*    WMS          DE */
   static const int ssSolNo[2][6] = {{5,4,1,2,0,4},{3,4,5,1,0,2}};
@@ -312,7 +324,7 @@ static struct pia6821_interface s11_pia[] = {
  /* CB1       Widget I/O LCB1 */
  /* CA2       (I) B SST2 */
  /* CB2       (I) C SST3 */
- /* in  : A/B,CA/B1,CA/B2 */ 0, 0, 0, 0, 0, 0,
+ /* in  : A/B,CA/B1,CA/B2 */ 0, pia3b_r, 0, 0, 0, 0,
  /* out : A/B,CA/B2       */ pia3a_w, pia3b_w, pia3ca2_w, pia3cb2_w,
  /* irq : A/B             */ s11_piaMainIrq, s11_piaMainIrq
 },{ /* PIA 4 (3000) */
