@@ -47,7 +47,6 @@ typedef struct {
 	UINT16	ppc;			//previous pc
 	UINT16	pc;				//current pc
 	UINT16	subtype;		//specific version of the cpu, ie 8031, or 8051 for example
-	UINT8   rbank;			//register bank
 	UINT8   executing;		//Flag to determine if an instruction is executing (needed for proper port operation)
 
 	//SFR Registers			(Note: Appear in order as they do in memory)
@@ -110,15 +109,15 @@ static UINT8 i8051_win_layout[] = {
 /*Short cuts*/
 
 /***************************************************************
- * Read/Write a byte from/to External Memory
- ***************************************************************/
-#define RM(a)		(UINT8)cpu_readmem16(a)
-#define WM(a,v)		cpu_writemem16(a,v)
-/***************************************************************
  * Read Opcode/Opcode Arguments from Program Code
  ***************************************************************/
 #define ROP(pc)		cpu_readop(pc)
 #define ROP_ARG(pc) cpu_readop_arg(pc)
+/***************************************************************
+ * Read/Write a byte from/to External Memory
+ ***************************************************************/
+#define RM(a)		(UINT8)cpu_readmem16(a)
+#define WM(a,v)		cpu_writemem16(a,v)
 /***************************************************************
  * Read/Write a byte from/to the Internal RAM
  ***************************************************************/
@@ -130,6 +129,11 @@ static UINT8 i8051_win_layout[] = {
 #define SFR_R(a)    sfr_read(a)
 #define SFR_W(a,v)  sfr_write(a,v)
 /***************************************************************
+ * Read/Write a bit from Bit Addressable Memory
+ ***************************************************************/
+#define BIT_R(a)    bit_address_r(a)
+#define BIT_W(a,v)  bit_address_w(a,v)
+/***************************************************************
  * Input/Output a byte from given I/O port
  ***************************************************************/
 #define IN(port)   ((UINT8)cpu_readport16(port))
@@ -137,7 +141,7 @@ static UINT8 i8051_win_layout[] = {
 /***************************************************************
  * Access the 4 banks of R registers (R0...R7)
  ***************************************************************/
-#define R_R(n)	i8051.IntRam[(R_RB*8)+(n)]
+#define R_R(n)	i8051.IntRam[(GET_RS*8)+(n)]
 /***************************************************************
  * Easy macro for working with 16 bit DPTR
  ***************************************************************/
@@ -173,7 +177,6 @@ static UINT8 i8051_win_layout[] = {
 #define PPC 	i8051.ppc
 #define PC		i8051.pc
 #define TYPE	i8051.subtype
-#define R_RB	i8051.rbank
 #define EXEC	i8051.executing
 
 //SFR Registers
@@ -239,7 +242,6 @@ void i8051_init(void)
 	state_save_register_UINT16("i8051", cpu, "PPC",       &i8051.ppc,    1);
 	state_save_register_UINT16("i8051", cpu, "PC",        &i8051.pc,     1);
 	state_save_register_UINT16("i8051", cpu, "SUBTYPE",   &i8051.subtype,1);
-	state_save_register_UINT8 ("i8051", cpu, "RBANK",     &i8051.rbank  ,1);
 	state_save_register_UINT8 ("i8051", cpu, "EXEC",      &i8051.executing ,1);
 	//SFR Registers	
 	state_save_register_UINT8 ("i8051", cpu, "PO",        &i8051.po,     1);
@@ -281,8 +283,7 @@ void i8051_reset(void *param)
 
 	//Clear Ram (w/0xff)
 	memset(&i8051.IntRam,0xff,sizeof(i8051.IntRam));
-	//	for(i=0;i<30;i++) i8051.IntRam[i] = i;	//Test the Internal ram actually works
-
+	
 	/* these are all defined reset states */
 	PC = 0;
 	SFR_W(SP, 0x7);
@@ -1058,7 +1059,7 @@ unsigned i8051_get_reg(int regnum)
 	case I8051_R5:	return R_R(5);
 	case I8051_R6:	return R_R(6);
 	case I8051_R7:	return R_R(7);
-	case I8051_RB:	return R_RB;
+	case I8051_RB:	return GET_RS;
 
 	default:
 		if( regnum <= REG_SP_CONTENTS )
@@ -1099,7 +1100,7 @@ void i8051_set_reg (int regnum, unsigned val)
 	case I8051_R5:	R_R(5) = val; break;
 	case I8051_R6:	R_R(6) = val; break;
 	case I8051_R7:	R_R(7) = val; break;
-	case I8051_RB:  R_RB = val&3; break;
+	case I8051_RB:  SET_RS( (val&3) ); break;
 
 	default:
 		if( regnum <= REG_SP_CONTENTS )
@@ -1121,6 +1122,21 @@ void i8051_set_reg (int regnum, unsigned val)
 
 void i8051_set_irq_line(int irqline, int state)
 {
+	switch( irqline )
+	{
+		case I8051_INT0_LINE:
+			if (state != CLEAR_LINE)
+			{
+				push_pc();
+				PC = V_IE0;
+			}
+			else
+			{
+			}
+			break;
+	}
+}
+
 #if 0
 	switch( irqline )
 	{
@@ -1179,8 +1195,9 @@ void i8051_set_irq_line(int irqline, int state)
 		}
 		break;
 	}
-#endif
 }
+#endif
+
 
 void i8051_set_irq_callback(int (*callback)(int irqline))
 {
@@ -1195,6 +1212,8 @@ void i8051_state_load(void *file)
 {
 }
 
+//This function is used to display the registers/flags, etc.. in the dissassembler window
+//Note: Make sure to use r-> rather than direct references to the i8051 structure (contained in macros)
 const char *i8051_info(void *context, int regnum)
 {
 	static char buffer[8][20];
@@ -1216,15 +1235,16 @@ const char *i8051_info(void *context, int regnum)
 		case CPU_INFO_REG+I8051_DPH:sprintf(buffer[which], "DPH:%02X", r->dph); break;
 		case CPU_INFO_REG+I8051_DPL:sprintf(buffer[which], "DPL:%02X", r->dpl); break;
 		case CPU_INFO_REG+I8051_IE:	sprintf(buffer[which], "IE:%02X", r->ie); break;
-		case CPU_INFO_REG+I8051_R0: sprintf(buffer[which], "R0:%02X", i8051.IntRam[0+(8*i8051.rbank)]); break;
-		case CPU_INFO_REG+I8051_R1: sprintf(buffer[which], "R1:%02X", i8051.IntRam[1+(8*i8051.rbank)]); break;
-		case CPU_INFO_REG+I8051_R2: sprintf(buffer[which], "R2:%02X", i8051.IntRam[2+(8*i8051.rbank)]); break;
-		case CPU_INFO_REG+I8051_R3: sprintf(buffer[which], "R3:%02X", i8051.IntRam[3+(8*i8051.rbank)]); break;
-		case CPU_INFO_REG+I8051_R4: sprintf(buffer[which], "R4:%02X", i8051.IntRam[4+(8*i8051.rbank)]); break;
-		case CPU_INFO_REG+I8051_R5: sprintf(buffer[which], "R5:%02X", i8051.IntRam[5+(8*i8051.rbank)]); break;
-		case CPU_INFO_REG+I8051_R6: sprintf(buffer[which], "R6:%02X", i8051.IntRam[6+(8*i8051.rbank)]); break;
-		case CPU_INFO_REG+I8051_R7: sprintf(buffer[which], "R7:%02X", i8051.IntRam[7+(8*i8051.rbank)]); break;
-		case CPU_INFO_REG+I8051_RB: sprintf(buffer[which], "RB:%02X", i8051.rbank); break;
+		case CPU_INFO_REG+I8051_R0: sprintf(buffer[which], "R0:%02X", r->IntRam[0+(8*((r->psw & 0x18)>>3))]); break;
+		case CPU_INFO_REG+I8051_R1: sprintf(buffer[which], "R1:%02X", r->IntRam[1+(8*((r->psw & 0x18)>>3))]); break;
+		case CPU_INFO_REG+I8051_R2: sprintf(buffer[which], "R2:%02X", r->IntRam[2+(8*((r->psw & 0x18)>>3))]); break;
+		case CPU_INFO_REG+I8051_R3: sprintf(buffer[which], "R3:%02X", r->IntRam[3+(8*((r->psw & 0x18)>>3))]); break;
+		case CPU_INFO_REG+I8051_R4: sprintf(buffer[which], "R4:%02X", r->IntRam[4+(8*((r->psw & 0x18)>>3))]); break;
+		case CPU_INFO_REG+I8051_R5: sprintf(buffer[which], "R5:%02X", r->IntRam[5+(8*((r->psw & 0x18)>>3))]); break;
+		case CPU_INFO_REG+I8051_R6: sprintf(buffer[which], "R6:%02X", r->IntRam[6+(8*((r->psw & 0x18)>>3))]); break;
+		case CPU_INFO_REG+I8051_R7: sprintf(buffer[which], "R7:%02X", r->IntRam[7+(8*((r->psw & 0x18)>>3))]); break;
+		case CPU_INFO_REG+I8051_RB: sprintf(buffer[which], "RB:%02X", ((r->psw & 0x18)>>3)); break;
+
 		case CPU_INFO_FLAGS:
 			sprintf(buffer[which], "%c%c%c%c%c%c%c%c",
 				r->psw & 0x80 ? 'C':'.',
@@ -1462,6 +1482,22 @@ static void set_parity()
 	//Update the PSW Pairty bit
 	SET_P(p & 1);
 }
+
+static READ_HANDLER(bit_address_r)
+{
+	return 0;
+}
+
+static WRITE_HANDLER(bit_address_w)
+{
+}
+
+/* The following to handlers are used by the MAME Debugger Memory Window...
+   By keeping these functions separate from the internally used IRAM_W/IRAM_R functions,
+   we can manipulate and display internal memory in the debugger memory window in a layout
+   that is not necessarily how the real memory is.. this will be especially useful for
+   the 8052 chip where both the SFR and the upper 128 bytes of ram are mapped to the same
+   address, so we can handle that here by mapping the sfr to a different address */
 
 READ_HANDLER(i8051_internal_r) 
 {
