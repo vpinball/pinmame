@@ -29,7 +29,8 @@
  *  #3) Portable UPI-41/8041/8741/8042/8742 emulator V0.1 by Juergen Buchmueller (MAME CORE)
  *
  *  Notes:
- *		  *Important*: Internal ROM needs to be treated the same as external rom by the programmer creating the driver
+ *		  *Important*: Internal ROM needs to be treated the same as external rom by the programmer 
+ *		               creating the driver (ie, use standard cpu rom region)
  *
  *        August 27,2003: Currently support for only 8031/8051/8751 chips (ie 128 RAM)
  *
@@ -111,56 +112,95 @@ static UINT8 i8051_win_layout[] = {
 /***************************************************************
  * Read Opcode/Opcode Arguments from Program Code
  ***************************************************************/
-#define ROP(pc)		cpu_readop(pc)
-#define ROP_ARG(pc) cpu_readop_arg(pc)
-/***************************************************************
- * Read/Write a byte from/to External Memory
- ***************************************************************/
-#define RM(a)		(UINT8)cpu_readmem16(a)
-#define WM(a,v)		cpu_writemem16(a,v)
+#define ROP(pc)			cpu_readop(pc)
+#define ROP_ARG(pc)		cpu_readop_arg(pc)
+/*****************************************************************************
+ * Read a byte from External Code Memory (Usually Program Rom(s) Space)
+ *****************************************************************************
+ This area is mapped from 0-FFFF internally (64K) */
+#define CODEMEM_R(a)	(UINT8)cpu_readmem20(a)
+/*****************************************************************************
+ * Read/Write a byte from/to External Data Memory (Usually RAM or other I/O)
+ *****************************************************************************
+ This area is *ALSO* mapped from 0-FFFF internally (64K)
+						** HOWEVER **
+ We *FORCE* the address space into the range 10000-1FFFF to allow both 
+ Code Memory and Data Memory to be pyshically separate while mapped @ the same 
+ addresses, w/o any contention. 
+ As far as the 8051 program code which is executing knows data memory still lives
+ in the 0-FFFF range.*/
+#define DATAMEM_R(a)	(UINT8)cpu_readmem20(a | 0x10000)
+#define DATAMEM_W(a,v)	cpu_writemem20(a | 0x10000,v)
 /***************************************************************
  * Read/Write a byte from/to the Internal RAM
  ***************************************************************/
-#define IRAM_R(a)   internal_ram_read(a)
-#define IRAM_W(a,v) internal_ram_write(a,v)
+#define IRAM_R(a)		internal_ram_read(a)
+#define IRAM_W(a,v)		internal_ram_write(a,v)
 /***************************************************************
  * Read/Write a byte from/to the SFR Registers
  ***************************************************************/
-#define SFR_R(a)    sfr_read(a)
-#define SFR_W(a,v)  sfr_write(a,v)
+#define SFR_R(a)		sfr_read(a)
+#define SFR_W(a,v)		sfr_write(a,v)
 /***************************************************************
  * Read/Write a bit from Bit Addressable Memory
  ***************************************************************/
-#define BIT_R(a)    bit_address_r(a)
-#define BIT_W(a,v)  bit_address_w(a,v)
+#define BIT_R(a)		bit_address_r(a)
+#define BIT_W(a,v)		bit_address_w(a,v)
 /***************************************************************
  * Input/Output a byte from given I/O port
  ***************************************************************/
-#define IN(port)   ((UINT8)cpu_readport16(port))
+#define IN(port)		((UINT8)cpu_readport16(port))
 #define OUT(port,value) cpu_writeport16(port,value)
 /***************************************************************
  * Access the 4 banks of R registers (R0...R7)
  ***************************************************************/
-#define R_R(n)	i8051.IntRam[(GET_RS*8)+(n)]
+#define R_R(n)			i8051.IntRam[(GET_RS*8)+(n)]
 /***************************************************************
  * Easy macro for working with 16 bit DPTR
  ***************************************************************/
-#define R_DPTR		((R_DPH<<8) | R_DPL)
+#define R_DPTR			((R_DPH<<8) | R_DPL)
 #define DPTR_W(n)		SFR_W(DPH, ((n>>8)&0xff));\
 						SFR_W(DPL, (n&0xff));
 
 //Set Flags
+
+/*PSW Flags*/
 #define SET_CY(n)		R_PSW = (R_PSW & 0x7f) | (n<<7); 
 #define SET_AC(n)		R_PSW = (R_PSW & 0xbf) | (n<<6); 
+#define SET_FO(n)		R_PSW = (R_PSW & 0xdf) | (n<<5);
 #define SET_RS(n)		R_PSW = (R_PSW & 0xe7) | (n<<3);
 #define SET_OV(n)		R_PSW = (R_PSW & 0xfb) | (n<<2);
 #define SET_P(n)		R_PSW = (R_PSW & 0xfe) | (n<<0);
+/*IE Flags*/
+#define SET_EA(n)		R_IE = (R_IE & 0x7f) | (n<<7); 
+#define SET_ET2(n)		R_IE = (R_IE & 0xdf) | (n<<5); 
+#define SET_ES(n)		R_IE = (R_IE & 0xef) | (n<<4); 
+#define SET_ET1(n)		R_IE = (R_IE & 0xf7) | (n<<3);
+#define SET_EX1(n)		R_IE = (R_IE & 0xfb) | (n<<2);
+#define SET_ET0(n)		R_IE = (R_IE & 0xfd) | (n<<1);
+#define SET_EX0(n)		R_IE = (R_IE & 0xfe) | (n<<0);
 
 //Get Flags
+/*PSW Flags*/
 #define GET_CY			((R_PSW & 0x80)>>7)
 #define GET_AC			((R_PSW & 0x40)>>6)
+#define GET_FO			((R_PSW & 0x20)>>5)
 #define GET_RS			((R_PSW & 0x18)>>3)
 #define GET_OV			((R_PSW & 0x04)>>2)
+#define GET_P			((R_PSW & 0x01)>>0)
+
+/*IE Flags*/
+#define GET_EA			((R_IE & 0x80)>>7)
+#define GET_ET2			((R_IE & 0x20)>>5)
+#define GET_ES			((R_IE & 0x10)>>4)
+#define GET_ET1			((R_IE & 0x08)>>3)
+#define GET_EX1			((R_IE & 0x04)>>2)
+#define GET_ET0			((R_IE & 0x02)>>1)
+#define GET_EX0			((R_IE & 0x01)>>0)
+
+//Add and Subtract Flag settings
+#define DO_ADD_FLAGS(a,d,c)	do_add_flags(a,d,c);
+#define DO_SUB_FLAGS(a,d,c)	do_sub_flags(a,d,c);
 
 /* PC vectors */
 #define V_RESET 0x000	/* power on address */
@@ -1134,6 +1174,16 @@ void i8051_set_irq_line(int irqline, int state)
 			{
 			}
 			break;
+		case I8051_INT1_LINE:
+			if (state != CLEAR_LINE)
+			{
+				push_pc();
+				PC = V_IE1;
+			}
+			else
+			{
+			}
+			break;
 	}
 }
 
@@ -1216,11 +1266,11 @@ void i8051_state_load(void *file)
 //Note: Make sure to use r-> rather than direct references to the i8051 structure (contained in macros)
 const char *i8051_info(void *context, int regnum)
 {
-	static char buffer[8][20];
+	static char buffer[19][20];
 	static int which = 0;
 	I8051 *r = context;
 
-	which = (which+1) % 8;
+	which = (which+1) % 19;
 	buffer[which][0] = '\0';
 	if( !context )
 		r = &i8051;
@@ -1485,11 +1535,62 @@ static void set_parity()
 
 static READ_HANDLER(bit_address_r)
 {
-	return 0;
+	int	word;
+	int	mask;
+	int	bit_pos;
+	int	base;		/* base of bit space or sfr */
+	int	distance;	/* distance between bit addressable words */
+					/* 1 for normal bits, 8 for sfr bit addresses */
+
+	offset &= 0xff;
+
+	//User defined bit addresses 0x20-0x2f (values are 0x0-0x7f)
+	if (offset < 0x80) {
+		base = 0x20;
+		distance = 1;
+	}
+	//SFR bit addressable registers
+	else {
+		base = 0x80;
+		distance = 8;
+	}
+	word = ( (offset & 0x78) >> 3) * distance + base;
+	bit_pos = offset & 0x7;
+	mask = 0x1 << bit_pos;
+	return((IRAM_R(word) & mask) >> bit_pos);
 }
+
 
 static WRITE_HANDLER(bit_address_w)
 {
+	int	word;
+	int	mask;
+	int	bit_pos;
+	int	result;
+	int	base;
+	int	distance;
+
+	offset &= 0xff;
+
+	//User defined bit addresses 0x20-0x2f (values are 0x0-0x7f)
+	if (offset < 0x80) {
+		base = 0x20;
+		distance = 1;
+	}
+	//SFR bit addressable registers
+	else {
+		base = 0x80;
+		distance = 8;
+	}
+	word = ((offset & 0x78) >> 3) * distance + base;
+	bit_pos = offset & 0x7;
+	data = (data & 0x1) << bit_pos;
+	mask = ~(1 << bit_pos) & 0xff;
+	//rwinst = TRUE;
+	result = IRAM_R(word) & mask;
+	//rwinst = FALSE;
+	result = result | data;
+	IRAM_W(word, result);
 }
 
 /* The following to handlers are used by the MAME Debugger Memory Window...
@@ -1514,4 +1615,42 @@ WRITE_HANDLER(i8051_internal_w)
 	//Restrict internal ram to 256 Bytes max
 	if(offset < 0x100)
 		IRAM_W(offset,data);
+}
+
+void do_add_flags(UINT8 a, UINT8 data, UINT8 c)
+{
+	UINT16 result = a+data+c;
+	INT16 result1 = (INT8)a+(INT8)data+c;
+	int cy, ac, ov;
+
+	cy = (result & 0x100) >> 8;
+	result = (a&0x0f)+(data&0x0f)+c;
+	ac = (result & 0x10) >> 4;
+	ov = (result1 < -128 || result1 > 127);
+
+	SET_CY(cy);
+	SET_AC(ac);
+	SET_OV(ov);
+
+#ifdef MAME_DEBUG
+//	printf("add: result=%x, c=%x, ac=%x, ov=%x\n",a+data+c,cy,ac,ov);
+#endif
+}
+
+void do_sub_flags(UINT8 a, UINT8 data, UINT8 c)
+{
+	INT16 result1 = (INT8)a-(INT8)(data-c);
+	int cy, ac, ov;
+
+	cy = ((data-c)>a);						//Set if unsigned value being subtracted is greater than the ACC value
+	ac = (((data-c)&0x0f) > (a&0x0f));		//Set if nibble of unsigned value being subtracted is greater than the nibble of ACC value
+	ov = (result1 < -128 || result1 > 127);
+
+	SET_CY(cy);
+	SET_AC(ac);
+	SET_OV(ov);
+
+#ifdef MAME_DEBUG
+//	printf("sub: result=%x, c=%x, ac=%x, ov=%x\n",a-data-c,cy,ac,ov);
+#endif
 }

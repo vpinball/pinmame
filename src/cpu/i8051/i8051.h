@@ -123,6 +123,8 @@ static READ_HANDLER(sfr_read);
 static WRITE_HANDLER(sfr_write);
 static WRITE_HANDLER( bit_address_w );
 static READ_HANDLER( bit_address_r );
+void do_add_flags(UINT8 a, UINT8 data, UINT8 c);
+void do_sub_flags(UINT8 a, UINT8 data, UINT8 c);
 
 #endif /* _I8051_H */
 
