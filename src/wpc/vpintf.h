@@ -3,6 +3,12 @@
 
 #include "snd_cmd.h"
 
+#ifdef VPINMAME
+	#define GAME_NOCRC 1
+#else
+	#define GAME_NOCRC 0
+#endif
+
 typedef struct { int lampNo, currStat; } vp_tChgLamps[CORE_MAXLAMPCOL*8];
 typedef struct { int solNo,  currStat; } vp_tChgSols[64];
 typedef struct { int giNo,   currStat; } vp_tChgGIs[CORE_MAXGI];

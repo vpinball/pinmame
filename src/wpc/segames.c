@@ -2,6 +2,7 @@
 #include "sim.h"
 #include "se.h"
 #include "sesound.h"
+#include "vpintf.h"
 
 /* NO OUTPUT */
 
@@ -11,10 +12,6 @@
 //};
 
 #define se_dmd128x32 0
-
-#ifndef VPINMAME
-   #define GAME_NOCRC 0
-#endif
 
 #define INITGAME(name, gen, balls) \
 static core_tGameData name##GameData = { \
