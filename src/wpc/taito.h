@@ -85,7 +85,7 @@
     NORMALREGION(0x10000, TAITO_MEMREG_CPU) \
       ROM_LOAD( n1, 0x0000, 0x0800, chk1) \
       ROM_LOAD( n2, 0x0800, 0x0800, chk2) \
-      ROM_LOAD( n4, 0x2800, 0x0800, chk4)
+      ROM_LOAD( n4, 0x1800, 0x0800, chk4)
 
 #define TAITO_ROMEND ROM_END
 
