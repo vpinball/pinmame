@@ -53,7 +53,7 @@ static INTERRUPT_GEN(taito_vblank) {
 	memcpy(coreGlobals.segments, TAITOlocals.segments, sizeof coreGlobals.segments);
   }
 
-  core_updateSw(core_getSol(16));
+  core_updateSw(core_getSol(18));
 }
 
 static SWITCH_UPDATE(taito) {
@@ -102,9 +102,6 @@ static WRITE_HANDLER(taito_sndCmd_w) {
 }
 
 static READ_HANDLER(switches_r) {
-	if ( offset==7 )
-		logerror("switch read: %i\n", offset);
-
 	if ( offset==6 )
 		return core_getDip(0)^0xff;
 	else
@@ -157,25 +154,25 @@ static WRITE_HANDLER(dma_commands)
 
 	switch ( offset ) {
 	case 0:
-		// upper nibble: - solenoids 13-14 (mux relay and play relay) 
+		// upper nibble: - solenoids 17-18 (mux relay and play relay) 
 		//				 - solenoids 5-6 or 11-12 depending on mux relay
-		TAITOlocals.solenoids = (TAITOlocals.solenoids & 0xfff) | ((data&0xc0)<<6);
-		if ( TAITOlocals.solenoids&0x1000 )
+		TAITOlocals.solenoids = (TAITOlocals.solenoids & 0xfffcffff) | ((data&0xc0)<<10);
+		if ( TAITOlocals.solenoids&0x10000 )
 			// 11-12
-			TAITOlocals.solenoids = (TAITOlocals.solenoids & 0x33ff) | ((data&0x30)<<6);
+			TAITOlocals.solenoids = (TAITOlocals.solenoids & 0xffff33ff) | ((data&0x30)<<6);
 		else
 			// 5-6
-			TAITOlocals.solenoids = (TAITOlocals.solenoids & 0x3fcf) | (data&0x30);
+			TAITOlocals.solenoids = (TAITOlocals.solenoids & 0xffff3fcf) | (data&0x30);
 		break;
 
 	case 1:
 		// upper nibble: solenoids 1-4 or 7-10 depending on mux relay
-		if ( TAITOlocals.solenoids&0x1000 )
+		if ( TAITOlocals.solenoids&0x10000 )
 			// 7-10
-			TAITOlocals.solenoids = (TAITOlocals.solenoids & 0x3c3f) | ((data&0xf0)<<2);
+			TAITOlocals.solenoids = (TAITOlocals.solenoids & 0xffff3c3f) | ((data&0xf0)<<2);
 		else
 			// 1-4
-			TAITOlocals.solenoids = (TAITOlocals.solenoids & 0x3ff0) | ((data&0xf0)>>4);
+			TAITOlocals.solenoids = (TAITOlocals.solenoids & 0xffff3ff0) | ((data&0xf0)>>4);
 		break;
 
 	// upper nibbles of offset 2-3: sound commands
@@ -205,6 +202,20 @@ static WRITE_HANDLER(dma_commands)
 		TAITOlocals.lampMatrix[offset-8] = (TAITOlocals.lampMatrix[offset-8]&0x0f) | ((data&0x0f)<<4);
 }
 
+static int TAITO_lamp2m(int no) { 
+	if ( (no/10)<8 )
+		return (4-(no%10))*8 + (no/10);
+	else
+		return (8-(no%10))*8 + ((no/10)-8);
+}
+
+static int TAITO_m2lamp(int col, int row) { 
+	if ( row<8 )
+		return (4-col)*8 + row;
+	else
+		return (8-col)*8 + (row-8);
+}
+
 static MEMORY_READ_START(taito_readmem)
   { 0x0000, 0x1fff, MRA_ROM },
   { 0x3000, 0x3eff, MRA_ROM },
@@ -231,8 +242,30 @@ MACHINE_DRIVER_START(taito)
   MDRV_NVRAM_HANDLER(taito)
   MDRV_DIPS(8)
   MDRV_SWITCH_UPDATE(taito)
+  MDRV_LAMP_CONV(TAITO_lamp2m,TAITO_m2lamp)
+  MDRV_DIAGNOSTIC_LEDH(1)
+MACHINE_DRIVER_END
 
-  MDRV_IMPORT_FROM(taitos)
+MACHINE_DRIVER_START(taito_sintevox)
+  MDRV_IMPORT_FROM(taito)
+
+  MDRV_IMPORT_FROM(taitos_sintevox)
+  MDRV_SOUND_CMD(taito_sndCmd_w)
+  MDRV_SOUND_CMDHEADING("taito")
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(taito_sintetizador)
+  MDRV_IMPORT_FROM(taito)
+
+  MDRV_IMPORT_FROM(taitos_sintetizador)
+  MDRV_SOUND_CMD(taito_sndCmd_w)
+  MDRV_SOUND_CMDHEADING("taito")
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(taito_sintevoxpp)
+  MDRV_IMPORT_FROM(taito)
+
+  MDRV_IMPORT_FROM(taitos_sintevoxpp)
   MDRV_SOUND_CMD(taito_sndCmd_w)
   MDRV_SOUND_CMDHEADING("taito")
 MACHINE_DRIVER_END
