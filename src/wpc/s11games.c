@@ -213,6 +213,15 @@ S11_ROMEND
 #define input_ports_bguns input_ports_s11
 CORE_GAMEDEF(bguns, l8, "Big Guns (L-8)", 1987, "Williams", s11_mS11AS,0)
 
+S11_ROMSTART48(bguns,l7,"guns_u26.l8", CRC(792dc1e8) SHA1(34586585bbaf579cb522569238e24d9ab891b471),
+                        "guns_u27.l8", CRC(8ff26d24) SHA1(eab732b401144ad7efc80d336299beae85ca7d24))
+S11XS_SOUNDROM88(        "guns_u21.l1", CRC(35c6bfe4) SHA1(83dbd10311add75f56046de58d315f8a87389703),
+                        "guns_u22.l1", CRC(091a5cb8) SHA1(db77314241eb6ed7f4385f99312a49b7caad1283))
+S11CS_SOUNDROM88(       "gund_u4.l1",  CRC(d4a430a3) SHA1(5b44e3f313cc7cb75f51c239013d46e5eb986f9d),
+                        "guns_u19.l1", CRC(ec1a6c23) SHA1(45bb4f78b89de9e690b5f9741d17f97766e702d6))
+S11_ROMEND
+CORE_CLONEDEF(bguns,l7,l8,"Big Guns (L-7)", 1987, "Williams", s11_mS11AS,0)
+
 /*--------------------
 / Space Station 1/88
 /--------------------*/
