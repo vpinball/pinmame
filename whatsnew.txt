@@ -12,6 +12,7 @@ Bugs Fixed
 
 New Features
 ------------
+-Hankin Emulation [no sound emulation yet]
 -Bally Cheap & Squeak Sound Emulation (preliminary & not fully working yet)
 -Support for games using Bally Cheap & Squalk sound
 -Bally 6803 Emulation (not fully working yet)
@@ -19,6 +20,7 @@ New Features
 -Support for all Bally 6803 Games
 -Support for Granny & the Gators (not working)
 -Missing sound rom support added for some Gottlieb System 3 games
+-Support for all Hanking games
  [Steve Ellenoff]
  
 -New Sound Speed Limit Option
