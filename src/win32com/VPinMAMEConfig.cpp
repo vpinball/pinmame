@@ -51,6 +51,7 @@ static struct rc_option vpinmame_opts[] = {
 	{ "dmd_width",  NULL, rc_int,  &dmd_width,  "0", 0, 10000, NULL, "DMD display width" },
 	{ "dmd_height", NULL, rc_int,  &dmd_height, "0", 0, 10000, NULL, "DMD display height" },
 	{ "dmd_doublesize",  NULL, rc_bool,  &dmd_doublesize,  "0", 0, 0, NULL, "DMD display doublesize" },
+	{ "threadpriority",  NULL, rc_int,  &threadpriority,  "1", 0, 2, NULL, "priority of the worker thread" },
 	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
 };
 
@@ -93,8 +94,6 @@ static char* GlobalSettings[] = {
 	"joystick",
 	"steadykey",
 
-	"threadpriority",
-	
 	NULL
 };
 
