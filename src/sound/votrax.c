@@ -17,8 +17,6 @@ the variable VotraxBaseFrequency, this is defaulted to 8000
 
 **************************************************************************/
 
-#define VERBOSE 1
-
 #if VERBOSE
 #define LOG(x) logerror x
 #else
@@ -46,6 +44,7 @@ static struct {
 
 #include "vtxsmpls.inc"
 
+#if VERBOSE
 static const char *PhonemeNames[65] =
 {
  "EH3","EH2","EH1","PA0","DT" ,"A1" ,"A2" ,"ZH",
@@ -58,6 +57,7 @@ static const char *PhonemeNames[65] =
  "THV","TH" ,"ER" ,"EH" ,"E1" ,"AW" ,"PA1","STOP",
  0
 };
+#endif
 
 WRITE_HANDLER(votraxsc01_w)
 {
