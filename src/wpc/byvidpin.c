@@ -78,7 +78,8 @@ static struct {
 
 static void byVP_lampStrobe(int board, int lampadr) {
   if (lampadr != 0x0f) {
-    int lampdata = ((locals.p0_a>>4)^0x0f) & 0x03; //only 2 lamp drivers
+    //int lampdata = ((locals.p0_a>>4)^0x0f) & 0x03; //only 2 lamp drivers
+	int lampdata = ((~locals.p0_a)>>6) & 0x03; //only 2 lamp drivers
     UINT8 *matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)+4*board];
     int bit = 1<<(lampadr & 0x07);
     while (lampdata) {
@@ -101,7 +102,7 @@ static WRITE_HANDLER(pia0a_w) {
   locals.p0_a = data;	//Controls Strobing
   //Write Data To Vidiot Latch Pre-Buffers - Only When Latch Input is Low
   if ((locals.p1_a & 0x04) == 0) soundlatch2_w(0,data ^ 0x0f);
-  byVP_lampStrobe(!locals.phase_a, locals.lampadr1);
+  byVP_lampStrobe(locals.phase_a, locals.lampadr1);
 }
 
 /* PIA0:B-R  Get Data depending on PIA0:A
