@@ -23,32 +23,36 @@ const struct GameDriver *drivers[] = {
 // ---------------------
 /*Games below are Cocktail #110 Model*/
 
-					//Real to Real (May 1978)
-					//Rio (??,1978)
-					//Camel Lights (May 1978)
-					//Foxy Lady (May 1978)
+DRIVERNV(foxylady)	//Foxy Lady (May 1978)
+					//Black Velvet (May 1978) (Same as Foxy Lady)
+					//Camel Lights (May 1978) (Same as Foxy Lady)
+					//Real to Real (May 1978) (Same as Foxy Lady)
+					//Rio (?? / 1978) (Same as Foxy Lady)
+
+					//Chuck-A-Luck (October 1978)
 
 /*Games below are Cocktail #120 Model*/
 
-					//Family Fun! (April 1979)
-					//Star Trip (April 1979)
+DRIVERNV(startrip)	//Star Trip (April 1979)
+					//Family Fun! (April 1979) (Same as Star Trip)
 
 /*Games below are regular standup pinball games*/
-					//Sharpshooter (May 1979)
+DRIVERNV(sshooter)	//Sharpshooter (May 1979)
 DRIVERNV(vegasgp)	//Vegas (August 1979)
 DRIVERNV(coneyis)	//Coney Island! (December 1979)
-					//Lizard (July 1980)
-					//Global Warfare (June 1981)
-					//Mike Bossy - The Scoring Machine (January 1982)
-					//Super Nova (May 1982)
-					//Sharp Shooter II (November 1983)
-					//Attila the Hun (April 1984)
-					//Agents 777 (November 1984)
-					//Captain Hook (April 1985)
-					//Lady Sharpshooter (May 1985)
-					//Andromeda (September 1985)
+DRIVERNV(lizard)	//Lizard (July 1980)
+DRIVERNV(gwarfare)	//Global Warfare (June 1981)
+					//Mike Bossy (January 1982)
+					//The Scoring Machine (January 1982)
+DRIVERNV(suprnova)	//Super Nova (May 1982)
+DRIVERNV(sshootr2)	//Sharp Shooter II (November 1983)
+DRIVERNV(atilla)	//Attila the Hun (April 1984)
+DRIVERNV(agent777)	//Agents 777 (November 1984)
+DRIVERNV(cpthook)	//Captain Hook (April 1985)
+DRIVERNV(ladyshot)	//Lady Sharpshooter (May 1985)
+DRIVERNV(andromed)	//Andromeda (September 1985)
 DRIVERNV(cyclopes)	//Cyclopes (November 1985)
-					//Loch-Ness Monster (November 1985)
+					//Loch Ness Monster (November 1985)
 
 										
 
