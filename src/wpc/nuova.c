@@ -730,5 +730,5 @@ ROM_START(f1gp) \
   ROM_COPY(REGION_USER1, 0x7000, 0xf000,0x1000)
 ROM_END
 
-CORE_GAMEDEFNV(f1gp, "F1 Grand Prix", 1987, "Nuova Bell Games", f1gp, 0)
+CORE_GAMEDEFNV(f1gp, "F1 Grand Prix", 1987, "Nuova Bell Games", f1gp, GAME_NOT_WORKING | GAME_NO_SOUND)
 
