@@ -31,6 +31,10 @@ static struct {
   struct sndbrdData brdData;
   int sndCmd;
 
+  int   soundEnabled1;
+  int   soundEnabled2;
+  int   actSamples;
+  int   pitch;
   int   channel;
   INT8  wavetable[16][32];
 } hnks_locals;
@@ -39,38 +43,64 @@ static struct {
 
 MEMORY_READ_START(hnks_readmem)
   { 0x0000, 0x007f, MRA_RAM },
-  { 0x0080, 0x00ff, pia_r(SP_PIA0) },
+  { 0x0080, 0x0083, pia_r(SP_PIA0) },
   { 0x1000, 0x17ff, MRA_ROM },
-  { 0xf000, 0xf200, MRA_ROM },
   { 0xf800, 0xffff, MRA_ROM }, /* reset vector */
 MEMORY_END
 
 MEMORY_WRITE_START(hnks_writemem)
   { 0x0000, 0x007f, MWA_RAM },
-  { 0x0080, 0x00ff, pia_w(SP_PIA0) },
+  { 0x0080, 0x0083, pia_w(SP_PIA0) },
   { 0x1000, 0x17ff, MWA_ROM },
-  { 0xf000, 0xf200, MWA_ROM },
   { 0xf800, 0xffff, MWA_ROM }, /* reset vector */
 MEMORY_END
 
-/*
-  PA4-PA7 : output: select waveform (0-15, upper bits of wave table ROM)
-*/
-static WRITE_HANDLER(pia0a_w)
-{
-  mixer_play_sample(hnks_locals.channel, (char*) &hnks_locals.wavetable[(data&0xf0)>>4], 32, 1000, 1);
+static void hnks_irq(int state) {
+  cpu_set_irq_line(hnks_locals.brdData.cpuNo, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
+}
+
+void start_samples(void) {
+//  if ( hnks_locals.soundEnabled1 && hnks_locals.soundEnabled2 )
+    mixer_play_sample(hnks_locals.channel, (char*) &hnks_locals.wavetable[hnks_locals.actSamples], 32, (0x4000/(hnks_locals.pitch+1)), 1);
+//  else
+//	mixer_stop_sample(hnks_locals.channel);
 }
 
 /*
-  PB0-PB3 : output: replay speed
+  PA4-PA7 : output: select waveform (0-15, upper 4 bits of wave table ROM IC3)
+*/
+static WRITE_HANDLER(pia0a_w)
+{
+  hnks_locals.actSamples = (data&0xf0)>>4;
+  start_samples();
+}
+
+/*
+  PB0-PB3 : output: replay pitch
   PB4-PB7 : output: set volume
 */
 static WRITE_HANDLER(pia0b_w)
 {
-  // pitch is not supported yet
-  // logerror("speed : %02x\n", data&0x0f);
+  hnks_locals.pitch = data&0x0f;
   
-  mixer_set_volume(hnks_locals.channel, ((data&0xf0)>>4)*0x10);
+  //logerror("pitch : %02x\n", hnks_locals.pitch);
+  // logerror("volume: %02x\n", (data&0xf0)>>4);
+
+  mixer_set_volume(hnks_locals.channel, data&0xf0);
+}
+
+static WRITE_HANDLER(pia0ca2_w)
+{
+  logerror("pia0ca2_w: %02x\n", data);
+  hnks_locals.soundEnabled1 = data;
+  start_samples();
+}
+
+static WRITE_HANDLER(pia0cb2_w)
+{
+  logerror("pia0cb2_w: %02x\n", data);
+  hnks_locals.soundEnabled2 = data;
+  start_samples();
 }
 
 /*
@@ -84,14 +114,18 @@ static WRITE_HANDLER(pia0b_w)
 
 static const struct pia6821_interface sp_pia = {
   /*i: A/B,CA/B1,CA/B2 */ 0, 0, 0, 0, 0, 0,
-  /*o: A/B,CA/B2       */ pia0a_w, pia0b_w, 0, 0,
-  /*irq: A/B           */ 0,0
+  /*o: A/B,CA/B2       */ pia0a_w, pia0b_w, pia0ca2_w, pia0cb2_w,
+  /*irq: A/B           */ hnks_irq,hnks_irq
 };
 
 static WRITE_HANDLER(hnks_data_w)
 {
     pia_set_input_a(SP_PIA0, data&0x0f);
-    cpu_set_irq_line(hnks_locals.brdData.cpuNo, M6802_IRQ_LINE, PULSE_LINE);
+}
+
+static WRITE_HANDLER(hnks_ctrl_w)
+{
+	pia_set_input_ca1(SP_PIA0, data);
 }
 
 static void hnks_init(struct sndbrdData *brdData)
@@ -101,13 +135,16 @@ static void hnks_init(struct sndbrdData *brdData)
   hnks_locals.brdData = *brdData;
 
   /* load the "wave table" (from the ROM, it's mapped to 0xf000-0xf1ff */
-  for (i=0; i<16; i++) {
-	  unsigned char* adr = memory_region(HNK_MEMREG_SCPU) + 0xf000 + (i*32);
+  for (i=0; i<=0x0f; i++) {
+	  unsigned char* adr = memory_region(HNK_MEMREG_SCPU) + 0xf000 + (i*0x20);
 	  for(j=0; j<32; j++)
-		hnks_locals.wavetable[i][j] = (*adr++)<<4;
+		hnks_locals.wavetable[i][j] = ((*adr++)<<4)-0x80;
   }
 
   pia_config(SP_PIA0, PIA_STANDARD_ORDERING, &sp_pia);
+
+  hnks_locals.soundEnabled1 = 1;
+
 }
 
 static int hnks_sh_start(const struct MachineSound *msound) {
@@ -124,7 +161,7 @@ static void hnks_sh_stop(void) {
 / exported interface
 /--------------------*/
 const struct sndbrdIntf hankinIntf = {
-  hnks_init, NULL, NULL, hnks_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  hnks_init, NULL, NULL, hnks_data_w, NULL, hnks_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
 struct CustomSound_interface hnks_custInt = {hnks_sh_start, hnks_sh_stop};

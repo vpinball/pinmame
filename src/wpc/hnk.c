@@ -133,8 +133,9 @@ static WRITE_HANDLER(pia0cb2_w) {
 
 /* PIA1:CA2-W Diagnostic LED & Audio Strobe */
 static WRITE_HANDLER(pia1ca2_w) {
+  // logerror("PIA1:CA2=%d\n",data);
   locals.diagnosticLed = data;
-  hnk_sndCmd_w(0, locals.p1_b & 0x0f);
+  sndbrd_0_ctrl_w(0, data);
 }
 
 /* PIA0:CA2-W Display Blanking */
@@ -146,6 +147,8 @@ static WRITE_HANDLER(pia0ca2_w) {
 
 /* PIA1:B-W Solenoid Data & Sound Data (PB0-3) */
 static WRITE_HANDLER(pia1b_w) {
+  hnk_sndCmd_w(0, data & 0x0f);
+
   locals.p1_b = data;
   coreGlobals.pulsedSolState = 0;
   if (!locals.p1_cb2)
