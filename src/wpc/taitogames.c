@@ -276,12 +276,25 @@ TAITO_ROMSTART2222(snake,"snake1.bin",CRC(7bb79585) SHA1(6e1bb1e33733bc2c41ad9fc
                          "snake2.bin",CRC(55c946f7) SHA1(b77549063c99ee194608abb45aa0cec958336636),
                          "snake3.bin",CRC(6f054bc0) SHA1(08ab82131888756e8178b2fe2bbc24fc4f494ef2),
                          "snake4.bin",CRC(ed231064) SHA1(42410dbbef36dea9d0163c65406bc86b35bb0bd7))
-// NOT AVAILABLE
 TAITO_SOUNDROMS44("snake_s1.bin", CRC(f7c1623c) SHA1(77e79ccc4b074b715008de37332baf76791d471e),
                   "snake_s2.bin", CRC(18316d73) SHA1(422a093ff245f0c8f710aeba91acd59666e2398b))
 TAITO_ROMEND
 #define input_ports_snake input_ports_taito
 CORE_GAMEDEFNV(snake,"Snake Machine",1982,"Taito",taito_sintetizadorpp,0)
+
+/*--------------------------------
+/ Voley Ball
+/-------------------------------*/
+INITGAME(voleybal,SNDBRD_TAITO_SINTETIZADORPP)
+TAITO_ROMSTART2222(voleybal,"voley1.bin",NO_DUMP,
+                            "voley2.bin",NO_DUMP,
+                            "voley3.bin",NO_DUMP,
+                            "voley4.bin",NO_DUMP)
+TAITO_SOUNDROMS44("voley_s1.bin", CRC(9c825666) SHA1(330ecd9caccb8a1555c5e7302095ae25558c020e),
+                  "voley_s2.bin", CRC(79a8228c) SHA1(e71d9347a8fc230c70703164ae0e4d44423bbb5d))
+TAITO_ROMEND
+#define input_ports_voleybal input_ports_taito
+CORE_GAMEDEFNV(voleybal,"Voley Ball",198?,"Taito",taito_sintetizadorpp,0)
 
 //??/82 Gork
 //??/8? Ogar
@@ -289,19 +302,18 @@ CORE_GAMEDEFNV(snake,"Snake Machine",1982,"Taito",taito_sintetizadorpp,0)
 /*--------------------------------
 / Mr. Black
 /-------------------------------*/
-INITGAME(mrblack,SNDBRD_TAITO_SINTEVOXPP)
+INITGAME(mrblack,SNDBRD_TAITO_SINTETIZADORPP)
 TAITO_ROMSTART22222(mrblack,"mrb1.bin",CRC(c2a43f6f) SHA1(14a461b6416e3b024cc3d7743b75e29ca1876b64),
                             "mrb2.bin",CRC(ddf2a88e) SHA1(8de67f4032811ec3b7da1655207d05e52d4e5e01),
                             "mrb3.bin",CRC(f319f68f) SHA1(f4b408837eeab8a7cd7dedc031f0b9332363a7d4),
                             "mrb4.bin",CRC(84367699) SHA1(a9a7b21fe31f12b0888bc3bbf82d0b13cf8bad49),
                             "mrb5.bin",CRC(18d8f2cc) SHA1(e14c20440753a1996e618e407ef97f3059775c46))
-// NOT AVAILABLE
-TAITO_SOUNDROMS444("mrb_s1.bin", NO_DUMP,
-                   "mrb_s2.bin", NO_DUMP,
-                   "mrb_s3.bin", NO_DUMP)
+TAITO_SOUNDROMS444("mrb_s1.bin", CRC(ff28b2b9) SHA1(3106811740e0206ad4ba7845e204e721b0da70e2),
+                   "mrb_s2.bin", CRC(3af4707e) SHA1(b7231ede973a0c83e009333f0377b81c34826117),
+                   "mrb_s3.bin", CRC(276fb897) SHA1(b1a4323a4d921e3ae4beefaa04cd95e18cc33b9d))
 TAITO_ROMEND
 #define input_ports_mrblack input_ports_taito
-CORE_GAMEDEFNV(mrblack,"Mr. Black",1984,"Taito",taito_sintevoxpp,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(mrblack,"Mr. Black",1984,"Taito",taito_sintetizadorpp,0)
 
 /*--------------------------------
 / Fire Action Deluxe
@@ -311,10 +323,9 @@ TAITO_ROMSTART2222(fireactd,"fired1.bin",CRC(2f923913) SHA1(c35dcf37e6957523f676
                             "fired2.bin",CRC(4d268048) SHA1(f1c4cb1c91f73e2a145725b4696b7996d311883f),
                             "fired3.bin",CRC(f5e07ed1) SHA1(3da566ea2fb56998fc56db3f373ec813b5b627e1),
                             "fired4.bin",CRC(da1a4ed5) SHA1(e39be103dfcfa004061d2249292b023bc3fac9bd))
-// NOT AVAILABLE
-TAITO_SOUNDROMS444("fired_s1.bin", NO_DUMP,
-                   "fired_s2.bin", NO_DUMP,
-                   "fired_s3.bin", NO_DUMP)
+TAITO_SOUNDROMS444("fired_s1.bin", CRC(b821d324) SHA1(db00416592467a5917dd75e437842aea822fffa8),
+                   "fired_s2.bin", CRC(d427d0f6) SHA1(bcd1cf15f4ff1df30a42d8889879cff9d3f16e6e),
+                   "fired_s3.bin", CRC(ecff8399) SHA1(7615da5a6952cbc0769963a9563017bd46e4a73f))
 TAITO_ROMEND
 #define input_ports_fireactd input_ports_taito
 CORE_GAMEDEFNV(fireactd,"Fire Action Deluxe",198?,"Taito",taito_sintevoxpp,GAME_IMPERFECT_SOUND)
@@ -349,3 +360,12 @@ TAITO_SOUNDROMS444("polar_s1.bin", CRC(baff1a67) SHA1(d93736b8d232034047f463b43a
 TAITO_ROMEND
 #define input_ports_polar input_ports_taito
 CORE_GAMEDEFNV(polar,"Polar Explorer",198?,"Taito",taito_sintetizadorpp,0)
+
+/*-----------
+/ Test Eprom
+/-----------*/
+INITGAME(taitest,SNDBRD_NONE)
+TAITO_ROMSTART2(taitest,"ttest1.bin",CRC(a9729e2f) SHA1(2c13bc9d6eab2101316fa795a18d5c5afac936d8))
+TAITO_ROMEND
+#define input_ports_taitest input_ports_taito
+CORE_GAMEDEFNV(taitest,"Taito Test Fixture",198?,"Taito",taito,0)

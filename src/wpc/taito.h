@@ -99,8 +99,15 @@
       ROM_LOAD( n3, 0x1000, 0x0800, chk3) \
         ROM_RELOAD( 0x1800, 0x0800)
 
+#define TAITO_ROMSTART2(name,n1,chk1) \
+  ROM_START(name) \
+    NORMALREGION(0x10000, TAITO_MEMREG_CPU) \
+      ROM_LOAD( n1, 0x0000, 0x0800, chk1) \
+        ROM_RELOAD( 0x1800, 0x0800)
+
 #define TAITO_ROMEND ROM_END
 
+extern MACHINE_DRIVER_EXTERN(taito);
 extern MACHINE_DRIVER_EXTERN(taito_sintetizador);
 extern MACHINE_DRIVER_EXTERN(taito_sintetizadorpp);
 extern MACHINE_DRIVER_EXTERN(taito_sintevox);

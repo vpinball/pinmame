@@ -91,8 +91,8 @@ static MACHINE_INIT(taito) {
 
 	TAITOlocals.timer_irq = timer_alloc(timer_irq);
 	timer_adjust(TAITOlocals.timer_irq, TIME_IN_HZ(TAITO_IRQFREQ), 0, TIME_IN_HZ(TAITO_IRQFREQ));
-
-	sndbrd_0_init(core_gameData->hw.soundBoard, TAITO_SCPU, memory_region(TAITO_MEMREG_SCPU), NULL, NULL);
+	if (core_gameData->hw.soundBoard)
+		sndbrd_0_init(core_gameData->hw.soundBoard, TAITO_SCPU, memory_region(TAITO_MEMREG_SCPU), NULL, NULL);
 
 	TAITOlocals.vblankCount = 1;
 }
@@ -102,7 +102,8 @@ static MACHINE_STOP(taito) {
 		timer_remove(TAITOlocals.timer_irq);
 		TAITOlocals.timer_irq = NULL;
 	}
-	sndbrd_0_exit();
+	if (core_gameData->hw.soundBoard)
+		sndbrd_0_exit();
 }
 
 static WRITE_HANDLER(taito_sndCmd_w) {
@@ -110,7 +111,8 @@ static WRITE_HANDLER(taito_sndCmd_w) {
 	if ( Machine->gamedrv->flags & GAME_NO_SOUND )
 		return;
 
-    sndbrd_0_data_w(0, data);
+	if (core_gameData->hw.soundBoard)
+		sndbrd_0_data_w(0, data);
 }
 
 static READ_HANDLER(switches_r) {
@@ -260,7 +262,7 @@ static MEMORY_READ_START(taito_readmem)
 MEMORY_END
 
 static MEMORY_WRITE_START(taito_writemem)
-  { 0x0000, 0x27ff, MWA_ROM },
+  { 0x0000, 0x3dff, MWA_NOP },
   { 0x3e00, 0x3fff, MWA_RAM },
   { 0x4000, 0x407f, MWA_RAM },
   { 0x4080, 0x408f, dma_display },
