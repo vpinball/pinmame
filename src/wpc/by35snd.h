@@ -172,16 +172,30 @@ extern const struct IO_WritePort by35_45_writeport[];
   ignore_interrupt,1 \
 }
 
-#define BY35_SOUND45ROMx0(n2,chk2) \
-  SOUNDREGION(0x10000, BY35_MEMREG_S1CPU) \
-    ROM_LOAD(n2, 0xf000, 0x1000, chk2)
+/* Load 4K ROM to fit into 16K Rom Space */
+#define BY35_ROMLOAD1(start, n, chk) \
+  ROM_LOAD(n, start + 0x0000, 0x1000, chk) \
+  ROM_RELOAD( start + 0x1000, 0x1000) \
+  ROM_RELOAD( start + 0x2000, 0x1000) \
+  ROM_RELOAD( start + 0x3000, 0x1000) 
+  
+/* Load 8K ROM to fit into 32K Rom Space */
+#define BY35_ROMLOAD2(start, n, chk) \
+  ROM_LOAD(n, start + 0x0000, 0x2000, chk) \
+  ROM_RELOAD( start + 0x2000, 0x2000) \
+  ROM_RELOAD( start + 0x4000, 0x2000) \
+  ROM_RELOAD( start + 0x6000, 0x2000)
 
-#define BY35_SOUND45ROM00(n1,chk1,n2,chk2) \
+/* 1 x 8K ROMS */
+#define BY35_SOUND45ROMx2(n1,chk1) \
   SOUNDREGION(0x10000, BY35_MEMREG_S1CPU) \
-    ROM_LOAD(n2, 0xb000, 0x1000, chk2) \
-	ROM_RELOAD(  0xc000, 0x1000) \
-    ROM_LOAD(n1, 0xe000, 0x1000, chk1) \
-	ROM_RELOAD(  0xf000, 0x1000) 
+    BY35_ROMLOAD2(0x8000,n1,chk1)
+
+/* 2 x 4K ROMS */
+#define BY35_SOUND45ROM11(n2,chk2,n1,chk1) \
+  SOUNDREGION(0x10000, BY35_MEMREG_S1CPU) \
+    BY35_ROMLOAD1(0x8000, n1, chk1) \
+    BY35_ROMLOAD1(0xc000, n2, chk2) 
 
 /* generic handler */
 void by35_soundInit(void);
