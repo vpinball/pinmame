@@ -314,67 +314,67 @@ INLINE void execute_one(int opcode)
 
 		case 0x70: /* ISZ */
 			I.R01 = (I.R01 & 0x0f) | ((I.R01 + 0x10) & 0xf0);
-			M_JMP(romno, !(I.R01 & 0xf0))
+			M_JMP(romno, (I.R01 & 0xf0))
 			break;
 		case 0x71: /* ISZ */
 			I.R01 = (I.R01 & 0xf0) | ((I.R01 + 1) & 0x0f);
-			M_JMP(romno, !(I.R01 & 0x0f))
+			M_JMP(romno, (I.R01 & 0x0f))
 			break;
 		case 0x72: /* ISZ */
 			I.R23 = (I.R23 & 0x0f) | ((I.R23 + 0x10) & 0xf0);
-			M_JMP(romno, !(I.R23 & 0xf0))
+			M_JMP(romno, (I.R23 & 0xf0))
 			break;
 		case 0x73: /* ISZ */
 			I.R23 = (I.R23 & 0xf0) | ((I.R23 + 1) & 0x0f);
-			M_JMP(romno, !(I.R23 & 0x0f))
+			M_JMP(romno, (I.R23 & 0x0f))
 			break;
 		case 0x74: /* ISZ */
 			I.R45 = (I.R45 & 0x0f) | ((I.R45 + 0x10) & 0xf0);
-			M_JMP(romno, !(I.R45 & 0xf0))
+			M_JMP(romno, (I.R45 & 0xf0))
 			break;
 		case 0x75: /* ISZ */
 			I.R45 = (I.R45 & 0xf0) | ((I.R45 + 1) & 0x0f);
-			M_JMP(romno, !(I.R45 & 0x0f))
+			M_JMP(romno, (I.R45 & 0x0f))
 			break;
 		case 0x76: /* ISZ */
 			I.R67 = (I.R67 & 0x0f) | ((I.R67 + 0x10) & 0xf0);
-			M_JMP(romno, !(I.R67 & 0xf0))
+			M_JMP(romno, (I.R67 & 0xf0))
 			break;
 		case 0x77: /* ISZ */
 			I.R67 = (I.R67 & 0xf0) | ((I.R67 + 1) & 0x0f);
-			M_JMP(romno, !(I.R67 & 0x0f))
+			M_JMP(romno, (I.R67 & 0x0f))
 			break;
 		case 0x78: /* ISZ */
 			I.R89 = (I.R89 & 0x0f) | ((I.R89 + 0x10) & 0xf0);
-			M_JMP(romno, !(I.R89 & 0xf0))
+			M_JMP(romno, (I.R89 & 0xf0))
 			break;
 		case 0x79: /* ISZ */
 			I.R89 = (I.R89 & 0xf0) | ((I.R89 + 1) & 0x0f);
-			M_JMP(romno, !(I.R89 & 0x0f))
+			M_JMP(romno, (I.R89 & 0x0f))
 			break;
 		case 0x7a: /* ISZ */
 			I.RAB = (I.RAB & 0x0f) | ((I.RAB + 0x10) & 0xf0);
-			M_JMP(romno, !(I.RAB & 0xf0))
+			M_JMP(romno, (I.RAB & 0xf0))
 			break;
 		case 0x7b: /* ISZ */
 			I.RAB = (I.RAB & 0xf0) | ((I.RAB + 1) & 0x0f);
-			M_JMP(romno, !(I.RAB & 0x0f))
+			M_JMP(romno, (I.RAB & 0x0f))
 			break;
 		case 0x7c: /* ISZ */
 			I.RCD = (I.RCD & 0x0f) | ((I.RCD + 0x10) & 0xf0);
-			M_JMP(romno, !(I.RCD & 0xf0))
+			M_JMP(romno, (I.RCD & 0xf0))
 			break;
 		case 0x7d: /* ISZ */
 			I.RCD = (I.RCD & 0xf0) | ((I.RCD + 1) & 0x0f);
-			M_JMP(romno, !(I.RCD & 0x0f))
+			M_JMP(romno, (I.RCD & 0x0f))
 			break;
 		case 0x7e: /* ISZ */
 			I.REF = (I.REF & 0x0f) | ((I.REF + 0x10) & 0xf0);
-			M_JMP(romno, !(I.REF & 0xf0))
+			M_JMP(romno, (I.REF & 0xf0))
 			break;
 		case 0x7f: /* ISZ */
 			I.REF = (I.REF & 0xf0) | ((I.REF + 1) & 0x0f);
-			M_JMP(romno, !(I.REF & 0x0f))
+			M_JMP(romno, (I.REF & 0x0f))
 			break;
 
 		case 0x80: /* ADD */
@@ -672,25 +672,25 @@ INLINE void execute_one(int opcode)
 			WM(0x1000 | I.ramaddr.d, I.accu);
 			break;
 		case 0xe1: /* WMP */
-			WM(0x2000 | I.ramaddr.d, I.accu);
+			M_OUT(1)
 			break;
 		case 0xe2: /* WRR */
-			WM(0x3000 | I.ramaddr.d, I.accu);
+			M_OUT(0)
 			break;
 		case 0xe3: /* WPM */
-			WM(0x4000 | I.ramaddr.d, I.accu);
+			M_OUT(2)
 			break;
 		case 0xe4: /* WR0 */
-			WM(0x5000 | (I.ramaddr.w.l & 0xff0), I.accu);
+			WM(0x2000 | (I.ramaddr.w.l & 0xff0), I.accu);
 			break;
 		case 0xe5: /* WR1 */
-			WM(0x5001 | (I.ramaddr.w.l & 0xff0), I.accu);
+			WM(0x2001 | (I.ramaddr.w.l & 0xff0), I.accu);
 			break;
 		case 0xe6: /* WR2 */
-			WM(0x5002 | (I.ramaddr.w.l & 0xff0), I.accu);
+			WM(0x2002 | (I.ramaddr.w.l & 0xff0), I.accu);
 			break;
 		case 0xe7: /* WR3 */
-			WM(0x5003 | (I.ramaddr.w.l & 0xff0), I.accu);
+			WM(0x2003 | (I.ramaddr.w.l & 0xff0), I.accu);
 			break;
 		case 0xe8: /* SBM */
 			I.accu = (((I.carry << 4) | I.accu) - RM(0x1000 | I.ramaddr.d)) & 0x0f;
@@ -700,7 +700,7 @@ INLINE void execute_one(int opcode)
 			I.accu = RM(0x1000 | I.ramaddr.d);
 			break;
 		case 0xea: /* RDR */
-			I.accu = RM(0x3000 | I.ramaddr.d);
+			M_IN
 			break;
 		case 0xeb: /* ADM */
 			I.accu += RM(0x1000 | I.ramaddr.d);
@@ -708,16 +708,16 @@ INLINE void execute_one(int opcode)
 			I.accu &= 0x0f;
 			break;
 		case 0xec: /* RD0 */
-			I.accu = RM(0x5000 | (I.ramaddr.w.l & 0xff0));
+			I.accu = RM(0x2000 | (I.ramaddr.w.l & 0xff0));
 			break;
 		case 0xed: /* RD1 */
-			I.accu = RM(0x5001 | (I.ramaddr.w.l & 0xff0));
+			I.accu = RM(0x2001 | (I.ramaddr.w.l & 0xff0));
 			break;
 		case 0xee: /* RD2 */
-			I.accu = RM(0x5002 | (I.ramaddr.w.l & 0xff0));
+			I.accu = RM(0x2002 | (I.ramaddr.w.l & 0xff0));
 			break;
 		case 0xef: /* RD3 */
-			I.accu = RM(0x5003 | (I.ramaddr.w.l & 0xff0));
+			I.accu = RM(0x2003 | (I.ramaddr.w.l & 0xff0));
 			break;
 
 		case 0xf0: /* CLB */
