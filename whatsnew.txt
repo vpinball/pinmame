@@ -1,4 +1,31 @@
 What's new:
+Version 1.31 (??, 2003)
+-----------------------
+Yahoo! Working Capcom Sound! It was probably the hardest challenge we've faced ever, and although
+it's not working perfectly, we're thrilled to have made it this far. Hopefully fixes to the 50V
+solenoid detection line will allow the other capcom games to function properly now.
+
+(gerrit to fill in rest here)
+
+
+Bugs Fixed
+----------
+- Missing 50V Solenoid Detection in Capcom Games fixed (reports as 99V but that's fine)
+- Flipper Football & Kingpin now fire 50V solenoids 
+  [Steve Ellenoff]
+
+
+New Features
+------------
+- Working Capcom Sound (though it's not quite perfect and does suffer frequent cut offs/resets)
+- Added multi chip TMS320AV120 MPG Audio Decoder Sound core
+- Upgraded 8051 CPU core to handle 8752 CPU core functionality
+- Added UART serial port support to 8051 core, plus a few new timer modes
+- Implemented 68306 DUART Serial ports & Timer functionality
+- Added mostly working X9241 Digital EPot to Capcom Sound board emulation.
+  [Steve Ellenoff]
+
+
 
 Version 1.30 (October 1, 2003)
 ------------------------------

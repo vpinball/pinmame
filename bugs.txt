@@ -39,3 +39,5 @@ Bugs in Pinmame that we are aware of:
 #15) No sound on some Hankin games.
 
 #16) Switch problems with Dataeast Playboy and the Grotto/VUK
+
+#17) Sound gets cut off or sounboard resets in capcom games, also some distortion sometimes
