@@ -739,3 +739,82 @@ SE_ROMEND
 #define input_ports_rctycne input_ports_se
 #define init_rctycne init_rctycn
 CORE_CLONEDEFNV(rctycne,rctycn,"Roller Coaster Tycoon (Spain)",2002,"Stern",de_mSES1,GAME_NOCRC)
+
+//And back to the 12 voice model here!
+/*-------------------------------------------------------------------
+/ The Simpsons Pinball Party (2.04)
+/-------------------------------------------------------------------*/
+INITGAME(simpprty,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(simpprty, "spp-cpu.204",0x5bc155f7)
+DE_DMD32ROM8x(           "sppdspa.201",0xf55505a4)
+DE2S_SOUNDROM18888(      "spp101.u7",  0x32efcdf6,
+                         "spp100.u17", 0x65e9344e,
+                         "spp100.U21", 0x17fee0f9,
+                         "spp100.u36", 0xffb957b0,
+                         "spp100.u37", 0x0738e1fc)
+SE_ROMEND
+#define input_ports_simpprty input_ports_se
+CORE_GAMEDEFNV(simpprty,"The Simpsons Pinball Party",2003,"Stern",de_mSES2,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ The Simpsons Pinball Party (Germany)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(simpprtd, "spp-cpu.204",0x5bc155f7)
+DE_DMD32ROM8x(           "sppdspi.201",0x00000000)
+DE2S_SOUNDROM18888(      "spp101.u7",  0x32efcdf6,
+                         "spp100.u17", 0x65e9344e,
+                         "spp100.U21", 0x17fee0f9,
+                         "spp100.u36", 0xffb957b0,
+                         "spp100.u37", 0x0738e1fc)
+SE_ROMEND
+#define input_ports_simpprtd input_ports_se
+#define init_simpprtd init_simpprty
+CORE_CLONEDEFNV(simpprtd,simpprty,"The Simpsons Pinball Party (Germany)",2003,"Stern",de_mSES2,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ The Simpsons Pinball Party (Spain)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(simpprte, "spp-cpu.204",0x5bc155f7)
+DE_DMD32ROM8x(           "sppdspl.201",0x78a67e23)
+DE2S_SOUNDROM18888(      "spp101.u7",  0x32efcdf6,
+                         "spp100.u17", 0x65e9344e,
+                         "spp100.U21", 0x17fee0f9,
+                         "spp100.u36", 0xffb957b0,
+                         "spp100.u37", 0x0738e1fc)
+SE_ROMEND
+#define input_ports_simpprte input_ports_se
+#define init_simpprte init_simpprty
+CORE_CLONEDEFNV(simpprte,simpprty,"The Simpsons Pinball Party (Spain)",2003,"Stern",de_mSES2,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ The Simpsons Pinball Party (France)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(simpprtf, "spp-cpu.204",0x5bc155f7)
+DE_DMD32ROM8x(           "sppdspf.201",0xd1c0c484)
+DE2S_SOUNDROM18888(      "spp101.u7",  0x32efcdf6,
+                         "spp100.u17", 0x65e9344e,
+                         "spp100.U21", 0x17fee0f9,
+                         "spp100.u36", 0xffb957b0,
+                         "spp100.u37", 0x0738e1fc)
+SE_ROMEND
+#define input_ports_simpprtf input_ports_se
+#define init_simpprtf init_simpprty
+CORE_CLONEDEFNV(simpprtf,simpprty,"The Simpsons Pinball Party (France)",2003,"Stern",de_mSES2,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ The Simpsons Pinball Party (Italy)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(simpprti, "spp-cpu.204",0x5bc155f7)
+DE_DMD32ROM8x(           "sppdspi.201",0xb4594819)
+DE2S_SOUNDROM18888(      "spp101.u7",  0x32efcdf6,
+                         "spp100.u17", 0x65e9344e,
+                         "spp100.U21", 0x17fee0f9,
+                         "spp100.u36", 0xffb957b0,
+                         "spp100.u37", 0x0738e1fc)
+SE_ROMEND
+#define input_ports_simpprti input_ports_se
+#define init_simpprti init_simpprty
+CORE_CLONEDEFNV(simpprti,simpprty,"The Simpsons Pinball Party (Italy)",2003,"Stern",de_mSES2,GAME_NOCRC)
+
+
+

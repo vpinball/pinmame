@@ -438,6 +438,7 @@ DRIVERNV(hirol_gr)      //Whitestar: 01/01 High Roller Casino (French display)
 DRIVERNV(hirol_it)      //Whitestar: 01/01 High Roller Casino (Italian display)
 
 #ifndef VPINMAME
+
 DRIVERNV(austin)        //Whitestar: 05/01 Austin Powers (3.01)
 DRIVERNV(austind)       //Whitestar: 05/01 Austin Powers (German display)
 DRIVERNV(austinf)       //Whitestar: 05/01 Austin Powers (French display)
@@ -458,6 +459,12 @@ DRIVERNV(rctycnd)       //Whitestar: 09/02 Roller Coaster Tycoon (German display
 DRIVERNV(rctycne)       //Whitestar: 09/02 Roller Coaster Tycoon (Spanish display)
 DRIVERNV(rctycnf)       //Whitestar: 09/02 Roller Coaster Tycoon (French display)
 DRIVERNV(rctycni)       //Whitestar: 09/02 Roller Coaster Tycoon (Italian display)
+DRIVERNV(simpprty)      //Whitestar: 01/03 The Simpsons Pinball Party (2.04)
+DRIVERNV(simpprtd)      //Whitestar: 01/03 The Simpsons Pinball Party (German display)
+DRIVERNV(simpprte)      //Whitestar: 01/03 The Simpsons Pinball Party (Spanish display)
+DRIVERNV(simpprtf)      //Whitestar: 01/03 The Simpsons Pinball Party (French display)
+DRIVERNV(simpprti)      //Whitestar: 01/03 The Simpsons Pinball Party (Italian display)
+
 #endif /* VPINMAME */
 
 
