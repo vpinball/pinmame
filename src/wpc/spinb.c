@@ -439,7 +439,7 @@ READ_HANDLER(ci20_portc_r) {
 	else	//Dip Column Strobe
  		data = core_getDip(SPINBlocals.swCol);
 
-	return (data & 0xf0) | (core_revnyb(data & 0x0f));	//Lower nibble is reversed
+	return data; //(data & 0xf0) | (core_revnyb(data & 0x0f));	//Lower nibble is reversed according to schematic, but not IRL!
 }
 READ_HANDLER(ci23_porta_r) { LOG(("UNDOCUMENTED: ci23_porta_r\n")); return 0; }
 READ_HANDLER(ci23_portb_r) { LOG(("UNDOCUMENTED: ci23_portb_r\n")); return 0; }
@@ -484,7 +484,7 @@ CI-20 8255 PPI
 (out) P3-P7: J2 - Pins 6 - 10 (Marked Nivel C03-C07) - Switch Strobe (5 lines)
 */
 WRITE_HANDLER(ci20_porta_w) {
-	if (data) SPINBlocals.swCol = core_BitColToNum(data);
+	SPINBlocals.swCol = core_BitColToNum(data);
 }
 /*
 CI-20 8255 PPI
