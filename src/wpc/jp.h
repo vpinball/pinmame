@@ -13,14 +13,13 @@
 /*-- Common Inports for JP Games --*/
 #define JP_COMPORTS \
   PORT_START /* 0 */ \
-    /* Switch Column 1 */ \
+    /* Switch Column 4 */ \
     COREPORT_BITDEF(  0x0010, IPT_START1,         IP_KEY_DEFAULT)  \
-    COREPORT_BITDEF(  0x0001, IPT_COIN1,          IP_KEY_DEFAULT) \
-    COREPORT_BITDEF(  0x0002, IPT_COIN2,          KEYCODE_3) \
-    COREPORT_BIT(     0x0008, "Ball Tilt",        KEYCODE_INSERT)  \
-    COREPORT_BIT(     0x0080, "Self Test",        KEYCODE_7) \
-    COREPORT_BIT(     0x0040, "Economic Adjusts", KEYCODE_8) \
-    COREPORT_BIT(     0x0020, "Reset Button",     KEYCODE_0) \
+    COREPORT_BITDEF(  0x0002, IPT_COIN1,          IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(  0x0004, IPT_COIN2,          KEYCODE_3) \
+    COREPORT_BITDEF(  0x0008, IPT_COIN3,          KEYCODE_4) \
+    COREPORT_BIT(     0x0040, "Pendulum Tilt",    KEYCODE_INSERT)  \
+    COREPORT_BIT(     0x0020, "Door Tilt",        KEYCODE_HOME) \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
       COREPORT_DIPSET(0x0000, "0" ) \
@@ -71,30 +70,18 @@
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x8000, "1" ) \
   PORT_START /* 2 */ \
-    COREPORT_DIPNAME( 0x0001, 0x0000, "S17") \
+    COREPORT_DIPNAME( 0x0001, 0x0000, "SA") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0001, "1" ) \
-    COREPORT_DIPNAME( 0x0002, 0x0000, "S18") \
+    COREPORT_DIPNAME( 0x0002, 0x0000, "SB") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0002, "1" ) \
-    COREPORT_DIPNAME( 0x0004, 0x0000, "S19") \
+    COREPORT_DIPNAME( 0x0004, 0x0000, "SC") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0004, "1" ) \
-    COREPORT_DIPNAME( 0x0008, 0x0008, "S20") \
+    COREPORT_DIPNAME( 0x0008, 0x0000, "SD") \
       COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0008, "1" ) \
-    COREPORT_DIPNAME( 0x0010, 0x0000, "S21") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0010, "1" ) \
-    COREPORT_DIPNAME( 0x0020, 0x0000, "S22") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0020, "1" ) \
-    COREPORT_DIPNAME( 0x0040, 0x0000, "S23") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0040, "1" ) \
-    COREPORT_DIPNAME( 0x0080, 0x0000, "S24") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0080, "1" )
+      COREPORT_DIPSET(0x0008, "1" )
 
 /*-- Standard input ports --*/
 #define JP_INPUT_PORTS_START(name,balls) \
@@ -107,9 +94,9 @@
 
 #define JP_COMINPORT       CORE_COREINPORT
 
-#define JP_LAMPSMOOTH      4 /* Smooth the lamps over this number of VBLANKS */
-#define JP_DISPLAYSMOOTH   1 /* Smooth the display over this number of VBLANKS */
-#define JP_SOLSMOOTH       4 /* Smooth the Solenoids over this number of VBLANKS */
+#define JP_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
+#define JP_DISPLAYSMOOTH   3 /* Smooth the display over this number of VBLANKS */
+#define JP_SOLSMOOTH       2 /* Smooth the Solenoids over this number of VBLANKS */
 
 /*-- Memory regions --*/
 #define JP_MEMREG_CPU	REGION_CPU1
