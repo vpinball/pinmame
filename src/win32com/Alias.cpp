@@ -36,6 +36,7 @@ static const struct tAliasTable { const char* alias; const char* real; } aliasTa
   { "gnr", "gnr_300" },
   { "twister", "twst_405" },
   { "southpk", "sprk_103" },
+  { "truckstp", "trucksp2" },
   { NULL, NULL }
 };
 
