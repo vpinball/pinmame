@@ -337,11 +337,11 @@ SE_ROMEND
 CORE_GAMEDEFNV(shrkysht,"Sharkey's Shootout",2000,"Stern",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ High Roller Casino
+/ High Roller Casino (3.0)
 /-------------------------------------------------------------------*/
 INITGAME(hirolcas,GEN_WS)
-SE128_ROMSTART(hirolcas,"hrccpu.210",0x2e3c682a)
-DE_DMD32ROM8x(      "hrcda200.bin",0x0642bdce7)
+SE128_ROMSTART(hirolcas,"hrccpu.300",0x0d1117fa)
+DE_DMD32ROM8x(      "hrcdispa.300",0x099ccaf0)
 DE2S_SOUNDROM18888("hrcu7.dat"   ,0xc41f91a7,
                   "casinou1.dat",0x5858dfd0,
                   "casinou2.dat",0xc653de96,
