@@ -36,6 +36,7 @@
   11/03/03          - First time sound was working almost fully (although still some glitches and much work left to do)
   11/09/03		    - 50V Line finally reports a voltage & KP,FF fire hi-volt solenoids
   11/10/03          - Seem to have found decent IRQ4 freq. to allow KP & FF to fire sols 1 & 2 properly
+  11/15/03			- 68306 optimized & true address mappings implemented, major speed improvements!
 
   Hacks & Issues that need to be looked into:
   #1) Why do we need to adjust the CPU Speed to get the animations to display at correct speed? U16 related bug?
@@ -55,21 +56,21 @@
 #include "capcoms.h"
 #include "sndbrd.h"
 
-//Comment out to show all error messages at startup
-#define SKIP_ERROR_MSG
+//Show all error messages at startup (U16 Errors)
+#define SKIP_ERROR_MSG		1
+
+//Turn off to use the correct actual frequency values, but the animations are much too slow..
+#define USE_ADJUSTED_FREQ	1
+
+//Turn off when not testing mpg audio
+#define TEST_MPGAUDIO		0
 
 //3 different ways to test 50V line (ONLY 1 can be uncommented at a time)
 //#define TEST50V_TRY1		//Gives varying readings, but most in the 50-85V range
 //#define TEST50V_TRY2		//Gives varying readings (only some games), but most in the 30V-50V range (note: 40V range raises check 50V interlock switch error message)
 #define TEST50V_TRY3		//Seems to give steady 99V reading
 
-//Comment out when not testing mpg audio
-//#define TEST_MPGAUDIO
-
-//Comment out to use the correct actual frequency values, but the animations are much too slow..
-#define USE_ADJUSTED_FREQ		
-
-#ifdef USE_ADJUSTED_FREQ
+#if USE_ADJUSTED_FREQ
 	#define CC_ZCFREQ       124			/* Zero cross frequency - Reports ~60Hz on the Solenoid/Line Voltage Test */
 	#define CPU_CLOCK		24000000	/* Animation speed is more accurate at this speed, strange.. */
 #else
@@ -83,6 +84,8 @@
 
 #define CC_IRQ4FREQ		TIME_IN_CYCLES(8000,0)	//Seems to work well for both KP & FF
 
+static data16_t *rom_base;
+static data16_t *ramptr;
 
 //declares
 extern void capcoms_manual_reset(void);
@@ -384,7 +387,7 @@ static READ16_HANDLER(io_r) {
       break;
 
     default:
-      DBGLOG(("PC%08x - io_r: [%08x] (%04x)\n",activecpu_get_pc(),offset,mem_mask));
+	  DBGLOG(("PC%08x - io_r: [%08x] (%04x)\n",activecpu_get_pc(),offset,mem_mask));
   }
   return data;
 }
@@ -459,37 +462,45 @@ static WRITE16_HANDLER(io_w) {
       break;
 
     default:
-      DBGLOG(("PC%08x - io_w: [%08x] (%04x) = %x\n",activecpu_get_pc(),offset,mem_mask,data));
+	  DBGLOG(("PC%08x - io_w: [%08x] (%04x) = %x\n",activecpu_get_pc(),offset,mem_mask,data));
   }
 }
 
 static MACHINE_INIT(cc) {
+  int i;
   memset(&locals, 0, sizeof(locals));
   locals.u16a[0] = 0x00bc;
   locals.vblankCount = 1;
 
+  //Skip showing error messages? (NOTE: MUST COME BEFORE WE COPY ROMS BELOW)
+#if SKIP_ERROR_MSG
+	Skip_Error_Msg();
+#endif
+
+  //Copy roms into correct location (ie, starting at 0x10000000 where they are mapped)
+  memcpy(rom_base, memory_region(REGION_CPU1), memory_region_length(REGION_CPU1));
+
+  //Clear out ram - except for vector table
+  for(i = 0x101; i<memory_region_length(REGION_CPU1); i++)
+	*((UINT8 *)(memory_region(REGION_CPU1) + i)) = 0;
+
   //Init soundboard
   sndbrd_0_init(core_gameData->hw.soundBoard, CAPCOMS_CPUNO, memory_region(CAPCOMS_ROMREGION),NULL,NULL);
  
-#ifdef TEST_MPGAUDIO
+#if TEST_MPGAUDIO
   //Freeze cpu so it won't slow down the emulation
   cpunum_set_halt_line(0,1);
 #else
   //IRQ1 Maximum Frequency 
   timer_pulse(TIME_IN_CYCLES(2811,0),0,cc_u16irq1);		//Only value that passes IRQ1 test (DO NOT CHANGE UNTIL CURRENT HACK IS REPLACED)
-  
+ 
   //IRQ4 Frequency
   timer_pulse(CC_IRQ4FREQ,0,cc_u16irq4);
   
 #endif
-
-  //Skip showing error messages?
-#ifdef SKIP_ERROR_MSG
-	Skip_Error_Msg();
-#endif
 }
 
-//NOTE: Due to our memory remapping, the fixaddress values must remove the top 8th bit, ie, 0x10092192 becomes 0x00092192
+//NOTE: Due to the way we load the roms, the fixaddress values must remove the top 8th bit, ie, 0x10092192 becomes 0x00092192
 static void Skip_Error_Msg(void){
 	UINT32 fixaddr = 0;
 	switch (core_gameData->hw.gameSpecific1) {
@@ -569,19 +580,6 @@ AFTER CS0 is configured by software:
 0x10800000-0x108fffff : ROM2 (U3)
 0x10c00000-0x10cfffff : ROM3 (U4)
 
-Our Emulation Mappings:
-
-0x00000000-0x000fffff : ROM0 (U1)
-0x00400000-0x004fffff : ROM1 (U2)
-0x00800000-0x008fffff : ROM2 (U3)
-0x00c00000-0x00cfffff : ROM3 (U4)
-
-CS2
-AUX
-EXT
-SWITCH0
-CS
-
 CS0 defined by writes to internal registers @ ffc0,ffc2
 ...
 CS7 defined by writes to internal registers @ ffdc,ffde
@@ -599,13 +597,11 @@ CS3 = 3001a2f0 => fffe0000,30000000 => 30000000-3001ffff (RW)
 On flipper football & kingpin:
 CS1 = 0001e6df => fff80000,00000000 => 00000000-0007ffff (RW) * Note: CSFC6,5,2,1 = 1
 
-There are a # of issues with the memory map that need to be discussed:
-First - ROM accesses is of course @ address 0, but after the CS0 is redefined, it should be at 0x10000000
-DRAM access is moved to 0-7fffff.
+To optimize speed on the 68306, I removed all handling of the cs/dram registers.
+So we simply use the memory mapping that the game software uses when it first writes to those 
+registers.. The only potential problem is if the game writes different values to cs/dram signals
+during program execution which could change these mappings!
 
-However, Martin said he couldn't map stuff that way, so he mapped it as 24 bit addresses and moved stuff around..
-Most obvious is that CS2 is @ 0x02000000 instead of 0x40000000, which means all I/O is in that range.
-All other addresses are mapped >> 4 bits, ie, 0x30000000 now becomes 0x03000000
 */
 
 /*-----------------------------------------------
@@ -631,21 +627,35 @@ static int cc_m2sw(int col, int row) {
   return col*8 + row + 9;
 }
 
-static data16_t *ramptr;
+/*
+From watching the program code set the cs registers.. (see explanation above)
+CS0 = 10000000-10ffffff (R)  -  ROM MEMORY SPACE
+CS1 = 00000000-0007ffff (RW) -  DRAM 
+CS2 = 40000000-40ffffff (RW) -  I/O ADDRESSES
+CS3 = 30000000-3001ffff (RW) -  NVRAM
+
+Therefore:
+ B A B=A23,A=A22 - Base address = 40000000
+----------------------
+ 0 0 (40000000) - /AUX I-O
+ 0 1 (40400000) - /EXT I-O
+ 1 0 (40800000) - /SWITCH0
+ 1 1 (40c00000) - /CS		(U16)
+*/
 static MEMORY_READ16_START(cc_readmem)
-  { 0x00000000, 0x00ffffff, MRA16_ROM },
-  { 0x01000000, 0x0107ffff, MRA16_RAM },			/* DRAM */
-  { 0x02000000, 0x02bfffff, io_r },					/* I/O */
-  { 0x02C00000, 0x02C007ff, u16_r },				/* U16 (A10,A2,A1)*/
-  { 0x03000000, 0x0300ffff, MRA16_RAM },			/* NVRAM */
+  { 0x00000000, 0x0007ffff, MRA16_RAM },			/* DRAM */
+  { 0x10000000, 0x10ffffff, MRA16_ROM },			/* ROMS */
+  { 0x30000000, 0x3001ffff, MRA16_RAM },			/* NVRAM */
+  { 0x40000000, 0x40bfffff, io_r },					/* I/O */
+  { 0x40c00000, 0x40c007ff, u16_r },				/* U16 (A10,A2,A1)*/
 MEMORY_END
 
 static MEMORY_WRITE16_START(cc_writemem)
-  { 0x00000000, 0x00ffffff, MWA16_ROM },
-  { 0x01000000, 0x0107ffff, MWA16_RAM, &ramptr },	/* DRAM */
-  { 0x02000000, 0x02bfffff, io_w },					/* I/O */
-  { 0x02C00000, 0x02C007ff, u16_w },				/* U16 (A10,A2,A1)*/
-  { 0x03000000, 0x0300ffff, MWA16_RAM, &CMOS },		/* NVRAM */
+  { 0x00000000, 0x0007ffff, MWA16_RAM, &ramptr },	/* DRAM */
+  { 0x10000000, 0x10ffffff, MWA16_ROM, &rom_base }, /* ROMS */
+  { 0x30000000, 0x3001ffff, MWA16_RAM, &CMOS },		/* NVRAM */
+  { 0x40000000, 0x40bfffff, io_w },					/* I/O */
+  { 0x40c00000, 0x40c007ff, u16_w },				/* U16 (A10,A2,A1)*/
 MEMORY_END
 
 static PORT_READ16_START(cc_readport)

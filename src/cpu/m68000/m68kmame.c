@@ -1243,10 +1243,39 @@ unsigned m68020_dasm(char *buffer, unsigned pc)
 #endif
 }
 #endif /* HAS_M68020 */
+
+
+#if defined(PINMAME) && (HAS_M68306)
 /****************************************************************************
  * 68306 section
  ****************************************************************************/
-#if defined(PINMAME) && (HAS_M68306)
+//NOTE: FOR SPEED REASONS FOR CAPCOM EMULTION - WE DO NOT PROCESS CS/DRAM SIGNALS 
+// - INSTEAD WE HARDCODE THE MEMORY MAPPINGS IN THE DRIVER (SJE -11/14/03)
+
+//Disable the 68306 Receiver/Transmitter functions for testing individual sections
+#define DISABLE_68306_RX		0
+#define DISABLE_68306_TX		0
+#define DISABLE_68306_TIMER		0
+
+//This line causes Transmitted data to be sent immediately (not accurate, but useful for testing)
+#define M68306_TX_SEND_IMMEDIATE	0
+
+//#define VERBOSE
+//#define DEBUGGING
+
+#ifdef VERBOSE
+//#define LOG(x)	logerror x
+#define LOG(x)	printf x
+#else
+#define LOG(x)
+#endif
+
+#ifdef DEBUGGING
+#define PRINTF(x) printf x
+#else
+#define PRINTF(x) 
+#endif
+
 // Could not find any other way to get the interrupts to work than inlcuding this
 #include "m68kcpu.h"
 #undef REG_PC
@@ -1269,31 +1298,6 @@ static int  (*m68306intack)(int int_line); /* Interrupt Acknowledge */
 static struct { offs_t addr, mask; UINT16 rw; } m68306cs[10];
 
 /*Duart stuff*/
-
-//Comment out to enable the 68306 Receiver/Transmitter functions
-//#define DISABLE_68306_RX
-//#define DISABLE_68306_TX
-//#define DISABLE_68306_TIMER
-
-//This line causes Transmitted data to be sent immediately (not accurate, but useful for testing)
-//#define M68306_TX_SEND_IMMEDIATE
-
-//#define VERBOSE
-//#define DEBUGGING
-
-#ifdef VERBOSE
-//#define LOG(x)	logerror x
-#define LOG(x)	printf x
-#else
-#define LOG(x)
-#endif
-
-#ifdef DEBUGGING
-#define PRINTF(x) printf x
-#else
-#define PRINTF(x) 
-#endif
-
 
 //Registers for read only will be even numbered, write only will be odd numbered
 enum {  dirDUMR1A,dirDUMR2A,		//0,1 (exception, these are r&w, but there's 2 so it works out)
@@ -1354,102 +1358,64 @@ extern void send_data_to_8752(int data);
 //-------------------------------------------
 // Memory read/write functions
 //   Check for internal registers
-//   Update top 8 bits based on CSx/DRAMx signals
 //-------------------------------------------
+
+//WRITE 8BIT
 static void m68306_write8(offs_t address, data8_t data) {
-  if (address >= 0xfffff000) { m68306_intreg_w(address, data, 0); return; }
-  cpu_writemem32bew(m68306_cs(address,1),data);
+  if (address >= 0xfffff000) 
+		m68306_intreg_w(address, data, 0); 
+  else
+		cpu_writemem32bew(address,data);
 }
+//WRITE 16BIT
 static void m68306_write16(offs_t address, data16_t data) {
-  if (address >= 0xfffff000) { m68306_intreg_w(address, data, 1); return; }
-  address = m68306_cs(address,1);
-  if (!(address & 1)) { cpu_writemem32bew_word(address, data); return; }
-  cpu_writemem32bew(address, data >> 8);
-  cpu_writemem32bew(address + 1, data);
+	if (address >= 0xfffff000)
+		m68306_intreg_w(address, data, 1); 
+	else
+		cpu_writemem32bew_word(address,data);
 }
+//WRITE 32BIT
 static void m68306_write32(offs_t address, data32_t data) {
-  if (address >= 0xfffff000) {
-    m68306_intreg_w(address,   data>>16, 1);
-    m68306_intreg_w(address+2, data,     1);
-    return;
-  }
-  address = m68306_cs(address,1);
-  if (!(address & 1)) {
-    cpu_writemem32bew_word(address, data>>16);
-    cpu_writemem32bew_word(address+2, data);
-    return;
-  }
-  cpu_writemem32bew(address, data >> 24);
-  cpu_writemem32bew_word(address + 1, data >> 8);
-  cpu_writemem32bew(address + 3, data);
+	if (address >= 0xfffff000) {
+		m68306_intreg_w(address,   data>>16, 1);
+		m68306_intreg_w(address+2, data,     1);
+	}
+	else {
+		cpu_writemem32bew_word(address, data >> 16);
+		cpu_writemem32bew_word(address + 2, data);  
+	}
 }
-
+//READ 8BIT
 static data8_t m68306_read8(offs_t address) {
-  if (address >= 0xfffff000) { return (data8_t)m68306_intreg_r(address, 0); }
-  return cpu_readmem32bew(m68306_cs(address,0));
+	if (address >= 0xfffff000)
+		return (data8_t)m68306_intreg_r(address, 0); 
+	else
+		return cpu_readmem32bew(address);
 }
+//READ 16BIT
 static data16_t m68306_read16(offs_t address) {
-  data16_t result;
-  if (address >= 0xfffff000) { return m68306_intreg_r(address, 1); }
-  address = m68306_cs(address,0);
-  if (!(address & 1)) { return cpu_readmem32bew_word(address); }
-  result = cpu_readmem32bew(address) << 8;
-  return result | cpu_readmem32bew(address + 1);
+	if (address >= 0xfffff000)
+		return m68306_intreg_r(address, 1); 
+	else
+		return cpu_readmem32bew_word(address);
 }
+//READ 32BIT
 static data32_t m68306_read32(offs_t address) {
-  data32_t result;
-  if (address >= 0xfffff000) {
-    result = m68306_intreg_r(address, 2)<<16;
-    return result | m68306_intreg_r(address+2, 1);
-  }
-  address = m68306_cs(address,0);
-  if (!(address & 1)) {
-    result = cpu_readmem32bew_word(address) << 16;
-    return result | cpu_readmem32bew_word(address + 2);
-  }
-  result = cpu_readmem32bew(address) << 24;
-  result |= cpu_readmem32bew_word(address + 1) << 8;
-  return result | cpu_readmem32bew(address + 3);
+	data32_t result;
+	if (address >= 0xfffff000) {
+		result = m68306_intreg_r(address, 1)<<16;
+		return result | m68306_intreg_r(address+2, 1);
+	}
+	else {
+		result = cpu_readmem32bew_word(address)<<16;
+		return result | cpu_readmem32bew_word(address + 2);  
+	}
 }
-//-----------------------------
-// calculate CSx/DRAMx signals
-//-----------------------------
-static offs_t m68306_cs(offs_t address, int write) {
-  const UINT16 rwmask = write ? 0x0001 : 0x8000;
-  const UINT32 masked = address & ((m68306intreg[0x1f] & 0x1000) ? 0x0000ffff : 0x00ffffff);
-  if ((m68306cs[0].rw & rwmask) && ((address & m68306cs[0].mask) == m68306cs[0].addr))
-    return masked;
-  if ((m68306cs[1].rw & rwmask) && ((address & m68306cs[1].mask) == m68306cs[1].addr))
-    return masked | 0x1000000;
-  if ((m68306cs[2].rw & rwmask) && ((address & m68306cs[2].mask) == m68306cs[2].addr))
-    return masked | 0x2000000;
-  if ((m68306cs[3].rw & rwmask) && ((address & m68306cs[3].mask) == m68306cs[3].addr))
-    return masked | 0x3000000;
-  if (m68306intreg[0x1f] & 0x0100) {
-    if ((m68306cs[4].rw & rwmask) && ((address & m68306cs[4].mask) == m68306cs[4].addr))
-      return masked | 0x4000000;
-    if ((m68306cs[5].rw & rwmask) && ((address & m68306cs[5].mask) == m68306cs[5].addr))
-      return masked | 0x5000000;
-    if ((m68306cs[6].rw & rwmask) && ((address & m68306cs[6].mask) == m68306cs[6].addr))
-      return masked | 0x6000000;
-    if ((m68306cs[7].rw & rwmask) && ((address & m68306cs[7].mask) == m68306cs[7].addr))
-      return masked | 0x7000000;
-  }
-  if ((m68306cs[8].rw & rwmask) && ((address & m68306cs[8].mask) == m68306cs[8].addr))
-    return masked | 0x8000000;
-  if ((m68306cs[9].rw & rwmask) && ((address & m68306cs[9].mask) == m68306cs[9].addr))
-    return masked | 0x9000000;
-  return masked | 0xa000000;
-}
-
 //-------------------------------------------------------------------
 // PC has changed
-//  should probably do a SetOPBase here but I am unsure how it works
-//  on non-continuous memory. For now I use the normal memory routines
-//  also for opcodes. It is a lot slower.
 //-------------------------------------------------------------------
 static void m68306_changepc(offs_t pc) {
-//  change_pc32bew(pc/*m68306_cs(pc,0)*/);
+	change_pc32bew(pc);
 }
 
 static const struct m68k_memory_interface interface_m68306 = {
@@ -1555,7 +1521,7 @@ static data16_t m68306_duart_reg_r(offs_t address, int word) {
 		//F7FD - START COUNTER COMMAND
 		case 0xf7fd:
 			LOG(("%8x:START COUNTER COMMAND Read = %x\n",activecpu_get_pc(),data));
-#ifndef DISABLE_68306_TIMER
+#if !DISABLE_68306_TIMER
 			//TIMER MODE?
 			if(m68306duartreg[dirDUACR] & 0x40) {
 				//Look for 1->0 transition in the output to trigger an interrupt!
@@ -1577,7 +1543,7 @@ static data16_t m68306_duart_reg_r(offs_t address, int word) {
 		//F7FF - STOP COUNTER COMMAND
 		case 0xf7ff:
 			LOG(("%8x:STOP COUNTER COMMAND Read = %x\n",activecpu_get_pc(),data));
-#ifndef DISABLE_68306_TIMER
+#if !DISABLE_68306_TIMER
 			//Clear CTR/TMR RDY bit (3) in DUISR - BOTH TIMER & COUNTER MODE
 			m68306duartreg[dirDUISR] &= (~0x08);
 
@@ -1628,7 +1594,7 @@ static void m68306_duart_reg_w(offs_t address, data16_t data, int word) {
 
 		//F7E7 - TRANSMIT BUFFER A(DUTBA)
 		case 0xf7e7:
-#ifndef DISABLE_68306_TX
+#if !DISABLE_68306_TX
 			if(m68306_duart.channel[0].tx_enable) {
 				LOG(("%8x:TRANSMIT BUFFER A(DUTBA) Write = %x\n",activecpu_get_pc(),data));
 				//Update buffer
@@ -1687,7 +1653,7 @@ static void m68306_duart_reg_w(offs_t address, data16_t data, int word) {
 
 		//F7F7 - TRANSMIT BUFFER B(DUTBB)
 		case 0xf7f7:
-#ifndef DISABLE_68306_TX
+#if !DISABLE_68306_TX
 			if(m68306_duart.channel[1].tx_enable) {
 				LOG(("%8x:TRANSMIT BUFFER B(DUTBB) Write = %x\n",activecpu_get_pc(),data));
 				//Update buffer
@@ -1795,7 +1761,7 @@ static void m68306_tx_send_byte(int which)
 //Load Transmitter with data
 static void m68306_load_transmitter(int which, int data)
 {
-#ifdef M68306_TX_SEND_IMMEDIATE
+#if M68306_TX_SEND_IMMEDIATE
 	if(which) send_data_to_8752(data);
 #else
 	//Load holding register with data
@@ -1810,7 +1776,7 @@ static void m68306_load_transmitter(int which, int data)
 
 void send_data_to_68306(int data)
 {
-#ifndef DISABLE_68306_RX
+#if !DISABLE_68306_RX
 	timer_set(TIME_NOW, data , m68306_rx_cause_int_channel_b);
 	//timer_set(TIME_IN_CYCLES(10000,0), data , m68306_rx_cause_int_channel_b);
 #endif
@@ -2140,6 +2106,7 @@ static void m68306_intreg_w(offs_t address, data16_t data, int word) {
       case irCS0H: case irCS1H: case irCS2H: case irCS3H:
       case irCS4H: case irCS5H: case irCS6H: case irCS7H:
       case irDRAM0H: case irDRAM1H:
+		//LOG(("writing to cs/dram hi=%x\n",data));
         m68306intreg[reg] = data;
         m68306cs[reg/2].addr = (data & 0xfffe)<<16;
         m68306cs[reg/2].rw = (m68306cs[reg/2].rw & 0x8000) | (data & 0x01);
@@ -2147,6 +2114,7 @@ static void m68306_intreg_w(offs_t address, data16_t data, int word) {
       case irCS0L: case irCS1L: case irCS2L: case irCS3L:
       case irCS4L: case irCS5L: case irCS6L: case irCS7L:
       case irDRAM0L: case irDRAM1L:
+		//LOG(("writing to cs/dram lo=%x\n",data));
         m68306intreg[reg] = data;
         m68306cs[reg/2].mask = ((UINT16)(0xffff0000>>((data & 0xf0)>>4)))<<16;
         m68306cs[reg/2].rw = (m68306cs[reg/2].rw & 0x01) | (data & 0x8000);
@@ -2202,6 +2170,7 @@ static data16_t m68306_intreg_r(offs_t address, int word) {
       case irCS4L: case irCS5L: case irCS6L: case irCS7L:
       case irDRAM0L: case irDRAM1L:
       case irPDATA:  case irPDIR:
+	    //LOG(("reading from cs/dram\n"));
         data = m68306intreg[reg]; break;
       case irPPIN: /* port pins (read_only) */
         // B4-B7 is also IRQ pins (ignored for now)
@@ -2434,7 +2403,7 @@ const char *m68306_info(void *context, int regnum)
 		case CPU_INFO_FAMILY: return "Motorola 68K";
 		case CPU_INFO_VERSION: return "3.2";
 		case CPU_INFO_FILE: return __FILE__;
-		case CPU_INFO_CREDITS: return "Copyright 2002 Martin Adrian and PinMAME team";
+		case CPU_INFO_CREDITS: return "Copyright 2002 Martin Adrian, Steve Ellenoff and PinMAME team";
 		case CPU_INFO_REG_LAYOUT: return (const char*)m68000_reg_layout;
 		case CPU_INFO_WIN_LAYOUT: return (const char*)m68000_win_layout;
 	}
