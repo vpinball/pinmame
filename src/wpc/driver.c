@@ -892,7 +892,8 @@ DRIVER(wd,12)           //WPC-544:  09/95 B Who dunnit
 DRIVER(wd,12g)                            // German
 DRIVER(jb,10r)          //WPC-551:  10/95 W Jack*Bot
 DRIVER(jb,10b)                            // Belgium/Canada
-DRIVER(congo,21)        //WPC-550:  11/95 W Congo
+DRIVER(congo,21)        //WPC-550:  11/95 W Congo (2.1)
+DRIVER(congo,20)        //WPC-550:  11/95 W Congo (2.0)
 DRIVER(afm,10)         //WPC-541:  12/95 B Attack from Mars (1.0)
 DRIVER(afm,11)          //WPC-541:  12/95 B Attack from Mars
 DRIVER(afm,113)							  // Home version
