@@ -371,6 +371,7 @@ static void snt_5220Irq(int state) {
   pia_set_input_cb1(3, !state);
 }
 
+#if 1
 static void sp45_cmd(int data) {
 	snd_cmd_log(data);
 	splocals.currcmd = data;
@@ -378,19 +379,59 @@ static void sp45_cmd(int data) {
 	cpu_set_irq_line(BY35_SCPU1NO, M6800_TIN_LINE, PULSE_LINE);
 }
 
+#else
+
+static void sp45_cmd_sync(int data) {
+  sntlocals.cmdout = 0; /* start reading commands */
+  /*set 6803 P20 line*/
+  cpu_set_irq_line(BY35_SCPU1NO, M6800_TIN_LINE, PULSE_LINE);
+}
+
+/* Collect two commands after rising edge */
+static void sp45_cmd(int data) {
+  if (data & ~sntlocals.lastcmd & 0x20)
+    sntlocals.cmdsync = 0;
+  else 
+	  if ((data & 0x20) && sntlocals.cmdsync < 2)
+	  {
+		sntlocals.cmd[sntlocals.cmdsync++] = data; 
+		snd_cmd_log(data);
+		if (sntlocals.cmdsync == 2) /* two commands received */
+			timer_set(TIME_NOW, data, sp45_cmd_sync);
+	  }
+  sntlocals.lastcmd = data;
+}
+
+#endif
+
 static READ_HANDLER(port1_r) { 
-	//int data = splocals.currcmd;
 	int data = 0;
-	//if(data)
-		logerror("port 1 read: %x\n",data);
+	//logerror("port 1 read: %x\n",data);
 	return data;
 }
+
+
+#if 1
+static READ_HANDLER(port2_r) { 
+	int data = splocals.currcmd;
+	//logerror("port 2 read: %x\n",data);
+	return data;
+}
+
+#else
 static READ_HANDLER(port2_r) { 
 	//int data = 0;
-	int data = splocals.currcmd;
-	logerror("port 2 read: %x\n",data);
-	return data;
+	//int data = splocals.currcmd;
+	//logerror("port 2 read: %x\n",data);
+    switch (splocals.cmdout) {
+      case 1 : //pia_set_input_ca1(2, 0);
+      case 0 : return splocals.cmd[splocals.cmdout++];
+      default: return splocals.lastcmd;
+    }
+//	return data;
 }
+#endif
+
 static WRITE_HANDLER(port1_w) { 
 	//logerror("port 1 write = %x\n",data);
 	DAC_0_data_w(0,data);
