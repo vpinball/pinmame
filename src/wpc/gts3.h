@@ -64,8 +64,8 @@
     COREPORT_BITDEF(  0x0004, IPT_COIN1,          IP_KEY_DEFAULT) \
     COREPORT_BITDEF(  0x0008, IPT_COIN4,          KEYCODE_6) \
     COREPORT_BITDEF(  0x0010, IPT_START1,         IP_KEY_DEFAULT) \
-	COREPORT_BIT(     0x0020, "Tournament",       KEYCODE_2) \
-	COREPORT_BIT(     0x0040, "Coin Door",        KEYCODE_END) \
+    COREPORT_BITTOG(  0x0020, "Tournament",       KEYCODE_2) \
+    COREPORT_BITTOG(  0x0040, "Coin Door",        KEYCODE_END) \
     /* These are put in switch column 0 since they are not read in the regular switch matrix */ \
     COREPORT_BIT(     0x0100, "Diagnostic",       KEYCODE_0) \
     COREPORT_BITTOG(  0x0200, "Ball Tilt",        KEYCODE_INSERT) \
@@ -88,9 +88,9 @@
 #define GTS3_CSOL(x) ((x)+24)
 
 /*-- S80 switch numbers --*/
-#define GTS3_SWDIAG     -10
-#define GTS3_SWTILT     -9
-#define GTS3_SWSLAM     -8
+#define GTS3_SWDIAG     -8
+#define GTS3_SWTILT     -7
+#define GTS3_SWSLAM     -6
 
 
 

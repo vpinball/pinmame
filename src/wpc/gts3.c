@@ -480,7 +480,7 @@ static int GTS3_vblank(void) {
 		GTS3locals.diagnosticLed = 0;
 		GTS3_dmdlocals.diagnosticLed = 0;
 	  }
-	  core_updateSw(GTS3locals.solenoids & 0x10000000); /* assume flipper enabled */
+	  core_updateSw(GTS3locals.solenoids & 0x80000000);
   }
   return 0;
 }
@@ -498,7 +498,7 @@ via_irq(1);
 
   if (inports) {
     coreGlobals.swMatrix[0] = (inports[GTS3_COMINPORT] & 0x7f00)>>8;
-    coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0xc0) | (inports[GTS3_COMINPORT] & 0x3f);
+    coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0x80) | (inports[GTS3_COMINPORT] & 0x7f);
   }
   GTS3locals.swDiag = (core_getSw(GTS3_SWDIAG)>0?1:0);
   GTS3locals.swTilt = (core_getSw(GTS3_SWTILT)>0?1:0);
@@ -518,23 +518,36 @@ static WRITE_HANDLER(GTS3_sndCmd_w)
 }
 // gts numbering col11->col12, col12->col13, col13->col14, col14->col15, col15->col11
 static int gts3_sw2m(int no) {
-  no += 10;
-  no = (no/10)*8 + no%10;
-  if (no >= 128) no -= 32;
-  else if (no >= 96) no += 8;
-  return no;
+  int col = no / 10 + 1;
+  int row = no % 10;
+  if (row > 7) return -1;
+  if (col > 10) col++;
+  if (col > 15) col = 11;
+  return col * 8 + row;
 }
+
 static int gts3_m2sw(int col, int row) {
   if (col == 11) col = 15;
   else if (col > 11) col -= 1;
   return (col-1)*10+row;
 }
+
+static int gts3_l2m(int no) {
+  int col = no / 10 + 1;
+  int row = no % 10;
+  return col * 8 + row;
+}
+
+static int gts3_m2l(int col, int row) {
+  return (col - 1) * 10 + row;
+}
+
 static core_tData GTS3Data = {
   0,	/* No DIPs */
   GTS3_updSw,
-  4,	/* 4 Diagnostic LEDS (CPU,DMD,Sound 1, Sound 2*/
+  4,	/* 4 Diagnostic LEDS (CPU,DMD,Sound 1, Sound 2) */
   GTS3_sndCmd_w, "GTS3",
-  gts3_sw2m, gts3_sw2m, gts3_m2sw, gts3_m2sw
+  gts3_sw2m, gts3_l2m, gts3_m2sw, gts3_m2l
 };
 
 /*Alpha Numeric First Generation Init*/
