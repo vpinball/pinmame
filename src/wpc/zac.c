@@ -11,8 +11,11 @@
 #include "zac.h"
 
 #define ZAC_VBLANKFREQ    60 /* VBLANK frequency */
-#define ZAC_IRQFREQ       2150 /* IRQ frequency (can someone confirm this?) */
-#define ZAC_IRQFREQ_A     1850 /* IRQ frequency (can someone confirm this?) */
+#define ZAC_IRQFREQ     1466 /* IRQ frequencies (guessed) */
+#define ZAC_IRQFREQ_A   1833
+#define ZAC_IRQFREQ_B   1933
+#define ZAC_IRQFREQ_C   1866
+#define ZAC_IRQFREQ_F   2066
 
 static WRITE_HANDLER(ZAC_soundCmd) { }
 static void ZAC_soundInit(void) {}
@@ -39,13 +42,13 @@ static INTERRUPT_GEN(ZAC_vblank) {
   /*update leds*/
     coreGlobals.diagnosticLed = locals.diagnosticLed;
     //locals.diagnosticLed = 0;
-  core_updateSw(core_getSol(8));
+  core_updateSw(coreGlobals.lampMatrix[2] & 0x08);
 }
 
 static SWITCH_UPDATE(ZAC) {
   if (inports) {
     coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0x80) | (inports[ZAC_COMINPORT] & 0xff);
-    coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0xfd) | (inports[ZAC_COMINPORT] >> 8);
+    coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0x79) | (inports[ZAC_COMINPORT] >> 8);
   }
 }
 
@@ -129,10 +132,11 @@ static READ_HANDLER(data_port_r)
 /*
    SENSE PORT: READ = Read Serial Input (hooked to printer)
 */
+static UINT8 senseData = 0x00;
 static READ_HANDLER(sense_port_r)
 {
 	logerror("%x: Sense Port Read\n",activecpu_get_previouspc());
-	return 0;
+	return senseData;
 }
 
 /*
@@ -176,6 +180,7 @@ static WRITE_HANDLER(data_port_w)
 /*   SENSE PORT: WRITE = Write Serial Output (hooked to printer) */
 static WRITE_HANDLER(sense_port_w)
 {
+	senseData = data;
 	logerror("%x: Sense Port Write=%x\n",activecpu_get_previouspc(),data);
 }
 
@@ -222,14 +227,13 @@ static WRITE_HANDLER(ram_w) {
 	} else if (offset > 0x4bf && offset < 0x4e8) {
 		locals.segments[0x4e7 - offset].w = core_bcd2seg7[data & 0x0f];
 		// handle comma in 5th display
-		if (locals.segments[4].w > 0)
-			locals.segments[4].w |= 0x80;
-		else
+		if (locals.segments[5].w && locals.segments[6].w && locals.segments[7].w) {
+			if (locals.segments[4].w) locals.segments[4].w |= 0x80;
+			if (locals.segments[1].w) locals.segments[1].w |= 0x80;
+		} else {
 			locals.segments[4].w &= 0x7f;
-		if (locals.segments[2].w > 0)
-			locals.segments[1].w |= 0x80;
-		else
 			locals.segments[1].w &= 0x7f;
+		}
 	}
 //	else logerror("ram_w: offset = %4x, data = %02x\n", offset, data);
 }
@@ -416,4 +420,22 @@ MACHINE_DRIVER_START(ZAC2A)
   MDRV_CORE_INIT_RESET_STOP(ZAC2A,NULL,ZAC)
   MDRV_CPU_MODIFY("mcpu")
   MDRV_CPU_PERIODIC_INT(ZAC_irq, ZAC_IRQFREQ_A)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(ZAC2B)
+  MDRV_IMPORT_FROM(ZAC2A)
+  MDRV_CPU_MODIFY("mcpu")
+  MDRV_CPU_PERIODIC_INT(ZAC_irq, ZAC_IRQFREQ_B)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(ZAC2C)
+  MDRV_IMPORT_FROM(ZAC2A)
+  MDRV_CPU_MODIFY("mcpu")
+  MDRV_CPU_PERIODIC_INT(ZAC_irq, ZAC_IRQFREQ_C)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(ZAC2F)
+  MDRV_IMPORT_FROM(ZAC2)
+  MDRV_CPU_MODIFY("mcpu")
+  MDRV_CPU_PERIODIC_INT(ZAC_irq, ZAC_IRQFREQ_F)
 MACHINE_DRIVER_END
