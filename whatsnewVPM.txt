@@ -12,6 +12,7 @@ Version 1.20 Alpha (August, 24, 2002)
 - by using Controller.Settings and Game.Settings access to nearly all MAME settings is available
   ('Settings.Value("name")=value' 
 - the emulation thread is running at a slightly higher system priority now
+- the display can be resized to every size you like
 
 Version 1.12.1 (April 14, 2002)
 -------------------------------
