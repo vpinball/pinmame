@@ -234,7 +234,7 @@ static READ_HANDLER(pia5a_r) {
 /-------------*/
 static void setSSSol(int data, int solNo) {
                                     /*    WMS          DE */
-  static const int ssSolNo[2][6] = {{5,4,1,2,0,4},{3,4,5,1,0,2}};
+  static const int ssSolNo[2][6] = {{5,4,1,2,0,3},{3,4,5,1,0,2}};
   int bit = CORE_SOLBIT(CORE_FIRSTSSSOL + ssSolNo[locals.deGame][solNo]);
   if (locals.ssEn & (~data & 1))
     { coreGlobals.pulsedSolState |= bit;  locals.solenoids |= bit; }
