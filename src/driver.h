@@ -25,7 +25,7 @@
 #ifdef PINMAME_EXT
 typedef struct {
   int dmd_red, dmd_green, dmd_blue;
-  int dmd_perc1, dmd_perc2, dmd_perc3;
+  int dmd_perc66, dmd_perc33, dmd_perc0;
 } tPMoptions;
 extern tPMoptions pmoptions;
 #endif /* PINMAME_EXT */
