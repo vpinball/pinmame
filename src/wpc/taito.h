@@ -72,6 +72,17 @@
 #define TAITO_SCPU		1
 
 /*-- Main CPU regions and ROM --*/
+#define TAITO_ROMSTART22222(name,n1,chk1,n2,chk2,n3,chk3,n4,chk4,n5,chk5) \
+  ROM_START(name) \
+    NORMALREGION(0x10000, TAITO_MEMREG_CPU) \
+      ROM_LOAD( n1, 0x0000, 0x0800, chk1) \
+      ROM_LOAD( n2, 0x0800, 0x0800, chk2) \
+      ROM_LOAD( n3, 0x1000, 0x0800, chk3) \
+      ROM_LOAD( n4, 0x1800, 0x0800, chk4) \
+      ROM_LOAD( n5, 0x2000, 0x0800, chk5) \
+        ROM_RELOAD( 0x4800, 0x0800)
+
+/*-- Main CPU regions and ROM --*/
 #define TAITO_ROMSTART2222(name,n1,chk1,n2,chk2,n3,chk3,n4,chk4) \
   ROM_START(name) \
     NORMALREGION(0x10000, TAITO_MEMREG_CPU) \
@@ -90,8 +101,9 @@
 
 #define TAITO_ROMEND ROM_END
 
-extern MACHINE_DRIVER_EXTERN(taito_sintevox);
 extern MACHINE_DRIVER_EXTERN(taito_sintetizador);
+extern MACHINE_DRIVER_EXTERN(taito_sintetizadorpp);
+extern MACHINE_DRIVER_EXTERN(taito_sintevox);
 extern MACHINE_DRIVER_EXTERN(taito_sintevoxpp);
 
 #endif /* INC_TAITO */

@@ -124,10 +124,6 @@ static WRITE_HANDLER(switches_w) {
 	logerror("switch write: %i %i\n", offset, data);
 }
 
-static WRITE_HANDLER(cmd_w) {
-	logerror("command (?) write: %i %i\n", offset, data);
-}
-
 // display
 static WRITE_HANDLER(dma_display)
 {
@@ -254,22 +250,23 @@ static int TAITO_m2sw(int col, int row) {
 }
 
 static MEMORY_READ_START(taito_readmem)
-  { 0x0000, 0x1fff, MRA_ROM },
-  { 0x3000, 0x3eff, MRA_ROM },
-  { 0x2800, 0x2807, switches_r }, /* some games use different locations */
+  { 0x0000, 0x27ff, MRA_ROM },
+  { 0x2800, 0x2808, switches_r }, /* some games use different locations */
   { 0x2880, 0x2887, switches_r }, /* -"- */
   { 0x28d8, 0x28df, switches_r }, /* -"- */
+  { 0x3e00, 0x3fff, MRA_RAM },
   { 0x4000, 0x40ff, MRA_RAM },
+  { 0x4800, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(taito_writemem)
-  { 0x0000, 0x1fff, MWA_ROM },
-  { 0x3000, 0x3eff, MWA_ROM },
-  { 0x3f00, 0x3fff, cmd_w },
+  { 0x0000, 0x27ff, MWA_ROM },
+  { 0x3e00, 0x3fff, MWA_RAM },
   { 0x4000, 0x407f, MWA_RAM },
   { 0x4080, 0x408f, dma_display },
   { 0x4090, 0x409f, dma_commands },
   { 0x40a0, 0x40ff, MWA_RAM },
+  { 0x4800, 0xffff, MWA_ROM },
 MEMORY_END
 
 MACHINE_DRIVER_START(taito)
@@ -286,18 +283,26 @@ MACHINE_DRIVER_START(taito)
   MDRV_DIAGNOSTIC_LEDH(1)
 MACHINE_DRIVER_END
 
-MACHINE_DRIVER_START(taito_sintevox)
-  MDRV_IMPORT_FROM(taito)
-
-  MDRV_IMPORT_FROM(taitos_sintevox)
-  MDRV_SOUND_CMD(taito_sndCmd_w)
-  MDRV_SOUND_CMDHEADING("taito")
-MACHINE_DRIVER_END
-
 MACHINE_DRIVER_START(taito_sintetizador)
   MDRV_IMPORT_FROM(taito)
 
   MDRV_IMPORT_FROM(taitos_sintetizador)
+  MDRV_SOUND_CMD(taito_sndCmd_w)
+  MDRV_SOUND_CMDHEADING("taito")
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(taito_sintetizadorpp)
+  MDRV_IMPORT_FROM(taito)
+
+  MDRV_IMPORT_FROM(taitos_sintetizadorpp)
+  MDRV_SOUND_CMD(taito_sndCmd_w)
+  MDRV_SOUND_CMDHEADING("taito")
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(taito_sintevox)
+  MDRV_IMPORT_FROM(taito)
+
+  MDRV_IMPORT_FROM(taitos_sintevox)
   MDRV_SOUND_CMD(taito_sndCmd_w)
   MDRV_SOUND_CMDHEADING("taito")
 MACHINE_DRIVER_END
