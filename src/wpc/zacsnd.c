@@ -104,10 +104,11 @@ static WRITE_HANDLER(zac1125_data_w) {
   static int vco[8] = { 1, 1, 1, 1, 0, 0, 1, 1 };
   static int mix[8] = { 0, 0, 0, 0, 0, 0, 2, 0 };
 
-  int state = (data & 0x0f) >> 1;
-  if (data & 1) {
-    logerror("Sound %x plays\n", state);
+  data &= 0x0f;
+  if (data) {
+    int state = data >> 1;
     SN76477_enable_w       (0, 1);
+    logerror("Sound %x plays\n", state);
     SN76477_mixer_w        (0, mix[state]);
     SN76477_set_decay_res  (0, states[state][0]); /* 7 */
     SN76477_set_vco_res    (0, states[state][1]); /* 18 */
@@ -138,10 +139,6 @@ static void zac1125_init(struct sndbrdData *brdData) {
 / Zaccaria Sound Board 1346
 / i8035 MCU, no PIAs
 /-----------------------------------------*/
-/*
-/ MCU I8035
-/ ROM 0000-07ff
-*/
 static void sp_init(struct sndbrdData *brdData);
 static void sp_diag(int button);
 static WRITE_HANDLER(sp1346_data_w);
@@ -235,7 +232,7 @@ static PORT_WRITE_START(i8035_writeport)
 MEMORY_END
 
 MACHINE_DRIVER_START(zac1346)
-  MDRV_CPU_ADD_TAG("scpu", I8035, 6000000/4)
+  MDRV_CPU_ADD_TAG("scpu", I8035, 6000000/15) // 8035 has internal divider by 15!
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(i8035_readmem, i8035_writemem)
   MDRV_CPU_PORTS(i8035_readport, i8035_writeport)
