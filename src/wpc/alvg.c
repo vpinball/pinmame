@@ -5,7 +5,7 @@
 
   Hardware from 1992-1994?
 
-  CPU BOARD: 
+  CPU BOARD:
 	CPU: 65c02 @ 2 Mhz?
 	I/O: 2 x 6522 VIA, 3 X 8255
 
@@ -43,7 +43,7 @@
   #7) Sound board FIRQ freq. is set by a jumper (don't know which is used) nor what the value of E is.
   #8) There's probably more I can't think of at the moment
   #9) Look into error log message from VIA chip about no callback handler for Timer.
-  
+
 
 **************************************************************************************/
 #include <stdarg.h>
@@ -164,7 +164,7 @@ static READ_HANDLER( xvia_0_a_r ) { return coreGlobals.swMatrix[alvglocals.swCol
 /*
 PB7  (In)  = DMD ACK
 PB6  (In)  = NU
-PB5  (In)  = Test Switch - Coin Door Switch			
+PB5  (In)  = Test Switch - Coin Door Switch
 PB4  (In)  = Enter Switch - Coin Door Switch
 PB3  (In)  = AVAI1 - Coin Door Switch (Flasher Sense in Pistol Poker)
 PB2  (In)  = AVAI2 - Coin Door Switch (Ticket Sense in Pistol Poker)
@@ -195,18 +195,18 @@ PB2  (Out) = NU
 PB1  (out) = NAND Gate -> WD (WatchDog)
 PB0  (out) = N/C
 */
-static WRITE_HANDLER( xvia_0_b_w ) { 
+static WRITE_HANDLER( xvia_0_b_w ) {
 	//if(data & 0x42) watchdog_reset_w(0,0);
-	if(data && !(data & 0x40 || data & 0x42)) LOG(("WARNING: U7-B-W: data=%x\n",data)); 
+	if(data && !(data & 0x40 || data & 0x42)) LOG(("WARNING: U7-B-W: data=%x\n",data));
 }
 
 //CA2: (OUT) - N.C.
 static WRITE_HANDLER( xvia_0_ca2_w ) { LOG(("%x:WARNING: N.C.: U7-CA2-W: data=%x\n",activecpu_get_previouspc(),data)); }
 
 //CB2: (OUT) - NMI TO MAIN 65C02
-static WRITE_HANDLER( xvia_0_cb2_w ) 
-{ 
-	//printf("NMI: U7-CB2-W: data=%x\n",data); 
+static WRITE_HANDLER( xvia_0_cb2_w )
+{
+	//printf("NMI: U7-CB2-W: data=%x\n",data);
 	cpu_set_nmi_line(ALVG_CPUNO, PULSE_LINE);
 }
 
@@ -225,13 +225,13 @@ PB3  (In)  = DMD Enable
 PB2        = NU
 PB1        = NU
 PB0        = NU*/
-static READ_HANDLER( xvia_1_b_r ) { 
+static READ_HANDLER( xvia_1_b_r ) {
 	int data = alvglocals.via_1_b;
-	data = ((data&0xf7) | alvglocals.DMDEnable) + 
-		   ((data&0xef) | alvglocals.DMDClock)  + 
+	data = ((data&0xf7) | alvglocals.DMDEnable) +
+		   ((data&0xef) | alvglocals.DMDClock)  +
 		   ((data&0xdf) | alvglocals.DMDData);
 	//printf("%x:U8-PB-R: data = %x\n",activecpu_get_previouspc(),data);
-	return data; 
+	return data;
 }
 //CA1: (IN) - Sound Control
 static READ_HANDLER( xvia_1_ca1_r ) { return sndbrd_1_ctrl_r(0); }
@@ -256,7 +256,7 @@ PB2        = NU
 PB1  (Out) = Sound Clock
 PB0        = NU
 */
-static WRITE_HANDLER( xvia_1_b_w ) { 
+static WRITE_HANDLER( xvia_1_b_w ) {
 	alvglocals.via_1_b = data;			//Probably not necessary
 
 	//On clock transition - write to sound latch
@@ -312,10 +312,10 @@ WRITE_HANDLER(u13_portb_w) {
 	UpdateSwCol();
 	//printf("SWITCH_STROBE(1-8): data = %x\n",data);
 }
-WRITE_HANDLER(u13_portc_w) { 
+WRITE_HANDLER(u13_portc_w) {
 	alvglocals.swColumn = (alvglocals.swColumn&0x00ff) | ((data^0xff)<<8);
 	UpdateSwCol();
-	//printf("SWITCH_STROBE(9-12): data = %x\n",data); 
+	//printf("SWITCH_STROBE(9-12): data = %x\n",data);
 }
 
 
@@ -336,7 +336,7 @@ void UpdateLampCol(void) {
 		if(tmp&1) lmpCol+=i;
 		tmp = tmp>>1;
 	}
-	coreGlobals.tmpLampMatrix[lmpCol-1] = 
+	coreGlobals.tmpLampMatrix[lmpCol-1] =
 		(coreGlobals.tmpLampMatrix[lmpCol-1]&0xff) | alvglocals.lampRow;
 	//printf("COL = %x LampColumn = %d\n",alvglocals.lampColumn,data);
 	//printf("LampColumn = %d\n",data);
@@ -345,16 +345,16 @@ void UpdateLampCol(void) {
 WRITE_HANDLER(u14_porta_w) {
 	alvglocals.lampColumn = (alvglocals.lampColumn&0xff80) | data;
 	UpdateLampCol();
-	//printf("LAMP STROBE(1-7):  data = %x\n",data); 
+	//printf("LAMP STROBE(1-7):  data = %x\n",data);
 }
 WRITE_HANDLER(u14_portb_w) {
 	alvglocals.lampColumn = (alvglocals.lampColumn&0x007f) | (data<<7); 	//Remeber it's 8-12, not 9-12!!
 	UpdateLampCol();
-	//printf("LAMP STROBE(8-12): data = %x\n",data); 
+	//printf("LAMP STROBE(8-12): data = %x\n",data);
 }
 WRITE_HANDLER(u14_portc_w) {
 	alvglocals.lampRow = data;
-	//printf("LAMP RETURN: data = %x\n",data); 
+	//printf("LAMP RETURN: data = %x\n",data);
 }
 
 
@@ -429,9 +429,9 @@ PC0-PC7 (out)  = Switch Strobe 9-12	(bits 4-7 nc)	(inverted)
 
 U14 - 8255
 
-PA0-PA7 (out) = Lamp Strobe 1-7  (bits 7 nc)		
-PB0-PB7 (out) = Lamp Strobe 8-12 (bits 5-7 nc)		
-PC0-PC7 (out) = Lamp Return 1-8						
+PA0-PA7 (out) = Lamp Strobe 1-7  (bits 7 nc)
+PB0-PB7 (out) = Lamp Strobe 8-12 (bits 5-7 nc)
+PC0-PC7 (out) = Lamp Return 1-8
 */
 
 static ppi8255_interface ppi8255_intf =
@@ -488,7 +488,7 @@ static INTERRUPT_GEN(alvg_vblank) {
 	alvglocals.diagnosticLeds1 = 0;
 	alvglocals.diagnosticLeds2 = 0;
   }
-  core_updateSw(alvglocals.solenoids & 0x80000000);
+  core_updateSw(core_getSol(27));
 }
 
 static SWITCH_UPDATE(alvg) {
@@ -508,8 +508,8 @@ static SWITCH_UPDATE(alvg) {
 }
 
 //Send a sound command to the sound board
-WRITE_HANDLER(alvg_sndCmd_w) { 
-	sndbrd_1_data_w(0, data); 
+WRITE_HANDLER(alvg_sndCmd_w) {
+	sndbrd_1_data_w(0, data);
 	sndbrd_1_ctrl_w(0, 0);
 }
 
@@ -524,7 +524,7 @@ static int alvg_m2sw(int col, int row) {
 /*Machine Init*/
 static MACHINE_INIT(alvg) {
   memset(&alvglocals, 0, sizeof(alvglocals));
-  
+
   /* init VIA */
   via_config(0, &via_0_interface);
   via_config(1, &via_1_interface);
