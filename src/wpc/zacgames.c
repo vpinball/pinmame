@@ -290,8 +290,8 @@ CORE_GAMEDEFNV(poolcham,"Pool Champion",1985,"Zaccaria",mZAC2F,GAME_NO_SOUND)
 INITGAME(bbeltzac,1,dispZAC3)
 ZAC_ROMSTART1820(bbeltzac,	"bbz-1.fil",0x2e7e1575,
 							"bbz-2.fil",0xdbec92ae)
-ZAC_SOUNDROM_e2f4(			"bbz-e.snd",0x0,
-							"bbz-f.snd",0x0)
+ZAC_SOUNDROM_e2f4(			"bbz-e.snd",0x1fe045d2,
+							"bbz-f.snd",0x9f58f369)
 ZAC_ROMEND
 CORE_GAMEDEFNV(bbeltzac,"Black Belt (Zaccaria)",1986,"Zaccaria",mZAC2F,GAME_NO_SOUND)
 
