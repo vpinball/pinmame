@@ -151,7 +151,7 @@ void sndbrd_sync_w(WRITE_HANDLER((*handler)),int offset, int data) {
   SNDBRDINTF(dcs)
   SNDBRDINTF(by32)
   SNDBRDINTF(by51)
-  SNDBRDINTF(by56)
+  SNDBRDINTF(by51)
   SNDBRDINTF(by61)
   SNDBRDINTF(by45)
   SNDBRDINTF(byTCS)

@@ -218,6 +218,7 @@
 
 /*-- These are only here so the game structure can be in the game file --*/
 extern const struct MachineDriver machine_driver_by35;
+extern const struct MachineDriver machine_driver_st200;
 #define by35_mBY17      by35
 #define by35_mBY35_32   by35
 #define by35_mBY35_50   by35
@@ -227,6 +228,8 @@ extern const struct MachineDriver machine_driver_by35;
 #define by35_mBY35_81   by35
 #define by35_mBY35_54   by35
 #define by35_mBY35_56   by35 // XENON
+#define by35_mST100     by35
+#define by35_mST200     st200
 
 extern const struct MachineDriver machine_driver_by35_32s;
 extern const struct MachineDriver machine_driver_by35_51s;

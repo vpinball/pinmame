@@ -47,6 +47,7 @@ extern struct AY8910interface     snt_ay8910Int;
   snt_readmem, snt_writemem, 0, 0, \
   ignore_interrupt,1 \
 }
+
 #define BY61_SOUND { SOUND_TMS5220, &snt_tms5220Int },\
                    { SOUND_DAC,     &snt_dacInt }, \
                    { SOUND_AY8910,  &snt_ay8910Int }, \
@@ -133,8 +134,8 @@ extern struct hc55516_interface sp_hc55516Int;
   ignore_interrupt,1 \
 }
 
-#define BY51_SOUND { SOUND_AY8910, &sp_ay8910Int }, SAMPLESINTERFACE
-#define BY56_SOUND { SOUND_AY8910, &sp_ay8910Int }, \
+#define BY51_SOUND { SOUND_AY8910,  &sp_ay8910Int }, SAMPLESINTERFACE
+#define BY56_SOUND { SOUND_AY8910,  &sp_ay8910Int }, \
                    { SOUND_HC55516, &sp_hc55516Int }, \
                    SAMPLESINTERFACE
 

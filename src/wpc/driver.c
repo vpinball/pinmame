@@ -188,6 +188,7 @@ DRIVERNV(fbclass )    //BY35-     02/85 Fireball Classic
 DRIVERNV(cybrnaut)    //BY35-     05/85 Cybernaut
 //MPU-6803
 DRIVERNV(eballchp)    //6803-0B38: 09/85 Eight Ball Champ
+DRIVERNV(eballch2)    //                 Eight Ball Champ (cheap squeak)
 DRIVERNV(beatclck)    //6803-0C70: 11/85 Beat the Clock
 DRIVERNV(ladyluck)    //6803-0E34: 02/86 Lady Luck
 DRIVERNV(motrdome)    //6803-0E14: 05/86 MotorDome
