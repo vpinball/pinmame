@@ -97,7 +97,7 @@ import "ocidl.idl";
 		[propget, id(5), helpstring("property CloneOf")] HRESULT CloneOf([out, retval] BSTR *pVal);
 		[propget, id(6), helpstring("property Roms")] HRESULT Roms([out, retval] IRoms* *pVal);
 		[propget, id(7), helpstring("property Settings")] HRESULT Settings([out, retval] IGameSettings* *pVal);
-		[id(8), helpstring("method ShowInfoDlg")] HRESULT ShowInfoDlg([in,defaultvalue(0)] int nShowOptions, [in,defaultvalue(0)] long hParentWnd, [out, retval] VARIANT_BOOL *pVal);
+		[id(8), helpstring("method ShowInfoDlg")] HRESULT ShowInfoDlg([in,defaultvalue(0)] int nShowOptions, [in,defaultvalue(0)] long hParentWnd, [out, retval] int *pVal);
 		[propget, id(9), helpstring("property IsSupported")] HRESULT IsSupported([out, retval] VARIANT_BOOL *pVal);
 	};
 
