@@ -320,6 +320,14 @@ SOURCE=.\src\machine\6522via.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\machine\6530riot.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\machine\6530riot.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\machine\6532riot.c
 # End Source File
 # Begin Source File
