@@ -15,7 +15,7 @@ INLINE void acall(void)
 {
 	UINT8 op = ROP(PC-1);					//Grab the opcode for ACALL
 	UINT8 addr = ROP_ARG(PC++);				//Grab code address byte
-	push_pc();								//Save PC to the stack
+	PUSH_PC									//Save PC to the stack
 	PC = ((op<<3) & 0x700) | addr;			//Set new PC
 }
 
@@ -24,7 +24,7 @@ INLINE void add_a_byte(void)
 {
 	UINT8 data = ROP_ARG(PC++);				//Grab data
 	UINT8 result = R_ACC + data;			//Add data to accumulator
-	DO_ADD_FLAGS(R_ACC,data,0);				//Set Flags
+	DO_ADD_FLAGS(R_ACC,data,0)				//Set Flags
 	SFR_W(ACC,result);						//Store 8 bit result of addtion in ACC
 }
 
@@ -455,7 +455,7 @@ INLINE void lcall(void)
 	UINT8 addr_hi, addr_lo;
 	addr_hi = ROP_ARG(PC++);
 	addr_lo = ROP_ARG(PC++);
-	push_pc();
+	PUSH_PC
 	PC = (UINT16)((addr_hi<<8) | addr_lo);
 }
 
@@ -593,7 +593,6 @@ INLINE void mov_r_a(int r)
 INLINE void movc_a_iapc(void)
 {
 	UINT8 data;
-	PC = PC + 1;
 	data = CODEMEM_R(R_ACC+PC);				//Move a byte from CODE(Program) Memory and store to ACC
 	SFR_W(ACC,data);
 }
@@ -741,14 +740,14 @@ INLINE void push(void)
 //RET										/* 1: 0010 0010 */
 INLINE void ret(void)
 {
-	pop_pc();
+	POP_PC
 }
 
 //RETI										/* 1: 0011 0010 */
 INLINE void reti(void)
 {
-	pop_pc();
-	//Todo: Clear Interrupt flags
+	POP_PC
+	i8051.cur_irq = 0xff;	//Clear current irq flag
 }
 
 //RL A										/* 1: 0010 0011 */
@@ -943,5 +942,5 @@ INLINE void xrl_a_r(int r)
 //illegal opcodes
 INLINE void illegal(void)
 {
-	logerror("i8051 #%d: illegal opcode at 0x%03x: %02x\n", cpu_getactivecpu(), PC, ROP(PC));
+	LOG(("i8051 #%d: illegal opcode at 0x%03x: %02x\n", cpu_getactivecpu(), PC, ROP(PC)));
 }

@@ -200,7 +200,8 @@ static PORT_WRITE_START( alvgdmd_writeport )
 PORT_END
 
 MACHINE_DRIVER_START(alvgdmd)
-  MDRV_CPU_ADD(I8051, 1000000)		/*12 Mhz*/
+  //MDRV_CPU_ADD(I8051, 12000000)		/*12 Mhz*/
+  MDRV_CPU_ADD(I8051, 2000000)		/*2 Mhz - Animations are much better speed @ 2Mhz*/
   MDRV_CPU_MEMORY(alvgdmd_readmem, alvgdmd_writemem)
   MDRV_CPU_PORTS(alvgdmd_readport, alvgdmd_writeport)
   MDRV_CPU_PERIODIC_INT(dmd32_firq, DMD32_FIRQFREQ)

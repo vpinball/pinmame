@@ -33,6 +33,7 @@
  *		               creating the driver (ie, use standard cpu rom region)
  *
  *        August 27,2003: Currently support for only 8031/8051/8751 chips (ie 128 RAM)
+ *		  Todo: Timer support, Serial Data support, Setting Interrupt Priority
  *
  *****************************************************************************/
 
@@ -42,6 +43,30 @@
 #include "mamedbg.h"
 #include "i8051.h"
 
+#if 1 //VERBOSE
+#define LOG(x)	logerror x
+#else
+#define LOG(x)
+#endif
+
+
+//Prototypes
+static void push_pc(void);
+static void pop_pc(void);
+static void set_parity(void);
+static READ_HANDLER(internal_ram_read);
+static WRITE_HANDLER(internal_ram_write);
+static READ_HANDLER(sfr_read);
+static WRITE_HANDLER(sfr_write);
+static WRITE_HANDLER( bit_address_w );
+static READ_HANDLER( bit_address_r );
+static void do_add_flags(UINT8 a, UINT8 data, UINT8 c);
+static void do_sub_flags(UINT8 a, UINT8 data, UINT8 c);
+static UINT8 check_interrupts(void);
+static void update_timer(int cyc);
+static void	update_serial(int cyc);
+//
+
 typedef struct {
 
 	//Internal stuff
@@ -49,6 +74,7 @@ typedef struct {
 	UINT16	pc;				//current pc
 	UINT16	subtype;		//specific version of the cpu, ie 8031, or 8051 for example
 	UINT8   executing;		//Flag to determine if an instruction is executing (needed for proper port operation)
+	UINT8	cur_irq;		//Holds value of any current IRQ being serviced
 
 	//SFR Registers			(Note: Appear in order as they do in memory)
 	UINT8	po;				//Port 0
@@ -161,26 +187,66 @@ static UINT8 i8051_win_layout[] = {
 #define R_DPTR			((R_DPH<<8) | R_DPL)
 #define DPTR_W(n)		SFR_W(DPH, ((n>>8)&0xff));\
 						SFR_W(DPL, (n&0xff));
-
-//Set Flags
-
+/***************************************************************
+ * Easy macros for Setting Flags
+ ***************************************************************/
 /*PSW Flags*/
-#define SET_CY(n)		R_PSW = (R_PSW & 0x7f) | (n<<7); 
-#define SET_AC(n)		R_PSW = (R_PSW & 0xbf) | (n<<6); 
-#define SET_FO(n)		R_PSW = (R_PSW & 0xdf) | (n<<5);
-#define SET_RS(n)		R_PSW = (R_PSW & 0xe7) | (n<<3);
-#define SET_OV(n)		R_PSW = (R_PSW & 0xfb) | (n<<2);
-#define SET_P(n)		R_PSW = (R_PSW & 0xfe) | (n<<0);
+#define SET_CY(n)		R_PSW = (R_PSW & 0x7f) | (n<<7);	//Carry Flag
+#define SET_AC(n)		R_PSW = (R_PSW & 0xbf) | (n<<6);	//Aux.Carry Flag
+#define SET_FO(n)		R_PSW = (R_PSW & 0xdf) | (n<<5);	//User Flag
+#define SET_RS(n)		R_PSW = (R_PSW & 0xe7) | (n<<3);	//R Bank Select
+#define SET_OV(n)		R_PSW = (R_PSW & 0xfb) | (n<<2);	//Overflow Flag
+#define SET_P(n)		R_PSW = (R_PSW & 0xfe) | (n<<0);	//Parity Flag
 /*IE Flags*/
-#define SET_EA(n)		R_IE = (R_IE & 0x7f) | (n<<7); 
-#define SET_ET2(n)		R_IE = (R_IE & 0xdf) | (n<<5); 
-#define SET_ES(n)		R_IE = (R_IE & 0xef) | (n<<4); 
-#define SET_ET1(n)		R_IE = (R_IE & 0xf7) | (n<<3);
-#define SET_EX1(n)		R_IE = (R_IE & 0xfb) | (n<<2);
-#define SET_ET0(n)		R_IE = (R_IE & 0xfd) | (n<<1);
-#define SET_EX0(n)		R_IE = (R_IE & 0xfe) | (n<<0);
+#define SET_EA(n)		R_IE = (R_IE & 0x7f) | (n<<7);		//Global Interrupt Enable/Disable
+#if (HAS_I8052)
+   #define SET_ET2(n)		R_IE = (R_IE & 0xdf) | (n<<5);	//Timer 2 Interrupt Enable/Disable
+#endif
+#define SET_ES(n)		R_IE = (R_IE & 0xef) | (n<<4);		//Serial Interrupt Enable/Disable
+#define SET_ET1(n)		R_IE = (R_IE & 0xf7) | (n<<3);		//Timer 1 Interrupt Enable/Disable
+#define SET_EX1(n)		R_IE = (R_IE & 0xfb) | (n<<2);		//External Int 1 Interrupt Enable/Disable
+#define SET_ET0(n)		R_IE = (R_IE & 0xfd) | (n<<1);		//Timer 0 Interrupt Enable/Disable	
+#define SET_EX0(n)		R_IE = (R_IE & 0xfe) | (n<<0);		//External Int 0 Interrupt Enable/Disable
+/*IP Flags*/
+#if (HAS_I8052)
+   #define SET_PT2(n)		R_IP = (R_IP & 0xdf) | (n<<5);	//Set Timer 2 Priority Level
+#endif
+#define SET_PS0(n)		R_IP = (R_IP & 0xef) | (n<<4);		//Set Serial Priority Level
+#define SET_PT1(n)		R_IP = (R_IP & 0xf7) | (n<<3);		//Set Timer 1 Priority Level
+#define SET_PX1(n)		R_IP = (R_IP & 0xfb) | (n<<2);		//Set External Int 1 Priority Level
+#define SET_PT0(n)		R_IP = (R_IP & 0xfd) | (n<<1);		//Set Timer 0 Priority Level
+#define SET_PX0(n)		R_IP = (R_IP & 0xfe) | (n<<0);		//Set External Int 0 Priority Level
+/*TCON Flags*/
+#define SET_TF1(n)		R_TCON = (R_TCON & 0x7f) | (n<<7);	//Indicated Timer 1 Overflow Int Triggered
+#define SET_TR1(n)		R_TCON = (R_TCON & 0xbf) | (n<<6);  //IndicateS Timer 1 is running
+#define SET_TF0(n)		R_TCON = (R_TCON & 0xdf) | (n<<5);	//Indicated Timer 0 Overflow Int Triggered
+#define SET_TR0(n)		R_TCON = (R_TCON & 0xef) | (n<<4);  //IndicateS Timer 0 is running
+#define SET_IE1(n)		R_TCON = (R_TCON & 0xf7) | (n<<3);  //Indicated External Int 1 Triggered
+#define SET_IT1(n)		R_TCON = (R_TCON & 0xfb) | (n<<2);  //Indicates how External Int 1 is Triggered
+#define SET_IE0(n)		R_TCON = (R_TCON & 0xfd) | (n<<1);  //Indicated External Int 0 Triggered
+#define SET_IT0(n)		R_TCON = (R_TCON & 0xfe) | (n<<0);  //Indicates how External Int 0 is Triggered
+/*SCON Flags*/
+#define SET_SM0(n)		R_SCON = (R_SCON & 0x7f) | (n<<7);	//Sets Serial Port Mode
+#define SET_SM1(n)		R_SCON = (R_SCON & 0xbf) | (n<<6);  //Sets Serial Port Mode
+#define SET_SM2(n)		R_SCON = (R_SCON & 0xdf) | (n<<5);	//Sets Serial Port Mode (Multiprocesser mode)
+#define SET_REN(n)		R_SCON = (R_SCON & 0xef) | (n<<4);  //Sets Serial Port Receive Enable
+#define SET_TB8(n)		R_SCON = (R_SCON & 0xf7) | (n<<3);  //Transmit 8th Bit
+#define SET_RB8(n)		R_SCON = (R_SCON & 0xfb) | (n<<2);  //Receive 8th Bit
+#define SET_TI(n)		R_SCON = (R_SCON & 0xfd) | (n<<1);  //Indicates Transmit Interrupt Occurred
+#define SET_RI(n)		R_SCON = (R_SCON & 0xfe) | (n<<0);  //Indicates Receive Interrupt Occurred
+/*TMOD Flags*/
+#define SET_GATE1(n)	R_TMOD = (R_TMOD & 0x7f) | (n<<7);	//Timer 1 Gate Mode
+#define SET_CT1(n)		R_TMOD = (R_TMOD & 0xbf) | (n<<6);  //Timer 1 Counter Mode
+#define SET_M1_1(n)		R_TMOD = (R_TMOD & 0xdf) | (n<<5);	//Timer 1 Timer Mode Bit 1
+#define SET_M1_0(n)		R_TMOD = (R_TMOD & 0xef) | (n<<4);  //Timer 1 Timer Mode Bit 0
+#define SET_GATE0(n)	R_TMOD = (R_TMOD & 0xf7) | (n<<3);  //Timer 0 Gate Mode
+#define SET_CT0(n)		R_TMOD = (R_TMOD & 0xfb) | (n<<2);  //Timer 0 Counter Mode
+#define SET_M0_1(n)		R_TMOD = (R_TMOD & 0xfd) | (n<<1);  //Timer 0 Timer Mode Bit 1
+#define SET_M0_0(n)		R_TMOD = (R_TMOD & 0xfe) | (n<<0);  //Timer 0 Timer Mode Bit 0
 
-//Get Flags
+/***************************************************************
+ * Easy macros for Getting Flags
+ ***************************************************************/
 /*PSW Flags*/
 #define GET_CY			((R_PSW & 0x80)>>7)
 #define GET_AC			((R_PSW & 0x40)>>6)
@@ -188,7 +254,6 @@ static UINT8 i8051_win_layout[] = {
 #define GET_RS			((R_PSW & 0x18)>>3)
 #define GET_OV			((R_PSW & 0x04)>>2)
 #define GET_P			((R_PSW & 0x01)>>0)
-
 /*IE Flags*/
 #define GET_EA			((R_IE & 0x80)>>7)
 #define GET_ET2			((R_IE & 0x20)>>5)
@@ -197,10 +262,50 @@ static UINT8 i8051_win_layout[] = {
 #define GET_EX1			((R_IE & 0x04)>>2)
 #define GET_ET0			((R_IE & 0x02)>>1)
 #define GET_EX0			((R_IE & 0x01)>>0)
+/*IP Flags*/
+#if (HAS_I8052)
+  #define GET_PT2			((R_IP & 0x20)>>5)
+#endif
+#define GET_PS			((R_IP & 0x10)>>4)
+#define GET_PT1			((R_IP & 0x08)>>3)
+#define GET_PX1			((R_IP & 0x04)>>2)
+#define GET_PT0			((R_IP & 0x02)>>1)
+#define GET_PX0			((R_IP & 0x01)>>0)
+/*TCON Flags*/
+#define GET_TF1			((R_TCON & 0x80)>>7)
+#define GET_TR1			((R_TCON & 0x40)>>6)
+#define GET_TF0			((R_TCON & 0x20)>>5)
+#define GET_TR0			((R_TCON & 0x10)>>4)
+#define GET_IE1			((R_TCON & 0x08)>>3)
+#define GET_IT1			((R_TCON & 0x04)>>2)
+#define GET_IE0			((R_TCON & 0x02)>>1)
+#define GET_IT0			((R_TCON & 0x01)>>0)
+/*SCON Flags*/
+#define GET_SM0			((R_SCON & 0x80)>>7)
+#define GET_SM1			((R_SCON & 0x40)>>6)
+#define GET_SM2			((R_SCON & 0x20)>>5)
+#define GET_REN			((R_SCON & 0x10)>>4)
+#define GET_TB8			((R_SCON & 0x08)>>3)
+#define GET_RB8			((R_SCON & 0x04)>>2)
+#define GET_TI			((R_SCON & 0x02)>>1)
+#define GET_RI			((R_SCON & 0x01)>>0)
+/*TMOD Flags*/
+#define GET_GATE1		((R_TMOD & 0x80)>>7)
+#define GET_CT1			((R_TMOD & 0x40)>>6)
+#define GET_M1_1		((R_TMOD & 0x20)>>5)
+#define GET_M1_0		((R_TMOD & 0x10)>>4)
+#define GET_GATE0		((R_TMOD & 0x08)>>3)
+#define GET_CT0			((R_TMOD & 0x04)>>2)
+#define GET_M0_1		((R_TMOD & 0x02)>>1)
+#define GET_M0_0		((R_TMOD & 0x01)>>0)
 
-//Add and Subtract Flag settings
+/*Add and Subtract Flag settings*/
 #define DO_ADD_FLAGS(a,d,c)	do_add_flags(a,d,c);
 #define DO_SUB_FLAGS(a,d,c)	do_sub_flags(a,d,c);
+
+#define SET_PARITY	set_parity();
+#define PUSH_PC		push_pc();
+#define POP_PC		pop_pc();
 
 /* PC vectors */
 #define V_RESET 0x000	/* power on address */
@@ -210,6 +315,9 @@ static UINT8 i8051_win_layout[] = {
 #define V_TF1	0x01b	/* Timer 1 Overflow */
 #define V_RITI	0x023	/* Serial Receive/Transmit */
 #define V_TF2	0x02b	/* Timer 2 Overflow */
+
+/* Clear IRQ Flags */
+#define	CLEAR_PENDING_IRQS	R_TCON&=0x55; R_SCON&=0xfc;
 
 /* shorter names for the I8051 structure elements */
 
@@ -283,6 +391,7 @@ void i8051_init(void)
 	state_save_register_UINT16("i8051", cpu, "PC",        &i8051.pc,     1);
 	state_save_register_UINT16("i8051", cpu, "SUBTYPE",   &i8051.subtype,1);
 	state_save_register_UINT8 ("i8051", cpu, "EXEC",      &i8051.executing ,1);
+	state_save_register_UINT8 ("i8051", cpu, "CUR_IRQ",   &i8051.cur_irq ,1);
 	//SFR Registers	
 	state_save_register_UINT8 ("i8051", cpu, "PO",        &i8051.po,     1);
 	state_save_register_UINT8 ("i8051", cpu, "SP",        &i8051.sp,     1);
@@ -355,6 +464,8 @@ void i8051_reset(void *param)
 	SFR_W(P1, 0xff);
 	SFR_W(P0, 0xff);
 
+	i8051.cur_irq = 0xff;
+
 #if 0
 	/* as part of the reset process, indicate that no interrupts are */
 	/* in progress */
@@ -392,24 +503,6 @@ int i8051_execute(int cycles)
 
 		PC += 1;
 		i8051_icount -= i8051_cycles[op];
-
-#if 0
-		if( ENABLE & T )
-			TIMER += i8051_cycles[op];
-
-		if( TIMER > 0x1fff )
-		{
-			TIMER &= 0x1fff;
-			TOVF = 1;
-			if( ENABLE & TCNTI )
-			{
-				WM( M_STACK + (PSW&SP) * 2 + 0, PC & 0xff);
-				WM( M_STACK + (PSW&SP) * 2 + 1, ((PC >> 8) & 0x0f) | (PSW & 0xf0) );
-				PSW = (PSW & ~SP) | ((PSW + 1) & SP);
-				PC = V_TIMER;
-			}
-		}
-#endif
 
 		//Flag Execution
 		EXEC = 1;
@@ -1055,6 +1148,17 @@ int i8051_execute(int cycles)
 		}
 		//Flag Execution
 		EXEC = 0;
+
+		//Update Timer (if any timers are running)
+		if(R_TCON & 0x50)
+			update_timer(i8051_cycles[op]);
+
+		//Update Serial Port
+		update_serial(i8051_cycles[op]);
+
+		//Check for pending interrupts & handle - remove machine cycles used
+		i8051_icount-=check_interrupts();
+
 	} while( i8051_icount > 0 );
 
 	return cycles - i8051_icount;
@@ -1158,95 +1262,144 @@ void i8051_set_reg (int regnum, unsigned val)
 	}
 }
 
-
-
 void i8051_set_irq_line(int irqline, int state)
 {
+	static int last_int0 = 0;
+	static int last_int1 = 0;
+
 	switch( irqline )
 	{
+		//External Interrupt 0
 		case I8051_INT0_LINE:
-			if (state != CLEAR_LINE)
-			{
-				push_pc();
-				PC = V_IE0;
-			}
-			else
-			{
-			}
-			break;
-		case I8051_INT1_LINE:
-			if (state != CLEAR_LINE)
-			{
-				push_pc();
-				PC = V_IE1;
-			}
-			else
-			{
-			}
-			break;
-	}
-}
-
-#if 0
-	switch( irqline )
-	{
-	case I8051_INT_IBF:
-		if (state != CLEAR_LINE)
-		{
-			STATE |= IBF;
-			if (ENABLE & IBFI)
-			{
-				WM( M_STACK + (PSW&SP) * 2 + 0, PC & 0xff);
-				WM( M_STACK + (PSW&SP) * 2 + 1, ((PC >> 8) & 0x0f) | (PSW & 0xf0) );
-				PSW = (PSW & ~SP) | ((PSW + 1) & SP);
-				PC = V_IBF;
-			}
-		}
-		else
-		{
-			STATE &= ~IBF;
-		}
-		break;
-
-	case I8051_INT_TEST0:
-		if (state != CLEAR_LINE)
-			STATE |= TEST0;
-		else
-			STATE &= ~TEST0;
-		break;
-
-	case I8051_INT_TEST1:
-		if (state != CLEAR_LINE)
-		{
-			STATE |= TEST1;
-		}
-		else
-		{
-			/* high to low transition? */
-			if (STATE & TEST1)
-			{
-				/* counting enabled? */
-				if (ENABLE & CNT)
-				{
-					if (++TIMER > 0x1fff)
-					{
-						TOVF = 1;
-						if (ENABLE & TCNTI)
-						{
-							WM( M_STACK + (PSW&SP) * 2 + 0, PC & 0xff);
-							WM( M_STACK + (PSW&SP) * 2 + 1, ((PC >> 8) & 0x0f) | (PSW & 0xf0) );
-							PSW = (PSW & ~SP) | ((PSW + 1) & SP);
-							PC = V_TIMER;
-						}
+			//Line Asserted?
+			if (state != CLEAR_LINE) {
+				//Is the enable flag for this interrupt set?
+				if(GET_EX0) {
+					//Need cleared->active line transition? (Logical 1-0 Pulse on the line)
+					if(GET_IT0){
+						if(last_int0 == CLEAR_LINE)
+							SET_IE0(1);
 					}
+					else
+						SET_IE0(1);		//Nope, just set it..
 				}
 			}
-			STATE &= ~TEST1;
-		}
-		break;
+			else
+				SET_IE0(0);		//Clear Int occurred flag
+			last_int0 = state;
+			
+			//Do the interrupt & handle - remove machine cycles used
+			if(GET_IE0)
+				i8051_icount-=check_interrupts();
+			break;
+
+		//External Interrupt 1
+		case I8051_INT1_LINE:
+
+			//Line Asserted?
+			if (state != CLEAR_LINE) {
+				if(GET_EX1) {
+					//Need cleared->active line transition? (Logical 1-0 Pulse on the line)
+					if(GET_IT1){
+						if(last_int1 == CLEAR_LINE)
+							SET_IE1(1);
+					}
+				else
+					SET_IE1(1);		//Nope, just set it..
+				}
+			}
+			else
+				SET_IE1(0);		//Clear Int occurred flag
+			last_int1 = state;
+
+			//Do the interrupt & handle - remove machine cycles used
+			if(GET_IE1)
+				i8051_icount-=check_interrupts();
+			break;
 	}
 }
+
+//Check for pending Interrupts and process - returns # of cycles used for the int
+static UINT8 check_interrupts(void)
+{
+	static UINT8 int_vec = 0;		//static should help execution time
+
+	//If All Inerrupts Disabled or no pending, clear all pending flags, and abort..
+	if(!GET_EA) {
+		LOG(("Skipping Interrupts\n"));
+		return 0;
+	}
+
+	//Any Interrupts Pending?
+	if(!(R_TCON & 0xaa) && !(R_SCON && 0x03))
+		return 0;
+
+	//Check which interrupt(s) have occurred
+	//NOTE: The order of checking is based on the internal/default priority levels
+
+	//External Int 0
+	if(!int_vec && GET_IE0) {
+		
+		//Skip Only if servicing this same irq
+		if(i8051.cur_irq == V_IE0)	{ LOG(("skipping ie0\n")); return 0; }
+
+		//Set vector and clear pending flag
+		int_vec = V_IE0;
+		SET_IE0(0);
+	}
+	//Timer 0 overflow 
+	if(!int_vec && GET_TF0) {
+
+		//Skip if servicing higher priority irq
+		if(i8051.cur_irq < V_TF0)	{ LOG(("skipping tf0\n")); return 0; }
+
+		//Set vector and clear pending flag
+		int_vec = V_TF0;
+		SET_TF0(0);
+	}
+	//External Int 1
+	if(!int_vec && GET_IE1) {
+		
+		//Skip if servicing higher priority irq
+		if(i8051.cur_irq < V_IE1)	{ LOG(("skipping ie1\n")); return 0; }
+
+		//Set vector and clear pending flag
+		int_vec = V_IE1;
+		SET_IE1(0);
+	}
+	//Timer 1 overflow
+	if(!int_vec && GET_TF1) {
+		LOG(("Timer 1 Interrupt!\n"));
+		//Set vector and clear pending flag
+		int_vec = V_TF1;
+		SET_TF1(0);
+		return 0;
+	}
+	//Serial Interrupt
+	if(!int_vec && (GET_TI || GET_RI)) {
+		LOG(("Serial Interrupt!\n"));
+		//Set vector and clear pending flag
+		int_vec = V_RITI;
+		// no flags are cleared, TI and RI
+		// remain active until reset by software
+		return 0;
+	}
+#if (HAS_I8052)
+	//Timer 2 overflow
+	if(!int_vec && GET_TF2) {
+		//Set vector and clear pending flag
+		int_vec = V_TF2;
+		SET_TF2(0);
+	}
 #endif
+
+    //Perform the interrupt
+	push_pc();
+	PC = int_vec;
+	i8051.cur_irq = int_vec;
+	int_vec = 0;
+	return 2;		//All interrupts use 2 machine cycles
+}
 
 
 void i8051_set_irq_callback(int (*callback)(int irqline))
@@ -1342,7 +1495,7 @@ static WRITE_HANDLER(sfr_write)
 
 		case SP: 
 			if(offset > 0x127)
-				logerror("i8051 #%d: attemping to write value to SP past 128 bytes at 0x%04x\n", cpu_getactivecpu(), PC);
+				LOG(("i8051 #%d: attemping to write value to SP past 128 bytes at 0x%04x\n", cpu_getactivecpu(), PC));
 			else
 				R_SP = data; 
 			break;
@@ -1403,19 +1556,19 @@ static WRITE_HANDLER(sfr_write)
 
 		case PSW:
 			R_PSW = data;
-			set_parity();
+			SET_PARITY;
 			break;
 
 		case ACC: 
 			R_ACC = data;
-			set_parity();
+			SET_PARITY;
 			break;
 
 		case B:			R_B   = data; break;
 
 		/* Illegal or non-implemented sfr */
 		default:
-			logerror("i8051 #%d: attemping to write to an invalid/non-implemented SFR address: %x at 0x%04x, data=%x\n", cpu_getactivecpu(), offset,PC,data);
+			LOG(("i8051 #%d: attemping to write to an invalid/non-implemented SFR address: %x at 0x%04x, data=%x\n", cpu_getactivecpu(), offset,PC,data));
 	}
 }
 
@@ -1456,7 +1609,7 @@ static READ_HANDLER(sfr_read)
 
 		/* Illegal or non-implemented sfr */
 		default:
-			logerror("i8051 #%d: attemping to read an invalid/non-implemented SFR address: %x at 0x%04x\n", cpu_getactivecpu(), offset,PC);
+			LOG(("i8051 #%d: attemping to read an invalid/non-implemented SFR address: %x at 0x%04x\n", cpu_getactivecpu(), offset,PC));
 	}
 	return 0xff;
 }
@@ -1471,7 +1624,7 @@ static READ_HANDLER(internal_ram_read)
 		if (offset < 256)
 			return SFR_R(offset);
 		else
-			logerror("i8051 #%d: attemping to read from an invalid Internal Ram address: %x at 0x%04x\n", cpu_getactivecpu(), offset,PC);
+			LOG(("i8051 #%d: attemping to read from an invalid Internal Ram address: %x at 0x%04x\n", cpu_getactivecpu(), offset,PC));
 	}
 	return 0xff;
 }
@@ -1487,12 +1640,12 @@ static WRITE_HANDLER(internal_ram_write)
 		if (offset < 256)
 			SFR_W(offset,data);
 		else
-			logerror("i8051 #%d: attemping to write to invalid Internal Ram address: %x at 0x%04x\n", cpu_getactivecpu(), offset,PC);
+			LOG(("i8051 #%d: attemping to write to invalid Internal Ram address: %x at 0x%04x\n", cpu_getactivecpu(), offset,PC));
 	}
 }
 
 /*Push the current PC to the stack*/
-static void push_pc()
+INLINE void push_pc()
 {
 	UINT8 tmpSP = R_SP;							//Grab and Increment Stack Pointer
 	tmpSP++;									// ""
@@ -1507,7 +1660,7 @@ static void push_pc()
 }
 
 /*Pop the current PC off the stack and into the pc*/
-static void pop_pc()
+INLINE void pop_pc()
 {
 	UINT8 tmpSP = R_SP;							//Grab Stack Pointer
 	PC = (IRAM_R(tmpSP) & 0xff) << 8;			//Store hi byte to PC
@@ -1519,7 +1672,7 @@ static void pop_pc()
 }
 
 //Set the PSW Parity Flag
-static void set_parity()
+INLINE void set_parity()
 {
 	//This flag will be set when the accumulator contains an odd # of bits set..
 	int i, 
@@ -1617,7 +1770,7 @@ WRITE_HANDLER(i8051_internal_w)
 		IRAM_W(offset,data);
 }
 
-void do_add_flags(UINT8 a, UINT8 data, UINT8 c)
+static void do_add_flags(UINT8 a, UINT8 data, UINT8 c)
 {
 	UINT16 result = a+data+c;
 	INT16 result1 = (INT8)a+(INT8)data+c;
@@ -1637,7 +1790,7 @@ void do_add_flags(UINT8 a, UINT8 data, UINT8 c)
 #endif
 }
 
-void do_sub_flags(UINT8 a, UINT8 data, UINT8 c)
+static void do_sub_flags(UINT8 a, UINT8 data, UINT8 c)
 {
 	INT16 result1 = (INT8)a-(INT8)(data-c);
 	int cy, ac, ov;
@@ -1653,4 +1806,43 @@ void do_sub_flags(UINT8 a, UINT8 data, UINT8 c)
 #ifdef MAME_DEBUG
 //	printf("sub: result=%x, c=%x, ac=%x, ov=%x\n",a-data-c,cy,ac,ov);
 #endif
+}
+
+static void update_timer(int cyc)
+{
+	//Todo: Add checks for Timer2
+	//Todo: Probably better to store the current mode of the timer on a write, so we don't waste time reading it.
+
+	//Update Timer 0
+	if(GET_TR0) {
+		//Determine Mode
+		int mode = GET_M0_0 + GET_M0_1;
+		UINT16 count = ((R_TH0<<8) | R_TL0);
+		switch(mode) {
+			case 0:			//13 Bit Timer Mode
+				break;
+			case 1:			//16 Bit Timer Mode
+				//Check for overflow
+				if((UINT32)(count+cyc)>0xffff) {
+					count = 0;
+                    SET_TF0(1);
+				}
+				else
+					count+=cyc;
+				R_TH0 = (count>>8) & 0xff;
+				R_TL0 = count & 0xff;
+				break;
+			case 2:			//8 Bit Autoreload
+				break;
+			case 3:			//Split Timer
+				break;
+		}
+	}
+
+	//Update Timer 1
+	if(GET_TR1) {
+	}
+}
+static void update_serial(int cyc)
+{
 }
