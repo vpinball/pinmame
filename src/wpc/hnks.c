@@ -61,7 +61,7 @@ static void hnks_irq(int state) {
 
 void start_samples(void) {
 //  if ( hnks_locals.soundEnabled1 && hnks_locals.soundEnabled2 )
-    mixer_play_sample(hnks_locals.channel, (char*) &hnks_locals.wavetable[hnks_locals.actSamples], 32, (0x4000/(hnks_locals.pitch+1)), 1);
+    mixer_play_sample(hnks_locals.channel, (INT8 *) &hnks_locals.wavetable[hnks_locals.actSamples], 32, (0x4000/(hnks_locals.pitch+1)), 1);
 //  else
 //	mixer_stop_sample(hnks_locals.channel);
 }
