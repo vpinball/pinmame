@@ -470,6 +470,7 @@ DRIVERNV(lightnin)      //MPU-200: 03/81 Lightning
 DRIVERNV(orbitor1)      //MPU-200: 04/82 Orbitor One
 DRIVERNV(cue)           //MPU-200: ??/82 Cue            (Proto - Never released)
 DRIVERNV(lazrlord)      //MPU-200: 10/84 Lazer Lord     (Proto - Never released)
+DRIVERNV(blbeauty)      //MPU-200: ??/84 Black Beauty (Bowler)
 // Whitestar System
 DRIVERNV(strikext)      //Whitestar: 03/00 Striker Extreme
 DRIVERNV(strxt_uk)      //Whitestar: 03/00 Striker Extreme (UK)
