@@ -12,7 +12,9 @@
 #define CC_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKS */
 
 static struct {
+  UINT16 u16a[4],u16b[4];
   int vblankCount;
+  int u16irqcount;
 } locals;
 
 static NVRAM_HANDLER(cc);
@@ -53,7 +55,7 @@ static SWITCH_UPDATE(cc) {
 }
 
 static void cc_zeroCross(int data) {
-  cpu_set_irq_line(0,MC68306_IRQ_2,ASSERT_LINE);
+//  cpu_set_irq_line(0,MC68306_IRQ_2,ASSERT_LINE);
 }
 static READ16_HANDLER(cc_porta_r) { DBGLOG(("Port A read\n")); return 0; }
 static READ16_HANDLER(cc_portb_r) { DBGLOG(("Port B read\n")); return 0; }
@@ -64,10 +66,42 @@ static WRITE16_HANDLER(cc_portb_w) {
   DBGLOG(("Port B write %04x\n",data));
 //  if (data & ~locals.lastb & 0x01) cpu_set_irq_line(0,MC68306_IRQ_2,CLEAR_LINE);
 }
+static WRITE16_HANDLER(u16_w) {
+  offset &= 0x203;
+  DBGLOG(("U16w [%03x]=%04x (%04x)\n",offset,data,mem_mask));
+  switch (offset) {
+    case 0x000: case 0x001: case 0x002: case 0x003:
+      locals.u16a[offset] = (locals.u16a[offset] & mem_mask) | data; break;
+    case 0x200: case 0x201: case 0x202: case 0x203:
+      locals.u16b[offset&3] = (locals.u16b[offset&3] & mem_mask) | data; break;
+  }
+}
+
+static void cc_u16irq(int data) {
+  locals.u16irqcount += 1;
+  if (locals.u16irqcount == (0x08>>((locals.u16b[0] & 0xc0)>>6))) {
+    cpu_set_irq_line(0,MC68306_IRQ_1,PULSE_LINE);
+    locals.u16irqcount = 0;
+  }
+}
+
+static READ16_HANDLER(u16_r) {
+  offset &= 0x203;
+  DBGLOG(("U16r [%03x] (%04x)\n",offset,mem_mask));
+  switch (offset) {
+    case 0x000: case 0x001: case 0x002: case 0x003:
+      return locals.u16a[offset];
+    case 0x200: case 0x201: case 0x202: case 0x203:
+      return locals.u16b[offset&3];
+  }
+  return 0;
+}
 
 static MACHINE_INIT(cc) {
   memset(&locals, 0, sizeof(locals));
+  locals.u16a[0] = 0x00bc;
   locals.vblankCount = 1;
+  timer_pulse(TIME_IN_CYCLES(2811,0),0,cc_u16irq);
 }
 
 /*-----------------------------------
@@ -134,13 +168,14 @@ static MEMORY_READ16_START(cc_readmem)
 //{ 0x02000000, 0x02000001, MRA16_RAM }, /* AUX I/O */
 //{ 0x02400000, 0x02400001, MRA16_RAM }, /* EXT I/O */
 //{ 0x02800000, 0x02800001, MRA16_RAM }, /* SWITCH0 */
-//{ 0x02C00000, 0x02C00001, MRA16_RAM }, /* CS */
+  { 0x02C00000, 0x02C007ff, u16_r },     /* U16 (A10,A2,A1)*/
   { 0x03000000, 0x0300ffff, MRA16_RAM }, /* NVRAM */
 MEMORY_END
 
 static MEMORY_WRITE16_START(cc_writemem)
   { 0x00000000, 0x00ffffbf, MWA16_ROM },
   { 0x01000000, 0x0107ffff, MWA16_RAM, &ramptr },
+  { 0x02C00000, 0x02C007ff, u16_w },    /* U16 (A10,A2,A1)*/
   { 0x03000000, 0x0300ffff, MWA16_RAM }, /* NVRAM */
 MEMORY_END
 
