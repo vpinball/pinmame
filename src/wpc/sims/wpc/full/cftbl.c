@@ -390,7 +390,7 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF (cftbl,l4,"Creature from the Black Lagoon (L-4)",1992,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF (cftbl,l4s,"Creature from the Black Lagoon (L-4s)",1992,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF (cftbl,l4s,l4,"Creature from the Black Lagoon (L-4s)",1992,"Bally",wpc_mFliptronS,0)
 
 /*-----------------------
 / Simulation Definitions
