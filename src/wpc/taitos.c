@@ -93,7 +93,7 @@ static WRITE_HANDLER(taitos_data_w)
 {
     // logerror("taitos_data_w: %i\n", data);
 
-    pia_set_input_b(SP_PIA0, data);
+    pia_set_input_b(SP_PIA0, data^0xff);
 	sndbrd_ctrl_w(0, data);
 }
 

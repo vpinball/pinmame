@@ -160,14 +160,15 @@ static WRITE_HANDLER(dma_commands)
 		break;
 
 	case 2:
-		// upper nibble: sound command 5-8 (or vv)
-		locals.sndCmd = (locals.sndCmd & 0x0f) | (data&0xf0);
+		// upper nibble: sound command 1-4
+		locals.sndCmd = (locals.sndCmd & 0xf0) | ((data&0xf0)>>4);
 		break;
 
 	case 3:
-		// upper nibble: sound command 1-4 (or vv)
-		locals.sndCmd = (locals.sndCmd & 0xf0) | ((data&0xf0)>>4);
+		// upper nibble: sound command 5-8
+		locals.sndCmd = (locals.sndCmd & 0x0f) | (data&0xf0);
 		break;
+
 	}
 
 	if ( locals.oldsndCmd!=locals.sndCmd ) {
