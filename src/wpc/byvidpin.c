@@ -4,10 +4,10 @@
    Games: Baby Pacman (1982)
           Granny & The Gators (1984)
 
-   Hardware:
+   Hardware: 
    (Both Games)
    MPU Board: MPU-133 (Equivalent of MPU-35 except for 1 diode change) - See note below
-
+   
    (BabyPacman Only):
    VIDIOT Board: Handles Video/Joystick Switchs/Sound Board
    Chips:		(1 x TMS9928 Video Chip), 6809 CPU (Video), 6803 (Sound), 6821 PIA
@@ -17,14 +17,14 @@
    Chips:		(2 x TMS9928 Video Chip - Master/Slave configuration), 6809 CPU, 6821 PIA
    Cheap Squeak Sound Board
 
-   Interesting Tech Note:
-
+   Interesting Tech Note: 
+   
    The sound board integrated into the vidiot, appears to be
    identical to what later became the separate Cheap Squeak board used on later model
    bally MPU-35 games, as well as Granny & Gators!
 
    Note from RGP:
-
+   
 		Bally video pins use an AS-2518-133 mpu.
 		I believe that some late games such as Grand Slam
 		may have also used the AS-2518-133 mpu.
@@ -61,7 +61,7 @@
   Rsvd: FFF0-1 (8010) *Valid Code?
 
   6803 vectors:
-  RES: FFFE-F
+  RES: FFFE-F 
   SWI: FFFA-B Software Interrupt (Not Used)
   NMI: FFFC-D (Used)
   IRQ: FFF8-9 (Not Used)
@@ -116,24 +116,20 @@ static struct {
   int snddata_lo;			//Lo Nibble Sound Command
   int snddata_hi;			//Hi Nibble Sound Command
   int lasttin;				//Track Last TIN IRQ Edge
-  int phase;
+  int phase_a;				//Track Phase A status
   void *zctimer;
 } locals;
 
 static void byVP_exit(void);
 static void byVP_nvram(void *file, int write);
 
-static void piaIrq(int state) {
-	if (state) DBGLOG(("irq\n"));
-	cpu_set_irq_line(0, M6800_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
-}
+static void piaIrq(int state) { cpu_set_irq_line(0, M6800_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE); }
 
 static void byVP_lampStrobe(int board, int lampadr) {
   if (lampadr != 0x0f) {
-    int lampdata = ((locals.p0_a>>4)^0x0f)&0x03; // only 2 lamp drivers
+	int lampdata = ((locals.p0_a>>4)^0x0f) & 0x03; //only 2 lamp drivers
     UINT8 *matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)+4*board];
     int bit = 1<<(lampadr & 0x07);
-    DBGLOG(("adr=%x data=%x\n",lampadr,lampdata));
     while (lampdata) {
       if (lampdata & 0x01) *matrix |= bit;
       lampdata >>= 1; matrix += 2;
@@ -158,10 +154,9 @@ static WRITE_HANDLER(pia0a_w) {
 	/*For some reason, code inverts lower nibble*/
 	data = (data&0xf0) | (~data & 0x0f);
 	locals.vidiot_u2_latch = data;
-	logerror("%x: Writing %x to vidiot u2 buffers: enable_input = %x\n",cpu_getpreviouspc(),data, locals.enable_input);
+	//logerror("%x: Writing %x to vidiot u2 buffers: enable_input = %x\n",cpu_getpreviouspc(),data, locals.enable_input);
   }
-
-  byVP_lampStrobe(locals.phase,locals.lampadr1);
+  byVP_lampStrobe(!locals.phase_a,locals.lampadr1);
 }
 
 /* PIA1:A-W: Communications to Vidiot
@@ -301,8 +296,8 @@ static void byVP_updSw(int *inports) {
 
 /* PIA2:B Read */
 // Video Switch Returns (Bits 5-7 not connected)
-static READ_HANDLER(pia2b_r) {
-	logerror("VID: Reading Switch Returns from %x\n",locals.p2_a);
+static READ_HANDLER(pia2b_r) { 
+	//logerror("VID: Reading Switch Returns from %x\n",locals.p2_a);
 	if(locals.p2_a & 0x80)
 		return coreGlobals.swMatrix[0]&0xf0;
 	else
@@ -329,7 +324,7 @@ static WRITE_HANDLER(pia2b_w) {
 
 /* PIA2:CB2 Write */
 // Diagnostic LED & Sound Strobe to 6803
-static WRITE_HANDLER(pia2cb2_w) {
+static WRITE_HANDLER(pia2cb2_w) { 
 	locals.diagnosticLedV = data;
 
 	if(data & ~locals.lasttin) {	//Rising Edge Triggers the IRQ
@@ -473,10 +468,9 @@ static core_tData byVPData = {
 
 /* I read on a post in rgp, that they used both ends of the zero cross, so we emulate it */
 static void byVP_zeroCross(int data) {
+  locals.phase_a = !locals.phase_a;
   /*- toggle zero/detection circuit-*/
-  pia_set_input_cb1(0,locals.phase);
-  DBGLOG(("zerocross=%d\n",locals.phase));
-  locals.phase = !locals.phase;
+  pia_set_input_cb1(0,locals.phase_a);
 }
 static void byVP_init(void) {
   if (locals.initDone) CORE_DOEXIT(byVP_exit);
@@ -503,12 +497,17 @@ static void byVP_exit(void) {
 static UINT8 *byVP_CMOS;
 static WRITE_HANDLER(byVP_CMOS_w) { byVP_CMOS[offset] = data; }
 
-/* P21-24 = Video U7(PB0-PB3)
+/* P10-P17 = What is this for? Only used in G&G*/
+static READ_HANDLER(sound_port1_r) { 
+	return 0;
+}
+
+/* P21-24 = Video U7(PB0-PB3) 
    NOTE: Sound commands are sent as 2 nibbles, first low byte, then high
          However, it reads the first low nibble 2x, then reads the high nibble
-         Since Port 2 begins with P20, we must << 1 the sound commands!
+         Since Port 2 begins with P20, we must << 1 the sound commands! 
 */
-static READ_HANDLER(sound_port2_r) {
+static READ_HANDLER(sound_port2_r) { 
 	cmdnum++;
 	if( cmdnum < 3) //If it's the 1st or 2nd time reading the port..
 		return locals.snddata_lo<<1;
@@ -545,7 +544,17 @@ static WRITE_HANDLER(sound_port2_w) {
 
 static int by_interrupt(void)
 {
-    TMS9928A_interrupt();
+    TMS9928A_interrupt(0);
+	//The IRQ must be triggered constantly for the video cpu to read/write to the latch
+	//I'm not sure why doing it the way it was coded from MESS does not work.
+	return M6809_INT_IRQ;
+	//return ignore_interrupt ();
+}
+
+static int by1_interrupt(void)
+{
+    TMS9928A_interrupt(0);
+	TMS9928A_interrupt(1);
 	//The IRQ must be triggered constantly for the video cpu to read/write to the latch
 	//I'm not sure why doing it the way it was coded from MESS does not work.
 	return M6809_INT_IRQ;
@@ -568,29 +577,56 @@ static void by_vdp_interrupt (int state)
 
 //Video CPU Vertical Blank
 static int byVP_vvblank(void) { return by_interrupt(); }
+static int byVP1_vvblank(void) { return by1_interrupt(); }
 
-static READ_HANDLER(vdp_r) {
-	//logerror("vdp_r\n");
+static READ_HANDLER(vdp0_r) {
+	//logerror("vdp0_r: offset=%x\n",offset);
 	if(offset == 0)
-		return TMS9928A_vram_r(offset);
+		return TMS9928A_vram_0_r(offset);
 	else
-		return TMS9928A_register_r(offset);
+		return TMS9928A_register_0_r(offset);
 }
 
-static WRITE_HANDLER(vdp_w) {
-	//logerror("%x:vdp_w=%x\n",cpu_getpreviouspc(),data);
+static WRITE_HANDLER(vdp0_w) {
+	//logerror("%x:vdp0_w: offset=%x, data=%x\n",cpu_getpreviouspc(),offset,data);
 	if(offset==0)
-		TMS9928A_vram_w(offset,data);
+		TMS9928A_vram_0_w(offset,data);
 	else
-		TMS9928A_register_w(offset,data);
+		TMS9928A_register_0_w(offset,data);
+}
+
+static READ_HANDLER(vdp1_r) {
+	//logerror("vdp1_r: offset=%x\n",offset);
+	if(offset == 0)
+		return TMS9928A_vram_1_r(offset);
+	else
+		return TMS9928A_register_1_r(offset);
+}
+
+static WRITE_HANDLER(vdp1_w) {
+	//logerror("%x:vdp1_w: offset=%x, data=%x\n",cpu_getpreviouspc(),offset,data);
+	if(offset==0)
+		TMS9928A_vram_1_w(offset,data);
+	else
+		TMS9928A_register_1_w(offset,data);
 }
 
 static int by_vh_start(void)
 {
-	if (TMS9928A_start(TMS99x8A, 0x4000)) return 1;
-	TMS9928A_int_callback(by_vdp_interrupt);
+	if (TMS9928A_start(0,TMS99x8A, 0x4000)) return 1;
+	TMS9928A_int_callback(0,by_vdp_interrupt);
 	return 0;
 }
+
+static int by1_vh_start(void)
+{
+	if (TMS9928A_start(0,TMS99x8A, 0x4000)) return 1;
+	if (TMS9928A_start(1,TMS99x8A, 0x4000)) return 1;
+	/*Only master chip controls interrupt*/
+	TMS9928A_int_callback(0,by_vdp_interrupt);
+	return 0;
+}
+
 static void by_vh_stop(void)
 {
   TMS9928A_stop();
@@ -600,7 +636,13 @@ static void by_vh_stop(void)
 static void by_drawStatus (struct mame_bitmap *bmp, int full_refresh);
 static void by_vh_refresh (struct mame_bitmap *bmp, int full_refresh)
 	{
-		TMS9928A_refresh(bmp,full_refresh);
+		TMS9928A_refresh(0, bmp,full_refresh);
+		by_drawStatus(bmp, full_refresh);
+	}
+static void by1_vh_refresh (struct mame_bitmap *bmp, int full_refresh)
+	{
+		TMS9928A_refresh(0, bmp,full_refresh);
+		TMS9928A_refresh(1, bmp,full_refresh);
 		by_drawStatus(bmp, full_refresh);
 	}
 
@@ -632,7 +674,7 @@ static MEMORY_READ_START(byVP_readmem)
   { 0x0088, 0x008b, pia_0_r }, /* U10 PIA: Switchs + Display + Lamps*/
   { 0x0090, 0x0093, pia_1_r }, /* U11 PIA: Solenoids/Sounds + Display Strobe */
   { 0x0200, 0x02ff, MRA_RAM }, /* CMOS Battery Backed*/
-//{0x0300,0x03ff, MRA_NOP},		// What does this do?
+  { 0x0300, 0x031c, MRA_RAM }, /* What is this? More CMOS? No 3rd Flash if commented as MWA_RAM */
   { 0x1000, 0x1fff, MRA_ROM },
   { 0x5000, 0x5fff, MRA_ROM },
   { 0xf000, 0xffff, MRA_ROM },
@@ -643,7 +685,7 @@ static MEMORY_WRITE_START(byVP_writemem)
   { 0x0088, 0x008b, pia_0_w }, /* U10 PIA: Switchs + Display + Lamps*/
   { 0x0090, 0x0093, pia_1_w }, /* U11 PIA: Solenoids/Sounds + Display Strobe */
   { 0x0200, 0x02ff, byVP_CMOS_w, &byVP_CMOS }, /* CMOS Battery Backed*/
-//{0x0300,0x03ff, MWA_NOP},		// What does this do?
+  { 0x0300, 0x031c, MWA_RAM }, /* What is this? More CMOS? No 3rd Flash if commented as MWA_RAM */
   { 0x1000, 0x1fff, MWA_ROM },
   { 0x5000, 0x5fff, MWA_ROM },
   { 0xf000, 0xffff, MWA_ROM },
@@ -653,41 +695,45 @@ MEMORY_END
 /  Memory map for VIDEO CPU (Located on Vidiot Board)
 /----------------------------------------------------*/
 static MEMORY_READ_START(byVP_video_readmem)
-	{ 0x0000, 0x1fff, latch_r },
+	{ 0x0000, 0x1fff, latch_r },  
 	{ 0x2000, 0x2003, pia_2_r }, /* U7 PIA */
-	{ 0x4000, 0x4001, vdp_r },   /* U16 VDP*/
+	{ 0x4000, 0x4001, vdp0_r },  /* U16 VDP*/
 	{ 0x6000, 0x6400, MRA_RAM }, /* U13&U14 1024x4 Byte Ram*/
 	{ 0x8000, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(byVP_video_writemem)
-	{ 0x0000, 0x1fff, latch_w },
+	{ 0x0000, 0x1fff, latch_w },  
 	{ 0x2000, 0x2003, pia_2_w }, /* U7 PIA */
-	{ 0x4000, 0x4001, vdp_w },   /* U16 VDP*/
+	{ 0x4000, 0x4001, vdp0_w },  /* U16 VDP*/
 	{ 0x6000, 0x6400, MWA_RAM }, /* U13&U14 1024x4 Byte Ram*/
 	{ 0x8000, 0xffff, MWA_ROM },
 MEMORY_END
 
-/*----------------------------------------------------------
-/  Memory map for VIDEO CPU (Located on Vidiot Board) - G&G
-/---------------------------------------------------------*/
+/*-------------------------------------------------------------------
+/  Memory map for VIDEO CPU (Located on Vidiot Deluxe Board) - G&G
+/------------------------------------------------------------------*/
 static MEMORY_READ_START(byVP2_video_readmem)
 	{ 0x0000, 0x0001, latch_r },
-	{ 0x0002, 0x0003, vdp_r },   /* VDP MASTER */
-		{ 0x0004, 0x0005, vdp_r },   /* VDP MASTER */
-//	{ 0x0004, 0x0005, vdp2_r },  /* VDP SLAVE  */
+	{ 0x0002, 0x0003, vdp0_r },  /* VDP MASTER? */
+	{ 0x0004, 0x0005, vdp1_r },  /* VDP SLAVE?  */
+	{ 0x0006, 0x0007, MRA_RAM }, /* ?????????  */
 	{ 0x0008, 0x000b, pia_2_r }, /* PIA */
-	{ 0x2400, 0x2800, MRA_RAM }, /* U13&U14 1024x4 Byte Ram*/
+	{ 0x0300, 0x031c, MRA_RAM }, /* What is this? More CMOS? No 3rd Flash if commented as MWA_RAM */
+	{ 0x2000, 0x27ff, MRA_RAM }, /* 2K RAM */
+	{ 0x2801, 0x2801, MRA_RAM }, /* ?????? */
 	{ 0x4000, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(byVP2_video_writemem)
 	{ 0x0000, 0x0001, latch_w },
-	{ 0x0002, 0x0003, vdp_w },   /* VDP MASTER */
-		{ 0x0004, 0x0005, vdp_w },   /* VDP MASTER */
-//	{ 0x0004, 0x0005, vdp2_w },  /* VDP SLAVE  */
+	{ 0x0002, 0x0003, vdp0_w },  /* VDP MASTER? */
+	{ 0x0004, 0x0005, vdp1_w },  /* VDP SLAVE?  */
+	{ 0x0006, 0x0007, MWA_RAM }, /* ?????????  */
 	{ 0x0008, 0x000b, pia_2_w }, /* PIA */
-	{ 0x2400, 0x2800, MWA_RAM }, /* U13&U14 1024x4 Byte Ram*/
+	{ 0x0300, 0x031c, MWA_RAM }, /* What is this? More CMOS? No 3rd Flash if commented as MWA_RAM */
+	{ 0x2000, 0x27ff, MWA_RAM }, /* 2K RAM*/
+	{ 0x2801, 0x2801, MWA_RAM }, /* ????????? */
 	{ 0x4000, 0xffff, MWA_ROM },
 MEMORY_END
 
@@ -726,6 +772,7 @@ static MEMORY_WRITE_START(byVP_sound_writemem)
 MEMORY_END
 
 static PORT_READ_START( byVP_sound_readport )
+	{ M6803_PORT1, M6803_PORT1, sound_port1_r },
 	{ M6803_PORT2, M6803_PORT2, sound_port2_r },
 PORT_END
 
@@ -769,7 +816,7 @@ struct MachineDriver machine_driver_byVP2 = {
    },
   {  CPU_M6809, 8000000/4, /* 2MHz */
       byVP2_video_readmem, byVP2_video_writemem, NULL, NULL,
-      byVP_vvblank, 1
+      byVP1_vvblank, 1
   },
   {  CPU_M6803 | CPU_AUDIO_CPU, 3580000/4, /* 3.58/4 = 900Hz */
       byVP_sound_readmem, byVP_sound_writemem, byVP_sound_readport, byVP_sound_writeport,
@@ -780,7 +827,7 @@ struct MachineDriver machine_driver_byVP2 = {
   50, byVP_init, CORE_EXITFUNC(byVP_exit)
   GRAPHICSETUP
   0,
-  by_vh_start,by_vh_stop, by_vh_refresh,
+  by1_vh_start,by_vh_stop, by1_vh_refresh,
   0,0,0,0, {{SOUND_DAC,&by_dacInt}},
   byVP_nvram
 };
