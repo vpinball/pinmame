@@ -525,6 +525,7 @@ static void nmi_callback(int param)
 WRITE_HANDLER(s80bs_nmi_rate_w)
 {
 	GTS80BS_locals.nmi_rate = data;
+//	logerror("NMI RATE SET TO %d\n",data);
 }
 
 WRITE_HANDLER(s80bs_cause_dac_nmi_w)
@@ -541,17 +542,27 @@ READ_HANDLER(s80bs_cause_dac_nmi_r)
 //Latch a command into the Sound Latch and generate the IRQ interrupts
 WRITE_HANDLER(s80bs_sh_w)
 {
-	if(!(core_gameData->hw.soundBoard & SNDBRD_GTS3))
-		data &= 0x3f;			//Not sure if this is needed for ALL generations.
+	int clear_irq = 0;
 
-	if ((data&0x0f) != 0xf) /* interrupt trigered by four low bits (not all 1's) */
+	/*GTS3 Specific stuff*/
+	if(core_gameData->hw.soundBoard & SNDBRD_GTS3) 
 	{
+		clear_irq = (data==0xff);  /* clear the IRQ when ALL bits are specified */
+	}
+	else
+	{
+		clear_irq = ((data&0x0f)==0x0f); /* interrupt trigered by four low bits (not all 1's) - Not sure if this is TRUE, comes from the MAME driver*/
+		data &= 0x3f;					 //Not sure if this is needed for ALL generations (but definitely not gts3!)
+	}
+
+	if (clear_irq) 	{
+		cpu_set_irq_line(cpu_gettotalcpu()-1, 0, CLEAR_LINE);
+		cpu_set_irq_line(cpu_gettotalcpu()-2, 0, CLEAR_LINE);
+	}
+	else {
 		soundlatch_w(offset,data);
 		cpu_set_irq_line(cpu_gettotalcpu()-1, 0, HOLD_LINE);
 		cpu_set_irq_line(cpu_gettotalcpu()-2, 0, HOLD_LINE);
-	} else {
-		cpu_set_irq_line(cpu_gettotalcpu()-1, 0, CLEAR_LINE);
-		cpu_set_irq_line(cpu_gettotalcpu()-2, 0, CLEAR_LINE);
 	}
 }
 
@@ -569,16 +580,21 @@ READ_HANDLER(s80bs1_sound_input_r)
 static WRITE_HANDLER( common_sound_control_w )
 {
 	/* Bit 0 enables and starts NMI timer */
-	if (GTS80BS_locals.nmi_timer)
-	{
-		timer_remove(GTS80BS_locals.nmi_timer);
-		GTS80BS_locals.nmi_timer = 0;
-	}
-
 	if (data & 0x01)
 	{
 		/* base clock is 250kHz divided by 256 */
-		double interval = TIME_IN_HZ(250000.0/256/(256-GTS80BS_locals.nmi_rate));
+		double interval;
+//		logerror("GTS80BS_locals.nmi_rate = %d\n",GTS80BS_locals.nmi_rate);
+
+		interval = TIME_IN_HZ(250000.0/256/(256-GTS80BS_locals.nmi_rate));
+//		logerror("interval = %f\n",interval);
+
+		if (GTS80BS_locals.nmi_timer)
+		{
+			timer_remove(GTS80BS_locals.nmi_timer);
+			GTS80BS_locals.nmi_timer = 0;
+		}
+
 		GTS80BS_locals.nmi_timer = timer_alloc(nmi_callback);
 
 		timer_adjust(GTS80BS_locals.nmi_timer, interval, 0, interval);
@@ -773,7 +789,7 @@ MEMORY_END
 struct DACinterface GTS80BS_dacInt =
 {
   2,			/*2 Chips - but it seems we only access 1?*/
- {100,100}		/* Volume */
+ {50,50}		/* Volume */
 };
 
 struct AY8910interface GTS80BS_ay8910Int = {
@@ -790,7 +806,7 @@ struct YM2151interface GTS80BS_ym2151Int =
 {
 	1,			/* 1 chip */
 	4000000,	/* 4 MHz */
-	{ YM3012_VOL(50,MIXER_PAN_LEFT,50,MIXER_PAN_RIGHT) },
+	{ YM3012_VOL(75,MIXER_PAN_LEFT,75,MIXER_PAN_RIGHT) },
 	{ 0 }
 };
 
@@ -837,11 +853,13 @@ struct YM2151interface GTS80BS_ym2151Int =
 
 */
 
+static int last_d7=0;
+
 // Send data to 6295, but only if Chip Selected and Write Enabled!
 static void oki6295_w(void)
 {
 	if ( GTS80BS_locals.enable_cs && GTS80BS_locals.enable_w ) {
-		if ( GTS80BS_locals.u2_latch&0x80 )
+		if ( !last_d7 && GTS80BS_locals.u2_latch&0x80  )
 			logerror("START OF SAMPLE!\n");
 
 		OKIM6295_data_0_w(0, GTS80BS_locals.u2_latch);
@@ -850,6 +868,7 @@ static void oki6295_w(void)
 	else {
 		logerror("NO OKI: cs=%x w=%x\n", GTS80BS_locals.enable_cs, GTS80BS_locals.enable_w);
 	}
+	last_d7 = (GTS80BS_locals.u2_latch>>7)&1;
 }
 
 static WRITE_HANDLER(u2latch_w)
@@ -871,10 +890,9 @@ static WRITE_HANDLER(u2latch_w)
 */
 static WRITE_HANDLER(sound_control_w)
 {
-	int hold_enable_w, hold_enable_cs, hold_rom_cs, hold_u3;
+	int hold_enable_w, hold_enable_cs, hold_u3;
 	hold_enable_w = GTS80BS_locals.enable_w;
 	hold_enable_cs = GTS80BS_locals.enable_cs;
-	hold_rom_cs = GTS80BS_locals.rom_cs;
 	hold_u3 = GTS80BS_locals.u3_latch;
 
 	//Process common bits (D0 for NMI, D7 for YM2151)
@@ -887,13 +905,13 @@ static WRITE_HANDLER(sound_control_w)
 
 	//D5 = Clock in U3 Data
 	GTS80BS_locals.u3_latch = (data>>5)&1;
-	if(GTS80BS_locals.u3_latch != hold_u3)
-	  logerror("U3 Latch = %x\n", GTS80BS_locals.u3_latch);
+	//if(GTS80BS_locals.u3_latch != hold_u3)
+	  //logerror("U3 Latch = %x\n", GTS80BS_locals.u3_latch);
 
 	//D6 = ~WR = 6295 Write Enabled (Active Low)
 	GTS80BS_locals.enable_w = ((~data)>>6)&1;
-	if(GTS80BS_locals.enable_w != hold_enable_w)
-	  logerror("~wr = %x\n", (data>>6)&1);
+	//if(GTS80BS_locals.enable_w != hold_enable_w)
+	  //logerror("~wr = %x\n", (data>>6)&1);
 
 /*
 	U3 - LS374 (Data is fed from the U2 Latch)
@@ -913,15 +931,14 @@ static WRITE_HANDLER(sound_control_w)
 
 		//D2 = 6295 Chip Select (Active Low)
 		GTS80BS_locals.enable_cs = ((~GTS80BS_locals.u2_latch)>>2)&1;
-		logerror("~cs = %x\n", (GTS80BS_locals.u2_latch>>2)&1);		
+		//logerror("~cs = %x\n", (GTS80BS_locals.u2_latch>>2)&1);		
 
 		//D3 = ROM Select (0 = Rom1, 1 = Rom2)
 		GTS80BS_locals.rom_cs = (GTS80BS_locals.u2_latch>>3)&1;
 
-		//if (GTS80BS_locals.rom_cs != hold_rom_cs ) {
+		//Only swap the rom bank if the value has changed!
 		OKIM6295_set_bank_base(0, GTS80BS_locals.rom_cs*0x80000);
 		logerror("Setting to rom #%x\n",GTS80BS_locals.rom_cs);
-		//}
 
 		//D4 = 6295 - SS (Data = 1 = 8Khz; Data = 0 = 6.4Khz frequency)
 		OKIM6295_set_frequency(0,((GTS80BS_locals.u2_latch>>4)&1)?8000:6400);
@@ -966,6 +983,12 @@ MEMORY_WRITE_START(GTS3_dwritemem)
 { 0x8000, 0x8000, s80bs_dac_vol_w },
 { 0x8001, 0x8001, s80bs_dac_data_w},
 MEMORY_END
+
+struct DACinterface GTS3_dacInt =
+{
+  2,			/*2 Chips - but it seems we only access 1?*/
+ {60,60}		/* Volume */
+};
 
 struct OKIM6295interface GTS3_okim6295_interface = {
 	1,						/* 1 chip */
@@ -1041,14 +1064,16 @@ MACHINE_DRIVER_START(gts80s_s3)
   MDRV_CPU_ADD_TAG("d-cpu", M65C02, 2000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(GTS3_dreadmem, GTS3_dwritemem)
-  MDRV_SOUND_ADD(DAC, GTS80BS_dacInt)
+  MDRV_SOUND_ADD(DAC, GTS3_dacInt)
 
   MDRV_CPU_ADD_TAG("y-cpu", M65C02, 2000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(GTS3_yreadmem, GTS3_ywritemem)
 
   MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
   MDRV_SOUND_ADD(YM2151,  GTS80BS_ym2151Int)
   MDRV_SOUND_ADD(OKIM6295,GTS3_okim6295_interface)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+  
 MACHINE_DRIVER_END
