@@ -2,16 +2,41 @@ What's new:
 
 Version 1.12.1 (April 14, 2002)
 -------------------------------
+This is just considered a bugfix release for some issues that became apparent
+with the 1.12 version. We're going to need more beta testers next time. :)
+Only one more game showed up in the meantime, GamePlan's "Vegas".
+Apart from that, everything else was a bug fix - more or less;
+as some of these "bugs" were hidden pretty deep inside the MAME core -
+like the illegal but still deliberately used 6502 opcode that crashed sound
+on some Gottlieb games!
+
+The next version will be based upon the 0.59 MAME core, which is a pretty big
+change, so it may take a while... ;)
 
 Bugs Fixed
 ----------
--GTS80: Fixed sound bugs for "BlackHole" and "Pink Panther"
+-Sound is back on Harley Davidson
+-S11: Solenoids 20 & 21 separated again (Rollergames etc.)
+ [Martin Adrian]
+
+-DE: Removed sound bug that crashed Secret Service (and maybe others?)
+-GTS3: Corrected key layouts for all games
+-GTS3: Natural order restored for switches & lamps
+-GTS80: Flippers are now correctly enabled / disabled
+-PinMAME display enlarged for various games (Bugs Bunny, Harley Davidson)
+ [Gerrit Volkenborn]
+
+-GTS80: Added "illegal" opcode for BlackHole and Pink Panther (and maybe others?)
  [Tom Haukap]
 
 New Features
 ------------
 -Votrax SC-01 integrated to the MAME core
  [Tom Haukap]
+
+-Atari sound improved (noise generation & different waveforms)
+-Added correct support for GamePlan's "Vegas"
+ [Gerrit Volkenborn]
 
 -GTS80: Memory mapping and layout should now be 100%
  [Tom Haukap]
@@ -77,6 +102,7 @@ New Features
 -Added extra displays to 6M$MAN
  [Martin Adrian]
 
+
 Version 1.11 (February 3, 2002)
 ------------------
 A good sized new release with working support from 2 new manufacturers (Hankin & Gameplan), as
@@ -136,7 +162,7 @@ New Features
  [Martin Adrian]
 
 -Updated Gottlieb games to use 9 segments displays
- [Tom Haukup]
+ [Tom Haukap]
 
 
 Version 1.10 (December 23, 2001) - Happy 30th Birthday Steve
