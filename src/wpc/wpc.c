@@ -22,10 +22,10 @@
 /*-- IRQ frequence, most WPC functions are performed at 1/16 of this frequency --*/
 #define WPC_IRQFREQ      976 /* IRQ Frequency-Timed by JD*/
 
-#define GEN_HASWPCSOUND
-#define GEN_FLIPTRONFLIP (GEN_ALLWPC & ~(GEN_WPCALPHA_1|GEN_WPCALPHA_2|GEN_WPCDMD))
-#define GEN_HASDMD
-
+#define GENWPC_HASDMD      (GEN_ALLWPC & ~(GEN_WPCALPHA_1|GEN_WPCALPHA_2))
+#define GENWPC_HASFLIPTRON (GEN_ALLWPC & ~(GEN_WPCALPHA_1|GEN_WPCALPHA_2|GEN_WPCDMD))
+#define GENWPC_HASWPC95    (GEN_WPC95 | GEN_WPC95DCS)
+#define GENWPC_HASPIC      (GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS)
 /*---------------------
 /  local WPC functions
 /----------------------*/
@@ -63,7 +63,7 @@ const struct core_dispLayout wpc_dispAlpha[] = {
   DISP_SEG_16(0,CORE_SEG16),DISP_SEG_16(1,CORE_SEG16),{0}
 };
 const struct core_dispLayout wpc_dispDMD[] = {
-  {0,0,32,128,CORE_DMD,wpcdmd_update}, {0}
+  {0,0,32,128,CORE_DMD,(void *)wpcdmd_update}, {0}
 };
 
 /*------------------
@@ -83,7 +83,6 @@ static struct {
     UINT8 count;
     int           codeW;
   } pic;
-  int time, ltime, ticks;
   int pageMask;            /* page handling */
   int firqSrc;             /* source of last firq */
   int diagnostic;
@@ -146,12 +145,10 @@ MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(wpc_alpha)
   MDRV_IMPORT_FROM(wpc)
-//  MDRV_VIDEO_UPDATE(core_led)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(wpc_alpha1S)
   MDRV_IMPORT_FROM(wpc)
-//  MDRV_VIDEO_UPDATE(core_led)
   MDRV_IMPORT_FROM(wmssnd_s11cs)
   MDRV_SOUND_CMD(sndbrd_1_data_w)
   MDRV_SOUND_CMDHEADING("s11cs")
@@ -159,7 +156,6 @@ MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(wpc_alpha2S)
   MDRV_IMPORT_FROM(wpc)
-//  MDRV_VIDEO_UPDATE(core_led)
   MDRV_IMPORT_FROM(wmssnd_wpcs)
   MDRV_SOUND_CMD(sndbrd_1_data_w)
   MDRV_SOUND_CMDHEADING("wpcs")
@@ -168,13 +164,11 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(wpc_dmd)
   MDRV_IMPORT_FROM(wpc)
   MDRV_VIDEO_START(wpc_dmd)
-//  MDRV_VIDEO_UPDATE(wpc_dmd)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(wpc_dmdS)
   MDRV_IMPORT_FROM(wpc)
   MDRV_VIDEO_START(wpc_dmd)
-//  MDRV_VIDEO_UPDATE(wpc_dmd)
   MDRV_IMPORT_FROM(wmssnd_wpcs)
   MDRV_SOUND_CMD(sndbrd_1_data_w)
   MDRV_SOUND_CMDHEADING("wpcs")
@@ -183,7 +177,6 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(wpc_dcsS)
   MDRV_IMPORT_FROM(wpc)
   MDRV_VIDEO_START(wpc_dmd)
-//  MDRV_VIDEO_UPDATE(wpc_dmd)
   MDRV_IMPORT_FROM(wmssnd_dcs1)
   MDRV_SOUND_CMD(sndbrd_1_data_w)
   MDRV_SOUND_CMDHEADING("dcs")
@@ -192,7 +185,6 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(wpc_95S)
   MDRV_IMPORT_FROM(wpc)
   MDRV_VIDEO_START(wpc_dmd)
-//  MDRV_VIDEO_UPDATE(wpc_dmd)
   MDRV_IMPORT_FROM(wmssnd_dcs2)
   MDRV_SOUND_CMD(sndbrd_1_data_w)
   MDRV_SOUND_CMDHEADING("dcs")
@@ -207,7 +199,7 @@ MACHINE_DRIVER_END
 static INTERRUPT_GEN(wpc_vblank) {
   wpclocals.vblankCount = (wpclocals.vblankCount+1) % 16;
 
-  if (core_gameData->gen & (GEN_ALLWPC & ~(GEN_WPCALPHA_1|GEN_WPCALPHA_2))) {
+  if (core_gameData->gen & GENWPC_HASDMD) {
     /*-- check if the DMD line matches the requested interrupt line */
     if ((wpclocals.vblankCount % WPC_VBLANKDIV) == (wpc_data[DMD_FIRQLINE]*WPC_VBLANKDIV/32))
       wpc_firq(TRUE, WPC_FIRQ_DMD);
@@ -234,14 +226,16 @@ static INTERRUPT_GEN(wpc_vblank) {
 
     wpc_data[WPC_SOLENOID1] = wpc_data[WPC_SOLENOID2] = 0;
     wpc_data[WPC_SOLENOID3] = wpc_data[WPC_SOLENOID4] = 0;
-    if (core_gameData->gen & GEN_FLIPTRONFLIP) {
-      coreGlobals.solenoids2 = wpclocals.solFlip;
+    // Move top 3 GI to solenoids -> gameOn = sol31
+    coreGlobals.solenoids2 = (wpc_data[WPC_GILAMPS] & 0xe0)<<3;
+    if (core_gameData->gen & GENWPC_HASFLIPTRON) {
+      coreGlobals.solenoids2 |= wpclocals.solFlip;
       wpclocals.solFlip = wpclocals.solFlipPulse;
     }
   }
   else if (((wpclocals.vblankCount % WPC_VBLANKDIV) == 0) &&
-           (core_gameData->gen & GEN_FLIPTRONFLIP)) {
-    coreGlobals.solenoids2 = (coreGlobals.solenoids2 & wpclocals.nonFlipBits) | wpclocals.solFlip;
+           (core_gameData->gen & GENWPC_HASFLIPTRON)) {
+    coreGlobals.solenoids2 = (coreGlobals.solenoids2 & (0xffffff00 | wpclocals.nonFlipBits)) | wpclocals.solFlip;
     wpclocals.solFlip = (wpclocals.solFlip & wpclocals.nonFlipBits) | wpclocals.solFlipPulse;
   }
 
@@ -267,7 +261,7 @@ static INTERRUPT_GEN(wpc_vblank) {
     memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
   if ((wpclocals.vblankCount % (WPC_VBLANKDIV*WPC_DISPLAYSMOOTH)) == 0) {
-    if (core_gameData->gen & (GEN_WPCALPHA_1|GEN_WPCALPHA_2)) {
+    if ((core_gameData->gen & GENWPC_HASDMD) == 0) {
       memcpy(coreGlobals.segments, wpclocals.alphaSeg, sizeof(coreGlobals.segments));
       memset(wpclocals.alphaSeg, 0, sizeof(wpclocals.alphaSeg));
     }
@@ -279,7 +273,7 @@ static INTERRUPT_GEN(wpc_vblank) {
   /  Update switches every vblank
   /-------------------------------*/
   if ((wpclocals.vblankCount % WPC_VBLANKDIV) == 0) /*-- update switches --*/
-	core_updateSw((core_gameData->gen & GEN_FLIPTRONFLIP) ? TRUE : (wpc_data[WPC_GILAMPS] & 0x80));
+	core_updateSw((core_gameData->gen & GENWPC_HASFLIPTRON) ? TRUE : (wpc_data[WPC_GILAMPS] & 0x80));
 }
 
 /* The FIRQ line is wired between the WPC chip and all external I/Os (sound) */
@@ -298,17 +292,17 @@ void wpc_firq(int set, int src) {
 READ_HANDLER(wpc_r) {
   switch (offset) {
     case WPC_FLIPPERS: /* Flipper switches */
-      if (core_gameData->gen & (GEN_ALLWPC & ~(GEN_WPC95|GEN_WPC95DCS)))
+      if ((core_gameData->gen & GENWPC_HASWPC95) == 0)
         return ~coreGlobals.swMatrix[CORE_FLIPPERSWCOL];
       break;
     case WPC_FLIPPERSW95:
-      if (core_gameData->gen & (GEN_WPC95|GEN_WPC95DCS))
+      if (core_gameData->gen & GENWPC_HASWPC95)
         return ~coreGlobals.swMatrix[CORE_FLIPPERSWCOL];
       break;
     case WPC_SWCOINDOOR: /* cabinet switches */
       return coreGlobals.swMatrix[CORE_COINDOORSWCOL];
     case WPC_SWROWREAD: /* read row */
-      if (core_gameData->gen & (GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS))
+      if (core_gameData->gen & GENWPC_HASPIC)
         return wpc_pic_r();
       return core_getSwCol(wpc_data[WPC_SWCOLSELECT]);
     case WPC_SHIFTADRH:
@@ -326,6 +320,8 @@ READ_HANDLER(wpc_r) {
     case WPC_DIPSWITCH:
       return (core_getDip(0) & 0xfc) + 3;
     case WPC_RTCHOUR: {
+      // Don't know how the clock works.
+      // This hack by JD puts right values into the memory locations
       UINT8 *timeMem = memory_region(WPC_CPUREGION) + 0x1800;
       UINT16 checksum = 0;
       time_t now;
@@ -385,24 +381,19 @@ WRITE_HANDLER(wpc_w) {
       break;
     }
     case WPC_FLIPPERS: /* Flipper coils */
-      if (core_gameData->gen & (GEN_ALLWPC & ~(GEN_WPC95|GEN_WPC95DCS))) {
+      if ((core_gameData->gen & GENWPC_HASWPC95) == 0) {
         wpclocals.solFlip &= wpclocals.nonFlipBits;
         wpclocals.solFlip |= wpclocals.solFlipPulse = ~data;
       }
       break;
     case WPC_FLIPPERCOIL95:
-      if (core_gameData->gen & (GEN_WPC95|GEN_WPC95DCS)) {
+      if (core_gameData->gen & GENWPC_HASWPC95) {
         wpclocals.solFlip &= wpclocals.nonFlipBits;
         wpclocals.solFlip |= wpclocals.solFlipPulse = data;
       }
-      else if (core_gameData->gen & (GEN_WPCALPHA_1|GEN_WPCALPHA_2))
+      else if ((core_gameData->gen & GENWPC_HASDMD) == 0)
         wpclocals.alphaSeg[20+wpc_data[WPC_ALPHAPOS]].b.lo |= data;
       break;
-    /*-----------------------------
-    /  Lamp handling
-    /  Lamp values are accumulated
-    /  see vblank for description
-    /------------------------------*/
     case WPC_LAMPROW: /* row and column can be written in any order */
       core_setLamp(coreGlobals.tmpLampMatrix,wpc_data[WPC_LAMPCOLUMN],data);
       break;
@@ -410,7 +401,7 @@ WRITE_HANDLER(wpc_w) {
       core_setLamp(coreGlobals.tmpLampMatrix,data,wpc_data[WPC_LAMPROW]);
       break;
     case WPC_SWCOLSELECT:
-      if (core_gameData->gen & (GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS))
+      if (core_gameData->gen & GENWPC_HASPIC)
         wpc_pic_w(data);
       break;
     case WPC_GILAMPS: { /* For now, we simply catch if GI String is on or off*/
@@ -422,16 +413,16 @@ WRITE_HANDLER(wpc_w) {
     case WPC_EXTBOARD1: /* WPC_ALPHAPOS */
       break; /* just save position */
     case WPC_EXTBOARD2: /* WPC_ALPHA1 */
-      if (core_gameData->gen & (GEN_WPCALPHA_1|GEN_WPCALPHA_2))
+      if ((core_gameData->gen & GENWPC_HASDMD) == 0)
         wpclocals.alphaSeg[wpc_data[WPC_ALPHAPOS]].b.lo |= data;
       break;
     case WPC_EXTBOARD3:
-      if (core_gameData->gen & (GEN_WPCALPHA_1|GEN_WPCALPHA_2))
+      if ((core_gameData->gen & GENWPC_HASDMD) == 0)
         wpclocals.alphaSeg[wpc_data[WPC_ALPHAPOS]].b.hi |= data;
       break;
     /* case WPC_EXTBOARD4: */
     case WPC_EXTBOARD5:
-      if (core_gameData->gen & (GEN_WPCALPHA_1|GEN_WPCALPHA_2))
+      if ((core_gameData->gen & GENWPC_HASDMD) == 0)
         wpclocals.alphaSeg[20+wpc_data[WPC_ALPHAPOS]].b.hi |= data;
       break;
     case WPC_SHIFTADRH:
@@ -442,10 +433,6 @@ WRITE_HANDLER(wpc_w) {
     case WPC_DIPSWITCH:
       //DBGLOG(("W:DIPSWITCH %x\n",data));
       break; /* just save value */
-    /*-------------------------------------------
-    /  The solenoids are accumulated over time.
-    /  See vblank interrupt for explanation.
-    /--------------------------------------------*/
     case WPC_SOLENOID1:
       coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x00FFFFFF) | (data<<24);
       data |= wpc_data[offset];
@@ -463,19 +450,19 @@ WRITE_HANDLER(wpc_w) {
       data |= wpc_data[offset];
       break;
     case 0x3fd1-WPC_BASE:
-      DBGLOG(("sdataX:%2x\n",data));
+      //DBGLOG(("sdataX:%2x\n",data));
       if (core_gameData->gen & GEN_WPCALPHA_1) {
         sndbrd_0_data_w(0,data); sndbrd_0_ctrl_w(0,0); sndbrd_0_ctrl_w(0,1);
 	snd_cmd_log(data);
       }
       break;
     case WPC_SOUNDIF:
-      DBGLOG(("sdata:%2x\n",data));
+      //DBGLOG(("sdata:%2x\n",data));
       sndbrd_0_data_w(0,data); snd_cmd_log(data);
       if (sndbrd_0_type() == SNDBRD_S11CS) sndbrd_0_ctrl_w(0,0);
       break;
     case WPC_SOUNDBACK:
-      DBGLOG(("sctrl:%2x\n",data));
+      //DBGLOG(("sctrl:%2x\n",data));
       if (sndbrd_0_type() == SNDBRD_S11CS)
         { sndbrd_0_data_w(0,data); sndbrd_0_ctrl_w(0,1); }
       else sndbrd_0_ctrl_w(0,data);
@@ -498,13 +485,8 @@ WRITE_HANDLER(wpc_w) {
     case DMD_VISIBLEPAGE: /* set the visible page */
       break;
     case WPC_RTCHOUR:
-      wpclocals.ltime = (wpclocals.ltime % 60) + data*60;
-      break;
     case WPC_RTCMIN:
-      wpclocals.ltime = (wpclocals.ltime / 60) * 60 + data;
-      break;
     case WPC_RTCLOAD:
-      wpclocals.time = wpclocals.ltime;
       break;
     case WPC_LED:
       wpclocals.diagnostic |= (data>>7);
@@ -576,9 +558,6 @@ static void wpc_pic_w(int data) {
 /  Generate IRQ interrupt
 /--------------------------*/
 static INTERRUPT_GEN(wpc_irq) {
-  /*-- update rtc clock --*/
-  if (++wpclocals.ticks >= 60*WPC_IRQFREQ)
-    { wpclocals.time += 1; wpclocals.ticks = 0; }
   cpu_set_irq_line(WPC_CPUNO, M6809_IRQ_LINE, HOLD_LINE);
 }
 
@@ -608,9 +587,6 @@ static MACHINE_INIT(wpc) {
   static const int romLengthMask[] = {0x07, 0x0f, 0x00, 0x1f, 0x00, 0x00, 0x00, 0x3f};
   int romLength = memory_region_length(WPC_ROMREGION);
 
-  /* for some strange reason is there no game_exit or machine_exit functions. */
-  /* Don't know why the mame32 or MacMame people doesn't complain */
-  /* fake an exit */
   memset(&wpclocals, 0, sizeof(wpclocals));
   switch (core_gameData->gen) {
     case GEN_WPCALPHA_1:
@@ -643,7 +619,7 @@ static MACHINE_INIT(wpc) {
   coreGlobals.swMatrix[2] |= 0x08; /* Always closed switch */
 
   /*-- init security chip (if present) --*/
-  if ((core_gameData->gen & (GEN_WPCSECURITY | GEN_WPC95|GEN_WPC95DCS)) &&
+  if ((core_gameData->gen & GENWPC_HASPIC) &&
       (core_gameData->wpc.serialNo))
     wpc_serialCnv(core_gameData->wpc.serialNo, wpclocals.pic.sData,
                   wpclocals.pic.codeNo);
@@ -761,138 +737,6 @@ PINMAME_VIDEO_UPDATE(wpcdmd_update) {
     *line = 0; /* to simplify antialiasing */
   }
   video_update_core_dmd(bitmap, cliprect, dotCol, layout);
-//  video_update_core_status(bitmap, cliprect);
   return 0;
 }
 
-#if 0
-const struct MachineDriver machine_driver_wpcDMD = {
-  {{  CPU_M6809, 2000000, /* 2 Mhz? */
-      wpc_readmem, wpc_writemem, NULL, NULL,
-      wpc_vblank, WPC_VBLANKDIV,
-      wpc_irq, WPC_IRQFREQ
-  }},
-  WPC_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  100, wpc_init, CORE_EXITFUNC(wpc_exit)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  dmd_start, NULL, dmd_refresh,
-  0,0,0,0, {{ 0,0 }},
-  wpc_nvram
-};
-
-const struct MachineDriver machine_driver_wpcAlpha = {
-  {{  CPU_M6809, 2000000, /* 2 Mhz? */
-      wpc_readmem, wpc_writemem, NULL, NULL,
-      wpc_vblank, WPC_VBLANKDIV,
-      wpc_irq, WPC_IRQFREQ
-  }},
-  WPC_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  100, wpc_init, CORE_EXITFUNC(wpc_exit)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  NULL, NULL, gen_refresh,
-  0,0,0,0, {{ 0,0 }},
-  wpc_nvram
-};
-
-const struct MachineDriver machine_driver_wpcDMD_s = {
-  {{  CPU_M6809, 2000000, /* 2 Mhz? */
-      wpc_readmem, wpc_writemem, NULL, NULL,
-      wpc_vblank, WPC_VBLANKDIV, wpc_irq, WPC_IRQFREQ
-  } WPCS_SOUNDCPU },
-  WPC_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  100, wpc_init, CORE_EXITFUNC(wpc_exit)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  dmd_start, NULL, dmd_refresh,
-  0, 0, 0, 0, { WPCS_SOUND },
-  wpc_nvram
-};
-const struct MachineDriver machine_driver_wpcAlpha1_s = {
-  {{  CPU_M6809, 2000000, /* 2 Mhz? */
-      wpc_readmem, wpc_writemem, NULL, NULL,
-      wpc_vblank, WPC_VBLANKDIV, wpc_irq, WPC_IRQFREQ
-  }, S11C_SOUNDCPU },
-  WPC_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  100, wpc_init, CORE_EXITFUNC(wpc_exit)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  NULL, NULL, gen_refresh,
-  0, 0, 0, 0, { S11C_SOUND },
-  wpc_nvram
-};
-
-const struct MachineDriver machine_driver_wpcAlpha_s = {
-  {{  CPU_M6809, 2000000, /* 2 Mhz? */
-      wpc_readmem, wpc_writemem, NULL, NULL,
-      wpc_vblank, WPC_VBLANKDIV, wpc_irq, WPC_IRQFREQ
-  }   WPCS_SOUNDCPU },
-  WPC_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  100, wpc_init, CORE_EXITFUNC(wpc_exit)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  NULL, NULL, gen_refresh,
-  0, 0, 0, 0, { WPCS_SOUND },
-  wpc_nvram
-};
-
-const struct MachineDriver machine_driver_wpcDCS_s = {
-  {{  CPU_M6809, 2000000, /* 2 Mhz? */
-      wpc_readmem, wpc_writemem, NULL, NULL,
-      wpc_vblank, WPC_VBLANKDIV, wpc_irq, WPC_IRQFREQ
-  } DCS1_SOUNDCPU },
-  WPC_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  100, wpc_init, CORE_EXITFUNC(wpc_exit)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  dmd_start, NULL, dmd_refresh,
-  0, 0, 0, 0, { DCS_SOUND },
-  wpc_nvram
-};
-
-const struct MachineDriver machine_driver_wpcDCS95_s = {
-  {{  CPU_M6809, 2000000, /* 2 Mhz? */
-      wpc_readmem, wpc_writemem, NULL, NULL,
-      wpc_vblank, WPC_VBLANKDIV, wpc_irq, WPC_IRQFREQ
-  } DCS2_SOUNDCPU },
-  WPC_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  100, wpc_init, CORE_EXITFUNC(wpc_exit)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  dmd_start, NULL, dmd_refresh,
-  0, 0, 0, 0, { DCS_SOUND },
-  wpc_nvram
-};
-static core_tData dcs_coreData = {
-  8, /* 8 DIPs */
-  wpc_updSw,
-  1,
-  sndbrd_0_data_w,
-  "dcs",
-  wpc_sw2m, wpc_sw2m,wpc_m2sw,wpc_m2sw
-};
-static core_tData wpcs_coreData = {
-  8, /* 8 DIPs */
-  wpc_updSw,
-  1,
-  sndbrd_0_data_w,
-  "wpcs",
-  wpc_sw2m, wpc_sw2m,wpc_m2sw,wpc_m2sw
-};
-static core_tData s11cs_coreData = {
-  8, /* 8 DIPs */
-  wpc_updSw,
-  1,
-  sndbrd_0_data_w,
-  "s11cs",
-  wpc_sw2m, wpc_sw2m,wpc_m2sw,wpc_m2sw
-};
-#endif
