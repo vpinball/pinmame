@@ -22,19 +22,17 @@ const struct GameDriver *drivers[] = {
 // GAME PLAN GAMES BELOW
 // ---------------------
 /*Games below are Cocktail #110 Model*/
-
 DRIVERNV(foxylady)	//Foxy Lady (May 1978)
-					//Black Velvet (May 1978) (Same as Foxy Lady)
-					//Camel Lights (May 1978) (Same as Foxy Lady)
-					//Real to Real (May 1978) (Same as Foxy Lady)
-					//Rio (?? / 1978) (Same as Foxy Lady)
+DRIVERNV(blvelvet)	//Black Velvet (May 1978)
+DRIVERNV(camlight)	//Camel Lights (May 1978)
+DRIVERNV(real)	//Real (to Real) (May 1978)
+DRIVERNV(rio)	//Rio (?? / 1978)
 
 					//Chuck-A-Luck (October 1978)
 
 /*Games below are Cocktail #120 Model*/
-
 DRIVERNV(startrip)	//Star Trip (April 1979)
-					//Family Fun! (April 1979) (Same as Star Trip)
+DRIVERNV(famlyfun)	//Family Fun! (April 1979)
 
 /*Games below are regular standup pinball games*/
 DRIVERNV(sshooter)	//Sharpshooter (May 1979)
@@ -53,9 +51,6 @@ DRIVERNV(ladyshot)	//Lady Sharpshooter (May 1985)
 DRIVERNV(andromed)	//Andromeda (September 1985)
 DRIVERNV(cyclopes)	//Cyclopes (November 1985)
 					//Loch Ness Monster (November 1985)
-
-										
-
 
 
 // ---------------------
