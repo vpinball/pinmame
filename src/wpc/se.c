@@ -234,7 +234,7 @@ PINMAME_VIDEO_UPDATE(seminidmd2_update) {
   for (ii = 0, bits = 0x01; ii < 7; ii++, bits <<= 1) {
     UINT8 *line = &dotCol[ii+1][0];
     for (jj = 0; jj < 3; jj++)
-      for (kk = 0; kk < 5; kk++)
+      for (kk = 4; kk >= 0; kk--)
         *line++ = ((selocals.minidmd[0][jj][kk] & bits) + (selocals.minidmd[1][jj][kk] & bits) +
                    (selocals.minidmd[2][jj][kk] & bits))/bits;
   }
