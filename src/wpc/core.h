@@ -29,7 +29,7 @@
 #  define CORE_SCREENX 640
 #  define CORE_SCREENY 400
 #else /* VPINMAME */
-#  define CORE_SCREENX 256
+#  define CORE_SCREENX 320
 #  define CORE_SCREENY 256
 #endif /* VPINMAME */
 /*-----------------
@@ -160,12 +160,13 @@
 #define CORE_SEG7     5 // 7  segments
 #define CORE_SEG87    6 // 7  segments, comma every three
 #define CORE_SEG87F   7 // 7  segments, forced comma every three
-#define CORE_SEG98    8 // 9  segments, comma every three
-#define CORE_SEG98F   9 // 9  segments, forced comma every three
-#define CORE_SEG7S  0xa // 7  segments, small
-#define CORE_DMD    0xb // DMD Display
-#define CORE_DMD2   0xc // another DMD Display
-#define CORE_VIDEO  0xd // VIDEO Display
+#define CORE_SEG87FD  8 // 7  segments, forced dot every three
+#define CORE_SEG98    9 // 9  segments, comma every three
+#define CORE_SEG98F 0xa // 9  segments, forced comma every three
+#define CORE_SEG7S  0xb // 7  segments, small
+#define CORE_DMD    0xc // DMD Display
+#define CORE_DMD2   0xd // another DMD Display
+#define CORE_VIDEO  0xe // VIDEO Display
 #define CORE_IMPORT 0xf // Link to another display layout
 
 #define CORE_SEGHIBIT 0x10
