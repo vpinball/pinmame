@@ -94,5 +94,6 @@ extern PINMAME_VIDEO_UPDATE(seminidmd4_update);
 #define SE_MINIDMD2   0x02
 #define SE_LED        0x04
 #define SE_MINIDMD3   0x08
+#define SE_DIGIT      0x10
 #endif /* INC_SE */
 
