@@ -8,6 +8,7 @@ INLINE void adcb_di(void);
 INLINE void adcb_ex(void);
 INLINE void adcb_im(void);
 INLINE void adcb_ix(void);
+INLINE void adcx_im(void);
 INLINE void adda_di(void);
 INLINE void adda_ex(void);
 INLINE void adda_im(void);
@@ -386,7 +387,7 @@ eorb_im,orb_im, adcb_im,addb_im,illegal,ldx_im, illegal,stx_im,
 subb_di,sbcb_di,cmpb_di,illegal,andb_di,ldb_di, bitb_di,stb_di,
 eorb_di,orb_di, adcb_di,addb_di,illegal,ldx_di, illegal,stx_di,
 subb_ix,sbcb_ix,cmpb_ix,illegal,andb_ix,ldb_ix, bitb_ix,stb_ix,
-eorb_ix,orb_ix, adcb_ix,addb_ix,illegal,ldx_ix, illegal,stx_ix,
+eorb_ix,orb_ix, adcb_ix,addb_ix,adcx_im,ldx_ix, illegal,stx_ix,
 subb_ex,sbcb_ex,cmpb_ex,illegal,andb_ex,ldb_ex, bitb_ex,stb_ex,
 eorb_ex,orb_ex, adcb_ex,addb_ex,addx_ex,ldx_ex, illegal,stx_ex
 };

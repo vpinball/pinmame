@@ -471,7 +471,7 @@ static const UINT8 cycles_nsc8105[] =
 	/*B*/  4, 4, 4, 0, 4, 4, 4, 5, 4, 4, 4, 4, 5, 5, 9, 6,
 	/*C*/  2, 2, 2, 0, 2, 2, 2, 0, 2, 2, 2, 2, 0, 3, 0, 0,
 	/*D*/  3, 3, 3, 0, 3, 3, 3, 4, 3, 3, 3, 3, 0, 4, 0, 5,
-	/*E*/  5, 5, 5, 0, 5, 5, 5, 6, 5, 5, 5, 5, 0, 6, 0, 7,
+	/*E*/  5, 5, 5, 0, 5, 5, 5, 6, 5, 5, 5, 5, 5, 6, 0, 7,
 	/*F*/  4, 4, 4, 0, 4, 4, 4, 5, 4, 4, 4, 4, 4, 5, 0, 6
 };
 
@@ -2285,7 +2285,7 @@ int nsc8105_execute(int cycles)
 				case 0xe9: orb_ix(); break;
 				case 0xea: adcb_ix(); break;
 				case 0xeb: addb_ix(); break;
-				case 0xec: illegal(); break;
+				case 0xec: adcx_im(); break; /* NSC8105 only */
 				case 0xed: ldx_ix(); break;
 				case 0xee: illegal(); break;
 				case 0xef: stx_ix(); break;
