@@ -23,8 +23,14 @@
 #define MAX_NAME_LENGTH 30
 #define MAX_LINE_LENGTH 100
 #define SMDCMD_DIGITTOGGLE SMDCMD_ZERO
+
+//Don't love this idea. Let's get a group vote! SJE
+
+#if 0
 /* Use memcard directory for wavefiles */
 #define OSD_FILETYPE_WAVEFILE OSD_FILETYPE_MEMCARD
+#endif
+
 static int playCmd(int length, int *cmd);
 static int checkName(const char *buf, const char *name);
 static void readCmds(char *head);
