@@ -29,7 +29,7 @@ BY17_ROMSTARTx88(blkshpsq,"cpu_u2.716",CRC(272ad984) SHA1(3a6574762bd1db0a64da1d
                           "cpu_u6.716",NO_DUMP)
 BY35_ROMEND
 #define input_ports_blkshpsq input_ports_st
-CORE_GAMEDEFNV(blkshpsq,"Black Sheep Squadron",1979,"Astro",by35_mST100,GAME_NO_SOUND)
+CORE_GAMEDEFNV(blkshpsq,"Black Sheep Squadron",1979,"Astro",by35_mST100s,0)
 
 /*----------------------------------
 / Unknown game and manufacturer
@@ -101,7 +101,7 @@ BY17_ROMSTARTx88(lectrono,"cpu_u2.716",CRC(79e918ff) SHA1(a728eb26d941a9c7484be5
                           "cpu_u6.716",CRC(7c6e5fb5) SHA1(3aa4e0c1f377ba024e6b34bd431a188ff02d4eaa))
 BY35_ROMEND
 #define input_ports_lectrono input_ports_st
-CORE_GAMEDEFNV(lectrono,"Lectronamo",1978,"Stern",by35_mST100,GAME_NO_SOUND)
+CORE_GAMEDEFNV(lectrono,"Lectronamo",1978,"Stern",by35_mST100s,0)
 
 /*--------------------------------
 / Wildfyre
@@ -111,7 +111,7 @@ BY17_ROMSTARTx88(wildfyre,"cpu_u2.716",CRC(063f8b5e) SHA1(80434de549102bff829b47
                           "cpu_u6.716",CRC(00336fbc) SHA1(d2c360b8a80b209ecf4ec02ee19a5234c0364504))
 BY35_ROMEND
 #define input_ports_wildfyre input_ports_st
-CORE_GAMEDEFNV(wildfyre,"Wildfyre",1978,"Stern",by35_mST100,GAME_NO_SOUND)
+CORE_GAMEDEFNV(wildfyre,"Wildfyre",1978,"Stern",by35_mST100s,0)
 
 /*--------------------------------
 / Nugent
@@ -121,7 +121,7 @@ BY17_ROMSTARTx88(nugent,"cpu_u2.716",CRC(79e918ff) SHA1(a728eb26d941a9c7484be593
                         "cpu_u6.716",CRC(7c6e5fb5) SHA1(3aa4e0c1f377ba024e6b34bd431a188ff02d4eaa))
 BY35_ROMEND
 #define input_ports_nugent input_ports_st
-CORE_GAMEDEFNV(nugent,"Nugent",1978,"Stern",by35_mST100,GAME_NO_SOUND)
+CORE_GAMEDEFNV(nugent,"Nugent",1978,"Stern",by35_mST100s,0)
 
 /*--------------------------------
 / Dracula
@@ -131,7 +131,7 @@ BY17_ROMSTARTx88(dracula,"cpu_u2.716",CRC(063f8b5e) SHA1(80434de549102bff829b474
                          "cpu_u6.716",CRC(00336fbc) SHA1(d2c360b8a80b209ecf4ec02ee19a5234c0364504))
 BY35_ROMEND
 #define input_ports_dracula input_ports_st
-CORE_GAMEDEFNV(dracula,"Dracula",1979,"Stern",by35_mST100,GAME_NO_SOUND)
+CORE_GAMEDEFNV(dracula,"Dracula",1979,"Stern",by35_mST100s,0)
 
 /*--------------------------------
 / Trident - uses MPU-200 inports
@@ -141,7 +141,7 @@ BY17_ROMSTARTx88(trident,"cpu_u2.716",CRC(934e49dd) SHA1(cbf6ca2759166f522f65182
                          "cpu_u6.716",CRC(540bce56) SHA1(0b21385501b83e448403e0216371487ed54026b7))
 BY35_ROMEND
 #define input_ports_trident input_ports_st
-CORE_GAMEDEFNV(trident,"Trident",1979,"Stern",by35_mST100,GAME_NO_SOUND)
+CORE_GAMEDEFNV(trident,"Trident",1979,"Stern",by35_mST100s,0)
 
 /*--------------------------------
 / Hot Hand - uses MPU-200 inports
@@ -151,7 +151,7 @@ BY17_ROMSTARTx88(hothand,"cpu_u2.716",CRC(5e79ea2e) SHA1(9b45c59b2076fcb3a35de1d
                          "cpu_u6.716",CRC(fb955a6f) SHA1(387080d5af318463475797fecff026d6db776a0c))
 BY35_ROMEND
 #define input_ports_hothand input_ports_st
-CORE_GAMEDEFNV(hothand,"Hot Hand",1979,"Stern",by35_mST100,GAME_NO_SOUND)
+CORE_GAMEDEFNV(hothand,"Hot Hand",1979,"Stern",by35_mST100s,0)
 
 /*--------------------------------
 / Magic - uses MPU-200 inports
@@ -161,7 +161,7 @@ BY17_ROMSTARTx88(magic,"cpu_u2.716",CRC(8838091f) SHA1(d2702b5e15076793b4560c77b
                        "cpu_u6.716",CRC(fb955a6f) SHA1(387080d5af318463475797fecff026d6db776a0c))
 BY35_ROMEND
 #define input_ports_magic input_ports_st
-CORE_GAMEDEFNV(magic,"Magic",1979,"Stern",by35_mST100,GAME_NO_SOUND)
+CORE_GAMEDEFNV(magic,"Magic",1979,"Stern",by35_mST100s,0)
 
 /*-------------------------------------
 / Cosmic Princess - same ROMs as Magic
@@ -171,8 +171,7 @@ BY17_ROMSTARTx88(princess,"cpu_u2.716",CRC(8838091f) SHA1(d2702b5e15076793b4560c
                           "cpu_u6.716",CRC(fb955a6f) SHA1(387080d5af318463475797fecff026d6db776a0c))
 BY35_ROMEND
 #define input_ports_princess input_ports_st
-CORE_GAMEDEFNV(princess,"Cosmic Princess",1979,"Stern",by35_mST100,GAME_NO_SOUND)
-
+CORE_GAMEDEFNV(princess,"Cosmic Princess",1979,"Stern",by35_mST100s,0)
 /****************************************************/
 /* STERN MPU-200 (almost identical to Bally MPU-35) */
 /****************************************************/
