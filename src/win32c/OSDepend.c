@@ -50,6 +50,7 @@ extern HANDLE		g_hGameRunning;
 
 static FILE* g_pErrorLog;
 BOOL g_bOsDebug;
+BOOL g_fSTAModel = FALSE;	// Are we using STA threading model?
 
 /***************************************************************************
     External OSD function definitions  
@@ -60,7 +61,10 @@ int osd_init()
     uclock_init();
 
 	Display.init(g_pControllerOptions);
+
+#ifndef USE_SOUND_C
 	DirectSound.init(g_pControllerOptions);
+#endif
 	Keyboard.init(g_pControllerOptions);
 
 	return 0;
@@ -68,7 +72,9 @@ int osd_init()
 
 void osd_exit(void)
 {
+#ifndef USE_SOUND_C
 	DirectSound.exit();
+#endif
     uclock_exit();
 }
 
@@ -137,14 +143,19 @@ void osd_update_video_and_audio(struct osd_bitmap *game_bitmap,
                                 struct osd_bitmap *debug_bitmap,
                                 int leds_status)
 {
+#ifndef USE_SOUND_C
     DirectSound.update_audio();
+#endif
+
 	Display.update_display(game_bitmap, debug_bitmap);
 
-	while ( MsgWaitForMultipleObjects(1, &g_hGameRunning, FALSE, INFINITE, QS_ALLINPUT)!=WAIT_OBJECT_0 ) {
-		MSG Msg;
-		while ( PeekMessage(&Msg, 0, 0, 0, PM_REMOVE) ) {
-			TranslateMessage(&Msg);
-			DispatchMessage(&Msg);
+	if ( !g_fSTAModel ) {
+		while ( MsgWaitForMultipleObjects(1, &g_hGameRunning, FALSE, INFINITE, QS_ALLINPUT)!=WAIT_OBJECT_0 ) {
+			MSG Msg;
+			while ( PeekMessage(&Msg, 0, 0, 0, PM_REMOVE) ) {
+				TranslateMessage(&Msg);
+				DispatchMessage(&Msg);
+			}
 		}
 	}
 }
@@ -186,6 +197,7 @@ void osd_debugger_focus(int debugger_has_focus)
 {
 }
 
+#ifndef USE_SOUND_C
 
 /***************************************************************************
     Sound
@@ -246,6 +258,8 @@ void osd_opl_control(int chip, int reg)
 void osd_opl_write(int chip, int data)
 {
 }
+
+#endif
 
 /***************************************************************************
     Keyboard
