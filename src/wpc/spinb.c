@@ -57,10 +57,8 @@
 	  If we use ram for data, there's paging problems
   #3) Would love to hear samples of the real machine to see if the music/effects are playing
       at the proper speed.
-  #4) Digital Volume Adjustment not implemented - see schematics for DS1666 chip for more details
-  #5) After entering sound commander, game does strange things..
-  
-	  
+  #4) After entering sound commander, game does strange things..
+
 **************************************************************************************
 
 PIA 8255 CHIPS - PIN DESCRIPTIONS
@@ -187,8 +185,8 @@ SND CPU #2 8255 PPI
 //IRQ 500, NMI = 1500 wasn't bad, but still can't find the right timing
 
 #define SPINB_VBLANKFREQ      60 /* VBLANK frequency*/
-#define SPINB_INTFREQ        250 /* Z80 Interrupt frequency*/
-#define SPINB_NMIFREQ        2270 /* Z80 NMI frequency (shouldn't be used according to schematics!?) */
+#define SPINB_INTFREQ        200 /* Z80 Interrupt frequency*/
+#define SPINB_NMIFREQ       2300 /* Z80 NMI frequency (shouldn't be used according to schematics!?) */
 
 #define MATRIX_STROBE 0
 #define DIPCOL_STROBE 1
@@ -307,6 +305,7 @@ struct {
   int    SoundCmd;
   int    TestContactos;
   int    LastStrobeType;
+  UINT8  volume;
   mame_timer *irqtimer;
   mame_timer *nmitimer;
   int irqfreq;
@@ -334,7 +333,7 @@ static struct MSM5205interface SPINB_msm6585Int = {
 	640000,									//640Khz Clock Frequency
 	{SPINB_S1_msmIrq, SPINB_S2_msmIrq},		//VCLK Int. Callback
 	{MSM5205_S48_4B, MSM5205_S48_4B},		//Sample Mode
-	{80,50}									//Volume
+	{100,75}								//Volume
 };
 /* Sound board */
 const struct sndbrdIntf spinbIntf = {
@@ -462,10 +461,10 @@ static WRITE_HANDLER(solenoid_w)
 			coreGlobals.tmpLampMatrix[8] = data & 0x7f;
 			break;
 		case 4:
-			coreGlobals.tmpLampMatrix[10] = data;
+			coreGlobals.tmpLampMatrix[9] = data;
 			break;
 		case 5:
-			coreGlobals.tmpLampMatrix[9] = data;
+			coreGlobals.tmpLampMatrix[10] = data;
 			break;
 		default:
 			LOG(("Solenoid_W Logic Error\n"));
@@ -608,7 +607,7 @@ CI-22 8255 PPI
   Port B:
   (out) P0-P7 : J4 - Pins 5 - 12 (Marked Various) - Flasher Control 5-12
 */
-WRITE_HANDLER(ci22_portb_w) { solenoid_w(5,data); }
+WRITE_HANDLER(ci22_portb_w) { solenoid_w(4,data); }
 /*
 CI-22 8255 PPI
 --------------
@@ -616,7 +615,7 @@ CI-22 8255 PPI
   (out) P0-P3 : J4 - Pins 1 - 4 (Marked Various) - Flasher Control 1-4
   (out) P4-P7 : J5 - Pins 15-19 (no 16) (Marked Various) - Fixed Lamps Head & Playfield (??)
 */
-WRITE_HANDLER(ci22_portc_w) { solenoid_w(4,data); }
+WRITE_HANDLER(ci22_portc_w) { solenoid_w(5,data); }
 
 /*
 CI-21 8255 PPI
@@ -862,6 +861,7 @@ static MACHINE_INIT(spinb) {
 static MACHINE_RESET(spinb) {
   //Is always off by 1 if we don't correct it here!
   SPINBlocals.DMDRow = 64-33;
+  SPINBlocals.volume = 122;
 }
 
 static MACHINE_STOP(spinb) {
@@ -919,20 +919,29 @@ static WRITE_HANDLER(i8031_port_write)
 			if(rd != GET_BIT2) {
 				rd = GET_BIT2;
 				//printf("RD = %x\n",rd);
+#if DMD_FROM_RAM
+#else
+				if (rd) {
+					if (SPINBlocals.DMDRow == 32)
+						memcpy(dmd32RAM,dmd32TMP,sizeof(dmd32TMP));
+					if (SPINBlocals.DMDRow > 32) {
+						SPINBlocals.DMDRow = 0;
+						SPINBlocals.DMDCol = 0;
+					}
+				}
+#endif
 			}
 			//Row Clock
 			if(rc != GET_BIT3) {
 				rc = GET_BIT3;
 				//printf("RC = %x\n",rc);
-				if(GET_BIT3) 
-				{
 #if DMD_FROM_RAM
 #else
+				if (rc) {
+					SPINBlocals.DMDCol = 0;
 					SPINBlocals.DMDRow = (SPINBlocals.DMDRow+1) % 64;
-					if(SPINBlocals.DMDRow == 0)
-						memcpy(dmd32RAM,dmd32TMP,sizeof(dmd32TMP));
-#endif					
 				}
+#endif
 			}
 			//Column Latch
 			if(cl != GET_BIT4) {
@@ -972,7 +981,13 @@ static READ_HANDLER(dmd_readcmd)
 READ_HANDLER(sndcmd_r) { return SPINBlocals.SoundCmd; }
 
 //Send commands to Digital Volume
-WRITE_HANDLER(digvol_w) { LOGSND(("digvol_w = %x\n",data)); }
+WRITE_HANDLER(digvol_w) {
+	if (data && SPINBlocals.volume < 142) SPINBlocals.volume++;
+	if (!data && SPINBlocals.volume > 0)  SPINBlocals.volume--;
+	LOGSND(("digvol_w = %x; volume = %d\n", data, SPINBlocals.volume));
+	MSM5205_set_volume(0, SPINBlocals.volume*100/142);
+	MSM5205_set_volume(1, SPINBlocals.volume*100/142);
+}
 
 //Sound Control - CPU #1 & CPU #2 (identical)
 //FROM MANUAL (AND TOTALLY WRONG!)
