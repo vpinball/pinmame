@@ -73,19 +73,69 @@
 #include "network.h"
 #endif /* MAME_NET */
 
-#ifdef PINMAME_EXT
+#ifdef PINMAME
 typedef struct {
   int dmd_red, dmd_green, dmd_blue;
   int dmd_perc66, dmd_perc33, dmd_perc0;
   int dmd_only, dmd_compact, dmd_antialias;
-  int soundlimit;
 } tPMoptions;
 extern tPMoptions pmoptions;
-#endif /* PINMAME_EXT */
-#ifdef PINMAME
-#define GAME_USES_CHIMES            0x0000
-#endif
+struct pinMachine {
+  int  coreDips;               /* Number of core DIPs */
+  void (*updSw)(int *inport);  /* update core specific switches */
+  int  diagLEDs;               /* number of diagnostic LEDs */
+  mem_write_handler sndCmd;    /* send a sound command */
+  char *sndHead;               /* heading in sound.dat */
+  int (*sw2m)(int no);         /* conversion function for switch */
+  int (*lamp2m)(int no);       /* conversion function for lamps */
+  int (*m2sw)(int col, int row);
+  int (*m2lamp)(int col, int row);
+  struct {
+    void (*callback)(int);
+    int  rate;
+  } timers[5];
+  void (*init)(void);
+  void (*reset)(void);
+  void (*stop)(void);
+};
+extern void machine_add_timer(struct InternalMachineDriver *machine, void (*func)(int), int rate);
+#define DIAGLED_VERTICAL	0x100	/* Flag indicated DIAG LEDS are Vertically Positioned */
+#define MDRV_DIPS(no) \
+  machine->pinmame.coreDips = (no);
 
+#define SWITCH_UPDATE(name) \
+  void name##_switch_update(int *inports)
+
+#define MDRV_SWITCH_UPDATE(name) \
+  machine->pinmame.updSw = name##_switch_update;
+#define MDRV_DIAGNOSTIC_LEDH(no) \
+  machine->pinmame.diagLEDs = (no);
+#define MDRV_DIAGNOSTIC_LEDV(no) \
+  machine->pinmame.diagLEDs = (no)|DIAGLED_VERTICAL;
+#define MDRV_DIAGNOSTIC_LED7 \
+  machine->pinmame.diagLEDs = 0xff;
+
+#define MDRV_SWITCH_CONV(toMatrix,fromMatrix) \
+  machine->pinmame.sw2m = toMatrix; \
+  machine->pinmame.m2sw = fromMatrix;
+#define MDRV_LAMP_CONV(toMatrix,fromMatrix) \
+  machine->pinmame.lamp2m = toMatrix; \
+  machine->pinmame.m2lamp = fromMatrix;
+#define MDRV_SOUND_CMD(name) \
+  machine->pinmame.sndCmd = (name);
+#define MDRV_SOUND_CMDHEADING(str) \
+  machine->pinmame.sndHead = (str);
+#define MDRV_TIMER_ADD(func, rate) \
+  machine_add_timer(machine, func, rate);
+#define MACHINE_RESET(name) void machine_reset_##name(void)
+#define machine_reset_NULL NULL
+#define machine_stop_NULL NULL
+#define MDRV_CORE_INIT_RESET_STOP(iname, rname, sname) \
+  machine->pinmame.init = machine_init_##iname; \
+  machine->pinmame.reset = machine_reset_##rname; \
+  machine->pinmame.stop = machine_stop_##sname;
+#define GAME_USES_CHIMES            0x0000
+#endif /* PINMAME */
 
 /***************************************************************************
 
@@ -315,6 +365,9 @@ struct InternalMachineDriver
 
 	UINT32 sound_attributes;
 	struct MachineSound sound[MAX_SOUND];
+#ifdef PINMAME
+        struct pinMachine pinmame;
+#endif
 };
 
 
