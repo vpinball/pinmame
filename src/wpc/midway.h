@@ -13,19 +13,26 @@
 /*-- Common Inports for MIDWAY Games --*/
 #define MIDWAY_COMPORTS \
   PORT_START /* 0 */ \
-    /* switch column 3 */ \
-    COREPORT_BITDEF(  0x0400, IPT_COIN2, KEYCODE_3) \
-    /* switch column 4 */ \
-    COREPORT_BITDEF(  0x4000, IPT_COIN1, IP_KEY_DEFAULT) \
     /* switch column 0 */ \
-    COREPORT_BIT(     0x0001, "Key 1", KEYCODE_1) \
-    COREPORT_BIT(     0x0002, "Key 2", KEYCODE_2) \
-    COREPORT_BIT(     0x0004, "Key 4", KEYCODE_4) \
-    COREPORT_BIT(     0x0080, "Key 6", KEYCODE_6) \
-    COREPORT_BIT(     0x0008, "Enter Diagnostic", KEYCODE_7) \
-    COREPORT_BIT(     0x0010, "Switch Test", KEYCODE_8) \
+    COREPORT_BIT(     0x0100, "Player #1 Start",   KEYCODE_1) \
+    COREPORT_BIT(     0x0400, "Player #2 Start",   KEYCODE_2) \
+    COREPORT_BIT(     0x0800, "Player #3 Start",   KEYCODE_3) \
+    COREPORT_BIT(     0x0200, "Player #4 Start",   KEYCODE_4) \
+    COREPORT_BIT(     0x0008, "Solenoid Test",     KEYCODE_7) \
+    COREPORT_BIT(     0x0010, "Switch Test",       KEYCODE_8) \
     COREPORT_BIT(     0x0020, "Lamp/Display Test", KEYCODE_9) \
-    COREPORT_BIT(     0x0040, "Reset", KEYCODE_0) \
+    COREPORT_BIT(     0x0040, "Reset",             KEYCODE_0) \
+    /* switch column 3 */ \
+    COREPORT_BIT(     0x1000, "Slam Tilt",         KEYCODE_HOME) \
+    COREPORT_BIT(     0x8000, "Ball Tilt",         KEYCODE_INSERT) \
+    COREPORT_BITDEF(  0x4000, IPT_COIN1, IP_KEY_DEFAULT) \
+    /* switch column 4 */ \
+    COREPORT_BITDEF(  0x2000, IPT_COIN2, KEYCODE_6)
+
+#define MIDWAYP_COMPORTS \
+  PORT_START /* 0 */ \
+    /* switch column 0 */ \
+    COREPORT_BIT(     0x0040, "Reset", KEYCODE_0)
 
 /*-- Standard input ports --*/
 #define MIDWAY_INPUT_PORTS_START(name,balls) \
@@ -33,6 +40,12 @@
     CORE_PORTS \
     SIM_PORTS(balls) \
     MIDWAY_COMPORTS
+
+#define MIDWAYP_INPUT_PORTS_START(name,balls) \
+  INPUT_PORTS_START(name) \
+    CORE_PORTS \
+    SIM_PORTS(balls) \
+    MIDWAYP_COMPORTS
 
 #define MIDWAY_INPUT_PORTS_END INPUT_PORTS_END
 

@@ -102,18 +102,20 @@ static INTERRUPT_GEN(MIDWAYP_vblank) {
 static SWITCH_UPDATE(MIDWAY) {
 	if (inports) {
 		coreGlobals.swMatrix[0] = inports[MIDWAY_COMINPORT] & 0xff;
-		coreGlobals.swMatrix[3] = (coreGlobals.swMatrix[3] & 0xbf) | ((inports[MIDWAY_COMINPORT] & 0x0f00) >> 4);
-		coreGlobals.swMatrix[4] = (coreGlobals.swMatrix[4] & 0xbf) | ((inports[MIDWAY_COMINPORT] & 0xf000) >> 8);
+		coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0x0f) | ((inports[MIDWAY_COMINPORT] & 0x0f00) >> 4);
+		coreGlobals.swMatrix[3] = (coreGlobals.swMatrix[3] & 0x2f) | ((inports[MIDWAY_COMINPORT] & 0xd000) >> 8);
+		coreGlobals.swMatrix[4] = (coreGlobals.swMatrix[4] & 0xbf) | ((inports[MIDWAY_COMINPORT] & 0x2000) >> 7);
 	}
 }
 
 static SWITCH_UPDATE(MIDWAYP) {
 	if (inports) {
 		coreGlobals.swMatrix[0] = inports[MIDWAY_COMINPORT] & 0x40;
-		if (coreGlobals.swMatrix[0] & 0x40)
+		if (coreGlobals.swMatrix[0] & 0x40) {
 			i4004_set_TEST(1);
+			locals.vblankCount = 0;
 		/* test line has to be held longer than a few milliseconds */
-		else if (locals.vblankCount % 5 == 0)
+		} else if (locals.vblankCount % 10 == 0)
 			i4004_set_TEST(0);
 	}
 }
@@ -289,12 +291,15 @@ static MACHINE_INIT(MIDWAY) {
   memset(&locals, 0, sizeof locals);
 }
 
-static MACHINE_RESET(MIDWAYP) {
+static MACHINE_INIT(MIDWAYP) {
   UINT8* ram = memory_region(MIDWAY_CPU);
   /* clear RAM area */
   memset(ram+0x1000, 0x00, 0x100);
   memset(ram+0x2000, 0x00, 0x100);
+  memset(&locals, 0, sizeof locals);
+#ifndef VPINMAME
   i4004_set_TEST(1);
+#endif
 }
 
 static MACHINE_STOP(MIDWAY) {
@@ -320,7 +325,7 @@ MACHINE_DRIVER_START(MIDWAYProto)
   MDRV_CPU_MEMORY(MIDWAYP_readmem, MIDWAYP_writemem)
   MDRV_CPU_PORTS(midway_readport2,midway_writeport2)
   MDRV_CPU_VBLANK_INT(MIDWAYP_vblank, 1)
-  MDRV_CORE_INIT_RESET_STOP(MIDWAY,MIDWAYP,MIDWAY)
+  MDRV_CORE_INIT_RESET_STOP(MIDWAYP,NULL,MIDWAY)
   MDRV_DIPS(0) // no dips!
   MDRV_SWITCH_UPDATE(MIDWAYP)
 //  MDRV_DIAGNOSTIC_LEDH(4)
