@@ -35,8 +35,12 @@ static void S80_nvram(void *file, int write);
 	s9  s10 s11 s12 s13 s14 s15 s16
 	s17 s18 s19 s20 s21 s22 s23 s24
 	s25 s26 s27 s28 s29 s30 s31 s32
+
+replaced by core_getDip():
+
+  static UINT8 opSwitches[4] = {0x02, 0x83, 0xd3, 0xfc};
+
 */
-static UINT8 opSwitches[4] = {0x02, 0x83, 0xd3, 0xfc};
 
 int core_bcd2seg16[16] = {0x3f00,0x0022,0x5b08,0x4f08,0x6608,0x6d08,0x7d08,0x0700,0x7f08,0x6f08,
 #ifdef MAME_DEBUG
@@ -198,7 +202,8 @@ static int revertByte(int value) {
 /*---------------
 / Switch reading
 /----------------*/
-static READ_HANDLER(riot0a_r)  { return S80locals.OpSwitchEnable?opSwitches[S80locals.swColOp]:(S80_getSwRow(S80locals.swRow)&0xff);}
+// static READ_HANDLER(riot0a_r)  { return S80locals.OpSwitchEnable?opSwitches[S80locals.swColOp]:(S80_getSwRow(S80locals.swRow)&0xff);}
+static READ_HANDLER(riot0a_r)  { return S80locals.OpSwitchEnable?revertByte(core_getDip(S80locals.swColOp)):(S80_getSwRow(S80locals.swRow)&0xff);}
 static WRITE_HANDLER(riot0a_w) { logerror("riot0a_w: 0x%02x\n", data); }
 
 static READ_HANDLER(riot0b_r)  { /* logerror("riot0b_r\n"); */ return 0x7f; }
