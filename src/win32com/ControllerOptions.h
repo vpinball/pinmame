@@ -39,16 +39,7 @@ typedef struct tagCONTROLLEROPTIONS {
 
 } CONTROLLEROPTIONS, *PCONTROLLEROPTIONS;
 
-typedef struct tagCONTROLLERPATHS {
-	char	szRomDirs[MAX_PATH];
-	char	szCfgDir[MAX_PATH];
-	char	szNVRamDir[MAX_PATH];
-	char	szSampleDirs[MAX_PATH];
-	char	szImgDir[MAX_PATH];
-} CONTROLLERPATHS, *PCONTROLLERPATHS;
-
 extern PCONTROLLEROPTIONS g_pControllerOptions;
-extern PCONTROLLERPATHS  g_pControllerPaths;
 
 #ifdef __cplusplus
 }
@@ -57,10 +48,6 @@ extern PCONTROLLERPATHS  g_pControllerPaths;
 BOOL GetOptions(PCONTROLLEROPTIONS pControllerOptions, char* pszROMName);
 BOOL PutOptions(PCONTROLLEROPTIONS pControllerOptions, char* pszROMName);
 void DelOptions(char* pszROMName);
-
-void GetPaths(PCONTROLLERPATHS pControllerPaths);
-void PutPaths(PCONTROLLERPATHS pControllerPaths);
-void DelPaths();
 
 int	  GetGameNumFromString(char *name);
 char* GetInstallDir(char *pszInstallDir, int iSize);

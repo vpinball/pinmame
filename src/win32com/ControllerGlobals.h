@@ -5,7 +5,6 @@
 extern "C" {
 #endif
 
-extern HWND			g_hMainWnd;			// handle to main window
 extern BOOL			g_fActivateWindow;	// Set this to TRUE if COM Window should become the ACTIVE window!
 extern int			g_fHandleMechanics;	// Signals wpc core to handle the mechanics for use
 extern int			g_fHandleKeyboard;  // Signals wpc core to handle the keyboard
