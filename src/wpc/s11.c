@@ -15,8 +15,6 @@
 // nvram save for DE games
 // de buttons
 // DE display layouts
-// DMD support
-// S2 sound support (BSMT)
 #define S11_PIA0 0
 #define S11_PIA1 1
 #define S11_PIA2 2
@@ -66,15 +64,22 @@ static struct {
 } s11locals;
 
 static void s11_irqline(int state) {
+  int deGame = core_gameData->gen & (GEN_DE|GEN_DEDMD16|GEN_DEDMD32|GEN_DEDMD64);
   if (state) {
     cpu_set_irq_line(0, M6808_IRQ_LINE, ASSERT_LINE);
-    pia_set_input_ca1(S11_PIA2, core_getSw(S11_SWADVANCE));
-    pia_set_input_cb1(S11_PIA2, core_getSw(S11_SWUPDN));
+    if (deGame) {
+      pia_set_input_ca1(S11_PIA2, !core_getSw(DE_SWADVANCE));
+      pia_set_input_cb1(S11_PIA2, !core_getSw(DE_SWUPDN));
+    }
+    else {
+      pia_set_input_ca1(S11_PIA2, core_getSw(S11_SWADVANCE));
+      pia_set_input_cb1(S11_PIA2, core_getSw(S11_SWUPDN));
+    }
   }
   else if (!s11locals.piaIrq) {
     cpu_set_irq_line(0, M6808_IRQ_LINE, CLEAR_LINE);
-    pia_set_input_ca1(S11_PIA2, 0);
-    pia_set_input_cb1(S11_PIA2, 0);
+    pia_set_input_ca1(S11_PIA2, deGame);
+    pia_set_input_cb1(S11_PIA2, deGame);
   }
 }
 
@@ -83,8 +88,7 @@ static void s11_piaMainIrq(int state) {
 }
 
 static int s11_irq(void) {
-  s11_irqline(1);
-  timer_set(TIME_IN_CYCLES(32,0),0,s11_irqline);
+  s11_irqline(1); timer_set(TIME_IN_CYCLES(32,0),0,s11_irqline);
   return 0;
 }
 
@@ -363,10 +367,6 @@ static void s11_updSw(int *inports) {
   sndbrd_0_diag(core_getSw(S11_SWSOUNDDIAG));
   if ((core_gameData->hw.gameSpecific1 & S11_MUXSW2) && core_gameData->sxx.muxSol)
     core_setSw(2, core_getSol(core_gameData->sxx.muxSol));
-//  if (core_getSw(S11_SWADVANCE)) pia_set_input_ca1(S11_PIA2, 1);
-//  if (core_getSw(S11_SWUPDN))    pia_set_input_cb1(S11_PIA2, 1);
-//  pia_set_input_ca1(S11_PIA2, core_getSw(S11_SWADVANCE));
-//  pia_set_input_cb1(S11_PIA2, core_getSw(S11_SWUPDN));
 }
 
 // convert lamp and switch numbers
