@@ -1422,6 +1422,14 @@ SOURCE=.\src\wpc\degames.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\desound.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\desound.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\driver.c
 # End Source File
 # Begin Source File
