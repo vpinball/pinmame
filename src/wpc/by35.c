@@ -40,7 +40,7 @@ static WRITE_HANDLER(snd300_wex) {
 #define BY35_VBLANKFREQ    60 /* VBLANK frequency */
 #define BY35_IRQFREQ      317 /* IRQ (via PIA) frequency */
 #define BY35_6802IRQFREQ  431 /* IRQ (via PIA) frequency for games using 6802 cpu */
-#define BY35_ZCFREQ       120 /* Zero cross frequency */
+#define BY35_ZCFREQ       100 /* Zero cross frequency */
 
 #define BY35_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
 #define BY35_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
@@ -348,7 +348,7 @@ static INTERRUPT_GEN(by35_irq) {
 }
 
 static void by35_zeroCross(int data) {
-  pia_set_input_cb1(BY35_PIA0, locals.phaseA = !locals.phaseA);
+    pia_set_input_cb1(BY35_PIA0, locals.phaseA = !locals.phaseA);
 }
 
 
@@ -569,14 +569,14 @@ MACHINE_DRIVER_START(by35)
   MDRV_CPU_ADD_TAG("mcpu", M6800, 500000)
   MDRV_CPU_MEMORY(by35_readmem, by35_writemem)
   MDRV_CPU_VBLANK_INT(by35_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(by35_irq, BY35_IRQFREQ*2) // the routine does the signal alternation!
+  MDRV_CPU_PERIODIC_INT(by35_irq, BY35_IRQFREQ) // the routine does the signal alternation!
   MDRV_NVRAM_HANDLER(by35)
   MDRV_DIPS(32)
   MDRV_SWITCH_UPDATE(by35)
   MDRV_DIAGNOSTIC_LEDH(1)
-  MDRV_TIMER_ADD(by35_zeroCross, BY35_ZCFREQ)
+  MDRV_TIMER_ADD(by35_zeroCross,BY35_ZCFREQ*2)
 MACHINE_DRIVER_END
-
+//  MDRV_TIMER_ADD(by35_zeroCross,BY35_ZCFREQ*2)
 MACHINE_DRIVER_START(byProto)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(by35Proto,by35,NULL)
