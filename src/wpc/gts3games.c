@@ -155,10 +155,12 @@ CORE_GAMEDEFNV(tfight,"Title Fight",1990,"Gottlieb",mGTS3S,GAME_IMPERFECT_GRAPHI
 /*-------------------------------------------------------------------
 / Nudge It
 /-------------------------------------------------------------------*/
-INITGAME(nudgeit, ALPHA, FLIP_SW(FLIP_L), 3/*?*/, SNDBRD_NONE, 5)
-GTS3ROMSTARTX(nudgeit,	"gprom.bin",NO_DUMP)
+INITGAME(nudgeit, ALPHA, FLIP_SW(FLIP_L), 1, SNDBRD_GTS3, 4)
+GTS3ROMSTART(nudgeit,	"gprom.bin",CRC(3d9e0309) SHA1(caaa28482e7f260668aa05b39b551acb8e4cc41a))
+GTS3SOUND3232(			"yrom1.bin",CRC(65fc2e60) SHA1(6377c220753d9e4b5c76d445056409526d95772f),
+						"drom1.bin",CRC(ae0c4b1d) SHA1(c8aa409c9b54fd8ecf70eb2926f4e98fc5eb11fe))
 GTS3_ROMEND
-CORE_GAMEDEFNV(nudgeit,"Nudge It",1990,"Gottlieb",mGTS3,GAME_NO_SOUND)
+CORE_GAMEDEFNV(nudgeit,"Nudge It",1990,"Gottlieb",mGTS3S80B,0)
 
 /*-------------------------------------------------------------------
 / Car Hop (#725)
