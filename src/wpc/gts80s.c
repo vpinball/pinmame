@@ -8,9 +8,11 @@
 #include "sound/votrax.h"
 #include "core.h"
 #include "sndbrd.h"
+#include "snd_cmd.h"
 
 #include "gts80.h"
 #include "gts80s.h"
+#include "gts3.h"
 
 /* 
     Gottlieb System 80 Sound Boards
@@ -23,6 +25,8 @@
 	  (thanks goes to Peter Hall for providing some very usefull information)
    
     - System 80B Sound Board (3 generations)
+
+	- System 3 sound boards
 
 */
 
@@ -209,8 +213,7 @@ void GTS80SS_irq(int state) {
 
 void GTS80SS_nmi(int state)
 {
-	logerror("NMI: %i\n",state);
-	/* Devils Dare will not play any sound if the NMI occurs */
+	// logerror("NMI: %i\n",state);
 	if ( !state )
 		cpu_set_irq_line(GTS80SS_locals.boardData.cpuNo, M6502_INT_NMI, PULSE_LINE);
 }
@@ -418,38 +421,51 @@ const struct sndbrdIntf gts80ssIntf = {
 /  Local varibles
 /-----------------*/
 struct {
-  int    ay_latch;			//Data Latch to AY-8913 chips
-  int    ym2151_port;		//Bit determines if Registor or Data is written to YM2151
-  int    nmi_rate;			//Programmable NMI rate
-  void   *nmi_timer;		//Timer for NMI
+  int    ay_latch;			// Data Latch to AY-8913 chips
+  int    ym2151_port;		// Bit determines if Registor or Data is written to YM2151
+  int    nmi_rate;			// Programmable NMI rate
+  void   *nmi_timer;		// Timer for NMI
   UINT8  dac_volume;
   UINT8  dac_data;
+
+  int adpcm;
+  int enable_cs;
+  int u3;
+  int enable_w;
+  int rom_cs;
 } GTS80BS_locals;
 
 // Latch data for AY chips
-WRITE_HANDLER(s80bs_ay8910_latch_w) { GTS80BS_locals.ay_latch = data;}
-
-// Init 
-void gts80b_init(struct sndbrdData *brdData) {
-	GTS80BS_locals.nmi_timer = NULL; 
-	memset(&GTS80BS_locals, 0, sizeof(GTS80BS_locals));
-}
-
-// Cleanup
-void gts80b_exit(int boardNo)
+WRITE_HANDLER(s80bs_ay8910_latch_w)
 {
-	if(GTS80BS_locals.nmi_timer)
-		timer_remove(GTS80BS_locals.nmi_timer);
-	GTS80BS_locals.nmi_timer = NULL;
+	GTS80BS_locals.ay_latch = data;
 }
-
 
 //Setup NMI timer and triggering code: Timed NMI occurs for the Y-CPU. Y-CPU triggers D-CPU NMI
-void nmi_generate(int param) { cpu_cause_interrupt(1,M6502_INT_NMI); }
-static void nmi_callback(int param) { cpu_cause_interrupt(cpu_gettotalcpu()-1, M6502_INT_NMI); }
-WRITE_HANDLER(s80bs_nmi_rate_w) { GTS80BS_locals.nmi_rate = data; }
-WRITE_HANDLER(s80bs_cause_dac_nmi_w) { cpu_cause_interrupt(cpu_gettotalcpu()-2, M6502_INT_NMI); }
-READ_HANDLER(s80bs_cause_dac_nmi_r) { s80bs_cause_dac_nmi_w(offset, 0); return 0; }
+void nmi_generate(int param)
+{
+	cpu_cause_interrupt(1,M6502_INT_NMI); 
+}
+
+static void nmi_callback(int param)
+{
+	cpu_cause_interrupt(cpu_gettotalcpu()-1, M6502_INT_NMI);
+}
+
+WRITE_HANDLER(s80bs_nmi_rate_w)
+{
+	GTS80BS_locals.nmi_rate = data;
+}
+
+WRITE_HANDLER(s80bs_cause_dac_nmi_w)
+{
+	cpu_cause_interrupt(cpu_gettotalcpu()-2, M6502_INT_NMI);
+}
+
+READ_HANDLER(s80bs_cause_dac_nmi_r)
+{
+	s80bs_cause_dac_nmi_w(offset, 0); return 0; 
+}
 
 //Latch a command into the Sound Latch and generate the IRQ interrupts
 WRITE_HANDLER(s80bs_sh_w)
@@ -570,6 +586,7 @@ WRITE_HANDLER(gts80b_data_w)
 {
 //	logerror("Sound Command %x\n",data);
 	s80bs_sh_w(0,data^0xff);	/*Data is inverted from main cpu*/
+	snd_cmd_log(data^0xff);
 }
 
 /***************************/
@@ -672,11 +689,6 @@ MEMORY_WRITE_START(GTS80BS3_writemem2)
 { 0x8001, 0x8001, s80bs_dac_data_w},
 MEMORY_END
 
-const struct sndbrdIntf gts80bIntf = {
-  gts80b_init, gts80b_exit, NULL, gts80b_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
-};
-
-
 /*----------------
 / Sound interface
 /-----------------*/
@@ -703,3 +715,184 @@ struct YM2151interface GTS80BS_ym2151Int =
 	{ YM3012_VOL(50,MIXER_PAN_LEFT,50,MIXER_PAN_RIGHT) },
 	{ 0 }
 };
+
+/* System 3 Sound:
+
+   Far as I know there is only 1 generation.
+
+   Hardware is almost the same as Generation 3 System 80b boards, except for the OKI chip.
+
+   CPU: 2x(6502): DAC: 2x(AD7528): DSP: 1x(YM2151): OTHER: OKI6295 (Speech)
+*/   
+
+/*--------------
+/  Memory map
+/---------------
+  CPU #1 (Y-CPU):
+  ---------------
+
+  S2 - LS139
+  A11 A12
+  -------
+  0    0 = (0x6000) = Y0 = S5 LS374 Chip Select
+  1    0 = (0x6800) = Y1 = A4-LS74 - Clear IRQ & Enable Latch
+  0    1 = (0x7000) = Y2 = CPU #2 - Trigger NMI
+  1    1 = (0x7800) = Y3 = S4-13 = Latch Data to 6295
+  
+  T4 - F138
+  A13 A14 A15
+  -----------
+    0   0   0 = Y0 = RAM Enable (0x1fff)
+    0   1   0 = Y2 = S4-14 = 2151 Enable  (0x4000)
+	1   1   0 = Y3 = S2-LS139 Enable(0x6000)
+	1   0   1 = Y5 = Enable G3-LS377 (0xA000)
+
+  CPU #2 (D-CPU):
+  ---------------
+
+  S2 - LS139
+  A14 A15
+  -------
+  0    0 = (<0x4000) = Y0 = RAM Enable
+  1    0 = (0x4000) = Y1 = A4-LS74 - Clear IRQ & Enable Latch
+  0    1 = (0x8000) = Y2 = Enable DAC (E2 - AD7528)
+  
+*/
+
+// Send data to 6295, but only if Chip Selected and Write Enabled!
+static void oki6295_w(void)
+{
+	if ( GTS80BS_locals.enable_cs && GTS80BS_locals.enable_w ) {
+		OKIM6295_data_0_w(0, GTS80BS_locals.adpcm);
+		logerror("OKI Data = %x\n", GTS80BS_locals.adpcm);
+	}
+	else {
+		logerror("NO OKI: cs=%x w=%x\n", GTS80BS_locals.enable_cs, GTS80BS_locals.enable_w);
+	}
+}
+
+static WRITE_HANDLER(adpcm_w)
+{
+	GTS80BS_locals.adpcm = data^0xff;	//Data is inverted from cpu
+	logerror("adpcm: %x\n", GTS80BS_locals.adpcm);
+	if ( GTS80BS_locals.adpcm&0x80 )
+		logerror("START OF SAMPLE!\n");
+	//Trigger a command to 6295
+	oki6295_w();
+}
+
+/* G3 - LS377
+   ----------
+D0 = Enable CPU #1 NMI - In conjunction with programmable timer circuit
+D1 = CPU #1 Diag LED
+D2-D4 = NA?
+D5 = S4-11 = DCLCK2 = Clock in 6295 Data from Latch to U3 Latch
+D6 = S4-12 = ~WR = 6295 Write Enabled
+D7 = S4-15 = YM2151 - A0
+
+   U3 - LS374
+   ----------
+D0 = VUP/DOWN??
+D1 = VSTEP??
+D2 = 6295 Chip Select (Active Low)
+D3 = ROM Select (Active Low)
+D4 = 6295 - SS (Data = 1 = 8Khz; Data = 0 = 6.4Khz frequency)
+D5 = LED
+D6 = SRET1
+D7 = SRET2
+*/
+static WRITE_HANDLER(sound_control_w)
+{
+	int hold_enable_w, hold_enable_cs, hold_rom_cs, hold_u3;
+	hold_enable_w = GTS80BS_locals.enable_w;
+	hold_enable_cs = GTS80BS_locals.enable_cs;
+	hold_rom_cs = GTS80BS_locals.rom_cs;
+	hold_u3 = GTS80BS_locals.u3;
+
+	//Proc the YM2151 & Other Stuff
+	s80bs3_sound_control_w(offset,data);
+	UpdateSoundLEDS(0,(data>>1)&1);
+
+	//Is 6295 Enabled for Writing(Active Low)?
+	if (data & 0x40) GTS80BS_locals.enable_w = 0; else GTS80BS_locals.enable_w = 1;
+	// logerror("Enable W = %x\n", GTS80BS_locals.enable_w);
+
+	//Trigger Command on Positive Edge
+	if (GTS80BS_locals.enable_w && !hold_enable_w) oki6295_w();
+
+	//Handle U3 Latch - On Positive Edge
+	GTS80BS_locals.u3 = (data & 0x20);
+	if( GTS80BS_locals.u3 && !hold_u3 ) {
+		UpdateSoundLEDS(1,(GTS80BS_locals.adpcm>>5)&1);
+		OKIM6295_set_frequency(0,((GTS80BS_locals.adpcm>>4)&1)?8000:6400);
+		if (GTS80BS_locals.adpcm & 0x04) GTS80BS_locals.enable_cs = 0; else GTS80BS_locals.enable_cs = 1;
+		//Select either Arom1 or Arom2 when Rom Select Changes
+		GTS80BS_locals.rom_cs = (GTS80BS_locals.adpcm>>3)&1;
+		if (GTS80BS_locals.rom_cs != hold_rom_cs )
+			OKIM6295_set_bank_base(0, 0x40000-(GTS80BS_locals.rom_cs*0x40000));
+
+		logerror("SS = %x\n",(GTS80BS_locals.adpcm>>4)&1);
+		logerror("ROM CS = %x\n",GTS80BS_locals.rom_cs);
+		logerror("Enable CS = %x\n",GTS80BS_locals.enable_cs);
+
+		//Trigger Command on Positive Edge of 6295 Chip Enabled
+		if (GTS80BS_locals.enable_cs && !hold_enable_cs) oki6295_w();
+	}
+}
+
+/*********/
+/* Y-CPU */
+/*********/
+MEMORY_READ_START(GTS3_sreadmem)
+{ 0x0000, 0x07ff, MRA_RAM },
+{ 0x6800, 0x6800, soundlatch_r},
+{ 0x7000, 0x7000, s80bs_cause_dac_nmi_r},
+{ 0x8000, 0xffff, MRA_ROM },
+MEMORY_END
+MEMORY_WRITE_START(GTS3_swritemem)
+{ 0x0000, 0x07ff, MWA_RAM },
+{ 0x4000, 0x4000, s80bs_ym2151_w },
+{ 0x6000, 0x6000, s80bs_nmi_rate_w},
+{ 0x7800, 0x7800, adpcm_w},
+{ 0xa000, 0xa000, sound_control_w },
+MEMORY_END
+/*********/
+/* D-CPU */
+/*********/
+MEMORY_READ_START(GTS3_sreadmem2)
+{ 0x0000, 0x07ff, MRA_RAM },
+{ 0x4000, 0x4000, soundlatch_r},
+{ 0x8000, 0xffff, MRA_ROM },
+MEMORY_END
+MEMORY_WRITE_START(GTS3_swritemem2)
+{ 0x0000, 0x07ff, MWA_RAM },
+{ 0x8000, 0x8000, s80bs_dac_vol_w },
+{ 0x8001, 0x8001, s80bs_dac_data_w},
+MEMORY_END
+
+struct OKIM6295interface GTS3_okim6295_interface = {															
+	1,						/* 1 chip */
+	{ 8000 },				/* 8000Hz frequency */
+	{ GTS3_MEMREG_SROM1 },	/* memory region */
+	{ 100 }
+};
+
+// Init 
+void gts80b_init(struct sndbrdData *brdData) {
+	GTS80BS_locals.nmi_timer = NULL; 
+	memset(&GTS80BS_locals, 0, sizeof(GTS80BS_locals));
+}
+
+// Cleanup
+void gts80b_exit(int boardNo)
+{
+	if(GTS80BS_locals.nmi_timer)
+		timer_remove(GTS80BS_locals.nmi_timer);
+	GTS80BS_locals.nmi_timer = NULL;
+}
+
+const struct sndbrdIntf gts80bIntf = {
+  gts80b_init, gts80b_exit, NULL, gts80b_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+};
+
+

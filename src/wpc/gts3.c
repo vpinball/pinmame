@@ -22,8 +22,7 @@
 #include "gts3.h"
 #include "vidhrdw/crtc6845.h"
 #include "gts3dmd.h"
-#include "gts3sound.h"
-#include "gts80.h"
+#include "gts80s.h"
 
 UINT8 DMDFrames[GTS3DMD_FRAMES][0x200];
 #define GTS3_VBLANKDIV	      6 /* Break VBLANK into pieces*/
@@ -312,8 +311,7 @@ static READ_HANDLER( xvia_1_cb2_r )
 static WRITE_HANDLER( xvia_1_a_w )
 {
 	// logerror1("Sound Command: WRITE:via_1_a_w: %x\n",data);
-	if ( coreGlobals.soundEn )
-		GTS3_SoundCommand(data);
+	sndbrd_0_data_w(0, data);
 }
 
 //PB0-7 Varies on Alpha or DMD Generation!
@@ -514,7 +512,10 @@ via_irq(1);
 	via_set_input_ca1(0,GTS3locals.swSlam);
 }
 
-static WRITE_HANDLER(GTS3_sndCmd_w) { GTS3_SoundCommand(data^0xff); }
+static WRITE_HANDLER(GTS3_sndCmd_w)
+{
+	sndbrd_0_data_w(0, data^0xff);
+}
 // gts numbering col11->col12, col12->col13, col13->col14, col14->col15, col15->col11
 static int gts3_sw2m(int no) {
   no += 10;
@@ -565,7 +566,7 @@ static void GTS3_alpha_common_init(void) {
   GTS3locals.timer_irq = timer_pulse(TIME_IN_HZ(GTS3_TRIGIRQ), 0, trigirq);
 
   /* Init the sound board */
-  sndbrd_0_init(core_gameData->hw.soundBoard, GTS3_SCPUNO-1, memory_region(GTS80_MEMREG_SCPU1), NULL, NULL);
+  sndbrd_0_init(core_gameData->hw.soundBoard, GTS3_SCPUNO-1, memory_region(GTS3_MEMREG_SCPU1), NULL, NULL);
 
   GTS3locals.initDone = TRUE;
 }
@@ -624,7 +625,7 @@ static void GTS3_init2(void) {
   GTS3locals.timer_irq = timer_pulse(TIME_IN_HZ(GTS3_TRIGIRQ), 0, trigirq);
 
   /* Init the sound board */
-  sndbrd_0_init(core_gameData->hw.soundBoard, GTS3_SCPUNO, memory_region(GTS80_MEMREG_SCPU1), NULL, NULL);
+  sndbrd_0_init(core_gameData->hw.soundBoard, GTS3_SCPUNO, memory_region(GTS3_MEMREG_SCPU1), NULL, NULL);
 
   GTS3locals.initDone = TRUE;
 }
