@@ -205,13 +205,15 @@ static WRITE_HANDLER(giaux_w) {
     if (data & ~selocals.lastgiaux & 0x80) { /* clock in data to minidmd */
       selocals.miniidx = (selocals.miniidx + 1) % 7;
       selocals.minidata[selocals.miniidx] = selocals.auxdata & 0x7f;
-      for (ii=0, bits = 0x01; ii < 14; ii++, bits <<= 1) {
-        if (bits & ((selocals.minidata[3] << 7) | selocals.minidata[4])) {
-          selocals.minidmd[0][ii/7][ii%7] = selocals.minidata[0];
-          selocals.minidmd[1][ii/7][ii%7] = selocals.minidata[1];
-          selocals.minidmd[2][ii/7][ii%7] = selocals.minidata[5];
-          selocals.minidmd[3][ii/7][ii%7] = selocals.minidata[6];
-          break;
+      if ((selocals.auxdata & 0x80) == 0) { /* enabled column? */
+        for (ii=0, bits = 0x01; ii < 14; ii++, bits <<= 1) {
+          if (bits & ((selocals.minidata[3] << 7) | selocals.minidata[4])) {
+            selocals.minidmd[0][ii/7][ii%7] = selocals.minidata[0];
+            selocals.minidmd[1][ii/7][ii%7] = selocals.minidata[1];
+            selocals.minidmd[2][ii/7][ii%7] = selocals.minidata[5];
+            selocals.minidmd[3][ii/7][ii%7] = selocals.minidata[6];
+            break;
+          }
         }
       }
     }
@@ -223,6 +225,7 @@ static WRITE_HANDLER(giaux_w) {
 PINMAME_VIDEO_UPDATE(seminidmd1_update) {
   tDMDDot dotCol;
   int ii,jj,kk,bits;
+  UINT16 *seg = &coreGlobals.drawSeg[0];
 
   for (ii = 0, bits = 0x40; ii < 7; ii++, bits >>= 1) {
     UINT8 *line = &dotCol[ii+1][0];
@@ -232,14 +235,11 @@ PINMAME_VIDEO_UPDATE(seminidmd1_update) {
                    (selocals.minidmd[2][jj][kk] & bits))/bits;
       }
   }
-  { // try to see if drawSeg can be used to access the miniDMD
-    UINT16 *seg = &coreGlobals.drawSeg[0];
-    for (ii = 0; ii < 21; ii++) {
-      bits = 0;
-      for (jj = 0; jj < 7; jj++)
-        bits = (bits<<2) | dotCol[jj+1][ii];
-      *seg++ = bits;
-    }
+  for (ii = 0; ii < 15; ii++) {
+    bits = 0;
+    for (jj = 0; jj < 7; jj++)
+      bits = (bits<<2) | dotCol[jj+1][ii];
+    *seg++ = bits;
   }
   video_update_core_dmd(bitmap, cliprect, dotCol, layout);
   return 0;
@@ -248,12 +248,20 @@ PINMAME_VIDEO_UPDATE(seminidmd1_update) {
 PINMAME_VIDEO_UPDATE(seminidmd2_update) {
   tDMDDot dotCol;
   int ii,jj,kk,bits;
+  UINT16 *seg = &coreGlobals.drawSeg[0];
+
   for (ii = 0, bits = 0x01; ii < 7; ii++, bits <<= 1) {
     UINT8 *line = &dotCol[ii+1][0];
     for (jj = 0; jj < 3; jj++)
       for (kk = 4; kk >= 0; kk--)
         *line++ = ((selocals.minidmd[0][jj][kk] & bits) + (selocals.minidmd[1][jj][kk] & bits) +
                    (selocals.minidmd[2][jj][kk] & bits))/bits;
+  }
+  for (ii = 0; ii < 15; ii++) {
+    bits = 0;
+    for (jj = 0; jj < 7; jj++)
+      bits = (bits<<2) | dotCol[jj+1][ii];
+    *seg++ = bits;
   }
   video_update_core_dmd(bitmap, cliprect, dotCol, layout);
   return 0;
@@ -262,6 +270,8 @@ PINMAME_VIDEO_UPDATE(seminidmd2_update) {
 PINMAME_VIDEO_UPDATE(seminidmd3_update) {
   tDMDDot dotCol;
   int ii,jj,kk,bits;
+  UINT16 *seg = &coreGlobals.drawSeg[0];
+
   memset(&dotCol,0,sizeof(dotCol));
   for (kk = 0; kk < 5; kk++) {
     UINT8 *line = &dotCol[kk+1][0];
@@ -269,6 +279,12 @@ PINMAME_VIDEO_UPDATE(seminidmd3_update) {
       for (ii = 0, bits = 0x01; ii < 7; ii++, bits <<= 1)
         *line++ = ((selocals.minidmd[0][jj][kk] & bits) + (selocals.minidmd[1][jj][kk] & bits) +
                    (selocals.minidmd[2][jj][kk] & bits))/bits;
+  }
+  for (ii = 0; ii < 21; ii++) {
+    bits = 0;
+    for (jj = 0; jj < 5; jj++)
+      bits = (bits<<2) | dotCol[jj+1][ii];
+    *seg++ = bits;
   }
   video_update_core_dmd(bitmap, cliprect, dotCol, layout);
   return 0;
@@ -281,17 +297,26 @@ PINMAME_VIDEO_UPDATE(seminidmd4_update) {
   int ii, kk, bits, isRed, isGrn;
   UINT8 *line;
   tDMDDot dotCol;
+  UINT16 bits1, bits2;
+  UINT16 *seg = &coreGlobals.drawSeg[0];
+
   for (ii=0; ii < 14; ii++) {
+    bits1 = 0;
+    bits2 = 0;
     for (kk=0, bits = 0x40; kk < 7; kk++, bits >>= 1) {
-	  isRed = (selocals.minidmd[0][ii/7][ii%7] & bits) > 0;
-	  isGrn = (selocals.minidmd[1][ii/7][ii%7] & bits) > 0;
-	  line = &dotCol[ii+1][kk];
+      isRed = (selocals.minidmd[0][ii/7][ii%7] & bits) > 0;
+      isGrn = (selocals.minidmd[1][ii/7][ii%7] & bits) > 0;
+      bits1 = (bits1 << 2) | (isGrn << 1) | isRed;
+      line = &dotCol[ii+1][kk];
       *line = color[isRed][isGrn];
-	  isRed = (selocals.minidmd[2][ii/7][ii%7] & bits) > 0;
-	  isGrn = (selocals.minidmd[3][ii/7][ii%7] & bits) > 0;
+      isRed = (selocals.minidmd[2][ii/7][ii%7] & bits) > 0;
+      isGrn = (selocals.minidmd[3][ii/7][ii%7] & bits) > 0;
+      bits2 = (bits2 << 2) | (isGrn << 1) | isRed;
       line = &dotCol[ii+1][7+kk];
       *line = color[isRed][isGrn];
     }
+    *seg++ = bits1;
+    *seg++ = bits2;
   }
   video_update_core_dmd(bitmap, cliprect, dotCol, layout);
   return 0;
@@ -372,62 +397,3 @@ MACHINE_DRIVER_END
 static NVRAM_HANDLER(se) {
   core_nvram(file, read_or_write, memory_region(SE_CPUREGION), 0x2000, 0xff);
 }
-
-#if 0
-struct MachineDriver machine_driver_se_1S = {
-  {{  CPU_M6809, 2000000, /* 2 Mhz */
-      se_readmem, se_writemem, NULL, NULL,
-      se_vblank, 1,
-      se_irq, se_IRQFREQ
-  }, DE2S_SOUNDCPU, DE_DMD32CPU },
-  SE_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, se_init, se_exit,
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  DE_DMD32VIDEO,
-  SOUND_SUPPORTS_STEREO,0,0,0,{ DE2S_SOUNDA },
-  se_nvram
-};
-
-struct MachineDriver machine_driver_se_2S = {
-  {{  CPU_M6809, 2000000, /* 2 Mhz */
-      se_readmem, se_writemem, NULL, NULL,
-      se_vblank, 1,
-      se_irq, SE_IRQFREQ
-  }, DE2S_SOUNDCPU, DE_DMD32CPU },
-  SE_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, se_init, se_exit,
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  DE_DMD32VIDEO,
-  SOUND_SUPPORTS_STEREO,0,0,0,{ DE2S_SOUNDB },
-  se_nvram
-};
-
-struct MachineDriver machine_driver_se_3S = {
-  {{  CPU_M6809, 2000000, /* 2 Mhz */
-      se_readmem, se_writemem, NULL, NULL,
-      se_vblank, 1,
-      se_irq, SE_IRQFREQ
-  }, DE2S_SOUNDCPU, DE_DMD32CPU },
-  SE_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, se_init, se_exit,
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  DE_DMD32VIDEO,
-  SOUND_SUPPORTS_STEREO,0,0,0,{ DE2S_SOUNDC },
-  se_nvram
-};
-static core_tData seData = {
-  8, /* 8 DIPs */
-  se_updSw,
-  1,
-  sndbrd_1_data_w, "se",
-  core_swSeq2m, core_swSeq2m,core_m2swSeq,core_m2swSeq
-};
-
-
-#endif
