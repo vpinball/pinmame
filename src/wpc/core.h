@@ -153,18 +153,19 @@
 /------------------------------*/
 /* The different kind of display units */
 #define CORE_SEG16    0 // 16 segments
-#define CORE_SEG10    1 // 10 segments
-#define CORE_SEG9     2 // 10 segments
-#define CORE_SEG8     3 // 8  segments
-#define CORE_SEG7     4 // 7  segments
-#define CORE_SEG87    5 // 7  segments, comma every three
-#define CORE_SEG87F   6 // 7  segments, forced comma every three
-#define CORE_SEG98    7 // 9  segments, comma every three
-#define CORE_SEG98F   8 // 9  segments, forced comma every three
-#define CORE_SEG7S    9 // 7  segments, small
-#define CORE_DMD    0xa // DMD Display
-#define CORE_DMD2   0xb // another DMD Display
-#define CORE_VIDEO  0xc // VIDEO Display
+#define CORE_SEG16R   1 // 16 segments with comma and period reversed
+#define CORE_SEG10    2 // 10 segments
+#define CORE_SEG9     3 // 10 segments
+#define CORE_SEG8     4 // 8  segments
+#define CORE_SEG7     5 // 7  segments
+#define CORE_SEG87    6 // 7  segments, comma every three
+#define CORE_SEG87F   7 // 7  segments, forced comma every three
+#define CORE_SEG98    8 // 9  segments, comma every three
+#define CORE_SEG98F   9 // 9  segments, forced comma every three
+#define CORE_SEG7S  0xa // 7  segments, small
+#define CORE_DMD    0xb // DMD Display
+#define CORE_DMD2   0xc // another DMD Display
+#define CORE_VIDEO  0xd // VIDEO Display
 #define CORE_IMPORT 0xf // Link to another display layout
 
 #define CORE_SEGHIBIT 0x10
