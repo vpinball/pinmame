@@ -1,8 +1,9 @@
 /*******************************************************************************
- Preliminary Johnny Mnemonic (Bally/Williams, 199) Pinball Simulator
+ Preliminary Johnny Mnemonic (Bally/Williams, 1995) Pinball Simulator
 
  by Marton Larrosa (marton@mail.com)
  Dec. 24, 2000
+ Cyber Glove Hand mech updated by Gerrit Volkenborn (gaston@yomail.de) June 2004
 
  Read PZ.c or FH.c if you like more help.
 
@@ -37,10 +38,10 @@ static void init_jm(void);
 /*-----------------------
   local static variables
  ------------------------*/
-/* Uncomment if you wish to use locals. type variables */
-//static struct {
-//  int
-//} locals;
+static struct {
+  int xPos;			/* Hand X Position */
+  int yPos;			/* Hand Y Position */
+} locals;
 
 /*--------------------------
 / Game specific input ports
@@ -259,21 +260,47 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(jm,12r,"Johnny Mnemonic (1.2R)",1995,"Williams",wpc_mSecurityS,0)
-static mech_tInitData mechX = {
-  22, -21, MECH_ONEDIRSOL|MECH_REVERSE|MECH_FAST|MECH_LENGTHSW,3500,3500,
-  {{12, 0,2},
-   {75, 0, 6,12},
-   {74, 4, 9,12}}
-};
-static mech_tInitData mechY = {
-  24, -23, MECH_ONEDIRSOL|MECH_REVERSE|MECH_FAST|MECH_LENGTHSW,3000,3000,
-  {{37,1498,1502},
-   {76, 0, 6,12},
-   {77, 4, 9,12}}
-};
+
+static void jm_handleMech(int mech) {
+	static UINT8 twobits_x, twobits_y;
+
+	core_setSw(68, core_getSw(118));
+	core_setSw(67, core_getSw(116));
+
+	UINT8 sols = wpc_data[WPC_SOLENOID3] >> 4; /* The normal solenoids are smoothed too much */
+	/* Hand X-axis */
+	if (mech & 0x01) {
+		if (sols & 0x02) { /* enable */
+			locals.xPos += (sols & 0x01) ? 1 : -1; /* direction */
+			twobits_x = locals.xPos & 0x03;
+		}
+		core_setSw(12, locals.xPos < 1 ? 1 : 0); /* zero-pos switch */
+		core_setSw(74, twobits_x == 1 || twobits_x == 2); /* direction encoder A */
+		core_setSw(75, twobits_x < 2); /* direction encoder B */
+	}
+	/* Hand Y-axis */
+	if (mech & 0x02) {
+		if (sols & 0x08) { /* enable */
+			locals.yPos += (sols & 0x04) ? 1 : -1; /* direction */
+			twobits_y = locals.yPos & 0x03;
+		}
+		core_setSw(37, locals.yPos < 1 ? 1 : 0); /* zero-pos switch */
+		core_setSw(76, twobits_y < 2); /* direction encoder B */
+		core_setSw(77, twobits_y == 1 || twobits_y == 2); /* direction encoder A */
+	}
+}
+
+static int jm_getMech(int mechNo){
+  switch (mechNo) {
+    case 0: return locals.xPos + 64;
+    case 1: return locals.yPos + 300;
+  }
+  return 0;
+}
+
 static void jm_drawMech(BMTYPE **line) {
-  core_textOutf(50, 0, BLACK,"%05d", mech_getPos(0));
-  core_textOutf(50,10, BLACK,"%05d", mech_getPos(1));
+  core_textOutf(30, 0, BLACK,"Hand X: %04d", jm_getMech(0) - 64);
+  core_textOutf(30,10, BLACK,"Hand Y: %04d", jm_getMech(1) - 300);
 }
 
 /*-----------------------
@@ -297,9 +324,9 @@ static sim_tSimData jmSimData = {
 static core_tGameData jmGameData = {
   GEN_WPCSECURITY, wpc_dispDMD,
   {
-    FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L) | FLIP_BUT(FLIP_U),
+    FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L) | FLIP_BUT(FLIP_L | FLIP_U),
     0,0,0,0,0,0,0,
-    0, 0, 0, jm_drawMech,
+    0, jm_handleMech,jm_getMech, jm_drawMech,
     0, NULL
   },
   &jmSimData,
@@ -317,7 +344,7 @@ static core_tGameData jmGameData = {
 /----------------*/
 static void init_jm(void) {
   core_gameData = &jmGameData;
-  mech_add(0,&mechX);
-  mech_add(1,&mechY);
+  locals.xPos = -64;
+  locals.yPos = -300;
 }
 
