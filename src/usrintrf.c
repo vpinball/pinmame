@@ -4152,9 +4152,11 @@ int handle_user_interface(struct mame_bitmap *bitmap)
 			if (input_ui_pressed(IPT_UI_LOAD_STATE))
 				do_loadsave(bitmap, LOADSAVE_LOAD);
 
+#ifndef PINMAME
 			/* if the user pressed F4, show the character set */
 			if (input_ui_pressed(IPT_UI_SHOW_GFX))
 				showcharset(bitmap);
+#endif
 
 			if (setup_selected == 0 && input_ui_pressed(IPT_UI_CANCEL))
 				return 1;
@@ -4239,7 +4241,7 @@ int handle_user_interface(struct mame_bitmap *bitmap)
 		ui_show_fps_set(!ui_show_fps_get());
 	}
 
-
+#ifndef PINMAME
 	/* if the user pressed F4, show the character set */
 	if (input_ui_pressed(IPT_UI_SHOW_GFX))
 	{
@@ -4249,6 +4251,7 @@ int handle_user_interface(struct mame_bitmap *bitmap)
 
 		osd_sound_enable(1);
 	}
+#endif
 
 	/* if the user pressed F1 and this is a lightgun game, toggle the crosshair */
 	if (input_ui_pressed(IPT_UI_TOGGLE_CROSSHAIR))
