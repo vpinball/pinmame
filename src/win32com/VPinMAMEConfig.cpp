@@ -518,6 +518,50 @@ bool RegSaveOpts(HKEY hKey, rc_option *pOpt, void* pValue)
 	return fFailed;
 }
 
+void SaveGlobalSettings()
+{
+	char szKey[MAX_PATH];
+	lstrcpy(szKey, REG_BASEKEY);
+	lstrcat(szKey, "\\");
+	lstrcat(szKey, REG_GLOBALS);
+
+	HKEY hKey;
+	DWORD dwDisposition;
+   	if ( RegCreateKeyEx(HKEY_CURRENT_USER, szKey, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_SET_VALUE, NULL, &hKey, &dwDisposition)!=ERROR_SUCCESS )
+		return;
+
+	rc_option* opts[10];
+	int sp = 0;
+
+	opts[sp] = ::opts;
+	while ( sp>=0 ) {
+		switch ( opts[sp]->type ) {
+			case rc_bool:
+			case rc_string:
+			case rc_int:
+			case rc_float:
+				if ( !IsGlobalSetting(opts[sp]->name) || IgnoreSetting(opts[sp]->name) )
+					break;
+				
+				RegSaveOpts(hKey, opts[sp], opts[sp]->dest);
+				break;
+
+			case rc_end:
+				sp--;
+				continue;
+
+			case rc_link:
+				opts[sp+1] = (rc_option*) opts[sp]->dest;
+				opts[sp]++;
+				sp++;
+				continue;
+		}
+		opts[sp]++;
+	}
+
+	RegCloseKey(hKey);
+}
+
 void LoadGlobalSettings()
 {
 	bool fNew = false;
@@ -581,12 +625,29 @@ void LoadGlobalSettings()
 		SaveGlobalSettings();
 }
 
-void SaveGlobalSettings()
+void DeleteGlobalSettings()
+{
+	char szKey[MAX_PATH];
+	lstrcpy(szKey, REG_BASEKEY);
+
+	HKEY hKey;
+   	if ( RegOpenKeyEx(HKEY_CURRENT_USER, szKey, 0, KEY_WRITE, &hKey)!=ERROR_SUCCESS )
+		return;
+
+	RegDeleteKey(hKey, REG_GLOBALS);
+
+	RegCloseKey(hKey);
+}
+
+void SaveGameSettings(char* pszGameName)
 {
 	char szKey[MAX_PATH];
 	lstrcpy(szKey, REG_BASEKEY);
 	lstrcat(szKey, "\\");
-	lstrcat(szKey, REG_GLOBALS);
+	if ( pszGameName && *pszGameName )
+		lstrcat(szKey, pszGameName);
+	else
+		lstrcat(szKey, REG_DEFAULT);
 
 	HKEY hKey;
 	DWORD dwDisposition;
@@ -603,9 +664,9 @@ void SaveGlobalSettings()
 			case rc_string:
 			case rc_int:
 			case rc_float:
-				if ( !IsGlobalSetting(opts[sp]->name) || IgnoreSetting(opts[sp]->name) )
+				if ( IsGlobalSetting(opts[sp]->name) || IgnoreSetting(opts[sp]->name) )
 					break;
-				
+
 				RegSaveOpts(hKey, opts[sp], opts[sp]->dest);
 				break;
 
@@ -621,20 +682,6 @@ void SaveGlobalSettings()
 		}
 		opts[sp]++;
 	}
-
-	RegCloseKey(hKey);
-}
-
-void DeleteGlobalSettings()
-{
-	char szKey[MAX_PATH];
-	lstrcpy(szKey, REG_BASEKEY);
-
-	HKEY hKey;
-   	if ( RegOpenKeyEx(HKEY_CURRENT_USER, szKey, 0, KEY_WRITE, &hKey)!=ERROR_SUCCESS )
-		return;
-
-	RegDeleteKey(hKey, REG_GLOBALS);
 
 	RegCloseKey(hKey);
 }
@@ -704,55 +751,8 @@ void LoadGameSettings(char* pszGameName)
 	if ( hDefaultKey )
 		RegCloseKey(hDefaultKey);
 
-//	if ( fNew )
-//		SaveGameSettings(pszGameName);
-}
-
-void SaveGameSettings(char* pszGameName)
-{
-	char szKey[MAX_PATH];
-	lstrcpy(szKey, REG_BASEKEY);
-	lstrcat(szKey, "\\");
-	if ( pszGameName && *pszGameName )
-		lstrcat(szKey, pszGameName);
-	else
-		lstrcat(szKey, REG_DEFAULT);
-
-	HKEY hKey;
-	DWORD dwDisposition;
-   	if ( RegCreateKeyEx(HKEY_CURRENT_USER, szKey, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_SET_VALUE, NULL, &hKey, &dwDisposition)!=ERROR_SUCCESS )
-		return;
-
-	rc_option* opts[10];
-	int sp = 0;
-
-	opts[sp] = ::opts;
-	while ( sp>=0 ) {
-		switch ( opts[sp]->type ) {
-			case rc_bool:
-			case rc_string:
-			case rc_int:
-			case rc_float:
-				if ( IsGlobalSetting(opts[sp]->name) || IgnoreSetting(opts[sp]->name) )
-					break;
-
-				RegSaveOpts(hKey, opts[sp], opts[sp]->dest);
-				break;
-
-			case rc_end:
-				sp--;
-				continue;
-
-			case rc_link:
-				opts[sp+1] = (rc_option*) opts[sp]->dest;
-				opts[sp]++;
-				sp++;
-				continue;
-		}
-		opts[sp]++;
-	}
-
-	RegCloseKey(hKey);
+	if ( fNew )
+		SaveGameSettings(pszGameName);
 }
 
 void DeleteGameSettings(char *pszGameName)
@@ -772,30 +772,30 @@ void DeleteGameSettings(char *pszGameName)
 	RegCloseKey(hKey);
 }
 
-
-BOOL GetGameSetting(char* pszGameName, char* pszName, VARIANT *pVal)
+BOOL GetSetting(char* pszGameName, char* pszName, VARIANT *pVal)
 {
-	VariantClear(pVal);
-
 	if ( !pszName && !*pszName )
 		return FALSE;
 
-	if ( IsGlobalSetting(pszName) || IgnoreSetting(pszName) )
+	if ( (pszGameName && IsGlobalSetting(pszName)) || IgnoreSetting(pszName) )
 		return FALSE;
 
 	struct rc_option *option;
 	if(!(option = rc_get_option2(opts, pszName)))
 		return FALSE;
 	
-	HKEY hDefaultKey = 0;
+	HKEY hKey = 0;
+	char szKey[MAX_PATH];
+	lstrcpy(szKey, REG_BASEKEY);
+	lstrcat(szKey, "\\");
 
-	char szDefaultKey[MAX_PATH];
-	lstrcpy(szDefaultKey, REG_BASEKEY);
-	lstrcat(szDefaultKey, "\\");
-	lstrcat(szDefaultKey, REG_DEFAULT);
+	if ( !pszGameName ) 
+		lstrcat(szKey, REG_GLOBALS);
+	else
+		lstrcat(szKey, REG_DEFAULT);
 
-	if ( RegOpenKeyEx(HKEY_CURRENT_USER, szDefaultKey, 0, KEY_QUERY_VALUE, &hDefaultKey)!=ERROR_SUCCESS )
-		hDefaultKey = 0;
+	if ( RegOpenKeyEx(HKEY_CURRENT_USER, szKey, 0, KEY_QUERY_VALUE, &hKey)!=ERROR_SUCCESS )
+		hKey = 0;
 
 	HKEY hGameKey = 0;
 	if ( pszGameName && *pszGameName ) {
@@ -809,8 +809,16 @@ BOOL GetGameSetting(char* pszGameName, char* pszName, VARIANT *pVal)
 
 	char szValue[4096];
 
+	char szHelp[4096];
+	lstrcpy(szHelp, "");
+	if ( IsPathOrFile(option->name) ) {
+		GetInstallDir(szHelp, sizeof szHelp);
+		lstrcat(szHelp, "\\");
+	}
+	lstrcat(szHelp, option->deflt);
+
 	char szDefault[4096];
-	RegLoadOpts(hDefaultKey, option, NULL, szDefault);
+	RegLoadOpts(hKey, option, szHelp, szDefault);
 	RegLoadOpts(hGameKey, option, szDefault, szValue);
 	CComVariant vValue(szValue);
 
@@ -831,20 +839,20 @@ BOOL GetGameSetting(char* pszGameName, char* pszName, VARIANT *pVal)
 	if ( hGameKey )
 		RegCloseKey(hGameKey);
 
-	if ( hDefaultKey )
-		RegCloseKey(hDefaultKey);
+	if ( hKey )
+		RegCloseKey(hKey);
 
 	vValue.Detach(pVal);
 
 	return TRUE;
 }
 
-BOOL PutGameSetting(char* pszGameName, char* pszName, VARIANT vValue)
+BOOL PutSetting(char* pszGameName, char* pszName, VARIANT vValue)
 {
 	if ( !pszName && !*pszName )
 		return FALSE;
 
-	if ( IsGlobalSetting(pszName) || IgnoreSetting(pszName) )
+	if ( (pszGameName && IsGlobalSetting(pszName)) || IgnoreSetting(pszName) )
 		return FALSE;
 
 	struct rc_option *option;
@@ -854,7 +862,9 @@ BOOL PutGameSetting(char* pszGameName, char* pszName, VARIANT vValue)
 	char szKey[MAX_PATH];
 	lstrcpy(szKey, REG_BASEKEY);
 	lstrcat(szKey, "\\");
-	if ( pszGameName && *pszGameName )
+	if ( !pszGameName )
+		lstrcat(szKey, REG_GLOBALS);
+	else if ( *pszGameName )
 		lstrcat(szKey, pszGameName);
 	else
 		lstrcat(szKey, REG_DEFAULT);
@@ -878,7 +888,10 @@ BOOL PutGameSetting(char* pszGameName, char* pszName, VARIANT vValue)
 			VariantChangeType(&vValue, &vValue, 0, VT_BSTR);
 			char szValue[4096];
 			WideCharToMultiByte(CP_ACP, 0, vValue.bstrVal, -1, szValue, sizeof szValue, NULL, NULL);
-			RegSaveOpts(hKey, option, szValue);
+
+			char* pszValue;
+			pszValue = szValue;
+			RegSaveOpts(hKey, option, &pszValue);
 			break;
 		
 		case rc_int:
