@@ -361,7 +361,10 @@ int ES5505_num(const struct MachineSound *msound) { return ((struct ES5505interf
 int ES5506_clock(const struct MachineSound *msound) { return ((struct ES5506interface*)msound->sound_interface)->baseclock[0]; }
 int ES5506_num(const struct MachineSound *msound) { return ((struct ES5506interface*)msound->sound_interface)->num; }
 #endif
-
+#if (HAS_BSMT2000)
+int BSMT2000_num(const struct MachineSound *msound) { return ((struct BSMT2000interface*)msound->sound_interface)->num; }
+int BSMT2000_clock(const struct MachineSound *msound) { return ((struct BSMT2000interface*)msound->sound_interface)->baseclock[0]; }
+#endif
 #ifdef MESS
 #if (HAS_BEEP)
 int beep_num(const struct MachineSound *msound) { return ((struct beep_interface*)msound->sound_interface)->num; }
@@ -936,6 +939,18 @@ struct snd_interface sndintf[] =
 		ES5506_clock,
 		ES5506_sh_start,
 		ES5506_sh_stop,
+		0,
+		0
+	},
+#endif
+#if (HAS_BSMT2000)
+	{
+		SOUND_BSMT2000,
+		"BSMT2000",
+		BSMT2000_num,
+		BSMT2000_clock,
+		BSMT2000_sh_start,
+		BSMT2000_sh_stop,
 		0,
 		0
 	},

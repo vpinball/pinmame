@@ -1131,3 +1131,11 @@ else
 SOUNDDEFS += -DHAS_ES5506=0
 endif
 
+SOUND=$(strip $(findstring BSMT2000@,$(SOUNDS)))
+ifneq ($(SOUND),)
+SOUNDDEFS += -DHAS_BSMT2000=1
+SOUNDOBJS += $(OBJ)/sound/bsmt2000.o
+else
+SOUNDDEFS += -DHAS_BSMT2000=0
+endif
+

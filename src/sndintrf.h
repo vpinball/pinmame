@@ -136,7 +136,9 @@ struct MachineSound
 #if (HAS_ES5505 || HAS_ES5506)
 #include "sound/es5506.h"
 #endif
-
+#if (HAS_BSMT2000)
+#include "sound/bsmt2000.h"
+#endif
 #ifdef MESS
 #if (HAS_BEEP)
 #include "mess/sound/beep.h"
@@ -300,7 +302,9 @@ enum
 #if (HAS_ES5506)
 	SOUND_ES5506,
 #endif
-
+#if (HAS_BSMT2000)
+	SOUND_BSMT2000,
+#endif
 #ifdef MESS
 #if (HAS_BEEP)
 	SOUND_BEEP,

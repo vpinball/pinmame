@@ -836,6 +836,9 @@ logerror("Machine reset\n");
 
 	/* reset each CPU */
 	for (i = 0; i < totalcpu; i++)
+#ifdef PINMAME
+	if (!CPU_AUDIO(i) || Machine->sample_rate != 0)
+#endif /* PINMAME */
 	{
 		/* swap memory contexts and reset */
 		memory_set_context(i);
