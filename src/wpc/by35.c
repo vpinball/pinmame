@@ -11,11 +11,6 @@
 #define BY35_PIA0 0
 #define BY35_PIA1 1
 
-#if 0
-void by35_soundInit(void) {}
-WRITE_HANDLER(by35_soundCmd) {}
-#endif
-
 #define BY35_VBLANKFREQ    60 /* VBLANK frequency */
 #define BY35_IRQFREQ      150 /* IRQ (via PIA) frequency*/
 #define BY35_ZCFREQ       100 /* Zero cross frequency */
@@ -36,14 +31,12 @@ static void by35_exit(void);
 static void by35_nvram(void *file, int write);
 
 static void piaIrq(int state) {
-  //DBGLOG(("IRQ = %d\n",state));
   cpu_set_irq_line(0, M6800_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
 static void by35_dispStrobe(int mask) {
   int digit = locals.a1 & 0xfe;
   int ii,jj;
-  //DBGLOG(("digit = %x (%x,%x,%x,%x,%x,%x)\n",digit,locals.bcd[0],locals.bcd[1],locals.bcd[2],locals.bcd[3],locals.bcd[4],locals.bcd[5]));
   for (ii = 0; digit; ii++, digit>>=1)
     if (digit & 0x01) {
       UINT8 dispMask = mask;
@@ -59,7 +52,6 @@ static void by35_lampStrobe(int board, int lampadr) {
     UINT8 *matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)+8*board];
     int bit = 1<<(lampadr & 0x07);
 
-    //DBGLOG(("adr=%x data=%x\n",lampadr,lampdata));
     while (lampdata) {
       if (lampdata & 0x01) *matrix |= bit;
       lampdata >>= 1; matrix += 2;
@@ -86,7 +78,8 @@ static WRITE_HANDLER(pia1a_w) {
   int tmp = locals.a1;
   locals.a1 = data;
 
-  sndbrd_0_data_w(0, (locals.cb21<<5) | ((locals.a1 & 0x02)<<3) | (locals.b1 & 0x0f));
+//  sndbrd_0_data_w(0, (locals.cb21<<5) | ((locals.a1 & 0x02)<<3) | (locals.b1 & 0x0f));
+  sndbrd_0_data_w(0, ((locals.a1 & 0x02)<<3) | (locals.b1 & 0x0f));
 
   if (!locals.ca20) {
     if (tmp & ~data & 0x01) { // Positive edge
@@ -107,13 +100,11 @@ static READ_HANDLER(pia0b_r) {
 
 /* PIA0:CB2-W Lamp Strobe #1, DIPBank3 STROBE */
 static WRITE_HANDLER(pia0cb2_w) {
-  //DBGLOG(("PIA0:CB2=%d PC=%4x\n",data,cpu_get_pc()));
   if (locals.cb20 & ~data) locals.lampadr1 = locals.a0 & 0x0f;
   locals.cb20 = data;
 }
 /* PIA1:CA2-W Lamp Strobe #2 */
 static WRITE_HANDLER(pia1ca2_w) {
-  //DBGLOG(("PIA1:CA2=%d\n",data));
   if (locals.ca21 & ~data) {
     locals.lampadr2 = locals.a0 & 0x0f;
     if (locals.displays > 6) { locals.bcd[6] = locals.a0>>4; by35_dispStrobe(0x40); }
@@ -124,7 +115,6 @@ static WRITE_HANDLER(pia1ca2_w) {
 
 /* PIA0:CA2-W Display Strobe */
 static WRITE_HANDLER(pia0ca2_w) {
-  //DBGLOG(("PIA0:CA2=%d\n",data));
   locals.ca20 = data;
   if (!data) by35_dispStrobe(0x1f);
 }
@@ -136,22 +126,22 @@ static WRITE_HANDLER(pia1b_w) {
     { locals.bcd[5] = locals.a0>>4; by35_dispStrobe(0x20); }
   locals.b1 = data;
 
-  sndbrd_0_data_w(0, (locals.cb21<<5) | ((locals.a1 & 0x02)<<3) | (data & 0x0f));
+//  sndbrd_0_data_w(0, (locals.cb21<<5) | ((locals.a1 & 0x02)<<3) | (data & 0x0f));
+  sndbrd_0_data_w(0, ((locals.a1 & 0x02)<<3) | (data & 0x0f));
   coreGlobals.pulsedSolState = 0;
   if (!locals.cb21)
     locals.solenoids |= coreGlobals.pulsedSolState = (1<<(data & 0x0f)) & 0x7fff;
   data ^= 0xf0;
   coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xfff0ffff) | ((data & 0xf0)<<12);
   locals.solenoids |= (data & 0xf0)<<12;
-
-  //DBGLOG(("PIA1:bw=%d\n",data));
 }
 
 /* PIA1:CB2-W Solenoid/Sound select */
 static WRITE_HANDLER(pia1cb2_w) {
   //DBGLOG(("PIA1:CB2=%d\n",data));
   locals.cb21 = data;
-  sndbrd_0_data_w(0, (locals.cb21<<5) | ((locals.a1 & 0x02)<<3) | (locals.b1 & 0x0f));
+//  sndbrd_0_data_w(0, (locals.cb21<<5) | ((locals.a1 & 0x02)<<3) | (locals.b1 & 0x0f));
+  sndbrd_0_ctrl_w(0, data);
 }
 
 static int by35_vblank(void) {
@@ -262,8 +252,7 @@ static core_tData by35Data = {
 };
 
 static void by35_zeroCross(int data) {
-  /*- toggle zero/detection circuit-*/
-  pia_pulse_cb1(BY35_PIA0, 0);
+  pia_pulse_cb1(BY35_PIA0, 0);  /*- toggle zero/detection circuit-*/
 }
 static void by35_init(void) {
   memset(&locals, 0, sizeof(locals));
