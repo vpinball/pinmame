@@ -43,7 +43,7 @@ static void corv_handleMech(int mech);
 //Convenience Macros
 #define FORWARD			0
 #define REVERSE			1
-#define TICKSPERPULSE	5		//# of Ticks before we pulse the Encoder switches
+#define TICKSPERPULSE	2		//# of Ticks before we pulse the Encoder switches
 
 /*-----------------------
   local static variables
@@ -52,10 +52,12 @@ static void corv_handleMech(int mech);
 static struct {
   int bluecarPos;		/* Left Player Car's Position */
   int redcarPos;        /* Right Computer Car's Position */
+  int enginePos;		/* The absolute position of the engine */
   int direction;        /* Race Direction */
   int active_blue;		/* # of ticks the blue car has been active*/
   int active_red;		/* # of ticks the blue car has been active*/
 } locals;
+extern UINT8 *wpc_data;
 
 /*--------------------------
 / Game specific input ports
@@ -370,6 +372,7 @@ static void init_corv(void) {
 static void corv_drawMech(BMTYPE **line) {
   core_textOutf(30,  0,BLACK,"Blue Car: %4d", corv_getMech(0));
   core_textOutf(30, 10,BLACK,"Red Car:  %4d", corv_getMech(1));
+  core_textOutf(30, 20,BLACK,"Engine:   %4d", corv_getMech(2));
 }
 
 
@@ -433,12 +436,23 @@ static void corv_handleMech(int mech) {
 	/*Make sure positions never go negative!*/
 	if(locals.bluecarPos < 0) locals.bluecarPos = 0;
 	if(locals.redcarPos < 0) locals.redcarPos = 0;
+
+	/* ZR-1 engine */
+	if (mech & 0x04) {
+		locals.enginePos = (int)wpc_data[WPC_EXTBOARD2];
+		core_setSw(71, locals.enginePos < 3 ? 1 : 0);
+		core_setSw(72, locals.enginePos > 252 ? 1 : 0);
+	}
+
+	/* magnet at engine, or lights inside the engine maybe? */
+	coreGlobals.solenoids = (coreGlobals.solenoids & 0x00ffffff) | (wpc_data[WPC_EXTBOARD3] << 24);
 }
 
 static int corv_getMech(int mechNo){
   switch (mechNo) {
     case 0: return locals.bluecarPos;
     case 1: return locals.redcarPos;
+    case 2: return locals.enginePos;
   }
   return 0;
 }
