@@ -121,6 +121,9 @@ void CreateSplashWnd(void **ppData, char* pszCredits)
 	CSplashWnd* pSplashWnd = new CSplashWnd;
 	pSplashWnd->Create((HWND) 0, CWindow::rcDefault, NULL, WS_VISIBLE|WS_POPUP, NULL, 0U, pszCredits);
 	*ppData = pSplashWnd;
+
+	/* remove this line if you want to run the game at once */
+	WaitForSplashWndToClose(ppData);
 }
 
 void DestroySplashWnd(void **ppData)
@@ -146,10 +149,10 @@ void WaitForSplashWndToClose(void **ppData)
 	CSplashWnd* pSplashWnd = (CSplashWnd*) *ppData;
 
 	MSG msg;
-	do {
-		GetMessage(&msg,0,0,0);
+	while ( pSplashWnd->IsWindow() ) {
+		GetMessage(&msg,pSplashWnd->m_hWnd,0,0);
 
 		TranslateMessage(&msg); 
 		DispatchMessage(&msg);
-	} while ( pSplashWnd->IsWindow() );
+	}
 }
