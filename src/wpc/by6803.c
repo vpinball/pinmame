@@ -40,7 +40,7 @@
   Squalk & Talk (Eight Ball Champ->?)
   Turbo Cheap Squeak (6809,6821,DAC)
   Sounds Deluxe (68000,6821,PAL,DAC)
-  Williams System 11B (Truck Stop & Atlantis)
+  Williams System 11C (Truck Stop & Atlantis)
 
 */
 #include <stdarg.h>
@@ -129,6 +129,7 @@ static WRITE_HANDLER(pia0a_w) {
 /* PIA1:A-W  0,2-7 Display handling */
 static WRITE_HANDLER(pia1a_w) {
   int tmp = locals.a1;
+  mlogerror("seg_w %x\n",data);
   locals.a1 = data;
   if (!locals.ca20) {
     if (tmp & ~data & 0x01) { // Positive edge
