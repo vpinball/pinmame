@@ -377,6 +377,20 @@ TAITO_ROMEND
 CORE_GAMEDEFNV(snake,"Snake Machine",1982,"Taito",taito_sintetizadorpp,0)
 
 /*--------------------------------
+/ Gork
+/-------------------------------*/
+INITGAME(gork,SNDBRD_TAITO_SINTEVOXPP)
+TAITO_ROMSTART2222(gork,"gork1.bin",CRC(d8c7bfee) SHA1(96319e60cf77d0cb7afc326de785d5255f73623f),
+                        "gork2.bin",CRC(540abe17) SHA1(ee0ea029ba4b4de5f69146b7ccf9482b4812ef4f),
+                        "gork3.bin",CRC(0ea1a2dc) SHA1(3ab58bc25a4512aae5c16f497bddf713413c02fe),
+                        "gork4.bin",CRC(0e6260fb) SHA1(b2f7190991d63701210a25a3970293b8f4c34022))
+TAITO_SOUNDROMS44("gork_s1.bin", CRC(6611a4cb) SHA1(3ab840b162f9bfe2aebe1d3afeb1fddaf849d9c5),
+                  "gork_s2.bin", CRC(440739cb) SHA1(6172bf000f854ccf5c24c7700a0ad208596d24f8))
+TAITO_ROMEND
+#define input_ports_gork input_ports_taito
+CORE_GAMEDEFNV(gork,"Gork",1982,"Taito",taito_sintevoxpp,0)
+
+/*--------------------------------
 / Voley Ball
 /-------------------------------*/
 INITGAME(voleybal,SNDBRD_TAITO_SINTETIZADORPP)
@@ -390,7 +404,6 @@ TAITO_ROMEND
 #define input_ports_voleybal input_ports_taito
 CORE_GAMEDEFNV(voleybal,"Voley Ball",198?,"Taito",taito_sintetizadorpp,0)
 
-//??/82 Gork
 //??/8? Ogar
 
 /*--------------------------------
