@@ -1017,10 +1017,6 @@ SOURCE=.\src\win32com\VPinMAME.def
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\win32com\VPinMAME.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\win32com\VPinMAME.idl
 # ADD MTL /tlb "VPinMAME.tlb" /h "VPinMAME.h" /iid "VPinMAME_i.c"
 # End Source File
