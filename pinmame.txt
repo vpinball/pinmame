@@ -1,0 +1,382 @@
+**************************************************************************************
+		                      PinMAME
+		      (Pinball Multiple Arcade Machine Emulator)
+				     Version 1.10
+			        (December 23, 2001)
+                                http://www.pinmame.com
+**************************************************************************************
+
+Latest Info
+-----------
+  See the whatsnew.txt for latest additions to PinMAME!
+
+What is it?
+-----------
+  PinMAME emulates the hardware found in many solid state pinball machines created from 
+  the late 1970's through 2001. Currently, the following pinball hardware is emulated:
+
+  Williams/Bally WPC, Williams/Bally System 11, Williams System 9, Williams System 7,
+  Williams System 6, Williams System 4, Williams System 3, 
+  Data East AlphaNumeric System, Data East 128x16 DMD, Data East 128x32 DMD, 
+  Data East/Sega 192x64 DMD, Sega/Stern Whitestar System, Stern MPU-100, Stern MPU-200,
+  Bally MPU-17 & MPU-35, Bally Video/Pinball(preliminary), Gottlieb System 80, 80a, 80b,
+  System 3.
+
+  *Note: Emulation is not 100% working on all hardware.
+
+  PinMAME is built as an add-on to the MAME 0.37 Beta 16 Source Code.
+
+  All the MAME readme file with all disclaimers, credits and instructions are included for
+  info on using mame related functions.
+
+  All standard MAME "functions" work in PinMAME (profiler, debugger, cheats,
+  record/playback, command line switches etc), but remember that it is
+  based on a mame beta release.
+
+What does it do?
+----------------
+  Before you start to extract the ROMS from your favorite pinball machine please note:
+
+  The PinMAME pinball emulator/simulator is not 100% playable. It only emulates the
+  electronic circuit boards and the display in the pinball machine backbox.
+  There is no playfield and no balls that you will see displayed!
+
+  However, you can activate switches with you keyboard, see display animations,
+  and listen/record the pinball game sounds.
+
+
+Games supported
+----------------
+  Williams/Bally WPC:  All games from Dr. Dude(1990) to Cactus Canyon(1998)
+  Williams/Bally System 11: All games from High Speed(1986) to Dr.Dude(1990)
+  Williams System 9: All games from Space Shuttle(1984) to Comet(1985)
+  Williams System 7: All games from Black Knight(1980) to Starlight(1984)
+  Williams System 6: All games from Blackout(1979) to Alien Poker(1980)
+  Williams System 4: All games from Phoenix(1978) to Stellar Wars(1979)
+  Williams System 3: All games from HotTip(1977) to Disco Fever(1978)
+  Data East AlphaNumeric System: All games from Laser War(1987) to The Simpsons(1990)
+  Data East 128x16 DMD: All games from Checkpoint(1991) to Hook(1992)
+  Data East 128x32 DMD: All games from Lethal Weapon 3(1992) to Guns N Roses(1994)
+  Data East 192x64 DMD: All games from Maverick(1994)
+  Sega 192x64 DMD: All games from Frankenstein(1994) to Batman Forever(1995)
+  Sega/Stern Whitestar: All games from Apollo13(1995) to High Roller Casino(2001)
+  Stern MPU-100: All games from Stingray(1977) to Magic(1979)
+  Stern MPU-200: All games from Meteor(1979) to Lazer Lord(1984)
+  Bally MPU-17: All games from Freedom(1977) to Black Jack(1978)
+  Bally MPU-35: All games from Lost World(1978) to Cybernaut(1985)
+  Bally Video/Pinball: Baby Pacman (1982) is supported.
+  Gottlieb System 80: All games from Spiderman(1980) to Haunted House(1982)
+  Gottlieb System 80a: All games from Devil's Dare(1982) to Ice Fever(1985)
+  Gottlieb System 80b: All games from Triple Play(1985) to BoneBusters(1989)
+  Gottlieb System 3: All games from Lights,Camera,Action(1989) to Barb Wire(1996)
+
+  Supported means that the game loads and the display starts up with lamps etc. All games
+  enter attract mode and you can use the Coin Door switches to enter the menus.
+
+    *Note: Sound is not supported, or may not work properly for all games.
+   **Note: A FEW games may not work or be supported due to customization of the original hardware
+  ***Note: Some games may not be supported simply because we could not find full rom sets.
+
+Simulated?
+----------
+  For many games there is a ball simulator which you can use to simulate "playing" the game.
+  The simulator allows you to use the keyboard to make shots/hit targets with your virtual/
+  invisible pinball..
+
+  Essentially, it triggers the correct switches depending on where the balls are located.
+
+  (You can program a simulator for your own favourite game if you know a
+  bit of programming and a lot about the game. If you are intersted let us know and we'll
+  try to explain how to do it)
+
+  For more information, please refer to simulation.txt for instructions on using the pinball   simulator built into pinmame!
+
+  *NEW*: Many games not fully simulated, now have preliminary simulator support!
+
+
+Instructions
+-------------
+  Only PinMAME specific setting are listed here. Please read the MAME readme
+  file for instructions on using mame and all it's options.
+
+  Note: The ROMS downloaded *directly* from William's website may be compressed with a zip
+  version not supported by mame.
+
+  If they do not work for you, you will need to uncompress them (using pkzip or Winzip for example),
+  and recompress them using the "normal compression" setting!
+
+  Roms available from other websites should work fine!
+
+  Some ROM images are double size (i.e. the data appears twice).
+  This is most often done on purpose due to the limited availability
+  of smaller sized EPROMS or to simplify upgrades (all ROM images same size).
+  PinMAME accepts the double sized ROMs but the checksum verification
+  is disabled. The -verifyroms will still report wrong sized ROMs.
+
+
+Command line switches
+---------------------
+  In an effort to minimize changing the original MAME source code, PinMAME uses some
+  existing mame command line swicthes in ways different than mame used them!
+
+  These can be set on the command line or in mame.cfg
+
+  -[no]antialias     on  = Display a more DMD like display (space between dots)
+		     off = Display a compact DMD display
+
+  -[no]translucency  on  = Display lamps, swithes and simulator
+                     off = Don't display lamps, switches and simulator
+                           (they still work). Good when creating animations
+                           or screen shots!
+
+  -[no]cheat         on  = Speed up WPC game start up by disabling checksum
+                           (does not work with Dr. Dude). Try it on a security
+                           PIC game for an interesting message. The
+                           functionality is present in the roms, PinMAME just
+                           enables it.
+                           Also enables MAME cheats (e.g overclocking)
+                     off = Normal startup
+
+  -flicker n         Antialias the DMD display with intensity 0-100%.
+
+Other MAME settings (modified to work with PinMAME)
+---------------------------------------------------
+  - The display looks better with -noscanlines
+  - Display must be forced to 8 bit (-depth 8) if it is not doing so automatically.
+  - Printer output will be saved in the MEMCARD directory
+  - You may underclock the DCS sound CPU to increase performance but
+    sound will be slightly delayed (not synchronized with the display)
+    and will sometimes be garbled. Use F8,F9,F11 keys for underclocking.
+  - DCS GAMES: Use -samplerate 32000 for the most accurate sound reproduction
+
+PinMAME Specific Command line switches
+--------------------------------------
+  The following are new command line switches for PinMAME only, and do not
+  exist in MAME.
+
+  These can be set on the command line or in mame.cfg
+
+  -dmd_red   0-255 (Controls the amount of red displayed for a DMD Dot when
+                    it's lit at 100%!)
+  -dmd_green 0-255 (Controls the amount of green displayed for a DMD Dot when
+                    it's lit at 100%!)
+  -dmd_blue  0-255 (Controls the amount of blue displayed for a DMD Dot when
+                    it's lit at 100%!)
+  -dmd_perc66 0-100 (Sets the Percentage to display a DMD Dot which is lit
+                    at 66%, Default = 67%)
+  -dmd_perc33 0-100 (Sets the Percentage to display a DMD Dot which is lit
+                    at 33%, Default = 34%)
+  -dmd_perc0  0-100 (Sets the Percentage to display a DMD Dot when NOT lit.
+
+  (for more information on the settings above, see "Changing the Look of the DMD")
+
+
+General Keys
+------------
+  Each Hardware platform supports different keys. See Keys.txt for more info.
+
+Controlling switches (manually)
+-------------------------------
+
+  The following keys will toggle the state of a switch
+
+  1 2 3 4 5 6 7 8
+  ---------------
+  Q,W,E,R,T,Y,U,I Select Column 1-8
+  A,S,D,F,G,H,J,K Select Row    1-8
+
+  For example, to toggle switch 34 (Col 3, Row 4) press E while holding F!
+  If the game has a simulator, press "Del" key to toggle between simulator keys
+  and the switch keys.
+
+
+DIP settings
+-------------
+  You can change the country and other settings for the game in the DIP menu.
+  All games does not support all country settings.
+
+  Each game and the simulator can use some "fake" DIP settings to
+  choose between different hardware options (e.g. number of balls installed).
+
+Display
+-------
+  The display shows the DMD or the Alphanumeric LEDs and optionally
+  (via the -[no]translucecy command line option) three matrices:
+
+  Top:		Lamp Matrix
+  Middle:	Switche Matrix
+  Bottom: 	Solenoids/Flasher Matrix
+  Below: 	Diagnostic Lights found on the main hardware board.
+
+  PinMAME contains functionality to diplay the lamp matrix laid out similar
+  to the real pinball machine. See TZ for an example.
+
+  If you want to do a similar layout for you favorite game which does not
+  yet exist, let us know.
+
+Changing the Look of the DMD
+----------------------------
+
+ Changing Color:
+
+   Every dot in the DMD uses an RGB(red, green, blue) color triplet to specify
+   the color of each dot to display. To change colors properly, you must know
+   the appropriate RGB numbers of the color you wish to use.
+
+   For example, PinMAME's default is a yellowish color: Red = 255, Green = 224,
+   Blue = 32
+   For an orange color, you could use: Red = 255, Green = 64, Blue = 0
+   For red dots, you could use: Red = 255, Green = 0, Blue = 0
+
+   Experiment with the #'s, until you find colors that look good to you!
+
+ Changing the Intensity of the DMD Dots:
+
+   The DMD uses 3 different levels of intensity (100%,66%,33%) to create
+   graphics on the display. 100% are dots that are fully lit, where as
+   66% & 33% will each be darker than the fully lit dot, by a certain
+   percentage.
+
+   You can control these percentages yourself to change the appearance
+   of the DMD. You can change the 2nd & 3rd intensities, using dmd_perc66
+   & dmd_perc33. You cannot change a fully lit dot's intensity. It must
+   always be 100%.
+
+   For example, to make the DMD Dots much closer in intensity, you could adjust
+   the settings to (100%,90%,80%), by setting dmd_perc66 = 90, dmd_perc33 = 80.
+   This would result in animations where the contrast between each of the 3
+   intensity levels would be minimal.
+
+   To make the contrast even more drastic, you could use (100%,50%,20%),
+   by setting dmd_perc66 = 50, dmd_perc33 = 20.
+
+   These are just examples to demonstrate the functionality. Using these
+   #'s, would probably not look very good! :)
+
+   As with the Colors, experiment with the intensity levels, until you find
+   #'s that look good to you!
+
+
+Sound Command Mode
+------------------
+
+  PinMAME has the ability to let you trigger sound commands manually. This
+  will let you play any sound the pinball game can make. Hit the F4 key to
+  turn Sound Command Mode on or off. Follow the instructions on screen to
+  generate sounds.
+
+  The sound commander work in two modes:
+  Manual mode:  you enter the commands directly using the arrows.
+                NOTE: Not all Sound Command #'s generate a sound. e.g.
+                Many games don't have a sound for command #01!
+                Most games require two bytes for each command.
+
+  Command mode: Sound command are read from the "sounds.dat" file
+                and you can scroll thru all available commands
+                with the arrow keys. Look in the sounds.dat for
+                details on hw to use it.
+
+  For some games the sound command history is displayed. It can be useful
+  to find out how certain sound are generated.
+
+Recording Sounds to a Wave File
+-------------------------------
+
+  PinMAME can record the sound output to a wave file for you to play back
+  anytime you want. Hit the F5 key to begin recording, and hit F5 again,
+  to stop recording.
+  The files are created in the wavefile directory. They begin with the name
+  of the game, plus a #, just like screenshots work.
+
+  If you're having trouble make sure your .cfg file points to a valid directory,
+  and that you have enough free disk space to create the wave.
+
+  Important:
+  ----------
+
+  WAV files can become *very* big quickly. These are not compressed like
+  MP3 files, so be carefull. You can easily end up with 50MB wav files
+  for just a few minutes of recording!
+
+Creating Animations
+-------------------
+
+  This is one suggested way to create animations with PinMAME.
+
+  1. First find a way get the animation on the display via the simulator
+     or the switch keys.
+
+  2. Delete the .nv file and restart pinmamew with the -record <name> switch
+     (e.g. pinmamew afm -record exball)
+
+  3. Repeat the simulator/switch keys until the animation is shown.
+
+  4. Delete .nv file and restart with playback without the simulator display
+     (e.g. pinmamew afm -notranslucency -playback exball)
+     You may want to use -noantialias as well.
+
+  5. Press pause just before the animation starts. Press F12 to save a
+     snapshot and the SHIFT-P to advance to next frame and repeat.
+
+  6. A sequence of PNG files will appear in your SNAP directory.
+
+  7. Convert the PNG files to a gif animation with your favorite graphic tool
+     (I use a program called "PictView 1.92" for the PNG to GIF conversion
+     and then another tool called "GifMake 2.1" to create the animation. Both
+     can be run from a batch file.)
+
+  8. Reduce the number of colours to decrease the filesize. The palette
+     is a mess right now but generally the colors are:
+     0:     background
+     1:     unlit DMD dot
+     2-4:   lit DMD dot
+     5-16:  Lamps switches etc.
+     17-23: antialiased DMD
+     All but 0,2,3,4 can be removed in an amination.
+
+
+Accessing Williams/Bally WPC - Hidden Menu
+------------------------------------------
+
+  Did you know that all WPC Machines have a hidden menu?
+  Yes, it's true. To access it, you must press 'Enter' twice, so that you are
+  sitting at the main menu and B.Bookkeeping is flashing as the selected choice.
+  Now press all 4 buttons Escapte, Down, Up, and Enter (normally mapped to
+  keys 7,8,9,0) ALL AT THE SAME TIME!
+  If you did it correctly, you should see a new choice on the menu:
+  EXEC LOCKUPS - B.1 01..... Using the normal Up/Down keys you can cycle through
+  the other new choices...Try this on your real machine at home too!
+
+
+Known Bugs
+----------
+ See bugs.txt for list of known problems with PinMAME.
+
+The PinMAME Development Team
+----------------------------
+Steve Ellenoff     (sellenoff@hotmail.com)
+Tom Haukap         (Tom.Haukap@t-online.de)
+Martin Adrian      (wpcmame@hotmail.com)
+Gerrit Volkenborn  (volkenborn@yahoo.com)
+
+PinMAME Contributors
+--------------------
+Marton Larrosa     (marton@mail.com)
+Jarek Parchanski   (jpdev@priv6.onet.pl)
+Jonathan N. Deitch (jdeitch@litz.org)
+Dave Roberts       (daverob@cwcom.net)
+Dorsola            (dorsola@descent2.com)
+Johan S		   (arcadepreserv@hotmail.com)
+Destruk		   (destruk@home.com)
+Guru		   (theguru@emuunlim.com)
+Martin Wiest	   (Mr.Startrek@gmx.de)
+
+
+Note from the PinMAME Dev. team
+-------------------------------
+
+We're working hard to improve this great emulator, and welcome your feedback!!
+Please do not hesitate to contact us with questions, bug reports, suggestions,
+whatever!
+
+
