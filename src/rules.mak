@@ -22,6 +22,17 @@ else
 CPUDEFS += -DHAS_Z180=0
 endif
 
+CPU=$(strip $(findstring 4004@,$(CPUS)))
+ifneq ($(CPU),)
+OBJDIRS += $(OBJ)/cpu/i4004
+CPUDEFS += -DHAS_4004=1
+CPUOBJS += $(OBJ)/cpu/i4004/i4004.o
+DBGOBJS += $(OBJ)/cpu/i4004/4004dasm.o
+$(OBJ)/cpu/i4004/i4004.o: i4004.c i4004.h i4004cpu.h i4004daa.h
+else
+CPUDEFS += -DHAS_4004=0
+endif
+
 CPU=$(strip $(findstring 8080@,$(CPUS)))
 ifneq ($(CPU),)
 OBJDIRS += $(OBJ)/cpu/i8085

@@ -29,6 +29,9 @@
 #if (HAS_Z180)
 #include "cpu/z180/z180.h"
 #endif
+#if (HAS_4004)
+#include "cpu/i4004/i4004.h"
+#endif
 #if (HAS_8080 || HAS_8085A)
 #include "cpu/i8085/i8085.h"
 #endif
@@ -372,6 +375,9 @@ const struct cpu_interface cpuintrf[] =
 #endif
 #if (HAS_Z180)
 	CPU1(Z180,	   z180, 	 1,255,1.00, 8, 20,	  0,20,LE,1, 4	),
+#endif
+#if (HAS_4004)
+	CPU0(4004,	   i4004,	 4,255,1.00, 8, 16,	  0,16,LE,1, 3	),
 #endif
 #if (HAS_8080)
 	CPU0(8080,	   i8080,	 4,255,1.00, 8, 16,	  0,16,LE,1, 3	),
