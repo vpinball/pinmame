@@ -111,8 +111,12 @@ MEMORY_READ_START(GTS80S_readmem)
 { 0x0040, 0x017f, MRA_BANK6}, // 64 Byte RIOT memory, repeated, base will be set in the init function
 { 0x0080, 0x01bf, MRA_BANK7}, // 64 Byte RIOT memory, repeated, base will be set in the init function
 { 0x00c0, 0x01ff, MRA_BANK8}, // 64 Byte RIOT memory, repeated, base will be set in the init function
-{ 0x0200, 0x02ff, riot6530_0_r},
+{ 0x0200, 0x03ff, riot6530_0_r},
 { 0x0400, 0x0fff, MRA_ROM},
+{ 0x1000, 0x103f, MRA_BANK9},  // 64 Byte RIOT Memory, repeated, base will be set in the init function
+{ 0x1040, 0x107f, MRA_BANK10}, // 64 Byte RIOT memory, repeated, base will be set in the init function
+{ 0x1080, 0x10bf, MRA_BANK11}, // 64 Byte RIOT memory, repeated, base will be set in the init function
+{ 0x10c0, 0x10ff, MRA_BANK12}, // 64 Byte RIOT memory, repeated, base will be set in the init function
 { 0xf800, 0xffff, MRA_ROM},
 MEMORY_END
 
@@ -125,8 +129,12 @@ MEMORY_WRITE_START(GTS80S_writemem)
 { 0x0040, 0x017f, MWA_BANK6}, // 64 Byte RIOT memory, repeated, base will be set in the init function
 { 0x0080, 0x01bf, MWA_BANK7}, // 64 Byte RIOT memory, repeated, base will be set in the init function
 { 0x00c0, 0x01ff, MWA_BANK8}, // 64 Byte RIOT memory, repeated, base will be set in the init function
-{ 0x0200, 0x02ff, riot6530_0_w},
+{ 0x0200, 0x03ff, riot6530_0_w},
 { 0x0400, 0x0fff, MWA_ROM},
+{ 0x1000, 0x103f, MWA_BANK9},  // 64 Byte RIOT Memory, repeated, base will be set in the init function
+{ 0x1040, 0x107f, MWA_BANK10}, // 64 Byte RIOT memory, repeated, base will be set in the init function
+{ 0x1080, 0x10bf, MWA_BANK11}, // 64 Byte RIOT memory, repeated, base will be set in the init function
+{ 0x10c0, 0x10ff, MWA_BANK12}, // 64 Byte RIOT memory, repeated, base will be set in the init function
 { 0xf800, 0xffff, MWA_ROM},
 MEMORY_END
 
@@ -192,7 +200,7 @@ void gts80s_init(struct sndbrdData *brdData) {
 		tell the MAME core this situation; the problem is that the cpu *will*
 		execute code in this area, so a usually read/writer handler fails
 	*/
-	for (i=1;i<=8;i++)
+	for (i=1;i<=12;i++)
 		cpu_setbank(i, memory_region(STATIC_BANK1));
 
 	/* init the RIOT */
