@@ -198,8 +198,8 @@ BEGIN
                     SS_LEFTNOWORDWRAP,8,168,55,9
     CONTROL         "http://www.pinmame.com",IDC_HOMEPAGELINK,"Static",
                     SS_LEFTNOWORDWRAP | SS_NOTIFY,68,168,83,9
-    CTEXT           "Steve Ellenoff, Tom Haukap,\n Martin Adrian and Gerrit Volkenborn",
-                    IDC_STATIC,150,53,160,15
+    CTEXT           "Steve Ellenoff, Tom Haukap, Martin Adrian,\nGerrit Volkenborn and Brian Smith",
+                    IDC_STATIC,150,51,160,15
 END
 
 IDD_DISCLAIMERDLG DIALOG  0, 0, 213, 111
