@@ -58,9 +58,11 @@
 / Machine driver constants
 /--------------------------*/
 /*-- Memory regions --*/
-#define TAITO_MEMREG_CPU REGION_CPU1
+#define TAITO_MEMREG_CPU  REGION_CPU1
+#define TAITO_MEMREG_SCPU REGION_CPU2
 
 #define TAITO_CPU		0
+#define TAITO_SCPU		1
 
 /*-- Main CPU regions and ROM --*/
 #define TAITO_ROMSTART4444(name,n1,chk1,n2,chk2,n3,chk3,n4,chk4) \
