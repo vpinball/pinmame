@@ -135,23 +135,24 @@ static WRITE_HANDLER(solenoid_w)
 //See U7-PB Read for more info
 READ_HANDLER(CoinDoorSwitches_Read)
 {
-//According to manual (but doesn't seem to work)
+//According to manual (but doesn't work)
 #if 0
 	int data = 0;
 	data |= (alvglocals.DMDAck   << 7);	 //DMD Ack		(?)
 	data |= (alvglocals.swTest   << 5);	 //Test Sw.		(Not Inverted)
-	data |= (alvglocals.swEnter  << 4);   //Enter Sw.	(Not Inverted)
+	data |= (alvglocals.swEnter  << 4);  //Enter Sw.	(Not Inverted)
 	data |= (alvglocals.swAvail1 << 3);  //Avail1		(Not Inverted)
 	data |= (alvglocals.swAvail2 << 2);  //Avail2		(Not Inverted)
 #else
 //Seems to work
 	int data = 0;
-	data |= (alvglocals.DMDAck   << 7);	 //DMD Ack		(?)
-	data |= (alvglocals.swTest   << 2);	 //Test Sw.		(Not Inverted)
-	data |= (alvglocals.swEnter  << 4);  //Enter Sw.	(Not Inverted)
-	data |= (alvglocals.swAvail1 << 1);  //Avail1		(Not Inverted)
-	data |= (alvglocals.swAvail2 << 3);  //Avail2		(Not Inverted)
+	data |= (alvglocals.DMDAck   << 7);	 //DMD Ack		(?)				(8)
+	data |= (alvglocals.swEnter  << 4);  //Enter Sw.	(Not Inverted)	(5)
+	data |= (alvglocals.swAvail2 << 3);  //Avail2		(Not Inverted)	(4)
+	data |= (alvglocals.swTest   << 2);	 //Test Sw.		(Not Inverted)	(3)
+	data |= (alvglocals.swAvail1 << 1);  //Avail1		(Not Inverted)	(2)
 #endif
+//printf("%x:data = %x\n",activecpu_get_previouspc(),data);
 return data;
 }
 
@@ -513,8 +514,16 @@ static SWITCH_UPDATE(alvg) {
   alvglocals.swTest = (core_getSw(ALVG_SWTEST)>0?1:0);
   alvglocals.swEnter = (core_getSw(ALVG_SWENTER)>0?1:0);
 
+  //Update Flasher Relay
+  {
+  int relay=(coreGlobals.solenoids & 0x4000)>>14;
+  alvglocals.swAvail1 = relay;
+  alvglocals.swAvail2 = relay;
+  }
+
+  //Not necessary it seems..
   //Force VIA to see the coin door switch values
-  via_0_portb_w(0,CoinDoorSwitches_Read(0));
+  //via_0_portb_w(0,CoinDoorSwitches_Read(0));
 }
 
 //Send a sound command to the sound board
