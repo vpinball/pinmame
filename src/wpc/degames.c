@@ -2,8 +2,10 @@
 #include "sim.h"
 #include "de.h"
 #include "de2.h"
+#include "desound.h"
 #include "de1sound.h"
 #include "de2sound.h"
+#include "s11.h"
 
 extern int de_data;	//Used for custom solenoids hooked to CN3 of CPU board.
 
@@ -13,6 +15,13 @@ static void init_##name(void) { \
   core_gameData = &name##GameData; \
 } \
 DE_INPUT_PORTS_START(name, balls) DE_INPUT_PORTS_END
+
+#define INITGAMES11(name, gen, disptype, flippers, db) \
+static core_tGameData name##GameData = { \
+  gen, disptype, {flippers,0,0,0,0,db,0}, NULL, {{0}},{10}}; \
+static void init_##name(void) { core_gameData = &name##GameData; }
+
+DE_INPUT_PORTS_START(des11, 1) DE_INPUT_PORTS_END
 
 //Used for games after Frankenstein
 #define INITGAME2(name, gen, disptype, flippers, balls) \
@@ -25,9 +34,9 @@ DE2_INPUT_PORTS_START(name, balls) DE_INPUT_PORTS_END
 
 /*Common Flipper Switch Settings*/
 #define FLIP4746    FLIP_SWNO(47,46)
-#define FLIP3031	FLIP_SWNO(30,31)
-#define FLIP1516	FLIP_SWNO(15,16)
-#define FLIP6364	FLIP_SWNO(63,64)
+#define FLIP3031    FLIP_SWNO(30,31)
+#define FLIP1516    FLIP_SWNO(15,16)
+#define FLIP6364    FLIP_SWNO(63,64)
 
 /* NO OUTPUT */
 core_tLCDLayout de_NoOutput[] = {{0}};
@@ -36,15 +45,13 @@ core_tLCDLayout de_NoOutput[] = {{0}};
 core_tLCDLayout de_dispAlpha1[] = {
   DISP_SEG_7(0,0, CORE_SEG16), DISP_SEG_7(0,1, CORE_SEG16),
   DISP_SEG_7(1,0, CORE_SEG7),  DISP_SEG_7(1,1, CORE_SEG7),
-  DISP_SEG_CREDIT(20,28,CORE_SEG7),DISP_SEG_BALLS(0,8,CORE_SEG7H),
-  {0}
+  DISP_SEG_CREDIT(20,28,CORE_SEG7),DISP_SEG_BALLS(0,8,CORE_SEG7H), {0}
 };
 
 /* 2 X 7 AlphaNumeric Rows, 2 X 7 Numeric Rows */
 core_tLCDLayout de_dispAlpha2[] = {
   DISP_SEG_7(0,0, CORE_SEG16), DISP_SEG_7(0,1, CORE_SEG16),
-  DISP_SEG_7(1,0, CORE_SEG7),  DISP_SEG_7(1,1, CORE_SEG7),
-  {0}
+  DISP_SEG_7(1,0, CORE_SEG7),  DISP_SEG_7(1,1, CORE_SEG7), {0}
 };
 
 /* 2 X 16 AlphaNumeric Rows */
@@ -70,122 +77,132 @@ core_tLCDLayout de_192x64DMD[] = {
 /*-------------------------------------------------------------------
 / Laser War - CPU Rev 1 /Alpha Type 1 - 32K ROM - 32/64K Sound Roms
 /-------------------------------------------------------------------*/
-INITGAME(lwar,DE_CPUREV1 | DE_ALPHA1, de_dispAlpha1, FLIP4746, 3/*?*/)
-DE32_ROMSTART(lwar,		"lwar.c5",0xeee158ee)
-DESOUND3264_ROMSTART(	"lwar_e9.snd",0x9a6c834d,	//F7 on schem (sound)
-						"lwar_e6.snd",0x7307d795,	//F6 on schem (voice1)
-						"lwar_e7.snd",0x0285cff9)	//F4 on schem (voice2)
+INITGAMES11(lwar, GEN_DE, de_dispAlpha1, FLIP4746, 0)
+DE32_ROMSTART(lwar,  "lwar.c5",    0xeee158ee)
+DE1S_SOUNDROM244("lwar_e9.snd",0x9a6c834d,	//F7 on schem (sound)
+	         "lwar_e6.snd",0x7307d795,	//F6 on schem (voice1)
+	         "lwar_e7.snd",0x0285cff9)	//F4 on schem (voice2)
 DE_ROMEND
-CORE_GAMEDEFNV(lwar,"Laser War",1987,"Data East",de_mDE_AS,0)
+#define input_ports_lwar input_ports_des11
+CORE_GAMEDEFNV(lwar,"Laser War",1987,"Data East",de_mDEAS,0)
 
 
 /*-------------------------------------------------------------------------
 / Secret Service - CPU Rev 2 /Alpha Type 2 - 32K Roms - 32K/64K Sound Roms
 /-------------------------------------------------------------------------*/
-INITGAME(ssvc,DE_CPUREV2 | DE_ALPHA2, de_dispAlpha2, FLIP3031, 3/*?*/)
-DE3232_ROMSTART(ssvc,	"ssvc4-6.b5",0xe5eab8cd,
-						"ssvc4-6.c5",0x171b97ae)
-DESOUND3264_ROMSTART(	"sssndf7.rom",0x980778d0,	//F7 on schem (sound)
-						"ssv1f6.rom",0xccbc72f8,	//F6 on schem (voice1)
-						"ssv2f4.rom",0x53832d16)	//F4 on schem (voice2)
+INITGAMES11(ssvc, GEN_DE, de_dispAlpha2, FLIP3031, 0)
+DE3232_ROMSTART(ssvc,"ssvc4-6.b5",0xe5eab8cd,
+		     "ssvc4-6.c5",0x171b97ae)
+DE1S_SOUNDROM244("sssndf7.rom",0x980778d0,	//F7 on schem (sound)
+		 "ssv1f6.rom",0xccbc72f8,	//F6 on schem (voice1)
+		 "ssv2f4.rom",0x53832d16)	//F4 on schem (voice2)
 DE_ROMEND
-CORE_GAMEDEFNV(ssvc,"Secret Service",1988,"Data East",de_mDE_AS,0)
+#define input_ports_ssvc input_ports_des11
+CORE_GAMEDEFNV(ssvc,"Secret Service",1988,"Data East",de_mDEAS,0)
 
 /*-----------------------------------------------------------------------
 / Torpedo Alley - CPU Rev 2 /Alpha Type 2 - 32K Roms - 32/64K Sound Roms
 /------------------------------------------------------------------------*/
-INITGAME(torpe,DE_CPUREV2 | DE_ALPHA2, de_dispAlpha2, FLIP1516, 3/*?*/)
-DE3232_ROMSTART(torpe,	"torpe2-1.b5",0xac0b03e3,
-						"torpe2-1.c5",0x9ad33882)
-DESOUND3264_ROMSTART(	"torpef7.rom",0x26f4c33e,	//F7 on schem (sound)
-						"torpef6.rom",0xb214a7ea,	//F6 on schem (voice1)
-						"torpef4.rom",0x83a4e7f3)	//F4 on schem (voice2)
+INITGAMES11(torpe, GEN_DE, de_dispAlpha2, FLIP1516, 0)
+DE3232_ROMSTART(torpe,"torpe2-1.b5",0xac0b03e3,
+                      "torpe2-1.c5",0x9ad33882)
+DE1S_SOUNDROM244("torpef7.rom",0x26f4c33e,	//F7 on schem (sound)
+		 "torpef6.rom",0xb214a7ea,	//F6 on schem (voice1)
+		 "torpef4.rom",0x83a4e7f3)	//F4 on schem (voice2)
 DE_ROMEND
-CORE_GAMEDEFNV(torpe,"Torpedo Alley",1988,"Data East",de_mDE_AS,0)
+#define input_ports_torpe input_ports_des11
+CORE_GAMEDEFNV(torpe,"Torpedo Alley",1988,"Data East",de_mDEAS,0)
 
 /*--------------------------------------------------------------------------
 / Time Machine - CPU Rev 2 /Alpha Type 2 16/32K Roms - 32/64K Sound Roms
 /--------------------------------------------------------------------------*/
-INITGAME(tmach,DE_CPUREV2 | DE_ALPHA2, de_dispAlpha2, FLIP1516, 3/*?*/)
-DE1632_ROMSTART(tmach,	"tmach2-4.b5",0x6ef3cf07,
-                        "tmach2-4.c5",0xb61035f5)
-DESOUND3264_ROMSTART(	"tmachf7.rom",0x5d4994bb,	//F7 on schem (sound)
-						"tmachf6.rom",0xc04b07ad,	//F6 on schem (voice1)
-						"tmachf4.rom",0x70f70888)	//F4 on schem (voice2)
+INITGAMES11(tmach, GEN_DE, de_dispAlpha2, FLIP1516, 0)
+DE1632_ROMSTART(tmach,"tmach2-4.b5",0x6ef3cf07,
+                      "tmach2-4.c5",0xb61035f5)
+DE1S_SOUNDROM244("tmachf7.rom",0x5d4994bb,	//F7 on schem (sound)
+		 "tmachf6.rom",0xc04b07ad,	//F6 on schem (voice1)
+		 "tmachf4.rom",0x70f70888)	//F4 on schem (voice2)
 DE_ROMEND
-CORE_GAMEDEFNV(tmach,"Time Machine",1988,"Data East",de_mDE_AS,0)
+#define input_ports_tmach input_ports_des11
+CORE_GAMEDEFNV(tmach, "Time Machine",1988,"Data East",de_mDEAS,0)
 
 
 /*-----------------------------------------------------------------------------------
 / Playboy 35th Anniversary - CPU Rev 2 /Alpha Type 2 - 32K Roms - 32/64K Sound Roms
 /-----------------------------------------------------------------------------------*/
-INITGAME(play,DE_CPUREV2 | DE_ALPHA2, de_dispAlpha2, FLIP1516, 3/*?*/)
-DE3232_ROMSTART(play,	"play2-4.b5",0xbc8d7b32,
-						"play2-4.c5",0x47c30bc2)
-DESOUND3264_ROMSTART(	"pbsnd7.dat",0xc2cf2cc5,	//F7 on schem (sound)
-						"pbsnd6.dat",0xc2570631,	//F6 on schem (voice1)
-						"pbsnd5.dat",0x0fd30569)	//F4 on schem (voice2)
+INITGAMES11(play, GEN_DE, de_dispAlpha2, FLIP1516, 0)
+DE3232_ROMSTART(play,"play2-4.b5",0xbc8d7b32,
+		     "play2-4.c5",0x47c30bc2)
+DE1S_SOUNDROM244("pbsnd7.dat",0xc2cf2cc5,	//F7 on schem (sound)
+		 "pbsnd6.dat",0xc2570631,	//F6 on schem (voice1)
+		 "pbsnd5.dat",0x0fd30569)	//F4 on schem (voice2)
 DE_ROMEND
-CORE_GAMEDEFNV(play,"Playboy 35th Anniversary",1989,"Data East",de_mDE_AS,0)
+#define input_ports_play input_ports_des11
+CORE_GAMEDEFNV(play,"Playboy 35th Anniversary",1989,"Data East",de_mDEAS,0)
 
 /*-----------------------------------------------------------------------------------
 / Monday Night Football - CPU Rev 2 /Alpha Type 3 16/32K Roms - 32/64K Sound Roms
 /----------------------------------------------------------------------------------*/
-INITGAME(mnfb,DE_CPUREV2 | DE_ALPHA3, de_dispAlpha3, FLIP1516, 3/*?*/)
-DE1632_ROMSTART(mnfb,	"mnfb2-7.b5",0x995eb9b8,
-						"mnfb2-7.c5",0x579d81df)
-DESOUND3264_ROMSTART(	"mnf-f7.256",0xfbc2d6f6,	//F7 on schem (sound)
-						"mnf-f5-6.512",0x0c6ea963,	//F6 on schem (voice1)
-						"mnf-f4-5.512",0xefca5d80)	//F4 on schem (voice2)
+INITGAMES11(mnfb,GEN_DE, de_dispAlpha3, FLIP1516, S11_LOWALPHA)
+DE1632_ROMSTART(mnfb,"mnfb2-7.b5",0x995eb9b8,
+		     "mnfb2-7.c5",0x579d81df)
+DE1S_SOUNDROM244("mnf-f7.256",0xfbc2d6f6,	//F7 on schem (sound)
+		 "mnf-f5-6.512",0x0c6ea963,	//F6 on schem (voice1)
+		 "mnf-f4-5.512",0xefca5d80)	//F4 on schem (voice2)
 DE_ROMEND
-CORE_GAMEDEFNV(mnfb,"Monday Night Football",1989,"Data East",de_mDE_AS,0)
+#define input_ports_mnfb input_ports_des11
+CORE_GAMEDEFNV(mnfb,"Monday Night Football",1989,"Data East",de_mDEAS,0)
 /*------------------------------------------------------------------
 / Robocop - CPU Rev 3 /Alpha Type 3 - 32K Roms - 32/64K Sound Roms
 /-----------------------------------------------------------------*/
-INITGAME(robo,DE_CPUREV3 | DE_ALPHA3, de_dispAlpha3, FLIP1516, 3/*?*/)
-DE3232_ROMSTART(robo,	"robob5.a34",0x5a611004,
-						"roboc5.a34",0xc8705f47)
-DESOUND3264_ROMSTART(	"robof7.rom",0xfa0891bd,	//F7 on schem (sound)
-						"robof6.rom",0x9246e107,	//F6 on schem (voice1)
-						"robof4.rom",0x27d31df3)	//F4 on schem (voice2)
+INITGAMES11(robo,GEN_DE, de_dispAlpha3, FLIP1516, S11_LOWALPHA)
+DE3232_ROMSTART(robo,"robob5.a34",0x5a611004,
+                     "roboc5.a34",0xc8705f47)
+DE1S_SOUNDROM244("robof7.rom",0xfa0891bd,	//F7 on schem (sound)
+		 "robof6.rom",0x9246e107,	//F6 on schem (voice1)
+		 "robof4.rom",0x27d31df3)	//F4 on schem (voice2)
 DE_ROMEND
-CORE_GAMEDEFNV(robo,"Robocop",1989,"Data East",de_mDE_AS,0)
+#define input_ports_robo input_ports_des11
+CORE_GAMEDEFNV(robo,"Robocop",1989,"Data East",de_mDEAS,0)
 
 /*-------------------------------------------------------------------------------
 / Phantom of the Opera - CPU Rev 3 /Alpha Type 3 16/32K Roms - 32/64K Sound Roms
 /-------------------------------------------------------------------------------*/
-INITGAME(poto,DE_CPUREV2 | DE_ALPHA3, de_dispAlpha3, FLIP1516, 3/*?*/)
-DE1632_ROMSTART(poto,	"potob5.3-2",0xbdc39205,
-						"potoc5.3-2",0xe6026455)
-DESOUND3264_ROMSTART(	"potof7.rom",0x2e60b2e3,	//7f
-						"potof6.rom",0x62b8f74b,	//6f
-						"potof5.rom",0x5a0537a8)	//4f
+INITGAMES11(poto,GEN_DE, de_dispAlpha3, FLIP1516, S11_LOWALPHA)
+DE1632_ROMSTART(poto,"potob5.3-2",0xbdc39205,
+                     "potoc5.3-2",0xe6026455)
+DE1S_SOUNDROM244("potof7.rom",0x2e60b2e3,	//7f
+		 "potof6.rom",0x62b8f74b,	//6f
+		 "potof5.rom",0x5a0537a8)	//4f
 DE_ROMEND
-CORE_GAMEDEFNV(poto,"The Phantom of the Opera",1990,"Data East",de_mDE_AS,0)
+#define input_ports_poto input_ports_des11
+CORE_GAMEDEFNV(poto,"The Phantom of the Opera",1990,"Data East",de_mDEAS,0)
 
 /*--------------------------------------------------------------------------------
 / Back To the Future - CPU Rev 3 /Alpha Type 3 - 32K Roms - 32/64K Sound Roms
 /--------------------------------------------------------------------------------*/
-INITGAME(bttf,DE_CPUREV3 | DE_ALPHA3, de_dispAlpha3, FLIP1516, 3/*?*/)
-DE3232_ROMSTART(bttf,	"bttfb5.2-0",0xc0d4df6b,
-						"bttfc5.2-0",0xa189a189)
-DESOUND3264_ROMSTART(	"bttfsf7.rom",0x7673146e,	//7f
-						"bttfsf6.rom",0x468a8d9c,	//6f
-						"bttfsf5.rom",0x37a6f6b8)	//4f
+INITGAMES11(bttf,GEN_DE, de_dispAlpha3, FLIP1516,S11_LOWALPHA)
+DE3232_ROMSTART(bttf,"bttfb5.2-0",0xc0d4df6b,
+		     "bttfc5.2-0",0xa189a189)
+DE1S_SOUNDROM244("bttfsf7.rom",0x7673146e,	//7f
+		 "bttfsf6.rom",0x468a8d9c,	//6f
+		 "bttfsf5.rom",0x37a6f6b8)	//4f
 DE_ROMEND
-CORE_GAMEDEFNV(bttf,"Back To the Future",1990,"Data East",de_mDE_AS,0)
+#define input_ports_bttf input_ports_des11
+CORE_GAMEDEFNV(bttf,"Back To the Future",1990,"Data East",de_mDEAS,0)
 
 /*------------------------------------------------------------------------
 / The Simpsons - CPU Rev 3 /Alpha Type 3 16/32K Roms - 32/128K Sound Roms
 /------------------------------------------------------------------------*/
-INITGAME(simp,DE_CPUREV3 | DE_ALPHA3, de_dispAlpha3, FLIP1516, 3/*?*/)
-DE1632_ROMSTART(simp,	"simpb5.2-7",0x701c4a4b,
-						"simpc5.2-7",0x400a98b2)
-DESOUND32128_ROMSTART(	"simpf7.rom",0xa36febbc,	//7f
-						"simpf6.rom",0x2eb32ed0,	//6f
-						"simpf5.rom",0xbd0671ae)	//4f
+INITGAMES11(simp,GEN_DE, de_dispAlpha3, FLIP1516, S11_LOWALPHA)
+DE1632_ROMSTART(simp, "simpb5.2-7",0x701c4a4b,
+		      "simpc5.2-7",0x400a98b2)
+DE1S_SOUNDROM288("simpf7.rom",0xa36febbc,	//7f
+		 "simpf6.rom",0x2eb32ed0,	//6f
+		 "simpf5.rom",0xbd0671ae)	//4f
 DE_ROMEND
-CORE_GAMEDEFNV(simp,"The Simpsons",1990,"Data East",de_mDE_AS,0)
+#define input_ports_simp input_ports_des11
+CORE_GAMEDEFNV(simp,"The Simpsons",1990,"Data East",de_mDEAS,0)
 
 
 /***********************************************************************/
