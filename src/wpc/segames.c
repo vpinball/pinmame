@@ -7,16 +7,17 @@
 
 /* NO OUTPUT */
 
-//MARTIN: Doing this causes pinmamew to always use COMPACTDMD option..
-//static core_tLCDLayout se_dmd128x32[] = {
-//  {0,0, 32,128, CORE_DMD}, {0}
-//};
+static struct core_dispLayout se_dmd128x32[] = {
+  {0,0, 32,128, CORE_DMD, dedmd32_update}, {0}
+};
+static struct core_dispLayout se_dmd128x32mini[] = {
+  { 0,0, 32,128, CORE_DMD, dedmd32_update},
+  {34,10, 7, 15, CORE_DMD, seminidmd_update}, {0}
+};
 
-#define se_dmd128x32 0
-
-#define INITGAME(name, gen) \
+#define INITGAME(name, gen, disp, hw) \
 static core_tGameData name##GameData = { \
-  gen, se_dmd128x32, {FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L), 0, 2}}; \
+  gen, disp, {FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L), 0, 2, 0, 0, hw}}; \
 static void init_##name(void) { core_gameData = &name##GameData; }
 
 SE_INPUT_PORTS_START(se, 1) SE_INPUT_PORTS_END
@@ -27,7 +28,7 @@ SE_INPUT_PORTS_START(se, 1) SE_INPUT_PORTS_END
 /*-------------------------------------------------------------------
 / Apollo 13
 /-------------------------------------------------------------------*/
-INITGAME(apollo13,GEN_WS)
+INITGAME(apollo13,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(apollo13,"apolcpu.501",0x5afb8801)
 DE_DMD32ROM8x(   "a13dspa.500",0xbf8e3249)
 DE2S_SOUNDROM1444("apollo13.u7" ,0xe58a36b8,
@@ -42,7 +43,7 @@ CORE_GAMEDEFNV(apollo13,"Apollo 13",1994,"Sega",de_mSES3,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / Goldeneye
 /-------------------------------------------------------------------*/
-INITGAME(gldneye,GEN_WS)
+INITGAME(gldneye,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(gldneye, "bondcpu.404",0x5aa6ffcc)
 DE_DMD32ROM8x(   "bondispa.400",0x9cc0c710)
 DE2S_SOUNDROM144("bondu7.bin" ,0x7581a349,
@@ -55,7 +56,7 @@ CORE_GAMEDEFNV(gldneye,"Goldeneye",1994,"Sega",de_mSES3,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / Twister
 /-------------------------------------------------------------------*/
-INITGAME(twister,GEN_WS)
+INITGAME(twister,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(twister, "twstcpu.405",0x8c3ea1a8)
 DE_DMD32ROM8x(   "twstdspa.400",0xa6a3d41d)
 DE2S_SOUNDROM144("twstsnd.u7" ,0x5ccf0798,
@@ -68,7 +69,7 @@ CORE_GAMEDEFNV(twister,"Twister",1994,"Sega",de_mSES1,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / ID4: Independence Day
 /-------------------------------------------------------------------*/
-INITGAME(id4,GEN_WS)
+INITGAME(id4,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(id4, "id4cpu.202",0x108d88fd)
 DE_DMD32ROM8x(    "id4dspa.200",0x2d3fbcc4)
 DE2S_SOUNDROM144 ("id4sndu7.512",0xdeeaed37,
@@ -81,7 +82,7 @@ CORE_GAMEDEFNV(id4,"ID4: Independence Day",1994,"Sega",de_mSES1,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / Space Jam
 /-------------------------------------------------------------------*/
-INITGAME(spacejam,GEN_WS)
+INITGAME(spacejam,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(spacejam,"jamcpu.300",0x9dc8df2e)
 DE_DMD32ROM8x(  "jamdspa.300",0x198e5e34)
 DE2S_SOUNDROM1444("spcjam.u7" ,0xc693d853,
@@ -95,7 +96,7 @@ CORE_GAMEDEFNV(spacejam,"Space Jam",1994,"Sega",de_mSES1,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / Star Wars Trilogy
 /-------------------------------------------------------------------*/
-INITGAME(swtril,GEN_WS)
+INITGAME(swtril,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(swtril,"swcpu.403",0xd022880e)
 DE_DMD32ROM8x(    "swsedspa.400",0xb9bcbf71)
 DE2S_SOUNDROM144("sw0219.u7" ,0xcd7c84d9,
@@ -108,7 +109,7 @@ CORE_GAMEDEFNV(swtril,"Star Wars Trilogy",1994,"Sega",de_mSES1,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / The Lost World: Jurassic Park
 /-------------------------------------------------------------------*/
-INITGAME(jplstwld,GEN_WS)
+INITGAME(jplstwld,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(jplstwld,"jp2cpu.202",0x0d317e601)
 DE_DMD32ROM8x(    "jp2dspa.201",0x08fc41ace)
 DE2S_SOUNDROM144("jp2_u7.bin" ,0x73b74c96,
@@ -121,7 +122,7 @@ CORE_GAMEDEFNV(jplstwld,"The Lost World: Jurassic Park",1994,"Sega",de_mSES1,GAM
 /*-------------------------------------------------------------------
 / X-Files
 /-------------------------------------------------------------------*/
-INITGAME(xfiles,GEN_WS)
+INITGAME(xfiles,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(xfiles,"xfcpu.303",0xc7ab5efe)
 DE_DMD32ROM8x(   "xfildspa.300",0x03c96af8)
 DE2S_SOUNDROM144( "xfsndu7.512" ,0x01d65239,
@@ -134,7 +135,7 @@ CORE_GAMEDEFNV(xfiles,"X-Files",1994,"Sega",de_mSES1,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / Starship Troopers
 /-------------------------------------------------------------------*/
-INITGAME(startrp,GEN_WS)
+INITGAME(startrp,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(startrp, "sstcpu.201",0x549699fe)
 DE_DMD32ROM8x(    "sstdspa.200",0x76a0e09e)
 DE2S_SOUNDROM1444("u7_b130.512" ,0xf1559e4f,
@@ -148,7 +149,7 @@ CORE_GAMEDEFNV(startrp,"Starship Troopers",1994,"Sega",de_mSES1,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / Viper Night Drivin'
 /-------------------------------------------------------------------*/
-INITGAME(viprsega,GEN_WS)
+INITGAME(viprsega,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(viprsega, "vipcpu.201",0x476557aa)
 DE_DMD32ROM8x(   "vipdspa.201",0x24b1dc21)
 DE2S_SOUNDROM14444("vpru7.dat" ,0xf21617d7,
@@ -163,7 +164,7 @@ CORE_GAMEDEFNV(viprsega,"Viper Night Drivin'",1994,"Sega",de_mSES1,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / Lost in Space
 /-------------------------------------------------------------------*/
-INITGAME(lostspc,GEN_WS)
+INITGAME(lostspc,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(lostspc, "liscpu.101",0x81b2ced8)
 DE_DMD32ROM8x(  "lisdspa.102",0xe8bf4a58)
 DE2S_SOUNDROM14444("lisu7.100" ,0x96e6b3c4,
@@ -178,7 +179,7 @@ CORE_GAMEDEFNV(lostspc,"Lost in Space",1994,"Sega",de_mSES1,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / Godzilla
 /-------------------------------------------------------------------*/
-INITGAME(godzilla,GEN_WS)
+INITGAME(godzilla,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(godzilla,"gdzcpu.205",0x0156c21c)
 DE_DMD32ROM8x(  "gzdspa.200",0xa254a01d)
 DE2S_SOUNDROM14444("gdzu7.100" ,0xa0afe8b7,
@@ -196,7 +197,7 @@ CORE_GAMEDEFNV(godzilla,"Godzilla",1994,"Sega",de_mSES1,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / South Park
 /-------------------------------------------------------------------*/
-INITGAME(southpk,GEN_WS)
+INITGAME(southpk,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(southpk,"spkcpu.103",0x55ca8aa1)
 DE_DMD32ROM8x(    "spdspa.101",0x048ca598d)
 DE2S_SOUNDROM18888("spku7.101" ,0x3d831d3e,
@@ -211,7 +212,7 @@ CORE_GAMEDEFNV(southpk,"South Park",1998,"Sega",de_mSES1,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / Harley Davidson
 /-------------------------------------------------------------------*/
-INITGAME(harley,GEN_WS)
+INITGAME(harley,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(harley,"harcpu.103",0x2a812c75)
 DE_DMD32ROM8x(   "hddsp.100",0x0bdeac0fd)
 DE2S_SOUNDROM18884("hdsnd.u7" ,0xb9accb75,
@@ -230,7 +231,7 @@ CORE_GAMEDEFNV(harley,"Harley Davidson",1998,"Sega",de_mSES1,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / Striker Extreme (USA)
 /-------------------------------------------------------------------*/
-INITGAME(strikext,GEN_WS)
+INITGAME(strikext,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(strikext,"sxcpua.102", 0x5e5f0fb8)
 DE_DMD32ROM8x(     "sxdispa.103",0xe4cf849f)
 DE2S_SOUNDROM18888("sxsounda.u7" ,0xe7e1a0cb,
@@ -245,7 +246,7 @@ CORE_GAMEDEFNV(strikext,"Striker Extreme",1999,"Stern",de_mSES2,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / Striker Extreme (UK)
 /-------------------------------------------------------------------*/
-//INITGAME(strxt_uk,GEN_WS)
+//INITGAME(strxt_uk,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(strxt_uk,"sxcpue.101", 0xeac29785)
 DE_DMD32ROM8x(     "sxdispa.101",0x1d2cb240)
 DE2S_SOUNDROM18888("sxsounda.u7" ,0xe7e1a0cb,
@@ -261,7 +262,7 @@ CORE_CLONEDEFNV(strxt_uk,strikext,"Striker Extreme (UK)",1999,"Stern",de_mSES2,G
 /*-------------------------------------------------------------------
 / Striker Extreme (DE)
 /-------------------------------------------------------------------*/
-//INITGAME(strxt_gr,GEN_WS)
+//INITGAME(strxt_gr,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(strxt_gr,"sxcpug.102", 0x2686743b)
 DE_DMD32ROM8x(     "sxdispg.103",0xeb656489)
 DE2S_SOUNDROM18888("sxsoundg.u7" ,0xb38ec07d,
@@ -277,7 +278,7 @@ CORE_CLONEDEFNV(strxt_gr,strikext,"Striker Extreme (Germany)",1999,"Stern",de_mS
 /*-------------------------------------------------------------------
 / Striker Extreme (FR)
 /-------------------------------------------------------------------*/
-//INITGAME(strxt_fr,GEN_WS)
+//INITGAME(strxt_fr,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(strxt_fr,"sxcpuf.102", 0x2804bc9f)
 DE_DMD32ROM8x(     "sxdispf.103",0x4b4b5c19)
 DE2S_SOUNDROM18888("soc.u7" ,0xa03131cf,
@@ -293,7 +294,7 @@ CORE_CLONEDEFNV(strxt_fr,strikext,"Striker Extreme (France)",1999,"Stern",de_mSE
 /*-------------------------------------------------------------------
 / Striker Extreme (IT)
 /-------------------------------------------------------------------*/
-//INITGAME(strxt_it,GEN_WS)
+//INITGAME(strxt_it,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(strxt_it,"sxcpui.102", 0xf955d0ef)
 DE_DMD32ROM8x(     "sxdispi.103",0x40be3fe2)
 DE2S_SOUNDROM18888("s00.u7" ,0x80625d23,
@@ -309,7 +310,7 @@ CORE_CLONEDEFNV(strxt_it,strikext,"Striker Extreme (Italy)",1999,"Stern",de_mSES
 /*-------------------------------------------------------------------
 / Striker Extreme (SP)
 /-------------------------------------------------------------------*/
-//INITGAME(strxt_sp,GEN_WS)
+//INITGAME(strxt_sp,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(strxt_sp,"sxcpul.102", 0x6b1e417f)
 DE_DMD32ROM8x(     "sxdispl.103",0x3efd4a18)
 DE2S_SOUNDROM18888("soc.u7" ,0xa03131cf,
@@ -325,7 +326,7 @@ CORE_CLONEDEFNV(strxt_sp,strikext,"Striker Extreme (Spain)",1999,"Stern",de_mSES
 /*-------------------------------------------------------------------
 / Sharkey's Shootout (2.11)
 /-------------------------------------------------------------------*/
-INITGAME(shrkysht,GEN_WS_1)
+INITGAME(shrkysht,GEN_WS_1,se_dmd128x32,0)
 SE128_ROMSTART(shrkysht,"sscpu.211",   0x66a0e5ce)
 DE_DMD32ROM8x(          "ssdispa.201", 0x3360300b)
 DE2S_SOUNDROM1888(      "sssndu7.101", 0xfbc6267b,
@@ -339,7 +340,7 @@ CORE_GAMEDEFNV(shrkysht,"Sharkey's Shootout",2000,"Stern",de_mSES1,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / High Roller Casino (3.0)
 /-------------------------------------------------------------------*/
-INITGAME(hirolcas,GEN_WS)
+INITGAME(hirolcas,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(hirolcas,"hrccpu.300",0x0d1117fa)
 DE_DMD32ROM8x(      "hrcdispa.300",0x099ccaf0)
 DE2S_SOUNDROM18888("hrcu7.dat"   ,0xc41f91a7,
@@ -354,7 +355,7 @@ CORE_GAMEDEFNV(hirolcas,"High Roller Casino",2001,"Stern",de_mSES2,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / High Roller Casino (DE)
 /-------------------------------------------------------------------*/
-//INITGAME(hirol_gr,GEN_WS)
+//INITGAME(hirol_gr,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(hirol_gr,"hrccpu.210",  0x2e3c682a)
 DE_DMD32ROM8x(  "hrcdg201.bin",0x57b95712)
 DE2S_SOUNDROM18888("hrcu7.dat"   ,0xc41f91a7,
@@ -370,7 +371,7 @@ CORE_CLONEDEFNV(hirol_gr,hirolcas,"High Roller Casino (Germany)",2001,"Stern",de
 /*-------------------------------------------------------------------
 / Austin Powers (3.0)
 /-------------------------------------------------------------------*/
-INITGAME(austin,GEN_WS)
+INITGAME(austin,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(austin,"apcpu.300",   0xa06b2b03)
 DE_DMD32ROM8x(   "apdsp-a.300", 0xecf2c3bb)
 DE2S_SOUNDROM18888("apsndu7.100" ,0xd0e79d59,
@@ -385,7 +386,7 @@ CORE_GAMEDEFNV(austin,"Austin Powers (3.0)",2001,"Stern",de_mSES2,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / Austin Powers (2.0)
 /-------------------------------------------------------------------*/
-//INITGAME(austin2,GEN_WS)
+//INITGAME(austin2,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(austin2,"apcpu.201",   0xa4ddcdca)
 DE_DMD32ROM8x(    "apdisp-a.200",0xf3ca7fca)
 DE2S_SOUNDROM18888("apsndu7.100" ,0xd0e79d59,
@@ -402,7 +403,7 @@ CORE_CLONEDEFNV(austin2,austin,"Austin Powers (2.0)",2001,"Stern",de_mSES2,GAME_
 /*-------------------------------------------------------------------
 / Monopoly 3.01
 /-------------------------------------------------------------------*/
-INITGAME(monopoly,GEN_WS)
+INITGAME(monopoly,GEN_WS,se_dmd128x32mini,SE_MINIDMD)
 SE128_ROMSTART(monopoly,"moncpu.301",  0x24978872)
 DE_DMD32ROM8x(          "mondsp-a.301",0xc4e2e032)
 DE2S_SOUNDROM1888("mnsndu7.100" ,0x400442e7,
@@ -416,7 +417,7 @@ CORE_GAMEDEFNV(monopoly,"Monopoly",2001,"Stern",de_mSES1,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / Playboy 2.03
 /-------------------------------------------------------------------*/
-INITGAME(playboys,GEN_WS)
+INITGAME(playboys,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(playboys,"pbcpu.203",   0x50eb01b0)
 DE_DMD32ROM8x(          "pbdisp-a.201",0x78ec6af8)
 DE2S_SOUNDROM18888(     "pbsndu7.102", 0x12a68f34,
