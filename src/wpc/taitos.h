@@ -39,6 +39,12 @@ extern MACHINE_DRIVER_EXTERN(taitos_sintevoxpp);
     ROM_LOAD(rom1, 0x3000, 0x1000, chk1) \
       ROM_RELOAD(  0xf000, 0x1000)
 
+#define TAITO_SOUNDROMS44(rom1,chk1,rom2,chk2) \
+  SOUNDREGION(0x10000, TAITO_MEMREG_SCPU) \
+    ROM_LOAD(rom1, 0x2000, 0x1000, chk1) \
+    ROM_LOAD(rom2, 0x3000, 0x1000, chk2) \
+      ROM_RELOAD(  0xf000, 0x1000)
+
 #define TAITO_SOUNDROMS444(rom1,chk1,rom2,chk2,rom3,chk3) \
   SOUNDREGION(0x10000, TAITO_MEMREG_SCPU) \
     ROM_LOAD(rom1, 0x5000, 0x1000, chk1) \
