@@ -412,19 +412,75 @@ INITGAME(monopoly,GEN_WS,dispMonopoly,SE_MINIDMD)
 SE128_ROMSTART(monopoly,"moncpu.303",0x4a66c9e4)
 DE_DMD32ROM8x(        "mondsp-a.301",0xc4e2e032)
 DE2S_SOUNDROM1888(     "mnsndu7.100",0x400442e7,
-                      "mnsndu17.100",0xf9bc55e8,
+                      "mnsndu17.100",0x595f23ab,
                       "mnsndu21.100",0xe0727e1f,
-                      "mnsndu36.100",0xc845aa97)
+                      "mnsndu36.100",0xd66c71a9)
 SE_ROMEND
 #define input_ports_monopoly input_ports_se
 CORE_GAMEDEFNV(monopoly,"Monopoly",2001,"Stern",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ Playboy (3.03)
+/ Monopoly (France)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(monopolf,"moncpu.303",0x4a66c9e4)
+DE_DMD32ROM8x(        "mondsp-f.301",0x0)
+DE2S_SOUNDROM1888(     "mnsndu7.100",0x400442e7,
+                      "mnsndu17.100",0x595f23ab,
+                      "mnsndu21.100",0xe0727e1f,
+                      "mnsndu36.100",0xd66c71a9)
+SE_ROMEND
+#define input_ports_monopolf input_ports_se
+#define init_monopolf init_monopoly
+CORE_CLONEDEFNV(monopolf,monopoly,"Monopoly (France)",2002,"Stern",de_mSES1,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Monopoly (Germany)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(monopold,"moncpu.303",0x4a66c9e4)
+DE_DMD32ROM8x(        "mondsp-g.301",0x0)
+DE2S_SOUNDROM1888(     "mnsndu7.100",0x400442e7,
+                      "mnsndu17.100",0x595f23ab,
+                      "mnsndu21.100",0xe0727e1f,
+                      "mnsndu36.100",0xd66c71a9)
+SE_ROMEND
+#define input_ports_monopold input_ports_se
+#define init_monopold init_monopoly
+CORE_CLONEDEFNV(monopold,monopoly,"Monopoly (Germany)",2002,"Stern",de_mSES1,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Monopoly (Italy)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(monopoli,"moncpu.303",0x4a66c9e4)
+DE_DMD32ROM8x(        "mondsp-i.301",0x0)
+DE2S_SOUNDROM1888(     "mnsndu7.100",0x400442e7,
+                      "mnsndu17.100",0x595f23ab,
+                      "mnsndu21.100",0xe0727e1f,
+                      "mnsndu36.100",0xd66c71a9)
+SE_ROMEND
+#define input_ports_monopoli input_ports_se
+#define init_monopoli init_monopoly
+CORE_CLONEDEFNV(monopoli,monopoly,"Monopoly (Italy)",2002,"Stern",de_mSES1,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Monopoly (Spain)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(monopols,"moncpu.303",0x4a66c9e4)
+DE_DMD32ROM8x(        "mondsp-s.301",0x0)
+DE2S_SOUNDROM1888(     "mnsndu7.100",0x400442e7,
+                      "mnsndu17.100",0x595f23ab,
+                      "mnsndu21.100",0xe0727e1f,
+                      "mnsndu36.100",0xd66c71a9)
+SE_ROMEND
+#define input_ports_monopols input_ports_se
+#define init_monopols init_monopoly
+CORE_CLONEDEFNV(monopols,monopoly,"Monopoly (Spain)",2002,"Stern",de_mSES1,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Playboy (4.01)
 /-------------------------------------------------------------------*/
 INITGAME(playboys,GEN_WS,se_dmd128x32,0)
-SE128_ROMSTART(playboys, "pbcpu.303",    0x6a6f6aab)
-DE_DMD32ROM8x(           "pbdisp-a.300", 0x2dbb372a)
+SE128_ROMSTART(playboys, "pbcpu.401",    0xcb2e2824)
+DE_DMD32ROM8x(           "pbdispa.400",  0x244e9740)
 DE2S_SOUNDROM18888(      "pbsndu7.102",  0x12a68f34,
                          "pbsndu17.100", 0xf5502fec,
                          "pbsndu21.100", 0x7869d34f,
@@ -437,8 +493,8 @@ CORE_GAMEDEFNV(playboys,"Playboy (Stern)",2002,"Stern",de_mSES2,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / Playboy (France)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(playboyf, "pbcpu.303",    0x6a6f6aab)
-DE_DMD32ROM8x(           "pbdisp-f.300", 0x69ab3bb2)
+SE128_ROMSTART(playboyf, "pbcpu.401",    0xcb2e2824)
+DE_DMD32ROM8x(           "pbdispf.400",  0x8ccce5d9)
 DE2S_SOUNDROM18888(      "pbsndu7.102",  0x12a68f34,
                          "pbsndu17.100", 0xf5502fec,
                          "pbsndu21.100", 0x7869d34f,
@@ -452,8 +508,8 @@ CORE_CLONEDEFNV(playboyf,playboys,"Playboy (France)",2002,"Stern",de_mSES2,GAME_
 /*-------------------------------------------------------------------
 / Playboy (Germany)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(playboyd, "pbcpu.303",    0x6a6f6aab)
-DE_DMD32ROM8x(           "pbdisp-g.300", 0xed7b7c62)
+SE128_ROMSTART(playboyd, "pbcpu.401",    0xcb2e2824)
+DE_DMD32ROM8x(           "pbdispg.400",  0xc26a0c73)
 DE2S_SOUNDROM18888(      "pbsndu7.102",  0x12a68f34,
                          "pbsndu17.100", 0xf5502fec,
                          "pbsndu21.100", 0x7869d34f,
@@ -467,8 +523,8 @@ CORE_CLONEDEFNV(playboyd,playboys,"Playboy (Germany)",2002,"Stern",de_mSES2,GAME
 /*-------------------------------------------------------------------
 / Playboy (Italy)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(playboyi, "pbcpu.303",    0x6a6f6aab)
-DE_DMD32ROM8x(           "pbdisp-i.300", 0x74c8cedf)
+SE128_ROMSTART(playboyi, "pbcpu.401",    0xcb2e2824)
+DE_DMD32ROM8x(           "pbdispi.400",  0x90c5afed)
 DE2S_SOUNDROM18888(      "pbsndu7.102",  0x12a68f34,
                          "pbsndu17.100", 0xf5502fec,
                          "pbsndu21.100", 0x7869d34f,
@@ -482,8 +538,8 @@ CORE_CLONEDEFNV(playboyi,playboys,"Playboy (Italy)",2002,"Stern",de_mSES2,GAME_N
 /*-------------------------------------------------------------------
 / Playboy (Spain)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(playboye, "pbcpu.303",    0x6a6f6aab)
-DE_DMD32ROM8x(           "pbdisp-l.300", 0xe7697fc3)
+SE128_ROMSTART(playboye, "pbcpu.401",    0xcb2e2824)
+DE_DMD32ROM8x(           "pbdisps.300",  0x92b48fdd)
 DE2S_SOUNDROM18888(      "pbsndu7.102",  0x12a68f34,
                          "pbsndu17.100", 0xf5502fec,
                          "pbsndu21.100", 0x7869d34f,
@@ -496,15 +552,15 @@ CORE_CLONEDEFNV(playboye,playboys,"Playboy (Spain)",2002,"Stern",de_mSES2,GAME_N
 
 //Strange that they went back to the 11 voice model here!
 /*-------------------------------------------------------------------
-/ Roller Coaster Tycoon (4.00)
+/ Roller Coaster Tycoon (6.00)
 /-------------------------------------------------------------------*/
 static struct core_dispLayout dispRCT[] = {
   DISP_SEG_IMPORT(se_dmd128x32),
   {34,10, 5,21, CORE_DMD, (void *)seminidmd3_update}, {0}
 };
 INITGAME(rctycn, GEN_WS, dispRCT, SE_MINIDMD)
-SE128_ROMSTART(rctycn, "rctcpu.400",0x4691de23)
-DE_DMD32ROM8x(       "rctdsp-a.400",0xd128a8fa)
+SE128_ROMSTART(rctycn, "rctcpu.600",0x2ada30e5)
+DE_DMD32ROM8x(       "rctdispa.600",0xdbd294e1)
 DE2S_SOUNDROM1888(    "rcsndu7.100",0xe6cde9b1,
                      "rcsndu17.100",0x18ba20ec,
                      "rcsndu21.100",0x64b19c11,
@@ -516,8 +572,8 @@ CORE_GAMEDEFNV(rctycn,"Roller Coaster Tycoon",2002,"Stern",de_mSES1,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / Roller Coaster Tycoon (Germany)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(rctycnd,"rctcpu.400",0x4691de23)
-DE_DMD32ROM8x(       "rctdsp-g.400",0xc88dc915)
+SE128_ROMSTART(rctycnd,"rctcpu.600",0x2ada30e5)
+DE_DMD32ROM8x(       "rctdispg.600",0x0)
 DE2S_SOUNDROM1888(    "rcsndu7.100",0xe6cde9b1,
                      "rcsndu17.100",0x18ba20ec,
                      "rcsndu21.100",0x64b19c11,
@@ -530,8 +586,8 @@ CORE_CLONEDEFNV(rctycnd,rctycn,"Roller Coaster Tycoon (Germany)",2002,"Stern",de
 /*-------------------------------------------------------------------
 / Roller Coaster Tycoon (France)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(rctycnf,"rctcpu.400",0x4691de23)
-DE_DMD32ROM8x(       "rctdsp-f.400",0x5b41893b)
+SE128_ROMSTART(rctycnf,"rctcpu.600",0x2ada30e5)
+DE_DMD32ROM8x(       "rctdispf.600",0x50aa2f48)
 DE2S_SOUNDROM1888(    "rcsndu7.100",0xe6cde9b1,
                      "rcsndu17.100",0x18ba20ec,
                      "rcsndu21.100",0x64b19c11,
@@ -545,8 +601,8 @@ CORE_CLONEDEFNV(rctycnf,rctycn,"Roller Coaster Tycoon (France)",2002,"Stern",de_
 /*-------------------------------------------------------------------
 / Roller Coaster Tycoon (Italy)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(rctycni,"rctcpu.400",0x4691de23)
-DE_DMD32ROM8x(       "rctdsp-i.400",0x7c1c0adb)
+SE128_ROMSTART(rctycni,"rctcpu.600",0x2ada30e5)
+DE_DMD32ROM8x(       "rctdispi.600",0xa55a86c1)
 DE2S_SOUNDROM1888(    "rcsndu7.100",0xe6cde9b1,
                      "rcsndu17.100",0x18ba20ec,
                      "rcsndu21.100",0x64b19c11,
@@ -559,8 +615,8 @@ CORE_CLONEDEFNV(rctycni,rctycn,"Roller Coaster Tycoon (Italy)",2002,"Stern",de_m
 /*-------------------------------------------------------------------
 / Roller Coaster Tycoon (Spain)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(rctycne,"rctcpu.400",0x4691de23)
-DE_DMD32ROM8x(       "rctdsp-s.400",0xc06e6669)
+SE128_ROMSTART(rctycne,"rctcpu.600",0x2ada30e5)
+DE_DMD32ROM8x(       "rctdisps.600",0x84a970a3)
 DE2S_SOUNDROM1888(    "rcsndu7.100",0xe6cde9b1,
                      "rcsndu17.100",0x18ba20ec,
                      "rcsndu21.100",0x64b19c11,
