@@ -135,7 +135,7 @@
     COREPORT_DIPNAME( 0x0008, 0x0000, "S4 (Sound & Speech Board)") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0008, "1" ) \
-    COREPORT_DIPNAME( 0x0010, 0x0010, "S5 (Sound & Speech Board)") \
+    COREPORT_DIPNAME( 0x0010, 0x0000, "S5 (Sound & Speech Board)") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0010, "1" ) \
     COREPORT_DIPNAME( 0x0020, 0x0020, "S6 (Sound & Speech Board)") \
