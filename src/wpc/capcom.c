@@ -8,7 +8,7 @@
   CPU BOARD:
 	CPU: 68306 @ 16.67 Mhz
 	I/O: 68306 has 2 8-bit ports and a dual uart with timer
-	DMD: Custom programmed U16 chip handles DMD Control Data and some timing 
+	DMD: Custom programmed U16 chip handles DMD Control Data and some timing
 	Size: 128x32 (all games except Flipper Football - 256x64!)
 
   SOUND BOARD:
@@ -45,7 +45,7 @@
   #4) Handle opto switches internally? Is this needed?
   #5) Handle EOS switches internally? Is this needed?
   #6) More complete M68306 emulation (although it's fairly good already) - could use some optimization
-  #7) Lamps will eventually come on in Kingpin/Flipper Football, why does it take so long? Faster IRQ4 timing will improve response time ( cycles of 2000 for example, but screws up solenoids ) 
+  #7) Lamps will eventually come on in Kingpin/Flipper Football, why does it take so long? Faster IRQ4 timing will improve response time ( cycles of 2000 for example, but screws up solenoids )
   #8) Not sure best way to emulate 50V line, see TEST50V_TRYx macros below
   #9) Firing of 50V solenoids seems sometimes inconsistent in FF&KP, but IRQ4 timing helps correct it
 **************************************************************************************/
@@ -79,7 +79,7 @@
 #endif
 
 #define CC_VBLANKFREQ     60 /* VBLANK frequency */
-#define CC_SOLSMOOTH       3 /* Smooth the Solenoids over this numer of VBLANKS */ 
+#define CC_SOLSMOOTH       3 /* Smooth the Solenoids over this numer of VBLANKS */
 #define CC_LAMPSMOOTH      4 /* Smooth the lamps over this number of VBLANKS */
 
 #define CC_IRQ4FREQ		TIME_IN_CYCLES(8000,0)	//Seems to work well for both KP & FF
@@ -183,7 +183,7 @@ static void cc_u16irq4(int data) {
 /* PORT A READ */
 /***************/
 //PA0   - J3 - Pin 7 - Token/Coin Meter/Printer Interface Board(Unknown purpose)
-//PA1   - J3 - Pin 8 - Token/Coin Meter/Printer Interface Board(Unknown purpose) 
+//PA1   - J3 - Pin 8 - Token/Coin Meter/Printer Interface Board(Unknown purpose)
 //PA2   - J3 - Pin 9 - Token/Coin Meter/Printer Interface Board(Unknown purpose)
 //PA3   - LED(output only)
 //PA4   - LINE_5 (Measures +5V Low power D/C Line)
@@ -208,9 +208,9 @@ static READ16_HANDLER(cc_porta_r) {
 
 	data = (1<<4) | (locals.line_v<<5);
 	if(!locals.pulse)	data ^= 0x10;
-	DBGLOG(("Port A read\n")); 
+	DBGLOG(("Port A read\n"));
 	//printf("[%08x] Port A read = %x\n",activecpu_get_previouspc(),data);
-	return data; 
+	return data;
 }
 /***************/
 /* PORT B READ */
@@ -223,11 +223,11 @@ static READ16_HANDLER(cc_porta_r) {
 //PB5 OR IRQ3  - NOT USED?
 //PB6 OR IRQ5  - J3 - Pin 11 - Token/Coin Meter/Printer Interface Board - SW6(Unknown Purpose)(Output Only)
 //PB7 OR IRQ6  - NOT USED?
-static READ16_HANDLER(cc_portb_r) { 
+static READ16_HANDLER(cc_portb_r) {
 	int data = 0;
 	data |= locals.zero_cross<<4;
 	DBGLOG(("Port B read = %x\n",data));
-	return data; 
+	return data;
 }
 
 /****************/
@@ -239,7 +239,7 @@ static READ16_HANDLER(cc_portb_r) {
 //PA3   - LED
 //PA4   - LINE_5 (Input only)
 //PA5   - LINE_V (Input only)
-//PA6   - VSET   
+//PA6   - VSET
 //PA7   - GRESET (to soundboard - Inverted?)
 static WRITE16_HANDLER(cc_porta_w) {
   int reset = 0;
@@ -288,8 +288,8 @@ static READ16_HANDLER(u16_r) {
   //printf("U16r [%03x] (%04x)\n",offset,mem_mask);
 
   switch (offset) {
-    case 0x000: case 0x001: 
-		return locals.u16a[offset];	
+    case 0x000: case 0x001:
+		return locals.u16a[offset];
 
 	//Should probably never occur?
 	case 0x002: case 0x003:
@@ -483,21 +483,21 @@ static MACHINE_INIT(cc) {
 
   //Init soundboard
   sndbrd_0_init(core_gameData->hw.soundBoard, CAPCOMS_CPUNO, memory_region(CAPCOMS_ROMREGION),NULL,NULL);
- 
+
 #if TEST_MPGAUDIO
   //Freeze cpu so it won't slow down the emulation
   cpunum_set_halt_line(0,1);
 #else
-  //IRQ1 Maximum Frequency 
+  //IRQ1 Maximum Frequency
   timer_pulse(TIME_IN_CYCLES(2811,0),0,cc_u16irq1);		//Only value that passes IRQ1 test (DO NOT CHANGE UNTIL CURRENT HACK IS REPLACED)
- 
+
   //IRQ4 Frequency
   timer_pulse(CC_IRQ4FREQ,0,cc_u16irq4);
-  
+
 #endif
 }
 
-//NOTE: Due to the way we load the roms, the fixaddress values must remove the top 8th bit, ie, 
+//NOTE: Due to the way we load the roms, the fixaddress values must remove the top 8th bit, ie,
 //		0x10092192 becomes 0x00092192
 static void Skip_Error_Msg(void){
 	UINT32 fixaddr = 0;
@@ -525,13 +525,16 @@ static void Skip_Error_Msg(void){
 			fixaddr = 0x000805e4;	//BSB
 			break;
 		case 9:
-			fixaddr = 0x00000880;	//FF
+			fixaddr = 0x00000880;	//FF104
 			break;
 		case 10:
 			fixaddr = 0x00051704;	//BBB
 			break;
 		case 11:
 			fixaddr = 0x00000894;	//KP
+			break;
+		case 12:
+			fixaddr = 0x00000784;	//FF101
 			break;
 		default:
 			break;
@@ -596,7 +599,7 @@ On flipper football & kingpin:
 CS1 = 0001e6df => fff80000,00000000 => 00000000-0007ffff (RW) * Note: CSFC6,5,2,1 = 1
 
 To optimize speed on the 68306, I removed all handling of the cs/dram registers.
-So we simply use the memory mapping that the game software uses when it first writes to those 
+So we simply use the memory mapping that the game software uses when it first writes to those
 registers.. The only potential problem is if the game writes different values to cs/dram signals
 during program execution which could change these mappings!
 
@@ -628,7 +631,7 @@ static int cc_m2sw(int col, int row) {
 /*
 From watching the program code set the cs registers.. (see explanation above)
 CS0 = 10000000-10ffffff (R)  -  ROM MEMORY SPACE
-CS1 = 00000000-0007ffff (RW) -  DRAM 
+CS1 = 00000000-0007ffff (RW) -  DRAM
 CS2 = 40000000-40ffffff (RW) -  I/O ADDRESSES
 CS3 = 30000000-3001ffff (RW) -  NVRAM
 
