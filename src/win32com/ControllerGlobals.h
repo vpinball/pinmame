@@ -10,6 +10,7 @@ extern BOOL			g_fActivateWindow;	// Set this to TRUE if COM Window should become
 extern int			g_fHandleMechanics;	// Signals wpc core to handle the mechanics for use
 extern int			g_fHandleKeyboard;  // Signals wpc core to handle the keyboard
 extern HANDLE		g_hGameRunning;		// Event handle used in osd_update_video_and_audio() to pause/resume the emulation
+extern BOOL			g_fSTA;				// Are we using TSA threading model?
 
 extern Controller*	g_pController;		// we need this, if we call OnSolenoid from the wpc core
 
