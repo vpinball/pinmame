@@ -52,6 +52,7 @@
 
 /*Functions used from the System 80b Sound Souce code*/
 extern void S80Bs_sound_init(void);
+extern void S80Bs_sound_exit(void);
 extern WRITE_HANDLER( s80bs_sh_w );
 extern READ_HANDLER( s80bs_cause_dac_nmi_r );
 extern WRITE_HANDLER( s80bs_nmi_rate_w );
@@ -210,4 +211,8 @@ struct OKIM6295interface GTS3_okim6295_interface = {
 
 void GTS3_sinit(int num) {
 	S80Bs_sound_init();
+}
+
+void GTS3_sound_exit(void) {
+	S80Bs_sound_exit();
 }

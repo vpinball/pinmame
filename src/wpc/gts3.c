@@ -574,6 +574,9 @@ static void GTS3_init2(void) {
 }
 
 static void GTS3_exit(void) {
+  /* Sound Enabled? */
+  if (((Machine->gamedrv->flags & GAME_NO_SOUND)==0) && Machine->sample_rate)
+    GTS3_sound_exit();
   core_exit();
 }
 

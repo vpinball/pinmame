@@ -95,6 +95,7 @@ extern struct Samplesinterface	samples_interface;
 
 /*-- Sound interface communications --*/
 extern void GTS3_sinit(int num);
+extern void GTS3_sound_exit(void);
 extern void GTS3_SoundCommand(int data);
 
 //Y-CPU
