@@ -222,7 +222,7 @@ void sim_draw(int firstRow) {
     rec.max_y = (rec.min_y = firstRow) + 5;
     rec.max_x = (rec.min_x = 130) + locals.shooterSpeed/2;
     fillbitmap(Machine->scrbitmap, Machine->pens[WHITE], &rec);
-    rec.min_x = 161+locals.shooterSpeed/2; rec.max_x = 185;
+    rec.min_x = 131+locals.shooterSpeed/2; rec.max_x = 155;
     fillbitmap(Machine->scrbitmap, Machine->pens[BLACK], &rec);
   }
   if (simData->drawStatic)
