@@ -1274,6 +1274,14 @@ SOURCE=.\src\wpc\zac.h
 
 SOURCE=.\src\wpc\zacgames.c
 # End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\zacsnd.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\zacsnd.h
+# End Source File
 # End Group
 # Begin Group "MAME"
 
