@@ -206,7 +206,6 @@ struct {
 	struct sndbrdData boardData;
 
 	int dips;
-	int NMIState;
 
 	int stream;
 	INT16  buffer[GTS80SS_BUFFER_SIZE+1];
@@ -223,13 +222,10 @@ void GTS80SS_irq(int state) {
 
 void GTS80SS_nmi(int state)
 {
-	logerror("NMI: %i\n",state);
-	if ( !GTS80SS_locals.NMIState && state ) {
-//		logerror("NMI: %i\n",state);
-/*		at last Devils Dare isn't working if the NMI is really fired */
-/*		cpu_set_irq_line(GTS80SS_locals.boardData.cpuNo, M6502_INT_NMI, PULSE_LINE); */
-	}
-	GTS80SS_locals.NMIState = state;
+//	logerror("NMI: %i\n",state);
+	/* Devils Dare will not play any sound if the NMI occurs */
+//	if ( state )
+//		cpu_set_irq_line(GTS80SS_locals.boardData.cpuNo, M6502_INT_NMI, PULSE_LINE);
 }
 
 UINT8 RIOT6532_3_RAM[256];
