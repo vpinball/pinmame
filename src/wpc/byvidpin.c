@@ -4,10 +4,10 @@
    Games: Baby Pacman (1982)
           Granny & The Gators (1984)
 
-   Hardware: 
+   Hardware:
    (Both Games)
    MPU Board: MPU-133 (Equivalent of MPU-35 except for 1 diode change) - See note below
-   
+
    (BabyPacman Only):
    VIDIOT Board: Handles Video/Joystick Switchs/Sound Board
    Chips:		(1 x TMS9928 Video Chip), 6809 CPU (Video), 6803 (Sound), 6821 PIA
@@ -17,14 +17,14 @@
    Chips:		(2 x TMS9928 Video Chip - Master/Slave configuration), 6809 CPU, 6821 PIA
    Cheap Squeak Sound Board
 
-   Interesting Tech Note: 
-   
+   Interesting Tech Note:
+
    The sound board integrated into the vidiot, appears to be
    identical to what later became the separate Cheap Squeak board used on later model
    bally MPU-35 games, as well as Granny & Gators!
 
    Note from RGP:
-   
+
 		Bally video pins use an AS-2518-133 mpu.
 		I believe that some late games such as Grand Slam
 		may have also used the AS-2518-133 mpu.
@@ -61,7 +61,7 @@
   Rsvd: FFF0-1 (8010) *Valid Code?
 
   6803 vectors:
-  RES: FFFE-F 
+  RES: FFFE-F
   SWI: FFFA-B Software Interrupt (Not Used)
   NMI: FFFC-D (Used)
   IRQ: FFF8-9 (Not Used)
@@ -116,19 +116,24 @@ static struct {
   int snddata_lo;			//Lo Nibble Sound Command
   int snddata_hi;			//Hi Nibble Sound Command
   int lasttin;				//Track Last TIN IRQ Edge
+  int phase;
   void *zctimer;
 } locals;
 
 static void byVP_exit(void);
 static void byVP_nvram(void *file, int write);
 
-static void piaIrq(int state) { cpu_set_irq_line(0, M6800_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE); }
+static void piaIrq(int state) {
+	if (state) DBGLOG(("irq\n"));
+	cpu_set_irq_line(0, M6800_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
+}
 
 static void byVP_lampStrobe(int board, int lampadr) {
   if (lampadr != 0x0f) {
-    int lampdata = (locals.p0_a>>4)^0x0f;
-    UINT8 *matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)+8*board];
+    int lampdata = ((locals.p0_a>>4)^0x0f)&0x03; // only 2 lamp drivers
+    UINT8 *matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)+4*board];
     int bit = 1<<(lampadr & 0x07);
+    DBGLOG(("adr=%x data=%x\n",lampadr,lampdata));
     while (lampdata) {
       if (lampdata & 0x01) *matrix |= bit;
       lampdata >>= 1; matrix += 2;
@@ -156,7 +161,7 @@ static WRITE_HANDLER(pia0a_w) {
 	logerror("%x: Writing %x to vidiot u2 buffers: enable_input = %x\n",cpu_getpreviouspc(),data, locals.enable_input);
   }
 
-  byVP_lampStrobe(0,locals.lampadr1);
+  byVP_lampStrobe(locals.phase,locals.lampadr1);
 }
 
 /* PIA1:A-W: Communications to Vidiot
@@ -219,7 +224,7 @@ static WRITE_HANDLER(pia1ca2_w) {
 
 /* PIA1:B-W Solenoid */
 static WRITE_HANDLER(pia1b_w) {
-  UINT16 mask = ~(0xffff);
+  UINT16 mask = (UINT16)~(0xffff);
   UINT16 sols = 0;
   locals.p1_b = data;
   //Solenoids 1-7 (same as by35)
@@ -296,7 +301,7 @@ static void byVP_updSw(int *inports) {
 
 /* PIA2:B Read */
 // Video Switch Returns (Bits 5-7 not connected)
-static READ_HANDLER(pia2b_r) { 
+static READ_HANDLER(pia2b_r) {
 	logerror("VID: Reading Switch Returns from %x\n",locals.p2_a);
 	if(locals.p2_a & 0x80)
 		return coreGlobals.swMatrix[0]&0xf0;
@@ -324,7 +329,7 @@ static WRITE_HANDLER(pia2b_w) {
 
 /* PIA2:CB2 Write */
 // Diagnostic LED & Sound Strobe to 6803
-static WRITE_HANDLER(pia2cb2_w) { 
+static WRITE_HANDLER(pia2cb2_w) {
 	locals.diagnosticLedV = data;
 
 	if(data & ~locals.lasttin) {	//Rising Edge Triggers the IRQ
@@ -468,10 +473,10 @@ static core_tData byVPData = {
 
 /* I read on a post in rgp, that they used both ends of the zero cross, so we emulate it */
 static void byVP_zeroCross(int data) {
-  static int last_zc = 0;
   /*- toggle zero/detection circuit-*/
-  pia_set_input_cb1(0,last_zc);
-  last_zc = !last_zc;
+  pia_set_input_cb1(0,locals.phase);
+  DBGLOG(("zerocross=%d\n",locals.phase));
+  locals.phase = !locals.phase;
 }
 static void byVP_init(void) {
   if (locals.initDone) CORE_DOEXIT(byVP_exit);
@@ -498,12 +503,12 @@ static void byVP_exit(void) {
 static UINT8 *byVP_CMOS;
 static WRITE_HANDLER(byVP_CMOS_w) { byVP_CMOS[offset] = data; }
 
-/* P21-24 = Video U7(PB0-PB3) 
+/* P21-24 = Video U7(PB0-PB3)
    NOTE: Sound commands are sent as 2 nibbles, first low byte, then high
          However, it reads the first low nibble 2x, then reads the high nibble
-         Since Port 2 begins with P20, we must << 1 the sound commands! 
+         Since Port 2 begins with P20, we must << 1 the sound commands!
 */
-static READ_HANDLER(sound_port2_r) { 
+static READ_HANDLER(sound_port2_r) {
 	cmdnum++;
 	if( cmdnum < 3) //If it's the 1st or 2nd time reading the port..
 		return locals.snddata_lo<<1;
@@ -648,7 +653,7 @@ MEMORY_END
 /  Memory map for VIDEO CPU (Located on Vidiot Board)
 /----------------------------------------------------*/
 static MEMORY_READ_START(byVP_video_readmem)
-	{ 0x0000, 0x1fff, latch_r },  
+	{ 0x0000, 0x1fff, latch_r },
 	{ 0x2000, 0x2003, pia_2_r }, /* U7 PIA */
 	{ 0x4000, 0x4001, vdp_r },   /* U16 VDP*/
 	{ 0x6000, 0x6400, MRA_RAM }, /* U13&U14 1024x4 Byte Ram*/
@@ -656,7 +661,7 @@ static MEMORY_READ_START(byVP_video_readmem)
 MEMORY_END
 
 static MEMORY_WRITE_START(byVP_video_writemem)
-	{ 0x0000, 0x1fff, latch_w },  
+	{ 0x0000, 0x1fff, latch_w },
 	{ 0x2000, 0x2003, pia_2_w }, /* U7 PIA */
 	{ 0x4000, 0x4001, vdp_w },   /* U16 VDP*/
 	{ 0x6000, 0x6400, MWA_RAM }, /* U13&U14 1024x4 Byte Ram*/
