@@ -1,6 +1,7 @@
 #include "driver.h"
 #include "cpu/m6809/m6809.h"
 #include "sound/bsmt2000.h"
+#include "snd_cmd.h"
 #include "se.h"
 #include "sesound.h"
 
@@ -48,7 +49,7 @@ static WRITE_HANDLER(ses_bsmt1_w) {
 	 BSMT2000_data_0_w(reg, sdata, 0);
      logerror("BSMT write to %02X (V%X R%X) = %02X%02X\n",
 				reg, reg % 11, reg / 11, locals.bsmtData, data);
-  
+
   //BSMT2000_data_0_w((~offset & 0xff), ((locals.bsmtData<<8)|data), 0);
   // BSMT is ready directly
   cpu_set_irq_line(SE_SCPUNO, M6809_IRQ_LINE, HOLD_LINE);
@@ -84,10 +85,10 @@ MEMORY_END
 
 MEMORY_WRITE_START(ses_writemem)
   { 0x0000, 0x1fff, MWA_RAM },
-  { 0x2000, 0x2001, ses_2000_w }, 
-//  { 0x2002, 0x2003, ses_2002_w }, 
-//  { 0x2004, 0x2005, ses_2004_w }, 
-//  { 0x2006, 0x2007, ses_2006_w }, 
+  { 0x2000, 0x2001, ses_2000_w },
+//  { 0x2002, 0x2003, ses_2002_w },
+//  { 0x2004, 0x2005, ses_2004_w },
+//  { 0x2006, 0x2007, ses_2006_w },
   { 0x2008, 0x5fff, MWA_ROM },
   { 0x6000, 0x6000, ses_bsmt0_w },
   { 0x6001, 0x9fff, MWA_ROM },
@@ -120,6 +121,7 @@ void ses_init(void) {
 
 WRITE_HANDLER(ses_soundCmd_w) {
   DBGLOG(("soundCmd:%2x\n",data));
+  snd_cmd_log(data);
   locals.soundCmd = data;
   locals.bufFull = TRUE;
 }
