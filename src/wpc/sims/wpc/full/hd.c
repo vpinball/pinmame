@@ -359,7 +359,13 @@ WPC_ROMEND
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF(hd,l3,"Harley Davidson (L-3)",1991,"Bally",wpc_mAlpha2S,0)
+static MACHINE_DRIVER_START(hd)
+  MDRV_IMPORT_FROM(wpc_alpha2S)
+  MDRV_SCREEN_SIZE(640, 400)
+  MDRV_VISIBLE_AREA(0, 639, 0, 399)
+MACHINE_DRIVER_END
+
+CORE_GAMEDEF(hd,l3,"Harley Davidson (L-3)",1991,"Bally", hd, 0)
 
 /*-----------------------
 / Simulation Definitions
