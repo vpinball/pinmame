@@ -45,10 +45,13 @@
  *		    The following all perform this on a port address..
  *		    (anl, orl, xrl, jbc, cpl, inc, dec, djnz, mov px.y,c, clr px.y, setb px.y)
  *
+ *		  Serial UART emulation is not really accurate, but faked enough to work as far as i can tell
+ *
  *        August 27,2003: Currently support for only 8031/8051/8751 chips (ie 128 RAM)
  *		  October 14,2003: Added initial support for the 8752 (ie 256 RAM)
- *
- *		  Todo: Full Timer support, Serial Data support, Setting Interrupt Priority
+ *		  October 22,2003: Full support for the 8752 (ie 256 RAM)
+ *				
+ *		  Todo: Full Timer support (all modes), Setting Interrupt Priority & Proper Handling (including reti)
  *
  *		  Not Implemented: RAM paging using hardware configured addressing...
  *                         the "MOVX a,@R0/R1" and "MOVX @R0/R1,a" commands can use any of the other ports
@@ -82,6 +85,7 @@ INLINE void do_sub_flags(UINT8 a, UINT8 data, UINT8 c);
 INLINE UINT8 check_interrupts(void);
 INLINE void update_timer(int cyc);
 INLINE void	update_serial(int cyc);
+INLINE void serial_transmit(UINT8 data);
 static READ_HANDLER(internal_ram_read);
 static WRITE_HANDLER(internal_ram_write);
 static READ_HANDLER(internal_ram_iread);
@@ -98,6 +102,14 @@ static WRITE_HANDLER(i8052_internal_ram_iwrite);
 //
 
 typedef struct {
+	UINT8	timerbaud;		//Flag set if timer overflow is controlling baud
+	UINT8	sending;		//Flag set when uart is sending
+	UINT8	data_out;		//Data to send out
+	UINT8	serial_int;		//Signals that a serial interrupt is in progress (1 bit for each line)
+	UINT8	bits_to_send;	//How many bits left to send when transmitting out the serial port
+} I8051_UART;
+
+typedef struct {
 
 	//Internal stuff
 	UINT16	ppc;			//previous pc
@@ -105,7 +117,6 @@ typedef struct {
 	UINT16	subtype;		//specific version of the cpu, ie 8031, or 8051 for example
 	UINT8	cur_irq;		//Holds value of any current IRQ being serviced
 	UINT8	rwm;			//Signals that the current instruction is a read/write/modify instruction
-
 	//SFR Registers			(Note: Appear in order as they do in memory)
 	UINT8	po;				//Port 0
 	UINT8	sp;				//Stack Pointer
@@ -143,6 +154,10 @@ typedef struct {
 	//Interrupt Callback
 	int 	(*irq_callback)(int irqline);
 
+	//Serial Port TX/RX Call backs
+	void    (*serial_tx_callback)(int data);	//Call back funciton when sending data out of serial port
+	int		(*serial_rx_callback)(void);		//Call back function to retrieve data when receiving serial port data
+
 	//Internal Indirect Read/Write Handlers
 	READ_HANDLER((*iram_iread));
 	WRITE_HANDLER((*iram_iwrite));
@@ -152,6 +167,7 @@ typedef struct {
 int i8051_icount;
 
 static I8051 i8051;
+static I8051_UART uart;
 
 /* Layout of the registers in the debugger (-1 = end of a line, 0 = end of layout) */
 static UINT8 i8051_reg_layout[] = {
@@ -167,6 +183,10 @@ static UINT8 i8051_win_layout[] = {
 	25,14,55, 8,	/* memory #2 window (right, lower middle) */
 	 0,23,80, 1,	/* command line window (bottom rows) */
 };
+
+//Hold callback function so it can be set by caller (before the cpu reset)
+static void (*hold_serial_tx_callback)(int data);
+static int (*hold_serial_rx_callback)(void);
 
 /*Short cuts*/
 
@@ -500,6 +520,12 @@ void i8051_reset(void *param)
 	i8051.iram_iread = internal_ram_read;		//Indirect ram read/write handled the same as direct for 8051!
 	i8051.iram_iwrite = internal_ram_write;		//Indirect ram read/write handled the same as direct for 8051!
 
+	//Set up serial call back handlers
+	i8051.serial_tx_callback = hold_serial_tx_callback;
+	hold_serial_tx_callback = NULL;
+	i8051.serial_rx_callback = hold_serial_rx_callback;
+	hold_serial_rx_callback = NULL;
+
 	//Clear Ram (w/0xff)
 	memset(&i8051.IntRam,0xff,sizeof(i8051.IntRam));
 	
@@ -527,18 +553,6 @@ void i8051_reset(void *param)
 	SFR_W(P0, 0xff);
 
 	i8051.cur_irq = 0xff;
-
-#if 0
-	/* as part of the reset process, indicate that no interrupts are */
-	/* in progress */
-	low_int = FALSE;
-	high_int = FALSE;
-
-	/* clear up the serial port I/O as well */
-	sbufset = FALSE;
-	serocnt = 0;
-	servar = FALSE;
-#endif
 }
 
 /* Shut down CPU core */
@@ -550,20 +564,34 @@ void i8051_exit(void)
 /* Execute cycles - returns number of cycles actually run */
 int i8051_execute(int cycles)
 {
+	static int prev_used_cycles = 0;
 	i8051_icount = cycles;
 
 	do
 	{
+		//Read next opcode
 		UINT8 op = cpu_readop(PC);
 
+		//Store previous PC
 		PPC = PC;
 
+		//Call Debugger
 		CALL_MAME_DEBUG;
 
 		//remove after testing
 		if(PC != PPC)	op = cpu_readop(PC);
 
+		//Update Timer (if any timers are running)
+		if(R_TCON & 0x50)
+			update_timer(prev_used_cycles);
+
+		//Update Serial (if serial port sending data)
+		if(uart.sending)
+			update_serial(prev_used_cycles);
+
+		//Update PC
 		PC += 1;
+		//Decrement total count by # of cycles used for this opcode
 		i8051_icount -= (i8051_cycles[op]);
 
 		switch( op )
@@ -1234,12 +1262,8 @@ int i8051_execute(int cycles)
 				illegal();
 		}
 
-		//Update Timer (if any timers are running)
-		if(R_TCON & 0x50)
-			update_timer(i8051_cycles[op]);
-
-		//Update Serial Port
-		update_serial(i8051_cycles[op]);
+		//Store # of used cycles for this opcode (for timer & serial check at top of code)
+		prev_used_cycles = i8051_cycles[op];
 
 		//Check for pending interrupts & handle - remove cycles used
 		i8051_icount-=check_interrupts();
@@ -1381,6 +1405,22 @@ void i8051_set_irq_line(int irqline, int state)
 			if(GET_IE1)
 				i8051_icount-=check_interrupts();
 			break;
+
+		//Serial Port Receive
+		case I8051_RX_LINE:
+			//Is the enable flags for this interrupt set?
+			if(GET_ES && GET_REN) {
+				int data = 0;
+				//Call our callball function to retrieve the data
+				if(i8051.serial_rx_callback)
+					data = i8051.serial_rx_callback();
+				//Update the register directly, since SFR_W() will trigger a serial transmit instead!
+				R_SBUF=data;	
+				//Flag the IRQ
+				SET_RI(1);
+			}
+			break;
+			//Note: we won't call check interrupts, we'll let the main loop catch it
 	}
 }
 
@@ -1390,14 +1430,10 @@ INLINE UINT8 check_interrupts(void)
 	static UINT8 int_vec = 0;		//static should help execution time
 
 	//If All Inerrupts Disabled or no pending abort..
-	if(!GET_EA) {
-		//LOG(("Skipping Interrupts\n"));
-		return 0;
-	}
+	if(!GET_EA)	return 0;
 
 	//Any Interrupts Pending?
-	if(!(R_TCON & 0xaa) && !(R_SCON & 0x03))
-		return 0;
+	if(!(R_TCON & 0xaa) && !(R_SCON & 0x03))	return 0;
 
 	//Check which interrupt(s) have occurred
 	//NOTE: The order of checking is based on the internal/default priority levels
@@ -1434,32 +1470,62 @@ INLINE UINT8 check_interrupts(void)
 	}
 	//Timer 1 overflow
 	if(!int_vec && GET_TF1) {
-		LOG(("Timer 1 Interrupt!\n"));
+
+		//Skip if servicing higher priority irq
+		if(i8051.cur_irq < V_TF1)	{ LOG(("skipping tf1\n")); return 0; }
+
 		//Set vector and clear pending flag
 		int_vec = V_TF1;
 		SET_TF1(0);
-		//remove this line when support is added
-		return 0;
 	}
-	//Serial Interrupt
+	//Serial Interrupt Transmit/Receive Interrupts
 	if(!int_vec && (GET_TI || GET_RI)) {
-		LOG(("Serial Interrupt!\n"));
-		//Set vector and clear pending flag
-		int_vec = V_RITI;
-		// no flags are cleared, TI and RI
-		// remain active until reset by software
 
-		//remove this line when support is added
-		return 0;
+		//Since interrupt flags are not cleared, we need way to avoid always calling this routine over and over
+		int skip_int = 0;
+
+		//Skip if servicing higher priority irq
+		if(i8051.cur_irq < V_RITI)	{ LOG(("skipping riti\n")); return 0; }
+
+		//Transmit Flag?
+		if(GET_TI) {
+			//Skip if we've handled the interrupt, but software has not cleared the flag!
+			if(uart.serial_int & TI_FLAG)
+				skip_int = 1;
+			else
+				uart.serial_int |= TI_FLAG;
+		}
+
+		//Receive Flag?
+		if(GET_RI) {
+			//Skip if we've handled the interrupt, but software has not cleared the flag!
+			if(uart.serial_int & RI_FLAG)
+				skip_int = 1;
+			else
+				uart.serial_int |= RI_FLAG;
+		}
+
+		//Skip Int? (Doesn't matter who caused the skip)
+		if(skip_int)	return 0;
+
+		//Set vector
+		int_vec = V_RITI;
+
+		// no flags are cleared, TI and RI remain set until reset by software
 	}
 #if (HAS_I8052 || HAS_I8752)
 	//Timer 2 overflow
 	if(!int_vec && GET_TF2) {
-		//Set vector and clear pending flag
+
+		//Skip if servicing higher priority irq
+		if(i8051.cur_irq < V_TF2)	{ LOG(("skipping tf2\n")); return 0; }
+
+		//Set vector
 		int_vec = V_TF2;
-		SET_TF2(0);
-		//remove this line when support is added
-		return 0;
+		//DO NOT CLEAR THE INTERRUPT FLAG (According to the manual)
+		//SET_TF2(0);
+		//HOWEVER - This causes a problem, because pc will be stuck jumping to vector until these flags cleared!
+		//Todo: implement a var as done with serial_int
 	}
 #endif
 
@@ -1468,7 +1534,6 @@ INLINE UINT8 check_interrupts(void)
 	PC = int_vec;
 	i8051.cur_irq = int_vec;
 	int_vec = 0;
-//	return 2;
 	return 24;		//All interrupts use 2 machine cycles
 }
 
@@ -1476,6 +1541,17 @@ INLINE UINT8 check_interrupts(void)
 void i8051_set_irq_callback(int (*callback)(int irqline))
 {
 	i8051.irq_callback = callback;
+}
+
+void i8051_set_serial_tx_callback(void (*callback)(int data))
+{
+	//Hold in static variable since this function can get called before reset has run, which wipes i8051 memory clean
+	hold_serial_tx_callback = callback;
+}
+void i8051_set_serial_rx_callback(int (*callback)(void))
+{
+	//Hold in static variable since this function can get called before reset has run, which wipes i8051 memory clean
+	hold_serial_rx_callback = callback;
 }
 
 void i8051_state_save(void *file)
@@ -1585,20 +1661,27 @@ static WRITE_HANDLER(sfr_write)
 			OUT(1,data);
 			break;
 
-		case SCON:
+		case SCON: {
+			//Grab previous status of serial port interrupt flags
+			int prev_ti_flag, prev_ri_flag;
+			prev_ti_flag = GET_TI;
+			prev_ri_flag = GET_RI;
+			
+			//Update register
 			R_SCON = data;
-			#if 0
-				scon = data;
-			#endif
+
+			//Was ti flag just cleared (if so clear interrupt handling flag)?
+			if(prev_ti_flag && !GET_TI)
+				uart.serial_int &= ~TI_FLAG;
+			//Was ri flag just cleared? (if so clear interrupt handling flag)?
+			if(prev_ri_flag && !GET_RI)
+				uart.serial_int &= ~RI_FLAG;
 			break;
+		}
 
 		case SBUF: 
-			R_SBUF = data;
-			#if 0
-				sbufo = data;
-				/* this will start the serial port xmitting */
-				sbufset = TRUE;
-			#endif
+			//R_SBUF = data;		//This register is used only for "Receiving data coming in!"
+			serial_transmit(data);	//Set up to transmit the data
 			break;
 
 		case P2:
@@ -1906,33 +1989,66 @@ INLINE void do_sub_flags(UINT8 a, UINT8 data, UINT8 c)
 
 INLINE void update_timer(int cyc)
 {
-	//Todo: Add checks for Timer2
+	//This code sucks, needs to be rewritten SJE
+
 	//Todo: Probably better to store the current mode of the timer on a write, so we don't waste time reading it.
 
-	//Note: Counting modes increment on 1 machine cycle (12 oscilator periods)
+	//Note: Counting modes increment on 1 machine cycle (12 oscilator periods) - except Timer 2 in certain modes
 
 	//Update Timer 0
 	if(GET_TR0) {
 		//Determine Mode
 		int mode = GET_M0_0 + GET_M0_1;
 		int overflow;
-		UINT16 count = ((R_TH0<<8) | R_TL0);
+		UINT16 count = 0;
 		switch(mode) {
 			case 0:			//13 Bit Timer Mode
+				count = ((R_TH0<<8) | R_TL0);
 				overflow = 0x3fff;
+				//Todo - really, we update HI counter when LO counter hits 0x20
 			case 1:			//16 Bit Timer Mode
+				count = ((R_TH0<<8) | R_TL0);
 				overflow = 0xffff;
 				//Check for overflow
 				if((UINT32)(count+(cyc/12))>overflow) {
+					//Any overflow from cycles?
+					cyc-= (overflow-count)*12;
 					count = 0;
                     SET_TF0(1);
 				}
-				else
-					count+=(cyc/12);
+				//Update the timer
+				if(cyc) {
+					int inctimer = 0;
+					//Gate Bit Set? Timer only incremented if Int0 is set!
+					if(GET_GATE0 && GET_IE0)
+						inctimer = (cyc/12);
+					//Counter Mode? Only increment on 1-0 transition of the Port 3's T0 Line
+					if(GET_CT0) {
+						//Not supported
+					}
+					//Neither, regular timer mode
+					if(!GET_GATE0 && !GET_CT0)
+						inctimer = (cyc/12);
+
+					count+=inctimer;		//Increment counter
+				}
+				//Update new values of the counter
 				R_TH0 = (count>>8) & 0xff;
 				R_TL0 = count & 0xff;
 				break;
 			case 2:			//8 Bit Autoreload
+				overflow = 0xff;
+				count = R_TL0;
+				//Check for overflow
+				if(count+(cyc/12)>overflow) {
+                    SET_TF0(1);
+					//Reload
+					count = R_TH0+(overflow-count);
+				}
+				else
+					count+=(cyc/12);
+				//Update new values of the counter
+				R_TL0 = count & 0xff;
 				break;
 			case 3:			//Split Timer
 				break;
@@ -1941,12 +2057,167 @@ INLINE void update_timer(int cyc)
 
 	//Update Timer 1
 	if(GET_TR1) {
+		//Determine Mode
+		int mode = GET_M1_0 + GET_M1_1;
+		int overflow;
+		UINT16 count = 0;
+		switch(mode) {
+			case 0:			//13 Bit Timer Mode
+				count = ((R_TH1<<8) | R_TL1);
+				overflow = 0x3fff;
+				//Todo - really, we update HI counter when LO counter hits 0x20
+			case 1:			//16 Bit Timer Mode
+				count = ((R_TH1<<8) | R_TL1);
+				overflow = 0xffff;
+				//Check for overflow
+				if((UINT32)(count+(cyc/12))>overflow) {
+					//Any overflow from cycles?
+					cyc-= (overflow-count)*12;
+					count = 0;
+                    SET_TF1(1);
+				}
+				//Update the timer
+				if(cyc) {
+					int inctimer = 0;
+					//Gate Bit Set? Timer only incremented if Int0 is set!
+					if(GET_GATE1 && GET_IE1)
+						inctimer = (cyc/12);
+					//Counter Mode? Only increment on 1-0 transition of the Port 3's T0 Line
+					if(GET_CT1) {
+						//Not supported
+					}
+					//Neither, regular timer mode
+					if(!GET_GATE1 && !GET_CT1)
+						inctimer = (cyc/12);
+
+					count+=inctimer;		//Increment counter
+				}
+				//Update new values of the counter
+				R_TH1 = (count>>8) & 0xff;
+				R_TL1 = count & 0xff;
+				break;
+			case 2:			//8 Bit Autoreload
+				overflow = 0xff;
+				count = R_TL1;
+				//Check for overflow
+				if(count+(cyc/12)>overflow) {
+                    SET_TF1(1);
+					//Reload
+					count = R_TH1+(overflow-count);
+				}
+				else
+					count+=(cyc/12);
+				//Update new values of the counter
+				R_TL1 = count & 0xff;
+				break;
+			case 3:			//Split Timer
+				break;
+		}
 	}
-}
-INLINE void update_serial(int cyc)
-{
+
+#if (HAS_I8052 || HAS_I8752)
+	//Update Timer 2
+	if(GET_TR2) {
+		int timerinc, overflow, isoverflow;
+		UINT16 count = ((R_TH2<<8) | R_TL2);
+		timerinc = overflow = isoverflow = 0;
+
+		//Are we in counter mode?
+		if(GET_CT2)		{
+			//Not supported
+		}
+		//Are we in timer mode?
+		else {
+			//16 Bit Timer Mode
+			overflow = 0xffff;
+			//Timer 2 Used as Baud Generator? (For now, only *same* send/receive rates supported)
+			if(GET_TCLK || GET_RCLK)
+				timerinc = cyc/2;						//Timer increments ever 1/2 cycle in baud mode
+			else
+			//REGULAR TIMER - 
+				timerinc = cyc/12;						//Timer increments ever 1/12 cycles in normal mode
+	
+			//Check for overflow
+			if((UINT32)(count+timerinc)>overflow) {	
+				//Set Interrupt flag *unless* used as baud generator
+				if(!GET_TCLK && !GET_RCLK) {
+					SET_TF2(1);
+				}
+				else {
+				//Update bits sent if sending & bits left to send!
+					if(uart.sending && uart.bits_to_send)
+						uart.bits_to_send-=1;
+				}
+				//Auto reload?
+				if(!GET_CP)
+					count = ((R_RCAP2H<<8) | R_RCAP2L); //+(overflow-count);
+				else
+					count = overflow-count;
+			}
+			else {
+			//No overflow, just increment timer
+				count+=timerinc;
+			}
+			//Update flags
+			R_TH2 = (count>>8) & 0xff;
+			R_TL2 = count & 0xff;
+		}
+	}
+#endif
 }
 
+//Set up to transmit data out of serial port
+INLINE void serial_transmit(UINT8 data)
+{
+	int mode = GET_SM0+GET_SM1;
+
+	//Serial Interrupt Enable must be set?
+	if(GET_ES) {
+
+		//Flag that we're sending data
+		uart.sending = 1;
+		uart.data_out = data;
+		switch(mode) {
+			//8 bit shifter
+			case 0:
+				LOG(("Serial mode 0 not supported in i8051!\n"));
+				break;
+			//8 bit uart ( + start,stop bit ) - baud set by timer1 or timer2
+			case 1:
+				uart.bits_to_send = 8+2;
+				break;
+			//9 bit uart
+			case 2:
+			case 3:
+				LOG(("Serial mode 2 & 3 not supported in i8051!\n"));
+				break;
+		}
+	}
+}
+
+//Check and update status of serial port
+INLINE void	update_serial(int cyc)
+{
+	//Any bits left to send?
+	if(uart.bits_to_send) {
+		//Timer Generated baud?
+		if(!uart.timerbaud) {
+			//Todo:Based on cycles, see if we've sent another bit
+		}
+		//Let Timer overflow handle removing bits
+	}
+	else {
+	//Nope - flag the interrupt & call the callback
+		//Clear sending flag
+		uart.sending = 0;
+		//Call the callback function
+		if(i8051.serial_tx_callback)	
+			i8051.serial_tx_callback(uart.data_out);
+		//Set Interrupt
+		SET_TI(1);
+		//Note: we'll let the main loop catch the interrupt
+	}
+}
 
 
 /****************************************************************************
@@ -1962,6 +2233,12 @@ void i8752_reset (void *param)
 	//Set up 8052 specific internal read/write (indirect) handlers..
 	i8051.iram_iread  = i8052_internal_ram_iread;
 	i8051.iram_iwrite = i8052_internal_ram_iwrite;
+
+	//Set up serial call back handlers
+	i8051.serial_tx_callback = hold_serial_tx_callback;
+	hold_serial_tx_callback = NULL;
+	i8051.serial_rx_callback = hold_serial_rx_callback;
+	hold_serial_rx_callback = NULL;
 
 	//Clear Ram (w/0xff)
 	memset(&i8051.IntRam,0xff,sizeof(i8051.IntRam));
@@ -1997,18 +2274,6 @@ void i8752_reset (void *param)
 	SFR_W(P0, 0xff);
 
 	i8051.cur_irq = 0xff;
-
-#if 0
-	/* as part of the reset process, indicate that no interrupts are */
-	/* in progress */
-	low_int = FALSE;
-	high_int = FALSE;
-
-	/* clear up the serial port I/O as well */
-	sbufset = FALSE;
-	serocnt = 0;
-	servar = FALSE;
-#endif
 }
 
 void i8752_exit	(void)										{ i8051_exit(); }
@@ -2019,6 +2284,8 @@ unsigned i8752_get_reg (int regnum)							{ return i8051_get_reg(regnum); }
 void i8752_set_reg (int regnum, unsigned val)				{ i8051_set_reg(regnum,val); }
 void i8752_set_irq_line(int irqline, int state)				{ i8051_set_irq_line(irqline,state); }
 void i8752_set_irq_callback(int (*callback)(int irqline))	{ i8051_set_irq_callback(callback); }
+void i8752_set_serial_tx_callback(void (*callback)(int data))	{ i8051_set_serial_tx_callback(callback); }
+void i8752_set_serial_rx_callback(int (*callback)(void))	{ i8051_set_serial_rx_callback(callback); }
 void i8752_state_save(void *file)							{ i8051_state_save(file); }
 void i8752_state_load(void *file)							{ i8051_state_load(file); }
 const char *i8752_info(void *context, int regnum)
