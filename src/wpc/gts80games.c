@@ -27,8 +27,7 @@ core_tLCDLayout gottlieb_dispNumeric2[] = {
   DISP_SEG_6(0,0, CORE_SEG9), DISP_SEG_6(0,1, CORE_SEG9),
   DISP_SEG_6(1,0, CORE_SEG9), DISP_SEG_6(1,1, CORE_SEG9),
   DISP_SEG_CREDIT(20,28,CORE_SEG9),DISP_SEG_BALLS(0,8,CORE_SEG9),
-  {6, 10, 42, 6, CORE_SEG9},
-  {0}
+  {6, 8, 42, 6, CORE_SEG9}, {0}
 };
 
 /* 4 X 6+1 AlphaNumeric Rows, 2 X 2 AlphaNumeric */
@@ -153,7 +152,13 @@ CORE_CLONEDEFNV(jamesb2,jamesb,"James Bond (3/5-Ball)",1980,"Gottlieb",gl_mGTS80
 /*-------------------------------------------------------------------
 / Time Line
 /-------------------------------------------------------------------*/
-INITGAME(timeline,GEN_GTS80,gottlieb_dispNumeric1, 1, SNDBRD_GTS80S)
+core_tLCDLayout dispTimeline[] = {
+  DISP_SEG_6(0,0, CORE_SEG9), DISP_SEG_6(0,1, CORE_SEG9),
+  DISP_SEG_6(1,0, CORE_SEG9), DISP_SEG_6(1,1, CORE_SEG9),
+  DISP_SEG_CREDIT(20,28,CORE_SEG9),DISP_SEG_BALLS(0,8,CORE_SEG9),
+  {6, 11, 42, 3, CORE_SEG9}, {0}
+};
+INITGAME(timeline,GEN_GTS80,dispTimeline, 1, SNDBRD_GTS80S)
 GTS80_1_ROMSTART(timeline, "659.cpu",      0x0d6950e3b,
                            "u2_80.bin",    0x4f0bc7b1,
                            "u3_80.bin",    0x1e69f9d0)
@@ -331,9 +336,7 @@ core_tLCDLayout dispDevilsdare[] = {
   {0,16,10,6,CORE_SEG9}, {0,28, 9,1,CORE_SEG9},
   {4, 0,22,6,CORE_SEG9}, {4,12,21,1,CORE_SEG9},
   {4,16,30,6,CORE_SEG9}, {4,28,29,1,CORE_SEG9},
-
   DISP_SEG_CREDIT(20,28,CORE_SEG9), DISP_SEG_BALLS(0,8,CORE_SEG9),
-
   {6, 9,42,6,CORE_SEG9}, {0}
 };
 
@@ -368,9 +371,7 @@ core_tLCDLayout dispRocky[] = {
   {0,16,10,6,CORE_SEG9}, {0,28, 9,1,CORE_SEG9},
   {4, 0,22,6,CORE_SEG9}, {4,12,21,1,CORE_SEG9},
   {4,16,30,6,CORE_SEG9}, {4,28,29,1,CORE_SEG9},
-
   DISP_SEG_CREDIT(20,28,CORE_SEG9), DISP_SEG_BALLS(0,8,CORE_SEG9),
-
   {6, 10,46,2,CORE_SEG9}, {6,16,42,2,CORE_SEG9}, {0}
 };
 INITGAME(rocky, GEN_GTS80, dispRocky, 1, SNDBRD_GTS80SS)
@@ -404,9 +405,7 @@ core_tLCDLayout dispSpirit[] = {
   {0,16,10,6,CORE_SEG9}, {0,28, 9,1,CORE_SEG9},
   {4, 0,22,6,CORE_SEG9}, {4,12,21,1,CORE_SEG9},
   {4,16,30,6,CORE_SEG9}, {4,28,29,1,CORE_SEG9},
-
   DISP_SEG_CREDIT(20,28,CORE_SEG9), DISP_SEG_BALLS(0,8,CORE_SEG9),
-
   {6, 9,42,6,CORE_SEG9}, {0}
 };
 INITGAME(spirit, GEN_GTS80, dispSpirit, 1, SNDBRD_GTS80SS)
@@ -427,9 +426,7 @@ core_tLCDLayout dispStriker[] = {
   {0,21,22,6,CORE_SEG9}, {0,33,21,1,CORE_SEG9},
   {4, 0,10,6,CORE_SEG9}, {4,12, 9,1,CORE_SEG9},
   {4,21,30,6,CORE_SEG9}, {4,33,29,1,CORE_SEG9},
-
   DISP_SEG_CREDIT(20,28,CORE_SEG9), DISP_SEG_BALLS(0,8,CORE_SEG9),
-
   {0,15,44,2,CORE_SEG9}, {0,36,54,2,CORE_SEG9},
   {4,15,42,2,CORE_SEG9}, {4,36,52,2,CORE_SEG9}, {0}
 };
@@ -464,9 +461,7 @@ core_tLCDLayout dispGoinNuts[] = {
   {0,16,10,6,CORE_SEG9}, {0,28, 9,1,CORE_SEG9},
   {4, 0,22,6,CORE_SEG9}, {4,12,21,1,CORE_SEG9},
   {4,16,30,6,CORE_SEG9}, {4,28,29,1,CORE_SEG9},
-
   DISP_SEG_CREDIT(20,28,CORE_SEG9), DISP_SEG_BALLS(0,8,CORE_SEG9),
-
   {6,12,45,3,CORE_SEG9}, {0}
 };
 INITGAME(goinnuts, GEN_GTS80, dispGoinNuts, 1, SNDBRD_GTS80SS)
@@ -487,9 +482,7 @@ core_tLCDLayout dispKrull[] = {
   {0,16,10,6,CORE_SEG9}, {0,28, 9,1,CORE_SEG9},
   {4, 0,22,6,CORE_SEG9}, {4,12,21,1,CORE_SEG9},
   {4,16,30,6,CORE_SEG9}, {4,28,29,1,CORE_SEG9},
-
   DISP_SEG_CREDIT(20,28,CORE_SEG9), DISP_SEG_BALLS(0,8,CORE_SEG9),
-
   {6, 8,42,3,CORE_SEG9}, {6,16,45,3,CORE_SEG9}, {0}
 };
 INITGAME(krull, GEN_GTS80, dispKrull, 1, SNDBRD_GTS80SS)
