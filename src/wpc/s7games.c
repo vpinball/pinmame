@@ -1,6 +1,5 @@
 #include "driver.h"
 #include "core.h"
-#include "sim.h"
 #include "wmssnd.h"
 #include "s7.h"
 

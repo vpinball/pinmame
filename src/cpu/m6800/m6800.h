@@ -11,9 +11,6 @@ enum {
 	M6800_PC=1, M6800_S, M6800_A, M6800_B, M6800_X, M6800_CC,
 	M6800_WAI_STATE, M6800_NMI_STATE, M6800_IRQ_STATE };
 
-#define M6800_INT_NONE  0           /* No interrupt required */
-#define M6800_INT_IRQ	1			/* Standard IRQ interrupt */
-#define M6800_INT_NMI	2			/* NMI interrupt		  */
 #define M6800_WAI		8			/* set when WAI is waiting for an interrupt */
 #define M6800_SLP		0x10		/* HD63701 only */
 
@@ -34,13 +31,8 @@ void m6800_exit(void);
 int	m6800_execute(int cycles);
 unsigned m6800_get_context(void *dst);
 void m6800_set_context(void *src);
-unsigned m6800_get_pc(void);
-void m6800_set_pc(unsigned val);
-unsigned m6800_get_sp(void);
-void m6800_set_sp(unsigned val);
 unsigned m6800_get_reg(int regnum);
 void m6800_set_reg(int regnum, unsigned val);
-void m6800_set_nmi_line(int state);
 void m6800_set_irq_line(int irqline, int state);
 void m6800_set_irq_callback(int (*callback)(int irqline));
 const char *m6800_info(void *context, int regnum);
@@ -60,9 +52,6 @@ unsigned m6800_dasm(char *buffer, unsigned pc);
 #define M6801_NMI_STATE 			M6800_NMI_STATE
 #define M6801_IRQ_STATE 			M6800_IRQ_STATE
 
-#define M6801_INT_NONE              M6800_INT_NONE
-#define M6801_INT_IRQ				M6800_INT_IRQ
-#define M6801_INT_NMI				M6800_INT_NMI
 #define M6801_WAI					M6800_WAI
 #define M6801_IRQ_LINE				M6800_IRQ_LINE
 
@@ -73,13 +62,8 @@ void m6801_exit(void);
 int	m6801_execute(int cycles);
 unsigned m6801_get_context(void *dst);
 void m6801_set_context(void *src);
-unsigned m6801_get_pc(void);
-void m6801_set_pc(unsigned val);
-unsigned m6801_get_sp(void);
-void m6801_set_sp(unsigned val);
 unsigned m6801_get_reg(int regnum);
 void m6801_set_reg(int regnum, unsigned val);
-void m6801_set_nmi_line(int state);
 void m6801_set_irq_line(int irqline, int state);
 void m6801_set_irq_callback(int (*callback)(int irqline));
 const char *m6801_info(void *context, int regnum);
@@ -100,9 +84,6 @@ unsigned m6801_dasm(char *buffer, unsigned pc);
 #define M6802_NMI_STATE 			M6800_NMI_STATE
 #define M6802_IRQ_STATE 			M6800_IRQ_STATE
 
-#define M6802_INT_NONE              M6800_INT_NONE
-#define M6802_INT_IRQ				M6800_INT_IRQ
-#define M6802_INT_NMI				M6800_INT_NMI
 #define M6802_WAI					M6800_WAI
 #define M6802_IRQ_LINE				M6800_IRQ_LINE
 
@@ -113,13 +94,8 @@ void m6802_exit(void);
 int	m6802_execute(int cycles);
 unsigned m6802_get_context(void *dst);
 void m6802_set_context(void *src);
-unsigned m6802_get_pc(void);
-void m6802_set_pc(unsigned val);
-unsigned m6802_get_sp(void);
-void m6802_set_sp(unsigned val);
 unsigned m6802_get_reg(int regnum);
 void m6802_set_reg(int regnum, unsigned val);
-void m6802_set_nmi_line(int state);
 void m6802_set_irq_line(int irqline, int state);
 void m6802_set_irq_callback(int (*callback)(int irqline));
 const char *m6802_info(void *context, int regnum);
@@ -140,9 +116,6 @@ unsigned m6802_dasm(char *buffer, unsigned pc);
 #define M6803_NMI_STATE 			M6800_NMI_STATE
 #define M6803_IRQ_STATE 			M6800_IRQ_STATE
 
-#define M6803_INT_NONE              M6800_INT_NONE
-#define M6803_INT_IRQ				M6800_INT_IRQ
-#define M6803_INT_NMI				M6800_INT_NMI
 #define M6803_WAI					M6800_WAI
 #define M6803_IRQ_LINE				M6800_IRQ_LINE
 #define M6803_TIN_LINE				M6800_TIN_LINE
@@ -154,13 +127,8 @@ void m6803_exit(void);
 int	m6803_execute(int cycles);
 unsigned m6803_get_context(void *dst);
 void m6803_set_context(void *src);
-unsigned m6803_get_pc(void);
-void m6803_set_pc(unsigned val);
-unsigned m6803_get_sp(void);
-void m6803_set_sp(unsigned val);
 unsigned m6803_get_reg(int regnum);
 void m6803_set_reg(int regnum, unsigned val);
-void m6803_set_nmi_line(int state);
 void m6803_set_irq_line(int irqline, int state);
 void m6803_set_irq_callback(int (*callback)(int irqline));
 const char *m6803_info(void *context, int regnum);
@@ -195,9 +163,6 @@ WRITE_HANDLER( m6803_internal_registers_w );
 #define M6808_NMI_STATE 			M6800_NMI_STATE
 #define M6808_IRQ_STATE 			M6800_IRQ_STATE
 
-#define M6808_INT_NONE              M6800_INT_NONE
-#define M6808_INT_IRQ               M6800_INT_IRQ
-#define M6808_INT_NMI               M6800_INT_NMI
 #define M6808_WAI                   M6800_WAI
 #define M6808_IRQ_LINE              M6800_IRQ_LINE
 
@@ -208,13 +173,8 @@ void m6808_exit(void);
 int	m6808_execute(int cycles);
 unsigned m6808_get_context(void *dst);
 void m6808_set_context(void *src);
-unsigned m6808_get_pc(void);
-void m6808_set_pc(unsigned val);
-unsigned m6808_get_sp(void);
-void m6808_set_sp(unsigned val);
 unsigned m6808_get_reg(int regnum);
 void m6808_set_reg(int regnum, unsigned val);
-void m6808_set_nmi_line(int state);
 void m6808_set_irq_line(int irqline, int state);
 void m6808_set_irq_callback(int (*callback)(int irqline));
 const char *m6808_info(void *context, int regnum);
@@ -235,9 +195,6 @@ unsigned m6808_dasm(char *buffer, unsigned pc);
 #define HD63701_NMI_STATE			 M6800_NMI_STATE
 #define HD63701_IRQ_STATE			 M6800_IRQ_STATE
 
-#define HD63701_INT_NONE             M6800_INT_NONE
-#define HD63701_INT_IRQ 			 M6800_INT_IRQ
-#define HD63701_INT_NMI 			 M6800_INT_NMI
 #define HD63701_WAI 				 M6800_WAI
 #define HD63701_SLP 				 M6800_SLP
 #define HD63701_IRQ_LINE			 M6800_IRQ_LINE
@@ -250,13 +207,8 @@ void hd63701_exit(void);
 int	hd63701_execute(int cycles);
 unsigned hd63701_get_context(void *dst);
 void hd63701_set_context(void *src);
-unsigned hd63701_get_pc(void);
-void hd63701_set_pc(unsigned val);
-unsigned hd63701_get_sp(void);
-void hd63701_set_sp(unsigned val);
 unsigned hd63701_get_reg(int regnum);
 void hd63701_set_reg(int regnum, unsigned val);
-void hd63701_set_nmi_line(int state);
 void hd63701_set_irq_line(int irqline, int state);
 void hd63701_set_irq_callback(int (*callback)(int irqline));
 const char *hd63701_info(void *context, int regnum);
@@ -289,9 +241,6 @@ WRITE_HANDLER( hd63701_internal_registers_w );
 #define NSC8105_NMI_STATE			 M6800_NMI_STATE
 #define NSC8105_IRQ_STATE			 M6800_IRQ_STATE
 
-#define NSC8105_INT_NONE             M6800_INT_NONE
-#define NSC8105_INT_IRQ 			 M6800_INT_IRQ
-#define NSC8105_INT_NMI 			 M6800_INT_NMI
 #define NSC8105_WAI 				 M6800_WAI
 #define NSC8105_IRQ_LINE			 M6800_IRQ_LINE
 #define NSC8105_TIN_LINE			 M6800_TIN_LINE
@@ -303,13 +252,8 @@ void nsc8105_exit(void);
 int	nsc8105_execute(int cycles);
 unsigned nsc8105_get_context(void *dst);
 void nsc8105_set_context(void *src);
-unsigned nsc8105_get_pc(void);
-void nsc8105_set_pc(unsigned val);
-unsigned nsc8105_get_sp(void);
-void nsc8105_set_sp(unsigned val);
 unsigned nsc8105_get_reg(int regnum);
 void nsc8105_set_reg(int regnum, unsigned val);
-void nsc8105_set_nmi_line(int state);
 void nsc8105_set_irq_line(int irqline, int state);
 void nsc8105_set_irq_callback(int (*callback)(int irqline));
 const char *nsc8105_info(void *context, int regnum);

@@ -13,10 +13,11 @@
 #include "wmssnd.h"
 
 /*----------------------
-/    System 4 - 7
+/    System 3 - 7
 /-----------------------*/
 #define S67S_PIA0 5
 
+/* sound board interface */
 static void s67s_init(struct sndbrdData *brdData);
 static WRITE_HANDLER(s67s_cmd_w);
 static void s67s_diag(int button);
@@ -25,10 +26,8 @@ const struct sndbrdIntf s67sIntf = {
   s67s_init, NULL, s67s_diag, s67s_cmd_w, NULL, NULL, NULL, SNDBRD_NOCTRLSYNC
 };
 
-struct DACinterface      s67s_dacInt     = { 1, { 50 }};
-struct hc55516_interface s67s_hc55516Int = { 1, { 80 }};
-
-MEMORY_READ_START(s67s_readmem )
+/* machine interface */
+static MEMORY_READ_START(s67s_readmem )
   { 0x0000, 0x007f, MRA_RAM },
   { 0x0400, 0x0403, pia_r(S67S_PIA0) },
   { 0x3000, 0x7fff, MRA_ROM },
@@ -36,13 +35,24 @@ MEMORY_READ_START(s67s_readmem )
   { 0xb000, 0xffff, MRA_ROM },
 MEMORY_END
 
-MEMORY_WRITE_START(s67s_writemem )
+static MEMORY_WRITE_START(s67s_writemem )
   { 0x0000, 0x007f, MWA_RAM },
   { 0x0400, 0x0403, pia_w(S67S_PIA0) },
   { 0x3000, 0x7fff, MWA_ROM },
   { 0x8400, 0x8403, pia_w(S67S_PIA0) },
   { 0xb000, 0xffff, MWA_ROM },
 MEMORY_END
+static struct DACinterface      s67s_dacInt     = { 1, { 50 }};
+static struct hc55516_interface s67s_hc55516Int = { 1, { 80 }};
+
+MACHINE_DRIVER_START(wmssnd_s67s)
+  MDRV_CPU_ADD(M6808, 3579000/4)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(s67s_readmem, s67s_writemem)
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD(DAC, s67s_dacInt)
+  MDRV_SOUND_ADD(HC55516, s67s_hc55516Int)
+MACHINE_DRIVER_END
 
 static void s67s_piaIrq(int state);
 static const struct pia6821_interface s67s_pia = {
@@ -88,35 +98,78 @@ static void s67s_piaIrq(int state) {
 #define S11S_BANK0 1
 #define S11S_BANK1 2
 
+/* sound board interface */
 static void s11s_init(struct sndbrdData *brdData);
 static void s11s_diag(int button);
 static WRITE_HANDLER(s11s_bankSelect);
 const struct sndbrdIntf s11sIntf = {
   s11s_init, NULL, s11s_diag, soundlatch_w, NULL, CAT3(pia_,S11S_PIA0,_ca1_w), NULL
 };
+/* machine interface */
+static MEMORY_READ_START(s9s_readmem)
+  { 0x0000, 0x0fff, MRA_RAM},
+  { 0x2000, 0x2003, pia_r(S11S_PIA0)},
+  { 0x8000, 0xffff, MRA_ROM}, /* U22 */
+MEMORY_END
+static MEMORY_WRITE_START(s9s_writemem)
+  { 0x0000, 0x0fff, MWA_RAM },
+  { 0x2000, 0x2003, pia_w(S11S_PIA0)},
+  { 0x8000, 0xffff, MWA_ROM}, /* U22 */
+MEMORY_END
 
-MEMORY_READ_START(s11s_readmem)
+static struct DACinterface      s9s_dacInt     = { 1, { 50 }};
+static struct hc55516_interface s9s_hc55516Int = { 1, { 80 }};
+
+MACHINE_DRIVER_START(wmssnd_s9s)
+  MDRV_CPU_ADD(M6808, 1000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(s9s_readmem, s9s_writemem)
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD(DAC,    s9s_dacInt)
+  MDRV_SOUND_ADD(HC55516,s9s_hc55516Int)
+MACHINE_DRIVER_END
+
+static MEMORY_READ_START(s11s_readmem)
   { 0x0000, 0x0fff, MRA_RAM},
   { 0x2000, 0x2003, pia_r(S11S_PIA0) },
   { 0x8000, 0xbfff, MRA_BANKNO(S11S_BANK0)}, /* U22 */
   { 0xc000, 0xffff, MRA_BANKNO(S11S_BANK1)}, /* U21 */
 MEMORY_END
-MEMORY_WRITE_START(s11s_writemem)
+static MEMORY_WRITE_START(s11s_writemem)
   { 0x0000, 0x0fff, MWA_RAM },
   { 0x1000, 0x1000, s11s_bankSelect},
   { 0x2000, 0x2003, pia_w(S11S_PIA0)},
   { 0x8000, 0xffff, MWA_ROM},
 MEMORY_END
-MEMORY_READ_START(s9s_readmem)
-  { 0x0000, 0x0fff, MRA_RAM},
-  { 0x2000, 0x2003, pia_r(S11S_PIA0)},
-  { 0x8000, 0xffff, MRA_ROM}, /* U22 */
-MEMORY_END
-MEMORY_WRITE_START(s9s_writemem)
-  { 0x0000, 0x0fff, MWA_RAM },
-  { 0x2000, 0x2003, pia_w(S11S_PIA0)},
-  { 0x8000, 0xffff, MWA_ROM}, /* U22 */
-MEMORY_END
+
+static void s11cs_ym2151IRQ(int state);
+static struct DACinterface      s11s_dacInt2     = { 2, { 50,50 }};
+static struct hc55516_interface s11s_hc55516Int2 = { 2, { 80,80 }};
+static struct YM2151interface   s11cs_ym2151Int  = {
+  1, 3579545, /* Hz */
+  { YM3012_VOL(10,MIXER_PAN_CENTER,30,MIXER_PAN_CENTER) },
+  { s11cs_ym2151IRQ }
+};
+
+MACHINE_DRIVER_START(wmssnd_s11s)
+  MDRV_IMPORT_FROM(wmssnd_s11cs)
+  MDRV_CPU_ADD(M6808, 1000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(s11s_readmem, s11s_writemem)
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_REPLACE("dac",  DAC,    s11s_dacInt2)
+  MDRV_SOUND_REPLACE("cvsd", HC55516,s11s_hc55516Int2)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(wmssnd_s11b2s)
+  MDRV_IMPORT_FROM(wmssnd_s11js)
+  MDRV_CPU_ADD(M6808, 1000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(s11s_readmem, s11s_writemem)
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_REPLACE("dac",  DAC,    s11s_dacInt2)
+  MDRV_SOUND_ADD(            HC55516,s11s_hc55516Int2)
+MACHINE_DRIVER_END
 
 static void s11s_piaIrq(int state);
 static const struct pia6821_interface s11s_pia[] = {{
@@ -166,32 +219,18 @@ static void s11s_diag(int button) {
   cpu_set_nmi_line(s11slocals.brdData.cpuNo, button ? ASSERT_LINE : CLEAR_LINE);
 }
 
-
 /*--------------------------
 /    System 11C sound board
 /---------------------------*/
 #define S11CS_PIA0    7
 #define S11CS_BANK0   4
 
-static void s11cs_ym2151IRQ(int state);
 static void s11cs_piaIrqA(int state);
 static void s11cs_piaIrqB(int state);
 static WRITE_HANDLER(s11cs_pia0ca2_w);
 static WRITE_HANDLER(s11cs_pia0cb2_w);
 static WRITE_HANDLER(s11cs_rombank_w);
 static void s11cs_init(struct sndbrdData *brdData);
-
-struct DACinterface s11_dacInt2 = { 2, { 50,50 }},
-                    s11_dacInt  = { 1, { 50 }};
-
-struct hc55516_interface s11_hc55516Int2 = { 2, { 80,80 }},
-                         s11_hc55516Int  = { 1, { 80 }};
-
-struct YM2151interface s11cs_ym2151Int = {
-  1, 3579545, /* Hz */
-  { YM3012_VOL(10,MIXER_PAN_CENTER,30,MIXER_PAN_CENTER) },
-  { s11cs_ym2151IRQ }
-};
 
 const struct sndbrdIntf s11csIntf = {
   s11cs_init, NULL, NULL,
@@ -203,14 +242,14 @@ static struct {
   struct sndbrdData brdData;
 } s11clocals;
 
-MEMORY_READ_START(s11cs_readmem)
+static MEMORY_READ_START(s11cs_readmem)
   { 0x0000, 0x1fff, MRA_RAM },
   { 0x2001, 0x2001, YM2151_status_port_0_r }, /* 2001-2fff odd */
   { 0x4000, 0x4003, pia_r(S11CS_PIA0) },      /* 4000-4fff */
   { 0x8000, 0xffff, MRA_BANKNO(S11CS_BANK0) },
 MEMORY_END
 
-MEMORY_WRITE_START(s11cs_writemem)
+static MEMORY_WRITE_START(s11cs_writemem)
   { 0x0000, 0x1fff, MWA_RAM },
   { 0x2000, 0x2000, YM2151_register_port_0_w },     /* 2000-2ffe even */
   { 0x2001, 0x2001, YM2151_data_port_0_w },         /* 2001-2fff odd */
@@ -219,6 +258,19 @@ MEMORY_WRITE_START(s11cs_writemem)
   { 0x6800, 0x6800, hc55516_0_clock_set_w },        /* 6800-6fff */
   { 0x7800, 0x7800, s11cs_rombank_w },              /* 7800-7fff */
 MEMORY_END
+
+static struct DACinterface      s11cs_dacInt      = { 1, { 50 }};
+static struct hc55516_interface s11cs_hc55516Int  = { 1, { 80 }};
+
+MACHINE_DRIVER_START(wmssnd_s11cs)
+  MDRV_CPU_ADD(M6809, 2000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(s11cs_readmem, s11cs_writemem)
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD(YM2151, s11cs_ym2151Int)
+  MDRV_SOUND_ADD_TAG("dac",  DAC,    s11cs_dacInt)
+  MDRV_SOUND_ADD_TAG("cvsd", HC55516,s11cs_hc55516Int)
+MACHINE_DRIVER_END
 
 static const struct pia6821_interface s11cs_pia = {
  /* PIA 0 (4000) */
@@ -267,12 +319,6 @@ static WRITE_HANDLER(s11js_reply_w);
 static WRITE_HANDLER(s11js_rombank_w);
 static WRITE_HANDLER(s11js_ctrl_w);
 
-struct YM2151interface s11js_ym2151Int = {
-  1, 3579545, /* Hz */
-  { YM3012_VOL(30,MIXER_PAN_LEFT,30,MIXER_PAN_RIGHT) },
-  { s11js_ym2151IRQ }
-};
-
 const struct sndbrdIntf s11jsIntf = {
   s11js_init, NULL, NULL,
   soundlatch2_w, soundlatch3_r,
@@ -283,7 +329,7 @@ static struct {
   struct sndbrdData brdData;
 } s11jlocals;
 
-MEMORY_READ_START(s11js_readmem)
+static MEMORY_READ_START(s11js_readmem)
   { 0x0000, 0x1fff, MRA_RAM },
   { 0x2001, 0x2001, YM2151_status_port_0_r }, /* 2001-2fff odd */
   { 0x3400, 0x3400, soundlatch2_r },
@@ -291,7 +337,7 @@ MEMORY_READ_START(s11js_readmem)
   { 0xc000, 0xffff, MRA_ROM },
 MEMORY_END
 
-MEMORY_WRITE_START(s11js_writemem)
+static MEMORY_WRITE_START(s11js_writemem)
   { 0x0000, 0x1fff, MWA_RAM },
   { 0x2000, 0x2000, YM2151_register_port_0_w },     /* 2000-2ffe even */
   { 0x2001, 0x2001, YM2151_data_port_0_w },         /* 2001-2fff odd */
@@ -300,6 +346,22 @@ MEMORY_WRITE_START(s11js_writemem)
   { 0x3800, 0x3800, s11js_rombank_w },
   { 0x8000, 0xffff, MWA_ROM },
 MEMORY_END
+static struct DACinterface      s11js_dacInt     = { 1, { 50 }};
+static struct YM2151interface   s11js_ym2151Int  = {
+  1, 3579545, /* Hz */
+  { YM3012_VOL(30,MIXER_PAN_LEFT,30,MIXER_PAN_RIGHT) },
+  { s11js_ym2151IRQ }
+};
+
+MACHINE_DRIVER_START(wmssnd_s11js)
+  MDRV_CPU_ADD(M6809, 2000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(s11js_readmem, s11js_writemem)
+  MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD(           YM2151, s11js_ym2151Int)
+  MDRV_SOUND_ADD_TAG("dac", DAC,    s11js_dacInt)
+MACHINE_DRIVER_END
 
 static WRITE_HANDLER(s11js_rombank_w) {
   cpu_setbank(S11JS_BANK0, s11jlocals.brdData.romRegion + 0x8000*(data & 0x01));
@@ -405,20 +467,7 @@ static void wpcs_ym2151IRQ(int state) {
   cpu_set_irq_line(locals.brdData.cpuNo, M6809_FIRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
-
-/*-------------------
-/ Exported interface
-/--------------------*/
-struct DACinterface wpcs_dacInt = { 1, { 50 }};
-struct hc55516_interface wpcs_hc55516Int = { 1, { 80 }};
-
-struct YM2151interface wpcs_ym2151Int = {
-  1, 3579545, /* Hz */
-  { YM3012_VOL(10,MIXER_PAN_CENTER,30,MIXER_PAN_CENTER) },
-  { wpcs_ym2151IRQ }
-};
-
-MEMORY_READ_START(wpcs_readmem)
+static MEMORY_READ_START(wpcs_readmem)
   { 0x0000, 0x1fff, MRA_RAM },
   { 0x2401, 0x2401, YM2151_status_port_0_r }, /* 2401-27ff odd */
   { 0x3000, 0x3000, wpcs_latch_r }, /* 3000-33ff */
@@ -426,7 +475,7 @@ MEMORY_READ_START(wpcs_readmem)
   { 0xc000, 0xffff, MRA_ROM }, /* same as page 7f */	//16K
 MEMORY_END
 
-MEMORY_WRITE_START(wpcs_writemem)
+static MEMORY_WRITE_START(wpcs_writemem)
   { 0x0000, 0x1fff, MWA_RAM },
   { 0x2000, 0x2000, wpcs_rombank_w }, /* 2000-23ff */
   { 0x2400, 0x2400, YM2151_register_port_0_w }, /* 2400-27fe even */
@@ -437,6 +486,23 @@ MEMORY_WRITE_START(wpcs_writemem)
   { 0x3800, 0x3800, wpcs_volume_w }, /* 3800-3bff */
   { 0x3c00, 0x3c00, wpcs_latch_w },  /* 3c00-3fff */
 MEMORY_END
+static struct DACinterface      wpcs_dacInt     = { 1, { 50 }};
+static struct hc55516_interface wpcs_hc55516Int = { 1, { 80 }};
+static struct YM2151interface   wpcs_ym2151Int  = {
+  1, 3579545, /* Hz */
+  { YM3012_VOL(10,MIXER_PAN_CENTER,30,MIXER_PAN_CENTER) },
+  { wpcs_ym2151IRQ }
+};
+
+MACHINE_DRIVER_START(wmssnd_wpcs)
+  MDRV_CPU_ADD(M6809, 2000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(wpcs_readmem, wpcs_writemem)
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD(YM2151, wpcs_ym2151Int)
+  MDRV_SOUND_ADD(DAC,    wpcs_dacInt)
+  MDRV_SOUND_ADD(HC55516,wpcs_hc55516Int)
+MACHINE_DRIVER_END
 
 /*---------------------
 /  Interface functions
@@ -523,10 +589,37 @@ static struct {
   int     replyAvail;
 } dcslocals;
 
-/*--------------
-/  Memory maps
-/---------------*/
-MEMORY_READ16_START(dcs2_readmem)
+static struct CustomSound_interface dcs_custInt = { dcs_custStart, dcs_custStop, 0 };
+
+static MEMORY_READ16_START(dcs1_readmem)
+  { ADSP_DATA_ADDR_RANGE(0x0000, 0x1fff), MRA16_RAM },
+  { ADSP_DATA_ADDR_RANGE(0x2000, 0x2fff), dcs_ROMbank_r },
+  { ADSP_DATA_ADDR_RANGE(0x3800, 0x39ff), MRA16_RAM },
+  { ADSP_PGM_ADDR_RANGE (0x0000, 0x0800), MRA16_RAM }, /* Internal boot RAM */
+  { ADSP_PGM_ADDR_RANGE (0x1000, 0x2fff), MRA16_RAM }, /* External RAM */
+  { ADSP_PGM_ADDR_RANGE (0x3000, 0x3000), dcs_latch_r },
+MEMORY_END
+
+static MEMORY_WRITE16_START(dcs1_writemem)
+  { ADSP_DATA_ADDR_RANGE(0x0000, 0x1fff), MWA16_RAM },
+  { ADSP_DATA_ADDR_RANGE(0x2000, 0x2fff), MWA16_ROM },
+  { ADSP_DATA_ADDR_RANGE(0x3000, 0x3000), dcs1_ROMbankSelect1_w },
+  { ADSP_DATA_ADDR_RANGE(0x3800, 0x39ff), MWA16_RAM },
+  { ADSP_DATA_ADDR_RANGE(0x3fe0, 0x3fff), adsp_control_w },
+  { ADSP_PGM_ADDR_RANGE (0x0000, 0x0800), MWA16_RAM },
+  { ADSP_PGM_ADDR_RANGE (0x1000, 0x2fff), MWA16_RAM },
+  { ADSP_PGM_ADDR_RANGE (0x3000, 0x3000), dcs_latch_w },
+MEMORY_END
+
+MACHINE_DRIVER_START(wmssnd_dcs1)
+  MDRV_CPU_ADD(ADSP2105, 10240000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(dcs1_readmem, dcs1_writemem)
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD(CUSTOM, dcs_custInt)
+MACHINE_DRIVER_END
+
+static MEMORY_READ16_START(dcs2_readmem)
   { ADSP_DATA_ADDR_RANGE(0x0000, 0x07ff), dcs_ROMbank_r },
   { ADSP_DATA_ADDR_RANGE(0x1000, 0x1fff), MRA16_RAM },
   { ADSP_DATA_ADDR_RANGE(0x2000, 0x2fff), dcs2_RAMbank_r },
@@ -537,7 +630,7 @@ MEMORY_READ16_START(dcs2_readmem)
   { ADSP_PGM_ADDR_RANGE (0x1000, 0x3fff), MRA16_RAM }, /* External RAM */
 MEMORY_END
 
-MEMORY_WRITE16_START(dcs2_writemem)
+static MEMORY_WRITE16_START(dcs2_writemem)
   { ADSP_DATA_ADDR_RANGE(0x0000, 0x07ff), MWA16_ROM },
   { ADSP_DATA_ADDR_RANGE(0x1000, 0x1fff), MWA16_RAM },
   { ADSP_DATA_ADDR_RANGE(0x2000, 0x2fff), dcs2_RAMbank_w },
@@ -551,31 +644,17 @@ MEMORY_WRITE16_START(dcs2_writemem)
   { ADSP_PGM_ADDR_RANGE (0x1000, 0x3fff), MWA16_RAM }, /* External RAM */
 MEMORY_END
 
-MEMORY_READ16_START(dcs1_readmem)
-  { ADSP_DATA_ADDR_RANGE(0x0000, 0x1fff), MRA16_RAM },
-  { ADSP_DATA_ADDR_RANGE(0x2000, 0x2fff), dcs_ROMbank_r },
-  { ADSP_DATA_ADDR_RANGE(0x3800, 0x39ff), MRA16_RAM },
-  { ADSP_PGM_ADDR_RANGE (0x0000, 0x0800), MRA16_RAM }, /* Internal boot RAM */
-  { ADSP_PGM_ADDR_RANGE (0x1000, 0x2fff), MRA16_RAM }, /* External RAM */
-  { ADSP_PGM_ADDR_RANGE (0x3000, 0x3000), dcs_latch_r },
-MEMORY_END
-
-MEMORY_WRITE16_START(dcs1_writemem)
-  { ADSP_DATA_ADDR_RANGE(0x0000, 0x1fff), MWA16_RAM },
-  { ADSP_DATA_ADDR_RANGE(0x2000, 0x2fff), MWA16_ROM },
-  { ADSP_DATA_ADDR_RANGE(0x3000, 0x3000), dcs1_ROMbankSelect1_w },
-  { ADSP_DATA_ADDR_RANGE(0x3800, 0x39ff), MWA16_RAM },
-  { ADSP_DATA_ADDR_RANGE(0x3fe0, 0x3fff), adsp_control_w },
-  { ADSP_PGM_ADDR_RANGE (0x0000, 0x0800), MWA16_RAM },
-  { ADSP_PGM_ADDR_RANGE (0x1000, 0x2fff), MWA16_RAM },
-  { ADSP_PGM_ADDR_RANGE (0x3000, 0x3000), dcs_latch_w },
-MEMORY_END
+MACHINE_DRIVER_START(wmssnd_dcs2)
+  MDRV_CPU_ADD(ADSP2105, 10240000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(dcs2_readmem, dcs2_writemem)
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD(CUSTOM, dcs_custInt)
+MACHINE_DRIVER_END
 
 /*----------------
 / Sound interface
 /-----------------*/
-struct CustomSound_interface dcs_custInt = { dcs_custStart, dcs_custStop, 0 };
-
 const struct sndbrdIntf dcsIntf = { dcs_init, NULL, NULL, dcs_data_w, dcs_data_r, NULL, dcs_ctrl_r };
 
 /*---------------
@@ -586,7 +665,7 @@ const struct sndbrdIntf dcsIntf = { dcs_init, NULL, NULL, dcs_data_w, dcs_data_r
 #define DCS2_ROMBANKBASE(bankH, bankL) \
   (dcslocals.brdData.romRegion + (((bankH) & 0x1c)<<18) + (((bankH) & 0x01)<<19) + (((bankL) & 0xff)<<11))
 #define DCS2_RAMBANKBASE(bank) \
-  ((UINT16 *)(((bank) & 0x08) ? memory_region(WPC_MEMREG_SBANK) : \
+  ((UINT16 *)(((bank) & 0x08) ? memory_region(DCS_BANKREGION) : \
               (dcslocals.cpuRegion + ADSP2100_DATA_OFFSET + (0x2000<<1))))
 
 static WRITE16_HANDLER(dcs1_ROMbankSelect1_w) {
@@ -709,7 +788,7 @@ static void dcs_init(struct sndbrdData *brdData) {
   memory_set_opbase_handler(dcslocals.brdData.cpuNo, opbaseoveride);
   /*-- initialize our structure --*/
   dcslocals.ROMbankPtr = dcslocals.brdData.romRegion;
-  dcslocals.RAMbankPtr = (UINT16 *)memory_region(WPC_MEMREG_SBANK);
+  dcslocals.RAMbankPtr = (UINT16 *)memory_region(DCS_BANKREGION);
 
   adsp_init(dcs_getBootROM, dcs_txData);
 
@@ -784,13 +863,17 @@ static struct {
  UINT32 *(*getBootROM)(void);
  void   (*txData)(UINT16 start, UINT16 size, UINT16 memStep, int sRate);
 } adsp; /* = {{0},NULL,dcs_getBootROM,dcs_txData};*/
+static void adsp_irqGen(int dummy);
 
 static void adsp_init(UINT32 *(*getBootROM)(void),
                      void (*txData)(UINT16 start, UINT16 size, UINT16 memStep, int sRate)) {
+  /* stupid timer/machine init handling in MAME */
+  if (adsp.irqTimer) timer_remove(adsp.irqTimer);
   /*-- reset control registers etc --*/
   memset(&adsp, 0, sizeof(adsp));
   adsp.getBootROM = getBootROM;
   adsp.txData = txData;
+  adsp.irqTimer = timer_alloc(adsp_irqGen);
   /*-- initialize the ADSP Tx callback --*/
   adsp2105_set_tx_callback(adsp_txCallback);
 }
@@ -816,8 +899,7 @@ static void adsp_boot(void) {
     data >>= 8;
     ADSP2100_WRPGM(&dst[ii], data);
   }
-  if (adsp.irqTimer)
-    { timer_remove(adsp.irqTimer); adsp.irqTimer = NULL; }
+  timer_enable(adsp.irqTimer, FALSE);
 }
 
 static WRITE16_HANDLER(adsp_control_w) {
@@ -836,8 +918,7 @@ static WRITE16_HANDLER(adsp_control_w) {
       if ((data & 0x0800) == 0) {
         dcs_txData(0, 0, 0, 0);
         /* nuke the timer */
-        if (adsp.irqTimer)
-          { timer_remove(adsp.irqTimer); adsp.irqTimer = NULL; }
+        timer_enable(adsp.irqTimer, FALSE);
       }
       break;
     case S1_AUTOBUF_REG:
@@ -845,8 +926,7 @@ static WRITE16_HANDLER(adsp_control_w) {
       if ((data & 0x0002) == 0) {
         adsp.txData(0, 0, 0, 0);
         /* nuke the timer */
-        if (adsp.irqTimer)
-          { timer_remove(adsp.irqTimer); adsp.irqTimer = NULL; }
+        timer_enable(adsp.irqTimer, FALSE);
       }
       break;
     case S1_CONTROL_REG:
@@ -900,8 +980,7 @@ static void adsp_txCallback(int port, INT32 data) {
   if (port != 1)
     { DBGLOG(("tx0 not handled\n")); return; };
   /*-- remove any pending timer --*/
-  if (adsp.irqTimer)
-    { timer_remove(adsp.irqTimer); adsp.irqTimer = NULL; }
+  timer_enable(adsp.irqTimer, FALSE);
   if ((adsp.ctrlRegs[SYSCONTROL_REG] & 0x0800) == 0)
     DBGLOG(("tx1 without SPORT1 enabled\n"));
   else if ((adsp.ctrlRegs[S1_AUTOBUF_REG] & 0x0002) == 0)
@@ -923,10 +1002,9 @@ static void adsp_txCallback(int port, INT32 data) {
     adsp_aBufData.irqCount = adsp_aBufData.last = 0;
     adsp_irqGen(0); /* first part, rest is handled via the timer */
     /*-- fire the irq timer --*/
-    adsp.irqTimer = timer_pulse(TIME_IN_HZ(adsp_aBufData.sRate) *
-                      adsp_aBufData.size / adsp_aBufData.step / DCS_IRQSTEPS,
-                                0, adsp_irqGen);
-    logerror("DCS size=%d,step=%d,rate=%d\n",adsp_aBufData.size,adsp_aBufData.step,adsp_aBufData.sRate);
+    timer_adjust(adsp.irqTimer, 0, 0, TIME_IN_HZ(adsp_aBufData.sRate) *
+                      adsp_aBufData.size / adsp_aBufData.step / DCS_IRQSTEPS);
+    DBGLOG(("DCS size=%d,step=%d,rate=%d\n",adsp_aBufData.size,adsp_aBufData.step,adsp_aBufData.sRate));
     return;
   }
   /*-- if we get here, something went wrong. Disable transmission --*/

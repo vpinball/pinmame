@@ -414,11 +414,11 @@ SE_ROMEND
 CORE_GAMEDEFNV(monopoly,"Monopoly",2001,"Stern",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ Playboy 3.00
+/ Playboy 2.03
 /-------------------------------------------------------------------*/
 INITGAME(playboys,GEN_WS)
-SE128_ROMSTART(playboys,"pbcpu.300",   0xd7e5bada)
-DE_DMD32ROM8x(          "pbdisp-a.300",0x2dbb372a)
+SE128_ROMSTART(playboys,"pbcpu.203",   0x50eb01b0)
+DE_DMD32ROM8x(          "pbdisp-a.201",0x78ec6af8)
 DE2S_SOUNDROM18888(     "pbsndu7.102", 0x12a68f34,
                         "pbsndu17.100",0xf5502fec,
                         "pbsndu21.100",0x7869d34f,
@@ -431,8 +431,8 @@ CORE_GAMEDEFNV(playboys,"Playboy (Stern)",2002,"Stern",de_mSES2,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / Playboy (France)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(playboyf,"pbcpu.300",   0xd7e5bada)
-DE_DMD32ROM8x(          "pbdisp-f.300",0x69ab3bb2)
+SE128_ROMSTART(playboyf,"pbcpu.203",   0x50eb01b0)
+DE_DMD32ROM8x(          "pbdisp-f.201",0xeedea4f4)
 DE2S_SOUNDROM18888(     "pbsndu7.102", 0x12a68f34,
                         "pbsndu17.100",0xf5502fec,
                         "pbsndu21.100",0x7869d34f,
@@ -446,8 +446,8 @@ CORE_CLONEDEFNV(playboyf,playboys,"Playboy (France)",2002,"Stern",de_mSES2,GAME_
 /*-------------------------------------------------------------------
 / Playboy (Germany)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(playboyd,"pbcpu.300",   0xd7e5bada)
-DE_DMD32ROM8x(          "pbdisp-g.300",0xed7b7c62)
+SE128_ROMSTART(playboyd,"pbcpu.203",   0x50eb01b0)
+DE_DMD32ROM8x(          "pbdisp-g.201",0xff525cc7)
 DE2S_SOUNDROM18888(     "pbsndu7.102", 0x12a68f34,
                         "pbsndu17.100",0xf5502fec,
                         "pbsndu21.100",0x7869d34f,
@@ -461,8 +461,8 @@ CORE_CLONEDEFNV(playboyd,playboys,"Playboy (Germany)",2002,"Stern",de_mSES2,GAME
 /*-------------------------------------------------------------------
 / Playboy (Italy)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(playboyi,"pbcpu.300",   0xd7e5bada)
-DE_DMD32ROM8x(          "pbdisp-i.300",0x74c8cedf)
+SE128_ROMSTART(playboyi,"pbcpu.203",   0x50eb01b0)
+DE_DMD32ROM8x(          "pbdisp-i.201",0x48f190dc)
 DE2S_SOUNDROM18888(     "pbsndu7.102", 0x12a68f34,
                         "pbsndu17.100",0xf5502fec,
                         "pbsndu21.100",0x7869d34f,
@@ -476,8 +476,8 @@ CORE_CLONEDEFNV(playboyi,playboys,"Playboy (Italy)",2002,"Stern",de_mSES2,GAME_N
 /*-------------------------------------------------------------------
 / Playboy (Spain)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(playboye,"pbcpu.300",   0xd7e5bada)
-DE_DMD32ROM8x(          "pbdisp-l.300",0xe7697fc3)
+SE128_ROMSTART(playboye,"pbcpu.203",   0x50eb01b0)
+DE_DMD32ROM8x(          "pbdisp-l.201",0xeaa65c45)
 DE2S_SOUNDROM18888(     "pbsndu7.102", 0x12a68f34,
                         "pbsndu17.100",0xf5502fec,
                         "pbsndu21.100",0x7869d34f,

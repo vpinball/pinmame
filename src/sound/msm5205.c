@@ -171,6 +171,7 @@ int MSM5205_sh_start (const struct MachineSound *msound)
 		voice->stream = stream_init(name,msm5205_intf->mixing_level[i],
                                 Machine->sample_rate,i,
 		                        MSM5205_update);
+		voice->timer = timer_alloc(MSM5205_vclk_callback);
 	}
 	/* initialize */
 	MSM5205_sh_reset();
@@ -289,19 +290,15 @@ void MSM5205_playmode_w(int num,int select)
 	{
 		stream_update(voice->stream,0);
 
-		/* remove VCLK timer */
-		if(voice->timer)
-		{
-			timer_remove(voice->timer);
-			voice->timer = 0;
-		}
 		voice->prescaler = prescaler;
 		/* timer set */
 		if( prescaler )
 		{
-			voice->timer =
-				timer_pulse (TIME_IN_HZ (msm5205_intf->baseclock / prescaler), num, MSM5205_vclk_callback);
+			double period = TIME_IN_HZ(msm5205_intf->baseclock / prescaler);
+			timer_adjust(voice->timer, period, num, period);
 		}
+		else
+			timer_adjust(voice->timer, TIME_NEVER, 0, 0);
 	}
 
 	if( voice->bitwidth != bitwidth )

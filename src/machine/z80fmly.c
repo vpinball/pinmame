@@ -96,6 +96,10 @@ void z80ctc_init (z80ctc_interface *intf)
 		ctcs[i].invclock256 = 256.0 / (double)intf->baseclock[i];
 		ctcs[i].notimer = intf->notimer[i];
 		ctcs[i].intr = intf->intr[i];
+		ctcs[i].timer[0] = timer_alloc(z80ctc_timercallback);
+		ctcs[i].timer[1] = timer_alloc(z80ctc_timercallback);
+		ctcs[i].timer[2] = timer_alloc(z80ctc_timercallback);
+		ctcs[i].timer[3] = timer_alloc(z80ctc_timercallback);
 		ctcs[i].zc[0] = intf->zc0[i];
 		ctcs[i].zc[1] = intf->zc1[i];
 		ctcs[i].zc[2] = intf->zc2[i];
@@ -158,9 +162,7 @@ void z80ctc_reset (int which)
 	{
 		ctc->mode[i] = RESET_ACTIVE;
 		ctc->tconst[i] = 0x100;
-		if (ctc->timer[i])
-			timer_remove (ctc->timer[i]);
-		ctc->timer[i] = NULL;
+		timer_adjust(ctc->timer[i], TIME_NEVER, 0, 0);
 		ctc->int_state[i] = 0;
 	}
 	z80ctc_interrupt_check( ctc );
@@ -198,10 +200,10 @@ void z80ctc_w (int which, int offset, int data)
 			if ((mode & TRIGGER) == TRIGGER_AUTO)
 			{
 				double clock = ((mode & PRESCALER) == PRESCALER_16) ? ctc->invclock16 : ctc->invclock256;
-				if (ctc->timer[ch])
-					timer_remove (ctc->timer[ch]);
 				if (!(ctc->notimer & (1<<ch)))
-					ctc->timer[ch] = timer_pulse (clock * (double)ctc->tconst[ch], (which << 2) + ch, z80ctc_timercallback);
+					timer_adjust(ctc->timer[ch], clock * (double)ctc->tconst[ch], (which << 2) + ch, clock * (double)ctc->tconst[ch]);
+				else
+					timer_adjust(ctc->timer[ch], TIME_NEVER, 0, 0);
 			}
 
 			/* else set the bit indicating that we're waiting for the appropriate trigger */
@@ -240,9 +242,7 @@ void z80ctc_w (int which, int offset, int data)
 		/* if we're being reset, clear out any pending timers for this channel */
 		if ((data & RESET) == RESET_ACTIVE)
 		{
-			if (ctc->timer[ch])
-				timer_remove (ctc->timer[ch]);
-			ctc->timer[ch] = NULL;
+			timer_adjust(ctc->timer[ch], TIME_NEVER, 0, 0);
 
 			if( ctc->int_state[ch] != 0 )
 			{
@@ -388,11 +388,10 @@ void z80ctc_trg_w (int which, int trg, int offset, int data)
 
 logerror("CTC clock %f\n",1.0/clock);
 
-
-				if (ctc->timer[ch])
-					timer_remove (ctc->timer[ch]);
 				if (!(ctc->notimer & (1<<ch)))
-					ctc->timer[ch] = timer_pulse (clock * (double)ctc->tconst[ch], (which << 2) + ch, z80ctc_timercallback);
+					timer_adjust(ctc->timer[ch], clock * (double)ctc->tconst[ch], (which << 2) + ch, clock * (double)ctc->tconst[ch]);
+				else
+					timer_adjust(ctc->timer[ch], TIME_NEVER, 0, 0);
 			}
 
 			/* we're no longer waiting */

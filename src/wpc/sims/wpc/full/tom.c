@@ -36,6 +36,7 @@
 ------------------------------------------------------------------------------*/
 
 #include "driver.h"
+#include "core.h"
 #include "wpc.h"
 #include "sim.h"
 #include "wmssnd.h"
@@ -522,10 +523,10 @@ static void tom_drawMech(BMTYPE **line) {
 
 static void tom_drawStatic(BMTYPE **line) {
   core_textOutf(30, 80,BLACK,"Help on this Simulator:");
-  core_textOutf(30, 90,BLACK,"L/R Ctrl+- = L/R Slingshot");
-  core_textOutf(30,100,BLACK,"L/R Ctrl+R = L/R Ramps (Trap Door)");
-  core_textOutf(30,110,BLACK,"L/R Ctrl+I/O = L/R Inlane/Outlane");
-  core_textOutf(30,120,BLACK,"L/R Ctrl+K/L = L/R Inner/Outer Loops");
+  core_textOutf(30, 90,BLACK,"L/R Shift+- = L/R Slingshot");
+  core_textOutf(30,100,BLACK,"L/R Shift+R = L/R Ramps (Trap Door)");
+  core_textOutf(30,110,BLACK,"L/R Shift+I/O = L/R Inlane/Outlane");
+  core_textOutf(30,120,BLACK,"L/R Shift+K/L = L/R Inner/Outer Loops");
   core_textOutf(30,130,BLACK,"Q = Drain Ball, W/E/S = Jet Bumpers");
   core_textOutf(30,140,BLACK,"G,H,J = Hokus Pokus, Trap Door, Poof");
   core_textOutf(30,150,BLACK,"N,M = L/R Bonux X, R = Rear Trunk");

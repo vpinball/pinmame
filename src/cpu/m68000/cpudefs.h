@@ -105,10 +105,8 @@ typedef struct
 
     UWORD sr;
 
-#if NEW_INTERRUPT_SYSTEM
 	int irq_state;
 	int (*irq_callback)(int irqline);
-#endif
 
 #ifdef MAME_DEBUG
 

@@ -39,8 +39,11 @@ extern double sec_to_cycles[];
 
 
 void timer_init(void);
-void *timer_pulse(double period, int param, void(*callback)(int));
-void *timer_set(double duration, int param, void(*callback)(int));
+void timer_free(void);
+void *timer_alloc(void (*callback)(int));
+void timer_adjust(void *which, double duration, int param, double period);
+void timer_pulse(double period, int param, void (*callback)(int));
+void timer_set(double duration, int param, void (*callback)(int));
 void timer_reset(void *which, double duration);
 void timer_remove(void *which);
 int timer_enable(void *which, int enable);

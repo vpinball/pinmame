@@ -242,32 +242,13 @@ void m4510_set_context (void *src)
 	}
 }
 
-unsigned m4510_get_pc (void)
-{
-	return M4510_MEM(PCD);
-}
-
-void m4510_set_pc (unsigned val)
-{
-	PCW = val;
-	CHANGE_PC;
-}
-
-unsigned m4510_get_sp (void)
-{
-	return S;
-}
-
-void m4510_set_sp (unsigned val)
-{
-	S = val;
-}
-
 unsigned m4510_get_reg (int regnum)
 {
 	switch( regnum )
 	{
+		case REG_PC: return M4510_MEM(PCD);
 		case M4510_PC: return m4510.pc.w.l;
+		case REG_SP: return S;
 		case M4510_S: return m4510.sp.w.l;
 		case M4510_P: return m4510.p;
 		case M4510_A: return m4510.a;
@@ -305,7 +286,9 @@ void m4510_set_reg (int regnum, unsigned val)
 {
 	switch( regnum )
 	{
+		case REG_PC: PCW = val; CHANGE_PC; break;
 		case M4510_PC: m4510.pc.w.l = val; break;
+		case REG_SP: S = val; break;
 		case M4510_S: m4510.sp.w.l = val; break;
 		case M4510_P: m4510.p = val; break;
 		case M4510_MEM_LOW:
@@ -323,7 +306,7 @@ void m4510_set_reg (int regnum, unsigned val)
 		case M4510_B: m4510.zp.b.h = val; break;
 		case M4510_EA: m4510.ea.w.l = val; break;
 		case M4510_ZP: m4510.zp.b.l = val; break;
-		case M4510_NMI_STATE: m4510_set_nmi_line( val ); break;
+		case M4510_NMI_STATE: m4510_set_irq_line( IRQ_LINE_NMI, val ); break;
 		case M4510_IRQ_STATE: m4510_set_irq_line( 0, val ); break;
 		default:
 			if( regnum <= REG_SP_CONTENTS )
@@ -402,33 +385,35 @@ int m4510_execute(int cycles)
 	return cycles - m4510_ICount;
 }
 
-void m4510_set_nmi_line(int state)
-{
-	if (m4510.nmi_state == state) return;
-	m4510.nmi_state = state;
-	if( state != CLEAR_LINE )
-	{
-		LOG((errorlog, "M4510#%d set_nmi_line(ASSERT)\n", cpu_getactivecpu()));
-		EAD = M4510_NMI_VEC;
-		m4510_ICount -= 7;
-		PUSH(PCH);
-		PUSH(PCL);
-		PUSH(P & ~F_B);
-		P = (P & ~F_D) | F_I;		/* knock out D and set I flag */
-		PCL = RDMEM(EAD);
-		PCH = RDMEM(EAD+1);
-		LOG((errorlog,"M4510#%d takes NMI ($%04x)\n", cpu_getactivecpu(), PCD));
-		CHANGE_PC;
-	}
-}
-
 void m4510_set_irq_line(int irqline, int state)
 {
-	m4510.irq_state = state;
-	if( state != CLEAR_LINE )
+	if (irqline == IRQ_LINE_NMI)
 	{
-		LOG((errorlog, "M4510#%d set_irq_line(ASSERT)\n", cpu_getactivecpu()));
-		m4510.pending_irq = 1;
+		if (m4510.nmi_state == state) return;
+		m4510.nmi_state = state;
+		if( state != CLEAR_LINE )
+		{
+			LOG((errorlog, "M4510#%d set_nmi_line(ASSERT)\n", cpu_getactivecpu()));
+			EAD = M4510_NMI_VEC;
+			m4510_ICount -= 7;
+			PUSH(PCH);
+			PUSH(PCL);
+			PUSH(P & ~F_B);
+			P = (P & ~F_D) | F_I;		/* knock out D and set I flag */
+			PCL = RDMEM(EAD);
+			PCH = RDMEM(EAD+1);
+			LOG((errorlog,"M4510#%d takes NMI ($%04x)\n", cpu_getactivecpu(), PCD));
+			CHANGE_PC;
+		}
+	}
+	else
+	{
+		m4510.irq_state = state;
+		if( state != CLEAR_LINE )
+		{
+			LOG((errorlog, "M4510#%d set_irq_line(ASSERT)\n", cpu_getactivecpu()));
+			m4510.pending_irq = 1;
+		}
 	}
 }
 

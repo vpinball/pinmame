@@ -822,12 +822,7 @@ void mixer_sh_update(void)
 			accum_pos = (accum_pos + 1) & ACCUMULATOR_MASK;
 		}
 	}
-#ifdef PINMAME_EXT
-       {
-         extern void pm_wave_record(INT16 *buffer, int samples);
-         pm_wave_record(mix_buffer, samples_this_frame);
-       }
-#endif /* PINMAME_EXT */
+
 	/* play the result */
 	samples_this_frame = osd_update_audio_stream(mix_buffer);
 

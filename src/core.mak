@@ -2,8 +2,8 @@
 # those are added in the target.mak files)
 COREOBJS = $(OBJ)/version.o $(OBJ)/mame.o \
 	$(OBJ)/drawgfx.o $(OBJ)/common.o $(OBJ)/usrintrf.o $(OBJ)/ui_text.o \
-	$(OBJ)/cpuintrf.o $(OBJ)/memory.o $(OBJ)/timer.o $(OBJ)/palette.o \
-	$(OBJ)/input.o $(OBJ)/inptport.o $(OBJ)/unzip.o \
+	$(OBJ)/cpuintrf.o $(OBJ)/cpuexec.o $(OBJ)/cpuint.o $(OBJ)/memory.o $(OBJ)/timer.o \
+	$(OBJ)/palette.o $(OBJ)/input.o $(OBJ)/inptport.o $(OBJ)/unzip.o \
 	$(OBJ)/audit.o $(OBJ)/info.o $(OBJ)/png.o $(OBJ)/artwork.o \
 	$(OBJ)/tilemap.o \
 	$(OBJ)/state.o $(OBJ)/datafile.o $(OBJ)/hiscore.o \
@@ -11,7 +11,6 @@ COREOBJS = $(OBJ)/version.o $(OBJ)/mame.o \
 	$(OBJ)/sndintrf.o \
 	$(OBJ)/sound/streams.o $(OBJ)/sound/mixer.o $(OBJ)/sound/filter.o \
 	$(sort $(SOUNDOBJS)) \
-	$(OBJ)/sound/votrax.o \
 	$(OBJ)/machine/z80fmly.o $(OBJ)/machine/6821pia.o \
 	$(OBJ)/machine/8255ppi.o $(OBJ)/machine/7474.o \
 	$(OBJ)/vidhrdw/generic.o $(OBJ)/vidhrdw/vector.o \
@@ -21,8 +20,10 @@ COREOBJS = $(OBJ)/version.o $(OBJ)/mame.o \
 	$(OBJ)/machine/mb87078.o \
 	$(OBJ)/mamedbg.o $(OBJ)/window.o \
 	$(OBJ)/profiler.o \
+	$(OBJ)/harddisk.o $(OBJ)/md5.o $(OBJ)/machine/idectrl.o \
+	$(OBJ)/sound/wavwrite.o \
 	$(sort $(DBGOBJS))
 
-TOOLS = romcmp$(EXE)
+TOOLS = romcmp$(EXE) hdcomp$(EXE)
 TEXTS = gamelist.txt
 

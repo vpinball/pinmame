@@ -49,8 +49,8 @@ const char *DATAFILE_TAG_KEY = "$info";
 const char *DATAFILE_TAG_BIO = "$bio";
 const char *DATAFILE_TAG_MAME = "$mame";
 
-const char *history_filename = "history.dat";
-const char *mameinfo_filename = "mameinfo.dat";
+const char *history_filename = NULL;
+const char *mameinfo_filename = NULL;
 
 
 /****************************************************************************
@@ -545,6 +545,9 @@ int load_driver_history (const struct GameDriver *drv, char *buffer, int bufsize
 
 	*buffer = 0;
 
+	if(!history_filename)
+		history_filename = "history.dat";
+
 	/* try to open history datafile */
 	if (ParseOpen (history_filename))
 	{
@@ -571,6 +574,9 @@ int load_driver_history (const struct GameDriver *drv, char *buffer, int bufsize
 		}
 		ParseClose ();
 	}
+
+	if(!mameinfo_filename)
+		mameinfo_filename = "mameinfo.dat";
 
 	/* try to open mameinfo datafile */
 	if (ParseOpen (mameinfo_filename))

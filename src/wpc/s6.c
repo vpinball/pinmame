@@ -14,6 +14,10 @@
 #define S6_VBLANKFREQ    60 /* VBLANK frequency */
 #define S6_IRQFREQ     1000 /* IRQ Frequency*/
 
+#define S6_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
+#define S6_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
+#define S6_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
+
 /*
   6 Digit Structure, Alpha Position, and Layout
   ----------------------------------------------
@@ -68,8 +72,6 @@ const core_tLCDLayout s6_7digit_disp[] = {
   {4, 9,20,1,CORE_SEG7},{4,11,28,1,CORE_SEG7}, {0}
 };
 
-static void s6_exit(void);
-
 static struct {
   int	 alphapos;
   int    vblankCount;
@@ -84,15 +86,15 @@ static struct {
 } s6locals;
 static data8_t *s6_CMOS;
 
-static void s6_nvram(void *file, int write);
+static NVRAM_HANDLER(s6);
 static void s6_irqline(int state) {
   if (state) {
-    cpu_set_irq_line(S6_CPUNO, M6808_IRQ_LINE, ASSERT_LINE);
+    cpu_set_irq_line(0, M6808_IRQ_LINE, ASSERT_LINE);
     pia_set_input_ca1(S6_PIA0, core_getSw(S6_SWADVANCE));
     pia_set_input_cb1(S6_PIA0, core_getSw(S6_SWUPDN));
   }
   else if (!s6locals.piaIrq) {
-    cpu_set_irq_line(S6_CPUNO, M6808_IRQ_LINE, CLEAR_LINE);
+    cpu_set_irq_line(0, M6808_IRQ_LINE, CLEAR_LINE);
     pia_set_input_ca1(S6_PIA0, 0);
     pia_set_input_cb1(S6_PIA0, 0);
   }
@@ -102,10 +104,9 @@ static void s6_piaIrq(int state) {
   s6_irqline(s6locals.piaIrq = state);
 }
 
-static int s6_irq(void) {
+static INTERRUPT_GEN(s6_irq) {
   s6_irqline(1);
-  timer_set(TIME_IN_CYCLES(32,S6_CPUNO),0,s6_irqline);
-  return 0;
+  timer_set(TIME_IN_CYCLES(32,0),0,s6_irqline);
 }
 
 /*-- Dips: alphapos selects one 4 bank --*/
@@ -221,7 +222,7 @@ static const struct pia6821_interface s6_pia[] = {
  /* irq : A/B               */ s6_piaIrq, s6_piaIrq
 }};
 
-static int s6_vblank(void) {
+static INTERRUPT_GEN(s6_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
@@ -257,7 +258,6 @@ static int s6_vblank(void) {
 
   }
   core_updateSw(s6locals.ssEn);
-  return 0;
 }
 
 static void s6_updSw(int *inports) {
@@ -281,7 +281,7 @@ static const core_tData s6Data = {
   core_swSeq2m, core_swSeq2m,core_m2swSeq,core_m2swSeq
 };
 
-static void s6_init(void) {
+static MACHINE_INIT(s6) {
   memset(&s6locals, 0, sizeof(s6locals));
   if (core_init(&s6Data)) return;
   pia_config(S6_PIA0, PIA_STANDARD_ORDERING, &s6_pia[0]);
@@ -293,7 +293,7 @@ static void s6_init(void) {
   s6locals.vblankCount = 1;
 }
 
-static void s6_exit(void) {
+static MACHINE_STOP(s6) {
   sndbrd_0_exit(); core_exit();
 }
 
@@ -323,6 +323,30 @@ static MEMORY_WRITE_START(s6_writemem)
   { 0x8000, 0xffff, MWA_ROM },		/*Doubled ROM region since only 15 address pins used!*/
 MEMORY_END
 
+MACHINE_DRIVER_START(s6)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CPU_ADD(M6808, 3580000/4)
+  MDRV_CPU_MEMORY(s6_readmem, s6_writemem)
+  MDRV_CPU_VBLANK_INT(s6_vblank, 1)
+  MDRV_CPU_PERIODIC_INT(s6_irq, S6_IRQFREQ)
+  MDRV_MACHINE_INIT(s6) MDRV_MACHINE_STOP(s6)
+  MDRV_VIDEO_UPDATE(core_led)
+  MDRV_NVRAM_HANDLER(s6)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(s6S)
+  MDRV_IMPORT_FROM(s6)
+  MDRV_IMPORT_FROM(wmssnd_s67s)
+MACHINE_DRIVER_END
+
+/*-----------------------------------------------
+/ Load/Save static ram
+/-------------------------------------------------*/
+static NVRAM_HANDLER(s6) {
+  core_nvram(file, read_or_write, s6_CMOS, 0x0100, 0xff);
+}
+
+#if 0
 const struct MachineDriver machine_driver_s6 = {
   {{  CPU_M6808, 3580000/4, /* 3.58/4 = 900hz */
       s6_readmem, s6_writemem, NULL, NULL,
@@ -351,11 +375,4 @@ const struct MachineDriver machine_driver_s6s= {
   0,0,0,0, { S67S_SOUND },
   s6_nvram
 };
-
-/*-----------------------------------------------
-/ Load/Save static ram
-/-------------------------------------------------*/
-static void s6_nvram(void *file, int write) {
-  core_nvram(file, write, s6_CMOS, 0x0100, 0xff);
-}
-
+#endif

@@ -232,17 +232,17 @@ static UINT8 *SZHVC_sub = 0;
 
 #if Z80_EXACT
 /* tmp1 value for ini/inir/outi/otir for [C.1-0][io.1-0] */
-static UINT8 irep_tmp1[4][4] = {
+static const UINT8 irep_tmp1[4][4] = {
 	{0,0,1,0},{0,1,0,1},{1,0,1,1},{0,1,1,0}
 };
 
 /* tmp1 value for ind/indr/outd/otdr for [C.1-0][io.1-0] */
-static UINT8 drep_tmp1[4][4] = {
+static const UINT8 drep_tmp1[4][4] = {
 	{0,1,0,0},{1,0,0,1},{0,0,1,0},{0,1,0,1}
 };
 
 /* tmp2 value for all in/out repeated opcodes for B.7-0 */
-static UINT8 breg_tmp2[256] = {
+static const UINT8 breg_tmp2[256] = {
 	0,0,1,1,0,1,0,0,1,1,0,0,1,0,1,1,
 	0,1,0,0,1,0,1,1,0,0,1,1,0,1,0,0,
 	1,1,0,0,1,0,1,1,0,0,1,1,0,1,0,0,
@@ -262,7 +262,7 @@ static UINT8 breg_tmp2[256] = {
 };
 #endif
 
-static UINT8 cc_op[0x100] = {
+static const UINT8 cc_op[0x100] = {
  4,10, 7, 6, 4, 4, 7, 4, 4,11, 7, 6, 4, 4, 7, 4,
  8,10, 7, 6, 4, 4, 7, 4,12,11, 7, 6, 4, 4, 7, 4,
  7,10,16, 6, 4, 4, 7, 4, 7,11,16, 6, 4, 4, 7, 4,
@@ -280,7 +280,7 @@ static UINT8 cc_op[0x100] = {
  5,10,10,19,10,11, 7,11, 5, 4,10, 4,10, 0, 7,11,
  5,10,10, 4,10,11, 7,11, 5, 6,10, 4,10, 0, 7,11};
 
-static UINT8 cc_cb[0x100] = {
+static const UINT8 cc_cb[0x100] = {
  8, 8, 8, 8, 8, 8,15, 8, 8, 8, 8, 8, 8, 8,15, 8,
  8, 8, 8, 8, 8, 8,15, 8, 8, 8, 8, 8, 8, 8,15, 8,
  8, 8, 8, 8, 8, 8,15, 8, 8, 8, 8, 8, 8, 8,15, 8,
@@ -298,7 +298,7 @@ static UINT8 cc_cb[0x100] = {
  8, 8, 8, 8, 8, 8,15, 8, 8, 8, 8, 8, 8, 8,15, 8,
  8, 8, 8, 8, 8, 8,15, 8, 8, 8, 8, 8, 8, 8,15, 8};
 
-static UINT8 cc_ed[0x100] = {
+static const UINT8 cc_ed[0x100] = {
  8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
  8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
  8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
@@ -316,7 +316,7 @@ static UINT8 cc_ed[0x100] = {
  8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
  8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8};
 
-static UINT8 cc_xy[0x100] = {
+static const UINT8 cc_xy[0x100] = {
  4, 4, 4, 4, 4, 4, 4, 4, 4,15, 4, 4, 4, 4, 4, 4,
  4, 4, 4, 4, 4, 4, 4, 4, 4,15, 4, 4, 4, 4, 4, 4,
  4,14,20,10, 9, 9, 9, 4, 4,15,20,10, 9, 9, 9, 4,
@@ -334,7 +334,7 @@ static UINT8 cc_xy[0x100] = {
  4,14, 4,23, 4,15, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4,
  4, 4, 4, 4, 4, 4, 4, 4, 4,10, 4, 4, 4, 4, 4, 4};
 
-static UINT8 cc_xycb[0x100] = {
+static const UINT8 cc_xycb[0x100] = {
 23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,
 23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,
 23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,
@@ -353,7 +353,7 @@ static UINT8 cc_xycb[0x100] = {
 23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23};
 
 /* extra cycles if jr/jp/call taken and 'interrupt latency' on rst 0-7 */
-static UINT8 cc_ex[0x100] = {
+static const UINT8 cc_ex[0x100] = {
  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
  5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	/* DJNZ */
  5, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0,	/* JR NZ/JR Z */
@@ -371,11 +371,13 @@ static UINT8 cc_ex[0x100] = {
  6, 0, 0, 0, 7, 0, 0, 2, 6, 0, 0, 0, 7, 0, 0, 2,
  6, 0, 0, 0, 7, 0, 0, 2, 6, 0, 0, 0, 7, 0, 0, 2};
 
-static UINT8 *cc[6] = { cc_op, cc_cb, cc_ed, cc_xy, cc_xycb, cc_ex };
+static const UINT8 *cc[6] = { cc_op, cc_cb, cc_ed, cc_xy, cc_xycb, cc_ex };
 #define Z80_TABLE_dd	Z80_TABLE_xy
 #define Z80_TABLE_fd	Z80_TABLE_xy
 
 static void take_interrupt(void);
+
+typedef void (*funcptr)(void);
 
 #define PROTOTYPES(tablename,prefix) \
 	INLINE void prefix##_00(void); INLINE void prefix##_01(void); INLINE void prefix##_02(void); INLINE void prefix##_03(void); \
@@ -442,7 +444,7 @@ static void take_interrupt(void);
 	INLINE void prefix##_f4(void); INLINE void prefix##_f5(void); INLINE void prefix##_f6(void); INLINE void prefix##_f7(void); \
 	INLINE void prefix##_f8(void); INLINE void prefix##_f9(void); INLINE void prefix##_fa(void); INLINE void prefix##_fb(void); \
 	INLINE void prefix##_fc(void); INLINE void prefix##_fd(void); INLINE void prefix##_fe(void); INLINE void prefix##_ff(void); \
-static void (*tablename[0x100])(void) = {	\
+static const funcptr tablename[0x100] = {	\
 	prefix##_00,prefix##_01,prefix##_02,prefix##_03,prefix##_04,prefix##_05,prefix##_06,prefix##_07, \
 	prefix##_08,prefix##_09,prefix##_0a,prefix##_0b,prefix##_0c,prefix##_0d,prefix##_0e,prefix##_0f, \
 	prefix##_10,prefix##_11,prefix##_12,prefix##_13,prefix##_14,prefix##_15,prefix##_16,prefix##_17, \
@@ -1070,8 +1072,8 @@ INLINE UINT8 DEC(UINT8 value)
  " movb %0,%%ah         \n" /* get result */                    \
  " andb $0x28,%%ah      \n" /* maks flags 5+3 */                \
  " orb %%ah,%1          \n" /* put them into flags */           \
- :"=r" (_A), "=r" (_F)                                          \
- :"r" (value), "1" (_F), "0" (_A)                               \
+ :"=q" (_A), "=q" (_F)                                          \
+ :"q" (value), "1" (_F), "0" (_A)                               \
  )
 #else
 #define ADD(value)												\
@@ -1083,8 +1085,8 @@ INLINE UINT8 DEC(UINT8 value)
  " addb %1,%1           \n" /* shift to P/V bit position */     \
  " andb $0xd1,%%ah      \n" /* sign, zero, half carry, carry */ \
  " orb %%ah,%1          \n"                                     \
- :"=r" (_A), "=r" (_F)                                          \
- :"r" (value), "1" (_F), "0" (_A)                               \
+ :"=q" (_A), "=q" (_F)                                          \
+ :"q" (value), "1" (_F), "0" (_A)                               \
  )
 #endif
 #else
@@ -1127,8 +1129,8 @@ INLINE UINT8 DEC(UINT8 value)
  " movb %0,%%ah         \n" /* get result */                    \
  " andb $0x28,%%ah      \n" /* maks flags 5+3 */                \
  " orb %%ah,%1          \n" /* put them into flags */           \
- :"=r" (_A), "=r" (_F)                                          \
- :"r" (value), "1" (_F), "0" (_A)                               \
+ :"=q" (_A), "=q" (_F)                                          \
+ :"q" (value), "1" (_F), "0" (_A)                               \
  )
 #else
 #define ADC(value)												\
@@ -1141,8 +1143,8 @@ INLINE UINT8 DEC(UINT8 value)
  " addb %1,%1           \n"                                     \
  " andb $0xd1,%%ah      \n" /* sign, zero, half carry, carry */ \
  " orb %%ah,%1          \n" /* combine with P/V */              \
- :"=r" (_A), "=r" (_F)                                          \
- :"r" (value), "1" (_F), "0" (_A)                               \
+ :"=q" (_A), "=q" (_F)                                          \
+ :"q" (value), "1" (_F), "0" (_A)                               \
  )
 #endif
 #else
@@ -1185,8 +1187,8 @@ INLINE UINT8 DEC(UINT8 value)
  " movb %0,%%ah         \n" /* get result */                    \
  " andb $0x28,%%ah      \n" /* maks flags 5+3 */                \
  " orb %%ah,%1          \n" /* put them into flags */           \
- :"=r" (_A), "=r" (_F)                                          \
- :"r" (value), "1" (_F), "0" (_A)                               \
+ :"=q" (_A), "=q" (_F)                                          \
+ :"q" (value), "1" (_F), "0" (_A)                               \
  )
 #else
 #define SUB(value)												\
@@ -1199,8 +1201,8 @@ INLINE UINT8 DEC(UINT8 value)
  " addb %1,%1           \n"                                     \
  " andb $0xd1,%%ah      \n" /* sign, zero, half carry, carry */ \
  " orb %%ah,%1          \n" /* combine with P/V */              \
- :"=r" (_A), "=r" (_F)                                          \
- :"r" (value), "1" (_F), "0" (_A)                               \
+ :"=q" (_A), "=q" (_F)                                          \
+ :"q" (value), "1" (_F), "0" (_A)                               \
  )
 #endif
 #else
@@ -1244,8 +1246,8 @@ INLINE UINT8 DEC(UINT8 value)
  " movb %0,%%ah         \n" /* get result */                    \
  " andb $0x28,%%ah      \n" /* maks flags 5+3 */                \
  " orb %%ah,%1          \n" /* put them into flags */           \
- :"=r" (_A), "=r" (_F)                                          \
- :"r" (value), "1" (_F), "0" (_A)                               \
+ :"=q" (_A), "=q" (_F)                                          \
+ :"q" (value), "1" (_F), "0" (_A)                               \
  )
 #else
 #define SBC(value)												\
@@ -1259,8 +1261,8 @@ INLINE UINT8 DEC(UINT8 value)
  " addb %1,%1           \n"                                     \
  " andb $0xd1,%%ah      \n" /* sign, zero, half carry, carry */ \
  " orb %%ah,%1          \n" /* combine with P/V */              \
- :"=r" (_A), "=r" (_F)                                          \
- :"r" (value), "1" (_F), "0" (_A)                               \
+ :"=q" (_A), "=q" (_F)                                          \
+ :"q" (value), "1" (_F), "0" (_A)                               \
  )
 #endif
 #else
@@ -1344,8 +1346,8 @@ INLINE UINT8 DEC(UINT8 value)
  " movb %2,%%ah         \n" /* get result */                    \
  " andb $0x28,%%ah      \n" /* maks flags 5+3 */                \
  " orb %%ah,%1          \n" /* put them into flags */           \
- :"=r" (_A), "=r" (_F)                                          \
- :"r" (value), "1" (_F), "0" (_A)                               \
+ :"=q" (_A), "=q" (_F)                                          \
+ :"q" (value), "1" (_F), "0" (_A)                               \
  )
 #else
 #define CP(value)												\
@@ -1358,8 +1360,8 @@ INLINE UINT8 DEC(UINT8 value)
  " addb %1,%1           \n"                                     \
  " andb $0xd1,%%ah      \n" /* sign, zero, half carry, carry */ \
  " orb %%ah,%1          \n" /* combine with P/V */              \
- :"=r" (_A), "=r" (_F)                                          \
- :"r" (value), "1" (_F), "0" (_A)                               \
+ :"=q" (_A), "=q" (_F)                                          \
+ :"q" (value), "1" (_F), "0" (_A)                               \
  )
 #endif
 #else
@@ -1439,7 +1441,7 @@ INLINE UINT8 DEC(UINT8 value)
  " movb %%ch,%%ah       \n" /* get result MSB */                \
  " andb $0x28,%%ah      \n" /* maks flags 5+3 */                \
  " orb %%ah,%1          \n" /* put them into flags */           \
- :"=c" (Z80.DR.d), "=r" (_F)                                    \
+ :"=c" (Z80.DR.d), "=q" (_F)                                    \
  :"0" (Z80.DR.d), "1" (_F), "d" (Z80.SR.d)                      \
  )
 #else
@@ -1451,7 +1453,7 @@ INLINE UINT8 DEC(UINT8 value)
  " lahf                 \n"                                     \
  " andb $0x11,%%ah      \n"                                     \
  " orb %%ah,%1          \n"                                     \
- :"=c" (Z80.DR.d), "=r" (_F)                                    \
+ :"=c" (Z80.DR.d), "=q" (_F)                                    \
  :"0" (Z80.DR.d), "1" (_F), "d" (Z80.SR.d)                      \
  )
 #endif
@@ -1489,7 +1491,7 @@ INLINE UINT8 DEC(UINT8 value)
  " movb %%ch,%%ah       \n" /* get result MSB */                \
  " andb $0x28,%%ah      \n" /* maks flags 5+3 */                \
  " orb %%ah,%1          \n" /* put them into flags */           \
- :"=c" (_HLD), "=r" (_F)                                        \
+ :"=c" (_HLD), "=q" (_F)                                        \
  :"0" (_HLD), "1" (_F), "d" (Z80.Reg.d)                         \
  )
 #else
@@ -1508,7 +1510,7 @@ INLINE UINT8 DEC(UINT8 value)
  " addb %1,%1           \n"                                     \
  " orb %%ah,%1          \n" /* overflow into P/V */             \
  " andb %%dl,%1         \n" /* mask zero */                     \
- :"=c" (_HLD), "=r" (_F)                                        \
+ :"=c" (_HLD), "=q" (_F)                                        \
  :"0" (_HLD), "1" (_F), "d" (Z80.Reg.d)                         \
  )
 #endif
@@ -1549,7 +1551,7 @@ asm (															\
  " movb %%ch,%%ah       \n" /* get result MSB */                \
  " andb $0x28,%%ah      \n" /* maks flags 5+3 */                \
  " orb %%ah,%1          \n" /* put them into flags */           \
- :"=c" (_HLD), "=r" (_F)                                        \
+ :"=c" (_HLD), "=q" (_F)                                        \
  :"0" (_HLD), "1" (_F), "d" (Z80.Reg.d)                         \
  )
 #else
@@ -1569,7 +1571,7 @@ asm (															\
  " addb %1,%1           \n"                                     \
  " orb %%ah,%1          \n" /* overflow into P/V */             \
  " andb %%dl,%1         \n" /* mask zero */                     \
- :"=c" (_HLD), "=r" (_F)                                        \
+ :"=c" (_HLD), "=q" (_F)                                        \
  :"0" (_HLD), "1" (_F), "d" (Z80.Reg.d)                         \
  )
 #endif
@@ -4282,9 +4284,9 @@ void z80_set_context (void *src)
  * Get a pointer to a cycle count table
  ****************************************************************************/
 #ifdef Z80_MSX
-void *z80_msx_get_cycle_table (int which)
+const void *z80_msx_get_cycle_table (int which)
 #else
-void *z80_get_cycle_table (int which)
+const void *z80_get_cycle_table (int which)
 #endif
 {
 	if (which >= 0 && which <= Z80_TABLE_xycb)
@@ -4306,55 +4308,6 @@ void z80_set_cycle_table (int which, void *new_table)
 }
 
 /****************************************************************************
- * Return program counter
- ****************************************************************************/
-#ifdef Z80_MSX
-unsigned z80_msx_get_pc (void)
-#else
-unsigned z80_get_pc (void)
-#endif
-{
-	return _PCD;
-}
-
-/****************************************************************************
- * Set program counter
- ****************************************************************************/
-#ifdef Z80_MSX
-void z80_msx_set_pc (unsigned val)
-#else
-void z80_set_pc (unsigned val)
-#endif
-{
-	_PC = val;
-	change_pc16(_PCD);
-}
-
-/****************************************************************************
- * Return stack pointer
- ****************************************************************************/
-#ifdef Z80_MSX
-unsigned z80_msx_get_sp (void)
-#else
-unsigned z80_get_sp (void)
-#endif
-{
-	return _SPD;
-}
-
-/****************************************************************************
- * Set stack pointer
- ****************************************************************************/
-#ifdef Z80_MSX
-void z80_msx_set_sp (unsigned val)
-#else
-void z80_set_sp (unsigned val)
-#endif
-{
-	_SP = val;
-}
-
-/****************************************************************************
  * Return a specific register
  ****************************************************************************/
 #ifdef Z80_MSX
@@ -4365,7 +4318,9 @@ unsigned z80_get_reg (int regnum)
 {
 	switch( regnum )
 	{
+		case REG_PC: return _PCD;
 		case Z80_PC: return Z80.PC.w.l;
+		case REG_SP: return _SPD;
 		case Z80_SP: return Z80.SP.w.l;
 		case Z80_AF: return Z80.AF.w.l;
 		case Z80_BC: return Z80.BC.w.l;
@@ -4412,7 +4367,9 @@ void z80_set_reg (int regnum, unsigned val)
 {
 	switch( regnum )
 	{
+		case REG_PC: _PC = val; change_pc16(_PCD); break;
 		case Z80_PC: Z80.PC.w.l = val; break;
+		case REG_SP: _SP = val; break;
 		case Z80_SP: Z80.SP.w.l = val; break;
 		case Z80_AF: Z80.AF.w.l = val; break;
 		case Z80_BC: Z80.BC.w.l = val; break;
@@ -4431,10 +4388,10 @@ void z80_set_reg (int regnum, unsigned val)
 		case Z80_IFF2: Z80.IFF2 = val; break;
 		case Z80_HALT: Z80.HALT = val; break;
 #ifdef Z80_MSX
-		case Z80_NMI_STATE: z80_msx_set_nmi_line(val); break;
+		case Z80_NMI_STATE: z80_msx_set_irq_line(IRQ_LINE_NMI,val); break;
 		case Z80_IRQ_STATE: z80_msx_set_irq_line(0,val); break;
 #else
-		case Z80_NMI_STATE: z80_set_nmi_line(val); break;
+		case Z80_NMI_STATE: z80_set_irq_line(IRQ_LINE_NMI,val); break;
 		case Z80_IRQ_STATE: z80_set_irq_line(0,val); break;
 #endif
 		case Z80_DC0: Z80.int_state[0] = val; break;
@@ -4455,31 +4412,6 @@ void z80_set_reg (int regnum, unsigned val)
 }
 
 /****************************************************************************
- * Set NMI line state
- ****************************************************************************/
-#ifdef Z80_MSX
-void z80_msx_set_nmi_line(int state)
-#else
-void z80_set_nmi_line(int state)
-#endif
-{
-	if( Z80.nmi_state == state ) return;
-
-	LOG(("Z80 #%d set_nmi_line %d\n", cpu_getactivecpu(), state));
-	Z80.nmi_state = state;
-	if( state == CLEAR_LINE ) return;
-
-	LOG(("Z80 #%d take NMI\n", cpu_getactivecpu()));
-	_PPC = -1;			/* there isn't a valid previous program counter */
-	LEAVE_HALT; 		/* Check if processor was halted */
-
-	_IFF1 = 0;
-	PUSH( PC );
-	_PCD = 0x0066;
-	Z80.extra_cycles += 11;
-}
-
-/****************************************************************************
  * Set IRQ line state
  ****************************************************************************/
 #ifdef Z80_MSX
@@ -4488,49 +4420,69 @@ void z80_msx_set_irq_line(int irqline, int state)
 void z80_set_irq_line(int irqline, int state)
 #endif
 {
-	LOG(("Z80 #%d set_irq_line %d\n",cpu_getactivecpu() , state));
-	Z80.irq_state = state;
-	if( state == CLEAR_LINE ) return;
-
-	if( Z80.irq_max )
+	if (irqline == IRQ_LINE_NMI)
 	{
-		int daisychain, device, int_state;
-		daisychain = (*Z80.irq_callback)(irqline);
-		device = daisychain >> 8;
-		int_state = daisychain & 0xff;
-		LOG(("Z80 #%d daisy chain $%04x -> device %d, state $%02x",cpu_getactivecpu(), daisychain, device, int_state));
+		if( Z80.nmi_state == state ) return;
 
-		if( Z80.int_state[device] != int_state )
-		{
-			LOG((" change\n"));
-			/* set new interrupt status */
-			Z80.int_state[device] = int_state;
-			/* check interrupt status */
-			Z80.request_irq = Z80.service_irq = -1;
+		LOG(("Z80 #%d set_irq_line (NMI) %d\n", cpu_getactivecpu(), state));
+		Z80.nmi_state = state;
+		if( state == CLEAR_LINE ) return;
 
-			/* search higher IRQ or IEO */
-			for( device = 0 ; device < Z80.irq_max ; device ++ )
-			{
-				/* IEO = disable ? */
-				if( Z80.int_state[device] & Z80_INT_IEO )
-				{
-					Z80.request_irq = -1;		/* if IEO is disable , masking lower IRQ */
-					Z80.service_irq = device;	/* set highest interrupt service device */
-				}
-				/* IRQ = request ? */
-				if( Z80.int_state[device] & Z80_INT_REQ )
-					Z80.request_irq = device;
-			}
-			LOG(("Z80 #%d daisy chain service_irq $%02x, request_irq $%02x\n", cpu_getactivecpu(), Z80.service_irq, Z80.request_irq));
-			if( Z80.request_irq < 0 ) return;
-		}
-		else
-		{
-			LOG((" no change\n"));
-			return;
-		}
+		LOG(("Z80 #%d take NMI\n", cpu_getactivecpu()));
+		_PPC = -1;			/* there isn't a valid previous program counter */
+		LEAVE_HALT; 		/* Check if processor was halted */
+
+		_IFF1 = 0;
+		PUSH( PC );
+		_PCD = 0x0066;
+		Z80.extra_cycles += 11;
 	}
-	take_interrupt();
+	else
+	{
+		LOG(("Z80 #%d set_irq_line %d\n",cpu_getactivecpu() , state));
+		Z80.irq_state = state;
+		if( state == CLEAR_LINE ) return;
+
+		if( Z80.irq_max )
+		{
+			int daisychain, device, int_state;
+			daisychain = (*Z80.irq_callback)(irqline);
+			device = daisychain >> 8;
+			int_state = daisychain & 0xff;
+			LOG(("Z80 #%d daisy chain $%04x -> device %d, state $%02x",cpu_getactivecpu(), daisychain, device, int_state));
+
+			if( Z80.int_state[device] != int_state )
+			{
+				LOG((" change\n"));
+				/* set new interrupt status */
+				Z80.int_state[device] = int_state;
+				/* check interrupt status */
+				Z80.request_irq = Z80.service_irq = -1;
+
+				/* search higher IRQ or IEO */
+				for( device = 0 ; device < Z80.irq_max ; device ++ )
+				{
+					/* IEO = disable ? */
+					if( Z80.int_state[device] & Z80_INT_IEO )
+					{
+						Z80.request_irq = -1;		/* if IEO is disable , masking lower IRQ */
+						Z80.service_irq = device;	/* set highest interrupt service device */
+					}
+					/* IRQ = request ? */
+					if( Z80.int_state[device] & Z80_INT_REQ )
+						Z80.request_irq = device;
+				}
+				LOG(("Z80 #%d daisy chain service_irq $%02x, request_irq $%02x\n", cpu_getactivecpu(), Z80.service_irq, Z80.request_irq));
+				if( Z80.request_irq < 0 ) return;
+			}
+			else
+			{
+				LOG((" no change\n"));
+				return;
+			}
+		}
+		take_interrupt();
+	}
 }
 
 /****************************************************************************

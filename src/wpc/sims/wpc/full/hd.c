@@ -33,6 +33,7 @@ ZXCVBNM,  D/A/V/I/D/S/O/N Targets
 ------------------------------------------------------------------------------*/
 
 #include "driver.h"
+#include "core.h"
 #include "wpc.h"
 #include "sim.h"
 #include "wmssnd.h"
@@ -313,10 +314,10 @@ static sim_tInportData hd_inportData[] = {
 
   static void hd_drawStatic(BMTYPE **line) {
   core_textOutf(30, 50,BLACK,"Help on this Simulator:");
-  core_textOutf(30, 60,BLACK,"L/R Ctrl+L = L/R Loop");
-  core_textOutf(30, 70,BLACK,"L/R Ctrl+- = L/R Slingshot");
-  core_textOutf(30, 80,BLACK,"L/R Ctrl+O = L/R Outlane");
-  core_textOutf(30, 90,BLACK,"L/R Ctrl+H = Top L/R Eject Hole");
+  core_textOutf(30, 60,BLACK,"L/R Shift+L = L/R Loop");
+  core_textOutf(30, 70,BLACK,"L/R Shift+- = L/R Slingshot");
+  core_textOutf(30, 80,BLACK,"L/R Shift+O = L/R Outlane");
+  core_textOutf(30, 90,BLACK,"L/R Shift+H = Top L/R Eject Hole");
   core_textOutf(30,100,BLACK,"Q = Drain Ball, W/E/R = Jet Bumpers");
   core_textOutf(30,110,BLACK,"T/Y/U/I = B/I/K/E Rollover");
   core_textOutf(30,120,BLACK,"O = Bottom Right Hole");
@@ -358,7 +359,7 @@ WPC_ROMEND
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF(hd,l3,"Harley Davidson (L-3)",1991,"Bally",wpc_mAlphaS,0)
+CORE_GAMEDEF(hd,l3,"Harley Davidson (L-3)",1991,"Bally",wpc_mAlpha2S,0)
 
 /*-----------------------
 / Simulation Definitions

@@ -25,19 +25,12 @@ extern "C" {
 
 struct artwork_info
 {
-	/* Publically accessible */
-	struct osd_bitmap *artwork;
-	struct osd_bitmap *artwork1;
-	struct osd_bitmap *alpha;
-	struct osd_bitmap *orig_artwork;   /* needed for palette recalcs */
-	UINT8 *orig_palette;               /* needed for restoring the colors after special effects? */
-	int num_pens_used;
-	UINT8 *transparency;
-	int num_pens_trans;
+	struct mame_bitmap *artwork;
+	struct mame_bitmap *artwork1;
+	struct mame_bitmap *alpha;
+	struct mame_bitmap *orig_artwork;   /* needed for palette recalcs */
 	int start_pen;
-	UINT8 *brightness;                 /* brightness of each palette entry */
-	UINT64 *rgb;
-	UINT8 *pTable;                     /* Conversion table usually used for mixing colors */
+	UINT32 *rgb;
 };
 
 
@@ -65,37 +58,24 @@ struct artwork_size_info
 
 extern struct artwork_info *artwork_backdrop;
 extern struct artwork_info *artwork_overlay;
-extern struct osd_bitmap *artwork_real_scrbitmap;
+extern struct mame_bitmap *artwork_real_scrbitmap;
 
 /*********************************************************************
   functions that apply to backdrops AND overlays
 *********************************************************************/
-void overlay_load(const char *filename, unsigned int start_pen, unsigned int max_pens);
-void overlay_create(const struct artwork_element *ae, unsigned int start_pen, unsigned int max_pens);
-void backdrop_load(const char *filename, unsigned int start_pen, unsigned int max_pens);
-void artwork_load(struct artwork_info **a,const char *filename, unsigned int start_pen, unsigned int max_pens);
-void artwork_load_size(struct artwork_info **a,const char *filename, unsigned int start_pen, unsigned int max_pens, int width, int height);
+void overlay_load(const char *filename, unsigned int start_pen);
+void overlay_create(const struct artwork_element *ae, unsigned int start_pen);
+void backdrop_load(const char *filename, unsigned int start_pen);
+/*void backdrop_refresh(struct artwork_info *a); */
+void artwork_load(struct artwork_info **a,const char *filename, unsigned int start_pen);
+void artwork_load_size(struct artwork_info **a,const char *filename, unsigned int start_pen, int width, int height);
 void artwork_elements_scale(struct artwork_element *ae, int width, int height);
 void artwork_free(struct artwork_info **a);
 int artwork_get_size_info(const char *file_name, struct artwork_size_info *a);
 
-/*********************************************************************
-  functions that are backdrop-specific
-*********************************************************************/
-void backdrop_refresh(struct artwork_info *a);
-
-/*********************************************************************
-  functions that are overlay-specific
-*********************************************************************/
-int overlay_set_palette (unsigned char *palette, int num_shades);
-
-
 /* called by mame.c */
 void artwork_kill(void);
-void artwork_draw(struct osd_bitmap *dest,struct osd_bitmap *source, int full_refresh);
-/* called by palette.c */
-void artwork_remap(void);
-
+void artwork_draw(struct mame_bitmap *dest,struct mame_bitmap *source, int full_refresh);
 
 #ifdef __cplusplus
 }

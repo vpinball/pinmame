@@ -27,20 +27,23 @@ struct DisplayText
 
 struct GfxElement *builduifont(void);
 void pick_uifont_colors(void);
-void displaytext(struct osd_bitmap *bitmap,const struct DisplayText *dt);
-void ui_text(struct osd_bitmap *bitmap,const char *buf,int x,int y);
-void ui_drawbox(struct osd_bitmap *bitmap,int leftx,int topy,int width,int height);
-void ui_displaymessagewindow(struct osd_bitmap *bitmap,const char *text);
-void ui_displaymenu(struct osd_bitmap *bitmap,const char **items,const char **subitems,char *flag,int selected,int arrowize_subitem);
-int showcopyright(struct osd_bitmap *bitmap);
-int showgamewarnings(struct osd_bitmap *bitmap);
+void displaytext(struct mame_bitmap *bitmap,const struct DisplayText *dt);
+void ui_text(struct mame_bitmap *bitmap,const char *buf,int x,int y);
+void ui_drawbox(struct mame_bitmap *bitmap,int leftx,int topy,int width,int height);
+void ui_displaymessagewindow(struct mame_bitmap *bitmap,const char *text);
+void ui_displaymenu(struct mame_bitmap *bitmap,const char **items,const char **subitems,char *flag,int selected,int arrowize_subitem);
+int showcopyright(struct mame_bitmap *bitmap);
+int showgamewarnings(struct mame_bitmap *bitmap);
 void set_ui_visarea (int xmin, int ymin, int xmax, int ymax);
 
 void init_user_interface(void);
-int handle_user_interface(struct osd_bitmap *bitmap);
+int handle_user_interface(struct mame_bitmap *bitmap);
 
 int onscrd_active(void);
 int setup_active(void);
+
+void switch_ui_orientation(struct mame_bitmap *bitmap);
+void switch_true_orientation(struct mame_bitmap *bitmap);
 
 void CLIB_DECL usrintf_showmessage(const char *text,...);
 void CLIB_DECL usrintf_showmessage_secs(int seconds, const char *text,...);

@@ -380,7 +380,7 @@
 	  ROM_LOAD( n5, 0xc000, 0x2000, chk5) \
 	  ROM_LOAD( n6, 0xe000, 0x2000, chk6) \
     NORMALREGION(0x10000, BYVP_MEMREG_SCPU) \
-	  ROM_LOAD( n7, 0xe000, 0x2000, chk7)  
+	  ROM_LOAD( n7, 0xe000, 0x2000, chk7)
 
 #define BYVP_ROMSTART100(name,n1,chk1,n2,chk2,n3,chk3,n4,chk4,n5,chk5,n6,chk6,n7,chk7,n8,chk8,n9,chk9)\
   ROM_START(name) \
@@ -398,14 +398,15 @@
 	  ROM_LOAD( n7, 0xc000, 0x2000, chk7) \
 	  ROM_LOAD( n8, 0xe000, 0x2000, chk8) \
     NORMALREGION(0x10000, BYVP_MEMREG_SCPU) \
-	  ROM_LOAD( n9, 0xe000, 0x2000, chk9)  
+	  ROM_LOAD( n9, 0xe000, 0x2000, chk9)
 
 #define BYVP_ROMEND ROM_END
 
 
 /*-- These are only here so the game structure can be in the game file --*/
-extern struct MachineDriver machine_driver_byVP;
-extern struct MachineDriver machine_driver_byVP2;
+extern MACHINE_DRIVER_EXTERN(byVP);
+extern MACHINE_DRIVER_EXTERN(byVP2);
+
 #define byVP_mVP1		byVP
 #define byVP_mVP2		byVP2
 

@@ -45,6 +45,7 @@ void CLIB_DECL logerror(const char *text,...)
 /* E2 = Even bytes 2nd half */
 /* O2 = Odd bytes 2nd half */
 enum {	MODE_A,
+		MODE_NIB1,MODE_NIB2,
 		MODE_12, MODE_22,
 		MODE_14, MODE_24, MODE_34, MODE_44,
 		MODE_E, MODE_O,
@@ -53,6 +54,8 @@ enum {	MODE_A,
 char *modenames[] =
 {
 	"          ",
+	"[bits 0-3]",
+	"[bits 4-7]",
 	"[1/2]     ",
 	"[2/2]     ",
 	"[1/4]     ",
@@ -73,6 +76,11 @@ static void compatiblemodes(int mode,int *start,int *end)
 	{
 		*start = MODE_A;
 		*end = MODE_A;
+	}
+	if (mode >= MODE_NIB1 && mode <= MODE_NIB2)
+	{
+		*start = MODE_NIB1;
+		*end = MODE_NIB2;
 	}
 	if (mode >= MODE_12 && mode <= MODE_22)
 	{
@@ -258,6 +266,8 @@ static int usedbytes(const struct fileinfo *file,int mode)
 	switch (mode)
 	{
 		case MODE_A:
+		case MODE_NIB1:
+		case MODE_NIB2:
 			return file->size;
 		case MODE_12:
 		case MODE_22:
@@ -278,7 +288,7 @@ static int usedbytes(const struct fileinfo *file,int mode)
 	}
 }
 
-static void basemult(const struct fileinfo *file,int mode,int *base,int *mult)
+static void basemultmask(const struct fileinfo *file,int mode,int *base,int *mult,int *mask)
 {
 	*mult = 1;
 	if (mode >= MODE_E) *mult = 2;
@@ -290,21 +300,25 @@ static void basemult(const struct fileinfo *file,int mode,int *base,int *mult)
 		case MODE_14:
 		case MODE_E:
 		case MODE_E12:
-			*base = 0; break;
+			*base = 0; *mask = 0xff; break;
+		case MODE_NIB1:
+			*base = 0; *mask = 0x0f; break;
+		case MODE_NIB2:
+			*base = 0; *mask = 0xf0; break;
 		case MODE_O:
 		case MODE_O12:
-			*base = 1; break;
+			*base = 1; *mask = 0xff; break;
 		case MODE_22:
 		case MODE_E22:
-			*base = file->size / 2; break;
+			*base = file->size / 2; *mask = 0xff; break;
 		case MODE_O22:
-			*base = 1 + file->size / 2; break;
+			*base = 1 + file->size / 2; *mask = 0xff; break;
 		case MODE_24:
-			*base = file->size / 4; break;
+			*base = file->size / 4; *mask = 0xff; break;
 		case MODE_34:
-			*base = 2*file->size / 4; break;
+			*base = 2*file->size / 4; *mask = 0xff; break;
 		case MODE_44:
-			*base = 3*file->size / 4; break;
+			*base = 3*file->size / 4; *mask = 0xff; break;
 	}
 }
 
@@ -313,7 +327,7 @@ static float filecompare(const struct fileinfo *file1,const struct fileinfo *fil
 	int i;
 	int match = 0;
 	int size1,size2;
-	int base1,base2,mult1,mult2;
+	int base1,base2,mult1,mult2,mask1,mask2;
 
 
 	if (file1->buf == 0 || file2->buf == 0) return 0.0;
@@ -323,11 +337,34 @@ static float filecompare(const struct fileinfo *file1,const struct fileinfo *fil
 
 	if (size1 != size2) return 0.0;
 
-	basemult(file1,mode1,&base1,&mult1);
-	basemult(file2,mode2,&base2,&mult2);
+	basemultmask(file1,mode1,&base1,&mult1,&mask1);
+	basemultmask(file2,mode2,&base2,&mult2,&mask2);
 
-	for (i = 0;i < size1;i++)
-		if (file1->buf[base1 + mult1 * i] == file2->buf[base2 + mult2 * i]) match++;
+	if (mask1 == mask2)
+	{
+		if (mask1 == 0xff)
+		{
+			/* normal compare */
+			for (i = 0;i < size1;i++)
+				if (file1->buf[base1 + mult1 * i] == file2->buf[base2 + mult2 * i]) match++;
+		}
+		else
+		{
+			/* nibble compare, abort if other half is not empty */
+			for (i = 0;i < size1;i++)
+			{
+				if (((file1->buf[base1 + mult1 * i] & ~mask1) != (0x00 & ~mask1) &&
+					 (file1->buf[base1 + mult1 * i] & ~mask1) != (0xff & ~mask1)) ||
+					((file2->buf[base1 + mult1 * i] & ~mask2) != (0x00 & ~mask2) &&
+					 (file2->buf[base1 + mult1 * i] & ~mask2) != (0xff & ~mask2)))
+				{
+					match = 0;
+					break;
+				}
+				if ((file1->buf[base1 + mult1 * i] & mask1) == (file2->buf[base2 + mult2 * i] & mask2)) match++;
+			}
+		}
+	}
 
 	return (float)match / size1;
 }
@@ -500,7 +537,7 @@ static int load_files(int i, int *found, const char *path)
 int CLIB_DECL main(int argc,char **argv)
 {
 	int	err;
-	int total_modes = 1;	/* by default, use only MODE_A */
+	int total_modes = MODE_NIB2;	/* by default, use only MODE_A, MODE_NIB1 and MODE_NIB2 */
 
 	if (argc >= 2 && strcmp(argv[1],"-d") == 0)
 	{

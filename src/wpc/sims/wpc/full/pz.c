@@ -37,6 +37,7 @@
 ------------------------------------------------------------------------------*/
 
 #include "driver.h"
+#include "core.h"
 #include "wpc.h"
 #include "sim.h"
 #include "wmssnd.h"
@@ -483,10 +484,10 @@ all the keys handy :) */
 
   static void pz_drawStatic(BMTYPE **line) {
   core_textOutf(30, 40,BLACK,"Help on this Simulator:");
-  core_textOutf(30, 50,BLACK,"L/R Ctrl+I = L/R Inlane");
-  core_textOutf(30, 60,BLACK,"L/R Ctrl+O = L/R Outlane");
-  core_textOutf(30, 70,BLACK,"L/R Ctrl+- = L/R Slingshot");
-  core_textOutf(30, 80,BLACK,"L/R Ctrl+R = Ramp Shot (Fail/OK)");
+  core_textOutf(30, 50,BLACK,"L/R Shift+I = L/R Inlane");
+  core_textOutf(30, 60,BLACK,"L/R Shift+O = L/R Outlane");
+  core_textOutf(30, 70,BLACK,"L/R Shift+- = L/R Slingshot");
+  core_textOutf(30, 80,BLACK,"L/R Shift+R = Ramp Shot (Fail/OK)");
   core_textOutf(30, 90,BLACK,"Q = Drain Ball, W/E/R = B/O/P Rollover");
   core_textOutf(30,100,BLACK,"A/S/D = Jet Bumpers, K = Dummy Lane");
   core_textOutf(30,110,BLACK,"G = DJ Eject, J = Supersonic R. Comic");

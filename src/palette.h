@@ -16,11 +16,7 @@
   not to the whole range of colors which can be produced by the hardware. The
   latter is referred to as "color space".
   The term "pen" refers to one of the maximum MAX_PENS colors that can be
-  used to generate the display. PC users might want to think of them as the
-  colors available in VGA, but be warned: the mapping of MAME pens to the VGA
-  registers is not 1:1, so MAME's pen 10 will not necessarily be mapped to
-  VGA's color #10 (actually this is never the case). This is done to ensure
-  portability, since on some systems it is not possible to do a 1:1 mapping.
+  used to generate the display.
 
   So, to summarize, the three layers of palette abstraction are:
 
@@ -33,9 +29,6 @@
   *always* use Machine->pens to map the color numbers. *Never* use constants.
   For example if you want to make pixel (x,y) of color 3, do:
   bitmap->line[y][x] = Machine->pens[3];
-  Also remember that when using a dynamic palette (see below) Machine->pens[]
-  is not constant, but changes as the games modifies its colors. Temporary
-  bitmaps must be completely redrawn when palette_recalc() asks to do so.
 
 
   Lookup table
@@ -61,55 +54,16 @@
 
   Display modes
   -------------
-  The available display modes can be summarized in four categories:
+  The available display modes can be summarized in three categories:
   1) Static palette. Use this for games which use PROMs for color generation.
      The palette is initialized by vh_init_palette(), and never changed
      again.
-  2) Dynamic palette. Use this for games which use RAM for color generation and
-     have no more than MAX_PENS colors in the palette. The palette can be
-     dynamically modified by the driver using the function
-     palette_change_color(). MachineDriver->video_attributes must contain the
-     flag VIDEO_MODIFIES_PALETTE.
-     The function palette_recalc() must be called every frame *before* doing
-     any rendering.
-     The return code of palette_recalc() tells the driver whether the lookup
-     table has changed, and therefore whether a screen refresh is needed.
-  3) Dynamic shrinked palette. Use this for games which use RAM for color
-     generation and have more than MAX_PENS colors in the palette.
-     The difference with case 2) above is that the driver must do some
-     additional work to allow for palette reduction without loss of quality.
-     The palette_used_colors[] array can be changed to precisely indicate to
-     the function which of the game colors are used. That way the palette
-     system, so it can pick only the needed colors, and make the palette fit
-     into MAX_PENS colors. Colors can also be marked as "transparent".
-     palette_recalc() asks for a complete refresh only if the lookup table has
-     changed for a color that was used both in the previous and in the current
-     frame, therefore you must be careful to mark as used all colors stored in
-     temporary bitmaps, even if you won't display them in the current frame: if
-     you don't do that, the contents of the bitmap might become invalid without
-     notice.
-  4) 16-bit color. This should only be used for games which use more than
-     MAX_PENS colors at a time. It is slower than the other modes, so it should
-     be avoided whenever possible. Transparency support is limited.
-     MachineDriver->video_attributes must contain VIDEO_MODIFIES_PALETTE, and
-     GameDriver->flags must contain GAME_REQUIRES_16BIT.
-
-  The dynamic shrinking of the palette works this way: as colors are requested,
-  they are associated to a pen. When a color is no longer needed, the pen is
-  freed and can be used for another color. When the code runs out of free pens,
-  it compacts the palette, putting together colors with the same RGB
-  components, then starts again to allocate pens for each new color. The bottom
-  line of all this is that the pen assignment will automatically adapt to the
-  game needs, and colors which change often will be assigned an exclusive pen,
-  which can be modified using the video cards hardware registers without need
-  for a screen refresh.
-  The important difference between cases 3) and 4) is that in 3), color cycling
-  (which many games use) is essentially free, while in 4) every palette change
-  requires a screen refresh. The color quality in 3) is also better than in 4)
-  if the game uses more than 5 bits per color component. For testing purposes,
-  you can switch between the two modes by just adding/removing the
-  GAME_REQUIRES_16BIT flag (but be warned about the limited transparency
-  support in 16-bit mode).
+  2) Dynamic palette. Use this for games which use RAM for color generation.
+     The palette can be dynamically modified by the driver using the function
+     palette_set_color().
+  3) Direct mapped 16-bit or 32-bit color. This should only be used in special
+     cases, e.g. to support alpha blending.
+     MachineDriver->video_attributes must contain VIDEO_RGB_DIRECT.
 
 ******************************************************************************/
 
@@ -120,55 +74,33 @@
 extern "C" {
 #endif
 
-#define DYNAMIC_MAX_PENS 254	/* the Mac cannot handle more than 254 dynamic pens */
-#define STATIC_MAX_PENS 256		/* but 256 static pens can be handled */
+typedef UINT32 pen_t;
+typedef UINT32 rgb_t;
+
+#define MAKE_RGB(r,g,b) ((((r) & 0xff) << 16) | (((g) & 0xff) << 8) | ((b) & 0xff))
+#define RGB_RED(rgb)	(((rgb) >> 16) & 0xff)
+#define RGB_GREEN(rgb)	(((rgb) >> 8) & 0xff)
+#define RGB_BLUE(rgb)	((rgb) & 0xff)
 
 int palette_start(void);
 void palette_stop(void);
 int palette_init(void);
-void palette_post_screen_update_cb(void);
 
-void palette_change_color(int color,UINT8 red,UINT8 green,UINT8 blue);
-
-/* This array is used by palette_recalc() to know which colors are used, and which */
-/* ones are transparent (see defines below). By default, it is initialized to */
-/* PALETTE_COLOR_USED for all colors; this is enough in some cases. */
-extern UINT8 *palette_used_colors;
-
-void palette_increase_usage_count(int table_offset,unsigned int usage_mask,int color_flags);
-void palette_decrease_usage_count(int table_offset,unsigned int usage_mask,int color_flags);
-void palette_increase_usage_countx(int table_offset,int num_pens,const UINT8 *pen_data,int color_flags);
-void palette_decrease_usage_countx(int table_offset,int num_pens,const UINT8 *pen_data,int color_flags);
-
-/* If you want to dynamically change the usage array, call palette_init_used_colors() */
-/* before setting used entries to PALETTE_COLOR_USED/PALETTE_COLOR_TRANSPARENT. */
-/* The function automatically marks colors used by the TileMap system. */
-void palette_init_used_colors(void);
-
-const UINT8 *palette_recalc(void);
-
-#define PALETTE_COLOR_UNUSED	0	/* This color is not needed for this frame */
-#define PALETTE_COLOR_VISIBLE	1	/* This color is currently visible */
-#define PALETTE_COLOR_CACHED	2	/* This color is cached in temporary bitmaps (but */
-									/* not necessarily visible) */
-	/* palette_recalc() will try to use always the same pens for the cached colors; */
-	/* if it is forced to rearrange the pens, it will return TRUE to signal the */
-	/* driver that it must refresh the cached bitmaps. */
-#define PALETTE_COLOR_TRANSPARENT_FLAG	4	/* All colors using this attribute will be */
-	/* mapped to the same pen, and no other colors will be mapped to that pen. */
-	/* This way, transparencies can be handled by copybitmap(). */
-
-/* backwards compatibility */
-#define PALETTE_COLOR_USED			(PALETTE_COLOR_VISIBLE | PALETTE_COLOR_CACHED)
-#define PALETTE_COLOR_TRANSPARENT	(PALETTE_COLOR_TRANSPARENT_FLAG | PALETTE_COLOR_USED)
-
-/* if you use PALETTE_COLOR_TRANSPARENT, to do a transparency blit with copybitmap() */
-/* pass it TRANSPARENCY_PEN, palette_transparent_pen. */
-extern UINT16 palette_transparent_pen;
+void palette_set_color(pen_t color,UINT8 r,UINT8 g,UINT8 b);
+void palette_get_color(pen_t color,UINT8 *r,UINT8 *g,UINT8 *b);
 
 
 extern UINT16 *palette_shadow_table;
 
+#define PALETTE_DEFAULT_SHADOW_FACTOR (0.6)
+#define PALETTE_DEFAULT_HIGHLIGHT_FACTOR (1/PALETTE_DEFAULT_SHADOW_FACTOR)
+
+void palette_set_brightness(pen_t color,double bright);
+void palette_set_shadow_factor(double factor);
+void palette_set_highlight_factor(double factor);
+
+/* use this if you need to fillbitmap() the background with black */
+pen_t get_black_pen(void);
 
 
 /* here are some functions to handle commonly used palette layouts, so you don't
@@ -232,6 +164,8 @@ WRITE16_HANDLER( paletteram16_IIIIRRRRGGGGBBBB_word_w );
 WRITE16_HANDLER( paletteram16_RRRRGGGGBBBBIIII_word_w );
 WRITE16_HANDLER( paletteram16_xrgb_word_w );
 WRITE16_HANDLER( paletteram16_RRRRGGGGBBBBRGBx_word_w );
+
+void palette_init_RRRR_GGGG_BBBB(UINT8 *palette, UINT16 *colortable, const UINT8 *color_prom);
 
 #ifdef __cplusplus
 }

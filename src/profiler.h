@@ -17,8 +17,9 @@ enum {
 	PROFILER_VIDEO,
 	PROFILER_DRAWGFX,
 	PROFILER_COPYBITMAP,
-	PROFILER_TILEMAP_UPDATE,
 	PROFILER_TILEMAP_DRAW,
+	PROFILER_TILEMAP_DRAW_ROZ,
+	PROFILER_TILEMAP_UPDATE,
 	PROFILER_BLIT,
 	PROFILER_SOUND,
 	PROFILER_MIXER,
@@ -61,6 +62,6 @@ void profiler__mark(int type);
 /* functions called by usrintf.c */
 void profiler_start(void);
 void profiler_stop(void);
-void profiler_show(struct osd_bitmap *bitmap);
+void profiler_show(struct mame_bitmap *bitmap);
 
 #endif	/* PROFILER_H */

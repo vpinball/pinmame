@@ -56,7 +56,7 @@ static int vesa_scroll_async(int x, int y)
       seg = _mmio_segment ? _mmio_segment : _my_ds();
 
       a = ((x * BYTES_PER_PIXEL(screen->vtable->color_depth)) +
-	   (y * ((unsigned long)screen->line[1] - (unsigned long)screen->line[0]))) / 4;
+	   (y * (((UINT8 *)screen->line[1]) - ((UINT8 *)screen->line[0])))) / 4;
 
       asm (
 	 "  pushw %%es ; "
@@ -96,14 +96,14 @@ static int vesa_scroll_async(int x, int y)
 }
 
 
-void blitscreen_dirty1_vga(struct osd_bitmap *bitmap)
+void blitscreen_dirty1_vga(struct mame_bitmap *bitmap)
 {
 	int width4, x, y;
 	unsigned long *lb, address;
 
-	width4 = (bitmap->line[1] - bitmap->line[0]) / 4;
+	width4 = (((UINT8 *)bitmap->line[1]) - ((UINT8 *)bitmap->line[0])) / 4;
 	address = 0xa0000 + gfx_xoffset + gfx_yoffset * gfx_width;
-	lb = (unsigned long *)(bitmap->line[skiplines] + skipcolumns);
+	lb = (unsigned long *)(((UINT8 *)bitmap->line[skiplines]) + skipcolumns);
 
 	for (y = 0; y < gfx_display_lines; y += 16)
 	{
@@ -133,15 +133,15 @@ void blitscreen_dirty1_vga(struct osd_bitmap *bitmap)
 	}
 }
 
-void blitscreen_dirty0_vga(struct osd_bitmap *bitmap)
+void blitscreen_dirty0_vga(struct mame_bitmap *bitmap)
 {
 	int width4,y,columns4;
 	unsigned long *lb, address;
 
-	width4 = (bitmap->line[1] - bitmap->line[0]) / 4;
+	width4 = (((UINT8 *)bitmap->line[1]) - ((UINT8 *)bitmap->line[0])) / 4;
 	columns4 = gfx_display_columns/4;
 	address = 0xa0000 + gfx_xoffset + gfx_yoffset * gfx_width;
-	lb = (unsigned long *)(bitmap->line[skiplines] + skipcolumns);
+	lb = (unsigned long *)(((UINT8 *)bitmap->line[skiplines]) + skipcolumns);
 	for (y = 0; y < gfx_display_lines; y++)
 	{
 		_dosmemputl(lb,columns4,address);
@@ -202,7 +202,7 @@ INLINE void unchained_flip(void)
 
 
 /* unchained dirty modes */
-void blitscreen_dirty1_unchained_vga(struct osd_bitmap *bitmap)
+void blitscreen_dirty1_unchained_vga(struct mame_bitmap *bitmap)
 {
 	int x, y, i, outval, dirty_page, triple_page, write_triple;
 	int plane, planeval, iloop, page;
@@ -215,7 +215,7 @@ void blitscreen_dirty1_unchained_vga(struct osd_bitmap *bitmap)
 	/* calculate our statics on the first call */
 	if (xpage == -1)
 	{
-		width4 = ((bitmap->line[1] - bitmap->line[0]) >> 2);
+		width4 = ((((UINT8 *)bitmap->line[1]) - ((UINT8 *)bitmap->line[0])) >> 2);
 		source_width = width4 << half_yres;
 		dest_width = gfx_width >> 2;
 		dest_line_width = (gfx_width << 2) >> half_yres;
@@ -246,7 +246,7 @@ void blitscreen_dirty1_unchained_vga(struct osd_bitmap *bitmap)
 		{
 			address = 0xa0000 + (xpage_size * dirty_page)+(gfx_xoffset >> 2) + (((gfx_yoffset >> half_yres) * gfx_width) >> 2);
 			triple_address = 0xa0000 + (xpage_size * triple_page)+(gfx_xoffset >> 2) + (((gfx_yoffset >> half_yres) * gfx_width) >> 2);
-			lb = (unsigned long *)(bitmap->line[skiplines] + skipcolumns + plane);
+			lb = (unsigned long *)(((UINT8 *)bitmap->line[skiplines]) + skipcolumns + plane);
 			/*set the bit plane */
 			outportw(0x3c4, planeval|0x02);
 			for (y = 0; y < gfx_display_lines ; y += 16)
@@ -473,7 +473,7 @@ INLINE void unchain_byte_blit(unsigned long *src,short seg,unsigned long address
 }
 
 /* unchained 'non-dirty' modes */
-void blitscreen_dirty0_unchained_vga(struct osd_bitmap *bitmap)
+void blitscreen_dirty0_unchained_vga(struct mame_bitmap *bitmap)
 {
 	unsigned long *lb, address;
 	static int width4,columns4,column_chained,memwidth,scrwidth,disp_height,blit_type;
@@ -481,12 +481,12 @@ void blitscreen_dirty0_unchained_vga(struct osd_bitmap *bitmap)
    /* only calculate our statics the first time around */
 	if(xpage==-1)
 	{
-		width4 = (bitmap->line[1] - bitmap->line[0]) >> 2;
+		width4 = (((UINT8 *)bitmap->line[1]) - ((UINT8 *)bitmap->line[0])) >> 2;
 		columns4 = gfx_display_columns >> 2;
 		disp_height = gfx_display_lines >> half_yres;
 
 		xpage = 1;
-		memwidth = (bitmap->line[1] - bitmap->line[0]) << half_yres;
+		memwidth = (((UINT8 *)bitmap->line[1]) - ((UINT8 *)bitmap->line[0])) << half_yres;
 		scrwidth = gfx_width >> 2;
 
 		/* check for 'not divisible by 8' */
@@ -504,7 +504,7 @@ void blitscreen_dirty0_unchained_vga(struct osd_bitmap *bitmap)
 	}
 
 	/* get the start of the screen bitmap */
-	lb = (unsigned long *)(bitmap->line[skiplines] + skipcolumns);
+	lb = (unsigned long *)(((UINT8 *)bitmap->line[skiplines]) + skipcolumns);
 	/* and the start address in video memory */
 	address = 0xa0000 + (xpage_size * xpage)+(gfx_xoffset >> 2) + (((gfx_yoffset >> half_yres) * gfx_width) >> 2);
 	/* call the appropriate blit routine */
@@ -905,9 +905,9 @@ INLINE void copyline_4x_32bpp(unsigned char *src,short seg,unsigned long address
 	unsigned long address; \
 	dest_seg = screen->seg; \
 	vesa_line = gfx_yoffset; \
-	line_offs = bitmap->line[1] - bitmap->line[0]; \
+	line_offs = ((UINT8 *)bitmap->line[1]) - ((UINT8 *)bitmap->line[0]); \
 	xoffs = (BPP/8)*gfx_xoffset; \
-	lb = bitmap->line[skiplines] + (BPP/8)*skipcolumns; \
+	lb = ((UINT8 *)bitmap->line[skiplines]) + (BPP/8)*skipcolumns; \
 	for (y = 0;y < gfx_display_lines;y += 16) \
 	{ \
 		for (x = 0;x < gfx_display_columns; /* */) \
@@ -950,10 +950,10 @@ INLINE void copyline_4x_32bpp(unsigned char *src,short seg,unsigned long address
 	unsigned long address, address_offset; \
 	dest_seg = screen->seg; \
 	vesa_line = gfx_yoffset; \
-	line_offs = (bitmap->line[1] - bitmap->line[0]); \
+	line_offs = (((UINT8 *)bitmap->line[1]) - ((UINT8 *)bitmap->line[0])); \
 	xoffs = (BPP/8)*(gfx_xoffset + triplebuf_pos); \
 	width = gfx_display_columns/(4/(BPP/8)); \
-	src = bitmap->line[skiplines] + (BPP/8)*skipcolumns;	\
+	src = ((UINT8 *)bitmap->line[skiplines]) + (BPP/8)*skipcolumns;	\
 	if (mmxlfb) { \
 		address = bmp_write_line(screen, vesa_line); \
 		_farsetsel (screen->seg); \
@@ -990,146 +990,146 @@ INLINE void copyline_4x_32bpp(unsigned char *src,short seg,unsigned long address
 	}
 
 
-void blitscreen_dirty1_vesa_1x_1x_8bpp(struct osd_bitmap *bitmap)   { DIRTY1(1,1,0,8,)  }
-void blitscreen_dirty1_vesa_1x_2x_8bpp(struct osd_bitmap *bitmap)   { DIRTY1(1,2,0,8,)  }
-void blitscreen_dirty1_vesa_1x_2xs_8bpp(struct osd_bitmap *bitmap)  { DIRTY1(1,2,1,8,)  }
-void blitscreen_dirty1_vesa_2x_1x_8bpp(struct osd_bitmap *bitmap)   { DIRTY1(2,1,0,8,)  }
-void blitscreen_dirty1_vesa_3x_1x_8bpp(struct osd_bitmap *bitmap)   { DIRTY1(3,1,0,8,)  }
-void blitscreen_dirty1_vesa_2x_2x_8bpp(struct osd_bitmap *bitmap)   { DIRTY1(2,2,0,8,)  }
-void blitscreen_dirty1_vesa_2x_2xs_8bpp(struct osd_bitmap *bitmap)  { DIRTY1(2,2,1,8,)  }
-void blitscreen_dirty1_vesa_2x_3x_8bpp(struct osd_bitmap *bitmap)   { DIRTY1(2,3,0,8,)  }
-void blitscreen_dirty1_vesa_2x_3xs_8bpp(struct osd_bitmap *bitmap)  { DIRTY1(2,3,1,8,)  }
-void blitscreen_dirty1_vesa_3x_2x_8bpp(struct osd_bitmap *bitmap)   { DIRTY1(3,2,0,8,)  }
-void blitscreen_dirty1_vesa_3x_2xs_8bpp(struct osd_bitmap *bitmap)  { DIRTY1(3,2,1,8,)  }
-void blitscreen_dirty1_vesa_3x_3x_8bpp(struct osd_bitmap *bitmap)   { DIRTY1(3,3,0,8,)  }
-void blitscreen_dirty1_vesa_3x_3xs_8bpp(struct osd_bitmap *bitmap)  { DIRTY1(3,3,1,8,)  }
-void blitscreen_dirty1_vesa_4x_2x_8bpp(struct osd_bitmap *bitmap)   { DIRTY1(4,2,0,8,)  }
-void blitscreen_dirty1_vesa_4x_2xs_8bpp(struct osd_bitmap *bitmap)  { DIRTY1(4,2,1,8,)  }
-void blitscreen_dirty1_vesa_4x_3x_8bpp(struct osd_bitmap *bitmap)   { DIRTY1(4,3,0,8,)  }
-void blitscreen_dirty1_vesa_4x_3xs_8bpp(struct osd_bitmap *bitmap)  { DIRTY1(4,3,1,8,)  }
+void blitscreen_dirty1_vesa_1x_1x_8bpp(struct mame_bitmap *bitmap)   { DIRTY1(1,1,0,8,)  }
+void blitscreen_dirty1_vesa_1x_2x_8bpp(struct mame_bitmap *bitmap)   { DIRTY1(1,2,0,8,)  }
+void blitscreen_dirty1_vesa_1x_2xs_8bpp(struct mame_bitmap *bitmap)  { DIRTY1(1,2,1,8,)  }
+void blitscreen_dirty1_vesa_2x_1x_8bpp(struct mame_bitmap *bitmap)   { DIRTY1(2,1,0,8,)  }
+void blitscreen_dirty1_vesa_3x_1x_8bpp(struct mame_bitmap *bitmap)   { DIRTY1(3,1,0,8,)  }
+void blitscreen_dirty1_vesa_2x_2x_8bpp(struct mame_bitmap *bitmap)   { DIRTY1(2,2,0,8,)  }
+void blitscreen_dirty1_vesa_2x_2xs_8bpp(struct mame_bitmap *bitmap)  { DIRTY1(2,2,1,8,)  }
+void blitscreen_dirty1_vesa_2x_3x_8bpp(struct mame_bitmap *bitmap)   { DIRTY1(2,3,0,8,)  }
+void blitscreen_dirty1_vesa_2x_3xs_8bpp(struct mame_bitmap *bitmap)  { DIRTY1(2,3,1,8,)  }
+void blitscreen_dirty1_vesa_3x_2x_8bpp(struct mame_bitmap *bitmap)   { DIRTY1(3,2,0,8,)  }
+void blitscreen_dirty1_vesa_3x_2xs_8bpp(struct mame_bitmap *bitmap)  { DIRTY1(3,2,1,8,)  }
+void blitscreen_dirty1_vesa_3x_3x_8bpp(struct mame_bitmap *bitmap)   { DIRTY1(3,3,0,8,)  }
+void blitscreen_dirty1_vesa_3x_3xs_8bpp(struct mame_bitmap *bitmap)  { DIRTY1(3,3,1,8,)  }
+void blitscreen_dirty1_vesa_4x_2x_8bpp(struct mame_bitmap *bitmap)   { DIRTY1(4,2,0,8,)  }
+void blitscreen_dirty1_vesa_4x_2xs_8bpp(struct mame_bitmap *bitmap)  { DIRTY1(4,2,1,8,)  }
+void blitscreen_dirty1_vesa_4x_3x_8bpp(struct mame_bitmap *bitmap)   { DIRTY1(4,3,0,8,)  }
+void blitscreen_dirty1_vesa_4x_3xs_8bpp(struct mame_bitmap *bitmap)  { DIRTY1(4,3,1,8,)  }
 
-void blitscreen_dirty1_vesa_1x_1x_16bpp(struct osd_bitmap *bitmap)  { DIRTY1(1,1,0,16,) }
-void blitscreen_dirty1_vesa_1x_2x_16bpp(struct osd_bitmap *bitmap)  { DIRTY1(1,2,0,16,) }
-void blitscreen_dirty1_vesa_1x_2xs_16bpp(struct osd_bitmap *bitmap) { DIRTY1(1,2,1,16,) }
-void blitscreen_dirty1_vesa_2x_1x_16bpp(struct osd_bitmap *bitmap)  { DIRTY1(2,1,0,16,) }
-void blitscreen_dirty1_vesa_2x_2x_16bpp(struct osd_bitmap *bitmap)  { DIRTY1(2,2,0,16,) }
-void blitscreen_dirty1_vesa_2x_2xs_16bpp(struct osd_bitmap *bitmap) { DIRTY1(2,2,1,16,) }
-void blitscreen_dirty1_vesa_2x_3x_16bpp(struct osd_bitmap *bitmap)  { DIRTY1(2,3,0,16,) }
-void blitscreen_dirty1_vesa_2x_3xs_16bpp(struct osd_bitmap *bitmap) { DIRTY1(2,3,1,16,) }
-void blitscreen_dirty1_vesa_3x_1x_16bpp(struct osd_bitmap *bitmap)  { DIRTY1(3,1,0,16,) }
-void blitscreen_dirty1_vesa_3x_2x_16bpp(struct osd_bitmap *bitmap)  { DIRTY1(3,2,0,16,) }
-void blitscreen_dirty1_vesa_3x_2xs_16bpp(struct osd_bitmap *bitmap) { DIRTY1(3,2,1,16,) }
-void blitscreen_dirty1_vesa_3x_3x_16bpp(struct osd_bitmap *bitmap)  { DIRTY1(3,3,0,16,) }
-void blitscreen_dirty1_vesa_3x_3xs_16bpp(struct osd_bitmap *bitmap) { DIRTY1(3,3,1,16,) }
-void blitscreen_dirty1_vesa_4x_2x_16bpp(struct osd_bitmap *bitmap)  { DIRTY1(4,2,0,16,) }
-void blitscreen_dirty1_vesa_4x_2xs_16bpp(struct osd_bitmap *bitmap) { DIRTY1(4,2,1,16,) }
-void blitscreen_dirty1_vesa_4x_3x_16bpp(struct osd_bitmap *bitmap)  { DIRTY1(4,3,0,16,) }
-void blitscreen_dirty1_vesa_4x_3xs_16bpp(struct osd_bitmap *bitmap) { DIRTY1(4,3,1,16,) }
+void blitscreen_dirty1_vesa_1x_1x_16bpp(struct mame_bitmap *bitmap)  { DIRTY1(1,1,0,16,) }
+void blitscreen_dirty1_vesa_1x_2x_16bpp(struct mame_bitmap *bitmap)  { DIRTY1(1,2,0,16,) }
+void blitscreen_dirty1_vesa_1x_2xs_16bpp(struct mame_bitmap *bitmap) { DIRTY1(1,2,1,16,) }
+void blitscreen_dirty1_vesa_2x_1x_16bpp(struct mame_bitmap *bitmap)  { DIRTY1(2,1,0,16,) }
+void blitscreen_dirty1_vesa_2x_2x_16bpp(struct mame_bitmap *bitmap)  { DIRTY1(2,2,0,16,) }
+void blitscreen_dirty1_vesa_2x_2xs_16bpp(struct mame_bitmap *bitmap) { DIRTY1(2,2,1,16,) }
+void blitscreen_dirty1_vesa_2x_3x_16bpp(struct mame_bitmap *bitmap)  { DIRTY1(2,3,0,16,) }
+void blitscreen_dirty1_vesa_2x_3xs_16bpp(struct mame_bitmap *bitmap) { DIRTY1(2,3,1,16,) }
+void blitscreen_dirty1_vesa_3x_1x_16bpp(struct mame_bitmap *bitmap)  { DIRTY1(3,1,0,16,) }
+void blitscreen_dirty1_vesa_3x_2x_16bpp(struct mame_bitmap *bitmap)  { DIRTY1(3,2,0,16,) }
+void blitscreen_dirty1_vesa_3x_2xs_16bpp(struct mame_bitmap *bitmap) { DIRTY1(3,2,1,16,) }
+void blitscreen_dirty1_vesa_3x_3x_16bpp(struct mame_bitmap *bitmap)  { DIRTY1(3,3,0,16,) }
+void blitscreen_dirty1_vesa_3x_3xs_16bpp(struct mame_bitmap *bitmap) { DIRTY1(3,3,1,16,) }
+void blitscreen_dirty1_vesa_4x_2x_16bpp(struct mame_bitmap *bitmap)  { DIRTY1(4,2,0,16,) }
+void blitscreen_dirty1_vesa_4x_2xs_16bpp(struct mame_bitmap *bitmap) { DIRTY1(4,2,1,16,) }
+void blitscreen_dirty1_vesa_4x_3x_16bpp(struct mame_bitmap *bitmap)  { DIRTY1(4,3,0,16,) }
+void blitscreen_dirty1_vesa_4x_3xs_16bpp(struct mame_bitmap *bitmap) { DIRTY1(4,3,1,16,) }
 
-void blitscreen_dirty1_vesa_1x_1x_16bpp_palettized(struct osd_bitmap *bitmap)  { DIRTY1(1,1,0,16,_palettized) }
-void blitscreen_dirty1_vesa_1x_2x_16bpp_palettized(struct osd_bitmap *bitmap)  { DIRTY1(1,2,0,16,_palettized) }
-void blitscreen_dirty1_vesa_1x_2xs_16bpp_palettized(struct osd_bitmap *bitmap) { DIRTY1(1,2,1,16,_palettized) }
-void blitscreen_dirty1_vesa_2x_1x_16bpp_palettized(struct osd_bitmap *bitmap)  { DIRTY1(2,1,0,16,_palettized) }
-void blitscreen_dirty1_vesa_2x_2x_16bpp_palettized(struct osd_bitmap *bitmap)  { DIRTY1(2,2,0,16,_palettized) }
-void blitscreen_dirty1_vesa_2x_2xs_16bpp_palettized(struct osd_bitmap *bitmap) { DIRTY1(2,2,1,16,_palettized) }
-void blitscreen_dirty1_vesa_2x_3x_16bpp_palettized(struct osd_bitmap *bitmap)  { DIRTY1(2,3,0,16,_palettized) }
-void blitscreen_dirty1_vesa_2x_3xs_16bpp_palettized(struct osd_bitmap *bitmap) { DIRTY1(2,3,1,16,_palettized) }
-void blitscreen_dirty1_vesa_3x_1x_16bpp_palettized(struct osd_bitmap *bitmap)  { DIRTY1(3,1,0,16,_palettized) }
-void blitscreen_dirty1_vesa_3x_2x_16bpp_palettized(struct osd_bitmap *bitmap)  { DIRTY1(3,2,0,16,_palettized) }
-void blitscreen_dirty1_vesa_3x_2xs_16bpp_palettized(struct osd_bitmap *bitmap) { DIRTY1(3,2,1,16,_palettized) }
-void blitscreen_dirty1_vesa_3x_3x_16bpp_palettized(struct osd_bitmap *bitmap)  { DIRTY1(3,3,0,16,_palettized) }
-void blitscreen_dirty1_vesa_3x_3xs_16bpp_palettized(struct osd_bitmap *bitmap) { DIRTY1(3,3,1,16,_palettized) }
-void blitscreen_dirty1_vesa_4x_2x_16bpp_palettized(struct osd_bitmap *bitmap)  { DIRTY1(4,2,0,16,_palettized) }
-void blitscreen_dirty1_vesa_4x_2xs_16bpp_palettized(struct osd_bitmap *bitmap) { DIRTY1(4,2,1,16,_palettized) }
-void blitscreen_dirty1_vesa_4x_3x_16bpp_palettized(struct osd_bitmap *bitmap)  { DIRTY1(4,3,0,16,_palettized) }
-void blitscreen_dirty1_vesa_4x_3xs_16bpp_palettized(struct osd_bitmap *bitmap) { DIRTY1(4,3,1,16,_palettized) }
+void blitscreen_dirty1_vesa_1x_1x_16bpp_palettized(struct mame_bitmap *bitmap)  { DIRTY1(1,1,0,16,_palettized) }
+void blitscreen_dirty1_vesa_1x_2x_16bpp_palettized(struct mame_bitmap *bitmap)  { DIRTY1(1,2,0,16,_palettized) }
+void blitscreen_dirty1_vesa_1x_2xs_16bpp_palettized(struct mame_bitmap *bitmap) { DIRTY1(1,2,1,16,_palettized) }
+void blitscreen_dirty1_vesa_2x_1x_16bpp_palettized(struct mame_bitmap *bitmap)  { DIRTY1(2,1,0,16,_palettized) }
+void blitscreen_dirty1_vesa_2x_2x_16bpp_palettized(struct mame_bitmap *bitmap)  { DIRTY1(2,2,0,16,_palettized) }
+void blitscreen_dirty1_vesa_2x_2xs_16bpp_palettized(struct mame_bitmap *bitmap) { DIRTY1(2,2,1,16,_palettized) }
+void blitscreen_dirty1_vesa_2x_3x_16bpp_palettized(struct mame_bitmap *bitmap)  { DIRTY1(2,3,0,16,_palettized) }
+void blitscreen_dirty1_vesa_2x_3xs_16bpp_palettized(struct mame_bitmap *bitmap) { DIRTY1(2,3,1,16,_palettized) }
+void blitscreen_dirty1_vesa_3x_1x_16bpp_palettized(struct mame_bitmap *bitmap)  { DIRTY1(3,1,0,16,_palettized) }
+void blitscreen_dirty1_vesa_3x_2x_16bpp_palettized(struct mame_bitmap *bitmap)  { DIRTY1(3,2,0,16,_palettized) }
+void blitscreen_dirty1_vesa_3x_2xs_16bpp_palettized(struct mame_bitmap *bitmap) { DIRTY1(3,2,1,16,_palettized) }
+void blitscreen_dirty1_vesa_3x_3x_16bpp_palettized(struct mame_bitmap *bitmap)  { DIRTY1(3,3,0,16,_palettized) }
+void blitscreen_dirty1_vesa_3x_3xs_16bpp_palettized(struct mame_bitmap *bitmap) { DIRTY1(3,3,1,16,_palettized) }
+void blitscreen_dirty1_vesa_4x_2x_16bpp_palettized(struct mame_bitmap *bitmap)  { DIRTY1(4,2,0,16,_palettized) }
+void blitscreen_dirty1_vesa_4x_2xs_16bpp_palettized(struct mame_bitmap *bitmap) { DIRTY1(4,2,1,16,_palettized) }
+void blitscreen_dirty1_vesa_4x_3x_16bpp_palettized(struct mame_bitmap *bitmap)  { DIRTY1(4,3,0,16,_palettized) }
+void blitscreen_dirty1_vesa_4x_3xs_16bpp_palettized(struct mame_bitmap *bitmap) { DIRTY1(4,3,1,16,_palettized) }
 
-void blitscreen_dirty1_vesa_1x_1x_32bpp(struct osd_bitmap *bitmap)  { DIRTY1(1,1,0,32,) }
-void blitscreen_dirty1_vesa_1x_2x_32bpp(struct osd_bitmap *bitmap)  { DIRTY1(1,2,0,32,) }
-void blitscreen_dirty1_vesa_1x_2xs_32bpp(struct osd_bitmap *bitmap) { DIRTY1(1,2,1,32,) }
-void blitscreen_dirty1_vesa_2x_1x_32bpp(struct osd_bitmap *bitmap)  { DIRTY1(2,1,0,32,) }
-void blitscreen_dirty1_vesa_2x_2x_32bpp(struct osd_bitmap *bitmap)  { DIRTY1(2,2,0,32,) }
-void blitscreen_dirty1_vesa_2x_2xs_32bpp(struct osd_bitmap *bitmap) { DIRTY1(2,2,1,32,) }
-void blitscreen_dirty1_vesa_2x_3x_32bpp(struct osd_bitmap *bitmap)  { DIRTY1(2,3,0,32,) }
-void blitscreen_dirty1_vesa_2x_3xs_32bpp(struct osd_bitmap *bitmap) { DIRTY1(2,3,1,32,) }
-void blitscreen_dirty1_vesa_3x_1x_32bpp(struct osd_bitmap *bitmap)  { DIRTY1(3,1,0,32,) }
-void blitscreen_dirty1_vesa_3x_2x_32bpp(struct osd_bitmap *bitmap)  { DIRTY1(3,2,0,32,) }
-void blitscreen_dirty1_vesa_3x_2xs_32bpp(struct osd_bitmap *bitmap) { DIRTY1(3,2,1,32,) }
-void blitscreen_dirty1_vesa_3x_3x_32bpp(struct osd_bitmap *bitmap)  { DIRTY1(3,3,0,32,) }
-void blitscreen_dirty1_vesa_3x_3xs_32bpp(struct osd_bitmap *bitmap) { DIRTY1(3,3,1,32,) }
-void blitscreen_dirty1_vesa_4x_2x_32bpp(struct osd_bitmap *bitmap)  { DIRTY1(4,2,0,32,) }
-void blitscreen_dirty1_vesa_4x_2xs_32bpp(struct osd_bitmap *bitmap) { DIRTY1(4,2,1,32,) }
-void blitscreen_dirty1_vesa_4x_3x_32bpp(struct osd_bitmap *bitmap)  { DIRTY1(4,3,0,32,) }
-void blitscreen_dirty1_vesa_4x_3xs_32bpp(struct osd_bitmap *bitmap) { DIRTY1(4,3,1,32,) }
+void blitscreen_dirty1_vesa_1x_1x_32bpp(struct mame_bitmap *bitmap)  { DIRTY1(1,1,0,32,) }
+void blitscreen_dirty1_vesa_1x_2x_32bpp(struct mame_bitmap *bitmap)  { DIRTY1(1,2,0,32,) }
+void blitscreen_dirty1_vesa_1x_2xs_32bpp(struct mame_bitmap *bitmap) { DIRTY1(1,2,1,32,) }
+void blitscreen_dirty1_vesa_2x_1x_32bpp(struct mame_bitmap *bitmap)  { DIRTY1(2,1,0,32,) }
+void blitscreen_dirty1_vesa_2x_2x_32bpp(struct mame_bitmap *bitmap)  { DIRTY1(2,2,0,32,) }
+void blitscreen_dirty1_vesa_2x_2xs_32bpp(struct mame_bitmap *bitmap) { DIRTY1(2,2,1,32,) }
+void blitscreen_dirty1_vesa_2x_3x_32bpp(struct mame_bitmap *bitmap)  { DIRTY1(2,3,0,32,) }
+void blitscreen_dirty1_vesa_2x_3xs_32bpp(struct mame_bitmap *bitmap) { DIRTY1(2,3,1,32,) }
+void blitscreen_dirty1_vesa_3x_1x_32bpp(struct mame_bitmap *bitmap)  { DIRTY1(3,1,0,32,) }
+void blitscreen_dirty1_vesa_3x_2x_32bpp(struct mame_bitmap *bitmap)  { DIRTY1(3,2,0,32,) }
+void blitscreen_dirty1_vesa_3x_2xs_32bpp(struct mame_bitmap *bitmap) { DIRTY1(3,2,1,32,) }
+void blitscreen_dirty1_vesa_3x_3x_32bpp(struct mame_bitmap *bitmap)  { DIRTY1(3,3,0,32,) }
+void blitscreen_dirty1_vesa_3x_3xs_32bpp(struct mame_bitmap *bitmap) { DIRTY1(3,3,1,32,) }
+void blitscreen_dirty1_vesa_4x_2x_32bpp(struct mame_bitmap *bitmap)  { DIRTY1(4,2,0,32,) }
+void blitscreen_dirty1_vesa_4x_2xs_32bpp(struct mame_bitmap *bitmap) { DIRTY1(4,2,1,32,) }
+void blitscreen_dirty1_vesa_4x_3x_32bpp(struct mame_bitmap *bitmap)  { DIRTY1(4,3,0,32,) }
+void blitscreen_dirty1_vesa_4x_3xs_32bpp(struct mame_bitmap *bitmap) { DIRTY1(4,3,1,32,) }
 
-void blitscreen_dirty0_vesa_1x_1x_8bpp(struct osd_bitmap *bitmap)   { DIRTY0(1,1,0,8,)  }
-void blitscreen_dirty0_vesa_1x_2x_8bpp(struct osd_bitmap *bitmap)   { DIRTY0(1,2,0,8,)  }
-void blitscreen_dirty0_vesa_1x_2xs_8bpp(struct osd_bitmap *bitmap)  { DIRTY0(1,2,1,8,)  }
-void blitscreen_dirty0_vesa_2x_1x_8bpp(struct osd_bitmap *bitmap)   { DIRTY0(2,1,0,8,)  }
-void blitscreen_dirty0_vesa_3x_1x_8bpp(struct osd_bitmap *bitmap)   { DIRTY0(3,1,0,8,)  }
-void blitscreen_dirty0_vesa_2x_2x_8bpp(struct osd_bitmap *bitmap)   { DIRTY0(2,2,0,8,)  }
-void blitscreen_dirty0_vesa_2x_2xs_8bpp(struct osd_bitmap *bitmap)  { DIRTY0(2,2,1,8,)  }
-void blitscreen_dirty0_vesa_2x_3x_8bpp(struct osd_bitmap *bitmap)   { DIRTY0(2,3,0,8,)  }
-void blitscreen_dirty0_vesa_2x_3xs_8bpp(struct osd_bitmap *bitmap)  { DIRTY0(2,3,1,8,)  }
-void blitscreen_dirty0_vesa_3x_2x_8bpp(struct osd_bitmap *bitmap)   { DIRTY0(3,2,0,8,)  }
-void blitscreen_dirty0_vesa_3x_2xs_8bpp(struct osd_bitmap *bitmap)  { DIRTY0(3,2,1,8,)  }
-void blitscreen_dirty0_vesa_3x_3x_8bpp(struct osd_bitmap *bitmap)   { DIRTY0(3,3,0,8,)  }
-void blitscreen_dirty0_vesa_3x_3xs_8bpp(struct osd_bitmap *bitmap)  { DIRTY0(3,3,1,8,)  }
-void blitscreen_dirty0_vesa_4x_2x_8bpp(struct osd_bitmap *bitmap)   { DIRTY0(4,2,0,8,)  }
-void blitscreen_dirty0_vesa_4x_2xs_8bpp(struct osd_bitmap *bitmap)  { DIRTY0(4,2,1,8,)  }
-void blitscreen_dirty0_vesa_4x_3x_8bpp(struct osd_bitmap *bitmap)   { DIRTY0(4,3,0,8,)  }
-void blitscreen_dirty0_vesa_4x_3xs_8bpp(struct osd_bitmap *bitmap)  { DIRTY0(4,3,1,8,)  }
+void blitscreen_dirty0_vesa_1x_1x_8bpp(struct mame_bitmap *bitmap)   { DIRTY0(1,1,0,8,)  }
+void blitscreen_dirty0_vesa_1x_2x_8bpp(struct mame_bitmap *bitmap)   { DIRTY0(1,2,0,8,)  }
+void blitscreen_dirty0_vesa_1x_2xs_8bpp(struct mame_bitmap *bitmap)  { DIRTY0(1,2,1,8,)  }
+void blitscreen_dirty0_vesa_2x_1x_8bpp(struct mame_bitmap *bitmap)   { DIRTY0(2,1,0,8,)  }
+void blitscreen_dirty0_vesa_3x_1x_8bpp(struct mame_bitmap *bitmap)   { DIRTY0(3,1,0,8,)  }
+void blitscreen_dirty0_vesa_2x_2x_8bpp(struct mame_bitmap *bitmap)   { DIRTY0(2,2,0,8,)  }
+void blitscreen_dirty0_vesa_2x_2xs_8bpp(struct mame_bitmap *bitmap)  { DIRTY0(2,2,1,8,)  }
+void blitscreen_dirty0_vesa_2x_3x_8bpp(struct mame_bitmap *bitmap)   { DIRTY0(2,3,0,8,)  }
+void blitscreen_dirty0_vesa_2x_3xs_8bpp(struct mame_bitmap *bitmap)  { DIRTY0(2,3,1,8,)  }
+void blitscreen_dirty0_vesa_3x_2x_8bpp(struct mame_bitmap *bitmap)   { DIRTY0(3,2,0,8,)  }
+void blitscreen_dirty0_vesa_3x_2xs_8bpp(struct mame_bitmap *bitmap)  { DIRTY0(3,2,1,8,)  }
+void blitscreen_dirty0_vesa_3x_3x_8bpp(struct mame_bitmap *bitmap)   { DIRTY0(3,3,0,8,)  }
+void blitscreen_dirty0_vesa_3x_3xs_8bpp(struct mame_bitmap *bitmap)  { DIRTY0(3,3,1,8,)  }
+void blitscreen_dirty0_vesa_4x_2x_8bpp(struct mame_bitmap *bitmap)   { DIRTY0(4,2,0,8,)  }
+void blitscreen_dirty0_vesa_4x_2xs_8bpp(struct mame_bitmap *bitmap)  { DIRTY0(4,2,1,8,)  }
+void blitscreen_dirty0_vesa_4x_3x_8bpp(struct mame_bitmap *bitmap)   { DIRTY0(4,3,0,8,)  }
+void blitscreen_dirty0_vesa_4x_3xs_8bpp(struct mame_bitmap *bitmap)  { DIRTY0(4,3,1,8,)  }
 
-void blitscreen_dirty0_vesa_1x_1x_16bpp(struct osd_bitmap *bitmap)  { DIRTY0(1,1,0,16,) }
-void blitscreen_dirty0_vesa_1x_2x_16bpp(struct osd_bitmap *bitmap)  { DIRTY0(1,2,0,16,) }
-void blitscreen_dirty0_vesa_1x_2xs_16bpp(struct osd_bitmap *bitmap) { DIRTY0(1,2,1,16,) }
-void blitscreen_dirty0_vesa_2x_1x_16bpp(struct osd_bitmap *bitmap)  { DIRTY0(2,1,0,16,) }
-void blitscreen_dirty0_vesa_2x_2x_16bpp(struct osd_bitmap *bitmap)  { DIRTY0(2,2,0,16,) }
-void blitscreen_dirty0_vesa_2x_2xs_16bpp(struct osd_bitmap *bitmap) { DIRTY0(2,2,1,16,) }
-void blitscreen_dirty0_vesa_2x_3x_16bpp(struct osd_bitmap *bitmap)  { DIRTY0(2,3,0,16,)  }
-void blitscreen_dirty0_vesa_2x_3xs_16bpp(struct osd_bitmap *bitmap) { DIRTY0(2,3,1,16,)  }
-void blitscreen_dirty0_vesa_3x_1x_16bpp(struct osd_bitmap *bitmap)  { DIRTY0(3,1,0,16,) }
-void blitscreen_dirty0_vesa_3x_2x_16bpp(struct osd_bitmap *bitmap)  { DIRTY0(3,2,0,16,) }
-void blitscreen_dirty0_vesa_3x_2xs_16bpp(struct osd_bitmap *bitmap) { DIRTY0(3,2,1,16,) }
-void blitscreen_dirty0_vesa_3x_3x_16bpp(struct osd_bitmap *bitmap)  { DIRTY0(3,3,0,16,) }
-void blitscreen_dirty0_vesa_3x_3xs_16bpp(struct osd_bitmap *bitmap) { DIRTY0(3,3,1,16,) }
-void blitscreen_dirty0_vesa_4x_2x_16bpp(struct osd_bitmap *bitmap)  { DIRTY0(4,2,0,16,) }
-void blitscreen_dirty0_vesa_4x_2xs_16bpp(struct osd_bitmap *bitmap) { DIRTY0(4,2,1,16,) }
-void blitscreen_dirty0_vesa_4x_3x_16bpp(struct osd_bitmap *bitmap)  { DIRTY0(4,3,0,16,) }
-void blitscreen_dirty0_vesa_4x_3xs_16bpp(struct osd_bitmap *bitmap) { DIRTY0(4,3,1,16,) }
+void blitscreen_dirty0_vesa_1x_1x_16bpp(struct mame_bitmap *bitmap)  { DIRTY0(1,1,0,16,) }
+void blitscreen_dirty0_vesa_1x_2x_16bpp(struct mame_bitmap *bitmap)  { DIRTY0(1,2,0,16,) }
+void blitscreen_dirty0_vesa_1x_2xs_16bpp(struct mame_bitmap *bitmap) { DIRTY0(1,2,1,16,) }
+void blitscreen_dirty0_vesa_2x_1x_16bpp(struct mame_bitmap *bitmap)  { DIRTY0(2,1,0,16,) }
+void blitscreen_dirty0_vesa_2x_2x_16bpp(struct mame_bitmap *bitmap)  { DIRTY0(2,2,0,16,) }
+void blitscreen_dirty0_vesa_2x_2xs_16bpp(struct mame_bitmap *bitmap) { DIRTY0(2,2,1,16,) }
+void blitscreen_dirty0_vesa_2x_3x_16bpp(struct mame_bitmap *bitmap)  { DIRTY0(2,3,0,16,)  }
+void blitscreen_dirty0_vesa_2x_3xs_16bpp(struct mame_bitmap *bitmap) { DIRTY0(2,3,1,16,)  }
+void blitscreen_dirty0_vesa_3x_1x_16bpp(struct mame_bitmap *bitmap)  { DIRTY0(3,1,0,16,) }
+void blitscreen_dirty0_vesa_3x_2x_16bpp(struct mame_bitmap *bitmap)  { DIRTY0(3,2,0,16,) }
+void blitscreen_dirty0_vesa_3x_2xs_16bpp(struct mame_bitmap *bitmap) { DIRTY0(3,2,1,16,) }
+void blitscreen_dirty0_vesa_3x_3x_16bpp(struct mame_bitmap *bitmap)  { DIRTY0(3,3,0,16,) }
+void blitscreen_dirty0_vesa_3x_3xs_16bpp(struct mame_bitmap *bitmap) { DIRTY0(3,3,1,16,) }
+void blitscreen_dirty0_vesa_4x_2x_16bpp(struct mame_bitmap *bitmap)  { DIRTY0(4,2,0,16,) }
+void blitscreen_dirty0_vesa_4x_2xs_16bpp(struct mame_bitmap *bitmap) { DIRTY0(4,2,1,16,) }
+void blitscreen_dirty0_vesa_4x_3x_16bpp(struct mame_bitmap *bitmap)  { DIRTY0(4,3,0,16,) }
+void blitscreen_dirty0_vesa_4x_3xs_16bpp(struct mame_bitmap *bitmap) { DIRTY0(4,3,1,16,) }
 
-void blitscreen_dirty0_vesa_1x_1x_16bpp_palettized(struct osd_bitmap *bitmap)  { DIRTY0(1,1,0,16,_palettized) }
-void blitscreen_dirty0_vesa_1x_2x_16bpp_palettized(struct osd_bitmap *bitmap)  { DIRTY0(1,2,0,16,_palettized) }
-void blitscreen_dirty0_vesa_1x_2xs_16bpp_palettized(struct osd_bitmap *bitmap) { DIRTY0(1,2,1,16,_palettized) }
-void blitscreen_dirty0_vesa_2x_1x_16bpp_palettized(struct osd_bitmap *bitmap)  { DIRTY0(2,1,0,16,_palettized) }
-void blitscreen_dirty0_vesa_2x_2x_16bpp_palettized(struct osd_bitmap *bitmap)  { DIRTY0(2,2,0,16,_palettized) }
-void blitscreen_dirty0_vesa_2x_2xs_16bpp_palettized(struct osd_bitmap *bitmap) { DIRTY0(2,2,1,16,_palettized) }
-void blitscreen_dirty0_vesa_2x_3x_16bpp_palettized(struct osd_bitmap *bitmap)  { DIRTY0(2,3,0,16,_palettized) }
-void blitscreen_dirty0_vesa_2x_3xs_16bpp_palettized(struct osd_bitmap *bitmap) { DIRTY0(2,3,1,16,_palettized) }
-void blitscreen_dirty0_vesa_3x_1x_16bpp_palettized(struct osd_bitmap *bitmap)  { DIRTY0(3,1,0,16,_palettized) }
-void blitscreen_dirty0_vesa_3x_2x_16bpp_palettized(struct osd_bitmap *bitmap)  { DIRTY0(3,2,0,16,_palettized) }
-void blitscreen_dirty0_vesa_3x_2xs_16bpp_palettized(struct osd_bitmap *bitmap) { DIRTY0(3,2,1,16,_palettized) }
-void blitscreen_dirty0_vesa_3x_3x_16bpp_palettized(struct osd_bitmap *bitmap)  { DIRTY0(3,3,0,16,_palettized) }
-void blitscreen_dirty0_vesa_3x_3xs_16bpp_palettized(struct osd_bitmap *bitmap) { DIRTY0(3,3,1,16,_palettized) }
-void blitscreen_dirty0_vesa_4x_2x_16bpp_palettized(struct osd_bitmap *bitmap)  { DIRTY0(4,2,0,16,_palettized) }
-void blitscreen_dirty0_vesa_4x_2xs_16bpp_palettized(struct osd_bitmap *bitmap) { DIRTY0(4,2,1,16,_palettized) }
-void blitscreen_dirty0_vesa_4x_3x_16bpp_palettized(struct osd_bitmap *bitmap)  { DIRTY0(4,3,0,16,_palettized) }
-void blitscreen_dirty0_vesa_4x_3xs_16bpp_palettized(struct osd_bitmap *bitmap) { DIRTY0(4,3,1,16,_palettized) }
+void blitscreen_dirty0_vesa_1x_1x_16bpp_palettized(struct mame_bitmap *bitmap)  { DIRTY0(1,1,0,16,_palettized) }
+void blitscreen_dirty0_vesa_1x_2x_16bpp_palettized(struct mame_bitmap *bitmap)  { DIRTY0(1,2,0,16,_palettized) }
+void blitscreen_dirty0_vesa_1x_2xs_16bpp_palettized(struct mame_bitmap *bitmap) { DIRTY0(1,2,1,16,_palettized) }
+void blitscreen_dirty0_vesa_2x_1x_16bpp_palettized(struct mame_bitmap *bitmap)  { DIRTY0(2,1,0,16,_palettized) }
+void blitscreen_dirty0_vesa_2x_2x_16bpp_palettized(struct mame_bitmap *bitmap)  { DIRTY0(2,2,0,16,_palettized) }
+void blitscreen_dirty0_vesa_2x_2xs_16bpp_palettized(struct mame_bitmap *bitmap) { DIRTY0(2,2,1,16,_palettized) }
+void blitscreen_dirty0_vesa_2x_3x_16bpp_palettized(struct mame_bitmap *bitmap)  { DIRTY0(2,3,0,16,_palettized) }
+void blitscreen_dirty0_vesa_2x_3xs_16bpp_palettized(struct mame_bitmap *bitmap) { DIRTY0(2,3,1,16,_palettized) }
+void blitscreen_dirty0_vesa_3x_1x_16bpp_palettized(struct mame_bitmap *bitmap)  { DIRTY0(3,1,0,16,_palettized) }
+void blitscreen_dirty0_vesa_3x_2x_16bpp_palettized(struct mame_bitmap *bitmap)  { DIRTY0(3,2,0,16,_palettized) }
+void blitscreen_dirty0_vesa_3x_2xs_16bpp_palettized(struct mame_bitmap *bitmap) { DIRTY0(3,2,1,16,_palettized) }
+void blitscreen_dirty0_vesa_3x_3x_16bpp_palettized(struct mame_bitmap *bitmap)  { DIRTY0(3,3,0,16,_palettized) }
+void blitscreen_dirty0_vesa_3x_3xs_16bpp_palettized(struct mame_bitmap *bitmap) { DIRTY0(3,3,1,16,_palettized) }
+void blitscreen_dirty0_vesa_4x_2x_16bpp_palettized(struct mame_bitmap *bitmap)  { DIRTY0(4,2,0,16,_palettized) }
+void blitscreen_dirty0_vesa_4x_2xs_16bpp_palettized(struct mame_bitmap *bitmap) { DIRTY0(4,2,1,16,_palettized) }
+void blitscreen_dirty0_vesa_4x_3x_16bpp_palettized(struct mame_bitmap *bitmap)  { DIRTY0(4,3,0,16,_palettized) }
+void blitscreen_dirty0_vesa_4x_3xs_16bpp_palettized(struct mame_bitmap *bitmap) { DIRTY0(4,3,1,16,_palettized) }
 
-void blitscreen_dirty0_vesa_1x_1x_32bpp(struct osd_bitmap *bitmap)  { DIRTY0(1,1,0,32,) }
-void blitscreen_dirty0_vesa_1x_2x_32bpp(struct osd_bitmap *bitmap)  { DIRTY0(1,2,0,32,) }
-void blitscreen_dirty0_vesa_1x_2xs_32bpp(struct osd_bitmap *bitmap) { DIRTY0(1,2,1,32,) }
-void blitscreen_dirty0_vesa_2x_1x_32bpp(struct osd_bitmap *bitmap)  { DIRTY0(2,1,0,32,) }
-void blitscreen_dirty0_vesa_2x_2x_32bpp(struct osd_bitmap *bitmap)  { DIRTY0(2,2,0,32,) }
-void blitscreen_dirty0_vesa_2x_2xs_32bpp(struct osd_bitmap *bitmap) { DIRTY0(2,2,1,32,) }
-void blitscreen_dirty0_vesa_2x_3x_32bpp(struct osd_bitmap *bitmap)  { DIRTY0(2,3,0,32,) }
-void blitscreen_dirty0_vesa_2x_3xs_32bpp(struct osd_bitmap *bitmap) { DIRTY0(2,3,1,32,) }
-void blitscreen_dirty0_vesa_3x_1x_32bpp(struct osd_bitmap *bitmap)  { DIRTY0(3,1,0,32,) }
-void blitscreen_dirty0_vesa_3x_2x_32bpp(struct osd_bitmap *bitmap)  { DIRTY0(3,2,0,32,) }
-void blitscreen_dirty0_vesa_3x_2xs_32bpp(struct osd_bitmap *bitmap) { DIRTY0(3,2,1,32,) }
-void blitscreen_dirty0_vesa_3x_3x_32bpp(struct osd_bitmap *bitmap)  { DIRTY0(3,3,0,32,) }
-void blitscreen_dirty0_vesa_3x_3xs_32bpp(struct osd_bitmap *bitmap) { DIRTY0(3,3,1,32,) }
-void blitscreen_dirty0_vesa_4x_2x_32bpp(struct osd_bitmap *bitmap)  { DIRTY0(4,2,0,32,) }
-void blitscreen_dirty0_vesa_4x_2xs_32bpp(struct osd_bitmap *bitmap) { DIRTY0(4,2,1,32,) }
-void blitscreen_dirty0_vesa_4x_3x_32bpp(struct osd_bitmap *bitmap)  { DIRTY0(4,3,0,32,) }
-void blitscreen_dirty0_vesa_4x_3xs_32bpp(struct osd_bitmap *bitmap) { DIRTY0(4,3,1,32,) }
+void blitscreen_dirty0_vesa_1x_1x_32bpp(struct mame_bitmap *bitmap)  { DIRTY0(1,1,0,32,) }
+void blitscreen_dirty0_vesa_1x_2x_32bpp(struct mame_bitmap *bitmap)  { DIRTY0(1,2,0,32,) }
+void blitscreen_dirty0_vesa_1x_2xs_32bpp(struct mame_bitmap *bitmap) { DIRTY0(1,2,1,32,) }
+void blitscreen_dirty0_vesa_2x_1x_32bpp(struct mame_bitmap *bitmap)  { DIRTY0(2,1,0,32,) }
+void blitscreen_dirty0_vesa_2x_2x_32bpp(struct mame_bitmap *bitmap)  { DIRTY0(2,2,0,32,) }
+void blitscreen_dirty0_vesa_2x_2xs_32bpp(struct mame_bitmap *bitmap) { DIRTY0(2,2,1,32,) }
+void blitscreen_dirty0_vesa_2x_3x_32bpp(struct mame_bitmap *bitmap)  { DIRTY0(2,3,0,32,) }
+void blitscreen_dirty0_vesa_2x_3xs_32bpp(struct mame_bitmap *bitmap) { DIRTY0(2,3,1,32,) }
+void blitscreen_dirty0_vesa_3x_1x_32bpp(struct mame_bitmap *bitmap)  { DIRTY0(3,1,0,32,) }
+void blitscreen_dirty0_vesa_3x_2x_32bpp(struct mame_bitmap *bitmap)  { DIRTY0(3,2,0,32,) }
+void blitscreen_dirty0_vesa_3x_2xs_32bpp(struct mame_bitmap *bitmap) { DIRTY0(3,2,1,32,) }
+void blitscreen_dirty0_vesa_3x_3x_32bpp(struct mame_bitmap *bitmap)  { DIRTY0(3,3,0,32,) }
+void blitscreen_dirty0_vesa_3x_3xs_32bpp(struct mame_bitmap *bitmap) { DIRTY0(3,3,1,32,) }
+void blitscreen_dirty0_vesa_4x_2x_32bpp(struct mame_bitmap *bitmap)  { DIRTY0(4,2,0,32,) }
+void blitscreen_dirty0_vesa_4x_2xs_32bpp(struct mame_bitmap *bitmap) { DIRTY0(4,2,1,32,) }
+void blitscreen_dirty0_vesa_4x_3x_32bpp(struct mame_bitmap *bitmap)  { DIRTY0(4,3,0,32,) }
+void blitscreen_dirty0_vesa_4x_3xs_32bpp(struct mame_bitmap *bitmap) { DIRTY0(4,3,1,32,) }

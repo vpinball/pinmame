@@ -170,7 +170,7 @@ typedef struct {
 /*-----------------------------
 / exported simulator functions
 /------------------------------*/
-void sim_draw(int fullRefresh, int firstRow);
+void sim_draw(int firstRow);
 void sim_run(int *inports, int firstGameInport, int useSimKeys, int noOfBalls);
 int sim_getSol(int solNo);
 int sim_init(sim_tSimData *gameSimData, int *inports, int firstGameInport);

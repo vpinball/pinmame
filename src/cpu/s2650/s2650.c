@@ -15,7 +15,7 @@
 #include "s2650cpu.h"
 
 /* define this to have some interrupt information logged */
-#define VERBOSE 1
+#define VERBOSE 0
 
 #if VERBOSE
 #include <stdio.h>
@@ -779,33 +779,13 @@ void s2650_set_context(void *src)
 	}
 }
 
-unsigned s2650_get_pc(void)
-{
-    return S.page + S.iar;
-}
-
-void s2650_set_pc(unsigned val)
-{
-	S.page = val & PAGE;
-	S.iar = val & PMSK;
-	change_pc16(S.page + S.iar);
-}
-
-unsigned s2650_get_sp(void)
-{
-	return S.psu & SP;
-}
-
-void s2650_set_sp(unsigned val)
-{
-	S.psu = (S.psu & ~SP) | (val & SP);
-}
-
 unsigned s2650_get_reg(int regnum)
 {
 	switch( regnum )
 	{
+		case REG_PC:
 		case S2650_PC: return S.page + S.iar;
+		case REG_SP: return S.psu & SP;
 		case S2650_PS: return (S.psu << 8) | S.psl;
 		case S2650_R0: return S.reg[0];
 		case S2650_R1: return S.reg[1];
@@ -834,7 +814,13 @@ void s2650_set_reg(int regnum, unsigned val)
 {
 	switch( regnum )
 	{
+		case REG_PC:
+			S.page = val & PAGE;
+			S.iar = val & PMSK;
+			change_pc16(S.page + S.iar);
+			break;
 		case S2650_PC: S.page = val & PAGE; S.iar = val & PMSK; break;
+		case REG_SP: S.psu = (S.psu & ~SP) | (val & SP); break;
 		case S2650_PS: S.psl = val & 0xff; S.psu = val >> 8; break;
 		case S2650_R0: S.reg[0] = val; break;
 		case S2650_R1: S.reg[1] = val; break;
@@ -855,11 +841,6 @@ void s2650_set_reg(int regnum, unsigned val)
 					S.ras[offset] = val;
 			}
     }
-}
-
-void s2650_set_nmi_line(int state)
-{
-	/* no NMI line */
 }
 
 void s2650_set_irq_line(int irqline, int state)

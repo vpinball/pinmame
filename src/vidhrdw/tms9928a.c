@@ -136,18 +136,18 @@ static unsigned char TMS9928A_palette[32*3] =
 /*
 ** Forward declarations of internal functions.
 */
-static void _TMS9928A_mode0 (int which,struct osd_bitmap*);
-static void _TMS9928A_mode1 (int which,struct osd_bitmap*);
-static void _TMS9928A_mode2 (int which,struct osd_bitmap*);
-static void _TMS9928A_mode12 (int which,struct osd_bitmap*);
-static void _TMS9928A_mode3 (int which,struct osd_bitmap*);
-static void _TMS9928A_mode23 (int which,struct osd_bitmap*);
-static void _TMS9928A_modebogus (int which,struct osd_bitmap*);
-static void _TMS9928A_sprites (int which, struct osd_bitmap*);
+static void _TMS9928A_mode0 (int which,struct mame_bitmap*);
+static void _TMS9928A_mode1 (int which,struct mame_bitmap*);
+static void _TMS9928A_mode2 (int which,struct mame_bitmap*);
+static void _TMS9928A_mode12 (int which,struct mame_bitmap*);
+static void _TMS9928A_mode3 (int which,struct mame_bitmap*);
+static void _TMS9928A_mode23 (int which,struct mame_bitmap*);
+static void _TMS9928A_modebogus (int which,struct mame_bitmap*);
+static void _TMS9928A_sprites (int which, struct mame_bitmap*);
 static void _TMS9928A_change_register (int which, int reg, UINT8 data);
 static void _TMS9928A_set_dirty (int which, char);
 
-static void (*ModeHandlers[])(int which, struct osd_bitmap*) = {
+static void (*ModeHandlers[])(int which, struct mame_bitmap*) = {
         _TMS9928A_mode0, _TMS9928A_mode1, _TMS9928A_mode2,  _TMS9928A_mode12,
         _TMS9928A_mode3, _TMS9928A_modebogus, _TMS9928A_mode23,
         _TMS9928A_modebogus };
@@ -167,7 +167,7 @@ typedef struct {
     void (*INTCallback)(int);
     /* memory */
     UINT8 *vMem, *dBackMem;
-    struct osd_bitmap *tmpbmp, *tmpsbmp;
+    struct mame_bitmap *tmpbmp, *tmpsbmp;
     int vramsize, model;
     /* emulation settings */
     int LimitSprites; /* max 4 sprites on a row, like original TMS9918A */
@@ -320,8 +320,8 @@ void TMS9928A_stop (int num_chips) {
 		free (tms[which].DirtyColour); tms[which].DirtyColour = NULL;
 		free (tms[which].DirtyName); tms[which].DirtyName = NULL;
 		free (tms[which].DirtyPattern); tms[which].DirtyPattern = NULL;
-		osd_free_bitmap (tms[which].tmpbmp); tms[which].tmpbmp = NULL;
-		osd_free_bitmap (tms[which].tmpsbmp); tms[which].tmpsbmp = NULL;
+		bitmap_free (tms[which].tmpbmp); tms[which].tmpbmp = NULL;
+		bitmap_free (tms[which].tmpsbmp); tms[which].tmpsbmp = NULL;
 	}
 }
 
@@ -525,7 +525,7 @@ void TMS9928A_set_spriteslimit (int which, int limit) {
 
 /* REWRITTEN TO SUPPORT MULTI-CHIPS IN 1 FUNCTION CALL */
 
-void TMS9928A_refresh (int num_chips, struct osd_bitmap *bmp, int full_refresh) {
+void TMS9928A_refresh (int num_chips, struct mame_bitmap *bmp, int full_refresh) {
     int c,which;
 	int update=0;
 
@@ -536,10 +536,10 @@ void TMS9928A_refresh (int num_chips, struct osd_bitmap *bmp, int full_refresh) 
 			if (tms[which].BackColour != c) tms[which].BackColour = c;
 		}
 
-		if (palette_recalc() ) {
-			_TMS9928A_set_dirty (which,1);
-			tms[which].Change = 1;
-		}
+//		if (palette_recalc() ) {
+//			_TMS9928A_set_dirty (which,1);
+//			tms[which].Change = 1;
+//		}
 	}
 
 	/*For each chip*/
@@ -595,7 +595,7 @@ void TMS9928A_refresh (int num_chips, struct osd_bitmap *bmp, int full_refresh) 
          so that the background of master then master sprites are drawn, then the slave..
 		 This is correct in the "non test" refresh code above.. Haven't had time to fix here..
 */
-void TMS9928A_refresh_test (int num_chips, struct osd_bitmap *bmp, int full_refresh) {
+void TMS9928A_refresh_test (int num_chips, struct mame_bitmap *bmp, int full_refresh) {
     int c,which;
 	int update=0;
 
@@ -606,10 +606,10 @@ void TMS9928A_refresh_test (int num_chips, struct osd_bitmap *bmp, int full_refr
 			if (tms[which].BackColour != c) tms[which].BackColour = c;
 		}
 
-		if (palette_recalc() ) {
-			_TMS9928A_set_dirty (which,1);
-			tms[which].Change = 1;
-		}
+//		if (palette_recalc() ) {
+//			_TMS9928A_set_dirty (which,1);
+//			tms[which].Change = 1;
+//		}
 	}
 
 	/*For each chip*/
@@ -699,7 +699,7 @@ int TMS9928A_interrupt (int which) {
     return b;
 }
 
-static void _TMS9928A_mode1 (int which, struct osd_bitmap *bmp) {
+static void _TMS9928A_mode1 (int which, struct mame_bitmap *bmp) {
     int pattern,x,y,yy,xx,name,charcode;
     UINT8 fg,bg,*patternptr;
 	struct rectangle rt;
@@ -741,7 +741,7 @@ static void _TMS9928A_mode1 (int which, struct osd_bitmap *bmp) {
     _TMS9928A_set_dirty (which,0);
 }
 
-static void _TMS9928A_mode12 (int which, struct osd_bitmap *bmp) {
+static void _TMS9928A_mode12 (int which, struct mame_bitmap *bmp) {
     int pattern,x,y,yy,xx,name,charcode;
     UINT8 fg,bg,*patternptr;
 	struct rectangle rt;
@@ -783,7 +783,7 @@ static void _TMS9928A_mode12 (int which, struct osd_bitmap *bmp) {
     _TMS9928A_set_dirty (which, 0);
 }
 
-static void _TMS9928A_mode0 (int which, struct osd_bitmap *bmp) {
+static void _TMS9928A_mode0 (int which, struct mame_bitmap *bmp) {
     int pattern,x,y,yy,xx,name,charcode,colour;
     UINT8 fg,bg,*patternptr;
 
@@ -812,7 +812,7 @@ static void _TMS9928A_mode0 (int which, struct osd_bitmap *bmp) {
 }
 
 // patched for Granny & The Gators
-static void _TMS9928A_mode2 (int which, struct osd_bitmap *bmp) {
+static void _TMS9928A_mode2 (int which, struct mame_bitmap *bmp) {
     int colour,name,x,y,yy,pattern,xx,charcode;
     UINT8 fg,bg;
     UINT8 *colourptr,*patternptr;
@@ -850,7 +850,7 @@ static void _TMS9928A_mode2 (int which, struct osd_bitmap *bmp) {
     _TMS9928A_set_dirty (which,0);
 }
 
-static void _TMS9928A_mode3 (int which, struct osd_bitmap *bmp) {
+static void _TMS9928A_mode3 (int which, struct mame_bitmap *bmp) {
     int x,y,yy,yyy,name,charcode;
     UINT8 fg,bg,*patternptr;
 
@@ -884,7 +884,7 @@ static void _TMS9928A_mode3 (int which, struct osd_bitmap *bmp) {
     _TMS9928A_set_dirty (which,0);
 }
 
-static void _TMS9928A_mode23 (int which, struct osd_bitmap *bmp) {
+static void _TMS9928A_mode23 (int which, struct mame_bitmap *bmp) {
     int x,y,yy,yyy,name,charcode;
     UINT8 fg,bg,*patternptr;
 
@@ -919,7 +919,7 @@ static void _TMS9928A_mode23 (int which, struct osd_bitmap *bmp) {
     _TMS9928A_set_dirty (which,0);
 }
 
-static void _TMS9928A_modebogus (int which, struct osd_bitmap *bmp) {
+static void _TMS9928A_modebogus (int which, struct mame_bitmap *bmp) {
     UINT8 fg,bg;
     int x,y,n,xx;
 
@@ -951,7 +951,7 @@ static void _TMS9928A_modebogus (int which, struct osd_bitmap *bmp) {
 **
 ** This code should be optimized. One day.
 */
-static void _TMS9928A_sprites (int which, struct osd_bitmap *bmp) {
+static void _TMS9928A_sprites (int which, struct mame_bitmap *bmp) {
     UINT8 *attributeptr,*patternptr,c;
     int p,x,y,size,i,j,large,yy,xx,limit[192],
         illegalsprite,illegalspriteline;

@@ -2,7 +2,6 @@
 must fix:
 	callm
 	chk
-	chk2cmp2
 */
 /* ======================================================================== */
 /* ========================= LICENSING & COPYRIGHT ======================== */
@@ -3413,7 +3412,7 @@ M68KMAKE_OP(chk, 16, ., .)
 
 M68KMAKE_OP(chk, 32, ., d)
 {
-	logerror("%08x: Chk 32d\n",cpu_get_pc());
+	logerror("%08x: Chk 32d\n",activecpu_get_pc());
 	if(CPU_TYPE_IS_EC020_PLUS(CPU_TYPE))
 	{
 		sint src = MAKE_INT_32(DX);
@@ -3433,7 +3432,7 @@ M68KMAKE_OP(chk, 32, ., d)
 
 M68KMAKE_OP(chk, 32, ., .)
 {
-		logerror("%08x: Chk 32\n",cpu_get_pc());
+		logerror("%08x: Chk 32\n",activecpu_get_pc());
 
 	if(CPU_TYPE_IS_EC020_PLUS(CPU_TYPE))
 	{
@@ -3457,7 +3456,7 @@ M68KMAKE_OP(chk2cmp2, 8, ., pcdi)
 	if(CPU_TYPE_IS_EC020_PLUS(CPU_TYPE))
 	{
 		uint word2 = OPER_I_16();
-		uint compare = REG_DA[(word2 >> 12) & 15];
+		uint compare = REG_DA[(word2 >> 12) & 15]&0xff;
 		uint ea = EA_PCDI_8();
 		uint lower_bound = m68ki_read_pcrel_8(ea);
 		uint upper_bound = m68ki_read_pcrel_8(ea + 1);
@@ -3466,7 +3465,7 @@ M68KMAKE_OP(chk2cmp2, 8, ., pcdi)
 			FLAG_C = MAKE_INT_8(compare) - MAKE_INT_8(lower_bound);
 		else
 			FLAG_C = compare - lower_bound;
-		FLAG_Z = MASK_OUT_ABOVE_8(FLAG_C);
+		FLAG_Z = !((upper_bound==compare) | (lower_bound==compare));
 		if(COND_CS())
 		{
 			if(BIT_B(word2))
@@ -3475,10 +3474,8 @@ M68KMAKE_OP(chk2cmp2, 8, ., pcdi)
 		}
 
 		FLAG_C = upper_bound - compare;
-		FLAG_Z = MASK_OUT_ABOVE_8(FLAG_C);
 		if(COND_CS() && BIT_B(word2))
 				m68ki_exception_trap(EXCEPTION_CHK);
-
 		return;
 	}
 	m68ki_exception_illegal();
@@ -3490,7 +3487,7 @@ M68KMAKE_OP(chk2cmp2, 8, ., pcix)
 	if(CPU_TYPE_IS_EC020_PLUS(CPU_TYPE))
 	{
 		uint word2 = OPER_I_16();
-		uint compare = REG_DA[(word2 >> 12) & 15];
+		uint compare = REG_DA[(word2 >> 12) & 15]&0xff;
 		uint ea = EA_PCIX_8();
 		uint lower_bound = m68ki_read_pcrel_8(ea);
 		uint upper_bound = m68ki_read_pcrel_8(ea + 1);
@@ -3499,7 +3496,7 @@ M68KMAKE_OP(chk2cmp2, 8, ., pcix)
 			FLAG_C = MAKE_INT_8(compare) - MAKE_INT_8(lower_bound);
 		else
 			FLAG_C = compare - lower_bound;
-		FLAG_Z = MASK_OUT_ABOVE_8(FLAG_C);
+		FLAG_Z = !((upper_bound==compare) | (lower_bound==compare));
 		if(COND_CS())
 		{
 			if(BIT_B(word2))
@@ -3508,10 +3505,8 @@ M68KMAKE_OP(chk2cmp2, 8, ., pcix)
 		}
 
 		FLAG_C = upper_bound - compare;
-		FLAG_Z = MASK_OUT_ABOVE_8(FLAG_C);
 		if(COND_CS() && BIT_B(word2))
 				m68ki_exception_trap(EXCEPTION_CHK);
-
 		return;
 	}
 	m68ki_exception_illegal();
@@ -3523,7 +3518,7 @@ M68KMAKE_OP(chk2cmp2, 8, ., .)
 	if(CPU_TYPE_IS_EC020_PLUS(CPU_TYPE))
 	{
 		uint word2 = OPER_I_16();
-		uint compare = REG_DA[(word2 >> 12) & 15];
+		uint compare = REG_DA[(word2 >> 12) & 15]&0xff;
 		uint ea = M68KMAKE_GET_EA_AY_8;
 		uint lower_bound = m68ki_read_8(ea);
 		uint upper_bound = m68ki_read_8(ea + 1);
@@ -3532,7 +3527,7 @@ M68KMAKE_OP(chk2cmp2, 8, ., .)
 			FLAG_C = MAKE_INT_8(compare) - MAKE_INT_8(lower_bound);
 		else
 			FLAG_C = compare - lower_bound;
-		FLAG_Z = MASK_OUT_ABOVE_8(FLAG_C);
+		FLAG_Z = !((upper_bound==compare) | (lower_bound==compare));
 		if(COND_CS())
 		{
 			if(BIT_B(word2))
@@ -3541,10 +3536,8 @@ M68KMAKE_OP(chk2cmp2, 8, ., .)
 		}
 
 		FLAG_C = upper_bound - compare;
-		FLAG_Z = MASK_OUT_ABOVE_8(FLAG_C);
 		if(COND_CS() && BIT_B(word2))
 				m68ki_exception_trap(EXCEPTION_CHK);
-
 		return;
 	}
 	m68ki_exception_illegal();
@@ -3556,7 +3549,7 @@ M68KMAKE_OP(chk2cmp2, 16, ., pcdi)
 	if(CPU_TYPE_IS_EC020_PLUS(CPU_TYPE))
 	{
 		uint word2 = OPER_I_16();
-		uint compare = REG_DA[(word2 >> 12) & 15];
+		uint compare = REG_DA[(word2 >> 12) & 15]&0xffff;
 		uint ea = EA_PCDI_16();
 		uint lower_bound = m68ki_read_pcrel_16(ea);
 		uint upper_bound = m68ki_read_pcrel_16(ea + 2);
@@ -3565,7 +3558,7 @@ M68KMAKE_OP(chk2cmp2, 16, ., pcdi)
 			FLAG_C = MAKE_INT_16(compare) - MAKE_INT_16(lower_bound);
 		else
 			FLAG_C = compare - lower_bound;
-		FLAG_Z = MASK_OUT_ABOVE_16(FLAG_C);
+		FLAG_Z = !((upper_bound==compare) | (lower_bound==compare));
 		FLAG_C = CFLAG_16(FLAG_C);
 		if(COND_CS())
 		{
@@ -3578,11 +3571,9 @@ M68KMAKE_OP(chk2cmp2, 16, ., pcdi)
 			FLAG_C = MAKE_INT_16(upper_bound) - MAKE_INT_16(compare);
 		else
 			FLAG_C = upper_bound - compare;
-		FLAG_Z = MASK_OUT_ABOVE_16(FLAG_C);
 		FLAG_C = CFLAG_16(FLAG_C);
 		if(COND_CS() && BIT_B(word2))
 				m68ki_exception_trap(EXCEPTION_CHK);
-
 		return;
 	}
 	m68ki_exception_illegal();
@@ -3594,7 +3585,7 @@ M68KMAKE_OP(chk2cmp2, 16, ., pcix)
 	if(CPU_TYPE_IS_EC020_PLUS(CPU_TYPE))
 	{
 		uint word2 = OPER_I_16();
-		uint compare = REG_DA[(word2 >> 12) & 15];
+		uint compare = REG_DA[(word2 >> 12) & 15]&0xffff;
 		uint ea = EA_PCIX_16();
 		uint lower_bound = m68ki_read_pcrel_16(ea);
 		uint upper_bound = m68ki_read_pcrel_16(ea + 2);
@@ -3603,7 +3594,7 @@ M68KMAKE_OP(chk2cmp2, 16, ., pcix)
 			FLAG_C = MAKE_INT_16(compare) - MAKE_INT_16(lower_bound);
 		else
 			FLAG_C = compare - lower_bound;
-		FLAG_Z = MASK_OUT_ABOVE_16(FLAG_C);
+		FLAG_Z = !((upper_bound==compare) | (lower_bound==compare));
 		FLAG_C = CFLAG_16(FLAG_C);
 		if(COND_CS())
 		{
@@ -3616,11 +3607,9 @@ M68KMAKE_OP(chk2cmp2, 16, ., pcix)
 			FLAG_C = MAKE_INT_16(upper_bound) - MAKE_INT_16(compare);
 		else
 			FLAG_C = upper_bound - compare;
-		FLAG_Z = MASK_OUT_ABOVE_16(FLAG_C);
 		FLAG_C = CFLAG_16(FLAG_C);
 		if(COND_CS() && BIT_B(word2))
 				m68ki_exception_trap(EXCEPTION_CHK);
-
 		return;
 	}
 	m68ki_exception_illegal();
@@ -3632,7 +3621,7 @@ M68KMAKE_OP(chk2cmp2, 16, ., .)
 	if(CPU_TYPE_IS_EC020_PLUS(CPU_TYPE))
 	{
 		uint word2 = OPER_I_16();
-		uint compare = REG_DA[(word2 >> 12) & 15];
+		uint compare = REG_DA[(word2 >> 12) & 15]&0xffff;
 		uint ea = M68KMAKE_GET_EA_AY_16;
 		uint lower_bound = m68ki_read_16(ea);
 		uint upper_bound = m68ki_read_16(ea + 2);
@@ -3642,7 +3631,7 @@ M68KMAKE_OP(chk2cmp2, 16, ., .)
 		else
 			FLAG_C = compare - lower_bound;
 
-		FLAG_Z = MASK_OUT_ABOVE_16(FLAG_C);
+		FLAG_Z = !((upper_bound==compare) | (lower_bound==compare));
 		FLAG_C = CFLAG_16(FLAG_C);
 		if(COND_CS())
 		{
@@ -3655,7 +3644,6 @@ M68KMAKE_OP(chk2cmp2, 16, ., .)
 		else
 			FLAG_C = upper_bound - compare;
 
-		FLAG_Z = MASK_OUT_ABOVE_16(FLAG_C);
 		FLAG_C = CFLAG_16(FLAG_C);
 		if(COND_CS() && BIT_B(word2))
 				m68ki_exception_trap(EXCEPTION_CHK);
@@ -3676,7 +3664,7 @@ M68KMAKE_OP(chk2cmp2, 32, ., pcdi)
 		uint upper_bound = m68ki_read_pcrel_32(ea + 4);
 
 		FLAG_C = compare - lower_bound;
-		FLAG_Z = MASK_OUT_ABOVE_32(FLAG_C);
+		FLAG_Z = !((upper_bound==compare) | (lower_bound==compare));
 		FLAG_C = CFLAG_SUB_32(lower_bound, compare, FLAG_C);
 		if(COND_CS())
 		{
@@ -3686,11 +3674,9 @@ M68KMAKE_OP(chk2cmp2, 32, ., pcdi)
 		}
 
 		FLAG_C = upper_bound - compare;
-		FLAG_Z = MASK_OUT_ABOVE_32(FLAG_C);
 		FLAG_C = CFLAG_SUB_32(compare, upper_bound, FLAG_C);
 		if(COND_CS() && BIT_B(word2))
 				m68ki_exception_trap(EXCEPTION_CHK);
-
 		return;
 	}
 	m68ki_exception_illegal();
@@ -3708,7 +3694,7 @@ M68KMAKE_OP(chk2cmp2, 32, ., pcix)
 		uint upper_bound = m68ki_read_pcrel_32(ea + 4);
 
 		FLAG_C = compare - lower_bound;
-		FLAG_Z = MASK_OUT_ABOVE_32(FLAG_C);
+		FLAG_Z = !((upper_bound==compare) | (lower_bound==compare));
 		FLAG_C = CFLAG_SUB_32(lower_bound, compare, FLAG_C);
 		if(COND_CS())
 		{
@@ -3718,11 +3704,9 @@ M68KMAKE_OP(chk2cmp2, 32, ., pcix)
 		}
 
 		FLAG_C = upper_bound - compare;
-		FLAG_Z = MASK_OUT_ABOVE_32(FLAG_C);
 		FLAG_C = CFLAG_SUB_32(compare, upper_bound, FLAG_C);
 		if(COND_CS() && BIT_B(word2))
 				m68ki_exception_trap(EXCEPTION_CHK);
-
 		return;
 	}
 	m68ki_exception_illegal();
@@ -3740,7 +3724,7 @@ M68KMAKE_OP(chk2cmp2, 32, ., .)
 		uint upper_bound = m68ki_read_32(ea + 4);
 
 		FLAG_C = compare - lower_bound;
-		FLAG_Z = MASK_OUT_ABOVE_32(FLAG_C);
+		FLAG_Z = !((upper_bound==compare) | (lower_bound==compare));
 		FLAG_C = CFLAG_SUB_32(lower_bound, compare, FLAG_C);
 		if(COND_CS())
 		{
@@ -3750,11 +3734,9 @@ M68KMAKE_OP(chk2cmp2, 32, ., .)
 		}
 
 		FLAG_C = upper_bound - compare;
-		FLAG_Z = MASK_OUT_ABOVE_32(FLAG_C);
 		FLAG_C = CFLAG_SUB_32(compare, upper_bound, FLAG_C);
 		if(COND_CS() && BIT_B(word2))
 				m68ki_exception_trap(EXCEPTION_CHK);
-
 		return;
 	}
 	m68ki_exception_illegal();

@@ -158,32 +158,13 @@ void m65ce02_set_context (void *src)
 	}
 }
 
-unsigned m65ce02_get_pc (void)
-{
-	return PCD;
-}
-
-void m65ce02_set_pc (unsigned val)
-{
-	PCW = val;
-	change_pc16(PCD);
-}
-
-unsigned m65ce02_get_sp (void)
-{
-	return S;
-}
-
-void m65ce02_set_sp (unsigned val)
-{
-	S = val;
-}
-
 unsigned m65ce02_get_reg (int regnum)
 {
 	switch( regnum )
 	{
+		case REG_PC: return PCD;
 		case M65CE02_PC: return m65ce02.pc.w.l;
+		case REG_SP: return S;
 		case M65CE02_S: return m65ce02.sp.w.l;
 		case M65CE02_P: return m65ce02.p;
 		case M65CE02_A: return m65ce02.a;
@@ -211,7 +192,9 @@ void m65ce02_set_reg (int regnum, unsigned val)
 {
 	switch( regnum )
 	{
+		case REG_PC: PCW = val; change_pc16(PCD); break;
 		case M65CE02_PC: m65ce02.pc.w.l = val; break;
+		case REG_SP: S = val; break;
 		case M65CE02_S: m65ce02.sp.w.l = val; break;
 		case M65CE02_P: m65ce02.p = val; break;
 		case M65CE02_A: m65ce02.a = val; break;
@@ -221,7 +204,7 @@ void m65ce02_set_reg (int regnum, unsigned val)
 		case M65CE02_B: m65ce02.zp.b.h = val; break;
 		case M65CE02_EA: m65ce02.ea.w.l = val; break;
 		case M65CE02_ZP: m65ce02.zp.b.l = val; break;
-		case M65CE02_NMI_STATE: m65ce02_set_nmi_line( val ); break;
+		case M65CE02_NMI_STATE: m65ce02_set_irq_line( IRQ_LINE_NMI, val ); break;
 		case M65CE02_IRQ_STATE: m65ce02_set_irq_line( 0, val ); break;
 		default:
 			if( regnum <= REG_SP_CONTENTS )
@@ -300,33 +283,35 @@ int m65ce02_execute(int cycles)
 	return cycles - m65ce02_ICount;
 }
 
-void m65ce02_set_nmi_line(int state)
-{
-	if (m65ce02.nmi_state == state) return;
-	m65ce02.nmi_state = state;
-	if( state != CLEAR_LINE )
-	{
-		LOG(("M65ce02#%d set_nmi_line(ASSERT)\n", cpu_getactivecpu()));
-		EAD = M65CE02_NMI_VEC;
-		m65ce02_ICount -= 7;
-		PUSH(PCH);
-		PUSH(PCL);
-		PUSH(P & ~F_B);
-		P = (P & ~F_D) | F_I;		/* knock out D and set I flag */
-		PCL = RDMEM(EAD);
-		PCH = RDMEM(EAD+1);
-		LOG(("M65ce02#%d takes NMI ($%04x)\n", cpu_getactivecpu(), PCD));
-		change_pc16(PCD);
-	}
-}
-
 void m65ce02_set_irq_line(int irqline, int state)
 {
-	m65ce02.irq_state = state;
-	if( state != CLEAR_LINE )
+	if (irqline == IRQ_LINE_NMI)
 	{
-		LOG(("M65ce02#%d set_irq_line(ASSERT)\n", cpu_getactivecpu()));
-		m65ce02.pending_irq = 1;
+		if (m65ce02.nmi_state == state) return;
+		m65ce02.nmi_state = state;
+		if( state != CLEAR_LINE )
+		{
+			LOG(("M65ce02#%d set_nmi_line(ASSERT)\n", cpu_getactivecpu()));
+			EAD = M65CE02_NMI_VEC;
+			m65ce02_ICount -= 7;
+			PUSH(PCH);
+			PUSH(PCL);
+			PUSH(P & ~F_B);
+			P = (P & ~F_D) | F_I;		/* knock out D and set I flag */
+			PCL = RDMEM(EAD);
+			PCH = RDMEM(EAD+1);
+			LOG(("M65ce02#%d takes NMI ($%04x)\n", cpu_getactivecpu(), PCD));
+			change_pc16(PCD);
+		}
+	}
+	else
+	{
+		m65ce02.irq_state = state;
+		if( state != CLEAR_LINE )
+		{
+			LOG(("M65ce02#%d set_irq_line(ASSERT)\n", cpu_getactivecpu()));
+			m65ce02.pending_irq = 1;
+		}
 	}
 }
 

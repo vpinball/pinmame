@@ -7,22 +7,22 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <dirent.h>
 #include <unzip.h>
-#include "dirent.h"
-#include "zlib.h"
+#include "zlib/zlib.h"
 
 #ifndef MESS
 enum { LIST_SHORT = 1, LIST_INFO, LIST_FULL, LIST_SAMDIR, LIST_ROMS, LIST_SAMPLES,
 		LIST_LMR, LIST_DETAILS, LIST_GAMELIST,
 		LIST_GAMES, LIST_CLONES,
 		LIST_WRONGORIENTATION, LIST_WRONGFPS, LIST_CRC, LIST_DUPCRC, LIST_WRONGMERGE,
-		LIST_ROMSIZE, LIST_CPU, LIST_SOURCEFILE };
+		LIST_ROMSIZE, LIST_PALETTESIZE, LIST_CPU, LIST_SOURCEFILE };
 #else
 enum { LIST_SHORT = 1, LIST_INFO, LIST_FULL, LIST_SAMDIR, LIST_ROMS, LIST_SAMPLES,
 		LIST_LMR, LIST_DETAILS, LIST_GAMELIST,
 		LIST_GAMES, LIST_CLONES,
 		LIST_WRONGORIENTATION, LIST_WRONGFPS, LIST_CRC, LIST_DUPCRC, LIST_WRONGMERGE,
-		LIST_ROMSIZE, LIST_CPU, LIST_SOURCEFILE, LIST_MESSINFO };
+		LIST_ROMSIZE, LIST_PALETTESIZE, LIST_CPU, LIST_SOURCEFILE, LIST_MESSINFO };
 #endif
 
 #define VERIFY_ROMS		0x00000001
@@ -62,6 +62,7 @@ struct rc_option frontend_opts[] = {
 	{ "listdupcrc", NULL, rc_set_int, &list, NULL, LIST_DUPCRC, 0, NULL, "duplicate crc's" },
 	{ "listwrongmerge", "lwm", rc_set_int, &list, NULL, LIST_WRONGMERGE, 0, NULL, "wrong merge attempts" },
 	{ "listromsize", "lrs", rc_set_int, &list, NULL, LIST_ROMSIZE, 0, NULL, "rom size" },
+	{ "listpalettesize", "lps", rc_set_int, &list, NULL, LIST_PALETTESIZE, 0, NULL, "palette size" },
 	{ "listcpu", NULL, rc_set_int, &list, NULL, LIST_CPU, 0, NULL, "cpu's used" },
 #ifdef MAME_DEBUG /* do not put this into a public release! */
 	{ "lmr", NULL, rc_set_int, &list, NULL, LIST_LMR, 0, NULL, "missing roms" },
@@ -90,8 +91,6 @@ struct rc_option frontend_opts[] = {
 
 
 int silentident,knownstatus;
-
-//extern unsigned int crc32 (unsigned int crc, const unsigned char *buf, unsigned int len);
 
 void get_rom_sample_path (int argc, char **argv, int game_index, char *override_default_rompath);
 
@@ -434,6 +433,7 @@ int CLIB_DECL compare_driver_names(const void *elem1, const void *elem2)
 
 int frontend_help (char *gamename)
 {
+	struct InternalMachineDriver drv;
 	int i, j;
 	char *all_games = "*";
 
@@ -584,17 +584,14 @@ int frontend_help (char *gamename)
 						|| (drivers[i]->clone_of->flags & NOT_A_DRIVER)
 						) && !strwildcmp(gamename, drivers[i]->name))
 				{
+					expand_machine_driver(drivers[i]->drv, &drv);
 #if (HAS_SAMPLES || HAS_VLM5030)
-					for( j = 0; drivers[i]->drv->sound[j].sound_type && j < MAX_SOUND; j++ )
+					for( j = 0; drv.sound[j].sound_type && j < MAX_SOUND; j++ )
 					{
 						const char **samplenames = NULL;
 #if (HAS_SAMPLES)
-						if( drivers[i]->drv->sound[j].sound_type == SOUND_SAMPLES )
-							samplenames = ((struct Samplesinterface *)drivers[i]->drv->sound[j].sound_interface)->samplenames;
-#endif
-#if (HAS_VLM5030)
-						if( drivers[i]->drv->sound[j].sound_type == SOUND_VLM5030 )
-							samplenames = ((struct VLM5030interface *)drivers[i]->drv->sound[j].sound_interface)->samplenames;
+						if( drv.sound[j].sound_type == SOUND_SAMPLES )
+							samplenames = ((struct Samplesinterface *)drv.sound[j].sound_interface)->samplenames;
 #endif
 						if (samplenames != 0 && samplenames[0] != 0)
 						{
@@ -627,16 +624,13 @@ int frontend_help (char *gamename)
 			{
 #if (HAS_SAMPLES || HAS_VLM5030)
 				int k;
-				for( k = 0; gamedrv->drv->sound[k].sound_type && k < MAX_SOUND; k++ )
+				expand_machine_driver(gamedrv->drv, &drv);
+				for( k = 0; drv.sound[k].sound_type && k < MAX_SOUND; k++ )
 				{
 					const char **samplenames = NULL;
 #if (HAS_SAMPLES)
-					if( gamedrv->drv->sound[k].sound_type == SOUND_SAMPLES )
-							samplenames = ((struct Samplesinterface *)gamedrv->drv->sound[k].sound_interface)->samplenames;
-#endif
-#if (HAS_VLM5030)
-					if( gamedrv->drv->sound[k].sound_type == SOUND_VLM5030 )
-							samplenames = ((struct VLM5030interface *)gamedrv->drv->sound[k].sound_interface)->samplenames;
+					if( drv.sound[k].sound_type == SOUND_SAMPLES )
+							samplenames = ((struct Samplesinterface *)drv.sound[k].sound_interface)->samplenames;
 #endif
 					if (samplenames != 0 && samplenames[0] != 0)
 					{
@@ -705,9 +699,13 @@ int frontend_help (char *gamename)
 				{
 					/* Dummy structs to fetch the information from */
 
-					const struct MachineDriver *x_driver = drivers[i]->drv;
-					const struct MachineCPU *x_cpu = x_driver->cpu;
-					const struct MachineSound *x_sound = x_driver->sound;
+					const struct MachineCPU *x_cpu;
+					const struct MachineSound *x_sound;
+					struct InternalMachineDriver x_driver;
+
+					expand_machine_driver(drivers[i]->drv, &x_driver);
+					x_cpu = x_driver.cpu;
+					x_sound = x_driver.sound;
 
 					/* First, the rom name */
 
@@ -877,20 +875,14 @@ int frontend_help (char *gamename)
 
 					{
 						const char **samplenames = NULL;
+						expand_machine_driver(drivers[i]->drv, &drv);
 #if (HAS_SAMPLES || HAS_VLM5030)
-						for (j = 0;drivers[i]->drv->sound[j].sound_type && j < MAX_SOUND; j++)
+						for (j = 0;drv.sound[j].sound_type && j < MAX_SOUND; j++)
 						{
 #if (HAS_SAMPLES)
-							if (drivers[i]->drv->sound[j].sound_type == SOUND_SAMPLES)
+							if (drv.sound[j].sound_type == SOUND_SAMPLES)
 							{
-								samplenames = ((struct Samplesinterface *)drivers[i]->drv->sound[j].sound_interface)->samplenames;
-								break;
-							}
-#endif
-#if (HAS_VLM5030)
-							if (drivers[i]->drv->sound[j].sound_type == SOUND_VLM5030)
-							{
-								samplenames = ((struct VLM5030interface *)drivers[i]->drv->sound[j].sound_interface)->samplenames;
+								samplenames = ((struct Samplesinterface *)drv.sound[j].sound_interface)->samplenames;
 								break;
 							}
 #endif
@@ -975,11 +967,13 @@ int frontend_help (char *gamename)
 
 		case LIST_WRONGORIENTATION: /* list drivers which incorrectly use the orientation and visible area fields */
 			for (i = 0; drivers[i]; i++)
-				if ((drivers[i]->drv->video_attributes & VIDEO_TYPE_VECTOR) == 0 &&
+			{
+				expand_machine_driver(drivers[i]->drv, &drv);
+				if ((drv.video_attributes & VIDEO_TYPE_VECTOR) == 0 &&
 						(drivers[i]->clone_of == 0
 								|| (drivers[i]->clone_of->flags & NOT_A_DRIVER)) &&
-						drivers[i]->drv->default_visible_area.max_x - drivers[i]->drv->default_visible_area.min_x + 1 <=
-						drivers[i]->drv->default_visible_area.max_y - drivers[i]->drv->default_visible_area.min_y + 1)
+						drv.default_visible_area.max_x - drv.default_visible_area.min_x + 1 <=
+						drv.default_visible_area.max_y - drv.default_visible_area.min_y + 1)
 				{
 					if (strcmp(drivers[i]->name,"crater") &&
 						strcmp(drivers[i]->name,"mpatrol") &&
@@ -1032,25 +1026,29 @@ int frontend_help (char *gamename)
 						strcmp(drivers[i]->name,"tomahawk") &&
 						1)
 						printf("%s %dx%d\n",drivers[i]->name,
-								drivers[i]->drv->default_visible_area.max_x - drivers[i]->drv->default_visible_area.min_x + 1,
-								drivers[i]->drv->default_visible_area.max_y - drivers[i]->drv->default_visible_area.min_y + 1);
+								drv.default_visible_area.max_x - drv.default_visible_area.min_x + 1,
+								drv.default_visible_area.max_y - drv.default_visible_area.min_y + 1);
+				}
 				}
 			return 0;
 			break;
 
 		case LIST_WRONGFPS: /* list drivers with too high frame rate */
 			for (i = 0; drivers[i]; i++)
-				if ((drivers[i]->drv->video_attributes & VIDEO_TYPE_VECTOR) == 0 &&
+			{
+				expand_machine_driver(drivers[i]->drv, &drv);
+				if ((drv.video_attributes & VIDEO_TYPE_VECTOR) == 0 &&
 						(drivers[i]->clone_of == 0
 								|| (drivers[i]->clone_of->flags & NOT_A_DRIVER)) &&
-						drivers[i]->drv->frames_per_second > 57 &&
-						drivers[i]->drv->default_visible_area.max_y - drivers[i]->drv->default_visible_area.min_y + 1 > 244 &&
-						drivers[i]->drv->default_visible_area.max_y - drivers[i]->drv->default_visible_area.min_y + 1 <= 256)
+						drv.frames_per_second > 57 &&
+						drv.default_visible_area.max_y - drv.default_visible_area.min_y + 1 > 244 &&
+						drv.default_visible_area.max_y - drv.default_visible_area.min_y + 1 <= 256)
 				{
 					printf("%s %dx%d %fHz\n",drivers[i]->name,
-							drivers[i]->drv->default_visible_area.max_x - drivers[i]->drv->default_visible_area.min_x + 1,
-							drivers[i]->drv->default_visible_area.max_y - drivers[i]->drv->default_visible_area.min_y + 1,
-							drivers[i]->drv->frames_per_second);
+							drv.default_visible_area.max_x - drv.default_visible_area.min_x + 1,
+							drv.default_visible_area.max_y - drv.default_visible_area.min_y + 1,
+							drv.frames_per_second);
+				}
 				}
 			return 0;
 			break;
@@ -1185,6 +1183,16 @@ int frontend_help (char *gamename)
 			return 0;
 			break;
 
+		case LIST_PALETTESIZE: /* I used this for statistical analysis */
+			for (i = 0; drivers[i]; i++)
+				if (drivers[i]->clone_of == 0 || (drivers[i]->clone_of->flags & NOT_A_DRIVER))
+				{
+					expand_machine_driver(drivers[i]->drv, &drv);
+					printf("%-8s\t%-5s\t%u\n",drivers[i]->name,drivers[i]->year,drv.total_colors);
+				}
+			return 0;
+			break;
+
 		case LIST_CPU: /* I used this for statistical analysis */
 			{
 				int year;
@@ -1205,8 +1213,11 @@ int frontend_help (char *gamename)
 					{
 						if (drivers[i]->clone_of == 0 || (drivers[i]->clone_of->flags & NOT_A_DRIVER))
 						{
-							const struct MachineDriver *x_driver = drivers[i]->drv;
-							const struct MachineCPU *x_cpu = x_driver->cpu;
+							struct InternalMachineDriver x_driver;
+							const struct MachineCPU *x_cpu;
+
+							expand_machine_driver(drivers[i]->drv, &x_driver);
+							x_cpu = x_driver.cpu;
 
 							if (atoi(drivers[i]->year) == year)
 							{
@@ -1279,16 +1290,13 @@ j = 0;	// count only the main cpu
 			if (verify & VERIFY_SAMPLES)
 			{
 				const char **samplenames = NULL;
+				expand_machine_driver(drivers[i]->drv, &drv);
 #if (HAS_SAMPLES || HAS_VLM5030)
- 				for( j = 0; drivers[i]->drv->sound[j].sound_type && j < MAX_SOUND; j++ )
+ 				for( j = 0; drv.sound[j].sound_type && j < MAX_SOUND; j++ )
 				{
 #if (HAS_SAMPLES)
- 					if( drivers[i]->drv->sound[j].sound_type == SOUND_SAMPLES )
- 						samplenames = ((struct Samplesinterface *)drivers[i]->drv->sound[j].sound_interface)->samplenames;
-#endif
-#if (HAS_VLM5030)
-					if( drivers[i]->drv->sound[j].sound_type == SOUND_VLM5030 )
-						samplenames = ((struct VLM5030interface *)drivers[i]->drv->sound[j].sound_interface)->samplenames;
+ 					if( drv.sound[j].sound_type == SOUND_SAMPLES )
+ 						samplenames = ((struct Samplesinterface *)drv.sound[j].sound_interface)->samplenames;
 #endif
 				}
 #endif

@@ -25,9 +25,9 @@
 
 #define S11_IRQFREQ     1000
 
-static void s11_exit(void);
-static void s11_nvram(void *file, int write);
-static void de_nvram(void *file, int write);
+static MACHINE_STOP(s11);
+static NVRAM_HANDLER(s11);
+static NVRAM_HANDLER(de);
 
 const core_tLCDLayout s11_dispS9[] = {
   DISP_SEG_7(0,0,CORE_SEG87),DISP_SEG_7(0,1,CORE_SEG87),
@@ -88,12 +88,11 @@ static void s11_piaMainIrq(int state) {
   s11_irqline(locals.piaIrq = state);
 }
 
-static int s11_irq(void) {
+static INTERRUPT_GEN(s11_irq) {
   s11_irqline(1); timer_set(TIME_IN_CYCLES(32,0),0,s11_irqline);
-  return 0;
 }
 
-static int s11_vblank(void) {
+static INTERRUPT_GEN(s11_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
@@ -128,7 +127,6 @@ static int s11_vblank(void) {
     locals.diagnosticLed = 0;
   }
   core_updateSw(locals.ssEn);
-  return 0;
 }
 
 /*---------------
@@ -432,7 +430,7 @@ static core_tData DEData = {
   core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
 };
 
-static void s11_init(void) {
+static MACHINE_INIT(s11) {
   if (core_gameData == NULL)  return;
   /*Init Core data*/
   if (core_gameData->gen & (GEN_DE | GEN_DEDMD16 | GEN_DEDMD32 | GEN_DEDMD64)) {
@@ -479,7 +477,7 @@ static void s11_init(void) {
   pia_reset();
 }
 
-static void s11_exit(void) {
+static MACHINE_STOP(s11) {
   sndbrd_0_exit(); sndbrd_1_exit(); core_exit();
 }
 
@@ -512,6 +510,113 @@ MEMORY_END
 /*-----------------
 /  Machine drivers
 /------------------*/
+static MACHINE_DRIVER_START(s11)
+  MDRV_CPU_ADD(M6808, 1000000)
+  MDRV_CPU_MEMORY(s11_readmem, s11_writemem)
+  MDRV_CPU_VBLANK_INT(s11_vblank, 1)
+  MDRV_CPU_PERIODIC_INT(s11_irq, S11_IRQFREQ)
+  MDRV_MACHINE_INIT(s11) MDRV_MACHINE_STOP(s11)
+MACHINE_DRIVER_END
+
+/* System 9 */
+MACHINE_DRIVER_START(s11_s9S)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_IMPORT_FROM(s11)
+  MDRV_IMPORT_FROM(wmssnd_s9s)
+  MDRV_VIDEO_UPDATE(core_led)
+  MDRV_NVRAM_HANDLER(s11)
+MACHINE_DRIVER_END
+
+/* System 11 */
+MACHINE_DRIVER_START(s11_s11S)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_IMPORT_FROM(s11)
+  MDRV_IMPORT_FROM(wmssnd_s11s)
+  MDRV_VIDEO_UPDATE(core_led)
+  MDRV_NVRAM_HANDLER(s11)
+MACHINE_DRIVER_END
+
+/* System 11B Jokerz! */
+MACHINE_DRIVER_START(s11_s11b2S)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_IMPORT_FROM(s11)
+  MDRV_IMPORT_FROM(wmssnd_s11b2s)
+  MDRV_VIDEO_UPDATE(core_led)
+  MDRV_NVRAM_HANDLER(s11)
+MACHINE_DRIVER_END
+
+/* System 11C */
+MACHINE_DRIVER_START(s11_s11cS)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_IMPORT_FROM(s11)
+  MDRV_IMPORT_FROM(wmssnd_s11cs)
+  MDRV_VIDEO_UPDATE(core_led)
+  MDRV_NVRAM_HANDLER(s11)
+MACHINE_DRIVER_END
+
+/* DE alpa numeric No Sound */
+MACHINE_DRIVER_START(de_a)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_IMPORT_FROM(s11)
+  MDRV_VIDEO_UPDATE(core_led)
+  MDRV_NVRAM_HANDLER(de)
+MACHINE_DRIVER_END
+
+/* DE alphanumeric Sound 1 */
+MACHINE_DRIVER_START(de_a1S)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_IMPORT_FROM(s11)
+  MDRV_IMPORT_FROM(de1s)
+  MDRV_VIDEO_UPDATE(core_led)
+  MDRV_NVRAM_HANDLER(de)
+MACHINE_DRIVER_END
+
+/* DE 128x16 Sound 1 */
+MACHINE_DRIVER_START(de_dmd161S)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_IMPORT_FROM(s11)
+  MDRV_IMPORT_FROM(de1s)
+  MDRV_IMPORT_FROM(de_dmd16)
+  MDRV_NVRAM_HANDLER(de)
+MACHINE_DRIVER_END
+
+/* DE 128x16 Sound 2a */
+MACHINE_DRIVER_START(de_dmd162aS)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_IMPORT_FROM(s11)
+  MDRV_IMPORT_FROM(de2as)
+  MDRV_IMPORT_FROM(de_dmd16)
+  MDRV_NVRAM_HANDLER(de)
+MACHINE_DRIVER_END
+
+/* DE 128x32 Sound 2a */
+MACHINE_DRIVER_START(de_dmd322aS)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_IMPORT_FROM(s11)
+  MDRV_IMPORT_FROM(de2as)
+  MDRV_IMPORT_FROM(de_dmd32)
+  MDRV_NVRAM_HANDLER(de)
+MACHINE_DRIVER_END
+
+/* DE 192x64 Sound 2a */
+MACHINE_DRIVER_START(de_dmd642aS)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_IMPORT_FROM(s11)
+  MDRV_IMPORT_FROM(de2as)
+  MDRV_IMPORT_FROM(de_dmd64)
+  MDRV_NVRAM_HANDLER(de)
+MACHINE_DRIVER_END
+
+/*-----------------------------------------------
+/ Load/Save static ram
+/-------------------------------------------------*/
+static NVRAM_HANDLER(s11) {
+  core_nvram(file, read_or_write, memory_region(S11_CPUREGION), 0x0800, 0xff);
+}
+static NVRAM_HANDLER(de) {
+  core_nvram(file, read_or_write, memory_region(S11_CPUREGION), 0x2000, 0xff);
+}
+#if 0
 #define S11_CPU { \
   CPU_M6808, 1000000, /* 1 Mhz */ \
   s11_readmem, s11_writemem, NULL, NULL, \
@@ -535,7 +640,7 @@ const struct MachineDriver machine_driver_s11_s = {
   { S11_CPU, S11C_SOUNDCPU, S11_SOUNDCPU },
   S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50, s11_init, s11_exit,
-  640, 400, { 0, 639, 0, 399 },
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
   NULL, NULL, gen_refresh,
@@ -561,7 +666,7 @@ const struct MachineDriver machine_driver_s11c_s = {
   { S11_CPU, S11C_SOUNDCPU },
   S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50, s11_init, s11_exit,
-  640, 400, { 0, 639, 0, 399 },
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
   NULL, NULL, gen_refresh,
@@ -625,7 +730,7 @@ const struct MachineDriver machine_driver_dedmd64s2a_s = {
   { S11_CPU, DE2S_SOUNDCPU, DE_DMD64CPU },
   S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50, s11_init, s11_exit,
-  640, 400, { 0, 639, 0, 399 },
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
   DE_DMD64VIDEO,
@@ -644,13 +749,4 @@ const struct MachineDriver machine_driver_s11 = {
   0,0,0,0, {{0}},
   de_nvram
 };
-
-/*-----------------------------------------------
-/ Load/Save static ram
-/-------------------------------------------------*/
-static void s11_nvram(void *file, int write) {
-  core_nvram(file, write, memory_region(S11_CPUREGION), 0x0800, 0xff);
-}
-static void de_nvram(void *file, int write) {
-  core_nvram(file, write, memory_region(S11_CPUREGION), 0x2000, 0xff);
-}
+#endif

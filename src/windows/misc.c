@@ -1,7 +1,7 @@
 /* Miscelancelous utility functions
 
    Copyright 2000 Hans de Goede
-   
+
    This file and the acompanying files in this directory are free software;
    you can redistribute them and/or modify them under the terms of the GNU
    Library General Public License as published by the Free Software Foundation;
@@ -22,7 +22,7 @@ Version 0.1, February 2000
 -initial release (Hans de Goede)
 Version 0.2, May 2000
 -moved time system headers from .h to .c to avoid header conflicts (Hans de Goede)
--made uclock a funtion on systems without gettimeofday too (Hans de Goede) 
+-made uclock a funtion on systems without gettimeofday too (Hans de Goede)
 -UCLOCKS_PER_SECOND is now always 1000000, instead of making it depent on
  the system headers. (Hans de Goede)
 */
@@ -32,11 +32,14 @@ Version 0.2, May 2000
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <time.h>
-//#include <sys/time.h>
+
+#ifndef _MSC_VER
+#include <sys/time.h>
+#endif
+
 #include "misc.h"
-#include "osd_cpu.h"
+
 
 #ifdef HAVE_GETTIMEOFDAY
 /* Standard UNIX clock() is based on CPU time, not real time.
@@ -47,10 +50,10 @@ uclock_t uclock(void)
 {
   static uclock_t init_sec = 0;
   struct timeval tv;
-  
+
   gettimeofday(&tv, 0);
   if (init_sec == 0) init_sec = tv.tv_sec;
-  
+
   return (tv.tv_sec - init_sec) * 1000000 + tv.tv_usec;
 }
 #else
@@ -93,19 +96,19 @@ void fprint_colums(FILE *f, const char *text1, const char *text2)
    text[1] = text2;
    width[0] = cols * 0.4;
    width[1] = cols - width[0];
-   
+
    while(!done)
    {
       done = 1;
       for(i = 0; i < 2; i++)
       {
          int to_print = width[i]-1; /* always leave one space open */
-         
+
          /* we don't want to print more then we have */
          j = strlen(text[i]);
          if (to_print > j)
            to_print = j;
-            
+
          /* if they have preffered breaks, try to give them to them */
          for(j=0; j<to_print; j++)
             if(text[i][j] == '\n')
@@ -113,27 +116,27 @@ void fprint_colums(FILE *f, const char *text1, const char *text2)
                to_print = j;
                break;
             }
-         
+
          /* if we don't have enough space, break at the first ' ' or '\n' */
          if(to_print < strlen(text[i]))
          {
            while(to_print && (text[i][to_print] != ' ') &&
               (text[i][to_print] != '\n'))
               to_print--;
-           
+
            /* if it didn't work, just print the columnwidth */
            if(!to_print)
               to_print = width[i]-1;
          }
          fprintf(f, "%-*.*s", width[i], to_print, text[i]);
-         
+
          /* adjust ptr */
          text[i] += to_print;
-         
+
          /* skip ' ' and '\n' */
          while((text[i][0] == ' ') || (text[i][0] == '\n'))
             text[i]++;
-         
+
          /* do we still have text to print */
          if(text[i][0])
             done = 0;

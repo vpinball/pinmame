@@ -33,6 +33,7 @@
 ------------------------------------------------------------------------------*/
 
 #include "driver.h"
+#include "core.h"
 #include "wpc.h"
 #include "sim.h"
 #include "wmssnd.h"
@@ -354,9 +355,9 @@ static sim_tInportData ss_inportData[] = {
 	/* Help */
 static void ss_drawStatic(BMTYPE **line) {
 	core_textOutf(30, 70,BLACK,"Help on this Simulator:");
-	core_textOutf(30, 80,BLACK,"L/R Ctrl+-/- = L/R/Upper Slingshot");
-	core_textOutf(30, 90,BLACK,"L/R Ctrl+R = L/R Ramp");
-	core_textOutf(30,100,BLACK,"L/R Ctrl+I/O = L/R Inlane/Outlane");
+	core_textOutf(30, 80,BLACK,"L/R Shift+-/- = L/R/Upper Slingshot");
+	core_textOutf(30, 90,BLACK,"L/R Shift+R = L/R Ramp");
+	core_textOutf(30,100,BLACK,"L/R Shift+I/O = L/R Inlane/Outlane");
 	core_textOutf(30,110,BLACK,"Q = Drain Ball, W/E/R = Jet Bumpers");
 	core_textOutf(30,120,BLACK,"C=Crate, S=Spider Hole, R=Missed Ramp");
 	core_textOutf(30,130,BLACK,"B,N,M=Leapers, F,G,H=Spell Targets");

@@ -38,9 +38,18 @@ struct m68k_memory_interface
 	data32_t	(*read32d)(offs_t);				// Direct read 32 bit
 };
 
+struct m68k_encryption_interface
+{
+	data8_t		(*read8pc)(offs_t);				// PC Relative read 8 bit
+	data16_t	(*read16pc)(offs_t);			// PC Relative read 16 bit
+	data32_t	(*read32pc)(offs_t);			// PC Relative read 32 bit
+
+	data16_t	(*read16d)(offs_t);				// Direct read 16 bit
+	data32_t	(*read32d)(offs_t);				// Direct read 32 bit
+};
+
 /* The MAME API for MC68000 */
 
-#define MC68000_INT_NONE 0
 #define MC68000_IRQ_1    1
 #define MC68000_IRQ_2    2
 #define MC68000_IRQ_3    3
@@ -59,13 +68,8 @@ extern void m68000_exit(void);
 extern int	m68000_execute(int cycles);
 extern unsigned m68000_get_context(void *dst);
 extern void m68000_set_context(void *src);
-extern unsigned m68000_get_pc(void);
-extern void m68000_set_pc(unsigned val);
-extern unsigned m68000_get_sp(void);
-extern void m68000_set_sp(unsigned val);
 extern unsigned m68000_get_reg(int regnum);
 extern void m68000_set_reg(int regnum, unsigned val);
-extern void m68000_set_nmi_line(int state);
 extern void m68000_set_irq_line(int irqline, int state);
 extern void m68000_set_irq_callback(int (*callback)(int irqline));
 extern const char *m68000_info(void *context, int regnum);
@@ -76,7 +80,6 @@ extern void m68000_memory_interface_set(int Entry,void * memory_routine);
  * M68010 section
  ****************************************************************************/
 #if HAS_M68010
-#define MC68010_INT_NONE                MC68000_INT_NONE
 #define MC68010_IRQ_1					MC68000_IRQ_1
 #define MC68010_IRQ_2					MC68000_IRQ_2
 #define MC68010_IRQ_3					MC68000_IRQ_3
@@ -94,13 +97,8 @@ extern void m68010_exit(void);
 extern int	m68010_execute(int cycles);
 extern unsigned m68010_get_context(void *dst);
 extern void m68010_set_context(void *src);
-extern unsigned m68010_get_pc(void);
-extern void m68010_set_pc(unsigned val);
-extern unsigned m68010_get_sp(void);
-extern void m68010_set_sp(unsigned val);
 extern unsigned m68010_get_reg(int regnum);
 extern void m68010_set_reg(int regnum, unsigned val);
-extern void m68010_set_nmi_line(int state);
 extern void m68010_set_irq_line(int irqline, int state);
 extern void m68010_set_irq_callback(int (*callback)(int irqline));
 const char *m68010_info(void *context, int regnum);
@@ -111,7 +109,6 @@ extern unsigned m68010_dasm(char *buffer, unsigned pc);
  * M68EC020 section
  ****************************************************************************/
 #if HAS_M68EC020
-#define MC68EC020_INT_NONE				MC68000_INT_NONE
 #define MC68EC020_IRQ_1					MC68000_IRQ_1
 #define MC68EC020_IRQ_2					MC68000_IRQ_2
 #define MC68EC020_IRQ_3					MC68000_IRQ_3
@@ -129,13 +126,8 @@ extern void m68ec020_exit(void);
 extern int	m68ec020_execute(int cycles);
 extern unsigned m68ec020_get_context(void *dst);
 extern void m68ec020_set_context(void *src);
-extern unsigned m68ec020_get_pc(void);
-extern void m68ec020_set_pc(unsigned val);
-extern unsigned m68ec020_get_sp(void);
-extern void m68ec020_set_sp(unsigned val);
 extern unsigned m68ec020_get_reg(int regnum);
 extern void m68ec020_set_reg(int regnum, unsigned val);
-extern void m68ec020_set_nmi_line(int state);
 extern void m68ec020_set_irq_line(int irqline, int state);
 extern void m68ec020_set_irq_callback(int (*callback)(int irqline));
 const char *m68ec020_info(void *context, int regnum);
@@ -146,7 +138,6 @@ extern unsigned m68ec020_dasm(char *buffer, unsigned pc);
  * M68020 section
  ****************************************************************************/
 #if HAS_M68020
-#define MC68020_INT_NONE				MC68000_INT_NONE
 #define MC68020_IRQ_1					MC68000_IRQ_1
 #define MC68020_IRQ_2					MC68000_IRQ_2
 #define MC68020_IRQ_3					MC68000_IRQ_3
@@ -164,13 +155,8 @@ extern void m68020_exit(void);
 extern int	m68020_execute(int cycles);
 extern unsigned m68020_get_context(void *dst);
 extern void m68020_set_context(void *src);
-extern unsigned m68020_get_pc(void);
-extern void m68020_set_pc(unsigned val);
-extern unsigned m68020_get_sp(void);
-extern void m68020_set_sp(unsigned val);
 extern unsigned m68020_get_reg(int regnum);
 extern void m68020_set_reg(int regnum, unsigned val);
-extern void m68020_set_nmi_line(int state);
 extern void m68020_set_irq_line(int irqline, int state);
 extern void m68020_set_irq_callback(int (*callback)(int irqline));
 const char *m68020_info(void *context, int regnum);

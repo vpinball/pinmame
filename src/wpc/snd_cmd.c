@@ -14,6 +14,7 @@
 
 #include <ctype.h>
 #include "driver.h"
+#include "core.h"
 #include "wmssnd.h"
 #include "snd_cmd.h"
 #include "wpc.h"
@@ -103,7 +104,7 @@ int snd_get_cmd_log(int *last, int *buffer) {
 /*-----------------------------------*/
 /*-- handle manual command display --*/
 /*-----------------------------------*/
-int manual_sound_commands(struct mame_bitmap *bitmap, int *fullRefresh) {
+int manual_sound_commands(struct mame_bitmap *bitmap) {
   int ii;
   /*-- we must have something to play with --*/
   if (!locals.soundCmd) return TRUE;
@@ -116,7 +117,6 @@ int manual_sound_commands(struct mame_bitmap *bitmap, int *fullRefresh) {
     locals.soundMode = !locals.soundMode;
     /* clear screen */
     fillbitmap(bitmap,Machine->uifont->colortable[0],NULL);
-    *fullRefresh = TRUE;
     /* start/stop all non-sound CPU(s) */
     for (ii = 0; ii < MAX_CPU; ii++)
       if ((Machine->drv->cpu[ii].cpu_type & ~CPU_FLAGS_MASK) &&

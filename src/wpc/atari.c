@@ -18,29 +18,18 @@
 #include "cpu/m6800/m6800.h"
 #include "cpu/m6809/m6809.h"
 #include "core.h"
+#include "sndbrd.h"
 #include "atari.h"
 
 #define ATARI_VBLANKFREQ      60 /* VBLANK frequency in HZ*/
-#define ATARI_IRQFREQ       2048 /* IRQ interval in USEC */
+#define ATARI_IRQFREQ        488 /* IRQ interval in HZ */
 #define ATARI_NMIFREQ        250 /* NMI frequency in HZ */
-
-extern void atari_snd0_w(int a);
-extern void atari_snd1_w(int b);
-
-static void ATARI1_init(void);
-static void ATARI1_exit(void);
-static void ATARI1_nvram(void *file, int write);
-
-static void ATARI2_init(void);
-static void ATARI2_exit(void);
-static void ATARI2_nvram(void *file, int write);
 
 /*----------------
 /  Local variables
 /-----------------*/
 static struct {
   int    vblankCount;
-  int    initDone;
   int    diagnosticLed;
   int    soldisable;
   UINT32 solenoids;
@@ -52,7 +41,7 @@ static struct {
 
 static int dispPos[] = { 49, 1, 9, 21, 29, 41, 61, 69 };
 
-static void ATARI1_nmihi(int state) {
+static INTERRUPT_GEN(ATARI1_nmihi) {
   //cpu_set_nmi_line(ATARI_CPU, state ? ASSERT_LINE : CLEAR_LINE);
 	cpu_set_nmi_line(ATARI_CPU, PULSE_LINE);
 }
@@ -61,7 +50,7 @@ static void ATARI2_irq(int state) {
   cpu_set_irq_line(ATARI_CPU, M6800_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
-static void ATARI2_irqhi(int dummy) {
+static INTERRUPT_GEN(ATARI2_irqhi) {
   ATARI2_irq(1);
 }
 
@@ -74,7 +63,7 @@ static WRITE_HANDLER(watchdog_w) {
 //logerror("Watchdog reset!\n");
 }
 
-static int ATARI_vblank(void) {
+static INTERRUPT_GEN(ATARI_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
@@ -105,7 +94,6 @@ static int ATARI_vblank(void) {
   coreGlobals.diagnosticLed = locals.diagnosticLed;
 
   core_updateSw(core_getSol(16));
-  return 0;
 }
 
 static void ATARI1_updSw(int *inports) {
@@ -129,14 +117,11 @@ static int ATARI_m2sw(int col, int row) {
 	return col*8 + row - 8;
 }
 
-static WRITE_HANDLER(ATARI_sndCmd_w) {
-}
-
 static core_tData ATARI1Data = {
   16, /* 16 dip switches */
   ATARI1_updSw,
   4, /* 4 diagnostic LEDs */
-  ATARI_sndCmd_w, "ATARI1",
+  sndbrd_0_data_w, "ATARI1",
   core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
 };
 
@@ -144,13 +129,9 @@ static core_tData ATARI2Data = {
   32, /* 32 dip switches */
   ATARI2_updSw,
   4, /* 4 diagnostic LEDs */
-  ATARI_sndCmd_w, "ATARI2",
+  sndbrd_0_data_w, "ATARI2",
   ATARI_sw2m, core_swSeq2m, ATARI_m2sw, core_m2swSeq
 };
-
-static READ_HANDLER(readCRC) {
-	return 0xb8;
-}
 
 /* Switch reading */
 // Gen 1
@@ -256,33 +237,33 @@ static WRITE_HANDLER(audiog1_w) {
 // Gen 2
 static WRITE_HANDLER(sound0_w) {
 	locals.diagnosticLed = data & 0x0f; /* coupled with waveform select */
-	atari_snd0_w(data);
+	sndbrd_0_ctrl_w(1, data);
 }
 
 static WRITE_HANDLER(sound1_w) {
-	atari_snd1_w(data);
+	sndbrd_0_data_w(0, data);
 }
 
-/* RAM */
-// Gen 1
-static UINT8 NVRAM_512[0x200];
-
-static READ_HANDLER(nvram1_r) {
-	return NVRAM_512[offset];
+/*-----------------------------------------------
+/ Load/Save static ram
+/ Save RAM & CMOS Information
+/-------------------------------------------------*/
+static UINT8 *ATARI1_CMOS;
+static WRITE_HANDLER(ATARI1_CMOS_w) {
+  ATARI1_CMOS[offset] = data;
 }
 
-static WRITE_HANDLER(nvram1_w) {
-	NVRAM_512[offset] = data;
-}
-// Gen 2
-static UINT8 NVRAM_256[0x100];
-
-static READ_HANDLER(nvram_r) {
-	return NVRAM_256[offset] & 0x0f;
+static NVRAM_HANDLER(ATARI1) {
+	core_nvram(file, read_or_write, ATARI1_CMOS, 512, 0x00);
 }
 
-static WRITE_HANDLER(nvram_w) {
-	NVRAM_256[offset] = data & 0x0f;
+static UINT8 *ATARI2_CMOS;
+static WRITE_HANDLER(ATARI2_CMOS_w) {
+  ATARI2_CMOS[offset] = data;
+}
+
+static NVRAM_HANDLER(ATARI2) {
+	core_nvram(file, read_or_write, ATARI2_CMOS, 256, 0x00);
 }
 
 /*-----------------------------------------
@@ -299,7 +280,7 @@ static WRITE_HANDLER(nvram_w) {
 6000-????  Audio Reset
 */
 static MEMORY_READ_START(ATARI1_readmem)
-{0x0000,0x01ff,	nvram1_r},	/* NVRAM */
+{0x0000,0x01ff,	MRA_RAM},	/* NVRAM */
 {0x1000,0x10ff,	MRA_RAM},	/* RAM */
 {0x1800,0x18ff,	MRA_RAM},	/* RAM */
 {0x2000,0x200f,	dipg1_r},	/* dips */
@@ -309,7 +290,7 @@ static MEMORY_READ_START(ATARI1_readmem)
 MEMORY_END
 
 static MEMORY_WRITE_START(ATARI1_writemem)
-{0x0000,0x01ff,	nvram1_w},	/* NVRAM */
+{0x0000,0x01ff,	ATARI1_CMOS_w, &ATARI1_CMOS},	/* NVRAM */
 {0x1080,0x1080,	latch10_w},	/* output */
 {0x1084,0x1084,	latch14_w},	/* output */
 {0x1088,0x1088,	latch18_w},	/* output */
@@ -332,7 +313,7 @@ MEMORY_END
 static MEMORY_READ_START(ATARI2_readmem)
 {0x0000,0x00ff,	MRA_RAM},	/* RAM */
 {0x0100,0x01ff,	MRA_NOP},	/* unmapped RAM */
-{0x0800,0x08ff,	nvram_r},	/* NVRAM */
+{0x0800,0x08ff,	MRA_RAM},	/* NVRAM */
 {0x0900,0x09ff,	MRA_NOP},	/* unmapped RAM */
 {0x1000,0x1007,	sw_r},		/* inputs */
 {0x2000,0x2003,	dip_r},		/* dip switches */
@@ -345,7 +326,7 @@ static MEMORY_WRITE_START(ATARI2_writemem)
 {0x0000,0x00ff,	MWA_RAM},	/* RAM */
 {0x0100,0x0100,	MWA_NOP},	/* unmapped RAM */
 {0x0700,0x07ff,	MWA_NOP},	/* unmapped RAM */
-{0x0800,0x08ff,	nvram_w},	/* NVRAM */
+{0x0800,0x08ff,	ATARI2_CMOS_w, &ATARI2_CMOS},	/* NVRAM */
 {0x1800,0x1800,	sound0_w},	/* sound */
 {0x1820,0x1820,	sound1_w},	/* sound */
 {0x1840,0x1846,	disp0_w},	/* display data output */
@@ -360,6 +341,76 @@ static MEMORY_WRITE_START(ATARI2_writemem)
 {0xf800,0xffff,	MWA_ROM},	/* reset vector */
 MEMORY_END
 
+static MACHINE_INIT(ATARI1) {
+  memset(&locals, 0, sizeof locals);
+  if (core_init(&ATARI1Data)) return;
+
+  /* Sound Enabled? */
+  if (((Machine->gamedrv->flags & GAME_NO_SOUND)==0) && Machine->sample_rate)
+  {
+	//ATARIS_init();
+  }
+}
+
+static MACHINE_STOP(ATARI1) {
+  if (locals.nmitimer) { timer_remove(locals.nmitimer); locals.nmitimer = NULL; }
+
+  /* Sound Enabled? */
+  if (((Machine->gamedrv->flags & GAME_NO_SOUND)==0) && Machine->sample_rate)
+  {
+	//ATARIS_exit();
+  }
+
+  core_exit();
+}
+
+static MACHINE_INIT(ATARI2) {
+  if (core_init(&ATARI2Data)) return;
+  memset(&locals, 0, sizeof locals);
+
+  /* Sound Enabled? */
+//  if (((Machine->gamedrv->flags & GAME_NO_SOUND)==0) && Machine->sample_rate)
+//  {
+    sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(REGION_SOUND1), NULL, NULL);
+//  }
+}
+
+static MACHINE_STOP(ATARI2) {
+  if (locals.irqtimer) { timer_remove(locals.irqtimer); locals.irqtimer = NULL; }
+
+  /* Sound Enabled? */
+//  if (((Machine->gamedrv->flags & GAME_NO_SOUND)==0) && Machine->sample_rate)
+//  {
+    sndbrd_0_exit();
+//  }
+
+  core_exit();
+}
+
+MACHINE_DRIVER_START(ATARI1)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CPU_ADD_TAG("mcpu", M6800, 1000000)
+  MDRV_CPU_MEMORY(ATARI1_readmem, ATARI1_writemem)
+  MDRV_CPU_VBLANK_INT(ATARI_vblank, 1)
+  MDRV_CPU_PERIODIC_INT(ATARI1_nmihi, ATARI_NMIFREQ)
+  MDRV_MACHINE_INIT(ATARI1) MDRV_MACHINE_STOP(ATARI1)
+  MDRV_VIDEO_UPDATE(core_led)
+  MDRV_NVRAM_HANDLER(ATARI1)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(ATARI2)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_IMPORT_FROM(atari2s)
+  MDRV_CPU_ADD_TAG("mcpu", M6800, 1000000)
+  MDRV_CPU_MEMORY(ATARI2_readmem, ATARI2_writemem)
+  MDRV_CPU_VBLANK_INT(ATARI_vblank, 1)
+  MDRV_CPU_PERIODIC_INT(ATARI2_irqhi, ATARI_IRQFREQ)
+  MDRV_MACHINE_INIT(ATARI2) MDRV_MACHINE_STOP(ATARI2)
+  MDRV_VIDEO_UPDATE(core_led)
+  MDRV_NVRAM_HANDLER(ATARI2)
+MACHINE_DRIVER_END
+
+#if 0
 struct MachineDriver machine_driver_ATARI1 = {
   {
     {
@@ -403,73 +454,4 @@ struct MachineDriver machine_driver_ATARI2 = {
   0,0,0,0,{ATARI_SOUND},
   ATARI2_nvram
 };
-
-static void ATARI1_init(void) {
-  if (locals.initDone) CORE_DOEXIT(ATARI_exit);
-
-  if (core_init(&ATARI1Data)) return;
-  memset(&locals, 0, sizeof locals);
-
-  locals.nmitimer = timer_pulse(TIME_IN_HZ(ATARI_NMIFREQ),0,ATARI1_nmihi);
-
-  /* Sound Enabled? */
-  if (((Machine->gamedrv->flags & GAME_NO_SOUND)==0) && Machine->sample_rate)
-  {
-	//ATARIS_init();
-  }
-
-  locals.initDone = TRUE;
-}
-
-static void ATARI1_exit(void) {
-  if (locals.nmitimer) { timer_remove(locals.nmitimer); locals.nmitimer = NULL; }
-
-  /* Sound Enabled? */
-  if (((Machine->gamedrv->flags & GAME_NO_SOUND)==0) && Machine->sample_rate)
-  {
-	//ATARIS_exit();
-  }
-
-  core_exit();
-}
-
-static void ATARI2_init(void) {
-  if (locals.initDone) CORE_DOEXIT(ATARI_exit);
-
-  if (core_init(&ATARI2Data)) return;
-  memset(&locals, 0, sizeof locals);
-
-  locals.irqtimer = timer_pulse(TIME_IN_USEC(ATARI_IRQFREQ),0,ATARI2_irqhi);
-
-  /* Sound Enabled? */
-  if (((Machine->gamedrv->flags & GAME_NO_SOUND)==0) && Machine->sample_rate)
-  {
-	//ATARIS_init();
-  }
-
-  locals.initDone = TRUE;
-}
-
-static void ATARI2_exit(void) {
-  if (locals.irqtimer) { timer_remove(locals.irqtimer); locals.irqtimer = NULL; }
-
-  /* Sound Enabled? */
-  if (((Machine->gamedrv->flags & GAME_NO_SOUND)==0) && Machine->sample_rate)
-  {
-	//ATARIS_exit();
-  }
-
-  core_exit();
-}
-
-/*-----------------------------------------------
-/ Load/Save static ram
-/ Save RAM & CMOS Information
-/-------------------------------------------------*/
-void ATARI1_nvram(void *file, int write) {
-	core_nvram(file, write, NVRAM_512, sizeof NVRAM_512, 0x00);
-}
-
-void ATARI2_nvram(void *file, int write) {
-	core_nvram(file, write, NVRAM_256, sizeof NVRAM_256, 0x00);
-}
+#endif

@@ -1,14 +1,6 @@
 #ifndef INC_S4
 #define INC_S4
 
-#include "core.h"
-#include "wpcsam.h"
-#include "sim.h"
-
-#define S4_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
-#define S4_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
-#define S4_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
-
 /*-- Common Inports for S3 Games --*/
 #define S3_COMPORTS \
   PORT_START /* 0 */ \
@@ -189,38 +181,27 @@
 /*-------------------------
 / Machine driver constants
 /--------------------------*/
-#define S4_CPUNO   0
-#define S4_SCPU1NO 1
-#define S4_SCPU2NO 2
-
 /*-- Memory regions --*/
-#define S4_MEMREG_CPU		REGION_CPU1
-#define S4_MEMREG_S1CPU		REGION_CPU2
-#define S4_MEMREG_S2CPU		REGION_CPU3
-#define WPC_MEMREG_SROM		REGION_SOUND1
+#define S4_CPUREGION	REGION_CPU1
 
 /*-- Main CPU regions and ROM --*/
-#define S4_ROMSTART(name, ver, n1, size1, chk1,\
-				 n2, size2, chk2,\
-				 n3, size3, chk3)\
-   ROM_START(name##_##ver) \
-    NORMALREGION(0x10000,    S4_MEMREG_CPU) \
-	ROM_LOAD( n1, 0x6000, size1, chk1 ) \
-	ROM_RELOAD(           0x6000+0x8000, size1 ) \
-	ROM_LOAD( n2, 0x7000, size2, chk2 ) \
-	ROM_RELOAD(           0x7000+0x8000, size2 ) \
-	ROM_LOAD( n3, 0x7800, size3, chk3 ) \
-	ROM_RELOAD(           0x7800+0x8000, size3 )
+#define S4_ROMSTART(name, ver, ic14,chk14, ic20,chk20, ic17,chk17) \
+  ROM_START(name##_##ver) \
+    NORMALREGION(0x10000, S4_CPUREGION) \
+      ROM_LOAD(ic14, 0x6000, 0x0800, chk14) \
+        ROM_RELOAD(  0xe000, 0x0800) \
+      ROM_LOAD(ic17, 0x7800, 0x0800, chk17) \
+        ROM_RELOAD(  0xf800, 0x0800) \
+      ROM_LOAD(ic20, 0x7000, 0x0800, chk20) \
+        ROM_RELOAD(  0xf000, 0x0800)
+
 #define S4_ROMEND ROM_END
 
-/*-- These are only here so the game structure can be in the game file --*/
-extern const struct MachineDriver machine_driver_s4;
-extern const struct MachineDriver machine_driver_s4s;
-extern const struct MachineDriver machine_driver_s3c;
-
+extern MACHINE_DRIVER_EXTERN(s4);
+extern MACHINE_DRIVER_EXTERN(s4S);
 #define s4_mS4      s4
-#define s4_mS4S     s4s
-#define s3_mS3C     s3c
+#define s4_mS4S     s4S
+#define s3_mS3C     s4
 
 /* standard 6 digit display layout */
 extern const core_tLCDLayout s4_disp[];

@@ -37,10 +37,6 @@
 
 #define S7_COMINPORT       CORE_COREINPORT
 
-#define S7_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
-#define S7_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
-#define S7_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
-
 /*-- S7 switch numbers --*/
 #define S7_SWADVANCE     -7
 #define S7_SWUPDN        -6
@@ -55,38 +51,36 @@
 #define S7_CPUNO   0
 
 /*-- Memory regions --*/
-#define S7_MEMREG_CPU REGION_CPU1
+#define S7_CPUREGION REGION_CPU1
 
 #define S7_ROMSTART8088(name,ver, ic14,chk14, ic17,chk17, ic20,chk20, ic26,chk26) \
   ROM_START(name##_##ver) \
-    NORMALREGION(0x10000,    S7_MEMREG_CPU) \
+    NORMALREGION(0x10000, S7_CPUREGION) \
       ROM_LOAD(ic14, 0xe000, 0x0800, chk14 ) \
-      ROM_RELOAD(    0x6000, 0x0800) \
+        ROM_RELOAD(  0x6000, 0x0800) \
       ROM_LOAD(ic17, 0xf000, 0x1000, chk17 ) \
-      ROM_RELOAD(    0x7000, 0x1000) \
+        ROM_RELOAD(  0x7000, 0x1000) \
       ROM_LOAD(ic20, 0xe800, 0x0800, chk20 ) \
-      ROM_RELOAD(    0x6800, 0x0800) \
+        ROM_RELOAD(  0x6800, 0x0800) \
       ROM_LOAD(ic26, 0xd800, 0x0800, chk26 ) \
-      ROM_RELOAD(    0x5800, 0x0800)
+        ROM_RELOAD(  0x5800, 0x0800)
 
 #define S7_ROMSTART000x(name, ver, ic14,chk14, ic17,chk17, ic20,chk20) \
   ROM_START(name##_##ver) \
-    NORMALREGION(0x10000,    S7_MEMREG_CPU) \
+    NORMALREGION(0x10000, S7_CPUREGION) \
       ROM_LOAD(ic20, 0xd000, 0x1000, chk20) \
-      ROM_RELOAD(    0x5000, 0x1000) \
+        ROM_RELOAD(  0x5000, 0x1000) \
       ROM_LOAD(ic14, 0xe000, 0x1000, chk14) \
-      ROM_RELOAD(    0x6000, 0x1000) \
+        ROM_RELOAD(  0x6000, 0x1000) \
       ROM_LOAD(ic17, 0xf000, 0x1000, chk17) \
-      ROM_RELOAD(    0x7000, 0x1000)
+        ROM_RELOAD(  0x7000, 0x1000)
 
 #define S7_ROMEND ROM_END
-/*-- These are only here so the game structure can be in the game file --*/
-extern const struct MachineDriver machine_driver_s7;
+
+extern MACHINE_DRIVER_EXTERN(s7);
+extern MACHINE_DRIVER_EXTERN(s7S);
 #define s7_mS7         s7
-
-extern const struct MachineDriver machine_driver_s7_s;
-#define s7_mS7S        s7_s
+#define s7_mS7S        s7S
 extern const core_tLCDLayout s7_dispS7[];
-
 #endif /* INC_S7 */
 

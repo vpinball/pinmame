@@ -60,7 +60,7 @@ extern int verbose;
 //	GLOBAL VARIABLES
 //============================================================
 
-UINT8						trying_to_quit;
+UINT8						win_trying_to_quit;
 
 
 
@@ -81,6 +81,7 @@ static int					hotrod;
 static int					hotrodse;
 static int					use_mouse;
 static int					use_joystick;
+static int					steadykey;
 
 // keyboard states
 static int					keyboard_count;
@@ -124,6 +125,7 @@ struct rc_option input_opts[] =
 	{ "hotrodse", NULL, rc_bool, &hotrodse, "0", 0, 0, NULL, "preconfigure for hotrod se" },
 	{ "mouse", NULL, rc_bool, &use_mouse, "0", 0, 0, NULL, "enable mouse input" },
 	{ "joystick", "joy", rc_bool, &use_joystick, "0", 0, 0, NULL, "enable joystick input" },
+	{ "steadykey", "steady", rc_bool, &steadykey, "0", 0, 0, NULL, "enable steadykey support" },
 	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
 };
 
@@ -380,7 +382,7 @@ static BOOL CALLBACK enum_keyboard_callback(LPCDIDEVICEINSTANCE instance, LPVOID
 		goto cant_set_format;
 
 	// set the cooperative level
-	result = IDirectInputDevice_SetCooperativeLevel(keyboard_device[keyboard_count], video_window,
+	result = IDirectInputDevice_SetCooperativeLevel(keyboard_device[keyboard_count], win_video_window,
 					DISCL_FOREGROUND | DISCL_NONEXCLUSIVE);
 	if (result != DI_OK)
 		goto cant_set_coop_level;
@@ -445,7 +447,7 @@ static BOOL CALLBACK enum_mouse_callback(LPCDIDEVICEINSTANCE instance, LPVOID re
 		goto cant_set_format;
 
 	// set the cooperative level
-	result = IDirectInputDevice_SetCooperativeLevel(mouse_device[mouse_count], video_window,
+	result = IDirectInputDevice_SetCooperativeLevel(mouse_device[mouse_count], win_video_window,
 					DISCL_FOREGROUND | DISCL_EXCLUSIVE);
 	if (result != DI_OK)
 		goto cant_set_coop_level;
@@ -511,7 +513,7 @@ static BOOL CALLBACK enum_joystick_callback(LPCDIDEVICEINSTANCE instance, LPVOID
 		goto cant_set_format;
 
 	// set the cooperative level
-	result = IDirectInputDevice_SetCooperativeLevel(joystick_device[joystick_count], video_window,
+	result = IDirectInputDevice_SetCooperativeLevel(joystick_device[joystick_count], win_video_window,
 					DISCL_FOREGROUND | DISCL_EXCLUSIVE);
 	if (result != DI_OK)
 		goto cant_set_coop_level;
@@ -533,10 +535,10 @@ out_of_joysticks:
 
 
 //============================================================
-//	win32_init_input
+//	win_init_input
 //============================================================
 
-int win32_init_input(void)
+int win_init_input(void)
 {
 	HRESULT result;
 
@@ -600,10 +602,10 @@ cant_create_dinput:
 
 
 //============================================================
-//	win32_shutdown_input
+//	win_shutdown_input
 //============================================================
 
-void win32_shutdown_input(void)
+void win_shutdown_input(void)
 {
 	int i;
 
@@ -628,10 +630,10 @@ void win32_shutdown_input(void)
 
 
 //============================================================
-//	win32_pause_input
+//	win_pause_input
 //============================================================
 
-void win32_pause_input(int paused)
+void win_pause_input(int paused)
 {
 	int i;
 
@@ -662,16 +664,16 @@ void win32_pause_input(int paused)
 
 	// set the paused state
 	input_paused = paused;
-	update_cursor_state();
+	win_update_cursor_state();
 }
 
 
 
 //============================================================
-//	win32_poll_input
+//	win_poll_input
 //============================================================
 
-void win32_poll_input(void)
+void win_poll_input(void)
 {
 	HWND focus = GetFocus();
 	HRESULT result = 1;
@@ -681,7 +683,7 @@ void win32_poll_input(void)
 	last_poll = ticker();
 
 	// periodically process events, in case they're not coming through
-	process_events_periodic();
+	win_process_events_periodic();
 
 	// if we don't have focus, turn off all keys
 	if (!focus)
@@ -731,7 +733,7 @@ void win32_poll_input(void)
 	updatekeyboard();
 
 	// if the debugger is up and visible, don't bother with the rest
-	if (debug_window != NULL && IsWindowVisible(debug_window))
+	if (win_debug_window != NULL && IsWindowVisible(win_debug_window))
 		return;
 
 	// poll all joysticks
@@ -780,7 +782,7 @@ void win32_poll_input(void)
 //	is_mouse_captured
 //============================================================
 
-int is_mouse_captured(void)
+int win_is_mouse_captured(void)
 {
 	return (!input_paused && mouse_active && mouse_count > 0);
 }
@@ -841,17 +843,17 @@ int osd_is_key_pressed(int keycode)
 
 	// make sure we've polled recently
 	if (ticker() > last_poll + TICKS_PER_SEC/4)
-		win32_poll_input();
+		win_poll_input();
 
 	// special case: if we're trying to quit, fake up/down/up/down
-	if (dik == DIK_ESCAPE && trying_to_quit)
+	if (dik == DIK_ESCAPE && win_trying_to_quit)
 	{
 		static int dummy_state = 1;
 		return dummy_state ^= 1;
 	}
 
 	// if the video window isn't visible, we have to get our events from the console
-	if (!video_window || !IsWindowVisible(video_window))
+	if (!win_video_window || !IsWindowVisible(win_video_window))
 	{
 		// warning: this code relies on the assumption that when you're polling for
 		// keyboard events before the system is initialized, they are all of the
@@ -863,7 +865,10 @@ int osd_is_key_pressed(int keycode)
 	}
 
 	// otherwise, just return the current keystate
-	return currkey[dik];
+	if (steadykey)
+		return currkey[dik];
+	else
+		return keyboard_state[0][dik];
 }
 
 
@@ -1173,7 +1178,7 @@ void osd_analogjoy_read(int player, int *analog_x, int *analog_y)
 	if (!mouse_active)
 	{
 		mouse_active = 1;
-		win32_pause_input(0);
+		win_pause_input(0);
 	}
 
 	// if out of range, skip it
@@ -1212,7 +1217,7 @@ void osd_trak_read(int player, int *deltax, int *deltay)
 	if (!mouse_active)
 	{
 		mouse_active = 1;
-		win32_pause_input(0);
+		win_pause_input(0);
 	}
 
 	// return the latest mouse info
@@ -1281,10 +1286,20 @@ void osd_joystick_end_calibration(void)
 void osd_customize_inputport_defaults(struct ipd *defaults)
 {
 	static InputSeq no_alt_tab_seq = SEQ_DEF_5(KEYCODE_TAB, CODE_NOT, KEYCODE_LALT, CODE_NOT, KEYCODE_RALT);
+	int fullscreen_set = 0;
 
 	// loop over all the defaults
 	while (defaults->type != IPT_END)
 	{
+		// Add alt-enter for fullscreen
+		if (defaults->type == IPT_OSD_RESERVED && !fullscreen_set)
+		{
+			defaults->type = IPT_OSD_1;
+			defaults->name = "Toggle fullscreen";
+			seq_set_2(&defaults->seq, KEYCODE_LALT, KEYCODE_ENTER);
+			fullscreen_set = 1;
+		}
+
 		// in all cases, disable the config menu if the ALT key is down
 		if (defaults->type == IPT_UI_CONFIGURE)
 			seq_copy(&defaults->seq, &no_alt_tab_seq);

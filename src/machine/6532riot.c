@@ -148,7 +148,8 @@ void riot6532_reset(void)
 		riot[i].timer_irq_enabled = 0;
 
 		riot[i].time = timer_get_time();
-		riot[i].t = timer_set(IFR_DELAY*riot[i].cycles_to_sec, i, riot_timeout);
+		riot[i].t = timer_alloc(riot_timeout);
+		timer_adjust(riot[i].t,IFR_DELAY*riot[i].cycles_to_sec, i, 0);
 	}
 }
 
@@ -215,7 +216,7 @@ static void riot_timeout(int which)
 
 	if ( p->irq_state & RIOT_TIMERIRQ ) {
 		LOG(("RIOT%d: Timeout reached.\n", which));
-		p->t = 0;
+		timer_enable(p->t,0);
 	}
 	else {
 		LOG(("RIOT%d: Timer IRQ.\n", which));
@@ -273,11 +274,9 @@ int riot6532_read(int which, int offset)
 	else {
 		switch ( offset & 0x01 ) {
 		case RIOT6532_TIMER:
-			if ( p->t ) {
+			if (timer_enable(p->t, 0)) {
 				if ( p->irq_state & RIOT_TIMERIRQ ) {
 					val = 255 - V_TIME_TO_CYCLES(timer_get_time() - p->time);
-					timer_remove(p->t);
-					p->t = 0;
 				}
 				else
 					val = p->timer_start - V_TIME_TO_CYCLES(timer_get_time() - p->time) / p->timer_divider;
@@ -398,10 +397,7 @@ void riot6532_write(int which, int offset, int data)
 
 //			if ( p->timer_irq_enabled )
 			{
-				if ( p->t )
-					timer_reset(p->t, V_CYCLES_TO_TIME(p->timer_divider * p->timer_start + IFR_DELAY));
-				else
-					p->t = timer_set(V_CYCLES_TO_TIME(p->timer_divider * p->timer_start + IFR_DELAY), which, riot_timeout);
+				timer_reset(p->t, V_CYCLES_TO_TIME(p->timer_divider * p->timer_start + IFR_DELAY));
 			}
 			p->time = timer_get_time();
 

@@ -34,9 +34,9 @@
 //============================================================
 
 // from input.c
-extern void win32_poll_input(void);
-extern void win32_pause_input(int pause);
-extern UINT8 trying_to_quit;
+extern void win_poll_input(void);
+extern void win_pause_input(int pause);
+extern UINT8 win_trying_to_quit;
 
 #ifdef PINMAME_EXT
 // from wpc/snd_cmd.c
@@ -49,11 +49,6 @@ extern int recording;
 
 // frameskipping
 #define FRAMESKIP_LEVELS		12
-
-// VERY IMPORTANT: osd_alloc_bitmap must allocate also a "safety area" 16 pixels wide all
-// around the bitmap. This is required because, for performance reasons, some graphic
-// routines don't clip at boundaries of the bitmap.
-#define BITMAP_SAFETY			16
 
 
 
@@ -114,7 +109,6 @@ static int warming_up;
 static int leds_old;
 
 // palette attributes
-static int modifiable_palette;
 static int screen_colors;
 
 // palette values
@@ -133,6 +127,7 @@ static float brightness_adjust;
 // timing measurements for throttling
 static TICKER last_skipcount0_time;
 static TICKER this_frame_base;
+static int allow_sleep;
 
 // FPS display info
 static int showfps;
@@ -149,6 +144,11 @@ static int frames_to_display;
 // frameskipping
 static int frameskip_counter;
 static int frameskipadjust;
+
+// game states that invalidate autoframeskip
+static int game_was_paused;
+static int game_is_paused;
+static int debugger_was_visible;
 
 // frameskipping tables
 static const int skiptable[FRAMESKIP_LEVELS][FRAMESKIP_LEVELS] =
@@ -206,26 +206,27 @@ struct rc_option video_opts[] =
 	{ "Windows video options", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },
 	{ "autoframeskip", "afs", rc_bool, &autoframeskip, "1", 0, 0, NULL, "skip frames to speed up emulation" },
 	{ "frameskip", "fs", rc_int, &frameskip, "0", 0, 12, NULL, "set frameskip explicitly (autoframeskip needs to be off)" },
-	{ "waitvsync", NULL, rc_bool, &wait_vsync, "0", 0, 0, NULL, "wait for vertical sync (reduces tearing)"},
-	{ "triplebuffer", "tb", rc_bool, &use_triplebuf, "0", 0, 0, NULL, "triple buffering (only if fullscreen)" },
-	{ "window", "w", rc_bool, &window_mode, "0", 0, 0, NULL, "run in a window/run on full screen" },
-	{ "ddraw", "dd", rc_bool, &use_ddraw, "1", 0, 0, NULL, "use DirectDraw for rendering" },
-	{ "hwstretch", "hws", rc_bool, &ddraw_stretch, "1", 0, 0, NULL, "stretch video using the hardware" },
+	{ "waitvsync", NULL, rc_bool, &win_wait_vsync, "0", 0, 0, NULL, "wait for vertical sync (reduces tearing)"},
+	{ "triplebuffer", "tb", rc_bool, &win_triple_buffer, "0", 0, 0, NULL, "triple buffering (only if fullscreen)" },
+	{ "window", "w", rc_bool, &win_window_mode, "0", 0, 0, NULL, "run in a window/run on full screen" },
+	{ "ddraw", "dd", rc_bool, &win_use_ddraw, "1", 0, 0, NULL, "use DirectDraw for rendering" },
+	{ "hwstretch", "hws", rc_bool, &win_hw_stretch, "1", 0, 0, NULL, "stretch video using the hardware" },
 	{ "resolution", "r", rc_string, &resolution, "auto", 0, 0, video_set_resolution, "set resolution" },
-	{ "refresh", NULL, rc_int, &gfx_refresh, "0", 0, 0, NULL, "set specific monitor refresh rate" },
-	{ "scanlines", "sl", rc_bool, &scanlines, "0", 0, 0, NULL, "emulate scanlines" },
-	{ "switchres", NULL, rc_bool, &switchres, "1", 0, 0, NULL, "switch resolutions to best fit" },
-	{ "switchbpp", NULL, rc_bool, &switchbpp, "1", 0, 0, NULL, "switch color depths to best fit" },
-	{ "maximize", "max", rc_bool, &maximize, "1", 0, 0, NULL, "start out maximized" },
-	{ "keepaspect", "ka", rc_bool, &keepaspect, "1", 0, 0, NULL, "enforce aspect ratio" },
-	{ "matchrefresh", NULL, rc_bool, &matchrefresh, "0", 0, 0, NULL, "attempt to match the game's refresh rate" },
-	{ "syncrefresh", NULL, rc_bool, &syncrefresh, "0", 0, 0, NULL, "syncronize only to the monitor refresh" },
+	{ "refresh", NULL, rc_int, &win_gfx_refresh, "0", 0, 0, NULL, "set specific monitor refresh rate" },
+	{ "scanlines", "sl", rc_bool, &win_old_scanlines, "0", 0, 0, NULL, "emulate win_old_scanlines" },
+	{ "switchres", NULL, rc_bool, &win_switch_res, "1", 0, 0, NULL, "switch resolutions to best fit" },
+	{ "switchbpp", NULL, rc_bool, &win_switch_bpp, "1", 0, 0, NULL, "switch color depths to best fit" },
+	{ "maximize", "max", rc_bool, &win_start_maximized, "1", 0, 0, NULL, "start out maximized" },
+	{ "keepaspect", "ka", rc_bool, &win_keep_aspect, "1", 0, 0, NULL, "enforce aspect ratio" },
+	{ "matchrefresh", NULL, rc_bool, &win_match_refresh, "0", 0, 0, NULL, "attempt to match the game's refresh rate" },
+	{ "syncrefresh", NULL, rc_bool, &win_sync_refresh, "0", 0, 0, NULL, "syncronize only to the monitor refresh" },
 	{ "dirty", NULL, rc_bool, &use_dirty, "1", 0, 0, NULL, "enable dirty video optimization" },
 	{ "throttle", NULL, rc_bool, &throttle, "1", 0, 0, NULL, "throttle speed to the game's framerate" },
-	{ "full_screen_brightness", "fsb", rc_float, &gfx_brightness, "0.0", 0.0, 4.0, NULL, "sets the brightness in full screen mode" },
+	{ "full_screen_brightness", "fsb", rc_float, &win_gfx_brightness, "0.0", 0.0, 4.0, NULL, "sets the brightness in full screen mode" },
 	{ "frames_to_run", "ftr", rc_int, &frames_to_display, "0", 0, 0, NULL, "sets the number of frames to run within the game" },
 	{ "effect", NULL, rc_string, &effect, "none", 0, 0, decode_effect, "specify the blitting effect" },
 	{ "screen_aspect", NULL, rc_string, &aspect, "4:3", 0, 0, decode_aspect, "specify an alternate monitor aspect ratio" },
+	{ "sleep", NULL, rc_bool, &allow_sleep, "1", 0, 0, NULL, "allow MAME to give back time to the system when it's not needed" },
 	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
 };
 
@@ -237,16 +238,16 @@ struct rc_option video_opts[] =
 
 INLINE int color_correct(int value)
 {
-	return (int)(255.0 * (brightness * brightness_adjust) * pow(value * (1.0 / 255.0), 1 / gamma_correct));
+	return (int)(255.0 * (brightness * brightness_adjust) * pow(value * (1.0 / 255.0), 1 / gamma_correct) + 0.5);
 }
 
 
 
 //============================================================
-//	mark_palette_dirty
+//	win_mark_palette_dirty
 //============================================================
 
-void mark_palette_dirty(void)
+void win_mark_palette_dirty(void)
 {
 	memset(dirtycolor, 1, screen_colors);
 	dirtypalette = 1;
@@ -262,29 +263,28 @@ static int video_set_resolution(struct rc_option *option, const char *arg, int p
 {
 	if (!strcmp(arg, "auto"))
 	{
-		gfx_width = gfx_height = gfx_depth = 0;
+		win_gfx_width = win_gfx_height = win_gfx_depth = 0;
 		options.vector_width = options.vector_height = 0;
 	}
-	else if (sscanf(arg, "%dx%dx%d", &gfx_width, &gfx_height, &gfx_depth) < 2)
+	else if (sscanf(arg, "%dx%dx%d", &win_gfx_width, &win_gfx_height, &win_gfx_depth) < 2)
 	{
-		gfx_width = gfx_height = gfx_depth = 0;
+		win_gfx_width = win_gfx_height = win_gfx_depth = 0;
 		options.vector_width = options.vector_height = 0;
 		fprintf(stderr, "error: invalid value for resolution: %s\n", arg);
 		return -1;
 	}
-	if ((gfx_depth != 0) &&
-		(gfx_depth != 8) &&
-		(gfx_depth != 16) &&
-		(gfx_depth != 24) &&
-		(gfx_depth != 32))
+	if ((win_gfx_depth != 0) &&
+		(win_gfx_depth != 16) &&
+		(win_gfx_depth != 24) &&
+		(win_gfx_depth != 32))
 	{
-		gfx_width = gfx_height = gfx_depth = 0;
+		win_gfx_width = win_gfx_height = win_gfx_depth = 0;
 		options.vector_width = options.vector_height = 0;
 		fprintf(stderr, "error: invalid value for resolution: %s\n", arg);
 		return -1;
 	}
-	options.vector_width = gfx_width;
-	options.vector_height = gfx_height;
+	options.vector_width = win_gfx_width;
+	options.vector_height = win_gfx_height;
 
 	option->priority = priority;
 	return 0;
@@ -298,8 +298,8 @@ static int video_set_resolution(struct rc_option *option, const char *arg, int p
 
 static int decode_effect(struct rc_option *option, const char *arg, int priority)
 {
-	bliteffect = lookup_effect(arg);
-	if (bliteffect == -1)
+	win_blit_effect = win_lookup_effect(arg);
+	if (win_blit_effect == -1)
 	{
 		fprintf(stderr, "error: invalid value for effect: %s\n", arg);
 		return -1;
@@ -323,112 +323,10 @@ static int decode_aspect(struct rc_option *option, const char *arg, int priority
 		fprintf(stderr, "error: invalid value for aspect ratio: %s\n", arg);
 		return -1;
 	}
-	screen_aspect = (double)num / (double)den;
+	win_screen_aspect = (double)num / (double)den;
 
 	option->priority = priority;
 	return 0;
-}
-
-
-
-//============================================================
-//	osd_alloc_bitmap
-//============================================================
-
-struct osd_bitmap *osd_alloc_bitmap(int width, int height, int depth)
-{
-	struct osd_bitmap *bitmap;
-
-	// verify it's a depth we can handle
-	if (depth != 8 && depth != 15 && depth != 16 && depth != 32)
-	{
-		logerror("osd_alloc_bitmap() unknown depth %d\n",depth);
-		return NULL;
-	}
-
-	// allocate memory for the bitmap struct
-	bitmap = malloc(sizeof(struct osd_bitmap));
-	if (bitmap != NULL)
-	{
-		int i, rowlen, rdwidth;
-		unsigned char *bm;
-
-		// initialize the basic parameters
-		bitmap->depth = depth;
-		bitmap->width = width;
-		bitmap->height = height;
-
-		// round the width to a quadword
-		rdwidth = (width + 7) & ~7;
-		rowlen = (rdwidth + 2 * BITMAP_SAFETY) * sizeof(unsigned char);
-
-		// expand 32bpp and 15/16bpp depths
-		if (depth == 32)
-			rowlen *= 4;
-		else if (depth == 15 || depth == 16)
-			rowlen *= 2;
-
-		// allocate memory for the bitmap itself
-		bm = malloc((height + 2 * BITMAP_SAFETY) * rowlen);
-		if (bm == NULL)
-		{
-			free(bitmap);
-			return 0;
-		}
-
-		// clear ALL bitmap, including safety area, to avoid garbage on right
-		memset(bm, 0, (height + 2 * BITMAP_SAFETY) * rowlen);
-
-		// allocate an array of line pointers
-		bitmap->line = malloc((height + 2 * BITMAP_SAFETY) * sizeof(unsigned char *));
-		if (bitmap->line == NULL)
-		{
-			free(bm);
-			free(bitmap);
-			return 0;
-		}
-
-		// initialize the line pointers
-		for (i = 0; i < height + 2 * BITMAP_SAFETY; i++)
-		{
-			if (depth == 32)
-				bitmap->line[i] = &bm[i * rowlen + 4*BITMAP_SAFETY];
-			else if (depth == 15 || depth == 16)
-				bitmap->line[i] = &bm[i * rowlen + 2*BITMAP_SAFETY];
-			else
-				bitmap->line[i] = &bm[i * rowlen + BITMAP_SAFETY];
-		}
-
-		// adjust for the safety rows
-		bitmap->line += BITMAP_SAFETY;
-
-		// save a pointer to the bitmap data in the private pointer
-		bitmap->_private = bm;
-	}
-
-	// return the result
-	return bitmap;
-}
-
-
-
-//============================================================
-//	osd_free_bitmap
-//============================================================
-
-void osd_free_bitmap(struct osd_bitmap *bitmap)
-{
-	// skip if NULL
-	if (!bitmap)
-		return;
-
-	// unadjust for the safety rows
-	bitmap->line -= BITMAP_SAFETY;
-
-	// free the memory
-	free(bitmap->line);
-	free(bitmap->_private);
-	free(bitmap);
 }
 
 
@@ -519,7 +417,7 @@ void osd_set_visible_area(int min_x, int max_x, int min_y, int max_y)
 
 	// now adjust the window for the aspect ratio
 	if (vis_width > 1 && vis_height > 1)
-		adjust_window_for_visible(min_x, max_x, min_y, max_y);
+		win_adjust_window_for_visible(min_x, max_x, min_y, max_y);
 }
 
 
@@ -552,12 +450,12 @@ int osd_create_display(int width, int height, int depth, int fps, int attributes
 
 	// extract useful parameters from the attributes
 	vector_game			= ((attributes & VIDEO_TYPE_VECTOR) != 0);
-	rgb_direct			= ((attributes & VIDEO_RGB_DIRECT) != 0);
+	rgb_direct			= (depth == 15) || (depth == 32);
 	if (use_dirty && !(attributes & VIDEO_SUPPORTS_DIRTY))
 		use_dirty = 0;
 
 	// create the window
-	if (create_window(width, height, video_depth, attributes, orientation))
+	if (win_create_window(width, height, video_depth, attributes, orientation))
 		return 1;
 
 	// set visible area to nothing just to initialize it - it will be set by the core
@@ -578,7 +476,7 @@ int osd_create_display(int width, int height, int depth, int fps, int attributes
 void osd_close_display(void)
 {
 	// tear down the window
-	destroy_window();
+	win_destroy_window();
 
 	// print a final result to the stdout
 	if (frames_displayed != 0)
@@ -607,7 +505,7 @@ void osd_close_display(void)
 //	init_direct_mapped_16bpp
 //============================================================
 
-static int init_direct_mapped_16bpp(unsigned int totalcolors, const UINT8 *palette, UINT32 *pens)
+static int init_direct_mapped_16bpp(unsigned int totalcolors, const UINT8 *palette, UINT32 *rgb_components)
 {
 	unsigned char *pal;
 	int r, g, b;
@@ -626,7 +524,7 @@ static int init_direct_mapped_16bpp(unsigned int totalcolors, const UINT8 *palet
 		return 1;
 
 	// mark the palette dirty to start
-	mark_palette_dirty();
+	win_mark_palette_dirty();
 
 	// initialize the palette to a fixed 5-5-5 mapping
 	pal = current_palette;
@@ -640,9 +538,9 @@ static int init_direct_mapped_16bpp(unsigned int totalcolors, const UINT8 *palet
 			}
 
 	// initialize the default palette
-	pens[0] = 0x7c00;
-	pens[1] = 0x03e0;
-	pens[2] = 0x001f;
+	rgb_components[0] = 0x7c00;
+	rgb_components[1] = 0x03e0;
+	rgb_components[2] = 0x001f;
 
 	// initialize the first 4 color table entries to something useful
 	Machine->uifont->colortable[0] = 0x0000;
@@ -659,7 +557,7 @@ static int init_direct_mapped_16bpp(unsigned int totalcolors, const UINT8 *palet
 //	init_direct_mapped_32bpp
 //============================================================
 
-static int init_direct_mapped_32bpp(unsigned int totalcolors, const UINT8 *palette, UINT32 *pens)
+static int init_direct_mapped_32bpp(unsigned int totalcolors, const UINT8 *palette, UINT32 *rgb_components)
 {
 	int i, r, g, b;
 
@@ -675,7 +573,7 @@ static int init_direct_mapped_32bpp(unsigned int totalcolors, const UINT8 *palet
 		return 1;
 
 	// mark the palette dirty to start
-	mark_palette_dirty();
+	win_mark_palette_dirty();
 
 	// initialize the default palette
 	for (i = 0; i < totalcolors; i++)
@@ -683,14 +581,14 @@ static int init_direct_mapped_32bpp(unsigned int totalcolors, const UINT8 *palet
 		r = color_correct(palette[3 * i + 0]);
 		g = color_correct(palette[3 * i + 1]);
 		b = color_correct(palette[3 * i + 2]);
-		*pens++ = color32(r, g, b);
+		*rgb_components++ = win_color32(r, g, b);
 	}
 
 	// initialize the first 4 color table entries to something useful
-	Machine->uifont->colortable[0] = color32(0, 0, 0);
-	Machine->uifont->colortable[1] = color32(255, 255, 255);
-	Machine->uifont->colortable[2] = color32(255, 255, 255);
-	Machine->uifont->colortable[3] = color32(0, 0, 0);
+	Machine->uifont->colortable[0] = win_color32(0, 0, 0);
+	Machine->uifont->colortable[1] = win_color32(255, 255, 255);
+	Machine->uifont->colortable[2] = win_color32(255, 255, 255);
+	Machine->uifont->colortable[3] = win_color32(0, 0, 0);
 
 	return 0;
 }
@@ -701,8 +599,8 @@ static int init_direct_mapped_32bpp(unsigned int totalcolors, const UINT8 *palet
 //	osd_allocate_colors
 //============================================================
 
-int osd_allocate_colors(unsigned int totalcolors, const UINT8 *palette, UINT32 *pens, int modifiable,
-	const UINT8 *debug_palette, UINT32 *debug_pens)
+int osd_allocate_colors(unsigned int totalcolors, const UINT8 *palette, UINT32 *rgb_components,
+	const UINT8 *debug_palette, pen_t *debug_pens)
 {
 	int i;
 
@@ -714,24 +612,17 @@ int osd_allocate_colors(unsigned int totalcolors, const UINT8 *palette, UINT32 *
 		for (i = 0; i < DEBUGGER_TOTAL_COLORS; i++)
 			debug_pens[i] = i;
 
-	// note the modifiable state
-	modifiable_palette = modifiable;
-
 	// handle direct-mapped modes separately
 	if (rgb_direct)
 	{
 		if (video_depth == 16)
-			return init_direct_mapped_16bpp(totalcolors, palette, pens);
+			return init_direct_mapped_16bpp(totalcolors, palette, rgb_components);
 		else
-			return init_direct_mapped_32bpp(totalcolors, palette, pens);
+			return init_direct_mapped_32bpp(totalcolors, palette, rgb_components);
 	}
 
 	// otherwise, set the screen colors based on the total number of colors
-	screen_colors = totalcolors;
-	if (video_depth != 8)
-		screen_colors += 2;
-	else
-		screen_colors = 256;
+	screen_colors = totalcolors + 2;
 
 	// allocate memory for the dirty buffer, palette, and 16bpp lookup
 	dirtycolor = malloc(screen_colors * sizeof(dirtycolor[0]));
@@ -744,76 +635,36 @@ int osd_allocate_colors(unsigned int totalcolors, const UINT8 *palette, UINT32 *
 		return 1;
 
 	// mark the palette dirty to start
-	mark_palette_dirty();
+	win_mark_palette_dirty();
 
 	// initialize the palette to black
 	for (i = 0; i < screen_colors; i++)
 		current_palette[3 * i + 0] = current_palette[3 * i + 1] = current_palette[3 * i + 2] = 0;
 
-	// 8bpp palette-compressed case
-	if (video_depth == 8 && totalcolors >= 255)
+	// reserve color totalcolors+1 for the user interface text */
+	if (totalcolors < 65535)
 	{
-		int bestblackscore = 3 * 255 * 255, bestwhitescore = 0;
-		int bestblack = 0, bestwhite = 0;
-
-		// find the closest black & white colors
-		for (i = 0; i < totalcolors; i++)
-		{
-			int r = palette[3 * i + 0];
-			int g = palette[3 * i + 1];
-			int b = palette[3 * i + 2];
-			int score = r*r + g*g + b*b;
-
-			// best black so far?
-			if (score < bestblackscore)
-			{
-				bestblack = i;
-				bestblackscore = score;
-			}
-
-			// best white so far?
-			if (score > bestwhitescore)
-			{
-				bestwhite = i;
-				bestwhitescore = score;
-			}
-		}
-
-		// initialize the pens 1:1
-		for (i = 0; i < totalcolors; i++)
-			pens[i] = i;
-
-		// map black to pen 0, otherwise the screen border will not be black
-		pens[bestblack] = 0;
-		pens[0] = bestblack;
-
-		// set the UI font
-		Machine->uifont->colortable[0] = pens[bestblack];
-		Machine->uifont->colortable[1] = pens[bestwhite];
-		Machine->uifont->colortable[2] = pens[bestwhite];
-		Machine->uifont->colortable[3] = pens[bestblack];
+		current_palette[(totalcolors+1)*3+0] = current_palette[(totalcolors+1)*3+1] = current_palette[(totalcolors+1)*3+2] = 0xff;
+		Machine->uifont->colortable[0] = totalcolors;
+		Machine->uifont->colortable[1] = totalcolors + 1;
+		Machine->uifont->colortable[2] = totalcolors + 1;
+		Machine->uifont->colortable[3] = totalcolors;
 	}
 	else
 	{
-		// reserve color 1 for the user interface text */
-		current_palette[3*1+0] = current_palette[3*1+1] = current_palette[3*1+2] = 0xff;
 		Machine->uifont->colortable[0] = 0;
-		Machine->uifont->colortable[1] = 1;
-		Machine->uifont->colortable[2] = 1;
+		Machine->uifont->colortable[1] = 65535;
+		Machine->uifont->colortable[2] = 65535;
 		Machine->uifont->colortable[3] = 0;
 
-		// fill the palette starting from the end, so we mess up badly written
-		// drivers which don't go through Machine->pens[]
-		for (i = 0; i < totalcolors; i++)
-			pens[i] = (screen_colors - 1) - i;
 	}
 
 	// initialize the current palette with the input palette
 	for (i = 0; i < totalcolors; i++)
 	{
-		current_palette[3 * pens[i] + 0] = palette[3 * i];
-		current_palette[3 * pens[i] + 1] = palette[3 * i + 1];
-		current_palette[3 * pens[i] + 2] = palette[3 * i + 2];
+		current_palette[3 * i + 0] = palette[3 * i];
+		current_palette[3 * i + 1] = palette[3 * i + 1];
+		current_palette[3 * i + 2] = palette[3 * i + 2];
 	}
 
 	return 0;
@@ -828,9 +679,15 @@ int osd_allocate_colors(unsigned int totalcolors, const UINT8 *palette, UINT32 *
 void osd_modify_pen(int pen, unsigned char red, unsigned char green, unsigned char blue)
 {
 	// error if the palette is non-modifiable
-	if (!modifiable_palette)
+	if (rgb_direct)
 	{
-		logerror("error: osd_modify_pen() called with modifiable_palette == 0\n");
+		logerror("error: osd_modify_pen() called with rgb direct mode\n");
+		return;
+	}
+
+	if (pen >= screen_colors)
+	{
+		logerror("error: osd_modify_pen() called with pen %d, allocated colors = %d\n",pen,screen_colors);
 		return;
 	}
 
@@ -847,31 +704,6 @@ void osd_modify_pen(int pen, unsigned char red, unsigned char green, unsigned ch
 		// mark the color and palette dirty
 		dirtycolor[pen] = 1;
 		dirtypalette = 1;
-	}
-}
-
-
-
-//============================================================
-//	osd_get_pen
-//============================================================
-
-void osd_get_pen(int pen, unsigned char *red, unsigned char *green, unsigned char *blue)
-{
-	// 16bpp non-modifiable case
-	if (video_depth != 8 && !modifiable_palette)
-	{
-		*red	= red16(pen);
-		*green 	= green16(pen);
-		*blue	= blue16(pen);
-	}
-
-	// modifiable cases
-	else
-	{
-		*red	= current_palette[3 * pen + 0];
-		*green	= current_palette[3 * pen + 1];
-		*blue	= current_palette[3 * pen + 2];
 	}
 }
 
@@ -895,8 +727,6 @@ int osd_skip_this_frame(void)
 
 static void check_inputs(void)
 {
-	static int alt_enter_pressed;
-
 	// increment frameskip?
 	if (input_ui_pressed(IPT_UI_FRAMESKIP_INC))
 	{
@@ -981,15 +811,8 @@ static void check_inputs(void)
 	}
 
 	// check for toggling fullscreen mode
-	if (code_pressed(KEYCODE_ENTER) &&
-		(code_pressed(KEYCODE_LALT) || code_pressed(KEYCODE_RALT)))
-	{
-		if (!alt_enter_pressed)
-			toggle_full_screen();
-		alt_enter_pressed = 1;
-	}
-	else
-		alt_enter_pressed = 0;
+	if (input_ui_pressed(IPT_OSD_1))
+		win_toggle_full_screen();
 }
 
 
@@ -1000,11 +823,11 @@ static void check_inputs(void)
 
 static void throttle_speed(void)
 {
-	TICKER target;
-	TICKER curr;
+	static double ticks_per_sleep_msec = 0;
+	TICKER target, curr;
 
 	// if we're only syncing to the refresh, bail now
-	if (syncrefresh)
+	if (win_sync_refresh)
 		return;
 
 	// this counts as idle time
@@ -1017,48 +840,30 @@ static void throttle_speed(void)
 	// sync
 	if (curr - target < 0)
 	{
-		do
+		// initialize the ticks per sleep
+		if (ticks_per_sleep_msec == 0)
+			ticks_per_sleep_msec = (double)(TICKS_PER_SEC / 1000);
+
+		// loop until we reach the target time
+		while (curr - target < 0)
 		{
+			// if we have enough time to sleep, do it
+			// ...but not if we're autoframeskipping and we're behind
+			if (allow_sleep && (!autoframeskip || frameskip == 0) &&
+				(target - curr) > (TICKER)(ticks_per_sleep_msec * 1.1))
+			{
+				// keep track of how long we actually slept
+				Sleep(1);
+				ticks_per_sleep_msec = (ticks_per_sleep_msec * 0.90) + ((double)(ticker() - curr) * 0.10);
+			}
+
+			// update the current time
 			curr = ticker();
-		} while (curr - target < 0);
+		}
 	}
 
 	// idle time done
 	profiler_mark(PROFILER_END);
-}
-
-
-
-//============================================================
-//	update_palette_8
-//============================================================
-
-void update_palette_8(void)
-{
-	int i;
-
-	// loop over dirty colors
-	for (i = 0; i < screen_colors; i++)
-		if (dirtycolor[i])
-		{
-			int r = current_palette[3 * i + 0];
-			int g = current_palette[3 * i + 1];
-			int b = current_palette[3 * i + 2];
-
-			// don't adjust the brightness of UI text
-			if (i != Machine->uifont->colortable[1])
-			{
-				r = bright_lookup[r];
-				g = bright_lookup[g];
-				b = bright_lookup[b];
-			}
-
-			// set the entry
-			set_palette_entry(i, r, g, b);
-
-			// no longer dirty
-			dirtycolor[i] = 0;
-		}
 }
 
 
@@ -1093,8 +898,8 @@ void update_palette_16(void)
 			}
 
 			// set the 16-bit color value
-			palette_16bit_lookup[i] = color16(r, g, b) * 0x10001;
-			palette_32bit_lookup[i] = color32(r, g, b);
+			palette_16bit_lookup[i] = win_color16(r, g, b) * 0x10001;
+			palette_32bit_lookup[i] = win_color32(r, g, b);
 
 			// no longer dirty
 			dirtycolor[i] = 0;
@@ -1107,7 +912,7 @@ void update_palette_16(void)
 //	display_fps
 //============================================================
 
-static void display_fps(struct osd_bitmap *bitmap)
+static void display_fps(struct mame_bitmap *bitmap)
 {
 	int divdr = 100 * FRAMESKIP_LEVELS;
 	int fps = (video_fps * (double)(FRAMESKIP_LEVELS - frameskip) * game_speed_percent + (divdr / 2)) / divdr;
@@ -1121,6 +926,11 @@ static void display_fps(struct osd_bitmap *bitmap)
 	if (vector_game)
 	{
 		sprintf(buf, " %d vector updates", vups);
+		ui_text(bitmap, buf, Machine->uiwidth - strlen(buf) * Machine->uifontwidth, Machine->uifontheight);
+	}
+	else if (partial_update_count > 1)
+	{
+		sprintf(buf, " %d partial updates", partial_update_count);
 		ui_text(bitmap, buf, Machine->uiwidth - strlen(buf) * Machine->uifontwidth, Machine->uifontheight);
 	}
 
@@ -1141,6 +951,10 @@ static void display_fps(struct osd_bitmap *bitmap)
 
 void update_autoframeskip(void)
 {
+	// don't adjust frameskip if we're paused or if the debugger was
+	// visible this cycle or if we haven't run yet
+	if (!game_was_paused && !debugger_was_visible && cpu_getcurrentframe() > 2 * FRAMESKIP_LEVELS)
+	{
 	// if we're too fast, attempt to increase the frameskip
 	if (game_speed_percent >= 100)
 	{
@@ -1175,13 +989,18 @@ void update_autoframeskip(void)
 	}
 }
 
+	// clear the other states
+	game_was_paused = game_is_paused;
+	debugger_was_visible = 0;
+}
+
 
 
 //============================================================
 //	render_frame
 //============================================================
 
-static void render_frame(struct osd_bitmap *bitmap)
+static void render_frame(struct mame_bitmap *bitmap)
 {
 	TICKER curr;
 	int i;
@@ -1204,7 +1023,7 @@ static void render_frame(struct osd_bitmap *bitmap)
 	{
 		frames_displayed++;
 		if (frames_displayed + 1 == frames_to_display)
-			trying_to_quit = 1;
+			win_trying_to_quit = 1;
 		end_time = curr;
 	}
 
@@ -1273,15 +1092,13 @@ static void render_frame(struct osd_bitmap *bitmap)
 	{
 		dirtypalette = 0;
 
-		if (bitmap->depth == 8)
-			update_palette_8();
-		else if (bitmap->depth == 15 || bitmap->depth == 16)
+		if (bitmap->depth == 15 || bitmap->depth == 16)
 			update_palette_16();
 	}
 
 	// update the bitmap we're drawing
 	profiler_mark(PROFILER_BLIT);
-	update_video_window(bitmap);
+	win_update_video_window(bitmap);
 	profiler_mark(PROFILER_END);
 
 	// if we're being dirty, reset
@@ -1299,7 +1116,7 @@ static void render_frame(struct osd_bitmap *bitmap)
 //	osd_update_video_and_audio
 //============================================================
 
-void osd_update_video_and_audio(struct osd_bitmap *game_bitmap, struct osd_bitmap *debug_bitmap, int leds_status)
+void osd_update_video_and_audio(struct mame_bitmap *game_bitmap, struct mame_bitmap *debug_bitmap, int leds_status)
 {
 	// if the LEDs have changed, update them
 	if (leds_old != leds_status)
@@ -1325,7 +1142,10 @@ void osd_update_video_and_audio(struct osd_bitmap *game_bitmap, struct osd_bitma
 
 	// update the debugger
 	if (debug_bitmap)
-		update_debug_window(debug_bitmap);
+	{
+		win_update_debug_window(debug_bitmap);
+		debugger_was_visible = 1;
+	}
 
 	// check for inputs
 	check_inputs();
@@ -1334,8 +1154,8 @@ void osd_update_video_and_audio(struct osd_bitmap *game_bitmap, struct osd_bitma
 	frameskip_counter = (frameskip_counter + 1) % FRAMESKIP_LEVELS;
 
 	// poll the joystick values here
-	process_events();
-	win32_poll_input();
+	win_process_events();
+	win_poll_input();
 }
 
 
@@ -1350,7 +1170,7 @@ void osd_set_gamma(float _gamma)
 	gamma_correct = _gamma;
 
 	// mark the palette dirty, and set a flag to rebuild the brightness table
-	mark_palette_dirty();
+	win_mark_palette_dirty();
 	dirty_bright = 1;
 }
 
@@ -1377,7 +1197,7 @@ void osd_set_brightness(int _brightness)
 	brightness = (float)_brightness * 0.01;
 
 	// mark the palette dirty, and set a flag to rebuild the brightness table
-	mark_palette_dirty();
+	win_mark_palette_dirty();
 	dirty_bright = 1;
 }
 
@@ -1398,7 +1218,7 @@ int osd_get_brightness(void)
 //	osd_save_snapshot
 //============================================================
 
-void osd_save_snapshot(struct osd_bitmap *bitmap)
+void osd_save_snapshot(struct mame_bitmap *bitmap)
 {
 	save_screen_snapshot(bitmap);
 }
@@ -1411,8 +1231,13 @@ void osd_save_snapshot(struct osd_bitmap *bitmap)
 
 void osd_pause(int paused)
 {
+	// note that we were paused during this autoframeskip cycle
+	game_is_paused = paused;
+	if (game_is_paused)
+		game_was_paused = 1;
+
 	// tell the input system
-	win32_pause_input(paused);
+	win_pause_input(paused);
 
 	// set the brightness adjustment based on whether or not we are paused
 	if (paused)
@@ -1421,6 +1246,6 @@ void osd_pause(int paused)
 		brightness_adjust = 1.0;
 
 	// mark the palette dirty, and set a flag to rebuild the brightness table
-	mark_palette_dirty();
+	win_mark_palette_dirty();
 	dirty_bright = 1;
 }

@@ -5,22 +5,7 @@
 #define DE1S_CPUREGION (REGION_CPU1+DE1S_CPUNO)
 #define DE1S_ROMREGION (REGION_SOUND1)
 
-/*-- Machine structure externals --*/
-extern const struct Memory_ReadAddress  de1s_readmem[];
-extern const struct Memory_WriteAddress de1s_writemem[];
-
-extern struct YM2151interface  de1s_ym2151Int;
-extern struct MSM5205interface de1s_msm5205Int;
-
-#define DE1S_SOUNDCPU { \
-  CPU_M6809 | CPU_AUDIO_CPU, \
-  2000000, /* 2 MHz */ \
-  de1s_readmem, de1s_writemem, 0, 0, \
-  0, 0, 0, 0 \
-}
-
-#define DE1S_SOUND { SOUND_YM2151,  &de1s_ym2151Int }, \
-                   { SOUND_MSM5205, &de1s_msm5205Int }, SAMPLESINTERFACE
+extern MACHINE_DRIVER_EXTERN(de1s);
 
 /*-- Sound rom macros --*/
 /*-- 32K Sound CPU Rom, 2 X 64K Voice Roms --*/
@@ -45,24 +30,9 @@ extern struct MSM5205interface de1s_msm5205Int;
 #define DE2S_CPUREGION (REGION_CPU1+DE2S_CPUNO)
 #define DE2S_ROMREGION (REGION_SOUND1)
 
-/*-- Machine structure externals --*/
-extern const struct Memory_ReadAddress  de2s_readmem[];
-extern const struct Memory_WriteAddress de2s_writemem[];
-
-extern struct BSMT2000interface de2s_bsmt2000aInt;
-extern struct BSMT2000interface de2s_bsmt2000bInt;
-extern struct BSMT2000interface de2s_bsmt2000cInt;
-extern int de2s_irq(void);
-
-#define DE2S_SOUNDCPU { \
-  CPU_M6809 | CPU_AUDIO_CPU, 2000000, /* 2 MHz */ \
-  de2s_readmem, de2s_writemem, 0, 0, \
-  0, 0, de2s_irq, 489 /* Fixed FIRQ of 489Hz as measured on real machine*/ \
-}
-
-#define DE2S_SOUNDA { SOUND_BSMT2000,  &de2s_bsmt2000aInt }, SAMPLESINTERFACE
-#define DE2S_SOUNDB { SOUND_BSMT2000,  &de2s_bsmt2000bInt }, SAMPLESINTERFACE
-#define DE2S_SOUNDC { SOUND_BSMT2000,  &de2s_bsmt2000cInt }, SAMPLESINTERFACE
+extern MACHINE_DRIVER_EXTERN(de2as);
+extern MACHINE_DRIVER_EXTERN(de2bs);
+extern MACHINE_DRIVER_EXTERN(de2cs);
 
 /*-- Sound rom macros --*/
 /* Load 1Mb Rom(128K) to fit into 1Meg Rom Space */

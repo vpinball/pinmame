@@ -6,6 +6,7 @@ struct MachineSound
 {
 	int sound_type;
 	void *sound_interface;
+	const char *tag;
 };
 
 
@@ -91,6 +92,9 @@ struct MachineSound
 #if (HAS_MSM5205)
 #include "sound/msm5205.h"
 #endif
+#if (HAS_MSM5232)
+#include "sound/msm5232.h"
+#endif
 #if (HAS_UPD7759)
 #include "sound/upd7759.h"
 #endif
@@ -139,9 +143,12 @@ struct MachineSound
 #if (HAS_BSMT2000)
 #include "sound/bsmt2000.h"
 #endif
+#ifdef PINMAME
 #if (HAS_VOTRAXSC01)
 #include "sound/votrax.h"
 #endif
+#endif /* PINMAME */
+
 #ifdef MESS
 #if (HAS_BEEP)
 #include "mess/sound/beep.h"
@@ -257,6 +264,9 @@ enum
 #if (HAS_MSM5205)
 	SOUND_MSM5205,
 #endif
+#if (HAS_MSM5232)
+	SOUND_MSM5232,
+#endif
 #if (HAS_UPD7759)
 	SOUND_UPD7759,
 #endif
@@ -308,9 +318,12 @@ enum
 #if (HAS_BSMT2000)
 	SOUND_BSMT2000,
 #endif
+#ifdef PINMAME
 #if (HAS_VOTRAXSC01)
 	SOUND_VOTRAXSC01,
 #endif
+#endif /* PINMAME */
+
 #ifdef MESS
 #if (HAS_BEEP)
 	SOUND_BEEP,

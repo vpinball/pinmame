@@ -1,5 +1,6 @@
-MAMEVER=3716
+MAMEVER=5900
 PINMAMESRC=wpc
+
 #
 # PinMAME specific flags
 #
@@ -26,22 +27,31 @@ DRVLIBS += $(OBJ)/vidhrdw/tms9928a.o
 DRVLIBS += $(PINOBJ)/s4.o $(PINOBJ)/s6.o $(PINOBJ)/s7.o $(PINOBJ)/s11.o
 DRVLIBS += $(PINOBJ)/wpc.o $(PINOBJ)/wmssnd.o
 DRVLIBS += $(PINOBJ)/dedmd.o $(PINOBJ)/desound.o
-DRVLIBS += $(PINOBJ)/gts3.o $(PINOBJ)/gts3dmd.o
+#DRVLIBS += $(PINOBJ)/gts3.o $(PINOBJ)/gts3dmd.o
 DRVLIBS += $(PINOBJ)/se.o
-DRVLIBS += $(PINOBJ)/gts80.o $(PINOBJ)/gts80s.o
-DRVLIBS += $(PINOBJ)/by35.o $(PINOBJ)/by35snd.o $(PINOBJ)/byvidpin.o
-DRVLIBS += $(PINOBJ)/by6803.o
-DRVLIBS += $(PINOBJ)/hnk.o $(PINOBJ)/hnks.o 
-DRVLIBS += $(PINOBJ)/zac.o $(PINOBJ)/gp.o $(PINOBJ)/atari.o $(PINOBJ)/atarisnd.o
+#DRVLIBS += $(PINOBJ)/gts80.o $(PINOBJ)/gts80s.o
+DRVLIBS += $(PINOBJ)/by35.o $(PINOBJ)/by35snd.o
+#DRVLIBS += $(PINOBJ)/by6803.o
+#DRVLIBS += $(PINOBJ)/hnk.o $(PINOBJ)/hnks.o
+#DRVLIBS += $(PINOBJ)/zac.o
+#DRVLIBS += $(PINOBJ)/gp.o
+DRVLIBS += $(PINOBJ)/atari.o $(PINOBJ)/atarisnd.o
+DRVLIBS += $(PINOBJ)/taito.o
 #
 # Games
 #
-PINGAMES  = $(PINOBJ)/by35games.o
+PINGAMES  = $(PINOBJ)/by35games.o $(PINOBJ)/stgames.o
 PINGAMES += $(PINOBJ)/s3games.o $(PINOBJ)/s4games.o $(PINOBJ)/s6games.o
 PINGAMES += $(PINOBJ)/s7games.o $(PINOBJ)/s11games.o
-PINGAMES += $(PINOBJ)/degames.o $(PINOBJ)/gts3games.o $(PINOBJ)/gts80games.o
-PINGAMES += $(PINOBJ)/segames.o $(PINOBJ)/wpcgames.o
-PINGAMES += $(PINOBJ)/hnkgames.o $(PINOBJ)/zacgames.o $(PINOBJ)/gpgames.o $(PINOBJ)/atarigames.o
+#PINGAMES += $(PINOBJ)/gts3games.o $(PINOBJ)/gts80games.o
+PINGAMES += $(PINOBJ)/degames.o
+PINGAMES += $(PINOBJ)/segames.o
+PINGAMES += $(PINOBJ)/wpcgames.o
+#PINGAMES += $(PINOBJ)/hnkgames.o
+#PINGAMES += $(PINOBJ)/zacgames.o
+#PINGAMES += $(PINOBJ)/gpgames.o
+PINGAMES += $(PINOBJ)/atarigames.o
+PINGAMES += $(PINOBJ)/taitogames.o
 #
 # Simulators
 #
@@ -108,9 +118,10 @@ CPUS += M6502@
 CPUS += M65C02@
 CPUS += M68000@
 CPUS += S2650@
+CPUS += 8080@
 
 SOUNDS += DAC@
-SOUNDS += YM2151@
+SOUNDS += YM2151_ALT@
 SOUNDS += HC55516@
 SOUNDS += SAMPLES@
 SOUNDS += TMS5220@
@@ -147,4 +158,8 @@ cleanpinmame:
 	$(RM) -r $(PINOBJ)
 	@echo Deleting $(EMULATOR)...
 	$(RM) $(EMULATOR)
+
+ifdef DEBUG
+LDFLAGS+= -Xlinker -Map -Xlinker $(TARGET).map -Xlinker --cref
+endif
 

@@ -11,7 +11,6 @@ static struct {
   struct sndbrdData brdData;
   int cmd, ncmd, busy, status, ctrl, bank;
   UINT32 *framedata;
-  void *timer;
   // dmd16 stuff
   UINT32 hv5408, hv5408s, hv5308, hv5308s, hv5222, lasthv5222;
   int blnk, rowdata, rowclk, frame;
@@ -23,9 +22,7 @@ static UINT8  *dmd32RAM;
 static WRITE_HANDLER(dmd_data_w)  { dmdlocals.ncmd = data; }
 static READ_HANDLER(dmd_status_r) { return dmdlocals.status; }
 static READ_HANDLER(dmd_busy_r)   { return dmdlocals.busy; }
-static void dmd_exit(int brdNo) {
-  if (dmdlocals.timer) { timer_remove(dmdlocals.timer); dmdlocals.timer = NULL; }
-}
+
 /*------------------------------------------*/
 /*Data East, Sega, Stern 128x32 DMD Handling*/
 /*------------------------------------------*/
@@ -34,17 +31,19 @@ static void dmd_exit(int brdNo) {
 
 static WRITE_HANDLER(dmd32_ctrl_w);
 static void dmd32_init(struct sndbrdData *brdData);
+static VIDEO_UPDATE(dmd32);
 
 const struct sndbrdIntf dedmd32Intf = {
-  dmd32_init, dmd_exit, NULL,
+  dmd32_init, NULL, NULL,
   dmd_data_w, dmd_busy_r, dmd32_ctrl_w, dmd_status_r, SNDBRD_NOTSOUND
 };
 
 static WRITE_HANDLER(dmd32_bank_w);
 static WRITE_HANDLER(dmd32_status_w);
 static READ_HANDLER(dmd32_latch_r);
+static INTERRUPT_GEN(dmd32_firq);
 
-MEMORY_READ_START(de_dmd32readmem)
+static MEMORY_READ_START(dmd32_readmem)
   { 0x0000, 0x1fff, MRA_RAM },
   { 0x2000, 0x2fff, MRA_RAM }, /* DMD RAM PAGE 0-7 512 bytes each */
   { 0x3000, 0x3000, crtc6845_register_r },
@@ -53,7 +52,7 @@ MEMORY_READ_START(de_dmd32readmem)
   { 0x8000, 0xffff, MRA_ROM },
 MEMORY_END
 
-MEMORY_WRITE_START(de_dmd32writemem)
+static MEMORY_WRITE_START(dmd32_writemem)
   { 0x0000, 0x1fff, MWA_RAM },
   { 0x2000, 0x2fff, MWA_RAM, &dmd32RAM }, /* DMD RAM PAGE 0-7 512 bytes each*/
   { 0x3000, 0x3000, crtc6845_address_w },
@@ -63,7 +62,13 @@ MEMORY_WRITE_START(de_dmd32writemem)
   { 0x8000, 0xffff, MWA_ROM },
 MEMORY_END
 
-static void dmd32_firq(int data);
+MACHINE_DRIVER_START(de_dmd32)
+  MDRV_CPU_ADD(M6809, 4000000)
+  MDRV_CPU_MEMORY(dmd32_readmem, dmd32_writemem)
+  MDRV_CPU_PERIODIC_INT(dmd32_firq, DMD32_FIRQFREQ)
+  MDRV_INTERLEAVE(50)
+  MDRV_VIDEO_UPDATE(dmd32)
+MACHINE_DRIVER_END
 
 static void dmd32_init(struct sndbrdData *brdData) {
   memset(&dmdlocals, 0, sizeof(dmdlocals));
@@ -72,7 +77,6 @@ static void dmd32_init(struct sndbrdData *brdData) {
   /* copy last 16K of ROM into last 16K of CPU region*/
   memcpy(memory_region(DE_DMD32CPUREGION) + 0x8000,
          memory_region(DE_DMD32ROMREGION) + memory_region_length(DE_DMD32ROMREGION)-0x8000,0x8000);
-  dmdlocals.timer = timer_pulse(TIME_IN_HZ(DMD32_FIRQFREQ), 0, dmd32_firq);
 }
 
 static WRITE_HANDLER(dmd32_ctrl_w) {
@@ -103,17 +107,15 @@ static READ_HANDLER(dmd32_latch_r) {
   return dmdlocals.cmd;
 }
 
-static void dmd32_firq(int data) {
+static INTERRUPT_GEN(dmd32_firq) {
   cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_FIRQ_LINE, HOLD_LINE);
 }
 
-void de_dmd32refresh(struct mame_bitmap *bitmap, int fullRefresh) {
+static VIDEO_UPDATE(dmd32) {
   UINT8 *RAM  = ((UINT8 *)dmd32RAM) + ((crtc6845_start_addr & 0x0100)<<2);
   UINT8 *RAM2 = RAM + 0x200;
   tDMDDot dotCol;
   int ii,jj;
-
-  if (fullRefresh) fillbitmap(bitmap,Machine->pens[0],NULL);
 
   for (ii = 1; ii <= 32; ii++) {
     UINT8 *line = &dotCol[ii][0];
@@ -134,8 +136,8 @@ void de_dmd32refresh(struct mame_bitmap *bitmap, int fullRefresh) {
   }
   {
     static const core_tLCDLayout dmd32_disp[] = {{0,0,32,128,CORE_DMD}, {0}};
-    dmd_draw(bitmap, dotCol, core_gameData->lcdLayout ? core_gameData->lcdLayout : dmd32_disp);
-    drawStatus(bitmap,fullRefresh);
+    video_update_core_dmd(bitmap, cliprect, dotCol, core_gameData->lcdLayout ? core_gameData->lcdLayout : dmd32_disp);
+    video_update_core_status(bitmap, cliprect);
   }
 }
 
@@ -146,9 +148,10 @@ void de_dmd32refresh(struct mame_bitmap *bitmap, int fullRefresh) {
 
 static WRITE_HANDLER(dmd64_ctrl_w);
 static void dmd64_init(struct sndbrdData *brdData);
+static VIDEO_UPDATE(dmd64);
 
 const struct sndbrdIntf dedmd64Intf = {
-  dmd64_init, dmd_exit, NULL,
+  dmd64_init, NULL, NULL,
   dmd_data_w, dmd_busy_r, dmd64_ctrl_w, dmd_status_r, SNDBRD_NOTSOUND
 };
 
@@ -157,15 +160,16 @@ static WRITE16_HANDLER(crtc6845_msb_register_w);
 static READ16_HANDLER(crtc6845_msb_register_r);
 static READ16_HANDLER(dmd64_latch_r);
 static WRITE16_HANDLER(dmd64_status_w);
+static INTERRUPT_GEN(dmd64_irq2);
 
-MEMORY_READ16_START(de_dmd64readmem)
+static MEMORY_READ16_START(dmd64_readmem)
   { 0x00000000, 0x000fffff, MRA16_ROM }, /* ROM (2 X 512K)*/
   { 0x00800000, 0x0080ffff, MRA16_RAM }, /* RAM - 0x800000 Page 0, 0x801000 Page 1*/
   { 0x00c00010, 0x00c00011, crtc6845_msb_register_r },
   { 0x00c00020, 0x00c00021, dmd64_latch_r }, /* Read the Latch from CPU*/
 MEMORY_END
 
-MEMORY_WRITE16_START(de_dmd64writemem)
+static MEMORY_WRITE16_START(dmd64_writemem)
   { 0x00000000, 0x000fffff, MWA16_ROM},	 /* ROM (2 X 512K)*/
   { 0x00800000, 0x0080ffff, MWA16_RAM, &dmd64RAM},	 /* RAM - 0x800000 Page 0, 0x801000 Page 1*/
   { 0x00c00010, 0x00c00011, crtc6845_msb_address_w},
@@ -173,12 +177,17 @@ MEMORY_WRITE16_START(de_dmd64writemem)
   { 0x00c00020, 0x00c00021, dmd64_status_w},/* Set the Status Line*/
 MEMORY_END
 
-static void dmd64_irq2(int data);
+MACHINE_DRIVER_START(de_dmd64)
+  MDRV_CPU_ADD(M68000, 6000000)
+  MDRV_CPU_MEMORY(dmd64_readmem, dmd64_writemem)
+  MDRV_CPU_PERIODIC_INT(dmd64_irq2, DMD64_IRQ2FREQ)
+  MDRV_INTERLEAVE(50)
+  MDRV_VIDEO_UPDATE(dmd64)
+MACHINE_DRIVER_END
 
 static void dmd64_init(struct sndbrdData *brdData) {
   memset(&dmdlocals, 0, sizeof(dmdlocals));
   dmdlocals.brdData = *brdData;
-  dmdlocals.timer = timer_pulse(TIME_IN_HZ(DMD64_IRQ2FREQ), 0, dmd64_irq2);
 }
 
 static WRITE_HANDLER(dmd64_ctrl_w) {
@@ -201,7 +210,7 @@ static READ16_HANDLER(dmd64_latch_r) {
   cpu_set_irq_line(dmdlocals.brdData.cpuNo, MC68000_IRQ_1, CLEAR_LINE);
   return dmdlocals.cmd;
 }
-static void dmd64_irq2(int data) {
+static INTERRUPT_GEN(dmd64_irq2) {
   cpu_set_irq_line(dmdlocals.brdData.cpuNo, MC68000_IRQ_2, HOLD_LINE);
 }
 static WRITE16_HANDLER(crtc6845_msb_address_w)  { if (ACCESSING_MSB) crtc6845_address_w(offset,data>>8);  }
@@ -209,13 +218,11 @@ static WRITE16_HANDLER(crtc6845_msb_register_w) { if (ACCESSING_MSB) crtc6845_re
 static READ16_HANDLER(crtc6845_msb_register_r)  { return crtc6845_register_r(offset)<<8; }
 
 /*-- update display --*/
-void de_dmd64refresh(struct mame_bitmap *bitmap, int fullRefresh) {
+static VIDEO_UPDATE(dmd64) {
   UINT8 *RAM  = (UINT8 *)(dmd64RAM) + ((crtc6845_start_addr & 0x400)<<2);
   UINT8 *RAM2 = RAM + 0x800;
   tDMDDot dotCol;
   int ii,jj;
-
-  if (fullRefresh) fillbitmap(bitmap,Machine->pens[0],NULL);
 
   for (ii = 1; ii <= 64; ii++) {
     UINT8 *line = &dotCol[ii][0];
@@ -244,8 +251,8 @@ void de_dmd64refresh(struct mame_bitmap *bitmap, int fullRefresh) {
     }
     *line = 0;
   }
-  dmd_draw(bitmap, dotCol, core_gameData->lcdLayout);
-  drawStatus(bitmap,fullRefresh);
+  video_update_core_dmd(bitmap, cliprect, dotCol, core_gameData->lcdLayout);
+  video_update_core_status(bitmap, cliprect);
 }
 
 /*------------------------------*/
@@ -263,38 +270,48 @@ void de_dmd64refresh(struct mame_bitmap *bitmap, int fullRefresh) {
 
 static void dmd16_init(struct sndbrdData *brdData);
 static WRITE_HANDLER(dmd16_ctrl_w);
+static INTERRUPT_GEN(dmd16_nmi);
+static VIDEO_UPDATE(dmd16);
 
 const struct sndbrdIntf dedmd16Intf = {
-  dmd16_init, dmd_exit, NULL,
+  dmd16_init, NULL, NULL,
   dmd_data_w, dmd_busy_r, dmd16_ctrl_w, dmd_status_r, SNDBRD_NOTSOUND
 };
 
 static READ_HANDLER(dmd16_port_r);
 static WRITE_HANDLER(dmd16_port_w);
 
-MEMORY_READ_START(de_dmd16readmem)
+static MEMORY_READ_START(dmd16_readmem)
   { 0x0000, 0x3fff, MRA_ROM },	               /* Z80 ROM CODE*/
   { 0x4000, 0x7fff, MRA_BANKNO(DMD16_BANK0) }, /* ROM BANK*/
   { 0x8000, 0x9fff, MRA_RAM },
 MEMORY_END
 
-MEMORY_WRITE_START(de_dmd16writemem)
+static MEMORY_WRITE_START(dmd16_writemem)
   { 0x0000, 0x3fff, MWA_ROM },
   { 0x4000, 0x7fff, MWA_ROM },
   { 0x8000, 0x9fff, MWA_RAM },
 MEMORY_END
 
-PORT_READ_START(de_dmd16readport)
+static PORT_READ_START(dmd16_readport)
   { 0x00, 0xff, dmd16_port_r },
 PORT_END
 
-PORT_WRITE_START(de_dmd16writeport)
+static PORT_WRITE_START(dmd16_writeport)
   { 0x00, 0xff, dmd16_port_w },
 PORT_END
 
+MACHINE_DRIVER_START(de_dmd16)
+  MDRV_CPU_ADD(Z80, 4000000)
+  MDRV_CPU_MEMORY(dmd16_readmem, dmd16_writemem)
+  MDRV_CPU_PORTS(dmd16_readport, dmd16_writeport)
+  MDRV_CPU_PERIODIC_INT(dmd16_nmi, DMD16_NMIFREQ)
+  MDRV_INTERLEAVE(50)
+  MDRV_VIDEO_UPDATE(dmd16)
+MACHINE_DRIVER_END
+
 static void dmd16_setbusy(int bit, int value);
 static void dmd16_setbank(int bit, int value);
-static void dmd16_nmi(int data);
 
 static void dmd16_init(struct sndbrdData *brdData) {
   memset(&dmdlocals, 0, sizeof(dmdlocals));
@@ -304,7 +321,6 @@ static void dmd16_init(struct sndbrdData *brdData) {
   dmdlocals.framedata = (UINT32 *)memory_region(DE_DMD16DMDREGION);
   dmd16_setbank(0x07, 0x07);
   dmd16_setbusy(BUSY_SET|BUSY_CLR,0);
-  dmdlocals.timer = timer_pulse(TIME_IN_HZ(DMD16_NMIFREQ), 0, dmd16_nmi);
 }
 /*--- Port decoding ----
   76543210
@@ -441,15 +457,13 @@ static void dmd16_setbank(int bit, int value) {
   dmdlocals.bank = (dmdlocals.bank & ~bit) | (value ? bit : 0);
   cpu_setbank(DMD16_BANK0, dmdlocals.brdData.romRegion + (dmdlocals.bank & 0x07)*0x4000);
 }
-static void dmd16_nmi(int data) { cpu_set_nmi_line(dmdlocals.brdData.cpuNo, PULSE_LINE); }
+static INTERRUPT_GEN(dmd16_nmi) { cpu_set_nmi_line(dmdlocals.brdData.cpuNo, PULSE_LINE); }
 
 /*-- update display --*/
-void de_dmd16refresh(struct mame_bitmap *bitmap, int fullRefresh) {
+static VIDEO_UPDATE(dmd16) {
   UINT32 *frame = &dmdlocals.framedata[(!dmdlocals.frame)*0x80];
   tDMDDot dotCol;
   int ii,jj,kk;
-
-  if (fullRefresh) fillbitmap(bitmap,Machine->pens[0],NULL);
 
   for (ii = 1; ii <= 16; ii++) {
     UINT8 *line = &dotCol[ii][0];
@@ -470,8 +484,8 @@ void de_dmd16refresh(struct mame_bitmap *bitmap, int fullRefresh) {
   }
   {
     static const core_tLCDLayout dmd16_disp[] = {{0,0,16,128,CORE_DMD}, {0}};
-    dmd_draw(bitmap, dotCol, core_gameData->lcdLayout ? core_gameData->lcdLayout : dmd16_disp);
-    drawStatus(bitmap,fullRefresh);
+    video_update_core_dmd(bitmap, cliprect, dotCol, core_gameData->lcdLayout ? core_gameData->lcdLayout : dmd16_disp);
+    video_update_core_status(bitmap, cliprect);
   }
 }
 

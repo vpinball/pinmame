@@ -506,8 +506,25 @@ SNIPPET_END
 
 SNIPPET_BEGIN asmblit1_8_to_16_rgb
 	movzx	eax,byte [esi]
-	mov		eax,[ecx+eax*4]
-	store_multiple2 ax,0,ax,2
+	movd	mm0,[ecx+eax*4]
+
+	mov		eax,[_asmblit_srcheight]
+	movq	mm2,mm0
+	mov		ebx,FIXUPVALUE(FIXUPVAL_LASTXCOUNT)
+	movq	mm6,mm0
+	sub		ebx,ebp
+	psrlq	mm0,2
+	shl		ebx,2
+	shl		eax,7
+	and		ebx,31
+	movq	mm4,mm0
+	pand	mm0,[_asmblit_rgbmask+eax+ebx+64]
+	pand	mm4,[_asmblit_rgbmask+eax+ebx]
+	mov		ebx,[_asmblit_dstpitch]
+	psubd	mm2,mm0
+	psubd	mm6,mm4
+	movd	[edi],mm2
+	movd	[edi+ebx],mm6
 SNIPPET_END
 
 SNIPPET_BEGIN asmblit16_8_to_16_rgb
@@ -787,8 +804,26 @@ SNIPPET_END
 
 SNIPPET_BEGIN asmblit1_8_to_32_rgb
 	movzx	eax,byte [esi]
-	mov		eax,[ecx+eax*4]
-	store_multiple2 eax,0,eax,4
+	movd	mm0,[ecx+eax*4]
+	punpckldq mm0,mm0
+
+	mov		eax,[_asmblit_srcheight]
+	movq	mm2,mm0
+	mov		ebx,FIXUPVALUE(FIXUPVAL_LASTXCOUNT)
+	movq	mm6,mm0
+	sub		ebx,ebp
+	psrlq	mm0,2
+	shl		ebx,3
+	shl		eax,7
+	and		ebx,63
+	movq	mm4,mm0
+	pand	mm0,[_asmblit_rgbmask+eax+ebx+64]
+	pand	mm4,[_asmblit_rgbmask+eax+ebx]
+	mov		ebx,[_asmblit_dstpitch]
+	psubd	mm2,mm0
+	psubd	mm6,mm4
+	movq	[edi],mm2
+	movq	[edi+ebx],mm6
 SNIPPET_END
 
 SNIPPET_BEGIN asmblit16_8_to_32_rgb
@@ -968,8 +1003,25 @@ SNIPPET_END
 
 SNIPPET_BEGIN asmblit1_16_to_16_rgb
 	movzx	eax,word [esi]
-	mov		eax,[ecx+eax*4]
-	store_multiple2 ax,0,ax,2
+	movd	mm0,[ecx+eax*4]
+
+	mov		eax,[_asmblit_srcheight]
+	movq	mm2,mm0
+	mov		ebx,FIXUPVALUE(FIXUPVAL_LASTXCOUNT)
+	movq	mm6,mm0
+	sub		ebx,ebp
+	psrlq	mm0,2
+	shl		ebx,2
+	shl		eax,7
+	and		ebx,31
+	movq	mm4,mm0
+	pand	mm0,[_asmblit_rgbmask+eax+ebx+64]
+	pand	mm4,[_asmblit_rgbmask+eax+ebx]
+	mov		ebx,[_asmblit_dstpitch]
+	psubd	mm2,mm0
+	psubd	mm6,mm4
+	movd	[edi],mm2
+	movd	[edi+ebx],mm6
 SNIPPET_END
 
 SNIPPET_BEGIN asmblit16_16_to_16_rgb
@@ -1249,8 +1301,26 @@ SNIPPET_END
 
 SNIPPET_BEGIN asmblit1_16_to_32_rgb
 	movzx	eax,word [esi]
-	mov		eax,[ecx+eax*4]
-	store_multiple2 eax,0,eax,4
+	movd	mm0,[ecx+eax*4]
+	punpckldq mm0,mm0
+
+	mov		eax,[_asmblit_srcheight]
+	movq	mm2,mm0
+	mov		ebx,FIXUPVALUE(FIXUPVAL_LASTXCOUNT)
+	movq	mm6,mm0
+	sub		ebx,ebp
+	psrlq	mm0,2
+	shl		ebx,3
+	shl		eax,7
+	and		ebx,63
+	movq	mm4,mm0
+	pand	mm0,[_asmblit_rgbmask+eax+ebx+64]
+	pand	mm4,[_asmblit_rgbmask+eax+ebx]
+	mov		ebx,[_asmblit_dstpitch]
+	psubd	mm2,mm0
+	psubd	mm6,mm4
+	movq	[edi],mm2
+	movq	[edi+ebx],mm6
 SNIPPET_END
 
 SNIPPET_BEGIN asmblit16_16_to_32_rgb

@@ -16,8 +16,12 @@
 #define S4_VBLANKFREQ    60 /* VBLANK frequency */
 #define S4_IRQFREQ    1000  /* IRQ Frequency*/
 
-static void s4_exit(void);
-static void s4_init(void);
+#define S4_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
+#define S4_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
+#define S4_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
+
+static MACHINE_STOP(s4);
+static MACHINE_STOP(s4);
 
 static struct {
   int	 alphapos;
@@ -51,7 +55,7 @@ const core_tLCDLayout s4_disp[] = {
   {4, 9,14,2,CORE_SEG7}, {4,14, 6,2,CORE_SEG7}, {0}
 };
 
-static void s4_nvram(void *file, int write);
+static NVRAM_HANDLER(s4);
 
 static READ_HANDLER(s4_dips_r);
 static READ_HANDLER(s4_entersw_r);
@@ -73,21 +77,20 @@ static WRITE_HANDLER(s4_gameon_w);
 
 static void s4_irqline(int state) {
   if (state) {
-    cpu_set_irq_line(S4_CPUNO, M6800_IRQ_LINE, ASSERT_LINE);
+    cpu_set_irq_line(0, M6800_IRQ_LINE, ASSERT_LINE);
     pia_set_input_ca1(S4_PIA0, core_getSw(S4_SWADVANCE));
     pia_set_input_cb1(S4_PIA0, core_getSw(S4_SWUPDN));
   }
   else {
-    cpu_set_irq_line(S4_CPUNO, M6800_IRQ_LINE, CLEAR_LINE);
+    cpu_set_irq_line(0, M6800_IRQ_LINE, CLEAR_LINE);
     pia_set_input_ca1(S4_PIA0, 0);
     pia_set_input_cb1(S4_PIA0, 0);
   }
 }
 
-static int s4_irq(void) {
+static INTERRUPT_GEN(s4_irq) {
   s4_irqline(1);
-  timer_set(TIME_IN_CYCLES(32,0),S4_CPUNO,s4_irqline);
-  return 0;
+  timer_set(TIME_IN_CYCLES(32,0),0,s4_irqline);
 }
 
 /*********************/
@@ -241,7 +244,7 @@ PIA IV:
   /* irq: A/B              */ 0, 0
 }};
 
-static int s4_vblank(void) {
+static INTERRUPT_GEN(s4_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
@@ -277,7 +280,6 @@ static int s4_vblank(void) {
 
   }
   core_updateSw(s4locals.ssEn);
-  return 0;
 }
 
 static void s4_updSw(int *inports) {
@@ -301,7 +303,7 @@ static const core_tData s4Data = {
   core_swSeq2m, core_swSeq2m,core_m2swSeq,core_m2swSeq
 };
 
-static void s4_init(void) {
+static MACHINE_INIT(s4) {
   memset(&s4locals, 0, sizeof(s4locals));
   if (core_init(&s4Data)) return;
   pia_config(S4_PIA0, PIA_STANDARD_ORDERING, &s4_pia[0]);
@@ -316,7 +318,7 @@ static void s4_init(void) {
   s4locals.vblankCount = 1;
 }
 
-static void s4_exit(void) {
+static MACHINE_STOP(s4) {
   sndbrd_0_exit(); core_exit();
 }
 
@@ -346,6 +348,32 @@ static MEMORY_WRITE_START(s4_writemem)
   { 0x8000, 0xffff, MWA_ROM },		/*Doubled ROM region since only 15 address pins used!*/
 MEMORY_END
 
+/*-- S4 without sound or S3 with chimes --*/
+MACHINE_DRIVER_START(s4)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CPU_ADD(M6800, 3580000/4)
+  MDRV_CPU_MEMORY(s4_readmem, s4_writemem)
+  MDRV_CPU_VBLANK_INT(s4_vblank, 1)
+  MDRV_CPU_PERIODIC_INT(s4_irq, S4_IRQFREQ)
+  MDRV_MACHINE_INIT(s4) MDRV_MACHINE_STOP(s4)
+  MDRV_VIDEO_UPDATE(core_led)
+  MDRV_NVRAM_HANDLER(s4)
+MACHINE_DRIVER_END
+
+/*-- S4 with sound board --*/
+MACHINE_DRIVER_START(s4S)
+  MDRV_IMPORT_FROM(s4)
+  MDRV_IMPORT_FROM(wmssnd_s67s)
+MACHINE_DRIVER_END
+
+/*-----------------------------------------------
+/ Load/Save static ram
+/-------------------------------------------------*/
+static NVRAM_HANDLER(s4) {
+  core_nvram(file, read_or_write, s4_CMOS, 0x100, 0xff);
+}
+
+#if 0
 //Special System 3 Machine for games using Chimes instead of Solid State Sound Hardware
 const struct MachineDriver machine_driver_s3c = {
   {{  CPU_M6800, 3580000/4, /* 3.58/4 = 900hz */
@@ -395,10 +423,4 @@ const struct MachineDriver machine_driver_s4s= {
   0,0,0,0, { S67S_SOUND },
   s4_nvram
 };
-
-/*-----------------------------------------------
-/ Load/Save static ram
-/-------------------------------------------------*/
-static void s4_nvram(void *file, int write) {
-  core_nvram(file, write, s4_CMOS, 0x100, 0xff);
-}
+#endif

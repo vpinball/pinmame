@@ -37,6 +37,7 @@
 -------------------------------------------------------------------------------------------------*/
 
 #include "driver.h"
+#include "core.h"
 #include "wpc.h"
 #include "sim.h"
 #include "wmssnd.h"
@@ -462,11 +463,11 @@ static void gw_drawMech(BMTYPE **line) {
 }
 static void gw_drawStatic(BMTYPE **line) {
   core_textOutf(30, 40,BLACK,"Help on this Simulator:");
-  core_textOutf(30, 50,BLACK,"L/R Ctrl+I = L/R Inlane");
-  core_textOutf(30, 60,BLACK,"L/R Ctrl+O = L/R Outlane");
-  core_textOutf(30, 70,BLACK,"L/R Ctrl+- = L/R Slingshot");
-  core_textOutf(30, 80,BLACK,"L/R Ctrl+L = L/R Freeway Loop");
-  core_textOutf(30, 90,BLACK,"L/R Ctrl+R = Lock/SuperCharger Ramp");
+  core_textOutf(30, 50,BLACK,"L/R Shift+I = L/R Inlane");
+  core_textOutf(30, 60,BLACK,"L/R Shift+O = L/R Outlane");
+  core_textOutf(30, 70,BLACK,"L/R Shift+- = L/R Slingshot");
+  core_textOutf(30, 80,BLACK,"L/R Shift+L = L/R Freeway Loop");
+  core_textOutf(30, 90,BLACK,"L/R Shift+R = Lock/SuperCharger Ramp");
   core_textOutf(30,100,BLACK,"Q = Drain Ball, W/E/R = Jet Bumpers");
   core_textOutf(30,110,BLACK,"T = Tunnel Hole, U = Upper Left Loop");
   core_textOutf(30,120,BLACK,"A/S/D = Top/Mid/Bottom Green Targets");

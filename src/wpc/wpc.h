@@ -1,9 +1,6 @@
 #ifndef INC_WPC
 #define INC_WPC
 
-#include "core.h"
-#include "wpcsam.h"
-
 /*-- Common Inports for WPCGames --*/
 #define WPC_COMPORTS \
   PORT_START /* 0 */ \
@@ -76,35 +73,26 @@
 #define WPC_swULFlipEOS swF7
 #define WPC_swULFlip    swF8
 
-/*-- Smoothing values --*/
-#define WPC_SOLSMOOTH      4 /* Smooth the Solenoids over this numer of VBLANKS */
-#define WPC_LAMPSMOOTH     2 /* Smooth the lamps over this number of VBLANKS */
-#define WPC_DISPLAYSMOOTH  2 /* Smooth the display over this number of VBLANKS */
-
 /*-------------------------
 / Machine driver constants
 /--------------------------*/
 #define WPC_CPUNO   0
-#define WPC_SCPUNO  1
 
 /*-- Memory regions --*/
-#define WPC_MEMREG_CPU		REGION_CPU1
-#define WPC_MEMREG_SCPU		REGION_CPU2
-#define	WPC_MEMREG_DMD		REGION_USER1
-#define WPC_MEMREG_ROM		REGION_USER2
-#define WPC_MEMREG_SROM		REGION_SOUND1
-#define WPC_MEMREG_SBANK        REGION_USER3
+#define WPC_CPUREGION		REGION_CPU1
+#define	WPC_DMDREGION		REGION_USER1
+#define WPC_ROMREGION		REGION_USER2
 
 /*-- standard display layout --*/
-extern core_tLCDLayout wpc_dispAlpha[];
-extern core_tLCDLayout wpc_dispDMD[];
+extern const core_tLCDLayout wpc_dispAlpha[];
+extern const core_tLCDLayout wpc_dispDMD[];
 
 /*-- Main CPU regions and ROM --*/
 #define WPC_ROMSTART(name, ver, n1, size, chk1) \
    ROM_START(name##_##ver) \
-     NORMALREGION(0x10000, WPC_MEMREG_CPU) \
-     NORMALREGION(0x2000,  WPC_MEMREG_DMD) \
-     NORMALREGION(size,    WPC_MEMREG_ROM) \
+     NORMALREGION(0x10000, WPC_CPUREGION) \
+     NORMALREGION(0x2000,  WPC_DMDREGION) \
+     NORMALREGION(size,    WPC_ROMREGION) \
        ROM_LOAD(n1, 0x00000, size, chk1)
 #define WPC_ROMEND ROM_END
 
@@ -118,7 +106,6 @@ extern core_tLCDLayout wpc_dispDMD[];
 / Some registers were moved in later
 / WPC generations. These end with "95"
 /-----------------------------------*/
-
 /*----------------------------------
 /  WPC_FLIPPERS write (active low)
 /   0  LL Stroke    4 LU Stroke
@@ -144,7 +131,6 @@ extern core_tLCDLayout wpc_dispDMD[];
 /
 / Dr. Who is the only game testing the shifter.
 /------------------------------------------------------------------------------
-/  					      Generations
 /------------------------------------------------AMFDS9-------------------------*/
 /* 3fc0 - 3fdf External IO. */
 /* Printer board */
@@ -212,31 +198,25 @@ extern WRITE_HANDLER(wpc_w);
 #define WPC_FIRQ_SOUND  0x02
 extern void wpc_firq(int set, int src);
 
-/*-- These are only here so the game structure can be in the game file --*/
-extern const struct MachineDriver machine_driver_wpcDMD;
-extern const struct MachineDriver machine_driver_wpcAlpha;
-#define wpc_mAlpha      wpcAlpha
-#define wpc_mFliptron   wpcDMD
-#define wpc_mDMD        wpcDMD
-#define wpc_mDCS        wpcDMD
-#define wpc_mSecurity   wpcDMD
-#define wpc_m95DCS      wpcDMD
-#define wpc_m95         wpcDMD
-
-extern const struct MachineDriver machine_driver_wpcAlpha1_s;
-extern const struct MachineDriver machine_driver_wpcAlpha_s;
-extern const struct MachineDriver machine_driver_wpcDMD_s;
-extern const struct MachineDriver machine_driver_wpcDCS_s;
-extern const struct MachineDriver machine_driver_wpcDCS95_s;
-#define wpc_mAlpha1S     wpcAlpha1_s
-#define wpc_mAlpha2S     wpcAlpha_s
-#define wpc_mAlphaS      wpcAlpha_s
-#define wpc_mFliptronS   wpcDMD_s
-#define wpc_mDMDS        wpcDMD_s
-#define wpc_mDCSS        wpcDCS_s
-#define wpc_mSecurityS   wpcDCS_s
-#define wpc_m95DCSS      wpcDCS_s
-#define wpc_m95S         wpcDCS95_s
+extern MACHINE_DRIVER_EXTERN(wpc_alpha);
+extern MACHINE_DRIVER_EXTERN(wpc_dmd);
+#define wpc_mAlpha       wpc_alpha
+#define wpc_mDMD         wpc_dmd
+#define wpc_mFliptron    wpc_dmd
+#define wpc_m95          wpc_dmd
+extern MACHINE_DRIVER_EXTERN(wpc_alpha1S);
+extern MACHINE_DRIVER_EXTERN(wpc_alpha2S);
+extern MACHINE_DRIVER_EXTERN(wpc_dmdS);
+extern MACHINE_DRIVER_EXTERN(wpc_dcsS);
+extern MACHINE_DRIVER_EXTERN(wpc_95S);
+#define wpc_mAlpha1S     wpc_alpha1S
+#define wpc_mAlpha2S     wpc_alpha2S
+#define wpc_mFliptronS   wpc_dmdS
+#define wpc_mDMDS        wpc_dmdS
+#define wpc_mDCSS        wpc_dcsS
+#define wpc_mSecurityS   wpc_dcsS
+#define wpc_m95DCSS      wpc_dcsS
+#define wpc_m95S         wpc_95S
 
 #endif /* INC_WPC */
 

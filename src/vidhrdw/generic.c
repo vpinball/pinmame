@@ -39,10 +39,12 @@ size_t spriteram_3_size;
 data8_t *dirtybuffer;
 data16_t *dirtybuffer16;
 data32_t *dirtybuffer32;
-struct osd_bitmap *tmpbitmap;
+struct mame_bitmap *tmpbitmap;
 
+int flip_screen_x, flip_screen_y;
+static int global_attribute_changed;
 
-void generic_vh_postload(void)
+void video_generic_postload(void)
 {
 	memset(dirtybuffer,1,videoram_size);
 }
@@ -52,39 +54,34 @@ void generic_vh_postload(void)
   Start the video hardware emulation.
 
 ***************************************************************************/
-int generic_vh_start(void)
+VIDEO_START( generic )
 {
 	dirtybuffer = 0;
 	tmpbitmap = 0;
 
 	if (videoram_size == 0)
 	{
-logerror("Error: generic_vh_start() called but videoram_size not initialized\n");
+logerror("Error: video_start_generic() called but videoram_size not initialized\n");
 		return 1;
 	}
 
-	if ((dirtybuffer = malloc(videoram_size)) == 0)
+	if ((dirtybuffer = auto_malloc(videoram_size)) == 0)
 		return 1;
 	memset(dirtybuffer,1,videoram_size);
 
-	if ((tmpbitmap = bitmap_alloc(Machine->drv->screen_width,Machine->drv->screen_height)) == 0)
-	{
-		free(dirtybuffer);
+	if ((tmpbitmap = auto_bitmap_alloc(Machine->drv->screen_width,Machine->drv->screen_height)) == 0)
 		return 1;
-	}
 
-	state_save_register_func_postload(generic_vh_postload);
+	state_save_register_func_postload(video_generic_postload);
 
 	return 0;
 }
 
 
-int generic_bitmapped_vh_start(void)
+VIDEO_START( generic_bitmapped )
 {
-	if ((tmpbitmap = bitmap_alloc(Machine->drv->screen_width,Machine->drv->screen_height)) == 0)
-	{
+	if ((tmpbitmap = auto_bitmap_alloc(Machine->drv->screen_width,Machine->drv->screen_height)) == 0)
 		return 1;
-	}
 
 	return 0;
 }
@@ -92,36 +89,13 @@ int generic_bitmapped_vh_start(void)
 
 /***************************************************************************
 
-  Stop the video hardware emulation.
-
-***************************************************************************/
-void generic_vh_stop(void)
-{
-	free(dirtybuffer);
-	bitmap_free(tmpbitmap);
-
-	dirtybuffer = 0;
-	tmpbitmap = 0;
-}
-
-void generic_bitmapped_vh_stop(void)
-{
-	bitmap_free(tmpbitmap);
-
-	tmpbitmap = 0;
-}
-
-
-/***************************************************************************
-
-  Draw the game screen in the given osd_bitmap.
+  Draw the game screen in the given mame_bitmap.
   To be used by bitmapped games not using sprites.
 
 ***************************************************************************/
-void generic_bitmapped_vh_screenrefresh(struct osd_bitmap *bitmap,int full_refresh)
+VIDEO_UPDATE( generic_bitmapped )
 {
-	if (full_refresh)
-		copybitmap(bitmap,tmpbitmap,0,0,0,0,&Machine->visible_area,TRANSPARENCY_NONE,0);
+	copybitmap(bitmap,tmpbitmap,0,0,0,0,&Machine->visible_area,TRANSPARENCY_NONE,0);
 }
 
 
@@ -268,4 +242,116 @@ void buffer_spriteram(unsigned char *ptr,int length)
 void buffer_spriteram_2(unsigned char *ptr,int length)
 {
 	memcpy(buffered_spriteram_2,ptr,length);
+}
+
+
+/***************************************************************************
+
+	Global video attribute handling code
+
+***************************************************************************/
+
+/*-------------------------------------------------
+	updateflip - handle global flipping
+-------------------------------------------------*/
+
+static void updateflip(void)
+{
+	int min_x,max_x,min_y,max_y;
+
+	tilemap_set_flip(ALL_TILEMAPS,(TILEMAP_FLIPX & flip_screen_x) | (TILEMAP_FLIPY & flip_screen_y));
+
+	min_x = Machine->drv->default_visible_area.min_x;
+	max_x = Machine->drv->default_visible_area.max_x;
+	min_y = Machine->drv->default_visible_area.min_y;
+	max_y = Machine->drv->default_visible_area.max_y;
+
+	if (flip_screen_x)
+	{
+		int temp;
+
+		temp = Machine->drv->screen_width - min_x - 1;
+		min_x = Machine->drv->screen_width - max_x - 1;
+		max_x = temp;
+	}
+	if (flip_screen_y)
+	{
+		int temp;
+
+		temp = Machine->drv->screen_height - min_y - 1;
+		min_y = Machine->drv->screen_height - max_y - 1;
+		max_y = temp;
+	}
+
+	set_visible_area(min_x,max_x,min_y,max_y);
+}
+
+
+/*-------------------------------------------------
+	flip_screen_set - set global flip
+-------------------------------------------------*/
+
+void flip_screen_set(int on)
+{
+	flip_screen_x_set(on);
+	flip_screen_y_set(on);
+}
+
+
+/*-------------------------------------------------
+	flip_screen_x_set - set global horizontal flip
+-------------------------------------------------*/
+
+void flip_screen_x_set(int on)
+{
+	if (on) on = ~0;
+	if (flip_screen_x != on)
+	{
+		set_vh_global_attribute(&flip_screen_x,on);
+		updateflip();
+	}
+}
+
+
+/*-------------------------------------------------
+	flip_screen_y_set - set global vertical flip
+-------------------------------------------------*/
+
+void flip_screen_y_set(int on)
+{
+	if (on) on = ~0;
+	if (flip_screen_y != on)
+	{
+		set_vh_global_attribute(&flip_screen_y,on);
+		updateflip();
+	}
+}
+
+
+/*-------------------------------------------------
+	set_vh_global_attribute - set an arbitrary
+	global video attribute
+-------------------------------------------------*/
+
+void set_vh_global_attribute( int *addr, int data )
+{
+	if (!addr || *addr != data)
+	{
+		global_attribute_changed = 1;
+		if (addr)
+			*addr = data;
+	}
+}
+
+
+/*-------------------------------------------------
+	get_vh_global_attribute - set an arbitrary
+	global video attribute
+-------------------------------------------------*/
+
+int get_vh_global_attribute_changed(void)
+{
+	int result = global_attribute_changed;
+	global_attribute_changed = 0;
+	return result;
 }

@@ -169,31 +169,6 @@ void via_config(int which, const struct via6522_interface *intf)
 }
 
 
-/******************* reset *******************/
-
-void via_reset(void)
-{
-	int i;
-	struct via6522 v;
-
-	memset(&v, 0, sizeof(v));
-
-	for (i = 0; i < MAX_VIA; i++)
-    {
-		v.intf = via[i].intf;
-		v.t1ll = via[i].t1ll;
-		v.t1lh = via[i].t1lh;
-		v.t2ll = via[i].t2ll;
-		v.t2lh = via[i].t2lh;
-		v.time1 = via[i].time1;
-		v.time2 = via[i].time2;
-		v.sec_to_cycles = via[i].sec_to_cycles;
-		v.cycles_to_sec = via[i].cycles_to_sec;
-
-		via[i] = v;
-    }
-}
-
 /******************* external interrupt check *******************/
 
 static void via_set_int (struct via6522 *v, int data)
@@ -227,7 +202,7 @@ static void via_t1_timeout (int which)
     {
 		if (T1_SET_PB7(v->acr))
 			v->out_b ^= 0x80;
-		timer_reset (v->t1, V_CYCLES_TO_TIME(TIMER1_VALUE(v) + IFR_DELAY));
+		timer_adjust (v->t1, V_CYCLES_TO_TIME(TIMER1_VALUE(v) + IFR_DELAY), which, 0);
     }
 	else
     {
@@ -255,6 +230,34 @@ static void via_t2_timeout (int which)
 
 	if (!(v->ifr & INT_T2))
 		via_set_int (v, INT_T2);
+}
+
+/******************* reset *******************/
+
+void via_reset(void)
+{
+	int i;
+	struct via6522 v;
+
+	memset(&v, 0, sizeof(v));
+
+	for (i = 0; i < MAX_VIA; i++)
+    {
+		v.intf = via[i].intf;
+		v.t1ll = via[i].t1ll;
+		v.t1lh = via[i].t1lh;
+		v.t2ll = via[i].t2ll;
+		v.t2lh = via[i].t2lh;
+		v.time1 = via[i].time1;
+		v.time2 = via[i].time2;
+		v.sec_to_cycles = via[i].sec_to_cycles;
+		v.cycles_to_sec = via[i].cycles_to_sec;
+		
+		v.t1 = timer_alloc(via_t1_timeout);
+		v.t2 = timer_alloc(via_t2_timeout);
+
+		via[i] = v;
+    }
 }
 
 /******************* CPU interface for VIA read *******************/
@@ -541,10 +544,7 @@ void via_write(int which, int offset, int data)
 			if (v->intf->out_b_func && v->ddr_b)
 				v->intf->out_b_func(0, v->out_b & v->ddr_b);
 		}
-		if (v->t1)
-			timer_reset (v->t1, V_CYCLES_TO_TIME(TIMER1_VALUE(v) + IFR_DELAY));
-		else
-			v->t1 = timer_set (V_CYCLES_TO_TIME(TIMER1_VALUE(v) + IFR_DELAY), which, via_t1_timeout);
+		timer_adjust (v->t1, V_CYCLES_TO_TIME(TIMER1_VALUE(v) + IFR_DELAY), which, 0);
 		break;
 
     case VIA_T2CL:
@@ -559,15 +559,9 @@ void via_write(int which, int offset, int data)
 
 		if (!T2_COUNT_PB6(v->acr))
 		{
-			if (v->t2)
-			{
-				if (v->intf->t2_callback)
-					v->intf->t2_callback(timer_timeelapsed(v->t2));
-				timer_reset (v->t2, V_CYCLES_TO_TIME(TIMER2_VALUE(v) + IFR_DELAY));
-			}
-			else
-				v->t2 = timer_set (V_CYCLES_TO_TIME(TIMER2_VALUE(v) + IFR_DELAY),
-								   which, via_t2_timeout);
+			if (v->intf->t2_callback)
+				v->intf->t2_callback(timer_timeelapsed(v->t2));
+			timer_adjust (v->t2, V_CYCLES_TO_TIME(TIMER2_VALUE(v) + IFR_DELAY), which, 0);
 		}
 		else
 		{
@@ -619,10 +613,7 @@ void via_write(int which, int offset, int data)
 		}
 		if (T1_CONTINUOUS(data))
 		{
-			if (v->t1)
-				timer_reset (v->t1, V_CYCLES_TO_TIME(TIMER1_VALUE(v) + IFR_DELAY));
-			else
-				v->t1 = timer_set (V_CYCLES_TO_TIME(TIMER1_VALUE(v) + IFR_DELAY), which, via_t1_timeout);
+			timer_adjust (v->t1, V_CYCLES_TO_TIME(TIMER1_VALUE(v) + IFR_DELAY), which, 0);
 		}
 		/* kludge for Mac Plus (and 128k, 512k, 512ke) : */
 		if (v->intf->si_ready_func && SI_EXT_CONTROL(data))

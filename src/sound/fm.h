@@ -1,5 +1,5 @@
 /*
-  File: fm.h -- header file for software emuration for FM sound genelator
+  File: fm.h -- header file for software emulation for FM sound generator
 
 */
 #ifndef _H_FM_FM_
@@ -17,15 +17,11 @@
 /* select stereo output buffer : 1=mixing / 0=separate */
 #define FM_STEREO_MIX 0
 /* select bit size of output : 8 or 16 */
-#define FM_OUTPUT_BIT 16
+#define FM_SAMPLE_BITS 16
 /* select timer system internal or external */
 #define FM_INTERNAL_TIMER 0
 
 /* --- speedup optimize --- */
-/* support LFO unit */
-#define FM_LFO_SUPPORT 1
-/* support OPN SSG type envelope mode */
-#define FM_SEG_SUPPORT 0
 /* busy flag enulation , The definition of FM_GET_TIME_NOW() is necessary. */
 #define FM_BUSY_FLAG_SUPPORT 1
 
@@ -36,22 +32,22 @@
 /* int n    = chip number        */
 /* int clk  = MasterClock(Hz)    */
 /* int rate = sample rate(Hz) */
-#define SSGClk(chip,clock) AY8910_set_clock(chip,clock)
+#define SSGClk(chip,clock) AY8910_set_clock((chip)+ay8910_index_ym,clock)
 
 /* SSGWrite : Write SSG port     */
 /* int n    = chip number        */
 /* int a    = address            */
 /* int v    = data               */
-#define SSGWrite(n,a,v) AY8910Write(n,a,v)
+#define SSGWrite(n,a,v) AY8910Write((n)+ay8910_index_ym,a,v)
 
 /* SSGRead  : Read SSG port */
 /* int n    = chip number   */
 /* return   = Read data     */
-#define SSGRead(n) AY8910Read(n)
+#define SSGRead(n) AY8910Read((n)+ay8910_index_ym)
 
 /* SSGReset : Reset SSG chip */
 /* int n    = chip number   */
-#define SSGReset(chip) AY8910_reset(chip)
+#define SSGReset(chip) AY8910_reset((chip)+ay8910_index_ym)
 
 /* --- external callback funstions for realtime update --- */
 
@@ -82,6 +78,7 @@
 #endif
 
 /* compiler dependence */
+#if 0
 #ifndef OSD_CPU_H
 #define OSD_CPU_H
 typedef unsigned char	UINT8;   /* unsigned  8bit */
@@ -91,6 +88,14 @@ typedef signed char		INT8;    /* signed  8bit   */
 typedef signed short	INT16;   /* signed 16bit   */
 typedef signed int		INT32;   /* signed 32bit   */
 #endif
+#endif
+
+#ifndef INLINE
+#define INLINE static __inline__
+#endif
+
+
+
 
 #define YM2203_NUMBUF 1
 #if FM_STEREO_MIX
@@ -105,11 +110,11 @@ typedef signed int		INT32;   /* signed 32bit   */
   #define YM2612_NUMBUF 2    /* FM L+R */
 #endif
 
-#if (FM_OUTPUT_BIT==16)
+#if (FM_SAMPLE_BITS==16)
 typedef INT16 FMSAMPLE;
 typedef unsigned long FMSAMPLE_MIX;
 #endif
-#if (FM_OUTPUT_BIT==8)
+#if (FM_SAMPLE_BITS==8)
 typedef unsigned char  FMSAMPLE;
 typedef unsigned short FMSAMPLE_MIX;
 #endif

@@ -394,17 +394,17 @@ static void print_game_rom(FILE* out, const struct GameDriver* game)
 static void print_game_sample(FILE* out, const struct GameDriver* game)
 {
 #if (HAS_SAMPLES || HAS_VLM5030)
+	struct InternalMachineDriver drv;
 	int i;
-	for( i = 0; game->drv->sound[i].sound_type && i < MAX_SOUND; i++ )
+
+	expand_machine_driver(game->drv, &drv);
+
+	for( i = 0; drv.sound[i].sound_type && i < MAX_SOUND; i++ )
 	{
 		const char **samplenames = NULL;
 #if (HAS_SAMPLES)
-		if( game->drv->sound[i].sound_type == SOUND_SAMPLES )
-			samplenames = ((struct Samplesinterface *)game->drv->sound[i].sound_interface)->samplenames;
-#endif
-#if (HAS_VLM5030)
-		if( game->drv->sound[i].sound_type == SOUND_VLM5030 )
-			samplenames = ((struct VLM5030interface *)game->drv->sound[i].sound_interface)->samplenames;
+		if( drv.sound[i].sound_type == SOUND_SAMPLES )
+			samplenames = ((struct Samplesinterface *)drv.sound[i].sound_interface)->samplenames;
 #endif
 		if (samplenames != 0 && samplenames[0] != 0) {
 			int k = 0;
@@ -434,10 +434,14 @@ static void print_game_sample(FILE* out, const struct GameDriver* game)
 
 static void print_game_micro(FILE* out, const struct GameDriver* game)
 {
-	const struct MachineDriver* driver = game->drv;
-	const struct MachineCPU* cpu = driver->cpu;
-	const struct MachineSound* sound = driver->sound;
+	struct InternalMachineDriver driver;
+	const struct MachineCPU* cpu;
+	const struct MachineSound* sound;
 	int j;
+
+	expand_machine_driver(game->drv, &driver);
+	cpu = driver.cpu;
+	sound = driver.sound;
 
 	for(j=0;j<MAX_CPU;++j)
 	{
@@ -484,7 +488,7 @@ static void print_game_micro(FILE* out, const struct GameDriver* game)
 
 static void print_game_video(FILE* out, const struct GameDriver* game)
 {
-	const struct MachineDriver* driver = game->drv;
+	struct InternalMachineDriver driver;
 
 	int dx;
 	int dy;
@@ -493,8 +497,10 @@ static void print_game_video(FILE* out, const struct GameDriver* game)
 	int showxy;
 	int orientation;
 
+	expand_machine_driver(game->drv, &driver);
+
 	fprintf(out, L1P "video" L2B);
-	if (driver->video_attributes & VIDEO_TYPE_VECTOR)
+	if (driver.video_attributes & VIDEO_TYPE_VECTOR)
 	{
 		fprintf(out, L2P "screen vector" L2N);
 		showxy = 0;
@@ -507,26 +513,26 @@ static void print_game_video(FILE* out, const struct GameDriver* game)
 
 	if (game->flags & ORIENTATION_SWAP_XY)
 	{
-		ax = VIDEO_ASPECT_RATIO_DEN(driver->video_attributes);
-		ay = VIDEO_ASPECT_RATIO_NUM(driver->video_attributes);
+		ax = VIDEO_ASPECT_RATIO_DEN(driver.video_attributes);
+		ay = VIDEO_ASPECT_RATIO_NUM(driver.video_attributes);
 		if (ax == 0 && ay == 0) {
 			ax = 3;
 			ay = 4;
 		}
-		dx = driver->default_visible_area.max_y - driver->default_visible_area.min_y + 1;
-		dy = driver->default_visible_area.max_x - driver->default_visible_area.min_x + 1;
+		dx = driver.default_visible_area.max_y - driver.default_visible_area.min_y + 1;
+		dy = driver.default_visible_area.max_x - driver.default_visible_area.min_x + 1;
 		orientation = 1;
 	}
 	else
 	{
-		ax = VIDEO_ASPECT_RATIO_NUM(driver->video_attributes);
-		ay = VIDEO_ASPECT_RATIO_DEN(driver->video_attributes);
+		ax = VIDEO_ASPECT_RATIO_NUM(driver.video_attributes);
+		ay = VIDEO_ASPECT_RATIO_DEN(driver.video_attributes);
 		if (ax == 0 && ay == 0) {
 			ax = 4;
 			ay = 3;
 		}
-		dx = driver->default_visible_area.max_x - driver->default_visible_area.min_x + 1;
-		dy = driver->default_visible_area.max_y - driver->default_visible_area.min_y + 1;
+		dx = driver.default_visible_area.max_x - driver.default_visible_area.min_x + 1;
+		dy = driver.default_visible_area.max_y - driver.default_visible_area.min_y + 1;
 		orientation = 0;
 	}
 
@@ -540,19 +546,23 @@ static void print_game_video(FILE* out, const struct GameDriver* game)
 	fprintf(out, L2P "aspectx %d" L2N, ax);
 	fprintf(out, L2P "aspecty %d" L2N, ay);
 
-	fprintf(out, L2P "freq %f" L2N, driver->frames_per_second);
+	fprintf(out, L2P "freq %f" L2N, driver.frames_per_second);
 	fprintf(out, L2E L1N);
 }
 
 static void print_game_sound(FILE* out, const struct GameDriver* game)
 {
-	const struct MachineDriver* driver = game->drv;
-	const struct MachineCPU* cpu = driver->cpu;
-	const struct MachineSound* sound = driver->sound;
+	struct InternalMachineDriver driver;
+	const struct MachineCPU* cpu;
+	const struct MachineSound* sound;
 
 	/* check if the game have sound emulation */
 	int has_sound = 0;
 	int i;
+
+	expand_machine_driver(game->drv, &driver);
+	cpu = driver.cpu;
+	sound = driver.sound;
 
 	i = 0;
 	while (i < MAX_SOUND && !has_sound)
@@ -574,7 +584,7 @@ static void print_game_sound(FILE* out, const struct GameDriver* game)
 	/* sound channel */
 	if (has_sound)
 	{
-		if (driver->sound_attributes & SOUND_SUPPORTS_STEREO)
+		if (driver.sound_attributes & SOUND_SUPPORTS_STEREO)
 			fprintf(out, L2P "channels 2" L2N);
 		else
 			fprintf(out, L2P "channels 1" L2N);
@@ -601,7 +611,9 @@ static void print_game_history(FILE* out, const struct GameDriver* game)
 
 static void print_game_driver(FILE* out, const struct GameDriver* game)
 {
-	const struct MachineDriver* driver = game->drv;
+	struct InternalMachineDriver driver;
+
+	expand_machine_driver(game->drv, &driver);
 
 	fprintf(out, L1P "driver" L2B);
 	if (game->flags & GAME_NOT_WORKING)
@@ -623,19 +635,9 @@ static void print_game_driver(FILE* out, const struct GameDriver* game)
 	else
 		fprintf(out, L2P "sound good" L2N);
 
-	fprintf(out, L2P "palettesize %d" L2N, driver->total_colors);
+	fprintf(out, L2P "palettesize %d" L2N, driver.total_colors);
 
-	if (driver->video_attributes & VIDEO_MODIFIES_PALETTE)
-		fprintf(out, L2P "palettemode dynamic" L2N);
-	else
-		fprintf(out, L2P "palettemode static" L2N);
-
-	if (game->flags & GAME_REQUIRES_16BIT)
-		fprintf(out, L2P "palettedepth 16" L2N);
-	else
-		fprintf(out, L2P "palettedepth 8" L2N);
-
-	if (driver->video_attributes & VIDEO_SUPPORTS_DIRTY)
+	if (driver.video_attributes & VIDEO_SUPPORTS_DIRTY)
 		fprintf(out, L2P "blit dirty" L2N);
 	else
 		fprintf(out, L2P "blit plain" L2N);

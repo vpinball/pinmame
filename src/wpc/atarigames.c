@@ -1,5 +1,6 @@
 #include "driver.h"
 #include "sim.h"
+#include "sndbrd.h"
 #include "atari.h"
 
 #define FLIPSW1920 FLIP_SWNO(19,20)
@@ -14,7 +15,7 @@
 
 #define INITGAME2(name, disptype, flippers, balls) \
 	ATARI2_INPUT_PORTS_START(name, balls) ATARI_INPUT_PORTS_END \
-	static core_tGameData name##GameData = {0,disptype,{flippers,0,0}}; \
+	static core_tGameData name##GameData = {0,disptype,{flippers,0,0,0,SNDBRD_ATARI2,0}}; \
 	static void init_##name(void) { \
 		core_gameData = &name##GameData; \
 	}

@@ -21,6 +21,24 @@ extern "C" {
 
 ***************************************************************************/
 
+struct mame_bitmap
+{
+	int width,height;	/* width and height of the bitmap */
+	int depth;			/* bits per pixel */
+	void **line;		/* pointers to the start of each line - can be UINT8 **, UINT16 ** or UINT32 ** */
+
+	/* alternate way of accessing the pixels */
+	void *base;			/* pointer to pixel (0,0) (adjusted for padding) */
+	int rowpixels;		/* pixels per row (including padding) */
+	int rowbytes;		/* bytes per row (including padding) */
+
+	/* functions to render in the correct orientation */
+	void (*plot)(struct mame_bitmap *bitmap,int x,int y,pen_t pen);
+	pen_t (*read)(struct mame_bitmap *bitmap,int x,int y);
+	void (*plot_box)(struct mame_bitmap *bitmap,int x,int y,int width,int height,pen_t pen);
+};
+
+
 struct RomModule
 {
 	const char *_name;	/* name of the file to load */
@@ -302,6 +320,60 @@ enum
 
 void showdisclaimer(void);
 
+/* helper function that reads samples from disk - this can be used by other */
+/* drivers as well (e.g. a sound chip emulator needing drum samples) */
+struct GameSamples *readsamples(const char **samplenames,const char *name);
+#define freesamples(samps)
+
+/* return a pointer to the specified memory region - num can be either an absolute */
+/* number, or one of the REGION_XXX identifiers defined above */
+UINT8 *memory_region(int num);
+size_t memory_region_length(int num);
+
+/* allocate a new memory region - num can be either an absolute */
+/* number, or one of the REGION_XXX identifiers defined above */
+int new_memory_region(int num, size_t length, UINT32 flags);
+void free_memory_region(int num);
+
+/* common coin counter helpers */
+#define COIN_COUNTERS	4	/* total # of coin counters */
+void coin_counter_w(int num,int on);
+void coin_lockout_w(int num,int on);
+void coin_lockout_global_w(int on);  /* Locks out all coin inputs */
+
+/* generic NVRAM handler */
+extern size_t generic_nvram_size;
+extern data8_t *generic_nvram;
+extern void nvram_handler_generic_0fill(void *file, int read_or_write);
+extern void nvram_handler_generic_1fill(void *file, int read_or_write);
+
+/* controls the global visible area */
+void set_visible_area(int min_x,int max_x,int min_y,int max_y);
+
+/* bitmap allocation */
+struct mame_bitmap *bitmap_alloc(int width,int height);
+struct mame_bitmap *bitmap_alloc_depth(int width,int height,int depth);
+void bitmap_free(struct mame_bitmap *bitmap);
+
+/* automatic resource management */
+void begin_resource_tracking(void);
+void end_resource_tracking(void);
+INLINE int get_resource_tag(void)
+{
+	extern int resource_tracking_tag;
+	return resource_tracking_tag;
+}
+
+/* automatically-freeing memory */
+void *auto_malloc(size_t size);
+struct mame_bitmap *auto_bitmap_alloc(int width,int height);
+struct mame_bitmap *auto_bitmap_alloc_depth(int width,int height,int depth);
+
+/* screen snapshots */
+void save_screen_snapshot_as(void *fp,struct mame_bitmap *bitmap);
+void save_screen_snapshot(struct mame_bitmap *bitmap);
+
+/* ROM processing */
 const struct RomModule *rom_first_region(const struct GameDriver *drv);
 const struct RomModule *rom_next_region(const struct RomModule *romp);
 const struct RomModule *rom_first_file(const struct RomModule *romp);
@@ -309,49 +381,8 @@ const struct RomModule *rom_next_file(const struct RomModule *romp);
 const struct RomModule *rom_first_chunk(const struct RomModule *romp);
 const struct RomModule *rom_next_chunk(const struct RomModule *romp);
 
-
-/* LBO 042898 - added coin counters */
-#define COIN_COUNTERS	4	/* total # of coin counters */
-void coin_counter_w(int num,int on);
-void coin_lockout_w(int num,int on);
-void coin_lockout_global_w(int on);  /* Locks out all coin inputs */
-
-
 int readroms(void);
 void printromlist(const struct RomModule *romp,const char *name);
-
-/* helper function that reads samples from disk - this can be used by other */
-/* drivers as well (e.g. a sound chip emulator needing drum samples) */
-struct GameSamples *readsamples(const char **samplenames,const char *name);
-void freesamples(struct GameSamples *samples);
-
-/* return a pointer to the specified memory region - num can be either an absolute */
-/* number, or one of the REGION_XXX identifiers defined above */
-UINT8 *memory_region(int num);
-size_t memory_region_length(int num);
-/* allocate a new memory region - num can be either an absolute */
-/* number, or one of the REGION_XXX identifiers defined above */
-int new_memory_region(int num, size_t length, UINT32 flags);
-void free_memory_region(int num);
-
-extern int flip_screen_x, flip_screen_y;
-
-void flip_screen_set(int on);
-void flip_screen_x_set(int on);
-void flip_screen_y_set(int on);
-#define flip_screen flip_screen_x
-
-/* sets a variable and schedules a full screen refresh if it changed */
-void set_vh_global_attribute( int *addr, int data );
-
-void set_visible_area(int min_x,int max_x,int min_y,int max_y);
-
-struct osd_bitmap *bitmap_alloc(int width,int height);
-struct osd_bitmap *bitmap_alloc_depth(int width,int height,int depth);
-void bitmap_free(struct osd_bitmap *bitmap);
-
-void save_screen_snapshot_as(void *fp,struct osd_bitmap *bitmap);
-void save_screen_snapshot(struct osd_bitmap *bitmap);
 
 
 

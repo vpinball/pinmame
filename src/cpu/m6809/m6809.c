@@ -438,42 +438,6 @@ void m6809_set_context(void *src)
     CHECK_IRQ_LINES;
 }
 
-/****************************************************************************
- * Return program counter
- ****************************************************************************/
-unsigned m6809_get_pc(void)
-{
-	return PC;
-}
-
-
-/****************************************************************************
- * Set program counter
- ****************************************************************************/
-void m6809_set_pc(unsigned val)
-{
-	PC = val;
-	CHANGE_PC;
-}
-
-
-/****************************************************************************
- * Return stack pointer
- ****************************************************************************/
-unsigned m6809_get_sp(void)
-{
-	return S;
-}
-
-
-/****************************************************************************
- * Set stack pointer
- ****************************************************************************/
-void m6809_set_sp(unsigned val)
-{
-	S = val;
-}
-
 
 /****************************************************************************/
 /* Return a specific register                                               */
@@ -482,7 +446,9 @@ unsigned m6809_get_reg(int regnum)
 {
 	switch( regnum )
 	{
+		case REG_PC:
 		case M6809_PC: return PC;
+		case REG_SP:
 		case M6809_S: return S;
 		case M6809_CC: return CC;
 		case M6809_U: return U;
@@ -514,7 +480,9 @@ void m6809_set_reg(int regnum, unsigned val)
 {
 	switch( regnum )
 	{
+		case REG_PC:
 		case M6809_PC: PC = val; CHANGE_PC; break;
+		case REG_SP:
 		case M6809_S: S = val; break;
 		case M6809_CC: CC = val; CHECK_IRQ_LINES; break;
 		case M6809_U: U = val; break;
@@ -582,52 +550,51 @@ void m6809_exit(void)
 
 /* Generate interrupts */
 /****************************************************************************
- * Set NMI line state
- ****************************************************************************/
-void m6809_set_nmi_line(int state)
-{
-	if (m6809.nmi_state == state) return;
-	m6809.nmi_state = state;
-	LOG(("M6809#%d set_nmi_line %d\n", cpu_getactivecpu(), state));
-	if( state == CLEAR_LINE ) return;
-
-	/* if the stack was not yet initialized */
-    if( !(m6809.int_state & M6809_LDS) ) return;
-
-    m6809.int_state &= ~M6809_SYNC;
-	/* HJB 990225: state already saved by CWAI? */
-	if( m6809.int_state & M6809_CWAI )
-	{
-		m6809.int_state &= ~M6809_CWAI;
-		m6809.extra_cycles += 7;	/* subtract +7 cycles next time */
-    }
-	else
-	{
-		CC |= CC_E; 				/* save entire state */
-		PUSHWORD(pPC);
-		PUSHWORD(pU);
-		PUSHWORD(pY);
-		PUSHWORD(pX);
-		PUSHBYTE(DP);
-		PUSHBYTE(B);
-		PUSHBYTE(A);
-		PUSHBYTE(CC);
-		m6809.extra_cycles += 19;	/* subtract +19 cycles next time */
-	}
-	CC |= CC_IF | CC_II;			/* inhibit FIRQ and IRQ */
-	PCD = RM16(0xfffc);
-	CHANGE_PC;
-}
-
-/****************************************************************************
  * Set IRQ line state
  ****************************************************************************/
 void m6809_set_irq_line(int irqline, int state)
 {
-    LOG(("M6809#%d set_irq_line %d, %d\n", cpu_getactivecpu(), irqline, state));
-	m6809.irq_state[irqline] = state;
-	if (state == CLEAR_LINE) return;
-	CHECK_IRQ_LINES;
+	if (irqline == IRQ_LINE_NMI)
+	{
+		if (m6809.nmi_state == state) return;
+		m6809.nmi_state = state;
+		LOG(("M6809#%d set_irq_line (NMI) %d\n", cpu_getactivecpu(), state));
+		if( state == CLEAR_LINE ) return;
+
+		/* if the stack was not yet initialized */
+	    if( !(m6809.int_state & M6809_LDS) ) return;
+
+	    m6809.int_state &= ~M6809_SYNC;
+		/* HJB 990225: state already saved by CWAI? */
+		if( m6809.int_state & M6809_CWAI )
+		{
+			m6809.int_state &= ~M6809_CWAI;
+			m6809.extra_cycles += 7;	/* subtract +7 cycles next time */
+	    }
+		else
+		{
+			CC |= CC_E; 				/* save entire state */
+			PUSHWORD(pPC);
+			PUSHWORD(pU);
+			PUSHWORD(pY);
+			PUSHWORD(pX);
+			PUSHBYTE(DP);
+			PUSHBYTE(B);
+			PUSHBYTE(A);
+			PUSHBYTE(CC);
+			m6809.extra_cycles += 19;	/* subtract +19 cycles next time */
+		}
+		CC |= CC_IF | CC_II;			/* inhibit FIRQ and IRQ */
+		PCD = RM16(0xfffc);
+		CHANGE_PC;
+	}
+	else if (irqline < 2)
+	{
+	    LOG(("M6809#%d set_irq_line %d, %d\n", cpu_getactivecpu(), irqline, state));
+		m6809.irq_state[irqline] = state;
+		if (state == CLEAR_LINE) return;
+		CHECK_IRQ_LINES;
+	}
 }
 
 /****************************************************************************

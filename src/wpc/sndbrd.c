@@ -144,6 +144,7 @@ void sndbrd_sync_w(WRITE_HANDLER((*handler)),int offset, int data) {
     }
   DBGLOG(("Warning: out of sync timers"));
 }
+const struct sndbrdIntf NULLIntf = { 0 }; // remove when all boards below works.
 #else /* SNDBRD_RECURSIVE */
 /* Sound board drivers */
   SNDBRDINTF(s11cs)
@@ -163,10 +164,10 @@ void sndbrd_sync_w(WRITE_HANDLER((*handler)),int offset, int data) {
   SNDBRDINTF(dedmd16)
   SNDBRDINTF(dedmd32)
   SNDBRDINTF(dedmd64)
-  SNDBRDINTF(gts80s)
-  SNDBRDINTF(gts80ss)
-  SNDBRDINTF(gts80b)
-  SNDBRDINTF(hankin)
+  SNDBRDINTF(atari2s)
+//  SNDBRDINTF(gts80s)
+//  SNDBRDINTF(gts80ss)
+//  SNDBRDINTF(gts80b)
+//  SNDBRDINTF(hankin)
 #endif /* SNDBRD_RECURSIVE */
-
 

@@ -301,7 +301,7 @@ static void copy_sample_data(UINT16 *data, int bytes_to_copy)
 
 	// attempt to lock the stream buffer
 	result = IDirectSoundBuffer_Lock(stream_buffer, stream_buffer_in, bytes_to_copy, &buffer1, &length1, &buffer2, &length2, 0);
-	if (result != DD_OK)
+	if (result != DS_OK)
 	{
 		buffer_underflows++;
 		return;
@@ -487,7 +487,7 @@ static int dsound_init(void)
 	}
 
 	// set the cooperative level
-	result = IDirectSound_SetCooperativeLevel(dsound, video_window, DSSCL_PRIORITY);
+	result = IDirectSound_SetCooperativeLevel(dsound, win_video_window, DSSCL_PRIORITY);
 	if (result != DS_OK)
 	{
 		fprintf(stderr, "Error setting cooperative level: %08x\n", (UINT32)result);

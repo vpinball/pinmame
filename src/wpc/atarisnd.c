@@ -6,13 +6,33 @@
 #include "core.h"
 #include "sndbrd.h"
 
+static struct {
+  struct sndbrdData brdData;
+  int    sound, volume, octave, frequency, waveform;
+  int    channel, noisechannel;
+} atarilocals;
+
+static int  atari_sh_start(const struct MachineSound *msound);
+static void atari_sh_stop (void);
+static WRITE_HANDLER(atari_data_w);
+static WRITE_HANDLER(atari_ctrl_w);
+
+static void atari_init(struct sndbrdData *brdData) {
+  memset(&atarilocals, 0, sizeof(atarilocals));
+  atarilocals.brdData = *brdData;
+}
+
 /*-------------------
 / exported interface
 /--------------------*/
-static int  atari_sh_start(const struct MachineSound *msound);
-static void atari_sh_stop (void);
+const struct sndbrdIntf atari2sIntf = {
+  atari_init, NULL, NULL, atari_data_w, NULL, atari_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+};
+static struct CustomSound_interface atari2s_custInt = {atari_sh_start, atari_sh_stop};
 
-struct CustomSound_interface atari_custInt = {atari_sh_start, atari_sh_stop};
+MACHINE_DRIVER_START(atari2s)
+  MDRV_SOUND_ADD(CUSTOM, atari2s_custInt)
+MACHINE_DRIVER_END
 
 #define ATARI_SNDFREQ   62500 /* audio base frequency in Hz */
 
@@ -64,11 +84,6 @@ static const UINT8 squareWave[] = {
 
 /* memory for noise */
 static UINT8 noiseWave[2000];
-
-static struct {
-  int    sound, volume, octave, frequency, waveform;
-  int    channel, noisechannel;
-} atarilocals;
 
 static void stopSound(void) {
 	if (mixer_is_sample_playing(atarilocals.channel))
@@ -123,7 +138,7 @@ static int atari_sh_start(const struct MachineSound *msound) {
 static void atari_sh_stop(void) {
 }
 
-void atari_snd0_w(int data) {
+static WRITE_HANDLER(atari_ctrl_w) {
 	int noise = data & 0x80;
 	int sound = data & 0x40;
 	if (noise && !(atarilocals.sound & 0x02))
@@ -152,7 +167,7 @@ void atari_snd0_w(int data) {
 	}
 }
 
-void atari_snd1_w(int data) {
+static WRITE_HANDLER(atari_data_w) {
 	if (atarilocals.frequency != (data >> 4)) {
 		atarilocals.frequency = data >> 4;
 		logerror("freq.div=%d\n", atarilocals.frequency);

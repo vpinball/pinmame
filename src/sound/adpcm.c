@@ -741,6 +741,8 @@ static void OKIM6295_data_w(int num, int data)
 				/* update the stream */
 				stream_update(voice->stream, 0);
 
+				if (Machine->sample_rate == 0) return;
+
 				/* determine the start/stop positions */
 				base = &voice->region_base[ okim6295_base[num][i] + okim6295_command[num] * 8];
 				start = (base[0] << 16) + (base[1] << 8) + base[2];

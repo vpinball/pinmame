@@ -56,8 +56,8 @@ static void               OnQueryNewPalette(HWND hWnd);
 
 static int                Display_init(PCONTROLLEROPTIONS pControllerOptions);
 static void               Display_exit(void);
-static struct osd_bitmap* Display_alloc_bitmap(int width,int height,int depth);
-static void               Display_free_bitmap(struct osd_bitmap* bitmap);
+static struct mame_bitmap* Display_alloc_bitmap(int width,int height,int depth);
+static void               Display_free_bitmap(struct mame_bitmap* bitmap);
 static int                Display_create_display(int width, int height, int depth, int fps, int attributes, int orientation);
 static void               Display_close_display(void);
 static void               Display_set_visible_area(int min_x, int max_x, int min_y, int max_y);
@@ -70,7 +70,7 @@ static void               Display_modify_pen(int pen, unsigned char red, unsigne
 static void               Display_get_pen(int pen, unsigned char* pRed, unsigned char* pGreen, unsigned char* pBlue);
 static void               Display_mark_dirty(int x1, int y1, int x2, int y2);
 static int                Display_skip_this_frame(void);
-static void               Display_update_display(struct osd_bitmap *game_bitmap, struct osd_bitmap *debug_bitmap);
+static void               Display_update_display(struct mame_bitmap *game_bitmap, struct mame_bitmap *debug_bitmap);
 static BOOL               Display_OnMessage(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam, LRESULT* pResult);
 static void               Display_set_gamma(float gamma);
 static void               Display_set_brightness(int brightness);
@@ -149,8 +149,8 @@ struct tDisplay_private
     uclock_t        start_time;
     uclock_t        end_time;  /* to calculate fps average on exit */
 
-    struct osd_bitmap*  m_pBitmap;
-    struct osd_bitmap*  m_pTempBitmap;
+    struct mame_bitmap*  m_pBitmap;
+    struct mame_bitmap*  m_pTempBitmap;
     BITMAPINFO*         m_pInfo;
 
     tRect               m_VisibleRect;
@@ -333,11 +333,14 @@ static void Display_exit(void)
 /* around the bitmap. This is required because, for performance reasons, some graphic */
 /* routines don't clip at boundaries of the bitmap. */
 
-static struct osd_bitmap* Display_alloc_bitmap(int width, int height, int depth)
+static struct mame_bitmap* Display_alloc_bitmap(int width, int height, int depth)
 {
-    struct osd_bitmap*  pBitmap;
+#if MAMEVER >= 5900
+  return bitmap_alloc_depth(width,height,depth);
+#else /* MAMEVER */
+    struct mame_bitmap*  pBitmap;
 
-    pBitmap = (struct osd_bitmap*)malloc(sizeof(struct osd_bitmap));
+    pBitmap = (struct mame_bitmap*)malloc(sizeof(struct mame_bitmap));
 
     if (pBitmap != NULL)
     {
@@ -389,13 +392,17 @@ static struct osd_bitmap* Display_alloc_bitmap(int width, int height, int depth)
     }
 
     return pBitmap;
+#endif /* MAMEVER */
 }
 
 /*
     Free memory allocated in create_bitmap.
 */
-static void Display_free_bitmap(struct osd_bitmap* pBitmap)
+static void Display_free_bitmap(struct mame_bitmap* pBitmap)
 {
+#if MAMEVER >= 5900
+  bitmap_free(pBitmap);
+#else /* MAMEVER */
     if (pBitmap != NULL)
     {
         pBitmap->line -= safety;
@@ -403,6 +410,7 @@ static void Display_free_bitmap(struct osd_bitmap* pBitmap)
         free(pBitmap->_private);
         free(pBitmap);
     }
+#endif /* MAMEVER */
 }
 
 /*
@@ -545,8 +553,11 @@ static int Display_create_display(int width, int height, int depth, int fps, int
     }
 
     /* Make a copy of the scrbitmap for 16 bit palette lookup. */
+#if MAMEVER >= 5900
+    This.m_pTempBitmap = bitmap_alloc_depth(bmwidth, bmheight, This.m_nDepth);
+#else
     This.m_pTempBitmap = osd_alloc_bitmap(bmwidth, bmheight, This.m_nDepth);
-
+#endif /* MAMEVER */
     /* Palette */
     if (This.m_nDepth == 8)
     {
@@ -561,7 +572,7 @@ static int Display_create_display(int width, int height, int depth, int fps, int
                                        sizeof(RGBQUAD) * OSD_NUMPENS);
 
     This.m_pInfo->bmiHeader.biSize          = sizeof(BITMAPINFOHEADER); 
-    This.m_pInfo->bmiHeader.biWidth         =  (This.m_pTempBitmap->line[1] - This.m_pTempBitmap->line[0]) / (This.m_nDepth / 8);
+    This.m_pInfo->bmiHeader.biWidth         =  (((UINT8 *)(This.m_pTempBitmap->line[1]) - (UINT8 *)(This.m_pTempBitmap->line[0]))) / (This.m_nDepth / 8);
     This.m_pInfo->bmiHeader.biHeight        = -(int)(This.m_VisibleRect.m_Height); /* Negative means "top down" */
     This.m_pInfo->bmiHeader.biPlanes        = 1;
     This.m_pInfo->bmiHeader.biBitCount      = This.m_nDepth;
@@ -600,9 +611,11 @@ static void Display_close_display(void)
             This.m_hPalette = NULL;
         }
     }
-
+#if MAMEVER >= 5900
+    bitmap_free(This.m_pTempBitmap);
+#else
     osd_free_bitmap(This.m_pTempBitmap);
-
+#endif /* MAMEVER */
     if (This.m_pInfo != NULL)
     {
         free(This.m_pInfo);
@@ -694,7 +707,7 @@ static int Display_allocate_colors(unsigned int totalcolors,
             r = 255.0 * Display_get_brightness() * pow(palette[3 * i + 0] / 255.0, 1.0 / Display_get_gamma()) / 100.0;
             g = 255.0 * Display_get_brightness() * pow(palette[3 * i + 1] / 255.0, 1.0 / Display_get_gamma()) / 100.0;
             b = 255.0 * Display_get_brightness() * pow(palette[3 * i + 2] / 255.0, 1.0 / Display_get_gamma()) / 100.0;
-            *pens++ = MAKECOL(r, g, b);
+            //*pens++ = MAKECOL(r, g, b);
         }
 
         Machine->uifont->colortable[0] = 0;
@@ -867,7 +880,7 @@ static void ClearFPSDisplay(void)
 /*
     Update the display.
 */
-static void Display_update_display(struct osd_bitmap *game_bitmap, struct osd_bitmap *debug_bitmap)
+static void Display_update_display(struct mame_bitmap *game_bitmap, struct mame_bitmap *debug_bitmap)
 {
     if (osd_skip_this_frame() == 0)
     {   

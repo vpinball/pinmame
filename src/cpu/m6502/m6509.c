@@ -183,33 +183,13 @@ void m6509_set_context (void *src)
 	}
 }
 
-/* gets effective PC */
-unsigned m6509_get_pc (void)
-{
-	return PCD;
-}
-
-void m6509_set_pc (unsigned val)
-{
-	PCW = val&0xffff;
-	change_pc20(PCD);
-}
-
-unsigned m6509_get_sp (void)
-{
-	return S;
-}
-
-void m6509_set_sp (unsigned val)
-{
-	S = val;
-}
-
 unsigned m6509_get_reg (int regnum)
 {
 	switch( regnum )
 	{
+		case REG_PC: return PCD;
 		case M6509_PC: return m6509.pc.d;
+		case REG_SP: return S;
 		case M6509_S: return m6509.sp.b.l;
 		case M6509_P: return m6509.p;
 		case M6509_A: return m6509.a;
@@ -238,7 +218,9 @@ void m6509_set_reg (int regnum, unsigned val)
 {
 	switch( regnum )
 	{
+		case REG_PC: PCW = val&0xffff; change_pc20(PCD); break;
 		case M6509_PC: m6509.pc.w.l = val; break;
+		case REG_SP: S = val; break;
 		case M6509_S: m6509.sp.b.l = val; break;
 		case M6509_P: m6509.p = val; break;
 		case M6509_A: m6509.a = val; break;
@@ -248,7 +230,7 @@ void m6509_set_reg (int regnum, unsigned val)
 		case M6509_IND_BANK: m6509.ind_bank.b.h2 = val; break;
 		case M6509_EA: m6509.ea.d = val; break;
 		case M6509_ZP: m6509.zp.b.l = val; break;
-		case M6509_NMI_STATE: m6509_set_nmi_line( val ); break;
+		case M6509_NMI_STATE: m6509_set_irq_line( IRQ_LINE_NMI, val ); break;
 		case M6509_IRQ_STATE: m6509_set_irq_line( 0, val ); break;
 		case M6509_SO_STATE: m6509_set_irq_line( M6509_SET_OVERFLOW, val ); break;
 		default:
@@ -329,44 +311,46 @@ int m6509_execute(int cycles)
 	return cycles - m6509_ICount;
 }
 
-void m6509_set_nmi_line(int state)
-{
-	if (m6509.nmi_state == state) return;
-	m6509.nmi_state = state;
-	if( state != CLEAR_LINE )
-	{
-		LOG(( "M6509#%d set_nmi_line(ASSERT)\n", cpu_getactivecpu()));
-		EAD = M6509_NMI_VEC;
-		EAWH = PBWH;
-		m6509_ICount -= 7;
-		PUSH(PCH);
-		PUSH(PCL);
-		PUSH(P & ~F_B);
-		P |= F_I;		/* knock out D and set I flag */
-		PCL = RDMEM(EAD);
-		PCH = RDMEM(EAD+1);
-		LOG(("M6509#%d takes NMI ($%04x)\n", cpu_getactivecpu(), PCD));
-		change_pc20(PCD);
-	}
-}
-
 void m6509_set_irq_line(int irqline, int state)
 {
-	if( irqline == M6509_SET_OVERFLOW )
+	if (irqline == IRQ_LINE_NMI)
 	{
-		if( m6509.so_state && !state )
+		if (m6509.nmi_state == state) return;
+		m6509.nmi_state = state;
+		if( state != CLEAR_LINE )
 		{
-			LOG(( "M6509#%d set overflow\n", cpu_getactivecpu()));
-			P|=F_V;
+			LOG(( "M6509#%d set_nmi_line(ASSERT)\n", cpu_getactivecpu()));
+			EAD = M6509_NMI_VEC;
+			EAWH = PBWH;
+			m6509_ICount -= 7;
+			PUSH(PCH);
+			PUSH(PCL);
+			PUSH(P & ~F_B);
+			P |= F_I;		/* knock out D and set I flag */
+			PCL = RDMEM(EAD);
+			PCH = RDMEM(EAD+1);
+			LOG(("M6509#%d takes NMI ($%04x)\n", cpu_getactivecpu(), PCD));
+			change_pc20(PCD);
 		}
-		m6509.so_state=state;
-		return;
 	}
-	m6509.irq_state = state;
-	if( state != CLEAR_LINE )
+	else
 	{
-		LOG(( "M6509#%d set_irq_line(ASSERT)\n", cpu_getactivecpu()));
-		m6509.pending_irq = 1;
+		if( irqline == M6509_SET_OVERFLOW )
+		{
+			if( m6509.so_state && !state )
+			{
+				LOG(( "M6509#%d set overflow\n", cpu_getactivecpu()));
+				P|=F_V;
+			}
+			m6509.so_state=state;
+			return;
+		}
+		m6509.irq_state = state;
+		if( state != CLEAR_LINE )
+		{
+			LOG(( "M6509#%d set_irq_line(ASSERT)\n", cpu_getactivecpu()));
+			m6509.pending_irq = 1;
+		}
 	}
 }
 

@@ -15,6 +15,10 @@
 #define BY35_IRQFREQ      150 /* IRQ (via PIA) frequency*/
 #define BY35_ZCFREQ        85 /* Zero cross frequency */
 
+#define BY35_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
+#define BY35_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
+#define BY35_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKS */
+
 static struct {
   int a0, a1, b1, ca20, ca21, cb20, cb21;
   int bcd[7];
@@ -26,8 +30,7 @@ static struct {
   void *zctimer;
 } locals;
 
-static void by35_exit(void);
-static void by35_nvram(void *file, int write);
+static NVRAM_HANDLER(by35);
 
 static void piaIrq(int state) {
   cpu_set_irq_line(0, M6800_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
@@ -147,7 +150,7 @@ static WRITE_HANDLER(pia1cb2_w) {
   sndbrd_0_ctrl_w(1, (locals.cb21 ? 1 : 0) | (locals.a1 & 0x02));
 }
 
-static int by35_vblank(void) {
+static INTERRUPT_GEN(by35_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
@@ -174,7 +177,6 @@ static int by35_vblank(void) {
     locals.diagnosticLed = 0;
   }
   core_updateSw(core_getSol(19));
-  return 0;
 }
 
 static void by35_updSw(int *inports) {
@@ -242,10 +244,9 @@ static struct pia6821_interface by35_pia[] = {{
 /* IRQ: A/B              */  piaIrq,piaIrq
 }};
 
-static int by35_irq(void) {
+static INTERRUPT_GEN(by35_irq) {
   static int last = 0;
   pia_set_input_ca1(BY35_PIA1, last = !last);
-  return 0;
 }
 
 static core_tData by35Data = {
@@ -257,18 +258,20 @@ static core_tData by35Data = {
 static void by35_zeroCross(int data) {
   pia_pulse_cb1(BY35_PIA0, 0);  /*- toggle zero/detection circuit-*/
 }
-static void by35_init(void) {
+static MACHINE_INIT(by35) {
+  if (locals.zctimer) timer_remove(locals.zctimer);
   memset(&locals, 0, sizeof(locals));
 
   if (core_init(&by35Data)) return;
   pia_config(BY35_PIA0, PIA_STANDARD_ORDERING, &by35_pia[0]);
   pia_config(BY35_PIA1, PIA_STANDARD_ORDERING, &by35_pia[1]);
-  sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(BY35_MEMREG_SROM), NULL, NULL);
+  sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(REGION_SOUND1), NULL, NULL);
   locals.vblankCount = 1;
-  locals.zctimer = timer_pulse(TIME_IN_HZ(BY35_ZCFREQ),0,by35_zeroCross);
+  locals.zctimer = timer_alloc(by35_zeroCross);
+  timer_adjust(locals.zctimer, 0,0, TIME_IN_HZ(BY35_ZCFREQ));
 }
 
-static void by35_exit(void) {
+static MACHINE_STOP(by35) {
   if (locals.zctimer) { timer_remove(locals.zctimer); locals.zctimer = NULL; }
   sndbrd_0_exit(); core_exit();
 }
@@ -308,6 +311,54 @@ static MEMORY_WRITE_START(by35_writemem)
   { 0xf000, 0xffff, MWA_ROM },
 MEMORY_END
 
+MACHINE_DRIVER_START(by35)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CPU_ADD_TAG("mcpu", M6800, 500000)
+  MDRV_CPU_MEMORY(by35_readmem, by35_writemem)
+  MDRV_CPU_VBLANK_INT(by35_vblank, 1)
+  MDRV_CPU_PERIODIC_INT(by35_irq, BY35_IRQFREQ)
+  MDRV_MACHINE_INIT(by35) MDRV_MACHINE_STOP(by35)
+  MDRV_VIDEO_UPDATE(core_led)
+  MDRV_NVRAM_HANDLER(by35)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(by35_32S)
+  MDRV_IMPORT_FROM(by35)
+  MDRV_IMPORT_FROM(by32)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(by35_51S)
+  MDRV_IMPORT_FROM(by35)
+  MDRV_IMPORT_FROM(by51)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(by35_56S)
+  MDRV_IMPORT_FROM(by35)
+  MDRV_IMPORT_FROM(by56)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(by35_61S)
+  MDRV_IMPORT_FROM(by35)
+  MDRV_IMPORT_FROM(by61)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(by35_45S)
+  MDRV_IMPORT_FROM(by35)
+  MDRV_IMPORT_FROM(by45)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(st200)
+  MDRV_IMPORT_FROM(by35)
+  MDRV_CPU_REPLACE("mcpu",M6800, 1000000)
+MACHINE_DRIVER_END
+
+/*-----------------------------------------------
+/ Load/Save static ram
+/-------------------------------------------------*/
+static NVRAM_HANDLER(by35) {
+  core_nvram(file, read_or_write, by35_CMOS, 0x100,0xff);
+}
+#if 0
 #define BY35_CPU { \
   CPU_M6800, 500000, /* 500KHz */ \
   by35_readmem, by35_writemem, 0, 0, \
@@ -395,10 +446,4 @@ const struct MachineDriver machine_driver_st200 = {
   0,0,0,0, {{0}},
   by35_nvram
 };
-
-/*-----------------------------------------------
-/ Load/Save static ram
-/-------------------------------------------------*/
-static void by35_nvram(void *file, int write) {
-  core_nvram(file, write, by35_CMOS, 0x100,0xff);
-}
+#endif

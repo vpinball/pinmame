@@ -87,6 +87,7 @@ struct sndbrdIntf {
 #define SNDBRD_GTS80B  SNDBRD_TYPE(20,0)
 #define SNDBRD_GTS3    SNDBRD_TYPE(20,1)
 #define SNDBRD_HANKIN  SNDBRD_TYPE(21,0)
-#define SNDBRD_COUNT 20
+#define SNDBRD_ATARI2  SNDBRD_TYPE(22,0)
+#define SNDBRD_COUNT 21
 
 #endif /* INC_SNDBRD */

@@ -1,7 +1,7 @@
 /* A simple rcfile and commandline parsing mechanism
 
    Copyright 1999,2000 Hans de Goede
-   
+
    This file and the acompanying files in this directory are free software;
    you can redistribute them and/or modify them under the terms of the GNU
    Library General Public License as published by the Free Software Foundation;
@@ -32,14 +32,17 @@ Version 0.3, Februari 2000
 #include <stdlib.h>
 #include <string.h>
 //#include <pwd.h>
-#include <unistd.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "rc.h"
 #include "misc.h"
-#include "osd_cpu.h"
 
+#include "rc.h"
+
+#ifdef _MSC_VER
+#define snprintf _snprintf
+#endif
 #define BUF_SIZE 512
 
 struct rc_struct
@@ -59,7 +62,7 @@ static int rc_verify(struct rc_option *option, float value)
 {
    if(option->min == option->max)
       return 0;
-      
+
    if( (value < option->min) || (value > option->max) )
       return -1;
 
@@ -82,14 +85,14 @@ static int rc_set_defaults(struct rc_option *option)
          option[i].priority))
          return -1;
    }
-   
+
    return 0;
 }
 
 static void rc_free_stuff(struct rc_option *option)
 {
    int i;
-   
+
    for(i=0; option[i].type; i++)
    {
       switch (option[i].type)
@@ -113,13 +116,13 @@ static void rc_free_stuff(struct rc_option *option)
 struct rc_struct *rc_create(void)
 {
    struct rc_struct *rc = NULL;
-   
+
    if(!(rc = calloc(1, sizeof(struct rc_struct))))
    {
       fprintf(stderr, "error: malloc failed for: struct rc_struct\n");
       return NULL;
    }
-   
+
    return rc;
 }
 
@@ -138,7 +141,7 @@ void rc_destroy(struct rc_struct *rc)
 int rc_register(struct rc_struct *rc, struct rc_option *option)
 {
    int i;
-   
+
    /* try to find a free entry in our option list */
    for(i = 0; i < rc->option_size; i++)
       if(rc->option[i].type <= 0)
@@ -155,26 +158,26 @@ int rc_register(struct rc_struct *rc, struct rc_option *option)
          return -1;
       }
       rc->option = tmp;
-      memset(rc->option + rc->option_size, 0, BUF_SIZE * 
+      memset(rc->option + rc->option_size, 0, BUF_SIZE *
          sizeof(struct rc_option));
       rc->option_size += BUF_SIZE;
    }
-   
+
    /* set the defaults */
    if(rc_set_defaults(option))
       return -1;
-   
+
    /* register the option */
    rc->option[i].type = rc_link;
    rc->option[i].dest = option;
-   
+
    return 0;
 }
 
 int rc_unregister(struct rc_struct *rc, struct rc_option *option)
 {
    int i;
-   
+
    /* try to find the entry in our option list, unregister later registered
       duplicates first */
    for(i = rc->option_size - 1; i >= 0; i--)
@@ -186,7 +189,7 @@ int rc_unregister(struct rc_struct *rc, struct rc_option *option)
          return 0;
       }
    }
-   
+
    return -1;
 }
 
@@ -194,22 +197,22 @@ int rc_load(struct rc_struct *rc, const char *name,
    int priority, int continue_on_errors)
 {
    FILE *f;
-   
+
    fprintf(stderr, "info: trying to parse: %s\n", name);
-   
+
    if (!(f = fopen(name, "r")))
       return 0;
-      
+
    return rc_read(rc, f, name, priority, continue_on_errors);
 }
-   
+
 int rc_save(struct rc_struct *rc, const char *name, int append)
 {
    FILE *f;
-   
+
    if (!(f = fopen(name, append? "a":"w")))
       return -1;
-      
+
    return rc_write(rc, f, name);
 }
 
@@ -218,26 +221,40 @@ int rc_read(struct rc_struct *rc, FILE *f, const char *description,
 {
    char buf[BUF_SIZE];
    int line = 0;
-   
+
    while(fgets(buf, BUF_SIZE, f))
    {
       struct rc_option *option;
       char *name, *tmp, *arg = NULL;
-      
+
       line ++;
-      
+
+      /* get option name */
       if(!(name = strtok(buf, " \t\r\n")))
          continue;
       if(name[0] == '#')
          continue;
-         
+
+      /* get complete rest of line */
+      arg = strtok(NULL, "\r\n");
+
+      /* ignore white space */
+      for (; (*arg == '\t' || *arg == ' '); arg++) {}
+
+      /* deal with quotations */
+      if (arg[0] == '"')
+         arg = strtok (arg, "\"");
+      else if (arg[0] == '\'')
+         arg = strtok (arg, "'");
+      else
+         arg = strtok (arg, " \t\r\n");
+
       if(!(option = rc_get_option2(rc->option, name)))
       {
          fprintf(stderr, "error: unknown option %s, on line %d of file: %s\n",
             name, line, description);
       }
-      else if (rc_requires_arg[option->type] &&
-         !(arg = strtok(NULL, " \t\r\n")))
+      else if (rc_requires_arg[option->type] && !arg)
       {
          fprintf(stderr,
             "error: %s requires an argument, on line %d of file: %s\n",
@@ -251,7 +268,7 @@ int rc_read(struct rc_struct *rc, FILE *f, const char *description,
       }
       else if (!rc_set_option3(option, arg, priority))
          continue;
-      
+
       if (continue_on_errors)
          fprintf(stderr, "   ignoring line\n");
       else
@@ -265,10 +282,10 @@ static int rc_real_write(struct rc_option *option, FILE *f,
    const char *description)
 {
    int i;
-   
+
    if (description)
-      fprintf(f, "### %s ###\n", description);   
-   
+      fprintf(f, "### %s ###\n", description);
+
    for(i=0; option[i].type; i++)
    {
       switch (option[i].type)
@@ -307,7 +324,7 @@ static int rc_real_write(struct rc_option *option, FILE *f,
       }
    }
    if (description)
-      fprintf(f, "\n");   
+      fprintf(f, "\n");
    return 0;
 }
 
@@ -320,7 +337,7 @@ int rc_parse_commandline(struct rc_struct *rc, int argc, char *argv[],
    int priority, int (*arg_callback)(char *arg))
 {
    int i;
-   
+
    for(i=1; i<argc; i++)
    {
       if(argv[i][0] == '-')
@@ -328,10 +345,10 @@ int rc_parse_commandline(struct rc_struct *rc, int argc, char *argv[],
          int start = 1;
          struct rc_option *option;
          char *arg = NULL;
-         
+
          if(argv[i][1] == '-')
             start = 2;
-         
+
          if((option = rc_get_option2(rc->option, argv[i] + start)))
          {
             if (option->type == rc_bool)
@@ -366,7 +383,7 @@ int rc_parse_commandline(struct rc_struct *rc, int argc, char *argv[],
             fprintf(stderr, "error: unknown option %s\n", argv[i]);
             return -1;
          }
-         
+
          if(rc_set_option3(option, arg, priority))
             return -1;
       }
@@ -387,11 +404,11 @@ int rc_parse_commandline(struct rc_struct *rc, int argc, char *argv[],
             memset(rc->arg + rc->arg_size, 0, BUF_SIZE * sizeof(char *));
             rc->arg_size += BUF_SIZE;
          }
-         
+
          /* register the non-option arg */
          rc->arg[rc->args_registered] = argv[i];
          rc->args_registered++;
-         
+
          /* call the callback if defined */
          if(arg_callback && (*arg_callback)(argv[i]))
             return -1;
@@ -414,7 +431,7 @@ static void rc_real_print_help(struct rc_option *option, FILE *f)
    char buf[BUF_SIZE];
    static const char *type_name[] = {"", "", " <string>", " <int>", " <float>",
       "", "", " <filename>", " <arg>", "", "" };
-   
+
    for(i=0; option[i].type; i++)
    {
       switch (option[i].type)
@@ -452,7 +469,7 @@ static void rc_real_print_man_options(struct rc_option *option, FILE *f)
    int i;
    static const char *type_name[] = {"", "", " Ar string", " Ar int",
       " Ar float", "", "", " Ar filename", " Ar arg", "", "" };
-   
+
    for(i=0; option[i].type; i++)
    {
       switch (option[i].type)
@@ -487,9 +504,9 @@ int rc_verify_power_of_2(struct rc_option *option, const char *arg,
    int priority)
 {
    int i, value;
-   
+
    value = *(int *)option->dest;
-   
+
    for(i=0; i<(sizeof(int)*8); i++)
       if(((int)0x01 << i) == value)
          break;
@@ -498,9 +515,9 @@ int rc_verify_power_of_2(struct rc_option *option, const char *arg,
       fprintf(stderr, "error invalid value for %s: %s\n", option->name, arg);
       return -1;
    }
-   
+
    option->priority = priority;
-   
+
    return 0;
 }
 
@@ -512,7 +529,7 @@ int rc_option_requires_arg(struct rc_struct *rc, const char *name)
 int rc_option_requires_arg2(struct rc_option *option, const char *name)
 {
    struct rc_option *my_option;
-   
+
    if(!(my_option = rc_get_option2(option, name)))
    {
       fprintf(stderr, "error: unknown option %s\n", name);
@@ -534,7 +551,7 @@ int rc_get_priority(struct rc_struct *rc, const char *name)
 int rc_get_priority2(struct rc_option *option, const char *name)
 {
    struct rc_option *my_option;
-   
+
    if(!(my_option = rc_get_option2(option, name)))
    {
       fprintf(stderr, "error: unknown option %s\n", name);
@@ -558,7 +575,7 @@ int rc_set_option2(struct rc_option *option, const char *name,
    const char *arg, int priority)
 {
    struct rc_option *my_option;
-   
+
    if(!(my_option = rc_get_option2(option, name)))
    {
       fprintf(stderr, "error: unknown option %s\n", name);
@@ -570,11 +587,11 @@ int rc_set_option2(struct rc_option *option, const char *name,
 int rc_set_option3(struct rc_option *option, const char *arg, int priority)
 {
    char *end;
-   
+
    /* check priority */
    if(priority < option->priority)
       return 0;
-   
+
    switch(option->type)
    {
       case rc_string:
@@ -586,10 +603,8 @@ int rc_set_option3(struct rc_option *option, const char *arg, int priority)
                return -1;
             }
             strcpy(str, arg);
-#ifndef _MSC_VER
             if(*(char **)option->dest)
                free(*(char **)option->dest);
-#endif /* _MSC_VER */
             *(char **)option->dest = str;
          }
          break;
@@ -647,9 +662,9 @@ int rc_set_option3(struct rc_option *option, const char *arg, int priority)
       ignore priority handling if they wish */
    if(option->func)
       return (*option->func)(option, arg, priority);
-   
+
    option->priority = priority;
-   
+
    return 0;
 }
 
@@ -662,7 +677,7 @@ struct rc_option *rc_get_option2(struct rc_option *option, const char *name)
 {
    int i;
    struct rc_option *result;
-   
+
    for(i=0; option[i].type; i++)
    {
       switch(option[i].type)
@@ -701,9 +716,9 @@ char *rc_get_home_dir(void)
 {
    struct passwd *pw;
    char *s;
-   
+
    if (!(pw=getpwuid(getuid())))
-   { 
+   {
       fprintf(stderr, "Who are you? Not found in passwd database!!\n");
       return NULL;
    }
@@ -716,7 +731,7 @@ char *rc_get_home_dir(void)
    return s;
 }
 
-/* 
+/*
  * check and if nescesarry create dir
  */
 int rc_check_and_create_dir(const char *name)

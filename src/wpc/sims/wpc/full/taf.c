@@ -1,4 +1,5 @@
 #include "driver.h"
+#include "core.h"
 #include "wpc.h"
 #include "sim.h"
 #include "wmssnd.h"
@@ -382,10 +383,10 @@ static void taf_drawMech(BMTYPE **line) {
 
 static void taf_drawStatic(BMTYPE **line) {
   core_textOutf(30, 40,BLACK,"Help on this Simulator:");
-  core_textOutf(30, 50,BLACK,"L/R Ctrl+O = L/R Loop");
-  core_textOutf(30, 60,BLACK,"L/R Ctrl+R = L/R Ramp");
-  core_textOutf(30, 70,BLACK,"L/R Ctrl+- = L/R Slingshot");
-  core_textOutf(30, 80,BLACK,"L/R Ctrl+I/O = L/R Inlane/Outlane");
+  core_textOutf(30, 50,BLACK,"L/R Shift+O = L/R Loop");
+  core_textOutf(30, 60,BLACK,"L/R Shift+R = L/R Ramp");
+  core_textOutf(30, 70,BLACK,"L/R Shift+- = L/R Slingshot");
+  core_textOutf(30, 80,BLACK,"L/R Shift+I/O = L/R Inlane/Outlane");
   core_textOutf(30, 90,BLACK,"Q = Drain Ball, W = Train Wreck");
   core_textOutf(30,100,BLACK,"E/Y/U = G/R/A (V-E) Targets");
   core_textOutf(30,110,BLACK,"T = Thing Lane, I = Left Inner Inlane");

@@ -346,3 +346,11 @@ void EEPROM_set_data(UINT8 *data, int length)
 {
 	memcpy(eeprom_data, data, length);
 }
+
+UINT8 * EEPROM_get_data_pointer(int * length)
+{
+	if(length)
+		*length = MEMORY_SIZE;
+
+	return eeprom_data;
+}

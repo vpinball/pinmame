@@ -48,10 +48,10 @@
 ------------------------------------------------------------------------------*/
 
 #include "driver.h"
+#include "core.h"
 #include "wpc.h"
 #include "sim.h"
 #include "wmssnd.h"
-#include "wpcsam.h"
 
 /*------------------
 /  Local functions
@@ -411,9 +411,9 @@ static void bop_drawMech(BMTYPE **line) {
 /* Help */
 static void bop_drawStatic(BMTYPE **line) {
   core_textOutf(30, 50,BLACK,"Help on this Simulator:");
-  core_textOutf(30, 60,BLACK,"L/R Ctrl+-   = L/R Slingshot");
-  core_textOutf(30, 70,BLACK,"L/R Ctrl+R   = Left Ramp (Fail/OK)");
-  core_textOutf(30, 80,BLACK,"L/R Ctrl+I/O = L/R Inlane/Outlane");
+  core_textOutf(30, 60,BLACK,"L/R Shift+-   = L/R Slingshot");
+  core_textOutf(30, 70,BLACK,"L/R Shift+R   = Left Ramp (Fail/OK)");
+  core_textOutf(30, 80,BLACK,"L/R Shift+I/O = L/R Inlane/Outlane");
   core_textOutf(30, 90,BLACK,"Q = Drain Ball, R = Right Loop");
   core_textOutf(30,100,BLACK,"T/Y/U = Jet Bumpers");
   core_textOutf(30,110,BLACK,"S = Small Wheel Hole, J = Spinner");
@@ -456,7 +456,7 @@ WPC_ROMEND
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF(bop,l7,"The Machine: Bride of Pinbot (L-7)",1991,"Williams",wpc_mAlphaS,0)
+CORE_GAMEDEF(bop,l7,"The Machine: Bride of Pinbot (L-7)",1991,"Williams",wpc_mAlpha2S,0)
 
 /*-----------------------
 / Simulation Definitions

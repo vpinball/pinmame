@@ -31,7 +31,26 @@ int RomsetMissing (int game)
 		tAuditRecord	*aud;
 		int				count;
 		int 			i;
-		int 			cloneRomsFound = 0;
+
+#if 1
+        int cloneRomsFound = 0;
+        int uniqueRomsFound = 0;
+
+		if ((count = AuditRomSet (game, &aud)) == 0)
+			return 1;
+
+		if (count == -1) return 0;
+
+        /* count number of roms found that are unique to clone */
+        for (i = 0; i < count; i++)
+			if (!RomInSet (gamedrv->clone_of, aud[i].expchecksum))
+			{
+				uniqueRomsFound++;
+				if (aud[i].status != AUD_ROM_NOT_FOUND)
+					cloneRomsFound++;
+			}
+#else
+		int cloneRomsFound = 0;
 
 		if ((count = AuditRomSet (game, &aud)) == 0)
 			return 1;
@@ -43,6 +62,7 @@ int RomsetMissing (int game)
 			if (aud[i].status != AUD_ROM_NOT_FOUND)
 				if (!RomInSet (gamedrv->clone_of, aud[i].expchecksum))
 					cloneRomsFound++;
+#endif
 
 		return !cloneRomsFound;
 	}
@@ -171,12 +191,12 @@ int VerifyRomSet (int game, verify_printf_proc verify_printf)
 
         /* count number of roms found that are unique to clone */
         for (i = 0; i < count; i++)
-        if (!RomInSet (gamedrv->clone_of, aud[i].expchecksum))
-        {
-            uniqueRomsFound++;
-            if (aud[i].status != AUD_ROM_NOT_FOUND)
-                cloneRomsFound++;
-        }
+			if (!RomInSet (gamedrv->clone_of, aud[i].expchecksum))
+			{
+				uniqueRomsFound++;
+				if (aud[i].status != AUD_ROM_NOT_FOUND)
+					cloneRomsFound++;
+			}
 
         #ifndef MESS
         /* Different MESS systems can use the same ROMs */
@@ -185,7 +205,7 @@ int VerifyRomSet (int game, verify_printf_proc verify_printf)
         #endif
     }
 #else
-        if (gamedrv->clone_of)
+	if (gamedrv->clone_of)
 	{
 		int i;
 		int cloneRomsFound = 0;
@@ -264,6 +284,7 @@ static tMissingSample *gMissingSamples = NULL;
    list of missing samples. */
 int AuditSampleSet (int game, tMissingSample **audit)
 {
+	struct InternalMachineDriver drv;
 	int skipfirst;
 	void *f;
 	const char **samplenames, *sharedname;
@@ -274,17 +295,15 @@ int AuditSampleSet (int game, tMissingSample **audit)
 	tMissingSample *aud;
 
 	gamedrv = drivers[game];
+	expand_machine_driver(gamedrv->drv, &drv);
+
 	samplenames = NULL;
 #if (HAS_SAMPLES || HAS_VLM5030)
-	for( j = 0; gamedrv->drv->sound[j].sound_type && j < MAX_SOUND; j++ )
+	for( j = 0; drv.sound[j].sound_type && j < MAX_SOUND; j++ )
 	{
 #if (HAS_SAMPLES)
-		if( gamedrv->drv->sound[j].sound_type == SOUND_SAMPLES )
-			samplenames = ((struct Samplesinterface *)gamedrv->drv->sound[j].sound_interface)->samplenames;
-#endif
-#if (HAS_VLM5030)
-		if( gamedrv->drv->sound[j].sound_type == SOUND_VLM5030 )
-			samplenames = ((struct VLM5030interface *)gamedrv->drv->sound[j].sound_interface)->samplenames;
+		if( drv.sound[j].sound_type == SOUND_SAMPLES )
+			samplenames = ((struct Samplesinterface *)drv.sound[j].sound_interface)->samplenames;
 #endif
 	}
 #endif

@@ -44,13 +44,7 @@ enum {
 	M4510_MEM4, M4510_MEM5, M4510_MEM6, M4510_MEM7
 };
 
-#define M4510_INT_NONE	M6502_INT_NONE
-#define M4510_INT_IRQ 	M6502_INT_IRQ
-#define M4510_INT_NMI 	M6502_INT_NMI
-
-#define M4510_NMI_VEC 	M6502_NMI_VEC
-#define M4510_RST_VEC 	M6502_RST_VEC
-#define M4510_IRQ_VEC 	M6502_IRQ_VEC
+#define M4510_IRQ_LINE					M6502_IRQ_LINE
 
 extern int m4510_ICount;				/* cycle count */
 
@@ -60,13 +54,8 @@ extern void m4510_exit(void);
 extern int	m4510_execute(int cycles);
 extern unsigned m4510_get_context (void *dst);
 extern void m4510_set_context (void *src);
-extern unsigned m4510_get_pc (void);
-extern void m4510_set_pc (unsigned val);
-extern unsigned m4510_get_sp (void);
-extern void m4510_set_sp (unsigned val);
 extern unsigned m4510_get_reg (int regnum);
 extern void m4510_set_reg (int regnum, unsigned val);
-extern void m4510_set_nmi_line(int state);
 extern void m4510_set_irq_line(int irqline, int state);
 extern void m4510_set_irq_callback(int (*callback)(int irqline));
 extern void m4510_state_save(void *file);

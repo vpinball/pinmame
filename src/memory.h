@@ -34,11 +34,6 @@ extern "C" {
 
 
 
-/* obsolete, to be removed */
-#define READ_WORD(a)			(*(UINT16 *)(a))
-#define WRITE_WORD(a,d)			(*(UINT16 *)(a) = (d))
-
-
 /***************************************************************************
 
 	Basic type definitions
@@ -710,10 +705,12 @@ DECLARE_MEM_HANDLERS_16BIT_BE(32)
 /* ----- declare 16-bit littleendian handlers ----- */
 DECLARE_MEM_HANDLERS_16BIT_LE(16)
 DECLARE_MEM_HANDLERS_16BIT_LE(17)
+DECLARE_MEM_HANDLERS_16BIT_LE(24)
 DECLARE_MEM_HANDLERS_16BIT_LE(29)
 DECLARE_MEM_HANDLERS_16BIT_LE(32)
 #define change_pc16lew(pc)		change_pc_generic(pc, 16, 1, cpu_setopbase16lew)
 #define change_pc17lew(pc)		change_pc_generic(pc, 17, 1, cpu_setopbase17lew)
+#define change_pc24lew(pc)		change_pc_generic(pc, 24, 1, cpu_setopbase24lew)
 #define change_pc29lew(pc)		change_pc_generic(pc, 29, 1, cpu_setopbase29lew)
 #define change_pc32lew(pc)		change_pc_generic(pc, 32, 1, cpu_setopbase32lew)
 
@@ -752,6 +749,7 @@ DECLARE_PORT_HANDLERS_16BIT_BE(16)
 
 /* ----- declare 16-bit littleendian handlers ----- */
 DECLARE_PORT_HANDLERS_16BIT_LE(16)
+DECLARE_PORT_HANDLERS_16BIT_LE(24)
 
 /* ----- declare 32-bit bigendian handlers ----- */
 DECLARE_PORT_HANDLERS_32BIT_BE(16)
@@ -777,31 +775,31 @@ void		memory_set_bankhandler_r(int bank, offs_t offset, mem_read_handler handler
 void		memory_set_bankhandler_w(int bank, offs_t offset, mem_write_handler handler);
 
 /* ----- opcode base control ---- */
-opbase_handler memory_set_opbase_handler(int cpu, opbase_handler function);
+opbase_handler memory_set_opbase_handler(int cpunum, opbase_handler function);
 
 /* ----- separate opcode/data encryption helpers ---- */
-void		memory_set_opcode_base(int cpu, void *base);
-void		memory_set_encrypted_opcode_range(int cpu, offs_t min_address,offs_t max_address);
+void		memory_set_opcode_base(int cpunum, void *base);
+void		memory_set_encrypted_opcode_range(int cpunum, offs_t min_address,offs_t max_address);
 extern offs_t encrypted_opcode_start[],encrypted_opcode_end[];
 
 /* ----- return a base pointer to memory ---- */
-void *		memory_find_base(int cpu, offs_t offset);
+void *		memory_find_base(int cpunum, offs_t offset);
 
 /* ----- dynamic memory mapping ----- */
-data8_t *	install_mem_read_handler    (int cpu, offs_t start, offs_t end, mem_read_handler handler);
-data16_t *	install_mem_read16_handler  (int cpu, offs_t start, offs_t end, mem_read16_handler handler);
-data32_t *	install_mem_read32_handler  (int cpu, offs_t start, offs_t end, mem_read32_handler handler);
-data8_t *	install_mem_write_handler   (int cpu, offs_t start, offs_t end, mem_write_handler handler);
-data16_t *	install_mem_write16_handler (int cpu, offs_t start, offs_t end, mem_write16_handler handler);
-data32_t *	install_mem_write32_handler (int cpu, offs_t start, offs_t end, mem_write32_handler handler);
+data8_t *	install_mem_read_handler    (int cpunum, offs_t start, offs_t end, mem_read_handler handler);
+data16_t *	install_mem_read16_handler  (int cpunum, offs_t start, offs_t end, mem_read16_handler handler);
+data32_t *	install_mem_read32_handler  (int cpunum, offs_t start, offs_t end, mem_read32_handler handler);
+data8_t *	install_mem_write_handler   (int cpunum, offs_t start, offs_t end, mem_write_handler handler);
+data16_t *	install_mem_write16_handler (int cpunum, offs_t start, offs_t end, mem_write16_handler handler);
+data32_t *	install_mem_write32_handler (int cpunum, offs_t start, offs_t end, mem_write32_handler handler);
 
 /* ----- dynamic port mapping ----- */
-void		install_port_read_handler   (int cpu, offs_t start, offs_t end, port_read_handler handler);
-void		install_port_read16_handler (int cpu, offs_t start, offs_t end, port_read16_handler handler);
-void		install_port_read32_handler (int cpu, offs_t start, offs_t end, port_read32_handler handler);
-void		install_port_write_handler  (int cpu, offs_t start, offs_t end, port_write_handler handler);
-void		install_port_write16_handler(int cpu, offs_t start, offs_t end, port_write16_handler handler);
-void		install_port_write32_handler(int cpu, offs_t start, offs_t end, port_write32_handler handler);
+void		install_port_read_handler   (int cpunum, offs_t start, offs_t end, port_read_handler handler);
+void		install_port_read16_handler (int cpunum, offs_t start, offs_t end, port_read16_handler handler);
+void		install_port_read32_handler (int cpunum, offs_t start, offs_t end, port_read32_handler handler);
+void		install_port_write_handler  (int cpunum, offs_t start, offs_t end, port_write_handler handler);
+void		install_port_write16_handler(int cpunum, offs_t start, offs_t end, port_write16_handler handler);
+void		install_port_write32_handler(int cpunum, offs_t start, offs_t end, port_write32_handler handler);
 
 
 
@@ -869,10 +867,10 @@ do {																					\
 	if (bank >= STATIC_BANK1 && bank <= STATIC_BANKMAX)									\
 	{																					\
 		cpu_bankbase[bank] = (UINT8 *)(base);											\
-		if (opcode_entry == bank)														\
+		if (opcode_entry == bank && cpu_getactivecpu() >= 0)							\
 		{																				\
 			opcode_entry = 0xff;														\
-			cpu_set_op_base(cpu_get_pc_byte());											\
+			activecpu_set_op_base(activecpu_get_pc_byte());											\
 		}																				\
 	}																					\
 } while (0)

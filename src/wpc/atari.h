@@ -210,11 +210,6 @@
 /* CPUs */
 #define ATARI_CPU	0
 
-/* sound */
-extern struct CustomSound_interface atari_custInt;
-
-#define ATARI_SOUND {SOUND_CUSTOM, &atari_custInt}, SAMPLESINTERFACE
-
 /*-- ATARI CPU regions and ROM, 3 game PROM version --*/
 #define ATARI_3_ROMSTART(name, n1, chk1, n2, chk2, n3, chk3) \
    ROM_START(name) \
@@ -239,8 +234,9 @@ extern struct CustomSound_interface atari_custInt;
          ROM_RELOAD(0xf800, 0x0800)
 
 /*-- These are only here so the game structure can be in the game file --*/
-extern struct MachineDriver machine_driver_ATARI1;
-extern struct MachineDriver machine_driver_ATARI2;
+extern MACHINE_DRIVER_EXTERN(ATARI1);
+extern MACHINE_DRIVER_EXTERN(ATARI2);
+extern MACHINE_DRIVER_EXTERN(atari2s);
 
 #define gl_mATARI1		ATARI1
 #define gl_mATARI2		ATARI2

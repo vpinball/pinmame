@@ -496,13 +496,13 @@ unsigned Dasm6809 (char *buffer, unsigned pc)
 			if( pb == 0x8c )
 			{
 				sym1 = set_ea_info(1, pc, (INT8)offset, EA_REL_PC);
-				ea = (pc + (INT8)offset + cpu_get_reg(regid_6809[reg])) & 0xffff;
+				ea = (pc + (INT8)offset + activecpu_get_reg(regid_6809[reg])) & 0xffff;
 				buffer += sprintf (buffer, "%s,%s", sym1, regs_6809[reg]);
 			}
 			else
 			{
 				sym1 = set_ea_info(1, offset, EA_INT8, EA_VALUE);
-				ea = (cpu_get_reg(regid_6809[reg]) + offset) & 0xffff;
+				ea = (activecpu_get_reg(regid_6809[reg]) + offset) & 0xffff;
 				buffer += sprintf (buffer, "%s,%s", sym1, regs_6809[reg]);
 			}
 //			  if( pb == 0x8c )
@@ -536,7 +536,7 @@ unsigned Dasm6809 (char *buffer, unsigned pc)
 			else
 			{
 				sym1 = set_ea_info(1, offset, EA_INT16, EA_VALUE);
-				ea = (cpu_get_reg(regid_6809[reg]) + offset) & 0xffff;
+				ea = (activecpu_get_reg(regid_6809[reg]) + offset) & 0xffff;
                 buffer += sprintf (buffer, "%s,%s", sym1, regs_6809[reg]);
 			}
 //			  if( pb == 0x8d )
@@ -550,35 +550,35 @@ unsigned Dasm6809 (char *buffer, unsigned pc)
 			switch( pb & 0x8f )
 			{
 			case 0x80:
-				ea = cpu_get_reg(regid_6809[reg]);
+				ea = activecpu_get_reg(regid_6809[reg]);
 				buffer += sprintf (buffer, ",%s+", regs_6809[reg]);
 				break;
 			case 0x81:
-				ea = cpu_get_reg(regid_6809[reg]);
+				ea = activecpu_get_reg(regid_6809[reg]);
                 buffer += sprintf (buffer, ",%s++", regs_6809[reg]);
 				break;
 			case 0x82:
-				ea = cpu_get_reg(regid_6809[reg]);
+				ea = activecpu_get_reg(regid_6809[reg]);
                 buffer += sprintf (buffer, ",-%s", regs_6809[reg]);
 				break;
 			case 0x83:
-				ea = cpu_get_reg(regid_6809[reg]);
+				ea = activecpu_get_reg(regid_6809[reg]);
                 buffer += sprintf (buffer, ",--%s", regs_6809[reg]);
 				break;
 			case 0x84:
-				ea = cpu_get_reg(regid_6809[reg]);
+				ea = activecpu_get_reg(regid_6809[reg]);
                 buffer += sprintf (buffer, ",%s", regs_6809[reg]);
 				break;
 			case 0x85:
-				ea = (cpu_get_reg(regid_6809[reg]) + (INT8) cpu_get_reg(M6809_B)) & 0xffff;
+				ea = (activecpu_get_reg(regid_6809[reg]) + (INT8) activecpu_get_reg(M6809_B)) & 0xffff;
                 buffer += sprintf (buffer, "B,%s", regs_6809[reg]);
 				break;
 			case 0x86:
-				ea = (cpu_get_reg(regid_6809[reg]) + (INT8) cpu_get_reg(M6809_A)) & 0xffff;
+				ea = (activecpu_get_reg(regid_6809[reg]) + (INT8) activecpu_get_reg(M6809_A)) & 0xffff;
                 buffer += sprintf (buffer, "A,%s", regs_6809[reg]);
 				break;
 			case 0x8b:
-				ea = (cpu_get_reg(regid_6809[reg]) + (cpu_get_reg(M6809_A) << 8) + cpu_get_reg(M6809_B)) & 0xffff;
+				ea = (activecpu_get_reg(regid_6809[reg]) + (activecpu_get_reg(M6809_A) << 8) + activecpu_get_reg(M6809_B)) & 0xffff;
                 buffer += sprintf (buffer, "D,%s", regs_6809[reg]);
 				break;
 			}

@@ -37,7 +37,7 @@
 extern "C" {
 #endif
 
-#define ZLIB_VERSION "1.1.3"
+#define ZLIB_VERSION "1.1.4"
 
 /* 
      The 'zlib' compression library provides in-memory compression and

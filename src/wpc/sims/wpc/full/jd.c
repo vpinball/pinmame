@@ -47,6 +47,7 @@
 -------------------------------------------------------------------------------------------------*/
 
 #include "driver.h"
+#include "core.h"
 #include "wpc.h"
 #include "sim.h"
 #include "wmssnd.h"
@@ -417,10 +418,10 @@ static sim_tInportData jd_inportData[] = {
   core_textOutf(30, 30, BLACK,"Help on this Simulator:");
   core_textOutf(30, 40, BLACK,"2/E=Buy-In,Super Game");
   core_textOutf(30, 50,BLACK,"L.Alt/Space=L/R FIRE");
-  core_textOutf(30, 60,BLACK,"L/R Ctrl+- =L/R Sling");
-  core_textOutf(30, 70,BLACK,"L/R Ctrl+I/O = L/R Inlane/Outlane");
-  core_textOutf(30, 80,BLACK,"L/R Ctrl+R,R = L/R/C Ramps");
-  core_textOutf(30, 90,BLACK,"L/R Ctrl+L = L/R Orbit Loops");
+  core_textOutf(30, 60,BLACK,"L/R Shift+- =L/R Sling");
+  core_textOutf(30, 70,BLACK,"L/R Shift+I/O = L/R Inlane/Outlane");
+  core_textOutf(30, 80,BLACK,"L/R Shift+R,R = L/R/C Ramps");
+  core_textOutf(30, 90,BLACK,"L/R Shift+L = L/R Orbit Loops");
   core_textOutf(30, 100,BLACK,"Q = Drain Ball, I = Inner R.Inlane");
   core_textOutf(30, 110,BLACK,"A = Air Raid Ramp, S = Subway");
   core_textOutf(30, 120,BLACK,"T = L.Shooter Lane, Y = Small Loop");

@@ -15,8 +15,11 @@
 #define S7_PIA4  4
 #define S7_BANK0 1
 
-static void s7_exit(void);
-static void s7_nvram(void *file, int write);
+#define S7_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
+#define S7_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
+#define S7_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
+
+static NVRAM_HANDLER(s7);
 
 /*----------------
 /  Local varibles
@@ -36,12 +39,12 @@ static data8_t *s7_rambankptr, *s7_CMOS;
 
 static void s7_irqline(int state) {
   if (state) {
-    cpu_set_irq_line(S7_CPUNO, M6808_IRQ_LINE, ASSERT_LINE);
+    cpu_set_irq_line(0, M6808_IRQ_LINE, ASSERT_LINE);
     pia_set_input_ca1(S7_PIA3, core_getSw(S7_SWADVANCE));
     pia_set_input_cb1(S7_PIA3, core_getSw(S7_SWUPDN));
   }
   else if (!s7locals.piaIrq) {
-    cpu_set_irq_line(S7_CPUNO, M6808_IRQ_LINE, CLEAR_LINE);
+    cpu_set_irq_line(0, M6808_IRQ_LINE, CLEAR_LINE);
     pia_set_input_ca1(S7_PIA3, 0);
     pia_set_input_cb1(S7_PIA3, 0);
   }
@@ -51,13 +54,12 @@ static void s7_piaIrq(int state) {
   s7_irqline(s7locals.piaIrq = state);
 }
 
-static int s7_irq(void) {
+static INTERRUPT_GEN(s7_irq) {
   s7_irqline(1);
   timer_set(TIME_IN_CYCLES(32,0),0,s7_irqline);
-  return 0;
 }
 
-static int s7_vblank(void) {
+static INTERRUPT_GEN(s7_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
@@ -88,7 +90,6 @@ static int s7_vblank(void) {
     s7locals.diagnosticLed = 0;
   }
   core_updateSw(s7locals.ssEn);
-  return 0;
 }
 
 /*---------------
@@ -236,7 +237,7 @@ const static core_tData s7Data = {
   core_swSeq2m, core_swSeq2m,core_m2swSeq,core_m2swSeq
 };
 
-static void s7_init(void) {
+static MACHINE_INIT(s7) {
   if (core_gameData == NULL) return;
   if (core_init(&s7Data)) return;
   pia_config(S7_PIA0, PIA_STANDARD_ORDERING, &s7_pia[0]);
@@ -249,7 +250,7 @@ static void s7_init(void) {
   cpu_setbank(S7_BANK0, s7_rambankptr);
 }
 
-static void s7_exit(void) {
+static MACHINE_STOP(s7) {
   sndbrd_0_exit(); core_exit();
 }
 
@@ -296,6 +297,29 @@ MEMORY_END
 /*-----------------
 /  Machine drivers
 /------------------*/
+MACHINE_DRIVER_START(s7)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CPU_ADD(M6808, 3580000/4)
+  MDRV_CPU_MEMORY(s7_readmem, s7_writemem)
+  MDRV_CPU_VBLANK_INT(s7_vblank, 1)
+  MDRV_CPU_PERIODIC_INT(s7_irq, S7_IRQFREQ)
+  MDRV_MACHINE_INIT(s7) MDRV_MACHINE_STOP(s7)
+  MDRV_VIDEO_UPDATE(core_led)
+  MDRV_NVRAM_HANDLER(s7)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(s7S)
+  MDRV_IMPORT_FROM(s7)
+  MDRV_IMPORT_FROM(wmssnd_s67s)
+MACHINE_DRIVER_END
+
+/*-----------------------------------------------
+/ Load/Save static ram
+/-------------------------------------------------*/
+static NVRAM_HANDLER(s7) {
+  core_nvram(file, read_or_write, s7_CMOS, 0x0100, 0xff);
+}
+#if 0
 const struct MachineDriver machine_driver_s7_s = {
   {{  CPU_M6808, 3.58e6/4,
       s7_readmem, s7_writemem, NULL, NULL,
@@ -327,11 +351,5 @@ const struct MachineDriver machine_driver_s7 = {
   s7_nvram
 };
 
-/*-----------------------------------------------
-/ Load/Save static ram
-/-------------------------------------------------*/
-static void s7_nvram(void *file, int write) {
-  core_nvram(file, write, s7_CMOS, 0x0100, 0xff);
-}
-
+#endif
 
