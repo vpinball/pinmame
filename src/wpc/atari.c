@@ -1,9 +1,17 @@
 /************************************************************************************************
- Atari Pinball generation 1 (Atarians to Space Riders)
- Atari Pinball generation 2 (Superman and later games)
+ Atari Pinball
+ -----------------
 
- CPU: 6809 (Gen 1), 6800 (Gen 2)
- I/O: DMA
+   Generation 1: Hardware: (From Atarians -> Space Riders)
+		CPU: M6800? (Fixed Frequency of 1MHz)
+			 INT: NMI @ 250Hz
+
+   Generation 2: Hardware: (Superman -> Hercules)
+		CPU: M6800 (Alternating frequency of 1MHz & 0.667MHz)
+			 INT: IRQ - Fixed @ 488Hz?
+		IO: DMA (Direct Memory Access/Address)
+		DISPLAY: 5x6 Digit 7 Segment Display
+		SOUND:	 Frequency + Noise Generator, Programmable Timers
 ************************************************************************************************/
 #include <stdarg.h>
 #include "driver.h"
@@ -14,7 +22,6 @@
 
 #define ATARI_VBLANKFREQ      60 /* VBLANK frequency in HZ*/
 #define ATARI_IRQFREQ       2048 /* IRQ interval in USEC */
-#define ATARI_DMAFREQ       2000 /* DMA frequency in HZ */
 #define ATARI_NMIFREQ        250 /* NMI frequency in HZ */
 
 static void ATARI1_init(void);
@@ -37,18 +44,15 @@ static struct {
   UINT8  swMatrix[CORE_MAXSWCOL];
   UINT8  lampMatrix[CORE_MAXLAMPCOL];
   core_tSeg segments, pseg;
-  void   *irqtimer, *dmatimer, *nmitimer;
+  void   *irqtimer, *nmitimer;
 //  int	 sound_data;
 } locals;
 
 static int dispPos[] = { 49, 1, 9, 21, 29, 41, 61, 69 };
 
-static void ATARI1_dmahi(int state) {
-  //logerror("DMA ");
-}
-
 static void ATARI1_nmihi(int state) {
-  cpu_set_nmi_line(ATARI_CPU, state ? ASSERT_LINE : CLEAR_LINE);
+  //cpu_set_nmi_line(ATARI_CPU, state ? ASSERT_LINE : CLEAR_LINE);
+	cpu_set_nmi_line(ATARI_CPU, PULSE_LINE);
 }
 
 static void ATARI2_irq(int state) {
@@ -217,31 +221,52 @@ static WRITE_HANDLER(nvram_w) {
 	NVRAM_256[offset] = data & 0x0f;
 }
 
-/*---------------------------
-/  Memory map for main CPU
-/----------------------------*/
+/*-----------------------------------------
+/  Memory map for CPU board (GENERATION 1)
+/------------------------------------------
+0000-00ff  1K RAM (When installed instead of 2K?)
+0300-04ff  2K RAM (When installed instead of 1K?)
+1000-10ff  1K RAM Mirror?
+1300-14ff  2K RAM Mirror?
+2000-????  Switch Read
+3000-????  Audio Enable
+4000-????  WatchDog Reset
+5000-????  Decode 5000 (Testing only?)
+6000-????  Audio Reset*/
 static MEMORY_READ_START(ATARI1_readmem)
 {0x0000,0x00ff,	MRA_RAM},	/* RAM */
-{0x0100,0xffff,	MRA_ROM},	/* ROM */
+//{0x0300,0x04ff,	MRA_RAM},	/* RAM */
+//{0x1000,0x10ff,	MRA_RAM},	/* RAM Mirror?*/
+//{0x1300,0x14ff,	MRA_RAM},	/* RAM Mirror?*/
+//{0x2000,0x2007,	sw_r},		/* inputs */
+{0x7000,0x7fff,	MRA_ROM},	/* ROM */
+{0xf800,0xffff,	MRA_ROM},	/* reset vector */
 MEMORY_END
 
 static MEMORY_WRITE_START(ATARI1_writemem)
-{0x0000,0x1fff, MWA_RAM},	/* RAM */
-//{0x0100,0xffff,	MWA_ROM},	/* ROM */
+{0x0000,0x00ff,	MWA_RAM},	/* RAM */
+//{0x0300,0x04ff,	MWA_RAM},	/* RAM */
+//{0x1000,0x10ff,	MWA_RAM},	/* RAM Mirror?*/
+//{0x1300,0x14ff,	MWA_RAM},	/* RAM Mirror?*/
+{0x7000,0x7fff,	MWA_ROM},	/* ROM */
+{0xf800,0xffff,	MWA_ROM},	/* reset vector */
 MEMORY_END
 
+/*-----------------------------------------
+/  Memory map for CPU board (GENERATION 2)
+/------------------------------------------*/
 static MEMORY_READ_START(ATARI2_readmem)
-{0x0000,0x00ff,	ram_r},	/* RAM */
+{0x0000,0x00ff,	ram_r},		/* RAM */
 {0x0800,0x08ff,	nvram_r},	/* NVRAM */
-{0x1000,0x1007,	sw_r},	/* inputs */
-{0x2000,0x2003,	dip_r},	/* dip switches */
+{0x1000,0x1007,	sw_r},		/* inputs */
+{0x2000,0x2003,	dip_r},		/* dip switches */
 {0x2800,0x3fff,	MRA_ROM},	/* ROM */
 {0xa800,0xbfff,	MRA_ROM},	/* ROM */
 {0xf800,0xffff,	MRA_ROM},	/* reset vector */
 MEMORY_END
 
 static MEMORY_WRITE_START(ATARI2_writemem)
-{0x0000,0x00ff,	ram_w},	/* RAM */
+{0x0000,0x00ff,	ram_w},		/* RAM */
 {0x0800,0x08ff,	nvram_w},	/* NVRAM */
 {0x1800,0x1800,	sound0_w},	/* sound */
 {0x1820,0x1820,	sound1_w},	/* sound */
@@ -250,7 +275,7 @@ static MEMORY_WRITE_START(ATARI2_writemem)
 {0x1860,0x1867,	lamp_w},	/* lamp output */
 {0x1880,0x1880,	sol0_w},	/* solenoid output */
 {0x18a0,0x18a7,	sol1_w},	/* solenoid enable & independent control output */
-{0x18c0,0x18c0,	watchdog_w},	/* watchdog reset */
+{0x18c0,0x18c0,	watchdog_w},/* watchdog reset */
 {0x18e0,0x18e0,	intack_w},	/* interrupt acknowledge (resets IRQ state) */
 {0x2800,0x3fff,	MWA_ROM},	/* ROM */
 {0xa800,0xbfff,	MWA_ROM},	/* ROM */
@@ -260,7 +285,7 @@ MEMORY_END
 struct MachineDriver machine_driver_ATARI1 = {
   {
     {
-      CPU_M6809, 1000000, /* 1 Mhz */
+      CPU_M6800, 1000000, /* 1 Mhz */
       ATARI1_readmem, ATARI1_writemem, NULL, NULL,
 	  ATARI_vblank, 1,
 	  NULL, 0
@@ -307,7 +332,6 @@ static void ATARI1_init(void) {
   if (core_init(&ATARI1Data)) return;
   memset(&locals, 0, sizeof locals);
 
-  locals.dmatimer = timer_pulse(TIME_IN_HZ(ATARI_DMAFREQ),0,ATARI1_dmahi);
   locals.nmitimer = timer_pulse(TIME_IN_HZ(ATARI_NMIFREQ),0,ATARI1_nmihi);
 
   /* Sound Enabled? */
@@ -320,7 +344,6 @@ static void ATARI1_init(void) {
 }
 
 static void ATARI1_exit(void) {
-  if (locals.dmatimer) { timer_remove(locals.dmatimer); locals.dmatimer = NULL; }
   if (locals.nmitimer) { timer_remove(locals.nmitimer); locals.nmitimer = NULL; }
 
   /* Sound Enabled? */
@@ -338,7 +361,6 @@ static void ATARI2_init(void) {
   if (core_init(&ATARI2Data)) return;
   memset(&locals, 0, sizeof locals);
 
-  //cpu_irq_line_vector_w(ATARI_CPU, M6800_INT_IRQ, 0x18e0);
   locals.irqtimer = timer_pulse(TIME_IN_USEC(ATARI_IRQFREQ),0,ATARI2_irqhi);
 
   /* Sound Enabled? */

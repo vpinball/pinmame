@@ -156,16 +156,14 @@
          ROM_RELOAD(0xf800, 0x0800)
 
 /*-- ATARI CPU regions and ROM, 2 game PROM version --*/
+
+/*NOTE: E00 should be loaded lower in memory, 
+	   so we load it first - easier than changing each entry in atarigames.c*/
 #define ATARI_2_ROMSTART(name, n1, chk1, n2, chk2) \
    ROM_START(name) \
      NORMALREGION(0x10000, ATARI_MEMREG_CPU) \
-       ROM_LOAD(n1, 0x2800, 0x0800, chk1) \
-         ROM_RELOAD(0x7000, 0x0800) \
-         ROM_RELOAD(0x7800, 0x0800) \
-       ROM_LOAD(n2, 0x2000, 0x0800, chk2) \
-         ROM_RELOAD(0x9000, 0x0800) \
-         ROM_RELOAD(0xb800, 0x0800) \
-         ROM_RELOAD(0xc000, 0x0800) \
+       ROM_LOAD(n2, 0x7000, 0x0800, chk2) \
+       ROM_LOAD(n1, 0x7800, 0x0800, chk1) \
          ROM_RELOAD(0xf800, 0x0800)
 
 /*-- These are only here so the game structure can be in the game file --*/
