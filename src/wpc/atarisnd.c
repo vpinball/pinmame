@@ -14,6 +14,7 @@ static struct {
 
 static int  atari_sh_start(const struct MachineSound *msound);
 static void atari_sh_stop (void);
+static WRITE_HANDLER(atari_gen1_w);
 static WRITE_HANDLER(atari_data_w);
 static WRITE_HANDLER(atari_ctrl_w);
 
@@ -25,10 +26,18 @@ static void atari_init(struct sndbrdData *brdData) {
 /*-------------------
 / exported interface
 /--------------------*/
+const struct sndbrdIntf atari1sIntf = {
+  atari_init, NULL, NULL, atari_gen1_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+};
 const struct sndbrdIntf atari2sIntf = {
   atari_init, NULL, NULL, atari_data_w, NULL, atari_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
+static struct CustomSound_interface atari1s_custInt = {atari_sh_start, atari_sh_stop};
 static struct CustomSound_interface atari2s_custInt = {atari_sh_start, atari_sh_stop};
+
+MACHINE_DRIVER_START(atari1s)
+  MDRV_SOUND_ADD(CUSTOM, atari1s_custInt)
+MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(atari2s)
   MDRV_SOUND_ADD(CUSTOM, atari2s_custInt)
@@ -104,13 +113,13 @@ static void playSound(void) {
 		for (i=0; i < sizeof(noiseWave); i++)
 			noiseWave[i] = (UINT8)(rand() % 256);
 		stopNoise();
-		mixer_set_volume(atarilocals.noisechannel, atarilocals.volume*3);
+		mixer_set_volume(atarilocals.noisechannel, atarilocals.volume*4);
 		mixer_play_sample(atarilocals.noisechannel, (signed char *)noiseWave, sizeof(noiseWave),
 		  ATARI_SNDFREQ / (16-atarilocals.frequency) * (1 << atarilocals.octave), 1);
 	}
 	if (atarilocals.sound & 0x01) { // wave on
 		stopSound();
-		mixer_set_volume(atarilocals.channel, atarilocals.volume*3);
+		mixer_set_volume(atarilocals.channel, atarilocals.volume*4);
 		if (atarilocals.waveform < 4)
 			mixer_play_sample(atarilocals.channel, (signed char *)squareWave, sizeof(squareWave),
 			  2 * ATARI_SNDFREQ / (16-atarilocals.frequency) * (1 << atarilocals.octave), 1);
@@ -136,6 +145,28 @@ static int atari_sh_start(const struct MachineSound *msound) {
 }
 
 static void atari_sh_stop(void) {
+}
+
+static WRITE_HANDLER(atari_gen1_w) {
+	if (data) {
+		atarilocals.frequency = data & 0x0f;
+		atarilocals.waveform = data >> 4;
+		if (atarilocals.waveform < 4)
+			mixer_play_sample(atarilocals.channel, (signed char *)squareWave, sizeof(squareWave),
+			  2 * ATARI_SNDFREQ / (16 - atarilocals.frequency), 1);
+		else if (atarilocals.waveform < 8)
+ 			mixer_play_sample(atarilocals.channel, (signed char *)triangleWave, sizeof(triangleWave),
+			  2 * ATARI_SNDFREQ / (16 - atarilocals.frequency), 1);
+		else if (atarilocals.waveform < 12)
+			mixer_play_sample(atarilocals.channel, (signed char *)sineWave, sizeof(sineWave),
+			  2 * ATARI_SNDFREQ / (16 - atarilocals.frequency), 1);
+		else
+			mixer_play_sample(atarilocals.channel, (signed char *)sawtoothWave, sizeof(sawtoothWave),
+			  2 * ATARI_SNDFREQ / (16 - atarilocals.frequency), 1);
+	} else {
+		if (mixer_is_sample_playing(atarilocals.channel))
+			mixer_stop_sample(atarilocals.channel);
+	}
 }
 
 static WRITE_HANDLER(atari_ctrl_w) {

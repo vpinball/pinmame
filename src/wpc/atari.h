@@ -15,13 +15,13 @@
 #define ATARI1_COMPORTS \
   PORT_START /* 0 */ \
     /* switch column 1 */ \
-    COREPORT_BIT(     0x0001, "Left Coin", KEYCODE_3)  \
-    COREPORT_BIT(     0x0002, "Right Coin", KEYCODE_5)  \
-    COREPORT_BIT(     0x0004, "Game", KEYCODE_1)  \
-    COREPORT_BIT(     0x0008, "Slam Tilt", KEYCODE_HOME)  \
-    /* switch column 3 */ \
-    COREPORT_BIT(     0x0100, "Cabinet Tilt", KEYCODE_DEL)  \
-    COREPORT_BIT(     0x0200, "Pendulum Tilt", KEYCODE_INSERT)  \
+    COREPORT_BIT(     0x0001, "Left Coin", KEYCODE_3) \
+    COREPORT_BIT(     0x0002, "Right Coin", KEYCODE_5) \
+    COREPORT_BIT(     0x0004, "Game", KEYCODE_1) \
+    COREPORT_BIT(     0x0008, "Slam Tilt", KEYCODE_HOME) \
+    /* switch column 1 or 3, depending on the generation */ \
+    COREPORT_BIT(     0x0100, "Cabinet Tilt", KEYCODE_DEL) \
+    COREPORT_BIT(     0x0200, "Pendulum Tilt", KEYCODE_INSERT) \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
       COREPORT_DIPSET(0x0000, "0" ) \
@@ -70,7 +70,25 @@
       COREPORT_DIPSET(0x4000, "1" ) \
     COREPORT_DIPNAME( 0x8000, 0x0000, "S16") \
       COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x8000, "1" )
+      COREPORT_DIPSET(0x8000, "1" ) \
+  PORT_START /* 2 */ \
+    COREPORT_DIPNAME( 0x000f, 0x0007, "Hi Score Settings") \
+      COREPORT_DIPSET(0x0000, "#1" ) \
+      COREPORT_DIPSET(0x0001, "#2" ) \
+      COREPORT_DIPSET(0x0002, "#3" ) \
+      COREPORT_DIPSET(0x0003, "#4" ) \
+      COREPORT_DIPSET(0x0004, "#5" ) \
+      COREPORT_DIPSET(0x0005, "#6" ) \
+      COREPORT_DIPSET(0x0006, "#7" ) \
+      COREPORT_DIPSET(0x0007, "#8" ) \
+      COREPORT_DIPSET(0x0008, "#9" ) \
+      COREPORT_DIPSET(0x0009, "#10" ) \
+      COREPORT_DIPSET(0x000a, "#11" ) \
+      COREPORT_DIPSET(0x000b, "#12" ) \
+      COREPORT_DIPSET(0x000c, "#13" ) \
+      COREPORT_DIPSET(0x000d, "#14" ) \
+      COREPORT_DIPSET(0x000e, "#15" ) \
+      COREPORT_DIPSET(0x000f, "#16" )
 
 #define ATARI2_COMPORTS \
   PORT_START /* 0 */ \
@@ -234,10 +252,13 @@
          ROM_RELOAD(0xf800, 0x0800)
 
 /*-- These are only here so the game structure can be in the game file --*/
+extern MACHINE_DRIVER_EXTERN(ATARI0);
 extern MACHINE_DRIVER_EXTERN(ATARI1);
 extern MACHINE_DRIVER_EXTERN(ATARI2);
 extern MACHINE_DRIVER_EXTERN(atari2s);
+extern MACHINE_DRIVER_EXTERN(atari1s);
 
+#define gl_mATARI0		ATARI0
 #define gl_mATARI1		ATARI1
 #define gl_mATARI2		ATARI2
 
