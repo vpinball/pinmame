@@ -52,6 +52,8 @@
 
 //Comment out to remove U16 Test bypass..
 #define USE_U16_TEST_BYPASS
+//Comment out when not testing mpg audio
+#define TEST_MPGAUDIO
 
 //Comment out to use the correct actual frequency values, but the animations are much too slow..
 #define USE_ADJUSTED_FREQ		
@@ -418,11 +420,16 @@ static MACHINE_INIT(cc) {
   locals.u16a[0] = 0x00bc;
   locals.vblankCount = 1;
   
+#ifdef TEST_MPGAUDIO
+  //Freeze cpu so it won't slow down the emulation
+  cpunum_set_halt_line(0,1);
+#else
   //IRQ1 Maximum Frequency 
   timer_pulse(TIME_IN_CYCLES(2811,0),0,cc_u16irq1);		//Only value that passes IRQ1 test (DO NOT CHANGE UNTIL CURRENT HACK IS REPLACED)
   
   //IRQ4 doesn't seem to do anything?!! Also, no idea of the frequency
   timer_pulse(TIME_IN_HZ(60),0,cc_u16irq4);
+#endif
 
   //Force U16 Tests on startup to succeed
   #ifdef USE_U16_TEST_BYPASS
