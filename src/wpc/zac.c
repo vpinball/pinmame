@@ -85,10 +85,10 @@ static SWITCH_UPDATE(ZAC1) {
     adjust_timer(10);
 #endif /* MAME_DEBUG */
   if (inports) {
-    coreGlobals.swMatrix[0] = (inports[ZAC_COMINPORT] & 0x1000) >> 5;
+    coreGlobals.swMatrix[0] = (inports[ZAC_COMINPORT] & 0x3000) >> 6;
     sndbrd_0_diag(core_getSw(-1));
     coreGlobals.swMatrix[1] = inports[ZAC_COMINPORT] & 0xff;
-    coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0x7f) | ((inports[ZAC_COMINPORT] & 0xefff) >> 8);
+    coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0x3f) | ((inports[ZAC_COMINPORT] & 0xcfff) >> 8);
   }
 }
 
@@ -119,16 +119,20 @@ static int ZAC_m2sw(int col, int row) {
 	return col*8 + row - 8;
 }
 
-static void timer_callback(int n) {
+static int irq_callback_old(int int_level) {
+  return core_getSw(-2) ? 0x10 : 0x18;
+}
+
+static void timer_callback_old(int n) {
   cpu_set_irq_line(ZAC_CPUNO, 0, PULSE_LINE);
 }
 
 static int irq_callback(int int_level) {
-	return 0xbf;
+  return 0xbf;
 }
 
-static int irq_callback_old(int int_level) {
-	return 0x18;
+static void timer_callback(int n) {
+  cpu_set_irq_line(ZAC_CPUNO, 0, PULSE_LINE);
 }
 
 /*-----------------------------------------------
@@ -144,16 +148,10 @@ static NVRAM_HANDLER(ZAC2) {
     core_nvram(file, read_or_write, ram, 0x800, 0x00);
 }
 
-//Generate the IRQ
-static INTERRUPT_GEN(ZAC_irq) {
-//	logerror("%x: IRQ\n",activecpu_get_previouspc());
-	cpu_set_irq_line(ZAC_CPUNO, 0, PULSE_LINE);
-}
-
 static MACHINE_INIT(ZAC1) {
   memset(&locals, 0, sizeof(locals));
   locals.gen = 1;
-  locals.irqtimer = timer_alloc(timer_callback);
+  locals.irqtimer = timer_alloc(timer_callback_old);
   locals.irqfreq = core_gameData->hw.gameSpecific1;
   timer_adjust(locals.irqtimer, 1.0/(double)locals.irqfreq, 0, 1.0/(double)locals.irqfreq);
   /* Set IRQ Vector Routine */
@@ -163,7 +161,7 @@ static MACHINE_INIT(ZAC1) {
   if (ram1[0xf7] != 0x05 && ram1[0xf8] != 0x0a) { // data is invalid
     UINT8 i;
     ram1[0xc0] = 0x03; // 3 balls
-    for (i=0xc1; i < 0xd1; i++) ram1[i] = 0x01; // enable match & coin slots
+    for (i=0xc1; i < 0xd6; i++) ram1[i] = 0x01; // enable match & coin slots
     ram1[0xf7] = 0x05; ram1[0xf8] = 0x0a; // validate data
   }
 
@@ -403,10 +401,6 @@ static READ_HANDLER(ram1_r) {
 		g1keys[offset - 0x34] = ram1[offset];
 	} else
 		value = ram1[offset];
-	if (coreGlobals.swMatrix[7]) {
-		value &= ~coreGlobals.swMatrix[7]; // short data lines (enable settings!)
-		ram1[0xf7] = 0; ram1[0] = 0; // invalidate the NVRAM data
-	}
 	return value;
 }
 

@@ -9,7 +9,8 @@
 #define ZAC_COMPORTS_OLD \
   PORT_START /* 0 */ \
     /* These are put in switch column 0 */ \
-    COREPORT_BIT   (0x1000, "Sound Diag", KEYCODE_9) \
+    COREPORT_BIT   (0x1000, "Programming", KEYCODE_8) \
+    COREPORT_BIT   (0x2000, "Sound Diag", KEYCODE_9) \
     /* These are put in switch column 1 */ \
     COREPORT_BIT   (0x0008, "Start", KEYCODE_1) \
     COREPORT_BIT   (0x0010, "Coin 1", KEYCODE_3) \
@@ -20,7 +21,8 @@
     COREPORT_BIT   (0x0004, "Slam Tilt", KEYCODE_HOME) \
     COREPORT_BIT   (0x0080, "Printer Log", KEYCODE_0) \
     /* These are put in switch column 2 */ \
-    COREPORT_BIT   (0x8000, "Test Mode", KEYCODE_END) \
+    COREPORT_BIT   (0x8000, "Test Mode / H.S.Reset", KEYCODE_END) \
+    COREPORT_BIT   (0x4000, "High Score Adjust", KEYCODE_PGUP) \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "Sound 1") \
       COREPORT_DIPSET(0x0000, "0" ) \
