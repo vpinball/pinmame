@@ -1246,6 +1246,11 @@ int win_process_events(void)
 		}
 	}
 
+#ifdef VPINMAME
+	// sometimes the Trottle() sub hasn't have enought time to call Sleep(0),
+	// so do it here in any case
+	Sleep(0);
+#endif
 	// return 1 if we slept this frame
 	return 0;
 }
