@@ -91,7 +91,7 @@ CORE_GAMEDEFNV(camlight,"Camel Lights",1978,"Game Plan",mGP1,GAME_USES_CHIMES)
 /-------------------------------------------------------------------*/
 INITGAME(real, 0,dispGP_DDU1,FLIP_SW(FLIP_L),0)
 GP_ROMSTART88(real,	"a-110.u12",0xed0d518b,
-						"b1-110.u13",0xa223f2e8)
+					"b1-110.u13",0xa223f2e8)
 GP_ROMEND
 CORE_GAMEDEFNV(real,"Real (to Real)",1978,"Game Plan",mGP1,GAME_USES_CHIMES)
 
@@ -100,7 +100,7 @@ CORE_GAMEDEFNV(real,"Real (to Real)",1978,"Game Plan",mGP1,GAME_USES_CHIMES)
 /-------------------------------------------------------------------*/
 INITGAME(rio, 0,dispGP_DDU1,FLIP_SW(FLIP_L),0)
 GP_ROMSTART88(rio,	"a-110.u12",0xed0d518b,
-						"b1-110.u13",0xa223f2e8)
+					"b1-110.u13",0xa223f2e8)
 GP_ROMEND
 CORE_GAMEDEFNV(rio,"Rio",1978,"Game Plan",mGP1,GAME_USES_CHIMES)
 
@@ -188,22 +188,22 @@ CORE_GAMEDEFNV(gwarfare,"Global Warfare",1981,"Game Plan",mGP2,GAME_NO_SOUND)
 /-------------------------------------------------------------------*/
 //Flyer suggests 6 digits for scoring??
 INITGAME(suprnova, 0,dispGP_BDU1,FLIP_SW(FLIP_L),0)
-GP_ROMSTART888(suprnova,"150a.716",0xdc402b37,
+GP_ROMSTART888(suprnova,"130a.716",0xdc402b37,
 						"150b.716",0x8980a8bb,
 						"150c.716",0x6fe08f96)
 GP_ROMEND
-CORE_GAMEDEFNV(suprnova,"Super Nova",1982,"Game Plan",mGP2,GAME_NO_SOUND)
+CORE_CLONEDEFNV(suprnova,sshooter,"Super Nova",1982,"Game Plan",mGP2,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
 / Sharp Shooter II (November 1983) - Model #730
 /-------------------------------------------------------------------*/
 INITGAME(sshootr2, 0,dispGP_BDU2,FLIP_SW(FLIP_L),0)
-GP_ROMSTART888(sshootr2,"730a",0xdc402b37,
-						"730b",0x19a86f5e,
+GP_ROMSTART888(sshootr2,"130a.716",0xdc402b37,
+						"130b.716",0x19a86f5e,
 						"730c",0xd1af712b)
 //GP_SOUNDROM8("730snd",0x6d3dcf44)
 GP_ROMEND
-CORE_GAMEDEFNV(sshootr2,"Sharp Shooter II",1983,"Game Plan",mGP2,GAME_NO_SOUND)
+CORE_CLONEDEFNV(sshootr2,sshooter,"Sharp Shooter II",1983,"Game Plan",mGP2,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
 / Attila the Hun (April 1984) - Model #260
