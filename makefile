@@ -1,5 +1,5 @@
 # set this to mame, mess or the destination you want to build
-TARGET = pinmame
+TARGET=pinmame
 # TARGET = mame
 # TARGET = mess
 # TARGET = neomame
@@ -14,10 +14,10 @@ endif
 # DEBUG = 1
 
 # uncomment next line to include the symbols for symify
-SYMBOLS = 1
+# SYMBOLS = 1
 
 # uncomment next line to generate a link map for exception handling in windows
-MAP = 1
+# MAP = 1
 
 # uncomment next line to use Assembler 68000 engine
 # X86_ASM_68000 = 1
