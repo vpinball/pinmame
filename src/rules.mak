@@ -490,6 +490,25 @@ DBGOBJS += $(OBJ)/cpu/m68000/m68kdasm.o
 else
 CPUDEFS += -DHAS_M68000=0
 endif
+# PinMAME
+CPU=$(strip $(findstring M68306@,$(CPUS)))
+ifneq ($(CPU),)
+OBJDIRS += $(OBJ)/cpu/m68000
+CPUDEFS += -DHAS_M68306=1
+ifdef X86_ASM_68000
+CPUOBJS += $(OBJ)/cpu/m68000/asmintf.o $(OBJ)/cpu/m68000/68000.o
+ASMDEFS += -DA68K0
+$(OBJ)/cpu/m68000/68kem.o: $(OBJ)/cpu/m68000/68kem.asm make68k.c
+else
+M68000_GENERATED_OBJS = \
+$(OBJ)/cpu/m68000/m68kops.o $(OBJ)/cpu/m68000/m68kopac.o \
+$(OBJ)/cpu/m68000/m68kopdm.o $(OBJ)/cpu/m68000/m68kopnz.o
+CPUOBJS += $(M68000_GENERATED_OBJS) $(OBJ)/cpu/m68000/m68kcpu.o $(OBJ)/cpu/m68000/m68kmame.o
+endif
+DBGOBJS += $(OBJ)/cpu/m68000/m68kdasm.o
+else
+CPUDEFS += -DHAS_M68306=0
+endif
 
 CPU=$(strip $(findstring M68010@,$(CPUS)))
 ifneq ($(CPU),)

@@ -53,7 +53,8 @@ extern struct m68k_memory_interface m68k_memory_intf;
 
 INLINE unsigned int m68k_read_immediate_16(unsigned int address)
 {
-	return cpu_readop16((address) ^ m68k_memory_intf.opcode_xor);
+        return m68k_read_memory_16(address ^ m68k_memory_intf.opcode_xor);
+//	return cpu_readop16((address) ^ m68k_memory_intf.opcode_xor);
 }
 
 INLINE unsigned int m68k_read_immediate_32(unsigned int address)

@@ -163,6 +163,36 @@ const char *m68020_info(void *context, int regnum);
 extern unsigned m68020_dasm(char *buffer, unsigned pc);
 #endif
 
+/****************************************************************************
+ * M68306 section
+ ****************************************************************************/
+#if HAS_M68306
+#define MC68306_IRQ_1					MC68000_IRQ_1
+#define MC68306_IRQ_2					MC68000_IRQ_2
+#define MC68306_IRQ_3					MC68000_IRQ_3
+#define MC68306_IRQ_4					MC68000_IRQ_4
+#define MC68306_IRQ_5					MC68000_IRQ_5
+#define MC68306_IRQ_6					MC68000_IRQ_6
+#define MC68306_IRQ_7					MC68000_IRQ_7
+#define MC68306_INT_ACK_AUTOVECTOR		MC68000_INT_ACK_AUTOVECTOR
+#define MC68306_INT_ACK_SPURIOUS		MC68000_INT_ACK_SPURIOUS
+#define M68306_PORTA  0
+#define M68306_PORTB  1
+#define m68306_ICount                   m68k_ICount
+extern void m68306_init(void);
+extern void m68306_reset(void *param);
+extern void m68306_exit(void);
+extern void m68306_set_context(void *src);
+extern unsigned m68306_get_reg(int regnum);
+extern void m68306_set_reg(int regnum, unsigned val);
+extern void m68306_set_irq_line(int irqline, int state);
+extern void m68306_set_irq_callback(int (*callback)(int irqline));
+#define m68306_execute          m68000_execute
+#define m68306_get_context      m68000_get_context
+#define m68306_info             m68000_info
+#define m68306_dasm             m68000_dasm
+#endif /* HAS_M68306 */
+
 // C Core header
 #include "m68kmame.h"
 

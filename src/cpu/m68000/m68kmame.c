@@ -1242,5 +1242,338 @@ unsigned m68020_dasm(char *buffer, unsigned pc)
 #endif
 }
 #endif /* HAS_M68020 */
+/****************************************************************************
+ * 68306 section
+ ****************************************************************************/
+#if HAS_M68306
+// Could not find any other way to get the interrupts to work than inlcuding this
+#include "m68kcpu.h"
+#undef REG_PC
 
-#endif // A68K2
+enum {
+  irCS0H, irCS0L, irCS1H, irCS1L, irCS2H, irCS2L, irCS3H, irCS3L,
+  irCS4H, irCS4L, irCS5H, irCS5L, irCS6H, irCS6L, irCS7H, irCS7L,
+  irDRAM0H, irDRAM0L, irDRAM1H, irDRAM1L,
+  irPDATA=0x18, irPDIR, irPPIN, irISR=0x1c, irICR, irBUSERR, irSYSTEM
+};
+
+static void m68306_intreg_w(offs_t address, data16_t data, int word);
+static data16_t m68306_intreg_r(offs_t address, int word);
+static offs_t m68306_cs(offs_t address, int write);
+static void m68306irq(int irqline, int state);
+static UINT16 m68306intreg[0x20];
+static UINT16 m68306holdirq; // HOLD_LINE handling
+static int  (*m68306intack)(int int_line); /* Interrupt Acknowledge */
+
+static struct { offs_t addr, mask; UINT16 rw; } m68306cs[10];
+
+//-------------------------------------------
+// Memory read/write functions
+//   Check for internal registers
+//   Update top 8 bits based on CSx/DRAMx signals
+//-------------------------------------------
+static void m68306_write8(offs_t address, data8_t data) {
+  if (address >= 0xfffff000) { m68306_intreg_w(address, data, 0); return; }
+  cpu_writemem32bew(m68306_cs(address,1),data);
+}
+static void m68306_write16(offs_t address, data16_t data) {
+  if (address >= 0xfffff000) { m68306_intreg_w(address, data, 1); return; }
+  address = m68306_cs(address,1);
+  if (!(address & 1)) { cpu_writemem32bew_word(address, data); return; }
+  cpu_writemem32bew(address, data >> 8);
+  cpu_writemem32bew(address + 1, data);
+}
+static void m68306_write32(offs_t address, data32_t data) {
+  if (address >= 0xfffff000) {
+    m68306_intreg_w(address,   data>>16, 1);
+    m68306_intreg_w(address+2, data,     1);
+    return;
+  }
+  address = m68306_cs(address,1);
+  if (!(address & 1)) {
+    cpu_writemem32bew_word(address, data>>16);
+    cpu_writemem32bew_word(address+2, data);
+    return;
+  }
+  cpu_writemem32bew(address, data >> 24);
+  cpu_writemem32bew_word(address + 1, data >> 8);
+  cpu_writemem32bew(address + 3, data);
+}
+
+static data8_t m68306_read8(offs_t address) {
+  if (address >= 0xfffff000) { return (data8_t)m68306_intreg_r(address, 0); }
+  return cpu_readmem32bew(m68306_cs(address,0));
+}
+static data16_t m68306_read16(offs_t address) {
+  data16_t result;
+  if (address >= 0xfffff000) { return m68306_intreg_r(address, 1); }
+  address = m68306_cs(address,0);
+  if (!(address & 1)) { return cpu_readmem32bew_word(address); }
+  result = cpu_readmem32bew(address) << 8;
+  return result | cpu_readmem32bew(address + 1);
+}
+static data32_t m68306_read32(offs_t address) {
+  data32_t result;
+  if (address >= 0xfffff000) {
+    result = m68306_intreg_r(address, 2)<<16;
+    return result | m68306_intreg_r(address+2, 1);
+  }
+  address = m68306_cs(address,0);
+  if (!(address & 1)) {
+    result = cpu_readmem32bew_word(address) << 16;
+    return result | cpu_readmem32bew_word(address + 2);
+  }
+  result = cpu_readmem32bew(address) << 24;
+  result |= cpu_readmem32bew_word(address + 1) << 8;
+  return result | cpu_readmem32bew(address + 3);
+}
+//-----------------------------
+// calculate CSx/DRAMx signals
+//-----------------------------
+static offs_t m68306_cs(offs_t address, int write) {
+  const UINT16 rwmask = write ? 0x0001 : 0x8000;
+  const UINT32 masked = address & ((m68306intreg[0x1f] & 0x1000) ? 0x0000ffff : 0x00ffffff);
+  if ((m68306cs[0].rw & rwmask) && ((address & m68306cs[0].mask) == m68306cs[0].addr))
+    return masked;
+  if ((m68306cs[1].rw & rwmask) && ((address & m68306cs[1].mask) == m68306cs[1].addr))
+    return masked | 0x1000000;
+  if ((m68306cs[2].rw & rwmask) && ((address & m68306cs[2].mask) == m68306cs[2].addr))
+    return masked | 0x2000000;
+  if ((m68306cs[3].rw & rwmask) && ((address & m68306cs[3].mask) == m68306cs[3].addr))
+    return masked | 0x3000000;
+  if (m68306intreg[0x1f] & 0x0100) {
+    if ((m68306cs[4].rw & rwmask) && ((address & m68306cs[4].mask) == m68306cs[4].addr))
+      return masked | 0x4000000;
+    if ((m68306cs[5].rw & rwmask) && ((address & m68306cs[5].mask) == m68306cs[5].addr))
+      return masked | 0x5000000;
+    if ((m68306cs[6].rw & rwmask) && ((address & m68306cs[6].mask) == m68306cs[6].addr))
+      return masked | 0x6000000;
+    if ((m68306cs[7].rw & rwmask) && ((address & m68306cs[7].mask) == m68306cs[7].addr))
+      return masked | 0x7000000;
+  }
+  if ((m68306cs[8].rw & rwmask) && ((address & m68306cs[8].mask) == m68306cs[8].addr))
+    return masked | 0x8000000;
+  if ((m68306cs[9].rw & rwmask) && ((address & m68306cs[9].mask) == m68306cs[9].addr))
+    return masked | 0x9000000;
+  return masked | 0xa000000;
+}
+
+//-------------------------------------------------------------------
+// PC has changed
+//  should probably do a SetOPBase here but I am unsure how it works
+//  on non-continuous memory. For now I use the normal memory routines
+//  also for opcodes. It is a lot slower.
+//-------------------------------------------------------------------
+static void m68306_changepc(offs_t pc) {
+//  change_pc32bew(pc/*m68306_cs(pc,0)*/);
+}
+
+static const struct m68k_memory_interface interface_m68306 = {
+	/*WORD_XOR_BE(0)*/0,
+	m68306_read8,
+	m68306_read16,
+	m68306_read32,
+	m68306_write8,
+	m68306_write16,
+	m68306_write32,
+	m68306_changepc
+};
+
+//----------------------------
+//  Internal register write
+//----------------------------
+static void m68306_intreg_w(offs_t address, data16_t data, int word) {
+  if (word && (address & 1)) {
+    logerror("M68306reg_w odd word address %08x\n",address); return;
+  }
+  if (address >= 0xffffffc0) { /* internal regs */
+    const int reg = (address & 0x3f)>>1;
+    const UINT16 oldval = m68306intreg[reg];
+    if (!word) { // handle byte writes
+      if (address & 1) data = (oldval & 0xff00) | (data & 0x00ff);
+      else             data = (oldval & 0x00ff) | (data << 8);
+    }
+    switch (reg) {
+      case irCS0H: case irCS1H: case irCS2H: case irCS3H:
+      case irCS4H: case irCS5H: case irCS6H: case irCS7H:
+      case irDRAM0H: case irDRAM1H:
+        m68306intreg[reg] = data;
+        m68306cs[reg/2].addr = (data & 0xfffe)<<16;
+        m68306cs[reg/2].rw = (m68306cs[reg/2].rw & 0x8000) | (data & 0x01);
+        break;
+      case irCS0L: case irCS1L: case irCS2L: case irCS3L:
+      case irCS4L: case irCS5L: case irCS6L: case irCS7L:
+      case irDRAM0L: case irDRAM1L:
+        m68306intreg[reg] = data;
+        m68306cs[reg/2].mask = ((UINT16)(0xffff0000>>((data & 0xf0)>>4)))<<16;
+        m68306cs[reg/2].rw = (m68306cs[reg/2].rw & 0x01) | (data & 0x8000);
+        break;
+      case irPDATA: { /* Port Data */
+        UINT16 tmp = (data ^ oldval) & m68306intreg[irPDIR];
+        m68306intreg[irPDATA] = data;
+        if (tmp & 0xff00) cpu_writeport16(M68306_PORTA, (data & m68306intreg[irPDIR])>>8);
+        if (tmp & 0x00ff) cpu_writeport16(M68306_PORTB, data & m68306intreg[irPDIR]);
+        // Writing to B4-B7 will also affect IRQ if configures as output.
+        break;
+      }
+      case irPDIR: /* Port direction */
+        m68306intreg[irPDIR] = data; /* Don't know if this affects output */
+        break;
+      case irICR: /* interrupt control */
+        m68306intreg[irICR] = data; m68306irq(0,0); // update irq level
+        break;
+      case irBUSERR: /* refresh + buserror */
+        logerror("buserror_w %04x\n",data);
+        break;
+      case irSYSTEM: /* system */
+        m68306intreg[irSYSTEM] = (oldval & 0x8000) | (data & 0x7fff); // BTERR bit ignored
+        if (data & 0x4000) logerror("Bus Timeout Error not implmented\n",data);
+        break;
+    } /* switch */
+  }
+  else if (address >= 0xfffff7e0) { /* UART */
+    logerror("M68306UART_w: %02x=%02x\n",address & 0x1f, data & 0xff);
+  }
+}
+//----------------------------
+//  Internal register read
+//----------------------------
+static data16_t m68306_intreg_r(offs_t address, int word) {
+  data16_t data = 0;
+  if (word && (address & 1)) {
+    logerror("M68306reg_r odd word address %08x\n",address); return 0;
+  }
+  if (address >= 0xffffffc0) { /* internal regs */
+    const int reg = (address & 0x3f)>>1;
+    switch (reg) {
+      case irCS0H: case irCS1H: case irCS2H: case irCS3H:
+      case irCS4H: case irCS5H: case irCS6H: case irCS7H:
+      case irDRAM0H: case irDRAM1H:
+      case irCS0L: case irCS1L: case irCS2L: case irCS3L:
+      case irCS4L: case irCS5L: case irCS6L: case irCS7L:
+      case irDRAM0L: case irDRAM1L:
+      case irPDATA:  case irPDIR:
+        data = m68306intreg[reg]; break;
+      case irPPIN: /* port pins (read_only) */
+        // B4-B7 is also IRQ pins (ignored for now)
+        if (word)
+          data = (((cpu_readport16(M68306_PORTA)<<8) | cpu_readport16(M68306_PORTB)) & ~m68306intreg[irPDIR]) |
+                 (m68306intreg[irPDATA] & m68306intreg[irPDIR]);
+        else if (address & 1)
+          data = (cpu_readport16(M68306_PORTB) & ~m68306intreg[irPDIR]) | (m68306intreg[irPDATA] & (m68306intreg[irPDIR] | 0xff00));
+        else
+          data = ((cpu_readport16(M68306_PORTA)<<8) & ~m68306intreg[irPDIR]) | (m68306intreg[irPDATA] & (m68306intreg[irPDIR] | 0x00ff));
+        break;
+      case irISR: /* interrupt status (read only)*/
+        data = m68306intreg[irISR]; break;
+      case irICR: /* interrupt control */
+        data = m68306intreg[irICR]; break;
+        break;
+      case irBUSERR: /* refresh + buserror */
+        logerror("buserror_r\n");
+        break;
+      case irSYSTEM: /* system */
+        data = m68306intreg[irSYSTEM]; m68306intreg[irSYSTEM] &= 0x7fff; // clear BTERR bit
+        break;
+    } /* switch */
+  }
+  else if (address >= 0xfffff7e0) { /* UART */
+    logerror("M68306UART_r: %02x\n",address & 0x1f);
+  }
+  return (word || (address & 1)) ? data : data>>8;
+}
+
+//---------------------
+// Interrupt handling
+//---------------------
+static int m68306ack(int int_level) {
+  if (int_level) {
+    UINT16 intbit = 1<<(int_level-1);
+    if (m68306holdirq & intbit) { // lower irq line on ack
+      m68306holdirq &= ~intbit;
+      m68306irq(int_level, 0);
+    }
+    if (m68306intreg[irICR] & intbit) // use auto-vector?
+      return M68K_INT_ACK_AUTOVECTOR;
+    else { // no autovector, IACK is not emulated
+      if (m68306intack)
+        return m68306intack(int_level);
+      else
+        logerror("M68306 No-AutoVector but no callback IRQ=%d\n",int_level);
+    }
+  }
+  return M68K_INT_ACK_AUTOVECTOR; // Whatever
+}
+
+static void m68306irq(int irqline, int state) {
+  if (irqline) {
+    if (state) {
+       m68306intreg[irISR] |= 0x0080<<irqline;
+       if (state == 2) m68306holdirq |= (1<<(irqline-1));
+    }
+    else
+       m68306intreg[irISR] &= ~(0x0080<<irqline);
+  }
+  CPU_INT_LEVEL = 0;
+  // If port B4-B7 are input  set_irq_line works
+  // if port B4-B7 are output writing to port works
+  // ignore this for now.
+  irqline = (m68306intreg[irISR] & m68306intreg[irICR] & 0x7f00)>>7;
+  while (irqline >>= 1) CPU_INT_LEVEL += 1;
+  CPU_INT_LEVEL <<= 8; m68ki_check_interrupts();
+}
+
+//---------------------
+// exported interface
+//---------------------
+void m68306_set_irq_line(int irqline, int state) {
+  switch (state) {
+    case PULSE_LINE:  m68306irq(irqline, 1); // no break;
+    case CLEAR_LINE:  m68306irq(irqline, 0); break;
+    case ASSERT_LINE: m68306irq(irqline, 1); break;
+    case HOLD_LINE:   m68306irq(irqline, 2); break;
+  }
+}
+
+void m68306_set_irq_callback(int (*callback)(int irqline)) {
+  m68306intack = callback;
+}
+
+void m68306_init(void) {
+  m68k_init();
+  m68k_set_cpu_type(M68K_CPU_TYPE_68306); //
+  m68k_memory_intf = interface_m68306;
+  m68k_state_register("m68306");
+  m68k_set_int_ack_callback(m68306ack);
+}
+
+void m68306_exit(void) {}
+
+void m68306_reset(void* param) {
+  memset(m68306intreg, 0, sizeof(m68306intreg));
+  memset(m68306cs,     0, sizeof(m68306cs));
+  m68306intack = NULL; m68306holdirq = 0;
+  m68306intreg[irSYSTEM] = 0x040f;
+  m68306intreg[irICR] = 0x00ff;
+  m68306intreg[irCS0H] = 0x0001;
+  m68306intreg[irCS0L] = 0xff0e;
+  m68306cs[0].rw = 0x8001;
+  m68k_pulse_reset();
+}
+
+void m68306_set_context(void *src)
+{
+	if (m68k_memory_intf.read8 != m68306_read8)
+            m68k_memory_intf = interface_m68306;
+	m68k_set_context(src);
+}
+unsigned m68306_get_reg(int regnum) {
+  if (regnum == REG_PC) return m68k_get_reg(NULL, M68K_REG_PC);
+  return m68000_get_reg(regnum);
+}
+void m68306_set_reg(int regnum, unsigned val) {
+  if ((short)regnum == (short)REG_PC) m68k_set_reg(M68K_REG_PC, val);
+  else m68000_set_reg(regnum, val);
+}
+#endif // HAS_M68306
+#endif
