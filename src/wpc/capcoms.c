@@ -10,9 +10,9 @@
   #1) /BOF line timing not properly emulated (fails start up test)
   #2) 9241 Digital volume pot - not sure what wipers 2 & 3 do..
   #3) Currently rom is hacked to bypass error messages for the above failed tests..
-  #4) Sound board often get's overloaded and resets or just drops out/misses sound commands
-  #5) Only KP game fails to report a proper sound board reset (others do, but if you watch received commands, not all commands are always sent)
-  #6) Sometimes received data doesn't always get sent (see sound reset of KP for good example)
+  #4) Strange issues when trying to reset the sound board in KP (other games appear to work)...
+      a) sometimes it works fine, other times the cpu will totally stop playing sounds..
+	  b) Also, watching the data coming back to 68306 after reset, it seems to stop sending data..
   ------------------------------------
 */
 #include "driver.h"
@@ -46,6 +46,9 @@
 
 //Comment out to allow Volume Control
 //#define DISABLE_VOLUME
+
+//Comment out to test accurate BOF line timing
+//#define DISABLE_BOF_HACK
 
 //Set length of time to delay the volume commnand (to improve sound getting cut off too soon) - Press start w/o coins in BBB109 for example to see this effect.
 #define X9241_DELAY_COMMAND		TIME_IN_MSEC(500)
@@ -91,6 +94,7 @@ static struct {
   int rombase_offset;	//Offset into current rom
   int rombase;			//Points to current rom
   int bof_line[2];		//Track status of bof line for each tms chip
+  int bof_last[2];		//Track previous state of bof line
   int sreq_line[2];		//Track status of sreq line for each tms chip
   int cbof_line[2];		//Clear BOF Line (8752 controlled)
   int cts;				//Clear to send (If 1, cpu will not send data)
@@ -162,20 +166,21 @@ int data_to_8752(void)
 //Track state of BOF 
 void cap_bof(int chipnum,int state)
 {
-	static int last[2] = {0,0};
-	
 	//Store the state..
 	locals.bof_line[chipnum]=state;
 	
 	//If line is lo - trigger the interrupt, otherwise clear it
 
+#ifndef DISABLE_BOF_HACK
 	//Ignore every 5th transition of low->hi (NO IDEA WHY THIS WORKS WELL FOR MUSIC, BUT NOT QUITE RIGHT FOR SOUNDS
 	if(!state)
-		last[chipnum]++;
-	if(last[chipnum] == 5) {
-		last[chipnum] = 0;
+		locals.bof_last[chipnum]++;
+	if(locals.bof_last[chipnum] == 5) {
+		locals.bof_last[chipnum] = 0;
 		return;
 	}
+#endif
+
 	if(chipnum)
 		cpu_set_irq_line(locals_cap.brdData.cpuNo, I8051_INT1_LINE, state?CLEAR_LINE:ASSERT_LINE);
 	else
@@ -373,7 +378,7 @@ static READ_HANDLER(port_r)
 			P3.6    (O) = /WR
 			P3.7    (O) = /RD*/
 		case 3:
-			//Todo: return RXD line
+			//Todo: return RXD line - is this actually necessary?
 			data |= (locals.bof_line[0])<<2;
 			data |= (locals.bof_line[1])<<3;
 			data |= (locals.sreq_line[0])<<4;
@@ -410,10 +415,7 @@ static WRITE_HANDLER(port_w)
 
 			//Set RTS Line
 			locals.rts = (data & 0x08)>>3;
-#if 0
-			if(locals.rts)
-				PRINTF(("rts = %x\n",locals.rts));
-#endif
+			//if(locals.rts)	PRINTF(("rts = %x\n",locals.rts));
 
 			//CBOF1 & CBOF2 (If cpu writes a 0 here, we set BOF HI, but if we write a 1, BOF line is unchanged!)
 			if((data&0x40)==0)	cap_bof(0,1);
@@ -431,7 +433,6 @@ static WRITE_HANDLER(port_w)
 			P3.6    (O) = /WR
 			P3.7    (O) = /RD*/
 		case 3:
-			//Todo: Implement Serial Transmit 
 			LOG(("writing to port %x data = %x\n",offset,data));
 			break;
 		default:
@@ -452,15 +453,12 @@ READ_HANDLER(rom_rd)
 	else {
 		base+=(locals.rombase+locals.rombase_offset+offset);//Do bankswitching
 		data = (int)*base;
-		//LOG(("%4x: rom_r[%4x] = %2x (rombase=%8x,base_offset=%8x)\n",activecpu_get_pc(),offset,data,locals.rombase,locals.rombase_offset));
 		return data;
 	}
 }
 
 READ_HANDLER(ram_r)
 {
-	//LOG(("ram_r %x data = %x\n",offset,locals.ram[offset]));
-
 	//Shift mirrored ram from it's current address range of 0x18000-0x1ffff to actual address range of 0-0x7fff
 	if(offset > 0xffff)
 		return locals.ram[offset-0x18000];
@@ -472,9 +470,6 @@ WRITE_HANDLER(ram_w)
 {
 	offset&=0xffff;	//strip off top bit
 	locals.ram[offset] = data;
-
-	//LOG(("ram_w %x data = %x\n",offset,data));
-	
 	/* 8752 CAN EXECUTE CODE FROM RAM - SO WE MUST COPY TO CPU REGION STARTING @ 0x8000 */
 	*((UINT8 *)(memory_region(CAPCOMS_CPUREGION) + offset +0x8000)) = data;
 }
@@ -639,9 +634,9 @@ MACHINE_DRIVER_END
 //Manual reset of cpu, triggered from external source
 void capcoms_manual_reset(void)
 {
+  cpu_set_reset_line(locals_cap.brdData.cpuNo, PULSE_LINE);
   capcoms_reset();
   TMS320AV120_sh_reset();
-  cpu_set_reset_line(locals_cap.brdData.cpuNo, PULSE_LINE);
 }
 
 //Initialize anything that should be cleared when cpu is reset

@@ -51,13 +51,13 @@
  *		  October 14,2003: Added initial support for the 8752 (ie 256 RAM)
  *		  October 22,2003: Full support for the 8752 (ie 256 RAM)
  *				
- *		  Todo: Full Timer support (all modes), Setting Interrupt Priority & Proper Handling (including reti)
+ *		  Todo: Full Timer support (all modes)
  *
  *		  Not Implemented: RAM paging using hardware configured addressing...
  *                         the "MOVX a,@R0/R1" and "MOVX @R0/R1,a" commands can use any of the other ports
  *						   to output a page offset into ram, but it is totally based on the hardware setup.
  *
- *		  Timing needs to be implemented via MAME timers
+ *		  Timing needs to be implemented via MAME timers perhaps?
  *
  *****************************************************************************/
 
@@ -105,7 +105,6 @@ typedef struct {
 	UINT8	timerbaud;		//Flag set if timer overflow is controlling baud
 	UINT8	sending;		//Flag set when uart is sending
 	UINT8	data_out;		//Data to send out
-	UINT8	serial_int;		//Signals that a serial interrupt is in progress (1 bit for each line)
 	UINT8	bits_to_send;	//How many bits left to send when transmitting out the serial port
 } I8051_UART;
 
@@ -116,11 +115,13 @@ typedef struct {
 	UINT16	pc;				//current pc
 	UINT16	subtype;		//specific version of the cpu, ie 8031, or 8051 for example
 	UINT8	cur_irq;		//Holds value of any current IRQ being serviced
+	UINT8	irq_priority;	//Holds value of the current IRQ Priority Level
 	UINT8	rwm;			//Signals that the current instruction is a read/write/modify instruction
 	int prev_used_cycles;	//Track previous # of used cycles
 	int last_int0;			//Store state of int0
 	int last_int1;			//Store state of int1
 	UINT8 int_vec;			//Pending Interrupt Vector
+	int priority_request;	//Priority level of incoming new irq
 	//SFR Registers			(Note: Appear in order as they do in memory)
 	UINT8	po;				//Port 0
 	UINT8	sp;				//Stack Pointer
@@ -311,7 +312,7 @@ static int (*hold_serial_rx_callback)(void);
 #if (HAS_I8052 || HAS_I8752)
   /*T2CON Flags*/
   #define SET_TF2(n)		R_T2CON = (R_T2CON & 0x7f) | (n<<7);	//Indicated Timer 2 Overflow Int Triggered
-  #define SET_EXF2(n)		R_T2CON = (R_T2CON & 0xbf) | (n<<6);	//IndicateS Timer 2 External Flag
+  #define SET_EXF2(n)		R_T2CON = (R_T2CON & 0xbf) | (n<<6);	//Indicates Timer 2 External Flag
   #define SET_RCLK(n)		R_T2CON = (R_T2CON & 0xdf) | (n<<5);	//Receive Clock
   #define SET_TCLK(n)		R_T2CON = (R_T2CON & 0xef) | (n<<4);	//Transmit Clock
   #define SET_EXEN2(n)		R_T2CON = (R_T2CON & 0xf7) | (n<<3);	//Timer 2 External Interrupt Enable
@@ -407,8 +408,16 @@ static int (*hold_serial_rx_callback)(void);
 #define V_TF2	0x02b	/* Timer 2 Overflow */
 #endif
 
-/* Clear IRQ Flags */
-#define	CLEAR_PENDING_IRQS	R_TCON&=0x55; R_SCON&=0xfc;
+/* Any pending IRQ */
+#if (HAS_I8052 || HAS_I8752)
+#define NO_PENDING_IRQ  !(R_TCON & 0xaa) && !(R_SCON & 0x03) && !GET_TF2 && !GET_EXF2
+#else
+#define NO_PENDING_IRQ  !(R_TCON & 0xaa) && !(R_SCON & 0x03)
+#endif
+
+/* Clear Current IRQ  */
+#define CLEAR_CURRENT_IRQ i8051.cur_irq = 0xff;\
+						  i8051.irq_priority = 0;
 
 /* shorter names for the I8051 structure elements */
 
@@ -557,7 +566,8 @@ void i8051_reset(void *param)
 	SFR_W(P1, 0xff);
 	SFR_W(P0, 0xff);
 
-	i8051.cur_irq = 0xff;
+	/* Flag as NO IRQ in Progress */
+	CLEAR_CURRENT_IRQ
 }
 
 /* Shut down CPU core */
@@ -1365,7 +1375,7 @@ void i8051_set_irq_line(int irqline, int state)
 			if (state != CLEAR_LINE) {
 				//Is the enable flag for this interrupt set?
 				if(GET_EX0) {
-					//Need cleared->active line transition? (Logical 1-0 Pulse on the line)
+					//Need cleared->active line transition? (Logical 1-0 Pulse on the line) - CLEAR->ASSERT Transition since INT1 active lo!
 					if(GET_IT0){
 						if(i8051.last_int0 == CLEAR_LINE)
 							SET_IE0(1);
@@ -1389,7 +1399,7 @@ void i8051_set_irq_line(int irqline, int state)
 			//Line Asserted?
 			if (state != CLEAR_LINE) {
 				if(GET_EX1) {
-					//Need cleared->active line transition? (Logical 1-0 Pulse on the line)
+					//Need cleared->active line transition? (Logical 1-0 Pulse on the line) - CLEAR->ASSERT Transition since INT1 active lo!
 					if(GET_IT1){
 						if(i8051.last_int1 == CLEAR_LINE)
 							SET_IE1(1);
@@ -1425,115 +1435,124 @@ void i8051_set_irq_line(int irqline, int state)
 	}
 }
 
-//Check for pending Interrupts and process - returns # of cycles used for the int
+/***********************************************************************************
+ Check for pending Interrupts and process - returns # of cycles used for the int
+
+ Note about priority & interrupting interrupts.. 
+ 1) A high priority interrupt cannot be interrupted by anything!
+ 2) A low priority interrupt can ONLY be interrupted by a high priority interrupt
+ 3) If more than 1 Interrupt Flag is set (ie, 2 simultaneous requests occur),
+    the following logic works as follows:
+	1) If two requests come in of different priority levels, the higher one is selected..
+	2) If the requests are of the same level, an internal order is used:
+		a) IEO
+		b) TFO
+		c) IE1
+		d) TF1
+		e) RI+TI
+		f) TF2+EXF2
+ **********************************************************************************/
 INLINE UINT8 check_interrupts(void)
 {
 	//If All Inerrupts Disabled or no pending abort..
 	if(!GET_EA)	return 0;
 
 	//Any Interrupts Pending?
-	if(!(R_TCON & 0xaa) && !(R_SCON & 0x03))	return 0;
+	if(NO_PENDING_IRQ) return 0;
 
-	//Check which interrupt(s) have occurred
-	//NOTE: The order of checking is based on the internal/default priority levels
+	//Skip if current irq in progress is high priority!
+	if(i8051.irq_priority)	{ LOG(("high priority irq in progress, skipping irq request\n")); return 0; }
+
+	//Check which interrupt(s) requests have occurred..
+	//NOTE: The order of checking is based on the internal/default priority levels when levels are the same
 
 	//External Int 0
-	if(!i8051.int_vec && GET_IE0) {
-		
-		//Skip Only if servicing this same irq
-		if(i8051.cur_irq == V_IE0)	{ LOG(("skipping ie0\n")); return 0; }
-
-		//Set vector and clear pending flag
+	if(GET_IE0) {
+		//Set vector & priority level request
 		i8051.int_vec = V_IE0;
-		SET_IE0(0);
+		i8051.priority_request = GET_PX0;
 	}
 	//Timer 0 overflow 
-	if(!i8051.int_vec && GET_TF0) {
-
-		//Skip if servicing higher priority irq
-		if(i8051.cur_irq < V_TF0)	{ LOG(("skipping tf0\n")); return 0; }
-
-		//Set vector and clear pending flag
+	if(!i8051.priority_request && GET_TF0 && (!i8051.int_vec || (i8051.int_vec && GET_PT0))) {
+		//Set vector & priority level request
 		i8051.int_vec = V_TF0;
-		SET_TF0(0);
+		i8051.priority_request = GET_PT0;
 	}
 	//External Int 1
-	if(!i8051.int_vec && GET_IE1) {
-		
-		//Skip if servicing higher priority irq
-		if(i8051.cur_irq < V_IE1)	{ LOG(("skipping ie1\n")); return 0; }
-
-		//Set vector and clear pending flag
+	if(!i8051.priority_request && GET_IE1 && (!i8051.int_vec || (i8051.int_vec && GET_PX1))) {
+		//Set vector & priority level request
 		i8051.int_vec = V_IE1;
-		SET_IE1(0);
+		i8051.priority_request = GET_PX1;
 	}
 	//Timer 1 overflow
-	if(!i8051.int_vec && GET_TF1) {
-
-		//Skip if servicing higher priority irq
-		if(i8051.cur_irq < V_TF1)	{ LOG(("skipping tf1\n")); return 0; }
-
-		//Set vector and clear pending flag
+	if(!i8051.priority_request && GET_TF1 && (!i8051.int_vec || (i8051.int_vec && GET_PT1))) {
+		//Set vector & priority level request
 		i8051.int_vec = V_TF1;
-		SET_TF1(0);
+		i8051.priority_request = GET_PT1;
 	}
 	//Serial Interrupt Transmit/Receive Interrupts
-	if(!i8051.int_vec && (GET_TI || GET_RI)) {
-
-		//Since interrupt flags are not cleared, we need way to avoid always calling this routine over and over
-		int skip_int = 0;
-
-		//Skip if servicing higher priority irq
-		if(i8051.cur_irq < V_RITI)	{ LOG(("skipping riti\n")); return 0; }
-
-		//Transmit Flag?
-		if(GET_TI) {
-			//Skip if we've handled the interrupt, but software has not cleared the flag!
-			if(uart.serial_int & TI_FLAG)
-				skip_int = 1;
-			else
-				uart.serial_int |= TI_FLAG;
-		}
-
-		//Receive Flag?
-		if(GET_RI) {
-			//Skip if we've handled the interrupt, but software has not cleared the flag!
-			if(uart.serial_int & RI_FLAG)
-				skip_int = 1;
-			else
-				uart.serial_int |= RI_FLAG;
-		}
-
-		//Skip Int? (Doesn't matter who caused the skip)
-		if(skip_int)	return 0;
-
-		//Set vector
+	if(!i8051.priority_request && (GET_TI || GET_RI) && (!i8051.int_vec || (i8051.int_vec && GET_PS))) {
+		//Set vector & priority level request
 		i8051.int_vec = V_RITI;
-
-		// no flags are cleared, TI and RI remain set until reset by software
+		i8051.priority_request = GET_PS;
 	}
 #if (HAS_I8052 || HAS_I8752)
-	//Timer 2 overflow
-	if(!i8051.int_vec && GET_TF2) {
-
-		//Skip if servicing higher priority irq
-		if(i8051.cur_irq < V_TF2)	{ LOG(("skipping tf2\n")); return 0; }
-
-		//Set vector
+	//Timer 2 overflow (Either Timer Overflow OR External Interrupt)
+	if(!i8051.priority_request && (GET_TF2 || GET_EXF2) && (!i8051.int_vec || (i8051.int_vec && GET_PT2))) {
+		//Set vector & priority level request
 		i8051.int_vec = V_TF2;
-		//DO NOT CLEAR THE INTERRUPT FLAG (According to the manual)
-		//SET_TF2(0);
-		//HOWEVER - This causes a problem, because pc will be stuck jumping to vector until these flags cleared!
-		//Todo: implement a var as done with serial_int
+		i8051.priority_request = GET_PT2;
 	}
 #endif
 
-    //Perform the interrupt
+	//Skip the interrupt request if currently processing is lo priority, and the new request IS NOT HI PRIORITY!
+	if(i8051.cur_irq < 0xff && !i8051.priority_request)
+		{ LOG(("low priority irq in progress already, skipping low irq request\n")); return 0; }
+
+    /*** --- Perform the interrupt --- ***/
+
+	//Save current pc to stack, set pc to new interrupt vector
 	push_pc();
 	PC = i8051.int_vec;
+
+	//Set current Irq & Priority being serviced
 	i8051.cur_irq = i8051.int_vec;
+	i8051.irq_priority = i8051.priority_request;
+
+	//Clear any interrupt flags that should be cleared since we're servicing the irq!
+	switch(i8051.cur_irq) {
+		case V_IE0:
+			//External Int Flag only cleared when configured as Edge Triggered..
+			//if(GET_IT0)	- for some reason having this, breaks alving dmd games
+				SET_IE0(0);
+			break;
+		case V_TF0:
+			//Timer 0 - Always clear Flag
+			SET_TF0(0);
+			break;
+		case V_IE1:
+			//External Int Flag only cleared when configured as Edge Triggered..
+			//if(GET_IT1)	- for some reason having this, breaks alving dmd games
+				SET_IE1(0);
+			break;
+		case V_TF1:
+			//Timer 0 - Always clear Flag
+			SET_TF1(0);
+			break;
+		case V_RITI:
+			// no flags are cleared, TI and RI remain set until reset by software
+			break;
+		case V_TF2:
+			// no flags are cleared according to manual
+			break;
+	}
+
+	//Clear vars.. (these are part of the 8051 structure for speed, so we don't have to dynamically allocate space each time)
 	i8051.int_vec = 0;
-	return 24;		//All interrupts use 2 machine cycles
+	i8051.priority_request = 0;
+
+	//All interrupts use 2 machine cycles
+	return 24;
 }
 
 
@@ -1661,20 +1680,8 @@ static WRITE_HANDLER(sfr_write)
 			break;
 
 		case SCON: {
-			//Grab previous status of serial port interrupt flags
-			int prev_ti_flag, prev_ri_flag;
-			prev_ti_flag = GET_TI;
-			prev_ri_flag = GET_RI;
-			
 			//Update register
 			R_SCON = data;
-
-			//Was ti flag just cleared (if so clear interrupt handling flag)?
-			if(prev_ti_flag && !GET_TI)
-				uart.serial_int &= ~TI_FLAG;
-			//Was ri flag just cleared? (if so clear interrupt handling flag)?
-			if(prev_ri_flag && !GET_RI)
-				uart.serial_int &= ~RI_FLAG;
 			break;
 		}
 
@@ -2273,7 +2280,8 @@ void i8752_reset (void *param)
 	SFR_W(P1, 0xff);
 	SFR_W(P0, 0xff);
 
-	i8051.cur_irq = 0xff;
+	/* Flag as NO IRQ in Progress */
+	CLEAR_CURRENT_IRQ
 }
 
 void i8752_exit	(void)										{ i8051_exit(); }
