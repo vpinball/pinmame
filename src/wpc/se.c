@@ -44,7 +44,13 @@ struct {
   int	 flipsol, flipsolPulse;
   int    dmdStatus;
   UINT8 *ram8000;
+  int    auxdata;
+  /* Mini DMD stuff */
+  int    lastgiaux, miniidx;
+  int    minidata[4], minidmd[3][5];
 } selocals;
+
+static void printdmd(void);
 
 static INTERRUPT_GEN(se_vblank) {
   /*-------------------------------
@@ -175,8 +181,39 @@ static READ_HANDLER(dmdie_r) { /*What is this for?*/
   DBGLOG(("DMD Input Enable Read PC=%x\n",activecpu_get_previouspc())); return 0x00;
 }
 
-static WRITE_HANDLER(auxboard_w) { /* logerror("Aux Board Write: Offset: %x Data: %x\n",offset,data); */}
-static WRITE_HANDLER(giaux_w)    { /* logerror("GI/Aux Board Write: Offset: %x Data: %x\n",offset,data); */}
+static WRITE_HANDLER(auxboard_w) { selocals.auxdata = data; }
+static WRITE_HANDLER(giaux_w) {
+  if (core_gameData->hw.display & SE_MINIDMD) {
+    if (data & ~selocals.lastgiaux & 0x80) { /* clock in data to minidmd */
+       selocals.minidata[selocals.miniidx] = selocals.auxdata;
+       selocals.miniidx = (selocals.miniidx + 1) % 4;
+    }
+    if ((selocals.auxdata & 0x80) == 0) { /* enabled column? */
+      int tmp = selocals.minidata[selocals.miniidx] & 0x1f;
+      if (tmp) {
+        int col = 1;
+        while (tmp >>= 1) col += 1;
+        selocals.minidmd[0][col-1] = selocals.minidata[(selocals.miniidx + 1) % 4];
+        selocals.minidmd[1][col-1] = selocals.minidata[(selocals.miniidx + 2) % 4];
+        selocals.minidmd[2][col-1] = selocals.minidata[(selocals.miniidx + 3) % 4];
+      }
+    }
+    selocals.lastgiaux = data;
+  }
+}
+
+PINMAME_VIDEO_UPDATE(seminidmd_update) {
+  tDMDDot dotCol;
+  int ii,jj,kk;
+  for (ii = 0; ii < 7; ii++) {
+    UINT8 *line = &dotCol[ii+1][0];
+    for (jj = 0; jj < 3; jj++)
+      for (kk = 0; kk < 5; kk++)
+        *line++ = (selocals.minidmd[jj][4-kk] & (1<<ii)) ? 3 : 0;
+  }
+  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+  return 0;
+}
 
 /*---------------------------
 /  Memory map for main CPU
