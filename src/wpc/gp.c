@@ -147,7 +147,7 @@ static SWITCH_UPDATE(GP) {
   }
   /*-- Diagnostic buttons on CPU board --*/
   if (core_getSw(GP_SWTEST)) generic_nvram[0xac] = val++;
-  if (core_getSw(GP_SWSOUNDDIAG) && core_gameData->hw.soundBoard == SNDBRD_GPMSU1)
+  if (core_getSw(GP_SWSOUNDDIAG) && core_gameData->hw.soundBoard == SNDBRD_GPMSU3)
     cpu_set_nmi_line(GP_SCPUNO, PULSE_LINE);
 }
 
@@ -306,6 +306,10 @@ static WRITE_HANDLER(mpu2_pa_w) {
 //	logerror("PA_W: P0-3 %x = %d\n",addrdata,addrdata);
 }
 
+static WRITE_HANDLER(ppi0_pb_w) {
+	logerror("PPI0 Port B Write: %02x\n", data);
+}
+
 /*
 PORT C WRITE
 (out) P0-P2 : 3-8 Demultiplexed Digit Selects (1-7)
@@ -387,7 +391,7 @@ static ppi8255_interface ppi8255_intf =
 	{ppi0_pb_r},	/* Port B read */
 	{0},			/* Port C read */
 	{ppi0_pa_w},	/* Port A write */
-	{0},			/* Port B write */
+	{ppi0_pb_w},	/* Port B write */
 	{ppi0_pc_w},	/* Port C write */
 };
 
