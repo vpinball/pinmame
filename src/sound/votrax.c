@@ -268,6 +268,11 @@ void PrepareVoiceData(int nextPhoneme, int nextIntonation)
 		}
 
 	}
+	else {
+		// the next one is of the same type as the previous one; use the values to prevent a "click noise"
+		iNextRemainingSamples = votraxsc01_locals.iRemainingSamples;
+		pNextPos = votraxsc01_locals.pActPos;
+	}
 
 	for (i=0; i<dwCount; i++)
 	{
