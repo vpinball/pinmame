@@ -23,7 +23,7 @@ Bugs Fixed
 ----------
 -Fixed Terminator 2 Knocker Sound Always Playing
 -Fixed Coin Door buttons for games using Pre-Whitestar System Portals Menu
--Fixed Chime support for System 3 Games, Hot Tip & Lucky Seven
+-Fixed Chime support for System 3 Games Hot Tip & Lucky Seven
  [Steve Ellenoff]
 
 -Corrected some s11 custom display layouts.
@@ -32,9 +32,11 @@ Bugs Fixed
 -Added 6th switch column to Bally -35 (switches 41-48)
 -Fixed dips 17-24 in Bally -35 and Stern MPUx00
 -Fixed sound board communication for Squawk'n'Talk board (i.e. Xenon etc now works)
+-Got Pinmame32 working again!
  [Martin Adrian]
 
 -Dip switches working now on Gottlieb games
+-Sped up System80 emulation by 1000 percent or so by rewriting the RIOT timers!
  [Tom Haukap]
 
 -Corrected Grand Lizard to use the working romset
@@ -42,7 +44,7 @@ Bugs Fixed
 -Changed several MAME error messages to say PinMAME instead
 -Changed version number to say PinMAME version instead of MAME version
 -Removed "sound not emulated yet" error message from games with only chimes
- (There is no sound to emulate)
+ (since there is no sound to emulate)
  [Gerrit Volkenborn]
 
 
@@ -61,7 +63,6 @@ New Features
 -Added Stereo Sound support for pre-BSMT Data East games. (still not fully emulated, but better than previous mono output).
 -Added support for Sound Roms for remaining Data East/Sega/Stern(Post 1998) Games.
 -Added support for Gottlieb System 3 games.
--Added sound support for Gottlieb System 80b games.
  [Steve Ellenoff]
 
 -New option to set the intensity of segments when they are off.
@@ -79,8 +80,9 @@ New Features
 -Added Pennant Fever to S9 games (sound not working)
 -Added Strike Master to WPC games (no sound)
 -Added a lot of clones for existing WPC/DataEast/Sega/new Stern games!
--Update several custom display layouts.
+-Updated several custom display layouts.
  [Gerrit Volkenborn]
+ 
 
 Version 1.0 Beta 2   (September 28, 2001)
 -----------------------------------------
