@@ -8,11 +8,7 @@
 /* NO OUTPUT */
 
 static struct core_dispLayout se_dmd128x32[] = {
-  {0,0, 32,128, CORE_DMD, dedmd32_update}, {0}
-};
-static struct core_dispLayout se_dmd128x32mini[] = {
-  { 0,0, 32,128, CORE_DMD, dedmd32_update},
-  {34,10, 7, 15, CORE_DMD, seminidmd_update}, {0}
+  {0,0, 32,128, CORE_DMD, (void *)dedmd32_update}, {0}
 };
 
 #define INITGAME(name, gen, disp, hw) \
@@ -340,7 +336,12 @@ CORE_GAMEDEFNV(shrkysht,"Sharkey's Shootout",2000,"Stern",de_mSES1,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / High Roller Casino (3.0)
 /-------------------------------------------------------------------*/
-INITGAME(hirolcas,GEN_WS,se_dmd128x32,0)
+static struct core_dispLayout dispHRC[] = {
+  DISP_SEG_IMPORT(se_dmd128x32),
+  {34,10, 7, 15, CORE_DMD, (void *)seminidmd1_update}, {0}
+};
+
+INITGAME(hirolcas,GEN_WS,dispHRC,SE_MINIDMD)
 SE128_ROMSTART(hirolcas,"hrccpu.300",0x0d1117fa)
 DE_DMD32ROM8x(      "hrcdispa.300",0x099ccaf0)
 DE2S_SOUNDROM18888("hrcu7.dat"   ,0xc41f91a7,
@@ -403,7 +404,11 @@ CORE_CLONEDEFNV(austin2,austin,"Austin Powers (2.0)",2001,"Stern",de_mSES2,GAME_
 /*-------------------------------------------------------------------
 / Monopoly (3.03)
 /-------------------------------------------------------------------*/
-INITGAME(monopoly,GEN_WS,se_dmd128x32mini,SE_MINIDMD)
+static struct core_dispLayout dispMonopoly[] = {
+  DISP_SEG_IMPORT(se_dmd128x32),
+  {34,10, 7, 15, CORE_DMD, (void *)seminidmd2_update}, {0}
+};
+INITGAME(monopoly,GEN_WS,dispMonopoly,SE_MINIDMD)
 SE128_ROMSTART(monopoly,"moncpu.303",0x4a66c9e4)
 DE_DMD32ROM8x(        "mondsp-a.301",0xc4e2e032)
 DE2S_SOUNDROM1888(     "mnsndu7.100",0x400442e7,
@@ -493,7 +498,11 @@ CORE_CLONEDEFNV(playboye,playboys,"Playboy (Spain)",2002,"Stern",de_mSES2,GAME_N
 /*-------------------------------------------------------------------
 / Roller Coaster Tycoon (4.00)
 /-------------------------------------------------------------------*/
-INITGAME(rctycn,GEN_WS,se_dmd128x32,0)
+static struct core_dispLayout dispRCT[] = {
+  DISP_SEG_IMPORT(se_dmd128x32),
+  {34,10, 5,21, CORE_DMD, (void *)seminidmd3_update}, {0}
+};
+INITGAME(rctycn, GEN_WS, dispRCT, SE_MINIDMD)
 SE128_ROMSTART(rctycn, "rctcpu.400",0x4691de23)
 DE_DMD32ROM8x(       "rctdsp-a.400",0xd128a8fa)
 DE2S_SOUNDROM1888(    "rcsndu7.100",0xe6cde9b1,
