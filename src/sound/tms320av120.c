@@ -339,7 +339,6 @@ void Layer12Synthesis(  int num,
    // D is 3.12, V is 6.9, want 16 bit output
    nextD = D;
    for(j=0;j<32;j++) {
-//      int i;
       long sample = 0; // 8.16
       for(i=0;i<16;i+=2) {
          sample += (*nextD++ * V[i][j]) >> 8;
@@ -771,6 +770,14 @@ static void tms320av120_data_write(struct TMS320AV120Chip *chip, data8_t data)
 void TMS320AV120_set_mute(int chipnum, int state)
 {
 	tms320av120[chipnum].mute = state;
+}
+
+/**********************************************************************************************
+     TMS320AV120_reset -- Resets the chip
+***********************************************************************************************/
+void TMS320AV120_reset(int chipnum)
+{
+	//Todo: put reset code here..
 }
 
 /**********************************************************************************************
