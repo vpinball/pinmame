@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -27,18 +27,18 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE 
 BEGIN
     "#include ""afxres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE 
 BEGIN
     "\r\n"
     "\0"
@@ -47,15 +47,14 @@ END
 #endif    // APSTUDIO_INVOKED
 
 
-#ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,4,0,0
- PRODUCTVERSION 1,4,0,0
+ FILEVERSION 1,41,0,0
+ PRODUCTVERSION 1,41,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -70,18 +69,13 @@ BEGIN
     BEGIN
         BLOCK "040704b0"
         BEGIN
-            VALUE "Comments", "\0"
-            VALUE "CompanyName", "\0"
-            VALUE "FileDescription", "InstallVPinMAME\0"
-            VALUE "FileVersion", "1.4\0"
-            VALUE "InternalName", "InstallVPinMAME\0"
-            VALUE "LegalCopyright", "Copyright © 2001-02 Steve Ellenoff, Tom Haukap, Martin Adrian, Gerrit Volkenborn\0"
-            VALUE "LegalTrademarks", "\0"
-            VALUE "OriginalFilename", "InstallVPinMAME.exe\0"
-            VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "Visual PinMAME\0"
-            VALUE "ProductVersion", "1.4\0"
-            VALUE "SpecialBuild", "\0"
+            VALUE "FileDescription", "InstallVPinMAME"
+            VALUE "FileVersion", "1.41"
+            VALUE "InternalName", "InstallVPinMAME"
+            VALUE "LegalCopyright", "Copyright © 2001-03 Steve Ellenoff, Tom Haukap, Martin Adrian, Gerrit Volkenborn"
+            VALUE "OriginalFilename", "InstallVPinMAME.exe"
+            VALUE "ProductName", "Visual PinMAME"
+            VALUE "ProductVersion", "1.41"
         END
     END
     BLOCK "VarFileInfo"
@@ -89,8 +83,6 @@ BEGIN
         VALUE "Translation", 0x407, 1200
     END
 END
-
-#endif    // !_MAC
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -100,15 +92,15 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_MAIN                ICON    DISCARDABLE     "Res\\InstallVPinMAME.ico"
+IDI_MAIN                ICON                    "Res\\InstallVPinMAME.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
 //
 
-IDD_MAINDLG DIALOG DISCARDABLE  0, 0, 340, 233
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_MAINDLG DIALOG  0, 0, 340, 233
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "VPinMAME Installation program (Version %s)"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -139,8 +131,8 @@ BEGIN
     LTEXT           "Ends this program.",IDC_STATIC,89,211,244,9
 END
 
-IDD_TESTDLG DIALOG DISCARDABLE  0, 0, 271, 202
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_TESTDLG DIALOG  0, 0, 271, 202
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Test the installation; start a game"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -166,7 +158,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
+GUIDELINES DESIGNINFO 
 BEGIN
     IDD_MAINDLG, DIALOG
     BEGIN
@@ -192,7 +184,7 @@ END
 // String Table
 //
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_TITLE               "Visual PinMAME Installer (Version %s)"
 END
