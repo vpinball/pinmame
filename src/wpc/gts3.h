@@ -87,8 +87,8 @@
 
 #define GTS3_COMINPORT       CORE_COREINPORT
 
-#define GTS3_SOLSMOOTH       4  /* Smooth the Solenoids over this numer of VBLANKS */
-#define GTS3_LAMPSMOOTH      60 /* Smooth the lamps over this number of VBLANKS */
+#define GTS3_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
+#define GTS3_LAMPSMOOTH      6 /* Smooth the lamps over this number of VBLANKS */
 #define GTS3_DISPLAYSMOOTH   1 /* Smooth the display over this number of VBLANKS */
 
 /*-- To access C-side multiplexed solenoid/flasher --*/
