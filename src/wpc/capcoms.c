@@ -27,10 +27,11 @@
 //Remove this flag to test the real game sending data (otherwise, we simply feed data from the roms till we hit the end)
 //#define TEST_FROM_ROM
 
-//Comment out to remove U16 Test bypass..
+//Comment out to remove Test bypass..
 #define TEST_BYPASS
 
 /*Declarations*/
+WRITE_HANDLER(capcoms_sndCmd_w);
 static void capcoms_init(struct sndbrdData *brdData);
 static void cap_bof(int chipnum,int state);
 static void cap_sreq(int chipnum,int state);
@@ -54,7 +55,7 @@ static struct TMS320AV120interface capcoms_TMS320AV120Int2 = {
 
 /* Sound board */
 const struct sndbrdIntf capcomsIntf = {
-	"TMS320AV120", capcoms_init, NULL, NULL, NULL, NULL, NULL, NULL, NULL, SNDBRD_NODATASYNC
+	"TMS320AV120", capcoms_init, NULL, NULL, capcoms_sndCmd_w, NULL, NULL, NULL, NULL, SNDBRD_NODATASYNC
    //"TMS320AV120", capcoms_init, NULL, NULL, alvg_sndCmd_w, alvgs_data_w, NULL, alvgs_ctrl_w, alvgs_ctrl_r, SNDBRD_NODATASYNC
 };
 
@@ -68,7 +69,9 @@ static struct {
   int bof_line[2];		//Track status of bof line for each tms chip
   int sreq_line[2];		//Track status of sreq line for each tms chip
   int cbof_line[2];		//Clear BOF Line (8752 controlled)
+  int cts;				//Clear to send (If 1, cpu will not send data)
   UINT8 from_8752;		//Data from the 8752
+  UINT8 to_8752;		//Data to the 8752
 #ifdef TEST_FROM_ROM
   int curr[2];			//Current position we've read from the rom
 #endif
@@ -88,36 +91,67 @@ static struct {
   int nextram;		//Which position in ram to store next
 } x9241;
 
+void set_cts_line_to_8752(int data)
+{
+	locals.cts = data;
+	printf("setting cts = %x\n",data);
+}
+
+void send_data_to_8752(int data)
+{
+	locals.to_8752 = data;
+	//Force the RX Line Callback
+	cpu_set_irq_line(locals.brdData.cpuNo, I8051_RX_LINE, ASSERT_LINE);
+}
+
+extern void send_data_to_68306(int data);
+
 //Data From 8752 (Transmitted from 8752 Serial UART TX line)
 void data_from_8752(int data)
 {
+	static int eat=0;
 	locals.from_8752 = data;
-//	printf("data from 8751 = %x\n",data);
-
-//	//Send the data back in!
-//	cpu_set_irq_line(locals.brdData.cpuNo, I8051_RX_LINE, ASSERT_LINE);
+#if 0
+	if(eat++<6) {
+		printf("eating command %x\n",data);
+		return;
+	}
+	else
+		eat = 6;
+#endif
+	send_data_to_68306(data);
 }
 
 //Data To 8752 (Transmitted To 8752 Serial UART RX line)
 int data_to_8752(void)
 {
-	int data = locals.from_8752+1;//0xff;
-//	printf("data to 8751 = %x\n",data);
+	int data = locals.to_8752;
 	return data;
 }
 
 //Track state of BOF 
 void cap_bof(int chipnum,int state)
 {
+	static int last[2] = {0,0};
+	
 	//Store the state..
 	locals.bof_line[chipnum]=state;
+	
 	//If line is lo - trigger the interrupt, otherwise clear it
+
+	//Ignore every 5th transition of low->hi (NO IDEA WHY THIS WORKS WELL FOR MUSIC, BUT NOT QUITE RIGHT FOR SOUNDS
+	if(!state)
+		last[chipnum]++;
+	if(last[chipnum] == 5) {
+		last[chipnum] = 0;
+		return;
+	}
 	if(chipnum)
 		cpu_set_irq_line(locals.brdData.cpuNo, I8051_INT1_LINE, state?CLEAR_LINE:ASSERT_LINE);
 	else
 		cpu_set_irq_line(locals.brdData.cpuNo, I8051_INT0_LINE, state?CLEAR_LINE:ASSERT_LINE);
 	LOG(("MPG#%d: BOF Set to %d\n",chipnum,state));
-//	printf("MPG#%d: BOF Set to %d\n",chipnum,state);
+	//printf("MPG#%d: BOF Set to %d\n",chipnum,state);
 }
 
 //Track state of SREQ
@@ -226,14 +260,14 @@ static READ_HANDLER(port_r)
 			P1.0    (O) = LED
 			P1.1    (X) = NC
 			P1.2    (I) = /CTS = CLEAR TO SEND   - From Main CPU(Active low)
-			P1.3    (I) = /RTS = REQEUST TO SEND - From Main CPU(Active low)
+			P1.3    (O) = /RTS = REQEUST TO SEND - To Main CPU(Active low)
 			P1.4    (I) = SCL = U10 - Pin 14 - EPOT CLOCK			(Not a mistake, port used for both I/O)
 			P1.5    (I) = SDA = U10 - Pin  9 - EPOT SERIAL DATA		(Not a mistake, port used for both I/O)
 			P1.6    (O) = /CBOF1 = CLEAR BOF1 IRQ
 			P1.7    (O) = /CBOF2 = CLEAR BOF2 IRQ */
 		case 1:
-			//Todo: return cts/rts lines..
 			//Todo: return scl/sda lines..
+			data |= (locals.cts)<<2;
 			LOG(("%4x:port read @ %x data = %x\n",activecpu_get_pc(),offset,data));
 			return data;
 		/*PORT 3:
@@ -536,6 +570,11 @@ static void capcoms_init(struct sndbrdData *brdData) {
   /*-- start the timer --*/
   timer_adjust(locals.buffTimer, 0, 0, TIME_IN_HZ(30));		// Send 30 Frames per second ( 32Khz sample rate ~ 27.8 Frames per second)
 #endif
+}
+
+WRITE_HANDLER(capcoms_sndCmd_w)
+{
+	send_data_to_8752(data);
 }
 
 //Code to feed data from the ROMS directly to the TMS chips for testing
