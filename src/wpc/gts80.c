@@ -22,6 +22,7 @@
 
 #define GTS80_VBLANKFREQ      60 /* VBLANK frequency */
 
+#define GTS80_CPU		0
 #define GTS80S_SCPU		1
 #define GTS80SS_SCPU	1
 
