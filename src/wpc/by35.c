@@ -35,7 +35,7 @@
 
 static struct {
   int a0, a1, b1, ca20, ca21, cb20, cb21;
-  int bcd[7], lastbcd;
+  int bcd[8], lastbcd;
   const int *bcd2seg;
   int lampadr1, lampadr2;
   UINT32 solenoids;
@@ -74,6 +74,7 @@ static void by35_lampStrobe(int board, int lampadr) {
   }
 }
 
+/* PIA0:A-W  Control what is read from PIA0:B */
 static WRITE_HANDLER(pia0a_w) {
   if (!locals.ca20) {
     int bcdLoad = locals.lastbcd & ~data & 0x0f;
@@ -81,7 +82,7 @@ static WRITE_HANDLER(pia0a_w) {
 
     for (ii = 0; bcdLoad; ii++, bcdLoad>>=1)
       if (bcdLoad & 0x01) locals.bcd[ii] = data>>4;
-    locals.lastbcd = (locals.lastbcd & 0x10) | (data & 0x0f);
+    locals.lastbcd = (locals.lastbcd & 0xf0) | (data & 0x0f);
   }
   locals.a0 = data;
   by35_lampStrobe(0,locals.lampadr1);
@@ -94,17 +95,29 @@ static WRITE_HANDLER(pia1a_w) {
   if (locals.hw & BY35HW_SOUNDE) sndbrd_0_ctrl_w(1, (locals.cb21 ? 1 : 0) | (data & 0x02));
 
   if (!locals.ca20) {
-    if (locals.hw & BY35HW_INVDISP4) {
-      if (~(locals.lastbcd>>4) & data & 0x01) { // positive edge
+    if (core_gameData->gen & GEN_BOWLING) {
+      if ((locals.lastbcd & 0xf0) == (data & 0xf0)) {
+        int bcdLoad = data >> 4;
+        int ii;
+
+        for (ii = 0; bcdLoad; ii++, bcdLoad>>=1)
+          if (bcdLoad & 0x01) locals.bcd[4+ii] = locals.a0>>4;
+        by35_dispStrobe(0xf0);
+      }
+      locals.lastbcd = (locals.lastbcd & 0x0f) | (data & 0xf0);
+    } else {
+      if (locals.hw & BY35HW_INVDISP4) {
+        if (~(locals.lastbcd>>4) & data & 0x01) { // positive edge
+          locals.bcd[4] = locals.a0>>4;
+          by35_dispStrobe(0x10);
+        }
+      }
+      else if ((locals.lastbcd>>4) & ~data & 0x01) { // negative edge
         locals.bcd[4] = locals.a0>>4;
         by35_dispStrobe(0x10);
       }
+      locals.lastbcd = (locals.lastbcd & 0x0f) | ((data & 0x01)<<4);
     }
-    else if ((locals.lastbcd>>4) & ~data & 0x01) { // negative edge
-      locals.bcd[4] = locals.a0>>4;
-      by35_dispStrobe(0x10);
-    }
-    locals.lastbcd = (locals.lastbcd & 0x0f) | ((data & 0x01)<<4);
   }
   locals.a1 = data;
 }
@@ -140,7 +153,7 @@ static WRITE_HANDLER(pia1ca2_w) {
 /* PIA0:CA2-W Display Strobe */
 static WRITE_HANDLER(pia0ca2_w) {
   locals.ca20 = data;
-  if (data) by35_dispStrobe(0x1f);
+  if (data) by35_dispStrobe(0x0f);
 }
 
 /* PIA1:B-W Solenoid/Sound output */
@@ -231,7 +244,7 @@ static INTERRUPT_GEN(by35_vblank) {
 
 static SWITCH_UPDATE(by35) {
   if (inports) {
-    if (core_gameData->gen & (GEN_BY17|GEN_BY35|GEN_STMPU100|GEN_ASTRO)) {
+    if (core_gameData->gen & (GEN_BY17|GEN_BY35|GEN_STMPU100)) {
       CORE_SETKEYSW(inports[BY35_COMINPORT],   0x07,0);
       CORE_SETKEYSW(inports[BY35_COMINPORT],   0x60,1);
       CORE_SETKEYSW(inports[BY35_COMINPORT]>>8,0x87,2);
@@ -249,6 +262,17 @@ static SWITCH_UPDATE(by35) {
     else if (core_gameData->gen & GEN_BYPROTO) {
       CORE_SETKEYSW(inports[BY35_COMINPORT]>>8,0x01,3);
       CORE_SETKEYSW(inports[BY35_COMINPORT],   0x1f,4);
+    }
+    else if (core_gameData->gen & GEN_ASTRO) {
+      CORE_SETKEYSW(inports[BY35_COMINPORT],   0x07,0);
+      CORE_SETKEYSW(inports[BY35_COMINPORT]>>8,0x03,1);
+      CORE_SETKEYSW((inports[BY35_COMINPORT]&0x20)<<2,0x80,5);
+    }
+    else if (core_gameData->gen & GEN_BOWLING) {
+      CORE_SETKEYSW(inports[BY35_COMINPORT],   0x07,0);
+      CORE_SETKEYSW(inports[BY35_COMINPORT],   0x20,5);
+      CORE_SETKEYSW(inports[BY35_COMINPORT]>>7,0x0e,5);
+      CORE_SETKEYSW(inports[BY35_COMINPORT]>>15,0x01,5);
     }
   }
   if ((core_gameData->gen & GEN_BYPROTO) == 0) {
@@ -414,26 +438,27 @@ static MACHINE_INIT(by35) {
     install_mem_write_handler(0,0x0200, 0x02ff, by35_CMOS_w);
     locals.bcd2seg = core_bcd2seg;
   }
-  else if (core_gameData->gen & GEN_ASTRO) { // Bally hardware?
-    locals.hw = BY35HW_INVDISP4|BY35HW_DIP4;
-    install_mem_write_handler(0,0x0200, 0x02ff, by35_CMOS_w);
-    locals.bcd2seg = core_bcd2seg;
-  }
   else if (core_gameData->gen & GEN_BY35) {
     locals.hw = BY35HW_SOUNDE|BY35HW_DIP4;
     install_mem_write_handler(0,0x0200, 0x02ff, by35_CMOS_w);
     locals.bcd2seg = core_bcd2seg;
   }
-  else if (core_gameData->gen & (GEN_STMPU100|GEN_STMPU200)) {
+  else if (core_gameData->gen & (GEN_STMPU100|GEN_STMPU200|GEN_ASTRO)) {
     locals.hw = BY35HW_INVDISP4|BY35HW_DIP4;
     locals.bcd2seg = core_bcd2seg;
     install_mem_write_handler(0,0x00a0, 0x00a7, e_sol1_w);
-    install_mem_write_handler(0,0x00a0, 0x00a7, e_sol2_w);
+    install_mem_write_handler(0,0x00c0, 0x00c0, e_sol2_w);
   }
   else if (core_gameData->gen & GEN_HNK) {
     locals.hw = BY35HW_REVSW|BY35HW_SCTRL|BY35HW_INVDISP4;
     install_mem_write_handler(0,0x0200, 0x02ff, by35_CMOS_w);
     locals.bcd2seg = core_bcd2seg9;
+  }
+  else if (core_gameData->gen & GEN_BOWLING) {
+    locals.hw = BY35HW_DIP4;
+    locals.bcd2seg = core_bcd2seg;
+    install_mem_write_handler(0,0x00a0, 0x00a7, e_sol1_w);
+    install_mem_write_handler(0,0x00c0, 0x00c0, e_sol2_w);
   }
 }
 

@@ -354,13 +354,14 @@
 #define HNK_MEMREG_SCPU	REGION_CPU2
 
 /*-- Main CPU regions and ROM --*/
-#define ASTRO_ROMSTART48(name,n1,chk1,n2,chk2) \
+#define ASTRO_ROMSTART88(name,n1,chk1,n2,chk2) \
   ROM_START(name) \
     NORMALREGION(0x10000, BY35_CPUREGION) \
-      ROM_LOAD( n1, 0x1400, 0x0400, chk1) \
-        ROM_RELOAD( 0x1c00, 0x0400) \
-      ROM_LOAD( n2, 0x1000, 0x0400, chk2) \
-        ROM_RELOAD( 0x1800, 0x0400)
+      ROM_LOAD( n1, 0x1000, 0x0800, chk1) \
+        ROM_RELOAD( 0x5000, 0x0800) \
+      ROM_LOAD( n2, 0x1800, 0x0800, chk2) \
+        ROM_RELOAD( 0x5800, 0x0800) \
+        ROM_RELOAD( 0xf800, 0x0800) \
 
 #define BYPROTO_ROMSTART(name,n1,chk1,n2,chk2,n3,chk3,n4,chk4,n5,chk5,n6,chk6) \
   ROM_START(name) \
@@ -471,6 +472,7 @@ extern MACHINE_DRIVER_EXTERN(hnk);
 #define by35_mBY35_81S  by35_61S
 #define by35_mBY35_56S  by35_56S // XENON
 #define by35_mBY35_45S  by35_45S
+#define by35_mBowling   by35
 #define by35_mAstro     by35
 #define by35_mHNK       hnk
 #define by35_mST100     by35
