@@ -3,6 +3,7 @@
 #include "machine/6532riot.h"
 #include "core.h"
 
+#include "gts80.h"
 #include "gts80ss.h"
 
 static int GTS80SS_CPUNo;
@@ -11,7 +12,6 @@ static int GTS80SS_CPUNo;
 
 struct {
 	int	NMIState;
-	int soundInput;
 
 	int stream;
 	INT16  buffer[BUFFER_SIZE+1];
@@ -28,41 +28,30 @@ void GTS80SS_irq(int state) {
 
 void GTS80SS_nmi(int state)
 {
-	logerror("NMI: %i/n\n",state);
-	cpu_set_irq_line(GTS80SS_CPUNo, M6502_INT_NMI, state? ASSERT_LINE:CLEAR_LINE);
+	if ( !GTS80SS_locals.NMIState && state ) {
+		logerror("NMI: %i/n\n",state);
+		cpu_set_irq_line(GTS80SS_CPUNo, M6502_INT_NMI, PULSE_LINE);
+	}
 	GTS80SS_locals.NMIState = state;
-	if ( state ) 
-		GTS80SS_locals.timer = timer_set(TIME_IN_USEC(100),0,GTS80SS_nmi);
-	else
-		GTS80SS_locals.timer = 0;
 }
 
-UINT8 riot_3_ram[256];
+UINT8 RIOT6532_3_RAM[256];
 
-READ_HANDLER( riot_3_ram_r )
+READ_HANDLER( riot6532_3_ram_r )
 {
-    return riot_3_ram[offset&0x7f];
+    return RIOT6532_3_RAM[offset&0x7f];
 }
 
-WRITE_HANDLER( riot_3_ram_w )
+WRITE_HANDLER( riot6532_3_ram_w )
 {
-	riot_3_ram[offset&0x7f]=data;
+	RIOT6532_3_RAM[offset&0x7f] = data;
 }
 
-
-/* input */
-READ_HANDLER(riot3a_r)  {
-	logerror("riot3a_r\n");
-	return (GTS80SS_locals.soundInput&0x0f?0x80:0x00) | 0x40 | GTS80SS_locals.soundInput;
-}
 WRITE_HANDLER(riot3a_w) { logerror("riot3a_w: 0x%02x\n", data);}
-
 
 /* Switch settings, test switch and NMI */
 READ_HANDLER(riot3b_r)  {
-	if ( GTS80SS_locals.timer )
-		logerror("riot3b_r\n");
-	return (GTS80SS_locals.NMIState?0x80:0x00) | ((0x22)^0x7f);
+	return (GTS80SS_locals.NMIState?0x00:0x80) | ((0x22)^0x7f);
 }
 
 WRITE_HANDLER(riot3b_w) { logerror("riot3b_w: 0x%02x\n", data);}
@@ -81,6 +70,36 @@ WRITE_HANDLER(da2_latch_w) {
 /*	logerror("da2_w: 0x%02x\n", data); */
 }
 
+/* expansion board */
+READ_HANDLER(ext_board_1_r) {
+	logerror("ext_board_1_r\n"); 
+	return 0xff;
+}
+
+WRITE_HANDLER(ext_board_1_w) {
+	logerror("ext_board_1_w: 0x%02x\n", data);
+}
+
+
+READ_HANDLER(ext_board_2_r) {
+	logerror("ext_board_2_r\n"); 
+	return 0xff;
+}
+
+WRITE_HANDLER(ext_board_2_w) {
+	logerror("ext_board_2_w: 0x%02x\n", data);
+}
+
+
+READ_HANDLER(ext_board_3_r) {
+	logerror("ext_board_3_r\n"); 
+	return 0xff;
+}
+
+WRITE_HANDLER(ext_board_3_w) {
+	logerror("ext_board_3_w: 0x%02x\n", data);
+}
+
 static const char *PhonemeTable[65] =
 {
  "EH3","EH2","EH1","PA0","DT" ,"A1" ,"A2" ,"ZH",
@@ -93,6 +112,13 @@ static const char *PhonemeTable[65] =
  "THV","TH" ,"ER" ,"EH" ,"E1" ,"AW" ,"PA1","STOP",
  0
 };
+
+void GTS80SS_speachtimeout(int state)
+{
+	logerror("speack timer timeout\n");
+	GTS80SS_locals.timer = 0;
+	GTS80SS_nmi(1);
+}
 
 /* voice synt latch */
 WRITE_HANDLER(vs_latch_w) {
@@ -115,51 +141,61 @@ WRITE_HANDLER(vs_latch_w) {
 				else
 					strcat(buf,PhonemeTable[queue[i]]);
 			}
-
 			usrintf_showmessage(buf);
+			GTS80SS_nmi(1);
 		}
 		pos = 0;
 	}
-	if ( !GTS80SS_locals.timer )
-		GTS80SS_locals.timer = timer_set(TIME_IN_USEC(50000),1,GTS80SS_nmi);
+	else {
+		GTS80SS_nmi(0);
+		if ( GTS80SS_locals.timer ) {
+			timer_remove(GTS80SS_locals.timer);
+			GTS80SS_locals.timer = 0;
+		}
+		GTS80SS_locals.timer = timer_set(TIME_IN_USEC(5000),1,GTS80SS_speachtimeout);
+	}
 }
+
+struct riot6532_interface GTS80SS_riot6532_intf = {
+ /* 6532RIOT 3: Sound/Speak board Chip U15 */
+ /* in  : A/B, */ NULL, riot3b_r,
+ /* out : A/B, */ riot3a_w, riot3b_w,
+ /* irq :      */ GTS80SS_irq
+};
 
 /*--------------
 /  Memory map
 /---------------*/
 MEMORY_READ_START(GTS80SS_readmem)
-{ 0x0000, 0x01ff, riot_3_ram_r},
-{ 0x0200, 0x027f, riot_3_r},
-/*{ 0x4000, 0x4fff, ext_board_1_r},*/
-/*{ 0x5000, 0x5fff, ext_board_2_r},*/
-/*{ 0x6000, 0x6fff, ext_board_3_r},*/
+{ 0x0000, 0x01ff, riot6532_3_ram_r},
+{ 0x0200, 0x027f, riot6532_3_r},
+{ 0x4000, 0x4fff, ext_board_1_r},
+{ 0x5000, 0x5fff, ext_board_2_r},
+{ 0x6000, 0x6fff, ext_board_3_r},
 { 0x7000, 0x7fff, MRA_ROM},
-{ 0xf000, 0xffff, MRA_ROM},
+{ 0x8000, 0xffff, MRA_ROM},
 MEMORY_END
 
 MEMORY_WRITE_START(GTS80SS_writemem)
-{ 0x0000, 0x01ff, riot_3_ram_w},
-{ 0x0200, 0x027f, riot_3_w},
+{ 0x0000, 0x01ff, riot6532_3_ram_w},
+{ 0x0200, 0x027f, riot6532_3_w},
 { 0x1000, 0x1fff, da1_latch_w},
 { 0x2000, 0x2fff, vs_latch_w},
 { 0x3000, 0x3fff, da2_latch_w},
-/*{ 0x4000, 0x4fff, ext_board_1_w},*/
-/*{ 0x5000, 0x5fff, ext_board_2_w},*/
-/*{ 0x6000, 0x6fff, ext_board_3_w},*/
+{ 0x4000, 0x4fff, ext_board_1_w},
+{ 0x5000, 0x5fff, ext_board_2_w},
+{ 0x6000, 0x6fff, ext_board_3_w},
 { 0x7000, 0x7fff, MWA_ROM},
-{ 0xf000, 0xfdff, MWA_ROM},
+{ 0x8000, 0xfdff, MWA_ROM},
 { 0xff00, 0xffff, MWA_RAM},
 MEMORY_END
 
 void GTS80SS_sound_latch(int data)
 {
-	int old = GTS80SS_locals.soundInput;
-	GTS80SS_locals.soundInput = (data & 0x3f);
+	data = (data&0x3f);
 
-	if ( GTS80SS_locals.soundInput!=old ) {
-		logerror("sound_latch: 0x%02x\n", GTS80SS_locals.soundInput);
-		riot_set_input_a(3, (GTS80SS_locals.soundInput&0x3f) | (GTS80SS_locals.soundInput&0x0f?0x80:0x00));
-	}
+	logerror("sound_latch: 0x%02x\n", data);
+	riot6532_set_input_a(3, (data&0x0f?0x80:0x00) | 0x40 | data);
 }
 
 static void GTS80_ss_Update(int num, INT16 *buffer, int length)
@@ -195,15 +231,26 @@ static void GTS80_ss_Update(int num, INT16 *buffer, int length)
 /  init
 /---------------*/
 void GTS80SS_init(int num) {
+	int i;
 	GTS80SS_CPUNo = num;
 
 	memset(&GTS80SS_locals, 0x00, sizeof GTS80SS_locals);
-	riot_set_clock(3, Machine->drv->cpu[GTS80SS_CPUNo].cpu_clock);
+
+	/* init RAM */
+	memset(RIOT6532_3_RAM, 0x00, sizeof RIOT6532_3_RAM);
+	
+	/* init RIOT */
+    riot6532_config(3, &GTS80SS_riot6532_intf);
+	riot6532_set_clock(3, Machine->drv->cpu[GTS80SS_CPUNo].cpu_clock);
 
 	GTS80SS_locals.clock[0]  = 0;
 	GTS80SS_locals.buffer[0] = 0;
 	GTS80SS_locals.buf_pos   = 1;
 
+	for(i = 0; i<8; i++)
+		memcpy(memory_region(GTS80_MEMREG_SCPU1)+0x8000+0x1000*i, memory_region(GTS80_MEMREG_SCPU1)+0x7000, 0x1000);
+
+	GTS80SS_nmi(1);
 	GTS80SS_locals.stream = stream_init("SND DAC", 100, 11025, 0, GTS80_ss_Update); 
 }
 
