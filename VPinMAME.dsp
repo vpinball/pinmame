@@ -223,6 +223,14 @@ SOURCE=.\src\zlib\zlib.h
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\src\win32com\Alias.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\Alias.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\win32com\Controller.cpp
 # End Source File
 # Begin Source File

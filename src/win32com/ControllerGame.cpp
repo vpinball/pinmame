@@ -12,6 +12,7 @@ extern "C" {
 #include "audit.h"
 }
 
+#include "alias.h"
 #include <atlwin.h>
 
 
@@ -450,53 +451,9 @@ STDMETHODIMP CGame::ShowInfoDlg(int nShowOptions, long hParentWnd, int *pVal)
 
 	return S_OK;
 }
-#if MAMEVER >= 6800
-typedef char* tCrc;
-#else
-typedef int tCrc;
-#endif
 
-#ifdef TEST_NEW_STERN
-static const tCrc CRCSOFGAMESNOTSUPPORRTED[] = {0,0};
-#else
-static const tCrc CRCSOFGAMESNOTSUPPORRTED[] = {
-	// Austin Powers (1st sound rom, game roms 201, 300, 301, 302)
-	CRC(c1e33fee), CRC(a06b2b03), CRC(a06b2b03), CRC(a4ddcdca), CRC(2920b59b),
-
-	// Monopoly (1st sound rom, game roms 233, 251, 301, 303)
-	CRC(f9bc55e8), CRC(f20a5ca6), CRC(0645cfae), CRC(24978872), CRC(4a66c9e4),
-
-	// Playboy (1st sound rom, game roms 203, 300, 302, 303, 401, 500)
-	CRC(f5502fec), CRC(50eb01b0), CRC(d7e5bada), CRC(206285ed), CRC(6a6f6aab), CRC(cb2e2824), CRC(e4d924ae),
-
-	// Roller Coaster Tycoon (1st sound rom, game rom 400, 600, 701)
-	CRC(18ba20ec), CRC(4691de23), CRC(2ada30e5), CRC(e1fe89f6),
-
-	// The Simpsons Pinball Party (1st sound rom, game rom 204)
-	CRC(32efcdf6), CRC(5bc155f7),
-
-	// Terminator 3: Rise of the Machines (1st sound rom, game rom 200)
-	CRC(7f99e3af), CRC(b5cc4e24),
-
-	// end of the list
-	0
-};
-#endif
-
-STDMETHODIMP CGame::get_IsSupported(VARIANT_BOOL *pVal)
-{
-	if ( !pVal )
-		return S_FALSE;
-
-	*pVal = VARIANT_FALSE;
-
-	if ( !m_gamedrv )
-		return S_OK;
-	static const tCrc* pHelp = CRCSOFGAMESNOTSUPPORRTED;
-	while ( *pHelp ) {
-          if (RomInSet(m_gamedrv, *pHelp)) return S_OK;
-          pHelp++;
-	}
-	*pVal = VARIANT_TRUE;
-	return S_OK;
+STDMETHODIMP CGame::get_IsSupported(VARIANT_BOOL *pVal) {
+  if (!pVal) return S_FALSE;
+  *pVal = ((!m_gamedrv) || checkGameNotSupported(m_gamedrv)) ? VARIANT_FALSE : VARIANT_TRUE;
+  return S_OK;
 }
