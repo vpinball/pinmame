@@ -431,7 +431,7 @@ void gts80ss_init(struct sndbrdData *brdData) {
 	for(i = 0; i<8; i++)
 		memcpy(memory_region(GTS80SS_locals.boardData.cpuNo)+0x8000+0x1000*i, memory_region(GTS80SS_locals.boardData.cpuNo)+0x7000, 0x1000);
 
-	GTS80SS_locals.stream = stream_init("SND DAC", 100, 11025, 0, GTS80_ss_Update);
+	GTS80SS_locals.stream = stream_init("SND DAC", 50, 11025, 0, GTS80_ss_Update);
 	set_RC_filter(GTS80SS_locals.stream, 270000, 15000, 0, 10000);
 }
 
@@ -466,7 +466,7 @@ struct CustomSound_interface GTS80SS_customsoundinterface = {
 
 struct VOTRAXSC01interface GTS80SS_votrax_sc01_interface = {
 	1,						/* 1 chip */
-	{ 100 },				/* master volume */
+	{ 50 },					/* master volume */
 	{ 7000 },				/* dynamically changing this is currently not supported */
 	{ &GTS80SS_nmi }		/* set NMI when busy signal get's low */
 };
