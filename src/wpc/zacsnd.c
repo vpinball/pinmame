@@ -420,9 +420,6 @@ static void sns_5220Irq(int state) { pia_set_input_cb1(SNS_PIA1, !state); }
 
 // TECHNOPLAY sound board - Pretty much stole the Gottlieb System 80b Generation 1 sound board, plus added TMS7000
 
-//Uncomment if we in fact should use the 2nd 6502 cpu (meaning, we found the rom code for it)
-//#define USE_2ND_6502
-
 /*----------------
 /  Local varibles
 /-----------------*/
@@ -432,10 +429,8 @@ static struct {
   int    nmi_rate;			// Programmable NMI rate
   void   *nmi_timer;		// Timer for NMI (NOT USED ANYMORE?)
   int nmi_enable;			// GTS3 - Enable NMI triggered by Programmable Circuit
-#ifdef USE_2ND_6502
   UINT8  dac_volume;
   UINT8  dac_data;
-#endif
 } techno_locals;
 
 // Latch data for AY chips
@@ -461,7 +456,8 @@ static void nmi_callback(int param)
 
 	//If enabled, fire the NMI for the Y CPU
 	if(techno_locals.nmi_enable) {
-		cpu_boost_interleave(TIME_IN_USEC(10), TIME_IN_USEC(800));
+		//seems to have no effect!
+		//cpu_boost_interleave(TIME_IN_USEC(10), TIME_IN_USEC(800));
 		cpu_set_nmi_line(ZACSND_CPUA, PULSE_LINE);
 	}
 }
@@ -475,9 +471,7 @@ WRITE_HANDLER(techno_nmi_rate_w)
 //Fire the NMI for the 2nd 6502
 WRITE_HANDLER(techno_cause_dac_nmi_w)
 {
-#ifdef USE_2ND_6502
 	cpu_set_nmi_line(ZACSND_CPUB, PULSE_LINE);
-#endif
 }
 
 READ_HANDLER(techno_cause_dac_nmi_r)
@@ -489,16 +483,16 @@ READ_HANDLER(techno_cause_dac_nmi_r)
 //Latch a command into the Sound Latch and generate the IRQ interrupts
 WRITE_HANDLER(techno_sh_w)
 {
+	static int last=0;
 	soundlatch_w(offset,data);
-	cpu_set_irq_line(ZACSND_CPUA, 0, ASSERT_LINE);
-#ifdef USE_2ND_6502
-	cpu_set_irq_line(ZACSND_CPUB, 0, ASSERT_LINE);
-#endif
-	//Bit 6 if set, fires TMS IRQ 1
-	if(data & 0x40) {
+	cpu_set_irq_line(ZACSND_CPUA, 0, HOLD_LINE);
+	cpu_set_irq_line(ZACSND_CPUB, 0, HOLD_LINE);
+	//Bit 6 if set, fires TMS IRQ 1, only on risiging (or is it falling?) edge?
+	if((last&0x40) && (data ^ 0x40)) {
 		printf("TMS IRQ1\n");
-		cpu_set_irq_line(ZACSND_CPUB, TMS7000_IRQ1_LINE, ASSERT_LINE);
+		cpu_set_irq_line(ZACSND_CPUC, TMS7000_IRQ1_LINE, ASSERT_LINE);
 	}
+	last = data;
 }
 
 //Generation 1 Specific
@@ -578,24 +572,25 @@ void tsns_exit(int boardNo)
 
 static WRITE_HANDLER(tsns_data_w) {
   data ^= 0xff;	/*Data is inverted from main cpu*/
+  //Bit 7 is the strobe - so commands are sent 2x, once with strobe set, then again, with it cleared..
+  //Doesn't seem to matter much if we put this in or leave it out..
+  //if(data & 0x80)
+	//  return;
   printf("tsns_data_w = %x\n",data);
   techno_sh_w(0,data);
 }
 
 static READ_HANDLER(techno_snd_r)
 {
-	cpu_set_irq_line(ZACSND_CPUA, 0, CLEAR_LINE);
+//	cpu_set_irq_line(ZACSND_CPUA, 0, CLEAR_LINE);
 	return soundlatch_r(0);
 }
 
-#ifdef USE_2ND_6502
 static READ_HANDLER(techno_b_snd_r)
 {
-	cpu_set_irq_line(ZACSND_CPUB, 0, CLEAR_LINE);
+//	cpu_set_irq_line(ZACSND_CPUB, 0, CLEAR_LINE);
 	return soundlatch_r(0);
 }
-#endif
-
 
 //Read data command
 READ_HANDLER(tms_porta_r)
@@ -667,13 +662,12 @@ struct AY8910interface techno_ay8910Int = {
 	{ 0 },
 	{ 0 }
 };
-#ifdef USE_2ND_6502
+
 struct DACinterface techno_6502dacInt =
 {
   2,			/*2 Chips - but it seems we only access 1?*/
  {50,50}		/* Volume */
 };
-#endif
 
 struct DACinterface techno_7000dacInt =
 {
@@ -686,7 +680,7 @@ MEMORY_READ_START( m6502_readmem )
 	{ 0x0000, 0x03ff, MRA_RAM },
 	{ 0x6000, 0x6000, techno_sound_input_r },
 	{ 0xa800, 0xa800, techno_snd_r },
-	{ 0xc000, 0xffff, MRA_ROM },
+	{ 0xe000, 0xffff, MRA_ROM },
 MEMORY_END
 MEMORY_WRITE_START( m6502_writemem )
 	{ 0x0000, 0x03ff, MWA_RAM },
@@ -697,11 +691,9 @@ MEMORY_WRITE_START( m6502_writemem )
 	{ 0x8000, 0x8000, techno_ay8910_latch_w },
 	{ 0xa000, 0xa000, techno_nmi_rate_w },	   /* set Y-CPU NMI rate */
 	{ 0xb000, 0xb000, techno_cause_dac_nmi_w }, /*Trigger D-CPU NMI*/
-	{ 0xc000, 0xffff, MWA_ROM },
+	{ 0xe000, 0xffff, MWA_ROM },
 MEMORY_END
 
-//We don't have roms for this cpu, so we'll leave it out!
-#ifdef USE_2ND_6502
 //6502 #2 CPU
 MEMORY_READ_START( m6502_b_readmem )
 	{ 0x0000, 0x03ff, MRA_RAM },
@@ -713,7 +705,6 @@ MEMORY_WRITE_START( m6502_b_writemem )
 	{ 0x4000, 0x4001, DAC_0_data_w },	/*Not sure if this shouldn't use s80bs_dac_vol_w & s80bs_dac_data_w*/
 	{ 0xe000, 0xffff, MWA_ROM },
 MEMORY_END
-#endif
 
 static MEMORY_READ_START(tms_readmem)
   { 0x0000, 0x7fff, MRA_BANK1 },
@@ -722,7 +713,7 @@ MEMORY_END
 
 static MEMORY_WRITE_START(tms_writemem)
   { 0x0000, 0x7fff, MWA_ROM },
-  { 0x8000, 0xffff, DAC_0_data_w },
+  //{ 0x8000, 0xffff, DAC_1_data_w },		//not sure how to handle 2 different dac interfaces here
 MEMORY_END
 
 static PORT_READ_START(tms_readport)
@@ -745,16 +736,14 @@ MACHINE_DRIVER_START(techno)
   MDRV_SOUND_ADD(AY8910, techno_ay8910Int)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)		//don't remember what this is for, but gts80 uses it...
 
-#ifdef USE_2ND_6502
   MDRV_CPU_ADD(M6502, 2000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(m6502_b_readmem, m6502_b_writemem)
   MDRV_SOUND_ADD(DAC, techno_6502dacInt)
-#endif
 
   MDRV_CPU_ADD(TMS7000, 6000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(tms_readmem, tms_writemem)
   MDRV_CPU_PORTS(tms_readport, tms_writeport)
-  MDRV_SOUND_ADD(DAC, techno_7000dacInt)
+  //MDRV_SOUND_ADD(DAC, techno_7000dacInt)
 MACHINE_DRIVER_END
