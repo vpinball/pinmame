@@ -560,7 +560,7 @@ tryagain:
         {
             /* generate voiced samples here */
             if (pitch_count < sizeof(chirptable))
-                current_val = (chirptable[pitch_count] * current_energy) / 333;
+                current_val = (chirptable[pitch_count] * current_energy) / 300;
             else
                 current_val = 0x00;
         }
