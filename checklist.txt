@@ -6,6 +6,7 @@ Important steps to take before a release:
 - remove the DEBUG define in the makefile!
 - execute "make" to build pinmamew.
 - execute "make -f pinmame32.mak" to build pinmame32.
+- edit "src/version.c" for the correct version number
 - edit "src/win32com/VPinMAME.cpp" for the desired release date
 - edit "src/win32com/VPinMAME.rc" for the correct version number and build (MinDependency)
 - build VPinMAME.DLL
