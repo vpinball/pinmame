@@ -147,7 +147,7 @@ static core_tLCDLayout smmanDisp[] = {
   {4, 0,50,6,CORE_SEG7}, {4,14,42,6,CORE_SEG7},
   {6, 4,35,2,CORE_SEG7}, {6,10,38,2,CORE_SEG7}, {0}
 };
-INITGAME(smman,GEN_BY35,smmanDisp,FLIP_SW(FLIP_L),0,SNDBRD_BY32,3)
+INITGAME(smman,GEN_BY35,smmanDisp,FLIP_SW(FLIP_L),0,SNDBRD_BY32,0x81)
 BY35_ROMSTART888(smman,"742-20_1.716",0x33e55a75,
                        "742-18_2.716",0x5365d36c,
                        "720-30_6.716",0x4be8aab0)
@@ -474,7 +474,13 @@ CORE_GAMEDEFNV(fathom  ,"Fathom",1981,"Bally",by35_mBY35_61BS,0)
 /*--------------------------------
 / Medusa
 /-------------------------------*/
-INITGAME(medusa  ,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY61B,0)
+static core_tLCDLayout medusaDisp[] = {
+  {0, 0, 1,7,CORE_SEG7}, {0,16, 9,7,CORE_SEG7},
+  {2, 0,17,7,CORE_SEG7}, {2,16,25,7,CORE_SEG7},
+  {4, 4,35,2,CORE_SEG7}, {4,10,38,2,CORE_SEG7},
+  {4,16,42,2,CORE_SEG7}, {4,21,44,2,CORE_SEG7},{4,26,46,2,CORE_SEG7},{0}
+};
+INITGAME(medusa  ,GEN_BY35,medusaDisp,FLIP_SW(FLIP_L),8,SNDBRD_BY61B,0x10)
 BY35_ROMSTARTx00(medusa,"845-16_2.732",0xb0fbd1ac,
                         "720-53_6.732",0xc2e92f80)
 BY61_SOUNDROMx008(      "845-01_3.532",0x32200e02,
@@ -591,7 +597,7 @@ static core_tLCDLayout m_mpacDisp[] = {
 {0}
 };
 
-INITGAME(m_mpac,GEN_BY35,m_mpacDisp,FLIP_SWNO(33,37),8,SNDBRD_BY61,2)
+INITGAME(m_mpac,GEN_BY35,m_mpacDisp,FLIP_SWNO(33,37),8,SNDBRD_BY61,0x80)
 BY35_ROMSTARTx00(m_mpac,"872-04_2.732",0x5e542882,
                         "720-53_6.732",0xc2e92f80)
 BY61_SOUNDROMxx00(      "872-01_4.532",0xd21ce16d,
