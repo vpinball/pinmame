@@ -43,6 +43,8 @@
 #define GEN_BY6803A     U64(0x00020000000)
 #define GEN_BOWLING     U64(0x00040000000) /* Big Ball Bowling, Stern hardware */
 
+#define GEN_ALVG        U64(0x00080000000) /* Alving G Hardware */
+
 #define GEN_GTS80       U64(0x00200000000) /* GTS80 */
 #define GEN_GTS80A      GEN_GTS80
 #define GEN_GTS80B      U64(0x00400000000) /* GTS80B */
