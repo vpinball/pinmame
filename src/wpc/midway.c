@@ -51,16 +51,14 @@ static INTERRUPT_GEN(MIDWAY_nmihi) {
 	cpu_set_nmi_line(MIDWAY_CPU, PULSE_LINE);
 }
 
+/*-------------------------------
+/  copy local data to interface
+/--------------------------------*/
 static INTERRUPT_GEN(MIDWAY_vblank) {
-  /*-------------------------------
-  /  copy local data to interface
-  /--------------------------------*/
-
   locals.vblankCount += 1;
   /*-- lamps --*/
   if ((locals.vblankCount % MIDWAY_LAMPSMOOTH) == 0) {
     memcpy(coreGlobals.lampMatrix, locals.lampMatrix, sizeof(locals.lampMatrix));
-//	memset(locals.lampMatrix, 0, sizeof(locals.lampMatrix));
   }
   /*-- solenoids --*/
   coreGlobals.solenoids = locals.solenoids;
@@ -72,8 +70,6 @@ static INTERRUPT_GEN(MIDWAY_vblank) {
   {
     memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
 	memset(locals.segments, 0x00, sizeof locals.segments);
-//  memcpy(locals.segments, locals.pseg, sizeof(locals.segments));
-
   }
 
   /*update leds*/
@@ -158,6 +154,7 @@ static WRITE_HANDLER(strobe_w) {
 	}
 }
 
+/* port read / write for Rotation VIII */
 PORT_READ_START( midway_readport )
 	{ 0x21, 0x22, port_2x_r },
 PORT_END
@@ -167,6 +164,45 @@ PORT_WRITE_START( midway_writeport )
 	{ 0x03, 0x05, port_0x_w },
 	{ 0x10, 0x17, port_1x_w },
 	{ 0x23, 0x23, strobe_w },
+PORT_END
+
+static READ_HANDLER(rom_r) {
+	if (offset%2)
+		return coreGlobals.swMatrix[offset/2] & 0x0f;
+	else
+		return coreGlobals.swMatrix[offset/2] >> 4;
+}
+
+static void flicker_disp(int offset, UINT8 data) {
+	((int *)locals.segments)[offset] = core_bcd2seg[data];
+}
+
+static WRITE_HANDLER(rom1_w) {
+	if (data > 0x09)
+		data = 0;
+	flicker_disp(15 - offset, data);
+}
+
+static WRITE_HANDLER(rom2_w) {
+	if (offset%2)
+		locals.lampMatrix[offset/2] = (locals.lampMatrix[offset/2] & 0x0f) | (data << 4);
+	else
+		locals.lampMatrix[offset/2] = (locals.lampMatrix[offset/2] & 0xf0) | data;
+}
+
+static WRITE_HANDLER(ram_w) {
+	locals.solenoids |= (1 << data);
+}
+
+/* port read / write for Flicker */
+PORT_READ_START( midway_readport2 )
+	{ 0x20, 0x2f, rom_r },
+PORT_END
+
+PORT_WRITE_START( midway_writeport2 )
+	{ 0x00, 0x0f, rom1_w },
+	{ 0x10, 0x1f, rom2_w },
+	{ 0x110,0x11f,ram_w },
 PORT_END
 
 /*-----------------------------------------------
@@ -183,7 +219,7 @@ static NVRAM_HANDLER(MIDWAY) {
 }
 
 /*-----------------------------------------
-/  Memory map for CPU board
+/  Memory map for Rotation VIII CPU board
 /------------------------------------------
 0000-17ff  3 x 2K ROM
 c000-c0ff  RAM
@@ -202,20 +238,23 @@ static MEMORY_WRITE_START(MIDWAY_writemem)
 {0xe000,0xe0ff,	MIDWAY_CMOS_w, &MIDWAY_CMOS},	/* NVRAM */
 MEMORY_END
 
+/*-----------------------------------------
+/  Memory map for Flicker CPU board
+/------------------------------------------
+0000-03ff  1K ROM
+1000-10ff  RAM
+2000-20ff  RAM
+*/
 static MEMORY_READ_START(MIDWAYP_readmem)
 {0x0000,0x03ff,	MRA_ROM},	/* ROM */
 {0x1000,0x10ff, MRA_RAM},   /* RAM */
 {0x2000,0x20ff, MRA_RAM},   /* RAM */
-{0x3000,0x30ff, MRA_RAM},   /* RAM */
-{0x5000,0x50ff, MRA_RAM},   /* RAM */
 MEMORY_END
 
 static MEMORY_WRITE_START(MIDWAYP_writemem)
 {0x0000,0x03ff,	MWA_ROM},	/* ROM */
 {0x1000,0x10ff, MWA_RAM},   /* RAM */
 {0x2000,0x20ff, MWA_RAM},   /* RAM */
-{0x3000,0x30ff, MWA_RAM},   /* RAM */
-{0x5000,0x50ff, MWA_RAM},   /* RAM */
 MEMORY_END
 
 static MACHINE_INIT(MIDWAY) {
@@ -243,6 +282,7 @@ MACHINE_DRIVER_START(MIDWAYProto)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CPU_ADD_TAG("mcpu", 4004, 750000)
   MDRV_CPU_MEMORY(MIDWAYP_readmem, MIDWAYP_writemem)
+  MDRV_CPU_PORTS(midway_readport2,midway_writeport2)
   MDRV_CPU_VBLANK_INT(MIDWAY_vblank, 1)
   MDRV_CORE_INIT_RESET_STOP(MIDWAY,NULL,MIDWAY)
   MDRV_DIPS(0) // no dips!
