@@ -16,18 +16,17 @@
 #define GEN_WPCSECURITY U64(0x00000000020) /* Security chip, World Cup Soccer 3/94 - Jackbot 10/95 */
 #define GEN_WPC95DCS    U64(0x00000000040) /* Hybrid WPC95 driver + DCS sound, Who Dunnit */
 #define GEN_WPC95       U64(0x00000000080) /* Integreted boards, Congo 3/96 - Cactus Canyon 2/99 */
-#define GEN_S11         U64(0x00000000100) /* S11  CPU, 2x7A+2x7+1x4 LED */
-#define GEN_S11A        U64(0x00000000200) /* S11A CPU, 2x7A+2x7+1x4 LED */
-#define GEN_S11B_1      U64(0x00000000400) /* S11B CPU, 2x7A+2x7 LED */
-#define GEN_S11B_2      U64(0x00000000800) /* S11B CPU, 2x16A LED, */
-#define GEN_S11B_2x     U64(0x00000001000) /* S11B CPU, 2x16A LED, Solenoid board */
-#define GEN_S11B_3      U64(0x00000002000) /* S11B CPU, 2x16A LED ?, Jokerz sound */
-#define GEN_S11C        U64(0x00000004000) /* S11C CPU, 2x16A LED */
-#define GEN_S9          U64(0x00000008000) /* S9 CPU, 4x7+1x4 */
+#define GEN_S11         U64(0x00000000100)
+#define GEN_S11A        GEN_S11
+#define GEN_S11B        GEN_S11
+#define GEN_S11B2       U64(0x00000000200) /* Jokerz! sound board */
+#define GEN_S11C        U64(0x00000000400)
+#define GEN_S9          U64(0x00000000800) /* S9 CPU, 4x7+1x4 */
+#define GEN_DE          U64(0x00000001000) /* DE AlphaSeg */
 #define GEN_S7          U64(0x00000010000) /* S7 CPU */
 #define GEN_S6          U64(0x00000020000) /* S6 CPU */
 #define GEN_S4          U64(0x00000040000) /* S4 CPU */
-#define GEN_S3C         U64(0x00000080000) /* S3 CPU */
+#define GEN_S3C         U64(0x00000080000) /* S3 CPU No soundboard */
 #define GEN_S3          U64(0x00000100000)
 #define GEN_BY17        U64(0x00000200000)
 #define GEN_BY35        U64(0x00000400000)
