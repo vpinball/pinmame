@@ -175,12 +175,9 @@ static WRITE_HANDLER(pia2b_w) {
       locals.segments[20+locals.digSel].w |=
            locals.pseg[20+locals.digSel].w = core_bcd2seg[data>>4];
     }
-    else if (core_gameData->hw.display & S11_LOWALPHA)
+    else
       locals.segments[20+locals.digSel].b.lo |=
           locals.pseg[20+locals.digSel].b.lo = data;
-    else
-      locals.segments[20+locals.digSel].b.hi |=
-          locals.pseg[20+locals.digSel].b.hi = data;
   }
 }
 static WRITE_HANDLER(pia5a_w) { // Not used for DMD
