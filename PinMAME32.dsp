@@ -700,6 +700,22 @@ SOURCE=.\src\cpu\i8085\i8085cpu.h
 SOURCE=.\src\cpu\i8085\i8085daa.h
 # End Source File
 # End Group
+# Begin Group "I8039"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\cpu\i8039\8039dasm.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i8039\i8039.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i8039\i8039.h
+# End Source File
+# End Group
 # Begin Group "I86"
 
 # PROP Default_Filter ""
