@@ -218,7 +218,7 @@ private:
 	}
 
 	LRESULT OnDontCare(WORD, UINT, HWND, BOOL&) {
-		EndDialog(IDOK);
+		EndDialog(IDIGNORE);
 		return 0;
 	}
 };
@@ -438,14 +438,14 @@ void SetGameWasStarted(char* pszROMName)
 	WriteRegistry(szKey, "", 1);
 }
 
-STDMETHODIMP CGame::ShowInfoDlg(int nShowOptions, long hParentWnd, VARIANT_BOOL *pVal)
+STDMETHODIMP CGame::ShowInfoDlg(int nShowOptions, long hParentWnd, int *pVal)
 {
 	if ( !pVal )
 		return S_FALSE;
 
 	CGameInfoDlg GameInfoDlg;
 	GameInfoDlg.m_nShowOptions = nShowOptions;
-	*pVal = (GameInfoDlg.DoModal((HWND) hParentWnd, (LPARAM) this)==IDOK)?VARIANT_TRUE:VARIANT_FALSE;
+	*pVal = GameInfoDlg.DoModal((HWND) hParentWnd, (LPARAM) this);
 
 	return S_OK;
 }
