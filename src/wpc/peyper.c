@@ -7,7 +7,7 @@
 			INT: IRQ @ 1250 Hz ?
 		IO:      Z80 ports, AY8910 ports for lamps
 		DISPLAY: 7-segment panels in both sizes
-		SOUND:	 2 x AY8910
+		SOUND:	 2 x AY8910 @ 2.5 MHz
  ************************************************************************************************/
 
 #include "driver.h"
@@ -29,7 +29,6 @@ static struct {
   UINT8  dispCol;
   UINT8  swCol;
   core_tSeg segments;
-  UINT8  sndCmd;
 } locals;
 
 static INTERRUPT_GEN(PEYPER_irq) {
@@ -115,18 +114,16 @@ static WRITE_HANDLER(sol_w) {
 
 static WRITE_HANDLER(ay8910_0_ctrl_w)   { AY8910Write(0,0,data); }
 static WRITE_HANDLER(ay8910_0_data_w)   { AY8910Write(0,1,data); }
-static READ_HANDLER (ay8910_0_r)        { return AY8910Read(0); }
 static WRITE_HANDLER(ay8910_0_porta_w)	{ coreGlobals.tmpLampMatrix[0] = data; }
 static WRITE_HANDLER(ay8910_0_portb_w)	{ coreGlobals.tmpLampMatrix[1] = data; }
 static WRITE_HANDLER(ay8910_1_ctrl_w)   { AY8910Write(1,0,data); }
 static WRITE_HANDLER(ay8910_1_data_w)   { AY8910Write(1,1,data); }
-static READ_HANDLER (ay8910_1_r)        { return AY8910Read(1); }
 static WRITE_HANDLER(ay8910_1_porta_w)	{ coreGlobals.tmpLampMatrix[2] = data; }
 static WRITE_HANDLER(ay8910_1_portb_w)	{ coreGlobals.tmpLampMatrix[3] = data; }
 
 struct AY8910interface PEYPER_ay8910Int = {
-	2,			/* 1 chip */
-	2000000,	/* 2 MHz */
+	2,			/* 2 chip */
+	2500000,	/* 2.5 MHz */
 	{ 30, 30 },		/* Volume */
 	{ 0, 0 }, { 0, 0 },
 	{ ay8910_0_porta_w, ay8910_1_porta_w },
