@@ -528,6 +528,8 @@ DRIVERNV(detest)        //Data East MPU: ??/?? DE Test Chip
 // -------------------------------------
 // WILLIAMS & WILLIAMS/BALLY GAMES BELOW
 // -------------------------------------
+DRIVER(tstrk,l1)        //???       Triple Strike (Bowler)
+
                         //??-466:   06/76 W Aztec
                         //??-470:   10/77 W Wild Card
 DRIVER(httip,l1)        //S3-477:   11/77 W Hot Tip
