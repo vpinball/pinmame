@@ -166,8 +166,9 @@ static WRITE_HANDLER(pia2b_w) {
        data = 0x04, CN3-Pin 7 (GNR Magnet 1)
        ....
        data = 0x80, CN3-Pin 1 (Blinder on Tommy)*/
-  if (core_gameData->gen & (GEN_DEDMD16|GEN_DEDMD32|GEN_DEDMD64))
-    locals.extSol = data;
+  if (core_gameData->gen & (GEN_DEDMD16|GEN_DEDMD32|GEN_DEDMD64)) {
+    if (core_gameData->hw.gameSpecific1 & S11_PRINTERLINE) locals.extSol = data;
+  }
   else {
     if (core_gameData->hw.display & S11_DISPINV) data = ~data;
     if (core_gameData->hw.display & S11_BCDDISP) {
@@ -447,7 +448,7 @@ static void s11_init(void) {
   pia_config(S11_PIA4, PIA_STANDARD_ORDERING, &s11_pia[4]);
   pia_config(S11_PIA5, PIA_STANDARD_ORDERING, &s11_pia[5]);
 
-  
+
   /*Additional hardware dependent init code*/
   switch (core_gameData->gen) {
     case GEN_S9:
