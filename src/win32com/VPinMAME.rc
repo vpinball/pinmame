@@ -179,11 +179,11 @@ BEGIN
     CTEXT           "Portions taken from MAME32 and MAMEW",IDC_STATIC,148,97,
                     160,8
     CTEXT           "Visual PinMAME written by",IDC_STATIC,150,42,160,8
-    CTEXT           "Copyright © 1997-2003 by the authors of MAME, MAME32, MAMEW and PinMAME",
+    CTEXT           "Copyright © 1997-2004 by the authors of MAME, MAME32, MAMEW and PinMAME",
                     IDC_STATIC,148,111,160,16
     CTEXT           "Visual PinMAME is a COM class, designed to use the functionality of PinMAME in scripting languages.",
                     IDC_STATIC,7,135,134,24
-    CTEXT           "Copyright © 2001-2003 by the authors.",IDC_STATIC,150,
+    CTEXT           "Copyright © 2001-2004 by the authors.",IDC_STATIC,150,
                     73,160,8
     CTEXT           "Thanks goes to all people involved producing MAME, MAME32, MAMEW and PinMAME for their GREAT work!!!",
                     IDC_STATIC,150,137,160,24
