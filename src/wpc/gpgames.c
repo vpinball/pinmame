@@ -22,8 +22,8 @@ static core_tLCDLayout dispGP_TEST[] = {
 							(00)
   (06)(05)(04)(03)(02)(01)
 
-  For balls/credits - left side displays [pb], right side [cc]
-	p = # of players in game, b = which ball is in play
+  For balls/credits - left side displays [bp], right side [cc]
+	b = which ball is in play, p = # of players in game, combined for match
 	cc = # of credits, up to 99
 */
 static core_tLCDLayout dispGP_DDU1[] = {
@@ -62,7 +62,7 @@ GP_INPUT_PORTS_START(name, 1) GP_INPUT_PORTS_END
 /*-------------------------------------------------------------------
 / Foxy Lady (May 1978) - Model: Cocktail #110
 /-------------------------------------------------------------------*/
-INITGAME(foxylady, 0,dispGP_DDU1,FLIP_SW(FLIP_L),0)
+INITGAME(foxylady, 0,dispGP_DDU1,FLIP_SW(FLIP_L),-2)
 GP_ROMSTART88(foxylady,	"a-110.u12",0xed0d518b,
 						"b1-110.u13",0xa223f2e8)
 GP_ROMEND
@@ -71,7 +71,7 @@ CORE_GAMEDEFNV(foxylady,"Foxy Lady",1978,"Game Plan",mGP1,GAME_USES_CHIMES)
 /*-------------------------------------------------------------------
 / Black Velvet (May 1978) - Model: Cocktail #110
 /-------------------------------------------------------------------*/
-INITGAME(blvelvet, 0,dispGP_DDU1,FLIP_SW(FLIP_L),0)
+INITGAME(blvelvet, 0,dispGP_DDU1,FLIP_SW(FLIP_L),-2)
 GP_ROMSTART88(blvelvet,	"a-110.u12",0xed0d518b,
 						"b1-110.u13",0xa223f2e8)
 GP_ROMEND
@@ -80,7 +80,7 @@ CORE_GAMEDEFNV(blvelvet,"Black Velvet",1978,"Game Plan",mGP1,GAME_USES_CHIMES)
 /*-------------------------------------------------------------------
 / Camel Lights (May 1978) - Model: Cocktail #110
 /-------------------------------------------------------------------*/
-INITGAME(camlight, 0,dispGP_DDU1,FLIP_SW(FLIP_L),0)
+INITGAME(camlight, 0,dispGP_DDU1,FLIP_SW(FLIP_L),-2)
 GP_ROMSTART88(camlight,	"a-110.u12",0xed0d518b,
 						"b1-110.u13",0xa223f2e8)
 GP_ROMEND
@@ -89,7 +89,7 @@ CORE_GAMEDEFNV(camlight,"Camel Lights",1978,"Game Plan",mGP1,GAME_USES_CHIMES)
 /*-------------------------------------------------------------------
 / Real (to Real) (May 1978) - Model: Cocktail #110
 /-------------------------------------------------------------------*/
-INITGAME(real, 0,dispGP_DDU1,FLIP_SW(FLIP_L),0)
+INITGAME(real, 0,dispGP_DDU1,FLIP_SW(FLIP_L),-2)
 GP_ROMSTART88(real,	"a-110.u12",0xed0d518b,
 					"b1-110.u13",0xa223f2e8)
 GP_ROMEND
@@ -98,7 +98,7 @@ CORE_GAMEDEFNV(real,"Real (to Real)",1978,"Game Plan",mGP1,GAME_USES_CHIMES)
 /*-------------------------------------------------------------------
 / Rio (May 1978) - Model: Cocktail #110
 /-------------------------------------------------------------------*/
-INITGAME(rio, 0,dispGP_DDU1,FLIP_SW(FLIP_L),0)
+INITGAME(rio, 0,dispGP_DDU1,FLIP_SW(FLIP_L),-2)
 GP_ROMSTART88(rio,	"a-110.u12",0xed0d518b,
 					"b1-110.u13",0xa223f2e8)
 GP_ROMEND
@@ -109,7 +109,7 @@ CORE_GAMEDEFNV(rio,"Rio",1978,"Game Plan",mGP1,GAME_USES_CHIMES)
 /*-------------------------------------------------------------------
 / Star Trip (April 1979) - Model: Cocktail #120
 /-------------------------------------------------------------------*/
-INITGAME(startrip, 0,dispGP_DDU1,FLIP_SW(FLIP_L),0)
+INITGAME(startrip, 0,dispGP_DDU1,FLIP_SW(FLIP_L),-2)
 GP_ROMSTART88(startrip,	"startrip.u12",0x98f27fdf,
 						"startrip.u13",0xb941a1a8)
 GP_ROMEND
@@ -118,7 +118,7 @@ CORE_GAMEDEFNV(startrip,"Star Trip",1979,"Game Plan",mGP1,GAME_NO_SOUND)
 /*-------------------------------------------------------------------
 / Family Fun! (April 1979) - Model: Cocktail #120
 /-------------------------------------------------------------------*/
-INITGAME(famlyfun, 0,dispGP_DDU1,FLIP_SW(FLIP_L),0)
+INITGAME(famlyfun, 0,dispGP_DDU1,FLIP_SW(FLIP_L),-2)
 GP_ROMSTART88(famlyfun,	"family.u12",0x98f27fdf,
 						"family.u13",0xb941a1a8)
 GP_ROMEND
@@ -142,9 +142,9 @@ CORE_GAMEDEFNV(sshooter,"Sharpshooter",1979,"Game Plan",mGP2,GAME_NO_SOUND)
 /*-------------------------------------------------------------------
 / Vegas (August 1979) - Cocktail Model #140 (MPU-1??)
 /-------------------------------------------------------------------*/
-INITGAME(vegasgp, 0,dispGP_DDU1,FLIP_SW(FLIP_L),0)
-GP_ROMSTART88(vegasgp,	"vegas.u12",0x98f27fdf,
-						"vegas.u13",0xb941a1a8)
+INITGAME(vegasgp, 0,dispGP_DDU1,FLIP_SW(FLIP_L),-2)
+GP_ROMSTART88(vegasgp,	"vegas.u12",0x0,
+						"vegas.u13",0x0)
 GP_ROMEND
 CORE_GAMEDEFNV(vegasgp,"Vegas (Game Plan)",1979,"Game Plan",mGP1,GAME_NO_SOUND)
 
