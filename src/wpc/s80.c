@@ -244,19 +244,19 @@ static WRITE_HANDLER(riot1a_w)
 		int strobe = (data&0x0f);
 
 		if ( (segSel&0x01) && !(S80locals.segSel&0x01) )
-			S80locals.seg1 = core_bcd2seg16[S80locals.disData&0x0f];
+			S80locals.seg1 = core_bcd2seg9[S80locals.disData&0x0f];
 		if ( !(S80locals.disData&0x10) )
-			S80locals.seg1 |= 0x0022;
+			S80locals.seg1 = core_bcd2seg9[0x01];
 
 		if ( (segSel&0x02) && !(S80locals.segSel&0x02) )
-			S80locals.seg2 = core_bcd2seg16[S80locals.disData&0x0f];
+			S80locals.seg2 = core_bcd2seg9[S80locals.disData&0x0f];
 		if ( !(S80locals.disData&0x20) )
-			S80locals.seg2 |= 0x0022;
+			S80locals.seg2 = core_bcd2seg9[0x01];
 
 		if ( (segSel&0x04) && !(S80locals.segSel&0x04) )
-			S80locals.seg3 = core_bcd2seg16[S80locals.disData&0x0f];
+			S80locals.seg3 = core_bcd2seg9[S80locals.disData&0x0f];
 		if ( !(S80locals.disData&0x40) )
-			S80locals.seg3 |= 0x0022;
+			S80locals.seg3 = core_bcd2seg9[0x01];
 
 		if ( strobe<=5 ) {
 			if ( S80locals.seg1 ) {
