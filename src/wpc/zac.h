@@ -22,7 +22,7 @@
     /* These are put in switch column 2 */ \
     COREPORT_BIT   (0x8000, "Test Mode", KEYCODE_END) \
   PORT_START /* 1 */ \
-    COREPORT_DIPNAME( 0x0001, 0x0001, "Sound 1") \
+    COREPORT_DIPNAME( 0x0001, 0x0000, "Sound 1") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0001, "1" ) \
     COREPORT_DIPNAME( 0x0002, 0x0002, "Sound 2") \
