@@ -767,7 +767,7 @@ INLINE void rl_a(void)
 //RLC A										/* 1: 0011 0011 */
 INLINE void rlc_a(void)
 {
-	//Left Shift A, Bit 7 goes to Carry Flag, Bit 0 of ACC goes to original Carry Flag
+	//Left Shift A, Bit 7 goes to Carry Flag, Original Carry Flag goes to Bit 0 of ACC
 	int carry = ((R_ACC & 0x80) >> 7);
 	int data = ((R_ACC<<1) & 0xfe) | GET_CY;
 	SFR_W(ACC, data);
