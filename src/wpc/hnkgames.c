@@ -42,7 +42,7 @@ HNK_SOUNDROMS("fj_ic14.snd", CRC(34fe3587) SHA1(132714675a23c101ceb5a4d544818650
               "fj_ic3.snd",  CRC(09d3f020) SHA1(274be0b94d341ee43357011691da82e83a7c4a00))
 HNK_ROMEND
 #define input_ports_fjholden input_ports_hnk
-CORE_GAMEDEFNV(fjholden,"FJ Holden",1978,"Hankin",by35_mHNK,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(fjholden,"FJ Holden",1978,"Hankin",by35_mHNK,0)
 
 /*--------------------------------
 / Orbit 1
@@ -54,7 +54,7 @@ HNK_SOUNDROMS("o1_ic14.snd", CRC(323bfbd5) SHA1(2e89aa4fcd33f9bfeea5c310ffb0a5be
               "o1_ic3.snd",  CRC(dfc57606) SHA1(638853c8e46bf461f2ecde02b8b2aa68c2d414b8))
 HNK_ROMEND
 #define input_ports_orbit1 input_ports_hnk
-CORE_GAMEDEFNV(orbit1,"Orbit 1",1978,"Hankin",by35_mHNK,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(orbit1,"Orbit 1",1978,"Hankin",by35_mHNK,0)
 
 /*--------------------------------
 / Howzat
