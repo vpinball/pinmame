@@ -1,0 +1,1747 @@
+; This file is used in the sound command mode
+; and contains shortcuts for playing sounds
+;
+; The entries (lines starting with a ':') in this file are grouped
+; under different headings (headings end with a ':')
+;
+; When a game is loaded it will look for entries under the
+; following headings:
+; dcs:         (for DCS games)
+; wpcs:        (for pre-DCS games)
+; game_name:   (short game name)
+; parent_name: (short parent name)
+;
+; Example: TZ 9.2 will use the entries under the headings
+; wpcs, tz_92, tz_94h
+;
+; Each entry consist of two parts:
+; - Up to 6 bytes command (hexadecimal)
+; - The text to display on the screen
+;
+; Example: Send the command sequence 01 02 03 04 and call it "sequence 1"
+; :01020304:Sequence 1
+;
+; If the same command appear several times the last one in this file
+; will be used.
+;
+; Note that DCS requires an even number of bytes in the command.
+;-----------------------------------------------------------------------
+
+; Common for all DCS games.
+; Additions made 01/21/01 by Dorsola (dorsola@descent2.com)
+; -------------
+dcs:
+:0000:All sound off
+# ------------
+# 55aaXXYY = Set Volume
+# XX = 47 to FF step 08
+# YY = FF - XX ... reason unknown.
+# ------------
+:55aa47b8:Set volume (8)
+:55aa4fb0:Set volume (9)
+:55aa57a8:Set volume (10)
+:55aa5fa0:Set volume (11)
+:55aa6798:Set volume (12)
+:55aa6f90:Set volume (13)
+:55aa7788:Set volume (14)
+:55aa7f80:Set volume (15)
+:55aa8778:Set volume (16)
+:55aa8f70:Set volume (17)
+:55aa9768:Set volume (18)
+:55aa9f60:Set volume (19)
+:55aae718:Set volume (28)
+:55aaef10:Set volume (29)
+:55aaf708:Set volume (30)
+:55aaff00:Set volume (31)
+# ------------
+# 03dX = System Bank
+# ------------
+:03d4:Menu Select A
+:03d5:Menu Select B
+:03d6:Warning Beep
+:03d7:Menu Op Complete
+:03d8:Alert Beep
+:03d9:Menu Select C
+:03da:Menu Select D
+:03db:Menu Enter
+:03dc:Menu Cancel/Clear
+:03dd:System Sweep
+
+; Common for all pre-DCS games.
+; Additions made 01/21/01 by Dorsola (dorsola@descent2.com)
+; -------------
+; Tech notes re CVSD playback: It appears that CVSD samples are
+; affected by tempo/playback speed parameters, which are typically
+; set automatically by playing a music command.
+; -------------
+wpcs:
+:00:Reset Sound System
+:1e:Decrease Music Tempo
+:1f:Increase Music Tempo
+:20:Set DAC (drums) volume to 15
+:21:Set DAC (drums) volume to 14
+:22:Set DAC (drums) volume to 13
+:23:Set DAC (drums) volume to 12
+:24:Set DAC (drums) volume to 11
+:25:Set DAC (drums) volume to 10
+:26:Set DAC (drums) volume to 9 
+:27:Set DAC (drums) volume to 8
+:28:Set DAC (drums) volume to 7
+:29:Set DAC (drums) volume to 6
+:2a:Set DAC (drums) volume to 5
+:2b:Set DAC (drums) volume to 4
+:2c:Set DAC (drums) volume to 3
+:2d:Set DAC (drums) volume to 2
+:2e:Set DAC (drums) volume to 1
+:2f:Set DAC (drums) volume to 0
+:50:FM: Menu Select A
+:51:FM: Menu Select B
+:52:FM: System Warning Beep
+:53:FM: Menu Op Completed
+:54:FM: System Attention Beep
+:55:FM: Menu Select C
+:56:FM: Menu Select D
+:57:FM: Menu Enter
+:58:FM: Menu Cancel/Clear
+:59:FM: System Sweep
+:60:Set FM (Music) volume to 18
+:61:Set FM (Music) volume to 17
+:62:Set FM (Music) volume to 16
+:63:Set FM (Music) volume to 15
+:64:Set FM (Music) volume to 14
+:65:Set FM (Music) volume to 13
+:66:Set FM (Music) volume to 12
+:67:Set FM (Music) volume to 11
+:68:Set FM (Music) volume to 10 
+:69:Set FM (Music) volume to 9
+:6a:Set FM (Music) volume to 8
+:6b:Set FM (Music) volume to 7
+:6c:Set FM (Music) volume to 6
+:6d:Set FM (Music) volume to 5
+:6e:Set FM (Music) volume to 4
+:6f:Set FM (Music) volume to 3
+:70:Set FM (Music) volume to 2
+:71:Set FM (Music) volume to 1
+:72:Set FM (Music) volume to 0
+
+
+; ROM Header name must match the ROM name
+
+
+; Creature from the Black Lagoon
+; Additions made 01/21/01 by Dorsola (dorsola@descent2.com)
+; --------------
+; Special notes re Creature: This game uses the 7a bank for
+; more voices - same as TZ - but for some reason the WPCMame
+; sound command editor can't access it.
+; --------------
+cftbl_l4:
+:00:Reset Sound System
+:01:Music: Main Game Theme 1 (?)
+:02:Music: Main Game Theme 2
+:03:Music: Main Game Theme 3
+:04:Music: Mega Menu
+:05:Music: Main Game Theme 4
+:06:Music: Multiball
+:07:Music: ?? Loop
+:08:Music: Snack Attack
+:09:Music: Normal Prelaunch
+:0a:Music: Video Mode
+:0b:Music: Main Game Theme 5
+:0c:Music: Main Game Theme 6
+:0d:Music: Move Your Car!
+:0e:Music: Multiball Hurry-Up
+:10:Music: ?? (same as 01)
+:11:Music: (01 = messed up)
+:12:Music: (02 = messed up)
+:13:Music: (03 = messed up)
+:14:Music: (04 = messed up)
+:15:Music: (05 = messed up)
+:16:Music: (06 = messed up)
+:17:Music: (08 = messed up)
+:18:Music: (1c = messed up)
+:19:Music: (1b = messed up)
+:1a:Music: Bonus Ending 1
+:1e:Decrease Music Tempo
+:1f:Increase Music Tempo
+:30:SFX: Car driving by
+:31:SFX: Kiss - Mwah!
+:32:SFX: Projector Startup
+:33:(Blues mumbling 1)
+:34:(Blues mumbling 2)
+:35:(Blues mumbling 3)
+:36:(Creature Noise)
+:37:SFX: Cash Register
+:38:"Thank you, enjoy the film"
+:39:SFX: Cash Reg + "Thank you"
+# -----------
+# Apparently the next two were jokes put in by one of the Williams
+# programmers against their boss or something.  Sounds like
+# something they would do.
+# -----------
+:3a:"I'm sorry, Jeff..."
+:3b:"Jeff! You are a weenie!"
+#
+:3c:"My hero!"
+:3d:"Thank you!"
+:3e:"You saved my life!"
+:3f:VOX: Girl screams
+:40:SFX: Boom 1
+:41:"Focus!"
+:42:"Move your car!"
+:43:"Hey, slide over, baby!"
+:44:"Ummm, okay!"
+:45:"Okay!"
+:46:"How about a kiss?"
+:47:"Gee, I dunno..."
+:48:"Awww, c'mon!"
+:49:"Well, maybe..."
+:4a:SFX: Ahooga!
+:4b:"Shoot the left ramp!"
+:4c:"Jackpot!"
+:4d:"Super Jackpot!"
+:4e:"Let's try the next..."
+# -----------
+# "At the Hop" was a popular 50's song, and evidently they encoded a
+# huge number of samples into this game to play it as a soundtrack.
+# I've personally never heard it used in the game, though, and I'd
+# think the voice samples would get overridden by more important
+# voices as you play the game.
+# -----------
+:4f:"At the hop!"
+:5a:"Hop!" 1
+:5b:"Hop!" 2
+:5c:"Hop!" 3
+:5d:"Hop!" 4
+#
+:80:SFX: PAID rollover 1
+:81:SFX: PAID rollover 2
+:82:SFX: PAID rollover 3
+:83:Music: Sneak-In Award
+:84:Music: 5 Million Award
+:85:SFX: Misc 1
+:86:SFX: Misc 2
+:87:SFX: Jet Bumper 1
+:88:SFX: Jet Bumper 2
+:89:SFX: Jet Bumper 3
+:8a:SFX: Inlane 1
+:8b:SFX: Inlane 2
+:8c:SFX: Right Ramp
+:8d:SFX: Car horn
+:8e:Music: M.Ball Restart
+:8f:SFX: Snackbar target 1
+:90:SFX: Snackbar target 2
+:91:SFX: Snackbar target 3
+:92:SFX: Snackbar target 4
+:96:Music: Sn.Attack Score
+:97:Music: KISS Score
+:98:Music: Mega Menu Score
+:99:Music: Creature Found
+:9a:Music: Girl Rescued
+:9b:Music: Jackpot Lit
+:9c:Music: Jackpot Score
+:9d:Music: Empty Tunnel
+:9e:Music: ??
+:9f:Music: Explain Award
+:a0:SFX: Whiz-Bang 1
+:a1:SFX: Whiz-Bang 2
+:a2:SFX: Whiz-Bang 3
+:a3:SFX: Misc 3
+:a4:SFX: Misc 4
+:a5:SFX: Countdown Tick
+:a6:SFX: Mode Fail
+:a7:SFX: Combo Shot 1
+:a8:SFX: Combo Shot 2
+:a9:SFX: Combo Shot 3
+:aa:SFX: Combo Shot 4
+:ab:SFX: Combo Shot 5
+:ac:SFX: Combo Shot Score
+:ad:SFX: Extra Ball Score
+:ae:SFX: Slide Score
+:af:SFX: M.Y. Car Shot 1
+:b0:SFX: Snack Bar Open
+:b1:SFX: Special Lit
+:b2:Music: Replay/Special
+:b3:SFX: FILM Letter Score
+:b4:Music: Game Over
+:b5:Music: Shoot Again
+:b6:Music: Playground Awd
+:b7:Music: Sup.Jackpot Lit
+:b8:Music: Sup.Jack. Score
+:b9:Music: S.J. Score 2 (?)
+:ba:Music: Movie Madness
+:bb:SFX: Bonus X
+:bc:SFX: Unlim.Mill. Score
+:bd:SFX: Misc 5
+:be:SFX: Misc 6
+:bf:Music: KISS Letter
+:c2:Music: F-I-L-M Sequence
+:c3:Music: (combo?)
+:c4:Music: Snackbar Random
+:c5:Music: Tilt Warning
+:c6:SFX: Bell 1
+:c7:SFX: Creature Loop 1
+:c8:SFX: Creature Loop 2
+:c9:SFX: Creature Loop 3
+:ca:SFX: Creature Loop 4
+:cb:SFX: Creature Loop 5
+:cc:SFX: Creature Loop 6
+:cd:SFX: Creature Loop 7
+:ce:SFX: Creature Loop 8
+:cf:SFX: Misc 7
+# ------------
+# More Hop voices - can anyone verify that this was actually
+# used in the game?
+# ------------
+:d0:"Hop, Baby, Hop!" 1
+:d1:"Hop, Baby, Hop!" 2
+:d2:"Hop, Baby, Hop!" 3
+:d3:(Hop) "Laa, laa!"
+:d4:(Hop) "Oh Baby!" 1
+:d5:(Hop) "Oh Baby!" 2
+:d6:(Hop) "Aaaaaahhh..." 1
+:d7:(Hop) "Aaaaaahhh..." 2
+:d8:(Hop) "Aaaaaahhh..." 3
+:d9:(Hop) "To the hop!" 1
+:da:(Hop) "To the hop!" 2
+:db:(Hop) "To the hop!" 3
+:dc:"Let's go to the hop" 1
+:dd:"Let's go to the hop" 2
+:de:"Let's go to the hop" 3
+#
+:df:SFX: EB.Countdown Fail
+:e0:SFX: Misc 8 (loops)
+:e1:Music: Snackbar Bonus
+
+
+; Demolition Man
+; Additions made 01/23/01 by Dorsola (dorsola@descent2.com)
+; DCS Hardware
+; ------------
+dm_lx4:
+# ------------
+# 00xx = Music and SFX bank
+# ------------
+:0001:Music: Main Prelaunch
+:0002:Music: Main Game, var 1
+:0003:Music: Main Game, var 2
+:0004:Music: Multiball Mode 1
+:0005:Music: Multiball Ready
+:0006:Music: MBall Ready Pre
+:0008:Music: Demolition Time
+:0009:Music: ACMAG
+:000a:Music: Demolition Time
+:000b:Music: Multiball Mode 2
+:000c:Music: Explode Hurry-Up
+:000e:Music: Cryo-Claw
+:0010:Music: ??
+:0013:Music: Computer Award
+:001a:Music: Collect Bonus
+:001f:Music: High Score Entry
+:0020:Music: High Score Entry
+:0021:Music: Super Jackpot
+:0023:Music: Capture Simon
+:0024:Music: Game Over, var 2
+:0025:Music: Multiball Mode 3
+:0064:SFX: Resounding Slam
+:0068:SFX: Flamethrower
+:006a:SFX: Comm noise
+:006c:SFX: Misc 1
+:006d:SFX: Computer Beeps 1
+:0070:SFX: Misc 2
+:0072:SFX: Elevator
+:0073:SFX: Tires Screeching
+:0075:SFX: Crash 1
+:0077:SFX: Misc 3
+:0078:SFX: Pop-Drop
+:0079:SFX: Misc 4
+:007a:SFX: Misc 5
+:007b:SFX: Misc 6
+:007c:SFX: Ricochet
+:007e:SFX: Whoosh
+:0081:SFX: Tinkle-Rustle
+:0088:SFX: Helicopter
+:008b:SFX: Industrial 1
+:008c:SFX: Industrial 2
+:008d:SFX: Industrial 3
+:0093:SFX: Jet Bumper 1
+:0094:SFX: Jet Bumper 2
+:0095:SFX: Jet Bumper 3
+:0098:SFX: Boom 1
+:0099:SFX: Boom 2
+:009b:SFX: Boom 3
+:00a3:SFX: Misc 7
+:00a5:SFX: Flyby 1
+:00a6:SFX: Flyby 2
+:00aa:SFX: Alarm
+:00ab:SFX: Techno Ding
+:00b0:SFX: Misc 8
+:00b4:SFX: Industrial 4
+:00b6:SFX: Industrial 5
+:00b8:SFX: Industrial 6
+:00b9:SFX: Industrial 7
+:00ba:SFX: Industrial 8
+:00bb:SFX: Industrial 9
+:00bc:SFX: Industrial 10
+:00bd:SFX: Industrial 11
+:00be:SFX: Industrial 12
+:00bf:SFX: Industrial 13
+:00c5:SFX: Misc 9
+:00c6:SFX: Thunder 1
+:00c7:SFX: Thunder 2
+:00c8:SFX: Thunder 3
+:00cb:SFX: Boom 4
+:00cc:SFX: Boom 5
+:00cd:SFX: Boom 6
+:00d1:SFX: Flamethrower
+:00d4:SFX: Car Drive-By
+:00d9:SFX: Crash 2
+:00fc:SFX: Boom 1
+:00fd:SFX: Boom 2
+:00ff:SFX: Boom 3
+# ------------
+# 01xx = SFX and Voice Bank 1
+# ------------
+:012a:SFX: Thunder 1
+:012b:SFX: Thunder 2
+:0140:"Glorious!"
+:0143:"What I wouldn't give"
+:0144:"Not many people get.."
+:014a:"Close enough"
+:014b:"This is between..."
+:0154:"Forgot to say Simon.."
+:0155:"Somebody put me..."
+:0156:"Go left!"
+:015b:"Just catch up to him!"
+:015e:(Sp) "Let's go!"
+:0162:VOX: Phoenix Laugh 1
+:0163:VOX: Phoenix Laugh 2
+:0164:VOX: Phoenix Laugh 3
+:0165:VOX: Phoenix Laugh 4
+:0166:"Aaaaaaaaaa!"
+:016c:"Oh yeah!"
+:0170:"Punch it, Hawkley!"
+:0171:"Push the pedal as..."
+:017f:"Wonder if I can..."
+:0181:VOX: Phoenix Laugh 5
+:0182:"Yeah, well I feel..."
+:0188:"Oh, I'm so scared!"
+:018a:"Illuminate!"
+:0191:SFX: Thunder 3
+:0193:SFX: Boom 4
+:0194:SFX: Boom 5
+:0195:SFX: Boom 6
+:01f8:SFX: Footstep 1
+:01f9:SFX: Footstep 2
+:01fb:SFX: Synth Hit 1
+:01fc:SFX: Zap!
+# ------------
+# 02xx = SFX and Voice Bank 2
+# ------------
+:0200:SFX: Misc 10
+:0201:SFX: Drop in Liquid
+:0202:SFX: Launch Ball
+:0205:SFX: Computer Beeps 1
+:0208:SFX: Twang 1
+:0209:SFX: Twang 2
+:020d:SFX: Twang 3
+:020e:SFX: Twang 4
+:020f:SFX: Twang 5
+:0210:SFX: Orchestra Hit 1
+:0212:SFX: Orchestra Hit 2
+:0213:SFX: Orchestra Hit 3
+:0216:SFX: Synth Hit 2
+:0218:SFX: Synth Hit 3
+:0219:SFX: Ground Loop
+:021b:SFX: Misc 11
+:021c:SFX: Twang 1
+:021d:SFX: Motorcycle
+:021e:SFX: Motorcycle
+:021f:Music: Extra Ball!
+:0220:Music: Accordian
+:0221:Music: Extra Ball!
+:025a:"D'ya see any cows...?"
+:0261:VOX: Girl screaming
+:0263:"Okay okay I got it..."
+:0264:"Simon Phoenix knows.."
+:0269:"EXCUSE ME???"
+:026b:"Whoa!"
+:026c:"What're you doing?"
+:026e:"Is it cold in here..."
+:0270:"Oh we gotta stop this"
+:0271:"Heads up!"
+:0275:"Send a maniac..."
+:0279:"...the best day of..."
+:027a:"What can I say? I'm.."
+:027c:VOX: Phoenix Misc 1
+:0289:"How nice!"
+:028a:"I love this gun!"
+:0291:"Now we need those..."
+:0292:VOX: Phoenix Growling
+:0297:"No free rides!"
+:0298:"Oh that is just..."
+:029c:"Prepare for Simon..."
+:029e:"Oh I musta done..."
+:02a9:"2 for the price of 1!"
+:02ac:"What're ya doin here?"
+:02ae:"You're dead, Spartan!"
+:02af:"You're under arrest."
+:02b0:"Arrest?"
+:02b1:"And you're trespassin"
+:02b2:"Do somethin'!"
+:02b3:VOX: Misc 1
+:02b4:"Phoeniiiiiiiiix!!"
+:02bc:(Ph) "Extra ball!"
+:02bf:"You're gonna need..."
+:02c3:"Move!"
+:02c4:(Ph) "Move it!"
+:02c5:(Ph) "Nice move!"
+:02c7:(Ph) "Go!"
+:02c8:(Ph) "Great shot!"
+:02d2:(Ph) "Hurryup!"
+:02d4:(Ph) "Double Jackpot!"
+:02d6:"Get the Sup.Jackpot!"
+:02e1:(Ph) "Nice shot!"
+:02e2:(Ph) "Nice shooting!"
+:02e7:VOX: Phoenix Laugh 6
+:02e8:VOX: Phoenix Laugh 7
+:02e9:VOX: Phoenix Laugh 8
+:02f6:(Ph) "Outstanding!"
+:02ff:"Simon says"
+# ------------
+# 03xx = Voice Bank 3
+# ------------
+:0303:"Step on it!"
+:0306:"Too bad!"
+:0308:"That was pathetic!"
+:030b:"Yeee-haa!"
+:030c:"You got it!"
+:030d:(Ph) "Amazing!"
+:0310:"Come and get me!"
+:0320:(Sp) "Amazing!"
+:0323:"Let's go!"
+:0327:(Sp) "Move it!"
+:0328:"Nice!"
+:0329:"Very nice!"
+:032a:(Sp) "Nice move!"
+:032c:"Don't move."
+:032e:"Drive!"
+:0331:"Excellent!"
+:033a:(Sp) "Go!"
+:033b:"Hurry!"
+:0340:"Cryo-Prison Breakout"
+:0341:"Be well, Phoenix."
+:034a:(Sp) "Extra ball!"
+:034d:"Get the extra ball!"
+:0353:(Sp) "Nice shooting!"
+:0354:(Sp) "Nice shot!"
+:0355:(Sp) "Great shot!"
+:0356:"Great shooting!"
+:0358:"Now that's what..."
+:035b:(Sp) "Shoot again!"
+:0361:"Skill shot!"
+:0362:"I hate it when..."
+:0364:"I love it when..."
+:036e:"Jackpot!"
+:0374:"Double Jackpot!"
+:0375:"Doubled!"
+:0376:"Tripled!"
+:0378:"Super Jackpot!"
+:037b:"Now!"
+:037c:"Oh no..."
+:037e:"Woah, yeah!"
+:037f:"Ohhhh yeah!"
+:0380:"Outstanding!"
+:0384:"Replay!"
+:0385:"You and me, Phoenix"
+:03e8:"ACMAG now activated"
+:03ec:"Accessing..."
+:03ee:"Car Crash Tripled"
+:03ef:"Computer Award"
+:03f0:"Collect Bonus"
+:03f2:"Cryo-Claw now act..."
+:03fc:"Explode activated"
+:03fd:"Explode Hurry-Up..."
+# ------------
+# 04xx = Voice Bank 4
+# ------------
+:0405:"Player One"
+:0406:"Player Two"
+:0407:"Player Three"
+:0408:"Player Four"
+:040e:(CPU) "Shoot again!"
+:0412:"Super Jets completed"
+:0414:"S.Jets now activated"
+:0416:"You look great today!"
+:0417:"Use buttons to..."
+:0418:"Use triggers to..."
+:041a:"Don't you ever want.."
+:041b:"Anybody to this.." (?)
+:041c:"You always were a..."
+:041d:"I'm the Demol. Man"
+:041e:"Shoulda stayed there"
+:0420:"Don't worry!"
+:0421:"I'll getcha with..."
+:0422:"I know that musta..."
+:0423:"JOHN SPARTAN!??"
+:0424:"Bad aim, Blondie!"
+:0425:"Phoenix!"
+:0427:VOX: Cow
+:0428:VOX: Cow
+:0429:VOX: Misc 2
+:042a:VOX: Misc 3
+:042b:VOX: Misc 4
+:042e:"Triple car crash"
+:0431:"Collect Standups"
+:0434:"Light Arrows"
+:0435:"Light Extra Ball"
+:0436:"Maximize Freezes"
+:0437:"Multiball Activated"
+:0438:"Shoot Left Loop"
+:0439:"Quick-Freeze Now..."
+:043a:"Double Retina-Scan"
+:043c:"It ain't over yet!"
+:043d:"Don't move, Phoenix"
+:043e:"Who is that?"
+:043f:"I've been dreamin..."
+:0440:"Well, keep dreamin'!"
+:0441:SFX: Gunshot
+
+
+; Dr. Who
+dw_l2:
+
+
+; Fun House
+; Additions made 01/21/01 by Dorsola (dorsola@descent2.com)
+; ------------
+; Unable to access 7a bank in this game either.
+; There are a lot of misc sound effects that are used everywhere
+; in the game.  After a while I stopped trying to identify them
+; all.
+; ------------
+fh_l9:
+:00:Reset Sound System
+:01:Music: Normal Prelaunch
+:02:Music: Normal Game
+:04:Music: Crazy Steps
+:05:Music: 11:30 Lock Lit
+:06:Music: 11:45 Lock Lit
+:07:Music: Midnight
+:08:Music: Multiball (normal)
+:09:Music: Multiball (Jackpot!)
+:0a:Music: 11:30 Prelaunch
+:0c:Music: 11:45 Prelaunch
+:0d:Music: Multiball (Hurry-Up!)
+:0e:Music: Frenzy Mode
+:0f:Music: Super HotDog Mode
+:10:Music: MBall Hurry-Up 2
+:11:Music: ??
+:12:Music: ??
+:13:Music: ??
+:40:Music: Ta-Da Hit
+:41:Music: 02 (messed up)
+:42:Music: 05 (messed up)
+:43:Music: 06 (messed up)
+:44:Music: 07 (messed up)
+:45:Music: 08 (messed up)
+:46:Music: 09 (messed up)
+:47:Music: 0d (messed up)
+:48:Music: 0e (messed up)
+:49:Music: 0f (messed up)
+:4a:Music: 11 (messed up)
+:80:Music: Extra Ball Awarded
+:81:Music: 11:30 Strike
+:82:SFX: Inlane Rollover
+:83:SFX: Misc 2
+:84:SFX: Outlane
+:85:Music: Wind Tunnel Award
+:86:SFX: Misc 4
+:88:SFX: Clock Chime 1
+:89:SFX: Misc 5
+:8a:SFX: Bell 1
+:8b:SFX: Bell 2
+:8c:SFX: Bell 3
+:8d:SFX: Misc 6
+:8e:SFX: Misc 7
+:90:SFX: Tilt!
+:91:SFX: Misc 8
+:92:SFX: Misc 9
+:93:SFX: Tilt Warning
+:94:SFX: Coin Inserted
+:95:SFX: Smudge
+:96:SFX: Bell 4
+:97:SFX: Bell 5
+:98:SFX: Bell 6
+:99:SFX: Bell 7
+:9a:SFX: Bell 8
+:9b:SFX: Bell 9
+:9c:SFX: Misc 10
+:9d:SFX: Steps Missed 1
+:9f:SFX: R. Outer Inlane
+:a0:SFX: Misc 13
+:a1:SFX: Crazy Steps Award
+:a2:SFX: Misc 14
+:a3:SFX: TrapDoor Countup 1
+:a4:SFX: Misc 15
+:a5:SFX: TrapDoor Countup 2
+:a7:SFX: TrapDoor Countup 3
+:a9:SFX: Misc 19
+:aa:Music: Combo Shot 1
+:ac:SFX: Misc 20
+:ad:Music: Combo Shot 2
+:ae:SFX: Trap Door Award
+:b0:SFX: Ball Locked
+:b5:SFX: Misc 22
+:b6:SFX: Misc 23
+:b8:SFX: Trap Door Open
+:ba:SFX: Misc 25
+:bc:SFX: Misc 26
+:bf:SFX: Kickout ready
+:c0:SFX: Clock Shime 2
+:c1:SFX: Misc 28
+:c2:SFX: Misc 29
+:c3:SFX: Misc 30
+:c4:SFX: Misc 31
+:c6:SFX: Boom 1
+:c7:SFX: Boom 2
+:c8:SFX: Misc 32
+:c9:SFX: Drums + Cymbal
+:ca:SFX: Misc 33
+:cb:SFX: Misc 34
+:cc:Music: Misc 1
+:ce:Music: Replay Awarded
+:d0:SFX: Misc 35
+:d1:SFX: Misc 36
+:d2:SFX: Misc 37
+:d3:SFX: Misc 38
+:d4:SFX: Misc 39
+:d5:SFX: Misc 40
+:d6:SFX: Misc 41
+:d7:SFX: Misc 42
+:d8:SFX: Misc 43
+:d9:SFX: Misc 44
+:db:SFX: Misc 45
+:df:SFX: Crash 1
+:e0:SFX: Bonus Sound 1
+:e1:SFX: Bonus Sound 2
+:e2:SFX: Bonus Sound 3
+:e3:SFX: Bonus Sound 4
+:e4:SFX: Instructions 1
+:e5:SFX: Instructions 2
+:e6:SFX: Bonus Sound 5
+
+
+; Theatre of Magic
+; Additions made 01/23/01 by Dorsola (dorsola@descent2.com)
+; ------------
+tom_13:
+# ------------
+# Music, Main SFX
+# ------------
+:0001:Music: Main Game
+:0002:Music: Main Prelaunch
+:0005:Music: Trunk Escape
+:0006:Music: Metamorphosis
+:0007:Music: Game Over
+:0008:Music: Tiger Saw
+:0009:Music: Safe Escape
+:000b:Music: Theatre HurryUp
+:000c:Music: Grand Finale
+:000d:Music: Coll. Bonus pt 1
+:000e:Music: Coll. Bonus pt 2
+:000f:Music: M.Ball Start
+:0010:Music: Main Prelaunch
+:0029:Music: Mode Title
+:0032:Music: Shot Complete 1
+:0033:Music: Th.HurryUp Score
+:0034:Music: Basement Select
+:0035:SFX: Going to Basement
+:0036:Music: Mode Complete 1
+:0037:Music: Mode Complete 2
+:0038:Music: MAGIC Spelled
+:0039:Music: Jackpot Score
+# ------------
+# In /003a/, Host says "Extra Brawl!" - apparently a slip of
+# the tongue when the clip was recorded.  Either nobody caught
+# it prior to release, or they figured it didn't need fixing.
+# ------------
+:003a:Music: Extra Ball!
+#
+:003b:Music: Replay!
+:003c:Music: Shot Complete 2
+:003d:Music: Spirit Ring
+:003e:Music: Special
+:003f:Music: Levitate!
+:0046:Music: Safe Esc. Hit 1
+:0047:Music: Sp.Cards Hit
+:0064:SFX: Trunk Magnet 1
+:0065:SFX: Saw Startup
+:0066:SFX: Saw Sustain
+:0067:SFX: Saw Shutdown
+:0068:SFX: Boom 1
+:0069:SFX: Misc 1
+:006b:SFX: Clock Chime
+:006c:SFX: Launch Ball
+:006d:SFX: Saw Slicing
+:006e:SFX: Misc 2
+:006f:SFX: Spinner
+:0070:SFX: Magna-Save
+:0071:SFX: Boom 2
+:0072:SFX: Boom 3 + Zap
+:0073:SFX: Spot THEATRE
+:0074:SFX: Crash 1
+:0075:SFX: Trunk Rotating
+:0076:SFX: Hocus-Pocus Hit
+:0077:SFX: Sp.Ring Capture
+:0078:SFX: TrapDoor Kickout
+:0079:SFX: Trunk Hit
+:007a:SFX: Loop-Ramp Cascade
+:007b:SFX: TrapDoor Target
+:007c:SFX: Misc 3
+:007d:SFX: Thunder
+:007e:SFX: Outlane
+:007f:SFX: Jet Bumper
+:0080:SFX: Captive Ball Hit
+:0081:SFX: Bonus X Lane
+:0082:SFX: Clock Winding
+:0085:SFX: Jackpot Increased
+:0086:SFX: Misc 4
+:0087:SFX: Ball Locked
+:0088:SFX: Misc 5
+:008a:SFX: Misc 6
+:008e:SFX: Misc 6 + Twinkles
+:008f:SFX: Tiger Roaring
+:0090:SFX: Phone Ringing
+:0091:SFX: Pick Up Phone
+:0092:SFX: Shuffling Cards
+:0093:SFX: Rattlesnake
+:0094:SFX: Birds
+:0095:SFX: Misc 7
+:0097:VOX: Bonus X Increased
+:0098:SFX: Ramp Shot
+:0099:SFX: Kickout Warning
+:009b:SFX: Misc 8
+:009c:SFX: Misc 9
+:009d:SFX: Spirit Ring Lit
+:009e:SFX: Misc 10
+:009f:VOX: "Moo!"
+:00c7:SFX: Boom 4
+:00c8:SFX: Illusion Lit
+:00c9:SFX: Misc 11
+:00ca:"Move your car!"
+:00cb:"Here's your hot dog!"
+# ------------
+# Male Voice Bank starts here.
+# ------------
+:00cc:"Go for Jackpot!"
+:00cd:"Jackpot is lit!"
+:00ce:"Billion!"
+:00cf:SFX: Combo shot
+:012c:Music: Jackpot! (2)
+:012d:SFX: Musical 1
+:012e:SFX: Musical 2
+:0190:VOX: Zap! "Vanish!"
+:01f4:"Extra ball!" (brawl)
+:01f6:"Seven o'clock."
+:01f7:"Eight o'clock."
+:01f8:"Nine o'clock!"
+:01f9:"Ten o'clock!"
+:01fa:"Eleven o'clock!"
+:01fb:"Midnight Madness!"
+:01fe:"Shoot for the trunk!"
+:01ff:"Shoot ... trap door."
+:0200:"Welcome to the Th..."
+:0201:"The Theatre awaits!"
+:0203:"Theatre complete!"
+:0210:"One o'clock."
+:0211:"It's Two o'clock."
+:0212:"Three o'clock."
+:0213:"Four o'clock."
+:0214:"Five o'clock."
+:0215:"It's six o'clock."
+:0219:"Mystifying!"
+:021a:"Magnificent!"
+:021b:"Astounding!"
+:021c:"Sensational!"
+:021d:"Spectacular!"
+:021e:"Unbelievable!"
+:021f:"Go for the extra ball"
+:0220:"Congratulations!"
+:0222:"Shoot... center stair"
+:0223:"Shoot... right stair"
+:0224:"Shoot for the jets"
+:0225:"Shoot... left lane"
+:0226:"Shoot... right lane"
+:0227:"Shoot... captive ball"
+:0228:"Shoot... spinner"
+:0229:"Make the ball vanish!"
+:022a:"Go for the center loop"
+:022c:"The rope is breaking!"
+:022d:"Hurry up!"
+:022e:"You must hurry up!"
+:022f:"Hurry up! ..danger!"
+:0230:"Look! She's in danger!"
+:0234:"Tiger Saw Jackpot!"
+:0237:"Shoot... magic trunk!"
+:023a:"The first ball is..."
+:023b:"The second ball is..."
+:023d:"The trap door is open!"
+:023e:"You must shoot into..."
+:0241:"Excellent!"
+:0242:"This ball is full of.."
+:0244:"...amazing player!"
+:0247:"I knew you could do it"
+:0249:"...can't help you now!"
+:024a:"Ticket, please."
+:024b:"Stay right where you.."
+:024c:"Don't give up now!"
+:024d:"You must continue!"
+:024e:"The basement is full.."
+:024f:"Oh no!" (crash oof ow!)
+:0250:"Replay!"
+:0252:"Careful!"
+:0255:"Try to saw the ball..."
+:0258:"Tonight's performance"
+:025c:"Player 1 is up."
+:025d:"Player 2 is up."
+:025e:"Player 3 is up."
+:025f:"Player 4 is up."
+:0260:"Amazing skill!"
+:0261:"Time is running out!"
+:0262:"Extra ball is lit!"
+:0263:"The air pressure is..."
+:0264:"Fifty Million!"
+:0265:"One-Hundred Million!"
+# ------------
+# Female Voice Bank
+# ------------
+:02bc:"Welcome to the Th..."
+:02bd:"Player"
+:02be:"One"
+:02bf:"Two"
+:02c0:"Three"
+:02c1:"Four"
+:02c2:"Welcome!"
+:02c4:"...is now closed."
+:02c7:"It's magic!"
+:02d3:"Shoot up the ctr stc."
+:02d4:"Shoot up the rt stc.."
+:02d5:"Shoot... the spinner!"
+:02d6:"Shoot for the jets!"
+:02d7:"Shoot... magic trunk!"
+:02d8:"Go for the ctr stc..."
+:02d9:"Go for the rt stc..."
+:02da:"Go for the spinner!"
+:02db:"Go for the jets!"
+:02dc:"Escape from the trunk"
+:02dd:"Shoot into the trap.."
+:02df:"Look!"
+:02e0:"Tiger Saw!"
+:02e1:"Spirit Cards!"
+:02e2:"Trunk Escape!"
+:02e3:"Levitating Woman!"
+:02e4:"Safe Escape!"
+:02e5:"The Metamorphosis!"
+:02e6:"Strait Jacket Escape!"
+:02e7:"Hat Magic!"
+:02e8:"Hocus Pocus!"
+:02ea:"The magic is within.."
+:02eb:"Vanish!"
+:02ed:"... the Grand Finale!"
+:02ee:"Make the Theatre..."
+:02ef:"You're an outstanding"
+:02f0:"Welcome back to the.."
+:02f1:"I am only an illusion"
+:02f2:"Hurry up!"
+:02f3:"Vanquish the chains!"
+:02f4:"You must break free!"
+:02f7:"I shall give you..."
+:02f9:"Extra ball is lit!"
+:02fa:"Go for the extra ball"
+:02fc:"Go for Multiball!"
+:02fd:"Lock is lit!"
+:02fe:"You must concentrate."
+:0300:"You are amazing!"
+:0301:"Unbelievable!"
+:0304:"Keep your cool!"
+:0307:"Levitate!"
+:0308:"You have the magic!"
+:0309:"You must believe in.."
+:030a:"Please!  Shoot again!"
+:030b:"You can do it!"
+:030c:"Here is another ball!"
+# ------------
+# German Translation of some comments
+# ------------
+:0321:VOX: (German)
+:0323:VOX: (German)
+:0325:VOX: (German)
+:0327:VOX: (German)
+:0328:VOX: (German)
+:0329:VOX: (German)
+:032a:VOX: (German)
+:032b:VOX: (German)
+:032c:VOX: (German)
+:032d:VOX: (German)
+:032e:VOX: (German)
+:032f:VOX: (German)
+:0332:VOX: (German)
+# ------------
+# Interesting... they didn't do a Spanish translation.
+# ------------
+
+
+; Twilight Zone
+; Additions made 01/20/01 by Dorsola (dorsola@descent2.com)
+; ------------
+tz_94h:
+:00:Reset Sound System
+:02:Music: Normal Prelaunch
+:03:Music: Normal Game
+:04:Music: Lock Lit
+:05:Music: Powerball Prelaunch
+:06:Music: Powerball Game
+:07:Music: Battle the Power
+:08:Music: Collect Bonus (pt 1)
+:09:Music: Power Mania
+:0a:Music: Multiball (normal)
+:0b:Music: Town Square Madness
+:0c:Music: T.S.M. Hit 1 + Theme
+:0d:Music: T.S.M. Hit 2 + Theme
+:0e:Music: T.S.M. Hit 3 + Theme
+:0f:Music: Multiball (Hurry-Up)
+:10:Music: Multiball (Jackpot!)
+:11:Music: Multiball Ready Pre
+:12:Music: Multiball Ready Game
+:13:Music: Super Slot
+:14:Music: Super Skill Shot
+:15:Music: Quick Lock Lit
+:16:Music: The Spiral
+:17:Music: Greed
+:18:Music: Clock Chaos level 1
+:19:Music: Clock Chaos level 2
+:1a:Music: Clock Chaos level 3
+:1b:Music: Clock Chaos level 4
+:1c:Music: Clock Chaos level 5
+:1d:Music: Quick Lock Theme 1
+# -------------
+# In most pre-DCS games, 1e and 1f adjust music tempo.  They're used
+# differently in TZ, however.
+# -------------
+:1e:Music: Clock Millions
+:1f:Music: Continue?
+# -------------
+# NOTE ABOUT 30: Will only sound if 37 or 08 was called previously.
+# -------------
+:30:Music: Collect Bonus (pt 2)
+# -------------
+# NOTE: Items marked with an asterisk (*) are special fade-in music
+# commands.  They perform a smooth transition from one theme to
+# another.
+# -------------
+:31:Music: Normal Prelaunch
+:32:Music: Normal Game *
+:33:Music: Lock Lit *
+:34:Music: Powerball Prelaunch
+:35:Music: Powerball Game *
+:36:Music: Battle the Power *
+:37:Music: Collect Bonus (pt 1)
+:38:Music: Power Mania
+:39:Music: Multiball Ready *
+:40:Music: Load Gumball pt. 1
+:41:Music: Load Gumball pt. 2
+:42:Music: Quick Lock Theme 2
+:43:Music: Quick Lock Theme 3
+:44:Music: Quick Lock Theme 4
+:45:Music: Quick Lock Theme 5
+:5a:Increase music tempo
+:5b:Decrease music tempo
+:7a:(+ param) = Alt. sound bank
+:81:SFX: Camera whirr-click
+:82:SFX: Crash 1
+:84:SFX: Slingshot
+:85:SFX: Tonk!
+:86:SFX: Crank turn 1
+:87:SFX: Crank turn 2
+:88:SFX: Crank turn 3
+:89:SFX: Misc 1
+:8a:SFX: Plunk
+:8d:SFX: Cuckoo
+:8e:SFX: Click 1
+:8f:SFX: Energy Release 1
+:90:SFX: Energy Release 2
+:91:SFX: Energy Release 3
+:93:SFX: Energy Release 4
+:94:SFX: Energy Release 5
+:95:SFX: Click 2
+:96:SFX: Crash 2
+:97:SFX: Launch Ball
+:98:SFX: Crash 3
+:9b:SFX: Click 3
+:9c:SFX: Right Ramp Diverter
+:9d:SFX: Gumball whirr-click
+:9e:SFX: Slot Machine Wind-up
+:9f:SFX: Slot Machine Stop
+:a0:SFX: Splat
+:a1:SFX: Click 4
+:a2:SFX: Click 5
+:a3:SFX: Boom 1
+:a4:SFX: Boom 2
+:a5:SFX: Boom 3
+:a7:SFX: Energy Release 1
+:a8:SFX: Energy Release 2
+:a9:SFX: Energy Release 3
+:ab:SFX: Crash 4
+:ac:SFX: Crash 5
+:ad:Music: Piano 2 (unused)
+:ae:SFX: Horn 1
+:af:SFX: Crash 6
+:b0:SFX: Horn 2
+:b1:SFX: Horn 3
+:b2:SFX: Horn 4
+:b3:SFX: Energy Release 4
+:b4:SFX: Energy Release 5
+:b5:SFX: Inlane rollover
+:b6:SFX: Outlane rollover
+:b7:SFX: Extra Ball Lit
+:b8:SFX: Multiball Start
+:b9:SFX: Rocket (long)
+:ba:SFX: Left Ramp Start
+:bb:SFX: Left Ramp Complete
+:bc:SFX: Misc 2
+:bd:SFX: Clock Chime
+:be:SFX: Misc 3
+:bf:SFX: Misc 4
+:c0:SFX: Hitchhiker Score
+:c1:SFX: TZ Hit (single)
+:c2:SFX: TZ Hit (Fade out)
+:c3:SFX: Spiral Score 1
+:c4:SFX: Spiral Score 2
+:c5:SFX: Spiral Breakthru
+:c6:SFX: Powerball Loop
+:c7:Music: Camera Score
+:c8:Music: Camera Next Award
+:c9:Music: Misc 1
+:ca:Music: Misc 2
+:cb:Music: Misc 3
+:cc:Music: Misc 4
+:cd:SFX: Jackpot Relit
+:ce:SFX: Quick Lock Show 1
+:cf:SFX: Quick Lock Show 2
+:d0:SFX: Slot Launch (ready)
+:d1:SFX: Slot Launch (go)
+:d2:SFX: Tilt Warning
+:d3:SFX: Tilt!
+:d4:SFX: Slam Tilt!
+:d5:SFX: Skill Red
+:d6:SFX: Skill Orange
+:d7:SFX: Skill Yellow
+:d8:SFX: Skill Shot Missed
+:d9:SFX: Echoed Click 1
+:da:SFX: Echoed Click 2
+:db:SFX: Echoed Click 3
+:dc:SFX: Echoed Click 4
+:dd:SFX: Electric Arc 1
+:e0:SFX: Electric Arc 2
+:e1:SFX: Super Slot Score
+:e2:SFX: T.S.M. Hit 1
+:e3:SFX: T.S.M. Hit 2
+:e4:SFX: T.S.M. Hit 3
+:e5:SFX: Super Skill Red
+:e6:SFX: Super Skill Orange
+:e7:SFX: Super Skill Yellow
+:e8:SFX: Super Skill Missed
+:e9:SFX: Start Battle Power
+:ea:SFX: Lite Slot Machine
+:eb:SFX: Spiral Shot Start
+:ec:SFX: Spiral Shot Complete
+:ed:SFX: Rocket (short)
+:ee:SFX: Door appears
+:ef:SFX: Robot Score
+:f0:SFX: Kick-out from lock, etc
+:f1:SFX: Jet bumper added
+:f2:Music: Replay/Special
+:f3:SFX: Misc 5
+:f4:SFX: Misc 6
+:f5:SFX: Misc 7
+:f6:SFX: Misc 8
+:f7:SFX: Jackpot Score (pt 1)
+:f8:SFX: Jackpot Score (pt 2)
+:fa:SFX: Right Ramp
+:fb:Music: Piano Award
+:fc:SFX: Lock Lit!
+:fd:SFX: Misc 9
+:fe:SFX: Mode Explain
+:ff:SFX: Misc 10
+# --------------
+# 01 is a blank music track used here so that CVSD sound can be played
+# back correctly.  It's unknown at this time if it's actually necessary
+# to play a music track before a CVSD sample or if this is simply serving
+# as a workaround to a bug in emulation.
+#
+# 7a = Select alt sound bank.  Next parameter is effect from alt bank.
+# --------------
+:017a01:"Tee hee hee hee hee!"
+:017a02:SFX: Boom 4
+:017a03:(Cousin It) "Aack!"
+:017a04:SFX: Bonk!
+:017a07:SFX: Boom 5
+:017a08:SFX: Boom 6
+:017a09:SFX: Boom 7
+:017a0a:SFX: Car Driving 1
+:017a0b:(Rudy) "Mmph! BLAH!"
+:017a0c:SFX: Car Driving 2
+:017a0d:SFX: Boom 8
+:017a0e:SFX: Boom 9
+:017a0f:SFX: Boom 10
+:017a10:"Here's your extra ball!"
+:017a11:SFX: Mode Complete
+:017a12:SFX: Robot Chatter
+:017a13:"Hi!  I'm Talking Tina!"
+:017a14:SFX: Gumball Pop
+:017a15:SFX: Car Screech
+:017a16:SFX: Misc 12
+:017a17:SFX: Misc 13
+:017a18:SFX: Clank 1
+:017a19:SFX: Clank 2
+:017a1a:SFX: Clank 3
+:017a1b:SFX: Boom 11
+:017a1c:SFX: Scream 1
+:017a1d:SFX: Scream 2
+:017a1e:SFX: Scream 3
+:017a20:"Haw haw haw haw haw!"
+:017a21:"Aaaaaaaarrrrrggghhh!"
+:017a22:"Feel lucky?"
+:017a23:(Power) "Oof!"
+:017a24:VOX: Power chuckle 1
+:017a25:VOX: Power chuckle 2
+:017a26:"Miss and you lose..."
+:017a27:"Noooooooooooooo!!"
+:017a28:"It's not yours!"
+:017a29:"Powerbaaallll!"
+:017a2a:"Put it back!"
+:017a2b:"Are you ready to...?"
+:017a2c:"Stop it!"
+:017a2d:"Too hot to handle?"
+:017a2e:"I want it back!"
+:017a32:"Be careful."
+:017a33:"Beyond... sight."
+:017a34:"Beyond... sound."
+:017a35:"Beyond... mind."
+:017a37:"This clock is worth..."
+:017a38:"You've just crossed..."
+:017a39:"Here's your extra ball!"
+:017a3a:"The Twilight Zone."
+:017a3b:"Into The Twilight Zone."
+:017a3d:"Feel the power."
+:017a3e:"There.  See what...?"
+:017a3f:"There's madness in..."
+:017a40:"Player One."
+:017a41:"Player Two."
+:017a42:"Player Three."
+:017a43:"Player Four."
+:017a44:"Note the hitchhiker..."
+:017a45:"This shot requires..."
+:017a46:"The Spiral awaits you."
+:017a47:"...Super Skill."
+:017a48:"Ten Million Points."
+:017a4a:"Not an ordinary day."
+:017a4b:"In an ordinary place."
+:017a4c:"Not an ordinary game?"
+:017a4d:"Or an ordinary player?"
+:017a4e:"The stakes are higher..."
+:017a4f:"...gumball machine."
+:017a50:"Time is a one-way..."
+:017a51:"You unlock this door..."
+:017a53:"An opportunity awaits..."
+:017a54:(Power) "Oof!" (2)
+:017a55:(Power) "Oof!" (3)
+:017a56:VOX: Power chuckle 3
+:017a59:"Breakthru!"
+:017a5a:(Robot) "Careful!"
+:017a5b:(Robot) "Don't miss!"
+:017a5c:"Don't touch the door!" 1
+:017a5d:"Don't touch the door!" 2
+:017a5e:"Get the extra ball!"
+:017a5f:"Faster!"
+:017a60:"Five!"
+:017a61:"Look to the future!"
+:017a62:"Lucky!"
+:017a63:"Oh no!"
+:017a64:"One!"
+:017a66:(Robot) "Put it back!"
+:017a67:"The robots can help!"
+:017a68:"Into the spiral!"
+:017a69:"Three!"
+:017a6a:"Two!"
+:017a6b:"You want more!"
+:017a6c:"Yes!"
+:017a6d:"You can do it!"
+:017a6e:"More!"
+:017a6f:"Jackpot!"
+:017a70:"Four!"
+:017a71:"Don't touch the door!" 3
+:017a72:"Ooo, give us shelter!"
+:017a73:"Return to your homes!"
+:017a74:"Do not panic!"
+:017a75:"Hey, it's only pinball!"
+:017a76:"Quit playin' with..."
+:017a77:"Greeeeeeeeed!"
+:017a78:VOX: Cousin It babbling
+:017a7a:SFX: Radio tuning 1
+:017a7b:SFX: Radio tuning 2
+:017a7e:SFX: Robot step 1
+:017a7f:SFX: Robot step 2
+:017a80:"Going my way?"
+:017a81:"Welcome race fans!"
+:017a82:"Go for the hill!"
+:017a83:"It's sunny drive time!"
+:017a84:"Picture the future."
+:017a85:"Big risk, big reward..."
+:017a86:"Things are not what..."
+:017a87:"Picture a ... camera."
+:017a88:"It's time to tune in..."
+:017a8a:"A chance at one of..."
+:017a8b:"Never underestimate..."
+:017a8c:"You have ... detour..."
+:017a8f:"Dance with the Devil..."
+:017a90:SFX: Scream 4
+:017a94:"...end of your journey."
+:017a95:"Survival is everything."
+:017a96:SFX: Cash register
+:017a97:SFX: Robot/Ramp Award
+:017a98:Music: Super Skill Start
+:017a99:SFX: Synth clank 1
+:017a9a:SFX: Synth clank 2
+:017a9b:SFX: Synth clank 3
+:017a9c:SFX: Misc 14
+:017a9d:Music: Super Skill Score
+:017a9e:Music: Gumball Shot
+:017a9f:Music: 3-way Combo
+:017aa0:Music: 4-way Combo
+:017aa1:Music: Quick Lock Start
+:017aa2:SFX: Misc 15
+:017aa3:SFX: Misc 16
+
+
+; World Cup Soccer '94
+; Additions made 01/20/01 by Dorsola (dorsola@descent2.com)
+; DCS Hardware
+; ------------
+wcs_l2:
+# ------------
+# 00xx = Music/Main SFX Bank
+# ------------
+:0000:Sound OFF
+:0001:Music: Multiball Main
+:0002:Music: Lock Lit Main
+:0003:Music: Intro + Norm Main
+:0004:Music: Final Draw Lit
+:0005:Music: Normal Pre
+:0006:Music: Lock Lit Pre
+:0007:Music: Multiball Pre
+:000b:Music: Extra Ball
+:000c:Music: Multiball Goal!
+:0015:Music: Normal Main
+:0016:Music: Kickoff Norm Main
+:0017:Music: Multiball Jackpot
+:0018:Music: B-I-G Goal Win
+:0019:Music: Striker Award
+:001a:Music: Striker Shot Lit
+:001b:Music: Ultra Goalie/Ramp
+:001d:Music: Shoot Again!
+:001f:Music: Ultra Item Full
+:0020:Music: EOB Bonus Show 3
+:0021:Music: EOB Bonus Flash
+:0023:Music: Boston Tea Party
+:0024:Music: BTP Complete
+:0027:Music: EOB Bonus Show 1
+:0028:Music: EOB Bonus Show 2
+:0036:Music: Fanfare 1
+:0037:Music: Fanfare (Lock Lit)
+:0038:Music: Final Draw
+:0039:Music: Victory Lap
+:003a:Music: Free Kick Hit
+:003b:Music: Sup. Free Kick Hit
+:003c:Music: Multiball Next Opp
+:003d:Music: Buy Ticket
+:003e:Music: Penalty Kick
+:0040:Music: Replay/Special
+:0042:Music: Skill Shot Score
+:0043:Music: B-I-G Goal Score
+:0044:Music: Super Free Kick
+:0046:Music: Multiball Rematch
+:0048:Music: Extra Ball Round
+:004a:Music: B-I-G Goal Round
+:004c:Music: Go For the Goalie!
+:004e:Music: Where's Striker?
+:0064:SFX: Fan Foghorn
+:0065:SFX: Misc 1
+:0066:SFX: Misc 2
+:0067:VOX: Crowd Cheer 1
+:0068:VOX: Crowd Cheer 2
+:0069:VOX: Crowd "Awwwwww!"
+:006a:VOX: Crowd "Boooooo!"
+:006c:SFX: Jet Flies Overhead
+:006e:SFX: Referee Whistle
+:006f:SFX: Misc 3
+:0071:SFX: Firework Whistle
+:0072:SFX: Firework Explosion
+:0073:SFX: Magna-Goalie
+:0075:VOX: Crowd Cheer 3
+:0076:SFX: Punch!
+:0077:SFX: "Unh!"
+:0078:SFX: Boing!
+:007c:SFX: Jet Bumper 1
+:007d:SFX: Jet Bumper 2
+:007e:SFX: Kicker
+:007f:VOX: Crowd Encouraging
+:0080:SFX: Normal Spinner
+:0083:SFX: Misc 4
+:0086:SFX: Goal Rollover 1
+:0087:SFX: Goal Rollover 2
+:0088:SFX: Goal Rollover 3
+:0089:SFX: Goal Rollover 4
+:008c:SFX: Misc 5
+:008d:SFX: Misc 6
+:008e:SFX: Misc 7
+:008f:SFX: Ball Captured
+:0092:SFX: Ticket Lane (Good)
+:0093:SFX: Ticket Lane (Bad)
+:0095:SFX: Ramp Complete
+:0096:SFX: Goal Rollover 5
+:0097:SFX: Thunder 1
+:0098:SFX: Super Spinner
+:009a:VOX: "Moo!"
+:009b:SFX: Boom 1
+:009c:VOX: Crowd Loop 1
+:009d:VOX: Crowd Loop 2
+:00a0:VOX: Crowd Cheer 1
+:00a1:VOX: Crowd Cheer 2
+:00a2:VOX: Crowd "Awwwwww!"
+:00a3:VOX: Crowd "Boooooo!"
+:00a4:SFX: Alert Bell
+:00a5:SFX: Ding!
+:00a6:SFX: TV Click
+:00a7:SFX: TV Static
+:00a8:SFX: Ramp Start
+:00aa:SFX: "Spwat!"
+:00ab:VOX: "Gulp!"
+:00ac:SFX: Striker Throws In
+:00ad:SFX: Firework Fuse
+:00ae:SFX: Firework Launch
+:00af:SFX: Chalkboard
+:00b0:SFX: Misc 11
+:00b1:SFX: Goalie Impact
+:00b2:SFX: Tweeting Birds
+:00bb:SFX: Kickout Warning
+:00bc:"Five!"
+:00bd:"Four!"
+:00be:"Three!"
+:00bf:"Two!"
+:00c0:"One!"
+:00cc:SFX: Outlane Drain
+# ------------
+# 01xx = Misc Voice Bank
+# ------------
+:012c:"Skill!"
+:012d:"Speed!"
+:012e:"Spirit!"
+:012f:"Stamina!"
+:0130:"Strength!"
+:0131:"Ultra Goalie"
+:0132:"Ultra Jets"
+:0133:Crowd Cheer + Bells
+:0134:"Ultra Ramps"
+:0135:"Ultra Spinner"
+# NS = Next Stop
+:0136:"NS, Chicago"
+:0137:"NS, Dallas"
+:0138:"NS, Boston"
+:0139:"NS, New York"
+:013a:"NS, New Jersey"
+:013b:"NS, Orlando"
+:013c:"NS, Washington DC"
+:013d:"NS, San Francisco"
+:013e:"NS, Detroit"
+# WLI = We're Landing In
+:013f:"WLI Chicago"
+:0140:"WLI Dallas"
+:0141:"WLI Boston"
+:0142:"WLI New York"
+:0143:"WLI New Jersey"
+:0144:"WLI Orlando"
+:0145:"WLI Washington DC"
+:0146:"WLI San Francisco"
+:0147:"WLI Detroit"
+# WT = Welcome To
+:0148:"WT Chicago"
+:0149:"WT Dallas"
+:014a:"WT Boston"
+:014b:"WT New York"
+:014c:"WT New Jersey"
+:014d:"WT Orlando"
+:014e:"WT Washington DC"
+:014f:"WT San Francisco"
+:0150:"WT Detroit"
+# EYSI = Enjoy Your Stay In
+:0151:"EYSI Chicago"
+:0152:"EYSI Dallas"
+:0153:"EYSI Boston"
+:0154:"EYSI New York"
+:0155:"EYSI New Jersey"
+:0156:"EYSI Orlando"
+:0157:"EYSI Washington DC"
+:0158:"EYSI San Francisco"
+:0159:"EYSI Detroit"
+# F501 = Flight 501 Now Boarding For
+:015a:"F501 Chicago"
+:015b:"F501 Dallas"
+:015c:"F501 Boston"
+:015d:"F501 New York"
+:015e:"F501 New Jersey"
+:015f:"F501 Orlando"
+:0160:"F501 Washington DC"
+:0161:"F501 San Francisco"
+:0162:"F501 Detroit"
+# PTLI = Prepare To Land In
+:0163:"PTLI Chicago"
+:0164:"PTLI Dallas"
+:0165:"PTLI Boston"
+:0166:"PTLI New York"
+:0167:"PTLI New Jersey"
+:0168:"PTLI Orlando"
+:0169:"PTLI Washington DC"
+:016a:"PTLI San Francisco"
+:016b:"PTLI Detroit"
+:016c:"Ultra (everything)"
+:016d:"Raiden!"
+:016e:"Nice car!"
+:016f:"I thought we were..."
+:0170:"Stay cool, daddio!"
+:0171:"Admiral Biadgi Out"
+:0172:VOX: Scream
+# ------------
+# 07xx = Announcer bank 1
+# ------------
+:07d0:"Hit the goalie!"
+:07d1:"Go for the goalie!"
+:07d2:"It's the Boston Tea..."
+:07d3:"It's tea time in..."
+:07d4:"Super Free Kick!"
+:07d5:"Go for the extra ball!"
+:07d6:"Extra Ball!"
+:07d7:"Fifty Million!"
+:07dc:"Shoot the goal!"
+:07de:"This team is on the..."
+:07df:"What a save!"
+:07e0:"Great save!"
+:07e1:"I can't... stopped..."
+:07e2:"This goalie is unb..."
+:07e3:"Great hands!"
+:07e4:"The guy is a wall!"
+:07e5:"Incredible save!"
+:07e6:"How did he make...?"
+:07e8:"The shot is good!"
+:07e9:"Another goal!"
+:07ea:"Goal!"
+:07eb:"Goooooaaaaaalllll!!"
+:07ec:"I can't... it went in!"
+:07ed:"What an unbelievable.."
+:07ee:"He scores!"
+:07ef:"He kicks it in!"
+:07f0:"What a header!"
+:07f1:"It's going in!"
+:07f2:"What a move!"
+:07f3:"Jackpot!"
+:07f4:"He scores a jackpot!"
+:07f5:"Great bicycle kick!"
+:07f6:"What a pass!"
+:07f7:"What a shot!"
+:07f8:"What a play!"
+:07f9:"Great tackle!"
+:07fa:"That was a hard tackle"
+:07fb:"He's lined up for a..."
+:07fc:"He's got a free kick!"
+:07fd:"Free kick!"
+:07fe:"Yellow card!"
+:07ff:"It's a red card!"
+# ------------
+# 08xx = Announcer bank 2
+# ------------
+:0800:"He's outta there!"
+:0801:"He passes downfield."
+:0802:"Out of bounds."
+:0803:"The corner kick is..."
+:0804:"It's kicked back in..."
+:0805:"Ready for corner kick!"
+:0807:"... instant replay!"
+:0808:"Let's watch that..."
+:080d:"Welcome ... WC '94!"
+:080e:"Get ready for the..."
+:080f:"The players are..."
+:0810:"The stadium is..."
+:0811:"It's time... Fin.Draw!"
+:0812:"You've qualified for.."
+:0813:"You made... Fin. Draw!"
+:0814:"Welcome to L.A., ..."
+:0815:"... World Cup Final!"
+:0816:"Defeat Germany for..."
+:0817:"The match is tied!"
+:0819:"We're in Overtime!"
+:081a:"You've won the W. Cup!"
+:081b:"A few seconds remain!"
+:081c:"Victory lap!"
+:081d:"The team takes a V.lap"
+:0821:"Germany is ahead by 1"
+:0822:"Germany is ahead by 2"
+:0823:"Germany is ahead by 3"
+:0824:"Germany is ahead by 4"
+:0825:"Germany is ahead by 5"
+:0826:"Germany is ahead by 6"
+:0827:"Germany is ahead by 7"
+:0828:"Germany is ahead by 8"
+:082b:"Germany leads by 1"
+:082c:"Germany leads by 2"
+:082d:"Germany leads by 3"
+:082e:"Germany leads by 4"
+:082f:"Germany leads by 5"
+:0830:"Germany leads by 6"
+:0831:"Germany leads by 7"
+:0832:"Germany leads by 8"
+:0835:"Germany trails by 1"
+:0836:"Germany trails by 2"
+:0837:"Germany trails by 3"
+:0838:"Germany trails by 4"
+:0839:"Germany trails by 5"
+:083a:"Germany trails by 6"
+:083b:"Germany trails by 7"
+:083c:"Germany trails by 8"
+:083f:"Germany is behind by 1"
+:0840:"Germany is behind by 2"
+:0841:"Germany is behind by 3"
+:0842:"Germany is behind by 4"
+:0843:"Germany is behind by 5"
+:0844:"Germany is behind by 6"
+:0845:"Germany is behind by 7"
+:0846:"Germany is behind by 8"
+:0848:"Germany retains the..."
+:0849:"Germany scores!"
+:084a:"Germany scores a goal!"
+# FM = First Match
+:0851:"FM: Germany"
+:0852:"FM: Germany, defend..."
+:0853:"FM: Italy"
+:0854:"FM: Holland"
+:0855:"FM: Sweden"
+:0856:"FM: Austria"
+:0857:"FM: France"
+:0858:"FM: USA"
+:0859:"FM: Canada"
+:085a:"FM: Australia"
+:085b:"FM: Great Britain"
+:085c:"FM: Morocco"
+:085d:"FM: Spain"
+:085e:"FM: Saudi Arabia"
+:085f:"FM: South Korea"
+:0860:"FM: Russia"
+# YO = Your Opponent
+:0865:"YO: Germany"
+:0866:"YO: Germany, defend..."
+:0867:"YO: Italy"
+:0868:"YO: Holland"
+:0869:"YO: Sweden"
+:086a:"YO: Austria"
+:086b:"YO: France"
+:086c:"YO: USA"
+:086d:"YO: Canada"
+:086e:"YO: Australia"
+:086f:"YO: Great Britain"
+:0870:"YO: Morocco"
+:0871:"YO: Spain"
+:0872:"YO: Saudi Arabia"
+:0873:"YO: South Korea"
+:0874:"YO: Russia"
+# NM = Next Match
+:0879:"NM: Germany"
+:087a:"NM: Germany, defend..."
+:087b:"NM: Italy"
+:087c:"NM: Holland"
+:087d:"NM: Sweden"
+:087e:"NM: Austria"
+:087f:"NM: France"
+:0880:"NM: USA"
+:0881:"NM: Canada"
+:0882:"NM: Australia"
+:0883:"NM: Great Britain"
+:0884:"NM: Morocco"
+:0885:"NM: Spain"
+:0886:"NM: Saudi Arabia"
+:0887:"NM: South Korea"
+:0888:"NM: Russia"
+#
+:088b:"The crowd is waiting.."
+:088e:"They can't seem to..."
+:0890:"He's set up in front.."
+:0891:"It's a breakaway!"
+:0892:"He's lined up for a..."
+:0893:"Where's he gone now?"
+:0894:"Where's Striker?"
+:0895:"There he is!"
+:0896:"That's not him!"
+:0897:"I was sure that was..."
+:089a:"It's Big Goal Round!"
+:089d:"Extra Ball Round!"
+:089e:"He takes a brutal hit!"
+:089f:"A crushing blow!"
+:08a1:"Let's take another..."
+:08a3:"Replay!"
+:08a4:"It's a match!"
+:08a5:"Shoot again!"
+:08a6:"Unbelievable play!"
+:08a7:"What a remarkable..."
+:08a8:"...extra ball on..."
+:08a9:"...extra ball by..."
+:08aa:"Back and better than.."
+:08ab:"What a powerful shot!"
+:08ac:"Goooooaaaaallll!!!"
+:08ad:"Incredible shot!"
+:08ae:"He slams it in!"
+:08af:"There's no stopping..."
+:08b0:"He's unstoppable!"
+:08b1:"Another unbel. save!"
+:08b3:"He blocks another one!"
+:08b4:"That was an amazing..."
+:08b5:"Special!"
+# ------------
+# 09xx = Announcer bank 3
+# ------------
+:0929:"What a save!"
+:092a:"Great save!"
+:092b:"I can't... stopped..."
+:092c:"This goalie is unb..."
+:092d:"Great hands!"
+:092e:"The guy is a wall!"
+:092f:"Incredible save!"
+:0930:"How did he make...?"
+:0931:"The shot is good!"
+:0932:"Another goal!"
+:0933:"Goal!"
+:0934:"Goooooaaaaaalllll!!"
+:0935:"I can't... it went in!"
+:0936:"What an unbelievable.."
+:0937:"He scores!"
+:0938:"He kicks it in!"
+:0939:"What a header!"
+:093b:"What a move!"
+:093c:"Jackpot!"
+:093d:"He scores a jackpot!"
+:093e:"Great bicycle kick!"
+:093f:"What a pass!"
+:0940:"What a shot!"
+:0941:"What a play!"
+:0942:"Goal!" + crowd cheer
+:0943:"Kooowwaaahh!"
+:0944:"Towwaaaaahh!"
+:0945:"Koooooooaahhh!"
