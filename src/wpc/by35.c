@@ -313,7 +313,7 @@ static void by35_zeroCross(int data) { pia_pulse_cb1(BY35_PIA0, 0); }
    makes it easier to map the lights, and saves a row.
  */
 
-static void by35p_lampStrobe() {
+static void by35p_lampStrobe(void) {
   int strobe = locals.a1 >> 2;
   int ii,jj;
   for (ii = 0; strobe; ii++, strobe>>=1) {
