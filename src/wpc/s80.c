@@ -36,12 +36,9 @@ static void S80_nvram(void *file, int write);
 	s9  s10 s11 s12 s13 s14 s15 s16
 	s17 s18 s19 s20 s21 s22 s23 s24
 	s25 s26 s27 s28 s29 s30 s31 s32
-
-replaced by core_getDip():
-
-  static UINT8 opSwitches[4] = {0x02, 0x83, 0xd3, 0xfc};
-
 */
+
+static UINT8 opSwitches[4] = {0x02, 0x83, 0xd3, 0xfc};
 
 int core_bcd2seg16[16] = {0x3f00,0x0022,0x5b08,0x4f08,0x6608,0x6d08,0x7d08,0x0700,0x7f08,0x6f08,
 #ifdef MAME_DEBUG
@@ -804,14 +801,22 @@ static void S80_exit(void) {
 /*-----------------------------------------------
 / Load/Save static ram
 / Save RAM & CMOS Information
-/ The RAM size was changed from 2K to 8K starting with
-/ CPU Rev #2
 /-------------------------------------------------*/
 void S80_nvram(void *file, int write) {
-	if (write)  /* save nvram */
-		osd_fwrite(file, RAM_256, 256);
-	else if (file) /* load nvram */
-		osd_fread(file, RAM_256, 256);
-	else  /* first time */
-		memset(RAM_256, 0x00, 256);
+	core_nvram(file, write, RAM_256, sizeof RAM_256, 0x00);
+	
+	/* no NVRAM file ? */
+	if ( !file ) {
+		int  i;
+		for(i=0;i<4;i++) {
+			if ( core_getDip(i) )
+				break;
+		}
+
+		/* no dips are defined by the user, so use default values */
+		if (i==4) {
+			for(i=0;i<4;i++)
+				core_setDip(i, revertByte(opSwitches[i]));
+		}
+	}
 }
