@@ -331,7 +331,7 @@ ZAC_SOUNDROM_de2g(		"robot_d.snd",CRC(ab5e5524) SHA1(9aae2560bccf64daeab0514c893
 						"robot_e.snd",CRC(2f314e33) SHA1(1f92aff3d99c2e86820720a3290285b9f36cb15b),
 						"robot_g.snd",CRC(6fb1caf5) SHA1(0bc6a6edaa9589b7d171f96fa74855a022c2b050))
 ZAC_ROMEND
-CORE_GAMEDEFNV(robot,"Robot",1985,"Zaccaria",ZAC_robot,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(robot,"Robot",1985,"Zaccaria",ZAC_robot,0)
 
 INITGAME(robotg,GEN_ZAC2,dispZAC3,SNDBRD_ZAC13136)
 ZAC_ROMSTART020(robotg,	"robot_1.lgc", CRC(5e754418) SHA1(81a25ef85147d8c043b7d243d9d0d3e8bf90f852),
@@ -340,7 +340,7 @@ ZAC_SOUNDROM_de2g(		"robot_dg.snd",CRC(88685b1e) SHA1(7d49a1d42f3e07948390a00a56
 						"robot_eg.snd",CRC(e326a851) SHA1(c2bb5e329803922fa1c1ca30be6e3ae3d292135a),
 						"robot_gg.snd",CRC(7ed5da55) SHA1(d70f1f470cf9d300375600352f9625b4e34f5ed3))
 ZAC_ROMEND
-CORE_CLONEDEFNV(robotg,robot,"Robot (german speech)",1985,"Zaccaria",ZAC_robot,GAME_NOT_WORKING)
+CORE_CLONEDEFNV(robotg,robot,"Robot (german speech)",1985,"Zaccaria",ZAC_robot,0)
 
 /*--------------------------------
 / Clown (07/85)
