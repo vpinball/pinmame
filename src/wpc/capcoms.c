@@ -11,6 +11,9 @@
 //Remove this flag to test the real game sending data (otherwise, we simply feed data from the roms till we hit the end)
 //#define TEST_FROM_ROM
 
+//Comment out to remove U16 Test bypass..
+#define TEST_BYPASS
+
 #define VERBOSE
 
 #ifdef VERBOSE
@@ -58,6 +61,7 @@ static struct {
   int rombase;			//Points to current rom
   int bof_line[2];		//Track status of bof line for each tms chip
   int sreq_line[2];		//Track status of sreq line for each tms chip
+  int cbof_line[2];		//Clear BOF Line (8752 controlled)
 #ifdef TEST_FROM_ROM
   int curr[2];			//Current position we've read from the rom
 #endif
@@ -82,11 +86,13 @@ void cap_bof(int chipnum,int state)
 {
 	locals.bof_line[chipnum]=state;
 	LOG(("MPG#%d: BOF Set to %d\n",chipnum,state));
+	printf("MPG#%d: BOF Set to %d\n",chipnum,state);
 }
 void cap_sreq(int chipnum,int state)
 {
 	locals.sreq_line[chipnum]=state;
 	LOG(("MPG#%d: SREQ Set to %d\n",chipnum,state));
+	printf("MPG#%d: SREQ Set to %d\n",chipnum,state);
 }
 
 
@@ -183,13 +189,13 @@ static READ_HANDLER(port_r)
 			P1.1    (X) = NC
 			P1.2    (I) = /CTS = CLEAR TO SEND   - From Main CPU(Active low)
 			P1.3    (I) = /RTS = REQEUST TO SEND - From Main CPU(Active low)
-			P1.4    (O) = SCL = U10 - Pin 14 - EPOT CLOCK
-			P1.5    (O) = SDA = U10 - Pin  9 - EPOT SERIAL DATA
+			P1.4    (I) = SCL = U10 - Pin 14 - EPOT CLOCK			(Not a mistake, port used for both I/O)
+			P1.5    (I) = SDA = U10 - Pin  9 - EPOT SERIAL DATA		(Not a mistake, port used for both I/O)
 			P1.6    (O) = /CBOF1 = CLEAR BOF1 IRQ
 			P1.7    (O) = /CBOF2 = CLEAR BOF2 IRQ */
 		case 1:
-			LOG(("%4x:port read @ %x data = %x\n",activecpu_get_pc(),offset,data));
 			//Todo: return cts/rts lines..
+			LOG(("%4x:port read @ %x data = %x\n",activecpu_get_pc(),offset,data));
 			return data;
 		/*PORT 3:
 			P3.0/RXD(I) = Serial Receive -  RXD
@@ -201,12 +207,12 @@ static READ_HANDLER(port_r)
 			P3.6    (O) = /WR
 			P3.7    (O) = /RD*/
 		case 3:
-			LOG(("%4x:port read @ %x data = %x\n",activecpu_get_pc(),offset,data));
 			//Todo: return RXD line
 			data |= (locals.bof_line[0])<<2;
 			data |= (locals.bof_line[1])<<3;
 			data |= (locals.sreq_line[0])<<4;
 			data |= (locals.sreq_line[1])<<5;
+			LOG(("%4x:port read @ %x data = %x\n",activecpu_get_pc(),offset,data));
 			return data;
 	}
 	LOG(("%4x:port read @ %x data = %x\n",activecpu_get_pc(),offset,data));
@@ -234,11 +240,15 @@ static WRITE_HANDLER(port_w)
 			cap_UpdateSoundLEDS(data&0x01);
 			//CBOF1
 			if((data&0x40)==0)	{
+				//BOF Line ALWAYS HI When this Line is Lo!
+				locals.bof_line[0] = 1;
 				cpu_set_irq_line(locals.brdData.cpuNo, I8051_INT0_LINE, CLEAR_LINE);
 				LOG(("Clearing /BOF1 - INT 0 \n"));
 			}
 			//CBOF2
 			if((data&0x80)==0){
+				//BOF Line ALWAYS HI When this Line is Lo!
+				locals.bof_line[1] = 1;
 				cpu_set_irq_line(locals.brdData.cpuNo, I8051_INT1_LINE, CLEAR_LINE);
 				LOG(("Clearing /BOF2 - INT 1 \n"));
 			}
@@ -462,6 +472,18 @@ static void capcoms_init(struct sndbrdData *brdData) {
   memset(&locals, 0, sizeof(locals));
   locals.brdData = *brdData;
   memset(&x9241, 0, sizeof(x9241));
+
+  //patch over tests that are failing
+  #ifdef TEST_BYPASS
+  //U22 Test (MPG 1)
+  *((UINT8 *)(memory_region(CAPCOMS_CPUREGION) + 0x7bb))   = 0x70;		//convert jz to jnz
+  //U23 Test (MPG 2)
+  *((UINT8 *)(memory_region(CAPCOMS_CPUREGION) + 0x7ca))   = 0x70;		//convert jz to jnz
+  //SCLK Stuck Line
+  *((UINT8 *)(memory_region(CAPCOMS_CPUREGION) + 0x80f))   = 0x30;		//convert jb to jnb
+  //SDA Stuck Line
+  *((UINT8 *)(memory_region(CAPCOMS_CPUREGION) + 0x817))   = 0x30;		//convert jb to jnb
+  #endif
 
 //Set up timer to force feed data to the TMS chips from the ROMS
 #ifdef TEST_FROM_ROM
