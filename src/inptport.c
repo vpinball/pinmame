@@ -551,7 +551,7 @@ struct ipd inputport_defaults[] =
 	{ (IPT_TRACKBALL_X | IPF_PLAYER7)+IPT_EXTENSION,                 "Track X 7", SEQ_DEF_1(JOYCODE_7_RIGHT) },
 	{ IPT_TRACKBALL_X | IPF_PLAYER8, "Track X 8", SEQ_DEF_1(JOYCODE_8_LEFT) },
 	{ (IPT_TRACKBALL_X | IPF_PLAYER8)+IPT_EXTENSION,                 "Track X 8", SEQ_DEF_1(JOYCODE_8_RIGHT) },
-	
+
 	{ IPT_TRACKBALL_Y | IPF_PLAYER1, "Track Y",   SEQ_DEF_3(KEYCODE_UP, CODE_OR, JOYCODE_1_UP) },
 	{ (IPT_TRACKBALL_Y | IPF_PLAYER1)+IPT_EXTENSION,                 "Track Y",   SEQ_DEF_3(KEYCODE_DOWN, CODE_OR, JOYCODE_1_DOWN) },
 	{ IPT_TRACKBALL_Y | IPF_PLAYER2, "Track Y 2", SEQ_DEF_3(KEYCODE_R, CODE_OR, JOYCODE_2_UP) },
@@ -632,7 +632,7 @@ struct ipd inputport_defaults[] =
 	{ (IPT_LIGHTGUN_X | IPF_PLAYER5)+IPT_EXTENSION,                "Lightgun X 5", SEQ_DEF_1(JOYCODE_5_RIGHT) },
 	{ IPT_LIGHTGUN_X | IPF_PLAYER6, "Lightgun X 6", SEQ_DEF_1(JOYCODE_6_LEFT) },
 	{ (IPT_LIGHTGUN_X | IPF_PLAYER6)+IPT_EXTENSION,                "Lightgun X 6", SEQ_DEF_1(JOYCODE_6_RIGHT) },
-	{ IPT_LIGHTGUN_X | IPF_PLAYER7, "Lightgun X 7", SEQ_DEF_1(JOYCODE_7_LEFT) },				   
+	{ IPT_LIGHTGUN_X | IPF_PLAYER7, "Lightgun X 7", SEQ_DEF_1(JOYCODE_7_LEFT) },
 	{ (IPT_LIGHTGUN_X | IPF_PLAYER7)+IPT_EXTENSION,                "Lightgun X 7", SEQ_DEF_1(JOYCODE_7_RIGHT) },
 	{ IPT_LIGHTGUN_X | IPF_PLAYER8, "Lightgun X 8", SEQ_DEF_1(JOYCODE_8_LEFT) },
 	{ (IPT_LIGHTGUN_X | IPF_PLAYER8)+IPT_EXTENSION,                "Lightgun X 8", SEQ_DEF_1(JOYCODE_8_RIGHT) },
@@ -1595,7 +1595,7 @@ static void save_default_keys(void)
 {
 	config_file *cfg;
 
-	cfg = config_open(NULL);
+	cfg = config_create(NULL);
 	if (cfg)
 	{
 		config_write_default_ports(cfg, inputport_defaults_backup, inputport_defaults);
