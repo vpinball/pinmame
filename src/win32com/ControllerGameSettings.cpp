@@ -458,12 +458,17 @@ STDMETHODIMP CGameSettings::get_Value(BSTR sName, VARIANT *pVal)
 	return GetSetting(m_szROM, szName, pVal)?S_OK:S_FALSE;
 }
 
+extern "C" 
+{
+	CController*	m_pController;	
+}
+
 STDMETHODIMP CGameSettings::put_Value(BSTR sName, VARIANT newVal)
 {
 	char szName[4096];
 	WideCharToMultiByte(CP_ACP, 0, sName, -1, szName, sizeof szName, NULL, NULL);
 
-	HRESULT hr = PutSetting(m_szROM, szName, newVal);
+	HRESULT hr = PutSetting(m_szROM, szName, newVal)?S_OK:S_FALSE;
 	if ( SUCCEEDED(hr) ) {
 		if ( IsEmulationRunning() && SettingAffectsRunningGame(szName) ) {
 			VariantChangeType(&newVal, &newVal, 0, VT_BSTR);
@@ -476,4 +481,28 @@ STDMETHODIMP CGameSettings::put_Value(BSTR sName, VARIANT newVal)
 	}
 
 	return hr;
+}
+
+STDMETHODIMP CGameSettings::DisplayPositionX(VARIANT newVal, long hParentWnd)
+{
+	VariantChangeType(&newVal, &newVal, 0, VT_I4);
+	if ( IsWindow((HWND) hParentWnd) ) {
+		RECT rect;
+		GetWindowRect((HWND) hParentWnd, &rect);
+		newVal.lVal += rect.left;
+	}
+
+	return put_Value(CComBSTR("dmd_pos_x"), newVal);
+}
+
+STDMETHODIMP CGameSettings::DisplayPositionY(VARIANT newVal, long hParentWnd)
+{
+	VariantChangeType(&newVal, &newVal, 0, VT_I4);
+	if ( IsWindow((HWND) hParentWnd) ) {
+		RECT rect;
+		GetWindowRect((HWND) hParentWnd, &rect);
+		newVal.lVal += rect.top;
+	}
+
+	return put_Value(CComBSTR("dmd_pos_y"), newVal);
 }
