@@ -190,7 +190,20 @@ CAPCOMS_SOUNDROM4b("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e
 				   "u30_b17.bin", CRC(b4b6011b) SHA1(362c11353390f9ed2ee788847e6a2078b29c8806), \
 				   "u31_b17.bin", CRC(3016563f) SHA1(432e89dd975559017771da3543e9fe36e425a32b))
 CC_ROMEND
-CORE_GAMEDEFNV(bbb109,"Big Bang Bar (Beta)",1996,"Capcom",cc2,0)
+CORE_GAMEDEFNV(bbb109,"Big Bang Bar (v1.09 Beta)",1996,"Capcom",cc2,0)
+
+INITGAME(bbb108, 10, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 8)
+CC_ROMSTART_4(bbb108,  "u1l_b18.bin", CRC(60a02e1e) SHA1(c2967b4ba0ce01cb9f4ed5ceb4ca5f16596fc75b),
+                       "u1h_b18.bin", CRC(7a987a29) SHA1(5307b7feb8d86cf7dd51dd9c501b2539441b684e),
+                       "u2l_b17.bin", CRC(9bebf271) SHA1(01c85396b96ffb04e445c03d6d2d88cce7835664),
+                       "u2h_b17.bin", CRC(afd36d9c) SHA1(b9f68b1e5792e293b9b8549dce0379ed3d8d2ceb))
+CAPCOMS_SOUNDROM4b("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e0252800b28274),\
+				   "u28_b17.bin", CRC(af47c0f0) SHA1(09f84b9d1399183298279dfac95367741d6304e5), \
+				   "u29_b17.bin", CRC(b5aa0d76) SHA1(c732fc76b992261da8475097adc70514e5a1c2e3), \
+				   "u30_b17.bin", CRC(b4b6011b) SHA1(362c11353390f9ed2ee788847e6a2078b29c8806), \
+				   "u31_b17.bin", CRC(3016563f) SHA1(432e89dd975559017771da3543e9fe36e425a32b))
+CC_ROMEND
+CORE_CLONEDEFNV(bbb108,bbb109,"Big Bang Bar (v1.08 Beta)",1996,"Capcom",cc2,0)
 
 /*-------------------------------------------------------------------
 / Kingpin (12/96)
