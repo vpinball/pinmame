@@ -443,7 +443,7 @@ int pia_read(int which, int offset)
 				                           p->intf->in_cb2_func(0));
 #ifdef MAME_DEBUG
 			else if (C2_INPUT(p->ctl_b) && !(p->in_set & PIA_IN_SET_CB2)) {
-				logerror("PIA%d: Error! PIA%d no CB2 read handler. Three-state pin is undefined\n",which);
+				logerror("PIA%d: Error! No CB2 read handler. Three-state pin is undefined\n",which);
 				pia_set_input_cb2(which, 0); // not connected pin is floating
 				p->in_set &= ~PIA_IN_SET_CB2;
 			}
