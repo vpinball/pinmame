@@ -398,7 +398,11 @@ CORE_GAMEDEF(bcats,l5, "Bad Cats (L-5)", 1989, "Williams", s11_mS11BS,0)
 /*-----------------------
 / Mousin' Around 12/89
 /-----------------------*/
-INITGAME(mousn,GEN_S11B,s11_dispS11b2,12, FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
+static core_tLCDLayout dispmousn[] = { \
+  {0,0,0,16,CORE_SEG16},{0,33,20,16,CORE_SEG16}, {0}
+};
+
+INITGAME(mousn,GEN_S11B,dispmousn,12, FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
 S11_ROMSTART48(mousn,l4,"mous_u26.l4", 0xa540edc1,
                         "mous_u27.l4", 0xff108148)
 S11S_SOUNDROM88(        "mous_u21.bin",0x59b1b0c5,
