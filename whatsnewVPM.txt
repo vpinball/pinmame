@@ -1,6 +1,10 @@
 What's new in Visual PinMAME:
 -----------------------------
 
+Version 1.21 (xxxxx xx, 2003)
+-----------------------------
+- Fixed the bug in the VPM-Setup-Program that the "Test" feature crashes under w9x
+
 Version 1.21 (March 31, 2003)
 -------------------------------------
 The most prominent feature this time should be Tom's "SyncLevel"(TM),
