@@ -303,7 +303,7 @@ CORE_GAMEDEFNV(s80tst,"System 80 Test",1981,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_
 // System 80a
 
 /*-------------------------------------------------------------------
-/ Devil's Dare (Sound and Speech)
+/ Devil's Dare (Sound and Speech) (#670)
 /-------------------------------------------------------------------*/
 core_tLCDLayout dispDevilsdare[] = {
   {0, 0, 2,6,CORE_SEG16}, {0,12, 1,1,CORE_SEG16},
@@ -325,7 +325,7 @@ S80_ROMEND
 CORE_GAMEDEFNV(dvlsdre,"Devil's Dare",1981,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
-/ Devil's Dare (Sound Only)
+/ Devil's Dare (Sound Only) (#670)
 /-------------------------------------------------------------------*/
 INITGAME(dvlsdre2,GEN_S80,dispDevilsdare, 1)
 S80_1_ROMSTART(dvlsdre2, "670-a.cpu",    0x353b2e18,
@@ -337,7 +337,7 @@ S80_ROMEND
 CORE_CLONEDEFNV(dvlsdre2,dvlsdre,"Devil's Dare (Sound Only)",1981,"Gottlieb",gl_mS80,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
-/ Rocky
+/ Rocky (#672)
 /-------------------------------------------------------------------*/
 core_tLCDLayout dispRocky[] = {
   {0, 0, 2,6,CORE_SEG16}, {0,12, 1,1,CORE_SEG16},
@@ -359,7 +359,7 @@ S80_ROMEND
 CORE_GAMEDEFNV(rocky,"Rocky",1982,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
-/ Caveman
+/ Caveman (#810?)
 /-------------------------------------------------------------------*/
 INITGAME(caveman,GEN_S80SS,gottlieb_dispNumeric3, 1)
 S80_1_ROMSTART(caveman, "pv810-1.cpu",  0xdd8d516c,
@@ -371,7 +371,7 @@ S80_ROMEND
 CORE_GAMEDEFNV(caveman,"Caveman",1982,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
-/ Spirit
+/ Spirit (#673)
 /-------------------------------------------------------------------*/
 core_tLCDLayout dispSpirit[] = {
   {0, 0, 2,6,CORE_SEG16}, {0,12, 1,1,CORE_SEG16},
@@ -393,7 +393,7 @@ S80_ROMEND
 CORE_GAMEDEFNV(spirit,"Spirit",1982,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
-/ Striker
+/ Striker (#675)
 /-------------------------------------------------------------------*/
 core_tLCDLayout dispStriker[] = {
   {0, 0, 2,6,CORE_SEG16}, {0,12, 1,1,CORE_SEG16},
@@ -416,7 +416,7 @@ S80_ROMEND
 CORE_GAMEDEFNV(striker,"Striker",1982,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
-/ Punk!
+/ Punk! (#674)
 /-------------------------------------------------------------------*/
 INITGAME(punk,GEN_S80SS,gottlieb_dispNumeric3, 1)
 S80_1_ROMSTART(punk, "674.cpu",    0x70cccc57,
@@ -472,7 +472,7 @@ S80_ROMEND
 CORE_GAMEDEFNV(krull,"Krull",1983,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
-/ Q*Bert's Quest
+/ Q*Bert's Quest (#677)
 /-------------------------------------------------------------------*/
 INITGAME(qbquest,GEN_S80SS,gottlieb_dispNumeric3, 1)
 S80_1_ROMSTART(qbquest, "677.cpu",    0xfd885874,
@@ -484,7 +484,7 @@ S80_ROMEND
 CORE_GAMEDEFNV(qbquest,"Q*Bert's Quest",1983,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
-/ Super Orbit
+/ Super Orbit (#680)
 /-------------------------------------------------------------------*/
 INITGAME(sorbit,GEN_S80SS,gottlieb_dispNumeric3, 1)
 S80_1_ROMSTART(sorbit, "680.cpu",    0xdecf84e6,
@@ -496,7 +496,7 @@ S80_ROMEND
 CORE_GAMEDEFNV(sorbit,"Super Orbit",1983,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
-/ Royal Flush Deluxe
+/ Royal Flush Deluxe (#681)
 /-------------------------------------------------------------------*/
 INITGAME(rflshdlx,GEN_S80SS,gottlieb_dispNumeric3, 1)
 S80_1_ROMSTART(rflshdlx, "681-2.cpu",  0x0b048658,
@@ -508,7 +508,7 @@ S80_ROMEND
 CORE_GAMEDEFNV(rflshdlx,"Royal Flush Deluxe",1983,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
-/ Amazon Hunt
+/ Amazon Hunt (#684)
 /-------------------------------------------------------------------*/
 INITGAME(amazonh,GEN_S80SS,gottlieb_dispNumeric3, 1)
 S80_1_ROMSTART(amazonh, "684-2.cpu",  0xb0d0c4af,
@@ -518,6 +518,9 @@ S80SOUND22_ROMSTART(    "684-s1.snd", 0x86d239df,
                         "684-s2.snd", 0x4d8ea26c)
 S80_ROMEND
 CORE_GAMEDEFNV(amazonh,"Amazon Hunt",1983,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
+
+//Amazon II  (No Roms)
+//Amazon III (No Roms)
 
 /*-------------------------------------------------------------------
 / Rack 'Em Up
@@ -618,7 +621,7 @@ CORE_GAMEDEFNV(icefever,"Ice Fever",1985,"Gottlieb",gl_mS80,GAME_IMPERFECT_SOUND
 // System 80b
 
 /*-------------------------------------------------------------------
-/ Chicago Cubs' Triple Play
+/ Chicago Cubs' Triple Play (#696)
 /-------------------------------------------------------------------*/
 //(No info on what sound hardware they use, presume Gen 1)
 INITGAME(triplay,GEN_S80B2K,gottlieb_dispAlpha, 1)
@@ -628,7 +631,7 @@ S80_ROMEND
 CORE_GAMEDEFNV(triplay, "Triple Play",1985,"Gottlieb",gl_mS80B,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
-/ Bounty Hunter
+/ Bounty Hunter (#694)
 /-------------------------------------------------------------------*/
 //(No info on what sound hardware they use, presume Gen 1)
 INITGAME(bountyh,GEN_S80B2K,gottlieb_dispAlpha, 1)
@@ -638,7 +641,7 @@ S80_ROMEND
 CORE_GAMEDEFNV(bountyh, "Bounty Hunter",1985,"Gottlieb",gl_mS80B,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
-/ Rock
+/ Rock (#697)
 /-------------------------------------------------------------------*/
 //(I assume these are using Gen.1 hardware, but there's 1 less rom, so who knows)
 INITGAME(rock,GEN_S80B2K,gottlieb_dispAlpha, 1)
@@ -673,28 +676,26 @@ S80_ROMEND
 CORE_GAMEDEFNV(hlywoodh, "Hollywood Heat",1986,"Gottlieb",gl_mS80BS1,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
-/ Genesis
+/ Genesis (#705)
 /-------------------------------------------------------------------*/
 INITGAME(genesis,GEN_S80B2K,gottlieb_dispAlpha, 1)
-// GAME_ROMS_NOT_AVAILABLE
-S80B_2K_ROMSTART(genesis, "prom2.cpu", 0x00000000,
-                          "prom1.cpu", 0x00000000)
-S80BSSOUND888(            "drom1.snd", 0x0,
-						  "yrom1.snd", 0x0,
-						  "yrom2.snd", 0x0)
+S80B_2K_ROMSTART(genesis, "prom2.cpu", 0xac9f3a0f,
+                          "prom1.cpu", 0x4a2f185c)
+S80BSSOUND888(            "drom1.snd", 0x758e1743,
+						  "yrom1.snd", 0x4869b0ec,
+						  "yrom2.snd", 0x0528c024)
 S80_ROMEND
 CORE_GAMEDEFNV(genesis, "Genesis",1986,"Gottlieb",gl_mS80BS1,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
-/ Gold Wings
+/ Gold Wings (#707)
 /-------------------------------------------------------------------*/
 INITGAME(goldwing,GEN_S80B2K,gottlieb_dispAlpha, 1)
-// GAME_ROMS_NOT_AVAILABLE
-S80B_2K_ROMSTART(goldwing, "prom2.cpu", 0x00000000,
+S80B_2K_ROMSTART(goldwing, "prom2.cpu", 0xa5318c20,
                            "prom1.cpu", 0xbf242185)
-S80BSSOUND888(             "drom1.snd", 0x0,
-						   "yrom1.snd", 0x0,
-						   "yrom2.snd", 0x0)
+S80BSSOUND888(             "drom1.snd", 0x892dbb21,
+						   "yrom1.snd", 0xe17e9b1f,
+						   "yrom2.snd", 0x4e482023)
 S80_ROMEND
 CORE_GAMEDEFNV(goldwing, "Gold Wings",1986,"Gottlieb",gl_mS80BS1,GAME_IMPERFECT_SOUND)
 
