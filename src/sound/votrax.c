@@ -176,7 +176,7 @@ void PrepareVoiceData(int nextPhoneme, int nextIntonation)
 	// set up processing
 	if ( PhonemeData[votraxsc01_locals.actPhoneme].sameAs!=PhonemeData[nextPhoneme].sameAs  ) {
 		// do something, if they are the same all FadeIn/Out values are 0, 
-		// the buffer is simply filled with the sample from the new phoneme
+		// the buffer is simply filled with the samples of the new phoneme
 
 		switch ( PhonemeData[votraxsc01_locals.actPhoneme].iType ) {
 			case PT_NS:
@@ -269,7 +269,7 @@ void PrepareVoiceData(int nextPhoneme, int nextIntonation)
 
 	}
 	else {
-		// the next one is of the same type as the previous one; use the values to prevent a "click noise"
+		// the next one is of the same type as the previous one; continue to use the samples of the last phoneme
 		iNextRemainingSamples = votraxsc01_locals.iRemainingSamples;
 		pNextPos = votraxsc01_locals.pActPos;
 	}
