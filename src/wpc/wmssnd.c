@@ -52,6 +52,7 @@ MACHINE_DRIVER_START(wmssnd_s67s)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(DAC, s67s_dacInt)
   MDRV_SOUND_ADD(HC55516, s67s_hc55516Int)
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END
 
 static void s67s_piaIrq(int state);
@@ -127,6 +128,7 @@ MACHINE_DRIVER_START(wmssnd_s9s)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(DAC,    s9s_dacInt)
   MDRV_SOUND_ADD(HC55516,s9s_hc55516Int)
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END
 
 static MEMORY_READ_START(s11s_readmem)
@@ -158,6 +160,7 @@ MACHINE_DRIVER_START(wmssnd_s11s)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(DAC,    s9s_dacInt)
   MDRV_SOUND_ADD(HC55516,s9s_hc55516Int)
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(wmssnd_s11xs)
@@ -280,6 +283,7 @@ MACHINE_DRIVER_START(wmssnd_s11cs)
   MDRV_SOUND_ADD(YM2151, s11cs_ym2151Int)
   MDRV_SOUND_ADD_TAG("dac",  DAC,    s11cs_dacInt)
   MDRV_SOUND_ADD_TAG("cvsd", HC55516,s11cs_hc55516Int)
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END
 
 static const struct pia6821_interface s11cs_pia = {
@@ -371,6 +375,7 @@ MACHINE_DRIVER_START(wmssnd_s11js)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(           YM2151, s11js_ym2151Int)
   MDRV_SOUND_ADD_TAG("dac", DAC,    s11js_dacInt)
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END
 
 static WRITE_HANDLER(s11js_rombank_w) {
@@ -632,6 +637,7 @@ MACHINE_DRIVER_START(wmssnd_dcs1)
   MDRV_CPU_MEMORY(dcs1_readmem, dcs1_writemem)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(CUSTOM, dcs_custInt)
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END
 
 static MEMORY_READ16_START(dcs2_readmem)
