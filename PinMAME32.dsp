@@ -1434,6 +1434,14 @@ SOURCE=.\src\sound\streams.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\sound\tms320av120.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\tms320av120.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\sound\tms5220.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
@@ -3901,6 +3909,14 @@ SOURCE=.\src\wpc\capcom.c
 # Begin Source File
 
 SOURCE=.\src\wpc\capcom.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\capcoms.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\capcoms.h
 # End Source File
 # Begin Source File
 

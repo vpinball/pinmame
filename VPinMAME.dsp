@@ -1016,6 +1016,14 @@ SOURCE=.\src\wpc\capcom.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\capcoms.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\capcoms.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\capgames.c
 # End Source File
 # Begin Source File
@@ -1937,6 +1945,14 @@ SOURCE=.\src\sound\streams.c
 # Begin Source File
 
 SOURCE=.\src\sound\streams.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\tms320av120.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\tms320av120.h
 # End Source File
 # Begin Source File
 
