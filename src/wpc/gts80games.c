@@ -454,7 +454,7 @@ CORE_GAMEDEFNV(punk,"Punk!",1982,"Gottlieb",gl_mGTS80SS,0)
 static core_tLCDLayout dispGoinNuts[] = {
   DISP_SEG_IMPORT(dispNumeric3), {6,12,53,3,CORE_SEG9}, {0}
 };
-INITGAME(goinnuts, GEN_GTS80A,0, dispGoinNuts, SNDBRD_GTS80SS_VOTRAX,0,0)
+INITGAME(goinnuts, GEN_GTS80A,0, dispGoinNuts, SNDBRD_GTS80SS,0,0)
 GTS80_1_ROMSTART(goinnuts, "682.cpu",    CRC(51c7c6de) SHA1(31accbc8d29038679f2b0396202490233657e538),
                            "u2_80a.bin", CRC(241de1d4) SHA1(9d5942704cbdec6565d6335e33e9f7e4c60a41ac),
                            "u3_80a.bin", CRC(2d77ccdc) SHA1(47241ccd365e8d74d5aa5b775acf6445cc95b8a8))
@@ -615,10 +615,10 @@ INITGAME(eldorado, GEN_GTS80A,0, dispNumeric3, SNDBRD_GTS80SP,0,0)
 GTS80_1_ROMSTART(eldorado, "692-2.cpu",  CRC(4ee6d09b) SHA1(5da0556204e76029380366f9fbb5662715cc3257),
                            "u2_80a.bin", CRC(241de1d4) SHA1(9d5942704cbdec6565d6335e33e9f7e4c60a41ac),
                            "u3_80a.bin", CRC(2d77ccdc) SHA1(47241ccd365e8d74d5aa5b775acf6445cc95b8a8))
-GTS80S2K_ROMSTART(         "692-s.snd", CRC(d5a10e53) SHA1(29e94ffef9cccb7370d525f747c4be6e6042fc87))
+GTS80S2K_ROMSTART(         "692-s.snd",  NO_DUMP)
 GTS80_ROMEND
 #define input_ports_eldorado input_ports_gts80
-CORE_GAMEDEFNV(eldorado,"El Dorado City of Gold",1984,"Gottlieb",gl_mGTS80S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(eldorado,"El Dorado City of Gold",1984,"Gottlieb",gl_mGTS80S,0)
 
 /*-------------------------------------------------------------------
 / Ice Fever (#695)
