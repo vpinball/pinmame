@@ -177,6 +177,8 @@ static WRITE_HANDLER(pia1b_w) {
 static WRITE_HANDLER(pia1a_w) {
   coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffffff00) | data;
   s7locals.solenoids |= data;
+  // the following line draws the extra lamp columns on Hyperball!
+  core_setLamp(coreGlobals.tmpLampMatrix, (core_revnyb(~data & 0x0f))<< 8, s7locals.lampRow);
 }
 static WRITE_HANDLER(pia1cb2_w) { s7locals.ssEn = data;}
 static WRITE_HANDLER(pia0ca2_w) { setSSSol(data, 7); }
@@ -207,7 +209,7 @@ static struct pia6821_interface s7_pia[] = {
  /* out : A/B,CA/B2       */ sndbrd_0_data_w, pia0b_w, pia0ca2_w, pia0cb2_w,
  /* irq : A/B             */ s7_piaIrq, s7_piaIrq
 },{/* PIA 1 (2200)
-    PA0-7 Sol 1-8
+    PA0-7 Sol 1-8 (Extra lamp strobe on Hyperball)
     PB0-7 Sol 9-16
     CA2   SS5
     CB2   GameOn (0)
