@@ -16,6 +16,10 @@ extern BOOL IsEmulationRunning();
 // from VPinMAMEConfig.c
 extern int fAllowWriteAccess;
 
+// we need this to adjust the game window if a game is running
+#include "Controller.h"
+extern "C" HWND win_video_window;
+
 /////////////////////////////////////////////////////////////////////////////
 // CControllerSettingsDlg
 
@@ -35,7 +39,8 @@ public:
 	enum { IDD = IDD_CONTROLLERSETTINGSDLG };
 
 private:
-	bool				m_fChanged;
+	bool			     m_fChanged;
+	CControllerSettings* pControllerSettings;
 
 	// helper functions
 	void SetControlValues() {
@@ -44,6 +49,7 @@ private:
 		/******************************************/
 
 		// Path Values
+
 		SetDlgItemText(IDC_ROMDIRS,    (char*) get_option("rompath"));
 		SetDlgItemText(IDC_CFGDIR,	   (char*) get_option("cfg_directory"));
 		SetDlgItemText(IDC_NVRAMDIR,   (char*) get_option("nvram_directory"));
@@ -58,23 +64,24 @@ private:
 
 	void GetControlValues() {
 		char szPath[4096];
-		
+
 		GetDlgItemText(IDC_ROMDIRS, szPath, sizeof(szPath));
-		set_option("rompath", szPath, 0);
+		pControllerSettings->put_Value(CComBSTR("rompath"), CComVariant(szPath));
 
 		GetDlgItemText(IDC_CFGDIR, szPath, sizeof(szPath));
-		set_option("cfg_directory", szPath, 0);
+		pControllerSettings->put_Value(CComBSTR("cfg_directory"), CComVariant(szPath));
 
 		GetDlgItemText(IDC_NVRAMDIR, szPath, sizeof(szPath));
-		set_option("nvram_directory", szPath, 0);
+		pControllerSettings->put_Value(CComBSTR("nvram_directory"), CComVariant(szPath));
 
 		GetDlgItemText(IDC_SAMPLEDIRS, szPath, sizeof(szPath));
-		set_option("samplepath", szPath, 0);
+		pControllerSettings->put_Value(CComBSTR("samplepath"), CComVariant(szPath));
 
 		GetDlgItemText(IDC_IMGDIR, szPath, sizeof(szPath));
-		set_option("snapshot_directory", szPath, 0);
+		pControllerSettings->put_Value(CComBSTR("snapshot_directory"), CComVariant(szPath));
 
 		fAllowWriteAccess = IsDlgButtonChecked(IDC_ALLOWWRITEACCESS);
+
 		char szRegKey[256];
 		lstrcpy(szRegKey, REG_BASEKEY);
 
@@ -130,6 +137,8 @@ private:
 	LRESULT OnInitDialog(UINT, WPARAM, LPARAM lParam, BOOL&) {
 		CenterWindow();
 
+		pControllerSettings = (CControllerSettings*) lParam;
+
 		/*Init Dialog*/
 		SetControlValues();
 		SetChanged(false);
@@ -146,9 +155,6 @@ private:
 		if ( m_fChanged ) {
 			// get settings from the controls
 			GetControlValues();
-
-			// save them
-			SaveGlobalSettings();
 
 			// emulation is running?
 			if ( IsEmulationRunning() )
@@ -226,122 +232,46 @@ CControllerSettings::CControllerSettings()
 {
 }
 
-
-STDMETHODIMP CControllerSettings::get_RomPath(BSTR *pVal)
-{
-	CComBSTR Val((char*) get_option("rompath"));
-	*pVal = Val.Detach();
-
-	return S_OK;
-}
-
-STDMETHODIMP CControllerSettings::put_RomPath(BSTR newVal)
-{
-	if ( !fAllowWriteAccess )
-		return S_OK;
-
-	char *pszNewVal = new char[lstrlenW(newVal)+1];
-	WideCharToMultiByte(CP_ACP, 0, newVal, -1, pszNewVal, lstrlenW(newVal)+1, NULL, NULL);
-
-	set_option("rompath", pszNewVal, 0);
-	
-	delete pszNewVal;
-	SaveGlobalSettings();
-
-	return S_OK;
-}
-
-STDMETHODIMP CControllerSettings::get_NVRamPath(BSTR *pVal)
-{
-	CComBSTR Val((char*) get_option("nvram_directory"));
-	*pVal = Val.Detach();
-	return S_OK;
-}
-
-STDMETHODIMP CControllerSettings::put_NVRamPath(BSTR newVal)
-{
-	if ( !fAllowWriteAccess )
-		return S_OK;
-
-	char *pszNewVal = new char[lstrlenW(newVal)+1];
-	WideCharToMultiByte(CP_ACP, 0, newVal, -1, pszNewVal, lstrlenW(newVal)+1, NULL, NULL);
-
-	set_option("nvram_directory", pszNewVal, 0);
-	SaveGlobalSettings();
-
-	return S_OK;
-}
-
-STDMETHODIMP CControllerSettings::get_SamplesPath(BSTR *pVal)
-{
-	CComBSTR Val((char*) get_option("samplepath"));
-	*pVal = Val.Detach();
-	return S_OK;
-}
-
-STDMETHODIMP CControllerSettings::put_SamplesPath(BSTR newVal)
-{
-	if ( !fAllowWriteAccess )
-		return S_OK;
-
-	char *pszNewVal = new char[lstrlenW(newVal)+1];
-	WideCharToMultiByte(CP_ACP, 0, newVal, -1, pszNewVal, lstrlenW(newVal)+1, NULL, NULL);
-
-	set_option("samplepath", pszNewVal, 0);
-	SaveGlobalSettings();
-
-	return S_OK;
-}
-
-STDMETHODIMP CControllerSettings::get_CfgPath(BSTR *pVal)
-{
-	CComBSTR Val((char*) get_option("cfg_directory"));
-	*pVal = Val.Detach();
-	return S_OK;
-}
-
-STDMETHODIMP CControllerSettings::put_CfgPath(BSTR newVal)
-{
-	if ( !fAllowWriteAccess )
-		return S_OK;
-
-	char *pszNewVal = new char[lstrlenW(newVal)+1];
-	WideCharToMultiByte(CP_ACP, 0, newVal, -1, pszNewVal, lstrlenW(newVal)+1, NULL, NULL);
-
-	set_option("cfg_directory", pszNewVal, 0);
-	SaveGlobalSettings();
-
-	return S_OK;
-}
-
-STDMETHODIMP CControllerSettings::get_SnapshotPath(BSTR *pVal)
-{
-	CComBSTR Val((char*) get_option("snapshot_directory"));
-	*pVal = Val.Detach();
-
-	return S_OK;
-}
-
-STDMETHODIMP CControllerSettings::put_SnapshotPath(BSTR newVal)
-{
-	if ( !fAllowWriteAccess )
-		return S_OK;
-
-	char *pszNewVal = new char[lstrlenW(newVal)+1];
-	WideCharToMultiByte(CP_ACP, 0, newVal, -1, pszNewVal, lstrlenW(newVal)+1, NULL, NULL);
-
-	set_option("snapshot_directory", pszNewVal, 0);
-	SaveGlobalSettings();
-
-	return S_OK;
-}
-
 STDMETHODIMP CControllerSettings::ShowSettingsDlg(long hParentWnd)
 {
 	CControllerSettingsDlg ControllerSettingsDlg;
-	ControllerSettingsDlg.DoModal((HWND) hParentWnd);
+	ControllerSettingsDlg.DoModal((HWND) hParentWnd, (LPARAM) this);
 
 	return S_OK;
+}
+
+STDMETHODIMP CControllerSettings::Clear()
+{
+	DeleteGlobalSettings();
+	
+	return S_OK;
+}
+
+STDMETHODIMP CControllerSettings::get_Value(BSTR sName, VARIANT *pVal)
+{
+	char szName[4096];
+	WideCharToMultiByte(CP_ACP, 0, sName, -1, szName, sizeof szName, NULL, NULL);
+
+	return GetSetting(NULL, szName, pVal)?S_OK:S_FALSE;
+}
+
+STDMETHODIMP CControllerSettings::put_Value(BSTR sName, VARIANT newVal)
+{
+	char szName[4096];
+	WideCharToMultiByte(CP_ACP, 0, sName, -1, szName, sizeof szName, NULL, NULL);
+
+	HRESULT hr = PutSetting(NULL, szName, newVal);
+	if ( SUCCEEDED(hr) ) {
+		VariantChangeType(&newVal, &newVal, 0, VT_BSTR);
+		char szValue[4096];
+		WideCharToMultiByte(CP_ACP, 0, newVal.bstrVal, -1, szValue, sizeof szName, NULL, NULL);
+		set_option(szName, szValue, 0);
+
+		if ( IsEmulationRunning() && SettingAffectsRunningGame(szName) ) 
+			PostMessage(win_video_window, RegisterWindowMessage(VPINMAMEADJUSTWINDOWMSG), 0, 0);
+	}
+
+	return hr;
 }
 
 STDMETHODIMP CControllerSettings::get_InstallDir(BSTR *pVal)
@@ -349,8 +279,7 @@ STDMETHODIMP CControllerSettings::get_InstallDir(BSTR *pVal)
 	char szInstallDir[MAX_PATH];
 	GetInstallDir(szInstallDir, sizeof szInstallDir);
 
-	CComBSTR Val(szInstallDir);
+	*pVal = CComBSTR(szInstallDir).Detach();
 
-	*pVal = Val.Detach();
 	return S_OK;
 }
