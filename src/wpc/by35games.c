@@ -530,7 +530,7 @@ CORE_GAMEDEFNV(vector ,"Vector",1982,"Bally",by35_mBY35_61S,0)
 / Spectrum
 /-------------------------------*/
 INITGAME(spectrum,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY61B,0)
-BY35_ROMSTARTx00(spectrum,"868-00_2.732",0x13f15156,
+BY35_ROMSTARTx00(spectrum,"868-00_2.732",0x00000000,
                           "720-53_6.732",0xc2e92f80)
 BY61_SOUNDROMx008(        "868-01_3.532",0xc3a16c66,
                           "868-02_4.532",0x6b441399,
@@ -546,7 +546,7 @@ BY61_SOUNDROMx008(        "868-01_3.532",0xc3a16c66,
                           "868-02_4.532",0x6b441399,
                           "868-03_5.716",0x4a5ac3b8)
 BY35_ROMEND
-CORE_CLONEDEFNV(spectru4,spectrum, "Spectrum 4 Player",1982,"Bally",by35_mBY35_61BS,0)
+CORE_CLONEDEFNV(spectru4,spectrum,"Spectrum (Ver. 4)",1982,"Bally",by35_mBY35_61BS,0)
 
 /*--------------------------------------------------
 / Speak Easy 2 Player - Uses AS2518-51 Sound Board
