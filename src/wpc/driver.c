@@ -157,6 +157,7 @@ DRIVERNV(specforc)      //6803-0E47: 08/86 Special Force
 DRIVERNV(strngsci)      //6803-0E35: 10/86 Strange Science
 DRIVERNV(cityslck)      //6803-0E79: 03/87 City Slicker
 DRIVERNV(hardbody)      //6803-0E94: 03/87 Hardbody
+DRIVERNV(hardbdyg)      //6803-0E94: 03/87 Hardbody (German)
 DRIVERNV(prtyanim)      //6803-0H01: 05/87 Party Animal
 DRIVERNV(hvymetal)      //6803-0H03: 08/87 Heavy Metal Meltdown
 DRIVERNV(dungdrag)      //6803-0H06: 10/87 Dungeons & Dragons
