@@ -153,7 +153,7 @@ void CreateSplashWnd(void **ppData, char* pszCredits)
 
 void DestroySplashWnd(void **ppData)
 {
-	if ( !ppData )
+	if ( !ppData || !*ppData )
 		return;
 
 	// destroy dialog if it exists
@@ -167,7 +167,7 @@ void DestroySplashWnd(void **ppData)
 
 void WaitForSplashWndToClose(void **ppData)
 {
-	if ( !ppData )
+	if ( !ppData || !*ppData )
 		return;
 
 	// wait for the splash window until it closes
