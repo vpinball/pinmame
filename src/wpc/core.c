@@ -1,11 +1,8 @@
 /***********************************************/
 /* PINMAME - Interface function (Input/Output) */
-/* 310301 - Corrected core_getSol problem with <= */
-/* 190401 - Corrected flipper hold coil problem */
 /***********************************************/
 #include <stdarg.h>
 #include "driver.h"
-//#include "cpu/m6809/m6809.h"
 #include "sim.h"
 #include "snd_cmd.h"
 #include "mech.h"
@@ -20,6 +17,7 @@ void OnStateChange(int nChange) {}
 UINT64 vp_getSolMask64(void) { return -1; }
 void vp_updateMech(void) {};
 int vp_getDip(int bank) { return 0; }
+void vp_setDip(int bank, int value) { }
 #endif
 
 #ifdef VPINMAME
@@ -34,7 +32,7 @@ int vp_getDip(int bank) { return 0; }
   #define OnStateChange(nChange)
   #define vp_getSolMask64() ((UINT64)(-1))
   #define vp_updateMech()
-  #define vp_dipnv(x,y)
+  #define vp_setDip(x,y)
 #endif /* VPINMAME */
 
 /* PinMAME specific options */
@@ -134,11 +132,10 @@ void core_initpalette(unsigned char *game_palette, unsigned short *game_colortab
     core_palette[DMD_COLORS+LAMP_COLORS+ii][2] = (core_palette[DMD_COLORS+ii][2] * 25) / 100;
   }
 
-  /*-- Autogenerate antialias colours --*/
+  { /*-- Autogenerate antialias colours --*/
 #if MAMEVER < 3715
 #  define vector_flicker flicker
 #endif /* MAME_VER */
-  {
     int rStep, gStep, bStep;
 
     rStart = core_palette[DMD_DOTOFF][0];
@@ -363,7 +360,6 @@ void core_updateSw(int flipEn) {
       }
       if ((col != lastCol) || (row != lastRow)) {
         coreGlobals.swMatrix[col] ^= (1<<(row-1));
-//        core_setSw(col*10+row, !core_getSw(col*10+row));
         lastCol = col; lastRow = row;
       }
     }
@@ -809,20 +805,14 @@ UINT64 core_getAllSol(void) {
   return sol;
 }
 
-/*------------------------------------------
-/  Get/Set the status of a DIP bank (8 dips)
-/-------------------------------------------*/
+/*---------------------------------------
+/  Get the status of a DIP bank (8 dips)
+/-----------------------------------------*/
 int core_getDip(int dipBank) {
 #ifdef VPINMAME
   return vp_getDIP(dipBank);
 #else /* VPINMAME */
   return (readinputport(CORE_COREINPORT+1+dipBank/2)>>((dipBank & 0x01)*8))&0xff;
-#endif /* VPINMAME */
-}
-
-void core_setDip(int dipBank, int value) {
-#ifdef VPINMAME
-  vp_setDIP(dipBank, value);
 #endif /* VPINMAME */
 }
 
@@ -944,7 +934,21 @@ void core_nvram(void *file, int write, void *mem, int length, UINT8 init) {
   else if (file) osd_fread(file,  mem, length); /* load */
   else           memset(mem, init, length);     /* first time */
   mech_nv(file, write); /* save mech positions */
-  vp_dipnv(file,write);
+  { /*-- Load/Save DIP settings --*/
+    UINT8 dips[4];
+    int   ii;
+
+    if (write) {
+      for (ii = 0; ii < 4; ii++) dips[ii] = core_getDip(ii);
+      osd_fwrite(file, dips, sizeof(dips));
+    }
+    else if (file) {
+      osd_fread(file, dips, sizeof(dips));
+      for (ii = 0; ii < 4; ii++) vp_setDip(ii, dips[ii]);
+    }
+    else { // always get the default from the inports
+      for (ii = 0; ii < (coreData.coreDips+7)/8; ii++)
+        vp_setDip(ii, readinputport(CORE_COREINPORT+1+ii/2)>>((ii & 0x01)*8) & 0xff);
+    }
+  }
 }
-
-
