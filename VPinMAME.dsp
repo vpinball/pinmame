@@ -1176,6 +1176,18 @@ SOURCE=.\src\wpc\indergames.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\jp.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\jp.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\jpgames.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\mech.c
 # End Source File
 # Begin Source File
