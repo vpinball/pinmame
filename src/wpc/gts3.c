@@ -329,7 +329,8 @@ static READ_HANDLER( xvia_1_cb2_r )
 static WRITE_HANDLER( xvia_1_a_w )
 {
 	// logerror1("Sound Command: WRITE:via_1_a_w: %x\n",data);
-	sndbrd_0_data_w(0, data);
+	// SJE - data commands to sound cpu need to be inverted.
+	sndbrd_0_data_w(0, ~data);
 }
 
 //PB0-7 Varies on Alpha or DMD Generation!
