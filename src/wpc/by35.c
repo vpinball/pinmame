@@ -268,6 +268,25 @@ static MACHINE_RESET(by35) {
 static MACHINE_STOP(by35) {
   sndbrd_0_exit();
 }
+
+/* setting a table of fixed interrupt / reset vectors here */
+static MACHINE_INIT(astro) {
+  UINT8* mem = memory_find_base(0, 0xfff0);
+  memset(&locals, 0, sizeof(locals));
+
+  pia_config(BY35_PIA0, PIA_STANDARD_ORDERING, &by35_pia[0]);
+  pia_config(BY35_PIA1, PIA_STANDARD_ORDERING, &by35_pia[1]);
+  locals.vblankCount = 1;
+  *mem++ = 0x19; *mem++ = 0xb3;
+  *mem++ = 0x19; *mem++ = 0xb3;
+  *mem++ = 0x19; *mem++ = 0xb3;
+  *mem++ = 0x19; *mem++ = 0xb3;
+  *mem++ = 0x19; *mem++ = 0xb3;
+  *mem++ = 0x19; *mem++ = 0xb3;
+  *mem++ = 0x19; *mem++ = 0xb3;
+  *mem++ = 0x18; *mem++ = 0x00;
+}
+
 static UINT8 *by35_CMOS;
 // Stern uses 8 bits, Bally 4 top bits
 static WRITE_HANDLER(by35_CMOS_w) {
@@ -348,6 +367,11 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(st200)
   MDRV_IMPORT_FROM(by35)
   MDRV_CPU_REPLACE("mcpu",M6800, 1000000)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(astro)
+  MDRV_IMPORT_FROM(by35)
+  MDRV_CORE_INIT_RESET_STOP(astro,by35,by35)
 MACHINE_DRIVER_END
 
 /*-----------------------------------------------
