@@ -1,7 +1,7 @@
 What's new:
 -----------
 
-Version 1.10 (December, 2001)
+Version 1.10 (December 13, 2001)
 -----------------------------------------
 This may very well be the most anticipated release of PinMAME to date. 4 Letters, BSMT.
 What was once thought nearly impossible has become a reality for PinMAME,
@@ -20,11 +20,6 @@ Bugs Fixed
 -Fixed Coin Door buttons for games using Pre-Whitestar System Portals Menu
  [Steve Ellenoff]
 
--Limited the number of extra samples that can be generated per frame.
- (If the CPU can't keep up 100% emulation speed the sound will be distorted.
-  There are two options: either slow down the sound or break it up.
-  This is something in between. It will slow down the sound up to a certain
-  limit but if that is not enough it will break it up)
 -Corrected some s11 custom display layouts.
 -BPR debug command works again
 -Fixed 6th display in Mr. & Mrs. Pac-Man
