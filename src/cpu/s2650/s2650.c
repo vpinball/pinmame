@@ -638,7 +638,8 @@ static	int 	S2650_relative[0x100] =
  ***************************************************************/
 #define M_SPSU()												\
 {																\
-	R0 = ((S.psu & ~PSU34) | (cpu_readport16(S2650_SENSE_PORT) & SI)); \
+	R0 = S.psu & ~PSU34;										\
+	if (SI) R0 = (R0 & 0x7f) | (cpu_readport16(S2650_SENSE_PORT) & 0x80); \
 	SET_CC(R0); 												\
 }
 
@@ -685,6 +686,7 @@ static	int 	S2650_relative[0x100] =
 #define M_PPSU()												\
 {																\
 	UINT8 ppsu = (ARG() & ~PSU34) & ~SI;						\
+	if (!S.reg[1]) cpu_writeport16(S2650_SENSE_PORT, S.reg[2]);	\
 	S.psu = S.psu | ppsu;										\
 }
 
@@ -1222,8 +1224,10 @@ int s2650_execute(int cycles)
 				break;
 			case 0x93:		/* LPSL */
 				/* change register set ? */
+/*
 				if ((S.psl ^ R0) & RS)
 					SWAP_REGS;
+*/
 				S.psl = R0;
 				break;
 
