@@ -9,6 +9,7 @@
 #include "driver.h"
 #include "png.h"
 #include "harddisk.h"
+#include "artwork.h"
 #include <stdarg.h>
 #include <ctype.h>
 
@@ -757,8 +758,25 @@ void end_resource_tracking(void)
 	the given filename
 -------------------------------------------------*/
 
-void save_screen_snapshot_as(void *fp,struct mame_bitmap *bitmap,const struct rectangle *bounds)
+void save_screen_snapshot_as(mame_file *fp, struct mame_bitmap *bitmap)
 {
+	struct rectangle bounds;
+	struct mame_bitmap *osdcopy;
+	UINT32 saved_rgb_components[3];
+
+	/* allow the artwork system to override certain parameters */
+	bounds.min_x = bounds.min_y = 0;
+	bounds.max_x = bitmap->width - 1;
+	bounds.max_y = bitmap->height - 1;
+	memcpy(saved_rgb_components, direct_rgb_components, sizeof(direct_rgb_components));
+	artwork_override_screenshot_params(&bitmap, direct_rgb_components);
+
+	/* allow the OSD system to muck with the screenshot */
+	osdcopy = osd_override_snapshot(bitmap, &bounds);
+	if (osdcopy)
+		bitmap = osdcopy;
+
+	/* now do the actual work */
 	if (Machine->drv->video_attributes & VIDEO_TYPE_VECTOR)
 		png_write_bitmap(fp,bitmap);
 	else
@@ -766,8 +784,8 @@ void save_screen_snapshot_as(void *fp,struct mame_bitmap *bitmap,const struct re
 		struct mame_bitmap *copy;
 		int sizex, sizey, scalex, scaley;
 
-		sizex = bounds->max_x - bounds->min_x + 1;
-		sizey = bounds->max_y - bounds->min_y + 1;
+		sizex = bounds.max_x - bounds.min_x + 1;
+		sizey = bounds.max_y - bounds.min_y + 1;
 
 		scalex = (Machine->drv->video_attributes & VIDEO_PIXEL_ASPECT_RATIO_2_1) ? 2 : 1;
 		scaley = (Machine->drv->video_attributes & VIDEO_PIXEL_ASPECT_RATIO_1_2) ? 2 : 1;
@@ -775,11 +793,10 @@ void save_screen_snapshot_as(void *fp,struct mame_bitmap *bitmap,const struct re
 		copy = bitmap_alloc_depth(sizex * scalex,sizey * scaley,bitmap->depth);
 		if (copy)
 		{
-			struct rectangle temprect = *bounds;
 			int x,y,sx,sy;
 
-			sx = temprect.min_x;
-			sy = temprect.min_y;
+			sx = bounds.min_x;
+			sy = bounds.min_y;
 
 			switch (bitmap->depth)
 			{
@@ -819,6 +836,11 @@ void save_screen_snapshot_as(void *fp,struct mame_bitmap *bitmap,const struct re
 			bitmap_free(copy);
 		}
 	}
+	memcpy(direct_rgb_components, saved_rgb_components, sizeof(saved_rgb_components));
+
+	/* if the OSD system allocated a bitmap; free it */
+	if (osdcopy)
+		bitmap_free(osdcopy);
 }
 
 
@@ -827,7 +849,7 @@ void save_screen_snapshot_as(void *fp,struct mame_bitmap *bitmap,const struct re
 	save_screen_snapshot - save a screen snapshot
 -------------------------------------------------*/
 
-void save_screen_snapshot(struct mame_bitmap *bitmap,const struct rectangle *bounds)
+void save_screen_snapshot(struct mame_bitmap *bitmap)
 {
 	char name[20];
 	mame_file *fp;
@@ -846,7 +868,7 @@ void save_screen_snapshot(struct mame_bitmap *bitmap,const struct rectangle *bou
 
 	if ((fp = mame_fopen(Machine->gamedrv->name, name, FILETYPE_SCREENSHOT, 1)) != NULL)
 	{
-		save_screen_snapshot_as(fp,bitmap,bounds);
+		save_screen_snapshot_as(fp, bitmap);
 		mame_fclose(fp);
 	}
 }
@@ -972,6 +994,51 @@ void CLIB_DECL debugload(const char *string, ...)
 
 
 /*-------------------------------------------------
+	determine_bios_rom - determine system_bios
+	from SystemBios structure and options.bios
+-------------------------------------------------*/
+
+int determine_bios_rom(const struct SystemBios *bios)
+{
+	const struct SystemBios *firstbios = bios;
+
+	/* set to default */
+	int bios_no = 0;
+
+	/* Not system_bios_0 and options.bios is set  */
+	if(bios && (options.bios != NULL))
+	{
+		/* Allow '-bios n' to still be used */
+		while(!BIOSENTRY_ISEND(bios))
+		{
+			char bios_number[3];
+			sprintf(bios_number, "%d", bios->value);
+
+			if(!strcmp(bios_number, options.bios))
+				bios_no = bios->value;
+
+			bios++;
+		}
+
+		bios = firstbios;
+
+		/* Test for bios short names */
+		while(!BIOSENTRY_ISEND(bios))
+		{
+			if(!strcmp(bios->_name, options.bios))
+				bios_no = bios->value;
+
+			bios++;
+		}
+	}
+
+	debugload("Using System BIOS: %d\n", bios_no);
+
+	return bios_no;
+}
+
+
+/*-------------------------------------------------
 	count_roms - counts the total number of ROMs
 	that will need to be loaded
 -------------------------------------------------*/
@@ -981,9 +1048,13 @@ static int count_roms(const struct RomModule *romp)
 	const struct RomModule *region, *rom;
 	int count = 0;
 
+	/* determine the correct biosset to load based on options.bios string */
+	int this_bios = determine_bios_rom(Machine->gamedrv->bios);
+
 	/* loop over regions, then over files */
 	for (region = romp; region; region = rom_next_region(region))
 		for (rom = rom_first_file(region); rom; rom = rom_next_file(rom))
+			if (!ROM_GETBIOSFLAGS(romp) || (ROM_GETBIOSFLAGS(romp) == (this_bios+1))) /* alternate bios sets */
 			count++;
 
 	/* return the total count */
@@ -1726,51 +1797,6 @@ static int process_disk_entries(struct rom_load_data *romdata, const struct RomM
 	/* error case */
 fatalerror:
 	return 0;
-}
-
-
-/*-------------------------------------------------
-	determine_bios_rom - determine system_bios
-	from SystemBios structure and options.bios
--------------------------------------------------*/
-
-int determine_bios_rom(const struct SystemBios *bios)
-{
-	const struct SystemBios *firstbios = bios;
-
-	/* set to default */
-	int bios_no = 0;
-
-	/* Not system_bios_0 and options.bios is set  */
-	if(bios && (options.bios != NULL))
-	{
-		/* Allow -bios n to still be used */
-		while(!BIOSENTRY_ISEND(bios))
-		{
-			char bios_number[3];
-			sprintf(bios_number, "%d", bios->value);
-
-			if(!strcmp(bios_number, options.bios))
-				bios_no = bios->value;
-
-			bios++;
-		}
-
-		bios = firstbios;
-
-		/* Test for bios short names */
-		while(!BIOSENTRY_ISEND(bios))
-		{
-			if(!strcmp(bios->_name, options.bios))
-				bios_no = bios->value;
-
-			bios++;
-		}
-	}
-
-	debugload("Using System BIOS: %d\n", bios_no);
-
-	return bios_no;
 }
 
 

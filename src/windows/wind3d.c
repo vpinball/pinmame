@@ -30,8 +30,7 @@
 #include "blit.h"
 #include "wind3dfx.h"
 
-// maximum prescale level
-#define MAX_PRESCALE			4
+#include "winddraw.h"
 
 
 
@@ -826,7 +825,7 @@ static double compute_mode_score(int width, int height, int depth, int refresh)
 	}
 
 	// compute initial score based on difference between target and current (adjusted for zoom level)
-	size_score = 1.0 / (1.0 + (fabs(width - target_width) / win_screen_aspect + fabs(height - target_height)) / win_gfx_zoom);
+	size_score = 1.0 / (1.0 + (fabs(width - target_width) / win_screen_aspect + fabs(height - target_height)) / 16 / win_gfx_zoom);
 
 	// if we're looking for a particular mode, make sure it matches
 	if (win_gfx_width && win_gfx_height && (width != win_gfx_width || height != win_gfx_height))
@@ -1021,12 +1020,19 @@ static int create_surfaces(void)
 	// for full screen mode, allocate flipping surfaces
 	if (!win_window_mode)
 	{
+		int buffer_count = 1;
+		if (win_triple_buffer)
+			buffer_count = 2;
+
 		primary_desc.dwFlags |= DDSD_BACKBUFFERCOUNT;
 		primary_desc.ddsCaps.dwCaps |= DDSCAPS_FLIP | DDSCAPS_COMPLEX | DDSCAPS_3DDEVICE;
-		if (win_triple_buffer)
-			primary_desc.dwBackBufferCount = 2;
-		else
-			primary_desc.dwBackBufferCount = 1;
+#ifdef _MSC_VER
+		// this is correct for current DX8/9 includes
+		primary_desc.DUMMYUNIONNAMEN(5).dwBackBufferCount = buffer_count;
+#else
+		// this is correct only with older DX includes
+		primary_desc.dwBackBufferCount = buffer_count;
+#endif
 	}
 
 	// then create the primary surface
@@ -1881,7 +1887,7 @@ static int render_to_blit(struct mame_bitmap *bitmap, const struct rectangle *bo
 	int blit_width, blit_height;
 	struct win_blit_params params;
 	HRESULT result;
-	RECT src, dst;
+	RECT src, dst, margins;
 	int dstxoffs;
 
 	if (blit_swapxy)
@@ -1958,8 +1964,20 @@ tryagain:
 	// adjust for more optimal bounds
 	if (bounds && !update && !vector_dirty_pixels)
 	{
-		params.dstxoffs += (bounds->min_x - win_visible_rect.left) * (blit_swapxy ? effect_min_yscale : effect_min_xscale);
-		params.dstyoffs += (bounds->min_y - win_visible_rect.top) * (blit_swapxy ? effect_min_xscale : effect_min_yscale);
+		struct rectangle bounds_disoriented = { bounds->min_x, bounds->max_x, bounds->min_y, bounds->max_y };
+
+		win_disorient_rect(&bounds_disoriented);
+
+		if (blit_swapxy)
+		{
+			params.dstxoffs += (bounds_disoriented.min_x + (blit_flipy ? win_visible_rect.top : -win_visible_rect.top)) * effect_min_xscale;
+			params.dstyoffs += (bounds_disoriented.min_y + (blit_flipx ? win_visible_rect.left : -win_visible_rect.left)) * effect_min_yscale;
+		}
+		else
+		{
+			params.dstxoffs += (bounds_disoriented.min_x + (blit_flipx ? win_visible_rect.left : -win_visible_rect.left)) * effect_min_xscale;
+			params.dstyoffs += (bounds_disoriented.min_y + (blit_flipy ? win_visible_rect.top : -win_visible_rect.top)) * effect_min_yscale;
+		}
 		params.srcxoffs += bounds->min_x - win_visible_rect.left;
 		params.srcyoffs += bounds->min_y - win_visible_rect.top;
 		params.srcwidth = bounds->max_x - bounds->min_x + 1;
@@ -1970,6 +1988,34 @@ tryagain:
 
 	// unlock the surface
 	IDirectDrawSurface7_Unlock(blit_surface, NULL);
+
+	// blit the image to the texture surface when texture management in't used
+	if (!win_d3d_tex_manage)
+	{
+		RECT blt_src = { params.dstxoffs, params.dstyoffs, params.dstxoffs, params.dstyoffs };
+
+		if (blit_swapxy)
+		{
+			blt_src.right += params.srcheight * effect_min_yscale;
+			blt_src.bottom += params.srcwidth * effect_min_xscale;
+		}
+		else
+		{
+			blt_src.right += params.srcwidth * effect_min_xscale;
+			blt_src.bottom += params.srcheight * effect_min_yscale;
+		}
+
+		result = IDirectDrawSurface7_BltFast(texture_surface, params.dstxoffs - dstxoffs, params.dstyoffs, blit_surface, &blt_src, DDBLTFAST_WAIT);
+		if (result == DDERR_SURFACELOST)
+			goto surface_lost;
+		if (result != DD_OK)
+		{
+			// error, print the error and fall back
+			if (verbose)
+				fprintf(stderr, "Unable to blt blit_surface to texture_surface: %08x\n", (UINT32)result);
+			return 0;
+		}
+	}
 
 	// make the src rect
 	src.left = dstxoffs;
@@ -2001,6 +2047,15 @@ tryagain:
 		dst.top += (primary_desc.dwHeight - (dst.bottom - dst.top)) / 2;
 		dst.right += dst.left;
 		dst.bottom += dst.top;
+		win_ddraw_fullscreen_margins(primary_desc.dwWidth, primary_desc.dwHeight, &margins);
+		if (dst.left < margins.left)
+			dst.left = margins.left;
+		if (dst.top < margins.top)
+			dst.top = margins.top;
+		if (dst.right > margins.right)
+			dst.right = margins.right;
+		if (dst.bottom > margins.bottom)
+			dst.bottom = margins.bottom;
    }
 
 	// render and flip
@@ -2036,6 +2091,7 @@ static int render_and_flip(LPRECT src, LPRECT dst, int update, int wait_for_lock
 	LPDIRECTDRAWSURFACE7 texture;
 	D3DVIEWPORT7 viewport;
 	HRESULT result;
+	RECT margins;
 
 	// determine the current zoom level
 	win_d3d_current_zoom = win_d3d_effects_swapxy ? (dst->right - dst->left) / win_visible_width :
@@ -2066,7 +2122,7 @@ static int render_and_flip(LPRECT src, LPRECT dst, int update, int wait_for_lock
 
 	if (position_changed)
 	{
-		win_d3d_effects_init(0);
+		win_d3d_effects_init(video_attributes);
 		if (win_d3d_use_auto_effect)
 		{
 			win_d3d_effects_init_surfaces();
@@ -2088,21 +2144,6 @@ tryagain:
 	result = IDirectDrawSurface7_IsLost(back_surface);
 	if (result == DDERR_SURFACELOST)
 		goto surface_lost;
-
-	if (!win_d3d_tex_manage)
-	{
-		// blit the image to the texture surface ourselves when texture management in't used
-		result = IDirectDrawSurface7_BltFast(texture_surface, 0, 0, blit_surface, src, DDBLTFAST_WAIT);
-		if (result == DDERR_SURFACELOST)
-			goto surface_lost;
-		if (result != DD_OK)
-		{
-			// error, print the error and fall back
-			if (verbose)
-				fprintf(stderr, "Unable to blt blit_surface to texture_surface: %08x\n", (UINT32)result);
-			return 0;
-		}
-	}
 
 	texture = texture_surface;
 
@@ -2178,10 +2219,11 @@ tryagain:
 	result = IDirect3DDevice7_SetRenderTarget(d3d_device7, back_surface, 0);
 
 	// set up the viewport
-	viewport.dwX = 0;
-	viewport.dwY = 0;
-	viewport.dwWidth = primary_desc.dwWidth;
-	viewport.dwHeight = primary_desc.dwHeight;
+	win_ddraw_fullscreen_margins(primary_desc.dwWidth, primary_desc.dwHeight, &margins);
+	viewport.dwX = margins.left;
+	viewport.dwY = margins.top;
+	viewport.dwWidth = margins.right - margins.left;
+	viewport.dwHeight = margins.bottom - margins.top;
 
 	result = IDirect3DDevice7_SetViewport(d3d_device7, &viewport);
 
@@ -2306,9 +2348,7 @@ tryagain:
 	if (update)
 	{
 		RECT outer;
-		outer.top = outer.left = 0;
-		outer.right = primary_desc.dwWidth;
-		outer.bottom = primary_desc.dwHeight;
+		win_ddraw_fullscreen_margins(primary_desc.dwWidth, primary_desc.dwHeight, &outer);
 		erase_outer_rect(&outer, dst, win_window_mode ? primary_surface : back_surface);
 	}
 
@@ -2353,13 +2393,18 @@ tryagain:
 	// blit the pattern for the RGB effects
 	if (win_d3d_use_rgbeffect)
 	{
-#if 1
-		if (win_d3d_use_auto_effect)
+		int zoom = (win_d3d_current_zoom > MAX_AUTOEFFECT_ZOOM) ? MAX_AUTOEFFECT_ZOOM : win_d3d_current_zoom;
+
+		if (win_d3d_use_auto_effect && (win_window_mode ||
+										!win_keep_aspect ||
+										win_force_int_stretch == FORCE_INT_STRECT_NONE ||
+										win_force_int_stretch == FORCE_INT_STRECT_HOR ||
+										zoom != win_d3d_current_zoom))
 		{
 			RECT rgb_dst;
 			RECT rgb_src = { 0, 0,
-							 win_d3d_effects_swapxy ? win_d3d_current_zoom * win_visible_width : dst->right - dst->left,
-							 win_d3d_effects_swapxy ? dst->bottom - dst->top : win_d3d_current_zoom * win_visible_height};
+							 win_d3d_effects_swapxy ? zoom * win_visible_width : dst->right - dst->left,
+							 win_d3d_effects_swapxy ? dst->bottom - dst->top : zoom * win_visible_height};
 
 			if (win_window_mode)
 			{
@@ -2371,7 +2416,6 @@ tryagain:
 			result = IDirectDrawSurface7_Blt(back_surface, win_window_mode ? &rgb_dst : dst, win_d3d_background_surface, &rgb_src, DDBLT_ASYNC, NULL);
 		}
 		else
-#endif
 		{
 			RECT rect = { 0, 0, dst->right - dst->left, dst->bottom - dst->top };
 

@@ -338,6 +338,7 @@ enum
 #define ROM_LOAD32_BYTE(name,offset,length,hash)     ROMX_LOAD(name, offset, length, hash, ROM_SKIP(3))
 #define ROM_LOAD32_WORD(name,offset,length,hash)     ROMX_LOAD(name, offset, length, hash, ROM_GROUPWORD | ROM_SKIP(2))
 #define ROM_LOAD32_WORD_SWAP(name,offset,length,hash)ROMX_LOAD(name, offset, length, hash, ROM_GROUPWORD | ROM_REVERSE | ROM_SKIP(2))
+#define ROM_LOAD32_DWORD(name,offset,length,hash)    ROMX_LOAD(name, offset, length, hash, ROM_GROUPDWORD)
 
 /* ----- disk loading macros ----- */
 #define DISK_REGION(type)							ROM_REGION(1, type, ROMREGION_DATATYPEDISK)
@@ -425,9 +426,16 @@ void *auto_malloc(size_t size);
 struct mame_bitmap *auto_bitmap_alloc(int width,int height);
 struct mame_bitmap *auto_bitmap_alloc_depth(int width,int height,int depth);
 
-/* screen snapshots */
-void save_screen_snapshot_as(void *fp,struct mame_bitmap *bitmap,const struct rectangle *bounds);
-void save_screen_snapshot(struct mame_bitmap *bitmap,const struct rectangle *bounds);
+/*
+  Save a screen shot of the game display. It is suggested to use the core
+  function save_screen_snapshot() or save_screen_snapshot_as(), so the format
+  of the screen shots will be consistent across ports. This hook is provided
+  only to allow the display of a file requester to let the user choose the
+  file name. This isn't scrictly necessary, so you can just call
+  save_screen_snapshot() to let the core automatically pick a default name.
+*/
+void save_screen_snapshot_as(mame_file *fp, struct mame_bitmap *bitmap);
+void save_screen_snapshot(struct mame_bitmap *bitmap);
 
 /* hard disk handling */
 void *get_disk_handle(int diskindex);

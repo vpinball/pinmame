@@ -134,7 +134,7 @@ static int dbg_dasm_relative_jumps = 0;
 
 static const char *dbg_info_once = NULL;
 
-static int dbg_show_scanline = 0;
+static int dbg_show_scanline = 1;
 
 /****************************************************************************
  * Color settings
@@ -4085,13 +4085,16 @@ static void cmd_dump_to_file( void )
 	data = get_option_or_value( &cmd, &length, "BYTE\0WORD\0DWORD\0");
 	if( length )
 	{
-		if( data != 1 && data != 2 && data != 4 )
+		if( data > 2 )
 		{
 			win_msgbox( cur_col[E_ERROR], "DUMP arguments",
 				"Wrong <data size>. Only BYTE, WORD or DWORD\n(also 0, 1 or 2) are supported");
 			data = 1;
 		}
-		datasize = data << 1;
+		else
+		{
+			datasize = 2 << data;
+		}
 		/* look if there's also an ASCII mode specified */
 		data = get_option_or_value( &cmd, &length, "OFF\0TRANSLATE\0FULL\0" );
 		if( length )
@@ -4191,7 +4194,7 @@ static void cmd_save_to_file( void )
 	const char *filename;
 	int length;
 	FILE *file;
-	unsigned start, end;
+	unsigned start, end, offs;
 	unsigned save_what;
 
 	filename = get_file_name( &cmd, &length );
@@ -4232,9 +4235,12 @@ static void cmd_save_to_file( void )
 	}
 
 	if( save_what )
-		fwrite( &OP_RAM[start], 1, end+1-start, file );
-	else
-		fwrite( &OP_ROM[start], 1, end+1-start, file );
+		save_what = PGM_MEMORY;
+
+	for( offs = 0; offs + start <= end; offs++ )
+	{
+		fputc( RDMEM( ( ( start + offs ) & AMASK ) + save_what ), file );
+	}
 
 	fclose( file );
 

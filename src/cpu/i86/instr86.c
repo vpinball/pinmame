@@ -935,7 +935,6 @@ static void PREFIX86(_es)(void)    /* Opcode 0x26 */
 
 static void PREFIX86(_daa)(void)    /* Opcode 0x27 */
 {
-	UINT8 tmpAL=I.regs.b[AL];
 	if (AF || ((I.regs.b[AL] & 0xf) > 9))
 	{
 		int tmp;
@@ -944,7 +943,7 @@ static void PREFIX86(_daa)(void)    /* Opcode 0x27 */
 		I.CarryVal |= tmp & 0x100;
 	}
 
-	if (CF || (tmpAL > 0x9f))
+	if (CF || (I.regs.b[AL] > 0x9f))
 	{
 		I.regs.b[AL] += 0x60;
 		I.CarryVal = 1;

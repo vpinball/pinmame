@@ -4,15 +4,20 @@
 **
 ** File: fm.c -- software implementation of Yamaha FM sound generator
 **
-** Copyright (C) 2001, 2002, 2003 Jarek Burczynski
+** Copyright (C) 2001, 2002, 2003 Jarek Burczynski (bujar at mame dot net)
 ** Copyright (C) 1998 Tatsuyuki Satoh , MultiArcadeMachineEmulator development
 **
-** Version 1.2 (final beta)
+** Version 1.3 (final beta)
 **
 */
 
 /*
 ** History:
+**
+** 14-06-2003 Jarek Burczynski:
+**  - implemented all of the YM2608 status register flags
+**  - implemented support for external memory read/write via YM2608
+**  - implemented support for deltat memory limit register in YM2608 emulation
 **
 ** 22-05-2003 Jarek Burczynski:
 **  - fixed LFO PM calculations (copy&paste bugfix)
@@ -84,7 +89,7 @@
 
 /*
 	no support:
-		YM2608 PCM memory data access, DELTA-T with PCM port
+		DELTA-T with PCM port
 */
 
 /************************************************************************/
@@ -1010,7 +1015,7 @@ INLINE void advance_lfo(FM_OPN *OPN)
 
 		/* update AM when LFO output changes */
 
-		//if (prev_pos != pos)
+		/*if (prev_pos != pos)*/
 		/* actually I can't optimize is this way without rewritting chan_calc()
 		to use chip->lfo_am instead of global lfo_am */
 		{
@@ -1027,7 +1032,7 @@ INLINE void advance_lfo(FM_OPN *OPN)
 		prev_pos >>= 2;
 		pos >>= 2;
 		/* update PM when LFO output changes */
-		//if (prev_pos != pos) //can't use global lfo_pm for this optimization, must be chip->lfo_pm instead
+		/*if (prev_pos != pos)*/ /* can't use global lfo_pm for this optimization, must be chip->lfo_pm instead*/
 		{
 			LFO_PM = pos;
 		}
@@ -2046,6 +2051,10 @@ void YM2203UpdateOne(int num, INT16 *buffer, int length)
 	}else refresh_fc_eg_chan( cch[2] );
 
 
+	/* YM2203 doesn't have LFO so we must keep these globals at 0 level */
+	LFO_AM = 0;
+    LFO_PM = 0;
+
 	/* buffering */
 	for (i=0; i < length ; i++)
 	{
@@ -2473,7 +2482,6 @@ static void FM_ADPCMAWrite(YM2610 *F2610,int r,int v)
 	F2610->adpcmreg[r] = v&0xff; /* stock data */
 	switch( r ){
 	case 0x00: /* DM,--,C5,C4,C3,C2,C1,C0 */
-		/* F2610->port1state = v&0xff; */
 		if( !(v&0x80) )
 		{
 			/* KEY ON */
@@ -3170,40 +3178,6 @@ static unsigned char YM2608_ADPCM_ROM[0x2000] = {
 
 
 
-
-#if 0
-/* Get next pcm data */
-INLINE int YM2608ReadADPCM(int n)
-{
-	YM2608 *F2608 = &(FM2608[n]);
-	if( F2608->ADMode & 0x20 )
-	{	/* buffer memory */
-		/* F2203->OPN.ST.status |= 0x04; */
-		return 0;
-	}
-	else
-	{	/* from PCM data register */
-		FM_STATUS_SET(F2608->OPN.ST,0x08); /* BRDY = 1 */
-		return F2608->ADData;
-	}
-}
-
-/* Put decoded data */
-INLINE void YM2608WriteADPCM(int n,int v)
-{
-	YM2608 *F2608 = &(FM2608[n]);
-	if( F2608->ADMode & 0x20 )
-	{	/* for buffer */
-		return;
-	}
-	else
-	{	/* for PCM data port */
-		F2608->ADData = v;
-		FM_STATUS_SET(F2608->OPN.ST,0x08) /* BRDY = 1 */
-	}
-}
-#endif
-
 /* IRQ flag control 0x110 */
 INLINE void YM2608IRQFlagWrite(FM_ST *ST,int n,int v)
 {
@@ -3242,9 +3216,6 @@ void YM2608UpdateOne(int num, INT16 **buffer, int length)
 	YM_DELTAT *DELTAT = &(F2608[num].deltaT);
 	int i,j;
 	FMSAMPLE  *bufL,*bufR;
-
-	/* setup DELTA-T unit */
-	YM_DELTAT_DECODE_PRESET(DELTAT);
 
 	/* set bufer */
 	bufL = buffer[0];
@@ -3326,7 +3297,7 @@ void YM2608UpdateOne(int num, INT16 **buffer, int length)
 		chan_calc(OPN, cch[5] );
 
 		/* deltaT ADPCM */
-		if( DELTAT->portstate )
+		if( DELTAT->portstate&0x80 )
 			YM_DELTAT_ADPCM_CALC(DELTAT);
 
 		/* ADPCMA */
@@ -3456,6 +3427,14 @@ static void YM2608_save_state(void)
 }
 #endif /* _STATE_H */
 
+static void YM2608_deltat_status_set(UINT8 which, UINT8 changebits)
+{
+	FM_STATUS_SET(&(FM2608[which].OPN.ST), changebits);
+}
+static void YM2608_deltat_status_reset(UINT8 which, UINT8 changebits)
+{
+	FM_STATUS_RESET(&(FM2608[which].OPN.ST), changebits);
+}
 /* YM2608(OPNA) */
 int YM2608Init(int num, int clock, int rate,
                void **pcmrom,int *pcmsize,
@@ -3487,9 +3466,6 @@ int YM2608Init(int num, int clock, int rate,
 		FM2608[i].OPN.ST.clock = clock;
 		FM2608[i].OPN.ST.rate = rate;
 
-		/* FM2608[i].OPN.ST.irq = 0; */
-		/* FM2608[i].OPN.ST.status = 0; */
-
 		/* External handlers */
 		FM2608[i].OPN.ST.Timer_Handler = TimerHandler;
 		FM2608[i].OPN.ST.IRQ_Handler   = IRQHandler;
@@ -3497,8 +3473,13 @@ int YM2608Init(int num, int clock, int rate,
 		/* DELTA-T */
 		FM2608[i].deltaT.memory = (UINT8 *)(pcmrom[i]);
 		FM2608[i].deltaT.memory_size = pcmsize[i];
-		FM2608[i].deltaT.arrivedFlagPtr = &FM2608[i].OPN.ST.status;
-		FM2608[i].deltaT.statusflag = 0x04;	/* status flag: set bit2 on End of Sample */
+		
+		FM2608[i].deltaT.status_set_handler = YM2608_deltat_status_set;
+		FM2608[i].deltaT.status_reset_handler = YM2608_deltat_status_reset;
+		FM2608[i].deltaT.status_change_which_chip = i;
+		FM2608[i].deltaT.status_change_EOS_bit = 0x04;	/* status flag: set bit2 on End Of Sample */
+		FM2608[i].deltaT.status_change_BRDY_bit = 0x08;	/* status flag: set bit3 on BRDY */
+		FM2608[i].deltaT.status_change_ZERO_bit = 0x10;	/* status flag: set bit4 if silence continues for more than 290 miliseconds while recording the ADPCM */
 
 		/* ADPCM Rhythm */
 		FM2608[i].pcmbuf   = YM2608_ADPCM_ROM;
@@ -3544,8 +3525,9 @@ void YM2608ResetChip(int num)
 	FM_IRQMASK_SET(&OPN->ST,0x1f);	/* default value for D4-D0 is 1 */
 	OPNWriteMode(OPN,0x27,0x30);	/* mode 0 , timer reset */
 
-	/* default value (after the reset) is: produce only 3 FM channels */
-	OPN->type &= (~TYPE_6CH); /* OPN mode */
+	/* default value after reset is:
+		enable only 3 FM channels and enable all the status flags */
+	YM2608IRQMaskWrite(OPN, 0x1f ); /* OPN mode, all flags enabled */
 
 	OPN->eg_timer = 0;
 	OPN->eg_cnt   = 0;
@@ -3563,9 +3545,8 @@ void YM2608ResetChip(int num)
 		OPNWriteReg(OPN,i|0x100,0);
 	}
 	for(i = 0x26 ; i >= 0x20 ; i-- ) OPNWriteReg(OPN,i,0);
-	/* reset ADPCM unit */
 
-	/**** ADPCM work initial ****/
+	/* ADPCM - percussion sounds */
 	for( i = 0; i < 6; i++ )
 	{
 		if (i<=3)	/* channels 0,1,2,3 */
@@ -3588,7 +3569,7 @@ void YM2608ResetChip(int num)
 		F2608->adpcm[i].adpcm_out = 0;
 	}
 	F2608->adpcmTL = 0x3f;
-	/* F2608->port1state = -1; */
+
 	F2608->adpcm_arrivedEndAddress = 0; /* not used */
 
 	/* DELTA-T unit */
@@ -3682,20 +3663,11 @@ int YM2608Write(int n, int a,UINT8 v)
 		case 0x00:	/* DELTAT PORT */
 			switch( addr )
 			{
-			case 0x0c:	/* Limit address L */
-				/*F2608->ADLimit = (F2608->ADLimit & 0xff00) | v; */
-				/*break;*/
-			case 0x0d:	/* Limit address H */
-				/*F2608->ADLimit = (F2608->ADLimit & 0x00ff) | (v<<8);*/
-				/*break;*/
 			case 0x0e:	/* DAC data */
-				/*break;*/
-			case 0x0f:	/* PCM data port */
-				/*F2608->ADData = v;*/
-				/*FM_STATUS_RESET(F2608->OPN.ST,0x08);*/
+				logerror("YM2608: write to DAC data (unimplemented) value=%02x\n",v);
 				break;
 			default:
-				/* 0x00-0x0b */
+				/* 0x00-0x0d */
 				YM_DELTAT_ADPCM_Write(&F2608->deltaT,addr,v);
 			}
 			break;
@@ -3720,22 +3692,32 @@ UINT8 YM2608Read(int n,int a)
 	switch( a&3 ){
 	case 0:	/* status 0 : YM2203 compatible */
 		/* BUSY:x:x:x:x:x:FLAGB:FLAGA */
-		if(addr==0xff) ret = 0x00; /* ID code */
-		else ret = FM_STATUS_FLAG(&F2608->OPN.ST) & 0x83;
+		ret = FM_STATUS_FLAG(&F2608->OPN.ST) & 0x83;
 		break;
 
-	case 1:	/* status 0 */
+	case 1:	/* status 0, ID  */
 		if( addr < 16 ) ret = SSGRead(n);
+		else if(addr == 0xff) ret = 0x00; /* ID code */
 		break;
 
-	case 2:	/* status 1 : + ADPCM status */
+	case 2:	/* status 1 : status 0 + ADPCM status */
 		/* BUSY:x:PCMBUSY:ZERO:BRDY:EOS:FLAGB:FLAGA */
-		if(addr==0xff) ret = 0x00; /* ID code */
-		else ret = FM_STATUS_FLAG(&F2608->OPN.ST) & F2608->flagmask;
+		ret = (FM_STATUS_FLAG(&F2608->OPN.ST) & (F2608->flagmask|0x80) ) | ((F2608->deltaT.PCM_BSY & 1)<<5) ;
 		break;
 
 	case 3:
-		ret = 0;
+		if(addr == 0x08)
+		{
+			ret = YM_DELTAT_ADPCM_Read(&F2608->deltaT);
+		}
+		else
+        {
+			if(addr == 0x0f)
+			{
+				logerror("YM2608 A/D convertion is accessed but not implemented !\n");
+				ret = 0x80; /* 2's complement PCM data - result from A/D convertion */
+			}
+		}
 		break;
 	}
 	return ret;
@@ -3780,9 +3762,6 @@ void YM2610UpdateOne(int num, INT16 **buffer, int length)
 	YM_DELTAT *DELTAT = &(F2610[num].deltaT);
 	int i,j;
 	FMSAMPLE  *bufL,*bufR;
-
-	/* setup DELTA-T unit */
-	YM_DELTAT_DECODE_PRESET(DELTAT);
 
 	/* buffer setup */
 	bufL = buffer[0];
@@ -3861,7 +3840,7 @@ void YM2610UpdateOne(int num, INT16 **buffer, int length)
 		chan_calc(OPN, cch[3] );	/*remapped to 5*/
 
 		/* deltaT ADPCM */
-		if( DELTAT->portstate )
+		if( DELTAT->portstate&0x80 )
 			YM_DELTAT_ADPCM_CALC(DELTAT);
 
 		/* ADPCMA */
@@ -3923,9 +3902,6 @@ void YM2610BUpdateOne(int num, INT16 **buffer, int length)
 	YM_DELTAT *DELTAT = &(FM2610[num].deltaT);
 	int i,j;
 	FMSAMPLE  *bufL,*bufR;
-
-	/* setup DELTA-T unit */
-	YM_DELTAT_DECODE_PRESET(DELTAT);
 
 	/* buffer setup */
 	bufL = buffer[0];
@@ -4005,7 +3981,7 @@ void YM2610BUpdateOne(int num, INT16 **buffer, int length)
 		chan_calc(OPN, cch[5] );
 
 		/* deltaT ADPCM */
-		if( DELTAT->portstate )
+		if( DELTAT->portstate&0x80 )
 			YM_DELTAT_ADPCM_CALC(DELTAT);
 
 		/* ADPCMA */
@@ -4133,6 +4109,15 @@ static void YM2610_save_state(void)
 }
 #endif /* _STATE_H */
 
+static void YM2610_deltat_status_set(UINT8 which, UINT8 changebits)
+{
+	FM2610[which].adpcm_arrivedEndAddress |= changebits;
+}
+static void YM2610_deltat_status_reset(UINT8 which, UINT8 changebits)
+{
+	FM2610[which].adpcm_arrivedEndAddress &= (~changebits);
+}
+
 int YM2610Init(int num, int clock, int rate,
                void **pcmroma,int *pcmsizea,void **pcmromb,int *pcmsizeb,
                FM_TIMERHANDLER TimerHandler,FM_IRQHANDLER IRQHandler)
@@ -4165,8 +4150,6 @@ int YM2610Init(int num, int clock, int rate,
 		F2610->OPN.P_CH = FM2610[i].CH;
 		F2610->OPN.ST.clock = clock;
 		F2610->OPN.ST.rate = rate;
-		/* FM2610[i].OPN.ST.irq = 0; */
-		/* FM2610[i].OPN.ST.status = 0; */
 		/* Extend handler */
 		F2610->OPN.ST.Timer_Handler = TimerHandler;
 		F2610->OPN.ST.IRQ_Handler   = IRQHandler;
@@ -4176,8 +4159,11 @@ int YM2610Init(int num, int clock, int rate,
 		/* DELTA-T */
 		F2610->deltaT.memory = (UINT8 *)(pcmromb[i]);
 		F2610->deltaT.memory_size = pcmsizeb[i];
-		F2610->deltaT.arrivedFlagPtr = &F2610->adpcm_arrivedEndAddress;
-		F2610->deltaT.statusflag = 0x80;	/* status flag: DELTAT EOS */
+		
+		FM2610[i].deltaT.status_set_handler = YM2610_deltat_status_set;
+		FM2610[i].deltaT.status_reset_handler = YM2610_deltat_status_reset;
+		FM2610[i].deltaT.status_change_which_chip = i;
+		FM2610[i].deltaT.status_change_EOS_bit = 0x80;	/* status flag: set bit7 on End Of Sample */
 
 		YM2610ResetChip(i);
 	}
@@ -4248,7 +4234,7 @@ void YM2610ResetChip(int num)
 		F2610->adpcm[i].adpcm_out = 0;
 	}
 	F2610->adpcmTL = 0x3f;
-	/* F2610->port1state = -1; */
+
 	F2610->adpcm_arrivedEndAddress = 0;
 
 	/* DELTA-T unit */
@@ -4300,35 +4286,60 @@ int YM2610Write(int n, int a, UINT8 v)
 
 			switch(addr)
 			{
+			case 0x10:	/* control 1 */
+			case 0x11:	/* control 2 */
+			case 0x12:	/* start address L */
+			case 0x13:	/* start address H */
+			case 0x14:	/* stop address L */
+			case 0x15:	/* stop address H */
+
+			case 0x19:	/* delta-n L */
+			case 0x1a:	/* delta-n H */
+			case 0x1b:	/* volume */
+				{
+					UINT8 val = v;
+					/* 0x10-0x1b */
+					if ( (addr-0x10)==0x00 )
+					{
+					/*	YM2610 always uses external memory and doesn't even have
+						memory flag bit.
+						To keep it in-line with other chips, we always set
+						the external memory flag bit (which is expected by the DELTA-T code).
+					*/
+						val |= 0x20;	/* set external memory flag */
+					}
+
+					if ( (addr-0x10)==0x01 )
+					{
+					/*	YM2610 always uses ROM as an external memory and doesn't tave
+						ROM/RAM memory flag bit.
+						To keep it in-line with other chips, we always set
+						ROM flag bit (which is expected by the DELTA-T code).
+					*/
+						val |= 0x01;	/* set ROM memory flag */
+					}
+
+					YM_DELTAT_ADPCM_Write(&F2610->deltaT,addr-0x10,val);
+				}
+            	break;
+
 			case 0x1c: /*  FLAG CONTROL : Extend Status Clear/Mask */
 				{
-				UINT8 statusmask = ~v;
-				/* set arrived flag mask */
-				for(ch=0;ch<6;ch++)
-					F2610->adpcm[ch].flagMask = statusmask&(1<<ch);
-				F2610->deltaT.statusflag      = statusmask&0x80;
-				/* clear arrived flag */
-				F2610->adpcm_arrivedEndAddress &= statusmask;
+					UINT8 statusmask = ~v;
+					/* set arrived flag mask */
+					for(ch=0;ch<6;ch++)
+						F2610->adpcm[ch].flagMask = statusmask&(1<<ch);
+						
+					F2610->deltaT.status_change_EOS_bit = statusmask & 0x80;	/* status flag: set bit7 on End Of Sample */
+
+					/* clear arrived flag */
+					F2610->adpcm_arrivedEndAddress &= statusmask;
 				}
-			break;
+				break;
+
 			default:
-			{
-				UINT8 val = v;
-
-				/*	YM2610 always uses external memory and doesn't even have
-					memory flag bit.
-					To keep it in-line with other chips, we simply always set
-					memory flag bit (which is expected by DELTA-T module).
-				*/
-				/* 0x10-0x1b */
-				if ( (addr-0x10)==0x00 )
-				{
-					val |= 0x20;
-				}
-
-				YM_DELTAT_ADPCM_Write(&F2610->deltaT,addr-0x10,val);
-			}
-    		break;
+				logerror("YM2610: write to unknown deltat register %02x val=%02x\n",addr,v);
+				break;
 			}
 
 			break;
@@ -4702,7 +4713,6 @@ void YM2612ResetChip(int num)
 	for(i = 0x26 ; i >= 0x20 ; i-- ) OPNWriteReg(OPN,i,0);
 	/* DAC mode clear */
 	F2612->dacen = 0;
-	//printf("reset: DAC disabled\n");
 }
 
 /* YM2612 write */
@@ -4738,12 +4748,10 @@ int YM2612Write(int n, int a,UINT8 v)
 			case 0x2a:	/* DAC data (YM2612) */
 				YM2612UpdateReq(n);
 				F2612->dacout = ((int)v - 0x80) << 8;	/* level unknown */
-				//printf("write dacout %i",F2612->dacout);
 				break;
 			case 0x2b:	/* DAC Sel  (YM2612) */
 				/* b7 = dac enable */
 				F2612->dacen = v & 0x80;
-				//printf("write dacen %2x",v);
 				cur_chip = NULL;
 				break;
 			default:	/* OPN section */
@@ -4827,7 +4835,7 @@ int YM2612TimerOver(int n,int c)
 
 
 
-#if 0 //BUILD_YM2151
+#if 0 /*BUILD_YM2151*/
 
 
 
@@ -5469,4 +5477,3 @@ int YM2151TimerOver(int n,int c)
 }
 
 #endif /* BUILD_YM2151 */
-

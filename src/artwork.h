@@ -76,7 +76,7 @@ struct overlay_piece
 
 int artwork_create_display(struct osd_create_params *params, UINT32 *rgb_components);
 void artwork_update_video_and_audio(struct mame_display *display);
-void artwork_save_snapshot(struct mame_bitmap *bitmap);
+void artwork_override_screenshot_params(struct mame_bitmap **bitmap, UINT32 *rgb_components);
 
 struct mame_bitmap *artwork_get_ui_bitmap(void);
 void artwork_mark_ui_dirty(int minx, int miny, int maxx, int maxy);

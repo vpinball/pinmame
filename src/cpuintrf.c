@@ -158,6 +158,12 @@
 #if (HAS_PIC16C54 || HAS_PIC16C55 || HAS_PIC16C56 || HAS_PIC16C57 || HAS_PIC16C58)
 #include "cpu/pic16c5x/pic16c5x.h"
 #endif
+#if (HAS_G65816)
+#include "cpu/g65816/g65816.h"
+#endif
+#if (HAS_SPC700)
+#include "cpu/spc700/spc700.h"
+#endif
 
 
 #ifdef MESS
@@ -174,9 +180,6 @@
 #if (HAS_F8)
 #include "cpu/f8/f8.h"
 #endif
-#if (HAS_G65816)
-#include "cpu/g65816/g65816.h"
-#endif
 #if (HAS_LH5801)
 #include "cpu/lh5801/lh5801.h"
 #endif
@@ -188,9 +191,6 @@
 #endif
 #if (HAS_SC61860)
 #include "cpu/sc61860/sc61860.h"
-#endif
-#if (HAS_SPC700)
-#include "cpu/spc700/spc700.h"
 #endif
 #if (HAS_Z80GB)
 #include "cpu/z80gb/z80gb.h"
@@ -608,7 +608,7 @@ const struct cpu_interface cpuintrf[] =
 	CPU3(ADSP2115, adsp2115, 4,  0,1.00,16,17lew, -1,15,LE,2, 4 ),
 #endif
 #if (HAS_PSXCPU)
-	CPU0(PSXCPU,   mips,	 8, -1,1.00,16,32lew,  0,32,LE,4, 4	),
+	CPU0(PSXCPU,   mips,	 1,  0,1.00,32,32ledw, 0,32,LE,4, 4 ),
 #endif
 #if (HAS_ASAP)
 	#define asap_ICount asap_icount
@@ -671,6 +671,12 @@ const struct cpu_interface cpuintrf[] =
 #if (HAS_PIC16C58)
 	CPU3(PIC16C58,pic16C58,  0,  0,1.00,8,16lew, 0,13,LE,1, 2 ),
 #endif
+#if (HAS_G65816)
+	CPU0(G65816,  g65816,	 1,  0,1.00, 8, 24,	  0,24,BE,1, 3	),
+#endif
+#if (HAS_SPC700)
+	CPU0(SPC700,   spc700,	 0,  0,1.00, 8, 16,	  0,16,LE,1, 3	),
+#endif
 
 #ifdef MESS
 #if (HAS_APEXC)
@@ -688,9 +694,6 @@ const struct cpu_interface cpuintrf[] =
 #define f8_ICount f8_icount
 	CPU4(F8,	   f8,		 1,  0,1.00, 8, 16,	  0,16,LE,1, 3	),
 #endif
-#if (HAS_G65816)
-	CPU0(G65816,  g65816,	 1,  0,1.00, 8, 24,	  0,24,BE,1, 3	),
-#endif
 #if (HAS_LH5801)
 #define lh5801_ICount lh5801_icount
 	CPU0(LH5801,   lh5801,	 1,  0,1.00, 8, 17,	  0,17,BE,1, 5	),
@@ -706,9 +709,6 @@ const struct cpu_interface cpuintrf[] =
 #if (HAS_SC61860)
 	#define sc61860_ICount sc61860_icount
 	CPU0(SC61860,  sc61860,  1,  0,1.00, 8, 16,	  0,16,BE,1, 4	),
-#endif
-#if (HAS_SPC700)
-	CPU0(SPC700,   spc700,	 0,  0,1.00, 8, 16,	  0,16,LE,1, 3	),
 #endif
 #if (HAS_Z80GB)
 	CPU0(Z80GB,    z80gb,	 5,255,1.00, 8, 16,	  0,16,LE,1, 4	),

@@ -72,6 +72,11 @@ static INT32 interrupt_vector[MAX_CPU][MAX_IRQ_LINES];
 static UINT8 irq_line_state[MAX_CPU][MAX_IRQ_LINES];
 static INT32 irq_line_vector[MAX_CPU][MAX_IRQ_LINES];
 
+/* ick, interrupt event queues */
+#define MAX_IRQ_EVENTS		256
+static INT32 irq_event_queue[MAX_CPU][MAX_IRQ_EVENTS];
+static int irq_event_index[MAX_CPU];
+
 
 
 /*************************************
@@ -130,6 +135,9 @@ int cpuint_init(void)
 			interrupt_vector[cpunum][irqline] =
 			irq_line_vector[cpunum][irqline] = cpunum_default_irq_vector(cpunum);
 		}
+		
+		/* reset the IRQ event queues */
+		irq_event_index[cpunum] = 0;
 	}
 
 	/* set up some stuff to save */
@@ -158,7 +166,10 @@ void cpuint_reset_cpu(int cpunum)
 	/* the machine doesn't have an interrupt enable port */
 	interrupt_enable[cpunum] = 1;
 	for (irqline = 0; irqline < MAX_IRQ_LINES; irqline++)
+	{
 		interrupt_vector[cpunum][irqline] = cpunum_default_irq_vector(cpunum);
+		irq_event_index[cpunum] = 0;
+	}
 
 	/* reset any driver hooks into the IRQ acknowledge callbacks */
 	drv_irq_callbacks[cpunum] = NULL;
@@ -249,24 +260,27 @@ void cpu_irq_line_vector_w(int cpunum, int irqline, int vector)
  *
  *************************************/
 
-static void cpu_manualirqcallback(int param)
+static void cpu_empty_event_queue(int cpunum)
 {
-	int cpunum = param & 0x0f;
-	int state = (param >> 4) & 0x0f;
-	int irqline = (param >> 8) & 0x7f;
-	int set_vector = (param >> 15) & 0x01;
-	int vector = param >> 16;
-
-	LOG(("cpu_manualirqcallback %d,%d,%d\n",cpunum,irqline,state));
+	int i;
 
 	/* swap to the CPU's context */
 	cpuintrf_push_context(cpunum);
+
+	/* loop over all events */
+	for (i = 0; i < irq_event_index[cpunum]; i++)
+	{
+		INT32 irq_event = irq_event_queue[cpunum][i];
+		int state = irq_event & 0xff;
+		int irqline = (irq_event >> 8) & 0xff;
+		int vector = irq_event >> 16;
+
+		LOG(("cpu_empty_event_queue %d,%d,%d\n",cpunum,irqline,state));
 
 	/* set the IRQ line state and vector */
 	if (irqline >= 0 && irqline < MAX_IRQ_LINES)
 	{
 		irq_line_state[cpunum][irqline] = state;
-		if (set_vector)
 			irq_line_vector[cpunum][irqline] = vector;
 	}
 
@@ -290,53 +304,45 @@ static void cpu_manualirqcallback(int param)
 		default:
 			logerror("cpu_manualirqcallback cpu #%d, line %d, unknown state %d\n", cpunum, irqline, state);
 	}
-	cpuintrf_pop_context();
 
 	/* generate a trigger to unsuspend any CPUs waiting on the interrupt */
 	if (state != CLEAR_LINE)
 		cpu_triggerint(cpunum);
 }
 
+	/* swap back */
+	cpuintrf_pop_context();
 
+	/* reset counter */
+	irq_event_index[cpunum] = 0;
+}
+
+	
 void cpu_set_irq_line(int cpunum, int irqline, int state)
 {
-	int vector = 0xff;
-	int param;
-
-	/* don't trigger interrupts on suspended CPUs */
-	if (cpu_getstatus(cpunum) == 0)
-		return;
-
-	/* pick the vector */
-	if (irqline >= 0 && irqline < MAX_IRQ_LINES)
-		vector = interrupt_vector[cpunum][irqline];
-
-	LOG(("cpu_set_irq_line(%d,%d,%d,%02x)\n", cpunum, irqline, state, vector));
-
-	/* assemble all the current data into a parameter */
-	param = (cpunum & 0x0f) | ((state & 0x0f) << 4) | ((irqline & 0x7f) << 8) | (1 << 15) | (vector << 16);
-	
-	/* if this is a clear on the executing CPU, do it immediately; otherwise, use a timer */
-	if (state == CLEAR_LINE && cpunum == cpu_getexecutingcpu())
-		cpu_manualirqcallback(param);
-	else
-		timer_set(TIME_NOW, param, cpu_manualirqcallback);
+	int vector = (irqline >= 0 && irqline < MAX_IRQ_LINES) ? interrupt_vector[cpunum][irqline] : 0xff;
+	cpu_set_irq_line_and_vector(cpunum, irqline, state, vector);
 }
 
 
 void cpu_set_irq_line_and_vector(int cpunum, int irqline, int state, int vector)
 {
-	int param;
-
-	/* don't trigger interrupts on suspended CPUs */
-	if (cpu_getstatus(cpunum) == 0)
-		return;
+	INT32 irq_event = (state & 0xff) | ((irqline & 0xff) << 8) | (vector << 16);
+	int event_index = irq_event_index[cpunum]++;
 
 	LOG(("cpu_set_irq_line(%d,%d,%d,%02x)\n", cpunum, irqline, state, vector));
 
-	/* set a timer to go off */
-	param = (cpunum & 0x0f) | ((state & 0x0f) << 4) | ((irqline & 0x7f) << 8) | (1 << 15) | (vector << 16);
-	timer_set(TIME_NOW, param, cpu_manualirqcallback);
+	/* enqueue the event */
+	if (event_index < MAX_IRQ_EVENTS)
+	{
+		irq_event_queue[cpunum][event_index] = irq_event;
+		
+		/* if this is the first one, set the timer */
+		if (event_index == 0)
+			timer_set(TIME_NOW, cpunum, cpu_empty_event_queue);
+	}
+	else
+		logerror("Exceeded pending IRQ event queue on CPU %d!\n", cpunum);
 }
 
 

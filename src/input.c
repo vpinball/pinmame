@@ -584,6 +584,13 @@ void seq_name(InputSeq* code, char* buffer, unsigned max)
 	{
 		const char* name;
 
+		/* this reduces those pesky "blah or n/a" constructs */
+		if (((*code)[j]==CODE_OR) && (j+1>=SEQ_MAX || !strcmp(code_name((*code)[j+1]), "n/a")))
+		{
+			++j;
+			continue;
+		}
+
 		if ((*code)[j]==CODE_NONE)
 			break;
 

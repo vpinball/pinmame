@@ -841,28 +841,20 @@ void artwork_update_video_and_audio(struct mame_display *display)
 
 
 /*-------------------------------------------------
-	artwork_save_snapshot - save a snapshot
+	artwork_override_screenshot_params - override
+	certain parameters when saving a screenshot
 -------------------------------------------------*/
 
-void artwork_save_snapshot(struct mame_bitmap *bitmap)
+void artwork_override_screenshot_params(struct mame_bitmap **bitmap, UINT32 *rgb_components)
 {
-	if ((bitmap == Machine->scrbitmap || bitmap == uioverlay) && artwork_list)
+	if ((*bitmap == Machine->scrbitmap || *bitmap == uioverlay) && artwork_list)
 	{
-		struct rectangle temprect = screenrect;
-		UINT32 saved_rgb_components[3];
-
 		/* snapshots require correct direct_rgb_components */
-		memcpy(saved_rgb_components, direct_rgb_components, sizeof(saved_rgb_components));
-		direct_rgb_components[0] = 0xff << rshift;
-		direct_rgb_components[1] = 0xff << gshift;
-		direct_rgb_components[2] = 0xff << bshift;
-
-		osd_save_snapshot(final, &temprect);
-
-		memcpy(direct_rgb_components, saved_rgb_components, sizeof(saved_rgb_components));
+		rgb_components[0] = 0xff << rshift;
+		rgb_components[1] = 0xff << gshift;
+		rgb_components[2] = 0xff << bshift;
+		*bitmap = final;
 	}
-	else
-		osd_save_snapshot(bitmap, &Machine->visible_area);
 }
 
 

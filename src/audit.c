@@ -15,7 +15,18 @@ static const struct GameDriver *hard_disk_gamedrv;
 
 void *audit_hard_disk_open(const char *filename, const char *mode)
 {
-	return mame_fopen(hard_disk_gamedrv->name, filename, FILETYPE_IMAGE, 0);
+	const struct GameDriver *drv;
+
+	/* attempt reading up the chain through the parents */
+	for (drv = hard_disk_gamedrv; drv != NULL; drv = drv->clone_of)
+	{
+		void* file = mame_fopen(drv->name, filename, FILETYPE_IMAGE, 0);
+
+		if (file != NULL)
+			return file;
+	}
+
+	return NULL;
 }
 
 
@@ -204,11 +215,20 @@ int AuditRomSet (int game, tAuditRecord **audit)
 				if (err)
 				{
 					if (hash_data_has_info(aud->exphash, HASH_INFO_NO_DUMP))
+					{
 						/* not found but it's not good anyway */
 						aud->status = AUD_NOT_AVAILABLE;
+					}
+					else if (ROM_ISOPTIONAL(rom))
+					{
+						/* optional ROM not found */
+						aud->status = AUD_OPTIONAL_ROM_NOT_FOUND;
+					}
 					else
+					{
 						/* not found */
 						aud->status = AUD_ROM_NOT_FOUND;
+					}
 				}
 				/* all cases below assume the ROM was at least found */
 				else if (aud->explength != aud->length)
@@ -365,6 +385,11 @@ int VerifyRomSet (int game, verify_printf_proc verify_printf)
 					drivers[game]->name, aud->rom, aud->explength);
 				VerifyDumpHashData(aud->exphash, NULL, verify_printf);
 				break;
+			case AUD_OPTIONAL_ROM_NOT_FOUND:
+				verify_printf ("%-8s: %-12s %7d bytes NOT FOUND BUT OPTIONAL\n",
+					drivers[game]->name, aud->rom, aud->explength);
+				VerifyDumpHashData(aud->exphash, NULL, verify_printf);
+				break;
 			case AUD_NOT_AVAILABLE:
 				verify_printf ("%-8s: %-12s %7d bytes NOT FOUND - NO GOOD DUMP KNOWN\n",
 					drivers[game]->name, aud->rom, aud->explength);
@@ -424,6 +449,8 @@ int VerifyRomSet (int game, verify_printf_proc verify_printf)
 		return INCORRECT;
 	if (archive_status & (AUD_ROM_NEED_DUMP|AUD_ROM_NEED_REDUMP|AUD_NOT_AVAILABLE))
 		return BEST_AVAILABLE;
+	if (archive_status & (AUD_OPTIONAL_ROM_NOT_FOUND))
+		return MISSING_OPTIONAL;
 
 	return CORRECT;
 

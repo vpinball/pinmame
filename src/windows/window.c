@@ -193,6 +193,7 @@ static struct win_effect_data effect_table[] =
 //	PROTOTYPES
 //============================================================
 
+static void compute_multipliers_internal(const RECT *rect, int visible_width, int visible_height, int *xmult, int *ymult);
 static void update_system_menu(void);
 static LRESULT CALLBACK video_window_proc(HWND wnd, UINT message, WPARAM wparam, LPARAM lparam);
 static void draw_video_contents(HDC dc, struct mame_bitmap *bitmap, const struct rectangle *bounds, void *vector_dirty_pixels, int update);
@@ -1048,6 +1049,9 @@ void win_constrain_to_aspect_ratio(RECT *rect, int adjustment, int constraints)
 
 void win_adjust_window_for_visible(int min_x, int max_x, int min_y, int max_y)
 {
+	int old_visible_width = win_visible_rect.right - win_visible_rect.left;
+	int old_visible_height = win_visible_rect.bottom - win_visible_rect.top;
+
 	// set the new values
 	win_visible_rect.left = min_x;
 	win_visible_rect.top = min_y;
@@ -1066,8 +1070,28 @@ void win_adjust_window_for_visible(int min_x, int max_x, int min_y, int max_y)
 			aspect_ratio /= 2.0;
 	}
 
+ 	// if we are adjusting the size in windowed mode without stretch, use our own way of changing the window size
+ 	if (visible_area_set && win_window_mode && win_use_directx != USE_D3D && (win_use_directx != USE_DDRAW || !win_dd_hw_stretch))
+ 	{
+ 		RECT r;
+ 		int xmult, ymult;
+
+ 		GetClientRect(win_video_window, &r);
+ 		compute_multipliers_internal(&r, old_visible_width, old_visible_height, &xmult, &ymult);
+
+ 		GetWindowRect(win_video_window, &r);
+ 		r.right += (win_visible_width - old_visible_width) * xmult;
+ 		r.left += (win_visible_height - old_visible_height) * ymult;
+ 		set_aligned_window_pos(win_video_window, NULL, r.left, r.top,
+ 				r.right - r.left,
+ 				r.bottom - r.top,
+ 				SWP_NOZORDER | SWP_NOMOVE);
+ 	}
+ 	else
+ 	{
 	// adjust the window
 	win_adjust_window();
+ 	}
 
 	// first time through here, we need to show the window
 	if (!visible_area_set)
@@ -1591,14 +1615,14 @@ int win_determine_effect(const struct win_blit_params *params)
 
 
 //============================================================
-//	win_compute_multipliers
+//	compute_multipliers_internal
 //============================================================
 
-void win_compute_multipliers(const RECT *rect, int *xmult, int *ymult)
+static void compute_multipliers_internal(const RECT *rect, int visible_width, int visible_height, int *xmult, int *ymult)
 {
 	// first compute simply
-	*xmult = (rect->right - rect->left) / win_visible_width;
-	*ymult = (rect->bottom - rect->top) / win_visible_height;
+	*xmult = (rect->right - rect->left) / visible_width;
+	*ymult = (rect->bottom - rect->top) / visible_height;
 
 	// clamp to the hardcoded max
 	if (*xmult > MAX_X_MULTIPLY)
@@ -1625,6 +1649,17 @@ void win_compute_multipliers(const RECT *rect, int *xmult, int *ymult)
 		*xmult = 1;
 	if (*ymult < 1)
 		*ymult = 1;
+}
+
+
+
+//============================================================
+//	win_compute_multipliers
+//============================================================
+
+void win_compute_multipliers(const RECT *rect, int *xmult, int *ymult)
+{
+	compute_multipliers_internal(rect, win_visible_width, win_visible_height, xmult, ymult);
 }
 
 
