@@ -209,7 +209,7 @@ S11_ROMEND
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF(eatpm, l4, "Elvira and the Party Monsters (L-4)", 1989, "Bally", s11_mS11B2S,0)
+CORE_GAMEDEF(eatpm, l4, "Elvira and the Party Monsters (L-4)", 1989, "Bally", s11_mS11BS,0)
 
 /*-----------------------
 / Simulation Definitions
