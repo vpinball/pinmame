@@ -67,8 +67,9 @@ static WRITE_HANDLER(intack_w) {
   ATARI2_irq(0);
 }
 
+/* only needed for real hardware */
 static WRITE_HANDLER(watchdog_w) {
-  /* only needed for real hardware */
+//logerror("Watchdog reset!\n");
 }
 
 static int ATARI_vblank(void) {
@@ -80,7 +81,7 @@ static int ATARI_vblank(void) {
   /*-- lamps --*/
   if ((locals.vblankCount % ATARI_LAMPSMOOTH) == 0) {
     memcpy(coreGlobals.lampMatrix, locals.lampMatrix, sizeof(locals.lampMatrix));
-//    memset(locals.lampMatrix, 0, sizeof(locals.lampMatrix));
+//	memset(locals.lampMatrix, 0, sizeof(locals.lampMatrix));
   }
   /*-- solenoids --*/
 
@@ -94,7 +95,7 @@ static int ATARI_vblank(void) {
   {
     memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
 	memset(locals.segments, 0x00, sizeof locals.segments);
-//    memcpy(locals.segments, locals.pseg, sizeof(locals.segments));
+//  memcpy(locals.segments, locals.pseg, sizeof(locals.segments));
 
   }
 
@@ -105,7 +106,10 @@ static int ATARI_vblank(void) {
   return 0;
 }
 
-static void ATARI_updSw(int *inports) {
+static void ATARI1_updSw(int *inports) {
+}
+
+static void ATARI2_updSw(int *inports) {
 	if (inports) {
 		coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0x62) | (inports[ATARI_COMINPORT] & 0x9d);
 	}
@@ -128,21 +132,33 @@ static int ATARI_m2sw(int col, int row) {
 
 static core_tData ATARI1Data = {
   32, /* 32 dip switches */
-  ATARI_updSw,
-  1,
+  ATARI1_updSw,
+  4, /* 4 diagnostic LEDs */
   ATARI_sndCmd_w, "ATARI1",
-  ATARI_sw2m, core_swSeq2m, ATARI_m2sw, core_m2swSeq
+  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
 };
 
 static core_tData ATARI2Data = {
   32, /* 32 dip switches */
-  ATARI_updSw,
+  ATARI2_updSw,
   4, /* 4 diagnostic LEDs */
   ATARI_sndCmd_w, "ATARI2",
   ATARI_sw2m, core_swSeq2m, ATARI_m2sw, core_m2swSeq
 };
 
+static READ_HANDLER(readCRC) {
+	return 0xb8;
+}
+
 /* Switch reading */
+static READ_HANDLER(swg1_r) {
+	return (coreGlobals.swMatrix[1+(offset/8)] & (1 << (offset % 8)))?0xff:0;
+}
+
+static WRITE_HANDLER(swg1_w) {
+	logerror("Test switch write %2x\n", data);
+}
+
 static READ_HANDLER(sw_r) {
 	return ~coreGlobals.swMatrix[offset+1];
 }
@@ -181,37 +197,69 @@ static WRITE_HANDLER(sol1_w) {
 }
 
 /* lamps */
+static WRITE_HANDLER(latch10_w) {
+	locals.lampMatrix[0] = data;
+}
+
+static WRITE_HANDLER(latch14_w) {
+	locals.lampMatrix[1] = data;
+}
+
+static WRITE_HANDLER(latch18_w) {
+	locals.lampMatrix[2] = data;
+}
+
+static WRITE_HANDLER(latch1c_w) {
+	locals.lampMatrix[3] = data;
+}
+
+static WRITE_HANDLER(latch50_w) {
+	locals.lampMatrix[4] = data;
+}
+
+static WRITE_HANDLER(latch54_w) {
+	locals.lampMatrix[5] = data;
+}
+
+static WRITE_HANDLER(latch58_w) {
+	locals.lampMatrix[6] = data;
+}
+
+static WRITE_HANDLER(latch5c_w) {
+	locals.lampMatrix[7] = data;
+}
+
 static WRITE_HANDLER(lamp_w) {
 	locals.lampMatrix[offset] = data;
 }
 
 /* sound */
+static WRITE_HANDLER(soundg1_w) {
+	logerror("Play sound %2x\n", data);
+}
+
+static WRITE_HANDLER(audiog1_w) {
+	logerror("Audio Reset %2x\n", data);
+}
+
 static WRITE_HANDLER(sound0_w) {
 	locals.diagnosticLed = data & 0x0f; /* coupled with waveform select */
-	if (data & 0x80) logerror("noise ");
-	if (data & 0x40) logerror("wave ");
-	if (data & 0x30) logerror("o%d ", data >> 4);
-	if (data & 0x0f) logerror("w%d ", data & 0x0f);
+	if (data & 0x80) logerror("noise on\n");
+	if (data & 0x40) logerror("wave on\n");
+	if (data & 0x30) logerror("octave=%d\n", data >> 4);
+	if (data & 0x0f) logerror("waveform=%d\n", data & 0x0f);
 //ATARI_sndCmd_w(0,!(data&0x10)?(~data)&0x0f:0x00);
 }
 
 static WRITE_HANDLER(sound1_w) {
-	if (data & 0xf0) logerror("f%d ", data >> 4);
-	if (data & 0x0f) logerror("a%d ", data & 0x0f);
+	if (data & 0xf0) logerror("freq.div=%d\n", data >> 4);
+	if (data & 0x0f) logerror("amplitude=%d\n", data & 0x0f);
 //ATARI_sndCmd_w(1,!(data&0x10)?(~data)&0x0f:0x00);
 }
 
 /* RAM */
-static UINT8 RAM_256[0x100];
+static UINT8 NVRAM_512[0x200];
 static UINT8 NVRAM_256[0x100];
-
-static READ_HANDLER(ram_r) {
-	return RAM_256[offset];
-}
-
-static WRITE_HANDLER(ram_w) {
-	RAM_256[offset] = data;
-}
 
 static READ_HANDLER(nvram_r) {
 	return NVRAM_256[offset] & 0x0f;
@@ -219,6 +267,14 @@ static READ_HANDLER(nvram_r) {
 
 static WRITE_HANDLER(nvram_w) {
 	NVRAM_256[offset] = data & 0x0f;
+}
+
+static READ_HANDLER(nvram1_r) {
+	return NVRAM_512[offset];
+}
+
+static WRITE_HANDLER(nvram1_w) {
+	NVRAM_512[offset] = data;
 }
 
 /*-----------------------------------------
@@ -232,22 +288,31 @@ static WRITE_HANDLER(nvram_w) {
 3000-????  Audio Enable
 4000-????  WatchDog Reset
 5000-????  Decode 5000 (Testing only?)
-6000-????  Audio Reset*/
+6000-????  Audio Reset
+*/
 static MEMORY_READ_START(ATARI1_readmem)
-{0x0000,0x00ff,	MRA_RAM},	/* RAM */
-//{0x0300,0x04ff,	MRA_RAM},	/* RAM */
-//{0x1000,0x10ff,	MRA_RAM},	/* RAM Mirror?*/
-//{0x1300,0x14ff,	MRA_RAM},	/* RAM Mirror?*/
-//{0x2000,0x2007,	sw_r},		/* inputs */
+{0x0000,0x01ff,	nvram1_r},	/* NVRAM */
+{0x1000,0x10ff,	MRA_RAM},	/* RAM */
+{0x1800,0x18ff,	MRA_RAM},	/* RAM */
+{0x2000,0x204f,	swg1_r},	/* inputs */
 {0x7000,0x7fff,	MRA_ROM},	/* ROM */
 {0xf800,0xffff,	MRA_ROM},	/* reset vector */
 MEMORY_END
 
 static MEMORY_WRITE_START(ATARI1_writemem)
-{0x0000,0x00ff,	MWA_RAM},	/* RAM */
-//{0x0300,0x04ff,	MWA_RAM},	/* RAM */
-//{0x1000,0x10ff,	MWA_RAM},	/* RAM Mirror?*/
-//{0x1300,0x14ff,	MWA_RAM},	/* RAM Mirror?*/
+{0x0000,0x01ff,	nvram1_w},	/* NVRAM */
+{0x1080,0x1080,	latch10_w},	/* output */
+{0x1084,0x1084,	latch14_w},	/* output */
+{0x1088,0x1088,	latch18_w},	/* output */
+{0x108c,0x108c,	latch1c_w},	/* output */
+{0x200b,0x200b,	swg1_w},	/* test switch write? */
+{0x3000,0x3000,	soundg1_w},	/* audio enable? */
+{0x4000,0x4000,	watchdog_w},/* watchdog reset? */
+{0x5080,0x5080,	latch50_w},	/* output */
+{0x5084,0x5084,	latch54_w},	/* output */
+{0x5088,0x5088,	latch58_w},	/* output */
+{0x508c,0x508c,	latch5c_w},	/* output */
+{0x6000,0x6000,	audiog1_w},	/* audio reset? */
 {0x7000,0x7fff,	MWA_ROM},	/* ROM */
 {0xf800,0xffff,	MWA_ROM},	/* reset vector */
 MEMORY_END
@@ -256,8 +321,10 @@ MEMORY_END
 /  Memory map for CPU board (GENERATION 2)
 /------------------------------------------*/
 static MEMORY_READ_START(ATARI2_readmem)
-{0x0000,0x00ff,	ram_r},		/* RAM */
+{0x0000,0x00ff,	MRA_RAM},	/* RAM */
+{0x0100,0x01ff,	nvram_r},	/* unmapped RAM */
 {0x0800,0x08ff,	nvram_r},	/* NVRAM */
+{0x0900,0x09ff,	nvram_r},	/* unmapped RAM */
 {0x1000,0x1007,	sw_r},		/* inputs */
 {0x2000,0x2003,	dip_r},		/* dip switches */
 {0x2800,0x3fff,	MRA_ROM},	/* ROM */
@@ -266,7 +333,9 @@ static MEMORY_READ_START(ATARI2_readmem)
 MEMORY_END
 
 static MEMORY_WRITE_START(ATARI2_writemem)
-{0x0000,0x00ff,	ram_w},		/* RAM */
+{0x0000,0x00ff,	MWA_RAM},	/* RAM */
+{0x0100,0x0100,	MWA_RAM},	/* unmapped RAM */
+{0x0700,0x07ff,	MWA_RAM},	/* unmapped RAM */
 {0x0800,0x08ff,	nvram_w},	/* NVRAM */
 {0x1800,0x1800,	sound0_w},	/* sound */
 {0x1820,0x1820,	sound1_w},	/* sound */
@@ -275,7 +344,7 @@ static MEMORY_WRITE_START(ATARI2_writemem)
 {0x1860,0x1867,	lamp_w},	/* lamp output */
 {0x1880,0x1880,	sol0_w},	/* solenoid output */
 {0x18a0,0x18a7,	sol1_w},	/* solenoid enable & independent control output */
-{0x18c0,0x18c0,	watchdog_w},/* watchdog reset */
+{0x18c0,0x18c1,	watchdog_w},/* watchdog reset */
 {0x18e0,0x18e0,	intack_w},	/* interrupt acknowledge (resets IRQ state) */
 {0x2800,0x3fff,	MWA_ROM},	/* ROM */
 {0xa800,0xbfff,	MWA_ROM},	/* ROM */
@@ -389,7 +458,7 @@ static void ATARI2_exit(void) {
 / Save RAM & CMOS Information
 /-------------------------------------------------*/
 void ATARI1_nvram(void *file, int write) {
-	core_nvram(file, write, NVRAM_256, sizeof NVRAM_256, 0x00);
+	core_nvram(file, write, NVRAM_512, sizeof NVRAM_512, 0x00);
 }
 
 void ATARI2_nvram(void *file, int write) {
