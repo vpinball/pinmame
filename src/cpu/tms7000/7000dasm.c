@@ -382,12 +382,6 @@ unsigned Dasm7000 (char *buffer, unsigned pc)
 			UINT16	c;
 			INT16	d;
 
-
-			if(opcode == 0xda)
-			{
-				int x=0;
-			}
-
 			buffer += sprintf (buffer, "%s", opcodes[i].name);
 
 			j=opcodes[i].operand;
