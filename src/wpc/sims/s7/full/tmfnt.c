@@ -87,43 +87,43 @@ S7_INPUT_PORTS_END
 /*-------------------
 / Switch definitions
 /--------------------*/
-#define swTilt		S7_SWNO( 1)
-#define swStart		S7_SWNO( 3)
-#define swSlamTilt	S7_SWNO( 7)
-#define swFantasy	S7_SWNO( 9)
-#define swfAntasy	S7_SWNO(10)
-#define swfaNtasy	S7_SWNO(11)
-#define swfanTasy	S7_SWNO(12)
-#define swfantAsy	S7_SWNO(13)
-#define swfantaSy	S7_SWNO(14)
-#define swfantasY	S7_SWNO(15)
-#define swLeftLoop	S7_SWNO(16)
-#define swRightLoop	S7_SWNO(17)
-#define swLeftOutlane	S7_SWNO(18)
-#define swRightOutlane	S7_SWNO(19)
-#define swLeftInlane	S7_SWNO(20)
-#define swRightInlane	S7_SWNO(21)
-#define sw1		S7_SWNO(22)
-#define sw2		S7_SWNO(23)
-#define sw3		S7_SWNO(24)
-#define sw4		S7_SWNO(25)
-#define sw5		S7_SWNO(26)
-#define swLLStandup	S7_SWNO(27)
-#define swULStandup	S7_SWNO(28)
-#define swUTRStandup	S7_SWNO(29)
-#define swUMRStandup	S7_SWNO(30)
-#define swUBRStandup	S7_SWNO(31)
-#define swLRStandup	S7_SWNO(32)
-#define swLeftJet	S7_SWNO(33)
-#define swRightJet	S7_SWNO(34)
-#define swBottomJet	S7_SWNO(35)
-#define swRampTarget	S7_SWNO(36)
-#define swLeftSling	S7_SWNO(37)
-#define swRightSling	S7_SWNO(38)
-#define swOuthole	S7_SWNO(39)
-#define swLaneChange	S7_SWNO(40)
-#define swPFTilt	S7_SWNO(41)
-#define swLeftLane	S7_SWNO(42)
+#define swTilt		 1
+#define swStart		 3
+#define swSlamTilt	 7
+#define swFantasy	 9
+#define swfAntasy	10
+#define swfaNtasy	11
+#define swfanTasy	12
+#define swfantAsy	13
+#define swfantaSy	14
+#define swfantasY	15
+#define swLeftLoop	16
+#define swRightLoop	17
+#define swLeftOutlane	18
+#define swRightOutlane	19
+#define swLeftInlane	20
+#define swRightInlane	21
+#define sw1		22
+#define sw2		23
+#define sw3		24
+#define sw4		25
+#define sw5		26
+#define swLLStandup	27
+#define swULStandup	28
+#define swUTRStandup	29
+#define swUMRStandup	30
+#define swUBRStandup	31
+#define swLRStandup	32
+#define swLeftJet	33
+#define swRightJet	34
+#define swBottomJet	35
+#define swRampTarget	36
+#define swLeftSling	37
+#define swRightSling	38
+#define swOuthole	39
+#define swLaneChange	40
+#define swPFTilt	41
+#define swLeftLane	42
 
 /*---------------------
 / Solenoid definitions
