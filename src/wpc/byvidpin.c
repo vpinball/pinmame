@@ -62,7 +62,7 @@
 #define BYVP_PIA2 2
 
 #define BYVP_VBLANKFREQ    60 /* VBLANK frequency */
-#define BYVP_IRQFREQ      316 /* IRQ (via PIA) frequency*/
+#define BYVP_IRQFREQ      317 /* IRQ (via PIA) frequency*/
 #define BYVP_ZCFREQ       120 /* Zero cross frequency */
 
 /*-----------------------------------------------
@@ -458,7 +458,7 @@ MACHINE_DRIVER_START(byVP1)
   MDRV_CPU_ADD_TAG("mcpu", M6800, 3580000/4)
   MDRV_CPU_MEMORY(byVP_readmem, byVP_writemem)
   MDRV_CPU_VBLANK_INT(byVP_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(byVP_irq, BYVP_IRQFREQ)
+  MDRV_CPU_PERIODIC_INT(byVP_irq, BYVP_IRQFREQ*2)
 
   MDRV_CPU_ADD_TAG("vcpu", M6809, 3580000/4)
   MDRV_CPU_MEMORY(byVP_video_readmem, byVP_video_writemem)
