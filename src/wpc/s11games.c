@@ -271,8 +271,8 @@ CORE_GAMEDEF(swrds, l2, "Swords of Fury (L-2)", 1988, "Williams", s11_mS11BS,0)
 / Taxi 10/88
 /--------------------*/
 static core_tLCDLayout dispTaxi[] = { \
-  DISP_SEG_16(0,CORE_SEG16),DISP_SEG_16(1,CORE_SEG8H),\
-  { 2, 0,21,7,CORE_SEG7S},{0}
+  DISP_SEG_16(0,CORE_SEG16),DISP_SEG_16(1,CORE_SEG8),\
+  { 2, 0,21,7,CORE_SEG7SH},{0}
 };
 
 INITGAME(taxi, GEN_S11B,dispTaxi,12, FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
@@ -349,9 +349,9 @@ CORE_GAMEDEF(bk2k, l4, "Black Knight 2000 (L-4)", 1989, "Williams", s11_mS11BS,0
 / Police Force 9/89
 /-----------------------*/
 static core_tLCDLayout dispPolic[] = {
-  { 0,8,20, 8,CORE_SEG8 },
+  { 0,8,20, 8,CORE_SEG8H },
   { 2,0, 0,16,CORE_SEG16 },
-  { 4,0,20,16,CORE_SEG8H},{0}
+  { 4,0,20,16,CORE_SEG8},{0}
 };
 INITGAME(polic,GEN_S11B, dispPolic, 12, FLIP_SW(FLIP_L),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
 S11_ROMSTART48(polic,l4,"pfrc_u26.l4", 0x1a1409e9,
@@ -494,10 +494,10 @@ CORE_GAMEDEF(radcl, l1, "Radical (L-1)", 1990, "Bally", s11_mS11CS,0)
 / Riverboat Gambler 10/90
 /--------------------*/
 static core_tLCDLayout dispRvrbt[] = {
-  { 0,18,21, 7, CORE_SEG87 },
-  { 0, 4,32, 4, CORE_SEG7  },
+  { 0,18,21, 7, CORE_SEG87H },
+  { 0, 4,32, 4, CORE_SEG7H },
   { 2, 0, 0,16, CORE_SEG16 },
-  { 4, 0,20,16, CORE_SEG8H },{0}
+  { 4, 0,20,16, CORE_SEG8 },{0}
 };
 INITGAME(rvrbt,GEN_S11C,dispRvrbt,12,FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
 S11_ROMSTART48(rvrbt,l3,"gamb_u26.l3", 0xa65f6004,
