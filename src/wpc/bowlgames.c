@@ -142,7 +142,6 @@ INITGAME_S10(gmine, GEN_S11, dispS10, 0, FLIP_SW(FLIP_L), S11_BCDDISP, 0)
 S9_ROMSTARTx4(gmine,l2,"u27.128",0x99c6e049)
 S11S_SOUNDROM88(       "u21.256",0x3b801570,
                        "u22.256",0x08352101)
-S11CS_SOUNDROM8(       "u4.256", 0x0)
 S11_ROMEND
 S11_INPUT_PORTS_START(gmine, 1) S11_INPUT_PORTS_END
 CORE_GAMEDEF(gmine, l2, "Gold Mine (L-2)", 1988, "Williams", s11_mS11S,0)
@@ -154,7 +153,6 @@ INITGAME_S10(tdawg, GEN_S11, dispS10, 0, FLIP_SW(FLIP_L), S11_BCDDISP, 0)
 S9_ROMSTARTx4(tdawg,l1,"tdu27r1.128",0x0b4bb586)
 S11S_SOUNDROM88(      "tdsu21r1.256",0x6a323227,
                       "tdsu22r1.256",0x58407eb4)
-S11CS_SOUNDROM8(      "tdsu4.l1.256",0x0)
 S11_ROMEND
 S11_INPUT_PORTS_START(tdawg, 1) S11_INPUT_PORTS_END
 CORE_GAMEDEF(tdawg, l1, "Top Dawg (L-1)", 1988, "Williams", s11_mS11S,0)
