@@ -469,7 +469,7 @@ int frontend_help (const char *gamename)
 	{
 		#ifndef MESS
 #ifdef PINMAME
-		printf("PinMAME v%s - Pinball's Multiple Arcade Machine Emulator\n"
+		printf("PinMAME v%s\n Pinball's Multiple Arcade Machine Emulator\n"
 				"Copyright (C) 2000-2003 by the PinMAME Team\n\n",build_version);
 		showdisclaimer();
 		printf("Usage:  PINMAME gamename [options]\n\n"
