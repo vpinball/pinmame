@@ -73,7 +73,7 @@ static void GTS80_irq(int state) {
   cpu_set_irq_line(GTS80_CPU, M6502_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
-static int GTS80_vblank(void) {
+static INTERRUPT_GEN(GTS80_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
@@ -108,7 +108,6 @@ static int GTS80_vblank(void) {
     coreGlobals.diagnosticLed = 0;
   }
   core_updateSw(TRUE); /* assume flipper enabled */
-  return 0;
 }
 
 static void GTS80_updSw(int *inports) {
@@ -648,7 +647,7 @@ static MACHINE_INIT(gts80) {
   sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(GTS80_MEMREG_SCPU1), NULL, NULL);
 
   riot6532_reset();
-  
+
   GTS80locals.initDone = TRUE;
 }
 
