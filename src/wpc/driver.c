@@ -776,7 +776,8 @@ DRIVER(dd,l2)           //S11-737:  11/90 B Dr. Dude
 DRIVER(dd,p7)           //WPC:      11/90 B Dr. Dude
 DRIVER(fh,l9)           //WPC-503:  12/90 W Funhouse
 DRIVER(fh,l9b)                            // bootleg with correct German translation
-DRIVER(bbnny,l2)        //S11-396:  01/91 B Bugs Bunny's Birthday Ball
+DRIVER(bbnny,l2)        //S11-396:  01/91 B Bugs Bunny's Birthday Ball (L-2)
+DRIVER(bbnny,lu)        //S11-396:  01/91 B Bugs Bunny's Birthday Ball (LU-2) European
 DRIVER(bop,l7)          //WPC-502:  02/91 W The Machine: Bride of Pinbot
 DRIVER(bop,l4)          //WPC-502:  02/91 W The Machine: Bride of Pinbot (L-4)
 DRIVER(hd,l3)           //WPC:      02/91 B Harley Davidson
