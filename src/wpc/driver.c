@@ -161,23 +161,34 @@ DRIVERNV(badgirls)    //System 80b: Bad Girls
 DRIVERNV(bighouse)    //System 80b: Big House
 DRIVERNV(bonebstr)    //System 80b: Bone Busters
 
-                      //System 3: Operation: Thunder
-                      //System 3: Super Mario Brothers
-                      //System 3: Super Mario Brothers Mushroom World
+DRIVERNV(lca)	      //System 3: Lights, Camera, Action 1989
+DRIVERNV(silvslug)    //System 3: Silver Slugger 1990
+DRIVERNV(vegas)       //System 3: Vegas 1990
+DRIVERNV(deadweap)    //System 3: Deadly Weapon 1990
+DRIVERNV(tfight)      //System 3: Title Fight 1990
+DRIVERNV(bellring)    //System 3: Bell Ringer/Nudge It 1990
+DRIVERNV(carhop)      //System 3: Car Hop 1991
+DRIVERNV(hoops)       //System 3: Hoops 1991
+DRIVERNV(cactjack)     //System 3: Cactus Jacks 1991
+DRIVERNV(clas1812)    //System 3: Class of 1812 1991
+DRIVERNV(surfnsaf)    //System 3: Surf'n Safari 1991
+DRIVERNV(opthund)     //System 3: Operation: Thunder
+DRIVERNV(smb)         //System 3: Super Mario Brothers
+DRIVERNV(smbmush)     //System 3: Super Mario Brothers Mushroom World
 DRIVERNV(cueball)     //System 3: Cue Ball Wizard
-                      //System 3: Street Fighter II
-                      //System 3: Tee'd Off
-                      //System 3: Wipe Out
-                      //System 3: Gladiators
-                      //System 3: World Challenge Soccer
-                      //System 3: Rescue 911
-                      //System 3: Freddy: A Nightmare on Elm Street
-                      //System 3: Shaq Attaq
-                      //System 3: Stargate
-                      //System 3: Big Hurt
-                      //System 3: Waterworld
-                      //System 3: Mario Andretti
-                      //System 3: Barb Wire
+DRIVERNV(sf2)         //System 3: Street Fighter II
+DRIVERNV(teedoff)     //System 3: Tee'd Off
+DRIVERNV(wipeout)     //System 3: Wipe Out
+DRIVERNV(gladiatr)    //System 3: Gladiators
+DRIVERNV(wcsoccer)    //System 3: World Challenge Soccer
+DRIVERNV(rescu911)    //System 3: Rescue 911
+DRIVERNV(freddy)      //System 3: Freddy: A Nightmare on Elm Street
+DRIVERNV(shaqattq)    //System 3: Shaq Attaq
+DRIVERNV(stargate)    //System 3: Stargate
+DRIVERNV(bighurt)     //System 3: Big Hurt
+DRIVERNV(waterwld)    //System 3: Waterworld
+DRIVERNV(andretti)    //System 3: Mario Andretti
+DRIVERNV(barbwire)    //System 3: Barb Wire
 
 // ---------------------
 // STERN GAMES BELOW
