@@ -181,6 +181,7 @@ extern const core_tLCDLayout s11_dispS9[], s11_dispS11[], s11_dispS11a[], s11_di
 extern MACHINE_DRIVER_EXTERN(s11_s9S);
 extern MACHINE_DRIVER_EXTERN(s11_s11S);
 extern MACHINE_DRIVER_EXTERN(s11_s11XS);
+extern MACHINE_DRIVER_EXTERN(s11_s11XSL);
 extern MACHINE_DRIVER_EXTERN(s11_s11aS);
 extern MACHINE_DRIVER_EXTERN(s11_s11b2S);
 extern MACHINE_DRIVER_EXTERN(s11_s11cS);
@@ -194,6 +195,7 @@ extern MACHINE_DRIVER_EXTERN(de_dmd642aS);
 #define s9_mS9S          s11_s9S
 #define s11_mS11S        s11_s11S
 #define s11_mS11XS       s11_s11XS
+#define s11_mS11XSL      s11_s11XSL
 #define s11_mS11AS       s11_s11aS
 #define s11_mS11BS       s11_s11aS
 #define s11_mS11B2S      s11_s11b2S

@@ -201,9 +201,9 @@ S11CS_SOUNDROM88(    "pbot_u4.l1",  CRC(de5926bd) SHA1(3d111e27c5f0c8c0afc5fe5cc
                      "pbot_u19.l1", CRC(40eb4e9f) SHA1(07b0557b35599a2dd5aa66a306fbbe8f50eed998))
 S11_ROMEND
 
-CORE_GAMEDEF(pb, l5, "Pinbot (L-5)", 1987, "Williams", s11_mS11XS,0)
-CORE_CLONEDEF(pb,l2,l5, "Pinbot (L-2)", 1987, "Williams", s11_mS11XS,0)
-CORE_CLONEDEF(pb,l3,l5, "Pinbot (L-3)", 1987, "Williams", s11_mS11XS,0)
+CORE_GAMEDEF(pb, l5, "Pinbot (L-5)", 1987, "Williams", s11_mS11XSL,0)
+CORE_CLONEDEF(pb,l2,l5, "Pinbot (L-2)", 1987, "Williams", s11_mS11XSL,0)
+CORE_CLONEDEF(pb,l3,l5, "Pinbot (L-3)", 1987, "Williams", s11_mS11XSL,0)
 
 /*--------------------
 / F14 Tomcat 3/87
