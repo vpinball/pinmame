@@ -256,9 +256,9 @@ static int TAITO_m2sw(int col, int row) {
 static MEMORY_READ_START(taito_readmem)
   { 0x0000, 0x1fff, MRA_ROM },
   { 0x3000, 0x3eff, MRA_ROM },
-  { 0x2800, 0x2808, switches_r }, /* some games use different locations */
-  { 0x2880, 0x2888, switches_r }, /* -"- */
-  { 0x28d0, 0x28d8, switches_r }, /* -"- */
+  { 0x2800, 0x2807, switches_r }, /* some games use different locations */
+  { 0x2880, 0x2887, switches_r }, /* -"- */
+  { 0x28d8, 0x28df, switches_r }, /* -"- */
   { 0x4000, 0x40ff, MRA_RAM },
 MEMORY_END
 
@@ -314,5 +314,5 @@ MACHINE_DRIVER_END
 // Load/Save static ram
 //-----------------------------------------------
 static NVRAM_HANDLER(taito) {
-  core_nvram(file, read_or_write, memory_region(TAITO_MEMREG_CPU)+0x4000, 0x100, 0xff);
+  core_nvram(file, read_or_write, memory_region(TAITO_MEMREG_CPU)+0x4000, 0x100, 0x00);
 }

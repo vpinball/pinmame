@@ -14,26 +14,30 @@ static const core_tLCDLayout dispTaito[] = {
   {0}
 };
 
-// all display, including two usually hidden ones (match and player)
-static const core_tLCDLayout dispTaito_all[] = {
+static const core_tLCDLayout dispTaito2[] = {
   { 0, 0,  0, 6, CORE_SEG7 },
   { 3, 0,  6, 6, CORE_SEG7 },
   { 6, 0, 12, 6, CORE_SEG7 },
   { 9, 0, 18, 6, CORE_SEG7 },
-  {13, 0, 26, 2, CORE_SEG7 }, {13, 8, 24, 2, CORE_SEG7 },
+  {13, 1, 24, 1, CORE_SEG7 }, {13, 9, 27, 1, CORE_SEG7 },
   {0}
 };
 
 TAITO_INPUT_PORTS_START(taito,1)        TAITO_INPUT_PORTS_END
 
+#define INITGAME1(name,sb) \
+static core_tGameData name##GameData = {0,dispTaito2,{FLIP_SW(FLIP_L),0,0,0,sb,0}}; \
+static void init_##name(void) { core_gameData = &name##GameData; }
+
 #define INITGAME(name,sb) \
 static core_tGameData name##GameData = {0,dispTaito,{FLIP_SW(FLIP_L),0,0,0,sb,0}}; \
 static void init_##name(void) { core_gameData = &name##GameData; }
 
+
 /*--------------------------------
 / Oba-Oba
 /-------------------------------*/
-INITGAME(obaoba,SNDBRD_TAITO_SINTEVOX)
+INITGAME1(obaoba,SNDBRD_TAITO_SINTEVOX)
 TAITO_ROMSTART22_2(obaoba,"ob1.bin",CRC(85cddf4f),
                           "ob2.bin",CRC(7a110b82),
                           "ob3.bin",CRC(8f32a7c0))
@@ -41,22 +45,21 @@ TAITO_SOUNDROMS22("ob_s1.bin", CRC(812a362b),
                   "ob_s2.bin", CRC(f7dbb715))
 TAITO_ROMEND
 #define input_ports_obaoba input_ports_taito
-CORE_GAMEDEFNV(obaoba,"Oba-Oba",1980,"Taito",taito_sintevox,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(obaoba,"Oba-Oba",1980,"Taito",taito_sintevox,0)
 
 /*--------------------------------
 / Drakor
 /-------------------------------*/
 INITGAME(drakor,SNDBRD_TAITO_SINTEVOX)
-// roms are reversed!
-TAITO_ROMSTART22_2(drakor,"drakor3.bin",CRC(7ecf377b),
+TAITO_ROMSTART22_2(drakor,"drakor1.bin",CRC(7ecf377b),
                           "drakor2.bin",CRC(91dbb199),
-                          "drakor1.bin",CRC(b0ba866e))
+                          "drakor3.bin",CRC(b0ba866e))
 // NOT AVAILABLE
 TAITO_SOUNDROMS22("drakors1.bin", NO_DUMP,
                   "drakors2.bin", NO_DUMP)
 TAITO_ROMEND
 #define input_ports_drakor input_ports_taito
-CORE_GAMEDEFNV(drakor,"Drakor",1980,"Taito",taito_sintevox,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(drakor,"Drakor",1980,"Taito",taito_sintevox,0)
 
 /*--------------------------------
 / Meteor
@@ -68,7 +71,7 @@ TAITO_ROMSTART22_2(meteort,"meteor1.bin",CRC(301a9f94),
 TAITO_SOUNDROMS2("meteo_s1.bin", CRC(23971d1e))
 TAITO_ROMEND
 #define input_ports_meteort input_ports_taito
-CORE_GAMEDEFNV(meteort,"Meteor (Taito)",1980,"Taito",taito_sintevox,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(meteort,"Meteor (Taito)",1980,"Taito",taito_sintevox,0)
 
 /*--------------------------------
 / Fire Action
