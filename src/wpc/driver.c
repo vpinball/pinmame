@@ -294,7 +294,6 @@ DRIVERNV(bighouse)      //S80b-713: 04/89 Big House
                         //S80b-718: 04/89 Hot Shots
 DRIVERNV(bonebstr)      //S80b-719: 08/89 Bone Busters Inc
 
-#if 0
 //System 3 Alphanumeric
 DRIVERNV(lca)           //S3-720:   11/89 Lights, Camera, Action 1989
 DRIVERNV(silvslug)      //S3-722:   02/90 Silver Slugger 1990
@@ -331,7 +330,6 @@ DRIVERNV(waterwld)      //S3-746:   10/95 Waterworld
 DRIVERNV(andretti)      //S3-747:   12/95 Mario Andretti
 DRIVERNV(barbwire)      //S3-748:   04/96 Barb Wire
 //Never produced        //S3-???:         Brooks & Dunn
-#endif
 
 // ---------------------
 // STERN GAMES BELOW

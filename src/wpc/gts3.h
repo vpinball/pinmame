@@ -150,13 +150,11 @@ extern MACHINE_DRIVER_EXTERN(gts3_1b);
 extern MACHINE_DRIVER_EXTERN(gts3_1as);
 extern MACHINE_DRIVER_EXTERN(gts3_1bs);
 extern MACHINE_DRIVER_EXTERN(gts3_2);
-extern MACHINE_DRIVER_EXTERN(gts3_2s);
 
 #define mGTS3         gts3_1a
 #define mGTS3S        gts3_1as
 #define mGTS3B        gts3_1b
 #define mGTS3BS       gts3_1bs
-#define mGTS3DMD      gts3_2
-#define mGTS3DMDS     gts3_2s
+#define mGTS3DMDS     gts3_2
 
 #endif /* INC_GTS3 */
