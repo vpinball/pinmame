@@ -39,6 +39,8 @@ static INTERRUPT_GEN(dmd32_firq);
 
 static READ_HANDLER(read_ext_mem)
 {
+	if(offset == 0x8000)
+		return dmdlocals.ncmd;
 	//printf("reading external address %x\n",offset);
 	logerror("reading external address %x\n", offset);
 	return 0;
@@ -96,18 +98,8 @@ static void dmd32_init(struct sndbrdData *brdData) {
 }
 
 static WRITE_HANDLER(dmd32_ctrl_w) {
-  if ((data | dmdlocals.ctrl) & 0x01) {
-    //cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_IRQ_LINE, (data & 0x01) ? ASSERT_LINE : CLEAR_LINE);
-    if (data & 0x01) {
-      sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, dmdlocals.busy = 1);
-      dmdlocals.cmd = dmdlocals.ncmd;
-    }
-  }
-  else if (~data & dmdlocals.ctrl & 0x02) {
-    cpu_set_reset_line(dmdlocals.brdData.cpuNo, PULSE_LINE);
-    cpu_setbank(DMD32_BANK0, dmdlocals.brdData.romRegion);
-  }
-  dmdlocals.ctrl = data;
+	logerror("Sending DMD Strobe - current command = %x\n",dmdlocals.ncmd);
+	cpu_set_irq_line(dmdlocals.brdData.cpuNo, I8051_INT0_LINE, PULSE_LINE);
 }
 
 static WRITE_HANDLER(dmd32_status_w) {
