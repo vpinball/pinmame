@@ -1357,6 +1357,14 @@ SOURCE=.\src\wpc\snd_cmd.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\sndbrd.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\sndbrd.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\vpintf.c
 # End Source File
 # Begin Source File
