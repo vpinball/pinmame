@@ -24,6 +24,8 @@
 #include "mamedbg.h"
 #include "tms7000.h"
 
+#define VERBOSE 1
+
 #if VERBOSE
 #define LOG(x)	logerror x
 #else
