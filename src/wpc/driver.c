@@ -470,6 +470,14 @@ DRIVERNV(lortium )      //Lortium
 DRIVERNV(petaco2 )      //Petaco 2
 
 // ----------------
+// LTD (Brazil)
+// ----------------
+DRIVERNV(bhol_ltd)      //Black Hole (clone of Gottlieb Black Hole)
+DRIVERNV(vulcano )      //Volcano (clone of Gottlieb Volcano?)
+DRIVERNV(zephy   )      //Zephy (Xenon clone)
+DRIVERNV(cauboy  )      //Cauboy
+
+// ----------------
 // MIDWAY GAMES
 // ----------------
 DRIVERNV(flicker )      //Flicker (Prototype, September 1974)
@@ -697,7 +705,7 @@ DRIVERNV(sopranos)      //Whitestar: ??/05 The Sopranos
                         //??/?? Apache!
                         //??/?? Football
                         //??/79 Hot Ball (B Eight Ball, 01/77)
-                        //??/79 Shock (W Flash, 01/79)
+DRIVERNV(shock   )      //??/79 Shock (W Flash, 01/79)
                         //??/?? Sultan (G Sinbad, 05/78)
 DRIVERNV(obaoba  )      //??/80 Oba Oba (B Playboy, 10/77)
 DRIVERNV(obaoba1 )      //??/80 Oba Oba alternate set
