@@ -311,6 +311,22 @@ static const char *fff_sample_names[] =
 	"fff20.wav",
 	"fff21.wav",
 	"fff22.wav",
+	"fff23.wav",
+	"fff24.wav",
+	"fff25.wav",
+	"fff26.wav",
+	"fff27.wav",
+	"fff28.wav",
+	"fff29.wav",
+	"fff30.wav",
+	"fff31.wav",
+	"fff32.wav",
+	"fff33.wav",
+	"fff34.wav",
+	"fff35.wav",
+	"fff36.wav",
+	"fff37.wav",
+	"fff38.wav",
 	0   /* end of array */
 };
 
@@ -328,23 +344,23 @@ static struct {
   UINT16 timlat1,timlat2,timlat3,timer1,timer2,timer3,t4562c;
   UINT16 timlats1,timlats2,timlats3;
   int    cr1,cr2,cr3,channel,timp1,timp2,timp3,tfre1,tfre2,tfre3,noise,conx,altx,dir;
-  int    volnr,reset,extfreq;	
+  int    volnr,reset,extfreq;
   int    speechsam;
 } st300loc;
 
 static  INT16  sineWaveinp[] = {
    0x7FFF, 0x7FFF, 0x7FFF, 0x7FFF, 0x7FFF, 0x7FFF, 0x7FFF, 0x7FFF,
   -0x7FFF,-0x7FFF,-0x7FFF,-0x7FFF,-0x7FFF,-0x7FFF,-0x7FFF,-0x7FFF
-}; // q2 wave 
+}; // q2 wave
 
 static  INT16  sineWaveinpq1[] = {
    0x4000, 0x2000, 0x7fff, 0x1000, 0x0000, 0x0000, 0x0000, 0x0000,
   -0x4000,-0x2000,-0x7fff,-0x1000,-0x0000,-0x0000,-0x0000,-0x0000
-}; // q1 wave 
+}; // q1 wave
 
 
 static  INT16  volume300[] = {
-       0,  0,  0,  0, 0, 10, 20, 20, 30, 30, 40, 40,  60,  60,  80,  90,100 ,100	
+       0,  0,  0,  0, 0, 10, 20, 20, 30, 30, 40, 40,  60,  60,  80,  90,100 ,100
 };
 
 static  INT16  sineWaveext[32000]; // wave triggered by external clock
@@ -352,32 +368,32 @@ static  INT16  sineWaveext[32000]; // wave triggered by external clock
 
 static int setvol(int param)	{
   if ((st300loc.volnr) == 0) return 0;
-  if (st300loc.dir) { // count up   
+  if (st300loc.dir) { // count up
 //        logerror("volume up %04d ind %04d \n",volume300[st300loc.volnr],st300loc.volnr );
     	return volume300[st300loc.volnr];
   } else {
 //        logerror("volume down %04d ind %04d \n",volume300[17-st300loc.volnr],st300loc.volnr );
-    	return volume300[17-st300loc.volnr] ;  	
-  }  
+    	return volume300[17-st300loc.volnr] ;
+  }
 }
 static void startvol(int param)	{
   st300loc.volnr = 1;
  }
 
 static void nextvol(int param) {
-  if ((st300loc.volnr > 0) && (st300loc.volnr <= 16)) st300loc.volnr++;	
+  if ((st300loc.volnr > 0) && (st300loc.volnr <= 16)) st300loc.volnr++;
   if (st300loc.volnr > 16) {
 	if (st300loc.conx == 0) {
 		if ((st300loc.dir) == 0) {
 			st300loc.volnr = 0;	// quiet if we are going down...
 		} else {
-		}	
+		}
 	} else {
 		startvol(0);
 		if (st300loc.altx) {
 			 st300loc.dir =  (st300loc.dir ? 0 : 1) ;
 		}
-	} 
+	}
   }
 }
 
@@ -387,15 +403,15 @@ static void playsam3(int param) {
    if ((st300loc.cr3 & 0x80) && (st300loc.timlat3 > 0) && (st300loc.reset == 0))   { // output is enabled...
 	startvol(0);
 	mixer_set_volume(st300loc.channel,setvol(0)*ST300_VOL);
-	mixer_set_volume(st300loc.channel+2,setvol(0)*ST300_VOL);	
+	mixer_set_volume(st300loc.channel+2,setvol(0)*ST300_VOL);
 //	logerror("playsam3 \n");
     } else {	// q3 is not running...
 	startvol(0);
 	mixer_set_volume(st300loc.channel,setvol(0)*ST300_VOL);
-	mixer_set_volume(st300loc.channel+2,setvol(0)*ST300_VOL);	
-//	logerror("playsam3 don't move \n");	
-    }	
-}	
+	mixer_set_volume(st300loc.channel+2,setvol(0)*ST300_VOL);
+//	logerror("playsam3 don't move \n");
+    }
+}
 
 static void playsam2(int param){
 // timer 2 (q2) is easy wave + volume from q3
@@ -403,15 +419,15 @@ static void playsam2(int param){
  	mixer_play_sample_16(st300loc.channel,sineWaveinp, sizeof(sineWaveinp), st300loc.tfre2*sizeof(sineWaveinp) / 2 / 1.137, 1);
 //	logerror("playsam2 %04d \n",st300loc.tfre2);
 	}
-}	
+}
 
 static void playsam1(int param){
-// timer 1 (q1) is easy wave + volume always 100 
+// timer 1 (q1) is easy wave + volume always 100
    if ((st300loc.cr1 & 0x80)  && (st300loc.timlat1 > 0) && (st300loc.reset == 0))   { // output is enabled...
  	mixer_play_sample_16(st300loc.channel+1,sineWaveinpq1, sizeof(sineWaveinpq1), st300loc.tfre1*sizeof(sineWaveinpq1) / 2 / 1.137, 1);
 //	logerror("playsam1 %04d \n",st300loc.tfre1);
 	}
-}	
+}
 
 
 static void playsamext(int param){
@@ -430,7 +446,7 @@ static void playsamext(int param){
 	mixer_stop_sample(st300loc.channel+2);
 //	logerror("playsamext stop \n");
    	}
-}	 
+}
 
 
 
@@ -438,8 +454,8 @@ static void softreset (int param) {
   st300loc.reset = param;
   if (st300loc.reset) { // reset
 	snddatst300.timer1 = st300loc.timlat1;
-	snddatst300.timer2 = st300loc.timlat2;	
-	snddatst300.timer3 = st300loc.timlat3;		
+	snddatst300.timer2 = st300loc.timlat2;
+	snddatst300.timer3 = st300loc.timlat3;
 	st300loc.timp1 = 0;
 	st300loc.timp2 = 0;
 	st300loc.timp2 = 0;
@@ -450,7 +466,7 @@ static void softreset (int param) {
 }
 
 
-	
+
 static void st300_pulse (int param) {
 // param = 0x02 -> internal 6840 clock
 // param = 0 -> external 4049 clock
@@ -495,11 +511,11 @@ static void st300_pulse (int param) {
 		if (st300loc.timp3) {
 			nextvol(0);
 			mixer_set_volume(st300loc.channel,setvol(0)*ST300_VOL);
-			mixer_set_volume(st300loc.channel+2,setvol(0)*ST300_VOL);			
+			mixer_set_volume(st300loc.channel+2,setvol(0)*ST300_VOL);
     		}
     	}
   }
- 
+
 }
 
 static int sound_started;
@@ -512,7 +528,7 @@ static void st300_start_common(void) {
   sound_started = 1;
   for (i = 0;i < 9;i++) {
     snddatst300.ax[i] = 0;
-    snddatst300.axb[i] = 0;  	
+    snddatst300.axb[i] = 0;
     snddatst300.c0 = 0;
   }
   for (i = 0;i < 32000;i++) {
@@ -570,34 +586,34 @@ static WRITE_HANDLER(st300_ctrl_w) {
 // c0 -> 10 -> 4 clock cycles
 // c0 -> 20 -> 8 clock cycles
   int wordsam, wordcmd, wordvol, wordspeed, speedcmd;
-  if (offset == 0) {	
+  if (offset == 0) {
      	snddatst300.c0=data;
   	st300loc.extfreq  = ((data & 0xf0) >> 4) + 1;
   	st300loc.noise    =  (data & 0x08) >> 3;
   	st300loc.conx = (data & 0x04) >> 2;
-  	st300loc.altx = (data & 0x02) >> 1;  
-  	if (snddatst300.c0 & 0x01)  { // count up 
+  	st300loc.altx = (data & 0x02) >> 1;
+  	if (snddatst300.c0 & 0x01)  { // count up
   		st300loc.dir  = 1;
   	} else {
   		st300loc.dir  = 0;
   	}
   	logerror("%04x: st300_CTRL_W adress C0 data %02x noise %04x \n", activecpu_get_previouspc(), data,st300loc.noise);
-  	playsamext(0); 
+  	playsamext(0);
   	playsam3(0);
   } else {
 	speedcmd = (data & 0x80) >> 7;
-	wordcmd = (data & 0x40) >> 6;	
+	wordcmd = (data & 0x40) >> 6;
  	logerror("%04x: st300_CTRL_W xxxx data %02x  \n", activecpu_get_previouspc(), data);
 	if (speedcmd) {
 		wordspeed = data & 0x07;
-		wordvol = (data & 0x38) >> 3;	 
+		wordvol = (data & 0x38) >> 3;
   		logerror("%04x: st300_CTRL_W Voicespeed data %02x speed %02x vol %02x  \n", activecpu_get_previouspc(), data,wordspeed,wordvol);
-		
+
 	}
 	if (wordcmd)  {
 		wordsam = data & 0x3f;
   		logerror("%04x: st300_CTRL_W Voice data %02x sam %02x \n", activecpu_get_previouspc(), data,wordsam);
-		if (st300loc.speechsam) 
+		if (st300loc.speechsam)
 	    {
 // all samples were recorded with speed = 2, vol = 5
 			sample_start(6,18 + wordsam,0);
@@ -607,9 +623,9 @@ static WRITE_HANDLER(st300_ctrl_w) {
 
   }
 }
-	
 
-	
+
+
 static WRITE_HANDLER(st300_data_w) {
   int w;
   long int w1;
@@ -630,14 +646,14 @@ static WRITE_HANDLER(st300_data_w) {
   if (data == 7) {
 	st300loc.timlat3 = snddatst300.ax[data] + snddatst300.ax[(data-1)] * 256;
 	snddatst300.timer3 = st300loc.timlat3;
-	st300loc.tfre3 = (ST300_INTCLOCK / (2 * (snddatst300.timer3 + 1)));		
+	st300loc.tfre3 = (ST300_INTCLOCK / (2 * (snddatst300.timer3 + 1)));
 //	logerror("%04x: st300_data_w timlat3 loaded %04x freq %04d  \n", activecpu_get_previouspc(), st300loc.timlat3,st300loc.tfre3);
   }
   if (data == 1)  {
 	st300loc.cr2= snddatst300.ax[data];
 //	logerror("%04x: st300_data_w CR2 %02x ", activecpu_get_previouspc(), st300loc.cr2);
-	if ((st300loc.cr2 & 0x80) == 0) {	
-  	}  
+	if ((st300loc.cr2 & 0x80) == 0) {
+  	}
 	if (st300loc.cr2 & 0x80)  {
 		logerror ("Output enabl ");
  		playsam2(0);
