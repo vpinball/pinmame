@@ -45,6 +45,8 @@
 #define IDB_SPLASH                      200
 #define IDB_SPLASH2			201
 #define IDB_SPLASH3			202
+#define IDB_SPLASH4			203
+#define IDB_SPLASH5			204
 #define IDGETCOLOR                      207
 #define IDD_DISCLAIMERDLG               208
 #define IDD_GAMEINFODLG                 209
