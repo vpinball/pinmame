@@ -1411,8 +1411,8 @@ static void m68306_intreg_w(offs_t address, data16_t data, int word) {
       case irPDATA: { /* Port Data */
         UINT16 tmp = (data ^ oldval) & m68306intreg[irPDIR];
         m68306intreg[irPDATA] = data;
-        if (tmp & 0xff00) cpu_writeport16(M68306_PORTA, (data & m68306intreg[irPDIR])>>8);
-        if (tmp & 0x00ff) cpu_writeport16(M68306_PORTB, data & m68306intreg[irPDIR]);
+        if (tmp & 0xff00) cpu_writeport16lew(M68306_PORTA, (data & m68306intreg[irPDIR])>>8);
+        if (tmp & 0x00ff) cpu_writeport16lew(M68306_PORTB, data & m68306intreg[irPDIR]);
         // Writing to B4-B7 will also affect IRQ if configures as output.
         break;
       }
@@ -1457,12 +1457,12 @@ static data16_t m68306_intreg_r(offs_t address, int word) {
       case irPPIN: /* port pins (read_only) */
         // B4-B7 is also IRQ pins (ignored for now)
         if (word)
-          data = (((cpu_readport16(M68306_PORTA)<<8) | cpu_readport16(M68306_PORTB)) & ~m68306intreg[irPDIR]) |
+          data = (((cpu_readport16lew(M68306_PORTA)<<8) | cpu_readport16lew(M68306_PORTB)) & ~m68306intreg[irPDIR]) |
                  (m68306intreg[irPDATA] & m68306intreg[irPDIR]);
         else if (address & 1)
-          data = (cpu_readport16(M68306_PORTB) & ~m68306intreg[irPDIR]) | (m68306intreg[irPDATA] & (m68306intreg[irPDIR] | 0xff00));
+          data = (cpu_readport16lew(M68306_PORTB) & ~m68306intreg[irPDIR]) | (m68306intreg[irPDATA] & (m68306intreg[irPDIR] | 0xff00));
         else
-          data = ((cpu_readport16(M68306_PORTA)<<8) & ~m68306intreg[irPDIR]) | (m68306intreg[irPDATA] & (m68306intreg[irPDIR] | 0x00ff));
+          data = ((cpu_readport16lew(M68306_PORTA)<<8) & ~m68306intreg[irPDIR]) | (m68306intreg[irPDATA] & (m68306intreg[irPDIR] | 0x00ff));
         break;
       case irISR: /* interrupt status (read only)*/
         data = m68306intreg[irISR]; break;
