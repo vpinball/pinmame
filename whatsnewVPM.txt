@@ -1,34 +1,42 @@
 What's new in Visual PinMAME:
 -----------------------------
 
-Version 1.51 (xxxx, 200x)
+Version 1.51 (January 11, 2005)
 -------------------------------
-- New properties for the controller object:
-    - Controller.Game: An abbreviation for Controller.Game(Controller.GameName). It returns the game object for the current game. It's now a bit
-      easier for a script to make game specific settings. You don't have to use the "GameName":
-      For example Controller.Game.Settings.Value("dmd_pos_x") = 20.
-    - Controller.MechSamples (bool): Enables the samples for mechanical devices (mostly flippers). The samples used by sound boards
-      will still be played (if not disabled by dip switches for the game). The setting is not sticky and will be reset to "false" upon a new 
-      'GameName' is set. An assignment has only an effect if done before "Controller.Run".
+- New properties for the Controller object:
+    - Controller.Game: An abbreviation for Controller.Game(Controller.GameName).
+      It returns the game object for the current game. It's now a bit easier
+      for a script to make game specific settings. You don't have to use the "GameName".
+      Example: Controller.Game.Settings.Value("dmd_pos_x") = 20
+    - Controller.MechSamples(bool): Enables the samples for mechanical devices (flippers, bumpers etc).
+      Sound-board specific samples will still be played (if not disabled by dip switches for the game).
+      This setting is not sticky and will be reset to "false" when a new game name is set.
+      An assignment will only have an effect if done before "Controller.Run".
 - New methods for the controller object:
-    - Controller.GetWindowRect(hWnd): Returns an array of four integer values (0-3) which holds the coordinates (left, top, right, bottom)
-      of the window with the handle 'hwnd' in screen coordinates. If 'hwnd' is absent or an invalid window handle the coordinates of the screen
-      will be returned.
-    - Controller.GetClientRect(hWnd): Returns an array of four integer values (0-3) which holds the client area coordinates (left, top, right, bottom)
-      of the window with the handle 'hwnd' in screen coordinates. If 'hwnd' is absent or an invalid window handle the coordinates of the screen
-      will be returned.
+    - Controller.GetWindowRect(hWnd): Returns an array of four integer values (0-3)
+      which holds the coordinates (left, top, right, bottom)
+      of the window with the handle 'hWnd' in screen coordinates.
+      If 'hwnd' is absent or an invalid window handle the coordinates of the screen will be returned.
+    - Controller.GetClientRect(hWnd): Returns an array of four integer values (0-3)
+      which holds the client area coordinates (left, top, right, bottom)
+      of the window with the handle 'hWnd' in screen coordinates.
+      If 'hwnd' is absent, or an invalid window handle, the coordinates of the screen will be returned.
 - New method for Game.Settings:
-    - Game.Settings.SetDisplayPosition x, y, hWnd: Moves the display to position "x, y". If "hWnd" is present and a valid window handle, the move 
-      is relative to the client position of the window. Otherwise relative to 0,0 of the screen.
-- Controller.SetDisplayPosition is fixed and works as wanted now. Nevertheless this method is depricated, so please use the above explained function
-- The display window can be moved to every x position by now 
-- While moving the display it makes short jumps if it has a title and/or border before. This bug is gone now.
-- Changed the warning message on the "Game Info" dialog: Upon start of a game the sound processor(s) will be disabled if a rom is missing; the new
-  warning message will reflect this.
-- Switching from full screen mode back to window mode (Alt+Enter) will restore the desktop background.
-- Initializing of the VPM display enhanced: It will always becomes visible at the right position, will always be "topmost"
-- If a valid handle to the "parent" window is added to Controller.Run this window will be "SetToForeground" upon start of VPM
-
+    - Game.Settings.SetDisplayPosition x, y, hWnd: Moves the display to position (x:y).
+      If "hWnd" is present and a valid window handle, the move is relative to the client position of the window.
+      Otherwise it will be positioned relative to the upper left corner of the screen.
+- Controller.SetDisplayPosition is fixed and works as desired now.
+  Nevertheless, this method is deprecated, so please use the function as described above!
+- The display window can be moved to every x position by now (not just to multiples of 16 pixels as before)
+- While moving the display, it made short jumps if the title and/or the border was visible; this bug is gone now.
+- Changed the warning message on the "Game Info" dialog:
+  When starting a game, the sound processor(s) will be disabled if a sound rom is missing;
+  the new warning message will reflect this behaviour.
+- Switching from full-screen mode back to windowed mode (Alt+Enter) will restore the desktop background.
+- Improved initializing of the VPM display:
+  It will always become visible at the right position, and will always be the topmost window
+- If a valid handle to the "parent" window is added to Controller.Run,
+  this window will be set to the foreground on VPM startup
 
 Version 1.50 (November 1, 2004)
 -------------------------------
@@ -128,6 +136,8 @@ Version 1.0 Beta 1 (July 31, 2001)
 -Corrected occasional problems when dragging window with mouse.
 -New Compact DMD Option added to Game Options
 -New Double Size DMD Option added to Game Options
+
+
 -New Anti-Alias % DMD Option added to Game Options (only works for Williams WPC games)
 -New HTML Installation Guide included with distribution.
 -Microsoft MSSTDFMT package included with distribution for users missing this file.
