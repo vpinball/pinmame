@@ -369,10 +369,10 @@ SE_ROMEND
 CORE_CLONEDEFNV(hirol_gr,hirolcas,"High Roller Casino (Germany)",2001,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ Austin Powers (3.01)
+/ Austin Powers (3.02)
 /-------------------------------------------------------------------*/
 INITGAME(austin,GEN_WS,se_dmd128x32,0)
-SE128_ROMSTART(austin, "apcpu.301",0x868d1f38)
+SE128_ROMSTART(austin, "apcpu.302",0x2920b59b)
 DE_DMD32ROM8x(       "apdsp-a.300",0xecf2c3bb)
 DE2S_SOUNDROM18888(  "apsndu7.100",0xd0e79d59,
                     "apsndu17.100",0xc1e33fee,
