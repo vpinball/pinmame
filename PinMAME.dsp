@@ -54,9 +54,9 @@ LINK32=link.exe
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib zlibstatmt.lib /nologo /subsystem:console /machine:I386 /libpath:"zlib"
 # Begin Custom Build - Copying...
 ProjDir=.
-TargetPath=.\obj\PinMAME\Release\PinMAMEVC.exe
+TargetPath=.\obj\PinMAME\Release\PinMAME.exe
 TargetName=PinMAME
-InputPath=.\obj\PinMAME\Release\PinMAMEVC.exe
+InputPath=.\obj\PinMAME\Release\PinMAME.exe
 SOURCE="$(InputPath)"
 
 "$(ProjDir)\$(TargetName).exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -3525,6 +3525,7 @@ SOURCE=.\src\wpc\byvidgames.c
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
 
 # PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Exclude_From_Build 1
 
 !ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
 
@@ -3540,6 +3541,7 @@ SOURCE=src\wpc\byvidpin.c
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
 
 # PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Exclude_From_Build 1
 
 !ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
 
@@ -3687,6 +3689,7 @@ SOURCE=.\src\wpc\gp.c
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
 
 # PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Exclude_From_Build 1
 
 !ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
 
@@ -3717,6 +3720,7 @@ SOURCE=.\src\wpc\gpgames.c
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
 
 # PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Exclude_From_Build 1
 
 !ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
 
@@ -3732,6 +3736,7 @@ SOURCE=src\wpc\gts3.c
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
 
 # PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Exclude_From_Build 1
 
 !ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
 
@@ -3762,6 +3767,7 @@ SOURCE=src\wpc\gts3dmd.c
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
 
 # PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Exclude_From_Build 1
 
 !ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
 
@@ -3792,6 +3798,7 @@ SOURCE=src\wpc\gts3games.c
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
 
 # PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Exclude_From_Build 1
 
 !ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
 
@@ -3809,8 +3816,6 @@ SOURCE=.\src\wpc\gts80.c
 # PROP Intermediate_Dir "obj/PinMAME/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Exclude_From_Build 1
 
 !ENDIF 
 
@@ -3840,8 +3845,6 @@ SOURCE=.\src\wpc\gts80games.c
 
 !ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
 
-# PROP Exclude_From_Build 1
-
 !ENDIF 
 
 # End Source File
@@ -3854,8 +3857,6 @@ SOURCE=.\src\wpc\gts80s.c
 # PROP Intermediate_Dir "obj/PinMAME/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Exclude_From_Build 1
 
 !ENDIF 
 
@@ -3900,8 +3901,6 @@ SOURCE=src\wpc\hnk.h
 
 !ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
 
-# PROP Exclude_From_Build 1
-
 !ENDIF 
 
 # End Source File
@@ -3915,8 +3914,6 @@ SOURCE=src\wpc\hnkgames.c
 
 !ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
 
-# PROP Exclude_From_Build 1
-
 !ENDIF 
 
 # End Source File
@@ -3929,8 +3926,6 @@ SOURCE=.\src\wpc\hnks.c
 # PROP Intermediate_Dir "obj/PinMAME/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Exclude_From_Build 1
 
 !ENDIF 
 
@@ -4415,6 +4410,7 @@ SOURCE=.\src\wpc\zac.c
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
 
 # PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Exclude_From_Build 1
 
 !ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
 
@@ -4445,6 +4441,7 @@ SOURCE=.\src\wpc\zacgames.c
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
 
 # PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Exclude_From_Build 1
 
 !ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
 
