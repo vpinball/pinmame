@@ -28,17 +28,17 @@
 #define INLINE_EA	1
 
 static UINT8 s2650_reg_layout[] = {
+//	S2650_HALT,  -1,
 	S2650_PC, S2650_PS, S2650_R0, S2650_R1, S2650_R2, S2650_R3, -1,
-	S2650_SI, S2650_FO, S2650_R1A, S2650_R2A, S2650_R3A, -1,
-	S2650_HALT, S2650_IRQ_STATE, 0
+	S2650_IRQ_STATE, S2650_SI, S2650_FO, S2650_R1A, S2650_R2A, S2650_R3A, 0
 };
 
 /* Layout of the debugger windows x,y,w,h */
 static UINT8 s2650_win_layout[] = {
-	32, 0,48, 4,	/* register window (top rows) */
-	 0, 0,31,22,	/* disassembler window (left colums) */
-	32, 5,48, 8,	/* memory #1 window (right, upper middle) */
-	32,14,48, 8,	/* memory #2 window (right, lower middle) */
+	31, 0,48, 3,	/* register window (top rows) */
+	 0, 0,30,22,	/* disassembler window (left colums) */
+	31, 4,48, 9,	/* memory #1 window (right, upper middle) */
+	31,14,48, 8,	/* memory #2 window (right, lower middle) */
      0,23,80, 1,    /* command line window (bottom rows) */
 };
 
@@ -143,6 +143,19 @@ static	UINT8 ccc[0x200] = {
 #define SET_CC_OVF(result,value)                                \
 	S.psl = (S.psl & ~(OVF+CC)) |								\
 		ccc[result + ( ( (result^value) << 1) & 256 )]
+
+#if 1
+#define SET_CC_OVF_ADD(result,value1,value2) SET_CC_OVF(result,value1)
+#define SET_CC_OVF_SUB(result,value1,value2) SET_CC_OVF(result,value1)
+#else
+#define SET_CC_OVF_ADD(result,value1,value2)                    \
+	S.psl = (S.psl & ~(OVF+CC)) |								\
+		ccc[result + ( ( (~(value1^value2) & (result^value1)) << 1) & 256 )]
+
+#define SET_CC_OVF_SUB(result,value1,value2)                    \
+	S.psl = (S.psl & ~(OVF+CC)) |								\
+		ccc[result + ( ( ((value1^value2) & (result^value1)) << 1) & 256 )]
+#endif
 
 /***************************************************************
  * ROP
@@ -532,7 +545,7 @@ static	int 	S2650_relative[0x100] =
 	if(res & 0x100) S.psl |= C; 							    \
     dest = res & 0xff;                                          \
 	if( (dest & 15) < (before & 15) ) S.psl |= IDC; 			\
-	SET_CC_OVF(dest,before);									\
+	SET_CC_OVF_ADD(dest,before,source);							\
 }
 
 /***************************************************************
@@ -548,8 +561,8 @@ static	int 	S2650_relative[0x100] =
 	S.psl &= ~(C | OVF | IDC);									\
 	if((res & 0x100)==0) S.psl |= C; 							\
     dest = res & 0xff;                                          \
-	if( (dest & 15) < (before & 15) ) S.psl |= IDC; 			\
-	SET_CC_OVF(dest,before);									\
+	if( (dest & 15) <= (before & 15) ) S.psl |= IDC; 			\
+	SET_CC_OVF_SUB(dest,before,source);							\
 }
 
 /***************************************************************
@@ -574,15 +587,8 @@ static	int 	S2650_relative[0x100] =
  ***************************************************************/
 #define M_DAR(dest)												\
 {																\
-	if((S.psl & IDC) != 0)										\
-	{															\
-		if((S.psl & C) == 0) dest -= 0x60;						\
-	}															\
-	else														\
-	{															\
-		if( (S.psl & C) != 0 ) dest -= 0x06;					\
-		else dest -= 0x66;										\
-	}															\
+	if ((S.psl & C) == 0) dest += 0xA0;							\
+	if ((S.psl & IDC) == 0) dest = (dest & 0xF0) | ((dest + 0x0A) & 0x0F);\
 }
 
 /***************************************************************
@@ -1469,11 +1475,11 @@ void s2650_state_load(void *file)
  ****************************************************************************/
 const char *s2650_info(void *context, int regnum)
 {
-	static char buffer[16][47+1];
+	static char buffer[14][47+1];
 	static int which = 0;
 	s2650_Regs *r = context;
 
-	which = (which+1) % 16;
+	which = (which+1) % 14;
 	buffer[which][0] = '\0';
 
     if( !context )
@@ -1481,7 +1487,6 @@ const char *s2650_info(void *context, int regnum)
 
     switch( regnum )
 	{
-		case CPU_INFO_FLAGS:
 		case CPU_INFO_REG+S2650_PC: sprintf(buffer[which], "PC:%04X", r->page + r->iar); break;
 		case CPU_INFO_REG+S2650_PS: sprintf(buffer[which], "PS:%02X%02X", r->psu, r->psl); break;
 		case CPU_INFO_REG+S2650_R0: sprintf(buffer[which], "R0:%02X", r->reg[0]); break;
@@ -1495,23 +1500,24 @@ const char *s2650_info(void *context, int regnum)
 		case CPU_INFO_REG+S2650_IRQ_STATE: sprintf(buffer[which], "IRQ:%X", r->irq_state); break;
 		case CPU_INFO_REG+S2650_SI: sprintf(buffer[which], "SI:%X", (r->psu & SI) ? 1 : 0); break;
 		case CPU_INFO_REG+S2650_FO: sprintf(buffer[which], "FO:%X", (r->psu & FO) ? 1 : 0); break;
-			sprintf(buffer[which], "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c",
-				r->psu & 0x80 ? 'S':'.',
-				r->psu & 0x40 ? 'O':'.',
-				r->psu & 0x20 ? 'I':'.',
-				r->psu & 0x10 ? '?':'.',
-				r->psu & 0x08 ? '?':'.',
-				r->psu & 0x04 ? 's':'.',
-				r->psu & 0x02 ? 's':'.',
-				r->psu & 0x01 ? 's':'.',
-                r->psl & 0x80 ? 'M':'.',
-				r->psl & 0x40 ? 'P':'.',
-				r->psl & 0x20 ? 'H':'.',
-				r->psl & 0x10 ? 'R':'.',
-				r->psl & 0x08 ? 'W':'.',
-				r->psl & 0x04 ? 'V':'.',
-				r->psl & 0x02 ? '2':'.',
-				r->psl & 0x01 ? 'C':'.');
+		case CPU_INFO_FLAGS: sprintf(buffer[which], "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%s",
+			r->psu & 0x80 ? 'S':'.',
+			r->psu & 0x40 ? 'O':'.',
+			r->psu & 0x20 ? 'I':'.',
+			r->psu & 0x10 ? '?':'.',
+			r->psu & 0x08 ? '?':'.',
+			r->psu & 0x04 ? 's':'.',
+			r->psu & 0x02 ? 's':'.',
+			r->psu & 0x01 ? 's':'.',
+			r->psl & 0x80 ? 'M':'.',
+			r->psl & 0x40 ? 'P':'.',
+			r->psl & 0x20 ? 'H':'.',
+			r->psl & 0x10 ? 'R':'.',
+			r->psl & 0x08 ? 'W':'.',
+			r->psl & 0x04 ? 'V':'.',
+			r->psl & 0x02 ? '2':'.',
+			r->psl & 0x01 ? 'C':'.',
+			r->halt ? " HALT" : "");
 			break;
 		case CPU_INFO_NAME: return "S2650";
 		case CPU_INFO_FAMILY: return "Signetics 2650";
