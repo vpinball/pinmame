@@ -533,9 +533,9 @@ INITGAME(monopoly,GEN_WS,dispMonopoly,SE_MINIDMD)
 SE128_ROMSTART(monopoly,"moncpu.303",0x4a66c9e4)
 DE_DMD32ROM8x(        "mondsp-a.301",0xc4e2e032)
 DE2S_SOUNDROM1888(     "mnsndu7.100",0x400442e7,
-                      "mnsndu17.100",0x595f23ab,
+                      "mnsndu17.100",0xf9bc55e8,
                       "mnsndu21.100",0xe0727e1f,
-                      "mnsndu36.100",0xd66c71a9)
+                      "mnsndu36.100",0xc845aa97)
 SE_ROMEND
 #define input_ports_monopoly input_ports_se
 CORE_GAMEDEFNV(monopoly,"Monopoly",2001,"Stern",de_mSES1,GAME_NOCRC)
@@ -546,9 +546,9 @@ CORE_GAMEDEFNV(monopoly,"Monopoly",2001,"Stern",de_mSES1,GAME_NOCRC)
 SE128_ROMSTART(monopolf,"moncpu.303",0x4a66c9e4)
 DE_DMD32ROM8x(        "mondsp-f.301",0x0)
 DE2S_SOUNDROM1888(     "mnsndu7.100",0x400442e7,
-                      "mnsndu17.100",0x595f23ab,
+                      "mnsndu17.100",0xf9bc55e8,
                       "mnsndu21.100",0xe0727e1f,
-                      "mnsndu36.100",0xd66c71a9)
+                      "mnsndu36.100",0xc845aa97)
 SE_ROMEND
 #define input_ports_monopolf input_ports_se
 #define init_monopolf init_monopoly
@@ -560,9 +560,9 @@ CORE_CLONEDEFNV(monopolf,monopoly,"Monopoly (France)",2002,"Stern",de_mSES1,GAME
 SE128_ROMSTART(monopold,"moncpu.303",0x4a66c9e4)
 DE_DMD32ROM8x(        "mondsp-g.301",0x0)
 DE2S_SOUNDROM1888(     "mnsndu7.100",0x400442e7,
-                      "mnsndu17.100",0x595f23ab,
+                      "mnsndu17.100",0xf9bc55e8,
                       "mnsndu21.100",0xe0727e1f,
-                      "mnsndu36.100",0xd66c71a9)
+                      "mnsndu36.100",0xc845aa97)
 SE_ROMEND
 #define input_ports_monopold input_ports_se
 #define init_monopold init_monopoly
@@ -574,9 +574,9 @@ CORE_CLONEDEFNV(monopold,monopoly,"Monopoly (Germany)",2002,"Stern",de_mSES1,GAM
 SE128_ROMSTART(monopoli,"moncpu.303",0x4a66c9e4)
 DE_DMD32ROM8x(        "mondsp-i.301",0x0)
 DE2S_SOUNDROM1888(     "mnsndu7.100",0x400442e7,
-                      "mnsndu17.100",0x595f23ab,
+                      "mnsndu17.100",0xf9bc55e8,
                       "mnsndu21.100",0xe0727e1f,
-                      "mnsndu36.100",0xd66c71a9)
+                      "mnsndu36.100",0xc845aa97)
 SE_ROMEND
 #define input_ports_monopoli input_ports_se
 #define init_monopoli init_monopoly
@@ -588,20 +588,20 @@ CORE_CLONEDEFNV(monopoli,monopoly,"Monopoly (Italy)",2002,"Stern",de_mSES1,GAME_
 SE128_ROMSTART(monopole,"moncpu.303",0x4a66c9e4)
 DE_DMD32ROM8x(        "mondsp-s.301",0x0)
 DE2S_SOUNDROM1888(     "mnsndu7.100",0x400442e7,
-                      "mnsndu17.100",0x595f23ab,
+                      "mnsndu17.100",0xf9bc55e8,
                       "mnsndu21.100",0xe0727e1f,
-                      "mnsndu36.100",0xd66c71a9)
+                      "mnsndu36.100",0xc845aa97)
 SE_ROMEND
 #define input_ports_monopole input_ports_se
 #define init_monopole init_monopoly
 CORE_CLONEDEFNV(monopole,monopoly,"Monopoly (Spain)",2002,"Stern",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ Playboy (4.01)
+/ Playboy (5.0)
 /-------------------------------------------------------------------*/
 INITGAME(playboys,GEN_WS,se_dmd128x32,0)
-SE128_ROMSTART(playboys, "pbcpu.401",    0xcb2e2824)
-DE_DMD32ROM8x(           "pbdispa.400",  0x244e9740)
+SE128_ROMSTART(playboys, "pbcpu.500",    0xe4d924ae)
+DE_DMD32ROM8x(           "pbdispa.500",  0x40450165)
 DE2S_SOUNDROM18888(      "pbsndu7.102",  0x12a68f34,
                          "pbsndu17.100", 0xf5502fec,
                          "pbsndu21.100", 0x7869d34f,
@@ -614,8 +614,8 @@ CORE_GAMEDEFNV(playboys,"Playboy (Stern)",2002,"Stern",de_mSES2,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / Playboy (France)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(playboyf, "pbcpu.401",    0xcb2e2824)
-DE_DMD32ROM8x(           "pbdispf.400",  0x8ccce5d9)
+SE128_ROMSTART(playboyf, "pbcpu.500",    0xe4d924ae)
+DE_DMD32ROM8x(           "pbdispf.500",  0xaedc6c32)
 DE2S_SOUNDROM18888(      "pbsndu7.102",  0x12a68f34,
                          "pbsndu17.100", 0xf5502fec,
                          "pbsndu21.100", 0x7869d34f,
@@ -629,8 +629,8 @@ CORE_CLONEDEFNV(playboyf,playboys,"Playboy (France)",2002,"Stern",de_mSES2,GAME_
 /*-------------------------------------------------------------------
 / Playboy (Germany)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(playboyd, "pbcpu.401",    0xcb2e2824)
-DE_DMD32ROM8x(           "pbdispg.400",  0xc26a0c73)
+SE128_ROMSTART(playboyd, "pbcpu.500",    0xe4d924ae)
+DE_DMD32ROM8x(           "pbdispg.500",  0x681392fe)
 DE2S_SOUNDROM18888(      "pbsndu7.102",  0x12a68f34,
                          "pbsndu17.100", 0xf5502fec,
                          "pbsndu21.100", 0x7869d34f,
@@ -644,8 +644,8 @@ CORE_CLONEDEFNV(playboyd,playboys,"Playboy (Germany)",2002,"Stern",de_mSES2,GAME
 /*-------------------------------------------------------------------
 / Playboy (Italy)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(playboyi, "pbcpu.401",    0xcb2e2824)
-DE_DMD32ROM8x(           "pbdispi.400",  0x90c5afed)
+SE128_ROMSTART(playboyi, "pbcpu.500",    0xe4d924ae)
+DE_DMD32ROM8x(           "pbdispi.500",  0xd90d7ec6)
 DE2S_SOUNDROM18888(      "pbsndu7.102",  0x12a68f34,
                          "pbsndu17.100", 0xf5502fec,
                          "pbsndu21.100", 0x7869d34f,
@@ -659,8 +659,8 @@ CORE_CLONEDEFNV(playboyi,playboys,"Playboy (Italy)",2002,"Stern",de_mSES2,GAME_N
 /*-------------------------------------------------------------------
 / Playboy (Spain)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(playboye, "pbcpu.401",    0xcb2e2824)
-DE_DMD32ROM8x(           "pbdisps.300",  0x92b48fdd)
+SE128_ROMSTART(playboye, "pbcpu.500",    0xe4d924ae)
+DE_DMD32ROM8x(           "pbdispl.500",  0xb019f0f6)
 DE2S_SOUNDROM18888(      "pbsndu7.102",  0x12a68f34,
                          "pbsndu17.100", 0xf5502fec,
                          "pbsndu21.100", 0x7869d34f,
@@ -761,13 +761,13 @@ DE2S_SOUNDROM18888(      "spp101.u7",  0x32efcdf6,
                          "spp100.u37", 0x0738e1fc)
 SE_ROMEND
 #define input_ports_simpprty input_ports_se
-CORE_GAMEDEFNV(simpprty,"The Simpsons Pinball Party",2003,"Stern",de_mSES2,GAME_NOCRC)
+CORE_GAMEDEFNV(simpprty,"The Simpsons Pinball Party",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / The Simpsons Pinball Party (Germany)
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(simpprtd, "spp-cpu.204",0x5bc155f7)
-DE_DMD32ROM8x(           "sppdspi.201",0x00000000)
+DE_DMD32ROM8x(           "sppdspg.201",0x00000000)
 DE2S_SOUNDROM18888(      "spp101.u7",  0x32efcdf6,
                          "spp100.u17", 0x65e9344e,
                          "spp100.u21", 0x17fee0f9,
@@ -776,7 +776,7 @@ DE2S_SOUNDROM18888(      "spp101.u7",  0x32efcdf6,
 SE_ROMEND
 #define input_ports_simpprtd input_ports_se
 #define init_simpprtd init_simpprty
-CORE_CLONEDEFNV(simpprtd,simpprty,"The Simpsons Pinball Party (Germany)",2003,"Stern",de_mSES2,GAME_NOCRC)
+CORE_CLONEDEFNV(simpprtd,simpprty,"The Simpsons Pinball Party (Germany)",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / The Simpsons Pinball Party (Spain)
@@ -791,7 +791,7 @@ DE2S_SOUNDROM18888(      "spp101.u7",  0x32efcdf6,
 SE_ROMEND
 #define input_ports_simpprte input_ports_se
 #define init_simpprte init_simpprty
-CORE_CLONEDEFNV(simpprte,simpprty,"The Simpsons Pinball Party (Spain)",2003,"Stern",de_mSES2,GAME_NOCRC)
+CORE_CLONEDEFNV(simpprte,simpprty,"The Simpsons Pinball Party (Spain)",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / The Simpsons Pinball Party (France)
@@ -806,7 +806,7 @@ DE2S_SOUNDROM18888(      "spp101.u7",  0x32efcdf6,
 SE_ROMEND
 #define input_ports_simpprtf input_ports_se
 #define init_simpprtf init_simpprty
-CORE_CLONEDEFNV(simpprtf,simpprty,"The Simpsons Pinball Party (France)",2003,"Stern",de_mSES2,GAME_NOCRC)
+CORE_CLONEDEFNV(simpprtf,simpprty,"The Simpsons Pinball Party (France)",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / The Simpsons Pinball Party (Italy)
@@ -821,7 +821,7 @@ DE2S_SOUNDROM18888(      "spp101.u7",  0x32efcdf6,
 SE_ROMEND
 #define input_ports_simpprti input_ports_se
 #define init_simpprti init_simpprty
-CORE_CLONEDEFNV(simpprti,simpprty,"The Simpsons Pinball Party (Italy)",2003,"Stern",de_mSES2,GAME_NOCRC)
+CORE_CLONEDEFNV(simpprti,simpprty,"The Simpsons Pinball Party (Italy)",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_NOCRC)
 
 
 
