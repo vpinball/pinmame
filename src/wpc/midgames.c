@@ -28,8 +28,8 @@ CORE_GAMEDEFNV(flicker,"Flicker (Prototype)",1974,"Nutting Associates",gl_mMIDWA
 core_tLCDLayout rot_disp[] = {
   {0, 0, 0, 6,CORE_SEG7}, {0,16, 7, 6,CORE_SEG7},
   {2, 0,14, 6,CORE_SEG7}, {2,16,21, 6,CORE_SEG7},
-  {4, 0,28, 2,CORE_SEG7}, {4, 8,35, 2,CORE_SEG7},
-  {4,16,32, 2,CORE_SEG7}, {4,24,39, 2,CORE_SEG7},
+/*{4, 0,28, 2,CORE_SEG7}, {4,24,32, 2,CORE_SEG7},*/
+  {4, 8,35, 6,CORE_SEG7},
   {0}
 };
 INITGAME(rotation, rot_disp, -1, FLIP_SW(FLIP_L), 1)
@@ -37,4 +37,4 @@ MIDWAY_3_ROMSTART(rotation,	"rot-a117.dat",	0x7bb6beb3,
 							"rot-b117.dat",	0x538e37b2,
 							"rot-c117.dat",	0x3321ff08)
 MIDWAY_ROMEND
-CORE_GAMEDEFNV(rotation,"Rotation VIII",1978,"Midway",gl_mMIDWAY,GAME_NO_SOUND)
+CORE_GAMEDEFNV(rotation,"Rotation VIII",1978,"Midway",gl_mMIDWAY,GAME_NOT_WORKING)
