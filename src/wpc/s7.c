@@ -190,11 +190,6 @@ static WRITE_HANDLER(pia1b_w) {
   s7locals.solenoids |= (((UINT16)data)<<8);
 }
 static WRITE_HANDLER(pia1a_w) {
-  if (s7locals.rr) { // Rat Race stores the solenoid bits elsewhere, only where?
-    coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffffff00) | (1 << s7locals.digSel); /* wrong! */
-    s7locals.solenoids |= (1 << s7locals.digSel); /* wrong! */
-    return;
-  }
   coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffffff00) | data;
   s7locals.solenoids |= data;
   // the following lines draw the extra lamp columns on Hyperball!
@@ -423,10 +418,15 @@ MACHINE_DRIVER_END
 /*----------------------
 /  Changes for Rat Race
 /-----------------------*/
+// This game doesn't use PIA1, but writes the solenoids directly!
+static WRITE_HANDLER(rr_sol_w) {
+  coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffffff00) | data;
+  s7locals.solenoids |= data;
+}
+
 static MEMORY_READ_START(rr_readmem)
   { 0x0000, 0x07ff, MRA_RAM},
   { 0x2100, 0x2103, pia_r(S7_PIA0)},
-  { 0x2200, 0x2203, pia_r(S7_PIA1)},
   { 0x2400, 0x2403, pia_r(S7_PIA2)},
   { 0x2800, 0x2803, pia_r(S7_PIA3)},
   { 0x3000, 0x3003, pia_r(S7_PIA4)},
@@ -436,7 +436,7 @@ MEMORY_END
 static MEMORY_WRITE_START(rr_writemem)
   { 0x0000, 0x07ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
   { 0x2100, 0x2103, pia_w(S7_PIA0)},
-  { 0x2200, 0x2203, pia_w(S7_PIA1)},
+  { 0x2200, 0x2200, rr_sol_w},
   { 0x2400, 0x2403, pia_w(S7_PIA2)},
   { 0x2800, 0x2803, pia_w(S7_PIA3)},
   { 0x3000, 0x3003, pia_w(S7_PIA4)},
@@ -446,7 +446,6 @@ MEMORY_END
 static MACHINE_INIT(rr) {
   if (core_gameData == NULL) return;
   pia_config(S7_PIA0, PIA_STANDARD_ORDERING, &s7_pia[0]);
-  pia_config(S7_PIA1, PIA_STANDARD_ORDERING, &s7_pia[1]);
   pia_config(S7_PIA2, PIA_STANDARD_ORDERING, &s7_pia[2]);
   pia_config(S7_PIA3, PIA_STANDARD_ORDERING, &s7_pia[3]);
   pia_config(S7_PIA4, PIA_STANDARD_ORDERING, &s7_pia[4]);
