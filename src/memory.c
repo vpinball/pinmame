@@ -1628,7 +1628,7 @@ void register_banks(void)
 /*-------------------------------------------------
 	READBYTE - generic byte-sized read handler
 -------------------------------------------------*/
-#ifdef DBG_BPR
+#if defined(DBG_BPR) && defined(MAME_DEBUG)
 extern void bpr_memref(UINT32 adr, int length);
 #else
 #define bpr_memref(a,l)
