@@ -268,11 +268,25 @@ DCS_SOUNDROM4mx("ans2v1_1.rom",CRC(0d023f90) SHA1(e411f7824df89374cf3385a2660d5b
                 "ans4v1_0.rom",CRC(c26dff5f) SHA1(d86323f0df15cf7abd4480d173e6b217ef715396),
                 "ans5v1_0.rom",CRC(32ca1602) SHA1(e4c7235b5d387bdde16ebef4d3aeeb7276c69d6d))
 WPC_ROMEND
+WPC_ROMSTART(totan,13,"arab1_3.rom",0x80000,CRC(2e4b9439) SHA1(ba564c5984d3b68eaeba27d06f3acd95d26073ee))
+DCS_SOUNDROM4mx("ans2v1_1.rom",CRC(0d023f90) SHA1(e411f7824df89374cf3385a2660d5bc91e0e9ef0),
+                "ans3v1_0.rom",CRC(3f677813) SHA1(b1e67c74b927c0c8cb76be8794a04a53fdf643d4),
+                "ans4v1_0.rom",CRC(c26dff5f) SHA1(d86323f0df15cf7abd4480d173e6b217ef715396),
+                "ans5v1_0.rom",CRC(32ca1602) SHA1(e4c7235b5d387bdde16ebef4d3aeeb7276c69d6d))
+WPC_ROMEND
+WPC_ROMSTART(totan,12,"arab1_2.rom",0x80000,CRC(f9ae3796) SHA1(06e4ce89cab2e0fe5039de4261f7b5ebd4c11c0b))
+DCS_SOUNDROM4mx("ans2v1_1.rom",CRC(0d023f90) SHA1(e411f7824df89374cf3385a2660d5bc91e0e9ef0),
+                "ans3v1_0.rom",CRC(3f677813) SHA1(b1e67c74b927c0c8cb76be8794a04a53fdf643d4),
+                "ans4v1_0.rom",CRC(c26dff5f) SHA1(d86323f0df15cf7abd4480d173e6b217ef715396),
+                "ans5v1_0.rom",CRC(32ca1602) SHA1(e4c7235b5d387bdde16ebef4d3aeeb7276c69d6d))
+WPC_ROMEND
 
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(totan,14,"Tales Of The Arabian Nights (1.4)",1996,"Williams",wpc_m95S,0)
+CORE_CLONEDEF(totan,13,14,"Tales Of The Arabian Nights (1.3)",1996,"Williams",wpc_m95S,0)
+CORE_CLONEDEF(totan,12,14,"Tales Of The Arabian Nights (1.2)",1996,"Williams",wpc_m95S,0)
 
 /*-----------------------
 / Simulation Definitions

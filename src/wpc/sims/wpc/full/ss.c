@@ -374,11 +374,23 @@ DCS_SOUNDROM3m("sssnd_11.s2",CRC(1b080a72) SHA1(be80e99e6bcc482379fe99519a4122f3
                "sssnd_11.s3",CRC(c4f2e08a) SHA1(e20ff622a3f475db11f1f44d36a6669e160437a3),
                "sssnd_11.s4",CRC(258b0a27) SHA1(83763b98907cf38e6f7b9fe4f26ce93a54ba3568))
 WPC_ROMEND
+WPC_ROMSTART(ss,14,"stiffg11.1_4",0x80000,CRC(17359ed6) SHA1(2ae549064a3666ea8b0b09aff9f5551db906d1d2))
+DCS_SOUNDROM3m("sssnd_11.s2",CRC(1b080a72) SHA1(be80e99e6bcc482379fe99519a4122f3b225be30),
+               "sssnd_11.s3",CRC(c4f2e08a) SHA1(e20ff622a3f475db11f1f44d36a6669e160437a3),
+               "sssnd_11.s4",CRC(258b0a27) SHA1(83763b98907cf38e6f7b9fe4f26ce93a54ba3568))
+WPC_ROMEND
+WPC_ROMSTART(ss,12,"stiffg11.1_2",0x80000,CRC(70eca59c) SHA1(07d50a32a4fb287780c4e6c1cb6fbeba97480219))
+DCS_SOUNDROM3m("sssnd_11.s2",CRC(1b080a72) SHA1(be80e99e6bcc482379fe99519a4122f3b225be30),
+               "sssnd_11.s3",CRC(c4f2e08a) SHA1(e20ff622a3f475db11f1f44d36a6669e160437a3),
+               "sssnd_11.s4",CRC(258b0a27) SHA1(83763b98907cf38e6f7b9fe4f26ce93a54ba3568))
+WPC_ROMEND
 
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(ss,15,"Scared Stiff (1.5)",1996,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(ss,14,15,"Scared Stiff (1.4)",1996,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(ss,12,15,"Scared Stiff (1.2)",1996,"Bally",wpc_m95S,0)
 
 /*-----------------------
 / Simulation Definitions

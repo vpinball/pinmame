@@ -812,6 +812,9 @@ DRIVER(bop,l5)          //WPC-502:  02/91 W The Machine: Bride of Pinbot (L-5)
 DRIVER(hd,l1)           //WPC:      02/91 B Harley Davidson (L-1)
 DRIVER(hd,l3)           //WPC:      02/91 B Harley Davidson (L-3)
 DRIVER(sf,l1)           //WPC-601:  03/91 W SlugFest
+DRIVER(t2,l2)           //WPC-513:  10/91 W Terminator 2: Judgement Day (L-2)
+DRIVER(t2,l3)           //WPC-513:  10/91 W Terminator 2: Judgement Day (L-3)
+DRIVER(t2,l4)           //WPC-513:  10/91 W Terminator 2: Judgement Day (L-4)
 DRIVER(t2,l6)           //WPC-513:  10/91 W Terminator 2: Judgement Day (L-6)
 DRIVER(t2,l8)           //WPC-513:  12/91 W Terminator 2: Judgement Day (L-8)
 DRIVER(t2,p2f)                            // Profanity Speech version
@@ -870,6 +873,7 @@ DRIVER(dm,pa2)          //WPC-528:  02/94 W Demolition Man (PA-2)
 DRIVER(dm,px5)          //WPC-528:  02/94 W Demolition Man (PX-5)
 DRIVER(pop,lx5)         //WPC:      02/94 B Popeye Saves the Earth
 DRIVER(wcs,l2)          //WPC-531:  02/94 B World Cup Soccer (Lx-2)
+DRIVER(wcs,p2)                            // (Pa-2)
 DRIVER(wcs,p3)                            // (Px-3)
                         //WPC-620:  06/94 W Pinball Circus
 DRIVER(fs,lx2)          //WPC-529:  07/94 W The Flintstones (LX-2)
@@ -881,8 +885,12 @@ DRIVER(corv,lx1)        //WPC-536:  08/94 B Corvette (LX1)
 DRIVER(corv,px4)        //WPC-536:  08/94 B Corvette (PX4)
                         //WPC-617:  10/94 W Hot Shots
 DRIVER(rs,lx2)          //WPC-524:  10/94 W Red & Ted's Road Show (Lx_2)
+DRIVER(rs,lx5)          //WPC-524:  10/94 W Red & Ted's Road Show (Lx_5)
+DRIVER(rs,la5)          //WPC-524:  10/94 W Red & Ted's Road Show (La_5)
 DRIVER(rs,l6)           //WPC-524:  10/94 W Red & Ted's Road Show (L_6)
+DRIVER(rs,la4)          //WPC-524:  10/94 W Red & Ted's Road Show (La_4)
 DRIVER(rs,lx4)							  // (Lx-4)
+DRIVER(rs,lx3)          //WPC-524:  10/94 W Red & Ted's Road Show (Lx_3)
 DRIVER(tafg,lx3)        //WPC:      10/94 B The Addams Family Special Collectors Edition
 DRIVER(tafg,la2)        //WPC:      10/94 B The Addams Family Special Collectors Edition (LA-2)
 DRIVER(tafg,la3)        //WPC:      10/94 B The Addams Family Special Collectors Edition (LA-3)
@@ -892,6 +900,7 @@ DRIVER(ts,lh6)							  // Home version
 DRIVER(dh,lx2)          //WPC-530:  03/95 W Dirty Harry
 DRIVER(tom,13)          //WPC-539:  03/95 B Theatre of Magic
 DRIVER(tom,12)							  // 1.2
+DRIVER(tom,06)							  // 0.6
 DRIVER(nf,23x)          //WPC-525:  05/95 W No Fear: Dangerous Sports
 DRIVER(i500,11r)        //WPC-526:  06/95 B Indianapolis 500
 DRIVER(i500,11b)        //WPC-526:  06/95 B Indianapolis 500 (Belgium)
@@ -909,8 +918,12 @@ DRIVER(lc,11)           //WPC:      ??/96 B League Champ (Shuffle Alley)
 DRIVER(ttt,10)          //WPC-905:  03/96 W Ticket Tac Toe
 DRIVER(sc,18)           //WPC-903:  03/96 B Safe Cracker
 DRIVER(sc,18n)                            // alternate version
-DRIVER(totan,14)        //WPC-547:  05/96 W Tales of the Arabian Nights
-DRIVER(ss,15)           //WPC-548:  09/96 B Scared Stiff
+DRIVER(totan,14)        //WPC-547:  05/96 W Tales of the Arabian Nights (1.4)
+DRIVER(totan,13)        //WPC-547:  05/96 W Tales of the Arabian Nights (1.3)
+DRIVER(totan,12)        //WPC-547:  05/96 W Tales of the Arabian Nights (1.2)
+DRIVER(ss,15)           //WPC-548:  09/96 B Scared Stiff (1.5)
+DRIVER(ss,14)           //WPC-548:  09/96 B Scared Stiff (1.4)
+DRIVER(ss,12)           //WPC-548:  09/96 B Scared Stiff (1.2)
 DRIVER(jy,12)           //WPC-552:  12/96 W Junk Yard (1.2)
 DRIVER(jy,11)           //WPC-552:  12/96 W Junk Yard (1.1)
 DRIVER(nbaf,31)         //WPC-553:  03/97 B NBA Fastbreak (3.1)
