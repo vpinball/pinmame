@@ -18,6 +18,7 @@ struct {
 	double clock[BUFFER_SIZE+1];
 
 	int	buf_pos;
+	void *timer;
 } S80sound1_locals;
 
 void S80SS_irq(int state) {
@@ -27,9 +28,13 @@ void S80SS_irq(int state) {
 
 void S80SS_nmi(int state)
 {
-	logerror("NMI\n");
-	cpu_set_irq_line(s80ss_sndCPUNo, M6502_INT_NMI, PULSE_LINE);
-	S80sound1_locals.NMIState = 1;
+	logerror("NMI: %i/n\n",state);
+	cpu_set_irq_line(s80ss_sndCPUNo, M6502_INT_NMI, state? ASSERT_LINE:PULSE_LINE);
+	S80sound1_locals.NMIState = state;
+	if ( state ) 
+		S80sound1_locals.timer = timer_set(TIME_IN_USEC(100),0,S80SS_nmi);
+	else
+		S80sound1_locals.timer = 0;
 }
 
 UINT8 riot_3_ram[256];
@@ -55,8 +60,9 @@ WRITE_HANDLER(riot3a_w) { logerror("riot3a_w: 0x%02x\n", data);}
 
 /* Switch settings, test switch and NMI */
 READ_HANDLER(riot3b_r)  {
-	// logerror("riot3b_r\n");
-	return ((S80sound1_locals.NMIState?0x80:0x00) | 0x22)^0xff;
+	if ( S80sound1_locals.timer )
+		logerror("riot3b_r\n");
+	return (S80sound1_locals.NMIState?0x80:0x00) | (0x22)^0x7f;
 }
 
 WRITE_HANDLER(riot3b_w) { logerror("riot3b_w: 0x%02x\n", data);}
@@ -93,10 +99,9 @@ WRITE_HANDLER(vs_latch_w) {
 	static int queue[100],pos;
 
 	data ^= 0xff;
-	queue[pos++] = data & 0x3f;
+	if ( pos<100)
+		queue[pos++] = data & 0x3f;
 
-	S80sound1_locals.NMIState = 0;
-	
 	logerror("Votrax: intonation %d, phoneme %02x %s\n",data >> 6,data & 0x3f,PhonemeTable[data & 0x3f]);
 	if ((data & 0x3f) == 0x3f) {
 		if (pos > 1) {
@@ -115,8 +120,8 @@ WRITE_HANDLER(vs_latch_w) {
 		}
 		pos = 0;
 	}
-	else
-		timer_set(TIME_IN_USEC(50),1,S80SS_nmi);
+	else if ( !S80sound1_locals.timer )
+		S80sound1_locals.timer = timer_set(TIME_IN_USEC(50000),1,S80SS_nmi);
 }
 
 /*--------------
@@ -201,6 +206,15 @@ void S80SS_sinit(int num) {
 
 	S80sound1_locals.stream = stream_init("SND DAC", 100, 11025, 0, s80_ss_Update); 
 }
+
+void S80SS_sexit()
+{
+	if ( S80sound1_locals.timer ) {
+		timer_remove(S80sound1_locals.timer);
+		S80sound1_locals.timer = 0;
+	}
+}
+
 
 
 

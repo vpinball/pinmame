@@ -754,7 +754,6 @@ struct MachineDriver machine_driver_S80BS3 = {
   S80_nvram
 };
 
-
 static void S80_init(void) {
   int ii;
 
@@ -804,9 +803,12 @@ static void S80_exit(void) {
   /* Sound Enabled? */
   if (((Machine->gamedrv->flags & GAME_NO_SOUND)==0) && Machine->sample_rate)
   {
-	  if ( core_gameData->gen & (GEN_S80B2K|GEN_S80B4K) )
+	  if ( core_gameData->gen & GEN_S80SS )
+		S80SS_sexit();
+	  else if ( core_gameData->gen & (GEN_S80B2K|GEN_S80B4K) )
 	    S80Bs_sound_exit();
   }
+
   riot_unconfig();
   core_exit();
 }
