@@ -134,7 +134,11 @@ static int dbg_dasm_relative_jumps = 0;
 
 static const char *dbg_info_once = NULL;
 
+#ifdef PINMAME
+static int dbg_show_scanline = 0;
+#else
 static int dbg_show_scanline = 1;
+#endif /* PINMAME */
 
 /****************************************************************************
  * Color settings
