@@ -1,3 +1,4 @@
+/* Williams System 9, 11, and All Data East Hardware */
 #include <stdarg.h>
 #include <time.h>
 #include "driver.h"
@@ -145,6 +146,9 @@ static READ_HANDLER (pia2a_r) { return core_getDip(0)<<7; }
 /*-----------------
 / Display handling
 /-----------------*/
+/*NOTE: Data East DMD Games:     data = 0x01, CN1-Pin 7 (Strobe) goes low
+								 data = 0x04, CN2-Pin 1 (Enable) goes low
+								 (currently we don't need to read these values)*/
 static WRITE_HANDLER(pia2a_w) {
   s11locals.digSel = data & 0x0f;
   if (core_gameData->hw.display & S11_BCDDIAG)
@@ -154,6 +158,13 @@ static WRITE_HANDLER(pia2a_w) {
 }
 
 static WRITE_HANDLER(pia2b_w) {
+  /* Data East writes auxiliary solenoids here for DMD games
+	 CN3 Printer Data Lines (Used by various games)
+	 data = 0x01, CN3-Pin 9 (GNR Magnet 3)
+	 data = 0x02, CN3-Pin 8 (GNR Magnet 2)
+	 data = 0x04, CN3-Pin 7 (GNR Magnet 1)
+	 ....
+	 data = 0x80, CN3-Pin 1 (Blinder on Tommy)*/
   if (core_gameData->gen & (GEN_DEDMD16|GEN_DEDMD32|GEN_DEDMD64))
     s11locals.extSol = data;
   else {
@@ -204,11 +215,13 @@ static READ_HANDLER(pia3b_r) {
   return 0;
 }
 
+//NOTE: Unusued in Data East Alpha Games
 static WRITE_HANDLER(pia2ca2_w) {
   data = data ? 0x80 : 0x00;
   s11locals.segments[1][s11locals.digSel].lo |= data;
   s11locals.pseg[1][s11locals.digSel].lo = (s11locals.pseg[1][s11locals.digSel].lo & 0x7f) | data;
 }
+//NOTE: Pin 10 of CN3 for Data East DMD Games (Currently we don't need to read this value)
 static WRITE_HANDLER(pia2cb2_w) {
   data = data ? 0x80 : 0x00;
   s11locals.segments[0][s11locals.digSel].lo |= data;
@@ -263,9 +276,13 @@ static READ_HANDLER(pia4a_r)  { return core_getSwCol(s11locals.swCol); }
 /  Sound
 /--------*/
 /*-- CPU board sound command --*/
+//NOTE: Not Used by Data East
 static WRITE_HANDLER(pia0a_w) { snd_cmd_log(0); snd_cmd_log(data); sndbrd_0_data_w(0,data); }
+
 /*-- Sound board sound command--*/
 static WRITE_HANDLER(pia5b_w) {
+  //Data East 128x16 games need to eat the 0xfe command (especially Hook)
+  if (core_gameData->gen & GEN_DEDMD16 && data == 0xfe) return;
   s11locals.sndCmd = data; snd_cmd_log(1); snd_cmd_log(data); sndbrd_1_data_w(0,data);
 }
 
@@ -295,6 +312,11 @@ static WRITE_HANDLER(s11_sndCmd_w) {
   }
 }
 
+//NOTE: Not used for Data East
+static WRITE_HANDLER(pia0ca2_w) { sndbrd_0_ctrl_w(0,data); }
+//NOTE: Not used for Data East
+static READ_HANDLER(pia5b_r) { return soundlatch3_r(offset); }
+
 static struct pia6821_interface s11_pia[] = {
 {/* PIA 0 (2100) */
  /* PA0 - PA7 Sound Select Outputs (sound latch) */
@@ -302,7 +324,7 @@ static struct pia6821_interface s11_pia[] = {
   /* CA2       Sound H.S.  */
  /* CB2       Enable Special Solenoids */
  /* in  : A/B,CA/B1,CA/B2 */ 0, 0, 0, 0, 0, 0,
- /* out : A/B,CA/B2       */ pia0a_w, pia0b_w, sndbrd_0_ctrl_w, pia0cb2_w,
+ /* out : A/B,CA/B2       */ pia0a_w, pia0b_w, pia0ca2_w, pia0cb2_w,
  /* irq : A/B             */ s11_piaMainIrq, s11_piaMainIrq
 },{ /* PIA 1 (2400) */
  /* PA0 - PA7 Lamp Matrix Strobe */
@@ -351,7 +373,7 @@ static struct pia6821_interface s11_pia[] = {
  /* CB1       Widget I/O MCB1 */
  /* CA2       Widget I/O MCA2 */
  /* CB2       Widget I/O MCB2 */
- /* in  : A/B,CA/B1,CA/B2 */ pia5a_r, soundlatch3_r, 0, 0, 0, 0,
+ /* in  : A/B,CA/B1,CA/B2 */ pia5a_r, pia5b_r, 0, 0, 0, 0,
  /* out : A/B,CA/B2       */ pia5a_w, pia5b_w, pia5ca2_w, pia5cb2_w,
  /* irq : A/B             */ s11_piaMainIrq, s11_piaMainIrq
 }};
