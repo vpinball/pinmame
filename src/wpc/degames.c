@@ -33,15 +33,15 @@ core_tLCDLayout de_NoOutput[] = {{0}};
 /* 2 X 7 AlphaNumeric Rows, 2 X 7 Numeric Rows, 1 X 4 Numeric*/
 core_tLCDLayout de_dispAlpha1[] = {
   DISP_SEG_7(0,0, CORE_SEG16), DISP_SEG_7(0,1, CORE_SEG16),
-  DISP_SEG_7(1,0, CORE_SEG7), DISP_SEG_7(1,1, CORE_SEG7),
-  DISP_SEG_CREDIT(16,24,CORE_SEG7),DISP_SEG_BALLS(0,8,CORE_SEG7H),
+  DISP_SEG_7(1,0, CORE_SEG7),  DISP_SEG_7(1,1, CORE_SEG7),
+  DISP_SEG_CREDIT(20,28,CORE_SEG7),DISP_SEG_BALLS(0,8,CORE_SEG7H),
   {0}
 };
 
 /* 2 X 7 AlphaNumeric Rows, 2 X 7 Numeric Rows */
 core_tLCDLayout de_dispAlpha2[] = {
   DISP_SEG_7(0,0, CORE_SEG16), DISP_SEG_7(0,1, CORE_SEG16),
-  DISP_SEG_7(1,0, CORE_SEG7), DISP_SEG_7(1,1, CORE_SEG7),
+  DISP_SEG_7(1,0, CORE_SEG7),  DISP_SEG_7(1,1, CORE_SEG7),
   {0}
 };
 
@@ -69,7 +69,7 @@ core_tLCDLayout de_192x64DMD[] = {
 / Laser War - CPU Rev 1 /Alpha Type 1 - 32K ROM - 32/64K Sound Roms
 /-------------------------------------------------------------------*/
 INITGAME(lwar,DE_CPUREV1 | DE_ALPHA1, de_dispAlpha1, FLIP4746, 3/*?*/)
-DE32_ROMSTART(lwar,		"lwar.c5",0xeee158ee) 
+DE32_ROMSTART(lwar,		"lwar.c5",0xeee158ee)
 DESOUND3264_ROMSTART(	"lwar_e9.snd",0x9a6c834d,	//F7 on schem (sound)
 						"lwar_e6.snd",0x7307d795,	//F6 on schem (voice1)
 						"lwar_e7.snd",0x0285cff9)	//F4 on schem (voice2)

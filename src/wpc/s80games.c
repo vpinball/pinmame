@@ -20,7 +20,7 @@
 core_tLCDLayout gottlieb_dispNumeric1[] = {
   DISP_SEG_6(0,0, CORE_SEG16), DISP_SEG_6(0,1, CORE_SEG16),
   DISP_SEG_6(1,0, CORE_SEG16), DISP_SEG_6(1,1, CORE_SEG16),
-  DISP_SEG_CREDIT(16,24,CORE_SEG16),DISP_SEG_BALLS(0,8,CORE_SEG16),
+  DISP_SEG_CREDIT(20,28,CORE_SEG16),DISP_SEG_BALLS(0,8,CORE_SEG16),
   {0}
 };
 
@@ -28,8 +28,8 @@ core_tLCDLayout gottlieb_dispNumeric1[] = {
 core_tLCDLayout gottlieb_dispNumeric2[] = {
   DISP_SEG_6(0,0, CORE_SEG16), DISP_SEG_6(0,1, CORE_SEG16),
   DISP_SEG_6(1,0, CORE_SEG16), DISP_SEG_6(1,1, CORE_SEG16),
-  DISP_SEG_CREDIT(16,24,CORE_SEG16),DISP_SEG_BALLS(0,8,CORE_SEG16),
-  {6, 10, 34, 6, CORE_SEG16},
+  DISP_SEG_CREDIT(20,28,CORE_SEG16),DISP_SEG_BALLS(0,8,CORE_SEG16),
+  {6, 10, 42, 6, CORE_SEG16},
   {0}
 };
 
@@ -37,9 +37,9 @@ core_tLCDLayout gottlieb_dispNumeric2[] = {
 core_tLCDLayout gottlieb_dispNumeric3[] = {
   {0, 0, 2,6,CORE_SEG16}, {0,12, 1,1,CORE_SEG16},
   {0,16,10,6,CORE_SEG16}, {0,28, 9,1,CORE_SEG16},
-  {4, 0,18,6,CORE_SEG16}, {4,12,17,1,CORE_SEG16},
-  {4,16,26,6,CORE_SEG16}, {4,28,25,1,CORE_SEG16},
-  DISP_SEG_CREDIT(16,24,CORE_SEG16), DISP_SEG_BALLS(0,8,CORE_SEG16),
+  {4, 0,22,6,CORE_SEG16}, {4,12,21,1,CORE_SEG16},
+  {4,16,30,6,CORE_SEG16}, {4,28,29,1,CORE_SEG16},
+  DISP_SEG_CREDIT(20,28,CORE_SEG16), DISP_SEG_BALLS(0,8,CORE_SEG16),
   {0}
 };
 
@@ -205,7 +205,7 @@ S80_ROMEND
 CORE_GAMEDEFNV(vlcno_ax,"Volcano",1981,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
-/ Volcano (Sound Only) 
+/ Volcano (Sound Only)
 /-------------------------------------------------------------------*/
 INITGAME(vlcno_1b,GEN_S80,gottlieb_dispNumeric1, 1)
 S80_1_ROMSTART(vlcno_1b,"667-1b.cpu" ,  0xa422d862,
@@ -241,7 +241,7 @@ S80_ROMEND
 CORE_CLONEDEFNV(blkhole2,blckhole,"Black Hole (Rev. 2)",1981,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
-/ Black Hole (Sound Only) 
+/ Black Hole (Sound Only)
 /-------------------------------------------------------------------*/
 INITGAME(blkholea,GEN_S80,gottlieb_dispNumeric2, 1)
 S80_1_ROMSTART(blkholea, "668-a2.cpu" ,  0xdf56f896,
@@ -308,12 +308,12 @@ CORE_GAMEDEFNV(s80tst,"System 80 Test",1981,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_
 core_tLCDLayout dispDevilsdare[] = {
   {0, 0, 2,6,CORE_SEG16}, {0,12, 1,1,CORE_SEG16},
   {0,16,10,6,CORE_SEG16}, {0,28, 9,1,CORE_SEG16},
-  {4, 0,18,6,CORE_SEG16}, {4,12,17,1,CORE_SEG16},
-  {4,16,26,6,CORE_SEG16}, {4,28,25,1,CORE_SEG16},
+  {4, 0,22,6,CORE_SEG16}, {4,12,21,1,CORE_SEG16},
+  {4,16,30,6,CORE_SEG16}, {4,28,29,1,CORE_SEG16},
 
-  DISP_SEG_CREDIT(16,24,CORE_SEG16), DISP_SEG_BALLS(0,8,CORE_SEG16),
+  DISP_SEG_CREDIT(20,28,CORE_SEG16), DISP_SEG_BALLS(0,8,CORE_SEG16),
 
-  {6, 9,34,6,CORE_SEG16}, {0}
+  {6, 9,42,6,CORE_SEG16}, {0}
 };
 INITGAME(dvlsdre,GEN_S80SS,dispDevilsdare, 1)
 S80_1_ROMSTART(dvlsdre, "670-1.cpu",  0x6318bce2,
@@ -342,12 +342,12 @@ CORE_CLONEDEFNV(dvlsdre2,dvlsdre,"Devil's Dare (Sound Only)",1981,"Gottlieb",gl_
 core_tLCDLayout dispRocky[] = {
   {0, 0, 2,6,CORE_SEG16}, {0,12, 1,1,CORE_SEG16},
   {0,16,10,6,CORE_SEG16}, {0,28, 9,1,CORE_SEG16},
-  {4, 0,18,6,CORE_SEG16}, {4,12,17,1,CORE_SEG16},
-  {4,16,26,6,CORE_SEG16}, {4,28,25,1,CORE_SEG16},
+  {4, 0,22,6,CORE_SEG16}, {4,12,21,1,CORE_SEG16},
+  {4,16,30,6,CORE_SEG16}, {4,28,29,1,CORE_SEG16},
 
-  DISP_SEG_CREDIT(16,24,CORE_SEG16), DISP_SEG_BALLS(0,8,CORE_SEG16),
+  DISP_SEG_CREDIT(20,28,CORE_SEG16), DISP_SEG_BALLS(0,8,CORE_SEG16),
 
-  {6, 10,38,2,CORE_SEG16}, {6,16,34,2,CORE_SEG16}, {0}
+  {6, 10,46,2,CORE_SEG16}, {6,16,42,2,CORE_SEG16}, {0}
 };
 INITGAME(rocky,GEN_S80SS,dispRocky, 1)
 S80_1_ROMSTART(rocky, "672-2x.cpu", 0x8e2f0d39,
@@ -376,12 +376,12 @@ CORE_GAMEDEFNV(caveman,"Caveman",1982,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
 core_tLCDLayout dispSpirit[] = {
   {0, 0, 2,6,CORE_SEG16}, {0,12, 1,1,CORE_SEG16},
   {0,16,10,6,CORE_SEG16}, {0,28, 9,1,CORE_SEG16},
-  {4, 0,18,6,CORE_SEG16}, {4,12,17,1,CORE_SEG16},
-  {4,16,26,6,CORE_SEG16}, {4,28,25,1,CORE_SEG16},
+  {4, 0,22,6,CORE_SEG16}, {4,12,21,1,CORE_SEG16},
+  {4,16,30,6,CORE_SEG16}, {4,28,29,1,CORE_SEG16},
 
-  DISP_SEG_CREDIT(16,24,CORE_SEG16), DISP_SEG_BALLS(0,8,CORE_SEG16),
+  DISP_SEG_CREDIT(20,28,CORE_SEG16), DISP_SEG_BALLS(0,8,CORE_SEG16),
 
-  {6, 9,34,6,CORE_SEG16}, {0}
+  {6, 9,42,6,CORE_SEG16}, {0}
 };
 INITGAME(spirit,GEN_S80SS,dispSpirit, 1)
 S80_1_ROMSTART(spirit, "673-2.cpu",  0xa7dc2207,
@@ -397,14 +397,14 @@ CORE_GAMEDEFNV(spirit,"Spirit",1982,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
 /-------------------------------------------------------------------*/
 core_tLCDLayout dispStriker[] = {
   {0, 0, 2,6,CORE_SEG16}, {0,12, 1,1,CORE_SEG16},
-  {0,21,18,6,CORE_SEG16}, {0,33,17,1,CORE_SEG16},
+  {0,21,22,6,CORE_SEG16}, {0,33,21,1,CORE_SEG16},
   {4, 0,10,6,CORE_SEG16}, {4,12, 9,1,CORE_SEG16},
-  {4,21,26,6,CORE_SEG16}, {4,33,25,1,CORE_SEG16},
+  {4,21,30,6,CORE_SEG16}, {4,33,29,1,CORE_SEG16},
 
-  DISP_SEG_CREDIT(16,24,CORE_SEG16), DISP_SEG_BALLS(0,8,CORE_SEG16),
+  DISP_SEG_CREDIT(20,28,CORE_SEG16), DISP_SEG_BALLS(0,8,CORE_SEG16),
 
-  {0,15,36,2,CORE_SEG16}, {0,36,46,2,CORE_SEG16},
-  {4,15,34,2,CORE_SEG16}, {4,36,44,2,CORE_SEG16}, {0}
+  {0,15,44,2,CORE_SEG16}, {0,36,54,2,CORE_SEG16},
+  {4,15,42,2,CORE_SEG16}, {4,36,52,2,CORE_SEG16}, {0}
 };
 INITGAME(striker,GEN_S80SS,dispStriker, 1)
 S80_1_ROMSTART(striker, "675.cpu",    0x06b66ce8,
@@ -433,12 +433,12 @@ CORE_GAMEDEFNV(punk,"Punk!",1982,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
 core_tLCDLayout dispGoinNuts[] = {
   {0, 0, 2,6,CORE_SEG16}, {0,12, 1,1,CORE_SEG16},
   {0,16,10,6,CORE_SEG16}, {0,28, 9,1,CORE_SEG16},
-  {4, 0,18,6,CORE_SEG16}, {4,12,17,1,CORE_SEG16},
-  {4,16,26,6,CORE_SEG16}, {4,28,25,1,CORE_SEG16},
+  {4, 0,22,6,CORE_SEG16}, {4,12,21,1,CORE_SEG16},
+  {4,16,30,6,CORE_SEG16}, {4,28,29,1,CORE_SEG16},
 
-  DISP_SEG_CREDIT(16,24,CORE_SEG16), DISP_SEG_BALLS(0,8,CORE_SEG16),
+  DISP_SEG_CREDIT(20,28,CORE_SEG16), DISP_SEG_BALLS(0,8,CORE_SEG16),
 
-  {6,12,37,3,CORE_SEG16}, {0}
+  {6,12,45,3,CORE_SEG16}, {0}
 };
 INITGAME(goinnuts,GEN_S80SS,dispGoinNuts, 1)
 S80_1_ROMSTART(goinnuts, "682.cpu",    0x51c7c6de,
@@ -455,12 +455,12 @@ CORE_GAMEDEFNV(goinnuts,"Goin' Nuts",1983,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SO
 core_tLCDLayout dispKrull[] = {
   {0, 0, 2,6,CORE_SEG16}, {0,12, 1,1,CORE_SEG16},
   {0,16,10,6,CORE_SEG16}, {0,28, 9,1,CORE_SEG16},
-  {4, 0,18,6,CORE_SEG16}, {4,12,17,1,CORE_SEG16},
-  {4,16,26,6,CORE_SEG16}, {4,28,25,1,CORE_SEG16},
+  {4, 0,22,6,CORE_SEG16}, {4,12,21,1,CORE_SEG16},
+  {4,16,30,6,CORE_SEG16}, {4,28,29,1,CORE_SEG16},
 
-  DISP_SEG_CREDIT(16,24,CORE_SEG16), DISP_SEG_BALLS(0,8,CORE_SEG16),
+  DISP_SEG_CREDIT(20,28,CORE_SEG16), DISP_SEG_BALLS(0,8,CORE_SEG16),
 
-  {6, 8,34,3,CORE_SEG16}, {6,16,37,3,CORE_SEG16}, {0}
+  {6, 8,42,3,CORE_SEG16}, {6,16,45,3,CORE_SEG16}, {0}
 };
 INITGAME(krull,GEN_S80SS,dispKrull, 1)
 S80_1_ROMSTART(krull, "676-3.cpu",  0x71507430,
@@ -727,7 +727,7 @@ S80_ROMEND
 CORE_GAMEDEFNV(diamond, "Diamond Lady",1988,"Gottlieb",gl_mS80B,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
-/ TX-Sector 
+/ TX-Sector
 /-------------------------------------------------------------------*/
 INITGAME(txsector,GEN_S80B2K,gottlieb_dispAlpha, 1)
 S80B_2K_ROMSTART(txsector, "prom2.cpu", 0xf12514e6,

@@ -47,7 +47,7 @@ core_tLCDLayout s4_disp[] = {
   // Player 1            Player 2
   {0, 0, 0,6,CORE_SEG7}, {0,18, 8,6,CORE_SEG7},
   // Player 3            Player 4
-  {2, 0,16,6,CORE_SEG7}, {2,18,24,6,CORE_SEG7},
+  {2, 0,20,6,CORE_SEG7}, {2,18,28,6,CORE_SEG7},
   // Right Side          Left Side
   {4, 9,14,2,CORE_SEG7}, {4,14, 6,2,CORE_SEG7}, {0}
 };

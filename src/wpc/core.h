@@ -216,8 +216,8 @@ typedef struct {
 
 #endif
 /* Shortcuts for some common display sizes */
-#define DISP_SEG_16(row,type)    {4*row, 0, 16*row, 16, type}
-#define DISP_SEG_7(row,col,type) {4*row,16*col,row*16+col*8+1,7,type}
+#define DISP_SEG_16(row,type)    {4*row, 0, 20*row, 16, type}
+#define DISP_SEG_7(row,col,type) {4*row,16*col,row*20+col*8+1,7,type}
 #define DISP_SEG_CREDIT(no1,no2,type) {2,2,no1,1,type},{2,4,no2,1,type}
 #define DISP_SEG_BALLS(no1,no2,type)  {2,8,no1,1,type},{2,10,no2,1,type}
 /* display layout structure */
