@@ -464,6 +464,11 @@ DRIVER  (sprk,103)      //Whitestar: 01/99 South Park (1.03)
 DRIVERNV(harley)        //Whitestar: 08/99 Harley Davidson
 
 // ---------------
+// SPINBALL GAMES
+// ---------------
+DRIVERNV(jolypark)      //Jolly Park
+
+// ---------------
 // STERN GAMES
 // ---------------
 // MPU-100 - Chime Sound
@@ -612,6 +617,7 @@ DRIVERNV(taitest )      //??/8? Test Fixture
 // ----------------
 
 DRIVERNV(scram_tp)      //03/87 Scramble
+DRIVERNV(xforce)        //??/87 X Force
 
 // ----------------
 // UNITED GAMES
@@ -875,7 +881,7 @@ DRIVERNV(bbeltzac)      //??/86 Blackbelt
 DRIVERNV(mexico)        //??/86 Mexico '86
 DRIVERNV(zankor)        //??/86 Zankor
 DRIVERNV(spooky)        //??/87 Spooky
-                        //??/87 Star's Phoenix
+DRIVERNV(strsphnx)      //??/87 Star's Phoenix
                         //??/86 New Star's Phoenix
 
 #endif /* DRIVER_RECURSIVE */
