@@ -85,7 +85,6 @@ int vp_getMech(int mechNo);
 /-----------*/
 void vp_setDIP(int dipBank, int value);
 int vp_getDIP(int dipBank);
-void vp_dipnv(void *file, int write);
 
 /*-----------
 /  set Solenoid Mask

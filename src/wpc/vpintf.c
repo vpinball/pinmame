@@ -127,13 +127,6 @@ int vp_getDIP(int dipBank) {
   return locals.dips[dipBank];
 }
 
-void vp_dipnv(void *file, int write) {
-  if (write)     osd_fwrite(file, locals.dips, sizeof(locals.dips));
-  else if (file) osd_fread(file, locals.dips, sizeof(locals.dips));
-//  Don't change if not saved before
-//  else           memset(locals.dips,0,sizeof(locals.dips));
-}
-
 /*-----------
 /  set Solenoid Mask
 /-----------*/
