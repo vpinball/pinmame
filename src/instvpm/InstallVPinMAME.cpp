@@ -196,7 +196,10 @@ void DisplayInstalledVersion(HWND hWnd)
 	GetInstalledVersion(szInstalledVersion, sizeof szInstalledVersion);
 
 	char szVersionText[256];
-	wsprintf(szVersionText, "(Installed version: %s)", szInstalledVersion);
+	if(strlen(szInstalledVersion) > 0)
+		wsprintf(szVersionText, "* Visual PinMAME Version %s is currently installed on your computer *", szInstalledVersion);
+	else
+		wsprintf(szVersionText, "* Visual PinMAME is not currently installed on your computer *");
 	SendMessage(GetDlgItem(hWnd, IDC_INSTALLEDVERSION), WM_SETTEXT, 0, (WPARAM) szVersionText);
 }
 

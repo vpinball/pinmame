@@ -75,7 +75,7 @@ BEGIN
             VALUE "FileDescription", "InstallVPinMAME\0"
             VALUE "FileVersion", "1.2\0"
             VALUE "InternalName", "InstallVPinMAME\0"
-            VALUE "LegalCopyright", "Copyright © 2001-02 Steve Ellenoff, Tom Haukap, WPCMAME\0"
+            VALUE "LegalCopyright", "Copyright © 2001-02 Steve Ellenoff, Tom Haukap, Martin Adrian\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "InstallVPinMAME.exe\0"
             VALUE "PrivateBuild", "\0"
@@ -100,7 +100,7 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_MAIN                ICON    DISCARDABLE     "Res\InstallVPinMAME.ico"
+IDI_MAIN                ICON    DISCARDABLE     "Res\\InstallVPinMAME.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -119,24 +119,24 @@ BEGIN
     CTEXT           "",IDC_INSTALLEDVERSION,7,25,326,8
     PUSHBUTTON      "&Install",IDC_REGISTER,8,42,77,20
     LTEXT           "This will install the Visual PinMAME COM object on your computer.",
-                    IDC_STATIC,89,43,244,16
+                    IDC_STATIC,89,47,244,10
     PUSHBUTTON      "&Uninstall",IDC_UNREGISTER,7,68,77,20
     LTEXT           "This will uninstall the Visual PinMAME COM object from your computer.",
-                    IDC_STATIC,89,69,244,16
+                    IDC_STATIC,89,74,244,8
     PUSHBUTTON      "Setup &Pathes...",IDC_DISPLAYPATHESDLG,7,95,77,20
     LTEXT           "This will allow you to specify and change the directories Visual PinMAME uses, such as ROM directories, and other configuration directories.",
                     IDC_STATIC,89,96,244,16
     PUSHBUTTON      "Setup &Defaults...",IDC_DISPLAYOPTSDIALOG,7,122,77,20
     LTEXT           "This will allow you to setup default options for all games.",
-                    IDC_STATIC,89,123,244,16
+                    IDC_STATIC,89,127,244,8
     PUSHBUTTON      "&Test",IDC_TESTDIALOG,7,148,77,20
-    LTEXT           "This will allow you to run some test if VPinMAME is properly installed.",
-                    IDC_STATIC,89,149,244,16
+    LTEXT           "This will allow you to test your Visual PinMAME Installation.",
+                    IDC_STATIC,89,154,244,10
     PUSHBUTTON      "&Info...",IDC_DISPLAYBAOUTDIALOG,7,179,77,20
-    LTEXT           "This shows the about dialog, and will confirm that the Visual PinMAME COM object is successfully installed on your computer.",
-                    IDC_STATIC,89,179,244,16
+    LTEXT           "This will show the Visual PinMAME ""About"" Screen",
+                    IDC_STATIC,89,185,244,8
     DEFPUSHBUTTON   "&Quit",IDCANCEL,7,206,77,20
-    LTEXT           "Ends this program.",IDC_STATIC,89,206,244,16
+    LTEXT           "Ends this program.",IDC_STATIC,89,211,244,9
 END
 
 IDD_TESTDLG DIALOG DISCARDABLE  0, 0, 213, 202
