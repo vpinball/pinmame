@@ -123,7 +123,19 @@ DRIVERNV(empsback)      //Star Wars - The Empire Strike Back
 // ---------------------
 // TAITO GAMES BELOW
 // ---------------------
-DRIVERNV(zarza   )      // Zarza (Xenon Clone)
+DRIVERNV(zarza   )      //Zarza (Xenon Clone)
+DRIVERNV(gemini  )      //Gemini
+DRIVERNV(cosmic  )      //Cosmic
+DRIVERNV(hawkman )		//Hawkman
+DRIVERNV(polar   )      //Polar
+DRIVERNV(rally   )      //Rally
+DRIVERNV(sharkt  )      //Shark (Taito)
+DRIVERNV(snake   )      //Snake
+DRIVERNV(titan   )      //Titan
+DRIVERNV(vortex  )      //Vortex
+DRIVERNV(stest   )      //Speed Test
+DRIVERNV(sshuttle)      //Space Shuttle (Taito)
+
 
 // ---------------------
 // BALLY GAMES BELOW
