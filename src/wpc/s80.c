@@ -69,9 +69,9 @@ static int core_ascii2seg[] = {
 };
 
 /*----------------
-/  Local varibles
+/  Local variables
 /-----------------*/
-struct {
+static struct {
   int    vblankCount;
   int    initDone;
   UINT32 solenoids;
@@ -757,11 +757,10 @@ struct MachineDriver machine_driver_S80BS3 = {
 static void S80_init(void) {
   int ii;
 
-  if (S80locals.initDone)
-    S80_exit();
-  S80locals.initDone = TRUE;
+  if (S80locals.initDone) CORE_DOEXIT(S80_exit);
 
-  memset(&S80locals.initDone, 0, sizeof S80locals.initDone);
+  if (core_init(&S80Data)) return;
+  memset(&S80locals, 0, sizeof S80locals);
 
   /* init ROM */
   for(ii = 1; ii<4; ii++) {
@@ -782,9 +781,6 @@ static void S80_init(void) {
   for (ii = 0; ii < sizeof(s80_riot_intf)/sizeof(s80_riot_intf[0]); ii++)
     riot_config(ii, &s80_riot_intf[ii]);
 
-  if (core_init(&S80Data))
-	  return;
-
   /* Sound Enabled? */
   if (((Machine->gamedrv->flags & GAME_NO_SOUND)==0) && Machine->sample_rate)
   {
@@ -797,6 +793,8 @@ static void S80_init(void) {
   }
 
   riot_reset();
+  
+  S80locals.initDone = TRUE;
 }
 
 static void S80_exit(void) {
