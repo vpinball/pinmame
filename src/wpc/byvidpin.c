@@ -185,7 +185,7 @@ static READ_HANDLER(pia2b_r) {
 static WRITE_HANDLER(pia2cb2_w) {
   locals.diagnosticLedV |= data;
   sndbrd_0_data_w(0, locals.p2_b);
-  sndbrd_0_ctrl_w(0,data);
+  sndbrd_0_ctrl_w(0, data);
 }
 
 // VIDEO PIA IRQ - TRIGGER VIDEO CPU FIRQ
@@ -292,7 +292,7 @@ static void byVP_zeroCross(int data) {
 
 static MACHINE_INIT(byVP) {
   memset(&locals, 0, sizeof(locals));
-  sndbrd_0_init(SNDBRD_BY45,BYVP_SCPUNO,NULL,NULL,NULL);
+  sndbrd_0_init(core_gameData->hw.soundBoard,BYVP_SCPUNO,NULL,NULL,NULL);
   /* init PIAs */
   pia_config(BYVP_PIA0, PIA_STANDARD_ORDERING, &piaIntf[0]);
   pia_config(BYVP_PIA1, PIA_STANDARD_ORDERING, &piaIntf[1]);
@@ -448,9 +448,8 @@ MACHINE_DRIVER_START(byVP1)
 
   MDRV_CPU_ADD_TAG("vcpu", M6809, 3580000/4)
   MDRV_CPU_MEMORY(byVP_video_readmem, byVP_video_writemem)
-  MDRV_IMPORT_FROM(by45)
-  MDRV_TIMER_ADD(byVP_zeroCross, BYVP_ZCFREQ)
   MDRV_INTERLEAVE(100)
+  MDRV_TIMER_ADD(byVP_zeroCross, BYVP_ZCFREQ)
   MDRV_CORE_INIT_RESET_STOP(byVP,NULL,byVP)
   MDRV_DIPS(32)
   MDRV_DIAGNOSTIC_LEDV(2)
@@ -474,6 +473,7 @@ MACHINE_DRIVER_START(byVP1)
   MDRV_VIDEO_STOP(byVP)
 
   /* sound hardware */
+  MDRV_IMPORT_FROM(by45)
   MDRV_SOUND_CMD(byVP_soundCmd)
   MDRV_SOUND_CMDHEADING("byVP")
 MACHINE_DRIVER_END
