@@ -2,13 +2,13 @@
   Nuova Bell Games
   ----------------
   by Steve Ellenoff
-  
+
   Main CPU Board:
 
   CPU: Motorola M6802
   Clock: Unknown (1Mhz?)
-  Interrupt: IRQ - Via the 6821 chips, NMI - Push Button? 
-  I/O: 2 X 6821 
+  Interrupt: IRQ - Via the 6821 chips, NMI - Push Button?
+  I/O: 2 X 6821
 
   Issues/Todo:
 
@@ -21,7 +21,7 @@
 
   Lamps: Lamp Addr is 1-16 data, Lamp Data 0-3 (each bit selects different 1-16 mux) - Strobe 2 used for Aux Lamps
 
-  Game is done with testing @ 14A3? 
+  Game is done with testing @ 14A3?
   143E - Display some digits?
   152e - CLI - Clear Interrupt Disable
   RAM - 680 - Contains text for display driver
@@ -37,9 +37,9 @@
 #include "sim.h"
 
 #define NUOVA_SOLSMOOTH 4
-#define NUOVA_CPUFREQ		   500000			//0.5Mhz (NO IDEA)
-#define F1GP_ZCFREQ				220/2			//220 Volt / 2 (NO IDEA)
-#define F1GP_555TIMER_FREQ		500			//??
+#define NUOVA_CPUFREQ		1000000			//1 Mhz (NO IDEA)
+#define F1GP_ZCFREQ				240			//120 Hz (NO IDEA)
+#define F1GP_555TIMER_FREQ		317			//??
 
 #define F1GP_SWCPUBUTT    -7
 #define F1GP_SWCPUDIAG    -6
@@ -50,8 +50,6 @@
 #define LOG(x) logerror x
 #endif
 
-static int f1gp_data_to_eseg(int data);
-
 static struct {
   int vblankCount;
   core_tSeg segments;
@@ -60,7 +58,7 @@ static struct {
   int diagnosticLed;
   int piaIrq;
   int SwCol;
-  int DispCol;
+  int dispCol[4];
   int LampCol;
   int zero_cross;
   int timer_555;
@@ -88,14 +86,6 @@ static void f1gp_555timer(int data) {
 	 pia_set_input_ca1(1,locals.timer_555);
 }
 
-static WRITE_HANDLER(disp_w) { 
-	//LOG(("%08x: disp1_w = %04x\n",activecpu_get_previouspc(),data)); 
-	if(offset&0x80)
-		locals.segments[locals.DispCol].w = f1gp_data_to_eseg(data);
-	else
-		locals.segments[locals.DispCol+16].w = f1gp_data_to_eseg(data);
-}
-
 static INTERRUPT_GEN(f1gp_vblank) {
   /*-------------------------------
   /  copy local data to interface
@@ -104,7 +94,7 @@ static INTERRUPT_GEN(f1gp_vblank) {
 
   memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
-  
+
   coreGlobals.solenoids = locals.solenoids;
   if ((locals.vblankCount % NUOVA_SOLSMOOTH) == 0) {
 	locals.solenoids = coreGlobals.pulsedSolState;
@@ -119,12 +109,12 @@ static INTERRUPT_GEN(f1gp_vblank) {
 static SWITCH_UPDATE(f1gp) {
   if (inports) {
 	  //Column 0 Switches
-	  coreGlobals.swMatrix[0] = (inports[CORE_COREINPORT] & 0x00c0)>>6;		
+	  coreGlobals.swMatrix[0] = (inports[CORE_COREINPORT] & 0x00c0)>>6;
 	  //Column 1 Switches
 	  coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0x9f) | ((inports[CORE_COREINPORT] & 0x03)<<5);
 	  //Column 2 Switches
-	  coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0x78) | 
-		  ((inports[CORE_COREINPORT] & 0x1c)>>2) | ((inports[CORE_COREINPORT] & 0x20)<<2);     
+	  coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0x78) |
+		  ((inports[CORE_COREINPORT] & 0x1c)>>2) | ((inports[CORE_COREINPORT] & 0x20)<<2);
   }
   // CPU DIAG SWITCH
   if (core_getSw(F1GP_SWCPUBUTT))
@@ -181,7 +171,7 @@ static READ_HANDLER(pia0_b_r)
 	}
 	else
 	{
-		data = coreGlobals.swMatrix[locals.SwCol+1];	//+1 so we begin by reading column 1 of input matrix instead of 0 which is used for special switches in many drivers 
+		data = coreGlobals.swMatrix[locals.SwCol+1];	//+1 so we begin by reading column 1 of input matrix instead of 0 which is used for special switches in many drivers
 		LOG(("%04x: SWITCH COL #%d - READ: pia0_b_r =%x\n",activecpu_get_previouspc(),locals.SwCol,data));
 	}
 	//return data;
@@ -192,13 +182,6 @@ static READ_HANDLER(pia0_ca1_r)
 {
 	int data = (core_getSw(F1GP_SWCPUDIAG))?1:0;
 	LOG(("%04x: DIAG SWITCH: pia0_ca1_r =%x \n",activecpu_get_previouspc(),data));
-	return data;
-}
-/*   i  CB1:    Tied to 43V line (Some kind of zero cross detection?) */
-static READ_HANDLER(pia0_cb1_r)
-{
-	int data = locals.zero_cross;
-	LOG(("%04x: X-CROSS?: pia0_cb1_r = %x\n",activecpu_get_previouspc(),data));
 	return data;
 }
 
@@ -215,32 +198,36 @@ static WRITE_HANDLER(pia0_a_w)
 	locals.pia0_a = data;
 	locals.SwCol = core_BitColToNum(data & 0xf);
 	LOG(("%04x: EVERYTHING: pia0_a_w = %x \n",activecpu_get_previouspc(),data));
+//	printf("0:%02x ", data);
+	if (data & 0x80) {
+		locals.dispCol[0] = 0;
+		locals.dispCol[1] = 0;
+		locals.dispCol[2] = 0;
+		locals.dispCol[3] = 0;
+	}
 }
 /*  o  CA2:    Display Blank */
 static WRITE_HANDLER(pia0_ca2_w)
 {
 	locals.pia0_da_enable = data & 1;
-	printf("%04x: DISP BLANK: pia0_ca2_w = %x \n",activecpu_get_previouspc(),data);
 	LOG(("%04x: DISP BLANK: pia0_ca2_w = %x \n",activecpu_get_previouspc(),data));
 }
 /*  o  CB2:    Dips 25-32 Strobe & Lamp Strobe #1 */
 static WRITE_HANDLER(pia0_cb2_w)
 {
+	UINT8 col = locals.pia0_a & 0x0f;
 	locals.pia0_cb2 = data & 1;
 	LOG(("%04x: DIP25 STR & LAMP STR 1: pia0_cb2_w = %x \n",activecpu_get_previouspc(),data));
+	if (col % 2 == 0)
+		coreGlobals.tmpLampMatrix[col/2] = (coreGlobals.tmpLampMatrix[col/2] & 0xf0) | (locals.pia0_a >> 4);
+	else
+		coreGlobals.tmpLampMatrix[col/2] = (coreGlobals.tmpLampMatrix[col/2] & 0x0f) | (locals.pia0_a & 0xf0);
 }
 
  /* -----------*/
  /* PIA 1 (U10)*/
  /* -----------*/
 
-/* i  CA1:    Tied to a 555 timer */
-static READ_HANDLER(pia1_ca1_r)
-{
-	int data = locals.timer_555;
-	LOG(("%04x: 555 Timer: pia1_ca1_r = %x\n",activecpu_get_previouspc(),data));
-	return data;
-}
 /* i  CB1:    Marked FE */
 static READ_HANDLER(pia1_cb1_r)
 {
@@ -248,36 +235,42 @@ static READ_HANDLER(pia1_cb1_r)
 	return 0;
 }
 
-/* 
+static const UINT16 core_ascii2seg[] = {
+  /* 0x00-0x07 */ 0x0000, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
+  /* 0x08-0x0f */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
+  /* 0x10-0x17 */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
+  /* 0x18-0x1f */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
+  /* 0x20-0x27 */ 0x0000, 0x0309, 0x0220, 0x2A4E, 0x2A6D, 0x6E65, 0x135D, 0x0400,
+  /* 0x28-0x2f */ 0x1400, 0x4100, 0x7F40, 0x2A40, 0x0000, 0x0840, 0x0000, 0x4400,
+  /* 0x30-0x37 */ 0x003f, 0x2200, 0x085B, 0x084f, 0x0866, 0x086D, 0x087D, 0x0007,
+  /* 0x38-0x3f */ 0x087F, 0x086F, 0x0848, 0x4040, 0x1400, 0x0848, 0x4100, 0x2803,
+  /* 0x40-0x47 */ 0x205F, 0x0877, 0x2A0F, 0x0039, 0x220F, 0x0079, 0x0071, 0x083D,
+  /* 0x48-0x4f */ 0x0876, 0x2209, 0x001E, 0x1470, 0x0038, 0x0536, 0x1136, 0x003f,
+  /* 0x50-0x57 */ 0x0873, 0x103F, 0x1873, 0x086D, 0x2201, 0x003E, 0x4430, 0x5036,
+  /* 0x58-0x5f */ 0x5500, 0x2500, 0x4409, 0x0039, 0x1100, 0x000f, 0x0402, 0x0008,
+  /* 0x60-0x67 */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
+  /* 0x68-0x6f */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
+  /* 0x70-0x77 */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
+  /* 0x78-0x7f */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
+};
+
+/*
   o  PA0     Display Strobe 5
   o  PA1-7   Display Digit 1-7 (note: diagram shows PA7 =Digit 1, PA6 = Digit 2, etc..)
 */
-static int lastval = 0;
-static int lastcol = 0;
 static WRITE_HANDLER(pia1_a_w)
 {
 	locals.pia1_a = data;
-
-	//Display Blank must be 0 - for data to display
-	if(!locals.pia0_da_enable)
-	{
-		printf("%04x: DISPLAY STR.5 & DIGIT: pia1_a_w = %x (BLANK=%x DIG=%x CHAR=%c) \n",activecpu_get_previouspc(),data,data&1,data>>1,locals.pia0_a);
-		//LOG(("%04x: DISPLAY STR.5 & DIGIT: pia1_a_w = %x (STR.5=%x DIG=%x) \n",activecpu_get_previouspc(),data,data&1,data>>1));
-		if( ((data>>1)==0) && lastval)
-			{
-				//hack to remove the spaces
-				if((lastcol&0x40)==0)
-					locals.DispCol = (locals.DispCol + 1) % 16;
-				if(lastcol&0x80) printf("****************\n");
-				disp_w(lastcol,locals.pia0_a);
-				printf("dispcol = %d\n",locals.DispCol);
-			}
-		else
-			lastcol = data;
-		lastval = (data>>1)?1:0;
-	}
+	if (data & 0x80 && locals.dispCol[0] < 16)
+		locals.segments[locals.dispCol[0]++].w = core_ascii2seg[locals.pia0_a & 0x7f];
+	if (data & 0x40 && locals.dispCol[1] < 16)
+		locals.segments[16+(locals.dispCol[1]++)].w = core_ascii2seg[locals.pia0_a & 0x7f];
+	if (data & 0x20 && locals.dispCol[2] < 16)
+		locals.segments[32+(locals.dispCol[2]++)].w = core_ascii2seg[locals.pia0_a & 0x7f];
+	if (data & 0x10 && locals.dispCol[3] < 16)
+		locals.segments[48+(locals.dispCol[3]++)].w = core_ascii2seg[locals.pia0_a & 0x7f];
 }
-/* 
+/*
   o  PB0:    A Solenoid
   o  PB1:    B Solenoid
   o  PB2:    C Solenoid
@@ -294,54 +287,18 @@ static WRITE_HANDLER(pia1_b_w)
 /* o  CA2:    LED & Lamp Strobe #2 */
 static WRITE_HANDLER(pia1_ca2_w)
 {
+	UINT8 col = locals.pia0_a & 0x0f;
 	locals.diagnosticLed = data & 1;
 	LOG(("%04x: LED & Lamp Strobe #2: pia1_ca2_w = %x \n",activecpu_get_previouspc(),data));
+	if (col % 2 == 0)
+		coreGlobals.tmpLampMatrix[8 + col/2] = (coreGlobals.tmpLampMatrix[8 + col/2] & 0xf0) | (locals.pia0_a >> 4);
+	else
+		coreGlobals.tmpLampMatrix[8 + col/2] = (coreGlobals.tmpLampMatrix[8 + col/2] & 0x0f) | (locals.pia0_a & 0xf0);
 }
 /* o  CB2:    Solenoid Bank Select */
 static WRITE_HANDLER(pia1_cb2_w)
 {
 	LOG(("%04x: SOL BANK SELECT: pia1_cb2_w = %x \n",activecpu_get_previouspc(),data));
-}
-
-//All these should not be used according to schematic
-static READ_HANDLER(pia0_a_r)
-{
-	LOG(("%04x: *WARNING* - Undocumented - pia0_a_r \n",activecpu_get_previouspc()));
-	return 0;
-}
-static READ_HANDLER(pia0_ca2_r)
-{
-	LOG(("%04x: *WARNING* - Undocumented - pia0_ca2_r \n",activecpu_get_previouspc()));
-	return 0;
-}
-static READ_HANDLER(pia0_cb2_r)
-{
-	LOG(("%04x: *WARNING* - Undocumented - pia0_cb2_r \n",activecpu_get_previouspc()));
-	return 0;
-}
-static READ_HANDLER(pia1_a_r)
-{
-	LOG(("%04x: *WARNING* - Undocumented - pia1_a_r \n",activecpu_get_previouspc()));
-	return 0;
-}
-static READ_HANDLER(pia1_b_r)
-{
-	LOG(("%04x: *WARNING* - Undocumented - pia1_b_r \n",activecpu_get_previouspc()));
-	return 0;
-}
-static READ_HANDLER(pia1_ca2_r)
-{
-	LOG(("%04x: *WARNING* - Undocumented - pia1_ca2_r \n",activecpu_get_previouspc()));
-	return 0;
-}
-static READ_HANDLER(pia1_cb2_r)
-{
-	LOG(("%04x: *WARNING* - Undocumented - pia1_cb2_r \n",activecpu_get_previouspc()));
-	return 0;
-}
-static WRITE_HANDLER(pia0_b_w)
-{
-	LOG(("%04x: *WARNING* - Undocumented - pia0_b_w = %x \n",activecpu_get_previouspc(),data));
 }
 
 static const struct pia6821_interface f1gp_pia[] = {
@@ -358,8 +315,8 @@ static const struct pia6821_interface f1gp_pia[] = {
   i  CB1:    Tied to 43V line (Some kind of zero cross detection?)
   o  CA2:    Activates Disp Addr Data
   o  CB2:    Dips 25-32 Strobe & Lamp Strobe #1 */
- /* in  : A/B,CA1/B1,CA2/B2 */ pia0_a_r, pia0_b_r, pia0_ca1_r, pia0_cb1_r, pia0_ca2_r, pia0_cb2_r,
- /* out : A/B,CA2/B2        */ pia0_a_w, pia0_b_w, pia0_ca2_w, pia0_cb2_w,
+ /* in  : A/B,CA1/B1,CA2/B2 */ 0, pia0_b_r, pia0_ca1_r, 0, 0, 0,
+ /* out : A/B,CA2/B2        */ pia0_a_w, 0, pia0_ca2_w, pia0_cb2_w,
  /* irq : A/B               */ f1gp_piaIrq, f1gp_piaIrq
 },{
  /* PIA 1 (U10)
@@ -378,7 +335,7 @@ static const struct pia6821_interface f1gp_pia[] = {
   i  CB1:    Marked FE
   o  CA2:    LED & Lamp Strobe #2
   o  CB2:    Solenoid Bank Select */
- /* in  : A/B,CA1/B1,CA2/B2 */ pia1_a_r, pia1_b_r, pia1_ca1_r, pia1_cb1_r, pia1_ca2_r, pia1_cb2_r,
+ /* in  : A/B,CA1/B1,CA2/B2 */ 0, 0, 0, pia1_cb1_r, 0, 0,
  /* out : A/B,CA2/B2        */ pia1_a_w, pia1_b_w, pia1_ca2_w, pia1_cb2_w,
  /* irq : A/B               */ f1gp_piaIrq, f1gp_piaIrq
 }
@@ -412,114 +369,15 @@ static WRITE16_HANDLER(sol1_w) { coreGlobals.pulsedSolState = (coreGlobals.pulse
 //Solenoids 17-32
 static WRITE16_HANDLER(sol2_w) { coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x0000FFFF) | (data<<16); }
 
-
-
-
-/*********************************************************************************************
-    Convert F1 Grand Prix Display Driver Codes to standard core 16 segment characeters
-
-   Core16 Segment Layout
-
-         1                                              1
-    ----------                                       ---------
-   |\9 10| 11/|             9 \ 10|   / 11           |       |
- 6 | \   |  / | 2              \  |  /             6 |       | 2 
-   |  \  | /  |                 \ | /                |       |
- 7  ----  ----  12          7 ---- ---- 12         7 ---- ---- 12  
-   |15/ | \13 |                 / |\                 |       |
- 5 | /  |  \  | 3           15 /  | \ 13           5 |       | 3 
-   |/ 14|   \ |               / 14|  \               |       |
-    ----------                                       ---------  
-        4                                               4      
-
-	8 = comma, 16 = period
-
-	Empty:
-	(20) = 0
-
-	Numbers: (BITS ON)
-	0 (30) = (1,2,3,4,5,6)					= 0x3f
-	1 (31) = (2,3)							= 0x06
-	2 (32) = (1,2,4,5,7,12)					= 0x85b
-	3 (33) = (1,2,3,4,7,12)					= 0x84f
-	4 (34) = (2,3,6,7,12)					= 0x866
-	5 (35) = (1,3,4,6,7,12)					= 0x86d
-	6 (36) = (1,3,4,5,6,7,12)				= 0x87d
-	7 (37) = (1,2,3)						= 0x07
-	8 (38) = (1,2,3,4,5,6,7,12)				= 0x87f
-	9 (39) = (1,2,3,4,6,7,12)				= 0x86f
-    : (3A) = (assume it means period) (16)	= 0x8000
-	; (3B) = (assume it means comma)  (8)	= 0x80
-	Special Chars 1:
-	< (3C) = (11,13)						= 0x1400
-	= (3D) = ??								= 0xffff (all)
-	> (3E) = (9,15)							= 0x4100
-	? (3F) = ?								= 0xffff (all)
-	@ (40) = ?								= 0xffff (all)
-	Letters:
-	A (41) = (1,2,3,5,6,7,12)				= 0x877	
-	B (42) = (1,2,3,4,10,12,14)				= 0x2a0f
-	C (43) = (1,4,5,6)						= 0x39
-	D (44) = (1,2,3,4,10,14)				= 0x220f
-	E (45) = (1,4,5,6,7,12)					= 0x879
-	F (46) = (1,5,6,7,12)					= 0x871
-	G (47) = (1,3,4,5,6,12)					= 0x83d
-	H (48) = (2,3,5,6,7,12)					= 0x876	
-	I (49) = (1,4,10,14)					= 0x2209
-	J (4A) = (2,3,4,5)						= 0x1e
-	K (4B) = (5,6,7,11,13)					= 0x1470
-	L (4C) = (4,5,6)						= 0x38
-	M (4D) = (2,3,5,6,9,11)					= 0x536
-	N (4E) = (2,3,5,6,9,13)					= 0x1136
-	O (4F) = (1,2,3,4,5,6)					= 0x3f
-	P (50) = (1,2,5,6,7,12)					= 0x873
-	Q (51) = (1,2,3,4,5,6,13)				= 0x103f
-	R (52) = (1,2,5,6,7,12,13)				= 0x1873
-	S (53) = (1,3,4,6,7,12)					= 0x86d
-	T (54) = (1,10,14)						= 0x2201
-	U (55) = (2,3,4,5,6)					= 0x3e
-	V (56) = (5,6,11,15)					= 0x4430
-	W (57) = (2,3,5,6,13,15)				= 0x5036
-	X (58) = (9,11,13,15)					= 0x5500
-	Y (59) = (9,11,14)						= 0x2500
-	Z (5A) = (1,4,11,15)					= 0x4409
-	Chars:
-	[ (5B) = (1,4,5,6)						= 0x39
-	\ (5C) = (9,13)							= 0x1100
-	] (5D) = (1,2,3,4)						= 0x0f
-	^ (5E) = (13,15)						= 0x5000
-	- (5F) = (7,12)							= 0x840
-*/
-
-static const int data_to_seg[] = {
-	0x3f,0x06,0x85b,0x84f,0x866,0x86d,0x87d,0x07,0x87f,0x86f,0x8000,0x80,  	  //0-9 AND .,
-	0x1400,0xffff,0x4100,0xffff,0xffff,										  //Spec Chars 1
-	0x877,0x2a0f,0x39,0x220f,0x879,0x871,0x83d,0x876,0x2209,0x1e,0x1470,0x38, //A - L
-	0x536,0x1136,0x3f,0x873,0x103f,0x1873,0x86d,0x2201,0x3e,0x4430,0x5036,	  //M - W
-	0x5500,0x2500,0x4409,													  //X - Z
-	0x39,0x1100,0x0f,0x5000,0x840											  //Spec Chars 2
-};
-
-static int f1gp_data_to_eseg(int data)
-{
-	if(data == 0x20) return 0;
-	if(data > 0x5f) 
-		{
-			printf("missing seg # %x\n",data);
-			return 0xffff;
-		}
-	return data_to_seg[data-0x30];
-}
-
 /*-----------------------------------
 /  Memory map for Main CPU board
 /------------------------------------*/
 static MEMORY_READ_START(cpu_readmem)
-  { 0x0000, 0x0087, MRA_RAM }, 
-  { 0x0088, 0x008b, pia_r(0)}, 
-  { 0x008c, 0x008f, MRA_RAM }, 
+  { 0x0000, 0x0087, MRA_RAM },
+  { 0x0088, 0x008b, pia_r(0)},
+  { 0x008c, 0x008f, MRA_RAM },
   { 0x0090, 0x0093, pia_r(1)},
-  { 0x0094, 0x07ff, MRA_RAM }, 
+  { 0x0094, 0x07ff, MRA_RAM },
   { 0x1000, 0x1fff, MRA_ROM },
   { 0x5000, 0x5fff, MRA_ROM },
   { 0x7000, 0x7fff, MRA_ROM },
@@ -530,9 +388,9 @@ static MEMORY_READ_START(cpu_readmem)
 MEMORY_END
 
 static MEMORY_WRITE_START(cpu_writemem)
-  { 0x0000, 0x0087, MWA_RAM }, 
-  { 0x0088, 0x008b, pia_w(0)}, 
-  { 0x008c, 0x008f, MWA_RAM }, 
+  { 0x0000, 0x0087, MWA_RAM },
+  { 0x0088, 0x008b, pia_w(0)},
+  { 0x008c, 0x008f, MWA_RAM },
   { 0x0090, 0x0093, pia_w(1)},
   { 0x0094, 0x07ff, MWA_RAM },
   { 0x1000, 0x1fff, MWA_ROM },
@@ -549,7 +407,7 @@ static core_tLCDLayout disp[] = {
   {3, 0,16,16,CORE_SEG16},
   {0}
 };
-static core_tGameData f1gpGameData = {GEN_ZAC2, disp};
+static core_tGameData f1gpGameData = {GEN_ZAC2, disp, {FLIP_SW(FLIP_L), 0, 2}};
 static void init_f1gp(void) {
   core_gameData = & f1gpGameData;
 }
