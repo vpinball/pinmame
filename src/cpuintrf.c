@@ -80,7 +80,7 @@
 #if (HAS_I8X41)
 #include "cpu/i8x41/i8x41.h"
 #endif
-#if defined(PINMAME) && (HAS_I8051)
+#if defined(PINMAME) && (HAS_I8051 || HAS_I8752)
 #include "cpu/i8051/i8051.h"
 #endif
 #if (HAS_M6800 || HAS_M6801 || HAS_M6802 || HAS_M6803 || HAS_M6808 || HAS_HD63701)
@@ -509,6 +509,13 @@ const struct cpu_interface cpuintrf[] =
 	//but MAME doesn't have 17 bit address handlers, so we use 20
 	CPU4(I8051,    i8051,	 4,  0,1.00, 8, 20,	  0,20,LE,1, 3	),
 #endif
+#if defined(PINMAME)  &&  (HAS_I8752)
+//	CPU4(I8752,    i8752,	 4,  0,1.00, 8, 16,	  0,16,LE,1, 3	),
+	//To accomodate external rom & ram, we use 1 extra address line and map the ram above the rom
+	//but MAME doesn't have 17 bit address handlers, so we use 20
+	CPU4(I8752,    i8752,	 4,  0,1.00, 8, 20,	  0,20,LE,1, 3	),
+#endif
+
 #if (HAS_M6800)
 	CPU0(M6800,    m6800,	 1,  0,1.00, 8, 16,	  0,16,BE,1, 4	),
 #endif

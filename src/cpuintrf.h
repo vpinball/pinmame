@@ -134,6 +134,9 @@ enum
 #if defined(PINMAME) && (HAS_I8051)
 	CPU_I8051,
 #endif
+#if defined(PINMAME) && (HAS_I8752)
+	CPU_I8752,
+#endif
 
 #if (HAS_M6800)
 	CPU_M6800,
