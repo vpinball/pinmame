@@ -82,8 +82,8 @@
 #define BY6803_PIA1 1
 
 #define BY6803_VBLANKFREQ     60 /* VBLANK frequency */
-#define BY6803_IRQFREQ       316 /* IRQ (via PIA) frequency*/
-#define BY6803_ZCFREQ        240/* Zero cross frequency (PHASE A is 1/2 this value)*/
+#define BY6803_IRQFREQ       317 /* IRQ (via PIA) frequency*/
+#define BY6803_ZCFREQ        120 /* Zero cross frequency (PHASE A equals this value)*/
 
 #define BY6803_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
 #define BY6803_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
@@ -557,11 +557,11 @@ static MACHINE_DRIVER_START(by6803)
   MDRV_CPU_MEMORY(by6803_readmem, by6803_writemem)
   MDRV_CPU_PORTS(by6803_readport, by6803_writeport)
   MDRV_CPU_VBLANK_INT(by6803_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(by6803_irq, BY6803_IRQFREQ)
+  MDRV_CPU_PERIODIC_INT(by6803_irq, BY6803_IRQFREQ*2)
   MDRV_NVRAM_HANDLER(by6803)
   MDRV_SWITCH_UPDATE(by6803)
   MDRV_DIAGNOSTIC_LEDH(2)
-  MDRV_TIMER_ADD(by6803_zeroCross,BY6803_ZCFREQ)
+  MDRV_TIMER_ADD(by6803_zeroCross,BY6803_ZCFREQ*2)
   MDRV_SOUND_CMD(by6803_soundCmd)
   MDRV_SOUND_CMDHEADING("by6803")
   MDRV_DIPS(1) // needed for extra core inport!
