@@ -577,10 +577,21 @@ DCS_SOUNDROM7x("ng_u2_s.l1",CRC(c3bd7bf5) SHA1(2476ff90232a52d667a407fac81ee4db0
                "ng_u8_s.l1",CRC(c9fb065e) SHA1(c148178ee0ea787acc88078db01d17073e75fdc7))
 WPC_ROMEND
 
+WPC_ROMSTART(sttng,p5,"sttng_p5.u6",0x80000,CRC(c1b80a8e) SHA1(90dd99efd41ec5405c631ad374a369f9fcb7217e))
+DCS_SOUNDROM7x("ng_u2_s.l1",CRC(c3bd7bf5) SHA1(2476ff90232a52d667a407fac81ee4db028b94e5),
+               "ng_u3_s.l1",CRC(9456cac7) SHA1(83e415e0f21bb5418f3677dbc13433e056c523ab),
+               "ng_u4_s.l1",CRC(179d22a4) SHA1(456b7189e23d4e2bd7e2a6249fa2a73bf0e12194),
+               "ng_u5_s.l1",CRC(231a3e72) SHA1(081b1a042e62ccb723788059d6c1e00b9b32c778),
+               "ng_u6_s.l1",CRC(bb21377d) SHA1(229fb42a1f8b22727a809e5d63f26f045a2adda5),
+               "ng_u7_s.l1",CRC(d81b39f0) SHA1(3443e7327c755b85a5b390f7fcd0e9923890425a),
+               "ng_u8_s.l1",CRC(c9fb065e) SHA1(c148178ee0ea787acc88078db01d17073e75fdc7))
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF(sttng,l7,"Star Trek: The Next Generation (Lx-7)",1993,"Williams",wpc_mDCSS,0)
+CORE_GAMEDEF(sttng,l7,"Star Trek: The Next Generation (LX-7)",1993,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(sttng,p5,l7,"Star Trek: The Next Generation (P-5)",1993,"Williams",wpc_mDCSS,0)
 
 /*-----------------------
 / Simulation Definitions

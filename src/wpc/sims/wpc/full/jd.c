@@ -445,10 +445,22 @@ DCS_SOUNDROM8x( "jdsnd_u2.bin",CRC(d8f453c6) SHA1(5dd677fde46436dbf2d2e9058f06dd
                 "jdsnd_u9.bin",CRC(885b7c70) SHA1(be3bb42aeda3020a72c527f52c5330d0bafa9966))
 WPC_ROMEND
 
+WPC_ROMSTART(jd,l6,"jd_l6.u6",0x80000,CRC(0a74cba4) SHA1(1872fd86bbfa772eac9cc2ef2634a90b72b3d5e2))
+DCS_SOUNDROM8x( "jdsnd_u2.bin",CRC(d8f453c6) SHA1(5dd677fde46436dbf2d2e9058f06dd3048600234),
+                "jdsnd_u3.bin",CRC(0a11f673) SHA1(ab556477a25e3493555b8a281ca86677caec8947),
+                "jdsnd_u4.bin",CRC(93f6ebc1) SHA1(5cb306afa693e60887069745588dfd5b930c5951),
+                "jdsnd_u5.bin",CRC(c9f28ba6) SHA1(8447372428e3b9fc86a98286c05f95a13abe26b0),
+                "jdsnd_u6.bin",CRC(ef0bf094) SHA1(c0860cecd436d352fe2c2208533ff6dc71bfced1),
+                "jdsnd_u7.bin",CRC(aebab88b) SHA1(d3f1be60a6840d9d085e22b43aafea1354771980),
+                "jdsnd_u8.bin",CRC(77604893) SHA1(a9a4a66412096edd88ee7adfd960eef6f5d16476),
+                "jdsnd_u9.bin",CRC(885b7c70) SHA1(be3bb42aeda3020a72c527f52c5330d0bafa9966))
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(jd,l7,"Judge Dredd (L-7)",1993,"Bally",wpc_mDCSS,0)
+CORE_CLONEDEF(jd,l6,l7,"Judge Dredd (L-6)",1993,"Bally",wpc_mDCSS,0)
 
 /*-----------------------
 / Simulation Definitions
