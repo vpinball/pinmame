@@ -26,77 +26,77 @@
     COREPORT_BIT(     0x0080, "Test Tecnico",	  KEYCODE_8)\
 	COREPORT_BIT(     0x0100, "Test Contacto",	  KEYCODE_7)\
   PORT_START /* 1 */ \
-    COREPORT_DIPNAME( 0x0001, 0x0000, "S1-1") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0001, "1" ) \
-    COREPORT_DIPNAME( 0x0002, 0x0000, "S1-2") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0002, "1" ) \
-    COREPORT_DIPNAME( 0x0004, 0x0000, "S1-3") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0004, "1" ) \
-    COREPORT_DIPNAME( 0x0008, 0x0008, "S1-4") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0008, "1" ) \
-    COREPORT_DIPNAME( 0x0010, 0x0000, "S1-5") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0010, "1" ) \
-    COREPORT_DIPNAME( 0x0020, 0x0000, "S1-6") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0020, "1" ) \
-    COREPORT_DIPNAME( 0x0040, 0x0000, "S1-7") \
+    COREPORT_DIPNAME( 0x000f, 0x0008, "Coins Per Game") \
+      COREPORT_DIPSET(0x0000, "25 ptas 2 Games" ) \
+      COREPORT_DIPSET(0x0008, "25 ptas 1 Game" ) \
+      COREPORT_DIPSET(0x0004, "25 ptas 1 Game, 100 ptas 5 Games" ) \
+      COREPORT_DIPSET(0x000c, "50 ptas 1 Game" ) \
+      COREPORT_DIPSET(0x0002, "50 ptas 1 Game, 200 ptas 5 Games" ) \
+      COREPORT_DIPSET(0x000a, "50 ptas 1 Game, 100 ptas 3 Games" ) \
+      COREPORT_DIPSET(0x0006, "100 ptas 1 Game" ) \
+      COREPORT_DIPSET(0x000e, "100 ptas 1 Game, 500 ptas 6 Games" ) \
+      COREPORT_DIPSET(0x0001, "100 ptas 1 Game, 200 ptas 3 Games" ) \
+      COREPORT_DIPSET(0x0009, "50 esc 1 Game" ) \
+      COREPORT_DIPSET(0x0005, "50 esc 1 Game, 100 esc 3 Games" ) \
+      COREPORT_DIPSET(0x000d, "100 esc 1 Game" ) \
+      COREPORT_DIPSET(0x0003, "100 esc 1 Game, 200 esc 3 Games" ) \
+      COREPORT_DIPSET(0x000b, "100 esc 1 Game, 200 esc 3 Games" ) \
+      COREPORT_DIPSET(0x0007, "100 esc 1 Game, 200 esc 3 Games" ) \
+      COREPORT_DIPSET(0x000f, "100 esc 2 Games, 200 esc 5 Games" ) \
+	COREPORT_DIPNAME( 0x0030, 0x0000, "First Replay Score") \
+      COREPORT_DIPSET(0x0000, "300 Million" ) \
+      COREPORT_DIPSET(0x0010, "400 Million" ) \
+      COREPORT_DIPSET(0x0020, "500 Million" ) \
+      COREPORT_DIPSET(0x0030, "600 Million" ) \
+	COREPORT_DIPNAME( 0x0040, 0x0000, "Reserved") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0040, "1" ) \
-    COREPORT_DIPNAME( 0x0080, 0x0000, "S1-8") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0080, "1" ) \
-    COREPORT_DIPNAME( 0x0100, 0x0000, "S2-1")\
-      COREPORT_DIPSET(0x0000, "0" )\
-      COREPORT_DIPSET(0x0100, "1" )\
-    COREPORT_DIPNAME( 0x0200, 0x0000, "S2-2")\
+    COREPORT_DIPNAME( 0x0080, 0x0000, "Game Type") \
+      COREPORT_DIPSET(0x0000, "Normal" ) \
+      COREPORT_DIPSET(0x0080, "Tournament" ) \
+    COREPORT_DIPNAME( 0x0100, 0x0000, "Balls")\
+      COREPORT_DIPSET(0x0000, "3" )\
+      COREPORT_DIPSET(0x0100, "5" )\
+    COREPORT_DIPNAME( 0x0200, 0x0000, "Reserved")\
       COREPORT_DIPSET(0x0000, "0" )\
       COREPORT_DIPSET(0x0200, "1" )\
-    COREPORT_DIPNAME( 0x0400, 0x0400, "S2-3")\
-      COREPORT_DIPSET(0x0000, "0" )\
-      COREPORT_DIPSET(0x0400, "1" )\
-    COREPORT_DIPNAME( 0x0800, 0x0000, "S2-4")\
-      COREPORT_DIPSET(0x0000, "0" )\
-      COREPORT_DIPSET(0x0800, "1" )\
-    COREPORT_DIPNAME( 0x1000, 0x0000, "S2-5")\
-      COREPORT_DIPSET(0x0000, "0" )\
-      COREPORT_DIPSET(0x1000, "1" )\
-    COREPORT_DIPNAME( 0x2000, 0x0000, "S2-6")\
-      COREPORT_DIPSET(0x0000, "0" )\
-      COREPORT_DIPSET(0x2000, "1" )\
-    COREPORT_DIPNAME( 0x4000, 0x0000, "S2-7")\
+    COREPORT_DIPNAME( 0x0c00, 0x0000, "Value of Handicap")\
+      COREPORT_DIPSET(0x0000, "700 Million" )\
+      COREPORT_DIPSET(0x0800, "750 Million" )\
+      COREPORT_DIPSET(0x0400, "800 Million" )\
+      COREPORT_DIPSET(0x0c00, "850 Million" )\
+	COREPORT_DIPNAME( 0x3000, 0x0000, "Time of New Ticket")\
+      COREPORT_DIPSET(0x0000, "Disabled" )\
+      COREPORT_DIPSET(0x1000, "Short" )\
+      COREPORT_DIPSET(0x2000, "Medium" )\
+      COREPORT_DIPSET(0x3000, "Long" )\
+	COREPORT_DIPNAME( 0x4000, 0x0000, "Reserved")\
       COREPORT_DIPSET(0x0000, "0" )\
       COREPORT_DIPSET(0x4000, "1" )\
-    COREPORT_DIPNAME( 0x8000, 0x0000, "S2-8")\
+    COREPORT_DIPNAME( 0x8000, 0x0000, "Reserved")\
       COREPORT_DIPSET(0x0000, "0" )\
       COREPORT_DIPSET(0x8000, "1" )\
   PORT_START /* 2 */\
-    COREPORT_DIPNAME( 0x0001, 0x0000, "S3-1")\
-      COREPORT_DIPSET(0x0000, "0" )\
-      COREPORT_DIPSET(0x0001, "1" )\
-    COREPORT_DIPNAME( 0x0002, 0x0000, "S3-2")\
+    COREPORT_DIPNAME( 0x0001, 0x0000, "AutoPlunger")\
+      COREPORT_DIPSET(0x0000, "Disabled" )\
+      COREPORT_DIPSET(0x0001, "Enabled" )\
+    COREPORT_DIPNAME( 0x0002, 0x0000, "Reserved")\
       COREPORT_DIPSET(0x0000, "0" )\
       COREPORT_DIPSET(0x0002, "1" )\
-    COREPORT_DIPNAME( 0x0004, 0x0000, "S3-3")\
-      COREPORT_DIPSET(0x0000, "0" )\
-      COREPORT_DIPSET(0x0004, "1" )\
-    COREPORT_DIPNAME( 0x0008, 0x0000, "S3-4")\
+    COREPORT_DIPNAME( 0x0008, 0x0000, "Number of loops for Extra Ball")\
       COREPORT_DIPSET(0x0000, "0" )\
       COREPORT_DIPSET(0x0008, "1" )\
-    COREPORT_DIPNAME( 0x0010, 0x0000, "S3-5")\
-      COREPORT_DIPSET(0x0000, "0" )\
-      COREPORT_DIPSET(0x0010, "1" )\
-    COREPORT_DIPNAME( 0x0020, 0x0000, "S3-6")\
-      COREPORT_DIPSET(0x0000, "0" )\
-      COREPORT_DIPSET(0x0020, "1" )\
-    COREPORT_DIPNAME( 0x0040, 0x0000, "S3-7")\
-      COREPORT_DIPSET(0x0000, "0" )\
-      COREPORT_DIPSET(0x0040, "1" )\
-    COREPORT_DIPNAME( 0x0080, 0x0000, "S3-8")\
+      COREPORT_DIPSET(0x0004, "2" )\
+      COREPORT_DIPSET(0x000C, "3" )\
+    COREPORT_DIPNAME( 0x0030, 0x0000, "Multiball Ballsaver or Restart")\
+      COREPORT_DIPSET(0x0000, "Disabled" )\
+      COREPORT_DIPSET(0x0010, "Short" )\
+      COREPORT_DIPSET(0x0020, "Medium" )\
+      COREPORT_DIPSET(0x0030, "Long" )\
+    COREPORT_DIPNAME( 0x0040, 0x0000, "Special Difficulty")\
+      COREPORT_DIPSET(0x0000, "Easy" )\
+      COREPORT_DIPSET(0x0040, "Hard" )\
+    COREPORT_DIPNAME( 0x0080, 0x0000, "Reserved")\
 	  COREPORT_DIPSET(0x0000, "0" )\
       COREPORT_DIPSET(0x0080, "1" )
 
