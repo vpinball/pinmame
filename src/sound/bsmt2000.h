@@ -20,6 +20,7 @@ struct BSMT2000interface
         int mixing_level[MAX_BSMT2000];         /* master volume */
 #ifdef PINMAME
         int voladj[MAX_BSMT2000];               /* Adjust Volume Commands to create louder output */
+		int use_de_rom_banking;					/* Special flag to use Data East rom bank handling */
 #endif 
 };
 
