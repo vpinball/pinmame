@@ -615,6 +615,7 @@ DRIVER(radcl,l1)        //S11-1904: 09/90 B Radical!
 DRIVER(dd,l2)           //S11-737:  11/90 B Dr. Dude
 DRIVER(dd,p7)           //WPC:      11/90 B Dr. Dude
 DRIVER(fh,l9)           //WPC-503:  12/90 W Funhouse
+DRIVER(fh,l9b)                            // bootleg with correct German translation
 DRIVER(bbnny,l2)        //S11-396:  01/91 B Bugs Bunny's Birthday Ball
 DRIVER(bop,l7)          //WPC-502:  02/91 W The Machine: Bride of Pinbot
 DRIVER(hd,l3)           //WPC:      02/91 B Harley Davidson
