@@ -50,6 +50,15 @@ ATARI_ROMEND
 CORE_GAMEDEFNV(atarians,"The Atarians",1976,"Atari",gl_mATARI0,GAME_NOT_WORKING)
 
 /*-------------------------------------------------------------------
+/ The Atarians (working bootleg)
+/-------------------------------------------------------------------*/
+INITGAME1(atarianb, atari_disp1, FLIP_SWNO(36,37), 1)
+ATARI_2_ROMSTART(atarianb,	"atarian.e0",	0x45cb0427,
+							"atarianb.e00",	0x74fc86e4)
+ATARI_ROMEND
+CORE_CLONEDEFNV(atarianb,atarians,"The Atarians (working bootleg)",2002,"Atari / Gaston",gl_mATARI0,0)
+
+/*-------------------------------------------------------------------
 / Time 2000 (06/1977)
 /-------------------------------------------------------------------*/
 INITGAME1(time2000, atari_disp1, FLIPSW1920, 1)
@@ -90,8 +99,8 @@ CORE_GAMEDEFNV(spcrider,"Space Riders",1978,"Atari",gl_mATARI1,GAME_IMPERFECT_SO
 /-------------------------------------------------------------------*/
 INITGAME2(superman, atari_disp2, FLIPSW6667, 1)
 ATARI_3_ROMSTART(superman,	"supmn_k.rom",	0xa28091c2,
-							"supmn_m.rom",	0x1bb6b72c,
-							"supmn_j.rom",	0x26521779)
+							"atari_m.rom",	0x1bb6b72c,
+							"atari_j.rom",	0x26521779)
 ATARI_ROMEND
 CORE_GAMEDEFNV(superman,"Superman",1979,"Atari",gl_mATARI2,0)
 
@@ -100,10 +109,10 @@ CORE_GAMEDEFNV(superman,"Superman",1979,"Atari",gl_mATARI2,0)
 /-------------------------------------------------------------------*/
 INITGAME2(hercules, atari_disp2, FLIPSW6667, 1)
 ATARI_3_ROMSTART(hercules,	"herc_k.rom",	0x65e099b1,
-							"supmn_m.rom",	0x1bb6b72c,
-							"supmn_j.rom",	0x26521779)
+							"atari_m.rom",	0x1bb6b72c,
+							"atari_j.rom",	0x26521779)
 ATARI_ROMEND
-CORE_CLONEDEFNV(hercules,superman,"Hercules",1979,"Atari",gl_mATARI2,0)
+CORE_GAMEDEFNV(hercules,"Hercules",1979,"Atari",gl_mATARI2,0)
 
 //Road Runner (1979)
 //Monza (1980)
