@@ -12,6 +12,7 @@
 #define CC_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKS */
 
 static struct {
+  UINT32 solenoids;
   UINT16 u16a[4],u16b[4];
   int vblankCount;
   int u16irqcount;
@@ -34,26 +35,17 @@ static INTERRUPT_GEN(cc_vblank) {
     memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
 
-#if 0
   /*-- solenoids --*/
   if ((locals.vblankCount % CC_SOLSMOOTH) == 0) {
     coreGlobals.solenoids = locals.solenoids;
     locals.solenoids = coreGlobals.pulsedSolState;
+    coreGlobals.pulsedSolState = 0;
   }
 
-#endif
+  /*update leds*/
+  coreGlobals.diagnosticLed = locals.diagnosticLed;
+  locals.diagnosticLed = 0;
 
-  /*-- display --*/
-  if ((locals.vblankCount % CC_DISPLAYSMOOTH) == 0) {
-#if 0
-    memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
-    memcpy(locals.segments, locals.pseg, sizeof(locals.segments));
-    memset(locals.pseg,0,sizeof(locals.pseg));
-#endif
-    /*update leds*/
-    coreGlobals.diagnosticLed = locals.diagnosticLed;
-	locals.diagnosticLed = 0;
-  }
   core_updateSw(TRUE);
 }
 
@@ -162,10 +154,48 @@ static READ16_HANDLER(io_r) {
 }
 
 static WRITE16_HANDLER(io_w) {
+  static int on = 1;
 #ifdef MAME_DEBUG
 	if(keyboard_pressed_memory_repeat(KEYCODE_Z,2))
 		printf("io_w [%03x]=%04x (%04x)\n",offset,data,mem_mask);
 #endif
+  switch (offset) {
+    case 0x08:
+      on = data & 0x0c;
+      break;
+    case 0x0c:
+      if (!on) {
+        if (data & 0x0100) coreGlobals.tmpLampMatrix[0] = (~data & 0xff);
+        if (data & 0x0200) coreGlobals.tmpLampMatrix[1] = (~data & 0xff);
+        if (data & 0x0400) coreGlobals.tmpLampMatrix[2] = (~data & 0xff);
+        if (data & 0x0800) coreGlobals.tmpLampMatrix[3] = (~data & 0xff);
+        if (data & 0x1000) coreGlobals.tmpLampMatrix[4] = (~data & 0xff);
+        if (data & 0x2000) coreGlobals.tmpLampMatrix[5] = (~data & 0xff);
+        if (data & 0x4000) coreGlobals.tmpLampMatrix[6] = (~data & 0xff);
+        if (data & 0x8000) coreGlobals.tmpLampMatrix[7] = (~data & 0xff);
+      }
+      break;
+    case 0x0d:
+      if (!on) {
+        if (data & 0x0100) coreGlobals.tmpLampMatrix[8] = (~data & 0xff);
+        if (data & 0x0200) coreGlobals.tmpLampMatrix[9] = (~data & 0xff);
+        if (data & 0x0400) coreGlobals.tmpLampMatrix[10] = (~data & 0xff);
+        if (data & 0x0800) coreGlobals.tmpLampMatrix[11] = (~data & 0xff);
+        if (data & 0x1000) coreGlobals.tmpLampMatrix[12] = (~data & 0xff);
+        if (data & 0x2000) coreGlobals.tmpLampMatrix[13] = (~data & 0xff);
+        if (data & 0x4000) coreGlobals.tmpLampMatrix[14] = (~data & 0xff);
+        if (data & 0x8000) coreGlobals.tmpLampMatrix[15] = (~data & 0xff);
+      }
+      break;
+    case 0x20000c:
+      coreGlobals.pulsedSolState |= (~data & 0xffff);
+      locals.solenoids = coreGlobals.pulsedSolState;
+      break;
+    case 0x20000d:
+      coreGlobals.pulsedSolState |= ((~data & 0xffff) << 16);
+      locals.solenoids = coreGlobals.pulsedSolState;
+      break;
+  }
 }
 
 static MACHINE_INIT(cc) {
