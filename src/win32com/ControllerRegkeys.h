@@ -2,8 +2,8 @@
 #define CONTROLLERREGKEYS_H
 
 #define REG_BASEKEY		"Software\\Freeware\\Visual PinMame"
-#define REG_DEFAULT		"Default"
-#define REG_GLOBALS		"Globals"
+#define REG_DEFAULT		"default"
+#define REG_GLOBALS		"globals"
 
 // these values are handle by the ISettings object and the ShowSettingsDlg
 
