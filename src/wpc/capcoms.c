@@ -45,15 +45,111 @@ static struct {
   int rombase;			//Points to current rom
 } locals;
 
+//Digital Volume Pot (x9241)
+static struct {
+  int scl;			//Clock Signal
+  int sda;			//Data Signal
+  int lscl;			//Previous SCL state
+  int lsda;			//Previous SDA state
+  int bits[8];		//Store 8 received bits
+  UINT8 ram[16];	//16 byte internal ram
+  int start;		//Set when a start command is received
+  int stop;			//Set when a stop command is received
+  int nextbit;		//Which bit to store next
+  int nextram;		//Which position in ram to store next
+} x9241;
+
+
+/***********************************************************************************
+X9241 - Digital Volume Pot
+--------------------------
+Data is clocked in via the SCL CLOCK PULSES, and serial sent via the SDA line..
+
+Start Command: 1->0 of SDA WHILE SCL = 1 (all data is ignored until start command)
+Stop Command:  0->1 of SDA WHILE SCL = 1
+Bit Data:      Data is sent while SCL = 0... SDA = 0 for no bit set, 1 for bit set.
+***********************************************************************************/
+void data_to_x9241(int scl, int sda)
+{
+	int i,data;
+
+	//store previous signals
+	x9241.lscl = x9241.scl;
+	x9241.lsda = x9241.sda;
+
+	//store current signals
+	x9241.scl = scl;
+	x9241.sda = sda;
+
+	//Sending a command?
+	if(scl) {
+		//is this a start command? (SCL = 1, SDA = 0, LSDA = 1)
+		if(sda == 0 && x9241.lsda == 1) {
+			x9241.start = 1;
+			x9241.stop = 0;
+			x9241.nextbit = 0;
+			x9241.nextram = 0;
+			for(i=0;i<16;i++)	x9241.ram[i] = 0;
+			LOG(("x9241: Start command received!\n"));
+			return;
+		}
+		//is this a stop command? (SCL = 1, SDA = 1, LSDA = 0)
+		if(sda == 1 && x9241.lsda == 0) {
+			x9241.start = 0;
+			x9241.stop = 1;
+			x9241.nextbit = 0;
+			x9241.nextram = 0;
+			LOG(("x9241: Stop command received!\n"));
+			return;
+		}
+	}
+	//Sending data?
+	else {
+		//attempting to send data w/o a start command?
+		if(!x9241.start) {
+			LOG(("ignoring data to x9241 w/o start command!\n"));
+			return;
+		}
+		//attempting to send data after a stop command?
+		if(x9241.stop) {
+			LOG(("ignoring data to x9241 because stop command was sent already!\n"));
+			return;
+		}
+		//Ok - store next bit
+		x9241.bits[x9241.nextbit++] = sda;
+		LOG(("x9241: Received bit #%d, value = %d\n",x9241.nextbit-1,sda));
+		//Do we have a full byte?
+		if(x9241.nextbit==8) {
+			data = 0;
+			x9241.nextbit = 0;		//Reset flag
+			//Convert to a byte & Clear bits array
+			for(i=0; i<8; i++) {
+				data |= x9241.bits[i]<<i;
+				x9241.bits[i] = 0;
+			}
+			LOG(("x9241: received byte: %x\n",data));
+			//Store in ram (but check for overflow)
+			if( (x9241.nextram+1) > 16) {
+				LOG(("x9241: Overflow of RAM data - skipping processed byte!\n"));
+				return;
+			}
+			else {
+				x9241.ram[x9241.nextram++] = data;
+				LOG(("x9241: storing byte to ram[%d]\n",x9241.nextram-1));
+			}
+		}
+	}
+}
+
 static READ_HANDLER(port_r)
 {
 	LOG(("port read @ %x\n",offset));
+	//printf("port read @ %x\n",offset);
 	return 0;
 }
 
 static WRITE_HANDLER(port_w)
 {
-	static int last = 0;
 	switch(offset) {
 		//Used for external addressing...
 		case 0:
@@ -72,9 +168,18 @@ static WRITE_HANDLER(port_w)
 			//LED
 			cap_UpdateSoundLEDS(~data&0x01);
 			//CBOF1
-			if((data&0x40)==0)	cpu_set_irq_line(locals.brdData.cpuNo, I8051_INT0_LINE, CLEAR_LINE);
-			//CBOF1
-			if((data&0x80)==0)	cpu_set_irq_line(locals.brdData.cpuNo, I8051_INT1_LINE, CLEAR_LINE);
+			if((data&0x40)==0)	{
+				cpu_set_irq_line(locals.brdData.cpuNo, I8051_INT0_LINE, CLEAR_LINE);
+				LOG(("Clearing /BOF1 - INT 0 \n"));
+			}
+			//CBOF2
+			if((data&0x80)==0){
+				cpu_set_irq_line(locals.brdData.cpuNo, I8051_INT1_LINE, CLEAR_LINE);
+				LOG(("Clearing /BOF2 - INT 1 \n"));
+			}
+
+			//Update x9241 data lines
+			data_to_x9241((data&0x10)>>4,(data&0x20)>>5);
 
 			LOG(("writing to port %x data = %x\n",offset,data));
 			break;
@@ -107,15 +212,24 @@ READ_HANDLER(rom_rd)
 	int data;
 	UINT8* base = (UINT8*)memory_region(REGION_SOUND1);	//Get pointer to 1st ROM..
 	offset&=0xffff;	//strip off top bit
-	LOG(("rom_r %x\n",offset));
-	base+=(locals.rombase+locals.rombase_offset+offset);//Do bankswitching
-	data = (int)*base;
-	return data;
+	//Is a valid rom set for reading?
+	if(locals.rombase < 0) {
+		LOG(("error from rom_rd - no ROM selected!\n"));
+		return 0;
+	}
+	else {
+		base+=(locals.rombase+locals.rombase_offset+offset);//Do bankswitching
+		data = (int)*base;
+		LOG(("%4x: rom_r[%4x] = %2x (rombase=%8x,base_offset=%8x)\n",activecpu_get_pc(),offset,data,locals.rombase,locals.rombase_offset));
+		//printf("%4x: rom_r[%4x] = %2x (rombase=%8x,base_offset=%8x)\n",activecpu_get_pc(),offset,data,locals.rombase,locals.rombase_offset);
+		return data;
+	}
 }
 
 READ_HANDLER(ram_r)
 {
 	//LOG(("ram_r %x data = %x\n",offset,locals.ram[offset]));
+	//printf("ram_r %x data = %x\n",offset,locals.ram[offset]);
 
 	//Shift mirrored ram from it's current address range of 0x18000-0x1ffff to actual address range of 0-0x7fff
 	if(offset > 0xffff)
@@ -128,7 +242,12 @@ WRITE_HANDLER(ram_w)
 {
 	offset&=0xffff;	//strip off top bit
 	locals.ram[offset] = data;
+	//printf("ram_w %x data = %x\n",offset,data);
 	//LOG(("ram_w %x data = %x\n",offset,data));
+	
+	/* 8752 CAN EXECUTE CODE FROM RAM - SO WE MUST COPY TO CPU REGION STARTING @ 0x8000 */
+	//printf("setting rom code @ %8x to %2x\n",offset,data);
+	*((UINT8 *)(memory_region(CAPCOMS_CPUREGION) + offset +0x8000)) = data;
 }
 
 //Set the /MPEG1 or /MPEG2 lines (active low) - clocks data into each of the tms320av120 chips
@@ -146,9 +265,25 @@ D3 = A18 (+0x8000*4)
 D4 = A19 (+0x8000*5)*/
 WRITE_HANDLER(bankswitch)
 {
-	LOG(("BANK SWITCH DATA=%x\n",data));
+//	LOG(("BANK SWITCH DATA=%x\n",data));
 	data &= 0x1f;	//Keep only bits 0-4
 	locals.rombase_offset = 0x8000*data;
+}
+
+
+void calc_rombase(int data)
+{
+	int activerom = (~data&0x0f);
+	int chipnum = 0;
+	if(activerom) {
+		//got to be an easier way than this hack?
+		if(activerom==8)	chipnum = 3;
+		else				chipnum = activerom>>1;
+		locals.rombase = 0x100000*(chipnum);
+	}
+	else
+		locals.rombase = -1;
+//	LOG(("ROM ACCESS - DATA=%x, ROMBASE = %x\n",(~data&0x0f),locals.rombase));
 }
 
 /*
@@ -163,12 +298,12 @@ D6 = /MPG1 Mute   (0 = MUTE)
 D7 = /MPG2 Mute   (0 = MUTE)*/
 WRITE_HANDLER(control_data)
 {
-	locals.rombase = 0x100000*(~data&0x0f);
-	if(data&0x10)	TMS320AV120_reset(0);		//Reset TMS320AV120 Chip #1
-	if(data&0x20)	TMS320AV120_reset(1);		//Reset TMS320AV120 Chip #2
-	TMS320AV120_set_mute(0,(~data&0x40));		//Mute TMS320AV120 Chip #1 (Active low)
-	TMS320AV120_set_mute(1,(~data&0x80));		//Mute TMS320AV120 Chip #2 (Active low)
-	LOG(("CONTROL_DATA - DATA=%x\n",data));
+	calc_rombase(data);							//Determine which ROM is active and set rombase
+	TMS320AV120_set_reset(0,(data&0x10)>>4);	//Reset TMS320AV120 Chip #1 (1 = Reset)
+	TMS320AV120_set_reset(1,(data&0x20)>>5);	//Reset TMS320AV120 Chip #2 (1 = Reset)
+	TMS320AV120_set_mute(0,((~data&0x40)>>6));	//Mute TMS320AV120 Chip #1 (Active low)
+	TMS320AV120_set_mute(1,((~data&0x80)>>7));	//Mute TMS320AV120 Chip #2 (Active low)
+//	LOG(("CONTROL_DATA - DATA=%x\n",data));
 }
 
 /*Control Lines
@@ -271,6 +406,8 @@ void cap_FillBuff(int dummy) {
 static void capcoms_init(struct sndbrdData *brdData) {
   memset(&locals, 0, sizeof(locals));
   locals.brdData = *brdData;
+
+  memset(&x9241, 0, sizeof(x9241));
 
   /* stupid timer/machine init handling in MAME */
   if (locals.buffTimer) timer_remove(locals.buffTimer);
