@@ -155,8 +155,10 @@ BOOL PopulateListV1_10andLower(HWND hWnd, IController *pController)
 	HWND hGamesList = GetDlgItem(hWnd, IDC_GAMESLIST);
 
 	VARIANT varArrayNames;
-	if ( FAILED(pController->get_Machines(NULL,&varArrayNames)) )
+	BSTR sCompatibleMachines = SysAllocString(L"");
+	if ( FAILED(pController->get_Machines(sCompatibleMachines,&varArrayNames)) )
 		return FALSE;
+	SysFreeString(sCompatibleMachines);
 
 	/* PROCESS THE MACHINE NAMES ARRAY AND POPULATE LISTBOX */
 	LONG lstart, lend;
@@ -316,7 +318,10 @@ BOOL PopulateList(HWND hWnd, IController *pController)
 	BSTR sVersion;
 	pController->get_Version(&sVersion);
 
-	if ( lstrcmpW(sVersion, L"01010000")<=0 )
+	char szVersion[256];
+	WideCharToMultiByte(CP_ACP, 0, (LPOLESTR) sVersion, -1, szVersion, sizeof szVersion, NULL, NULL);
+
+	if ( lstrcmp(szVersion, "01010000")<=0 )
 		return PopulateListV1_10andLower(hWnd, pController);
 	else
 		return PopulateListGreaterV1_10(hWnd, pController);
