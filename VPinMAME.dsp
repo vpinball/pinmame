@@ -800,6 +800,279 @@ SOURCE=.\src\zlib\zconf.h
 SOURCE=.\src\zlib\zlib.h
 # End Source File
 # End Group
+# Begin Group "Win32"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\win32c\DirectSound.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32c\DirectSound.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32c\Dirty.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32c\Dirty.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32c\Display.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32c\Display.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32c\DXDecode.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32c\DXDecode.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32c\File.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32c\File.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32c\FilePrivate.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32c\Keyboard.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32c\Keyboard.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32c\M32Util.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32c\M32Util.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32c\osd_cpu.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32c\OSDepend.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32c\OSInline.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32c\Registry.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32c\Registry.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32c\sound.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32c\Strings.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32c\UClock.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32c\UClock.h
+# End Source File
+# End Group
+# Begin Group "COM"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\win32com\Controller.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\Controller.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\ControllerGame.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\ControllerGame.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\ControllerGameInfo.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\ControllerGameInfo.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\ControllerGames.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\ControllerGames.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\ControllerGlobals.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\ControllerGlobals.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\ControllerOptions.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\ControllerOptions.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\ControllerOptionsDlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\ControllerOptionsDlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\ControllerRegkeys.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\ControllerRom.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\ControllerRom.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\ControllerRoms.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\ControllerRoms.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\ControllerRun.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\ControllerRun.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\dlldatax.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\resource.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\StdAfx.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\StdAfx.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\VPinMAME.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\VPinMAME.def
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\VPinMAME.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\VPinMAME.idl
+# ADD MTL /tlb "VPinMAME.tlb"
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\VPinMAME.rc
+# ADD BASE RSC /l 0x407 /i "src\win32com"
+# SUBTRACT BASE RSC /i ".\src\win32com\autogen"
+# ADD RSC /l 0x409 /i "src\win32com" /i "src\win32com\autogen"
+# SUBTRACT RSC /i ".\src\win32com\autogen"
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\VPinMAMEAboutDlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\VPinMAMEAboutDlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\VPinMAMECP.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\VPinMAMEDisclaimerDlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\VPinMAMEDisclaimerDlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\VPinMAMESplashWnd.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\VPinMAMESplashWnd.h
+# End Source File
+# End Group
+# Begin Group "VC"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\vc\dirent.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\vc\dirent.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\vc\unistd.h
+# End Source File
+# End Group
 # Begin Group "PinMAME"
 
 # PROP Default_Filter ""
@@ -1074,14 +1347,6 @@ SOURCE=.\src\wpc\by6803.c
 # Begin Source File
 
 SOURCE=.\src\wpc\by6803.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\wpc\by6803snd.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\wpc\by6803snd.h
 # End Source File
 # Begin Source File
 
@@ -1422,279 +1687,6 @@ SOURCE=.\src\wpc\zac.h
 # Begin Source File
 
 SOURCE=.\src\wpc\zacgames.c
-# End Source File
-# End Group
-# Begin Group "Win32"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\src\win32c\DirectSound.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32c\DirectSound.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32c\Dirty.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32c\Dirty.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32c\Display.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32c\Display.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32c\DXDecode.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32c\DXDecode.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32c\File.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32c\File.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32c\FilePrivate.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32c\Keyboard.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32c\Keyboard.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32c\M32Util.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32c\M32Util.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32c\osd_cpu.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32c\OSDepend.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32c\OSInline.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32c\Registry.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32c\Registry.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32c\sound.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32c\Strings.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32c\UClock.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32c\UClock.h
-# End Source File
-# End Group
-# Begin Group "COM"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\src\win32com\Controller.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\Controller.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\ControllerGame.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\ControllerGame.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\ControllerGameInfo.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\ControllerGameInfo.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\ControllerGames.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\ControllerGames.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\ControllerGlobals.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\ControllerGlobals.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\ControllerOptions.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\ControllerOptions.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\ControllerOptionsDlg.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\ControllerOptionsDlg.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\ControllerRegkeys.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\ControllerRom.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\ControllerRom.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\ControllerRoms.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\ControllerRoms.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\ControllerRun.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\ControllerRun.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\dlldatax.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\resource.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\StdAfx.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\StdAfx.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\VPinMAME.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\VPinMAME.def
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\VPinMAME.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\VPinMAME.idl
-# ADD MTL /tlb "VPinMAME.tlb"
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\VPinMAME.rc
-# ADD BASE RSC /l 0x407 /i "src\win32com"
-# SUBTRACT BASE RSC /i ".\src\win32com\autogen"
-# ADD RSC /l 0x409 /i "src\win32com" /i "src\win32com\autogen"
-# SUBTRACT RSC /i ".\src\win32com\autogen"
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\VPinMAMEAboutDlg.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\VPinMAMEAboutDlg.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\VPinMAMECP.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\VPinMAMEDisclaimerDlg.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\VPinMAMEDisclaimerDlg.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\VPinMAMESplashWnd.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\win32com\VPinMAMESplashWnd.h
-# End Source File
-# End Group
-# Begin Group "VC"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\src\vc\dirent.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\vc\dirent.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\vc\unistd.h
 # End Source File
 # End Group
 # End Group
