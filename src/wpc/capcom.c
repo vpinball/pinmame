@@ -147,7 +147,7 @@ MACHINE_DRIVER_START(cc)
   MDRV_VIDEO_UPDATE(cc_dmd)
   MDRV_NVRAM_HANDLER(cc)
   MDRV_SWITCH_UPDATE(cc)
-  MDRV_TIMER_ADD(cc_zeroCross, TIME_IN_HZ(CC_ZCFREQ))
+  MDRV_TIMER_ADD(cc_zeroCross, CC_ZCFREQ)
 MACHINE_DRIVER_END
 
 /*-----------------------------------------------
