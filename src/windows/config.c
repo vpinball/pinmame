@@ -149,12 +149,12 @@ static struct rc_option opts[] = {
 #ifdef PINMAME_EXT
 	/* PinMAME options */
 	{ "PinMAME options", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },
-	{ "dmd_red",    NULL, rc_int, &pmoptions.dmd_red,   "225", 0, 255, NULL, "DMD color: Red" },
-	{ "dmd_green",  NULL, rc_int, &pmoptions.dmd_green, "224", 0, 255, NULL, "DMD color: Green" },
-	{ "dmd_blue",   NULL, rc_int, &pmoptions.dmd_blue,   "32", 0, 255, NULL, "DMD color: Blue" },
-	{ "dmd_perc0",	NULL, rc_int, &pmoptions.dmd_perc1,  "20", 0, 100, NULL, "DMD off intensity [%]" },
-	{ "dmd_perc33",	NULL, rc_int, &pmoptions.dmd_perc2,  "33", 0, 100, NULL, "DMD low intensity [%]" },
-	{ "dmd_perc66", NULL, rc_int, &pmoptions.dmd_perc3,  "67", 0, 100, NULL, "DMD medium intensity [%]" },
+	{ "dmd_red",    NULL, rc_int, &options.dmd_red,   "225", 0, 255, NULL, "DMD color: Red" },
+	{ "dmd_green",  NULL, rc_int, &options.dmd_green, "224", 0, 255, NULL, "DMD color: Green" },
+	{ "dmd_blue",   NULL, rc_int, &options.dmd_blue,   "32", 0, 255, NULL, "DMD color: Blue" },
+	{ "dmd_perc0",	NULL, rc_int, &options.dmd_perc1,  "20", 0, 100, NULL, "DMD off intensity [%]" },
+	{ "dmd_perc33",	NULL, rc_int, &options.dmd_perc2,  "33", 0, 100, NULL, "DMD low intensity [%]" },
+	{ "dmd_perc66", NULL, rc_int, &options.dmd_perc3,  "67", 0, 100, NULL, "DMD medium intensity [%]" },
 #endif /* PINMAME_EXT */
 	/* vector */
 	{ "Mame CORE vector game options", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },
