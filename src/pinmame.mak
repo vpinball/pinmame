@@ -12,6 +12,7 @@ DEFS += -DPINMAME=1 -DMAMEVER=$(MAMEVER)
 #
 DRVLIBS = $(PINOBJ)/sim.o $(PINOBJ)/core.o $(OBJ)/allgames.a
 DRVLIBS += $(PINOBJ)/vpintf.o $(PINOBJ)/snd_cmd.o $(PINOBJ)/wpcsam.o
+DRVLIBS += $(PINOBJ)/sndbrd.o
 
 COREOBJS += $(PINOBJ)/driver.o $(OBJ)/cheat.o $(PINOBJ)/mech.o
 
@@ -55,7 +56,7 @@ PINGAMES += $(PINOBJ)/sims/wpc/full/afm.o
 PINGAMES += $(PINOBJ)/sims/wpc/full/bop.o
 PINGAMES += $(PINOBJ)/sims/wpc/full/br.o
 PINGAMES += $(PINOBJ)/sims/wpc/full/cftbl.o
-PINGAMES += $(PINOBJ)/sims/wpc/full/dd.o
+PINGAMES += $(PINOBJ)/sims/wpc/full/dd_wpc.o
 PINGAMES += $(PINOBJ)/sims/wpc/full/drac.o
 PINGAMES += $(PINOBJ)/sims/wpc/full/fh.o
 PINGAMES += $(PINOBJ)/sims/wpc/full/ft.o
