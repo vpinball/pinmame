@@ -139,7 +139,7 @@
       COREPORT_DIPSET(0x0004, "10s" ) \
       COREPORT_DIPSET(0x0008, "2m" ) \
       COREPORT_DIPSET(0x000c, "4m" ) \
-    COREPORT_DIPNAME( 0x0010, 0x0000, "SS:S5: Background Sound ") \
+    COREPORT_DIPNAME( 0x0010, 0x0010, "SS:S5: Background Sound ") \
       COREPORT_DIPSET(0x0000, "Disabled" ) \
       COREPORT_DIPSET(0x0010, "Enabled" ) \
     COREPORT_DIPNAME( 0x0020, 0x0020, "SS:S6: Speech") \
