@@ -273,15 +273,24 @@ static WRITE_HANDLER(sense_port_w)
 }
 
 static READ_HANDLER(ram_r) {
+	int off;
+	static int key[64];
 	if (offset == 0x05a6) // locks up some games if 0
 		ram[offset] = 0xff;
 	else {
-		if (locals.gen < 3) {
-			if (offset > 0x508 && offset < 0x549)
-				ram[offset] = (coreGlobals.swMatrix[(offset-0x509)/8+1] & (1 << (offset-0x509)%8)) ? 0x0f : 0x00;
-		} else {
-			if (offset > 0x51c && offset < 0x55d)
-				ram[offset] = (coreGlobals.swMatrix[(offset-0x51d)/8+1] & (1 << (offset-0x51d)%8)) ? 0x0f : 0x00;
+		off = (locals.gen < 3) ? 0x508 : 0x51c;
+		if (offset > off && offset < off + 0x41) {
+			off = offset - off - 1;
+			if (coreGlobals.swMatrix[off/8+1] & (1 << off%8))
+				key[off]++;
+			else
+				key[off] = 0;
+			if (!key[off]) ram[offset] = 0;
+			else if (key[off] == 1) {
+				if (!ram[offset]) ram[offset] = 0x01;
+			} else if (key[off] == 2) {
+				ram[offset] |= 0x02;
+			}
 		}
 	}
 //	else logerror("ram_r: offset = %4x\n", offset);
@@ -327,8 +336,7 @@ static WRITE_HANDLER(ram1_w) {
 	if (offset < 0x2e)
 		locals.segments[0x2f - offset].w = core_bcd2seg7[data & 0x0f];
 	else if (offset > 0x3f && offset < 0x60) {
-		UINT32 sol = 1 << offset;
-		offset -= 0x40;
+		UINT32 sol = 1 << (offset - 0x40);
 		if (data)
 			locals.solenoids |= sol;
 		else
@@ -343,8 +351,13 @@ static WRITE_HANDLER(ram1_w) {
 }
 
 static READ_HANDLER(ram1_r) {
-	if (offset > 0x2d && offset < 0x34)
-		ram1[offset] = coreGlobals.swMatrix[offset - 0x2d];
+	UINT8 value;
+	int off = 0x2d;
+	if (offset > off && offset < off + 0x07) {
+		off = offset - off - 1;
+		value = coreGlobals.swMatrix[off + 1];
+		ram1[offset] = value;
+	}
 	return ram1[offset];
 }
 
@@ -474,6 +487,7 @@ MACHINE_DRIVER_START(ZAC1)
   MDRV_SWITCH_CONV(ZAC_sw2m,ZAC_m2sw)
   MDRV_SOUND_CMD(ZAC_soundCmd)
   MDRV_SOUND_CMDHEADING("ZAC")
+//  MDRV_IMPORT_FROM(zac1346)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(ZAC0)
@@ -497,7 +511,7 @@ MACHINE_DRIVER_START(ZAC2)
   MDRV_SWITCH_CONV(ZAC_sw2m,ZAC_m2sw)
   MDRV_SOUND_CMD(ZAC_soundCmd)
   MDRV_SOUND_CMDHEADING("ZAC")
-//  MDRV_IMPORT_FROM(zac)
+//  MDRV_IMPORT_FROM(zac1370)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(ZAC2A)
