@@ -221,7 +221,7 @@ static struct pia6821_interface s7_pia[] = {
  /* irq : A/B             */ s7_piaIrq, s7_piaIrq
 }};
 
-static void s7_updSw(int *inports) {
+static SWITCH_UPDATE(s7) {
   if (inports) {
     coreGlobals.swMatrix[0] = (inports[S7_COMINPORT] & 0x7f00)>>8;
     coreGlobals.swMatrix[1] = inports[S7_COMINPORT];
@@ -231,27 +231,23 @@ static void s7_updSw(int *inports) {
   sndbrd_0_diag(core_getSw(S7_SWSOUNDDIAG));
 }
 
-const static core_tData s7Data = {
-  2, /* On sound board */
-  s7_updSw, CORE_DIAG7SEG, sndbrd_0_data_w, "s7",
-  core_swSeq2m, core_swSeq2m,core_m2swSeq,core_m2swSeq
-};
-
 static MACHINE_INIT(s7) {
   if (core_gameData == NULL) return;
-  if (core_init(&s7Data)) return;
   pia_config(S7_PIA0, PIA_STANDARD_ORDERING, &s7_pia[0]);
   pia_config(S7_PIA1, PIA_STANDARD_ORDERING, &s7_pia[1]);
   pia_config(S7_PIA2, PIA_STANDARD_ORDERING, &s7_pia[2]);
   pia_config(S7_PIA3, PIA_STANDARD_ORDERING, &s7_pia[3]);
   pia_config(S7_PIA4, PIA_STANDARD_ORDERING, &s7_pia[4]);
   sndbrd_0_init(SNDBRD_S67S, 1, NULL, NULL, NULL);
-  pia_reset();
   cpu_setbank(S7_BANK0, s7_rambankptr);
 }
 
+static MACHINE_RESET(s7) {
+  pia_reset();
+}
+
 static MACHINE_STOP(s7) {
-  sndbrd_0_exit(); core_exit();
+  sndbrd_0_exit();
 }
 
 /*---------------------------
@@ -299,18 +295,23 @@ MEMORY_END
 /------------------*/
 MACHINE_DRIVER_START(s7)
   MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CORE_INIT_RESET_STOP(s7,s7,s7)
   MDRV_CPU_ADD(M6808, 3580000/4)
   MDRV_CPU_MEMORY(s7_readmem, s7_writemem)
   MDRV_CPU_VBLANK_INT(s7_vblank, 1)
   MDRV_CPU_PERIODIC_INT(s7_irq, S7_IRQFREQ)
-  MDRV_MACHINE_INIT(s7) MDRV_MACHINE_STOP(s7)
   MDRV_VIDEO_UPDATE(core_led)
   MDRV_NVRAM_HANDLER(s7)
+  MDRV_DIPS(2) /* On sound board */
+  MDRV_SWITCH_UPDATE(s7)
+  MDRV_DIAGNOSTIC_LED7
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(s7S)
   MDRV_IMPORT_FROM(s7)
   MDRV_IMPORT_FROM(wmssnd_s67s)
+  MDRV_SOUND_CMD(sndbrd_0_data_w)
+  MDRV_SOUND_CMDHEADING("s7")
 MACHINE_DRIVER_END
 
 /*-----------------------------------------------
@@ -350,6 +351,12 @@ const struct MachineDriver machine_driver_s7 = {
   0,0,0,0, {{ 0 }},
   s7_nvram
 };
+const static core_tData s7Data = {
+  2,
+  s7_updSw, CORE_DIAG7SEG, sndbrd_0_data_w, "s7",
+  core_swSeq2m, core_swSeq2m,core_m2swSeq,core_m2swSeq
+};
+
 
 #endif
 

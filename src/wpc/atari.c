@@ -36,7 +36,6 @@ static struct {
   UINT8  swMatrix[CORE_MAXSWCOL];
   UINT8  lampMatrix[CORE_MAXLAMPCOL];
   core_tSeg segments, pseg;
-  void   *irqtimer, *nmitimer;
 } locals;
 
 static int dispPos[] = { 49, 1, 9, 21, 29, 41, 61, 69 };
@@ -96,14 +95,14 @@ static INTERRUPT_GEN(ATARI_vblank) {
   core_updateSw(core_getSol(16));
 }
 
-static void ATARI1_updSw(int *inports) {
+static SWITCH_UPDATE(ATARI1) {
 	if (inports) {
 		coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0xf0) | (inports[ATARI_COMINPORT] & 0x0f);
 		coreGlobals.swMatrix[3] = (coreGlobals.swMatrix[3] & 0xfc) | ((inports[ATARI_COMINPORT] & 0x0300) >> 8);
 	}
 }
 
-static void ATARI2_updSw(int *inports) {
+static SWITCH_UPDATE(ATARI2) {
 	if (inports) {
 		coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0x62) | (inports[ATARI_COMINPORT] & 0x9d);
 	}
@@ -116,22 +115,6 @@ static int ATARI_sw2m(int no) {
 static int ATARI_m2sw(int col, int row) {
 	return col*8 + row - 8;
 }
-
-static core_tData ATARI1Data = {
-  16, /* 16 dip switches */
-  ATARI1_updSw,
-  4, /* 4 diagnostic LEDs */
-  sndbrd_0_data_w, "ATARI1",
-  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
-};
-
-static core_tData ATARI2Data = {
-  32, /* 32 dip switches */
-  ATARI2_updSw,
-  4, /* 4 diagnostic LEDs */
-  sndbrd_0_data_w, "ATARI2",
-  ATARI_sw2m, core_swSeq2m, ATARI_m2sw, core_m2swSeq
-};
 
 /* Switch reading */
 // Gen 1
@@ -343,71 +326,53 @@ MEMORY_END
 
 static MACHINE_INIT(ATARI1) {
   memset(&locals, 0, sizeof locals);
-  if (core_init(&ATARI1Data)) return;
-
-  /* Sound Enabled? */
-  if (((Machine->gamedrv->flags & GAME_NO_SOUND)==0) && Machine->sample_rate)
-  {
-	//ATARIS_init();
-  }
 }
 
 static MACHINE_STOP(ATARI1) {
-  if (locals.nmitimer) { timer_remove(locals.nmitimer); locals.nmitimer = NULL; }
-
-  /* Sound Enabled? */
-  if (((Machine->gamedrv->flags & GAME_NO_SOUND)==0) && Machine->sample_rate)
-  {
-	//ATARIS_exit();
-  }
-
-  core_exit();
 }
 
 static MACHINE_INIT(ATARI2) {
-  if (core_init(&ATARI2Data)) return;
   memset(&locals, 0, sizeof locals);
-
-  /* Sound Enabled? */
-//  if (((Machine->gamedrv->flags & GAME_NO_SOUND)==0) && Machine->sample_rate)
-//  {
-    sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(REGION_SOUND1), NULL, NULL);
-//  }
+  sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(REGION_SOUND1), NULL, NULL);
 }
 
 static MACHINE_STOP(ATARI2) {
-  if (locals.irqtimer) { timer_remove(locals.irqtimer); locals.irqtimer = NULL; }
-
-  /* Sound Enabled? */
-//  if (((Machine->gamedrv->flags & GAME_NO_SOUND)==0) && Machine->sample_rate)
-//  {
-    sndbrd_0_exit();
-//  }
-
-  core_exit();
+  sndbrd_0_exit();
 }
 
 MACHINE_DRIVER_START(ATARI1)
   MDRV_IMPORT_FROM(PinMAME)
+  MDRV_VIDEO_UPDATE(core_led)
   MDRV_CPU_ADD_TAG("mcpu", M6800, 1000000)
   MDRV_CPU_MEMORY(ATARI1_readmem, ATARI1_writemem)
   MDRV_CPU_VBLANK_INT(ATARI_vblank, 1)
   MDRV_CPU_PERIODIC_INT(ATARI1_nmihi, ATARI_NMIFREQ)
-  MDRV_MACHINE_INIT(ATARI1) MDRV_MACHINE_STOP(ATARI1)
-  MDRV_VIDEO_UPDATE(core_led)
+  MDRV_CORE_INIT_RESET_STOP(ATARI1,NULL,ATARI1)
   MDRV_NVRAM_HANDLER(ATARI1)
+  MDRV_DIPS(16)
+  MDRV_SWITCH_UPDATE(ATARI1)
+  MDRV_DIAGNOSTIC_LEDH(4)
+  MDRV_SOUND_CMD(sndbrd_0_data_w)
+  MDRV_SOUND_CMDHEADING("ATARI1")
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(ATARI2)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_IMPORT_FROM(atari2s)
+  MDRV_CORE_INIT_RESET_STOP(ATARI2,NULL,ATARI2)
   MDRV_CPU_ADD_TAG("mcpu", M6800, 1000000)
   MDRV_CPU_MEMORY(ATARI2_readmem, ATARI2_writemem)
   MDRV_CPU_VBLANK_INT(ATARI_vblank, 1)
   MDRV_CPU_PERIODIC_INT(ATARI2_irqhi, ATARI_IRQFREQ)
-  MDRV_MACHINE_INIT(ATARI2) MDRV_MACHINE_STOP(ATARI2)
   MDRV_VIDEO_UPDATE(core_led)
   MDRV_NVRAM_HANDLER(ATARI2)
+  MDRV_DIPS(32)
+  MDRV_SWITCH_UPDATE(ATARI2)
+  MDRV_DIAGNOSTIC_LEDH(4)
+  MDRV_SWITCH_CONV(ATARI_sw2m,ATARI_m2sw)
+
+  MDRV_IMPORT_FROM(atari2s)
+  MDRV_SOUND_CMD(sndbrd_0_data_w)
+  MDRV_SOUND_CMDHEADING("ATARI2")
 MACHINE_DRIVER_END
 
 #if 0

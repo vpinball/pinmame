@@ -118,7 +118,6 @@ static struct {
   int sounddiagnosticLed;
   int vblankCount;
   int phase_a, p21;
-  void *zctimer;
   void (*DISPSTROBE)(int mask);
   WRITE_HANDLER((*SEGWRITE));
   WRITE_HANDLER((*DISPDATA));
@@ -220,7 +219,7 @@ static WRITE_HANDLER(by6803_dispdata2) {
 
 static void by6803_dispStrobe2(int mask) {
 	//Segments H&J is inverted bit 0 (but it's bit 8 in core.c) - Not sure why it's inverted, this is not shown on the schematic
-	int data = (locals.p1_a >> 1) | (((locals.p1_a & 1)<<7)^0x80);
+	int data = (locals.p1_a >> 1) | (((locals.p1_a & 1)<<8)^0x100);
 	if (locals.disprow > 1) {
 /* There is some blanking going on that corrupts the commas. Needs more work!
 		if (locals.commacol > 7) {
@@ -231,8 +230,10 @@ static void by6803_dispStrobe2(int mask) {
 			locals.segments[1][locals.commacol].hi = (data & 0x08) >> 2;
 		}
 */
-	} else
+	} else {
 		locals.segments[locals.disprow][locals.dispcol].lo |= locals.pseg[locals.disprow][locals.dispcol].lo = data;
+		locals.segments[locals.disprow][locals.dispcol].hi |= locals.pseg[locals.disprow][locals.dispcol].hi = data>>8;
+        }
 }
 
 static void by6803_lampStrobe(int board, int lampadr) {
@@ -345,8 +346,8 @@ static INTERRUPT_GEN(by6803_vblank) {
   core_updateSw(core_getSol(19));
 }
 
-static void by6803_updSw(int *inports) {
-  int ext = coreData.coreDips?1:0;
+static SWITCH_UPDATE(by6803) {
+  int ext = (core_gameData->gen & GEN_BY6803A) ? 1 : 0;
   if (inports) {
     coreGlobals.swMatrix[0] = (inports[BY6803_COMINPORT]>>13) & 0x03;
     coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & (ext?0xd0:0xdf)) |
@@ -430,17 +431,6 @@ static WRITE_HANDLER(by6803_soundCmd) {
   sndbrd_0_data_w(0,data);  sndbrd_0_ctrl_w(0,0); sndbrd_0_ctrl_w(0,1);
 }
 
-static core_tData by6803Data = {
-  1, // keypad inports
-  by6803_updSw, 2, by6803_soundCmd, "by6803",
-  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
-};
-
-static core_tData by6803aData = {
-  0, // no keypad
-  by6803_updSw, 2, by6803_soundCmd, "by6803",
-  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
-};
 
 static void by6803_zeroCross(int data) {
   /*- toggle zero/detection circuit-*/
@@ -451,16 +441,11 @@ static void by6803_zeroCross(int data) {
 }
 
 static MACHINE_INIT(by6803) {
-  if (locals.zctimer) timer_remove(locals.zctimer);
   memset(&locals, 0, sizeof(locals));
-  if (core_init((core_gameData->gen & GEN_BY6803A) ? &by6803aData : &by6803Data)) return;
   sndbrd_0_init(core_gameData->hw.soundBoard,1,memory_region(REGION_SOUND1),NULL,by6803_soundLED);
   pia_config(BY6803_PIA0, PIA_STANDARD_ORDERING, &piaIntf[0]);
   pia_config(BY6803_PIA1, PIA_STANDARD_ORDERING, &piaIntf[1]);
-  pia_reset();
   locals.vblankCount = 1;
-  locals.zctimer = timer_alloc(by6803_zeroCross);
-  timer_adjust(locals.zctimer,0,0,TIME_IN_HZ(BY6803_ZCFREQ));
   if (core_gameData->hw.display == BY6803_DISPALPHA) {
     locals.DISPSTROBE = by6803_dispStrobe2;
     locals.SEGWRITE = by6803_segwrite2;
@@ -472,10 +457,12 @@ static MACHINE_INIT(by6803) {
     locals.DISPDATA = by6803_dispdata1;
   }
 }
+static MACHINE_RESET(by6803) {
+  pia_reset();
+}
 
 static MACHINE_STOP(by6803) {
-  if (locals.zctimer) { timer_remove(locals.zctimer); locals.zctimer = NULL; }
-  sndbrd_0_exit(); core_exit();
+  sndbrd_0_exit();
 }
 
 //NA?
@@ -549,58 +536,58 @@ static PORT_WRITE_START( by6803_writeport )
 PORT_END
 
 static MACHINE_DRIVER_START(by6803)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CORE_INIT_RESET_STOP(by6803,by6803,by6803)
   MDRV_CPU_ADD(M6803, 3580000/4)
   MDRV_CPU_MEMORY(by6803_readmem, by6803_writemem)
   MDRV_CPU_PORTS(by6803_readport, by6803_writeport)
   MDRV_CPU_VBLANK_INT(by6803_vblank, 1)
   MDRV_CPU_PERIODIC_INT(by6803_irq, BY6803_IRQFREQ)
-  MDRV_MACHINE_INIT(by6803) MDRV_MACHINE_STOP(by6803)
   MDRV_VIDEO_UPDATE(core_led)
   MDRV_NVRAM_HANDLER(by6803)
+  MDRV_SWITCH_UPDATE(by6803)
+  MDRV_DIAGNOSTIC_LEDH(2)
+  MDRV_TIMER_ADD(by6803_zeroCross,TIME_IN_HZ(BY6803_ZCFREQ))
+  MDRV_SOUND_CMD(by6803_soundCmd)
+  MDRV_SOUND_CMDHEADING("by6803")
 MACHINE_DRIVER_END
 
 //6803 - Generation 1 Sound (Squawk & Talk)
 MACHINE_DRIVER_START(by6803_61S)
-  MDRV_IMPORT_FROM(PinMAME)
   MDRV_IMPORT_FROM(by6803)
   MDRV_IMPORT_FROM(by61)
 MACHINE_DRIVER_END
 //6803 - Generation 1A Sound (Cheap Squeak)
 MACHINE_DRIVER_START(by6803_45S)
-  MDRV_IMPORT_FROM(PinMAME)
   MDRV_IMPORT_FROM(by6803)
   MDRV_IMPORT_FROM(by45)
 MACHINE_DRIVER_END
 //6803 - Generation 2 Sound (Turbo Cheap Squeak)
 MACHINE_DRIVER_START(by6803_TCSS)
-  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_IMPORT_FROM(by6803)
   MDRV_SCREEN_SIZE(640,480)
   MDRV_VISIBLE_AREA(0, 639, 0, 319)
-  MDRV_IMPORT_FROM(by6803)
   MDRV_IMPORT_FROM(byTCS)
 MACHINE_DRIVER_END
 //6803 - Generation 2A Sound (Turbo Cheap Squeak 2)
 MACHINE_DRIVER_START(by6803_TCS2S)
-  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_IMPORT_FROM(by6803)
   MDRV_SCREEN_SIZE(640,480)
   MDRV_VISIBLE_AREA(0, 639, 0, 319)
-  MDRV_IMPORT_FROM(by6803)
   MDRV_IMPORT_FROM(byTCS)
 MACHINE_DRIVER_END
 //6803 - Generation 3 Sound (Sounds Deluxe) with keypad
 MACHINE_DRIVER_START(by6803_SDS)
-  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_IMPORT_FROM(by6803)
   MDRV_SCREEN_SIZE(640,480)
   MDRV_VISIBLE_AREA(0, 639, 0, 319)
-  MDRV_IMPORT_FROM(by6803)
   MDRV_IMPORT_FROM(bySD)
 MACHINE_DRIVER_END
 //6803 - Generation 4 Sound (Williams System 11C) without keypad
 MACHINE_DRIVER_START(by6803_S11CS)
-  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_IMPORT_FROM(by6803)
   MDRV_SCREEN_SIZE(640,480)
   MDRV_VISIBLE_AREA(0, 639, 0, 319)
-  MDRV_IMPORT_FROM(by6803)
   MDRV_IMPORT_FROM(wmssnd_s11cs)
 MACHINE_DRIVER_END
 
@@ -687,5 +674,16 @@ const struct MachineDriver machine_driver_by6803_S11CS = {
   NULL, NULL, gen_refresh,
   0,0,0,0, { S11C_SOUND },
   by6803_nvram
+};
+static core_tData by6803Data = {
+  1, // keypad inports
+  by6803_updSw, 2, by6803_soundCmd, "by6803",
+  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
+};
+
+static core_tData by6803aData = {
+  0, // no keypad
+  by6803_updSw, 2, by6803_soundCmd, "by6803",
+  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
 };
 #endif

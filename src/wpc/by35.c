@@ -27,7 +27,6 @@ static struct {
   core_tSeg segments,pseg;
   int    diagnosticLed;
   int vblankCount;
-  void *zctimer;
 } locals;
 
 static NVRAM_HANDLER(by35);
@@ -181,7 +180,7 @@ static INTERRUPT_GEN(by35_vblank) {
   core_updateSw(core_getSol(19));
 }
 
-static void by35_updSw(int *inports) {
+static SWITCH_UPDATE(by35) {
   if (inports) {
     coreGlobals.swMatrix[0] = (inports[BY35_COMINPORT]>>10) & 0x07;
     coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & (~0x60)) |
@@ -251,31 +250,23 @@ static INTERRUPT_GEN(by35_irq) {
   pia_set_input_ca1(BY35_PIA1, last = !last);
 }
 
-static core_tData by35Data = {
-  32, /* 32 Dips */
-  by35_updSw, 1, sndbrd_0_data_w, "by35",
-  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
-};
 
 static void by35_zeroCross(int data) {
   pia_pulse_cb1(BY35_PIA0, 0);  /*- toggle zero/detection circuit-*/
 }
 static MACHINE_INIT(by35) {
-  if (locals.zctimer) timer_remove(locals.zctimer);
   memset(&locals, 0, sizeof(locals));
 
-  if (core_init(&by35Data)) return;
   pia_config(BY35_PIA0, PIA_STANDARD_ORDERING, &by35_pia[0]);
   pia_config(BY35_PIA1, PIA_STANDARD_ORDERING, &by35_pia[1]);
   sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(REGION_SOUND1), NULL, NULL);
   locals.vblankCount = 1;
-  locals.zctimer = timer_alloc(by35_zeroCross);
-  timer_adjust(locals.zctimer, 0,0, TIME_IN_HZ(BY35_ZCFREQ));
 }
-
+static MACHINE_RESET(by35) {
+  pia_reset();
+}
 static MACHINE_STOP(by35) {
-  if (locals.zctimer) { timer_remove(locals.zctimer); locals.zctimer = NULL; }
-  sndbrd_0_exit(); core_exit();
+  sndbrd_0_exit();
 }
 static UINT8 *by35_CMOS;
 // Stern uses 8 bits, Bally 4 top bits
@@ -315,13 +306,19 @@ MEMORY_END
 
 MACHINE_DRIVER_START(by35)
   MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CORE_INIT_RESET_STOP(by35,by35,by35)
   MDRV_CPU_ADD_TAG("mcpu", M6800, 500000)
   MDRV_CPU_MEMORY(by35_readmem, by35_writemem)
   MDRV_CPU_VBLANK_INT(by35_vblank, 1)
   MDRV_CPU_PERIODIC_INT(by35_irq, BY35_IRQFREQ)
-  MDRV_MACHINE_INIT(by35) MDRV_MACHINE_STOP(by35)
   MDRV_VIDEO_UPDATE(core_led)
   MDRV_NVRAM_HANDLER(by35)
+  MDRV_DIPS(32)
+  MDRV_SWITCH_UPDATE(by35)
+  MDRV_DIAGNOSTIC_LEDH(1)
+  MDRV_TIMER_ADD(by35_zeroCross, TIME_IN_HZ(BY35_ZCFREQ))
+  MDRV_SOUND_CMD(sndbrd_0_data_w)
+  MDRV_SOUND_CMDHEADING("by35")
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(by35_32S)
@@ -447,5 +444,10 @@ const struct MachineDriver machine_driver_st200 = {
   NULL, NULL, gen_refresh,
   0,0,0,0, {{0}},
   by35_nvram
+};
+static core_tData by35Data = {
+  32, /* 32 Dips */
+  by35_updSw, 1, sndbrd_0_data_w, "by35",
+  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
 };
 #endif

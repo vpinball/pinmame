@@ -260,7 +260,7 @@ static INTERRUPT_GEN(s6_vblank) {
   core_updateSw(s6locals.ssEn);
 }
 
-static void s6_updSw(int *inports) {
+static SWITCH_UPDATE(s6) {
   if (inports) {
     coreGlobals.swMatrix[1] = inports[S6_COMINPORT] & 0x00ff;
     coreGlobals.swMatrix[0] = (inports[S6_COMINPORT] & 0xff00)>>8;
@@ -273,28 +273,21 @@ static void s6_updSw(int *inports) {
   core_textOutf(40, 30, BLACK, core_getSw(S6_SWUPDN) ? "Auto  " : "Manual");
 }
 
-static const core_tData s6Data = {
-  8+16, /* 16 DIPs */
-  s6_updSw,
-  2 | DIAGLED_VERTICAL,
-  sndbrd_0_data_w, "s6",
-  core_swSeq2m, core_swSeq2m,core_m2swSeq,core_m2swSeq
-};
-
 static MACHINE_INIT(s6) {
   memset(&s6locals, 0, sizeof(s6locals));
-  if (core_init(&s6Data)) return;
   pia_config(S6_PIA0, PIA_STANDARD_ORDERING, &s6_pia[0]);
   pia_config(S6_PIA1, PIA_STANDARD_ORDERING, &s6_pia[1]);
   pia_config(S6_PIA2, PIA_STANDARD_ORDERING, &s6_pia[2]);
   pia_config(S6_PIA3, PIA_STANDARD_ORDERING, &s6_pia[3]);
   sndbrd_0_init(SNDBRD_S67S, 1, NULL, NULL, NULL);
-  pia_reset();
   s6locals.vblankCount = 1;
+}
+static MACHINE_RESET(s6) {
+  pia_reset();
 }
 
 static MACHINE_STOP(s6) {
-  sndbrd_0_exit(); core_exit();
+  sndbrd_0_exit();
 }
 
 static WRITE_HANDLER(s6_CMOS_w) { s6_CMOS[offset] = data | 0xf0; }
@@ -325,18 +318,23 @@ MEMORY_END
 
 MACHINE_DRIVER_START(s6)
   MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CORE_INIT_RESET_STOP(s6,s6,s6)
   MDRV_CPU_ADD(M6808, 3580000/4)
   MDRV_CPU_MEMORY(s6_readmem, s6_writemem)
   MDRV_CPU_VBLANK_INT(s6_vblank, 1)
   MDRV_CPU_PERIODIC_INT(s6_irq, S6_IRQFREQ)
-  MDRV_MACHINE_INIT(s6) MDRV_MACHINE_STOP(s6)
   MDRV_VIDEO_UPDATE(core_led)
   MDRV_NVRAM_HANDLER(s6)
+  MDRV_DIPS(8+16)
+  MDRV_SWITCH_UPDATE(s6)
+  MDRV_DIAGNOSTIC_LEDV(2)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(s6S)
   MDRV_IMPORT_FROM(s6)
   MDRV_IMPORT_FROM(wmssnd_s67s)
+  MDRV_SOUND_CMD(sndbrd_0_data_w)
+  MDRV_SOUND_CMDHEADING("s6")
 MACHINE_DRIVER_END
 
 /*-----------------------------------------------
@@ -375,4 +373,12 @@ const struct MachineDriver machine_driver_s6s= {
   0,0,0,0, { S67S_SOUND },
   s6_nvram
 };
+static const core_tData s6Data = {
+  8+16, /* 16 DIPs */
+  s6_updSw,
+  2 | DIAGLED_VERTICAL,
+  sndbrd_0_data_w, "s6",
+  core_swSeq2m, core_swSeq2m,core_m2swSeq,core_m2swSeq
+};
+
 #endif

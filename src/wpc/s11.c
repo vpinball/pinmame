@@ -384,7 +384,7 @@ static struct pia6821_interface s11_pia[] = {
 }
 };
 
-static void s11_updSw(int *inports) {
+static SWITCH_UPDATE(s11) {
   if (inports) {
     coreGlobals.swMatrix[0] = (inports[S11_COMINPORT] & 0x7f00)>>8;
     coreGlobals.swMatrix[1] = inports[S11_COMINPORT];
@@ -414,38 +414,16 @@ static void s11_updSw(int *inports) {
 // i.e. 1=8, 2=9...
 static int s11_sw2m(int no) { return no+7; }
 static int s11_m2sw(int col, int row) { return col*8+row-7; }
-static core_tData s11Data = {
-  1, /* 1 DIP (actually a jumper) */
-  s11_updSw, CORE_DIAG7SEG, s11_sndCmd_w, "s11",
-  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
-};
-static core_tData s11AData = {
-  1, /* 1 DIP (actually a jumper) */
-  s11_updSw, 1, s11_sndCmd_w, "s11",
-  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
-};
-static core_tData DEData = {
-  1, /* 1 DIP (actually a jumper) */
-  s11_updSw, 1, de_sndCmd_w, "DE",
-  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
-};
 
 static MACHINE_INIT(s11) {
-  if (core_gameData == NULL)  return;
-  /*Init Core data*/
-  if (core_gameData->gen & (GEN_DE | GEN_DEDMD16 | GEN_DEDMD32 | GEN_DEDMD64)) {
-    locals.deGame = 1; if (core_init(&DEData)) return;
-  }
-  else {
-    if (core_init((core_gameData->hw.display & S11_BCDDIAG) ? &s11Data : &s11AData)) return;
-  }
+  if (core_gameData->gen & (GEN_DE | GEN_DEDMD16 | GEN_DEDMD32 | GEN_DEDMD64))
+    locals.deGame = 1;
   pia_config(S11_PIA0, PIA_STANDARD_ORDERING, &s11_pia[0]);
   pia_config(S11_PIA1, PIA_STANDARD_ORDERING, &s11_pia[1]);
   pia_config(S11_PIA2, PIA_STANDARD_ORDERING, &s11_pia[2]);
   pia_config(S11_PIA3, PIA_STANDARD_ORDERING, &s11_pia[3]);
   pia_config(S11_PIA4, PIA_STANDARD_ORDERING, &s11_pia[4]);
   pia_config(S11_PIA5, PIA_STANDARD_ORDERING, &s11_pia[5]);
-
 
   /*Additional hardware dependent init code*/
   switch (core_gameData->gen) {
@@ -474,11 +452,12 @@ static MACHINE_INIT(s11) {
       sndbrd_1_init(core_gameData->hw.soundBoard, 1, memory_region(DE1S_ROMREGION), pia_5_cb1_w, NULL);
       break;
   }
+}
+static MACHINE_RESET(s11) {
   pia_reset();
 }
-
 static MACHINE_STOP(s11) {
-  sndbrd_0_exit(); sndbrd_1_exit(); core_exit();
+  sndbrd_0_exit(); sndbrd_1_exit();
 }
 
 /*---------------------------
@@ -511,100 +490,132 @@ MEMORY_END
 /  Machine drivers
 /------------------*/
 static MACHINE_DRIVER_START(s11)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CORE_INIT_RESET_STOP(s11,s11,s11)
   MDRV_CPU_ADD(M6808, 1000000)
   MDRV_CPU_MEMORY(s11_readmem, s11_writemem)
   MDRV_CPU_VBLANK_INT(s11_vblank, 1)
   MDRV_CPU_PERIODIC_INT(s11_irq, S11_IRQFREQ)
-  MDRV_MACHINE_INIT(s11) MDRV_MACHINE_STOP(s11)
+  MDRV_DIPS(1) /* (actually a jumper) */
+  MDRV_SWITCH_UPDATE(s11)
 MACHINE_DRIVER_END
 
 /* System 9 */
 MACHINE_DRIVER_START(s11_s9S)
-  MDRV_IMPORT_FROM(PinMAME)
   MDRV_IMPORT_FROM(s11)
   MDRV_IMPORT_FROM(wmssnd_s9s)
   MDRV_VIDEO_UPDATE(core_led)
   MDRV_NVRAM_HANDLER(s11)
+  MDRV_DIAGNOSTIC_LED7
+  MDRV_SOUND_CMD(s11_sndCmd_w)
+  MDRV_SOUND_CMDHEADING("s11")
 MACHINE_DRIVER_END
 
 /* System 11 */
 MACHINE_DRIVER_START(s11_s11S)
-  MDRV_IMPORT_FROM(PinMAME)
   MDRV_IMPORT_FROM(s11)
   MDRV_IMPORT_FROM(wmssnd_s11s)
   MDRV_VIDEO_UPDATE(core_led)
   MDRV_NVRAM_HANDLER(s11)
+  MDRV_DIAGNOSTIC_LED7
+  MDRV_SOUND_CMD(s11_sndCmd_w)
+  MDRV_SOUND_CMDHEADING("s11")
+MACHINE_DRIVER_END
+
+/* System 11a */
+MACHINE_DRIVER_START(s11_s11aS)
+  MDRV_IMPORT_FROM(s11)
+  MDRV_IMPORT_FROM(wmssnd_s11s)
+  MDRV_VIDEO_UPDATE(core_led)
+  MDRV_NVRAM_HANDLER(s11)
+  MDRV_DIAGNOSTIC_LEDH(1)
+  MDRV_SOUND_CMD(s11_sndCmd_w)
+  MDRV_SOUND_CMDHEADING("s11")
 MACHINE_DRIVER_END
 
 /* System 11B Jokerz! */
 MACHINE_DRIVER_START(s11_s11b2S)
-  MDRV_IMPORT_FROM(PinMAME)
   MDRV_IMPORT_FROM(s11)
   MDRV_IMPORT_FROM(wmssnd_s11b2s)
   MDRV_VIDEO_UPDATE(core_led)
   MDRV_NVRAM_HANDLER(s11)
+  MDRV_DIAGNOSTIC_LEDH(1)
+  MDRV_SOUND_CMD(s11_sndCmd_w)
+  MDRV_SOUND_CMDHEADING("s11")
 MACHINE_DRIVER_END
 
 /* System 11C */
 MACHINE_DRIVER_START(s11_s11cS)
-  MDRV_IMPORT_FROM(PinMAME)
   MDRV_IMPORT_FROM(s11)
   MDRV_IMPORT_FROM(wmssnd_s11cs)
   MDRV_VIDEO_UPDATE(core_led)
   MDRV_NVRAM_HANDLER(s11)
+  MDRV_DIAGNOSTIC_LEDH(1)
+  MDRV_SOUND_CMD(s11_sndCmd_w)
+  MDRV_SOUND_CMDHEADING("s11")
 MACHINE_DRIVER_END
 
 /* DE alpa numeric No Sound */
 MACHINE_DRIVER_START(de_a)
-  MDRV_IMPORT_FROM(PinMAME)
   MDRV_IMPORT_FROM(s11)
   MDRV_VIDEO_UPDATE(core_led)
   MDRV_NVRAM_HANDLER(de)
+  MDRV_DIAGNOSTIC_LEDH(1)
 MACHINE_DRIVER_END
 
 /* DE alphanumeric Sound 1 */
 MACHINE_DRIVER_START(de_a1S)
-  MDRV_IMPORT_FROM(PinMAME)
   MDRV_IMPORT_FROM(s11)
   MDRV_IMPORT_FROM(de1s)
   MDRV_VIDEO_UPDATE(core_led)
   MDRV_NVRAM_HANDLER(de)
+  MDRV_DIAGNOSTIC_LEDH(1)
+  MDRV_SOUND_CMD(de_sndCmd_w)
+  MDRV_SOUND_CMDHEADING("DE")
 MACHINE_DRIVER_END
 
 /* DE 128x16 Sound 1 */
 MACHINE_DRIVER_START(de_dmd161S)
-  MDRV_IMPORT_FROM(PinMAME)
   MDRV_IMPORT_FROM(s11)
   MDRV_IMPORT_FROM(de1s)
   MDRV_IMPORT_FROM(de_dmd16)
   MDRV_NVRAM_HANDLER(de)
+  MDRV_DIAGNOSTIC_LEDH(1)
+  MDRV_SOUND_CMD(de_sndCmd_w)
+  MDRV_SOUND_CMDHEADING("DE")
 MACHINE_DRIVER_END
 
 /* DE 128x16 Sound 2a */
 MACHINE_DRIVER_START(de_dmd162aS)
-  MDRV_IMPORT_FROM(PinMAME)
   MDRV_IMPORT_FROM(s11)
   MDRV_IMPORT_FROM(de2as)
   MDRV_IMPORT_FROM(de_dmd16)
   MDRV_NVRAM_HANDLER(de)
+  MDRV_DIAGNOSTIC_LEDH(1)
+  MDRV_SOUND_CMD(de_sndCmd_w)
+  MDRV_SOUND_CMDHEADING("DE")
 MACHINE_DRIVER_END
 
 /* DE 128x32 Sound 2a */
 MACHINE_DRIVER_START(de_dmd322aS)
-  MDRV_IMPORT_FROM(PinMAME)
   MDRV_IMPORT_FROM(s11)
   MDRV_IMPORT_FROM(de2as)
   MDRV_IMPORT_FROM(de_dmd32)
   MDRV_NVRAM_HANDLER(de)
+  MDRV_DIAGNOSTIC_LEDH(1)
+  MDRV_SOUND_CMD(de_sndCmd_w)
+  MDRV_SOUND_CMDHEADING("DE")
 MACHINE_DRIVER_END
 
 /* DE 192x64 Sound 2a */
 MACHINE_DRIVER_START(de_dmd642aS)
-  MDRV_IMPORT_FROM(PinMAME)
   MDRV_IMPORT_FROM(s11)
   MDRV_IMPORT_FROM(de2as)
   MDRV_IMPORT_FROM(de_dmd64)
   MDRV_NVRAM_HANDLER(de)
+  MDRV_DIAGNOSTIC_LEDH(1)
+  MDRV_SOUND_CMD(de_sndCmd_w)
+  MDRV_SOUND_CMDHEADING("DE")
 MACHINE_DRIVER_END
 
 /*-----------------------------------------------
@@ -749,4 +760,20 @@ const struct MachineDriver machine_driver_s11 = {
   0,0,0,0, {{0}},
   de_nvram
 };
+static core_tData s11Data = {
+  1, /* 1 DIP (actually a jumper) */
+  s11_updSw, CORE_DIAG7SEG, s11_sndCmd_w, "s11",
+  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
+};
+static core_tData s11AData = {
+  1, /* 1 DIP (actually a jumper) */
+  s11_updSw, 1, s11_sndCmd_w, "s11",
+  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
+};
+static core_tData DEData = {
+  1, /* 1 DIP (actually a jumper) */
+  s11_updSw, 1, de_sndCmd_w, "DE",
+  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
+};
+
 #endif
