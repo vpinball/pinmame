@@ -29,19 +29,27 @@
 #include "machine/6821pia.h"
 #include "core.h"
 #include "sim.h"
+#include "sndbrd.h"
 
 #define NUOVA_SOLSMOOTH 4
 #define NUOVA_CPUFREQ		1000000			//1 Mhz ??
 #define F1GP_ZCFREQ				240			//120 Hz * 2 ??
 #define F1GP_555TIMER_FREQ		 10			//??
 
+#define F1GP_SWSNDDIAG		-2
 #define F1GP_SWCPUDIAG		-1
 #define F1GP_SWCPUBUTT		0
 
 #if 0
-#define LOG(x) printf x
-#else
 #define LOG(x) logerror x
+#else
+#define LOG(x)
+#endif
+
+#if 1
+#define LOGSND(x) logerror x
+#else
+#define LOGSND(x)
 #endif
 
 static struct {
@@ -60,7 +68,9 @@ static struct {
   int pia0_a;
   int pia1_a;
   int pia0_cb2;
+  int pia1_cb2;
   int pia0_da_enable;
+  UINT8 sndCmd;
 } locals;
 
 /***************/
@@ -94,14 +104,13 @@ static INTERRUPT_GEN(f1gp_vblank) {
   }
 
   coreGlobals.diagnosticLed = locals.diagnosticLed;
-  locals.diagnosticLed = 0;
 
   core_updateSw(core_getSol(18));
 }
 
 static SWITCH_UPDATE(f1gp) {
   if (inports) {
-    CORE_SETKEYSW(inports[CORE_COREINPORT]<<4,0xc0,0);
+    CORE_SETKEYSW(inports[CORE_COREINPORT]<<4,0xe0,0);
     CORE_SETKEYSW(inports[CORE_COREINPORT],   0x60,1);
     CORE_SETKEYSW(inports[CORE_COREINPORT]>>8,0x87,2);
   }
@@ -123,6 +132,13 @@ static SWITCH_UPDATE(f1gp) {
 	  }
   }
   pia_set_input_ca1(0,core_getSw(F1GP_SWCPUDIAG));
+  if (core_getSw(F1GP_SWSNDDIAG)) {
+    cpu_set_nmi_line(1, ASSERT_LINE);
+    cpu_set_irq_line(1, M6803_IRQ_LINE, ASSERT_LINE);
+  } else {
+    cpu_set_nmi_line(1, CLEAR_LINE);
+    cpu_set_irq_line(1, M6803_IRQ_LINE, CLEAR_LINE);
+  }
 }
 
 static void f1gp_irqline(int state) {
@@ -206,14 +222,14 @@ static const UINT16 core_ascii2seg[] = {
   /* 0x08-0x0f */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
   /* 0x10-0x17 */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
   /* 0x18-0x1f */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
-  /* 0x20-0x27 */ 0x0000, 0x0309, 0x0220, 0x2A4E, 0x2A6D, 0x5d64, 0x135D, 0x0400,
-  /* 0x28-0x2f */ 0x1400, 0x4100, 0x7F40, 0x2A40, 0x0000, 0x0840, 0x0000, 0x4400,
-  /* 0x30-0x37 */ 0x003f, 0x2200, 0x085B, 0x084f, 0x0866, 0x086D, 0x087D, 0x0007,
-  /* 0x38-0x3f */ 0x087F, 0x086F, 0x0848, 0x4040, 0x1400, 0x0848, 0x4100, 0x2803,
-  /* 0x40-0x47 */ 0x205F, 0x0877, 0x2A0F, 0x0039, 0x220F, 0x0079, 0x0071, 0x083D,
-  /* 0x48-0x4f */ 0x0876, 0x2209, 0x001E, 0x1470, 0x0038, 0x0536, 0x1136, 0x003f,
-  /* 0x50-0x57 */ 0x0873, 0x103F, 0x1873, 0x086D, 0x2201, 0x003E, 0x4430, 0x5036,
-  /* 0x58-0x5f */ 0x5500, 0x2500, 0x4409, 0x0039, 0x1100, 0x000f, 0x0402, 0x0008,
+  /* 0x20-0x27 */ 0x0000, 0x0309, 0x0220, 0x2A4E, 0x2A6D, 0x5d64, 0x135D, 0x0200, //  !"#$%&'
+  /* 0x28-0x2f */ 0x1400, 0x4100, 0x7F40, 0x2A40, 0x0080, 0x0840, 0x8000, 0x4400, // ()*+,-./
+  /* 0x30-0x37 */ 0x003f, 0x2200, 0x085B, 0x084f, 0x0866, 0x086D, 0x087D, 0x0007, // 01234567
+  /* 0x38-0x3f */ 0x087F, 0x086F, 0x0800, 0x8080, 0x1400, 0x0848, 0x4100, 0x2803, // 89:;<=>?
+  /* 0x40-0x47 */ 0x205F, 0x0877, 0x2A0F, 0x0039, 0x220F, 0x0079, 0x0071, 0x083D, // @ABCDEFG
+  /* 0x48-0x4f */ 0x0876, 0x2209, 0x001E, 0x1470, 0x0038, 0x0536, 0x1136, 0x003f, // HIJKLMNO
+  /* 0x50-0x57 */ 0x0873, 0x103F, 0x1873, 0x086D, 0x2201, 0x003E, 0x4430, 0x5036, // PRQSTUVW
+  /* 0x58-0x5f */ 0x5500, 0x2500, 0x4409, 0x0039, 0x1100, 0x000f, 0x0402, 0x0008, // XYZ[\]^_
   /* 0x60-0x67 */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
   /* 0x68-0x6f */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
   /* 0x70-0x77 */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
@@ -256,15 +272,19 @@ static WRITE_HANDLER(pia1_a_w)
 */
 static WRITE_HANDLER(pia1_b_w)
 {
-	if ((data & 0x20) == 0) // activates any solenoid
+	if (locals.pia1_cb2) { // sound
+		locals.sndCmd = data & 0x0f;
+		if ((data & 0x0f) < 0x0f) LOGSND(("snd data w = %x\n", data & 0x0f));
+	} else if ((data & 0x20) == 0) { // activates any solenoid
 		locals.solenoids = 0xf7fff & ((core_revbyte(~data & 0xd0) << 16) | (1 << (data & 0x0f)));
-	LOG(("%04x: SOLS & (SOUND?): pia1_b_w = %x \n",activecpu_get_previouspc(),data));
+		LOG(("%04x: SOLS & (SOUND?): pia1_b_w = %x \n",activecpu_get_previouspc(),data));
+	}
 }
 /* o  CA2:    LED & Lamp Strobe #2 */
 static WRITE_HANDLER(pia1_ca2_w)
 {
 	UINT8 col = locals.pia0_a & 0x0f;
-	locals.diagnosticLed = data & 1;
+	locals.diagnosticLed = (locals.diagnosticLed & 2) | (data & 1);
 	LOG(("%04x: LED & Lamp Strobe #2: pia1_ca2_w = %x \n",activecpu_get_previouspc(),data));
 	if (col % 2 == 0)
 		coreGlobals.tmpLampMatrix[8 + col/2] = (coreGlobals.tmpLampMatrix[8 + col/2] & 0xf0) | (locals.pia0_a >> 4);
@@ -274,6 +294,7 @@ static WRITE_HANDLER(pia1_ca2_w)
 /* o  CB2:    Solenoid Bank Select */
 static WRITE_HANDLER(pia1_cb2_w)
 {
+	locals.pia1_cb2 = data & 1;
 	LOG(("%04x: SOL BANK SELECT: pia1_cb2_w = %x \n",activecpu_get_previouspc(),data));
 }
 
@@ -321,9 +342,7 @@ static MACHINE_INIT(f1gp) {
   memset(&locals, 0, sizeof(locals));
   pia_config(0, PIA_STANDARD_ORDERING, &f1gp_pia[0]);
   pia_config(1, PIA_STANDARD_ORDERING, &f1gp_pia[1]);
-#if 0
-  sndbrd_0_init(SNDBRD_S67S, 1, NULL, NULL, NULL);
-#endif
+  sndbrd_0_init(SNDBRD_ZAC1346, 1, memory_region(REGION_CPU2), NULL, NULL);
 }
 
 static MACHINE_RESET(f1gp) {
@@ -393,6 +412,43 @@ static MEMORY_WRITE_START(cpu_writemem)
   { 0xf000, 0xffff, MWA_ROM },
 MEMORY_END
 
+static WRITE_HANDLER(bank_w) {
+  data = ~data;
+  LOGSND(("m8000w = %x\n",data));
+  locals.diagnosticLed = (locals.diagnosticLed & 1) | ((data >> 6) & 2);
+  if (data & 0x0f)
+    cpu_setbank(1, memory_region(REGION_SOUND1) + (0x8000 * data & 0x07));
+  else
+    cpu_setbank(1, memory_region(REGION_SOUND1));
+}
+
+static READ_HANDLER(snd_cmd_r) {
+  return locals.sndCmd;
+}
+
+static WRITE_HANDLER(snd_enable) {
+  LOGSND(("sound P2w: %02x\n", data));
+}
+
+static MEMORY_READ_START(snd_readmem)
+  { 0x0000, 0x00ff, MRA_RAM },
+  { 0x8000, 0xffff, MRA_BANKNO(1) },
+MEMORY_END
+
+static MEMORY_WRITE_START(snd_writemem)
+  { 0x0000, 0x00ff, MWA_RAM },
+  { 0xc000, 0xc000, bank_w  },
+MEMORY_END
+
+static PORT_READ_START(snd_readport)
+  { M6803_PORT2, M6803_PORT2, snd_cmd_r },
+PORT_END
+
+static PORT_WRITE_START(snd_writeport)
+  { M6803_PORT1, M6803_PORT1, DAC_0_data_w },
+  { M6803_PORT2, M6803_PORT2, snd_enable },
+PORT_END
+
 static core_tLCDLayout disp[] = {
   {0, 0, 0,16,CORE_SEG16},
   {3, 0,16,16,CORE_SEG16},
@@ -402,6 +458,7 @@ static core_tGameData f1gpGameData = {GEN_ZAC2, disp, {FLIP_SWNO(48, 0), 0, 2}};
 static void init_f1gp(void) {
   core_gameData = & f1gpGameData;
 }
+static struct DACinterface nuova_dacInt = { 1, { 25 }};
 
 MACHINE_DRIVER_START(f1gp)
   MDRV_IMPORT_FROM(PinMAME)
@@ -412,9 +469,15 @@ MACHINE_DRIVER_START(f1gp)
   MDRV_NVRAM_HANDLER(f1gp)
   MDRV_DIPS(32)
   MDRV_SWITCH_UPDATE(f1gp)
-  MDRV_DIAGNOSTIC_LEDH(1)
+  MDRV_DIAGNOSTIC_LEDH(2)
   MDRV_TIMER_ADD(f1gp_zeroCross, F1GP_ZCFREQ)
   MDRV_TIMER_ADD(f1gp_555timer,  F1GP_555TIMER_FREQ)
+
+  MDRV_CPU_ADD_TAG("scpu", M6803, 1000000)
+  MDRV_CPU_MEMORY(snd_readmem, snd_writemem)
+  MDRV_CPU_PORTS(snd_readport, snd_writeport)
+  MDRV_SOUND_ADD(DAC, nuova_dacInt)
+  MDRV_INTERLEAVE(500)
 MACHINE_DRIVER_END
 
 INPUT_PORTS_START(f1gp) \
@@ -431,6 +494,7 @@ INPUT_PORTS_START(f1gp) \
   /* These are put in switch column 0 since they are not read in the regular switch matrix */ \
     COREPORT_BIT(     0x0008, "CPU Button",       KEYCODE_7) \
 	COREPORT_BIT(     0x0004, "Self Test",        KEYCODE_8) \
+	COREPORT_BIT(     0x0002, "Sound Test",       KEYCODE_0) \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
       COREPORT_DIPSET(0x0000, "0" ) \
@@ -549,18 +613,28 @@ INPUT_PORTS_END
 // Check - Data @ 0xD000 = 0xD5 (found @ 3000) (A15->A13, A14=0)
 // Check - Data @ 0xF000 = 0xFA (found @ 7000) (A15->A13, A12->A14, A14->A12)
 
-ROM_START(f1gp) \
-  NORMALREGION(0x100000, REGION_USER1) \
-    ROM_LOAD("cpu_u7", 0x0000, 0x8000, CRC(2287dea1) SHA1(5438752bf63aadaa6b6d71bbf56a72d8b67b545a)) \
-  NORMALREGION(0x100000, REGION_CPU1) \
-  ROM_COPY(REGION_USER1, 0x0000, 0x1000,0x1000) \
-  ROM_COPY(REGION_USER1, 0x1000, 0x5000,0x1000) \
-  ROM_COPY(REGION_USER1, 0x5000, 0x7000,0x1000) \
-  ROM_COPY(REGION_USER1, 0x2000, 0x9000,0x1000) \
-  ROM_COPY(REGION_USER1, 0x6000, 0xb000,0x1000) \
-  ROM_COPY(REGION_USER1, 0x3000, 0xd000,0x1000) \
-  ROM_COPY(REGION_USER1, 0x7000, 0xf000,0x1000)
+ROM_START(f1gp)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("cpu_u7", 0x8000, 0x8000, CRC(2287dea1) SHA1(5438752bf63aadaa6b6d71bbf56a72d8b67b545a))
+  ROM_COPY(REGION_CPU1, 0x8000, 0x1000,0x1000)
+  ROM_COPY(REGION_CPU1, 0x9000, 0x5000,0x1000)
+  ROM_COPY(REGION_CPU1, 0xd000, 0x7000,0x1000)
+  ROM_COPY(REGION_CPU1, 0xa000, 0x9000,0x1000)
+  ROM_COPY(REGION_CPU1, 0xb000, 0xd000,0x1000)
+  ROM_COPY(REGION_CPU1, 0xe000, 0xb000,0x1000)
+
+  NORMALREGION(0x40000, REGION_SOUND1)
+    ROM_LOAD("snd_u8b", 0x0000, 0x8000, CRC(14cddb29) SHA1(667b54174ad5dd8aa45037574916ecb4ee996a94))
+    ROM_LOAD("snd_u8a", 0x8000, 0x8000, CRC(3a2af90b) SHA1(f6eeae74b3bfb1cfd9235c5214f7c029e0ad14d6))
+    ROM_LOAD("snd_u9b", 0x10000,0x8000, CRC(726920b5) SHA1(002e7a072a173836c89746cceca7e5d2ac26356d))
+    ROM_LOAD("snd_u9a", 0x18000,0x8000, CRC(681ee99c) SHA1(955cd782073a1ce0be7a427c236d47fcb9cccd20))
+    ROM_LOAD("snd_u10b",0x20000,0x8000, CRC(9de359fb) SHA1(ce75a78dc4ed747421a386d172fa0f8a1369e860))
+    ROM_LOAD("snd_u10a",0x28000,0x8000, CRC(4d3fc9bb) SHA1(d43cd134f399e128a678b86e57b1917fad70df76))
+    ROM_LOAD("snd_u11b",0x30000,0x8000, CRC(2394b498) SHA1(bf0884a6556a27791e7e801051be5975dd6b95c4))
+    ROM_LOAD("snd_u11a",0x38000,0x8000, CRC(884dc754) SHA1(b121476ea621eae7a7ba0b9a1b5e87051e1e9e3d))
+  NORMALREGION(0x10000, REGION_CPU2)
+  ROM_COPY(REGION_SOUND1, 0x0000, 0x8000,0x8000)
 ROM_END
 
-CORE_GAMEDEFNV(f1gp, "F1 Grand Prix", 1987, "Nuova Bell Games", f1gp, GAME_NOT_WORKING | GAME_NO_SOUND)
+CORE_GAMEDEFNV(f1gp, "F1 Grand Prix", 1987, "Nuova Bell Games", f1gp, GAME_NOT_WORKING)
 
