@@ -46,3 +46,11 @@ old name                new name for romset
 eshak_l3         =      esha_la3
 southpk          =      sprk_103
 twister          =      twst_405
+
+since version 1.50:
+
+old name                new name for romset
+-------------------------------------------
+maverick         =      mav_401
+truckstp         =      trucksp2
+harley           =      harl_a10
