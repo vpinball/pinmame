@@ -65,7 +65,8 @@ struct sndbrdIntf {
 #define SNDBRD_S11CS   SNDBRD_TYPE( 1,0)
 #define SNDBRD_WPCS    SNDBRD_TYPE( 2,0)
 #define SNDBRD_DCS     SNDBRD_TYPE( 3,0)
-#define SNDBRD_DCS95   SNDBRD_TYPE( 3,1)
+#define SNDBRD_DCSB    SNDBRD_TYPE( 3,1)
+#define SNDBRD_DCS95   SNDBRD_TYPE( 3,2)
 #define SNDBRD_BY32    SNDBRD_TYPE( 4,0)
 #define SNDBRD_BY50    SNDBRD_BY32
 #define SNDBRD_BY51    SNDBRD_TYPE( 5,0)
