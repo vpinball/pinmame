@@ -27,7 +27,7 @@
 /*-- default screen size */
 #ifdef VPINMAME
 #  define CORE_SCREENX 640
-#  define CORE_SCREENY 320
+#  define CORE_SCREENY 400
 #else /* VPINMAME */
 #  define CORE_SCREENX 256
 #  define CORE_SCREENY 256
@@ -407,7 +407,9 @@ typedef struct {
 extern const core_tGameData *core_gameData;
 
 extern const int core_bcd2seg9[]; /* BCD to 9 segment display */
+extern const int core_bcd2seg9a[]; /* BCD to 9 segment display, missing 6 top line */
 extern const int core_bcd2seg7[]; /* BCD to 7 segment display */
+extern const int core_bcd2seg7a[]; /* BCD to 7 segment display, missing 6 top line */
 extern const int core_bcd2seg7e[]; /* BCD to 7 segment display with A to E letters */
 #define core_bcd2seg  core_bcd2seg7
 
