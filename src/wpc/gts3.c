@@ -23,7 +23,6 @@
 UINT8 DMDFrames[GTS3DMD_FRAMES][0x200];
 #define GTS3_VBLANKFREQ      60 /* VBLANK frequency*/
 #define GTS3_IRQFREQ        975 /* IRQ Frequency (Guessed)*/
-#define GTS3_DMDNMIFREQ     720 /* DMD NMI Frequency (Guessed, must be multiple of vblank freq.)*/
 #define GTS3_ALPHANMIFREQ   300 /* Alpha NMI Frequency (Guessed)*/
 
 #define GTS3_CPUNO	0
@@ -231,6 +230,7 @@ static WRITE_HANDLER(alpha_u4_pb_w) {
 */
 static WRITE_HANDLER(dmd_u4_pb_w) {
 	static int ledOK = 0;
+	static int bitSet = 0;
 	int lampBits = data & 0x0f;
 	core_setLamp(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
 	if (data & ~GTS3locals.u4pb & LSTRB) { // Positive edge
@@ -246,7 +246,19 @@ static WRITE_HANDLER(dmd_u4_pb_w) {
 	}
 	if (lampBits == 0x06 && (GTS3locals.u4pb & 0x0f) == 0x02) ledOK = 1;
 
-	GTS3_dmdlocals.dstrb = (data & DSTRB) != 0;
+	if (data & DSTRB) {
+		if (~GTS3locals.u4pb & DSTRB) {
+		    bitSet = 0;
+			cpu_set_nmi_line(GTS3_DCPUNO, CLEAR_LINE);
+		} else {
+			bitSet++;
+			if (bitSet > 2)
+				cpu_set_nmi_line(GTS3_DCPUNO, HOLD_LINE);
+		}
+	}
+
+	GTS3_dmdlocals.dstrb = (data & DBLNK) != 0;
+
 	GTS3locals.u4pb = data;
 }
 
@@ -682,11 +694,6 @@ static WRITE_HANDLER(dmd_display){
 		logerror("DMD Signal: Offset: %x Data: %x\n",offset,data);
 }
 
-//FIRE NMI FOR DMD!
-static INTERRUPT_GEN(dmdnmi) {
-	cpu_set_nmi_line(GTS3_DCPUNO, PULSE_LINE);
-}
-
 /*Chip U14 - LS273:
   D0=Q0=PA0=A14 of DMD Eprom
   D1=Q1=PA1=A15 of DMD Eprom
@@ -761,7 +768,7 @@ static void alpha_update(){
 			tempbits = 0;
 			if (segbits > 0) {
 				for (k=0; k<16; k++) {
-					if ( (segbits>>k)&1 ) 
+					if ( (segbits>>k)&1 )
 						tempbits |= (1<<alpha_adjust[k]);
 				}
 			}
@@ -789,7 +796,7 @@ void dmd_vblank(void){
   int offset = (crtc6845_start_addr>>2);
   memcpy(DMDFrames[GTS3_dmdlocals.nextDMDFrame],memory_region(GTS3_MEMREG_DCPU1)+0x1000+offset,0x200);
   GTS3_dmdlocals.nextDMDFrame = (GTS3_dmdlocals.nextDMDFrame + 1) % GTS3DMD_FRAMES;
-  cpu_set_nmi_line(GTS3_DCPUNO, CLEAR_LINE);
+//  cpu_set_nmi_line(GTS3_DCPUNO, PULSE_LINE);
 }
 
 /*-----------------------------------------------
@@ -887,7 +894,6 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(gts3_dmd)
   MDRV_CPU_ADD(M65C02, 3579000/2)
   MDRV_CPU_MEMORY(GTS3_dmdreadmem, GTS3_dmdwritemem)
-  MDRV_CPU_PERIODIC_INT(dmdnmi, GTS3_DMDNMIFREQ)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(gts3_2)
