@@ -1402,3 +1402,18 @@ static tSegRow segSize3[4][8] = {
   { 1, 1,NULL},{1,1,NULL}, /* DMD */
   { 1, 1,NULL}             /* VIDEO */
 }};
+
+//Convert Bit Column Data to corresponding #, ie, if Bit 3=1, return 3 - Zero Based (Bit1=1 returns 0)
+//Assumes only 1 bit is set at a time.
+int core_BitColToNum(int tmp)
+{
+	int i, data;
+	i = data = 0;
+	while(tmp)
+	{
+		if(tmp&1) data+=i;
+		tmp = tmp>>1;
+		i++;
+	}
+	return data;
+}

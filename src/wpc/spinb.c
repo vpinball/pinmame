@@ -238,16 +238,6 @@ static WRITE_HANDLER(SPINB_S2_MSM5025_w);
 static void spinb_z80int(int data);
 static void spinb_z80nmi(int data);
 
-//Convenience macros - we should probably put these in the core.h
-#define GET_BIT0 (data & 0x01) >> 0
-#define GET_BIT1 (data & 0x02) >> 1
-#define GET_BIT2 (data & 0x04) >> 2
-#define GET_BIT3 (data & 0x08) >> 3
-#define GET_BIT4 (data & 0x10) >> 4
-#define GET_BIT5 (data & 0x20) >> 5
-#define GET_BIT6 (data & 0x40) >> 6
-#define GET_BIT7 (data & 0x80) >> 7
-
 #if DMD_FROM_RAM
 	static UINT8  *dmd32RAM;
 #else
@@ -339,21 +329,6 @@ static struct MSM5205interface SPINB_msm6585Int = {
 const struct sndbrdIntf spinbIntf = {
    "SPINB", NULL, NULL, NULL, spinb_sndCmd_w, NULL, NULL, NULL, NULL, SNDBRD_NODATASYNC
 };
-
-//Convert Bit Column Data to corresponding #, ie, if Bit 3=1, return 3 - Zero Based (Bit1=1 returns 0)
-//Probably should be moved to core.c since it could be used in many drivers.
-static int BitColToNum(int tmp)
-{
-	int i, data;
-	i = data = 0;
-	while(tmp)
-	{
-		if(tmp&1) data+=i;
-		tmp = tmp>>1;
-		i++;
-	}
-	return data;
-}
 
 /* -- Manual IRQ & NMI Timing Adjustments for debugging -- */
 #ifdef MAME_DEBUG
@@ -530,12 +505,12 @@ CI-20 8255 PPI
 WRITE_HANDLER(ci20_porta_w) {
 	if(data & 0x07) {
 		SPINBlocals.LastStrobeType = DIPCOL_STROBE;
-		SPINBlocals.DipCol = BitColToNum(data & 0x07);
+		SPINBlocals.DipCol = core_BitColToNum(data & 0x07);
 	}
 	else {
 		SPINBlocals.LastStrobeType = MATRIX_STROBE;
 		SPINBlocals.swColumn = (SPINBlocals.swColumn&0xff00) | (data ^ 0x07) >> 3;
-		SPINBlocals.swCol = BitColToNum(SPINBlocals.swColumn);
+		SPINBlocals.swCol = core_BitColToNum(SPINBlocals.swColumn);
 	}
 }
 /*
@@ -548,7 +523,7 @@ CI-20 8255 PPI
 WRITE_HANDLER(ci20_portb_w) {
 	SPINBlocals.LastStrobeType = MATRIX_STROBE;
 	SPINBlocals.swColumn = (SPINBlocals.swColumn&0x00ff) | (data<<5);
-	SPINBlocals.swCol = BitColToNum(SPINBlocals.swColumn);
+	SPINBlocals.swCol = core_BitColToNum(SPINBlocals.swColumn);
 }
 
 WRITE_HANDLER(ci20_portc_w) { LOG(("UNDOCUMENTED: ci20_portc_w = %x\n",data)); }
@@ -569,7 +544,7 @@ CI-23 8255 PPI
   Port B:
   (out) P0-P7 : J3 - Pins 11 - 19 (no 18) (Nivel Luces 0-7) - Lamp Column Strobe 0 - 7
 */
-WRITE_HANDLER(ci23_portb_w) { SPINBlocals.lampColumn = BitColToNum(data); }
+WRITE_HANDLER(ci23_portb_w) { SPINBlocals.lampColumn = core_BitColToNum(data); }
 
 /*
 CI-23 8255 PPI

@@ -24,6 +24,17 @@
   #define SOUNDREGION(size ,reg)   ROM_REGION(size, reg, ROMREGION_SOUNDONLY)
   #define SOUNDREGIONE(size ,reg)  ROM_REGION(size, reg, ROMREGION_SOUNDONLY|ROMREGION_ERASE)
 
+/*-- convenience macro for handling bits --*/
+#define GET_BIT0 (data & 0x01) >> 0
+#define GET_BIT1 (data & 0x02) >> 1
+#define GET_BIT2 (data & 0x04) >> 2
+#define GET_BIT3 (data & 0x08) >> 3
+#define GET_BIT4 (data & 0x10) >> 4
+#define GET_BIT5 (data & 0x20) >> 5
+#define GET_BIT6 (data & 0x40) >> 6
+#define GET_BIT7 (data & 0x80) >> 7
+
+
 /*-- default screen size */
 #ifdef VPINMAME
 #  define CORE_SCREENX 640
@@ -454,6 +465,9 @@ INLINE UINT16 core_revword(UINT16 x) {
 /*-- core DIP handling --*/
 //  Get the status of a DIP bank (8 dips)
 extern int core_getDip(int dipBank);
+
+//Easy Bit Column to Number conversion
+extern int core_BitColToNum(int tmp);
 
 extern MACHINE_DRIVER_EXTERN(PinMAME);
 #endif /* INC_CORE */
