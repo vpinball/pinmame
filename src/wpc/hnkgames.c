@@ -31,7 +31,7 @@ INITGAME(fjholden,0,dispHNK,FLIP_SW(FLIP_L),0)
 HNK_ROMSTART(fjholden,	"fj_ic2.mpu",0xb47bc2c7,
 						"fj_ic3.mpu",0xceaeb7d3)
 HNK_ROMEND
-CORE_GAMEDEFNV(fjholden,"FJ Holden",1981,"Hankin",mHNK,0)
+CORE_GAMEDEFNV(fjholden,"FJ Holden",1978,"Hankin",mHNK,GAME_NO_SOUND)
 
 /*--------------------------------
 / Orbit 1
@@ -40,7 +40,7 @@ INITGAME(orbit1,0,dispHNK,FLIP_SW(FLIP_L),0)
 HNK_ROMSTART(orbit1,	"o1_ic2.mpu",0xb47bc2c7,
 						"o1_ic3.mpu",0xfe7b61be)
 HNK_ROMEND
-CORE_GAMEDEFNV(orbit1,"Orbit 1",1981,"Hankin",mHNK,0)
+CORE_GAMEDEFNV(orbit1,"Orbit 1",1978,"Hankin",mHNK,GAME_NO_SOUND)
 
 /*--------------------------------
 / Howzat
@@ -49,7 +49,7 @@ INITGAME(howzat,0,dispHNK,FLIP_SW(FLIP_L),0)
 HNK_ROMSTART(howzat,	"hz_ic2.mpu",0xb47bc2c7,
 						"hz_ic3.mpu",0xd13df4bc)
 HNK_ROMEND
-CORE_GAMEDEFNV(howzat,"Howzat",1981,"Hankin",mHNK,0)
+CORE_GAMEDEFNV(howzat,"Howzat",1980,"Hankin",mHNK,GAME_NO_SOUND)
 
 /*--------------------------------
 / Shark
@@ -58,7 +58,7 @@ INITGAME(shark,0,dispHNK,FLIP_SW(FLIP_L),0)
 HNK_ROMSTART(shark,		"shk_ic2.mpu",0xb47bc2c7,
 						"shk_ic3.mpu",0xc3ef936c)
 HNK_ROMEND
-CORE_GAMEDEFNV(shark,"Shark",1981,"Hankin",mHNK,0)
+CORE_GAMEDEFNV(shark,"Shark",1980,"Hankin",mHNK,GAME_NO_SOUND)
 
 /*--------------------------------
 / The Empire Strike Back
@@ -67,5 +67,5 @@ INITGAME(empsback,0,dispHNK,FLIP_SW(FLIP_L),0)
 HNK_ROMSTART(empsback,	"sw_ic2.mpu",0xb47bc2c7,
 						"sw_ic3.mpu",0x837ffe32)
 HNK_ROMEND
-CORE_GAMEDEFNV(empsback,"The Empire Strike Back",1981,"Hankin",mHNK,0)
+CORE_GAMEDEFNV(empsback,"The Empire Strike Back",1981,"Hankin",mHNK,GAME_NO_SOUND)
 
