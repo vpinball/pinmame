@@ -429,7 +429,13 @@ DRIVERNV(playboyd)      //Whitestar: 02/02 Playboy (German display)
 DRIVERNV(playboye)      //Whitestar: 02/02 Playboy (Spanish display)
 DRIVERNV(playboyf)      //Whitestar: 02/02 Playboy (French display)
 DRIVERNV(playboyi)      //Whitestar: 02/02 Playboy (Italian display)
+DRIVERNV(rctycn)        //Whitestar: 09/02 Roller Coaster Tycoon (4.00)
+DRIVERNV(rctycnd)       //Whitestar: 09/02 Roller Coaster Tycoon (German display)
+DRIVERNV(rctycne)       //Whitestar: 09/02 Roller Coaster Tycoon (Spanish display)
+DRIVERNV(rctycnf)       //Whitestar: 09/02 Roller Coaster Tycoon (French display)
+DRIVERNV(rctycni)       //Whitestar: 09/02 Roller Coaster Tycoon (Italian display)
 #endif /* VPINMAME */
+
 
 // ---------------------
 // SEGA GAMES BELOW

@@ -260,7 +260,7 @@ SE_ROMEND
 CORE_CLONEDEFNV(strxt_uk,strikext,"Striker Extreme (UK)",1999,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ Striker Extreme (DE)
+/ Striker Extreme (Germany)
 /-------------------------------------------------------------------*/
 //INITGAME(strxt_gr,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(strxt_gr,"sxcpug.102", 0x2686743b)
@@ -276,7 +276,7 @@ SE_ROMEND
 CORE_CLONEDEFNV(strxt_gr,strikext,"Striker Extreme (Germany)",1999,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ Striker Extreme (FR)
+/ Striker Extreme (France)
 /-------------------------------------------------------------------*/
 //INITGAME(strxt_fr,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(strxt_fr,"sxcpuf.102", 0x2804bc9f)
@@ -292,7 +292,7 @@ SE_ROMEND
 CORE_CLONEDEFNV(strxt_fr,strikext,"Striker Extreme (France)",1999,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ Striker Extreme (IT)
+/ Striker Extreme (Italy)
 /-------------------------------------------------------------------*/
 //INITGAME(strxt_it,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(strxt_it,"sxcpui.102", 0xf955d0ef)
@@ -308,7 +308,7 @@ SE_ROMEND
 CORE_CLONEDEFNV(strxt_it,strikext,"Striker Extreme (Italy)",1999,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ Striker Extreme (SP)
+/ Striker Extreme (Spain)
 /-------------------------------------------------------------------*/
 //INITGAME(strxt_sp,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(strxt_sp,"sxcpul.102", 0x6b1e417f)
@@ -353,7 +353,7 @@ SE_ROMEND
 CORE_GAMEDEFNV(hirolcas,"High Roller Casino",2001,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ High Roller Casino (DE)
+/ High Roller Casino (Germany)
 /-------------------------------------------------------------------*/
 //INITGAME(hirol_gr,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(hirol_gr,"hrccpu.210",  0x2e3c682a)
@@ -488,3 +488,75 @@ SE_ROMEND
 #define input_ports_playboye input_ports_se
 #define init_playboye init_playboys
 CORE_CLONEDEFNV(playboye,playboys,"Playboy (Spain)",2002,"Stern",de_mSES2,GAME_NOCRC)
+
+//Strange that they went back to the 11 voice model here!
+/*-------------------------------------------------------------------
+/ Roller Coaster Tycoon (4.00)
+/-------------------------------------------------------------------*/
+INITGAME(rctycn,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(rctycn,   "rctcpu.400",    0x4691de23)
+DE_DMD32ROM8x(           "rctdsp-a.400",  0xd128a8fa)
+DE2S_SOUNDROM1888(       "rct100.u7",  0xe6cde9b1,
+                         "rct100.u17", 0x18ba20ec,
+                         "rct100.u21", 0x64b19c11,
+                         "rct100.u36", 0x05c8bac9)
+SE_ROMEND
+#define input_ports_rctycn input_ports_se
+CORE_GAMEDEFNV(rctycn,"Roller Coaster Tycoon",2002,"Stern",de_mSES1,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Roller Coaster Tycoon (Germany)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(rctycnd,  "rctcpu.400",    0x4691de23)
+DE_DMD32ROM8x(           "rctdsp-g.400",  0xc88dc915)
+DE2S_SOUNDROM1888(       "rct100.u7",  0xe6cde9b1,
+                         "rct100.u17", 0x18ba20ec,
+                         "rct100.u21", 0x64b19c11,
+                         "rct100.u36", 0x05c8bac9)
+SE_ROMEND
+#define input_ports_rctycnd input_ports_se
+#define init_rctycnd init_rctycn
+CORE_CLONEDEFNV(rctycnd,rctycn,"Roller Coaster Tycoon (Germany)",2002,"Stern",de_mSES1,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Roller Coaster Tycoon (France)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(rctycnf,  "rctcpu.400",    0x4691de23)
+DE_DMD32ROM8x(           "rctdsp-f.400",  0x5b41893b)
+DE2S_SOUNDROM1888(       "rct100.u7",  0xe6cde9b1,
+                         "rct100.u17", 0x18ba20ec,
+                         "rct100.u21", 0x64b19c11,
+                         "rct100.u36", 0x05c8bac9)
+SE_ROMEND
+#define input_ports_rctycnf input_ports_se
+#define init_rctycnf init_rctycn
+CORE_CLONEDEFNV(rctycnf,rctycn,"Roller Coaster Tycoon (France)",2002,"Stern",de_mSES1,GAME_NOCRC)
+
+
+/*-------------------------------------------------------------------
+/ Roller Coaster Tycoon (Italy)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(rctycni,  "rctcpu.400",    0x4691de23)
+DE_DMD32ROM8x(           "rctdsp-i.400",  0x7c1c0adb)
+DE2S_SOUNDROM1888(       "rct100.u7",  0xe6cde9b1,
+                         "rct100.u17", 0x18ba20ec,
+                         "rct100.u21", 0x64b19c11,
+                         "rct100.u36", 0x05c8bac9)
+SE_ROMEND
+#define input_ports_rctycni input_ports_se
+#define init_rctycni init_rctycn
+CORE_CLONEDEFNV(rctycni,rctycn,"Roller Coaster Tycoon (Italy)",2002,"Stern",de_mSES1,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Roller Coaster Tycoon (Spain)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(rctycne,  "rctcpu.400",    0x4691de23)
+DE_DMD32ROM8x(           "rctdsp-s.400",  0xc06e6669)
+DE2S_SOUNDROM1888(       "rct100.u7",  0xe6cde9b1,
+                         "rct100.u17", 0x18ba20ec,
+                         "rct100.u21", 0x64b19c11,
+                         "rct100.u36", 0x05c8bac9)
+SE_ROMEND
+#define input_ports_rctycne input_ports_se
+#define init_rctycne init_rctycn
+CORE_CLONEDEFNV(rctycne,rctycn,"Roller Coaster Tycoon (Spain)",2002,"Stern",de_mSES1,GAME_NOCRC)

@@ -452,9 +452,10 @@ STDMETHODIMP CGame::ShowInfoDlg(int nShowOptions, long hParentWnd, VARIANT_BOOL 
 
 int CRCSOFGAMESNOTSUPPORRTED[] = {
 	0x0d1117fa,0x2e3c682a,										// High Roller Casino
-	0xa06b2b03,0xa4ddcdca,										// Austin Powers
-	0x24978872,													// Monopoly (251, 301)
+	0xa06b2b03,0xa4ddcdca,0x2920b59b,							// Austin Powers (201,301,302)
+	0x24978872,													// Monopoly (301)
 	0xd7e5bada, 0x206285ed, 0x2dbb372a,0x69ab3bb2,0xed7b7c62,0x74c8cedf,0xe7697fc3,	// Playboy (300, 302)
+	0x4691de23, 0xc88dc915, 0x5b41893b,0x7c1c0adb,0x7c1c0adb,0xc06e6669,	// Roller Coaster Tycoon (400)
 	0x0
 };
 
