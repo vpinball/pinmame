@@ -113,7 +113,7 @@ CORE_GAMEDEFNV(fireact,"Fire Action",1981,"Taito",taito_sintevox,0)
 INITGAME(cavnegro,SNDBRD_TAITO_SINTEVOX)
 TAITO_ROMSTART2222(cavnegro,"cn1.bin",CRC(6b414089) SHA1(5f6042cc85a9319b3e34bdf39fd1f7feb5db0ec2),
                             "cn2.bin",CRC(9641f2e5) SHA1(4d7e522bd1d691901868abd191010b62a9032fda),
-                            "cn3.bin",CRC(4ca99983) SHA1(0995325444ada4aa5cd19a90230bcad58c6cd072),
+                            "cn3.bin",CRC(4ca99983) SHA1(88c806f013cc31443c842fb7925f97b0ed1bbdc9),
                             "cn4.bin",CRC(0cf4c1fa) SHA1(f0170da2c3fb138cc9f6c076a2d3f4fbf529e923))
 TAITO_SOUNDROMS22("cn_s1.bin", CRC(aec5069a) SHA1(4ec1f1f054e010caf9ffdda60071f96ba772c01a),
                   "cn_s2.bin", CRC(a0508863) SHA1(b4f343ed48960048c6b2b36c5ce0bad0fdb7ac62))
@@ -410,11 +410,11 @@ TAITO_ROMSTART22222(mrblack,"mrb1.bin",CRC(c2a43f6f) SHA1(14a461b6416e3b024cc3d7
                             "mrb4.bin",CRC(84367699) SHA1(a9a7b21fe31f12b0888bc3bbf82d0b13cf8bad49),
                             "mrb5.bin",CRC(18d8f2cc) SHA1(e14c20440753a1996e618e407ef97f3059775c46))
 TAITO_SOUNDROMS444("mrb_s1.bin", CRC(ff28b2b9) SHA1(3106811740e0206ad4ba7845e204e721b0da70e2),
-                   "mrb_s2.bin", CRC(3af4707e) SHA1(b7231ede973a0c83e009333f0377b81c34826117),
+                   "mrb_s2.bin", CRC(34d52449) SHA1(bdd5db5e58ca997d413d18f291928ad1a45c194e),
                    "mrb_s3.bin", CRC(276fb897) SHA1(b1a4323a4d921e3ae4beefaa04cd95e18cc33b9d))
 TAITO_ROMEND
 #define input_ports_mrblack input_ports_taito
-CORE_GAMEDEFNV(mrblack,"Mr. Black",1984,"Taito",taito_sintetizadorpp,0)
+CORE_GAMEDEFNV(mrblack,"Mr. Black",1984,"Taito",taito_sintetizadorpp,GAME_NOT_WORKING)
 
 /*--------------------------------
 / Fire Action Deluxe
@@ -429,32 +429,34 @@ TAITO_SOUNDROMS444("fired_s1.bin", CRC(b821d324) SHA1(db00416592467a5917dd75e437
                    "fired_s3.bin", CRC(ecff8399) SHA1(7615da5a6952cbc0769963a9563017bd46e4a73f))
 TAITO_ROMEND
 #define input_ports_fireactd input_ports_taito
-CORE_GAMEDEFNV(fireactd,"Fire Action Deluxe",198?,"Taito",taito_sintevoxpp,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(fireactd,"Fire Action Deluxe",198?,"Taito",taito_sintevoxpp,0)
 
 /*--------------------------------
 / Space Shuttle
 /-------------------------------*/
-INITGAME(sshuttle,SNDBRD_TAITO_SINTETIZADOR)
+INITGAME(sshuttle,SNDBRD_TAITO_SINTETIZADORPP)
 TAITO_ROMSTART2222(sshuttle,"sshtl1.bin",CRC(ab67ed50) SHA1(0f627b007d74b81aba6b4ad0f4cf6782e42e24c9),
                             "sshtl2.bin",CRC(ed5130a4) SHA1(3e99c151d6649c4b19d59ab2128ee3160c6462a9),
                             "sshtl3.bin",CRC(17d43a16) SHA1(dd9a503460db9af64d6e22303d8a5b5b578ff950),
                             "sshtl4.bin",CRC(2719dbac) SHA1(3519dbac6fc0314d3277d59211bad4abf844ee02))
-TAITO_SOUNDROMS22("rally_s1.bin", CRC(0c7ca1bc) SHA1(09df10b1b295b9a7f5c337eb4f1e1e4db0f3d113),
-                  "rally_s2.bin", CRC(a409d9d1) SHA1(3005cfaedd6edf3d80cac539563655f3bcc342ca))
+TAITO_SOUNDROMS444("sshtl_s1.bin", CRC(5a6211e7) SHA1(9e53f76f76203c20f1933bf491b3f60279708c46),
+                   "sshtl_s2.bin", CRC(3af4707e) SHA1(b7231ede973a0c83e009333f0377b81c34826117),
+                   "sshtl_s3.bin", CRC(0788990b) SHA1(7197018d1ede74def864411afad99f98ddbab78a))
 TAITO_ROMEND
 #define input_ports_sshuttle input_ports_taito
-CORE_GAMEDEFNV(sshuttle,"Space Shuttle (Taito)",1985,"Taito",taito_sintetizador,0)
+CORE_GAMEDEFNV(sshuttle,"Space Shuttle (Taito)",1985,"Taito",taito_sintetizadorpp,0)
 
 TAITO_ROMSTART2222(sshuttl1,"sshtl1.bin", CRC(ab67ed50) SHA1(0f627b007d74b81aba6b4ad0f4cf6782e42e24c9),
                             "sshtl2.bin", CRC(ed5130a4) SHA1(3e99c151d6649c4b19d59ab2128ee3160c6462a9),
                             "sshtl3a.bin",CRC(b1ddb78b) SHA1(ffa2aa6f501a06b2a3a92b1926050bd3ca053d0d),
                             "sshtl4a.bin",CRC(163a569d) SHA1(9fe259d09944eacd30582e36d9a1dcbb6f5e1ea2))
-TAITO_SOUNDROMS22("rally_s1.bin", CRC(0c7ca1bc) SHA1(09df10b1b295b9a7f5c337eb4f1e1e4db0f3d113),
-                  "rally_s2.bin", CRC(a409d9d1) SHA1(3005cfaedd6edf3d80cac539563655f3bcc342ca))
+TAITO_SOUNDROMS444("sshtl_s1.bin", CRC(5a6211e7) SHA1(9e53f76f76203c20f1933bf491b3f60279708c46),
+                   "sshtl_s2.bin", CRC(3af4707e) SHA1(b7231ede973a0c83e009333f0377b81c34826117),
+                   "sshtl_s3.bin", CRC(0788990b) SHA1(7197018d1ede74def864411afad99f98ddbab78a))
 TAITO_ROMEND
 #define init_sshuttl1 init_sshuttle
 #define input_ports_sshuttl1 input_ports_sshuttle
-CORE_CLONEDEFNV(sshuttl1,sshuttle,"Space Shuttle (Taito) (alternate set)",1985,"Taito",taito_sintetizador,0)
+CORE_CLONEDEFNV(sshuttl1,sshuttle,"Space Shuttle (Taito) (alternate set)",1985,"Taito",taito_sintetizadorpp,0)
 
 /*--------------------------------
 / Polar Explorer
