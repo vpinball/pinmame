@@ -816,7 +816,7 @@ BY45_SOUNDROM22(           "u3_snd.532",0x1bdd6e2b,
                            "u4_snd.532",0xe9ef01e6)
 BY6803_ROMEND
 #define input_ports_ladyluck input_ports_by6803
-CORE_GAMEDEFNV(ladyluck,"Lady Luck",1986,"Bally",by_mBY6803_45S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(ladyluck,"Lady Luck",1986,"Bally",by_mBY6803_45S,0)
 
 // Games below use Turbo Cheap Squalk Sound Hardware
 
