@@ -314,6 +314,9 @@ static WRITE_HANDLER(giaux_w) {
     } else if (data == 0xbe)
       coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | (selocals.auxdata << 4);
     selocals.lastgiaux = selocals.auxdata;
+  } else if (core_gameData->hw.display & SE_DIGIT) {
+    coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | (core_revbyte(selocals.auxdata & 0xf0) << 2);
+    coreGlobals.segments[0].w = core_bcd2seg7[selocals.auxdata & 0x0f];
   } else
     coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | (selocals.auxdata << 4);
 }

@@ -24,7 +24,12 @@ SE_INPUT_PORTS_START(se, 1) SE_INPUT_PORTS_END
 /*-------------------------------------------------------------------
 / Apollo 13
 /-------------------------------------------------------------------*/
-INITGAME(apollo13,GEN_WS,se_dmd128x32,0)
+static struct core_dispLayout se_apollo[] = {
+  {0,0, 32,128, CORE_DMD, (void *)dedmd32_update},
+  {7,0,  0,  1, CORE_SEG7},
+  {0}
+};
+INITGAME(apollo13,GEN_WS,se_apollo,SE_DIGIT)
 SE128_ROMSTART(apollo13,"apolcpu.501",CRC(5afb8801) SHA1(65608148817f487c384dd36c221138962f1d9824))
 DE_DMD32ROM8x(   "a13dspa.500",CRC(bf8e3249) SHA1(5e04681901ca794feb970f5388cb355427cf9a9a))
 DE2S_SOUNDROM1444("apollo13.u7" ,CRC(e58a36b8) SHA1(ae60470a7b6c41cd40dbb7c0bea6f2f148f7b088),
