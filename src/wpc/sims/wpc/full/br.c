@@ -373,9 +373,9 @@ static void br_drawMech(BMTYPE **line) {
 static void br_drawStatic(BMTYPE **line) {
 
   core_textOutf(30, 50,BLACK,"Help on this Simulator:");
-  core_textOutf(30, 60,BLACK,"L/R Shift+R = L/R Ramp");
-  core_textOutf(30, 70,BLACK,"L/R Shift+- = L/R Slingshot");
-  core_textOutf(30, 80,BLACK,"L/R Shift+I/O = L/R Inlane/Outlane");
+  core_textOutf(30, 60,BLACK,"L/R Ctrl+R = L/R Ramp");
+  core_textOutf(30, 70,BLACK,"L/R Ctrl+- = L/R Slingshot");
+  core_textOutf(30, 80,BLACK,"L/R Ctrl+I/O = L/R Inlane/Outlane");
   core_textOutf(30, 90,BLACK,"Q = Drain Ball, W = Jet Bumpers Loop");
   core_textOutf(30,100,BLACK,"E = Ball Lock, R = Ship Ramp (Left)");
   core_textOutf(30,110,BLACK,"T = Top Ramp Loop, B = Broadside Hole");

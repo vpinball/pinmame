@@ -356,8 +356,8 @@ static wpcsim_tInportData xxx_inportData[] = {
 /* Help */
 
   wpc_textOutf(30, 40,BLACK,"Help on this Simulator:");
-  wpc_textOutf(30, 50,BLACK,"L/R Shift+- = L/R Slingshot");
-  wpc_textOutf(30, 60,BLACK,"L/R Shift+I/O = L/R Inlane/Outlane");
+  wpc_textOutf(30, 50,BLACK,"L/R Ctrl+- = L/R Slingshot");
+  wpc_textOutf(30, 60,BLACK,"L/R Ctrl+I/O = L/R Inlane/Outlane");
   wpc_textOutf(30, 70,BLACK,"Q = Drain Ball, W/E/R = Jet Bumpers");
   wpc_textOutf(30, 80,BLACK,"");
   wpc_textOutf(30, 90,BLACK,"");

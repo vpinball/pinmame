@@ -356,11 +356,11 @@ static void wcs_drawMech(BMTYPE **line) {
   /* Help */
 static void wcs_drawStatic(BMTYPE **line) {
   core_textOutf(30, 40,BLACK,"Help:");
-  core_textOutf(30, 50,BLACK,"L/R Shift+R = L/R Ramp");
-  core_textOutf(30, 60,BLACK,"L/R Shift+- = L/R Slingshot");
-  core_textOutf(30, 70,BLACK,"L/R Shift+X = L/R Buy Ticket");
-  core_textOutf(30, 80,BLACK,"L/R Shift+F = Free Kick Saucer");
-  core_textOutf(30, 90,BLACK,"L/R Shift+I/O = L/R Inlane/Outlane");
+  core_textOutf(30, 50,BLACK,"L/R Ctrl+R = L/R Ramp");
+  core_textOutf(30, 60,BLACK,"L/R Ctrl+- = L/R Slingshot");
+  core_textOutf(30, 70,BLACK,"L/R Ctrl+X = L/R Buy Ticket");
+  core_textOutf(30, 80,BLACK,"L/R Ctrl+F = Free Kick Saucer");
+  core_textOutf(30, 90,BLACK,"L/R Ctrl+I/O = L/R Inlane/Outlane");
   core_textOutf(30,100,BLACK,"Q = Drain Ball, W = Spinner");
   core_textOutf(30,110,BLACK,"E = Tackle, T = TV-Scoop, K = Keeper");
   core_textOutf(30,120,BLACK,"Y/U/I/O = Rollovers, A = Assist Saucer");

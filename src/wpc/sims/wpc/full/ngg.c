@@ -543,9 +543,9 @@ static char* SlamText[] = {"Down","Up"};
 }
   static void ngg_drawStatic(BMTYPE **line) {
   core_textOutf(30, 80,BLACK,"Help on this Simulator:");
-  core_textOutf(30, 89,BLACK,"L/R Shift+- = L/R Slingshot");
-  core_textOutf(30, 98,BLACK,"L/R Shift+L/O = L/R Loops/Outlane");
-  core_textOutf(30,107,BLACK,"L/R Shift+I/R =L/C/R Inlanes/Ramp");
+  core_textOutf(30, 89,BLACK,"L/R Ctrl+- = L/R Slingshot");
+  core_textOutf(30, 98,BLACK,"L/R Ctrl+L/O = L/R Loops/Outlane");
+  core_textOutf(30,107,BLACK,"L/R Ctrl+I/R =L/C/R Inlanes/Ramp");
   core_textOutf(30,116,BLACK,"Q = Drain Ball, S/D/F = Jet Bumpers");
   core_textOutf(30,125,BLACK,"G/H/J/K = Kick B/N/M = Skill Targets");
   core_textOutf(30,134,BLACK,"T = Putt Out A = Jet Advance");
