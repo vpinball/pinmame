@@ -65,6 +65,16 @@
       ROM_LOAD(ic26, 0xd800, 0x0800, chk26 ) \
         ROM_RELOAD(  0x5800, 0x0800)
 
+#define S7_ROMSTART808x(name,ver, ic14,chk14, ic17,chk17, ic20,chk20) \
+  ROM_START(name##_##ver) \
+    NORMALREGION(0x10000, S7_CPUREGION) \
+      ROM_LOAD(ic14, 0xe000, 0x0800, chk14 ) \
+        ROM_RELOAD(  0x6000, 0x0800) \
+      ROM_LOAD(ic17, 0xf000, 0x1000, chk17 ) \
+        ROM_RELOAD(  0x7000, 0x1000) \
+      ROM_LOAD(ic20, 0xe800, 0x0800, chk20 ) \
+        ROM_RELOAD(  0x6800, 0x0800)
+
 #define S7_ROMSTART000x(name, ver, ic14,chk14, ic17,chk17, ic20,chk20) \
   ROM_START(name##_##ver) \
     NORMALREGION(0x10000, S7_CPUREGION) \
