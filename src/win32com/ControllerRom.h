@@ -15,6 +15,8 @@ public:
 	CRom();
 	~CRom();
 
+	HRESULT Init(const struct GameDriver *gamedrv, const struct RomModule *region, const struct RomModule *rom);
+
 DECLARE_NO_REGISTRY()
 DECLARE_NOT_AGGREGATABLE(CRom)
 DECLARE_PROTECT_FINAL_CONSTRUCT()
@@ -30,18 +32,15 @@ END_COM_MAP()
 
 // IRom
 public:
-	STDMETHOD(Audit)();
+	STDMETHOD(Audit)(/*[in]*/ BOOL fStrict);
 	STDMETHOD(get_StateDescription)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(get_State)(/*[out, retval]*/ long *pVal);
 	STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal);
-
-public:
 	STDMETHOD(get_Flags)(/*[out, retval]*/ long *pVal);
 	STDMETHOD(get_ExpChecksum)(/*[out, retval]*/ long *pVal);
 	STDMETHOD(get_Checksum)(/*[out, retval]*/ long *pVal);
 	STDMETHOD(get_ExpLength)(/*[out, retval]*/ long *pVal);
 	STDMETHOD(get_Length)(/*[out, retval]*/ long *pVal);
-	HRESULT Init(const struct GameDriver *gamedrv, const struct RomModule *region, const struct RomModule *rom);
 
 private:
 	long m_lGameNum;

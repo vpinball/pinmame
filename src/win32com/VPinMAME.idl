@@ -20,7 +20,7 @@ import "ocidl.idl";
 		[propget, id(1), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
 		[propget, id(2), helpstring("property State")] HRESULT State([out, retval] long *pVal);
 		[propget, id(3), helpstring("property StateDescription")] HRESULT StateDescription([out, retval] BSTR *pVal);
-		[id(4), helpstring("method Audit")] HRESULT Audit();
+		[id(4), helpstring("method Audit")] HRESULT Audit([in,defaultvalue(0)] BOOL fStrict);
 		[propget, id(5), helpstring("property Length")] HRESULT Length([out, retval] long *pVal);
 		[propget, id(6), helpstring("property ExpLength")] HRESULT ExpLength([out, retval] long *pVal);
 		[propget, id(7), helpstring("property Checksum")] HRESULT Checksum([out, retval] long *pVal);
@@ -44,7 +44,7 @@ import "ocidl.idl";
 		[propget, id(1), helpstring("property Available")] HRESULT Available([out, retval] BOOL *pVal);
 		[propget, id(2), helpstring("property State")] HRESULT State([out, retval] long *pVal);
 		[propget, id(3), helpstring("property StateDescription")] HRESULT StateDescription([out, retval] BSTR *pVal);
-		[id(4), helpstring("method Audit")] HRESULT Audit();
+		[id(4), helpstring("method Audit")] HRESULT Audit([in,defaultvalue(0)] BOOL fStrict);
 	};
 
 	[

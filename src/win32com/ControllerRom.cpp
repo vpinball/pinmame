@@ -144,9 +144,11 @@ STDMETHODIMP CRom::get_StateDescription(BSTR *pVal)
 	return S_OK;
 }
 
-STDMETHODIMP CRom::Audit()
+STDMETHODIMP CRom::Audit(BOOL fStrict)
 {
 	int err;
+
+	m_dwChecksum = fStrict?0xffffffff:ROM_GETCRC(m_rom);
 
 	/* obtain CRC-32 and length of ROM file */
 	const struct GameDriver *drv = m_gamedrv;

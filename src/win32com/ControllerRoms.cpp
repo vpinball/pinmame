@@ -369,11 +369,11 @@ STDMETHODIMP CRoms::get_StateDescription(BSTR *pVal)
 	return S_OK;
 }
 
-STDMETHODIMP CRoms::Audit()
+STDMETHODIMP CRoms::Audit(BOOL fStrict)
 {
 	int i = 0;
 	while ( i<m_lRoms )
-		m_pRomsList[i++]->Audit();
+		m_pRomsList[i++]->Audit(fStrict);
 
 	return S_OK;
 }
