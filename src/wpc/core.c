@@ -1005,7 +1005,7 @@ void core_nvram(void *file, int write, void *mem, int length, UINT8 init) {
   else           memset(mem, init, length);     /* first time */
   mech_nv(file, write); /* save mech positions */
   { /*-- Load/Save DIP settings --*/
-    UINT8 dips[5];
+    UINT8 dips[6];
     int   ii;
 
     if (write) {
