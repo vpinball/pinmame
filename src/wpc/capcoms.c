@@ -1,4 +1,11 @@
 /*Capcom Sound Hardware
+
+  SOUND BOARD:
+	CPU: 87c52 @ 12 Mhz
+	I/O: 87c52 has a uart for communication back to main cpu
+	SND: 2 x TMS320AV120 MPG DECODER ( Only 1 on Breakshot )
+	VOL: x9241 Digital Volume Pot
+
   ------------------------------------
 */
 #include "driver.h"
@@ -7,12 +14,6 @@
 #include "capcom.h"
 #include "capcoms.h"
 #include "sndbrd.h"
-
-//Remove this flag to test the real game sending data (otherwise, we simply feed data from the roms till we hit the end)
-//#define TEST_FROM_ROM
-
-//Comment out to remove U16 Test bypass..
-#define TEST_BYPASS
 
 #define VERBOSE
 
@@ -23,13 +24,18 @@
 #define LOG(x)
 #endif
 
+//Remove this flag to test the real game sending data (otherwise, we simply feed data from the roms till we hit the end)
+//#define TEST_FROM_ROM
+
+//Comment out to remove U16 Test bypass..
+#define TEST_BYPASS
+
 /*Declarations*/
 static void capcoms_init(struct sndbrdData *brdData);
 static void cap_bof(int chipnum,int state);
 static void cap_sreq(int chipnum,int state);
-
 #ifdef TEST_FROM_ROM
-void cap_FillBuff(int dummy);
+  void cap_FillBuff(int dummy);
 #endif
 
 /*Interfaces*/
@@ -56,7 +62,7 @@ const struct sndbrdIntf capcomsIntf = {
 static struct {
   struct sndbrdData brdData;
   void *buffTimer;
-  UINT8 ram[0x8000+1];	//External 32K Ram
+  UINT8 ram[0x8000];	//External 32K Ram
   int rombase_offset;	//Offset into current rom
   int rombase;			//Points to current rom
   int bof_line[2];		//Track status of bof line for each tms chip
@@ -81,18 +87,26 @@ static struct {
   int nextram;		//Which position in ram to store next
 } x9241;
 
-//Track state of BOF & SREQ Lines
+//Track state of BOF 
 void cap_bof(int chipnum,int state)
 {
+	//Store the state..
 	locals.bof_line[chipnum]=state;
+	//If line is lo - trigger the interrupt, otherwise clear it
+	if(chipnum)
+		cpu_set_irq_line(locals.brdData.cpuNo, I8051_INT1_LINE, state?CLEAR_LINE:ASSERT_LINE);
+	else
+		cpu_set_irq_line(locals.brdData.cpuNo, I8051_INT0_LINE, state?CLEAR_LINE:ASSERT_LINE);
 	LOG(("MPG#%d: BOF Set to %d\n",chipnum,state));
-	printf("MPG#%d: BOF Set to %d\n",chipnum,state);
+//	printf("MPG#%d: BOF Set to %d\n",chipnum,state);
 }
+
+//Track state of SREQ
 void cap_sreq(int chipnum,int state)
 {
 	locals.sreq_line[chipnum]=state;
 	LOG(("MPG#%d: SREQ Set to %d\n",chipnum,state));
-	printf("MPG#%d: SREQ Set to %d\n",chipnum,state);
+//	printf("MPG#%d: SREQ Set to %d\n",chipnum,state);
 }
 
 
@@ -104,6 +118,11 @@ Data is clocked in via the SCL CLOCK PULSES, and serial sent via the SDA line..
 Start Command: 1->0 of SDA WHILE SCL = 1 (all data is ignored until start command)
 Stop Command:  0->1 of SDA WHILE SCL = 1
 Bit Data:      Data is sent while SCL = 0... SDA = 0 for no bit set, 1 for bit set.
+
+Todo:	#1) Implement Acknowledge
+		#2) Implement commands & registers
+		#3) Adjust volume accordingly
+
 ***********************************************************************************/
 void data_to_x9241(int scl, int sda)
 {
@@ -195,6 +214,7 @@ static READ_HANDLER(port_r)
 			P1.7    (O) = /CBOF2 = CLEAR BOF2 IRQ */
 		case 1:
 			//Todo: return cts/rts lines..
+			//Todo: return scl/sda lines..
 			LOG(("%4x:port read @ %x data = %x\n",activecpu_get_pc(),offset,data));
 			return data;
 		/*PORT 3:
@@ -238,23 +258,13 @@ static WRITE_HANDLER(port_w)
 		case 1:
 			//LED
 			cap_UpdateSoundLEDS(data&0x01);
-			//CBOF1
-			if((data&0x40)==0)	{
-				//BOF Line ALWAYS HI When this Line is Lo!
-				locals.bof_line[0] = 1;
-				cpu_set_irq_line(locals.brdData.cpuNo, I8051_INT0_LINE, CLEAR_LINE);
-				LOG(("Clearing /BOF1 - INT 0 \n"));
-			}
-			//CBOF2
-			if((data&0x80)==0){
-				//BOF Line ALWAYS HI When this Line is Lo!
-				locals.bof_line[1] = 1;
-				cpu_set_irq_line(locals.brdData.cpuNo, I8051_INT1_LINE, CLEAR_LINE);
-				LOG(("Clearing /BOF2 - INT 1 \n"));
-			}
 
-			//Update x9241 data lines
+			//Update x9241 data lines (SCL & SDA)
 			data_to_x9241((data&0x10)>>4,(data&0x20)>>5);
+
+			//CBOF1 & CBOF2 (If cpu writes a 0 here, we set BOF HI, but if we write a 1, BOF line is unchanged!)
+			if((data&0x40)==0)	cap_bof(0,1);
+			if((data&0x80)==0)	cap_bof(1,1);
 
 			LOG(("writing to port %x data = %x\n",offset,data));
 			break;
@@ -268,17 +278,12 @@ static WRITE_HANDLER(port_w)
 			P3.6    (O) = /WR
 			P3.7    (O) = /RD*/
 		case 3:
+			//Todo: Implement Serial Transmit 
 			LOG(("writing to port %x data = %x\n",offset,data));
 			break;
 		default:
 			LOG(("writing to port %x data = %x\n",offset,data));
 	}
-}
-
-READ_HANDLER(unk_r)
-{
-	LOG(("unk_r read @ %x\n",offset));
-	return 0;
 }
 
 //Return a byte from the bankswitched roms
@@ -369,7 +374,7 @@ D6 = /MPG1 Mute   (0 = MUTE)
 D7 = /MPG2 Mute   (0 = MUTE)*/
 WRITE_HANDLER(control_data)
 {
-	calc_rombase(data);							//Determine which ROM is active and set rombase
+	calc_rombase(data&0x0f);					//Determine which ROM is active and set rombase
 #ifndef TEST_FROM_ROM
 	TMS320AV120_set_reset(0,(data&0x10)>>4);	//Reset TMS320AV120 Chip #1 (1 = Reset)
 	TMS320AV120_set_reset(1,(data&0x20)>>5);	//Reset TMS320AV120 Chip #2 (1 = Reset)
@@ -419,6 +424,15 @@ WRITE_HANDLER(control_w)
 			LOG(("control_w %x data = %x\n",offset,data));
 	}
 }
+
+//This should never be called, but here just in case there's a bug in the 8051 cpu core or a wrong assumption by me!
+READ_HANDLER(unk_r)
+{
+	LOG(("unk_r read @ %x\n",offset));
+	return 0;
+}
+
+
 
 //The MC51 cpu's can all access up to 64K ROM & 64K RAM in the SAME ADDRESS SPACE
 //It uses separate commands to distinguish which area it's reading/writing!
@@ -497,7 +511,7 @@ static void capcoms_init(struct sndbrdData *brdData) {
   locals.buffTimer = timer_alloc(cap_FillBuff);
 
   /*-- start the timer --*/
-  timer_adjust(locals.buffTimer, 0, 0, TIME_IN_HZ(40));		//Frequency is somewhat arbitrary but must be fast enough to work
+  timer_adjust(locals.buffTimer, 0, 0, TIME_IN_HZ(30));		// Send 30 Frames per second ( 32Khz sample rate ~ 27.8 Frames per second)
 #endif
 }
 
