@@ -63,7 +63,7 @@ ZAC_ROMSTART44444(wsports,	"ws1.bin",CRC(58feb058) SHA1(50216bba5be28284e63d8265
 							"ws4.bin",CRC(74460cf2) SHA1(4afa612af1eff8eae686ceba7c117bc7962272c7),
 							"ws5.bin",CRC(5ef51ced) SHA1(390579d0482ceabf87924f7718ef33e336726d92))
 ZAC_ROMEND
-CORE_GAMEDEFNV(wsports,"Winter Sports",1978,"Zaccaria",mZAC1311,0)
+CORE_GAMEDEFNV(wsports,"Winter Sports",1978,"Zaccaria",mZAC1311,GAME_NOT_WORKING)
 
 /*--------------------------------
 // House of Diamonds (07/78)
@@ -75,7 +75,7 @@ ZAC_ROMSTART44444(hod,		"hod_1.bin",CRC(b666af0e) SHA1(e6a96ed30733e7b011ba35d1a
 							"hod_2.bin",NO_DUMP,
 							"hod_5.bin",CRC(7adff5a2) SHA1(63359e564b05720c55905be0a1045fcf41850f53))
 ZAC_ROMEND
-CORE_GAMEDEFNV(hod,"House of Diamonds",1978,"Zaccaria",mZAC1311,0)
+CORE_GAMEDEFNV(hod,"House of Diamonds",1978,"Zaccaria",mZAC1311,GAME_NOT_WORKING)
 
 //10/78 Ski Jump
 
@@ -90,7 +90,7 @@ ZAC_ROMSTART44444(futurwld,	"futwld_1.lgc",CRC(d83b8793) SHA1(3bb04d8395191ecf32
 							"futwld_4.lgc",CRC(b1de2120) SHA1(970e1c4eadb7ace1398684accac289a434d13d84),
 							"futwld_5.lgc",CRC(6b7965f2) SHA1(31314bc63f01717004c5c2448b5db7d292145b60))
 ZAC_ROMEND
-CORE_GAMEDEFNV(futurwld,"Future World",1978,"Zaccaria",mZAC1311,0)
+CORE_GAMEDEFNV(futurwld,"Future World",1978,"Zaccaria",mZAC1311,GAME_NOT_WORKING)
 
 /*--------------------------------
 / Shooting the Rapids (04/79)
@@ -102,7 +102,7 @@ ZAC_ROMSTART44444(strapids,	"rapids_1.lgc",CRC(2a30cef3) SHA1(1af0ad08316fca565a
 							"rapids_4.lgc",CRC(3319fa21) SHA1(b384a7347e0d6ca3bec53f356312b66d66b5b03f),
 							"rapids_5.lgc",CRC(0dd67110) SHA1(0c32e400ef07d7243148ae280e145a3e050313e8))
 ZAC_ROMEND
-CORE_GAMEDEFNV(strapids,"Shooting the Rapids",1979,"Zaccaria",mZAC1125,SOUNDFLAG)
+CORE_GAMEDEFNV(strapids,"Shooting the Rapids",1979,"Zaccaria",mZAC1125,GAME_NOT_WORKING|SOUNDFLAG)
 
 /*--------------------------------
 / Hot Wheels (09/79)
@@ -114,7 +114,7 @@ ZAC_ROMSTART84444(hotwheel,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6
 							"htwhls_4.lgc",CRC(974804ba) SHA1(f35c1b52327b2d3170a9a28dbee4d1437f1f594a),
 							"htwhls_5.lgc",CRC(e28f3c60) SHA1(eb780be60b41017d105288cef71906d15474b8fa))
 ZAC_ROMEND
-CORE_GAMEDEFNV(hotwheel,"Hot Wheels",1979,"Zaccaria",mZAC1125,SOUNDFLAG)
+CORE_GAMEDEFNV(hotwheel,"Hot Wheels",1979,"Zaccaria",mZAC1125,GAME_NOT_WORKING|SOUNDFLAG)
 
 //09/79 Space City
 
@@ -128,7 +128,7 @@ ZAC_ROMSTART84444(firemntn,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6
 							"firemt_4.lgc",CRC(b5cac3da) SHA1(94f1153571a099574d041a5168854056a692a03d),
 							"firemt_5.lgc",CRC(13f11d84) SHA1(031f43467a4a01810297e3bfe0762ed2eed4e251))
 ZAC_ROMEND
-CORE_GAMEDEFNV(firemntn,"Fire Mountain",1980,"Zaccaria",mZAC1125,SOUNDFLAG)
+CORE_GAMEDEFNV(firemntn,"Fire Mountain",1980,"Zaccaria",mZAC1125,GAME_NOT_WORKING|SOUNDFLAG)
 
 /*--------------------------------
 / Star God (05/80)
@@ -140,7 +140,7 @@ ZAC_ROMSTART84444(stargod,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6c
 							"stargod4.lgc",CRC(09e5682a) SHA1(c9fcad4f55ee005e204a49fa65e7d77ecfde9680),
 							"stargod5.lgc",CRC(43ba2462) SHA1(6749bdceca4a1dc2bc90d7ee3b671f52219e1af4))
 ZAC_ROMEND
-CORE_GAMEDEFNV(stargod,"Star God",1980,"Zaccaria",mZAC1125,SOUNDFLAG)
+CORE_GAMEDEFNV(stargod,"Star God",1980,"Zaccaria",mZAC1125,GAME_NOT_WORKING|SOUNDFLAG)
 
 INITGAME1(stargoda,GEN_ZAC1,dispZAC1,SNDBRD_S67S,125)
 ZAC_ROMSTART84444(stargoda,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6c0fda6fa0d1fea8257cb15),
@@ -150,7 +150,7 @@ ZAC_ROMSTART84444(stargoda,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6
 							"stargod5.lgc",CRC(43ba2462) SHA1(6749bdceca4a1dc2bc90d7ee3b671f52219e1af4))
 S67S_SOUNDROMS8(			"stargod.snd", CRC(c9103a68) SHA1(cc77af54fdb192f0b334d9d1028210618c3f1d95))
 ZAC_ROMEND
-CORE_CLONEDEFNV(stargoda,stargod,"Star God (alternate sound)",1980,"Zaccaria",mZAC1144,0)
+CORE_CLONEDEFNV(stargoda,stargod,"Star God (alternate sound)",1980,"Zaccaria",mZAC1144,GAME_NOT_WORKING)
 
 /*--------------------------------
 / Space Shuttle (09/80)
@@ -163,7 +163,7 @@ ZAC_ROMSTART84444(sshtlzac,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6
 							"spcshtl5.lgc",CRC(d1dabd9b) SHA1(0d28336764f43fa4d1b23d849b6ec0f60b2b4ecf))
 ZAC_SOUNDROM_0(				"spcshtl.snd", CRC(9a61781c) SHA1(0293640653d8cc9532debd31bbb70f025b4e6d03))
 ZAC_ROMEND
-CORE_GAMEDEFNV(sshtlzac,"Space Shuttle (Zaccaria)",1980,"Zaccaria",mZAC1346,0)
+CORE_GAMEDEFNV(sshtlzac,"Space Shuttle (Zaccaria)",1980,"Zaccaria",mZAC1346,GAME_NOT_WORKING)
 
 /*--------------------------------
 / Earth, Wind & Fire (04/81)
@@ -176,7 +176,7 @@ ZAC_ROMSTART84444(ewf,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6c0fda
 						"ewf_5.lgc",   CRC(f695dab6) SHA1(48ca60718cea40baa5052f690c8d69eb7ab32b0e))
 ZAC_SOUNDROM_0(			"ewf.snd",     CRC(5079e493) SHA1(51d366cdd09ad00b8b016b0ea1c85ac95ef94d71))
 ZAC_ROMEND
-CORE_GAMEDEFNV(ewf,"Earth, Wind & Fire",1981,"Zaccaria",mZAC1346,0)
+CORE_GAMEDEFNV(ewf,"Earth, Wind & Fire",1981,"Zaccaria",mZAC1346,GAME_NOT_WORKING)
 
 /*--------------------------------
 / Locomotion (09/81)
@@ -189,15 +189,12 @@ ZAC_ROMSTART84844(locomotn,	"loc-1.fil",  CRC(8d0252a2) SHA1(964dca642fb26eef2c1
 							"loc-5.fil",  CRC(cad4122a) SHA1(df29914adeb9675abbd9f43dbef23adf2fe96c81))
 ZAC_SOUNDROM_0(				"loc-snd.fil",CRC(51ea9d2a) SHA1(9a68687af2c1cad2a261f61a67a625d906c502e1))
 ZAC_ROMEND
-CORE_GAMEDEFNV(locomotn,"Locomotion",1981,"Zaccaria",mZAC1146,SOUNDFLAG)
+CORE_GAMEDEFNV(locomotn,"Locomotion",1981,"Zaccaria",mZAC1146,GAME_NOT_WORKING|SOUNDFLAG)
 
 /*
    It seems each and every generation 2 machine uses a different IRQ frequency.
    Some of them are *really* picky about this value, e.g. Time Machine, or Pinball Champ.
    If it's off by just 0.5 percent, the game will freeze or reset!
-   According to the schematics, the real IRQ freq. will be somewhat around 125,000 Hz!
-   MAME can't handle interrupts at that speed, so we have to work around it for now
-   by breaking it down to about 1 percent of that value... it's time for an update. :(
 */
 /*--------------------------------
 / Pinball Champ '82 (04/82) (Is this really different from the '83?)
