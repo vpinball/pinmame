@@ -23,8 +23,6 @@ static struct {
   core_tSeg segments;
   int    diagnosticLed;
   int vblankCount;
-  int initDone;
-  void *zctimer;
 } locals;
 
 static void piaIrq(int state) {
@@ -182,7 +180,7 @@ static INTERRUPT_GEN(hnk_vblank) {
   core_updateSw(core_getSol(19));
 }
 
-static void hnk_updSw(int *inports) {
+static SWITCH_UPDATE(hnk) {
   if (inports) {
       coreGlobals.swMatrix[0] = (inports[HNK_COMINPORT]>>5) & 0x07;
       coreGlobals.swMatrix[1] =   (coreGlobals.swMatrix[1] & 0xf9)
@@ -249,19 +247,12 @@ static struct pia6821_interface piaIntf[] = {{
 /* IRQ: A/B              */  piaIrq,piaIrq
 }};
 
-static core_tData hnkData = {
-  24, /* 24 Dips */
-  hnk_updSw, 1, hnk_sndCmd_w, "hnk",
-  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
-};
-
 static void hnk_zeroCross(int data) {
   /*- toggle zero/detection circuit-*/
   pia_set_input_cb1(0, 0); pia_set_input_cb1(0, 1);
 }
 
 static MACHINE_INIT(hnk) {
-  if (core_init(&hnkData)) return;
   memset(&locals, 0, sizeof(locals));
 
   /* init PIAs */
@@ -270,17 +261,15 @@ static MACHINE_INIT(hnk) {
 
   sndbrd_0_init(core_gameData->hw.soundBoard, HNK_SCPU1, memory_region(HNK_MEMREG_SCPU), NULL, NULL);
 
-  pia_reset();
   locals.vblankCount = 1;
-  timer_pulse(TIME_IN_HZ(HNK_ZCFREQ),0,hnk_zeroCross);
+}
 
-  locals.initDone = TRUE;
+static MACHINE_RESET(hnk) {
+  pia_reset();
 }
 
 static MACHINE_STOP(hnk) {
   sndbrd_0_exit();
-
-  core_exit();
 }
 
 /*-----------------------------------------------
@@ -320,13 +309,20 @@ MEMORY_END
 
 MACHINE_DRIVER_START(hnk)
   MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CORE_INIT_RESET_STOP(hnk,hnk,hnk)
   MDRV_CPU_ADD(M6800, 3580000/4)
   MDRV_CPU_MEMORY(hnk_readmem, hnk_writemem)
   MDRV_CPU_VBLANK_INT(hnk_vblank, 1)
-  MDRV_MACHINE_INIT(hnk) MDRV_MACHINE_STOP(hnk)
   MDRV_NVRAM_HANDLER(hnk)
   MDRV_VIDEO_UPDATE(core_led)
+  MDRV_DIPS(24)
+  MDRV_SWITCH_UPDATE(hnk)
+  MDRV_DIAGNOSTIC_LEDH(1)
+  MDRV_TIMER_ADD(hnk_zeroCross, TIME_IN_HZ(HNK_ZCFREQ))
+
   MDRV_IMPORT_FROM(hnks)
+  MDRV_SOUND_CMD(hnk_sndCmd_w)
+  MDRV_SOUND_CMDHEADING("hnk")
 MACHINE_DRIVER_END
 
 
@@ -348,6 +344,11 @@ struct MachineDriver machine_driver_HNK = {
   NULL, NULL, gen_refresh,
   0,0,0,0, {HNK_SOUND},
   hnk_nvram
+};
+static core_tData hnkData = {
+  24, /* 24 Dips */
+  hnk_updSw, 1, hnk_sndCmd_w, "hnk",
+  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
 };
 #endif
 

@@ -125,12 +125,13 @@ struct {
   int	 status2;
   int    dstrb;
   UINT8  dmd_visible_addr;
+  int    nextDMDFrame;
 } GTS3_dmdlocals;
 
 
 /*Hack to keep IRQ going*/
 static void via_irq(int state);
-static void trigirq(int data) { 
+static void trigirq(int data) {
 	static int lastirq=0;
 	lastirq = !lastirq;
 	//via_irq(lastirq);
@@ -156,7 +157,7 @@ static READ_HANDLER(alpha_u4_pb_r)
 	int data = 0;
 	//Gen 1 checks Slam switch here
 	if(GTS3locals.alphagen==1)
-		data |= (GTS3locals.swSlam <<3);	//Slam Switch (NOT INVERTED!) 
+		data |= (GTS3locals.swSlam <<3);	//Slam Switch (NOT INVERTED!)
 	else
 		data |= (GTS3locals.swDiag << 3);	//Diag Switch (NOT INVERTED!)
 	data |= (GTS3locals.swTilt << 4);   //Tilt Switch (NOT INVERTED!)
@@ -372,7 +373,7 @@ static WRITE_HANDLER(alpha_u5_cb2_w) { logerror1("WRITE:via_1_cb2_w: %x\n",data)
 static WRITE_HANDLER(dmd_u5_cb2_w) { logerror1("WRITE:via_1_cb2_w: %x\n",data); }
 
 //IRQ:  IRQ to Main CPU
-static void via_irq(int state) { 
+static void via_irq(int state) {
 	// logerror("IN VIA_IRQ - STATE = %x\n",state);
 #if 0
 	if(state)
@@ -479,7 +480,7 @@ static INTERRUPT_GEN(GTS3_vblank) {
   }
 }
 
-static void GTS3_updSw(int *inports) {
+static SWITCH_UPDATE(GTS3) {
 via_irq(1);
 #if 0
 	//HACK to make the IRQ work. Must be a bug in the VIA code, since this shouldn't be necessary!
@@ -527,18 +528,9 @@ static int gts3_m2sw(int col, int row) {
   return (col - 1) * 10 + row;
 }
 
-static core_tData GTS3Data = {
-  0,	/* No DIPs */
-  GTS3_updSw,
-  4,	/* 4 Diagnostic LEDS (CPU,DMD,Sound 1, Sound 2) */
-  GTS3_sndCmd_w, "GTS3",
-  gts3_sw2m, gts3_sw2m, gts3_m2sw, gts3_m2sw
-};
 
 /*Alpha Numeric First Generation Init*/
 static void GTS3_alpha_common_init(void) {
-  if (core_init(&GTS3Data)) return;
-
   memset(&GTS3_dmdlocals, 0, sizeof(GTS3_dmdlocals));
   memset(&DMDFrames, 0, sizeof(DMDFrames));
 
@@ -586,8 +578,6 @@ static MACHINE_INIT(gts3b) {
 
 /*DMD Generation Init*/
 static MACHINE_INIT(gts3dmd) {
-  if (core_init(&GTS3Data)) return;
-
   memset(&GTS3_dmdlocals, 0, sizeof(GTS3_dmdlocals));
   memset(&DMDFrames, 0, sizeof(DMDFrames));
 
@@ -644,7 +634,6 @@ static MACHINE_STOP(gts3) {
   }
 
   sndbrd_0_exit();
-  core_exit();
 }
 
 /*Solenoids - Need to verify correct solenoid # here!*/
@@ -717,7 +706,7 @@ static WRITE_HANDLER(alpha_display){
 static WRITE_HANDLER(dmd_display){
 	//Latch DMD Data from U7
     GTS3_dmdlocals.dmd_latch = data;
-	if (offset==0) 
+	if (offset==0)
 		cpu_set_irq_line(GTS3_DCPUNO, 0, PULSE_LINE);
 	else
 		if(offset==1) cpu_set_reset_line(1, PULSE_LINE);
@@ -726,7 +715,7 @@ static WRITE_HANDLER(dmd_display){
 }
 
 //FIRE NMI FOR DMD!
-static void dmdnmi(int data){ 
+static void dmdnmi(int data){
 	cpu_set_nmi_line(GTS3_DCPUNO, PULSE_LINE);
 }
 
@@ -832,8 +821,8 @@ void alpha_vblank(void) { }
 //Update the DMD Frames
 void dmd_vblank(void){
   int offset = (crtc6845_start_addr>>2);
-  memcpy(DMDFrames[coreGlobals_dmd.nextDMDFrame],memory_region(GTS3_MEMREG_DCPU1)+0x1000+offset,0x200);
-  coreGlobals_dmd.nextDMDFrame = (coreGlobals_dmd.nextDMDFrame + 1) % GTS3DMD_FRAMES;
+  memcpy(DMDFrames[GTS3_dmdlocals.nextDMDFrame],memory_region(GTS3_MEMREG_DCPU1)+0x1000+offset,0x200);
+  GTS3_dmdlocals.nextDMDFrame = (GTS3_dmdlocals.nextDMDFrame + 1) % GTS3DMD_FRAMES;
   dmdnmi(0);
 }
 
@@ -898,27 +887,34 @@ MACHINE_DRIVER_START(gts3)
 
   MDRV_NVRAM_HANDLER(gts3)
   MDRV_VIDEO_UPDATE(core_led)
+
+  MDRV_SWITCH_UPDATE(GTS3)
+  MDRV_DIAGNOSTIC_LEDH(4)
+  MDRV_SWITCH_CONV(gts3_sw2m,gts3_m2sw)
+  MDRV_LAMP_CONV(gts3_sw2m,gts3_m2sw)
+  MDRV_SOUND_CMD(GTS3_sndCmd_w)
+  MDRV_SOUND_CMDHEADING("GTS3")
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(gts3_1a)
   MDRV_IMPORT_FROM(gts3)
-  MDRV_MACHINE_INIT(gts3) MDRV_MACHINE_STOP(gts3)
+  MDRV_CORE_INIT_RESET_STOP(gts3,NULL,gts3)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(gts3_1b)
   MDRV_IMPORT_FROM(gts3)
-  MDRV_MACHINE_INIT(gts3b) MDRV_MACHINE_STOP(gts3)
+  MDRV_CORE_INIT_RESET_STOP(gts3b,NULL,gts3)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(gts3_1as)
   MDRV_IMPORT_FROM(gts3)
-  MDRV_MACHINE_INIT(gts3) MDRV_MACHINE_STOP(gts3)
+  MDRV_CORE_INIT_RESET_STOP(gts3,NULL,gts3)
   MDRV_IMPORT_FROM(gts80s_b3)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(gts3_1bs)
   MDRV_IMPORT_FROM(gts3)
-  MDRV_MACHINE_INIT(gts3b) MDRV_MACHINE_STOP(gts3)
+  MDRV_CORE_INIT_RESET_STOP(gts3b,NULL,gts3)
   MDRV_IMPORT_FROM(gts80s_b3)
 MACHINE_DRIVER_END
 
@@ -931,7 +927,7 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(gts3_2)
   MDRV_IMPORT_FROM(gts3)
   MDRV_IMPORT_FROM(gts3_dmd)
-  MDRV_MACHINE_INIT(gts3dmd) MDRV_MACHINE_STOP(gts3)
+  MDRV_CORE_INIT_RESET_STOP(gts3dmd,NULL,gts3)
   MDRV_IMPORT_FROM(gts80s_s3)
 MACHINE_DRIVER_END
 
@@ -1080,4 +1076,12 @@ struct MachineDriver machine_driver_GTS3_2S = {
   0,0,0,0,{GTS3_2_SOUND},
   GTS3_nvram
 };
+static core_tData GTS3Data = {
+  0,	/* No DIPs */
+  GTS3_updSw,
+  4,	/* 4 Diagnostic LEDS (CPU,DMD,Sound 1, Sound 2) */
+  GTS3_sndCmd_w, "GTS3",
+  gts3_sw2m, gts3_sw2m, gts3_m2sw, gts3_m2sw
+};
+
 #endif

@@ -21,7 +21,6 @@ static struct {
   core_tSeg segments,pseg;
   int    diagnosticLed;
   int vblankCount;
-  void *zctimer;
 } locals;
 
 static NVRAM_HANDLER(taito);
@@ -74,7 +73,7 @@ static INTERRUPT_GEN(taito_vblank) {
   core_updateSw(core_getSol(19));
 }
 
-static void taito_updSw(int *inports) {
+static SWITCH_UPDATE(taito) {
   if (inports) {
     coreGlobals.swMatrix[0] = (inports[TAITO_COMINPORT]>>10) & 0x07;
     coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & (~0x60)) |
@@ -95,31 +94,15 @@ static void taito_updSw(int *inports) {
 static INTERRUPT_GEN(taito_irq) {
 }
 
-static core_tData taitoData = {
-  32, /* 32 Dips */
-  taito_updSw, 1, sndbrd_0_data_w, "taito",
-  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
-};
-
 static void taito_zeroCross(int data) {
 }
 
 static MACHINE_INIT(taito) {
-  if (locals.zctimer) timer_remove(locals.zctimer);
   memset(&locals, 0, sizeof(locals));
 
-  if (core_init(&taitoData)) return;
-  //sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(REGION_SOUND1), NULL, NULL);
   locals.vblankCount = 1;
-  locals.zctimer = timer_alloc(taito_zeroCross);
-  timer_adjust(locals.zctimer, 0,0, TIME_IN_HZ(TAITO_ZCFREQ));
 }
 
-static MACHINE_STOP(taito) {
-  if (locals.zctimer) { timer_remove(locals.zctimer); locals.zctimer = NULL; }
-  //sndbrd_0_exit();
-  core_exit();
-}
 static UINT8 *taito_CMOS;
 
 static WRITE_HANDLER(taito_CMOS_w) {
@@ -172,13 +155,17 @@ MEMORY_END
 
 MACHINE_DRIVER_START(taito)
   MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CORE_INIT_RESET_STOP(taito,NULL,NULL)
   MDRV_CPU_ADD_TAG("mcpu", 8080, 4000000)
   MDRV_CPU_MEMORY(taito_readmem, taito_writemem)
   MDRV_CPU_VBLANK_INT(taito_vblank, 1)
   MDRV_CPU_PERIODIC_INT(taito_irq, TAITO_IRQFREQ)
-  MDRV_MACHINE_INIT(taito) MDRV_MACHINE_STOP(taito)
   MDRV_VIDEO_UPDATE(core_led)
   MDRV_NVRAM_HANDLER(taito)
+  MDRV_DIPS(32)
+  MDRV_SWITCH_UPDATE(taito)
+  MDRV_DIAGNOSTIC_LEDH(1)
+  MDRV_TIMER_ADD(taito_zeroCross, TIME_IN_HZ(TAITO_ZCFREQ))
 MACHINE_DRIVER_END
 
 /*-----------------------------------------------
@@ -187,3 +174,10 @@ MACHINE_DRIVER_END
 static NVRAM_HANDLER(taito) {
   core_nvram(file, read_or_write, taito_CMOS, 0x100,0xff);
 }
+#if 0
+static core_tData taitoData = {
+  32, /* 32 Dips */
+  taito_updSw, 1, sndbrd_0_data_w, "taito",
+  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
+};
+#endif

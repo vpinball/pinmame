@@ -10,6 +10,9 @@
 #include "wpc.h"
 
 #define WPC_VBLANKDIV      4 /* How often to check the DMD FIRQ interrupt */
+/*-- no of DMD frames to add together to create shades --*/
+/*-- (hardcoded, do not change)                        --*/
+#define DMD_FRAMES         3
 
 /*-- Smoothing values --*/
 #define WPC_SOLSMOOTH      4 /* Smooth the Solenoids over this numer of VBLANKS */
@@ -42,6 +45,7 @@ static VIDEO_UPDATE(wpc_dmd);
 static MACHINE_INIT(wpc);
 static MACHINE_STOP(wpc);
 static NVRAM_HANDLER(wpc);
+static SWITCH_UPDATE(wpc);
 
 /*------------------------
 /  DMD display registers
@@ -83,9 +87,13 @@ static struct {
   int time, ltime, ticks;
   int pageMask;            /* page handling */
   int firqSrc;             /* source of last firq */
-  int initDone;            /* TRUE if glocals initialised, used to handle restarts */
   int diagnostic;
 } wpclocals;
+
+static struct {
+  UINT8 *DMDFrames[DMD_FRAMES];
+  int    nextDMDFrame;
+} dmdlocals;
 
 /*-- pointers --*/
 static void *wpc_printfile = NULL;
@@ -112,67 +120,83 @@ static MEMORY_WRITE_START(wpc_writemem)
   { 0x8000, 0xffff, MWA_ROM },
 MEMORY_END
 
+// convert lamp and switch numbers
+// both use column*10+row
+// convert to 0-63 (+8)
+// i.e. 11=8,12=9,21=16
+static int wpc_sw2m(int no) { return (no/10)*8+(no%10-1); }
+static int wpc_m2sw(int col, int row) { return col*10+row+1; }
+
 /*-----------------
 /  Machine drivers
 /------------------*/
 static MACHINE_DRIVER_START(wpc)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CORE_INIT_RESET_STOP(wpc,NULL,wpc)
   MDRV_CPU_ADD(M6809, 2000000)
   MDRV_CPU_MEMORY(wpc_readmem, wpc_writemem)
   MDRV_CPU_VBLANK_INT(wpc_vblank, WPC_VBLANKDIV)
   MDRV_CPU_PERIODIC_INT(wpc_irq, WPC_IRQFREQ)
-  MDRV_MACHINE_INIT(wpc) MDRV_MACHINE_STOP(wpc)
   MDRV_NVRAM_HANDLER(wpc)
+  MDRV_DIPS(8)
+  MDRV_SWITCH_UPDATE(wpc)
+  MDRV_DIAGNOSTIC_LEDH(1)
+  MDRV_SWITCH_CONV(wpc_sw2m,wpc_m2sw)
+  MDRV_LAMP_CONV(wpc_sw2m,wpc_m2sw)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(wpc_alpha)
-  MDRV_IMPORT_FROM(PinMAME)
   MDRV_IMPORT_FROM(wpc)
   MDRV_VIDEO_UPDATE(core_led)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(wpc_alpha1S)
-  MDRV_IMPORT_FROM(PinMAME)
   MDRV_IMPORT_FROM(wpc)
   MDRV_VIDEO_UPDATE(core_led)
   MDRV_IMPORT_FROM(wmssnd_s11cs)
+  MDRV_SOUND_CMD(sndbrd_1_data_w)
+  MDRV_SOUND_CMDHEADING("s11cs")
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(wpc_alpha2S)
-  MDRV_IMPORT_FROM(PinMAME)
   MDRV_IMPORT_FROM(wpc)
   MDRV_VIDEO_UPDATE(core_led)
   MDRV_IMPORT_FROM(wmssnd_wpcs)
+  MDRV_SOUND_CMD(sndbrd_1_data_w)
+  MDRV_SOUND_CMDHEADING("wpcs")
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(wpc_dmd)
-  MDRV_IMPORT_FROM(PinMAME)
   MDRV_IMPORT_FROM(wpc)
   MDRV_VIDEO_START(wpc_dmd)
   MDRV_VIDEO_UPDATE(wpc_dmd)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(wpc_dmdS)
-  MDRV_IMPORT_FROM(PinMAME)
   MDRV_IMPORT_FROM(wpc)
   MDRV_VIDEO_START(wpc_dmd)
   MDRV_VIDEO_UPDATE(wpc_dmd)
   MDRV_IMPORT_FROM(wmssnd_wpcs)
+  MDRV_SOUND_CMD(sndbrd_1_data_w)
+  MDRV_SOUND_CMDHEADING("wpcs")
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(wpc_dcsS)
-  MDRV_IMPORT_FROM(PinMAME)
   MDRV_IMPORT_FROM(wpc)
   MDRV_VIDEO_START(wpc_dmd)
   MDRV_VIDEO_UPDATE(wpc_dmd)
   MDRV_IMPORT_FROM(wmssnd_dcs1)
+  MDRV_SOUND_CMD(sndbrd_1_data_w)
+  MDRV_SOUND_CMDHEADING("dcs")
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(wpc_95S)
-  MDRV_IMPORT_FROM(PinMAME)
   MDRV_IMPORT_FROM(wpc)
   MDRV_VIDEO_START(wpc_dmd)
   MDRV_VIDEO_UPDATE(wpc_dmd)
   MDRV_IMPORT_FROM(wmssnd_dcs2)
+  MDRV_SOUND_CMD(sndbrd_1_data_w)
+  MDRV_SOUND_CMDHEADING("dcs")
 MACHINE_DRIVER_END
 
 /*--------------------------------------------------------------
@@ -190,8 +214,8 @@ static INTERRUPT_GEN(wpc_vblank) {
       wpc_firq(TRUE, WPC_FIRQ_DMD);
     if ((wpclocals.vblankCount % WPC_VBLANKDIV) == 0) {
       /*-- This is the real VBLANK interrupt --*/
-      coreGlobals_dmd.DMDFrames[coreGlobals_dmd.nextDMDFrame] = memory_region(WPC_DMDREGION)+ (wpc_data[DMD_VISIBLEPAGE] & 0x0f) * 0x200;
-      coreGlobals_dmd.nextDMDFrame = (coreGlobals_dmd.nextDMDFrame + 1) % DMD_FRAMES;
+      dmdlocals.DMDFrames[dmdlocals.nextDMDFrame] = memory_region(WPC_DMDREGION)+ (wpc_data[DMD_VISIBLEPAGE] & 0x0f) * 0x200;
+      dmdlocals.nextDMDFrame = (dmdlocals.nextDMDFrame + 1) % DMD_FRAMES;
     }
   }
 
@@ -559,7 +583,7 @@ static INTERRUPT_GEN(wpc_irq) {
   cpu_set_irq_line(WPC_CPUNO, M6809_IRQ_LINE, HOLD_LINE);
 }
 
-static void wpc_updSw(int *inports) {
+static SWITCH_UPDATE(wpc) {
   if (inports) {
     coreGlobals.swMatrix[CORE_COINDOORSWCOL] = inports[WPC_COMINPORT] & 0xff;
     /*-- check standard keys --*/
@@ -576,37 +600,6 @@ static void wpc_updSw(int *inports) {
   }
 }
 
-// convert lamp and switch numbers
-// both use column*10+row
-// convert to 0-63 (+8)
-// i.e. 11=8,12=9,21=16
-static int wpc_sw2m(int no) { return (no/10)*8+(no%10-1); }
-static int wpc_m2sw(int col, int row) { return col*10+row+1; }
-
-static core_tData dcs_coreData = {
-  8, /* 8 DIPs */
-  wpc_updSw,
-  1,
-  sndbrd_0_data_w,
-  "dcs",
-  wpc_sw2m, wpc_sw2m,wpc_m2sw,wpc_m2sw
-};
-static core_tData wpcs_coreData = {
-  8, /* 8 DIPs */
-  wpc_updSw,
-  1,
-  sndbrd_0_data_w,
-  "wpcs",
-  wpc_sw2m, wpc_sw2m,wpc_m2sw,wpc_m2sw
-};
-static core_tData s11cs_coreData = {
-  8, /* 8 DIPs */
-  wpc_updSw,
-  1,
-  sndbrd_0_data_w,
-  "s11cs",
-  wpc_sw2m, wpc_sw2m,wpc_m2sw,wpc_m2sw
-};
 static WRITE_HANDLER(snd_data_cb) { // WPCS sound generates FIRQ on reply
   wpc_firq(TRUE, WPC_FIRQ_SOUND);
 }
@@ -620,27 +613,21 @@ static MACHINE_INIT(wpc) {
   /* Don't know why the mame32 or MacMame people doesn't complain */
   /* fake an exit */
   memset(&wpclocals, 0, sizeof(wpclocals));
-  if (core_gameData == NULL)  return;
-
   switch (core_gameData->gen) {
     case GEN_WPCALPHA_1:
-      if (core_init(&s11cs_coreData)) return;
       sndbrd_0_init(SNDBRD_S11CS, 1, memory_region(S11CS_ROMREGION),NULL,NULL);
       break;
     case GEN_WPCALPHA_2:
     case GEN_WPCDMD:
     case GEN_WPCFLIPTRON:
-      if (core_init(&wpcs_coreData)) return;
       sndbrd_0_init(SNDBRD_WPCS, 1, memory_region(WPCS_ROMREGION),snd_data_cb,NULL);
       break;
     case GEN_WPCDCS:
     case GEN_WPCSECURITY:
     case GEN_WPC95DCS:
-      if (core_init(&dcs_coreData))  return;
       sndbrd_0_init(SNDBRD_DCS, 1, memory_region(DCS_ROMREGION),NULL,NULL);
       break;
     case GEN_WPC95:
-      if (core_init(&dcs_coreData))  return;
       sndbrd_0_init(SNDBRD_DCS95, 1, memory_region(DCS_ROMREGION),NULL,NULL);
       break;
   }
@@ -678,7 +665,6 @@ static MACHINE_STOP(wpc) {
   sndbrd_0_exit();
   if (wpc_printfile)
     { osd_fclose(wpc_printfile); wpc_printfile = NULL; }
-  core_exit();
 }
 
 /*-----------------------------------------------
@@ -740,8 +726,8 @@ static VIDEO_START(wpc_dmd) {
   int ii;
 
   for (ii = 0; ii < DMD_FRAMES; ii++)
-    coreGlobals_dmd.DMDFrames[ii] = RAM;
-  coreGlobals_dmd.nextDMDFrame = 0;
+    dmdlocals.DMDFrames[ii] = RAM;
+  dmdlocals.nextDMDFrame = 0;
   return 0;
 }
 
@@ -755,12 +741,12 @@ static VIDEO_UPDATE(wpc_dmd) {
     for (jj = 0; jj < 16; jj++) {
       /* Intensity depends on how many times the pixel */
       /* been on in the last 3 frames                  */
-      unsigned int intens1 = ((coreGlobals_dmd.DMDFrames[0][kk] & 0x55) +
-                              (coreGlobals_dmd.DMDFrames[1][kk] & 0x55) +
-                              (coreGlobals_dmd.DMDFrames[2][kk] & 0x55));
-      unsigned int intens2 = ((coreGlobals_dmd.DMDFrames[0][kk] & 0xaa) +
-                              (coreGlobals_dmd.DMDFrames[1][kk] & 0xaa) +
-                              (coreGlobals_dmd.DMDFrames[2][kk] & 0xaa));
+      unsigned int intens1 = ((dmdlocals.DMDFrames[0][kk] & 0x55) +
+                              (dmdlocals.DMDFrames[1][kk] & 0x55) +
+                              (dmdlocals.DMDFrames[2][kk] & 0x55));
+      unsigned int intens2 = ((dmdlocals.DMDFrames[0][kk] & 0xaa) +
+                              (dmdlocals.DMDFrames[1][kk] & 0xaa) +
+                              (dmdlocals.DMDFrames[2][kk] & 0xaa));
 
       *line++ = (intens1)    & 0x03;
       *line++ = (intens2>>1) & 0x03;
@@ -883,5 +869,29 @@ const struct MachineDriver machine_driver_wpcDCS95_s = {
   dmd_start, NULL, dmd_refresh,
   0, 0, 0, 0, { DCS_SOUND },
   wpc_nvram
+};
+static core_tData dcs_coreData = {
+  8, /* 8 DIPs */
+  wpc_updSw,
+  1,
+  sndbrd_0_data_w,
+  "dcs",
+  wpc_sw2m, wpc_sw2m,wpc_m2sw,wpc_m2sw
+};
+static core_tData wpcs_coreData = {
+  8, /* 8 DIPs */
+  wpc_updSw,
+  1,
+  sndbrd_0_data_w,
+  "wpcs",
+  wpc_sw2m, wpc_sw2m,wpc_m2sw,wpc_m2sw
+};
+static core_tData s11cs_coreData = {
+  8, /* 8 DIPs */
+  wpc_updSw,
+  1,
+  sndbrd_0_data_w,
+  "s11cs",
+  wpc_sw2m, wpc_sw2m,wpc_m2sw,wpc_m2sw
 };
 #endif

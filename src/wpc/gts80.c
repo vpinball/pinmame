@@ -110,7 +110,7 @@ static INTERRUPT_GEN(GTS80_vblank) {
   core_updateSw(TRUE); /* assume flipper enabled */
 }
 
-static void GTS80_updSw(int *inports) {
+static SWITCH_UPDATE(GTS80) {
 	if (inports) {
 		coreGlobals.swMatrix[0] = ((inports[GTS80_COMINPORT] & 0xff00)>>8);
         coreGlobals.swMatrix[8] = (coreGlobals.swMatrix[8]&0xc0) | (inports[GTS80_COMINPORT] & 0x003f);
@@ -147,13 +147,6 @@ static int GTS80_m2sw(int col, int row) {
 static int GTS80_m2lamp(int no) { return no+8; }
 static int GTS80_lamp2m(int col, int row) { return (col-1)*8+row; }
 
-static core_tData GTS80Data = {
-  42, /* 42 DIPs (32 for the controller board, 8 for the SS- and 2 for the S-Board*/
-  GTS80_updSw,
-  1,
-  GTS80_sndCmd_w, "GTS80",
-  GTS80_sw2m, GTS80_m2lamp, GTS80_m2sw, GTS80_lamp2m
-};
 
 static int GTS80_getSwRow(int row) {
 	int value = 0;
@@ -624,7 +617,6 @@ struct MachineDriver machine_driver_GTS80BS3 = {
 static MACHINE_INIT(gts80) {
   int ii;
 
-  if (core_init(&GTS80Data)) return;
   memset(&GTS80locals, 0, sizeof GTS80locals);
 
   /* init ROM */
@@ -656,7 +648,6 @@ static MACHINE_STOP(gts80)
   sndbrd_0_exit();
 
   riot6532_unconfig();
-  core_exit();
 }
 
 /*-----------------------------------------------
@@ -674,12 +665,19 @@ static NVRAM_HANDLER(gts80) {
 
 MACHINE_DRIVER_START(gts80)
   MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CORE_INIT_RESET_STOP(gts80,NULL,gts80)
   MDRV_CPU_ADD(M6502, 850000)
   MDRV_CPU_MEMORY(GTS80_readmem, GTS80_writemem)
   MDRV_CPU_VBLANK_INT(GTS80_vblank, 1)
-  MDRV_MACHINE_INIT(gts80) MDRV_MACHINE_STOP(gts80)
   MDRV_NVRAM_HANDLER(gts80)
   MDRV_VIDEO_UPDATE(core_led)
+  MDRV_DIPS(42) /* 42 DIPs (32 for the controller board, 8 for the SS- and 2 for the S-Board*/
+  MDRV_SWITCH_UPDATE(GTS80)
+  MDRV_DIAGNOSTIC_LEDH(1)
+  MDRV_SWITCH_CONV(GTS80_sw2m,GTS80_m2sw)
+  MDRV_LAMP_CONV(GTS80_sw2m,GTS80_m2sw)
+  MDRV_SOUND_CMD(GTS80_sndCmd_w)
+  MDRV_SOUND_CMDHEADING("GTS80")
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(gts80s)
@@ -711,3 +709,12 @@ MACHINE_DRIVER_START(gts80bs3)
   MDRV_IMPORT_FROM(gts80)
   MDRV_IMPORT_FROM(gts80s_b3)
 MACHINE_DRIVER_END
+#if 0
+static core_tData GTS80Data = {
+  42, /* 42 DIPs (32 for the controller board, 8 for the SS- and 2 for the S-Board*/
+  GTS80_updSw,
+  1,
+  GTS80_sndCmd_w, "GTS80",
+  GTS80_sw2m, GTS80_m2lamp, GTS80_m2sw, GTS80_lamp2m
+};
+#endif

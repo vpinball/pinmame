@@ -71,7 +71,7 @@ static INTERRUPT_GEN(se_vblank) {
   core_updateSw(TRUE); /* flippers are CPU controlled */
 }
 
-static void se_updSw(int *inports) {
+static SWITCH_UPDATE(se) {
   if (inports) {
     /*Switch Col 0 = Dedicated Switches - Coin Door Only - Begin at 6th Spot*/
     coreGlobals.swMatrix[0] = (inports[SE_COMINPORT] & 0x000f)<<4;
@@ -84,16 +84,7 @@ static void se_updSw(int *inports) {
   }
 }
 
-static core_tData seData = {
-  8, /* 8 DIPs */
-  se_updSw,
-  1,
-  sndbrd_1_data_w, "se",
-  core_swSeq2m, core_swSeq2m,core_m2swSeq,core_m2swSeq
-};
-
 static MACHINE_INIT(se) {
-  if (core_init(&seData)) return;
   /* Copy Last 32K into last 32K of CPU space */
   memcpy(memory_region(SE_CPUREGION) + 0x8000,
          memory_region(SE_ROMREGION) +
@@ -107,7 +98,7 @@ static MACHINE_INIT(se) {
 }
 
 static MACHINE_STOP(se) {
-  sndbrd_0_exit(); sndbrd_1_exit(); core_exit();
+  sndbrd_0_exit(); sndbrd_1_exit();
 }
 
 /*-- Main CPU Bank Switch --*/
@@ -219,33 +210,40 @@ static MEMORY_WRITE_START(se_writemem)
 MEMORY_END
 
 static MACHINE_DRIVER_START(se)
+  MDRV_IMPORT_FROM(PinMAME)
   MDRV_CPU_ADD(M6809, 2000000)
+  MDRV_CORE_INIT_RESET_STOP(se,NULL,se)
   MDRV_CPU_MEMORY(se_readmem, se_writemem)
   MDRV_CPU_VBLANK_INT(se_vblank, 1)
   MDRV_CPU_PERIODIC_INT(irq1_line_pulse, SE_IRQFREQ)
-  MDRV_MACHINE_INIT(se) MDRV_MACHINE_STOP(se)
   MDRV_NVRAM_HANDLER(se)
+  MDRV_DIPS(8)
+  MDRV_SWITCH_UPDATE(se)
+  MDRV_DIAGNOSTIC_LEDH(1)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(se2aS)
-  MDRV_IMPORT_FROM(PinMAME)
   MDRV_IMPORT_FROM(se)
   MDRV_IMPORT_FROM(de2as)
   MDRV_IMPORT_FROM(de_dmd32)
+  MDRV_SOUND_CMD(sndbrd_1_data_w)
+  MDRV_SOUND_CMDHEADING("se")
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(se2bS)
-  MDRV_IMPORT_FROM(PinMAME)
   MDRV_IMPORT_FROM(se)
   MDRV_IMPORT_FROM(de2bs)
   MDRV_IMPORT_FROM(de_dmd32)
+  MDRV_SOUND_CMD(sndbrd_1_data_w)
+  MDRV_SOUND_CMDHEADING("se")
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(se2cS)
-  MDRV_IMPORT_FROM(PinMAME)
   MDRV_IMPORT_FROM(se)
   MDRV_IMPORT_FROM(de2cs)
   MDRV_IMPORT_FROM(de_dmd32)
+  MDRV_SOUND_CMD(sndbrd_1_data_w)
+  MDRV_SOUND_CMDHEADING("se")
 MACHINE_DRIVER_END
 
 /*-----------------------------------------------
@@ -304,5 +302,13 @@ struct MachineDriver machine_driver_se_3S = {
   SOUND_SUPPORTS_STEREO,0,0,0,{ DE2S_SOUNDC },
   se_nvram
 };
+static core_tData seData = {
+  8, /* 8 DIPs */
+  se_updSw,
+  1,
+  sndbrd_1_data_w, "se",
+  core_swSeq2m, core_swSeq2m,core_m2swSeq,core_m2swSeq
+};
+
 
 #endif

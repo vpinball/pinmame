@@ -20,9 +20,6 @@
 #define S4_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
 #define S4_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
 
-static MACHINE_STOP(s4);
-static MACHINE_STOP(s4);
-
 static struct {
   int	 alphapos;
   int    vblankCount;
@@ -282,7 +279,7 @@ static INTERRUPT_GEN(s4_vblank) {
   core_updateSw(s4locals.ssEn);
 }
 
-static void s4_updSw(int *inports) {
+static SWITCH_UPDATE(s4) {
   if (inports) {
     coreGlobals.swMatrix[1] = inports[S4_COMINPORT] & 0x00ff;
     coreGlobals.swMatrix[0] = (inports[S4_COMINPORT] & 0xff00)>>8;
@@ -295,17 +292,8 @@ static void s4_updSw(int *inports) {
   core_textOutf(40, 30, BLACK, core_getSw(S4_SWUPDN) ? "Auto  " : "Manual");
 }
 
-static const core_tData s4Data = {
-  8+16, /* 16 Dips */
-  s4_updSw,
-  2 | DIAGLED_VERTICAL,
-  sndbrd_0_data_w, "s4",
-  core_swSeq2m, core_swSeq2m,core_m2swSeq,core_m2swSeq
-};
-
 static MACHINE_INIT(s4) {
   memset(&s4locals, 0, sizeof(s4locals));
-  if (core_init(&s4Data)) return;
   pia_config(S4_PIA0, PIA_STANDARD_ORDERING, &s4_pia[0]);
   pia_config(S4_PIA1, PIA_STANDARD_ORDERING, &s4_pia[1]);
   pia_config(S4_PIA2, PIA_STANDARD_ORDERING, &s4_pia[2]);
@@ -314,12 +302,14 @@ static MACHINE_INIT(s4) {
     sndbrd_0_init(SNDBRD_NONE, 0, NULL, NULL, NULL);
   else
     sndbrd_0_init(SNDBRD_S67S, 1, NULL, NULL, NULL);
-  pia_reset();
   s4locals.vblankCount = 1;
+}
+static MACHINE_RESET(s4) {
+  pia_reset();
 }
 
 static MACHINE_STOP(s4) {
-  sndbrd_0_exit(); core_exit();
+  sndbrd_0_exit();
 }
 
 static WRITE_HANDLER(s4_CMOS_w) { s4_CMOS[offset] = data | 0xf0; }
@@ -351,19 +341,24 @@ MEMORY_END
 /*-- S4 without sound or S3 with chimes --*/
 MACHINE_DRIVER_START(s4)
   MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CORE_INIT_RESET_STOP(s4,s4,s4)
   MDRV_CPU_ADD(M6800, 3580000/4)
   MDRV_CPU_MEMORY(s4_readmem, s4_writemem)
   MDRV_CPU_VBLANK_INT(s4_vblank, 1)
   MDRV_CPU_PERIODIC_INT(s4_irq, S4_IRQFREQ)
-  MDRV_MACHINE_INIT(s4) MDRV_MACHINE_STOP(s4)
   MDRV_VIDEO_UPDATE(core_led)
   MDRV_NVRAM_HANDLER(s4)
+  MDRV_DIPS(8+16)
+  MDRV_SWITCH_UPDATE(s4)
+  MDRV_DIAGNOSTIC_LEDV(2)
 MACHINE_DRIVER_END
 
 /*-- S4 with sound board --*/
 MACHINE_DRIVER_START(s4S)
   MDRV_IMPORT_FROM(s4)
   MDRV_IMPORT_FROM(wmssnd_s67s)
+  MDRV_SOUND_CMD(sndbrd_0_data_w)
+  MDRV_SOUND_CMDHEADING("s4")
 MACHINE_DRIVER_END
 
 /*-----------------------------------------------
@@ -423,4 +418,12 @@ const struct MachineDriver machine_driver_s4s= {
   0,0,0,0, { S67S_SOUND },
   s4_nvram
 };
+static const core_tData s4Data = {
+  8+16, /* 16 Dips */
+  s4_updSw,
+  2 | DIAGLED_VERTICAL,
+  sndbrd_0_data_w, "s4",
+  core_swSeq2m, core_swSeq2m,core_m2swSeq,core_m2swSeq
+};
+
 #endif
