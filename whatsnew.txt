@@ -1,7 +1,31 @@
 What's new:
 
 Version 1.31? (October 31, 2003)
--------------------------------
+--------------------------------
+
+This release is probably one of the most significant releases we've ever had!
+With newly added fully working support for Alvin G & Co. and playable Capcom emulation 
+we finally have support for all the "well known" manufacturers. Most of the remaining
+manufacturers games are very rare or hard to find info on, so in a sense we have pretty
+much as complete support for all games as we can get.. Sure some information may pop
+up for some of the more obscure manufacturers, and we'll be sure to add them, but most
+likely, the current supported hardware is pretty much final.
+
+Additionally, several bugs that have plaqued PinMAME for a very very long time have 
+been fixed or worked around, such as the infamous Black Knight sound issues
+which are now fully working!
+
+Of course, there's still quite a lot left to do to improve PinMAME, adding Capcom sound
+support being one of them. That will be quite complicated and will surely keep us busy
+for quite awhile, but in the meantime, we hope you enjoy our newest release!
+
+The switch to the MAME 74 core has created a number of new bugs which we did not have
+time to correct before the release. We apologize for the inconvenience and will try to
+correct them as quickly as possible. If you find any we're unaware of, please let us know
+immediately.
+
+
+
 Bugs Fixed
 ----------
 - Implemented memory protection in wpc games.
@@ -32,12 +56,14 @@ New Features
 - Intel 8051 CPU Core emulation (required for Alvin G DMD)
   (Thanks to Gerrit for helping with those damn SUBB flags)
 - Added Rollover mode in Sound Commander
+- Working and playable Capcom emulation (no sound yet), but current hacks need to be removed when U16 is better understood
   [Steve Ellenoff]
 
 - Added VPM Lamp handling for Alvin G Games
   [Gerrit Volkenborn]
 
 - Added proper Pistol Poker Lamp handling
+- Working Switch/Solenoid/Lamps in Capcom games (not all games working yet)
   [Gerrit Volkenborn]
   [Steve Ellenoff]
 
