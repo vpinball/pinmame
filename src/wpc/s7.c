@@ -22,6 +22,7 @@
 
 static NVRAM_HANDLER(s7);
 
+
 /*----------------
 / Local variables
 /-----------------*/
@@ -29,7 +30,7 @@ static struct {
   int    vblankCount;
   UINT32 solenoids;
   UINT32 solsmooth[S7_SOLSMOOTH];
-  core_tSeg segments, pseg;
+  core_tSeg segments;
   UINT16 alphaSegs;
   int    lampRow, lampColumn;
   int    digSel;
@@ -39,6 +40,8 @@ static struct {
   int    piaIrq;
   int    s6sound;
   int    rr; /* Tweaks for Rat Race */
+  UINT32 custSol;	/* 10 custom solenoids for Defender */
+  UINT8  solBits1,solBits2;
 } s7locals;
 static data8_t *s7_rambankptr, *s7_CMOS;
 
@@ -90,10 +93,11 @@ static INTERRUPT_GEN(s7_vblank) {
 #endif
   coreGlobals.solenoids = s7locals.solsmooth[0] | s7locals.solsmooth[1];
   s7locals.solenoids = coreGlobals.pulsedSolState;
+
   /*-- display --*/
   if ((s7locals.vblankCount % S7_DISPLAYSMOOTH) == 0) {
     memcpy(coreGlobals.segments, s7locals.segments, sizeof(coreGlobals.segments));
-    memcpy(s7locals.segments, s7locals.pseg, sizeof(s7locals.segments));
+    memset(s7locals.segments,0,sizeof(s7locals.segments));
     coreGlobals.diagnosticLed = s7locals.diagnosticLed;
   }
   core_updateSw(s7locals.ssEn);
@@ -121,20 +125,22 @@ static WRITE_HANDLER(pia3ca2_w) {
 }
 
 static WRITE_HANDLER(pia3b_w) {
-  s7locals.segments[s7locals.digSel].w |=
-    s7locals.pseg[s7locals.digSel].w = core_bcd2seg[data>>4];
-  s7locals.segments[20+s7locals.digSel].w |=
-    s7locals.pseg[20+s7locals.digSel].w = core_bcd2seg[data&0x0f];
+  int seg7;
+  seg7 = core_bcd2seg[data >> 4] & 0x7F;
+  if (seg7) {
+    s7locals.segments[   s7locals.digSel].w &= 0x80;
+    s7locals.segments[   s7locals.digSel].w |= seg7;
+  }
+  seg7 = core_bcd2seg[data & 15] & 0x7F;
+  if (seg7) {
+    s7locals.segments[20+s7locals.digSel].w &= 0x80;
+    s7locals.segments[20+s7locals.digSel].w |= seg7;
+  }
 }
+
 static WRITE_HANDLER(pia0b_w) {
-  if (data & 0x40) {
-    s7locals.segments[21+s7locals.digSel].w |= 0x80;
-    s7locals.pseg[21+s7locals.digSel].w |= 0x80;
-  }
-  if (data & 0x80) {
-    s7locals.segments[1+s7locals.digSel].w |= 0x80;
-    s7locals.pseg[1+s7locals.digSel].w |= 0x80;
-  }
+  if (data & 0x80) s7locals.segments[ 1+s7locals.digSel].w |= 0x80;
+  if (data & 0x40) s7locals.segments[21+s7locals.digSel].w |= 0x80;
 }
 
 /*---------------------------
@@ -154,8 +160,7 @@ static WRITE_HANDLER(pia5b_w) {
   if (data & 0x20) s7locals.alphaSegs |= 0x1000;
   if (data & 0x40) s7locals.alphaSegs |= 0x80;
   if (data & 0x80) s7locals.alphaSegs |= 0x8000;
-  s7locals.segments[40+s7locals.digSel].w |=
-    s7locals.pseg[40+s7locals.digSel].w = s7locals.alphaSegs;
+  s7locals.segments[40+s7locals.digSel].w |= s7locals.alphaSegs;
 }
 static WRITE_HANDLER(pia5ca2_w) {
   DBGLOG(("pia5ca2_w\n"));
@@ -167,6 +172,11 @@ static WRITE_HANDLER(pia5cb2_w) {
 /*------------
 /  Solenoids
 /-------------*/
+// Custom multiplexed solenoids 51-60 on Defender
+int dfndrCustSol(int solno) {
+  return s7locals.custSol & (1 << (solno - CORE_FIRSTCUSTSOL));
+}
+
 static void setSSSol(int data, int solNo) {
   int bit = CORE_SOLBIT(CORE_FIRSTSSSOL + solNo);
   if (s7locals.rr) { // Rat Race doesn't use the ssEn output, and has the special solenoids non-inverted?
@@ -182,16 +192,44 @@ static void setSSSol(int data, int solNo) {
     coreGlobals.pulsedSolState &= ~bit;
 }
 
+static void updsol(void) {
+  /* set new solenoids, preserve SSSol */
+  coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x01ff0000)
+                             | (s7locals.solBits2 << 8)
+                             | (s7locals.solBits1     );
+
+  /* if game has a MUX ... */
+  if (core_gameData->sxx.muxSol) {
+    if (coreGlobals.pulsedSolState & (1 << (core_gameData->sxx.muxSol - 1))) {
+      /* active mux */
+      UINT32 muxsol = core_gameData->hw.gameSpecific2; // mux affected solenoids
+      s7locals.custSol            = coreGlobals.pulsedSolState & muxsol;
+      coreGlobals.pulsedSolState &= ~muxsol;
+    }
+    else {
+      /* inactive mux */
+      s7locals.custSol = 0;
+    }
+  }
+
+  s7locals.solenoids |= coreGlobals.pulsedSolState;
+}
+
 static WRITE_HANDLER(pia1b_w) {
+  if (data != s7locals.solBits2) {
+    s7locals.solBits2 = data;
+    updsol();
+  }
   if (s7locals.s6sound) {
     sndbrd_0_data_w(0, ~data); data &= 0xe0; /* mask of sound command bits */
   }
-  coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffff00ff) | (((UINT16)data)<<8);
-  s7locals.solenoids |= (((UINT16)data)<<8);
 }
+
 static WRITE_HANDLER(pia1a_w) {
-  coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffffff00) | data;
-  s7locals.solenoids |= data;
+  if (data != s7locals.solBits1) {
+    s7locals.solBits1 = data;
+    updsol();
+  }
   // the following lines draw the extra lamp columns on Hyperball!
   if (s7locals.lampColumn & 0x01) core_setLamp(coreGlobals.tmpLampMatrix, 0x100, ~data & 0x0f);
   if (s7locals.lampColumn & 0x02) core_setLamp(coreGlobals.tmpLampMatrix, 0x100, ~data << 4);
@@ -202,6 +240,7 @@ static WRITE_HANDLER(pia1a_w) {
   if (s7locals.lampColumn & 0x40) core_setLamp(coreGlobals.tmpLampMatrix, 0x800, ~data & 0x0f);
   if (s7locals.lampColumn & 0x80) core_setLamp(coreGlobals.tmpLampMatrix, 0x800, ~data << 4);
 }
+
 static WRITE_HANDLER(pia1cb2_w) { s7locals.ssEn = data; }
 static WRITE_HANDLER(pia0ca2_w) { setSSSol(data, 7); }
 static WRITE_HANDLER(pia0cb2_w) { setSSSol(data, 6); }
@@ -306,15 +345,13 @@ static SWITCH_UPDATE(s7) {
     coreGlobals.swMatrix[0] = (inports[S7_COMINPORT] & 0x7f00)>>8;
     coreGlobals.swMatrix[1] = inports[S7_COMINPORT];
   }
+
   /*-- Generate interupts for diganostic keys --*/
-  if (core_getSw(S7_SWCPUDIAG)) {
-    cpu_set_nmi_line(0, ASSERT_LINE);
-    memset(&s7locals.pseg,0,sizeof(s7locals.pseg)); /* clear digits in cache */
-  }
-  else
-    cpu_set_nmi_line(0, CLEAR_LINE);
+  cpu_set_nmi_line(0,core_getSw(S7_SWCPUDIAG) ? ASSERT_LINE : CLEAR_LINE);
 
   sndbrd_0_diag(core_getSw(S7_SWSOUNDDIAG));
+
+  core_textOutf(40,30,BLACK,core_getSw(S7_SWUPDN) ? "Up/Auto " : "Down/Man");
 }
 
 static MACHINE_INIT(s7) {
