@@ -379,7 +379,7 @@ static void DirectSound_update_audio(void)
                 if (writepos < voice_pos && writepos >= next_voice_pos)
                     break;
             }
-			Sleep(10);
+			Sleep(5);
         }
         profiler_mark(PROFILER_END);
 		{
@@ -387,7 +387,8 @@ static void DirectSound_update_audio(void)
 			int margin = voice_pos - writepos;
 			if ( ((voice_pos < next_voice_pos) && (writepos > next_voice_pos))) margin += buffer_length;
 			if (!((voice_pos < next_voice_pos) || (writepos > next_voice_pos))) margin -= buffer_length;
-			if ((margin < buffer_length/10) && (margin < lastmargin)/* && (sampleadd < 32)*/) sampleadd += 1;
+			if ((margin < buffer_length/10) && (margin < lastmargin) &&
+			    (!pmoptions.soundlimit || (sampleadd < 64))) sampleadd += 1;
 			else if (sampleadd > 0) sampleadd -= 1;
 			samples_left_over = sampleadd;
 			lastmargin = margin;

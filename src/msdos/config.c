@@ -502,6 +502,10 @@ void parse_cmdline (int argc, char **argv, int game_index, char *override_defaul
         pmoptions.dmd_perc0 = get_int("config", "dmd_perc0", NULL, 20);
         pmoptions.dmd_perc33 = get_int("config", "dmd_perc33", NULL, 34);
         pmoptions.dmd_perc66 = get_int("config", "dmd_perc66", NULL, 67);
+        pmoptions.dmd_only = get_bool("config", "dmd_only", NULL, 0);
+        pmoptions.dmd_compact = get_bool("config", "dmd_compact", NULL, 0);
+        pmoptions.dmd_antialias = get_int("config", "dmd_antialias", NULL, 50);
+        pmoptions.soundlimit = get_bool("config", "soundlimit", NULL, 1);
         if(pmoptions.dmd_red   < 0)   pmoptions.dmd_red   = 0;
         if(pmoptions.dmd_red   > 255) pmoptions.dmd_red   = 255;
         if(pmoptions.dmd_green < 0)   pmoptions.dmd_green = 0;
@@ -514,6 +518,8 @@ void parse_cmdline (int argc, char **argv, int game_index, char *override_defaul
         if(pmoptions.dmd_perc33 > 100) pmoptions.dmd_perc33 = 100;
         if(pmoptions.dmd_perc66 < 0)   pmoptions.dmd_perc66 = 0;
         if(pmoptions.dmd_perc66 > 100) pmoptions.dmd_perc66 = 100;
+        if(pmoptions.dmd_antialias < 0)   pmoptions.dmd_antialias = 0;
+        if(pmoptions.dmd_antialias > 100) pmoptions.dmd_antialias = 100;
 #endif /* PINMAME_EXT *
 
 	logerror("cheatfile = %s - cheatdir = %s\n",cheatfile,cheatdir);
