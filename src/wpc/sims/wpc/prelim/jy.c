@@ -46,8 +46,8 @@ static void init_jy(void);
 WPC_INPUT_PORTS_START(jy,4)
 
   PORT_START /* 0 */
-    COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LSHIFT)
-    COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RSHIFT)
+    COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LCONTROL)
+    COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RCONTROL)
     COREPORT_BIT(0x0004,"",		        KEYCODE_R)
     COREPORT_BIT(0x0008,"L/R Outlane",		KEYCODE_O)
     COREPORT_BIT(0x0010,"L/R Slingshot",		KEYCODE_MINUS)
@@ -104,7 +104,7 @@ WPC_INPUT_PORTS_END
 #define swTrough1	32
 #define swTrough2	33
 #define swTrough3	34
-#define swTrough4	35	
+#define swTrough4	35
 #define swLeftSling	51
 #define swRightSling	52
 

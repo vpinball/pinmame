@@ -141,8 +141,8 @@ static struct {
 --------------------------------------------------------------------------------------------------*/
 WPC_INPUT_PORTS_START(fh,3)
   PORT_START /* 0 */
-    COREPORT_BIT(   0x0001,"Left Qualifier",  KEYCODE_LSHIFT)
-    COREPORT_BIT(   0x0002,"Right Qualifier", KEYCODE_RSHIFT)
+    COREPORT_BIT(   0x0001,"Left Qualifier",  KEYCODE_LCONTROL)
+    COREPORT_BIT(   0x0002,"Right Qualifier", KEYCODE_RCONTROL)
     COREPORT_BITIMP(0x0004,"L/R Ramp",        KEYCODE_R)
     COREPORT_BITIMP(0x0008,"L/R Outlane",     KEYCODE_O)
     COREPORT_BITIMP(0x0010,"L/R Loop",        KEYCODE_L)
@@ -187,7 +187,7 @@ WPC_INPUT_PORTS_END
 #define swSlamTilt   	21
 #define swCoinDoor   	22
 #define swTicket     	23
-#define swNotUsed	24	
+#define swNotUsed	24
 #define swLockR		25
 #define	swAwardEB	26
 #define	swLockC		27
@@ -217,7 +217,7 @@ WPC_INPUT_PORTS_END
 #define swStepT		54
 #define swAwardDog	55	/*Opto*/
 #define swMRampEnt	56
-#define swJetLane	57	
+#define swJetLane	57
 #define swDropKickout	58
 
 #define swRIn		61
@@ -427,9 +427,9 @@ static int fh_handleBallState(sim_tBallStatus *ball, int *inports) {
     	case stRudyHit:
 		/*Is Rudy's Mouth Open?*/
 		if (locals.rudymouthPos)
-			return setState(stRudyJaw1,10);		/*Yes, ball goes into rudy's mouth*/	
+			return setState(stRudyJaw1,10);		/*Yes, ball goes into rudy's mouth*/
 		else
-			return setState(stRudyJaw,10);		/*Ball hits Rudy's Jaw!!*/	
+			return setState(stRudyJaw,10);		/*Ball hits Rudy's Jaw!!*/
 		break;
 
 	/* Trap Door */
@@ -438,7 +438,7 @@ static int fh_handleBallState(sim_tBallStatus *ball, int *inports) {
 		if (locals.trapdoorPos)
 			return setState(stBallInTrap,10);	/*Trap Door is Open, Ball Lands in Trap Door!*/
 		else
-			return setState(stUpperLoop,10);	/*Trap Door is Closed, Make Upper Loop Shot!*/	
+			return setState(stUpperLoop,10);	/*Trap Door is Closed, Make Upper Loop Shot!*/
 		break;
 
 	/* Left Outlane - Drain or Go to Left Shooter? */

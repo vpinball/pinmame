@@ -47,8 +47,8 @@ static void init_pop(void);
 WPC_INPUT_PORTS_START(pop,6)
 
   PORT_START /* 0 */
-    COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LSHIFT)
-    COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RSHIFT)
+    COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LCONTROL)
+    COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RCONTROL)
     COREPORT_BIT(0x0004,"",		        KEYCODE_R)
     COREPORT_BIT(0x0008,"L/R Outlane",		KEYCODE_O)
     COREPORT_BIT(0x0010,"L/R Slingshot",		KEYCODE_MINUS)
@@ -96,15 +96,15 @@ WPC_INPUT_PORTS_END
 /* Other switches */
 #define swLeftJet	16
 #define swRightJet	17
-#define swCenterJet	18	
+#define swCenterJet	18
 #define swLaunch	23
 #define swWheelExit	37
 #define swTrough1	51
 #define swTrough2	52
 #define swTrough3	53
-#define swTrough4	54	
-#define swTrough5	55	
-#define swTrough6	56	
+#define swTrough4	54
+#define swTrough5	55
+#define swTrough6	56
 #define swTroughJam	57
 #define swLeftOutlane	74
 #define swLeftInlane	75

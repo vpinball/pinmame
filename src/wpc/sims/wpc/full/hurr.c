@@ -50,8 +50,8 @@ static void init_hurr(void);
 WPC_INPUT_PORTS_START(hurr,3)
 
   PORT_START /* 0 */
-    COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LSHIFT)
-    COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RSHIFT)
+    COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LCONTROL)
+    COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RCONTROL)
     COREPORT_BIT(0x0004,"C/R Ramp",	        KEYCODE_R)
     COREPORT_BIT(0x0008,"L/R Outlane",		KEYCODE_O)
     COREPORT_BIT(0x0010,"L/R Slingshot",		KEYCODE_MINUS)
@@ -97,11 +97,11 @@ WPC_INPUT_PORTS_END
 #define swFerrisWheel	31
 #define swLDropT	33
 #define swLDropM	34
-#define swLDropB	35	
+#define swLDropB	35
 #define swLeftSling	36
 #define swLeftInlane	37
 #define swLeftOutlane	38
-	
+
 #define swRTarget1	42
 #define swRTarget2	43
 #define swRTarget3	44

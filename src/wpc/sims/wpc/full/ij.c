@@ -92,8 +92,8 @@ static struct ij_tLocals {
 /---------------------------*/
 WPC_INPUT_PORTS_START(ij,7) /* 7 balls: 6 plus the captured one */
   PORT_START /* 0 */
-    COREPORT_BIT(   0x0001, "Left Qualifier",  KEYCODE_LSHIFT)
-    COREPORT_BIT(   0x0002, "Right Qualifier", KEYCODE_RSHIFT)
+    COREPORT_BIT(   0x0001, "Left Qualifier",  KEYCODE_LCONTROL)
+    COREPORT_BIT(   0x0002, "Right Qualifier", KEYCODE_RCONTROL)
     COREPORT_BITIMP(0x0004, "L/R Ramp",        KEYCODE_R)
     COREPORT_BITIMP(0x0008, "L/R Outlane",     KEYCODE_O)
     COREPORT_BIT(   0x0010, "R Outlane NE",    KEYCODE_O)
@@ -184,7 +184,7 @@ WPC_INPUT_PORTS_END
 #define swaDventure	62
 #define swadVenture	63
 #define swBCapBall	64
-#define swTL_PoA	65	
+#define swTL_PoA	65
 #define swMTL_PoA	66
 #define swMBL_PoA	67
 #define swBL_PoA	68
@@ -453,7 +453,7 @@ static void ij_initSim(sim_tBallStatus *balls, int *inports, int noOfBalls)
     locals.hitCaptiveBall = 0;
 
     /* set switch for idol pos 1*/
-    core_setSw(swIdolPos1, 1);	
+    core_setSw(swIdolPos1, 1);
 }
 
 /*---------------------------

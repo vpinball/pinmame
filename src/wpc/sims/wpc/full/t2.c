@@ -86,8 +86,8 @@ static struct {
 --------------------------------------------------------------------------------------------------*/
 WPC_INPUT_PORTS_START(t2,3)
   PORT_START /* 0 */
-    COREPORT_BIT(   0x0001,"Left Qualifier",  KEYCODE_LSHIFT)
-    COREPORT_BIT(   0x0002,"Right Qualifier", KEYCODE_RSHIFT)
+    COREPORT_BIT(   0x0001,"Left Qualifier",  KEYCODE_LCONTROL)
+    COREPORT_BIT(   0x0002,"Right Qualifier", KEYCODE_RCONTROL)
     COREPORT_BITIMP(0x0004,"L/R Ramp",        KEYCODE_R)
     COREPORT_BITIMP(0x0008,"L/R Outlane",     KEYCODE_O)
     COREPORT_BITIMP(0x0010,"L/R Loop",        KEYCODE_L)
@@ -101,7 +101,7 @@ WPC_INPUT_PORTS_START(t2,3)
     COREPORT_BIT(   0x2000,"Jet 1",				KEYCODE_H)
     COREPORT_BITIMP(0x4000,"Jet 2",				KEYCODE_J)
     COREPORT_BIT(   0x8000,"Jet 3",				KEYCODE_K)
-   	
+
   PORT_START /* 1 */
     COREPORT_BIT(   0x0001,"Mid. Drop Targ. 1",	KEYCODE_X)
     COREPORT_BIT(   0x0002,"Mid. Drop Targ. 2",	KEYCODE_C)
@@ -144,10 +144,10 @@ WPC_INPUT_PORTS_END
 #define swGunHome		33
 #define swTrigger		34
 /*35 Not Used*/
-#define swMidLeft		36	
+#define swMidLeft		36
 #define swMidCenter		37
 #define swMidRight		38
-	
+
 #define swJet1			41
 #define swJet2			42
 #define swJet3			43

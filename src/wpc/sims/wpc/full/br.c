@@ -71,8 +71,8 @@ static struct {
 WPC_INPUT_PORTS_START(br,3)
 
   PORT_START /* 0 */
-    COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LSHIFT)
-    COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RSHIFT)
+    COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LCONTROL)
+    COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RCONTROL)
     COREPORT_BIT(0x0004,"L/R Ramp",	        KEYCODE_R)
     COREPORT_BIT(0x0008,"L/R Outlane",		KEYCODE_O)
     COREPORT_BIT(0x0010,"L/R Slingshot",		KEYCODE_MINUS)
@@ -123,12 +123,12 @@ WPC_INPUT_PORTS_END
 #define swBotBot	31
 #define swBotMid	32
 #define swBotTop	33
-#define swFireButton	34	
+#define swFireButton	34
 #define swCannonKicker	35
 #define swRightOutlane	36
 #define swRightInlane	37
 #define swRightSling	38
-	
+
 #define swMidTop	41
 #define swMidMid	42
 #define swMidBot	43

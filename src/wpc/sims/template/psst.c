@@ -81,7 +81,7 @@ static void init_xxx(void);
  ------------------------*/
 /* Uncomment if you wish to use locals. type variables */
 //static struct {
-//  int 
+//  int
 //} locals;
 
 /*--------------------------
@@ -92,8 +92,8 @@ WPC_INPUT_PORTS_START(xxx,3)
 (DCS normally uses 4 balls, and WPC 3) */
 
   PORT_START /* 0 */
-    WPCPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LSHIFT)
-    WPCPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RSHIFT)
+    WPCPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LCONTROL)
+    WPCPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RCONTROL)
     WPCPORT_BIT(0x0004,"",		        KEYCODE_R)
     WPCPORT_BIT(0x0008,"L/R Outlane",		KEYCODE_O)
     WPCPORT_BIT(0x0010,"L/R Slingshot",		KEYCODE_MINUS)
@@ -154,16 +154,16 @@ WPC_INPUT_PORTS_END
 #define sw		32
 #define sw		33
 #define sw		34
-#define sw		35	
+#define sw		35
 #define sw		36
 #define sw		37
 #define sw		38
-	
+
 #define sw		41
 #define sw		42
 #define sw		43
 #define sw		44
-#define sw		45	
+#define sw		45
 #define sw		46
 #define sw		47
 #define sw		48
@@ -172,7 +172,7 @@ WPC_INPUT_PORTS_END
 #define sw		52
 #define sw		53
 #define sw		54
-#define sw		55	
+#define sw		55
 #define sw		56
 #define sw		57
 #define sw		58
@@ -181,7 +181,7 @@ WPC_INPUT_PORTS_END
 #define sw		62
 #define sw		63
 #define sw		64
-#define sw		65	
+#define sw		65
 #define sw		66
 #define sw		67
 #define sw		68
@@ -190,7 +190,7 @@ WPC_INPUT_PORTS_END
 #define sw		72
 #define sw		73
 #define sw		74
-#define sw		75	
+#define sw		75
 #define sw		76
 #define sw		77
 #define sw		78
@@ -199,7 +199,7 @@ WPC_INPUT_PORTS_END
 #define sw		82
 #define sw		83
 #define sw		84
-#define sw		85	
+#define sw		85
 #define sw		86
 #define sw		87
 #define sw		88
@@ -290,7 +290,7 @@ static int xxx_handleBallState(wpcsim_tBallStatus *ball, int *inports) {
 	{
 
 	/* Ball in Shooter Lane */
-    	case stBallLane:  
+    	case stBallLane:
 		if (ball->speed < 25)
 			return setState(stNotEnough,25);	/*Ball not plunged hard enough*/
 //		if (ball->speed < 35)

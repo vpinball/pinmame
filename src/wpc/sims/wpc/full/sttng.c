@@ -87,8 +87,8 @@ static struct {
 --------------------------------------------------------------------------------------------------*/
 WPC_INPUT_PORTS_START(sttng,6)
   PORT_START /* 0 */
-    COREPORT_BIT(   0x0001,"Left Qualifier",  KEYCODE_LSHIFT)
-    COREPORT_BIT(   0x0002,"Right Qualifier", KEYCODE_RSHIFT)
+    COREPORT_BIT(   0x0001,"Left Qualifier",  KEYCODE_LCONTROL)
+    COREPORT_BIT(   0x0002,"Right Qualifier", KEYCODE_RCONTROL)
     COREPORT_BITIMP(0x0004,"L/R Ramp",        KEYCODE_R)
     COREPORT_BITIMP(0x0008,"L/R Outlane",     KEYCODE_O)
     COREPORT_BITIMP(0x0010,"L/R Loop",        KEYCODE_L)
@@ -136,7 +136,7 @@ WPC_INPUT_PORTS_END
 #define swSlamTilt   	21
 #define swCoinDoor   	22
 #define swCRampExit    	23
-#define swNotUsed	24	
+#define swNotUsed	24
 #define swRRampEnt	25
 #define	swCBankL	26
 #define	swCBankC	27
@@ -167,9 +167,9 @@ WPC_INPUT_PORTS_END
 #define swLBankBott    	53
 #define swRBankTop	54
 #define swRBankMid	55
-#define swRBankBott	56	
+#define swRBankBott	56
 #define swTDropTarget	57
-#define swROuterLoop	58	
+#define swROuterLoop	58
 
 /*All switchs in this column are optos -except last switch!-*/
 #define swTrough1	61
@@ -375,7 +375,7 @@ static sim_tState sttng_stateDef[] = {
 
 static int sttng_handleBallState(sim_tBallStatus *ball, int *inports) {
   switch (ball->state)
-	{	
+	{
 		/*-----------------
 		  Top Drop Target
 		-------------------*/
@@ -402,7 +402,7 @@ static int sttng_handleBallState(sim_tBallStatus *ball, int *inports) {
 		/*--------------------------
 		  Underfield Bottom Diverter
 		---------------------------*/
-		
+
 		/*If Underside Bott Diverter firing(OPEN), send to Left Popper/Gun, otherwise, top left popper!*/
 		case stBottDiverter:
 		if (locals.UBDivPos==DIV_OPEN)

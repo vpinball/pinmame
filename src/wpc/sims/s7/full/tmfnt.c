@@ -52,8 +52,8 @@ static int  tmfnt_handleBallState(sim_tBallStatus *ball, int *inports);
 /---------------------------*/
 S7_INPUT_PORTS_START(tmfnt,1)
   PORT_START /* 0 */
-    COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LSHIFT)
-    COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RSHIFT)
+    COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LCONTROL)
+    COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RCONTROL)
     COREPORT_BIT(0x0004,"L/R Slingshot",		KEYCODE_MINUS)
     COREPORT_BIT(0x0008,"L/R Outlane",		KEYCODE_O)
     COREPORT_BIT(0x0010,"Lower Standups",	KEYCODE_EQUALS)
