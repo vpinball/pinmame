@@ -221,8 +221,6 @@ static const char *orb_sample_names[] =
 	"orb56.wav",
 	"orb57.wav",
 	"orb58.wav",
-	"orb59.wav",
-	"orb60.wav",
 	0   /* end of array */
 };
 
@@ -289,8 +287,72 @@ struct Samplesinterface cat_samples_interface =
 };
 
 
+/* Unknown number of samples, so we expect the maximum count */
 static const char *fff_sample_names[] =
 {
+	"fff00.wav",
+	"fff01.wav",
+	"fff02.wav",
+	"fff03.wav",
+	"fff04.wav",
+	"fff05.wav",
+	"fff06.wav",
+	"fff07.wav",
+	"fff08.wav",
+	"fff09.wav",
+	"fff10.wav",
+	"fff11.wav",
+	"fff12.wav",
+	"fff13.wav",
+	"fff14.wav",
+	"fff15.wav",
+	"fff16.wav",
+	"fff17.wav",
+	"fff18.wav",
+	"fff19.wav",
+	"fff20.wav",
+	"fff21.wav",
+	"fff22.wav",
+	"fff23.wav",
+	"fff24.wav",
+	"fff25.wav",
+	"fff26.wav",
+	"fff27.wav",
+	"fff28.wav",
+	"fff29.wav",
+	"fff30.wav",
+	"fff31.wav",
+	"fff32.wav",
+	"fff33.wav",
+	"fff34.wav",
+	"fff35.wav",
+	"fff36.wav",
+	"fff37.wav",
+	"fff38.wav",
+	"fff39.wav",
+	"fff40.wav",
+	"fff41.wav",
+	"fff42.wav",
+	"fff43.wav",
+	"fff44.wav",
+	"fff45.wav",
+	"fff46.wav",
+	"fff47.wav",
+	"fff48.wav",
+	"fff49.wav",
+	"fff50.wav",
+	"fff51.wav",
+	"fff52.wav",
+	"fff53.wav",
+	"fff54.wav",
+	"fff55.wav",
+	"fff56.wav",
+	"fff57.wav",
+	"fff58.wav",
+	"fff59.wav",
+	"fff60.wav",
+	"fff61.wav",
+	"fff62.wav",
 	0   /* end of array */
 };
 
@@ -482,12 +544,14 @@ static void st300_pulse (int param) {
  
 }
 
+static int sound_started;
 static void st300_start_common(void) {
   int mixing_levels[3] = {30,30,30};
   int i;
   int s = 0;
-	
-  memset(&st300loc, 0, sizeof(st300loc)); 
+
+  memset(&st300loc, 0, sizeof(st300loc));
+  sound_started = 1;
   for (i = 0;i < 9;i++) {
     snddatst300.ax[i] = 0;
     snddatst300.axb[i] = 0;  	
@@ -511,7 +575,7 @@ static void st300_start_common(void) {
 }
 
 static int st300_sh_start(const struct MachineSound *msound)  {
-  if (!st300loc.channel) st300_start_common();
+  if (!sound_started) st300_start_common();
   st300loc.speechsam = 0; // no samples for speech
   return 0;
 }
@@ -521,7 +585,7 @@ static void checksam (int param) {
 }
 
 static int st300sam_sh_start(const struct MachineSound *msound)  {
-  if (!st300loc.channel) st300_start_common();
+  if (!sound_started) st300_start_common();
   st300loc.speechsam = 1; // samples for speech used
   timer_pulse(TIME_IN_SEC(0.1),0,checksam); // check if sample is finished
   return 0;
@@ -529,6 +593,8 @@ static int st300sam_sh_start(const struct MachineSound *msound)  {
 
 
 static void st300_sh_stop(void) {
+  sound_started = 0;
+  samples_sh_stop();
 }
 
 static struct CustomSound_interface st300_custInt = {st300_sh_start, st300_sh_stop};
