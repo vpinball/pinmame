@@ -1684,6 +1684,26 @@ SOURCE=.\src\cpu\pps4\pps4cpu.h
 SOURCE=.\src\cpu\pps4\pps4dasm.c
 # End Source File
 # End Group
+# Begin Group "SCAMP"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\cpu\scamp\scamp.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\scamp\scamp.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\scamp\scampcpu.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\scamp\scampdsm.c
+# End Source File
+# End Group
 # Begin Group "I8051"
 
 # PROP Default_Filter ""

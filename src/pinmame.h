@@ -87,6 +87,7 @@
 #define HAS_I86      1
 #define HAS_4004     1
 #define HAS_PPS4     1
+#define HAS_SCAMP    1
 #define HAS_I8051    1
 #define HAS_I8752    1
 #define HAS_TMS7000  1
