@@ -411,7 +411,7 @@ void core_updateSw(int flipEn);
 
 /*-- text output functions --*/
 void core_textOut(char *buf, int length, int x, int y, int color);
-void CLIB_DECL core_textOutf(int x, int y, int color, char *text, ...);
+void CLIB_DECL core_textOutf(int x, int y, int color, const char *text, ...);
 
 /*-- lamp handling --*/
 void core_setLamp(UINT8 *lampMatrix, int col, int row);
