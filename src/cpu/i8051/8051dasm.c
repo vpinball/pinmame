@@ -729,19 +729,16 @@ unsigned Dasm8051(char *dst, unsigned pc)
 			sprintf(dst, "sjmp  %s", sym);
 			break;
 
-		//Unable to test
 		//ANL C, bit addr
 		case 0x82:				/* 1: 1000 0010 */
 			sym = get_bit_address(cpu_readop_arg(PC++));
 			sprintf(dst, "anl   c,%s", sym);		
 			break;
 
-		
 		//MOVC A, @A + PC
 		case 0x83:				/* 1: 1000 0011 */
 			sprintf(dst, "movc  a,@a+pc");		
 			break;
-
 		
 		//DIV AB
 		case 0x84:				/* 1: 1000 0100 */
@@ -884,7 +881,6 @@ unsigned Dasm8051(char *dst, unsigned pc)
 			sprintf(dst, "mov   r%d,%s", op&7, sym);
 			break;
 
-		//Unable to test
 		//ANL C,/bit addr
 		case 0xb0:						 /* 1: 1011 0000 */
 			sym = get_bit_address(cpu_readop_arg(PC++));

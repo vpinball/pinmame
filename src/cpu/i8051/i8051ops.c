@@ -150,17 +150,20 @@ INLINE void anl_a_r(int r)
 //ANL C, bit addr							/* 1: 1000 0010 */
 INLINE void anl_c_bitaddr(void)
 {
+	int cy = GET_CY;
 	UINT8 addr = ROP_ARG(PC++);				//Grab bit address
 	UINT8 bit = BIT_R(addr);				//Grab bit data from bit address
-	SET_CY(GET_CY & bit);					//Set Carry flag to Carry Flag Value Logical AND with Bit
+	SET_CY( (cy & bit) );					//Set Carry flag to Carry Flag Value Logical AND with Bit
 }
 
 //ANL C,/bit addr							/* 1: 1011 0000 */
 INLINE void anl_c_nbitaddr(void)
 {
+	int cy = GET_CY;
 	UINT8 addr = ROP_ARG(PC++);				//Grab bit address
 	UINT8 bit = BIT_R(addr);				//Grab bit data from bit address
-	SET_CY(GET_CY & ((~bit)&1));			//Set Carry flag to Carry Flag Value Logical AND with Complemented Bit
+	bit = ((~bit)&1);						//Complement bit
+	SET_CY( (cy & bit) );					//Set Carry flag to Carry Flag Value Logical AND with Complemented Bit
 }
 
 //CJNE A, #data, code addr					/* 1: 1011 0100 */
@@ -603,7 +606,7 @@ INLINE void movc_a_iapc(void)
 INLINE void mov_c_bitaddr(void)
 {
 	UINT8 addr = ROP_ARG(PC++);				//Grab bit address
-	SET_CY(BIT_R(addr));					//Store Bit from Bit Address to Carry Flag
+	SET_CY( (BIT_R(addr)) );				//Store Bit from Bit Address to Carry Flag
 }
 
 //MOVC A, @A + DPTR							/* 1: 1001 0011 */
@@ -707,17 +710,20 @@ INLINE void orl_a_r(int r)
 //ORL C, bit addr							/* 1: 0111 0010 */
 INLINE void orl_c_bitaddr(void)
 {
+	int cy = GET_CY;
 	UINT8 addr = ROP_ARG(PC++);				//Grab bit address
 	UINT8 bit = BIT_R(addr);				//Grab bit data from bit address
-	SET_CY(GET_CY | bit);					//Set Carry flag to Carry Flag Value Logical OR with Bit
+	SET_CY( (cy | bit) );					//Set Carry flag to Carry Flag Value Logical OR with Bit
 }
 
 //ORL C, /bit addr							/* 1: 1010 0000 */
 INLINE void orl_c_nbitaddr(void)
 {
+	int cy = GET_CY;
 	UINT8 addr = ROP_ARG(PC++);				//Grab bit address
 	UINT8 bit = BIT_R(addr);				//Grab bit data from bit address
-	SET_CY(GET_CY | ((~bit)&1));			//Set Carry flag to Carry Flag Value Logical OR with Complemented Bit
+	bit = ((~bit)&1);						//Complement bit
+	SET_CY( (cy | bit) );					//Set Carry flag to Carry Flag Value Logical OR with Complemented Bit
 }
 
 //POP data addr								/* 1: 1101 0000 */
