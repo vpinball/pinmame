@@ -7,7 +7,7 @@
 static core_tLCDLayout dispZAC1[] = {
   {0, 0,42,6,CORE_SEG7}, {0,16,34,6,CORE_SEG7},
   {2, 0,26,6,CORE_SEG7}, {2,16,18,6,CORE_SEG7},
-  {4, 0, 2,2,CORE_SEG7}, {4, 8, 6,2,CORE_SEG7}, {4,16,10,6,CORE_SEG7},
+  {5, 0, 2,2,CORE_SEG7}, {5, 8, 6,2,CORE_SEG7}, {5,16,10,6,CORE_SEG7},
   {0}
 };
 
@@ -109,6 +109,7 @@ ZAC_ROMSTART84444(stargod,	"zac_boot.lgc",0x62a3da59,
 							"stargod3.lgc",0x95492ac0,
 							"stargod4.lgc",0x09e5682a,
 							"stargod5.lgc",0x03cd4e24)
+ZAC_SOUNDROM_0(				"stargod.snd", 0x5079e493)
 ZAC_ROMEND
 CORE_GAMEDEFNV(stargod,"Star God",1980,"Zaccaria",mZAC0,GAME_NOT_WORKING)
 
@@ -121,6 +122,7 @@ ZAC_ROMSTART84444(sshtlzac,	"zac_boot.lgc",0x62a3da59,
 							"spcshtl3.lgc",0xa302e5a9,
 							"spcshtl4.lgc",0xa02ee0b5,
 							"spcshtl5.lgc",0xd1dabd9b)
+ZAC_SOUNDROM_0(				"spcshtl.snd", 0x9a61781c)
 ZAC_ROMEND
 CORE_GAMEDEFNV(sshtlzac,"Space Shuttle (Zaccaria)",1980,"Zaccaria",mZAC0,GAME_NO_SOUND)
 
@@ -134,6 +136,7 @@ ZAC_ROMSTART84444(ewf,	"zac_boot.lgc",0x62a3da59,
 						"ewf_3.lgc",   0xb21bf015,
 						"ewf_4.lgc",   0xd110da3f,
 						"ewf_5.lgc",   0x686c4a4b)
+ZAC_SOUNDROM_0(			"stargod.snd", 0x5079e493)
 ZAC_ROMEND
 CORE_GAMEDEFNV(ewf,"Earth, Wind & Fire",1981,"Zaccaria",mZAC0,GAME_NOT_WORKING)
 
@@ -141,11 +144,12 @@ CORE_GAMEDEFNV(ewf,"Earth, Wind & Fire",1981,"Zaccaria",mZAC0,GAME_NOT_WORKING)
 / Locomotion (09/81)
 /-------------------------------*/
 INITGAME1(locomotn,0,dispZAC1)
-ZAC_ROMSTART84844(locomotn,	"loc-1.fil",0x8d0252a2,
-							"loc-2.fil",0x9dbd8601,
-							"loc-3.fil",0x8cadea7b,
-							"loc-4.fil",0x177c89b6,
-							"loc-5.fil",0xcad4122a)
+ZAC_ROMSTART84844(locomotn,	"loc-1.fil",  0x8d0252a2,
+							"loc-2.fil",  0x9dbd8601,
+							"loc-3.fil",  0x8cadea7b,
+							"loc-4.fil",  0x177c89b6,
+							"loc-5.fil",  0xcad4122a)
+ZAC_SOUNDROM_0(				"loc-snd.fil",0x51ea9d2a)
 ZAC_ROMEND
 CORE_GAMEDEFNV(locomotn,"Locomotion",1981,"Zaccaria",mZAC1,GAME_NO_SOUND)
 
@@ -248,6 +252,7 @@ CORE_GAMEDEFNV(mcastle,"Magic Castle",1984,"Zaccaria",mZAC2,GAME_NO_SOUND)
 /*--------------------------------
 / Robot (01/85)
 /-------------------------------*/
+// There might be a bad rom on this one.
 INITGAME(robot,1,dispZAC3)
 ZAC_ROMSTART020(robot,	"robot_1.lgc",0x96a87432,
 						"robot_2.lgc",0x28ba9687)
@@ -280,7 +285,7 @@ ZAC_ROMEND
 CORE_GAMEDEFNV(poolcham,"Pool Champion",1985,"Zaccaria",mZAC2F,GAME_NO_SOUND)
 
 /*--------------------------------
-/ Blackbelt (??/86)
+/ Black Belt (03/86)
 /-------------------------------*/
 INITGAME(bbeltzac,1,dispZAC3)
 ZAC_ROMSTART1820(bbeltzac,	"bbz-1.fil",0x2e7e1575,
@@ -288,10 +293,10 @@ ZAC_ROMSTART1820(bbeltzac,	"bbz-1.fil",0x2e7e1575,
 ZAC_SOUNDROM_e2f4(			"bbz-e.snd",0x0,
 							"bbz-f.snd",0x0)
 ZAC_ROMEND
-CORE_GAMEDEFNV(bbeltzac,"Blackbelt (Zaccaria)",1986,"Zaccaria",mZAC2F,GAME_NO_SOUND)
+CORE_GAMEDEFNV(bbeltzac,"Black Belt (Zaccaria)",1986,"Zaccaria",mZAC2F,GAME_NO_SOUND)
 
 /*--------------------------------
-/ Mexico '86 (??/86)
+/ Mexico '86 (07/86)
 /-------------------------------*/
 INITGAME(mexico,1,dispZAC3)
 ZAC_ROMSTART1820(mexico,	"mex86_1.lgc",0x60d559b1,
@@ -302,7 +307,7 @@ ZAC_ROMEND
 CORE_GAMEDEFNV(mexico,"Mexico '86",1986,"Zaccaria",mZAC2F,GAME_NO_SOUND)
 
 /*--------------------------------
-/ Zankor (??/86)
+/ Zankor (12/86)
 /-------------------------------*/
 INITGAME(zankor,1,dispZAC3)
 ZAC_ROMSTART1820(zankor,	"zan_ic1.764",0xe7ba5acf,
@@ -318,7 +323,7 @@ CORE_GAMEDEFNV(zankor,"Zankor",1986,"Zaccaria",mZAC2F,GAME_NO_SOUND)
 //??/86 Mystic Star (conversion kit with different hardware)
 
 /*--------------------------------
-/ Spooky (??/87)
+/ Spooky (04/87)
 /-------------------------------*/
 INITGAME(spooky,1,dispZAC3)
 ZAC_ROMSTART1820(spooky,	"spook_1.lgc",0x377b347d,

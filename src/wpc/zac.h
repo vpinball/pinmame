@@ -9,13 +9,14 @@
 #define ZAC_COMPORTS_OLD \
   PORT_START /* 0 */ \
     /* These are put in switch column 1 */ \
-    COREPORT_BITIMP(  0x0008, "Start", KEYCODE_1) \
+    COREPORT_BIT   (  0x0008, "Start", KEYCODE_1) \
     COREPORT_BITIMP(  0x0010, "Coin 1", KEYCODE_3) \
     COREPORT_BITIMP(  0x0020, "Coin 2", KEYCODE_4) \
     COREPORT_BITIMP(  0x0040, "Coin 3", KEYCODE_5) \
     COREPORT_BITIMP(  0x0001, "Diagnostics", KEYCODE_7) \
     COREPORT_BIT   (  0x0002, "Ball Tilt", KEYCODE_INSERT) \
     COREPORT_BITIMP(  0x0004, "Slam Tilt", KEYCODE_HOME) \
+    COREPORT_BITIMP(  0x0080, "Printer Log", KEYCODE_0) \
     /* These are put in switch column 2 */ \
     COREPORT_BIT   (  0x8000, "Test Mode", KEYCODE_END) \
   PORT_START /* 1 */ \

@@ -8,6 +8,11 @@
 
 extern MACHINE_DRIVER_EXTERN(zac);
 
+#define ZAC_SOUNDROM_0(u1, chk1) \
+  SOUNDREGION(0x10000, ZACSND_CPUAREGION) \
+    ROM_LOAD(u1, 0xf000, 0x0800, chk1) \
+      ROM_RELOAD(0xf800, 0x0800)
+
 #define ZAC_SOUNDROM_cefg0(uc,chkc,ue,chke,uf,chkf,ug,chkg) \
   SOUNDREGION(0x10000, ZACSND_CPUAREGION) \
     ROM_LOAD(uc, 0xc000, 0x1000, chkc) \
