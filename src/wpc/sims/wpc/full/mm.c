@@ -463,11 +463,20 @@ DCS_SOUNDROM5xm("mm_s2.1_0",  CRC(c55c3b71) SHA1(95febbf16645dd897bdd459ccad9501
                 "mm_sav6.rom",CRC(439d55f2) SHA1(d80e7268223157d864674261d140322634fb3bc2))
 WPC_ROMEND
 
+WPC_ROMSTART(mm,050, "g11-050.rom", 0x080000,CRC(d211ad16) SHA1(539fb0c4ca6fe19ac6140f5792c5b7cd51f737ce))
+DCS_SOUNDROM5xm("s2-020.rom",  CRC(ee009ce4) SHA1(36843b2f1a07cf1e23bdff9b7347ceeca7e915bc),
+                "mm_sav3.rom",CRC(ed1be570) SHA1(ead4c4f89d63ee0b46d8a8bcd8650d506542d1ee),
+                "mm_sav4.rom",CRC(9c89eacf) SHA1(594a2aa81e34658862a9b7f0a83cf514182f2a2d),
+                "mm_sav5.rom",CRC(45089e30) SHA1(e83492109c59e8a2f1ba9e1f793788b97d150a9b),
+                "mm_sav6.rom",CRC(439d55f2) SHA1(d80e7268223157d864674261d140322634fb3bc2))
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF (mm,10,   "Medieval Madness (1.0)",1997,"Williams",wpc_m95S,0)
 CORE_CLONEDEF(mm,109,10,"Medieval Madness (1.09)", 1997,"Williams",wpc_m95S,0)
+CORE_CLONEDEF(mm,055,10,"Medieval Madness (0.50)", 1997,"Williams",wpc_m95S,0)
 
 /*-----------------------
 / Simulation Definitions
