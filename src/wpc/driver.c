@@ -19,6 +19,79 @@ const struct GameDriver *drivers[] = {
 #else /* DRIVER_RECURSIVE */
 
 // ---------------------
+// GAME PLAN GAMES BELOW
+// ---------------------
+/*Games below are Cocktail #110 Model*/
+
+					//Real to Real (May 1978)
+					//Rio (??,1978)
+					//Camel Lights (May 1978)
+					//Foxy Lady (May 1978)
+
+/*Games below are Cocktail #120 Model*/
+
+					//Family Fun! (April 1979)
+					//Star Trip (April 1979)
+
+/*Games below are regular standup pinball games*/
+					//Sharpshooter (May 1979)
+DRIVERNV(vegasgp)	//Vegas (August 1979)
+DRIVERNV(coneyis)	//Coney Island! (December 1979)
+					//Lizard (July 1980)
+					//Global Warfare (June 1981)
+					//Mike Bossy - The Scoring Machine (January 1982)
+					//Super Nova (May 1982)
+					//Sharp Shooter II (November 1983)
+					//Attila the Hun (April 1984)
+					//Agents 777 (November 1984)
+					//Captain Hook (April 1985)
+					//Lady Sharpshooter (May 1985)
+					//Andromeda (September 1985)
+DRIVERNV(cyclopes)	//Cyclopes (November 1985)
+					//Loch-Ness Monster (November 1985)
+
+										
+
+
+
+// ---------------------
+// ZACCARIA GAMES BELOW
+// ---------------------
+					//Other games created earlier by Zaccaria are EM
+					//10/77 Combat
+					//01/78 Winter Sports
+					//07/78 House of Diamonds
+					//09/78 Strike
+					//10/78 Ski Jump					
+					//10/78 Future World
+					//04/79 Shooting the Rapids
+					//09/79 Hot Wheels
+					//09/79 Space City
+					//01/80 Fire Mountain
+					//05/80 Star God
+					//09/80 Space Shuttle
+					//04/81 Earth, Wind & Fire
+					//09/81 Locomotion
+					//04/82 Pinball Champ '82 (Is this really different than the '83?)
+					//09/82 Soccer King
+DRIVERNV(pinchamp)	//??/83 Pinball Champ
+DRIVERNV(tmachzac)	//04/83 Time Machine
+DRIVERNV(farfalla)	//09/83 Farfalla
+DRIVERNV(dvlrider)	//04/84 Devil Riders
+					//09/84 Magic Castle
+					//01/85 Robot
+					//07/85 Clown
+					//12/85 Pool Champion
+DRIVERNV(bbeltzac)	//??/86 Blackbelt
+					//??/86 Mexico
+					//??/86 Zankor
+					//??/86 Mystic Star
+					//??/87 Spooky
+					//??/87 Star's Phoenix
+					//??/86 New Star's Phoenix
+
+
+// ---------------------
 // HANKIN GAMES BELOW
 // ---------------------
 DRIVERNV(fjholden)	//FJ Holden
