@@ -801,9 +801,6 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, 
 
   memset(pixel,0,sizeof(pixel));
 
-  if(bits)
-	  logerror("hello!");
-
   for (kk = 1; bits; kk++, bits >>= 1) {
     if (bits & 0x01)
       for (ll = 0; ll < s->rows; ll++)
