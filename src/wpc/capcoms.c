@@ -8,7 +8,7 @@
 
   Hacks & Issues that need to be looked into:
   #1) /BOF line timing not properly emulated (fails start up test)
-  #2) 9241 Digital volume pot not finished (but passes tests!)
+  #2) 9241 Digital volume pot - not sure what wipers 2 & 3 do..
   #3) Currently rom is hacked to bypass error messages for the above failed tests..
   #4) Sound board often get's overloaded and resets or just drops out/misses sound commands
   #5) Only KP game fails to report a proper sound board reset (others do, but if you watch received commands, not all commands are always sent)
@@ -210,9 +210,7 @@ Start Command: 1->0 of SDA WHILE SCL = 1 (all data is ignored until start comman
 Stop Command:  0->1 of SDA WHILE SCL = 1
 Bit Data:      Data is sent while SCL = 0... SDA = 0 for no bit set, 1 for bit set.
 
-Todo:	#2) Implement commands & registers
-		#3) Adjust volume accordingly
-
+Todo:	#1) Figure out how wipers 2 & 3 are configured in capcom's audio section
 ***********************************************************************************/
 void data_to_x9241(int scl, int sda)
 {
