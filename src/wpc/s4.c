@@ -286,7 +286,7 @@ static SWITCH_UPDATE(s4) {
   }
   /*-- Diagnostic buttons on CPU board --*/
   cpu_set_nmi_line(0, core_getSw(S4_SWCPUDIAG) ? ASSERT_LINE : CLEAR_LINE);
-  sndbrd_0_diag(core_getSw(S4_SWSOUNDDIAG));
+  if (!(core_gameData->gen & GEN_S3C)) sndbrd_0_diag(core_getSw(S4_SWSOUNDDIAG));
 
   /* Show Status of Auto/Manual Switch */
   core_textOutf(40, 30, BLACK, core_getSw(S4_SWUPDN) ? "Auto  " : "Manual");
@@ -298,9 +298,7 @@ static MACHINE_INIT(s4) {
   pia_config(S4_PIA1, PIA_STANDARD_ORDERING, &s4_pia[1]);
   pia_config(S4_PIA2, PIA_STANDARD_ORDERING, &s4_pia[2]);
   pia_config(S4_PIA3, PIA_STANDARD_ORDERING, &s4_pia[3]);
-  if (core_gameData->gen & GEN_S3C)
-    sndbrd_0_init(SNDBRD_NONE, 0, NULL, NULL, NULL);
-  else
+  if (!(core_gameData->gen & GEN_S3C))
     sndbrd_0_init(SNDBRD_S67S, 1, NULL, NULL, NULL);
   s4locals.vblankCount = 1;
 }
@@ -309,7 +307,7 @@ static MACHINE_RESET(s4) {
 }
 
 static MACHINE_STOP(s4) {
-  sndbrd_0_exit();
+  if (!(core_gameData->gen & GEN_S3C)) sndbrd_0_exit();
 }
 
 static WRITE_HANDLER(s4_CMOS_w) { s4_CMOS[offset] = data | 0xf0; }
