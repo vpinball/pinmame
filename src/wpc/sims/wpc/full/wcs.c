@@ -402,8 +402,18 @@ DCS_SOUNDROM7x("wcup_u2.rom",0x92252f28,
                "wcup_u7.rom",0xfff01703,
                "wcup_u8.rom",0x670cd382)
 WPC_ROMEND
+WPC_ROMSTART(wcs,p3,"wcup_px3.rom",0x80000,0x617ea2bc)
+DCS_SOUNDROM7x("wcup_u2.rom",0x92252f28,
+               "wcup_u3.rom",0x83f541ad,
+               "wcup_u4.rom",0x1540c505,
+               "wcup_u5.rom",0xbddad8d4,
+               "wcup_u6.rom",0x00f46c12,
+               "wcup_u7.rom",0xfff01703,
+               "wcup_u8.rom",0x670cd382)
+WPC_ROMEND
 
 CORE_GAMEDEF(wcs,l2,"World Cup Soccer (Lx-2)",1994,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(wcs,p3,l2,"World Cup Soccer (Px-3)",1994,"Bally",wpc_mSecurityS,0)
 
 /*----------
 / Game Data
