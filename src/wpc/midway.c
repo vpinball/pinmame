@@ -226,7 +226,7 @@ static INTERRUPT_GEN(MIDWAYP_vblank) {
   /*-- solenoids --*/
   coreGlobals.solenoids = locals.solenoids;
   if ((locals.vblankCount % (MIDWAY_SOLSMOOTH)) == 0)
-    locals.solenoids = 0;
+    locals.solenoids &= 0x8000;
   /*-- display --*/
   if ((locals.vblankCount % MIDWAY_DISPLAYSMOOTH) == 0) {
     memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
