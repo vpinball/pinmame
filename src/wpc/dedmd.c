@@ -45,7 +45,7 @@ static INTERRUPT_GEN(dmd32_firq);
 static MEMORY_READ_START(dmd32_readmem)
   { 0x0000, 0x1fff, MRA_RAM },
   { 0x2000, 0x2fff, MRA_RAM }, /* DMD RAM PAGE 0-7 512 bytes each */
-  { 0x3000, 0x3000, crtc6845_register_r },
+  { 0x3000, 0x3000, crtc6845_register_0_r },
   { 0x3003, 0x3003, dmd32_latch_r },
   { 0x4000, 0x7fff, MRA_BANKNO(DMD32_BANK0) }, /* Banked ROM */
   { 0x8000, 0xffff, MRA_ROM },
@@ -54,8 +54,8 @@ MEMORY_END
 static MEMORY_WRITE_START(dmd32_writemem)
   { 0x0000, 0x1fff, MWA_RAM },
   { 0x2000, 0x2fff, MWA_RAM, &dmd32RAM }, /* DMD RAM PAGE 0-7 512 bytes each*/
-  { 0x3000, 0x3000, crtc6845_address_w },
-  { 0x3001, 0x3001, crtc6845_register_w },
+  { 0x3000, 0x3000, crtc6845_address_0_w },
+  { 0x3001, 0x3001, crtc6845_register_0_w },
   { 0x3002, 0x3002, dmd32_bank_w }, /* DMD Bank Switching*/
   { 0x4000, 0x4000, dmd32_status_w },   /* DMD Status*/
   { 0x8000, 0xffff, MWA_ROM },
@@ -75,6 +75,8 @@ static void dmd32_init(struct sndbrdData *brdData) {
   /* copy last 16K of ROM into last 16K of CPU region*/
   memcpy(memory_region(DE_DMD32CPUREGION) + 0x8000,
          memory_region(DE_DMD32ROMREGION) + memory_region_length(DE_DMD32ROMREGION)-0x8000,0x8000);
+  //Init 6845
+  crtc6845_init(0);
 }
 
 static WRITE_HANDLER(dmd32_ctrl_w) {
@@ -110,7 +112,7 @@ static INTERRUPT_GEN(dmd32_firq) {
 }
 
 PINMAME_VIDEO_UPDATE(dedmd32_update) {
-  UINT8 *RAM  = ((UINT8 *)dmd32RAM) + ((crtc6845_start_addr & 0x0100)<<2);
+  UINT8 *RAM  = ((UINT8 *)dmd32RAM) + ((crtc6845_start_address_r(0) & 0x0100)<<2);
   UINT8 *RAM2 = RAM + 0x200;
   tDMDDot dotCol;
   int ii,jj;
@@ -206,13 +208,13 @@ static READ16_HANDLER(dmd64_latch_r) {
 static INTERRUPT_GEN(dmd64_irq2) {
   cpu_set_irq_line(dmdlocals.brdData.cpuNo, MC68000_IRQ_2, HOLD_LINE);
 }
-static WRITE16_HANDLER(crtc6845_msb_address_w)  { if (ACCESSING_MSB) crtc6845_address_w(offset,data>>8);  }
-static WRITE16_HANDLER(crtc6845_msb_register_w) { if (ACCESSING_MSB) crtc6845_register_w(offset,data>>8); }
-static READ16_HANDLER(crtc6845_msb_register_r)  { return crtc6845_register_r(offset)<<8; }
+static WRITE16_HANDLER(crtc6845_msb_address_w)  { if (ACCESSING_MSB) crtc6845_address_0_w(offset,data>>8);  }
+static WRITE16_HANDLER(crtc6845_msb_register_w) { if (ACCESSING_MSB) crtc6845_register_0_w(offset,data>>8); }
+static READ16_HANDLER(crtc6845_msb_register_r)  { return crtc6845_register_0_r(offset)<<8; }
 
 /*-- update display --*/
 PINMAME_VIDEO_UPDATE(dedmd64_update) {
-  UINT8 *RAM  = (UINT8 *)(dmd64RAM) + ((crtc6845_start_addr & 0x400)<<2);
+  UINT8 *RAM  = (UINT8 *)(dmd64RAM) + ((crtc6845_start_address_r(0) & 0x400)<<2);
   UINT8 *RAM2 = RAM + 0x800;
   tDMDDot dotCol;
   int ii,jj;

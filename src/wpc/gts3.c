@@ -582,6 +582,9 @@ static void gts3dmd_init(void) {
   via_config(1, &via_1_interface);
   via_reset();
 
+  //Init 6845
+  crtc6845_init(0);
+
   /*DMD*/
   /*copy last 32K of ROM into last 32K of CPU region*/
   /*Setup ROM Swap so opcode will work*/
@@ -772,7 +775,7 @@ static WRITE_HANDLER(dmd_aux) {
 }
 //Update the DMD Frames
 static void dmd_vblank(void) {
-  int offset = (crtc6845_start_addr>>2);
+  int offset = (crtc6845_start_address_r(0)>>2);
   memcpy(DMDFrames[GTS3_dmdlocals.nextDMDFrame],memory_region(GTS3_MEMREG_DCPU1)+0x1000+offset,0x200);
   GTS3_dmdlocals.nextDMDFrame = (GTS3_dmdlocals.nextDMDFrame + 1) % GTS3DMD_FRAMES;
   cpu_set_nmi_line(GTS3_DCPUNO, PULSE_LINE);
@@ -865,8 +868,8 @@ MEMORY_END
 static MEMORY_WRITE_START(GTS3_dmdwritemem)
 {0x0000,0x0fff, MWA_RAM},
 {0x1000,0x1fff, MWA_RAM},    /*DMD Display RAM*/
-{0x2800,0x2800, crtc6845_address_w},
-{0x2801,0x2801, crtc6845_register_w},
+{0x2800,0x2800, crtc6845_address_0_w},
+{0x2801,0x2801, crtc6845_register_0_w},
 {0x3800,0x3800, dmdoport},   /*Output Enable*/
 {0x4000,0x7fff, MWA_BANK1},
 {0x8000,0xffff, MWA_ROM},
