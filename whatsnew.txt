@@ -9,6 +9,8 @@ Version 1.20
 -Fixed dying sound in DCS games (e.g. STTNG, Shadow)
 -Added mini DMD support to the whitestar hardware (monopoly)
 -Handles pulsed switches better in mech handler and increased size to 20 switches
+-Fixed missing flashers in IJ
+-Inverted flipper switches now work as they should (IJ and NBA)
  [Martin Adrian]
 
 - Fixed Gottlieb Sys80B games with 4K game PROMS (i.e. Bone Buster, Badgirls, etc.)
