@@ -849,6 +849,7 @@ static void drawChar1(struct mame_bitmap *bitmap, int row, int col, UINT32 bits,
 }
 
 int core_init(core_tData *cd) {
+  UINT32 size;
   /*-- init variables --*/
   memset(&coreGlobals, 0, sizeof(coreGlobals));
   memcpy(&coreData, cd, sizeof(coreData));
