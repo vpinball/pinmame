@@ -38,7 +38,7 @@ core_tLCDLayout GTS80_dispCaveman[] = {
   {4, 0,30,6,CORE_SEG9}, {4,12,20,1,CORE_SEG9},
   {4,16,24,6,CORE_SEG9}, {4,28,23,1,CORE_SEG9},
   DISP_SEG_CREDIT(40,41,CORE_SEG9), DISP_SEG_BALLS(42,43,CORE_SEG9),
-  {70,0,240,256,CORE_VIDEO,caveman_update},{0}
+  {70,0,240,256,CORE_VIDEO,(void *)caveman_update},{0}
 };
 
 static const UINT16 core_ascii2seg[] = {
@@ -127,7 +127,7 @@ static SWITCH_UPDATE(GTS80) {
     CORE_SETKEYSW(inports[GTS80_COMINPORT], 0x3f, 8);
     // Set slam switch
     core_setSw(GTS80_SWSLAMTILT, inports[GTS80_COMINPORT] & 0x8000);
-    if (core_gameData->hw.display & GTS80_DISPVIDEO) 
+    if (core_gameData->hw.display & GTS80_DISPVIDEO)
       CORE_SETKEYSW(inports[GTS80_COMINPORT]>>8,0x0f,0);
   }
   /*-- slam tilt --*/
@@ -135,10 +135,10 @@ static SWITCH_UPDATE(GTS80) {
   if (core_gameData->hw.display & GTS80_DISPVIDEO) { // Also triggers NMI on video CPU
     cpu_set_irq_line(GTS80_VIDCPU, IRQ_LINE_NMI, (coreGlobals.swMatrix[0] & 0x80) ? ASSERT_LINE : CLEAR_LINE);
     // Don't know what this is for
-    if (!(GTS80locals.vblankCount % 5)) {
-      int ii;
-      for(ii = 1; ii < 8; ii++) coreGlobals.swMatrix[ii] &= 0xfc;
-    }
+//    if (!(GTS80locals.vblankCount % 5)) {
+//      int ii;
+//      for(ii = 1; ii < 8; ii++) coreGlobals.swMatrix[ii] &= 0xfc;
+//    }
   }
 }
 
@@ -597,14 +597,14 @@ static READ_HANDLER(port102r)  { DBGLOG(("HD46505 read\n")); return 0; }
 /* output to game switches, row 0 */
 static WRITE_HANDLER(port200w) {
   int ii;
-  for (ii = 1; ii < 8; ii++, data>>1)
+  for (ii = 1; ii < 8; ii++, data >>= 1)
     coreGlobals.swMatrix[ii] = (coreGlobals.swMatrix[ii] & 0xfe) | (data & 0x01);
 }
 /* output to game switches, row 1 */
 static WRITE_HANDLER(port300w) {
   int ii;
   data <<= 1;
-  for (ii = 1; ii < 8; ii++, data>>1)
+  for (ii = 1; ii < 8; ii++, data >>= 1)
     coreGlobals.swMatrix[ii] = (coreGlobals.swMatrix[ii] & 0xfd) | (data & 0x02);
 }
 
