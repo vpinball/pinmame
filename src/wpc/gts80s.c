@@ -35,6 +35,7 @@
 extern void sh_votrax_start(int Channel);
 extern void sh_votrax_stop(void);
 extern void votrax_w(int data);
+extern int votrax_status_r(void);
 
 struct {
 	struct sndbrdData boardData;
@@ -251,7 +252,8 @@ WRITE_HANDLER(riot3a_w) { logerror("riot3a_w: 0x%02x\n", data);}
 /* Switch settings, test switch and NMI */
 READ_HANDLER(riot3b_r)  {
 	// 0x40: test switch SW1
-	return (GTS80SS_locals.NMIState?0x00:0x80) | 0x40 | (GTS80SS_locals.dips^0x3f);
+//	return (GTS80SS_locals.NMIState?0x00:0x80) | 0x40 | (GTS80SS_locals.dips^0x3f);
+	return (votrax_status_r()?0x80:0x00) | 0x40 | (GTS80SS_locals.dips^0x3f);
 }
 
 WRITE_HANDLER(riot3b_w) { logerror("riot3b_w: 0x%02x\n", data);}
