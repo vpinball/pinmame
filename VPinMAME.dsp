@@ -126,16 +126,26 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386
 # ADD LINK32 kernel32.lib user32.lib shell32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zlib.lib winmm.lib version.lib /nologo /version:4.0 /subsystem:windows /dll /machine:I386 /libpath:".\zlib"
-# Begin Custom Build - Performing registration
-OutDir=.\obj/ReleaseMinDependency
+# Begin Custom Build - Copying and performing registration
+IntDir=.\obj/ReleaseMinDependency
+ProjDir=.
 TargetPath=.\obj\ReleaseMinDependency\VPinMAME.dll
+TargetName=VPinMAME
 InputPath=.\obj\ReleaseMinDependency\VPinMAME.dll
 SOURCE="$(InputPath)"
 
-"$(OutDir)\regsvr32.trg" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	regsvr32 /s /c "$(TargetPath)" 
-	echo regsvr32 exec. time > "$(OutDir)\regsvr32.trg" 
+BuildCmds= \
+	copy "$(TargetPath)" "$(ProjDir)\$(TargetName).dll" \
+	regsvr32 /s /c "$(ProjDir)\$(TargetName).dll" \
+	echo regsvr32 exec.time > "$(IntDir)\regsvr32.trg" \
+	echo "$(ProjDir)\$(TargetName).dll" \
 	
+
+"$(ProjDir)\$(TargetName).dll" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+
+"$(IntDir)\regsvr32.trg" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
 # End Custom Build
 
 !ENDIF 
