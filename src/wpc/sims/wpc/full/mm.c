@@ -476,7 +476,7 @@ WPC_ROMEND
 /---------------*/
 CORE_GAMEDEF (mm,10,   "Medieval Madness (1.0)",1997,"Williams",wpc_m95S,0)
 CORE_CLONEDEF(mm,109,10,"Medieval Madness (1.09)", 1997,"Williams",wpc_m95S,0)
-CORE_CLONEDEF(mm,055,10,"Medieval Madness (0.50)", 1997,"Williams",wpc_m95S,0)
+CORE_CLONEDEF(mm,050,10,"Medieval Madness (0.50)", 1997,"Williams",wpc_m95S,0)
 
 /*-----------------------
 / Simulation Definitions
