@@ -369,7 +369,7 @@ DRIVERNV(lightnin)      //MPU-200: 03/81 Lightning
 DRIVERNV(orbitor1)      //MPU-200: 04/82 Orbitor One
 DRIVERNV(cue)           //MPU-200: ??/82 Cue            (Proto - Never released)
 DRIVERNV(lazrlord)      //MPU-200: 10/84 Lazer Lord     (Proto - Never released)
-#if 0
+
 // Whitestar System
 DRIVERNV(strikext)      //Whitestar: 03/00 Striker Extreme
 DRIVERNV(strxt_uk)      //Whitestar: 03/00 Striker Extreme (UK)
@@ -378,6 +378,7 @@ DRIVERNV(strxt_fr)      //Whitestar: 03/00 Striker Extreme (France)
 DRIVERNV(strxt_it)      //Whitestar: 03/00 Striker Extreme (Italy)
 DRIVERNV(strxt_sp)      //Whitestar: 03/00 Striker Extreme (Spain)
 DRIVERNV(shrkysht)      //Whitestar: 09/00 Sharkey's Shootout (2.11)
+
 #ifndef VPINMAME
 DRIVERNV(hirolcas)      //Whitestar: 01/01 High Roller Casino
 DRIVERNV(hirol_gr)      //Whitestar: 01/01 High Roller Casino (Germany)
@@ -390,7 +391,7 @@ DRIVERNV(playboye)      //Whitestar: 02/02 Playboy (Spanish display)
 DRIVERNV(playboyf)      //Whitestar: 02/02 Playboy (French display)
 DRIVERNV(playboyi)      //Whitestar: 02/02 Playboy (Italian display)
 #endif /* VPINMAME */
-#endif
+
 // ---------------------
 // SEGA GAMES BELOW
 // ---------------------
