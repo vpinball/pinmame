@@ -69,5 +69,7 @@ extern PINMAME_VIDEO_UPDATE(cc_dmd256x64);
 #define CC_ROMEND ROM_END
 
 extern MACHINE_DRIVER_EXTERN(cc);
+extern MACHINE_DRIVER_EXTERN(cc1);
+extern MACHINE_DRIVER_EXTERN(cc2);
 
 #endif /* INC_CAPCOM */

@@ -5,7 +5,8 @@
 #define CAPCOMS_CPUREGION (REGION_CPU1+CAPCOMS_CPUNO)
 #define CAPCOMS_ROMREGION (REGION_SOUND1)
 
-extern MACHINE_DRIVER_EXTERN(capcoms);
+extern MACHINE_DRIVER_EXTERN(capcom1s);
+extern MACHINE_DRIVER_EXTERN(capcom2s);
 
 /*-- Sound rom macros --*/
 
