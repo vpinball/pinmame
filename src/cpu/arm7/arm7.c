@@ -49,7 +49,7 @@ static READ32_HANDLER(test_rt_r_callback);
 static WRITE32_HANDLER(test_rt_w_callback);
 static void test_dt_r_callback (data32_t insn, data32_t* prn, data32_t (*read32)(int addr));
 static void test_dt_w_callback (data32_t insn, data32_t* prn, void (*write32)(int addr, data32_t data));
-#if MAME_DEBUG
+#ifdef MAME_DEBUG
 char *Spec_RT( char *pBuf, data32_t opcode, char *pConditionCode, char *pBuf0);
 char *Spec_DT( char *pBuf, data32_t opcode, char *pConditionCode, char *pBuf0);
 char *Spec_DO( char *pBuf, data32_t opcode, char *pConditionCode, char *pBuf0);
@@ -376,7 +376,7 @@ void arm7_init(void)
 	arm7_coproc_rt_w_callback = test_rt_w_callback;
 	arm7_coproc_dt_r_callback = test_dt_r_callback;
 	arm7_coproc_dt_w_callback = test_dt_w_callback;
-#if MAME_DEBUG
+#ifdef MAME_DEBUG
 	//setup dasm callbacks - direct method example
 	arm7_dasm_cop_dt_callback = Spec_DT;
 	arm7_dasm_cop_rt_callback = Spec_RT;
@@ -415,7 +415,7 @@ static void test_dt_w_callback (data32_t insn, data32_t* prn, void (*write32)(in
 }
 
 //Custom Co-proc DASM handlers
-#if MAME_DEBUG
+#ifdef MAME_DEBUG
 char *Spec_RT( char *pBuf, data32_t opcode, char *pConditionCode, char *pBuf0)
 {
 	pBuf += sprintf( pBuf, "SPECRT");

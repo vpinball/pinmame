@@ -31,10 +31,10 @@
 /****************************************************************************************************
  *	PUBLIC FUNCTIONS ( to be called directly from cpu implementation )
  ***************************************************************************************************/
-static void arm7_core_init(const char *cpuname);
-static void arm7_core_reset(void *param);
-static int arm7_core_execute(int cycles);
-static void arm7_core_set_irq_line(int irqline, int state);
+//static void arm7_core_init(const char *cpuname);
+//static void arm7_core_reset(void *param);
+//static int arm7_core_execute(int cycles);
+//static void arm7_core_set_irq_line(int irqline, int state);
 
 /****************************************************************************************************
  * Default Memory Handlers *
@@ -310,12 +310,12 @@ enum
 
 /* Static Vars */
 //Note: for multi-cpu implementation, this approach won't work w/o modification
-static WRITE32_HANDLER((*arm7_coproc_do_callback));		//holder for the co processor Data Operations Callback func.
-static READ32_HANDLER((*arm7_coproc_rt_r_callback));	//holder for the co processor Register Transfer Read Callback func.
-static WRITE32_HANDLER((*arm7_coproc_rt_w_callback));	//holder for the co processor Register Transfer Write Callback Callback func.
+WRITE32_HANDLER((*arm7_coproc_do_callback));		//holder for the co processor Data Operations Callback func.
+READ32_HANDLER((*arm7_coproc_rt_r_callback));	//holder for the co processor Register Transfer Read Callback func.
+WRITE32_HANDLER((*arm7_coproc_rt_w_callback));	//holder for the co processor Register Transfer Write Callback Callback func.
 //holder for the co processor Data Transfer Read & Write Callback funcs
-static void (*arm7_coproc_dt_r_callback)(data32_t insn, data32_t* prn, data32_t (*read32)(int addr));		
-static void (*arm7_coproc_dt_w_callback)(data32_t insn, data32_t* prn, void (*write32)(int addr, data32_t data));
+void (*arm7_coproc_dt_r_callback)(data32_t insn, data32_t* prn, data32_t (*read32)(int addr));		
+void (*arm7_coproc_dt_w_callback)(data32_t insn, data32_t* prn, void (*write32)(int addr, data32_t data));
 
 #ifdef MAME_DEBUG
 extern void arm7_disasm( char *pBuf, data32_t pc, data32_t opcode );
