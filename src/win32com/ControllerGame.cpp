@@ -455,6 +455,10 @@ typedef char* tCrc;
 #else
 typedef int tCrc;
 #endif
+
+#ifdef TEST_NEW_STERN
+static const tCrc CRCSOFGAMESNOTSUPPORRTED[] = {0,0};
+#else
 static const tCrc CRCSOFGAMESNOTSUPPORRTED[] = {
 	// Austin Powers (1st sound rom, game roms 201, 300, 301, 302)
 	CRC(c1e33fee), CRC(a06b2b03), CRC(a06b2b03), CRC(a4ddcdca), CRC(2920b59b),
@@ -477,6 +481,7 @@ static const tCrc CRCSOFGAMESNOTSUPPORRTED[] = {
 	// end of the list
 	0
 };
+#endif
 
 STDMETHODIMP CGame::get_IsSupported(VARIANT_BOOL *pVal)
 {
