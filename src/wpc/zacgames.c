@@ -187,8 +187,17 @@ ZAC_ROMEND
 CORE_GAMEDEFNV(bbeltzac,"Blackbelt (Zaccaria)",1986,"Zaccaria",mZAC2,TEST)
 
 //??/86 Mexico
-//??/86 Zankor
-//??/86 Mystic Star
+
+/*--------------------------------
+/ Zankor (??/86)
+/-------------------------------*/
+INITGAME(zankor,0,dispZAC,FLIP_SW(FLIP_L),2)
+ZAC_ROMSTART1820(zankor,	"zan_ic1.764",0xe7ba5acf,
+							"zan_ic2.764",0x5804ff10)
+ZAC_ROMEND
+CORE_GAMEDEFNV(zankor,"Zankor",1986,"Zaccaria",mZAC2,TEST)
+
+//??/86 Mystic Star (conversion kit with different hardware)
 
 /*--------------------------------
 / Spooky (??/87)
