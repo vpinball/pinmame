@@ -227,7 +227,7 @@ S11CS_SOUNDROM88(       "swrd_u4.l1",  CRC(272b509c),
                         "swrd_u19.l1", CRC(a22f84fa))
 S11_ROMEND
 #define input_ports_swrds input_ports_s11
-CORE_GAMEDEF(swrds, l2, "Swords of Fury (L-2)", 1988, "Williams", s11_mS11XS, 0)
+CORE_GAMEDEF(swrds, l2, "Swords of Fury (L-2)", 1988, "Williams", s11_mS11BS, 0)
 
 /*--------------------
 / Taxi 10/88
