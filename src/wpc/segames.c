@@ -1342,3 +1342,18 @@ SE_ROMEND
 #define input_ports_elvisi input_ports_elvis
 #define init_elvisi init_elvis
 CORE_CLONEDEFNV(elvisi,elvis,"Elvis (Italy)",2004,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ The Sopranos
+/-------------------------------------------------------------------*/
+INITGAME(sopranos,GEN_WS,se_dmd128x32,SE_LED)
+SE128_ROMSTART(sopranos, "soprcpu.400", NO_DUMP)
+DE_DMD32ROM8x(      "soprdspa.400", NO_DUMP)
+DE3SA_SOUNDROM18888("sopr.u7",  NO_DUMP,
+                    "sopr.u17", NO_DUMP,
+                    "sopr.u21", NO_DUMP,
+                    "sopr.u36", NO_DUMP,
+                    "sopr.u37", NO_DUMP)
+SE_ROMEND
+#define input_ports_sopranos input_ports_se
+CORE_GAMEDEFNV(sopranos,"The Sopranos",2005,"Stern",de_mSES3,0)

@@ -328,9 +328,9 @@ static char *rtos( int n )
 	return tmp;
 }
 
-static WRITE_HANDLER(de2s_bsmtcmdHi_w) { 
-	de2slocals.bsmtData = data; 
-//	LOG(("%04x: hi=%x\n",activecpu_get_pc(),data)); 
+static WRITE_HANDLER(de2s_bsmtcmdHi_w) {
+	de2slocals.bsmtData = data;
+//	LOG(("%04x: hi=%x\n",activecpu_get_pc(),data));
 }
 
 static WRITE_HANDLER(de2s_bsmtcmdLo_w)
@@ -368,19 +368,19 @@ static INTERRUPT_GEN(de2s_firq) {
    by simply replacing the older game roms into the board.
    The BSMT chip is software emulated by the AT91 CPU and has added new capabilities such as
    16 bit sample support and ADPCM compression. The Xilinx FPGA is programmed to handle a variety of
-   tasks. It controls 2 of the ROM Enable lines, acts as a sound command buffer from the main cpu, 
+   tasks. It controls 2 of the ROM Enable lines, acts as a sound command buffer from the main cpu,
    and most importantly, acts as a simple DSP chip which converts the 16 bit sample data into a serial sound
    stream for output to a DAC. It may have other functionality as well, but not related to sound if so.
 
    A # of MAME related techincal challenges occurred which required some work arounds.
-   First, I wanted to use the memory map to handle everything, but for some reason when I 
+   First, I wanted to use the memory map to handle everything, but for some reason when I
    tried it with the 32 bit sized address like 0x40000000, it took about 30 seconds to load and
    consumed massive amounts of memory. Second I tried installing memory handlers in the init code
    to handle it, but for some reason they never returned an offset value > 0. So finally I was stuck
    to create call backs right from the core, but while speed is fine, it's a yucky hack.
-   Second, because the AT91 core swaps RAM into page 0 memory after a 
+   Second, because the AT91 core swaps RAM into page 0 memory after a
    certain register write occurs, and the boot code is also swapped, I needed to provide the
-   AT91 code pointers to the memory region data so it could perform the swap. 
+   AT91 code pointers to the memory region data so it could perform the swap.
 
    The bios code will setup a simple overflow counter to trigger an IRQ at 1/2 the CPU freq. Ideally this should
    be handled by the CPU core itself, but for now, I'm doing it this way because it's much quicker to implement.
@@ -475,7 +475,7 @@ static READ32_HANDLER(arm_cs_r)
 			romaddr = (romaddr&0xFFDFFFFF)>>1;
 
 			data = (data8_t)*((memory_region(REGION_SOUND2) + romaddr + ((romchip-1) * 0x100000)));
-			LOG(("%08x: reading from U%d: %08x = %08x (%08x)\n",activecpu_get_pc(),romchip,romaddr,data,offset));	
+			LOG(("%08x: reading from U%d: %08x = %08x (%08x)\n",activecpu_get_pc(),romchip,romaddr,data,offset));
 		}
 	}
 	else
@@ -545,7 +545,7 @@ static WRITE32_HANDLER(arm_cs_w)
 	//CSR 1 Mapped to 0x40000000 - U7 ROM
 	if(offset < 0x4fffffff)
 	{
-		LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));		
+		LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));
 	}
 	else
 	{
@@ -567,7 +567,7 @@ static READ32_HANDLER(arm_cs_r)
 		case 1:
 			LOG(("%08x: reading from: %08x = %08x\n",activecpu_get_pc(),offset,data));
 			break;
-		//CSR 2 Mapped to 0x20000000 (Xilinx & U17-U37 ROMS)	
+		//CSR 2 Mapped to 0x20000000 (Xilinx & U17-U37 ROMS)
 		case 2:
 			//Xilinx Provides Sound Command from Main CPU
 			if(offset == 0x20000000)
@@ -593,7 +593,7 @@ static READ32_HANDLER(arm_cs_r)
 				romaddr = (romaddr&0xFFDFFFFF)>>1;
 
 				data = (data8_t)*((memory_region(REGION_SOUND2) + romaddr + ((romchip-1) * 0x100000)));
-				LOG(("%08x: reading from U%d: %08x = %08x (%08x)\n",activecpu_get_pc(),romchip,romaddr,data,offset));	
+				LOG(("%08x: reading from U%d: %08x = %08x (%08x)\n",activecpu_get_pc(),romchip,romaddr,data,offset));
 			}
 			break;
 		//CSR 3 Mapped to 0x30000000 - U412 (Not Used)
@@ -616,7 +616,7 @@ static READ32_HANDLER(arm_cs_r)
 static WRITE32_HANDLER(arm_cs_w)
 {
 	data &= mem_mask;
-	
+
 	switch( (offset & 0xF0000000) >> 28 )
 	{
 		case 0:
@@ -656,7 +656,7 @@ static WRITE32_HANDLER(arm_cs_w)
 			break;
 		//CSR 1 Mapped to 0x40000000 - U7 ROM
 		case 4:
-			LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));		
+			LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));
 			break;
 		default:
 			LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));
@@ -671,7 +671,7 @@ static READ32_HANDLER(arm_cs_r)
 	data32_t data = 0;
 	data32_t offcheck = (offset & 0xF0000000);
 
-	//CSR 2 Mapped to 0x20000000 (Xilinx & U17-U37 ROMS)	
+	//CSR 2 Mapped to 0x20000000 (Xilinx & U17-U37 ROMS)
 	if(offcheck == 0x20000000)
 	{
 		//Xilinx Provides Sound Command from Main CPU
@@ -698,7 +698,7 @@ static READ32_HANDLER(arm_cs_r)
 			romaddr = (romaddr&0xFFDFFFFF)>>1;
 
 			data = (data8_t)*((memory_region(REGION_SOUND2) + romaddr + ((romchip-1) * 0x100000)));
-			LOG(("%08x: reading from U%d: %08x = %08x (%08x)\n",activecpu_get_pc(),romchip,romaddr,data,offset));	
+			LOG(("%08x: reading from U%d: %08x = %08x (%08x)\n",activecpu_get_pc(),romchip,romaddr,data,offset));
 		}
 	}
 	else
@@ -711,10 +711,10 @@ static READ32_HANDLER(arm_cs_r)
 	}
 	else
 	{
-		//CSR 0 Mapped to 0x10000000 - BIOS ROM U8 
+		//CSR 0 Mapped to 0x10000000 - BIOS ROM U8
 		//OR
 		//CSR 3 Mapped to 0x30000000 - U412 (Not Used)
-		//OR 
+		//OR
 		//Whatever else..
 		LOG(("%08x: reading from: %08x = %08x\n",activecpu_get_pc(),offset,data));
 	}
@@ -726,8 +726,8 @@ static WRITE32_HANDLER(arm_cs_w)
 	data32_t offcheck = (offset & 0xF0000000);
 	data &= mem_mask;
 
-	//CSR 2 Mapped to 0x20000000 (Xilinx & U17-U37 ROMS)	
-	if(offcheck == 0x20000000)	
+	//CSR 2 Mapped to 0x20000000 (Xilinx & U17-U37 ROMS)
+	if(offcheck == 0x20000000)
 	{
 		//Data Stream Output
 		//if( (offset == 0x20400000) || (offset == 0x20400002) )
@@ -752,10 +752,10 @@ static WRITE32_HANDLER(arm_cs_w)
 		}
 	}
 	else
-	{	//CSR 0 Mapped to 0x10000000 - BIOS ROM U8 
+	{	//CSR 0 Mapped to 0x10000000 - BIOS ROM U8
 		//OR
 		//CSR 3 Mapped to 0x30000000 - U412 (Not Used)
-		//OR 
+		//OR
 		//CSR 1 Mapped to 0x40000000 - U7 ROM
 		//Whatever else..
 		LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));
@@ -764,11 +764,11 @@ static WRITE32_HANDLER(arm_cs_w)
 #endif
 
 //Remove Delay from LED Flashing code to speed up the boot time of the cpu
-static void remove_led_code()
+static void remove_led_code(void)
 {
 
   //LOTR OS Version -
-  if( 
+  if(
 	  (de3as_page0_ram[(0x2854+0x8000)/4] == 0xeb000061) &&
 	  (de3as_page0_ram[(0x2860+0x8000)/4] == 0xeb00005e) &&
 	  (de3as_page0_ram[(0x286c+0x8000)/4] == 0xeb00005b) &&
@@ -790,8 +790,8 @@ static void remove_led_code()
 			LOG(("LOTR OS - LED Code Removed!\n"));
 		}
 
-  //ELVIS OS Version - 
-  if( 
+  //ELVIS OS Version -
+  if(
 	  (de3as_page0_ram[(0x2d90+0x8000)/4] == 0xeb00004b) &&
 	  (de3as_page0_ram[(0x2d9c+0x8000)/4] == 0xeb000048) &&
 	  (de3as_page0_ram[(0x2da8+0x8000)/4] == 0xeb000045) &&
@@ -883,7 +883,7 @@ static void at91_sh_update(int num, INT16 *buffer, int length)
 		#endif
 		break;	//drop out of loop
 	}
-	 
+
 	//Send next pcm sample to output buffer
 	buffer[ii] = samplebuf[sampout];
 
@@ -1014,7 +1014,7 @@ static READ32_HANDLER(flashb_cs_r)
 		}
 
 		if(read_mancode)
-			data = 0xc0;		//AT49BV1614 
+			data = 0xc0;		//AT49BV1614
 //			data = 0xc2;		//AT49BV1614T
 
 		//Devcode is read 1st, then Mancode is read next
