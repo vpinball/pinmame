@@ -344,7 +344,7 @@ static core_tGameData corvGameData = {
   GEN_WPCSECURITY, NULL,
   {
   FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_UL),
-    0,0,0,
+    0,0,0,0,0,0,0,
     NULL, corv_handleMech, corv_getMech, corv_drawMech,
     NULL, NULL
   },

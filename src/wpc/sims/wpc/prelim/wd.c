@@ -322,7 +322,7 @@ static core_tGameData wdGameData = {
   GEN_WPC95DCS, NULL,
   {
     FLIP_SW(FLIP_L|FLIP_U) | FLIP_SOL(FLIP_L),
-    0,0,0,
+    0,0,0,0,0,0,0,
     NULL, wd_handleMech, wd_getMech, wd_drawMech,
     NULL, NULL
   },

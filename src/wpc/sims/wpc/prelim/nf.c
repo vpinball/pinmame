@@ -271,10 +271,7 @@ static sim_tSimData nfSimData = {
 static core_tGameData nfGameData = {
   GEN_WPCSECURITY, NULL,
   {
-    FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_UR),
-    0,0,0,
-    NULL, NULL, NULL, NULL,
-    NULL, NULL
+    FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_UR)
   },
   &nfSimData,
   {

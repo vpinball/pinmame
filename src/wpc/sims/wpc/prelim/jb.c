@@ -292,10 +292,7 @@ static sim_tSimData jbSimData = {
 static core_tGameData jbGameData = {
   GEN_WPC95DCS, NULL,
   {
-    FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
-    0,0,0,
-    NULL, NULL, NULL, NULL,
-    NULL, NULL
+    FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L)
   },
   &jbSimData,
   {

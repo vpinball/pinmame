@@ -406,7 +406,7 @@ static core_tGameData cftblGameData = {
   GEN_WPCFLIPTRON, NULL,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
-    0,0,0,
+    0,0,0,0,0,0,0,
     NULL, cftbl_handleMech, NULL, cftbl_drawMech,
     NULL, cftbl_samsolmap
   },

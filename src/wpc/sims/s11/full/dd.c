@@ -90,57 +90,57 @@ S11_INPUT_PORTS_END
 /*-------------------
 / Switch definitions
 /--------------------*/
-#define swTilt		S11_SWNO(1)
-#define swStart		S11_SWNO(3)
-#define swSlamTilt	S11_SWNO(7)
-#define swShooter	S11_SWNO(9)
-#define swOutHole	S11_SWNO(10)
-#define swRTrough	S11_SWNO(11)
-#define swCTrough	S11_SWNO(12)
-#define swLTrough	S11_SWNO(13)
-#define swHeart		S11_SWNO(14)
-#define swEnterRamp	S11_SWNO(15)
-#define swRampMade	S11_SWNO(16)
-#define swLeftOutlane	S11_SWNO(17)
-#define swRightOutlane	S11_SWNO(18)
-#define swRightInlane	S11_SWNO(19)
-#define swLeftInlane	S11_SWNO(20)
-#define swRDrop1	S11_SWNO(21) /* Top */
-#define swRDrop2	S11_SWNO(22)
-#define swRDrop3	S11_SWNO(23)
-#define swRDrop4	S11_SWNO(24) /* Bottom */
-#define swrefleX	S11_SWNO(25)
-#define swreflEx	S11_SWNO(26)
-#define swrefLex	S11_SWNO(27)
-#define swreFlex	S11_SWNO(28)
-#define swrEflex	S11_SWNO(29)
-#define swReflex	S11_SWNO(30)
-#define swBigShot	S11_SWNO(31)
-#define swRPopper	S11_SWNO(32)
-#define swMixerGabT	S11_SWNO(33)
-#define swMixerGabM	S11_SWNO(34)
-#define swMixerGabB	S11_SWNO(35)
-#define swMixerHeartL	S11_SWNO(36)
-#define swMixerHeartM	S11_SWNO(37)
-#define swMixerHeartR	S11_SWNO(38)
-#define swTopLeft10	S11_SWNO(39)
-#define swMixerMagT	S11_SWNO(41)
-#define swMixerMagM	S11_SWNO(42)
-#define swMixerMagB	S11_SWNO(43)
-#define swMidMid10	S11_SWNO(46)
-#define swMidBot10	S11_SWNO(47)
-#define swMidTop10	S11_SWNO(48)
-#define swITest		S11_SWNO(49)
-#define swMagnet	S11_SWNO(50)
-#define swLPopper	S11_SWNO(51)
-#define swLeftJet	S11_SWNO(52)
-#define swRightJet	S11_SWNO(53)
-#define swBottomJet	S11_SWNO(54)
-#define swLeftSling	S11_SWNO(55)
-#define swRightSling	S11_SWNO(56)
-#define swRFlip		S11_SWNO(57)
-#define swLFlip		S11_SWNO(58)
-#define swRLoop		S11_SWNO(59)
+#define swTilt		1
+#define swStart		3
+#define swSlamTilt	7
+#define swShooter	9
+#define swOutHole	10
+#define swRTrough	11
+#define swCTrough	12
+#define swLTrough	13
+#define swHeart		14
+#define swEnterRamp	15
+#define swRampMade	16
+#define swLeftOutlane	17
+#define swRightOutlane	18
+#define swRightInlane	19
+#define swLeftInlane	20
+#define swRDrop1	21 /* Top */
+#define swRDrop2	22
+#define swRDrop3	23
+#define swRDrop4	24 /* Bottom */
+#define swrefleX	25
+#define swreflEx	26
+#define swrefLex	27
+#define swreFlex	28
+#define swrEflex	29
+#define swReflex	30
+#define swBigShot	31
+#define swRPopper	32
+#define swMixerGabT	33
+#define swMixerGabM	34
+#define swMixerGabB	35
+#define swMixerHeartL	36
+#define swMixerHeartM	37
+#define swMixerHeartR	38
+#define swTopLeft10	39
+#define swMixerMagT	41
+#define swMixerMagM	42
+#define swMixerMagB	43
+#define swMidMid10	46
+#define swMidBot10	47
+#define swMidTop10	48
+#define swITest		49
+#define swMagnet	50
+#define swLPopper	51
+#define swLeftJet	52
+#define swRightJet	53
+#define swBottomJet	54
+#define swLeftSling	55
+#define swRightSling	56
+#define swRFlip		57
+#define swLFlip		58
+#define swRLoop		59
 
 /*---------------------
 / Solenoid definitions
@@ -410,7 +410,7 @@ static core_tGameData ddGameData = {
   GEN_S11C, s11_dispS11c,
   {
     FLIP_SWNO(swLFlip,swRFlip),
-    0,0,0,
+    0,0,0,0,0,0,0,
     NULL, dd_handleMech, NULL, NULL,
     &dd_lampPos, dd_samsolmap
   },

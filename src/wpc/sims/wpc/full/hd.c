@@ -386,7 +386,7 @@ static core_tGameData hdGameData = {
   GEN_WPCALPHA_2, disphd,
   {
     FLIP_SWNO(12,11),
-    0,0,0,
+    0,0,0,0,0,0,0,
     NULL, hd_handleMech, NULL, NULL,
     NULL, hd_samsolmap
   },

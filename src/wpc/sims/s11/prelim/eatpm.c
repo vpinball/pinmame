@@ -48,54 +48,54 @@ S11_INPUT_PORTS_END
 /*-------------------
 / Switch definitions
 /--------------------*/
-#define swTilt     S11_SWNO( 1)
-#define swRelay    S11_SWNO( 2)
-#define swStart    S11_SWNO( 3)
-#define swSlamTilt S11_SWNO( 7)
-#define swOuthole  S11_SWNO( 9)
-#define swTrough1  S11_SWNO(11)
-#define swTrough2  S11_SWNO(12)
-#define swTrough3  S11_SWNO(13)
-#define swRStand1  S11_SWNO(15)
-#define swRStand2  S11_SWNO(16)
-#define swLOut     S11_SWNO(17)
-#define swLIn      S11_SWNO(18)
-#define swRIn      S11_SWNO(19)
-#define swROut     S11_SWNO(20)
-#define swShooter  S11_SWNO(21)
-#define swPizzaTop S11_SWNO(22)
-#define swPizzaBot S11_SWNO(23)
-#define swDHwake   S11_SWNO(25)
-#define swDHthee   S11_SWNO(26)
-#define swDHdead   S11_SWNO(27)
-#define swDHheads  S11_SWNO(28)
-#define swLockEnt  S11_SWNO(29)
-#define swLRampEnt S11_SWNO(30)
-#define swLRampEnd S11_SWNO(31)
-#define swPopper   S11_SWNO(32)
-#define swLSling   S11_SWNO(33)
-#define swRSling   S11_SWNO(34)
-#define swLJet     S11_SWNO(35)
-#define swRJet     S11_SWNO(36)
-#define swBJet     S11_SWNO(37)
-#define swLDrop    S11_SWNO(41)
-#define swCDrop    S11_SWNO(42)
-#define swRDrop    S11_SWNO(43)
-#define swRRampEnt S11_SWNO(44)
-#define swbAT      S11_SWNO(45)
-#define swBaT      S11_SWNO(46)
-#define swBAt      S11_SWNO(47)
-#define swEject    S11_SWNO(48)
-#define swLock1    S11_SWNO(49)
-#define swLock2    S11_SWNO(50)
-#define swLock3    S11_SWNO(51)
-#define swLockSafe S11_SWNO(52)
-#define swFlip1Tar S11_SWNO(53)
-#define swFlip2Tar S11_SWNO(54)
-#define swFlip1Op  S11_SWNO(55)
-#define swFlip2Op  S11_SWNO(56)
-#define swRFlip    S11_SWNO(57)
-#define swLFlip    S11_SWNO(58)
+#define swTilt      1
+#define swRelay     2
+#define swStart     3
+#define swSlamTilt  7
+#define swOuthole   9
+#define swTrough1  11
+#define swTrough2  12
+#define swTrough3  13
+#define swRStand1  15
+#define swRStand2  16
+#define swLOut     17
+#define swLIn      18
+#define swRIn      19
+#define swROut     20
+#define swShooter  21
+#define swPizzaTop 22
+#define swPizzaBot 23
+#define swDHwake   25
+#define swDHthee   26
+#define swDHdead   27
+#define swDHheads  28
+#define swLockEnt  29
+#define swLRampEnt 30
+#define swLRampEnd 31
+#define swPopper   32
+#define swLSling   33
+#define swRSling   34
+#define swLJet     35
+#define swRJet     36
+#define swBJet     37
+#define swLDrop    41
+#define swCDrop    42
+#define swRDrop    43
+#define swRRampEnt 44
+#define swbAT      45
+#define swBaT      46
+#define swBAt      47
+#define swEject    48
+#define swLock1    49
+#define swLock2    50
+#define swLock3    51
+#define swLockSafe 52
+#define swFlip1Tar 53
+#define swFlip2Tar 54
+#define swFlip1Op  55
+#define swFlip2Op  56
+#define swRFlip    57
+#define swLFlip    58
 
 /* Solenoids, The rest are flashes I think */
 #define sOuthole 1
@@ -236,10 +236,7 @@ static core_tLCDLayout dispeatpm[] = { \
 static core_tGameData eatpmGameData = {
   GEN_S11B_2, dispeatpm,
   {
-    FLIP_SWNO(swLFlip,swRFlip),
-    0,0,0,
-    NULL, NULL, NULL, NULL,
-    NULL, NULL
+    FLIP_SWNO(swLFlip,swRFlip)
   },
   &eatpmSimData,
   {{0}},

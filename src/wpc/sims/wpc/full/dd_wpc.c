@@ -391,9 +391,9 @@ static wpc_tSamSolMap dd_samsolmap[] = {
 /  ROM definitions
 /------------------*/
 WPC_ROMSTART(dd,p7,  "dude_u6.p7",0x020000,0xb6c35b98)
-S11CS_SOUNDROMWPC000("dude_u4.l1",  0x3eeef714,
-                     "dude_u19.l1", 0xdc7b985b,
-                     "dude_u20.l1", 0xa83d53dd)
+S11CS_SOUNDROM000("dude_u4.l1",  0x3eeef714,
+                  "dude_u19.l1", 0xdc7b985b,
+                  "dude_u20.l1", 0xa83d53dd)
 WPC_ROMEND
 
 /*--------------
@@ -423,7 +423,7 @@ static core_tGameData ddGameData = {
   GEN_WPCALPHA_1, wpc_dispAlpha, /* generation */
   {
     FLIP_SWNO(82,81),
-    0,0,0,
+    0,0,0,0,0,0,0,
     NULL, dd_handleMech, NULL, NULL,
     &dd_lampPos, dd_samsolmap
   },

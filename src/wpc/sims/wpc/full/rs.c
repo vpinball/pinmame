@@ -581,7 +581,7 @@ static core_tGameData rsGameData = {
   GEN_WPCSECURITY, NULL,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_U), /* actually 3 left flippers */
-    0,0,0,
+    0,0,0,0,0,0,0,
     NULL, rs_handleMech, rs_getMech, rs_drawMech,
     &rs_lampPos, rs_samsolmap
   },

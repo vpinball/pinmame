@@ -423,7 +423,7 @@ static core_tGameData wcsGameData = {
   GEN_WPCSECURITY, NULL,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
-    0,0,0,
+    0,0,0,0,0,0,0,
     wcs_getSol, wcs_handleMech, wcs_getMech, wcs_drawMech,
     &wcs_lampPos, NULL
   },

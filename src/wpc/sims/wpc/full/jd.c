@@ -471,7 +471,7 @@ static core_tGameData jdGameData = {
   GEN_WPCDCS, NULL,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_U),
-    0,0,1,
+    0,0,1,0,0,0,0,
     jd_getSol, jd_handleMech, jd_getMech, jd_drawMech,
     NULL, NULL
   },

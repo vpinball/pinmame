@@ -488,7 +488,7 @@ static core_tGameData giGameData = {
   GEN_WPCDMD, NULL,
   {
     FLIP_SWNO(12,11),
-    0,0,0,
+    0,0,0,0,0,0,0,
     NULL, gi_handleMech, NULL, gi_drawMech,
     &gi_lampPos, gi_samsolmap
   },

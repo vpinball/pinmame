@@ -581,7 +581,7 @@ static core_tGameData tomGameData = {
   GEN_WPCSECURITY, NULL,
   {
     FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L),
-    0,0,0,
+    0,0,0,0,0,0,0,
     NULL, tom_handleMech, tom_getMech, tom_drawMech,
     &tom_lampPos, tom_SamSolMap
   },

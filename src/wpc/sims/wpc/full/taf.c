@@ -454,7 +454,7 @@ static core_tGameData tafGameData = {
   GEN_WPCFLIPTRON, NULL,/* generation */
   {
     FLIP_BUT(FLIP_L) | FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L|FLIP_U),
-    0,0,0,
+    0,0,0,0,0,0,0,
     NULL, taf_handleMech, taf_getMech, taf_drawMech,
     &taf_lampPos, taf_SamSolMap
   },

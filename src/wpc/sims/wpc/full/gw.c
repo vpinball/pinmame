@@ -511,7 +511,7 @@ static core_tGameData gwGameData = {
   GEN_WPCFLIPTRON, NULL,	/* generation */
   {
     FLIP_SW(FLIP_L | FLIP_UR) | FLIP_SOL(FLIP_L | FLIP_UR),	/* Which switches are the flippers */
-    0,0,0,
+    0,0,0,0,0,0,0,
     NULL, gw_handleMech, NULL, gw_drawMech,
     &gw_lampPos, NULL
   },
