@@ -200,15 +200,15 @@ const struct sndbrdIntf de2sIntf = {
 /* Older 11 Voice Style BSMT Chip */
 //NOTE: Do not put a volume adjustment here, otherwise 128x16 games have audible junk played at the beggining
 static struct BSMT2000interface de2s_bsmt2000aInt = {
-  1, {24000000}, {11}, {DE2S_ROMREGION}, {100}, {0000}, 1
+  1, {24000000}, {11}, {DE2S_ROMREGION}, {100}, {0000}, 1, 0
 };
 /* Newer 12 Voice Style BSMT Chip */
 static struct BSMT2000interface de2s_bsmt2000bInt = {
-  1, {24000000}, {12}, {DE2S_ROMREGION}, {100}, {2000}, 1
+  1, {24000000}, {12}, {DE2S_ROMREGION}, {100}, {2000}, 1, 0
 };
 /* Older 11 Voice Style BSMT Chip but needs large volume adjustment */
 static struct BSMT2000interface de2s_bsmt2000cInt = {
-  1, {24000000}, {11}, {DE2S_ROMREGION}, {100}, {4000}, 1
+  1, {24000000}, {11}, {DE2S_ROMREGION}, {100}, {4000}, 1, 0
 };
 
 static MEMORY_READ_START(de2s_readmem)
