@@ -167,8 +167,12 @@ CRoms::~CRoms()
 
 STDMETHODIMP CRoms::Init(const struct GameDriver *gamedrv)
 {
-	if ( !gamedrv )
-		return S_FALSE;
+	if ( !gamedrv ) {
+		m_lRoms = 0;
+		m_pRomsList = NULL;
+		m_gamedrv = NULL;
+		return S_OK;
+	}
 
 	m_gamedrv = gamedrv;
 

@@ -2,8 +2,7 @@
 #include "VPinMAME.h"
 
 #include "Controller.h"
-#include "VPinMAMEDisclaimerDlg.h"
-#include "ControllerOptions.h"
+#include "ControllerDisclaimerDlg.h"
 
 #include "resource.h"
 
@@ -24,11 +23,10 @@ private:
 
 	LRESULT OnInitDialog(UINT, WPARAM, LPARAM lParam, BOOL&) {
 		CenterWindow();
-		m_pController = (Controller*) lParam;
-		if ( !m_pController )
+		if ( !lParam )
 			return 1;
 
-		SetDlgItemText(IDC_DISGAMESPEC, m_pController->m_ControllerOptions.szDescription);
+		SetDlgItemText(IDC_DISGAMESPEC, (char*) lParam);
 		return 1;
 	}
 
@@ -43,7 +41,7 @@ private:
 	}
 };
 
-BOOL ShowDisclaimer(HWND hParentWnd, Controller* pController) { 
+BOOL ShowDisclaimer(HWND hParentWnd, char* szDescription) { 
 	CDisclaimerDlg DisclaimerDlg;
-	return DisclaimerDlg.DoModal(hParentWnd, (LPARAM) pController)==IDOK;
+	return DisclaimerDlg.DoModal(hParentWnd, (LPARAM) szDescription)==IDOK;
 }

@@ -1,7 +1,6 @@
 #include "StdAfx.h"
 #include "VPinMAMEAboutDlg.h"
 
-#include "ControllerOptions.h"
 #include "resource.h"
 
 #include <atlwin.h>
