@@ -32,9 +32,9 @@ CORE_GAMEDEF(httip,l1,"Hot Tip (L-1)",1977,"Williams",s3_mS3C,GAME_USES_CHIMES)
 / Lucky Seven - Sys.3 (Game #480) - No Sound board
 /---------------------------------*/
 INITGAMEFULL(lucky, GEN_S3C, s4_disp,0,0,34,33,36,24,0,0)
-S4_ROMSTART(lucky,l1,"gamerom.716", 0x7cfbd4c7,
-                                         "white1.716", 0x9bbbf14f,
-                                         "white2.716", 0x4d4010dd)
+S4_ROMSTART(lucky,l1,"gamerom.716",0x7cfbd4c7,
+                     "white1.716", 0x9bbbf14f,
+                     "white2.716", 0x4d4010dd)
 S4_ROMEND
 #define input_ports_lucky input_ports_s3
 CORE_GAMEDEF(lucky,l1,"Lucky Seven (L-1)",1977,"Williams",s3_mS3C,GAME_USES_CHIMES)
@@ -44,8 +44,8 @@ CORE_GAMEDEF(lucky,l1,"Lucky Seven (L-1)",1977,"Williams",s3_mS3C,GAME_USES_CHIM
 /-------------------------------------*/
 INITGAME(wldcp, GEN_S3,s4_disp)
 S4_ROMSTART(wldcp,l1,"gamerom.716", 0xc8071956,
-                                 "white1.716", 0x9bbbf14f,
-                                         "white2.716", 0x4d4010dd)
+                     "white1.716",  0x9bbbf14f,
+                     "white2wc.716",0x618d15b5)
 S67S_SOUNDROMS8("sound1.716",0xf4190ca3)
 S4_ROMEND
 #define input_ports_wldcp input_ports_s3
@@ -55,9 +55,9 @@ CORE_GAMEDEF(wldcp,l1,"World Cup Soccer (L-1)",1978,"Williams",s3_mS3S,0)
 / Contact - Sys.3 (Game #482)
 /-------------------------------------*/
 INITGAME(cntct, GEN_S3,s4_disp)
-S4_ROMSTART(cntct,l1,"gamerom.716", 0x35359b60,
-                                 "white1.716", 0x9bbbf14f,
-                                         "white2.716", 0x4d4010dd)
+S4_ROMSTART(cntct,l1,"gamerom.716",0x35359b60,
+                     "white1.716", 0x9bbbf14f,
+                     "white2.716", 0x4d4010dd)
 S67S_SOUNDROMS8("sound1.716",0xf4190ca3)
 S4_ROMEND
 #define input_ports_cntct input_ports_s3
@@ -68,8 +68,8 @@ CORE_GAMEDEF(cntct,l1,"Contact (L-1)",1978,"Williams",s3_mS3S,0)
 /-------------------------------------*/
 INITGAMEFULL(disco, GEN_S3,s4_disp,0,0,33,17,23,21,0,0)
 S4_ROMSTART(disco,l1,"gamerom.716", 0x831d8adb,
-                                 "white1.716", 0x9bbbf14f,
-                                         "white2.716", 0x4d4010dd)
+                     "white1.716", 0x9bbbf14f,
+                     "white2.716", 0x4d4010dd)
 S67S_SOUNDROMS8("sound1.716",0xf4190ca3)
 S4_ROMEND
 #define input_ports_disco input_ports_s3
