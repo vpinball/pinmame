@@ -254,7 +254,7 @@ CORE_GAMEDEFNV(dollyptn,"Dolly Parton",1979,"Bally",by35_mBY35_50S,0)
 /*--------------------------------
 / Kiss
 /-------------------------------*/
-INITGAME(kiss,GEN_BY35_50,dispBy6,FLIP_SW(FLIP_L),0)
+INITGAME(kiss,GEN_BY35_50,dispBy6,FLIP_SW(FLIP_L),8)
 BY35_ROMSTART888(kiss,"746-11_1.716",0x78ec7fad,
 		      "746-14_2.716",0x0fc8922d,
 		      "720-30_6.716",0x4be8aab0)
@@ -269,7 +269,7 @@ CORE_GAMEDEFNV(kiss,"Kiss",1979,"Bally",by35_mBY35_50S,0)
 /*--------------------------------
 / Future Spa
 /-------------------------------*/
-INITGAME(futurspa,GEN_BY35_51,dispBy6,FLIP_SW(FLIP_L),0)
+INITGAME(futurspa,GEN_BY35_51,dispBy6,FLIP_SW(FLIP_L),8)
 BY35_ROMSTART888(futurspa,"781-07_1.716",0x4c716a6a,
 		          "781-09_2.716",0x316617ed,
 		          "720-35_6.716",0x78d6d289)
@@ -279,7 +279,7 @@ CORE_GAMEDEFNV(futurspa,"Future Spa",1979,"Bally",by35_mBY35_51S,GAME_IMPERFECT_
 /*--------------------------------
 / Space invaders
 /-------------------------------*/
-INITGAME(spaceinv,GEN_BY35_51,dispBy6,FLIP_SW(FLIP_L),0)
+INITGAME(spaceinv,GEN_BY35_51,dispBy6,FLIP_SW(FLIP_L),8)
 BY35_ROMSTART888(spaceinv,"792-10_1.716",0x075eba5a,
 		          "792-13_2.716",0xb87b9e6b,
 		          "720-37_6.716",0xceff6993)
@@ -542,7 +542,7 @@ CORE_CLONEDEFNV(spectru4,spectrum, "Spectrum 4 Player",1982,"Bally",by35_mBY35_6
 /*--------------------------------------------------
 / Speak Easy 2 Player - Uses AS2518-51 Sound Board
 /--------------------------------------------------*/
-INITGAME(speakesy,GEN_BY35_51,dispBy7,FLIP_SW(FLIP_L),0)
+INITGAME(speakesy,GEN_BY35_51,dispBy7,FLIP_SW(FLIP_L),8)
 BY35_ROMSTARTx00(speakesy,"877-03_2.732", 0x34b28bbc,
                           "720-53_6.732", 0xc2e92f80)
 BY35_SOUND51ROM("877-01_4.716",0x6534e826)
@@ -635,7 +635,7 @@ CORE_GAMEDEFNV(granslam,"Grand Slam",1983,"Bally",by35_mBY35_51S,GAME_IMPERFECT_
 /*----------------------------------------------------------
 / Gold Ball (BY35-???: 10/83)  - Uses AS2518-51 Sound Board
 /----------------------------------------------------------*/
-INITGAME(goldball,GEN_BY35_51,dispBy7,FLIP_SW(FLIP_L),0)
+INITGAME(goldball,GEN_BY35_51,dispBy7,FLIP_SW(FLIP_L),8)
 BY35_ROMSTARTx00(goldball,	"gold2732.u2", 0x3169493c,
 							"720-5332.u6", 0xc2e92f80)
 BY35_SOUND51ROM0(			"gb_u4.532",0x2dcb0315)
@@ -649,7 +649,7 @@ CORE_GAMEDEFNV(goldball,"Gold Ball",1983,"Bally",by35_mBY35_51S,GAME_NOT_WORKING
 /*--------------------------------
 / X's & O's (BY35-???: 12/83)
 /-------------------------------*/
-INITGAME(xsandos ,GEN_BY35_45,dispBy7,FLIP_SW(FLIP_L),0)
+INITGAME(xsandos ,GEN_BY35_45,dispBy7,FLIP_SW(FLIP_L),8)
 BY35_ROMSTARTx00(xsandos ,	"x&os2732.u2", 0x068dfe5a,
 							"720-5332.u6", 0xc2e92f80)
 BY35_SOUND45ROMx2(			"720_u3.snd",0x5d8e2adb)
@@ -677,7 +677,7 @@ CORE_GAMEDEFNVR90(granny,"Granny and the Gators (Video/Pinball Combo)",1984,"Bal
 /*--------------------------------
 / Kings of Steel (BY35-???: 05/84)
 /-------------------------------*/
-INITGAME(kosteel ,GEN_BY35_45,dispBy7,FLIP_SW(FLIP_L),0)
+INITGAME(kosteel ,GEN_BY35_45,dispBy7,FLIP_SW(FLIP_L),8)
 BY35_ROMSTARTx00(kosteel ,	"kngs2732.u2", 0xf876d8f2,
 							"720-5332.u6", 0xc2e92f80)
 BY35_SOUND45ROM11(			"kngsu3.snd",0x11b02dca,
@@ -688,7 +688,7 @@ CORE_GAMEDEFNV(kosteel ,"Kings of Steel",1984,"Bally",by35_mBY35_45S,GAME_IMPERF
 /*--------------------------------
 / Black Pyramid (BY35-???: 07/84)
 /-------------------------------*/
-INITGAME(blakpyra,GEN_BY35_45,dispBy7,FLIP_SW(FLIP_L),0)
+INITGAME(blakpyra,GEN_BY35_45,dispBy7,FLIP_SW(FLIP_L),8)
 BY35_ROMSTARTx00(blakpyra,	"blkp2732.u2", 0x600535b0,
 							"720-5332.u6", 0xc2e92f80)
 BY35_SOUND45ROM11(			"bp_u3.532",0xa5005067,
@@ -699,7 +699,7 @@ CORE_GAMEDEFNV(blakpyra,"Black Pyramid",1984,"Bally",by35_mBY35_45S,GAME_IMPERFE
 /*--------------------------------
 / Spy Hunter (BY35-???: 10/84)
 /-------------------------------*/
-INITGAME(spyhuntr,GEN_BY35_45,dispBy7,FLIP_SW(FLIP_L),0)
+INITGAME(spyhuntr,GEN_BY35_45,dispBy7,FLIP_SW(FLIP_L),8)
 BY35_ROMSTARTx00(spyhuntr,	"spy-2732.u2", 0x9e930f2d,
 							"720-5332.u6", 0xc2e92f80)
 BY35_SOUND45ROM11(			"spy_u3.532",0x95ffc1b8,
@@ -712,7 +712,7 @@ CORE_GAMEDEFNV(spyhuntr,"Spy Hunter",1984,"Bally",by35_mBY35_45S,GAME_IMPERFECT_
 /*-------------------------------------
 / Fireball Classic (BY35-???: 02/85)
 /------------------------------------*/
-INITGAME(fbclass ,GEN_BY35_45,dispBy7,FLIP_SW(FLIP_L),0)
+INITGAME(fbclass ,GEN_BY35_45,dispBy7,FLIP_SW(FLIP_L),8)
 BY35_ROMSTARTx00(fbclass ,	"fb-class.u2", 0x32faac6c,
 							"720-5332.u6", 0xc2e92f80)
 BY35_SOUND45ROM11(			"fbcu3.snd",0x1ad71775,
@@ -723,7 +723,7 @@ CORE_GAMEDEFNV(fbclass ,"Fireball Classic",1985,"Bally",by35_mBY35_45S,GAME_IMPE
 /*--------------------------------
 / Cybernaut (BY35-???: 05/85)
 /-------------------------------*/
-INITGAME(cybrnaut,GEN_BY35_45,dispBy7,FLIP_SW(FLIP_L),0)
+INITGAME(cybrnaut,GEN_BY35_45,dispBy7,FLIP_SW(FLIP_L),8)
 BY35_ROMSTARTx00(cybrnaut,	"cybe2732.u2", 0x0610b0e0,
 							"720-5332.u6", 0xc2e92f80)
 BY35_SOUND45ROMx2(			"cybu3.snd",0xa3c1f6e7)
