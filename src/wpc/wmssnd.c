@@ -257,6 +257,7 @@ static MEMORY_WRITE_START(s11cs_writemem)
   { 0x6000, 0x6000, hc55516_0_digit_clock_clear_w },/* 6000-67ff */
   { 0x6800, 0x6800, hc55516_0_clock_set_w },        /* 6800-6fff */
   { 0x7800, 0x7800, s11cs_rombank_w },              /* 7800-7fff */
+  { 0x8000, 0xffff, MWA_ROM },
 MEMORY_END
 
 static struct DACinterface      s11cs_dacInt      = { 1, { 50 }};
@@ -344,7 +345,7 @@ static MEMORY_WRITE_START(s11js_writemem)
   { 0x2800, 0x2800, s11js_reply_w },
   { 0x3000, 0x3000, DAC_0_data_w },
   { 0x3800, 0x3800, s11js_rombank_w },
-  { 0x8000, 0xffff, MWA_ROM },
+  { 0x4000, 0xffff, MWA_ROM },
 MEMORY_END
 static struct DACinterface      s11js_dacInt     = { 1, { 50 }};
 static struct YM2151interface   s11js_ym2151Int  = {
@@ -485,6 +486,7 @@ static MEMORY_WRITE_START(wpcs_writemem)
   { 0x3400, 0x3400, hc55516_0_digit_clock_clear_w }, /* 3400-37ff */
   { 0x3800, 0x3800, wpcs_volume_w }, /* 3800-3bff */
   { 0x3c00, 0x3c00, wpcs_latch_w },  /* 3c00-3fff */
+  { 0x4000, 0xffff, MWA_ROM },
 MEMORY_END
 static struct DACinterface      wpcs_dacInt     = { 1, { 50 }};
 static struct hc55516_interface wpcs_hc55516Int = { 1, { 80 }};
