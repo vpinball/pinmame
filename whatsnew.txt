@@ -3,6 +3,7 @@ What's new:
 
 Version 1.1x (xxx)
 ------------------
+A solid new release with working support from 2 new manufacturers (Hankin & Gameplan), as well as preliminary support for 1 more (Zaccaria). Of course, we're thrilled to be able to add working Baby Pacman support, which has been a long standing request going back to the very first few versions of PinMAME. Finally, we close the book on missing Bally support, by adding working 6803 emulation. Hope you enjoy this latest release.
 
 Bugs Fixed
 ----------
@@ -15,21 +16,26 @@ Bugs Fixed
 
 New Features
 ------------
--Baby Pacman Working Emulation Including Sound
+-Baby Pacman Working Emulation (Including Sound)
 -Hankin Emulation [no sound emulation yet]
--Bally 6803 Emulation (most games not fully working yet)
+-Game Plan Emulation [no sound emulation yet]
 -Bally 6803 Turbo Cheap Squalk, Sounds Deluxe, System 11C Sound Support (may still have some issues)
 -Bally Cheap & Squeak Sound Emulation (might still have some issues)
 -Preliminary Zaccaria Emulation [not working]
--Preliminary Game Plan Emulation [not working]
 -Support for games using Bally Cheap & Squalk sound
 -Support for all Bally 6803 Games
 -Support for Granny & the Gators (not working)
 -Support for all Hanking games
+-Support for all Gameplan games [that have romsets available]
 -Missing sound rom support added for some Gottlieb System 3 games
 -Missing sound rom support added for some Bally 35 games
 -Added support for Tommy Blinder Motor
  [Steve Ellenoff]
+
+-Bally 6803 Emulation
+ [Steve Ellenoff]
+ [Martin Adrian]
+ [Gerrit Volkenborn]
  
 -New Sound Speed Limit Option
  When 'ON' should eliminate scratchy sound introduced in 1.10 release
