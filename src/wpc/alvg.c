@@ -3,7 +3,7 @@
   -----------------
   by Steve Ellenoff (08/20/2003)
 
-  Hardware from 1992-1994?
+  Hardware from 1991-1994
 
   CPU BOARD:
 	CPU: 65c02 @ 2 Mhz?
@@ -14,7 +14,7 @@
 	I/O: buffers
 	SND: BSMT2000 @ 24Mhz
 
-  DMD BOARD:
+  DMD BOARD (not on all games):
 	CPU: 8031 @ 12 Mhz? (Displays properly @ 1-2 Mhz)
 
   Lamp Matrix     = 8x12 = 96 Lamps
@@ -235,7 +235,7 @@ static READ_HANDLER( xvia_1_b_r ) {
 	return data;
 }
 //CA1: (IN) - Sound Control
-static READ_HANDLER( xvia_1_ca1_r ) { return sndbrd_1_ctrl_r(0); }
+static READ_HANDLER( xvia_1_ca1_r ) { return sndbrd_0_ctrl_r(0); }
 //CB1: (IN) - N.C.
 static READ_HANDLER( xvia_1_cb1_r ) { LOG(("WARNING: N.C.: U8-CB1-R\n")); return 0; }
 //CA2:  (IN) - N.C.
@@ -244,7 +244,7 @@ static READ_HANDLER( xvia_1_ca2_r ) { LOG(("WARNING: N.C.: U8-CA2-R\n")); return
 static READ_HANDLER( xvia_1_cb2_r ) { LOG(("WARNING: U8-CB2-R\n")); return 0; }
 
 //PA0-7: (OUT) - Sound Data
-static WRITE_HANDLER( xvia_1_a_w ) { sndbrd_1_data_w(0,data); }
+static WRITE_HANDLER( xvia_1_a_w ) { sndbrd_0_data_w(0,data); }
 
 //PB0-7: (OUT)
 /*
@@ -261,7 +261,7 @@ static WRITE_HANDLER( xvia_1_b_w ) {
 	alvglocals.via_1_b = data;			//Probably not necessary
 
 	//On clock transition - write to sound latch
-	if(!alvglocals.sound_strobe && (data & 0x02))	sndbrd_1_ctrl_w(0,0);
+	if(!alvglocals.sound_strobe && (data & 0x02))	sndbrd_0_ctrl_w(0,0);
 	alvglocals.sound_strobe = data&0x02;
 }
 //CA2: (OUT) - CPU DIAG LED
@@ -528,8 +528,8 @@ static SWITCH_UPDATE(alvg) {
 
 //Send a sound command to the sound board
 WRITE_HANDLER(alvg_sndCmd_w) {
-	sndbrd_1_data_w(0, data);
-	sndbrd_1_ctrl_w(0, 0);
+	sndbrd_0_data_w(0, data);
+	sndbrd_0_ctrl_w(0, 0);
 }
 
 static int alvg_sw2m(int no) {
@@ -540,8 +540,22 @@ static int alvg_m2sw(int col, int row) {
 	return col*8 + row - 9;
 }
 
+//Send data to the DMD CPU
+static WRITE_HANDLER(DMD_LATCH) {
+	sndbrd_1_data_w(0,data);
+	sndbrd_1_ctrl_w(0,0);
+}
+
+//Send data to the display segments
+static WRITE_HANDLER(LED_LATCH) {
+  logerror("Write to 2c00: %02x\n", data);
+}
+static WRITE_HANDLER(LED_DATA) {
+  logerror("Write to %04x: %02x\n", 0x2c80 + offset, data);
+}
+
 /*Machine Init*/
-static MACHINE_INIT(alvg) {
+static void init_common(void) {
   memset(&alvglocals, 0, sizeof(alvglocals));
 
   /* init VIA */
@@ -555,9 +569,19 @@ static MACHINE_INIT(alvg) {
   /*watchdog*/
   //watchdog_reset_w(0,0);
 
-  /* Init the dmd & sound board */
-  sndbrd_0_init(core_gameData->hw.display,    ALVGDMD_CPUNO, memory_region(ALVGDMD_ROMREGION),data_from_dmd,NULL);
-  sndbrd_1_init(core_gameData->hw.soundBoard, ALVGS_CPUNO,   memory_region(ALVGS_ROMREGION)  ,NULL,NULL);
+  /* Init the sound board */
+  sndbrd_0_init(core_gameData->hw.soundBoard, ALVGS_CPUNO,   memory_region(ALVGS_ROMREGION)  ,NULL,NULL);
+}
+static MACHINE_INIT(alvg) {
+  init_common();
+  install_mem_write_handler(0, 0x2c00, 0x2c00, LED_LATCH);
+  install_mem_write_handler(0, 0x2c80, 0x2c83, LED_DATA);
+}
+static MACHINE_INIT(alvgdmd) {
+  init_common();
+  /* Init the dmd board */
+  install_mem_write_handler(0, 0x2c00, 0x2fff, DMD_LATCH);
+  sndbrd_1_init(core_gameData->hw.display,    ALVGDMD_CPUNO, memory_region(ALVGDMD_ROMREGION),data_from_dmd,NULL);
 }
 
 static MACHINE_STOP(alvg) {
@@ -571,12 +595,6 @@ void alvg_UpdateSoundLEDS(int num,int data)
 		alvglocals.diagnosticLeds1 = data;
 	else
 		alvglocals.diagnosticLeds2 = data;
-}
-
-//Send data to the DMD CPU
-static WRITE_HANDLER(DMD_LATCH) {
-	sndbrd_0_data_w(0,data);
-	sndbrd_0_ctrl_w(0,0);
 }
 
 /*-----------------------------------------------
@@ -614,7 +632,6 @@ static MEMORY_WRITE_START(alvg_writemem)
 {0x2000,0x2003,ppi8255_0_w},
 {0x2400,0x2403,ppi8255_1_w},
 {0x2800,0x2803,ppi8255_2_w},
-{0x2c00,0x2fff,DMD_LATCH},
 {0x3800,0x380f,via_1_w},
 {0x3c00,0x3c0f,via_0_w},
 {0x4000,0xffff,MWA_ROM},
@@ -623,7 +640,6 @@ MEMORY_END
 //Main Machine Driver (Main CPU Only)
 MACHINE_DRIVER_START(alvg)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CORE_INIT_RESET_STOP(alvg,NULL,alvg)
   MDRV_CPU_ADD(M65C02, 2000000)
   MDRV_CPU_MEMORY(alvg_readmem, alvg_writemem)
   MDRV_CPU_VBLANK_INT(alvg_vblank, ALVG_VBLANKFREQ)
@@ -634,11 +650,21 @@ MACHINE_DRIVER_START(alvg)
   MDRV_SWITCH_CONV(alvg_sw2m,alvg_m2sw)
 MACHINE_DRIVER_END
 
+//Main CPU, Sound hardware Driver
+MACHINE_DRIVER_START(alvgs0)
+  MDRV_IMPORT_FROM(alvg)
+  MDRV_IMPORT_FROM(alvgs)
+  MDRV_CORE_INIT_RESET_STOP(alvg,NULL,alvg)
+  MDRV_SOUND_CMD(alvg_sndCmd_w)
+  MDRV_SOUND_CMDHEADING("alvg")
+MACHINE_DRIVER_END
+
 //Main CPU, DMD, Sound hardware Driver
 MACHINE_DRIVER_START(alvgs1)
   MDRV_IMPORT_FROM(alvg)
-  MDRV_IMPORT_FROM(alvgdmd)
   MDRV_IMPORT_FROM(alvgs)
+  MDRV_IMPORT_FROM(alvgdmd)
+  MDRV_CORE_INIT_RESET_STOP(alvgdmd,NULL,alvg)
   MDRV_SOUND_CMD(alvg_sndCmd_w)
   MDRV_SOUND_CMDHEADING("alvg")
 MACHINE_DRIVER_END
