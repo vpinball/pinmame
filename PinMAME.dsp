@@ -3605,7 +3605,6 @@ SOURCE=.\src\wpc\byvidgames.c
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
 
 # PROP Intermediate_Dir "obj/PinMAME/Release"
-# PROP Exclude_From_Build 1
 
 !ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
 
@@ -3621,7 +3620,6 @@ SOURCE=src\wpc\byvidpin.c
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
 
 # PROP Intermediate_Dir "obj/PinMAME/Release"
-# PROP Exclude_From_Build 1
 
 !ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
 
@@ -4488,7 +4486,6 @@ SOURCE=.\src\wpc\zac.c
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
 
 # PROP Intermediate_Dir "obj/PinMAME/Release"
-# PROP Exclude_From_Build 1
 
 !ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
 
@@ -4519,7 +4516,6 @@ SOURCE=.\src\wpc\zacgames.c
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
 
 # PROP Intermediate_Dir "obj/PinMAME/Release"
-# PROP Exclude_From_Build 1
 
 !ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
 
