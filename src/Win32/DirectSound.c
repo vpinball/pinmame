@@ -356,11 +356,11 @@ static void DirectSound_update_audio(void)
 
     if (Display_Throttled()) /* sync with audio only when speed throttling is not turned off */
     {
+        LONG writepos;
         profiler_mark(PROFILER_IDLE);
         for (;;)
         {
             LONG curpos;
-            LONG writepos;
 
             IDirectSoundBuffer_GetCurrentPosition(dsb, &curpos, &writepos);
             if (voice_pos < next_voice_pos)
