@@ -734,8 +734,9 @@ DRIVER(pb,l5)           //S11-549:  10/86 W Pin-bot
 DRIVER(milln,l3)        //S11-555:  01/87 W Millionaire
 DRIVER(f14,l1)          //S11-554:  03/87 W F-14 Tomcat
 DRIVER(fire,l3)         //S11-556:  08/87 W Fire!
-DRIVER(bguns,l7)        //S11-557:  10/87 W Big Guns
-DRIVER(bguns,l8)        //S11-557:  10/87 W Big Guns
+DRIVER(bguns,la)        //S11-557:  10/87 W Big Guns (L-A)
+DRIVER(bguns,l7)        //S11-557:  10/87 W Big Guns (L-7)
+DRIVER(bguns,l8)        //S11-557:  10/87 W Big Guns (L-8)
 DRIVER(spstn,l5)        //S11-552:  12/87 W Space Station
 DRIVER(gmine,l2)        //S11-920:  ??/88 W Gold Mine (Bowler)
 DRIVER(tdawg,l1)        //S11-921:  ??/88 W Top Dawg (Bowler)
