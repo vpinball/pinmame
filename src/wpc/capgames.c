@@ -98,7 +98,8 @@ CORE_CLONEDEFNV(abv106r,abv106,"Airborne (Redemption)",1996,"Capcom",cc2,GAME_IM
 INITGAME(bsv103, 5, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 0)
 CC_ROMSTART_2(bsv103,  "u1l_v13.bin", CRC(f8932dcc),
                        "u1h_v13.bin", CRC(508c145d))
-CAPCOMS_SOUNDROM2("u24_v1x.bin", NO_DUMP,\
+//I'm told BS can run with the U24 from FF
+CAPCOMS_SOUNDROM2("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e0252800b28274), \
 				  "u28_v11.bin", CRC(b076ad2e) SHA1(1be8e3bda2890545253f6f7e4825d2db1d925255), \
 				  "u29_v11.bin", CRC(b251a27c) SHA1(bc30791cb9b5497c11f1cff06c89a729a07b5d4a)) 
 CC_ROMEND
@@ -107,7 +108,8 @@ CORE_GAMEDEFNV(bsv103,"Breakshot (1.3)",1996,"Capcom",cc1,GAME_IMPERFECT_SOUND)
 INITGAME(bsv100r, 6, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 0)
 CC_ROMSTART_2(bsv100r, "u1l_v10i.bin",CRC(304b4da8),
                        "u1h_v10i.bin",CRC(c10b2aff))
-CAPCOMS_SOUNDROM2("u24_v1x.bin", NO_DUMP,\
+//I'm told BS can run with the U24 from FF
+CAPCOMS_SOUNDROM2("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e0252800b28274), \
 				  "u28_v11.bin", CRC(b076ad2e) SHA1(1be8e3bda2890545253f6f7e4825d2db1d925255), \
 				  "u29_v11.bin", CRC(b251a27c) SHA1(bc30791cb9b5497c11f1cff06c89a729a07b5d4a)) 
 CC_ROMEND
@@ -116,7 +118,8 @@ CORE_CLONEDEFNV(bsv100r,bsv103,"Breakshot (Redemption 1.0)",1996,"Capcom",cc1,GA
 INITGAME(bsv102r, 7, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 0)
 CC_ROMSTART_2(bsv102r, "u1l_v12i.bin",CRC(ed09e463),
                        "u1h_v12i.bin",CRC(71bf99e9))
-CAPCOMS_SOUNDROM2("u24_v1x.bin", NO_DUMP,\
+//I'm told BS can run with the U24 from FF
+CAPCOMS_SOUNDROM2("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e0252800b28274), \
 				  "u28_v11.bin", CRC(b076ad2e) SHA1(1be8e3bda2890545253f6f7e4825d2db1d925255), \
 				  "u29_v11.bin", CRC(b251a27c) SHA1(bc30791cb9b5497c11f1cff06c89a729a07b5d4a)) 
 CC_ROMEND
@@ -125,7 +128,8 @@ CORE_CLONEDEFNV(bsv102r,bsv103,"Breakshot (Redemption 1.2)",1996,"Capcom",cc1,GA
 INITGAME(bsb105, 8, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 0)
 CC_ROMSTART_2(bsb105,  "bsu1l_b1.05", CRC(053684c7),
                        "bsu1h_b1.05", CRC(f1dc6db8))
-CAPCOMS_SOUNDROM2("u24_v1x.bin", NO_DUMP,\
+//I'm told BS can run with the U24 from FF
+CAPCOMS_SOUNDROM2("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e0252800b28274), \
 				  "u28_v11.bin", CRC(b076ad2e) SHA1(1be8e3bda2890545253f6f7e4825d2db1d925255), \
 				  "u29_v11.bin", CRC(b251a27c) SHA1(bc30791cb9b5497c11f1cff06c89a729a07b5d4a)) 
 CC_ROMEND
