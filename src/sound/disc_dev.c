@@ -223,7 +223,7 @@ int dsd_squarew555_step(struct node_description *node)
 	tOff = context->k[0] * node->input[3] * node->input[4];
 
 	/* Establish trigger phase from time periods */
-	context->trigger=(tOn / (tOn + tOff)) * (2.0 * PI);
+	context->trigger=(tOn / (tOn + tOff)) * (2.0 * M_PI);
 
 	/* Work out the phase step based on phase/freq & sample rate */
 	/* The enable input only curtails output, phase rotation     */
@@ -232,9 +232,9 @@ int dsd_squarew555_step(struct node_description *node)
 	/*     phase step = 2Pi/(output period/sample period)        */
 	/*                    boils out to                           */
 	/*     phase step = 2Pi/(output period*sample freq)          */
-	newphase = context->phase + ((2.0 * PI) / ((tOn + tOff) * Machine->sample_rate));
+	newphase = context->phase + ((2.0 * M_PI) / ((tOn + tOff) * Machine->sample_rate));
 	/* Keep the new phasor in the 2Pi range.*/
-	context->phase = fmod(newphase, 2.0 * PI);
+	context->phase = fmod(newphase, 2.0 * M_PI);
 
 	if(node->input[0])
 	{
@@ -264,7 +264,7 @@ int dsd_squarew555_reset(struct node_description *node)
 	struct dsd_squarew555_context *context=(struct dsd_squarew555_context*)node->context;
 
 	/* Establish starting phase and reset values */
-	context->phase = fmod(0, 2.0 * PI);
+	context->phase = fmod(0, 2.0 * M_PI);
 	context->was_reset = 1;
 	context->k[0] = log(2);	/* standard 555 charge/discharge constant */
 	context->k[1] = log(3);	/* after reset 555 charge/discharge constant, used for first pulse */
@@ -316,7 +316,7 @@ int dsd_squarew566_step(struct node_description *node)
 	double newphase;
 
 	/* Establish trigger phase from duty */
-	context->trigger=((100-node->input[3])/100)*(2.0*PI);
+	context->trigger=((100-node->input[3])/100)*(2.0*M_PI);
 
 	/* Work out the phase step based on phase/freq & sample rate */
 	/* The enable input only curtails output, phase rotation     */
@@ -325,9 +325,9 @@ int dsd_squarew566_step(struct node_description *node)
 	/*     phase step = 2Pi/(output period/sample period)        */
 	/*                    boils out to                           */
 	/*     phase step = (2Pi*output freq)/sample freq)           */
-	newphase = context->phase+((2.0*PI*node->input[1])/Machine->sample_rate);
+	newphase = context->phase+((2.0*M_PI*node->input[1])/Machine->sample_rate);
 	/* Keep the new phasor in the 2Pi range.*/
-	context->phase=fmod(newphase,2.0*PI);
+	context->phase=fmod(newphase,2.0*M_PI);
 
 	if(node->input[0])
 	{
@@ -353,9 +353,9 @@ int dsd_squarew566_reset(struct node_description *node)
 	double start;
 
 	/* Establish starting phase, convert from degrees to radians */
-	start=(node->input[5]/360.0)*(2.0*PI);
+	start=(node->input[5]/360.0)*(2.0*M_PI);
 	/* Make sure its always mod 2Pi */
-	context->phase=fmod(start,2.0*PI);
+	context->phase=fmod(start,2.0*M_PI);
 
 	/* Step the output */
 	dsd_squarew566_step(node);
@@ -410,15 +410,15 @@ int dsd_trianglew566_step(struct node_description *node)
 	/*     phase step = 2Pi/(output period/sample period)        */
 	/*                    boils out to                           */
 	/*     phase step = (2Pi*output freq)/sample freq)           */
-	newphase=context->phase+((2.0*PI*node->input[1])/Machine->sample_rate);
+	newphase=context->phase+((2.0*M_PI*node->input[1])/Machine->sample_rate);
 	/* Keep the new phasor in the 2Pi range.*/
-	newphase=fmod(newphase,2.0*PI);
+	newphase=fmod(newphase,2.0*M_PI);
 	context->phase=newphase;
 
 	if(node->input[0])
 	{
-		node->output=newphase < PI ? (node->input[2] * (newphase / (PI/2.0) - 1.0))/2.0 :
-									(node->input[2] * (3.0 - newphase / (PI/2.0)))/2.0 ;
+		node->output=newphase < M_PI ? (node->input[2] * (newphase / (M_PI/2.0) - 1.0))/2.0 :
+									(node->input[2] * (3.0 - newphase / (M_PI/2.0)))/2.0 ;
 
 		/* Add DC Bias component */
 		node->output=node->output+node->input[3];
@@ -437,9 +437,9 @@ int dsd_trianglew566_reset(struct node_description *node)
 	double start;
 
 	/* Establish starting phase, convert from degrees to radians */
-	start=(node->input[4]/360.0)*(2.0*PI);
+	start=(node->input[4]/360.0)*(2.0*M_PI);
 	/* Make sure its always mod 2Pi */
-	context->phase=fmod(start,2.0*PI);
+	context->phase=fmod(start,2.0*M_PI);
 
 	/* Step to set the output */
 	dsd_trianglew566_step(node);
