@@ -6,21 +6,21 @@
 #include "taitos.h"
 
 static const core_tLCDLayout dispTaito[] = {
-  { 0, 0,  0, 3, CORE_SEG87 }, { 0, 6,  3, 3, CORE_SEG87 },
-  { 3, 0,  6, 3, CORE_SEG87 }, { 3, 6,  9, 3, CORE_SEG87 },
-  { 6, 0, 12, 3, CORE_SEG87 }, { 6, 6, 15, 3, CORE_SEG87 },
-  { 9, 0, 18, 3, CORE_SEG87 }, { 9, 6, 21, 3, CORE_SEG87 },
-  {13, 1, 24, 1, CORE_SEG87 }, {13, 9, 25, 1, CORE_SEG87 },
+  { 0, 0,  0, 6, CORE_SEG7 },
+  { 3, 0,  6, 6, CORE_SEG7 },
+  { 6, 0, 12, 6, CORE_SEG7 },
+  { 9, 0, 18, 6, CORE_SEG7 },
+  {13, 1, 24, 1, CORE_SEG7 }, {13, 9, 25, 1, CORE_SEG7 },
   {0}
 };
 
 // all display, including two usually hidden ones (match and player)
 static const core_tLCDLayout dispTaito_all[] = {
-  { 0, 0,  0, 3, CORE_SEG87 }, { 0, 6,  3, 3, CORE_SEG87 },
-  { 3, 0,  6, 3, CORE_SEG87 }, { 3, 6,  9, 3, CORE_SEG87 },
-  { 6, 0, 12, 3, CORE_SEG87 }, { 6, 6, 15, 3, CORE_SEG87 },
-  { 9, 0, 18, 3, CORE_SEG87 }, { 9, 6, 21, 3, CORE_SEG87 },
-  {13, 0, 26, 2, CORE_SEG87 }, {13, 8, 24, 2, CORE_SEG87 },
+  { 0, 0,  0, 6, CORE_SEG7 },
+  { 3, 0,  6, 6, CORE_SEG7 },
+  { 6, 0, 12, 6, CORE_SEG7 },
+  { 9, 0, 18, 6, CORE_SEG7 },
+  {13, 0, 26, 2, CORE_SEG7 }, {13, 8, 24, 2, CORE_SEG7 },
   {0}
 };
 

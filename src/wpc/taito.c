@@ -22,9 +22,9 @@
 #define TAITO_VBLANKFREQ     60  // VBLANK frequency
 #define TAITO_IRQFREQ        0.2
 
-#define TAITO_SOLSMOOTH      2 // Smooth the sols over this number of VBLANKS 
-#define TAITO_DISPLAYSMOOTH  2 // Smooth the display over this number of VBLANKS 
-#define TAITO_LAMPSMOOTH	 2 // Smooth the display over this number of VBLANKS 
+#define TAITO_SOLSMOOTH      2 // Smooth the sols over this number of VBLANKS
+#define TAITO_DISPLAYSMOOTH  2 // Smooth the display over this number of VBLANKS
+#define TAITO_LAMPSMOOTH	 2 // Smooth the display over this number of VBLANKS
 
 static struct {
   int vblankCount;
@@ -65,7 +65,7 @@ static INTERRUPT_GEN(taito_vblank) {
 		memcpy(coreGlobals.segments, TAITOlocals.segments, sizeof coreGlobals.segments);
 	}
 
-	// sol 18 is the play relay 
+	// sol 18 is the play relay
 	core_updateSw(core_getSol(18));
 }
 
@@ -135,29 +135,29 @@ static WRITE_HANDLER(dma_display)
 
 	if ( offset<12 ) {
 		// player 1-4, 6 digits per player
-		TAITOlocals.segments[2*offset+segMap[offset]].w   = core_bcd2seg[(data>>4)&0x0f];
-		TAITOlocals.segments[2*offset+segMap[offset]+1].w = core_bcd2seg[data&0x0f];
+		TAITOlocals.segments[2*offset+segMap[offset]].w   = core_bcd2seg7e[(data>>4)&0x0f];
+		TAITOlocals.segments[2*offset+segMap[offset]+1].w = core_bcd2seg7e[data&0x0f];
 	}
 	else {
 		switch ( offset ) {
 		case 12:
 			// balls in play
-			TAITOlocals.segments[2*12+segMap[12]].w = core_bcd2seg[data&0x0f];
+			TAITOlocals.segments[2*12+segMap[12]].w = core_bcd2seg7e[data&0x0f];
 			break;
-		
+
 		case 13:
 			// credits
-			TAITOlocals.segments[2*12+segMap[12]+1].w = core_bcd2seg[data&0x0f];
+			TAITOlocals.segments[2*12+segMap[12]+1].w = core_bcd2seg7e[data&0x0f];
 			break;
-		
+
 		case 14:
 			// match
-			TAITOlocals.segments[2*13+segMap[13]].w = core_bcd2seg[data&0x0f];
+			TAITOlocals.segments[2*13+segMap[13]].w = core_bcd2seg7e[data&0x0f];
 			break;
 
 		case 15:
 			// active player
-			TAITOlocals.segments[2*13+segMap[13]+1].w = core_bcd2seg[data&0x0f];
+			TAITOlocals.segments[2*13+segMap[13]+1].w = core_bcd2seg7e[data&0x0f];
 			break;
 		}
 	}
@@ -171,7 +171,7 @@ static WRITE_HANDLER(dma_commands)
 
 	switch ( offset ) {
 	case 0:
-		// upper nibble: - solenoids 17-18 (mux relay and play relay) 
+		// upper nibble: - solenoids 17-18 (mux relay and play relay)
 		//				 - solenoids 5-6 or 11-12 depending on mux relay
 		TAITOlocals.solenoids = (TAITOlocals.solenoids & 0xfffcffff) | ((data&0xc0)<<10);
 		if ( TAITOlocals.solenoids&0x10000 )
@@ -230,15 +230,15 @@ static WRITE_HANDLER(dma_commands)
 
 // strobe (0-15)*10 + L3-L0
 // example: 123 is strobe 12, L3 is the first lamp in row number 12
-// 
-static int TAITO_lamp2m(int no) { 
+//
+static int TAITO_lamp2m(int no) {
 	if ( (no/10)<8 )
 		return (4-(no%10))*8 + (no/10);
 	else
 		return (8-(no%10))*8 + ((no/10)-8);
 }
 
-static int TAITO_m2lamp(int col, int row) { 
+static int TAITO_m2lamp(int col, int row) {
 	if ( col<4 )
 		return (row*10) + (3-col);
 	else
