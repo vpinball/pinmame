@@ -6,7 +6,7 @@ Bugs Fixed
 ----------
 - Implemented memory protection in wpc games.
 - Fixed rom write problems in wms soundboards.
-- Fixed bug with System 7 games (e.g. Black Knight)
+- Fixed bug with System 7 games (e.g. Black Knight sound now works)
   [Martin Adrian]
 
 New Features
@@ -19,7 +19,7 @@ New Features
 - SHA1 checksums
   [Martin Adrian]
 
-- Alvin G. and Co. emulation including sound and dmd (still quite a few issues to fix)
+- Alvin G. and Co. emulation including full sound and dmd support
   (Big thanks to Joep for the manual and help in checking on his real machine)
 - Intel 8051 CPU Core emulation (required for Alvin G DMD)
   [Steve Ellenoff]

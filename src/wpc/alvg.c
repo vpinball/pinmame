@@ -10,12 +10,12 @@
 	I/O: 2 x 6522 VIA, 3 X 8255
 
   SOUND BOARD:
-	CPU: 68B09 @ 1 Mhz? (Sound best @ 1Mhz)
+	CPU: 68B09 @ 8 Mhz? (Sound best @ 1 Mhz)
 	I/O: buffers
 	SND: BSMT2000 @ 24Mhz
 
   DMD BOARD:
-	CPU: 8031 @ 12 Mhz?
+	CPU: 8031 @ 12 Mhz? (Displays properly @ 1-2 Mhz)
 
   Lamp Matrix     = 8x12 = 96 Lamps
   Switch Matrix   = 8X12 = 96 Switches
@@ -101,7 +101,7 @@ struct {
 	18 -  CLK  - TOGGLE?  - D2 - OR D1?
 	19 -  DATA - READY    - D1 - OR D0?
  */
-static WRITE_HANDLER(fromdmd)
+static WRITE_HANDLER(data_from_dmd)
 {
 	data&=0x0f;
 	alvglocals.DMDAck    = ((data & 1) >> 0);
@@ -481,8 +481,6 @@ static INTERRUPT_GEN(alvg_vblank) {
   /*-- display --*/
   if ((alvglocals.vblankCount % ALVG_DISPLAYSMOOTH) == 0) {
 	/*update leds*/
-	//coreGlobals.diagnosticLed = alvglocals.diagnosticLed;
-    //alvglocals.diagnosticLed = 0;	//For some reason, LED won't work with this line in
 	coreGlobals.diagnosticLed = (alvglocals.diagnosticLeds2<<2) |
 								(alvglocals.diagnosticLeds1<<1) |
 								alvglocals.diagnosticLed;
@@ -509,6 +507,7 @@ static SWITCH_UPDATE(alvg) {
   via_0_portb_w(0,CoinDoorSwitches_Read(0));
 }
 
+//Send a sound command to the sound board
 WRITE_HANDLER(alvg_sndCmd_w) { 
 	sndbrd_1_data_w(0, data); 
 	sndbrd_1_ctrl_w(0, 0);
@@ -523,7 +522,7 @@ static int alvg_m2sw(int col, int row) {
   return (col - 1) * 12 + row;
 }
 
-/*Alpha Numeric First Generation Init*/
+/*Machine Init*/
 static MACHINE_INIT(alvg) {
   memset(&alvglocals, 0, sizeof(alvglocals));
   
@@ -539,7 +538,7 @@ static MACHINE_INIT(alvg) {
   //watchdog_reset_w(0,0);
 
   /* Init the dmd & sound board */
-  sndbrd_0_init(core_gameData->hw.display,    ALVGDMD_CPUNO, memory_region(ALVGDMD_ROMREGION),fromdmd,NULL);
+  sndbrd_0_init(core_gameData->hw.display,    ALVGDMD_CPUNO, memory_region(ALVGDMD_ROMREGION),data_from_dmd,NULL);
   sndbrd_1_init(core_gameData->hw.soundBoard, ALVGS_CPUNO,   memory_region(ALVGS_ROMREGION)  ,NULL,NULL);
 }
 
@@ -547,7 +546,7 @@ static MACHINE_STOP(alvg) {
   sndbrd_0_exit();
   sndbrd_1_exit();
 }
-//Show Sound Diagnostic LEDS
+//Show Sound & DMD Diagnostic LEDS
 void alvg_UpdateSoundLEDS(int num,int data)
 {
 	if(num==0)

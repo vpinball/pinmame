@@ -5,40 +5,50 @@
 #include "alvg.h"
 #include "alvgdmd.h"
 
-#if 1 //VERBOSE
+#if VERBOSE
 #define LOG(x)	logerror x
 #else
 #define LOG(x)
 #endif
 
-/*--------- Common DMD stuff ----------*/
+/*---------------------------*/
+/*ALVIN G 128x32 DMD Handling*/
+/*---------------------------*/
+#define DMD32_BANK0    1
+#define DMD32_FIRQFREQ 481	//no idea on this one, just a wild guess
+
+/*static vars*/
+static int vid_page;
+static UINT8  *dmd32RAM;
+
 static struct {
   struct sndbrdData brdData;
   int cmd, planenable, disenable, setsync;
 } dmdlocals;
 
-static int vid_page;
-static UINT8  *dmd32RAM;
-
-static WRITE_HANDLER(dmd_data_w)  { dmdlocals.cmd = data; }
-
-/*------------------------------------------*/
-/*Data East, Sega, Stern 128x32 DMD Handling*/
-/*------------------------------------------*/
-#define DMD32_BANK0    1
-#define DMD32_FIRQFREQ 481	//no idea on this one, just a wild guess
-
-static WRITE_HANDLER(dmd32_ctrl_w);
-static void dmd32_init(struct sndbrdData *brdData);
-
-const struct sndbrdIntf alvgdmdIntf = {
-  NULL, dmd32_init, NULL, NULL,NULL, 
-  dmd_data_w, NULL, dmd32_ctrl_w, NULL, SNDBRD_NOTSOUND
-};
-
+/*declarations*/
 static WRITE_HANDLER(dmd32_bank_w);
 static READ_HANDLER(dmd32_latch_r);
 static INTERRUPT_GEN(dmd32_firq);
+static WRITE_HANDLER(dmd32_data_w);
+static void dmd32_init(struct sndbrdData *brdData);
+static WRITE_HANDLER(dmd32_ctrl_w);
+static WRITE_HANDLER(control_w);
+static READ_HANDLER(control_r);
+static WRITE_HANDLER(port_w);
+static READ_HANDLER(port_r);
+
+/*Interface*/
+const struct sndbrdIntf alvgdmdIntf = {
+  NULL, dmd32_init, NULL, NULL,NULL, 
+  dmd32_data_w, NULL, dmd32_ctrl_w, NULL, SNDBRD_NOTSOUND
+};
+
+
+/*Main CPU sends command to DMD*/
+static WRITE_HANDLER(dmd32_data_w)  {
+	dmdlocals.cmd = data; 
+}
 
 static WRITE_HANDLER(control_w)
 {
@@ -54,13 +64,11 @@ static WRITE_HANDLER(control_w)
 
 		//Send Data to the Main CPU
 		case 0x9000:
-			//printf("sending data to main cpu %x\n",data);
 			sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, data);
 			break;
 
 		//ROM Bankswitching
 		case 0xa000:
-			//printf("setting bank to %x\n",data&0x1f);
 			dmd32_bank_w(0,data);
 			break;
 
@@ -102,8 +110,10 @@ static READ_HANDLER(control_r)
 	switch (tmpoffset)
 	{
 		//Read Main CPU DMD Command
-		case 0x8000:
-			return dmd32_latch_r(0);
+		case 0x8000: {
+			int data = dmd32_latch_r(0);
+			return data;
+		}
 		//While unlikely, a READ to these addresses, can actually trigger control lines, so we call control_w()
 		case 0x9000:
 		case 0xa000:
@@ -124,7 +134,7 @@ static READ_HANDLER(control_r)
 static READ_HANDLER(port_r)
 {
 	//Port 1 is read in the wait for interrupt loop.. Not sure why this is done.
-	if(offset ==1)
+	if(offset == 1)
 		return vid_page;
 	else
 		LOG(("port read @ %x\n",offset));
@@ -142,8 +152,7 @@ static WRITE_HANDLER(port_w)
 			vid_page = (data&0x0f)<<11;
 			if(last != data) {
 				last = data;
-				//printf("port write @ %x, data=%x\n",offset,data);
-				//LOG(("port write @ %x, data=%x\n",offset,data));
+				LOG(("port write @ %x, data=%x\n",offset,data));
 			}
 			break;
 		case 2:
@@ -159,8 +168,9 @@ static WRITE_HANDLER(port_w)
 			P3.6 = /WR  (Used Internally only?)
 			P3.7 = /RD  (Used Internally only?) */
 		case 3:
-			dmdlocals.planenable = data & 1;
-			alvg_UpdateSoundLEDS(1,(data&2)>>1);
+			dmdlocals.planenable = data & 0x01;
+			alvg_UpdateSoundLEDS(1,(data&0x02)>>1);
+			dmdlocals.disenable = ((data & 0x20) >> 5);
 			break;
 		default:
 			LOG(("writing to port %x data = %x\n",offset,data));
@@ -169,7 +179,7 @@ static WRITE_HANDLER(port_w)
 
 static WRITE_HANDLER(dmd32_bank_w)
 {
-//	printf("dmd32_bank_w: %x\n",data);
+	LOG(("setting dmd32_bank to: %x\n",data));
 	cpu_setbank(DMD32_BANK0, dmdlocals.brdData.romRegion + ((data & 0x1f)*0x8000));
 }
 
@@ -199,9 +209,11 @@ static PORT_WRITE_START( alvgdmd_writeport )
 	{ 0x00,0xff, port_w },
 PORT_END
 
+#define AVERAGE_CYCLES	12
+
 MACHINE_DRIVER_START(alvgdmd)
-  //MDRV_CPU_ADD(I8051, 12000000)		/*12 Mhz*/
-  MDRV_CPU_ADD(I8051, 2000000)		/*2 Mhz - Animations are much better speed @ 2Mhz*/
+  //MDRV_CPU_ADD(I8051, 12000000)	/*12 Mhz*/
+  MDRV_CPU_ADD(I8051, 12000000/AVERAGE_CYCLES)	//This is required due to MAME core problems with wait states
   MDRV_CPU_MEMORY(alvgdmd_readmem, alvgdmd_writemem)
   MDRV_CPU_PORTS(alvgdmd_readport, alvgdmd_writeport)
   MDRV_CPU_PERIODIC_INT(dmd32_firq, DMD32_FIRQFREQ)
@@ -221,8 +233,8 @@ MACHINE_DRIVER_END
 static void dmd32_init(struct sndbrdData *brdData) {
   memset(&dmdlocals, 0, sizeof(dmdlocals));
   dmdlocals.brdData = *brdData;
-  dmd32_bank_w(0,0);	//Set DMD Bank to 0
-  dmdlocals.setsync = 1;
+  dmd32_bank_w(0,0);			//Set DMD Bank to 0
+  dmdlocals.setsync = 1;		//Start Sync @ 1
 }
 
 //Send data from Main CPU to latch - Set's the INT0 Line
@@ -251,13 +263,15 @@ static INTERRUPT_GEN(dmd32_firq) {
 PINMAME_VIDEO_UPDATE(alvgdmd_update) {
 
   UINT8 *RAM  = ((UINT8 *)dmd32RAM);
-  UINT8 *RAM2 = RAM;//+ 0x200;
+  UINT8 *RAM2;
   tDMDDot dotCol;
   int ii,jj;
   static int offset = 0;
+  RAM = RAM + vid_page;
+  RAM2 = RAM + (dmdlocals.planenable*0x200);
 
-#if 1
-  core_textOutf(50,20,1,"offset=%4x", offset);
+#ifdef MAME_DEBUG
+  core_textOutf(50,20,1,"offset=%08x", offset);
   memset(&dotCol,0,sizeof(dotCol));
 
   if(keyboard_pressed_memory_repeat(KEYCODE_Z,2))
@@ -270,10 +284,18 @@ PINMAME_VIDEO_UPDATE(alvgdmd_update) {
 	  offset+=0x800;
   if(keyboard_pressed_memory_repeat(KEYCODE_B,2))
 	  offset-=0x800;
-#endif
+  if(keyboard_pressed_memory_repeat(KEYCODE_N,2))
+	  //offset=0xb4;
+	  offset=0xc3;
+  if(keyboard_pressed_memory_repeat(KEYCODE_M,2))
+  {
+	  dmd32_data_w(0,offset);
+	  dmd32_ctrl_w(0,0);
+  }
 
-  RAM = RAM+offset+vid_page;
-  RAM2 = RAM + (dmdlocals.planenable*0x200);
+  RAM += offset;
+  RAM2 += offset;
+#endif
 
   for (ii = 1; ii <= 32; ii++) {
     UINT8 *line = &dotCol[ii][0];
