@@ -344,7 +344,6 @@ INLINE int adsp2101_generate_irq(int which, int indx)
 static void check_irqs(void)
 {
 	UINT8 check;
-#if HAS_ADSP2101 // PINMAME
 	if (chip_type >= CHIP_TYPE_ADSP2101)
 	{
 		/* check IRQ2 */
@@ -373,7 +372,6 @@ static void check_irqs(void)
 			return;
 	}
 	else
-#endif // HAS_ADSP2101
 	{
 		/* check IRQ3 */
 		check = (adsp2100.icntl & 8) ? adsp2100.irq_latch[ADSP2100_IRQ3] : adsp2100.irq_state[ADSP2100_IRQ3];

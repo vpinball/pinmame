@@ -70,6 +70,9 @@
 #define HAS_M6800    1
 #define HAS_M6803    1
 #define HAS_M6802    1
+#if MAMEVER >= 6300
+#define HAS_ADSP2101 1 // must be defined for 2105 to work
+#endif // MAMEVER
 #define HAS_ADSP2105 1
 #define HAS_Z80      1
 #define HAS_M6502    1
