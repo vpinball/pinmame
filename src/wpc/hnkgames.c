@@ -57,7 +57,7 @@ HNK_ROMSTART(howzat,	"hz_ic2.mpu",0xb47bc2c7,
 HNK_SOUNDROMS("hz_ic14.snd", 0x0e3fdb59,
               "hz_ic3.snd",  0xdfc57606)
 HNK_ROMEND
-CORE_GAMEDEFNV(howzat,"Howzat",1980,"Hankin",mHNK,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(howzat,"Howzat",1980,"Hankin",mHNK,0)
 
 /*--------------------------------
 / Shark
@@ -68,7 +68,7 @@ HNK_ROMSTART(shark,		"shk_ic2.mpu",0xb47bc2c7,
 HNK_SOUNDROMS("shk_ic14.snd", 0x8f8b0e48,
               "shk_ic3.snd",  0xdfc57606)
 HNK_ROMEND
-CORE_GAMEDEFNV(shark,"Shark",1980,"Hankin",mHNK,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(shark,"Shark",1980,"Hankin",mHNK,0)
 
 /*--------------------------------
 / The Empire Strike Back
@@ -79,5 +79,5 @@ HNK_ROMSTART(empsback,	"sw_ic2.mpu",0xb47bc2c7,
 HNK_SOUNDROMS("sw_ic14.snd", 0xc1eeb53b,
               "sw_ic3.snd",  0xdfc57606)
 HNK_ROMEND
-CORE_GAMEDEFNV(empsback,"The Empire Strike Back",1981,"Hankin",mHNK,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(empsback,"The Empire Strike Back",1981,"Hankin",mHNK,0)
 
