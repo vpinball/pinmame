@@ -483,6 +483,7 @@ static void st300_pulse (int param) {
 }
 
 static void st300_start_common(void) {
+  int mixing_levels[3] = {30,30,30};
   int i;
   int s = 0;
 	
@@ -499,7 +500,6 @@ static void st300_start_common(void) {
     } else
       sineWaveext[i] = 0-rand();
   }
-  int mixing_levels[3] = {30,30,30};
   st300loc.channel = mixer_allocate_channels(3, mixing_levels);
   mixer_set_name  (st300loc.channel, "MC6840 #0");
   mixer_set_volume(st300loc.channel,0);	   // the sound from timer pulse q2
@@ -521,7 +521,7 @@ static void checksam (int param) {
 }
 
 static int st300sam_sh_start(const struct MachineSound *msound)  {
-  if (!&st300loc.channel) st300_start_common();
+  if (!st300loc.channel) st300_start_common();
   st300loc.speechsam = 1; // samples for speech used
   timer_pulse(TIME_IN_SEC(0.1),0,checksam); // check if sample is finished
   return 0;
