@@ -250,16 +250,16 @@ static sim_tInportData sc_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(sc,18,"safe_18g.rom",0x80000,CRC(aeb4b669))
-DCS_SOUNDROM3m(	"safsnds2.rom",CRC(20e14c63),
-		"safsnds3.rom",CRC(99e318e7),
-		"safsnds4.rom",CRC(9c8a23eb))
+WPC_ROMSTART(sc,18,"safe_18g.rom",0x80000,CRC(aeb4b669) SHA1(2925eb11133526ddff8ae92bb53f9b45c6ed8134))
+DCS_SOUNDROM3m(	"safsnds2.rom",CRC(20e14c63) SHA1(61b1c000a7afe5d0e9c31093e3fa963d6a594d54),
+		"safsnds3.rom",CRC(99e318e7) SHA1(918f9013da82b29a559cb474bce93fb4ce88b731),
+		"safsnds4.rom",CRC(9c8a23eb) SHA1(a0ee1174c8af0f262f9bec950da588cc9eb8747d))
 WPC_ROMEND
 
-WPC_ROMSTART(sc,18n,"safe_18n.rom",0x80000,CRC(4d5d5626))
-DCS_SOUNDROM3m(	"safsnds2.rom",CRC(20e14c63),
-		"safsnds3.rom",CRC(99e318e7),
-		"safsnds4.rom",CRC(9c8a23eb))
+WPC_ROMSTART(sc,18n,"safe_18n.rom",0x80000,CRC(4d5d5626) SHA1(2d6f201d47f24df2195f10267ec1426cf0a087c9))
+DCS_SOUNDROM3m(	"safsnds2.rom",CRC(20e14c63) SHA1(61b1c000a7afe5d0e9c31093e3fa963d6a594d54),
+		"safsnds3.rom",CRC(99e318e7) SHA1(918f9013da82b29a559cb474bce93fb4ce88b731),
+		"safsnds4.rom",CRC(9c8a23eb) SHA1(a0ee1174c8af0f262f9bec950da588cc9eb8747d))
 WPC_ROMEND
 
 /*--------------

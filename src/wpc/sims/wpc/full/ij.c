@@ -591,14 +591,14 @@ static void ij_drawStatic(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(ij,l7,"ijone_l7.rom",0x80000,CRC(4658c877))
-DCS_SOUNDROM7x("ijsnd_l3.u2",CRC(fbd91a0d),
-               "ijsnd_l3.u3",CRC(3f12a996),
-               "ijsnd_l3.u4",CRC(05a92937),
-               "ijsnd_l3.u5",CRC(e6fe417c),
-               "ijsnd_l3.u6",CRC(975f3e48),
-               "ijsnd_l3.u7",CRC(2d9cd098),
-               "ijsnd_l3.u8",CRC(45e35bd7))
+WPC_ROMSTART(ij,l7,"ijone_l7.rom",0x80000,CRC(4658c877) SHA1(b47ab064ff954bd182919f714ed8930cf0bed896))
+DCS_SOUNDROM7x("ijsnd_l3.u2",CRC(fbd91a0d) SHA1(8d9a74f04f6088f18dfbb578893410abc21a0e42),
+               "ijsnd_l3.u3",CRC(3f12a996) SHA1(5f5d2853e671d13fafdb2972f52a823e18f27643),
+               "ijsnd_l3.u4",CRC(05a92937) SHA1(e4e53e2899a7e7cbcd6ce7e3331bb8aa13321aa6),
+               "ijsnd_l3.u5",CRC(e6fe417c) SHA1(d990ed218fe296ad9a015d77519b8d954d252035),
+               "ijsnd_l3.u6",CRC(975f3e48) SHA1(16c56500b18e551bcd2e0c7e4c55ddab4791ac84),
+               "ijsnd_l3.u7",CRC(2d9cd098) SHA1(8d26c84cbd4ab2a5c9f4be3ea95a79fd125248e3),
+               "ijsnd_l3.u8",CRC(45e35bd7) SHA1(782b406be341d55d22a96acb8c2459f3058940df))
 WPC_ROMEND
 
 /*--------------

@@ -321,10 +321,10 @@ static wpc_tSamSolMap hurr_samsolmap[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(hurr,l2,"hurcnl_2.rom",0x40000,CRC(fda6155f))
-WPCS_SOUNDROM222("u18.pp",CRC(63944b37),
-                 "u15.pp",CRC(93d02c62),
-                 "u14.pp",CRC(51c82899))
+WPC_ROMSTART(hurr,l2,"hurcnl_2.rom",0x40000,CRC(fda6155f) SHA1(0088155a2582524d8720d71cd3ff82e8733ef434))
+WPCS_SOUNDROM222("u18.pp",CRC(63944b37) SHA1(045f8046ba5bf1c88b65a80737e2d3d017271c04),
+                 "u15.pp",CRC(93d02c62) SHA1(203cd6b933822d6d3f70c63e051237e3587568f1),
+                 "u14.pp",CRC(51c82899) SHA1(aa6c3d9e7efa3708727b06fb3372638d5245a510))
 WPC_ROMEND
 
 /*--------------

@@ -369,10 +369,10 @@ static void ss_drawStatic(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(ss,15,"ss_g11.1_5",0x80000,CRC(5de8d0a0))
-DCS_SOUNDROM3m("sssnd_11.s2",CRC(1b080a72),
-               "sssnd_11.s3",CRC(c4f2e08a),
-               "sssnd_11.s4",CRC(258b0a27))
+WPC_ROMSTART(ss,15,"ss_g11.1_5",0x80000,CRC(5de8d0a0) SHA1(91cdd5f4e1654fd4dbde8b9cb03db935cba5d876))
+DCS_SOUNDROM3m("sssnd_11.s2",CRC(1b080a72) SHA1(be80e99e6bcc482379fe99519a4122f3b225be30),
+               "sssnd_11.s3",CRC(c4f2e08a) SHA1(e20ff622a3f475db11f1f44d36a6669e160437a3),
+               "sssnd_11.s4",CRC(258b0a27) SHA1(83763b98907cf38e6f7b9fe4f26ce93a54ba3568))
 WPC_ROMEND
 
 /*--------------

@@ -446,8 +446,8 @@ static void ft_drawStatic(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(ft,l5,"fshtl_5.rom",0x80000,CRC(88847775))
-WPCS_SOUNDROM8xx("ft_u18.l1",CRC(48d2760a))
+WPC_ROMSTART(ft,l5,"fshtl_5.rom",0x80000,CRC(88847775) SHA1(ab323980b914678e1e3c9e2e4d92956e97dc32fa))
+WPCS_SOUNDROM8xx("ft_u18.l1",CRC(48d2760a) SHA1(701b0bbb68f99332493ee1276e5a1cef5c85d499))
 WPC_ROMEND
 
 /*--------------

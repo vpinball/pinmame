@@ -245,12 +245,12 @@ static sim_tInportData dh_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(dh,lx2,"harr_lx2.rom",0x80000,CRC(d92c2d35))
-DCS_SOUNDROM5x(	"dh_snd.u2",CRC(dce5339a),
-		"dh_snd.u3",CRC(27c30ada),
-		"dh_snd.u4",CRC(8bde0089),
-		"dh_snd.u5",CRC(bfacfbdb),
-		"dh_snd.u6",CRC(793dcfb8))
+WPC_ROMSTART(dh,lx2,"harr_lx2.rom",0x80000,CRC(d92c2d35) SHA1(68f08120fbc510db46b1fd0e68ec07fe536f77ca))
+DCS_SOUNDROM5x(	"dh_snd.u2",CRC(dce5339a) SHA1(c89ec1c2f4f5201cbc40c7038cd1219b200066c7),
+		"dh_snd.u3",CRC(27c30ada) SHA1(388c0e533d1d5c88ae020ef8d8b98db4c603c157),
+		"dh_snd.u4",CRC(8bde0089) SHA1(8efdcc60daef06c65acf5cb805790d2b82d3c091),
+		"dh_snd.u5",CRC(bfacfbdb) SHA1(aa443906a0945586ba5d2910972b333b5d316894),
+		"dh_snd.u6",CRC(793dcfb8) SHA1(c9b35e0511962f9fc372f98e937ee5989109056d))
 WPC_ROMEND
 
 /*--------------

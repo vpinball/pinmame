@@ -374,10 +374,10 @@ static wpc_tSamSolMap cftbl_samsolmap[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(cftbl,l4,"creat_l4.rom",0x80000,CRC(b8778cb6))
-WPCS_SOUNDROM288("bl_u18.l1",CRC(87267bcc),
-                 "bl_u15.l1",CRC(15477d6f),
-                 "bl_u14.l1",CRC(6b02bee4))
+WPC_ROMSTART(cftbl,l4,"creat_l4.rom",0x80000,CRC(b8778cb6) SHA1(a5dcc1ebedbd62d81e2e56fb8aebdc33fa6ba70c))
+WPCS_SOUNDROM288("bl_u18.l1",CRC(87267bcc) SHA1(3e733437bce3491c216a8627810897f6123f0679),
+                 "bl_u15.l1",CRC(15477d6f) SHA1(3ed7942828630bc9111d2e602fee931ef67db2ce),
+                 "bl_u14.l1",CRC(6b02bee4) SHA1(4f852b897dbf0ec2d5b17eed2ff70d9360b12213))
 WPC_ROMEND
 
 /*--------------

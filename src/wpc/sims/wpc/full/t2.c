@@ -515,16 +515,16 @@ static void t2_drawStatic(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(t2,l8,"t2_l8.rom",0x80000,CRC(c00e52e9))
-WPCS_SOUNDROM222("t2_u18.l3",CRC(2280bdd0),
-                 "t2_u15.l3",CRC(dad03ad1),
-                 "t2_u14.l3",CRC(9addc9dc))
+WPC_ROMSTART(t2,l8,"t2_l8.rom",0x80000,CRC(c00e52e9) SHA1(830c1a7eabf3c8e4fa6242421587b398e21449e8))
+WPCS_SOUNDROM222("t2_u18.l3",CRC(2280bdd0) SHA1(ea94265cb8291ee427e0a2119d901ba1eb50d8ee),
+                 "t2_u15.l3",CRC(dad03ad1) SHA1(7c200f9a6564d751e5aa9b1ba84363b221502770),
+                 "t2_u14.l3",CRC(9addc9dc) SHA1(847bb027f6b9167cbbaa13f1af50d61e0c69f01f))
 WPC_ROMEND
 /* Profanity speech ROM. Don't know if the sound rom works with L8 */
-WPC_ROMSTART(t2,p2f,"u6-nasty.rom",0x40000,CRC(add685a4))
-WPCS_SOUNDROM222(   "t2_u18.l3",   CRC(2280bdd0),
-                    "t2_u15.l3",   CRC(dad03ad1),
-                    "u14-nsty.rom",CRC(b4d64152))
+WPC_ROMSTART(t2,p2f,"u6-nasty.rom",0x40000,CRC(add685a4) SHA1(d1ee7eb620864b017495e52ea8fe8db18508c3eb))
+WPCS_SOUNDROM222(   "t2_u18.l3",   CRC(2280bdd0) SHA1(ea94265cb8291ee427e0a2119d901ba1eb50d8ee),
+                    "t2_u15.l3",   CRC(dad03ad1) SHA1(7c200f9a6564d751e5aa9b1ba84363b221502770),
+                    "u14-nsty.rom",CRC(b4d64152) SHA1(03a828cef8b067d4da058fd3a1e972265a72f10a))
 WPC_ROMEND
 
 /*--------------

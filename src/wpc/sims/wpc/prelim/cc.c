@@ -251,22 +251,22 @@ static sim_tInportData cc_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(cc,12,"cc_g11.1_2",0x100000,CRC(17ad9266))
-DCS_SOUNDROM6m("sav2_8.rom",CRC(94928841),
-               "sav3_8.rom",CRC(a22b13f0),
-               "sav4_8.rom",CRC(fe8324e2),
-               "sav5_8.rom",CRC(1b2a1ff3),
-	       "sav6_8.rom",CRC(2cccf10e),
-	       "sav7_8.rom",CRC(90fb1277))
+WPC_ROMSTART(cc,12,"cc_g11.1_2",0x100000,CRC(17ad9266) SHA1(b18c4e2cc9f4269904c05e5e414675a94f96e955))
+DCS_SOUNDROM6m("sav2_8.rom",CRC(94928841) SHA1(953586d6abe8222a6cd6b74e417fa4ce078efa43),
+               "sav3_8.rom",CRC(a22b13f0) SHA1(5df6ea9d5059cd04bdb369c1c7255b09d64b3c65),
+               "sav4_8.rom",CRC(fe8324e2) SHA1(72c56d094cb4185a083a7da81fd527a908ce9de0),
+               "sav5_8.rom",CRC(1b2a1ff3) SHA1(2d9a5952c7ac000c47d87d198ff7ca62913ec73f),
+	       "sav6_8.rom",CRC(2cccf10e) SHA1(3b9b9c87ab3c0d74eaacde416d18f3357f8302bd),
+	       "sav7_8.rom",CRC(90fb1277) SHA1(502c920e1d54d285a4d4af401e574f785149da47))
 WPC_ROMEND
 
-WPC_ROMSTART(cc,13,"cc_g11.1_3",0x100000,CRC(7741fa4e))
-DCS_SOUNDROM6m("sav2_8.rom",CRC(94928841),
-               "sav3_8.rom",CRC(a22b13f0),
-	       "sav4_8.rom",CRC(fe8324e2),
-	       "sav5_8.rom",CRC(1b2a1ff3),
-	       "sav6_8.rom",CRC(2cccf10e),
-	       "sav7_8.rom",CRC(90fb1277))
+WPC_ROMSTART(cc,13,"cc_g11.1_3",0x100000,CRC(7741fa4e) SHA1(adaf6b07d2f2714e87e367db28d15ae0145b6ae6))
+DCS_SOUNDROM6m("sav2_8.rom",CRC(94928841) SHA1(953586d6abe8222a6cd6b74e417fa4ce078efa43),
+               "sav3_8.rom",CRC(a22b13f0) SHA1(5df6ea9d5059cd04bdb369c1c7255b09d64b3c65),
+	       "sav4_8.rom",CRC(fe8324e2) SHA1(72c56d094cb4185a083a7da81fd527a908ce9de0),
+	       "sav5_8.rom",CRC(1b2a1ff3) SHA1(2d9a5952c7ac000c47d87d198ff7ca62913ec73f),
+	       "sav6_8.rom",CRC(2cccf10e) SHA1(3b9b9c87ab3c0d74eaacde416d18f3357f8302bd),
+	       "sav7_8.rom",CRC(90fb1277) SHA1(502c920e1d54d285a4d4af401e574f785149da47))
 WPC_ROMEND
 
 /*--------------

@@ -253,23 +253,23 @@ static sim_tInportData mb_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(mb,106,"mb_1_06.bin",0x100000,CRC(381a8822))
-DCS_SOUNDROM6xm("mb_s2.rom",CRC(9152f559),
-                "mb_s3.rom",CRC(c3cd6e81),
-                "mb_s4.rom",CRC(00b88352),
-                "mb_s5.rom",CRC(dae16105),
-		"mb_s6.rom",CRC(3975d5da),
-		"mb_s7.rom",CRC(c242fb78))
+WPC_ROMSTART(mb,106,"mb_1_06.bin",0x100000,CRC(381a8822) SHA1(b0b5bf58accff24a4023c102952c89c1f116a174))
+DCS_SOUNDROM6xm("mb_s2.rom",CRC(9152f559) SHA1(68d455d8b875101caedafd21b59c447f326566dd),
+                "mb_s3.rom",CRC(c3cd6e81) SHA1(b041979c8955907090b30960780cecb19258bd5e),
+                "mb_s4.rom",CRC(00b88352) SHA1(5da75e0b400eb71583681e06088eb97fc12e7f17),
+                "mb_s5.rom",CRC(dae16105) SHA1(15878ef8685f3e9fc8eb2a2401581d30fe706e89),
+		"mb_s6.rom",CRC(3975d5da) SHA1(6dbb34a827c0956e6aef1401c12cba88ae370e1f),
+		"mb_s7.rom",CRC(c242fb78) SHA1(c5a2a37ff3414d1e946cddb69b5e8f067b50bcc6))
 WPC_ROMEND
 
 
-WPC_ROMSTART(mb,10, "mb_g11.1_0", 0x100000,CRC(6b8db967))
-DCS_SOUNDROM6xm("mb_s2.rom",CRC(9152f559),
-                "mb_s3.rom",CRC(c3cd6e81),
-                "mb_s4.rom",CRC(00b88352),
-                "mb_s5.rom",CRC(dae16105),
-		"mb_s6.rom",CRC(3975d5da),
-		"mb_s7.rom",CRC(c242fb78))
+WPC_ROMSTART(mb,10, "mb_g11.1_0", 0x100000,CRC(6b8db967) SHA1(e24d801ed9d326b9d4ddb26100c85cfd8e697d17))
+DCS_SOUNDROM6xm("mb_s2.rom",CRC(9152f559) SHA1(68d455d8b875101caedafd21b59c447f326566dd),
+                "mb_s3.rom",CRC(c3cd6e81) SHA1(b041979c8955907090b30960780cecb19258bd5e),
+                "mb_s4.rom",CRC(00b88352) SHA1(5da75e0b400eb71583681e06088eb97fc12e7f17),
+                "mb_s5.rom",CRC(dae16105) SHA1(15878ef8685f3e9fc8eb2a2401581d30fe706e89),
+		"mb_s6.rom",CRC(3975d5da) SHA1(6dbb34a827c0956e6aef1401c12cba88ae370e1f),
+		"mb_s7.rom",CRC(c242fb78) SHA1(c5a2a37ff3414d1e946cddb69b5e8f067b50bcc6))
 WPC_ROMEND
 
 /*--------------

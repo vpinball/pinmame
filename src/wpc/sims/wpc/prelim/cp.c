@@ -235,13 +235,13 @@ static sim_tInportData cp_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(cp,16,"cp_g11.1_6",0x80000,CRC(d6d0b921))
-DCS_SOUNDROM6xm("cp_s2.bin",CRC(e0b67f6f),
-				"cp_s3.bin",CRC(68accf24),
-				"cp_s4.bin",CRC(50d1c920),
-				"cp_s5.bin",CRC(69af347a),
-				"cp_s6.bin",CRC(76ca4fed),
-				"cp_s7.bin",CRC(be619157))
+WPC_ROMSTART(cp,16,"cp_g11.1_6",0x80000,CRC(d6d0b921) SHA1(6784bd5116d239f307310d4a1ddac1068292dd60))
+DCS_SOUNDROM6xm("cp_s2.bin",CRC(e0b67f6f) SHA1(48fbf01eca4fd6250df18bb5f35959100f40f6e0),
+				"cp_s3.bin",CRC(68accf24) SHA1(9f86ac84ef8130592e471f1da0e05ba811dbc38b),
+				"cp_s4.bin",CRC(50d1c920) SHA1(00b247853ef1f91c6245746c9311f8463b9335d1),
+				"cp_s5.bin",CRC(69af347a) SHA1(d15683e6297603104e4ba777224331c24565be7c),
+				"cp_s6.bin",CRC(76ca4fed) SHA1(8995e518c8dafbdd8bf994533b71f42172057b27),
+				"cp_s7.bin",CRC(be619157) SHA1(b18acde4f683b5f8b2248b46bb3dc7c3e0ab1c26))
 WPC_ROMEND
 
 /*--------------

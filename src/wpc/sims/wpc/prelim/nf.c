@@ -237,13 +237,13 @@ static sim_tInportData nf_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(nf,23x,"nofe2_3x.rom",0x80000,CRC(d853650b))
-DCS_SOUNDROM6x("nfu2s",CRC(136caeb9),
-               "nfu3s",CRC(983e5578),
-               "nfu4s",CRC(9469cd40),
-               "nfu5s",CRC(e14d4315),
-               "nfu6s",CRC(40a58903),
-               "nfu7s",CRC(61002bdd))
+WPC_ROMSTART(nf,23x,"nofe2_3x.rom",0x80000,CRC(d853650b) SHA1(06d58f86c68ccdc242d6b96a22c6226758dc3e44))
+DCS_SOUNDROM6x("nfu2s",CRC(136caeb9) SHA1(61a56b29a7655e8aab4987d300173e1acf27c77c),
+               "nfu3s",CRC(983e5578) SHA1(374b1397abbdde5fd9257fd45fd8613c94fbd02d),
+               "nfu4s",CRC(9469cd40) SHA1(8a1dd1088f24018f48b114c0b27f0331263d4eea),
+               "nfu5s",CRC(e14d4315) SHA1(63d5ae800cc8a750ea2e3a87c646ab175b60abc7),
+               "nfu6s",CRC(40a58903) SHA1(78f7e99f39efc83f3cf17801a30e6dc6e4864125),
+               "nfu7s",CRC(61002bdd) SHA1(e623399ff95f59a4ab7efdd7c69b1a1370479398))
 WPC_ROMEND
 
 /*--------------

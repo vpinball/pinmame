@@ -567,14 +567,14 @@ static void sttng_drawStatic(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(sttng,l7,"trek_lx7.rom",0x80000,CRC(d439fdbb))
-DCS_SOUNDROM7x("ng_u2_s.l1",CRC(c3bd7bf5),
-               "ng_u3_s.l1",CRC(9456cac7),
-               "ng_u4_s.l1",CRC(179d22a4),
-               "ng_u5_s.l1",CRC(231a3e72),
-               "ng_u6_s.l1",CRC(bb21377d),
-               "ng_u7_s.l1",CRC(d81b39f0),
-               "ng_u8_s.l1",CRC(c9fb065e))
+WPC_ROMSTART(sttng,l7,"trek_lx7.rom",0x80000,CRC(d439fdbb) SHA1(12d1c72cd6cc18db53e51ebb4c1e55ca9bcf9908))
+DCS_SOUNDROM7x("ng_u2_s.l1",CRC(c3bd7bf5) SHA1(2476ff90232a52d667a407fac81ee4db028b94e5),
+               "ng_u3_s.l1",CRC(9456cac7) SHA1(83e415e0f21bb5418f3677dbc13433e056c523ab),
+               "ng_u4_s.l1",CRC(179d22a4) SHA1(456b7189e23d4e2bd7e2a6249fa2a73bf0e12194),
+               "ng_u5_s.l1",CRC(231a3e72) SHA1(081b1a042e62ccb723788059d6c1e00b9b32c778),
+               "ng_u6_s.l1",CRC(bb21377d) SHA1(229fb42a1f8b22727a809e5d63f26f045a2adda5),
+               "ng_u7_s.l1",CRC(d81b39f0) SHA1(3443e7327c755b85a5b390f7fcd0e9923890425a),
+               "ng_u8_s.l1",CRC(c9fb065e) SHA1(c148178ee0ea787acc88078db01d17073e75fdc7))
 WPC_ROMEND
 
 /*--------------

@@ -536,21 +536,21 @@ static void tom_drawStatic(BMTYPE **line) {
 /*-----------------
 /  ROM definitions  (Take them from Games.c)
 /------------------*/
-WPC_ROMSTART(tom,13,"tom1_3x.rom",0x80000,CRC(aff4d14c))
-DCS_SOUNDROM6x("tm_u2_s.l2",CRC(b128fbba),
-               "tm_u3_s.l2",CRC(128c7d3c),
-               "tm_u4_s.l2",CRC(3d9b2354),
-               "tm_u5_s.l2",CRC(44247b60),
-               "tm_u6_s.l2",CRC(f366bbe5),
-               "tm_u7_s.l2",CRC(f98e9e38))
+WPC_ROMSTART(tom,13,"tom1_3x.rom",0x80000,CRC(aff4d14c) SHA1(9896f3034bb7a59c9e241d16bf231fefc0ae1fd0))
+DCS_SOUNDROM6x("tm_u2_s.l2",CRC(b128fbba) SHA1(59101f9f4f43c240630dfbdc7fb432a9939f122d),
+               "tm_u3_s.l2",CRC(128c7d3c) SHA1(1bd5b56d3f9c8485498746ae6c4d65a1e053161a),
+               "tm_u4_s.l2",CRC(3d9b2354) SHA1(a39917c0cceda33288594652c47fd0385a85b8b1),
+               "tm_u5_s.l2",CRC(44247b60) SHA1(519b9d6eab4fe05676382c5f99ea87d4f7a12c5e),
+               "tm_u6_s.l2",CRC(f366bbe5) SHA1(aca23649a54521748e90aa9a182b9bbdde126409),
+               "tm_u7_s.l2",CRC(f98e9e38) SHA1(bf8c204cfbbf5f9d59b7ad03d1784d37c638712c))
 WPC_ROMEND
-WPC_ROMSTART(tom,12,"tom1_2x.rom",0x80000,CRC(bd8dd884))
-DCS_SOUNDROM6x("tm_u2_s.l2",CRC(b128fbba),
-               "tm_u3_s.l2",CRC(128c7d3c),
-               "tm_u4_s.l2",CRC(3d9b2354),
-               "tm_u5_s.l2",CRC(44247b60),
-               "tm_u6_s.l2",CRC(f366bbe5),
-               "tm_u7_s.l2",CRC(f98e9e38))
+WPC_ROMSTART(tom,12,"tom1_2x.rom",0x80000,CRC(bd8dd884) SHA1(2cb74ae5082d8ceaf89b8ef4df86f78cb5ba6463))
+DCS_SOUNDROM6x("tm_u2_s.l2",CRC(b128fbba) SHA1(59101f9f4f43c240630dfbdc7fb432a9939f122d),
+               "tm_u3_s.l2",CRC(128c7d3c) SHA1(1bd5b56d3f9c8485498746ae6c4d65a1e053161a),
+               "tm_u4_s.l2",CRC(3d9b2354) SHA1(a39917c0cceda33288594652c47fd0385a85b8b1),
+               "tm_u5_s.l2",CRC(44247b60) SHA1(519b9d6eab4fe05676382c5f99ea87d4f7a12c5e),
+               "tm_u6_s.l2",CRC(f366bbe5) SHA1(aca23649a54521748e90aa9a182b9bbdde126409),
+               "tm_u7_s.l2",CRC(f98e9e38) SHA1(bf8c204cfbbf5f9d59b7ad03d1784d37c638712c))
 WPC_ROMEND
 
 /*--------------

@@ -249,13 +249,13 @@ static sim_tInportData pop_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(pop,lx5,"peye_lx5.rom",0x80000,CRC(ee1f7a67))
-DCS_SOUNDROM6x(	"popsndl2.u2",CRC(00590f2d),
-		"popsndl2.u3",CRC(87032b27),
-		"popsndl2.u4",CRC(b0808aa8),
-		"popsndl2.u5",CRC(3662206b),
-		"popsndl2.u6",CRC(84a5f317),
-		"popsndl2.u7",CRC(b8fde2c7))
+WPC_ROMSTART(pop,lx5,"peye_lx5.rom",0x80000,CRC(ee1f7a67) SHA1(f02518546de93256b00bc1f5b92452a10f9e56dd))
+DCS_SOUNDROM6x(	"popsndl2.u2",CRC(00590f2d) SHA1(540ad9825dbaace55bf36a6cee98bef06f240e15),
+		"popsndl2.u3",CRC(87032b27) SHA1(9488d177418b53ceb37686cf6f4f58800b306d85),
+		"popsndl2.u4",CRC(b0808aa8) SHA1(bebe6ec3c3e675e096084b6ed61065ad48dc5c3f),
+		"popsndl2.u5",CRC(3662206b) SHA1(c2714665db18e9ae540a8f922d7ebb3058638563),
+		"popsndl2.u6",CRC(84a5f317) SHA1(f1b9710d109e28fe3255e36dafa2be23656d0445),
+		"popsndl2.u7",CRC(b8fde2c7) SHA1(ee82a7b1ad32e1231356ce42c4ad3109150a9992))
 WPC_ROMEND
 
 /*--------------

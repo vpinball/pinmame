@@ -391,10 +391,10 @@ static wpc_tSamSolMap dd_samsolmap[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(dd,p7,  "dude_u6.p7",0x020000,CRC(b6c35b98))
-S11CS_SOUNDROM000("dude_u4.l1",  CRC(3eeef714),
-                  "dude_u19.l1", CRC(dc7b985b),
-                  "dude_u20.l1", CRC(a83d53dd))
+WPC_ROMSTART(dd,p7,  "dude_u6.p7",0x020000,CRC(b6c35b98) SHA1(5e9d70ce40669e2f402561dc1d8aa70a8b8a2958))
+S11CS_SOUNDROM000("dude_u4.l1",  CRC(3eeef714) SHA1(74dcc83958cb62819e0ac36ca83001694faafec7),
+                  "dude_u19.l1", CRC(dc7b985b) SHA1(f672d1f1fe1d1d887113ea6ccd745a78f7760526),
+                  "dude_u20.l1", CRC(a83d53dd) SHA1(92a81069c42c7760888201fb0787fa7ddfbf1658))
 WPC_ROMEND
 
 /*--------------

@@ -245,19 +245,19 @@ static sim_tInportData nbaf_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(nbaf,31a,"fb_g11.3_1",0x80000,CRC(acd84ec2))
-DCS_SOUNDROM5xm("fb-s2.1_0",CRC(32f42a82),
-                "fb-s3.1_0",CRC(033aa54a),
-                "fb-s4.1_0",CRC(6965a7c5),
-                "fb-s5.1_0",CRC(db50b79a),
-                "fb-s6.1_0",CRC(f1633371))
+WPC_ROMSTART(nbaf,31a,"fb_g11.3_1",0x80000,CRC(acd84ec2) SHA1(bd641b26e7a577be9f8705b21de4a694400945ce))
+DCS_SOUNDROM5xm("fb-s2.1_0",CRC(32f42a82) SHA1(387636c8e9f8525e7442ccdced735392db113044),
+                "fb-s3.1_0",CRC(033aa54a) SHA1(9221f3013f204a9a857aced5d774c606a7e48648),
+                "fb-s4.1_0",CRC(6965a7c5) SHA1(7e72bbd3bad9accc8da1754c57c24ebdf13e57b9),
+                "fb-s5.1_0",CRC(db50b79a) SHA1(9753d599cd822b55ed64bcf64955f625dc51997d),
+                "fb-s6.1_0",CRC(f1633371) SHA1(a707748d3298ffb6d10d8308f4dae7982b540fa0))
 WPC_ROMEND
-WPC_ROMSTART(nbaf,31,"fb_g11.3_1",0x80000,CRC(acd84ec2))
-DCS_SOUNDROM5m("fb-s2.3_0",CRC(4594abd3),
-               "fb-s3.1_0",CRC(033aa54a),
-               "fb-s4.1_0",CRC(6965a7c5),
-               "fb-s5.1_0",CRC(db50b79a),
-               "fb-s6.1_0",CRC(f1633371))
+WPC_ROMSTART(nbaf,31,"fb_g11.3_1",0x80000,CRC(acd84ec2) SHA1(bd641b26e7a577be9f8705b21de4a694400945ce))
+DCS_SOUNDROM5m("fb-s2.3_0",CRC(4594abd3) SHA1(d14654f0c2d29c28cae604e2dbcc9adf361b28a9),
+               "fb-s3.1_0",CRC(033aa54a) SHA1(9221f3013f204a9a857aced5d774c606a7e48648),
+               "fb-s4.1_0",CRC(6965a7c5) SHA1(7e72bbd3bad9accc8da1754c57c24ebdf13e57b9),
+               "fb-s5.1_0",CRC(db50b79a) SHA1(9753d599cd822b55ed64bcf64955f625dc51997d),
+               "fb-s6.1_0",CRC(f1633371) SHA1(a707748d3298ffb6d10d8308f4dae7982b540fa0))
 WPC_ROMEND
 
 /*--------------

@@ -447,10 +447,10 @@ static wpc_tSamSolMap bop_samsolmap[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(bop,l7,"tmbopl_7.rom",0x40000,CRC(773e1488))
-WPCS_SOUNDROM222("mach_u18.l1",CRC(f3f53896),
-                 "mach_u15.l1", CRC(fb49513b),
-                 "mach_u14.l1", CRC(be2a736a))
+WPC_ROMSTART(bop,l7,"tmbopl_7.rom",0x40000,CRC(773e1488) SHA1(36e8957b3903b99844a76bf15ba393b17db0db59))
+WPCS_SOUNDROM222("mach_u18.l1",CRC(f3f53896) SHA1(4be5a8a27c5ac4718713c05ff2ddf51658a1be27),
+                 "mach_u15.l1", CRC(fb49513b) SHA1(01f5243ff258adce3a28b24859eba3f465444bdf),
+                 "mach_u14.l1", CRC(be2a736a) SHA1(ebf7b26a86d3ffcc35eaa1da8e4f432bd281fe15))
 WPC_ROMEND
 
 /*--------------

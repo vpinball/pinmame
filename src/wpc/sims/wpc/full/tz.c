@@ -430,16 +430,16 @@ static void tz_drawStatic(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(tz, 94h, "tz_94h.rom", 0x80000, CRC(5032e8c6))
-WPCS_SOUNDROM882("tzu18_l2.rom", CRC(66575ec2),
-                 "tzu15_l2.rom", CRC(389d2442),
-                 "tzu14_l2.rom", CRC(5a67bd56))
+WPC_ROMSTART(tz, 94h, "tz_94h.rom", 0x80000, CRC(5032e8c6) SHA1(d7481612b1c3040823e1f7b9e53ebbaa83de0532))
+WPCS_SOUNDROM882("tzu18_l2.rom", CRC(66575ec2) SHA1(deceb56324ee9785946f5771f8cfbaf1b1d2c8bc),
+                 "tzu15_l2.rom", CRC(389d2442) SHA1(58a4bc7cc7a28b47c75d5c9bbf14abf34bd7a9e3),
+                 "tzu14_l2.rom", CRC(5a67bd56) SHA1(98669fbfdc5793bcf09fe72c231e2b4fa2524cc5))
 WPC_ROMEND
 
-WPC_ROMSTART(tz,92,"tzone9_2.rom",0x80000,CRC(ec3e61c8))
-WPCS_SOUNDROM882("tzu18_l2.rom",CRC(66575ec2),
-                 "tzu15_l2.rom",CRC(389d2442),
-                 "tzu14_l2.rom",CRC(5a67bd56))
+WPC_ROMSTART(tz,92,"tzone9_2.rom",0x80000,CRC(ec3e61c8) SHA1(378c33add72c934aa2ee32e71830297ad1f08ce5))
+WPCS_SOUNDROM882("tzu18_l2.rom",CRC(66575ec2) SHA1(deceb56324ee9785946f5771f8cfbaf1b1d2c8bc),
+                 "tzu15_l2.rom",CRC(389d2442) SHA1(58a4bc7cc7a28b47c75d5c9bbf14abf34bd7a9e3),
+                 "tzu14_l2.rom",CRC(5a67bd56) SHA1(98669fbfdc5793bcf09fe72c231e2b4fa2524cc5))
 WPC_ROMEND
 
 /*--------------
