@@ -123,8 +123,6 @@ void riot_reset(void)
 	/* zap each structure, preserving the interface and swizzle */
 	for (i = 0; i < MAX_RIOT; i++)
 	{
-		const struct riot6532_interface *intf = riot[i].intf;
-
 		riot[i].timer_divider = 1;
 		riot[i].timer_start   = 0x00;
 		riot[i].timer_irq_enabled = 0;
@@ -210,7 +208,6 @@ int riot_read(int which, int offset)
 {
 	struct riot6532 *p = riot + which;
 	int val = 0;
-	int help = 0;
 
 	/* adjust offset for 16-bit */
 	offset &= 0x1f;
