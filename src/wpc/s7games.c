@@ -83,10 +83,10 @@ CORE_GAMEDEF(solar,l2,"Solar Fire (L-2)",1981,"Williams",s7_mS7S,0)
 / Thunderball - Sys.7 (Game #508)
 /-----------------------------------*/
 INITGAMEFULL(thund,s7_dispS7,0,0,0,0,0,0,0,0)
-S7_ROMSTART000x(thund,p1, "ic14.716",   CRC(1cd34f1f) SHA1(3f5b5a319570c26a3d34d640fef2ac6c04b83b70),
+S7_ROMSTART000x(thund,p1, "ic14.532",   CRC(1cd34f1f) SHA1(3f5b5a319570c26a3d34d640fef2ac6c04b83b70),
                           "ic17.532",   CRC(bb571a17) SHA1(fb0b7f247673dae0744d4188e1a03749a2237165),
-                          "ic20.716",   CRC(aa3f07dc) SHA1(f31662972046f9a874380a8dcd1bc9259de5f6ba))
-S67S_SOUNDROMS0(          "sound12.716",CRC(cc70af52) SHA1(d9c2840acdcd69aab39fc647dd4819eccc06af33))
+                          "ic20.532",   CRC(aa3f07dc) SHA1(f31662972046f9a874380a8dcd1bc9259de5f6ba))
+S67S_SOUNDROMS0(          "sound12.532",CRC(cc70af52) SHA1(d9c2840acdcd69aab39fc647dd4819eccc06af33))
 S67S_SPEECHROMS0000(      "speech7.532",CRC(33e1b041) SHA1(f50c0311bde69fa6e8071e297a81cc3ef3dcf44f),
                           "speech5.532",CRC(11780c80) SHA1(bcc5efcd69b4f776feef32484a872863847d64cd),
                           "speech6.532",CRC(ab688698) SHA1(e0cbac44a6fe30a49da478c32500a0b43903cc2b),
@@ -220,7 +220,7 @@ S7_ROMEND
 CORE_GAMEDEF(fpwr2,l2,"Firepower II (L-2)",1983,"Williams",s7_mS7S,0)
 
 /*-----------------------------
-/ Starlight - Sys.7 (Game #530)
+/ Star Light - Sys.7 (Game #530)
 /-----------------------------*/
 INITGAMEFULL(strlt,s7_dispS7,0,0,50,51,41,42,43,0)
 S7_ROMSTART000x(strlt,l1,"ic14.532",   CRC(292f1c4a) SHA1(0b5d50331364655672be16236d38d72b28f6dec2),
@@ -229,4 +229,4 @@ S7_ROMSTART000x(strlt,l1,"ic14.532",   CRC(292f1c4a) SHA1(0b5d50331364655672be16
 S67S_SOUNDROMS8(         "sound12.716",CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
 S7_ROMEND
 #define input_ports_strlt input_ports_s7
-CORE_GAMEDEF(strlt,l1,"Starlight (L-1)",1984,"Williams",s7_mS7S,0)
+CORE_GAMEDEF(strlt,l1,"Star Light (L-1)",1984,"Williams",s7_mS7S,0)
