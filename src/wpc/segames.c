@@ -533,9 +533,9 @@ INITGAME(monopoly,GEN_WS,dispMonopoly,SE_MINIDMD)
 SE128_ROMSTART(monopoly,"moncpu.303",CRC(4a66c9e4))
 DE_DMD32ROM8x(        "mondsp-a.301",CRC(c4e2e032))
 DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7),
-                      "mnsndu17.100",CRC(595f23ab),
+                      "mnsndu17.100",CRC(f9bc55e8),
                       "mnsndu21.100",CRC(e0727e1f),
-                      "mnsndu36.100",CRC(d66c71a9))
+                      "mnsndu36.100",CRC(c845aa97))
 SE_ROMEND
 #define input_ports_monopoly input_ports_se
 CORE_GAMEDEFNV(monopoly,"Monopoly",2001,"Stern",de_mSES1,GAME_NOCRC)
@@ -546,9 +546,9 @@ CORE_GAMEDEFNV(monopoly,"Monopoly",2001,"Stern",de_mSES1,GAME_NOCRC)
 SE128_ROMSTART(monopolf,"moncpu.303",CRC(4a66c9e4))
 DE_DMD32ROM8x(        "mondsp-f.301",NO_DUMP)
 DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7),
-                      "mnsndu17.100",CRC(595f23ab),
+                      "mnsndu17.100",CRC(f9bc55e8),
                       "mnsndu21.100",CRC(e0727e1f),
-                      "mnsndu36.100",CRC(d66c71a9))
+                      "mnsndu36.100",CRC(c845aa97))
 SE_ROMEND
 #define input_ports_monopolf input_ports_se
 #define init_monopolf init_monopoly
@@ -560,9 +560,9 @@ CORE_CLONEDEFNV(monopolf,monopoly,"Monopoly (France)",2002,"Stern",de_mSES1,GAME
 SE128_ROMSTART(monopold,"moncpu.303",CRC(4a66c9e4))
 DE_DMD32ROM8x(        "mondsp-g.301",NO_DUMP)
 DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7),
-                      "mnsndu17.100",CRC(595f23ab),
+                      "mnsndu17.100",CRC(f9bc55e8),
                       "mnsndu21.100",CRC(e0727e1f),
-                      "mnsndu36.100",CRC(d66c71a9))
+                      "mnsndu36.100",CRC(c845aa97))
 SE_ROMEND
 #define input_ports_monopold input_ports_se
 #define init_monopold init_monopoly
@@ -574,9 +574,9 @@ CORE_CLONEDEFNV(monopold,monopoly,"Monopoly (Germany)",2002,"Stern",de_mSES1,GAM
 SE128_ROMSTART(monopoli,"moncpu.303",CRC(4a66c9e4))
 DE_DMD32ROM8x(        "mondsp-i.301",NO_DUMP)
 DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7),
-                      "mnsndu17.100",CRC(595f23ab),
+                      "mnsndu17.100",CRC(f9bc55e8),
                       "mnsndu21.100",CRC(e0727e1f),
-                      "mnsndu36.100",CRC(d66c71a9))
+                      "mnsndu36.100",CRC(c845aa97))
 SE_ROMEND
 #define input_ports_monopoli input_ports_se
 #define init_monopoli init_monopoly
@@ -588,9 +588,9 @@ CORE_CLONEDEFNV(monopoli,monopoly,"Monopoly (Italy)",2002,"Stern",de_mSES1,GAME_
 SE128_ROMSTART(monopole,"moncpu.303",CRC(4a66c9e4))
 DE_DMD32ROM8x(        "mondsp-s.301",NO_DUMP)
 DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7),
-                      "mnsndu17.100",CRC(595f23ab),
+                      "mnsndu17.100",CRC(f9bc55e8),
                       "mnsndu21.100",CRC(e0727e1f),
-                      "mnsndu36.100",CRC(d66c71a9))
+                      "mnsndu36.100",CRC(c845aa97))
 SE_ROMEND
 #define input_ports_monopole input_ports_se
 #define init_monopole init_monopoly
