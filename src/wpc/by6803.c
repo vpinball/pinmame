@@ -87,7 +87,7 @@ static struct {
   int sounddiagnosticLed;
   int vblankCount;
   int initDone;
-  int phase_a;
+  int phase_a, p21;
   int sndint;
   int snddata;
   void *zctimer;
@@ -203,11 +203,11 @@ static void by6803_dispStrobe2(int mask) {
 
 static void by6803_lampStrobe(int board, int lampadr) {
   if (lampadr != 0x0f) {
-    int lampdata = (locals.p0_a>>4)^0x0f;
-    UINT8 *matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)+8*board];
+    int lampdata = ((locals.p0_a>>4)^0x0f) & 0x03;
+    UINT8 *matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)+4*board];
     int bit = 1<<(lampadr & 0x07);
 
-    //DBGLOG(("adr=%x data=%x\n",lampadr,lampdata));
+    DBGLOG(("adr=%x data=%x\n",lampadr,lampdata));
     while (lampdata) {
       if (lampdata & 0x01) *matrix |= bit;
       lampdata >>= 1; matrix += 2;
@@ -223,7 +223,7 @@ static void by6803_lampStrobe(int board, int lampadr) {
 static WRITE_HANDLER(pia0a_w) {
   locals.DISPDATA(offset,data);
   locals.p0_a = data;
-  by6803_lampStrobe(!locals.phase_a,locals.lampadr1);
+  by6803_lampStrobe(locals.phase_a,locals.lampadr1);
 }
 
 /* PIA1:A-W  0,2-7 Display handling:
@@ -390,6 +390,7 @@ static struct pia6821_interface piaIntf[] = {{
 static int by6803_irq(void) {
   static int last = 0;
   pia_set_input_ca1(1, last = !last);
+//  DBGLOG(("irq=%d\n",last));
   return 0;
 }
 
@@ -411,6 +412,11 @@ static core_tData by6803aData = {
 
 static void by6803_zeroCross(int data) {
   /*- toggle zero/detection circuit-*/
+  locals.phase_a = !locals.phase_a;
+  pia_set_input_cb1(0, locals.phase_a);
+  cpu_set_irq_line(0, M6800_TIN_LINE, (locals.phase_a && !locals.p21) ? ASSERT_LINE : CLEAR_LINE);
+  DBGLOG(("phase=%d\n",locals.phase_a));
+#if 0
   int state = locals.phase_a;
 
   /*toggle phase_a*/
@@ -427,6 +433,7 @@ static void by6803_zeroCross(int data) {
 
   /*set 6803 P20 line*/
   cpu_set_irq_line(0, M6800_TIN_LINE, state ? ASSERT_LINE : CLEAR_LINE);
+#endif
 }
 
 static void by6803_init_common(int hasKeypad) {
@@ -533,9 +540,8 @@ static READ_HANDLER(port1_r) {
 //Read Phase A Status? (Not sure if this is used)
 //JW7 (PB3) should not be set, which breaks the gnd connection, so we set the line high.
 static READ_HANDLER(port2_r) {
-	int data = locals.phase_a | 0x08;
 	//mlogerror("%x: port 2 read: %x\n",cpu_getpreviouspc(),data);
-	return data;
+	return (locals.phase_a && !locals.p21) | 0x18;
 }
 
 //Sound Data (PB0-3 only connected on schem, but later generations may use all 8 bits)
@@ -553,6 +559,8 @@ static WRITE_HANDLER(port2_w) {
 		locals.SOUNDCOMMAND(0,locals.snddata);
 	locals.sndint = sndint;
 	//logerror("port 2 write = %x\n",data);
+	locals.p21 = data & 0x02;
+	cpu_set_irq_line(0, M6800_TIN_LINE, (locals.phase_a && !locals.p21) ? ASSERT_LINE : CLEAR_LINE);
 }
 
 void BY6803_UpdateSoundLED(int data){

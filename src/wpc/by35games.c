@@ -588,7 +588,7 @@ CORE_GAMEDEFNV(m_mpac  ,"Mr. and Mrs. PacMan",1982,"Bally",by35_mBY35_61S,0)
 /*-----------------------------------------------------
 / Baby Pacman (Video/Pinball Combo) (BY133-???:  10/82)
 /-----------------------------------------------------*/
-INITGAMEVP(babypac,0,by_NoOutput,FLIP_SW(FLIP_L),0)
+INITGAMEVP(babypac,0,by_NoOutput,FLIP_SWNO(0,1),0)
 BYVP_ROMSTARTx00(babypac,	"891-u2.732", 0x7f7242d1,
 							"891-u6.732", 0x6136d636,
 							"891-u9.764",  0x7fa570f3,
