@@ -23,6 +23,9 @@
 #define GEN_S11C        U64(0x00000000400)
 #define GEN_S9          U64(0x00000000800) /* S9 CPU, 4x7+1x4 */
 #define GEN_DE          U64(0x00000001000) /* DE AlphaSeg */
+#define GEN_DEDMD16     U64(0x00000002000) /* DE 128x16 */
+#define GEN_DEDMD32     U64(0x00000004000) /* DE 128x32 */
+#define GEN_DEDMD64     U64(0x00000008000) /* DE 192x64 */
 #define GEN_S7          U64(0x00000010000) /* S7 CPU */
 #define GEN_S6          U64(0x00000020000) /* S6 CPU */
 #define GEN_S4          U64(0x00000040000) /* S4 CPU */

@@ -135,60 +135,29 @@ extern const core_tLCDLayout s11_dispS9[], s11_dispS11[], s11_dispS11a[], s11_di
 
 #define DE_CPUREGION		REGION_CPU1
 
-//#define DE_MEMREG_SCPU1		REGION_CPU2	/*Sound is CPU #2 for alpha games*/
-//#define DE_MEMREG_DCPU1		REGION_CPU2 /*DMD is CPU #2 for DMD games*/
-//#define DE_MEMREG_SDCPU1	REGION_CPU3 /*Sound is CPU #3 for DMD games*/
-
-//#define DE_MEMREG_SROM1		REGION_USER1 /*Sound rom loaded into Region #1*/
-//#define DE_MEMREG_DROM1		REGION_USER1 /*DMD rom loaded into Region #1*/
-//#define DE_MEMREG_SDROM1	REGION_USER2 /*Sound rom on DMD games loaded into Region #2*/
-
-/**************************************/
-/******* GAMES USING 2 ROMS     *******/
-/**************************************/
-
-/********************/
-/** 16K & 32K ROMS **/
-/********************/
-
-/*-- Main CPU regions and ROM --*/
-#define DE_ROMSTART12(name, n1, chk1, n2, chk2) \
+/** 16K & 32K ROMS 1632 **/
+#define DE_ROMSTART48(name, n1, chk1, n2, chk2) \
    ROM_START(name) \
      NORMALREGION(0x10000, DE_CPUREGION) \
        ROM_LOAD(n1, 0x4000, 0x4000, chk1) \
        ROM_LOAD(n2, 0x8000, 0x8000, chk2)
 
-/***********************************************/
-/** 2 X 32K(1st 8K of B5 Chip is Blank) ROMS  **/
-/***********************************************/
-
-/*-- Main CPU regions and ROM --*/
-#define DE_ROMSTART22(name, n1, chk1, n2, chk2) \
+/** 2 X 32K(1st 8K of B5 Chip is Blank) ROMS  3232 **/
+#define DE_ROMSTART88(name, n1, chk1, n2, chk2) \
    ROM_START(name) \
      NORMALREGION(0x10000, DE_CPUREGION) \
        ROM_LOAD(n1, 0x0000, 0x8000, chk1) \
        ROM_LOAD(n2, 0x8000, 0x8000, chk2)
 
-/**************************************/
 /******* GAMES USING ONLY 1 ROM *******/
-/**************************************/
-
-/***********************/
 /** 32K in 1 Rom Only **/
-/***********************/
-
-/*-- Main CPU regions and ROM --*/
-#define DEx2_ROMSTART(name, n1, chk1) \
+#define DE_ROMSTARTx8(name, n1, chk1) \
    ROM_START(name) \
      NORMALREGION(0x10000, DE_CPUREGION) \
 	ROM_LOAD(n1, 0x8000, 0x8000, chk1)
 
-/**************************************/
 /** 64K(1st 8K of Chip is Blank) ROM **/
-/**************************************/
-
-/*-- Main CPU regions and ROM --*/
-#define DE_ROMSTARTx4(name, n1, chk1) \
+#define DE_ROMSTARTx0(name, n1, chk1) \
    ROM_START(name) \
      NORMALREGION(0x10000, DE_CPUREGION) \
        ROM_LOAD(n1, 0x0000, 0x10000, chk1)
@@ -208,14 +177,22 @@ extern const struct MachineDriver machine_driver_s9_s;
 extern const struct MachineDriver machine_driver_s11_s;
 extern const struct MachineDriver machine_driver_s11b2_s;
 extern const struct MachineDriver machine_driver_s11c_s;
-extern const struct MachineDriver machine_driver_des11_s;
+extern const struct MachineDriver machine_driver_deas1_s;
+extern const struct MachineDriver machine_driver_dedmd16s1_s;
+extern const struct MachineDriver machine_driver_dedmd16s2a_s;
+extern const struct MachineDriver machine_driver_dedmd32s2a_s;
+extern const struct MachineDriver machine_driver_dedmd64s2a_s;
 #define s9_mS9S          s9_s
 #define s11_mS11S        s11_s
 #define s11_mS11AS       s11_s
 #define s11_mS11BS       s11_s
 #define s11_mS11B2S      s11b2_s
 #define s11_mS11CS       s11c_s
-#define de_mDEAS         des11_s
+#define de_mDEAS1        deas1_s
+#define de_mDEDMD16S1    dedmd16s1_s
+#define de_mDEDMD16S2A   dedmd16s2a_s
+#define de_mDEDMD32S2A   dedmd32s2a_s
+#define de_mDEDMD64S2A   dedmd64s2a_s
 
 #define S11_BCDDIAG      0x01 // 7seg diagnostic led
 #define S11_BCDDISP      0x02 // BCD display
