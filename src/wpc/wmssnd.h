@@ -127,6 +127,8 @@ extern MACHINE_DRIVER_EXTERN(wmssnd_s11b2s); /* with jokerz sound board */
 /*-------------------------
 /  S9 sound on CPU board
 /--------------------------*/
+#define S9_SOUNDHACK   0x20 // Game specific option for Space Shuttle
+
 #define S9S_CPUNO     1
 #define S9S_CPUREGION (REGION_CPU1+S9S_CPUNO)
 extern MACHINE_DRIVER_EXTERN(wmssnd_s9s);
