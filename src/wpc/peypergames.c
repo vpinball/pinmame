@@ -8,7 +8,7 @@
 
 #define INITGAME(name, disptype, balls) \
 	PEYPER_INPUT_PORTS_START(name, balls) PEYPER_INPUT_PORTS_END \
-	static core_tGameData name##GameData = {GEN_PEYPER,disptype,{FLIP_SW(FLIP_L), 0,10,0, SNDBRD_NONE}}; \
+	static core_tGameData name##GameData = {GEN_PEYPER,disptype,{FLIP_SW(FLIP_L), 0,6,0, SNDBRD_NONE}}; \
 	static void init_##name(void) { \
 		core_gameData = &name##GameData; \
 	}

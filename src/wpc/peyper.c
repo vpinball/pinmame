@@ -5,7 +5,7 @@
    ---------
 		CPU:     Z80 @ 2.5 MHz
 			INT: IRQ @ 1250 Hz ?
-		IO:      Z80 ports
+		IO:      Z80 ports, AY8910 ports for lamps
 		DISPLAY: 7-segment panels in both sizes
 		SOUND:	 2 x AY8910
  ************************************************************************************************/
@@ -72,7 +72,7 @@ static int PEYPER_m2sw(int col, int row) {
 }
 
 static READ_HANDLER(dip_r) {
-  return ~core_getDip(offset / 4);
+  return core_getDip(offset / 4);
 }
 
 static READ_HANDLER(sw0_r) {
@@ -86,15 +86,15 @@ static READ_HANDLER(sw_r) {
 // switch and display strobing done here
 static WRITE_HANDLER(col_w) {
   if ((data & 0x40) == 0x40) locals.swCol = data & 0x0f;
-  if ((data & 0x90) == 0x90) locals.dispCol = 0;
+  else if ((data & 0x90) == 0x90) locals.dispCol = 0;
 }
 
 static WRITE_HANDLER(disp_w) {
   locals.segments[15-locals.dispCol].w = core_bcd2seg7[data >> 4];
   locals.segments[31-locals.dispCol].w = core_bcd2seg7[data & 0x0f];
   // mapping various lamps (million, player up, game over, tilt) from segments data
-  if (locals.dispCol < 3) coreGlobals.tmpLampMatrix[12 + locals.dispCol] = data;
-  if (locals.dispCol > 7 && locals.dispCol < 11) coreGlobals.tmpLampMatrix[7 + locals.dispCol] = data;
+  if (locals.dispCol < 3) coreGlobals.tmpLampMatrix[8 + locals.dispCol] = data;
+  if (locals.dispCol > 7 && locals.dispCol < 11) coreGlobals.tmpLampMatrix[3 + locals.dispCol] = data;
   locals.dispCol = (locals.dispCol + 1) % 16;
 }
 
@@ -102,6 +102,10 @@ static WRITE_HANDLER(lamp_w) {
   coreGlobals.tmpLampMatrix[4 + offset / 4] = data;
   // mapping game enable lamp to solenoid 30 here
   locals.solenoids = (locals.solenoids & 0x00ffffff) | ((coreGlobals.tmpLampMatrix[6] & 0xe0) << 24);
+}
+
+static WRITE_HANDLER(lamp7_w) {
+  coreGlobals.tmpLampMatrix[7] = data;
 }
 
 // the right decoder provided, you could access up to 255 solenoids this way; I guess only 16 are used though
@@ -134,7 +138,7 @@ static MEMORY_READ_START(PEYPER_readmem)
   {0x6000,0x67ff, MRA_RAM},
 MEMORY_END
 
-// although the RAM is battery-backed, it seems not to store anything?
+// NVRAM works, but not always?
 static MEMORY_WRITE_START(PEYPER_writemem)
   {0x6000,0x67ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
 MEMORY_END
@@ -153,7 +157,8 @@ static PORT_WRITE_START(PEYPER_writeport)
   {0x08,0x08, ay8910_1_ctrl_w},
   {0x0a,0x0a, ay8910_1_data_w},
   {0x0c,0x0c, sol_w},
-  {0x10,0x2c, lamp_w}, // only 10, 14, 18, 1c, 20, 24, 28, 2c used
+  {0x10,0x18, lamp_w}, // only 10, 14, 18 used
+  {0x2c,0x2c, lamp7_w},
 PORT_END
 
 static MACHINE_INIT(PEYPER) {
