@@ -23,17 +23,27 @@ static void init_##name(void) { core_gameData = &name##GameData; }
 /*----------------------------------
 / Black Sheep Squadron (Astro game)
 /---------------------------------*/
-static const core_tLCDLayout dispBlkSheep[] = {
+INITGAME(blkshpsq,GEN_STMPU100,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST100,0)
+BY17_ROMSTARTx88(blkshpsq,"cpu_u2.716",CRC(272ad984) SHA1(3a6574762bd1db0a64da1de3bc875f3a3f1dfff6),
+                          "cpu_u6.716",CRC(432e9b9e) SHA1(292e509f50bc841f6e469c198fc82c2a9095f008))
+BY35_ROMEND
+#define input_ports_blkshpsq input_ports_st
+CORE_GAMEDEFNV(blkshpsq,"Black Sheep Squadron",1979,"Astro",by35_mST100,GAME_NO_SOUND)
+
+/*----------------------------------
+/ Unknown game and manufacturer
+/---------------------------------*/
+static const core_tLCDLayout dispUnknown[] = {
   {0, 0, 1,7,CORE_SEG87F},{0,16, 9,7,CORE_SEG87F},
   {2, 0,17,7,CORE_SEG87F},{2,16,25,7,CORE_SEG87F},
   {4, 0,33,7,CORE_SEG87}, {0}
 };
-INITGAME(blkshpsq,GEN_ASTRO,dispBlkSheep,FLIP_SW(FLIP_L),0,SNDBRD_ASTRO,0)
-ASTRO_ROMSTART88(blkshpsq,"cpu_u2.716",CRC(b9ac5204) SHA1(1ac4e336eb62c091e61e9b6b21a858e70ac9ab38),
+INITGAME(st_game,GEN_ASTRO,dispUnknown,FLIP_SW(FLIP_L),0,SNDBRD_ASTRO,0)
+ASTRO_ROMSTART88(st_game, "cpu_u2.716",CRC(b9ac5204) SHA1(1ac4e336eb62c091e61e9b6b21a858e70ac9ab38),
                           "cpu_u6.716",CRC(e16fbde1) SHA1(f7fe2f2ef9251792af1227f82dcc95239dd8baa1))
 BY35_ROMEND
-#define input_ports_blkshpsq input_ports_st
-CORE_GAMEDEFNV(blkshpsq,"Black Sheep Squadron",1979,"Astro",by35_mAstro,GAME_NOT_WORKING|GAME_NO_SOUND)
+#define input_ports_st_game input_ports_st
+CORE_GAMEDEFNV(st_game,"Unknown Game",198?,"Unknown Manufacturer",by35_mAstro,GAME_NOT_WORKING|GAME_NO_SOUND)
 
 /****************************************************/
 /* STERN MPU-100 (almost identical to Bally MPU-17) */

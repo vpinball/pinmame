@@ -75,6 +75,15 @@ S9_ROMEND
 #define input_ports_comet input_ports_s11
 CORE_GAMEDEF(comet, l4, "Comet (L-4)", 1985, "Williams", s9_mS9S,0)
 
+S9_ROMSTARTx4(comet,l5,"cpu_u20.l5",  CRC(d153d9ab) SHA1(0b97591b8ba35207b1427900486d69078ae122bc))
+S9S_SOUNDROM41111(     "cpu_u49.128", CRC(f1db0cbe) SHA1(59b7f36fb2003b90b288abeff56df62ce50f10c6),
+                       "spch_u4.732", CRC(d0215c49) SHA1(4f0925a826199b6e8baa5e7fbff5cde9e31d505b),
+                       "spch_u5.732", CRC(89f7ede5) SHA1(bbfbd991c9e005c2fa36d8458803b121f4933618),
+                       "spch_u6.732", CRC(6ba2aba6) SHA1(783b4e9b38db8677d91f86cb4805f0fa1ae8f856),
+                       "spch_u7.732", CRC(36545b22) SHA1(f4a026f3fa58dce81b439d76120a6769f4632955))
+S9_ROMEND
+CORE_CLONEDEF(comet,l5,l4,"Comet (L-5)", 1985, "Williams", s9_mS9S,0)
+
 /*--------------------
 / High Speed 01/86
 /--------------------*/
@@ -116,6 +125,22 @@ S11CS_SOUNDROM8(        "road_u4.l1",  CRC(4395b48f) SHA1(2325ce6ba7f6f92f884c30
 S11_ROMEND
 #define input_ports_rdkng input_ports_s11
 CORE_GAMEDEF(rdkng, l4, "Road Kings (L-4)", 1986, "Williams", s11_mS11XS,0)
+
+S11_ROMSTART48(rdkng,l1,"road_u26.l1", CRC(19abe96b) SHA1(d6c3b6dab328f23cc4506e4f56cd0beeb06fb3cb),
+                        "road_u27.l1", CRC(3dcad794) SHA1(0cf06f8e16d738f0bc0111e2e12351a26e2f02c6))
+S11XS_SOUNDROM88(       "road_u21.l1", CRC(f34efbf4) SHA1(cb5ffe9818994f4681e3492a5cd46f410d2e5353),
+                        "road_u22.l1", CRC(a9803804) SHA1(a400d4621c3f7a6e47546b2f33dc4920183a5a74))
+S11CS_SOUNDROM8(        "road_u4.l1",  CRC(4395b48f) SHA1(2325ce6ba7f6f92f884c302e6f053c31229dc774))
+S11_ROMEND
+CORE_CLONEDEF(rdkng,l1,l4,"Road Kings (L-1)", 1986, "Williams", s11_mS11XS,0)
+
+S11_ROMSTART48(rdkng,l3,"road_u26.l3", CRC(9bade45d) SHA1(c1791724761cdd1d863e12b02655c5fed8936162),
+                        "road_u27.l3", CRC(97b599dc) SHA1(18524d22a75b0569bb480d847cef8047ee51f91e))
+S11XS_SOUNDROM88(       "road_u21.l1", CRC(f34efbf4) SHA1(cb5ffe9818994f4681e3492a5cd46f410d2e5353),
+                        "road_u22.l1", CRC(a9803804) SHA1(a400d4621c3f7a6e47546b2f33dc4920183a5a74))
+S11CS_SOUNDROM8(        "road_u4.l1",  CRC(4395b48f) SHA1(2325ce6ba7f6f92f884c302e6f053c31229dc774))
+S11_ROMEND
+CORE_CLONEDEF(rdkng,l3,l4,"Road Kings (L-3)", 1986, "Williams", s11_mS11XS,0)
 
 /*--------------------
 / Pinbot 10/86
@@ -353,7 +378,16 @@ S11CS_SOUNDROM88(       "pfrc_u4.l2",  CRC(8f431529) SHA1(0f479990715a31fd860c00
                         "pfrc_u19.l1", CRC(abc4caeb) SHA1(6faef2de9a49a1015b4038ab18849de2f25dbded))
 S11_ROMEND
 #define input_ports_polic input_ports_s11
-CORE_GAMEDEF(polic,l4, "Police Force (L-4)", 1989, "Williams", s11_mS11BS,0)
+CORE_GAMEDEF(polic,l4, "Police Force (LA-4)", 1989, "Williams", s11_mS11BS,0)
+
+S11_ROMSTART48(polic,l3,"pfrc_u26.l4", CRC(1a1409e9) SHA1(775d35a22483bcf8c4b03841e0aca22b6504a48f),
+                        "pfrc_u27.lx3",CRC(ef5d4808) SHA1(89cf62640e39397899776ab1d132645a5eab9e0e))
+S11XS_SOUNDROM88(       "pfrc_u21.l1", CRC(7729afd3) SHA1(9cd2898a7a4203cf3b2dcd203e25cde5dd582ee7),
+                        "pfrc_u22.l1", CRC(40f5e6b2) SHA1(4af2e2658720b08d03d24c9d314a6e5074b2c747))
+S11CS_SOUNDROM88(       "pfrc_u4.l2",  CRC(8f431529) SHA1(0f479990715a31fd860c000a066cffb70da502c2),
+                        "pfrc_u19.l1", CRC(abc4caeb) SHA1(6faef2de9a49a1015b4038ab18849de2f25dbded))
+S11_ROMEND
+CORE_CLONEDEF(polic,l3,l4,"Police Force (LA-3)", 1989, "Williams", s11_mS11BS,0)
 
 /*-----------------------------
 / Transporter the Rescue 6/89

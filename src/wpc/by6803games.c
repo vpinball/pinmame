@@ -224,6 +224,17 @@ BY6803_ROMEND
 #define input_ports_esclwrld input_ports_by6803a
 CORE_GAMEDEFNV(esclwrld,"Escape from the Lost World",1987,"Bally",by_mBY6803_SDS,0)
 
+BY6803_ROMSTART44(esclwrlg,"u2_ger.128", CRC(0a6ab137) SHA1(0627b7c67d13f305f2287f3cfa023c8dd7721250),
+                           "u3_ger.128", CRC(26d8bfbb) SHA1(3b81fb0e736d14004bbbbb2edd682fdfc1b2c832))
+BYSD_SOUNDROM0000(         "u12.512",CRC(0c003473) SHA1(8ada2aa546a6499c5e2b5eb45a1975b8285d25f9),
+                           "u11.512",CRC(360f6658) SHA1(c0346952dcd33bbcf4c43c51cde5433a099a7a5d),
+                           "u14.512",CRC(0b92afff) SHA1(78f51989e74ced9e0a81c4e18d5abad71de01faf),
+                           "u13.512",CRC(b056842e) SHA1(7c67e5d69235a784b9c38cb31302d206278a3814))
+BY6803_ROMEND
+#define init_esclwrlg init_esclwrld
+#define input_ports_esclwrlg input_ports_esclwrld
+CORE_CLONEDEFNV(esclwrlg,esclwrld,"Escape from the Lost World (German)",1987,"Bally",by_mBY6803_SDS,0)
+
 /*------------------------------------
 / Blackwater 100 (6803-0H07: 03/88)
 /------------------------------------*/
