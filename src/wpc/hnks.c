@@ -95,11 +95,11 @@ void start_samples(void)
 static WRITE_HANDLER(pia0a_w)
 {
   // logerror("pia0a_w: %02x\n", data);
-  int samples = (data&0xf0)>>4;
-  if ( samples==hnks_locals.actSamples )
+  int samp = (data&0xf0)>>4;
+  if ( samp == hnks_locals.actSamples )
 	  return;
 
-  hnks_locals.actSamples = samples;
+  hnks_locals.actSamples = samp;
   // logerror("samples: %02x\n", samples);
   start_samples();
 }
@@ -174,7 +174,6 @@ static WRITE_HANDLER(hnks_data_w)
   hnks_locals.pia0a_r = data&0x0f;
 }
 
-static int first = 0;
 /* sound strobe */
 static WRITE_HANDLER(hnks_ctrl_w)
 {
