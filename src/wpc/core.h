@@ -155,7 +155,8 @@
 #define CORE_SEG87F   6 // 7  segments, forced comma every three
 #define CORE_SEG7S    7 // 7  segements, small
 #define CORE_DMD      8 // DMD Display
-#define CORE_VIDEO    9 // VIDEO displ
+#define CORE_DMD2     9 // Another DMD Display
+#define CORE_VIDEO   10 // VIDEO displ
 
 #define CORE_SEGHIBIT 0x10
 #define CORE_SEGREV   0x20
@@ -181,6 +182,9 @@ typedef UINT8 tDMDDot[DMD_MAXY+2][DMD_MAXX+2];
 #define DISP_SEG_CREDIT(no1,no2,type) {2,2,no1,1,type},{2,4,no2,1,type}
 #define DISP_SEG_BALLS(no1,no2,type)  {2,8,no1,1,type},{2,10,no2,1,type}
 /* display layout structure */
+/* Don't know how the LCD got in there. Should have been LED but now it
+   handles all kinds of displays so we call it dispLayout.
+   Keep the typedef of core_tLCDLayout for some time. */
 struct core_dispLayout {
   UINT8  top, left, start, length;
   UINT16 type;
@@ -189,9 +193,6 @@ struct core_dispLayout {
 typedef struct core_dispLayout core_tLCDLayout, *core_ptLCDLayout;
 
 extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *cliprect, tDMDDot dotCol, const struct core_dispLayout *layout);
-/* Generic display handler. requires LCD layout in GameData structure */
-extern VIDEO_UPDATE(core_gen);
-
 
 /*----------------------
 / WPC driver constants

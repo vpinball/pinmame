@@ -204,7 +204,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 /  Generic segement display handler
 /------------------------------------*/
 static VIDEO_UPDATE(core_gen) {
-  struct core_dispLayout *layout = core_gameData->lcdLayout;
+  const struct core_dispLayout *layout = core_gameData->lcdLayout;
   if (layout == NULL) { DBGLOG(("gen_refresh without LCD layout\n")); return; }
   for (; layout->length; layout += 1) {
     if (layout->update) if (!layout->update(bitmap,cliprect,layout)) continue;
@@ -991,10 +991,10 @@ static UINT32 core_initDisplaySize(const struct core_dispLayout *layout) {
   if (layout) {
     while (layout->length) {
       int tmp;
-      if (layout->type == CORE_DMD) tmp = (layout->left + layout->length) * locals.segData[CORE_DMD].cols + 1;
+      if (layout->type >= CORE_DMD) tmp = (layout->left + layout->length) * locals.segData[CORE_DMD].cols + 1;
       else tmp = (layout->left + 2*layout->length) * (locals.segData[layout->type & 0x07].cols + 1) / 2;
       if (tmp > maxX) maxX = tmp;
-      if (layout->type == CORE_DMD) tmp = (layout->top  + layout->start)  * locals.segData[CORE_DMD].rows + 1;
+      if (layout->type >= CORE_DMD) tmp = (layout->top  + layout->start)  * locals.segData[CORE_DMD].rows + 1;
       else tmp = (layout->top + 2) * (locals.segData[0].rows + 1) / 2;
       if (tmp > maxY) maxY = tmp;
       layout += 1;
