@@ -570,6 +570,18 @@ DRIVER  (harl,g13)      //Whitestar: 10/99 Harley Davidson (1.03 Germany)
 DRIVER  (harl,i13)      //Whitestar: 10/99 Harley Davidson (1.03 Italy)
 DRIVER  (harl,l13)      //Whitestar: 10/99 Harley Davidson (1.03 Spain)
 
+// ----------------
+// SONIC
+// ----------------
+						// Night Fever (1979)
+						// Storm (1979)
+						// Odin De Luxe (1985)
+						// Gamatron (1986)
+						// Solar Wars (1986)
+						// Star Wars (1987)
+DRIVERNV(poleposn)		// Pole Position (1987)
+						// Hang-On (1988)
+
 // ---------------
 // SPINBALL GAMES
 // ---------------

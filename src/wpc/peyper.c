@@ -90,11 +90,11 @@ static WRITE_HANDLER(col_w) {
 }
 
 static WRITE_HANDLER(disp_w) {
+  static int colMap[16] = { 8, 10, 12, 0, 0, 0, 0, 0, 9, 11, 13 };
   locals.segments[15-locals.dispCol].w = core_bcd2seg7[data >> 4];
   locals.segments[31-locals.dispCol].w = core_bcd2seg7[data & 0x0f];
   // mapping various lamps (million, player up, game over, tilt) from segments data
-  if (locals.dispCol < 3) coreGlobals.tmpLampMatrix[8 + locals.dispCol] = data;
-  if (locals.dispCol > 7 && locals.dispCol < 11) coreGlobals.tmpLampMatrix[3 + locals.dispCol] = data;
+  if (colMap[locals.dispCol]) coreGlobals.tmpLampMatrix[colMap[locals.dispCol]] = data;
   locals.dispCol = (locals.dispCol + 1) % 16;
 }
 
