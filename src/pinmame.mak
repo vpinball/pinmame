@@ -9,14 +9,16 @@
 # src/unzip.c
 
 MAMEVER=3716
-NEWSTUFF=1
 
-ifdef NEWSTUFF
+#MAMEVER > 3716
+#DEFS += -DBMTYPE=UINT16
+#DEFS += -DM65C02_INT_IRQ=M65C02_IRQ_LINE
+#DEFS += -DM65C02_INT_NMI=INTERRUPT_NMI
+#else
+DEFS += -DBMTYPE=UINT8
+DEFS += -Dmame_bitmap=osd_bitmap
+
 PINMAMESRC=wpc
-else
-PINMAMESRC=wpc10
-endif
-
 #
 # enable PinMAME extension (sound recording, command line switches)
 # requires patches in the following MAME files:
@@ -63,6 +65,7 @@ endif
 ifdef PINMAME_EXIT
 DEFS += -DPINMAME_EXIT
 endif
+
 #
 # Common stuff
 #
@@ -83,15 +86,11 @@ DRVLIBS += $(PINOBJ)/s7.o
 DRVLIBS += $(PINOBJ)/s6.o $(PINOBJ)/s67s.o
 DRVLIBS += $(PINOBJ)/s4.o
 DRVLIBS += $(PINOBJ)/de.o $(PINOBJ)/de1sound.o
-DRVLIBS += $(PINOBJ)/de2.o
-DRVLIBS += $(PINOBJ)/de3.o
+DRVLIBS += $(PINOBJ)/de2.o $(PINOBJ)/de3.o $(PINOBJ)/dedmd.o
 DRVLIBS += $(PINOBJ)/gts3.o
 DRVLIBS += $(PINOBJ)/se.o
 DRVLIBS += $(PINOBJ)/s80.o $(PINOBJ)/s80sound0.o $(PINOBJ)/s80sound1.o
 DRVLIBS += $(PINOBJ)/by35.o $(PINOBJ)/by35snd.o
-ifdef NEWSTUFF
-DRVLIBS += $(PINOBJ)/wpcdmd.o  $(PINOBJ)/dedmd.o
-endif
 #
 # Games
 #

@@ -10,7 +10,7 @@
 
  Changes:
 
- 280201 - First version. 
+ 280201 - First version.
 
  Read PZ.c or FH.c if you like more help.
 
@@ -44,7 +44,7 @@
 /  Local functions
 /-------------------*/
 static void init_tmfnt(void);
-static void tmfnt_drawMech(unsigned char **line);
+static void tmfnt_drawMech(BMTYPE **line);
 static int  tmfnt_handleBallState(sim_tBallStatus *ball, int *inports);
 
 /*--------------------------
@@ -141,7 +141,7 @@ S7_INPUT_PORTS_END
 enum {stOuthole=SIM_FIRSTSTATE, stShooter, stBallLane, stNotEnough,
      stDrain, stRightOutlane, stLeftOutlane, stRightInlane, stLeftInlane,
      stLeftSling, stRightSling, stLeftJet, stRightJet, stBottomJet, stLLStandup, stLRStandup, stULStandup, stUTRStandup, stUMRStandup, stUBRStandup,
-     stLeftLoop, stLeftLoop2, stRightLoop, stRightLoop2, 
+     stLeftLoop, stLeftLoop2, stRightLoop, stRightLoop2,
      stFantasy, stfAntasy, stfaNtasy, stfanTasy, stfantAsy, stfantaSy, stfantasY, stRampTarget, stLeftLane,
      st1, st2, st3, st4, st5, stLJet, stRJet, stBJet
 };
@@ -212,7 +212,7 @@ static int tmfnt_handleBallState(sim_tBallStatus *ball, int *inports) {
 	{
 
 	/* Ball in Shooter Lane */
-    	case stBallLane:  
+    	case stBallLane:
 		if (ball->speed < 7)
 			return setState(stNotEnough,7);
 		if (ball->speed < 15)
@@ -278,7 +278,7 @@ static sim_tInportData tmfnt_inportData[] = {
 /*--------------------
   Drawing information
   --------------------*/
-static void tmfnt_drawMech(unsigned char **line) {
+static void tmfnt_drawMech(BMTYPE **line) {
 
 /* Help */
 

@@ -30,7 +30,7 @@
 /  Local functions
 /-------------------*/
 static int  congo_handleBallState(sim_tBallStatus *ball, int *inports);
-static void congo_drawStatic(unsigned char **line);
+static void congo_drawStatic(BMTYPE **line);
 static void init_congo(void);
 
 /*-----------------------
@@ -38,7 +38,7 @@ static void init_congo(void);
  ------------------------*/
 /* Uncomment if you wish to use locals. type variables */
 //static struct {
-//  int 
+//  int
 //} locals;
 
 /*--------------------------
@@ -225,7 +225,7 @@ static sim_tInportData congo_inportData[] = {
 /*--------------------
   Drawing information
   --------------------*/
-  static void congo_drawStatic(unsigned char **line) {
+  static void congo_drawStatic(BMTYPE **line) {
 
 /* Help */
 
@@ -245,7 +245,7 @@ static sim_tInportData congo_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(congo,21,"cg_g11.2_1",0x80000,0x5d8435bf) 
+WPC_ROMSTART(congo,21,"cg_g11.2_1",0x80000,0x5d8435bf)
 DCS_SOUNDROM3m("cgs2v1_1.rom",0x2b7637ae,
                "cgs3v1_0.rom",0x6cfd9fe0,
                "cgs4v1_0.rom",0x2a1980e7)

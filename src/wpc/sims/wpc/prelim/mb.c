@@ -30,10 +30,10 @@
 /  Local functions
 /-------------------*/
 static int  mb_handleBallState(sim_tBallStatus *ball, int *inports);
-static void mb_drawStatic(unsigned char **line);
+static void mb_drawStatic(BMTYPE **line);
 static void init_mb(void);
 static void mb_handleMech(int mech);
-static void mb_drawMech(unsigned char **line);
+static void mb_drawMech(BMTYPE **line);
 static int mb_getMech(int mechNo);
 
 
@@ -232,7 +232,7 @@ static sim_tInportData mb_inportData[] = {
 /*--------------------
   Drawing information
   --------------------*/
-  static void mb_drawStatic(unsigned char **line) {
+  static void mb_drawStatic(BMTYPE **line) {
 
 /* Help */
 
@@ -331,17 +331,17 @@ static mech_tInitData mb_mech[] = {{
   {{78, 0, 5},{77, 18, 23},{76,36,51},{75,64,69},{74,85,89}}
 }};
 
-static void mb_drawMech(unsigned char **line) {
+static void mb_drawMech(BMTYPE **line) {
   core_textOutf(50, 0,BLACK,"Bank: %3d", mech_getPos(0));
   core_textOutf(50,10,BLACK,"Frank: %3d",mech_getPos(1));
   core_textOutf(50,20,BLACK,"Drac: %3d", mech_getPos(2));
 }
 static void mb_handleMech(int mech) {
   /*-- up/dn bank --*/
-  if (mech & 0x01) mech_update(0);
+  //if (mech & 0x01) mech_update(0);
   /*-- Frankenstein Table --*/
-  if (mech & 0x02) mech_update(1);
-  if (mech & 0x04) mech_update(2);
+  //if (mech & 0x02) mech_update(1);
+  //if (mech & 0x04) mech_update(2);
 }
 
 static int mb_getMech(int mechNo) {

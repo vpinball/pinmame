@@ -42,8 +42,8 @@
 /-------------------*/
 static int  cftbl_handleBallState(sim_tBallStatus *ball, int *inports);
 static void cftbl_handleMech(int mech);
-static void cftbl_drawMech(unsigned char **line);
-static void cftbl_drawStatic(unsigned char **line);
+static void cftbl_drawMech(BMTYPE **line);
+static void cftbl_drawStatic(BMTYPE **line);
 static void init_cftbl(void);
 
 /*-----------------------
@@ -251,7 +251,7 @@ static int cftbl_handleBallState(sim_tBallStatus *ball, int *inports) {
 	{
 
 	/* Ball in Shooter Lane */
-    	case stBallLane:  
+    	case stBallLane:
 		if (ball->speed < 15)
 			return setState(stNotEnough,15);	/*Ball not plunged hard enough*/
 		if (ball->speed < 22)
@@ -330,11 +330,11 @@ static sim_tInportData cftbl_inportData[] = {
 /*--------------------
   Drawing information
   --------------------*/
-  static void cftbl_drawMech(unsigned char **line) {
+  static void cftbl_drawMech(BMTYPE **line) {
   core_textOutf(30, 10,BLACK,"Creature Ramp: %-6s", core_getSw(swRampUpDown) ? "Down":"Up");
 }
 /* Help */
-  static void cftbl_drawStatic(unsigned char **line) {
+  static void cftbl_drawStatic(BMTYPE **line) {
 
   core_textOutf(30, 40,BLACK,"Help on this Simulator:");
   core_textOutf(30, 50,BLACK,"L/R Shift+I = L/R Inlane");
@@ -354,8 +354,8 @@ static sim_tInportData cftbl_inportData[] = {
 /* Solenoid-to-sample handling */
 static wpc_tSamSolMap cftbl_samsolmap[] = {
  /*Channel #0*/
- {sKnocker,0,SAM_KNOCKER}, {sTrough,0,SAM_BALLREL}, 
- {sOutHole,0,SAM_OUTHOLE}, 
+ {sKnocker,0,SAM_KNOCKER}, {sTrough,0,SAM_BALLREL},
+ {sOutHole,0,SAM_OUTHOLE},
 
  /*Channel #1*/
  {sLeftJet,1,SAM_JET1}, {sRightJet,1,SAM_JET2},

@@ -24,8 +24,8 @@ static int tz_getSol(int solNo);
 static void tz_handleMech(int mech);
 static int tz_getMech(int mechNo);
 static void tz_initSim(sim_tBallStatus *balls, int *inports, int noOfBalls);
-static void tz_drawMech(unsigned char **line);
-static void tz_drawStatic(unsigned char **line);
+static void tz_drawMech(BMTYPE **line);
+static void tz_drawStatic(BMTYPE **line);
 static void init_tz(void);
 
 /*-----------------------
@@ -402,14 +402,14 @@ static core_tLampDisplay tz_lampPos = {
 }
 };
 
-static void tz_drawMech(unsigned char **line) {
+static void tz_drawMech(BMTYPE **line) {
   core_textOutf(50, 0,BLACK,"%2d:%02d",locals.clockTick/(4*TZ_CLOCKTICKS),
                           (locals.clockTick*15/TZ_CLOCKTICKS) % 60);
   core_textOutf(50,10,BLACK,"Gum:%3d",locals.gumPos);
 }
   /* Help */
 
-static void tz_drawStatic(unsigned char **line) {
+static void tz_drawStatic(BMTYPE **line) {
   core_textOutf(30, 40,BLACK,"Help:");
   core_textOutf(30, 50,BLACK,"L/R Shift+S = L/R Loop");
   core_textOutf(30, 60,BLACK,"L/R Shift+R = L/R Rmp");

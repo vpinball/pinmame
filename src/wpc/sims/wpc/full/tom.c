@@ -54,8 +54,8 @@ static int  tom_handleBallState(sim_tBallStatus *ball, int *inports);
 static void tom_handleMech(int mech);
 static void tom_initSim(sim_tBallStatus *balls, int *inports, int noOfBalls);
 static void init_tom(void);
-static void tom_drawMech(unsigned char **line);
-static void tom_drawStatic(unsigned char **line);
+static void tom_drawMech(BMTYPE **line);
+static void tom_drawStatic(BMTYPE **line);
 static int tom_getMech(int mechNo);
 /*-----------------------
   local static variables
@@ -204,10 +204,10 @@ WPC_INPUT_PORTS_END
 /  Ball state handling
 /----------------------*/
 enum {stTrough1=SIM_FIRSTSTATE, stTrough2, stTrough3, stTrough4, stTroughJAM, stDrain, stDraining,
-      stShooter, stBallLane, stNotEnough, 
+      stShooter, stBallLane, stNotEnough,
 	  stLeftOutlaneTop, stLeftOutlane, stOnLeftMagnet,
 	  stRightOutlaneTop, stRightOutlane, stOnRightMagnet,
-	  stLeftInlane, stRightInlane,  
+	  stLeftInlane, stRightInlane,
 	  stLeftSling, stRightSling, stLeftJet, stRightJet, stBottomJet,
 
 	  stTrunkHit, stGrabbedByTrunk,
@@ -217,7 +217,7 @@ enum {stTrough1=SIM_FIRSTSTATE, stTrough2, stTrough3, stTrough4, stTroughJAM, st
 	  stCRampEnter, stCRampExit, stLRamp,
 	  stRRamp, stRRampEnter, stRRampMiddle, stRRampExit, stUnderSpiritRing, stSpiritRing, stCHabit,
 
-	  stLInnerLoopEnter, stLInnerLoopExit, stLInnerLoopSpinner, 
+	  stLInnerLoopEnter, stLInnerLoopExit, stLInnerLoopSpinner,
 	  stRInnerLoopSpinner, stRInnerLoopEnter, stRInnerLoopExit,
 
 	  stLOuterLoopEnter, stLOuterLoopTop, stLOuterLoopRight, stLOuterLoopExit, stRHabit,
@@ -245,7 +245,7 @@ static sim_tState tom_stateDef[] = {
   {"Shooter",			1,swShooter,	 sShooterRel,	stBallLane,	0,	0,	0,	SIM_STNOTEXCL|SIM_STSHOOT},
   {"Ball Lane",			1,0,			 0,		0,			2,	0,	0,	SIM_STNOTEXCL},
   {"No Strength",		1,swShooter,	 0,		stShooter,	3},
-  
+
 /* Inlanes, Slingshots, Jets */
   {"Left Outlane Top",	1,swLDrain,		 0,		0,			0},
   {"Left Outlane",		1,swLeftOutlane, 0,		stDrain,	15},
@@ -325,7 +325,7 @@ static sim_tState tom_stateDef[] = {
 static int tom_handleBallState(sim_tBallStatus *ball, int *inports) {
 	switch (ball->state) {
 	
-	case stBallLane:  
+	case stBallLane:
 		if(ball->speed < 25)
 			return setState(stNotEnough,25);	/*Ball not plunged hard enough*/
 
@@ -341,7 +341,7 @@ static int tom_handleBallState(sim_tBallStatus *ball, int *inports) {
 		return setState(stFree,1);
 
 	case stGrabbedByTrunk:
-		if (!locals.magnetTicks) 
+		if (!locals.magnetTicks)
 			return setState(stFree,1);
 		if (!core_getSw(swCubePos2))
 			return setState(stRearTrunkEntrance,1);
@@ -384,7 +384,7 @@ static int tom_handleBallState(sim_tBallStatus *ball, int *inports) {
 		break;
 
     case stCapturedHit:
-        locals.hitCapturedBall = 1;   
+        locals.hitCapturedBall = 1;
       	return setState(stFree,1);
 
 	case stCapturedRest:
@@ -478,7 +478,7 @@ static core_tLampDisplay tom_lampPos = {
 
 static wpc_tSamSolMap tom_SamSolMap[] = {
  /*Channel #0*/
- {sKnocker,0,SAM_KNOCKER}, 
+ {sKnocker,0,SAM_KNOCKER},
  {sBallTrough,0,SAM_BALLREL},
  {sCLoopPost,0,SAM_SOLENOID_ON}, {sCLoopPost,0,SAM_SOLENOID_OFF, WPCSAM_F_ONOFF},
 
@@ -488,18 +488,18 @@ static wpc_tSamSolMap tom_SamSolMap[] = {
  {sBottomJet,1,SAM_JET1},
 
  /*Channel #2*/
- {sTrapDoorUp,2,SAM_FLAPOPEN}, {sTrapDoorHold,2,SAM_FLAPCLOSE,WPCSAM_F_ONOFF}, 
+ {sTrapDoorUp,2,SAM_FLAPOPEN}, {sTrapDoorHold,2,SAM_FLAPCLOSE,WPCSAM_F_ONOFF},
  {sBoxClockwise,2,SAM_MOTOR_1, WPCSAM_F_CONT}, {sBoxCounterClockwise,2,SAM_MOTOR_1, WPCSAM_F_CONT},
  {sTDiverterPost,2,SAM_SOLENOID_ON}, {sTDiverterPost,2,SAM_SOLENOID_OFF,WPCSAM_F_ONOFF},
- {sMiddleJet,2,SAM_JET2}, 
+ {sMiddleJet,2,SAM_JET2},
 
  /*Channel #3*/
- {sSubBallRelease, 3, SAM_SOLENOID}, 
+ {sSubBallRelease, 3, SAM_SOLENOID},
  {sTopKickout, 3, SAM_SOLENOID},
  {sTopJet,3,SAM_JET3},{-1}
 };
 
-static void tom_drawMech(unsigned char **line) {
+static void tom_drawMech(BMTYPE **line) {
   core_textOutf(30, 0,BLACK,"Trunk Pos : %-3d", locals.trunkPos);
   if (!core_getSw(swCubePos1))
 	core_textOutf(30,10,BLACK,"Trunk Face: Closed ");
@@ -520,7 +520,7 @@ static void tom_drawMech(unsigned char **line) {
 }
 /* Help */
 
-static void tom_drawStatic(unsigned char **line) {
+static void tom_drawStatic(BMTYPE **line) {
   core_textOutf(30, 80,BLACK,"Help on this Simulator:");
   core_textOutf(30, 90,BLACK,"L/R Shift+- = L/R Slingshot");
   core_textOutf(30,100,BLACK,"L/R Shift+R = L/R Ramps (Trap Door)");

@@ -7,7 +7,7 @@
  Known Issues/Problems with this Simulator:
 
  None.
-  
+
  Thanks goes to Steve Ellenoff for his lamp matrix designer program.
 
  Read PZ.c or FH.c if you like more help.
@@ -43,8 +43,8 @@
 /-------------------*/
 static int  drac_handleBallState(sim_tBallStatus *ball, int *inports);
 static void drac_handleMech(int mech);
-static void drac_drawMech(unsigned char **line);
-static void drac_drawStatic(unsigned char **line);
+static void drac_drawMech(BMTYPE **line);
+static void drac_drawStatic(BMTYPE **line);
 static void init_drac(void);
 
 /*-----------------------
@@ -233,7 +233,7 @@ static sim_tState drac_stateDef[] = {
   /*Line 3*/
   {"Under Shoot R.",	1,swUnderShootR, 0,		stRGate,	5},
   {"Right Gate",	1,swBallOnMagnet,sRGate,	stMagnet,	0},
-  {"Mist Magnet",	1,0,		 0,		0,		0},  
+  {"Mist Magnet",	1,0,		 0,		0,		0},
   {"Left Gate",		1,swMagLPocket,	 sLGate,	stMagnet,	0},
 
   /*Line 4*/
@@ -246,7 +246,7 @@ static sim_tState drac_stateDef[] = {
   {"Top Mid Lane",	1,swTopMLane,	 0,		stFree,		2},
   {"Top Right Lane",	1,swTopRLane,	 0,		stFree,		2},
   {"Top Mid Lane",	1,swTopMLane,	 0,		stLJet,		7},
-  
+
   /*Line 5*/
   {"Bottom R. Hole",	1,swCastlePop,	 sCastlePopper, stFree,		0},
   {"L. Bottom Tgt.",	1,swLBankB,	 0,		stFree,		2},
@@ -423,14 +423,14 @@ static core_tLampDisplay drac_lampPos = {
 }
 };
 
-  static void drac_drawMech(unsigned char **line) {
+  static void drac_drawMech(BMTYPE **line) {
   core_textOutf(30, 10,BLACK,"Shooter Ramp : %-6s", core_getSol(sShooterRamp) ? "Up":"Down");
   core_textOutf(30, 20,BLACK,"Coffin Ramp  : %-6s", core_getSw(swRRampUp) ? "Up":"Down");
   core_textOutf(30, 30,BLACK,"Drop Target  : %-6s", core_getSw(swLDrop) ? "Down":"Up");
 //  core_textOutf(30, 40,BLACK,"Ramp Diverter: %-6s", core_getSw(swDiverter) ? "On":"Off");
 }
 /* Help */
-  static void drac_drawStatic(unsigned char **line) {
+  static void drac_drawStatic(BMTYPE **line) {
 
   core_textOutf(30, 60,BLACK,"Help on this Simulator:");
   core_textOutf(30, 70,BLACK,"L/R Shift+R = L/R Ramp");
@@ -449,7 +449,7 @@ static core_tLampDisplay drac_lampPos = {
 /* Solenoid-to-sample handling */
 static wpc_tSamSolMap drac_samsolmap[] = {
  /*Channel #0*/
- {sKnocker,0,SAM_KNOCKER}, {sTrough,0,SAM_BALLREL}, 
+ {sKnocker,0,SAM_KNOCKER}, {sTrough,0,SAM_BALLREL},
  {sOutHole,0,SAM_OUTHOLE}, {sShooterRamp,0,SAM_FLAPOPEN},
  {sShooterRamp,0,SAM_SOLENOID_OFF,WPCSAM_F_ONOFF},
 
@@ -465,7 +465,7 @@ F*CKING diverter... it flicks so the sample gets played a lot of times!
  /*Channel #2*/
  {sShooter,2,SAM_SOLENOID},  {sLeftSling,2,SAM_LSLING},
  {sRightSling,2,SAM_RSLING},  {sCoffinPopper,2,SAM_POPPER},
- 
+
  /*Channel #3*/
  {sCastlePopper,3,SAM_POPPER}, {sRRampUp,3,SAM_FLAPOPEN},
  {sRRampDown,3,SAM_FLAPCLOSE}, {sLDrop,3,SAM_SOLENOID_ON},

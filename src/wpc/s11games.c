@@ -11,7 +11,7 @@
 Issues:
 Grand Lizard: ROM missing
 Road Kings: Main CPU
--Jokerz: No soundboard
+Jokerz: No soundboard
 Pool: Sound loops on startup
 Police: Display mess (don't know how it should look)
 */
@@ -30,8 +30,8 @@ static core_tLCDLayout dispSshtl[] = { \
 	{  0, 0,17,7, CORE_SEG87},
 	{  2, 0,25,7, CORE_SEG87},
 	{  4, 0, 1,7, CORE_SEG87}, { 4, 26,9,7,CORE_SEG87},
-	{  5,16, 0,1, CORE_SEG7},{5,18, 8,1,CORE_SEG7},
-	{  5,21,16,1, CORE_SEG7},{5,23,24,1,CORE_SEG7},{0}
+	{  5,18, 0,1, CORE_SEG7},{5,20, 8,1,CORE_SEG7},
+	{  5,23,16,1, CORE_SEG7},{5,25,24,1,CORE_SEG7},{0}
 };
 static core_tGameData sshtlGameData = {
   GEN_S9, dispSshtl,
@@ -68,13 +68,40 @@ S9_ROMEND
 CORE_GAMEDEF(sorcr, l1, "Sorcerer (L-1)", 1985, "Williams", s9_mS9S,0)
 
 /*--------------------
+/ Pennant Fever
+/--------------------*/
+static core_tLCDLayout dispPfever[] = { \
+  { 0, 0,17, 3, CORE_SEG7}, { 0, 8,21, 3, CORE_SEG7}, { 0,16,12, 4, CORE_SEG7},
+  { 2, 2, 0, 1, CORE_SEG7},  { 2, 4, 8, 1, CORE_SEG7},
+  { 2, 8,16, 1, CORE_SEG7},  { 2,10,24, 1, CORE_SEG7},
+  { 4, 4,29, 1, CORE_SEG7},  { 4, 8,31, 1, CORE_SEG7},
+  {0}
+};
+static core_tGameData PfevrGameData = {
+  GEN_S9, dispPfever,
+  {0},
+  NULL,
+  {{0}},
+  {FLIP_SW(FLIP_L)}
+};
+static void init_pfevr(void) {
+  core_gameData = &PfevrGameData;
+}
+S11_INPUT_PORTS_START(pfevr, 1) S11_INPUT_PORTS_END
+S9_ROMSTART12(pfevr,p3,"cpu_u19.732", 0x03796c6d,
+                       "cpu_u20.764", 0x3a3acb39)
+S9S_SOUNDROM4("cpu_u49.128", 0xb0161712)
+S9_ROMEND
+CORE_GAMEDEF(pfevr, p3, "Pennant Fever Baseball (P-3)", 1984, "Williams", s9_mS9S,GAME_IMPERFECT_SOUND)
+
+/*--------------------
 / Comet (S9) 06/85
 /--------------------*/
 static core_tLCDLayout dispComet[] = { \
   {  0, 0,17, 7, CORE_SEG87}, {3,  0,25,7,CORE_SEG87},
-  {  5,18, 1, 7, CORE_SEG87}, {8, 18, 9,7,CORE_SEG87},
-  {  7, 3,16, 1, CORE_SEG7 }, {7,  5,24,1,CORE_SEG7},
-  {  7, 8, 0, 1, CORE_SEG7 }, {7, 10, 8,1,CORE_SEG7}, {0}
+  {  0,18, 1, 7, CORE_SEG87}, {3,18, 9,7,CORE_SEG87},
+  {  6, 3,16, 1, CORE_SEG7 }, {6, 5,24,1,CORE_SEG7},
+  {  6, 8, 0, 1, CORE_SEG7 }, {6,10, 8,1,CORE_SEG7}, {0}
 };
 static core_tGameData cometGameData = {
   GEN_S9, dispComet,
@@ -101,10 +128,10 @@ CORE_GAMEDEF(comet, l4, "Comet (L-4)", 1985, "Williams", s9_mS9S,0)
 / High Speed 01/86
 /--------------------*/
 static core_tLCDLayout dispHS[] = { \
-  { 0,  0, 1, 7, CORE_SEG16}, { 0, 18, 9,7,CORE_SEG16},
-  { 3,  0,17, 7, CORE_SEG87}, { 3, 18,25,7,CORE_SEG87},
-  { 5,  5,16, 1, CORE_SEG7 }, { 5,  7,24,1,CORE_SEG7},
-  { 5, 10, 0, 1, CORE_SEG7H}, { 5, 12, 8,1,CORE_SEG7H}, {0}
+  { 0,  0, 1, 7, CORE_SEG16}, { 0, 16, 9,7,CORE_SEG16},
+  { 3,  0,17, 7, CORE_SEG8}, { 3, 16,25,7,CORE_SEG8},
+  { 6,  5,16, 1, CORE_SEG7 }, { 6,  7,24,1,CORE_SEG7},
+  { 6, 10, 0, 1, CORE_SEG7H}, { 6, 12, 8,1,CORE_SEG7H}, {0}
 };
 static core_tGameData hsGameData = {
   GEN_S11, dispHS,
@@ -170,7 +197,8 @@ S11_ROMSTART48(pb,l5,"pbot_u26.l5", 0xdaa0c8e4,
                      "pbot_u27.l5", 0xe625d6ce)
 S11S_SOUNDROM88(     "pbot_u21.l1", 0x3eab88d9,
                      "pbot_u22.l1", 0xf8f7c965)
-S11CS_SOUNDROM8(     "pbot_u4.l1",  0xde5926bd)
+S11CS_SOUNDROM88(    "pbot_u4.l1",  0xde5926bd,
+                     "pbot_u19.l1", 0x40eb4e9f)
 S11_ROMEND
 
 CORE_GAMEDEF(pb, l5, "Pinbot (L-5)", 1987, "Williams", s11_mS11AS,0)
@@ -334,9 +362,9 @@ CORE_CLONEDEF(taxi , l3, l4, "Taxi (Marylin) (L-3)", 1988, "Williams", s11_mS11B
 INITGAME(jokrz, GEN_S11B_3, s11_dispS11b_3,12, FLIP_SW(FLIP_L),3/*?*/)
 S11_ROMSTART48(jokrz,l6,"jokeru26.l6", 0xc748c1ba,
                         "jokeru27.l6", 0x612d0ea7)
-S11B3S_SOUNDROM88(      "jokeru21.l1", 0x9e2be4f6,
-                        "jokeru22.l1", 0x2f67160c)
-/*                      "jokeru5.l2" , 0x11111111) */
+S11B3S_SOUNDROM881(      "jokeru21.l1", 0x9e2be4f6,
+                        "jokeru22.l1", 0x2f67160c,
+                        "jokeru5.l2" , 0xe9dc0095)
 S11_ROMEND
 
 CORE_GAMEDEF(jokrz, l6, "Jokerz (L-6)", 1989, "Williams", s11_mS11B_3S,GAME_IMPERFECT_SOUND)
@@ -386,7 +414,7 @@ CORE_GAMEDEF(bk2k, l4, "Black Knight 2000 (L-4)", 1989, "Williams", s11_mS11B_2S
 static core_tLCDLayout dispPolic[] = {
   { 0,8,16, 8,CORE_SEG8 },
   { 2,0, 0,16,CORE_SEG16 },
-  { 4,0,16,16,CORE_SEG8H}
+  { 4,0,16,16,CORE_SEG8H},{0}
 };
 INITGAME(polic,GEN_S11B_2, dispPolic, 12, FLIP_SW(FLIP_L),3/*?*/)
 S11_ROMSTART48(polic,l4,"pfrc_u26.l4", 0x1a1409e9,
@@ -430,7 +458,7 @@ static void bcats_handleMech(int mech) {
   }
   core_setSwSeq(44,wheelPos < 3);
 }
-static void bcats_drawMech(unsigned char **line) {
+static void bcats_drawMech(BMTYPE **line) {
   core_textOutf(50, 0,BLACK,"wheel:%3d", wheelPos);
 }
 
@@ -479,7 +507,7 @@ CORE_GAMEDEF(mousn,l4, "Mousin' Around (L-4)", 1989, "Bally", s11_mS11B_2S,0)
 /*-----------------------
 / Whirlwind 4/90
 /-----------------------*/
-INITGAME(whirl,GEN_S11B_2,s11_dispS11b_2,12, FLIP_SW(FLIP_L),3/*?*/)
+INITGAME(whirl,GEN_S11B_2x,s11_dispS11b_2,12, FLIP_SWNO(S11_SWNO(58),S11_SWNO(57)),3/*?*/)
 S11_ROMSTART48(whirl,l3,"whir_u26.l3", 0x066b8fec,
                         "whir_u27.l3", 0x47fc033d)
 S11S_SOUNDROM88(        "whir_u21.l1", 0xfa3da322,
@@ -563,7 +591,7 @@ static core_tLCDLayout dispRvrbt[] = {
   { 0,18,17, 7, CORE_SEG87 },
   { 0, 4,28, 4, CORE_SEG7  },
   { 2, 0, 0,16, CORE_SEG16 },
-  { 4, 0,16,16, CORE_SEG8H }
+  { 4, 0,16,16, CORE_SEG8H }, {0}
 };
 INITGAME(rvrbt,GEN_S11C,dispRvrbt,12,FLIP_SW(FLIP_L),3/*?*/)
 S11_ROMSTART48(rvrbt,l3,"gamb_u26.l3", 0xa65f6004,

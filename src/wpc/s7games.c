@@ -43,7 +43,7 @@ S7_ROMSTART8088(csmic,l1, "ic14.716",   0xac66c0dc,
                           "ic26.716",   0xa259eba0)
 S67S_SOUNDROMS8(          "sound12.716",0xaf41737b)
 S7_ROMEND
-CORE_GAMEDEF(csmic,l1,"Cosmic Gunfight (L-1)",1980,"Williams",s7_mS7,GAME_NO_SOUND)
+CORE_GAMEDEF(csmic,l1,"Cosmic Gunfight (L-1)",1980,"Williams",s7_mS7S,0)
 
 
 /*--------------------------------
@@ -93,12 +93,14 @@ CORE_GAMEDEF(solar,l2,"Solar Fire (L-2)",1981,"Williams",s7_mS7S,0)
 /*-------------------------------
 / Hyperball - Sys.7 - (Game #509)
 /-------------------------------*/
-INITGAME(hypbl,FLIP_SW(FLIP_L),3)
-S7_ROMSTART000x(hypbl,l4, "ic14.532",0x8090fe71,
-                          "ic17.532",0x6f4c0c4c,
-                          "ic20.532",0xd13962e8)
+//INITGAME(hypbl,FLIP_SW(FLIP_L),3)
+INITGAME(hypbl,FLIP_SWNO(0,S7_SWNO(59)),3)
+S7_ROMSTART000x(hypbl,l4, "ic14.532",    0x8090fe71,
+                          "ic17.532",    0x6f4c0c4c,
+                          "ic20.532",    0xd13962e8)
+S67S_SOUNDROMS0(          "sound12.532", 0x06051e5e)
 S7_ROMEND
-CORE_GAMEDEF(hypbl,l4,"HyperBall (L-4)",1981,"Williams",s7_mS7,GAME_NOT_WORKING)
+CORE_GAMEDEF(hypbl,l4,"HyperBall (L-4)",1981,"Williams",s7_mS7S,GAME_NOT_WORKING)
 
 /*----------------------------
 / Barracora- Sys.7 (Game #510)
@@ -132,8 +134,6 @@ CORE_GAMEDEF(vrkon,l1,"Varkon (L-1)",1982,"Williams",s7_mS7S,0)
 /*----------------------------
 / Warlok- Sys.7 (Game #516)
 /----------------------------*/
-//Emulation locks up with sound running, so we'll disable it for now! 
-//(NOT SURE IF THIS STILL HAPPENS?)
 INITGAME(wrlok,FLIP_SW(FLIP_L),3)
 S7_ROMSTART8088(wrlok,l3, "ic14.716",   0x291be241,
                           "ic17.532",   0xbb571a17,
@@ -142,7 +142,6 @@ S7_ROMSTART8088(wrlok,l3, "ic14.716",   0x291be241,
 S67S_SOUNDROMS8(          "sound12.716",0x5d8e46d6)
 S7_ROMEND
 CORE_GAMEDEF(wrlok,l3,"Warlok (L-3)",1982,"Williams",s7_mS7S,0)
-//CORE_GAMEDEF(wrlok,l3,"Warlok (L-3)",1982,"Williams",s7_mS7,GAME_NO_SOUND)
 
 /*----------------------------
 / Defender - Sys.7 (Game #517)
@@ -195,14 +194,11 @@ CORE_GAMEDEF(fpwr2,l2,"Firepower II (L-2)",1983,"Williams",s7_mS7S,0)
 /*-----------------------------
 / Starlight - Sys.7 (Game #530)
 /-----------------------------*/
-INITGAME(strlt,FLIP_SW(FLIP_L),3)
-//S7_ROMSTART000x (strlt,l1,	"ic14.bin",0x0638e3bad,
-//							"ic17.bin",0x0a43d8518,
-//							"ic20.bin",0x0b750ddc0)
-S7_ROMSTART8088(strlt,l1,"ic14.716",    0x00000000,
-                         "ic17.532",    0x00000000,
-                         "ic20.716",    0x00000000,
-                         "ic26.716",    0x00000000)
-S67S_SOUNDROMS8(         "sound12.532", 0x00000000)
+//INITGAME(strlt,FLIP_SW(FLIP_L),3)
+INITGAME(strlt,FLIP_SWNO(0,S7_SWNO(59)),3)
+S7_ROMSTART000x(strlt,l1,"ic14.532",   0x638e3bad,
+                         "ic17.532",   0xa43d8518,
+                         "ic20.532",   0xb750ddc0)
+S67S_SOUNDROMS8(         "sound12.716",0x00000000)
 S7_ROMEND
-CORE_GAMEDEF(strlt,l1,"Starlight (L-1)",1984,"Williams",s7_mS7S,0)
+CORE_GAMEDEF(strlt,l1,"Starlight (L-1)",1984,"Williams",s7_mS7S,GAME_NOT_WORKING)

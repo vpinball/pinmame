@@ -44,8 +44,8 @@ Changes:
 /*-- local state/ball handling functions --*/
 static int  ft_handleBallState(sim_tBallStatus *ball, int *inports);
 static void ft_handleMech(int mech);
-static void ft_drawMech(unsigned char **line);
-static void ft_drawStatic(unsigned char **line);
+static void ft_drawMech(BMTYPE **line);
+static void ft_drawStatic(BMTYPE **line);
 static void init_ft(void);
 static int  ft_getSol(int solNo);
 static char * showReelPos(void);
@@ -55,7 +55,7 @@ static int ft_getMech(int mechNo);
   local static variables
  ------------------------
    I used this locals structure for setting up variables to track the state of mechanical objects
-   which needed to be displayed on screen 
+   which needed to be displayed on screen
 --------------------------------------------------------------------------------------------------*/
 static struct {
   int dtPos;    	/* Drop Target Position */
@@ -202,11 +202,11 @@ WPC_INPUT_PORTS_END
 
 /* ---------------------------------------------------------------------------------
    The following variables are used to refer to the state array!
-   These vars *must* be in the *exact* *same* *order* as each stateDef array entry! 
+   These vars *must* be in the *exact* *same* *order* as each stateDef array entry!
    -----------------------------------------------------------------------------------------*/
 enum {	stRTrough=SIM_FIRSTSTATE, stCTrough, stLTrough, stOuthole, stDrain,
       	stShooter, stBallLane, stROut, stLOut, stRIn, stLIn, stLSling, stRSling, stJetB1, stJetB2, stJetB3,
-      	stLLoopUp, stLLoopDn, stSpinnerRL, stSpinnerLR, 
+      	stLLoopUp, stLLoopDn, stSpinnerRL, stSpinnerLR,
 	stEjectHole, stGateRL, stGateLR,
 	stRLoopUp, stRLoopDn, stLRampEnt, stLRampMade, stRRampEnt, stRRampMade,
 	stDropTarget, stCaster, stCatapult, stCatapult2, stHabitTrail, stReelEntry,
@@ -216,15 +216,15 @@ enum {	stRTrough=SIM_FIRSTSTATE, stCTrough, stLTrough, stOuthole, stDrain,
       };
 
 /********************************************************************************************************
-   The following is a list of all possible game states..... 
+   The following is a list of all possible game states.....
    We start defining our own states at element #3, since 'Not Installed', 'Moving', and 'Playfield'
    are always defined the same!!
 
    Any state with all zeros, like the following example must be handled in the Handle Ball State function!
-   {"State Name",    1,0,    0,       0, 0}, 
+   {"State Name",    1,0,    0,       0, 0},
 
    Fields for each array element
-   ----------------------------- 
+   -----------------------------
    #1) Name to display on screen
    #2) Switch down time (minimum)
    #3) Switch to be triggered while in this state
@@ -284,7 +284,7 @@ static sim_tState ft_stateDef[] = {
 
   /*Line 5*/
   {"Right Loop",       1,swTRLoop, 	 0,       stGateRL,   1}, /* Right Loop Going Up     */
-  {"Right Loop",       1,swTRLoop, 	 0,       stFree,   10},  /* Right Loop Coming Down  */ 
+  {"Right Loop",       1,swTRLoop, 	 0,       stFree,   10},  /* Right Loop Coming Down  */
 
   /*Line 5*/
   {"L. Ramp Enter",	1,swLBoatEntry,  0,       stLRampMade,	 5},
@@ -369,10 +369,10 @@ static int ft_handleBallState(sim_tBallStatus *ball, int *inports) {
 /*---------------------------
 /  Keyboard conversion table
 /----------------------------
-  Each entry maps a keypress to either begin a state or trigger a switch! 
-  The Inport #, and Bit Mask define which keypresses should be used - See code from 
+  Each entry maps a keypress to either begin a state or trigger a switch!
+  The Inport #, and Bit Mask define which keypresses should be used - See code from
   WPC_INPUT_PORTS_START to determine # and Mask for each key press
--------------------------------------------------------------------------------------------------- 
+--------------------------------------------------------------------------------------------------
   Layout of inportData array
    ----------------------------
    #1) Inport number
@@ -419,16 +419,16 @@ static sim_tInportData ft_inportData[] = {
   Drawing information
  ---------------------*/
 /*--------------------------------------------------------
-  Code to draw the mechanical objects, and their states! 
+  Code to draw the mechanical objects, and their states!
 ---------------------------------------------------------*/
 
-static void ft_drawMech(unsigned char **line) {
+static void ft_drawMech(BMTYPE **line) {
   core_textOutf(30, 0,BLACK,"Gate: %-6s", (locals.gatePos==OPEN)?"Open":"Closed");
   core_textOutf(30, 10,BLACK,"Drop Target: %-6s", (locals.dtPos==UP)?"Up":"Down");
   core_textOutf(30, 20,BLACK,"Reel: %-15s",showReelPos());
 //  core_textOutf(30, 20,BLACK,"Reel: %6d", locals.reelPos);
 }
-static void ft_drawStatic(unsigned char **line) {
+static void ft_drawStatic(BMTYPE **line) {
   core_textOutf(30, 50,BLACK,"Help on this Simulator:");
   core_textOutf(30, 60,BLACK,"L/R Shift+R = L/R Ramp");
   core_textOutf(30, 70,BLACK,"L/R Shift+L = L/R Loop");

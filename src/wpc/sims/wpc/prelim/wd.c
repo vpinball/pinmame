@@ -18,7 +18,7 @@
    WER  Jet Bumpers
 
    More to be added...
-                      
+
 ------------------------------------------------------------------------------*/
 
 #include "driver.h"
@@ -32,7 +32,7 @@
 /-------------------*/
 static int  wd_handleBallState(sim_tBallStatus *ball, int *inports);
 static void wd_handleMech(int mech);
-static void wd_drawStatic(unsigned char **line);
+static void wd_drawStatic(BMTYPE **line);
 static void init_wd(void);
 
 /*-----------------------
@@ -40,7 +40,7 @@ static void init_wd(void);
  ------------------------*/
 /* Uncomment if you wish to use locals. type variables */
 //static struct {
-//  int 
+//  int
 //} locals;
 
 /*--------------------------
@@ -173,7 +173,7 @@ static int wd_handleBallState(sim_tBallStatus *ball, int *inports) {
   switch (ball->state)
 	{
 	/* Ball in Shooter Lane */
-    	case stBallLane:  
+    	case stBallLane:
 		if (ball->speed < 25)
 			return setState(stNotEnough,25);	/*Ball not plunged hard enough*/
 		if (ball->speed < 51)
@@ -241,9 +241,9 @@ static mech_tInitData wd_reelMech[] = {{
 }};
 
 static void wd_handleMech(int mech) {
-  if (mech & 0x01) mech_update(0);
-  if (mech & 0x02) mech_update(1);
-  if (mech & 0x04) mech_update(2);
+//  if (mech & 0x01) mech_update(0);
+//  if (mech & 0x02) mech_update(1);
+//  if (mech & 0x04) mech_update(2);
 }
 
 static int wd_getMech(int mechNo) {
@@ -253,7 +253,7 @@ static int wd_getMech(int mechNo) {
 /*--------------------
   Drawing information
   --------------------*/
-static void wd_drawStatic(unsigned char **line) {
+static void wd_drawStatic(BMTYPE **line) {
   core_textOutf(30, 60,BLACK,"Help on this Simulator:");
   core_textOutf(30, 70,BLACK,"L/R Shift+- = L/R Slingshot");
   core_textOutf(30, 80,BLACK,"L/R Shift+I/O = L/R Inlane/Outlane");
@@ -266,7 +266,7 @@ static void wd_drawStatic(unsigned char **line) {
   core_textOutf(30,150,BLACK,"");
   core_textOutf(30,160,BLACK,"");
 }
-static void wd_drawMech(unsigned char **line) {
+static void wd_drawMech(BMTYPE **line) {
   core_textOutf(50, 0,BLACK,"Reel1:%3d", mech_getPos(0));
   core_textOutf(50,10,BLACK,"Reel2:%3d", mech_getPos(1));
   core_textOutf(50,20,BLACK,"Reel3:%3d", mech_getPos(2));
@@ -285,10 +285,20 @@ DCS_SOUNDROM6x("wdu2_10.rom",0x2fd534be,
                "wdu7_10.rom",0x36285ca2)
 WPC_ROMEND
 
+WPC_ROMSTART(wd,12g,"whod1_2.rom",0x80000,0xd49be363)
+DCS_SOUNDROM6x("wdu2_20g.rom",0x2fe0ce7e,
+               "wdu3_20g.rom",0xf01142ab,
+               "wdu4_10.rom",0x46965682,
+               "wdu5_10.rom",0x0a787015,
+               "wdu6_10.rom",0xd2e05659,
+               "wdu7_10.rom",0x36285ca2)
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(wd,12,"Who Dunnit (1.2)",1995,"Bally",wpc_m95DCSS,0)
+CORE_CLONEDEF(wd,12g,12,"Who Dunnit (1.2 Germany)",1995,"Bally",wpc_m95DCSS,0)
 
 /*-----------------------
 / Simulation Definitions

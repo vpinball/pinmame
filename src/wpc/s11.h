@@ -150,14 +150,21 @@ extern core_tLCDLayout s11_dispS9[], s11_dispS11[], s11_dispS11a[], s11_dispS11b
      ROM_LOAD(u49, 0xc000, 0x4000, chk49)  \
 	 ROM_LOAD(u5,  0x9000, 0x1000, chk5) \
      ROM_LOAD(u6,  0xa000, 0x1000, chk6) \
-     ROM_LOAD(u4,  0xb000, 0x1000, chk4) 
+     ROM_LOAD(u4,  0xb000, 0x1000, chk4)
+
+#define S9S_SOUNDROM4(u49,chk49) \
+   S9S_STDREG \
+     ROM_LOAD(u49, 0xc000, 0x4000, chk49) \
+     ROM_RELOAD(0x8000, 0x4000) \
+     ROM_RELOAD(0xc000, 0x4000) \
+     ROM_RELOAD(0x0000, 0x4000)
 
 /*-- Jokerz sound on CPU board --*/
 #define S11B3S_STDREG \
   SOUNDREGION(0x10000, S11_MEMREG_SCPU1) \
   SOUNDREGION(0x10000, S11_MEMREG_SROM1)
 
-#define S11B3S_SOUNDROM88(n1, chk1, n2, chk2) \
+#define S11B3S_SOUNDROM881(n1, chk1, n2, chk2, n3, chk3) \
   S11B3S_STDREG \
     ROM_LOAD(n1, 0x0000, 0x8000, chk1) \
     ROM_LOAD(n2, 0x8000, 0x8000, chk2)

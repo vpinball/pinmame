@@ -18,7 +18,7 @@
    WER  Jet Bumpers
 
    More to be added...
-                      
+
 ------------------------------------------------------------------------------*/
 
 #include "driver.h"
@@ -30,7 +30,7 @@
 /  Local functions
 /-------------------*/
 static int  fs_handleBallState(sim_tBallStatus *ball, int *inports);
-static void fs_drawStatic(unsigned char **line);
+static void fs_drawStatic(BMTYPE **line);
 static void init_fs(void);
 
 /*-----------------------
@@ -38,7 +38,7 @@ static void init_fs(void);
  ------------------------*/
 /* Uncomment if you wish to use locals. type variables */
 //static struct {
-//  int 
+//  int
 //} locals;
 
 /*--------------------------
@@ -224,7 +224,7 @@ static sim_tInportData fs_inportData[] = {
 /*--------------------
   Drawing information
   --------------------*/
-  static void fs_drawStatic(unsigned char **line) {
+  static void fs_drawStatic(BMTYPE **line) {
 
 /* Help */
 

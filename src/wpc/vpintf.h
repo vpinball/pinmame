@@ -83,14 +83,11 @@ int vp_getChangedGI(vp_tChgGIs chgStat);
 int vp_getMech(int mechNo);
 
 /*-----------
-/  set DIPs
+/  DIPs
 /-----------*/
 void vp_setDIP(int dipBank, int value);
-
-/*-----------
-/  get DIPs
-/-----------*/
 int vp_getDIP(int dipBank);
+void vp_dipnv(void *file, int write);
 
 /*-----------
 /  set Solenoid Mask

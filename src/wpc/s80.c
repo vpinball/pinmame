@@ -31,12 +31,12 @@ static void S80_nvram(void *file, int write);
 /* operator adjustable switches
 	s1 is the msb of the first byte, s32 the lsb of the last byte :
 
-	s1  s2  s3  s4  s5  s6  s7  s8 
+	s1  s2  s3  s4  s5  s6  s7  s8
 	s9  s10 s11 s12 s13 s14 s15 s16
-	s17 s18 s19 s20 s21 s22 s23 s24 
+	s17 s18 s19 s20 s21 s22 s23 s24
 	s25 s26 s27 s28 s29 s30 s31 s32
 */
-static unsigned char opSwitches[4] = {0x02, 0x83, 0xd3, 0xfc};
+static UINT8 opSwitches[4] = {0x02, 0x83, 0xd3, 0xfc};
 
 int core_bcd2seg16[16] = {0x3f00,0x0022,0x5b08,0x4f08,0x6608,0x6d08,0x7d08,0x0700,0x7f08,0x6f08,
 #ifdef MAME_DEBUG
@@ -101,7 +101,7 @@ static int S80_vblank(void) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
- 
+
   S80locals.vblankCount += 1;
   /*-- lamps --*/
   if ((S80locals.vblankCount % S80_LAMPSMOOTH) == 0) {
@@ -137,7 +137,7 @@ static int S80_vblank(void) {
 
 static void S80_updSw(int *inports) {
 	if (inports) {
-//		if ( core_gameData->gen & GEN_S80B4K ) 
+//		if ( core_gameData->gen & GEN_S80B4K )
 			coreGlobals.swMatrix[0] = ((inports[S80_COMINPORT] & 0xff00)>>8);
 //		else
 //			coreGlobals.swMatrix[0] = ((inports[S80_COMINPORT] & 0xff00)>>8)^0x01;
@@ -177,7 +177,7 @@ static int S80_getSwRow(int row) {
 	int value = 0;
 	int ii;
 
-	for (ii=8; ii>=1; ii--) 
+	for (ii=8; ii>=1; ii--)
 		value = (value<<1) | (coreGlobals.swMatrix[ii]&row?0x01:0x00);
 
 	return value;
@@ -210,7 +210,7 @@ static WRITE_HANDLER(riot0b_w) { /* logerror("riot0b_w: 0x%02x\n", data); */  S8
 
 static READ_HANDLER(riot1a_r)  { /* logerror("riot1a_r\n"); */ return core_gameData->gen&GEN_S80B4K ? (core_getSw(S80_SWSLAMTILT)?0x80:0x00) : (core_getSw(S80_SWSLAMTILT)?0x00:0x80); }
 static WRITE_HANDLER(riot1a_w)
-{ 
+{
 	int segSel = ((data>>4)&0x07);
 	if ( core_gameData->gen & (GEN_S80B2K|GEN_S80B4K) ) {
 		if ( (segSel&0x01) && !(S80locals.segSel&0x01) )
@@ -221,7 +221,7 @@ static WRITE_HANDLER(riot1a_w)
 	else {
 		int strobe = (data&0x0f);
 
-		if ( (segSel&0x01) && !(S80locals.segSel&0x01) ) 
+		if ( (segSel&0x01) && !(S80locals.segSel&0x01) )
 			S80locals.seg1 = core_bcd2seg16[S80locals.disData&0x0f];
 		if ( !(S80locals.disData&0x10) )
 			S80locals.seg1 |= 0x0022;
@@ -319,7 +319,7 @@ static WRITE_HANDLER(riot1a_w)
 static READ_HANDLER(riot1b_r)  { /* logerror("riot1b_r\n"); */ return 0x00; }
 static WRITE_HANDLER(riot1b_w)
 {
-//	logerror("riot1b_w: 0x%02x\n", data); 
+//	logerror("riot1b_w: 0x%02x\n", data);
 	S80locals.OpSwitchEnable = (data&0x80);
 	if ( core_gameData->gen & (GEN_S80B2K|GEN_S80B4K) ) {
 		int value;
@@ -380,7 +380,7 @@ static int S80_bitsHi[] = { 0x10, 0x20, 0x40, 0x80 };
 
 /* solenoids */
 static READ_HANDLER(riot2a_r)  { /* logerror("riot2a_r\n"); */ return 0xff; }
-static WRITE_HANDLER(riot2a_w) { 
+static WRITE_HANDLER(riot2a_w) {
 	/* solenoids 1-4 */
 	if ( !(data&0x20) ) S80locals.solenoids |= S80_bitsLo[~data&0x03];
 	/* solenoids 1-4 */
@@ -395,8 +395,8 @@ static WRITE_HANDLER(riot2a_w) {
 }
 
 static READ_HANDLER(riot2b_r)  { logerror("riot2b_r\n"); return 0xff; }
-static WRITE_HANDLER(riot2b_w) { 
-	/* logerror("riot2b_w: 0x%02x\n", data); */ 
+static WRITE_HANDLER(riot2b_w) {
+	/* logerror("riot2b_w: 0x%02x\n", data); */
 	if ( data&0xf0 ) {
 		int col = ((data&0xf0)>>4)-1;
 		if ( col%2 ) {
@@ -423,7 +423,7 @@ struct riot6532_interface s80_riot_intf[] = {
 {/* RIOT 0 (0x200) Chip U4 (SWITCH MATRIX)*/
  /* PA0 - PA7 Switch Return  (ROW) */
  /* PB0 - PB7 Switch Strobes (COL) */
- /* in  : A/B, */ riot0a_r, riot0b_r, 
+ /* in  : A/B, */ riot0a_r, riot0b_r,
  /* out : A/B, */ riot0a_w, riot0b_w,
  /* irq :      */ S80_irq
 },
@@ -449,13 +449,13 @@ struct riot6532_interface s80_riot_intf[] = {
  /* PA7:   SOL.9 */
  /* PB0-3: LD1-4 */
  /* PB4-7: FEED Z33:LS154 (LAMP LATCHES) + PART OF SWITCH ENABLE */
- /* in  : A/B, */ riot2a_r, riot2b_r, 
+ /* in  : A/B, */ riot2a_r, riot2b_r,
  /* out : A/B, */ riot2a_w, riot2b_w,
  /* irq :      */ S80_irq
 },
 
 {/* RIOT 3: Sound/Speak board Chip U15 */
- /* in  : A/B, */ riot3a_r, riot3b_r, 
+ /* in  : A/B, */ riot3a_r, riot3b_r,
  /* out : A/B, */ riot3a_w, riot3b_w,
  /* irq :      */ S80SS_irq
 }};
@@ -471,7 +471,7 @@ static void RIOT_clock(int param)
 //    riot_clk(i);
 }
 
-static UINT8 RAM_256[0x100]; 
+static UINT8 RAM_256[0x100];
 static READ_HANDLER(ram_256r) {
 	return RAM_256[offset%0x100];
 }
@@ -480,9 +480,9 @@ static WRITE_HANDLER(ram_256w) {
 	RAM_256[offset%0x100] = (data&0x0f);
 }
 
-static UINT8 RIOT0_RAM[0x80]; 
-static UINT8 RIOT1_RAM[0x80]; 
-static UINT8 RIOT2_RAM[0x80]; 
+static UINT8 RIOT0_RAM[0x80];
+static UINT8 RIOT1_RAM[0x80];
+static UINT8 RIOT2_RAM[0x80];
 
 static READ_HANDLER(riot0_ram_r) {
 	return RIOT0_RAM[offset%0x80];
@@ -696,7 +696,7 @@ static void S80_init(void) {
   memset(RIOT0_RAM, 0x00, sizeof RIOT0_RAM);
   memset(RIOT1_RAM, 0x00, sizeof RIOT1_RAM);
   memset(RIOT1_RAM, 0x00, sizeof RIOT1_RAM);
-  
+
   /* init RIOTS */
   for (ii = 0; ii < sizeof(s80_riot_intf)/sizeof(s80_riot_intf[0]); ii++)
     riot_config(ii, &s80_riot_intf[ii]);

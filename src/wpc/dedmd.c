@@ -8,7 +8,7 @@ extern int crtc6845_start_addr;
 /*-----------------------------*/
 /*Data East 192x64 DMD Handling*/
 /*-----------------------------*/
-void de_dmd192x64_refresh(struct osd_bitmap *bitmap, int fullRefresh) {
+void de_dmd192x64_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
   UINT8 *RAM  = memory_region(DE_MEMREG_DCPU1) + 0x800000 + (crtc6845_start_addr&0x400)*4;
   UINT8 *RAM2 = memory_region(DE_MEMREG_DCPU1) + 0x800800 + (crtc6845_start_addr&0x400)*4;
   tDMDDot dotCol;
@@ -45,7 +45,7 @@ void de_dmd192x64_refresh(struct osd_bitmap *bitmap, int fullRefresh) {
     }
     *line = 0;
   }
-  dmd_draw(bitmap->line, dotCol, core_gameData->lcdLayout);
+  dmd_draw(bitmap, dotCol, core_gameData->lcdLayout);
   drawStatus(bitmap,fullRefresh);
 }
 
@@ -57,7 +57,7 @@ static core_tLCDLayout de_128x32DMD[] = {
 	{0,0,32,128,CORE_DMD}, {0}
 };
 
-void de_dmd128x32_refresh(struct osd_bitmap *bitmap, int fullRefresh) {
+void de_dmd128x32_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
   UINT8 *RAM  = memory_region(DE_MEMREG_DCPU1) + 0x2000 + (crtc6845_start_addr&0x0100)*4;
   UINT8 *RAM2 = memory_region(DE_MEMREG_DCPU1) + 0x2200 + (crtc6845_start_addr&0x0100)*4;
   tDMDDot dotCol;
@@ -84,7 +84,7 @@ void de_dmd128x32_refresh(struct osd_bitmap *bitmap, int fullRefresh) {
     }
     *line = 0;
   }
-  dmd_draw(bitmap->line, dotCol, de_128x32DMD);
+  dmd_draw(bitmap, dotCol, de_128x32DMD);
   drawStatus(bitmap,fullRefresh);
 }
 
@@ -93,10 +93,10 @@ void de_dmd128x32_refresh(struct osd_bitmap *bitmap, int fullRefresh) {
 /*------------------------------*/
 extern int de_dmd128x16[16][128];
 
-void de_dmd128x16_refresh(struct osd_bitmap *bitmap, int fullRefresh) {
+void de_dmd128x16_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
   int cols=128;
   int rows=16;
-  UINT8 **lines = bitmap->line;
+  BMTYPE **lines = (BMTYPE **)bitmap->line;
   //UINT8 dotCol[34][129];
   int ii,jj;//,kk;
 
@@ -104,7 +104,7 @@ void de_dmd128x16_refresh(struct osd_bitmap *bitmap, int fullRefresh) {
   if (fullRefresh) fillbitmap(bitmap,Machine->pens[0],NULL);
 
   for (ii = 0; ii < rows; ii++) {
-	  UINT8 *line = *lines++;
+	  BMTYPE *line = *lines++;
 	  for (jj = 0; jj < cols; jj++) {
 		  if(de_dmd128x16[ii][jj])
 			  *line++ = (de_dmd128x16[ii][jj]>1) ? CORE_COLOR(DMD_DOTON) : CORE_COLOR(DMD_DOT66);
@@ -126,10 +126,10 @@ void de_dmd128x16_refresh(struct osd_bitmap *bitmap, int fullRefresh) {
 /*Data East 128x16 DMD Handling*/
 /*------------------------------*/
 static int offset=0;
-void de2_dmd128x16_refresh(struct osd_bitmap *bitmap, int fullRefresh) {
-  unsigned char *RAM;
-  unsigned char *RAM2;
-  UINT8 **lines = bitmap->line;
+void de2_dmd128x16_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
+  UINT8 *RAM;
+  UINT8 *RAM2;
+  BMTYPE **lines = (BMTYPE **)bitmap->line;
   int cols=128;
   int rows=16;
   int ii,jj,kk;
@@ -157,7 +157,7 @@ void de2_dmd128x16_refresh(struct osd_bitmap *bitmap, int fullRefresh) {
 		  anydata += RAM2[(ii*(cols/8))+jj];
 
   for (ii = 0; ii < rows; ii++) {
-	  UINT8 *line = *lines++;
+	  BMTYPE *line = *lines++;
 	  for (jj = 0; jj < (cols/8); jj++) {
   		  int data  = RAM[(ii*(cols/8))+jj];
 		  int data2 = RAM2[(ii*(cols/8))+jj];

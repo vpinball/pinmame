@@ -41,8 +41,8 @@ static int  afm_getSol(int solNo);
 static void afm_handleMech(int mech);
 static int afm_getMech(int mechNo);
 static int  afm_keyCond(int sw, int ballState, int *inports);
-static void afm_drawMech(unsigned char **line);
-static void afm_drawStatic(unsigned char **line);
+static void afm_drawMech(BMTYPE **line);
+static void afm_drawStatic(BMTYPE **line);
 
 /*-----------------------
 / local static variables
@@ -304,13 +304,13 @@ static sim_tInportData afm_inportData[] = {
 /*--------------------
 / Drawing information
 /---------------------*/
-static void afm_drawMech(unsigned char **line) {
+static void afm_drawMech(BMTYPE **line) {
   core_textOutf(50, 0,BLACK,"Bank: %-4s", core_getSw(swMBankUp) ? "Up" : (core_getSw(swMBankDn) ? "Down" : ""));
   core_textOutf(50,10,BLACK,"Drop: %-4s", core_getSw(swDrop) ? "Down" : "Up");
 }
 
 /* Help */
-static void afm_drawStatic(unsigned char **line) {
+static void afm_drawStatic(BMTYPE **line) {
   core_textOutf(30, 50,BLACK,"Help on this Simulator:");
   core_textOutf(30, 60,BLACK,"L/R Shift+I/O = L/R Inlane/Outlane");
   core_textOutf(30, 70,BLACK,"L/R Shift+- = L/R Slingshot");

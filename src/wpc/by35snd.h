@@ -49,13 +49,13 @@ extern struct AY8910interface  snt_ay8910Int;
     ROM_LOAD(n2, 0xe000, 0x1000, chk2) \
     ROM_LOAD(n3, 0xf000, 0x0800, chk3) \
     ROM_RELOAD(  0xf800, 0x0800)
-#if 0
+
 #define BY35_SOUND61ROMx000(n1,chk1,n2,chk2,n3,chk3) \
   SOUNDREGION(0x10000, BY35_MEMREG_S1CPU) \
     ROM_LOAD(n1, 0xd000, 0x1000, chk1) \
     ROM_LOAD(n2, 0xe000, 0x1000, chk2) \
     ROM_LOAD(n3, 0xf000, 0x1000, chk3)
-#endif
+
 #define BY35_SOUND61ROM0000(n1,chk1,n2,chk2,n3,chk3,n4,chk4) \
   SOUNDREGION(0x10000, BY35_MEMREG_S1CPU) \
     ROM_LOAD(n1, 0xc000, 0x1000, chk1) \

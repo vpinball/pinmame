@@ -34,9 +34,6 @@ static const char *rompath;
 static const char *samplepath;
 static const char *cfgdir, *nvdir, *hidir, *inpdir, *stadir;
 static const char *memcarddir, *artworkdir, *screenshotdir, *cheatdir;
-#ifdef PINMAME_EXT
-static const char *wavedir;
-#endif /* PINMAME_EXT */
 /* from datafile.c */
 extern const char *history_filename;
 extern const char *mameinfo_filename;
@@ -60,9 +57,6 @@ struct rc_option fileio_opts[] =
 	{ "state_directory", NULL, rc_string, &stadir, "sta", 0, 0, NULL, "directory to save states" },
 	{ "artwork_directory", NULL, rc_string, &artworkdir, "artwork", 0, 0, NULL, "directory for Artwork (Overlays etc.)" },
 	{ "snapshot_directory", NULL, rc_string, &screenshotdir, "snap", 0, 0, NULL, "directory for screenshots (.png format)" },
-#ifdef PINMAME_EXT
-	{ "wavefile_directory", NULL, rc_string, &wavedir, "wavefile", 0, 0, NULL, "directory for wavefiles (.wav format)" },
-#endif /* PINMAME_EXT */
 	{ "cheat_file", NULL, rc_string, &cheatfile, "cheat.dat", 0, 0, NULL, "cheat filename" },
 	{ "history_file", NULL, rc_string, &history_filename, "history.dat", 0, 0, NULL, NULL },
 	{ "mameinfo_file", NULL, rc_string, &mameinfo_filename, "mameinfo.dat", 0, 0, NULL, NULL },
@@ -347,23 +341,6 @@ int osd_faccess (const char *newfilename, int filetype)
 		else
 			return 0;
 	}
-#ifdef PINMAME_EXT
-	else
-	if( filetype == OSD_FILETYPE_WAVEFILE )
-	{
-		void *f;
-
-		sprintf (name, "%s/%s.wav", wavedir, newfilename);
-		f = fopen (name, "rb");
-		if( f )
-		{
-			fclose (f);
-			return 1;
-		}
-		else
-			return 0;
-	}
-#endif /* PINMAME_EXT */
 	else
 		return 0;
 
@@ -1032,21 +1009,6 @@ void *osd_fopen (const char *game, const char *filename, int filetype, int openf
 		f->file = fopen (name, openforwrite ? "wb" : "rb");
 		found = f->file != 0;
 		break;
-#ifdef PINMAME_EXT
-	case OSD_FILETYPE_WAVEFILE:
-		/* only for writing */
-		if( !openforwrite )
-		{
-			logerror("osd_fopen: type %02x read not supported\n",filetype);
-			break;
-		}
-
-		sprintf (name, "%s/%s.wav", wavedir, filename);
-		f->type = kPlainFile;
-		f->file = fopen (name, openforwrite ? "wb" : "rb");
-		found = f->file != 0;
-		break;
-#endif /* PINMAME_EXT */
 	case OSD_FILETYPE_HIGHSCORE_DB:
 		/* only for reading */
 		if( openforwrite )

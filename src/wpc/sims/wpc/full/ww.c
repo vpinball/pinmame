@@ -45,8 +45,8 @@
 static int  ww_handleBallState(sim_tBallStatus *ball, int *inports);
 static void ww_handleMech(int mech);
 static int ww_getMech(int mechNo);
-static void ww_drawMech(unsigned char **line);
-static void ww_drawStatic(unsigned char **line);
+static void ww_drawMech(BMTYPE **line);
+static void ww_drawStatic(BMTYPE **line);
 static void init_ww(void);
 static char* showbigfootpos(void);
 
@@ -260,7 +260,7 @@ static sim_tState ww_stateDef[] = {
   {"Left Lock",		1,swLockupL,	 0,		stLockupC,	1},
   {"Center Lock",	1,swLockupC,	 0,		stLockupR,	1},
   {"Right Lock",	1,swLockupR,	 sLockupPopper,	stMiniPF,	0},
-                                                                         
+
   /*Line 7*/
   {"Left Loop",		1,swLeftLoop,	 0,		stLeftLoop2,	5},
   {"Left Loop Made",	1,swRightLoop,	 0,		stLJet,		3},
@@ -280,7 +280,7 @@ static int ww_handleBallState(sim_tBallStatus *ball, int *inports) {
 	{
 
 	/* Ball in Shooter Lane */
-    	case stBallLane:  
+    	case stBallLane:
 		if (ball->speed < 20)
 			return setState(stNotEnough,25);	/*Ball not plunged hard enough*/
 		if (ball->speed < 40)
@@ -348,7 +348,7 @@ static sim_tInportData ww_inportData[] = {
 /*--------------------
   Drawing information
   --------------------*/
-  static void ww_drawMech(unsigned char **line) {
+  static void ww_drawMech(BMTYPE **line) {
   core_textOutf(30, 10,BLACK,"    BigFoot's Head:");
   core_textOutf(30, 20,BLACK,"       %-8s", showbigfootpos());
   core_textOutf(30, 30,BLACK,"%3d", locals.bigfootPos);
@@ -357,7 +357,7 @@ static sim_tInportData ww_inportData[] = {
 }
 /* Help */
 
-  static void ww_drawStatic(unsigned char **line) {
+  static void ww_drawStatic(BMTYPE **line) {
   core_textOutf(30, 50,BLACK,"Help on this Simulator:");
   core_textOutf(30, 60,BLACK,"L/R Shift+L = L/R Loop");
   core_textOutf(30, 70,BLACK,"L/R Shift+- = L/R Slingshot");
@@ -375,8 +375,8 @@ static sim_tInportData ww_inportData[] = {
 /* Solenoid-to-sample handling */
 static wpc_tSamSolMap ww_samsolmap[] = {
  /*Channel #0*/
- {sKnocker,0,SAM_KNOCKER}, {sTrough,0,SAM_BALLREL}, 
- {sOutHole,0,SAM_OUTHOLE}, 
+ {sKnocker,0,SAM_KNOCKER}, {sTrough,0,SAM_BALLREL},
+ {sOutHole,0,SAM_OUTHOLE},
 
  /*Channel #1*/
  {sLeftJet,1,SAM_JET1}, {sRightJet,1,SAM_JET2},
@@ -386,7 +386,7 @@ static wpc_tSamSolMap ww_samsolmap[] = {
  /*Channel #2*/
  {sLeftSling,2,SAM_LSLING}, {sRightSling,2,SAM_RSLING},
  {sKickBack,2,SAM_SOLENOID},
- 
+
  /*Channel #3*/
  {sLockupPopper,3,SAM_POPPER}, {sWpoolPopper,3,SAM_POPPER},
 

@@ -106,6 +106,11 @@
 	ROM_LOAD( n3, 0x9000, 0x1000, chk3 ) \
 	ROM_LOAD( n4, 0xa000, 0x1000, chk4 )
 
+/* Only 1 Sound Rom */
+#define S91_SOUNDROMS(n1, chk1)\
+    SOUNDREGION(0x10000, S9_MEMREG_S1CPU) \
+	ROM_LOAD( n1, 0xc000, 0x4000, chk1 )
+
 /*-- These are only here so the game structure can be in the game file --*/
 extern struct MachineDriver machine_driver_s9a_2;
 #define s9_mS9         s9a_2

@@ -19,9 +19,7 @@ static struct {
   int a0, a1, b1, ca20, ca21, cb20, cb21;
   int bcd[6];
   int lampadr1, lampadr2;
-  UINT32 solenoids, solenoids2;
-  UINT8  swMatrix[CORE_MAXSWCOL];
-  UINT8  lampMatrix[CORE_MAXLAMPCOL];
+  UINT32 solenoids;
   core_tSeg segments,pseg;
   int    diagnosticLed;
   int vblankCount;
@@ -37,20 +35,23 @@ static void piaIrq(int state) {
   cpu_set_irq_line(0, M6800_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
-static void by35_dispStrobe(void) {
-  int digit = locals.a1;
+static void by35_dispStrobe(int mask) {
+  int digit = locals.a1 & 0xfe;
   int ii,jj;
   //DBGLOG(("digit = %x (%x,%x,%x,%x,%x,%x)\n",digit,locals.bcd[0],locals.bcd[1],locals.bcd[2],locals.bcd[3],locals.bcd[4],locals.bcd[5]));
   for (ii = 0; digit; ii++, digit>>=1)
-    if (digit & 0x01)
-      for (jj = 0; jj < 6; jj++)
-        ((int *)locals.segments)[jj*8+ii] |= ((int *)locals.pseg)[jj*8+ii] = core_bcd2seg[locals.bcd[jj]];
+    if (digit & 0x01) {
+      UINT8 dispMask = mask;
+      for (jj = 0; dispMask; jj++, dispMask>>=1)
+        if (dispMask & 0x01)
+          ((int *)locals.segments)[jj*8+ii] |= ((int *)locals.pseg)[jj*8+ii] = core_bcd2seg[locals.bcd[jj]];
+    }
 }
 
 static void by35_lampStrobe(int board, int lampadr) {
   if (lampadr != 0x0f) {
     int lampdata = (locals.a0>>4)^0x0f;
-    UINT8 *matrix = &locals.lampMatrix[(lampadr>>3)+8*board];
+    UINT8 *matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)+8*board];
     int bit = 1<<(lampadr & 0x07);
 
     //DBGLOG(("adr=%x data=%x\n",lampadr,lampdata));
@@ -64,7 +65,7 @@ static void by35_lampStrobe(int board, int lampadr) {
 /* PIA0:A-W  Control what is read from PIA0:B */
 static WRITE_HANDLER(pia0a_w) {
   if (!locals.ca20) {
-    int bcdLoad = (locals.a0 & ~data) & 0x0f;
+    int bcdLoad = locals.a0 & ~data & 0x0f;
     int ii;
 
     for (ii = 0; bcdLoad; ii++, bcdLoad>>=1)
@@ -83,9 +84,9 @@ static WRITE_HANDLER(pia1a_w) {
   by35_soundCmd(0, (locals.cb21<<5) | ((locals.a1 & 0x02)<<3) | (locals.b1 & 0x0f));
 
   if (!locals.ca20) {
-    if (~tmp & data & 0x01) { // Positive edge
+    if (tmp & ~data & 0x01) { // Positive edge
       locals.bcd[4] = locals.a0>>4;
-      by35_dispStrobe();
+      by35_dispStrobe(0x10);
     }
   }
 }
@@ -97,10 +98,9 @@ static READ_HANDLER(pia0b_r) {
   // If Stern game, we need to set at least 1 dip to ON to prevent game booting to diagnostic!
   // So we choose Dip #20 - Show Credit
   if (locals.a0 & 0x80) // DIP#17-24
-    return core_getDip(2) ^ (core_gameData->gen & (GEN_STMPU100|GEN_STMPU200)) ? 0x8 : 0x0;
+    return core_getDip(2) ^ ((core_gameData->gen & (GEN_STMPU100|GEN_STMPU200)) ? 0x8 : 0x0);
   if (locals.cb20)      return core_getDip(3);	// DIP#25-32
-  if (locals.a0 & 0x1f) return core_getSwCol(locals.a0 & 0x1f);
-  return 0;
+  return core_getSwCol((locals.a0 & 0x1f) | ((locals.b1 & 0x80)>>2));
 }
 
 /* PIA0:CB2-W Lamp Strobe #1, DIPBank3 STROBE */
@@ -121,13 +121,13 @@ static WRITE_HANDLER(pia1ca2_w) {
 static WRITE_HANDLER(pia0ca2_w) {
   //DBGLOG(("PIA0:CA2=%d\n",data));
   locals.ca20 = data;
-  if (!data) by35_dispStrobe();
+  if (!data) by35_dispStrobe(0x1f);
 }
 
 /* PIA1:B-W Solenoid/Sound output */
 static WRITE_HANDLER(pia1b_w) {
   // m_mpac got a 6th display connected to solenoid 20
-  if (locals.b1 & ~data & 0x80) locals.bcd[5] = locals.a0>>4;
+  if (~locals.b1 & data & 0x80) { locals.bcd[5] = locals.a0>>4; by35_dispStrobe(0x20); }
   locals.b1 = data;
 
   by35_soundCmd(0, (locals.cb21<<5) | ((locals.a1 & 0x02)<<3) | (data & 0x0f));
@@ -157,8 +157,8 @@ static int by35_vblank(void) {
 
   /*-- lamps --*/
   if ((locals.vblankCount % BY35_LAMPSMOOTH) == 0) {
-    memcpy(coreGlobals.lampMatrix, locals.lampMatrix, sizeof(locals.lampMatrix));
-    memset(locals.lampMatrix, 0, sizeof(locals.lampMatrix));
+    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+    memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
 
   /*-- solenoids --*/
@@ -171,7 +171,6 @@ static int by35_vblank(void) {
     memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
     memcpy(locals.segments, locals.pseg, sizeof(locals.segments));
     memset(locals.pseg,0,sizeof(locals.pseg));
-
     /*update leds*/
     coreGlobals.diagnosticLed = locals.diagnosticLed;
     locals.diagnosticLed = 0;
@@ -195,7 +194,7 @@ static void by35_updSw(int *inports) {
   }
   /*-- Diagnostic buttons on CPU board --*/
   if (core_getSw(BY35_SWCPUDIAG))  cpu_set_nmi_line(0, PULSE_LINE);
-  if ((core_gameData->gen & (GEN_BY35_51|GEN_BY35_56|GEN_BY35_61|GEN_BY35_81)) &&
+  if ((core_gameData->gen & (GEN_BY35_51|GEN_BY35_56|GEN_BY35_61|GEN_BY35_61B|GEN_BY35_81)) &&
       core_getSw(BY35_SWSOUNDDIAG)) cpu_set_nmi_line(BY35_SCPU1NO, PULSE_LINE);
   /*-- coin door switches --*/
   pia_set_input_ca1(0, !core_getSw(BY35_SWSELFTEST));

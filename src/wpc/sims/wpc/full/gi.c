@@ -51,8 +51,8 @@
 /-------------------*/
 static int  gi_handleBallState(sim_tBallStatus *ball, int *inports);
 static void gi_handleMech(int mech);
-static void gi_drawMech(unsigned char **line);
-static void gi_drawStatic(unsigned char **line);
+static void gi_drawMech(BMTYPE **line);
+static void gi_drawStatic(BMTYPE **line);
 static void init_gi(void);
 
 /*-----------------------
@@ -298,7 +298,7 @@ static int gi_handleBallState(sim_tBallStatus *ball, int *inports) {
 	{
 
 	/* Ball in Shooter Lane */
-    	case stBallLane:  
+    	case stBallLane:
 		if (ball->speed < 25)
 			return setState(stNotEnough,25);	/*Ball not plunged hard enough*/
 		if (ball->speed < 40)
@@ -407,13 +407,13 @@ static core_tLampDisplay gi_lampPos = {
 }
 };
 
-  static void gi_drawMech(unsigned char **line) {
+  static void gi_drawMech(BMTYPE **line) {
   core_textOutf(30, 10,BLACK,"Ramp Status    : %-4s", core_getSw(swRampStatus) ? "Down":"Up");
   core_textOutf(30, 20,BLACK,"Jungle Position: %d", locals.junglePos);
 
 /* Help */
 }
-  static void gi_drawStatic(unsigned char **line) {
+  static void gi_drawStatic(BMTYPE **line) {
   core_textOutf(30, 40,BLACK,"Help on this Simulator:");
   core_textOutf(30, 50,BLACK,"L/R Shift+I = L/R Inlane");
   core_textOutf(30, 60,BLACK,"L/R Shift+O = L/R Outlane");
@@ -433,8 +433,8 @@ static core_tLampDisplay gi_lampPos = {
 /* Solenoid-to-sample handling */
 static wpc_tSamSolMap gi_samsolmap[] = {
  /*Channel #0*/
- {sKnocker,0,SAM_KNOCKER}, {sTrough,0,SAM_BALLREL}, 
- {sOutHole,0,SAM_OUTHOLE}, 
+ {sKnocker,0,SAM_KNOCKER}, {sTrough,0,SAM_BALLREL},
+ {sOutHole,0,SAM_OUTHOLE},
 
  /*Channel #1*/
  {sLeftJet,1,SAM_JET1}, {sRightJet,1,SAM_JET2},
@@ -443,7 +443,7 @@ static wpc_tSamSolMap gi_samsolmap[] = {
  /*Channel #2*/
  {sLeftLock,2,SAM_POPPER},  {sLeftSling,2,SAM_LSLING},
  {sRightSling,2,SAM_RSLING},  {sKickBack,2,SAM_SOLENOID},
- 
+
  /*Channel #3*/
  {sRampUp,3,SAM_FLAPOPEN}, {sRampDown,3,SAM_FLAPCLOSE},
  {sTopEject,3,SAM_SOLENOID_ON},

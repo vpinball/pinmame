@@ -47,15 +47,15 @@
 /*-- local state/ball handling functions --*/
 static int  gw_handleBallState(sim_tBallStatus *ball, int *inports);
 static void gw_handleMech(int mech);
-static void gw_drawMech(unsigned char **line);
-static void gw_drawStatic(unsigned char **line);
+static void gw_drawMech(BMTYPE **line);
+static void gw_drawStatic(BMTYPE **line);
 static void init_gw(void);
 
 /*-----------------------
   local static variables
  ------------------------
    I used this locals structure for setting up variables to track the state of mechanical objects
-   which needed to be displayed on screen 
+   which needed to be displayed on screen
 --------------------------------------------------------------------------------------------------*/
 static struct {
   int rampPos;    	/* Ramp Position */
@@ -208,15 +208,15 @@ WPC_INPUT_PORTS_END
 
 /* ---------------------------------------------------------------------------------
    The following variables are used to refer to the state array!
-   These vars *must* be in the *exact* *same* *order* as each stateDef array entry! 
+   These vars *must* be in the *exact* *same* *order* as each stateDef array entry!
    -----------------------------------------------------------------------------------------*/
 enum {	stRTrough=SIM_FIRSTSTATE, stCTrough, stLTrough, stOuthole, stDrain,
       	stGearChange, stShooter, stBallLane, stROut, stLOut, stRIn, stLIn, stLSling, stRSling,
-      	stLLoopUp, stLLoopUp2, stLLoopDn, stLLoopDn2, 
-	stRLoopUp, stRLoopUp2, stRLoopDn, stRLoopDn2, 
+      	stLLoopUp, stLLoopUp2, stLLoopDn, stLLoopDn2,
+	stRLoopUp, stRLoopUp2, stRLoopDn, stRLoopDn2,
 	stLRampEnt, stLRampDiv, stLRampExit, stRRampEnt, stRRamp,
 	stTunnel, stTopLock, stMidLock, stBotLock,
-	stSuperCh1, stSuperCh2, stSuperCh3, stSuperCh4, 
+	stSuperCh1, stSuperCh2, stSuperCh3, stSuperCh4,
 	stULoop1, stULoop2, stULoop3,
         stTopRed, stMidRed, stBotRed, stTopYellow, stMidYellow, stBotYellow, stTopGreen, stMidGreen, stBotGreen,
         stJet1, stJet2, stJet3,
@@ -224,15 +224,15 @@ enum {	stRTrough=SIM_FIRSTSTATE, stCTrough, stLTrough, stOuthole, stDrain,
      };
 
 /********************************************************************************************************
-   The following is a list of all possible game states..... 
+   The following is a list of all possible game states.....
    We start defining our own states at element #3, since 'Not Installed', 'Moving', and 'Playfield'
    are always defined the same!!
 
    Any state with all zeros, like the following example must be handled in the Handle Ball State function!
-   {"State Name",    1,0,    0,       0, 0}, 
+   {"State Name",    1,0,    0,       0, 0},
 
    Fields for each array element
-   ----------------------------- 
+   -----------------------------
    #1) Name to display on screen
    #2) Switch down time (minimum)
    #3) Switch to be triggered while in this state
@@ -352,10 +352,10 @@ static int gw_handleBallState(sim_tBallStatus *ball, int *inports) {
 /*---------------------------
 /  Keyboard conversion table
 /----------------------------
-  Each entry maps a keypress to either begin a state or trigger a switch! 
-  The Inport #, and Bit Mask define which keypresses should be used - See code from 
+  Each entry maps a keypress to either begin a state or trigger a switch!
+  The Inport #, and Bit Mask define which keypresses should be used - See code from
   WPC_INPUT_PORTS_START to determine # and Mask for each key press
--------------------------------------------------------------------------------------------------- 
+--------------------------------------------------------------------------------------------------
   Layout of inportData array
    ----------------------------
    #1) Inport number
@@ -418,12 +418,12 @@ static core_tLampDisplay gw_lampPos = {
 
  /*Lamp 6 - Matrix # 16 - Splits into 2 bulbs*/
  {2,{{10, 1,RED},{ 8,26,RED}}},
- 
+
  {1,{{12, 2,ORANGE}}},
 
  /*Lamp 8 - Matrix # 18 - Splits into 2 bulbs*/
  {2,{{14, 3,GREEN},{15,17,GREEN}}},
- 
+
  {1,{{31,10,GREEN}}},{1,{{32,12,GREEN}}},{1,{{32,14,ORANGE}}},{1,{{32,16,GREEN}}},
  {1,{{31,18,GREEN}}},{1,{{13,13,RED}}},{1,{{14,15,ORANGE}}},{1,{{16,19,WHITE}}},
  {1,{{ 3,15,RED}}},{1,{{ 4,16,YELLOW}}},{1,{{ 5,17,GREEN}}},{1,{{10,25,ORANGE}}},
@@ -444,7 +444,7 @@ static core_tLampDisplay gw_lampPos = {
  {2,{{23, 3,ORANGE},{23,25,ORANGE}}},
  {2,{{22, 4,ORANGE},{22,24,ORANGE}}},
  {2,{{21, 5,ORANGE},{21,23,ORANGE}}},
- 
+
  {1,{{13, 7,YELLOW}}},{1,{{13, 6,RED}}},{1,{{39, 0,YELLOW}}},
  {1,{{17,16,RED}}},{1,{{18,18,RED}}},{1,{{ 8,22,RED}}},{1,{{ 9,22,YELLOW}}},
  {1,{{10,22,GREEN}}},{1,{{18,10,RED}}},{1,{{17,12,RED}}},{1,{{17,14,RED}}},
@@ -453,14 +453,14 @@ static core_tLampDisplay gw_lampPos = {
 }
 };
 /*--------------------------------------------------------
-  Code to draw the mechanical objects, and their states! 
+  Code to draw the mechanical objects, and their states!
 ---------------------------------------------------------*/
 
-static void gw_drawMech(unsigned char **line) {
+static void gw_drawMech(BMTYPE **line) {
   core_textOutf(30, 0,BLACK,"Gear Shifter: %-6s", core_getSw(swGearLo) ? "Down  " : (core_getSw(swGearHi) ? "Up    " : "Middle"));
   core_textOutf(30, 10,BLACK,"Up/Down Ramp: %-6s", (locals.rampPos==UP)?"Up":"Down");
 }
-static void gw_drawStatic(unsigned char **line) {
+static void gw_drawStatic(BMTYPE **line) {
   core_textOutf(30, 40,BLACK,"Help on this Simulator:");
   core_textOutf(30, 50,BLACK,"L/R Shift+I = L/R Inlane");
   core_textOutf(30, 60,BLACK,"L/R Shift+O = L/R Outlane");

@@ -73,14 +73,14 @@ static int rom_load_new(const struct RomModule *romp);
 
 void showdisclaimer(void)   /* MAURY_BEGIN: dichiarazione */
 {
-	printf("MAME is an emulator: it reproduces, more or less faithfully, the behaviour of\n"
-		 "several arcade machines. But hardware is useless without software, so an image\n"
-		 "of the ROMs which run on that hardware is required. Such ROMs, like any other\n"
-		 "commercial software, are copyrighted material and it is therefore illegal to\n"
-		 "use them if you don't own the original arcade machine. Needless to say, ROMs\n"
-		 "are not distributed together with MAME. Distribution of MAME together with ROM\n"
-		 "images is a violation of copyright law and should be promptly reported to the\n"
-		 "authors so that appropriate legal action can be taken.\n\n");
+        printf("PinMAME is an emulator: it reproduces, more or less faithfully, the behaviour\n"
+               "of several pinball arcade machines. But hardware is useless without software,\n"
+               "so an image of the ROMs which run on that hardware is required. Such ROMs, like\n"
+               "any other commercial software, are copyrighted material and it is therefore\n"
+               "illegal to use them if you don't own the original arcade machine. Needless to\n"
+               "say, ROMs are not distributed together with PinMAME. Distribution of PinMAME\n"
+               "together with ROM images is a violation of copyright law and should be promptly\n"
+               "reported to the authors so that appropriate legal action can be taken.\n\n");
 }                           /* MAURY_END: dichiarazione */
 
 

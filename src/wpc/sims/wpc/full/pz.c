@@ -47,8 +47,8 @@
 /*-- local state/ball handling functions --*/
 static int  pz_handleBallState(sim_tBallStatus *ball, int *inports);
 static void pz_handleMech(int mech);
-static void pz_drawMech(unsigned char **line);
-static void pz_drawStatic(unsigned char **line);
+static void pz_drawMech(BMTYPE **line);
+static void pz_drawStatic(BMTYPE **line);
 static void init_pz(void);
 static int pz_getMech(int mechNo);
 
@@ -245,15 +245,15 @@ enum {stTrough1=SIM_FIRSTSTATE, stTrough2, stTrough3, stOutHole, stDrain,
 	  };
 
 /********************************************************************************************************
-   The following is a list of all possible game states..... 
+   The following is a list of all possible game states.....
    We start defining our own states at element #3, since 'Not Installed', 'Moving', and 'PF'
    are always defined the same!!
 
    Any state with all zeros, like the following example must be handled in the Handle Ball State function!
-   {"State Name",    1,0,    0,       0, 0}, 
+   {"State Name",    1,0,    0,       0, 0},
 
    Fields for each array element
-   ----------------------------- 
+   -----------------------------
    #1) Name to display on screen
    #2) Switch down time (minimum)
    #3) Switch to be triggered while in this state
@@ -362,7 +362,7 @@ static int pz_handleBallState(sim_tBallStatus *ball, int *inports) {
         /* This is pretty straightforward */
 	/* Ball in Shooter Lane */
         /* Note: Sim supports max of 50 speed for manual plunger */
-    	case stBallLane:  
+    	case stBallLane:
 		if (ball->speed < 20)
 			return setState(stNotEnough,20);	/*Ball not plunged hard enough*/
 		if (ball->speed < 30)
@@ -380,10 +380,10 @@ static int pz_handleBallState(sim_tBallStatus *ball, int *inports) {
 /*---------------------------
 /  Keyboard conversion table
 /----------------------------
-  Each entry maps a keypress to either begin a state or trigger a switch! 
-  The Inport #, and Bit Mask define which keypresses should be used - See code from 
+  Each entry maps a keypress to either begin a state or trigger a switch!
+  The Inport #, and Bit Mask define which keypresses should be used - See code from
   WPC_INPUT_PORTS_START to determine # and Mask for each key press
--------------------------------------------------------------------------------------------------- 
+--------------------------------------------------------------------------------------------------
   Layout of inportData array
    ----------------------------
    #1) Inport number
@@ -469,11 +469,11 @@ static core_tLampDisplay pz_lampPos = {
 };
 
 /*--------------------------------------------------------
-  Code to draw the mechanical objects, and their states! 
+  Code to draw the mechanical objects, and their states!
 This part is pretty easy, core_getSol tells the emulator the state of a Solenoid,
 you can use getSw too if you like to know the state of a switch.
 ---------------------------------------------------------*/
-  static void pz_drawMech(unsigned char **line) {
+  static void pz_drawMech(BMTYPE **line) {
   core_textOutf(30,  0,BLACK,"Dancin'Dummy: %-6s", core_getSol(sDummy) ? "Down":"Up");
   core_textOutf(30, 10,BLACK,"Comic Mouth : %-6s", core_getSol(sComicMouth) ? "Open" : "Closed");
   core_textOutf(30, 20,BLACK,"B.Zarr Mouth: %-6s", core_getSol(sDJMouth) ? "Open":"Closed");
@@ -481,7 +481,7 @@ you can use getSw too if you like to know the state of a switch.
 /* I've added help because I was tired of having to print/exit PINMAME to have
 all the keys handy :) */
 
-  static void pz_drawStatic(unsigned char **line) {
+  static void pz_drawStatic(BMTYPE **line) {
   core_textOutf(30, 40,BLACK,"Help on this Simulator:");
   core_textOutf(30, 50,BLACK,"L/R Shift+I = L/R Inlane");
   core_textOutf(30, 60,BLACK,"L/R Shift+O = L/R Outlane");
@@ -500,8 +500,8 @@ all the keys handy :) */
 /* Solenoid-to-sample handling */
 static wpc_tSamSolMap pz_samsolmap[] = {
  /*Channel #0*/
- {sKnocker,0,SAM_KNOCKER}, {sBallRel,0,SAM_BALLREL}, 
- {sOutHole,0,SAM_OUTHOLE}, 
+ {sKnocker,0,SAM_KNOCKER}, {sBallRel,0,SAM_BALLREL},
+ {sOutHole,0,SAM_OUTHOLE},
 
  /*Channel #1*/
  {sLeftJet,1,SAM_JET1}, {sRightJet,1,SAM_JET2},
@@ -511,7 +511,7 @@ static wpc_tSamSolMap pz_samsolmap[] = {
  {sBackPopper,2,SAM_POPPER},  {sLeftSling,2,SAM_LSLING},
  {sRightSling,2,SAM_RSLING},  {sDummy,2,SAM_SOLENOID_ON},
  {sDummy,2,SAM_SOLENOID_OFF,WPCSAM_F_ONOFF},
- 
+
  /*Channel #3*/
  {sDJEject,3,SAM_SOLENOID_ON}, {sComicMouth,3,SAM_SOLENOID_ON},
  {sComicMouth,3,SAM_SOLENOID_OFF,WPCSAM_F_ONOFF}, {sRightPopper,3,SAM_POPPER},
@@ -524,7 +524,7 @@ static wpc_tSamSolMap pz_samsolmap[] = {
 /  ROM definitions
 /------------------*/
 /* (Name,Revision,"FileName.Rom",Size,CRC (0 means that No Good Dump Exist)) */
-WPC_ROMSTART(pz,f4,"pzonef_4.rom",0x40000,0x041d7d15) 
+WPC_ROMSTART(pz,f4,"pzonef_4.rom",0x40000,0x041d7d15)
 /* ("FileName.Rom",CRC (0 means that No Good Dump Exist)) */
 WPCS_SOUNDROM224("pz_u18.l1",0xb7fbba98,
                  "pz_u15.l1",0x168bcc52,

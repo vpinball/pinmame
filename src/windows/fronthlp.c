@@ -443,15 +443,15 @@ int frontend_help (char *gamename)
 	if (help)  /* brief help - useful to get current version info */
 	{
 		#ifndef MESS
-		printf("M.A.M.E. v%s - Multiple Arcade Machine Emulator\n"
-				"Copyright (C) 1997-2001 by Nicola Salmoria and the MAME Team\n\n",build_version);
+		printf("PinMAME v%s - Pinball's Multiple Arcade Machine Emulator\n"
+				"Copyright (C) 2001 by Steve Ellenoff, WPCmame and the PinMAME Team\n\n",build_version);
 		showdisclaimer();
-		printf("Usage:  MAME gamename [options]\n\n"
-				"        MAME -list         for a brief list of supported games\n"
-				"        MAME -listfull     for a full list of supported games\n"
-				"        MAME -showusage    for a brief list of options\n"
-				"        MAME -showconfig   for a list of configuration options\n"
-				"        MAME -createconfig to create a mame.ini\n\n"
+		printf("Usage:  PINMAMEW gamename [options]\n\n"
+				"        -list         for a brief list of supported games\n"
+				"        -listfull     for a full list of supported games\n"
+				"        -showusage    for a brief list of options\n"
+				"        -showconfig   for a list of configuration options\n"
+				"        -createconfig to create a mame.ini\n\n"
 				"See readme.txt for a complete list of options.\n");
 		#else
 		showmessinfo();

@@ -46,7 +46,7 @@ ASDFGH  Reflex Targets
 /-------------------*/
 static int  dd_handleBallState(sim_tBallStatus *ball, int *inports);
 static void dd_handleMech(int mech);
-static void dd_drawStatic(unsigned char **line);
+static void dd_drawStatic(BMTYPE **line);
 static void init_dd(void);
 
 /*--------------------------
@@ -342,7 +342,7 @@ static core_tLampDisplay dd_lampPos = {
 
 /* Help */
 
-  static void dd_drawStatic(unsigned char **line) {
+  static void dd_drawStatic(BMTYPE **line) {
   core_textOutf(30, 50,BLACK,"Help on this Simulator:");
   core_textOutf(30, 60,BLACK,"L/R Shift+R = MixMaster Ramp");
   core_textOutf(30, 70,BLACK,"L/R Shift+- = L/R Slingshot");

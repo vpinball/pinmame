@@ -6,14 +6,9 @@
 #include "dcs.h"
 #include "snd_cmd.h"
 #include "sim.h"
-#include "wpcdmd.h"
 #include "core.h"
 #include "wpc.h"
-/* 240201 WPC Only updates flipper solenoids if CPU controlled */
-/* 180301 use core_setLamp, core_getSwCol */
-/* 310301 corrected initDone handling in wpc_init */
-/* 110401 corrected RTC patch */
-/* 160401 corrected crash if printfile can't be opened */
+
 #define WPC_VBLANKDIV      4 /* How often to check the DMD FIRQ interrupt */
 
 /*-- IRQ frequence, most WPC functions are performed at 1/16 of this frequency --*/
@@ -22,7 +17,6 @@
 #define GEN_HASWPCSOUND
 #define GEN_FLIPTRONFLIP (GEN_ALLWPC & ~(GEN_WPCALPHA_1|GEN_WPCALPHA_2|GEN_WPCDMD))
 #define GEN_HASDMD
-
 
 /*---------------------
 /  local WPC functions
@@ -34,8 +28,11 @@ static int wpc_irq(void);
 /*-- PIC security chip emulation --*/
 static int wpc_pic_r(void);
 static void wpc_pic_w(int data);
-static void wpc_serialCnv(char no[21], unsigned char schip[16],
-                          unsigned char code[3]);
+static void wpc_serialCnv(char no[21], UINT8 schip[16],
+                          UINT8 code[3]);
+/*-- DMD --*/
+static int  dmd_start(void);
+static void dmd_refresh(struct mame_bitmap *bitmap, int full_refresh);
 
 /*-- misc. --*/
 static void wpc_init(void);
@@ -53,8 +50,7 @@ static void wpc_nvram(void *file, int write);
 /*---------------------
 /  Global variables
 /---------------------*/
-core_tGameData *core_gameData = NULL;  /* data about the running game */
-unsigned char *wpc_data;	     /* WPC registers */
+UINT8 *wpc_data;     /* WPC registers */
 int WPC_gWPC95;      /* dcs95 sound, used in ADSP2100 patch ? */
 core_tLCDLayout wpc_dispAlpha[] = {
   DISP_SEG_16(0,CORE_SEG16),DISP_SEG_16(1,CORE_SEG16),{0}
@@ -70,19 +66,18 @@ static struct {
   UINT32  solData;        /* current value of solenoids 1-28 */
   UINT8   solFlip, solFlipPulse;  /* current value of flipper solenoids */
   UINT8   nonFlipBits;    /* flipper solenoids not used for flipper (smoothed) */
-  UINT8   lampMatrix[CORE_MAXLAMPCOL];    /* Curren lamp matrix state */
   int  vblankCount;                   /* vblank interrupt counter */
+  core_tSeg alphaSeg;
   struct {
-    unsigned char sData[16];
-    unsigned char codeNo[3];
-    unsigned char lastW;             /* last written command */
-    unsigned char sNoS;              /* serial number scrambler */
-    unsigned char count;
+    UINT8 sData[16];
+    UINT8 codeNo[3];
+    UINT8 lastW;             /* last written command */
+    UINT8 sNoS;              /* serial number scrambler */
+    UINT8 count;
     int           codeW;
   } pic;
   int time, ltime, ticks;
   int pageMask;            /* page handling */
-  core_tSeg alphaSeg;
   int firqSrc;             /* source of last firq */
   int initDone;            /* TRUE if glocals initialised, used to handle restarts */
   int diagnostic;
@@ -272,8 +267,8 @@ static int wpc_vblank(void) {
   / the lamp code here worked for 9.2 but not in 9.4.
   /-------------------------------------------------------------*/
   if ((wpclocals.vblankCount % (WPC_VBLANKDIV*WPC_LAMPSMOOTH)) == 0) {
-    memcpy(coreGlobals.lampMatrix, wpclocals.lampMatrix, sizeof(wpclocals.lampMatrix));
-    memset(wpclocals.lampMatrix, 0, sizeof(wpclocals.lampMatrix));
+    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+    memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
   if ((wpclocals.vblankCount % (WPC_VBLANKDIV*WPC_DISPLAYSMOOTH)) == 0) {
     if (core_gameData->gen & (GEN_WPCALPHA_1|GEN_WPCALPHA_2)) {
@@ -391,7 +386,7 @@ READ_HANDLER(wpc_r) {
     case DMD_FIRQLINE:
       return (wpclocals.firqSrc & WPC_FIRQ_DMD) ? 0x80 : 0x00;
     default:
-      logerror("wpc_r %4x\n", offset+WPC_BASE);
+      DBGLOG(("wpc_r %4x\n", offset+WPC_BASE));
       break;
   }
   return wpc_data[offset];
@@ -424,10 +419,10 @@ WRITE_HANDLER(wpc_w) {
     /  see vblank for description
     /------------------------------*/
     case WPC_LAMPROW: /* row and column can be written in any order */
-      core_setLamp(wpclocals.lampMatrix,wpc_data[WPC_LAMPCOLUMN],data);
+      core_setLamp(coreGlobals.tmpLampMatrix,wpc_data[WPC_LAMPCOLUMN],data);
       break;
     case WPC_LAMPCOLUMN: /* row and column can be written in any order */
-      core_setLamp(wpclocals.lampMatrix,data,wpc_data[WPC_LAMPROW]);
+      core_setLamp(coreGlobals.tmpLampMatrix,data,wpc_data[WPC_LAMPROW]);
       break;
     case WPC_SWCOLSELECT:
       if (core_gameData->gen & (GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS))
@@ -484,7 +479,7 @@ WRITE_HANDLER(wpc_w) {
       break;
     case WPC_SOUNDIF:
       if (coreGlobals.soundEn) {
-        DBGLOG(("Sound cmd: %2x\n",data));
+        //DBGLOG(("Sound cmd: %2x\n",data));
         snd_cmd_log(data);
         if (core_gameData->gen &
             (GEN_WPCALPHA_2 | GEN_WPCDMD | GEN_WPCFLIPTRON)) wpcs_data_w(0,data);
@@ -542,7 +537,7 @@ WRITE_HANDLER(wpc_w) {
       }
       break;
     default:
-      logerror("wpc_w %4x %2x\n", offset+WPC_BASE, data);
+      DBGLOG(("wpc_w %4x %2x\n", offset+WPC_BASE, data));
       break;
   }
   wpc_data[offset] = data;
@@ -570,8 +565,8 @@ static int wpc_pic_r(void) {
 static void wpc_pic_w(int data) {
   if (wpclocals.pic.codeW > 0) {
     if (wpclocals.pic.codeNo[3 - wpclocals.pic.codeW] != data)
-      logerror("Wrong code %2x (expected %2x) sent to pic.",
-               data, wpclocals.pic.codeNo[3 - wpclocals.pic.codeW]);
+      DBGLOG(("Wrong code %2x (expected %2x) sent to pic.",
+               data, wpclocals.pic.codeNo[3 - wpclocals.pic.codeW]));
     wpclocals.pic.codeW -= 1;
   }
   else if (data == 0) {
@@ -639,7 +634,6 @@ static core_tData wpcs_coreData = {
   wpcs_data_w,
   "wpcs"
 };
-UINT8 *explampmatrix = &wpclocals.lampMatrix[0];
 static void wpc_init(void) {
                               /*128K  256K        512K        768K       1024K*/
   static const int romLengthMask[] = {0x07, 0x0f, 0x00, 0x1f, 0x00, 0x00, 0x00, 0x3f};
@@ -715,8 +709,7 @@ void wpc_nvram(void *file, int write) {
 	         (core_gameData->gen & (GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS)) ? 0x3800 : 0x2000);
 }
 
-static void wpc_serialCnv(char no[21], unsigned char pic[16],
-                          unsigned char code[3]) {
+static void wpc_serialCnv(char no[21], UINT8 pic[16], UINT8 code[3]) {
   int x;
 
   pic[10] = 0x12; /* whatever */
@@ -753,3 +746,54 @@ static void wpc_serialCnv(char no[21], unsigned char pic[16],
   code[1] = x >> 8;
   code[2] = x;
 }
+
+/*----------------------------------*/
+/* Williams WPC 128x32 DMD Handling */
+/*----------------------------------*/
+static int dmd_start(void) {
+  UINT8 *RAM = memory_region(WPC_MEMREG_DMD);
+  int ii;
+
+  for (ii = 0; ii < DMD_FRAMES; ii++)
+    coreGlobals_dmd.DMDFrames[ii] = RAM;
+  coreGlobals_dmd.nextDMDFrame = 0;
+  return 0;
+}
+
+static void dmd_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
+  tDMDDot dotCol;
+  int ii,jj,kk;
+
+  /* Drawing is not optimised so just clear everything */
+  if (fullRefresh) fillbitmap(bitmap,Machine->pens[0],NULL);
+
+  /* Create a temporary buffer with all pixels */
+  for (kk = 0, ii = 1; ii < 33; ii++) {
+    UINT8 *line = &dotCol[ii][0];
+    for (jj = 0; jj < 16; jj++) {
+      /* Intensity depends on how many times the pixel */
+      /* been on in the last 3 frames                  */
+      unsigned int intens1 = ((coreGlobals_dmd.DMDFrames[0][kk] & 0x55) +
+                              (coreGlobals_dmd.DMDFrames[1][kk] & 0x55) +
+                              (coreGlobals_dmd.DMDFrames[2][kk] & 0x55));
+      unsigned int intens2 = ((coreGlobals_dmd.DMDFrames[0][kk] & 0xaa) +
+                              (coreGlobals_dmd.DMDFrames[1][kk] & 0xaa) +
+                              (coreGlobals_dmd.DMDFrames[2][kk] & 0xaa));
+
+      *line++ = (intens1)    & 0x03;
+      *line++ = (intens2>>1) & 0x03;
+      *line++ = (intens1>>2) & 0x03;
+      *line++ = (intens2>>3) & 0x03;
+      *line++ = (intens1>>4) & 0x03;
+      *line++ = (intens2>>5) & 0x03;
+      *line++ = (intens1>>6) & 0x03;
+      *line++ = (intens2>>7) & 0x03;
+      kk +=1;
+    }
+    *line = 0; /* to simplify antialiasing */
+  }
+  dmd_draw(bitmap, dotCol, core_gameData->lcdLayout ? core_gameData->lcdLayout : &wpc_dispDMD[0]);
+
+  drawStatus(bitmap,fullRefresh);
+}
+

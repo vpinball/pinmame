@@ -31,9 +31,6 @@ int samplepathc = 0;
 
 const char *cfgdir, *nvdir, *hidir, *inpdir, *stadir;
 const char *memcarddir, *artworkdir, *screenshotdir, *cheatdir;
-#ifdef PINMAME_EXT
-const char *wavedir;
-#endif /* PINMAME_EXT */
 char *alternate_name;				   /* for "-romdir" */
 
 typedef enum
@@ -290,23 +287,6 @@ int osd_faccess (const char *newfilename, int filetype)
 		else
 			return 0;
 	}
-#ifdef PINMAME_EXT
-	else
-	if( filetype == OSD_FILETYPE_WAVEFILE )
-	{
-		void *f;
-
-		sprintf (name, "%s/%s.wav", wavedir, newfilename);
-		f = fopen (name, "rb");
-		if( f )
-		{
-			fclose (f);
-			return 1;
-		}
-		else
-			return 0;
-	}
-#endif /* PINMAME_EXT */
 	else
 		return 0;
 
@@ -1019,24 +999,6 @@ void *osd_fopen (const char *game, const char *filename, int filetype, int _writ
 		f->file = fopen (name, _write ? "wb" : "rb");
 		found = f->file != 0;
 		break;
-#ifdef PINMAME_EXT
-	case OSD_FILETYPE_WAVEFILE:
-
-		LOG(("osd_fopen: attempting to %s wavefile '%s' with name '%s'\n", _write ? "write" : "read", filename, gamename));
-
-		/* only for writing */
-		if( !_write )
-		{
-			logerror("osd_fopen: type %02x read not supported\n",filetype);
-			break;
-		}
-
-		sprintf (name, "%s/%s.wav", wavedir, filename);
-		f->type = kPlainFile;
-		f->file = fopen (name, _write ? "wb" : "rb");
-		found = f->file != 0;
-		break;
-#endif /* PINMAME_EXT */
 	case OSD_FILETYPE_HIGHSCORE_DB:
 	case OSD_FILETYPE_HISTORY:
 

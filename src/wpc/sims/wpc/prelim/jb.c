@@ -18,7 +18,7 @@
    WER  Jet Bumpers
 
    More to be added...
-                      
+
 ------------------------------------------------------------------------------*/
 
 #include "driver.h"
@@ -30,7 +30,7 @@
 /  Local functions
 /-------------------*/
 static int  jb_handleBallState(sim_tBallStatus *ball, int *inports);
-static void jb_drawStatic(unsigned char **line);
+static void jb_drawStatic(BMTYPE **line);
 static void init_jb(void);
 
 /*-----------------------
@@ -38,7 +38,7 @@ static void init_jb(void);
  ------------------------*/
 /* Uncomment if you wish to use locals. type variables */
 //static struct {
-//  int 
+//  int
 //} locals;
 
 /*--------------------------
@@ -171,7 +171,7 @@ static int jb_handleBallState(sim_tBallStatus *ball, int *inports) {
   switch (ball->state)
 	{
 	/* Ball in Shooter Lane */
-    	case stBallLane:  
+    	case stBallLane:
 		if (ball->speed < 25)
 			return setState(stNotEnough,25);	/*Ball not plunged hard enough*/
 		if (ball->speed < 51)
@@ -230,7 +230,7 @@ static sim_tInportData jb_inportData[] = {
 /*--------------------
   Drawing information
   --------------------*/
-  static void jb_drawStatic(unsigned char **line) {
+  static void jb_drawStatic(BMTYPE **line) {
 
 /* Help */
 
@@ -250,14 +250,14 @@ static sim_tInportData jb_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(jb,10r,"jack1_0r.rom",0x80000,0x00e1a900a) 
+WPC_ROMSTART(jb,10r,"jack1_0r.rom",0x80000,0x00e1a900a)
 DCS_SOUNDROM5x( "jbsnd_u2.rom",0xb116d59f,
                 "jbsnd_u3.rom",0x76ad3aad,
                 "jbsnd_u4.rom",0x038b1309,
                 "jbsnd_u5.rom",0x0957e2ad,
 				"jbsnd_u6.rom",0x7a1e2c3d)
 WPC_ROMEND
-WPC_ROMSTART(jb,10b,"jack1_0b.rom",0x80000,0xda3b2735) 
+WPC_ROMSTART(jb,10b,"jack1_0b.rom",0x80000,0xda3b2735)
 DCS_SOUNDROM5x( "jbsnd_u2.rom",0xb116d59f,
                 "jbsnd_u3.rom",0x76ad3aad,
                 "jbsnd_u4.rom",0x038b1309,
@@ -268,8 +268,8 @@ WPC_ROMEND
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF(jb,10r,"Jack*Bot (1.0R)",1995,"Williams",wpc_mSecurityS,0)
-CORE_CLONEDEF(jb,10b,10r,"Jack*Bot (1.0B) (Belgium/Canada)",1995,"Williams",wpc_mSecurityS,0)
+CORE_GAMEDEF(jb,10r,"Jack*Bot (1.0R)",1995,"Williams",wpc_m95DCSS,0)
+CORE_CLONEDEF(jb,10b,10r,"Jack*Bot (1.0B) (Belgium/Canada)",1995,"Williams",wpc_m95DCSS,0)
 
 /*-----------------------
 / Simulation Definitions
@@ -290,7 +290,7 @@ static sim_tSimData jbSimData = {
 / Game Data Information
 /----------------------*/
 static core_tGameData jbGameData = {
-  GEN_WPCSECURITY, NULL,
+  GEN_WPC95DCS, NULL,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
     0,0,0,

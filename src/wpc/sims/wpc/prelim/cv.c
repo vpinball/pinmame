@@ -30,7 +30,7 @@
 /  Local functions
 /-------------------*/
 static int  cv_handleBallState(sim_tBallStatus *ball, int *inports);
-static void cv_drawStatic(unsigned char **line);
+static void cv_drawStatic(BMTYPE **line);
 static void init_cv(void);
 
 /*-----------------------
@@ -228,7 +228,7 @@ static sim_tInportData cv_inportData[] = {
 /*--------------------
   Drawing information
   --------------------*/
-static void cv_drawStatic(unsigned char **line) {
+static void cv_drawStatic(BMTYPE **line) {
   core_textOutf(30, 60,BLACK,"Help on this Simulator:");
   core_textOutf(30, 70,BLACK,"L/R Shift+- = L/R Slingshot");
   core_textOutf(30, 80,BLACK,"L/R Shift+I/O = L/R Inlane/Outlane");
@@ -248,7 +248,7 @@ static mech_tInitData cv_ringMech = {
 };
 
 static void cv_handleMech(int mech) {
-  if (mech & 0x01) mech_update(0);
+//  if (mech & 0x01) mech_update(0);
   if (mech & 0x02) {
     if (core_getSol(35)) locals.sol35 = 10; else if (locals.sol35 > 0) locals.sol35 -= 1;
     if (core_getSol(36)) locals.sol36 = 10; else if (locals.sol36 > 0) locals.sol36 -= 1;
@@ -264,7 +264,7 @@ static int cv_getSol(int solNo) {
 static int cv_getMech(int mechNo) {
   return mech_getPos(mechNo);
 }
-static void cv_drawMech(unsigned char **line) {
+static void cv_drawMech(BMTYPE **line) {
   core_textOutf(50, 0,BLACK,"CV Pos: %3d", mech_getPos(0));
 }
 

@@ -17,7 +17,7 @@
      Q  SDTM (Drain Ball)
 
    More to be added...
-                      
+
 ------------------------------------------------------------------------------*/
 
 #include "driver.h"
@@ -29,7 +29,7 @@
 /  Local functions
 /-------------------*/
 static int  jy_handleBallState(sim_tBallStatus *ball, int *inports);
-static void jy_drawStatic(unsigned char **line);
+static void jy_drawStatic(BMTYPE **line);
 static void init_jy(void);
 
 /*-----------------------
@@ -37,7 +37,7 @@ static void init_jy(void);
  ------------------------*/
 /* Uncomment if you wish to use locals. type variables */
 //static struct {
-//  int 
+//  int
 //} locals;
 
 /*--------------------------
@@ -163,7 +163,7 @@ static int jy_handleBallState(sim_tBallStatus *ball, int *inports) {
   switch (ball->state)
 	{
 	/* Ball in Shooter Lane */
-    	case stBallLane:  
+    	case stBallLane:
 		if (ball->speed < 25)
 			return setState(stNotEnough,25);	/*Ball not plunged hard enough*/
 		if (ball->speed < 51)
@@ -222,7 +222,7 @@ static sim_tInportData jy_inportData[] = {
 /*--------------------
   Drawing information
   --------------------*/
-  static void jy_drawStatic(unsigned char **line) {
+  static void jy_drawStatic(BMTYPE **line) {
 
 /* Help */
 

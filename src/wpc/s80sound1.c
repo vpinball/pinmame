@@ -31,7 +31,7 @@ void S80SS_nmi(int state)
 	S80sound1_locals.NMIState = 1;
 }
 
-unsigned char riot_3_ram[256];
+UINT8 riot_3_ram[256];
 
 READ_HANDLER( riot_3_ram_r )
 {
@@ -45,23 +45,23 @@ WRITE_HANDLER( riot_3_ram_w )
 
 
 /* input */
-READ_HANDLER(riot3a_r)  { 
-//	logerror("riot3a_r\n"); 
+READ_HANDLER(riot3a_r)  {
+//	logerror("riot3a_r\n");
 	return (S80sound1_locals.soundInput&0x0f?0x80:0x00) | 0x40 | S80sound1_locals.soundInput;
 }
 WRITE_HANDLER(riot3a_w) { logerror("riot3a_w: 0x%02x\n", data);}
 
 
 /* Switch settings, test switch and NMI */
-READ_HANDLER(riot3b_r)  { 
-	// logerror("riot3b_r\n"); 
-	return (S80sound1_locals.NMIState?0x00:0x80) | 0x54; 
+READ_HANDLER(riot3b_r)  {
+	// logerror("riot3b_r\n");
+	return (S80sound1_locals.NMIState?0x00:0x80) | 0x54;
 }
 
 WRITE_HANDLER(riot3b_w) { logerror("riot3b_w: 0x%02x\n", data);}
 
 /* D/A converters */
-WRITE_HANDLER(da1_latch_w) { 
+WRITE_HANDLER(da1_latch_w) {
 	/* logerror("da1_w: 0x%02x\n", data); */
 	if ( S80sound1_locals.buf_pos>=BUFFER_SIZE )
 		return;
@@ -69,7 +69,7 @@ WRITE_HANDLER(da1_latch_w) {
 	S80sound1_locals.buffer[S80sound1_locals.buf_pos++] = (0x80-data)*0x100;
 }
 
-WRITE_HANDLER(da2_latch_w) { 
+WRITE_HANDLER(da2_latch_w) {
 /*	logerror("da2_w: 0x%02x\n", data); */
 }
 
@@ -87,7 +87,7 @@ static const char *PhonemeTable[65] =
 };
 
 /* voice synt latch */
-WRITE_HANDLER(vs_latch_w) { 
+WRITE_HANDLER(vs_latch_w) {
 	static int queue[100],pos;
 
 	data ^= 0xff;
@@ -103,9 +103,9 @@ WRITE_HANDLER(vs_latch_w) {
 
 			buf[0] = 0;
 			for (i = 0;i < pos-1;i++) {
-				if (queue[i] == 0x03 || queue[i] == 0x3e) 
+				if (queue[i] == 0x03 || queue[i] == 0x3e)
 					strcat(buf," ");
-				else 
+				else
 					strcat(buf,PhonemeTable[queue[i]]);
 			}
 

@@ -30,7 +30,7 @@
 /  Local functions
 /-------------------*/
 static int  i500_handleBallState(sim_tBallStatus *ball, int *inports);
-static void i500_drawStatic(unsigned char **line);
+static void i500_drawStatic(BMTYPE **line);
 static void init_i500(void);
 
 /*-----------------------
@@ -192,7 +192,7 @@ static void i500_handleMech(int mech) {
 static int i500_getMech(int mechNo) {
   return mechNo ? locals.turboPos : locals.speed;
 }
-static void i500_drawMech(unsigned char **line) {
+static void i500_drawMech(BMTYPE **line) {
   static char *speedText[] = {"Stopped","Slow","Fast"};
   core_textOutf(50, 0,BLACK,"Turbo Speed:%-8s", speedText[locals.speed]);
   core_textOutf(50,10,BLACK,"Turbo Pos:%2d", locals.turboPos);
@@ -247,7 +247,7 @@ static sim_tInportData i500_inportData[] = {
 /*--------------------
   Drawing information
   --------------------*/
-  static void i500_drawStatic(unsigned char **line) {
+  static void i500_drawStatic(BMTYPE **line) {
 
 /* Help */
 
@@ -267,7 +267,7 @@ static sim_tInportData i500_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(i500,11r,"indy1_1r.rom",0x80000,0xec385bf5) 
+WPC_ROMSTART(i500,11r,"indy1_1r.rom",0x80000,0xec385bf5)
 DCS_SOUNDROM6x(	"su2",0xd2f9ab24,
 		"su3",0x067f4df6,
 		"su4",0x229b96c2,

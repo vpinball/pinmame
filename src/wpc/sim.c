@@ -225,7 +225,7 @@ void sim_draw(int fullRefresh, int firstRow) {
     fillbitmap(Machine->scrbitmap, Machine->pens[BLACK], &rec);
   }
   if (fullRefresh && simData->drawStatic)
-    simData->drawStatic(&Machine->scrbitmap->line[firstRow]);
+    simData->drawStatic((void *)(&Machine->scrbitmap->line[firstRow]));
 }
 
 /*--------------------

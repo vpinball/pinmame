@@ -24,13 +24,10 @@ static struct {
   int    vblankCount;
   int    initDone;
   UINT32 solenoids;
-  UINT8  swMatrix[CORE_MAXSWCOL];
-  UINT8  lampMatrix[CORE_MAXLAMPCOL];
   core_tSeg segments, pseg;
   int    lampRow, lampColumn;
   int    diagnosticLed;
   int    swCol;
-  int    dipcol;
   int    ssEn;
 } s4locals;
 
@@ -39,27 +36,20 @@ static data8_t *s4_CMOS;
 /*
   6 Digit Structure, Alpha Position, and Layout
   ----------------------------------------------
-  (00)(01)(02)(03)(04)(05) (06)(07)(08)(09)(10)(11)
+  (00)(01)(02)(03)(04)(05) (08)(09)(10)(11)(12)(13)
 
-  (16)(17)(18((19)(20)(21) (22)(23)(24)(25)(26)(27)
+  (16)(17)(18)(19)(20)(21) (24)(25)(26)(27)(28)(29)
 
-	   (12)(13)   (14)(15)
-
-  0-5 =		Player 1
-  6-11 =	Player 2
-  12-15 =   Credits/Balls In Play
-  16-21 =	Player 3
-  22-27 =	Player 4
+	   (14)(15)   (06)(97)
 */
-
 //Structure is: top, left, start, length, type
 core_tLCDLayout s4_disp[] = {
   // Player 1            Player 2
-  {0, 0, 0,6,CORE_SEG7}, {0,18, 6,6,CORE_SEG7},
+  {0, 0, 0,6,CORE_SEG7}, {0,18, 8,6,CORE_SEG7},
   // Player 3            Player 4
-  {2, 0,16,6,CORE_SEG7}, {2,18,22,6,CORE_SEG7},
+  {2, 0,16,6,CORE_SEG7}, {2,18,24,6,CORE_SEG7},
   // Right Side          Left Side
-  {4, 9,12,2,CORE_SEG7}, {4,14, 14,2,CORE_SEG7}, {0}
+  {4, 9,14,2,CORE_SEG7}, {4,14, 6,2,CORE_SEG7}, {0}
 };
 
 static void s4_nvram(void *file, int write);
@@ -68,7 +58,6 @@ static READ_HANDLER(s4_dips_r);
 static READ_HANDLER(s4_diagsw1_r);
 static READ_HANDLER(s4_diagsw2_r);
 static READ_HANDLER(s4_entersw_r);
-static READ_HANDLER(s4_swcol_r);
 static READ_HANDLER(s4_swrow_r);
 static WRITE_HANDLER(s4_swcol_w);
 static WRITE_HANDLER(s4_alpha_w);
@@ -92,142 +81,77 @@ static WRITE_HANDLER(s4_gameon_w);
   Dips are matrixed.. Column 0 = Data Switches 1-4, Column 1 = Data Switches 5-8..
   		      Column 2 = Function Switches 1-4, Column 3 = Function Switches 5-8
  */
-READ_HANDLER(s4_dips_r)
-{
+static READ_HANDLER(s4_dips_r) {
   /* 0x01=0, 0x02=1, 0x04=2, 0x08=3 */
-  int dipcol = (s4locals.dipcol & 0x0c) ? ((s4locals.dipcol>>2)+1) :
-	                                         s4locals.dipcol>>1;
-  return (core_getDip(dipcol/2)<<(4*(1-(dipcol&0x01)))) & 0xf0;
+  int dipcol = (s4locals.alphapos & 0x0c) ? ((s4locals.alphapos>>2)+1) :
+                                              s4locals.alphapos>>1;
+  return (core_getDip(dipcol/2+1)<<(4*(1-(dipcol&0x01)))) & 0xf0;
 }
 
 /*********************/
 /*DIAGNOSTIC SWITCHES*/
 /*********************/
-/*ADVANCE SWITCH - (CA1)*/
-READ_HANDLER(s4_diagsw1_r)
-{
-int data = cpu_get_reg(M6800_IRQ_STATE) ?(core_getSw(S4_SWADVANCE)) : 0; 
-//logerror("s4_diagsw1_r: data = %x \n", data);
-return data;
+static READ_HANDLER(s4_diagsw1_r) { /*ADVANCE SWITCH - (CA1)*/
+  return cpu_get_reg(M6800_IRQ_STATE) ? core_getSw(S4_SWADVANCE) : 0;
 }
 
-/*AUTO/MANUAL SWITCH - (CB1)*/
-READ_HANDLER(s4_diagsw2_r)
-{ 
-int data = cpu_get_reg(M6800_IRQ_STATE) ?(core_getSw(S4_SWUPDN)) : 0;
-//logerror("s4_diagsw2_r: data = %x \n", data);
-return data;
+static READ_HANDLER(s4_diagsw2_r) { /*AUTO/MANUAL SWITCH - (CB1)*/
+  return cpu_get_reg(M6800_IRQ_STATE) ? core_getSw(S4_SWUPDN) : 0;
 }
 
 /***********************************/
 /*ENTER                            */
 /***********************************/
-READ_HANDLER(s4_entersw_r)
-{
-int data = core_getSw(S4_ENTER);
-logerror("s4_entersw_r: data = %x \n", data);
-return data;
+static READ_HANDLER(s4_entersw_r) {
+  return core_getSw(S4_ENTER);
 }
 
 /********************/
 /*SWITCH MATRIX     */
 /********************/
-READ_HANDLER(s4_swcol_r)
-{
-logerror("s4_swcol_r\n");
-return 0;
-}
-READ_HANDLER(s4_swrow_r) { return core_getSwCol(s4locals.swCol); }
-WRITE_HANDLER(s4_swcol_w)
-{
-//logerror("s4_swcol_w: data = %x \n", data);
-s4locals.swCol = data;
-}
-
-
+static READ_HANDLER(s4_swrow_r) { return core_getSwCol(s4locals.swCol); }
+static WRITE_HANDLER(s4_swcol_w) { s4locals.swCol = data; }
 
 /*****************/
 /*DISPLAY ALPHA  */
 /*****************/
-WRITE_HANDLER(s4_alpha_w)
-{
-s4locals.segments[0][s4locals.alphapos].lo |=
-s4locals.pseg[0][s4locals.alphapos].lo = core_bcd2seg[data>>4];
-s4locals.segments[1][s4locals.alphapos].lo |=
-s4locals.pseg[1][s4locals.alphapos].lo = core_bcd2seg[data&0x0f];
+static WRITE_HANDLER(s4_alpha_w) {
+  s4locals.segments[0][s4locals.alphapos].lo |=
+    s4locals.pseg[0][s4locals.alphapos].lo = core_bcd2seg[data>>4];
+  s4locals.segments[1][s4locals.alphapos].lo |=
+    s4locals.pseg[1][s4locals.alphapos].lo = core_bcd2seg[data&0x0f];
 }
 
-WRITE_HANDLER(s4_pa_w)
-{
-char led1, led2;
-/*DIAG LED IS PA-4 & PA-5*/
-led2 = (data>>4)&0x01;
-led1 = (data>>5)&0x01;
-s4locals.diagnosticLed = ((led2<<1) | led1);
-
-/*Blanking? PA-2*/
-
-/*ALPHA POSITION - PA0-PA3*/
-data &= 0x0f;
-//logerror("alphapos: %x blanking?:%x \n",data,(data>>2)&0x01);
-
-/*Store Dips Column Enable = Same as Digit Select PA0-PA3*/
-s4locals.dipcol = data;
-
-/*Adjust alpha digit select for proper positioning!:
-  We need to modify the strobe from it's current ordering:
-  1,2,3,4,5,6,9,10,11,12,13,14,15,16,7,8 to regular 1..16 order!*/
-if(data >= 6  && data <= 7)
- data+=8;
-else
- if(data >= 8)
-   data-=2;
-s4locals.alphapos = data;
+static WRITE_HANDLER(s4_pa_w) {
+  /* DIAG LED IS PA-4 & PA-5*/
+  s4locals.diagnosticLed = ((data>>3) & 0x02) | ((data>>5) & 0x01);
+  /*Blanking? PA-2*/
+  /* Alpha position/Dip */
+  s4locals.alphapos = data & 0x0f;
 }
 
 /*****************/
 /* LAMP HANDLING */
 /*****************/
-READ_HANDLER(s4_lamprow_r);
-READ_HANDLER(s4_lamprow_r)
-{
-logerror("s4_lamprow_r\n");
-return 0;
-}
-
-READ_HANDLER(s4_lampcol_r);
-READ_HANDLER(s4_lampcol_r)
-{
-logerror("s4_lampcol_r\n");
-return 0;
-}
-
-WRITE_HANDLER(s4_lampcol_w) { core_setLamp(s4locals.lampMatrix, s4locals.lampColumn = data, s4locals.lampRow); }
-WRITE_HANDLER(s4_lamprow_w) { core_setLamp(s4locals.lampMatrix, s4locals.lampColumn, s4locals.lampRow = ~data); }
+static WRITE_HANDLER(s4_lampcol_w) { core_setLamp(coreGlobals.tmpLampMatrix, s4locals.lampColumn = data, s4locals.lampRow); }
+static WRITE_HANDLER(s4_lamprow_w) { core_setLamp(coreGlobals.tmpLampMatrix, s4locals.lampColumn, s4locals.lampRow = ~data); }
 
 /**************************/
 /* REGULAR SOLENOIDS #1-8 */
 /**************************/
-WRITE_HANDLER(s4_sol1_8_w)
-{
-//logerror("s4_sol1_8_w: data = %x \n", data);
-coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffffff00) | data;
-s4locals.solenoids |= data;
+static WRITE_HANDLER(s4_sol1_8_w) {
+  coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffffff00) | data;
+  s4locals.solenoids |= data;
 }
 
 /***********************************************************/
 /* REGULAR SOLENOIDS #9-16 - USED AS SOUND COMMANDS! (9-14)*/
 /***********************************************************/
-WRITE_HANDLER(s4_sol9_16_w)
-{
-//logerror("s4_sol9_16_w: data = %x \n", data);
-//snd_cmd_w(0,data&0x1f);		/*Sound Command is bits 1-5!*/
-//logerror("snd_cmd_w: data = %x \n", data&0x1f);
-s67s_cmd(0, ~data); data &= 0xe0; /* mask of sound command bits */
-coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffff00ff) | (data<<8);
-s4locals.solenoids |= (data<<8);
+static WRITE_HANDLER(s4_sol9_16_w) {
+  s67s_cmd(0, ~data); data &= 0xe0; /* mask of sound command bits */
+  coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffff00ff) | (data<<8);
+  s4locals.solenoids |= (data<<8);
 }
-
 
 /**********************************/
 /* SPECIAL SOLENOID CONTROL #1-#6 */
@@ -237,104 +161,17 @@ static void setSSSol(int data, int solNo) {
   if (s4locals.ssEn & (~data & 1)) { coreGlobals.pulsedSolState |= bit;  s4locals.solenoids |= bit; }
   else                               coreGlobals.pulsedSolState &= ~bit;
 }
-WRITE_HANDLER(s4_specsol1_w)
-{
-//logerror("s4_specsol1_w: data = %x \n", data);
-setSSSol(data, 0);
-}
-WRITE_HANDLER(s4_specsol2_w)
-{
-//logerror("s4_specsol2_w: data = %x \n", data);
-setSSSol(data, 1);
-}
-WRITE_HANDLER(s4_specsol3_w)
-{
-//logerror("s4_specsol3_w: data = %x \n",data);
-setSSSol(data, 2);
-}
-WRITE_HANDLER(s4_specsol4_w)
-{
-//logerror("s4_specsol4_w: data = %x \n", data);
-setSSSol(data, 3);
-}
-WRITE_HANDLER(s4_specsol5_w)
-{
-//logerror("s4_specsol5_w: data = %x \n", data);
-setSSSol(data, 4);
-}
-WRITE_HANDLER(s4_specsol6_w)
-{
-//logerror("s4_specsol6_w: data = %x \n", data);
-setSSSol(data, 5);
-}
-
+static WRITE_HANDLER(s4_specsol1_w) { setSSSol(data, 0); }
+static WRITE_HANDLER(s4_specsol2_w) { setSSSol(data, 1); }
+static WRITE_HANDLER(s4_specsol3_w) { setSSSol(data, 2); }
+static WRITE_HANDLER(s4_specsol4_w) { setSSSol(data, 3); }
+static WRITE_HANDLER(s4_specsol5_w) { setSSSol(data, 4); }
+static WRITE_HANDLER(s4_specsol6_w) { setSSSol(data, 5); }
 
 /*******************/
 /* GAME ON SIGNAL? */
 /*******************/
-WRITE_HANDLER(s4_gameon_w)
-{
-logerror("s4_gameon_w: data = %x \n", data);
-s4locals.ssEn = data;
-}
-
-/* UNHANDLED - NOT DOCUMENTED */
-static READ_HANDLER(pia1_b_r);
-static READ_HANDLER(pia1_b_r)
-{
-logerror("pia1_b_r \n");
-return 0;
-}
-static READ_HANDLER(pia1_cb2_r);
-static READ_HANDLER(pia1_cb2_r)
-{
-logerror("pia1_cb2_r \n");
-return 0;
-}
-
-static WRITE_HANDLER(pia1_ca2_w);
-static WRITE_HANDLER(pia1_ca2_w)
-{
-logerror("pia1_ca2_w: data = %x \n",data);
-}
-
-static READ_HANDLER(pia4_a_r);
-static READ_HANDLER(pia4_a_r)
-{
-	logerror("pia4_a_r \n");
-return 0;
-}
-static READ_HANDLER(pia4_b_r);
-static READ_HANDLER(pia4_b_r)
-{
-	logerror("pia4_b_r \n");
-return 0;
-}
-
-static WRITE_HANDLER(pia2_a_w);
-static WRITE_HANDLER(pia2_a_w)
-{
-	logerror("pia2_a_w: data %x \n",data);
-}
-
-static void pia1_irqa(int state);
-static void pia1_irqa(int state)
-{
-logerror("pia1_irqa \n");
-}
-static void pia1_irqb(int state);
-static void pia1_irqb(int state)
-{
-logerror("pia1_irqb \n");
-}
-
-static void s4s_piaIrq(int state);
-static void s4s_piaIrq(int state)
-{
-	/* IRQ to the sound CPU */
-	cpu_set_irq_line(1, M6800_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
-//	logerror("irq\n");
-}
+WRITE_HANDLER(s4_gameon_w) { s4locals.ssEn = data; }
 
 /*PIA 1 - Display and other*/
 /*PIA I:
@@ -355,11 +192,10 @@ static void s4s_piaIrq(int state)
 		  7,8,16 = (Status)5,6,(2&3)
 		  9-14 = (P2&4)1-6
 */
-static struct pia6821_interface pia_1_intf =
-{
-	/*inputs : A/B,CA1/B1,CA2/B2 */ s4_dips_r, pia1_b_r, s4_diagsw1_r, s4_diagsw2_r, s4_entersw_r, pia1_cb2_r,
-	/*outputs: A/B,CA2/B2       */  s4_pa_w, s4_alpha_w, pia1_ca2_w, s4_specsol6_w,
-	/*irqs   : A/B             */ pia1_irqa, pia1_irqb
+static struct pia6821_interface pia_1_intf = {
+ /* i : A/B,CA1/B1,CA2/B2 */ s4_dips_r, 0, s4_diagsw1_r, s4_diagsw2_r, s4_entersw_r, 0,
+ /* o : A/B,CA2/B2        */ s4_pa_w, s4_alpha_w, 0, s4_specsol6_w,
+ /* irq: A/B              */ 0, 0
 };
 /*PIA 2 - Switch Matrix*/
 /*PIA II:
@@ -371,11 +207,10 @@ static struct pia6821_interface pia_1_intf =
 (out)	CA2:	Special Solenoid #4
 (out)	CB2:	Special Solenoid #3
 */
-static struct pia6821_interface pia_2_intf =
-{
-	/*inputs : A/B,CA1/B1,CA2/B2 */ s4_swrow_r, s4_swcol_r, 0, 0, 0, 0,
-	/*outputs: A/B,CA2/B2       */  pia2_a_w, s4_swcol_w, s4_specsol4_w,s4_specsol3_w,
-	/*irqs   : A/B             */ 0, 0
+static struct pia6821_interface pia_2_intf = {
+  /* i : A/B,CA1/B1,CA2/B2 */ s4_swrow_r, 0, 0, 0, 0, 0,
+  /* o : A/B,CA2/B2        */ 0, s4_swcol_w, s4_specsol4_w, s4_specsol3_w,
+  /* irq: A/B             */  0, 0
 };
 /*PIA 3 - Lamp Matrix*/
 /*
@@ -388,42 +223,26 @@ PIA III:
 (out)	CA2:	Special Solenoid #2
 (out)	CB2:	Special Solenoid #1
 */
-static struct pia6821_interface pia_3_intf =
-{
-	/*inputs : A/B,CA1/B1,CA2/B2 */ s4_lamprow_r, s4_lampcol_r, 0, 0, 0, 0,
-	/*outputs: A/B,CA2/B2       */  s4_lamprow_w, s4_lampcol_w, s4_specsol2_w,s4_specsol1_w,
-	/*irqs   : A/B             */ 0, 0
+static struct pia6821_interface pia_3_intf = {
+  /* i : A/B,CA1/B1,CA2/B2 */ 0, 0, 0, 0, 0, 0,
+  /* o : A/B,CA2/B2        */ s4_lamprow_w, s4_lampcol_w, s4_specsol2_w,s4_specsol1_w,
+  /* irq: A/B              */ 0, 0
 };
 /*PIA 4 - Standard Solenoids*/
 /*
-PIA IV:	
-	PA0-7:	Solenoids 1-8  
+PIA IV:
+	PA0-7:	Solenoids 1-8
 	PB0-7:	Solenoids 9-16 - Sound Commands!
 	CA1:	None
 	CB1:	None
 	CA2:	Special Solenoid #5
 	CB2:	Game On Signal
 */
-static struct pia6821_interface pia_4_intf =
-{
-	/*inputs : A/B,CA1/B1,CA2/B2 */ pia4_a_r, pia4_b_r, 0, 0, 0, 0,
-	/*outputs: A/B,CA2/B2       */ s4_sol1_8_w, s4_sol9_16_w,s4_specsol5_w, s4_gameon_w,
-	/*irqs   : A/B             */ 0, 0
+static struct pia6821_interface pia_4_intf = {
+  /* i : A/B,CA1/B1,CA2/B2 */ 0, 0, 0, 0, 0, 0,
+  /* o : A/B,CA2/B2        */ s4_sol1_8_w, s4_sol9_16_w,s4_specsol5_w, s4_gameon_w,
+  /* irq: A/B              */ 0, 0
 };
-
-/*PIA 5 Sound Board PIA*/
-static struct pia6821_interface pia_5_intf = {
- /* PA0 -	DAC */
- /* PB0 -	N/A*/
- /* CA1     	N/A */
- /* CB1     	N/A */
- /* CA2     	CVSD*/
- /* CB2     	CLOCK */
- /* in  : A/B,CA/B1,CA/B2 */   0, 0, 0, 0, 0, 0,
- /* out : A/B,CA/B2       */   DAC_0_data_w, 0,hc55516_0_digit_w, hc55516_0_clock_w,
- /* irq : A/B             */   s4s_piaIrq, s4s_piaIrq
-};
-
 
 static int s4_irq(void) {
   cpu_set_irq_line(0, M6800_IRQ_LINE, PULSE_LINE);
@@ -438,8 +257,8 @@ static int s4_vblank(void) {
 
   /*-- lamps --*/
   if ((s4locals.vblankCount % S4_LAMPSMOOTH) == 0) {
-    memcpy(coreGlobals.lampMatrix, s4locals.lampMatrix, sizeof(s4locals.lampMatrix));
-    memset(s4locals.lampMatrix, 0, sizeof(s4locals.lampMatrix));
+    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+    memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
 
   /*-- solenoids --*/
@@ -469,7 +288,6 @@ static int s4_vblank(void) {
   return 0;
 }
 
-
 static void s4_updSw(int *inports) {
   if (inports) {
     coreGlobals.swMatrix[1] = inports[S4_COMINPORT] & 0x00ff;
@@ -484,13 +302,8 @@ static void s4_updSw(int *inports) {
   pia_set_input_cb1(0, core_getSw(S4_SWUPDN));
 
   /* Show Status of Auto/Manual Switch */
-  if(core_getSw(S4_SWUPDN))
-          core_textOutf(40, 30, BLACK, "%-7s","Auto");
-  else
-          core_textOutf(40, 30, BLACK, "%-7s","Manual");
+  core_textOutf(40, 30, BLACK, core_getSw(S4_SWUPDN) ? "Auto  " : "Manual");
 }
-
-
 
 static core_tData s4Data = {
   16, /* 16 Dips */
@@ -501,8 +314,7 @@ static core_tData s4Data = {
 };
 
 static void s4_init(void) {
-  if (s4locals.initDone)
-    s4_exit();
+  if (s4locals.initDone) CORE_DOEXIT(s4_exit);
   s4locals.initDone = TRUE;
 
   if (core_init(&s4Data)) return;
@@ -517,12 +329,6 @@ static void s4_init(void) {
   if (coreGlobals.soundEn) s67s_init();
   pia_reset();
 
-}
-
-static void s4s_init(void){
-	s4_init();
-	pia_config(4, PIA_STANDARD_ORDERING, &pia_5_intf);
-	pia_reset();
 }
 
 static void s4_exit(void) {
@@ -547,7 +353,7 @@ MEMORY_END
 
 static MEMORY_WRITE_START(s4_writemem)
   { 0x0000, 0x00ff, MWA_RAM },
-{ 0x0100, 0x01ff, s4_CMOS_w, &s4_CMOS },
+  { 0x0100, 0x01ff, s4_CMOS_w, &s4_CMOS },
   { 0x2200, 0x2203, pia_3_w },		/*Solenoids + Sound Commands*/
   { 0x2400, 0x2403, pia_2_w }, 		/*Lamps*/
   { 0x2800, 0x2803, pia_0_w },		/*Display + Other*/
@@ -557,41 +363,33 @@ static MEMORY_WRITE_START(s4_writemem)
 MEMORY_END
 
 struct MachineDriver machine_driver_s4 = {
-    {
-     {
-      CPU_M6800, 3580000/4, /* 3.58/4 = 900hz */
+  {{  CPU_M6800, 3580000/4, /* 3.58/4 = 900hz */
       s4_readmem, s4_writemem, NULL, NULL,
-      s4_vblank, 1,
-      s4_irq, S4_IRQFREQ
-     }
-  },
+      s4_vblank, 1, s4_irq, S4_IRQFREQ
+  }},
   S4_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50,
-  s4_init,CORE_EXITFUNC(NULL)
+  s4_init, CORE_EXITFUNC(NULL)
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_TYPE_RASTER,
-  0,
+  VIDEO_TYPE_RASTER, 0,
   NULL, NULL, gen_refresh,
   0,0,0,0, {{0}},
   s4_nvram
 };
 
 struct MachineDriver machine_driver_s4s= {
-    {{
-      CPU_M6800, 3580000/4, /* 3.58/4 = 900hz */
-      s4_readmem, s4_writemem, NULL, NULL,
-      s4_vblank, 1,
-      s4_irq, S4_IRQFREQ
-     },S67S_SOUNDCPU
-	},
+  {{ CPU_M6800, 3580000/4, /* 3.58/4 = 900hz */
+     s4_readmem, s4_writemem, NULL, NULL,
+     s4_vblank, 1, s4_irq, S4_IRQFREQ
+   },S67S_SOUNDCPU
+  },
   S4_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50,
-  s4s_init,CORE_EXITFUNC(NULL)
+  s4_init, CORE_EXITFUNC(NULL)
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_TYPE_RASTER,
-  0,
+  VIDEO_TYPE_RASTER, 0,
   NULL, NULL, gen_refresh,
   0,0,0,0, { S67S_SOUND },
   s4_nvram
@@ -600,9 +398,6 @@ struct MachineDriver machine_driver_s4s= {
 /*-----------------------------------------------
 / Load/Save static ram
 /-------------------------------------------------*/
-void s4_nvram(void *file, int write) {
-  UINT8 *mem = s4_CMOS;
-  if (write)     osd_fwrite(file, mem, 0x0100); /* save */
-  else if (file) osd_fread( file, mem, 0x0100); /* load */
-  else           memset(mem, 0xff, 0x0100);     /* first time */
+static void s4_nvram(void *file, int write) {
+  core_nvram(file, write, s4_CMOS, 0x100);
 }
