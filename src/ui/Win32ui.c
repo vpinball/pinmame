@@ -571,7 +571,8 @@ struct GameDriver driver_neogeo =
 	0,
 	0,
 	0,
-        NOT_A_DRIVER,
+    0,
+    NOT_A_DRIVER
 };
 #else
 extern struct GameDriver driver_neogeo;
