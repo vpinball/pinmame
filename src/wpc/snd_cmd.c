@@ -105,8 +105,9 @@ int snd_get_cmd_log(int *last, int *buffer) {
 /*-----------------------------------*/
 int manual_sound_commands(struct mame_bitmap *bitmap) {
   int ii;
+
   /*-- we must have something to play with --*/
-  if (!locals.boards) return TRUE;
+  if (mame_debug || !locals.boards) return TRUE; // F4 interferes with mame debugger
 
   /*-- handle recording --*/
   if (keyboard_pressed_memory_repeat(SMDCMD_RECORDTOGGLE,REPEATKEY))
