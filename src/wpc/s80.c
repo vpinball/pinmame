@@ -18,6 +18,7 @@
 #include "s80.h"
 #include "s80sound0.h"
 #include "s80sound1.h"
+#include "s80sound2.h"
 
 #define S80_VBLANKFREQ      60 /* VBLANK frequency */
 
@@ -167,7 +168,10 @@ static WRITE_HANDLER(S80_sndCmd_w) {
 		// sys80 sound & speech board
 		sys80_sound_latch_ss(data|((S80locals.lampMatrix[1]&0x02)?0x10:0x00));
 	}
-
+	if ( core_gameData->gen & GEN_S80B2K || core_gameData->gen & GEN_S80B4K) {
+		// sys80b sound board (all generations)
+		S80Bs_soundlatch(data);
+	}
 	// logerror("sound cmd: 0x%02x\n", data);
 }
 
@@ -658,6 +662,7 @@ struct MachineDriver machine_driver_S80SS = {
   S80_nvram
 };
 
+/* s80b - no sound (needed until all known hardware is deteremined) */
 struct MachineDriver machine_driver_S80B = {
   {
     {
@@ -679,6 +684,76 @@ struct MachineDriver machine_driver_S80B = {
   0,0,0,0,{{0}},
   S80_nvram
 };
+
+/* s80b - Gen 1 Sound Hardware*/
+struct MachineDriver machine_driver_S80BS1 = {
+  {
+    {
+      CPU_M6502, 850000, /* 0.85 Mhz */
+      S80_readmem, S80_writemem, NULL, NULL,
+	  S80_vblank, 1,
+	  NULL, 0
+	}
+	S80BS1_SOUNDCPU2
+    S80BS1_SOUNDCPU1},
+  S80_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  50,
+  S80_init,CORE_EXITFUNC(NULL)
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
+  VIDEO_TYPE_RASTER,
+  0,
+  NULL, NULL, gen_refresh,
+  0,0,0,0,{S80BS1_SOUND},
+  S80_nvram
+};
+
+/* s80b - Gen 2 Sound Hardware*/
+struct MachineDriver machine_driver_S80BS2 = {
+  {
+    {
+      CPU_M6502, 850000, /* 0.85 Mhz */
+      S80_readmem, S80_writemem, NULL, NULL,
+	  S80_vblank, 1,
+	  NULL, 0
+	}
+	S80BS2_SOUNDCPU2
+    S80BS2_SOUNDCPU1},
+  S80_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  50,
+  S80_init,CORE_EXITFUNC(NULL)
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
+  VIDEO_TYPE_RASTER,
+  0,
+  NULL, NULL, gen_refresh,
+  0,0,0,0,{S80BS2_SOUND},
+  S80_nvram
+};
+
+/* s80b - Gen 3 Sound Hardware*/
+struct MachineDriver machine_driver_S80BS3 = {
+  {
+    {
+      CPU_M6502, 850000, /* 0.85 Mhz */
+      S80_readmem, S80_writemem, NULL, NULL,
+	  S80_vblank, 1,
+	  NULL, 0
+	}
+	S80BS3_SOUNDCPU2
+    S80BS3_SOUNDCPU1},
+  S80_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  50,
+  S80_init,CORE_EXITFUNC(NULL)
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
+  VIDEO_TYPE_RASTER,
+  0,
+  NULL, NULL, gen_refresh,
+  0,0,0,0,{S80BS3_SOUND},
+  S80_nvram
+};
+
 
 static void S80_init(void) {
   int ii;
@@ -718,6 +793,8 @@ static void S80_init(void) {
 		S80S_sinit(S80SS_SCPU);
 	  else if ( core_gameData->gen & GEN_S80SS )
 		S80SS_sinit(S80SS_SCPU);
+	  else if ( core_gameData->gen & GEN_S80B2K || core_gameData->gen & GEN_S80B4K )
+	    S80Bs_sound_init(); 
   }
 
   riot_reset();
