@@ -13,6 +13,7 @@
  *
  *   TODO:
  *		   1) Not sure where to set BOF line properly
+ *		   2) Not sure of best pcm buffer size and prebuffer size values (nor when best to put SREQ low again)
  **********************************************************************************************/
 
 
@@ -85,13 +86,13 @@ static int valid_header(int chipnum);
 /**********************************************************************************************
      CONSTANTS
 ***********************************************************************************************/
-#define MPG_HEADERSIZE				4							//Mpeg1 - Layer 2 Header Size
-#define MPG_FRAMESIZE				140							//Mpeg1 - Layer 2 Framesize @ 32KHz/32kbps (excluding header)
+#define MPG_HEADERSIZE				4			//Mpeg1 - Layer 2 Header Size
+#define MPG_FRAMESIZE				140			//Mpeg1 - Layer 2 Framesize @ 32KHz/32kbps (excluding header)
 
-#define CAP_PCMBUFFER_SIZE			1152*10						//# of Samples to hold (1 Frame = 1152 Samples)
-#define CAP_PREBUFFER_SIZE			1152*2						//# of decoded samples needed before we begin to output pcm
+#define CAP_PCMBUFFER_SIZE			1152*16		//# of Samples to hold (1 Frame = 1152 Samples)
+#define CAP_PREBUFFER_SIZE			1152*2		//# of decoded samples needed before we begin to output pcm
 
-#define	LOG_DATA_IN					0							//Set to 1 to log data input to an mp3 file
+#define	LOG_DATA_IN					0			//Set to 1 to log data input to an mp3 file
 
 /**********************************************************************************************
      INTERNAL DATA STRUCTURES
@@ -526,7 +527,8 @@ static void tms320av120_update(int num, INT16 *buffer, int length)
 		}
 		//No more data ready for output, so abort
 		if (tms320av120[num].sOut == tms320av120[num].pcm_pos){
-			LOG(("TMS320AV120 #%d: No more pcm samples ready for output, so skipping\n",num));
+			if(tms320av120[num].found_header)
+				LOG(("TMS320AV120 #%d: No more pcm samples ready for output, skipping %d \n",num,length-ii));
 			break;
 		}
 		//Send next pcm sample to output buffer (mute if it is set)
@@ -688,7 +690,7 @@ void TMS320AV120_set_mute(int chipnum, int state)
 	if(state == tms320av120[chipnum].mute) return;
 	//Update state
 	tms320av120[chipnum].mute = state;
-	LOG(("TMS320AV120 #%d mute line set to %d!\n",chipnum,state));
+	//LOG(("TMS320AV120 #%d mute line set to %d!\n",chipnum,state));
 }
 
 /**********************************************************************************************
@@ -699,7 +701,7 @@ void TMS320AV120_set_reset(int chipnum, int state)
 	//Act only on change of state
 	if(state == tms320av120[chipnum].reset) return;
 
-	LOG(("TMS320AV120 #%d reset line set to %d!\n",chipnum,state));
+	//LOG(("TMS320AV120 #%d reset line set to %d!\n",chipnum,state));
 
 	//Transition from active to reset?
 	if(!tms320av120[chipnum].reset && state)
@@ -791,14 +793,14 @@ WRITE_HANDLER( TMS320AV120_data_w )
 		//Reset Frame Buffer position for reading
 		tms320av120[chipnum].fb_pos = 0;
 
-		//Handle PCM overflow? (Leave room for this frame)
+		//Handle PCM wraparound.. (Leave room for this frame)
 		if( (tms320av120[chipnum].pcm_pos+1152) == CAP_PCMBUFFER_SIZE) {
 			//Flag SREQ HI to stop data coming in!
 			set_sreq_line(chipnum,1);
 		}
 
 		//Decode the frame (generates 1152 pcm samples)
-		DecodeLayer2(chipnum);
+		DecodeLayer2(chipnum);		 //note: tms320av120[chipnum].pcm_pos will be adjusted +1152 inside the decode function
 
 		//Do we now have enough pre-buffer to begin?
 		if(tms320av120[chipnum].pcm_pos == CAP_PREBUFFER_SIZE)
