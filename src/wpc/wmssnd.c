@@ -534,7 +534,7 @@ static void wpcs_init(struct sndbrdData *brdData) {
 /  DCS sound board
 /---------------------*/
 /*-- ADSP core functions --*/
-static void adsp_init(UINT32 *(*getBootROM)(int soft),
+static void adsp_init(data8_t *(*getBootROM)(int soft),
                void (*txData)(UINT16 start, UINT16 size, UINT16 memStep, int sRate));
 static void adsp_boot(int soft);
 static void adsp_txCallback(int port, INT32 data);
@@ -697,8 +697,8 @@ static READ16_HANDLER(dcs2_RAMbank_r)  { return dcslocals.RAMbankPtr[offset]; }
 
 static WRITE16_HANDLER(dcs2_RAMbank_w) { dcslocals.RAMbankPtr[offset] = data; }
 
-static UINT32 *dcs_getBootROM(int soft) {
-  return (UINT32 *)(dcslocals.brdData.romRegion +
+static data8_t *dcs_getBootROM(int soft) {
+  return (data8_t *)(dcslocals.brdData.romRegion +
                     (soft ? ((dcslocals.ROMbank1 & 0xff)<<12) : 0));
 }
 
@@ -878,12 +878,12 @@ enum {
 static struct {
  UINT16  ctrlRegs[32];
  void   *irqTimer;
- UINT32 *(*getBootROM)(int soft);
+ data8_t *(*getBootROM)(int soft);
  void   (*txData)(UINT16 start, UINT16 size, UINT16 memStep, int sRate);
 } adsp; /* = {{0},NULL,dcs_getBootROM,dcs_txData};*/
 static void adsp_irqGen(int dummy);
 
-static void adsp_init(UINT32 *(*getBootROM)(int soft),
+static void adsp_init(data8_t *(*getBootROM)(int soft),
                      void (*txData)(UINT16 start, UINT16 size, UINT16 memStep, int sRate)) {
   /* stupid timer/machine init handling in MAME */
   if (adsp.irqTimer) timer_remove(adsp.irqTimer);
@@ -896,27 +896,18 @@ static void adsp_init(UINT32 *(*getBootROM)(int soft),
   adsp2105_set_tx_callback(adsp_txCallback);
 }
 
-static void adsp_boot(int soft) {
-  UINT32 *src = adsp.getBootROM(soft);
-  UINT32 *dst = (UINT32 *)(dcslocals.cpuRegion + ADSP2100_PGM_OFFSET);
-  UINT32  data = src[0];
-  UINT32  size;
-  UINT32  ii;
-
-  data = src[0];
-#ifdef LSB_FIRST // ************** not really tested yet ****************
-  data = ((data & 0xff)<<24) | ((data & 0xff00)<<8) | ((data>>8) & 0xff00) | ((data>>24) & 0xff);
-#endif /* LSB_FIRST */
-  size = ((data & 0xff) + 1) * 8;
-
-  for (ii = 0; ii < size; ii++) {
-    data = src[ii];
-#ifdef LSB_FIRST // ************** not really tested yet ****************
-    data = ((data & 0xff)<<24) | ((data & 0xff00)<<8) | ((data>>8) & 0xff00) | ((data>>24) & 0xff);
-#endif
-    data >>= 8;
-    ADSP2100_WRPGM(&dst[ii], data);
+#if MAMEVER < 6300
+static void adsp2105_load_boot_data(data8_t *srcdata, data32_t *dstdata) {
+  UINT32 size = 8 * (srcdata[3] + 1), i;
+  for (i = 0; i < size; i++) {
+    UINT32 opcode = (srcdata[i*4+0] << 16) | (srcdata[i*4+1] << 8) | srcdata[i*4+2];
+    ADSP2100_WRPGM(&dstdata[i], opcode);
   }
+}
+#endif /* MAMEVER */
+
+static void adsp_boot(int soft) {
+  adsp2105_load_boot_data(adsp.getBootROM(soft), (UINT32 *)(dcslocals.cpuRegion+ADSP2100_PGM_OFFSET));
   timer_enable(adsp.irqTimer, FALSE);
 }
 

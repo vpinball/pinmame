@@ -1,6 +1,6 @@
 MAMEVER=5900
 PINMAMESRC=wpc
-
+ISVER$(MAMEVER)=1
 #
 # PinMAME specific flags
 #
@@ -126,6 +126,9 @@ CPUS += M6800@
 CPUS += M6803@
 CPUS += M6802@
 CPUS += ADSP2105@
+ifdef ISVER6300
+CPUS += ADSP2101@
+endif
 CPUS += Z80@
 CPUS += M6502@
 CPUS += M65C02@
@@ -140,6 +143,13 @@ CPUS += PPS4@
 
 SOUNDS += DAC@
 SOUNDS += YM2151_ALT@
+ifdef ISVER6300
+SOUNDS += YM2610@ #to avoid compile errors
+SOUNDS += YM2610B@
+endif
+ifdef ISVER6100
+SOUNDS += YM2610@ #to avoid compile errors
+endif
 SOUNDS += HC55516@
 SOUNDS += SAMPLES@
 SOUNDS += TMS5220@

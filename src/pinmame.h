@@ -10,8 +10,25 @@
 #define TINY_COMPILE
 #define NEOFREE
 
+
 #if MAMEVER >= 6100
 #define osd_mark_dirty(a,b,c,d)
+#endif /* MAMEVER */
+#if MAMEVER >= 6300
+#define VIDEO_SUPPORTS_DIRTY 0
+#define FILETYPE_PRINTER FILETYPE_MEMCARD
+#endif /* MAMEVER */
+#if MAMEVER < 6300
+#define FILETYPE_WAVE OSD_FILETYPE_WAVEFILE
+#define FILETYPE_HIGHSCORE_DB OSD_FILETYPE_HIGHSCORE_DB
+#define FILETYPE_PRINTER OSD_FILETYPE_MEMCARD
+#define mame_file void
+#define mame_fopen osd_fopen
+#define mame_fclose osd_fclose
+#define mame_fgets osd_fgets
+#define mame_faccess osd_faccess
+#define mame_fwrite osd_fwrite
+#define mame_fwrite_lsbfirst osd_fwrite_lsbfirst
 #endif /* MAMEVER */
 #if MAMEVER > 3716
 #define BMTYPE UINT16
@@ -41,11 +58,14 @@
 #define HAS_M68000   1
 #define HAS_M68306   1
 #define HAS_S2650    1
-#define HAS_8080	 1
-#define HAS_8085A	 1
+#define HAS_8080     1
+#define HAS_8085A    1
 #define HAS_I86      1
 #define HAS_4004     1
 #define HAS_PPS4     1
+#if MAMEVER >= 6300
+#define HAS_ADSP2101 // to avoid compile errors
+#endif
 
 // Sound
 #define HAS_DAC        1
