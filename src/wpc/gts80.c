@@ -747,7 +747,7 @@ static void GTS80_init(void) {
   /* init RAM */
   memset(RIOT6532_0_RAM, 0x00, sizeof RIOT6532_0_RAM);
   memset(RIOT6532_1_RAM, 0x00, sizeof RIOT6532_1_RAM);
-  memset(RIOT6532_1_RAM, 0x00, sizeof RIOT6532_1_RAM);
+  memset(RIOT6532_2_RAM, 0x00, sizeof RIOT6532_2_RAM);
 
   /* init RIOTS */
   for (ii = 0; ii < sizeof(GTS80_riot6532_intf)/sizeof(GTS80_riot6532_intf[0]); ii++)
