@@ -850,6 +850,7 @@ DRIVERNV(mcastle)       //09/84 Magic Castle
 DRIVERNV(mcastleg)      //09/84 Magic Castle (german speech)
 DRIVERNV(myststar)      //??/84 Mystic Star
 DRIVERNV(robot)         //01/85 Robot
+DRIVERNV(robotg)        //01/85 Robot (german speech)
 DRIVERNV(clown)         //07/85 Clown
 DRIVERNV(poolcham)      //12/85 Pool Champion
 DRIVERNV(bbeltzac)      //??/86 Blackbelt
