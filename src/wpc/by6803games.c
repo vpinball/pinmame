@@ -247,7 +247,7 @@ CORE_CLONEDEFNV(esclwrlg,esclwrld,"Escape from the Lost World (German)",1987,"Ba
 / Blackwater 100 (6803-0H07: 03/88)
 /------------------------------------*/
 //CPU & Sound Works?
-INITGAME6803(black100,GEN_BY6803A,dispBy104,FLIP_SW(FLIP_L),4,SNDBRD_BYSD, BY6803_DISPALPHA)
+INITGAME6803(black100,GEN_BY6803A,dispBy104,FLIP6803,4,SNDBRD_BYSD, BY6803_DISPALPHA)
 BY6803_ROMSTART44(black100, "u2.cpu", CRC(411fa773) SHA1(9756c7eee0f78792823a0b0379d2baac28cb03e8),
                             "u3.cpu", CRC(d6f6f890) SHA1(8fe4dae471f4c89f2fd72c6e647ead5206881c63))
 BYSD_SOUNDROM0000(          "u12.bin",CRC(a0ecb282) SHA1(4655e0b85f7e8af8dda853279696718d3adbf7e3),
@@ -263,7 +263,7 @@ CORE_GAMEDEFNV(black100,"Blackwater 100",1988,"Bally",by_mBY6803_SDS,0)
 / Truck Stop (6803-2001: 12/88) - These are ProtoType ROMS?
 /-------------------------------------------------------------*/
 //CPU & Sound Works?
-INITGAME6803(truckstp,GEN_BY6803A,dispBy104,FLIP_SW(FLIP_L),4,SNDBRD_S11CS, BY6803_DISPALPHA)
+INITGAME6803(truckstp,GEN_BY6803A,dispBy104,FLIP6803,4,SNDBRD_S11CS, BY6803_DISPALPHA)
 BY6803_ROMSTART44(truckstp,"u2_p2.128",   CRC(3c397dec) SHA1(2fc86ad39c935ce8615eafd67e571ac94c938cd7),
                            "u3_p2.128",   CRC(d7ac519a) SHA1(612bf9fee0d54e8b1215508bd6c1ea61dcb99951))
 S11CS_SOUNDROM888(         "u4sndp1.256", CRC(120a386f) SHA1(51b3b45eb7ea63758b21aad404ba12a9607fec44),
