@@ -74,7 +74,9 @@ static struct {
   int       firstSimRow;
   tSegData  *segData;
   void      *timers[5];
-  int       displaySize; // 1=compact 2=normal
+  int       flipTimer[4];  // time since flipper was activated (used for EOS simulation)
+  UINT8     flipMask;      // Flipper bits used for flippers
+  int       displaySize;   // 1=compact 2=normal
 } locals;
 
 /*--------
@@ -250,10 +252,10 @@ static VIDEO_UPDATE(core_gen) {
 /----------------------*/
 void core_updateSw(int flipEn) {
   /*-- handle flippers--*/
-  int flip = core_gameData->hw.flippers;
+  const int flip = core_gameData->hw.flippers;
+  const int flipSwCol = (core_gameData->gen & GEN_GTS3) ? 15 : CORE_FLIPPERSWCOL;
   int inports[CORE_MAXPORTS];
-  UINT8 swFlip = coreGlobals.swMatrix[(core_gameData->gen & GEN_GTS3) ? 15 : CORE_FLIPPERSWCOL] &
-                 (CORE_SWULFLIPBUTBIT|CORE_SWURFLIPBUTBIT|CORE_SWLLFLIPBUTBIT|CORE_SWLRFLIPBUTBIT);
+  UINT8 swFlip;
   int ii;
 
   if (g_fHandleKeyboard) {
@@ -264,19 +266,21 @@ void core_updateSw(int flipEn) {
     swFlip = 0;
     if (inports[CORE_FLIPINPORT] & CORE_LLFLIPKEY) swFlip |= CORE_SWLLFLIPBUTBIT;
     if (inports[CORE_FLIPINPORT] & CORE_LRFLIPKEY) swFlip |= CORE_SWLRFLIPBUTBIT;
-    if (flip & FLIP_SW(FLIP_UL)) {    /* have UL switch */
+    if (locals.flipMask & CORE_SWULFLIPBUTBIT) {    /* have UL switch */
       if (flip & FLIP_BUT(FLIP_UL))
         { if (inports[CORE_FLIPINPORT] & CORE_ULFLIPKEY) swFlip |= CORE_SWULFLIPBUTBIT; }
       else
         { if (inports[CORE_FLIPINPORT] & CORE_LLFLIPKEY) swFlip |= CORE_SWULFLIPBUTBIT; }
     }
-    if (flip & FLIP_SW(FLIP_UR)) {    /* have UL switch */
+    if (locals.flipMask & CORE_SWURFLIPBUTBIT) {    /* have UR switch */
       if (flip & FLIP_BUT(FLIP_UR))
         { if (inports[CORE_FLIPINPORT] & CORE_URFLIPKEY) swFlip |= CORE_SWURFLIPBUTBIT; }
       else
         { if (inports[CORE_FLIPINPORT] & CORE_LRFLIPKEY) swFlip |= CORE_SWURFLIPBUTBIT; }
     }
   }
+  else
+    swFlip = (coreGlobals.swMatrix[flipSwCol] ^ coreGlobals.invSw[flipSwCol]) & (CORE_SWULFLIPBUTBIT|CORE_SWURFLIPBUTBIT|CORE_SWLLFLIPBUTBIT|CORE_SWLRFLIPBUTBIT);
 
   /*-- set switches in matrix for non-fliptronic games --*/
   if (FLIP_SWL(flip)) core_setSw(FLIP_SWL(flip), swFlip & CORE_SWLLFLIPBUTBIT);
@@ -292,27 +296,28 @@ void core_updateSw(int flipEn) {
   }
 
   /*-- EOS switches --*/
-  if (flip & FLIP_EOS(FLIP_UL)) {
-    if (core_getSol(sULFlip)) coreGlobals.flipTimer[0] += 1;
-    else                      coreGlobals.flipTimer[0] = 0;
-    if (coreGlobals.flipTimer[0] >= CORE_FLIPSTROKETIME) swFlip |= CORE_SWULFLIPEOSBIT;
+  if (locals.flipMask & CORE_SWULFLIPEOSBIT) {
+    if (core_getSol(sULFlip)) locals.flipTimer[0] += 1;
+    else                      locals.flipTimer[0] = 0;
+    if (locals.flipTimer[0] >= CORE_FLIPSTROKETIME) swFlip |= CORE_SWULFLIPEOSBIT;
   }
-  if (flip & FLIP_EOS(FLIP_UR)) {
-    if (core_getSol(sURFlip)) coreGlobals.flipTimer[1] += 1;
-    else                      coreGlobals.flipTimer[1] = 0;
-    if (coreGlobals.flipTimer[1] >= CORE_FLIPSTROKETIME) swFlip |= CORE_SWURFLIPEOSBIT;
+  if (locals.flipMask & CORE_SWURFLIPEOSBIT) {
+    if (core_getSol(sURFlip)) locals.flipTimer[1] += 1;
+    else                      locals.flipTimer[1] = 0;
+    if (locals.flipTimer[1] >= CORE_FLIPSTROKETIME) swFlip |= CORE_SWURFLIPEOSBIT;
   }
-  if (flip & FLIP_EOS(FLIP_LL)) {
-    if (core_getSol(sLLFlip)) coreGlobals.flipTimer[2] += 1;
-    else                      coreGlobals.flipTimer[2] = 0;
-    if (coreGlobals.flipTimer[2] >= CORE_FLIPSTROKETIME) swFlip |= CORE_SWLLFLIPEOSBIT;
+  if (locals.flipMask & CORE_SWLLFLIPEOSBIT) {
+    if (core_getSol(sLLFlip)) locals.flipTimer[2] += 1;
+    else                      locals.flipTimer[2] = 0;
+    if (locals.flipTimer[2] >= CORE_FLIPSTROKETIME) swFlip |= CORE_SWLLFLIPEOSBIT;
   }
-  if (flip & FLIP_EOS(FLIP_LR)) {
-    if (core_getSol(sLRFlip)) coreGlobals.flipTimer[3] += 1;
-    else                      coreGlobals.flipTimer[3] = 0;
-    if (coreGlobals.flipTimer[3] >= CORE_FLIPSTROKETIME) swFlip |= CORE_SWLRFLIPEOSBIT;
+  if (locals.flipMask & CORE_SWLRFLIPEOSBIT) {
+    if (core_getSol(sLRFlip)) locals.flipTimer[3] += 1;
+    else                      locals.flipTimer[3] = 0;
+    if (locals.flipTimer[3] >= CORE_FLIPSTROKETIME) swFlip |= CORE_SWLRFLIPEOSBIT;
   }
-  coreGlobals.swMatrix[(core_gameData->gen & GEN_GTS3) ? 15 : CORE_FLIPPERSWCOL] = swFlip;
+  coreGlobals.swMatrix[flipSwCol] = (coreGlobals.swMatrix[flipSwCol]         & ~locals.flipMask) |
+                                    ((swFlip ^ coreGlobals.invSw[flipSwCol]) &  locals.flipMask);
 
   /*-- update core dependent switches --*/
   if (coreData->updSw)  coreData->updSw(g_fHandleKeyboard ? inports : NULL);
@@ -918,7 +923,17 @@ static MACHINE_INIT(core) {
     /*-- init switch matrix --*/
     memcpy(&coreGlobals.invSw, core_gameData->wpc.invSw, sizeof(core_gameData->wpc.invSw));
     memcpy(coreGlobals.swMatrix, coreGlobals.invSw, sizeof(coreGlobals.invSw));
-
+    /*-- mask bit used by flippers --*/
+    {
+      const int flip = core_gameData->hw.flippers;
+      locals.flipMask = CORE_SWLRFLIPBUTBIT | CORE_SWLLFLIPBUTBIT |
+         ((flip & FLIP_SW(FLIP_UL)) ? CORE_SWULFLIPBUTBIT : 0) |
+         ((flip & FLIP_SW(FLIP_UR)) ? CORE_SWURFLIPBUTBIT : 0) |
+         ((flip & FLIP_EOS(FLIP_UL))? CORE_SWULFLIPEOSBIT : 0) |
+         ((flip & FLIP_EOS(FLIP_UR))? CORE_SWURFLIPEOSBIT : 0) |
+         ((flip & FLIP_EOS(FLIP_LL))? CORE_SWLLFLIPEOSBIT : 0) |
+         ((flip & FLIP_EOS(FLIP_LR))? CORE_SWLRFLIPEOSBIT : 0);
+    }
     /*-- command line options --*/
     locals.displaySize = pmoptions.dmd_compact ? 1 : 2;
     // Skip core_initDisplaySize if using CORE_VIDEO flag.. but this code must also run if NO layout defined
