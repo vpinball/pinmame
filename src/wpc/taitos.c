@@ -82,22 +82,14 @@ static WRITE_HANDLER(pia0ca2_w)
 static WRITE_HANDLER(pia0cb2_w)
 {
 //	logerror("pia0cb2_w: %02x\n", data);
-	if ((taitos_locals.brdData.subType & 0x01) == SINTEVOX) {
-	    if (!votraxsc01_status_r(0)) {
-			pia_set_input_ca1(SP_PIA0, 0);
-			if ((taitos_locals.votrax_data & 0x3f) == 0x3f) // STOP command
-				pia_set_input_ca1(SP_PIA0, 1);
-			else
-				votraxsc01_w(0, taitos_locals.votrax_data);
-		}
-	}
+	if ((taitos_locals.brdData.subType & 0x01) == SINTEVOX) 
+		votraxsc01_w(0, taitos_locals.votrax_data);
 }
 
 static void votrax_busy(int state)
 {
 //	logerror("votrax busy: %i\n", state);
-	if (!state)
-		pia_set_input_ca1(SP_PIA0, 1);
+	pia_set_input_ca1(SP_PIA0, state?0:1);
 }
 
 static const struct pia6821_interface sp_pia = {
@@ -132,12 +124,12 @@ static void taitos_init(struct sndbrdData *brdData)
 struct DACinterface TAITO_dacInt =
 {
   1,			/* 1 Chip */
-  {100}		    /* Volume */
+  {50}		    /* Volume */
 };
 
 struct VOTRAXSC01interface TAITO_votrax_sc01_interface = {
 	1,						/* 1 chip */
-	{ 100 },				/* master volume */
+	{ 50 },					/* master volume */
 	{ 8000 },				/* dynamically changing this is currently not supported */
 	{ &votrax_busy }		/* set NMI when busy signal get's low */
 };
