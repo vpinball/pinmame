@@ -1319,9 +1319,22 @@ SOURCE=src\sound\sn76477.c
 !ENDIF 
 
 # End Source File
-sn76477.c# Begin Source File
+# Begin Source File
 
 SOURCE=src\sound\sn76477.h
+
+!IF  "$(CFG)" == "PinMAME - Win32 Release"
+
+# PROP Intermediate_Dir "obj/PinMAME/Release"
+
+!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=src\sound\streams.c
 
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
 
