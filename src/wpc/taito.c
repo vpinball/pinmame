@@ -120,11 +120,6 @@ static READ_HANDLER(switches_r) {
 		return coreGlobals.swMatrix[offset+1]^0xff;
 }
 
-// some games (Drakor) are reading from 0x28d8 and 0x28df)
-static READ_HANDLER(unknown_r) {
-	return 0x00;
-}
-
 static WRITE_HANDLER(switches_w) {
 	logerror("switch write: %i %i\n", offset, data);
 }
@@ -261,8 +256,9 @@ static int TAITO_m2sw(int col, int row) {
 static MEMORY_READ_START(taito_readmem)
   { 0x0000, 0x1fff, MRA_ROM },
   { 0x3000, 0x3eff, MRA_ROM },
-  { 0x2800, 0x2808, switches_r },
-  { 0x28d0, 0x28f8, unknown_r },
+  { 0x2800, 0x2808, switches_r }, /* some games use different locations */
+  { 0x2880, 0x2888, switches_r }, /* -"- */
+  { 0x28d0, 0x28d8, switches_r }, /* -"- */
   { 0x4000, 0x40ff, MRA_RAM },
 MEMORY_END
 
