@@ -279,10 +279,10 @@ static WRITE_HANDLER(snt_pia2ca2_w);
 static void snt_irq(int state);
 static void snt_5220Irq(int state);
 
-struct TMS5220interface snt_tms5220Int = { 640000, 100, snt_5220Irq };
-struct DACinterface snt_dacInt = { 1, { 100 }};
+struct TMS5220interface snt_tms5220Int = { 640000, 50, snt_5220Irq };
+struct DACinterface snt_dacInt = { 1, { 20 }};
 struct AY8910interface snt_ay8910Int = {
-  1, 3580000/4, {100}, {snt_8910a_r}
+  1, 3580000/4, {25}, {snt_8910a_r}
 };
 
 static struct {
@@ -391,10 +391,10 @@ static void sp45_cmd_sync(int data) {
 void sp45_cmd(int data) {
   if (data & ~sntlocals.lastcmd & 0x20)
     sntlocals.cmdsync = 0;
-  else 
+  else
 	  if ((data & 0x20) && sntlocals.cmdsync < 2)
 	  {
-		sntlocals.cmd[sntlocals.cmdsync++] = data; 
+		sntlocals.cmd[sntlocals.cmdsync++] = data;
 		snd_cmd_log(data);
 		if (sntlocals.cmdsync == 2) /* two commands received */
 			timer_set(TIME_NOW, data, sp45_cmd_sync);
@@ -404,7 +404,7 @@ void sp45_cmd(int data) {
 
 #endif
 
-static READ_HANDLER(port1_r) { 
+static READ_HANDLER(port1_r) {
 	int data = 0;
 	//logerror("port 1 read: %x\n",data);
 	return data;
@@ -412,14 +412,14 @@ static READ_HANDLER(port1_r) {
 
 
 #if 1
-static READ_HANDLER(port2_r) { 
+static READ_HANDLER(port2_r) {
 	int data = splocals.currcmd;
 	//logerror("port 2 read: %x\n",data);
 	return data;
 }
 
 #else
-static READ_HANDLER(port2_r) { 
+static READ_HANDLER(port2_r) {
 	//int data = 0;
 	//int data = splocals.currcmd;
 	//logerror("port 2 read: %x\n",data);
@@ -432,7 +432,7 @@ static READ_HANDLER(port2_r) {
 }
 #endif
 
-static WRITE_HANDLER(port1_w) { 
+static WRITE_HANDLER(port1_w) {
 	//logerror("port 1 write = %x\n",data);
 	DAC_0_data_w(0,data);
 }
