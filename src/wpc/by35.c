@@ -27,7 +27,7 @@ static READ_HANDLER(snd300_r) {
 static WRITE_HANDLER(snd300_w) {
   snddatst300.ax[offset]=data;
   sndbrd_0_data_w(0,offset);
-}
+} 
 
 static WRITE_HANDLER(snd300_wex) {
   sndbrd_0_ctrl_w(0,data);
@@ -178,17 +178,31 @@ static READ_HANDLER(pia0b_r) {
 
 /* PIA0:CB2-W Lamp Strobe #1, DIPBank3 STROBE */
 static WRITE_HANDLER(pia0cb2_w) {
+  int sb = core_gameData->hw.soundBoard;		// ok
   if (locals.cb20 & ~data) locals.lampadr1 = locals.a0 & 0x0f;
   locals.cb20 = data;
+// 
+  
+   if (sb == SNDBRD_ST300V) {
+      if (snddatst300.sampleisplaying) {
+   	  pia_set_input_cb1(BY35_PIA1,0); }
+       else {
+   	  pia_set_input_cb1(BY35_PIA1,data);}
+   }
 }
+   
 /* PIA1:CA2-W Lamp Strobe #2 */
 static WRITE_HANDLER(pia1ca2_w) {
+  int sb = core_gameData->hw.soundBoard;		// ok
   if (locals.ca21 & ~data) {
     locals.lampadr2 = locals.a0 & 0x0f;
     if (core_gameData->hw.display & 0x01)
       { locals.bcd[6] = locals.a0>>4; by35_dispStrobe(0x40); }
   }
   if (locals.hw & BY35HW_SCTRL) sndbrd_0_ctrl_w(0, data);
+  if ((sb == SNDBRD_ST300V) && (data)) {
+    sndbrd_1_ctrl_w(0, locals.a0); // ok
+  }  
   locals.ca21 = locals.diagnosticLed = data;
 }
 
@@ -364,6 +378,9 @@ static WRITE_HANDLER(piap0a_w) {
   locals.a0 = data;
   if (!locals.ca20 && locals.lastbcd)
     locals.bcd[--locals.lastbcd] = data;
+
+  if (locals.ca21) logerror("%04x: speechboard active ! data  %02x \n", activecpu_get_previouspc(),data);
+
 }
 // switches & dips (inverted)
 static READ_HANDLER(piap0b_r) {
@@ -457,7 +474,10 @@ static MACHINE_INIT(by35) {
   pia_config(BY35_PIA0, PIA_STANDARD_ORDERING, &by35_pia[0]);
   pia_config(BY35_PIA1, PIA_STANDARD_ORDERING, &by35_pia[1]);
 //   if ((sb & 0xff00) != SNDBRD_ST300)		// ok
-    sndbrd_0_init(sb, 1, memory_region(REGION_SOUND1), NULL, NULL);
+  sndbrd_0_init(sb, 1, memory_region(REGION_SOUND1), NULL, NULL);
+// do the voice boards...
+  if (sb == SNDBRD_ST300V)   sndbrd_1_init(sb, 1, memory_region(REGION_SOUND1), NULL, NULL);
+//
   locals.vblankCount = 1;
   // set up hardware
   if (core_gameData->gen & (GEN_BY17|GEN_BOWLING)) {
@@ -617,6 +637,37 @@ MACHINE_DRIVER_START(st200)
   MDRV_CPU_REPLACE("mcpu",M6800, 1000000)
   MDRV_IMPORT_FROM(st300)
 MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(st200f2k)
+  MDRV_IMPORT_FROM(st200)
+  MDRV_IMPORT_FROM(st300f2k)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(st200fal)
+  MDRV_IMPORT_FROM(st200)
+  MDRV_IMPORT_FROM(st300fal)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(st200lit)
+  MDRV_IMPORT_FROM(st200)
+  MDRV_IMPORT_FROM(st300lit)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(st200sec)
+  MDRV_IMPORT_FROM(st200)
+  MDRV_IMPORT_FROM(st300sec)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(st200cat)
+  MDRV_IMPORT_FROM(st200)
+  MDRV_IMPORT_FROM(st300cat)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(st200orb)
+  MDRV_IMPORT_FROM(st200)
+  MDRV_IMPORT_FROM(st300orb)
+MACHINE_DRIVER_END
+
 
 MACHINE_DRIVER_START(hnk)
   MDRV_IMPORT_FROM(by35)
