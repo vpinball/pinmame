@@ -88,6 +88,7 @@
 #define HAS_4004     1
 #define HAS_PPS4     1
 #define HAS_I8051    1
+#define HAS_TMS7000  1
 
 // Sound
 #define HAS_DAC        1
