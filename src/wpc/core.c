@@ -704,11 +704,7 @@ static tSegData segData[2][9] = {{
 },{
   {12,11,&segSize2[0][0]}, /* SEG16 */
   {12, 9,&segSize2[2][0]}, /* SEG10 */
-#ifdef VPINMAME
   {12,11,&segSize2[2][0]}, /* SEG9 */
-#else /* VPINMAME */
-  {10, 7,&segSize3[2][0]}, /* SEG9, must be smaller for PinMAME (Bally6803 games) */
-#endif /* VPINMAME */
   {12,11,&segSize2[1][0]}, /* SEG8 */
   {12, 9,&segSize2[1][0]}, /* SEG7 */
   {12,11,&segSize2[1][0]}, /* SEG87 */
