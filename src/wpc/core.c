@@ -17,7 +17,7 @@ void OnStateChange(int nChange) {}
 UINT64 vp_getSolMask64(void) { return -1; }
 void vp_updateMech(void) {};
 int vp_getDip(int bank) { return 0; }
-void vp_setDip(int bank, int value) { }
+void vp_setDIP(int bank, int value) { }
 #endif
 
 #ifdef VPINMAME
@@ -32,7 +32,7 @@ void vp_setDip(int bank, int value) { }
   #define OnStateChange(nChange)
   #define vp_getSolMask64() ((UINT64)(-1))
   #define vp_updateMech()
-  #define vp_setDip(x,y)
+  #define vp_setDIP(x,y)
 #endif /* VPINMAME */
 
 /* PinMAME specific options */
@@ -944,11 +944,11 @@ void core_nvram(void *file, int write, void *mem, int length, UINT8 init) {
     }
     else if (file) {
       osd_fread(file, dips, sizeof(dips));
-      for (ii = 0; ii < 4; ii++) vp_setDip(ii, dips[ii]);
+      for (ii = 0; ii < 4; ii++) vp_setDIP(ii, dips[ii]);
     }
     else { // always get the default from the inports
       for (ii = 0; ii < (coreData.coreDips+7)/8; ii++)
-        vp_setDip(ii, readinputport(CORE_COREINPORT+1+ii/2)>>((ii & 0x01)*8) & 0xff);
+        vp_setDIP(ii, readinputport(CORE_COREINPORT+1+ii/2)>>((ii & 0x01)*8) & 0xff);
     }
   }
 }
