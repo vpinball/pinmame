@@ -90,46 +90,11 @@ public:
 	~CControllerEvents() {};
 };
 
-typedef const char * (ZLIBVERSION)(void);
-
-int CheckzLib(HWND hWnd)
-{
-	// Let's check if the zlib.dll is installed
-	HMODULE hModule = LoadLibrary("zlib.dll");
-	if ( !hModule ) {
-		DisplayError(hWnd, GetLastError(), "The 'zlib.dll' file can't be loaded.", "Be sure to have this file either in the system directory or in the directory where the vpinmame.dll is located!");
-		return 0;
-	}
-
-	ZLIBVERSION *pzlibVersion = (ZLIBVERSION*) GetProcAddress(hModule, "zlibVersion");
-	if ( !pzlibVersion ) {
-		FreeLibrary(hModule);
-		DisplayError(hWnd, GetLastError(), "The installed 'zlib.dll' is to old or corrupt.", "Be sure to have an actual version of this file.");
-		return 0;
-	}
-
-	char szzlibVersion[256];
-	lstrcpy(szzlibVersion, pzlibVersion());
-
-	if (strcmp(szzlibVersion, "1.1.3")<0) {
-		FreeLibrary(hModule);
-		
-		char szErrorMsg[256];
-		wsprintf(szErrorMsg, "The actual installed version (%s) is to old for using it with VPinMAME. Please use at least version 1.1.3", szzlibVersion);
-		MessageBox(hWnd, szErrorMsg, g_szCaption, MB_ICONEXCLAMATION|MB_OK);
-		return 0;
-	}
-
-	FreeLibrary(hModule);
-	return 1;
-}
-
 const char* GetInstalledVersion(char* szVersion, int iSize)
 {
 	if ( !szVersion )
 		return NULL;
 
-	//lstrcpy(szVersion, "None.");
 	lstrcpy(szVersion, "");
 
 	HRESULT hr;
@@ -164,7 +129,8 @@ const char* GetInstalledVersion(char* szVersion, int iSize)
 
 typedef struct tagGAMEINFO {
 	char	szGameName[64];
-	BOOL	fROMOk; // this is not used at the moment
+	char	szGameDescription[128];
+	BOOL	fROMAvailable; 
 } GAMEINFO, *PGAMEINFO;
 
 void DeleteListContent(HWND hWnd)
@@ -180,13 +146,8 @@ void DeleteListContent(HWND hWnd)
 	SendMessage(hGamesList, LB_RESETCONTENT, 0, 0);
 }
 
-/***********************************************************/
-/* Pulls all Machine Names and populates to Control Passed */
-/***********************************************************/
-BOOL PopulateList(HWND hWnd, IController *pController)
+BOOL PopulateListV1_10andLower(HWND hWnd, IController *pController)
 {
-	DeleteListContent(hWnd);
-
 	HWND hGamesList = GetDlgItem(hWnd, IDC_GAMESLIST);
 
 	VARIANT varArrayNames;
@@ -220,7 +181,8 @@ BOOL PopulateList(HWND hWnd, IController *pController)
 				
 				PGAMEINFO pGameInfo = new GAMEINFO;
 				lstrcpy(pGameInfo->szGameName, szGameName);
-				pGameInfo->fROMOk = true;
+				lstrcpy(pGameInfo->szGameDescription, szGameName);
+				pGameInfo->fROMAvailable = true;
 				SendMessage(hGamesList, LB_SETITEMDATA, nIndex, (WPARAM) pGameInfo);
 			}
 		}
@@ -230,6 +192,106 @@ BOOL PopulateList(HWND hWnd, IController *pController)
 
 	SendMessage(hGamesList, LB_SETCURSEL, 0, 0);
 	return TRUE;
+}
+
+BOOL PopulateListGreaterV1_10(HWND hWnd, IController *pController)
+{
+	const int sTabStops[] = {190, 230};
+
+	HWND hGamesList = GetDlgItem(hWnd, IDC_GAMESLIST);
+	SendMessage(hGamesList, LB_SETTABSTOPS, 2, (WPARAM) &sTabStops);
+
+	IGames* pGames = NULL;
+
+	/* first, get a pointer to the games interface */
+	HRESULT hr = pController->get_Games(&pGames);
+	if ( FAILED(hr) ) /* upps, fallback to the old style */
+		PopulateListV1_10andLower(hWnd, pController);
+
+	IUnknown *pUnk;
+	IEnumGames* pEnumGames;
+	hr = pGames->get__NewEnum((IUnknown**) &pUnk);
+	if ( FAILED(hr) ) { /* upps, fallback to the old style */
+		pGames->Release();
+		PopulateListV1_10andLower(hWnd, pController);
+	}
+	
+	hr = pUnk->QueryInterface(__uuidof(IEnumGames), (void**) &pEnumGames);
+	pUnk->Release();
+
+	if ( FAILED(hr) ) { /* upps, fallback to the old style */
+		pGames->Release();
+		PopulateListV1_10andLower(hWnd, pController);
+	}
+
+	VARIANT vGame;
+	unsigned long uFetched;
+	
+	IGame* pGame = NULL;
+
+	while ( SUCCEEDED(pEnumGames->Next(1, &vGame, &uFetched)) && uFetched ) {
+		hr = vGame.pdispVal->QueryInterface(__uuidof(IGame), (void**) &pGame);
+		vGame.pdispVal->Release();
+
+		if ( FAILED(hr) )
+			continue;
+
+		BSTR sHelp;
+		char szListEntry[256] = {""};
+
+		PGAMEINFO pGameInfo = new GAMEINFO;
+		pGameInfo->fROMAvailable = false;
+
+		IRoms* pRoms;
+		if ( SUCCEEDED(pGame->get_Roms(&pRoms)) ) {
+			long fAvailable = -1;
+
+			hr = pRoms->get_Available(&fAvailable);
+			pGameInfo->fROMAvailable = (fAvailable==VARIANT_TRUE);
+			pRoms->Release();
+		}
+
+		pGame->get_Description(&sHelp);
+		WideCharToMultiByte(CP_ACP, 0, (LPOLESTR) sHelp, -1, pGameInfo->szGameDescription, sizeof pGameInfo->szGameDescription, NULL, NULL);
+		lstrcpy(szListEntry, pGameInfo->szGameDescription);
+		lstrcat(szListEntry, "\t");
+
+		pGame->get_Name(&sHelp);
+		WideCharToMultiByte(CP_ACP, 0, (LPOLESTR) sHelp, -1, pGameInfo->szGameName, sizeof pGameInfo->szGameName, NULL, NULL);
+		lstrcat(szListEntry, pGameInfo->szGameName);
+
+		pGame->Release();
+
+		if ( pGameInfo->fROMAvailable )
+			lstrcat(szListEntry, "\tX");
+
+		int nIndex = SendMessage(hGamesList, LB_ADDSTRING, 0, (LPARAM) szListEntry);
+		SendMessage(hGamesList, LB_SETITEMDATA, nIndex, (WPARAM) pGameInfo);
+	}
+
+	pGames->Release();
+
+	return TRUE;
+}
+
+/***********************************************************/
+/* Pulls all Machine Names and populates to Control Passed */
+/***********************************************************/
+BOOL PopulateList(HWND hWnd, IController *pController)
+{
+	DeleteListContent(hWnd);
+
+	if ( !pController )
+		return false;
+
+	/* grab the description of the pin if version > V1.10 */
+	BSTR sVersion;
+	pController->get_Version(&sVersion);
+
+	if ( lstrcmpW(sVersion, L"01010000")<=0 )
+		return PopulateListV1_10andLower(hWnd, pController);
+	else
+		return PopulateListGreaterV1_10(hWnd, pController);
 }
 
 /***************************************************************************************/
@@ -260,6 +322,33 @@ void RunGame(HWND hWnd, IController *pController)
 
 	SysFreeString(sGameName);
 }
+
+/***************************************************************************************/
+/* Checks the roms /*
+/***************************************************************************************/
+void CheckRoms(HWND hWnd, IController *pController)
+{   
+	int iIndex = SendDlgItemMessage(hWnd,IDC_GAMESLIST, LB_GETCURSEL, 0, 0);
+
+	if ( iIndex<0 )
+		return;
+
+	PGAMEINFO pGameInfo = (PGAMEINFO) SendDlgItemMessage(hWnd, IDC_GAMESLIST, LB_GETITEMDATA, iIndex, 0);
+
+	BSTR sGameName;
+	sGameName = SysAllocStringLen(NULL, strlen(pGameInfo->szGameName));
+
+	MultiByteToWideChar(CP_ACP, 0,pGameInfo->szGameName, -1, sGameName, strlen(pGameInfo->szGameName)); 
+	pController->put_GameName(sGameName);
+	SysFreeString(sGameName);
+
+	long fResult;
+	if ( FAILED(pController->CheckROMS(0, (long) hWnd, &fResult)) )
+		DisplayCOMError(pController, __uuidof(IController));
+
+	SysFreeString(sGameName);
+}
+
 
 /***************************************************************************************/
 /* Displays the game options /*
@@ -307,6 +396,7 @@ void EnableButtons(HWND hWnd, IController *pController) {
 	EnableWindow(GetDlgItem(hWnd, IDC_START), SendDlgItemMessage(hWnd, IDC_GAMESLIST, LB_GETCURSEL, 0,0)>=0);
 	EnableWindow(GetDlgItem(hWnd, IDC_STOP), fRunning);
 	EnableWindow(GetDlgItem(hWnd, IDC_OPTIONS), SendDlgItemMessage(hWnd, IDC_GAMESLIST, LB_GETCURSEL, 0,0)>=0);
+	EnableWindow(GetDlgItem(hWnd, IDC_CHECKROMS), SendDlgItemMessage(hWnd, IDC_GAMESLIST, LB_GETCURSEL, 0,0)>=0);
 }
 
 int PASCAL RunDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -323,12 +413,6 @@ int PASCAL RunDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 	switch ( uMsg ) {
 	case WM_INITDIALOG:
-		/* check if we have the correct zlib.dll */
-		if ( !CheckzLib(hWnd) ) {
-			EndDialog(hWnd, IDCANCEL);
-			return FALSE;
-		}
-
 		/* create the controller object */
 
 		CLSID ClsID;
@@ -410,6 +494,10 @@ int PASCAL RunDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			GameOptions(hWnd, pController);
 			break;
 
+		case IDC_CHECKROMS:
+			CheckRoms(hWnd, pController);
+			break;
+
 		case IDC_GAMESLIST:
 			switch (HIWORD(wParam)) {
 			case LBN_DBLCLK:
@@ -451,10 +539,5 @@ int PASCAL RunDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void RunTest(HWND hWnd)
 {
-	if ( !CheckzLib(hWnd) )
-		return;
-
-	if ( DialogBox(g_hInstance, MAKEINTRESOURCE(IDD_TESTDLG), hWnd, RunDlgProc)==-1 ) {
-		int iError = GetLastError();
-	};
+	DialogBox(g_hInstance, MAKEINTRESOURCE(IDD_TESTDLG), hWnd, RunDlgProc);
 }

@@ -14,11 +14,6 @@ int RegisterUnregisterVPinMAME(HWND hWnd, int fRegister)
 	HRESULT hr;
 	HMODULE hModule;
 
-	if ( fRegister ) {
-		if ( !CheckzLib(hWnd) )
-			return 0;
-	}
-
 	// so now let's see if we can load vpinmame.dll
 	hModule = LoadLibrary("vpinmame.dll");
 	if ( !hModule ) {
