@@ -2,35 +2,38 @@
 #include "cpu/i8051/i8051.h"
 #include "core.h"
 #include "sndbrd.h"
+#include "alvg.h"
 #include "alvgdmd.h"
+
+#if 1 //VERBOSE
+#define LOG(x)	logerror x
+#else
+#define LOG(x)
+#endif
 
 /*--------- Common DMD stuff ----------*/
 static struct {
   struct sndbrdData brdData;
-  int cmd, ncmd, busy, status, ctrl, bank;
-  UINT32 *framedata;
-  int blnk, rowdata, rowclk, frame;
+  int cmd, planenable, disenable, setsync;
 } dmdlocals;
 
 static int vid_page;
 static UINT8  *dmd32RAM;
 
-static WRITE_HANDLER(dmd_data_w)  { dmdlocals.ncmd = data; }
-static READ_HANDLER(dmd_status_r) { return dmdlocals.status; }
-static READ_HANDLER(dmd_busy_r)   { return dmdlocals.busy; }
+static WRITE_HANDLER(dmd_data_w)  { dmdlocals.cmd = data; }
 
 /*------------------------------------------*/
 /*Data East, Sega, Stern 128x32 DMD Handling*/
 /*------------------------------------------*/
 #define DMD32_BANK0    1
-#define DMD32_FIRQFREQ 480	//no idea on this one, just a wild guess
+#define DMD32_FIRQFREQ 481	//no idea on this one, just a wild guess
 
 static WRITE_HANDLER(dmd32_ctrl_w);
 static void dmd32_init(struct sndbrdData *brdData);
 
 const struct sndbrdIntf alvgdmdIntf = {
   NULL, dmd32_init, NULL, NULL,NULL, 
-  dmd_data_w, dmd_busy_r, dmd32_ctrl_w, dmd_status_r, SNDBRD_NOTSOUND
+  dmd_data_w, NULL, dmd32_ctrl_w, NULL, SNDBRD_NOTSOUND
 };
 
 static WRITE_HANDLER(dmd32_bank_w);
@@ -47,7 +50,7 @@ static WRITE_HANDLER(control_w)
 	{
 		//Read Main CPU DMD Command
 		case 0x8000:
-			logerror("WARNING! Writing to address 0x8000 - DMD Latch, data=%x!\n",data);
+			LOG(("WARNING! Writing to address 0x8000 - DMD Latch, data=%x!\n",data));
 			break;
 
 		//Send Data to the Main CPU
@@ -64,22 +67,31 @@ static WRITE_HANDLER(control_w)
 
 		//ROWSTART Line
 		case 0xb000:
+			LOG(("rowstart = %x\n",data));
 			break;
 
 		//COLSTART Line
 		case 0xc000:
+			LOG(("colstart = %x\n",data));
 			break;
 
 		//NC
 		case 0xd000:
 		case 0xe000:
+			LOG(("writing to not connected address: %x data=%x\n",offset,data));
 			break;
 
 		//SETSYNC Line
 		case 0xf000:
+			dmdlocals.setsync=data;
+			LOG(("setsync=%x\n",data));
 			break;
 		default:
-			logerror("WARNING! Reading invalid control address %x\n", offset);
+			LOG(("WARNING! Reading invalid control address %x\n", offset));
+	}
+	//Setsync line goes hi for all address except it's own(0xf000)
+	if(offset != 0xf000) {
+		dmdlocals.setsync=1;
 	}
 }
 
@@ -92,8 +104,7 @@ static READ_HANDLER(control_r)
 	{
 		//Read Main CPU DMD Command
 		case 0x8000:
-			//printf("reading dmd command %x\n",dmdlocals.ncmd);
-			return dmdlocals.ncmd;
+			return dmd32_latch_r(0);
 		//While unlikely, a READ to these addresses, can actually trigger control lines, so we call control_w()
 		case 0x9000:
 		case 0xa000:
@@ -105,7 +116,7 @@ static READ_HANDLER(control_r)
 			control_w(offset,0);
 			break;
 		default:
-			logerror("WARNING! Reading invalid control address %x\n", offset);
+			LOG(("WARNING! Reading invalid control address %x\n", offset));
 	}
 	return 0;
 }
@@ -113,8 +124,11 @@ static READ_HANDLER(control_r)
 
 static READ_HANDLER(port_r)
 {
-	//printf("port read @ %x\n",offset);
-	logerror("port read @ %x\n",offset);
+	//Port 1 is read in the wait for interrupt loop.. Not sure why this is done.
+	if(offset ==1)
+		return vid_page;
+	else
+		LOG(("port read @ %x\n",offset));
 	return 0;
 }
 
@@ -122,13 +136,34 @@ static WRITE_HANDLER(port_w)
 {
 	static int last = 0;
 	switch(offset) {
+		case 0:
+			LOG(("writing to port %x data = %x\n",offset,data));
+			break;
 		case 1:
-		vid_page = (data&0x0f)<<11;
-		if(last != data) {
-			last = data;
-			//printf("port write @ %x, data=%x\n",offset,data);
-			//logerror("port write @ %x, data=%x\n",offset,data);
-		}
+			vid_page = (data&0x0f)<<11;
+			if(last != data) {
+				last = data;
+				//printf("port write @ %x, data=%x\n",offset,data);
+				//LOG(("port write @ %x, data=%x\n",offset,data));
+			}
+			break;
+		case 2:
+			LOG(("writing to port %x data = %x\n",offset,data));
+			break;
+		/*PORT 3:
+			P3.0 = PLANSENABLE (Plane Enable)
+			P3.1 = LED
+			P3.2 = INT0 (Not used as output)
+			P3.3 = INT1 (Not used as output)
+			P3.4 = TO   (Not used as output)
+			P3.5 = DISENABLE (Display Enable)
+			P3.6 = /WR  (Used Internally only?)
+			P3.7 = /RD  (Used Internally only?) */
+		case 3:
+			alvg_UpdateSoundLEDS(1,(data&2)>>1);
+			break;
+		default:
+			LOG(("writing to port %x data = %x\n",offset,data));
 	}
 }
 
@@ -165,7 +200,7 @@ static PORT_WRITE_START( alvgdmd_writeport )
 PORT_END
 
 MACHINE_DRIVER_START(alvgdmd)
-  MDRV_CPU_ADD(I8051, 12000000)		/*12 Mhz*/
+  MDRV_CPU_ADD(I8051, 1000000)		/*12 Mhz*/
   MDRV_CPU_MEMORY(alvgdmd_readmem, alvgdmd_writemem)
   MDRV_CPU_PORTS(alvgdmd_readport, alvgdmd_writeport)
   MDRV_CPU_PERIODIC_INT(dmd32_firq, DMD32_FIRQFREQ)
@@ -175,7 +210,7 @@ MACHINE_DRIVER_END
 //Use only for testing the 8031 core emulation
 #ifdef MAME_DEBUG
 MACHINE_DRIVER_START(test8031)
-  MDRV_CPU_ADD(I8051, 12000000)		/*12 Mhz*/
+  MDRV_CPU_ADD(I8051, 1000000)		/*12 Mhz*/
   MDRV_CPU_MEMORY(alvgdmd_readmem, alvgdmd_writemem)
   MDRV_CPU_PORTS(alvgdmd_readport, alvgdmd_writeport)
   MDRV_CPU_PERIODIC_INT(dmd32_firq, DMD32_FIRQFREQ)
@@ -186,22 +221,30 @@ static void dmd32_init(struct sndbrdData *brdData) {
   memset(&dmdlocals, 0, sizeof(dmdlocals));
   dmdlocals.brdData = *brdData;
   dmd32_bank_w(0,0);	//Set DMD Bank to 0
+  dmdlocals.setsync = 1;
 }
 
+//Send data from Main CPU to latch - Set's the INT0 Line
 static WRITE_HANDLER(dmd32_ctrl_w) {
-//	printf("Sending DMD Strobe - current command = %x\n",dmdlocals.ncmd);
-	//logerror("Sending DMD Strobe - current command = %x\n",dmdlocals.ncmd);
-	cpu_set_irq_line(dmdlocals.brdData.cpuNo, I8051_INT0_LINE, PULSE_LINE);
+	LOG(("INT0: Sending DMD Strobe - current command = %x\n",dmdlocals.cmd));
+	cpu_set_irq_line(dmdlocals.brdData.cpuNo, I8051_INT0_LINE, HOLD_LINE);
 }
 
+//Read data from latch sent by Main CPU - Clear's the INT0 Line
 static READ_HANDLER(dmd32_latch_r) {
-  sndbrd_data_cb(dmdlocals.brdData.boardNo, dmdlocals.busy = 0); // Clear Busy
-//  cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_IRQ_LINE, CLEAR_LINE);
+  LOG(("INT0: reading latch: data = %x\n",dmdlocals.cmd));
+  cpu_set_irq_line(dmdlocals.brdData.cpuNo, I8051_INT0_LINE, CLEAR_LINE);
   return dmdlocals.cmd;
 }
 
+//Pulse the INT1 Line
 static INTERRUPT_GEN(dmd32_firq) {
-  cpu_set_irq_line(dmdlocals.brdData.cpuNo, I8051_INT1_LINE, PULSE_LINE);
+	if(dmdlocals.setsync) {
+		LOG(("INT1 Pulse\n"));
+		cpu_set_irq_line(dmdlocals.brdData.cpuNo, I8051_INT1_LINE, PULSE_LINE);
+	}
+	else
+		printf("Skipping INT1\n");
 }
 
 PINMAME_VIDEO_UPDATE(alvgdmd_update) {
@@ -212,6 +255,7 @@ PINMAME_VIDEO_UPDATE(alvgdmd_update) {
   int ii,jj;
   static int offset = 0;
 
+#if 1
   core_textOutf(50,20,1,"offset=%4x", offset);
   memset(&dotCol,0,sizeof(dotCol));
 
@@ -225,6 +269,7 @@ PINMAME_VIDEO_UPDATE(alvgdmd_update) {
 	  offset+=0x800;
   if(keyboard_pressed_memory_repeat(KEYCODE_B,2))
 	  offset-=0x800;
+#endif
 
   RAM = RAM+offset+vid_page;
   RAM2 = RAM + 0x200;
