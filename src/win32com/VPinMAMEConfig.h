@@ -6,8 +6,8 @@ extern void vpm_frontend_exit(void);
 #define cli_frontend_init vpm_frontend_init
 #define cli_frontend_exit vpm_frontend_exit
 
-void vpm_game_init();
-void vpm_game_exit();
+void vpm_game_init(int game_index);
+void vpm_game_exit(int game_index);
 
 int set_option(const char *name, const char *arg, int priority);
 void *get_option(const char *name);

@@ -175,11 +175,109 @@ void vpm_frontend_init(void) {
 void vpm_frontend_exit(void) {
 }
 
-void vpm_game_init() {
-  logfile = config_get_logfile();
+extern "C" {
+extern int video_norotate = 0;
+extern int video_flipy = 0;
+extern int video_flipx = 0;
+extern int video_ror = 0;
+extern int video_rol = 0;
+extern int video_autoror = 0;
+extern int video_autorol = 0;
+
+// rotation
+extern UINT8		blit_flipx;
+extern UINT8		blit_flipy;
+extern UINT8		blit_swapxy;
 }
 
-void vpm_game_exit() {
+void vpm_game_init(int game_index) {
+	logfile = config_get_logfile();
+
+    /* first start with the game's built in orientation */
+	int orientation = drivers[game_index]->flags & ORIENTATION_MASK;
+	options.ui_orientation = orientation;
+
+	if (options.ui_orientation & ORIENTATION_SWAP_XY)
+	{
+		/* if only one of the components is inverted, switch them */
+		if ((options.ui_orientation & ROT180) == ORIENTATION_FLIP_X ||
+				(options.ui_orientation & ROT180) == ORIENTATION_FLIP_Y)
+			options.ui_orientation ^= ROT180;
+	}
+
+	/* override if no rotation requested */
+	if (video_norotate)
+		orientation = options.ui_orientation = ROT0;
+
+	/* rotate right */
+	if (video_ror)
+	{
+		/* if only one of the components is inverted, switch them */
+		if ((orientation & ROT180) == ORIENTATION_FLIP_X ||
+				(orientation & ROT180) == ORIENTATION_FLIP_Y)
+			orientation ^= ROT180;
+
+		orientation ^= ROT90;
+	}
+
+	/* rotate left */
+	if (video_rol)
+	{
+		/* if only one of the components is inverted, switch them */
+		if ((orientation & ROT180) == ORIENTATION_FLIP_X ||
+				(orientation & ROT180) == ORIENTATION_FLIP_Y)
+			orientation ^= ROT180;
+
+		orientation ^= ROT270;
+	}
+
+	/* auto-rotate right (e.g. for rotating lcds), based on original orientation */
+	if (video_autoror && (drivers[game_index]->flags & ORIENTATION_SWAP_XY) )
+	{
+		/* if only one of the components is inverted, switch them */
+		if ((orientation & ROT180) == ORIENTATION_FLIP_X ||
+				(orientation & ROT180) == ORIENTATION_FLIP_Y)
+			orientation ^= ROT180;
+
+		orientation ^= ROT90;
+	}
+
+	/* auto-rotate left (e.g. for rotating lcds), based on original orientation */
+	if (video_autorol && (drivers[game_index]->flags & ORIENTATION_SWAP_XY) )
+	{
+		/* if only one of the components is inverted, switch them */
+		if ((orientation & ROT180) == ORIENTATION_FLIP_X ||
+				(orientation & ROT180) == ORIENTATION_FLIP_Y)
+			orientation ^= ROT180;
+
+		orientation ^= ROT270;
+	}
+
+	/* flip X/Y */
+	if (video_flipx)
+		orientation ^= ORIENTATION_FLIP_X;
+	if (video_flipy)
+		orientation ^= ORIENTATION_FLIP_Y;
+
+	blit_flipx = ((orientation & ORIENTATION_FLIP_X) != 0);
+	blit_flipy = ((orientation & ORIENTATION_FLIP_Y) != 0);
+	blit_swapxy = ((orientation & ORIENTATION_SWAP_XY) != 0);
+
+	if( options.vector_width == 0 && options.vector_height == 0 )
+	{
+		options.vector_width = 640;
+		options.vector_height = 480;
+	}
+	if( blit_swapxy )
+	{
+		int temp;
+		temp = options.vector_width;
+		options.vector_width = options.vector_height;
+		options.vector_height = temp;
+	}
+}
+
+void vpm_game_exit(int game_index) {
   /* close open files */
   if (options.language_file) /* this seems to never be opened in Win32 version */
     { mame_fclose(options.language_file); options.language_file = NULL; }
