@@ -1,0 +1,25 @@
+Important steps to take before a release:
+
+- check out EVERYTHING again. Update the pinmame folder, remove sticky tags, create subfolders.
+- check whatsnew.txt" if nobody was forgotten concerning contributions, bugs fixes, and so on. Check the date in whatsnew.txt!
+- remove the entire obj folder preferrably. Only this way you may ensure nothing was forgotten!
+- remove the DEBUG define in the makefile!
+- execute "make" to build pinmamew.
+- execute "make -f pinmame32.mak" to build pinmame32.
+- edit "src/win32com/VPinMAME.cpp" for the desired release date
+- edit "src/win32com/VPinMAME.rc" for the correct version number and build (MinDependency)
+- build VPinMAME.DLL
+- edit "src/instvpm/InstallVPinMAME.rc" for the correct version number and build (Release)
+- build InstallVPinMAME.exe
+
+If anything of the above fails, forget about a release and correct the errors first!
+If it worked out ok, however, do a release!
+
+- Pack everything together nicely, using Max Compression.
+- Upload the zips to pinmame.com, update the news & download pages.
+- Release it on shivasite's upload page, tell all the forum people it's happened!
+- Shut down your computer!
+- Go and have a drink. You deserved it now!
+- 12 hours later, check back the forum for the fist terrible errors Tom & Martin forgot to fix!
+
+:)

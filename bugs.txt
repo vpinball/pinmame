@@ -1,0 +1,57 @@
+Bugs in Pinmame that we are aware of:
+-------------------------------------
+(Note: Many of these bugs have been extremely difficult to track down and fix, 
+       so it might be awhile before they can be corrected!)
+
+#1)  Williams/Bally WPC: DCS sound still have some problems.
+     (Don't use full volume (30-31) to avoid static noise)
+
+#2)  Not all Williams/Bally WPC functions are implemented in PinMAME. The most
+     important (?!) functions missing are the ticket dispenser, and accurate
+     real time clock emulation (current rtc functionality is a work around).
+
+#3)  The WPC printer function is only tested with default settings. The
+     printout will probably not work with other settings.
+
+#4)  Saucer LEDs not implemented in AFM.
+
+#5) The Williams/Bally WPC CVSD speech seems to have a different pitch than
+    the real game. A strange thing is that the speech works better when
+    background music is playing.
+
+#6) The name and year for each game were taken from the internet pinball
+    database and may not be 100% accurate!
+
+#7) Some games have custom Alpha/Numeric layouts which may not yet be supported.
+
+#8) Comma issues with System 9
+
+#9) Dip Switches do not work for Williams System 3-6.
+
+#10) System 7 games using a Speech board do not work properly.
+
+#11) Data East 128x16 DMD support is not 100% accurate.
+ 
+#12) Data East/Sega/Stern 128x32 DMD support is not 100% accurate.
+
+#13) Data East/Sega 192x64 DMD support is not 100% accurate
+
+#14) Certain System 11 games seem to have highly customized displays, and are not emulated properly.
+
+#15) Following DCS Games have sound issues:
+     a) Indy 500 - Sound dies on ball 2
+     b) STTNG - sound stops for extra ball.
+     c) The Shadow - Sound stops on every ball except the first until a trigger is hit.
+     d) Judge Dredd - Sound Volume varies between different balls.
+
+#16) Rapid Fire displays all 2 in the bottom display.
+
+#17) DCS Playback appears to be warped on Windows XP Beta builds..
+
+#18) Volume Issues with BSMT games
+
+#19) DMD Issues with Gottlieb System 3 Games.
+
+#20) Numerous Issues with Gottlieb Systm 3 Alpha Numeric Games
+
+#21) # of Credits Remaining in Gottlieb System 80 games.

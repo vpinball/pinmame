@@ -1,0 +1,84 @@
+What's new in Visual PinMAME:
+-----------------------------
+
+Version 1.10 (December 23, 2001)
+---------------------------------------
+-Updated Visual PinMAME to 1.10 release of PinMAME Source Code.
+-Updated Installer program with new TEST feature built in.
+-Removed VPinMAMETest.exe, use the new TEST feature of the Installer (Setup.exe) instead.
+-Updated the Installation Guide to illustrate new TEST feature.
+
+Version 1.0 Beta 2 (September 28, 2001)
+---------------------------------------
+-Updated Visual PinMAME to 1.0 Beta 2 release of PinMAME Source Code.
+-Removed need to have MSSTDFMT.DLL for VPinMAMETest.exe to work!!
+-Improved Rom Checking Dialogue, now displays the type of rom (CPU or SOUND).
+-Games can now be played even if the sound roms are missing.
+-Added warning message for games that have Imperfect, but emulated sound (Centaur is an example)
+-New interface function .Mech() which allows users to create mech handlers from script.
+-New interface function .NewSoundsCommands() which allows users to track sound commands and play external sound files from the script.
+-Added protection so that newest Stern games (currently Only Austin Powers) cannot be played, to avoid any issues from Stern.
+
+
+Version 1.0 Beta 1 (July 31, 2001)
+------------------------------------
+-Updated Visual PinMAME to 1.0 Beta 1 release of PinMAME Source Code
+-Errors reading zipped roms(wrong compression for example), are now reported to user.
+-Corrected occasional problems when dragging window with mouse.
+-New Compact DMD Option added to Game Options
+-New Double Size DMD Option added to Game Options
+-New Anti-Alias % DMD Option added to Game Options (only works for Williams WPC games)
+-New HTML Installation Guide included with distribution.
+-Microsoft MSSTDFMT package included with distribution for users missing this file.
+
+
+Version 0.99 Beta 3 (May 04, 2001)
+------------------------------------
+-Updated Visual PinMAME to 0.99 Beta 3 release of PinMAME Source Code
+-Updated installer, now v1.02
+-New Right Mouse Click, Context/Drop Down Menu, for selecting options and window settings
+-New Left Mouse Click & Drag the window to reposition it.
+-New Version Property to allow scripts to check for a minimum Version #.
+-Fixed Display Bug with games using a very wide display layout, such as Harley Davidson
+-Fixed Crashes on games that failed the CRC Check
+-Fixed Initial path information showing in the old 8.3 format instead of long filenames
+
+
+Version 0.99 Beta 2 Rev A (April 23, 2001)
+------------------------------------------
+-Adjusted ROM Mismatch dialog to allow user to try and load roms that are reported as incorrect.
+-Improved Installer/Setup program to identify which version is being installed.
+
+Version 0.99 Beta 2 (April 22, 2001)
+------------------------------------
+-Updated Visual PinMAME to 0.99 Beta 2 release of PinMAME Source Code
+-New Visual PinMAME Setup/Installtion Program
+-New Dialog for troubleshooting missing roms and bad configurations
+-Rom + Configuation Paths only need to be set once, rather than for each individual rom.
+-New Interface Web Page for easier reading of the interface properties!
+-Many New Interface properties for controlling Visual PinMAME: 
+  (See interface.html for more info)
+  Controller.GetMech
+  Controller.SampleRate
+  Controller.ShowFrame
+  Controller.BorderSizeX / Controller.BorderSizeY
+  Controller.WindowPosX / Controller.WindowPosY
+  Controller.DoubleSize
+  Controller.SetDisplayPosition
+  Controller.LockDisplay
+  Controller.Antialias
+  Controller.CheckROMS
+
+-Updated test program to show off some of the new interface features
+-F12 Screenshot functionality added.
+-New configuration directory for screenshots.
+-Controller.Switches() bug fixed.. now returns true/false properly.
+
+
+Version 0.99 Beta 1 (March 31, 2001)
+------------------------------------
+-Updated Visual PinMAME to 0.99 Beta 1 release of PinMAME Source Code
+
+Version 0.99 Beta (March 30, 2001)
+----------------------------------
+-Welcome to the first official release of Visual PinMAME!
