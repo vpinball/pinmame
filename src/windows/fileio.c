@@ -109,7 +109,9 @@ static const char *rompath;
 static const char *samplepath;
 static const char *cfgdir, *nvdir, *hidir, *inpdir, *stadir, *diffdir;
 static const char *memcarddir, *artworkdir, *screenshotdir, *cheatdir;
-
+#ifdef PINMAME
+static const char *wavedir;
+#endif /* PINMAME */
 static struct stat_cache_entry *stat_cache[STATCACHE_SIZE];
 static struct stat_cache_entry stat_cache_entry[STATCACHE_SIZE];
 
@@ -150,6 +152,9 @@ struct rc_option fileio_opts[] =
 	{ "artwork_directory", NULL, rc_string, &artworkdir, "artwork", 0, 0, NULL, "directory for Artwork (Overlays etc.)" },
 	{ "snapshot_directory", NULL, rc_string, &screenshotdir, "snap", 0, 0, NULL, "directory for screenshots (.png format)" },
 	{ "diff_directory", NULL, rc_string, &diffdir, "diff", 0, 0, NULL, "directory for hard drive image difference files" },
+#ifdef PINMAME
+	{ "wave_directory", NULL, rc_string, &wavedir, "wave", 0, 0, NULL, "directory for wave files" },
+#endif /* PINMAME */
 	{ "cheat_file", NULL, rc_string, &cheatfile, "cheat.dat", 0, 0, NULL, "cheat filename" },
 	{ "history_file", NULL, rc_string, &history_filename, "history.dat", 0, 0, NULL, NULL },
 	{ "mameinfo_file", NULL, rc_string, &mameinfo_filename, "mameinfo.dat", 0, 0, NULL, NULL },
@@ -189,6 +194,9 @@ void *osd_fopen(const char *gamename, const char *filename, int filetype, int op
 
 		// write-only cases
 		case OSD_FILETYPE_SCREENSHOT:
+#ifdef PINMAME
+                case OSD_FILETYPE_WAVEFILE:
+#endif /* PINMAME */
 			if (!openforwrite)
 			{
 				logerror("osd_fopen: type %02x read not supported\n", filetype);
@@ -269,7 +277,11 @@ void *osd_fopen(const char *gamename, const char *filename, int filetype, int op
 		// screenshot files
 		case OSD_FILETYPE_SCREENSHOT:
 			return generic_fopen(pathc, pathv, NULL, filename, extension, 0, FILEFLAG_OPENWRITE);
-
+#ifdef PINMAME
+		// wave files
+		case OSD_FILETYPE_WAVEFILE:
+			return generic_fopen(pathc, pathv, NULL, filename, extension, 0, FILEFLAG_OPENWRITE);
+#endif /* PINMAME */
 		// history files
 		case OSD_FILETYPE_HISTORY:
 			return generic_fopen(pathc, pathv, NULL, filename, extension, 0, FILEFLAG_OPENREAD);
@@ -1238,7 +1250,13 @@ static int get_pathlist_for_filetype(int filetype, const char ***pathlist, const
 			*pathlist = &screenshotdir;
 			*extension = "png";
 			return 1;
-
+#ifdef PINMAME
+		// wavefiles
+		case OSD_FILETYPE_WAVEFILE:
+			*pathlist = &wavedir;
+			*extension = "wav";
+			return 1;
+#endif /* PINMAME */
 		// cheat file
 		case OSD_FILETYPE_CHEAT:
 			*pathlist = &cheatdir;
