@@ -188,7 +188,7 @@ static const struct pia6821_interface s6_pia[] = {
   i  CB1:    Diagnostic Switch - On interrupt: Auto/Manual Switch
   i  CA2:    Read Master Command Enter Switch
   o  CB2:    Special Solenoid #6 */
- /* in  : A/B,CA1/B1,CA2/B2 */ s6_dips_r, 0, 0,0, 0, 0,
+ /* in  : A/B,CA1/B1,CA2/B2 */ s6_dips_r, 0, PIA_UNUSED_VAL(0), PIA_UNUSED_VAL(0), 0, 0,
  /* out : A/B,CA2/B2        */ s6_pa_w, s6_alpha_w, s6_pia0ca2_w, s6_specsol6_w,
  /* irq : A/B               */ s6_piaIrq, s6_piaIrq
 },{/*PIA 2 - Switch Matrix
@@ -284,6 +284,8 @@ static MACHINE_INIT(s6) {
 }
 static MACHINE_RESET(s6) {
   pia_reset();
+  // These must be intialized to 0 since they are only updated on irq
+  pia_set_input_ca1(S6_PIA0, 0); pia_set_input_cb1(S6_PIA0, 0);
 }
 
 static MACHINE_STOP(s6) {
@@ -332,8 +334,6 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(s6S)
   MDRV_IMPORT_FROM(s6)
   MDRV_IMPORT_FROM(wmssnd_s67s)
-  MDRV_SOUND_CMD(sndbrd_0_data_w)
-  MDRV_SOUND_CMDHEADING("s6")
 MACHINE_DRIVER_END
 
 /*-----------------------------------------------
@@ -343,41 +343,3 @@ static NVRAM_HANDLER(s6) {
   core_nvram(file, read_or_write, s6_CMOS, 0x0100, 0xff);
 }
 
-#if 0
-const struct MachineDriver machine_driver_s6 = {
-  {{  CPU_M6808, 3580000/4, /* 3.58/4 = 900hz */
-      s6_readmem, s6_writemem, NULL, NULL,
-      s6_vblank, 1, s6_irq, S6_IRQFREQ
-  }},
-  S6_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, s6_init, s6_exit,
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_TYPE_RASTER, 0, NULL, NULL, gen_refresh,
-  0,0,0,0, {{0}},
-  s6_nvram
-};
-
-const struct MachineDriver machine_driver_s6s= {
-  {{  CPU_M6808, 3580000/4, /* 3.58/4 = 900hz */
-      s6_readmem, s6_writemem, NULL, NULL,
-      s6_vblank, 1, s6_irq, S6_IRQFREQ
-  }, S67S_SOUNDCPU
-  },
-  S6_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, s6_init, s6_exit,
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_TYPE_RASTER, 0, NULL, NULL, gen_refresh,
-  0,0,0,0, { S67S_SOUND },
-  s6_nvram
-};
-static const core_tData s6Data = {
-  8+16, /* 16 DIPs */
-  s6_updSw,
-  2 | DIAGLED_VERTICAL,
-  sndbrd_0_data_w, "s6",
-  core_swSeq2m, core_swSeq2m,core_m2swSeq,core_m2swSeq
-};
-
-#endif
