@@ -18,7 +18,6 @@
   #include "mess.h"
 #endif
 
-
 /* Variables for stat menu */
 extern char build_version[];
 extern unsigned int dispensed_tickets;
@@ -3569,9 +3568,15 @@ void do_loadsave(struct mame_bitmap *bitmap, int request_loadsave)
 			usrintf_showmessage("Load cancelled");
 	}
 }
+#ifdef VPINMAME
+extern int g_fPause;
+#endif
 
 int handle_user_interface(struct mame_bitmap *bitmap)
 {
+#ifdef VPINMAME
+	int fPause;
+#endif
 	static int show_profiler;
 
 #ifdef MESS
@@ -3727,7 +3732,15 @@ if (Machine->gamedrv->flags & GAME_COMPUTER)
 	if (input_ui_pressed(IPT_UI_LOAD_STATE))
 		do_loadsave(bitmap, LOADSAVE_LOAD);
 
+#ifdef VPINMAME
+	if ( single_step || input_ui_pressed(IPT_UI_PAUSE) )
+		g_fPause = 1;
+
+	fPause = g_fPause;
+	if ( fPause ) /* pause the game */
+#else
 	if (single_step || input_ui_pressed(IPT_UI_PAUSE)) /* pause the game */
+#endif
 	{
 /*		osd_selected = 0;	   disable on screen display, since we are going   */
 							/* to change parameters affected by it */
@@ -3738,8 +3751,15 @@ if (Machine->gamedrv->flags & GAME_COMPUTER)
 			osd_pause(1);
 		}
 
-		while (!input_ui_pressed(IPT_UI_PAUSE))
-		{
+#ifdef VPINMAME
+		if ( input_ui_pressed(IPT_UI_PAUSE) )
+			g_fPause = 0;
+		while ( g_fPause ) {
+			if ( input_ui_pressed(IPT_UI_PAUSE) )
+				g_fPause = 0;
+#else
+		while (!input_ui_pressed(IPT_UI_PAUSE)) {
+#endif
 #ifdef MAME_NET
 			osd_net_sync();
 #endif /* MAME_NET */
