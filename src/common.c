@@ -71,6 +71,10 @@ int resource_tracking_tag = 0;
 size_t generic_nvram_size;
 data8_t *generic_nvram;
 
+#ifdef PINMAME
+extern void core_nvram(void *file, int write, void *mem, int length, UINT8 init);
+#endif
+
 /* hard disks */
 static void *hard_disk_handle[4];
 
@@ -478,12 +482,16 @@ void coin_lockout_global_w(int on)
 
 void nvram_handler_generic_0fill(mame_file *file, int read_or_write)
 {
+#ifdef PINMAME
+  core_nvram(file, read_or_write, generic_nvram, generic_nvram_size, 0x00);
+#else
 	if (read_or_write)
 		mame_fwrite(file, generic_nvram, generic_nvram_size);
 	else if (file)
 		mame_fread(file, generic_nvram, generic_nvram_size);
 	else
 		memset(generic_nvram, 0, generic_nvram_size);
+#endif
 }
 
 
@@ -494,12 +502,16 @@ void nvram_handler_generic_0fill(mame_file *file, int read_or_write)
 
 void nvram_handler_generic_1fill(mame_file *file, int read_or_write)
 {
+#ifdef PINMAME
+  core_nvram(file, read_or_write, generic_nvram, generic_nvram_size, 0xff);
+#else
 	if (read_or_write)
 		mame_fwrite(file, generic_nvram, generic_nvram_size);
 	else if (file)
 		mame_fread(file, generic_nvram, generic_nvram_size);
 	else
 		memset(generic_nvram, 0xff, generic_nvram_size);
+#endif
 }
 
 
