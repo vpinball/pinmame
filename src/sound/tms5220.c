@@ -6,7 +6,7 @@
      With help from Neill Corlett
      Additional tweaking by Aaron Giles
 
-  2003-12-06 GV: some modifications for clearer speech output
+  2003-12-11 GV: some modifications for clearer speech output
 
 ***********************************************************************************************/
 
@@ -560,7 +560,7 @@ tryagain:
         {
             /* generate voiced samples here */
             if (pitch_count < sizeof(chirptable))
-                current_val = ((INT8)chirptable[pitch_count] * current_energy) >> 7;
+                current_val = (chirptable[pitch_count] * current_energy) / 333;
             else
                 current_val = 0x00;
         }
