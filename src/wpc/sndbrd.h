@@ -122,5 +122,6 @@ struct sndbrdIntf {
 #define SNDBRD_CAPCOMS SNDBRD_TYPE(38,0)
 #define SNDBRD_SPINB   SNDBRD_TYPE(39,0)
 #define SNDBRD_MRGAME  SNDBRD_TYPE(40,0)
+#define SNDBRD_DE3S    SNDBRD_TYPE(41,0)
 
 #endif /* INC_SNDBRD */
