@@ -317,7 +317,7 @@ bool regSaveOpts(HKEY hKey, rc_option *pOpt)
 
 	switch ( pOpt->type ) {
 	case rc_string:
-		szHelp = *(char**) opts->dest;
+		szHelp = *(char**) pOpt->dest;
 		fFailed = (RegSetValueEx(hKey, pOpt->name, 0, REG_SZ, (LPBYTE) szHelp, lstrlen(szHelp)+1)!=ERROR_SUCCESS);
 		break;
 	}
