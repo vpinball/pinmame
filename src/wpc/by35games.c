@@ -2,6 +2,8 @@
 #include "sim.h"
 #include "by35.h"
 #include "by35snd.h"
+#include "byvidpin.h"
+
 //#define DISPLAYALL
 #ifdef DISPLAYALL
 static core_tLCDLayout dispBy6[] = {
@@ -22,12 +24,21 @@ static core_tLCDLayout dispBy7[] = {
 };
 #endif /* DISPLAYALL */
 
+static core_tLCDLayout by_NoOutput[] = {{0}};
+
 #define INITGAME(name, gen, disp, flip, lamps) \
 static core_tGameData name##GameData = {gen,disp,{flip,0,lamps}}; \
 static void init_##name(void) { \
   core_gameData = &name##GameData; \
 } \
 BY35_INPUT_PORTS_START(name, 1) BY35_INPUT_PORTS_END
+
+#define INITGAMEVP(name, gen, disp, flip, lamps) \
+static core_tGameData name##GameData = {gen,disp,{flip,0,lamps}}; \
+static void init_##name(void) { \
+  core_gameData = &name##GameData; \
+} \
+BYVP_INPUT_PORTS_START(name, 1) BYVP_INPUT_PORTS_END
 
 /*--------------------------------
 / Freedom
@@ -514,6 +525,22 @@ BY35_SOUND61ROMxx00("872-01_4.532",0xd21ce16d,
                     "872-03_5.532",0x8fcdf853)
 BY35_ROMEND
 CORE_GAMEDEFNV(m_mpac  ,"Mr. and Mrs. PacMan",1982,"Bally",by35_mBY35_61S,0)
+
+/*----------------------------------
+/ Baby Pacman (Video/Pinball Combo)
+/----------------------------------*/
+INITGAMEVP(babypac,0,by_NoOutput,FLIP_SW(FLIP_L),0)
+BYVP_ROMSTARTx00(babypac,	"891-u2.732", 0x7f7242d1,
+							"891-u6.732", 0x6136d636,
+							"891-u9.764",  0x7fa570f3,
+							"891-u10.764", 0x28f4df8b,
+							"891-u11.764", 0x0a5967a4,
+							"891-u12.764", 0x58cfe542,
+							"891-u29.764", 0x0b57fd5d)
+BYVP_ROMEND
+CORE_GAMEDEFNV(babypac,"Baby Pacman (Video/Pinball Combo)",1982,"Bally",byVP_mVP1,0)
+
+
 /*--------------------------------
 / BMX
 /-------------------------------*/

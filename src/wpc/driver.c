@@ -73,7 +73,7 @@ DRIVERNV(speakesy)      //BY35-877: 08/82 Speakeasy
 DRIVERNV(speakes4)      //BY35-877: 08/82 Speakeasy 4 (4 player)
 DRIVERNV(rapidfir)      //BY35-869: 06/81 Rapid Fire
 DRIVERNV(m_mpac  )      //BY35-872: 05/82 Mr. & Mrs. Pac-Man
-                        //??        10/82 Baby Pac-Man
+DRIVERNV(babypac )      //??        10/82 Baby Pac-Man
 /*same as eballdlx*/    //BY35      10/82 Eight Ball Deluxe Limited Edition
 DRIVERNV(bmx     )      //BY35-888: 11/82 BMX
 DRIVERNV(granslam)      //BY35-     01/83 Grand Slam
