@@ -11,7 +11,8 @@ N = No Lead, L = Have a Lead on Rom
 (N)Bell Ringer 1990
 (N)Nudge It 1990
 (N)Hoops 1991
-??Strikes 'N Spares 1995 (????????)
+(L)Strikes 'N Spares 1995 (sound Y and D roms)
+(?)Brooks & Dunn 1996 (display, sound)
 */
 static struct core_dispLayout gts_128x32DMD[] = {
   {0,0,32,128,CORE_DMD,(void *)gts3_dmd128x32}, {0}
@@ -56,6 +57,20 @@ static struct core_dispLayout GTS3_dispAlpha[] = {
 
 /* GAMES APPEAR IN PRODUCTION ORDER (MORE OR LESS) */
 
+// some games produced by Premier for International Concepts
+/*-------------------------------------------------------------------
+/ Caribbean Cruise (#C102)
+/-------------------------------------------------------------------*/
+INITGAME(ccruise, ALPHA, FLIP67, 2, SNDBRD_GTS3, 5)
+GTS3ROMSTART(ccruise,	"gprom.bin",0x668b5757)
+GTS3SOUND3232(			"yrom1.bin",0x6e424e53,
+						"drom1.bin",0x4480257e)
+GTS3_ROMEND
+CORE_GAMEDEFNV(ccruise,"Caribbean Cruise",1989,"International Concepts",mGTS3S,GAME_IMPERFECT_SOUND)
+
+// Night Moves 11/89
+
+// Premier games below
 /*-------------------------------------------------------------------
 / Lights, Camera, Action (#720)
 /-------------------------------------------------------------------*/
@@ -392,6 +407,19 @@ GTS3_ROMEND
 CORE_GAMEDEFNV(bighurt,"Big Hurt",1995,"Gottlieb",mGTS3DMDS, GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
+/ Strikes 'N Spares (#N111)
+/-------------------------------------------------------------------*/
+INITGAME2(snspares, DMD, FLIP4243, 4, SNDBRD_GTS3, 4)
+GTS3ROMSTART(snspares,	"gprom.bin", 0x9e018496)
+GTS3_DMD256_ROMSTART(	"dsprom.bin",0x5c901899)
+GTS3SOUND32256(		"yrom1.bin",0x0,
+			"drom1.bin",0x0,
+			"arom1.bin",0x4db05a2f,
+			"arom2.bin",0x775b20bc)
+GTS3_ROMEND
+CORE_GAMEDEFNV(snspares,"Strikes 'N Spares",1995,"Gottlieb",mGTS3DMDSA, GAME_IMPERFECT_SOUND)
+
+/*-------------------------------------------------------------------
 / Waterworld
 /-------------------------------------------------------------------*/
 INITGAME2(waterwld, DMD, FLIP4142, 4, SNDBRD_GTS3, 5)
@@ -429,3 +457,16 @@ GTS3SOUND32512256(		"yrom1.bin",0x7c602a35,
 						"arom2.bin",0xce83c6c3)
 GTS3_ROMEND
 CORE_GAMEDEFNV(barbwire,"Barb Wire",1996,"Gottlieb",mGTS3DMDSA, GAME_IMPERFECT_SOUND)
+
+/*-------------------------------------------------------------------
+/ Brooks & Dunn (#749)
+/-------------------------------------------------------------------*/
+INITGAME2(brooks, DMD, FLIP4243, 4, SNDBRD_GTS3, 5)
+GTS3ROMSTART(brooks,	"gprom.bin", 0x26cebf07)
+GTS3_DMD512_ROMSTART(	"dsprom.bin",0x0)
+GTS3SOUND32512256(	"yrom1.bin",0x0,
+			"drom1.bin",0x0,
+			"arom1.bin",0x0,
+			"arom2.bin",0x0)
+GTS3_ROMEND
+CORE_GAMEDEFNV(brooks,"Brooks & Dunn (Prototype)",1996,"Gottlieb",mGTS3DMDS, GAME_NO_SOUND)

@@ -340,6 +340,8 @@ DRIVERNV(hotshots)      //S80b-718: 04/89 Hot Shots
 DRIVERNV(bonebstr)      //S80b-719: 08/89 Bone Busters Inc
 
 //System 3 Alphanumeric
+DRIVERNV(ccruise)       //C-102:    ??/89 Caribbean Cruise (for International Concepts)
+                        //C-103?    ??/89 Night Moves (for International Concepts)
 DRIVERNV(lca)           //S3-720:   11/89 Lights, Camera, Action 1989
 DRIVERNV(silvslug)      //S3-722:   02/90 Silver Slugger 1990
 DRIVERNV(vegas)         //S3-723:   07/90 Vegas 1990
@@ -356,7 +358,7 @@ DRIVERNV(surfnsaf)      //S3-731:   11/91 Surf'n Safari 1991
 DRIVERNV(opthund)       //S3-732:   02/92 Operation: Thunder
 //System 3 128x32 DMD
 DRIVERNV(smb)           //S3-733:   04/92 Super Mario Bros.
-DRIVERNV(smbmush)       //S3-???:   06/92 Super Mario Bros. Mushroom World
+DRIVERNV(smbmush)       //S3-N105:  06/92 Super Mario Bros. Mushroom World
 DRIVERNV(cueball)       //S3-734:   10/92 Cue Ball Wizard
 DRIVERNV(sfight2)       //S3-735:   03/93 Street Fighter II
 DRIVERNV(sfight2a)      //                Street Fighter II (V2)
@@ -368,13 +370,13 @@ DRIVERNV(rescu911)      //S3-740:   05/94 Rescue 911
 DRIVERNV(freddy)        //S3-744:   10/94 Freddy: A Nightmare on Elm Street
 DRIVERNV(shaqattq)      //S3-743:   02/95 Shaq Attaq
 DRIVERNV(stargate)      //S3-742:   03/95 Stargate
-DRIVERNV(stargat2)      //                Starget (V2)
+DRIVERNV(stargat2)      //                Stargate (V2)
 DRIVERNV(bighurt)       //S3-743:   06/95 Big Hurt
-                        //S3-???:   10/95 Strikes 'N Spares
+DRIVERNV(snspares)      //S3-N111:  10/95 Strikes 'N Spares
 DRIVERNV(waterwld)      //S3-746:   10/95 Waterworld
 DRIVERNV(andretti)      //S3-747:   12/95 Mario Andretti
 DRIVERNV(barbwire)      //S3-748:   04/96 Barb Wire
-//Never produced        //S3-???:         Brooks & Dunn
+DRIVERNV(brooks)        //S3-749:   08/96 Brooks & Dunn (never produced)
 
 // ---------------------
 // STERN GAMES BELOW
