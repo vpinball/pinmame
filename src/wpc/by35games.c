@@ -472,6 +472,17 @@ BY35_ROMEND
 #define input_ports_embryon input_ports_by35
 CORE_GAMEDEFNV(embryon ,"Embryon",1981,"Bally",by35_mBY35_61BS,0)
 /*--------------------------------
+/ Embryon (7-digit bootleg)
+/-------------------------------*/
+INITGAME(embryonb,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY61B,0)
+BY35_ROMSTARTx00(embryonb,"embd71u2.bin",0x8a25d7e9,
+                          "embd71u6.732",0x20a3b3ce)
+BY61_SOUNDROMxx80(        "841-01_4.716",0xe8b234e3,
+                          "841-02_5.532",0x9cd8c04e)
+BY35_ROMEND
+#define input_ports_embryonb input_ports_embryon
+CORE_CLONEDEFNV(embryonb,embryon ,"Embryon (7-digit bootleg)",2002,"Bally / Oliver",by35_mBY35_61BS,0)
+/*--------------------------------
 / Fathom
 /-------------------------------*/
 INITGAME(fathom  ,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY61B,0)
@@ -515,7 +526,13 @@ CORE_GAMEDEFNV(centaur,"Centaur",1981,"Bally",by35_mBY35_61BS,0)
 /*--------------------------------
 / Elektra
 /-------------------------------*/
-INITGAME(elektra ,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY61,0)
+static core_tLCDLayout elektraDisp[] = {
+  {0, 0, 1,7,CORE_SEG87F}, {0,16, 9,7,CORE_SEG87F},
+  {2, 0,17,7,CORE_SEG87F}, {2,16,25,7,CORE_SEG87F},
+  {4, 4,35,2,CORE_SEG87}, {4,10,38,2,CORE_SEG87},
+  {4,21,44,2,CORE_SEG87}, {0}
+};
+INITGAME(elektra ,GEN_BY35,elektraDisp,FLIP_SW(FLIP_L),8,SNDBRD_BY61,0x80)
 BY35_ROMSTARTx00(elektra,"857-04_2.732",0xd2476720,
                          "720-53_6.732",0xc2e92f80)
 BY61_SOUNDROMx008(       "857-01_3.532",0x031548cc,
