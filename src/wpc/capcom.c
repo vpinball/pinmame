@@ -59,6 +59,8 @@ static INTERRUPT_GEN(cc_vblank) {
 
 static SWITCH_UPDATE(cc) {
   if (inports) {
+    CORE_SETKEYSW(inports[CORE_COREINPORT],0xcf,9);
+    CORE_SETKEYSW(inports[CORE_COREINPORT]>>8,0xff,0);
   }
 }
 
@@ -106,7 +108,7 @@ static void cc_u16irq4(int data) {
 	cpu_set_irq_line(0,MC68306_IRQ_4,PULSE_LINE);
 }
 
-static fixaddr = 0;
+static UINT32 fixaddr = 0;
 
 static READ16_HANDLER(u16_r) {
   static int readnum = 0;
@@ -139,22 +141,34 @@ static READ16_HANDLER(u16_r) {
 }
 
 static READ16_HANDLER(io_r) {
-#ifdef MAME_DEBUG
-	if(keyboard_pressed_memory_repeat(KEYCODE_R,2))
-	   printf("io_r [%03x] (%04x)\n",offset,mem_mask);
-#endif
-   return 0xffff;		//Switches are inverted as evidence by breakshot "stuck switch" messages
+  UINT16 sw = 0;
+  switch (offset) {
+    case 0x200008:
+      sw = coreGlobals.swMatrix[5] << 8 | coreGlobals.swMatrix[1];
+      break;
+    case 0x200009:
+      sw = coreGlobals.swMatrix[6] << 8 | coreGlobals.swMatrix[2];
+      break;
+    case 0x20000a:
+      sw = coreGlobals.swMatrix[7] << 8 | coreGlobals.swMatrix[3];
+      break;
+    case 0x20000b:
+      sw = coreGlobals.swMatrix[8] << 8 | coreGlobals.swMatrix[4];
+      break;
+    case 0x400000:
+      sw = coreGlobals.swMatrix[0] << 8 | coreGlobals.swMatrix[9];
+  }
+  return ~sw;
 }
 
 static WRITE16_HANDLER(io_w) {
 #ifdef MAME_DEBUG
-	if(keyboard_pressed_memory_repeat(KEYCODE_W,2))
+	if(keyboard_pressed_memory_repeat(KEYCODE_Z,2))
 		printf("io_w [%03x]=%04x (%04x)\n",offset,data,mem_mask);
 #endif
 }
 
 static MACHINE_INIT(cc) {
-  int i = 0;
   memset(&locals, 0, sizeof(locals));
   locals.u16a[0] = 0x00bc;
   locals.vblankCount = 1;
@@ -200,7 +214,7 @@ static MACHINE_INIT(cc) {
 /*-----------------------------------
 /  Memory map for CPU board
 /------------------------------------*/
-#if 0
+/*
 PB0/IACK2 : XC Ack
 PB1/IACK3 : Pulse ?
 PB2/IACK5 : SW3 ?
@@ -264,7 +278,24 @@ DRAM access is moved to 0-7fffff.
 However, Martin said he couldn't map stuff that way, so he mapped it as 24 bit addresses and moved stuff around..
 Most obvious is that CS2 is @ 0x02000000 instead of 0x40000000, which means all I/O is in that range.
 All other addresses are mapped >> 4 bits, ie, 0x30000000 now becomes 0x03000000
-#endif
+*/
+
+/*-----------------------------------------------
+/ Load/Save static ram
+/-------------------------------------------------*/
+static UINT16 *CMOS;
+
+static NVRAM_HANDLER(cc) {
+  core_nvram(file, read_or_write, CMOS, 0x10000, 0x00);
+}
+
+static int cc_sw2m(int no) {
+	return no + 7;
+}
+
+static int cc_m2sw(int col, int row) {
+	return col*8 + row - 9;
+}
 
 static data16_t *ramptr;
 static MEMORY_READ16_START(cc_readmem)
@@ -283,18 +314,17 @@ static MEMORY_WRITE16_START(cc_writemem)
   { 0x01000000, 0x0107ffff, MWA16_RAM, &ramptr },
   { 0x02000000, 0x02bfffff, io_w },		
   { 0x02C00000, 0x02C007ff, u16_w },    /* U16 (A10,A2,A1)*/
-  { 0x03000000, 0x0300ffff, MWA16_RAM }, /* NVRAM */
+  { 0x03000000, 0x0300ffff, MWA16_RAM, &CMOS }, /* NVRAM */
 MEMORY_END
 
 static PORT_READ16_START(cc_readport)
-  { M68306_PORTA, M68306_PORTA, cc_porta_r },
-  { M68306_PORTA, M68306_PORTA, cc_portb_r },
+  { M68306_PORTA, M68306_PORTA+1, cc_porta_r },
+  { M68306_PORTB+1, M68306_PORTB+2, cc_portb_r },
 PORT_END
 static PORT_WRITE16_START(cc_writeport)
-  { M68306_PORTA, M68306_PORTA, cc_porta_w },
-  { M68306_PORTA, M68306_PORTA, cc_portb_w },
+  { M68306_PORTA, M68306_PORTA+1, cc_porta_w },
+  { M68306_PORTB+1, M68306_PORTB+2, cc_portb_w },
 PORT_END
-static VIDEO_UPDATE(cc_dmd);
 
 MACHINE_DRIVER_START(cc)
   MDRV_IMPORT_FROM(PinMAME)
@@ -305,15 +335,10 @@ MACHINE_DRIVER_START(cc)
   MDRV_CPU_VBLANK_INT(cc_vblank, 1)
   MDRV_NVRAM_HANDLER(cc)
   MDRV_SWITCH_UPDATE(cc)
+  MDRV_SWITCH_CONV(cc_sw2m,cc_m2sw)
   MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_TIMER_ADD(cc_zeroCross, CC_ZCFREQ)
 MACHINE_DRIVER_END
-
-/*-----------------------------------------------
-/ Load/Save static ram
-/-------------------------------------------------*/
-static NVRAM_HANDLER(cc) {
-}
 
 PINMAME_VIDEO_UPDATE(cc_dmd) {
   static UINT32 offset;
@@ -321,27 +346,6 @@ PINMAME_VIDEO_UPDATE(cc_dmd) {
   int ii, jj, kk;
   UINT16 *RAM;
 
-#ifdef MAME_DEBUG
-  core_textOutf(50,20,1,"offset=%4x", offset);
-  memset(dotCol,0,sizeof(dotCol));
-  if(keyboard_pressed_memory_repeat(KEYCODE_A,2))
-	 offset+=0x1;
-  if(keyboard_pressed_memory_repeat(KEYCODE_B,2))
-	 offset-=0x1;
-  if(keyboard_pressed_memory_repeat(KEYCODE_C,2))
-	 offset+=0x10;
-  if(keyboard_pressed_memory_repeat(KEYCODE_D,2))
-	 offset-=0x10;
-  if(keyboard_pressed_memory_repeat(KEYCODE_E,2))
-	 offset+=0x20;
-  if(keyboard_pressed_memory_repeat(KEYCODE_F,2))
-	 offset-=0x20;
-  if(keyboard_pressed_memory_repeat(KEYCODE_G,2))
-	 offset+=0x200;
-  if(keyboard_pressed_memory_repeat(KEYCODE_H,2))
-	 offset-=0x200;
-  if(offset > 0x40000) offset = 0x40000;
-#endif
   offset = 0x37ff0+(0x800*locals.visible_page);
   RAM = ramptr+offset;
   for (ii = 0; ii <= 32; ii++) {

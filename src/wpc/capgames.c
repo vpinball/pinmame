@@ -2,13 +2,15 @@
 #include "sim.h"
 #include "capcom.h"
 
+#define FLIP    FLIP_SWNO(69,70)
+
 const core_tLCDLayout cc_dispDMD[] = {
   {0,0,32,128,CORE_DMD,(void *)cc_dmd}, {0}
 };
 
 #define INITGAME(name, gen, balls) \
 	CC_INPUT_PORTS_START(name, balls) CC_INPUT_PORTS_END \
-	static core_tGameData name##GameData = {gen,cc_dispDMD,{0,0,0}}; \
+	static core_tGameData name##GameData = {gen,cc_dispDMD,{FLIP,0,0}}; \
 	static void init_##name(void) { \
 		core_gameData = &name##GameData; \
 	}
