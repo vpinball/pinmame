@@ -107,7 +107,7 @@ CORE_GAMEDEF(algar,l1,"Algar (L-1)",1980,"Williams",s6_mS6S,0)
 / Alien Poker - Sys.6 (Game #501)
 /-------------------------------*/
 INITGAMEFULL(alpok,s6_7digit_disp,0,43,35,37,36,38,0,13)
-S6_ROMSTART(alpok,l2, "gamerom.716", CRC(20538a4a),
+S6_ROMSTART(alpok,l6, "gamerom6.716",CRC(20538a4a),
                       "green1.716",  CRC(2145f8ab),
                       "green2.716",  CRC(1c978a4a))
 S67S_SOUNDROMS8(      "sound2.716",  CRC(55a10d13))
@@ -116,4 +116,25 @@ S67S_SPEECHROMS000x(  "v_ic7.532" ,  CRC(a66c7ca6),
                       "v_ic6.532" ,  CRC(15a3cc85))
 S6_ROMEND
 #define input_ports_alpok input_ports_s6
-CORE_GAMEDEF(alpok,l2,"Alien Poker (L-2)",1980,"Williams",s6_mS6S,0)
+CORE_GAMEDEF(alpok,l6,"Alien Poker (L-6)",1980,"Williams",s6_mS6S,0)
+
+S6_ROMSTART(alpok,l2, "gamerom.716", CRC(79c07603),
+                      "green1.716",  CRC(2145f8ab),
+                      "green2.716",  CRC(1c978a4a))
+S67S_SOUNDROMS8(      "sound2.716",  CRC(55a10d13))
+S67S_SPEECHROMS000x(  "v_ic7.532" ,  CRC(a66c7ca6),
+                      "v_ic5.532" ,  CRC(f16a237a),
+                      "v_ic6.532" ,  CRC(15a3cc85))
+S6_ROMEND
+CORE_CLONEDEF(alpok,l2,l6,"Alien Poker (L-2)",1980,"Williams",s6_mS6S,0)
+
+S6_ROMSTART(alpok,f6, "gamerom6.716",CRC(20538a4a),
+                      "green1.716",  CRC(2145f8ab),
+                      "green2.716",  CRC(1c978a4a))
+S67S_SOUNDROMS8(      "sound2.716",  CRC(55a10d13))
+S67S_SPEECHROMS0000(  "5t5014fr.dat",CRC(1d961517),
+                      "5t5015fr.dat",CRC(8d065f80),
+                      "5t5016fr.dat",CRC(0ddf91e9),
+                      "5t5017fr.dat",CRC(7e546dc1))
+S6_ROMEND
+CORE_CLONEDEF(alpok,f6,l6,"Alien Poker (L-6, French speech)",1980,"Williams",s6_mS6S,0)
