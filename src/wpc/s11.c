@@ -216,7 +216,7 @@ static READ_HANDLER(pia5a_r) {
   if (core_gameData->gen & GEN_DEDMD64)
     return sndbrd_0_ctrl_r(0);
   else if (core_gameData->gen & GEN_DEDMD16)
-    return (sndbrd_0_data_r(0) ? 0x80 : 0x00) | (sndbrd_0_ctrl_r(0)<<1);
+    return (sndbrd_0_data_r(0) ? 0x01 : 0x00) | (sndbrd_0_ctrl_r(0)<<1);
   return 0;
 }
 
