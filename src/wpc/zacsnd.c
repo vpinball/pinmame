@@ -2,6 +2,7 @@
 #include "machine/6821pia.h"
 #include "cpu/m6800/m6800.h"
 #include "cpu/i8039/i8039.h"
+#include "cpu/tms7000/tms7000.h"
 #include "sound/discrete.h"
 #include "sound/sn76477.h"
 #include "core.h"
@@ -45,24 +46,24 @@ static void zac1125_init(struct sndbrdData *brdData);
 static WRITE_HANDLER(zac1125_data_w);
 static WRITE_HANDLER(zac1125_ctrl_w);
 
-static struct SN76477interface  zac1125_sn76477Int = { 1, { 25 }, /* mixing level */
-/*                         pin description		 */
-	{ RES_K(47)  },		/*	4  noise_res		 */
-	{ RES_K(220) },		/*	5  filter_res		 */
-	{ CAP_N(2.2) },		/*	6  filter_cap		 */
-	{ RES_M(1.5) },		/*	7  decay_res		 */
-	{ CAP_U(2.2) },		/*	8  attack_decay_cap  */
-	{ RES_K(4.7) },		/* 10  attack_res		 */
-	{ RES_K(47)  },		/* 11  amplitude_res	 */
-	{ RES_K(320) },		/* 12  feedback_res 	 */
-	{ 0	/* ??? */},		/* 16  vco_voltage		 */
-	{ CAP_U(0.33)},		/* 17  vco_cap			 */
-	{ RES_K(100) },		/* 18  vco_res			 */
-	{ 5.0		 },		/* 19  pitch_voltage	 */
-	{ RES_M(1)   },		/* 20  slf_res			 */
-	{ CAP_U(2.2) },		/* 21  slf_cap			 */
-	{ CAP_U(2.2) },		/* 23  oneshot_cap		 */
-	{ RES_M(1.5) }		/* 24  oneshot_res		 */
+static struct SN76477interface  zac1125_sn76477Int = { 1, { 50 }, /* mixing level */
+/*						   pin description		*/
+	{ RES_K(47)   },	/*	4  noise_res		*/
+	{ RES_K(220)  },	/*	5  filter_res		*/
+	{ CAP_N(2.2)  },	/*	6  filter_cap		*/
+	{ RES_M(1.5)  },	/*	7  decay_res		*/
+	{ CAP_U(2.2)  },	/*	8  attack_decay_cap */
+	{ RES_K(4.7)  },	/* 10  attack_res		*/
+	{ RES_K(47)   },	/* 11  amplitude_res	*/
+	{ RES_K(320)  },	/* 12  feedback_res 	*/
+	{ 0	/* ??? */ },	/* 16  vco_voltage		*/
+	{ CAP_U(0.33) },	/* 17  vco_cap			*/
+	{ RES_K(100)  },	/* 18  vco_res			*/
+	{ 5.0		  },	/* 19  pitch_voltage	*/
+	{ RES_M(1)    },	/* 20  slf_res			*/
+	{ CAP_U(2.2)  },	/* 21  slf_cap			*/
+	{ CAP_U(2.2)  },	/* 23  oneshot_cap		*/
+	{ RES_M(1.5)  }		/* 24  oneshot_res		*/
 };
 
 /*-------------------
@@ -81,7 +82,7 @@ static struct {
 } s1125locals;
 
 static WRITE_HANDLER(zac1125_data_w) {
-  logerror("snd ctrl %d = %d\n", s1125locals.ctrl, data);
+  logerror("snd write %d = %d\n", s1125locals.ctrl, data);
 }
 
 static WRITE_HANDLER(zac1125_ctrl_w) {
@@ -415,3 +416,45 @@ static void sns_irqb(int state) {
 }
 
 static void sns_5220Irq(int state) { pia_set_input_cb1(SNS_PIA1, !state); }
+
+// TECHNOPLAY sound board
+
+const struct sndbrdIntf technoIntf = {"TECHNO"};
+
+static MEMORY_READ_START(techno_readmem)
+  { 0x0000, 0x1fff, MRA_RAM },
+  { 0x2000, 0xffff, MRA_ROM },
+MEMORY_END
+
+static MEMORY_WRITE_START(techno_writemem)
+  { 0x0000, 0x1fff, MWA_RAM },
+  { 0x2000, 0xffff, MWA_ROM },
+MEMORY_END
+
+static READ_HANDLER(tms_port_r) {
+  return 0;
+}
+
+static WRITE_HANDLER(tms_port_w) {
+}
+
+PORT_READ_START( tms_readport )
+{ TMS7000_PORTA, TMS7000_PORTA, tms_port_r },
+{ TMS7000_PORTB, TMS7000_PORTB, tms_port_r },
+{ TMS7000_PORTC, TMS7000_PORTC, tms_port_r },
+{ TMS7000_PORTD, TMS7000_PORTD, tms_port_r },
+PORT_END
+
+PORT_WRITE_START( tms_writeport )
+{ TMS7000_PORTA, TMS7000_PORTA, tms_port_w },
+{ TMS7000_PORTB, TMS7000_PORTB, tms_port_w },
+{ TMS7000_PORTC, TMS7000_PORTC, tms_port_w },
+{ TMS7000_PORTD, TMS7000_PORTD, tms_port_w },
+PORT_END
+
+MACHINE_DRIVER_START(techno)
+  MDRV_CPU_ADD(TMS7000, 6000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(techno_readmem, techno_writemem)
+  MDRV_CPU_PORTS(tms_readport, tms_writeport)
+MACHINE_DRIVER_END

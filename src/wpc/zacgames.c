@@ -366,3 +366,14 @@ CORE_GAMEDEFNV(spooky,"Spooky",1987,"Zaccaria",mZAC2XS,SOUNDFLAG)
 
 //??/87 Star's Phoenix
 //??/86 New Star's Phoenix
+
+/*--------------------------------
+/ Scramble (Technoplay 1987)
+/-------------------------------*/
+INITGAME(scram_tp,1,dispZAC2,SNDBRD_TECHNO)
+ZAC_ROMSTART1820(scram_tp,	"scram_1.lgc",CRC(da565549),
+							"scram_2.lgc",CRC(537e6c61))
+TECHNO_SOUNDROM("scram_1.snd",CRC(ee5f868b),
+                "scram_2.snd",CRC(a04bf7d0))
+ZAC_ROMEND
+CORE_GAMEDEFNV(scram_tp,"Scramble",1987,"Technoplay",mTECHNO,SOUNDFLAG)

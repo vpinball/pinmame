@@ -24,10 +24,12 @@
 
 static WRITE_HANDLER(ZAC_soundCmd) { }
 static void ZAC_soundInit(void) {
-  sndbrd_0_init(core_gameData->hw.soundBoard, ZACSND_CPUA, memory_region(ZACSND_CPUAREGION), NULL, NULL);
+  if (core_gameData->hw.soundBoard)
+    sndbrd_0_init(core_gameData->hw.soundBoard, ZACSND_CPUA, memory_region(ZACSND_CPUAREGION), NULL, NULL);
 }
 static void ZAC_soundExit(void) {
-  sndbrd_0_exit();
+  if (core_gameData->hw.soundBoard)
+    sndbrd_0_exit();
 }
 
 static struct {
@@ -245,8 +247,9 @@ static WRITE_HANDLER(ctrl_port_w)
 /*   DATA PORT : WRITE = Sound Data 0-7 */
 static WRITE_HANDLER(data_port_w)
 {
-	sndbrd_0_data_w(ZACSND_CPUA, data);
-	logerror("%x: Sound Data Write=%x\n",activecpu_get_previouspc(),data);
+  if (core_gameData->hw.soundBoard)
+    sndbrd_0_data_w(ZACSND_CPUA, data);
+  logerror("%x: Sound Data Write=%x\n",activecpu_get_previouspc(),data);
 }
 
 /*   SENSE PORT: WRITE = Write Serial Output (hooked to printer) */
@@ -335,9 +338,14 @@ static WRITE_HANDLER(ram1_w) {
 		offset -= 0x40;
 		if (core_gameData->hw.soundBoard == SNDBRD_ZAC1311 && offset > 19 && offset < 25)
 			discrete_sound_w(1 << (offset-20), data);
-		else if (core_gameData->hw.soundBoard == SNDBRD_ZAC1125 && offset > 27) {
-			sndbrd_0_ctrl_w(0, offset-28);
-			sndbrd_0_data_w(0, data);
+		else if (core_gameData->hw.soundBoard == SNDBRD_ZAC1125 && offset > 23) {
+			UINT32 sol = 1 << offset;
+			sndbrd_ctrl_w(0, offset - 24);
+			sndbrd_data_w(0, data);
+			if (data)
+				locals.solenoids |= sol;
+			else
+				locals.solenoids &= ~sol;
 		} else {
 			UINT32 sol = 1 << offset;
 			if (data)
@@ -355,14 +363,18 @@ static WRITE_HANDLER(ram1_w) {
 }
 
 static READ_HANDLER(ram1_r) {
-	UINT8 value;
-	int off = 0x2d;
-	if (offset > off && offset < off + 0x07) {
-		off = offset - off - 1;
-		value = coreGlobals.swMatrix[off + 1];
-		ram1[offset] = value;
-	}
-	return ram1[offset];
+	static UINT8 g1keys[6];
+	UINT8 value = 0;
+	if (offset > 0x2d && offset < 0x34) {
+		value = coreGlobals.swMatrix[offset - 0x2d];
+		ram1[offset] = ram1[offset + 6] = value;
+	} else if (offset > 0x33 && offset < 0x3a) {
+		value = g1keys[offset - 0x34];
+		g1keys[offset - 0x34] = ram1[offset];
+	} else
+		value = ram1[offset];
+
+	return value;
 }
 
 WRITE_HANDLER(UpdateZACSoundLED)
@@ -604,4 +616,10 @@ MACHINE_DRIVER_START(ZAC2FS)
   MDRV_IMPORT_FROM(ZAC2XS)
   MDRV_CPU_MODIFY("mcpu")
   MDRV_CPU_PERIODIC_INT(ZAC_irq, ZAC_IRQFREQ_F)
+MACHINE_DRIVER_END
+
+//Technoplay sound board
+MACHINE_DRIVER_START(TECHNO)
+  MDRV_IMPORT_FROM(ZAC2NS)
+  MDRV_IMPORT_FROM(techno)
 MACHINE_DRIVER_END
