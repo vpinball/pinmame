@@ -9,14 +9,17 @@
 #define ZAC_COMPORTS \
   PORT_START /* 0 */ \
     /* These are put in switch column 1 */ \
-    COREPORT_BITIMP(  0x0001, "Up", KEYCODE_7) \
-    COREPORT_BITIMP(  0x0002, "Down", KEYCODE_8) \
-    COREPORT_BITIMP(  0x0004, "Reset", KEYCODE_0) \
-    COREPORT_BITIMP(  0x0008, "Coin 4 / Start", KEYCODE_1) \
     COREPORT_BITIMP(  0x0010, "Coin 1", KEYCODE_3) \
     COREPORT_BITIMP(  0x0020, "Coin 2", KEYCODE_4) \
     COREPORT_BITIMP(  0x0040, "Coin 3", KEYCODE_5) \
-    COREPORT_BIT   (  0x0200, "Advance", KEYCODE_9) \
+    COREPORT_BITIMP(  0x0008, "Coin 4 / Start", KEYCODE_6) \
+    COREPORT_BITIMP(  0x0001, "Diag. Up", KEYCODE_7) \
+    COREPORT_BITIMP(  0x0002, "Diag. Down", KEYCODE_8) \
+    COREPORT_BITIMP(  0x0004, "Reset", KEYCODE_0) \
+    /* These are put in switch column 2 */ \
+    COREPORT_BIT   (  0x0200, "Start", KEYCODE_1) \
+    COREPORT_BIT   (  0x0400, "Ball Tilt", KEYCODE_INSERT) \
+    COREPORT_BITIMP(  0x8000, "Slam Tilt", KEYCODE_HOME) \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
       COREPORT_DIPSET(0x0000, "0" ) \
@@ -214,10 +217,16 @@ extern MACHINE_DRIVER_EXTERN(ZAC0);
 extern MACHINE_DRIVER_EXTERN(ZAC1);
 extern MACHINE_DRIVER_EXTERN(ZAC2);
 extern MACHINE_DRIVER_EXTERN(ZAC2A);
+extern MACHINE_DRIVER_EXTERN(ZAC2B);
+extern MACHINE_DRIVER_EXTERN(ZAC2C);
+extern MACHINE_DRIVER_EXTERN(ZAC2F);
 
 #define mZAC0     ZAC0
 #define mZAC1     ZAC1
 #define mZAC2     ZAC2
 #define mZAC2A    ZAC2A
+#define mZAC2B    ZAC2B
+#define mZAC2C    ZAC2C
+#define mZAC2F    ZAC2F
 
 #endif /* INC_ZAC */

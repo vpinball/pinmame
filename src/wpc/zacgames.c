@@ -150,7 +150,7 @@ ZAC_ROMSTART000(socrking,	"soccer.ic1",0x3fbd7c32,
 							"soccer.ic2",0x0cc0df1f,
 							"soccer.ic3",0x5da6ea20)
 ZAC_ROMEND
-CORE_GAMEDEFNV(socrking,"Soccer King",1982,"Zaccaria",mZAC2A,0)
+CORE_GAMEDEFNV(socrking,"Soccer King",1982,"Zaccaria",mZAC2A,GAME_NOT_WORKING)
 
 //04/82 Pinball Champ '82 (Is this really different from the '83?)
 
@@ -162,7 +162,7 @@ ZAC_ROMSTART000(pinchamp,	"pinchamp.ic1",0x1412ec33,
 							"pinchamp.ic2",0xa24ba4c6,
 							"pinchamp.ic3",0xdf5f4f88)
 ZAC_ROMEND
-CORE_GAMEDEFNV(pinchamp,"Pinball Champ",1983,"Zaccaria",mZAC2A,0)
+CORE_GAMEDEFNV(pinchamp,"Pinball Champ",1983,"Zaccaria",mZAC2B,GAME_NOT_WORKING)
 
 /*--------------------------------
 / Time Machine (04/83)
@@ -171,7 +171,7 @@ INITGAME(tmachzac,1,dispZAC2,FLIP_SW(FLIP_L),2)
 ZAC_ROMSTART1820(tmachzac,	"timemach.ic1",0xd88f424b,
 							"timemach.ic2",0x3c313487)
 ZAC_ROMEND
-CORE_GAMEDEFNV(tmachzac,"Time Machine (Zaccaria)",1983,"Zaccaria",mZAC2A,0)
+CORE_GAMEDEFNV(tmachzac,"Time Machine (Zaccaria)",1983,"Zaccaria",mZAC2C,GAME_NOT_WORKING)
 
 /*--------------------------------
 / Farfalla (09/83)
@@ -180,7 +180,7 @@ INITGAME(farfalla,1,dispZAC2,FLIP_SW(FLIP_L),2)
 ZAC_ROMSTART1820(farfalla,	"cpurom1.bin",0xac249150,
 							"cpurom2.bin",0x6edc823f)
 ZAC_ROMEND
-CORE_GAMEDEFNV(farfalla,"Farfalla",1983,"Zaccaria",mZAC2,0)
+CORE_GAMEDEFNV(farfalla,"Farfalla",1983,"Zaccaria",mZAC2F,0)
 
 /*--------------------------------
 / Devil Riders (04/84)
@@ -207,7 +207,7 @@ INITGAME(robot,1,dispZAC3,FLIP_SW(FLIP_L),2)
 ZAC_ROMSTART020(robot,	"robot_1.lgc",0x96a87432,
 						"robot_2.lgc",0x28ba9687)
 ZAC_ROMEND
-CORE_GAMEDEFNV(robot,"Robot",1985,"Zaccaria",mZAC2,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(robot,"Robot",1985,"Zaccaria",mZAC2F,GAME_NOT_WORKING)
 
 /*--------------------------------
 / Clown (07/85)
@@ -225,7 +225,7 @@ INITGAME(poolcham,1,dispZAC3,FLIP_SW(FLIP_L),2)
 ZAC_ROMSTART020(poolcham,	"poolcham.ic1",0xfca2a2b2,
 							"poolcham.ic2",0x267a2a02)
 ZAC_ROMEND
-CORE_GAMEDEFNV(poolcham,"Pool Champion",1985,"Zaccaria",mZAC2,0)
+CORE_GAMEDEFNV(poolcham,"Pool Champion",1985,"Zaccaria",mZAC2F,0)
 
 /*--------------------------------
 / Blackbelt (??/86)
@@ -234,7 +234,7 @@ INITGAME(bbeltzac,1,dispZAC3,FLIP_SW(FLIP_L),2)
 ZAC_ROMSTART1820(bbeltzac,	"bbz-1.fil",0x2e7e1575,
 							"bbz-2.fil",0xdbec92ae)
 ZAC_ROMEND
-CORE_GAMEDEFNV(bbeltzac,"Blackbelt (Zaccaria)",1986,"Zaccaria",mZAC2,0)
+CORE_GAMEDEFNV(bbeltzac,"Blackbelt (Zaccaria)",1986,"Zaccaria",mZAC2F,0)
 
 /*--------------------------------
 / Mexico '86 (??/86)
@@ -243,7 +243,7 @@ INITGAME(mexico,1,dispZAC3,FLIP_SW(FLIP_L),2)
 ZAC_ROMSTART1820(mexico,	"mex86_1.lgc",0x60d559b1,
 							"mex86_2.lgc",0x5c984c15)
 ZAC_ROMEND
-CORE_GAMEDEFNV(mexico,"Mexico '86",1986,"Zaccaria",mZAC2,0)
+CORE_GAMEDEFNV(mexico,"Mexico '86",1986,"Zaccaria",mZAC2F,0)
 
 /*--------------------------------
 / Zankor (??/86)
@@ -252,7 +252,7 @@ INITGAME(zankor,1,dispZAC3,FLIP_SW(FLIP_L),2)
 ZAC_ROMSTART1820(zankor,	"zan_ic1.764",0xe7ba5acf,
 							"zan_ic2.764",0x5804ff10)
 ZAC_ROMEND
-CORE_GAMEDEFNV(zankor,"Zankor",1986,"Zaccaria",mZAC2,0)
+CORE_GAMEDEFNV(zankor,"Zankor",1986,"Zaccaria",mZAC2F,0)
 
 //??/86 Mystic Star (conversion kit with different hardware)
 
