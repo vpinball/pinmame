@@ -10,20 +10,20 @@
 #define TAITO_VBLANKFREQ     60  // VBLANK frequency
 #define TAITO_IRQFREQ        0.2
 
-#define TAITO_SOLSMOOTH      2 /* Smooth the solenoids over this numer of VBLANKS */
+#define TAITO_SOLSMOOTH      2 /* Smooth the Solenoids over this numer of VBLANKS */
 #define TAITO_DISPLAYSMOOTH  2 /* Smooth the display over this number of VBLANKS */
-#define TAITO_LAMPSMOOTH     2 /* Smooth the lamps over this number of VBLANKS */
+#define TAITO_LAMPSMOOTH	 2 /* Smooth the display over this number of VBLANKS */
 
 static struct {
-	int vblankCount;
-	core_tSeg segments;
-	UINT8  lampMatrix[CORE_MAXLAMPCOL];
-	UINT32 solenoids;
-	int sndCmd, oldsndCmd;
+  int vblankCount;
+  core_tSeg segments;
+  UINT32 solenoids;
+  UINT8 lampMatrix[CORE_MAXLAMPCOL];
+  int sndCmd, oldsndCmd;
 
-	void* timer_irq;
-	UINT8* pDisplayRAM;
-	UINT8* pCommandsDMA;
+  void* timer_irq;
+  UINT8* pDisplayRAM;
+  UINT8* pCommandsDMA;
 } TAITOlocals;
 
 static NVRAM_HANDLER(taito);
@@ -44,20 +44,22 @@ static INTERRUPT_GEN(taito_vblank) {
 	}
 
 	/*-- lamps --*/
-	if ((TAITOlocals.vblankCount % TAITO_LAMPSMOOTH) == 0) {
-		memcpy(coreGlobals.lampMatrix, TAITOlocals.lampMatrix, sizeof(coreGlobals.lampMatrix));
-	}
+ 	if ((TAITOlocals.vblankCount % TAITO_LAMPSMOOTH) == 0) {
+ 		memcpy(coreGlobals.lampMatrix, TAITOlocals.lampMatrix, sizeof(coreGlobals.lampMatrix));
+ 	}
 
-	/*-- display --*/
-	if ((TAITOlocals.vblankCount % TAITO_DISPLAYSMOOTH) == 0) {
-		memcpy(coreGlobals.segments, TAITOlocals.segments, sizeof coreGlobals.segments);
-	}
+  /*-- display --*/
+  if ((TAITOlocals.vblankCount % TAITO_DISPLAYSMOOTH) == 0) {
+	memcpy(coreGlobals.segments, TAITOlocals.segments, sizeof coreGlobals.segments);
+  }
+
+  core_updateSw(core_getSol(16));
 }
 
 static SWITCH_UPDATE(taito) {
-	if (inports) {
-		coreGlobals.swMatrix[1] = (inports[TAITO_COMINPORT]&0xff)^0x40;
-	}
+  if (inports) {
+	coreGlobals.swMatrix[1] = (inports[TAITO_COMINPORT]&0xff)^0x40;
+  }
 }
 
 static INTERRUPT_GEN(taito_irq) {
@@ -70,30 +72,25 @@ static void timer_irq(int data) {
 }
 
 static MACHINE_INIT(taito) {
-	memset(&TAITOlocals, 0, sizeof(TAITOlocals));
+  memset(&TAITOlocals, 0, sizeof(TAITOlocals));
 
-	// if a DMA access occurs, put the value the RAM also
-	// these vales are precalculated to speed up the emulation
-	TAITOlocals.pDisplayRAM  = memory_region(TAITO_MEMREG_CPU) + 0x4080;
-	TAITOlocals.pCommandsDMA = memory_region(TAITO_MEMREG_CPU) + 0x4090;
+  TAITOlocals.pDisplayRAM  = memory_region(TAITO_MEMREG_CPU) + 0x4080;
+  TAITOlocals.pCommandsDMA = memory_region(TAITO_MEMREG_CPU) + 0x4090;
 
-	// looks like, a priodic interrupt could'nt occure at lower rate of 1,
-	// so set a timer to 0.2 Hz according the the schmatics and fire an interrupt 
-	// any 5 seconds
-	TAITOlocals.timer_irq = timer_alloc(timer_irq);
-	timer_adjust(TAITOlocals.timer_irq, TIME_IN_HZ(TAITO_IRQFREQ), 0, TIME_IN_HZ(TAITO_IRQFREQ));
+  TAITOlocals.timer_irq = timer_alloc(timer_irq);
+  timer_adjust(TAITOlocals.timer_irq, TIME_IN_HZ(TAITO_IRQFREQ), 0, TIME_IN_HZ(TAITO_IRQFREQ));
 
-	sndbrd_0_init(core_gameData->hw.soundBoard, TAITO_SCPU, memory_region(TAITO_MEMREG_SCPU), NULL, NULL);
+  sndbrd_0_init(core_gameData->hw.soundBoard, TAITO_SCPU, memory_region(TAITO_MEMREG_SCPU), NULL, NULL);
 
-	TAITOlocals.vblankCount = 1;
+  TAITOlocals.vblankCount = 1;
 }
 
 static MACHINE_STOP(taito) {
-	if ( TAITOlocals.timer_irq ) {
-		timer_remove(TAITOlocals.timer_irq);
-		TAITOlocals.timer_irq = NULL;
-	}
-	sndbrd_0_exit();
+  if ( TAITOlocals.timer_irq ) {
+	  timer_remove(TAITOlocals.timer_irq);
+	  TAITOlocals.timer_irq = NULL;
+  }
+  sndbrd_0_exit();
 }
 
 static WRITE_HANDLER(taito_sndCmd_w) {
@@ -105,6 +102,9 @@ static WRITE_HANDLER(taito_sndCmd_w) {
 }
 
 static READ_HANDLER(switches_r) {
+	if ( offset==7 )
+		logerror("switch read: %i\n", offset);
+
 	if ( offset==6 )
 		return core_getDip(0)^0xff;
 	else
@@ -121,25 +121,20 @@ static WRITE_HANDLER(cmd_w) {
 
 static WRITE_HANDLER(dma_display)
 {
-    // if a DMA access occurs, put the value the RAM also
 	TAITOlocals.pDisplayRAM[offset] = data;
 
 	if ( offset<14 ) {
 		((int*) TAITOlocals.segments)[2*offset+segMap[offset]]   = core_bcd2seg[(data>>4)&0x0f];
 		((int*) TAITOlocals.segments)[2*offset+segMap[offset]+1] = core_bcd2seg[data&0x0f];
 	}
-	else 
-		logerror("write to display DMA area: %i, value: %i\n", offset, data);
 }
 
 static WRITE_HANDLER(dma_commands)
 {
-    // if a DMA access occurs, put the value the RAM also
-	TAITOlocals.pCommandsDMA[offset] = data;
-
 	// upper nibbles of offset 0-1: solenoids
 	// upper nibbles of offset 2-3: sound commands
 	// lower nibbles: lamps, offset 0-?
+	TAITOlocals.pCommandsDMA[offset] = data;
 
 	switch ( offset ) {
 	case 0:
@@ -206,11 +201,11 @@ MACHINE_DRIVER_START(taito)
   MDRV_CPU_ADD_TAG("mcpu", 8080, 4000000)
   MDRV_CPU_MEMORY(taito_readmem, taito_writemem)
   MDRV_CPU_VBLANK_INT(taito_vblank, TAITO_VBLANKFREQ)
+  // MDRV_CPU_PERIODIC_INT(taito_irq, TAITO_IRQFREQ)
   MDRV_NVRAM_HANDLER(taito)
   MDRV_DIPS(8)
   MDRV_SWITCH_UPDATE(taito)
 
-  // sound board
   MDRV_IMPORT_FROM(taitos)
   MDRV_SOUND_CMD(taito_sndCmd_w)
   MDRV_SOUND_CMDHEADING("taito")
