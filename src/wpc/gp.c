@@ -14,8 +14,8 @@
 		a) Sometimes the display seems to not get erased properly, ie, it retains displayed data
 		   (at startup (for vegasgp), notice how credit display = 0 while others are blank)
 		   (occurs especially in the ball/credit areas, but also occurs during lamp test for other digits)
-		b) No idea how solenoids 16-18 get triggered
-		c) Solenoid ordering not adjusted for all games
+		b) No idea how solenoids 17 & 18 (display on/off) get triggered. Not at all, perhaps?
+		c) Solenoid ordering not adjusted for all games. But then, Bally suffers from the same problem...
 */
 #include <stdarg.h>
 #include <time.h>
@@ -25,12 +25,6 @@
 #include "machine/8255ppi.h"
 #include "core.h"
 #include "gp.h"
-
-#if 1
-#define mlogerror printf
-#else
-#define mlogerror logerror
-#endif
 
 #define GP_VBLANKFREQ    60 /* VBLANK frequency */
 #define GP_IRQFREQ      150 /* IRQ (via PIA) frequency*/
@@ -42,27 +36,21 @@ static struct {
   int p0_a;
   int bcd[5];
   int lampaddr;
-  UINT32 solenoids;
-  core_tSeg segments,pseg;
-  int    diagnosticLed;
+  int diagnosticLed;
   int vblankCount;
-  int initDone;
-  void *zctimer;
   int swCol;
   int disp_enable;		//Is Display Enabled
   int disp_col;			//Current Display Column/Digit Selected
   int last_clk;			//Last Digit Clock Line to go low
+  UINT32 solenoids;
+  core_tSeg segments,pseg;
   WRITE_HANDLER((*PORTA_WRITE));
 } locals;
-
-static void GP_exit(void);
-static void GP_nvram(void *file, int write);
-
 
 static void GP_dispStrobe(int mask) {
   int digit = locals.disp_col;
   int ii,jj;
-  logerror("mask = %x, digit = %x (%x,%x,%x,%x,%x)\n",mask, digit,locals.bcd[0],locals.bcd[1],locals.bcd[2],locals.bcd[3],locals.bcd[4]);
+//  logerror("mask = %x, digit = %x (%x,%x,%x,%x,%x)\n",mask, digit,locals.bcd[0],locals.bcd[1],locals.bcd[2],locals.bcd[3],locals.bcd[4]);
   ii = digit;
   jj = mask;
   ((int *)locals.segments)[jj*8+ii] |= ((int *)locals.pseg)[jj*8+ii] = core_bcd2seg[locals.bcd[jj]];
@@ -100,7 +88,7 @@ static void GP_lampStrobe2(int lampadr, int lampdata) {
 static void GP_UpdateSolenoids (int bank, int soldata) {
   UINT32 mask = 0xC0008000;
   UINT32 sols = 0;
-  logerror("soldata = %x\n",soldata);
+//  logerror("soldata = %x\n",soldata);
   //Solenoids 1-15, 17-30
   soldata &= 0x0f;
   if (soldata != 0x0f) {
@@ -113,7 +101,7 @@ static void GP_UpdateSolenoids (int bank, int soldata) {
   }
 }
 
-static int GP_vblank(void) {
+static INTERRUPT_GEN(GP_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
@@ -140,10 +128,9 @@ static int GP_vblank(void) {
     locals.diagnosticLed = 0;
   }
   core_updateSw(core_getSol(16));
-  return ignore_interrupt();
 }
 
-static void GP_updSw(int *inports) {
+static SWITCH_UPDATE(GP) {
   if (inports) {
 	coreGlobals.swMatrix[0] = (inports[GP_COMINPORT]>>9) & 0x01;
 	coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & (~0xf7)) |
@@ -214,7 +201,7 @@ static WRITE_HANDLER(mpu1_pa_w) {
 	/*Enabling Solenoids? (Address Line 1,2)*/
 	if(tmpdata>0 && tmpdata<3) {
 		//No solenoid is wired for 15, so we use it for releasing the sols.
-		logerror("%x: sol en: %x addr %x \n",cpu_getpreviouspc(),tmpdata-1,addrdata);
+//		logerror("%x: sol en: %x addr %x \n",activecpu_get_previouspc(),tmpdata-1,addrdata);
 		GP_UpdateSolenoids(tmpdata-1,addrdata);
 	}
 
@@ -234,12 +221,12 @@ static WRITE_HANDLER(mpu1_pa_w) {
 	if(tmpdata>7 && tmpdata<12) {
 		if(locals.disp_enable) {
 			locals.last_clk = disp_clk;
-			logerror("%x: disp clock #%x, data=%x\n",cpu_getpreviouspc(),disp_clk,addrdata);
+//			logerror("%x: disp clock #%x, data=%x\n",activecpu_get_previouspc(),disp_clk,addrdata);
 		}
 	}
 
-	logerror("PA_W: P4-7 %x = %d\n",tmpdata,tmpdata);
-	logerror("PA_W: P0-3 %x = %d\n",addrdata,addrdata);
+//	logerror("PA_W: P4-7 %x = %d\n",tmpdata,tmpdata);
+//	logerror("PA_W: P0-3 %x = %d\n",addrdata,addrdata);
 }
 
 /************************  MPU-2 GENERATION ********************************
@@ -256,7 +243,7 @@ PORT A WRITE
 	1) = Solenoid Address 1-4 Enable
 	2) = Solenoid Address 5-8 Enable
 	3-6) = Lamp Data 1-4
-	7) = Swicht Strobe 0 AND BDU - Clock 1
+	7) = Switch Strobe 0 AND BDU - Clock 1
 	8) = Switch Strobe 1 AND Display Clock 1 AND BDU - Clock 2
 	9) = Switch Strobe 2 AND Display Clock 2 AND BDU - Clock 3
 	10) = Switch Strobe 3 AND Display Clock 3 AND BDU - Clock 4
@@ -282,7 +269,7 @@ static WRITE_HANDLER(mpu2_pa_w) {
 	/*Enabling Solenoids? (Address Line 1,2)*/
 	if(tmpdata>0 && tmpdata<3) {
 		//No solenoid is wired for 15, so we use it for releasing the sols.
-		logerror("%x: sol en: %x addr %x \n",cpu_getpreviouspc(),tmpdata-1,addrdata);
+//		logerror("%x: sol en: %x addr %x \n",activecpu_get_previouspc(),tmpdata-1,addrdata);
 		GP_UpdateSolenoids(tmpdata-1,addrdata);
 	}
 
@@ -302,12 +289,12 @@ static WRITE_HANDLER(mpu2_pa_w) {
 	if(tmpdata>6 && tmpdata<12) {
 		if(locals.disp_enable) {
 			locals.last_clk = disp_clk;
-			logerror("%x: disp clock #%x, data=%x\n",cpu_getpreviouspc(),disp_clk,addrdata);
+//			logerror("%x: disp clock #%x, data=%x\n",activecpu_get_previouspc(),disp_clk,addrdata);
 		}
 	}
 
-	logerror("PA_W: P4-7 %x = %d\n",tmpdata,tmpdata);
-	logerror("PA_W: P0-3 %x = %d\n",addrdata,addrdata);
+//	logerror("PA_W: P4-7 %x = %d\n",tmpdata,tmpdata);
+//	logerror("PA_W: P0-3 %x = %d\n",addrdata,addrdata);
 }
 
 /*
@@ -329,9 +316,9 @@ static WRITE_HANDLER(ppi0_pc_w) {
 	if(col < 7)
 		locals.disp_col = 6-col;	//Reverse the ordering
 
-	logerror("disp_enable = %x\n",locals.disp_enable);
-	logerror("col: %x \n",col);
-	logerror("PC_W: %x\n",data);
+//	logerror("disp_enable = %x\n",locals.disp_enable);
+//	logerror("col: %x \n",col);
+//	logerror("PC_W: %x\n",data);
 	sol16 = (data>>7)&1;
 	sol31 = (data>>5)&1;
 	sol32 = (data>>6)&1;
@@ -406,7 +393,7 @@ static ppi8255_interface ppi8255_intf =
 /* z80 ctc */
 static void ctc_interrupt (int state)
 {
-	cpu_cause_interrupt (0, Z80_VECTOR(0,state) );
+	cpu_set_irq_line_and_vector(0, 0, state, Z80_VECTOR(0, state));
 }
 
 static z80ctc_interface ctc_intf =
@@ -420,15 +407,8 @@ static z80ctc_interface ctc_intf =
 	{ 0 }							/* ZC/TO2 callback */
 };
 
-static int GP_irq(void) {
-  return ignore_interrupt();
+static INTERRUPT_GEN(GP_irq) {
 }
-
-static core_tData GPData = {
-  32, /* 32 Dips */
-  GP_updSw, 1, GP_soundCmd, "GP",
-  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
-};
 
 static void GP_zeroCross(int data) {
   /*- toggle zero/detection circuit-*/
@@ -438,9 +418,6 @@ static void GP_zeroCross(int data) {
 }
 
 static void GP_common_init(void) {
-  if (locals.initDone) CORE_DOEXIT(GP_exit);
-
-  if (core_init(&GPData)) return;
   memset(&locals, 0, sizeof(locals));
 
   /* init PPI */
@@ -452,36 +429,42 @@ static void GP_common_init(void) {
 
   //if (coreGlobals.soundEn) GP_soundInit();
   locals.vblankCount = 1;
-  locals.zctimer = timer_pulse(TIME_IN_HZ(GP_ZCFREQ),0,GP_zeroCross);
-
-  locals.initDone = TRUE;
 }
 
 /*MPU-1 Generation Init*/
-static void GP1_init(void) {
+static MACHINE_INIT(GP1) {
 	GP_common_init();
 	locals.PORTA_WRITE = mpu1_pa_w;
 }
 /*MPU-2 Generation Init*/
-static void GP2_init(void) {
+static MACHINE_INIT(GP2) {
 	GP_common_init();
 	locals.PORTA_WRITE = mpu2_pa_w;
 }
 
-
-static void GP_exit(void) {
-#ifdef PINMAME_EXIT
-  if (locals.zctimer) { timer_remove(locals.zctimer); locals.zctimer = NULL; }
-#endif
-  //if (coreGlobals.soundEn) GP_soundExit();
-  core_exit();
+static MACHINE_STOP(GP) {
+//  if (coreGlobals.soundEn) GP_soundExit();
+//  core_exit();
 }
 
 static Z80_DaisyChain GP_DaisyChain[] =
 {
-        {z80ctc_reset, z80ctc_interrupt, z80ctc_reti, 0},
-        {0,0,0,-1}
+    {z80ctc_reset, z80ctc_interrupt, z80ctc_reti, 0},
+    {0,0,0,-1}
 };
+
+/*-----------------------------------------------
+/ Load/Save static ram
+/-------------------------------------------------*/
+static UINT8 *GP_CMOS;
+
+static NVRAM_HANDLER(GP) {
+  core_nvram(file, read_or_write, GP_CMOS, 0xff, 0x00);
+}
+
+static WRITE_HANDLER(GP_CMOS_w) {
+  GP_CMOS[offset] = data;
+}
 
 /*-----------------------------------
 /  Memory map for CPU board
@@ -494,7 +477,7 @@ MEMORY_END
 
 static MEMORY_WRITE_START(GP_writemem)
 	{ 0x0000, 0x1fff, MWA_ROM },
-	{ 0x8c00, 0x8cff, MWA_RAM }, /*256K CMOS RAM - Battery Backed*/
+	{ 0x8c00, 0x8cff, GP_CMOS_w, &GP_CMOS }, /*256K CMOS RAM - Battery Backed*/
 	{ 0x8d00, 0x8dff, MWA_RAM }, /*128K NMOS RAM*/
 MEMORY_END
 
@@ -508,6 +491,35 @@ static PORT_WRITE_START( GP_writeport )
 	{0x08,0x0b, z80ctc_0_w  },
 PORT_END
 
+MACHINE_DRIVER_START(GP1)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CPU_ADD_TAG("mcpu", Z80, 2000000)
+  MDRV_CPU_CONFIG(GP_DaisyChain)
+  MDRV_CPU_MEMORY(GP_readmem, GP_writemem)
+  MDRV_CPU_PORTS(GP_readport,GP_writeport)
+  MDRV_CPU_VBLANK_INT(GP_vblank, 1)
+  MDRV_CPU_PERIODIC_INT(GP_irq, GP_IRQFREQ)
+  MDRV_TIMER_ADD(GP_zeroCross, GP_ZCFREQ)
+  MDRV_CORE_INIT_RESET_STOP(GP1,NULL,GP)
+  MDRV_NVRAM_HANDLER(GP)
+  MDRV_DIPS(32)
+  MDRV_SWITCH_UPDATE(GP)
+  MDRV_DIAGNOSTIC_LEDH(1)
+  MDRV_SOUND_CMD(GP_soundCmd)
+  MDRV_SOUND_CMDHEADING("GP")
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(GP2)
+  MDRV_IMPORT_FROM(GP1)
+  MDRV_CORE_INIT_RESET_STOP(GP2,NULL,GP)
+MACHINE_DRIVER_END
+
+#if 0
+static core_tData GPData = {
+  32, /* 32 Dips */
+  GP_updSw, 1, GP_soundCmd, "GP",
+  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
+};
 
 /*MPU-1*/
 struct MachineDriver machine_driver_GP1 = {
@@ -540,10 +552,4 @@ struct MachineDriver machine_driver_GP2 = {
   0,0,0,0, {{0}},
   GP_nvram
 };
-
-/*-----------------------------------------------
-/ Load/Save static ram
-/-------------------------------------------------*/
-static void GP_nvram(void *file, int write) {
-  core_nvram(file, write, memory_region(GP_MEMREG_CPU)+0x8c00, 0xff,0x0);
-}
+#endif
