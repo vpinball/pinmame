@@ -166,9 +166,9 @@ extern const core_tLCDLayout wpc_dispDMD[];
 #define WPC_EXTBOARD4     (0x3fee - WPC_BASE) /*   x    W: Extension Driver Board 4 */
 #define WPC_FLIPPERCOIL95 (0x3fee - WPC_BASE) /*      x W: Flipper Solenoids */
 #define WPC_ALPHA2HI      (0x3fee - WPC_BASE) /* x      W: Display 2nd row hi bits */
+#define WPC_ALPHA2LO      (0x3fee - WPC_BASE) /* x      W:           b 2nd row lo bits */
 #define WPC_EXTBOARD5     (0x3fef - WPC_BASE) /*   x    W: Extension Driver Board 5 */
 #define WPC_FLIPPERSW95   (0x3fef - WPC_BASE) /*      x R: Flipper switches */
-#define WPC_ALPHA2LO      (0x3fee - WPC_BASE) /* x      W: Display 2nd row lo bits */
 #define WPC_LED           (0x3ff2 - WPC_BASE) /* xxxxxx W: CPU LED (bit 7) */
 #define WPC_IRQACK        (0x3ff3 - WPC_BASE) /*        W: IRQ Ack ??? */
 #define WPC_SHIFTADRH     (0x3ff4 - WPC_BASE) /* xxxxxx RW: See above */
@@ -178,9 +178,9 @@ extern const core_tLCDLayout wpc_dispDMD[];
 #define WPC_FIRQSRC       (0x3ff8 - WPC_BASE) /*   xxxx R: bit 7 0=DMD, 1=SOUND? W: Clear FIRQ line */
 #define WPC_RTCHOUR       (0x3ffa - WPC_BASE) /* xxxxxx RW: Real time clock: hour */
 #define WPC_RTCMIN        (0x3ffb - WPC_BASE) /* xxxxxx RW: Real time clock: minute */
+#define WPC_ROMBANK       (0x3ffc - WPC_BASE) /* xxxxxx W: Rombank switch */
 #define WPC_PROTMEM       (0x3ffd - WPC_BASE) /* xxxxxx W: enabled/disable protected memory */
 #define WPC_PROTMEMCTRL   (0x3ffe - WPC_BASE) /* xxxxxx W: Set protected memory area */
-#define WPC_ROMBANK       (0x3ffc - WPC_BASE) /* xxxxxx W: Rombank switch */
 #define WPC_WATCHDOG      (0x3fff - WPC_BASE) /* xxxxxx W: Watchdog */
 
 #define WPC_VBLANKFREQ    60 /* VBLANK frequency */
