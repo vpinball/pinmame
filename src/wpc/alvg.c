@@ -554,7 +554,7 @@ static WRITE_HANDLER(DMD_LATCH) {
 	alvg_dmdlocals.dmd_latch = data;
 	sndbrd_0_data_w(0,data);
 	sndbrd_0_ctrl_w(0,0);
-	//printf("DMD_LATCH: data=%x\n",data);
+//	printf("DMD_LATCH: data=%x\n",data);
 }
 
 /*-----------------------------------------------
