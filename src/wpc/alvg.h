@@ -49,8 +49,8 @@
 #define ALVG_CSOL(x) ((x)+24)
 
 /*-- switch numbers --*/
-#define ALVG_SWTEST     -8
-#define ALVG_SWENTER    -7
+#define ALVG_SWTEST     -7
+#define ALVG_SWENTER    -6
 
 /*-- Memory regions --*/
 #define ALVG_MEMREG_CPU		REGION_CPU1
