@@ -2878,6 +2878,12 @@ static void dump_mem_hex( int which, unsigned len_addr, unsigned len_data )
 		pedit->n = order(column % (len_data / 2), len_data / 2);
 		pedit++;
 
+#ifdef PINMAME
+		//If viewing internal ram - COLOR where STACK currently points!
+		if(DBGMEM[which].internal && (activecpu_get_sp()==DBGMEM[which].address) )
+			color = cur_col[COLOR_PROMPT*16];
+#endif
+
 		win_set_color( win, color );
 		switch( DBGMEM[which].ascii )
 		{
