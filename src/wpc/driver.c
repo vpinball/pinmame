@@ -817,7 +817,8 @@ DRIVER(ft,l4)           //WPC-505:  09/92 W Fish Tales (L-4)
 DRIVER(ft,l5)           //WPC-505:  12/92 W Fish Tales (L-5)
 DRIVER(dw,l1)           //WPC-206   10/92 B Doctor Who (L-1)
 DRIVER(dw,l2)           //WPC-206:  11/92 B Doctor Who (L-2)
-DRIVER(cftbl,l4)        //WPC:      12/92 B Creature from the Black Lagoon
+DRIVER(cftbl,l4)        //WPC:      12/92 B Creature from the Black Lagoon (L-4)
+DRIVER(cftbl,l4s)       //WPC:      12/92 B Creature from the Black Lagoon (L-4s)
 DRIVER(ww,l5)           //WPC-518:  01/93 W White Water
 DRIVER(drac,l1)         //WPC-501:  04/93 W Bram Stoker's Dracula
 DRIVER(tz,l2)           //WPC-520:  05/93 B Twilight Zone (L-2)
