@@ -28,7 +28,20 @@
   4 Flashes and stops: 4 Direct switches or U7 - 6522
   5 Flashes and stops: U8 - 6522
 
+  Main CPU NMI - Controls DMD Commands (and Lamp Generation in Pistol Poker)
+  Main CPU IRQ - Switch Strobing/Reading (and maybe other stuff)
+
   65c02: Vectors: FFFE&F = IRQ, FFFA&B = NMI, FFFC&D = RESET
+
+  Hacks & Issues that need to be looked into:
+  #1) Manually calling the VIA_IRQ	(VIA BUG?)
+  #2) Manually calling the NMI		(VIA BUG?)
+  #3) Clearing the Lamp Matrix at the appropriate time
+  #4) Lamp and Switch Column handling needs to be improved (use core functions)
+  #5) Not sure if I did the sw2m and m2sw functions properly
+  #6) Solenoid handling needs to be cleaned up (ie, remove unnecessary code)
+  #7) Sound board FIRQ freq. is set by a jumper (don't know which is used) nor what the value of E is.
+  #8) There's probably more I can't think of at the moment
 **************************************************************************************/
 #include <stdarg.h>
 #include "driver.h"
@@ -54,21 +67,23 @@ WRITE_HANDLER(alvg_sndCmd_w);
 struct {
   int    vblankCount;
   UINT32 solenoids;
-  int    lampRow, lampColumn;
+  UINT16 lampColumn, swColumn;
+  int    lampRow, swCol;
   int    diagnosticLed;
   int    diagnosticLeds1;
   int    diagnosticLeds2;
-  int    swCol;
   int    ssEn;
   int    mainIrq;
   int    DMDAck;
+  int    DMDClock;
+  int    DMDEnable;
+  int    DMDData;
   int	 swTest;
   int    swEnter;
-  int    swVolUp;
-  int    swVolDn;
+  int    swAvail1;
+  int    swAvail2;
   int	 via_1_b;
   int    sound_strobe;
-  int    sound_data;
 } alvglocals;
 
 struct {
@@ -110,36 +125,46 @@ static WRITE_HANDLER(solenoid_w)
 	}
 }
 
+//See U7-PB Read for more info
+READ_HANDLER(CoinDoorSwitches_Read)
+{
+//According to manual (but doesn't seem to work)
+#if 0
+	int data = 0;
+	data |= (alvglocals.DMDAck   << 7);	 //DMD Ack		(?)
+	data |= (alvglocals.swTest   << 5);	 //Test Sw.		(Not Inverted)
+	data |= (alvglocals.swEnter  << 4);   //Enter Sw.	(Not Inverted)
+	data |= (alvglocals.swAvail1 << 3);  //Avail1		(Not Inverted)
+	data |= (alvglocals.swAvail2 << 2);  //Avail2		(Not Inverted)
+#else
+//Seems to work
+	int data = 0;
+	data |= (alvglocals.DMDAck   << 7);	 //DMD Ack		(?)
+	data |= (alvglocals.swTest   << 2);	 //Test Sw.		(Not Inverted)
+	data |= (alvglocals.swEnter  << 4);  //Enter Sw.	(Not Inverted)
+	data |= (alvglocals.swAvail1 << 1);  //Avail1		(Not Inverted)
+	data |= (alvglocals.swAvail2 << 3);  //Avail2		(Not Inverted)
+#endif
+return data;
+}
+
 /* U7 - 6522 */
 
 //PA0-7 (IN) - Switch Return (Switches are inverted!)
-static READ_HANDLER( xvia_0_a_r ) { 
-	int data = core_getSwCol(alvglocals.swCol)^0xff;
-	//logerror("%x: SWITCH READ: U7-PA-R = %x\n",activecpu_get_previouspc(),data); 
-	return data;
-}
+static READ_HANDLER( xvia_0_a_r ) { return coreGlobals.swMatrix[alvglocals.swCol]^0xff; }
+
 //PB0-7 (IN)
 /*
-PB7  (In?) = DMD ACK
+PB7  (In)  = DMD ACK
 PB6  (In)  = NU
 PB5  (In)  = Test Switch - Coin Door Switch			
 PB4  (In)  = Enter Switch - Coin Door Switch
-PB3  (In)  = AVAI1 (Volume Up?) - Coin Door Switch
-PB2  (In)  = AVAI2 (Volume Down?) - Coin Door Switch
+PB3  (In)  = AVAI1 - Coin Door Switch (Flasher Sense in Pistol Poker)
+PB2  (In)  = AVAI2 - Coin Door Switch (Ticket Sense in Pistol Poker)
 PB1  (In)  = NU
 PB0  (In)  = NU
 */
-static READ_HANDLER( xvia_0_b_r ) { 
-	int data = 0;
-	//alvglocals.DMDAck = !alvglocals.DMDAck;
-	data |= (alvglocals.DMDAck  << 7);	 //DMD Ack?
-	data |= (alvglocals.swTest  << 5);	 //Test Sw.		(Not Inverted)
-	data |= (alvglocals.swEnter << 4);   //Enter Sw.	(Not Inverted)
-	data |= (alvglocals.swVolUp << 3);   //Vol Up Sw.	(Not Inverted)
-	data |= (alvglocals.swVolDn << 2);   //Vol Down Sw.	(Not Inverted)
-	//logerror("%x: COIN DOOR SWITCH: U7-PB-R - reading data=%x\n",activecpu_get_previouspc(),data); 
-	return data;
-}
+static READ_HANDLER( xvia_0_b_r ) { return CoinDoorSwitches_Read(0); }
 //CA1: (IN) - N.C.
 static READ_HANDLER( xvia_0_ca1_r ) { logerror("WARNING: N.C.: U7-CA1-R\n"); return 0; }
 //CB1: (IN) - N.C.
@@ -150,12 +175,11 @@ static READ_HANDLER( xvia_0_ca2_r ) { logerror("U7-CA2-R\n"); return 0; }
 static READ_HANDLER( xvia_0_cb2_r ) { logerror("U7-CB2-R\n"); return 0; }
 
 //PA0-7: (OUT) - N.C.
-static WRITE_HANDLER( xvia_0_a_w ) { 
-	logerror("WARNING - N.C.: U7-A-W: data=%x\n",data);
-}
+static WRITE_HANDLER( xvia_0_a_w ) { logerror("WARNING - N.C.: U7-A-W: data=%x\n",data); }
+
 //PB0-7: (OUT)
 /*
-PB7  (Out) = NU?
+PB7  (Out) = NU
 PB6  (Out) = NAND Gate -> WD (WatchDog)
 PB5  (Out) = NU
 PB4  (Out) = NU
@@ -165,16 +189,17 @@ PB1  (out) = NAND Gate -> WD (WatchDog)
 PB0  (out) = N/C
 */
 static WRITE_HANDLER( xvia_0_b_w ) { 
-	if(!(data & 0x40 || data & 0x42))
-		logerror("U7-B-W: data=%x\n",data);
+	//if(data & 0x42) watchdog_reset_w(0,0);
+	if(data && !(data & 0x40 || data & 0x42)) logerror("WARNING: U7-B-W: data=%x\n",data); 
 }
+
 //CA2: (OUT) - N.C.
 static WRITE_HANDLER( xvia_0_ca2_w ) { logerror("%x:WARNING: N.C.: U7-CA2-W: data=%x\n",activecpu_get_previouspc(),data); }
 
 //CB2: (OUT) - NMI TO MAIN 65C02
 static WRITE_HANDLER( xvia_0_cb2_w ) 
 { 
-	//logerror("NMI: U7-CB2-W: data=%x\n",data); 
+	//printf("NMI: U7-CB2-W: data=%x\n",data); 
 	cpu_set_nmi_line(ALVG_CPUNO, PULSE_LINE);
 }
 
@@ -185,20 +210,24 @@ static READ_HANDLER( xvia_1_a_r ) { logerror("WARNING: U8-PA-R\n"); return 0; }
 
 //PB0-7 (IN)
 /*
-PB7        = N/C
-PB6        = N/C
-PB5  (I?)  = DMD Data
-PB4  (O?)  = DMD Clock
-PB3  (O?)  = DMD Enable?
-PB2        = N/C
-PB1        = N/C
-PB0        = N/C*/
+PB7        = NU
+PB6        = NU
+PB5  (In)  = DMD Data
+PB4  (In)  = DMD Clock
+PB3  (In)  = DMD Enable
+PB2        = NU
+PB1        = NU
+PB0        = NU*/
 static READ_HANDLER( xvia_1_b_r ) { 
-	//logerror("%x:U8-PB-R\n",activecpu_get_previouspc());
-	return alvglocals.via_1_b; 
+	int data = alvglocals.via_1_b;
+	data = ((data&0xf7) | alvglocals.DMDEnable) + 
+		   ((data&0xef) | alvglocals.DMDClock)  + 
+		   ((data&0xdf) | alvglocals.DMDData);
+	//printf("%x:U8-PB-R: data = %x\n",activecpu_get_previouspc(),data);
+	return data; 
 }
 //CA1: (IN) - Sound Control
-static READ_HANDLER( xvia_1_ca1_r ) { return 0; }//logerror("SOUND CONTROL: U8-CA1-R\n"); return 0; }
+static READ_HANDLER( xvia_1_ca1_r ) { return sndbrd_ctrl_r(0); }
 //CB1: (IN) - N.C.
 static READ_HANDLER( xvia_1_cb1_r ) { logerror("WARNING: N.C.: U8-CB1-R\n"); return 0; }
 //CA2:  (IN) - N.C.
@@ -207,36 +236,25 @@ static READ_HANDLER( xvia_1_ca2_r ) { logerror("WARNING: N.C.: U8-CA2-R\n"); ret
 static READ_HANDLER( xvia_1_cb2_r ) { logerror("WARNING: U8-CB2-R\n"); return 0; }
 
 //PA0-7: (OUT) - Sound Data
-static WRITE_HANDLER( xvia_1_a_w ) { 
-	alvglocals.sound_data = data;
-	//logerror("SOUND DATA: U8-A-W: data=%x\n",data); 
-}
+static WRITE_HANDLER( xvia_1_a_w ) { sndbrd_0_data_w(0,data); }
 
 //PB0-7: (OUT)
 /*
-PB7        = N/C
-PB6        = N/C
-PB5  (I?)  = DMD Data
-PB4  (O?)  = DMD Clock
-PB3  (O?)  = DMD Enable?
-PB2        = N/C
+PB7        = NU
+PB6        = NU
+PB5        = NU
+PB4        = NU
+PB3		   = NU
+PB2        = NU
 PB1  (Out) = Sound Clock
-PB0        = N/C
+PB0        = NU
 */
 static WRITE_HANDLER( xvia_1_b_w ) { 
-	//logerror("U8-B-W: data=%x\n",data);
-	alvglocals.via_1_b = data;
+	alvglocals.via_1_b = data;			//Probably not necessary
 
 	//On clock transition - write to sound latch
-	if(!alvglocals.sound_strobe && (data & 0x02))
-	{
-		if(alvglocals.sound_data)
-			alvg_sndCmd_w(0,alvglocals.sound_data);
-	}
+	if(!alvglocals.sound_strobe && (data & 0x02))	sndbrd_0_ctrl_w(0,0);
 	alvglocals.sound_strobe = data&0x02;
-
-	//if(alvglocals.sound_strobe) logerror("SOUND CLOCK!\n");
-	//else logerror("SOUND CLOCK RESET\n");
 }
 //CA2: (OUT) - CPU DIAG LED
 static WRITE_HANDLER( xvia_1_ca2_w ) { 	alvglocals.diagnosticLed = data; }
@@ -245,7 +263,7 @@ static WRITE_HANDLER( xvia_1_cb2_w ) { logerror("WARNING: N.C.: U8-CB2-W: data=%
 
 //IRQ:  IRQ to Main CPU
 static void via_irq(int state) {
-	//logerror("IN VIA_IRQ - STATE = %x\n",state);
+//	printf("IN VIA_IRQ - STATE = %x\n",state);
 	cpu_set_irq_line(ALVG_CPUNO, 0, state?ASSERT_LINE:CLEAR_LINE);
 //	cpu_set_irq_line(ALVG_CPUNO, 0, PULSE_LINE);
 }
@@ -262,21 +280,75 @@ WRITE_HANDLER(u12_portc_w) { solenoid_w(2,data); }
 /*U13 - 8255*/
 /*
 PA0-PA7 (out)  = Sol 25-32
-PB0-PB7 (out)  = Switch Strobe 1-8
-PC0-PC7 (out)  = Switch Strobe 9-12	(bits 4-7 nc)
+PB0-PB7 (out)  = Switch Strobe 1-8					(inverted)
+PC0-PC7 (out)  = Switch Strobe 9-12	(bits 4-7 nc)	(inverted)
 */
 WRITE_HANDLER(u13_porta_w) { solenoid_w(3,data); }
-WRITE_HANDLER(u13_portb_w) { } //logerror("SWITCH_STROBE(1-8): data = %x\n",data^0xff); }
-WRITE_HANDLER(u13_portc_w) { } //logerror("SWITCH_STROBE(9-12): data = %x\n",data^0xff); }
+
+void UpdateSwCol(void) {
+	int i, tmp, data;
+	i = data = 0;
+	tmp = alvglocals.swColumn;
+	while(tmp)
+	{
+		i++;
+		if(tmp&1) data+=i;
+		tmp = tmp>>1;
+	}
+	alvglocals.swCol = data;
+	//printf("COL = %x SwColumn = %d\n",alvglocals.swColumn,data);
+	//printf("SwColumn = %d\n",data);
+}
+
+WRITE_HANDLER(u13_portb_w) {
+	alvglocals.swColumn = (alvglocals.swColumn&0xff00) | (data^0xff);
+	UpdateSwCol();
+	//printf("SWITCH_STROBE(1-8): data = %x\n",data);
+}
+WRITE_HANDLER(u13_portc_w) { 
+	alvglocals.swColumn = (alvglocals.swColumn&0x00ff) | ((data^0xff)<<8);
+	UpdateSwCol();
+	//printf("SWITCH_STROBE(9-12): data = %x\n",data); 
+}
+
+
 /*U14 - 8255*/
 /*
 PA0-PA7 (out) = Lamp Strobe 1-7  (bits 7 nc)
 PB0-PB7 (out) = Lamp Strobe 8-12 (bits 5-7 nc)
 PC0-PC7 (out) = Lamp Return 1-8
 */
-WRITE_HANDLER(u14_porta_w) {} //logerror("LAMP STROBE(1-7):  data = %x\n",data^0xff); }
-WRITE_HANDLER(u14_portb_w) {}//logerror("LAMP STROBE(8-12): data = %x\n",data^0xff); }
-WRITE_HANDLER(u14_portc_w) {}//logerror("LAMP RETURN: data = %x\n",data^0xff); }
+
+void UpdateLampCol(void) {
+	int i, tmp, lmpCol;
+	i = lmpCol = 0;
+	tmp = alvglocals.lampColumn;
+	while(tmp)
+	{
+		i++;
+		if(tmp&1) lmpCol+=i;
+		tmp = tmp>>1;
+	}
+	coreGlobals.tmpLampMatrix[lmpCol-1] = 
+		(coreGlobals.tmpLampMatrix[lmpCol-1]&0xff) | alvglocals.lampRow;
+	//printf("COL = %x LampColumn = %d\n",alvglocals.lampColumn,data);
+	//printf("LampColumn = %d\n",data);
+}
+
+WRITE_HANDLER(u14_porta_w) {
+	alvglocals.lampColumn = (alvglocals.lampColumn&0xff80) | data;
+	UpdateLampCol();
+	//printf("LAMP STROBE(1-7):  data = %x\n",data); 
+}
+WRITE_HANDLER(u14_portb_w) {
+	alvglocals.lampColumn = (alvglocals.lampColumn&0x007f) | (data<<7); 	//Remeber it's 8-12, not 9-12!!
+	UpdateLampCol();
+	//printf("LAMP STROBE(8-12): data = %x\n",data); 
+}
+WRITE_HANDLER(u14_portc_w) {
+	alvglocals.lampRow = data;
+	//printf("LAMP RETURN: data = %x\n",data); 
+}
 
 
 
@@ -287,14 +359,14 @@ WRITE_HANDLER(u14_portc_w) {}//logerror("LAMP RETURN: data = %x\n",data^0xff); }
 /*
 U7 - 6522
 
-PA0-7(In) = Switch Column 1-8 Return?
-PB7  (In?) = DMD ACK
+PA0-7(In)  = Switch Column 1-8 Return
+PB7  (In)  = DMD ACK
 PB6  (Out) = NAND Gate -> WD (WatchDog)
 PB5  (In)  = Test Switch - Cabinet Switch
 PB4  (In)  = Enter Switch - Cabinet Switch
 PB3  (In)  = AVAI1 - Cabinet Switch
 PB2  (In)  = AVAI2 - Cabinet Switch
-PB1  (out) = NAND Gate -> WD (WatchDog)
+PB1  (Out) = NAND Gate -> WD (WatchDog)
 PB0        = N/C
 CA1        = N/C
 CA2        = N/C
@@ -304,12 +376,12 @@ IRQ        = 65C02 IRQ
 
 U8 - 6522
 
-PA0-7(O)   = Sound Data
+PA0-7(Out) = Sound Data
 PB7        = N/C
 PB6        = N/C
-PB5  (I?)  = DMD Data
-PB4  (O?)  = DMD Clock
-PB3  (O?)  = DMD Enable?
+PB5  (In)  = DMD Data
+PB4  (In)  = DMD Clock
+PB3  (In)  = DMD Enable
 PB2        = N/C
 PB1  (Out) = Sound Clock
 PB0        = N/C
@@ -345,14 +417,14 @@ PC0-PC7 (out) = Sol 17-24
 U13 - 8255
 
 PA0-PA7 (out)  = Sol 25-32
-PB0-PB7 (out)  = Switch Strobe 1-8
-PC0-PC7 (out)  = Switch Strobe 9-12	(bits 4-7 nc)
+PB0-PB7 (out)  = Switch Strobe 1-8					(inverted)
+PC0-PC7 (out)  = Switch Strobe 9-12	(bits 4-7 nc)	(inverted)
 
 U14 - 8255
 
-PA0-PA7 (out) = Lamp Strobe 1-7  (bits 7 nc)
-PB0-PB7 (out) = Lamp Strobe 8-12 (bits 5-7 nc)
-PC0-PC7 (out) = Lamp Return 1-8
+PA0-PA7 (out) = Lamp Strobe 1-7  (bits 7 nc)		
+PB0-PB7 (out) = Lamp Strobe 8-12 (bits 5-7 nc)		
+PC0-PC7 (out) = Lamp Return 1-8						
 */
 
 static ppi8255_interface ppi8255_intf =
@@ -362,12 +434,16 @@ static ppi8255_interface ppi8255_intf =
 	{0, 0, 0},										/* Port B read */
 	{0, 0, 0},										/* Port C read */
 	{u12_porta_w, u13_porta_w, u14_porta_w},		/* Port A write */
-	{u12_portb_w, u14_portb_w, u14_portb_w},		/* Port B write */
+	{u12_portb_w, u13_portb_w, u14_portb_w},		/* Port B write */
 	{u12_portc_w, u13_portc_w, u14_portc_w},		/* Port C write */
 };
 
 
 static INTERRUPT_GEN(alvg_vblank) {
+  //hack to improve the lamp display
+  static int lclear=0;
+  lclear++;
+
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
@@ -376,6 +452,11 @@ static INTERRUPT_GEN(alvg_vblank) {
   /*-- lamps --*/
   if ((alvglocals.vblankCount % ALVG_LAMPSMOOTH) == 0) {
 	memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+	//don't clear lamp display every time (this is a hack)
+	if((lclear%25)==0){
+		memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
+		lclear=0;
+	}
   }
   /*-- solenoids --*/
   coreGlobals.solenoids = alvglocals.solenoids;
@@ -406,39 +487,39 @@ static INTERRUPT_GEN(alvg_vblank) {
 }
 
 static SWITCH_UPDATE(alvg) {
-//  via_irq(1);
+  via_irq(1);			//Why is this necessary? - Seems to help switch scanning..
+  xvia_0_cb2_w(0,1);	//Force an NMI call - fixes lamps in Pistol Poker & sending data to DMD
+
   if (inports) {
-    coreGlobals.swMatrix[0] = (inports[ALVG_COMINPORT] & 0x0f00)>>8;									//Column 0 Switches
-	coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0xe0) | (inports[ALVG_COMINPORT] & 0x1f);		//Column 1 Switches
-	coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0xfc) | ((inports[ALVG_COMINPORT] & 0x60)>>5);	//Column 2 Switches
+    coreGlobals.swMatrix[0] = (inports[ALVG_COMINPORT] & 0x0300)>>8;								 	    //Column 0 Switches
+	coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0xe0) | (inports[ALVG_COMINPORT] & 0x1f);		    //Column 1 Switches
+	coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0x3c) | ((inports[ALVG_COMINPORT] & 0x1860)>>5);	//Column 2 Switches
   }
   alvglocals.swTest = (core_getSw(ALVG_SWTEST)>0?1:0);
   alvglocals.swEnter = (core_getSw(ALVG_SWENTER)>0?1:0);
-  alvglocals.swVolUp = (core_getSw(ALVG_SWVOLUP)>0?1:0);
-  alvglocals.swVolDn = (core_getSw(ALVG_SWVOLDN)>0?1:0);
+
+  //Force VIA to see the coin door switch values
+  via_0_portb_w(0,CoinDoorSwitches_Read(0));
 }
 
-WRITE_HANDLER(alvg_sndCmd_w)
-{
-	printf("SOUND COMMAND: %x\n",data);
-	soundlatch_w(0,data);
-	cpu_set_irq_line(ALVGS_CPUNO, 0, PULSE_LINE);
-	//cpu_set_irq_line(ALVGS_CPUNO, 0, HOLD_LINE);
-//	sndbrd_0_data_w(0, data^0xff);
+WRITE_HANDLER(alvg_sndCmd_w) { 
+	sndbrd_0_data_w(0, data); 
+	sndbrd_0_ctrl_w(0, 0);
 }
 
 static int alvg_sw2m(int no) {
-  if (no % 10 > 7) return -1;
-  return (no / 10 + 1) * 8 + (no % 10);
+  if (no % 12 > 7) return -1;
+  return (no / 12 + 1) * 8 + (no % 12);
 }
 
 static int alvg_m2sw(int col, int row) {
-  return (col - 1) * 10 + row;
+  return (col - 1) * 12 + row;
 }
 
 /*Alpha Numeric First Generation Init*/
 static MACHINE_INIT(alvg) {
   memset(&alvglocals, 0, sizeof(alvglocals));
+  memset(&alvg_dmdlocals, 0, sizeof(alvg_dmdlocals));
   
   /* init VIA */
   via_config(0, &via_0_interface);
@@ -447,6 +528,9 @@ static MACHINE_INIT(alvg) {
 
   /* init PPI */
   ppi8255_init(&ppi8255_intf);
+
+  /*watchdog*/
+  //watchdog_reset_w(0,0);
 
   /* Init the sound board */
   sndbrd_0_init(core_gameData->hw.soundBoard, ALVGS_CPUNO, memory_region(ALVGS_ROMREGION), NULL, NULL);
@@ -465,7 +549,10 @@ void alvg_UpdateSoundLEDS(int num,int data)
 		alvglocals.diagnosticLeds2 = data;
 }
 
-static WRITE_HANDLER(DMD_LATCH) {} //logerror("DMD_LATCH: data=%x\n",data); }
+static WRITE_HANDLER(DMD_LATCH) {
+	alvg_dmdlocals.dmd_latch = data;
+	//printf("DMD_LATCH: data=%x\n",data);
+}
 
 /*-----------------------------------------------
 / Load/Save static ram
