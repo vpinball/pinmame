@@ -152,12 +152,12 @@ static WRITE_HANDLER(sp1346_data_w);
 const struct sndbrdIntf zac1346Intf = {
   "ZAC1346", sp_init, NULL, sp_diag, sp1346_data_w, sp1346_data_w, NULL, NULL, NULL, 0
 };
-static struct DACinterface sp1346_dacInt = { 1, { 20 }};
+static struct DACinterface sp1346_dacInt = { 1, { 25 }};
 
 static struct {
   struct sndbrdData brdData;
   int lastcmd;
-  int p20, p21, p22, wr, t1;
+  int tc;
 } splocals;
 
 static void sp_init(struct sndbrdData *brdData) {
@@ -170,71 +170,46 @@ static void sp_diag(int button) {
 
 static WRITE_HANDLER(sp1346_data_w) {
   logerror("Sound %x plays\n", data);
-  i8035_set_reg(I8035_TC, data & 1);
+  splocals.tc = data ? 1 : 0;
+  i8035_set_reg(I8035_TC, -splocals.tc);
   splocals.lastcmd = data;
 }
 
-static READ_HANDLER(sp1346_data_r) {
-  return (core_getDip(0) << 4) | splocals.lastcmd;
-}
-
-static void sp_irq(int state) {
-  cpu_set_irq_line(splocals.brdData.cpuNo, 0, state ? ASSERT_LINE : CLEAR_LINE);
-}
-
-READ_HANDLER(rom_r) {
-  UINT16 address;
-  UINT8 *rom = memory_region(ZACSND_CPUAREGION);
-  splocals.p20 = i8035_get_reg(I8035_P2) & 0x01;
-  splocals.p21 = (i8035_get_reg(I8035_P2) >> 1) & 0x01;
-  splocals.p22 = (i8035_get_reg(I8035_P2) >> 2) & 0x01;
-  address = (offset & 0x7f) | ((offset & 0x100) >> 1)
-   | (splocals.p20 << 8) | (splocals.p21 << 9) | (splocals.p22 << 10);
-  splocals.wr = (offset & 0x80) ? 0 : 1;
-  return rom[address];
-}
-
 static MEMORY_READ_START(i8035_readmem)
-  { 0x0000, 0x07ff, rom_r },
+  { 0x0000, 0x07ff, MRA_ROM },
   { 0x0800, 0x087f, MRA_RAM },
-  { 0x0880, 0x08ff, sp1346_data_r },
+  { 0x0880, 0x08ff, MRA_RAM },
 MEMORY_END
 
 static MEMORY_WRITE_START(i8035_writemem)
-  { 0x0000, 0x07ff, MWA_ROM },
   { 0x0800, 0x087f, MWA_RAM },
 MEMORY_END
 
-READ_HANDLER(test_r) {
-  int oldT1 = splocals.t1;
-  splocals.t1 = 1;
-  return oldT1;
+static WRITE_HANDLER(ram_w) {
+  UINT8 *rom = memory_region(ZACSND_CPUAREGION);
+  rom[0x800 + offset] = data;
 }
-WRITE_HANDLER(port_w) {
-  static UINT8 *ram;
-  if (!ram) ram = memory_region(ZACSND_CPUAREGION) + 0x800;
-  ram[offset & 0x7f] = data;
+static READ_HANDLER(ram_r) {
+  UINT8 *rom = memory_region(ZACSND_CPUAREGION);
+  return rom[0x800 + offset];
 }
-READ_HANDLER(port_r) {
-  UINT8 *ram = memory_region(ZACSND_CPUAREGION) + 0x800;
-  return ram[offset];
-}
-WRITE_HANDLER(dac_w) {
-  logerror("Write to DAC:%02x\n", data);
-  DAC_0_data_w(0, data);
-}
+static READ_HANDLER(sp1346_data_r) { return (core_getDip(0) << 4) | splocals.lastcmd; }
+static READ_HANDLER(test_r) { return splocals.tc; }
+static WRITE_HANDLER(dac_w) { DAC_0_data_w(0, core_revbyte(data)); }
+
 static PORT_READ_START(i8035_readport)
+  { 0x00, 0x7f, ram_r },
+  { 0x80, 0xff, sp1346_data_r },
   { I8039_t1, I8039_t1, test_r },
-  { 0x20, 0xa9, port_r },
 MEMORY_END
 
 static PORT_WRITE_START(i8035_writeport)
-  { 0x20, 0xa9, port_w },
+  { 0x00, 0x7f, ram_w },
   { I8039_p1, I8039_p1, dac_w },
 MEMORY_END
 
 MACHINE_DRIVER_START(zac1346)
-  MDRV_CPU_ADD_TAG("scpu", I8035, 6000000)
+  MDRV_CPU_ADD_TAG("scpu", I8035, 6000000/4)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(i8035_readmem, i8035_writemem)
   MDRV_CPU_PORTS(i8035_readport, i8035_writeport)
