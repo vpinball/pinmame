@@ -50,6 +50,7 @@
 #include "machine/6821pia.h"
 #include "vidhrdw/tms9928a.h"
 #include "core.h"
+#include "by35.h"
 #include "byvidpin.h"
 #include "snd_cmd.h"
 #include "by35snd.h"
@@ -62,8 +63,8 @@
 #define BYVP_PIA2 2
 
 #define BYVP_VBLANKFREQ    60 /* VBLANK frequency */
-#define BYVP_IRQFREQ      317 /* IRQ (via PIA) frequency*/
-#define BYVP_ZCFREQ       120 /* Zero cross frequency */
+#define BYVP_IRQFREQ       BY35_IRQFREQ /* IRQ (via PIA) frequency*/
+#define BYVP_ZCFREQ        BY35_ZCFREQ  /* Zero cross frequency */
 
 /*-----------------------------------------------
 / Load/Save static ram
@@ -458,12 +459,12 @@ MACHINE_DRIVER_START(byVP1)
   MDRV_CPU_ADD_TAG("mcpu", M6800, 3580000/4)
   MDRV_CPU_MEMORY(byVP_readmem, byVP_writemem)
   MDRV_CPU_VBLANK_INT(byVP_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(byVP_irq, BYVP_IRQFREQ*2)
+  MDRV_CPU_PERIODIC_INT(byVP_irq, BYVP_IRQFREQ)
 
   MDRV_CPU_ADD_TAG("vcpu", M6809, 3580000/4)
   MDRV_CPU_MEMORY(byVP_video_readmem, byVP_video_writemem)
   MDRV_INTERLEAVE(100)
-  MDRV_TIMER_ADD(byVP_zeroCross, BYVP_ZCFREQ)
+  MDRV_TIMER_ADD(byVP_zeroCross, BYVP_ZCFREQ*2)
   MDRV_CORE_INIT_RESET_STOP(byVP,NULL,byVP)
   MDRV_DIPS(32)
   MDRV_DIAGNOSTIC_LEDV(2)

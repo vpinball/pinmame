@@ -341,6 +341,11 @@
 
 #define BY35_COMINPORT       CORE_COREINPORT
 
+/*-- By35 IRQ values --*/
+#define BY35_IRQFREQ     317 /* IRQ (via PIA) frequency */
+#define BY35_6802IRQFREQ 431 /* IRQ (via PIA) frequency for games using 6802 cpu */
+#define BY35_ZCFREQ      100 /* Zero cross frequency */
+
 /*-- By35 switch numbers --*/
 #define BY35_SWSELFTEST   -7
 #define BY35_SWCPUDIAG    -6
