@@ -21,7 +21,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="src,src\wpc,src\zlib,src\vc,src\windows"
-				PreprocessorDefinitions="_DEBUG,WIN32,_CONSOLE,LSB_FIRST=1,CLIB_DECL=__cdecl,DECL_SPEC=__cdecl,inline=__inline,__inline__=__inline,INLINE=__inline,DIRECTINPUT_VERSION=0x0500,DIRECTDRAW_VERSION=0x0300,NONAMELESSUNION,_WINDOWS,ZLIB_DLL,MAME_DEBUG,MAMEVER=3716,PINMAME"
+				PreprocessorDefinitions="_DEBUG,MAME_DEBUG,WIN32,_CONSOLE,LSB_FIRST=1,CLIB_DECL=__cdecl,DECL_SPEC=__cdecl,inline=__inline,__inline__=__inline,INLINE=__inline,DIRECTINPUT_VERSION=0x0500,DIRECTDRAW_VERSION=0x0300,NONAMELESSUNION,_WINDOWS,ZLIB_DLL,MAMEVER=5900,PINMAME"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile=".\obj/PinMAME/Debug/PinMAME.pch"
@@ -77,10 +77,9 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="1"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="src,src\wpc,src\zlib,src\vc,src\windows"
-				PreprocessorDefinitions="WIN32,NDEBUG,_CONSOLE,LSB_FIRST=1,CLIB_DECL=__cdecl,DECL_SPEC=__cdecl,inline=__inline,__inline__=__inline,INLINE=__inline,DIRECTINPUT_VERSION=0x0500,DIRECTDRAW_VERSION=0x0300,NONAMELESSUNION,_WINDOWS,ZLIB_DLL,MAMEVER=3716,PINMAME"
+				PreprocessorDefinitions="NDEBUG,WIN32,_CONSOLE,LSB_FIRST=1,CLIB_DECL=__cdecl,DECL_SPEC=__cdecl,inline=__inline,__inline__=__inline,INLINE=__inline,DIRECTINPUT_VERSION=0x0500,DIRECTDRAW_VERSION=0x0300,NONAMELESSUNION,_WINDOWS,ZLIB_DLL,MAMEVER=5900,PINMAME"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="TRUE"
@@ -101,11 +100,11 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib zlibstatmt.lib"
-				OutputFile=".\obj/PinMAME/Release/PinMAMEVC.exe"
+				OutputFile="obj/PinMAME/Debug/PinMAMEVC.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="zlib"
-				ProgramDatabaseFile=".\obj/PinMAME/Release/PinMAME.pdb"
+				ProgramDatabaseFile=".\obj/PinMAME/Release/PinMAMEVC.pdb"
 				SubSystem="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -158,6 +157,18 @@
 					RelativePath=".\src\common.h">
 				</File>
 				<File
+					RelativePath=".\src\cpuexec.c">
+				</File>
+				<File
+					RelativePath=".\src\cpuexec.h">
+				</File>
+				<File
+					RelativePath=".\src\cpuint.c">
+				</File>
+				<File
+					RelativePath=".\src\cpuint.h">
+				</File>
+				<File
 					RelativePath=".\src\cpuintrf.c">
 				</File>
 				<File
@@ -186,6 +197,12 @@
 				</File>
 				<File
 					RelativePath=".\src\gfxobj.h">
+				</File>
+				<File
+					RelativePath=".\src\harddisk.c">
+				</File>
+				<File
+					RelativePath=".\src\harddisk.h">
 				</File>
 				<File
 					RelativePath=".\src\hiscore.c">
@@ -225,6 +242,12 @@
 				</File>
 				<File
 					RelativePath=".\src\mamedbg.h">
+				</File>
+				<File
+					RelativePath=".\src\md5.c">
+				</File>
+				<File
+					RelativePath=".\src\md5.h">
 				</File>
 				<File
 					RelativePath=".\src\memory.c">
@@ -470,6 +493,88 @@
 							RelativePath=".\src\cpu\s2650\s2650cpu.h">
 						</File>
 					</Filter>
+					<Filter
+						Name="I8085"
+						Filter="">
+						<File
+							RelativePath=".\src\cpu\i8085\8085dasm.c">
+						</File>
+						<File
+							RelativePath=".\src\cpu\i8085\i8085.c">
+						</File>
+						<File
+							RelativePath=".\src\cpu\i8085\i8085.h">
+						</File>
+						<File
+							RelativePath=".\src\cpu\i8085\i8085cpu.h">
+						</File>
+						<File
+							RelativePath=".\src\cpu\i8085\i8085daa.h">
+						</File>
+					</Filter>
+					<Filter
+						Name="I86"
+						Filter="">
+						<File
+							RelativePath=".\src\cpu\i86\ea.h">
+						</File>
+						<File
+							RelativePath=".\src\cpu\i86\host.h">
+						</File>
+						<File
+							RelativePath=".\src\cpu\i86\i86.c">
+						</File>
+						<File
+							RelativePath=".\src\cpu\i86\i86.h">
+						</File>
+						<File
+							RelativePath=".\src\cpu\i86\i86dasm.c">
+						</File>
+						<File
+							RelativePath=".\src\cpu\i86\i86intf.h">
+						</File>
+						<File
+							RelativePath=".\src\cpu\i86\modrm.h">
+						</File>
+						<File
+							RelativePath=".\src\cpu\i86\table86.h">
+						</File>
+					</Filter>
+					<Filter
+						Name="I4004"
+						Filter="">
+						<File
+							RelativePath=".\src\cpu\i4004\4004dasm.c">
+						</File>
+						<File
+							RelativePath=".\src\cpu\i4004\i4004.c">
+						</File>
+						<File
+							RelativePath=".\src\cpu\i4004\i4004.h">
+						</File>
+						<File
+							RelativePath=".\src\cpu\i4004\i4004cpu.h">
+						</File>
+						<File
+							RelativePath=".\src\cpu\i4004\i4004daa.h">
+						</File>
+					</Filter>
+					<Filter
+						Name="PPS4"
+						Filter="">
+						<File
+							RelativePath=".\src\cpu\pps4\pps4.c">
+						</File>
+						<File
+							RelativePath=".\src\cpu\pps4\pps4.h">
+						</File>
+						<File
+							RelativePath=".\src\cpu\pps4\pps4cpu.h">
+						</File>
+						<File
+							RelativePath=".\src\cpu\pps4\pps4dasm.c">
+						</File>
+					</Filter>
 				</Filter>
 				<Filter
 					Name="Machine"
@@ -667,7 +772,7 @@
 						Name="Debug|Win32">
 						<Tool
 							Name="VCCustomBuildTool"
-							CommandLine="c:\mingw\bin\nasmw -f coff -o $(IntDir)\$(InputName).obj $(InputPath)
+							CommandLine="nasmw -f coff -o $(IntDir)\$(InputName).obj $(InputPath)
 "
 							Outputs="$(IntDir)\$(InputName).obj"/>
 					</FileConfiguration>
@@ -675,7 +780,26 @@
 						Name="Release|Win32">
 						<Tool
 							Name="VCCustomBuildTool"
-							CommandLine="c:\mingw\bin\nasmw -f coff -o $(IntDir)\$(InputName).obj $(InputPath)
+							CommandLine="nasmw -f coff -o $(IntDir)\$(InputName).obj $(InputPath)
+"
+							Outputs="$(IntDir)\$(InputName).obj"/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\src\windows\asmtile.asm">
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCustomBuildTool"
+							CommandLine="nasmw -f coff -o $(IntDir)\$(InputName).obj $(InputPath)
+"
+							Outputs="$(IntDir)\$(InputName).obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCustomBuildTool"
+							CommandLine="nasmw -f coff -o $(IntDir)\$(InputName).obj $(InputPath)
 "
 							Outputs="$(IntDir)\$(InputName).obj"/>
 					</FileConfiguration>
@@ -872,6 +996,12 @@
 					RelativePath=".\src\windows\video.h">
 				</File>
 				<File
+					RelativePath=".\src\windows\winddraw.c">
+				</File>
+				<File
+					RelativePath=".\src\windows\winddraw.h">
+				</File>
+				<File
 					RelativePath=".\src\windows\window.c">
 					<FileConfiguration
 						Name="Debug|Win32">
@@ -955,10 +1085,25 @@
 					RelativePath=".\src\wpc\by6803.h">
 				</File>
 				<File
+					RelativePath=".\src\wpc\by6803games.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\byvidgames.c">
+				</File>
+				<File
 					RelativePath=".\src\wpc\byvidpin.c">
 				</File>
 				<File
 					RelativePath=".\src\wpc\byvidpin.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\capcom.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\capcom.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\capgames.c">
 				</File>
 				<File
 					RelativePath=".\src\wpc\core.c">
@@ -995,6 +1140,15 @@
 				</File>
 				<File
 					RelativePath=".\src\wpc\gpgames.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\gts1.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\gts1.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\gts1games.c">
 				</File>
 				<File
 					RelativePath=".\src\wpc\gts3.c">
@@ -1046,6 +1200,15 @@
 				</File>
 				<File
 					RelativePath=".\src\wpc\mech.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\midgames.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\midway.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\midway.h">
 				</File>
 				<File
 					RelativePath=".\src\pinmame.h">
@@ -1117,6 +1280,24 @@
 					RelativePath=".\src\wpc\sndbrd.h">
 				</File>
 				<File
+					RelativePath=".\src\wpc\stgames.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\taito.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\taito.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\taitogames.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\taitos.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\taitos.h">
+				</File>
+				<File
 					RelativePath=".\src\wpc\vpintf.c">
 				</File>
 				<File
@@ -1151,6 +1332,12 @@
 				</File>
 				<File
 					RelativePath=".\src\wpc\zacgames.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\zacsnd.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\zacsnd.h">
 				</File>
 				<Filter
 					Name="sims"

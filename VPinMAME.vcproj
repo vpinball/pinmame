@@ -24,8 +24,8 @@
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				OptimizeForProcessor="1"
-				AdditionalIncludeDirectories="src,src\zlib,src\wpc,src\vc,src\win32c,src\win32com,src\win32com\autogen"
-				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;&quot;INLINE=static __inline&quot;;inline=__inline;__inline__=__inline;PROCESSOR_ARCHITECTURE=x86;LSB_FIRST;ZLIB_DLL;VPINMAME;PINMAME;MAMEVER=3716;USE_SOUND_C"
+				AdditionalIncludeDirectories="src,src\zlib,src\wpc,src\vc,src\win32c,src\win32com,src\win32com\autogen,src\windows"
+				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;INLINE=__inline;inline=__inline;__inline__=__inline;PROCESSOR_ARCHITECTURE=x86;LSB_FIRST;ZLIB_DLL;VPINMAME;PINMAME;MAMEVER=5900;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="TRUE"
@@ -34,7 +34,6 @@
 				AssemblerListingLocation=".\obj/VPinMAME/Release/"
 				ObjectFile=".\obj/VPinMAME/Release/"
 				ProgramDataBaseFileName=".\obj/VPinMAME/Release/"
-				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				CompileAs="0"/>
 			<Tool
@@ -48,9 +47,9 @@ echo regsvr32 exec.time &gt; &quot;$(IntDir)\regsvr32.trg&quot;
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="odbc32.lib odbccp32.lib zlibstatmt.lib winmm.lib dsound.lib version.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib zlibstatmt.lib winmm.lib dsound.lib version.lib dxguid.lib ddraw.lib dinput.lib"
 				OutputFile=".\obj/VPinMAME/Release/VPinMAME.dll"
-				Version="4.0"
+				Version="20.0"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="zlib"
@@ -80,6 +79,140 @@ echo regsvr32 exec.time &gt; &quot;$(IntDir)\regsvr32.trg&quot;
 				Name="VCWebDeploymentTool"/>
 		</Configuration>
 		<Configuration
+			Name="MAME Debug|Win32"
+			OutputDirectory=".\obj/VPinMAME/MDebug"
+			IntermediateDirectory=".\obj/VPinMAME/MDebug"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			UseOfATL="1"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				InlineFunctionExpansion="1"
+				OptimizeForProcessor="1"
+				AdditionalIncludeDirectories="src,src\zlib,src\wpc,src\vc,src\win32c,src\win32com,src\win32com\autogen,src\windows"
+				PreprocessorDefinitions="NDEBUG;MAME_DEBUG;WIN32;_WINDOWS;_USRDLL;INLINE=__inline;inline=__inline;__inline__=__inline;PROCESSOR_ARCHITECTURE=x86;LSB_FIRST;ZLIB_DLL;VPINMAME;PINMAME;MAMEVER=5900;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300"
+				StringPooling="TRUE"
+				RuntimeLibrary="0"
+				EnableFunctionLevelLinking="TRUE"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderFile=".\obj/VPinMAME/MDebug/VPinMAME.pch"
+				AssemblerListingLocation=".\obj/VPinMAME/MDebug/"
+				ObjectFile=".\obj/VPinMAME/MDebug/"
+				ProgramDataBaseFileName=".\obj/VPinMAME/MDebug/"
+				SuppressStartupBanner="TRUE"
+				CompileAs="0"/>
+			<Tool
+				Name="VCCustomBuildTool"
+				Description="Copying and performing registration"
+				CommandLine="copy &quot;$(TargetPath)&quot; &quot;$(ProjectDir)$(TargetName).dll&quot;
+regsvr32 /s /c &quot;$(ProjectDir)$(TargetName).dll&quot;
+echo regsvr32 exec.time &gt; &quot;$(IntDir)\regsvr32.trg&quot;
+"
+				Outputs="$(ProjectDir)$(TargetName).dll;$(IntDir)\regsvr32.trg"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions="/MACHINE:I386"
+				AdditionalDependencies="odbc32.lib odbccp32.lib zlibstatmt.lib winmm.lib dsound.lib version.lib dxguid.lib ddraw.lib dinput.lib"
+				OutputFile=".\obj/VPinMAME/MDebug/VPinMAME.dll"
+				Version="20.0"
+				LinkIncremental="1"
+				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="zlib"
+				ModuleDefinitionFile=".\src\win32com\VPinMAME.def"
+				ProgramDatabaseFile=".\obj/VPinMAME/MDebug/VPinMAME.pdb"
+				SubSystem="2"
+				ImportLibrary=".\obj/VPinMAME/MDebug/VPinMAME.lib"/>
+			<Tool
+				Name="VCMIDLTool"
+				TargetEnvironment="1"
+				TypeLibraryName=".\obj/VPinMAME/MDebug/VPinMAME.tlb"
+				OutputDirectory=".\src\win32com\autogen"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1033"
+				AdditionalIncludeDirectories=".\src\win32com\autogen"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+		</Configuration>
+		<Configuration
+			Name="VC+MAME Debug|Win32"
+			OutputDirectory=".\obj/VPinMAME/VCMDebug"
+			IntermediateDirectory=".\obj/VPinMAME/VCMDebug"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				OptimizeForProcessor="1"
+				AdditionalIncludeDirectories="src,src\zlib,src\wpc,src\vc,src\win32c,src\win32com,src\win32com\autogen,src\windows"
+				PreprocessorDefinitions="_DEBUG;MAME_DEBUG;WIN32;_WINDOWS;_USRDLL;INLINE=__inline;inline=__inline;__inline__=__inline;PROCESSOR_ARCHITECTURE=x86;LSB_FIRST;ZLIB_DLL;VPINMAME;PINMAME;MAMEVER=5900;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="1"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderFile=".\obj/VPinMAME/VCMDebug/VPinMAME.pch"
+				AssemblerListingLocation=".\obj/VPinMAME/VCMDebug/"
+				ObjectFile=".\obj/VPinMAME/VCMDebug/"
+				ProgramDataBaseFileName=".\obj/VPinMAME/VCMDebug/"
+				WarningLevel="3"
+				SuppressStartupBanner="TRUE"
+				DebugInformationFormat="4"
+				CompileAs="0"/>
+			<Tool
+				Name="VCCustomBuildTool"
+				Description="Performing registration"
+				CommandLine="regsvr32 /s /c &quot;$(TargetPath)&quot;
+echo regsvr32 exec. time &gt; &quot;$(IntDir)\regsvr32.trg&quot;
+"
+				Outputs="$(IntDir)\regsvr32.trg"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions="/MACHINE:I386"
+				AdditionalDependencies="odbc32.lib odbccp32.lib zlibstatmtd.lib winmm.lib dsound.lib version.lib dxguid.lib ddraw.lib dinput.lib"
+				OutputFile=".\obj/VPinMAME/VCMDebug/VPinMAME.dll"
+				Version="4.0"
+				LinkIncremental="2"
+				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="zlib"
+				ModuleDefinitionFile=".\src\win32com\VPinMAME.def"
+				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile=".\obj/VPinMAME/VCMDebug/VPinMAME.pdb"
+				SubSystem="2"
+				ImportLibrary=".\obj/VPinMAME/VCMDebug/VPinMAME.lib"/>
+			<Tool
+				Name="VCMIDLTool"
+				TargetEnvironment="1"
+				TypeLibraryName=".\obj/VPinMAME/VCMDebug/VPinMAME.tlb"
+				OutputDirectory=".\src\win32com\autogen"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"
+				AdditionalIncludeDirectories=".\src\win32com\autogen"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+		</Configuration>
+		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory=".\obj/VPinMAME/Debug"
 			IntermediateDirectory=".\obj/VPinMAME/Debug"
@@ -91,8 +224,8 @@ echo regsvr32 exec.time &gt; &quot;$(IntDir)\regsvr32.trg&quot;
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				OptimizeForProcessor="1"
-				AdditionalIncludeDirectories="src,src\zlib,src\wpc,src\vc,src\win32c,src\win32com,src\win32com\autogen"
-				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;&quot;INLINE=static __inline&quot;;inline=__inline;__inline__=__inline;PROCESSOR_ARCHITECTURE=x86;LSB_FIRST;ZLIB_DLL;VPINMAME;PINMAME;MAMEVER=3716"
+				AdditionalIncludeDirectories="src,src\zlib,src\wpc,src\vc,src\win32c,src\win32com,src\win32com\autogen,src\windows"
+				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;INLINE=__inline;inline=__inline;__inline__=__inline;PROCESSOR_ARCHITECTURE=x86;LSB_FIRST;ZLIB_DLL;VPINMAME;PINMAME;MAMEVER=5900;DIRECTINPUT_VERSION=0x0500;DIRECTDRAW_VERSION=0x0300"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="2"
@@ -114,7 +247,7 @@ echo regsvr32 exec. time &gt; &quot;$(IntDir)\regsvr32.trg&quot;
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="odbc32.lib odbccp32.lib zlibstatmtd.lib winmm.lib dsound.lib version.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib zlibstatmtd.lib winmm.lib dsound.lib version.lib dxguid.lib ddraw.lib dinput.lib"
 				OutputFile=".\obj/VPinMAME/Debug/VPinMAME.dll"
 				Version="4.0"
 				LinkIncremental="2"
@@ -152,6 +285,879 @@ echo regsvr32 exec. time &gt; &quot;$(IntDir)\regsvr32.trg&quot;
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<Filter
+				Name="zlib"
+				Filter="">
+				<File
+					RelativePath=".\src\zlib\zconf.h">
+				</File>
+				<File
+					RelativePath=".\src\zlib\zlib.h">
+				</File>
+			</Filter>
+			<Filter
+				Name="VPinMAME"
+				Filter="">
+				<File
+					RelativePath=".\src\win32com\Controller.cpp">
+				</File>
+				<File
+					RelativePath=".\src\win32com\Controller.cpp.crypt">
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCustomBuildTool"
+							Description="Decrypting $(InputPath)"
+							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
+cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
+echo &gt;NUL
+"
+							Outputs="$(InputDir)$(InputName)"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="MAME Debug|Win32">
+						<Tool
+							Name="VCCustomBuildTool"
+							Description="Decrypting $(InputPath)"
+							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
+cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
+echo &gt;NUL
+"
+							Outputs="$(InputDir)$(InputName)"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="VC+MAME Debug|Win32">
+						<Tool
+							Name="VCCustomBuildTool"
+							Description="Decrypting $(InputPath)"
+							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
+cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
+echo &gt;NUL
+"
+							Outputs="$(InputDir)$(InputName)"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCustomBuildTool"
+							Description="Decrypting $(InputPath)"
+							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
+cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
+echo &gt;NUL
+"
+							Outputs="$(InputDir)$(InputName)"/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\src\win32com\Controller.h">
+				</File>
+				<File
+					RelativePath=".\src\win32com\Controller.h.crypt">
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCustomBuildTool"
+							Description="Decrypting $(InputPath)"
+							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
+cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
+echo &gt;NUL
+"
+							Outputs="$(InputDir)$(InputName)"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="MAME Debug|Win32">
+						<Tool
+							Name="VCCustomBuildTool"
+							Description="Decrypting $(InputPath)"
+							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
+cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
+echo &gt;NUL
+"
+							Outputs="$(InputDir)$(InputName)"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="VC+MAME Debug|Win32">
+						<Tool
+							Name="VCCustomBuildTool"
+							Description="Decrypting $(InputPath)"
+							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
+cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
+echo &gt;NUL
+"
+							Outputs="$(InputDir)$(InputName)"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCustomBuildTool"
+							Description="Decrypting $(InputPath)"
+							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
+cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
+echo &gt;NUL
+"
+							Outputs="$(InputDir)$(InputName)"/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\src\win32com\ControllerDisclaimerDlg.cpp">
+				</File>
+				<File
+					RelativePath=".\src\win32com\ControllerDisclaimerDlg.h">
+				</File>
+				<File
+					RelativePath=".\src\win32com\ControllerGame.cpp">
+				</File>
+				<File
+					RelativePath=".\src\win32com\ControllerGame.h">
+				</File>
+				<File
+					RelativePath=".\src\win32com\ControllerGameSettings.cpp">
+				</File>
+				<File
+					RelativePath=".\src\win32com\ControllerGameSettings.h">
+				</File>
+				<File
+					RelativePath=".\src\win32com\ControllerGames.cpp">
+				</File>
+				<File
+					RelativePath=".\src\win32com\ControllerGames.h">
+				</File>
+				<File
+					RelativePath=".\src\win32com\ControllerRegkeys.h">
+				</File>
+				<File
+					RelativePath=".\src\win32com\ControllerRom.cpp">
+				</File>
+				<File
+					RelativePath=".\src\win32com\ControllerRom.h">
+				</File>
+				<File
+					RelativePath=".\src\win32com\ControllerRoms.cpp">
+				</File>
+				<File
+					RelativePath=".\src\win32com\ControllerRoms.h">
+				</File>
+				<File
+					RelativePath=".\src\win32com\ControllerRun.cpp">
+				</File>
+				<File
+					RelativePath=".\src\win32com\ControllerRun.cpp.crypt">
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCustomBuildTool"
+							Description="Decrypting $(InputPath)"
+							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
+cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
+echo &gt;NUL
+"
+							Outputs="$(InputDir)$(InputName)"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="MAME Debug|Win32">
+						<Tool
+							Name="VCCustomBuildTool"
+							Description="Decrypting $(InputPath)"
+							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
+cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
+echo &gt;NUL
+"
+							Outputs="$(InputDir)$(InputName)"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="VC+MAME Debug|Win32">
+						<Tool
+							Name="VCCustomBuildTool"
+							Description="Decrypting $(InputPath)"
+							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
+cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
+echo &gt;NUL
+"
+							Outputs="$(InputDir)$(InputName)"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCustomBuildTool"
+							Description="Decrypting $(InputPath)"
+							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
+cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
+echo &gt;NUL
+"
+							Outputs="$(InputDir)$(InputName)"/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\src\win32com\ControllerSettings.cpp">
+				</File>
+				<File
+					RelativePath=".\src\win32com\ControllerSettings.h">
+				</File>
+				<File
+					RelativePath=".\src\win32com\ControllerSplashWnd.cpp">
+				</File>
+				<File
+					RelativePath=".\src\win32com\ControllerSplashWnd.h">
+				</File>
+				<File
+					RelativePath=".\src\win32com\StdAfx.cpp">
+				</File>
+				<File
+					RelativePath=".\src\win32com\StdAfx.h">
+				</File>
+				<File
+					RelativePath=".\src\win32com\VPinMAME.cpp">
+				</File>
+				<File
+					RelativePath=".\src\win32com\VPinMAME.cpp.crypt">
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCustomBuildTool"
+							Description="Decrypting $(InputPath)"
+							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
+cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
+echo &gt;NUL
+"
+							Outputs="$(InputDir)$(InputName)"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="MAME Debug|Win32">
+						<Tool
+							Name="VCCustomBuildTool"
+							Description="Decrypting $(InputPath)"
+							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
+cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
+echo &gt;NUL
+"
+							Outputs="$(InputDir)$(InputName)"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="VC+MAME Debug|Win32">
+						<Tool
+							Name="VCCustomBuildTool"
+							Description="Decrypting $(InputPath)"
+							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
+cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
+echo &gt;NUL
+"
+							Outputs="$(InputDir)$(InputName)"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCustomBuildTool"
+							Description="Decrypting $(InputPath)"
+							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
+cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
+echo &gt;NUL
+"
+							Outputs="$(InputDir)$(InputName)"/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\src\win32com\VPinMAME.def">
+				</File>
+				<File
+					RelativePath=".\src\win32com\VPinMAME.idl">
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCMIDLTool"
+							TargetEnvironment="1"
+							TypeLibraryName="VPinMAME.tlb"
+							HeaderFileName="VPinMAME.h"
+							InterfaceIdentifierFileName="VPinMAME_i.c"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="MAME Debug|Win32">
+						<Tool
+							Name="VCMIDLTool"
+							TargetEnvironment="1"
+							TypeLibraryName="VPinMAME.tlb"
+							HeaderFileName="VPinMAME.h"
+							InterfaceIdentifierFileName="VPinMAME_i.c"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="VC+MAME Debug|Win32">
+						<Tool
+							Name="VCMIDLTool"
+							TargetEnvironment="1"
+							TypeLibraryName="VPinMAME.tlb"
+							HeaderFileName="VPinMAME.h"
+							InterfaceIdentifierFileName="VPinMAME_i.c"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCMIDLTool"
+							TargetEnvironment="1"
+							TypeLibraryName="VPinMAME.tlb"
+							HeaderFileName="VPinMAME.h"
+							InterfaceIdentifierFileName="VPinMAME_i.c"/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\src\win32com\VPinMAME.rc">
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCResourceCompilerTool"
+							AdditionalIncludeDirectories=".\src\win32com\autogen;src\win32com;.\obj/VPinMAME/Release;$(OUTDIR);$(NoInherit)"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="MAME Debug|Win32">
+						<Tool
+							Name="VCResourceCompilerTool"
+							AdditionalIncludeDirectories=".\src\win32com\autogen;src\win32com;.\obj/VPinMAME/Release;$(OUTDIR);$(NoInherit)"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="VC+MAME Debug|Win32">
+						<Tool
+							Name="VCResourceCompilerTool"
+							AdditionalIncludeDirectories=".\src\win32com\autogen;src\win32com;.\obj/VPinMAME/Release;$(OUTDIR);$(NoInherit)"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCResourceCompilerTool"
+							AdditionalIncludeDirectories=".\src\win32com\autogen;src\win32com;.\obj/VPinMAME/Release;$(OUTDIR);$(NoInherit)"/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\src\win32com\VPinMAMEAboutDlg.cpp">
+				</File>
+				<File
+					RelativePath=".\src\win32com\VPinMAMEAboutDlg.h">
+				</File>
+				<File
+					RelativePath=".\src\win32com\VPinMAMECP.h">
+				</File>
+				<File
+					RelativePath=".\src\win32com\VPinMAMEConfig.cpp">
+				</File>
+				<File
+					RelativePath=".\src\win32com\VPinMAMEConfig.h">
+				</File>
+				<File
+					RelativePath=".\src\win32com\WSHDlg.cpp">
+				</File>
+				<File
+					RelativePath=".\src\win32com\WSHDlg.h">
+				</File>
+				<File
+					RelativePath=".\src\win32com\WSHDlgCtrl.cpp">
+				</File>
+				<File
+					RelativePath=".\src\win32com\WSHDlgCtrl.h">
+				</File>
+				<File
+					RelativePath=".\src\win32com\WSHDlgCtrls.cpp">
+				</File>
+				<File
+					RelativePath=".\src\win32com\WSHDlgCtrls.h">
+				</File>
+				<File
+					RelativePath=".\src\win32com\dlldatax.h">
+				</File>
+				<File
+					RelativePath=".\src\win32com\resource.h">
+				</File>
+			</Filter>
+			<Filter
+				Name="VC"
+				Filter="">
+				<File
+					RelativePath=".\src\vc\dirent.c">
+				</File>
+				<File
+					RelativePath=".\src\vc\dirent.h">
+				</File>
+				<File
+					RelativePath=".\src\vc\unistd.h">
+				</File>
+			</Filter>
+			<Filter
+				Name="PinMAME"
+				Filter="">
+				<File
+					RelativePath=".\src\wpc\atari.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\atari.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\atarigames.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\atarisnd.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\by35.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\by35.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\by35games.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\by35snd.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\by35snd.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\by6803.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\by6803.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\by6803games.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\byvidgames.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\byvidpin.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\byvidpin.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\capcom.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\capcom.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\capgames.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\core.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\core.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\dedmd.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\dedmd.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\degames.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\desound.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\desound.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\driver.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\gen.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\gp.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\gp.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\gpgames.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\gts1.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\gts1.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\gts1games.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\gts3.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\gts3.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\gts3dmd.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\gts3dmd.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\gts3games.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\gts80.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\gts80.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\gts80games.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\gts80s.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\gts80s.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\hnk.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\hnk.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\hnkgames.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\hnks.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\hnks.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\mech.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\mech.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\midgames.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\midway.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\midway.h">
+				</File>
+				<File
+					RelativePath=".\src\pinmame.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\s11.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\s11.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\s11games.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\s3games.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\s4.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\s4.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\s4games.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\s6.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\s6.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\s6games.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\s7.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\s7.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\s7games.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\se.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\se.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\segames.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\sim.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\sim.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\snd_cmd.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\snd_cmd.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\sndbrd.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\sndbrd.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\stgames.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\taito.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\taito.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\taitogames.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\taitos.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\taitos.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\vpintf.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\vpintf.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\wmssnd.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\wmssnd.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\wpc.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\wpc.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\wpcgames.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\wpcsam.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\wpcsam.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\zac.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\zac.h">
+				</File>
+				<File
+					RelativePath=".\src\wpc\zacgames.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\zacsnd.c">
+				</File>
+				<File
+					RelativePath=".\src\wpc\zacsnd.h">
+				</File>
+				<Filter
+					Name="sims"
+					Filter="">
+					<Filter
+						Name="s11"
+						Filter="">
+						<Filter
+							Name="full_s11"
+							Filter="">
+							<File
+								RelativePath=".\src\wpc\sims\s11\full\dd.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\s11\full\milln.c">
+							</File>
+						</Filter>
+						<Filter
+							Name="prelim_s11"
+							Filter="">
+							<File
+								RelativePath=".\src\wpc\sims\s11\prelim\eatpm.c">
+							</File>
+						</Filter>
+					</Filter>
+					<Filter
+						Name="wpc"
+						Filter="">
+						<Filter
+							Name="full_wpc"
+							Filter="">
+							<File
+								RelativePath=".\src\wpc\sims\wpc\full\afm.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\full\bop.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\full\br.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\full\cftbl.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\full\dd_wpc.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\full\drac.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\full\fh.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\full\ft.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\full\gi.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\full\gw.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\full\hd.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\full\hurr.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\full\ij.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\full\jd.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\full\mm.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\full\ngg.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\full\pz.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\full\rs.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\full\ss.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\full\sttng.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\full\t2.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\full\taf.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\full\tom.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\full\tz.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\full\wcs.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\full\ww.c">
+							</File>
+						</Filter>
+						<Filter
+							Name="prelim_wpc"
+							Filter="">
+							<File
+								RelativePath=".\src\wpc\sims\wpc\prelim\cc.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\prelim\congo.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\prelim\corv.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\prelim\cp.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\prelim\cv.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\prelim\dh.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\prelim\dm.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\prelim\dw.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\prelim\fs.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\prelim\i500.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\prelim\jb.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\prelim\jm.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\prelim\jy.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\prelim\mb.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\prelim\nbaf.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\prelim\nf.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\prelim\pop.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\prelim\sc.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\prelim\totan.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\prelim\ts.c">
+							</File>
+							<File
+								RelativePath=".\src\wpc\sims\wpc\prelim\wd.c">
+							</File>
+						</Filter>
+					</Filter>
+					<Filter
+						Name="s7"
+						Filter="">
+						<Filter
+							Name="full_s7"
+							Filter="">
+							<File
+								RelativePath=".\src\wpc\sims\s7\full\tmfnt.c">
+							</File>
+						</Filter>
+					</Filter>
+				</Filter>
+			</Filter>
+			<Filter
 				Name="MAME"
 				Filter="">
 				<File
@@ -177,6 +1183,18 @@ echo regsvr32 exec. time &gt; &quot;$(IntDir)\regsvr32.trg&quot;
 				</File>
 				<File
 					RelativePath=".\src\common.h">
+				</File>
+				<File
+					RelativePath=".\src\cpuexec.c">
+				</File>
+				<File
+					RelativePath=".\src\cpuexec.h">
+				</File>
+				<File
+					RelativePath=".\src\cpuint.c">
+				</File>
+				<File
+					RelativePath=".\src\cpuint.h">
 				</File>
 				<File
 					RelativePath=".\src\cpuintrf.c">
@@ -207,6 +1225,12 @@ echo regsvr32 exec. time &gt; &quot;$(IntDir)\regsvr32.trg&quot;
 				</File>
 				<File
 					RelativePath=".\src\gfxobj.h">
+				</File>
+				<File
+					RelativePath=".\src\harddisk.c">
+				</File>
+				<File
+					RelativePath=".\src\harddisk.h">
 				</File>
 				<File
 					RelativePath=".\src\hiscore.c">
@@ -246,6 +1270,12 @@ echo regsvr32 exec. time &gt; &quot;$(IntDir)\regsvr32.trg&quot;
 				</File>
 				<File
 					RelativePath=".\src\mamedbg.h">
+				</File>
+				<File
+					RelativePath=".\src\md5.c">
+				</File>
+				<File
+					RelativePath=".\src\md5.h">
 				</File>
 				<File
 					RelativePath=".\src\memory.c">
@@ -479,6 +1509,88 @@ echo regsvr32 exec. time &gt; &quot;$(IntDir)\regsvr32.trg&quot;
 							RelativePath=".\src\cpu\s2650\s2650cpu.h">
 						</File>
 					</Filter>
+					<Filter
+						Name="I8085"
+						Filter="">
+						<File
+							RelativePath=".\src\cpu\i8085\8085dasm.c">
+						</File>
+						<File
+							RelativePath=".\src\cpu\i8085\i8085.c">
+						</File>
+						<File
+							RelativePath=".\src\cpu\i8085\i8085.h">
+						</File>
+						<File
+							RelativePath=".\src\cpu\i8085\i8085cpu.h">
+						</File>
+						<File
+							RelativePath=".\src\cpu\i8085\i8085daa.h">
+						</File>
+					</Filter>
+					<Filter
+						Name="I86"
+						Filter="">
+						<File
+							RelativePath=".\src\cpu\i86\ea.h">
+						</File>
+						<File
+							RelativePath=".\src\cpu\i86\host.h">
+						</File>
+						<File
+							RelativePath=".\src\cpu\i86\i86.c">
+						</File>
+						<File
+							RelativePath=".\src\cpu\i86\i86.h">
+						</File>
+						<File
+							RelativePath=".\src\cpu\i86\i86dasm.c">
+						</File>
+						<File
+							RelativePath=".\src\cpu\i86\i86intf.h">
+						</File>
+						<File
+							RelativePath=".\src\cpu\i86\modrm.h">
+						</File>
+						<File
+							RelativePath=".\src\cpu\i86\table86.h">
+						</File>
+					</Filter>
+					<Filter
+						Name="I4004"
+						Filter="">
+						<File
+							RelativePath=".\src\cpu\i4004\4004dasm.c">
+						</File>
+						<File
+							RelativePath=".\src\cpu\i4004\i4004.c">
+						</File>
+						<File
+							RelativePath=".\src\cpu\i4004\i4004.h">
+						</File>
+						<File
+							RelativePath=".\src\cpu\i4004\i4004cpu.h">
+						</File>
+						<File
+							RelativePath=".\src\cpu\i4004\i4004daa.h">
+						</File>
+					</Filter>
+					<Filter
+						Name="PPS4"
+						Filter="">
+						<File
+							RelativePath=".\src\cpu\pps4\pps4.c">
+						</File>
+						<File
+							RelativePath=".\src\cpu\pps4\pps4.h">
+						</File>
+						<File
+							RelativePath=".\src\cpu\pps4\pps4cpu.h">
+						</File>
+						<File
+							RelativePath=".\src\cpu\pps4\pps4dasm.c">
+						</File>
+					</Filter>
 				</Filter>
 				<Filter
 					Name="Machine"
@@ -668,687 +1780,180 @@ echo regsvr32 exec. time &gt; &quot;$(IntDir)\regsvr32.trg&quot;
 				</Filter>
 			</Filter>
 			<Filter
-				Name="zlib"
+				Name="Windows"
 				Filter="">
 				<File
-					RelativePath=".\src\zlib\zconf.h">
-				</File>
-				<File
-					RelativePath=".\src\zlib\zlib.h">
-				</File>
-			</Filter>
-			<Filter
-				Name="Win32"
-				Filter="">
-				<File
-					RelativePath=".\src\win32c\DXDecode.c">
-				</File>
-				<File
-					RelativePath=".\src\win32c\DXDecode.h">
-				</File>
-				<File
-					RelativePath=".\src\win32c\DirectSound.c">
-				</File>
-				<File
-					RelativePath=".\src\win32c\DirectSound.h">
-				</File>
-				<File
-					RelativePath=".\src\win32c\Dirty.c">
-				</File>
-				<File
-					RelativePath=".\src\win32c\Dirty.h">
-				</File>
-				<File
-					RelativePath=".\src\win32c\Display.c">
-				</File>
-				<File
-					RelativePath=".\src\win32c\Display.h">
-				</File>
-				<File
-					RelativePath=".\src\win32c\File.c">
-				</File>
-				<File
-					RelativePath=".\src\win32c\File.h">
-				</File>
-				<File
-					RelativePath=".\src\win32c\FilePrivate.h">
-				</File>
-				<File
-					RelativePath=".\src\win32c\Keyboard.c">
-				</File>
-				<File
-					RelativePath=".\src\win32c\Keyboard.h">
-				</File>
-				<File
-					RelativePath=".\src\win32c\M32Util.c">
-				</File>
-				<File
-					RelativePath=".\src\win32c\M32Util.h">
-				</File>
-				<File
-					RelativePath=".\src\win32c\OSDepend.c">
-				</File>
-				<File
-					RelativePath=".\src\win32c\OSInline.h">
-				</File>
-				<File
-					RelativePath=".\src\win32c\Registry.c">
-				</File>
-				<File
-					RelativePath=".\src\win32c\Registry.h">
-				</File>
-				<File
-					RelativePath=".\src\win32c\Strings.h">
-				</File>
-				<File
-					RelativePath=".\src\win32c\UClock.c">
-				</File>
-				<File
-					RelativePath=".\src\win32c\UClock.h">
-				</File>
-				<File
-					RelativePath=".\src\win32c\osd_cpu.h">
-				</File>
-				<File
-					RelativePath=".\src\win32c\sound.c">
-				</File>
-			</Filter>
-			<Filter
-				Name="COM"
-				Filter="">
-				<File
-					RelativePath=".\src\win32com\Controller.cpp">
-				</File>
-				<File
-					RelativePath=".\src\win32com\Controller.h">
-				</File>
-				<File
-					RelativePath=".\src\win32com\ControllerGame.cpp">
-				</File>
-				<File
-					RelativePath=".\src\win32com\ControllerGame.h">
-				</File>
-				<File
-					RelativePath=".\src\win32com\ControllerGameInfo.cpp">
-				</File>
-				<File
-					RelativePath=".\src\win32com\ControllerGameInfo.h">
-				</File>
-				<File
-					RelativePath=".\src\win32com\ControllerGames.cpp">
-				</File>
-				<File
-					RelativePath=".\src\win32com\ControllerGames.h">
-				</File>
-				<File
-					RelativePath=".\src\win32com\ControllerGlobals.cpp">
-				</File>
-				<File
-					RelativePath=".\src\win32com\ControllerGlobals.h">
-				</File>
-				<File
-					RelativePath=".\src\win32com\ControllerOptions.cpp">
-				</File>
-				<File
-					RelativePath=".\src\win32com\ControllerOptions.h">
-				</File>
-				<File
-					RelativePath=".\src\win32com\ControllerOptionsDlg.cpp">
-				</File>
-				<File
-					RelativePath=".\src\win32com\ControllerOptionsDlg.h">
-				</File>
-				<File
-					RelativePath=".\src\win32com\ControllerRegkeys.h">
-				</File>
-				<File
-					RelativePath=".\src\win32com\ControllerRom.cpp">
-				</File>
-				<File
-					RelativePath=".\src\win32com\ControllerRom.h">
-				</File>
-				<File
-					RelativePath=".\src\win32com\ControllerRoms.cpp">
-				</File>
-				<File
-					RelativePath=".\src\win32com\ControllerRoms.h">
-				</File>
-				<File
-					RelativePath=".\src\win32com\ControllerRun.cpp">
-				</File>
-				<File
-					RelativePath=".\src\win32com\ControllerRun.h">
-				</File>
-				<File
-					RelativePath=".\src\win32com\StdAfx.cpp">
-				</File>
-				<File
-					RelativePath=".\src\win32com\StdAfx.h">
-				</File>
-				<File
-					RelativePath=".\src\win32com\VPinMAME.cpp">
-				</File>
-				<File
-					RelativePath=".\src\win32com\VPinMAME.def">
-				</File>
-				<File
-					RelativePath=".\src\win32com\VPinMAME.idl">
+					RelativePath=".\src\windows\asmblit.asm">
 					<FileConfiguration
 						Name="Release|Win32">
 						<Tool
-							Name="VCMIDLTool"
-							TargetEnvironment="1"
-							TypeLibraryName="VPinMAME.tlb"
-							HeaderFileName="VPinMAME.h"
-							InterfaceIdentifierFileName="VPinMAME_i.c"/>
+							Name="VCCustomBuildTool"
+							CommandLine="nasmw -f coff -o $(IntDir)\$(InputName).obj $(InputPath)
+"
+							Outputs="$(IntDir)\$(InputName).obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="MAME Debug|Win32">
+						<Tool
+							Name="VCCustomBuildTool"
+							CommandLine="nasmw -f coff -o $(IntDir)\$(InputName).obj $(InputPath)
+"
+							Outputs="$(IntDir)\$(InputName).obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="VC+MAME Debug|Win32">
+						<Tool
+							Name="VCCustomBuildTool"
+							CommandLine="nasmw -f coff -o $(IntDir)\$(InputName).obj $(InputPath)
+"
+							Outputs="$(IntDir)\$(InputName).obj"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug|Win32">
 						<Tool
-							Name="VCMIDLTool"
-							TargetEnvironment="1"
-							TypeLibraryName="VPinMAME.tlb"
-							HeaderFileName="VPinMAME.h"
-							InterfaceIdentifierFileName="VPinMAME_i.c"/>
+							Name="VCCustomBuildTool"
+							CommandLine="nasmw -f coff -o $(IntDir)\$(InputName).obj $(InputPath)
+"
+							Outputs="$(IntDir)\$(InputName).obj"/>
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\src\win32com\VPinMAME.rc">
+					RelativePath=".\src\windows\asmtile.asm">
 					<FileConfiguration
 						Name="Release|Win32">
 						<Tool
-							Name="VCResourceCompilerTool"
-							AdditionalIncludeDirectories=".\src\win32com\autogen;src\win32com;.\obj/VPinMAME/Release;$(OUTDIR);$(NoInherit)"/>
+							Name="VCCustomBuildTool"
+							CommandLine="nasmw -f coff -o $(IntDir)\$(InputName).obj $(InputPath)
+"
+							Outputs="$(IntDir)\$(InputName).obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="MAME Debug|Win32">
+						<Tool
+							Name="VCCustomBuildTool"
+							CommandLine="nasmw -f coff -o $(IntDir)\$(InputName).obj $(InputPath)
+"
+							Outputs="$(IntDir)\$(InputName).obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="VC+MAME Debug|Win32">
+						<Tool
+							Name="VCCustomBuildTool"
+							CommandLine="nasmw -f coff -o $(IntDir)\$(InputName).obj $(InputPath)
+"
+							Outputs="$(IntDir)\$(InputName).obj"/>
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Debug|Win32">
 						<Tool
-							Name="VCResourceCompilerTool"
-							AdditionalIncludeDirectories=".\src\win32com\autogen;src\win32com;.\obj/VPinMAME/Release;$(OUTDIR);$(NoInherit)"/>
+							Name="VCCustomBuildTool"
+							CommandLine="nasmw -f coff -o $(IntDir)\$(InputName).obj $(InputPath)
+"
+							Outputs="$(IntDir)\$(InputName).obj"/>
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\src\win32com\VPinMAMEAboutDlg.cpp">
+					RelativePath=".\src\windows\blit.c">
 				</File>
 				<File
-					RelativePath=".\src\win32com\VPinMAMEAboutDlg.h">
+					RelativePath=".\src\windows\blit.h">
 				</File>
 				<File
-					RelativePath=".\src\win32com\VPinMAMECP.h">
+					RelativePath=".\src\windows\dirty.h">
 				</File>
 				<File
-					RelativePath=".\src\win32com\VPinMAMEDisclaimerDlg.cpp">
+					RelativePath=".\src\windows\fileio.c">
 				</File>
 				<File
-					RelativePath=".\src\win32com\VPinMAMEDisclaimerDlg.h">
+					RelativePath=".\src\windows\fronthlp.c">
 				</File>
 				<File
-					RelativePath=".\src\win32com\VPinMAMESplashWnd.cpp">
+					RelativePath=".\src\windows\input.c">
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile=".\obj/VPinMAME/Release/Windows/"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="MAME Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile=".\obj/VPinMAME/MDebug/Windows/"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="VC+MAME Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile=".\obj/VPinMAME/VCMDebug/Windows/"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile=".\obj/VPinMAME/Debug/Windows/"/>
+					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\src\win32com\VPinMAMESplashWnd.h">
+					RelativePath=".\src\windows\misc.c">
 				</File>
 				<File
-					RelativePath=".\src\win32com\WSHDlg.cpp">
+					RelativePath=".\src\windows\osinline.h">
 				</File>
 				<File
-					RelativePath=".\src\win32com\WSHDlg.h">
+					RelativePath=".\src\windows\rc.c">
 				</File>
 				<File
-					RelativePath=".\src\win32com\WSHDlgCtrl.cpp">
+					RelativePath=".\src\windows\snprintf.c">
 				</File>
 				<File
-					RelativePath=".\src\win32com\WSHDlgCtrl.h">
+					RelativePath=".\src\windows\sound.c">
 				</File>
 				<File
-					RelativePath=".\src\win32com\WSHDlgCtrls.cpp">
+					RelativePath=".\src\windows\ticker.c">
 				</File>
 				<File
-					RelativePath=".\src\win32com\WSHDlgCtrls.h">
+					RelativePath=".\src\windows\ticker.h">
 				</File>
 				<File
-					RelativePath=".\src\win32com\dlldatax.h">
+					RelativePath=".\src\windows\video.c">
 				</File>
 				<File
-					RelativePath=".\src\win32com\resource.h">
+					RelativePath=".\src\windows\winddraw.c">
 				</File>
-			</Filter>
-			<Filter
-				Name="VC"
-				Filter="">
 				<File
-					RelativePath=".\src\vc\dirent.c">
+					RelativePath=".\src\windows\winddraw.h">
 				</File>
 				<File
-					RelativePath=".\src\vc\dirent.h">
+					RelativePath=".\src\windows\window.c">
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile=".\obj/VPinMAME/Release/Windows/"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="MAME Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile=".\obj/VPinMAME/MDebug/Windows/"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="VC+MAME Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile=".\obj/VPinMAME/VCMDebug/Windows/"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile=".\obj/VPinMAME/Debug/Windows/"/>
+					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\src\vc\unistd.h">
+					RelativePath=".\src\windows\winprefix.h">
 				</File>
-			</Filter>
-			<Filter
-				Name="PinMAME"
-				Filter="">
-				<File
-					RelativePath=".\src\wpc\atari.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\atari.h">
-				</File>
-				<File
-					RelativePath=".\src\wpc\atarigames.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\atarisnd.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\by35.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\by35.h">
-				</File>
-				<File
-					RelativePath=".\src\wpc\by35games.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\by35snd.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\by35snd.h">
-				</File>
-				<File
-					RelativePath=".\src\wpc\by6803.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\by6803.h">
-				</File>
-				<File
-					RelativePath=".\src\wpc\byvidpin.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\byvidpin.h">
-				</File>
-				<File
-					RelativePath=".\src\wpc\core.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\core.h">
-				</File>
-				<File
-					RelativePath=".\src\wpc\dedmd.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\dedmd.h">
-				</File>
-				<File
-					RelativePath=".\src\wpc\degames.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\desound.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\desound.h">
-				</File>
-				<File
-					RelativePath=".\src\wpc\driver.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\gen.h">
-				</File>
-				<File
-					RelativePath=".\src\wpc\gp.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\gp.h">
-				</File>
-				<File
-					RelativePath=".\src\wpc\gpgames.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\gts3.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\gts3.h">
-				</File>
-				<File
-					RelativePath=".\src\wpc\gts3dmd.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\gts3dmd.h">
-				</File>
-				<File
-					RelativePath=".\src\wpc\gts3games.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\gts80.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\gts80.h">
-				</File>
-				<File
-					RelativePath=".\src\wpc\gts80games.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\gts80s.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\gts80s.h">
-				</File>
-				<File
-					RelativePath=".\src\wpc\hnk.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\hnk.h">
-				</File>
-				<File
-					RelativePath=".\src\wpc\hnkgames.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\hnks.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\hnks.h">
-				</File>
-				<File
-					RelativePath=".\src\wpc\mech.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\mech.h">
-				</File>
-				<File
-					RelativePath=".\src\pinmame.h">
-				</File>
-				<File
-					RelativePath=".\src\wpc\s11.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\s11.h">
-				</File>
-				<File
-					RelativePath=".\src\wpc\s11games.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\s3games.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\s4.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\s4.h">
-				</File>
-				<File
-					RelativePath=".\src\wpc\s4games.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\s6.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\s6.h">
-				</File>
-				<File
-					RelativePath=".\src\wpc\s6games.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\s7.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\s7.h">
-				</File>
-				<File
-					RelativePath=".\src\wpc\s7games.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\se.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\se.h">
-				</File>
-				<File
-					RelativePath=".\src\wpc\segames.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\sim.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\sim.h">
-				</File>
-				<File
-					RelativePath=".\src\wpc\snd_cmd.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\snd_cmd.h">
-				</File>
-				<File
-					RelativePath=".\src\wpc\sndbrd.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\sndbrd.h">
-				</File>
-				<File
-					RelativePath=".\src\wpc\vpintf.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\vpintf.h">
-				</File>
-				<File
-					RelativePath=".\src\wpc\wmssnd.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\wmssnd.h">
-				</File>
-				<File
-					RelativePath=".\src\wpc\wpc.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\wpc.h">
-				</File>
-				<File
-					RelativePath=".\src\wpc\wpcgames.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\wpcsam.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\wpcsam.h">
-				</File>
-				<File
-					RelativePath=".\src\wpc\zac.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\zac.h">
-				</File>
-				<File
-					RelativePath=".\src\wpc\zacgames.c">
-				</File>
-				<Filter
-					Name="sims"
-					Filter="">
-					<Filter
-						Name="s11"
-						Filter="">
-						<Filter
-							Name="full_s11"
-							Filter="">
-							<File
-								RelativePath=".\src\wpc\sims\s11\full\dd.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\s11\full\milln.c">
-							</File>
-						</Filter>
-						<Filter
-							Name="prelim_s11"
-							Filter="">
-							<File
-								RelativePath=".\src\wpc\sims\s11\prelim\eatpm.c">
-							</File>
-						</Filter>
-					</Filter>
-					<Filter
-						Name="wpc"
-						Filter="">
-						<Filter
-							Name="full_wpc"
-							Filter="">
-							<File
-								RelativePath=".\src\wpc\sims\wpc\full\afm.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\full\bop.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\full\br.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\full\cftbl.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\full\dd_wpc.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\full\drac.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\full\fh.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\full\ft.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\full\gi.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\full\gw.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\full\hd.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\full\hurr.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\full\ij.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\full\jd.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\full\mm.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\full\ngg.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\full\pz.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\full\rs.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\full\ss.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\full\sttng.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\full\t2.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\full\taf.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\full\tom.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\full\tz.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\full\wcs.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\full\ww.c">
-							</File>
-						</Filter>
-						<Filter
-							Name="prelim_wpc"
-							Filter="">
-							<File
-								RelativePath=".\src\wpc\sims\wpc\prelim\cc.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\prelim\congo.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\prelim\corv.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\prelim\cp.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\prelim\cv.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\prelim\dh.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\prelim\dm.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\prelim\dw.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\prelim\fs.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\prelim\i500.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\prelim\jb.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\prelim\jm.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\prelim\jy.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\prelim\mb.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\prelim\nbaf.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\prelim\nf.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\prelim\pop.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\prelim\sc.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\prelim\totan.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\prelim\ts.c">
-							</File>
-							<File
-								RelativePath=".\src\wpc\sims\wpc\prelim\wd.c">
-							</File>
-						</Filter>
-					</Filter>
-					<Filter
-						Name="s7"
-						Filter="">
-						<Filter
-							Name="full_s7"
-							Filter="">
-							<File
-								RelativePath=".\src\wpc\sims\s7\full\tmfnt.c">
-							</File>
-						</Filter>
-					</Filter>
-				</Filter>
 			</Filter>
 		</Filter>
 		<Filter
@@ -1363,6 +1968,12 @@ echo regsvr32 exec. time &gt; &quot;$(IntDir)\regsvr32.trg&quot;
 			<File
 				RelativePath=".\src\win32com\Res\VPinMAMESplash.bmp">
 			</File>
+			<File
+				RelativePath=".\src\win32com\Res\VPinMAMESplash4.bmp">
+			</File>
+			<File
+				RelativePath=".\src\win32com\WSHDlg.rgs">
+			</File>
 		</Filter>
 		<Filter
 			Name="Included Files"
@@ -1371,6 +1982,18 @@ echo regsvr32 exec. time &gt; &quot;$(IntDir)\regsvr32.trg&quot;
 				RelativePath=".\src\cpu\adsp2100\2100ops.c">
 				<FileConfiguration
 					Name="Release|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="MAME Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="VC+MAME Debug|Win32"
 					ExcludedFromBuild="TRUE">
 					<Tool
 						Name="VCCLCompilerTool"/>
@@ -1391,6 +2014,18 @@ echo regsvr32 exec. time &gt; &quot;$(IntDir)\regsvr32.trg&quot;
 						Name="VCCLCompilerTool"/>
 				</FileConfiguration>
 				<FileConfiguration
+					Name="MAME Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="VC+MAME Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Debug|Win32"
 					ExcludedFromBuild="TRUE">
 					<Tool
@@ -1401,6 +2036,18 @@ echo regsvr32 exec. time &gt; &quot;$(IntDir)\regsvr32.trg&quot;
 				RelativePath=".\src\cpu\m6800\6800tbl.c">
 				<FileConfiguration
 					Name="Release|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="MAME Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="VC+MAME Debug|Win32"
 					ExcludedFromBuild="TRUE">
 					<Tool
 						Name="VCCLCompilerTool"/>
@@ -1421,6 +2068,18 @@ echo regsvr32 exec. time &gt; &quot;$(IntDir)\regsvr32.trg&quot;
 						Name="VCCLCompilerTool"/>
 				</FileConfiguration>
 				<FileConfiguration
+					Name="MAME Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="VC+MAME Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Debug|Win32"
 					ExcludedFromBuild="TRUE">
 					<Tool
@@ -1436,6 +2095,18 @@ echo regsvr32 exec. time &gt; &quot;$(IntDir)\regsvr32.trg&quot;
 						Name="VCCLCompilerTool"/>
 				</FileConfiguration>
 				<FileConfiguration
+					Name="MAME Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="VC+MAME Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Debug|Win32"
 					ExcludedFromBuild="TRUE">
 					<Tool
@@ -1446,6 +2117,18 @@ echo regsvr32 exec. time &gt; &quot;$(IntDir)\regsvr32.trg&quot;
 				RelativePath=".\src\cpu\m6502\t6502.c">
 				<FileConfiguration
 					Name="Release|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="MAME Debug|Win32"
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="VC+MAME Debug|Win32"
 					ExcludedFromBuild="TRUE">
 					<Tool
 						Name="VCCLCompilerTool"/>
