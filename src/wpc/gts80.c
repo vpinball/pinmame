@@ -103,7 +103,7 @@ static int GTS80_vblank(void) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
-
+  int active;
   GTS80locals.vblankCount += 1;
   /*-- lamps --*/
   if ((GTS80locals.vblankCount % GTS80_LAMPSMOOTH) == 0) {
@@ -133,7 +133,12 @@ static int GTS80_vblank(void) {
     /*update leds*/
     coreGlobals.diagnosticLed = 0;
   }
-  core_updateSw(TRUE); /* assume flipper enabled */
+  /* Lamp 0 controls game enable */
+  active = coreGlobals.lampMatrix[0] & 1;
+  /* Lamp 1 controls tilt on System80 & System80a */
+  if (!(core_gameData->gen & (GEN_GTS80B2K|GEN_GTS80B4K|GEN_GTS80B8K)))
+	  active = active && !(coreGlobals.lampMatrix[0] & 2);
+  core_updateSw(active);
   return 0;
 }
 
