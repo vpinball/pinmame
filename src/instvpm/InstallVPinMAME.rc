@@ -53,8 +53,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,41,0,0
- PRODUCTVERSION 1,41,0,0
+ FILEVERSION 1,42,0,0
+ PRODUCTVERSION 1,42,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -70,12 +70,12 @@ BEGIN
         BLOCK "040704b0"
         BEGIN
             VALUE "FileDescription", "InstallVPinMAME"
-            VALUE "FileVersion", "1.41"
+            VALUE "FileVersion", "1.42"
             VALUE "InternalName", "InstallVPinMAME"
             VALUE "LegalCopyright", "Copyright © 2001-03 Steve Ellenoff, Tom Haukap, Martin Adrian, Gerrit Volkenborn"
             VALUE "OriginalFilename", "InstallVPinMAME.exe"
-            VALUE "ProductName", "Visual PinMAME"
-            VALUE "ProductVersion", "1.41"
+            VALUE "ProductName", "Visual PinMAME Installer"
+            VALUE "ProductVersion", "1.42"
         END
     END
     BLOCK "VarFileInfo"
