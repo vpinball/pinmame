@@ -2,15 +2,45 @@ VERSION 5.00
 Begin VB.Form VPinMAMETest 
    BorderStyle     =   1  'Fixed Single
    Caption         =   "VPinMame Test"
-   ClientHeight    =   7875
+   ClientHeight    =   8475
    ClientLeft      =   45
    ClientTop       =   330
    ClientWidth     =   5640
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   7875
+   ScaleHeight     =   8475
    ScaleWidth      =   5640
+   Begin VB.TextBox GName 
+      Height          =   285
+      Left            =   1320
+      TabIndex        =   56
+      Top             =   7440
+      Width           =   1815
+   End
+   Begin VB.TextBox GValue 
+      Height          =   285
+      Left            =   3240
+      TabIndex        =   55
+      Top             =   7440
+      Width           =   1335
+   End
+   Begin VB.CommandButton GPut 
+      Caption         =   "P"
+      Height          =   375
+      Left            =   4680
+      TabIndex        =   54
+      Top             =   7440
+      Width           =   375
+   End
+   Begin VB.CommandButton GGet 
+      Caption         =   "G"
+      Height          =   375
+      Left            =   5160
+      TabIndex        =   53
+      Top             =   7440
+      Width           =   375
+   End
    Begin VB.CommandButton GSGet 
       Caption         =   "G"
       Height          =   375
@@ -157,9 +187,9 @@ Begin VB.Form VPinMAMETest
    Begin VB.CommandButton CheckRoms 
       Caption         =   "Check ROMS"
       Height          =   375
-      Left            =   1440
+      Left            =   1560
       TabIndex        =   28
-      Top             =   7440
+      Top             =   7920
       Width           =   1215
    End
    Begin VB.CheckBox DoubleSize 
@@ -233,9 +263,9 @@ Begin VB.Form VPinMAMETest
    Begin VB.CommandButton About 
       Caption         =   "About"
       Height          =   375
-      Left            =   4200
+      Left            =   4320
       TabIndex        =   19
-      Top             =   7440
+      Top             =   7920
       Width           =   1215
    End
    Begin VB.ComboBox GameNames 
@@ -252,9 +282,9 @@ Begin VB.Form VPinMAMETest
    Begin VB.CommandButton Options 
       Caption         =   "Options"
       Height          =   375
-      Left            =   2760
+      Left            =   2880
       TabIndex        =   17
-      Top             =   7440
+      Top             =   7920
       Width           =   1335
    End
    Begin VB.CommandButton ResumeButton 
@@ -360,6 +390,14 @@ Begin VB.Form VPinMAMETest
       TabIndex        =   0
       Top             =   2160
       Width           =   975
+   End
+   Begin VB.Label Label3 
+      Caption         =   "Global settings"
+      Height          =   255
+      Left            =   120
+      TabIndex        =   57
+      Top             =   7440
+      Width           =   1095
    End
    Begin VB.Label slsl 
       Caption         =   "Game settings"
@@ -532,15 +570,31 @@ Private Sub GetSwitch_Click()
 End Sub
 
 Private Sub GSGet_Click()
+    If (Controller.Version < "01200000") Then Exit Sub
+    
     If (Controller.GameName <> "") Then
         GSValue.Text = Controller.Games(Controller.GameName).Settings.Value(GSName)
     End If
 End Sub
 
 Private Sub GSPut_Click()
+    If (Controller.Version < "01200000") Then Exit Sub
+
     If (Controller.GameName <> "") Then
         Controller.Games(Controller.GameName).Settings.Value(GSName) = GSValue.Text
     End If
+End Sub
+
+Private Sub GGet_Click()
+    If (Controller.Version < "01200000") Then Exit Sub
+    
+    GValue.Text = Controller.Settings.Value(GName)
+End Sub
+
+Private Sub GPut_Click()
+    If (Controller.Version < "01200000") Then Exit Sub
+    
+    Controller.Settings.Value(GName) = GValue.Text
 End Sub
 
 Private Sub Options_Click()
