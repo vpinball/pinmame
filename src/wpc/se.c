@@ -146,7 +146,7 @@ static WRITE_HANDLER(mcpu_ram8000_w) { SElocals.ram8000[offset] = data; }
 
 /*-- Lamps --*/
 static WRITE_HANDLER(lampdriv_w) {
-  SElocals.lampRow = CORE_SWAPBYTE(data);
+  SElocals.lampRow = core_revbyte(data);
   core_setLamp(coreGlobals.tmpLampMatrix, SElocals.lampColumn, SElocals.lampRow);
 }
 static WRITE_HANDLER(lampstrb_w) { core_setLamp(coreGlobals.tmpLampMatrix, SElocals.lampColumn = (SElocals.lampColumn & 0xff00) | data, SElocals.lampRow);}
@@ -170,7 +170,7 @@ static READ_HANDLER(dedswitch_r) {
   /* CORE Defines flippers in order as: RFlipEOS, RFlip, LFlipEOS, LFlip*/
   /* We need to adjust to: LFlip, LFlipEOS, RFlip, RFlipEOS*/
   /* Swap the 4 lowest bits*/
-  return ~((coreGlobals.swMatrix[0]) | CORE_SWAPNYB(coreGlobals.swMatrix[11] & 0x0f));
+  return ~((coreGlobals.swMatrix[0]) | core_revnyb(coreGlobals.swMatrix[11] & 0x0f));
 }
 
 /*-- Dip Switch SW300 - Country Settings --*/
