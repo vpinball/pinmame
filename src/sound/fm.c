@@ -3639,7 +3639,8 @@ INLINE void OPM_CALC_CH7( FM_CH *CH )
 	{
 		NoiseCnt += NoiseIncr;
 		if( eg_out4 < EG_CUT_OFF )
-			*CH->connect4 += OP_OUTN(NoiseCnt,eg_out4);
+			*CH->connect4 += OP_OUT(NoiseCnt,eg_out4);
+//			*CH->connect4 += OP_OUTN(NoiseCnt,eg_out4);
 	}
 	else
 	{
