@@ -1,0 +1,210 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DIALOG1 DIALOG DISCARDABLE  0, 0, 279, 198
+STYLE DS_MODALFRAME | WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "File Crypter"
+MENU IDR_MENU1
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Crypter Key:",IDC_STATIC,17,12,39,8,WS_TABSTOP
+    EDITTEXT        IDC_EDIT2,17,22,66,14,ES_AUTOHSCROLL
+    LTEXT           "Encrypted File Extension:",IDC_STATIC,97,12,80,8
+    EDITTEXT        IDC_EDIT3,97,22,66,14,ES_AUTOHSCROLL
+    LTEXT           "Encrypted Files Directory:",IDC_STATIC,17,41,81,8
+    EDITTEXT        IDC_DIRTEXT,17,51,219,14,ES_AUTOHSCROLL
+    PUSHBUTTON      ". . .",IDDIR,243,51,17,14
+    LTEXT           "Decrypted Files Directory:",IDC_STATIC,17,67,82,8
+    EDITTEXT        IDC_DIRTEXT2,17,77,219,14,ES_AUTOHSCROLL
+    PUSHBUTTON      ". . .",IDDIR2,243,77,17,14
+    LTEXT           "Files to be processed (specified in 'Files.txt')",
+                    IDC_FILESLABEL,19,98,253,8
+    LISTBOX         IDC_LIST1,17,108,73,53,LBS_SORT | LBS_NOINTEGRALHEIGHT | 
+                    WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "&Encrypt",IDENCRYPT,78,171,50,14
+    PUSHBUTTON      "&Decrypt",IDDECRYPT,150,171,50,14
+END
+
+IDD_ABOUT DIALOGEX 0, 0, 186, 90
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About File Crypter"
+FONT 8, "MS Sans Serif"
+BEGIN
+    ICON            IDI_ICON1,IDC_MYICON,14,9,20,20
+    DEFPUSHBUTTON   "OK",IDOK,69,62,50,14
+    LTEXT           "File Crypter (Version 1.0)",IDC_STATIC,45,12,128,8
+    LTEXT           "by Steve Ellenoff",IDC_STATIC,45,26,128,8
+    LTEXT           "sellenoff@hotmail.com",IDC_EMAILLINK,67,42,71,8,
+                    SS_NOTIFY | NOT WS_GROUP,WS_EX_TRANSPARENT
+    LTEXT           "email:",IDC_STATIC,45,42,17,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_DIALOG1, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 272
+        TOPMARGIN, 5
+        BOTTOMMARGIN, 188
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ICON1               ICON    DISCARDABLE     "SECUR02B.ICO"
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,0
+ PRODUCTVERSION 1,0,0,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "Comments", "\0"
+            VALUE "CompanyName", "SE Consulting\0"
+            VALUE "FileDescription", "File Crypter Version 1.0\0"
+            VALUE "FileVersion", "1, 0, 0, 0\0"
+            VALUE "InternalName", "Cryptf\0"
+            VALUE "LegalCopyright", "Copyright © 2002\0"
+            VALUE "LegalTrademarks", "\0"
+            VALUE "OriginalFilename", "Cryptf.exe\0"
+            VALUE "PrivateBuild", "\0"
+            VALUE "ProductName", "File Crypter\0"
+            VALUE "ProductVersion", "1, 0, 0, 0\0"
+            VALUE "SpecialBuild", "\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+#endif    // !_MAC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MENU1 MENU DISCARDABLE 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&Encrypt Files",              IDENCRYPT
+        MENUITEM "&Decrypt Files",              IDDECRYPT
+        MENUITEM SEPARATOR
+        POPUP "&Modify"
+        BEGIN
+            MENUITEM "&INI File",                   ID_MOD_INI
+            MENUITEM "&File List",                  ID_MOD_FILES
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       IDCANCEL
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&Command Line Help",          ID_SHOWCOMMAND
+        MENUITEM "View &Readme File",           ID_README
+        MENUITEM "&About",                      ID_ABOUT
+    END
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
