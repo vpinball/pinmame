@@ -18,6 +18,22 @@ const struct GameDriver *drivers[] = {
 };
 #else /* DRIVER_RECURSIVE */
 
+// -----------------
+// ATARI GAMES BELOW
+// -----------------
+DRIVERNV(atarians)	//The Atarians (November 1976)
+DRIVERNV(time2000)	//Time 2000 (June 1977)
+DRIVERNV(aavenger)	//Airborne Avenger (September 1977)
+DRIVERNV(midearth)	//Middle Earth (February 1978)
+DRIVERNV(spcrider)	//Space Riders (September 1978)
+DRIVERNV(superman)	//Superman (March 1979)
+DRIVERNV(hercules)	//Hercules (May 1979)
+					//Road Runner (1979)
+					//Monza (1980)
+					//Neutron Star (1981)
+					//4x4 (1983)
+					//Triangle (19??)
+
 // ---------------------
 // GAME PLAN GAMES BELOW
 // ---------------------
@@ -61,7 +77,7 @@ DRIVERNV(cyclopes)	//Cyclopes (November 1985)
 					//01/78 Winter Sports
 					//07/78 House of Diamonds
 					//09/78 Strike
-					//10/78 Ski Jump					
+					//10/78 Ski Jump
 					//10/78 Future World
 					//04/79 Shooting the Rapids
 					//09/79 Hot Wheels
