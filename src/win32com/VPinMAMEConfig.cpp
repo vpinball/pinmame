@@ -161,7 +161,6 @@ static struct rc_option opts[] = {
 	/* make it options.gamma_correction? */
 	{ "gamma", NULL, rc_float, &gamma_correct , "1.0", 0.5, 2.0, NULL, "gamma correction"},
 
-#ifdef PINMAME_EXT
 	/* PinMAME options */
 	{ "PinMAME options", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },
 	{ "dmd_red",    NULL, rc_int, &pmoptions.dmd_red,   "225", 0, 255, NULL, "DMD color: Red" },
@@ -173,8 +172,6 @@ static struct rc_option opts[] = {
 	{ "dmd_only",	NULL, rc_bool,&pmoptions.dmd_only,    "0",  0, 0,   NULL, "Show only DMD" },
 	{ "dmd_compact",NULL, rc_bool,&pmoptions.dmd_compact, "0",  0, 0,   NULL, "Show comact display" },
 	{ "dmd_antialias", NULL, rc_int, &pmoptions.dmd_antialias,  "50", 0, 100, NULL, "DMD antialias intensity [%]" },
-	{ "soundlimit", NULL, rc_bool, &pmoptions.soundlimit,  "1", 0, 0, NULL, "Limit Sound slowdown" },
-#endif /* PINMAME_EXT */
 	/* vector */
 	{ "Mame CORE vector game options", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },
 	{ "antialias", "aa", rc_bool, &options.antialias, "1", 0, 0, NULL, "draw antialiased vectors" },
