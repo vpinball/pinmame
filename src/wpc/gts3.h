@@ -136,11 +136,13 @@
 /*-- These are only here so the game structure can be in the game file --*/
 extern struct MachineDriver machine_driver_GTS3_1;
 extern struct MachineDriver machine_driver_GTS3_2;
+extern struct MachineDriver machine_driver_GTS3_1S;
 extern struct MachineDriver machine_driver_GTS3_2S;
 
 extern void UpdateSoundLEDS(int num,int data);
 
 #define mGTS3         GTS3_1
+#define mGTS3S        GTS3_1S
 #define mGTS3DMD      GTS3_2
 #define mGTS3DMDS     GTS3_2S
 
