@@ -14,6 +14,7 @@ static const struct tAliasTable { const char* alias; const char* real; } aliasTa
   { "torpe", "torp_e21" },
   { "tmach", "tmac_a24" },
   { "play", "play_a24" },
+  { "maverick", "mav_401" },
   { "mnfb", "mnfb_c27" },
   { "robo", "robo_a34" },
   { "poto", "poto_a32" },
