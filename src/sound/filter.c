@@ -18,7 +18,7 @@ void filter_free(filter* f) {
 void filter_state_reset(filter* f, filter_state* s) {
 	int i;
 	s->prev_mac = 0;
-	for(i=0;i<f->order;++i) {
+	for(i=0;i<(int)f->order;++i) {
 		s->xprev[i] = 0;
 	}
 }
@@ -85,9 +85,9 @@ filter* filter_lp_fir_alloc(double freq, int order) {
 	/* Compute the antitrasform of the perfect low pass filter */
 	gain = 2*freq;
 #ifdef FILTER_USE_INT
-	f->xcoeffs[0] = gain * (1 << FILTER_INT_FRACT);
+	f->xcoeffs[0] = (int) (gain * (1 << FILTER_INT_FRACT));
 #else
-	f->xcoeffs[0] = gain;
+	f->xcoeffs[0] = (int) gain;
 #endif
 	for(i=1;i<=midorder;++i) {
 		/* number of the sample starting from 0 to (order-1) included */
@@ -110,16 +110,16 @@ filter* filter_lp_fir_alloc(double freq, int order) {
 
 		/* insert the coeff */
 #ifdef FILTER_USE_INT
-		f->xcoeffs[i] = c * (1 << FILTER_INT_FRACT);
+		f->xcoeffs[i] = (int) (c * (1 << FILTER_INT_FRACT));
 #else
-		f->xcoeffs[i] = c;
+		f->xcoeffs[i] = (int) c;
 #endif
 	}
 
 	/* adjust the gain to be exact 1.0 */
 	for(i=0;i<=midorder;++i) {
 #ifdef FILTER_USE_INT
-		f->xcoeffs[i] /= gain;
+		f->xcoeffs[i] /= (int) gain;
 #else
 		f->xcoeffs[i] = f->xcoeffs[i] * (double)(1 << FILTER_INT_FRAC) / gain;
 #endif
