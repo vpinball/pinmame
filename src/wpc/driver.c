@@ -89,7 +89,10 @@ DRIVERNV(blakpyra)      //BY35-     07/84 Black Pyramid
 DRIVERNV(fbclass )      //BY35-     02/85 Fireball Classic
 DRIVERNV(cybrnaut)      //BY35-     05/85 Cybernaut
                         //BY??      09/85 Eight Ball Champ
-//DRIVERNV(atlantis)    //6803-2006: 03/89 Atlantis
+DRIVERNV(atlantis)		//6803-2006: 03/89 Atlantis
+DRIVERNV(prtyanim)		//6803-????: ??/?? Party Animal
+DRIVERNV(hvymetal)		//6803-????: ??/?? Heavy Metal Meltdown
+DRIVERNV(motrdome)		//6803-????: ??/?? MotorDome
 
 // ---------------------
 // GOTTLIEB GAMES BELOW
