@@ -889,3 +889,9 @@ READ_HANDLER( pia_4_cb2_r ) { return pia[4].in_cb2; }
 READ_HANDLER( pia_5_cb2_r ) { return pia[5].in_cb2; }
 READ_HANDLER( pia_6_cb2_r ) { return pia[6].in_cb2; }
 READ_HANDLER( pia_7_cb2_r ) { return pia[7].in_cb2; }
+#ifdef PINMAME
+WRITE_HANDLER(pia_pulse_ca1) { pia_set_input_ca1(offset, data); pia_set_input_ca1(offset, !data); }
+WRITE_HANDLER(pia_pulse_ca2) { pia_set_input_ca2(offset, data); pia_set_input_ca2(offset, !data); }
+WRITE_HANDLER(pia_pulse_cb1) { pia_set_input_cb1(offset, data); pia_set_input_cb1(offset, !data); }
+WRITE_HANDLER(pia_pulse_cb2) { pia_set_input_cb2(offset, data); pia_set_input_cb2(offset, !data); }
+#endif /* PINMAME */
