@@ -522,11 +522,7 @@ static const char* WheelText[] =
 {" 0 Lite Xtra Ball", " 1 Cart Attack   ", " 2 Gofer Attack! ", " 3 Lite Q Jackpot",
  " 4 Warp          ", " 5 Pop-A-Gofer   ", " 6 Lite Outlanes ", " 7 Players Choice",
  " 8 Free Lock     ", " 9 Speed Golf    ", "10 Lite Ripoff   ", "11 Bad Shot      ",
- "12 Hole In One   ", "13 Lite Kickback ", "14 Big Spinners  ", "15 Gofer's Choice"};
-
-static const int realPos[] =
-{ 7, 7, 8, 8, 8, 8, 9, 9, 9, 9,10,10,10,10,11,11,11,11,12,12,12,12,13,13,13,13,14,14,14,14,15,15,
- 15,15, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8 };
+ "12 Hole In One   ", "13 Lite Kickback ", "14 Big Spinners  ", "15 Gofer's Choice", " 0 Lite Xtra Ball"};
 
 static const char* SlamText[] = {"Down","Up"};
 
@@ -536,7 +532,7 @@ static const char* SlamText[] = {"Down","Up"};
 
   core_textOutf(30, 30,BLACK,"Centre Ramp: %-10s", showramp(0));
   core_textOutf(30, 40,BLACK,"Right Ramp: %-10s", showramp(1));
-  core_textOutf(30, 50,BLACK,"Wheel:%s", WheelText[realPos[locals.wheelpos]]);
+  core_textOutf(30, 50,BLACK,"Wheel:%s", WheelText[(locals.wheelpos+1)/4]);
   core_textOutf(30, 60,BLACK,"Slam Ramp: %s  ", SlamText[locals.slampos]);
 }
   static void ngg_drawStatic(BMTYPE **line) {
@@ -618,10 +614,13 @@ static core_tGameData nggGameData = {
 };
 
 static WRITE_HANDLER(ngg_wpc_w) {
-  static int coilsCalled = 0;
-  if (offset == WPC_FLIPPERCOIL95) { // this has to be delayed 1 cycle to not interfere with the flashers!
-    if (coilsCalled > 1) wpc_w(WPC_FLIPPERCOIL95, data);
-    if (data) coilsCalled++; else coilsCalled = 0;
+  static int lastFlip, lastWheel = 0;
+// writes to the flippers have to be delayed 1 cycle to not interfere with the flashers.
+// also, an intermittent 0 byte write has to be avoided.
+  if (offset == WPC_FLIPPERCOIL95) {
+    if (lastFlip & data & 0x3f) wpc_w(WPC_FLIPPERCOIL95, data);
+    if (!lastFlip & !data) wpc_w(WPC_FLIPPERCOIL95, 0);
+    lastFlip = data;
   } else
     wpc_w(offset, data);
 
@@ -645,18 +644,19 @@ static WRITE_HANDLER(ngg_wpc_w) {
 //
 // Pos.    0    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15
   if (offset == WPC_SOLENOID1) {
-    if (~data & 0x20) {
+    if (lastWheel & ~data & 0x20) {
       locals.wheelpos++;
       if (locals.wheelpos > 63)
         locals.wheelpos = 0;
     }
-    if (~data & 0x10) {
+    if (lastWheel & ~data & 0x10) {
       locals.wheelpos--;
       if (locals.wheelpos < 0)
         locals.wheelpos = 63;
     }
-    core_setSw(swInnerWheel, locals.wheelpos > 0 && locals.wheelpos < 35);
-    core_setSw(swOuterWheel, locals.wheelpos % 4 > 1);
+    core_setSw(swInnerWheel, locals.wheelpos > 0);
+    core_setSw(swOuterWheel, locals.wheelpos % 4 == 0 || locals.wheelpos % 4 == 3);
+    lastWheel = data;
   }
 }
 
