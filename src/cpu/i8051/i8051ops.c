@@ -4,19 +4,14 @@
  with the exception of the PC
 ********************************************************************************************/
 
-//Todo: Don't forget to ensure that all operations done on a port address read the data latch, not the 
-//      input pins (and clarify what that means, ie, we don't issue a port_read/port_write?)
-//		Manual refers to it also as Read/Modify/Write operations, the following all perform this on a port
-//		address, and if so, send data to the latch, not the actual port pins..
-//		(anl, orl, xrl, jbc, cpl, inc, dec, djnz, mov px.y,c, clr px.y, setb px.y)
-
 //ACALL code addr							/* 1: aaa1 0001 */
 INLINE void acall(void)
 {
 	UINT8 op = ROP(PC-1);					//Grab the opcode for ACALL
 	UINT8 addr = ROP_ARG(PC++);				//Grab code address byte
 	PUSH_PC									//Save PC to the stack
-	PC = ((op<<3) & 0x700) | addr;			//Set new PC
+	//Thanks Gerrit for help with this! :)
+	PC = (PC & 0xf800) | ((op & 0xe0) << 3) | addr;
 }
 
 //ADD A, #data								/* 1: 0010 0100 */
@@ -98,7 +93,8 @@ INLINE void ajmp(void)
 {
 	UINT8 op = ROP(PC-1);					//Grab the opcode for AJMP
 	UINT8 addr = ROP_ARG(PC++);				//Grab code address byte
-	PC = ((op<<3) & 0x700) | addr;			//Set new PC
+	//Thanks Gerrit for help with this! :)
+	PC = (PC & 0xf800) | ((op & 0xe0) << 3) | addr;	
 }
 
 //ANL data addr, A							/* 1: 0101 0010 */
