@@ -193,7 +193,7 @@ static const struct pia6821_interface s4_pia[] = {{
 		  7,8,16 = (Status)5,6,(2&3)
 		  9-14 = (P2&4)1-6
 */
- /* i : A/B,CA1/B1,CA2/B2 */ s4_dips_r, 0, 0,0, s4_entersw_r, 0,
+ /* i : A/B,CA1/B1,CA2/B2 */ s4_dips_r, 0, PIA_UNUSED_VAL(0), PIA_UNUSED_VAL(0), s4_entersw_r, 0,
  /* o : A/B,CA2/B2        */ s4_pa_w, s4_alpha_w, 0, s4_specsol6_w,
  /* irq: A/B              */ 0, 0
 },{
@@ -222,7 +222,7 @@ PIA III:
 (out)	CA2:	Special Solenoid #2
 (out)	CB2:	Special Solenoid #1
 */
-  /* i : A/B,CA1/B1,CA2/B2 */ 0, 0, 0, 0, 0, 0,
+  /* i : A/B,CA1/B1,CA2/B2 */ 0, 0, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(1), 0, 0,
   /* o : A/B,CA2/B2        */ s4_lamprow_w, s4_lampcol_w, s4_specsol2_w,s4_specsol1_w,
   /* irq: A/B              */ 0, 0
 },{
@@ -286,7 +286,7 @@ static SWITCH_UPDATE(s4) {
   }
   /*-- Diagnostic buttons on CPU board --*/
   cpu_set_nmi_line(0, core_getSw(S4_SWCPUDIAG) ? ASSERT_LINE : CLEAR_LINE);
-  if (!(core_gameData->gen & GEN_S3C)) sndbrd_0_diag(core_getSw(S4_SWSOUNDDIAG));
+  sndbrd_0_diag(core_getSw(S4_SWSOUNDDIAG));
 
   /* Show Status of Auto/Manual Switch */
   core_textOutf(40, 30, BLACK, core_getSw(S4_SWUPDN) ? "Auto  " : "Manual");
@@ -306,9 +306,7 @@ static MACHINE_RESET(s4) {
   pia_reset();
 }
 
-static MACHINE_STOP(s4) {
-  if (!(core_gameData->gen & GEN_S3C)) sndbrd_0_exit();
-}
+static MACHINE_STOP(s4) { sndbrd_0_exit(); }
 
 static WRITE_HANDLER(s4_CMOS_w) { s4_CMOS[offset] = data | 0xf0; }
 
@@ -354,8 +352,6 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(s4S)
   MDRV_IMPORT_FROM(s4)
   MDRV_IMPORT_FROM(wmssnd_s67s)
-  MDRV_SOUND_CMD(sndbrd_0_data_w)
-  MDRV_SOUND_CMDHEADING("s4")
 MACHINE_DRIVER_END
 
 /*-----------------------------------------------
@@ -365,62 +361,3 @@ static NVRAM_HANDLER(s4) {
   core_nvram(file, read_or_write, s4_CMOS, 0x100, 0xff);
 }
 
-#if 0
-//Special System 3 Machine for games using Chimes instead of Solid State Sound Hardware
-const struct MachineDriver machine_driver_s3c = {
-  {{  CPU_M6800, 3580000/4, /* 3.58/4 = 900hz */
-      s4_readmem, s4_writemem, NULL, NULL,
-      s4_vblank, 1, s4_irq, S4_IRQFREQ
-  }},
-  S4_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50,
-  s4_init, s4_exit,
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_TYPE_RASTER, 0,
-  NULL, NULL, gen_refresh,
-  0,0,0,0, {{0}},
-  s4_nvram
-};
-
-const struct MachineDriver machine_driver_s4 = {
-  {{  CPU_M6800, 3580000/4, /* 3.58/4 = 900hz */
-      s4_readmem, s4_writemem, NULL, NULL,
-      s4_vblank, 1, s4_irq, S4_IRQFREQ
-  }},
-  S4_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50,
-  s4_init, s4_exit,
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_TYPE_RASTER, 0,
-  NULL, NULL, gen_refresh,
-  0,0,0,0, {{0}},
-  s4_nvram
-};
-
-const struct MachineDriver machine_driver_s4s= {
-  {{ CPU_M6800, 3580000/4, /* 3.58/4 = 900hz */
-     s4_readmem, s4_writemem, NULL, NULL,
-     s4_vblank, 1, s4_irq, S4_IRQFREQ
-   },S67S_SOUNDCPU
-  },
-  S4_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50,
-  s4_init, s4_exit,
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_TYPE_RASTER, 0,
-  NULL, NULL, gen_refresh,
-  0,0,0,0, { S67S_SOUND },
-  s4_nvram
-};
-static const core_tData s4Data = {
-  8+16, /* 16 Dips */
-  s4_updSw,
-  2 | DIAGLED_VERTICAL,
-  sndbrd_0_data_w, "s4",
-  core_swSeq2m, core_swSeq2m,core_m2swSeq,core_m2swSeq
-};
-
-#endif

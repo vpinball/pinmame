@@ -208,6 +208,7 @@ void pia_config(int which, int addressing, const struct pia6821_interface *intf)
 	// Ports A,CA1,CA2 default to 1
 	// Ports B,CB1,CB2 are three-state and undefined (set to 0)
 	pia[which].in_a = pia[which].in_ca1 = pia[which].in_ca2 = 0xff;
+//    pia[0].in_ca1 = 0;
 	if ((intf->in_a_func) && ((FPTR)(intf->in_a_func) <= 0x100))
 		{ pia[which].in_a = ((FPTR)(intf->in_a_func) - 1); pia[which].in_set |= PIA_IN_SET_A; }
 	if ((intf->in_b_func) && ((FPTR)(intf->in_b_func) <= 0x100))
@@ -635,8 +636,14 @@ void pia_set_input_ca1(int which, int data)
 
 	/* limit the data to 0 or 1 */
 	data = data ? 1 : 0;
-
-	/* the new state has caused a transition */
+    /* An unconnected CA1 defaults to 1. */
+    /* if this function is called it is obviously connected to something. */
+    /* and should have been initialized. */
+    /* To avoid problems with existing drivers we assume that the first call */
+    /* to this function is an initialisation and doesn't cause a transition */
+    if (!(p->in_set & PIA_IN_SET_CA1))
+	  logerror("PIA%d: Warning: CA1 not initialized before set_input_ca1\n",which);
+    else
 	if (p->in_ca1 ^ data)
 	{
 		/* handle the active transition */
@@ -676,7 +683,14 @@ void pia_set_input_ca2(int which, int data)
 
 	/* limit the data to 0 or 1 */
 	data = data ? 1 : 0;
-
+    /* An unconnected CA2 is undefined. */
+    /* if this function is called it is obviously connected to something. */
+    /* and should have been initialized. */
+    /* To avoid problems with existing drivers we assume that the first call */
+    /* to this function is an initialisation and doesn't cause a transition */
+    if (!(p->in_set & PIA_IN_SET_CA2))
+	  logerror("PIA%d: Warning: CA2 not initialized before set_input_ca2\n",which);
+    else
 	/* CA2 is in input mode */
 	if (C2_INPUT(p->ctl_a))
 	{
@@ -723,7 +737,14 @@ void pia_set_input_cb1(int which, int data)
 
 	/* limit the data to 0 or 1 */
 	data = data ? 1 : 0;
-
+    /* An unconnected CB1 defaults to 1. */
+    /* if this function is called it is obviously connected to something. */
+    /* and should have been initialized. */
+    /* To avoid problems with existing drivers we assume that the first call */
+    /* to this function is an initialisation and doesn't cause a transition */
+    if (!(p->in_set & PIA_IN_SET_CB1))
+	  logerror("PIA%d: Warning: CB1 not initialized before set_input_cb1\n",which);
+    else
 	/* the new state has caused a transition */
 	if (p->in_cb1 ^ data)
 	{
@@ -768,6 +789,14 @@ void pia_set_input_cb2(int which, int data)
 
 	/* limit the data to 0 or 1 */
 	data = data ? 1 : 0;
+    /* An unconnected CB2 is undefined. */
+    /* if this function is called it is obviously connected to something. */
+    /* and should have been initialized. */
+    /* To avoid problems with existing drivers we assume that the first call */
+    /* to this function is an initialisation and doesn't cause a transition */
+    if (!(p->in_set & PIA_IN_SET_CB2))
+	  logerror("PIA%d: Warning: CB2 not initialized before set_input_cb2\n",which);
+    else
 
 	/* CB2 is in input mode */
 	if (C2_INPUT(p->ctl_b))
