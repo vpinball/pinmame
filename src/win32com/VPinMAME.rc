@@ -346,11 +346,11 @@ BEGIN
         MENUITEM "&Global Settings...",         ID_CTRLCTXMENU_PATHES
         POPUP "&Display"
         BEGIN
-            MENUITEM "&Title",                      ID_CTRLCTXMENU_DISPLAY_TITLE
+            MENUITEM "&Title and Border",           ID_CTRLCTXMENU_DISPLAY_TITLE
 
-            MENUITEM "&Border",                     ID_CTRLCTXMENU_DISPLAY_BORDER
+            MENUITEM "&Border without title",       ID_CTRLCTXMENU_DISPLAY_BORDER
 
-            MENUITEM "DMD &Only",                   ID_CTRLCTXMENU_DISPLAY_DMDONLY
+            MENUITEM "Border&less",                 ID_CTRLCTXMENU_DISPLAY_DMDONLY
 
         END
         MENUITEM SEPARATOR
