@@ -2,6 +2,7 @@
 #include "sim.h"
 #include "core.h"
 #include "s11csoun.h"
+#include "mech.h"
 #include "s11.h"
 
 //220201: Moved Millionaire to own Sim File (SJE)
@@ -591,9 +592,38 @@ static core_tLCDLayout dispRvrbt[] = {
   { 0,18,17, 7, CORE_SEG87 },
   { 0, 4,28, 4, CORE_SEG7  },
   { 2, 0, 0,16, CORE_SEG16 },
-  { 4, 0,16,16, CORE_SEG8H }, {0}
+  { 4, 0,16,16, CORE_SEG8H },{0}
 };
-INITGAME(rvrbt,GEN_S11C,dispRvrbt,12,FLIP_SW(FLIP_L),3/*?*/)
+#if 1
+static char *wheel[] = {"Red","Green","Black","Red","Black","Red*","Black","Red",
+                        "Black","Green","Red","Black","Red","Black*","Red","Black"};
+#endif
+static void rvrbt_drawMech(unsigned char **line) {
+  core_textOutf(50, 0,BLACK,"wheel:%3d", mech_getPos(0));
+  core_textOutf(50,10,BLACK,"wheel:%-7s", wheel[mech_getPos(0)]);
+}
+static core_tGameData rvrbtGameData = {
+  GEN_S11C, dispRvrbt, {
+    FLIP_SW(FLIP_L),
+    0,0,0,
+    NULL, NULL,NULL,rvrbt_drawMech,
+    NULL,NULL
+  },
+  NULL,
+  {{0}},
+  {12}
+};
+static mech_tInitData rvrbt_wheelMech = {
+  14,15, MECH_LINEAR|MECH_CIRCLE|MECH_TWOSTEPSOL|MECH_FAST, 200,16,
+  {{S11_SWNO(59),15,15},{S11_SWNO(59),0,6}}
+};
+static void init_rvrbt(void) {
+  core_gameData = &rvrbtGameData;
+  mech_add(0,&rvrbt_wheelMech);
+}
+S11_INPUT_PORTS_START(rvrbt, 3) S11_INPUT_PORTS_END
+
+//INITGAME(rvrbt,GEN_S11C,dispRvrbt,12,FLIP_SW(FLIP_L),3/*?*/)
 S11_ROMSTART48(rvrbt,l3,"gamb_u26.l3", 0xa65f6004,
                         "gamb_u27.l3", 0x9be0f613)
 S11CS_SOUNDROM000(      "gamb_u4.l2",  0xc0cfa9be,
