@@ -7,8 +7,8 @@ Version 1.51 (xxxx, 200x)
     - Controller.Game: An abbreviation for Controller.Game(Controller.GameName). It returns the game object for the current game. It's now a bit
       easier for a script to make game specific settings. You don't have to use the "GameName":
       For example Controller.Game.Settings.Value("dmd_pos_x") = 20.
-    - Controller.MechSamples (bool): Disables the samples for mechanical devices (mostly flippers). The samples used by sound boards
-      will still be played (if not disabled by dip switches for the game). The setting is not sticky and will be reset to "true" upon a new 
+    - Controller.MechSamples (bool): Enables the samples for mechanical devices (mostly flippers). The samples used by sound boards
+      will still be played (if not disabled by dip switches for the game). The setting is not sticky and will be reset to "false" upon a new 
       'GameName' is set. An assignment has only an effect if done before "Controller.Run".
 - New methods for the controller object:
     - Controller.GetWindowRect(hWnd): Returns an array of four integer values (0-3) which holds the coordinates (left, top, right, bottom)
@@ -26,6 +26,8 @@ Version 1.51 (xxxx, 200x)
 - Changed the warning message on the "Game Info" dialog: Upon start of a game the sound processor(s) will be disabled if a rom is missing; the new
   warning message will reflect this.
 - Switching from full screen mode back to window mode (Alt+Enter) will restore the desktop background.
+- Initializing of the VPM display enhanced: It will always becomes visible at the right position, will always be "topmost"
+- If a valid handle to the "parent" window is added to Controller.Run this window will be "SetToForeground" upon start of VPM
 
 
 Version 1.50 (November 1, 2004)
