@@ -232,7 +232,7 @@ enum
 	CPU_Z8000,
 #endif
 #if defined(PINMAME) && (HAS_TMS7000)
-        CPU_TMS7000,
+        //CPU_TMS7000,
 #endif
 #if (HAS_TMS32010)
 	CPU_TMS32010,
