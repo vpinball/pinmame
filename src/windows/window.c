@@ -1293,6 +1293,14 @@ void win_toggle_full_screen(void)
 	// adjust the window style and z order
 	if (win_window_mode)
 	{
+#ifdef VPINMAME
+		// force the background to be redrawn
+		InvalidateRect(0, NULL, FALSE);
+		UpdateWindow(0);
+
+		// let the VPM window set his right window style (title, etc.)
+		PostMessage(win_video_window, RegisterWindowMessage("VPinMAMEAdjustWindowMsg"), 0, 0);
+#else
 		// adjust the style
 		SetWindowLong(win_video_window, GWL_STYLE, WINDOW_STYLE);
 		SetWindowLong(win_video_window, GWL_EXSTYLE, WINDOW_STYLE_EX);
@@ -1312,6 +1320,7 @@ void win_toggle_full_screen(void)
 			set_aligned_window_pos(win_video_window, HWND_TOP, 0, 0, win_visible_width + 2, win_visible_height + 2, SWP_NOZORDER);
 			win_toggle_maximize();
 		}
+#endif
 	}
 	else
 	{
