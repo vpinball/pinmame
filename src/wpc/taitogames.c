@@ -3,12 +3,12 @@
 #include "sim.h"
 #include "taito.h"
 
-#define DISP_SEG_6(row,col,type) {4*row,16*col,row*12+col*6,6,type}
-
 static const core_tLCDLayout dispTaito[] = {
-  DISP_SEG_6(0,0, CORE_SEG7), DISP_SEG_6(0,1, CORE_SEG7),
-  DISP_SEG_6(1,0, CORE_SEG7), DISP_SEG_6(1,1, CORE_SEG7),
-  DISP_SEG_BALLS(26,27,CORE_SEG7), DISP_SEG_CREDIT(24,25,CORE_SEG7),
+  { 0, 0,  0, 3, CORE_SEG87 }, { 0, 6,  3, 3, CORE_SEG87 },
+  { 3, 0,  6, 3, CORE_SEG87 }, { 3, 6,  9, 3, CORE_SEG87 },
+  { 6, 0, 12, 3, CORE_SEG87 }, { 6, 6, 15, 3, CORE_SEG87 },
+  { 9, 0, 18, 3, CORE_SEG87 }, { 9, 6, 21, 3, CORE_SEG87 },
+  {13, 0, 26, 2, CORE_SEG87 }, {13, 8, 24, 2, CORE_SEG87 },
   {0}
 };
 
@@ -17,6 +17,19 @@ TAITO_INPUT_PORTS_START(taito,1)        TAITO_INPUT_PORTS_END
 #define INITGAME(name) \
 static core_tGameData name##GameData = {0,dispTaito,{FLIP_SW(FLIP_L),0,0,0,0,0}}; \
 static void init_##name(void) { core_gameData = &name##GameData; }
+
+/*--------------------------------
+/ Meteor
+/-------------------------------*/
+INITGAME(meteort)
+// The third rom seems badly dumped, so I marked it as NO GOOD DUMP KNOWN.
+TAITO_ROMSTART4444(meteort,"meteor1.bin",0x301a9f94,
+                           "meteor2.bin",0x6d136853,
+                           "meteor3.bin",0x0,
+                           "meteor4.bin",0xc818e889)
+TAITO_ROMEND
+#define input_ports_meteort input_ports_taito
+CORE_GAMEDEFNV(meteort,"Meteor (Taito)",198?,"Taito",taito,GAME_NOT_WORKING)
 
 /*--------------------------------
 / Zarza
@@ -28,10 +41,10 @@ TAITO_ROMSTART4444(zarza,"zarza1.bin",0x81a35f85,
                          "zarza4.bin",0xddfcdd20)
 TAITO_ROMEND
 #define input_ports_zarza input_ports_taito
-CORE_GAMEDEFNV(zarza,"Zarza",1985,"Taito",taito,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(zarza,"Zarza",198?,"Taito",taito,GAME_NOT_WORKING)
 
 /*--------------------------------
-/ Gemini
+/ Gemini 2000
 /-------------------------------*/
 INITGAME(gemini)
 TAITO_ROMSTART4444(gemini,"gemini1.bin",0x4f952799,
@@ -40,7 +53,7 @@ TAITO_ROMSTART4444(gemini,"gemini1.bin",0x4f952799,
                           "gemini4.bin",0xcac64ea6)
 TAITO_ROMEND
 #define input_ports_gemini input_ports_taito
-CORE_GAMEDEFNV(gemini,"Gemini",1985,"Taito",taito,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(gemini,"Gemini 2000",198?,"Taito",taito,GAME_NOT_WORKING)
 
 /*--------------------------------
 / Cosmic
@@ -52,7 +65,7 @@ TAITO_ROMSTART4444(cosmic,"cosmic1.bin",0x1864f295,
                           "cosmic4.bin",0x09ed5ecd)
 TAITO_ROMEND
 #define input_ports_cosmic input_ports_taito
-CORE_GAMEDEFNV(cosmic,"Cosmic",1985,"Taito",taito,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(cosmic,"Cosmic",198?,"Taito",taito,GAME_NOT_WORKING)
 
 /*--------------------------------
 / Hawkman
@@ -64,10 +77,10 @@ TAITO_ROMSTART4444(hawkman,"hawk1.bin",0xcf991a68,
                            "hawk4.bin",0xe6df08a5)
 TAITO_ROMEND
 #define input_ports_hawkman input_ports_taito
-CORE_GAMEDEFNV(hawkman,"Hawkman",1985,"Taito",taito,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(hawkman,"Hawkman",198?,"Taito",taito,GAME_NOT_WORKING)
 
 /*--------------------------------
-/ Polar
+/ Polar Explorer
 /-------------------------------*/
 INITGAME(polar)
 TAITO_ROMSTART4444(polar,"polar1.bin",0xf92944b6,
@@ -76,7 +89,7 @@ TAITO_ROMSTART4444(polar,"polar1.bin",0xf92944b6,
                          "polar4.bin",0x1c02f0c9)
 TAITO_ROMEND
 #define input_ports_polar input_ports_taito
-CORE_GAMEDEFNV(polar,"Polar",1985,"Taito",taito,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(polar,"Polar Explorer",198?,"Taito",taito,GAME_NOT_WORKING)
 
 /*--------------------------------
 / Rally
@@ -88,10 +101,10 @@ TAITO_ROMSTART4444(rally,"rally1.bin",0xd0d6b32e,
                          "rally4.bin",0x7fb471ee)
 TAITO_ROMEND
 #define input_ports_rally input_ports_taito
-CORE_GAMEDEFNV(rally,"Rally",1985,"Taito",taito,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(rally,"Rally",1983,"Taito",taito,GAME_NOT_WORKING)
 
 /*--------------------------------
-/ Shark (Taito)
+/ Shark
 /-------------------------------*/
 INITGAME(sharkt)
 TAITO_ROMSTART4444(sharkt,"shark1.bin",0xefe19b88,
@@ -100,10 +113,10 @@ TAITO_ROMSTART4444(sharkt,"shark1.bin",0xefe19b88,
                           "shark4.bin",0x8ca33f37)
 TAITO_ROMEND
 #define input_ports_sharkt input_ports_taito
-CORE_GAMEDEFNV(sharkt,"Shark (Taito)",1985,"Taito",taito,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(sharkt,"Shark (Taito)",1982,"Taito",taito,GAME_NOT_WORKING)
 
 /*--------------------------------
-/ Snake
+/ Snake Machine
 /-------------------------------*/
 INITGAME(snake)
 TAITO_ROMSTART4444(snake,"snake1.bin",0x7bb79585,
@@ -112,7 +125,7 @@ TAITO_ROMSTART4444(snake,"snake1.bin",0x7bb79585,
                          "snake4.bin",0xed231064)
 TAITO_ROMEND
 #define input_ports_snake input_ports_taito
-CORE_GAMEDEFNV(snake,"Snake",1985,"Taito",taito,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(snake,"Snake Machine",198?,"Taito",taito,GAME_NOT_WORKING)
 
 /*--------------------------------
 / Titan
@@ -124,7 +137,7 @@ TAITO_ROMSTART4444(titan,"titan1.bin",0x625f58fb,
                          "titan4.bin",0xfb3d0282)
 TAITO_ROMEND
 #define input_ports_titan input_ports_taito
-CORE_GAMEDEFNV(titan,"Titan",1985,"Taito",taito,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(titan,"Titan",198?,"Taito",taito,GAME_NOT_WORKING)
 
 /*--------------------------------
 / Vortex
@@ -136,7 +149,7 @@ TAITO_ROMSTART4444(vortex,"vortex1.bin",0xabe193e7,
                           "vortex4.bin",0x39ef8112)
 TAITO_ROMEND
 #define input_ports_vortex input_ports_taito
-CORE_GAMEDEFNV(vortex,"Vortex",1985,"Taito",taito,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(vortex,"Vortex",198?,"Taito",taito,GAME_NOT_WORKING)
 
 /*--------------------------------
 / Speed Test
@@ -148,7 +161,7 @@ TAITO_ROMSTART4444(stest,"stest1.bin",0xe13ed60c,
                          "stest4.bin",0x1cdd4e08)
 TAITO_ROMEND
 #define input_ports_stest input_ports_taito
-CORE_GAMEDEFNV(stest,"Speed Test",1985,"Taito",taito,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(stest,"Speed Test",198?,"Taito",taito,GAME_NOT_WORKING)
 
 /*--------------------------------
 / Space Shuttle
@@ -160,5 +173,5 @@ TAITO_ROMSTART444(sshuttle,"sshutle1.bin",0xab67ed50,
                            "sshutle3.bin",0xb1ddb78b)
 TAITO_ROMEND
 #define input_ports_sshuttle input_ports_taito
-CORE_GAMEDEFNV(sshuttle,"Space Suttle",1985,"Taito",taito,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(sshuttle,"Space Shuttle (Taito)",1985,"Taito",taito,GAME_NOT_WORKING)
 
