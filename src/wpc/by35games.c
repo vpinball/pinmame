@@ -538,7 +538,25 @@ BYVP_ROMSTARTx00(babypac,	"891-u2.732", 0x7f7242d1,
 							"891-u12.764", 0x58cfe542,
 							"891-u29.764", 0x0b57fd5d)
 BYVP_ROMEND
-CORE_GAMEDEFNVR90(babypac,"Baby Pacman (Video/Pinball Combo)",1982,"Bally",byVP_mVP1,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(babypac,"Baby Pacman (Video/Pinball Combo)",1982,"Bally",byVP_mVP1,GAME_NOT_WORKING)
+//CORE_GAMEDEFNVR90(babypac,"Baby Pacman (Video/Pinball Combo)",1982,"Bally",byVP_mVP1,GAME_NOT_WORKING)
+
+/*---------------------------------------------
+/ Granny and the Gators (Video/Pinball Combo)
+/--------------------------------------------*/
+INITGAMEVP(granny,0,by_NoOutput,FLIP_SW(FLIP_L),0)
+BYVP_ROMSTART100(granny,	"cpu_u2.532", 0xd45bb956,
+							"cpu_u6.532", 0x306aa673,
+							"vid_u4.764", 0x3a3d4c6b,
+							"vid_u5.764", 0x78bcb0fb,
+							"vid_u6.764", 0x8d8220a6,
+							"vid_u7.764", 0xaa71cf29,
+							"vid_u8.764", 0xa442bc01,
+							"vid_u9.764", 0x6b67a1f7,							
+							"cs_u3.764", 0x0a39a51d)
+BYVP_ROMEND
+CORE_GAMEDEFNV(granny,"Granny and the Gators (Video/Pinball Combo)",1984,"Bally",byVP_mVP2,GAME_NOT_WORKING)
+//CORE_GAMEDEFNVR90(granny,"Granny and the Gators (Video/Pinball Combo)",1984,"Bally",byVP_mVP2,GAME_NOT_WORKING)
 
 
 /*--------------------------------

@@ -5,6 +5,12 @@
 
    For simplicity sake, I just copied all code from by35 
    -but maybe someday we should merge common routines for easier maintenance
+
+  6809 vectors:
+  RES: FFFE-F
+  NMI: FFFC-D
+  IRQ: FFF8-9
+  FIRQ: FFF6-7
 */
 #include <stdarg.h>
 #include <time.h>
@@ -15,6 +21,13 @@
 #include "vidhrdw/tms9928a.h"
 #include "core.h"
 #include "byvidpin.h"
+
+
+#if 1
+	#define mlogerror logerror
+#else
+	#define mlogerror printf
+#endif
 
 #define BYVP_VCPUNO 1		/* Video CPU # */
 #define BYVP_SCPUNO 2		/* Sound CPU # */
@@ -39,6 +52,8 @@ static struct {
   int vidiot_status;		//Status of Vidiot
   int vidiot_u1_latch;		//U1 Latch -> Data going to Main CPU from Vidiot
   int vidiot_u2_latch;		//U2 Latch -> Data coming from Main CPU
+  int u7_portb;				//U7 Port B data
+  int u7_portcb2;			//U7 Port CB2
   void *zctimer;
 } locals;
 
@@ -118,10 +133,10 @@ pia_set_input_ca2(2, locals.enable_input);
 //(in)  PB0-1: Vidiot Status Bits 0,1 (When Status Data Enabled Flag is Set)
 //(in)  PB0-7: Vidiot Output Data (When Enable Output Flag is Set)
 static READ_HANDLER(pia0b_r) {
-  if (locals.status_enable) {
-	    logerror("reading vidiot status %x\n",locals.vidiot_status&0x03);
-		return locals.vidiot_status&0x03;
-  }
+//  if (locals.status_enable) {
+//	    logerror("%x: reading vidiot status %x\n",cpu_getpreviouspc(),locals.vidiot_status&0x03);
+//		return locals.vidiot_status&0x03;
+//  }
   if (locals.enable_output) {
 	    logerror("reading vidiot data %x\n",locals.vidiot_u1_latch);
 		return locals.vidiot_u1_latch;
@@ -232,19 +247,22 @@ static void byVP_updSw(int *inports) {
 
 /* PIA2:B Read */
 // Video Switch Returns (Bits 5-7 not connected)
-static READ_HANDLER(pia2b_r) { return 0; }
+static READ_HANDLER(pia2b_r) { 
+	mlogerror("VID: Reading 2b r\n");
+	return 0; 
+}
 
 /* PIA2:CA1 Read */
 // Read Enable Data Output to Main CPU
 static READ_HANDLER(pia2ca1_r) { 
-	logerror("VID: Reading output enable\n",locals.enable_output);
+	logerror("%x:VID: Reading output enable\n",cpu_getpreviouspc(),locals.enable_output);
 	return locals.enable_output; 
 }
 
 /* PIA2:CA2 Read */
 // Read Main CPU Latch Data Input
 static READ_HANDLER(pia2ca2_r) { 
-	logerror("VID: Reading input enable\n",locals.enable_input);
+	logerror("%x:VID: Reading input enable\n",cpu_getpreviouspc(),locals.enable_input);
 	return locals.enable_input; 
 }
 
@@ -253,22 +271,30 @@ static READ_HANDLER(pia2ca2_r) {
 //PA4-7: Video Switch Strobes (Only Bit 7 is used however)
 static WRITE_HANDLER(pia2a_w) {
 	locals.vidiot_status = data & 0x03;
-	logerror("VID: Setting status to %x\n",data&0x03);
+	logerror("%x:VID: Setting status to %x\n",cpu_getpreviouspc(),data&0x03);
 }
 
 /* PIA2:B Write*/
 //PB0-3: Output to 6803 CPU
 //PB4-7: N/A
-static WRITE_HANDLER(pia2b_w) { }
+static WRITE_HANDLER(pia2b_w) {
+locals.u7_portb = data&0x0f;
+}
+
 /* PIA2:CB2 Write */
 // 6803 Data Strobe & LED
-static WRITE_HANDLER(pia2cb2_w) { locals.diagnosticLedV = data; }
+static WRITE_HANDLER(pia2cb2_w) { 
+	locals.diagnosticLedV = data;
+	locals.u7_portcb2 = data;
+}
 
 //VIDEO PIA IRQ - TRIGGER VIDEO CPU (6809) FIRQ
 static void pia2Irq(int state) {
   logerror("VID: PIA IRQ - CAUSE FIRQ\n");
   cpu_set_irq_line(BYVP_VCPUNO, M6809_FIRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
+  //cpu_set_irq_line(BYVP_VCPUNO, M6809_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
+
 
 /*PIA 0*/
 /*PIA U10:
@@ -419,18 +445,48 @@ static int byVP_vvblank(void) {
 	//Set End of Frame Bit
 	//locals.end_of_frame = 1;
 	//return 0;
+	if(keyboard_pressed_memory_repeat(KEYCODE_A,2))
+	{
+	static int ct=0;
+	locals.vidiot_u2_latch = ct++;
+	logerror("sending %x\n",ct);
+	pia_set_input_ca2(2, 1);
+	}
+
 	return by_interrupt();
 }
 
-static READ_HANDLER(sound_port1_r) { logerror("sound port 1 read\n"); return 0; }
-static READ_HANDLER(sound_port2_r) { logerror("sound port 2 read\n"); return 0; }
-static WRITE_HANDLER(sound_port1_w) { logerror("sound port 1 write = %x\n",data);}
-static WRITE_HANDLER(sound_port2_w) { logerror("sound port 2 write = %x\n",data);}
+//Should never be called!
+static READ_HANDLER(sound_port1_r) { 
+	//logerror("sound port 1 read\n"); 
+	return 0; 
+}
 
-#define mlogerror logerror
+//P20(Bit 0) = U7(CB2)
+//P21-24 = Video U7(PB0-PB3)
+static READ_HANDLER(sound_port2_r) { 
+	int data = locals.u7_portcb2;
+	data |= (locals.u7_portb<<1);
+	logerror("sound port 2 read: %x\n",data);
+	return data; 
+}
+
+//The data might need to be swapped.. P10(Bit 0)->Pin 8 of DAC
+static WRITE_HANDLER(sound_port1_w) { 
+	//DAC_0_data_w(offset,core_revbyte(data));
+	DAC_0_data_w(offset,data);
+	logerror("DAC: sound port 1 write = %x\n",data);
+}
+//P20(Bit 0) = LED & Data Strobe
+//P21-24 = Video U7(PB0-PB3)
+static WRITE_HANDLER(sound_port2_w) {
+	locals.diagnosticLedV = (data>>0)&1;
+	pia_set_input_b(0,data&0x1e);	//Keep only bits 1-4
+	logerror("sound port 2 write = %x\n",data);
+}
 
 static READ_HANDLER(vdp_r) {
-	//mlogerror("READ=%x\n",locals.end_of_frame);
+	mlogerror("vdp_r\n");
 	if(offset == 0)
 		return TMS9928A_vram_r(offset);
 	else
@@ -438,7 +494,7 @@ static READ_HANDLER(vdp_r) {
 }
 
 static WRITE_HANDLER(vdp_w) {
-	//mlogerror("%x:vdp_w=%x\n",offset,data);
+	mlogerror("%x:vdp_w=%x\n",offset,data);
 	if(offset==0)
 		TMS9928A_vram_w(offset,data);
 	else
@@ -469,8 +525,13 @@ static void by_vdp_interrupt (int state)
 {
 	static int last_state = 0;
 
+	mlogerror("vdp_int\n");
+
     /* only if it goes up */
-	if (state && !last_state) cpu_set_irq_line(BYVP_VCPUNO, M6809_IRQ_LINE, PULSE_LINE);
+	if (state && !last_state) {
+		mlogerror("6809IRQ\n");
+		cpu_set_irq_line(BYVP_VCPUNO, M6809_IRQ_LINE, PULSE_LINE);
+	}
 	last_state = state;
 }
 
@@ -497,6 +558,22 @@ static void by_vh_refresh (struct osd_bitmap *bmp, int full_refresh)
   by_drawStatus(bmp, full_refresh);
 }
 
+static READ_HANDLER(misc_r)
+{
+	int data = locals.vidiot_u2_latch;
+	logerror("MISC_R: offset=%x, data=%x\n",offset,data);
+	return data;
+}
+static WRITE_HANDLER(misc_w)
+{
+	locals.vidiot_u1_latch = data;
+	logerror("MISC_W: offset=%x, data=%x\n",offset,data);
+}
+
+
+static struct DACinterface by_dacInt =
+  { 1, { 50 }};
+
 /*-----------------------------------
 /  Memory map for MAIN CPU board
 /------------------------------------*/
@@ -505,7 +582,7 @@ static MEMORY_READ_START(byVP_readmem)
   { 0x0200, 0x02ff, MRA_RAM }, /* CMOS Battery Backed*/
   { 0x0088, 0x008b, pia_0_r }, /* U10 PIA: Switchs + Display + Lamps*/
   { 0x0090, 0x0093, pia_1_r }, /* U11 PIA: Solenoids/Sounds + Display Strobe */
-//{0x0300,0x03ff, vid_r},
+//{0x0300,0x03ff, vid_r},		// What does this do?
   { 0x1000, 0x1fff, MRA_ROM },
   { 0x5000, 0x5fff, MRA_ROM },
   { 0xf000, 0xffff, MRA_ROM },
@@ -516,7 +593,7 @@ static MEMORY_WRITE_START(byVP_writemem)
   { 0x0200, 0x02ff, byVP_CMOS_w, &byVP_CMOS }, /* CMOS Battery Backed*/
   { 0x0088, 0x008b, pia_0_w }, /* U10 PIA: Switchs + Display + Lamps*/
   { 0x0090, 0x0093, pia_1_w }, /* U11 PIA: Solenoids/Sounds + Display Strobe */
-//{0x0300,0x03ff, vid_w},
+//{0x0300,0x03ff, vid_w},		// What does this do?
   { 0x1000, 0x1fff, MWA_ROM },
   { 0x5000, 0x5fff, MWA_ROM },
   { 0xf000, 0xffff, MWA_ROM },
@@ -526,32 +603,74 @@ MEMORY_END
 /  Memory map for VIDEO CPU (Located on Vidiot Board)
 /----------------------------------------------------*/
 static MEMORY_READ_START(byVP_video_readmem)
-	{ 0x4000, 0x4001, vdp_r },   /* U16 VDP*/
-	{ 0x6000, 0x63ff, MRA_RAM }, /* U13&U14 1024x4 Byte Ram*/
+	{ 0x0000, 0x1fff, misc_r },  
 	{ 0x2000, 0x2003, pia_2_r }, /* U7 PIA */
+	{ 0x4000, 0x4001, vdp_r },   /* U16 VDP*/
+	{ 0x6000, 0x6400, MRA_RAM }, /* U13&U14 1024x4 Byte Ram*/
 	{ 0x8000, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(byVP_video_writemem)
-	{ 0x4000, 0x4001, vdp_w },   /* U16 VDP*/
-	{ 0x6000, 0x63ff, MWA_RAM }, /* U13&U14 1024x4 Byte Ram*/
+	{ 0x0000, 0x1fff, misc_w },  
 	{ 0x2000, 0x2003, pia_2_w }, /* U7 PIA */
+	{ 0x4000, 0x4001, vdp_w },   /* U16 VDP*/
+	{ 0x6000, 0x6400, MWA_RAM }, /* U13&U14 1024x4 Byte Ram*/
 	{ 0x8000, 0xffff, MWA_ROM },
+MEMORY_END
+
+/*----------------------------------------------------------
+/  Memory map for VIDEO CPU (Located on Vidiot Board) - G&G
+/---------------------------------------------------------*/
+static MEMORY_READ_START(byVP2_video_readmem)
+//	{ 0x0000, 0x1fff, misc_r },  
+	{ 0x0002, 0x0003, vdp_r },   /* U16 VDP*/
+	{ 0x0008, 0x000b, pia_2_r }, /* U7 PIA */
+	{ 0x2400, 0x2800, MRA_RAM }, /* U13&U14 1024x4 Byte Ram*/
+	{ 0x4000, 0xffff, MRA_ROM },
+MEMORY_END
+
+static MEMORY_WRITE_START(byVP2_video_writemem)
+//	{ 0x0000, 0x1fff, misc_w },  
+	{ 0x0002, 0x0003, vdp_w },   /* U16 VDP*/
+	{ 0x0008, 0x000b, pia_2_w }, /* U7 PIA */
+	{ 0x2400, 0x2800, MWA_RAM }, /* U13&U14 1024x4 Byte Ram*/
+	{ 0x4000, 0xffff, MWA_ROM },
 MEMORY_END
 
 /*-----------------------------------------------------
 /  Memory map for SOUND CPU (Located on Vidiot Board)
 /-----------------------------------------------------*/
+/*
+NMI: = Sound Test Switch
+IRQ: = NA
+Port 1:
+(out)P10 = DAC 8
+(out)P11 = DAC 7
+(out)P12 = DAC 6
+(out)P13 = DAC 5
+(out)P14 = DAC 4
+(out)P15 = DAC 3
+(out)P16 = DAC 2
+(out)P17 = DAC 1
+Port 2:
+(out)P20 = U7(CB2)->LED & DATA STROBE
+(in)P21 = U7(PB0)->DATA Nibble
+(in)P22 = U7(PB1)->DATA Nibble
+(in)P23 = U7(PB2)->DATA Nibble
+(in)P24 = U7(PB3)->DATA Nibble
+*/
 static MEMORY_READ_START(byVP_sound_readmem)
-//{ 0x0000, 0x001f, m6803_internal_registers_r },
+	{ 0x0000, 0x001f, m6803_internal_registers_r },
+	{ 0x0080, 0x00ff, MRA_RAM },	/*Internal 128K RAM*/
 	{ 0x0000, 0xdfff, MRA_NOP },
-	{ 0xe000, 0xffff, MRA_ROM },  /* U29 ROM */
+	{ 0xe000, 0xffff, MRA_ROM },	/* U29 ROM */
 MEMORY_END
 
 static MEMORY_WRITE_START(byVP_sound_writemem)
-//{ 0x0000, 0x001f, m6803_internal_registers_w },
+	{ 0x0000, 0x001f, m6803_internal_registers_w },
+	{ 0x0080, 0x00ff, MWA_RAM },	/*Internal 128K RAM*/
 	{ 0x0000, 0xdfff, MWA_NOP },
-	{ 0xe000, 0xffff, MWA_ROM },  /* U29 ROM */
+	{ 0xe000, 0xffff, MWA_ROM },	/* U29 ROM */
 MEMORY_END
 
 static PORT_READ_START( byVP_sound_readport )
@@ -583,6 +702,7 @@ VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, \
 /*--------------------*/
 /* Machine Definition */
 /*--------------------*/
+/*BABYPAC HARDWARE*/
 struct MachineDriver machine_driver_byVP = {
   {{  CPU_M6800, 3580000/4, /* 3.58/4 = 900Hz */
       byVP_readmem, byVP_writemem, NULL, NULL,
@@ -602,9 +722,34 @@ struct MachineDriver machine_driver_byVP = {
   GRAPHICSETUP
   0,
   by_vh_start,by_vh_stop, by_vh_refresh,
-  0,0,0,0, {{0}},
+  0,0,0,0, {{SOUND_DAC,&by_dacInt}},
   byVP_nvram
 };
+
+/*GRANNY & THE GATORS HARDWARE*/
+struct MachineDriver machine_driver_byVP2 = {
+  {{  CPU_M6800, 3580000/4, /* 3.58/4 = 900Hz */
+      byVP_readmem, byVP_writemem, NULL, NULL,
+      byVP_vblank, 1, byVP_irq, BYVP_IRQFREQ
+   },
+  {  CPU_M6809, 4000000/2, /* 2MHz */
+      byVP2_video_readmem, byVP2_video_writemem, NULL, NULL,
+      byVP_vvblank, 1
+  },
+  {  CPU_M6803 | CPU_AUDIO_CPU, 3580000/4, /* 3.58/4 = 900Hz */
+      byVP_sound_readmem, byVP_sound_writemem, byVP_sound_readport, byVP_sound_writeport,
+      NULL, 1, NULL, 1
+  }
+  },
+  BYVP_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  50, byVP_init, CORE_EXITFUNC(byVP_exit)
+  GRAPHICSETUP
+  0,
+  by_vh_start,by_vh_stop, by_vh_refresh,
+  0,0,0,0, {{SOUND_DAC,&by_dacInt}},
+  byVP_nvram
+};
+
 
 /*-----------------------------------------------
 / Load/Save static ram
@@ -619,7 +764,7 @@ static void byVP_nvram(void *file, int write) {
 /---------------------------------------------*/
 void by_drawStatus(struct mame_bitmap *bitmap, int fullRefresh) {
   BMTYPE **lines = (BMTYPE **)bitmap->line;
-  int firstRow = 110;
+  int firstRow = 0;
   int ii, jj, bits;
   BMTYPE dotColor[2];
 
