@@ -1,8 +1,8 @@
 **************************************************************************************
 		                       PinMAME
 		      (Pinball Multiple Arcade Machine Emulator)
-		                     Version 1.50
-		                  (November 1, 2004)
+		                     Version 1.51
+		                  (January 11, 2005)
 		                http://www.pinmame.com
 **************************************************************************************
 
@@ -21,7 +21,8 @@ What is it?
   Data East/Sega 192x64 DMD, Sega/Stern Whitestar System, Stern MPU-100, Stern MPU-200,
   Bally MPU-17 & MPU-35, Bally Video/Pinball, Bally 6803,
   Gottlieb System 80, 80a, 80b, System 3, Hankin, Gameplan MPU-1 & MPU-2, Atari,
-  Zaccaria, Taito of Brazil, Midway, Capcom, Alvin G. and Co., Technoplay, Mr.Game, Spinball.
+  Zaccaria, Taito of Brazil, Midway, Capcom, Alvin G. and Co., Technoplay, Mr.Game, Spinball,
+  (Nuova Bell), Inder, Juegos Populares.
 
   *Note: Emulation is not 100% working on all hardware.
 
@@ -70,7 +71,7 @@ Games supported
   Gottlieb System 3: All games from Lights,Camera,Action (1989) to Barb Wire (1996)
   Hankin Pinball: All games from FJ Holden (1978) to Orbit 1 (1981)
   Game Plan Pinball: All games from Rio (1978) to Cyclopes (1985)
-  Atari Pinball: All games from Atarians (1976) to Hercules (1979)
+  Atari Pinball: All games from Atarians (1976) to Road Runner (1979)
   Zaccaria Pinball: All games from Winter Sports (1978) to Spooky (1987) that are available.
   Taito Pinball: All that's available... games between 1980 and 1985.
   Midway Pinball: Rotation VIII (1978).
@@ -80,7 +81,9 @@ Games supported
   Mr. Game: Dakar and Motor Show (1988)
   Spinball: Jolly Park (1996)
   Nuova Bell: F1 Grand Prix (1987) - Not working yet
-  Prototype games: Dave Nutting's Flicker (Sep 1974), and Bally's Bow & Arrow (Jan 1976)
+  Inder: Brave Team (1985), Canasta 86 (1986), Bushido (1993 - not working yet)
+  Juegos Populares: America 1492 (198?)
+  Prototype games: Dave Nutting's Flicker (Sep 1974), Bally's Bow & Arrow (Jan 1976), Williams Rat Race (Jan 1983)
 
   Supported means that the game loads and the display starts up with lamps etc. All games
   enter attract mode and you can use the Coin Door switches to enter the menus.
