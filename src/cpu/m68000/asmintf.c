@@ -44,7 +44,7 @@ void m68k_illegal_opcode(void)
 
 unsigned int m68k_disassemble(char* str_buff, unsigned int pc, unsigned int cpu_type);
 
-#ifdef WIN32
+#ifdef _WIN32
 #define CONVENTION __cdecl
 #else
 #define CONVENTION
@@ -421,11 +421,16 @@ static const struct m68k_memory_interface interface_a32_d32 =
 void m68000_init(void)
 {
 	a68k_state_register("m68000");
+	M68000_regs.reset_callback = 0;
 }
 
 static void m68k16_reset_common(void)
 {
+	int (*rc)(void);
+
+	rc = M68000_regs.reset_callback;
 	memset(&M68000_regs,0,sizeof(M68000_regs));
+	M68000_regs.reset_callback = rc;
 
     M68000_regs.a[7] = M68000_regs.isp = (( READOP(0) << 16 ) | READOP(2));
     M68000_regs.pc   = (( READOP(4) << 16 ) | READOP(6)) & 0xffffff;
@@ -441,11 +446,11 @@ static void m68k16_reset_common(void)
 void m68000_reset(void *param)
 {
 	struct m68k_encryption_interface *interface = param;
-	
+
     // Default Memory Routines
 	if (a68k_memory_intf.read8 != cpu_readmem24bew)
 		a68k_memory_intf = interface_a24_d16;
-	
+
 	// Import encryption routines if present
 	if (param)
 	{
@@ -834,11 +839,16 @@ unsigned m68010_dasm(char *buffer, unsigned pc)
 void m68020_init(void)
 {
 	a68k_state_register("m68020");
+	M68020_regs.reset_callback = 0;
 }
 
 static void m68k32_reset_common(void)
 {
+	int (*rc)(void);
+
+	rc = M68020_regs.reset_callback;
 	memset(&M68020_regs,0,sizeof(M68020_regs));
+	M68020_regs.reset_callback = rc;
 
     M68020_regs.a[7] = M68020_regs.isp = (( READOP(0) << 16 ) | READOP(2));
     M68020_regs.pc   = (( READOP(4) << 16 ) | READOP(6)) & 0xffffff;

@@ -5,6 +5,7 @@
  *
  *	 Copyright (c) 1998,1999,2000 Juergen Buchmueller, all rights reserved.
  *	 65sc02 core Copyright (c) 2000 Peter Trauner.
+ *	 Deco16 portions Copyright (c) 2001-2003 Bryan McPhail.
  *
  *	 - This source code is released as freeware for non-commercial purposes.
  *	 - You are free to use and redistribute this code in modified or
@@ -36,6 +37,9 @@
 #define M6502_RST_VEC	0xfffc
 #define M6502_IRQ_VEC	0xfffe
 
+#define DECO16_RST_VEC	0xfff0
+#define DECO16_IRQ_VEC	0xfff2
+#define DECO16_NMI_VEC	0xfff4
 
 #define VERBOSE 0
 
@@ -154,6 +158,10 @@ static m6502_Regs m6502;
 #include "t65sc02.c"
 #endif
 
+#if (HAS_DECO16)
+#include "tdeco16.c"
+#endif
+
 /*****************************************************************************
  *
  *		6502 CPU interface functions
@@ -196,6 +204,8 @@ void m6502_reset(void *param)
 	m6502.pending_irq = 0;	/* nonzero if an IRQ is pending */
 	m6502.after_cli = 0;	/* pending IRQ and last insn cleared I */
 	m6502.irq_callback = NULL;
+	m6502.irq_state = 0;
+	m6502.nmi_state = 0;
 
 	change_pc16(PCD);
 }
@@ -828,6 +838,190 @@ const char *m65sc02_info(void *context, int regnum)
 	return m6502_info(context,regnum);
 }
 unsigned m65sc02_dasm(char *buffer, unsigned pc)
+{
+#ifdef MAME_DEBUG
+	return Dasm6502( buffer, pc );
+#else
+	sprintf( buffer, "$%02X", cpu_readop(pc) );
+	return 1;
+#endif
+}
+#endif
+
+/****************************************************************************
+ * DECO16 section
+ ****************************************************************************/
+#if (HAS_DECO16)
+/* Layout of the registers in the debugger */
+static UINT8 deco16_reg_layout[] = {
+	DECO16_A,DECO16_X,DECO16_Y,DECO16_S,DECO16_PC,DECO16_P, -1,
+	DECO16_EA,DECO16_ZP,DECO16_NMI_STATE,DECO16_IRQ_STATE, 0
+};
+
+/* Layout of the debugger windows x,y,w,h */
+static UINT8 deco16_win_layout[] = {
+	25, 0,55, 2,	/* register window (top, right rows) */
+	 0, 0,24,22,	/* disassembler window (left colums) */
+	25, 3,55, 9,	/* memory #1 window (right, upper middle) */
+	25,13,55, 9,	/* memory #2 window (right, lower middle) */
+	 0,23,80, 1,	/* command line window (bottom rows) */
+};
+
+void deco16_init(void)
+{
+	m6502.subtype = SUBTYPE_DECO16;
+	m6502.insn = insndeco16;
+	m6502_state_register("deco16");
+}
+
+
+void deco16_reset (void *param)
+{
+	m6502_reset(param);
+	m6502.subtype = SUBTYPE_DECO16;
+	m6502.insn = insndeco16;
+
+    PCL = RDMEM(DECO16_RST_VEC+1);
+    PCH = RDMEM(DECO16_RST_VEC);
+
+	m6502.sp.d = 0x01ff;	/* stack pointer starts at page 1 offset FF */
+	m6502.p = F_T|F_I|F_Z|F_B|(P&F_D);	/* set T, I and Z flags */
+	m6502.pending_irq = 0;	/* nonzero if an IRQ is pending */
+	m6502.after_cli = 0;	/* pending IRQ and last insn cleared I */
+	m6502.irq_callback = NULL;
+
+	change_pc16(PCD);
+}
+
+INLINE void deco16_take_irq(void)
+{
+	if( !(P & F_I) )
+	{
+		EAD = DECO16_IRQ_VEC;
+		m6502_ICount -= 7;
+		PUSH(PCH);
+		PUSH(PCL);
+		PUSH(P & ~F_B);
+		P |= F_I;		/* set I flag */
+		PCL = RDMEM(EAD+1);
+		PCH = RDMEM(EAD);
+		LOG(("M6502#%d takes IRQ ($%04x)\n", cpu_getactivecpu(), PCD));
+		/* call back the cpuintrf to let it clear the line */
+		if (m6502.irq_callback) (*m6502.irq_callback)(0);
+		change_pc16(PCD);
+	}
+	m6502.pending_irq = 0;
+}
+
+void deco16_set_irq_line(int irqline, int state)
+{
+	if (irqline == IRQ_LINE_NMI)
+	{
+		if (m6502.nmi_state == state) return;
+		m6502.nmi_state = state;
+		if( state != CLEAR_LINE )
+		{
+			LOG(( "M6502#%d set_nmi_line(ASSERT)\n", cpu_getactivecpu()));
+			EAD = DECO16_NMI_VEC;
+			m6502_ICount -= 7;
+			PUSH(PCH);
+			PUSH(PCL);
+			PUSH(P & ~F_B);
+			P |= F_I;		/* set I flag */
+			PCL = RDMEM(EAD+1);
+			PCH = RDMEM(EAD);
+			LOG(("M6502#%d takes NMI ($%04x)\n", cpu_getactivecpu(), PCD));
+			change_pc16(PCD);
+		}
+	}
+	else
+	{
+		if( irqline == M6502_SET_OVERFLOW )
+		{
+			if( m6502.so_state && !state )
+			{
+				LOG(( "M6502#%d set overflow\n", cpu_getactivecpu()));
+				P|=F_V;
+			}
+			m6502.so_state=state;
+			return;
+		}
+		m6502.irq_state = state;
+		if( state != CLEAR_LINE )
+		{
+			LOG(( "M6502#%d set_irq_line(ASSERT)\n", cpu_getactivecpu()));
+			m6502.pending_irq = 1;
+		}
+	}
+}
+
+void deco16_exit  (void) { m6502_exit(); }
+int deco16_execute(int cycles)
+{
+	m6502_ICount = cycles;
+
+	change_pc16(PCD);
+
+	do
+	{
+		UINT8 op;
+		PPC = PCD;
+
+		CALL_MAME_DEBUG;
+
+		op = RDOP();
+		(*m6502.insn[op])();
+
+		/* if an irq is pending, take it now */
+		if( m6502.pending_irq )
+			deco16_take_irq();
+
+
+		/* check if the I flag was just reset (interrupts enabled) */
+		if( m6502.after_cli )
+		{
+			LOG(("M6502#%d after_cli was >0", cpu_getactivecpu()));
+			m6502.after_cli = 0;
+			if (m6502.irq_state != CLEAR_LINE)
+			{
+				LOG((": irq line is asserted: set pending IRQ\n"));
+				m6502.pending_irq = 1;
+			}
+			else
+			{
+				LOG((": irq line is clear\n"));
+			}
+		}
+		else
+		if( m6502.pending_irq )
+			deco16_take_irq();
+
+	} while (m6502_ICount > 0);
+
+	return cycles - m6502_ICount;
+}
+unsigned deco16_get_context (void *dst) { return m6502_get_context(dst); }
+void deco16_set_context (void *src) { m6502_set_context(src); }
+unsigned deco16_get_reg (int regnum) { return m6502_get_reg(regnum); }
+void deco16_set_reg (int regnum, unsigned val) { m6502_set_reg(regnum,val); }
+void deco16_set_irq_callback(int (*callback)(int irqline)) { m6502_set_irq_callback(callback); }
+const char *deco16_info(void *context, int regnum)
+{
+	switch( regnum )
+	{
+		case CPU_INFO_NAME: return "DECO CPU16";
+		case CPU_INFO_FAMILY: return "DECO";
+		case CPU_INFO_VERSION: return "0.1";
+		case CPU_INFO_CREDITS:
+			return "Copyright (c) 1998 Juergen Buchmueller\n"
+				"Copyright (c) 2001-2003 Bryan McPhail\n"
+				"all rights reserved.";
+		case CPU_INFO_REG_LAYOUT: return (const char*)deco16_reg_layout;
+		case CPU_INFO_WIN_LAYOUT: return (const char*)deco16_win_layout;
+	}
+	return m6502_info(context,regnum);
+}
+unsigned deco16_dasm(char *buffer, unsigned pc)
 {
 #ifdef MAME_DEBUG
 	return Dasm6502( buffer, pc );

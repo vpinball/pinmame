@@ -1,7 +1,7 @@
 /***************************************************************************
 
   M.A.M.E.32  -  Multiple Arcade Machine Emulator for Win32
-  Win32 Portions Copyright (C) 1997-2001 Michael Soderstrom and Chris Kirmse
+  Win32 Portions Copyright (C) 1997-2003 Michael Soderstrom and Chris Kirmse
 
   This file is part of MAME32, and may only be used, modified and
   distributed under the terms of the MAME license, in "readme.txt".
@@ -108,25 +108,40 @@ void DoMoveItem( HWND hWnd, BOOL bDown)
 	}
 }
 
-INT_PTR CALLBACK ColumnDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
+INT_PTR InternalColumnDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam,
+	int nColumnMax, int *shown, int *order,
+	const char **names, void (*pfnGetRealColumnOrder)(int *),
+	void (*pfnGetColumnInfo)(int *pnOrder, int *pnShown),
+	void (*pfnSetColumnInfo)(int *pnOrder, int *pnShown))
 {
 	static HWND hShown;
 	static HWND hAvailable;
-	static int  shown[COLUMN_MAX];
-	static int  order[COLUMN_MAX];
 	static BOOL showMsg = FALSE;
 	int         nShown;
 	int         nAvail;
 	int         i, nCount = 0;
 	LV_ITEM     lvi;
+	DWORD dwShowStyle, dwAvailableStyle, dwView;
 
 	switch (Msg)
 	{
 	case WM_INITDIALOG:
 		hShown	   = GetDlgItem(hDlg, IDC_LISTSHOWCOLUMNS);
 		hAvailable = GetDlgItem(hDlg, IDC_LISTAVAILABLECOLUMNS);
-		GetColumnOrder(order);
-		GetColumnShown(shown);
+		/*Change Style to Always Show Selection */
+		dwShowStyle = GetWindowLong(hShown, GWL_STYLE); 
+		dwAvailableStyle = GetWindowLong(hAvailable, GWL_STYLE); 
+		dwView = LVS_SHOWSELALWAYS | LVS_LIST;
+
+		/* Only set the window style if the view bits have changed. */
+		if ((dwShowStyle & LVS_TYPEMASK) != dwView) 
+		SetWindowLong(hShown, GWL_STYLE, 
+			(dwShowStyle & ~LVS_TYPEMASK) | dwView); 
+		if ((dwAvailableStyle & LVS_TYPEMASK) != dwView) 
+		SetWindowLong(hAvailable, GWL_STYLE, 
+			(dwAvailableStyle & ~LVS_TYPEMASK) | dwView); 
+
+		pfnGetColumnInfo(order, shown);
 
 		showMsg = TRUE;
 		nShown	= 0;
@@ -138,21 +153,21 @@ INT_PTR CALLBACK ColumnDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPa
 		lvi.iImage	  = -1;
 
 		/* Get the Column Order and save it */
-		GetRealColumnOrder(order);
+		pfnGetRealColumnOrder(order);
 
 #if 0
         {
             char tmp[80];
             
-            sprintf(tmp,"ColumnOrder: %d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
+            sprintf(tmp,"ColumnOrder: %d,%d,%d,%d,%d,%d,%d,%d,%d,%d, %d",
                 order[0], order[1], order[2], order[3], order[4],
-                order[5], order[6], order[7], order[8], order[9]);
+                order[5], order[6], order[7], order[8], order[9], order[10]);
             MessageBox(0, tmp, "Column Order", IDOK);
         }
 #endif
-		for (i = 0 ; i < COLUMN_MAX; i++)
+		for (i = 0 ; i < nColumnMax; i++)
 		{		 
-			lvi.pszText = column_names[order[i]];
+			lvi.pszText = (char *) names[order[i]];
 			lvi.lParam	= order[i];
 
 			if (shown[order[i]])
@@ -168,6 +183,18 @@ INT_PTR CALLBACK ColumnDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPa
 				nAvail++;
 			}
 		}
+		if( nShown > 0)
+		{
+			/*Set to Second, because first is not allowed*/
+			ListView_SetItemState(hShown, 1,
+				LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED | LVIS_SELECTED);
+		}
+		if( nAvail > 0)
+		{
+			ListView_SetItemState(hAvailable, 0,
+				LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED | LVIS_SELECTED);
+		}
+		EnableWindow(GetDlgItem(hDlg, IDC_BUTTONADD)  ,    TRUE);
 		return TRUE;
 
 	case WM_NOTIFY:
@@ -178,11 +205,6 @@ INT_PTR CALLBACK ColumnDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPa
 			
 			switch (nm->code)
 			{
-			case LVN_KEYDOWN:
-				{
-				}
-				break;
-				
 			case NM_DBLCLK:
 				// Do Data Exchange here, which ListView was double clicked?
 				switch (nm->idFrom)
@@ -222,24 +244,76 @@ INT_PTR CALLBACK ColumnDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPa
 					{
 						// Don't allow selecting the first item
 						ListView_SetItemState(hShown, pnmv->iItem,
-							0, LVIS_FOCUSED | LVIS_SELECTED);
+							LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED | LVIS_SELECTED);
 						if (showMsg)
 						{
-							MessageBox(0, "Selecting this Item is not permitted", "Select Item", IDOK);
+							MessageBox(0, "Changing this item is not permitted", "Select Item", IDOK);
 							showMsg = FALSE;
 						}
 						EnableWindow(GetDlgItem(hDlg, IDC_BUTTONREMOVE),   FALSE);
 						EnableWindow(GetDlgItem(hDlg, IDC_BUTTONMOVEUP),   FALSE);
 						EnableWindow(GetDlgItem(hDlg, IDC_BUTTONMOVEDOWN), FALSE);
-						SetFocus(GetDlgItem(hDlg,IDOK));
+						/*Leave Focus on Control*/
+						//SetFocus(GetDlgItem(hDlg,IDOK));
 						return TRUE;
 					}
 					else
 						showMsg = TRUE;
 				}
+				if( pnmv->uOldState & LVIS_SELECTED && pnmv->iItem == 0 && pnmv->hdr.idFrom == IDC_LISTSHOWCOLUMNS )
+				{
+					/*we enable the buttons again, if the first Entry loses selection*/
+					EnableWindow(GetDlgItem(hDlg, IDC_BUTTONREMOVE),   TRUE);
+					EnableWindow(GetDlgItem(hDlg, IDC_BUTTONMOVEUP),   TRUE);
+					EnableWindow(GetDlgItem(hDlg, IDC_BUTTONMOVEDOWN), TRUE);
+					//SetFocus(GetDlgItem(hDlg,IDOK));
+				}
 				break;
-
+			case NM_SETFOCUS:
+				{
+					switch (nm->idFrom)
+					{
+					case IDC_LISTAVAILABLECOLUMNS:
+						if (ListView_GetItemCount(nm->hwndFrom) != 0)
+						{
+							EnableWindow(GetDlgItem(hDlg, IDC_BUTTONADD),	   TRUE);
+							EnableWindow(GetDlgItem(hDlg, IDC_BUTTONREMOVE),   FALSE);
+							EnableWindow(GetDlgItem(hDlg, IDC_BUTTONMOVEDOWN), FALSE);
+							EnableWindow(GetDlgItem(hDlg, IDC_BUTTONMOVEUP),   FALSE);
+						}
+						break;
+					case IDC_LISTSHOWCOLUMNS:
+						if (ListView_GetItemCount(nm->hwndFrom) != 0)
+						{
+							EnableWindow(GetDlgItem(hDlg, IDC_BUTTONADD),	   FALSE);
+							
+							if (ListView_GetNextItem(hShown, -1, LVIS_SELECTED | LVIS_FOCUSED) == 0 )
+							{
+								EnableWindow(GetDlgItem(hDlg, IDC_BUTTONREMOVE),   FALSE);
+								EnableWindow(GetDlgItem(hDlg, IDC_BUTTONMOVEDOWN), FALSE);
+								EnableWindow(GetDlgItem(hDlg, IDC_BUTTONMOVEUP),   FALSE);
+							}
+							else
+							{
+								EnableWindow(GetDlgItem(hDlg, IDC_BUTTONREMOVE),   TRUE);
+								EnableWindow(GetDlgItem(hDlg, IDC_BUTTONMOVEDOWN), TRUE);
+								EnableWindow(GetDlgItem(hDlg, IDC_BUTTONMOVEUP),   TRUE);
+							}
+						}
+						break;
+					}
+				}
+				break;
+			case LVN_KEYDOWN:
 			case NM_CLICK:
+				pnmv = (NM_LISTVIEW *)nm;
+				if (//!(pnmv->uOldState & LVIS_SELECTED) &&
+					(pnmv->uNewState  & LVIS_SELECTED))
+				{
+					if (pnmv->iItem == 0 && pnmv->hdr.idFrom == IDC_LISTSHOWCOLUMNS)
+					{
+					}
+				}
 				switch (nm->idFrom)
 				{
 				case IDC_LISTAVAILABLECOLUMNS:
@@ -256,17 +330,26 @@ INT_PTR CALLBACK ColumnDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPa
 					if (ListView_GetItemCount(nm->hwndFrom) != 0)
 					{
 						EnableWindow(GetDlgItem(hDlg, IDC_BUTTONADD),	   FALSE);
-						EnableWindow(GetDlgItem(hDlg, IDC_BUTTONREMOVE),   TRUE);
-						EnableWindow(GetDlgItem(hDlg, IDC_BUTTONMOVEDOWN), TRUE);
-						EnableWindow(GetDlgItem(hDlg, IDC_BUTTONMOVEUP),   TRUE);
+						if (ListView_GetNextItem(hShown, -1, LVIS_SELECTED | LVIS_FOCUSED) == 0 )
+						{
+							EnableWindow(GetDlgItem(hDlg, IDC_BUTTONREMOVE),   FALSE);
+							EnableWindow(GetDlgItem(hDlg, IDC_BUTTONMOVEDOWN), FALSE);
+							EnableWindow(GetDlgItem(hDlg, IDC_BUTTONMOVEUP),   FALSE);
+						}
+						else
+						{
+							EnableWindow(GetDlgItem(hDlg, IDC_BUTTONREMOVE),   TRUE);
+							EnableWindow(GetDlgItem(hDlg, IDC_BUTTONMOVEDOWN), TRUE);
+							EnableWindow(GetDlgItem(hDlg, IDC_BUTTONMOVEUP),   TRUE);
+						}
 					}
 					break;
 				}
+				//SetFocus( nm->hwndFrom );
 				return TRUE;
 			}
 		}
 		return FALSE;
-
 	case WM_COMMAND:
 	   {
 			WORD wID	  = GET_WM_COMMAND_ID(wParam, lParam);
@@ -275,6 +358,8 @@ INT_PTR CALLBACK ColumnDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPa
 
 			switch (wID)
 			{
+				case IDC_LISTSHOWCOLUMNS:
+					break;
 				case IDC_BUTTONADD:
 					// Move selected Item in Available to Shown
 					nPos = DoExchangeItem(hAvailable, hShown, 0);
@@ -338,18 +423,17 @@ INT_PTR CALLBACK ColumnDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPa
 						char tmp[80];
 						sprintf(tmp,"Shown (%d) - Hidden (%d)",nShown,nAvail);
 						MessageBox(0,tmp,"List Counts",IDOK);
-						sprintf(tmp,"ColumnOrder: %d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
+						sprintf(tmp,"ColumnOrder: %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
 							order[0], order[1], order[2], order[3], order[4],
-							order[5], order[6], order[7], order[8], order[9]);
+							order[5], order[6], order[7], order[8], order[9], shown[10]);
 						MessageBox(0,tmp,"Column Order", IDOK);
-						sprintf(tmp,"ColumnShown: %d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
+						sprintf(tmp,"ColumnShown: %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
 							shown[0], shown[1], shown[2], shown[3], shown[4],
-							shown[5], shown[6], shown[7], shown[8], shown[9]);
+							shown[5], shown[6], shown[7], shown[8], shown[9], shown[10]);
 						MessageBox(0,tmp,"Column Shown", IDOK);
 					}
 #endif
-					SetColumnOrder(order);
-					SetColumnShown(shown);
+					pfnSetColumnInfo(order, shown);
 					EndDialog(hDlg, 1);
 					return TRUE;
 
@@ -361,6 +445,26 @@ INT_PTR CALLBACK ColumnDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPa
 		break;
 	}
 	return 0;
+}
+
+static void GetColumnInfo(int *order, int *shown)
+{
+	GetColumnOrder(order);
+	GetColumnShown(shown);
+}
+
+static void SetColumnInfo(int *order, int *shown)
+{
+	SetColumnOrder(order);
+	SetColumnShown(shown);
+}
+
+INT_PTR CALLBACK ColumnDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
+{
+	static int shown[COLUMN_MAX];
+	static int order[COLUMN_MAX];
+	return InternalColumnDialogProc(hDlg, Msg, wParam, lParam, COLUMN_MAX,
+		shown, order, column_names, GetRealColumnOrder, GetColumnInfo, SetColumnInfo);
 }
 
 

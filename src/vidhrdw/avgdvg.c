@@ -407,6 +407,9 @@ static int dvg_generate_vector_list(void)
 				a = firstwd & 0x0fff;
 				VGLOG(("%4x", a));
 				pc = a;
+
+				if (!pc)
+					done=1;
 				break;
 
 			/* DJSRL: jump to a new program location as subroutine */
@@ -1041,33 +1044,6 @@ PALETTE_INIT( avg_white )
 	int i;
 	for (i = 0; i < 32; i++)
 		colorram[i] = MAKE_RGB(0xff, 0xff, 0xff);
-}
-
-
-/* Monochrome Aqua vector colors for Red Baron */
-PALETTE_INIT( avg_aqua )
-{
-	int i;
-	for (i = 0; i < 32; i++)
-		colorram[i] = MAKE_RGB(0x44, 0xff, 0xff);
-}
-
-
-/* Monochrome Aqua vector colors for Asteroids Deluxe */
-PALETTE_INIT( avg_astdelux )
-{
-	/* Use backdrop if present */
-	backdrop_load("astdelux.png", 0);
-	palette_init_avg_aqua(palette, colortable, color_prom);
-}
-
-
-/* Black and White vector colors for Battlezone */
-PALETTE_INIT( avg_bzone )
-{
-	/* Use backdrop if present */
-	backdrop_load("bzone.png", 0);
-	palette_init_avg_white(palette, colortable, color_prom);
 }
 
 

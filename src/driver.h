@@ -23,9 +23,9 @@
 #define MACHINE_INIT(name)		void machine_init_##name(void)
 #define MACHINE_STOP(name)		void machine_stop_##name(void)
 
-#define NVRAM_HANDLER(name)		void nvram_handler_##name(void *file,int read_or_write)
+#define NVRAM_HANDLER(name)		void nvram_handler_##name(mame_file *file, int read_or_write)
 
-#define PALETTE_INIT(name)		void palette_init_##name(UINT8 *palette, UINT16 *colortable, const UINT8 *color_prom)
+#define PALETTE_INIT(name)		void palette_init_##name(UINT16 *colortable, const UINT8 *color_prom)
 
 #define VIDEO_START(name)		int video_start_##name(void)
 #define VIDEO_STOP(name)		void video_stop_##name(void)
@@ -69,9 +69,17 @@
 #include "tilemap.h"
 #include "profiler.h"
 
+#ifdef MESS
+#include "messdrv.h"
+#endif
+
 #ifdef MAME_NET
 #include "network.h"
 #endif /* MAME_NET */
+
+#ifdef MMSND
+#include "mmsnd/mmsnd.h"
+#endif
 
 #ifdef PINMAME
 typedef struct {
@@ -85,7 +93,7 @@ struct pinMachine {
   void (*updSw)(int *inport);  /* update core specific switches */
   int  diagLEDs;               /* number of diagnostic LEDs */
   mem_write_handler sndCmd;    /* send a sound command */
-  char *sndHead;               /* heading in sound.dat */
+  const char *sndHead;         /* heading in sound.dat */
   int (*sw2m)(int no);         /* conversion function for switch */
   int (*lamp2m)(int no);       /* conversion function for lamps */
   int (*m2sw)(int col, int row);
@@ -182,7 +190,7 @@ extern void machine_add_timer(struct InternalMachineDriver *machine, void (*func
 	cpu = machine_find_cpu(machine, tag);								\
 	if (cpu)															\
 	{																	\
-		cpu->cpu_type = (CPU_##type) | (cpu->cpu_type & CPU_FLAGS_MASK);\
+		cpu->cpu_type = (CPU_##type);									\
 		cpu->cpu_clock = (clock);										\
 	}																	\
 
@@ -190,7 +198,7 @@ extern void machine_add_timer(struct InternalMachineDriver *machine, void (*func
 /* CPU parameters */
 #define MDRV_CPU_FLAGS(flags)											\
 	if (cpu)															\
-		cpu->cpu_type = (flags) | (cpu->cpu_type & ~CPU_FLAGS_MASK);	\
+		cpu->cpu_flags = (flags);										\
 
 #define MDRV_CPU_CONFIG(config)											\
 	if (cpu)															\
@@ -249,10 +257,11 @@ extern void machine_add_timer(struct InternalMachineDriver *machine, void (*func
 
 /* core video parameters */
 #define MDRV_VIDEO_ATTRIBUTES(flags)									\
-	machine->video_attributes = (flags) | (machine->video_attributes & VIDEO_ASPECT_RATIO_MASK);\
+	machine->video_attributes = (flags);								\
 
 #define MDRV_ASPECT_RATIO(num, den)										\
-	machine->video_attributes = VIDEO_ASPECT_RATIO(num,den) | (machine->video_attributes & ~VIDEO_ASPECT_RATIO_MASK);\
+	machine->aspect_x = (num);											\
+	machine->aspect_y = (den);											\
 
 #define MDRV_SCREEN_SIZE(width, height)									\
 	machine->screen_width = (width);									\
@@ -348,16 +357,17 @@ struct InternalMachineDriver
 
 	void (*machine_init)(void);
 	void (*machine_stop)(void);
-	void (*nvram_handler)(void *file,int read_or_write);
+	void (*nvram_handler)(mame_file *file, int read_or_write);
 
 	UINT32 video_attributes;
+	UINT32 aspect_x, aspect_y;
 	int screen_width,screen_height;
 	struct rectangle default_visible_area;
 	struct GfxDecodeInfo *gfxdecodeinfo;
 	UINT32 total_colors;
 	UINT32 color_table_len;
 
-	void (*init_palette)(unsigned char *palette, unsigned short *colortable,const unsigned char *color_prom);
+	void (*init_palette)(UINT16 *colortable,const UINT8 *color_prom);
 	int (*video_start)(void);
 	void (*video_stop)(void);
 	void (*video_eof)(void);
@@ -400,13 +410,6 @@ struct InternalMachineDriver
 
 
 /* ----- flags for video_attributes ----- */
-#ifdef PINMAME
-/* bit 2 of the video attributes decides if the display size is fixed or may be shrunk down */
-#define	VIDEO_FIXED_SIZE			0x0004
-#endif /* PINMAME */
-
-/* bit 1 of the video attributes indicates whether or not dirty rectangles will work */
-#define	VIDEO_SUPPORTS_DIRTY		0x0002
 
 /* bit 0 of the video attributes indicates raster or vector video hardware */
 #define	VIDEO_TYPE_RASTER			0x0000
@@ -430,10 +433,10 @@ struct InternalMachineDriver
 #define VIDEO_PIXEL_ASPECT_RATIO_1_2 0x0020
 #define VIDEO_PIXEL_ASPECT_RATIO_2_1 0x0040
 
-#define VIDEO_DUAL_MONITOR 0x0080
+#define VIDEO_DUAL_MONITOR			0x0080
 
 /* Mish 181099:  See comments in vidhrdw/generic.c for details */
-#define VIDEO_BUFFERS_SPRITERAM 0x0100
+#define VIDEO_BUFFERS_SPRITERAM		0x0100
 
 /* game wants to use a hicolor or truecolor bitmap (e.g. for alpha blending) */
 #define VIDEO_RGB_DIRECT 			0x0200
@@ -443,12 +446,6 @@ struct InternalMachineDriver
 
 /* automatically extend the palette creating a brighter copy for highlights */
 #define VIDEO_HAS_HIGHLIGHTS		0x0800
-
-/* generic aspect ratios */
-#define VIDEO_ASPECT_RATIO_MASK		0xffff0000
-#define VIDEO_ASPECT_RATIO_NUM(a)	(((a) >> 24) & 0xff)
-#define VIDEO_ASPECT_RATIO_DEN(a)	(((a) >> 16) & 0xff)
-#define VIDEO_ASPECT_RATIO(n,d)		((((n) & 0xff) << 24) | (((d) & 0xff) << 16))
 
 
 /* ----- flags for sound_attributes ----- */
@@ -468,6 +465,8 @@ struct GameDriver
 	const struct GameDriver *clone_of;	/* if this is a clone, point to */
 										/* the main version of the game */
 	const char *name;
+	const struct SystemBios *bios;	/* if this system has alternate bios roms use this */
+									/* structure to list names and ROM_BIOSFLAGS. */
 	const char *description;
 	const char *year;
 	const char *manufacturer;
@@ -479,7 +478,7 @@ struct GameDriver
 
 	const struct RomModule *rom;
 #ifdef MESS
-	const struct IODevice *dev;
+	void (*sysconfig_ctor)(struct SystemConfigurationParamBlock *cfg);
 #endif
 
 	UINT32 flags;	/* orientation and other flags; see defines below */
@@ -531,6 +530,7 @@ const struct GameDriver driver_##NAME =		\
 	__FILE__,								\
 	&driver_##PARENT,						\
 	#NAME,									\
+	system_bios_0,							\
 	FULLNAME,								\
 	#YEAR,									\
 	COMPANY,								\
@@ -548,6 +548,7 @@ const struct GameDriver driver_##NAME =		\
 	__FILE__,								\
 	&driver_##PARENT,						\
 	#NAME,									\
+	system_bios_0,							\
 	FULLNAME,								\
 	#YEAR,									\
 	COMPANY,								\
@@ -558,6 +559,41 @@ const struct GameDriver driver_##NAME =		\
 	(MONITOR)|(FLAGS)						\
 };
 
+#define GAMEB(YEAR,NAME,PARENT,BIOS,MACHINE,INPUT,INIT,MONITOR,COMPANY,FULLNAME)	\
+extern const struct GameDriver driver_##PARENT;	\
+const struct GameDriver driver_##NAME =		\
+{											\
+	__FILE__,								\
+	&driver_##PARENT,						\
+	#NAME,									\
+	system_bios_##BIOS,						\
+	FULLNAME,								\
+	#YEAR,									\
+	COMPANY,								\
+	construct_##MACHINE,					\
+	input_ports_##INPUT,					\
+	init_##INIT,							\
+	rom_##NAME,								\
+	MONITOR									\
+};
+
+#define GAMEBX(YEAR,NAME,PARENT,BIOS,MACHINE,INPUT,INIT,MONITOR,COMPANY,FULLNAME,FLAGS)	\
+extern const struct GameDriver driver_##PARENT;	\
+const struct GameDriver driver_##NAME =		\
+{											\
+	__FILE__,								\
+	&driver_##PARENT,						\
+	#NAME,									\
+	system_bios_##BIOS,						\
+	FULLNAME,								\
+	#YEAR,									\
+	COMPANY,								\
+	construct_##MACHINE,					\
+	input_ports_##INPUT,					\
+	init_##INIT,							\
+	rom_##NAME,								\
+	(MONITOR)|(FLAGS)						\
+};
 
 /* monitor parameters to be used with the GAME() macro */
 #define	ROT0	0
@@ -568,6 +604,8 @@ const struct GameDriver driver_##NAME =		\
 /* this allows to leave the INIT field empty in the GAME() macro call */
 #define init_0 0
 
+/* this allows to leave the BIOS field empty in the GAMEB() macro call */
+#define system_bios_0 0
 
 
 /***************************************************************************
@@ -577,5 +615,6 @@ const struct GameDriver driver_##NAME =		\
 ***************************************************************************/
 
 extern const struct GameDriver *drivers[];
+extern const struct GameDriver *test_drivers[];
 
 #endif

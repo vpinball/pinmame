@@ -95,7 +95,7 @@ INLINE void free_entry(memory_entry *entry)
 //	IMPLEMENTATION
 //============================================================
 
-void *malloc(size_t size)
+void* CLIB_DECL malloc(size_t size)
 {
 	memory_entry *entry = allocate_entry();
 	UINT8 *page_base, *block_base;
@@ -129,7 +129,7 @@ void *malloc(size_t size)
 }
 
 
-void *calloc(size_t size, size_t count)
+void* CLIB_DECL calloc(size_t size, size_t count)
 {
 	// first allocate the memory
 	void *memory = malloc(size * count);
@@ -142,7 +142,7 @@ void *calloc(size_t size, size_t count)
 }
 
 
-void *realloc(void *memory, size_t size)
+void * CLIB_DECL realloc(void *memory, size_t size)
 {
 	void *newmemory = NULL;
 
@@ -173,7 +173,7 @@ void *realloc(void *memory, size_t size)
 }
 
 
-void free(void *memory)
+void CLIB_DECL free(void *memory)
 {
 	memory_entry *entry = find_entry(memory);
 
@@ -192,3 +192,18 @@ void free(void *memory)
 	VirtualFree(entry->vbase, 0, MEM_RELEASE);
 	free_entry(entry);
 }
+
+size_t CLIB_DECL _msize(void *memory)
+{
+	memory_entry *entry = find_entry(memory);
+
+	// error if no entry found
+	if (entry == NULL)
+	{
+		fprintf(stderr, "Error: msize a non-existant block\n");
+		return 0;
+	}
+	return entry->size;
+}
+
+

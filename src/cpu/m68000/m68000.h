@@ -166,7 +166,7 @@ extern unsigned m68020_dasm(char *buffer, unsigned pc);
 /****************************************************************************
  * M68306 section
  ****************************************************************************/
-#if HAS_M68306
+#if defined(PINMAME) && (HAS_M68306)
 #define MC68306_IRQ_1					MC68000_IRQ_1
 #define MC68306_IRQ_2					MC68000_IRQ_2
 #define MC68306_IRQ_3					MC68000_IRQ_3
@@ -191,7 +191,7 @@ extern void m68306_set_irq_callback(int (*callback)(int irqline));
 #define m68306_get_context      m68000_get_context
 #define m68306_info             m68000_info
 #define m68306_dasm             m68000_dasm
-#endif /* HAS_M68306 */
+#endif /* PINMAME & HAS_M68306 */
 
 // C Core header
 #include "m68kmame.h"

@@ -935,6 +935,7 @@ static void PREFIX86(_es)(void)    /* Opcode 0x26 */
 
 static void PREFIX86(_daa)(void)    /* Opcode 0x27 */
 {
+	UINT8 tmpAL=I.regs.b[AL];
 	if (AF || ((I.regs.b[AL] & 0xf) > 9))
 	{
 		int tmp;
@@ -943,7 +944,7 @@ static void PREFIX86(_daa)(void)    /* Opcode 0x27 */
 		I.CarryVal |= tmp & 0x100;
 	}
 
-	if (CF || (I.regs.b[AL] > 0x9f))
+	if (CF || (tmpAL > 0x9f))
 	{
 		I.regs.b[AL] += 0x60;
 		I.CarryVal = 1;
@@ -1011,6 +1012,7 @@ static void PREFIX86(_cs)(void)    /* Opcode 0x2e */
 
 static void PREFIX86(_das)(void)    /* Opcode 0x2f */
 {
+	UINT8 tmpAL=I.regs.b[AL];
 	if (AF || ((I.regs.b[AL] & 0xf) > 9))
 	{
 		int tmp;
@@ -1019,7 +1021,7 @@ static void PREFIX86(_das)(void)    /* Opcode 0x2f */
 		I.CarryVal |= tmp & 0x100;
 	}
 
-	if (CF || (I.regs.b[AL] > 0x9f))
+	if (CF || (tmpAL > 0x9f))
 	{
 		I.regs.b[AL] -= 0x60;
 		I.CarryVal = 1;
@@ -1087,10 +1089,13 @@ static void PREFIX86(_ss)(void)    /* Opcode 0x36 */
 
 static void PREFIX86(_aaa)(void)    /* Opcode 0x37 */
 {
+	UINT8 ALcarry=1;
+	if (I.regs.b[AL]>0xf9) ALcarry=2;
+
 	if (AF || ((I.regs.b[AL] & 0xf) > 9))
     {
 		I.regs.b[AL] += 6;
-		I.regs.b[AH] += 1;
+		I.regs.b[AH] += ALcarry;
 		I.AuxVal = 1;
 		I.CarryVal = 1;
     }
@@ -1155,6 +1160,9 @@ static void PREFIX86(_ds)(void)    /* Opcode 0x3e */
 
 static void PREFIX86(_aas)(void)    /* Opcode 0x3f */
 {
+	UINT8 ALcarry=1;
+	if (I.regs.b[AL]>0xf9) ALcarry=2;
+
 	if (AF || ((I.regs.b[AL] & 0xf) > 9))
     {
 		I.regs.b[AL] -= 6;

@@ -2,6 +2,7 @@
 
     TI TMS5220 Emulator
     (c) Frank Palazzolo
+    Updated by Raphael Nabet
 
 *****************************
 
@@ -29,7 +30,7 @@ The TI speech chip contains a 128-bit parallel-in, serial-out FIFO, a
 10-pole digital lattice filter which models the vocal tract, and a D/A
 converter.  It was originally design to operate either with a microcomputer
 interface, or with a serial speech ROM.  The Speech ROM functionality is
-not emulated as no arcade games require it.
+now emulated, although no arcade games require it currently.
 
 The input data is writen a byte at a time into the chip, and it is
 decoded bitwise into variable length frames.

@@ -15,7 +15,7 @@
 #define LOG(x)
 #endif
 
-char *db_filename = "hiscore.dat"; /* high score definition file */
+const char *db_filename = "hiscore.dat"; /* high score definition file */
 
 static struct
 {
@@ -164,7 +164,7 @@ static void hs_free (void)
 
 static void hs_load (void)
 {
-	void *f = osd_fopen (Machine->gamedrv->name, 0, OSD_FILETYPE_HIGHSCORE, 0);
+	mame_file *f = mame_fopen (Machine->gamedrv->name, 0, FILETYPE_HIGHSCORE, 0);
 	state.hiscores_have_been_loaded = 1;
 	LOG(("hs_load\n"));
 	if (f)
@@ -180,19 +180,19 @@ static void hs_load (void)
 					enough to be dynamically allocated, but let's
 					avoid memory trashing just in case
 				*/
-				osd_fread (f, data, mem_range->num_bytes);
+				mame_fread (f, data, mem_range->num_bytes);
 				copy_to_memory (mem_range->cpu, mem_range->addr, data, mem_range->num_bytes);
 				free (data);
 			}
 			mem_range = mem_range->next;
 		}
-		osd_fclose (f);
+		mame_fclose (f);
 	}
 }
 
 static void hs_save (void)
 {
-	void *f = osd_fopen (Machine->gamedrv->name, 0, OSD_FILETYPE_HIGHSCORE, 1);
+	mame_file *f = mame_fopen (Machine->gamedrv->name, 0, FILETYPE_HIGHSCORE, 1);
 	LOG(("hs_save\n"));
 	if (f)
 	{
@@ -208,11 +208,11 @@ static void hs_save (void)
 					avoid memory trashing just in case
 				*/
 				copy_from_memory (mem_range->cpu, mem_range->addr, data, mem_range->num_bytes);
-				osd_fwrite(f, data, mem_range->num_bytes);
+				mame_fwrite(f, data, mem_range->num_bytes);
 			}
 			mem_range = mem_range->next;
 		}
-		osd_fclose(f);
+		mame_fclose(f);
 	}
 }
 
@@ -222,7 +222,7 @@ static void hs_save (void)
 /* call hs_open once after loading a game */
 void hs_open (const char *name)
 {
-	void *f = osd_fopen (NULL, db_filename, OSD_FILETYPE_HIGHSCORE_DB, 0);
+	mame_file *f = mame_fopen (NULL, db_filename, FILETYPE_HIGHSCORE_DB, 0);
 	state.mem_range = NULL;
 
 	LOG(("hs_open: '%s'\n", name));
@@ -233,7 +233,7 @@ void hs_open (const char *name)
 		enum { FIND_NAME, FIND_DATA, FETCH_DATA } mode;
 		mode = FIND_NAME;
 
-		while (osd_fgets (buffer, MAX_CONFIG_LINE_SIZE, f))
+		while (mame_fgets (buffer, MAX_CONFIG_LINE_SIZE, f))
 		{
 			if (mode==FIND_NAME)
 			{
@@ -283,7 +283,7 @@ void hs_open (const char *name)
 				if (mode == FETCH_DATA) break;
 			}
 		}
-		osd_fclose (f);
+		mame_fclose (f);
 	}
 }
 

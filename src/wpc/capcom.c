@@ -180,12 +180,12 @@ static MEMORY_WRITE16_START(cc_writemem)
 MEMORY_END
 
 static PORT_READ16_START(cc_readport)
-  { M68306_PORTA, M68306_PORTA, cc_porta_r },
-  { M68306_PORTA, M68306_PORTA, cc_portb_r },
+  { M68306_PORTA, M68306_PORTA+1, cc_porta_r },
+  { M68306_PORTB+1, M68306_PORTB+2, cc_portb_r },
 PORT_END
 static PORT_WRITE16_START(cc_writeport)
-  { M68306_PORTA, M68306_PORTA, cc_porta_w },
-  { M68306_PORTA, M68306_PORTA, cc_portb_w },
+  { M68306_PORTA, M68306_PORTA+1, cc_porta_w },
+  { M68306_PORTB+1, M68306_PORTB+2, cc_portb_w },
 PORT_END
 static VIDEO_UPDATE(cc_dmd);
 

@@ -24,6 +24,8 @@ void m68k_op_abcd_8_rr(void)
 	uint dst = *r_dst;
 	uint res = LOW_NIBBLE(src) + LOW_NIBBLE(dst) + XFLAG_AS_1();
 
+	FLAG_V = ~res; /* Undefined V behavior */
+
 	if(res > 9)
 		res += 6;
 	res += HIGH_NIBBLE(src) + HIGH_NIBBLE(dst);
@@ -31,7 +33,8 @@ void m68k_op_abcd_8_rr(void)
 	if(FLAG_C)
 		res -= 0xa0;
 
-	FLAG_N = NFLAG_8(res); /* officially undefined */
+	FLAG_V &= res; /* Undefined V behavior part II */
+	FLAG_N = NFLAG_8(res); /* Undefined N behavior */
 
 	res = MASK_OUT_ABOVE_8(res);
 	FLAG_Z |= res;
@@ -47,6 +50,8 @@ void m68k_op_abcd_8_mm_ax7(void)
 	uint dst = m68ki_read_8(ea);
 	uint res = LOW_NIBBLE(src) + LOW_NIBBLE(dst) + XFLAG_AS_1();
 
+	FLAG_V = ~res; /* Undefined V behavior */
+
 	if(res > 9)
 		res += 6;
 	res += HIGH_NIBBLE(src) + HIGH_NIBBLE(dst);
@@ -54,7 +59,8 @@ void m68k_op_abcd_8_mm_ax7(void)
 	if(FLAG_C)
 		res -= 0xa0;
 
-	FLAG_N = NFLAG_8(res); /* officially undefined */
+	FLAG_V &= res; /* Undefined V behavior part II */
+	FLAG_N = NFLAG_8(res); /* Undefined N behavior */
 
 	res = MASK_OUT_ABOVE_8(res);
 	FLAG_Z |= res;
@@ -70,6 +76,8 @@ void m68k_op_abcd_8_mm_ay7(void)
 	uint dst = m68ki_read_8(ea);
 	uint res = LOW_NIBBLE(src) + LOW_NIBBLE(dst) + XFLAG_AS_1();
 
+	FLAG_V = ~res; /* Undefined V behavior */
+
 	if(res > 9)
 		res += 6;
 	res += HIGH_NIBBLE(src) + HIGH_NIBBLE(dst);
@@ -77,7 +85,8 @@ void m68k_op_abcd_8_mm_ay7(void)
 	if(FLAG_C)
 		res -= 0xa0;
 
-	FLAG_N = NFLAG_8(res); /* officially undefined */
+	FLAG_V &= res; /* Undefined V behavior part II */
+	FLAG_N = NFLAG_8(res); /* Undefined N behavior */
 
 	res = MASK_OUT_ABOVE_8(res);
 	FLAG_Z |= res;
@@ -93,6 +102,8 @@ void m68k_op_abcd_8_mm_axy7(void)
 	uint dst = m68ki_read_8(ea);
 	uint res = LOW_NIBBLE(src) + LOW_NIBBLE(dst) + XFLAG_AS_1();
 
+	FLAG_V = ~res; /* Undefined V behavior */
+
 	if(res > 9)
 		res += 6;
 	res += HIGH_NIBBLE(src) + HIGH_NIBBLE(dst);
@@ -100,7 +111,8 @@ void m68k_op_abcd_8_mm_axy7(void)
 	if(FLAG_C)
 		res -= 0xa0;
 
-	FLAG_N = NFLAG_8(res); /* officially undefined */
+	FLAG_V &= res; /* Undefined V behavior part II */
+	FLAG_N = NFLAG_8(res); /* Undefined N behavior */
 
 	res = MASK_OUT_ABOVE_8(res);
 	FLAG_Z |= res;
@@ -116,6 +128,8 @@ void m68k_op_abcd_8_mm(void)
 	uint dst = m68ki_read_8(ea);
 	uint res = LOW_NIBBLE(src) + LOW_NIBBLE(dst) + XFLAG_AS_1();
 
+	FLAG_V = ~res; /* Undefined V behavior */
+
 	if(res > 9)
 		res += 6;
 	res += HIGH_NIBBLE(src) + HIGH_NIBBLE(dst);
@@ -123,7 +137,8 @@ void m68k_op_abcd_8_mm(void)
 	if(FLAG_C)
 		res -= 0xa0;
 
-	FLAG_N = NFLAG_8(res); /* officially undefined */
+	FLAG_V &= res; /* Undefined V behavior part II */
+	FLAG_N = NFLAG_8(res); /* Undefined N behavior */
 
 	res = MASK_OUT_ABOVE_8(res);
 	FLAG_Z |= res;
@@ -9222,6 +9237,10 @@ void m68k_op_chk_16_d(void)
 	sint src = MAKE_INT_16(DX);
 	sint bound = MAKE_INT_16(DY);
 
+	FLAG_Z = ZFLAG_16(src); /* Undocumented */
+	FLAG_V = VFLAG_CLEAR;   /* Undocumented */
+	FLAG_C = CFLAG_CLEAR;   /* Undocumented */
+
 	if(src >= 0 && src <= bound)
 	{
 		return;
@@ -9235,6 +9254,10 @@ void m68k_op_chk_16_ai(void)
 {
 	sint src = MAKE_INT_16(DX);
 	sint bound = MAKE_INT_16(OPER_AY_AI_16());
+
+	FLAG_Z = ZFLAG_16(src); /* Undocumented */
+	FLAG_V = VFLAG_CLEAR;   /* Undocumented */
+	FLAG_C = CFLAG_CLEAR;   /* Undocumented */
 
 	if(src >= 0 && src <= bound)
 	{
@@ -9250,6 +9273,10 @@ void m68k_op_chk_16_pi(void)
 	sint src = MAKE_INT_16(DX);
 	sint bound = MAKE_INT_16(OPER_AY_PI_16());
 
+	FLAG_Z = ZFLAG_16(src); /* Undocumented */
+	FLAG_V = VFLAG_CLEAR;   /* Undocumented */
+	FLAG_C = CFLAG_CLEAR;   /* Undocumented */
+
 	if(src >= 0 && src <= bound)
 	{
 		return;
@@ -9263,6 +9290,10 @@ void m68k_op_chk_16_pd(void)
 {
 	sint src = MAKE_INT_16(DX);
 	sint bound = MAKE_INT_16(OPER_AY_PD_16());
+
+	FLAG_Z = ZFLAG_16(src); /* Undocumented */
+	FLAG_V = VFLAG_CLEAR;   /* Undocumented */
+	FLAG_C = CFLAG_CLEAR;   /* Undocumented */
 
 	if(src >= 0 && src <= bound)
 	{
@@ -9278,6 +9309,10 @@ void m68k_op_chk_16_di(void)
 	sint src = MAKE_INT_16(DX);
 	sint bound = MAKE_INT_16(OPER_AY_DI_16());
 
+	FLAG_Z = ZFLAG_16(src); /* Undocumented */
+	FLAG_V = VFLAG_CLEAR;   /* Undocumented */
+	FLAG_C = CFLAG_CLEAR;   /* Undocumented */
+
 	if(src >= 0 && src <= bound)
 	{
 		return;
@@ -9291,6 +9326,10 @@ void m68k_op_chk_16_ix(void)
 {
 	sint src = MAKE_INT_16(DX);
 	sint bound = MAKE_INT_16(OPER_AY_IX_16());
+
+	FLAG_Z = ZFLAG_16(src); /* Undocumented */
+	FLAG_V = VFLAG_CLEAR;   /* Undocumented */
+	FLAG_C = CFLAG_CLEAR;   /* Undocumented */
 
 	if(src >= 0 && src <= bound)
 	{
@@ -9306,6 +9345,10 @@ void m68k_op_chk_16_aw(void)
 	sint src = MAKE_INT_16(DX);
 	sint bound = MAKE_INT_16(OPER_AW_16());
 
+	FLAG_Z = ZFLAG_16(src); /* Undocumented */
+	FLAG_V = VFLAG_CLEAR;   /* Undocumented */
+	FLAG_C = CFLAG_CLEAR;   /* Undocumented */
+
 	if(src >= 0 && src <= bound)
 	{
 		return;
@@ -9319,6 +9362,10 @@ void m68k_op_chk_16_al(void)
 {
 	sint src = MAKE_INT_16(DX);
 	sint bound = MAKE_INT_16(OPER_AL_16());
+
+	FLAG_Z = ZFLAG_16(src); /* Undocumented */
+	FLAG_V = VFLAG_CLEAR;   /* Undocumented */
+	FLAG_C = CFLAG_CLEAR;   /* Undocumented */
 
 	if(src >= 0 && src <= bound)
 	{
@@ -9334,6 +9381,10 @@ void m68k_op_chk_16_pcdi(void)
 	sint src = MAKE_INT_16(DX);
 	sint bound = MAKE_INT_16(OPER_PCDI_16());
 
+	FLAG_Z = ZFLAG_16(src); /* Undocumented */
+	FLAG_V = VFLAG_CLEAR;   /* Undocumented */
+	FLAG_C = CFLAG_CLEAR;   /* Undocumented */
+
 	if(src >= 0 && src <= bound)
 	{
 		return;
@@ -9347,6 +9398,10 @@ void m68k_op_chk_16_pcix(void)
 {
 	sint src = MAKE_INT_16(DX);
 	sint bound = MAKE_INT_16(OPER_PCIX_16());
+
+	FLAG_Z = ZFLAG_16(src); /* Undocumented */
+	FLAG_V = VFLAG_CLEAR;   /* Undocumented */
+	FLAG_C = CFLAG_CLEAR;   /* Undocumented */
 
 	if(src >= 0 && src <= bound)
 	{
@@ -9362,6 +9417,10 @@ void m68k_op_chk_16_i(void)
 	sint src = MAKE_INT_16(DX);
 	sint bound = MAKE_INT_16(OPER_I_16());
 
+	FLAG_Z = ZFLAG_16(src); /* Undocumented */
+	FLAG_V = VFLAG_CLEAR;   /* Undocumented */
+	FLAG_C = CFLAG_CLEAR;   /* Undocumented */
+
 	if(src >= 0 && src <= bound)
 	{
 		return;
@@ -9373,11 +9432,14 @@ void m68k_op_chk_16_i(void)
 
 void m68k_op_chk_32_d(void)
 {
-	logerror("%08x: Chk 32d\n",activecpu_get_pc());
 	if(CPU_TYPE_IS_EC020_PLUS(CPU_TYPE))
 	{
 		sint src = MAKE_INT_32(DX);
 		sint bound = MAKE_INT_32(DY);
+
+		FLAG_Z = ZFLAG_32(src); /* Undocumented */
+		FLAG_V = VFLAG_CLEAR;   /* Undocumented */
+		FLAG_C = CFLAG_CLEAR;   /* Undocumented */
 
 		if(src >= 0 && src <= bound)
 		{
@@ -9393,12 +9455,14 @@ void m68k_op_chk_32_d(void)
 
 void m68k_op_chk_32_ai(void)
 {
-		logerror("%08x: Chk 32\n",activecpu_get_pc());
-
 	if(CPU_TYPE_IS_EC020_PLUS(CPU_TYPE))
 	{
 		sint src = MAKE_INT_32(DX);
 		sint bound = MAKE_INT_32(OPER_AY_AI_32());
+
+		FLAG_Z = ZFLAG_32(src); /* Undocumented */
+		FLAG_V = VFLAG_CLEAR;   /* Undocumented */
+		FLAG_C = CFLAG_CLEAR;   /* Undocumented */
 
 		if(src >= 0 && src <= bound)
 		{
@@ -9414,12 +9478,14 @@ void m68k_op_chk_32_ai(void)
 
 void m68k_op_chk_32_pi(void)
 {
-		logerror("%08x: Chk 32\n",activecpu_get_pc());
-
 	if(CPU_TYPE_IS_EC020_PLUS(CPU_TYPE))
 	{
 		sint src = MAKE_INT_32(DX);
 		sint bound = MAKE_INT_32(OPER_AY_PI_32());
+
+		FLAG_Z = ZFLAG_32(src); /* Undocumented */
+		FLAG_V = VFLAG_CLEAR;   /* Undocumented */
+		FLAG_C = CFLAG_CLEAR;   /* Undocumented */
 
 		if(src >= 0 && src <= bound)
 		{
@@ -9435,12 +9501,14 @@ void m68k_op_chk_32_pi(void)
 
 void m68k_op_chk_32_pd(void)
 {
-		logerror("%08x: Chk 32\n",activecpu_get_pc());
-
 	if(CPU_TYPE_IS_EC020_PLUS(CPU_TYPE))
 	{
 		sint src = MAKE_INT_32(DX);
 		sint bound = MAKE_INT_32(OPER_AY_PD_32());
+
+		FLAG_Z = ZFLAG_32(src); /* Undocumented */
+		FLAG_V = VFLAG_CLEAR;   /* Undocumented */
+		FLAG_C = CFLAG_CLEAR;   /* Undocumented */
 
 		if(src >= 0 && src <= bound)
 		{
@@ -9456,12 +9524,14 @@ void m68k_op_chk_32_pd(void)
 
 void m68k_op_chk_32_di(void)
 {
-		logerror("%08x: Chk 32\n",activecpu_get_pc());
-
 	if(CPU_TYPE_IS_EC020_PLUS(CPU_TYPE))
 	{
 		sint src = MAKE_INT_32(DX);
 		sint bound = MAKE_INT_32(OPER_AY_DI_32());
+
+		FLAG_Z = ZFLAG_32(src); /* Undocumented */
+		FLAG_V = VFLAG_CLEAR;   /* Undocumented */
+		FLAG_C = CFLAG_CLEAR;   /* Undocumented */
 
 		if(src >= 0 && src <= bound)
 		{
@@ -9477,12 +9547,14 @@ void m68k_op_chk_32_di(void)
 
 void m68k_op_chk_32_ix(void)
 {
-		logerror("%08x: Chk 32\n",activecpu_get_pc());
-
 	if(CPU_TYPE_IS_EC020_PLUS(CPU_TYPE))
 	{
 		sint src = MAKE_INT_32(DX);
 		sint bound = MAKE_INT_32(OPER_AY_IX_32());
+
+		FLAG_Z = ZFLAG_32(src); /* Undocumented */
+		FLAG_V = VFLAG_CLEAR;   /* Undocumented */
+		FLAG_C = CFLAG_CLEAR;   /* Undocumented */
 
 		if(src >= 0 && src <= bound)
 		{
@@ -9498,12 +9570,14 @@ void m68k_op_chk_32_ix(void)
 
 void m68k_op_chk_32_aw(void)
 {
-		logerror("%08x: Chk 32\n",activecpu_get_pc());
-
 	if(CPU_TYPE_IS_EC020_PLUS(CPU_TYPE))
 	{
 		sint src = MAKE_INT_32(DX);
 		sint bound = MAKE_INT_32(OPER_AW_32());
+
+		FLAG_Z = ZFLAG_32(src); /* Undocumented */
+		FLAG_V = VFLAG_CLEAR;   /* Undocumented */
+		FLAG_C = CFLAG_CLEAR;   /* Undocumented */
 
 		if(src >= 0 && src <= bound)
 		{
@@ -9519,12 +9593,14 @@ void m68k_op_chk_32_aw(void)
 
 void m68k_op_chk_32_al(void)
 {
-		logerror("%08x: Chk 32\n",activecpu_get_pc());
-
 	if(CPU_TYPE_IS_EC020_PLUS(CPU_TYPE))
 	{
 		sint src = MAKE_INT_32(DX);
 		sint bound = MAKE_INT_32(OPER_AL_32());
+
+		FLAG_Z = ZFLAG_32(src); /* Undocumented */
+		FLAG_V = VFLAG_CLEAR;   /* Undocumented */
+		FLAG_C = CFLAG_CLEAR;   /* Undocumented */
 
 		if(src >= 0 && src <= bound)
 		{
@@ -9540,12 +9616,14 @@ void m68k_op_chk_32_al(void)
 
 void m68k_op_chk_32_pcdi(void)
 {
-		logerror("%08x: Chk 32\n",activecpu_get_pc());
-
 	if(CPU_TYPE_IS_EC020_PLUS(CPU_TYPE))
 	{
 		sint src = MAKE_INT_32(DX);
 		sint bound = MAKE_INT_32(OPER_PCDI_32());
+
+		FLAG_Z = ZFLAG_32(src); /* Undocumented */
+		FLAG_V = VFLAG_CLEAR;   /* Undocumented */
+		FLAG_C = CFLAG_CLEAR;   /* Undocumented */
 
 		if(src >= 0 && src <= bound)
 		{
@@ -9561,12 +9639,14 @@ void m68k_op_chk_32_pcdi(void)
 
 void m68k_op_chk_32_pcix(void)
 {
-		logerror("%08x: Chk 32\n",activecpu_get_pc());
-
 	if(CPU_TYPE_IS_EC020_PLUS(CPU_TYPE))
 	{
 		sint src = MAKE_INT_32(DX);
 		sint bound = MAKE_INT_32(OPER_PCIX_32());
+
+		FLAG_Z = ZFLAG_32(src); /* Undocumented */
+		FLAG_V = VFLAG_CLEAR;   /* Undocumented */
+		FLAG_C = CFLAG_CLEAR;   /* Undocumented */
 
 		if(src >= 0 && src <= bound)
 		{
@@ -9582,12 +9662,14 @@ void m68k_op_chk_32_pcix(void)
 
 void m68k_op_chk_32_i(void)
 {
-		logerror("%08x: Chk 32\n",activecpu_get_pc());
-
 	if(CPU_TYPE_IS_EC020_PLUS(CPU_TYPE))
 	{
 		sint src = MAKE_INT_32(DX);
 		sint bound = MAKE_INT_32(OPER_I_32());
+
+		FLAG_Z = ZFLAG_32(src); /* Undocumented */
+		FLAG_V = VFLAG_CLEAR;   /* Undocumented */
+		FLAG_C = CFLAG_CLEAR;   /* Undocumented */
 
 		if(src >= 0 && src <= bound)
 		{

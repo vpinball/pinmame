@@ -13,14 +13,12 @@ OBJDIRS += $(OBJ)/ui
 
 # only OS specific output files and rules
 OSOBJS += \
-        $(OBJ)/ui/MAME32.o \
+        $(OBJ)/ui/m32main.o \
         $(OBJ)/ui/M32Util.o \
         $(OBJ)/ui/DirectInput.o \
         $(OBJ)/ui/DIJoystick.o \
         $(OBJ)/ui/DirectDraw.o \
-        $(OBJ)/ui/file.o \
         $(OBJ)/ui/Directories.o \
-        $(OBJ)/ui/mzip.o \
         $(OBJ)/ui/audit32.o \
         $(OBJ)/ui/ColumnEdit.o \
         $(OBJ)/ui/Screenshot.o \
@@ -31,13 +29,14 @@ OSOBJS += \
         $(OBJ)/ui/dxdecode.o \
         $(OBJ)/ui/Win32ui.o \
         $(OBJ)/ui/Properties.o \
-        $(OBJ)/ui/ChildOutputStream.o \
         $(OBJ)/ui/options.o \
-        $(OBJ)/ui/help.o
+        $(OBJ)/ui/help.o \
+        $(OBJ)/ui/layout.o \
+        $(OBJ)/ui/history.o
 
 
 # add resource file
-OSOBJS += $(OBJ)/ui/mame32.res
+OSOBJS += $(OBJ)/ui/PinMAME32.res
 
 #####################################################################
 # compiler
@@ -50,13 +49,14 @@ DEFS += -DDIRECTSOUND_VERSION=0x0300 \
         -DDIRECTINPUT_VERSION=0x0500 \
         -DDIRECTDRAW_VERSION=0x0300 \
         -DWINVER=0x0400 \
-        -D_WIN32_IE=0x0400 \
+        -D_WIN32_IE=0x0500 \
         -D_WIN32_WINNT=0x0400 \
         -DWIN32 \
         -UWINNT \
 	-DCLIB_DECL=__cdecl \
 	-DDECL_SPEC= \
         -DZEXTERN=extern \
+        -Isrc/htmlhelp/include
 
 #####################################################################
 # Resources
@@ -82,7 +82,7 @@ LIBS += -lkernel32 \
         -lhtmlhelp
 
 # use -mconsole for romcmp
-LDFLAGS += -mwindows
+LDFLAGS += -mwindows -Lsrc/htmlhelp/lib
 
 #####################################################################
 

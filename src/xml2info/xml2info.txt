@@ -1,0 +1,65 @@
+MAME XML to INFO converter v1.0
+-------------------------------
+
+This program is a stream filter able to translate the MAME XML
+output of the -listxml to the old INFO format.
+
+A typical use is :
+
+	mame -listxml | xml2info > mame.lst
+
+
+COMPILING
+---------
+
+To help the compiling process on all platforms a copy of the libexpat
+library (version 1.95.6) is directly included in the sources.
+
+To compile the program use the command :
+
+	gcc -O1 -o xml2info xml2info.c
+
+
+CHECKING
+--------
+
+The program does the following extra checks on the XML input :
+
+) Any game has a name attribute.
+) Any game name is unique.
+) Any cloneof/romof/sampleof attribute references an existing game.
+
+Please note that the program doesn't validate the XML input. It only
+checks if it's weel-formed.
+
+
+LICENSE
+-------
+
+The xml2info.c file is public domain.
+
+The included libexpat sources are released with the following license:
+
+Copyright (c) 1998, 1999, 2000 Thai Open Source Software Center Ltd
+                               and Clark Cooper
+Copyright (c) 2001, 2002 Expat maintainers.
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+

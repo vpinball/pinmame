@@ -8,13 +8,10 @@
 #define __OSINLINE__
 
 #include "osd_cpu.h"
-#include "video.h"
 
 //============================================================
 //	MACROS
 //============================================================
-
-#define osd_mark_vector_dirty MARK_DIRTY
 
 #define osd_pend	osd_pend
 #define pdo16		osd_pdo16
@@ -52,18 +49,6 @@ INLINE int _vec_mult(int x, int y)
     return result;
 }
 
-INLINE unsigned int osd_cycles(void)
-{
-	int result;
-
-	__asm {
-        rdtsc
-        mov result, eax
-    }
-
-    return result;
-}
-
 #else
 
 #define vec_mult _vec_mult
@@ -79,20 +64,6 @@ INLINE int _vec_mult(int x, int y)
 			   "mr" (y)
 			:  "%edx", "%cc"            /* clobbers edx and flags */
 		);
-	return result;
-}
-
-INLINE unsigned int osd_cycles(void)
-{
-	int result;
-
-	__asm__ __volatile__ (
-		"rdtsc                 \n"	/* load clock cycle counter in eax and edx */
-		:  "=&a" (result)			/* the result has to go in eax */
-		:							/* no inputs */
-		:  "%edx"					/* clobbers edx */
-	);
-
 	return result;
 }
 

@@ -27,12 +27,6 @@ int avgdvg_init(int vgType);
 
 /* Black and White vector colors for Asteroids, Lunar Lander, Omega Race */
 PALETTE_INIT( avg_white );
-/* Monochrome Aqua vector colors for Red Baron */
-PALETTE_INIT( avg_aqua );
-/* Monochrome Aqua vector colors for Asteroids Deluxe */
-PALETTE_INIT( avg_astdelux );
-/* Basic 8 rgb vector colors for Battlezone */
-PALETTE_INIT( avg_bzone );
 /* Basic 8 rgb vector colors for Tempest, Gravitar, Major Havoc etc. */
 PALETTE_INIT( avg_multi );
 

@@ -372,7 +372,7 @@ const char *i86_info(void *context, int regnum)
 				r->flags & 0x0002 ? 'N' : '.',
 				r->flags & 0x0001 ? 'C' : '.');
 		break;
-	case CPU_INFO_NAME: 		return "I86";
+	case CPU_INFO_NAME: 		return "I8086";
 	case CPU_INFO_FAMILY:		return "Intel 80x86";
 	case CPU_INFO_VERSION:		return "1.4";
 	case CPU_INFO_FILE: 		return __FILE__;
@@ -402,7 +402,7 @@ const char *i88_info(void *context, int regnum)
 	switch (regnum)
 	{
 	case CPU_INFO_NAME:
-		return "I88";
+		return "I8088";
 	}
 	return i86_info(context, regnum);
 }
@@ -465,7 +465,7 @@ const char *i188_info(void *context, int regnum)
 	switch (regnum)
 	{
 	case CPU_INFO_NAME:
-		return "I188";
+		return "I80188";
 	}
 	return i186_info(context, regnum);
 }
@@ -480,7 +480,7 @@ const char *i186_info(void *context, int regnum)
 	switch (regnum)
 	{
 	case CPU_INFO_NAME:
-		return "I186";
+		return "I80186";
 	}
 	return i86_info(context, regnum);
 }

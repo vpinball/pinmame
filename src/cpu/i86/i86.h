@@ -91,7 +91,7 @@ typedef enum { AH,AL,CH,CL,DH,DL,BH,BL,SPH,SPL,BPH,BPL,SIH,SIL,DIH,DIL } BREGS;
 
 #define FETCH					(cpu_readop_arg(I.pc++))
 #define FETCHOP					(cpu_readop(I.pc++))
-#define PEEKOP(addr)			(cpu_readop(addr)) 
+#define PEEKOP(addr)			(cpu_readop(addr))
 #define FETCHWORD(var) 			{ var = cpu_readop_arg(I.pc); var += (cpu_readop_arg(I.pc + 1) << 8); I.pc += 2; }
 #define CHANGE_PC(addr)			change_pc20(addr)
 #define PUSH(val)				{ I.regs.w[SP] -= 2; WriteWord(((I.base[SS] + I.regs.w[SP]) & AMASK), val); }

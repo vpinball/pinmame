@@ -1,7 +1,7 @@
 /***************************************************************************
 
   M.A.M.E.32  -  Multiple Arcade Machine Emulator for Win32
-  Win32 Portions Copyright (C) 1997-2001 Michael Soderstrom and Chris Kirmse
+  Win32 Portions Copyright (C) 1997-2003 Michael Soderstrom and Chris Kirmse
     
   This file is part of MAME32, and may only be used, modified and
   distributed under the terms of the MAME license, in "readme.txt".
@@ -17,8 +17,6 @@
 #include "options.h"
 #include "ScreenShot.h"
 
-#define GAME_BROKEN (GAME_NOT_WORKING | GAME_UNEMULATED_PROTECTION)
-
 enum
 {
 	TAB_PICKER = 0,
@@ -29,22 +27,22 @@ enum
 
 typedef struct
 {
-BOOL neogeo;
-} game_data_type;
+	INT resource;
+	const char *icon_name;
+} ICONDATA;
 
 /* global variables */
-extern char *column_names[COLUMN_MAX];
+extern const char *column_names[COLUMN_MAX];
 
-extern game_data_type* GetGameData(void);
+extern const ICONDATA g_iconData[];
 
-extern HWND  GetMainWindow(void);
-extern int   GetNumGames(void);
-extern void  GetRealColumnOrder(int order[]);
-extern HICON LoadIconFromFile(char *iconname);
-extern BOOL  GameUsesTrackball(int game);
-extern void  UpdateScreenShot(void);
-extern void  ResizePickerControls(HWND hWnd);
-extern int   UpdateLoadProgress(const char* name, int current, int total);
+extern HWND GetMainWindow(void);
+extern HWND GetTreeView(void);
+extern int GetNumGames(void);
+extern void GetRealColumnOrder(int order[]);
+extern HICON LoadIconFromFile(const char *iconname);
+extern void UpdateScreenShot(void);
+extern void ResizePickerControls(HWND hWnd);
 
 // Move The in "The Title (notes)" to "Title, The (notes)"
 extern char *ModifyThe(const char *str);
@@ -52,9 +50,20 @@ extern char *ModifyThe(const char *str);
 // Convert Ampersand so it can display in a static control
 extern char* ConvertAmpersandString(const char *s);
 
-/* globalized for painting tree control */
-extern HBITMAP      hBitmap;
-extern HPALETTE     hPALbg;
-extern MYBITMAPINFO bmDesc;
+// globalized for painting tree control
+extern HBITMAP GetBackgroundBitmap(void);
+extern HPALETTE GetBackgroundPalette(void);
+extern MYBITMAPINFO * GetBackgroundInfo(void);
+
+int GetMinimumScreenShotWindowWidth(void);
+
+// we maintain an array of drivers sorted by name, useful all around
+int GetDriverIndex(const struct GameDriver *driver);
+int GetGameNameIndex(const char *name);
+int GetIndexFromSortedIndex(int sorted_index);
+
+int Mame32Main(HINSTANCE    hInstance,
+                   LPSTR        lpCmdLine,
+                   int          nCmdShow);
 
 #endif

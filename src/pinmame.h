@@ -126,12 +126,7 @@
 #pragma warning(disable:4761)		// "integral size mismatch in argument"
 #pragma warning(disable:4068)
 #pragma warning(disable:4005)
-#ifndef M_PI
-#  define M_PI 3.14159265358
-#endif // M_PI
-#ifndef PI
-#  define PI M_PI
-#endif // M_PI
+#define M_PI 3.14159265358
 #define strcasecmp stricmp
 #define snprintf _snprintf
 

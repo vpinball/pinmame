@@ -8,7 +8,9 @@
 
 #include "driver.h"
 #include "png.h"
+#include "harddisk.h"
 #include <stdarg.h>
+#include <ctype.h>
 
 
 //#define LOG_LOAD
@@ -26,7 +28,7 @@
 // routines don't clip at boundaries of the bitmap.
 #define BITMAP_SAFETY			16
 
-#define MAX_MALLOCS				1024
+#define MAX_MALLOCS				4096
 
 
 
@@ -35,24 +37,6 @@
 	Type definitions
 
 ***************************************************************************/
-
-struct rom_load_data
-{
-	int 		warnings;				/* warning count during processing */
-	int 		errors;					/* error count during processing */
-
-	int 		romsloaded;				/* current ROMs loaded count */
-	int			romstotal;				/* total number of ROMs to read */
-
-	void *		file;					/* current file */
-
-	UINT8 *		regionbase;				/* base of current region */
-	UINT32		regionlength;			/* length of current region */
-
-	char		errorbuf[4096];			/* accumulated errors */
-	UINT8		tempbuf[65536];			/* temporary buffer */
-};
-
 
 struct malloc_info
 {
@@ -87,16 +71,11 @@ int resource_tracking_tag = 0;
 size_t generic_nvram_size;
 data8_t *generic_nvram;
 
+/* hard disks */
+static void *hard_disk_handle[4];
 
-
-/***************************************************************************
-
-	Prototypes
-
-***************************************************************************/
-
-static int rom_load_new(const struct RomModule *romp);
-
+/* system BIOS */
+static int system_bios;
 
 
 /***************************************************************************
@@ -149,7 +128,7 @@ void showdisclaimer(void)   /* MAURY_BEGIN: dichiarazione */
 	read_wav_sample - read a WAV file as a sample
 -------------------------------------------------*/
 
-static struct GameSample *read_wav_sample(void *f)
+static struct GameSample *read_wav_sample(mame_file *f)
 {
 	unsigned long offset = 0;
 	UINT32 length, rate, filesize, temp32;
@@ -158,20 +137,20 @@ static struct GameSample *read_wav_sample(void *f)
 	struct GameSample *result;
 
 	/* read the core header and make sure it's a WAVE file */
-	offset += osd_fread(f, buf, 4);
+	offset += mame_fread(f, buf, 4);
 	if (offset < 4)
 		return NULL;
 	if (memcmp(&buf[0], "RIFF", 4) != 0)
 		return NULL;
 
 	/* get the total size */
-	offset += osd_fread(f, &filesize, 4);
+	offset += mame_fread(f, &filesize, 4);
 	if (offset < 8)
 		return NULL;
 	filesize = intelLong(filesize);
 
 	/* read the RIFF file type and make sure it's a WAVE file */
-	offset += osd_fread(f, buf, 4);
+	offset += mame_fread(f, buf, 4);
 	if (offset < 12)
 		return NULL;
 	if (memcmp(&buf[0], "WAVE", 4) != 0)
@@ -180,56 +159,56 @@ static struct GameSample *read_wav_sample(void *f)
 	/* seek until we find a format tag */
 	while (1)
 	{
-		offset += osd_fread(f, buf, 4);
-		offset += osd_fread(f, &length, 4);
+		offset += mame_fread(f, buf, 4);
+		offset += mame_fread(f, &length, 4);
 		length = intelLong(length);
 		if (memcmp(&buf[0], "fmt ", 4) == 0)
 			break;
 
 		/* seek to the next block */
-		osd_fseek(f, length, SEEK_CUR);
+		mame_fseek(f, length, SEEK_CUR);
 		offset += length;
 		if (offset >= filesize)
 			return NULL;
 	}
 
 	/* read the format -- make sure it is PCM */
-	offset += osd_fread_lsbfirst(f, &temp16, 2);
+	offset += mame_fread_lsbfirst(f, &temp16, 2);
 	if (temp16 != 1)
 		return NULL;
 
 	/* number of channels -- only mono is supported */
-	offset += osd_fread_lsbfirst(f, &temp16, 2);
+	offset += mame_fread_lsbfirst(f, &temp16, 2);
 	if (temp16 != 1)
 		return NULL;
 
 	/* sample rate */
-	offset += osd_fread(f, &rate, 4);
+	offset += mame_fread(f, &rate, 4);
 	rate = intelLong(rate);
 
 	/* bytes/second and block alignment are ignored */
-	offset += osd_fread(f, buf, 6);
+	offset += mame_fread(f, buf, 6);
 
 	/* bits/sample */
-	offset += osd_fread_lsbfirst(f, &bits, 2);
+	offset += mame_fread_lsbfirst(f, &bits, 2);
 	if (bits != 8 && bits != 16)
 		return NULL;
 
 	/* seek past any extra data */
-	osd_fseek(f, length - 16, SEEK_CUR);
+	mame_fseek(f, length - 16, SEEK_CUR);
 	offset += length - 16;
 
 	/* seek until we find a data tag */
 	while (1)
 	{
-		offset += osd_fread(f, buf, 4);
-		offset += osd_fread(f, &length, 4);
+		offset += mame_fread(f, buf, 4);
+		offset += mame_fread(f, &length, 4);
 		length = intelLong(length);
 		if (memcmp(&buf[0], "data", 4) == 0)
 			break;
 
 		/* seek to the next block */
-		osd_fseek(f, length, SEEK_CUR);
+		mame_fseek(f, length, SEEK_CUR);
 		offset += length;
 		if (offset >= filesize)
 			return NULL;
@@ -248,7 +227,7 @@ static struct GameSample *read_wav_sample(void *f)
 	/* read the data in */
 	if (bits == 8)
 	{
-		osd_fread(f, result->data, length);
+		mame_fread(f, result->data, length);
 
 		/* convert 8-bit data to signed samples */
 		for (temp32 = 0; temp32 < length; temp32++)
@@ -257,7 +236,7 @@ static struct GameSample *read_wav_sample(void *f)
 	else
 	{
 		/* 16-bit data is fine as-is */
-		osd_fread_lsbfirst(f, result->data, length);
+		mame_fread_lsbfirst(f, result->data, length);
 	}
 
 	return result;
@@ -298,17 +277,17 @@ struct GameSamples *readsamples(const char **samplenames,const char *basename)
 
 	for (i = 0;i < samples->total;i++)
 	{
-		void *f;
+		mame_file *f;
 
 		if (samplenames[i+skipfirst][0])
 		{
-			if ((f = osd_fopen(basename,samplenames[i+skipfirst],OSD_FILETYPE_SAMPLE,0)) == 0)
+			if ((f = mame_fopen(basename,samplenames[i+skipfirst],FILETYPE_SAMPLE,0)) == 0)
 				if (skipfirst)
-					f = osd_fopen(samplenames[0]+1,samplenames[i+skipfirst],OSD_FILETYPE_SAMPLE,0);
+					f = mame_fopen(samplenames[0]+1,samplenames[i+skipfirst],FILETYPE_SAMPLE,0);
 			if (f != 0)
 			{
 				samples->sample[i] = read_wav_sample(f);
-				osd_fclose(f);
+				mame_fclose(f);
 			}
 		}
 	}
@@ -497,12 +476,12 @@ void coin_lockout_global_w(int on)
 	with a 0 fill
 -------------------------------------------------*/
 
-void nvram_handler_generic_0fill(void *file, int read_or_write)
+void nvram_handler_generic_0fill(mame_file *file, int read_or_write)
 {
 	if (read_or_write)
-		osd_fwrite(file, generic_nvram, generic_nvram_size);
+		mame_fwrite(file, generic_nvram, generic_nvram_size);
 	else if (file)
-		osd_fread(file, generic_nvram, generic_nvram_size);
+		mame_fread(file, generic_nvram, generic_nvram_size);
 	else
 		memset(generic_nvram, 0, generic_nvram_size);
 }
@@ -513,67 +492,14 @@ void nvram_handler_generic_0fill(void *file, int read_or_write)
 	with a 1 fill
 -------------------------------------------------*/
 
-void nvram_handler_generic_1fill(void *file, int read_or_write)
+void nvram_handler_generic_1fill(mame_file *file, int read_or_write)
 {
 	if (read_or_write)
-		osd_fwrite(file, generic_nvram, generic_nvram_size);
+		mame_fwrite(file, generic_nvram, generic_nvram_size);
 	else if (file)
-		osd_fread(file, generic_nvram, generic_nvram_size);
+		mame_fread(file, generic_nvram, generic_nvram_size);
 	else
 		memset(generic_nvram, 0xff, generic_nvram_size);
-}
-
-
-
-/*-------------------------------------------------
-	set_visible_area - adjusts the visible portion
-	of the bitmap area dynamically
--------------------------------------------------*/
-
-void set_visible_area(int min_x,int max_x,int min_y,int max_y)
-{
-	Machine->visible_area.min_x = min_x;
-	Machine->visible_area.max_x = max_x;
-	Machine->visible_area.min_y = min_y;
-	Machine->visible_area.max_y = max_y;
-
-	/* vector games always use the whole bitmap */
-	if (Machine->drv->video_attributes & VIDEO_TYPE_VECTOR)
-	{
-		min_x = 0;
-		max_x = Machine->scrbitmap->width - 1;
-		min_y = 0;
-		max_y = Machine->scrbitmap->height - 1;
-	}
-	else
-	{
-		int temp;
-
-		if (Machine->orientation & ORIENTATION_SWAP_XY)
-		{
-			temp = min_x; min_x = min_y; min_y = temp;
-			temp = max_x; max_x = max_y; max_y = temp;
-		}
-		if (Machine->orientation & ORIENTATION_FLIP_X)
-		{
-			temp = Machine->scrbitmap->width - min_x - 1;
-			min_x = Machine->scrbitmap->width - max_x - 1;
-			max_x = temp;
-		}
-		if (Machine->orientation & ORIENTATION_FLIP_Y)
-		{
-			temp = Machine->scrbitmap->height - min_y - 1;
-			min_y = Machine->scrbitmap->height - max_y - 1;
-			max_y = temp;
-		}
-	}
-
-	osd_set_visible_area(min_x,max_x,min_y,max_y);
-
-	Machine->absolute_visible_area.min_x = min_x;
-	Machine->absolute_visible_area.max_x = max_x;
-	Machine->absolute_visible_area.min_y = min_y;
-	Machine->absolute_visible_area.max_y = max_y;
 }
 
 
@@ -592,17 +518,9 @@ struct mame_bitmap *bitmap_alloc_core(int width,int height,int depth,int use_aut
 {
 	struct mame_bitmap *bitmap;
 
-	/* cheesy kludge: pass in negative depth to prevent orientation swapping */
+	/* obsolete kludge: pass in negative depth to prevent orientation swapping */
 	if (depth < 0)
-	{
 		depth = -depth;
-	}
-
-	/* adjust for orientation */
-	else if (Machine->orientation & ORIENTATION_SWAP_XY)
-	{
-		int temp = width; width = height; height = temp;
-	}
 
 	/* verify it's a depth we can handle */
 	if (depth != 8 && depth != 15 && depth != 16 && depth != 32)
@@ -827,7 +745,7 @@ void end_resource_tracking(void)
 	the given filename
 -------------------------------------------------*/
 
-void save_screen_snapshot_as(void *fp,struct mame_bitmap *bitmap)
+void save_screen_snapshot_as(void *fp,struct mame_bitmap *bitmap,const struct rectangle *bounds)
 {
 	if (Machine->drv->video_attributes & VIDEO_TYPE_VECTOR)
 		png_write_bitmap(fp,bitmap);
@@ -836,26 +754,20 @@ void save_screen_snapshot_as(void *fp,struct mame_bitmap *bitmap)
 		struct mame_bitmap *copy;
 		int sizex, sizey, scalex, scaley;
 
-		sizex = Machine->visible_area.max_x - Machine->visible_area.min_x + 1;
-		sizey = Machine->visible_area.max_y - Machine->visible_area.min_y + 1;
+		sizex = bounds->max_x - bounds->min_x + 1;
+		sizey = bounds->max_y - bounds->min_y + 1;
 
 		scalex = (Machine->drv->video_attributes & VIDEO_PIXEL_ASPECT_RATIO_2_1) ? 2 : 1;
 		scaley = (Machine->drv->video_attributes & VIDEO_PIXEL_ASPECT_RATIO_1_2) ? 2 : 1;
 
 		copy = bitmap_alloc_depth(sizex * scalex,sizey * scaley,bitmap->depth);
-
 		if (copy)
 		{
+			struct rectangle temprect = *bounds;
 			int x,y,sx,sy;
 
-			sx = Machine->absolute_visible_area.min_x;
-			sy = Machine->absolute_visible_area.min_y;
-			if (Machine->orientation & ORIENTATION_SWAP_XY)
-			{
-				int t;
-
-				t = scalex; scalex = scaley; scaley = t;
-			}
+			sx = temprect.min_x;
+			sy = temprect.min_y;
 
 			switch (bitmap->depth)
 			{
@@ -903,28 +815,41 @@ void save_screen_snapshot_as(void *fp,struct mame_bitmap *bitmap)
 	save_screen_snapshot - save a screen snapshot
 -------------------------------------------------*/
 
-void save_screen_snapshot(struct mame_bitmap *bitmap)
+void save_screen_snapshot(struct mame_bitmap *bitmap,const struct rectangle *bounds)
 {
 	char name[20];
-	void *fp;
+	mame_file *fp;
 
 	/* avoid overwriting existing files */
 	/* first of all try with "gamename.png" */
 	sprintf(name,"%.8s", Machine->gamedrv->name);
-	if (osd_faccess(name,OSD_FILETYPE_SCREENSHOT))
+	if (mame_faccess(name,FILETYPE_SCREENSHOT))
 	{
 		do
 		{
 			/* otherwise use "nameNNNN.png" */
 			sprintf(name,"%.4s%04d",Machine->gamedrv->name,snapno++);
-		} while (osd_faccess(name, OSD_FILETYPE_SCREENSHOT));
+		} while (mame_faccess(name, FILETYPE_SCREENSHOT));
 	}
 
-	if ((fp = osd_fopen(Machine->gamedrv->name, name, OSD_FILETYPE_SCREENSHOT, 1)) != NULL)
+	if ((fp = mame_fopen(Machine->gamedrv->name, name, FILETYPE_SCREENSHOT, 1)) != NULL)
 	{
-		save_screen_snapshot_as(fp,bitmap);
-		osd_fclose(fp);
+		save_screen_snapshot_as(fp,bitmap,bounds);
+		mame_fclose(fp);
 	}
+}
+
+
+
+/***************************************************************************
+
+	Hard disk handling
+
+***************************************************************************/
+
+void *get_disk_handle(int diskindex)
+{
+	return hard_disk_handle[diskindex];
 }
 
 
@@ -1011,7 +936,6 @@ const struct RomModule *rom_next_chunk(const struct RomModule *romp)
 }
 
 
-
 /*-------------------------------------------------
 	debugload - log data to a file
 -------------------------------------------------*/
@@ -1096,23 +1020,72 @@ static void handle_missing_file(struct rom_load_data *romdata, const struct RomM
 	}
 }
 
-
 /*-------------------------------------------------
-	verify_length_and_crc - verify the length
-	and CRC of a file
+	dump_wrong_and_correct_checksums - dump an
+	error message containing the wrong and the
+	correct checksums for a given ROM
 -------------------------------------------------*/
 
-static void verify_length_and_crc(struct rom_load_data *romdata, const char *name, UINT32 explength, UINT32 expcrc)
+static void dump_wrong_and_correct_checksums(struct rom_load_data* romdata, const char* hash, const char* acthash)
 {
-	UINT32 actlength, actcrc;
+	unsigned i;
+	char chksum[256];
+	unsigned found_functions;
+	unsigned wrong_functions;
+
+	found_functions = hash_data_used_functions(hash) & hash_data_used_functions(acthash);
+
+	hash_data_print(hash, found_functions, chksum);
+	sprintf(&romdata->errorbuf[strlen(romdata->errorbuf)], "    EXPECTED: %s\n", chksum);
+
+	/* We dump informations only of the functions for which MAME provided
+		a correct checksum. Other functions we might have calculated are
+		useless here */
+	hash_data_print(acthash, found_functions, chksum);
+	sprintf(&romdata->errorbuf[strlen(romdata->errorbuf)], "       FOUND: %s\n", chksum);
+
+	/* For debugging purposes, we check if the checksums available in the
+	   driver are correctly specified or not. This can be done by checking
+	   the return value of one of the extract functions. Maybe we want to
+	   activate this only in debug buils, but many developers only use
+	   release builds, so I keep it as is for now. */
+	wrong_functions = 0;
+	for (i=0;i<HASH_NUM_FUNCTIONS;i++)
+		if (hash_data_extract_printable_checksum(hash, 1<<i, chksum) == 2)
+			wrong_functions |= 1<<i;
+
+	if (wrong_functions)
+	{
+		for (i=0;i<HASH_NUM_FUNCTIONS;i++)
+			if (wrong_functions & (1<<i))
+			{
+				sprintf(&romdata->errorbuf[strlen(romdata->errorbuf)],
+					"\tInvalid %s checksum treated as 0 (check leading zeros)\n",
+					hash_function_name(1<<i));
+
+				romdata->warnings++;
+			}
+	}
+}
+
+
+/*-------------------------------------------------
+	verify_length_and_hash - verify the length
+	and hash signatures of a file
+-------------------------------------------------*/
+
+static void verify_length_and_hash(struct rom_load_data *romdata, const char *name, UINT32 explength, const char* hash)
+{
+	UINT32 actlength;
+	const char* acthash;
 
 	/* we've already complained if there is no file */
 	if (!romdata->file)
 		return;
 
 	/* get the length and CRC from the file */
-	actlength = osd_fsize(romdata->file);
-	actcrc = osd_fcrc(romdata->file);
+	actlength = mame_fsize(romdata->file);
+	acthash = mame_fhash(romdata->file);
 
 	/* verify length */
 	if (explength != actlength)
@@ -1121,20 +1094,26 @@ static void verify_length_and_crc(struct rom_load_data *romdata, const char *nam
 		romdata->warnings++;
 	}
 
-	/* verify CRC */
-	if (expcrc != actcrc)
+	/* If there is no good dump known, write it */
+	if (hash_data_has_info(hash, HASH_INFO_NO_DUMP))
 	{
-		/* expected CRC == 0 means no good dump known */
-		if (expcrc == 0)
 			sprintf(&romdata->errorbuf[strlen(romdata->errorbuf)], "%-12s NO GOOD DUMP KNOWN\n", name);
-
-		/* inverted CRC means needs redump */
-		else if (expcrc == BADCRC(actcrc))
-			sprintf(&romdata->errorbuf[strlen(romdata->errorbuf)], "%-12s ROM NEEDS REDUMP\n",name);
-
+		romdata->warnings++;
+	}
+	/* verify checksums */
+	else if (!hash_data_is_equal(hash, acthash, 0))
+	{
 		/* otherwise, it's just bad */
-		else
-			sprintf(&romdata->errorbuf[strlen(romdata->errorbuf)], "%-12s WRONG CRC (expected: %08x found: %08x)\n", name, expcrc, actcrc);
+		sprintf(&romdata->errorbuf[strlen(romdata->errorbuf)], "%-12s WRONG CHECKSUMS:\n", name);
+
+		dump_wrong_and_correct_checksums(romdata, hash, acthash);
+
+		romdata->warnings++;
+	}
+	/* If it matches, but it is actually a bad dump, write it */
+	else if (hash_data_has_info(hash, HASH_INFO_BAD_DUMP))
+	{
+		sprintf(&romdata->errorbuf[strlen(romdata->errorbuf)], "%-12s ROM NEEDS REDUMP\n",name);
 		romdata->warnings++;
 	}
 }
@@ -1150,7 +1129,7 @@ static int display_rom_load_results(struct rom_load_data *romdata)
 	int region;
 
 	/* final status display */
-	osd_display_loading_rom_message(NULL, romdata->romsloaded, romdata->romstotal);
+	osd_display_loading_rom_message(NULL, romdata);
 
 	/* only display if we have warnings or errors */
 	if (romdata->warnings || romdata->errors)
@@ -1216,7 +1195,7 @@ static void region_post_process(struct rom_load_data *romdata, const struct RomM
 	/* if this is a CPU region, override with the CPU width and endianness */
 	if (type >= REGION_CPU1 && type < REGION_CPU1 + MAX_CPU)
 	{
-		int cputype = Machine->drv->cpu[type - REGION_CPU1].cpu_type & ~CPU_FLAGS_MASK;
+		int cputype = Machine->drv->cpu[type - REGION_CPU1].cpu_type;
 		if (cputype != 0)
 		{
 			datawidth = cputype_databus_width(cputype) / 8;
@@ -1254,29 +1233,25 @@ static void region_post_process(struct rom_load_data *romdata, const struct RomM
 
 /*-------------------------------------------------
 	open_rom_file - open a ROM file, searching
-	up the parent and loading via CRC
+	up the parent and loading by checksum
 -------------------------------------------------*/
 
 static int open_rom_file(struct rom_load_data *romdata, const struct RomModule *romp)
 {
 	const struct GameDriver *drv;
-	char crc[9];
+
+	++romdata->romsloaded;
 
 	/* update status display */
-	if (osd_display_loading_rom_message(ROM_GETNAME(romp), ++romdata->romsloaded, romdata->romstotal) != 0)
+	if (osd_display_loading_rom_message(ROM_GETNAME(romp), romdata))
        return 0;
 
-	/* first attempt reading up the chain through the parents */
+	/* Attempt reading up the chain through the parents. It automatically also
+	   attempts any kind of load by checksum supported by the archives. */
 	romdata->file = NULL;
 	for (drv = Machine->gamedrv; !romdata->file && drv; drv = drv->clone_of)
 		if (drv->name && *drv->name)
-			romdata->file = osd_fopen(drv->name, ROM_GETNAME(romp), OSD_FILETYPE_ROM, 0);
-
-	/* if that failed, attempt to open via CRC */
-	sprintf(crc, "%08x", ROM_GETCRC(romp));
-	for (drv = Machine->gamedrv; !romdata->file && drv; drv = drv->clone_of)
-		if (drv->name && *drv->name)
-			romdata->file = osd_fopen(drv->name, crc, OSD_FILETYPE_ROM, 0);
+			romdata->file = mame_fopen_rom(drv->name, ROM_GETNAME(romp), ROM_GETHASHDATA(romp));
 
 	/* return the result */
 	return (romdata->file != NULL);
@@ -1292,7 +1267,7 @@ static int rom_fread(struct rom_load_data *romdata, UINT8 *buffer, int length)
 {
 	/* files just pass through */
 	if (romdata->file)
-		return osd_fread(romdata->file, buffer, length);
+		return mame_fread(romdata->file, buffer, length);
 
 	/* otherwise, fill with randomness */
 	else
@@ -1444,8 +1419,8 @@ static int fill_rom_data(struct rom_load_data *romdata, const struct RomModule *
 		return 0;
 	}
 
-	/* fill the data */
-	memset(base, ROM_GETCRC(romp) & 0xff, numbytes);
+	/* fill the data (filling value is stored in place of the hashdata) */
+	memset(base, (UINT32)ROM_GETHASHDATA(romp) & 0xff, numbytes);
 	return 1;
 }
 
@@ -1459,7 +1434,7 @@ static int copy_rom_data(struct rom_load_data *romdata, const struct RomModule *
 	UINT8 *base = romdata->regionbase + ROM_GETOFFSET(romp);
 	int srcregion = ROM_GETFLAGS(romp) >> 24;
 	UINT32 numbytes = ROM_GETLENGTH(romp);
-	UINT32 srcoffs = ROM_GETCRC(romp);
+	UINT32 srcoffs = (UINT32)ROM_GETHASHDATA(romp);  /* srcoffset in place of hashdata */
 	UINT8 *srcbase;
 
 	/* make sure we copy within the region space */
@@ -1540,60 +1515,67 @@ static int process_rom_entries(struct rom_load_data *romdata, const struct RomMo
 		/* handle files */
 		else if (ROMENTRY_ISFILE(romp))
 		{
-			const struct RomModule *baserom = romp;
-			int explength = 0;
-
-			/* open the file */
-			debugload("Opening ROM file: %s\n", ROM_GETNAME(romp));
-			if (!open_rom_file(romdata, romp))
-				handle_missing_file(romdata, romp);
-
-			/* loop until we run out of reloads */
-			do
+			if (!ROM_GETBIOSFLAGS(romp) || (ROM_GETBIOSFLAGS(romp) == (system_bios+1))) /* alternate bios sets */
 			{
-				/* loop until we run out of continues */
+				const struct RomModule *baserom = romp;
+				int explength = 0;
+
+				/* open the file */
+				debugload("Opening ROM file: %s\n", ROM_GETNAME(romp));
+				if (!open_rom_file(romdata, romp))
+					handle_missing_file(romdata, romp);
+
+				/* loop until we run out of reloads */
 				do
 				{
-					struct RomModule modified_romp = *romp++;
-					int readresult;
+					/* loop until we run out of continues */
+					do
+					{
+						struct RomModule modified_romp = *romp++;
+						int readresult;
 
-					/* handle flag inheritance */
-					if (!ROM_INHERITSFLAGS(&modified_romp))
-						lastflags = modified_romp._length & ROM_INHERITEDFLAGS;
-					else
-						modified_romp._length = (modified_romp._length & ~ROM_INHERITEDFLAGS) | lastflags;
+						/* handle flag inheritance */
+						if (!ROM_INHERITSFLAGS(&modified_romp))
+							lastflags = modified_romp._flags;
+						else
+							modified_romp._flags = (modified_romp._flags & ~ROM_INHERITEDFLAGS) | lastflags;
 
-					explength += UNCOMPACT_LENGTH(modified_romp._length);
+						explength += ROM_GETLENGTH(&modified_romp);
 
-                    /* attempt to read using the modified entry */
-					readresult = read_rom_data(romdata, &modified_romp);
-					if (readresult == -1)
-						goto fatalerror;
+						/* attempt to read using the modified entry */
+						readresult = read_rom_data(romdata, &modified_romp);
+						if (readresult == -1)
+							goto fatalerror;
+					}
+					while (ROMENTRY_ISCONTINUE(romp));
+
+					/* if this was the first use of this file, verify the length and CRC */
+					if (baserom)
+					{
+						debugload("Verifying length (%X) and checksums\n", explength);
+						verify_length_and_hash(romdata, ROM_GETNAME(baserom), explength, ROM_GETHASHDATA(baserom));
+						debugload("Verify finished\n");
+					}
+
+					/* reseek to the start and clear the baserom so we don't reverify */
+					if (romdata->file)
+						mame_fseek(romdata->file, 0, SEEK_SET);
+					baserom = NULL;
+					explength = 0;
 				}
-				while (ROMENTRY_ISCONTINUE(romp));
+				while (ROMENTRY_ISRELOAD(romp));
 
-				/* if this was the first use of this file, verify the length and CRC */
-				if (baserom)
-				{
-					debugload("Verifying length (%X) and CRC (%08X)\n", explength, ROM_GETCRC(baserom));
-					verify_length_and_crc(romdata, ROM_GETNAME(baserom), explength, ROM_GETCRC(baserom));
-					debugload("Verify succeeded\n");
-				}
-
-				/* reseek to the start and clear the baserom so we don't reverify */
+				/* close the file */
 				if (romdata->file)
-					osd_fseek(romdata->file, 0, SEEK_SET);
-				baserom = NULL;
-				explength = 0;
+				{
+					debugload("Closing ROM file\n");
+					mame_fclose(romdata->file);
+					romdata->file = NULL;
+				}
 			}
-			while (ROMENTRY_ISRELOAD(romp));
-
-			/* close the file */
-			if (romdata->file)
+			else
 			{
-				debugload("Closing ROM file\n");
-				osd_fclose(romdata->file);
-				romdata->file = NULL;
+				romp++; /* skip over file */
 			}
 		}
 	}
@@ -1602,28 +1584,190 @@ static int process_rom_entries(struct rom_load_data *romdata, const struct RomMo
 	/* error case */
 fatalerror:
 	if (romdata->file)
-		osd_fclose(romdata->file);
+		mame_fclose(romdata->file);
 	romdata->file = NULL;
 	return 0;
 }
 
 
+
 /*-------------------------------------------------
-	readroms - load all the ROMs for this machine
+	process_disk_entries - process all disk entries
+	for a region
 -------------------------------------------------*/
 
-int readroms(void)
+static int process_disk_entries(struct rom_load_data *romdata, const struct RomModule *romp)
 {
-	return rom_load_new(Machine->gamedrv->rom);
+	/* loop until we hit the end of this region */
+	while (!ROMENTRY_ISREGIONEND(romp))
+	{
+		/* handle files */
+		if (ROMENTRY_ISFILE(romp))
+		{
+			struct hard_disk_header header;
+			char filename[1024], *c;
+			void *source, *diff;
+			UINT8 md5[16];
+			int err;
+
+			/* make the filename of the source */
+			strcpy(filename, ROM_GETNAME(romp));
+			c = strrchr(filename, '.');
+			if (c)
+				strcpy(c, ".chd");
+			else
+				strcat(filename, ".chd");
+
+			/* first open the source drive */
+			debugload("Opening disk image: %s\n", filename);
+			source = hard_disk_open(filename, 0, NULL);
+			if (!source)
+			{
+				sprintf(&romdata->errorbuf[strlen(romdata->errorbuf)], "%-12s NOT FOUND\n", filename);
+				romdata->errors++;
+				romp++;
+				continue;
+			}
+
+			/* get the header and extract the MD5 */
+			header = *hard_disk_get_header(source);
+			if (!hash_data_extract_binary_checksum(ROM_GETHASHDATA(romp), HASH_MD5, md5))
+			{
+				printf("%-12s INVALID MD5 IN SOURCE\n", filename);
+				goto fatalerror;
+			}
+
+			/* verify the MD5 */
+			if (memcmp(md5, header.md5, sizeof(md5)))
+			{
+				char acthash[HASH_BUF_SIZE];
+
+				/* Prepare a hashdata to be able to call dump_wrong_and_correct_checksums() */
+				hash_data_clear(acthash);
+				hash_data_insert_binary_checksum(acthash, HASH_MD5, header.md5);
+
+				/* Emit the warning to the screen */
+				sprintf(&romdata->errorbuf[strlen(romdata->errorbuf)], "%-12s WRONG CHECKSUMS:\n", filename);
+				dump_wrong_and_correct_checksums(romdata, ROM_GETHASHDATA(romp), acthash);
+				romdata->warnings++;
+			}
+
+			if (hash_data_used_functions(ROM_GETHASHDATA(romp)) != HASH_MD5)
+			{
+				sprintf(&romdata->errorbuf[strlen(romdata->errorbuf)], "%-12s IGNORED ADDITIONAL CHECKSUM INFORMATIONS (ONLY MD5 SUPPORTED)\n",
+					filename);
+			}
+
+
+			/* make the filename of the diff */
+			strcpy(filename, ROM_GETNAME(romp));
+			c = strrchr(filename, '.');
+			if (c)
+				strcpy(c, ".dif");
+			else
+				strcat(filename, ".dif");
+
+			/* try to open the diff */
+			debugload("Opening differencing image: %s\n", filename);
+			diff = hard_disk_open(filename, 1, source);
+			if (!diff)
+			{
+				/* didn't work; try creating it instead */
+
+				/* first get the parent's header and modify that */
+				header.flags |= HDFLAGS_HAS_PARENT | HDFLAGS_IS_WRITEABLE;
+				header.compression = HDCOMPRESSION_NONE;
+				memcpy(header.parentmd5, header.md5, sizeof(header.parentmd5));
+				memset(header.md5, 0, sizeof(header.md5));
+
+				/* then do the create; if it fails, we're in trouble */
+				debugload("Creating differencing image: %s\n", filename);
+				err = hard_disk_create(filename, &header);
+				if (err != HDERR_NONE)
+				{
+					sprintf(&romdata->errorbuf[strlen(romdata->errorbuf)], "%-12s: CAN'T CREATE DIFF FILE\n", filename);
+					romdata->errors++;
+					romp++;
+					continue;
+				}
+
+				/* open the newly-created diff file */
+				debugload("Opening differencing image: %s\n", filename);
+				diff = hard_disk_open(filename, 1, source);
+				if (!diff)
+				{
+					sprintf(&romdata->errorbuf[strlen(romdata->errorbuf)], "%-12s: CAN'T OPEN DIFF FILE\n", filename);
+					romdata->errors++;
+					romp++;
+					continue;
+				}
+			}
+
+			/* we're okay, set the handle */
+			debugload("Assigning to handle %d\n", DISK_GETINDEX(romp));
+			hard_disk_handle[DISK_GETINDEX(romp)] = diff;
+			romp++;
+		}
+	}
+	return 1;
+
+	/* error case */
+fatalerror:
+	return 0;
 }
 
 
 /*-------------------------------------------------
-	rom_load_new - new, more flexible ROM
+	determine_bios_rom - determine system_bios
+	from SystemBios structure and options.bios
+-------------------------------------------------*/
+
+int determine_bios_rom(const struct SystemBios *bios)
+{
+	const struct SystemBios *firstbios = bios;
+
+	/* set to default */
+	int bios_no = 0;
+
+	/* Not system_bios_0 and options.bios is set  */
+	if(bios && (options.bios != NULL))
+	{
+		/* Allow -bios n to still be used */
+		while(!BIOSENTRY_ISEND(bios))
+		{
+			char bios_number[3];
+			sprintf(bios_number, "%d", bios->value);
+
+			if(!strcmp(bios_number, options.bios))
+				bios_no = bios->value;
+
+			bios++;
+		}
+
+		bios = firstbios;
+
+		/* Test for bios short names */
+		while(!BIOSENTRY_ISEND(bios))
+		{
+			if(!strcmp(bios->_name, options.bios))
+				bios_no = bios->value;
+
+			bios++;
+		}
+	}
+
+	debugload("Using System BIOS: %d\n", bios_no);
+
+	return bios_no;
+}
+
+
+/*-------------------------------------------------
+	rom_load - new, more flexible ROM
 	loading system
 -------------------------------------------------*/
 
-int rom_load_new(const struct RomModule *romp)
+int rom_load(const struct RomModule *romp)
 {
 	const struct RomModule *regionlist[REGION_MAX];
 	const struct RomModule *region;
@@ -1638,6 +1782,12 @@ int rom_load_new(const struct RomModule *romp)
 	memset(&romdata, 0, sizeof(romdata));
 	romdata.romstotal = count_roms(romp);
 
+	/* reset the disk list */
+	memset(hard_disk_handle, 0, sizeof(hard_disk_handle));
+
+	/* determine the correct biosset to load based on options.bios string */
+	system_bios = determine_bios_rom(Machine->gamedrv->bios);
+
 	/* loop until we hit the end */
 	for (region = romp, regnum = 0; region; region = rom_next_region(region), regnum++)
 	{
@@ -1651,10 +1801,6 @@ int rom_load_new(const struct RomModule *romp)
 			printf("Error: missing ROM_REGION header\n");
 			return 1;
 		}
-#ifdef PINMAME /* MAME crahes if CPU regions are not created */
-#  define ROMREGION_ISCPU(r) ((ROMREGION_GETTYPE(r) >= REGION_CPU1) && (ROMREGION_GETTYPE(r) <= REGION_CPU8))
-              if (!ROMREGION_ISCPU(region))
-#endif /* PINMAME */
 
 		/* if sound is disabled and it's a sound-only region, skip it */
 		if (Machine->sample_rate == 0 && ROMREGION_ISSOUNDONLY(region))
@@ -1687,8 +1833,16 @@ int rom_load_new(const struct RomModule *romp)
 #endif
 
 		/* now process the entries in the region */
-		if (!process_rom_entries(&romdata, region + 1))
-			return 1;
+		if (ROMREGION_ISROMDATA(region))
+		{
+			if (!process_rom_entries(&romdata, region + 1))
+				return 1;
+		}
+		else if (ROMREGION_ISDISKDATA(region))
+		{
+			if (!process_disk_entries(&romdata, region + 1))
+				return 1;
+		}
 
 		/* add this region to the list */
 		if (regiontype < REGION_MAX)
@@ -1717,6 +1871,7 @@ int rom_load_new(const struct RomModule *romp)
 void printromlist(const struct RomModule *romp,const char *basename)
 {
 	const struct RomModule *region, *rom, *chunk;
+	char buf[512];
 
 	if (!romp) return;
 
@@ -1732,16 +1887,34 @@ void printromlist(const struct RomModule *romp,const char *basename)
 		for (rom = rom_first_file(region); rom; rom = rom_next_file(rom))
 		{
 			const char *name = ROM_GETNAME(rom);
-			int expchecksum = ROM_GETCRC(rom);
-			int length = 0;
+			const char* hash = ROM_GETHASHDATA(rom);
+			int length = -1; /* default is for disks! */
 
-			for (chunk = rom_first_chunk(rom); chunk; chunk = rom_next_chunk(chunk))
-				length += ROM_GETLENGTH(chunk);
+			if (ROMREGION_ISROMDATA(region))
+			{
+				length = 0;
+				for (chunk = rom_first_chunk(rom); chunk; chunk = rom_next_chunk(chunk))
+					length += ROM_GETLENGTH(chunk);
+			}
 
-			if (expchecksum)
-				printf("%-12s  %7d bytes  %08x\n",name,length,expchecksum);
+			printf("%-12s ", name);
+			if (length >= 0)
+				printf("%7d",length);
+				else
+				printf("       ");
+
+			if (!hash_data_has_info(hash, HASH_INFO_NO_DUMP))
+			{
+				if (hash_data_has_info(hash, HASH_INFO_BAD_DUMP))
+					printf(" BAD");
+
+				hash_data_print(hash, 0, buf);
+				printf(" %s", buf);
+			}
 			else
-				printf("%-12s  %7d bytes  NO GOOD DUMP KNOWN\n",name,length);
+				printf(" NO GOOD DUMP KNOWN");
+
+			printf("\n");
 		}
 	}
 }

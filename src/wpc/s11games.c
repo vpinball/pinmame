@@ -23,9 +23,9 @@ S11_INPUT_PORTS_START(s11, 1) S11_INPUT_PORTS_END
 / Space Shuttle (S9) 12/84
 /--------------------*/
 static core_tLCDLayout dispSshtl[] = { \
-  { 0, 0,21,7, CORE_SEG87},
-  { 2, 0,29,7, CORE_SEG87},
-  { 4, 0, 1,7, CORE_SEG87}, { 4,26, 9,7,CORE_SEG87},
+  { 0, 0,21,7, CORE_SEG87F},
+  { 2, 0,29,7, CORE_SEG87F},
+  { 4, 0, 1,7, CORE_SEG87F}, { 4,26, 9,7,CORE_SEG87F},
   { 5,16, 0,1, CORE_SEG7},  { 5,18, 8,1,CORE_SEG7},
   { 5,21,20,1, CORE_SEG7},  { 5,23,28,1,CORE_SEG7},{0}
 };
@@ -59,13 +59,7 @@ CORE_GAMEDEF(sorcr, l1, "Sorcerer (L-1)", 1985, "Williams", s9_mS9S,0)
 /*--------------------
 / Comet (S9) 06/85
 /--------------------*/
-static core_tLCDLayout dispComet[] = { \
-  {  0, 0,21, 7, CORE_SEG87}, {3, 0,29,7,CORE_SEG87},
-  {  0,18, 1, 7, CORE_SEG87}, {3,18, 9,7,CORE_SEG87},
-  {  6, 8,20, 1, CORE_SEG7 }, {6,10,28,1,CORE_SEG7},
-  {  6, 3, 0, 1, CORE_SEG7 }, {6, 5, 8,1,CORE_SEG7}, {0}
-};
-INITGAMEFULL(comet, GEN_S9, dispComet, 0, FLIP_SWNO(0,30),
+INITGAMEFULL(comet, GEN_S9, s11_dispS9, 0, FLIP_SWNO(0,30),
              S11_BCDDIAG|S11_BCDDISP,0,47,48,40,41,42,0)
 S9_ROMSTARTx4(comet,l4,"cpu_u20.128", CRC(36193600))
 S9S_SOUNDROM41111(     "cpu_u49.128", CRC(f1db0cbe),

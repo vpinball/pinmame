@@ -9,20 +9,25 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <unzip.h>
-#include "zlib/zlib.h"
+#include <zlib.h>
 
 #ifndef MESS
-enum { LIST_SHORT = 1, LIST_INFO, LIST_FULL, LIST_SAMDIR, LIST_ROMS, LIST_SAMPLES,
+enum { LIST_SHORT = 1, LIST_INFO, LIST_XML, LIST_FULL, LIST_SAMDIR, LIST_ROMS, LIST_SAMPLES,
 		LIST_LMR, LIST_DETAILS, LIST_GAMELIST,
 		LIST_GAMES, LIST_CLONES,
-		LIST_WRONGORIENTATION, LIST_WRONGFPS, LIST_CRC, LIST_DUPCRC, LIST_WRONGMERGE,
-		LIST_ROMSIZE, LIST_PALETTESIZE, LIST_CPU, LIST_SOURCEFILE };
+		LIST_WRONGORIENTATION, LIST_WRONGFPS, LIST_CRC, LIST_SHA1, LIST_MD5, LIST_DUPCRC,
+		LIST_WRONGMERGE, LIST_ROMSIZE, LIST_ROMDISTRIBUTION, LIST_ROMNUMBER, LIST_PALETTESIZE,
+		LIST_CPU, LIST_CPUCLASS, LIST_NOSOUND, LIST_SOUND, LIST_NVRAM, LIST_SOURCEFILE,
+		LIST_GAMESPERSOURCEFILE };
 #else
-enum { LIST_SHORT = 1, LIST_INFO, LIST_FULL, LIST_SAMDIR, LIST_ROMS, LIST_SAMPLES,
+#include "messwin.h"
+enum { LIST_SHORT = 1, LIST_INFO, LIST_XML, LIST_FULL, LIST_SAMDIR, LIST_ROMS, LIST_SAMPLES,
 		LIST_LMR, LIST_DETAILS, LIST_GAMELIST,
 		LIST_GAMES, LIST_CLONES,
-		LIST_WRONGORIENTATION, LIST_WRONGFPS, LIST_CRC, LIST_DUPCRC, LIST_WRONGMERGE,
-		LIST_ROMSIZE, LIST_PALETTESIZE, LIST_CPU, LIST_SOURCEFILE, LIST_MESSINFO };
+		LIST_WRONGORIENTATION, LIST_WRONGFPS, LIST_CRC, LIST_SHA1, LIST_MD5, LIST_DUPCRC, LIST_WRONGMERGE,
+		LIST_ROMSIZE, LIST_ROMDISTRIBUTION, LIST_ROMNUMBER, LIST_PALETTESIZE,
+		LIST_CPU, LIST_CPUCLASS, LIST_NOSOUND, LIST_SOUND, LIST_NVRAM, LIST_SOURCEFILE,
+		LIST_GAMESPERSOURCEFILE, LIST_MESSTEXT, LIST_MESSDEVICES, LIST_MESSCREATEDIR };
 #endif
 
 #define VERIFY_ROMS		0x00000001
@@ -34,6 +39,14 @@ enum { LIST_SHORT = 1, LIST_INFO, LIST_FULL, LIST_SAMDIR, LIST_ROMS, LIST_SAMPLE
 #define KNOWN_ALL   1
 #define KNOWN_NONE  2
 #define KNOWN_SOME  3
+
+#ifndef MESS
+#define YEAR_BEGIN 1975
+#define YEAR_END   2000
+#else
+#define YEAR_BEGIN 1950
+#define YEAR_END   2000
+#endif
 
 static int list = 0;
 static int listclones = 1;
@@ -55,15 +68,25 @@ struct rc_option frontend_opts[] = {
 	{ "listdetails", NULL, rc_set_int, &list, NULL, LIST_DETAILS, 0, NULL, "detailed info" },
 	{ "gamelist", NULL, rc_set_int, &list, NULL, LIST_GAMELIST, 0, NULL, "output gamelist.txt main body" },
 	{ "listsourcefile",	NULL, rc_set_int, &list, NULL, LIST_SOURCEFILE, 0, NULL, "driver sourcefile" },
+	{ "listgamespersourcefile",	NULL, rc_set_int, &list, NULL, LIST_GAMESPERSOURCEFILE, 0, NULL, "games per sourcefile" },
 	{ "listinfo", "li", rc_set_int, &list, NULL, LIST_INFO, 0, NULL, "all available info on driver" },
+	{ "listxml", "lx", rc_set_int, &list, NULL, LIST_XML, 0, NULL, "all available info on driver in XML format" },
 	{ "listclones", "lc", rc_set_int, &list, NULL, LIST_CLONES, 0, NULL, "show clones" },
 	{ "listsamdir", NULL, rc_set_int, &list, NULL, LIST_SAMDIR, 0, NULL, "shared sample directory" },
-	{ "listcrc", NULL, rc_set_int, &list, NULL, LIST_CRC, 0, NULL, "checksums" },
+	{ "listcrc", NULL, rc_set_int, &list, NULL, LIST_CRC, 0, NULL, "CRC-32s" },
+	{ "listsha1", NULL, rc_set_int, &list, NULL, LIST_SHA1, 0, NULL, "SHA-1s" },
+	{ "listmd5", NULL, rc_set_int, &list, NULL, LIST_MD5, 0, NULL, "MD5s" },
 	{ "listdupcrc", NULL, rc_set_int, &list, NULL, LIST_DUPCRC, 0, NULL, "duplicate crc's" },
 	{ "listwrongmerge", "lwm", rc_set_int, &list, NULL, LIST_WRONGMERGE, 0, NULL, "wrong merge attempts" },
-	{ "listromsize", "lrs", rc_set_int, &list, NULL, LIST_ROMSIZE, 0, NULL, "rom size" },
+	{ "listromsize", NULL, rc_set_int, &list, NULL, LIST_ROMSIZE, 0, NULL, "rom size" },
+	{ "listromdistribution", NULL, rc_set_int, &list, NULL, LIST_ROMDISTRIBUTION, 0, NULL, "rom distribution" },
+	{ "listromnumber", NULL, rc_set_int, &list, NULL, LIST_ROMNUMBER, 0, NULL, "rom size" },
 	{ "listpalettesize", "lps", rc_set_int, &list, NULL, LIST_PALETTESIZE, 0, NULL, "palette size" },
 	{ "listcpu", NULL, rc_set_int, &list, NULL, LIST_CPU, 0, NULL, "cpu's used" },
+	{ "listcpuclass", NULL, rc_set_int, &list, NULL, LIST_CPUCLASS, 0, NULL, "class of cpu's used by year" },
+	{ "listnosound", NULL, rc_set_int, &list, NULL, LIST_NOSOUND, 0, NULL, "drivers missing sound support" },
+	{ "listsound", NULL, rc_set_int, &list, NULL, LIST_SOUND, 0, NULL, "sound chips used" },
+	{ "listnvram",	NULL, rc_set_int, &list, NULL, LIST_NVRAM, 0, NULL, "games with nvram" },
 #ifdef MAME_DEBUG /* do not put this into a public release! */
 	{ "lmr", NULL, rc_set_int, &list, NULL, LIST_LMR, 0, NULL, "missing roms" },
 #endif
@@ -71,26 +94,26 @@ struct rc_option frontend_opts[] = {
 	{ "wrongfps", NULL, rc_set_int, &list, NULL, LIST_WRONGFPS, 0, NULL, "wrong fps" },
 	{ "clones", NULL, rc_bool, &listclones, "1", 0, 0, NULL, "enable/disable clones" },
 #ifdef MESS
-	{ "listdevices", NULL, rc_set_int, &list, NULL, LIST_MESSINFO, 0, NULL, NULL },
-	{ "listtext", NULL, rc_set_int, &list, NULL, LIST_MESSINFO, 0, NULL, NULL },
-	{ "createdir", NULL, rc_set_int, &list, NULL, LIST_MESSINFO, 0, NULL, NULL },
+	{ "listdevices", NULL, rc_set_int, &list, NULL, LIST_MESSDEVICES, 0, NULL, "list available devices" },
+	{ "listtext", NULL, rc_set_int, &list, NULL, LIST_MESSTEXT, 0, NULL, "list available file extensions" },
+	{ "createdir", NULL, rc_set_int, &list, NULL, LIST_MESSCREATEDIR, 0, NULL, NULL },
 #endif
-	{ "listroms", NULL, rc_set_int, &list, NULL, LIST_ROMS, 0, NULL, NULL },
-	{ "listsamples", NULL, rc_set_int, &list, NULL, LIST_SAMPLES, 0, NULL, NULL },
-	{ "verifyroms", NULL, rc_set_int, &verify, NULL, VERIFY_ROMS, 0, NULL, NULL },
-	{ "verifysets", NULL, rc_set_int, &verify, NULL, VERIFY_ROMS|VERIFY_VERBOSE|VERIFY_TERSE, 0, NULL, NULL },
-	{ "vset", NULL, rc_set_int, &verify, NULL, VERIFY_ROMS|VERIFY_VERBOSE, 0, NULL, NULL },
-	{ "verifysamples", NULL, rc_set_int, &verify, NULL, VERIFY_SAMPLES|VERIFY_VERBOSE, 0, NULL, NULL },
-	{ "vsam", NULL, rc_set_int, &list, NULL, VERIFY_SAMPLES|VERIFY_VERBOSE, 0, NULL, NULL },
-	{ "romident", NULL, rc_set_int, &ident, NULL, 1, 0, NULL, NULL },
-	{ "isknown", NULL, rc_set_int, &ident, NULL, 2, 0, NULL, NULL },
+	{ "listroms", NULL, rc_set_int, &list, NULL, LIST_ROMS, 0, NULL, "list required roms for a driver" },
+	{ "listsamples", NULL, rc_set_int, &list, NULL, LIST_SAMPLES, 0, NULL, "list optional samples for a driver" },
+	{ "verifyroms", NULL, rc_set_int, &verify, NULL, VERIFY_ROMS, 0, NULL, "report romsets that have problems" },
+	{ "verifysets", NULL, rc_set_int, &verify, NULL, VERIFY_ROMS|VERIFY_VERBOSE|VERIFY_TERSE, 0, NULL, "verify checksums of romsets (terse)" },
+	{ "vset", NULL, rc_set_int, &verify, NULL, VERIFY_ROMS|VERIFY_VERBOSE, 0, NULL, "verify checksums of a romset (verbose)" },
+	{ "verifysamples", NULL, rc_set_int, &verify, NULL, VERIFY_SAMPLES|VERIFY_VERBOSE, 0, NULL, "report samplesets that have problems" },
+	{ "vsam", NULL, rc_set_int, &verify, NULL, VERIFY_SAMPLES|VERIFY_VERBOSE, 0, NULL, "verify a sampleset" },
+	{ "romident", NULL, rc_set_int, &ident, NULL, 1, 0, NULL, "compare files with known MAME roms" },
+	{ "isknown", NULL, rc_set_int, &ident, NULL, 2, 0, NULL, "compare files with known MAME roms (brief)" },
 	{ "sortname", NULL, rc_set_int, &sortby, NULL, 1, 0, NULL, "sort by descriptive name" },
 	{ "sortdriver", NULL, rc_set_int, &sortby, NULL, 2, 0, NULL, "sort by driver" },
 	{ NULL, NULL, rc_end, NULL, NULL, 0, 0, NULL, NULL }
 };
 
 
-int silentident,knownstatus;
+static int silentident,knownstatus;
 
 void get_rom_sample_path (int argc, char **argv, int game_index, char *override_default_rompath);
 
@@ -146,51 +169,55 @@ int strwildcmp(const char *sp1, const char *sp2)
 
 	return stricmp(s1, s2);
 }
-#if 0
-/* fuzzy string compare, compare short string against long string        */
-/* e.g. astdel == "Asteroids Deluxe". The return code is the fuzz index, */
-/* we simply count the gaps between maching chars.                       */
-int fuzzycmp (const char *s, const char *l)
+
+
+static void namecopy(char *name_ref,const char *desc)
 {
-	int gaps = 0;
-	int match = 0;
-	int last = 1;
+	char name[200];
 
-	for (; *s && *l; l++)
+	strcpy(name,desc);
+
+	/* remove details in parenthesis */
+	if (strstr(name," (")) *strstr(name," (") = 0;
+
+	/* Move leading "The" to the end */
+	if (strncmp(name,"The ",4) == 0)
 	{
-		if (*s == *l)
-			match = 1;
-		else if (*s >= 'a' && *s <= 'z' && (*s - 'a') == (*l - 'A'))
-			match = 1;
-		else if (*s >= 'A' && *s <= 'Z' && (*s - 'A') == (*l - 'a'))
-			match = 1;
-		else
-			match = 0;
-
-		if (match)
-			s++;
-
-		if (match != last)
-		{
-			last = match;
-			if (!match)
-				gaps++;
-		}
+		sprintf(name_ref,"%s, The",name+4);
 	}
-
-	/* penalty if short string does not completely fit in */
-	for (; *s; s++)
-		gaps++;
-
-	return gaps;
+	else
+		sprintf(name_ref,"%s",name);
 }
-#endif
+
 
 /* Identifies a rom from from this checksum */
-void identify_rom(const char* name, int checksum, int length)
+static void match_roms(const struct GameDriver *driver,const char* hash,int *found)
 {
-/* Nicola output format */
-#if 1
+	const struct RomModule *region, *rom;
+
+	for (region = rom_first_region(driver); region; region = rom_next_region(region))
+	{
+		for (rom = rom_first_file(region); rom; rom = rom_next_file(rom))
+		{
+			if (hash_data_is_equal(hash, ROM_GETHASHDATA(rom), 0))
+			{
+				char baddump = hash_data_has_info(ROM_GETHASHDATA(rom), HASH_INFO_BAD_DUMP);
+
+				if (!silentident)
+				{
+					if (*found != 0)
+						printf("             ");
+					printf("= %s%-12s  %s\n",baddump ? "(BAD) " : "",ROM_GETNAME(rom),driver->description);
+				}
+				(*found)++;
+			}
+		}
+	}
+}
+
+
+void identify_rom(const char* name, const char* hash, int length)
+{
 	int found = 0;
 
 	/* remove directory name */
@@ -204,37 +231,14 @@ void identify_rom(const char* name, int checksum, int length)
 		}
 	}
 	if (!silentident)
-		printf("%-12s ",&name[i]);
+		printf("%s ",&name[0]);
 
 	for (i = 0; drivers[i]; i++)
-	{
-		const struct RomModule *region, *rom;
+		match_roms(drivers[i],hash,&found);
 
-		for (region = rom_first_region(drivers[i]); region; region = rom_next_region(region))
-			for (rom = rom_first_file(region); rom; rom = rom_next_file(rom))
-			{
-				if (checksum == ROM_GETCRC(rom))
-				{
-					if (!silentident)
-					{
-						if (found != 0)
-							printf("             ");
-						printf("= %-12s  %s\n",ROM_GETNAME(rom),drivers[i]->description);
-					}
-					found++;
-				}
-				if (BADCRC(checksum) == ROM_GETCRC(rom))
-				{
-					if (!silentident)
-					{
-						if (found != 0)
-							printf("             ");
-						printf("= (BAD) %-12s  %s\n",ROM_GETNAME(rom),drivers[i]->description);
-					}
-					found++;
-				}
-			}
-	}
+	for (i = 0; test_drivers[i]; i++)
+		match_roms(test_drivers[i],hash,&found);
+
 	if (found == 0)
 	{
 		unsigned size = length;
@@ -261,34 +265,15 @@ void identify_rom(const char* name, int checksum, int length)
 		else if (knownstatus == KNOWN_NONE)
 			knownstatus = KNOWN_SOME;
 	}
-#else
-/* New output format */
-	int i;
-	printf("%s\n",name);
-
-	for (i = 0; drivers[i]; i++)
-	{
-		const struct RomModule *region, *rom;
-
-		for (region = rom_first_region(drivers[i]; region; region = rom_next_region(region))
-			for (rom = rom_first_file(region); rom; rom = rom_next_file(rom))
-				if (checksum == ROM_GETCRC(romp))
-				{
-					printf("\t%s/%s %s, %s, %s\n",drivers[i]->name,ROM_GETNAME(rom),
-						drivers[i]->description,
-						drivers[i]->manufacturer,
-						drivers[i]->year);
-				}
-	}
-#endif
 }
 
-/* Identifies a file from from this checksum */
+/* Identifies a file from this checksum */
 void identify_file(const char* name)
 {
 	FILE *f;
 	int length;
 	char* data;
+	char hash[HASH_BUF_SIZE];
 
 	f = fopen(name,"rb");
 	if (!f) {
@@ -334,7 +319,16 @@ void identify_file(const char* name)
 
 	fclose(f);
 
-	identify_rom(name, crc32(0L,(const unsigned char*)data,length),length);
+	/* Compute checksum of all the available functions. Since MAME for
+	   now carries inforamtions only for CRC and SHA1, we compute only
+	   these */
+	if (options.crc_only)
+		hash_compute(hash, data, length, HASH_CRC);
+	else
+		hash_compute(hash, data, length, HASH_CRC|HASH_SHA1);
+
+	/* Try to identify the ROM */
+	identify_rom(name, hash, length);
 
 	free(data);
 }
@@ -343,7 +337,7 @@ void identify_zip(const char* zipname)
 {
 	struct zipent* ent;
 
-	ZIP* zip = openzip( zipname );
+	ZIP* zip = openzip( FILETYPE_RAW, 0, zipname );
 	if (!zip)
 		return;
 
@@ -351,8 +345,35 @@ void identify_zip(const char* zipname)
 		/* Skip empty file and directory */
 		if (ent->uncompressed_size!=0) {
 			char* buf = (char*)malloc(strlen(zipname)+1+strlen(ent->name)+1);
-			sprintf(buf,"%s/%s",zipname,ent->name);
-			identify_rom(buf,ent->crc32,ent->uncompressed_size);
+			char hash[HASH_BUF_SIZE];
+			UINT8 crcs[4];
+
+//			sprintf(buf,"%s/%s",zipname,ent->name);
+			sprintf(buf,"%-12s",ent->name);
+
+			/* Decompress the ROM from the ZIP, and compute all the needed
+			   checksums. Since MAME for now carries informations only for CRC and
+			   SHA1, we compute only these (actually, CRC is extracted from the
+			   ZIP header) */
+			hash_data_clear(hash);
+
+			if (!options.crc_only)
+			{
+				UINT8* data =  (UINT8*)malloc(ent->uncompressed_size);
+				readuncompresszip(zip, ent, data);
+				hash_compute(hash, data, ent->uncompressed_size, HASH_SHA1);
+				free(data);
+			}
+
+			crcs[0] = (UINT8)(ent->crc32 >> 24);
+			crcs[1] = (UINT8)(ent->crc32 >> 16);
+			crcs[2] = (UINT8)(ent->crc32 >> 8);
+			crcs[3] = (UINT8)(ent->crc32 >> 0);
+			hash_data_insert_binary_checksum(hash, HASH_CRC, crcs);
+
+			/* Try to identify the ROM */
+			identify_rom(buf, hash, ent->uncompressed_size);
+
 			free(buf);
 		}
 	}
@@ -409,7 +430,7 @@ void romident(const char* name,int enter_dirs) {
 }
 
 
-void CLIB_DECL terse_printf(char *fmt,...)
+void CLIB_DECL terse_printf(const char *fmt,...)
 {
 	/* no-op */
 }
@@ -419,7 +440,10 @@ int CLIB_DECL compare_names(const void *elem1, const void *elem2)
 {
 	struct GameDriver *drv1 = *(struct GameDriver **)elem1;
 	struct GameDriver *drv2 = *(struct GameDriver **)elem2;
-	return strcmp(drv1->description, drv2->description);
+	char name1[200],name2[200];
+	namecopy(name1,drv1->description);
+	namecopy(name2,drv2->description);
+	return strcmp(name1,name2);
 }
 
 
@@ -431,11 +455,11 @@ int CLIB_DECL compare_driver_names(const void *elem1, const void *elem2)
 }
 
 
-int frontend_help (char *gamename)
+int frontend_help (const char *gamename)
 {
 	struct InternalMachineDriver drv;
 	int i, j;
-	char *all_games = "*";
+	const char *all_games = "*";
 
 	/* display help unless a game or an utility are specified */
 	if (!gamename && !help && !list && !ident && !verify)
@@ -446,18 +470,18 @@ int frontend_help (char *gamename)
 		#ifndef MESS
 #ifdef PINMAME
 		printf("PinMAME v%s - Pinball's Multiple Arcade Machine Emulator\n"
-				"Copyright (C) 2000-2002 by Steve Ellenoff, WPCmame and the PinMAME Team\n\n",build_version);
+				"Copyright (C) 2000-2003 by the PinMAME Team\n\n",build_version);
 		showdisclaimer();
-		printf("Usage:  PINMAMEW gamename [options]\n\n"
+		printf("Usage:  PINMAME gamename [options]\n\n"
 				"        -list         for a brief list of supported games\n"
 				"        -listfull     for a full list of supported games\n"
 				"        -showusage    for a brief list of options\n"
 				"        -showconfig   for a list of configuration options\n"
 				"        -createconfig to create a mame.ini\n\n"
 				"See readme.txt for a complete list of options.\n");
-#else
+#else /* PINMAME */
 		printf("M.A.M.E. v%s - Multiple Arcade Machine Emulator\n"
-				"Copyright (C) 1997-2001 by Nicola Salmoria and the MAME Team\n\n",build_version);
+				"Copyright (C) 1997-2003 by Nicola Salmoria and the MAME Team\n\n",build_version);
 		showdisclaimer();
 		printf("Usage:  MAME gamename [options]\n\n"
 				"        MAME -list         for a brief list of supported games\n"
@@ -466,7 +490,7 @@ int frontend_help (char *gamename)
 				"        MAME -showconfig   for a list of configuration options\n"
 				"        MAME -createconfig to create a mame.ini\n\n"
 				"See readme.txt for a complete list of options.\n");
-#endif
+#endif /* PINMAME */
 		#else
 		showmessinfo();
 		#endif
@@ -496,21 +520,24 @@ int frontend_help (char *gamename)
 	{
 
         #ifdef MESS
-		case LIST_MESSINFO: /* all mess specific calls here */
+		case LIST_MESSTEXT: /* all mess specific calls here */
 		{
-			for (i=1;i<argc;i++)
-			{
-				/* list all mess info options here */
-				if (
-					!stricmp(argv[i],"-listdevices") |
-					!stricmp(argv[i],"-listtext")    |
-					!stricmp(argv[i],"-createdir")
-				   )
-			 	{
-					/* send the gamename and arg to mess.c */
-					list_mess_info(gamename, argv[i], listclones);
-				}
-			}
+			/* send the gamename and arg to mess.c */
+			list_mess_info(gamename, "-listtext", listclones);
+			return 0;
+			break;
+		}
+		case LIST_MESSDEVICES:
+		{
+			/* send the gamename and arg to mess.c */
+			list_mess_info(gamename, "-listdevices", listclones);
+			return 0;
+			break;
+		}
+		case LIST_MESSCREATEDIR:
+		{
+			/* send the gamename and arg to mess.c */
+			list_mess_info(gamename, "-createdir", listclones);
 			return 0;
 			break;
 		}
@@ -554,17 +581,8 @@ int frontend_help (char *gamename)
 
 					printf("%-10s",drivers[i]->name);
 
-					strcpy(name,drivers[i]->description);
-
-					/* Move leading "The" to the end */
-					if (strstr(name," (")) *strstr(name," (") = 0;
-					if (strncmp(name,"The ",4) == 0)
-					{
-						printf("\"%s",name+4);
-						printf(", The");
-					}
-					else
-						printf("\"%s",name);
+					namecopy(name,drivers[i]->description);
+					printf("\"%s",name);
 
 					/* print the additional description only if we are listing clones */
 					if (listclones)
@@ -723,7 +741,7 @@ int frontend_help (char *gamename)
 
 					for(j=0;j<MAX_CPU;j++)
 					{
-						if (x_cpu[j].cpu_type & CPU_AUDIO_CPU)
+						if (x_cpu[j].cpu_flags & CPU_AUDIO_CPU)
 							printf("[%-6s] ",cputype_name(x_cpu[j].cpu_type));
 						else
 							printf("%-8s ",cputype_name(x_cpu[j].cpu_type));
@@ -750,11 +768,7 @@ int frontend_help (char *gamename)
 			break;
 
 		case LIST_GAMELIST: /* GAMELIST.TXT */
-#ifdef PINMAME
-			printf("This is the complete list of games supported by PinMAME %s.\n",build_version);
-#else
 			printf("This is the complete list of games supported by MAME %s.\n",build_version);
-#endif
 			if (!listclones)
 				printf("Variants of the same game are not included, you can use the -listclones command\n"
 					"to get a list of the alternate versions of a given game.\n");
@@ -816,18 +830,11 @@ int frontend_help (char *gamename)
 						|| (drivers[i]->clone_of->flags & NOT_A_DRIVER)
 						) && !strwildcmp(gamename, drivers[i]->name))
 				{
-					char name[200],name_ref[200];
+					char name_ref[200];
 
-					strcpy(name,drivers[i]->description);
+					namecopy(name_ref,drivers[i]->description);
 
-					/* Move leading "The" to the end */
-					if (strstr(name," (")) *strstr(name," (") = 0;
-					if (strncmp(name,"The ",4) == 0)
-					{
-						sprintf(name_ref,"%s, The ",name+4);
-					}
-					else
-						sprintf(name_ref,"%s ",name);
+					strcat(name_ref," ");
 
 					/* print the additional description only if we are listing clones */
 					if (listclones)
@@ -936,17 +943,8 @@ int frontend_help (char *gamename)
 
 					printf("%-5s%-36s ",drivers[i]->year,drivers[i]->manufacturer);
 
-					strcpy(name,drivers[i]->description);
-
-					/* Move leading "The" to the end */
-					if (strstr(name," (")) *strstr(name," (") = 0;
-					if (strncmp(name,"The ",4) == 0)
-					{
-						printf("%s",name+4);
-						printf(", The");
-					}
-					else
-						printf("%s",name);
+					namecopy(name,drivers[i]->description);
+					printf("%s",name);
 
 					/* print the additional description only if we are listing clones */
 					if (listclones)
@@ -1033,7 +1031,7 @@ int frontend_help (char *gamename)
 								drv.default_visible_area.max_x - drv.default_visible_area.min_x + 1,
 								drv.default_visible_area.max_y - drv.default_visible_area.min_y + 1);
 				}
-				}
+			}
 			return 0;
 			break;
 
@@ -1053,7 +1051,7 @@ int frontend_help (char *gamename)
 							drv.default_visible_area.max_y - drv.default_visible_area.min_y + 1,
 							drv.frames_per_second);
 				}
-				}
+			}
 			return 0;
 			break;
 
@@ -1064,14 +1062,85 @@ int frontend_help (char *gamename)
 			return 0;
 			break;
 
+		case LIST_GAMESPERSOURCEFILE:
+			{
+				#define MAXCOUNT 8
+
+				int numcount[MAXCOUNT],gamescount[MAXCOUNT];
+
+				for (i = 0;i < MAXCOUNT;i++) numcount[i] = gamescount[i] = 0;
+
+				for (i = 0; drivers[i]; i++)
+				{
+					if (drivers[i]->clone_of == 0 ||
+							(drivers[i]->clone_of->flags & NOT_A_DRIVER))
+					{
+						const char *sf = drivers[i]->source_file;
+						int total = 0;
+
+						for (j = 0; drivers[j]; j++)
+						{
+							if (drivers[j]->clone_of == 0 ||
+									(drivers[j]->clone_of->flags & NOT_A_DRIVER))
+							{
+								if (drivers[j]->source_file == sf)
+								{
+									if (j < i) break;
+
+									total++;
+								}
+							}
+						}
+
+						if (total)
+						{
+							if (total == 1)							{ numcount[0]++; gamescount[0] += total; }
+							else if (total >= 2 && total <= 3)		{ numcount[1]++; gamescount[1] += total; }
+							else if (total >= 4 && total <= 7)		{ numcount[2]++; gamescount[2] += total; }
+							else if (total >= 8 && total <= 15)		{ numcount[3]++; gamescount[3] += total; }
+							else if (total >= 16 && total <= 31)	{ numcount[4]++; gamescount[4] += total; }
+							else if (total >= 32 && total <= 63)	{ numcount[5]++; gamescount[5] += total; }
+							else if (total >= 64)					{ numcount[6]++; gamescount[6] += total; }
+						}
+					}
+				}
+
+				printf("1\t%d\t%d\n",		numcount[0],gamescount[0]);
+				printf("2-3\t%d\t%d\n",		numcount[1],gamescount[1]);
+				printf("4-7\t%d\t%d\n",		numcount[2],gamescount[2]);
+				printf("8-15\t%d\t%d\n",	numcount[3],gamescount[3]);
+				printf("16-31\t%d\t%d\n",	numcount[4],gamescount[4]);
+				printf("32-63\t%d\t%d\n",	numcount[5],gamescount[5]);
+				printf("64+\t%d\t%d\n",		numcount[6],gamescount[6]);
+
+				#undef MAXCOUNT
+			}
+			return 0;
+			break;
+
 		case LIST_CRC: /* list all crc-32 */
+		case LIST_SHA1: /* list all sha-1 */
+		case LIST_MD5:  /* list all md5 */
+
+			if (list == LIST_SHA1)
+				j = HASH_SHA1;
+			else if (list == LIST_MD5)
+				j = HASH_MD5;
+			else
+				j = HASH_CRC;
+
 			for (i = 0; drivers[i]; i++)
 			{
 				const struct RomModule *region, *rom;
 
 				for (region = rom_first_region(drivers[i]); region; region = rom_next_region(region))
 					for (rom = rom_first_file(region); rom; rom = rom_next_file(rom))
-						printf("%08x %-12s %s\n",ROM_GETCRC(rom),ROM_GETNAME(rom),drivers[i]->description);
+					{
+						char chksum[256];
+
+						if (hash_data_extract_printable_checksum(ROM_GETHASHDATA(rom), j, chksum))
+							printf("%s %-12s %s\n",chksum,ROM_GETNAME(rom),drivers[i]->description);
+					}
 			}
 			return 0;
 			break;
@@ -1083,18 +1152,36 @@ int frontend_help (char *gamename)
 
 				for (region = rom_first_region(drivers[i]); region; region = rom_next_region(region))
 					for (rom = rom_first_file(region); rom; rom = rom_next_file(rom))
-						if (ROM_GETCRC(rom))
+						/* compare all the ROMS that we have a dump for */
+						if (!hash_data_has_info(ROM_GETHASHDATA(rom), HASH_INFO_NO_DUMP))
+						{
+							char first_match = 1;
+
 							for (j = i + 1; drivers[j]; j++)
 							{
 								const struct RomModule *region1, *rom1;
 
 								for (region1 = rom_first_region(drivers[j]); region1; region1 = rom_next_region(region1))
 									for (rom1 = rom_first_file(region1); rom1; rom1 = rom_next_file(rom1))
-										if (strcmp(ROM_GETNAME(rom), ROM_GETNAME(rom1)) && ROM_GETCRC(rom) == ROM_GETCRC(rom1))
+										if (strcmp(ROM_GETNAME(rom), ROM_GETNAME(rom1)) && hash_data_is_equal(ROM_GETHASHDATA(rom), ROM_GETHASHDATA(rom1), 0))
 										{
-											printf("%08x %-12s %-8s <-> %-12s %-8s\n",ROM_GETCRC(rom),
-													ROM_GETNAME(rom),drivers[i]->name,
-													ROM_GETNAME(rom1),drivers[j]->name);
+											/* Dump checksum infos only on the first match for a given
+											   ROM. This reduces the output size and makes it more
+											   readable. */
+											if (first_match)
+										{
+												char buf[512];
+
+												first_match = 0;
+
+												hash_data_print(ROM_GETHASHDATA(rom), 0, buf);
+												printf("%s\n", buf);
+												printf("    %-12s %-8s\n", ROM_GETNAME(rom),drivers[i]->name);
+
+											}
+
+											printf("    %-12s %-8s\n", ROM_GETNAME(rom1),drivers[j]->name);
+										}
 										}
 							}
 			}
@@ -1113,7 +1200,7 @@ int frontend_help (char *gamename)
 				{
 					for (rom = rom_first_file(region); rom; rom = rom_next_file(rom))
 					{
-						if (ROM_GETCRC(rom))
+						if (!hash_data_has_info(ROM_GETHASHDATA(rom), HASH_INFO_NO_DUMP))
 						{
 							for (j = 0; drivers[j]; j++)
 							{
@@ -1132,13 +1219,23 @@ int frontend_help (char *gamename)
 										{
 											if (!strcmp(ROM_GETNAME(rom), ROM_GETNAME(rom1)))
 											{
-												if (ROM_GETCRC(rom1) &&
-														ROM_GETCRC(rom) != ROM_GETCRC(rom1) &&
-														ROM_GETCRC(rom) != BADCRC(ROM_GETCRC(rom1)))
+												if (!hash_data_has_info(ROM_GETHASHDATA(rom1), HASH_INFO_NO_DUMP) &&
+													!hash_data_is_equal(ROM_GETHASHDATA(rom), ROM_GETHASHDATA(rom1), 0))
 												{
-													printf("%-12s %08x %-8s <-> %08x %-8s\n",ROM_GETNAME(rom),
-															ROM_GETCRC(rom),drivers[i]->name,
-															ROM_GETCRC(rom1),drivers[j]->name);
+													char temp[512];
+
+													/* Print only the checksums available for both the roms */
+													unsigned int functions =
+														hash_data_used_functions(ROM_GETHASHDATA(rom)) &
+														hash_data_used_functions(ROM_GETHASHDATA(rom1));
+
+													printf("%s:\n", ROM_GETNAME(rom));
+
+													hash_data_print(ROM_GETHASHDATA(rom), functions, temp);
+													printf("  %-8s: %s\n", drivers[i]->name, temp);
+
+													hash_data_print(ROM_GETHASHDATA(rom1), functions, temp);
+													printf("  %-8s: %s\n", drivers[j]->name, temp);
 												}
 												else
 													match = 1;
@@ -1152,11 +1249,20 @@ int frontend_help (char *gamename)
 										{
 											for (rom1 = rom_first_file(region1); rom1; rom1 = rom_next_file(rom1))
 											{
-												if (strcmp(ROM_GETNAME(rom), ROM_GETNAME(rom1)) && ROM_GETCRC(rom) == ROM_GETCRC(rom1))
+												if (strcmp(ROM_GETNAME(rom), ROM_GETNAME(rom1)) &&
+													hash_data_is_equal(ROM_GETHASHDATA(rom), ROM_GETHASHDATA(rom1), 0))
 												{
-													printf("%08x %-12s %-8s <-> %-12s %-8s\n",ROM_GETCRC(rom),
-															ROM_GETNAME(rom),drivers[i]->name,
-															ROM_GETNAME(rom1),drivers[j]->name);
+													char temp[512];
+
+													/* Print only the checksums available for both the roms */
+													unsigned int functions =
+														hash_data_used_functions(ROM_GETHASHDATA(rom)) &
+														hash_data_used_functions(ROM_GETHASHDATA(rom1));
+
+													hash_data_print(ROM_GETHASHDATA(rom), functions, temp);
+													printf("%s\n", temp);
+													printf("  %-12s %-8s\n", ROM_GETNAME(rom), drivers[i]->name);
+													printf("  %-12s %-8s\n", ROM_GETNAME(rom1),drivers[j]->name);
 												}
 											}
 										}
@@ -1172,18 +1278,113 @@ int frontend_help (char *gamename)
 
 		case LIST_ROMSIZE: /* I used this for statistical analysis */
 			for (i = 0; drivers[i]; i++)
+			{
 				if (drivers[i]->clone_of == 0 || (drivers[i]->clone_of->flags & NOT_A_DRIVER))
 				{
 					const struct RomModule *region, *rom, *chunk;
+					int romtotal = 0,romcpu = 0,romgfx = 0,romsound = 0;
 
-					j = 0;
 					for (region = rom_first_region(drivers[i]); region; region = rom_next_region(region))
-						for (rom = rom_first_file(region); rom; rom = rom_next_file(rom))
-							for (chunk = rom_first_chunk(rom); chunk; chunk = rom_next_chunk(chunk))
-								j += ROM_GETLENGTH(chunk);
+					{
+						int type = ROMREGION_GETTYPE(region);
 
-					printf("%-8s\t%-5s\t%u\n",drivers[i]->name,drivers[i]->year,j);
+						for (rom = rom_first_file(region); rom; rom = rom_next_file(rom))
+						{
+							for (chunk = rom_first_chunk(rom); chunk; chunk = rom_next_chunk(chunk))
+							{
+								romtotal += ROM_GETLENGTH(chunk);
+								if (type >= REGION_CPU1 && type <= REGION_CPU8) romcpu += ROM_GETLENGTH(chunk);
+								if (type >= REGION_GFX1 && type <= REGION_GFX8) romgfx += ROM_GETLENGTH(chunk);
+								if (type >= REGION_SOUND1 && type <= REGION_SOUND8) romsound += ROM_GETLENGTH(chunk);
+							}
+						}
+					}
+
+//					printf("%-8s\t%-5s\t%u\t%u\t%u\t%u\n",drivers[i]->name,drivers[i]->year,romtotal,romcpu,romgfx,romsound);
+					printf("%-8s\t%-5s\t%u\n",drivers[i]->name,drivers[i]->year,romtotal);
 				}
+			}
+			return 0;
+			break;
+
+		case LIST_ROMDISTRIBUTION: /* I used this for statistical analysis */
+			{
+				int year;
+
+				for (year = 1975;year <= 2000;year++)
+				{
+					int gamestotal = 0,romcpu = 0,romgfx = 0,romsound = 0;
+
+					for (i = 0; drivers[i]; i++)
+					{
+						if (atoi(drivers[i]->year) == year)
+						{
+							if (drivers[i]->clone_of == 0 || (drivers[i]->clone_of->flags & NOT_A_DRIVER))
+							{
+								const struct RomModule *region, *rom, *chunk;
+
+								gamestotal++;
+
+								for (region = rom_first_region(drivers[i]); region; region = rom_next_region(region))
+								{
+									int type = ROMREGION_GETTYPE(region);
+
+									for (rom = rom_first_file(region); rom; rom = rom_next_file(rom))
+									{
+										for (chunk = rom_first_chunk(rom); chunk; chunk = rom_next_chunk(chunk))
+										{
+											if (type >= REGION_CPU1 && type <= REGION_CPU8) romcpu += ROM_GETLENGTH(chunk);
+											if (type >= REGION_GFX1 && type <= REGION_GFX8) romgfx += ROM_GETLENGTH(chunk);
+											if (type >= REGION_SOUND1 && type <= REGION_SOUND8) romsound += ROM_GETLENGTH(chunk);
+										}
+									}
+								}
+							}
+						}
+					}
+
+					printf("%-5d\t%u\t%u\t%u\t%u\n",year,gamestotal,romcpu,romgfx,romsound);
+				}
+			}
+			return 0;
+			break;
+
+		case LIST_ROMNUMBER: /* I used this for statistical analysis */
+			{
+				#define MAXCOUNT 100
+
+				int numcount[MAXCOUNT];
+
+				for (i = 0;i < MAXCOUNT;i++) numcount[i] = 0;
+
+				for (i = 0; drivers[i]; i++)
+				{
+					if (drivers[i]->clone_of == 0 || (drivers[i]->clone_of->flags & NOT_A_DRIVER))
+					{
+						const struct RomModule *region, *rom;
+						int romnum = 0;
+
+						for (region = rom_first_region(drivers[i]); region; region = rom_next_region(region))
+						{
+							for (rom = rom_first_file(region); rom; rom = rom_next_file(rom))
+							{
+								romnum++;
+							}
+						}
+
+						if (romnum)
+						{
+							if (romnum > MAXCOUNT) romnum = MAXCOUNT;
+							numcount[romnum-1]++;
+						}
+					}
+				}
+
+				for (i = 0;i < MAXCOUNT;i++)
+					printf("%d\t%d\n",i+1,numcount[i]);
+
+				#undef MAXCOUNT
+			}
 			return 0;
 			break;
 
@@ -1199,18 +1400,65 @@ int frontend_help (char *gamename)
 
 		case LIST_CPU: /* I used this for statistical analysis */
 			{
+				int type;
+
+				for (type = 1;type < CPU_COUNT;type++)
+				{
+					int count_main = 0,count_slave = 0;
+
+					i = 0;
+					while (drivers[i])
+					{
+						if (drivers[i]->clone_of == 0 || (drivers[i]->clone_of->flags & NOT_A_DRIVER))
+						{
+							struct InternalMachineDriver x_driver;
+							const struct MachineCPU *x_cpu;
+
+							expand_machine_driver(drivers[i]->drv, &x_driver);
+							x_cpu = x_driver.cpu;
+
+							for (j = 0;j < MAX_CPU;j++)
+							{
+								if (x_cpu[j].cpu_type == type)
+								{
+									if (j == 0) count_main++;
+									else count_slave++;
+									break;
+								}
+							}
+						}
+
+						i++;
+					}
+
+					printf("%s\t%d\n",cputype_name(type),count_main+count_slave);
+//					printf("%s\t%d\t%d\n",cputype_name(type),count_main,count_slave);
+				}
+			}
+
+			return 0;
+			break;
+
+
+		case LIST_CPUCLASS: /* I used this for statistical analysis */
+			{
 				int year;
 
-				for (j = 1;j < CPU_COUNT;j++)
-					printf("\t%s",cputype_name(j));
+//				for (j = 1;j < CPU_COUNT;j++)
+//					printf("\t%s",cputype_name(j));
+				for (j = 0;j < 3;j++)
+					printf("\t%d",8<<j);
 				printf("\n");
 
-				for (year = 1980;year <= 1995;year++)
+				for (year = YEAR_BEGIN;year <= YEAR_END;year++)
 				{
 					int count[CPU_COUNT];
+					int count_buswidth[3];
 
 					for (j = 0;j < CPU_COUNT;j++)
 						count[j] = 0;
+					for (j = 0;j < 3;j++)
+						count_buswidth[j] = 0;
 
 					i = 0;
 					while (drivers[i])
@@ -1227,7 +1475,15 @@ int frontend_help (char *gamename)
 							{
 //								for (j = 0;j < MAX_CPU;j++)
 j = 0;	// count only the main cpu
-									count[x_cpu[j].cpu_type & ~CPU_FLAGS_MASK]++;
+								{
+									count[x_cpu[j].cpu_type]++;
+									switch(cputype_databus_width(x_cpu[j].cpu_type))
+									{
+										case  8: count_buswidth[0]++; break;
+										case 16: count_buswidth[1]++; break;
+										case 32: count_buswidth[2]++; break;
+									}
+								}
 							}
 						}
 
@@ -1235,8 +1491,10 @@ j = 0;	// count only the main cpu
 					}
 
 					printf("%d",year);
-					for (j = 1;j < CPU_COUNT;j++)
-						printf("\t%d",count[j]);
+//					for (j = 1;j < CPU_COUNT;j++)
+//						printf("\t%d",count[j]);
+					for (j = 0;j < 3;j++)
+						printf("\t%d",count_buswidth[j]);
 					printf("\n");
 				}
 			}
@@ -1244,8 +1502,128 @@ j = 0;	// count only the main cpu
 			return 0;
 			break;
 
+
+		case LIST_NOSOUND: /* I used this for statistical analysis */
+			{
+				int year;
+
+				for (year = 1975;year <= 2000;year++)
+				{
+					int games=0,nosound=0;
+
+					i = 0;
+					while (drivers[i])
+					{
+						if (drivers[i]->clone_of == 0 || (drivers[i]->clone_of->flags & NOT_A_DRIVER))
+						{
+							if (atoi(drivers[i]->year) == year)
+							{
+								games++;
+								if (drivers[i]->flags & GAME_NO_SOUND) nosound++;
+							}
+						}
+
+						i++;
+					}
+
+					printf("%d\t%d\t%d\n",year,nosound,games);
+				}
+			}
+
+			return 0;
+			break;
+
+
+		case LIST_SOUND: /* I used this for statistical analysis */
+			{
+				int type;
+
+				for (type = 1;type < SOUND_COUNT;type++)
+				{
+					int count = 0,minyear = 3000,maxyear = 0;
+
+					i = 0;
+					while (drivers[i])
+					{
+						if (drivers[i]->clone_of == 0 || (drivers[i]->clone_of->flags & NOT_A_DRIVER))
+						{
+							struct InternalMachineDriver x_driver;
+							const struct MachineSound *x_sound;
+
+							expand_machine_driver(drivers[i]->drv, &x_driver);
+							x_sound = x_driver.sound;
+
+							for (j = 0;j < MAX_SOUND;j++)
+							{
+								if (x_sound[j].sound_type == type)
+								{
+									int year = atoi(drivers[i]->year);
+
+									count++;
+
+									if (year > 1900)
+									{
+										if (year > maxyear) maxyear = year;
+										if (year < minyear) minyear = year;
+									}
+								}
+							}
+						}
+
+						i++;
+					}
+
+					if (count)
+//						printf("%s (%d-%d)\t%d\n",soundtype_name(type),minyear,maxyear,count);
+						printf("%s\t%d\n",soundtype_name(type),count);
+				}
+			}
+
+			return 0;
+			break;
+
+
+		case LIST_NVRAM: /* I used this for statistical analysis */
+			{
+				int year;
+
+				for (year = 1975;year <= 2000;year++)
+				{
+					int games=0,nvram=0;
+
+					i = 0;
+					while (drivers[i])
+					{
+						if (drivers[i]->clone_of == 0 || (drivers[i]->clone_of->flags & NOT_A_DRIVER))
+						{
+							struct InternalMachineDriver x_driver;
+
+							expand_machine_driver(drivers[i]->drv, &x_driver);
+
+							if (atoi(drivers[i]->year) == year)
+							{
+								games++;
+								if (x_driver.nvram_handler) nvram++;
+							}
+						}
+
+						i++;
+					}
+
+					printf("%d\t%d\t%d\n",year,nvram,games);
+				}
+			}
+
+			return 0;
+			break;
+
+
 		case LIST_INFO: /* list all info */
 			print_mame_info( stdout, drivers );
+			return 0;
+
+		case LIST_XML: /* list all info */
+			print_mame_xml( stdout, drivers );
 			return 0;
 	}
 

@@ -65,7 +65,7 @@ struct MachineSound
  #ifndef MESS
 #include "sound/nes_apu.h"
  #else
-#include "mess/sound/nesintf.h"
+#include "sound/nesintf.h"
  #endif
 #endif
 #if (HAS_ASTROCADE)
@@ -73,6 +73,9 @@ struct MachineSound
 #endif
 #if (HAS_NAMCO)
 #include "sound/namco.h"
+#endif
+#if (HAS_NAMCONA)
+#include "sound/namcona.h"
 #endif
 #if (HAS_TMS36XX)
 #include "sound/tms36xx.h"
@@ -143,6 +146,27 @@ struct MachineSound
 #if (HAS_BSMT2000)
 #include "sound/bsmt2000.h"
 #endif
+#if (HAS_YMF262)
+#include "sound/262intf.h"
+#endif
+#if (HAS_YMF278B)
+#include "sound/ymf278b.h"
+#endif
+#if (HAS_GAELCO_CG1V || HAS_GAELCO_GAE1)
+#include "sound/gaelco.h"
+#endif
+#if (HAS_X1_010)
+#include "sound/x1_010.h"
+#endif
+#if (HAS_MULTIPCM)
+#include "sound/multipcm.h"
+#endif
+#if (HAS_C6280)
+#include "sound/c6280.h"
+#endif
+#if (HAS_TIA)
+#include "sound/tiaintf.h"
+#endif
 #ifdef PINMAME
 #if (HAS_VOTRAXSC01)
 #include "sound/votrax.h"
@@ -151,16 +175,13 @@ struct MachineSound
 
 #ifdef MESS
 #if (HAS_BEEP)
-#include "mess/sound/beep.h"
+#include "sound/beep.h"
 #endif
 #if (HAS_SPEAKER)
-#include "mess/sound/speaker.h"
-#endif
-#if (HAS_TIA)
-#include "mess/sound/tiaintf.h"
+#include "sound/speaker.h"
 #endif
 #if (HAS_WAVE)
-#include "mess/sound/wave.h"
+#include "sound/wave.h"
 #endif
 #endif
 
@@ -243,6 +264,9 @@ enum
 #if (HAS_NAMCO)
 	SOUND_NAMCO,
 #endif
+#if (HAS_NAMCONA)
+	SOUND_NAMCONA,
+#endif
 #if (HAS_TMS36XX)
 	SOUND_TMS36XX,
 #endif
@@ -318,6 +342,30 @@ enum
 #if (HAS_BSMT2000)
 	SOUND_BSMT2000,
 #endif
+#if (HAS_YMF262)
+	SOUND_YMF262,
+#endif
+#if (HAS_YMF278B)
+	SOUND_YMF278B,
+#endif
+#if (HAS_GAELCO_CG1V)
+	SOUND_GAELCO_CG1V,
+#endif
+#if (HAS_GAELCO_GAE1)
+	SOUND_GAELCO_GAE1,
+#endif
+#if (HAS_X1_010)
+	SOUND_X1_010,
+#endif
+#if (HAS_MULTIPCM)
+	SOUND_MULTIPCM,
+#endif
+#if (HAS_C6280)
+ SOUND_C6280,
+#endif
+#if (HAS_TIA)
+	SOUND_TIA,
+#endif
 #ifdef PINMAME
 #if (HAS_VOTRAXSC01)
 	SOUND_VOTRAXSC01,
@@ -330,9 +378,6 @@ enum
 #endif
 #if (HAS_SPEAKER)
 	SOUND_SPEAKER,
-#endif
-#if (HAS_TIA)
-	SOUND_TIA,
 #endif
 #if (HAS_WAVE)
 	SOUND_WAVE,
@@ -357,6 +402,7 @@ void sound_update(void);
 void sound_reset(void);
 
 /* returns name of the sound system */
+const char *soundtype_name(int soundtype);
 const char *sound_name(const struct MachineSound *msound);
 /* returns number of chips, or 0 if the sound type doesn't support multiple instances */
 int sound_num(const struct MachineSound *msound);

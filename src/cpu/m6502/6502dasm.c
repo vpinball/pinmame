@@ -98,7 +98,11 @@ enum opcodes {
 	neg,  asr2/* arithmetic shift right */,
 	asw,  row,	dew,  inw,	phw,
 /* 4510 mnemonics */
-	map
+	map,
+
+/* Deco CPU16 mnemonics */
+	vbl,  u13,  u8F,  uAB,  u87,  u0B,  uA3,  u4B,
+	u3F,  uBB,  u23
 };
 
 
@@ -129,7 +133,11 @@ static const char *token[]=
 	"neg", "asr",
 	"asw", "row", "dew", "inw", "phw",
 /* 4510 mnemonics */
-	"map"
+	"map",
+
+/* Deco CPU16 mnemonics */
+	"VBL", "u13", "u8F", "uAB", "u87", "u0B", "uA3", "u4B",
+	"u3F", "uBB", "u23"
 };
 
 /* Some really short names for the EA access modes */
@@ -557,6 +565,76 @@ static const UINT8 op4510[256][3] = {
 };
 #endif
 
+#if (HAS_DECO16)
+static const UINT8 opdeco16[256][3] =
+{
+	{brk,imp,0  },{ora,idx,MRD},{ill,non,0  },{ill,non,0	},/* 00 */
+	{ill,non,0  },{ora,zpg,ZRD},{asl,zpg,ZRW},{ill,non,0	},
+	{php,imp,0  },{ora,imm,VAL},{asl,acc,0  },{u0B,zpg,0	},
+	{ill,non,0  },{ora,aba,MRD},{asl,aba,MRW},{ill,non,0	},
+	{bpl,rel,BRA},{ora,idy,MRD},{ill,non,0  },{u13,zpg,0	},/* 10 */
+	{ill,non,0  },{ora,zpx,ZRD},{asl,zpx,ZRW},{ill,non,0	},
+	{clc,imp,0  },{ora,aby,MRD},{ill,non,0  },{ill,non,0	},
+	{ill,non,0  },{ora,abx,MRD},{asl,abx,MRW},{ill,non,0	},
+	{jsr,adr,JMP},{and,idx,MRD},{ill,non,0  },{u23,zpg,0	},/* 20 */
+	{bit,zpg,ZRD},{and,zpg,ZRD},{rol,zpg,ZRW},{ill,non,0	},
+	{plp,imp,0  },{and,imm,VAL},{rol,acc,0  },{ill,non,0	},
+	{bit,aba,MRD},{and,aba,MRD},{rol,aba,MRW},{ill,non,0	},
+	{bmi,rel,BRA},{and,idy,MRD},{ill,non,0  },{ill,non,0	},/* 30 */
+	{ill,non,0  },{and,zpx,ZRD},{rol,zpx,ZRW},{ill,non,0	},
+	{sec,imp,0  },{and,aby,MRD},{ill,non,0  },{ill,non,0	},
+	{ill,non,0  },{and,abx,MRD},{rol,abx,MRW},{u3F,zpg,0	},
+   {rti,imp,0  },{eor,idx,MRD},{ill,non,0  },{ill,non,0	},/* 40 */
+   {ill,non,0  },{eor,zpg,ZRD},{lsr,zpg,ZRW},{ill,non,0  },
+   {pha,imp,0  },{eor,imm,VAL},{lsr,acc,0  },{u4B,zpg,0	},
+   {jmp,adr,JMP},{eor,aba,MRD},{lsr,aba,MRW},{ill,non,0	},
+   {bvc,rel,BRA},{eor,idy,MRD},{ill,non,0  },{ill,non,0	},/* 50 */
+   {ill,non,0  },{eor,zpx,ZRD},{lsr,zpx,ZRW},{ill,non,0	},
+   {cli,imp,0  },{eor,aby,MRD},{ill,non,0  },{ill,non,0	},
+   {ill,non,0  },{eor,abx,MRD},{lsr,abx,MRW},{ill,non,0	},
+   {rts,imp,0  },{adc,idx,MRD},{ill,non,0  },{ill,non,0	},/* 60 */
+   {ill,non,0  },{adc,zpg,ZRD},{ror,zpg,ZRW},{vbl,zpg,0	},  		// MISH
+   {pla,imp,0  },{adc,imm,VAL},{ror,acc,0  },{ill,non,0	},
+   {jmp,ind,JMP},{adc,aba,MRD},{ror,aba,MRW},{ill,non,0	},
+   {bvs,rel,BRA},{adc,idy,MRD},{ill,non,0  },{ill,non,0	},/* 70 */
+   {ill,non,0  },{adc,zpx,ZRD},{ror,zpx,ZRW},{ill,non,0	},
+   {sei,imp,0  },{adc,aby,MRD},{ill,non,0  },{ill,non,0	},
+   {ill,non,0  },{adc,abx,MRD},{ror,abx,MRW},{ill,non,0	},
+   {ill,non,0  },{sta,idx,MWR},{ill,non,0  },{ill,non,0	},/* 80 */
+   {sty,zpg,ZWR},{sta,zpg,ZWR},{stx,zpg,ZWR},{u87,zpg,0	},
+   {dey,imp,0  },{ill,non,0	},{txa,imp,0  },{ill,non,0	},
+   {sty,aba,MWR},{sta,aba,MWR},{stx,aba,MWR},{u8F,zpg,0	},
+   {bcc,rel,BRA},{sta,idy,MWR},{ill,non,0  },{ill,non,0	},/* 90 */
+   {sty,zpx,ZWR},{sta,zpx,ZWR},{stx,zpy,ZWR},{ill,non,0	},
+   {tya,imp,0  },{sta,aby,MWR},{txs,imp,0  },{ill,non,0	},
+   {ill,non,0  },{sta,abx,MWR},{ill,non,0  },{ill,non,0	},
+   {ldy,imm,VAL},{lda,idx,MRD},{ldx,imm,VAL},{uA3,zpg,0	},/* a0 */
+   {ldy,zpg,ZRD},{lda,zpg,ZRD},{ldx,zpg,ZRD},{ill,non,0	},
+   {tay,imp,0  },{lda,imm,VAL},{tax,imp,0  },{uAB,zpg,0	},
+   {ldy,aba,MRD},{lda,aba,MRD},{ldx,aba,MRD},{ill,non,0	},
+   {bcs,rel,BRA},{lda,idy,MRD},{ill,non,0  },{ill,non,0	},/* b0 */
+   {ldy,zpx,ZRD},{lda,zpx,ZRD},{ldx,zpy,ZRD},{ill,non,0	},
+   {clv,imp,0  },{lda,aby,MRD},{tsx,imp,0  },{uBB,zpg,0	},
+   {ldy,abx,MRD},{lda,abx,MRD},{ldx,aby,MRD},{ill,non,0	},
+   {cpy,imm,VAL},{cmp,idx,MRD},{ill,non,0  },{ill,non,0	},/* c0 */
+   {cpy,zpg,ZRD},{cmp,zpg,ZRD},{dec,zpg,ZRW},{ill,non,0	},
+   {iny,imp,0  },{cmp,imm,VAL},{dex,imp,0  },{ill,non,0 },
+   {cpy,aba,MRD},{cmp,aba,MRD},{dec,aba,MRW},{ill,non,0	},
+   {bne,rel,BRA},{cmp,idy,MRD},{ill,non,0  },{ill,non,0	},/* d0 */
+   {ill,non,0  },{cmp,zpx,ZRD},{dec,zpx,ZRW},{ill,non,0	},
+   {cld,imp,0  },{cmp,aby,MRD},{ill,non,0  },{ill,non,0	},
+   {ill,non,0  },{cmp,abx,MRD},{dec,abx,MRW},{ill,non,0	},
+   {cpx,imm,VAL},{sbc,idx,MRD},{ill,non,0  },{ill,non,0	},/* e0 */
+   {cpx,zpg,ZRD},{sbc,zpg,ZRD},{inc,zpg,ZRW},{ill,non,0	},
+   {inx,imp,0  },{sbc,imm,VAL},{nop,imp,0  },{ill,non,0	},
+   {cpx,aba,MRD},{sbc,aba,MRD},{inc,aba,MRW},{ill,non,0	},
+   {beq,rel,BRA},{sbc,idy,MRD},{ill,non,0  },{ill,non,0	},/* f0 */
+   {ill,non,0  },{sbc,zpx,ZRD},{inc,zpx,ZRW},{ill,non,0	},
+   {sed,imp,0  },{sbc,aby,MRD},{ill,non,0  },{ill,non,0	},
+   {ill,non,0  },{sbc,abx,MRD},{inc,abx,MRW},{ill,non,0	}
+ };
+#endif
+
 /*****************************************************************************
  * Disassemble a single opcode starting at pc
  *****************************************************************************/
@@ -593,6 +671,13 @@ unsigned Dasm6502(char *buffer, unsigned pc)
 			opc = op6510[op][0];
 			arg = op6510[op][1];
 			access = op6510[op][2];
+			break;
+#endif
+#if (HAS_DECO16)
+		case SUBTYPE_DECO16:
+			opc = opdeco16[op][0];
+			arg = opdeco16[op][1];
+			access = opdeco16[op][2];
 			break;
 #endif
 		default:

@@ -53,6 +53,8 @@
 int debug_key_pressed = 0;	/* set to non zero to break into the debugger */
 int debug_key_delay = 0;	/* set to 0x7ffe to force keyboard check on next update */
 int debug_trace_delay = 0;	/* set to 0 to force a screen update */
+UINT8 debugger_bitmap_changed;
+UINT8 debugger_focus;
 
 /****************************************************************************
  * Limits
@@ -131,6 +133,8 @@ static int dbg_dasm_case = 0;
 static int dbg_dasm_relative_jumps = 0;
 
 static const char *dbg_info_once = NULL;
+
+static int dbg_show_scanline = 0;
 
 /****************************************************************************
  * Color settings
@@ -324,6 +328,7 @@ static void cmd_set_mem_squeezed( void );
 static void cmd_set_element_color( void );
 static void cmd_brk_exec_toggle( void );
 static void cmd_brk_data_toggle( void );
+static void cmd_toggle_scanlines( void );
 
 static void cmd_switch_window( void );
 static void cmd_dasm_up( void );
@@ -503,23 +508,23 @@ static int dbg_key_repeat = 4;
 
 UINT8 debugger_idle;
 
-UINT8 debugger_palette[] = {
-	0x00,0x00,0x00, /* black	 */
-	0x00,0x00,0x7f, /* blue 	 */
-	0x00,0x7f,0x00, /* green	 */
-	0x00,0x7f,0x7f, /* cyan 	 */
-	0x7f,0x00,0x00, /* red		 */
-	0x7f,0x00,0x7f, /* magenta	 */
-	0x7f,0x7f,0x00, /* brown	 */
-	0x7f,0x7f,0x7f, /* ltgray	 */
-	0x5f,0x5f,0x5f, /* dkgray	 */
-	0x00,0x00,0xff, /* ltblue	 */
-	0x00,0xff,0x00, /* ltgreen	 */
-	0x00,0xff,0xff, /* ltcyan	 */
-	0xff,0x00,0x00, /* ltred	 */
-	0xff,0x00,0xff, /* ltmagenta */
-	0xff,0xff,0x00, /* yellow	 */
-	0xff,0xff,0xff	/* white	 */
+rgb_t debugger_palette[] = {
+	MAKE_RGB(0x00,0x00,0x00), /* black	 */
+	MAKE_RGB(0x00,0x00,0x7f), /* blue 	 */
+	MAKE_RGB(0x00,0x7f,0x00), /* green	 */
+	MAKE_RGB(0x00,0x7f,0x7f), /* cyan 	 */
+	MAKE_RGB(0x7f,0x00,0x00), /* red		 */
+	MAKE_RGB(0x7f,0x00,0x7f), /* magenta	 */
+	MAKE_RGB(0x7f,0x7f,0x00), /* brown	 */
+	MAKE_RGB(0x7f,0x7f,0x7f), /* ltgray	 */
+	MAKE_RGB(0x5f,0x5f,0x5f), /* dkgray	 */
+	MAKE_RGB(0x00,0x00,0xff), /* ltblue	 */
+	MAKE_RGB(0x00,0xff,0x00), /* ltgreen	 */
+	MAKE_RGB(0x00,0xff,0xff), /* ltcyan	 */
+	MAKE_RGB(0xff,0x00,0x00), /* ltred	 */
+	MAKE_RGB(0xff,0x00,0xff), /* ltmagenta */
+	MAKE_RGB(0xff,0xff,0x00), /* yellow	 */
+	MAKE_RGB(0xff,0xff,0xff)  /* white	 */
 };
 
 
@@ -529,8 +534,6 @@ struct GfxElement *build_debugger_font(void)
 {
 	struct GfxElement *font;
 
-	switch_ui_orientation(NULL);
-
 	font = decodegfx(fontdata,&fontlayout);
 
 	if (font)
@@ -539,19 +542,12 @@ struct GfxElement *build_debugger_font(void)
 		font->total_colors = DEBUGGER_TOTAL_COLORS*DEBUGGER_TOTAL_COLORS;
 	}
 
-	switch_true_orientation(NULL);
-
 	return font;
 }
 
 static void toggle_cursor(struct mame_bitmap *bitmap, struct GfxElement *font)
 {
 	int sx, sy, x, y;
-	int saved_depth = Machine->color_depth;
-
-	/* ASG: this allows the debug bitmap to be a different depth than the screen */
-	Machine->color_depth = bitmap->depth;
-	switch_ui_orientation(bitmap);
 	sx = cursor_x * font->width;
 	sy = cursor_y * font->height;
 	for (y = 0; y < font->height; y++)
@@ -571,9 +567,8 @@ static void toggle_cursor(struct mame_bitmap *bitmap, struct GfxElement *font)
 			plot_pixel(bitmap, sx+x, sy+y, pen);
 		}
 	}
-	Machine->color_depth = saved_depth;
-	switch_true_orientation(bitmap);
 	cursor_on ^= 1;
+	debugger_bitmap_changed = 1;
 }
 
 void dbg_put_screen_char(int ch, int attr, int x, int y)
@@ -581,11 +576,10 @@ void dbg_put_screen_char(int ch, int attr, int x, int y)
 	struct mame_bitmap *bitmap = Machine->debug_bitmap;
 	struct GfxElement *font = Machine->debugger_font;
 
-	switch_ui_orientation(bitmap);
 	drawgfx(bitmap, font,
 		ch, attr, 0, 0, x*font->width, y*font->height,
 		0, TRANSPARENCY_NONE, 0);
-	switch_true_orientation(bitmap);
+	debugger_bitmap_changed = 1;
 }
 
 static void set_screen_curpos(int x, int y)
@@ -860,6 +854,11 @@ static s_command commands[] = {
 	"[either OPCODES (from OP_ROM, default) or DATA (from OP_RAM), also 0|1].",
 	cmd_save_to_file },
 {	(1<<EDIT_CMDS),
+	"SCANLINE",     0,          CODE_NONE,
+	"",
+	"Toggles the display of scanlines",
+	cmd_toggle_scanlines },
+{	(1<<EDIT_CMDS),
 	"IGNORE",       0,          CODE_NONE,
 	"<cpunum>",
 	"Ignore CPU #<cpunum> while debugging or tracing",
@@ -1071,22 +1070,22 @@ INLINE unsigned order( unsigned offset, unsigned size )
 /* adjust an offset by shifting it left activecpu_address_shift() times */
 INLINE unsigned lshift( unsigned offset )
 {
-	switch( ASHIFT )
-	{
-	case -1: return offset / 2;
-	case  3: return offset * 8;
-	}
+	int shift = ASHIFT;
+	if (shift > 0)
+		offset <<= shift;
+	else
+		offset >>= -shift;
 	return offset;
 }
 
 /* adjust an offset by shifting it right activecpu_address_shift() times */
 INLINE unsigned rshift( unsigned offset )
 {
-	switch( ASHIFT )
-	{
-	case -1: return offset * 2;
-	case  3: return offset / 8;
-	}
+	int shift = ASHIFT;
+	if (shift > 0)
+		offset >>= shift;
+	else
+		offset <<= -shift;
 	return offset;
 }
 
@@ -1385,7 +1384,7 @@ static unsigned get_boolean( char **parg, int *size )
 		else
 		if( !isalnum(p[1]) )
 		{
-			result = 0;
+			result = 1;
 			length = 1;
 			*parg += length;
 		}
@@ -1462,7 +1461,7 @@ static const char *get_file_name( char **parg, int *size )
 const char *get_ea_info( unsigned pc )
 {
 	static char buffer[63+1];
-	static char *access[EA_COUNT] =
+	static const char *access[EA_COUNT] =
 	{
 		"",     /* no EA mode */
 		"#",    /* immediate */
@@ -2521,6 +2520,11 @@ static void dump_regs( void )
 			}
 		}
 	}
+	if (dbg_show_scanline)
+	{
+		win_printf( win, "Scanline: %d Horz: %d\n", cpu_getscanline(), cpu_gethorzbeampos());
+	}
+
 	regs->top = y;
 	y = 0;
 
@@ -3967,7 +3971,7 @@ static void cmd_dasm_to_file( void )
 		return;
 	}
 	opcodes = get_boolean( &cmd, &length );
-	if( !length ) opcodes = 1;	/* default to display opcodes */
+	if( length == 4 ) opcodes = 1; 	/* default to display opcodes */
 
 	file = fopen(filename, "w");
 	if( !file )
@@ -3988,6 +3992,8 @@ static void cmd_dasm_to_file( void )
 		s = rshift(size);
 
 		fprintf(file, "%0*X: ", width, pc );
+		if( opcodes )
+		{
 		switch( ALIGN )
 		{
 		case 1: /* dump bytes */
@@ -4021,6 +4027,8 @@ static void cmd_dasm_to_file( void )
 			}
 			break;
 		}
+		}
+
 		fprintf( file, "%s\n", buffer );
 		if( (pc + size) < pc )
 			break;
@@ -4477,7 +4485,7 @@ static void cmd_go_break( void )
 	dbg_active = 0;
 
 	osd_sound_enable(1);
-	osd_debugger_focus(0);
+	debugger_focus = 0;
 }
 
 /**************************************************************************
@@ -4492,7 +4500,7 @@ static void cmd_here( void )
 	dbg_active = 0;
 
 	osd_sound_enable(1);
-	osd_debugger_focus(0);
+	debugger_focus = 0;
 
 	edit_cmds_reset();
 }
@@ -5007,6 +5015,15 @@ static void cmd_brk_data_toggle( void )
 }
 
 /**************************************************************************
+ * cmd_toggle_scanlines
+ * Toggles the display of scanlines in the display
+ **************************************************************************/
+static void cmd_toggle_scanlines( void )
+{
+	dbg_show_scanline = !dbg_show_scanline;
+}
+
+/**************************************************************************
  * cmd_run_to_cursor
  * Set temporary break point at cursor line and go
  **************************************************************************/
@@ -5110,7 +5127,7 @@ static void cmd_go( void )
 	edit_cmds_reset();
 
 	osd_sound_enable(1);
-	osd_debugger_focus(0);
+	debugger_focus = 0;
 }
 
 /**************************************************************************
@@ -5235,7 +5252,7 @@ void mame_debug_init(void)
 	FILE *file;
 
 	mame_debug_reset_statics();
-	osd_debugger_focus(1);
+	debugger_focus = 1;
 
 	total_cpu = cpu_gettotalcpu();
 
@@ -5356,6 +5373,7 @@ void MAME_Debug(void)
 	if( ++debug_key_delay == 0x7fff )
 	{
 		debug_key_delay = 0;
+		if (!debug_key_pressed)
 		debug_key_pressed = seq_pressed(input_port_type_seq(IPT_UI_ON_SCREEN_DISPLAY));
 	}
 
@@ -5370,7 +5388,7 @@ void MAME_Debug(void)
 	/* If this CPU shall be ignored, just return */
 	if( DBG.ignore ) return;
 
-	cputype = Machine->drv->cpu[active_cpu].cpu_type & ~CPU_FLAGS_MASK;
+	cputype = Machine->drv->cpu[active_cpu].cpu_type;
 
 	if( trace_on )
 	{
@@ -5392,7 +5410,7 @@ void MAME_Debug(void)
 			dbg_update = 0;
 			dbg_active = 0;
 			osd_sound_enable(1);
-			osd_debugger_focus(0);
+			debugger_focus = 0;
 		}
 		DBG.prev_sp = 0;
 	}
@@ -5411,7 +5429,7 @@ void MAME_Debug(void)
 		}
 
 		first_time = 0;
-		osd_debugger_focus(1);
+		debugger_focus = 1;
 		win_invalidate_video();
 
 		edit_cmds_reset();
@@ -5449,7 +5467,7 @@ void MAME_Debug(void)
 				{
 					dbg_trace = 0;
 					dbg_step = 0;
-					osd_debugger_focus(1);
+					debugger_focus = 1;
 				}
 			}
 		}

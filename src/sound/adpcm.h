@@ -1,7 +1,8 @@
 #ifndef ADPCM_H
 #define ADPCM_H
 
-#define MAX_ADPCM 8
+#define MAX_ADPCM		16
+#define MAX_OKIM6295	(MAX_ADPCM/4)	// 4 voices per chip
 
 
 /* a generic ADPCM interface, for unknown chips */
@@ -26,8 +27,6 @@ int ADPCM_playing(int num);
 
 /* an interface for the OKIM6295 and similar chips */
 
-#define MAX_OKIM6295 			2
-
 /*
   Note about the playback frequency: the external clock is internally divided,
   depending on pin 7, by 132 (high) or 165 (low). This isn't handled by the
@@ -50,15 +49,21 @@ void OKIM6295_set_frequency(int which, int frequency);
 
 READ_HANDLER( OKIM6295_status_0_r );
 READ_HANDLER( OKIM6295_status_1_r );
+READ_HANDLER( OKIM6295_status_2_r );
 READ16_HANDLER( OKIM6295_status_0_lsb_r );
 READ16_HANDLER( OKIM6295_status_1_lsb_r );
+READ16_HANDLER( OKIM6295_status_2_lsb_r );
 READ16_HANDLER( OKIM6295_status_0_msb_r );
 READ16_HANDLER( OKIM6295_status_1_msb_r );
+READ16_HANDLER( OKIM6295_status_2_msb_r );
 WRITE_HANDLER( OKIM6295_data_0_w );
 WRITE_HANDLER( OKIM6295_data_1_w );
+WRITE_HANDLER( OKIM6295_data_2_w );
 WRITE16_HANDLER( OKIM6295_data_0_lsb_w );
 WRITE16_HANDLER( OKIM6295_data_1_lsb_w );
+WRITE16_HANDLER( OKIM6295_data_2_lsb_w );
 WRITE16_HANDLER( OKIM6295_data_0_msb_w );
 WRITE16_HANDLER( OKIM6295_data_1_msb_w );
+WRITE16_HANDLER( OKIM6295_data_2_msb_w );
 
 #endif

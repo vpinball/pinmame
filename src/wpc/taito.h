@@ -80,12 +80,13 @@
       ROM_LOAD( n3, 0x1000, 0x0800, chk3) \
       ROM_LOAD( n4, 0x1800, 0x0800, chk4)
 
-#define TAITO_ROMSTART22_2(name,n1,chk1,n2,chk2,n4,chk4) \
+#define TAITO_ROMSTART22_2(name,n1,chk1,n2,chk2,n3,chk3) \
   ROM_START(name) \
     NORMALREGION(0x10000, TAITO_MEMREG_CPU) \
       ROM_LOAD( n1, 0x0000, 0x0800, chk1) \
       ROM_LOAD( n2, 0x0800, 0x0800, chk2) \
-      ROM_LOAD( n4, 0x1800, 0x0800, chk4)
+      ROM_LOAD( n3, 0x1000, 0x0800, chk3) \
+        ROM_RELOAD( 0x1800, 0x0800)
 
 #define TAITO_ROMEND ROM_END
 

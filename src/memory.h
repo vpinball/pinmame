@@ -696,9 +696,11 @@ DECLARE_MEM_HANDLERS_8BIT(24)
 
 /* ----- declare 16-bit bigendian handlers ----- */
 DECLARE_MEM_HANDLERS_16BIT_BE(16)
+DECLARE_MEM_HANDLERS_16BIT_BE(18)
 DECLARE_MEM_HANDLERS_16BIT_BE(24)
 DECLARE_MEM_HANDLERS_16BIT_BE(32)
 #define change_pc16bew(pc)		change_pc_generic(pc, 16, 1, cpu_setopbase16bew)
+#define change_pc18bew(pc)      change_pc_generic(pc, 18, 1, cpu_setopbase18bew)
 #define change_pc24bew(pc)		change_pc_generic(pc, 24, 1, cpu_setopbase24bew)
 #define change_pc32bew(pc)		change_pc_generic(pc, 32, 1, cpu_setopbase32bew)
 
@@ -723,9 +725,11 @@ DECLARE_MEM_HANDLERS_32BIT_BE(32)
 #define change_pc32bedw(pc)		change_pc_generic(pc, 32, 2, cpu_setopbase32bedw)
 
 /* ----- declare 32-bit littleendian handlers ----- */
+DECLARE_MEM_HANDLERS_32BIT_LE(24)
 DECLARE_MEM_HANDLERS_32BIT_LE(26)
 DECLARE_MEM_HANDLERS_32BIT_LE(29)
 DECLARE_MEM_HANDLERS_32BIT_LE(32)
+#define change_pc24ledw(pc)		change_pc_generic(pc, 24, 2, cpu_setopbase24ledw)
 #define change_pc26ledw(pc)		change_pc_generic(pc, 26, 2, cpu_setopbase26ledw)
 #define change_pc29ledw(pc)		change_pc_generic(pc, 29, 2, cpu_setopbase29ledw)
 #define change_pc32ledw(pc)		change_pc_generic(pc, 32, 2, cpu_setopbase32ledw)
@@ -757,6 +761,7 @@ DECLARE_PORT_HANDLERS_32BIT_BE(16)
 /* ----- declare 32-bit littleendian handlers ----- */
 DECLARE_PORT_HANDLERS_32BIT_LE(16)
 DECLARE_PORT_HANDLERS_32BIT_LE(24)
+DECLARE_PORT_HANDLERS_32BIT_LE(32)
 
 
 /***************************************************************************
@@ -769,6 +774,7 @@ DECLARE_PORT_HANDLERS_32BIT_LE(24)
 int			memory_init(void);
 void		memory_shutdown(void);
 void		memory_set_context(int activecpu);
+void		memory_set_unmap_value(data32_t value);
 
 /* ----- dynamic bank handlers ----- */
 void		memory_set_bankhandler_r(int bank, offs_t offset, mem_read_handler handler);
@@ -784,6 +790,8 @@ extern offs_t encrypted_opcode_start[],encrypted_opcode_end[];
 
 /* ----- return a base pointer to memory ---- */
 void *		memory_find_base(int cpunum, offs_t offset);
+void *		memory_get_read_ptr(int cpunum, offs_t offset);
+void *		memory_get_write_ptr(int cpunum, offs_t offset);
 
 /* ----- dynamic memory mapping ----- */
 data8_t *	install_mem_read_handler    (int cpunum, offs_t start, offs_t end, mem_read_handler handler);

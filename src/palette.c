@@ -1,66 +1,154 @@
+/******************************************************************************
+
+	palette.c
+
+	Palette handling functions.
+
+******************************************************************************/
+
 #include "driver.h"
 #include "state.h"
+#include <math.h>
 
 #define VERBOSE 0
 
 
-static UINT8 *game_palette;		/* RGB palette as set by the driver */
-static UINT8 *actual_palette;	/* actual RGB palette after brightness adjustments */
-static double *brightness;
+/*-------------------------------------------------
+	CONSTANTS
+-------------------------------------------------*/
 
+#define PEN_BRIGHTNESS_BITS		8
+#define MAX_PEN_BRIGHTNESS		(4 << PEN_BRIGHTNESS_BITS)
 
-static int colormode;
 enum
 {
 	PALETTIZED_16BIT,
 	DIRECT_15BIT,
 	DIRECT_32BIT
 };
-static int total_colors;
-static double shadow_factor,highlight_factor;
-static int palette_initialized;
+
+
+/*-------------------------------------------------
+	GLOBAL VARIABLES
+-------------------------------------------------*/
 
 UINT32 direct_rgb_components[3];
-
-
-
 UINT16 *palette_shadow_table;
 
+data8_t *paletteram;
+data8_t *paletteram_2;	/* use when palette RAM is split in two parts */
+data16_t *paletteram16;
+data16_t *paletteram16_2;
+data32_t *paletteram32;
 
-static void palette_reset_32_direct(void);
-static void palette_reset_15_direct(void);
-static void palette_reset_16_palettized(void);
 
 
+/*-------------------------------------------------
+	LOCAL VARIABLES
+-------------------------------------------------*/
+
+static rgb_t *game_palette;			/* RGB palette as set by the driver */
+static rgb_t *adjusted_palette;		/* actual RGB palette after brightness/gamma adjustments */
+static UINT32 *dirty_palette;
+static UINT16 *pen_brightness;
+
+static UINT8 adjusted_palette_dirty;
+static UINT8 debug_palette_dirty;
+
+static UINT16 shadow_factor, highlight_factor;
+static double global_brightness, global_brightness_adjust, global_gamma;
+
+static UINT8 colormode;
+static pen_t total_colors;
+static pen_t total_colors_with_ui;
+
+static UINT8 color_correct_table[(MAX_PEN_BRIGHTNESS * MAX_PEN_BRIGHTNESS) >> PEN_BRIGHTNESS_BITS];
+
+
+
+/*-------------------------------------------------
+	PROTOTYPES
+-------------------------------------------------*/
+
+static int palette_alloc(void);
+static void palette_reset(void);
+static void recompute_adjusted_palette(int brightness_or_gamma_changed);
+static void internal_modify_pen(pen_t pen, rgb_t color, int pen_bright);
+
+
+
+/*-------------------------------------------------
+	rgb_to_direct15 - convert an RGB triplet to
+	a 15-bit OSD-specified RGB value
+-------------------------------------------------*/
+
+INLINE UINT16 rgb_to_direct15(rgb_t rgb)
+{
+	return  (  RGB_RED(rgb) >> 3) * (direct_rgb_components[0] / 0x1f) +
+			(RGB_GREEN(rgb) >> 3) * (direct_rgb_components[1] / 0x1f) +
+			( RGB_BLUE(rgb) >> 3) * (direct_rgb_components[2] / 0x1f);
+}
+
+
+
+/*-------------------------------------------------
+	rgb_to_direct32 - convert an RGB triplet to
+	a 32-bit OSD-specified RGB value
+-------------------------------------------------*/
+
+INLINE UINT32 rgb_to_direct32(rgb_t rgb)
+{
+	return    RGB_RED(rgb) * (direct_rgb_components[0] / 0xff) +
+			RGB_GREEN(rgb) * (direct_rgb_components[1] / 0xff) +
+			 RGB_BLUE(rgb) * (direct_rgb_components[2] / 0xff);
+}
+
+
+
+/*-------------------------------------------------
+	adjust_palette_entry - adjust a palette
+	entry for brightness and gamma
+-------------------------------------------------*/
+
+INLINE rgb_t adjust_palette_entry(rgb_t entry, int pen_bright)
+{
+	int r = color_correct_table[(RGB_RED(entry) * pen_bright) >> PEN_BRIGHTNESS_BITS];
+	int g = color_correct_table[(RGB_GREEN(entry) * pen_bright) >> PEN_BRIGHTNESS_BITS];
+	int b = color_correct_table[(RGB_BLUE(entry) * pen_bright) >> PEN_BRIGHTNESS_BITS];
+	return MAKE_RGB(r,g,b);
+}
+
+
+
+/*-------------------------------------------------
+	mark_pen_dirty - mark a given pen index dirty
+-------------------------------------------------*/
+
+INLINE void mark_pen_dirty(int pen)
+{
+	dirty_palette[pen / 32] |= 1 << (pen % 32);
+}
+
+
+
+/*-------------------------------------------------
+	palette_start - palette initialization that
+	takes place before the display is created
+-------------------------------------------------*/
 
 int palette_start(void)
 {
-	int i;
+	/* init statics */
+	adjusted_palette_dirty = 1;
+	debug_palette_dirty = 1;
 
-	if ((Machine->drv->video_attributes & VIDEO_RGB_DIRECT) &&
-			Machine->drv->color_table_len)
-	{
-		logerror("Error: VIDEO_RGB_DIRECT requires color_table_len to be 0.\n");
-		return 1;
-	}
+	shadow_factor = (int)(PALETTE_DEFAULT_SHADOW_FACTOR * (double)(1 << PEN_BRIGHTNESS_BITS));
+	highlight_factor = (int)(PALETTE_DEFAULT_HIGHLIGHT_FACTOR * (double)(1 << PEN_BRIGHTNESS_BITS));
+	global_brightness = (options.brightness > .001) ? options.brightness : 1.0;
+	global_brightness_adjust = 1.0;
+	global_gamma = (options.gamma > .001) ? options.gamma : 1.0;
 
-	total_colors = Machine->drv->total_colors;
-	if (Machine->drv->video_attributes & VIDEO_HAS_SHADOWS)
-		total_colors += Machine->drv->total_colors;
-	if (Machine->drv->video_attributes & VIDEO_HAS_HIGHLIGHTS)
-		total_colors += Machine->drv->total_colors;
-	if (total_colors > 65536)
-	{
-		logerror("Error: palette has more than 65536 colors.\n");
-		return 1;
-	}
-	shadow_factor = PALETTE_DEFAULT_SHADOW_FACTOR;
-	highlight_factor = PALETTE_DEFAULT_HIGHLIGHT_FACTOR;
-
-	game_palette = malloc(3 * total_colors);
-	actual_palette = malloc(3 * total_colors);
-	brightness = malloc(sizeof(*brightness) * Machine->drv->total_colors);
-
+	/* determine the color mode */
 	if (Machine->color_depth == 15)
 		colormode = DIRECT_15BIT;
 	else if (Machine->color_depth == 32)
@@ -68,197 +156,469 @@ int palette_start(void)
 	else
 		colormode = PALETTIZED_16BIT;
 
-	Machine->pens = malloc(total_colors * sizeof(*Machine->pens));
-	Machine->palette = malloc(total_colors * sizeof(*Machine->palette));
-	Machine->debug_pens = malloc(DEBUGGER_TOTAL_COLORS * sizeof(*Machine->debug_pens));
-
-	if (Machine->drv->color_table_len)
+	/* ensure that RGB direct video modes don't have a colortable */
+	if ((Machine->drv->video_attributes & VIDEO_RGB_DIRECT) &&
+			Machine->drv->color_table_len)
 	{
-		Machine->game_colortable = malloc(Machine->drv->color_table_len * sizeof(*Machine->game_colortable));
-		Machine->remapped_colortable = malloc(Machine->drv->color_table_len * sizeof(*Machine->remapped_colortable));
+		logerror("Error: VIDEO_RGB_DIRECT requires color_table_len to be 0.\n");
+		return 1;
+	}
+
+	/* compute the total colors, including shadows and highlights */
+	total_colors = Machine->drv->total_colors;
+	if (Machine->drv->video_attributes & VIDEO_HAS_SHADOWS)
+		total_colors += Machine->drv->total_colors;
+	if (Machine->drv->video_attributes & VIDEO_HAS_HIGHLIGHTS)
+		total_colors += Machine->drv->total_colors;
+	total_colors_with_ui = total_colors;
+
+	/* make sure we still fit in 16 bits */
+	if (total_colors > 65536)
+	{
+		logerror("Error: palette has more than 65536 colors.\n");
+		return 1;
+	}
+
+	/* allocate all the data structures */
+	if (palette_alloc())
+		return 1;
+
+	/* set up save/restore of the palette */
+	state_save_register_UINT32("palette", 0, "colors", game_palette, total_colors);
+	state_save_register_UINT16("palette", 0, "brightness", pen_brightness, Machine->drv->total_colors);
+	state_save_register_func_postload(palette_reset);
+
+	return 0;
+}
+
+
+
+//* AAT041603
+/*-------------------------------------------------
+	palette_set_shadow_mode(mode)
+
+		mode: 0 = use preset 0 (default shadow)
+		      1 = use preset 1 (default highlight)
+		      2 = use preset 2 *
+		      3 = use preset 3 *
+
+	* Preset 2 & 3 work independently under 32bpp,
+	  supporting up to four different types of
+	  shadows at one time. They mirror preset 1 & 2
+	  in lower depth settings to maintain
+	  compatibility.
+
+
+	palette_set_shadow_factor32(factor)
+
+		factor: 1.0(normal) to 0.0(darker)
+
+
+	palette_set_highlight_factor32(factor)
+
+		factor: 1.0(normal) to 2.0(brighter)
+
+
+	palette_set_shadow_dRGB32(mode, dr, dg, db, noclip)
+
+		mode:    0 to   3, which preset to configure
+
+		  dr: -255 to 255,   red displacement
+		  dg: -255 to 255, green displacement
+		  db: -255 to 255,  blue displacement
+
+		noclip: 0 = resultant RGB clipped at 0x00/0xff
+		        1 = resultant RGB wraparound 0x00/0xff
+
+
+	* Color shadows only work under 32bpp.
+	  This function has no effect in lower color
+	  depths where
+
+		palette_set_shadow_factor32() or
+		palette_set_highlight_factor32()
+
+	  should be used instead.
+
+	* 32-bit shadows are lossy. Even with zero RGB
+	  the affected area will still look slightly
+	  darkened. Drivers should ensure shadow pen
+	  entries in gfx_drawmode_table are set to
+	  DRAWMODE_NONE to avoid this side-effect.
+
+-------------------------------------------------*/
+#define MAX_SHADOW_PRESETS 4
+
+static UINT32 *shadow_table_base[MAX_SHADOW_PRESETS];
+
+
+static void internal_set_shadow_preset(int mode, double factor, int dr, int dg, int db, int noclip, int style, int init)
+{
+	static double oldfactor[MAX_SHADOW_PRESETS] = {0,0,0,0};
+	static int oldRGB[MAX_SHADOW_PRESETS][3] = {{0,0,0},{0,0,0},{0,0,0},{0,0,0}};
+	static int oldclip;
+
+	UINT32 *table_ptr32;
+	int i, r, g, b;
+
+	if (mode < 0 || mode >= MAX_SHADOW_PRESETS) return;
+
+	if ((table_ptr32 = shadow_table_base[mode]) == NULL) return;
+
+	if (style)
+	{
+		if (factor < 0) factor = 0;
+
+		if (!init && oldfactor[mode] == factor) return;
+
+		oldfactor[mode] = factor;
+
+		if (colormode != DIRECT_32BIT)
+		{
+			if (style == 1) palette_set_shadow_factor(factor); else
+			if (style == 2) palette_set_highlight_factor(factor);
+			return;
+		}
+
+		for (i=0; i<32768; i++)
+		{
+			r = (int)(factor * (i & 0x7c00));
+			g = (int)(factor * (i & 0x03e0));
+			b = (int)(factor * (i & 0x001f));
+
+			if (r < 0x7c00) r &= 0x7c00; else r = 0x7c00;
+			if (g < 0x03e0) g &= 0x03e0; else g = 0x03e0;
+			if (b < 0x001f) b &= 0x001f; else b = 0x001f;
+
+			table_ptr32[i] = (UINT32)(r<<9 | g<<6 | b<<3);
+		}
 	}
 	else
 	{
-		Machine->game_colortable = 0;
+		if (colormode != DIRECT_32BIT) return;
+
+		if (dr < -0xff) dr = -0xff; else if (dr > 0xff) dr = 0xff;
+		if (dg < -0xff) dg = -0xff; else if (dg > 0xff) dg = 0xff;
+		if (db < -0xff) db = -0xff; else if (db > 0xff) db = 0xff;
+		dr >>= 3; dg >>= 3; db >>= 3;
+
+		if (!init && oldclip==noclip && oldRGB[mode][0]==dr && oldRGB[mode][1]==dg && oldRGB[mode][2]==db) return;
+
+		#ifdef MAME_DEBUG
+			//usrintf_showmessage("shadow %d recalc %d %d %d %02x", mode, dr, dg, db, noclip);
+		#endif
+
+		oldclip = noclip;
+		oldRGB[mode][0] = dr; oldRGB[mode][1] = dg; oldRGB[mode][2] = db;
+
+		dr <<= 10; dg <<= 5;
+
+		if (noclip)
+		{
+			for (i=0; i<32768; i++)
+			{
+				r = (i & 0x7c00) + dr;
+				g = (i & 0x03e0) + dg;
+				b = (i & 0x001f) + db;
+
+				r &= 0x7c00;
+				g &= 0x03e0;
+				b &= 0x001f;
+
+				table_ptr32[i] = (UINT32)(r<<9 | g<<6 | b<<3);
+			}
+		}
+		else
+		{
+			for (i=0; i<32768; i++)
+			{
+				r = (i & 0x7c00) + dr;
+				g = (i & 0x03e0) + dg;
+				b = (i & 0x001f) + db;
+
+				if (r < 0) r = 0; else if (r > 0x7c00) r = 0x7c00;
+				if (g < 0) g = 0; else if (g > 0x03e0) g = 0x03e0;
+				if (b < 0) b = 0; else if (b > 0x001f) b = 0x001f;
+
+				table_ptr32[i] = (UINT32)(r<<9 | g<<6 | b<<3);
+			}
+		}
+	}
+}
+
+
+void palette_set_shadow_mode(int mode)
+{
+	if (mode >= 0 && mode < MAX_SHADOW_PRESETS) palette_shadow_table = (UINT16*)shadow_table_base[mode];
+}
+
+
+void palette_set_shadow_factor32(double factor)
+{
+	internal_set_shadow_preset(0, factor, 0, 0, 0, 0, 1, 0);
+}
+
+
+void palette_set_highlight_factor32(double factor)
+{
+	internal_set_shadow_preset(1, factor, 0, 0, 0, 0, 2, 0);
+}
+
+
+void palette_set_shadow_dRGB32(int mode, int dr, int dg, int db, int noclip)
+{
+	internal_set_shadow_preset(mode, 0, dr, dg, db, noclip, 0, 0);
+}
+
+
+
+/*-------------------------------------------------
+	palette_alloc - allocate memory for palette
+	structures
+-------------------------------------------------*/
+
+static int palette_alloc(void)
+{
+	int max_total_colors = total_colors + 2;
+	int i;
+
+	/* allocate memory for the raw game palette */
+	game_palette = auto_malloc(max_total_colors * sizeof(game_palette[0]));
+	if (!game_palette)
+		return 1;
+	for (i = 0; i < max_total_colors; i++)
+		game_palette[i] = MAKE_RGB((i & 1) * 0xff, ((i >> 1) & 1) * 0xff, ((i >> 2) & 1) * 0xff);
+
+	/* allocate memory for the adjusted game palette */
+	adjusted_palette = auto_malloc(max_total_colors * sizeof(adjusted_palette[0]));
+	if (!adjusted_palette)
+		return 1;
+	for (i = 0; i < max_total_colors; i++)
+		adjusted_palette[i] = game_palette[i];
+
+	/* allocate memory for the dirty palette array */
+	dirty_palette = auto_malloc((max_total_colors + 31) / 32 * sizeof(dirty_palette[0]));
+	if (!dirty_palette)
+		return 1;
+	for (i = 0; i < max_total_colors; i++)
+		mark_pen_dirty(i);
+
+	/* allocate memory for the pen table */
+	Machine->pens = auto_malloc(total_colors * sizeof(Machine->pens[0]));
+	if (!Machine->pens)
+		return 1;
+	for (i = 0; i < total_colors; i++)
+		Machine->pens[i] = i;
+
+	/* allocate memory for the per-entry brightness table */
+	pen_brightness = auto_malloc(Machine->drv->total_colors * sizeof(pen_brightness[0]));
+	if (!pen_brightness)
+		return 1;
+	for (i = 0; i < Machine->drv->total_colors; i++)
+		pen_brightness[i] = 1 << PEN_BRIGHTNESS_BITS;
+
+	/* allocate memory for the colortables, if needed */
+	if (Machine->drv->color_table_len)
+	{
+		/* first for the raw colortable */
+		Machine->game_colortable = auto_malloc(Machine->drv->color_table_len * sizeof(Machine->game_colortable[0]));
+		if (!Machine->game_colortable)
+			return 1;
+		for (i = 0; i < Machine->drv->color_table_len; i++)
+			Machine->game_colortable[i] = i % total_colors;
+
+		/* then for the remapped colortable */
+		Machine->remapped_colortable = auto_malloc(Machine->drv->color_table_len * sizeof(Machine->remapped_colortable[0]));
+		if (!Machine->remapped_colortable)
+			return 1;
+	}
+
+	/* otherwise, keep the game_colortable NULL and point the remapped_colortable to the pens */
+	else
+	{
+		Machine->game_colortable = NULL;
 		Machine->remapped_colortable = Machine->pens;	/* straight 1:1 mapping from palette to colortable */
 	}
-	Machine->debug_remapped_colortable = malloc(2*DEBUGGER_TOTAL_COLORS*DEBUGGER_TOTAL_COLORS * sizeof(*Machine->debug_remapped_colortable));
 
+	/* allocate memory for the debugger pens */
+	Machine->debug_pens = auto_malloc(DEBUGGER_TOTAL_COLORS * sizeof(Machine->debug_pens[0]));
+	if (!Machine->debug_pens)
+		return 1;
+	for (i = 0; i < DEBUGGER_TOTAL_COLORS; i++)
+		Machine->debug_pens[i] = i;
+
+	/* allocate memory for the debugger colortable */
+	Machine->debug_remapped_colortable = auto_malloc(2 * DEBUGGER_TOTAL_COLORS * DEBUGGER_TOTAL_COLORS * sizeof(Machine->debug_remapped_colortable[0]));
+	if (!Machine->debug_remapped_colortable)
+		return 1;
+	for (i = 0; i < DEBUGGER_TOTAL_COLORS * DEBUGGER_TOTAL_COLORS; i++)
+	{
+		Machine->debug_remapped_colortable[2*i+0] = i / DEBUGGER_TOTAL_COLORS;
+		Machine->debug_remapped_colortable[2*i+1] = i % DEBUGGER_TOTAL_COLORS;
+	}
+
+#if 0
+	/* allocate the shadow lookup table for 16bpp modes */
+	palette_shadow_table = NULL;
 	if (colormode == PALETTIZED_16BIT)
 	{
 		/* we allocate a full 65536 entries table, to prevent memory corruption
 		 * bugs should the tilemap contains pens >= total_colors
 		 * (e.g. Machine->uifont->colortable[0] as returned by get_black_pen())
 		 */
-		palette_shadow_table = malloc(65536 * sizeof(*palette_shadow_table));
-		if (palette_shadow_table == 0)
-		{
-			palette_stop();
+		palette_shadow_table = auto_malloc(65536 * sizeof(palette_shadow_table[0]));
+		if (!palette_shadow_table)
 			return 1;
-		}
-		for (i = 0;i < 65536;i++)
+
+		/* map entries up to the total_colors so they point to the next block of colors */
+		for (i = 0; i < 65536; i++)
 		{
 			palette_shadow_table[i] = i;
 			if ((Machine->drv->video_attributes & VIDEO_HAS_SHADOWS) && i < Machine->drv->total_colors)
 				palette_shadow_table[i] += Machine->drv->total_colors;
 		}
 	}
-	else
+#else
+	{
+		//* AAT041603
+		UINT16 *table_ptr16;
+		UINT32 *table_ptr32;
+		int c = Machine->drv->total_colors;
+		int cx2 = c << 1;
+
+		for (i=0; i<MAX_SHADOW_PRESETS; i++) shadow_table_base[i] = NULL;
 		palette_shadow_table = NULL;
 
-	if ((Machine->drv->color_table_len && (Machine->game_colortable == 0 || Machine->remapped_colortable == 0))
-			|| game_palette == 0 || actual_palette == 0 || brightness == 0
-			|| Machine->pens == 0 || Machine->debug_pens == 0 || Machine->debug_remapped_colortable == 0)
-	{
-		palette_stop();
-		return 1;
+		if (colormode != DIRECT_32BIT)
+		{
+			if (Machine->drv->video_attributes & VIDEO_HAS_SHADOWS)
+			{
+				if (!(table_ptr16 = auto_malloc(65536 * sizeof(UINT16)))) return 1;
+				if (palette_shadow_table == NULL) palette_shadow_table = table_ptr16;
+				shadow_table_base[0] = shadow_table_base[2] = (UINT32*)table_ptr16;
+
+				for (i=0; i<c; i++) table_ptr16[i] = c + i;
+				for (i=c; i<65536; i++) table_ptr16[i] = i;
+
+				internal_set_shadow_preset(0, PALETTE_DEFAULT_SHADOW_FACTOR32, 0, 0, 0, 0, 1, 1);
+			}
+
+			if (Machine->drv->video_attributes & VIDEO_HAS_HIGHLIGHTS)
+			{
+				if (!(table_ptr16 = auto_malloc(65536 * sizeof(UINT16)))) return 1;
+				if (palette_shadow_table == NULL) palette_shadow_table = table_ptr16;
+				shadow_table_base[1] = shadow_table_base[3] = (UINT32*)table_ptr16;
+
+				for (i=0; i<c; i++) table_ptr16[i] = cx2 + i;
+				for (i=c; i<65536; i++) table_ptr16[i] = i;
+
+				internal_set_shadow_preset(1, PALETTE_DEFAULT_HIGHLIGHT_FACTOR32, 0, 0, 0, 0, 2, 1);
+			}
+		}
+		else
+		{
+			if (Machine->drv->video_attributes & VIDEO_HAS_SHADOWS)
+			{
+				if (!(table_ptr32 = auto_malloc(65536 * sizeof(UINT32)))) return 1;
+				if (palette_shadow_table == NULL) palette_shadow_table = (UINT16*)table_ptr32;
+
+				shadow_table_base[0] = table_ptr32;
+				shadow_table_base[2] = table_ptr32 + 32768;
+
+				internal_set_shadow_preset(0, PALETTE_DEFAULT_SHADOW_FACTOR32, 0, 0, 0, 0, 1, 1);
+			}
+
+			if (Machine->drv->video_attributes & VIDEO_HAS_HIGHLIGHTS)
+			{
+				if (!(table_ptr32 = auto_malloc(65536 * sizeof(UINT32)))) return 1;
+				if (palette_shadow_table == NULL) palette_shadow_table = (UINT16*)table_ptr32;
+
+				shadow_table_base[1] = table_ptr32;
+				shadow_table_base[3] = table_ptr32 + 32768;
+
+				internal_set_shadow_preset(1, PALETTE_DEFAULT_HIGHLIGHT_FACTOR32, 0, 0, 0, 0, 2, 1);
+			}
+		}
 	}
-
-	for (i = 0;i < Machine->drv->total_colors;i++)
-		brightness[i] = 1.0;
-
-
-	state_save_register_UINT8("palette", 0, "colors", game_palette, total_colors*3);
-	state_save_register_UINT8("palette", 0, "actual_colors", actual_palette, total_colors*3);
-	state_save_register_double("palette", 0, "brightness", brightness, Machine->drv->total_colors);
-	switch (colormode)
-	{
-		case PALETTIZED_16BIT:
-			state_save_register_func_postload(palette_reset_16_palettized);
-			break;
-		case DIRECT_15BIT:
-			state_save_register_func_postload(palette_reset_15_direct);
-			break;
-		case DIRECT_32BIT:
-			state_save_register_func_postload(palette_reset_32_direct);
-			break;
-	}
+#endif
 
 	return 0;
 }
 
-void palette_stop(void)
-{
-	free(game_palette);
-	game_palette = 0;
-	free(actual_palette);
-	actual_palette = 0;
-	free(brightness);
-	brightness = 0;
-	if (Machine->game_colortable)
-	{
-		free(Machine->game_colortable);
-		Machine->game_colortable = 0;
-		/* remapped_colortable is malloc()ed only when game_colortable is, */
-		/* otherwise it just points to Machine->pens */
-		free(Machine->remapped_colortable);
-	}
-	Machine->remapped_colortable = 0;
-	free(Machine->debug_remapped_colortable);
-	Machine->debug_remapped_colortable = 0;
-	free(Machine->pens);
-	Machine->pens = 0;
-	free(Machine->debug_pens);
-	Machine->debug_pens = 0;
-	free(palette_shadow_table);
-	palette_shadow_table = 0;
-
-	palette_initialized = 0;
-}
 
 
+/*-------------------------------------------------
+	palette_init - palette initialization that
+	takes place after the display is created
+-------------------------------------------------*/
 
 int palette_init(void)
 {
 	int i;
-	UINT8 *debug_palette;
-	pen_t *debug_pens;
 
-#ifdef MAME_DEBUG
-	if (mame_debug)
-	{
-		debug_palette = debugger_palette;
-		debug_pens = Machine->debug_pens;
-	}
-	else
-#endif
-	{
-		debug_palette = NULL;
-		debug_pens = NULL;
-	}
+	/* recompute the default palette and initalize the color correction table */
+	recompute_adjusted_palette(1);
 
-	/* We initialize the palette and colortable to some default values so that */
-	/* drivers which dynamically change the palette don't need an init_palette() */
-	/* function (provided the default color table fits their needs). */
-
-	for (i = 0;i < total_colors;i++)
-	{
-		game_palette[3*i + 0] = actual_palette[3*i + 0] = ((i & 1) >> 0) * 0xff;
-		game_palette[3*i + 1] = actual_palette[3*i + 1] = ((i & 2) >> 1) * 0xff;
-		game_palette[3*i + 2] = actual_palette[3*i + 2] = ((i & 4) >> 2) * 0xff;
-	}
-
-	/* Preload the colortable with a default setting, following the same */
-	/* order of the palette. The driver can overwrite this in */
-	/* init_palette() */
-	for (i = 0;i < Machine->drv->color_table_len;i++)
-		Machine->game_colortable[i] = i % total_colors;
-
-	/* now the driver can modify the default values if it wants to. */
+	/* now let the driver modify the initial palette and colortable */
 	if (Machine->drv->init_palette)
-		(*Machine->drv->init_palette)(game_palette,Machine->game_colortable,memory_region(REGION_PROMS));
+		(*Machine->drv->init_palette)(Machine->game_colortable, memory_region(REGION_PROMS));
 
-
+	/* switch off the color mode */
 	switch (colormode)
 	{
+		/* 16-bit paletteized case */
 		case PALETTIZED_16BIT:
 		{
-			if (osd_allocate_colors(total_colors,game_palette,NULL,debug_palette,debug_pens))
-				return 1;
+			/* refresh the palette to support shadows in static palette games */
+			for (i = 0; i < Machine->drv->total_colors; i++)
+				palette_set_color(i, RGB_RED(game_palette[i]), RGB_GREEN(game_palette[i]), RGB_BLUE(game_palette[i]));
 
-			for (i = 0;i < total_colors;i++)
-				Machine->pens[i] = i;
-
-			/* refresh the palette to support shadows in PROM games */
-			for (i = 0;i < Machine->drv->total_colors;i++)
-				palette_set_color(i,game_palette[3*i + 0],game_palette[3*i + 1],game_palette[3*i + 2]);
+			/* map the UI pens */
+			if (total_colors_with_ui <= 65534)
+			{
+				game_palette[total_colors + 0] = adjusted_palette[total_colors + 0] = MAKE_RGB(0x00,0x00,0x00);
+				game_palette[total_colors + 1] = adjusted_palette[total_colors + 1] = MAKE_RGB(0xff,0xff,0xff);
+				Machine->uifont->colortable[0] = Machine->uifont->colortable[3] = total_colors_with_ui++;
+				Machine->uifont->colortable[1] = Machine->uifont->colortable[2] = total_colors_with_ui++;
+			}
+			else
+			{
+				game_palette[0] = adjusted_palette[0] = MAKE_RGB(0x00,0x00,0x00);
+				game_palette[65535] = adjusted_palette[65535] = MAKE_RGB(0xff,0xff,0xff);
+				Machine->uifont->colortable[0] = Machine->uifont->colortable[3] = 0;
+				Machine->uifont->colortable[1] = Machine->uifont->colortable[2] = 65535;
+			}
+			break;
 		}
-		break;
 
+		/* 15-bit direct case */
 		case DIRECT_15BIT:
 		{
-			const UINT8 rgbpalette[3*3] = { 0xff,0x00,0x00, 0x00,0xff,0x00, 0x00,0x00,0xff };
+			/* remap the game palette into direct RGB pens */
+			for (i = 0; i < total_colors; i++)
+				Machine->pens[i] = rgb_to_direct15(game_palette[i]);
 
-			if (osd_allocate_colors(3,rgbpalette,direct_rgb_components,debug_palette,debug_pens))
-				return 1;
-
-			for (i = 0;i < total_colors;i++)
-				Machine->pens[i] =
-						(game_palette[3*i + 0] >> 3) * (direct_rgb_components[0] / 0x1f) +
-						(game_palette[3*i + 1] >> 3) * (direct_rgb_components[1] / 0x1f) +
-						(game_palette[3*i + 2] >> 3) * (direct_rgb_components[2] / 0x1f);
-
+			/* map the UI pens */
+			Machine->uifont->colortable[0] = Machine->uifont->colortable[3] = rgb_to_direct15(MAKE_RGB(0x00,0x00,0x00));
+			Machine->uifont->colortable[1] = Machine->uifont->colortable[2] = rgb_to_direct15(MAKE_RGB(0xff,0xff,0xff));
 			break;
 		}
 
 		case DIRECT_32BIT:
 		{
-			const UINT8 rgbpalette[3*3] = { 0xff,0x00,0x00, 0x00,0xff,0x00, 0x00,0x00,0xff };
+			/* remap the game palette into direct RGB pens */
+			for (i = 0; i < total_colors; i++)
+				Machine->pens[i] = rgb_to_direct32(game_palette[i]);
 
-			if (osd_allocate_colors(3,rgbpalette,direct_rgb_components,debug_palette,debug_pens))
-				return 1;
-
-			for (i = 0;i < total_colors;i++)
-				Machine->pens[i] =
-						game_palette[3*i + 0] * (direct_rgb_components[0] / 0xff) +
-						game_palette[3*i + 1] * (direct_rgb_components[1] / 0xff) +
-						game_palette[3*i + 2] * (direct_rgb_components[2] / 0xff);
-
+			/* map the UI pens */
+			Machine->uifont->colortable[0] = Machine->uifont->colortable[3] = rgb_to_direct32(MAKE_RGB(0x00,0x00,0x00));
+			Machine->uifont->colortable[1] = Machine->uifont->colortable[2] = rgb_to_direct32(MAKE_RGB(0xff,0xff,0xff));
 			break;
 		}
 	}
 
-	for (i = 0;i < Machine->drv->color_table_len;i++)
+	/* now compute the remapped_colortable */
+	for (i = 0; i < Machine->drv->color_table_len; i++)
 	{
 		pen_t color = Machine->game_colortable[i];
 
@@ -270,232 +630,388 @@ int palette_init(void)
 					i,color,total_colors);
 	}
 
-	for (i = 0;i < DEBUGGER_TOTAL_COLORS*DEBUGGER_TOTAL_COLORS;i++)
-	{
-		Machine->debug_remapped_colortable[2*i+0] = Machine->debug_pens[i / DEBUGGER_TOTAL_COLORS];
-		Machine->debug_remapped_colortable[2*i+1] = Machine->debug_pens[i % DEBUGGER_TOTAL_COLORS];
-	}
-
-	palette_initialized = 1;
-
+	/* all done */
 	return 0;
 }
 
 
 
-INLINE void palette_set_color_15_direct(pen_t color,UINT8 red,UINT8 green,UINT8 blue)
+/*-------------------------------------------------
+	palette_get_total_colors_with_ui - returns
+	the total number of palette entries including
+	UI
+-------------------------------------------------*/
+
+int palette_get_total_colors_with_ui(void)
 {
-	if (	actual_palette[3*color + 0] == red &&
-			actual_palette[3*color + 1] == green &&
-			actual_palette[3*color + 2] == blue)
-		return;
-	actual_palette[3*color + 0] = red;
-	actual_palette[3*color + 1] = green;
-	actual_palette[3*color + 2] = blue;
-	Machine->pens[color] =
-			(red   >> 3) * (direct_rgb_components[0] / 0x1f) +
-			(green >> 3) * (direct_rgb_components[1] / 0x1f) +
-			(blue  >> 3) * (direct_rgb_components[2] / 0x1f);
+	int result = Machine->drv->total_colors;
+	if (Machine->drv->video_attributes & VIDEO_HAS_SHADOWS)
+		result += Machine->drv->total_colors;
+	if (Machine->drv->video_attributes & VIDEO_HAS_HIGHLIGHTS)
+		result += Machine->drv->total_colors;
+	if (result <= 65534)
+		result += 2;
+	return result;
 }
 
-static void palette_reset_15_direct(void)
+
+
+/*-------------------------------------------------
+	palette_update_display - update the display
+	state with our latest info
+-------------------------------------------------*/
+
+void palette_update_display(struct mame_display *display)
 {
-	pen_t color;
-	for(color = 0; color < total_colors; color++)
-		Machine->pens[color] =
-				(game_palette[3*color + 0]>>3) * (direct_rgb_components[0] / 0x1f) +
-				(game_palette[3*color + 1]>>3) * (direct_rgb_components[1] / 0x1f) +
-				(game_palette[3*color + 2]>>3) * (direct_rgb_components[2] / 0x1f);
-}
-
-INLINE void palette_set_color_32_direct(pen_t color,UINT8 red,UINT8 green,UINT8 blue)
-{
-	if (	actual_palette[3*color + 0] == red &&
-			actual_palette[3*color + 1] == green &&
-			actual_palette[3*color + 2] == blue)
-		return;
-	actual_palette[3*color + 0] = red;
-	actual_palette[3*color + 1] = green;
-	actual_palette[3*color + 2] = blue;
-	Machine->pens[color] =
-			red   * (direct_rgb_components[0] / 0xff) +
-			green * (direct_rgb_components[1] / 0xff) +
-			blue  * (direct_rgb_components[2] / 0xff);
-}
-
-static void palette_reset_32_direct(void)
-{
-	pen_t color;
-	for(color = 0; color < total_colors; color++)
-		Machine->pens[color] =
-				game_palette[3*color + 0] * (direct_rgb_components[0] / 0xff) +
-				game_palette[3*color + 1] * (direct_rgb_components[1] / 0xff) +
-				game_palette[3*color + 2] * (direct_rgb_components[2] / 0xff);
-}
-
-INLINE void palette_set_color_16_palettized(pen_t color,UINT8 red,UINT8 green,UINT8 blue)
-{
-	if (	actual_palette[3*color + 0] == red &&
-			actual_palette[3*color + 1] == green &&
-			actual_palette[3*color + 2] == blue)
-		return;
-
-	actual_palette[3*color + 0] = red;
-	actual_palette[3*color + 1] = green;
-	actual_palette[3*color + 2] = blue;
-
-	if (palette_initialized)
-		osd_modify_pen(Machine->pens[color],red,green,blue);
-}
-
-static void palette_reset_16_palettized(void)
-{
-	if (palette_initialized)
+	/* palettized case: point to the palette info */
+	if (colormode == PALETTIZED_16BIT)
 	{
-		pen_t color;
-		for (color=0; color<total_colors; color++)
-			osd_modify_pen(Machine->pens[color],
-						   game_palette[3*color + 0],
-						   game_palette[3*color + 1],
-						   game_palette[3*color + 2]);
-   }
-}
+		display->game_palette = adjusted_palette;
+		display->game_palette_entries = total_colors_with_ui;
+		display->game_palette_dirty = dirty_palette;
 
-
-INLINE void adjust_shadow(UINT8 *r,UINT8 *g,UINT8 *b,double factor)
-{
-	if (factor > 1)
-	{
-		int max = *r;
-		if (*g > max) max = *g;
-		if (*b > max) max = *b;
-
-		if ((int)(max * factor + 0.5) >= 256)
-			factor = 255.0 / max;
+		if (adjusted_palette_dirty)
+			display->changed_flags |= GAME_PALETTE_CHANGED;
 	}
 
-	*r = *r * factor + 0.5;
-	*g = *g * factor + 0.5;
-	*b = *b * factor + 0.5;
-}
-
-void palette_set_color(pen_t color,UINT8 r,UINT8 g,UINT8 b)
-{
-	if (color >= total_colors)
-	{
-logerror("error: palette_set_color() called with color %d, but only %d allocated.\n",color,total_colors);
-		return;
-	}
-
-	game_palette[3*color + 0] = r;
-	game_palette[3*color + 1] = g;
-	game_palette[3*color + 2] = b;
-
-	if (color < Machine->drv->total_colors && brightness[color] != 1.0)
-	{
-		r = r * brightness[color] + 0.5;
-		g = g * brightness[color] + 0.5;
-		b = b * brightness[color] + 0.5;
-	}
-
-	Machine->palette[color] = MAKE_RGB(r,g,b);
-
-	switch (colormode)
-	{
-		case PALETTIZED_16BIT:
-			palette_set_color_16_palettized(color,r,g,b);
-			break;
-		case DIRECT_15BIT:
-			palette_set_color_15_direct(color,r,g,b);
-			break;
-		case DIRECT_32BIT:
-			palette_set_color_32_direct(color,r,g,b);
-			break;
-	}
-
-	if (color < Machine->drv->total_colors)
-	{
-		/* automatically create darker shade for shadow handling */
-		if (Machine->drv->video_attributes & VIDEO_HAS_SHADOWS)
-		{
-			UINT8 nr=r,ng=g,nb=b;
-
-			adjust_shadow(&nr,&ng,&nb,shadow_factor);
-
-			color += Machine->drv->total_colors;	/* carry this change over to highlight handling */
-			palette_set_color(color,nr,ng,nb);
-		}
-
-		/* automatically create brighter shade for highlight handling */
-		if (Machine->drv->video_attributes & VIDEO_HAS_HIGHLIGHTS)
-		{
-			UINT8 nr=r,ng=g,nb=b;
-
-			adjust_shadow(&nr,&ng,&nb,highlight_factor);
-
-			color += Machine->drv->total_colors;
-			palette_set_color(color,nr,ng,nb);
-		}
-	}
-}
-
-void palette_get_color(pen_t color,UINT8 *r,UINT8 *g,UINT8 *b)
-{
-	if (color == get_black_pen())
-	{
-		*r = *g = *b = 0;
-	}
-	else if (color >= total_colors)
-	{
-		usrintf_showmessage("palette_get_color() out of range");
-	}
+	/* direct case: no palette mucking */
 	else
 	{
-		*r = game_palette[3*color + 0];
-		*g = game_palette[3*color + 1];
-		*b = game_palette[3*color + 2];
+		display->game_palette = NULL;
+		display->game_palette_entries = 0;
+		display->game_palette_dirty = NULL;
 	}
+
+	/* debugger always has a palette */
+#ifdef MAME_DEBUG
+	display->debug_palette = debugger_palette;
+	display->debug_palette_entries = DEBUGGER_TOTAL_COLORS;
+#endif
+
+	/* update the dirty state */
+	if (debug_palette_dirty)
+		display->changed_flags |= DEBUG_PALETTE_CHANGED;
+
+	/* clear the dirty flags */
+	adjusted_palette_dirty = 0;
+	debug_palette_dirty = 0;
 }
 
-void palette_set_brightness(pen_t color,double bright)
+
+
+/*-------------------------------------------------
+	internal_modify_single_pen - change a single
+	pen and recompute its adjusted RGB value
+-------------------------------------------------*/
+
+static void internal_modify_single_pen(pen_t pen, rgb_t color, int pen_bright)
 {
-	if (brightness[color] != bright)
-	{
-		brightness[color] = bright;
+	rgb_t adjusted_color;
 
-		palette_set_color(color,game_palette[3*color + 0],game_palette[3*color + 1],game_palette[3*color + 2]);
+	/* skip if out of bounds or not ready */
+	if (pen >= total_colors)
+		return;
+
+	/* update the raw palette */
+	game_palette[pen] = color;
+
+	/* now update the adjusted color if it's different */
+	adjusted_color = adjust_palette_entry(color, pen_bright);
+	if (adjusted_color != adjusted_palette[pen])
+	{
+		/* change the adjusted palette entry */
+		adjusted_palette[pen] = adjusted_color;
+		adjusted_palette_dirty = 1;
+
+		/* update the pen value or mark the palette dirty */
+		switch (colormode)
+		{
+			/* 16-bit palettized: just mark it dirty for later */
+			case PALETTIZED_16BIT:
+				mark_pen_dirty(pen);
+				break;
+
+			/* 15/32-bit direct: update the Machine->pens array */
+			case DIRECT_15BIT:
+				Machine->pens[pen] = rgb_to_direct15(adjusted_color);
+				break;
+
+			case DIRECT_32BIT:
+				Machine->pens[pen] = rgb_to_direct32(adjusted_color);
+				break;
+		}
 	}
 }
+
+
+
+/*-------------------------------------------------
+	internal_modify_pen - change a pen along with
+	its corresponding shadow/highlight
+-------------------------------------------------*/
+
+static void internal_modify_pen(pen_t pen, rgb_t color, int pen_bright)
+{
+	/* first modify the base pen */
+	internal_modify_single_pen(pen, color, pen_bright);
+
+	/* see if we need to handle shadow/highlight */
+	if (pen < Machine->drv->total_colors)
+	{
+		/* check for shadows */
+		if (Machine->drv->video_attributes & VIDEO_HAS_SHADOWS)
+		{
+			pen += Machine->drv->total_colors;
+			internal_modify_single_pen(pen, color, (pen_bright * shadow_factor) >> PEN_BRIGHTNESS_BITS);
+		}
+
+		/* check for highlights */
+		if (Machine->drv->video_attributes & VIDEO_HAS_HIGHLIGHTS)
+		{
+			pen += Machine->drv->total_colors;
+			internal_modify_single_pen(pen, color, (pen_bright * highlight_factor) >> PEN_BRIGHTNESS_BITS);
+		}
+	}
+}
+
+
+
+/*-------------------------------------------------
+	recompute_adjusted_palette - recompute the
+	entire palette after some major event
+-------------------------------------------------*/
+
+static void recompute_adjusted_palette(int brightness_or_gamma_changed)
+{
+	int i;
+
+	/* regenerate the color correction table if needed */
+	if (brightness_or_gamma_changed)
+		for (i = 0; i < sizeof(color_correct_table); i++)
+		{
+			int value = (int)(255.0 * (global_brightness * global_brightness_adjust) * pow((double)i * (1.0 / 255.0), 1.0 / global_gamma) + 0.5);
+			color_correct_table[i] = (value < 0) ? 0 : (value > 255) ? 255 : value;
+		}
+
+	/* now update all the palette entries */
+	for (i = 0; i < Machine->drv->total_colors; i++)
+		internal_modify_pen(i, game_palette[i], pen_brightness[i]);
+}
+
+
+
+/*-------------------------------------------------
+	palette_reset - called after restore to
+	actually update the palette
+-------------------------------------------------*/
+
+static void palette_reset(void)
+{
+	/* recompute everything */
+	recompute_adjusted_palette(0);
+}
+
+
+
+/*-------------------------------------------------
+	palette_set_color - set a single palette
+	entry
+-------------------------------------------------*/
+
+void palette_set_color(pen_t pen, UINT8 r, UINT8 g, UINT8 b)
+{
+	/* make sure we're in range */
+	if (pen >= total_colors)
+	{
+		logerror("error: palette_set_color() called with color %d, but only %d allocated.\n", pen, total_colors);
+		return;
+	}
+
+	/* set the pen value */
+	internal_modify_pen(pen, MAKE_RGB(r, g, b), pen_brightness[pen]);
+}
+
+/* handy wrapper for palette_set_color */
+void palette_set_colors(pen_t color_base, const UINT8 *colors, int color_count)
+{
+        while(color_count--)
+        {
+                palette_set_color(color_base++, colors[0], colors[1], colors[2]);
+                colors += 3;
+        }
+}
+
+/*-------------------------------------------------
+	palette_get_color - return a single palette
+	entry
+-------------------------------------------------*/
+
+void palette_get_color(pen_t pen, UINT8 *r, UINT8 *g, UINT8 *b)
+{
+	/* special case the black pen */
+	if (pen == get_black_pen())
+		*r = *g = *b = 0;
+
+	/* record the result from the game palette */
+	else if (pen < total_colors)
+	{
+		*r = RGB_RED(game_palette[pen]);
+		*g = RGB_GREEN(game_palette[pen]);
+		*b = RGB_BLUE(game_palette[pen]);
+	}
+	else
+		usrintf_showmessage("palette_get_color() out of range");
+}
+
+
+
+
+
+/*-------------------------------------------------
+	palette_set_brightness - set the per-pen
+	brightness factor
+-------------------------------------------------*/
+
+void palette_set_brightness(pen_t pen, double bright)
+{
+	/* compute the integral brightness value */
+	int brightval = (int)(bright * (double)(1 << PEN_BRIGHTNESS_BITS));
+	if (brightval > MAX_PEN_BRIGHTNESS)
+		brightval = MAX_PEN_BRIGHTNESS;
+
+	/* if it changed, update the array and the adjusted palette */
+	if (pen_brightness[pen] != brightval)
+	{
+		pen_brightness[pen] = brightval;
+		internal_modify_pen(pen, game_palette[pen], brightval);
+	}
+}
+
+
+
+/*-------------------------------------------------
+	palette_set_shadow_factor - set the global
+	shadow brightness factor
+-------------------------------------------------*/
 
 void palette_set_shadow_factor(double factor)
 {
-	if (shadow_factor != factor)
+	/* compute the integral shadow factor value */
+	int factorval = (int)(factor * (double)(1 << PEN_BRIGHTNESS_BITS));
+	if (factorval > MAX_PEN_BRIGHTNESS)
+		factorval = MAX_PEN_BRIGHTNESS;
+
+	/* if it changed, update the entire palette */
+	if (shadow_factor != factorval)
 	{
-		int i;
-
-		shadow_factor = factor;
-
-		if (palette_initialized)
-		{
-			for (i = 0;i < Machine->drv->total_colors;i++)
-				palette_set_color(i,game_palette[3*i + 0],game_palette[3*i + 1],game_palette[3*i + 2]);
-		}
+		shadow_factor = factorval;
+		recompute_adjusted_palette(0);
 	}
 }
+
+
+
+/*-------------------------------------------------
+	palette_set_highlight_factor - set the global
+	highlight brightness factor
+-------------------------------------------------*/
 
 void palette_set_highlight_factor(double factor)
 {
-	if (highlight_factor != factor)
+	/* compute the integral highlight factor value */
+	int factorval = (int)(factor * (double)(1 << PEN_BRIGHTNESS_BITS));
+	if (factorval > MAX_PEN_BRIGHTNESS)
+		factorval = MAX_PEN_BRIGHTNESS;
+
+	/* if it changed, update the entire palette */
+	if (highlight_factor != factorval)
 	{
-		int i;
-
-		highlight_factor = factor;
-
-		for (i = 0;i < Machine->drv->total_colors;i++)
-			palette_set_color(i,game_palette[3*i + 0],game_palette[3*i + 1],game_palette[3*i + 2]);
+		highlight_factor = factorval;
+		recompute_adjusted_palette(0);
 	}
 }
 
+
+
+/*-------------------------------------------------
+	palette_set_global_gamma - set the global
+	gamma factor
+-------------------------------------------------*/
+
+void palette_set_global_gamma(double _gamma)
+{
+	/* if the gamma changed, recompute */
+	if (global_gamma != _gamma)
+	{
+		global_gamma = _gamma;
+		recompute_adjusted_palette(1);
+	}
+}
+
+
+
+/*-------------------------------------------------
+	palette_get_global_gamma - return the global
+	gamma factor
+-------------------------------------------------*/
+
+double palette_get_global_gamma(void)
+{
+	return global_gamma;
+}
+
+
+
+/*-------------------------------------------------
+	palette_set_global_brightness - set the global
+	brightness factor
+-------------------------------------------------*/
+
+void palette_set_global_brightness(double brightness)
+{
+	/* if the gamma changed, recompute */
+	if (global_brightness != brightness)
+	{
+		global_brightness = brightness;
+		recompute_adjusted_palette(1);
+	}
+}
+
+
+
+/*-------------------------------------------------
+	palette_set_global_brightness_adjust - set
+	the global brightness adjustment factor
+-------------------------------------------------*/
+
+void palette_set_global_brightness_adjust(double adjustment)
+{
+	/* if the gamma changed, recompute */
+	if (global_brightness_adjust != adjustment)
+	{
+		global_brightness_adjust = adjustment;
+		recompute_adjusted_palette(1);
+	}
+}
+
+
+
+/*-------------------------------------------------
+	palette_get_global_brightness - return the global
+	brightness factor
+-------------------------------------------------*/
+
+double palette_get_global_brightness(void)
+{
+	return global_brightness;
+}
+
+
+
+/*-------------------------------------------------
+	get_black_pen - use this if you need to
+	fillbitmap() the background with black
+-------------------------------------------------*/
 
 pen_t get_black_pen(void)
 {
@@ -503,17 +1019,13 @@ pen_t get_black_pen(void)
 }
 
 
+
+
 /******************************************************************************
 
  Commonly used palette RAM handling functions
 
 ******************************************************************************/
-
-data8_t *paletteram;
-data8_t *paletteram_2;	/* use when palette RAM is split in two parts */
-data16_t *paletteram16;
-data16_t *paletteram16_2;
-data32_t *paletteram32;
 
 READ_HANDLER( paletteram_r )
 {
@@ -751,6 +1263,12 @@ WRITE_HANDLER( paletteram_xxxxBBBBRRRRGGGG_split2_w )
 	changecolor_xxxxBBBBRRRRGGGG(offset,paletteram[offset] | (paletteram_2[offset] << 8));
 }
 
+WRITE16_HANDLER( paletteram16_xxxxBBBBRRRRGGGG_word_w )
+{
+	COMBINE_DATA(&paletteram16[offset]);
+	changecolor_xxxxBBBBRRRRGGGG(offset,paletteram16[offset]);
+}
+
 
 INLINE void changecolor_xxxxRRRRBBBBGGGG(pen_t color,int data)
 {
@@ -926,6 +1444,18 @@ WRITE_HANDLER( paletteram_xBBBBBGGGGGRRRRR_swap_w )
 	changecolor_xBBBBBGGGGGRRRRR(offset / 2,paletteram[offset | 1] | (paletteram[offset & ~1] << 8));
 }
 
+WRITE_HANDLER( paletteram_xBBBBBGGGGGRRRRR_split1_w )
+{
+	paletteram[offset] = data;
+	changecolor_xBBBBBGGGGGRRRRR(offset,paletteram[offset] | (paletteram_2[offset] << 8));
+}
+
+WRITE_HANDLER( paletteram_xBBBBBGGGGGRRRRR_split2_w )
+{
+	paletteram_2[offset] = data;
+	changecolor_xBBBBBGGGGGRRRRR(offset,paletteram[offset] | (paletteram_2[offset] << 8));
+}
+
 WRITE16_HANDLER( paletteram16_xBBBBBGGGGGRRRRR_word_w )
 {
 	COMBINE_DATA(&paletteram16[offset]);
@@ -982,6 +1512,29 @@ WRITE16_HANDLER( paletteram16_xGGGGGRRRRRBBBBB_word_w )
 {
 	COMBINE_DATA(&paletteram16[offset]);
 	changecolor_xGGGGGRRRRRBBBBB(offset,paletteram16[offset]);
+}
+
+
+INLINE void changecolor_xGGGGGBBBBBRRRRR(pen_t color,int data)
+{
+	int r,g,b;
+
+
+	r = (data >>  0) & 0x1f;
+	g = (data >> 10) & 0x1f;
+	b = (data >>  5) & 0x1f;
+
+	r = (r << 3) | (r >> 2);
+	g = (g << 3) | (g >> 2);
+	b = (b << 3) | (b >> 2);
+
+	palette_set_color(color,r,g,b);
+}
+
+WRITE16_HANDLER( paletteram16_xGGGGGBBBBBRRRRR_word_w )
+{
+	COMBINE_DATA(&paletteram16[offset]);
+	changecolor_xGGGGGBBBBBRRRRR(offset,paletteram16[offset]);
 }
 
 
@@ -1117,6 +1670,21 @@ WRITE16_HANDLER( paletteram16_RRRRGGGGBBBBRGBx_word_w )
 
 ******************************************************************************/
 
+
+/***************************************************************************
+
+	Standard black and white palette.
+	Color 0 is pure black, color 1 is pure white.
+
+***************************************************************************/
+
+PALETTE_INIT( black_and_white )
+{
+	palette_set_color(0,0x00,0x00,0x00); /* black */
+	palette_set_color(1,0xff,0xff,0xff); /* white */
+}
+
+
 /***************************************************************************
 
   This assumes the commonly used resistor values:
@@ -1127,6 +1695,7 @@ WRITE16_HANDLER( paletteram16_RRRRGGGGBBBBRGBx_word_w )
   bit 0 -- 2.2kohm resistor  -- RED/GREEN/BLUE
 
 ***************************************************************************/
+
 PALETTE_INIT( RRRR_GGGG_BBBB )
 {
 	int i;

@@ -1,7 +1,7 @@
 /* Miscelancelous utility functions
 
    Copyright 2000 Hans de Goede
-   
+
    This file and the acompanying files in this directory are free software;
    you can redistribute them and/or modify them under the terms of the GNU
    Library General Public License as published by the Free Software Foundation;

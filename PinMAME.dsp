@@ -42,7 +42,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /O2 /I "src" /I "src\wpc" /I "src\zlib" /I "src\vc" /I "src\windows" /D "NDEBUG" /D "_MBCS" /D "WIN32" /D "_CONSOLE" /D LSB_FIRST=1 /D CLIB_DECL=__cdecl /D DECL_SPEC=__cdecl /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D "NONAMELESSUNION" /D "_WINDOWS" /D "ZLIB_DLL" /D MAMEVER=5900 /D "PINMAME" /FD /c
+# ADD CPP /nologo /MT /W3 /O2 /I "src" /I "src\wpc" /I "src\zlib" /I "src\vc" /I "src\windows" /D "NDEBUG" /D "_MBCS" /D "WIN32" /D "_CONSOLE" /D LSB_FIRST=1 /D CLIB_DECL=__cdecl /D DECL_SPEC=__cdecl /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D "NONAMELESSUNION" /D "_WINDOWS" /D "ZLIB_DLL" /D MAMEVER=6900 /D "PINMAME" /FD /c
 # SUBTRACT CPP /YX
 # ADD BASE RSC /l 0x41d /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
@@ -78,7 +78,7 @@ SOURCE="$(InputPath)"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /ZI /Od /I "src" /I "src\wpc" /I "src\zlib" /I "src\vc" /I "src\windows" /D "_DEBUG" /D "MAME_DEBUG" /D "WIN32" /D "_CONSOLE" /D LSB_FIRST=1 /D CLIB_DECL=__cdecl /D DECL_SPEC=__cdecl /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D "NONAMELESSUNION" /D "_WINDOWS" /D "ZLIB_DLL" /D MAMEVER=5900 /D "PINMAME" /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /ZI /Od /I "src" /I "src\wpc" /I "src\zlib" /I "src\vc" /I "src\windows" /D "_DEBUG" /D "MAME_DEBUG" /D "WIN32" /D "_CONSOLE" /D LSB_FIRST=1 /D CLIB_DECL=__cdecl /D DECL_SPEC=__cdecl /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D "NONAMELESSUNION" /D "_WINDOWS" /D "ZLIB_DLL" /D MAMEVER=6900 /D "PINMAME" /FD /GZ /c
 # SUBTRACT CPP /YX
 # ADD BASE RSC /l 0x41d /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
@@ -133,6 +133,11 @@ SOURCE=src\cpu\adsp2100\2100dasm.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\cpu\adsp2100\2100ops.c
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
 SOURCE=src\cpu\adsp2100\adsp2100.c
 
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
@@ -176,6 +181,16 @@ SOURCE=src\cpu\m6809\6809dasm.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\cpu\m6809\6809ops.c
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m6809\6809tbl.c
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
 SOURCE=src\cpu\m6809\m6809.c
 
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
@@ -216,6 +231,16 @@ SOURCE=src\cpu\m6800\6800dasm.c
 
 !ENDIF 
 
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m6800\6800ops.c
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m6800\6800tbl.c
+# PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
@@ -370,6 +395,10 @@ SOURCE=src\cpu\m6502\m6502.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\cpu\m6502\m65ce02.h
+# End Source File
+# Begin Source File
+
 SOURCE=src\cpu\m6502\ops02.h
 
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
@@ -393,6 +422,20 @@ SOURCE=src\cpu\m6502\opsc02.h
 
 !ENDIF 
 
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m6502\opsn2a03.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m6502\t6502.c
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m6502\t65c02.c
+# PROP Exclude_From_Build 1
 # End Source File
 # End Group
 # Begin Group "M68000"
@@ -583,6 +626,10 @@ SOURCE=src\cpu\m68000\m68kops.c
 !ENDIF 
 
 # End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m68000\m68kops.h
+# End Source File
 # End Group
 # Begin Group "S2650"
 
@@ -690,6 +737,20 @@ SOURCE=.\src\cpu\i86\i86dasm.c
 # Begin Source File
 
 SOURCE=.\src\cpu\i86\i86intf.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i86\i86time.c
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i86\instr86.c
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i86\instr86.h
 # End Source File
 # Begin Source File
 
@@ -1152,29 +1213,41 @@ SOURCE=src\sound\dac.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\discrete.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
+SOURCE=.\src\sound\disc_dev.c
+# PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\discrete.h
+SOURCE=.\src\sound\disc_flt.c
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
 
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
+SOURCE=.\src\sound\disc_inp.c
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+SOURCE=.\src\sound\disc_mth.c
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
 
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
+SOURCE=.\src\sound\disc_out.c
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
 
-!ENDIF 
+SOURCE=.\src\sound\disc_wav.c
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
 
+SOURCE=.\src\sound\discrete.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\discrete.h
 # End Source File
 # Begin Source File
 
@@ -1308,29 +1381,11 @@ SOURCE=src\sound\samples.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\sn76477.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
+SOURCE=.\src\sound\sn76477.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\sound\sn76477.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
+SOURCE=.\src\sound\sn76477.h
 # End Source File
 # Begin Source File
 
@@ -1386,6 +1441,11 @@ SOURCE=src\sound\tms5220.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\sound\tms5220r.c
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
 SOURCE=src\sound\votrax.c
 
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
@@ -1409,6 +1469,10 @@ SOURCE=.\src\sound\votrax.h
 
 !ENDIF 
 
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\vtxsmpls.inc
 # End Source File
 # Begin Source File
 
@@ -1784,6 +1848,14 @@ SOURCE=src\driver.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\fileio.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\fileio.h
+# End Source File
+# Begin Source File
+
 SOURCE=src\sound\filter.c
 
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
@@ -1828,6 +1900,14 @@ SOURCE=.\src\harddisk.c
 # Begin Source File
 
 SOURCE=.\src\harddisk.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\hash.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\hash.h
 # End Source File
 # Begin Source File
 
@@ -2148,6 +2228,14 @@ SOURCE=src\profiler.h
 
 !ENDIF 
 
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sha1.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sha1.h
 # End Source File
 # Begin Source File
 
@@ -2502,6 +2590,10 @@ SOURCE=src\windows\config.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\windows\d3d_extra.h
+# End Source File
+# Begin Source File
+
 SOURCE=src\windows\dirty.h
 
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
@@ -2619,6 +2711,10 @@ SOURCE=src\windows\osinline.h
 
 !ENDIF 
 
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\windows\pattern.h
 # End Source File
 # Begin Source File
 
@@ -2741,6 +2837,22 @@ SOURCE=src\windows\video.h
 
 !ENDIF 
 
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\windows\wind3d.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\windows\wind3d.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\windows\wind3dfx.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\windows\wind3dfx.h
 # End Source File
 # Begin Source File
 

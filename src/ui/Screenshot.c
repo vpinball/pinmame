@@ -1,7 +1,7 @@
 /***************************************************************************
 
   M.A.M.E.32  -  Multiple Arcade Machine Emulator for Win32
-  Win32 Portions Copyright (C) 1997-2001 Michael Soderstrom and Chris Kirmse
+  Win32 Portions Copyright (C) 1997-2003 Michael Soderstrom and Chris Kirmse
 
   This file is part of MAME32, and may only be used, modified and
   distributed under the terms of the MAME license, in "readme.txt".
@@ -26,42 +26,33 @@
 #include <io.h>
 #include <fcntl.h>
 #include <driver.h>
-#include <zlib.h>
 #include <png.h>
 #include <osdepend.h>
 #include "screenshot.h"
 #include "file.h"
 #include "options.h"
-
-
-/***************************************************************************
-    global variables
-***************************************************************************/
-
-char pic_format[FORMAT_MAX][4] =
-{
-	"png",
-	"bmp"
-};
+#include "m32util.h"
+#include "win32ui.h"
 
 /***************************************************************************
     function prototypes
 ***************************************************************************/
 
-static BOOL     LoadPNG(LPVOID mfile, HGLOBAL *phDIB, HPALETTE *pPal);
-static BOOL     LoadBMP(LPVOID mfile, HGLOBAL *phDIB, HPALETTE *Pal);
 static BOOL     DrawDIB(HWND hWnd, HDC hDC, HGLOBAL hDIB, HPALETTE hPal);
-static LPVOID   ImageIdent(LPCSTR filename, int* filetype, BOOL flyer);
 
 static BOOL     AllocatePNG(struct png_info *p, HGLOBAL *phDIB, HPALETTE* pPal);
 
+static int png_read_bitmap(LPVOID mfile, HGLOBAL *phDIB, HPALETTE *pPAL);
 /***************************************************************************
     Static global variables
 ***************************************************************************/
 
-static HGLOBAL   m_hDIB = 0;
-static HPALETTE  m_hPal = 0;
-static int       nLastGame = -1;
+/* these refer to the single image currently loaded by the ScreenShot functions */
+static HGLOBAL   m_hDIB = NULL;
+static HPALETTE  m_hPal = NULL;
+static HANDLE m_hDDB = NULL;
+static int current_image_game = -1;
+static int current_image_type = -1;
 
 #define WIDTHBYTES(width) ((width) / 8)
 
@@ -78,210 +69,8 @@ static int   effWidth;
 
 BOOL ScreenShotLoaded(void)
 {
-	return m_hDIB != NULL;
+	return m_hDDB != NULL;
 }
-
-/* This function will work with both "old" (BITMAPCOREHEADER)
- * and "new" (BITMAPINFOHEADER) bitmap formats, but will always
- * return with the "new" BITMAPINFO header in the phDIB handle.
- *
- * LoadBMP  - Loads a BMP file and creates a logical palette for it.
- * Returns  - TRUE for success
- * sBMPFile - Full path of the BMP file
- * phDIB    - Pointer to a HGLOBAL variable to hold the loaded bitmap
- *            Memory is allocated by this function but should be 
- *            released by the caller.
- * pPal     - Will hold the logical palette
- */
-static BOOL LoadBMP(LPVOID mfile, HGLOBAL *phDIB, HPALETTE  *pPal)
-{
-	int                 dibSize;
-	int                 palEntrySize;
-	int                 nColors;
-	int                 nFileLen = 0;
-	int                 size;
-	HGLOBAL             hDIB;
-	BITMAPFILEHEADER    bmfHeader;
-	BITMAPINFOHEADER    bi;
-	LPBITMAPINFO        bmInfo;
-	LPBITMAPINFOHEADER  lpbi;
-	LPBITMAPCOREHEADER  bc;
-	RGBQUAD*            pRgb;
-	LPVOID              lpDIBBits = 0;
-	DWORD               dwWidth = 0; 
-	DWORD               dwHeight = 0; 
-	WORD                wPlanes, wBitCount;
-
-	/* Get the file size */
-	if (osd_fseek(mfile, 0L, SEEK_END) != 0)
-		return FALSE;
-
-	if ((nFileLen = osd_ftell(mfile)) == -1)
-		return FALSE;
-
-	osd_fseek(mfile, 0L, SEEK_SET);
-
-	/* Read file header */
-	if (osd_fread(mfile, (LPSTR)&bmfHeader, sizeof(bmfHeader)) != sizeof(bmfHeader))
-	{
-		return FALSE;
-	}
-	
-	/* File type should be 'BM' */
-	if (bmfHeader.bfType != ((WORD) ('M' << 8) | 'B'))
-	{
-		return FALSE;
-	}
-	if (osd_fread(mfile, (LPSTR)&bi, sizeof(BITMAPINFOHEADER)) != sizeof(BITMAPINFOHEADER))
-	{
-		return FALSE;
-	}
-
-	size = bi.biSize;
-
-	/* Check the nature (BITMAPINFO or BITMAPCORE) of the info. block and
-	 * extract the field information accordingly. If a BITMAPCOREHEADER, 
-	 * transfer it's field information to a BITMAPINFOHEADER-style block 
-	 */ 
-	switch (size)
-	{
-	case sizeof(BITMAPINFOHEADER):
-		palEntrySize = sizeof(RGBQUAD);
-		if (bi.biClrUsed != 0)
-		{
-			nColors = bi.biClrUsed;
-		}
-		else
-		{
-			nColors = (bi.biBitCount <= 8) ? 1 << bi.biBitCount : 0;
-			/* 24 bit images have no color table */
-		}
-		break;
-
-	case sizeof(BITMAPCOREHEADER):
-		bc = (LPBITMAPCOREHEADER)&bi;
-
-		nColors = (bc->bcBitCount <= 8) ? 1 << bc->bcBitCount : 0;        
-
-		dwWidth   = (DWORD)bc->bcWidth; 
-		dwHeight  = (DWORD)bc->bcHeight; 
-		wPlanes   = bc->bcPlanes; 
-		wBitCount = bc->bcBitCount; 
-
-		bi.biSize           = sizeof(BITMAPINFOHEADER); 
-		bi.biWidth          = dwWidth; 
-		bi.biHeight         = dwHeight; 
-		bi.biPlanes         = wPlanes; 
-		bi.biBitCount       = wBitCount; 
-
-		bi.biCompression    = BI_RGB; 
-		bi.biSizeImage      = 0; 
-		bi.biXPelsPerMeter  = 0; 
-		bi.biYPelsPerMeter  = 0; 
-		bi.biClrUsed        = nColors; 
-		bi.biClrImportant   = nColors;
-
-		osd_fseek(mfile, sizeof(BITMAPCOREHEADER) - sizeof (BITMAPINFOHEADER), SEEK_CUR);
-
-		palEntrySize = sizeof(RGBTRIPLE);
-		break;
-
-    default: 
-		/* Not a DIB! */
-		osd_fclose(mfile);
-		return FALSE;
-	}
-
-	if (bi.biSizeImage == 0)
-		bi.biSizeImage = WIDTHBYTES((DWORD)bi.biWidth * bi.biBitCount) *
-						 bi.biHeight;
-
-	if (bi.biClrUsed == 0)
-		bi.biClrUsed = nColors;
-
-	dibSize = nFileLen - (sizeof(BITMAPFILEHEADER) + size + (nColors * palEntrySize));
-	hDIB = GlobalAlloc(GMEM_FIXED, bi.biSize + (nColors * sizeof(RGBQUAD)) + dibSize);
-	if (! hDIB)
-	{
-		osd_fclose(mfile);
-		return FALSE;
-	}
-	lpbi = (LPVOID)hDIB;
-	memcpy(lpbi, &bi, sizeof(BITMAPINFOHEADER));
-	pRgb = (RGBQUAD*)((LPSTR)lpbi + bi.biSize);
-	lpDIBBits = (LPVOID)((LPSTR)lpbi + bi.biSize + (nColors * sizeof(RGBQUAD)));
-	if (nColors)
-	{
-		if (osd_fread(mfile, (LPSTR)pRgb, nColors * palEntrySize) !=
-			(nColors * palEntrySize))
-		{
-			GlobalFree(hDIB);
-			osd_fclose(mfile);
-			return FALSE;
-		}
-
-		if (size == sizeof(BITMAPCOREHEADER))
-		{
-			int i;
-			/* Convert an old color table (3 byte RGBTRIPLEs) to a new
-			 * color table (4 byte RGBQUADs)
-			 */
-			for (i = nColors - 1; i >= 0; i--)
-			{
-				RGBQUAD rgb;
-				
-				rgb.rgbRed		= ((RGBTRIPLE *)pRgb)[i].rgbtRed;
-				rgb.rgbGreen	= ((RGBTRIPLE *)pRgb)[i].rgbtGreen;
-				rgb.rgbBlue 	= ((RGBTRIPLE *)pRgb)[i].rgbtBlue;
-				rgb.rgbReserved = (BYTE)0;
-				
-				pRgb[i] = rgb; 
-			} 
-		} 
-	} 
-	
-	/* Read the remainder of the bitmap file. */
-	if (osd_fread(mfile, (LPSTR)lpDIBBits, dibSize) != dibSize)
-	{
-		GlobalFree(hDIB);
-		return FALSE;
-	}
-	
-	bmInfo = (LPBITMAPINFO)hDIB;
-
-	/* Create a halftone palette if colors > 256.  */
-	if (0 == nColors)
-	{
-		HDC hDC = CreateCompatibleDC(0); /* Desktop DC */
-		*pPal = CreateHalftonePalette(hDC);
-		DeleteDC(hDC);
-	}
-	else
-	{
-		UINT nSize = sizeof(LOGPALETTE) + (sizeof(PALETTEENTRY) * nColors);
-		LOGPALETTE *pLP = (LOGPALETTE *)malloc(nSize);
-		int  i;
-
-		pLP->palVersion 	= 0x300;
-		pLP->palNumEntries	= nColors;
-
-		for (i = 0; i < nColors; i++)
-		{
-			pLP->palPalEntry[i].peRed	= bmInfo->bmiColors[i].rgbRed;
-			pLP->palPalEntry[i].peGreen = bmInfo->bmiColors[i].rgbGreen; 
-			pLP->palPalEntry[i].peBlue	= bmInfo->bmiColors[i].rgbBlue;
-			pLP->palPalEntry[i].peFlags = 0;
-		}
-		
-		*pPal = CreatePalette(pLP);
-		
-		free(pLP);
-	}
-	
-	*phDIB = hDIB;
-	return TRUE;
-}
-
 
 /* Draw a DIB on the screen. It will scale the bitmap
  * to the area associated with the passed in HWND handle.
@@ -323,6 +112,8 @@ static BOOL DrawDIB(HWND hWnd, HDC hDC, HGLOBAL hDIB, HPALETTE hPal)
 		OffsetRect(&rect, x, y);
 	}
 
+	SetStretchBltMode(hDC, STRETCH_HALFTONE);
+
     nResults = StretchDIBits(hDC,                        /* hDC */
 							 rect.left,                  /* DestX */
 							 rect.top,                   /* DestY */
@@ -340,109 +131,48 @@ static BOOL DrawDIB(HWND hWnd, HDC hDC, HGLOBAL hDIB, HPALETTE hPal)
 	return (nResults) ? TRUE : FALSE;
 }
 
-BOOL GetScreenShotRect(HWND hWnd, RECT *pRect, BOOL restrict)
+
+
+#ifdef MESS
+static BOOL LoadSoftwareScreenShot(const struct GameDriver *drv, LPCSTR lpSoftwareName, int nType)
 {
-	int 	destX, destY;
-	int 	destW, destH;
-	RECT	rect;
-	/* for scaling */		 
-	int x, y;
-	int rWidth, rHeight;
-	double scale;
-	LPBITMAPINFO bmInfo = (LPBITMAPINFO)m_hDIB;
-	BOOL bReduce = FALSE;
-
-	if (m_hDIB == 0)
-		return FALSE;
-	
-	GetClientRect(hWnd, &rect);
-
-	/* Scale the bitmap to the frame specified by the passed in hwnd */
-	x = bmInfo->bmiHeader.biWidth;
-	y = bmInfo->bmiHeader.biHeight;
-
-	rWidth	= (rect.right  - rect.left);
-	rHeight = (rect.bottom - rect.top);
-
-	/* Limit the screen shot to max height of 254 */
-	if (restrict == TRUE && rHeight > 264)
-	{
-		rect.bottom = rect.top + 264;
-		rHeight = 264;
-	}
-
-	/* If the bitmap does NOT fit in the screenshot area */
-	if (x > rWidth - 10 || y > rHeight - 10)
-	{
-		rect.right	-= 10;
-		rect.bottom -= 10;
-		rWidth	-= 10;
-		rHeight -= 10;
-		bReduce = TRUE;
-		/* Try to scale it properly */
-		/*	assumes square pixels, doesn't consider aspect ratio */
-		if (x > y)
-			scale = (double)rWidth	/ x;
-		else
-			scale = (double)rHeight / y;
-
-		destW = (int)(x * scale);
-		destH = (int)(y * scale);
-
-		/* If it's still to big, scale again */
-		if (destW > rWidth || destH > rHeight)
-		{
-			if (destW > rWidth)
-				scale = (double)rWidth	/ destW;
-			else
-				scale = (double)rHeight / destH;
-
-			destW = (int)(destW * scale);
-			destH = (int)(destH * scale);
-		}
-	}
-	else
-	{
-		/* Use the bitmaps size if it fits */
-		destW = x;
-		destH = y;
-	}
-
-
-	destX = ((rWidth  - destW) / 2);
-	destY = ((rHeight - destH) / 2);
-
-	if (bReduce)
-	{
-		destX += 5;
-		destY += 5;
-	}
-
-	pRect->left   = destX;
-	pRect->top	  = destY;
-	pRect->right  = destX + destW;
-	pRect->bottom = destY + destH;
-	
-	return TRUE;
+	char *s = alloca(strlen(drv->name) + 1 + strlen(lpSoftwareName) + 5);
+	sprintf(s, "%s/%s.png", drv->name, lpSoftwareName);
+	return LoadDIB(s, &m_hDIB, &m_hPal, nType);
 }
+#endif /* MESS */
 
 /* Allow us to pre-load the DIB once for future draws */
+#ifdef MESS
+BOOL LoadScreenShotEx(int nGame, LPCSTR lpSoftwareName, int nType)
+#else /* !MESS */
 BOOL LoadScreenShot(int nGame, int nType)
+#endif /* MESS */
 {
-	static int use_flyer = -1;
 	BOOL loaded = FALSE;
 
 	/* No need to reload the same one again */
-	if (nGame == nLastGame && m_hDIB != 0 && use_flyer == nType)
-	{
+#ifndef MESS
+	if (nGame == current_image_game && nType == current_image_type)
 		return TRUE;
-	}
+#endif
 
 	/* Delete the last ones */
 	FreeScreenShot();
 
 	/* Load the DIB */
-	loaded = LoadDIB(drivers[nGame]->name, &m_hDIB, &m_hPal, nType);
+#ifdef MESS
+	if (lpSoftwareName)
+	{
+		loaded = LoadSoftwareScreenShot(drivers[nGame], lpSoftwareName, nType);
+		if (!loaded && (drivers[nGame]->clone_of && !(drivers[nGame]->clone_of->flags & NOT_A_DRIVER)))
+			loaded = LoadSoftwareScreenShot(drivers[nGame]->clone_of, lpSoftwareName, nType);
+	}
+	if (!loaded)
+#endif /* MESS */
+	{
+		loaded = LoadDIB(drivers[nGame]->name, &m_hDIB, &m_hPal, nType);
+	}
 
 	/* If not loaded, see if there is a clone and try that */
 	if (!loaded
@@ -454,102 +184,100 @@ BOOL LoadScreenShot(int nGame, int nType)
 			loaded = LoadDIB(drivers[nGame]->clone_of->clone_of->name, &m_hDIB, &m_hPal, nType);
 	}
 
-	nLastGame = nGame;
-	use_flyer = nType;
+	if (loaded)
+	{
+		HDC hdc = GetDC(GetMainWindow());
+		m_hDDB = DIBToDDB(hdc, m_hDIB, NULL);
+		ReleaseDC(GetMainWindow(),hdc);
+		
+		current_image_game = nGame;
+		current_image_type = nType;
+
+	}
 
 	return (loaded) ? TRUE : FALSE;
 }
 
-/* This will draw the screen shot if it's loaded
- * Returns TRUE for success
- */
-BOOL DrawScreenShot(HWND hWnd)
+HANDLE GetScreenShotHandle()
 {
-	HDC 	hDC;
-	BOOL	bSuccess = FALSE;
-	
-	if (m_hDIB != 0)
-	{
-		hDC = GetWindowDC(hWnd);
-		bSuccess = DrawDIB(hWnd, hDC, m_hDIB, m_hPal);
-		ReleaseDC(hWnd, hDC);
-	}
-	return bSuccess;
+	return m_hDDB;
+}
+
+int GetScreenShotWidth(void)
+{
+	return ((LPBITMAPINFO)m_hDIB)->bmiHeader.biWidth;
+}
+
+int GetScreenShotHeight(void)
+{
+	return ((LPBITMAPINFO)m_hDIB)->bmiHeader.biHeight;
 }
 
 /* Delete the HPALETTE and Free the HDIB memory */
 void FreeScreenShot(void)
 {
-	if (m_hDIB != 0)
+	if (m_hDIB != NULL)
 		GlobalFree(m_hDIB);
-	m_hDIB = 0;
+	m_hDIB = NULL;
 
-	if (m_hPal)
+	if (m_hPal != NULL)
 		DeleteObject(m_hPal);
-	m_hPal = 0;
+	m_hPal = NULL;
+
+	if (m_hDDB != NULL)
+		DeleteObject(m_hDDB);
+	m_hDDB = NULL;
+
+	current_image_game = -1;
+	current_image_type = -1;
 }
 
-BOOL LoadDIB(LPCTSTR filename, HGLOBAL *phDIB, HPALETTE *pPal, BOOL flyer)
+BOOL LoadDIB(LPCTSTR filename, HGLOBAL *phDIB, HPALETTE *pPal, int pic_type)
 {
-	LPVOID	mfile;
-	int 	filetype;
-	BOOL	success = FALSE;
-	
-	if ((mfile = ImageIdent(filename, &filetype, flyer)) != 0)
+	mame_file *mfile;
+	BOOL success;
+	const char *zip_name = NULL;
+
+	switch (pic_type)
 	{
-		switch (filetype)
-		{
-		case FORMAT_BMP:	/* BMP */
-			success = LoadBMP(mfile, phDIB, pPal);
-			break;
-
-		case FORMAT_PNG:	/* PNG */
-			success = LoadPNG(mfile, phDIB, pPal);
-			break;
-
-		case FORMAT_UNKNOWN: /* Not a supported format */
-			success = FALSE;
-			break;
-		}
-		osd_fclose(mfile);
+	case PICT_SCREENSHOT :
+		set_pathlist(FILETYPE_ARTWORK,GetImgDir());
+		zip_name = "snap";
+		break;
+	case PICT_FLYER :
+		set_pathlist(FILETYPE_ARTWORK,GetFlyerDir());
+		zip_name = "flyers";
+		break;
+	case PICT_CABINET :
+		set_pathlist(FILETYPE_ARTWORK,GetCabinetDir());
+		zip_name = "cabinets";
+		break;
+	case PICT_MARQUEE :
+		set_pathlist(FILETYPE_ARTWORK,GetMarqueeDir());
+		zip_name = "marquees";
+		break;
+	case PICT_TITLES :
+		set_pathlist(FILETYPE_ARTWORK,GetTitlesDir());
+		zip_name = "titles";
+		break;
 	}
-	return success;
-}
+	
+	// look for the raw file
+	mfile = mame_fopen(NULL,filename,FILETYPE_ARTWORK,0);
+	if (mfile == NULL)
+	{
+		// and look for the zip
+		mfile = mame_fopen(zip_name,filename,FILETYPE_ARTWORK,0);
+	}
 
-static LPVOID ImageIdent(LPCSTR filename, int *filetype, BOOL flyer)
-{
-	LPVOID	mfile;
-	char	buf[16];
-	int 	ftype = (flyer) ? OSD_FILETYPE_FLYER : OSD_FILETYPE_SCREENSHOT;
-
-	if ((mfile = osd_fopen2(filename, "", ftype, 0)) == NULL)
+	if (mfile == NULL)
 		return FALSE;
-	
-	/* Read file header */
-	if (osd_fread(mfile, buf, 16) != 16)
-		return 0;
 
-	osd_fseek(mfile, 0L, SEEK_SET);
+	success = png_read_bitmap(mfile, phDIB, pPal);
 
-	/* File type should be 'BM' */
-	if (buf[0] == 'B'
-	&&	buf[1] == 'M')
-	{
-		*filetype = FORMAT_BMP;
-	}
-	else
-	if (buf[1] == 'P'
-	&&	buf[2] == 'N'
-	&&	buf[3] == 'G')
-	{
-		*filetype = FORMAT_PNG;
-	}
-	else
-	{
-		*filetype = FORMAT_UNKNOWN;
-	}
+	mame_fclose(mfile);
 
-	return mfile;
+	return success;
 }
 
 HBITMAP DIBToDDB(HDC hDC, HANDLE hDIB, LPMYBITMAPINFO desc)
@@ -769,12 +497,11 @@ static int png_read_bitmap(LPVOID mfile, HGLOBAL *phDIB, HPALETTE *pPAL)
 	return 1;
 }
 
-/* Load a png image */
-static BOOL LoadPNG(LPVOID mfile, HGLOBAL *phDIB, HPALETTE *pPal)
+#ifdef MESS
+BOOL LoadScreenShot(int nGame, int nType)
 {
-	if (!png_read_bitmap(mfile, phDIB, pPal))
-		return 0;
-	return 1;
+	return LoadScreenShotEx(nGame, NULL, nType);
 }
+#endif
 
 /* End of source */

@@ -18,14 +18,13 @@ char *trans_text[UI_last_entry + 1];
 const char * default_text[] =
 {
 #ifdef PINMAME
-	"PINMAME",
-#else /* PINMAME */
+	"PIN"
+#endif /* PINMAME */
 #ifndef MESS
 	"MAME",
 #else
 	"MESS",
 #endif
-#endif /* PINMAME */
 	/* copyright stuff */
 	"Usage of emulators in conjunction with ROMs you don't own is forbidden by copyright law.",
 	"IF YOU ARE NOT LEGALLY ENTITLED TO PLAY \"%s\" ON THIS EMULATOR, PRESS ESC.",
@@ -96,6 +95,13 @@ const char * default_text[] =
 #ifdef MESS
 	"The emulated system is a computer: ",
 	"The keyboard emulation may not be 100% accurate.",
+	"Keyboard Emulation Status",
+	"-------------------------",
+	"Mode: PARTIAL Emulation",
+	"Mode: FULL Emulation",
+	"UI:   Enabled",
+	"UI:   Disabled",
+	"**Use ScrLock to toggle**",
 #endif
 
 	/* main menu */
@@ -119,6 +125,33 @@ const char * default_text[] =
 	"Image Information",
 	"File Manager",
 	"Tape Control",
+	"recording",
+	"playing",
+	"(recording)",
+	"(playing)",
+	"stopped",
+	"Pause/Stop",
+	"Record",
+	"Play",
+	"Rewind",
+	"Fast Forward",
+	"Mount",
+	"Unmount",
+	"[empty slot]",
+	"Quit Fileselector",
+	"File Specification",	/* IMPORTANT: be careful to ensure that the following */
+	"Cartridge",		/* device list matches the order found in device.h    */
+	"Floppy Disk",		/* and is ALWAYS placed after "File Specification"    */
+	"Hard Disk",
+	"Cylinder",
+	"Cassette",
+	"Punched Card",
+	"Punched Tape",
+	"Printer",
+	"Serial Port",
+	"Parallel Port",
+	"Snapshot",
+	"Quickload",
 #endif
 	"Cheat",
 	"Memory Card",
@@ -137,7 +170,9 @@ const char * default_text[] =
 	"Load Memory Card",
 	"Eject Memory Card",
 	"Create Memory Card",
+#ifdef MESS
 	"Call Memory Card Manager (RESET)",
+#endif
 	"Failed To Load Memory Card!",
 	"Load OK!",
 	"Memory Card Ejected!",
@@ -210,7 +245,7 @@ const char * default_text[] =
 	NULL
 };
 
-int uistring_init (void *langfile)
+int uistring_init (mame_file *langfile)
 {
 	/*
 		TODO: This routine needs to do several things:
@@ -235,11 +270,12 @@ int uistring_init (void *langfile)
 
 	if (!langfile) return 0;
 
-	while (osd_fgets (curline, 255, langfile) != NULL)
+	while (mame_fgets (curline, 255, langfile) != NULL)
 	{
 		/* Ignore commented and blank lines */
 		if (curline[0] == ';') continue;
 		if (curline[0] == '\n') continue;
+		if (curline[0] == '\r') continue;
 
 		if (curline[0] == '[')
 		{
@@ -257,22 +293,22 @@ int uistring_init (void *langfile)
 			ptr = strtok (curline, "=");
 			if (strcmp (ptr, "Version") == 0)
 			{
-				ptr = strtok (NULL, "\n");
+				ptr = strtok (NULL, "\n\r");
 				sscanf (ptr, "%d", &lang.version);
 			}
 			else if (strcmp (ptr, "Language") == 0)
 			{
-				ptr = strtok (NULL, "\n");
+				ptr = strtok (NULL, "\n\r");
 				strcpy (lang.langname, ptr);
 			}
 			else if (strcmp (ptr, "Author") == 0)
 			{
-				ptr = strtok (NULL, "\n");
+				ptr = strtok (NULL, "\n\r");
 				strcpy (lang.author, ptr);
 			}
 			else if (strcmp (ptr, "Font") == 0)
 			{
-				ptr = strtok (NULL, "\n");
+				ptr = strtok (NULL, "\n\r");
 				strcpy (lang.fontname, ptr);
 			}
 		}
@@ -281,7 +317,7 @@ int uistring_init (void *langfile)
 		if (strcmp (section, "Strings") == 0)
 		{
 			/* Get all text up to the first line ending */
-			ptr = strtok (curline, "\n");
+			ptr = strtok (curline, "\n\r");
 
 			/* Find a matching default string */
 			for (i = 0; i < UI_last_entry; i ++)
@@ -291,10 +327,10 @@ int uistring_init (void *langfile)
 					char transline[255];
 
 					/* Found a match, read next line as the translation */
-					osd_fgets (transline, 255, langfile);
+					mame_fgets (transline, 255, langfile);
 
 					/* Get all text up to the first line ending */
-					ptr = strtok (transline, "\n");
+					ptr = strtok (transline, "\n\r");
 
 					/* Allocate storage and copy the string */
 					trans_text[i] = malloc (strlen(transline)+1);

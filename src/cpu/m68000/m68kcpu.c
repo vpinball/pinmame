@@ -34,7 +34,6 @@ static const char* copyright_notice =
 
 #include "m68kops.h"
 #include "m68kcpu.h"
-#include "state.h"
 
 /* ======================================================================== */
 /* ================================= DATA ================================= */
@@ -46,7 +45,7 @@ uint m68ki_tracing = 0;
 uint m68ki_address_space;
 
 #ifdef M68K_LOG_ENABLE
-char* m68ki_cpu_names[9] =
+const char* m68ki_cpu_names[9] =
 {
 	"Invalid CPU",
 	"M68000",
@@ -64,8 +63,12 @@ char* m68ki_cpu_names[9] =
 m68ki_cpu_core m68ki_cpu = {0};
 
 #if M68K_EMULATE_ADDRESS_ERROR
-jmp_buf m68ki_address_error_trap;
+jmp_buf m68ki_aerr_trap;
 #endif /* M68K_EMULATE_ADDRESS_ERROR */
+
+uint    m68ki_aerr_address;
+uint    m68ki_aerr_write_mode;
+uint    m68ki_aerr_fc;
 
 /* Used by shift & rotate instructions */
 uint8 m68ki_shift_8_table[65] =
@@ -400,6 +403,11 @@ static void default_instr_hook_callback(void)
 {
 }
 
+
+#if M68K_EMULATE_ADDRESS_ERROR
+	#include <setjmp.h>
+	jmp_buf m68ki_aerr_trap;
+#endif /* M68K_EMULATE_ADDRESS_ERROR */
 
 
 /* ======================================================================== */
@@ -753,6 +761,8 @@ void m68k_pulse_reset(void)
 	CPU_STOPPED = 0;
 	SET_CYCLES(0);
 
+	CPU_RUN_MODE = RUN_MODE_BERR_AERR_RESET;
+
 	/* Turn off tracing */
 	FLAG_T1 = FLAG_T0 = 0;
 	m68ki_clear_trace();
@@ -774,6 +784,8 @@ void m68k_pulse_reset(void)
 	REG_SP = m68ki_read_imm_32();
 	REG_PC = m68ki_read_imm_32();
 	m68ki_jump(REG_PC);
+
+	CPU_RUN_MODE = RUN_MODE_NORMAL;
 }
 
 /* Pulse the HALT line on the CPU */
@@ -801,6 +813,15 @@ void m68k_set_context(void* src)
 	if(src) m68ki_cpu = *(m68ki_cpu_core*)src;
 }
 
+
+
+/* ======================================================================== */
+/* ============================== MAME STUFF ============================== */
+/* ======================================================================== */
+
+#if M68K_COMPILE_FOR_MAME == OPT_ON
+
+#include "state.h"
 
 static struct {
 	UINT16 sr;
@@ -850,7 +871,7 @@ void m68k_state_register(const char *type)
 	state_save_register_func_postload(m68k_post_load);
 }
 
-
+#endif /* M68K_COMPILE_FOR_MAME */
 
 /* ======================================================================== */
 /* ============================== END OF FILE ============================= */

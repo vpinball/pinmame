@@ -29,6 +29,15 @@
 #define VECTOR_COLOR444(c) \
 	MAKE_RGB((((c) >> 8) & 15) * 0x11, (((c) >> 4) & 15) * 0x11, (((c) >> 0) & 15) * 0x11)
 
+
+typedef UINT32 vector_pixel_t;
+#define VECTOR_PIXEL_END	0xffffffff
+#define VECTOR_PIXEL(x,y)	((x) | ((y) << 16))
+#define VECTOR_PIXEL_X(p)	((p) & 0xffff)
+#define VECTOR_PIXEL_Y(p)	((p) >> 16)
+
+extern vector_pixel_t *vector_dirty_list;
+
 extern int translucency;  /* translucent vectors  */
 
 extern unsigned char *vectorram;

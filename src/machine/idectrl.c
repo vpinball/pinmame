@@ -13,13 +13,21 @@
  *
  *************************************/
 
+#define VERBOSE						0
 #define PRINTF_IDE_COMMANDS			0
 
-#define VERBOSE
-#ifdef VERBOSE
+#if VERBOSE
 #define LOG(x)	logerror x
 #else
 #define LOG(X)
+#endif
+
+#if (VERBOSE && PRINTF_IDE_COMMANDS)
+#define LOGPRINT(x)	logerror x; printf x
+#elif PRINTF_IDE_COMMANDS
+#define LOGPRINT(x)	printf x
+#else
+#define LOGPRINT(X)
 #endif
 
 
@@ -31,8 +39,10 @@
  *************************************/
 
 #define TIME_PER_SECTOR				(TIME_IN_USEC(100))
+#define TIME_PER_ROTATION			(TIME_IN_HZ(5400/60))
 
 #define IDE_STATUS_ERROR			0x01
+#define IDE_STATUS_HIT_INDEX		0x02
 #define IDE_STATUS_BUFFER_READY		0x08
 #define IDE_STATUS_SEEK_COMPLETE	0x10
 #define IDE_STATUS_DRIVE_READY		0x40
@@ -58,12 +68,24 @@
 #define IDE_COMMAND_READ_MULTIPLE	0x20
 #define IDE_COMMAND_WRITE_MULTIPLE	0x30
 #define IDE_COMMAND_SET_CONFIG		0x91
+#define IDE_COMMAND_READ_MULTIPLE_BLOCK	0xc4
+#define IDE_COMMAND_WRITE_MULTIPLE_BLOCK 0xc5
+#define IDE_COMMAND_SET_BLOCK_COUNT		0xc6
+#define IDE_COMMAND_READ_DMA			0xc8
+#define IDE_COMMAND_WRITE_DMA			0xca
 #define IDE_COMMAND_GET_INFO		0xec
+#define IDE_COMMAND_SET_FEATURES		0xef
+#define IDE_COMMAND_UNKNOWN_F9		0xf9
 
 #define IDE_ERROR_NONE				0x00
+#define IDE_ERROR_DEFAULT			0x01
 #define IDE_ERROR_UNKNOWN_COMMAND	0x04
 #define IDE_ERROR_BAD_LOCATION		0x10
 #define IDE_ERROR_BAD_SECTOR		0x80
+
+#define IDE_BUSMASTER_STATUS_ACTIVE		0x01
+#define IDE_BUSMASTER_STATUS_ERROR		0x02
+#define IDE_BUSMASTER_STATUS_IRQ		0x04
 
 
 
@@ -78,11 +100,29 @@ struct ide_state
 	UINT8	adapter_control;
 	UINT8	status;
 	UINT8	error;
+	UINT8	command;
 	UINT8	interrupt_pending;
+	UINT8	precomp_offset;
 
 	UINT8	buffer[HARD_DISK_SECTOR_SIZE];
+	UINT8	features[HARD_DISK_SECTOR_SIZE];
 	UINT16	buffer_offset;
 	UINT16	sector_count;
+
+	UINT16	block_count;
+	UINT16	sectors_until_int;
+	
+	UINT8	dma_active;
+	UINT8	dma_cpu;
+	UINT8	dma_address_xor;
+	UINT8	dma_last_buffer;
+	offs_t	dma_address;
+	offs_t	dma_descriptor;
+	UINT32	dma_bytes_left;
+	
+	UINT8	bus_master_command;
+	UINT8	bus_master_status;
+	UINT32	bus_master_descriptor;
 
 	UINT16	cur_cylinder;
 	UINT8	cur_sector;
@@ -99,6 +139,8 @@ struct ide_state
 
 	struct ide_interface *intf;
 	void *	disk;
+	void *	last_status_timer;
+	void *	reset_timer;
 };
 
 
@@ -119,7 +161,16 @@ static struct ide_state idestate[MAX_IDE_CONTROLLERS];
  *
  *************************************/
 
-static void *open_source_and_diff(const char *diskname);
+static void reset_callback(int param);
+
+static void ide_build_features(struct ide_state *ide);
+
+static void continue_read(struct ide_state *ide);
+static void read_sector_done(int which);
+static void read_next_sector(struct ide_state *ide);
+
+static UINT32 ide_controller_read(struct ide_state *ide, offs_t offset, int size);
+static void ide_controller_write(struct ide_state *ide, offs_t offset, int size, UINT32 data);
 
 
 
@@ -131,15 +182,20 @@ static void *open_source_and_diff(const char *diskname);
 
 INLINE void signal_interrupt(struct ide_state *ide)
 {
+	LOG(("IDE interrupt assert\n"));
+
 	/* signal an interrupt */
 	if (ide->intf->interrupt)
 		(*ide->intf->interrupt)(ASSERT_LINE);
 	ide->interrupt_pending = 1;
+	ide->bus_master_status |= IDE_BUSMASTER_STATUS_IRQ;
 }
 
 
 INLINE void clear_interrupt(struct ide_state *ide)
 {
+	LOG(("IDE interrupt clear\n"));
+
 	/* clear an interrupt */
 	if (ide->intf->interrupt)
 		(*ide->intf->interrupt)(CLEAR_LINE);
@@ -154,7 +210,7 @@ INLINE void clear_interrupt(struct ide_state *ide)
  *
  *************************************/
 
-int ide_controller_init(int which, struct ide_interface *intf, const char *diskname1, const char *diskname2)
+int ide_controller_init_custom(int which, struct ide_interface *intf, void *diskhandle)
 {
 	struct ide_state *ide = &idestate[which];
 	const struct hard_disk_header *header;
@@ -163,17 +219,12 @@ int ide_controller_init(int which, struct ide_interface *intf, const char *diskn
 	if (!intf)
 		return 1;
 
-	/* only one hard disk is supported currently */
-	if (diskname2)
-		return 1;
-
 	/* reset the IDE state */
 	memset(ide, 0, sizeof(*ide));
 	ide->intf = intf;
 
-	/* attempt to open the first disk */
-	if (diskname1)
-		ide->disk = open_source_and_diff(diskname1);
+	/* set MAME harddisk handle */
+	ide->disk = diskhandle;
 
 	/* get and copy the geometry */
 	if (ide->disk)
@@ -182,8 +233,24 @@ int ide_controller_init(int which, struct ide_interface *intf, const char *diskn
 		ide->num_cylinders = header->cylinders;
 		ide->num_sectors = header->sectors;
 		ide->num_heads = header->heads;
+#if PRINTF_IDE_COMMANDS
+		printf("CHS: %d %d %d\n", ide->num_cylinders, ide->num_sectors, ide->num_heads);
+#endif
 	}
+
+	/* build the features page */
+	ide_build_features(ide);
+
+	/* create a timer for timing status */
+	ide->last_status_timer = timer_alloc(NULL);
+	ide->reset_timer = timer_alloc(reset_callback);
 	return 0;
+}
+
+int ide_controller_init(int which, struct ide_interface *intf)
+{
+	/* we only support one hard disk right now; get a handle to it */
+	return ide_controller_init_custom(which, intf, get_disk_handle(0));
 }
 
 
@@ -191,81 +258,26 @@ void ide_controller_reset(int which)
 {
 	struct ide_state *ide = &idestate[which];
 
+	LOG(("IDE controller reset performed\n"));
+
 	/* reset the drive state */
 	ide->status = IDE_STATUS_DRIVE_READY | IDE_STATUS_SEEK_COMPLETE;
-	ide->error = IDE_ERROR_NONE;
+	ide->error = IDE_ERROR_DEFAULT;
 	ide->buffer_offset = 0;
 	clear_interrupt(ide);
 }
 
 
+UINT8 *ide_get_features(int which)
+{
+	struct ide_state *ide = &idestate[which];
+	return ide->features;
+}
+
 
 static void reset_callback(int param)
 {
 	ide_controller_reset(param);
-}
-
-
-
-/*************************************
- *
- *	Open source hard drive and diff
- *
- *************************************/
-
-static void *open_source_and_diff(const char *diskname)
-{
-	struct hard_disk_header header;
-	char filename[1024], *c;
-	void *source, *diff;
-	int err;
-
-	/* make the filename of the source */
-	strcpy(filename, diskname);
-	c = strrchr(filename, '.');
-	if (c)
-		strcpy(c, ".chd");
-	else
-		strcat(filename, ".chd");
-
-	/* first open the source drive */
-	source = hard_disk_open(filename, 0, NULL);
-	if (!source)
-		return NULL;
-
-	/* make the filename of the diff */
-	strcpy(filename, diskname);
-	c = strrchr(filename, '.');
-	if (c)
-		strcpy(c, ".dif");
-	else
-		strcat(filename, ".dif");
-
-	/* try to open the diff */
-	diff = hard_disk_open(filename, 1, source);
-	if (diff)
-		return diff;
-
-	/* didn't work; try creating it instead */
-
-	/* first get the parent's header and modify that */
-	header = *hard_disk_get_header(source);
-	header.flags |= HDFLAGS_HAS_PARENT | HDFLAGS_IS_WRITEABLE;
-	header.compression = HDCOMPRESSION_NONE;
-	memcpy(header.parentmd5, header.md5, sizeof(header.parentmd5));
-	memset(header.md5, 0, sizeof(header.md5));
-
-	/* then do the create; if it fails, just fall back on the source */
-	err = hard_disk_create(filename, &header);
-	if (err != HDERR_NONE)
-		return source;
-
-	/* now try opening the drive */
-	diff = hard_disk_open(filename, 1, source);
-	if (diff)
-		return diff;
-
-	return source;
 }
 
 
@@ -316,17 +328,33 @@ INLINE int convert_to_offset_and_size(offs_t *offset, data32_t mem_mask)
 
 INLINE void next_sector(struct ide_state *ide)
 {
-	/* sectors are 1-based */
-	ide->cur_sector++;
-	if (ide->cur_sector > ide->num_sectors)
+	/* LBA direct? */
+	if (ide->cur_head_reg & 0x40)
 	{
-		/* heads are 0 based */
-		ide->cur_sector = 1;
-		ide->cur_head++;
-		if (ide->cur_head >= ide->num_heads)
+		ide->cur_sector++;
+		if (ide->cur_sector == 0)
 		{
-			ide->cur_head = 0;
 			ide->cur_cylinder++;
+			if (ide->cur_cylinder == 0)
+				ide->cur_head++;
+		}
+	}
+
+	/* standard CHS */
+	else
+	{
+		/* sectors are 1-based */
+		ide->cur_sector++;
+		if (ide->cur_sector > ide->num_sectors)
+		{
+			/* heads are 0 based */
+			ide->cur_sector = 1;
+			ide->cur_head++;
+			if (ide->cur_head >= ide->num_heads)
+			{
+				ide->cur_head = 0;
+				ide->cur_cylinder++;
+			}
 		}
 	}
 }
@@ -341,7 +369,13 @@ INLINE void next_sector(struct ide_state *ide)
 
 INLINE UINT32 lba_address(struct ide_state *ide)
 {
-	return (ide->cur_cylinder * ide->num_heads + ide->cur_head) * ide->num_sectors + ide->cur_sector - 1;
+	/* LBA direct? */
+	if (ide->cur_head_reg & 0x40)
+		return ide->cur_sector + ide->cur_cylinder * 256 + ide->cur_head * 16777216;
+
+	/* standard CHS */
+	else
+		return (ide->cur_cylinder * ide->num_heads + ide->cur_head) * ide->num_sectors + ide->cur_sector - 1;
 }
 
 
@@ -352,32 +386,100 @@ INLINE UINT32 lba_address(struct ide_state *ide)
  *
  *************************************/
 
+static void swap_strncpy(UINT8 *dst, const char *src, int field_size_in_words)
+{
+	int i;
+
+	for (i = 0; i < field_size_in_words * 2 && src[i]; i++)
+		dst[i ^ 1] = src[i];
+	for ( ; i < field_size_in_words; i++)
+		dst[i ^ 1] = ' ';
+}
+
+
 static void ide_build_features(struct ide_state *ide)
 {
-	int bytes_per_track = ide->num_sectors * HARD_DISK_SECTOR_SIZE;
+	int total_sectors = ide->num_cylinders * ide->num_heads * ide->num_sectors;
 
 	memset(ide->buffer, 0, HARD_DISK_SECTOR_SIZE);
 
 	/* basic geometry */
-	ide->buffer[ 0] = 0x5a;							/* configuration bits */
-	ide->buffer[ 1] = 0x04;
-	ide->buffer[ 2] = ide->num_cylinders & 0xff;	/* cylinders */
-	ide->buffer[ 3] = ide->num_cylinders >> 8;
-	ide->buffer[ 4] = 0;							/* unused */
-	ide->buffer[ 5] = 0;
-	ide->buffer[ 6] = ide->num_heads & 0xff;		/* heads */
-	ide->buffer[ 7] = ide->num_heads >> 8;
-	ide->buffer[ 8] = bytes_per_track & 0xff;		/* bytes per track (obsolete) */
-	ide->buffer[ 9] = bytes_per_track >> 8;
-	ide->buffer[10] = HARD_DISK_SECTOR_SIZE & 0xff;	/* bytes per sector (obsolete) */
-	ide->buffer[11] = HARD_DISK_SECTOR_SIZE >> 8;
-	ide->buffer[12] = ide->num_sectors & 0xff;		/* sectors */
-	ide->buffer[13] = ide->num_sectors >> 8;
-	ide->buffer[14] = 0;							/* vendor-specific */
-	ide->buffer[15] = 0;
-
-	/* serial number */
-	memset(&ide->buffer[20], ' ', 20);
+	ide->features[ 0*2+0] = 0x5a;						/*  0: configuration bits */
+	ide->features[ 0*2+1] = 0x04;
+	ide->features[ 1*2+0] = ide->num_cylinders & 0xff;	/*  1: logical cylinders */
+	ide->features[ 1*2+1] = ide->num_cylinders >> 8;
+	ide->features[ 2*2+0] = 0;							/*  2: reserved */
+	ide->features[ 2*2+1] = 0;
+	ide->features[ 3*2+0] = ide->num_heads & 0xff;		/*  3: logical heads */
+	ide->features[ 3*2+1] = ide->num_heads >> 8;
+	ide->features[ 4*2+0] = 0;							/*  4: vendor specific (obsolete) */
+	ide->features[ 4*2+1] = 0;
+	ide->features[ 5*2+0] = 0;							/*  5: vendor specific (obsolete) */
+	ide->features[ 5*2+1] = 0;
+	ide->features[ 6*2+0] = ide->num_sectors & 0xff;	/*  6: logical sectors per logical track */
+	ide->features[ 6*2+1] = ide->num_sectors >> 8;
+	ide->features[ 7*2+0] = 0;							/*  7: vendor-specific */
+	ide->features[ 7*2+1] = 0;
+	ide->features[ 8*2+0] = 0;							/*  8: vendor-specific */
+	ide->features[ 8*2+1] = 0;
+	ide->features[ 9*2+0] = 0;							/*  9: vendor-specific */
+	ide->features[ 9*2+1] = 0;
+	swap_strncpy(&ide->features[10*2+0], 				/* 10-19: serial number */
+			"00000000000000000000", 10);
+	ide->features[20*2+0] = 0;							/* 20: vendor-specific */
+	ide->features[20*2+1] = 0;
+	ide->features[21*2+0] = 0;							/* 21: vendor-specific */
+	ide->features[21*2+1] = 0;
+	ide->features[22*2+0] = 4;							/* 22: # of vendor-specific bytes on read/write long commands */
+	ide->features[22*2+1] = 0;
+	swap_strncpy(&ide->features[23*2+0], 				/* 23-26: firmware revision */
+			"1.0", 4);
+	swap_strncpy(&ide->features[27*2+0], 				/* 27-46: model number */
+			"MAME Compressed Hard Disk", 20);
+	ide->features[47*2+0] = 0x01;						/* 47: read/write multiple support */
+	ide->features[47*2+1] = 0x80;
+	ide->features[48*2+0] = 0;							/* 48: reserved */
+	ide->features[48*2+1] = 0;
+	ide->features[49*2+0] = 0x00;						/* 49: capabilities */
+	ide->features[49*2+1] = 0x0f;
+	ide->features[50*2+0] = 0;							/* 50: reserved */
+	ide->features[50*2+1] = 0;
+	ide->features[51*2+0] = 2;							/* 51: PIO data transfer cycle timing mode */
+	ide->features[51*2+1] = 0;
+	ide->features[52*2+0] = 2;							/* 52: single word DMA transfer cycle timing mode */
+	ide->features[52*2+1] = 0;
+	ide->features[53*2+0] = 3;							/* 53: field validity */
+	ide->features[53*2+1] = 0;
+	ide->features[54*2+0] = ide->num_cylinders & 0xff;	/* 54: number of current logical cylinders */
+	ide->features[54*2+1] = ide->num_cylinders >> 8;
+	ide->features[55*2+0] = ide->num_heads & 0xff;		/* 55: number of current logical heads */
+	ide->features[55*2+1] = ide->num_heads >> 8;
+	ide->features[56*2+0] = ide->num_sectors & 0xff;	/* 56: number of current logical sectors per track */
+	ide->features[56*2+1] = ide->num_sectors >> 8;
+	ide->features[57*2+0] = total_sectors & 0xff;		/* 57-58: number of current logical sectors per track */
+	ide->features[57*2+1] = total_sectors >> 8;
+	ide->features[58*2+0] = total_sectors >> 16;
+	ide->features[58*2+1] = total_sectors >> 24;
+	ide->features[59*2+0] = 0;							/* 59: multiple sector timing */
+	ide->features[59*2+1] = 0;
+	ide->features[60*2+0] = total_sectors & 0xff;		/* 60-61: total user addressable sectors */
+	ide->features[60*2+1] = total_sectors >> 8;
+	ide->features[61*2+0] = total_sectors >> 16;
+	ide->features[61*2+1] = total_sectors >> 24;
+	ide->features[62*2+0] = 0x07;						/* 62: single word dma transfer */
+	ide->features[62*2+1] = 0x00;
+	ide->features[63*2+0] = 0x07;						/* 63: multiword DMA transfer */
+	ide->features[63*2+1] = 0x04;
+	ide->features[64*2+0] = 0x03;						/* 64: flow control PIO transfer modes supported */
+	ide->features[64*2+1] = 0x00;
+	ide->features[65*2+0] = 0x78;						/* 65: minimum multiword DMA transfer cycle time per word */
+	ide->features[65*2+1] = 0x00;
+	ide->features[66*2+0] = 0x78;						/* 66: mfr's recommended multiword DMA transfer cycle time */
+	ide->features[66*2+1] = 0x00;
+	ide->features[67*2+0] = 0x4d;						/* 67: minimum PIO transfer cycle time without flow control */
+	ide->features[67*2+1] = 0x01;
+	ide->features[68*2+0] = 0x78;						/* 68: minimum PIO transfer cycle time with IORDY */
+	ide->features[68*2+1] = 0x00;
 }
 
 
@@ -387,6 +489,74 @@ static void ide_build_features(struct ide_state *ide)
  *	Sector reading
  *
  *************************************/
+
+static void continue_read(struct ide_state *ide)
+{
+	/* reset the totals */
+	ide->buffer_offset = 0;
+
+	/* clear the buffer ready flag */
+	ide->status &= ~IDE_STATUS_BUFFER_READY;
+
+	/* if there is more data to read, keep going */
+	if (ide->sector_count > 0)
+		ide->sector_count--;
+	if (ide->sector_count > 0)
+		read_next_sector(ide);
+	else
+	{
+		ide->bus_master_status &= ~IDE_BUSMASTER_STATUS_ACTIVE;
+		ide->dma_active = 0;
+	}
+}
+
+
+static void write_buffer_to_dma(struct ide_state *ide)
+{
+	int bytesleft = HARD_DISK_SECTOR_SIZE;
+	UINT8 *data = ide->buffer;
+	
+//	LOG(("Writing sector to %08X\n", ide->dma_address));
+
+	/* loop until we've consumed all bytes */
+	while (bytesleft--)
+	{
+		/* if we're out of space, grab the next descriptor */
+		if (ide->dma_bytes_left == 0)
+		{
+			/* if we're out of buffer space, that's bad */
+			if (ide->dma_last_buffer)
+			{
+				LOG(("DMA Out of buffer space!\n"));
+				return;
+			}
+		
+			/* fetch the address */
+			ide->dma_address = cpunum_read_byte(ide->dma_cpu, ide->dma_descriptor++ ^ ide->dma_address_xor);
+			ide->dma_address |= cpunum_read_byte(ide->dma_cpu, ide->dma_descriptor++ ^ ide->dma_address_xor) << 8;
+			ide->dma_address |= cpunum_read_byte(ide->dma_cpu, ide->dma_descriptor++ ^ ide->dma_address_xor) << 16;
+			ide->dma_address |= cpunum_read_byte(ide->dma_cpu, ide->dma_descriptor++ ^ ide->dma_address_xor) << 24;
+			ide->dma_address &= 0xfffffffe;
+
+			/* fetch the length */
+			ide->dma_bytes_left = cpunum_read_byte(ide->dma_cpu, ide->dma_descriptor++ ^ ide->dma_address_xor);
+			ide->dma_bytes_left |= cpunum_read_byte(ide->dma_cpu, ide->dma_descriptor++ ^ ide->dma_address_xor) << 8;
+			ide->dma_bytes_left |= cpunum_read_byte(ide->dma_cpu, ide->dma_descriptor++ ^ ide->dma_address_xor) << 16;
+			ide->dma_bytes_left |= cpunum_read_byte(ide->dma_cpu, ide->dma_descriptor++ ^ ide->dma_address_xor) << 24;
+			ide->dma_last_buffer = (ide->dma_bytes_left >> 31) & 1;
+			ide->dma_bytes_left &= 0xfffe;
+			if (ide->dma_bytes_left == 0)
+				ide->dma_bytes_left = 0x10000;
+			
+//			LOG(("New DMA descriptor: address = %08X  bytes = %04X  last = %d\n", ide->dma_address, ide->dma_bytes_left, ide->dma_last_buffer));
+		}
+		
+		/* write the next byte */
+		cpunum_write_byte(ide->dma_cpu, ide->dma_address++, *data++);
+		ide->dma_bytes_left--;
+	}
+}
+
 
 static void read_sector_done(int which)
 {
@@ -415,7 +585,18 @@ static void read_sector_done(int which)
 		ide->error = IDE_ERROR_NONE;
 
 		/* signal an interrupt */
+		if (--ide->sectors_until_int == 0 || ide->sector_count == 1)
+		{
+			ide->sectors_until_int = ((ide->command == IDE_COMMAND_READ_MULTIPLE_BLOCK) ? ide->block_count : 1);
 		signal_interrupt(ide);
+	}
+
+		/* keep going for DMA */
+		if (ide->dma_active)
+		{
+			write_buffer_to_dma(ide);
+			continue_read(ide);
+		}
 	}
 
 	/* if we got an error, we need to report it */
@@ -424,6 +605,8 @@ static void read_sector_done(int which)
 		/* set the error flag and the error */
 		ide->status |= IDE_STATUS_ERROR;
 		ide->error = IDE_ERROR_BAD_SECTOR;
+		ide->bus_master_status |= IDE_BUSMASTER_STATUS_ERROR;
+		ide->bus_master_status &= ~IDE_BUSMASTER_STATUS_ACTIVE;
 
 		/* signal an interrupt */
 		signal_interrupt(ide);
@@ -445,6 +628,69 @@ static void read_next_sector(struct ide_state *ide)
  *	Sector writing
  *
  *************************************/
+
+static void write_sector_done(int which);
+
+static void continue_write(struct ide_state *ide)
+{
+	/* reset the totals */
+	ide->buffer_offset = 0;
+
+	/* clear the buffer ready flag */
+	ide->status &= ~IDE_STATUS_BUFFER_READY;
+
+	/* set a timer to do the write */
+	timer_set(TIME_PER_SECTOR, ide - idestate, write_sector_done);
+	ide->status |= IDE_STATUS_BUSY;
+}
+
+
+static void read_buffer_from_dma(struct ide_state *ide)
+{
+	int bytesleft = HARD_DISK_SECTOR_SIZE;
+	UINT8 *data = ide->buffer;
+	
+//	LOG(("Reading sector from %08X\n", ide->dma_address));
+
+	/* loop until we've consumed all bytes */
+	while (bytesleft--)
+	{
+		/* if we're out of space, grab the next descriptor */
+		if (ide->dma_bytes_left == 0)
+		{
+			/* if we're out of buffer space, that's bad */
+			if (ide->dma_last_buffer)
+			{
+				LOG(("DMA Out of buffer space!\n"));
+				return;
+			}
+		
+			/* fetch the address */
+			ide->dma_address = cpunum_read_byte(ide->dma_cpu, ide->dma_descriptor++ ^ ide->dma_address_xor);
+			ide->dma_address |= cpunum_read_byte(ide->dma_cpu, ide->dma_descriptor++ ^ ide->dma_address_xor) << 8;
+			ide->dma_address |= cpunum_read_byte(ide->dma_cpu, ide->dma_descriptor++ ^ ide->dma_address_xor) << 16;
+			ide->dma_address |= cpunum_read_byte(ide->dma_cpu, ide->dma_descriptor++ ^ ide->dma_address_xor) << 24;
+			ide->dma_address &= 0xfffffffe;
+
+			/* fetch the length */
+			ide->dma_bytes_left = cpunum_read_byte(ide->dma_cpu, ide->dma_descriptor++ ^ ide->dma_address_xor);
+			ide->dma_bytes_left |= cpunum_read_byte(ide->dma_cpu, ide->dma_descriptor++ ^ ide->dma_address_xor) << 8;
+			ide->dma_bytes_left |= cpunum_read_byte(ide->dma_cpu, ide->dma_descriptor++ ^ ide->dma_address_xor) << 16;
+			ide->dma_bytes_left |= cpunum_read_byte(ide->dma_cpu, ide->dma_descriptor++ ^ ide->dma_address_xor) << 24;
+			ide->dma_last_buffer = (ide->dma_bytes_left >> 31) & 1;
+			ide->dma_bytes_left &= 0xfffe;
+			if (ide->dma_bytes_left == 0)
+				ide->dma_bytes_left = 0x10000;
+			
+//			LOG(("New DMA descriptor: address = %08X  bytes = %04X  last = %d\n", ide->dma_address, ide->dma_bytes_left, ide->dma_last_buffer));
+		}
+		
+		/* read the next byte */
+		*data++ = cpunum_read_byte(ide->dma_cpu, ide->dma_address++);
+		ide->dma_bytes_left--;
+	}
+}
+
 
 static void write_sector_done(int which)
 {
@@ -472,12 +718,27 @@ static void write_sector_done(int which)
 		/* clear the error value */
 		ide->error = IDE_ERROR_NONE;
 
+		/* signal an interrupt */
+		if (--ide->sectors_until_int == 0 || ide->sector_count == 1)
+		{
+			ide->sectors_until_int = ((ide->command == IDE_COMMAND_WRITE_MULTIPLE_BLOCK) ? ide->block_count : 1);
+			signal_interrupt(ide);
+		}
+		
 		/* signal an interrupt if there's more data needed */
 		if (ide->sector_count > 0)
 			ide->sector_count--;
 		if (ide->sector_count == 0)
 			ide->status &= ~IDE_STATUS_BUFFER_READY;
-		signal_interrupt(ide);
+		
+		/* keep going for DMA */
+		if (ide->dma_active && ide->sector_count != 0)
+		{
+			read_buffer_from_dma(ide);
+			continue_write(ide);
+		}
+		else
+			ide->dma_active = 0;
 	}
 
 	/* if we got an error, we need to report it */
@@ -486,18 +747,12 @@ static void write_sector_done(int which)
 		/* set the error flag and the error */
 		ide->status |= IDE_STATUS_ERROR;
 		ide->error = IDE_ERROR_BAD_SECTOR;
+		ide->bus_master_status |= IDE_BUSMASTER_STATUS_ERROR;
+		ide->bus_master_status &= ~IDE_BUSMASTER_STATUS_ACTIVE;
 
 		/* signal an interrupt */
 		signal_interrupt(ide);
 	}
-}
-
-
-static void write_cur_sector(struct ide_state *ide)
-{
-	/* just set a timer and mark ourselves busy */
-	timer_set(TIME_PER_SECTOR, ide - idestate, write_sector_done);
-	ide->status |= IDE_STATUS_BUSY;
 }
 
 
@@ -513,47 +768,88 @@ void handle_command(struct ide_state *ide, UINT8 command)
 	/* implicitly clear interrupts here */
 	clear_interrupt(ide);
 
+	ide->command = command;
 	switch (command)
 	{
 		case IDE_COMMAND_READ_MULTIPLE:
-			LOG(("IDE Read multiple: C=%d H=%d S=%d LBA=%d count=%d\n",
+			LOGPRINT(("IDE Read multiple: C=%d H=%d S=%d LBA=%d count=%d\n",
 				ide->cur_cylinder, ide->cur_head, ide->cur_sector, lba_address(ide), ide->sector_count));
-#if PRINTF_IDE_COMMANDS
-			fprintf(stderr, "IDE Read multiple: C=%d H=%d S=%d LBA=%d count=%d\n",
-				ide->cur_cylinder, ide->cur_head, ide->cur_sector, lba_address(ide), ide->sector_count);
-#endif
+
 			/* reset the buffer */
 			ide->buffer_offset = 0;
+			ide->sectors_until_int = 1;
+			ide->dma_active = 0;
 
 			/* start the read going */
 			read_next_sector(ide);
 			break;
 
-		case IDE_COMMAND_WRITE_MULTIPLE:
-			LOG(("IDE Write multiple: C=%d H=%d S=%d LBA=%d count=%d\n",
+		case IDE_COMMAND_READ_MULTIPLE_BLOCK:
+			LOGPRINT(("IDE Read multiple block: C=%d H=%d S=%d LBA=%d count=%d\n",
 				ide->cur_cylinder, ide->cur_head, ide->cur_sector, lba_address(ide), ide->sector_count));
-#if PRINTF_IDE_COMMANDS
-			fprintf(stderr, "IDE Write multiple: C=%d H=%d S=%d LBA=%d count=%d\n",
-				ide->cur_cylinder, ide->cur_head, ide->cur_sector, lba_address(ide), ide->sector_count);
-#endif
+
 			/* reset the buffer */
 			ide->buffer_offset = 0;
+			ide->sectors_until_int = ide->block_count;
+			ide->dma_active = 0;
+
+			/* start the read going */
+			read_next_sector(ide);
+			break;
+
+		case IDE_COMMAND_READ_DMA:
+			LOGPRINT(("IDE Read multiple DMA: C=%d H=%d S=%d LBA=%d count=%d\n",
+				ide->cur_cylinder, ide->cur_head, ide->cur_sector, lba_address(ide), ide->sector_count));
+
+			/* reset the buffer */
+			ide->buffer_offset = 0;
+			ide->sectors_until_int = ide->sector_count;
+			ide->dma_active = 1;
+
+			/* start the read going */
+			if (ide->bus_master_command & 1)
+			read_next_sector(ide);
+			break;
+
+		case IDE_COMMAND_WRITE_MULTIPLE:
+			LOGPRINT(("IDE Write multiple: C=%d H=%d S=%d LBA=%d count=%d\n",
+				ide->cur_cylinder, ide->cur_head, ide->cur_sector, lba_address(ide), ide->sector_count));
+
+			/* reset the buffer */
+			ide->buffer_offset = 0;
+			ide->sectors_until_int = 1;
+			ide->dma_active = 0;
 
 			/* mark the buffer ready */
 			ide->status |= IDE_STATUS_BUFFER_READY;
 			break;
 
+		case IDE_COMMAND_WRITE_DMA:
+			LOGPRINT(("IDE Write multiple DMA: C=%d H=%d S=%d LBA=%d count=%d\n",
+				ide->cur_cylinder, ide->cur_head, ide->cur_sector, lba_address(ide), ide->sector_count));
+
+			/* reset the buffer */
+			ide->buffer_offset = 0;
+			ide->sectors_until_int = ide->sector_count;
+			ide->dma_active = 1;
+
+			/* start the read going */
+			if (ide->bus_master_command & 1)
+			{
+				read_buffer_from_dma(ide);
+				continue_write(ide);
+			}
+			break;
+
 		case IDE_COMMAND_GET_INFO:
-			LOG(("IDE Read features\n"));
-#if PRINTF_IDE_COMMANDS
-			fprintf(stderr, "IDE Read features\n");
-#endif
+			LOGPRINT(("IDE Read features\n"));
+
 			/* reset the buffer */
 			ide->buffer_offset = 0;
 			ide->sector_count = 1;
 
 			/* build the features page */
-			ide_build_features(ide);
+			memcpy(ide->buffer, ide->features, sizeof(ide->buffer));
 
 			/* indicate everything is ready */
 			ide->status |= IDE_STATUS_BUFFER_READY;
@@ -571,10 +867,8 @@ void handle_command(struct ide_state *ide, UINT8 command)
 			break;
 
 		case IDE_COMMAND_SET_CONFIG:
-			LOG(("IDE Set configuration (%d heads, %d sectors)\n", ide->cur_head + 1, ide->sector_count));
-#if PRINTF_IDE_COMMANDS
-			fprintf(stderr, "IDE Set configuration (%d heads, %d sectors)\n", ide->cur_head + 1, ide->sector_count);
-#endif
+			LOGPRINT(("IDE Set configuration (%d heads, %d sectors)\n", ide->cur_head + 1, ide->sector_count));
+
 			ide->num_sectors = ide->sector_count;
 			ide->num_heads = ide->cur_head + 1;
 
@@ -582,10 +876,37 @@ void handle_command(struct ide_state *ide, UINT8 command)
 			signal_interrupt(ide);
 			break;
 
+		case IDE_COMMAND_UNKNOWN_F9:
+			/* only used by Killer Instinct AFAICT */
+			LOGPRINT(("IDE unknown command (F9)\n"));
+
+			/* signal an interrupt */
+			signal_interrupt(ide);
+			break;
+
+		case IDE_COMMAND_SET_FEATURES:
+			LOGPRINT(("IDE Set features (%02X %02X %02X %02X %02X)\n", ide->precomp_offset, ide->sector_count & 0xff, ide->cur_sector, ide->cur_cylinder & 0xff, ide->cur_cylinder >> 8));
+
+			/* signal an interrupt */
+			signal_interrupt(ide);
+			break;
+		
+		case IDE_COMMAND_SET_BLOCK_COUNT:
+			LOGPRINT(("IDE Set block count (%02X)\n", ide->sector_count));
+
+			ide->block_count = ide->sector_count;
+
+			/* signal an interrupt */
+			signal_interrupt(ide);
+			break;
+
 		default:
-			logerror("IDE unknown command (%02X)\n", command);
-#if PRINTF_IDE_COMMANDS
-			fprintf(stderr, "IDE unknown command (%02X)\n", command);
+			LOGPRINT(("IDE unknown command (%02X)\n", command));
+#ifdef MAME_DEBUG
+{
+	extern int debug_key_pressed;
+	debug_key_pressed = 1;
+}
 #endif
 			break;
 	}
@@ -604,7 +925,7 @@ static UINT32 ide_controller_read(struct ide_state *ide, offs_t offset, int size
 	UINT32 result = 0;
 
 	/* logit */
-	if (offset != IDE_ADDR_DATA)
+	if (offset != IDE_ADDR_DATA && offset != IDE_ADDR_STATUS_COMMAND && offset != IDE_ADDR_STATUS_CONTROL)
 		LOG(("%08X:IDE read at %03X, size=%d\n", activecpu_get_previouspc(), offset, size));
 
 	switch (offset)
@@ -639,19 +960,7 @@ static UINT32 ide_controller_read(struct ide_state *ide, offs_t offset, int size
 
 				/* if we're at the end of the buffer, handle it */
 				if (ide->buffer_offset >= HARD_DISK_SECTOR_SIZE)
-				{
-					/* reset the totals */
-					ide->buffer_offset = 0;
-
-					/* clear the buffer ready flag */
-					ide->status &= ~IDE_STATUS_BUFFER_READY;
-
-					/* if there is more data to read, keep going */
-					if (ide->sector_count > 0)
-						ide->sector_count--;
-					if (ide->sector_count > 0)
-						read_next_sector(ide);
-				}
+					continue_read(ide);
 			}
 			break;
 
@@ -681,14 +990,24 @@ static UINT32 ide_controller_read(struct ide_state *ide, offs_t offset, int size
 
 		/* return the current status and clear any pending interrupts */
 		case IDE_ADDR_STATUS_COMMAND:
-			result = ide->status;
-			if (ide->interrupt_pending)
-				clear_interrupt(ide);
-			break;
-
 		/* return the current status but don't clear interrupts */
 		case IDE_ADDR_STATUS_CONTROL:
 			result = ide->status;
+			if (timer_timeelapsed(ide->last_status_timer) > TIME_PER_ROTATION)
+			{
+				result |= IDE_STATUS_HIT_INDEX;
+				timer_adjust(ide->last_status_timer, TIME_NEVER, 0, 0);
+			}
+
+			/* clear interrutps only when reading the real status */
+			if (offset == IDE_ADDR_STATUS_COMMAND)
+			{
+				if (ide->interrupt_pending)
+					clear_interrupt(ide);
+			}
+			
+			/* take a bit of time to speed up people who poll hard */
+			activecpu_adjust_icount(-100);
 			break;
 
 		/* log anything else */
@@ -749,21 +1068,13 @@ static void ide_controller_write(struct ide_state *ide, offs_t offset, int size,
 
 				/* if we're at the end of the buffer, handle it */
 				if (ide->buffer_offset >= HARD_DISK_SECTOR_SIZE)
-				{
-					/* reset the totals */
-					ide->buffer_offset = 0;
-
-					/* clear the buffer ready flag */
-					ide->status &= ~IDE_STATUS_BUFFER_READY;
-
-					/* do the write */
-					write_cur_sector(ide);
-				}
+					continue_write(ide);
 			}
 			break;
 
 		/* precompensation offset?? */
 		case IDE_ADDR_ERROR:
+			ide->precomp_offset = data;
 			break;
 
 		/* sector count */
@@ -808,10 +1119,100 @@ static void ide_controller_write(struct ide_state *ide, offs_t offset, int size,
 			{
 				ide->status |= IDE_STATUS_BUSY;
 				ide->status &= ~IDE_STATUS_DRIVE_READY;
-				timer_set(TIME_IN_MSEC(5), ide - idestate, reset_callback);
+				timer_adjust(ide->reset_timer, TIME_IN_MSEC(5), ide - idestate, 0);
 			}
 			break;
 	}
+}
+
+
+
+/*************************************
+ *
+ *	Bus master read
+ *
+ *************************************/
+
+static UINT32 ide_bus_master_read(struct ide_state *ide, offs_t offset, int size)
+{
+	LOG(("%08X:ide_bus_master_read(%d, %d)\n", activecpu_get_previouspc(), offset, size));
+
+	/* command register */
+	if (offset == 0)
+		return ide->bus_master_command | (ide->bus_master_status << 16);
+	
+	/* descriptor table register */
+	if (offset == 4)
+		return ide->bus_master_descriptor;
+	
+	return 0xffffffff;
+}
+
+
+
+/*************************************
+ *
+ *	Bus master write
+ *
+ *************************************/
+
+static void ide_bus_master_write(struct ide_state *ide, offs_t offset, int size, UINT32 data)
+{
+	LOG(("%08X:ide_bus_master_write(%d, %d, %08X)\n", activecpu_get_previouspc(), offset, size, data));
+
+	/* command register */
+	if (offset == 0)
+	{
+		UINT8 old = ide->bus_master_command;
+		UINT8 val = data & 0xff;
+		
+		/* save the read/write bit and the start/stop bit */
+		ide->bus_master_command = (old & 0xf6) | (val & 0x09);
+		ide->bus_master_status = (ide->bus_master_status & ~IDE_BUSMASTER_STATUS_ACTIVE) | (val & 0x01);
+		
+		/* handle starting a transfer */
+		if (!(old & 1) && (val & 1))
+		{
+			/* reset all the DMA data */
+			ide->dma_bytes_left = 0;
+			ide->dma_last_buffer = 0;
+			ide->dma_descriptor = ide->bus_master_descriptor;
+			ide->dma_cpu = cpu_getactivecpu();
+			ide->dma_address_xor = (activecpu_endianess() == CPU_IS_LE) ? 0 : 3;
+			
+			/* if we're going live, start the pending read/write */
+			if (ide->dma_active)
+			{
+				if (ide->bus_master_command & 8)
+					read_next_sector(ide);
+				else
+				{
+					read_buffer_from_dma(ide);
+					continue_write(ide);
+				}
+			}
+		}
+	}
+	
+	/* status register */
+	if (offset <= 2 && offset + size > 2)
+	{
+		UINT8 old = ide->bus_master_status;
+		UINT8 val = data >> (8 * (2 - offset));
+		
+		/* save the DMA capable bits */
+		ide->bus_master_status = (old & 0x9f) | (val & 0x60);
+		
+		/* clear interrupt and error bits */
+		if (val & IDE_BUSMASTER_STATUS_IRQ)
+			ide->bus_master_status &= ~IDE_BUSMASTER_STATUS_IRQ;
+		if (val & IDE_BUSMASTER_STATUS_ERROR)
+			ide->bus_master_status &= ~IDE_BUSMASTER_STATUS_ERROR;
+	}
+	
+	/* descriptor table register */
+	if (offset == 4)
+		ide->bus_master_descriptor = data & 0xfffffffc;
 }
 
 
@@ -841,6 +1242,28 @@ WRITE32_HANDLER( ide_controller32_0_w )
 	size = convert_to_offset_and_size(&offset, mem_mask);
 
 	ide_controller_write(&idestate[0], offset, size, data >> ((offset & 3) * 8));
+}
+
+
+READ32_HANDLER( ide_bus_master32_0_r )
+{
+	int size;
+
+	offset *= 4;
+	size = convert_to_offset_and_size(&offset, mem_mask);
+
+	return ide_bus_master_read(&idestate[0], offset, size) << ((offset & 3) * 8);
+}
+
+
+WRITE32_HANDLER( ide_bus_master32_0_w )
+{
+	int size;
+
+	offset *= 4;
+	size = convert_to_offset_and_size(&offset, mem_mask);
+
+	ide_bus_master_write(&idestate[0], offset, size, data >> ((offset & 3) * 8));
 }
 
 

@@ -67,22 +67,22 @@ struct png_info {
 	UINT8 *fimage;
 };
 
-int png_verify_signature (void *fp);
+int png_verify_signature (mame_file *fp);
 int png_inflate_image (struct png_info *p);
-int png_read_file(void *fp, struct png_info *p);
-int png_read_info(void *fp, struct png_info *p);
+int png_read_file(mame_file *fp, struct png_info *p);
+int png_read_info(mame_file *fp, struct png_info *p);
 int png_expand_buffer_8bit (struct png_info *p);
 void png_delete_unused_colors (struct png_info *p);
 int png_add_text (const char *keyword, const char *text);
 int png_unfilter(struct png_info *p);
 int png_filter(struct png_info *p);
 int png_deflate_image(struct png_info *p);
-int png_write_sig(void *fp);
-int png_write_datastream(void *fp, struct png_info *p);
-int png_write_bitmap(void *fp, struct mame_bitmap *bitmap);
-int mng_capture_start(void *fp, struct mame_bitmap *bitmap);
-int mng_capture_frame(void *fp, struct mame_bitmap *bitmap);
-int mng_capture_stop(void *fp);
+int png_write_sig(mame_file *fp);
+int png_write_datastream(mame_file *fp, struct png_info *p);
+int png_write_bitmap(mame_file *fp, struct mame_bitmap *bitmap);
+int mng_capture_start(mame_file *fp, struct mame_bitmap *bitmap);
+int mng_capture_frame(mame_file *fp, struct mame_bitmap *bitmap);
+int mng_capture_stop(mame_file *fp);
 int mng_capture_status(void);
 #endif
 

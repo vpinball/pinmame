@@ -1,3 +1,4 @@
+#include <windows.h>
 #include <ddraw.h>
 #include <dinput.h>
 #include <stdio.h>
@@ -9,7 +10,7 @@
 typedef struct tagERRORCODE
 {
 	HRESULT     hr;
-	LPSTR       szError;
+	const char *szError;
 } ERRORCODE, * LPERRORCODE;
 
 /***************************************************************/

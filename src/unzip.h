@@ -2,6 +2,7 @@
 #define __UNZIP_H
 
 #include "osd_cpu.h"
+#include "osdepend.h"
 #include <stdio.h>
 
 #ifdef __cplusplus
@@ -37,7 +38,8 @@ struct zipent {
 
 typedef struct _ZIP {
 	char* zip; /* zip name */
-	FILE* fp; /* zip handler */
+	osd_file* fp; /* zip handler */
+	int pathtype,pathindex;	/* additional path info */
 	long length; /* length of zip file */
 
 	char* ecd; /* end_of_cent_dir data */
@@ -66,7 +68,7 @@ typedef struct _ZIP {
      !=0 success, zip stream
      ==0 error
 */
-ZIP* openzip(const char* path);
+ZIP* openzip(int pathtype, int pathindex, const char* path);
 
 /* Closes a zip stream */
 void closezip(ZIP* zip);
@@ -122,9 +124,9 @@ int readcompresszip(ZIP* zip, struct zipent* ent, char* data);
 int readuncompresszip(ZIP* zip, struct zipent* ent, char* data);
 
 /* public functions */
-int /* error */ load_zipped_file (const char *zipfile, const char *filename,
+int /* error */ load_zipped_file (int pathtype, int pathindex, const char *zipfile, const char *filename,
 	unsigned char **buf, unsigned int *length);
-int /* error */ checksum_zipped_file (const char *zipfile, const char *filename, unsigned int *length, unsigned int *sum);
+int /* error */ checksum_zipped_file (int pathtype, int pathindex, const char *zipfile, const char *filename, unsigned int *length, unsigned int *sum);
 
 void unzip_cache_clear(void);
 

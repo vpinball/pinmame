@@ -203,10 +203,10 @@ static uint g_5bit_data_table[32] =
 	16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31
 };
 
-static char* g_cc[16] =
+static const char* g_cc[16] =
 {"t", "f", "hi", "ls", "cc", "cs", "ne", "eq", "vc", "vs", "pl", "mi", "ge", "lt", "gt", "le"};
 
-static char* g_cpcc[64] =
+static const char* g_cpcc[64] =
 {/* 000    001    010    011    100    101    110    111 */
 	  "f",  "eq", "ogt", "oge", "olt", "ole", "ogl",  "or", /* 000 */
 	 "un", "ueq", "ugt", "uge", "ult", "ule",  "ne",   "t", /* 001 */
@@ -1756,8 +1756,8 @@ static void d68000_move_to_usp(void)
 static void d68010_movec(void)
 {
 	uint extension;
-	char* reg_name;
-	char* processor;
+	const char* reg_name;
+	const char* processor;
 	LIMIT_CPU_TYPES(M68010_PLUS);
 	extension = read_imm_16();
 
@@ -3243,7 +3243,7 @@ unsigned int m68k_disassemble(char* str_buff, unsigned int pc, unsigned int cpu_
 	{
 		case M68K_CPU_TYPE_68000:
 			g_cpu_type = TYPE_68000;
-			g_address_mask = 0xffffffff;
+			g_address_mask = 0x00ffffff;
 			break;
 		case M68K_CPU_TYPE_68010:
 			g_cpu_type = TYPE_68010;

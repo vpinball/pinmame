@@ -260,10 +260,9 @@ CORE_GAMEDEFNV(ladyshot,"Lady Sharpshooter",1985,"Game Plan",mGP2,GAME_NO_SOUND)
 / Andromeda (September 1985) - Model #850
 /-------------------------------------------------------------------*/
 INITGAME(andromed, 0,dispGP_BDU2,FLIP_SW(FLIP_L),0)
-GP_ROMSTART000(andromed,"850.a",CRC(3e9628e5),
-						"850.b",CRC(3f945c46),
-						"850.c",CRC(7ea18e65))
-//GP_SOUNDROM8("850.snd",CRC(290db3d2))
+GP_ROMSTART00(andromed,	"850.a",CRC(67ed03ee),
+						"850.b",CRC(37c244e8))
+//GP_SOUNDROM8("850.snd",CRC(18e084a6))
 GP_ROMEND
 CORE_GAMEDEFNV(andromed,"Andromeda",1985,"Game Plan",mGP2,GAME_NO_SOUND)
 
@@ -271,9 +270,10 @@ CORE_GAMEDEFNV(andromed,"Andromeda",1985,"Game Plan",mGP2,GAME_NO_SOUND)
 / Cyclopes (November 1985) - Model #800
 /-------------------------------------------------------------------*/
 INITGAME(cyclopes, 0,dispGP_BDU2,FLIP_SW(FLIP_L),0)
-GP_ROMSTART00(cyclopes,	"800.a",CRC(67ed03ee),
-						"800.b",CRC(37c244e8))
-//GP_SOUNDROM8("800.snd",CRC(18e084a6))
+GP_ROMSTART000(cyclopes,"800.a",CRC(3e9628e5),
+						"800.b",CRC(3f945c46),
+						"800.c",CRC(7ea18e65))
+//GP_SOUNDROM8("800.snd",CRC(290db3d2))
 GP_ROMEND
 CORE_GAMEDEFNV(cyclopes,"Cyclopes",1985,"Game Plan",mGP2,GAME_NO_SOUND)
 

@@ -67,12 +67,9 @@
 #define MSTAT_REVERSE	0x02			/* bit-reverse addressing enable (DAG1) */
 #define MSTAT_STICKYV	0x04			/* sticky ALU overflow enable */
 #define MSTAT_SATURATE	0x08			/* AR saturation mode enable */
-
-#if SUPPORT_2101_EXTENSIONS
 #define MSTAT_INTEGER	0x10			/* MAC result placement; 0=fractional, 1=integer */
 #define MSTAT_TIMER		0x20			/* timer enable */
 #define MSTAT_GOMODE	0x40			/* go mode enable */
-#endif
 
 /* you must call this in order to change MSTAT */
 INLINE void set_mstat(int new_value)
@@ -283,8 +280,9 @@ INLINE void stat_stack_pop(void)
 			adsp2100.sstat |= STATUS_EMPTY;
 	}
 	set_mstat(adsp2100.stat_stack[adsp2100.stat_sp][0]);
-	adsp2100.imask = adsp2100.stat_stack[adsp2100.stat_sp][1]; check_irqs();
+	adsp2100.imask = adsp2100.stat_stack[adsp2100.stat_sp][1];
 	adsp2100.astat = adsp2100.stat_stack[adsp2100.stat_sp][2];
+ 	check_irqs();
 }
 
 
@@ -354,27 +352,33 @@ static void wr_l5(INT32 val)    { adsp2100.l[5] = val & 0x3fff; adsp2100.lmask[5
 static void wr_l6(INT32 val)    { adsp2100.l[6] = val & 0x3fff; adsp2100.lmask[6] = mask_table[val & 0x3fff]; adsp2100.base[6] = adsp2100.i[6] & adsp2100.lmask[6]; }
 static void wr_l7(INT32 val)    { adsp2100.l[7] = val & 0x3fff; adsp2100.lmask[7] = mask_table[val & 0x3fff]; adsp2100.base[7] = adsp2100.i[7] & adsp2100.lmask[7]; }
 static void wr_astat(INT32 val) { adsp2100.astat = val & 0x00ff; }
-#if SUPPORT_2101_EXTENSIONS
-static void wr_mstat(INT32 val) { set_mstat(val & 0x007f); }
-#else
-static void wr_mstat(INT32 val) { set_mstat(val & 0x000f); }
-#endif
+static void wr_mstat(INT32 val) { set_mstat(val & mstat_mask); }
 static void wr_sstat(INT32 val) { adsp2100.sstat = val & 0x00ff; }
-#if SUPPORT_2101_EXTENSIONS
-static void wr_imask(INT32 val) { adsp2100.imask = val & 0x003f; check_irqs(); }
-#else
-static void wr_imask(INT32 val) { adsp2100.imask = val & 0x000f; check_irqs(); }
-#endif
+static void wr_imask(INT32 val) { adsp2100.imask = val & imask_mask; check_irqs(); }
 static void wr_icntl(INT32 val) { adsp2100.icntl = val & 0x001f; check_irqs(); }
 static void wr_cntr(INT32 val)  { cntr_stack_push(); adsp2100.cntr = val & 0x3fff; }
 static void wr_sb(INT32 val)    { adsp2100.core.sb.s = (INT32)(val << 27) >> 27; }
 static void wr_px(INT32 val)    { adsp2100.px = val; }
-#if SUPPORT_2101_EXTENSIONS
-static void wr_ifc(INT32 val)	{ adsp2100.ifc = val; }
-static void wr_tx0(INT32 val)	{ if ( adsp2105_tx_callback ) (*adsp2105_tx_callback)( 0, val ); }
-static void wr_tx1(INT32 val)	{ if ( adsp2105_tx_callback ) (*adsp2105_tx_callback)( 1, val ); }
+static void wr_ifc(INT32 val)
+{
+	adsp2100.ifc = val;
+#if HAS_ADSP2101 // PINMAME
+	if (val & 0x002) adsp2100.irq_latch[ADSP2101_IRQ0] = 0;
+	if (val & 0x004) adsp2100.irq_latch[ADSP2101_IRQ1] = 0;
+	if (val & 0x008) adsp2100.irq_latch[ADSP2101_SPORT0_RX] = 0;
+	if (val & 0x010) adsp2100.irq_latch[ADSP2101_SPORT0_TX] = 0;
+	if (val & 0x020) adsp2100.irq_latch[ADSP2101_IRQ2] = 0;
+	if (val & 0x080) adsp2100.irq_latch[ADSP2101_IRQ0] = 1;
+	if (val & 0x100) adsp2100.irq_latch[ADSP2101_IRQ1] = 1;
+	if (val & 0x200) adsp2100.irq_latch[ADSP2101_SPORT0_RX] = 1;
+	if (val & 0x400) adsp2100.irq_latch[ADSP2101_SPORT0_TX] = 1;
+	if (val & 0x800) adsp2100.irq_latch[ADSP2101_IRQ2] = 1;
+#endif // HAS_ADSP2101
+	check_irqs();
+}
+static void wr_tx0(INT32 val)	{ if (sport_tx_callback) (*sport_tx_callback)(0, val); }
+static void wr_tx1(INT32 val)	{ if (sport_tx_callback) (*sport_tx_callback)(1, val); }
 static void wr_owrctr(INT32 val) { adsp2100.cntr = val & 0x3fff; }
-#endif
 static void wr_topstack(INT32 val) { pc_stack_push_val(val & 0x3fff); }
 
 #define WRITE_REG(grp,reg,val) ((*wr_reg[grp][reg])(val))
@@ -395,11 +399,7 @@ static void (*wr_reg[4][16])(INT32) =
 	},
 	{
 		wr_astat, wr_mstat, wr_inval, wr_imask, wr_icntl, wr_cntr, wr_sb, wr_px,
-#if SUPPORT_2101_EXTENSIONS
 		wr_inval, wr_tx0, wr_inval, wr_tx1, wr_ifc, wr_owrctr, wr_inval, wr_topstack
-#else
-		wr_inval, wr_inval, wr_inval, wr_inval, wr_inval, wr_inval, wr_inval, wr_topstack
-#endif
 	}
 };
 
@@ -458,10 +458,8 @@ static INT32 rd_icntl(void) { return adsp2100.icntl; }
 static INT32 rd_cntr(void)  { return adsp2100.cntr; }
 static INT32 rd_sb(void)    { return adsp2100.core.sb.s; }
 static INT32 rd_px(void)    { return adsp2100.px; }
-#if SUPPORT_2101_EXTENSIONS
-static INT32 rd_rx0(void)	{ if ( adsp2105_rx_callback ) return (*adsp2105_rx_callback)( 0 ); else return 0; }
-static INT32 rd_rx1(void)	{ if ( adsp2105_rx_callback ) return (*adsp2105_rx_callback)( 1 ); else return 0; }
-#endif
+static INT32 rd_rx0(void)	{ if (sport_rx_callback) return (*sport_rx_callback)(0); else return 0; }
+static INT32 rd_rx1(void)	{ if (sport_rx_callback) return (*sport_rx_callback)(1); else return 0; }
 static INT32 rd_stacktop(void)	{ return pc_stack_pop_val(); }
 
 #define READ_REG(grp,reg) ((*rd_reg[grp][reg])())
@@ -482,11 +480,7 @@ static INT32 (*rd_reg[4][16])(void) =
 	},
 	{
 		rd_astat, rd_mstat, rd_sstat, rd_imask, rd_icntl, rd_cntr, rd_sb, rd_px,
-#if SUPPORT_2101_EXTENSIONS
 		rd_rx0, rd_inval, rd_rx1, rd_inval, rd_inval, rd_inval, rd_inval, rd_stacktop
-#else
-		rd_inval, rd_inval, rd_inval, rd_inval, rd_inval, rd_inval, rd_inval, rd_stacktop
-#endif
 	}
 };
 
@@ -1005,11 +999,7 @@ void alu_op_af(int op)
 
 void mac_op_mr(int op)
 {
-#if SUPPORT_2101_EXTENSIONS
 	INT8 shift = ((adsp2100.mstat & MSTAT_INTEGER) >> 4) ^ 1;
-#else
-	INT8 shift = 1;
-#endif
 	INT32 xop = (op >> 8) & 7;
 	INT32 yop = (op >> 11) & 3;
 	INT32 temp;
@@ -1173,11 +1163,7 @@ void mac_op_mr(int op)
 
 void mac_op_mf(int op)
 {
-#if SUPPORT_2101_EXTENSIONS
 	INT8 shift = ((adsp2100.mstat & MSTAT_INTEGER) >> 4) ^ 1;
-#else
-	INT8 shift = 1;
-#endif
 	INT32 xop = (op >> 8) & 7;
 	INT32 yop = (op >> 11) & 3;
 	INT32 temp;

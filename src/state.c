@@ -41,20 +41,21 @@ enum {
 	SS_INT32,
 	SS_UINT32,
 	SS_INT,
-	SS_DOUBLE
+	SS_DOUBLE,
+	SS_FLOAT
 };
 
 #ifdef VERBOSE
-static const char *ss_type[] =	{ "i8", "u8", "i16", "u16", "i32", "u32", "int", "dbl" };
+static const char *ss_type[] =	{ "i8", "u8", "i16", "u16", "i32", "u32", "int", "dbl", "flt" };
 #endif
-static int		   ss_size[] =	{	 1,    1,	  2,	 2, 	4,	   4,	  4,	 8 };
+static int		   ss_size[] =	{	 1,    1,	  2,	 2, 	4,	   4,	  4,	 8,     4 };
 
 static void ss_c2(unsigned char *, unsigned);
 static void ss_c4(unsigned char *, unsigned);
 static void ss_c8(unsigned char *, unsigned);
 
 static void (*ss_conv[])(unsigned char *, unsigned) = {
-	0, 0, ss_c2, ss_c2, ss_c4, ss_c4, 0, ss_c8
+	0, 0, ss_c2, ss_c2, ss_c4, ss_c4, 0, ss_c8, ss_c4
 };
 
 
@@ -87,7 +88,7 @@ static ss_func *ss_postfunc_reg;
 static int ss_current_tag;
 
 static unsigned char *ss_dump_array;
-static void *ss_dump_file;
+static mame_file *ss_dump_file;
 static unsigned int ss_dump_size;
 
 
@@ -285,6 +286,12 @@ void state_save_register_double(const char *module, int instance,
 	ss_register_entry(module, instance, name, SS_DOUBLE, val, size);
 }
 
+void state_save_register_float(const char *module, int instance,
+							   const char *name, float *val, unsigned size)
+{
+	ss_register_entry(module, instance, name, SS_FLOAT, val, size);
+}
+
 
 
 static void ss_register_func(ss_func **root, void (*func)(void))
@@ -294,7 +301,7 @@ static void ss_register_func(ss_func **root, void (*func)(void))
 	{
 		if (next->func == func && next->tag == ss_current_tag)
 		{
-			logerror("Duplicate save state function (%d, 0x%x)\n", ss_current_tag, func);
+			logerror("Duplicate save state function (%d, 0x%x)\n", ss_current_tag, (int)func);
 			exit(1);
 		}
 		next = next->next;
@@ -375,7 +382,7 @@ static void ss_c8(unsigned char *data, unsigned size)
 }
 
 
-void state_save_save_begin(void *file)
+void state_save_save_begin(mame_file *file)
 {
 	ss_module *m;
 	TRACE(logerror("Beginning save\n"));
@@ -465,14 +472,14 @@ void state_save_save_finish(void)
 	ss_dump_array[0x16] = signature >> 16;
 	ss_dump_array[0x17] = signature >> 24;
 
-	osd_fwrite(ss_dump_file, ss_dump_array, ss_dump_size);
+	mame_fwrite(ss_dump_file, ss_dump_array, ss_dump_size);
 	free(ss_dump_array);
 	ss_dump_array = 0;
 	ss_dump_size = 0;
 	ss_dump_file = 0;
 }
 
-int state_save_load_begin(void *file)
+int state_save_load_begin(mame_file *file)
 {
 	ss_module *m;
 	unsigned int offset = 0;
@@ -482,10 +489,10 @@ int state_save_load_begin(void *file)
 
 	signature = ss_get_signature();
 
-	ss_dump_size = osd_fsize(file);
+	ss_dump_size = mame_fsize(file);
 	ss_dump_array = malloc(ss_dump_size);
 	ss_dump_file = file;
-	osd_fread(ss_dump_file, ss_dump_array, ss_dump_size);
+	mame_fread(ss_dump_file, ss_dump_array, ss_dump_size);
 
 	if(memcmp(ss_dump_array, "MAMESAVE", 8)) {
 		usrintf_showmessage("Error: This is not a mame save file");

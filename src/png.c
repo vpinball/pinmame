@@ -11,7 +11,7 @@
   11/09/1998 Bit depths 1-8 MLR
   11/10/1998 Some additional PNG chunks recognized MLR
   05/14/1999 Color type 2 and PNG save functions added
-  05/15/1999 Handle RGB555 while saving, use osd_fxxx
+  05/15/1999 Handle RGB555 while saving, use mame_fxxx
              functions for writing MSH
   04/27/2001 Simple MNG support MLR
 
@@ -25,8 +25,6 @@
 #include "driver.h"
 #include "png.h"
 
-extern char build_version[];
-extern UINT32 direct_rgb_components[3]; /* Used to determine the RGB layout in direct modes */
 
 /* convert_uint is here so we don't have to deal with byte-ordering issues */
 static UINT32 convert_from_network_order (UINT8 *v)
@@ -103,11 +101,11 @@ int png_unfilter(struct png_info *p)
 	return 1;
 }
 
-int png_verify_signature (void *fp)
+int png_verify_signature (mame_file *fp)
 {
 	INT8 signature[8];
 
-	if (osd_fread (fp, signature, 8) != 8)
+	if (mame_fread (fp, signature, 8) != 8)
 	{
 		logerror("Unable to read PNG signature (EOF)\n");
 		return 0;
@@ -144,7 +142,7 @@ int png_inflate_image (struct png_info *p)
 	return 1;
 }
 
-int png_read_file(void *fp, struct png_info *p)
+int png_read_file(mame_file *fp, struct png_info *p)
 {
 	/* translates color_type to bytes per pixel */
 	const int samples[] = {1, 0, 3, 1, 2, 0, 4};
@@ -176,11 +174,11 @@ int png_read_file(void *fp, struct png_info *p)
 
 	while (chunk_type != PNG_CN_IEND)
 	{
-		if (osd_fread(fp, v, 4) != 4)
+		if (mame_fread(fp, v, 4) != 4)
 			logerror("Unexpected EOF in PNG\n");
 		chunk_length=convert_from_network_order(v);
 
-		if (osd_fread(fp, str_chunk_type, 4) != 4)
+		if (mame_fread(fp, str_chunk_type, 4) != 4)
 			logerror("Unexpected EOF in PNG file\n");
 
 		str_chunk_type[4]=0; /* terminate string */
@@ -195,7 +193,7 @@ int png_read_file(void *fp, struct png_info *p)
 				logerror("Out of memory\n");
 				return 0;
 			}
-			if (osd_fread (fp, chunk_data, chunk_length) != chunk_length)
+			if (mame_fread (fp, chunk_data, chunk_length) != chunk_length)
 			{
 				logerror("Unexpected EOF in PNG file\n");
 				free(chunk_data);
@@ -207,7 +205,7 @@ int png_read_file(void *fp, struct png_info *p)
 		else
 			chunk_data = NULL;
 
-		if (osd_fread(fp, v, 4) != 4)
+		if (mame_fread(fp, v, 4) != 4)
 			logerror("Unexpected EOF in PNG\n");
 		chunk_crc=convert_from_network_order(v);
 
@@ -345,7 +343,7 @@ int png_read_file(void *fp, struct png_info *p)
 	return 1;
 }
 
-int png_read_info(void *fp, struct png_info *p)
+int png_read_info(mame_file *fp, struct png_info *p)
 {
 	UINT32 chunk_length, chunk_type=0, chunk_crc, crc;
 	UINT8 *chunk_data;
@@ -357,11 +355,11 @@ int png_read_info(void *fp, struct png_info *p)
 
 	while (chunk_type != PNG_CN_IEND)
 	{
-		if (osd_fread(fp, v, 4) != 4)
+		if (mame_fread(fp, v, 4) != 4)
 			logerror("Unexpected EOF in PNG\n");
 		chunk_length=convert_from_network_order(v);
 
-		if (osd_fread(fp, str_chunk_type, 4) != 4)
+		if (mame_fread(fp, str_chunk_type, 4) != 4)
 			logerror("Unexpected EOF in PNG file\n");
 
 		str_chunk_type[4]=0; /* terminate string */
@@ -376,7 +374,7 @@ int png_read_info(void *fp, struct png_info *p)
 				logerror("Out of memory\n");
 				return 0;
 			}
-			if (osd_fread (fp, chunk_data, chunk_length) != chunk_length)
+			if (mame_fread (fp, chunk_data, chunk_length) != chunk_length)
 			{
 				logerror("Unexpected EOF in PNG file\n");
 				free(chunk_data);
@@ -388,7 +386,7 @@ int png_read_info(void *fp, struct png_info *p)
 		else
 			chunk_data = NULL;
 
-		if (osd_fread(fp, v, 4) != 4)
+		if (mame_fread(fp, v, 4) != 4)
 			logerror("Unexpected EOF in PNG\n");
 		chunk_crc=convert_from_network_order(v);
 
@@ -575,7 +573,7 @@ int png_add_text (const char *keyword, const char *text)
 	return 1;
 }
 
-static int write_chunk(void *fp, UINT32 chunk_type, UINT8 *chunk_data, UINT32 chunk_length)
+static int write_chunk(mame_file *fp, UINT32 chunk_type, UINT8 *chunk_data, UINT32 chunk_length)
 {
 	UINT32 crc;
 	UINT8 v[4];
@@ -583,24 +581,24 @@ static int write_chunk(void *fp, UINT32 chunk_type, UINT8 *chunk_data, UINT32 ch
 
 	/* write length */
 	convert_to_network_order(chunk_length, v);
-	written = osd_fwrite(fp, v, 4);
+	written = mame_fwrite(fp, v, 4);
 
 	/* write type */
 	convert_to_network_order(chunk_type, v);
-	written += osd_fwrite(fp, v, 4);
+	written += mame_fwrite(fp, v, 4);
 
 	/* calculate crc */
 	crc=crc32(0, v, 4);
 	if (chunk_length > 0)
 	{
 		/* write data */
-		written += osd_fwrite(fp, chunk_data, chunk_length);
+		written += mame_fwrite(fp, chunk_data, chunk_length);
 		crc=crc32(crc, chunk_data, chunk_length);
 	}
 	convert_to_network_order(crc, v);
 
 	/* write crc */
-	written += osd_fwrite(fp, v, 4);
+	written += mame_fwrite(fp, v, 4);
 
 	if (written != 3*4+chunk_length)
 	{
@@ -610,10 +608,10 @@ static int write_chunk(void *fp, UINT32 chunk_type, UINT8 *chunk_data, UINT32 ch
 	return 1;
 }
 
-int png_write_sig(void *fp)
+int png_write_sig(mame_file *fp)
 {
 	/* PNG Signature */
-	if (osd_fwrite(fp, PNG_Signature, 8) != 8)
+	if (mame_fwrite(fp, PNG_Signature, 8) != 8)
 	{
 		logerror("PNG sig write failed\n");
 		return 0;
@@ -621,7 +619,7 @@ int png_write_sig(void *fp)
 	return 1;
 }
 
-int png_write_datastream(void *fp, struct png_info *p)
+int png_write_datastream(mame_file *fp, struct png_info *p)
 {
 	UINT8 ihdr[13];
 	struct png_text *pt;
@@ -765,7 +763,7 @@ static int png_create_datastream(void *fp, struct mame_bitmap *bitmap)
 	p.width = bitmap->width;
 	p.height = bitmap->height;
 
-	if ((Machine->color_depth == 16) && (Machine->drv->total_colors <= 256))
+	if ((bitmap->depth == 16) && (Machine->drv->total_colors <= 256))
 	{
 		p.color_type = 3;
 		if((p.palette = (UINT8 *)malloc (3*256))==NULL)
@@ -809,7 +807,7 @@ static int png_create_datastream(void *fp, struct mame_bitmap *bitmap)
 
 		ip = p.image;
 
-		switch (Machine->color_depth)
+		switch (bitmap->depth)
 		{
 		case 16: /* 16BIT */
 			for (i = 0; i < p.height; i++)
@@ -854,6 +852,7 @@ static int png_create_datastream(void *fp, struct mame_bitmap *bitmap)
 			break;
 		}
 	}
+
 	if(png_filter (&p)==0)
 		return 0;
 
@@ -870,7 +869,7 @@ static int png_create_datastream(void *fp, struct mame_bitmap *bitmap)
 	return 1;
 }
 
-int png_write_bitmap(void *fp, struct mame_bitmap *bitmap)
+int png_write_bitmap(mame_file *fp, struct mame_bitmap *bitmap)
 {
 	char text[1024];
 
@@ -900,12 +899,12 @@ int png_write_bitmap(void *fp, struct mame_bitmap *bitmap)
 
 static int mng_status;
 
-int mng_capture_start(void *fp, struct mame_bitmap *bitmap)
+int mng_capture_start(mame_file *fp, struct mame_bitmap *bitmap)
 {
 	UINT8 mhdr[28];
 /*	UINT8 term; */
 
-	if (osd_fwrite(fp, MNG_Signature, 8) != 8)
+	if (mame_fwrite(fp, MNG_Signature, 8) != 8)
 	{
 		logerror("MNG sig write failed\n");
 		return 0;
@@ -929,7 +928,7 @@ int mng_capture_start(void *fp, struct mame_bitmap *bitmap)
 	return 1;
 }
 
-int mng_capture_frame(void *fp, struct mame_bitmap *bitmap)
+int mng_capture_frame(mame_file *fp, struct mame_bitmap *bitmap)
 {
 	if (mng_status)
 	{
@@ -944,7 +943,7 @@ int mng_capture_frame(void *fp, struct mame_bitmap *bitmap)
 	}
 }
 
-int mng_capture_stop(void *fp)
+int mng_capture_stop(mame_file *fp)
 {
 	if (write_chunk(fp, MNG_CN_MEND, NULL, 0)==0)
 		return 0;

@@ -51,6 +51,7 @@ struct pia6821_interface
 extern "C" {
 #endif
 
+void pia_init(int count);
 void pia_unconfig(void);
 void pia_config(int which, int addressing, const struct pia6821_interface *intf);
 void pia_reset(void);
@@ -230,12 +231,7 @@ READ_HANDLER( pia_4_cb2_r );
 READ_HANDLER( pia_5_cb2_r );
 READ_HANDLER( pia_6_cb2_r );
 READ_HANDLER( pia_7_cb2_r );
-#ifdef PINMAME
-WRITE_HANDLER(pia_pulse_ca1);
-WRITE_HANDLER(pia_pulse_ca2);
-WRITE_HANDLER(pia_pulse_cb1);
-WRITE_HANDLER(pia_pulse_cb2);
-#endif /* PINMAME */
+
 #ifdef __cplusplus
 }
 #endif

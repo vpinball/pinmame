@@ -1,7 +1,7 @@
 /***************************************************************************
 
   M.A.M.E.32  -  Multiple Arcade Machine Emulator for Win32
-  Win32 Portions Copyright (C) 1997-2001 Michael Soderstrom and Chris Kirmse
+  Win32 Portions Copyright (C) 1997-2003 Michael Soderstrom and Chris Kirmse
 
   This file is part of MAME32, and may only be used, modified and
   distributed under the terms of the MAME license, in "readme.txt".
@@ -15,23 +15,25 @@
 
 #include <htmlhelp.h>
 
-#ifdef MESS
-/* MESS32 text files */
-#define HELPTEXT_RELEASE    "Mess.txt"
-#define HELPTEXT_WHATS_NEW  "Messnew.txt"
-#else
-/* MAME32 text files */
-#define HELPTEXT_SUPPORT    "support.htm"
-#define HELPTEXT_RELEASE    "windows.txt"
-#define HELPTEXT_WHATS_NEW  "whatsnew.txt"
-#endif
+typedef struct
+{
+	int		nMenuItem;
+	BOOL	bIsHtmlHelp;
+	LPCSTR	lpFile;
+} MAMEHELPINFO;
+
+extern const MAMEHELPINFO g_helpInfo[];
 
 #if !defined(MAME32HELP)
 #define MAME32HELP "mame32.chm"
 #endif
 
-extern int  Help_Init(void);
-extern void Help_Exit(void);
-extern HWND Help_HtmlHelp(HWND hwndCaller, LPCSTR pszFile, UINT uCommand, DWORD_PTR dwData);
+#if !defined(MAME32CONTEXTHELP)
+#define MAME32CONTEXTHELP "mame32.chm::/cntx_help.txt"
+#endif
+
+extern int HelpInit(void);
+extern void HelpExit(void);
+extern HWND HelpFunction(HWND hwndCaller, LPCSTR pszFile, UINT uCommand, DWORD_PTR dwData);
 
 #endif

@@ -19,6 +19,22 @@
 /* Pull in the ROM tables */
 #include "tms5220r.c"
 
+/*
+  Changes by R. Nabet
+   * added Speech ROM support
+   * modified code so that the beast only start speaking at the start of next frame, like the data
+     sheet says
+*/
+#define USE_OBSOLETE_HACK 0
+
+
+#ifndef TRUE
+	#define TRUE 1
+#endif
+#ifndef FALSE
+	#define FALSE 0
+#endif
+
 
 /* these contain data that describes the 128-bit data FIFO */
 #define FIFO_SIZE 16
@@ -26,18 +42,30 @@ static UINT8 fifo[FIFO_SIZE];
 static UINT8 fifo_head;
 static UINT8 fifo_tail;
 static UINT8 fifo_count;
-static UINT8 bits_taken;
+static UINT8 fifo_bits_taken;
 
 
 /* these contain global status bits */
-static UINT8 speak_external;
+/*
+	R Nabet : speak_external is only set when a speak external command is going on.
+	tms5220_speaking is set whenever a speak or speak external command is going on.
+	Note that we really need to do anything in tms5220_process and play samples only when
+	tms5220_speaking is true.  Else, we can play nothing as well, which is a
+	speed-up...
+*/
+static UINT8 tms5220_speaking;	/* Speak or Speak External command in progress */
+static UINT8 speak_external;	/* Speak External command in progress */
+#if USE_OBSOLETE_HACK
 static UINT8 speak_delay_frames;
-static UINT8 talk_status;
-static UINT8 buffer_low;
-static UINT8 buffer_empty;
-static UINT8 irq_pin;
+#endif
+static UINT8 talk_status; 		/* tms5220 is really currently speaking */
+static UINT8 first_frame;		/* we have just started speaking, and we are to parse the first frame */
+static UINT8 last_frame;		/* we are doing the frame of sound */
+static UINT8 buffer_low;		/* FIFO has less than 8 bytes in it */
+static UINT8 buffer_empty;		/* FIFO is empty*/
+static UINT8 irq_pin;			/* state of the IRQ pin (output) */
 
-static void (*irq_func)(int state);
+static void (*irq_func)(int state); /* called when the state of the IRQ pin changes */
 
 
 /* these contain data describing the current and previous voice frames */
@@ -59,8 +87,8 @@ static UINT16 target_energy;
 static UINT16 target_pitch;
 static int target_k[10];
 
-static UINT8 interp_count;       /* number of interp periods (0-7) */
-static UINT8 sample_count;       /* sample number within interp (0-24) */
+static UINT8 interp_count;		/* number of interp periods (0-7) */
+static UINT8 sample_count;		/* sample number within interp (0-24) */
 static int pitch_count;
 
 static int u[11];
@@ -72,12 +100,24 @@ static INT8 randbit;
 /* Static function prototypes */
 static void process_command(void);
 static int extract_bits(int count);
-static int parse_frame(int removeit);
+static int parse_frame(int the_first_frame);
 static void check_buffer_low(void);
 static void set_interrupt_state(int state);
 
 
 #define DEBUG_5220	0
+
+
+
+/* R Nabet : These have been added to emulate speech Roms */
+static int (*read_callback)(int count) = NULL;
+static void (*load_address_callback)(int data) = NULL;
+static void (*read_and_branch_callback)(void) = NULL;
+static int schedule_dummy_read;			/* set after each load address, so that next read operation
+										  is preceded by a dummy read */
+
+static UINT8 data_register;				/* data register, used by read command */
+static int RDB_flag;					/* whether we should read data register or status register */
 
 
 /**********************************************************************************************
@@ -88,40 +128,88 @@ static void set_interrupt_state(int state);
 
 void tms5220_reset(void)
 {
-    /* initialize the FIFO */
-    memset(fifo, 0, sizeof(fifo));
-    fifo_head = fifo_tail = fifo_count = bits_taken = 0;
+	/* initialize the FIFO */
+	/*memset(fifo, 0, sizeof(fifo));*/
+	fifo_head = fifo_tail = fifo_count = fifo_bits_taken = 0;
 
-    /* initialize the chip state */
-    speak_external = speak_delay_frames = talk_status = irq_pin = 0;
+	/* initialize the chip state */
+	/* Note that we do not actually clear IRQ on start-up : IRQ is even raised if buffer_empty or buffer_low are 0 */
+	tms5220_speaking = speak_external = talk_status = first_frame = last_frame = irq_pin = 0;
+#if USE_OBSOLETE_HACK
+	speak_delay_frames = 0;
+#endif
+	if (irq_func) irq_func(0);
 	buffer_empty = buffer_low = 1;
 
-    /* initialize the energy/pitch/k states */
-    old_energy = new_energy = current_energy = target_energy = 0;
-    old_pitch = new_pitch = current_pitch = target_pitch = 0;
-    memset(old_k, 0, sizeof(old_k));
-    memset(new_k, 0, sizeof(new_k));
-    memset(current_k, 0, sizeof(current_k));
-    memset(target_k, 0, sizeof(target_k));
+	RDB_flag = FALSE;
 
-    /* initialize the sample generators */
-    interp_count = sample_count = pitch_count = 0;
-    randbit = 0;
-    memset(u, 0, sizeof(u));
-    memset(x, 0, sizeof(x));
+	/* initialize the energy/pitch/k states */
+	old_energy = new_energy = current_energy = target_energy = 0;
+	old_pitch = new_pitch = current_pitch = target_pitch = 0;
+	memset(old_k, 0, sizeof(old_k));
+	memset(new_k, 0, sizeof(new_k));
+	memset(current_k, 0, sizeof(current_k));
+	memset(target_k, 0, sizeof(target_k));
+
+	/* initialize the sample generators */
+	interp_count = sample_count = pitch_count = 0;
+	randbit = 0;
+	memset(u, 0, sizeof(u));
+	memset(x, 0, sizeof(x));
+
+	if (load_address_callback)
+		(*load_address_callback)(0);
+
+	schedule_dummy_read = TRUE;
 }
 
 
 
 /**********************************************************************************************
 
-     tms5220_reset -- reset the TMS5220
+     tms5220_set_irq -- sets the interrupt handler
 
 ***********************************************************************************************/
 
 void tms5220_set_irq(void (*func)(int))
 {
     irq_func = func;
+}
+
+
+/**********************************************************************************************
+
+     tms5220_set_read -- sets the speech ROM read handler
+
+***********************************************************************************************/
+
+void tms5220_set_read(int (*func)(int))
+{
+	read_callback = func;
+}
+
+
+/**********************************************************************************************
+
+     tms5220_set_load_address -- sets the speech ROM load address handler
+
+***********************************************************************************************/
+
+void tms5220_set_load_address(void (*func)(int))
+{
+	load_address_callback = func;
+}
+
+
+/**********************************************************************************************
+
+     tms5220_set_read_and_branch -- sets the speech ROM read and branch handler
+
+***********************************************************************************************/
+
+void tms5220_set_read_and_branch(void (*func)(void))
+{
+	read_and_branch_callback = func;
 }
 
 
@@ -153,12 +241,16 @@ void tms5220_data_write(int data)
 
     /* update the buffer low state */
     check_buffer_low();
+
+	if (! speak_external)
+		/* R Nabet : we parse commands at once.  It is necessary for such commands as read. */
+		process_command (/*data*/);
 }
 
 
 /**********************************************************************************************
 
-     tms5220_status_read -- read status from the TMS5220
+     tms5220_status_read -- read status or data from the TMS5220
 
 	  From the data sheet:
         bit 0 = TS - Talk Status is active (high) when the VSP is processing speech data.
@@ -181,12 +273,21 @@ void tms5220_data_write(int data)
 
 int tms5220_status_read(void)
 {
-    /* clear the interrupt pin */
-    set_interrupt_state(0);
+	if (RDB_flag)
+	{	/* if last command was read, return data register */
+		RDB_flag = FALSE;
+		return(data_register);
+	}
+	else
+	{	/* read status */
 
-    if (DEBUG_5220) logerror("Status read: TS=%d BL=%d BE=%d\n", talk_status, buffer_low, buffer_empty);
+		/* clear the interrupt pin */
+		set_interrupt_state(0);
 
-    return (talk_status << 7) | (buffer_low << 6) | (buffer_empty << 5);
+		if (DEBUG_5220) logerror("Status read: TS=%d BL=%d BE=%d\n", talk_status, buffer_low, buffer_empty);
+
+		return (talk_status << 7) | (buffer_low << 6) | (buffer_empty << 5);
+	}
 }
 
 
@@ -202,6 +303,46 @@ int tms5220_ready_read(void)
     return (fifo_count < FIFO_SIZE-1);
 }
 
+
+/**********************************************************************************************
+
+     tms5220_ready_read -- returns the number of cycles until ready is asserted
+
+***********************************************************************************************/
+
+int tms5220_cycles_to_ready(void)
+{
+	int answer;
+
+
+	if (tms5220_ready_read())
+		answer = 0;
+	else
+	{
+		int val;
+
+		answer = 200-sample_count;
+
+		/* total number of bits available in current byte is (8 - fifo_bits_taken) */
+		/* if more than 4 are available, we need to check the energy */
+		if (fifo_bits_taken < 4)
+		{
+			/* read energy */
+			val = (fifo[fifo_head] >> fifo_bits_taken) & 0xf;
+			if (val == 0)
+				/* 0 -> silence frame: we will only read 4 bits, and we will
+				therefore need to read another frame before the FIFO is not
+				full any more */
+				answer += 200;
+			/* 15 -> stop frame, we will only read 4 bits, but the FIFO will
+			we cleared */
+			/* otherwise, we need to parse the repeat flag (1 bit) and the
+			pitch (6 bits), so everything will be OK. */
+		}
+	}
+
+	return answer;
+}
 
 
 /**********************************************************************************************
@@ -231,25 +372,40 @@ void tms5220_process(INT16 *buffer, unsigned int size)
 tryagain:
 
     /* if we're not speaking, parse commands */
-    while (!speak_external && fifo_count > 0)
-        process_command();
+	/*while (!speak_external && fifo_count > 0)
+		process_command();*/
 
     /* if we're empty and still not speaking, fill with nothingness */
-    if (!speak_external)
+	if ((!tms5220_speaking) && (!last_frame))
         goto empty;
 
     /* if we're to speak, but haven't started, wait for the 9th byte */
-    if (!talk_status)
+	if (!talk_status && speak_external)
     {
         if (fifo_count < 9)
            goto empty;
 
-        /* parse but don't remove the first frame, and set the status to 1 */
-        parse_frame(0);
         talk_status = 1;
-        buffer_empty = 0;
-    }
+		first_frame = 1;	/* will cause the first frame to be parsed */
+		buffer_empty = 0;
+	}
 
+#if 0
+	/* we are to speak, yet we fill with 0s until start of next frame */
+	if (first_frame)
+	{
+		while ((size > 0) && ((sample_count != 0) || (interp_count != 0)))
+		{
+			sample_count = (sample_count + 1) % 200;
+			interp_count = (interp_count + 1) % 25;
+			buffer[buf_count] = 0x00;	/* should be (-1 << 8) ??? (cf note in data sheet, p 10, table 4) */
+			buf_count++;
+			size--;
+		}
+	}
+#endif
+
+#if USE_OBSOLETE_HACK
     /* apply some delay before we actually consume data; Victory requires this */
     if (speak_delay_frames)
     {
@@ -264,9 +420,10 @@ tryagain:
     		speak_delay_frames = 0;
     	}
     }
+#endif
 
     /* loop until the buffer is full or we've stopped speaking */
-    while ((size > 0) && speak_external)
+	while ((size > 0) && talk_status)
     {
         int current_val;
 
@@ -274,8 +431,9 @@ tryagain:
         if ((interp_count == 0) && (sample_count == 0))
         {
             /* Parse a new frame */
-            if (!parse_frame(1))
-                break;
+			if (!parse_frame(first_frame))
+				break;
+			first_frame = 0;
 
             /* Set old target as new start of frame */
             current_energy = old_energy;
@@ -299,11 +457,19 @@ tryagain:
                 /*printf("processing frame: stop frame\n");*/
                 current_energy = energytable[0] >> 6;
                 target_energy = current_energy;
-                speak_external = talk_status = 0;
-                interp_count = sample_count = pitch_count = 0;
+				/*interp_count = sample_count =*/ pitch_count = 0;
+				last_frame = 0;
+				if (tms5220_speaking)
+					/* new speech command in progress */
+					first_frame = 1;
+				else
+				{
+					/* really stop speaking */
+					talk_status = 0;
 
-                /* generate an interrupt if necessary */
-                set_interrupt_state(1);
+					/* generate an interrupt if necessary */
+					set_interrupt_state(1);
+				}
 
                 /* try to fetch commands again */
                 goto tryagain;
@@ -422,7 +588,9 @@ empty:
 
     while (size > 0)
     {
-        buffer[buf_count] = 0x00;
+		sample_count = (sample_count + 1) % 200;
+		interp_count = (interp_count + 1) % 25;
+		buffer[buf_count] = 0x00;	/* should be (-1 << 8) ??? (cf note in data sheet, p 10, table 4) */
         buf_count++;
         size--;
     }
@@ -441,9 +609,9 @@ static void process_command(void)
     unsigned char cmd;
 
     /* if there are stray bits, ignore them */
-    if (bits_taken)
-    {
-        bits_taken = 0;
+	if (fifo_bits_taken)
+	{
+		fifo_bits_taken = 0;
         fifo_count--;
         fifo_head = (fifo_head + 1) % FIFO_SIZE;
     }
@@ -451,15 +619,63 @@ static void process_command(void)
     /* grab a full byte from the FIFO */
     if (fifo_count > 0)
     {
-        cmd = fifo[fifo_head] & 0x70;
-        fifo_count--;
-        fifo_head = (fifo_head + 1) % FIFO_SIZE;
+		cmd = fifo[fifo_head];
+		fifo_count--;
+		fifo_head = (fifo_head + 1) % FIFO_SIZE;
 
-        /* only real command we handle now is speak external */
-        if (cmd == 0x60)
-        {
-            speak_external = 1;
+		/* parse the command */
+		switch (cmd & 0x70)
+		{
+		case 0x10 : /* read byte */
+			if (schedule_dummy_read)
+			{
+				schedule_dummy_read = FALSE;
+				if (read_callback)
+					(*read_callback)(1);
+			}
+			if (read_callback)
+				data_register = (*read_callback)(8);	/* read one byte from speech ROM... */
+			RDB_flag = TRUE;
+			break;
+
+		case 0x30 : /* read and branch */
+			if (DEBUG_5220) logerror("read and branch command received\n");
+			RDB_flag = FALSE;
+			if (read_and_branch_callback)
+				(*read_and_branch_callback)();
+			break;
+
+		case 0x40 : /* load address */
+			/* tms5220 data sheet says that if we load only one 4-bit nibble, it won't work.
+			  This code does not care about this. */
+			if (load_address_callback)
+				(*load_address_callback)(cmd & 0x0f);
+			schedule_dummy_read = TRUE;
+			break;
+
+		case 0x50 : /* speak */
+			if (schedule_dummy_read)
+			{
+				schedule_dummy_read = FALSE;
+				if (read_callback)
+					(*read_callback)(1);
+			}
+			tms5220_speaking = 1;
+			speak_external = 0;
+			if (! last_frame)
+			{
+				first_frame = 1;
+			}
+			talk_status = 1;  /* start immediately */
+			break;
+
+		case 0x60 : /* speak external */
+			tms5220_speaking = speak_external = 1;
+#if USE_OBSOLETE_HACK
             speak_delay_frames = 10;
+#endif
+
+			RDB_flag = FALSE;
 
             /* according to the datasheet, this will cause an interrupt due to a BE condition */
             if (!buffer_empty)
@@ -467,6 +683,19 @@ static void process_command(void)
                 buffer_empty = 1;
                 set_interrupt_state(1);
             }
+
+			talk_status = 0;	/* wait to have 8 bytes in buffer before starting */
+			break;
+
+		case 0x70 : /* reset */
+			if (schedule_dummy_read)
+			{
+				schedule_dummy_read = FALSE;
+				if (read_callback)
+					(*read_callback)(1);
+			}
+			tms5220_reset();
+			break;
         }
     }
 
@@ -486,17 +715,28 @@ static int extract_bits(int count)
 {
     int val = 0;
 
-    while (count--)
-    {
-        val = (val << 1) | ((fifo[fifo_head] >> bits_taken) & 1);
-        bits_taken++;
-        if (bits_taken >= 8)
-        {
-            fifo_count--;
-            fifo_head = (fifo_head + 1) % FIFO_SIZE;
-            bits_taken = 0;
-        }
+	if (speak_external)
+	{
+		/* extract from FIFO */
+    	while (count--)
+    	{
+        	val = (val << 1) | ((fifo[fifo_head] >> fifo_bits_taken) & 1);
+        	fifo_bits_taken++;
+        	if (fifo_bits_taken >= 8)
+        	{
+        	    fifo_count--;
+        	    fifo_head = (fifo_head + 1) % FIFO_SIZE;
+        	    fifo_bits_taken = 0;
+        	}
+    	}
     }
+	else
+	{
+		/* extract from speech ROM */
+		if (read_callback)
+			val = (* read_callback)(count);
+	}
+
     return val;
 }
 
@@ -508,16 +748,19 @@ static int extract_bits(int count)
 
 ***********************************************************************************************/
 
-static int parse_frame(int removeit)
+static int parse_frame(int the_first_frame)
 {
-    int old_head, old_taken, old_count;
-    int bits, indx, i, rep_flag;
+	int bits = 0;	/* number of bits in FIFO (speak external only) */
+	int indx, i, rep_flag;
 
+	if (! the_first_frame)
+	{
     /* remember previous frame */
     old_energy = new_energy;
     old_pitch = new_pitch;
     for (i = 0; i < 10; i++)
         old_k[i] = new_k[i];
+	}
 
     /* clear out the new frame */
     new_energy = 0;
@@ -526,24 +769,24 @@ static int parse_frame(int removeit)
         new_k[i] = 0;
 
     /* if the previous frame was a stop frame, don't do anything */
-    if (old_energy == (energytable[15] >> 6))
+	if ((! the_first_frame) && (old_energy == (energytable[15] >> 6)))
+		/*return 1;*/
 	{
 		buffer_empty = 1;
 		return 1;
 	}
 
-    /* remember the original FIFO counts, in case we don't have enough bits */
-    old_count = fifo_count;
-    old_head = fifo_head;
-    old_taken = bits_taken;
-
-    /* count the total number of bits available */
-    bits = fifo_count * 8 - bits_taken;
+	if (speak_external)
+    	/* count the total number of bits available */
+		bits = fifo_count * 8 - fifo_bits_taken;
 
     /* attempt to extract the energy index */
+	if (speak_external)
+	{
     bits -= 4;
     if (bits < 0)
         goto ranout;
+	}
     indx = extract_bits(4);
     new_energy = energytable[indx] >> 6;
 
@@ -555,22 +798,29 @@ static int parse_frame(int removeit)
 		/* clear fifo if stop frame encountered */
 		if (indx == 15)
 		{
-			fifo_head = fifo_tail = fifo_count = bits_taken = 0;
-			removeit = 1;
+			fifo_head = fifo_tail = fifo_count = fifo_bits_taken = 0;
+			speak_external = tms5220_speaking = 0;
+			last_frame = 1;
 		}
 		goto done;
 	}
 
     /* attempt to extract the repeat flag */
+	if (speak_external)
+	{
     bits -= 1;
     if (bits < 0)
         goto ranout;
+	}
     rep_flag = extract_bits(1);
 
     /* attempt to extract the pitch */
+	if (speak_external)
+	{
     bits -= 6;
     if (bits < 0)
         goto ranout;
+	}
     indx = extract_bits(6);
     new_pitch = pitchtable[indx] / 256;
 
@@ -588,9 +838,12 @@ static int parse_frame(int removeit)
     if (indx == 0)
     {
         /* attempt to extract 4 K's */
+		if (speak_external)
+		{
         bits -= 18;
         if (bits < 0)
             goto ranout;
+		}
         new_k[0] = k1table[extract_bits(5)];
         new_k[1] = k2table[extract_bits(5)];
         new_k[2] = k3table[extract_bits(4)];
@@ -601,9 +854,12 @@ static int parse_frame(int removeit)
     }
 
     /* else we need 10 K's */
+	if (speak_external)
+	{
     bits -= 39;
     if (bits < 0)
         goto ranout;
+	}
     new_k[0] = k1table[extract_bits(5)];
     new_k[1] = k2table[extract_bits(5)];
     new_k[2] = k3table[extract_bits(4)];
@@ -618,15 +874,21 @@ static int parse_frame(int removeit)
     if (DEBUG_5220) logerror("  (50-bit energy=%d pitch=%d rep=%d 10K frame)\n", new_energy, new_pitch, rep_flag);
 
 done:
+	if (DEBUG_5220)
+	{
+		if (speak_external)
+			logerror("Parsed a frame successfully in FIFO - %d bits remaining\n", bits);
+		else
+			logerror("Parsed a frame successfully in ROM\n");
+	}
 
-    if (DEBUG_5220) logerror("Parsed a frame successfully - %d bits remaining\n", bits);
-
-    /* if we're not to remove this one, restore the FIFO */
-    if (!removeit)
-    {
-        fifo_count = old_count;
-        fifo_head = old_head;
-        bits_taken = old_taken;
+	if (the_first_frame)
+	{
+		/* if this is the first frame, no previous frame to take as a starting point */
+		old_energy = new_energy;
+		old_pitch = new_pitch;
+		for (i = 0; i < 10; i++)
+			old_k[i] = new_k[i];
     }
 
     /* update the buffer_low status */
@@ -639,8 +901,10 @@ ranout:
 
     /* this is an error condition; mark the buffer empty and turn off speaking */
     buffer_empty = 1;
-    talk_status = speak_external = 0;
+	talk_status = speak_external = tms5220_speaking = the_first_frame = last_frame = 0;
     fifo_count = fifo_head = fifo_tail = 0;
+
+	RDB_flag = FALSE;
 
     /* generate an interrupt if necessary */
     set_interrupt_state(1);

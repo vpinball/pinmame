@@ -48,7 +48,7 @@
  */
 
 
-char* g_version = "3.3";
+const char* g_version = "3.3";
 
 /* ======================================================================== */
 /* =============================== INCLUDES =============================== */
@@ -184,8 +184,8 @@ typedef struct
 /* All modifications necessary for a specific EA mode of an instruction */
 typedef struct
 {
-	char* fname_add;
-	char* ea_add;
+	const char* fname_add;
+	const char* ea_add;
 	unsigned int mask_add;
 	unsigned int match_add;
 } ea_info_struct;
@@ -208,8 +208,8 @@ typedef struct
 
 
 /* Function Prototypes */
-void error_exit(char* fmt, ...);
-void perror_exit(char* fmt, ...);
+void error_exit(const char* fmt, ...);
+void perror_exit(const char* fmt, ...);
 int check_strsncpy(char* dst, char* src, int maxlength);
 int check_atoi(char* str, int *result);
 int skip_spaces(char* str);
@@ -220,7 +220,7 @@ int get_oper_cycles(opcode_struct* op, int ea_mode, int cpu_type);
 opcode_struct* find_opcode(char* name, int size, char* spec_proc, char* spec_ea);
 opcode_struct* find_illegal_opcode(void);
 int extract_opcode_info(char* src, char* name, int* size, char* spec_proc, char* spec_ea);
-void add_replace_string(replace_struct* replace, char* search_str, char* replace_str);
+void add_replace_string(replace_struct* replace, const char* search_str, const char* replace_str);
 void write_body(FILE* filep, body_struct* body, replace_struct* replace);
 void get_base_name(char* base_name, opcode_struct* op);
 void write_prototype(FILE* filep, char* base_name);
@@ -282,7 +282,7 @@ ea_info_struct g_ea_info_table[13] =
 };
 
 
-char* g_cc_table[16][2] =
+const char* g_cc_table[16][2] =
 {
 	{ "t",  "T"}, /* 0000 */
 	{ "f",  "F"}, /* 0001 */
@@ -444,7 +444,7 @@ int g_clr_cycle_table[13][3] =
 /* ======================================================================== */
 
 /* Print an error message and exit with status error */
-void error_exit(char* fmt, ...)
+void error_exit(const char* fmt, ...)
 {
 	va_list args;
 	fprintf(stderr, "In %s, near or on line %d:\n\t", g_input_filename, g_line_number);
@@ -464,7 +464,7 @@ void error_exit(char* fmt, ...)
 }
 
 /* Print an error message, call perror(), and exit with status error */
-void perror_exit(char* fmt, ...)
+void perror_exit(const char* fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
@@ -701,7 +701,7 @@ int extract_opcode_info(char* src, char* name, int* size, char* spec_proc, char*
 
 
 /* Add a search/replace pair to a replace structure */
-void add_replace_string(replace_struct* replace, char* search_str, char* replace_str)
+void add_replace_string(replace_struct* replace, const char* search_str, const char* replace_str)
 {
 	if(replace->length >= MAX_REPLACE_LENGTH)
 		error_exit("overflow in replace structure");

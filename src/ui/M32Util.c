@@ -1,7 +1,7 @@
 /***************************************************************************
 
   M.A.M.E.32	-  Multiple Arcade Machine Emulator for Win32
-  Win32 Portions Copyright (C) 1997-2001 Michael Soderstrom and Chris Kirmse
+  Win32 Portions Copyright (C) 1997-2003 Michael Soderstrom and Chris Kirmse
 
   This file is part of MAME32, and may only be used, modified and
   distributed under the terms of the MAME license, in "readme.txt".
@@ -19,8 +19,10 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <shellapi.h>
+#include <shlwapi.h>
 #include <assert.h>
 #include <stdio.h>
+#include "unzip.h"
 #include "MAME32.h"
 #include "M32Util.h"
 
@@ -32,8 +34,6 @@
 	External variables
  ***************************************************************************/
 
-BOOL bErrorMsgBox = TRUE;
-
 /***************************************************************************
 	Internal structures
  ***************************************************************************/
@@ -41,6 +41,13 @@ BOOL bErrorMsgBox = TRUE;
 /***************************************************************************
 	Internal variables
  ***************************************************************************/
+#ifndef PATH_SEPARATOR
+#ifdef _MSC_VER
+#define PATH_SEPARATOR '\\'
+#else
+#define PATH_SEPARATOR '/'
+#endif
+#endif
 
 
 /***************************************************************************
@@ -55,44 +62,41 @@ void __cdecl ErrorMsg(const char* fmt, ...)
 	static FILE*	pFile = NULL;
 	DWORD			dwWritten;
 	char			buf[5000];
+	char			buf2[5000];
 	va_list 		va;
 
 	va_start(va, fmt);
 
-	if (bErrorMsgBox == TRUE)
-	{
-		wvsprintf(buf, fmt, va);
-		MessageBox(GetActiveWindow(), buf, MAME32NAME, MB_OK | MB_ICONERROR);
-	}
+	vsprintf(buf, fmt, va);
 
-	lstrcat(buf, MAME32NAME ": ");
+	MessageBox(GetActiveWindow(), buf, MAME32NAME, MB_OK | MB_ICONERROR);
 
-	wvsprintf(&buf[lstrlen(buf)], fmt, va);
-	lstrcat(buf, "\n");
+	strcpy(buf2, MAME32NAME ": ");
+	strcat(buf2,buf);
+	strcat(buf2, "\n");
 
-	OutputDebugString(buf);
-
-	WriteFile(GetStdHandle(STD_OUTPUT_HANDLE), buf, strlen(buf), &dwWritten, NULL);
+	WriteFile(GetStdHandle(STD_OUTPUT_HANDLE), buf2, strlen(buf2), &dwWritten, NULL);
 
 	if (pFile == NULL)
 		pFile = fopen("debug.txt", "wt");
+
 	if (pFile != NULL)
-		fprintf(pFile, buf);
+	{
+		fprintf(pFile, "%s", buf2);
+		fflush(pFile);
+	}
 
 	va_end(va);
 }
 
-void __cdecl TraceMsg(const char* fmt, ...)
+void __cdecl dprintf(const char* fmt, ...)
 {
 	char	buf[5000];
 	va_list va;
 
 	va_start(va, fmt);
 
-	lstrcat(buf, MAME32NAME ": ");
-
-	wvsprintf(&buf[lstrlen(buf)], fmt, va);
-	lstrcat(buf, "\n");
+	_vsnprintf(buf,sizeof(buf),fmt,va);
 
 	OutputDebugString(buf);
 
@@ -113,24 +117,11 @@ UINT GetDepth(HWND hWnd)
 	return nBPP;
 }
 
-BOOL OnNT()
-{
-	OSVERSIONINFO version_info;
-
-	version_info.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	GetVersionEx(&version_info);
-
-	if (version_info.dwPlatformId == VER_PLATFORM_WIN32_NT)
-		return TRUE;
-	else
-		return FALSE;
-}
-
 /*
  * Return TRUE if comctl32.dll is version 4.71 or greater
  * otherwise return FALSE.
  */
-BOOL GetDllVersion()
+LONG GetCommonControlVersion()
 {
 	HMODULE hModule = GetModuleHandle("comctl32");
 
@@ -145,24 +136,46 @@ BOOL GetDllVersion()
 			if (NULL != lpfnDLLI) 
 			{
 				/* comctl 4.71 or greater */
-				return TRUE;
+
+				// see if we can find out exactly
+				
+				DLLGETVERSIONPROC pDllGetVersion;
+				pDllGetVersion = (DLLGETVERSIONPROC)GetProcAddress(hModule, "DllGetVersion");
+
+				/* Because some DLLs might not implement this function, you
+				   must test for it explicitly. Depending on the particular 
+				   DLL, the lack of a DllGetVersion function can be a useful
+				   indicator of the version. */
+
+				if(pDllGetVersion)
+				{
+					DLLVERSIONINFO dvi;
+					HRESULT hr;
+
+					ZeroMemory(&dvi, sizeof(dvi));
+					dvi.cbSize = sizeof(dvi);
+
+					hr = (*pDllGetVersion)(&dvi);
+
+					if (SUCCEEDED(hr))
+					{
+						return PACKVERSION(dvi.dwMajorVersion, dvi.dwMinorVersion);
+					}
+				}
+				return PACKVERSION(4,71);
 			}
-			/* comctl 4.7 - fall through
-			 * return FALSE;
-			 */
+			return PACKVERSION(4,7);
 		}
-		/* comctl 4.0 - fall through
-		 * return FALSE;
-		 */
+		return PACKVERSION(4,0);
 	}
 	/* DLL not found */
-	return FALSE;
+	return PACKVERSION(0,0);
 }
 
-void DisplayTextFile(HWND hWnd, char *cName)
+void DisplayTextFile(HWND hWnd, const char *cName)
 {
 	HINSTANCE hErr;
-	char	  *msg = 0;
+	const char	  *msg = 0;
 
 	hErr = ShellExecute(hWnd, NULL, cName, NULL, NULL, SW_SHOWNORMAL);
 	if ((int)hErr > 32)
@@ -221,6 +234,220 @@ char* MyStrStrI(const char* pFirst, const char* pSrch)
 		cp++;
 	}
 	return NULL;
+}
+
+char * ConvertToWindowsNewlines(const char *source)
+{
+	static char buf[9000];
+	char *dest;
+
+	dest = buf;
+	while (*source != 0)
+	{
+		if (*source == '\n')
+		{
+			*dest++ = '\r';
+			*dest++ = '\n';
+		}
+		else
+			*dest++ = *source;
+		source++;
+	}
+	*dest = 0;
+	return buf;
+}
+
+/* Lop off path and extention from a source file name
+ * This assumes their is a pathname passed to the function
+ * like src\drivers\blah.c
+ */
+const char * GetDriverFilename(int nIndex)
+{
+    static char tmp[40];
+    char *ptmp;
+
+	const char *s = drivers[nIndex]->source_file;
+
+    tmp[0] = '\0';
+
+	ptmp = strrchr(s, '\\');
+	if (ptmp == NULL)
+		ptmp = strrchr(s, '/');
+    if (ptmp == NULL)
+		return s;
+
+	ptmp++;
+	strcpy(tmp,ptmp);
+	return tmp;
+}
+
+BOOL DriverIsClone(int driver_index)
+{
+	return (drivers[driver_index]->clone_of->flags & NOT_A_DRIVER) == 0;
+}
+
+BOOL DriverIsBroken(int driver_index)
+{
+	return (drivers[driver_index]->flags & (GAME_NOT_WORKING | GAME_UNEMULATED_PROTECTION)) != 0;
+}
+
+BOOL DriverIsHarddisk(int driver_index)
+{
+	const struct RomModule *region;
+
+	const struct GameDriver *gamedrv = drivers[driver_index];
+
+	for (region = rom_first_region(gamedrv); region; region = rom_next_region(region))
+		if (ROMREGION_ISDISKDATA(region))
+			return TRUE;
+
+	return FALSE;	
+}
+
+BOOL DriverHasOptionalBIOS(int driver_index)
+{
+	const struct RomModule *region, *rom;
+
+	const struct GameDriver *gamedrv = drivers[driver_index];
+
+	for (region = rom_first_region(gamedrv); region; region = rom_next_region(region))
+		if (ROMREGION_ISROMDATA(region))
+		{
+			for (rom=rom_first_file(region);rom;rom=rom_next_file(rom))
+			{
+				//dprintf("%s %i %i",ROM_GETNAME(rom),ROM_GETFLAGS(rom),ROM_BIOSFLAGS(rom));
+				if (ROM_GETBIOSFLAGS(rom) != 0)
+					return TRUE;
+			}
+		}
+
+	return FALSE;	
+}
+
+BOOL DriverIsStereo(int driver_index)
+{
+    struct InternalMachineDriver drv;
+    expand_machine_driver(drivers[driver_index]->drv, &drv);
+	return (drv.sound_attributes & SOUND_SUPPORTS_STEREO) != 0;
+}
+
+BOOL DriverIsVector(int driver_index)
+{
+    struct InternalMachineDriver drv;
+    expand_machine_driver(drivers[driver_index]->drv, &drv);
+	return (drv.video_attributes & VIDEO_TYPE_VECTOR) != 0;
+}
+
+BOOL DriverUsesSamples(int driver_index)
+{
+#if (HAS_SAMPLES == 1) || (HAS_VLM5030 == 1)
+
+	int i;
+    struct InternalMachineDriver drv;
+
+	expand_machine_driver(drivers[driver_index]->drv,&drv);
+
+	for (i = 0; drv.sound[i].sound_type && i < MAX_SOUND; i++)
+	{
+		const char **samplenames = NULL;
+
+#if (HAS_SAMPLES == 1)
+		if (drv.sound[i].sound_type == SOUND_SAMPLES)
+			samplenames = ((struct Samplesinterface *)drv.sound[i].sound_interface)->samplenames;
+#endif
+
+        /*
+#if (HAS_VLM5030 == 1)
+		if (drv.sound[i].sound_type == SOUND_VLM5030)
+			samplenames = ((struct VLM5030interface *)drv.sound[i].sound_interface)->samplenames;
+#endif
+        */
+		if (samplenames != 0 && samplenames[0] != 0)
+			return TRUE;
+	}
+
+#endif
+
+	return FALSE;
+}
+
+BOOL DriverUsesTrackball(int driver_index)
+{
+    const struct InputPortTiny *input_ports;
+
+	if (drivers[driver_index]->input_ports == NULL)
+        return FALSE;
+
+    input_ports = drivers[driver_index]->input_ports;
+
+	while (1)
+    {
+        UINT32 type;
+
+        type = input_ports->type;
+
+        if (type == IPT_END)
+            break;
+
+        type &= ~IPF_MASK;
+        
+        if (type == IPT_DIAL || type == IPT_PADDLE || 
+			type == IPT_TRACKBALL_X || type == IPT_TRACKBALL_Y ||
+            type == IPT_AD_STICK_X || type == IPT_AD_STICK_Y)
+        {
+            return TRUE;
+        }
+        
+        input_ports++;
+    }
+
+    return FALSE;
+}
+
+BOOL DriverUsesLightGun(int driver_index)
+{
+    const struct InputPortTiny *input_ports;
+
+	if (drivers[driver_index]->input_ports == NULL)
+        return FALSE;
+
+    input_ports = drivers[driver_index]->input_ports;
+
+	while (1)
+    {
+        UINT32 type;
+
+        type = input_ports->type;
+
+        if (type == IPT_END)
+			break;
+
+		type &= ~IPF_MASK;
+        
+		if (type == IPT_LIGHTGUN_X || type == IPT_LIGHTGUN_Y)
+            return TRUE;
+        
+        input_ports++;
+    }
+
+    return FALSE;
+}
+
+void FlushFileCaches(void)
+{
+	unzip_cache_clear();
+}
+
+void FreeIfAllocated(char **s)
+{
+	if (*s)
+		free(*s);
+	*s = NULL;
+}
+
+BOOL StringIsSuffixedBy(const char *s, const char *suffix)
+{
+	return (strlen(s) > strlen(suffix)) && (strcmp(s + strlen(s) - strlen(suffix), suffix) == 0);
 }
 
 /***************************************************************************

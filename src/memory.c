@@ -151,7 +151,10 @@ offs_t						mem_amask;						/* memory address mask */
 static offs_t				port_amask;						/* port address mask */
 
 UINT8 *						cpu_bankbase[STATIC_COUNT];		/* array of bank bases */
+int ext_entries = 0;										/* number of entries ext_memory[] entries used */
 struct ExtMemory			ext_memory[MAX_EXT_MEMORY];		/* externally-allocated memory */
+
+static data32_t				unmap_value;					/* unmapped memory value */
 
 static opbase_handler		opbasefunc;						/* opcode base override */
 
@@ -225,6 +228,7 @@ int memory_init(void)
 
 	/* no current context to start */
 	cur_context = -1;
+	unmap_value = 0;
 
 	/* init the static handlers */
 	if (!init_static())
@@ -268,6 +272,7 @@ int memory_init(void)
 void memory_shutdown(void)
 {
 	struct ExtMemory *ext;
+	int ext_entry;
 	int cpunum;
 
 	/* free all the tables */
@@ -285,9 +290,14 @@ void memory_shutdown(void)
 	memset(&cpudata, 0, sizeof(cpudata));
 
 	/* free all the external memory */
-	for (ext = ext_memory; ext->data; ext++)
+	ext = ext_memory;
+	for( ext_entry = 0; ext_entry < ext_entries; ext_entry++ )
+	{
 		free(ext->data);
+		ext++;
+	}
 	memset(ext_memory, 0, sizeof(ext_memory));
+	ext_entries = 0;
 }
 
 
@@ -341,6 +351,17 @@ void memory_set_context(int activecpu)
 	port_amask = cpudata[activecpu].port.mask;
 
 	opbasefunc = cpudata[activecpu].opbase;
+}
+
+
+/*-------------------------------------------------
+	memory_set_unmap_value - set the unmapped
+	memory value
+-------------------------------------------------*/
+
+void memory_set_unmap_value(data32_t value)
+{
+	unmap_value = value;
 }
 
 
@@ -696,6 +717,7 @@ int CLIB_DECL fatalerror(const char *string, ...)
 	va_start(arg, string);
 	vprintf(string, arg);
 	va_end(arg);
+	exit(1);
 	return 0;
 }
 
@@ -708,15 +730,76 @@ int CLIB_DECL fatalerror(const char *string, ...)
 
 void *memory_find_base(int cpunum, offs_t offset)
 {
+	int ext_entry;
 	int region = REGION_CPU1 + cpunum;
 	struct ExtMemory *ext;
 
 	/* look in external memory first */
-	for (ext = ext_memory; ext->data; ext++)
+	ext = ext_memory;
+	for( ext_entry = 0; ext_entry < ext_entries; ext_entry++ )
+	{
 		if (ext->region == region && ext->start <= offset && ext->end >= offset)
+		{
 			return (void *)((UINT8 *)ext->data + (offset - ext->start));
+		}
+		ext++;
+	}
 
 	return (UINT8 *)cpudata[cpunum].rambase + offset;
+}
+
+
+/*-------------------------------------------------
+	memory_get_read_ptr - return a pointer to the
+	base of RAM associated with the given CPU
+	and offset
+-------------------------------------------------*/
+
+void *memory_get_read_ptr(int cpunum, offs_t offset)
+{
+	struct memport_data *memport = &cpudata[cpunum].mem;
+	struct handler_data *handlist = (memport->dbits == 32) ? rmemhandler32 : (memport->dbits == 16) ? rmemhandler16 : rmemhandler8;
+	UINT8 minbits = memport->abits - memport->ebits;
+	UINT8 entry;
+
+	/* perform the lookup */
+	offset &= memport->mask;
+	entry = memport->read.table[LEVEL1_INDEX(offset, memport->abits, minbits)];
+	if (entry >= SUBTABLE_BASE)
+		entry = memport->read.table[LEVEL2_INDEX(entry, offset, memport->abits, minbits)];
+
+	/* 8-bit case: RAM/ROM/RAMROM */
+	if (entry > STATIC_RAM || (minbits == 0 && entry != STATIC_RAM))
+		return NULL;
+	offset -= handlist[entry].offset;
+	return &cpu_bankbase[entry][offset];
+}
+
+
+/*-------------------------------------------------
+	memory_get_write_ptr - return a pointer to the
+	base of RAM associated with the given CPU
+	and offset
+-------------------------------------------------*/
+
+void *memory_get_write_ptr(int cpunum, offs_t offset)
+{
+	struct memport_data *memport = &cpudata[cpunum].mem;
+	struct handler_data *handlist = (memport->dbits == 32) ? wmemhandler32 : (memport->dbits == 16) ? wmemhandler16 : wmemhandler8;
+	UINT8 minbits = memport->abits - memport->ebits;
+	UINT8 entry;
+
+	/* perform the lookup */
+	offset &= memport->mask;
+	entry = memport->write.table[LEVEL1_INDEX(offset, memport->abits, minbits)];
+	if (entry >= SUBTABLE_BASE)
+		entry = memport->write.table[LEVEL2_INDEX(entry, offset, memport->abits, minbits)];
+
+	/* 8-bit case: RAM/ROM/RAMROM */
+	if (entry > STATIC_RAM || (minbits == 0 && entry != STATIC_RAM))
+		return NULL;
+	offset -= handlist[entry].offset;
+	return &cpu_bankbase[entry][offset];
 }
 
 
@@ -974,7 +1057,7 @@ static int init_cpudata(void)
 	/* loop over CPUs */
 	for (cpunum = 0; cpunum < cpu_gettotalcpu(); cpunum++)
 	{
-		int cputype = Machine->drv->cpu[cpunum].cpu_type & ~CPU_FLAGS_MASK;
+		int cputype = Machine->drv->cpu[cpunum].cpu_type;
 
 		/* set the RAM/ROM base */
 		cpudata[cpunum].rambase = cpudata[cpunum].op_ram = cpudata[cpunum].op_rom = memory_region(REGION_CPU1 + cpunum);
@@ -994,21 +1077,21 @@ static int init_cpudata(void)
 #if HAS_Z80
 		/* Z80 port mask kludge */
 		if (cputype == CPU_Z80)
-			if (!(Machine->drv->cpu[cpunum].cpu_type & CPU_16BIT_PORT))
+			if (!(Machine->drv->cpu[cpunum].cpu_flags & CPU_16BIT_PORT))
 				cpudata[cpunum].port.mask = 0xff;
 #endif
 #ifdef MESS
 #if HAS_Z80_MSX
 		 /* Z80_MSX port mask kludge */
 		 if (cputype == CPU_Z80_MSX)
-			 if (!(Machine->drv->cpu[cpunum].cpu_type & CPU_16BIT_PORT))
+			 if (!(Machine->drv->cpu[cpunum].cpu_flags & CPU_16BIT_PORT))
 				 cpudata[cpunum].port.mask = 0xff;
 #endif
 #endif
 #if HAS_Z180
 		/* Z180 port mask kludge */
 		if (cputype == CPU_Z180)
-			if (!(Machine->drv->cpu[cpunum].cpu_type & CPU_16BIT_PORT))
+			if (!(Machine->drv->cpu[cpunum].cpu_flags & CPU_16BIT_PORT))
 				cpudata[cpunum].port.mask = 0xff;
 #endif
 	}
@@ -1230,6 +1313,8 @@ static int allocate_memory(void)
 	struct ExtMemory *ext = ext_memory;
 	int cpunum;
 
+	ext_entries = 0;
+
 	/* don't do it for drivers that don't have ROM (MESS needs this) */
 	if (Machine->gamedrv->rom == 0)
 		return 1;
@@ -1282,6 +1367,12 @@ static int allocate_memory(void)
 							end = mwa->end;
 			}
 
+			ext_entries++;
+			if( ext_entries > MAX_EXT_MEMORY )
+			{
+				return fatalerror("MAX_EXT_MEMORY too small (%d)\n", ext_entries);
+			}
+
 			/* fill in the data structure */
 			ext->start = lowest;
 			ext->end = end;
@@ -1297,6 +1388,10 @@ static int allocate_memory(void)
 
 			/* prepare for the next loop */
 			size = ext->end + 1;
+			/* check for wraparound */
+			if (size < ext->end)
+				break;
+
 			ext++;
 		}
 	}
@@ -1445,7 +1540,8 @@ static void rg_add_entry(UINT32 start, UINT32 end, int mode)
 			*cur = e;
 			cur = &(*cur)->next;
 			start = e->end + 1;
-			if(start > end)
+			/* check for wraparound */
+			if(start == 0 || start > end)
 				return;
 		}
 
@@ -1482,6 +1578,9 @@ static void rg_add_entry(UINT32 start, UINT32 end, int mode)
 		(*cur)->flags = ((*cur)->flags & ~mask) | mode;
 		start = (*cur)->end + 1;
 		cur = &(*cur)->next;
+		/* check for wraparound */
+		if (start == 0)
+			break;
 	}
 }
 
@@ -1666,7 +1765,7 @@ void register_banks(void)
 /*-------------------------------------------------
 	READBYTE - generic byte-sized read handler
 -------------------------------------------------*/
-#if defined(DBG_BPR) && defined(MAME_DEBUG)
+#if defined(PINMAME) && defined(DBG_BPR) && defined(MAME_DEBUG)
 extern void bpr_memref(UINT32 adr, int length);
 #else
 #define bpr_memref(a,l)
@@ -1819,7 +1918,7 @@ data16_t name(offs_t address)															\
 	MEMREADSTART																		\
 																						\
 	/* perform lookup */																\
-	address &= mask;bpr_memref(address,2);																	\
+	address &= mask & ~1;bpr_memref(address,2);																	\
 	entry = lookup[LEVEL1_INDEX(address,abits,1)];										\
 	if (entry >= SUBTABLE_BASE)															\
 		entry = lookup[LEVEL2_INDEX(entry,address,abits,1)];							\
@@ -1845,7 +1944,7 @@ data16_t name(offs_t address)															\
 	MEMREADSTART																		\
 																						\
 	/* perform lookup */																\
-	address &= mask;bpr_memref(address,2);																	\
+	address &= mask & ~1;bpr_memref(address,2);																	\
 	entry = lookup[LEVEL1_INDEX(address,abits,2)];										\
 	if (entry >= SUBTABLE_BASE)															\
 		entry = lookup[LEVEL2_INDEX(entry,address,abits,2)];							\
@@ -1872,7 +1971,7 @@ data16_t name(offs_t address)															\
 	MEMREADSTART																		\
 																						\
 	/* perform lookup */																\
-	address &= mask;bpr_memref(address,2);																	\
+	address &= mask & ~1;bpr_memref(address,2);																	\
 	entry = lookup[LEVEL1_INDEX(address,abits,2)];										\
 	if (entry >= SUBTABLE_BASE)															\
 		entry = lookup[LEVEL2_INDEX(entry,address,abits,2)];							\
@@ -1905,7 +2004,7 @@ data32_t name(offs_t address)															\
 	MEMREADSTART																		\
 																						\
 	/* perform lookup */																\
-	address &= mask;bpr_memref(address,4);																	\
+	address &= mask & ~3;bpr_memref(address,4);																	\
 	entry = lookup[LEVEL1_INDEX(address,abits,2)];										\
 	if (entry >= SUBTABLE_BASE)															\
 		entry = lookup[LEVEL2_INDEX(entry,address,abits,2)];							\
@@ -2071,7 +2170,7 @@ void name(offs_t address, data16_t data)												\
 	MEMWRITESTART																		\
 																						\
 	/* perform lookup */																\
-	address &= mask;bpr_memref(address,2);																	\
+	address &= mask & ~1;bpr_memref(address,2);																	\
 	entry = lookup[LEVEL1_INDEX(address,abits,1)];										\
 	if (entry >= SUBTABLE_BASE)															\
 		entry = lookup[LEVEL2_INDEX(entry,address,abits,1)];							\
@@ -2096,7 +2195,7 @@ void name(offs_t address, data16_t data)												\
 	MEMWRITESTART																		\
 																						\
 	/* perform lookup */																\
-	address &= mask;bpr_memref(address,2);																	\
+	address &= mask & ~1;bpr_memref(address,2);																	\
 	entry = lookup[LEVEL1_INDEX(address,abits,2)];										\
 	if (entry >= SUBTABLE_BASE)															\
 		entry = lookup[LEVEL2_INDEX(entry,address,abits,2)];							\
@@ -2122,7 +2221,7 @@ void name(offs_t address, data16_t data)												\
 	MEMWRITESTART																		\
 																						\
 	/* perform lookup */																\
-	address &= mask;bpr_memref(address,2);																	\
+	address &= mask & ~1;bpr_memref(address,2);																	\
 	entry = lookup[LEVEL1_INDEX(address,abits,2)];										\
 	if (entry >= SUBTABLE_BASE)															\
 		entry = lookup[LEVEL2_INDEX(entry,address,abits,2)];							\
@@ -2154,7 +2253,7 @@ void name(offs_t address, data32_t data)												\
 	MEMWRITESTART																		\
 																						\
 	/* perform lookup */																\
-	address &= mask;bpr_memref(address,4);																	\
+	address &= mask & ~3;bpr_memref(address,4);																	\
 	entry = lookup[LEVEL1_INDEX(address,abits,2)];										\
 	if (entry >= SUBTABLE_BASE)															\
 		entry = lookup[LEVEL2_INDEX(entry,address,abits,2)];							\
@@ -2316,6 +2415,7 @@ GENERATE_MEM_HANDLERS_8BIT(21)
 GENERATE_MEM_HANDLERS_8BIT(24)
 
 GENERATE_MEM_HANDLERS_16BIT_BE(16)
+GENERATE_MEM_HANDLERS_16BIT_BE(18)
 GENERATE_MEM_HANDLERS_16BIT_BE(24)
 GENERATE_MEM_HANDLERS_16BIT_BE(32)
 
@@ -2329,6 +2429,7 @@ GENERATE_MEM_HANDLERS_32BIT_BE(24)
 GENERATE_MEM_HANDLERS_32BIT_BE(29)
 GENERATE_MEM_HANDLERS_32BIT_BE(32)
 
+GENERATE_MEM_HANDLERS_32BIT_LE(24)
 GENERATE_MEM_HANDLERS_32BIT_LE(26)
 GENERATE_MEM_HANDLERS_32BIT_LE(29)
 GENERATE_MEM_HANDLERS_32BIT_LE(32)
@@ -2344,6 +2445,7 @@ static const struct memory_address_table readmem_to_bits[] =
 	{ 24, cpu_readmem24 },
 
 	{ 16, cpu_readmem16bew },
+	{ 18, cpu_readmem18bew },
 	{ 24, cpu_readmem24bew },
 	{ 32, cpu_readmem32bew },
 
@@ -2357,6 +2459,7 @@ static const struct memory_address_table readmem_to_bits[] =
 	{ 29, cpu_readmem29bedw },
 	{ 32, cpu_readmem32bedw },
 
+	{ 24, cpu_readmem24ledw },
 	{ 26, cpu_readmem26ledw },
 	{ 29, cpu_readmem29ledw },
 	{ 32, cpu_readmem32ledw },
@@ -2380,6 +2483,7 @@ GENERATE_PORT_HANDLERS_32BIT_BE(16)
 
 GENERATE_PORT_HANDLERS_32BIT_LE(16)
 GENERATE_PORT_HANDLERS_32BIT_LE(24)
+GENERATE_PORT_HANDLERS_32BIT_LE(32)
 
 
 /*-------------------------------------------------
@@ -2424,20 +2528,20 @@ int port_address_bits_of_cpu(int cputype)
 static READ_HANDLER( mrh8_bad )
 {
 	logerror("cpu #%d (PC=%08X): unmapped memory byte read from %08X\n", cpu_getactivecpu(), activecpu_get_pc(), offset);
-	if (activecpu_address_bits() <= SPARSE_THRESH) return cpu_bankbase[STATIC_RAM][offset];
-	return 0;
+	if (activecpu_address_bits() <= SPARSE_THRESH && unmap_value == 0) return cpu_bankbase[STATIC_RAM][offset];
+	return unmap_value;
 }
 static READ16_HANDLER( mrh16_bad )
 {
 	logerror("cpu #%d (PC=%08X): unmapped memory word read from %08X & %04X\n", cpu_getactivecpu(), activecpu_get_pc(), offset*2, mem_mask ^ 0xffff);
-	if (activecpu_address_bits() <= SPARSE_THRESH) return ((data16_t *)cpu_bankbase[STATIC_RAM])[offset];
-	return 0;
+	if (activecpu_address_bits() <= SPARSE_THRESH && unmap_value == 0) return ((data16_t *)cpu_bankbase[STATIC_RAM])[offset];
+	return unmap_value;
 }
 static READ32_HANDLER( mrh32_bad )
 {
 	logerror("cpu #%d (PC=%08X): unmapped memory dword read from %08X & %08X\n", cpu_getactivecpu(), activecpu_get_pc(), offset*4, mem_mask ^ 0xffffffff);
-	if (activecpu_address_bits() <= SPARSE_THRESH) return ((data32_t *)cpu_bankbase[STATIC_RAM])[offset];
-	return 0;
+	if (activecpu_address_bits() <= SPARSE_THRESH && unmap_value == 0) return ((data32_t *)cpu_bankbase[STATIC_RAM])[offset];
+	return unmap_value;
 }
 
 static WRITE_HANDLER( mwh8_bad )
@@ -2459,17 +2563,17 @@ static WRITE32_HANDLER( mwh32_bad )
 static READ_HANDLER( prh8_bad )
 {
 	logerror("cpu #%d (PC=%08X): unmapped port byte read from %08X\n", cpu_getactivecpu(), activecpu_get_pc(), offset);
-	return 0;
+	return unmap_value;
 }
 static READ16_HANDLER( prh16_bad )
 {
 	logerror("cpu #%d (PC=%08X): unmapped port word read from %08X & %04X\n", cpu_getactivecpu(), activecpu_get_pc(), offset*2, mem_mask ^ 0xffff);
-	return 0;
+	return unmap_value;
 }
 static READ32_HANDLER( prh32_bad )
 {
 	logerror("cpu #%d (PC=%08X): unmapped port dword read from %08X & %08X\n", cpu_getactivecpu(), activecpu_get_pc(), offset*4, mem_mask ^ 0xffffffff);
-	return 0;
+	return unmap_value;
 }
 
 static WRITE_HANDLER( pwh8_bad )

@@ -68,7 +68,8 @@ enum
 	HDERR_SECTOR_OUT_OF_RANGE,
 	HDERR_DECOMPRESSION_ERROR,
 	HDERR_COMPRESSION_ERROR,
-	HDERR_CANT_CREATE_FILE
+	HDERR_CANT_CREATE_FILE,
+	HDERR_CANT_VERIFY
 };
 
 
@@ -123,5 +124,7 @@ UINT32 hard_disk_write(void *disk, UINT32 lbasector, UINT32 numsectors, const vo
 
 int hard_disk_get_last_error(void);
 const struct hard_disk_header *hard_disk_get_header(void *disk);
+int hard_disk_set_header(const char *filename, const struct hard_disk_header *header);
 
 int hard_disk_compress(const char *rawfile, UINT32 offset, const char *newfile, const struct hard_disk_header *header, const char *difffile, void (*progress)(const char *, ...));
+int hard_disk_verify(const char *hdfile, void (*progress)(const char *, ...), UINT8 headermd5[16], UINT8 actualmd5[16]);

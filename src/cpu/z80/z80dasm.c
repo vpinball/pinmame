@@ -38,7 +38,7 @@ enum e_mnemonics {
 	zSLL  ,zSRA  ,zSRL	,zSUB  ,zXOR
 };
 
-static char *s_mnemonic[] = {
+static const char *s_mnemonic[] = {
 	"adc", "add", "and", "bit", "call","ccf", "cp",  "cpd",
 	"cpdr","cpi", "cpir","cpl", "daa", "db",  "dec", "di",
 	"djnz","ei",  "ex",  "exx", "halt","im",  "in",  "inc",
@@ -418,7 +418,8 @@ unsigned DasmZ80( char *buffer, unsigned pc )
 {
     z80dasm *d;
 	const char *symbol, *src;
-	char *ixy, *dst;
+	const char *ixy;
+	char *dst;
 	unsigned PC = pc;
 	INT8 offset = 0;
 	UINT8 op, op1;
