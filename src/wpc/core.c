@@ -255,7 +255,7 @@ void core_updateSw(int flipEn) {
   /*-- handle flippers--*/
   int flip = core_gameData->hw.flippers;
   int inports[CORE_MAXPORTS];
-  UINT8 swFlip = coreGlobals.swMatrix[CORE_FLIPPERSWCOL] &
+  UINT8 swFlip = coreGlobals.swMatrix[(core_gameData->gen & GEN_GTS3) ? 15 : CORE_FLIPPERSWCOL] &
                  (CORE_SWULFLIPBUTBIT|CORE_SWURFLIPBUTBIT|CORE_SWLLFLIPBUTBIT|CORE_SWLRFLIPBUTBIT);
   int ii;
 
@@ -315,7 +315,7 @@ void core_updateSw(int flipEn) {
     else                      coreGlobals.flipTimer[3] = 0;
     if (coreGlobals.flipTimer[3] >= CORE_FLIPSTROKETIME) swFlip |= CORE_SWLRFLIPEOSBIT;
   }
-  coreGlobals.swMatrix[CORE_FLIPPERSWCOL] = swFlip;
+  coreGlobals.swMatrix[(core_gameData->gen & GEN_GTS3) ? 15 : CORE_FLIPPERSWCOL] = swFlip;
 
   /*-- update core dependent switches --*/
   if (coreData.updSw)  coreData.updSw(g_fHandleKeyboard ? inports : NULL);
