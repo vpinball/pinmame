@@ -305,7 +305,7 @@ VIDEO_UPDATE(core_gen) {
 void core_updateSw(int flipEn) {
   /*-- handle flippers--*/
   const int flip = core_gameData->hw.flippers;
-  const int flipSwCol = (core_gameData->gen & GEN_GTS3) ? 15 : CORE_FLIPPERSWCOL;
+  const int flipSwCol = (core_gameData->gen & (GEN_GTS3 | GEN_ALVG)) ? 15 : CORE_FLIPPERSWCOL;
   int inports[CORE_MAXPORTS];
   UINT8 swFlip;
   int ii;

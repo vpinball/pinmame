@@ -514,12 +514,11 @@ WRITE_HANDLER(alvg_sndCmd_w) {
 }
 
 static int alvg_sw2m(int no) {
-  if (no % 12 > 7) return -1;
-  return (no / 12 + 1) * 8 + (no % 12);
+	return no + 7;
 }
 
 static int alvg_m2sw(int col, int row) {
-  return (col - 1) * 12 + row;
+	return col*8 + row - 9;
 }
 
 /*Machine Init*/
