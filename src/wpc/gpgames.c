@@ -222,7 +222,8 @@ INITGAME(sshootr2, 0,dispGP_BDU2,FLIP_SW(FLIP_L),SNDBRD_GPMSU1,0)
 GP_ROMSTART888(sshootr2,"130a.716",CRC(dc402b37),
 						"130b.716",CRC(19a86f5e),
 						"730c",CRC(d1af712b))
-GP_SOUNDROM0("730snd",NO_DUMP)
+GP_SOUNDROM88("730u9.snd", CRC(dfa98db5),
+              "730u10.snd",CRC(6d3dcf44))
 GP_ROMEND
 CORE_GAMEDEFNV(sshootr2,"Sharp Shooter II",1983,"Game Plan",mGP2S,0)
 
