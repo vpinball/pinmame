@@ -193,7 +193,14 @@ CORE_GAMEDEF(wrlok,l3,"Warlok (L-3)",1982,"Williams",s7_mS7S,0)
 /*----------------------------
 / Defender - Sys.7 (Game #517)
 /----------------------------*/
-INITGAMEFULL(dfndr,s7_dispS7,0,59,55,56,57,58,0,0)
+// Multiplex solenoid requires custom solenoid handler.
+extern int dfndrCustSol(int);
+static core_tGameData dfndrGameData = {
+ GEN_S7, s7_dispS7, {FLIP_SWNO(0,59),0,0,10,0,0,0,0x3FF,dfndrCustSol},
+ NULL,{{0}},{11,{55,56,57,58,0,0}}
+};
+static void init_dfndr(void) { core_gameData = &dfndrGameData; }
+
 S7_ROMSTART000x(dfndr,l4, "ic14.532",   CRC(959ec419) SHA1(f400d3a1feba0e149d24f4e1a8d240fe900b3f0b),
                           "ic17.532",   CRC(bb571a17) SHA1(fb0b7f247673dae0744d4188e1a03749a2237165),
                           "ic20.532",   CRC(e99e64a2) SHA1(a6cde9cb771063778cae706c740b73ce9bce9aa5))
