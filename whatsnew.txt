@@ -9,14 +9,9 @@ Bugs Fixed
 - Fixed bug with System 7 games (e.g. Black Knight sound now works)
   [Martin Adrian]
 
-- Corrected VPM Lamp handling for Alvin G Games
-  [Gerrit Volkenborn]
-
-- Corrected Pistol Poker Lamp handling
-  [Gerrit Volkenborn]
-  [Steve Ellenoff]
-
 - Corrected reversed comma and period in WPC Alphanumeric games
+- Fixed (with an ugly hack) WPC Pre-DCS games that have pitch too low when music not playing
+  (This was probably one of the longest/oldest bugs ever, as it's been there since day 1 of the original wpcmame emulator)
   [Steve Ellenoff]
   
 
@@ -35,6 +30,14 @@ New Features
 - Intel 8051 CPU Core emulation (required for Alvin G DMD)
   (Thanks to Gerrit for helping with those damn SUBB flags)
   [Steve Ellenoff]
+
+- Added VPM Lamp handling for Alvin G Games
+  [Gerrit Volkenborn]
+
+- Added proper Pistol Poker Lamp handling
+  [Gerrit Volkenborn]
+  [Steve Ellenoff]
+
 
 Version 1.21 (March 31, 2002)
 -----------------------------

@@ -11,6 +11,13 @@
 #include "wpc.h"
 #include "wmssnd.h"
 
+//This awful hack is here to prevent the bug where the speech pitch is too low on pre-dcs games when
+//the YM2151 is not outputing music. In the hardware the YM2151's Timer A is set to control the FIRQ of the sound cpu 6809.
+//The 6809 will output CVSD speech data based on the speed of the FIRQ. The faster the speed, the higher the
+//pitch. For some reason, when the YM2151 is not outputting sound, the FIRQ rate goes down.. Def. some kind of
+//MAME core bug with timing, but I can't find it. I really hope someone can fix this hack someday..SJE 09/17/03
+#define PREDCS_FIRQ_HACK
+
 /*----------------------
 /    System 3 - 7
 /-----------------------*/
@@ -491,6 +498,32 @@ static void wpcs_ym2151IRQ(int state) {
   cpu_set_irq_line(locals.brdData.cpuNo, M6809_FIRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
+#ifdef PREDCS_FIRQ_HACK
+
+	//This value is based on a lot of trial and error and comparing the same voice sample played with and without music playing
+	#define FIRQ_HACK_RATE        2000
+
+	extern int YM2151ReadOutputFlag();
+
+	//Force the FIRQ to toggle @ the specified rate, but only while the 2151 is not outputting sound
+	static void firq_hack(int data) {
+		static int last = 0;
+		if(!YM2151ReadOutputFlag(0)) {
+			if(last)
+			{
+				cpu_set_irq_line(locals.brdData.cpuNo, M6809_FIRQ_LINE, CLEAR_LINE);
+				last = 0;
+			}
+			else
+			{
+				cpu_set_irq_line(locals.brdData.cpuNo, M6809_FIRQ_LINE, ASSERT_LINE);
+				last++;
+			}
+		}
+
+	}
+#endif
+
 static MEMORY_READ_START(wpcs_readmem)
   { 0x0000, 0x1fff, MRA_RAM },
   { 0x2401, 0x2401, YM2151_status_port_0_r }, /* 2401-27ff odd */
@@ -528,6 +561,10 @@ MACHINE_DRIVER_START(wmssnd_wpcs)
   MDRV_SOUND_ADD(DAC,    wpcs_dacInt)
   MDRV_SOUND_ADD(HC55516,wpcs_hc55516Int)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+#ifdef PREDCS_FIRQ_HACK
+  //Force the FIRQ to toggle @ the specified rate, but only while the 2151 is not outputting sound
+  MDRV_TIMER_ADD(firq_hack, FIRQ_HACK_RATE)
+#endif
 MACHINE_DRIVER_END
 
 /*---------------------

@@ -172,6 +172,10 @@ typedef struct
 	unsigned int clock;					/* chip clock in Hz (passed from 2151intf.c) */
 	unsigned int sampfreq;				/* sampling frequency in Hz (passed from 2151intf.c) */
 
+#ifdef PINMAME
+	int output;							/* Flag indicating if the 2151 is outputting sound */
+#endif
+
 } YM2151;
 
 
@@ -2435,6 +2439,24 @@ void YM2151UpdateOne(int num, INT16 **buffers, int length)
 
 		SAVE_ALL_CHANNELS
 
+
+#ifdef PINMAME
+		//Flag if any output coming out of the 2151
+		{
+		static int buffer = 0;
+		if(outl > 0 || outr > 0) {
+			buffer = 0;
+			PSG->output = 1;
+		}
+		else
+			buffer++;
+		if(buffer>15) {
+			PSG->output = 0;
+			buffer = 0;
+		}
+		}
+#endif
+
 #ifdef USE_MAME_TIMERS
 		/* ASG 980324 - handled by real timers now */
 #else
@@ -2470,3 +2492,10 @@ void YM2151SetPortWriteHandler(int n, mem_write_handler handler)
 	YMPSG[n].porthandler = handler;
 }
 
+#ifdef PINMAME
+/*return 1 if 2151 is outputting any data*/
+int YM2151ReadOutputFlag(int n)
+{
+	return YMPSG[n].output;
+}
+#endif

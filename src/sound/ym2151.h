@@ -78,4 +78,9 @@ void YM2151SetIrqHandler(int n, void (*handler)(int irq));
 /* set port write handler on YM2151 chip number 'n'*/
 void YM2151SetPortWriteHandler(int n, mem_write_handler handler);
 
+#ifdef PINMAME
+/*return 1 if 2151 is outputting any data*/
+	int YM2151ReadOutputFlag(int n);
+#endif
+
 #endif /*_H_YM2151_*/
