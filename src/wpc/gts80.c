@@ -608,7 +608,7 @@ struct MachineDriver machine_driver_GTS80S = {
   VIDEO_TYPE_RASTER,
   0,
   NULL, NULL, gen_refresh,
-  0,0,0,0,{{0}},
+  0,0,0,0,{GTS80S_SOUND},
   GTS80_nvram
 };
 
