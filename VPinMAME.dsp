@@ -7,21 +7,21 @@
 CFG=Visual PinMame - Win32 Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
-!MESSAGE
+!MESSAGE 
 !MESSAGE NMAKE /f "VPinMAME.mak".
-!MESSAGE
+!MESSAGE 
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
-!MESSAGE
+!MESSAGE 
 !MESSAGE NMAKE /f "VPinMAME.mak" CFG="Visual PinMame - Win32 Debug"
-!MESSAGE
+!MESSAGE 
 !MESSAGE Possible choices for configuration are:
-!MESSAGE
+!MESSAGE 
 !MESSAGE "Visual PinMame - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "Visual PinMame - Win32 MAME Debug" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "Visual PinMame - Win32 VC+MAME Debug" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "Visual PinMame - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE
+!MESSAGE 
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
@@ -63,8 +63,8 @@ InputPath=.\obj\VPinMAME\Debug\VPinMAME.dll
 SOURCE="$(InputPath)"
 
 "$(IntDir)\regsvr32.trg" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	regsvr32 /s /c "$(TargetPath)"
-	echo regsvr32 exec. time > "$(IntDir)\regsvr32.trg"
+	regsvr32 /s /c "$(TargetPath)" 
+	echo regsvr32 exec. time > "$(IntDir)\regsvr32.trg" 
 	
 # End Custom Build
 
@@ -145,8 +145,8 @@ InputPath=.\obj\VPinMAME\VCMDebug\VPinMAME.dll
 SOURCE="$(InputPath)"
 
 "$(IntDir)\regsvr32.trg" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	regsvr32 /s /c "$(TargetPath)"
-	echo regsvr32 exec. time > "$(IntDir)\regsvr32.trg"
+	regsvr32 /s /c "$(TargetPath)" 
+	echo regsvr32 exec. time > "$(IntDir)\regsvr32.trg" 
 	
 # End Custom Build
 
@@ -195,7 +195,7 @@ BuildCmds= \
    $(BuildCmds)
 # End Custom Build
 
-!ENDIF
+!ENDIF 
 
 # Begin Target
 
@@ -230,42 +230,45 @@ SOURCE=.\src\win32com\Controller.cpp
 SOURCE=.\src\win32com\Controller.cpp.crypt
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+
 # Begin Custom Build - Decrypting $(InputPath)
 InputDir=.\src\win32com
 InputPath=.\src\win32com\Controller.cpp.crypt
 InputName=Controller.cpp
 
 "$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
-	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
-	echo >NUL
-
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL 
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini 
+	echo >NUL 
+	
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
+
 # Begin Custom Build - Decrypting $(InputPath)
 InputDir=.\src\win32com
 InputPath=.\src\win32com\Controller.cpp.crypt
 InputName=Controller.cpp
 
 "$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
-	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
-	echo >NUL
-
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL 
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini 
+	echo >NUL 
+	
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
+
 # Begin Custom Build - Decrypting $(InputPath)
 InputDir=.\src\win32com
 InputPath=.\src\win32com\Controller.cpp.crypt
 InputName=Controller.cpp
 
 "$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
-	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
-	echo >NUL
-
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL 
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini 
+	echo >NUL 
+	
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
@@ -276,13 +279,13 @@ InputPath=.\src\win32com\Controller.cpp.crypt
 InputName=Controller.cpp
 
 "$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
-	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
-	echo >NUL
-
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL 
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini 
+	echo >NUL 
+	
 # End Custom Build
 
-!ENDIF
+!ENDIF 
 
 # End Source File
 # Begin Source File
@@ -294,42 +297,45 @@ SOURCE=.\src\win32com\Controller.h
 SOURCE=.\src\win32com\Controller.h.crypt
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+
 # Begin Custom Build - Decrypting $(InputPath)
 InputDir=.\src\win32com
 InputPath=.\src\win32com\Controller.h.crypt
 InputName=Controller.h
 
 "$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
-	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
-	echo >NUL
-
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL 
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini 
+	echo >NUL 
+	
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
+
 # Begin Custom Build - Decrypting $(InputPath)
 InputDir=.\src\win32com
 InputPath=.\src\win32com\Controller.h.crypt
 InputName=Controller.h
 
 "$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
-	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
-	echo >NUL
-
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL 
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini 
+	echo >NUL 
+	
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
+
 # Begin Custom Build - Decrypting $(InputPath)
 InputDir=.\src\win32com
 InputPath=.\src\win32com\Controller.h.crypt
 InputName=Controller.h
 
 "$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
-	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
-	echo >NUL
-
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL 
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini 
+	echo >NUL 
+	
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
@@ -340,13 +346,13 @@ InputPath=.\src\win32com\Controller.h.crypt
 InputName=Controller.h
 
 "$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
-	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
-	echo >NUL
-
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL 
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini 
+	echo >NUL 
+	
 # End Custom Build
 
-!ENDIF
+!ENDIF 
 
 # End Source File
 # Begin Source File
@@ -410,42 +416,45 @@ SOURCE=.\src\win32com\ControllerRun.cpp
 SOURCE=.\src\win32com\ControllerRun.cpp.crypt
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+
 # Begin Custom Build - Decrypting $(InputPath)
 InputDir=.\src\win32com
 InputPath=.\src\win32com\ControllerRun.cpp.crypt
 InputName=ControllerRun.cpp
 
 "$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
-	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
-	echo >NUL
-
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL 
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini 
+	echo >NUL 
+	
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
+
 # Begin Custom Build - Decrypting $(InputPath)
 InputDir=.\src\win32com
 InputPath=.\src\win32com\ControllerRun.cpp.crypt
 InputName=ControllerRun.cpp
 
 "$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
-	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
-	echo >NUL
-
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL 
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini 
+	echo >NUL 
+	
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
+
 # Begin Custom Build - Decrypting $(InputPath)
 InputDir=.\src\win32com
 InputPath=.\src\win32com\ControllerRun.cpp.crypt
 InputName=ControllerRun.cpp
 
 "$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
-	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
-	echo >NUL
-
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL 
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini 
+	echo >NUL 
+	
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
@@ -456,13 +465,13 @@ InputPath=.\src\win32com\ControllerRun.cpp.crypt
 InputName=ControllerRun.cpp
 
 "$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
-	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
-	echo >NUL
-
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL 
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini 
+	echo >NUL 
+	
 # End Custom Build
 
-!ENDIF
+!ENDIF 
 
 # End Source File
 # Begin Source File
@@ -506,42 +515,45 @@ SOURCE=.\src\win32com\VPinMAME.cpp
 SOURCE=.\src\win32com\VPinMAME.cpp.crypt
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+
 # Begin Custom Build - Decrypting $(InputPath)
 InputDir=.\src\win32com
 InputPath=.\src\win32com\VPinMAME.cpp.crypt
 InputName=VPinMAME.cpp
 
 "$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
-	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
-	echo >NUL
-
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL 
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini 
+	echo >NUL 
+	
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
+
 # Begin Custom Build - Decrypting $(InputPath)
 InputDir=.\src\win32com
 InputPath=.\src\win32com\VPinMAME.cpp.crypt
 InputName=VPinMAME.cpp
 
 "$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
-	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
-	echo >NUL
-
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL 
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini 
+	echo >NUL 
+	
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
+
 # Begin Custom Build - Decrypting $(InputPath)
 InputDir=.\src\win32com
 InputPath=.\src\win32com\VPinMAME.cpp.crypt
 InputName=VPinMAME.cpp
 
 "$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
-	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
-	echo >NUL
-
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL 
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini 
+	echo >NUL 
+	
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
@@ -552,13 +564,13 @@ InputPath=.\src\win32com\VPinMAME.cpp.crypt
 InputName=VPinMAME.cpp
 
 "$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
-	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
-	echo >NUL
-
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL 
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini 
+	echo >NUL 
+	
 # End Custom Build
 
-!ENDIF
+!ENDIF 
 
 # End Source File
 # Begin Source File
@@ -2122,7 +2134,7 @@ InputName=asmblit
 
 # End Custom Build
 
-!ENDIF
+!ENDIF 
 
 # End Source File
 # Begin Source File
@@ -2177,33 +2189,28 @@ InputName=asmtile
 
 # End Custom Build
 
-!ENDIF
+!ENDIF 
 
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\blit.c
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\blit.h
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\dirty.h
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\fileio.c
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\fronthlp.c
-
 # End Source File
 # Begin Source File
 
@@ -2225,58 +2232,48 @@ SOURCE=.\src\windows\input.c
 
 # PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
 
-!ENDIF
+!ENDIF 
 
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\misc.c
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\osinline.h
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\rc.c
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\snprintf.c
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\sound.c
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\ticker.c
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\ticker.h
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\video.c
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\winddraw.c
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\winddraw.h
-
 # End Source File
 # Begin Source File
 
@@ -2298,13 +2295,12 @@ SOURCE=.\src\windows\window.c
 
 # PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
 
-!ENDIF
+!ENDIF 
 
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\winprefix.h
-
 # End Source File
 # End Group
 # End Group
