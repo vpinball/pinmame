@@ -190,9 +190,14 @@ static READ_HANDLER(data_port_r)
 */
 static READ_HANDLER(sense_port_r)
 {
-	UINT8 random = rand() % 256;
-//	logerror("%x: Sense Port Read=%02x\n",activecpu_get_previouspc(),random);
-	return random;
+	static UINT8 byte = 0xff;
+	static int bitno = 7;
+	if (++bitno > 7) {
+		byte++;
+		bitno = 0;
+		logerror("%x: Sense Port Read=%02x\n",activecpu_get_previouspc(),byte);
+	}
+	return (byte >> bitno) & 1;
 }
 
 /*
@@ -236,14 +241,27 @@ static WRITE_HANDLER(data_port_w)
 static WRITE_HANDLER(sense_port_w)
 {
 	static UINT8 printdata[] = {0};
-	printdata[0] = data;
+	static int bitno = 0;
+	static int startbit = 0;
 	if (locals.printfile == NULL) {
 	  char filename[13];
 	  sprintf(filename,"%s.prt", Machine->gamedrv->name);
 	  locals.printfile = osd_fopen(Machine->gamedrv->name,filename,OSD_FILETYPE_MEMCARD,2); // APPEND write mode
 	}
-    if (locals.printfile) osd_fwrite(locals.printfile, printdata, 1);
-//	logerror("%x: Sense Port Write=%02x\n",activecpu_get_previouspc(),data);
+	if (data && startbit < 1)
+		startbit = 1;
+	else if (data == 0 && startbit == 1)
+		startbit = 2;
+	else if (bitno < 8 && startbit > 1)
+		printdata[0] |= (data << bitno++);
+	if (bitno == 8 && startbit > 1)
+    	if (locals.printfile) osd_fwrite(locals.printfile, printdata, 1);
+    if (bitno > 7) {
+		printdata[0] = 0;
+		bitno = 0;
+		startbit = 0;
+	}
+	logerror("%x: Sense Port Write=%x\n",activecpu_get_previouspc(),data);
 }
 
 static READ_HANDLER(ram_r) {
