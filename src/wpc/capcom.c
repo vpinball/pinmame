@@ -52,13 +52,21 @@ static SWITCH_UPDATE(cc) {
   }
 }
 
-
 static void cc_zeroCross(int data) {
+  cpu_set_irq_line(0,MC68306_IRQ_2,ASSERT_LINE);
+}
+static READ16_HANDLER(cc_porta_r) { DBGLOG(("Port A read\n")); return 0; }
+static READ16_HANDLER(cc_portb_r) { DBGLOG(("Port B read\n")); return 0; }
+static WRITE16_HANDLER(cc_porta_w) {
+  DBGLOG(("Port A write %04x\n",data));
+}
+static WRITE16_HANDLER(cc_portb_w) {
+  DBGLOG(("Port B write %04x\n",data));
+//  if (data & ~locals.lastb & 0x01) cpu_set_irq_line(0,MC68306_IRQ_2,CLEAR_LINE);
 }
 
 static MACHINE_INIT(cc) {
   memset(&locals, 0, sizeof(locals));
-
   locals.vblankCount = 1;
 }
 
@@ -113,15 +121,15 @@ EXT
 SWITCH0
 CS
 
-CS0 = ff000000,80000000 => 80000000-80ffffff (R)
-CS1 = fffc0000,00000000 => 00000000-0003ffff (RW)
-CS2 = ff000000,40000000 => 40000000-40ffffff (RW)
-CS3 = ffff0000,30000000 => 30000000-3000ffff (RW)
+CS0 = 1000e680 => ff000000,10000000 => 10000000-10ffffff (R)
+CS1 = 0001a2df => fff80000,00000000 => 00000000-0007ffff (RW)
+CS2 = 4001a280 => ff000000,40000000 => 40000000-40ffffff (RW)
+CS3 = 3001a2f0 => fffe0000,30000000 => 30000000-3001ffff (RW)
 #endif
 
 static data16_t *ramptr;
 static MEMORY_READ16_START(cc_readmem)
-  { 0x00000000, 0x00ffffbf, MRA16_ROM },
+  { 0x00000000, 0x00ffffff, MRA16_ROM },
   { 0x01000000, 0x0107ffff, MRA16_RAM },
 //{ 0x02000000, 0x02000001, MRA16_RAM }, /* AUX I/O */
 //{ 0x02400000, 0x02400001, MRA16_RAM }, /* EXT I/O */
@@ -136,6 +144,14 @@ static MEMORY_WRITE16_START(cc_writemem)
   { 0x03000000, 0x0300ffff, MWA16_RAM }, /* NVRAM */
 MEMORY_END
 
+static PORT_READ16_START(cc_readport)
+  { M68306_PORTA, M68306_PORTA, cc_porta_r },
+  { M68306_PORTA, M68306_PORTA, cc_portb_r },
+PORT_END
+static PORT_WRITE16_START(cc_writeport)
+  { M68306_PORTA, M68306_PORTA, cc_porta_w },
+  { M68306_PORTA, M68306_PORTA, cc_portb_w },
+PORT_END
 static VIDEO_UPDATE(cc_dmd);
 
 MACHINE_DRIVER_START(cc)
@@ -143,6 +159,7 @@ MACHINE_DRIVER_START(cc)
   MDRV_CORE_INIT_RESET_STOP(cc, NULL, NULL)
   MDRV_CPU_ADD(M68306, 16670000/4)
   MDRV_CPU_MEMORY(cc_readmem, cc_writemem)
+  MDRV_CPU_PORTS(cc_readport, cc_writeport)
   MDRV_CPU_VBLANK_INT(cc_vblank, 1)
   MDRV_VIDEO_UPDATE(cc_dmd)
   MDRV_NVRAM_HANDLER(cc)
@@ -172,15 +189,13 @@ static VIDEO_UPDATE(cc_dmd) {
   if(keyboard_pressed_memory_repeat(KEYCODE_B,2))
 	  offset-=0x100;
   RAM = ramptr+offset;
-  for (kk = 0, ii = 1; ii < 33; ii++) {
-    UINT8 *line = &dotCol[ii][0];
+  for (kk = 0, ii = 1; ii < 33; ii++, kk += 8) {
+    UINT8 *line = (&dotCol[ii][0])-16;
     for (jj = 0; jj < 8; jj++) {
       UINT16 d = RAM[kk++];
-	  UINT8 lo = d&0xffff;
-	  UINT8 hi = d>>8;
-	  d = core_revbyte(lo) | core_revbyte(hi)<<8;
+      line += 32;
       for (ll = 0; ll < 16; ll++)
-        { *line++ = d & 0x01; d>>=1; }
+        { *(--line) = d & 0x01; d>>=1; }
     }
   }
   video_update_core_dmd(bitmap, cliprect, dotCol, core_gameData->lcdLayout ? core_gameData->lcdLayout : &cc_dispDMD[0]);
