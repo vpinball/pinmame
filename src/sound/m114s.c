@@ -28,7 +28,7 @@
 #include "driver.h"
 #include "m114s.h"
 
-#if 1
+#if 0
 #define LOG(x) printf x
 #else
 #define LOG(x) logerror x
@@ -198,7 +198,7 @@ static const double freqtable4Mhz[0xff] = {
  0,0,0,0,0,0,0,														//0xF0 - 0xFF (Special codes)
 };
 #else
-/* Frequency Table for a 4Mhz Clocked Chip 
+/* Frequency Table for a 4Mhz Clocked Chip
    Note: Only the 1st set of frequencies came from the manual, the rest were calculated using 1 semitone increments
    using a program called Test Tone Generator 3.91
 */
@@ -721,7 +721,7 @@ static void process_channel_data(struct M114SChip *chip)
 if(channel->regs.outputs == 2) {
 	if(channel->regs.frequency == 0x70)
 	{
-		printf("orig: = %0f, freq1 = %0f, sample_rate = %0d \n",freqtable4Mhz[channel->regs.frequency],freq1,channel->table1.sample_rate);
+		LOG(("orig: = %0f, freq1 = %0f, sample_rate = %0d \n",freqtable4Mhz[channel->regs.frequency],freq1,channel->table1.sample_rate));
 	}
 		//printf("EOT=%d\n",channel->end_of_table);
 	LOG(("C:%02d V:%02d FQ:%03x TS1:%02x TS2:%02x T1L:%04d T1R:%01d T2L:%04d T2R:%01d OD=%01d I:%02d E:%01d\n",
