@@ -382,9 +382,7 @@ Private Sub BorderSizeY_Change()
 End Sub
 
 Private Sub CheckRoms_Click()
-    If (Not Controller.CheckRoms(0)) Then
-        MsgBox "ROM set is invalid"
-    End If
+    Controller.CheckRoms (0)
 End Sub
 
 Private Sub DebugBox_Click()
