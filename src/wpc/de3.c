@@ -236,19 +236,25 @@ static READ_HANDLER (pia2a_r)  {return 1;} // { logerror("pia2a_r\n"); return 1;
 
 /* - Feeds Chip 4H - 74154 1-16 Active Low output multiplexer
      (Also, PA-4 feeds PIA LED - it's inverted)
-     data = 0x01, CN1-Pin 7 (Magnets) goes low
+     data = 0x01, CN1-Pin 7 (Strobe) goes low
      data = 0x04, CN2-Pin 1 (Enable) goes low    */
 static WRITE_HANDLER(pia2a_w) {
 	delocals.diagnosticLed = ~(data>>4);	/*LED = PA_4*/
-    //logerror("pia2a_w: %x\n",data);
+    logerror("pia2a_w: %x\n",data);
 }
 static READ_HANDLER(pia2b_r) {return 0;} //{ logerror("pia2b_r\n"); return 0; }
 
-/* - CN3 Printer Data Lines (& Magnets on GNR)
-	 data = 0x01, CN3-Pin 9 (Magnet 3?)
-	 data = 0x02, CN3-Pin 8 (Magnet 2?)
-	 data = 0x04, CN3-Pin 7 (Magnet 1?)       */
-static WRITE_HANDLER(pia2b_w) { de_data = data & 0x07; } // logerror("pia2b_w: %x\n",data); }
+/* - CN3 Printer Data Lines (Used by various games)
+	 data = 0x01, CN3-Pin 9 (Magnet 3)
+	 data = 0x02, CN3-Pin 8 (Magnet 2)
+	 data = 0x04, CN3-Pin 7 (Magnet 1)
+	 ....
+	 data = 0x80, CN3-Pin 1 (Blinder on Tommy)
+*/
+static WRITE_HANDLER(pia2b_w) { 
+	de_data = data;		//Return all 8 bits, since diff. games wired to different bits
+	logerror("pia2b_w: %x\n",data);
+}  
 static WRITE_HANDLER(pia5a_w) {} // logerror("pia5a_w\n"); }
 
 /*----------------
@@ -273,7 +279,11 @@ static READ_HANDLER (pia3cb1_r) {return 0x00;}
 static READ_HANDLER (pia3ca2_r) {return 0x00;}
 static READ_HANDLER (pia3cb2_r) {return 0x00;}
 static WRITE_HANDLER(pia2ca2_w) {/*logerror("Comma 3+4 %d\n",data);*/}
-static WRITE_HANDLER(pia2cb2_w) {/*logerror("Comma 1+2 %d\n",data);*/}
+//Pin 10 of CN3
+static WRITE_HANDLER(pia2cb2_w) {
+	logerror("Pin 10 of CN3 = %x\n",data);
+	/*logerror("Comma 1+2 %d\n",data);*/
+}
 static WRITE_HANDLER(pia5ca2_w) {/*logerror("pia5ca2_w %x\n",data);*/}
 
 //Set state of up/down switch(inverted), and return state of advance switch(inverted)
@@ -449,7 +459,7 @@ struct pia6821_interface dedmd2_pia_intf[] = {
  /* CA1       (I) Diagnostic Advance */
  /* CB1       (I) Diagnostic Up/dn */
  /* CA2       N/A */
- /* CB2       N/A */
+ /* CB2       Pin 10 of CN3 */
  /* in  : A/B,CA/B1,CA/B2 */ pia2a_r, pia2b_r, pia2ca1_r, pia2cb1_r, 0, 0,
  /* out : A/B,CA/B2       */ pia2a_w, pia2b_w, pia2ca2_w, pia2cb2_w,
  /* irq : A/B             */ de_piaMainIrq, de_piaMainIrq
