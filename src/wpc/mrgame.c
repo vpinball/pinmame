@@ -3,10 +3,12 @@
   ----------------
   by Steve Ellenoff (08/23/2004)
   
-  Thanks to Gerrit for:
+  Huge Thanks to Gerrit for:
   a) helping out with Solenoid smoothing (better now) and getting those damn matrix out of the way of the video display..
   b) Fixing switches and enabling the flippers to work
+  c) SCROLLING! Just ask him why the code works?!
 
+ ************************************************************************************************
   Main CPU Board:
 
   CPU: Motorola M68000
@@ -14,14 +16,19 @@
   Interrupt: Tied to a Fixed System Timer
   I/O: DMA
 
+  Video Board:
+
+  CPU: Z80
+  Clock: 3 Mhz
+  Interrupt: Some funky timing thing..
+  I/O: 8255
+
   Issues/Todo:
-  #0) Z80 WAIT line is involved in the real schematic somehow, maybe this needs to be emulated?
-  #1) Adding NMI pulse seems to have helped, but still something is quite wrong
-  #2) Watching output of video commands from cpu->video, motor cross definitely loses some commands..
-      (this occurs after drag race graphic)
-  #3) Screen has 32 scroll registers, these are not yet properly emulated.
-  #4) Sound not done yet
-  #5) Mr. Game Logo not correct color in Motor Show ( Bad Color Prom Read? )
+  #1) Used a hack to ensure all video commands are read by the video cpu - not sure if the "underlying" 
+      cause is still making other things wrong!
+  #2) Timing of animations might be too slow..
+  #3) Sound not done yet
+  #4) Mr. Game Logo not correct color in Motor Show ( Bad Color Prom Read? )
 ************************************************************************************************/
 #include "driver.h"
 #include "cpu/m68000/m68000.h"
@@ -42,6 +49,12 @@
 
 //Jumper on board shows 200Hz hard wired ( should double check it's actually 200Hz and not a divide by 200)
 #define MRGAME_IRQ_FREQ TIME_IN_HZ(200)
+
+//Video Commands buffering
+#define MRGAME_VID_MAX_BUF 40
+static int vidcmd_buf[MRGAME_VID_MAX_BUF];
+static int vidcmd_next = 0;
+static int vidcmd_read = 0;
 
 #if 0
 #define LOG(x) printf x
@@ -207,6 +220,7 @@ static WRITE_HANDLER(solenoid_w)
 			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFF00FFFF) | (data<<16);
 			locals.solenoids |= data << 16;
             break;
+		//Not used but here anyway..
 		case 3:
 			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x00FFFFFF) | (data<<24);
 			locals.solenoids |= data << 24;
@@ -223,7 +237,6 @@ static WRITE16_HANDLER(sound_w) {
 #ifdef TEST_MOTORSHOW
 const static int cycle[] = {0x18,0x19,0x1a};
 static int cycind=0;
-
 static WRITE_HANDLER(fake_w)
 {
 	locals.vid_data = cycle[cycind];
@@ -235,8 +248,10 @@ static WRITE_HANDLER(fake_w)
 //8 bit data to this latch comes from D8-D15 (ie, upper bits only)
 static WRITE16_HANDLER(video_w) { 
 #ifndef TEST_MOTORSHOW
-	locals.vid_data = (data>>8) & 0xff;  
-    //LOG(("viddata=%x\n",data>>8));
+	vidcmd_buf[vidcmd_next] = (data>>8) & 0xff;
+	vidcmd_next = (vidcmd_next + 1) % MRGAME_VID_MAX_BUF;
+	//locals.vid_data = (data>>8) & 0xff;  
+	//LOG(("viddata=%x\n",data>>8));
 #endif
 }
 
@@ -343,14 +358,34 @@ static NVRAM_HANDLER(mrgame_nvram) {
 
 //Read D0-D7 from cpu
 static READ_HANDLER(i8255_porta_r) { 
+#ifndef TEST_MOTORSHOW
+	int data = vidcmd_buf[vidcmd_read];
+	vidcmd_read = (vidcmd_read + 1) % MRGAME_VID_MAX_BUF;
+	if(vidcmd_read >= vidcmd_next) {
+		vidcmd_read = vidcmd_next = 0;
+	}
+	return data;
+#else
 	//LOG(("i8255_porta_r=%x\n",locals.vid_data)); 
 	return locals.vid_data; 
+#endif
 }
 static READ_HANDLER(i8255_portb_r) { LOG(("UNDOCUMENTED: i8255_portb_r\n")); return 0; }
 
 //Bits 0-3 = Video Dips (NOT INVERTED)
 //Bits   4 = Video Strobe from CPU
-static READ_HANDLER(i8255_portc_r) { return core_getDip(1) | (locals.vid_strb<<4); }
+//static READ_HANDLER(i8255_portc_r) { return core_getDip(1) | (locals.vid_strb<<4); }
+static int pulse=0;
+static READ_HANDLER(i8255_portc_r) { 
+	int data = core_getDip(1);
+	int strobe = (locals.vid_strb<<4);
+	//Force a strobe if data waiting in buffer
+	if(vidcmd_next > 1) {
+		strobe = pulse<<4;
+		pulse = !pulse;
+	}
+	return  data | strobe;
+}
 
 //Connected to monitor! Not sure what kind of data it could send here!
 static WRITE_HANDLER(i8255_portb_w) { LOG(("i8255_portb_w=%x\n",data)); }
@@ -370,7 +405,7 @@ static WRITE_HANDLER(vid_registers_w) {
 		//?
 		case 1:
 			cpu_interrupt_enable(1,data&1);
- 			break;
+			break;
 		//Graphics rom - address line 12 pin
 		case 3:
 			locals.vid_a12 = data & 1;
@@ -394,8 +429,10 @@ static READ_HANDLER(soundg1_2_port_r) {
 static WRITE_HANDLER(soundg1_2_port_w) {
 }
 
+static struct mame_bitmap *tmpbitmap2;
 static VIDEO_START(mrgame) {
-  tmpbitmap = auto_bitmap_alloc(Machine->drv->screen_width,Machine->drv->screen_height);
+  tmpbitmap = auto_bitmap_alloc(Machine->drv->screen_width,256);
+  tmpbitmap2 = auto_bitmap_alloc(Machine->drv->screen_width, 240);
   return (tmpbitmap == 0);
 }
 
@@ -403,6 +440,11 @@ static VIDEO_START(mrgame) {
 static int charoff = 0;
 #endif
 
+static const struct rectangle screen_all_area =
+{
+	0, 255,
+	0, 255,
+};
 static const struct rectangle screen_visible_area =
 {
 	0, 255,
@@ -410,6 +452,7 @@ static const struct rectangle screen_visible_area =
 };
 
 PINMAME_VIDEO_UPDATE(mrgame_update) {
+    static int scrollers[256];
 	int offs = 0;
 	int color = 0;
 	int colorindex = 0;
@@ -439,7 +482,7 @@ if(1 || !debugger_focus) {
 
 	/* for every character in the Video RAM, check if it has been modified */
 	/* since last time and update it accordingly. */
-	for (offs = 0; offs < videoram_size - 1; offs++)
+	for (offs = 0; offs < videoram_size; offs++)
 	{
 		if (1) //dirtybuffer[offs])
 		{
@@ -451,7 +494,8 @@ if(1 || !debugger_focus) {
 			colorindex = (colorindex+2);
 			if(sx==0) colorindex=1;
 			color = mrgame_objectram[colorindex];
-
+			scrollers[offs % 256] = -mrgame_objectram[colorindex-1];
+//printf("%d:%d ", sx, scrollers[sx]);
 			tile = mrgame_videoram[offs]+
                    (locals.vid_a11<<8)+(locals.vid_a12<<9)+(locals.vid_a13<<10);
 
@@ -463,6 +507,8 @@ if(1 || !debugger_focus) {
 					0,TRANSPARENCY_NONE,0);
 		}
 	}
+	/* copy the temporary bitmap to the screen with scolling */
+	copyscrollbitmap(tmpbitmap2,tmpbitmap,0,0,72,scrollers,&screen_all_area,TRANSPARENCY_NONE,0);
 
 	/* Draw Sprites - Not sure of total size here (this memory size allows 8 sprites on screen at once ) */
 	for (offs = 0x40; offs < 0x60; offs += 4)
@@ -475,16 +521,15 @@ if(1 || !debugger_focus) {
 				   (locals.vid_a11<<6) + (locals.vid_a12<<7) + (locals.vid_a13<<7);
 		color = mrgame_objectram[offs + 2];	//Note: This byte may have upper bits also used for other things, but no idea what if/any!
 
-		drawgfx(tmpbitmap,Machine->gfx[1],
+		drawgfx(tmpbitmap2,Machine->gfx[1],
 				tile,
 				color+2,							//+2 to offset from PinMAME palette entries
 				flipx,flipy,
 				sx,sy,
 				0,TRANSPARENCY_PEN,0);
 	}
+	copybitmap(bitmap,tmpbitmap2,0,0,0,-8,&screen_visible_area,TRANSPARENCY_NONE,0);
 
-	/* copy the temporary bitmap to the screen */
-	copybitmap(bitmap,tmpbitmap,0,0,0,0,&screen_visible_area,TRANSPARENCY_NONE,0);
     return 0;
 }
 
