@@ -32,14 +32,14 @@
 
 /******************************************************************************
  *  Notes:
- *		  *Important*: Internal ROM needs to be treated the same as external rom by the programmer 
+ *		  *Important*: Internal ROM needs to be treated the same as external rom by the programmer
  *		               creating the driver (ie, use standard cpu rom region)
  *
  *		  The term cycles is used here to really refer to clock oscilations, because 1 machine cycle
  *		  actually takes 12 oscilations.
  *
- *		  Read/Write/Modify Instruction - 
- *			Data is read from the Port Latch (not the Port Pin!), possibly modified, and 
+ *		  Read/Write/Modify Instruction -
+ *			Data is read from the Port Latch (not the Port Pin!), possibly modified, and
  *          written back to (the pin? and) the latch!
  *
  *		    The following all perform this on a port address..
@@ -51,7 +51,8 @@
  *		  October 14,2003: Added initial support for the 8752 (ie 256 RAM)
  *		  October 22,2003: Full support for the 8752 (ie 256 RAM)
  *        July 28,2004: Fixed MOVX command and added External Ram Paging Support
- *				
+ *        July 31,2004: Added Serial Mode 0 Support & Fixed Interrupt Flags for Serial Port
+ *
  *		  Todo: Full Timer support (all modes)
  *
  *		  NOW Implemented: RAM paging using hardware configured addressing...
@@ -108,6 +109,7 @@ typedef struct {
 	UINT8	sending;		//Flag set when uart is sending
 	UINT8	data_out;		//Data to send out
 	UINT8	bits_to_send;	//How many bits left to send when transmitting out the serial port
+	UINT8	bitcycles;		//# of bitcycles passed since last bit was sent
 } I8051_UART;
 
 typedef struct {
@@ -216,9 +218,9 @@ static READ32_HANDLER((*hold_eram_iaddr_callback));
  *****************************************************************************
  This area is *ALSO* mapped from 0-FFFF internally (64K)
 						** HOWEVER **
- We *FORCE* the address space into the range 10000-1FFFF to allow both 
- Code Memory and Data Memory to be pyshically separate while mapped @ the same 
- addresses, w/o any contention. 
+ We *FORCE* the address space into the range 10000-1FFFF to allow both
+ Code Memory and Data Memory to be pyshically separate while mapped @ the same
+ addresses, w/o any contention.
  As far as the 8051 program code which is executing knows data memory still lives
  in the 0-FFFF range.*/
 #define DATAMEM_R(a)	(UINT8)cpu_readmem20(a+0x10000)
@@ -281,7 +283,7 @@ static READ32_HANDLER((*hold_eram_iaddr_callback));
 #define SET_ES(n)		R_IE = (R_IE & 0xef) | (n<<4);		//Serial Interrupt Enable/Disable
 #define SET_ET1(n)		R_IE = (R_IE & 0xf7) | (n<<3);		//Timer 1 Interrupt Enable/Disable
 #define SET_EX1(n)		R_IE = (R_IE & 0xfb) | (n<<2);		//External Int 1 Interrupt Enable/Disable
-#define SET_ET0(n)		R_IE = (R_IE & 0xfd) | (n<<1);		//Timer 0 Interrupt Enable/Disable	
+#define SET_ET0(n)		R_IE = (R_IE & 0xfd) | (n<<1);		//Timer 0 Interrupt Enable/Disable
 #define SET_EX0(n)		R_IE = (R_IE & 0xfe) | (n<<0);		//External Int 0 Interrupt Enable/Disable
 /*IP Flags*/
 #if (HAS_I8052 || HAS_I8752)
@@ -390,7 +392,7 @@ static READ32_HANDLER((*hold_eram_iaddr_callback));
 #if (HAS_I8052 || HAS_I8752)
   /*T2CON Flags*/
   #define GET_TF2			((R_T2CON & 0x80)>>7)
-  #define GET_EXF2			((R_T2CON & 0x40)>>6) 
+  #define GET_EXF2			((R_T2CON & 0x40)>>6)
   #define GET_RCLK			((R_T2CON & 0x20)>>5)
   #define GET_TCLK			((R_T2CON & 0x10)>>4)
   #define GET_EXEN2			((R_T2CON & 0x08)>>3)
@@ -420,10 +422,12 @@ static READ32_HANDLER((*hold_eram_iaddr_callback));
 #endif
 
 /* Any pending IRQ */
+#define SERIALPORT_IRQ    ((R_SCON & 0x03) && GET_ES)
+
 #if (HAS_I8052 || HAS_I8752)
-#define NO_PENDING_IRQ  !(R_TCON & 0xaa) && !(R_SCON & 0x03) && !GET_TF2 && !GET_EXF2
+#define NO_PENDING_IRQ  !(R_TCON & 0xaa) && !(SERIALPORT_IRQ) && !GET_TF2 && !GET_EXF2
 #else
-#define NO_PENDING_IRQ  !(R_TCON & 0xaa) && !(R_SCON & 0x03)
+#define NO_PENDING_IRQ  !(R_TCON & 0xaa) && !(SERIALPORT_IRQ)
 #endif
 
 /* Clear Current IRQ  */
@@ -486,7 +490,7 @@ static UINT8 i8051_cycles[] = {
 	24,24,12,12,12,12,12,12,12,12,12,12,12,12,12,12,
 	24,24,12,12,12,24,12,12,24,24,24,24,24,24,24,24,
 	24,24,24,24,12,12,12,12,12,12,12,12,12,12,12,12,
-	24,24,24,24,12,12,12,12,12,12,12,12,12,12,12,12 
+	24,24,24,24,12,12,12,12,12,12,12,12,12,12,12,12
 };
 
 /* Include Opcode functions */
@@ -502,7 +506,7 @@ void i8051_init(void)
 	state_save_register_UINT16("i8051", cpu, "SUBTYPE",   &i8051.subtype,1);
 	state_save_register_UINT8 ("i8051", cpu, "RWM",       &i8051.rwm ,1);
 	state_save_register_UINT8 ("i8051", cpu, "CUR_IRQ",   &i8051.cur_irq ,1);
-	//SFR Registers	
+	//SFR Registers
 	state_save_register_UINT8 ("i8051", cpu, "PO",        &i8051.po,     1);
 	state_save_register_UINT8 ("i8051", cpu, "SP",        &i8051.sp,     1);
 	state_save_register_UINT8 ("i8051", cpu, "DPL",       &i8051.dpl,    1);
@@ -557,7 +561,7 @@ void i8051_reset(void *param)
 
 	//Clear Ram (w/0xff)
 	memset(&i8051.IntRam,0xff,sizeof(i8051.IntRam));
-	
+
 	/* these are all defined reset states */
 	PC = 0;
 	SFR_W(SP, 0x7);
@@ -696,12 +700,12 @@ int i8051_execute(int cycles)
 				RWM=0;
 				break;
 			//DEC @R0/@R1					/* 1: 0001 011i */
-			case 0x16: 
+			case 0x16:
 			case 0x17:
 				dec_ir(op&1);
 				break;
 			//DEC R0 to R7					/* 1: 0001 1rrr */
-			case 0x18: 
+			case 0x18:
 			case 0x19:
 			case 0x1a:
 			case 0x1b:
@@ -730,18 +734,18 @@ int i8051_execute(int cycles)
 			//ADD A, #data
 			case 0x24:						/* 1: 0010 0100 */
 				add_a_byte();
-				break;	
+				break;
 			//ADD A, data addr
 			case 0x25:						/* 1: 0010 0101 */
 				add_a_mem();
-				break;		
+				break;
 			//ADD A, @R0/@R1				/* 1: 0010 011i */
-			case 0x26: 
-			case 0x27: 
+			case 0x26:
+			case 0x27:
 				add_a_ir(op&1);
 				break;
 			//ADD A, R0 to R7				/* 1: 0010 1rrr */
-			case 0x28: 
+			case 0x28:
 			case 0x29:
 			case 0x2a:
 			case 0x2b:
@@ -777,7 +781,7 @@ int i8051_execute(int cycles)
 				break;
 			//ADDC A, @R0/@R1				/* 1: 0011 011i */
 			case 0x36:
-			case 0x37: 
+			case 0x37:
 				addc_a_ir(op&1);
 				break;
 			//ADDC A, R0 to R7				/* 1: 0011 1rrr */
@@ -805,7 +809,7 @@ int i8051_execute(int cycles)
 				orl_mem_a();
 				RWM=0;
 				break;
-			//ORL data addr, #data	
+			//ORL data addr, #data
 			case 0x43:						/* 1: 0100 0011 */
 				RWM=1;
 				orl_mem_byte();
@@ -825,14 +829,14 @@ int i8051_execute(int cycles)
 				orl_a_ir(op&1);
 				break;
 			//ORL A, RO to R7				/* 1: 0100 1rrr */
-			case 0x48: 
-			case 0x49: 
-			case 0x4a: 
-			case 0x4b: 
-			case 0x4c: 
-			case 0x4d: 
-			case 0x4e: 
-			case 0x4f: 
+			case 0x48:
+			case 0x49:
+			case 0x4a:
+			case 0x4b:
+			case 0x4c:
+			case 0x4d:
+			case 0x4e:
+			case 0x4f:
 				orl_a_r(op&7);
 				break;
 			//JNC code addr
@@ -864,7 +868,7 @@ int i8051_execute(int cycles)
 				anl_a_mem();
 				break;
 			//ANL A, @RO/@R1				/* 1: 0101 011i */
-			case 0x56: 
+			case 0x56:
 			case 0x57:
 				anl_a_ir(op&1);
 				break;
@@ -938,7 +942,7 @@ int i8051_execute(int cycles)
 			//JMP @A+DPTR
 			case 0x73:						/* 1: 0111 0011 */
 				jmp_iadptr();
-				break;	
+				break;
 			//MOV A, #data
 			case 0x74:						/* 1: 0111 0100 */
 				mov_a_byte();
@@ -1222,7 +1226,7 @@ int i8051_execute(int cycles)
 				ajmp();
 				break;
 			//MOVX A, @R0/@R1				/* 1: 1110 001i */
-			case 0xe2:						
+			case 0xe2:
 			case 0xe3:
 				movx_a_ir(op&1);
 				break;
@@ -1402,7 +1406,7 @@ void i8051_set_irq_line(int irqline, int state)
 			else
 				SET_IE0(0);		//Clear Int occurred flag
 			i8051.last_int0 = state;
-			
+
 			//Do the interrupt & handle - remove machine cycles used
 			if(GET_IE0)
 				i8051_icount-=check_interrupts();
@@ -1441,7 +1445,7 @@ void i8051_set_irq_line(int irqline, int state)
 				if(i8051.serial_rx_callback)
 					data = i8051.serial_rx_callback();
 				//Update the register directly, since SFR_W() will trigger a serial transmit instead!
-				R_SBUF=data;	
+				R_SBUF=data;
 				//Flag the IRQ
 				SET_RI(1);
 			}
@@ -1453,7 +1457,7 @@ void i8051_set_irq_line(int irqline, int state)
 /***********************************************************************************
  Check for pending Interrupts and process - returns # of cycles used for the int
 
- Note about priority & interrupting interrupts.. 
+ Note about priority & interrupting interrupts..
  1) A high priority interrupt cannot be interrupted by anything!
  2) A low priority interrupt can ONLY be interrupted by a high priority interrupt
  3) If more than 1 Interrupt Flag is set (ie, 2 simultaneous requests occur),
@@ -1476,7 +1480,7 @@ INLINE UINT8 check_interrupts(void)
 	if(NO_PENDING_IRQ) return 0;
 
 	//Skip if current irq in progress is high priority!
-	if(i8051.irq_priority)	{ LOG(("high priority irq in progress, skipping irq request\n")); return 0; }
+	if(i8051.irq_priority)	{ /* LOG(("high priority irq in progress, skipping irq request\n")); */ return 0; }
 
 	//Check which interrupt(s) requests have occurred..
 	//NOTE: The order of checking is based on the internal/default priority levels when levels are the same
@@ -1487,7 +1491,7 @@ INLINE UINT8 check_interrupts(void)
 		i8051.int_vec = V_IE0;
 		i8051.priority_request = GET_PX0;
 	}
-	//Timer 0 overflow 
+	//Timer 0 overflow
 	if(!i8051.priority_request && GET_TF0 && (!i8051.int_vec || (i8051.int_vec && GET_PT0))) {
 		//Set vector & priority level request
 		i8051.int_vec = V_TF0;
@@ -1505,8 +1509,8 @@ INLINE UINT8 check_interrupts(void)
 		i8051.int_vec = V_TF1;
 		i8051.priority_request = GET_PT1;
 	}
-	//Serial Interrupt Transmit/Receive Interrupts
-	if(!i8051.priority_request && (GET_TI || GET_RI) && (!i8051.int_vec || (i8051.int_vec && GET_PS))) {
+	//Serial Interrupt Transmit/Receive Interrupts (Note: ES Bit - Serial Interrupts must be enabled)
+	if(!i8051.priority_request && GET_ES && (GET_TI || GET_RI) && (!i8051.int_vec || (i8051.int_vec && GET_PS))) {
 		//Set vector & priority level request
 		i8051.int_vec = V_RITI;
 		i8051.priority_request = GET_PS;
@@ -1680,7 +1684,7 @@ static WRITE_HANDLER(sfr_write)
 			OUT(0,data);
 			break;
 
-		case SP: 
+		case SP:
 			if(offset > 0xff)
 				LOG(("i8051 #%d: attemping to write value to SP past 256 bytes at 0x%04x\n", cpu_getactivecpu(), PC));
 			R_SP = data&0xff; //keep sp w/in 256 bytes
@@ -1707,7 +1711,7 @@ static WRITE_HANDLER(sfr_write)
 			break;
 		}
 
-		case SBUF: 
+		case SBUF:
 			//R_SBUF = data;		//This register is used only for "Receiving data coming in!"
 			serial_transmit(data);	//Set up to transmit the data
 			break;
@@ -1740,7 +1744,7 @@ static WRITE_HANDLER(sfr_write)
 			SET_PARITY;
 			break;
 
-		case ACC: 
+		case ACC:
 			R_ACC = data;
 			SET_PARITY;
 			break;
@@ -1758,7 +1762,7 @@ static READ_HANDLER(sfr_read)
 {
 	switch (offset)
 	{
-		case P0:	
+		case P0:
 			if(RWM)
 				return R_P0;					//Read directly from port latch
 			else
@@ -1773,14 +1777,14 @@ static READ_HANDLER(sfr_read)
 		case TL1:		return R_TL1;
 		case TH0:		return R_TH0;
 		case TH1:		return R_TH1;
-		case P1:		
+		case P1:
 			if(RWM)
 				return R_P1;					//Read directly from port latch
 			else
 				return IN(1);					//Read from actual port
 		case SCON:		return R_SCON;
 		case SBUF:		return R_SBUF;
-		case P2:		
+		case P2:
 			if(RWM)
 				return R_P2;					//Read directly from port latch
 			else
@@ -1858,7 +1862,7 @@ static WRITE_HANDLER(internal_ram_iwrite)
 /*Generate an external ram address for read/writing using indirect addressing mode */
 /*The lowest 8 bits of the address are passed in (from the R0/R1 register), however
   the hardware can be configured to set the rest of the address lines to any available output port pins, which
-  means the only way we can implement this is to allow the driver to setup a callback to generate the 
+  means the only way we can implement this is to allow the driver to setup a callback to generate the
   address as defined by the specific hardware setup. We'll assume the address won't be bigger than 32 bits
 */
 static READ32_HANDLER(external_ram_iaddr)
@@ -1901,12 +1905,12 @@ INLINE void pop_pc()
 INLINE void set_parity()
 {
 	//This flag will be set when the accumulator contains an odd # of bits set..
-	int i, 
+	int i,
 	p = 0;
 	for (i=1; i<=128; i=i*2) {		//Test for each of the 8 bits in the ACC!
 		if ((R_ACC & i) != 0)
 			p++;					//Keep track of how many bits are set
-	}								
+	}
 
 	//Update the PSW Pairty bit
 	SET_P(p & 1);
@@ -1977,7 +1981,7 @@ static WRITE_HANDLER(bit_address_w)
    the 8052 chip where both the SFR and the upper 128 bytes of ram are mapped to the same
    address, so we can handle that here by mapping the sfr to a different address */
 
-READ_HANDLER(i8051_internal_r) 
+READ_HANDLER(i8051_internal_r)
 {
 	//Restrict internal ram to 256 Bytes max
 	if(offset < 0x100)
@@ -1985,7 +1989,7 @@ READ_HANDLER(i8051_internal_r)
 	else
 		return 0;
 }
-WRITE_HANDLER(i8051_internal_w) 
+WRITE_HANDLER(i8051_internal_w)
 {
 	//Restrict internal ram to 256 Bytes max
 	if(offset < 0x100)
@@ -2114,6 +2118,9 @@ INLINE void update_timer(int cyc)
 				overflow = 0xffff;
 				//Check for overflow
 				if((UINT32)(count+(cyc/12))>overflow) {
+
+					//TODO: Timer 1 can be set as Serial Baud Rate in the 8051 only... process bits here..
+
 					//Any overflow from cycles?
 					cyc-= (overflow-count)*12;
 					count = 0;
@@ -2177,18 +2184,18 @@ INLINE void update_timer(int cyc)
 			if(GET_TCLK || GET_RCLK)
 				timerinc = cyc/2;						//Timer increments ever 1/2 cycle in baud mode
 			else
-			//REGULAR TIMER - 
+			//REGULAR TIMER -
 				timerinc = cyc/12;						//Timer increments ever 1/12 cycles in normal mode
-	
+
 			//Check for overflow
-			if((UINT32)(count+timerinc)>overflow) {	
+			if((UINT32)(count+timerinc)>overflow) {
 				//Set Interrupt flag *unless* used as baud generator
 				if(!GET_TCLK && !GET_RCLK) {
 					SET_TF2(1);
 				}
 				else {
 				//Update bits sent if sending & bits left to send!
-					if(uart.sending && uart.bits_to_send)
+					if(uart.sending && uart.bits_to_send && uart.timerbaud)
 						uart.bits_to_send-=1;
 				}
 				//Auto reload?
@@ -2210,31 +2217,31 @@ INLINE void update_timer(int cyc)
 }
 
 //Set up to transmit data out of serial port
+//NOTE: Enable Serial Port Interrupt bit is NOT required to send/receive data!
 INLINE void serial_transmit(UINT8 data)
 {
 	int mode = GET_SM0+GET_SM1;
 
-	//Serial Interrupt Enable must be set?
-	if(GET_ES) {
-
-		//Flag that we're sending data
-		uart.sending = 1;
-		uart.data_out = data;
-		switch(mode) {
-			//8 bit shifter
-			case 0:
-				LOG(("Serial mode 0 not supported in i8051!\n"));
-				break;
-			//8 bit uart ( + start,stop bit ) - baud set by timer1 or timer2
-			case 1:
-				uart.bits_to_send = 8+2;
-				break;
-			//9 bit uart
-			case 2:
-			case 3:
-				LOG(("Serial mode 2 & 3 not supported in i8051!\n"));
-				break;
-		}
+	//Flag that we're sending data
+	uart.sending = 1;
+	uart.data_out = data;
+	switch(mode) {
+		//8 bit shifter ( + start,stop bit ) - baud set by clock freq / 12
+		case 0:
+			uart.timerbaud = 0;
+			uart.bitcycles = 0;
+			uart.bits_to_send = 8+2;
+			break;
+		//8 bit uart ( + start,stop bit ) - baud set by timer1 or timer2
+		case 1:
+			uart.timerbaud = 1;
+			uart.bits_to_send = 8+2;
+			break;
+		//9 bit uart
+		case 2:
+		case 3:
+			LOG(("Serial mode 2 & 3 not supported in i8051!\n"));
+			break;
 	}
 }
 
@@ -2244,19 +2251,34 @@ INLINE void	update_serial(int cyc)
 	//Any bits left to send?
 	if(uart.bits_to_send) {
 		//Timer Generated baud?
-		if(!uart.timerbaud) {
-			//Todo:Based on cycles, see if we've sent another bit
+		if(uart.timerbaud) {
+			//Let Timer overflow handle removing bits
 		}
-		//Let Timer overflow handle removing bits
+		else {
+			//Oscillator Based baud rate = Osc/12 baud rate, however it also means 1 bit = 12 cycles.
+			uart.bitcycles+=cyc;
+			if(uart.bitcycles > 11)	{
+				int bits_sent = uart.bitcycles / 12;
+				int diff = uart.bitcycles % 12;
+				//don't allow more bits sent than ready to send
+				if(bits_sent > uart.bits_to_send) {
+					bits_sent = uart.bits_to_send;
+					diff = 0;
+				}
+				uart.bits_to_send-=bits_sent;
+				uart.bitcycles = diff;
+			}
+		}
 	}
-	else {
-	//Nope - flag the interrupt & call the callback
+	//If no bits left to send - flag the interrupt & call the callback
+	if(!uart.bits_to_send) {
 		//Clear sending flag
 		uart.sending = 0;
+		uart.bitcycles = 0;
 		//Call the callback function
-		if(i8051.serial_tx_callback)	
+		if(i8051.serial_tx_callback)
 			i8051.serial_tx_callback(uart.data_out);
-		//Set Interrupt
+		//Set Interrupt Flag
 		SET_TI(1);
 		//Note: we'll let the main loop catch the interrupt
 	}
@@ -2269,7 +2291,7 @@ INLINE void	update_serial(int cyc)
 #if (HAS_I8752)
 void i8752_init (void)										{ i8051_init(); }
 void i8752_reset (void *param)
-{ 
+{
 	memset(&i8051, 0, sizeof(I8051));
 	memset(&uart, 0, sizeof(I8051_UART));
 	i8051.subtype = 8752;
@@ -2290,7 +2312,7 @@ void i8752_reset (void *param)
 
 	//Clear Ram (w/0xff)
 	memset(&i8051.IntRam,0xff,sizeof(i8051.IntRam));
-	
+
 	/* these are all defined reset states */
 	PC = 0;
 	SFR_W(SP, 0x7);
@@ -2328,7 +2350,7 @@ void i8752_reset (void *param)
 void i8752_exit	(void)										{ i8051_exit(); }
 int	i8752_execute(int cycles)								{ return i8051_execute(cycles); }
 unsigned i8752_get_context (void *dst)						{ return i8051_get_context(dst); }
-void i8752_set_context (void *src)							{ i8051_set_context(src); }		
+void i8752_set_context (void *src)							{ i8051_set_context(src); }
 unsigned i8752_get_reg (int regnum)							{ return i8051_get_reg(regnum); }
 void i8752_set_reg (int regnum, unsigned val)				{ i8051_set_reg(regnum,val); }
 void i8752_set_irq_line(int irqline, int state)				{ i8051_set_irq_line(irqline,state); }
@@ -2363,9 +2385,9 @@ unsigned i8752_dasm(char *buffer, unsigned pc)
    the 8052 chip where both the SFR and the upper 128 bytes of ram are mapped to the same
    address, so we can handle that here by mapping the sfr to a different address */
 
-READ_HANDLER(i8752_internal_r) 
+READ_HANDLER(i8752_internal_r)
 {
-	//USE INDIRECT READ TO ALLOW FULL 256 Bytes of RAM to show in the debugger	
+	//USE INDIRECT READ TO ALLOW FULL 256 Bytes of RAM to show in the debugger
 	if(offset < 0x100)
 		return IRAM_IR(offset);
 	else
@@ -2376,7 +2398,7 @@ READ_HANDLER(i8752_internal_r)
 	//Everything else is 0 (and invalid)
 		return 0;
 }
-WRITE_HANDLER(i8752_internal_w) 
+WRITE_HANDLER(i8752_internal_w)
 {
 	//USE INDIRECT WRITE TO ALLOW FULL 256 Bytes of RAM to show in the debugger
 	if(offset < 0x100)
