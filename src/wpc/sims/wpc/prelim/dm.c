@@ -6,6 +6,8 @@
 
  Read PZ.c or FH.c if you like more help.
 
+ 031003 Tom: added support for flashers 37-44 (51-58)
+
  ******************************************************************************/
 
 /*------------------------------------------------------------------------------
@@ -34,6 +36,7 @@
 static int  dm_handleBallState(sim_tBallStatus *ball, int *inports);
 static void dm_drawStatic(BMTYPE **line);
 static void init_dm(void);
+static int dm_getSol(int solNo);
 
 /*-----------------------
   local static variables
@@ -291,7 +294,9 @@ static sim_tSimData dmSimData = {
 static core_tGameData dmGameData = {
   GEN_WPCDCS, wpc_dispDMD,
   {
-    FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_UL)
+    FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_UL),
+	0,0,8,0,0,0,0,
+	dm_getSol, NULL, NULL, NULL
   },
   &dmSimData,
   {
@@ -309,4 +314,11 @@ static core_tGameData dmGameData = {
 static void init_dm(void) {
   core_gameData = &dmGameData;
 }
+
+static int dm_getSol(int solNo) {
+  if ((solNo >= CORE_CUSTSOLNO(1)) && (solNo <= CORE_CUSTSOLNO(8)))
+    return ((wpc_data[WPC_EXTBOARD1]>>(solNo-CORE_CUSTSOLNO(1)))&0x01);
+  return 0;
+}
+
 

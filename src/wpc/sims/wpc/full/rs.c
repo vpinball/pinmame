@@ -10,6 +10,8 @@
 
  Read PZ.c or FH.c if you like more help.
 
+031003 Tom: added support for flashers 37-44 (51-58)
+
  ******************************************************************************/
 
 /*------------------------------------------------------------------------------
@@ -48,6 +50,7 @@
 /  Local functions
 /-------------------*/
 static int  rs_handleBallState(sim_tBallStatus *ball, int *inports);
+static int rs_getSol(int solNo);
 static void rs_handleMech(int mech);
 static void rs_drawMech(BMTYPE **line);
 static void rs_drawStatic(BMTYPE **line);
@@ -582,8 +585,8 @@ static core_tGameData rsGameData = {
   GEN_WPCSECURITY, wpc_dispDMD,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_U), /* actually 3 left flippers */
-    0,0,0,0,0,0,0,
-    NULL, rs_handleMech, rs_getMech, rs_drawMech,
+    0,0,8,0,0,0,0,
+    rs_getSol, rs_handleMech, rs_getMech, rs_drawMech,
     &rs_lampPos, rs_samsolmap
   },
   &rsSimData,
@@ -601,6 +604,12 @@ static core_tGameData rsGameData = {
 /----------------*/
 static void init_rs(void) {
   core_gameData = &rsGameData;
+}
+
+static int rs_getSol(int solNo) {
+  if ((solNo >= CORE_CUSTSOLNO(1)) && (solNo <= CORE_CUSTSOLNO(8)))
+    return ((wpc_data[WPC_EXTBOARD1]>>(solNo-CORE_CUSTSOLNO(1)))&0x01);
+  return 0;
 }
 
 static void rs_handleMech(int mech) {
