@@ -19,24 +19,6 @@ static void init_##name(void) { core_gameData = &name##GameData; }
 
 S7_INPUT_PORTS_START(s7, 1) S7_INPUT_PORTS_END
 
-
-/*---------------------------------
-/ Black Knight - Sys.7 (Game #500)
-/---------------------------------*/
-INITGAMEFULL(bk,s7_dispS7,0,0,21,22,36,0,0,0)
-S7_ROMSTART8088(bk,l4,"ic14.716",   CRC(fcbe3d44),
-                      "ic17.532",   CRC(bb571a17),
-                      "ic20.716",   CRC(dfb4b75a),
-                      "ic26.716",   CRC(104b78da))
-S67S_SOUNDROMS8(      "sound12.716",CRC(6d454c0e))
-S67S_SPEECHROMS0000(  "speech7.532",CRC(c7e229bf),
-                      "speech5.532",CRC(411bc92f),
-                      "speech6.532",CRC(fc985005),
-                      "speech4.532",CRC(f36f12e5))
-S7_ROMEND
-#define input_ports_bk input_ports_s7
-CORE_GAMEDEF(bk,l4,"Black Knight (L-4)",1980,"Williams",s7_mS7S,0)
-
 /*-----------------------------------
 / Cosmic Gunfight - Sys.7 (Game #502)
 /-----------------------------------*/

@@ -893,6 +893,10 @@ SOURCE=.\src\wpc\sims\wpc\prelim\wd.c
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\src\wpc\sims\s7\full\bk.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\sims\s7\full\tmfnt.c
 # End Source File
 # End Group
