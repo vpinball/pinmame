@@ -11,7 +11,7 @@ TARGET = mame
 endif
 
 # uncomment next line to include the debugger
-DEBUG = 1
+# DEBUG = 1
 
 # uncomment next line to include the symbols for symify
 # SYMBOLS = 1

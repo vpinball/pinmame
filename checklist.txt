@@ -15,11 +15,10 @@ Important steps to take before a release:
 If anything of the above fails, forget about a release and correct the errors first!
 If it worked out ok, however, do a release!
 
-- Pack everything together nicely, using Max Compression.
+- Pack everything together nicely, using max. compression
 - Upload the zips to pinmame.com, update the news & download pages.
-- Release it on shivasite's upload page, tell all the forum people it's happened!
-- Shut down your computer!
-- Go and have a drink. You deserved it now!
-- 12 hours later, check back the forum for the fist terrible errors Tom & Martin forgot to fix!
+- Release it to shivasite's upload page, and tell all the forum people what has happened!
+- Shut down your computer! Go and have a drink. You deserve one now!
+- 12 hours later, check back the forum for the first terrible errors we forgot to fix!
 
 :)
