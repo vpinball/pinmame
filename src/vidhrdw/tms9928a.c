@@ -34,7 +34,15 @@
 **   and WRITE_HANDLER.
 ** - Got rid of the color table, unused. Also got rid of the old colors,
 **   which where commented out anyways.
-** 
+**
+** 24 jan 2002, Steve Ellenoff:
+** - Added support to display multiple chip outputs on the same screen.
+**
+** 23 mar 2002, Gerrit Volkenborn:
+** - Corrected color palette. Colors by R. Nabet were too bright, light red was off.
+**   Keeping the original palette though for slave chips introduced by S. Ellenoff.
+**   This involved to internally extend the palette to 32 colors.
+** - Introduced color blending for multiple chips in mode 2 (for Granny & The Gators).
 **
 ** Todo:
 ** - The screen image is rendered in `one go'. Modifications during
@@ -42,9 +50,6 @@
 ** - Correctly emulate 4,8,16 kb VRAM if needed.
 ** - uses plot_pixel (...) in TMS_sprites (...), which is rended in
 **   in a back buffer created with malloc (). Hmm..
-** - Colours are incorrect. [fixed by R Nabet ?]
-**
-** MODIFIED: by Steve Ellenoff for multi-chip support (01/24/2002)
 */
 
 #include "driver.h"
@@ -53,90 +58,71 @@
 #include "tms9928a.h"
 
 /*
-	New palette (R. Nabet).
+	New palette (R. Nabet, updated by G. Volkenborn).
 
 	First 3 columns from TI datasheet (in volts).
 	Next 3 columns based on formula :
 		Y = .299*R + .587*G + .114*B (NTSC)
 	(the coefficients are likely to be slightly different with PAL, but who cares ?)
 	I assumed the "zero" for R-Y and B-Y was 0.47V.
-	Last 3 coeffs are the 8-bit values.
+	Next 3 coeffs were the 8-bit values if the over-intensified red (288) was applied.
+	Last 3 coeffs are the recalculated values if 1.13V is considered the peak value (255).
 
-	Color            Y  	R-Y 	B-Y 	R   	G   	B   	R	G	B
+	Color            Y  	R-Y 	B-Y 	R   	G   	B   	R	G	B	RC	GC	BC
 	0 Transparent
-	1 Black         0.00	0.47	0.47	0.00	0.00	0.00	  0	  0	  0
-	2 Medium green  0.53	0.07	0.20	0.13	0.79	0.26	 33	200	 66
-	3 Light green   0.67	0.17	0.27	0.37	0.86	0.47	 94	220	120
-	4 Dark blue     0.40	0.40	1.00	0.33	0.33	0.93	 84	 85	237
-	5 Light blue    0.53	0.43	0.93	0.49	0.46	0.99	125	118	252
-	6 Dark red      0.47	0.83	0.30	0.83	0.32	0.30	212	 82	 77
-	7 Cyan          0.73	0.00	0.70	0.26	0.92	0.96	 66	235	245
-	8 Medium red    0.53	0.93	0.27	0.99	0.33	0.33	252	 85	 84
-	9 Light red     0.67	0.93	0.27	1.13(!)	0.47	0.47	255	121	120
-	A Dark yellow   0.73	0.57	0.07	0.83	0.76	0.33	212	193	 84
-	B Light yellow  0.80	0.57	0.17	0.90	0.81	0.50	230	206	128
-	C Dark green    0.47	0.13	0.23	0.13	0.69	0.23	 33	176	 59
-	D Magenta       0.53	0.73	0.67	0.79	0.36	0.73	201	 91	186
-	E Gray          0.80	0.47	0.47	0.80	0.80	0.80	204	204	204
-	F White         1.00	0.47	0.47	1.00	1.00	1.00	255	255	255
+	1 Black         0.00	0.47	0.47	0.00	0.00	0.00	  0	  0	  0	  0	  0	  0
+	2 Medium green  0.53	0.07	0.20	0.13	0.79	0.26	 33	201	 66	 29	178	 59
+	3 Light green   0.67	0.17	0.27	0.37	0.86	0.47	 94	219	120	 83	194	106
+	4 Dark blue     0.40	0.40	1.00	0.33	0.33	0.93	 84	 84	237	 74	 74	210
+	5 Light blue    0.53	0.43	0.93	0.49	0.46	0.99	125	117	252	111	103	223
+	6 Dark red      0.47	0.83	0.30	0.83	0.32	0.30	212	 82	 77	187	 72	 68
+	7 Cyan          0.73	0.00	0.70	0.26	0.92	0.96	 67	236	246	 59	208	217
+	8 Medium red    0.53	0.93	0.27	0.99	0.33	0.33	253	 84	 84	223	 74	 74
+	9 Light red     0.67	0.93	0.27	1.13(!)	0.47	0.47	288	120	120	255	106	106
+	A Dark yellow   0.73	0.57	0.07	0.83	0.76	0.33	212	194	 84	187	172	 74
+	B Light yellow  0.80	0.57	0.17	0.90	0.81	0.50	230	207	128	203	183	113
+	C Dark green    0.47	0.13	0.23	0.13	0.69	0.23	 33	176	 59	 29	156	 52
+	D Magenta       0.53	0.73	0.67	0.79	0.36	0.73	201	 92	186	178	 81	165
+	E Gray          0.80	0.47	0.47	0.80	0.80	0.80	204	204	204	181	181	181
+	F White         1.00	0.47	0.47	1.00	1.00	1.00	255	255	255	226	226	226
 */
 
-// Needed to double-size palette for multi chip support on Granny & The Gators
-// The original colors have been darkened by 10% to allow for color "blending".
 static unsigned char TMS9928A_palette[32*3] =
 {
-/* slightly darkened colors for master chip */
+/* correct colors for master chip */
 	0, 0, 0,
 	0, 0, 0,
-	30, 180, 59,
-	85, 198, 108,
-	76, 76, 213,
-	112, 106, 227,
-	191, 74, 69,
-	59, 211, 220,
-	227, 76, 76,
-	229, 109, 108,
-	191, 174, 76,
-	207, 185, 115,
-	30, 158, 53,
-	181, 82, 167,
-	184, 184, 184,
-	229, 229, 229
-/* regular colors for slave chip */
+	29, 178, 59,
+	83, 194, 106,
+	74, 74, 210,
+	111, 103, 223,
+	187, 72, 68,
+	59, 208, 217,
+	223, 74, 74,
+	255, 106, 106,
+	187, 172, 74,
+	203, 183, 113,
+	29, 156, 52,
+	178, 81, 165,
+	181, 181, 181,
+	237, 237, 237 // raised white to 105%, as it looked too smudgy
+/* over-intensified colors for slave chip */
 	,0, 0, 0,
 	0, 0, 0,
-	33, 200, 66,
-	94, 220, 120,
-	84, 85, 237,
-	125, 118, 252,
+	33, 201, 66,
+	94, 219, 120,
+	84, 84, 237,
+	125, 117, 252,
 	212, 82, 77,
-	66, 235, 245,
-	252, 85, 84,
-	255, 121, 120,
-	212, 193, 84,
-	230, 206, 128,
+	67, 236, 246,
+	253, 84, 84,
+	255, 120, 120, // note red value is 13% too low here!
+	212, 194, 84,
+	230, 207, 128,
 	33, 176, 59,
-	201, 91, 186,
+	201, 92, 186,
 	204, 204, 204,
 	255, 255, 255
-/* slightly lightened colors (unusable)
-	,0, 0, 0,
-	0, 0, 0,
-	36, 220, 72,
-	103, 242, 132,
-	92, 94, 255,
-	138, 130, 255,
-	233, 90, 85,
-	72, 255, 255,
-	255, 94, 92,
-	255, 133, 132,
-	233, 174, 92,
-	253, 227, 141,
-	36, 194, 65,
-	221, 100, 205,
-	224, 224, 224,
-	255, 255, 255
-*/
 };
 
 /*
