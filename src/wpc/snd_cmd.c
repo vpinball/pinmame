@@ -85,6 +85,7 @@ void snd_cmd_exit(void) {
 / log handling
 /-----------------*/
 void snd_cmd_log(int cmd) {
+  if (locals.soundMode) return; // Don't log from within sound commander
   locals.cmdLog[locals.firstLog++] = cmd;
   locals.firstLog %= MAX_CMD_LOG;
 }
@@ -115,8 +116,11 @@ int manual_sound_commands(struct mame_bitmap *bitmap, int *fullRefresh) {
     /* clear screen */
     fillbitmap(bitmap,Machine->uifont->colortable[0],NULL);
     *fullRefresh = TRUE;
-    /* start/stop main CPU */
-    cpu_set_halt_line(WPC_CPUNO, locals.soundMode);
+    /* start/stop all non-sound CPU(s) */
+    for (ii = 0; ii < MAX_CPU; ii++)
+      if ((Machine->drv->cpu[ii].cpu_type & ~CPU_FLAGS_MASK) &&
+          (Machine->drv->cpu[ii].cpu_type & CPU_AUDIO_CPU) == 0)
+        cpu_set_halt_line(ii, locals.soundMode);
   }
 
   if (locals.soundMode) {
@@ -188,7 +192,6 @@ int manual_sound_commands(struct mame_bitmap *bitmap, int *fullRefresh) {
   }
   return TRUE; /* not in sound command mode */
 }
-
 
 static int checkName(const char *buf, const char *name) {
   while (*name)
@@ -282,7 +285,6 @@ static void clrCmds(void) {
     cmds.next = NULL;
   }
 }
-
 
 static int playCmd(int length, int *cmd) {
   static int cmdIdx = 0;
