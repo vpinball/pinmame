@@ -866,6 +866,14 @@ SOURCE=.\src\wpc\gts3sound.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\hnk.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\hnkgames.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\mech.c
 # End Source File
 # Begin Source File
@@ -1496,6 +1504,10 @@ SOURCE=.\src\wpc\gts3dmd.h
 # Begin Source File
 
 SOURCE=.\src\wpc\gts3sound.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\hnk.h
 # End Source File
 # Begin Source File
 
