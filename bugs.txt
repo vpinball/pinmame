@@ -3,32 +3,32 @@ Bugs in Pinmame that we are aware of:
 (Note: Many of these bugs have been extremely difficult to track down and fix, 
        so it might be awhile before they can be corrected!)
 
-#1)  Williams/Bally WPC: DCS sound still have some problems.
-     (Don't use full volume (30-31) to avoid static noise)
+ #1) Williams/Bally WPC: DCS sound still has some problems.
+     (Don't use full volume (29-31) to avoid static noise)
 
-#2)  Not all Williams/Bally WPC functions are implemented in PinMAME. The most
-     important (?!) functions missing are the ticket dispenser, and accurate
-     real time clock emulation (current rtc functionality is a work around).
+ #2) Not all Williams/Bally WPC functions are implemented in PinMAME.
+     The most important (?!) functions missing are the ticket dispenser,
+     and accurate real time clock emulation (current rtc functionality is a workaround).
 
-#3)  The WPC printer function is only tested with default settings. The
-     printout will probably not work with other settings.
+ #3) The WPC printer function is only tested with default settings.
+     The printout will probably not work with other settings.
 
-#4)  Saucer LEDs not implemented in AFM.
+ #4) Saucer LEDs not implemented in AFM.
 
-#5) The Williams/Bally WPC CVSD speech seems to have a different pitch than
-    the real game. A strange thing is that the speech works better when
-    background music is playing.
+ #5) The Williams/Bally WPC CVSD speech seems to have a different pitch
+     than the real game. A strange thing is that the speech works better
+     when background music is playing.
 
-#6) The name and year for each game were taken from the internet pinball
-    database and may not be 100% accurate!
+ #6) The name and year for each game were taken from the Internet Pinball Database
+     (http://www.lysator.liu.se/pinball/IPD), and may not be 100% accurate!
 
-#7) Some games have custom Alpha/Numeric layouts which may not yet be supported.
+ #7) Some games have custom AlphaNumeric layouts which may not yet be supported.
 
-#8) Comma issues with System 9
+ #8) Comma issues with Williams System 9
 
-#9) Dip Switches do not work for Williams System 3-6.
+ #9) Dip switches do not work for Williams System 3-6.
 
-#10) System 7 games using a Speech board do not work properly.
+#10) System 7 games using a speech board do not work properly.
 
 #11) Data East 128x16 DMD support is not 100% accurate.
  
@@ -42,16 +42,19 @@ Bugs in Pinmame that we are aware of:
      a) Indy 500 - Sound dies on ball 2
      b) STTNG - sound stops for extra ball.
      c) The Shadow - Sound stops on every ball except the first until a trigger is hit.
-     d) Judge Dredd - Sound Volume varies between different balls.
+     d) Judge Dredd - Sound volume varies between different balls.
 
-#16) Rapid Fire displays all 2 in the bottom display.
+#16) Bally-35 games using sound board 51 do have sound problems.
 
-#17) DCS Playback appears to be warped on Windows XP Beta builds..
+#17) DCS playback appears to be warped on Windows XP.
 
-#18) Volume Issues with BSMT games
+#18) Volume issues with BSMT games; most of them are too low.
 
-#19) DMD Issues with Gottlieb System 3 Games.
+#19) DMD issues with Gottlieb System 3 games.
 
-#20) Numerous Issues with Gottlieb Systm 3 Alpha Numeric Games
+#20) Numerous issues with Gottlieb System 3 AlphaNumeric games.
 
-#21) # of Credits Remaining in Gottlieb System 80 games.
+#21) No. of Credits remaining in Gottlieb System 80 games will jump to the maximum possible amount.
+     This is an error of the new 6502 emulation and won't live long... :)
+     
+#22) Some Gottlieb System80A games do have sound problems.
