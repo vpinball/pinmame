@@ -468,7 +468,7 @@ static WRITE_HANDLER(GTS3_sndCmd_w) { GTS3_SoundCommand(data^0xff); }
 // gts numbering col11->col12, col12->col13, col13->col14, col14->col15, col15->col11
 static int gts3_sw2m(int no) {
   no += 10;
-  no = (no/10)*8 + no%8;
+  no = (no/10)*8 + no%10;
   if (no >= 128) no -= 32;
   else if (no >= 96) no += 8;
   return no;
