@@ -1924,6 +1924,14 @@ SOURCE=.\src\sound\sn76477.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\sound\sp0250.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\sp0250.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\sound\streams.c
 # End Source File
 # Begin Source File
