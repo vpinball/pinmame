@@ -37,7 +37,7 @@ ALVGDMD_SPLIT_ROM(		"dot27c.512", CRC(c8bd48e7) SHA1(e2dc513dd42c05c2018e6d8c0b6
 						"romdef1.c20",CRC(045b21c1) SHA1(134b7eb0f71506d12d9ded24999d530126c558fc),
 						"romdef2.c20",CRC(23c32ee5) SHA1(429b3b069251bb8b681bbc6382ceb6b85125eb79))
 ALVG_ROMEND
-CORE_GAMEDEFNV(wtgband,"World Tour Garage Band",1992,"Alvin G",mALVGS,GAME_IMPERFECT_GRAPHICS)
+CORE_GAMEDEFNV(wtgband,"World Tour Garage Band",1992,"Alvin G",mALVGS,0)
 
 /*-------------------------------------------------------------------
 / Mystery Castle
@@ -52,7 +52,7 @@ ALVGS_SOUNDROM(			"mcastle.102", CRC(752822d0) SHA1(36461ef03cac5aefa0c03dfdc63c
 ALVGDMD_ROM2R(			"mcastle.du4", CRC(686e253a) SHA1(28aff34c120c61e231e2111dc396df515bcbbb89),
 						"mcastle.du5", CRC(9095c367) SHA1(9d3e9416f662ee2aad891eef059278c530448fcc))
 ALVG_ROMEND
-CORE_GAMEDEFNV(mystcast,"Mystery Castle",1993,"Alvin G",mALVGS,GAME_IMPERFECT_GRAPHICS)
+CORE_GAMEDEFNV(mystcast,"Mystery Castle",1993,"Alvin G",mALVGS,0)
 
 /*-------------------------------------------------------------------
 / Pistol Poker
@@ -68,7 +68,12 @@ ALVGDMD_ROM(			"p_peteu4.512", CRC(caa0cabd) SHA1(caff6ca4a9cce4e3d846502696c883
 						"p_peteu5.c20", CRC(1d2cecd8) SHA1(6072a0f744fb9eef728fe7cf5e17d0007edbddd7),
 						"p_peteu6.c20", CRC(3a56376c) SHA1(69febc17b8416c03a58e651447bbe1e14ff27e50))
 ALVG_ROMEND
-CORE_GAMEDEFNV(pstlpkr,"Pistol Poker",1993,"Alvin G",mALVGS,GAME_IMPERFECT_GRAPHICS)
+CORE_GAMEDEFNV(pstlpkr,"Pistol Poker",1993,"Alvin G",mALVGS,0)
+
+
+
+
+
 
 //Use only for testing the 8031 core emulation
 #ifdef MAME_DEBUG
@@ -78,21 +83,9 @@ CORE_GAMEDEFNV(pstlpkr,"Pistol Poker",1993,"Alvin G",mALVGS,GAME_IMPERFECT_GRAPH
 INITGAME(test8031, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS, 0, 5)
 ROM_START(test8031)
 
-TEST8031_ROM(			"test1.bin", NO_DUMP,
+TEST8031_ROM(			"addsub.bin", NO_DUMP,
 						"p_peteu5.c20", CRC(1d2cecd8) SHA1(6072a0f744fb9eef728fe7cf5e17d0007edbddd7),
 						"p_peteu6.c20", CRC(3a56376c) SHA1(69febc17b8416c03a58e651447bbe1e14ff27e50))
-#if 0
-//Pistol Poker DMD Rom
-TEST8031_ROM(			"p_peteu4.512", CRC(caa0cabd) SHA1(caff6ca4a9cce4e3d846502696c8838805673261),
-						"p_peteu5.c20", CRC(1d2cecd8) SHA1(6072a0f744fb9eef728fe7cf5e17d0007edbddd7),
-						"p_peteu6.c20", CRC(3a56376c) SHA1(69febc17b8416c03a58e651447bbe1e14ff27e50))
-//#else
-//World Tour DMD Rom
-TEST8031_SPLIT_ROM(		"dot27c.512", CRC(c8bd48e7) SHA1(e2dc513dd42c05c2018e6d8c0b6f0b2c56e6e059),
-						"romdef1.c20",CRC(045b21c1) SHA1(134b7eb0f71506d12d9ded24999d530126c558fc),
-						"romdef2.c20",CRC(23c32ee5) SHA1(429b3b069251bb8b681bbc6382ceb6b85125eb79))
-#endif
-
 ALVG_ROMEND
 CORE_GAMEDEFNV(test8031,"Test 8031 CPU Core",2003,"Steve Ellenoff",mTEST8031,0)
 #endif

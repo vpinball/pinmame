@@ -20,30 +20,29 @@ extern PINMAME_VIDEO_UPDATE(alvgdmd_update);
 //NOTE: DMD CPU requires 128K of region space, since the ROM is mapped in the lower 64K, and the RAM in the upper 64K
 #define CPU_REGION(reg)		 NORMALREGION(0x20000, reg)
 
-//256K DMD Data Roms - Treat 256K roms as 512K roms because it's the max size supported
+//256K DMD Data Roms
 #define ALVGDMD_256K_DATA_ROM(reg, n2,chk2,n3,chk3) \
   NORMALREGION(0x100000, reg) \
     ROM_LOAD(n2, 0x00000, 0x40000, chk2) \
-	ROM_RELOAD(  0x40000, 0x40000) \
-    ROM_LOAD(n3, 0x80000, 0x40000, chk3) \
+	ROM_RELOAD(  0x80000, 0x40000) \
+    ROM_LOAD(n3, 0x40000, 0x40000, chk3) \
 	ROM_RELOAD(  0xc0000, 0x40000) 
 
 //Same as above, but with extra 64K for the dmd cpu to be temporarily stored
 #define ALVGDMD_256K_DATA_ROM_SPLIT(reg, n2,chk2,n3,chk3) \
   NORMALREGION(0x110000, reg) \
     ROM_LOAD(n2, 0x00000, 0x40000, chk2) \
-	ROM_RELOAD(	 0x40000, 0x40000) \
-    ROM_LOAD(n3, 0x80000, 0x40000, chk3) \
-	ROM_RELOAD(	 0xc0000, 0x40000) 
+	ROM_RELOAD(  0x80000, 0x40000) \
+    ROM_LOAD(n3, 0x40000, 0x40000, chk3) \
+	ROM_RELOAD(  0xc0000, 0x40000) 
 
 //512K DMD Data Roms
 #define ALVGDMD_512K_DATA_ROM(reg, n2,chk2,n3,chk3) \
   NORMALREGION(0x100000, reg) \
     ROM_LOAD(n2, 0x00000, 0x80000, chk2) \
-    ROM_LOAD(n3, 0xc0000, 0x80000, chk3) 
+    ROM_LOAD(n3, 0x80000, 0x80000, chk3) 
 
 /* END HELPER MACROS */
-
 
 
 //Main CPU 64K (Full Rom), DMD Data Roms (2 X 256K) - 
@@ -66,7 +65,9 @@ extern PINMAME_VIDEO_UPDATE(alvgdmd_update);
 	ROM_LOAD(n1, 0x00000, 0x10000, chk1) \
     NORMALREGION(0x100000, ALVGDMD_ROMREGION) \
     ROM_LOAD(n2, 0x00000, 0x40000, chk2) \
-	ROM_RELOAD(  0x40000, 0x40000) 
+	ROM_RELOAD(  0x40000, 0x40000) \
+	ROM_RELOAD(  0x80000, 0x40000) \
+	ROM_RELOAD(  0xc0000, 0x40000)
 
 //Use only for testing the 8031 core emulation
 #ifdef MAME_DEBUG
