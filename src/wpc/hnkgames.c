@@ -3,12 +3,15 @@
 #include "hnk.h"
 
 //Display: 5 X 9 Segment, 6 Digit Displays. Backglass covers the ball/credit display.
-
+/*
+(02)(03)(04)(05)(06)(07)xx(10)(11)(12)(13)(14)(15)xx
+(18)(19)(20)(21)(22)(23)xx(26)(27)(28)(29)(30)(31)xx
+(34)(35)(36)(37)(39)(40)
+*/
 static core_tLCDLayout dispHNK[] = {
-  {0, 0, 2,6,CORE_SEG7}, {0,14,10,6,CORE_SEG7},
-  {2, 0,18,6,CORE_SEG7}, {2,14,26,6,CORE_SEG7},
-  {4, 0,34,6,CORE_SEG7},
-  //{4, 4,35,2,CORE_SEG7}, {4,10,38,2,CORE_SEG7},{0}
+  {0, 0, 2,6,CORE_SEG9}, {0,14,10,6,CORE_SEG9},
+  {2, 0,18,6,CORE_SEG9}, {2,14,26,6,CORE_SEG9},
+  {4, 4,34,2,CORE_SEG9}, {4,10,36,2,CORE_SEG9},{0}
 };
 
 #define INITGAME(name, gen, disp, flip, lamps) \
