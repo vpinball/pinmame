@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "VPinMAME.h"
+#include "VPinMAMEConfig.h"
 
 #include "Controller.h"
 #include "ControllerOptions.h"
@@ -8,7 +9,7 @@
 extern "C" {
 #include "mame.h"
 #include "driver.h"
-#include "registry.h"
+#include "rc.h"
 }
 
 // all options are save to the registry; saving to other locations is possible
@@ -258,9 +259,9 @@ void DelOptions(char* pszROMName)
 	RegCloseKey(hKey);
 }
 
-void GetPathes(PCONTROLLERPATHES pControllerPathes)
+void GetPaths(PCONTROLLERPATHS pControllerPaths)
 {
-	if ( !pControllerPathes )
+	if ( !pControllerPaths )
 		return;
 
 	BOOL fNew = FALSE;
@@ -270,20 +271,20 @@ void GetPathes(PCONTROLLERPATHES pControllerPathes)
 	char szInstallDir[MAX_PATH];
 	GetInstallDir(szInstallDir, sizeof szInstallDir);
 
-	lstrcpy(pControllerPathes->szRomDirs, szInstallDir);
-	lstrcat(pControllerPathes->szRomDirs, REG_SZROMDIRS_DEF);
+	lstrcpy(pControllerPaths->szRomDirs, szInstallDir);
+	lstrcat(pControllerPaths->szRomDirs, REG_SZROMDIRS_DEF);
 	
-	lstrcpy(pControllerPathes->szCfgDir, szInstallDir);
-	lstrcat(pControllerPathes->szCfgDir, REG_SZCFGDIR_DEF);
+	lstrcpy(pControllerPaths->szCfgDir, szInstallDir);
+	lstrcat(pControllerPaths->szCfgDir, REG_SZCFGDIR_DEF);
 
-	lstrcpy(pControllerPathes->szNVRamDir, szInstallDir);
-	lstrcat(pControllerPathes->szNVRamDir, REG_SZNVRAMDIR_DEF);
+	lstrcpy(pControllerPaths->szNVRamDir, szInstallDir);
+	lstrcat(pControllerPaths->szNVRamDir, REG_SZNVRAMDIR_DEF);
 
-	lstrcpy(pControllerPathes->szSampleDirs, szInstallDir);
-	lstrcat(pControllerPathes->szSampleDirs, REG_SZSAMPLEDIRS_DEF);
+	lstrcpy(pControllerPaths->szSampleDirs, szInstallDir);
+	lstrcat(pControllerPaths->szSampleDirs, REG_SZSAMPLEDIRS_DEF);
 
-	lstrcpy(pControllerPathes->szImgDir, szInstallDir);
-	lstrcat(pControllerPathes->szImgDir, REG_SZIMGDIRDIR_DEF);
+	lstrcpy(pControllerPaths->szImgDir, szInstallDir);
+	lstrcat(pControllerPaths->szImgDir, REG_SZIMGDIRDIR_DEF);
 
 	char szKey[MAX_PATH];
 	lstrcpy(szKey, REG_BASEKEY);
@@ -296,7 +297,7 @@ void GetPathes(PCONTROLLERPATHES pControllerPathes)
 		lstrcat(szKey, "\\");
 		lstrcat(szKey, REG_DEFAULT);
    		if ( RegOpenKeyEx(HKEY_CURRENT_USER, szKey, 0, KEY_WRITE|KEY_QUERY_VALUE, &hKey)!=ERROR_SUCCESS ) {
-			PutPathes(pControllerPathes);
+			PutPaths(pControllerPaths);
 			return;
 		}
 		
@@ -311,35 +312,35 @@ void GetPathes(PCONTROLLERPATHES pControllerPathes)
 	dwType = REG_SZ;
  	dwSize = sizeof szValue; 
     if ( RegQueryValueEx(hKey, REG_SZROMDIRS, 0, &dwType, (LPBYTE) &szValue, &dwSize)==ERROR_SUCCESS ) 
-		lstrcpy(pControllerPathes->szRomDirs, szValue);
+		lstrcpy(pControllerPaths->szRomDirs, szValue);
 	else
 		fNew = TRUE;
 
 	dwType = REG_SZ;
  	dwSize = sizeof szValue; 
     if ( RegQueryValueEx(hKey, REG_SZCFGDIR, 0, &dwType, (LPBYTE) &szValue, &dwSize)==ERROR_SUCCESS ) 
-		lstrcpy(pControllerPathes->szCfgDir, szValue);
+		lstrcpy(pControllerPaths->szCfgDir, szValue);
 	else
 		fNew = TRUE;
 
 	dwType = REG_SZ;
  	dwSize = sizeof szValue; 
     if ( RegQueryValueEx(hKey, REG_SZNVRAMDIR, 0, &dwType, (LPBYTE) &szValue, &dwSize)==ERROR_SUCCESS ) 
-		lstrcpy(pControllerPathes->szNVRamDir, szValue);
+		lstrcpy(pControllerPaths->szNVRamDir, szValue);
 	else
 		fNew = TRUE;
 
 	dwType = REG_SZ;
  	dwSize = sizeof szValue; 
     if ( RegQueryValueEx(hKey, REG_SZSAMPLEDIRS, 0, &dwType, (LPBYTE) &szValue, &dwSize)==ERROR_SUCCESS ) 
-		lstrcpy(pControllerPathes->szSampleDirs, szValue);
+		lstrcpy(pControllerPaths->szSampleDirs, szValue);
 	else
 		fNew = TRUE;
 
 	dwType = REG_SZ;
  	dwSize = sizeof szValue;   
     if ( RegQueryValueEx(hKey, REG_SZIMGDIRDIR, 0, &dwType, (LPBYTE) &szValue, &dwSize)==ERROR_SUCCESS ) 
-		lstrcpy(pControllerPathes->szImgDir, szValue);
+		lstrcpy(pControllerPaths->szImgDir, szValue);
 	else
 		fNew = TRUE;
 
@@ -354,11 +355,16 @@ void GetPathes(PCONTROLLERPATHES pControllerPathes)
 	RegCloseKey(hKey);
 
 	if ( fNew )
-		PutPathes(pControllerPathes);
+		PutPaths(pControllerPaths);
 
+	set_option("rompath", pControllerPaths->szRomDirs, 0);
+	set_option("samplepath", pControllerPaths->szSampleDirs, 0);
+	set_option("cfg_directory", pControllerPaths->szCfgDir, 0);
+	set_option("nvram_directory", pControllerPaths->szNVRamDir, 0);
+	set_option("snapshot_directory", pControllerPaths->szImgDir, 0);
 }
 
-void PutPathes(PCONTROLLERPATHES pControllerPathes)
+void PutPaths(PCONTROLLERPATHS pControllerPaths)
 {
 	char szKey[MAX_PATH];
 	lstrcpy(szKey, REG_BASEKEY);
@@ -370,16 +376,16 @@ void PutPathes(PCONTROLLERPATHES pControllerPathes)
    	if ( RegCreateKeyEx(HKEY_CURRENT_USER, szKey, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_SET_VALUE, NULL, &hKey, &dwDisposition)!=ERROR_SUCCESS )
 		return;
 	
-    RegSetValueEx(hKey, REG_SZROMDIRS, 0, REG_SZ, (LPBYTE) &pControllerPathes->szRomDirs, lstrlen(pControllerPathes->szRomDirs)+1);
-    RegSetValueEx(hKey, REG_SZCFGDIR, 0, REG_SZ, (LPBYTE) &pControllerPathes->szCfgDir, lstrlen(pControllerPathes->szCfgDir)+1);
-    RegSetValueEx(hKey, REG_SZNVRAMDIR, 0, REG_SZ, (LPBYTE) &pControllerPathes->szNVRamDir, lstrlen(pControllerPathes->szNVRamDir)+1);
-    RegSetValueEx(hKey, REG_SZSAMPLEDIRS, 0, REG_SZ, (LPBYTE) &pControllerPathes->szSampleDirs, lstrlen(pControllerPathes->szSampleDirs)+1);
-    RegSetValueEx(hKey, REG_SZIMGDIRDIR, 0, REG_SZ, (LPBYTE) &pControllerPathes->szImgDir, lstrlen(pControllerPathes->szImgDir)+1);
+    RegSetValueEx(hKey, REG_SZROMDIRS, 0, REG_SZ, (LPBYTE) &pControllerPaths->szRomDirs, lstrlen(pControllerPaths->szRomDirs)+1);
+    RegSetValueEx(hKey, REG_SZCFGDIR, 0, REG_SZ, (LPBYTE) &pControllerPaths->szCfgDir, lstrlen(pControllerPaths->szCfgDir)+1);
+    RegSetValueEx(hKey, REG_SZNVRAMDIR, 0, REG_SZ, (LPBYTE) &pControllerPaths->szNVRamDir, lstrlen(pControllerPaths->szNVRamDir)+1);
+    RegSetValueEx(hKey, REG_SZSAMPLEDIRS, 0, REG_SZ, (LPBYTE) &pControllerPaths->szSampleDirs, lstrlen(pControllerPaths->szSampleDirs)+1);
+    RegSetValueEx(hKey, REG_SZIMGDIRDIR, 0, REG_SZ, (LPBYTE) &pControllerPaths->szImgDir, lstrlen(pControllerPaths->szImgDir)+1);
 
 	RegCloseKey(hKey);
 }
 
-void DelPathes()
+void DelPaths()
 {
 	char szKey[MAX_PATH];
 	lstrcpy(szKey, REG_BASEKEY);
