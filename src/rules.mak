@@ -1572,7 +1572,7 @@ OBJDIRS += $(OBJ)/cpu/scamp
 CPUDEFS += -DHAS_SCAMP=1
 CPUOBJS += $(OBJ)/cpu/scamp/scamp.o
 DBGOBJS += $(OBJ)/cpu/scamp/scampdsm.o
-$(OBJ)/cpu/scamp/scamp.o: scamp.c scamp.h scampcpu.h
+$(OBJ)/cpu/scamp/scamp.o: scamp.c scamp.h
 else
 CPUDEFS += -DHAS_SCAMP=0
 endif
