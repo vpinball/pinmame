@@ -411,6 +411,36 @@ S11_ROMEND
 #define input_ports_bk2k input_ports_s11
 CORE_GAMEDEF(bk2k, l4, "Black Knight 2000 (L-4)", 1989, "Williams", s11_mS11BS,0)
 
+S11_ROMSTART48(bk2k,lg1,"bk2kgu26.lg1", CRC(5748e637) SHA1(01cbcb0fb9b0677638a422bb7d0ea5903f3f762a),
+                        "bk2kgu27.lg1", CRC(4132ac5c) SHA1(5636d4e8fb9bf5a5f4ccafe4ef035ab0e8964e8b))
+S11XS_SOUNDROM88(       "bk2k_u21.l1", CRC(08be36ad) SHA1(0f4c448e003df54ed8ccf0e0c57f6123ce1e2027),
+                        "bk2k_u22.l1", CRC(9c8becd8) SHA1(9090e8104dad63f14246caabafec428d94d5e18d))
+S11CS_SOUNDROM88(       "bk2k_u4.l2",  CRC(1d87281b) SHA1(609288b017aac6ce6da8717a35fdf87013adeb3c),
+                        "bk2k_u19.l1", CRC(58e162b2) SHA1(891f810ae18b46593f570d719f0290a1d08a1a10))
+S11_ROMEND
+#define input_ports_bk2k input_ports_s11
+CORE_CLONEDEF(bk2k,lg1,l4, "Black Knight 2000 (LG-1)", 1989, "Williams", s11_mS11BS,0)
+
+S11_ROMSTART48(bk2k,lg3,"u26-lg3.rom", CRC(6f468c85) SHA1(b919b436559a29c43911bd2839c5ae7c03e9b06f),
+                        "u27-lg3.rom", CRC(27707522) SHA1(37844e2f3c70430ee169e1c369aa8e9d47b2c8f2))
+S11XS_SOUNDROM88(       "bk2k_u21.l1", CRC(08be36ad) SHA1(0f4c448e003df54ed8ccf0e0c57f6123ce1e2027),
+                        "bk2k_u22.l1", CRC(9c8becd8) SHA1(9090e8104dad63f14246caabafec428d94d5e18d))
+S11CS_SOUNDROM88(       "bk2k_u4.l2",  CRC(1d87281b) SHA1(609288b017aac6ce6da8717a35fdf87013adeb3c),
+                        "bk2k_u19.l1", CRC(58e162b2) SHA1(891f810ae18b46593f570d719f0290a1d08a1a10))
+S11_ROMEND
+#define input_ports_bk2k input_ports_s11
+CORE_CLONEDEF(bk2k,lg3,l4,"Black Knight 2000 (LG-3)", 1989, "Williams", s11_mS11BS,0)
+
+S11_ROMSTART48(bk2k,pu1,"u26-pu1.rom", CRC(2da07403) SHA1(4b48c5d7b0a03aa4593dc6053dc5e94df22d2a64),
+                        "u27-pu1.rom", CRC(245efbae) SHA1(e6354a6f5029f21aab2343cd90daf6cbfb51e556))
+S11XS_SOUNDROM88(       "bk2k_u21.l1", CRC(08be36ad) SHA1(0f4c448e003df54ed8ccf0e0c57f6123ce1e2027),
+                        "bk2k_u22.l1", CRC(9c8becd8) SHA1(9090e8104dad63f14246caabafec428d94d5e18d))
+S11CS_SOUNDROM88(       "bk2k_u4.l2",  CRC(1d87281b) SHA1(609288b017aac6ce6da8717a35fdf87013adeb3c),
+                        "bk2k_u19.l1", CRC(58e162b2) SHA1(891f810ae18b46593f570d719f0290a1d08a1a10))
+S11_ROMEND
+#define input_ports_bk2k input_ports_s11
+CORE_CLONEDEF(bk2k,pu1,l4,"Black Knight 2000 (PU-1)", 1989, "Williams", s11_mS11BS,0)
+
 /*-----------------------
 / Police Force 9/89
 /-----------------------*/
