@@ -210,12 +210,12 @@ extern struct DACinterface        tcs_dacInt;
 
 #define BYTCS_SOUND { SOUND_DAC, &tcs_dacInt }, SAMPLESINTERFACE
 
-#define BYTCS_SOUNDCPU ,{ \
+#define BYTCS_SOUND_CPU { \
   CPU_M6809 | CPU_AUDIO_CPU, 2000000,	/* 2MHz */					\
   tcs_readmem, tcs_writemem, 0, 0, \
   ignore_interrupt,1 \
 }
-#define BYTCS2_SOUNDCPU ,{ \
+#define BYTCS2_SOUND_CPU { \
   CPU_M6809 | CPU_AUDIO_CPU, 2000000,	/* 2MHz */					\
   tcs2_readmem, tcs2_writemem, 0, 0, \
   ignore_interrupt,1 \
@@ -226,7 +226,7 @@ extern const struct Memory_ReadAddress16  sd_readmem[];
 extern const struct Memory_WriteAddress16 sd_writemem[];
 extern struct DACinterface          sd_dacInt;
 
-#define BYSD_SOUNDCPU ,{ \
+#define BYSD_SOUND_CPU { \
   CPU_M68000 | CPU_AUDIO_CPU, 8000000,	/* 8MHz */					\
   sd_readmem, sd_writemem, 0, 0, \
   ignore_interrupt,1 \
