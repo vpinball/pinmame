@@ -151,6 +151,39 @@ static WRITE_HANDLER(pia1cb2_w) {
   // HNK: no sound
 }
 
+/* Extra (sound) solenoids on Stern games */
+static int sound_flag = FALSE;
+
+static WRITE_HANDLER(e_sol1_w) {
+  static int mute_22 = FALSE;
+
+  if (!sound_flag && offset > 0)
+    sound_flag = TRUE;
+  if (offset == 0 && data == 0x92 && !mute_22) {
+      locals.solenoids |= (1 << 22);
+  } else if (offset == 1) {
+	if (data == 0)
+	  mute_22 = TRUE;
+	else if (data == 1)
+	  mute_22 = FALSE;
+	else if (data == 0x93)
+      locals.solenoids |= (1 << 23);
+  }
+//logerror("extra snd #1+%d = %02x\n", offset, data);
+}
+
+/* Extra (sound) solenoids on Stern games */
+static WRITE_HANDLER(e_sol2_w) {
+  if (sound_flag) {
+	if (data & 0x08)
+      locals.solenoids |= (1 << ((data >> 4) + 24));
+  } else {
+    if (data != 0xff)
+      locals.solenoids |= ((data ^ 0xff) << 24);
+  }
+//logerror("extra snd #2 = %02x\n", data);
+}
+
 static INTERRUPT_GEN(by35_vblank) {
   /*-------------------------------
   /  copy local data to interface
@@ -315,6 +348,8 @@ MEMORY_END
 
 static MEMORY_WRITE_START(by35_writemem)
   { 0x0000, 0x0080, MWA_RAM }, /* U7 128 Byte Ram*/
+  { 0x00a0, 0x00a7, e_sol1_w },/* extra (sound) solenoids on Stern games */
+  { 0x00c0, 0x00c0, e_sol2_w },/* extra (sound) solenoids on Stern games */
   { 0x0200, 0x02ff, by35_CMOS_w, &by35_CMOS }, /* CMOS Battery Backed*/
   { 0x0088, 0x008b, pia_w(BY35_PIA0) }, /* U10 PIA: Switchs + Display + Lamps*/
   { 0x0090, 0x0093, pia_w(BY35_PIA1) }, /* U11 PIA: Solenoids/Sounds + Display Strobe */
