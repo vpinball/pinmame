@@ -33,7 +33,14 @@ DRIVERNV(hercules)      //Hercules (May 1979)
                         //Neutron Star (1981)
                         //4x4 (1983)
                         //Triangle (19??)
-#if 0
+
+// MIDWAY GAMES
+DRIVERNV(flicker )      //Flicker (Prototype, November 1974)
+DRIVERNV(rotation)      //Rotation VIII (September 1978)
+
+// ASTRO GAMES
+DRIVERNV(blkshpsq)      //Black Sheep Squadron (1979) - using Bally hardware
+
 // ---------------------
 // GAME PLAN GAMES BELOW
 // ---------------------
@@ -43,7 +50,6 @@ DRIVERNV(blvelvet)      //Black Velvet (May 1978)
 DRIVERNV(camlight)      //Camel Lights (May 1978)
 DRIVERNV(real)          //Real (to Real) (May 1978)
 DRIVERNV(rio)           //Rio (?? / 1978)
-
                         //Chuck-A-Luck (October 1978)
 
 /*Games below are Cocktail #120 Model*/
@@ -56,8 +62,7 @@ DRIVERNV(vegasgp)       //Vegas (August 1979)
 DRIVERNV(coneyis)       //Coney Island! (December 1979)
 DRIVERNV(lizard)        //Lizard (July 1980)
 DRIVERNV(gwarfare)      //Global Warfare (June 1981)
-                        //Mike Bossy (January 1982)
-                        //The Scoring Machine (January 1982)
+                        //Mike Bossy - The Scoring Machine (January 1982)
 DRIVERNV(suprnova)      //Super Nova (May 1982)
 DRIVERNV(sshootr2)      //Sharp Shooter II (November 1983)
 DRIVERNV(atilla)        //Attila the Hun (April 1984)
@@ -68,7 +73,7 @@ DRIVERNV(andromed)      //Andromeda (September 1985)
 DRIVERNV(cyclopes)      //Cyclopes (November 1985)
                         //Loch Ness Monster (November 1985)
 
-
+#if 0
 // ---------------------
 // ZACCARIA GAMES BELOW
 // ---------------------
@@ -104,9 +109,7 @@ DRIVERNV(bbeltzac)      //??/86 Blackbelt
                         //??/87 Spooky
                         //??/87 Star's Phoenix
                         //??/86 New Star's Phoenix
-
 #endif
-
 
 // ---------------------
 // HANKIN GAMES BELOW
@@ -122,7 +125,6 @@ DRIVERNV(empsback)      //Star Wars - The Empire Strike Back
 // ---------------------
 DRIVERNV(zarza   )      // Zarza (Xenon Clone)
 
-
 // ---------------------
 // BALLY GAMES BELOW
 // ---------------------
@@ -132,8 +134,6 @@ DRIVERNV(nightrdr)      //BY17-721: 01/76 Night Rider (EM release date)
 DRIVERNV(blackjck)      //BY17-728: 05/76 Black Jack  (EM release date)
 DRIVERNV(evelknie)      //BY17-722: 09/76 Evel Knievel
 DRIVERNV(matahari)      //BY17-725: 09/77 Mata Hari
-                        //??        10/76 Fireball
-                        //??        10/76 Star Ship
 DRIVERNV(sst     )      //BY35-741: 10/76 Supersonic
 DRIVERNV(eightbll)      //BY17-723: 01/77 Eight Ball
 DRIVERNV(pwerplay)      //BY17-724: 02/77 Power Play
@@ -143,7 +143,6 @@ DRIVERNV(lostwrld)      //BY35-729: 02/77 Lost World
 DRIVERNV(smman   )      //BY35-742: 08/77 The Six Million Dollar Man
 DRIVERNV(playboy )      //BY35-743: 09/76 Playboy
                         //??          /78 Big Foot
-                        //??          /78 Galaxy
 DRIVERNV(startrek)      //BY35-745: 01/78 Star Trek
 DRIVERNV(voltan  )      //BY35-744: 01/78 Voltan Escapes Cosmic Doom
                         //??        02/78 Skateball
@@ -218,17 +217,29 @@ DRIVERNV(black100)      //6803-0H07: 03/88 Blackwater 100
 DRIVERNV(truckstp)      //6803-2001: 12/88 Truck Stop
 DRIVERNV(atlantis)      //6803-2006: 03/89 Atlantis
                         //??         05/89 Ice Castle
+
 // ---------------------
 // GOTTLIEB GAMES BELOW
 // ---------------------
-                        //??-421    02/79 Solar Ride
-                        //??-422    05/79 Count-Down
-                        //??-428    08/79 Space Walk
-                        //??-433    10/79 Incredible Hulk
-                        //??-429    10/79 Totem
-                        //??-435    11/79 Genie
+//System 1
+                        //S1-409    11/77 Cleopatra
+                        //S1-412    05/78 Sinbad
+                        //S1-417    08/78 Joker Poker
+                        //S1-419    10/78 Dragon
+                        //S1-424    10/78 Close Encounters of the Third Kind
+                        //S1-425    11/78 Charlie's Angels
+                        //S1-421    02/79 Solar Ride
+                        //S1-422    05/79 Count-Down
+                        //S1-427    08/79 Pinball Pool
+                        //S1-429    10/79 Totem
+                        //S1-433    10/79 Incredible Hulk
+                        //S1-435    11/79 Genie
+                        //S1-437    01/80 Buck Rogers
+                        //S1-438    02/80 Torch
+                        //S1-440    02/80 Roller Disco
+                        //S1-442    12/80 Asteroid Annie and the Aliens
 //System 80
-DRIVERNV(spidermn)      //S80-635:  05/80 The Amazing Spider-man
+DRIVERNV(spidermn)      //S80-653:  05/80 The Amazing Spider-man
 DRIVERNV(circus)        //S80-654:  06/80 Circus
 DRIVERNV(panthera)      //S80-652:  06/80 Panthera
 DRIVERNV(cntforce)      //S80-656:  08/80 Counterforce
@@ -465,7 +476,6 @@ DRIVERNV(gnr)           //Data East MPU: 07/94 Guns N Roses
 DRIVERNV(maverick)      //Data East MPU: 09/94 Maverick
 //MISC
 DRIVERNV(detest)        //Data East MPU: ??/?? DE Test Chip
-
 
 // -------------------------------------
 // WILLIAMS & WILLIAMS/BALLY GAMES BELOW
