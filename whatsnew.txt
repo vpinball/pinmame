@@ -5,6 +5,13 @@ Version 1.xx (Month x, 2002)
 ----------------------------
 - Sound on Gottlieb System 80 games is now working fine, except for some minor games (thanks goes to Peter Hall
   for providing very helpfully infos)
+- Hankin: Switch numbering changed
+- Sound for Hankin games working (minor issues on Orbit 1 and FJ, speed and pitch maybe not correct)
+  [Tom Haukap]
+
+- Speech for Gottlieb System 80 games is working (prelimninary)
+  [Gerrit Volkenborn, Tom Haukap]
+
 
 Version 1.11 (February 3, 2002)
 ------------------
