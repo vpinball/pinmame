@@ -189,12 +189,11 @@
 / Machine driver constants
 /--------------------------*/
 #define GP_CPUNO   0
-#define GP_SCPU1NO 1
+#define GP_SCPUNO  1
 
 /*-- Memory regions --*/
 #define GP_MEMREG_CPU	REGION_CPU1
-#define GP_MEMREG_S1CPU	REGION_CPU2
-#define GP_MEMREG_SROM	REGION_SOUND1
+#define GP_MEMREG_SCPU	REGION_CPU2
 
 /*-- Main CPU regions and ROM --*/
 
@@ -241,8 +240,10 @@
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(GP1);
 extern MACHINE_DRIVER_EXTERN(GP2);
+extern MACHINE_DRIVER_EXTERN(GP2S);
 
 #define mGP1     GP1
 #define mGP2     GP2
+#define mGP2S    GP2S
 
 #endif /* INC_GP */
