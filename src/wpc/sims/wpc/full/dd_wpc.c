@@ -400,7 +400,7 @@ WPC_ROMEND
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF(dd,p7,"Dr. Dude (P-7)",1990,"Bally",wpc_mAlpha1S,0)
+CORE_CLONEDEF(dd,p7,l2,"Dr. Dude (P-7)",1990,"Bally",wpc_mAlpha1S,0)
 
 /*-----------------------
 / Simulation Definitions
