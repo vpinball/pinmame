@@ -10,8 +10,9 @@ extern int crtc6845_start_addr;
 
 #if 1
 
-PINMAME_VIDEO_UPDATE(gts3_dmd128x32) {
 // void gts3_dmd128x32_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
+PINMAME_VIDEO_UPDATE(gts3_dmd128x32) {
+  static int initTime = 1;
   tDMDDot dotCol;
   UINT8 *frameData = &DMDFrames[0][0];
   int ii,jj,kk,ll;
@@ -21,10 +22,12 @@ PINMAME_VIDEO_UPDATE(gts3_dmd128x32) {
   core_textOutf(50,50,1,temp);
 #endif
 
+  if (initTime) {
   /* Drawing is not optimised so just clear everything */
   // !!! if (fullRefresh) fillbitmap(bitmap,Machine->pens[0],NULL);
-
-  memset(dotCol,0,sizeof(tDMDDot));
+    memset(dotCol,0,sizeof(tDMDDot));
+    initTime = 0;
+  }
   for (ii = 0; ii < GTS3DMD_FRAMES; ii++) {
     for (jj = 1; jj <= 32; jj++) {           // 32 lines
       UINT8 *line = &dotCol[jj][0];
@@ -38,10 +41,10 @@ PINMAME_VIDEO_UPDATE(gts3_dmd128x32) {
   for (ii = 1; ii <= 32; ii++)               // 32 lines
     for (jj = 0; jj < 128; jj++) {          // 128 pixels/line
       UINT8 data = dotCol[ii][jj];
-      if (data >= 43)      data = 3; // 100% intensity
-      else if (data >= 15) data = 2; // 66% intensity
-      else if (data > 0)   data = 1; // 33% intensity
-      else                 data = 0; // nothing.
+      if (data >= GTS3DMD_100)     data = 3; // 100% intensity
+      else if (data >= GTS3DMD_66) data = 2; // 66% intensity
+      else if (data >= GTS3DMD_33) data = 1; // 33% intensity
+      else                         data = 0; // nothing.
       dotCol[ii][jj] = data;
   }
 
