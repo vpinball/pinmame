@@ -95,6 +95,19 @@ S4_ROMEND
 #define input_ports_tstrk input_ports_bowl
 CORE_GAMEDEF(tstrk,l1,"Triple Strike (Bowler) (L-1)",1983,"Williams",s4_mS4S,0)
 
+/*----------------------------
+/ Black Beauty
+/----------------------------*/
+static core_tGameData blbeautyGameData = {GEN_BOWLING,dispBowl,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_ST300,0}};
+static void init_blbeauty(void) { core_gameData = &blbeautyGameData; }
+ST200_ROMSTART8888(blbeauty,"cpu_u1.716",CRC(e2550957) SHA1(e445548b650fec5d593ca7da587300799ef94991),
+                            "cpu_u5.716",CRC(70fcd9f7) SHA1(ca5c2ea09f45f5ba50526880c158aaac61f007d5),
+                            "cpu_u2.716",CRC(3f55d17f) SHA1(e6333e53570fb05a841a7f141872c8bd14143f9c),
+                            "cpu_u6.716",CRC(842cd307) SHA1(8429d84e8bc4343b437801d0236150e04de79b75))
+BY35_ROMEND
+BY35_INPUT_PORTS_START(blbeauty, 1) BY35_INPUT_PORTS_END
+CORE_GAMEDEFNV(blbeauty,"Black Beauty (Bowler)",1984,"Stern",by35_mST200,GAME_NO_SOUND)
+
 /*--------------------
 / Pennant Fever (#526)
 /--------------------*/
