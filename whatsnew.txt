@@ -2,6 +2,7 @@ Version 1.51 (January 11, 2005) - "Coming of age"
 -------------------------------------------------
 PinMAME has grown up to be a relatively stable and mature software with only little
 quirks and issues left open... a few of which are solved with this release! :)
+Hopefully, no new bugs were added.
 
 A few old bugs could be squashed, like the hangup bug on some Zaccaria games,
 thanks to the MAME guys finally fixing the opcode timing on the Signetics 2650.
@@ -58,8 +59,10 @@ New Features
 - Emulation of the Stern SB-100 sound board
   [Oliver Kaegi]
 
-- Added real AMR7 core (extended by the AT91 core for new Stern sound),
-  boosting emulation speed by some 30 percent along the way
+- Separated ARM7 core code for easier maintenance and to allow other cpu cores to 
+  be easily built using it.
+  Also optimized the ARM7 core a bit, which resulted in some decent speed ups (10-20FPS)
+- Modified AT91 CPU Emulation to use new ARM7 core
   [Steve Ellenoff]
 
 - Automatically turning off sound if missing sound ROMs are detected
