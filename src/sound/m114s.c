@@ -61,7 +61,7 @@ struct M114STable
         UINT32          start_address;				/* start address (offset into ROM) for table */
         UINT32          stop_address;				/* stop address (offset into ROM) for table */
 		UINT16			length;						/* length in bytes of the table */
-		UINT16			total_length;				/* total length in bytes of the table (including repetitions) */			
+		UINT16			total_length;				/* total length in bytes of the table (including repetitions) */
 };
 
 /* struct describing the registers for a single channel */
@@ -223,8 +223,8 @@ static void build_vol_table(void)
 /**********************************************************************************************
 
      read_sample -- returns 1 sample from the channel's output buffer, but upsamples the data
-	 as necessary to match the Machine driver's output sample rate. 
-	 
+	 as necessary to match the Machine driver's output sample rate.
+
 	 Note: eventually we should put some interpolation here to improve the sound quality.
 
 ***********************************************************************************************/
@@ -248,11 +248,11 @@ static INT16 read_sample(struct M114SChannel *channel, int sample_rate, int leng
 
 /**********************************************************************************************
 
-     read_table -- Reads the two tables of rom data into a temporary buffer, 
+     read_table -- Reads the two tables of rom data into a temporary buffer,
 	 mixes the samples using the chip's internal interpolation equation,
 	 applies the volume, and writes the single mixed sample to the output buffer for the channel.
 	 It processes the entire table1 length of data.
-     
+
 	 Note: Eventually this should flag an End of Table, and should process new table data
 
 ***********************************************************************************************/
@@ -270,7 +270,7 @@ static void read_table(struct M114SChip *chip, struct M114SChannel *channel)
 	intp = channel->regs.interp;
 	memset(&tb1,0,sizeof(tb1));
 	memset(&tb2,0,sizeof(tb2));
-	
+
 	//printf("t1s = %d t2s = %d, l1=%d l2=%d, r1=%d, r2=%d, int = %d\n",t1start,t2start,lent1,lent2,rep1,rep2,intp);
 
 	//Table1 is always larger, so use that as the size
@@ -333,7 +333,7 @@ static void m114s_update(int num, INT16 **buffer, int samples)
 				//We use Table 1 to drive everything, as Table 2 is really for mixing into Table 1..
 				sample = read_sample(channel, channel->table1.sample_rate, channel->table1.total_length);
 				//Mix the output of this channel to the appropriate output channel
-				accum[channel->regs.outputs]+= sample;			
+				accum[channel->regs.outputs]+= sample;
 			}
 		}
 
@@ -369,7 +369,7 @@ static void m114s_update(int num, INT16 **buffer, int samples)
 			if(channel->active)	{
 				//We use Table 1 to drive everything, as Table 2 is really for mixing into Table 1..
 				sample = read_sample(channel, channel->table1.sample_rate, channel->table1.total_length);
-				*buffer[c]++ = sample;			
+				*buffer[c]++ = sample;
 			}
 			else {
 			*buffer[c]++ = 0;
@@ -396,12 +396,12 @@ INLINE void init_channel(struct M114SChannel *channel)
 	memset(&channel->table1,0,sizeof(channel->table1));
 	memset(&channel->table2,0,sizeof(channel->table2));
  }
- 
- 
+
+
 INLINE void init_all_channels(struct M114SChip *chip)
  {
  	int i;
- 
+
  	/* init the channels */
  	for (i = 0; i < M114S_CHANNELS; i++)
  		init_channel(&chip->channels[i]);
@@ -425,7 +425,7 @@ int M114S_sh_start(const struct MachineSound *msound)
 
 	/* create the volume table */
 	build_vol_table();
-	
+
 	/* initialize the chips */
 	memset(&m114schip, 0, sizeof(m114schip));
 	for (i = 0; i < intf->num; i++)
@@ -597,7 +597,7 @@ static void process_channel_data(struct M114SChip *chip)
 		//Freq Table is based on 16 byte length & 1 pass read - adjust for length..
 		if(lent1>16) freq1 /= (double)(lent1/16);
 		if(lent2>16) freq2 /= (double)(lent2/16);
-	
+
 		//Adjust Start & Stop Address - Special case for table length of 16 - Bit 5 always 1 in this case
 		if(lent1 == 16) {
 			t1start |= 0x10;
@@ -612,7 +612,7 @@ static void process_channel_data(struct M114SChip *chip)
 		channel->active = 1;
 
 		//Adjust frequency if octave divisor set
-		if(channel->regs.oct_divisor) 
+		if(channel->regs.oct_divisor)
 		{
 			freq1/=2;
 			freq2/=2;
@@ -687,15 +687,15 @@ if(chip->channel == 2) {
 static void m114s_data_write(struct M114SChip *chip, data8_t data)
 {
 	/* Check if the chip needs to 'auto-reset' - this occurs if during the programming sequence (ie before all 8 bytes read)
-	   a certain amount of time elapses without receiving another byte of programming... 
-	   128us in the 4Mhz chip, 85us in the 6Mhz chip. 
+	   a certain amount of time elapses without receiving another byte of programming...
+	   128us in the 4Mhz chip, 85us in the 6Mhz chip.
 	*/
 	static double last_totcyc = 0;
 	double curr_totcyc = cpu_gettotalcycles(chip->cpu_num);
 	double diff = abs(curr_totcyc-last_totcyc);
 	last_totcyc = curr_totcyc;
 	if(chip->bytes_read && diff > chip->reset_cycles) {
-		LOG(("M114S #%0d: Auto Reset - bytes read=%0d - data=%0x, elapsed cycles = %f\n",chip->bytes_read,data&0x3f,diff));
+		LOG(("M114S: Auto Reset - bytes read=%0d - data=%0x, elapsed cycles = %f\n",chip->bytes_read,data&0x3f,diff));
 		M114S_sh_reset();
 	}
 
@@ -703,13 +703,13 @@ static void m114s_data_write(struct M114SChip *chip, data8_t data)
 	chip->bytes_read++;
 	switch(chip->bytes_read)
 	{
-	/*  BYTE #1 - 
+	/*  BYTE #1 -
 	    Bits 0-5: Attenuation Value (0-63) - 0 = No Attenuation, 3E = Max, 3F = Silence active channel */
 		case 1:
 			chip->tempch_regs.atten = data;
 			break;
-		
-	/*  BYTE #2 - 
+
+	/*  BYTE #2 -
 		Bits 0-1: Table 2 Address (Bits 6-7)
 		Bits 2-3: Table 1 Address (Bits 6-7)
 		Bits 3-5: Output Pin Selection (0-3)  */
@@ -746,7 +746,7 @@ static void m114s_data_write(struct M114SChip *chip, data8_t data)
 		case 6:
 			chip->tempch_regs.oct_divisor = data & 1;
 			chip->tempch_regs.env_enable = (data & 2)>>1;
-			chip->tempch_regs.interp = (data & 0x3c)>>2; 
+			chip->tempch_regs.interp = (data & 0x3c)>>2;
 			break;
 
 	/*	BYTE #7 -
@@ -754,7 +754,7 @@ static void m114s_data_write(struct M114SChip *chip, data8_t data)
 		Bits 2-5: Channel */
 		case 7:
 			chip->tempch_regs.frequency = (data&0x03);
-			chip->channel = (data & 0x3c)>>2; 
+			chip->channel = (data & 0x3c)>>2;
 			break;
 
 	/*	BYTE #8 -
