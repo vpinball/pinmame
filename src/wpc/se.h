@@ -63,18 +63,20 @@
 /*-- Main CPU regions and ROM (Up to 512MB) --*/
 #define SE128_ROMSTART(name, n1, chk1) \
   ROM_START(name) \
-    NORMALREGION(0x10000, SE_CPUREGION) \
     NORMALREGION(0x80000, SE_ROMREGION) \
       ROM_LOAD(n1, 0x00000, 0x20000, chk1) \
-        ROM_RELOAD(0x20000, 0x20000) \
-	ROM_RELOAD(0x40000, 0x20000) \
-	ROM_RELOAD(0x60000, 0x20000)
+      ROM_RELOAD(0x20000, 0x20000) \
+	  ROM_RELOAD(0x40000, 0x20000) \
+	  ROM_RELOAD(0x60000, 0x20000) \
+  NORMALREGION(0x10000, SE_CPUREGION) \
+  ROM_COPY( SE_ROMREGION, 0x18000, 0x8000, 0x8000)
 
 #define SE_ROMEND ROM_END
 
 extern MACHINE_DRIVER_EXTERN(se2aS);
 extern MACHINE_DRIVER_EXTERN(se2bS);
 extern MACHINE_DRIVER_EXTERN(se2cS);
+extern MACHINE_DRIVER_EXTERN(se3aS);
 extern PINMAME_VIDEO_UPDATE(seminidmd1_update);
 extern PINMAME_VIDEO_UPDATE(seminidmd1a_update);
 extern PINMAME_VIDEO_UPDATE(seminidmd1b_update);
@@ -85,7 +87,7 @@ extern PINMAME_VIDEO_UPDATE(seminidmd4_update);
 #define de_mSES1 se2aS
 #define de_mSES2 se2bS
 #define de_mSES2C se2cS
-#define de_mSES3 se2bS
+#define de_mSES3 se3aS
 
 /* Hardware variants */
 #define SE_MINIDMD    0x01
