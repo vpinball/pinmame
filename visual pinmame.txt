@@ -1,7 +1,7 @@
 **************************************************************************************
 				    Visual PinMAME
-				     Version 1.32
-				    (May 1, 2004)
+				     Version 1.50
+				  (November 1, 2004)
 				http://www.pinmame.com
 **************************************************************************************
 
@@ -74,3 +74,5 @@ Tom Haukap         (Tom.Haukap@t-online.de)
 Martin Adrian      (wpcmame@hotmail.com)
 Gerrit Volkenborn  (gaston@yomail.de)
 Brian Smith        (destruk@vpforums.com)
+Thomas Behrens     (behrens@tecs.de)
+Oliver Kaegi       (okaegi@freesurf.ch)

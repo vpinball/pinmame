@@ -1,59 +1,68 @@
-Version 1.33 (??, 2004) - "??"
-------------------------------
+Version 1.50 (November 1, 2004) - "PlasmaSound"
+-----------------------------------------------
 The future of PinMAME has never looked better! With new team members Thomas Behrens and Oliver O? making huge
 and immediate contributions, and Steve's temporary break from retirement, this release is destined to be one
 of the largest and most significant yet. Many often requested features and bug fixes are included, as well as
 several new hardware systems. Pinball fans will definitely be pleased with this release. 
-(Gerrit to add more if necessary)
+It's so much stuff, we cannot guarantee we listed all the items contained... :)
 
+Amazingly, Steve wrote an Atmel AT91 core ready to emulate the new Stern sound,
+as used on Stern's LOTR and later games. There still are some issues with it, so
+for instance, Elvis is not working correctly yet, and it's also running too slow.
+But still this is a major breakthrough, so we chose to add it for you to check out.
+
+BTW, this should really be the final version being built on the MAME 0.76 basis,
+but it's proven to be rather stable so far, so who knows? ;)
 
 Bugs Fixed
 ----------
-
-- Fixed some bugs in 8051 cpu core
-- Adjusted CPU & FIRQ frequency on the Alvin G games
-  (Sounds much better to me now, but still need access to real machine to confirm)
-  [Steve Ellenoff]
-- WMS System 3 to 7: Fixed/Added support for game adjustment dip switches.
-  With proper scripting support, these can now be used to adjust game settings as
-  described in the manuals.
-  [Thomas Behrens]
-- WMS System 3 to 7: Improved solenoid smoothing method. This gives more accurate
-  flashers (e.g. on Firepower) and knockers.
-  [Martin Adrian]
 - Bally 6803: improved display/lamp operation and fixed a problem with switches
   41 to 48 for all games of this family. These games should run fine now.
   Also flipper keys can now be used to navigate the service menue on Blackwater
   and Truckstop.
   [Gerrit Volkenborn, Thomas Behrens]
+
 - WMS System 11 and Data East: Fixed code to remove erraneous solenoid "spikes".
   While this primarily fixes DE Playboy 35th Anniversary, all Sys11/DE games
   will show more precise solenoid operation now.
   [Martin Adrian, Thomas Behrens]
+
+- Corrected IRQ value for all games based on Bally hardware
+  [Oliver Kaegi, Gerrit Volkenborn]
+
+- Fixed some bugs in 8051 cpu core
+- Adjusted CPU & FIRQ frequency on the Alvin G games
+  (Sounds much better to me now, but still need access to real machine to confirm)
+  [Steve Ellenoff]
+
+- WMS System 3 to 7: Improved solenoid smoothing method. This gives more accurate
+  flashers (e.g. on Firepower) and knockers.
+  [Martin Adrian]
+
+- WMS System 3 to 7: Fixed/Added support for game adjustment dip switches.
+  With proper scripting support, these can now be used to adjust game settings as
+  described in the manuals.
 - Stern Golden Cue and Sharkey's Shootout: These games are now working. Emulation
   support for the upper left flipper is still missing.
   [Thomas Behrens]
 
 New Features
 ------------
+- Spinball hardware emulation including full Sound and DMD support (some strobing issues left)
+  (Big thanks to inkochnito for posting links to both the manual and rom on the
+  forum so we could access them)
+- Mr. Game hardware emulation including sound and video support (still some video & sound issues)
+  [Steve Ellenoff, Gerrit Volkenborn]
+
+- Added tons of new games and clones
+  [Brian Smith, Gerrit Volkenborn]
+
 - Emulation of Stern Pinball's new Sound board - Used on LOTR and newer games.
   Unfortunately the emulated 40Mhz cpu cannot run full speed with < 3-4 Ghz machine thus far.
   (HUGE THANK YOU TO DESTRUK FOR DONATING HIS OWN $ TO BUY AN EXTREMELY EXPENSIVE
    LOTR SOUND BOARD WITHOUT WHICH THE EMULATION COULD HAVE NEVER BEEN ACHIEVED!!)
-  [Steve Ellenoff]
-
-- Spinball hardware emulation including full Sound and DMD support
-  (Big thanks to inkochnito for posting links to both the manual and rom on the
-  forum so we could access them)
-  [Steve Ellenoff, Gerrit Volkenborn]
-
-- Mr. Game hardware emulation including sound and video support (still some video & sound issues)
-  [Steve Ellenoff, Gerrit Volkenborn]
-
-- Working Tecnoplay driver (X-Force) including display, lamps, solenoids, switches.
+- Working Technoplay driver (X-Force) including display, lamps, solenoids, switches.
   (Need sound roms to be able to begin work on sound emulation)
-  [Steve Ellenoff]
-
 - New ARM7TDMI CPU Core and Atmel 9140008 CPU Core (for new Stern Sound)
 - Added External Hardware Addressing to 8051 cpu core
 - Added support for Serial UART mode 1 to 8051
@@ -61,6 +70,14 @@ New Features
 - Preliminary Nuova Bell driver (F1 Grand Prix) - (not really working yet)
   [Steve Ellenoff]
 
+- Sound support for Zaccaria games from Winter Sports to Locomotion
+  (some sounds not correct yet, need to compare to real table sounds)
+- Added AFM Saucer LEDs, and CP life lamps
+  [Gerrit Volkenborn]
+
+- Old Stern: emulation of the SB-300 and samples support for the VSU-100 Speech board
+- Bally: Samples support for early -32 and -50 sounds; much more accurate than before.
+  [Oliver Kaegi]
 
 
 Version 1.32 (May 1, 2004) - "MayDay Edition"
