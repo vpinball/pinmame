@@ -16,7 +16,7 @@ typedef struct {
 } wpc_tSamSolMap;
 
 #ifdef PINMAME_SAMPLES
-  extern const struct Samplesinterface samples_interface;
+  extern struct Samplesinterface samples_interface;
   #define SAMPLESINTERFACE {SOUND_SAMPLES, &samples_interface}
 #else
   #define SAMPLESINTERFACE {0}
