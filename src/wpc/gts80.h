@@ -239,12 +239,12 @@
        ROM_LOAD(n2, 0x2000, 0x2000, chk2)
 
 /*-- GTS80B Main CPU regions and ROM, 8K & 4K game PROM --*/
-/*-- the second half of PROM2 is later copied to the right location */
 #define GTS80B_4K_ROMSTART(name, n1, chk1, n2, chk2) \
    ROM_START(name) \
      NORMALREGION(0x10000, GTS80_MEMREG_CPU) \
-       ROM_LOAD(n1, 0x1000, 0x1000, chk1) \
-       ROM_LOAD(n2, 0x2000, 0x2000, chk2)
+       ROM_LOAD(n1, 0x1000, 0x0800, chk1) \
+	   ROM_CONTINUE(0x9000, 0x0800)       \
+       ROM_LOAD(n2, 0x2000, 0x2000, chk2) \
 
 /*-- TheGTS80 are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(gts80s);
