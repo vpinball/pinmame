@@ -410,7 +410,7 @@ static core_tGameData ddGameData = {
   GEN_S11C, s11_dispS11c,
   {
     FLIP_SWNO(swLFlip,swRFlip),
-    0,0,0,0,0,0,0,
+    0,0,0,0,S11_LOWALPHA|S11_DISPINV,S11_MUXSW2,0,
     NULL, dd_handleMech, NULL, NULL,
     &dd_lampPos, dd_samsolmap
   },
