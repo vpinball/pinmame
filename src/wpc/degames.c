@@ -15,10 +15,10 @@
 
 	2) 520-5014-01: 2 X 7 Digit (16 Seg. Alphanumeric), 2 X 7 Digit (7 Seg. Alphanumeric)
 	   (Secret Service to Playboy)
-	
+
 	3) 520-5030-00: 2 X 16 Digit (16 Seg Alphanumeric)
 		(MNF to Simpsons)
-	
+
 	4) 520-5042-00: 128X16 DMD - z80 CPU + integrated controller.
 	   (Checkpoint to Hook)
 
@@ -88,13 +88,13 @@ DE_INPUT_PORTS_START2(des112, 1) DE_INPUT_PORTS_END
 
 static struct core_dispLayout de_dispAlpha1[] = { /* 2 X 7 AlphaNumeric Rows, 2 X 7 Numeric Rows, 1 X 4 Numeric*/
   DISP_SEG_7(0,0, CORE_SEG16), DISP_SEG_7(0,1, CORE_SEG16),
-  DISP_SEG_7(1,0, CORE_SEG7),  DISP_SEG_7(1,1, CORE_SEG7),
+  DISP_SEG_7(1,0, CORE_SEG8),  DISP_SEG_7(1,1, CORE_SEG8),
   DISP_SEG_CREDIT(20,28,CORE_SEG7),DISP_SEG_BALLS(0,8,CORE_SEG7H), {0}
 };
 
 static struct core_dispLayout de_dispAlpha2[] = { /* 2 X 7 AlphaNumeric Rows, 2 X 7 Numeric Rows */
   DISP_SEG_7(0,0, CORE_SEG16), DISP_SEG_7(0,1, CORE_SEG16),
-  DISP_SEG_7(1,0, CORE_SEG7),  DISP_SEG_7(1,1, CORE_SEG7), {0}
+  DISP_SEG_7(1,0, CORE_SEG8),  DISP_SEG_7(1,1, CORE_SEG8), {0}
 };
 
 static struct core_dispLayout de_dispAlpha3[] = { /* 2 X 16 AlphaNumeric Rows */
