@@ -949,44 +949,10 @@ SOURCE=.\src\wpc\by6803games.c
 # Begin Source File
 
 SOURCE=.\src\wpc\byvidgames.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-# PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
-
-# PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
-
-# PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\byvidpin.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-# PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
-
-# PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
-
-# PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
