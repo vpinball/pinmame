@@ -30,20 +30,14 @@
 #define GEN_S3C         U64(0x00000080000) /* S3 CPU */
 #define GEN_S3          U64(0x00000100000)
 #define GEN_BY17        U64(0x00000200000)
-#define GEN_BY35_32     U64(0x00000400000)
-#define GEN_BY35_50     U64(0x00000800000)
-#define GEN_BY35_51     U64(0x00001000000)
-#define GEN_BY35_61     U64(0x00002000000) /* Squawk'n'talk */
-#define GEN_BY35_61B    U64(0x00004000000) /* Squawk'n'talk without AY8910 */
-#define GEN_BY35_81     U64(0x00008000000)
-#define GEN_BY35_54     U64(0x00010000000)
-#define GEN_BY35_56     U64(0x00020000000) /* Sounds Plus */
-#define GEN_BY35_45     U64(0x00040000000) /* Cheap Squeak */
+#define GEN_BY35        U64(0x00000400000)
+#define GEN_BY6803      U64(0x00000800000)
+#define GEN_BY6803A     U64(0x00001000000)
 #define GEN_STMPU100	U64(0x00080000000) /* Stern MPU - 100*/
 #define GEN_STMPU200	U64(0x00100000000) /* Stern MPU - 200*/
-#define GEN_GTS80S		U64(0x00200000000) /* GTS80 - Sound Board */
-#define GEN_GTS80SS		U64(0x00400000000) /* GTS80 - Sound & Speech Board */
-#define GEN_GTS80B		U64(0x00800000000) /* GTS80B, GTS80B Sound Board */
+#define GEN_GTS80S	U64(0x00200000000) /* GTS80 - Sound Board */
+#define GEN_GTS80SS	U64(0x00400000000) /* GTS80 - Sound & Speech Board */
+#define GEN_GTS80B	U64(0x00800000000) /* GTS80B, GTS80B Sound Board */
 #define GEN_GTS80B2K	U64(0x01000000000) /* GTS80B, 2KROM */
 #define GEN_GTS80B4K	U64(0x02000000000) /* GTS80B, 4KROM, slam switch is reversed */
 #define GEN_WS          U64(0x04000000000) /* Whitestar */
@@ -52,8 +46,8 @@
 
 #define GEN_ALLWPC      U64(0x000000000ff)
 #define GEN_ALLS11      U64(0x00000007f00)
-#define GEN_ALLBY35     U64(0x0007fe00000)
-#define GEN_ALLS80		U64(0x03e00000000)
+#define GEN_ALLBY35     U64(0x00000600000)
+#define GEN_ALLS80      U64(0x03e00000000)
 
 
 #endif /* INC_GEN */
