@@ -475,9 +475,6 @@ bool RegLoadOpts(HKEY hKey, rc_option *pOpt, char* pszDefault, char* pszValue)
 				else
 					lstrcpy(szValue, "0");
 			}
-
-				lstrcpy(szValue, pOpt->deflt);
-
 			fNew = true;
 		}
 		else
