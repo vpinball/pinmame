@@ -362,8 +362,8 @@ CORE_GAMEDEFNV(austin,"Austin Powers (3.0)",2001,"Stern",de_mSES2,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / Austin Powers (2.0)
 /-------------------------------------------------------------------*/
-INITGAME(austin,GEN_WS,3/*?*/)
-SE128_ROMSTART(austin,"apcpu.210",0xa4ddcdca)
+INITGAME(austin2,GEN_WS,3/*?*/)
+SE128_ROMSTART(austin2,"apcpu.210",0xa4ddcdca)
 SE_DMD524_ROMSTART(  "apdisp-a.200",0xf3ca7fca)
 SES_SOUNDROM00000("apsndu7.100" ,0xd0e79d59,
                   "apsndu17.100",0xc1e33fee,
