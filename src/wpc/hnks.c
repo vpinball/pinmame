@@ -34,7 +34,7 @@ static struct {
   struct sndbrdData brdData;
   int sndCmd;
 
-  int     counterEnabled;
+  int     div2;
   int     counterSpeed;
   int     counterReset;
   int     actSamples;
@@ -83,10 +83,8 @@ void start_samples(void)
 	mixer_play_sample(
 		hnks_locals.channel, 
 		samples[iBuffer],
-		(
-		// hnks_locals.counterEnabled &&
-		!hnks_locals.counterReset)?0x20:1, 
-		(BASE_FREQUENCY/(hnks_locals.counterSpeed+1)), 
+		!hnks_locals.counterReset?0x20:1, 
+		BASE_FREQUENCY/(hnks_locals.counterSpeed/((1-hnks_locals.div2)+1)+1),
 		1
 	);
 }
@@ -129,10 +127,10 @@ static WRITE_HANDLER(pia0b_w)
 static WRITE_HANDLER(pia0ca2_w)
 {
   // logerror("pia0ca2_w: %02x\n", data);
-  if ( hnks_locals.counterEnabled==data )
+  if ( hnks_locals.div2==data )
 	  return;
 
-  hnks_locals.counterEnabled = data;
+  hnks_locals.div2 = data;
   start_samples();
 }
 
