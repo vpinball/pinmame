@@ -43,7 +43,7 @@ core_tLCDLayout atari_disp2[] = {
 /*-------------------------------------------------------------------
 / The Atarians (11/1976)
 /-------------------------------------------------------------------*/
-INITGAME1(atarians, atari_disp1, FLIPSW6667, 1)
+INITGAME1(atarians, atari_disp1, FLIP_SWNO(36,37), 1)
 ATARI_2_ROMSTART(atarians,	"atarian.e0",	0x45cb0427,
 							"atarian.e00",	0x6066bd63)
 ATARI_ROMEND
