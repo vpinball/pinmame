@@ -643,12 +643,12 @@ unsigned Dasm6809 (char *buffer, unsigned pc)
 			if( pb2 & 0x02 )
 			{
 				if( pb2 & 0xfc ) buffer += sprintf (buffer, ",");
-                strcat (buffer, "A");
+                buffer += sprintf (buffer, "A");
 			}
 			if( pb2 & 0x01 )
 			{
 				if( pb2 & 0xfe ) buffer += sprintf (buffer, ",");
-                strcat (buffer, "CC");
+                buffer += sprintf (buffer, "CC");
 			}
 		}
 		else
