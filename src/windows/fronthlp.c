@@ -546,11 +546,15 @@ int frontend_help (const char *gamename)
 		#endif
 
 		case LIST_SHORT: /* simple games list */
-			#ifndef MESS
+#ifndef MESS
+	#ifdef PINMAME
+			printf("\nPinMAME currently supports the following games:\n\n");
+	#else
 			printf("\nMAME currently supports the following games:\n\n");
-			#else
+	#endif
+#else
 			printf("\nMESS currently supports the following systems:\n\n");
-			#endif
+#endif
 			for (i = j = 0; drivers[i]; i++)
 				if ((listclones || drivers[i]->clone_of == 0
 						|| (drivers[i]->clone_of->flags & NOT_A_DRIVER)
