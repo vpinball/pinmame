@@ -769,6 +769,17 @@ BY35_ROMEND
 #define input_ports_goldball input_ports_by35
 CORE_GAMEDEFNV(goldball,"Gold Ball",1983,"Bally",by35_mBY35_51S,0)
 
+/*--------------------------------
+/ Gold Ball (Alternate Gold Set)
+/-------------------------------*/
+INITGAME3(goldbaln,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
+BY35_ROMSTARTx00(goldbaln,"u2.532",CRC(aa6eb9d6) SHA1(a73cc832450e718d9b8484e409a1f8093d91d786),
+                          "goldball.u6",CRC(9b6e79d0) SHA1(4fcda91bbe930e6131d94964a08459e395f841af))
+BY51_SOUNDROM0(           "gb_u4.532",  CRC(2dcb0315) SHA1(8cb9c9f627f0c8420d3b3d9f0d10d77a82c8be56))
+BY35_ROMEND
+#define input_ports_goldbaln input_ports_by35
+CORE_CLONEDEFNV(goldbaln,goldball ,"Gold Ball (Alternate)",1983,"Bally",by35_mBY35_51S,0)
+
 /********************************************************/
 /******* Games Below use Cheap Squeak Sound Board *******/
 /********************************************************/
