@@ -7,8 +7,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <dirent.h>
 #include <unzip.h>
+#include "dirent.h"
+#include "zlib.h"
 
 #ifndef MESS
 enum { LIST_SHORT = 1, LIST_INFO, LIST_FULL, LIST_SAMDIR, LIST_ROMS, LIST_SAMPLES,
@@ -90,7 +91,7 @@ struct rc_option frontend_opts[] = {
 
 int silentident,knownstatus;
 
-extern unsigned int crc32 (unsigned int crc, const unsigned char *buf, unsigned int len);
+//extern unsigned int crc32 (unsigned int crc, const unsigned char *buf, unsigned int len);
 
 void get_rom_sample_path (int argc, char **argv, int game_index, char *override_default_rompath);
 

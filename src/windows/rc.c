@@ -38,8 +38,7 @@ Version 0.3, Februari 2000
 #include <sys/stat.h>
 #include "rc.h"
 #include "misc.h"
-
-#include "rc.h"
+#include "osd_cpu.h"
 
 #define BUF_SIZE 512
 
@@ -587,8 +586,10 @@ int rc_set_option3(struct rc_option *option, const char *arg, int priority)
                return -1;
             }
             strcpy(str, arg);
+#ifndef _MSC_VER
             if(*(char **)option->dest)
                free(*(char **)option->dest);
+#endif /* _MSC_VER */
             *(char **)option->dest = str;
          }
          break;
