@@ -41,8 +41,9 @@ extern MACHINE_DRIVER_EXTERN(zac13136);
 #define ZAC_SOUNDROM_de1g(ud,chkd,ue,chke,ug,chkg) \
   SOUNDREGION(0x10000, ZACSND_CPUAREGION) \
     ROM_LOAD(ud, 0xe000, 0x2000, chkd) \
-    ROM_LOAD(ue, 0xd000, 0x1000, chke) \
-    ROM_LOAD(ug, 0xb000, 0x2000, chkg)
+    ROM_LOAD(ue, 0xc000, 0x1000, chke) \
+	ROM_RELOAD(0xd000, 0x1000) \
+    ROM_LOAD(ug, 0xa000, 0x2000, chkg)
 
 #define ZAC_SOUNDROM_de2g(ud,chkd,ue,chke,ug,chkg) \
   SOUNDREGION(0x10000, ZACSND_CPUAREGION) \

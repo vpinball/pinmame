@@ -172,7 +172,7 @@ ZAC_SOUNDROM_cefg0(			"pbc_1c.snd",  0x6e2defe5,
 							"pbc_1f.snd",  0xf3f4b950,
 							"pbc_1g.snd",  0x44adae13)
 ZAC_ROMEND
-CORE_CLONEDEFNV(pinchp82,pinchamp,"Pinball Champ '82",1982,"Zaccaria",mZAC2B,GAME_NOT_WORKING|SOUNDFLAG)
+CORE_CLONEDEFNV(pinchp82,pinchamp,"Pinball Champ '82",1982,"Zaccaria",mZAC2B,SOUNDFLAG)
 
 /*--------------------------------
 / Soccer King (09/82)
@@ -181,10 +181,10 @@ INITGAME(socrking,1,dispZAC3,SNDBRD_ZAC1370)
 ZAC_ROMSTART000(socrking,	"soccer.ic1",0x3fbd7c32,
 							"soccer.ic2",0x0cc0df1f,
 							"soccer.ic3",0x5da6ea20)
-ZAC_SOUNDROM_cefg1(			"sound1.c",  0x9c28b291,
-							"sound2.e",  0x6aff2325,
-							"sound3.f",  0xd26b43b1,
-							"sound4.g",  0x5de7fc8c)
+ZAC_SOUNDROM_cefg1(			"sound1.c",  0x00000000,
+							"sound2.e",  0x00000000,
+							"sound3.f",  0x00000000,
+							"sound4.g",  0x00000000)
 ZAC_ROMEND
 CORE_GAMEDEFNV(socrking,"Soccer King",1982,"Zaccaria",mZAC2A,GAME_NOT_WORKING|SOUNDFLAG)
 
@@ -200,7 +200,7 @@ ZAC_SOUNDROM_cefg0(			"sound1.c",    0xf739fcba,
 							"sound3.f",    0xd055e8c6,
 							"sound4.g",    0x39b68215)
 ZAC_ROMEND
-CORE_GAMEDEFNV(pinchamp,"Pinball Champ",1983,"Zaccaria",mZAC2B,GAME_NOT_WORKING|SOUNDFLAG)
+CORE_GAMEDEFNV(pinchamp,"Pinball Champ",1983,"Zaccaria",mZAC2B,SOUNDFLAG)
 
 /*--------------------------------
 / Time Machine (04/83)
@@ -213,6 +213,7 @@ ZAC_SOUNDROM_de1g(			"sound1.d",    0xefc1d724,
 							"sound3.g",    0xb7b872da)
 ZAC_ROMEND
 CORE_GAMEDEFNV(tmachzac,"Time Machine (Zaccaria)",1983,"Zaccaria",mZAC2C,GAME_NOT_WORKING|SOUNDFLAG)
+
 
 /*--------------------------------
 / Farfalla (09/83)
