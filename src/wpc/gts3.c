@@ -139,7 +139,7 @@ static void trigirq(int data) {
 /* U4 */
 
 //PA0-7 Switch Rows/Returns (Switches are inverted)
-static READ_HANDLER( xvia_0_a_r ) { return ~core_getSwCol(GTS3locals.lampColumn<<(GTS3locals.lampColumn>=0x0400)); }
+static READ_HANDLER( xvia_0_a_r ) { return ~core_getSwCol(GTS3locals.lampColumn); }
 
 //PB0-7 Varies on Alpha or DMD Generation!
 static READ_HANDLER( xvia_0_b_r ) { return GTS3locals.U4_PB_R(offset); }
@@ -516,29 +516,13 @@ static WRITE_HANDLER(GTS3_sndCmd_w)
 {
 	sndbrd_0_data_w(0, data^0xff);
 }
-// gts numbering col11->col12, col12->col13, col13->col14, col14->col15, col15->col11
+
 static int gts3_sw2m(int no) {
-  int col = no / 10 + 1;
-  int row = no % 10;
-  if (row > 7) return -1;
-  if (col > 10) col++;
-  if (col > 15) col = 11;
-  return col * 8 + row;
+  if (no % 10 > 7) return -1;
+  return (no / 10 + 1) * 8 + (no % 10);
 }
 
 static int gts3_m2sw(int col, int row) {
-  if (col == 11) col = 15;
-  else if (col > 11) col -= 1;
-  return (col-1)*10+row;
-}
-
-static int gts3_l2m(int no) {
-  int col = no / 10 + 1;
-  int row = no % 10;
-  return col * 8 + row;
-}
-
-static int gts3_m2l(int col, int row) {
   return (col - 1) * 10 + row;
 }
 
@@ -547,7 +531,7 @@ static core_tData GTS3Data = {
   GTS3_updSw,
   4,	/* 4 Diagnostic LEDS (CPU,DMD,Sound 1, Sound 2) */
   GTS3_sndCmd_w, "GTS3",
-  gts3_sw2m, gts3_l2m, gts3_m2sw, gts3_m2l
+  gts3_sw2m, gts3_sw2m, gts3_m2sw, gts3_m2sw
 };
 
 /*Alpha Numeric First Generation Init*/
