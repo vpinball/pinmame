@@ -63,9 +63,9 @@ static INTERRUPT_GEN(ZAC_vblank) {
 
 #ifdef MAME_DEBUG
 static void adjust_timer(int offset) {
+  static char s[4];
   locals.irqfreq += offset;
   if (locals.irqfreq < 1) locals.irqfreq = 1;
-  static char s[4];
   sprintf(s, "%4d", locals.irqfreq);
   core_textOut(s, 4, 25, 5, 5);
   timer_adjust(locals.irqtimer, 1.0/(double)locals.irqfreq, 0, 1.0/(double)locals.irqfreq);
