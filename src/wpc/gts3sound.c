@@ -210,11 +210,3 @@ struct OKIM6295interface GTS3_okim6295_interface = {
 	{ GTS3_MEMREG_SROM1 },	/* memory region */
 	{ 100 }
 };
-
-void GTS3_sinit(int num) {
-	sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(GTS80_MEMREG_SCPU1), NULL, NULL);
-}
-
-void GTS3_sound_exit(void) {
-	sndbrd_0_exit();
-}

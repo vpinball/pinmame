@@ -18,10 +18,12 @@
 #include "cpu/m6502/m65ce02.h"
 #include "machine/6522via.h"
 #include "core.h"
+#include "sndbrd.h"
 #include "gts3.h"
 #include "vidhrdw/crtc6845.h"
 #include "gts3dmd.h"
 #include "gts3sound.h"
+#include "gts80.h"
 
 UINT8 DMDFrames[GTS3DMD_FRAMES][0x200];
 #define GTS3_VBLANKDIV	      6 /* Break VBLANK into pieces*/
@@ -35,9 +37,6 @@ UINT8 DMDFrames[GTS3DMD_FRAMES][0x200];
 #define GTS3_CPUNO	0
 #define GTS3_DCPUNO 1
 #define GTS3_SCPUNO 2
-
-static int UsingSound = 0;
-static int GTS3_scpuno = 0;
 
 #if 1
 #define logerror1 logerror
@@ -108,6 +107,10 @@ struct {
   WRITE_HANDLER((*AUX_W));
   void (*UPDATE_DISPLAY)(void);
   void (*VBLANK_PROC)(void);
+
+  void* timer_nmi;
+  void* timer_irq;
+
 } GTS3locals;
 
 struct {
@@ -184,23 +187,23 @@ static READ_HANDLER(dmd_u4_pb_r)
 //CA2:  To A1P6-12 & A1P7-6 Auxiliary (INPUT???)
 static READ_HANDLER( xvia_0_ca2_r )
 {
-	logerror1("READ: NA?: via_0_ca2_r\n");
+	// logerror1("READ: NA?: via_0_ca2_r\n");
 	return 0;
 }
 static READ_HANDLER( xvia_0_cb1_r )
 {
-	logerror1("READ: NA?: via_0_cb1_r\n");
+	// logerror1("READ: NA?: via_0_cb1_r\n");
 	return 0;
 }
 static READ_HANDLER( xvia_0_cb2_r )
 {
-	logerror1("READ: NA?: via_0_cb2_r\n");
+	// logerror1("READ: NA?: via_0_cb2_r\n");
 	return 0;
 }
 
 static WRITE_HANDLER( xvia_0_a_w )
 {
-	logerror1("WRITE:NA?: via_0_a_w: %x\n",data);
+	// logerror1("WRITE:NA?: via_0_a_w: %x\n",data);
 }
 
 //PB0-7 Varies on Alpha or DMD Generation!
@@ -256,7 +259,7 @@ static WRITE_HANDLER(dmd_u4_pb_w) {
 //AUX DATA? See ca2 above!
 static WRITE_HANDLER( xvia_0_ca2_w )
 {
-	logerror1("WRITE:AUX W??:via_0_ca2_w: %x\n",data);
+	// logerror1("WRITE:AUX W??:via_0_ca2_w: %x\n",data);
 }
 
 //CB2:  NMI to Main CPU
@@ -270,46 +273,46 @@ static WRITE_HANDLER( xvia_0_cb2_w )
 //Not used?
 static READ_HANDLER( xvia_1_a_r )
 {
-	logerror1("via_1_a_r\n");
+	// logerror1("via_1_a_r\n");
 	return 0;
 }
 
 //Data to A1P6 Auxilary? Not used on a read?
 static READ_HANDLER( xvia_1_b_r )
 {
-	logerror1("via_1_b_r\n");
+	// logerror1("via_1_b_r\n");
 	return 0;
 }
 //CA1:   Sound Return/Status
 static READ_HANDLER( xvia_1_ca1_r )
 {
-	logerror1("SOUND RET READ: via_1_ca1_r\n");
+	// logerror1("SOUND RET READ: via_1_ca1_r\n");
 	return 0;
 }
 //Should be NA!
 static READ_HANDLER( xvia_1_ca2_r )
 {
-	logerror1("via_1_ca2_r\n");
+	// logerror1("via_1_ca2_r\n");
 	return 0;
 }
 //CB1:   CX1 - A1P6 (Auxilary)
 static READ_HANDLER( xvia_1_cb1_r )
 {
-	logerror1("via_1_cb1_r\n");
+	// logerror1("via_1_cb1_r\n");
 	return 0;
 }
 //CB2:   CX2 - A1P6 (Auxilary)
 static READ_HANDLER( xvia_1_cb2_r )
 {
-	logerror1("via_1_cb2_r\n");
+	// logerror1("via_1_cb2_r\n");
 	return 0;
 }
 
 //PA0-7: SD0-7 - A1P4 (Sound data)
 static WRITE_HANDLER( xvia_1_a_w )
 {
-	logerror1("Sound Command: WRITE:via_1_a_w: %x\n",data);
-	if(UsingSound)
+	// logerror1("Sound Command: WRITE:via_1_a_w: %x\n",data);
+	if ( coreGlobals.soundEn )
 		GTS3_SoundCommand(data);
 }
 
@@ -324,14 +327,14 @@ static WRITE_HANDLER( xvia_1_b_w ) { GTS3locals.U4_PB_W(offset,data); }
 		AX4(DX7?) = Latch the Data
 */
 static WRITE_HANDLER(alpha_u5_pb_w) {
-	logerror1("ALPHA DATA: %x\n",data);
+	// logerror1("ALPHA DATA: %x\n",data);
 }
 
 /* DMD GENERATION
    ----------------
    Data to A1P6 Auxilary
 */
-static WRITE_HANDLER(dmd_u5_pb_w){ logerror1("AUX: WRITE:via_1_b_w: %x\n",data); }
+static WRITE_HANDLER(dmd_u5_pb_w){ /* logerror1("AUX: WRITE:via_1_b_w: %x\n",data); */ }
 
 //Should be not used!
 static WRITE_HANDLER( xvia_1_ca1_w )
@@ -350,12 +353,12 @@ static WRITE_HANDLER( xvia_1_cb1_w ) { GTS3locals.U5_CB1_W(offset,data); }
    ----------------
    CB1:   CX1 - A1P6 Where Does this GO?
 */
-static WRITE_HANDLER(alpha_u5_cb1_w) { logerror1("WRITE:via_1_cb1_w: %x\n",data); }
+static WRITE_HANDLER(alpha_u5_cb1_w) { /* logerror1("WRITE:via_1_cb1_w: %x\n",data); */ }
 /* DMD GENERATION
    ----------------
    CB1:   CX1 - A1P6 (Auxilary)
 */
-static WRITE_HANDLER(dmd_u5_cb1_w) { logerror1("WRITE:via_1_cb1_w: %x\n",data); }
+static WRITE_HANDLER(dmd_u5_cb1_w) { /* logerror1("WRITE:via_1_cb1_w: %x\n",data); */ }
 
 //CB2 Varies on Alpha or DMD Generation!
 static WRITE_HANDLER( xvia_1_cb2_w ) { GTS3locals.U5_CB2_W(offset,data); }
@@ -363,16 +366,16 @@ static WRITE_HANDLER( xvia_1_cb2_w ) { GTS3locals.U5_CB2_W(offset,data); }
    ----------------
    CB2:   CX2 - A1P6 Where Does this GO?
 */
-static WRITE_HANDLER(alpha_u5_cb2_w){ logerror1("WRITE:via_1_cb2_w: %x\n",data); }
+static WRITE_HANDLER(alpha_u5_cb2_w){ /* logerror1("WRITE:via_1_cb2_w: %x\n",data); */ }
 /* DMD GENERATION
    ----------------
    CB2:   CX2 - A1P6 (Auxilary)
 */
-static WRITE_HANDLER(dmd_u5_cb2_w) { logerror1("WRITE:via_1_cb2_w: %x\n",data); }
+static WRITE_HANDLER(dmd_u5_cb2_w) { /* logerror1("WRITE:via_1_cb2_w: %x\n",data); */ }
 
 //IRQ:  IRQ to Main CPU
 static void via_irq(int state) { 
-	logerror("IN VIA_IRQ - STATE = %x\n",state);
+	// logerror("IN VIA_IRQ - STATE = %x\n",state);
 #if 0
 	if(state)
 		printf("IRQ = 1\n");
@@ -535,9 +538,8 @@ static core_tData GTS3Data = {
 
 /*Alpha Numeric First Generation Init*/
 static void GTS3_alpha_common_init(void) {
-  if (GTS3locals.initDone)
-    GTS3_exit();
-  GTS3locals.initDone = TRUE;
+  if (GTS3locals.initDone) CORE_DOEXIT(GTS3_exit);
+  if (core_init(&GTS3Data)) return;
 
   memset(&GTS3_dmdlocals, 0, sizeof(GTS3_dmdlocals));
   memset(&DMDFrames, 0, sizeof(DMDFrames));
@@ -557,24 +559,15 @@ static void GTS3_alpha_common_init(void) {
   GTS3locals.VBLANK_PROC = alpha_vblank;
 
   //Manually call the CPU NMI at the specified rate
-  timer_pulse(TIME_IN_HZ(GTS3_ALPHANMIFREQ), 0, alphanmi);
+  GTS3locals.timer_nmi = timer_pulse(TIME_IN_HZ(GTS3_ALPHANMIFREQ), 0, alphanmi);
 
   //Manually call the CPU IRQ at the specified rate
-  timer_pulse(TIME_IN_HZ(GTS3_TRIGIRQ), 0, trigirq);
+  GTS3locals.timer_irq = timer_pulse(TIME_IN_HZ(GTS3_TRIGIRQ), 0, trigirq);
 
+  /* Init the sound board */
+  sndbrd_0_init(core_gameData->hw.soundBoard, GTS3_SCPUNO-1, memory_region(GTS80_MEMREG_SCPU1), NULL, NULL);
 
-  /*Init Sound if Sound Enabled?*/
-  if (((Machine->gamedrv->flags & GAME_NO_SOUND) == 0) && Machine->sample_rate)
-  {
-	  UsingSound=1;
-	  GTS3_scpuno = GTS3_SCPUNO-1;	//Remove 1 because No DMD CPU
-	  GTS3_sinit(GTS3_scpuno);
-  }
-  else
-	  UsingSound=0;
-
-  if (core_init(&GTS3Data))
-	  return;
+  GTS3locals.initDone = TRUE;
 }
 
 /*Alpha Numeric First Generation Init*/
@@ -582,7 +575,6 @@ static void GTS3_init(void) {
 	GTS3_alpha_common_init();
 	GTS3locals.alphagen = 1;
 }
-
 
 /*Alpha Numeric Second Generation Init*/
 static void GTS3b_init(void) {
@@ -592,9 +584,8 @@ static void GTS3b_init(void) {
 
 /*DMD Generation Init*/
 static void GTS3_init2(void) {
-  if (GTS3locals.initDone)
-    GTS3_exit();
-  GTS3locals.initDone = TRUE;
+  if (GTS3locals.initDone) CORE_DOEXIT(GTS3_exit);
+  if (core_init(&GTS3Data)) return;
 
   memset(&GTS3_dmdlocals, 0, sizeof(GTS3_dmdlocals));
   memset(&DMDFrames, 0, sizeof(DMDFrames));
@@ -627,29 +618,29 @@ static void GTS3_init2(void) {
   GTS3locals.VBLANK_PROC = dmd_vblank;
 
   //Manually call the DMD NMI at the specified rate  (Although the code simply returns rti in most cases, we should call the nmi anyway, incase a game uses it)
-  //timer_pulse(TIME_IN_HZ(GTS3_DMDNMIFREQ), 0, dmdnmi);
+  // GTS3locals.timer_nmi = timer_pulse(TIME_IN_HZ(GTS3_DMDNMIFREQ), 0, dmdnmi);
 
   //Manually call the CPU IRQ at the specified rate
-  timer_pulse(TIME_IN_HZ(GTS3_TRIGIRQ), 0, trigirq);
+  GTS3locals.timer_irq = timer_pulse(TIME_IN_HZ(GTS3_TRIGIRQ), 0, trigirq);
 
-  /*Init Sound if Sound Enabled?*/
-  if (((Machine->gamedrv->flags & GAME_NO_SOUND) == 0) && Machine->sample_rate)
-  {
-	  UsingSound=1;
-	  GTS3_scpuno = GTS3_SCPUNO;
-	  GTS3_sinit(GTS3_scpuno);
-  }
-  else
-	  UsingSound=0;
+  /* Init the sound board */
+  sndbrd_0_init(core_gameData->hw.soundBoard, GTS3_SCPUNO, memory_region(GTS80_MEMREG_SCPU1), NULL, NULL);
 
-  if (core_init(&GTS3Data))
-	  return;
+  GTS3locals.initDone = TRUE;
 }
 
 static void GTS3_exit(void) {
-  /* Sound Enabled? */
-  if (((Machine->gamedrv->flags & GAME_NO_SOUND)==0) && Machine->sample_rate)
-    GTS3_sound_exit();
+  if ( GTS3locals.timer_nmi ) {
+	  timer_remove(GTS3locals.timer_nmi);
+	  GTS3locals.timer_nmi = NULL;
+  }
+
+  if ( GTS3locals.timer_irq ) {
+	  timer_remove(GTS3locals.timer_irq);
+	  GTS3locals.timer_irq = NULL;
+  }
+
+  sndbrd_0_exit();
   core_exit();
 }
 
@@ -757,7 +748,7 @@ dmdswitchbank();
 }
 
 //This should never be called!
-static READ_HANDLER(display_r){ logerror("DISPLAY_R\n"); return 0;}
+static READ_HANDLER(display_r){ /* logerror("DISPLAY_R\n"); */ return 0;}
 
 
 //Writes Lamp Returns
