@@ -544,10 +544,5 @@ struct MachineDriver machine_driver_GP2 = {
 / Load/Save static ram
 /-------------------------------------------------*/
 static void GP_nvram(void *file, int write) {
-  if (write)  /* save nvram */
-    osd_fwrite(file, memory_region(GP_MEMREG_CPU)+0x8c00, 0xff);
-  else if (file) /* load nvram */
-    osd_fread(file, memory_region(GP_MEMREG_CPU)+0x8c00, 0xff);
-  else        /* first time */
-    memset(memory_region(GP_MEMREG_CPU)+0x8c00, 0x00, 0xff);	//Must be 0 initially for it to work!
+  core_nvram(file, write, memory_region(GP_MEMREG_CPU)+0x8c00, 0xff,0x0);
 }
