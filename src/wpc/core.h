@@ -173,40 +173,28 @@
 /  Generic Display layout data
 /------------------------------*/
 /* The different kind of display units */
-#if 0
-#define CORE_SEG16  0                 // 16 seg alphanumeric
-#define CORE_SEG8   1                 //  7 seg + comma
-#define CORE_SEG7   2                 //  7 seg
-#define CORE_SEG7S  3                 //  7 seg small
-#define CORE_SEG87  4                 //  7 seg + comma every 3
-#define CORE_SEG8H  (CORE_SEG8+8)     //  7 seg + comma, use high bits
-#define CORE_SEG7H  (CORE_SEG7+8)     //  7 seg use high bits
-#define CORE_SEG87H (CORE_SEG87+8)    //  7 seg + comma every 3, use high bits
-#define CORE_SEG7SH (CORE_SEG7S+8)    //  7 seg small, use high bits
-#else
-#define CORE_DMD      7 // DMD Display
 #define CORE_SEG16    0 // 16 segements
 #define CORE_SEG10    1 // 10 segments
-#define CORE_SEG8     2 // 8  segments
-#define CORE_SEG7     3 // 7  segments
-#define CORE_SEG87    4 // 7  segments, comma every three
-#define CORE_SEG87F   5 // 7  segments, forced comma every three
-#define CORE_SEG7S    6 // 7  segements, small
+#define CORE_SEG9     2 // 10 segments
+#define CORE_SEG8     3 // 8  segments
+#define CORE_SEG7     4 // 7  segments
+#define CORE_SEG87    5 // 7  segments, comma every three
+#define CORE_SEG87F   6 // 7  segments, forced comma every three
+#define CORE_SEG7S    7 // 7  segements, small
+#define CORE_DMD      8 // DMD Display
 
-#define CORE_SEG10H   (CORE_SEG10 +8)
-#define CORE_SEG8H    (CORE_SEG8  +8)
-#define CORE_SEG7H    (CORE_SEG7  +8)
-#define CORE_SEG87H   (CORE_SEG87 +8)
-#define CORE_SEG87FH  (CORE_SEG87F+8)
-#define CORE_SEG7SH   (CORE_SEG7S +8)
+#define CORE_SEGHIBIT 0x10
+#define CORE_SEG8H    (CORE_SEG8  | CORE_SEGHIBIT)
+#define CORE_SEG7H    (CORE_SEG7  | CORE_SEGHIBIT)
+#define CORE_SEG87H   (CORE_SEG87 | CORE_SEGHIBIT)
+#define CORE_SEG87FH  (CORE_SEG87F| CORE_SEGHIBIT)
+#define CORE_SEG7SH   (CORE_SEG7S | CORE_SEGHIBIT)
 
-#define CORE_DUMMYZERO(x) ((x)*16)
+#define CORE_DUMMYZERO(x) ((x)*32)
 
 #define DMD_MAXX 192
 #define DMD_MAXY 64
 
-
-#endif
 /* Shortcuts for some common display sizes */
 #define DISP_SEG_16(row,type)    {4*row, 0, 20*row, 16, type}
 #define DISP_SEG_7(row,col,type) {4*row,16*col,row*20+col*8+1,7,type}
@@ -214,7 +202,8 @@
 #define DISP_SEG_BALLS(no1,no2,type)  {2,8,no1,1,type},{2,10,no2,1,type}
 /* display layout structure */
 typedef struct {
-  UINT8 top, left, start, length, type;
+  UINT8  top, left, start, length;
+  UINT16 type;
 } core_tLCDLayout, *core_ptLCDLayout;
 
 typedef UINT8 tDMDDot[DMD_MAXY+2][DMD_MAXX+2];
@@ -447,7 +436,9 @@ typedef struct {
 #define CORE_DIAG7SEG           0xff
 #define DIAGLED_VERTICAL	0x100	/*Flag indicated DIAG LEDS are Vertically Positioned*/
 extern core_tData coreData;
-extern const int core_bcd2seg[]; /* BCD to 7 segment display */
+extern const int core_bcd2seg7[]; /* BCD to 7 segment display */
+extern const int core_bcd2seg9[]; /* BCD to 9 segment display */
+#define core_bcd2seg core_bcd2seg7
 
 /*-- Exported Display handling functions--*/
 void core_initpalette(unsigned char *game_palette, unsigned short *game_colortable,
