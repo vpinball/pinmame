@@ -84,7 +84,7 @@ wpcs:
 :23:Set DAC (drums) volume to 12
 :24:Set DAC (drums) volume to 11
 :25:Set DAC (drums) volume to 10
-:26:Set DAC (drums) volume to 9 
+:26:Set DAC (drums) volume to 9
 :27:Set DAC (drums) volume to 8
 :28:Set DAC (drums) volume to 7
 :29:Set DAC (drums) volume to 6
@@ -112,7 +112,7 @@ wpcs:
 :65:Set FM (Music) volume to 13
 :66:Set FM (Music) volume to 12
 :67:Set FM (Music) volume to 11
-:68:Set FM (Music) volume to 10 
+:68:Set FM (Music) volume to 10
 :69:Set FM (Music) volume to 9
 :6a:Set FM (Music) volume to 8
 :6b:Set FM (Music) volume to 7
@@ -1745,3 +1745,41 @@ wcs_l2:
 :0943:"Kooowwaaahh!"
 :0944:"Towwaaaaahh!"
 :0945:"Koooooooaahhh!"
+#######
+# FIREPOWER: some sounds are multilayered
+# 1f is needed to reset the line after each sound.
+# By Greywolf
+#######
+frpwr_l2:
+:001f:FIREPOWER/start
+:011f:FIREPOWER/score
+:021f:Player 4 Start
+:031f:Match
+:041f:End Game
+:051f:POWER completed
+:061f:Player 3 Start
+:071f:Fire One/Two/Three
+:081f:Boom
+:091f:Bonus (>145 layers)
+:0a1f:Whirring Background (30 layers)
+:0b1f:Launch
+:0c1f:All Sounds Off
+:0d1f:Spinner (32 layers)
+:0e1f:Firepower Background (36 layers)
+:0f1f:1-6 target base (thunk)
+:101f:FIREPOWER MISSION ACCOMPLISHED 
+:111f:ENEMY DESTROYED 
+:121f:FIRE 
+:131f:MISSION ACCOMPLISHED 
+:141f:1000 points 
+:151f:100 points
+:161f:Top Lane (thuff) 
+:171f:YOU WON ONE MISSION 
+:181f:YOU ARE DESTROYED 
+:191f:1-6 completed base 
+:1a1f:10 points 
+:1b1f:Player 2 Start/Extra Ball 
+:1c1f:Lock 
+:1d1f:Power Target 
+:1e1f:Tilt
+
