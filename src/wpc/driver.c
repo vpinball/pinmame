@@ -504,6 +504,11 @@ DRIVERNV(wcup90)		//World Cup 90 (1990)
 // ----------------
 DRIVERNV(f1gp)			//F1 Grand Prix (1987)
 
+// ----------------
+// PEYPER
+// ----------------
+DRIVERNV(odisea)		//Odisea Paris-Dakar
+
 // --------------
 // SEGA GAMES
 // --------------
