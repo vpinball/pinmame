@@ -278,7 +278,7 @@ static core_tLCDLayout dispTaxi[] = { \
   { 2, 0,21,7,CORE_SEG7S},{0}
 };
 
-INITGAME(taxi, GEN_S11B,dispTaxi,12, FLIP_SW(FLIP_L),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
+INITGAME(taxi, GEN_S11B,dispTaxi,12, FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
 S11_ROMSTART48(taxi, l4,"taxi_u26.l4", 0xa70d8088,
                         "taxi_u27.l4", 0xf973f79c)
 S11S_SOUNDROM88(        "taxi_u21.l1", 0x2b20e9ab,
@@ -470,7 +470,7 @@ CORE_GAMEDEF(pool , l7, "Pool Sharks (L-7)", 1990, "Bally", s11_mS11CS,GAME_IMPE
 /*--------------------
 / Diner 8/90
 /--------------------*/
-INITGAME(diner,GEN_S11C,s11_dispS11c,12,FLIP_SW(FLIP_L),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
+INITGAME(diner,GEN_S11C,s11_dispS11c,12,FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
 S11_ROMSTART48(diner,l4,"dinr_u26.l4", 0x6f187abf,
                         "dinr_u27.l4", 0xd69f9f74)
 S11CS_SOUNDROM000(      "dinr_u4.l1",  0x3bd28368,
@@ -502,7 +502,7 @@ static core_tLCDLayout dispRvrbt[] = {
   { 2, 0, 0,16, CORE_SEG16 },
   { 4, 0,20,16, CORE_SEG8H },{0}
 };
-INITGAME(rvrbt,GEN_S11C,dispRvrbt,12,FLIP_SW(FLIP_L),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
+INITGAME(rvrbt,GEN_S11C,dispRvrbt,12,FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
 S11_ROMSTART48(rvrbt,l3,"gamb_u26.l3", 0xa65f6004,
                         "gamb_u27.l3", 0x9be0f613)
 S11CS_SOUNDROM000(      "gamb_u4.l2",  0xc0cfa9be,
