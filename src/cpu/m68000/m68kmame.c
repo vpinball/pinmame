@@ -1416,9 +1416,13 @@ static void m68306_intreg_w(offs_t address, data16_t data, int word) {
         // Writing to B4-B7 will also affect IRQ if configures as output.
         break;
       }
-      case irPDIR: /* Port direction */
-        m68306intreg[irPDIR] = data; /* Don't know if this affects output */
+	  case irPDIR: { /* Port direction */
+        UINT16 tmp = data & ~oldval;
+        m68306intreg[irPDIR] = data;
+        if (tmp & 0xff00) cpu_writeport16lew(M68306_PORTA_START, (data & m68306intreg[irPDATA])>>8);
+        if (tmp & 0x00ff) cpu_writeport16lew(M68306_PORTB_START, data & m68306intreg[irPDATA]);
         break;
+      }
       case irICR: /* interrupt control */
         m68306intreg[irICR] = data; m68306irq(0,0); // update irq level
         break;
