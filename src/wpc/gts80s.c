@@ -5,6 +5,7 @@
 #include "machine/6532riot.h"
 #include "sound/2151intf.h"
 #include "sound/dac.h"
+#include "sound/votrax.h"
 #include "core.h"
 #include "sndbrd.h"
 
@@ -31,11 +32,6 @@
 /-----------------------------------------*/
 
 #define GTS80S_BUFFER_SIZE 8192
-
-extern void sh_votrax_start(int Channel);
-extern void sh_votrax_stop(void);
-extern void votrax_w(int data);
-extern int votrax_status_r(void);
 
 struct {
 	struct sndbrdData boardData;
@@ -227,6 +223,7 @@ void GTS80SS_irq(int state) {
 
 void GTS80SS_nmi(int state)
 {
+	logerror("NMI: %i\n",state);
 	if ( !GTS80SS_locals.NMIState && state ) {
 //		logerror("NMI: %i\n",state);
 /*		at last Devils Dare isn't working if the NMI is really fired */
@@ -252,7 +249,6 @@ WRITE_HANDLER(riot3a_w) { logerror("riot3a_w: 0x%02x\n", data);}
 /* Switch settings, test switch and NMI */
 READ_HANDLER(riot3b_r)  {
 	// 0x40: test switch SW1
-//	return (GTS80SS_locals.NMIState?0x00:0x80) | 0x40 | (GTS80SS_locals.dips^0x3f);
 	return (votrax_status_r()?0x80:0x00) | 0x40 | (GTS80SS_locals.dips^0x3f);
 }
 
@@ -269,7 +265,7 @@ WRITE_HANDLER(da1_latch_w) {
 }
 
 WRITE_HANDLER(da2_latch_w) {
-/*	logerror("da2_w: 0x%02x\n", data); */
+	logerror("da2_w: 0x%02x\n", data); 
 }
 
 /* expansion board */
@@ -315,35 +311,14 @@ static const char *PhonemeTable[65] =
  0
 };
 
-static const int PhonemeDurationMS[65] =
-{
-  59,  71, 121,  47,  47,  71, 103,  90,  
-  71,  55,  80, 121, 103,  80,  71,  71,
-  71, 121,  71, 146, 121, 146, 103, 185,
-  103, 80,  47,  71,  71, 103,  55,  90,
-  185, 65,  80,  47, 250, 103, 185, 185,
-  185, 103, 71,  90, 185,  80, 185, 103,
-   90, 71, 103, 185,  80, 121,  59,  90,
-   80, 71, 146, 185, 121, 250, 185,  47
-};
-
-void GTS80SS_speachtimeout(int state)
-{
-//	logerror("votrax timer timeout\n");
-	GTS80SS_locals.timer = 0;
-	GTS80SS_nmi(1);
-}
-
 /* voice synt latch */
 WRITE_HANDLER(vs_latch_w) {
+/*
 	static int queue[100],pos;
 
-	votrax_w(data^0xff);
-	data = (data^0xff) & 0x3f;
+    data = (data^0xff) & 0x3f;
 	if ( pos<100 )
 		queue[pos++] = data;
-
-//	logerror("Votrax: intonation %d, phoneme %02x %s\n",data >> 6,data & 0x3f,PhonemeTable[data & 0x3f]);
 
 	if ( data==0x3f ) {
 		if ( pos>1 ) {
@@ -361,14 +336,8 @@ WRITE_HANDLER(vs_latch_w) {
 		}
 		pos = 0;
 	}
-
-	/* start working and set a timer when output is done */
-	GTS80SS_nmi(0);
-	if ( GTS80SS_locals.timer ) {
-		timer_remove(GTS80SS_locals.timer);
-		GTS80SS_locals.timer = 0;
-	}
-	GTS80SS_locals.timer = timer_set(TIME_IN_USEC(PhonemeDurationMS[data]*1000),1,GTS80SS_speachtimeout);
+*/
+	votrax_w(data^0xff);
 }
 
 struct riot6532_interface GTS80SS_riot6532_intf = {
@@ -478,7 +447,9 @@ void gts80ss_init(struct sndbrdData *brdData) {
 	GTS80SS_nmi(1);
 	GTS80SS_locals.stream = stream_init("SND DAC", 100, 11025, 0, GTS80_ss_Update); 
 	set_RC_filter(GTS80SS_locals.stream, 270000, 15000, 0, 10000);
-	sh_votrax_start(mixer_allocate_channel(15));
+
+	votrax_set_busy_func(GTS80SS_nmi);
+	votrax_set_base_freqency(7000);
 }
 
 void gts80ss_exit(int boardNo)
@@ -487,7 +458,6 @@ void gts80ss_exit(int boardNo)
 		timer_remove(GTS80SS_locals.timer);
 		GTS80SS_locals.timer = 0;
 	}
-	sh_votrax_stop();
 }
 
 const struct sndbrdIntf gts80ssIntf = {

@@ -61,11 +61,8 @@ extern const struct Memory_WriteAddress GTS80SS_writemem[];
   ignore_interrupt, 0 \
 }
 
-extern struct Samplesinterface votrax_interface;
-#define VOTRAXINTERFACE {SOUND_SAMPLES, &votrax_interface}
-
 #define GTS80SS_SOUND \
-{ SOUND_SAMPLES, &votrax_interface}
+VOTRAXINTERFACE, SAMPLESINTERFACE
 
 /* Gottlieb System 80B Sound board Hardware Versions:
    -----------------------------------------
