@@ -1,3 +1,27 @@
+Version 1.33 (??, 2004) - "??"
+
+Steve took a quick break from retirement to whip together the spinball emulation.. (gerrit add more text here)
+
+Bugs Fixed
+----------
+
+-Fixed some bugs in 8051 cpu core
+  [Steve Ellenoff]
+
+New Features
+------------
+
+
+- Spinball emulation including full Sound and DMD support
+(Big thanks to inkochnito for posting links to both the manual and rom on the forum so we could access them)
+  [Steve Ellenoff, Gerrit Volkenborn]
+
+- Added External Hardware Addressing to 8051 cpu core
+- Added support for Serial UART mode 1 to 8051
+  [Steve Ellenoff]
+
+
+
 Version 1.32 (May 1, 2004) - "MayDay Edition"
 -------------------------------------------------------------
 Not a lot of new stuff in here, but this release is needed to ensure people can enjoy
