@@ -156,7 +156,7 @@ STDMETHODIMP CWSHDlg::get_Ctrls(IWSHDlgCtrls **ppVal)
 	return m_pWSHDlgCtrls->QueryInterface(IID_IWSHDlgCtrls, (void**) ppVal);
 }
 
-INT_PTR CALLBACK WSHDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+int _stdcall WSHDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 STDMETHODIMP CWSHDlg::Show(VARIANT *RetVal)
 {
@@ -212,7 +212,7 @@ void SaveDlgValues(HWND hDlg, CWSHDlgCtrls *pWSHDlgCtrls)
 	}
 }
 
-INT_PTR CALLBACK WSHDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+int _stdcall WSHDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	static CWSHDlg		*pWSHDlg = NULL;
 	static CWSHDlgCtrls *pWSHDlgCtrls = NULL;
