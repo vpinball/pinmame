@@ -6,13 +6,14 @@
 #define DE1S_ROMREGION (REGION_SOUND1)
 
 extern MACHINE_DRIVER_EXTERN(de1s);
+extern MACHINE_DRIVER_EXTERN(de1s_hack);	//IRQ Hack for Robocop
 
 /*-- Sound rom macros --*/
 /*-- 32K Sound CPU Rom, 2 X 64K Voice Roms --*/
 #define DE1S_SOUNDROM244(n1,chk1,n2,chk2,n3,chk3) \
   SOUNDREGION(0x10000, DE1S_CPUREGION) \
     ROM_LOAD(n1, 0x8000,  0x8000, chk1) \
-  SOUNDREGION(0x40000, DE1S_ROMREGION) \
+	SOUNDREGION(0x40000, DE1S_ROMREGION) \
     ROM_LOAD(n2, 0x00000, 0x10000, chk2) \
       ROM_RELOAD(  0x10000, 0x10000) \
     ROM_LOAD(n3, 0x20000, 0x10000, chk3) \

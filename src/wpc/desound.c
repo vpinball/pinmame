@@ -12,6 +12,8 @@
 #include "machine/6821pia.h"
 #include "sndbrd.h"
 
+#define IRQ_HACK_RATE	1165.216471		//Determinded by checking what the YM2151 - Timer B value is set to by the Robocop code
+
 #define DE1S_BANK0 1
 
 static void de1s_init(struct sndbrdData *brdData);
@@ -40,6 +42,14 @@ static struct YM2151interface de1s_ym2151Int = {
   { de1s_ym2151IRQ }, { de1s_ym2151Port }
 };
 
+//Needed for ROBOCOP - we'll set the IRQ ourselves, so we ensure that the YM2151 doesn't call it's IRQ callback
+static struct YM2151interface de1s_ym2151Int_Hack = {
+  1, 3579545, /* Hz */
+  { YM3012_VOL(40,MIXER_PAN_LEFT,40,MIXER_PAN_RIGHT) },
+  {0}, { de1s_ym2151Port }
+};
+
+
 static MEMORY_READ_START(de1s_readmem)
   { 0x0000, 0x1fff, MRA_RAM },
   { 0x2001, 0x2001, YM2151_status_port_0_r },
@@ -60,21 +70,33 @@ static MEMORY_WRITE_START(de1s_writemem)
   { 0x4000, 0xffff, MWA_ROM },
 MEMORY_END
 
-MACHINE_DRIVER_START(de1s)
-  MDRV_CPU_ADD(M6809, 2000000)
-  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
-  MDRV_CPU_MEMORY(de1s_readmem, de1s_writemem)
-  MDRV_INTERLEAVE(50)
-  MDRV_SOUND_ADD(YM2151,  de1s_ym2151Int)
-  MDRV_SOUND_ADD(MSM5205, de1s_msm5205Int)
-  MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
-MACHINE_DRIVER_END
-
 static struct {
   struct sndbrdData brdData;
   int    msmread, nmiEn, cmd;
   UINT8  msmdata;
 } de1slocals;
+
+//Ensure that the IRQ is continually pulsed.. this hack is needed for Robocop!
+static void irq_hack(int data) { 
+	cpu_set_irq_line(de1slocals.brdData.cpuNo, M6809_IRQ_LINE, PULSE_LINE);
+}
+
+MACHINE_DRIVER_START(de1s)
+  MDRV_CPU_ADD(M6809, 2000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(de1s_readmem, de1s_writemem)
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD_TAG("ym2151", YM2151,  de1s_ym2151Int)
+  MDRV_SOUND_ADD(MSM5205, de1s_msm5205Int)
+  MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
+MACHINE_DRIVER_END
+
+//Machine driver with IRQ_HACK needed for Robocop
+MACHINE_DRIVER_START(de1s_hack)
+  MDRV_IMPORT_FROM(de1s)
+  MDRV_SOUND_REPLACE("ym2151", YM2151,  de1s_ym2151Int_Hack)
+  MDRV_TIMER_ADD(irq_hack, IRQ_HACK_RATE)
+MACHINE_DRIVER_END
 
 static void de1s_init(struct sndbrdData *brdData) {
   memset(&de1slocals, 0, sizeof(de1slocals));
@@ -85,7 +107,7 @@ static void de1s_init(struct sndbrdData *brdData) {
 }
 
 static WRITE_HANDLER(de1s_data_w) {
-  de1slocals.cmd = data;
+	de1slocals.cmd = data;
 }
 
 static WRITE_HANDLER(de1s_ctrl_w) {
@@ -145,6 +167,7 @@ static void de1s_msmIrq(int data) {
   // Are we done fetching both nibbles? Generate an NMI for more data!
   if (de1slocals.msmread && de1slocals.nmiEn)
     cpu_set_nmi_line(de1slocals.brdData.cpuNo, PULSE_LINE);
+
   de1slocals.msmread ^= 1;
 }
 
@@ -269,4 +292,3 @@ static INTERRUPT_GEN(de2s_firq) {
   //NOTE: Odd that it will NOT WORK without HOLD_LINE - although we don't clear it anywaywhere!
   cpu_set_irq_line(de2slocals.brdData.cpuNo, M6809_FIRQ_LINE, HOLD_LINE);
 }
-
