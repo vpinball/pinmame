@@ -418,7 +418,10 @@ static void sns_irqb(int state) {
 
 static void sns_5220Irq(int state) { pia_set_input_cb1(SNS_PIA1, !state); }
 
-// TECHNOPLAY sound board - Pretty much stole the Gottlieb System 80b Generation 1 sound board, plus added TMS7000
+/* TECHNOPLAY sound board - 
+   
+   Pretty much stole the Gottlieb System 80b Generation 1 sound board, plus..
+   added a TMS7000 and an extra DAC for additional sounds */
 
 /*----------------
 /  Local varibles
@@ -428,7 +431,8 @@ static struct {
   int    ay_latch;			// Data Latch to AY-8913 chips
   int    nmi_rate;			// Programmable NMI rate
   void   *nmi_timer;		// Timer for NMI (NOT USED ANYMORE?)
-  int nmi_enable;			// GTS3 - Enable NMI triggered by Programmable Circuit
+  int	 nmi_enable;		// Enable NMI triggered by Programmable Circuit
+  int    snd_data;			// Command from cpu
   UINT8  dac_volume;
   UINT8  dac_data;
   UINT8  speechboard_drq;	
@@ -485,17 +489,11 @@ READ_HANDLER(techno_cause_dac_nmi_r)
 //Latch a command into the Sound Latch and generate the IRQ interrupts
 WRITE_HANDLER(techno_sh_w)
 {
-	static int last=0;
-	soundlatch_w(offset,data);
+	techno_locals.snd_data = data;
 	cpu_set_irq_line(ZACSND_CPUA, 0, HOLD_LINE);
 	cpu_set_irq_line(ZACSND_CPUB, 0, HOLD_LINE);
-	//Bit 6 if set, fires TMS IRQ 1, only on risiging (or is it falling?) edge?
-	//if((last&0x40) && (data ^ 0x40)) {
-	if(data ^ 0x40) {
-		logerror("TMS IRQ1\n");
-		cpu_set_irq_line(ZACSND_CPUC, TMS7000_IRQ1_LINE, ASSERT_LINE);
-	}
-	last = data;
+	//Bit 6 if NOT set, fires TMS IRQ 1
+	if(~data & 0x40) cpu_set_irq_line(ZACSND_CPUC, TMS7000_IRQ1_LINE, ASSERT_LINE);
 }
 
 /* bits 0-3 are probably unused (future expansion) */
@@ -593,19 +591,19 @@ static WRITE_HANDLER(tsns_data_w) {
 static READ_HANDLER(techno_snd_r)
 {
 //	cpu_set_irq_line(ZACSND_CPUA, 0, CLEAR_LINE);
-	return soundlatch_r(0);
+	return techno_locals.snd_data;
 }
 
 static READ_HANDLER(techno_b_snd_r)
 {
 //	cpu_set_irq_line(ZACSND_CPUB, 0, CLEAR_LINE);
-	return soundlatch_r(0);
+	return techno_locals.snd_data;
 }
 
 //Read data command
 READ_HANDLER(tms_porta_r)
 {
-	int data = soundlatch_r(0) & 0x1f;	//Only bits 0-4 used
+	int data = techno_locals.snd_data & 0x1f;	//Only bits 0-4 used
 	logerror("reading porta =%x\n",data);
 	return data;
 }
@@ -630,10 +628,7 @@ READ_HANDLER(tms_portd_r)
 }
 
 //Should not be used for output?
-WRITE_HANDLER(tms_porta_w)
-{
-	logerror("writing port a = %x\n",data);
-}
+WRITE_HANDLER(tms_porta_w) { logerror("writing port a = %x\n",data); }
 
 /*
 D0 = U25 ROM Select
@@ -644,21 +639,12 @@ D4-D7 = Used for Bus Control
 */
 WRITE_HANDLER(tms_portb_w)
 {
-	//this doesn't seem to be working correctly
-	logerror("writing port b = %x\n",data);
-	cpu_setbank(1, techno_locals.brdData.romRegion + 0x10000 + (data&2*0x8000));
+	cpu_setbank(1, techno_locals.brdData.romRegion + (0x10000) + ((data&2)>>1)*0x8000);
 }
 
 //should not be used since it's used for address and data lines
-WRITE_HANDLER(tms_portc_w)
-{
-	logerror("writing port c = %x\n",data);
-}
-//should not be used since it's used for address and data lines
-WRITE_HANDLER(tms_portd_w)
-{
-	logerror("writing port d = %x\n",data);
-}
+WRITE_HANDLER(tms_portc_w){	logerror("writing port c = %x\n",data); }
+WRITE_HANDLER(tms_portd_w){	logerror("writing port d = %x\n",data); }
 
 //Speechboard IRQ callback, will be set to 1 while speech is busy..
 static void speechboard_drq_w(int level)
@@ -669,6 +655,25 @@ static void speechboard_drq_w(int level)
 //Latch data to the SP0250
 static WRITE_HANDLER(sp0250_latch) {
 	techno_locals.sp0250_latch = data;
+}
+
+//DAC Handling.. Set volume
+static WRITE_HANDLER( dac_vol_w )
+{
+	techno_locals.dac_volume = data;
+	DAC_data_16_w(0, techno_locals.dac_volume * techno_locals.dac_data);
+}
+//DAC Handling.. Set data to send
+static WRITE_HANDLER( dac_data_w )
+{
+	techno_locals.dac_data = data;
+	DAC_data_16_w(0, techno_locals.dac_volume * techno_locals.dac_data);
+}
+
+//TMS7000 will use dac chip #1
+static WRITE_HANDLER(DAC_TMS_w)
+{
+	DAC_data_w(1,data);
 }
 
 const struct sndbrdIntf technoIntf =
@@ -687,7 +692,7 @@ struct AY8910interface techno_ay8910Int = {
 
 struct DACinterface techno_6502dacInt =
 {
-  2,			/*2 Chips - really could be 3 as 1 of them is a dual chip, but we're not emulating it*/
+  2,			/*2 Chips */
  {50,50}		/* Volume */
 };
 
@@ -724,18 +729,19 @@ MEMORY_READ_START( m6502_b_readmem )
 MEMORY_END
 MEMORY_WRITE_START( m6502_b_writemem )
 	{ 0x0000, 0x03ff, MWA_RAM },
-	{ 0x4000, 0x4001, DAC_0_data_w },	/*Not sure if this shouldn't use s80bs_dac_vol_w & s80bs_dac_data_w*/
+	{ 0x4000, 0x4000, dac_vol_w},
+	{ 0x4001, 0x4001, dac_data_w},
 	{ 0xe000, 0xffff, MWA_ROM },
 MEMORY_END
 
+//TMS7000 CPU
 static MEMORY_READ_START(tms_readmem)
-  { 0x0000, 0x7fff, MRA_BANK1 },
+  { 0x0000, 0x7fff, MRA_BANK1 },		/* ROM BANK */
   { 0x8000, 0xffff, MRA_ROM },
 MEMORY_END
-
 static MEMORY_WRITE_START(tms_writemem)
   { 0x0000, 0x7fff, MWA_ROM },
-  { 0x8000, 0xffff, DAC_1_data_w },
+  { 0x8000, 0x8000, DAC_TMS_w },		/* DAC */
 MEMORY_END
 
 static PORT_READ_START(tms_readport)
@@ -763,7 +769,8 @@ MACHINE_DRIVER_START(techno)
   MDRV_CPU_MEMORY(m6502_b_readmem, m6502_b_writemem)
   MDRV_SOUND_ADD(DAC, techno_6502dacInt)
 
-  MDRV_CPU_ADD(TMS7000, 4000000)
+  //MDRV_CPU_ADD(TMS7000, 4000000)
+  MDRV_CPU_ADD(TMS7000, 1500000)		//Sounds much better at 1.5Mhz than 4Mhz
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(tms_readmem, tms_writemem)
   MDRV_CPU_PORTS(tms_readport, tms_writeport)

@@ -25,7 +25,7 @@
 static WRITE_HANDLER(ZAC_soundCmd) { }
 static void ZAC_soundInit(void) {
   if (core_gameData->hw.soundBoard == SNDBRD_TECHNO)
-    sndbrd_0_init(core_gameData->hw.soundBoard, ZACSND_CPUA, memory_region(ZACSND_CPUBREGION), NULL, NULL);
+    sndbrd_0_init(core_gameData->hw.soundBoard, ZACSND_CPUA, memory_region(ZACSND_CPUCREGION), NULL, NULL);
   else
     sndbrd_0_init(core_gameData->hw.soundBoard, ZACSND_CPUA, memory_region(ZACSND_CPUAREGION), NULL, NULL);
 }

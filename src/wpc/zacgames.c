@@ -379,4 +379,4 @@ TECHNO_SOUNDROM2("scram_3.snd",CRC(ed27cd78) SHA1(a062ee1a3ec8819acddac13a4b454f
                  "scram_4.snd",CRC(943f279d) SHA1(52767708d706a01ea16e37c866eb5762297e1f86),
                  "scram_5.snd",CRC(3aa782ec) SHA1(7cbbd3a737239b2755c6a6651a284e83fcfa22f6))
 ZAC_ROMEND
-CORE_GAMEDEFNV(scram_tp,"Scramble",1987,"Technoplay",mTECHNO,SOUNDFLAG)
+CORE_GAMEDEFNV(scram_tp,"Scramble",1987,"Technoplay",mTECHNO,0)
