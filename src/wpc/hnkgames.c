@@ -77,7 +77,7 @@ INITGAME(empsback,0,dispHNK,FLIP_SW(FLIP_L),0,SNDBRD_HANKIN)
 HNK_ROMSTART(empsback,	"sw_ic2.mpu",0xb47bc2c7,
 						"sw_ic3.mpu",0x837ffe32)
 HNK_SOUNDROMS("sw_ic14.snd", 0xc1eeb53b,
-              "sw_ic3.snd",  0xdfc57606)
+              "sw_ic3.snd",  0xdb214f65)
 HNK_ROMEND
 CORE_GAMEDEFNV(empsback,"The Empire Strike Back",1981,"Hankin",mHNK,0)
 
