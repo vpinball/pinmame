@@ -178,7 +178,7 @@ const struct MachineDriver machine_driver_wpcAlpha_s = {
   }   WPCS_SOUNDCPU },
   WPC_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   100, wpc_init, CORE_EXITFUNC(wpc_exit)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  640, 400, { 0, 639, 0, 399 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
   NULL, NULL, gen_refresh,
@@ -482,11 +482,13 @@ WRITE_HANDLER(wpc_w) {
       data |= wpc_data[offset];
       break;
     case 0x3fd1-WPC_BASE:
-	  DBGLOG(("sdataX:%2x\n",data));
-      sndbrd_0_data_w(0,data); sndbrd_0_ctrl_w(0,0); sndbrd_0_ctrl_w(0,1);
-	  snd_cmd_log(data);
+	  if (core_gameData->gen & GEN_WPCALPHA_1) {
+		  DBGLOG(("sdataX:%2x\n",data));
+		  sndbrd_0_data_w(0,data); sndbrd_0_ctrl_w(0,0); sndbrd_0_ctrl_w(0,1);
+		  snd_cmd_log(data);
+	  }
 	  break;
-	case WPC_SOUNDIF:
+    case WPC_SOUNDIF:
 	  DBGLOG(("sdata:%2x\n",data));
       sndbrd_0_data_w(0,data); snd_cmd_log(data);
 	  if (sndbrd_0_type() == SNDBRD_S11CS) sndbrd_0_ctrl_w(0,0);
