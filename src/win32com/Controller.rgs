@@ -16,7 +16,7 @@ HKCR
 			VersionIndependentProgID = s 'VPinMAME.Controller'
 			InprocServer32 = s '%MODULE%'
 			{
-				val ThreadingModel = s 'free'
+				val ThreadingModel = s 'Apartment'
 			}
 		}
 	}
