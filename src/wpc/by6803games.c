@@ -160,6 +160,14 @@ BY6803_ROMEND
 #define input_ports_hardbody input_ports_by6803
 CORE_GAMEDEFNV(hardbody,"Hardbody",1987,"Bally",by_mBY6803_TCS2S,0)
 
+BY6803_ROMSTART44(hardbdyg,"hrdbdy-g.u2", CRC(fce357cc) SHA1(f7d13c12aabcb3c5bb5826b1911817bd359f1941),
+                           "hrdbdy-g.u3", CRC(ccac74b5) SHA1(d55cfc8ee866a9af4567d56890f5a9ecb9c3c02f))
+BYTCS_SOUNDROM0(           "sound_u7.512",CRC(c96f91af) SHA1(9602a8991ca0cf9a7c68710f55c245d9c675b06f))
+BY6803_ROMEND
+#define init_hardbdyg init_hardbody
+#define input_ports_hardbdyg input_ports_hardbody
+CORE_CLONEDEFNV(hardbdyg,hardbody,"Hardbody (German)",1987,"Bally",by_mBY6803_TCS2S,0)
+
 // Games below use Sounds Deluxe Sound Hardware
 
 /*--------------------------------
