@@ -253,23 +253,23 @@ static sim_tInportData mb_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(mb,106,"mb_1_06.bin",0x100000,0x381a8822)
-DCS_SOUNDROM6xm("mb_s2.rom",0x9152f559,
-                "mb_s3.rom",0xc3cd6e81,
-                "mb_s4.rom",0x00b88352,
-                "mb_s5.rom",0xdae16105,
-		"mb_s6.rom",0x3975d5da,
-		"mb_s7.rom",0xc242fb78)
+WPC_ROMSTART(mb,106,"mb_1_06.bin",0x100000,CRC(381a8822))
+DCS_SOUNDROM6xm("mb_s2.rom",CRC(9152f559),
+                "mb_s3.rom",CRC(c3cd6e81),
+                "mb_s4.rom",CRC(00b88352),
+                "mb_s5.rom",CRC(dae16105),
+		"mb_s6.rom",CRC(3975d5da),
+		"mb_s7.rom",CRC(c242fb78))
 WPC_ROMEND
 
 
-WPC_ROMSTART(mb,10, "mb_g11.1_0", 0x100000,0x6b8db967)
-DCS_SOUNDROM6xm("mb_s2.rom",0x9152f559,
-                "mb_s3.rom",0xc3cd6e81,
-                "mb_s4.rom",0x00b88352,
-                "mb_s5.rom",0xdae16105,
-		"mb_s6.rom",0x3975d5da,
-		"mb_s7.rom",0xc242fb78)
+WPC_ROMSTART(mb,10, "mb_g11.1_0", 0x100000,CRC(6b8db967))
+DCS_SOUNDROM6xm("mb_s2.rom",CRC(9152f559),
+                "mb_s3.rom",CRC(c3cd6e81),
+                "mb_s4.rom",CRC(00b88352),
+                "mb_s5.rom",CRC(dae16105),
+		"mb_s6.rom",CRC(3975d5da),
+		"mb_s7.rom",CRC(c242fb78))
 WPC_ROMEND
 
 /*--------------

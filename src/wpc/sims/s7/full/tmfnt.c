@@ -299,11 +299,11 @@ static void tmfnt_drawMech(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
-S7_ROMSTART8088(tmfnt,l5, "ic14.716",   0x56b8e5ad,
-                          "ic17.532",   0xbb571a17,
-                          "ic20.716",   0xdfb4b75a,
-                          "ic26.716",   0x0f86947c)
-S67S_SOUNDROMS8(          "sound12.716",0x55a10d13)
+S7_ROMSTART8088(tmfnt,l5, "ic14.716",   CRC(56b8e5ad),
+                          "ic17.532",   CRC(bb571a17),
+                          "ic20.716",   CRC(dfb4b75a),
+                          "ic26.716",   CRC(0f86947c))
+S67S_SOUNDROMS8(          "sound12.716",CRC(55a10d13))
 S7_ROMEND
 
 /*--------------

@@ -241,21 +241,21 @@ static sim_tInportData ts_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(ts,lh6,"shad_h6.rom",0x080000,0x0a72268d)
-DCS_SOUNDROM6x("ts_u2_s.l1",0xf1486cfb,
-               "ts_u3_s.l1",0xb9e39c3f,
-               "ts_u4_s.l1",0xa1d1ab66,
-               "ts_u5_s.l1",0xab8cf435,
-               "ts_u6_s.l1",0x63b8d2db,
-               "ts_u7_s.l1",0x62b5db14)
+WPC_ROMSTART(ts,lh6,"shad_h6.rom",0x080000,CRC(0a72268d))
+DCS_SOUNDROM6x("ts_u2_s.l1",CRC(f1486cfb),
+               "ts_u3_s.l1",CRC(b9e39c3f),
+               "ts_u4_s.l1",CRC(a1d1ab66),
+               "ts_u5_s.l1",CRC(ab8cf435),
+               "ts_u6_s.l1",CRC(63b8d2db),
+               "ts_u7_s.l1",CRC(62b5db14))
 WPC_ROMEND
-WPC_ROMSTART(ts,lx5,"shad_x5.rom",0x080000,0xbb545f83)
-DCS_SOUNDROM6x("ts_u2_s.l1",0xf1486cfb,
-               "ts_u3_s.l1",0xb9e39c3f,
-               "ts_u4_s.l1",0xa1d1ab66,
-               "ts_u5_s.l1",0xab8cf435,
-               "ts_u6_s.l1",0x63b8d2db,
-               "ts_u7_s.l1",0x62b5db14)
+WPC_ROMSTART(ts,lx5,"shad_x5.rom",0x080000,CRC(bb545f83))
+DCS_SOUNDROM6x("ts_u2_s.l1",CRC(f1486cfb),
+               "ts_u3_s.l1",CRC(b9e39c3f),
+               "ts_u4_s.l1",CRC(a1d1ab66),
+               "ts_u5_s.l1",CRC(ab8cf435),
+               "ts_u6_s.l1",CRC(63b8d2db),
+               "ts_u7_s.l1",CRC(62b5db14))
 WPC_ROMEND
 
 /*--------------

@@ -277,22 +277,22 @@ static void wd_drawMech(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(wd,12,"whod1_2.rom",0x80000,0xd49be363)
-DCS_SOUNDROM6x("wdu2_10.rom",0x2fd534be,
-               "wdu3_10.rom",0xbe9b312f,
-               "wdu4_10.rom",0x46965682,
-               "wdu5_10.rom",0x0a787015,
-               "wdu6_10.rom",0xd2e05659,
-               "wdu7_10.rom",0x36285ca2)
+WPC_ROMSTART(wd,12,"whod1_2.rom",0x80000,CRC(d49be363))
+DCS_SOUNDROM6x("wdu2_10.rom",CRC(2fd534be),
+               "wdu3_10.rom",CRC(be9b312f),
+               "wdu4_10.rom",CRC(46965682),
+               "wdu5_10.rom",CRC(0a787015),
+               "wdu6_10.rom",CRC(d2e05659),
+               "wdu7_10.rom",CRC(36285ca2))
 WPC_ROMEND
 
-WPC_ROMSTART(wd,12g,"whod1_2.rom",0x80000,0xd49be363)
-DCS_SOUNDROM6x("wdu2_20g.rom",0x2fe0ce7e,
-               "wdu3_20g.rom",0xf01142ab,
-               "wdu4_10.rom",0x46965682,
-               "wdu5_10.rom",0x0a787015,
-               "wdu6_10.rom",0xd2e05659,
-               "wdu7_10.rom",0x36285ca2)
+WPC_ROMSTART(wd,12g,"whod1_2.rom",0x80000,CRC(d49be363))
+DCS_SOUNDROM6x("wdu2_20g.rom",CRC(2fe0ce7e),
+               "wdu3_20g.rom",CRC(f01142ab),
+               "wdu4_10.rom",CRC(46965682),
+               "wdu5_10.rom",CRC(0a787015),
+               "wdu6_10.rom",CRC(d2e05659),
+               "wdu7_10.rom",CRC(36285ca2))
 WPC_ROMEND
 
 /*--------------

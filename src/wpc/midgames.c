@@ -25,7 +25,7 @@ core_tLCDLayout flicker_disp[] = {
   {3,18,13,1,CORE_SEG7}, {3,20,16,1,CORE_SEG7}, {0}
 };
 INITGAMEP(flicker, flicker_disp, 1)
-MIDWAY_1_ROMSTART(flicker,"flicker.rom", 0xc692e586)
+MIDWAY_1_ROMSTART(flicker,"flicker.rom", CRC(c692e586))
 MIDWAY_ROMEND
 CORE_GAMEDEFNV(flicker,"Flicker (Prototype)",1974,"Nutting Associates",gl_mMIDWAYP,GAME_USES_CHIMES)
 
@@ -38,8 +38,8 @@ core_tLCDLayout rot_disp[] = {
   {4, 8,35, 6,CORE_SEG7}, {0}
 };
 INITGAME(rotation, rot_disp, 1)
-MIDWAY_3_ROMSTART(rotation,	"rot-a117.dat",	0x7bb6beb3,
-							"rot-b117.dat",	0x538e37b2,
-							"rot-c117.dat",	0x3321ff08)
+MIDWAY_3_ROMSTART(rotation,	"rot-a117.dat",	CRC(7bb6beb3),
+							"rot-b117.dat",	CRC(538e37b2),
+							"rot-c117.dat",	CRC(3321ff08))
 MIDWAY_ROMEND
 CORE_GAMEDEFNV(rotation,"Rotation VIII",1978,"Midway",gl_mMIDWAY,GAME_NO_SOUND)

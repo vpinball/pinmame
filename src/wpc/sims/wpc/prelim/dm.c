@@ -250,21 +250,21 @@ static sim_tInportData dm_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(dm,lx4,"dman_lx4.rom",0x80000,0xc2d0f493)
-DCS_SOUNDROM6x("dm_u2_s.l2",0x85fb8bce,
-               "dm_u3_s.l2",0x2b65a66e,
-               "dm_u4_s.l2",0x9d6815fe,
-               "dm_u5_s.l2",0x9f614c27,
-               "dm_u6_s.l2",0x3efc2c0e,
-               "dm_u7_s.l2",0x75066af1)
+WPC_ROMSTART(dm,lx4,"dman_lx4.rom",0x80000,CRC(c2d0f493))
+DCS_SOUNDROM6x("dm_u2_s.l2",CRC(85fb8bce),
+               "dm_u3_s.l2",CRC(2b65a66e),
+               "dm_u4_s.l2",CRC(9d6815fe),
+               "dm_u5_s.l2",CRC(9f614c27),
+               "dm_u6_s.l2",CRC(3efc2c0e),
+               "dm_u7_s.l2",CRC(75066af1))
 WPC_ROMEND
-WPC_ROMSTART(dm,px5,"dman_px5.rom",0x80000,0x42673371)
-DCS_SOUNDROM6x("dm_u2_s.l2",0x85fb8bce,
-               "dm_u3_s.l2",0x2b65a66e,
-               "dm_u4_s.l2",0x9d6815fe,
-               "dm_u5_s.l2",0x9f614c27,
-               "dm_u6_s.l2",0x3efc2c0e,
-               "dm_u7_s.l2",0x75066af1)
+WPC_ROMSTART(dm,px5,"dman_px5.rom",0x80000,CRC(42673371))
+DCS_SOUNDROM6x("dm_u2_s.l2",CRC(85fb8bce),
+               "dm_u3_s.l2",CRC(2b65a66e),
+               "dm_u4_s.l2",CRC(9d6815fe),
+               "dm_u5_s.l2",CRC(9f614c27),
+               "dm_u6_s.l2",CRC(3efc2c0e),
+               "dm_u7_s.l2",CRC(75066af1))
 WPC_ROMEND
 
 /*--------------

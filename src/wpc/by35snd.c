@@ -344,11 +344,11 @@ static WRITE_HANDLER(snt_pia1a_w) { sntlocals.pia1a = data; }
 static WRITE_HANDLER(snt_pia1b_w) {
   if (sntlocals.pia1b & ~data & 0x02) { // write
     tms5220_data_w(0, sntlocals.pia1a);
-    pia_pulse_ca2(SNT_PIA1, 1);
+    pia_set_input_ca2(SNT_PIA1, 1); pia_set_input_ca2(SNT_PIA1, 0);
   }
   else if (sntlocals.pia1b & ~data & 0x01) { // read
     pia_set_input_a(SNT_PIA1, tms5220_status_r(0));
-    pia_pulse_ca2(SNT_PIA1, 1);
+    pia_set_input_ca2(SNT_PIA1, 1); pia_set_input_ca2(SNT_PIA1, 0);
   }
   sntlocals.pia1b = data;
 }
@@ -580,7 +580,10 @@ static void sd_diag(int button) {
 }
 static WRITE_HANDLER(sd_cmd_w) {
   sdlocals.cmd[sdlocals.cmdsync ^= 1] = data;
-  if (sdlocals.irqnext) { pia_pulse_ca1(SD_PIA0,0); sdlocals.irqnext = 0; }
+  if (sdlocals.irqnext) {
+    pia_set_input_ca1(SD_PIA0,0); pia_set_input_ca1(SD_PIA0,1);
+    sdlocals.irqnext = 0;
+  }
 }
 static WRITE_HANDLER(sd_ctrl_w) {
   if (!(data & 0x01)) sdlocals.irqnext = 1;

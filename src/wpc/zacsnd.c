@@ -264,11 +264,11 @@ static WRITE_HANDLER(sns_pia1a_w) { snslocals.pia1a = data; }
 static WRITE_HANDLER(sns_pia1b_w) {
   if (snslocals.pia1b & ~data & 0x02) { // write
     tms5220_data_w(0, snslocals.pia1a);
-    pia_pulse_ca2(SNS_PIA1, 1);
+    pia_set_input_ca2(SNS_PIA1, 1); pia_set_input_ca2(SNS_PIA1, 0);
   }
   else if (snslocals.pia1b & ~data & 0x01) { // read
     pia_set_input_a(SNS_PIA1, tms5220_status_r(0));
-    pia_pulse_ca2(SNS_PIA1, 1);
+    pia_set_input_ca2(SNS_PIA1, 1); pia_set_input_ca2(SNS_PIA1, 0);
   }
   snslocals.pia1b = data;
   UpdateZACSoundACT((data>>2)&0x3);	//ACTSND & ACTSPK on bits 2 & 3

@@ -177,7 +177,7 @@ void vpm_frontend_init(void) {
 void vpm_frontend_exit(void) {
   /* close open files */
   if (options.language_file) /* this seems to never be opened in Win32 version */
-    { osd_fclose(options.language_file); options.language_file = NULL; }
+    { mame_fclose(options.language_file); options.language_file = NULL; }
   if (logfile)
     { fclose(logfile); logfile = NULL; }
 }

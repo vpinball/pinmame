@@ -246,10 +246,10 @@ static sim_tInportData congo_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(congo,21,"cg_g11.2_1",0x80000,0x5d8435bf)
-DCS_SOUNDROM3m("cgs2v1_1.rom",0x2b7637ae,
-               "cgs3v1_0.rom",0x6cfd9fe0,
-               "cgs4v1_0.rom",0x2a1980e7)
+WPC_ROMSTART(congo,21,"cg_g11.2_1",0x80000,CRC(5d8435bf))
+DCS_SOUNDROM3m("cgs2v1_1.rom",CRC(2b7637ae),
+               "cgs3v1_0.rom",CRC(6cfd9fe0),
+               "cgs4v1_0.rom",CRC(2a1980e7))
 WPC_ROMEND
 
 

@@ -245,15 +245,15 @@ static sim_tInportData fs_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(fs,lx5,"flin_lx5.rom",0x80000,0x06707244)
-DCS_SOUNDROM8x("fs_u2_s.l1",0xaa3da768,
-               "fs_u3_s.l1",0xe8a0b2d1,
-               "fs_u4_s.l1",0xa5de69f4,
-               "fs_u5_s.l1",0x74b4d495,
-               "fs_u6_s.l1",0x3c7f7a04,
-               "fs_u7_s.l1",0xf32b9271,
-               "fs_u8_s.l1",0xa7aafa3e,
-               "fs_u9_s.l1",0x0a6664fb)
+WPC_ROMSTART(fs,lx5,"flin_lx5.rom",0x80000,CRC(06707244))
+DCS_SOUNDROM8x("fs_u2_s.l1",CRC(aa3da768),
+               "fs_u3_s.l1",CRC(e8a0b2d1),
+               "fs_u4_s.l1",CRC(a5de69f4),
+               "fs_u5_s.l1",CRC(74b4d495),
+               "fs_u6_s.l1",CRC(3c7f7a04),
+               "fs_u7_s.l1",CRC(f32b9271),
+               "fs_u8_s.l1",CRC(a7aafa3e),
+               "fs_u9_s.l1",CRC(0a6664fb))
 WPC_ROMEND
 
 /*--------------

@@ -306,13 +306,13 @@ static sim_tInportData corv_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(corv,21,"corv_2_1.rom",0x80000,0x4fe64c6d)
-DCS_SOUNDROM6x("corvsnd2",0x630d20a3,
-               "corvsnd3",0x6ace0353,
-               "corvsnd4",0x87807278,
-               "corvsnd5",0x35f82c21,
-               "corvsnd6",0x61e56d90,
-               "corvsnd7",0x1417b547)
+WPC_ROMSTART(corv,21,"corv_2_1.rom",0x80000,CRC(4fe64c6d))
+DCS_SOUNDROM6x("corvsnd2",CRC(630d20a3),
+               "corvsnd3",CRC(6ace0353),
+               "corvsnd4",CRC(87807278),
+               "corvsnd5",CRC(35f82c21),
+               "corvsnd6",CRC(61e56d90),
+               "corvsnd7",CRC(1417b547))
 WPC_ROMEND
 
 /*--------------

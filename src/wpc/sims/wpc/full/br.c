@@ -410,10 +410,10 @@ static wpc_tSamSolMap br_samsolmap[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(br,l4,"brose_l4.rom",0x80000,0xe140dc46)
-WPCS_SOUNDROM224("br_u18.l1",0x7d446e7d,
-                 "br_u15.l1",0x10250e96,
-                 "br_u14.l1",0x490bb87f)
+WPC_ROMSTART(br,l4,"brose_l4.rom",0x80000,CRC(e140dc46))
+WPCS_SOUNDROM224("br_u18.l1",CRC(7d446e7d),
+                 "br_u15.l1",CRC(10250e96),
+                 "br_u14.l1",CRC(490bb87f))
 WPC_ROMEND
 
 /*--------------

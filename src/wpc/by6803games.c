@@ -35,18 +35,18 @@ static void init_##name(void) { core_gameData = &name##GameData; }
 /------------------------------------*/
 //CPU Works
 INITGAME6803(eballchp,GEN_BY6803,dispBy7C,FLIP_SWNO(0,26),4,SNDBRD_BY61, BY6803_DISP7SEG)
-BY6803_ROMSTARTx4(eballchp,"u3_cpu.128",0x025f3008)
-BY61_SOUNDROMx000(         "u3_snd.532",0x4836d70d,
-                           "u4_snd.532",0x4b49d94d,
-                           "u5_snd.532",0x655441df)
+BY6803_ROMSTARTx4(eballchp,"u3_cpu.128",CRC(025f3008))
+BY61_SOUNDROMx000(         "u3_snd.532",CRC(4836d70d),
+                           "u4_snd.532",CRC(4b49d94d),
+                           "u5_snd.532",CRC(655441df))
 BY6803_ROMEND
 #define input_ports_eballchp input_ports_by6803
 CORE_GAMEDEFNV(eballchp,"Eight Ball Champ",1985,"Bally",by_mBY6803_61S,0)
 
 INITGAME6803(eballch2,GEN_BY6803,dispBy7C,FLIP_SWNO(0,26),4,SNDBRD_BY45, BY6803_DISP7SEG)
-BY6803_ROMSTARTx4(eballch2,"u3_cpu.128",0x025f3008)
-BY45_SOUNDROM22(           "ebcu3.snd", 0x00000000,
-                           "ebcu4.snd", 0x00000000)
+BY6803_ROMSTARTx4(eballch2,"u3_cpu.128",CRC(025f3008))
+BY45_SOUNDROM22(           "ebcu3.snd", NO_DUMP,
+                           "ebcu4.snd", NO_DUMP)
 BY6803_ROMEND
 #define input_ports_eballch2 input_ports_by6803
 CORE_CLONEDEFNV(eballch2,eballchp,"Eight Ball Champ (Cheap Squeek)",1985,"Bally",by_mBY6803_45S,0)
@@ -56,11 +56,11 @@ CORE_CLONEDEFNV(eballch2,eballchp,"Eight Ball Champ (Cheap Squeek)",1985,"Bally"
 /------------------------------------*/
 //CPU Works
 INITGAME6803(beatclck,GEN_BY6803,dispBy7C,FLIP_SW(FLIP_L),4,SNDBRD_BY61, BY6803_DISP7SEG)
-BY6803_ROMSTARTx4(beatclck,"btc_u3.cpu",0x9ba822ab)
-BY61_SOUNDROM0000(         "btc_u2.snd",0xfd22fd2a,
-                           "btc_u3.snd",0x22311a4a,
-                           "btc_u4.snd",0xaf1cf23b,
-                           "btc_u5.snd",0x230cf329)
+BY6803_ROMSTARTx4(beatclck,"btc_u3.cpu",CRC(9ba822ab))
+BY61_SOUNDROM0000(         "btc_u2.snd",CRC(fd22fd2a),
+                           "btc_u3.snd",CRC(22311a4a),
+                           "btc_u4.snd",CRC(af1cf23b),
+                           "btc_u5.snd",CRC(230cf329))
 BY6803_ROMEND
 #define input_ports_beatclck input_ports_by6803
 CORE_GAMEDEFNV(beatclck,"Beat the Clock",1985,"Bally",by_mBY6803_61S,0)
@@ -70,9 +70,9 @@ CORE_GAMEDEFNV(beatclck,"Beat the Clock",1985,"Bally",by_mBY6803_61S,0)
 /------------------------------------*/
 //CPU Works
 INITGAME6803(ladyluck,GEN_BY6803,dispBy7C,FLIP_SW(FLIP_L),4,SNDBRD_BY45, BY6803_DISP7SEG)
-BY6803_ROMSTARTx4(ladyluck,"u3.cpu",    0x129f41f5)
-BY45_SOUNDROM22(           "u3_snd.532",0x1bdd6e2b,
-                           "u4_snd.532",0xe9ef01e6)
+BY6803_ROMSTARTx4(ladyluck,"u3.cpu",    CRC(129f41f5))
+BY45_SOUNDROM22(           "u3_snd.532",CRC(1bdd6e2b),
+                           "u4_snd.532",CRC(e9ef01e6))
 BY6803_ROMEND
 #define input_ports_ladyluck input_ports_by6803
 CORE_GAMEDEFNV(ladyluck,"Lady Luck",1986,"Bally",by_mBY6803_45S,0)
@@ -84,9 +84,9 @@ CORE_GAMEDEFNV(ladyluck,"Lady Luck",1986,"Bally",by_mBY6803_45S,0)
 /-------------------------------*/
 //CPU & Sound Works?
 INITGAME6803(motrdome,GEN_BY6803,dispBy104,FLIP6803,4,SNDBRD_BYTCS, BY6803_DISPALPHA)
-BY6803_ROMSTART44(motrdome,"modm_u2.dat",0x820ca073,
-                           "modm_u3.dat",0xaae7c418)
-BYTCS_SOUNDROM8(           "modm_u7.snd",0x29ce4679)
+BY6803_ROMSTART44(motrdome,"modm_u2.dat",CRC(820ca073),
+                           "modm_u3.dat",CRC(aae7c418))
+BYTCS_SOUNDROM8(           "modm_u7.snd",CRC(29ce4679))
 BY6803_ROMEND
 #define input_ports_motrdome input_ports_by6803
 CORE_GAMEDEFNV(motrdome,"MotorDome",1986,"Bally",by_mBY6803_TCSS,0)
@@ -100,9 +100,9 @@ CORE_GAMEDEFNV(motrdome,"MotorDome",1986,"Bally",by_mBY6803_TCSS,0)
 /------------------------------------*/
 //CPU & Sound Works?
 INITGAME6803(blackblt,GEN_BY6803,dispBy104,FLIP6803,4,SNDBRD_BYTCS, BY6803_DISPALPHA)
-BY6803_ROMSTART44(blackblt,"u2.cpu",     0x7c771910,
-                           "u3.cpu",     0xbad0f4c3)
-BYTCS_SOUNDROM8(           "blck_u7.snd",0xdb8bce07)
+BY6803_ROMSTART44(blackblt,"u2.cpu",     CRC(7c771910),
+                           "u3.cpu",     CRC(bad0f4c3))
+BYTCS_SOUNDROM8(           "blck_u7.snd",CRC(db8bce07))
 BY6803_ROMEND
 #define input_ports_blackblt input_ports_by6803
 CORE_GAMEDEFNV(blackblt,"Black Belt",1986,"Bally",by_mBY6803_TCSS,0)
@@ -114,12 +114,12 @@ CORE_GAMEDEFNV(blackblt,"Black Belt",1986,"Bally",by_mBY6803_TCSS,0)
 /------------------------------------*/
 //CPU & Sound Works?
 INITGAME6803(specforc,GEN_BY6803,dispBy104,FLIP_SW(FLIP_L),4,SNDBRD_BYSD, BY6803_DISPALPHA)
-BY6803_ROMSTART44(specforc,"u2_revc.128",0xd042af04,
-                           "u3_revc.128",0xd48a5eaf)
-BYSD_SOUNDROM0000(         "u12_snd.512",0x4f48a490,
-                           "u11_snd.512",0xb16eb713,
-                           "u14_snd.512",0x6911fa51,
-                           "u13_snd.512",0x3edda92d)
+BY6803_ROMSTART44(specforc,"u2_revc.128",CRC(d042af04),
+                           "u3_revc.128",CRC(d48a5eaf))
+BYSD_SOUNDROM0000(         "u12_snd.512",CRC(4f48a490),
+                           "u11_snd.512",CRC(b16eb713),
+                           "u14_snd.512",CRC(6911fa51),
+                           "u13_snd.512",CRC(3edda92d))
 BY6803_ROMEND
 #define input_ports_specforc input_ports_by6803
 CORE_GAMEDEFNV(specforc,"Special Force",1986,"Bally",by_mBY6803_SDS,0)
@@ -129,9 +129,9 @@ CORE_GAMEDEFNV(specforc,"Special Force",1986,"Bally",by_mBY6803_SDS,0)
 /------------------------------------*/
 //CPU & Sound Works?
 INITGAME6803(strngsci,GEN_BY6803,dispBy104,FLIP_SW(FLIP_L),4,SNDBRD_BYTCS, BY6803_DISPALPHA)
-BY6803_ROMSTART44(strngsci, "cpu_u2.128",  0x2ffcf284,
-                            "cpu_u3.128",  0x35257931)
-BYTCS_SOUNDROM8(            "sound_u7.256",0xbc33901e)
+BY6803_ROMSTART44(strngsci, "cpu_u2.128",  CRC(2ffcf284),
+                            "cpu_u3.128",  CRC(35257931))
+BYTCS_SOUNDROM8(            "sound_u7.256",CRC(bc33901e))
 BY6803_ROMEND
 #define input_ports_strngsci input_ports_by6803
 CORE_GAMEDEFNV(strngsci,"Strange Science",1986,"Bally",by_mBY6803_TCSS,0)
@@ -141,9 +141,9 @@ CORE_GAMEDEFNV(strngsci,"Strange Science",1986,"Bally",by_mBY6803_TCSS,0)
 /------------------------------------*/
 //CPU & Sound Works?
 INITGAME6803(cityslck,GEN_BY6803,dispBy104,FLIP6803,4,SNDBRD_BYTCS, BY6803_DISPALPHA)
-BY6803_ROMSTART44(cityslck, "u2.128",    0x94bcf162,
-                            "u3.128",    0x97cb2bca)
-BYTCS_SOUNDROM0(            "u7_snd.512",0x6941d68a)
+BY6803_ROMSTART44(cityslck, "u2.128",    CRC(94bcf162),
+                            "u3.128",    CRC(97cb2bca))
+BYTCS_SOUNDROM0(            "u7_snd.512",CRC(6941d68a))
 BY6803_ROMEND
 #define input_ports_cityslck input_ports_by6803
 CORE_GAMEDEFNV(cityslck,"City Slicker",1987,"Bally",by_mBY6803_TCS2S,0)
@@ -153,9 +153,9 @@ CORE_GAMEDEFNV(cityslck,"City Slicker",1987,"Bally",by_mBY6803_TCS2S,0)
 /------------------------------------*/
 //CPU & Sound Works?
 INITGAME6803(hardbody,GEN_BY6803,dispBy104,FLIP_SW(FLIP_L),4,SNDBRD_BYTCS, BY6803_DISPALPHA)
-BY6803_ROMSTART44(hardbody,"cpu_u2.128",  0xc9248b47,
-                           "cpu_u3.128",  0x31c255d0)
-BYTCS_SOUNDROM0(           "sound_u7.512",0xc96f91af)
+BY6803_ROMSTART44(hardbody,"cpu_u2.128",  CRC(c9248b47),
+                           "cpu_u3.128",  CRC(31c255d0))
+BYTCS_SOUNDROM0(           "sound_u7.512",CRC(c96f91af))
 BY6803_ROMEND
 #define input_ports_hardbody input_ports_by6803
 CORE_GAMEDEFNV(hardbody,"Hardbody",1987,"Bally",by_mBY6803_TCS2S,0)
@@ -167,12 +167,12 @@ CORE_GAMEDEFNV(hardbody,"Hardbody",1987,"Bally",by_mBY6803_TCS2S,0)
 /-------------------------------*/
 //CPU & Sound Works?
 INITGAME6803(prtyanim,GEN_BY6803,dispBy104,FLIP6803,4,SNDBRD_BYSD, BY6803_DISPALPHA)
-BY6803_ROMSTART44(prtyanim,"cpu_u2.128", 0xabdc0b2d,
-                           "cpu_u3.128", 0xe48b2d63)
-BYSD_SOUNDROM0000(         "snd_u12.512",0x265a9494,
-                           "snd_u11.512",0x20be998f,
-                           "snd_u14.512",0x639b3db1,
-                           "snd_u13.512",0xb652597b)
+BY6803_ROMSTART44(prtyanim,"cpu_u2.128", CRC(abdc0b2d),
+                           "cpu_u3.128", CRC(e48b2d63))
+BYSD_SOUNDROM0000(         "snd_u12.512",CRC(265a9494),
+                           "snd_u11.512",CRC(20be998f),
+                           "snd_u14.512",CRC(639b3db1),
+                           "snd_u13.512",CRC(b652597b))
 BY6803_ROMEND
 #define input_ports_prtyanim input_ports_by6803
 CORE_GAMEDEFNV(prtyanim,"Party Animal",1987,"Bally",by_mBY6803_SDS,0)
@@ -185,10 +185,10 @@ CORE_GAMEDEFNV(prtyanim,"Party Animal",1987,"Bally",by_mBY6803_SDS,0)
 //3 Different Sources claim that this games only uses U11&U12..
 //Must be correct, as it DOES pass the start up test.
 INITGAME6803(hvymetal,GEN_BY6803,dispBy104,FLIP6803,4,SNDBRD_BYSD, BY6803_DISPALPHA)
-BY6803_ROMSTART44(hvymetal,"u2.rom", 0x53466e4e,
-                           "u3.rom", 0x0a08ae7e)
-BYSD_SOUNDROM00xx(         "u12.rom",0x77933258,
-                           "u11.rom",0xb7e4de7d)
+BY6803_ROMSTART44(hvymetal,"u2.rom", CRC(53466e4e),
+                           "u3.rom", CRC(0a08ae7e))
+BYSD_SOUNDROM00xx(         "u12.rom",CRC(77933258),
+                           "u11.rom",CRC(b7e4de7d))
 BY6803_ROMEND
 #define input_ports_hvymetal input_ports_by6803
 CORE_GAMEDEFNV(hvymetal,"Heavy Metal Meltdown",1987,"Bally",by_mBY6803_SDS,0)
@@ -198,12 +198,12 @@ CORE_GAMEDEFNV(hvymetal,"Heavy Metal Meltdown",1987,"Bally",by_mBY6803_SDS,0)
 /------------------------------------*/
 //CPU & Sound Works?
 INITGAME6803(dungdrag,GEN_BY6803,dispBy104,FLIP_SW(FLIP_L),4,SNDBRD_BYSD, BY6803_DISPALPHA)
-BY6803_ROMSTART44(dungdrag,"cpu_u2.128", 0xcefd4330,
-                           "cpu_u3.128", 0x4bacc7f5)
-BYSD_SOUNDROM0000(         "snd_u12.512",0xdd95f851,
-                           "snd_u11.512",0xdcd461b3,
-                           "snd_u14.512",0xdd9e61eb,
-                           "snd_u13.512",0x1e2d9211)
+BY6803_ROMSTART44(dungdrag,"cpu_u2.128", CRC(cefd4330),
+                           "cpu_u3.128", CRC(4bacc7f5))
+BYSD_SOUNDROM0000(         "snd_u12.512",CRC(dd95f851),
+                           "snd_u11.512",CRC(dcd461b3),
+                           "snd_u14.512",CRC(dd9e61eb),
+                           "snd_u13.512",CRC(1e2d9211))
 BY6803_ROMEND
 #define input_ports_dungdrag input_ports_by6803
 CORE_GAMEDEFNV(dungdrag,"Dungeons & Dragons",1987,"Bally",by_mBY6803_SDS,0)
@@ -214,12 +214,12 @@ CORE_GAMEDEFNV(dungdrag,"Dungeons & Dragons",1987,"Bally",by_mBY6803_SDS,0)
 /-----------------------------------------------*/
 //CPU & Sound Works?
 INITGAME6803(esclwrld,GEN_BY6803A,dispBy104,FLIP6803,4,SNDBRD_BYSD, BY6803_DISPALPHA)
-BY6803_ROMSTART44(esclwrld,"u2.128", 0xb11a97ea,
-                           "u3.128", 0x5385a562)
-BYSD_SOUNDROM0000(         "u12.512",0x0c003473,
-                           "u11.512",0x360f6658,
-                           "u14.512",0x0b92afff,
-                           "u13.512",0xb056842e)
+BY6803_ROMSTART44(esclwrld,"u2.128", CRC(b11a97ea),
+                           "u3.128", CRC(5385a562))
+BYSD_SOUNDROM0000(         "u12.512",CRC(0c003473),
+                           "u11.512",CRC(360f6658),
+                           "u14.512",CRC(0b92afff),
+                           "u13.512",CRC(b056842e))
 BY6803_ROMEND
 #define input_ports_esclwrld input_ports_by6803a
 CORE_GAMEDEFNV(esclwrld,"Escape from the Lost World",1987,"Bally",by_mBY6803_SDS,0)
@@ -229,12 +229,12 @@ CORE_GAMEDEFNV(esclwrld,"Escape from the Lost World",1987,"Bally",by_mBY6803_SDS
 /------------------------------------*/
 //CPU & Sound Works?
 INITGAME6803(black100,GEN_BY6803A,dispBy104,FLIP_SW(FLIP_L),4,SNDBRD_BYSD, BY6803_DISPALPHA)
-BY6803_ROMSTART44(black100, "u2.cpu", 0x411fa773,
-                            "u3.cpu", 0xd6f6f890)
-BYSD_SOUNDROM0000(          "u12.bin",0xa0ecb282,
-                            "u11.bin",0x3f117ba3,
-                            "u14.bin",0xb45bf5c4,
-                            "u13.bin",0xf5890443)
+BY6803_ROMSTART44(black100, "u2.cpu", CRC(411fa773),
+                            "u3.cpu", CRC(d6f6f890))
+BYSD_SOUNDROM0000(          "u12.bin",CRC(a0ecb282),
+                            "u11.bin",CRC(3f117ba3),
+                            "u14.bin",CRC(b45bf5c4),
+                            "u13.bin",CRC(f5890443))
 BY6803_ROMEND
 #define input_ports_black100 input_ports_by6803a
 CORE_GAMEDEFNV(black100,"Blackwater 100",1988,"Bally",by_mBY6803_SDS,0)
@@ -245,11 +245,11 @@ CORE_GAMEDEFNV(black100,"Blackwater 100",1988,"Bally",by_mBY6803_SDS,0)
 /-------------------------------------------------------------*/
 //CPU & Sound Works?
 INITGAME6803(truckstp,GEN_BY6803A,dispBy104,FLIP_SW(FLIP_L),4,SNDBRD_S11CS, BY6803_DISPALPHA)
-BY6803_ROMSTART44(truckstp,"u2_p2.128",   0x3c397dec,
-                           "u3_p2.128",   0xd7ac519a)
-S11CS_SOUNDROM888(         "u4sndp1.256", 0x120a386f,
-                           "u19sndp1.256",0x5cd43dda,
-                           "u20sndp1.256",0x93ac5c33)
+BY6803_ROMSTART44(truckstp,"u2_p2.128",   CRC(3c397dec),
+                           "u3_p2.128",   CRC(d7ac519a))
+S11CS_SOUNDROM888(         "u4sndp1.256", CRC(120a386f),
+                           "u19sndp1.256",CRC(5cd43dda),
+                           "u20sndp1.256",CRC(93ac5c33))
 BY6803_ROMEND
 #define input_ports_truckstp input_ports_by6803a
 CORE_GAMEDEFNV(truckstp,"Truck Stop",1988,"Bally",by_mBY6803_S11CS,0)
@@ -259,11 +259,11 @@ CORE_GAMEDEFNV(truckstp,"Truck Stop",1988,"Bally",by_mBY6803_S11CS,0)
 /-----------------------------------------------------------*/
 //CPU & Sound Works?
 INITGAME6803(atlantis,GEN_BY6803A,dispBy104,FLIP6803,4,SNDBRD_S11CS, BY6803_DISPALPHA)
-BY6803_ROMSTART44(atlantis, "u26_cpu.rom",0xb98491e1,
-                            "u27_cpu.rom",0x8ea2b4db)
-S11CS_SOUNDROM888(          "u4_snd.rom", 0x6a48b588,
-                            "u19_snd.rom",0x1387467c,
-                            "u20_snd.rom",0xd5a6a773)
+BY6803_ROMSTART44(atlantis, "u26_cpu.rom",CRC(b98491e1),
+                            "u27_cpu.rom",CRC(8ea2b4db))
+S11CS_SOUNDROM888(          "u4_snd.rom", CRC(6a48b588),
+                            "u19_snd.rom",CRC(1387467c),
+                            "u20_snd.rom",CRC(d5a6a773))
 BY6803_ROMEND
 #define input_ports_atlantis input_ports_by6803a
 CORE_GAMEDEFNV(atlantis,"Atlantis",1989,"Bally",by_mBY6803_S11CS,0)

@@ -525,11 +525,11 @@ static wpc_tSamSolMap pz_samsolmap[] = {
 /  ROM definitions
 /------------------*/
 /* (Name,Revision,"FileName.Rom",Size,CRC (0 means that No Good Dump Exist)) */
-WPC_ROMSTART(pz,f4,"pzonef_4.rom",0x40000,0x041d7d15)
+WPC_ROMSTART(pz,f4,"pzonef_4.rom",0x40000,CRC(041d7d15))
 /* ("FileName.Rom",CRC (0 means that No Good Dump Exist)) */
-WPCS_SOUNDROM224("pz_u18.l1",0xb7fbba98,
-                 "pz_u15.l1",0x168bcc52,
-                 "pz_u14.l1",0x4d8897ce)
+WPCS_SOUNDROM224("pz_u18.l1",CRC(b7fbba98),
+                 "pz_u15.l1",CRC(168bcc52),
+                 "pz_u14.l1",CRC(4d8897ce))
 
 WPC_ROMEND
 

@@ -351,9 +351,9 @@ static wpc_tSamSolMap hd_samsolmap[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(hd,l3,"harly_l3.rom",0x020000,0x65f2e0b4)
-WPCS_SOUNDROM22x("hd_u18.rom",0x810d98c0,
-		 "hd_u15.rom",0xe7870938)
+WPC_ROMSTART(hd,l3,"harly_l3.rom",0x020000,CRC(65f2e0b4))
+WPCS_SOUNDROM22x("hd_u18.rom",CRC(810d98c0),
+		 "hd_u15.rom",CRC(e7870938))
 WPC_ROMEND
 
 /*--------------

@@ -538,23 +538,23 @@ static wpc_tSamSolMap rs_samsolmap[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(rs,l6,"rshw_l6.rom",0x80000,0x3986d402)
-DCS_SOUNDROM7x("rs_u2_s.l1",0x5a2db20c,
-               "rs_u3_s.l1",0x719be036,
-               "rs_u4_s.l1",0xd452d007,
-               "rs_u5_s.l1",0x1faa04c9,
-               "rs_u6_s.l1",0xeee00add,
-               "rs_u7_s.l1",0x3a222a54,
-               "rs_u8_s.l1",0xc70f2210)
+WPC_ROMSTART(rs,l6,"rshw_l6.rom",0x80000,CRC(3986d402))
+DCS_SOUNDROM7x("rs_u2_s.l1",CRC(5a2db20c),
+               "rs_u3_s.l1",CRC(719be036),
+               "rs_u4_s.l1",CRC(d452d007),
+               "rs_u5_s.l1",CRC(1faa04c9),
+               "rs_u6_s.l1",CRC(eee00add),
+               "rs_u7_s.l1",CRC(3a222a54),
+               "rs_u8_s.l1",CRC(c70f2210))
 WPC_ROMEND
-WPC_ROMSTART(rs,lx4,"rshw_lx4.rom",0x80000,0x866f16a5)
-DCS_SOUNDROM7x("rs_u2_s.l1",0x5a2db20c,
-               "rs_u3_s.l1",0x719be036,
-               "rs_u4_s.l1",0xd452d007,
-               "rs_u5_s.l1",0x1faa04c9,
-               "rs_u6_s.l1",0xeee00add,
-               "rs_u7_s.l1",0x3a222a54,
-               "rs_u8_s.l1",0xc70f2210)
+WPC_ROMSTART(rs,lx4,"rshw_lx4.rom",0x80000,CRC(866f16a5))
+DCS_SOUNDROM7x("rs_u2_s.l1",CRC(5a2db20c),
+               "rs_u3_s.l1",CRC(719be036),
+               "rs_u4_s.l1",CRC(d452d007),
+               "rs_u5_s.l1",CRC(1faa04c9),
+               "rs_u6_s.l1",CRC(eee00add),
+               "rs_u7_s.l1",CRC(3a222a54),
+               "rs_u8_s.l1",CRC(c70f2210))
 WPC_ROMEND
 
 /*--------------

@@ -434,15 +434,15 @@ static sim_tInportData jd_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(jd,l7,"jdrd_l7.rom",0x80000,0x87b2a5c3)
-DCS_SOUNDROM8x( "jdsnd_u2.bin",0xd8f453c6,
-                "jdsnd_u3.bin",0x0a11f673,
-                "jdsnd_u4.bin",0x93f6ebc1,
-                "jdsnd_u5.bin",0xc9f28ba6,
-                "jdsnd_u6.bin",0xef0bf094,
-                "jdsnd_u7.bin",0xaebab88b,
-                "jdsnd_u8.bin",0x77604893,
-                "jdsnd_u9.bin",0x885b7c70)
+WPC_ROMSTART(jd,l7,"jdrd_l7.rom",0x80000,CRC(87b2a5c3))
+DCS_SOUNDROM8x( "jdsnd_u2.bin",CRC(d8f453c6),
+                "jdsnd_u3.bin",CRC(0a11f673),
+                "jdsnd_u4.bin",CRC(93f6ebc1),
+                "jdsnd_u5.bin",CRC(c9f28ba6),
+                "jdsnd_u6.bin",CRC(ef0bf094),
+                "jdsnd_u7.bin",CRC(aebab88b),
+                "jdsnd_u8.bin",CRC(77604893),
+                "jdsnd_u9.bin",CRC(885b7c70))
 WPC_ROMEND
 
 /*--------------

@@ -394,23 +394,23 @@ static core_tLampDisplay wcs_lampPos = {
 }
 };
 
-WPC_ROMSTART(wcs,l2,"wcup_lx2.rom",0x80000,0x0e4514e8)
-DCS_SOUNDROM7x("wcup_u2.rom",0x92252f28,
-               "wcup_u3.rom",0x83f541ad,
-               "wcup_u4.rom",0x1540c505,
-               "wcup_u5.rom",0xbddad8d4,
-               "wcup_u6.rom",0x00f46c12,
-               "wcup_u7.rom",0xfff01703,
-               "wcup_u8.rom",0x670cd382)
+WPC_ROMSTART(wcs,l2,"wcup_lx2.rom",0x80000,CRC(0e4514e8))
+DCS_SOUNDROM7x("wcup_u2.rom",CRC(92252f28),
+               "wcup_u3.rom",CRC(83f541ad),
+               "wcup_u4.rom",CRC(1540c505),
+               "wcup_u5.rom",CRC(bddad8d4),
+               "wcup_u6.rom",CRC(00f46c12),
+               "wcup_u7.rom",CRC(fff01703),
+               "wcup_u8.rom",CRC(670cd382))
 WPC_ROMEND
-WPC_ROMSTART(wcs,p3,"wcup_px3.rom",0x80000,0x617ea2bc)
-DCS_SOUNDROM7x("wcup_u2.rom",0x92252f28,
-               "wcup_u3.rom",0x83f541ad,
-               "wcup_u4.rom",0x1540c505,
-               "wcup_u5.rom",0xbddad8d4,
-               "wcup_u6.rom",0x00f46c12,
-               "wcup_u7.rom",0xfff01703,
-               "wcup_u8.rom",0x670cd382)
+WPC_ROMSTART(wcs,p3,"wcup_px3.rom",0x80000,CRC(617ea2bc))
+DCS_SOUNDROM7x("wcup_u2.rom",CRC(92252f28),
+               "wcup_u3.rom",CRC(83f541ad),
+               "wcup_u4.rom",CRC(1540c505),
+               "wcup_u5.rom",CRC(bddad8d4),
+               "wcup_u6.rom",CRC(00f46c12),
+               "wcup_u7.rom",CRC(fff01703),
+               "wcup_u8.rom",CRC(670cd382))
 WPC_ROMEND
 
 CORE_GAMEDEF(wcs,l2,"World Cup Soccer (Lx-2)",1994,"Bally",wpc_mSecurityS,0)

@@ -329,16 +329,16 @@ static void afm_drawStatic(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(afm,11, "mars1_1.rom",  0x080000,0x13b174d9)
-DCS_SOUNDROM3m(	"afm_s2.l1",0x6e39d96e,
-		"afm_s3.l1",0x1cbce9b1,
-		"afm_s4.l1",0x5ff7fbb7)
+WPC_ROMSTART(afm,11, "mars1_1.rom",  0x080000,CRC(13b174d9))
+DCS_SOUNDROM3m(	"afm_s2.l1",CRC(6e39d96e),
+		"afm_s3.l1",CRC(1cbce9b1),
+		"afm_s4.l1",CRC(5ff7fbb7))
 WPC_ROMEND
 
-WPC_ROMSTART(afm,113,"afm_1_13.bin", 0x100000,0xe1fbd81b)
-DCS_SOUNDROM3m(	"afm_s2.l1",0x6e39d96e,
-		"afm_s3.l1",0x1cbce9b1,
-		"afm_s4.l1",0x5ff7fbb7)
+WPC_ROMSTART(afm,113,"afm_1_13.bin", 0x100000,CRC(e1fbd81b))
+DCS_SOUNDROM3m(	"afm_s2.l1",CRC(6e39d96e),
+		"afm_s3.l1",CRC(1cbce9b1),
+		"afm_s4.l1",CRC(5ff7fbb7))
 WPC_ROMEND
 
 /*--------------

@@ -251,22 +251,22 @@ static sim_tInportData cc_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(cc,12,"cc_g11.1_2",0x100000,0x17ad9266)
-DCS_SOUNDROM6m("sav2_8.rom",0x94928841,
-               "sav3_8.rom",0xa22b13f0,
-               "sav4_8.rom",0xfe8324e2,
-               "sav5_8.rom",0x1b2a1ff3,
-	       "sav6_8.rom",0x2cccf10e,
-	       "sav7_8.rom",0x90fb1277)
+WPC_ROMSTART(cc,12,"cc_g11.1_2",0x100000,CRC(17ad9266))
+DCS_SOUNDROM6m("sav2_8.rom",CRC(94928841),
+               "sav3_8.rom",CRC(a22b13f0),
+               "sav4_8.rom",CRC(fe8324e2),
+               "sav5_8.rom",CRC(1b2a1ff3),
+	       "sav6_8.rom",CRC(2cccf10e),
+	       "sav7_8.rom",CRC(90fb1277))
 WPC_ROMEND
 
-WPC_ROMSTART(cc,13,"cc_g11.1_3",0x100000,0x7741fa4e)
-DCS_SOUNDROM6m("sav2_8.rom",0x94928841,
-               "sav3_8.rom",0xa22b13f0,
-	       "sav4_8.rom",0xfe8324e2,
-	       "sav5_8.rom",0x1b2a1ff3,
-	       "sav6_8.rom",0x2cccf10e,
-	       "sav7_8.rom",0x90fb1277)
+WPC_ROMSTART(cc,13,"cc_g11.1_3",0x100000,CRC(7741fa4e))
+DCS_SOUNDROM6m("sav2_8.rom",CRC(94928841),
+               "sav3_8.rom",CRC(a22b13f0),
+	       "sav4_8.rom",CRC(fe8324e2),
+	       "sav5_8.rom",CRC(1b2a1ff3),
+	       "sav6_8.rom",CRC(2cccf10e),
+	       "sav7_8.rom",CRC(90fb1277))
 WPC_ROMEND
 
 /*--------------

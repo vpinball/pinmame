@@ -245,14 +245,14 @@ static sim_tInportData jm_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(jm,12r,"john1_2r.rom",0x80000,0xfff07398)
-DCS_SOUNDROM7x("jm_u2_s.1_0",0x4aeeff3d,
-               "jm_u3_s.1_0",0x9bf7bc43,
-               "jm_u4_s.1_0",0x2e044582,
-               "jm_u5_s.1_0",0x50cc06a7,
-               "jm_u6_s.1_0",0xbfc94707,
-               "jm_u7_s.1_0",0x9d4d9e9d,
-               "jm_u8_s.1_0",0xfc7af6c0)
+WPC_ROMSTART(jm,12r,"john1_2r.rom",0x80000,CRC(fff07398))
+DCS_SOUNDROM7x("jm_u2_s.1_0",CRC(4aeeff3d),
+               "jm_u3_s.1_0",CRC(9bf7bc43),
+               "jm_u4_s.1_0",CRC(2e044582),
+               "jm_u5_s.1_0",CRC(50cc06a7),
+               "jm_u6_s.1_0",CRC(bfc94707),
+               "jm_u7_s.1_0",CRC(9d4d9e9d),
+               "jm_u8_s.1_0",CRC(fc7af6c0))
 WPC_ROMEND
 
 /*--------------
@@ -263,13 +263,13 @@ static mech_tInitData mechX = {
   22, -21, MECH_ONEDIRSOL|MECH_REVERSE|MECH_FAST|MECH_LENGTHSW,3500,3500,
   {{12, 0,2},
    {75, 0, 6,12},
-   {74, 4, 9,12}} 
+   {74, 4, 9,12}}
 };
 static mech_tInitData mechY = {
   24, -23, MECH_ONEDIRSOL|MECH_REVERSE|MECH_FAST|MECH_LENGTHSW,3000,3000,
   {{37,1498,1502},
    {76, 0, 6,12},
-   {77, 4, 9,12}} 
+   {77, 4, 9,12}}
 };
 static void jm_drawMech(BMTYPE **line) {
   core_textOutf(50, 0, BLACK,"%05d", mech_getPos(0));

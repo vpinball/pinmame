@@ -251,19 +251,19 @@ static sim_tInportData jb_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(jb,10r,"jack1_0r.rom",0x80000,0x00e1a900a)
-DCS_SOUNDROM5x( "jbsnd_u2.rom",0xb116d59f,
-                "jbsnd_u3.rom",0x76ad3aad,
-                "jbsnd_u4.rom",0x038b1309,
-                "jbsnd_u5.rom",0x0957e2ad,
-				"jbsnd_u6.rom",0x7a1e2c3d)
+WPC_ROMSTART(jb,10r,"jack1_0r.rom",0x80000,CRC(0e1a900a))
+DCS_SOUNDROM5x( "jbsnd_u2.rom",CRC(b116d59f),
+                "jbsnd_u3.rom",CRC(76ad3aad),
+                "jbsnd_u4.rom",CRC(038b1309),
+                "jbsnd_u5.rom",CRC(0957e2ad),
+				"jbsnd_u6.rom",CRC(7a1e2c3d))
 WPC_ROMEND
-WPC_ROMSTART(jb,10b,"jack1_0b.rom",0x80000,0xda3b2735)
-DCS_SOUNDROM5x( "jbsnd_u2.rom",0xb116d59f,
-                "jbsnd_u3.rom",0x76ad3aad,
-                "jbsnd_u4.rom",0x038b1309,
-                "jbsnd_u5.rom",0x0957e2ad,
-				"jbsnd_u6.rom",0x7a1e2c3d)
+WPC_ROMSTART(jb,10b,"jack1_0b.rom",0x80000,CRC(da3b2735))
+DCS_SOUNDROM5x( "jbsnd_u2.rom",CRC(b116d59f),
+                "jbsnd_u3.rom",CRC(76ad3aad),
+                "jbsnd_u4.rom",CRC(038b1309),
+                "jbsnd_u5.rom",CRC(0957e2ad),
+				"jbsnd_u6.rom",CRC(7a1e2c3d))
 WPC_ROMEND
 
 /*--------------

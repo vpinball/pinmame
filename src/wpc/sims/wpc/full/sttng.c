@@ -567,14 +567,14 @@ static void sttng_drawStatic(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(sttng,l7,"trek_lx7.rom",0x80000,0xd439fdbb)
-DCS_SOUNDROM7x("ng_u2_s.l1",0xc3bd7bf5,
-               "ng_u3_s.l1",0x9456cac7,
-               "ng_u4_s.l1",0x179d22a4,
-               "ng_u5_s.l1",0x231a3e72,
-               "ng_u6_s.l1",0xbb21377d,
-               "ng_u7_s.l1",0xd81b39f0,
-               "ng_u8_s.l1",0xc9fb065e)
+WPC_ROMSTART(sttng,l7,"trek_lx7.rom",0x80000,CRC(d439fdbb))
+DCS_SOUNDROM7x("ng_u2_s.l1",CRC(c3bd7bf5),
+               "ng_u3_s.l1",CRC(9456cac7),
+               "ng_u4_s.l1",CRC(179d22a4),
+               "ng_u5_s.l1",CRC(231a3e72),
+               "ng_u6_s.l1",CRC(bb21377d),
+               "ng_u7_s.l1",CRC(d81b39f0),
+               "ng_u8_s.l1",CRC(c9fb065e))
 WPC_ROMEND
 
 /*--------------

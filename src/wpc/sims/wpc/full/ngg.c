@@ -558,22 +558,22 @@ static const char* SlamText[] = {"Down","Up"};
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(ngg,13,"go_g11.1_3",0x80000,0x64e73117)
-DCS_SOUNDROM5xm("nggsndl1.s2",  0x6263866d,
-                "nggsndl1.s3",	0x6871b20d,
-                "nggsndl1.s4",	0x86ed8f5a,
-                "nggsndl1.s5",	0xea2062f0,
-                "nggsndl1.s6",	0xb1b8b514)
+WPC_ROMSTART(ngg,13,"go_g11.1_3",0x80000,CRC(64e73117))
+DCS_SOUNDROM5xm("nggsndl1.s2",  CRC(6263866d),
+                "nggsndl1.s3",	CRC(6871b20d),
+                "nggsndl1.s4",	CRC(86ed8f5a),
+                "nggsndl1.s5",	CRC(ea2062f0),
+                "nggsndl1.s6",	CRC(b1b8b514))
 WPC_ROMEND
 // No Good Gofers prototype roms
 // s2 v0.2 rom is identical to l1 rom except for version string
 // even the checksum (non CRC32) is the same!
-WPC_ROMSTART(ngg,p06,"ngg0_6.rom",0x80000,0xe0e0d331)
-DCS_SOUNDROM5xm("ngg_s2.0_2",  0xdde128d5,
-                "nggsndl1.s3",	0x6871b20d,
-                "nggsndl1.s4",	0x86ed8f5a,
-                "nggsndl1.s5",	0xea2062f0,
-                "nggsndl1.s6",	0xb1b8b514)
+WPC_ROMSTART(ngg,p06,"ngg0_6.rom",0x80000,CRC(e0e0d331))
+DCS_SOUNDROM5xm("ngg_s2.0_2",  CRC(dde128d5),
+                "nggsndl1.s3",	CRC(6871b20d),
+                "nggsndl1.s4",	CRC(86ed8f5a),
+                "nggsndl1.s5",	CRC(ea2062f0),
+                "nggsndl1.s6",	CRC(b1b8b514))
 WPC_ROMEND
 
 

@@ -401,21 +401,21 @@ static void taf_drawStatic(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(taf,l5,  "addam_l5.rom",0x80000,0x4c071564)
-WPCS_SOUNDROM8xx("tafu18l1.rom",0x131ae471)
+WPC_ROMSTART(taf,l5,  "addam_l5.rom",0x80000,CRC(4c071564))
+WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471))
 WPC_ROMEND
 
-WPC_ROMSTART(taf,l6,  "taf_l6.u6",0x80000,0x06b37e65)
-WPCS_SOUNDROM8xx("tafu18l1.rom",0x131ae471)
+WPC_ROMSTART(taf,l6,  "taf_l6.u6",0x80000,CRC(06b37e65))
+WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471))
 WPC_ROMEND
 
-WPC_ROMSTART(tafg,lx3,"afgldlx3.rom",0x80000,0x0cc62fa5)
-WPCS_SOUNDROM84x("ag_u18_s.l1",0x02e824a9,
-                 "ag_u15_s.l1",0xb8c88c75)
+WPC_ROMSTART(tafg,lx3,"afgldlx3.rom",0x80000,CRC(0cc62fa5))
+WPCS_SOUNDROM84x("ag_u18_s.l1",CRC(02e824a9),
+                 "ag_u15_s.l1",CRC(b8c88c75))
 WPC_ROMEND
-WPC_ROMSTART(tafg,h3,"cpu-u6h3.rom",0x80000,0x2fe97098)
-WPCS_SOUNDROM84x("ag_u18_s.l1",0x02e824a9,
-                 "ag_u15_s.l1",0xb8c88c75)
+WPC_ROMSTART(tafg,h3,"cpu-u6h3.rom",0x80000,CRC(2fe97098))
+WPCS_SOUNDROM84x("ag_u18_s.l1",CRC(02e824a9),
+                 "ag_u15_s.l1",CRC(b8c88c75))
 WPC_ROMEND
 /*--------------
 /  Game drivers

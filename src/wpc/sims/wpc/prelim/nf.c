@@ -237,13 +237,13 @@ static sim_tInportData nf_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(nf,23x,"nofe2_3x.rom",0x80000,0xd853650b)
-DCS_SOUNDROM6x("nfu2s",0x136caeb9,
-               "nfu3s",0x983e5578,
-               "nfu4s",0x9469cd40,
-               "nfu5s",0xe14d4315,
-               "nfu6s",0x40a58903,
-               "nfu7s",0x61002bdd)
+WPC_ROMSTART(nf,23x,"nofe2_3x.rom",0x80000,CRC(d853650b))
+DCS_SOUNDROM6x("nfu2s",CRC(136caeb9),
+               "nfu3s",CRC(983e5578),
+               "nfu4s",CRC(9469cd40),
+               "nfu5s",CRC(e14d4315),
+               "nfu6s",CRC(40a58903),
+               "nfu7s",CRC(61002bdd))
 WPC_ROMEND
 
 /*--------------
