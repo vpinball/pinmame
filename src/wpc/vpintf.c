@@ -28,7 +28,7 @@ void vp_init(void) {
 /  get status of a lamp (0=off, 1=on)
 /-------------------------------------*/
 int vp_getLamp(int lampNo) {
-  if (coreData.lamp2m) lampNo = coreData.lamp2m(lampNo)-8;
+  if (coreData->lamp2m) lampNo = coreData->lamp2m(lampNo)-8;
   return (coreGlobals.lampMatrix[lampNo/8]>>(lampNo%8)) & 0x01;
 }
 
@@ -53,7 +53,7 @@ int vp_getChangedLamps(vp_tChgLamps chgStat) {
 
       for (jj = 0; jj < 8; jj++) {
         if (chgLamp & 0x01) {
-          chgStat[idx].lampNo = coreData.m2lamp ? coreData.m2lamp(ii+1, jj) : 0;
+          chgStat[idx].lampNo = coreData->m2lamp ? coreData->m2lamp(ii+1, jj) : 0;
           chgStat[idx].currStat = tmpLamp & 0x01;
           idx += 1;
         }
@@ -224,7 +224,7 @@ int vp_getChangedLEDs(vp_tChgLED chgStat, UINT64 mask) {
     if ((mask & 0x01) && chgLED) {
       chgStat[idx].ledNo = ii;
       chgStat[idx].chgSeg = chgLED;
-      chgStat[idx].currStat = ledArray[ii] & chgLED;
+      chgStat[idx].currStat = ledArray[ii];
       idx += 1;
     }
   }
