@@ -161,9 +161,9 @@ static void playsam(int cmd) {
 // 	}
 // 	else
 // 	{
-  		sample_start(6+lastchan,samplex,0);
 		lastchan++;
 		if (lastchan > 2) lastchan = 0;
+  		sample_start(6+lastchan,samplex,0);
 //  		by32locals.startit = 0;
 //	}
 //       sample_start(0,samplex,0);
