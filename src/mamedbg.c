@@ -57,7 +57,8 @@ UINT8 debugger_bitmap_changed;
 UINT8 debugger_focus;
 
 #ifdef PINMAME
-static int shift_pressed = 0;	/*detects if shift key (either) was pressed */
+static int shift_pressed = 0;		/*detects if shift key (either) was pressed */
+static int dbg_sound_disable = 0;	/*for disabling/enabling sound with debugger window open */
 #endif
 
 /****************************************************************************
@@ -360,6 +361,8 @@ void edit_cmds_reset( void );
 #endif /* DBG_BPR */
 #ifdef PINMAME
 static void cmd_jumpover( void );
+static void cmd_sound_enable( void );
+static void cmd_sound_disable( void );
 #endif
 /****************************************************************************
  * Generic structure for saving points in the 'follow history'
@@ -875,6 +878,16 @@ static s_command commands[] = {
 	"Toggles the display of scanlines",
 	cmd_toggle_scanlines },
 #ifdef PINMAME
+{	(1<<EDIT_CMDS),
+	"SD",     0,          CODE_NONE,
+	"",
+	"Disables Sound when debugger window is active",
+	cmd_sound_disable },
+{	(1<<EDIT_CMDS),
+	"SE",     0,          CODE_NONE,
+	"",
+	"Enables Sound when debugger window is active",
+	cmd_sound_enable },
 {	(1<<EDIT_CMDS),
 	"SHIFT+ENTER",     0,          CODE_NONE,
 	"",
@@ -4570,6 +4583,30 @@ static void cmd_jumpover( void )
 
 	edit_cmds_reset();
 }
+/**************************************************************************
+ * cmd_sound_enable
+ * Allow sound to be enabled while debugger window is open
+ **************************************************************************/
+static void cmd_sound_enable( void )
+{
+	dbg_sound_disable = 0;
+
+	osd_sound_enable(1);
+
+	edit_cmds_reset();
+}
+/**************************************************************************
+ * cmd_sound_disable
+ * Allow sound to be enabled while debugger window is open
+ **************************************************************************/
+static void cmd_sound_disable( void )
+{
+	dbg_sound_disable = 1;
+
+	osd_sound_enable(0);
+
+	edit_cmds_reset();
+}
 #endif
 
 /**************************************************************************
@@ -5492,7 +5529,12 @@ void MAME_Debug(void)
 
 		if( !first_time )
 		{
+#ifdef PINMAME
+		if(dbg_sound_disable)
 			osd_sound_enable(0);
+#else
+			osd_sound_enable(0);
+#endif
 		}
 
 		first_time = 0;
