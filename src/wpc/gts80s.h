@@ -32,6 +32,7 @@ extern const struct Memory_WriteAddress GTS80S_writemem[];
 }
 
 void GTS80S_init(int num);
+void GTS80S_exit();
 extern void GTS80S_sound_latch(int data);
 
 #endif /* GTSS80S_H */
