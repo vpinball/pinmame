@@ -15,7 +15,7 @@
     CPU: 6809 @ 2 Mhz
 	I/O: 6255 VIA
 	SND: YM3812 (Music), OKI6295 (Speech)
- 
+
   DISPLAY BOARD:
     ALPHA NUMERIC SEGMENTS ( 2 DISPLAYS OF 20 DIGIT 16 ALPHA/NUMERIC SEGMENTS )
 	I/O: 8255
@@ -178,10 +178,11 @@ READ_HANDLER(CoinDoorSwitches_Read)
 	data |= (alvglocals.swAvail1 << 3);  //Avail1		(Not Inverted)
 	data |= (alvglocals.swAvail2 << 2);  //Avail2		(Not Inverted)
 #else
-//Seems to work
+//Seems to work, note that the ticket switch may only be set when the ticket solenoid is pulled in,
+//as this input is also connected to a flasher lamp test!
 	int data = 0;
 	data |= (alvglocals.DMDAck   << 7);	 //DMD Ack		(?)				(8)
-	data |= (alvglocals.swTicket << 5);	 //Ticket Sw.	(Inverted)		(6)
+	data |= (alvglocals.swTicket << 5);	 //Ticket Sw.	(Not Inverted)	(6)
 	data |= (alvglocals.swEnter  << 4);  //Enter Sw.	(Not Inverted)	(5)
 	data |= (alvglocals.swAvail2 << 3);  //Avail2		(Not Inverted)	(4)
 	data |= (alvglocals.swTest   << 2);	 //Test Sw.		(Not Inverted)	(3)
@@ -569,7 +570,7 @@ static SWITCH_UPDATE(alvg) {
   }
   alvglocals.swTest = (core_getSw(ALVG_SWTEST)>0?1:0);
   alvglocals.swEnter = (core_getSw(ALVG_SWENTER)>0?1:0);
-  alvglocals.swTicket = (core_getSw(ALVG_SWTICKET)?0:1);
+  alvglocals.swTicket = (core_getSw(ALVG_SWTICKET)?1:0);
 
   //Update Flasher Relay
   {
