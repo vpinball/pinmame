@@ -82,8 +82,8 @@
 #endif
 
 #define SPINB_VBLANKFREQ      60 /* VBLANK frequency*/
-#define SPINB_INTFREQ        600 /* Z80 Interrupt frequency*/
-#define SPINB_NMIFREQ       1080 /* Z80 NMI frequency (shouldn't be used according to schematics!?) */
+#define SPINB_INTFREQ        250 /* Z80 Interrupt frequency*/
+#define SPINB_NMIFREQ       2270 /* Z80 NMI frequency (shouldn't be used according to schematics!?) */
 
 WRITE_HANDLER(spinb_sndCmd_w);
 
@@ -121,7 +121,7 @@ struct {
 
 #ifdef MAME_DEBUG
 static void adjust_timer(int which, int offset) {
-  static char s[4];
+  static char s[8];
   if (which) { // 0 = NMI, others = IRQ
     SPINBlocals.irqfreq += offset;
     if (SPINBlocals.irqfreq < 1) SPINBlocals.irqfreq = 1;
@@ -822,9 +822,6 @@ MACHINE_DRIVER_START(spinb)
   MDRV_SWITCH_UPDATE(spinb)
   //MDRV_DIAGNOSTIC_LEDH(3)
   MDRV_SWITCH_CONV(spinb_sw2m,spinb_m2sw)
-
-  MDRV_TIMER_ADD(spinb_z80int, SPINB_INTFREQ)
-  MDRV_TIMER_ADD(spinb_z80nmi, SPINB_NMIFREQ)
 MACHINE_DRIVER_END
 
 //Main CPU, DMD, Sound hardware Driver
