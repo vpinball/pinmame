@@ -23,14 +23,18 @@
 #include <windowsx.h>
 #include <commctrl.h>
 #include <stdio.h>
+#include <richedit.h>
 
-#include "resource.h"
+#include "screenshot.h"
+#include "win32ui.h"
 
-#include <driver.h>
 #include <audit.h>
 #include <unzip.h>
 
-#include "win32ui.h"
+#include "resource.h"
+
+#include "bitmask.h"
+#include "options.h"
 #include "m32util.h"
 #include "audit32.h"
 #include "Properties.h"
@@ -69,6 +73,7 @@ static BOOL bCancel = FALSE;
 
 void AuditDialog(HWND hParent)
 {
+	HMODULE hModule = NULL;
 	rom_index         = 0;
 	roms_correct      = 0;
 	roms_incorrect    = 0;
@@ -76,7 +81,20 @@ void AuditDialog(HWND hParent)
 	samples_correct   = 0;
 	samples_incorrect = 0;
 
-	DialogBox(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_AUDIT),hParent,AuditWindowProc);
+	//RS use Riched32.dll
+	hModule = LoadLibrary("Riched32.dll");
+	if( hModule )
+	{
+		DialogBox(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_AUDIT),hParent,AuditWindowProc);
+		FreeLibrary( hModule );
+		hModule = NULL;
+	}
+	else
+	{
+	    MessageBox(GetMainWindow(),"Unable to Load Riched32.dll","Error",
+				   MB_OK | MB_ICONERROR);
+	}
+	
 }
 
 void InitGameAudit(int gameIndex)
@@ -84,9 +102,69 @@ void InitGameAudit(int gameIndex)
 	rom_index = gameIndex;
 }
 
+const char * GetAuditString(int audit_result)
+{
+	switch (audit_result)
+	{
+	case CORRECT :
+	case BEST_AVAILABLE :
+	case MISSING_OPTIONAL :
+		return "yes";
+
+	case NOTFOUND :
+	case INCORRECT :
+	case CLONE_NOTFOUND :
+		return "no";
+		break;
+
+	case UNKNOWN :
+		return "?";
+
+	default:
+		dprintf("unknown audit value %i",audit_result);
+	}
+
+	return "?";
+}
+
+BOOL IsAuditResultKnown(int audit_result)
+{
+	return audit_result != UNKNOWN;
+}
+
+BOOL IsAuditResultYes(int audit_result)
+{
+	return audit_result == CORRECT || audit_result == BEST_AVAILABLE || 
+		audit_result == MISSING_OPTIONAL;
+}
+
+BOOL IsAuditResultNo(int audit_result)
+{
+	return audit_result == NOTFOUND || audit_result == INCORRECT || audit_result == CLONE_NOTFOUND;
+}
+
+
 /***************************************************************************
     Internal functions
  ***************************************************************************/
+
+// Verifies the ROM set while calling SetRomAuditResults	
+int Mame32VerifyRomSet(int game)
+{
+	int iStatus;
+	iStatus = VerifyRomSet(game, (verify_printf_proc)DetailsPrintf);
+	SetRomAuditResults(game, iStatus);
+	return iStatus;
+}
+
+// Verifies the Sample set while calling SetSampleAuditResults	
+int Mame32VerifySampleSet(int game)
+{
+	int iStatus;
+	iStatus = VerifySampleSet(game, (verify_printf_proc)DetailsPrintf);
+	SetSampleAuditResults(game, iStatus);
+	return iStatus;
+}
 
 static DWORD WINAPI AuditThreadProc(LPVOID hDlg)
 {
@@ -130,17 +208,21 @@ static INT_PTR CALLBACK AuditWindowProc(HWND hDlg, UINT Msg, WPARAM wParam, LPAR
 	static HANDLE hThread;
 	static DWORD dwThreadID;
 	DWORD dwExitCode;
+	HWND hEdit;
 
 	switch (Msg)
 	{
 	case WM_INITDIALOG:
 		hAudit = hDlg;
+		//RS 20030613 Set Bkg of RichEdit Ctrl
+		hEdit = GetDlgItem(hAudit, IDC_AUDIT_DETAILS);
+		if (hEdit != NULL)
+			SendMessage( hEdit, EM_SETBKGNDCOLOR, FALSE, GetSysColor(COLOR_BTNFACE) );
 		SendDlgItemMessage(hDlg, IDC_ROMS_PROGRESS,    PBM_SETRANGE, 0, MAKELPARAM(0, GetNumGames()));
 		SendDlgItemMessage(hDlg, IDC_SAMPLES_PROGRESS, PBM_SETRANGE, 0, MAKELPARAM(0, GetNumGames()));
 		bPaused = FALSE;
 		bCancel = FALSE;
 		rom_index = 0;
-
 		hThread = CreateThread(NULL, 0, AuditThreadProc, hDlg, 0, &dwThreadID);
 		return 1;
 
@@ -180,20 +262,6 @@ static INT_PTR CALLBACK AuditWindowProc(HWND hDlg, UINT Msg, WPARAM wParam, LPAR
 	return 0;
 }
 
-#ifdef MESS
-/* Checks to see if this system even has a ROM set */
-static BOOL HasRomSet(int nDriver)
-{
-	const struct GameDriver *gamedrv = drivers[nDriver];
-	const struct RomModule *region, *rom;
-
-	for (region = rom_first_region(gamedrv); region; region = rom_next_region(region))
-		for (rom = rom_first_file(region); rom; rom = rom_next_file(rom))
-			return TRUE;
-	return FALSE;
-}
-#endif
-
 /* Callback for the Audit property sheet */
 INT_PTR CALLBACK GameAuditDialogProc(HWND hDlg,UINT Msg,WPARAM wParam,LPARAM lParam)
 {
@@ -210,21 +278,15 @@ INT_PTR CALLBACK GameAuditDialogProc(HWND hDlg,UINT Msg,WPARAM wParam,LPARAM lPa
 		KillTimer(hDlg, 0);
 		{
 			int iStatus;
+			LPCSTR lpStatus;
 
-			iStatus = VerifyRomSet(rom_index, (verify_printf_proc)DetailsPrintf);
-#ifdef MESS
-			SetHasRoms(rom_index, (iStatus == CORRECT || iStatus == BEST_AVAILABLE || !HasRomSet(rom_index)) ? 1 : 0);
-#else
-			SetHasRoms(rom_index, (iStatus == CORRECT || iStatus == BEST_AVAILABLE) ? 1 : 0);
-#endif
-			SetWindowText(GetDlgItem(hDlg, IDC_PROP_ROMS), StatusString(iStatus));
+			iStatus = Mame32VerifyRomSet(rom_index);
+			lpStatus = DriverUsesRoms(rom_index) ? StatusString(iStatus) : "None required";
+			SetWindowText(GetDlgItem(hDlg, IDC_PROP_ROMS), lpStatus);
 
-			iStatus = VerifySampleSet(rom_index, (verify_printf_proc)DetailsPrintf);
-			SetHasSamples(rom_index,(iStatus == CORRECT || iStatus == BEST_AVAILABLE));
-			if (DriverUsesSamples(rom_index))
-				SetWindowText(GetDlgItem(hDlg, IDC_PROP_SAMPLES),StatusString(iStatus));
-			else
-				SetWindowText(GetDlgItem(hDlg, IDC_PROP_SAMPLES),"None required");
+			iStatus = Mame32VerifySampleSet(rom_index);
+			lpStatus = DriverUsesSamples(rom_index) ? StatusString(iStatus) : "None required";
+			SetWindowText(GetDlgItem(hDlg, IDC_PROP_SAMPLES), lpStatus);
 		}
 		ShowWindow(hDlg, SW_SHOW);
 		break;
@@ -237,11 +299,12 @@ static void ProcessNextRom()
 	int retval;
 	char buffer[200];
 
-	retval = VerifyRomSet(rom_index, (verify_printf_proc)DetailsPrintf);
+	retval = Mame32VerifyRomSet(rom_index);
 	switch (retval)
 	{
 	case BEST_AVAILABLE: /* correct, incorrect or separate count? */
 	case CORRECT:
+	case MISSING_OPTIONAL:
 		roms_correct++;
 		sprintf(buffer, "%i", roms_correct);
 		SendDlgItemMessage(hAudit, IDC_ROMS_CORRECT, WM_SETTEXT, 0, (LPARAM)buffer);
@@ -261,11 +324,6 @@ static void ProcessNextRom()
 		break;
 	}
 
-#ifdef MESS
-	SetHasRoms(rom_index, (retval == CORRECT || retval == BEST_AVAILABLE || !HasRomSet(rom_index)) ? 1 : 0);
-#else
-	SetHasRoms(rom_index, (retval == CORRECT || retval == BEST_AVAILABLE) ? 1 : 0);
-#endif
 	rom_index++;
 	SendDlgItemMessage(hAudit, IDC_ROMS_PROGRESS, PBM_SETPOS, rom_index, 0);
 
@@ -281,7 +339,7 @@ static void ProcessNextSample()
 	int  retval;
 	char buffer[200];
 	
-	retval = VerifySampleSet(sample_index, (verify_printf_proc)DetailsPrintf);
+	retval = Mame32VerifySampleSet(sample_index);
 	
 	switch (retval)
 	{
@@ -308,8 +366,6 @@ static void ProcessNextSample()
 		
 		break;
 	}
-	
-	SetHasSamples(sample_index, (retval == CORRECT || retval == BEST_AVAILABLE) ? 1 : 0);
 
 	sample_index++;
 	SendDlgItemMessage(hAudit, IDC_SAMPLES_PROGRESS, PBM_SETPOS, sample_index, 0);
@@ -320,7 +376,6 @@ static void ProcessNextSample()
 		SendDlgItemMessage(hAudit, IDCANCEL, WM_SETTEXT, 0, (LPARAM)"Close");
 		sample_index = -1;
 	}
-	
 }
 
 static void CLIB_DECL DetailsPrintf(const char *fmt, ...)
@@ -329,9 +384,20 @@ static void CLIB_DECL DetailsPrintf(const char *fmt, ...)
 	va_list marker;
 	char	buffer[2000];
 	char * s;
-	
+	long l;
+
+	//RS 20030613 Different Ids for Property Page and Dialog
+	// so see which one's currently instantiated
 	hEdit = GetDlgItem(hAudit, IDC_AUDIT_DETAILS);
+	if (hEdit ==  NULL)
+		hEdit = GetDlgItem(hAudit, IDC_AUDIT_DETAILS_PROP);
 	
+	if (hEdit == NULL)
+	{
+		dprintf("audit detailsprintf() can't find any audit control");
+		return;
+	}
+
 	va_start(marker, fmt);
 	
 	vsprintf(buffer, fmt, marker);
@@ -339,9 +405,13 @@ static void CLIB_DECL DetailsPrintf(const char *fmt, ...)
 	va_end(marker);
 
 	s = ConvertToWindowsNewlines(buffer);
+	//RS this works for both, Edit COntrol and RichEditControl
+	l = Edit_GetTextLength(hEdit);
+	SendMessage( hEdit, EM_REPLACESEL, FALSE, (WPARAM)s );
 
-	Edit_SetSel(hEdit, Edit_GetTextLength(hEdit), Edit_GetTextLength(hEdit));
-	Edit_ReplaceSel(hEdit, s);
+	// used to be
+	//Edit_SetSel(hEdit, Edit_GetTextLength(hEdit), Edit_GetTextLength(hEdit));
+	//Edit_ReplaceSel(hEdit, s);
 }
 
 static const char * StatusString(int iStatus)
@@ -367,6 +437,10 @@ static const char * StatusString(int iStatus)
 		
 	case INCORRECT:
 		ptr = "Failed";
+		break;
+
+	case MISSING_OPTIONAL:
+		ptr = "Missing optional";
 		break;
 	}
 

@@ -10,8 +10,8 @@
 
  ***************************************************************************/
 
-#ifndef MAME32UTIL_H
-#define MAME32UTIL_H
+#ifndef M32UTIL_H
+#define M32UTIL_H
 
 extern void __cdecl ErrorMsg(const char* fmt, ...);
 extern void __cdecl dprintf(const char* fmt, ...);
@@ -37,6 +37,7 @@ BOOL DriverIsHarddisk(int driver_index);
 BOOL DriverHasOptionalBIOS(int driver_index);
 BOOL DriverIsStereo(int driver_index);
 BOOL DriverIsVector(int driver_index);
+BOOL DriverUsesRoms(int driver_index);
 BOOL DriverUsesSamples(int driver_index);
 BOOL DriverUsesTrackball(int driver_index);
 BOOL DriverUsesLightGun(int driver_index);

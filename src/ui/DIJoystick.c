@@ -22,6 +22,8 @@
 #include <assert.h>
 #include <stdio.h>
 #include <math.h>
+
+#include "screenshot.h"
 #include "MAME32.h"
 #include "DirectInput.h"
 #include "DIJoystick.h"

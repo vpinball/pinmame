@@ -34,13 +34,14 @@
 
 #include <io.h>
 #include <driver.h>
-#include "MAME32.h"
 #include "M32Util.h"
+#include "bitmask.h"
+#include "screenshot.h"
+#include "mame32.h"
 #include "TreeView.h"
 #include "resource.h"
-#include "Screenshot.h"
-#include "Properties.h"
-#include "Options.h"
+#include "properties.h"
+#include "options.h"
 #include "help.h"
 
 #ifdef _MSC_VER
@@ -94,7 +95,7 @@ static TREEICON treeIconNames[] =
 /* this has an entry for every folder eventually in the UI, including subfolders */
 static TREEFOLDER **treeFolders = 0;
 static UINT         numFolders  = 0;        /* Number of folder in the folder array */
-static UINT         next_folder_id = FOLDER_END;
+static UINT         next_folder_id = MAX_FOLDERS;
 static UINT         folderArrayLength = 0;  /* Size of the folder array */
 static LPTREEFOLDER lpCurrentFolder = 0;    /* Currently selected folder */
 static UINT         nCurrentFolder = 0;     /* Current folder ID */
@@ -128,8 +129,6 @@ static LPTREEFOLDER NewFolder(const char *lpTitle,
                               UINT nFolderId, int nParent, UINT nIconId,
                               DWORD dwFlags);
 static void         DeleteFolder(LPTREEFOLDER lpFolder);
-static void AddTreeFolders(int start_index,int end_index);
-static void SelectDefaultFolder(void);
 
 static LRESULT CALLBACK TreeWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -404,17 +403,36 @@ INT_PTR CALLBACK ResetDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPar
 
 INT_PTR CALLBACK InterfaceDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
+	char pcscreenshot[100];
+
 	switch (Msg)
 	{
 	case WM_INITDIALOG:
 		Button_SetCheck(GetDlgItem(hDlg,IDC_START_GAME_CHECK),GetGameCheck());
-		Button_SetCheck(GetDlgItem(hDlg,IDC_START_VERSION_WARN),GetVersionCheck());
 		Button_SetCheck(GetDlgItem(hDlg,IDC_JOY_GUI),GetJoyGUI());
 		Button_SetCheck(GetDlgItem(hDlg,IDC_BROADCAST),GetBroadcast());
 		Button_SetCheck(GetDlgItem(hDlg,IDC_RANDOM_BG),GetRandomBackground());
 		Button_SetCheck(GetDlgItem(hDlg,IDC_SKIP_DISCLAIMER),GetSkipDisclaimer());
 		Button_SetCheck(GetDlgItem(hDlg,IDC_SKIP_GAME_INFO),GetSkipGameInfo());
 		Button_SetCheck(GetDlgItem(hDlg,IDC_HIGH_PRIORITY),GetHighPriority());
+		
+		Button_SetCheck(GetDlgItem(hDlg,IDC_HIDE_MOUSE),GetHideMouseOnStartup());
+
+		itoa( GetCycleScreenshot(), pcscreenshot, 10);
+		Edit_SetText(GetDlgItem(hDlg, IDC_CYCLETIMESEC), pcscreenshot);
+		if( GetCycleScreenshot() <= 0 )
+		{
+			Button_SetCheck(GetDlgItem(hDlg,IDC_CYCLE_SCREENSHOT),FALSE);
+			EnableWindow(GetDlgItem(hDlg, IDC_CYCLETIME), FALSE);
+			EnableWindow(GetDlgItem(hDlg, IDC_CYCLETIMESEC), FALSE);
+		}
+		else
+		{
+			Button_SetCheck(GetDlgItem(hDlg,IDC_CYCLE_SCREENSHOT),TRUE);
+			EnableWindow(GetDlgItem(hDlg, IDC_CYCLETIME), TRUE);
+			EnableWindow(GetDlgItem(hDlg, IDC_CYCLETIMESEC), TRUE);
+		}
+
 		return TRUE;
 
 	case WM_HELP:
@@ -429,15 +447,34 @@ INT_PTR CALLBACK InterfaceDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM 
 	case WM_COMMAND :
 		switch (GET_WM_COMMAND_ID(wParam, lParam))
 		{
+		case IDC_CYCLE_SCREENSHOT:
+		{
+			BOOL bCheck = Button_GetCheck(GetDlgItem(hDlg, IDC_CYCLE_SCREENSHOT));
+			EnableWindow(GetDlgItem(hDlg, IDC_CYCLETIME), bCheck);
+			EnableWindow(GetDlgItem(hDlg, IDC_CYCLETIMESEC), bCheck);
+			return TRUE;
+		}
 		case IDOK :
 			SetGameCheck(Button_GetCheck(GetDlgItem(hDlg, IDC_START_GAME_CHECK)));
-			SetVersionCheck(Button_GetCheck(GetDlgItem(hDlg, IDC_START_VERSION_WARN)));
 			SetJoyGUI(Button_GetCheck(GetDlgItem(hDlg, IDC_JOY_GUI)));
 			SetBroadcast(Button_GetCheck(GetDlgItem(hDlg, IDC_BROADCAST)));
 			SetRandomBackground(Button_GetCheck(GetDlgItem(hDlg, IDC_RANDOM_BG)));
 			SetSkipDisclaimer(Button_GetCheck(GetDlgItem(hDlg, IDC_SKIP_DISCLAIMER)));
 			SetSkipGameInfo(Button_GetCheck(GetDlgItem(hDlg, IDC_SKIP_GAME_INFO)));
 			SetHighPriority(Button_GetCheck(GetDlgItem(hDlg, IDC_HIGH_PRIORITY)));
+			
+			SetHideMouseOnStartup(Button_GetCheck(GetDlgItem(hDlg,IDC_HIDE_MOUSE)));
+
+			if (Button_GetCheck(GetDlgItem(hDlg,IDC_CYCLE_SCREENSHOT)))
+			{
+				Edit_GetText(GetDlgItem(hDlg, IDC_CYCLETIMESEC),pcscreenshot,sizeof(pcscreenshot));
+				SetCycleScreenshot(atoi(pcscreenshot));
+			}
+			else
+			{
+				SetCycleScreenshot(0);
+			}
+
 			EndDialog(hDlg, 0);
 			return TRUE;
 
@@ -501,6 +538,7 @@ void CreateManufacturerFolders(int parent_index)
 	LPTREEFOLDER lpFolder = treeFolders[parent_index];
 
 	// not sure why this is added separately
+	// should find out at some point.
 	LPTREEFOLDER lpTemp;
 	lpTemp = NewFolder("Romstar", next_folder_id++, parent_index, IDI_MANUFACTURER,
 					   GetFolderFlags(numFolders));
@@ -644,6 +682,37 @@ void CreateSoundFolders(int parent_index)
 	}
 }
 
+void CreateOrientationFolders(int parent_index)
+{
+	int jj;
+	int nGames = GetNumGames();
+	LPTREEFOLDER lpFolder = treeFolders[parent_index];
+
+	// create our two subfolders
+	LPTREEFOLDER lpVert, lpHorz;
+	lpVert = NewFolder("Vertical", next_folder_id++, parent_index, IDI_FOLDER,
+					   GetFolderFlags(numFolders));
+	AddFolder(lpVert);
+	lpHorz = NewFolder("Horizontal", next_folder_id++, parent_index, IDI_FOLDER,
+					   GetFolderFlags(numFolders));
+	AddFolder(lpHorz);
+
+	// no games in top level folder
+	SetAllBits(lpFolder->m_lpGameBits,FALSE);
+
+	for (jj = 0; jj < nGames; jj++)
+	{
+		if (drivers[jj]->flags & ORIENTATION_SWAP_XY)
+		{
+			AddGame(lpVert,jj);
+		}
+		else
+		{
+			AddGame(lpHorz,jj);
+		}
+	}
+}
+
 void CreateYearFolders(int parent_index)
 {
 	int i,jj;
@@ -732,6 +801,156 @@ void CreateAllChildFolders(void)
 	}
 }
 
+// adds these folders to the treeview
+void ResetTreeViewFolders(void)
+{
+	HWND hTreeView = GetTreeView();
+	int i;
+	TVITEM tvi;
+	TVINSERTSTRUCT	tvs;
+
+	HTREEITEM shti; // for current child branches
+
+	// currently "cached" parent
+	HTREEITEM hti_parent = NULL;
+	int index_parent = -1;			
+
+	TreeView_DeleteAllItems(hTreeView);
+
+	//dprintf("Adding folders to tree ui indices %i to %i",start_index,end_index);
+
+	tvs.hInsertAfter = TVI_SORT;
+
+	for (i=0;i<numFolders;i++)
+	{
+		LPTREEFOLDER lpFolder = treeFolders[i];
+
+		if (lpFolder->m_nParent == -1)
+		{
+			if (lpFolder->m_nFolderId < MAX_FOLDERS)
+			{
+				// it's a built in folder, let's see if we should show it
+				if (GetShowFolder(lpFolder->m_nFolderId) == FALSE)
+				{
+					continue;
+				}
+			}
+
+			tvi.mask	= TVIF_TEXT | TVIF_PARAM | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
+			tvs.hParent = TVI_ROOT;
+			tvi.pszText = lpFolder->m_lpTitle;
+			tvi.lParam	= (LPARAM)lpFolder;
+			tvi.iImage	= GetTreeViewIconIndex(lpFolder->m_nIconId);
+			tvi.iSelectedImage = 0;
+
+#if defined(__GNUC__) /* bug in commctrl.h */
+			tvs.item = tvi;
+#else
+			tvs.DUMMYUNIONNAME.item = tvi;
+#endif
+
+			// Add root branch
+			hti_parent = TreeView_InsertItem(hTreeView, &tvs);
+
+			continue;
+		}
+
+		// not a top level branch, so look for parent
+		if (treeFolders[i]->m_nParent != index_parent)
+		{
+			
+			hti_parent = TreeView_GetRoot(hTreeView);
+			while (1)
+			{
+				if (hti_parent == NULL)
+				{
+					// couldn't find parent folder, so it's a built-in but
+					// not shown folder
+					break;
+				}
+
+				tvi.hItem = hti_parent;
+				tvi.mask = TVIF_PARAM;
+				TreeView_GetItem(hTreeView,&tvi);
+				if (((LPTREEFOLDER)tvi.lParam) == treeFolders[treeFolders[i]->m_nParent])
+					break;
+
+				hti_parent = TreeView_GetNextSibling(hTreeView,hti_parent);
+			}
+
+			// if parent is not shown, then don't show the child either obviously!
+			if (hti_parent == NULL)
+				continue;
+
+			index_parent = treeFolders[i]->m_nParent;
+		}
+
+		tvi.mask	= TVIF_TEXT | TVIF_PARAM | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
+		tvs.hParent = hti_parent;
+		tvi.iImage	= GetTreeViewIconIndex(treeFolders[i]->m_nIconId);
+		tvi.iSelectedImage = 0;
+		tvi.pszText = treeFolders[i]->m_lpTitle;
+		tvi.lParam	= (LPARAM)treeFolders[i];
+		
+#if defined(__GNUC__) /* bug in commctrl.h */
+		tvs.item = tvi;
+#else
+		tvs.DUMMYUNIONNAME.item = tvi;
+#endif
+		// Add it to this tree branch
+		shti = TreeView_InsertItem(hTreeView, &tvs);
+
+	}
+}
+
+void SelectTreeViewFolder(int folder_id)
+{
+	HWND hTreeView = GetTreeView();
+	HTREEITEM hti;
+	TVITEM tvi;
+
+	hti = TreeView_GetRoot(hTreeView);
+
+	while (hti != NULL)
+	{
+		HTREEITEM hti_next;
+
+		tvi.hItem = hti;
+		tvi.mask = TVIF_PARAM;
+		TreeView_GetItem(hTreeView,&tvi);
+
+		if (((LPTREEFOLDER)tvi.lParam)->m_nFolderId == folder_id)
+		{
+			TreeView_SelectItem(hTreeView,tvi.hItem);
+			SetCurrentFolder((LPTREEFOLDER)tvi.lParam);
+			return;
+		}
+		
+		hti_next = TreeView_GetChild(hTreeView,hti);
+		if (hti_next == NULL)
+		{
+			hti_next = TreeView_GetNextSibling(hTreeView,hti);
+			if (hti_next == NULL)
+			{
+				hti_next = TreeView_GetParent(hTreeView,hti);
+				if (hti_next != NULL)
+					hti_next = TreeView_GetNextSibling(hTreeView,hti_next);
+			}
+		}
+		hti = hti_next;
+	}
+
+	// could not find folder to select
+	// make sure we select something
+	tvi.hItem = TreeView_GetRoot(hTreeView);
+	tvi.mask = TVIF_PARAM;
+	TreeView_GetItem(hTreeView,&tvi);
+
+	TreeView_SelectItem(hTreeView,tvi.hItem);
+	SetCurrentFolder((LPTREEFOLDER)tvi.lParam);
+
+}
+
 /* Add a folder to the list.  Does not allocate */
 static BOOL AddFolder(LPTREEFOLDER lpFolder)
 {
@@ -806,137 +1025,6 @@ static void DeleteFolder(LPTREEFOLDER lpFolder)
 		free(lpFolder);
 		lpFolder = 0;
 	}
-}
-
-// adds these folders to the treeview
-static void AddTreeFolders(int start_index,int end_index)
-{
-	HWND hTreeView = GetTreeView();
-	int i;
-	TVITEM tvi;
-	TVINSERTSTRUCT	tvs;
-
-	HTREEITEM shti; // for current child branches
-
-	// currently "cached" parent
-	HTREEITEM hti_parent = NULL;
-	int index_parent = -1;			
-
-	//dprintf("Adding folders to tree ui indices %i to %i",start_index,end_index);
-
-	tvs.hInsertAfter = TVI_SORT;
-
-	for (i=start_index;i<end_index;i++)
-	{
-		LPTREEFOLDER lpFolder = treeFolders[i];
-
-		if (lpFolder->m_nParent == -1)
-		{
-			tvi.mask	= TVIF_TEXT | TVIF_PARAM | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
-			tvs.hParent = TVI_ROOT;
-			tvi.pszText = lpFolder->m_lpTitle;
-			tvi.lParam	= (LPARAM)lpFolder;
-			tvi.iImage	= GetTreeViewIconIndex(lpFolder->m_nIconId);
-			tvi.iSelectedImage = 0;
-
-#if defined(__GNUC__) /* bug in commctrl.h */
-			tvs.item = tvi;
-#else
-			tvs.DUMMYUNIONNAME.item = tvi;
-#endif
-
-			// Add root branch
-			hti_parent = TreeView_InsertItem(hTreeView, &tvs);
-
-			continue;
-		}
-
-		// not a top level branch, so look for parent
-		if (treeFolders[i]->m_nParent != index_parent)
-		{
-			hti_parent = TreeView_GetRoot(hTreeView);
-			while (1)
-			{
-				if (hti_parent == NULL)
-				{
-					dprintf("looking for parent index %i, failed",treeFolders[i]->m_nParent);
-					break;
-				}
-				tvi.hItem = hti_parent;
-				tvi.mask = TVIF_PARAM;
-				TreeView_GetItem(hTreeView,&tvi);
-				if (((LPTREEFOLDER)tvi.lParam) == treeFolders[treeFolders[i]->m_nParent])
-					break;
-
-				hti_parent = TreeView_GetNextSibling(hTreeView,hti_parent);
-			}
-
-			index_parent = treeFolders[i]->m_nParent;
-		}
-
-		tvi.mask	= TVIF_TEXT | TVIF_PARAM | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
-		tvs.hParent = hti_parent;
-		tvi.iImage	= GetTreeViewIconIndex(treeFolders[i]->m_nIconId);
-		tvi.iSelectedImage = 0;
-		tvi.pszText = treeFolders[i]->m_lpTitle;
-		tvi.lParam	= (LPARAM)treeFolders[i];
-		
-#if defined(__GNUC__) /* bug in commctrl.h */
-		tvs.item = tvi;
-#else
-		tvs.DUMMYUNIONNAME.item = tvi;
-#endif
-		// Add it to this tree branch
-		shti = TreeView_InsertItem(hTreeView, &tvs);
-
-	}
-}
-
-static void SelectDefaultFolder(void)
-{
-	HWND hTreeView = GetTreeView();
-	HTREEITEM hti;
-	TVITEM tvi;
-
-	hti = TreeView_GetRoot(hTreeView);
-
-	while (hti != NULL)
-	{
-		HTREEITEM hti_next;
-
-		tvi.hItem = hti;
-		tvi.mask = TVIF_PARAM;
-		TreeView_GetItem(hTreeView,&tvi);
-
-		if (((LPTREEFOLDER)tvi.lParam)->m_nFolderId == GetSavedFolderID())
-		{
-			TreeView_SelectItem(hTreeView,tvi.hItem);
-			SetCurrentFolder((LPTREEFOLDER)tvi.lParam);
-			return;
-		}
-		
-		hti_next = TreeView_GetChild(hTreeView,hti);
-		if (hti_next == NULL)
-		{
-			hti_next = TreeView_GetNextSibling(hTreeView,hti);
-			if (hti_next == NULL)
-			{
-				hti_next = TreeView_GetParent(hTreeView,hti);
-				if (hti_next != NULL)
-					hti_next = TreeView_GetNextSibling(hTreeView,hti_next);
-			}
-		}
-		hti = hti_next;
-	}
-
-	// could not find saved folder
-	// make sure we select something
-	tvi.hItem = TreeView_GetRoot(hTreeView);
-	tvi.mask = TVIF_PARAM;
-	TreeView_GetItem(hTreeView,&tvi);
-
-	TreeView_SelectItem(hTreeView,tvi.hItem);
-	SetCurrentFolder((LPTREEFOLDER)tvi.lParam);
 }
 
 /* Make a reasonable name out of the one found in the driver array */
@@ -1079,11 +1167,11 @@ BOOL InitFolders(void)
 
 	CreateTreeIcons();
 
-	AddTreeFolders(0,numFolders);
-
 	ResetWhichGamesInFolders();
 
-	SelectDefaultFolder();
+	ResetTreeViewFolders();
+
+	SelectTreeViewFolder(GetSavedFolderID());
 
 	return TRUE;
 }
@@ -1160,10 +1248,9 @@ static void TreeCtrlOnPaint(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	HBITMAP 	hOldBitmap;
 
 	HBITMAP hBackground = GetBackgroundBitmap();
+	MYBITMAPINFO *bmDesc = GetBackgroundInfo();
 
-    hDC = GetDC(hWnd);
-
-	BeginPaint(hWnd, &ps);
+	hDC = BeginPaint(hWnd, &ps);
 
 	GetClipBox(hDC, &rcClip);
 	GetClientRect(hWnd, &rcClient);
@@ -1172,7 +1259,8 @@ static void TreeCtrlOnPaint(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	memDC = CreateCompatibleDC(hDC);
 
 	// Select a compatible bitmap into the memory DC
-	bitmap = CreateCompatibleBitmap(hDC, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top);
+	bitmap = CreateCompatibleBitmap(hDC, rcClient.right - rcClient.left,
+									rcClient.bottom - rcClient.top);
 	hOldBitmap = SelectObject(memDC, bitmap);
 	
 	// First let the control do its default drawing.
@@ -1181,39 +1269,41 @@ static void TreeCtrlOnPaint(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	// Draw bitmap in the background
 	{
 		HPALETTE hPAL;		 
-		HDC      maskDC;
-		HBITMAP  maskBitmap;
-		HDC      tempDC;
-		HDC      imageDC;
-		HBITMAP  bmpImage;
-		HBITMAP  hOldBmpBitmap;
-		HBITMAP  hOldMaskBitmap;
-		HBITMAP  hOldHBitmap;
-		int      i, j;
-		RECT     rcRoot;
-		MYBITMAPINFO *bmDesc = GetBackgroundInfo();
+		HDC maskDC;
+		HBITMAP maskBitmap;
+		HDC tempDC;
+		HDC imageDC;
+		HBITMAP bmpImage;
+		HBITMAP hOldBmpImage;
+		HBITMAP hOldMaskBitmap;
+		HBITMAP hOldHBitmap;
+		int i, j;
+		RECT rcRoot;
 
 		// Now create a mask
 		maskDC = CreateCompatibleDC(hDC);	
 		
 		// Create monochrome bitmap for the mask
-		maskBitmap = CreateBitmap(rcClient.right - rcClient.left, rcClient.bottom - rcClient.top, 
+		maskBitmap = CreateBitmap(rcClient.right - rcClient.left,
+								  rcClient.bottom - rcClient.top, 
 								  1, 1, NULL);
+
 		hOldMaskBitmap = SelectObject(maskDC, maskBitmap);
 		SetBkColor(memDC, GetSysColor(COLOR_WINDOW));
 
 		// Create the mask from the memory DC
-		BitBlt(maskDC, 0, 0, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top, memDC, 
+		BitBlt(maskDC, 0, 0, rcClient.right - rcClient.left,
+			   rcClient.bottom - rcClient.top, memDC, 
 			   rcClient.left, rcClient.top, SRCCOPY);
-
 
 		tempDC = CreateCompatibleDC(hDC);
 		hOldHBitmap = SelectObject(tempDC, hBackground);
 
 		imageDC = CreateCompatibleDC(hDC);
-		bmpImage = CreateCompatibleBitmap(hDC, rcClient.right - rcClient.left, 
+		bmpImage = CreateCompatibleBitmap(hDC,
+										  rcClient.right - rcClient.left, 
 										  rcClient.bottom - rcClient.top);
-		hOldBmpBitmap = SelectObject(imageDC, bmpImage);
+		hOldBmpImage = SelectObject(imageDC, bmpImage);
 
 		hPAL = GetBackgroundPalette();
 		if (hPAL == NULL)
@@ -1233,8 +1323,8 @@ static void TreeCtrlOnPaint(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		// Draw bitmap in tiled manner to imageDC
 		for (i = rcRoot.left; i < rcClient.right; i += bmDesc->bmWidth)
 			for (j = rcRoot.top; j < rcClient.bottom; j += bmDesc->bmHeight)
-				BitBlt(imageDC,  i, j, bmDesc->bmWidth, bmDesc->bmHeight, tempDC, 
-					   0, 0, SRCCOPY);
+				BitBlt(imageDC,  i, j, bmDesc->bmWidth, bmDesc->bmHeight, 
+					   tempDC, 0, 0, SRCCOPY);
 
 		// Set the background in memDC to black. Using SRCPAINT with black and any other
 		// color results in the other color, thus making black the transparent color
@@ -1248,22 +1338,22 @@ static void TreeCtrlOnPaint(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		SetBkColor(imageDC, RGB(255,255,255));
 		SetTextColor(imageDC, RGB(0,0,0));
 		BitBlt(imageDC, rcClip.left, rcClip.top, rcClip.right - rcClip.left, 
-			   rcClip.bottom - rcClip.top, maskDC, 
-			   rcClip.left, rcClip.top, SRCAND);
+			   rcClip.bottom - rcClip.top,
+			   maskDC, rcClip.left, rcClip.top, SRCAND);
 
 		// Combine the foreground with the background
 		BitBlt(imageDC, rcClip.left, rcClip.top, rcClip.right - rcClip.left,
 			   rcClip.bottom - rcClip.top, 
 			   memDC, rcClip.left, rcClip.top, SRCPAINT);
+
 		// Draw the final image to the screen
-		
 		BitBlt(hDC, rcClip.left, rcClip.top, rcClip.right - rcClip.left,
 			   rcClip.bottom - rcClip.top, 
 			   imageDC, rcClip.left, rcClip.top, SRCCOPY);
 		
-		SelectObject(maskDC,  hOldMaskBitmap);
-		SelectObject(tempDC,  hOldHBitmap);
-		SelectObject(imageDC, hOldBmpBitmap);
+		SelectObject(maskDC, hOldMaskBitmap);
+		SelectObject(tempDC, hOldHBitmap);
+		SelectObject(imageDC, hOldBmpImage);
 
 		DeleteDC(maskDC);
 		DeleteDC(imageDC);
@@ -1276,7 +1366,6 @@ static void TreeCtrlOnPaint(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			DeleteObject(hPAL);
 			hPAL = 0;
 		}
-
 	}
 
 	SelectObject(memDC, hOldBitmap);
@@ -1292,7 +1381,14 @@ static LRESULT CALLBACK TreeWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
 	if (GetBackgroundBitmap() != NULL)
 	{
 		switch (uMsg)
+		{	
+	    case WM_MOUSEMOVE:
 		{
+			if (MouseHasBeenMoved())
+				ShowCursor(TRUE);
+			break;
+		}
+
 		case WM_KEYDOWN :
 			if (wParam == VK_F2)
 			{
@@ -1707,12 +1803,12 @@ BOOL TryAddExtraFolderAndChildren(int parent_index)
     char*   p;
     char*   name;
     int     id, current_id;
-    LPTREEFOLDER lpTemp = 0;
+    LPTREEFOLDER lpTemp = NULL;
 	LPTREEFOLDER lpFolder = treeFolders[parent_index];
 
     current_id = lpFolder->m_nFolderId;
     
-    id = lpFolder->m_nFolderId - FOLDER_END;
+    id = lpFolder->m_nFolderId - MAX_FOLDERS;
 
     /* "folder\title.ini" */
 
@@ -1787,6 +1883,13 @@ BOOL TryAddExtraFolderAndChildren(int parent_index)
             /* IMPORTANT: This assumes that all driver names are lowercase! */
             strlwr( name );
 
+			if (lpTemp == NULL)
+			{
+				ErrorMsg("Error parsing %s: missing [folder name] or [ROOT_FOLDER]",
+						 fname);
+				current_id = lpFolder->m_nFolderId;
+				lpTemp = lpFolder;
+			}
 			AddGame(lpTemp,GetGameNameIndex(name));
         }
     }

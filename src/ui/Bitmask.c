@@ -1,6 +1,9 @@
 /* Bitmask.c - Bitmask support routines - MSH 11/19/1998 */
 
-#include "Bitmask.h"
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
+#include "bitmask.h"
 #include <stdlib.h> /* For malloc and free */
 
 /* Bit routines */

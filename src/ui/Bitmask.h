@@ -1,9 +1,6 @@
 #ifndef BITMASK_H
 #define BITMASK_H
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h> /* For TYPES */
-
 /* Bit array type */
 typedef struct
 {

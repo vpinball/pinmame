@@ -30,10 +30,6 @@ void    InitDefaultPropertyPage(HINSTANCE hInst, HWND hWnd);
 /* Get Help ID array for WM_HELP and WM_CONTEXTMENU */
 DWORD   GetHelpIDs(void);
 
-/* Check for ROMs and Samples called in OnIdle in win32ui.c */
-BOOL    FindRomSet(int game);
-BOOL    FindSampleSet(int game);
-
 /* Get Game status text string */
 const char *GameInfoStatus(int driver_index);
 

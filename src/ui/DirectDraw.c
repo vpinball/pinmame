@@ -27,10 +27,12 @@
 #include <multimon.h>
 #endif
 #include <ddraw.h>
-#include "DirectDraw.h"
+
 #include "M32Util.h"
+#include "screenshot.h"
 #include "mame32.h"
 #include "dxdecode.h"
+#include "DirectDraw.h"
 
 /***************************************************************************
 	function prototypes
