@@ -56,26 +56,7 @@
 #define BYVP_LAMPSMOOTH      4 /* Smooth the lamps over this number of VBLANKS */
 #define BYVP_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKS */
 
-/*-- Common Inports for BY_VP Games --*/
-#define BYVP_COMPORTS \
-  PORT_START /* 0 */ \
-    /* These are put in switch column 0 */ \
-    COREPORT_BIT(     0x0001, "Self Test",        KEYCODE_7) \
-    COREPORT_BIT(     0x0002, "CPU Diagnostic",   KEYCODE_9) \
-    COREPORT_BIT(     0x0004, "Sound Diagnostic", KEYCODE_0) \
-    COREPORT_BIT(     0x0008, "Video Diagnostic", KEYCODE_8) \
-	COREPORT_BIT(	  0x0010, "Joystick Right",	  KEYCODE_RIGHT) \
-    COREPORT_BIT(	  0x0020, "Joystick Left",	  KEYCODE_LEFT) \
-	COREPORT_BIT(	  0x0040, "Joystick Down",	  KEYCODE_DOWN) \
-	COREPORT_BIT(	  0x0080, "Joystick Up",	  KEYCODE_UP) \
-    /* Switch Column 1 (Switches #3 & #6)*/ \
-    COREPORT_BITDEF(  0x0100, IPT_START2,        KEYCODE_2)  \
-    COREPORT_BITDEF(  0x0200, IPT_START1,        KEYCODE_1)  \
-    /* Switch Column 2 (Switches #1,#2,#7,#8)*/ \
-    COREPORT_BITDEF(  0x0400, IPT_COIN1,          IP_KEY_DEFAULT) \
-    COREPORT_BITDEF(  0x0800, IPT_COIN2,          IP_KEY_DEFAULT) \
-	COREPORT_BIT(     0x1000, "Ball Tilt",        KEYCODE_DEL)  \
-    COREPORT_BIT(     0x2000, "Slam Tilt",        KEYCODE_HOME)  \
+#define BYVP_DIPS \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
       COREPORT_DIPSET(0x0000, "0" ) \
@@ -176,12 +157,56 @@
       COREPORT_DIPSET(0x8000, "1" )
 
 
+#define BYVP_babypac_PORT \
+  PORT_START /* 0 */ \
+    /* These are put in switch column 0 */ \
+    COREPORT_BIT(     0x0001, "Self Test",        KEYCODE_7) \
+    COREPORT_BIT(     0x0002, "CPU Diagnostic",   KEYCODE_9) \
+    COREPORT_BIT(     0x0004, "Sound Diagnostic", KEYCODE_0) \
+    COREPORT_BIT(     0x0008, "Video Diagnostic", KEYCODE_8) \
+	COREPORT_BIT(	  0x0010, "Joystick Right",	  KEYCODE_RIGHT) \
+    COREPORT_BIT(	  0x0020, "Joystick Left",	  KEYCODE_LEFT) \
+	COREPORT_BIT(	  0x0040, "Joystick Down",	  KEYCODE_DOWN) \
+	COREPORT_BIT(	  0x0080, "Joystick Up",	  KEYCODE_UP) \
+    /* Switch Column 1 (Switches #3 & #6)*/ \
+    COREPORT_BITDEF(  0x0100, IPT_START2,        KEYCODE_2)  \
+    COREPORT_BITDEF(  0x0200, IPT_START1,        KEYCODE_1)  \
+    /* Switch Column 2 (Switches #1,#2,#7,#8)*/ \
+    COREPORT_BITDEF(  0x0400, IPT_COIN1,          IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(  0x0800, IPT_COIN2,          IP_KEY_DEFAULT) \
+	COREPORT_BIT(     0x1000, "Ball Tilt",        KEYCODE_DEL)  \
+    COREPORT_BIT(     0x2000, "Slam Tilt",        KEYCODE_HOME)  \
+	BYVP_DIPS
+
+#define BYVP_granny_PORT \
+  PORT_START /* 0 */ \
+    /* These are put in switch column 0 */ \
+    COREPORT_BIT(     0x0001, "Self Test",        KEYCODE_7) \
+    COREPORT_BIT(     0x0002, "CPU Diagnostic",   KEYCODE_9) \
+    COREPORT_BIT(     0x0004, "Sound Diagnostic", KEYCODE_0) \
+    COREPORT_BIT(     0x0008, "Video Diagnostic", KEYCODE_8) \
+	COREPORT_BIT(	  0x0010, "Paddle Right",	  KEYCODE_RIGHT) \
+    COREPORT_BIT(	  0x0020, "Paddle Left",	  KEYCODE_LEFT) \
+	COREPORT_BIT(	  0x0040, "Fire/Start 2",	  KEYCODE_LSHIFT) \
+	COREPORT_BIT(	  0x0080, "Fire/Start 1",	  KEYCODE_RSHIFT) \
+    /* Switch Column 2 (Switches #5 & #6)*/ \
+    COREPORT_BITDEF(  0x0100, IPT_START2,        KEYCODE_2)  \
+    COREPORT_BITDEF(  0x0200, IPT_START1,        KEYCODE_1)  \
+    /* Switch Column 2 (Switches #1,#2,#7,#8)*/ \
+    COREPORT_BITDEF(  0x0400, IPT_COIN1,          IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(  0x0800, IPT_COIN2,          IP_KEY_DEFAULT) \
+	COREPORT_BIT(     0x1000, "Ball Tilt",        KEYCODE_DEL)  \
+    COREPORT_BIT(     0x2000, "Slam Tilt",        KEYCODE_HOME)  \
+	COREPORT_BIT(     0x4000, "Power",		      KEYCODE_UP)  \
+	BYVP_DIPS
+
+
 /*-- Standard input ports --*/
 #define BYVP_INPUT_PORTS_START(name,balls) \
   INPUT_PORTS_START(name) \
     CORE_PORTS \
     SIM_PORTS(balls) \
-    BYVP_COMPORTS
+	BYVP_##name##_PORT
 
 #define BYVP_INPUT_PORTS_END INPUT_PORTS_END
 
