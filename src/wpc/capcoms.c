@@ -8,7 +8,7 @@
 
   Hacks & Issues that need to be looked into:
   #1) /BOF line timing not properly emulated (fails start up test)
-  #2) 9241 Digital volume pot not emulated (fails start up test)
+  #2) 9241 Digital volume pot not finished (but passes tests!)
   #3) Currently rom is hacked to bypass error messages for the above failed tests..
   #4) Sound board often get's overloaded and resets or just drops out/misses sound commands
   #5) Only KP game fails to report a proper sound board reset (others do, but if you watch received commands, not all commands are always sent)
@@ -26,8 +26,8 @@
 //#define DEBUGGING
 
 #ifdef VERBOSE
-#define LOG(x)	logerror x
-//#define LOG(x)	printf x
+//#define LOG(x)	logerror x
+#define LOG(x)	printf x
 #else
 #define LOG(x)
 #endif
@@ -43,6 +43,9 @@
 
 //Comment out to remove Test bypass..
 #define TEST_BYPASS
+
+//Comment out to allow Volume Control
+#define DISABLE_VOLUME
 
 /*Declarations*/
 WRITE_HANDLER(capcoms_sndCmd_w);
@@ -89,6 +92,8 @@ static struct {
   int cbof_line[2];		//Clear BOF Line (8752 controlled)
   int cts;				//Clear to send (If 1, cpu will not send data)
   int rts;				//Request to send (If 1, sender will not send data)
+  int scl;				//SCL line
+  int sda;				//SDA line
   UINT8 from_8752;		//Data from the 8752
   UINT8 to_8752;		//Data to the 8752
 #ifdef TEST_FROM_ROM
@@ -109,6 +114,9 @@ static struct {
   int stop;			//Set when a stop command is received
   int nextbit;		//Which bit to store next
   int nextram;		//Which position in ram to store next
+  int waitforack;	//Waiting to get ack cycle
+  int waitackend;	//Waiting to get ack end cycle
+  UINT8 wcr[4];		//The 4 wiper control registers
 } x9241;
 
 void set_cts_line_to_8752(int data)
@@ -169,7 +177,7 @@ void cap_bof(int chipnum,int state)
 		cpu_set_irq_line(locals_cap.brdData.cpuNo, I8051_INT1_LINE, state?CLEAR_LINE:ASSERT_LINE);
 	else
 		cpu_set_irq_line(locals_cap.brdData.cpuNo, I8051_INT0_LINE, state?CLEAR_LINE:ASSERT_LINE);
-	LOG(("MPG#%d: BOF Set to %d\n",chipnum,state));
+//	LOG(("MPG#%d: BOF Set to %d\n",chipnum,state));
 	//PRINTF(("MPG#%d: BOF Set to %d\n",chipnum,state));
 }
 
@@ -177,7 +185,7 @@ void cap_bof(int chipnum,int state)
 void cap_sreq(int chipnum,int state)
 {
 	locals.sreq_line[chipnum]=state;
-	LOG(("MPG#%d: SREQ Set to %d\n",chipnum,state));
+//	LOG(("MPG#%d: SREQ Set to %d\n",chipnum,state));
 //	PRINTF(("MPG#%d: SREQ Set to %d\n",chipnum,state));
 }
 
@@ -191,14 +199,13 @@ Start Command: 1->0 of SDA WHILE SCL = 1 (all data is ignored until start comman
 Stop Command:  0->1 of SDA WHILE SCL = 1
 Bit Data:      Data is sent while SCL = 0... SDA = 0 for no bit set, 1 for bit set.
 
-Todo:	#1) Implement Acknowledge
-		#2) Implement commands & registers
+Todo:	#2) Implement commands & registers
 		#3) Adjust volume accordingly
 
 ***********************************************************************************/
 void data_to_x9241(int scl, int sda)
 {
-	int i,data;
+	int i,data,changed=0;
 
 	//store previous signals
 	x9241.lscl = x9241.scl;
@@ -208,62 +215,118 @@ void data_to_x9241(int scl, int sda)
 	x9241.scl = scl;
 	x9241.sda = sda;
 
-	//Sending a command?
-	if(scl) {
-		//is this a start command? (SCL = 1, SDA = 0, LSDA = 1)
-		if(sda == 0 && x9241.lsda == 1) {
+	//update to external structure for reading
+	locals.scl = scl;
+	locals.sda = sda;
+
+	//Check for a change in state..
+	if(scl == x9241.lscl && sda == x9241.lsda) {
+		//If we've started, and scl = 0, then sda in fact has changed, even if values did not!
+		if(x9241.start && !x9241.scl)
+			x9241.lsda = !x9241.lsda;	//Force a change!
+		else
+			return;
+	}
+
+	//Which bit changed? (0 = SCLK Changed, 1 = SDA Changed)
+	if(sda != x9241.lsda)
+		changed = 1;
+
+	//If waiting for ack
+	if(x9241.waitforack) {
+		//Did SCLK change?
+		if(!changed) {
+			//Begin ACK? (0->1 transition)?
+			if(!x9241.lscl && scl) { 
+				//Yes - Pull SDA low!
+				locals.sda = 0;
+				x9241.waitackend = 1;
+				return;
+			}
+			//End ACK? (1->0 transition)?
+			if(x9241.waitackend) {
+				if(x9241.lscl && !scl) {
+					x9241.waitforack = 0;
+					x9241.waitackend = 0;
+					return;
+				}
+			}
+		}
+		//ABORT
+		return;
+	}
+
+	//Found a start command already?
+	if(x9241.start) {
+		//Check for new bit (Transition of SCL 0->1)
+		if(!x9241.lscl && scl && !changed) {
+			//Ok - store next bit
+			x9241.bits[x9241.nextbit++] = sda;
+			//LOG(("x9241: Received bit #%d, value = %d\n",x9241.nextbit-1,sda));
+			//Do we have a full byte?
+			if(x9241.nextbit==8) {
+				data = 0;
+				x9241.nextbit = 0;		//Reset flag
+				x9241.waitforack = 1;	//Set Flag
+				//Convert to a byte & Clear bits array
+				for(i=0; i<8; i++) {
+					data |= x9241.bits[i]<<i;
+					x9241.bits[i] = 0;
+				}
+				//Serial data must be loaded MSB first, so we must reverse it..
+				data = core_revbyte(data);
+				//LOG(("x9241: received byte: %x\n",data));
+				//Store in ram (but check for overflow)
+				if( (x9241.nextram+1) > 16) {
+					LOG(("x9241: Overflow of RAM data - skipping processed byte!\n"));
+					return;
+				}
+				else {
+					x9241.ram[x9241.nextram++] = data;
+				//	LOG(("x9241: storing byte to ram[%d]\n",x9241.nextram-1));
+				}
+			}
+		}
+	}
+	//Sending a start or stop command? (Check only when SDA changes, and SCL = 1)
+	if(changed && x9241.scl) {
+		//is this a start command? (SCL = 1, LSDA = 1, SDA = 0)
+		if(x9241.lsda == 1 && sda == 0) {
 			x9241.start = 1;
 			x9241.stop = 0;
 			x9241.nextbit = 0;
 			x9241.nextram = 0;
 			for(i=0;i<16;i++)	x9241.ram[i] = 0;
-			LOG(("x9241: Start command received!\n"));
+			//LOG(("x9241: Start command received!\n"));
 			return;
 		}
-		//is this a stop command? (SCL = 1, SDA = 1, LSDA = 0)
-		if(sda == 1 && x9241.lsda == 0) {
+		//is this a stop command? (SCL = 1, LSDA = 0, SDA = 1)
+		if(x9241.lsda == 0 && sda == 1) {
 			x9241.start = 0;
 			x9241.stop = 1;
 			x9241.nextbit = 0;
-			x9241.nextram = 0;
-			LOG(("x9241: Stop command received!\n"));
-			return;
-		}
-	}
-	//Sending data?
-	else {
-		//attempting to send data w/o a start command?
-		if(!x9241.start) {
-			LOG(("ignoring data to x9241 w/o start command!\n"));
-			return;
-		}
-		//attempting to send data after a stop command?
-		if(x9241.stop) {
-			LOG(("ignoring data to x9241 because stop command was sent already!\n"));
-			return;
-		}
-		//Ok - store next bit
-		x9241.bits[x9241.nextbit++] = sda;
-		LOG(("x9241: Received bit #%d, value = %d\n",x9241.nextbit-1,sda));
-		//Do we have a full byte?
-		if(x9241.nextbit==8) {
-			data = 0;
-			x9241.nextbit = 0;		//Reset flag
-			//Convert to a byte & Clear bits array
-			for(i=0; i<8; i++) {
-				data |= x9241.bits[i]<<i;
-				x9241.bits[i] = 0;
-			}
-			LOG(("x9241: received byte: %x\n",data));
-			//Store in ram (but check for overflow)
-			if( (x9241.nextram+1) > 16) {
-				LOG(("x9241: Overflow of RAM data - skipping processed byte!\n"));
-				return;
-			}
+			//LOG(("x9241: Stop command received!\n"));
+			//Process the commands (how many bytes were in this command sequence?)
+			if(x9241.nextram != 3)
+				LOG(("9241 Volume emulation only supports 3 byte command sequences!\n"));
 			else {
-				x9241.ram[x9241.nextram++] = data;
-				LOG(("x9241: storing byte to ram[%d]\n",x9241.nextram-1));
+				//Command sequence must begin with 0x50
+				if(x9241.ram[0] != 0x50)
+					LOG(("9241 Volume - Illegal first command byte!\n"));
+				else {
+					//2nd Byte is the Register (bits 2-3), 3rd Byte the Value
+					x9241.wcr[(x9241.ram[1] & 0x0c)>>2] = x9241.ram[2];
+#ifndef DISABLE_VOLUME
+					LOG(("wcr[%x]=%x\n",(x9241.ram[1] & 0x0c)>>2,x9241.ram[2]));
+					//Now adjust volume - wipers 0 & 1 control mpg1 & mpg2 ( since 16 is max value of wcr, 16*6 = 96 Volume setting)
+					mixer_set_volume(0,x9241.wcr[0]*6);
+					mixer_set_volume(1,x9241.wcr[1]*6);
+					//Not sure what wipers 2 & 3 do..
+#endif
+				}
 			}
+			x9241.nextram = 0;
+			return;
 		}
 	}
 }
@@ -285,9 +348,10 @@ static READ_HANDLER(port_r)
 			P1.6    (O) = /CBOF1 = CLEAR BOF1 IRQ
 			P1.7    (O) = /CBOF2 = CLEAR BOF2 IRQ */
 		case 1:
-			//Todo: return scl/sda lines..
 			data |= (locals.cts)<<2;
-			LOG(("%4x:port read @ %x data = %x\n",activecpu_get_pc(),offset,data));
+			data |= (locals.scl)<<4;
+			data |= (locals.sda)<<5;
+			//LOG(("%4x:port read @ %x data = %x\n",activecpu_get_pc(),offset,data));
 			return data;
 		/*PORT 3:
 			P3.0/RXD(I) = Serial Receive -  RXD
@@ -304,7 +368,7 @@ static READ_HANDLER(port_r)
 			data |= (locals.bof_line[1])<<3;
 			data |= (locals.sreq_line[0])<<4;
 			data |= (locals.sreq_line[1])<<5;
-			LOG(("%4x:port read @ %x data = %x\n",activecpu_get_pc(),offset,data));
+			//LOG(("%4x:port read @ %x data = %x\n",activecpu_get_pc(),offset,data));
 			return data;
 	}
 	LOG(("%4x:port read @ %x data = %x\n",activecpu_get_pc(),offset,data));
@@ -345,7 +409,7 @@ static WRITE_HANDLER(port_w)
 			if((data&0x40)==0)	cap_bof(0,1);
 			if((data&0x80)==0)	cap_bof(1,1);
 
-			LOG(("writing to port %x data = %x\n",offset,data));
+			//LOG(("writing to port %x data = %x\n",offset,data));
 			break;
 		/*PORT 3:
 			P3.0/RXD(I) = Serial Receive -  RXD
@@ -563,7 +627,7 @@ MACHINE_DRIVER_START(capcom2s)
 MACHINE_DRIVER_END
 
 //Manual reset of cpu, triggered from external source
-void capcoms_manual_reset()
+void capcoms_manual_reset(void)
 {
   capcoms_reset();
   TMS320AV120_sh_reset();
@@ -586,10 +650,6 @@ static void capcoms_reset()
   *((UINT8 *)(memory_region(CAPCOMS_CPUREGION) + 0x7bb))   = 0x70;		//convert jz to jnz
   //U23 Test (MPG 2)
   *((UINT8 *)(memory_region(CAPCOMS_CPUREGION) + 0x7ca))   = 0x70;		//convert jz to jnz
-  //SCLK Stuck Line
-  *((UINT8 *)(memory_region(CAPCOMS_CPUREGION) + 0x80f))   = 0x30;		//convert jb to jnb
-  //SDA Stuck Line
-  *((UINT8 *)(memory_region(CAPCOMS_CPUREGION) + 0x817))   = 0x30;		//convert jb to jnb
   #endif
 
 //Set up timer to force feed data to the TMS chips from the ROMS
