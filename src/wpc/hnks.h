@@ -19,9 +19,10 @@ extern const struct Memory_WriteAddress hnks_writemem[];
   0,1 \
 }
 
-extern struct CustomSound_interface hnks_custInt;
+extern MACHINE_DRIVER_EXTERN(hnks);
 
-#define HNK_SOUND {SOUND_CUSTOM,&hnks_custInt}, SAMPLESINTERFACE
+// extern struct CustomSound_interface hnks_custInt;
+// #define HNK_SOUND {SOUND_CUSTOM,&hnks_custInt}, SAMPLESINTERFACE
 
 #define HNK_SOUNDROMS(ic14,chk14,ic3,chk3) \
   SOUNDREGION(0x10000, HNK_MEMREG_SCPU) \

@@ -176,3 +176,10 @@ const struct sndbrdIntf hankinIntf = {
 
 struct CustomSound_interface hnks_custInt = {hnks_sh_start, hnks_sh_stop};
 
+MACHINE_DRIVER_START(hnks)
+  MDRV_CPU_ADD_TAG("scpu", M6802, 900000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(hnks_readmem, hnks_writemem)
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD(CUSTOM, hnks_custInt)
+MACHINE_DRIVER_END

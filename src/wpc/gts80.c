@@ -20,32 +20,6 @@
 #include "gts80.h"
 #include "gts80s.h"
 
-#define GTS80_VBLANKFREQ      60 /* VBLANK frequency */
-
-static void GTS80_init(void);
-static void GTS80_exit(void);
-static void GTS80_nvram(void *file, int write);
-
-/* operator adjustable switches
-	s1 is the msb of the first byte, s32 the lsb of the last byte :
-
-	s1  s2  s3  s4  s5  s6  s7  s8
-	s9  s10 s11 s12 s13 s14 s15 s16
-	s17 s18 s19 s20 s21 s22 s23 s24
-	s25 s26 s27 s28 s29 s30 s31 s32
-*/
-#if 0
-static UINT8 opSwitches[4] = {0x02, 0x83, 0xd3, 0xfc};
-#endif
-int core_bcd2seg16[16] = {0x3f00,0x0022,0x5b08,0x4f08,0x6608,0x6d08,0x7d08,0x0700,0x7f08,0x6f08,
-#ifdef MAME_DEBUG
-/*
-0x3700, 0x7C08, 0x3900, 0x5E08, 0x7908, 0x7108
-*/
-#endif /* MAME_DEBUG */
-};
-
-
 static int core_ascii2seg[] = {
 	/* 0x00-0x07 */ 0x0000, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
 	/* 0x08-0x0f */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
@@ -96,14 +70,14 @@ static struct {
 } GTS80locals;
 
 static void GTS80_irq(int state) {
-  cpu_set_irq_line(GTS80_CPU, M6502_INT_IRQ, state ? ASSERT_LINE : CLEAR_LINE);
+  cpu_set_irq_line(GTS80_CPU, M6502_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
 static int GTS80_vblank(void) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
-  int active;
+
   GTS80locals.vblankCount += 1;
   /*-- lamps --*/
   if ((GTS80locals.vblankCount % GTS80_LAMPSMOOTH) == 0) {
@@ -133,12 +107,7 @@ static int GTS80_vblank(void) {
     /*update leds*/
     coreGlobals.diagnosticLed = 0;
   }
-  /* Lamp 0 controls game enable */
-  active = coreGlobals.lampMatrix[0] & 1;
-  /* Lamp 1 controls tilt on System80 & System80a */
-  if (!(core_gameData->gen & (GEN_GTS80B2K|GEN_GTS80B4K|GEN_GTS80B8K)))
-	  active = active && !(coreGlobals.lampMatrix[0] & 2);
-  core_updateSw(active);
+  core_updateSw(TRUE); /* assume flipper enabled */
   return 0;
 }
 
@@ -582,74 +551,7 @@ static MEMORY_WRITE_START(GTS80_writemem)
 {0xf000,0xffff, MWA_ROM},			/*U3 ROM*/
 MEMORY_END
 
-struct MachineDriver machine_driver_GTS80S = {
-  {
-    {
-      CPU_M6502, 850000, /* 0.85 Mhz */
-      GTS80_readmem, GTS80_writemem, NULL, NULL,
-	  GTS80_vblank, 1,
-	  NULL, 0
-	},
-	GTS80S_SOUNDCPU,
-  },
-  GTS80_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50,
-  GTS80_init,CORE_EXITFUNC(GTS80_exit)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_TYPE_RASTER,
-  0,
-  NULL, NULL, gen_refresh,
-  0,0,0,0,{GTS80S_SOUND},
-  GTS80_nvram
-};
-
-/* GTS80/80a with sound/speech board */
-struct MachineDriver machine_driver_GTS80SS = {
-  {
-    {
-      CPU_M6502, 850000, /* 0.85 Mhz */
-      GTS80_readmem, GTS80_writemem, NULL, NULL,
-	  GTS80_vblank, 1,
-	  NULL, 0
-	},
-	GTS80SS_SOUNDCPU,
-  },
-  GTS80_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50,
-  GTS80_init,CORE_EXITFUNC(GTS80_exit)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_TYPE_RASTER,
-  0,
-  NULL, NULL, gen_refresh,
-  0,0,0,0,{GTS80SS_SOUND},
-  GTS80_nvram
-};
-
-/* GTS80b - System80a sound only hardware with 2K sound rom */
-struct MachineDriver machine_driver_GTS80B = {
-  {
-    {
-      CPU_M6502, 850000, /* 0.85 Mhz */
-      GTS80_readmem, GTS80_writemem, NULL, NULL,
-	  GTS80_vblank, 1,
-	  NULL, 0
-	},
-	GTS80S_SOUNDCPU
-  },
-  GTS80_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50,
-  GTS80_init,CORE_EXITFUNC(GTS80_exit)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_TYPE_RASTER,
-  0,
-  NULL, NULL, gen_refresh,
-  0,0,0,0,{{0}},
-  GTS80_nvram
-};
-
+#if 0
 /* GTS80b - Gen 1 Sound Hardware*/
 struct MachineDriver machine_driver_GTS80BS1 = {
   {
@@ -718,11 +620,10 @@ struct MachineDriver machine_driver_GTS80BS3 = {
   0,0,0,0,{GTS80BS3_SOUND},
   GTS80_nvram
 };
+#endif
 
-static void GTS80_init(void) {
+static MACHINE_INIT(gts80) {
   int ii;
-
-  if (GTS80locals.initDone) CORE_DOEXIT(GTS80_exit);
 
   if (core_init(&GTS80Data)) return;
   memset(&GTS80locals, 0, sizeof GTS80locals);
@@ -744,19 +645,16 @@ static void GTS80_init(void) {
   for (ii = 0; ii < sizeof(GTS80_riot6532_intf)/sizeof(GTS80_riot6532_intf[0]); ii++)
     riot6532_config(ii, &GTS80_riot6532_intf[ii]);
 
-  /* Sound Enabled? */
-  if (((Machine->gamedrv->flags & GAME_NO_SOUND)==0) && Machine->sample_rate)
-	  sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(GTS80_MEMREG_SCPU1), NULL, NULL);
+  sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(GTS80_MEMREG_SCPU1), NULL, NULL);
 
   riot6532_reset();
   
   GTS80locals.initDone = TRUE;
 }
 
-static void GTS80_exit(void) {
-  /* Sound Enabled? */
-  if (((Machine->gamedrv->flags & GAME_NO_SOUND)==0) && Machine->sample_rate)
-	  sndbrd_0_exit();
+static MACHINE_STOP(gts80)
+{
+  sndbrd_0_exit();
 
   riot6532_unconfig();
   core_exit();
@@ -766,10 +664,51 @@ static void GTS80_exit(void) {
 / Load/Save static ram
 / Save RAM & CMOS Information
 /-------------------------------------------------*/
-void GTS80_nvram(void *file, int write) {
+
+static NVRAM_HANDLER(gts80) {
 	int i;
-	core_nvram(file, write, memory_region(GTS80_MEMREG_CPU)+0x1800, 0x100, 0x00);
-	if (!write)
+	core_nvram(file, read_or_write, memory_region(GTS80_MEMREG_CPU)+0x1800, 0x100, 0x00);
+	if (!read_or_write)
 		for(i=1;i<8;i++)
 			memcpy(memory_region(GTS80_MEMREG_CPU)+0x1800+(i*0x100), memory_region(GTS80_MEMREG_CPU)+0x1800, 0x100);
 }
+
+MACHINE_DRIVER_START(gts80)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CPU_ADD(M6502, 850000)
+  MDRV_CPU_MEMORY(GTS80_readmem, GTS80_writemem)
+  MDRV_CPU_VBLANK_INT(GTS80_vblank, 1)
+  MDRV_MACHINE_INIT(gts80) MDRV_MACHINE_STOP(gts80)
+  MDRV_NVRAM_HANDLER(gts80)
+  MDRV_VIDEO_UPDATE(core_led)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(gts80s)
+  MDRV_IMPORT_FROM(gts80)
+  MDRV_IMPORT_FROM(gts80s_s)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(gts80ss)
+  MDRV_IMPORT_FROM(gts80)
+  MDRV_IMPORT_FROM(gts80s_ss)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(gts80b)
+  MDRV_IMPORT_FROM(gts80)
+  MDRV_IMPORT_FROM(gts80s_s)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(gts80bs1)
+  MDRV_IMPORT_FROM(gts80)
+  MDRV_IMPORT_FROM(gts80s_b1)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(gts80bs2)
+  MDRV_IMPORT_FROM(gts80)
+  MDRV_IMPORT_FROM(gts80s_b2)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(gts80bs3)
+  MDRV_IMPORT_FROM(gts80)
+  MDRV_IMPORT_FROM(gts80s_b3)
+MACHINE_DRIVER_END

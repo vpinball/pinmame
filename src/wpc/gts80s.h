@@ -31,22 +31,8 @@
     ROM_LOAD(n1, 0x0800,  0x0800, chk1) \
     ROM_RELOAD(  0xf800,  0x0800)
 
-/*-- Machine structure externals --*/
-extern const struct Memory_ReadAddress  GTS80S_readmem[];
-extern const struct Memory_WriteAddress GTS80S_writemem[];
+extern MACHINE_DRIVER_EXTERN(gts80s_s);
 
-#define GTS80S_SOUNDCPU { \
-  CPU_M6502 | CPU_AUDIO_CPU, /* actually, it is an 6503 (6502 with only 12 address lines) */ \
-  1000000, /* 1 MHz ??? */ \
-  GTS80S_readmem, GTS80S_writemem, 0, 0, \
-  ignore_interrupt, 0 \
-}
-
-extern struct CustomSound_interface GTS80S_customsoundinterface;
-
-#define GTS80S_SOUND \
-{ SOUND_CUSTOM, &GTS80SS_customsoundinterface }, \
-{ SOUND_SAMPLES, &samples_interface}
 
 /* Gottlieb System 80/80A Sound & Speech Board */
 
@@ -56,24 +42,8 @@ extern struct CustomSound_interface GTS80S_customsoundinterface;
 	ROM_LOAD(n1, 0x7000,  0x0800, chk1) \
 	ROM_LOAD(n2, 0x7800,  0x0800, chk2) 
 
-/*-- Machine structure externals --*/
-extern const struct Memory_ReadAddress  GTS80SS_readmem[];
-extern const struct Memory_WriteAddress GTS80SS_writemem[];
+extern MACHINE_DRIVER_EXTERN(gts80s_ss);
 
-#define GTS80SS_SOUNDCPU { \
-  CPU_M6502 | CPU_AUDIO_CPU, \
-  1000000, /* 1 MHz */ \
-  GTS80SS_readmem, GTS80SS_writemem, 0, 0, \
-  ignore_interrupt, 0 \
-}
-
-extern struct CustomSound_interface GTS80SS_customsoundinterface;
-extern struct VOTRAXSC01interface GTS80SS_votrax_sc01_interface;
-
-#define GTS80SS_SOUND \
-{ SOUND_CUSTOM, &GTS80SS_customsoundinterface }, \
-{ SOUND_VOTRAXSC01,&GTS80SS_votrax_sc01_interface },\
-{ SOUND_SAMPLES, &samples_interface}
 
 /* Gottlieb System 80B Sound board Hardware Versions:
    -----------------------------------------
@@ -112,85 +82,9 @@ extern struct VOTRAXSC01interface GTS80SS_votrax_sc01_interface;
   SOUNDREGION(0x10000, GTS80_MEMREG_SCPU2) \
     GTS80BS_ROMLOAD32(0x8000, n2, chk2)
 
-/*-- Machine structure externals --*/
-extern const struct Memory_ReadAddress  GTS80BS1_readmem[];
-extern const struct Memory_WriteAddress GTS80BS1_writemem[];
-extern const struct Memory_ReadAddress  GTS80BS1_readmem2[];
-extern const struct Memory_WriteAddress GTS80BS1_writemem2[];
-extern const struct Memory_ReadAddress  GTS80BS2_readmem[];
-extern const struct Memory_WriteAddress GTS80BS2_writemem[];
-extern const struct Memory_ReadAddress  GTS80BS2_readmem2[];
-extern const struct Memory_WriteAddress GTS80BS2_writemem2[];
-extern const struct Memory_ReadAddress  GTS80BS3_readmem[];
-extern const struct Memory_WriteAddress GTS80BS3_writemem[];
-extern const struct Memory_ReadAddress  GTS80BS3_readmem2[];
-extern const struct Memory_WriteAddress GTS80BS3_writemem2[];
-
-extern struct DACinterface      GTS80BS_dacInt;
-extern struct AY8910interface   GTS80BS_ay8910Int;
-extern struct YM2151interface   GTS80BS_ym2151Int;
-extern struct Samplesinterface	samples_interface;
-
-/****************/
-/* GENERATION 1 */
-/****************/
-#define GTS80BS1_SOUNDCPU1 ,{ \
-  CPU_M6502 | CPU_AUDIO_CPU, \
-  2000000, /* 2 MHz */ \
-  GTS80BS1_readmem, GTS80BS1_writemem, 0, 0, \
-  ignore_interrupt, 0 \
-}
-
-#define GTS80BS1_SOUNDCPU2 ,{ \
-  CPU_M6502 | CPU_AUDIO_CPU, \
-  2000000, /* 2 MHz */ \
-  GTS80BS1_readmem2, GTS80BS1_writemem2, 0, 0, \
-  ignore_interrupt, 0 \
-}
-#define GTS80BS1_SOUND \
-{ SOUND_DAC,     &GTS80BS_dacInt }, \
-{ SOUND_AY8910,  &GTS80BS_ay8910Int }, \
-{ SOUND_SAMPLES, &samples_interface}
-
-/****************/
-/* GENERATION 2 */
-/****************/
-#define GTS80BS2_SOUNDCPU1 ,{ \
-  CPU_M6502 | CPU_AUDIO_CPU, \
-  2000000, /* 2 MHz */ \
-  GTS80BS2_readmem, GTS80BS2_writemem, 0, 0, \
-  ignore_interrupt, 0 \
-}
-#define GTS80BS2_SOUNDCPU2 ,{ \
-  CPU_M6502 | CPU_AUDIO_CPU, \
-  2000000, /* 2 MHz */ \
-  GTS80BS2_readmem2, GTS80BS2_writemem2, 0, 0, \
-  ignore_interrupt, 0 \
-}
-#define GTS80BS2_SOUND \
-{ SOUND_DAC,     &GTS80BS_dacInt }, \
-{ SOUND_AY8910,  &GTS80BS_ay8910Int }, \
-{ SOUND_SAMPLES, &samples_interface}
-
-/****************/
-/* GENERATION 3 */
-/****************/
-#define GTS80BS3_SOUNDCPU1 ,{ \
-  CPU_M6502 | CPU_AUDIO_CPU, \
-  2000000, /* 2 MHz */ \
-  GTS80BS3_readmem, GTS80BS3_writemem, 0, 0, \
-  ignore_interrupt, 0 \
-}
-#define GTS80BS3_SOUNDCPU2 ,{ \
-  CPU_M6502 | CPU_AUDIO_CPU, \
-  2000000, /* 2 MHz */ \
-  GTS80BS3_readmem2, GTS80BS3_writemem2, 0, 0, \
-  ignore_interrupt, 0 \
-}
-#define GTS80BS3_SOUND \
-{ SOUND_DAC,     &GTS80BS_dacInt }, \
-{ SOUND_YM2151,  &GTS80BS_ym2151Int }, \
-{ SOUND_SAMPLES, &samples_interface}
+extern MACHINE_DRIVER_EXTERN(gts80s_b1);
+extern MACHINE_DRIVER_EXTERN(gts80s_b2);
+extern MACHINE_DRIVER_EXTERN(gts80s_b3);
 
 /*-- GTS3 --*/
 
@@ -278,39 +172,6 @@ extern struct Samplesinterface	samples_interface;
   SOUNDREGION(0x80000, GTS3_MEMREG_SROM1) \
   SOUNDREGION(0x10000, GTS3_MEMREG_SCPU2) 
 
-/*-- Machine structure externals --*/
-extern const struct Memory_ReadAddress  GTS3_sreadmem[];
-extern const struct Memory_WriteAddress GTS3_swritemem[];
-extern const struct Memory_ReadAddress  GTS3_sreadmem2[];
-extern const struct Memory_WriteAddress GTS3_swritemem2[];
-
-//Y-CPU
-#define GTS3_SOUNDCPU1 ,{ \
-  CPU_M65C02 | CPU_AUDIO_CPU, \
-  2000000, /* 2 MHz */ \
-  GTS3_sreadmem, GTS3_swritemem, 0, 0, \
-  ignore_interrupt, 0 \
-}
-
-//D-CPU
-#define GTS3_SOUNDCPU2 ,{ \
-  CPU_M65C02 | CPU_AUDIO_CPU, \
-  2000000, /* 2 MHz */ \
-  GTS3_sreadmem2, GTS3_swritemem2, 0, 0, \
-  ignore_interrupt, 0 \
-}
-
-extern struct OKIM6295interface GTS3_okim6295_interface;
-
-#define GTS3_SOUND \
-{ SOUND_YM2151,  &GTS80BS_ym2151Int }, \
-{ SOUND_DAC,     &GTS80BS_dacInt }, \
-{ SOUND_SAMPLES, &samples_interface}
-
-#define GTS3_2_SOUND \
-{ SOUND_YM2151,  &GTS80BS_ym2151Int }, \
-{ SOUND_DAC,     &GTS80BS_dacInt }, \
-{ SOUND_OKIM6295,&GTS3_okim6295_interface },\
-{ SOUND_SAMPLES, &samples_interface}
+extern MACHINE_DRIVER_EXTERN(gts80s_s3);
 
 #endif /* GTSS80S_H */

@@ -205,7 +205,7 @@ static WRITE_HANDLER(gts80s_data_w)
 	/* the PiggyPack board is really firing an interrupt; sound board layout
 	   for theses game is different, because the IRQ line is connected */
 	if ( (GTS80S_locals.boardData.subType==1) && data && GTS80S_locals.IRQEnabled )
-		cpu_set_irq_line(GTS80S_locals.boardData.cpuNo, M6502_INT_IRQ, PULSE_LINE);
+		cpu_set_irq_line(GTS80S_locals.boardData.cpuNo, 0, PULSE_LINE);
 }
 
 /* only in at the moment for the pinmame startup information */
@@ -216,6 +216,15 @@ struct CustomSound_interface GTS80S_customsoundinterface = {
 const struct sndbrdIntf gts80sIntf = {
 	gts80s_init, gts80s_exit, NULL, gts80s_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
+
+MACHINE_DRIVER_START(gts80s_s)
+  MDRV_CPU_ADD_TAG("scpu", M6502, 1000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(GTS80S_readmem, GTS80S_writemem)
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD(CUSTOM, GTS80S_customsoundinterface)
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
+MACHINE_DRIVER_END
 
 
 /*----------------------------------------
@@ -240,14 +249,14 @@ static struct {
 
 static void GTS80SS_irq(int state) {
 //	logerror("IRQ: %i\n",state);
-	cpu_set_irq_line(GTS80SS_locals.boardData.cpuNo, M6502_INT_IRQ, state ? ASSERT_LINE : CLEAR_LINE);
+	cpu_set_irq_line(GTS80SS_locals.boardData.cpuNo, 0, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
 static void GTS80SS_nmi(int state)
 {
 	// logerror("NMI: %i\n",state);
 	if ( !state )
-		cpu_set_irq_line(GTS80SS_locals.boardData.cpuNo, M6502_INT_NMI, PULSE_LINE);
+		cpu_set_nmi_line(GTS80SS_locals.boardData.cpuNo, PULSE_LINE);
 }
 
 static WRITE_HANDLER(GTS80SS_riot3a_w) { logerror("riot3a_w: 0x%02x\n", data);}
@@ -422,12 +431,6 @@ void gts80ss_init(struct sndbrdData *brdData) {
 
 	GTS80SS_locals.stream = stream_init("SND DAC", 100, 11025, 0, GTS80_ss_Update); 
 	set_RC_filter(GTS80SS_locals.stream, 270000, 15000, 0, 10000);
-
-/*
-	votrax_set_busy_func(GTS80SS_nmi);
-	votrax_set_base_freqency(7000);
-	GTS80SS_nmi(0);
-*/
 }
 
 /*--------------
@@ -470,6 +473,16 @@ const struct sndbrdIntf gts80ssIntf = {
   gts80ss_init, gts80ss_exit, NULL, gts80ss_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
+MACHINE_DRIVER_START(gts80s_ss)
+  MDRV_CPU_ADD_TAG("scpu", M6502, 1000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(GTS80SS_readmem, GTS80SS_writemem)
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD(CUSTOM, GTS80SS_customsoundinterface)
+  MDRV_SOUND_ADD(VOTRAXSC01, GTS80SS_votrax_sc01_interface)
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
+MACHINE_DRIVER_END
+
 /*----------------------------------------
 / Gottlieb Sys 80B Sound Board
 /-----------------------------------------*/
@@ -501,12 +514,12 @@ WRITE_HANDLER(s80bs_ay8910_latch_w)
 //Setup NMI timer and triggering code: Timed NMI occurs for the Y-CPU. Y-CPU triggers D-CPU NMI
 void nmi_generate(int param)
 {
-	cpu_cause_interrupt(1,M6502_INT_NMI); 
+	cpu_set_nmi_line(1, PULSE_LINE);
 }
 
 static void nmi_callback(int param)
 {
-	cpu_cause_interrupt(cpu_gettotalcpu()-1, M6502_INT_NMI);
+	cpu_set_nmi_line(cpu_gettotalcpu()-1, PULSE_LINE);
 }
 
 WRITE_HANDLER(s80bs_nmi_rate_w)
@@ -516,12 +529,13 @@ WRITE_HANDLER(s80bs_nmi_rate_w)
 
 WRITE_HANDLER(s80bs_cause_dac_nmi_w)
 {
-	cpu_cause_interrupt(cpu_gettotalcpu()-2, M6502_INT_NMI);
+	cpu_set_nmi_line(cpu_gettotalcpu()-2, PULSE_LINE);
 }
 
 READ_HANDLER(s80bs_cause_dac_nmi_r)
 {
-	s80bs_cause_dac_nmi_w(offset, 0); return 0; 
+	s80bs_cause_dac_nmi_w(offset, 0); 
+	return 0; 
 }
 
 //Latch a command into the Sound Latch and generate the IRQ interrupts
@@ -531,8 +545,8 @@ WRITE_HANDLER(s80bs_sh_w)
 	if ((data&0x0f) != 0xf) /* interrupt trigered by four low bits (not all 1's) */
 	{
 		soundlatch_w(offset,data);
-		cpu_cause_interrupt(cpu_gettotalcpu()-1,M6502_INT_IRQ);
-		cpu_cause_interrupt(cpu_gettotalcpu()-2,M6502_INT_IRQ);
+		cpu_set_irq_line(cpu_gettotalcpu()-1, 0, PULSE_LINE);
+		cpu_set_irq_line(cpu_gettotalcpu()-2, 0, PULSE_LINE);
 	}
 }
 
@@ -560,7 +574,9 @@ static WRITE_HANDLER( common_sound_control_w )
 	{
 		/* base clock is 250kHz divided by 256 */
 		double interval = TIME_IN_HZ(250000.0/256/(256-GTS80BS_locals.nmi_rate));
-		GTS80BS_locals.nmi_timer = timer_pulse(interval, 0, nmi_callback);
+		GTS80BS_locals.nmi_timer = timer_alloc(nmi_callback);
+
+		timer_adjust(GTS80BS_locals.nmi_timer, interval, 0, interval);
 	}
 
 	/* Bit 1 controls a LED on the sound board */
@@ -868,7 +884,7 @@ static WRITE_HANDLER(sound_control_w)
 
 	//Proc the YM2151 & Other Stuff
 	s80bs3_sound_control_w(offset,data);
-	UpdateSoundLEDS(0,(data>>1)&1);
+	// UpdateSoundLEDS(0,(data>>1)&1);
 
 	//Is 6295 Enabled for Writing(Active Low)?
 	if (data & 0x40) GTS80BS_locals.enable_w = 0; else GTS80BS_locals.enable_w = 1;
@@ -880,7 +896,7 @@ static WRITE_HANDLER(sound_control_w)
 	//Handle U3 Latch - On Positive Edge
 	GTS80BS_locals.u3 = (data & 0x20);
 	if( GTS80BS_locals.u3 && !hold_u3 ) {
-		UpdateSoundLEDS(1,(GTS80BS_locals.adpcm>>5)&1);
+		// UpdateSoundLEDS(1,(GTS80BS_locals.adpcm>>5)&1);
 		OKIM6295_set_frequency(0,((GTS80BS_locals.adpcm>>4)&1)?8000:6400);
 		if (GTS80BS_locals.adpcm & 0x04) GTS80BS_locals.enable_cs = 0; else GTS80BS_locals.enable_cs = 1;
 		//Select either Arom1 or Arom2 when Rom Select Changes
@@ -952,4 +968,67 @@ const struct sndbrdIntf gts80bIntf = {
   gts80b_init, gts80b_exit, NULL, gts80b_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
+MACHINE_DRIVER_START(gts80s_b1)
+  MDRV_CPU_ADD_TAG("d-cpu", M6502, 2000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(GTS80BS1_readmem2, GTS80BS1_writemem2)
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD(DAC, GTS80BS_dacInt)
 
+  MDRV_CPU_ADD_TAG("y-cpu", M6502, 2000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(GTS80BS1_readmem, GTS80BS1_writemem)
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD(AY8910, GTS80BS_ay8910Int)
+
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(gts80s_b2)
+  MDRV_CPU_ADD_TAG("d-cpu", M6502, 2000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(GTS80BS2_readmem2, GTS80BS2_writemem2)
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD(DAC, GTS80BS_dacInt)
+
+  MDRV_CPU_ADD_TAG("y-cpu", M6502, 2000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(GTS80BS2_readmem, GTS80BS2_writemem)
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD(AY8910, GTS80BS_ay8910Int)
+
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(gts80s_b3)
+  MDRV_CPU_ADD_TAG("d-cpu", M6502, 2000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(GTS80BS3_readmem2, GTS80BS3_writemem2)
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD(DAC, GTS80BS_dacInt)
+
+  MDRV_CPU_ADD_TAG("y-cpu", M6502, 2000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(GTS80BS3_readmem, GTS80BS3_writemem)
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD(YM2151, GTS80BS_ym2151Int)
+
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(gts80s_s3)
+  MDRV_CPU_ADD_TAG("d-cpu", M65C02, 2000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(GTS3_sreadmem2, GTS3_swritemem2)
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD(DAC, GTS80BS_dacInt)
+
+  MDRV_CPU_ADD_TAG("y-cpu", M65C02, 2000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(GTS3_sreadmem, GTS3_swritemem)
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD(YM2151,  GTS80BS_ym2151Int)
+  MDRV_SOUND_ADD(OKIM6295,GTS3_okim6295_interface)
+
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
+MACHINE_DRIVER_END
