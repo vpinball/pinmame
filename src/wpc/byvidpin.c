@@ -429,7 +429,7 @@ static MEMORY_WRITE_START(byVPGG_video_writemem)
 MEMORY_END
 
 const struct core_dispLayout byVP_dispBabyPac[] = {
-  {0,0,256,192,CORE_VIDEO,(void *)byVP_update}, {0}
+  {0,0,192,256,CORE_VIDEO,(void *)byVP_update}, {0}
 };
 const struct core_dispLayout byVP_dispGranny[] = {
   {0,0,192,256,CORE_VIDEO,(void *)byVP_update}, {0}
@@ -457,13 +457,8 @@ MACHINE_DRIVER_START(byVP1)
   MDRV_NVRAM_HANDLER(byVP)
 
   /* video hardware */
-#ifdef MAME_DEBUG
-  MDRV_SCREEN_SIZE(320,512) // To view matrices and solno
-  MDRV_VISIBLE_AREA(0, 319, 0, 511)
-#else // MAME_DEBUG
-  MDRV_SCREEN_SIZE(256, 192)
-  MDRV_VISIBLE_AREA(0, 255, 0, 191)
-#endif // MAME_DEBUG
+  MDRV_SCREEN_SIZE(256,256) // To view matrices and solno
+  MDRV_VISIBLE_AREA(0, 255, 0, 255)
   MDRV_GFXDECODE(0)
   MDRV_PALETTE_LENGTH(TMS9928A_PALETTE_SIZE)
   MDRV_COLORTABLE_LENGTH(TMS9928A_COLORTABLE_SIZE)
@@ -483,7 +478,7 @@ MACHINE_DRIVER_START(byVP2)
   MDRV_IMPORT_FROM(byVP1)
   MDRV_CPU_REPLACE("vcpu", M6809, 8000000/4)
   MDRV_CPU_MEMORY(byVPGG_video_readmem, byVPGG_video_writemem)
-  MDRV_SCREEN_SIZE(256, 320) // 256x192 + matrices
-  MDRV_VISIBLE_AREA(0, 255, 0, 319)
+  MDRV_SCREEN_SIZE(256,256) // 256x192 + matrices
+  MDRV_VISIBLE_AREA(0, 255, 0, 255)
 MACHINE_DRIVER_END
 
