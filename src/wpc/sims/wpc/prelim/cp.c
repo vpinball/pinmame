@@ -335,14 +335,14 @@ static WRITE_HANDLER(cp_wpc_w) {
   if (offset == WPC_SOLENOID1) {
     HC4094_data_w (0, GET_BIT6);
     HC4094_data_w (1, GET_BIT7);
-    HC4094_strobe_w(0, GET_BIT4);
-    HC4094_strobe_w(1, GET_BIT4);
+    HC4094_strobe_w(0, GET_BIT5);
+    HC4094_strobe_w(1, GET_BIT5);
     HC4094_strobe_w(2, GET_BIT5);
     HC4094_strobe_w(3, GET_BIT5);
     HC4094_clock_w(0, GET_BIT4);
     HC4094_clock_w(1, GET_BIT4);
-    HC4094_clock_w(2, GET_BIT5);
-    HC4094_clock_w(3, GET_BIT5);
+    HC4094_clock_w(2, GET_BIT4);
+    HC4094_clock_w(3, GET_BIT4);
   }
 }
 
