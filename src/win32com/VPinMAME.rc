@@ -66,7 +66,6 @@ IDB_SPLASH4             BITMAP                  "Res\\VPinMAMESplash4.bmp"
 IDR_CONTROLLER          REGISTRY                "Controller.rgs"
 IDR_WSHDLG              REGISTRY                "WSHDlg.rgs"
 
-#ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
@@ -103,8 +102,6 @@ BEGIN
         VALUE "Translation", 0x409, 1200
     END
 END
-
-#endif    // !_MAC
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -205,8 +202,9 @@ BEGIN
                     IDC_STATIC,152,51,154,24
 END
 
-IDD_DISCLAIMERDLG DIALOG DISCARDABLE  0, 0, 218, 158
-STYLE DS_MODALFRAME | DS_SETFOREGROUND | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_DISCLAIMERDLG DIALOG  0, 0, 218, 158
+STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
 CAPTION "Please answer and press OK..."
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -223,12 +221,12 @@ BEGIN
     CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME,24,36,168,24
 END
 
-IDD_GAMEINFODLG DIALOG  0, 0, 393, 245
+IDD_GAMEINFODLG DIALOGEX 0, 0, 393, 255
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Game Info"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,172,224,50,14
+    DEFPUSHBUTTON   "OK",IDOK,172,234,50,14
     LTEXT           "Game Name",IDC_STATIC,7,7,379,8
     LTEXT           "Static",IDC_GAMENAME,7,16,379,10,SS_SUNKEN
     LTEXT           "ROM set name",IDC_STATIC,7,31,48,8
@@ -247,8 +245,8 @@ BEGIN
     LTEXT           "Actual",IDC_STATIC,269,105,21,8
     LTEXT           "State",IDC_STATIC,328,105,18,8
     LTEXT           "State:",IDC_STATIC,7,195,379,8
-    LTEXT           "Static",IDC_STATE,7,204,379,10,SS_SUNKEN
-    PUSHBUTTON      "Don't care results, continue anyway",IDC_DONTCARE,7,224,
+    LTEXT           "Static",IDC_STATE,7,204,379,20,SS_SUNKEN
+    PUSHBUTTON      "Don't care results, continue anyway",IDC_DONTCARE,7,234,
                     155,14
 END
 
@@ -319,7 +317,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 386
         TOPMARGIN, 7
-        BOTTOMMARGIN, 238
+        BOTTOMMARGIN, 248
     END
 
     IDD_CONTROLLERSETTINGSDLG, DIALOG
