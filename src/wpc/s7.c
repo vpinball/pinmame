@@ -177,8 +177,15 @@ static WRITE_HANDLER(pia1b_w) {
 static WRITE_HANDLER(pia1a_w) {
   coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffffff00) | data;
   s7locals.solenoids |= data;
-  // the following line draws the extra lamp columns on Hyperball!
-  core_setLamp(coreGlobals.tmpLampMatrix, (core_revnyb(~data & 0x0f))<< 8, s7locals.lampRow);
+  // the following lines draw the extra lamp columns on Hyperball!
+  if (s7locals.lampColumn & 0x01) core_setLamp(coreGlobals.tmpLampMatrix, 0x100, ~data & 0x0f);
+  if (s7locals.lampColumn & 0x02) core_setLamp(coreGlobals.tmpLampMatrix, 0x100, ~data << 4);
+  if (s7locals.lampColumn & 0x04) core_setLamp(coreGlobals.tmpLampMatrix, 0x200, ~data & 0x0f);
+  if (s7locals.lampColumn & 0x08) core_setLamp(coreGlobals.tmpLampMatrix, 0x200, ~data << 4);
+  if (s7locals.lampColumn & 0x10) core_setLamp(coreGlobals.tmpLampMatrix, 0x400, ~data & 0x0f);
+  if (s7locals.lampColumn & 0x20) core_setLamp(coreGlobals.tmpLampMatrix, 0x400, ~data << 4);
+  if (s7locals.lampColumn & 0x40) core_setLamp(coreGlobals.tmpLampMatrix, 0x800, ~data & 0x0f);
+  if (s7locals.lampColumn & 0x80) core_setLamp(coreGlobals.tmpLampMatrix, 0x800, ~data << 4);
 }
 static WRITE_HANDLER(pia1cb2_w) { s7locals.ssEn = data;}
 static WRITE_HANDLER(pia0ca2_w) { setSSSol(data, 7); }
