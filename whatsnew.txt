@@ -9,6 +9,11 @@ Bugs Fixed
 - Some small fixes in Bally cheap-squeek sound (Black pyramid is still strange)
   [Martin Adrian]
 
+- Hack implemented which fixes Data East Robocop Music (should be 100% as far as I can tell)
+- Greatly improved lamps in Baby Pacman, although there are still some issues.
+- Improved music in GTS3 games, but still a long, long way to go.
+  [Steve Ellenoff]
+
 New Features
 ------------
 - Added GameOn solenoid for WPC games (Sol 31)
@@ -19,6 +24,9 @@ New Features
   GameOn is adjusted to mean "game in progress and not tilted"
 - Solenoid display now shows 4 last activated solenoids
   [Martin Adrian]
+
+- Added rom support for The Getaway: High Speed II (L-2)
+  [Steve Ellenoff]
 
 Version 1.20 Beta (September 29, 2002)
 --------------------------------------
