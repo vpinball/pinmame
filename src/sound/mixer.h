@@ -1,7 +1,12 @@
 #ifndef MIXER_H
 #define MIXER_H
 
+#ifdef PINMAME
+/* PinMAME needs 17 channels for some games with SC-01 support. */
+#define MIXER_MAX_CHANNELS 20
+#else
 #define MIXER_MAX_CHANNELS 16
+#endif
 
 /*
   When you allocate a channel, you pass a default mixing level setting.
