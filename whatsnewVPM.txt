@@ -3,11 +3,13 @@ What's new in Visual PinMAME:
 
 Version 1.12 (March 29, 2002)
 ----------------------------
+- Updated Visual PinMAME to 1.12 release of PinMAME Source Code.
 - Added IObjectSafety interface (VPinMAME now states that it's "safe for scripting")
 - Added a class to created customizable dialogs from the script
 
 Version 1.11 (February 3, 2002)
 -------------------------------
+- Updated Visual PinMAME to 1.11 release of PinMAME Source Code.
 - Removed the need for the zlib.dll
 - Added Controller.Games property which enables you to get much more information about the supported games
   and also enables you to make a more detailed rom check
