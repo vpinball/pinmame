@@ -281,45 +281,8 @@ WRITE_HANDLER(ext_board_3_w) {
 	logerror("ext_board_3_w: 0x%02x\n", data);
 }
 
-static const char *PhonemeTable[65] =
-{
- "EH3","EH2","EH1","PA0","DT" ,"A1" ,"A2" ,"ZH",
- "AH2","I3" ,"I2" ,"I1" ,"M"  ,"N"  ,"B"  ,"V",
- "CH" ,"SH" ,"Z"  ,"AW1","NG" ,"AH1","OO1","OO",
- "L"  ,"K"  ,"J"  ,"H"  ,"G"  ,"F"  ,"D"  ,"S",
- "A"  ,"AY" ,"Y1" ,"UH3","AH" ,"P"  ,"O"  ,"I",
- "U"  ,"Y"  ,"T"  ,"R"  ,"E"  ,"W"  ,"AE" ,"AE1",
- "AW2","UH2","UH1","UH" ,"O2" ,"O1" ,"IU" ,"U1",
- "THV","TH" ,"ER" ,"EH" ,"E1" ,"AW" ,"PA1","STOP",
- 0
-};
-
 /* voice synt latch */
 WRITE_HANDLER(vs_latch_w) {
-/*
-	static int queue[100],pos;
-
-    data = (data^0xff) & 0x3f;
-	if ( pos<100 )
-		queue[pos++] = data;
-
-	if ( data==0x3f ) {
-		if ( pos>1 ) {
-			int i;
-			char buf[200];
-
-			buf[0] = 0;
-			for (i = 0;i < pos-1;i++) {
-				if (queue[i] == 0x03 || queue[i] == 0x3e)
-					strcat(buf," ");
-				else
-					strcat(buf,PhonemeTable[queue[i]]);
-			}
-			usrintf_showmessage(buf);
-		}
-		pos = 0;
-	}
-*/
 	votrax_w(data^0xff);
 }
 
