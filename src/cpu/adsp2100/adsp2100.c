@@ -21,7 +21,7 @@
 **	CONSTANTS
 **#################################################################################################*/
 
-#define TRACK_HOTSPOTS		1
+#define TRACK_HOTSPOTS		0
 
 /* stack depths */
 #define	PC_STACK_DEPTH		16
