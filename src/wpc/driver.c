@@ -774,11 +774,15 @@ DRIVER(whirl,l3)        //S11-574:  01/90 W Whirlwind
 DRIVER(gs,l3)           //S11-985:  04/90 B Game Show
 DRIVER(rollr,l2)        //S11-576:  06/90 W Rollergames
 DRIVER(pool,l7)         //S11-1848: 06/90 B Pool Sharks (Shark?)
-DRIVER(diner,l4)        //S11-571:  09/90 W Diner
+DRIVER(diner,l4)        //S11-571:  09/90 W Diner (L-4)
+DRIVER(diner,l3)        //S11-571:  09/90 W Diner (L-3)
+DRIVER(diner,l1)        //S11-571:  09/90 W Diner (L-1)
 DRIVER(radcl,l1)        //S11-1904: 09/90 B Radical!
-DRIVER(dd,l2)           //S11-737:  11/90 B Dr. Dude
+DRIVER(dd,l2)           //S11-737:  11/90 B Dr. Dude (L-2)
+DRIVER(dd,p6)           //S11-737:  11/90 B Dr. Dude (P-6)
 //WPC
-DRIVER(dd,p7)           //WPC:      11/90 B Dr. Dude
+DRIVER(dd,p7)           //WPC:      11/90 B Dr. Dude (P-7 WPC)
+DRIVER(dd,p06)          //WPC:      11/90 B Dr. Dude (P-6 WPC)
 DRIVER(fh,l9)           //WPC-503:  12/90 W Funhouse
 DRIVER(fh,l9b)                            // bootleg with correct German translation
 DRIVER(bbnny,l2)        //S11-396:  01/91 B Bugs Bunny's Birthday Ball (L-2)
@@ -822,6 +826,7 @@ DRIVER(cftbl,l4)        //WPC:      12/92 B Creature from the Black Lagoon (L-4)
 DRIVER(cftbl,l4s)       //WPC:      12/92 B Creature from the Black Lagoon (L-4s)
 DRIVER(ww,l5)           //WPC-518:  01/93 W White Water
 DRIVER(drac,l1)         //WPC-501:  04/93 W Bram Stoker's Dracula
+DRIVER(drac,p11)        //WPC-501:  04/93 W Bram Stoker's Dracula (P-11)
 DRIVER(tz,l2)           //WPC-520:  05/93 B Twilight Zone (L-2)
 DRIVER(tz,l4)           //WPC-520:  06/93 B Twilight Zone (L-4)
 DRIVER(tz,92)           //WPC-520:  01/95 B Twilight Zone (9.2)
@@ -835,8 +840,9 @@ DRIVER(jd,l6)           //WPC-220:  10/93 B Judge Dredd (L-6)
 DRIVER(jd,l7)           //WPC-220:  12/93 B Judge Dredd (L-7)
 DRIVER(sttng,p5)        //WPC-523:  11/93 W Star Trek: The Next Generation (P-5)
 DRIVER(sttng,l7)        //WPC-523:  02/94 W Star Trek: The Next Generation (LX-7)
-DRIVER(dm,lx4)          //WPC-528:  02/94 W Demolition Man
-DRIVER(dm,px5)
+DRIVER(dm,lx4)          //WPC-528:  02/94 W Demolition Man (LX-4)
+DRIVER(dm,pa2)          //WPC-528:  02/94 W Demolition Man (PA-2)
+DRIVER(dm,px5)          //WPC-528:  02/94 W Demolition Man (PX-5)
 DRIVER(pop,lx5)         //WPC:      02/94 B Popeye Saves the Earth
 DRIVER(wcs,l2)          //WPC-531:  02/94 B World Cup Soccer (Lx-2)
 DRIVER(wcs,p3)                            // (Px-3)
