@@ -1400,8 +1400,10 @@ static void HandleMemBlock( data32_t insn)
 	data32_t rbp = GET_REGISTER(rb);
 	int result;
 
+#if ARM7_DEBUG_CORE
 	if(rbp & 3)
 		LOG(("%08x: Unaligned Mem Transfer @ %08x\n",R15,rbp));
+#endif
 
 	//We will specify the cycle count for each case, so remove the -3 that occurs at the end
 	ARM7_ICOUNT +=3;

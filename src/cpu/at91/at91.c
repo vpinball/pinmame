@@ -88,9 +88,18 @@ static READ32_HANDLER((*cs_r_callback));		//holder for the cs_r callback
 static WRITE32_HANDLER((*cs_w_callback));		//holder for the cs_w callback
 static offs_t cs_r_start, cs_r_end, cs_w_start, cs_w_end;
 static WRITE32_HANDLER((*at91_ready_irq_cb));
+static data32_t int_vector = 0;					//holds the interrupt vector address programmed into AIC register
 
 /* include the arm7 core */
 #include "../arm7/arm7core.c"
+
+#undef LOG
+
+#if 0
+#define LOG(x) printf x
+#else
+#define LOG(x) logerror x
+#endif
 
 /* external interfaces */
 void at91_set_ram_pointers(data32_t *reset_ram_ptrx, data32_t *page0_ram_ptrx)
@@ -181,6 +190,7 @@ INLINE void internal_write (int addr, data32_t data)
 						//Copy Reset RAM Contents into Page 0 RAM Address
 						memcpy(page0_ram_ptr, reset_ram_ptr, 0x100000);
 						remap = 1;
+						LOG(("AT91-EBI_RCR = 1 (RAM @ 0x300000 remapped to 0x0)!\n"));
 					}
 				else
 					LOG(("AT91-EBI_RCR = 0 (no effect)!\n"));
@@ -241,6 +251,9 @@ INLINE void internal_write (int addr, data32_t data)
 			case 0xffff0000:
 				LOG(("AT91-PER (PIO ENABLE REGISTER) WRITE: %08x = %08x\n",addr,data));
 				break;
+			case 0xffff0004:
+				LOG(("AT91-PDR (PIO OUTPUT DISABLE REGISTER) WRITE: %08x = %08x\n",addr,data));
+				break;
 			case 0xffff0010:
 				LOG(("AT91-OER (PIO OUTPUT ENABLE REGISTER) WRITE: %08x = %08x\n",addr,data));
 				break;
@@ -267,8 +280,14 @@ INLINE void internal_write (int addr, data32_t data)
 	//AIC - Advanced Interrupt Controller
 	if (addr >= 0xfffff000 && addr <=0xffffffff)
 	{
-		if(addr != 0xfffff100 && addr != 0xfffff130)
-		LOG(("AT91-AIC WRITE: %08x = %08x\n",addr,data));
+		if(addr == 0xfffff090)
+		{
+			int_vector = data;
+			LOG(("AT91-AIC INTERRUPT VECTOR ADDRESS: %08x = %08x\n",addr,data));
+		}
+		else
+			if(addr != 0xfffff100 && addr != 0xfffff130)
+				LOG(("AT91-AIC WRITE: %08x = %08x\n",addr,data));
 	}
 	else
 		LOG(("AT91-OCP WRITE: %08x = %08x\n",addr,data));
@@ -307,9 +326,7 @@ INLINE data32_t internal_read (int addr)
 	{
 		//AIC Interrupt Vector Register - Based on current IRQ source 0-31, returns value of Source Vector 
 		if(addr == 0xfffff100){
-			//harded coded for timer 1 - totally cheating here
-			data = 0x3af8;
-			//LOG(("AT91-AIC_IVR READ: %08x = %08x\n",addr,data));
+			data = int_vector;
 		}
 		else
 			LOG(("AT91-AIC READ: %08x = %08x\n",addr,data));

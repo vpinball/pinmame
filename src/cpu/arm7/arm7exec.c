@@ -110,38 +110,13 @@
 		/*******************************************************************/		
 		switch( (insn & 0xF000000)>>24 )
 		{
+			/* Bits 27-24 = 0000 -> Can be Data Proc, Multiply, Multiply Long, Halfword Data Transfer */
 			case 0:
-			case 1:
-			case 2:
-			case 3:
-				/* Branch and Exchange (BX) */
-				if( (insn&0x0ffffff0)==0x012fff10 )		//bits 27-4 == 000100101111111111110001
-				{ 
-					R15 = GET_REGISTER(insn & 0x0f);
-					//If new PC address has A0 set, switch to Thumb mode
-					if(R15 & 1) {
-						SET_CPSR(GET_CPSR|T_BIT);
-						LOG(("%08x: Setting Thumb Mode due to R15 change to %08x - but not supported\n",pc,R15));
-					}
-				}
-				else
-				/* Multiply OR Swap OR Half Word Data Transfer */
-				if( (insn & 0x0e000000)==0 && (insn & 0x80) && (insn & 0x10) )	//bits 27-25 == 000, bit 7=1, bit 4=1
+				/* Bits 7-4 */
+				switch(insn & 0xf0)
 				{
-					/* Half Word Data Transfer */
-					if(insn & 0x60)			//bits = 6-5 != 00
-					{
-						HandleHalfWordDT(insn);
-					}
-					else 
-					/* Swap */
-					if(insn & 0x01000000)	//bit 24 = 1
-					{
-						HandleSwap(insn);
-					}
-					/* Multiply Or Multiply Long */
-					else
-					{
+					// Multiply, Multiply Long
+					case 0x90:		//1001
 						/* multiply long */
 						if( insn&0x800000 )	//Bit 23 = 1 for Multiply Long
 						{
@@ -157,11 +132,49 @@
 							HandleMul(insn);
 						}
 						R15 += 4;
+						break;
+
+					// Halfword Data Transfer
+					case 0xb0:		//1011
+					case 0xd0:		//1101
+						HandleHalfWordDT(insn);
+						break;
+					// Data Proc (Cannot be PSR Transfer since bit 24 = 0)
+					default:
+						HandleALU(insn);
+				}
+				break;
+
+			/* Bits 27-24 = 0001 -> Can be BX, SWP, Halfword Data Transfer, Data Proc/PSR Transfer */
+			case 1:
+
+				/* Branch and Exchange (BX) */
+				if( (insn&0x0ffffff0)==0x012fff10 )		//bits 27-4 == 000100101111111111110001
+				{ 
+					R15 = GET_REGISTER(insn & 0x0f);
+					//If new PC address has A0 set, switch to Thumb mode
+					if(R15 & 1) {
+						SET_CPSR(GET_CPSR|T_BIT);
+						LOG(("%08x: Setting Thumb Mode due to R15 change to %08x - but not supported\n",pc,R15));
+					}
+				}
+				else
+				/* Swap OR Half Word Data Transfer OR Data Proc/PSR Transfer */
+				if( (insn & 0x80) && (insn & 0x10) )	// bit 7=1, bit 4=1
+				{
+					/* Half Word Data Transfer */
+					if(insn & 0x60)			//bits = 6-5 != 00
+					{
+						HandleHalfWordDT(insn);
+					}
+					else 
+					/* Swap */
+					{
+						HandleSwap(insn);
 					}
 				}
 				else
 				/* Data Processing OR PSR Transfer */
-				if( (insn & 0x0c000000) ==0 )	//bits 27-26 == 00 - This check can only exist properly after Multiplication check above
 				{
 					/* PSR Transfer (MRS & MSR) */
 					if( ((insn&0x0100000)==0) && ((insn&0x01800000)==0x01000000) ) //( S bit must be clear, and bit 24,23 = 10 )
@@ -177,6 +190,24 @@
 					}
 				}
 				break;
+
+			/* Bits 27-24 = 0011 OR 0010 -> Can only be Data Proc/PSR Transfer */
+			case 2:
+			case 3:
+				/* PSR Transfer (MRS & MSR) */
+				if( ((insn&0x0100000)==0) && ((insn&0x01800000)==0x01000000) ) //( S bit must be clear, and bit 24,23 = 10 )
+				{
+					HandlePSRTransfer(insn);
+					ARM7_ICOUNT += 2;		//PSR only takes 1 - S Cycle, so we add + 2, since at end, we -3..
+					R15 += 4;
+				}
+				/* Data Processing */
+				else
+				{
+					HandleALU(insn);
+				}
+				break;
+
 			/* Data Transfer - Single Data Access */
 			case 4:
 			case 5:
