@@ -11,6 +11,15 @@
 static UINT16 *dmd64RAM;
 static UINT8  *dmd32RAM;
 static UINT8  *dmd16RAM;
+static UINT32 dmd16frame[4][32][2];
+/*--------- Common DMD stuff ----------*/
+static struct {
+  struct sndbrdData brdData;
+  int cmd, ncmd, busy, status, ctrl, bank;
+  // dmd16 stuff
+  UINT32 hv5408, hv5408s, hv5308, hv5308s, hv5222;
+  int blnk, rowdata, rowclk, frame;
+} dmdlocals;
 /*-----------------------------*/
 /*Data East 192x64 DMD Handling*/
 /*-----------------------------*/
@@ -53,7 +62,6 @@ void de_dmd192x64_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
   drawStatus(bitmap,fullRefresh);
 }
 
-
 /*------------------------------------------*/
 /*Data East, Sega, Stern 128x32 DMD Handling*/
 /*------------------------------------------*/
@@ -90,40 +98,6 @@ void de_dmd128x32_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
   dmd_draw(bitmap, dotCol, de_128x32DMD);
   drawStatus(bitmap,fullRefresh);
 }
-#if 0
-/*------------------------------*/
-/*Data East 128x16 DMD Handling*/
-/*------------------------------*/
-extern int de_dmd128x16[16][128];
-
-void de_dmd128x16_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
-  int cols=128;
-  int rows=16;
-  BMTYPE **lines = (BMTYPE **)bitmap->line;
-  //UINT8 dotCol[34][129];
-  int ii,jj;//,kk;
-
-  /* Drawing is not optimised so just clear everything */
-  if (fullRefresh) fillbitmap(bitmap,Machine->pens[0],NULL);
-
-  for (ii = 0; ii < rows; ii++) {
-	  BMTYPE *line = *lines++;
-	  for (jj = 0; jj < cols; jj++) {
-		  if(de_dmd128x16[ii][jj])
-			  *line++ = (de_dmd128x16[ii][jj]>1) ? CORE_COLOR(DMD_DOTON) : CORE_COLOR(DMD_DOT66);
-		  else
-			*line++ = CORE_COLOR(DMD_DOTOFF);
-
-		line++;
-	  }
-	  lines++;
-  }
-
-  osd_mark_dirty(0,0,cols*coreGlobals_dmd.DMDsize,rows*coreGlobals_dmd.DMDsize);
-
-  drawStatus(bitmap,fullRefresh);
-}
-#endif
 /*DIFFERENT ATTEMPT AT DE 128x16 HANDLING*/
 /*------------------------------*/
 /*Data East 128x16 DMD Handling*/
@@ -132,44 +106,28 @@ static core_tLCDLayout de_128x16DMD[] = {
   {0,0,16,128,CORE_DMD}, {0}
 };
 void de2_dmd128x16_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
-  UINT8 *RAM  = (UINT8 *)dmd16RAM;
-  UINT8 *RAM2 = RAM;
   tDMDDot dotCol;
-  int ii,jj,kk;
-
+  int ii,jj,kk,ll;
+  DBGLOG(("refresh\n"));
   if (fullRefresh) fillbitmap(bitmap,Machine->pens[0],NULL);
-
-  /* See if ANY data has been written to DMD region #2 0x8100-0x8200*/
-  for (ii = 0; ii < 16*128/8; ii++)
-    if (RAM[ii+0x0100]) { RAM2 = RAM + 0x0100; break; }
-
-  for (kk = 0, ii = 1; ii <= 16; ii++) {
-    UINT8 *line = &dotCol[ii][0];
-    for (jj = 0; jj < (128/8); jj++) {
-      UINT8 intens1 = 2*(RAM[kk] & 0x55) + (RAM2[kk] & 0x55);
-      UINT8 intens2 =   (RAM[kk] & 0xaa) + (RAM2[kk] & 0xaa)/2;
-      *line++ = (intens2>>6) & 0x03;
-      *line++ = (intens1>>6) & 0x03;
-      *line++ = (intens2>>4) & 0x03;
-      *line++ = (intens1>>4) & 0x03;
-      *line++ = (intens2>>2) & 0x03;
-      *line++ = (intens1>>2) & 0x03;
-      *line++ = (intens2)    & 0x03;
-      *line++ = (intens1)    & 0x03;
-      kk += 1;
+  memset(dotCol,0,sizeof(dotCol));
+  for (ll = 2; ll < 4; ll++) {
+    for (ii = 0; ii < 16; ii++) {
+      UINT8 *line = &dotCol[ii+1][0];
+      for (jj = 0; jj < 2; jj++) {
+        UINT32 tmp1 = dmd16frame[(dmdlocals.frame+ll)&3][ii*2+jj][0];
+        UINT32 tmp2 = dmd16frame[(dmdlocals.frame+ll)&3][ii*2+jj][1];
+        for (kk = 0; kk < 32; kk++) {
+          *line++ = (tmp2 & 0x80000000) ? 3 : 0; tmp2 <<= 1;
+          *line++ = (tmp1 & 0x80000000) ? 3 : 0; tmp1 <<= 1;
+        }
+      }
     }
-    *line = 0;
   }
   dmd_draw(bitmap, dotCol, de_128x16DMD);
   drawStatus(bitmap,fullRefresh);
-}
-
-/*--------- Common DMD stuff ----------*/
-static struct {
-  struct sndbrdData brdData;
-  int cmd, ncmd, busy, status, ctrl, bank;
-} dmdlocals;
-
+}      
+      
 static WRITE_HANDLER(dmd_data_w)  { dmdlocals.ncmd = data; DBGLOG(("dmdcmd=%x\n",data));}
 static READ_HANDLER(dmd_status_r) { return dmdlocals.status; }
 static READ_HANDLER(dmd_busy_r)   { return dmdlocals.busy; }
@@ -322,7 +280,7 @@ static READ16_HANDLER(crtc6845_msb_register_r)  { return crtc6845_register_r(off
 
 /*------- DMD 128x16 -----------*/
 #define DMD16_BANK0 2
-#define DMD16_FIRQFREQ 2000
+#define DMD16_FIRQFREQ 1000
 #define BUSY_CLR    0x01
 #define BUSY_SET    0x02
 #define BUSY_CLK    0x04
@@ -368,23 +326,23 @@ static void dmd16_init(struct sndbrdData *brdData) {
   memcpy(memory_region(DE_DMD16CPUREGION),
          memory_region(DE_DMD16ROMREGION) + memory_region_length(DE_DMD16ROMREGION)-0x4000,0x4000);
   dmd16_setbank(0x07, 0x07);
-  dmd16_setbusy(BUSY_SET|BUSY_CLR,BUSY_SET|BUSY_CLR);
+  dmd16_setbusy(BUSY_SET|BUSY_CLR,0);
   timer_pulse(TIME_IN_HZ(DMD16_FIRQFREQ), 0, de_dmd16nmi);
 }
 /*--- Port decoding ----
   76543210
-  10 001   Bank0
-  10 011   Bank1
-  10 101   Bank2
-  11 001   Status
-  11 111   Test
-  1    0   IDAT
+  10-001-- Bank0
+  10-011-- Bank1
+  10-101-- Bank2
+  11-001-- Status
+  11-111-- Test
+  1----0-- IDAT
   ------
-  10 111   Blanking
-  11 011   Row Data
-  11 101   Row Clock
-  0    1   CLATCH
-  0    0   COCLK
+  10-111-- Blanking
+  11-011-- Row Data
+  11-101-- Row Clock
+  0----1-- CLATCH
+  0----0-- COCLK
 
 --------------------*/
 static READ_HANDLER(dmd16_port_r) {
@@ -392,18 +350,58 @@ static READ_HANDLER(dmd16_port_r) {
     dmd16_setbusy(BUSY_CLR, 0); dmd16_setbusy(BUSY_CLR,1);
     return dmdlocals.cmd;
   }
+  dmd16_port_w(offset,0xff);
   return 0xff;
 }
+
 static WRITE_HANDLER(dmd16_port_w) {
-  data &= 0x01;
-  switch (offset & 0xbc) {
-    case 0x84: dmd16_setbank(0x01, !data);    break;
-    case 0x8c: dmd16_setbank(0x02, !data);    break;
-    case 0x94: dmd16_setbank(0x04, !data);    break;
-    case 0xa4: sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, dmdlocals.status = data); break;
-    case 0xbc: dmd16_setbusy(BUSY_SET, data); break;
-  }
+  switch (offset & 0x84) {
+    case 0x00: // COCLK
+      dmdlocals.hv5408s = (dmdlocals.hv5408s<<1) | ((data>>((offset & 0x03)*2))   & 0x01);
+      dmdlocals.hv5308s = (dmdlocals.hv5308s<<1) | ((data>>((offset & 0x03)*2+1)) & 0x01);
+      break;
+    case 0x04: // CLATCH
+      dmdlocals.hv5408 = dmdlocals.hv5408s; dmdlocals.hv5308 = dmdlocals.hv5308s; break;
+    case 0x80: break; // IDAT (ignored on write)
+    case 0x84:
+      data &= 0x01;
+      switch (offset & 0xdc) {
+        case 0x84: // Bank0
+          dmd16_setbank(0x01, !data); break;
+        case 0x8c: // Bank1
+          dmd16_setbank(0x02, !data); break;
+        case 0x94: // Bank2
+          dmd16_setbank(0x04, !data); break;
+        case 0xc4: // status
+          sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, dmdlocals.status = data); break;
+        case 0xdc: // Test
+          dmd16_setbusy(BUSY_SET, data); break; // Test
+        case 0x9c: // blanking
+          if (~data & dmdlocals.blnk) {
+            UINT32 row = dmdlocals.hv5222;
+            int ii;
+            for (ii = 0; row && (ii < 32); ii++, row >>= 1)
+              if (row & 0x01) { // Row is active copy column data
+                dmd16frame[dmdlocals.frame][ii][0] = dmdlocals.hv5408; // even dots
+                dmd16frame[dmdlocals.frame][ii][1] = dmdlocals.hv5308; // odd dots
+              }
+            DBGLOG(("Blanking row=%2d frame=%d data=(%08x,%08x)\n",ii,dmdlocals.frame,dmdlocals.hv5408,dmdlocals.hv5308));
+            if (ii == 32) dmdlocals.frame = (dmdlocals.frame + 1) & 3;
+          }
+          dmdlocals.blnk = data;
+          break;
+        case 0xcc: // row data
+          dmdlocals.rowdata = data; break; // row data
+        case 0xd4: // row clock
+          if (~data & dmdlocals.rowclk) // negative edge;
+            dmdlocals.hv5222 = (dmdlocals.hv5222<<1) | (dmdlocals.rowdata);
+            dmdlocals.rowclk = data;
+          break;
+      } // Switch
+      break;
+  } // switch
 }
+
 static WRITE_HANDLER(dmd16_ctrl_w) {
   if ((data | dmdlocals.ctrl) & 0x01) {
     dmdlocals.cmd = dmdlocals.ncmd;
@@ -412,7 +410,7 @@ static WRITE_HANDLER(dmd16_ctrl_w) {
   if (~data & dmdlocals.ctrl & 0x02) {
     sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, dmdlocals.status = 0);
     dmd16_setbank(0x07, 0x07);
-    dmd16_setbusy(BUSY_SET, 0); dmd16_setbusy(BUSY_SET, 1);
+    dmd16_setbusy(BUSY_CLR|BUSY_SET, 0); 
     cpu_set_reset_line(dmdlocals.brdData.cpuNo, PULSE_LINE);
   }
   dmdlocals.ctrl = data;
@@ -421,12 +419,27 @@ static WRITE_HANDLER(dmd16_ctrl_w) {
 static void dmd16_setbusy(int bit, int value) {
   static int laststat = 0;
   int newstat = (laststat & ~bit) | (value ? bit : 0);
-  switch (newstat & 0x03) {
-    case 0x00:
-    case 0x02: dmdlocals.busy = 0; break;
-    case 0x03: if (!(newstat & ~laststat & BUSY_CLK)) break;
-    case 0x01: dmdlocals.busy = 1; break;
+#if 1
+  /* In the data-sheet for the HC74 flip-flop is says that SET & CLR are _not_
+     edge triggered. For some strange reason doesn't the DMD work unless we
+     treat the HC74 as edge-triggered.
+  */
+  if      (~newstat & laststat & BUSY_CLR) dmdlocals.busy = 0;
+  else if (~newstat & laststat & BUSY_SET) dmdlocals.busy = 1;
+  else if ((newstat & (BUSY_CLR|BUSY_SET)) == (BUSY_CLR|BUSY_SET)) {
+    if (newstat & ~laststat & BUSY_CLK) dmdlocals.busy = 1;
   }
+#else
+  switch (newstat & 0x03) {
+    case 0x00: // CLR=0 SET=0 => CLR
+    case 0x02: // CLR=0 SET=1 => CLR
+      dmdlocals.busy = 0; break;
+    case 0x03: // CLR=1 SET=1 => check clock
+      if (!(newstat & ~laststat & BUSY_CLK)) break;
+    case 0x01: // CLR=1 SET=0 => SET
+      dmdlocals.busy = 1; break;
+  }
+#endif
   laststat = newstat;
   cpu_set_irq_line(dmdlocals.brdData.cpuNo, Z80_INT_REQ, dmdlocals.busy ? ASSERT_LINE : CLEAR_LINE);
   sndbrd_data_cb(dmdlocals.brdData.boardNo, dmdlocals.busy);
@@ -437,5 +450,5 @@ static void dmd16_setbank(int bit, int value) {
   cpu_setbank(DMD16_BANK0, dmdlocals.brdData.romRegion + (dmdlocals.bank & 0x07)*0x4000);
 }
 
-static void de_dmd16nmi(int data) { cpu_set_nmi_line(dmdlocals.brdData.cpuNo, HOLD_LINE); }
+static void de_dmd16nmi(int data) { DBGLOG(("DMD NMI\n")); cpu_set_nmi_line(dmdlocals.brdData.cpuNo, PULSE_LINE); }
 
