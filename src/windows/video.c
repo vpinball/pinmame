@@ -846,8 +846,7 @@ static void throttle_speed(void)
 		while (curr - target < 0)
 		{
 #ifdef VPINMAME
-			// free the rest of the time slice to give other programs access to the cpu
-			Sleep(0);
+			Sleep((target-curr)/ticks_per_sleep_msec);
 #else
 			// if we have enough time to sleep, do it
 			// ...but not if we're autoframeskipping and we're behind
@@ -855,11 +854,10 @@ static void throttle_speed(void)
 				(target - curr) > (TICKER)(ticks_per_sleep_msec * 1.1))
 			{
 				// keep track of how long we actually slept
-				Sleep(1);
 				ticks_per_sleep_msec = (ticks_per_sleep_msec * 0.90) + ((double)(ticker() - curr) * 0.10);
+				Sleep(1);
 			}
 #endif
-
 			// update the current time
 			curr = ticker();
 		}
