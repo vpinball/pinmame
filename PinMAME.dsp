@@ -3929,6 +3929,14 @@ SOURCE=.\src\wpc\gpgames.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\gpsnd.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\gpsnd.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\gts1.c
 # End Source File
 # Begin Source File
@@ -4458,6 +4466,14 @@ SOURCE=.\src\wpc\sndbrd.h
 # Begin Source File
 
 SOURCE=.\src\wpc\stgames.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\stsnd.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\stsnd.h
 # End Source File
 # Begin Source File
 
