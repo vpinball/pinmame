@@ -22,7 +22,7 @@ extern "C" {
   extern struct rc_option pinmame_opts[];
   extern struct rc_option core_opts[];
   extern struct rc_struct *rc;
-  extern FILE *config_get_logfile(void); 
+  extern FILE *config_get_logfile(void);
   // Global options
   int verbose	= 0;
   char *rompath_extra;
@@ -43,7 +43,7 @@ int threadpriority = 1;
 static FILE *logfile;
 
 static struct rc_option vpinmame_opts[] = {
-	// VPinMAME options 
+	// VPinMAME options
 	{ "dmd_border", NULL, rc_bool, &dmd_border, "1", 0, 0, NULL, "DMD display border" },
 	{ "dmd_title",  NULL, rc_bool, &dmd_title,  "1", 0, 0, NULL, "DMD display title" },
 	{ "dmd_pos_x",  NULL, rc_int,  &dmd_pos_x,  "0", 0, 10000, NULL, "DMD display position x" },
@@ -80,11 +80,11 @@ static char* GlobalSettings[] = {
 	"state_directory",
 	"artwork_directory",
 	"snapshot_directory",
-	"diff_directory", 
-	"wave_directory", 
-	"cheat_file", 
-	"history_file", 
-	"mameinfo_file", 
+	"diff_directory",
+	"wave_directory",
+	"cheat_file",
+	"history_file",
+	"mameinfo_file",
 
 	// input_opts
 	"hotrod",
@@ -110,11 +110,11 @@ static char* PathOrFileSettings[] = {
 	"state_directory",
 	"artwork_directory",
 	"snapshot_directory",
-	"diff_directory", 
-	"wave_directory", 
-	"cheat_file", 
-	"history_file", 
-	"mameinfo_file", 
+	"diff_directory",
+	"wave_directory",
+	"cheat_file",
+	"history_file",
+	"mameinfo_file",
 
 	NULL
 };
@@ -134,7 +134,7 @@ static char* RunningGameSettings[] = {
 	// fileio_opts
 	"dmd_pos_x",
 	"dmd_pos_y",
-	"dmd_doublesize", 
+	"dmd_doublesize",
 	"dmd_border",
 	"dmd_title",
 	"dmd_width",
@@ -143,7 +143,7 @@ static char* RunningGameSettings[] = {
 	NULL
 };
 
-void cli_frontend_init(void) {
+void vpm_frontend_init(void) {
   /* clear all core options */
   memset(&options,0,sizeof(options));
 #if MAMEVER < 6100
@@ -158,7 +158,9 @@ void cli_frontend_init(void) {
   /* need a decent default for debug width/height */
   if (options.debug_width == 0)  options.debug_width = 640;
   if (options.debug_height == 0) options.debug_height = 480;
+#if MAMEVER >= 6100
   options.debug_depth = 8; // Debugger only works with 8 bits?
+#endif /* MAMEVER */
   options.gui_host = 1;
 #ifdef MAME_DEBUG
   options.mame_debug = 1;
@@ -169,7 +171,7 @@ void cli_frontend_init(void) {
   logfile = config_get_logfile();
 }
 
-void cli_frontend_exit(void) {
+void vpm_frontend_exit(void) {
   /* close open files */
   if (options.language_file) /* this seems to never be opened in Win32 version */
     { osd_fclose(options.language_file); options.language_file = NULL; }
@@ -623,7 +625,7 @@ BOOL GetSetting(char* pszGameName, char* pszName, VARIANT *pVal)
 	lstrcpy(szKey, REG_BASEKEY);
 	lstrcat(szKey, "\\");
 
-	if ( !pszGameName ) 
+	if ( !pszGameName )
 		lstrcat(szKey, REG_GLOBALS);
 	else
 		lstrcat(szKey, REG_DEFAULT);
@@ -773,7 +775,7 @@ BOOL WriteRegistry(char* pszKey, char* pszName, DWORD dwValue) {
 
 /* Reads a DWORD from the Registry! Opens the Registry Key Specified & Closes When Done*/
 DWORD ReadRegistry(char* pszKey, char* pszName, DWORD dwDefault) {
-	DWORD dwValue = dwDefault; 
+	DWORD dwValue = dwDefault;
 	HKEY hKey;
 	DWORD dwType;
 	DWORD dwSize;
@@ -786,7 +788,7 @@ DWORD ReadRegistry(char* pszKey, char* pszName, DWORD dwDefault) {
 
 	dwType = REG_DWORD;
 	dwSize = sizeof dwValue;
-    if ( RegQueryValueEx(hKey, pszName, 0, &dwType, (LPBYTE) &dwValue, &dwSize)!=ERROR_SUCCESS ) 
+    if ( RegQueryValueEx(hKey, pszName, 0, &dwType, (LPBYTE) &dwValue, &dwSize)!=ERROR_SUCCESS )
 		dwValue = dwDefault;
 
 	RegCloseKey(hKey);
