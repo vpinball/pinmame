@@ -59,12 +59,14 @@ static int op_cycles[] = {
 
 static UINT8 ROP(void)
 {
-	return cpu_readop(++I.PC.w.l);
+	I.PC.w.l = ((I.PC.w.l + 1) & 0x0fff) | (I.PC.w.l & 0xf000);
+	return cpu_readop(I.PC.w.l);
 }
 
 static UINT8 ARG(void)
 {
-	return cpu_readop_arg(++I.PC.w.l);
+	I.PC.w.l = ((I.PC.w.l + 1) & 0x0fff) | (I.PC.w.l & 0xf000);
+	return cpu_readop_arg(I.PC.w.l);
 }
 
 static UINT8 RM(UINT32 a)
@@ -100,10 +102,12 @@ INLINE void execute_one(int opcode)
 	switch (opcode)
 	{
 		case 0x00: /* HALT */
-			// set HOLD? Output???
+			// pulse H Output... what pin is that one?
+			cpu_writeport16(SCAMP_H_PORT, 1);
+			cpu_writeport16(SCAMP_H_PORT, 0);
 			break;
 		case 0x01: /* XAE */
-			tmp = I.ereg;
+			tmp = I.accu;
 			I.accu = I.ereg;
 			I.ereg = tmp;
 			break;
@@ -123,7 +127,10 @@ INLINE void execute_one(int opcode)
 			I.accu = I.sreg;
 			break;
 		case 0x07: /* CSA */
-			I.sreg = (I.sreg & 0x30) | (I.accu & 0xcf);
+			tmp = (I.sreg & 0x30) | (I.accu & 0xcf);
+			if ((tmp & 0x07) != (I.sreg & 0x07))
+				cpu_writeport16(SCAMP_FLAG_PORT, tmp & 0x07);
+			I.sreg = tmp;
 			break;
 		case 0x08: /* NOP */
 			break;
@@ -228,19 +235,18 @@ INLINE void execute_one(int opcode)
 		case 0x68: /* DADE */
 			tmp16 = I.accu + I.ereg + (I.sreg >> 7);
 			I.accu = (tmp16 & 0xff) % 100;
-			I.sreg = (I.sreg & 0x7f) | (((tmp16 >> 8) > 0) << 7);
+			I.sreg = (I.sreg & 0x7f) | (tmp16 >> 1);
 			break;
 
 		case 0x70: /* ADDE */
 			tmp16 = I.accu + I.ereg + (I.sreg >> 7);
 			I.accu = tmp16 & 0xff;
-			I.sreg = (I.sreg & 0x7f) | (((tmp16 >> 8) > 0) << 7);
+			I.sreg = (I.sreg & 0x3f) | ((tmp16 & 0x100) ? 0xc0 : 0);
 			break;
 		case 0x78: /* CADE */
-			tmp = ~I.ereg;
-			tmp16 = I.accu + tmp + (I.sreg >> 7);
+			tmp16 = I.accu + ~I.ereg + (I.sreg >> 7);
 			I.accu = tmp16 & 0xff;
-			I.sreg = (I.sreg & 0x7f) | (((tmp16 >> 8) > 0) << 7);
+			I.sreg = (I.sreg & 0x3f) | ((tmp16 & 0x100) ? 0xc0 : 0);
 			break;
 
 		case 0x8f: /* DLY */
@@ -595,179 +601,179 @@ INLINE void execute_one(int opcode)
 			}
 			break;
 		case 0xe8: /* DAD PC */
-			tmp16 = I.accu + RM(I.PC.w.l + (INT8)tmp);
+			tmp16 = I.accu + RM(I.PC.w.l + (INT8)tmp) + (I.sreg >> 7);
 			I.accu = (tmp16 & 0xff) % 100;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 >> 1) & 0x80);
+			I.sreg = (I.sreg & 0x7f) | ((tmp16 & 0x100) >> 1);
 			break;
 		case 0xe9: /* DAD P1 */
-			tmp16 = I.accu + RM(I.P1.w.l + (INT8)tmp);
+			tmp16 = I.accu + RM(I.P1.w.l + (INT8)tmp) + (I.sreg >> 7);
 			I.accu = (tmp16 & 0xff) % 100;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 >> 1) & 0x80);
+			I.sreg = (I.sreg & 0x7f) | ((tmp16 & 0x100) >> 1);
 			break;
 		case 0xea: /* DAD P2 */
-			tmp16 = I.accu + RM(I.P2.w.l + (INT8)tmp);
+			tmp16 = I.accu + RM(I.P2.w.l + (INT8)tmp) + (I.sreg >> 7);
 			I.accu = (tmp16 & 0xff) % 100;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 >> 1) & 0x80);
+			I.sreg = (I.sreg & 0x7f) | ((tmp16 & 0x100) >> 1);
 			break;
 		case 0xeb: /* DAD P3 */
-			tmp16 = I.accu + RM(I.P3.w.l + (INT8)tmp);
+			tmp16 = I.accu + RM(I.P3.w.l + (INT8)tmp) + (I.sreg >> 7);
 			I.accu = (tmp16 & 0xff) % 100;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 >> 1) & 0x80);
+			I.sreg = (I.sreg & 0x7f) | ((tmp16 & 0x100) >> 1);
 			break;
 		case 0xec: /* DADI */
-			tmp16 = I.accu + tmp;
+			tmp16 = I.accu + tmp + (I.sreg >> 7);
 			I.accu = (tmp16 & 0xff) % 100;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 >> 1) & 0x80);
+			I.sreg = (I.sreg & 0x7f) | ((tmp16 & 0x100) >> 1);
 			break;
 		case 0xed: /* DADA P1 */
 			if (tmp & 0x80) {
 				I.P1.w.l += (INT8)tmp;
-				tmp16 = I.accu + RM(I.P1.w.l);
+				tmp16 = I.accu + RM(I.P1.w.l) + (I.sreg >> 7);
 			} else {
-				tmp16 = I.accu + RM(I.P1.w.l);
+				tmp16 = I.accu + RM(I.P1.w.l) + (I.sreg >> 7);
 				I.P1.w.l += tmp;
 			}
 			I.accu = (tmp16 & 0xff) % 100;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 >> 1) & 0x80);
+			I.sreg = (I.sreg & 0x7f) | ((tmp16 & 0x100) >> 1);
 			break;
 		case 0xee: /* DADA P2 */
 			if (tmp & 0x80) {
 				I.P2.w.l += (INT8)tmp;
-				tmp16 = I.accu + RM(I.P2.w.l);
+				tmp16 = I.accu + RM(I.P2.w.l) + (I.sreg >> 7);
 			} else {
-				tmp16 = I.accu + RM(I.P2.w.l);
+				tmp16 = I.accu + RM(I.P2.w.l) + (I.sreg >> 7);
 				I.P2.w.l += tmp;
 			}
 			I.accu = (tmp16 & 0xff) % 100;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 >> 1) & 0x80);
+			I.sreg = (I.sreg & 0x7f) | ((tmp16 & 0x100) >> 1);
 			break;
 		case 0xef: /* DADA P3 */
 			if (tmp & 0x80) {
 				I.P3.w.l += (INT8)tmp;
-				tmp16 = I.accu + RM(I.P3.w.l);
+				tmp16 = I.accu + RM(I.P3.w.l) + (I.sreg >> 7);
 			} else {
-				tmp16 = I.accu + RM(I.P3.w.l);
+				tmp16 = I.accu + RM(I.P3.w.l) + (I.sreg >> 7);
 				I.P3.w.l += tmp;
 			}
 			I.accu = (tmp16 & 0xff) % 100;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 >> 1) & 0x80);
+			I.sreg = (I.sreg & 0x7f) | ((tmp16 & 0x100) >> 1);
 			break;
 
 		case 0xf0: /* ADD PC */
-			tmp16 = I.accu + RM(I.PC.w.l + (INT8)tmp);
+			tmp16 = I.accu + RM(I.PC.w.l + (INT8)tmp) + (I.sreg >> 7);
 			I.accu = tmp16 & 0xff;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 >> 1) & 0x80);
+			I.sreg = (I.sreg & 0x3f) | ((tmp16 & 0x100) ? 0xc0 : 0);
 			break;
 		case 0xf1: /* ADD P1 */
-			tmp16 = I.accu + RM(I.P1.w.l + (INT8)tmp);
+			tmp16 = I.accu + RM(I.P1.w.l + (INT8)tmp) + (I.sreg >> 7);
 			I.accu = tmp16 & 0xff;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 >> 1) & 0x80);
+			I.sreg = (I.sreg & 0x3f) | ((tmp16 & 0x100) ? 0xc0 : 0);
 			break;
 		case 0xf2: /* ADD P2 */
-			tmp16 = I.accu + RM(I.P2.w.l + (INT8)tmp);
+			tmp16 = I.accu + RM(I.P2.w.l + (INT8)tmp) + (I.sreg >> 7);
 			I.accu = tmp16 & 0xff;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 >> 1) & 0x80);
+			I.sreg = (I.sreg & 0x3f) | ((tmp16 & 0x100) ? 0xc0 : 0);
 			break;
 		case 0xf3: /* ADD P3 */
-			tmp16 = I.accu + RM(I.P3.w.l + (INT8)tmp);
+			tmp16 = I.accu + RM(I.P3.w.l + (INT8)tmp) + (I.sreg >> 7);
 			I.accu = tmp16 & 0xff;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 >> 1) & 0x80);
+			I.sreg = (I.sreg & 0x3f) | ((tmp16 & 0x100) ? 0xc0 : 0);
 			break;
 		case 0xf4: /* ADDI */
-			tmp16 = I.accu + tmp;
+			tmp16 = I.accu + tmp + (I.sreg >> 7);
 			I.accu = tmp16 & 0xff;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 >> 1) & 0x80);
+			I.sreg = (I.sreg & 0x3f) | ((tmp16 & 0x100) ? 0xc0 : 0);
 			break;
 		case 0xf5: /* ADDA P1 */
 			if (tmp & 0x80) {
 				I.P1.w.l += (INT8)tmp;
-				tmp16 = I.accu + RM(I.P1.w.l);
+				tmp16 = I.accu + RM(I.P1.w.l) + (I.sreg >> 7);
 			} else {
-				tmp16 = I.accu + RM(I.P1.w.l);
+				tmp16 = I.accu + RM(I.P1.w.l) + (I.sreg >> 7);
 				I.P1.w.l += tmp;
 			}
 			I.accu = tmp16 & 0xff;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 >> 1) & 0x80);
+			I.sreg = (I.sreg & 0x3f) | ((tmp16 & 0x100) ? 0xc0 : 0);
 			break;
 		case 0xf6: /* ADDA P2 */
 			if (tmp & 0x80) {
 				I.P2.w.l += (INT8)tmp;
-				tmp16 = I.accu + RM(I.P2.w.l);
+				tmp16 = I.accu + RM(I.P2.w.l) + (I.sreg >> 7);
 			} else {
-				tmp16 = I.accu + RM(I.P2.w.l);
+				tmp16 = I.accu + RM(I.P2.w.l) + (I.sreg >> 7);
 				I.P2.w.l += tmp;
 			}
 			I.accu = tmp16 & 0xff;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 >> 1) & 0x80);
+			I.sreg = (I.sreg & 0x3f) | ((tmp16 & 0x100) ? 0xc0 : 0);
 			break;
 		case 0xf7: /* ADDA P3 */
 			if (tmp & 0x80) {
 				I.P3.w.l += (INT8)tmp;
-				tmp16 = I.accu + RM(I.P3.w.l);
+				tmp16 = I.accu + RM(I.P3.w.l) + (I.sreg >> 7);
 			} else {
-				tmp16 = I.accu + RM(I.P3.w.l);
+				tmp16 = I.accu + RM(I.P3.w.l) + (I.sreg >> 7);
 				I.P3.w.l += tmp;
 			}
 			I.accu = tmp16 & 0xff;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 >> 1) & 0x80);
+			I.sreg = (I.sreg & 0x3f) | ((tmp16 & 0x100) ? 0xc0 : 0);
 			break;
 		case 0xf8: /* CAD PC */
-			tmp16 = I.accu + ~RM(I.PC.w.l + (INT8)tmp);
+			tmp16 = I.accu + ~RM(I.PC.w.l + (INT8)tmp) + (I.sreg >> 7);
 			I.accu = tmp16 & 0xff;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 >> 1) & 0x80);
+			I.sreg = (I.sreg & 0x3f) | ((tmp16 & 0x100) ? 0xc0 : 0);
 			break;
 		case 0xf9: /* CAD P1 */
-			tmp16 = I.accu + ~RM(I.P1.w.l + (INT8)tmp);
+			tmp16 = I.accu + ~RM(I.P1.w.l + (INT8)tmp) + (I.sreg >> 7);
 			I.accu = tmp16 & 0xff;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 >> 1) & 0x80);
+			I.sreg = (I.sreg & 0x3f) | ((tmp16 & 0x100) ? 0xc0 : 0);
 			break;
 		case 0xfa: /* CAD P2 */
-			tmp16 = I.accu + ~RM(I.P2.w.l + (INT8)tmp);
+			tmp16 = I.accu + ~RM(I.P2.w.l + (INT8)tmp) + (I.sreg >> 7);
 			I.accu = tmp16 & 0xff;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 >> 1) & 0x80);
+			I.sreg = (I.sreg & 0x3f) | ((tmp16 & 0x100) ? 0xc0 : 0);
 			break;
 		case 0xfb: /* CAD P3 */
-			tmp16 = I.accu + ~RM(I.P3.w.l + (INT8)tmp);
+			tmp16 = I.accu + ~RM(I.P3.w.l + (INT8)tmp) + (I.sreg >> 7);
 			I.accu = tmp16 & 0xff;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 >> 1) & 0x80);
+			I.sreg = (I.sreg & 0x3f) | ((tmp16 & 0x100) ? 0xc0 : 0);
 			break;
 		case 0xfc: /* CADI */
-			tmp16 = I.accu + ~tmp;
+			tmp16 = I.accu + ~tmp + (I.sreg >> 7);
 			I.accu = tmp16 & 0xff;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 >> 1) & 0x80);
+			I.sreg = (I.sreg & 0x3f) | ((tmp16 & 0x100) ? 0xc0 : 0);
 			break;
 		case 0xfd: /* CADA P1 */
 			if (tmp & 0x80) {
 				I.P1.w.l += (INT8)tmp;
-				tmp16 = I.accu + RM(I.P1.w.l);
+				tmp16 = I.accu + ~RM(I.P1.w.l) + (I.sreg >> 7);
 			} else {
-				tmp16 = I.accu + RM(I.P1.w.l);
+				tmp16 = I.accu + ~RM(I.P1.w.l) + (I.sreg >> 7);
 				I.P1.w.l += tmp;
 			}
 			I.accu = tmp16 & 0xff;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 >> 1) & 0x80);
+			I.sreg = (I.sreg & 0x3f) | ((tmp16 & 0x100) ? 0xc0 : 0);
 			break;
 		case 0xfe: /* CADA P2 */
 			if (tmp & 0x80) {
 				I.P2.w.l += (INT8)tmp;
-				tmp16 = I.accu + RM(I.P2.w.l);
+				tmp16 = I.accu + ~RM(I.P2.w.l) + (I.sreg >> 7);
 			} else {
-				tmp16 = I.accu + RM(I.P2.w.l);
+				tmp16 = I.accu + ~RM(I.P2.w.l) + (I.sreg >> 7);
 				I.P2.w.l += tmp;
 			}
 			I.accu = tmp16 & 0xff;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 >> 1) & 0x80);
+			I.sreg = (I.sreg & 0x3f) | ((tmp16 & 0x100) ? 0xc0 : 0);
 			break;
 		case 0xff: /* CADA P3 */
 			if (tmp & 0x80) {
 				I.P3.w.l += (INT8)tmp;
-				tmp16 = I.accu + RM(I.P3.w.l);
+				tmp16 = I.accu + ~RM(I.P3.w.l) + (I.sreg >> 7);
 			} else {
-				tmp16 = I.accu + RM(I.P3.w.l);
+				tmp16 = I.accu + ~RM(I.P3.w.l) + (I.sreg >> 7);
 				I.P3.w.l += tmp;
 			}
 			I.accu = tmp16 & 0xff;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 >> 1) & 0x80);
+			I.sreg = (I.sreg & 0x3f) | ((tmp16 & 0x100) ? 0xc0 : 0);
 			break;
 
 		default:
@@ -778,6 +784,14 @@ INLINE void execute_one(int opcode)
 
 int SCAMP_execute(int cycles)
 {
+	PAIR   tmpPC;
+	if ((I.sreg & 0x18) == 0x18) { // do the interrupt routine
+		tmpPC = I.PC;
+		I.PC = I.P3;
+		I.P3 = tmpPC;
+		I.sreg &= 0xf7;
+	}
+
 	SCAMP_ICount = cycles;
 	do
 	{
@@ -910,10 +924,10 @@ const char *SCAMP_info(void *context, int regnum)
 		  (I.sreg & 0x80) ? 'C' : '.',
 		  (I.sreg & 0x40) ? 'V' : '.',
 		  (I.sreg & 0x20) ? 'B' : '.',
-		  (I.sreg & 0x01) ? 'A' : '.',
-		  (I.sreg & 0x01) ? 'I' : '.',
-		  (I.sreg & 0x01) ? '2' : '.',
-		  (I.sreg & 0x01) ? '1' : '.',
+		  (I.sreg & 0x10) ? 'A' : '.',
+		  (I.sreg & 0x08) ? 'I' : '.',
+		  (I.sreg & 0x04) ? '2' : '.',
+		  (I.sreg & 0x02) ? '1' : '.',
 		  (I.sreg & 0x01) ? '0' : '.');
 		  break;
 		case CPU_INFO_NAME: return "SC/MP";
@@ -927,7 +941,22 @@ const char *SCAMP_info(void *context, int regnum)
 	return buffer[which];
 }
 
+void SCAMP_set_sense_a(int state) {
+	if (state)
+		I.sreg |= 0x10;
+	else
+		I.sreg &= 0xef;
+}
+
+void SCAMP_set_sense_b(int state) {
+	if (state)
+		I.sreg |= 0x20;
+	else
+		I.sreg &= 0xdf;
+}
+
 void SCAMP_set_irq_line(int irqline, int state) {
+	SCAMP_set_sense_a(state);
 }
 
 void SCAMP_set_irq_callback(int (*callback)(int)) {
