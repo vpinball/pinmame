@@ -38,11 +38,6 @@ extern void win_poll_input(void);
 extern void win_pause_input(int pause);
 extern UINT8 win_trying_to_quit;
 
-#ifdef PINMAME_EXT
-// from wpc/snd_cmd.c
-extern int recording;
-#endif
-
 //============================================================
 //	PARAMETERS
 //============================================================
@@ -1059,33 +1054,12 @@ static void render_frame(struct mame_bitmap *bitmap)
 	if (showfps || showfpstemp)
 		display_fps(bitmap);
 
-#ifdef PINMAME_EXT
-	/*Display the status of recording a .wav file*/
-	if (recording != 0)
-	{
-		char buf[30];
-		static int dots=0;
-		switch(recording){
-			/*recording failed*/
-			case -1:
-				sprintf(buf,"Unable to Record Wave File!!!");
-				break;
-			/*recording now*/
-			case 1:
-				sprintf(buf,"Recording Wave File%c%c%c",(dots>=25)?'.':' ',(dots>=50)?'.':' ',(dots>=75)?'.':' ');
-				dots++;
-				if(dots>100) dots=0;
-				break;
-			/*recoring done*/
-			case 2:
-				dots=0;
-				recording = 0;
-			default:
-				sprintf(buf,"                            ");
-		}
-		ui_text(bitmap,buf,Machine->uiwidth-strlen(buf)*Machine->uifontwidth,0);
-	}
-#endif /* PINMAME_EXT */
+#ifdef PINMAME
+        {
+          extern void pm_wave_disp(struct mame_bitmap *abitmap);
+          pm_wave_disp(bitmap);
+        }
+#endif /* PINMAME */
 
 	// recompute the brightness adjustment table if necessary
 	if (dirty_bright)
