@@ -7,6 +7,9 @@
  - Missing memory write handlers, esp. for 0x4805, which seems to be a timer of some sort?
  - Does the NVRAM really use 8 bits? It's 256 Bytes long, and has 2 5101 chips.
 
+ NOTE:
+ - According to the manual, these games could read 10 switch columns, but only 3 + 5 are used.
+
    Hardware:
    ---------
 		CPU:     Z80 @ 2.5 MHz
@@ -37,9 +40,9 @@ static struct {
   core_tSeg segments;
 } locals;
 
-// switches start at 50, each column adds 10.
-static int INDER_sw2m(int no) { return (no/10 - 5) * 8 + no % 10; }
-static int INDER_m2sw(int col, int row) { return 50 + col*10 + row; }
+// switches start at 50 for column 1, and each column adds 10.
+static int INDER_sw2m(int no) { return (no/10 - 4)*8 + no%10; }
+static int INDER_m2sw(int col, int row) { return 40 + col*10 + row; }
 
 static MACHINE_INIT(INDER) {
   memset(&locals, 0, sizeof locals);
