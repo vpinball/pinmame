@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  *	 arm7.c
- *	 Portable ARM7TDMI Core Emulator
+ *	 Portable ARM7TDMI CPU Emulator
  *
  *	 Copyright (c) 2004 Steve Ellenoff, all rights reserved.
  *
@@ -100,6 +100,7 @@ void arm7_exit(void)
 
 int arm7_execute( int cycles )
 {
+/*include the arm7 core execute code*/
 #include "arm7exec.c"
 } /* arm7_execute */
 
