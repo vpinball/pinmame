@@ -11,6 +11,7 @@
 
 static void de1s_init(struct sndbrdData *brdData);
 static WRITE_HANDLER(de1s_data_w);
+static WRITE_HANDLER(de1s_ctrl_w);
 static READ_HANDLER(de1s_cmd_r);
 static void de1s_msmIrq(int data);
 static void de1s_ym2151IRQ(int state);
@@ -20,7 +21,7 @@ static WRITE_HANDLER(de1s_4052_w);
 static WRITE_HANDLER(de1s_MSM5025_w);
 
 const struct sndbrdIntf de1sIntf = {
-  de1s_init, NULL, NULL, de1s_data_w, NULL, NULL, NULL
+  de1s_init, NULL, NULL, de1s_data_w, NULL, de1s_ctrl_w, NULL
 };
 
 struct MSM5205interface de1s_msm5205Int = {
@@ -70,7 +71,11 @@ static void de1s_init(struct sndbrdData *brdData) {
 
 static WRITE_HANDLER(de1s_data_w) {
   de1slocals.cmd = data;
-  cpu_set_irq_line(de1slocals.brdData.cpuNo, M6809_FIRQ_LINE, ASSERT_LINE);
+}
+
+static WRITE_HANDLER(de1s_ctrl_w) {
+	if(~data&0x1)
+		cpu_set_irq_line(de1slocals.brdData.cpuNo, M6809_FIRQ_LINE, ASSERT_LINE);
 }
 
 static READ_HANDLER(de1s_cmd_r) {
