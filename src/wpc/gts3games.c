@@ -5,37 +5,15 @@
 
 /* ROM STATUS
 N = No Lead, L = Have a Lead on Rom
-
-(N*)Lights, Camera, Action 1989 (Sound roms only)
-(N*)Bell Ringer 1990
-Silver Slugger 1990
-(L)Vegas 1990
-(L)Deadly Weapon 1990
-(N*)Title Fight 1990
-(N*)Nudge It 1990
-Car Hop 1991
-(N*)Hoops 1991
-Cactus Jacks 1991
-Class of 1812 1991
-Surf'n Safari 1991
-(L)Operation: Thunderstorm(Need sound) (OT) /No. 1721/ Premier Technology , March 1992, 4 players
-Super Mario Bros. (SMB) /No. 2435/ Premier Technology , April 25, 1992, 4 players
-(N*)Super Mario Bros. Mushroom World (MW) /No. 3427/ Premier Technology , June 1992, 4 players
-Cue Ball Wizard (CBW) /No. 610/ Premier Technology , October 1992, 4 players
-Street Fighter II (SF2, SFII) /No. 2403/ Premier Technology , March 1993, 4 players
-Tee'd Off (TO) /No. 2508/ Premier Technology , May 1993, 4 players
-Wipe Out (WO) /No. 2799/ Premier Technology , October 1993, 4 players
-Gladiators /No. 1011/ Premier Technology , November 1993, 4 players
-World Challenge Soccer (WCS) /No. 2808/ Premier Technology , February 1994, 4 players
-Rescue 911 (R911) /No. 1951/ Premier Technology , May 1994, 4 players
-Freddy: a Nightmare on Elm Street (Freddy) /No. 948/ Premier Technology , October 1994, 4
-Shaq Attaq (SA) /No. 2874/ Premier Technology , February 1995, 4 players
-Stargate (SG) /No. 2847/ Premier Technology , March 1995, 4 players
-Big Hurt /No. 3591/ Premier Technology , June 1995, 4 players
-Strikes 'N Spares 1995 (????????)
-Waterworld (WW) /No. 3793/ Premier Technology , October 1995, 4 players
-Mario Andretti (MA) /No. 3794/ Premier Technology , December 1995, 4 players
-Barb Wire /No. 3795/ Premier Technology , April 1996, 4 players
+-----------------------------------------------
+(N)Lights, Camera, Action 1989 (Sound roms only)
+(N)Bell Ringer 1990
+(N)Nudge It 1990
+(N)Hoops 1991
+(N)Operation: Thunderstorm (Bad Sound Rom)
+(N)Super Mario Bros. Mushroom World (MW) /No. 3427/ Premier Technology , June 1992, 4 players
+(N)Stargate (Bad Soun rom)
+??Strikes 'N Spares 1995 (????????)
 */
 
 #define ALPHA	 GTS3_dispAlpha
@@ -99,7 +77,7 @@ GTS3ROMSTART(bellring,	"gprom.bin",0x0)
 GTS3_ROMEND
 CORE_GAMEDEFNV(bellring,"Bell Ringer",1990,"Gottlieb",mGTS3,GAME_NOT_WORKING)
 /*-------------------------------------------------------------------
-/ Silver Slugger (#722)
+/ Silver Slugger (#722) - Display is messed up
 /-------------------------------------------------------------------*/
 INITGAME(silvslug, ALPHA, FLIP67, 3/*?*/)
 GTS3ROMSTART(silvslug,	"gprom.bin",0xa6c524e2)
@@ -108,26 +86,32 @@ GTS3SOUND3232(			"yrom1.bin",0x20bc9797,
 GTS3_ROMEND
 CORE_GAMEDEFNV(silvslug,"Silver Slugger",1990,"Gottlieb",mGTS3S,GAME_NOT_WORKING)
 /*-------------------------------------------------------------------
-/ Vegas
+/ Vegas (#723)
 /-------------------------------------------------------------------*/
 INITGAME(vegas, ALPHA, FLIP67, 3/*?*/)
-GTS3ROMSTART(vegas,	"gprom.bin",0x0)
+GTS3ROMSTART(vegas,	"gprom.bin",0x48189981)
+GTS3SOUND3232(		"yrom1.bin",0xaf1095f1,
+					"drom1.bin",0x46eb5755)
 GTS3_ROMEND
-CORE_GAMEDEFNV(vegas,"Vegas",1990,"Gottlieb",mGTS3,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(vegas,"Vegas",1990,"Gottlieb",mGTS3S,GAME_NOT_WORKING)
 /*-------------------------------------------------------------------
-/ Deadly Weapon
+/ Deadly Weapon - Display is messed up
 /-------------------------------------------------------------------*/
 INITGAME(deadweap, ALPHA, FLIP67, 3/*?*/)
-GTS3ROMSTART(deadweap,	"gprom.bin",0x0)
+GTS3ROMSTART(deadweap,	"gprom.bin",0x07d84b32)
+GTS3SOUND3232(			"yrom1.bin",0x93369ed3,
+						"drom1.bin",0xf55dd7ec)
 GTS3_ROMEND
-CORE_GAMEDEFNV(deadweap,"Deadly Weapon",1990,"Gottlieb",mGTS3,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(deadweap,"Deadly Weapon",1990,"Gottlieb",mGTS3S,GAME_NOT_WORKING)
 /*-------------------------------------------------------------------
-/ Title Fight
+/ Title Fight - Display is messed up
 /-------------------------------------------------------------------*/
 INITGAME(tfight, ALPHA, FLIP67, 3/*?*/)
-GTS3ROMSTART(tfight,	"gprom.bin",0x0)
+GTS3ROMSTART(tfight,	"gprom.bin",0x43b3193a)
+GTS3SOUND3232(			"yrom1.bin",0x8591d421,
+						"drom1.bin",0x9514739f)
 GTS3_ROMEND
-CORE_GAMEDEFNV(tfight,"Title Fight",1990,"Gottlieb",mGTS3,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(tfight,"Title Fight",1990,"Gottlieb",mGTS3S,GAME_NOT_WORKING)
 /*-------------------------------------------------------------------
 / Nudge It
 /-------------------------------------------------------------------*/
@@ -153,7 +137,7 @@ GTS3_ROMEND
 CORE_GAMEDEFNV(hoops,"Hoops",1991,"Gottlieb",mGTS3,GAME_NOT_WORKING)
 
 /*-------------------------------------------------------------------
-/ Cactus Jack
+/ Cactus Jack (#729)
 /-------------------------------------------------------------------*/
 INITGAME(cactjack, ALPHA, FLIP67, 3/*?*/)
 GTS3ROMSTART(cactjack,	"gprom.bin",0x5661ab06)
@@ -165,7 +149,7 @@ GTS3_ROMEND
 CORE_GAMEDEFNV(cactjack,"Cactus Jack",1991,"Gottlieb",mGTS3S,GAME_NOT_WORKING)
 
 /*-------------------------------------------------------------------
-/ Class of 1812
+/ Class of 1812 (#730)
 /-------------------------------------------------------------------*/
 INITGAME(clas1812, ALPHA, FLIP67, 3/*?*/)
 GTS3ROMSTART(clas1812,	"gprom.bin",0x564349bf)
@@ -180,7 +164,7 @@ CORE_GAMEDEFNV(clas1812,"Class of 1812",1991,"Gottlieb",mGTS3S,GAME_NOT_WORKING)
 //ALL GAMES LISTED BELOW HERE - FLIPPER SWITCHES ARE CONFIRMED CORRECT!!!!
 
 /*-------------------------------------------------------------------
-/ Surf'n Safari
+/ Surf'n Safari (#731)
 /-------------------------------------------------------------------*/
 INITGAME(surfnsaf, ALPHA, FLIP67, 3/*?*/)
 GTS3ROMSTART(surfnsaf,	"gprom.bin",0xac3393bd)
@@ -192,7 +176,7 @@ GTS3_ROMEND
 CORE_GAMEDEFNV(surfnsaf,"Surf'n Safari",1991,"Gottlieb",mGTS3S,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
-/ Operation Thunder
+/ Operation Thunder (#732)
 /-------------------------------------------------------------------*/
 INITGAME3(opthund, ALPHA, FLIP67, 3/*?*/)
 GTS3ROMSTART(opthund,	"gprom.bin",0x96a128c2)
