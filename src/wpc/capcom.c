@@ -36,17 +36,13 @@
   #1) U16 Needs to be better understood and emulated
   #2) Once U16 better understood, remove hacks that bypass U16 startup check
   #3) IRQ4 appears to do nothing, this seems odd
-  #4) Lamps and Solenoids don't work in Flipper Football and Kingpin
-  #5) Driver Board Detection needs to be implemented (Causes Improper Driver Error Msg on Startup)
-  #6) For some reason Zero Cross Circuit is not being detected (Causes Missing Zero X Msg on Startup)
-  #7) Power Line Detection needs to be implemented (Causes Bad Signals Error Msg on Startup)
-  #8) Lamps seem to flash too quickly, but only some, and only sometimes.
-  #9) Sound communication occurs via the 68306 UARTS (currently not really emulated in the 68306 core)
-  #10) Handle opto switches internally? Is this needed?
-  #11) Handle EOS switches internally? Is this needed?
-  #12) More complete M68306 emulation (although it's fairly good already)
-  #13) Figure out how Port A is getting data written in the top 8 bits
-  #14) Why are the port handlers 16 bit handlers? (Martin?)
+  #4) High Power Solenoids don't work in Flipper Football and Kingpin (related to Signals Error)
+  #5) Power Line Detection needs to be implemented (Causes Bad Signals Error Msg on Startup)
+  #6) Sound communication occurs via the 68306 UARTS (currently not really emulated in the 68306 core)
+  #7) Handle opto switches internally? Is this needed?
+  #8) Handle EOS switches internally? Is this needed?
+  #9) More complete M68306 emulation (although it's fairly good already)
+  #10) Lamps will eventually come on in Kingpin/Flipper Football, why does it take so long? And they flicker too fast!
 
 **************************************************************************************/
 #include <stdarg.h>
@@ -55,10 +51,10 @@
 #include "core.h"
 
 #define CC_VBLANKFREQ    60 /* VBLANK frequency */
-#define CC_ZCFREQ        60 /* Zero cross frequency?? */
+#define CC_ZCFREQ        87 /* Zero cross frequency?? Reports ~60Hz on the Solenoid/Line Voltage Test */
 
 #define CC_SOLSMOOTH       3 /* Smooth the Solenoids over this numer of VBLANKS */
-#define CC_LAMPSMOOTH      3 /* Smooth the lamps over this number of VBLANKS */
+#define CC_LAMPSMOOTH      4 /* Smooth the lamps over this number of VBLANKS */
 
 static struct {
   UINT32 solenoids;
@@ -73,6 +69,10 @@ static struct {
   int swCol;
   int read_u16;
   UINT8 lastb;
+  int vset;
+  int line_v;
+  int greset;
+  int pulse;
 } locals;
 
 static UINT32 fixaddr = 0;
@@ -137,28 +137,33 @@ static void cc_u16irq4(int data) {
 /***************/
 /* PORT A READ */
 /***************/
-//PA0   - J3 - Pin 7 (Unknown purpose)
-//PA1   - J3 - Pin 8 (Unknown purpose) 
-//PA2   - J3 - Pin 9 (Unknown purpose)
+//PA0   - J3 - Pin 7 - Token/Coin Meter/Printer Interface Board(Unknown purpose)
+//PA1   - J3 - Pin 8 - Token/Coin Meter/Printer Interface Board(Unknown purpose) 
+//PA2   - J3 - Pin 9 - Token/Coin Meter/Printer Interface Board(Unknown purpose)
 //PA3   - LED(output only)
-//PA4   - LINE_5 (As in +5V line)
-//PA5   - LINE_V (As in CPU generated reference line?)
+//PA4   - LINE_5 (Measures +5V Low power D/C Line)
+//PA5   - LINE_V (Measures 50V High Power A/C Line for Solenoids)
 //PA6   - VSET(output only)
 //PA7   - GRESET(output only)
-static READ16_HANDLER(cc_porta_r) { 
+static READ16_HANDLER(cc_porta_r) {
+	int data = 0;
+	locals.line_v = !locals.line_v;		//This should be cycling fast, but it's also somehow related to Pulse signal from cpu, but don't know how
+	data = (1<<4) | (locals.line_v<<5);
+	data ^= 0xff;	//Data inverted?
 	DBGLOG(("Port A read\n")); 
-	return 0; 
+//	printf("[%08x] Port A read = %x\n",activecpu_get_previouspc(),data);
+	return data; 
 }
 /***************/
 /* PORT B READ */
 /***************/
 //PB0 OR IACK2 - ZERO X ACK(Output Only)
 //PB1 OR IACK3 - PULSE (To J2) (Output Only)
-//PB2 OR IACK5 - J3 - Pin 13 - SW3(Unknown Purpose)(Output Only)
-//PB3 OR IACK6 - J3 - Pin 12 - SW4(Unknown Purpose)(Output Only)
+//PB2 OR IACK5 - J3 - Pin 13 - Token/Coin Meter/Printer Interface Board - SW3(Unknown Purpose)(Output Only)
+//PB3 OR IACK6 - J3 - Pin 12 - Token/Coin Meter/Printer Interface Board - SW4(Unknown Purpose)(Output Only)
 //PB4 OR IRQ2  - ZERO CROSS IRQ
 //PB5 OR IRQ3  - NOT USED?
-//PB6 OR IRQ5  - J3 - Pin 11 - SW6(Unknown Purpose)(Output Only)
+//PB6 OR IRQ5  - J3 - Pin 11 - Token/Coin Meter/Printer Interface Board - SW6(Unknown Purpose)(Output Only)
 //PB7 OR IRQ6  - NOT USED?
 static READ16_HANDLER(cc_portb_r) { 
 	int data = 0;
@@ -170,9 +175,9 @@ static READ16_HANDLER(cc_portb_r) {
 /****************/
 /* PORT A WRITE */
 /****************/
-//PA0   - J3 - Pin 7 (Unknown purpose)(Input Only)
-//PA1   - J3 - Pin 8 (Unknown purpose)(Input Only)
-//PA2   - J3 - Pin 9 (Unknown purpose)(Input Only)
+//PA0   - J3 - Pin 7 - Token/Coin Meter/Printer Interface Board(Unknown purpose)(Input Only)
+//PA1   - J3 - Pin 8 - Token/Coin Meter/Printer Interface Board(Unknown purpose)(Input Only)
+//PA2   - J3 - Pin 9 - Token/Coin Meter/Printer Interface Board(Unknown purpose)(Input Only)
 //PA3   - LED
 //PA4   - LINE_5 (Input only)
 //PA5   - LINE_V (Input only)
@@ -183,37 +188,32 @@ static WRITE16_HANDLER(cc_porta_w) {
 	DBGLOG(("Port A write %04x\n",data));
   locals.driverBoard = 0x0700; // this value is expected by Breakshot after port writes
   locals.diagnosticLed = ((~data)&0x08>>3);
+  locals.vset = (data>>6)&1;
+  locals.greset = (data>>7)&1;
 }
 /****************/
 /* PORT B WRITE */
 /****************/
 //PB0 OR IACK2 - ZERO CROSS ACK (Clears IRQ2)
 //PB1 OR IACK3 - PULSE (To J2)
-//PB2 OR IACK5 - J3 - Pin 13 - SW3(Unknown Purpose)(Output Only)
-//PB3 OR IACK6 - J3 - Pin 12 - SW4(Unknown Purpose)(Output Only)
+//PB2 OR IACK5 - J3 - Pin 13 - Token/Coin Meter/Printer Interface Board - SW3(Unknown Purpose)(Output Only)
+//PB3 OR IACK6 - J3 - Pin 12 - Token/Coin Meter/Printer Interface Board - SW4(Unknown Purpose)(Output Only)
 //PB4 OR IRQ2  - ZERO CROSS IRQ (Input Only)
 //PB5 OR IRQ3  - NOT USED?
-//PB6 OR IRQ5  - J3 - Pin 11 - SW6(Unknown Purpose)
+//PB6 OR IRQ5  - J3 - Pin 11 - Token/Coin Meter/Printer Interface Board - SW6(Unknown Purpose)
 //PB7 OR IRQ6  - NOT USED?
 static WRITE16_HANDLER(cc_portb_w) {
-  locals.lastb = data;
+  locals.pulse = (data>>1)&1;
   DBGLOG(("Port B write %04x\n",data));
-  if (data & ~locals.lastb & 0x01) cpu_set_irq_line(0,MC68306_IRQ_2,CLEAR_LINE);
+  if (data & ~locals.lastb & 0x01)
+	  cpu_set_irq_line(0,MC68306_IRQ_2,CLEAR_LINE);
+  locals.lastb = data;
+//  if(locals.pulse) printf("pulse=1\n"); else printf("pulse=0\n");
 }
-
 /************/
 /* U16 READ */
 /************/
 static READ16_HANDLER(u16_r) {
-  //Once we've read the U16 3 times, we can safely return the ROM data we changed back, so U1 ROM test won't fail
-  //NOTE: doesn't work on Flipper Football and Kingpin, and I can't see a way to make it work, so rom test U1 will complain, but just an annoyance..
-  if (offset == 0 && locals.read_u16 < 3) {
-    locals.read_u16++;
-    if (locals.read_u16 == 3) {
-      *((UINT16 *)(memory_region(REGION_CPU1) + fixaddr)) = 0x6600;
-    }
-  }
-
   offset &= 0x203;
   //DBGLOG(("U16r [%03x] (%04x)\n",offset,mem_mask));
 
@@ -270,7 +270,9 @@ static READ16_HANDLER(io_r) {
     //Read from other boards
     case 0x000006:
     case 0x00000a:
+	  data=0;
       DBGLOG(("PC%08x - io_r: [%08x] (%04x)\n",activecpu_get_pc(),offset,mem_mask));
+	  //printf("PC%08x - io_r: [%08x] (%04x)\n",activecpu_get_pc(),offset,mem_mask);
       break;
     //Lamp A & B Matrix Row Status? Used to determine non-functioning bulbs?
     case 0x00000c:
@@ -389,83 +391,81 @@ static MACHINE_INIT(cc) {
   memset(&locals, 0, sizeof(locals));
   locals.u16a[0] = 0x00bc;
   locals.vblankCount = 1;
-  //Not sure where Martin got the timing for irq1.
-  timer_pulse(TIME_IN_CYCLES(2211,0),0,cc_u16irq1);
+  timer_pulse(TIME_IN_CYCLES(2811,0),0,cc_u16irq1);		//Only value that passes IRQ1 test (DO NOT CHANGE UNTIL CURRENT HACK IS REPLACED)
   //IRQ4 doesn't seem to do anything?!! Also, no idea of the frequency
-  timer_pulse(TIME_IN_HZ(400),0,cc_u16irq4);
+  timer_pulse(TIME_IN_HZ(120),0,cc_u16irq4);
   //Force U16 Tests on startup to succeed
   U16_Tests_Hack();
 }
 
 void U16_Tests_Hack(void){
+	UINT16 jmp1 = 0;
+	UINT16 jmp2 = 0;
 	switch (core_gameData->hw.gameSpecific1) {
 		case 0:
 			break;
 		case 1:
 		case 2:
-			fixaddr = 0x00091FD8; //PM
+			fixaddr = 0x00092192; //PM
+			jmp1 = 0x1009;
+			jmp2 = 0x5738;
 			break;
 		case 3:
 			fixaddr = 0x00089486; //AB
+			jmp1 = 0x1008;
+			jmp2 = 0x984c;
 			break;
 		case 4:
-			fixaddr = 0x00084886; //ABR
+			fixaddr = 0x00084a12; //ABR
+			jmp1 = 0x1008;
+			jmp2 = 0x8000;
 			break;
 		case 5:
 		case 6:
-			fixaddr = 0x0008b198; //BS
+			fixaddr = 0x0008b324; //BS
+			jmp1 = 0x1008;
+			jmp2 = 0xe95c;
 			break;
 		case 7:
-			fixaddr = 0x00086b56; //BS102R
+			fixaddr = 0x00086ce2; //BS102R
+			jmp1 = 0x1008;
+			jmp2 = 0x6f1c;
 			break;
 		case 8:
-			fixaddr = 0x0007cc1c; //BSB
+			fixaddr = 0x0007cda8; //BSB
+			jmp1 = 0x1008;
+			jmp2 = 0x03e0;
 			break;
 		case 9:
-			fixaddr = 0x00000302;	//FF
+			fixaddr = 0x0000048e; //FF
+			jmp1 = 0x1000;
+			jmp2 = 0x064e;
 			break;
 		case 10:
-			fixaddr = 0x0004dd1c;	//BBB
+			fixaddr = 0x0004dea8; //BBB
+			jmp1 = 0x1005;
+			jmp2 = 0x1500;
 			break;
 		case 11:
-			fixaddr = 0x00000316;	//KP
+			fixaddr = 0x000004a2; //KP
+			jmp1 = 0x1000;
+			jmp2 = 0x0662;
 			break;
 		default:
 			break;
   }
-  //changes a BNE to a BEQ to bypass one of the U16 tests that doesn't seem to pass
-  *((UINT16 *)(memory_region(REGION_CPU1) + fixaddr)) = 0x6700;
+  //Implements a JMP to address at the 1st point of U16-IRQ4 failure.. The JMP Address goes to the beginning of Driver Board Test (ie, we skip the entire ROM checks)
+  *((UINT16 *)(memory_region(REGION_CPU1) + fixaddr))   = 0x4ef9;
+  *((UINT16 *)(memory_region(REGION_CPU1) + fixaddr+2)) = jmp1;
+  *((UINT16 *)(memory_region(REGION_CPU1) + fixaddr+4)) = jmp2;
 }
 
 /*-----------------------------------
 /  Memory map for CPU board
 /------------------------------------*/
 /*
-PB0/IACK2 : XC Ack
-PB1/IACK3 : Pulse ?
-PB2/IACK5 : SW3 ?
-PB3/IACK6 : SW4 ?
-PB4/IRQ2  : XC
-PB6/IRQ5  : SW6
-IRQ1      : Not used
-PB5/IRQ3  : Not used
-IRQ4      : Not used
-PB7/IRQ6  : Not used
-IRQ7      : Not used
-BG        : ?
-BGACK     : Not used
-BR        : Not used
-BRERR     : Not used
-RESET     : Not used
-HALT      : Not used
-PA0       : ?
-PA1
-PA2
-PA3       : Diagnostic LED1
-PA4       : Line S
-PA5       : Line V
-PA6       : V Set
-PA7       : GReset
+
+//See notes near PORTA & B for details on Port Memory
 
 CS0 ROM
 CS1 DRAM
@@ -556,7 +556,7 @@ static int cc_m2sw(int col, int row) {
 
 static data16_t *ramptr;
 static MEMORY_READ16_START(cc_readmem)
-  { 0x00000000, 0x00ffffff, MRA16_ROM },
+  { 0x00000000, 0x00ffffff, MRA16_RAM },
   { 0x01000000, 0x0107ffff, MRA16_RAM },			/* DRAM */
   { 0x02000000, 0x02bfffff, io_r },					/* I/O */
   { 0x02C00000, 0x02C007ff, u16_r },				/* U16 (A10,A2,A1)*/
@@ -564,7 +564,7 @@ static MEMORY_READ16_START(cc_readmem)
 MEMORY_END
 
 static MEMORY_WRITE16_START(cc_writemem)
-  { 0x00000000, 0x00ffffff, MWA16_ROM },
+  { 0x00000000, 0x00ffffff, MWA16_RAM },
   { 0x01000000, 0x0107ffff, MWA16_RAM, &ramptr },	/* DRAM */
   { 0x02000000, 0x02bfffff, io_w },					/* I/O */
   { 0x02C00000, 0x02C007ff, u16_w },				/* U16 (A10,A2,A1)*/
