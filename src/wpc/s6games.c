@@ -70,10 +70,24 @@ S6_ROMEND
 #define input_ports_grgar input_ports_s6
 CORE_GAMEDEF(grgar,l1,"Gorgar (L-1)",1979,"Williams",s6_mS6S,0)
 
-
 /*-------------------------------
 / Firepower - Sys.6 (Game #497)
 /------------------------------*/
+INITGAMEFULL(frpwr_l6,s6_6digit_disp,0,45,26,25,27,28,42,12)
+S6_ROMSTARTPROM(frpwr_l6, "gamerom.716", CRC(fdd3b983) SHA1(fb5d1eb01589311cf4b2ef16e25db03d40bca2f7),
+                          "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
+                          "green2.716",  CRC(1c978a4a) SHA1(1959184764643d58f1740c54bb74c2aad7d667d2),
+                          "prom1_6.474", CRC(af6eb0b9) SHA1(28f8366737e09ffd60cb5ea55a5734143cdb9663),
+                          "prom2.474",   CRC(f75ade1a) SHA1(a5572c5c721dbcb82988b709f4ef2119118e37c2),
+                          "prom3.474",   CRC(242ec687) SHA1(c3366c898a66c78034687e6a6000193d52be4141))
+S67S_SOUNDROMS8(          "sound3.716",  CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
+S67S_SPEECHROMS000x(      "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c3319fdd72c1af2846659290),
+                          "v_ic5.532",   CRC(1737fdd2) SHA1(6307e0ae715e97294ee8aaaeb2e2bebb0cb590c2),
+                          "v_ic6.532",   CRC(e56f7aa2) SHA1(cb922c3f4d91285dda4ccae880c2d798a82fd51b))
+S6_ROMEND
+#define input_ports_frpwr_l6 input_ports_s6
+CORE_GAMEDEFNV(frpwr_l6,"Firepower (L-6)",1980,"Williams",s6_mS6S,0)
+
 INITGAMEFULL(frpwr_l2,s6_6digit_disp,0,45,26,25,27,28,42,12)
 S6_ROMSTARTPROM(frpwr_l2, "gamerom.716", CRC(fdd3b983) SHA1(fb5d1eb01589311cf4b2ef16e25db03d40bca2f7),
                           "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
@@ -86,11 +100,9 @@ S67S_SPEECHROMS000x(      "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c331
                           "v_ic5.532",   CRC(1737fdd2) SHA1(6307e0ae715e97294ee8aaaeb2e2bebb0cb590c2),
                           "v_ic6.532",   CRC(e56f7aa2) SHA1(cb922c3f4d91285dda4ccae880c2d798a82fd51b))
 S6_ROMEND
-#define input_ports_frpwr_l2 input_ports_s6
-CORE_GAMEDEFNV(frpwr_l2,"Firepower (L-2)",1980,"Williams",s6_mS6S,0)
-/*-------------------------------
-/ Firepower - Sys.6 7-Digit conversion
-/------------------------------*/
+#define input_ports_frpwr_l2 input_ports_frpwr_l6
+CORE_CLONEDEFNV(frpwr_l2,frpwr_l6,"Firepower (L-2)",1980,"Williams",s6_mS6S,0)
+
 static const struct core_dispLayout fp_7digit_disp[] = {
   // Player 1            Player 2
   {0, 0, 0,7,CORE_SEG7}, {0,18, 7,7,CORE_SEG7},
@@ -109,7 +121,7 @@ S67S_SPEECHROMS000x(     "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c3319
                          "v_ic6.532",   CRC(e56f7aa2) SHA1(cb922c3f4d91285dda4ccae880c2d798a82fd51b))
 S6_ROMEND
 #define input_ports_frpwr_b6 input_ports_frpwr_l2
-CORE_CLONEDEFNV(frpwr_b6,frpwr_l2,"Firepower (Sys.6 7-digit conversion)",2003,"Williams / Oliver",s6_mS6S,0)
+CORE_CLONEDEFNV(frpwr_b6,frpwr_l6,"Firepower (Sys.6 7-digit conversion)",2003,"Williams / Oliver",s6_mS6S,0)
 
 /* Following games used a 7 segment display */
 

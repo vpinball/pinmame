@@ -583,7 +583,16 @@ BY61_SOUNDROMxx80(        "841-01_4.716",CRC(e8b234e3) SHA1(584e553748b1c6571491
                           "841-02_5.532",CRC(9cd8c04e) SHA1(7d74d8f33a98c9832fda1054187eb7300dbf5f5e))
 BY35_ROMEND
 #define input_ports_embryonb input_ports_embryon
-CORE_CLONEDEFNV(embryonb,embryon ,"Embryon (7-digit conversion)",2002,"Bally / Oliver",by35_mBY35_61BS,0)
+CORE_CLONEDEFNV(embryonb,embryon ,"Embryon (7-digit conversion rev.1)",2002,"Bally / Oliver",by35_mBY35_61BS,0)
+
+BY35_ROMSTARTx00(embryonc,"embd78u2.bin",CRC(7b399975) SHA1(8e8c30884af61ca2003d9d38871d5c4d48bcf177),
+                          "embd78u6.bin",CRC(aa623412) SHA1(a6d386bd867ef01179d9e8695ce5e630727551df))
+BY61_SOUNDROMxx80(        "841-01_4.716",CRC(e8b234e3) SHA1(584e553748b1c6571491150e346d815005948b68),
+                          "841-02_5.532",CRC(9cd8c04e) SHA1(7d74d8f33a98c9832fda1054187eb7300dbf5f5e))
+BY35_ROMEND
+#define input_ports_embryonc input_ports_embryon
+#define init_embryonc init_embryonb
+CORE_CLONEDEFNV(embryonc,embryon ,"Embryon (7-digit conversion rev.8)",2004,"Bally / Oliver",by35_mBY35_61BS,0)
 /*--------------------------------
 / Fathom
 /-------------------------------*/

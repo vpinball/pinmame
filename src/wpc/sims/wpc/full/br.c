@@ -416,7 +416,7 @@ WPCS_SOUNDROM224("br_u18.l1",CRC(7d446e7d) SHA1(2b03235aecbea0f6f5efad5aff9da194
                  "br_u14.l1",CRC(490bb87f) SHA1(2e4c0bf776b82e2b5fb60c651edd34ab65d6c5aa))
 WPC_ROMEND
 
-WPC_ROMSTART(br,sp1,"u6-l1.rom",0x80000,CRC(87ad7f78) SHA1(5978fb753574bfbfcf5164bc098c5764df8c7403))
+WPC_ROMSTART(br,p17,"u6-p17.rom",0x40000,CRC(c5629f68) SHA1(580b38d57c4297525c5a96719fb886b2b6cfa772))
 WPCS_SOUNDROM224("u18-sp1.rom",CRC(01fb319d) SHA1(881180fbf524823cc3a89efe6dd6a444b40552ee),
                  "br_u15.l1",CRC(10250e96) SHA1(769c9a8c7e2bf4af312345d885afa000c4aedf3d),
                  "br_u14.l1",CRC(490bb87f) SHA1(2e4c0bf776b82e2b5fb60c651edd34ab65d6c5aa))
@@ -437,10 +437,10 @@ WPC_ROMEND
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF (br,l4,"Black Rose (L-4)",1992,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF (br,sp1,l4,"Black Rose (SP-1)",1992,"Bally",wpc_mFliptronS,0)
+CORE_GAMEDEF (br,l4,"Black Rose (L-4)",1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF (br,p17,l4,"Black Rose (SP-1)",1992,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF (br,l1,l4,"Black Rose (L-1)",1992,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF (br,l3,l4,"Black Rose (L-3)",1992,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF (br,l3,l4,"Black Rose (L-3)",1993,"Bally",wpc_mFliptronS,0)
 
 /*-----------------------
 / Simulation Definitions

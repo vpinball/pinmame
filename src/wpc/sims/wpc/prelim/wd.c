@@ -296,10 +296,9 @@ DCS_SOUNDROM6x("wdu2_20g.rom",CRC(2fe0ce7e) SHA1(ae148809b8f8925376bc6b6b0478176
                "wdu7_10.rom",CRC(36285ca2) SHA1(d42f04aa62b9859ce2452fa05da2049fe39e9411))
 WPC_ROMEND
 
-WPC_ROMSTART(wd,10,"whod1_0.rom",0x80000,CRC(85c29cfe) SHA1(5156d3699f16ac366c063149113ec78232ba787b)) WD_SOUND WPC_ROMEND
-WPC_ROMSTART(wd,11,"whod1_1.rom",0x80000,CRC(85cab586) SHA1(3940bff8dfa240f8c0ed96c96f58ab66effbdea5)) WD_SOUND WPC_ROMEND
-WPC_ROMSTART(wd,10f,"u6_10f.rom",0x80000,CRC(86ca3749) SHA1(fa011a39c260f9c3fd8c6f5d18f803f6f0bfe7a0)) WD_SOUND WPC_ROMEND
-WPC_ROMSTART(wd,10r,"u6_10r.rom",0x80000,CRC(d49be363) SHA1(a265110170e1debf4a566d91c12e0e4c93838d08)) WD_SOUND WPC_ROMEND
+WPC_ROMSTART(wd,10r,"whod1_0.rom",0x80000,CRC(85c29cfe) SHA1(5156d3699f16ac366c063149113ec78232ba787b)) WD_SOUND WPC_ROMEND
+WPC_ROMSTART(wd,11, "whod1_1.rom",0x80000,CRC(85cab586) SHA1(3940bff8dfa240f8c0ed96c96f58ab66effbdea5)) WD_SOUND WPC_ROMEND
+WPC_ROMSTART(wd,10f,"u6_10f.rom", 0x80000,CRC(86ca3749) SHA1(fa011a39c260f9c3fd8c6f5d18f803f6f0bfe7a0)) WD_SOUND WPC_ROMEND
 
 WPC_ROMSTART(wd,10g,"u6_10g.rom",0x80000,CRC(fbc17e3f) SHA1(7d9a8c7dda06bb4353517417fdc65d87b6c94167))
 DCS_SOUNDROM6x("wdu2_20g.rom",CRC(2fe0ce7e) SHA1(ae148809b8f8925376bc6b6b0478176cae490a2b),
@@ -310,15 +309,25 @@ DCS_SOUNDROM6x("wdu2_20g.rom",CRC(2fe0ce7e) SHA1(ae148809b8f8925376bc6b6b0478176
                "wdu7_10.rom",CRC(36285ca2) SHA1(d42f04aa62b9859ce2452fa05da2049fe39e9411))
 WPC_ROMEND
 
+WPC_ROMSTART(wd,03r,"u6_03r.rom",0x80000,CRC(8901868a) SHA1(35d8173865208a08a819275b4d76db3f050f61f1))
+DCS_SOUNDROM6x("u2-s031.rom",CRC(a265cd93) SHA1(2cebb00119f8fc2022959be2107669c9b4b65bfb),
+               "u3-s031.rom",CRC(16105ac9) SHA1(7b40cc9a30dd4f675fda979f41a22364aa9ea452),
+               "u4-s031.rom",CRC(07d52ef3) SHA1(4bd7dd97316c7244b556b4bd0a8475e282abaa25),
+               "u5-s031.rom",CRC(14fea24c) SHA1(a63e2a7796b89d5a6bca419ceaa14888ae22b7a6),
+               "u6-s031.rom",CRC(d15d073e) SHA1(063412a51de3b6c2bdbde0c3f84132d70c935fb4),
+               "u7-s031.rom",CRC(d252f599) SHA1(bdce67187c027b713b6ef88f6cd4f025de469929))
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF (wd,12,    "Who Dunnit (1.2)",1995,"Bally",wpc_m95DCSS,0)
 CORE_CLONEDEF(wd,12g,12,"Who Dunnit (1.2 Germany)",1995,"Bally",wpc_m95DCSS,0)
 CORE_CLONEDEF(wd,11,12, "Who Dunnit (1.1)",1995,"Bally",wpc_m95DCSS,0)
-CORE_CLONEDEF(wd,10,12, "Who Dunnit (1.0)",1995,"Bally",wpc_m95DCSS,0)
+CORE_CLONEDEF(wd,10r,12,"Who Dunnit (1.0 R)",1995,"Bally",wpc_m95DCSS,0)
 CORE_CLONEDEF(wd,10g,12,"Who Dunnit (1.0 Germany)",1995,"Bally",wpc_m95DCSS,0)
 CORE_CLONEDEF(wd,10f,12,"Who Dunnit (1.0 French)",1995,"Bally",wpc_m95DCSS,0)
+CORE_CLONEDEF(wd,03r,12,"Who Dunnit (0.3 R)",1995,"Bally",wpc_m95DCSS,0)
 
 /*-----------------------
 / Simulation Definitions

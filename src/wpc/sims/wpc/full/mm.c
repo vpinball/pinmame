@@ -448,22 +448,18 @@ static wpc_tSamSolMap mm_samsolmap[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(mm,109,"mm_1_09.bin",0x100000,CRC(9bac4d0c) SHA1(92cbe21802e1a77feff77b78f4dbbdbffb7b14bc))
-DCS_SOUNDROM5xm("mm_s2.1_0",  CRC(c55c3b71) SHA1(95febbf16645dd897bdd459ccad9501d2457d1f1),
-                "mm_sav3.rom",CRC(ed1be570) SHA1(ead4c4f89d63ee0b46d8a8bcd8650d506542d1ee),
-                "mm_sav4.rom",CRC(9c89eacf) SHA1(594a2aa81e34658862a9b7f0a83cf514182f2a2d),
-                "mm_sav5.rom",CRC(45089e30) SHA1(e83492109c59e8a2f1ba9e1f793788b97d150a9b),
+#define MM_SOUND \
+DCS_SOUNDROM5xm("mm_s2.1_0",  CRC(c55c3b71) SHA1(95febbf16645dd897bdd459ccad9501d2457d1f1), \
+                "mm_sav3.rom",CRC(ed1be570) SHA1(ead4c4f89d63ee0b46d8a8bcd8650d506542d1ee), \
+                "mm_sav4.rom",CRC(9c89eacf) SHA1(594a2aa81e34658862a9b7f0a83cf514182f2a2d), \
+                "mm_sav5.rom",CRC(45089e30) SHA1(e83492109c59e8a2f1ba9e1f793788b97d150a9b), \
                 "mm_sav6.rom",CRC(439d55f2) SHA1(d80e7268223157d864674261d140322634fb3bc2))
-WPC_ROMEND
-WPC_ROMSTART(mm,10, "mm_g11.1_0", 0x080000,CRC(6bd735c6) SHA1(3922df00e785610837230d5d9c24b9e082aa6fb6))
-DCS_SOUNDROM5xm("mm_s2.1_0",  CRC(c55c3b71) SHA1(95febbf16645dd897bdd459ccad9501d2457d1f1),
-                "mm_sav3.rom",CRC(ed1be570) SHA1(ead4c4f89d63ee0b46d8a8bcd8650d506542d1ee),
-                "mm_sav4.rom",CRC(9c89eacf) SHA1(594a2aa81e34658862a9b7f0a83cf514182f2a2d),
-                "mm_sav5.rom",CRC(45089e30) SHA1(e83492109c59e8a2f1ba9e1f793788b97d150a9b),
-                "mm_sav6.rom",CRC(439d55f2) SHA1(d80e7268223157d864674261d140322634fb3bc2))
-WPC_ROMEND
 
-WPC_ROMSTART(mm,050, "g11-050.rom", 0x080000,CRC(d211ad16) SHA1(539fb0c4ca6fe19ac6140f5792c5b7cd51f737ce))
+WPC_ROMSTART(mm,109, "mm_1_09.bin", 0x100000,CRC(9bac4d0c) SHA1(92cbe21802e1a77feff77b78f4dbbdbffb7b14bc)) MM_SOUND WPC_ROMEND
+WPC_ROMSTART(mm,109c,"mm_1_09c.bin",0x100000,CRC(d9e5189f) SHA1(fc01855c139d408559605fe9932236250cd566a8)) MM_SOUND WPC_ROMEND
+WPC_ROMSTART(mm,10,  "mm_g11.1_0",  0x080000,CRC(6bd735c6) SHA1(3922df00e785610837230d5d9c24b9e082aa6fb6)) MM_SOUND WPC_ROMEND
+
+WPC_ROMSTART(mm,05, "g11-050.rom", 0x080000,CRC(d211ad16) SHA1(539fb0c4ca6fe19ac6140f5792c5b7cd51f737ce))
 DCS_SOUNDROM5xm("s2-020.rom",  CRC(ee009ce4) SHA1(36843b2f1a07cf1e23bdff9b7347ceeca7e915bc),
                 "mm_sav3.rom",CRC(ed1be570) SHA1(ead4c4f89d63ee0b46d8a8bcd8650d506542d1ee),
                 "mm_sav4.rom",CRC(9c89eacf) SHA1(594a2aa81e34658862a9b7f0a83cf514182f2a2d),
@@ -475,8 +471,9 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF (mm,10,   "Medieval Madness (1.0)",1997,"Williams",wpc_m95S,0)
-CORE_CLONEDEF(mm,109,10,"Medieval Madness (1.09)", 1997,"Williams",wpc_m95S,0)
-CORE_CLONEDEF(mm,050,10,"Medieval Madness (0.50)", 1997,"Williams",wpc_m95S,0)
+CORE_CLONEDEF(mm,109,10,"Medieval Madness (1.09)", 1999,"Williams",wpc_m95S,0)
+CORE_CLONEDEF(mm,109c,10,"Medieval Madness (1.09C, Profanity)", 1999,"Williams",wpc_m95S,0)
+CORE_CLONEDEF(mm,05,10,"Medieval Madness (0.50)", 1997,"Williams",wpc_m95S,0)
 
 /*-----------------------
 / Simulation Definitions
