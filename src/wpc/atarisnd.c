@@ -27,10 +27,10 @@ static void atari_init(struct sndbrdData *brdData) {
 / exported interface
 /--------------------*/
 const struct sndbrdIntf atari1sIntf = {
-  atari_init, NULL, NULL, atari_gen1_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "ATARI1", atari_init, NULL, NULL, atari_gen1_w, atari_gen1_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 const struct sndbrdIntf atari2sIntf = {
-  atari_init, NULL, NULL, atari_data_w, NULL, atari_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "ATARI2", atari_init, NULL, NULL, atari_data_w, atari_data_w, NULL, atari_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 static struct CustomSound_interface atari1s_custInt = {atari_sh_start, atari_sh_stop};
 static struct CustomSound_interface atari2s_custInt = {atari_sh_start, atari_sh_stop};

@@ -14,6 +14,7 @@
 static void by32_init(struct sndbrdData *brdData);
 static WRITE_HANDLER(by32_data_w);
 static WRITE_HANDLER(by32_ctrl_w);
+static WRITE_HANDLER(by32_manCmd_w);
 static int by32_sh_start(const struct MachineSound *msound);
 static void by32_sh_stop(void);
 
@@ -21,7 +22,7 @@ static void by32_sh_stop(void);
 / exported interface
 /--------------------*/
 const struct sndbrdIntf by32Intf = {
-  by32_init, NULL, NULL, by32_data_w, NULL, by32_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "BY32", by32_init, NULL, NULL, by32_manCmd_w, by32_data_w, NULL, by32_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 static struct CustomSound_interface by32_custInt = {by32_sh_start, by32_sh_stop};
 
@@ -80,7 +81,9 @@ static WRITE_HANDLER(by32_ctrl_w) {
   setfreq((by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00));
   by32locals.strobe = data;
 }
-
+static WRITE_HANDLER(by32_manCmd_w) {
+  by32_data_w(0, data); by32_ctrl_w(0,0); by32_ctrl_w(0,((data & 0x10)>>3)|0x01);
+}
 static void by32_init(struct sndbrdData *brdData) {
   memset(&by32locals, 0, sizeof(by32locals));
   by32locals.brdData = *brdData;
@@ -117,12 +120,13 @@ static void by32_init(struct sndbrdData *brdData) {
 static void sp_init(struct sndbrdData *brdData);
 static WRITE_HANDLER(sp51_data_w);
 static WRITE_HANDLER(sp51_ctrl_w);
+static WRITE_HANDLER(sp51_manCmd_w);
 static READ_HANDLER(sp_8910a_r);
 /*-------------------
 / exported interface
 /--------------------*/
 const struct sndbrdIntf by51Intf = {
-  sp_init, NULL, NULL, sp51_data_w, NULL, sp51_ctrl_w, NULL,
+  "BY51", sp_init, NULL, NULL, sp51_manCmd_w, sp51_data_w, NULL, sp51_ctrl_w, NULL,
 };
 
 static struct AY8910interface   sp_ay8910Int  = { 1, 3580000/4, {20}, {sp_8910a_r} };
@@ -208,6 +212,9 @@ static WRITE_HANDLER(sp51_ctrl_w) {
   splocals.lastcmd = (splocals.lastcmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00);
   pia_set_input_ca1(SP_PIA0, data & 0x01);
 }
+static WRITE_HANDLER(sp51_manCmd_w) {
+  splocals.lastcmd = data;  pia_set_input_ca1(SP_PIA0, 1); pia_set_input_ca1(SP_PIA0, 0);
+}
 
 static READ_HANDLER(sp_8910a_r) { return ~splocals.lastcmd; }
 
@@ -261,11 +268,12 @@ static void snt_init(struct sndbrdData *brdData);
 static void snt_diag(int button);
 static WRITE_HANDLER(snt_data_w);
 static WRITE_HANDLER(snt_ctrl_w);
+static WRITE_HANDLER(snt_manCmd_w);
 static void snt_5220Irq(int state);
 static READ_HANDLER(snt_8910a_r);
 
 const struct sndbrdIntf by61Intf = {
-  snt_init, NULL, snt_diag, snt_data_w, NULL, snt_ctrl_w, NULL, 0//SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "BYSNT", snt_init, NULL, snt_diag, snt_manCmd_w, snt_data_w, NULL, snt_ctrl_w, NULL, 0//SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 static struct TMS5220interface snt_tms5220Int = { 640000, 50, snt_5220Irq };
 static struct DACinterface     snt_dacInt = { 1, { 20 }};
@@ -360,6 +368,9 @@ static WRITE_HANDLER(snt_ctrl_w) {
   sntlocals.lastcmd = (sntlocals.lastcmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00);
   pia_set_input_cb1(SNT_PIA0, ~data & 0x01);
 }
+static WRITE_HANDLER(snt_manCmd_w) {
+  sntlocals.lastcmd = data;  pia_set_input_cb1(SNT_PIA0, 1); pia_set_input_cb1(SNT_PIA0, 0);
+}
 static READ_HANDLER(snt_8910a_r) { return ~sntlocals.lastcmd; }
 
 static WRITE_HANDLER(snt_pia0ca2_w) { sndbrd_ctrl_cb(sntlocals.brdData.boardNo,data); } // diag led
@@ -379,7 +390,7 @@ static READ_HANDLER(cs_port1_r);
 static WRITE_HANDLER(cs_port2_w);
 
 const struct sndbrdIntf by45Intf = {
-  cs_init, NULL, NULL, cs_cmd_w, NULL, cs_ctrl_w, NULL, 0
+  "BY45", cs_init, NULL, NULL, NULL, cs_cmd_w, NULL, cs_ctrl_w, NULL, 0
 };
 static struct DACinterface cs_dacInt = { 1, { 20 }};
 static MEMORY_READ_START(cs_readmem)
@@ -439,7 +450,7 @@ static WRITE_HANDLER(tcs_ctrl_w);
 static READ_HANDLER(tcs_status_r);
 
 const struct sndbrdIntf byTCSIntf = {
-  tcs_init, NULL, tcs_diag, tcs_cmd_w, tcs_status_r, tcs_ctrl_w, NULL, SNDBRD_NOCBSYNC
+  "BYTCS", tcs_init, NULL, tcs_diag, NULL, tcs_cmd_w, tcs_status_r, tcs_ctrl_w, NULL, SNDBRD_NOCBSYNC
 };
 static struct DACinterface tcs_dacInt = { 1, { 20 }};
 static MEMORY_READ_START(tcs_readmem)
@@ -530,7 +541,7 @@ static WRITE_HANDLER(sd_ctrl_w);
 static READ_HANDLER(sd_status_r);
 
 const struct sndbrdIntf bySDIntf = {
-  sd_init, NULL, sd_diag, sd_cmd_w, sd_status_r, sd_ctrl_w, NULL, 0//SNDBRD_NODATASYNC|SNDBRD_NOCBSYNC
+  "BYSD", sd_init, NULL, sd_diag, NULL, sd_cmd_w, sd_status_r, sd_ctrl_w, NULL, 0//SNDBRD_NODATASYNC|SNDBRD_NOCBSYNC
 };
 static struct DACinterface sd_dacInt = { 1, { 80 }};
 static MEMORY_READ16_START(sd_readmem)

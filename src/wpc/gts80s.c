@@ -216,7 +216,7 @@ struct CustomSound_interface GTS80S_customsoundinterface = {
 };
 
 const struct sndbrdIntf gts80sIntf = {
-	gts80s_init, gts80s_exit, NULL, gts80s_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "GTS80", gts80s_init, gts80s_exit, NULL, gts80s_data_w, gts80s_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
 MACHINE_DRIVER_START(gts80s_s)
@@ -472,7 +472,7 @@ struct VOTRAXSC01interface GTS80SS_votrax_sc01_interface = {
 };
 
 const struct sndbrdIntf gts80ssIntf = {
-  gts80ss_init, gts80ss_exit, NULL, gts80ss_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "GTS80SS", gts80ss_init, gts80ss_exit, NULL, gts80ss_data_w, gts80ss_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
 MACHINE_DRIVER_START(gts80s_ss)
@@ -694,7 +694,7 @@ WRITE_HANDLER(gts80b_data_w)
 {
 	data ^= 0xff;	/*Data is inverted from main cpu*/
 	s80bs_sh_w(0,data);
-	snd_cmd_log(data);
+//	snd_cmd_log(data);
 }
 
 /***************************/
@@ -1045,7 +1045,7 @@ void gts80b_exit(int boardNo)
 }
 
 const struct sndbrdIntf gts80bIntf = {
-  gts80b_init, gts80b_exit, NULL, gts80b_data_w, NULL, NULL, NULL, 0 //SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "GTS80B", gts80b_init, gts80b_exit, gts80b_data_w, gts80b_data_w, NULL, NULL, NULL, 0 //SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
 MACHINE_DRIVER_START(gts80s_b1)

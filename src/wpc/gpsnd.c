@@ -318,15 +318,15 @@ MEMORY_END
 / exported interfaces
 /--------------------*/
 const struct sndbrdIntf gpSSU1Intf = {
-  gpss1_init, NULL, NULL, gpss1_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "GPS1", gpss1_init, NULL, NULL, gpss1_data_w, gpss1_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
 const struct sndbrdIntf gpSSU2Intf = {
-  gpss2_init, NULL, NULL, gpss2_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "GPS2", gpss2_init, NULL, NULL, gpss2_data_w, gpss2_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
 const struct sndbrdIntf gpMSU1Intf = {
-  gpsm_init, NULL, NULL, gpsm_data_w, NULL, gpsm_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "GPSM", gpsm_init, NULL, NULL, gpsm_data_w, gpsm_data_w, NULL, gpsm_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
 MACHINE_DRIVER_START(gpSSU1)

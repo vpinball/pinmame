@@ -16,8 +16,8 @@
 #include "driver.h"
 #include "core.h"
 #include "wmssnd.h"
+#include "sndbrd.h"
 #include "snd_cmd.h"
-#include "wpc.h"
 
 #define MAX_CMD_LENGTH   6
 #define MAX_NAME_LENGTH 30
@@ -26,7 +26,7 @@
 
 static int playCmd(int length, int *cmd);
 static int checkName(const char *buf, const char *name);
-static void readCmds(const char *head);
+static void readCmds(int boardNo, const char *head);
 static void clrCmds(void);
 
 static struct cmds {
@@ -46,6 +46,7 @@ static struct {
   int cmdLog[MAX_CMD_LOG];
   int firstLog;
   mem_write_handler soundCmd;
+  int boards; // 0 = none, 1 = board0, 2 = board1, 3 = both
 } locals;
 
 static void wave_init(void);
@@ -54,12 +55,17 @@ static void wave_handle(void);
 /*---------------------------------*/
 /*-- init manual sound commands  --*/
 /*---------------------------------*/
-void snd_cmd_init(mem_write_handler soundCmd, const char *head) {
+void snd_cmd_init(void) {
   int ii;
   memset(&locals, 0, sizeof(locals));
   locals.currCmd = &cmds;
-  locals.soundCmd = soundCmd;
-  if (soundCmd) readCmds(head);
+  locals.boards = sndbrd_exists(0) + 2*sndbrd_exists(1);
+  switch (locals.boards) {
+    case 1: readCmds(-1, sndbrd_typestr(0)); break;
+    case 2: readCmds(-1, sndbrd_typestr(1)); break;
+    case 3: readCmds( 0, sndbrd_typestr(0));
+            readCmds( 1, sndbrd_typestr(1)); break;
+  }
   for (ii = 0; ii < MAX_CMD_LENGTH*2; ii++) locals.digits[ii] = 0x10;
   wave_init();
 }
@@ -75,8 +81,12 @@ void snd_cmd_exit(void) {
 /*----------------
 / log handling
 /-----------------*/
-void snd_cmd_log(int cmd) {
-  if (locals.soundMode) return; // Don't log from within sound commander
+void snd_cmd_log(int boardNo, int cmd) {
+  if (locals.soundMode || (locals.boards == 0)) return; // Don't log from within sound commander
+  if (locals.boards == 3) {
+    locals.cmdLog[locals.firstLog++] = boardNo;
+    locals.firstLog %= MAX_CMD_LOG;
+  }
   locals.cmdLog[locals.firstLog++] = cmd;
   locals.firstLog %= MAX_CMD_LOG;
 }
@@ -96,7 +106,7 @@ int snd_get_cmd_log(int *last, int *buffer) {
 int manual_sound_commands(struct mame_bitmap *bitmap) {
   int ii;
   /*-- we must have something to play with --*/
-  if (!locals.soundCmd) return TRUE;
+  if (!locals.boards) return TRUE;
 
   /*-- handle recording --*/
   if (keyboard_pressed_memory_repeat(SMDCMD_RECORDTOGGLE,REPEATKEY))
@@ -197,9 +207,9 @@ static int checkName(const char *buf, const char *name) {
   return TRUE;
 }
 
-static void readCmds(const char *head) {
+static void readCmds(int boardNo, const char *head) {
   mame_file *f = mame_fopen(NULL, "sounds.dat", FILETYPE_HIGHSCORE_DB, 0);
-  int getData = FALSE;
+  int getData = 0;
 
   if (f) {
     char buffer[MAX_LINE_LENGTH];
@@ -221,6 +231,9 @@ static void readCmds(const char *head) {
             else
               break;
             if (tmpCmd.length++ & 0x01) {
+              if ((getData == 2) && (boardNo >= 0)) {
+                tmpCmd.cmd[tmpCmd.length/2-1] = boardNo; tmpCmd.length += 2;
+              }
               tmpCmd.cmd[tmpCmd.length/2-1] = cmd;
               /* logerror("cmd=%x\n",cmd); */
               cmd = 0;
@@ -261,12 +274,17 @@ found:      ;
       else if ((buffer[0] == ';') || (buffer[0] == '#') ||
                (buffer[0] == '\n') || (buffer[0] == ' '))
         continue;
-      else
-        getData = (checkName(buffer, head) ||
-                   checkName(buffer, Machine->gamedrv->name) ||
-                   (Machine->gamedrv->clone_of &&
-                    !(Machine->gamedrv->clone_of->flags & NOT_A_DRIVER) &&
-                    checkName(buffer, Machine->gamedrv->clone_of->name)));
+      else {
+        if (checkName(buffer, head))
+          getData = 2;
+        else
+          getData = (boardNo != 0) &&
+                    (checkName(buffer, Machine->gamedrv->name) ||
+                     (Machine->gamedrv->clone_of &&
+                      !(Machine->gamedrv->clone_of->flags & NOT_A_DRIVER) &&
+                      checkName(buffer, Machine->gamedrv->clone_of->name)));
+
+      }
     } /* while */
     mame_fclose(f);
   } /* if */
@@ -295,16 +313,17 @@ static int playCmd(int length, int *cmd) {
     cmdIdx = 1;
     return FALSE;
   }
-  /* logerror("cmdIdx = %d\n",cmdIdx); */
   /* currently sending a command ? */
   if (cmdIdx > 0) {
     cmdIdx += 1;
     if ((cmdIdx % 4) == 2) { /* only send cmd every 4th frame */
-      int comm = nextCmd[cmdIdx/4];
-      if      (comm == -1)
+      if      (nextCmd[cmdIdx/4] == -1)
         cmdIdx = 0;
+      else if (locals.boards == 3) {
+        sndbrd_manCmd(nextCmd[cmdIdx/4], nextCmd[cmdIdx/4+1]); cmdIdx += 4;
+      }
       else
-        locals.soundCmd(0,comm);
+        sndbrd_manCmd(locals.boards - 1, nextCmd[cmdIdx/4]);
     }
   }
   return FALSE;

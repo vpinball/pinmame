@@ -92,8 +92,6 @@ struct pinMachine {
   int  coreDips;               /* Number of core DIPs */
   void (*updSw)(int *inport);  /* update core specific switches */
   int  diagLEDs;               /* number of diagnostic LEDs */
-  mem_write_handler sndCmd;    /* send a sound command */
-  const char *sndHead;         /* heading in sound.dat */
   int (*sw2m)(int no);         /* conversion function for switch */
   int (*lamp2m)(int no);       /* conversion function for lamps */
   int (*m2sw)(int col, int row);
@@ -129,10 +127,8 @@ extern void machine_add_timer(struct InternalMachineDriver *machine, void (*func
 #define MDRV_LAMP_CONV(toMatrix,fromMatrix) \
   machine->pinmame.lamp2m = toMatrix; \
   machine->pinmame.m2lamp = fromMatrix;
-#define MDRV_SOUND_CMD(name) \
-  machine->pinmame.sndCmd = (name);
-#define MDRV_SOUND_CMDHEADING(str) \
-  machine->pinmame.sndHead = (str);
+#define MDRV_SOUND_CMD(name) 
+#define MDRV_SOUND_CMDHEADING(str)
 #define MDRV_TIMER_ADD(func, rate) \
   machine_add_timer(machine, func, rate);
 #define MACHINE_RESET(name) void machine_reset_##name(void)

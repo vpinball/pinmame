@@ -5,6 +5,8 @@ extern void sndbrd_sync_w(WRITE_HANDLER((*handler)),int offset, int data);
 /*-- core interface --*/
 extern void sndbrd_init(int brdNo, int brdType, int cpuNo, UINT8 *romRegion,
                        WRITE_HANDLER((*data_cb)),WRITE_HANDLER((*ctrl_cb)));
+extern int sndbrd_exists(int board);
+extern const char* sndbrd_typestr(int board);
 extern void sndbrd_exit(int board);
 extern void sndbrd_diag(int board, int button);
 extern void sndbrd_data_w(int board, int data);
@@ -13,6 +15,7 @@ extern void sndbrd_ctrl_w(int board, int data);
 extern int sndbrd_ctrl_r(int board);
 extern void sndbrd_ctrl_cb(int board, int data);
 extern void sndbrd_data_cb(int board, int data);
+void sndbrd_manCmd(int board, int cmd);
 extern void sndbrd_0_init(int brdType, int cpuNo, UINT8 *romRegion,
                           WRITE_HANDLER((*data_cb)),WRITE_HANDLER((*ctrl_cb)));
 extern void sndbrd_1_init(int brdType, int cpuNo, UINT8 *romRegion,
@@ -39,9 +42,11 @@ struct sndbrdData {
   UINT8 *romRegion;
 };
 struct sndbrdIntf {
+  const char* typestr;
   void (*init)(struct sndbrdData *brdData);
   void (*exit)(int boardNo);
   void (*diag)(int buttons);
+  WRITE_HANDLER((*manCmd_w));
   WRITE_HANDLER((*data_w));
    READ_HANDLER((*data_r));
   WRITE_HANDLER((*ctrl_w));

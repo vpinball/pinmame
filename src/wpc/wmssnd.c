@@ -7,7 +7,6 @@
 #include "sound/hc55516.h"
 #include "sound/dac.h"
 #include "core.h"
-#include "snd_cmd.h"
 #include "sndbrd.h"
 #include "wpc.h"
 #include "wmssnd.h"
@@ -23,7 +22,7 @@ static WRITE_HANDLER(s67s_cmd_w);
 static void s67s_diag(int button);
 
 const struct sndbrdIntf s67sIntf = {
-  s67s_init, NULL, s67s_diag, s67s_cmd_w, NULL, NULL, NULL, SNDBRD_NOCTRLSYNC
+  "WMSS67", s67s_init, NULL, s67s_diag, s67s_cmd_w, s67s_cmd_w, NULL, NULL, NULL, SNDBRD_NOCTRLSYNC
 };
 
 /* machine interface */
@@ -82,7 +81,6 @@ static WRITE_HANDLER(s67s_cmd_w) {
   data = (data & 0x1f) | (core_getDip(0)<<5);
   pia_set_input_b(S67S_PIA0, data);
   pia_set_input_cb1(S67S_PIA0, !((data & 0x1f) == 0x1f));
-  snd_cmd_log(data);
 }
 static void s67s_diag(int button) {
   cpu_set_nmi_line(s67slocals.brdData.cpuNo, button ? ASSERT_LINE : CLEAR_LINE);
@@ -102,9 +100,10 @@ static void s67s_piaIrq(int state) {
 /* sound board interface */
 static void s11s_init(struct sndbrdData *brdData);
 static void s11s_diag(int button);
+static WRITE_HANDLER(s11s_manCmd_w);
 static WRITE_HANDLER(s11s_bankSelect);
 const struct sndbrdIntf s11sIntf = {
-  s11s_init, NULL, s11s_diag, soundlatch_w, NULL, CAT3(pia_,S11S_PIA0,_ca1_w), NULL
+  "WMSS11", s11s_init, NULL, s11s_diag, s11s_manCmd_w, soundlatch_w, NULL, CAT3(pia_,S11S_PIA0,_ca1_w), NULL
 };
 /* machine interface */
 static MEMORY_READ_START(s9s_readmem)
@@ -217,7 +216,9 @@ static void s11s_init(struct sndbrdData *brdData) {
     cpu_setbank(S11S_BANK1, s11slocals.brdData.romRegion+0x4000);
   }
 }
-
+static WRITE_HANDLER(s11s_manCmd_w) {
+  soundlatch_w(0, data); pia_set_input_ca1(S11S_PIA0, 1); pia_set_input_ca1(S11S_PIA0, 0);
+}
 static WRITE_HANDLER(s11s_bankSelect) {
   cpu_setbank(S11S_BANK0, s11slocals.brdData.romRegion + 0x8000+((data&0x01)<<14));
   cpu_setbank(S11S_BANK1, s11slocals.brdData.romRegion + 0x0000+((data&0x02)<<13));
@@ -242,10 +243,11 @@ static void s11cs_piaIrqB(int state);
 static WRITE_HANDLER(s11cs_pia0ca2_w);
 static WRITE_HANDLER(s11cs_pia0cb2_w);
 static WRITE_HANDLER(s11cs_rombank_w);
+static WRITE_HANDLER(s11cs_manCmd_w);
 static void s11cs_init(struct sndbrdData *brdData);
 
 const struct sndbrdIntf s11csIntf = {
-  s11cs_init, NULL, NULL,
+  "WMSS11C", s11cs_init, NULL, NULL, s11cs_manCmd_w, 
   soundlatch2_w, NULL,
   CAT3(pia_,S11CS_PIA0,_cb1_w), soundlatch3_r
 };
@@ -310,6 +312,9 @@ static void s11cs_init(struct sndbrdData *brdData) {
   pia_config(S11CS_PIA0, PIA_STANDARD_ORDERING, &s11cs_pia);
   cpu_setbank(S11CS_BANK0, s11clocals.brdData.romRegion);
 }
+static WRITE_HANDLER(s11cs_manCmd_w) {
+  soundlatch2_w(0, data); pia_set_input_cb1(S11CS_PIA0, 1); pia_set_input_cb1(S11CS_PIA0, 0);
+}
 
 static WRITE_HANDLER(s11cs_pia0ca2_w) { if (!data) YM2151_sh_reset(); }
 static WRITE_HANDLER(s11cs_pia0cb2_w) { sndbrd_data_cb(s11clocals.brdData.boardNo,data); }
@@ -332,9 +337,9 @@ static void s11js_init(struct sndbrdData *brdData);
 static WRITE_HANDLER(s11js_reply_w);
 static WRITE_HANDLER(s11js_rombank_w);
 static WRITE_HANDLER(s11js_ctrl_w);
-
+static WRITE_HANDLER(s11js_manCmd_w);
 const struct sndbrdIntf s11jsIntf = {
-  s11js_init, NULL, NULL,
+  "WMSS11J", s11js_init, NULL, NULL, s11js_manCmd_w, 
   soundlatch2_w, soundlatch3_r,
   s11js_ctrl_w, NULL, 0
 };
@@ -394,9 +399,13 @@ static WRITE_HANDLER(s11js_reply_w) {
   soundlatch3_w(0,data);
   sndbrd_data_cb(s11jlocals.brdData.boardNo, 0); sndbrd_data_cb(s11jlocals.brdData.boardNo, 1);
 }
+static WRITE_HANDLER(s11js_manCmd_w) {
+  soundlatch2_w(0, data); s11js_ctrl_w(0,0);
+}
 static void s11js_ym2151IRQ(int state) {
   cpu_set_irq_line(s11jlocals.brdData.cpuNo, M6809_FIRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
+
 
 /*------------------
 /  WPC sound board
@@ -413,7 +422,7 @@ static READ_HANDLER(wpcs_data_r);
 static WRITE_HANDLER(wpcs_data_w);
 static READ_HANDLER(wpcs_ctrl_r);
 static WRITE_HANDLER(wpcs_ctrl_w);
-const struct sndbrdIntf wpcsIntf = { wpcs_init, NULL, NULL, wpcs_data_w, wpcs_data_r, wpcs_ctrl_w, wpcs_ctrl_r };
+const struct sndbrdIntf wpcsIntf = { "WPCS", wpcs_init, NULL, NULL, wpcs_data_w, wpcs_data_w, wpcs_data_r, wpcs_ctrl_w, wpcs_ctrl_r };
 
 /*-- other memory handlers --*/
 static WRITE_HANDLER(wpcs_rombank_w);
@@ -677,7 +686,7 @@ MACHINE_DRIVER_END
 /*----------------
 / Sound interface
 /-----------------*/
-const struct sndbrdIntf dcsIntf = { dcs_init, NULL, NULL, dcs_data_w, dcs_data_r, dcs_ctrl_w, dcs_ctrl_r };
+const struct sndbrdIntf dcsIntf = { "DCS", dcs_init, NULL, NULL, dcs_data_w, dcs_data_w, dcs_data_r, dcs_ctrl_w, dcs_ctrl_r };
 
 /*---------------
 /  Bank handlers
@@ -741,7 +750,6 @@ static data8_t *dcs_getBootROM(int soft) {
   sndbrd_data_cb(dcslocals.brdData.boardNo, data);
 }
 
-
 static int dcs_custStart(const struct MachineSound *msound) {
   /*-- clear DAC data --*/
   memset(&dcs_dac,0,sizeof(dcs_dac));
@@ -788,9 +796,7 @@ static READ_HANDLER(dcs_data_r) {
 }
 
 static WRITE_HANDLER(dcs_data_w) {
-  DBGLOG(("Latch_w: %02x\n",data));
-  soundlatch_w(0, data);
-  cpu_set_irq_line(dcslocals.brdData.cpuNo, ADSP2105_IRQ2, ASSERT_LINE);
+  soundlatch_w(0, data); cpu_set_irq_line(dcslocals.brdData.cpuNo, ADSP2105_IRQ2, ASSERT_LINE);
 }
 
 static WRITE_HANDLER(dcs_ctrl_w) {
