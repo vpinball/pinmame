@@ -222,10 +222,22 @@ ZAC_ROMSTART000(socrking,	"soccer.ic1",CRC(3fbd7c32) SHA1(2f56f67d1ad98763828400
 							"soccer.ic3",CRC(5da6ea20) SHA1(c0e740e20a968ee58e0cd12a0089bb047f5e2cbb))
 ZAC_SOUNDROM_cefg1(			"sound1.c",  CRC(3aa95018) SHA1(5347c3aefb642fc5cabd9d5e61fe6515a2dcb2aa),
 							"sound2.e",  CRC(f9b57fd6) SHA1(50e42ed349680211eedf55ae639dbae899f3c6da),
-							"sound3.f",  CRC(d162b022) SHA1(3087554f254e2a8e59ed87feb2770a013d90b53d),
+							"sound3.f",  CRC(551566e6) SHA1(350432dbc0d6f55404cae970524a0dfda15d8aa0),
 							"sound4.g",  CRC(720593fb) SHA1(93aa9ae1be299548e17b4fe97a7fb4ddab76de40))
 ZAC_ROMEND
 CORE_GAMEDEFNV(socrking,"Soccer Kings",1982,"Zaccaria",ZAC2A,GAME_NOT_WORKING)
+
+INITGAME(socrkngg,GEN_ZAC2,dispZAC3,SNDBRD_ZAC1370,1827)
+ZAC_ROMSTART000(socrkngg,	"soccer.ic1",CRC(3fbd7c32) SHA1(2f56f67d1ad987638284000cca1e20ff17fcd4f9),
+							"soccer.ic2",CRC(0cc0df1f) SHA1(2fd05af0ec63835a8f69fdc50e2faceb829b4df2),
+							"soccer.ic3",CRC(5da6ea20) SHA1(c0e740e20a968ee58e0cd12a0089bb047f5e2cbb))
+ZAC_SOUNDROM_cefgh(			"sk-de1.c",  CRC(702e3e67) SHA1(ad4c02ef480d3923eebaedb12851018146740558),
+							"sk-de2.e",  CRC(b60eddb5) SHA1(7e335315d0b91fc67888cda644dabafdef1afa19),
+							"sk-de3.f",  CRC(2f72a94e) SHA1(912ef1e2878b61edff88e5cc1ec19d1b22d44f2d),
+							"sk-de4.g",  CRC(23adcc78) SHA1(c25185c08377286c04c43fa2156245a71fc68e2e),
+							"sk-de5.h",  CRC(c6f0302d) SHA1(c57d36f3bc3a7e3a056b930b8e11b4cee4af0558))
+ZAC_ROMEND
+CORE_CLONEDEFNV(socrkngg,socrking,"Soccer Kings (German speech)",1982,"Zaccaria",ZAC2A,GAME_NOT_WORKING)
 
 /*--------------------------------
 / Pinball Champ (??/83)

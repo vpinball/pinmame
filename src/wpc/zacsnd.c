@@ -297,21 +297,23 @@ static WRITE_HANDLER(sns_data_w);
 static WRITE_HANDLER(sns_ctrl_w);
 static void sns_5220Irq(int state);
 static READ_HANDLER(sns_8910a_r);
+static WRITE_HANDLER(sns_8910b_w);
 static READ_HANDLER(sns2_8910a_r);
+static WRITE_HANDLER(sns_dac_w);
 
 const struct sndbrdIntf zac1370Intf = {
-  "ZAC1370", sns_init, NULL, sns_diag, NULL, sns_data_w, NULL, sns_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "ZAC1370", sns_init, NULL, sns_diag, sns_data_w, sns_data_w, NULL, sns_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 const struct sndbrdIntf zac13136Intf = {
-  "ZAC13136", sns_init, NULL, sns_diag, NULL, sns_data_w, NULL, sns_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "ZAC13136", sns_init, NULL, sns_diag, sns_data_w, sns_data_w, NULL, sns_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 const struct sndbrdIntf zac11178Intf = {
-  "ZAC11178", sns_init, NULL, sns_diag, NULL, sns_data_w, NULL, sns_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "ZAC11178", sns_init, NULL, sns_diag, sns_data_w, sns_data_w, NULL, sns_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 static struct TMS5220interface sns_tms5220Int = { 640000, 100, sns_5220Irq };
 static struct DACinterface     sns_dacInt = { 1, { 20 }};
-static struct AY8910interface  sns_ay8910Int = { 1, 3580000/4, {25}, {sns_8910a_r}};
-static struct AY8910interface  sns2_ay8910Int = { 2, 3580000/4, {25, 25}, {sns_8910a_r, sns2_8910a_r}};
+static struct AY8910interface  sns_ay8910Int = { 1, 3580000/4, {25}, {sns_8910a_r}, {0}, {0}, {sns_8910b_w}};
+static struct AY8910interface  sns2_ay8910Int = { 2, 3580000/4, {25, 25}, {sns_8910a_r, sns2_8910a_r}, {0}, {0}, {sns_8910b_w}};
 
 static WRITE_HANDLER(ram80_w) {
   logerror("CEM3374 offset=%d, data=%02x\n", offset, data);
@@ -325,7 +327,7 @@ static MEMORY_READ_START(sns_readmem)
   { 0x0080, 0x0083, pia_r(SNS_PIA0) },
   { 0x0090, 0x0093, pia_r(SNS_PIA1) },
   { 0x2000, 0x2000, sns_8910a_r },
-  { 0x4000, 0xffff, MRA_ROM },
+  { 0x7000, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_READ_START(sns2_readmem)
@@ -335,7 +337,7 @@ static MEMORY_READ_START(sns2_readmem)
   { 0x0090, 0x0093, pia_r(SNS_PIA1) },
   { 0x1800, 0x1800, sns2_8910a_r },
   { 0x2000, 0x2000, sns_8910a_r },
-  { 0x4000, 0xffff, MRA_ROM },
+  { 0x7000, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_READ_START(sns3_readmem)
@@ -349,8 +351,7 @@ static MEMORY_WRITE_START(sns_writemem)
   { 0x0080, 0x0083, pia_w(SNS_PIA0) },
   { 0x0084, 0x0087, pia_w(SNS_PIA2) }, // 13136 only
   { 0x0090, 0x0093, pia_w(SNS_PIA1) },
-  { 0x1000, 0x1000, DAC_0_data_w },
-  { 0x4000, 0xffff, MWA_ROM },
+  { 0x1000, 0x1000, sns_dac_w },
 MEMORY_END
 
 static MEMORY_WRITE_START(sns3_writemem)
@@ -358,8 +359,7 @@ static MEMORY_WRITE_START(sns3_writemem)
   { 0x0080, 0x0087, ram80_w },
   { 0x0090, 0x0093, pia_w(SNS_PIA1) },
   { 0x00a0, 0x00a7, rama0_w },
-  { 0x1000, 0x1000, DAC_0_data_w },
-  { 0x4000, 0xffff, MWA_ROM },
+  { 0x1000, 0x1000, sns_dac_w },
 MEMORY_END
 
 MACHINE_DRIVER_START(zac1370)
@@ -398,6 +398,7 @@ static READ_HANDLER(sns_pia0a_r);
 static WRITE_HANDLER(sns_pia0a_w);
 static WRITE_HANDLER(sns_pia0b_w);
 static WRITE_HANDLER(sns_pia0ca2_w);
+static WRITE_HANDLER(sns_pia0cb2_w);
 static WRITE_HANDLER(sns_pia1a_w);
 static WRITE_HANDLER(sns_pia1b_w);
 static READ_HANDLER(sns_pia2a_r);
@@ -412,12 +413,13 @@ static struct {
   struct sndbrdData brdData;
   int pia0a, pia0b, pia1a, pia1b, pia2a, pia2b;
   int cmd[2], lastcmd, cmdin, cmdout, lastctrl;
+  int dacMute;
   void* cb1timer;
 } snslocals;
 
 static const struct pia6821_interface sns_pia[] = {{
   /*i: A/B,CA/B1,CA/B2 */ sns_pia0a_r, 0, 0, 0, 0, 0,
-  /*o: A/B,CA/B2       */ sns_pia0a_w, sns_pia0b_w, sns_pia0ca2_w, 0,
+  /*o: A/B,CA/B2       */ sns_pia0a_w, sns_pia0b_w, sns_pia0ca2_w, sns_pia0cb2_w,
   /*irq: A/B           */ sns_irqa, sns_irqb
 },{
   /*i: A/B,CA/B1,CA/B2 */ 0, 0, 0, 0, 0, 0,
@@ -430,24 +432,28 @@ static const struct pia6821_interface sns_pia[] = {{
 }};
 
 static void timer_callback(int n) {
-  pia_set_input_cb1(2, n);
+    pia_set_input_cb1(2, n);
 }
 
 static void sns_init(struct sndbrdData *brdData) {
   snslocals.brdData = *brdData;
   pia_config(SNS_PIA0, PIA_STANDARD_ORDERING, &sns_pia[0]);
   pia_config(SNS_PIA1, PIA_STANDARD_ORDERING, &sns_pia[1]);
-  if (brdData->boardNo == SNDBRD_ZAC13136)
+  if (core_gameData->hw.soundBoard == SNDBRD_ZAC13136)
     pia_config(SNS_PIA2, PIA_STANDARD_ORDERING, &sns_pia[2]);
   snslocals.cmdin = snslocals.cmdout = 2;
   snslocals.cb1timer = timer_alloc(timer_callback);
-  if (snslocals.brdData.boardNo == SNDBRD_ZAC11178) {
+  if (core_gameData->hw.soundBoard == SNDBRD_ZAC11178) {
     timer_adjust(snslocals.cb1timer, 1.0/874.0, 0, 1.0/874.0);
   }
 }
 
 static void sns_diag(int button) {
   cpu_set_nmi_line(ZACSND_CPUA, button ? ASSERT_LINE : CLEAR_LINE);
+}
+
+static WRITE_HANDLER(sns_dac_w) {
+  if (!snslocals.dacMute) DAC_0_data_w(offset, data);
 }
 
 static READ_HANDLER(sns_pia0a_r) {
@@ -459,6 +465,7 @@ static WRITE_HANDLER(sns_pia0a_w) {
   if (snslocals.pia0b & 0x02) AY8910Write(0, snslocals.pia0b ^ 0x01, snslocals.pia0a);
 }
 static WRITE_HANDLER(sns_pia0b_w) {
+  if ((data & 0xf0) != (snslocals.pia0b & 0xf0)) logerror("DAC1408 modulation: %x\n", data >> 4);
   snslocals.pia0b = data;
   if (snslocals.pia0b & 0x02) AY8910Write(0, snslocals.pia0b ^ 0x01, snslocals.pia0a);
 }
@@ -466,6 +473,9 @@ static WRITE_HANDLER(sns_pia0ca2_w) {
   //sndbrd_ctrl_cb(snslocals.brdData.boardNo,data);
   UpdateZACSoundLED(1, data);
 } // diag led
+static WRITE_HANDLER(sns_pia0cb2_w) {
+  snslocals.dacMute = data;
+} // mute DAC
 
 static WRITE_HANDLER(sns_pia1a_w) { snslocals.pia1a = data; }
 static WRITE_HANDLER(sns_pia1b_w) {
@@ -477,6 +487,7 @@ static WRITE_HANDLER(sns_pia1b_w) {
     pia_set_input_a(SNS_PIA1, tms5220_status_r(0));
     pia_set_input_ca2(SNS_PIA1, 1); pia_set_input_ca2(SNS_PIA1, 0);
   }
+  if ((data & 0xf0) != (snslocals.pia1b & 0xf0)) logerror("TMS5200 modulation: %x\n", data >> 4);
   snslocals.pia1b = data;
   UpdateZACSoundACT((data>>2)&0x3);	//ACTSND & ACTSPK on bits 2 & 3
 }
@@ -502,27 +513,33 @@ static WRITE_HANDLER(sns_data_w) {
   snslocals.lastcmd = data & 0x7f;
   //pia_set_input_cb1(SNS_PIA0, ~data & 0x01);
   pia_set_input_cb1(SNS_PIA0, data & 0x80 ? 1 : 0);
-  if (snslocals.brdData.boardNo == SNDBRD_ZAC13136)
+  if (core_gameData->hw.soundBoard == SNDBRD_ZAC13136)
     pia_set_input_cb1(SNS_PIA2, data & 0x80 ? 1 : 0);
 }
 
 static WRITE_HANDLER(sns_ctrl_w) {
   snslocals.lastcmd = (snslocals.lastcmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00);
   pia_set_input_cb1(SNS_PIA0, ~data & 0x01);
-  if (snslocals.brdData.boardNo == SNDBRD_ZAC13136)
+  if (core_gameData->hw.soundBoard == SNDBRD_ZAC13136)
     pia_set_input_cb1(SNS_PIA2, ~data & 0x01);
 }
 
 static READ_HANDLER(sns_8910a_r) { return ~snslocals.lastcmd; }
 
+static WRITE_HANDLER(sns_8910b_w) {
+  static UINT8 lastAy = 0;
+  if ((lastAy & 0x0f) != (data & 0x0f)) logerror("AY8910  modulation: %x\n", data & 0x0f);
+  lastAy = data;
+}
+
 static READ_HANDLER(sns2_8910a_r) { return ~snslocals.lastcmd; }
 
 static void sns_irqa(int state) {
   logerror("sns_irqA: state=%x\n",state);
-  if (snslocals.brdData.boardNo == SNDBRD_ZAC1370) {
+  if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370) {
     cpu_set_irq_line(ZACSND_CPUA, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
   }
-  if (snslocals.brdData.boardNo == SNDBRD_ZAC11178) {
+  if (core_gameData->hw.soundBoard == SNDBRD_ZAC11178) {
     sns_diag(state);
   }
 }
@@ -533,13 +550,14 @@ static void sns_irqb(int state) {
 
 static void sns_5220Irq(int state) { pia_set_input_cb1(SNS_PIA1, !state); }
 
+
 /* TECHNOPLAY sound board -
 
    Pretty much stole the Gottlieb System 80b Generation 1 sound board, plus..
    added a TMS7000 and an extra DAC for additional sounds */
 
 /*----------------
-/  Local varibles
+/  Local variables
 /-----------------*/
 static struct {
   struct sndbrdData brdData;
