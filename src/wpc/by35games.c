@@ -854,6 +854,18 @@ BY35_ROMEND
 CORE_GAMEDEFNV(cybrnaut,"Cybernaut",1985,"Bally",by35_mBY35_45S,0)
 
 /*--------------------------------
+/ Space Hawks (Cybernaut Clone) Nuova Bell Italy (BY35-???: 05/85)
+/-------------------------------*/
+
+INITGAME2(spacehaw,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY45,0)
+BY35_ROMSTARTx00(spacehaw,"spacehaw.u2",CRC(d4a5e2f6) SHA1(841e940632993919a68c905546f533ff38a0ce31),
+                          "spacehaw.u6",CRC(b154a3a3) SHA1(d632c5eddd0582ba2ca778ab03e11ca3f6f4e1ed))
+BY45_SOUNDROMx2(          "cybu3.snd",  CRC(a3c1f6e7) SHA1(35a5e828a6f2dd9009e165328a005fa079bad6cb))
+BY35_ROMEND
+#define input_ports_spacehaw input_ports_by35
+CORE_GAMEDEFNV(spacehaw,"Space Hawks",1985,"Nuova Bell",by35_mBY35_45S,0)
+
+/*--------------------------------
 / Mystic Star (Zaccaria game, 1984)
 /-------------------------------*/
 INITGAME(myststar,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),0,SNDBRD_BY50,0)
