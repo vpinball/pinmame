@@ -72,7 +72,7 @@ CC_ROMSTART_4(abv106,  "u1l_v16.bin", CRC(59b258f1),
                        "u1h_v16.bin", CRC(a4571905),
                        "u2l_v10.bin", CRC(a15b1ec0),
                        "u2h_v10.bin", CRC(c22e3338))
-CAPCOMS_SOUNDROM3("u24_v11.bin", NO_DUMP,\
+CAPCOMS_SOUNDROM3("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e0252800b28274),\
 				  "u28_v10.bin", CRC(ca3c6954) SHA1(44345c0a720c78c312459425c54180a4c5413c0d), \
 				  "u29_v10.bin", CRC(8989d566) SHA1(f1827fb5c1d917a324fffe2035e87fcca77f362f), \
 				  "u30_v11.bin", CRC(e16f1c4d) SHA1(9aa0ff87c303c6a8c95ef1c0e5382abad6179e21)) 
@@ -84,7 +84,7 @@ CC_ROMSTART_4(abv106r, "u1l_v16i.bin",CRC(7d7d2d85),
                        "u1h_v16i.bin",CRC(b9bc0c5a),
                        "u2l_v10.bin", CRC(a15b1ec0),
                        "u2h_v10.bin", CRC(c22e3338))
-CAPCOMS_SOUNDROM3("u24_v11.bin", NO_DUMP,\
+CAPCOMS_SOUNDROM3("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e0252800b28274),\
 				  "u28_v10.bin", CRC(ca3c6954) SHA1(44345c0a720c78c312459425c54180a4c5413c0d), \
 				  "u29_v10.bin", CRC(8989d566) SHA1(f1827fb5c1d917a324fffe2035e87fcca77f362f), \
 				  "u30_v11.bin", CRC(e16f1c4d) SHA1(9aa0ff87c303c6a8c95ef1c0e5382abad6179e21)) 
@@ -144,7 +144,7 @@ CC_ROMSTART_8(ffv104,  "u1l_v104.bin",CRC(375f4dd3),
                        "u4h_v104.bin",CRC(fb7012a9),
                        "u3l_v104.bin",CRC(aed63bd0),
                        "u3h_v104.bin",CRC(9376881e))
-CAPCOMS_SOUNDROM4a("u24_v11.bin", NO_DUMP,\
+CAPCOMS_SOUNDROM4a("u24_v11.bin",  CRC(d46212f4) SHA1(50f1279d995b597c468805b323e0252800b28274),\
 				   "u28_v101.bin", CRC(68b896e0) SHA1(3d8c286d43c1db68c39fb4d130cd3cd679209a22), \
 				   "u29_v101.bin", CRC(b79f3e58) SHA1(9abd570590216800bbfe9f12b4660fbe0200679e), \
 				   "u30_v101.bin", CRC(f5432518) SHA1(8c26a267335289145f29db822bf7dfcb4730b208), \
@@ -161,7 +161,7 @@ CC_ROMSTART_4(bbb109,  "u1l_b19.bin", CRC(32be6cb0),
                        "u1h_b19.bin", CRC(2bd1c06d),
                        "u2l_b17.bin", CRC(9bebf271),
                        "u2h_b17.bin", CRC(afd36d9c))
-CAPCOMS_SOUNDROM4b("u24_v11.bin", NO_DUMP,\
+CAPCOMS_SOUNDROM4b("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e0252800b28274),\
 				   "u28_b17.bin", CRC(af47c0f0) SHA1(09f84b9d1399183298279dfac95367741d6304e5), \
 				   "u29_b17.bin", CRC(b5aa0d76) SHA1(c732fc76b992261da8475097adc70514e5a1c2e3), \
 				   "u30_b17.bin", CRC(b4b6011b) SHA1(362c11353390f9ed2ee788847e6a2078b29c8806), \
@@ -176,7 +176,7 @@ CORE_GAMEDEFNV(bbb109,"Big Bang Bar (Beta)",1996,"Capcom",cc2,GAME_IMPERFECT_SOU
 INITGAME(kpv106, 11, cc_dispDMD128x32, 3, SNDBRD_CAPCOMS, 8)
 CC_ROMSTART_2X(kpv106, "u1hu1l.bin",  CRC(d2d42121),
                        "u2hu2l.bin",  CRC(9cd91371))
-CAPCOMS_SOUNDROM4b("u24_v11.bin", NO_DUMP,\
+CAPCOMS_SOUNDROM4b("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e0252800b28274), \
 				   "u28_b11.bin", CRC(aa480506) SHA1(4fbf384bc5e2d0eec4d1137784006d63091974ca), \
 				   "u29_b11.bin", CRC(33345446) SHA1(d229d45228e13e2f02b73ce125eab4f2dd91db6e), \
 				   "u30_b11.bin", CRC(fa35a177) SHA1(3c54c12db8e17a8c316a22b9b7ac80b6b3af8474), \

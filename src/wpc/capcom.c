@@ -54,7 +54,7 @@
 //Comment out to remove U16 Test bypass..
 #define USE_U16_TEST_BYPASS
 //Comment out when not testing mpg audio
-#define TEST_MPGAUDIO
+//#define TEST_MPGAUDIO
 
 //Comment out to use the correct actual frequency values, but the animations are much too slow..
 #define USE_ADJUSTED_FREQ		
@@ -78,6 +78,7 @@ static struct {
   int vblankCount;
   int u16irqcount;
   int diagnosticLed;
+  int diagnosticLedS;
   UINT8 visible_page;
   int zero_cross;
   int blanking;
@@ -115,8 +116,9 @@ static INTERRUPT_GEN(cc_vblank) {
   }
 
   /*update leds*/
-  coreGlobals.diagnosticLed = locals.diagnosticLed;
+  coreGlobals.diagnosticLed = (locals.diagnosticLedS<<1) | locals.diagnosticLed;
   locals.diagnosticLed = 0;
+  locals.diagnosticLedS = 0;
 
   core_updateSw(TRUE);
 }
@@ -503,6 +505,13 @@ static void U16_Tests_ByPass(void){
   *((UINT16 *)(memory_region(REGION_CPU1) + fixaddr+4)) = jmp2;
 }
 
+//Show Sound & DMD Diagnostic LEDS
+void cap_UpdateSoundLEDS(int data)
+{
+	locals.diagnosticLedS = data;
+	printf("setting led to %x\n",data);
+}
+
 /*-----------------------------------
 /  Memory map for CPU board
 /------------------------------------*/
@@ -634,7 +643,7 @@ MACHINE_DRIVER_START(cc)
   MDRV_NVRAM_HANDLER(cc)
   MDRV_SWITCH_UPDATE(cc)
   MDRV_SWITCH_CONV(cc_sw2m,cc_m2sw)
-  MDRV_DIAGNOSTIC_LEDH(1)
+  MDRV_DIAGNOSTIC_LEDH(2)
   MDRV_TIMER_ADD(cc_zeroCross, CC_ZCFREQ)
 MACHINE_DRIVER_END
 
