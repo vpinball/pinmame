@@ -16,15 +16,24 @@ which are now fully working!
 
 Of course, there's still quite a lot left to do to improve PinMAME, adding Capcom sound
 support being one of them. That will be quite complicated and will surely keep us busy
-for quite awhile, but in the meantime, we hope you enjoy our newest release!
+for quite awhile!
 
-The switch to the MAME 74 core has created a number of new bugs which we did not have
-time to correct before the release. We apologize for the inconvenience and will try to
-correct them as quickly as possible. If you find any we're unaware of, please let us know
-immediately.
-One we're very well aware of - and it's bothering us like hell - is all of the Gottlieb
+Additionally, we've expanded core support for alternate rom revisions so that many older
+rom revisions can be used. This change will require some current romsets to be renamed.
+Please see the enclosed "alias.txt" file for details, and use the included "romupdate.bat"
+file to update the names of all affected rom zip files which you are legally entitled to have.
+
+Unfortunately, the switch to the MAME 74 core has created a number of new bugs which we did not have
+time to correct before the release (although we tried really hard!). 
+We apologize for the inconvenience and will try to correct them as quickly as possible. 
+If you find any we're unaware of, please let us know immediately.
+
+One we're very well aware of - and it's driving us crazy - is all of the Gottlieb
 System80A games - Devil's Dare to Ice Fever - are NOT working! All regular System80 games
 from Spiderman to Eclipse work, however, and it's exactly the same CPU board!? :(
+
+Despite these few little issues, we hope you'll enjoy our latest release which really marks
+a very big milestone for us and for PinMAME.
 
 Bugs Fixed
 ----------
@@ -43,8 +52,8 @@ Bugs Fixed
 - Adjusted Taito sound speed
   [Tom Haukap]
 
-- Corrected Taito speech support (still sounds not like a Votrax SC01 though)
-- Sound support for some older Zaccaria and GamePlan games (added SN76477)
+- Corrected Taito speech support (still does not sound like a Votrax SC01 though)
+- Sound support for some older Zaccaria and GamePlan games (added SN76477 support)
 - Switch debuffering bug fixed on old Zaccaria games
 - Dip switch settings are stored in VPM on old Atari games now
   [Gerrit Volkenborn]
@@ -52,7 +61,7 @@ Bugs Fixed
 Bugs Introduced
 ---------------
 - Gottlieb System80A games are not working. We have to figure out why!
-  This is one serious issue, and we try to get if fixed as quick as can be.
+  This is one serious issue, and we'll try to get it fixed as quickly as possible.
   [Update to the MAME .74 core]
 
 New Features
@@ -62,32 +71,35 @@ New Features
 
 - Reworked sound commander internally. No visible change
 - Simulator for Black Knight
-- SHA1 checksums
+- Added SHA1 checksums
+- Added rom support for Stern's Terminator 3
+- Rom Alias support for VPM
   [Martin Adrian]
 
 - Alvin G. and Co. emulation including full Sound and DMD support
   (Big thanks to Joep for the manual and help in checking on his real machine)
-- Intel 8051 CPU Core emulation (required for Alvin G DMD)
-- Added Rollover mode in Sound Commander
 - Working and playable Capcom emulation (no sound yet),
   but current hacks need to be removed when U16 is better understood
-- Added sound for Technoplay Scramble
+- Added sound for Technoplay Scramble (still some problems with TMS7000 related sound)
   (Thanks to Douglas Cope for help)
 - Added SP0250 support for Technoplay and GTS80B1 sound boards
+- Intel 8051 CPU Core emulation (required for Alvin G DMD)
+- Modifications to the TMS7000 core to work with Technoplay sound board
+  (Thanks to Tim Lindler for his cpu core and for his help and suggestions)
+- Added Rollover mode in Sound Commander
   [Steve Ellenoff]
 
 - Added VPM Lamp handling for Alvin G Games
 - Added GTS3 extra LED display panels support
-- Added TMS7000 emulation from MESS for Technoplay sound board
-  (Thanks to Tim Lindler for his emulator)
+- Added TMS7000 cpu core from MESS to PinMAME for Technoplay sound board
+- New romset name batch update file
   [Gerrit Volkenborn]
 
 - Added proper Pistol Poker Lamp handling
 - Working Switch/Solenoid/Lamps in Capcom games (not all games working yet)
-  [Gerrit Volkenborn]
-  [Steve Ellenoff]
+  [Gerrit Volkenborn, Steve Ellenoff]
 
-- Enabled AY-8910 sound on the Toito piggy pack sound board
+- Enabled AY-8910 sound on the Taito piggy back sound board
   [Tom Haukap]
 
 
@@ -115,7 +127,7 @@ Bugs Fixed
 - Changed Mousin' around display to one row
 - Some small fixes in Bally cheap-squeek sound (Black pyramid is still strange)
 - Corrected 6809 core bug with CC register and exg + tfr instructions.
-  (if a memedev reads this: the bug is also in mame66)
+  (if a mamedev reads this: the bug is also in mame66)
 - Fixed a small port read problem on 6803
 - Corrected 68306 cpu emulation (Capcom)
 - Merged Hankin driver with bally -35 games
@@ -132,8 +144,7 @@ Bugs Fixed
   [Steve Ellenoff]
 
 - Robocop sound working 100%
-  [Martin Adrian]
-  [Steve Ellenoff]
+  [Martin Adrian, Steve Ellenoff]
 
 - Improved Gottlieb System 80B sound
 - Added comma segments to GTS80A games
