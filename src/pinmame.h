@@ -1,10 +1,10 @@
 #ifndef INC_PINMAME
 #define INC_PINMAME
 
-#define PINMAME_EXT   1   // PinMAME extensions added to MAME source
-#define PINMAME_EXIT  1   // Use Machine->exitfunc (normally only in MESS)
-#define WPCDCSSPEEDUP 1   // DCS Speedup added to MAME ADSP emulation
-#define DBG_BPR       1   // BPR command added to debugger
+#define PINMAME_EXT     1 // PinMAME extensions added to MAME source
+#define PINMAME_EXIT    1 // Use Machine->exitfunc (normally only in MESS)
+#define WPCDCSSPEEDUP   1 // DCS Speedup added to MAME ADSP emulation
+#define DBG_BPR         1 // BPR command added to debugger
 #define PINMAME_SAMPLES 1 // Sample Support
 
 #define TINY_COMPILE
@@ -39,6 +39,8 @@
 #define HAS_M68306   1
 #define HAS_S2650    1
 #define HAS_8080	 1
+#define HAS_I86      1
+#define HAS_4004     1
 
 // Sound
 #define HAS_DAC        1
