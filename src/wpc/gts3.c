@@ -265,7 +265,7 @@ static WRITE_HANDLER( xvia_0_ca2_w )
 static WRITE_HANDLER( xvia_0_cb2_w )
 {
 	//logerror1("NMI: via_0_cb2_w: %x\n",data);
-	cpu_cause_interrupt(0,M65C02_INT_NMI);
+	cpu_set_nmi_line(GTS3_CPUNO, PULSE_LINE);
 }
 
 /* U5 */
@@ -380,8 +380,7 @@ static void via_irq(int state) {
 	else
 		printf("IRQ = 0\n");
 #endif
-	cpu_set_irq_line(0, M6502_INT_IRQ, PULSE_LINE); 
-	//cpu_set_irq_line(0, M6502_INT_IRQ, state?ASSERT_LINE:CLEAR_LINE); 
+	cpu_set_irq_line(GTS3_CPUNO, 0, PULSE_LINE);
 }
 
 /*
@@ -433,7 +432,8 @@ static struct via6522_interface via_1_interface =
 };
 
 static int GTS3_irq(void) {
-  return ignore_interrupt();	//NO INT OR NMI GENERATED - External Devices Trigger it!
+	return 0;
+	// return ignore_interrupt();	// !!! NO INT OR NMI GENERATED - External Devices Trigger it!
 }
 
 static int GTS3_vblank(void) {
@@ -543,7 +543,6 @@ static core_tData GTS3Data = {
 
 /*Alpha Numeric First Generation Init*/
 static void GTS3_alpha_common_init(void) {
-  if (GTS3locals.initDone) CORE_DOEXIT(GTS3_exit);
   if (core_init(&GTS3Data)) return;
 
   memset(&GTS3_dmdlocals, 0, sizeof(GTS3_dmdlocals));
@@ -563,11 +562,15 @@ static void GTS3_alpha_common_init(void) {
   GTS3locals.AUX_W = alpha_aux;
   GTS3locals.VBLANK_PROC = alpha_vblank;
 
-  //Manually call the CPU NMI at the specified rate
-  GTS3locals.timer_nmi = timer_pulse(TIME_IN_HZ(GTS3_ALPHANMIFREQ), 0, alphanmi);
+  // Manually call the CPU NMI at the specified rate
+  // !!! GTS3locals.timer_nmi = timer_pulse(TIME_IN_HZ(GTS3_ALPHANMIFREQ), 0, alphanmi);
+  GTS3locals.timer_nmi = timer_alloc(alphanmi);
+  timer_adjust(GTS3locals.timer_nmi, TIME_IN_HZ(GTS3_ALPHANMIFREQ), 0, TIME_IN_HZ(GTS3_ALPHANMIFREQ));
 
-  //Manually call the CPU IRQ at the specified rate
-  GTS3locals.timer_irq = timer_pulse(TIME_IN_HZ(GTS3_TRIGIRQ), 0, trigirq);
+  // Manually call the CPU IRQ at the specified rate
+  // !!! GTS3locals.timer_irq = timer_pulse(TIME_IN_HZ(GTS3_TRIGIRQ), 0, trigirq);
+  GTS3locals.timer_irq = timer_alloc(trigirq);
+  timer_adjust(GTS3locals.timer_irq, TIME_IN_HZ(GTS3_TRIGIRQ), 0, TIME_IN_HZ(GTS3_TRIGIRQ));
 
   /* Init the sound board */
   sndbrd_0_init(core_gameData->hw.soundBoard, GTS3_SCPUNO-1, memory_region(GTS3_MEMREG_SCPU1), NULL, NULL);
@@ -576,20 +579,19 @@ static void GTS3_alpha_common_init(void) {
 }
 
 /*Alpha Numeric First Generation Init*/
-static void GTS3_init(void) {
+static MACHINE_INIT(gts3) {
 	GTS3_alpha_common_init();
 	GTS3locals.alphagen = 1;
 }
 
 /*Alpha Numeric Second Generation Init*/
-static void GTS3b_init(void) {
+static MACHINE_INIT(gts3b) {
 	GTS3_alpha_common_init();
 	GTS3locals.alphagen = 2;
 }
 
 /*DMD Generation Init*/
-static void GTS3_init2(void) {
-  if (GTS3locals.initDone) CORE_DOEXIT(GTS3_exit);
+static MACHINE_INIT(gts3dmd) {
   if (core_init(&GTS3Data)) return;
 
   memset(&GTS3_dmdlocals, 0, sizeof(GTS3_dmdlocals));
@@ -622,11 +624,13 @@ static void GTS3_init2(void) {
   GTS3locals.AUX_W = dmd_aux;
   GTS3locals.VBLANK_PROC = dmd_vblank;
 
-  //Manually call the DMD NMI at the specified rate  (Although the code simply returns rti in most cases, we should call the nmi anyway, incase a game uses it)
+  // Manually call the DMD NMI at the specified rate  (Although the code simply returns rti in most cases, we should call the nmi anyway, incase a game uses it)
   // GTS3locals.timer_nmi = timer_pulse(TIME_IN_HZ(GTS3_DMDNMIFREQ), 0, dmdnmi);
 
-  //Manually call the CPU IRQ at the specified rate
-  GTS3locals.timer_irq = timer_pulse(TIME_IN_HZ(GTS3_TRIGIRQ), 0, trigirq);
+  // Manually call the CPU IRQ at the specified rate
+  // !!! GTS3locals.timer_irq = timer_pulse(TIME_IN_HZ(GTS3_TRIGIRQ), 0, trigirq);
+  GTS3locals.timer_irq = timer_alloc(trigirq);
+  timer_adjust(GTS3locals.timer_irq, TIME_IN_HZ(GTS3_TRIGIRQ), 0, TIME_IN_HZ(GTS3_TRIGIRQ));
 
   /* Init the sound board */
   sndbrd_0_init(core_gameData->hw.soundBoard, GTS3_SCPUNO, memory_region(GTS3_MEMREG_SCPU1), NULL, NULL);
@@ -634,7 +638,7 @@ static void GTS3_init2(void) {
   GTS3locals.initDone = TRUE;
 }
 
-static void GTS3_exit(void) {
+static MACHINE_STOP(gts3) {
   if ( GTS3locals.timer_nmi ) {
 	  timer_remove(GTS3locals.timer_nmi);
 	  GTS3locals.timer_nmi = NULL;
@@ -719,7 +723,8 @@ static WRITE_HANDLER(alpha_display){
 static WRITE_HANDLER(dmd_display){
 	//Latch DMD Data from U7
     GTS3_dmdlocals.dmd_latch = data;
-	if(offset==0) cpu_cause_interrupt(1,M65C02_INT_IRQ);
+	if (offset==0) 
+		cpu_set_irq_line(GTS3_DCPUNO, 0, PULSE_LINE);
 	else
 		if(offset==1) cpu_set_reset_line(1, PULSE_LINE);
 		else
@@ -727,7 +732,9 @@ static WRITE_HANDLER(dmd_display){
 }
 
 //FIRE NMI FOR DMD!
-static void dmdnmi(int data){ cpu_cause_interrupt(1,M65C02_INT_NMI); }
+static void dmdnmi(int data){ 
+	cpu_set_nmi_line(GTS3_DCPUNO, PULSE_LINE);
+}
 
 /*Chip U14 - LS273:
   D0=Q0=PA0=A14 of DMD Eprom
@@ -836,6 +843,14 @@ void dmd_vblank(void){
   dmdnmi(0);
 }
 
+/*-----------------------------------------------
+/ Load/Save static ram
+/ Save RAM & CMOS Information
+/-------------------------------------------------*/
+static NVRAM_HANDLER(gts3) {
+  core_nvram(file, read_or_write, memory_region(GTS3_MEMREG_CPU), 0x2000, 0x00);
+}
+
 /*---------------------------
 /  Memory map for main CPU
 /----------------------------*/
@@ -881,7 +896,59 @@ static MEMORY_WRITE_START(GTS3_dmdwritemem)
 {0x8000,0xffff, MWA_ROM},
 MEMORY_END
 
+MACHINE_DRIVER_START(gts3)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CPU_ADD(M65C02, 2000000)
+  MDRV_CPU_MEMORY(GTS3_readmem, GTS3_writemem)
+  MDRV_CPU_VBLANK_INT(GTS3_vblank, GTS3_VBLANKDIV)
+  MDRV_CPU_PERIODIC_INT(GTS3_irq, GTS3_IRQFREQ)
 
+  MDRV_NVRAM_HANDLER(gts3)
+  MDRV_VIDEO_UPDATE(core_led)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(gts3_1a)
+  MDRV_IMPORT_FROM(gts3)
+  MDRV_MACHINE_INIT(gts3) MDRV_MACHINE_STOP(gts3)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(gts3_1b)
+  MDRV_IMPORT_FROM(gts3)
+  MDRV_MACHINE_INIT(gts3b) MDRV_MACHINE_STOP(gts3)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(gts3_1as)
+  MDRV_IMPORT_FROM(gts3)
+  MDRV_MACHINE_INIT(gts3) MDRV_MACHINE_STOP(gts3)
+  MDRV_IMPORT_FROM(gts80s_b3)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(gts3_1bs)
+  MDRV_IMPORT_FROM(gts3)
+  MDRV_MACHINE_INIT(gts3b) MDRV_MACHINE_STOP(gts3)
+  MDRV_IMPORT_FROM(gts80s_b3)
+MACHINE_DRIVER_END
+
+
+MACHINE_DRIVER_START(gts3_dmd)
+  MDRV_CPU_ADD(M65C02, 3579000/2)
+  MDRV_CPU_MEMORY(GTS3_dmdreadmem, GTS3_dmdwritemem)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(gts3_2)
+  MDRV_IMPORT_FROM(gts3)
+  MDRV_IMPORT_FROM(gts3_dmd)
+  MDRV_MACHINE_INIT(gts3dmd) MDRV_MACHINE_STOP(gts3)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(gts3_2s)
+  MDRV_IMPORT_FROM(gts3)
+  MDRV_IMPORT_FROM(gts3_dmd)
+  MDRV_MACHINE_INIT(gts3dmd) MDRV_MACHINE_STOP(gts3)
+  MDRV_IMPORT_FROM(gts80s_s3)
+MACHINE_DRIVER_END
+
+#if 0
 /* First Generation Alpha Numeric Games */
 struct MachineDriver machine_driver_GTS3_1A = {
   {
@@ -1026,17 +1093,4 @@ struct MachineDriver machine_driver_GTS3_2S = {
   0,0,0,0,{GTS3_2_SOUND},
   GTS3_nvram
 };
-
-
-/*-----------------------------------------------
-/ Load/Save static ram
-/ Save RAM & CMOS Information
-/-------------------------------------------------*/
-void GTS3_nvram(void *file, int write) {
-  if (write)  /* save nvram */
-    osd_fwrite(file, memory_region(GTS3_MEMREG_CPU), 0x2000);
-  else if (file) /* load nvram */
-    osd_fread(file, memory_region(GTS3_MEMREG_CPU), 0x2000);
-  else        /* first time */
-    memset(memory_region(GTS3_MEMREG_CPU), 0x00, 0x2000);
-}
+#endif

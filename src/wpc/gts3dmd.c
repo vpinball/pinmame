@@ -46,8 +46,8 @@ void gts3_dmd128x32_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
       else               data = 0;
       dotCol[ii][jj] = data;
   }
-  dmd_draw(bitmap, dotCol, gts_128x32DMD);
-  drawStatus(bitmap,fullRefresh);
+// !!!  dmd_draw(bitmap, dotCol, gts_128x32DMD);
+// !!!  drawStatus(bitmap,fullRefresh);
 }
 
 #else
