@@ -352,7 +352,6 @@ typedef struct {
   int    gi[CORE_MAXGI];  /* WPC gi strings */
   int    simAvail;        /* simulator (keys) available */
   int    soundEn;         /* Sound enabled ? */
-  int    flipTimer[4];    /* time since flipper was activated (used for EOS simulation) */
   int    diagnosticLed;	  /* data relating to diagnostic led(s)*/
 } core_tGlobals;
 extern core_tGlobals coreGlobals;
