@@ -45,7 +45,10 @@
 #define TEST_BYPASS
 
 //Comment out to allow Volume Control
-#define DISABLE_VOLUME
+//#define DISABLE_VOLUME
+
+//Set length of time to delay the volume commnand (to improve sound getting cut off too soon) - Press start w/o coins in BBB109 for example to see this effect.
+#define X9241_DELAY_COMMAND		TIME_IN_MSEC(500)
 
 /*Declarations*/
 WRITE_HANDLER(capcoms_sndCmd_w);
@@ -189,6 +192,14 @@ void cap_sreq(int chipnum,int state)
 //	PRINTF(("MPG#%d: SREQ Set to %d\n",chipnum,state));
 }
 
+//Update the mixer volume based on settings of the x9241 chip
+static void x9241_update_vol(int param)
+{
+	//Now adjust volume - wipers 0 & 1 control mpg1 & mpg2 ( since 16 is max value of wcr, 16*6 = 96 Volume setting)
+	mixer_set_volume(0,x9241.wcr[0]*6);
+	mixer_set_volume(1,x9241.wcr[1]*6);
+	//Not sure what wipers 2 & 3 do..
+}
 
 /***********************************************************************************
 X9241 - Digital Volume Pot
@@ -316,12 +327,13 @@ void data_to_x9241(int scl, int sda)
 				else {
 					//2nd Byte is the Register (bits 2-3), 3rd Byte the Value
 					x9241.wcr[(x9241.ram[1] & 0x0c)>>2] = x9241.ram[2];
-#ifndef DISABLE_VOLUME
 					LOG(("wcr[%x]=%x\n",(x9241.ram[1] & 0x0c)>>2,x9241.ram[2]));
-					//Now adjust volume - wipers 0 & 1 control mpg1 & mpg2 ( since 16 is max value of wcr, 16*6 = 96 Volume setting)
-					mixer_set_volume(0,x9241.wcr[0]*6);
-					mixer_set_volume(1,x9241.wcr[1]*6);
-					//Not sure what wipers 2 & 3 do..
+#ifndef DISABLE_VOLUME
+					//If setting levels to 0, delay it to avoid early cut off..
+					if(x9241.wcr[0] == 0 || x9241.wcr[1] == 0)
+						timer_set(X9241_DELAY_COMMAND,0, x9241_update_vol);
+					else
+						x9241_update_vol(0);
 #endif
 				}
 			}
