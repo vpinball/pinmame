@@ -211,9 +211,11 @@
 /*-- These are only here so the game structure can be in the game file --*/
 extern struct MachineDriver machine_driver_s4;
 extern struct MachineDriver machine_driver_s4s;
+extern struct MachineDriver machine_driver_s3c;
 
 #define s4_mS4      s4
 #define s4_mS4S     s4s
+#define s3_mS3C     s3c
 
 /* standard 6 digit display layout */
 extern core_tLCDLayout s4_disp[];

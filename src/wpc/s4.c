@@ -18,6 +18,8 @@
 	pia_config(3, PIA_STANDARD_ORDERING, &d);
 
 static void s4_exit(void);
+static void s4_init(void);
+static void s3c_init(void);		//Special Init Routine for Chime based sound hardware.
 
 static struct {
   int	 alphapos;
@@ -29,6 +31,7 @@ static struct {
   int    diagnosticLed;
   int    swCol;
   int    ssEn;
+  int	 hasChimes;
 } s4locals;
 
 static data8_t *s4_CMOS;
@@ -148,7 +151,11 @@ static WRITE_HANDLER(s4_sol1_8_w) {
 /* REGULAR SOLENOIDS #9-16 - USED AS SOUND COMMANDS! (9-14)*/
 /***********************************************************/
 static WRITE_HANDLER(s4_sol9_16_w) {
-  s67s_cmd(0, ~data); data &= 0xe0; /* mask of sound command bits */
+  /* If machine does not use Chimes, mask off sound command bits */
+  if(!s4locals.hasChimes) {
+	s67s_cmd(0, ~data); 
+	data &= 0xe0;
+  }
   coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffff00ff) | (data<<8);
   s4locals.solenoids |= (data<<8);
 }
@@ -313,6 +320,11 @@ static core_tData s4Data = {
   "s4"
 };
 
+static void s3c_init(void) {
+	s4_init();
+	s4locals.hasChimes = 1;
+}
+
 static void s4_init(void) {
   if (s4locals.initDone) CORE_DOEXIT(s4_exit);
   s4locals.initDone = TRUE;
@@ -361,6 +373,23 @@ static MEMORY_WRITE_START(s4_writemem)
   { 0x6000, 0x8000, MWA_ROM },
   { 0x8000, 0xffff, MWA_ROM },		/*Doubled ROM region since only 15 address pins used!*/
 MEMORY_END
+
+//Special System 3 Machine for games using Chimes instead of Solid State Sound Hardware
+struct MachineDriver machine_driver_s3c = {
+  {{  CPU_M6800, 3580000/4, /* 3.58/4 = 900hz */
+      s4_readmem, s4_writemem, NULL, NULL,
+      s4_vblank, 1, s4_irq, S4_IRQFREQ
+  }},
+  S4_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  50,
+  s3c_init, CORE_EXITFUNC(NULL)
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
+  VIDEO_TYPE_RASTER, 0,
+  NULL, NULL, gen_refresh,
+  0,0,0,0, {{0}},
+  s4_nvram
+};
 
 struct MachineDriver machine_driver_s4 = {
   {{  CPU_M6800, 3580000/4, /* 3.58/4 = 900hz */
