@@ -13,7 +13,7 @@ WRITE_HANDLER(by35_soundCmd) {}
 
 #define BY35_VBLANKFREQ    60 /* VBLANK frequency */
 #define BY35_IRQFREQ      150 /* IRQ (via PIA) frequency*/
-#define BY35_ZCFREQ        85 /* Zero cross frequency */
+#define BY35_ZCFREQ       120 /* Zero cross frequency */
 
 static struct {
   int a0, a1, b1, ca20, ca21, cb20, cb21;
