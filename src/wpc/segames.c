@@ -191,7 +191,7 @@ DE2S_SOUNDROM1444(   "gc_sound.u7", CRC(8b559e39) SHA1(59c33615b53864cd542c8bd3b
                      "gc_sound.u36",CRC(81f27955) SHA1(eba4250898f6de96111232e49d965b78fc6ee2e2))
 SE_ROMEND
 #define input_ports_goldcue input_ports_se
-CORE_GAMEDEFNV(goldcue,"Golden Cue",1998,"Sega",de_mSES1,GAME_NOT_WORKING|GAME_NOCRC)
+CORE_GAMEDEFNV(goldcue,"Golden Cue",1998,"Sega",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Godzilla
@@ -356,7 +356,7 @@ DE2S_SOUNDROM1888(    "sssndu7.101",CRC(fbc6267b) SHA1(e6e70662031e5209385f8b9c5
                      "sssndu36.100",CRC(d22fcfa3) SHA1(3fa407f72ecc64f9d00b92122c4e4d85022e4202))
 SE_ROMEND
 #define input_ports_shrkysht input_ports_se
-CORE_GAMEDEFNV(shrkysht,"Sharkey's Shootout (2.11)",2000,"Stern",de_mSES1,GAME_NOT_WORKING|GAME_NOCRC)
+CORE_GAMEDEFNV(shrkysht,"Sharkey's Shootout (2.11)",2000,"Stern",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Sharkey's Shootout (Germany)
@@ -370,7 +370,7 @@ DE2S_SOUNDROM1888(    "sssndu7.101",CRC(fbc6267b) SHA1(e6e70662031e5209385f8b9c5
 SE_ROMEND
 #define input_ports_shrky_gr input_ports_se
 #define init_shrky_gr init_shrkysht
-CORE_CLONEDEFNV(shrky_gr,shrkysht,"Sharkey's Shootout (Germany)",2001,"Stern",de_mSES1,GAME_NOT_WORKING|GAME_NOCRC)
+CORE_CLONEDEFNV(shrky_gr,shrkysht,"Sharkey's Shootout (Germany)",2001,"Stern",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Sharkey's Shootout (France)
@@ -384,7 +384,7 @@ DE2S_SOUNDROM1888(    "sssndu7.101",CRC(fbc6267b) SHA1(e6e70662031e5209385f8b9c5
 SE_ROMEND
 #define input_ports_shrky_fr input_ports_se
 #define init_shrky_fr init_shrkysht
-CORE_CLONEDEFNV(shrky_fr,shrkysht,"Sharkey's Shootout (France)",2001,"Stern",de_mSES1,GAME_NOT_WORKING|GAME_NOCRC)
+CORE_CLONEDEFNV(shrky_fr,shrkysht,"Sharkey's Shootout (France)",2001,"Stern",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Sharkey's Shootout (Italy)
@@ -398,7 +398,7 @@ DE2S_SOUNDROM1888(    "sssndu7.101",CRC(fbc6267b) SHA1(e6e70662031e5209385f8b9c5
 SE_ROMEND
 #define input_ports_shrky_it input_ports_se
 #define init_shrky_it init_shrkysht
-CORE_CLONEDEFNV(shrky_it,shrkysht,"Sharkey's Shootout (Italy)",2001,"Stern",de_mSES1,GAME_NOT_WORKING|GAME_NOCRC)
+CORE_CLONEDEFNV(shrky_it,shrkysht,"Sharkey's Shootout (Italy)",2001,"Stern",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / High Roller Casino (3.0)
