@@ -767,7 +767,7 @@ WRITE_HANDLER( TMS320AV120_data_w )
 	//ABORT IF SREQ HIGH!
 	if(tms320av120[chipnum].sreq_line)	
 	{
-		LOG(("TMS320AV120 #d: SREQ HI - Data Ignored!\n",chipnum));
+		LOG(("TMS320AV120 #%d: SREQ HI - Data Ignored!\n",chipnum));
 		return;
 	}
 
