@@ -39,6 +39,11 @@ static core_tLCDLayout dispBy104[] = {
   {0,32,28, 7,CORE_SEG9}, {0,48,35, 1,CORE_SEG9}, {0,50,22, 6,CORE_SEG9}, {0}
 };
 
+/*Use for Video/Pinball Combinations*/
+core_tLCDLayout VIDEO[] = {
+	{0,0,0,0,CORE_VIDEO}, {0}
+};
+
 #endif /* DISPLAYALL */
 
 static core_tLCDLayout by_NoOutput[] = {{0}};
@@ -588,7 +593,7 @@ CORE_GAMEDEFNV(m_mpac  ,"Mr. and Mrs. PacMan",1982,"Bally",by35_mBY35_61S,0)
 /*-----------------------------------------------------
 / Baby Pacman (Video/Pinball Combo) (BY133-???:  10/82)
 /-----------------------------------------------------*/
-INITGAMEVP(babypac,0,by_NoOutput,FLIP_SWNO(0,1),0)
+INITGAMEVP(babypac,0,VIDEO,FLIP_SWNO(0,1),0)
 BYVP_ROMSTARTx00(babypac,	"891-u2.732", 0x7f7242d1,
 							"891-u6.732", 0x6136d636,
 							"891-u9.764",  0x7fa570f3,
@@ -597,7 +602,6 @@ BYVP_ROMSTARTx00(babypac,	"891-u2.732", 0x7f7242d1,
 							"891-u12.764", 0x58cfe542,
 							"891-u29.764", 0x0b57fd5d)
 BYVP_ROMEND
-//CORE_GAMEDEFNV(babypac,"Baby Pacman (Video/Pinball Combo)",1982,"Bally",byVP_mVP1,0)
 CORE_GAMEDEFNVR90(babypac,"Baby Pacman (Video/Pinball Combo)",1982,"Bally",byVP_mVP1,0)
 
 /*same as eballdlx*/    //BY35      10/82 Eight Ball Deluxe Limited Edition
@@ -653,7 +657,7 @@ CORE_GAMEDEFNV(xsandos ,"X's & O's",1983,"Bally",by35_mBY35_45S,GAME_IMPERFECT_S
 /*-----------------------------------------------------------------
 / Granny and the Gators (Video/Pinball Combo) - (BY35-???: 01/84)
 /----------------------------------------------------------------*/
-INITGAMEVP(granny,0,by_NoOutput,FLIP_SW(FLIP_L),0)
+INITGAMEVP(granny,0,VIDEO,FLIP_SWNO(0,1),0)
 BYVP_ROMSTART100(granny,	"cpu_u2.532", 0xd45bb956,
 							"cpu_u6.532", 0x306aa673,
 							"vid_u4.764", 0x3a3d4c6b,
@@ -664,8 +668,7 @@ BYVP_ROMSTART100(granny,	"cpu_u2.532", 0xd45bb956,
 							"vid_u9.764", 0x6b67a1f7,
 							"cs_u3.764", 0x0a39a51d)
 BYVP_ROMEND
-CORE_GAMEDEFNV(granny,"Granny and the Gators (Video/Pinball Combo)",1984,"Bally",byVP_mVP2,GAME_NOT_WORKING)
-//CORE_GAMEDEFNVR90(granny,"Granny and the Gators (Video/Pinball Combo)",1984,"Bally",byVP_mVP2,GAME_NOT_WORKING)
+CORE_GAMEDEFNVR90(granny,"Granny and the Gators (Video/Pinball Combo)",1984,"Bally",byVP_mVP2,GAME_NOT_WORKING)
 
 /*--------------------------------
 / Kings of Steel (BY35-???: 05/84)

@@ -182,6 +182,7 @@
 #define CORE_SEG87F   6 // 7  segments, forced comma every three
 #define CORE_SEG7S    7 // 7  segements, small
 #define CORE_DMD      8 // DMD Display
+#define CORE_VIDEO	255 // Video Display for Video/Pin Combinations
 
 #define CORE_SEGHIBIT 0x10
 #define CORE_SEG8H    (CORE_SEG8  | CORE_SEGHIBIT)

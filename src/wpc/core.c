@@ -915,11 +915,16 @@ int core_init(core_tData *cd) {
   /*-- command line options --*/
   coreGlobals_dmd.DMDsize = options.antialias ? 2 : 1;
   coreGlobals_dmd.dmdOnly = !options.translucency;
-  size = core_initDisplaySize(core_gameData->lcdLayout) >> 16;
-  if ((size > CORE_SCREENX) && (coreGlobals_dmd.DMDsize > 1)) {
-    /* force small display */
-    coreGlobals_dmd.DMDsize = 1;
-    core_initDisplaySize(core_gameData->lcdLayout);
+  //Skip core_initDisplaySize if using CORE_VIDEO flag.. but this code must also run if NO layout defined
+  if( !(core_gameData->lcdLayout) ||
+	   (core_gameData->lcdLayout && core_gameData->lcdLayout->type != CORE_VIDEO)
+	){
+	  size = core_initDisplaySize(core_gameData->lcdLayout) >> 16;
+	  if ((size > CORE_SCREENX) && (coreGlobals_dmd.DMDsize > 1)) {
+		/* force small display */
+		coreGlobals_dmd.DMDsize = 1;
+		core_initDisplaySize(core_gameData->lcdLayout);
+	  }
   }
   /*-- Sound enabled ? */
   if (((Machine->gamedrv->flags & GAME_NO_SOUND) == 0) && Machine->sample_rate) {

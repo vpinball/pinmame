@@ -632,36 +632,28 @@ static void by_vh_stop(void)
   TMS9928A_stop();
 }
 
-#if 1
 static void by_drawStatus (struct mame_bitmap *bmp, int full_refresh);
 static void by_vh_refresh (struct mame_bitmap *bmp, int full_refresh)
 	{
 		TMS9928A_refresh(0, bmp,full_refresh);
-		by_drawStatus(bmp, full_refresh);
+		if(!coreGlobals_dmd.dmdOnly)
+			by_drawStatus(bmp, full_refresh);
 	}
 static void by1_vh_refresh (struct mame_bitmap *bmp, int full_refresh)
 	{
 		TMS9928A_refresh(0, bmp,full_refresh);
 		TMS9928A_refresh(1, bmp,full_refresh);
-		by_drawStatus(bmp, full_refresh);
+		if(!coreGlobals_dmd.dmdOnly)
+			by_drawStatus(bmp, full_refresh);
 	}
 
-	#define GRAPHICSETUP \
-	  32*8, 32*8, { 0*8, 32*8-1, 0*8, 32*8-1 }, \
+#define GRAPHICSETUP \
+	  256, 192, { 0, 255, 0, 191 }, \
 	  0, /* gfxdecodeinfo */\
 	  TMS9928A_PALETTE_SIZE,\
 	  TMS9928A_COLORTABLE_SIZE,\
 	  tms9928A_init_palette,\
 	  VIDEO_TYPE_RASTER | VIDEO_MODIFIES_PALETTE,\
-
-#else
-	#define by_vh_refresh gen_refresh
-	#define GRAPHICSETUP \
-		256, CORE_SCREENY, { 0, 256-1, 0, CORE_SCREENY-1 }, \
-		0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,\
-		VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, \
-
-#endif
 
 static struct DACinterface by_dacInt =
   { 1, { 50 }};
