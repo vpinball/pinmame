@@ -62,8 +62,10 @@ struct via6522
 	UINT8 ifr;
 
 	void *t1;
+	int ft1;
 	double time1;
 	void *t2;
+	int ft2;
 	double time2;
 
 	double cycles_to_sec;
@@ -203,12 +205,14 @@ static void via_t1_timeout (int which)
 		if (T1_SET_PB7(v->acr))
 			v->out_b ^= 0x80;
 		timer_adjust (v->t1, V_CYCLES_TO_TIME(TIMER1_VALUE(v) + IFR_DELAY), which, 0);
+		v->ft1 = 1;
     }
 	else
     {
 		if (T1_SET_PB7(v->acr))
 			v->out_b |= 0x80;
-		v->t1 = 0;
+// !!!	v->t1 = 0;
+		v->ft1 = 0;
 		v->time1=timer_get_time();
     }
 	if (v->intf->out_b_func && v->ddr_b)
@@ -225,7 +229,8 @@ static void via_t2_timeout (int which)
 	if (v->intf->t2_callback)
 		v->intf->t2_callback(timer_timeelapsed(v->t2));
 
-	v->t2 = 0;
+	// !!! v->t2 = 0;
+	v->ft2 = 0;
 	v->time2=timer_get_time();
 
 	if (!(v->ifr & INT_T2))
@@ -254,7 +259,9 @@ void via_reset(void)
 		v.cycles_to_sec = via[i].cycles_to_sec;
 		
 		v.t1 = timer_alloc(via_t1_timeout);
+		v.ft1 = 0;
 		v.t2 = timer_alloc(via_t2_timeout);
+		v.ft2 = 0;
 
 		via[i] = v;
     }
@@ -330,7 +337,7 @@ int via_read(int which, int offset)
 
     case VIA_T1CL:
 		via_clear_int (v, INT_T1);
-		if (v->t1)
+		if (v->ft1)
 			val = V_TIME_TO_CYCLES(timer_timeleft(v->t1)) & 0xff;
 		else
 		{
@@ -350,7 +357,7 @@ int via_read(int which, int offset)
 		break;
 
     case VIA_T1CH:
-		if (v->t1)
+		if (v->ft1)
 			val = V_TIME_TO_CYCLES(timer_timeleft(v->t1)) >> 8;
 		else
 		{
@@ -379,7 +386,7 @@ int via_read(int which, int offset)
 
     case VIA_T2CL:
 		via_clear_int (v, INT_T2);
-		if (v->t2)
+		if (v->ft2)
 			val = V_TIME_TO_CYCLES(timer_timeleft(v->t2)) & 0xff;
 		else
 		{
@@ -397,7 +404,7 @@ int via_read(int which, int offset)
 		break;
 
     case VIA_T2CH:
-		if (v->t2)
+		if (v->ft2)
 			val = V_TIME_TO_CYCLES(timer_timeleft(v->t2)) >> 8;
 		else
 		{
@@ -545,6 +552,7 @@ void via_write(int which, int offset, int data)
 				v->intf->out_b_func(0, v->out_b & v->ddr_b);
 		}
 		timer_adjust (v->t1, V_CYCLES_TO_TIME(TIMER1_VALUE(v) + IFR_DELAY), which, 0);
+		v->ft1 = 1;
 		break;
 
     case VIA_T2CL:
@@ -562,6 +570,7 @@ void via_write(int which, int offset, int data)
 			if (v->intf->t2_callback)
 				v->intf->t2_callback(timer_timeelapsed(v->t2));
 			timer_adjust (v->t2, V_CYCLES_TO_TIME(TIMER2_VALUE(v) + IFR_DELAY), which, 0);
+			v->ft2 = 1;
 		}
 		else
 		{
@@ -603,7 +612,7 @@ void via_write(int which, int offset, int data)
 		v->acr = data;
 		if (T1_SET_PB7(v->acr))
 		{
-			if (v->t1)
+			if (v->ft1)
 				v->out_b &= ~0x80;
 			else
 				v->out_b |= 0x80;
@@ -614,6 +623,7 @@ void via_write(int which, int offset, int data)
 		if (T1_CONTINUOUS(data))
 		{
 			timer_adjust (v->t1, V_CYCLES_TO_TIME(TIMER1_VALUE(v) + IFR_DELAY), which, 0);
+			v->ft1 = 1;
 		}
 		/* kludge for Mac Plus (and 128k, 512k, 512ke) : */
 		if (v->intf->si_ready_func && SI_EXT_CONTROL(data))
