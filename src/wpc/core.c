@@ -210,7 +210,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
       for (jj = 0; jj < layout->length; jj++) {
         *line++ = dmdColor[dotCol[ii][jj]];
         if (locals.displaySize > 1)
-          *line++ = aaColor[dotCol[ii][jj] + dotCol[ii][jj+1]];
+          *line++ = (layout->type & CORE_DMDNOAA) ? 0 : aaColor[dotCol[ii][jj] + dotCol[ii][jj+1]];
       }
     }
     if (locals.displaySize > 1) {
@@ -218,8 +218,8 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
       line = (*lines++) + (layout->left*locals.displaySize);
       for (jj = 0; jj < layout->length; jj++) {
         int col2 = dotCol[ii][jj+1] + dotCol[ii+1][jj+1];
-        *line++ = aaColor[col1];
-        *line++ = aaColor[2*(col1 + col2)/5];
+        *line++ = (layout->type & CORE_DMDNOAA) ? 0 : aaColor[col1];
+        *line++ = (layout->type & CORE_DMDNOAA) ? 0 : aaColor[2*(col1 + col2)/5];
         col1 = col2;
       }
     }
@@ -868,7 +868,7 @@ static MACHINE_INIT(core) {
     /*-- Sound enabled ? */
     if (((Machine->gamedrv->flags & GAME_NO_SOUND) == 0) && Machine->sample_rate)
       coreGlobals.soundEn = TRUE;
-  
+
     /*-- init simulator --*/
     if (g_fHandleKeyboard && core_gameData->simData) {
       int inports[CORE_MAXPORTS];
@@ -910,15 +910,15 @@ static MACHINE_STOP(core) {
 static void core_findSize(const struct core_dispLayout *layout, int *maxX, int *maxY) {
   if (layout) {
     for (; layout->length; layout += 1) {
-      int tmpX = 0, tmpY = 0;
-      if (layout->type == CORE_IMPORT)
+      int tmpX = 0, tmpY = 0, type = layout->type & CORE_SEGMASK;
+      if (type == CORE_IMPORT)
         { core_findSize(layout->ptr, maxX, maxY); continue; }
-      if ((layout->type & CORE_SEGMASK) >= CORE_DMD) {
-        tmpX = (layout->left + layout->length) * locals.segData[layout->type].cols + 1;
-        tmpY = (layout->top  + layout->start)  * locals.segData[layout->type].rows + 1;
+      if (type >= CORE_DMD) {
+        tmpX = (layout->left + layout->length) * locals.segData[type].cols + 1;
+        tmpY = (layout->top  + layout->start)  * locals.segData[type].rows + 1;
       }
       else {
-        tmpX = (layout->left + 2*layout->length) * (locals.segData[layout->type & 0x07].cols + 1) / 2;
+        tmpX = (layout->left + 2*layout->length) * (locals.segData[type & 0x07].cols + 1) / 2;
         tmpY = (layout->top + 2) * (locals.segData[0].rows + 1) / 2;
       }
       if (tmpX > *maxX) *maxX = tmpX;
