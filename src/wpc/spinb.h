@@ -141,7 +141,13 @@
 //NOTE: DMD CPU requires a memory region of 204,801 Bytes to allow linear address mapping as follows:
 //      ROM0 lives in 1st 64K space, RAM lives in next 2K space, ROM1 lives in next 128K space, and
 //      DMD Commands lives in the next byte, totalling 0x32001 of space required
-#define SPINB_DMDROM(n1, chk1, n2, chk2) \
+
+/* 1 X 64K ROM */
+#define SPINB_DMDROM1(n1, chk1) \
+  NORMALREGION(0x32001, SPINB_MEMREG_DMD) \
+   ROM_LOAD(n1, 0x00000, 0x10000, chk1)
+/* 2 X 64K ROM */
+#define SPINB_DMDROM2(n1, chk1, n2, chk2) \
   NORMALREGION(0x32001, SPINB_MEMREG_DMD) \
    ROM_LOAD(n1, 0x00000, 0x10000, chk1) \
    ROM_LOAD(n2, 0x12000, 0x20000, chk2) 
