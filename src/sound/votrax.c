@@ -8,9 +8,9 @@
 **************************************************************************
 
 VOTRAXSC01_sh_start  - Start emulation, load samples from Votrax subdirectory
-sh_votrax_stop   - End emulation, free memory used for samples
-votrax_w		 - Write data to votrax port
-votrax_status    - Return busy status (1 = busy)
+VOTRAXSC01_sh_stop   - End emulation, free memory used for samples
+votraxsc01_w         - Write data to votrax port
+votraxsc01_status_r  - Return busy status (1 = busy)
 
 If you need to alter the base frequency (i.e. Qbert) then just alter
 the variable VotraxBaseFrequency, this is defaulted to 8000
@@ -487,6 +487,7 @@ static void VOTRAXSC01_sh_start_timeout(int which)
 
 int VOTRAXSC01_sh_start(const struct MachineSound *msound)
 {
+	static char s[32];
 #ifndef REAL_DEVICE
 	int i;
 #endif
@@ -513,8 +514,9 @@ int VOTRAXSC01_sh_start(const struct MachineSound *msound)
 	PrepareVoiceData(votraxsc01_locals.actPhoneme, votraxsc01_locals.actIntonation);
 
 	for (i=0; i<=3; i++) {
-		votraxsc01_locals.channels[i] = stream_init("SND VOTRAX-SC01-0", votraxsc01_locals.intf->mixing_level[0], sample_rate[i], i, Votrax_Update);
-		set_RC_filter(votraxsc01_locals.channels[i], 270000, 15000, 0, 10000);
+		sprintf(s, "Votrax-SC01 #%d Int %d", 0, i);
+		votraxsc01_locals.channels[i] = stream_init(s, votraxsc01_locals.intf->mixing_level[0], sample_rate[i], i, Votrax_Update);
+//		set_RC_filter(votraxsc01_locals.channels[i], 270000, 15000, 0, 10000);
 	}
 
 	if ( votraxsc01_locals.intf->BusyCallback[0] )
