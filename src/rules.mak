@@ -1,5 +1,16 @@
 # List of CPU core (and, for a debug build, disassembler) object files
 
+CPU=$(strip $(findstring PPS4@,$(CPUS)))
+ifneq ($(CPU),)
+OBJDIRS += $(OBJ)/cpu/pps4
+CPUDEFS += -DHAS_PPS4=1
+CPUOBJS += $(OBJ)/cpu/pps4/pps4.o
+DBGOBJS += $(OBJ)/cpu/pps4/pps4dasm.o
+$(OBJ)/cpu/pps4/pps4.o: pps4.c pps4.h pps4cpu.h
+else
+CPUDEFS += -DHAS_PPS4=0
+endif
+
 CPU=$(strip $(findstring Z80@,$(CPUS)))
 ifneq ($(CPU),)
 OBJDIRS += $(OBJ)/cpu/z80
