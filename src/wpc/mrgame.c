@@ -15,11 +15,15 @@
   I/O: DMA
 
   Issues/Todo:
-  #1) Motor show - get's caught in a loop @ 1a47 - 1a4e and stops reading cpu input
-  #2) The Mr. Game Logos do not appear during attract mode, unless you go into video test and exit, and
-      then only sometimes will it appear after a few seconds..
-  #3) Colors not impleneted
-  #4) Sound not done yet
+  #0) Z80 WAIT line is involved in the real schematic somehow, maybe this needs to be emulated?
+  #1) Adding NMI pulse seems to have helped, but still something is quite wrong
+  #2) Watching output of video commands from cpu->video, motor cross definitely loses some commands..
+      (this occurs after drag race graphic)
+  #3) Have not figured out how object ram assigns colors to different areas of the screen
+  #4) There are sprites - these are not handled yet!
+  #5) I can see screen scroll registers, so the screen must scroll somehow..
+  #6) Sound not done yet
+  #7) Mr. Game Logo not correct color in Motor Show ( Bad Color Prom Read? )
 ************************************************************************************************/
 #include "driver.h"
 #include "cpu/m68000/m68000.h"
@@ -77,6 +81,7 @@ static struct {
 } locals;
 
 data8_t *mrgame_videoram;
+data8_t *mrgame_objectram;
 
 /* -------------------*/
 /* --- Interfaces --- */
@@ -117,9 +122,6 @@ static void mrgame_irq(int data)
 }
 
 static INTERRUPT_GEN(vblank) {
-
-  //Gen #1 - needs to set IRQ (no idea @ what frequency)
-  cpu_set_irq_line(1, IRQ_LINE_NMI, ASSERT_LINE);
 
   /*-------------------------------
   /  copy local data to interface
@@ -164,7 +166,7 @@ static MACHINE_INIT(mrgame) {
   timer_pulse(MRGAME_IRQ_FREQ,0,mrgame_irq);
 
   //pull video registers out of ram space
-  install_mem_write_handler(1,0x6800, 0x6805, vid_registers_w);
+  install_mem_write_handler(1,0x6800, 0x68ff, vid_registers_w);
 }
 
 
@@ -223,10 +225,7 @@ static WRITE16_HANDLER(sound_w) {
 }
 
 //8 bit data to this latch comes from D8-D15 (ie, upper bits only)
-static WRITE16_HANDLER(video_w) { 
-	locals.vid_data = (data>>8) & 0xff;
-//	LOG(("%08x: video_w = %04x = %02x (%c)\n",activecpu_get_pc(),data,locals.vid_data,locals.vid_data^0xff)); 
-}
+static WRITE16_HANDLER(video_w) { locals.vid_data = (data>>8) & 0xff; } //printf("viddata=%x\n",data>>8);}
 
 /*
 Bits 0-2 = D0-D2 selecting 0-7 output of selected bank (see below)
@@ -296,27 +295,13 @@ Bits 0 - Bit 1 = D0-D1 to CN12 (i/o) -- AND CN14 (video) - NOT USED!
 Bits 2 - Bit 3 = D0-D1 to CN14A (video board) - NOT USED?!
 Bits 4 - Bit 7 = D4-D7 to CN14A (video board) - NOT USED?!
 */
-static WRITE16_HANDLER(data_w) { 
-	locals.d0d1 = data & 0x03;
-#if 0
-	if(locals.d0d1 > 0)
-		LOG(("* * * %08x: data_w = %04x, aoa2 = %x\n",activecpu_get_pc(),data,locals.a0a2)); 
-//	else
-//		LOG(("%08x: data_w = %04x\n",activecpu_get_pc(),data)); 
-#endif
-}
+static WRITE16_HANDLER(data_w) { locals.d0d1 = data & 0x03; }
 
 /*
 Bits 0-2 = A0-A2 of CN12 --- AND CN14 (NOT USED!)
 Bits 3-7 = NC
 */
-static WRITE16_HANDLER(extadd_w) { 
-	locals.a0a2 = data & 0x07;
-#if 0
-	if(locals.d0d1)
-		LOG(("%08x: extadd_w = %04x\n",activecpu_get_pc(),data)); 
-#endif
-}
+static WRITE16_HANDLER(extadd_w) { locals.a0a2 = data & 0x07; }
 
 /*
 Bit 0 - Bit 2 => Rows 0->7
@@ -334,9 +319,9 @@ static WRITE16_HANDLER(row_w) {
 }
 
 //NVRAM
-//static UINT16 *NVRAM;
+static UINT16 *NVRAM;
 static NVRAM_HANDLER(mrgame_nvram) {
-  //core_nvram(file, read_or_write, NVRAM, 0x2000, 0x00);
+  core_nvram(file, read_or_write, NVRAM, 0x10000, 0x00);
 }
 
 /***************************************************************************/
@@ -345,7 +330,19 @@ static NVRAM_HANDLER(mrgame_nvram) {
 
 //Read D0-D7 from cpu
 static READ_HANDLER(i8255_porta_r) { 
-	LOG(("i8255_porta_r=%x\n",locals.vid_data)); 
+	//LOG(("i8255_porta_r=%x\n",locals.vid_data)); 
+
+	//title
+	//if(locals.vid_data == 0x18) locals.vid_data = 0x13;
+
+	//Racecars
+    //if(locals.vid_data == 0x18) locals.vid_data = 0x1a;
+
+	//Bikes
+    //if(locals.vid_data == 0x18) locals.vid_data = 0x19;
+	
+	//printf("i8255_porta_r=%x\n",locals.vid_data);
+
 	return locals.vid_data; 
 }
 static READ_HANDLER(i8255_portb_r) { LOG(("UNDOCUMENTED: i8255_portb_r\n")); return 0; }
@@ -355,15 +352,21 @@ static READ_HANDLER(i8255_portb_r) { LOG(("UNDOCUMENTED: i8255_portb_r\n")); ret
 static int lastr = 0;
 READ_HANDLER(i8255_portc_r) { 
 	int data = core_getDip(1) | (locals.vid_strb<<4);
+#if 0
 	if(lastr != data) {
 		LOG(("i8255_portc_r=%x\n",data));
 		lastr = data;
 	}
+#endif
 	return data;
 }
 
 static WRITE_HANDLER(i8255_porta_w) { LOG(("i8255_porta_w=%x\n",data)); }
-static WRITE_HANDLER(i8255_portb_w) { LOG(("i8255_portb_w=%x\n",data)); }
+
+static WRITE_HANDLER(i8255_portb_w) {
+	//cpu_interrupt_enable(1,data&1);
+	//LOG(("i8255_portb_w=%x\n",data)); 
+}
 static WRITE_HANDLER(i8255_portc_w) { LOG(("i8255_portc_w=%x\n",data)); }
 
 static WRITE_HANDLER(vid_registers_w) {
@@ -372,6 +375,10 @@ static WRITE_HANDLER(vid_registers_w) {
 		case 0:
 			locals.vid_a11 = data & 1;
 			break;
+		//?
+		case 1:
+			//cpu_interrupt_enable(1,data&1);
+ 			break;
 		//Graphics rom - address line 12 pin
 		case 3:
 			locals.vid_a12 = data & 1;
@@ -394,16 +401,6 @@ static READ_HANDLER(soundg1_2_port_r) {
 }
 static WRITE_HANDLER(soundg1_2_port_w) {
 }
-static READ_HANDLER(videog1_port_r) {
-	return 0;
-}
-static WRITE_HANDLER(videog1_port_w) {
-}
-static READ_HANDLER(videog2_port_r) {
-	return 0;
-}
-static WRITE_HANDLER(videog2_port_w) {
-}
 
 static VIDEO_START(mrgame) {
   tmpbitmap = auto_bitmap_alloc(Machine->drv->screen_width,Machine->drv->screen_height);
@@ -411,15 +408,14 @@ static VIDEO_START(mrgame) {
 }
 
 static int charoff = 0;
-
 PINMAME_VIDEO_UPDATE(mrgame_update) {
-	int offs;
-	int color = 1;
+	int offs = 0;
+	int color = 0;
 	int tile = 0;
 
 #ifdef MAME_DEBUG
-  core_textOutf(10,300,1,"offset=%08x", charoff);
 
+if(!debugger_focus) {
   if(keyboard_pressed_memory_repeat(KEYCODE_Z,2))
 	  charoff+=0x100;
   if(keyboard_pressed_memory_repeat(KEYCODE_X,2))
@@ -428,6 +424,7 @@ PINMAME_VIDEO_UPDATE(mrgame_update) {
 	  charoff++;
   if(keyboard_pressed_memory_repeat(KEYCODE_V,2))
 	  charoff--;
+}
 #endif
 
 	/* for every character in the Video RAM, check if it has been modified */
@@ -440,12 +437,22 @@ PINMAME_VIDEO_UPDATE(mrgame_update) {
 
 //			dirtybuffer[offs] = 0;
 
-			sx = offs % (256/8);
-			sy = offs / (256/8);
+			sx = offs % 32;
+			sy = offs / 32;
+
+			//this works, but is wrong, as the object ram can vary the color in several places.
+#if 1
+			color = mrgame_objectram[1];
+#else
+			//This might be correct, but i'm not sure..
+			if(offs%2==0)
+				color = mrgame_objectram[(offs%32)+1];
+			else
+				color = mrgame_objectram[offs%32];
+#endif
 
 			tile = mrgame_videoram[offs]+
-                   (locals.vid_a11*0x100)+(locals.vid_a12*0x200)+(locals.vid_a13*0x400)+
-			       charoff;
+                   (locals.vid_a11*0x100)+(locals.vid_a12*0x200)+(locals.vid_a13*0x400)+charoff;
 
 			drawgfx(tmpbitmap,Machine->gfx[0],
 					tile,
@@ -491,15 +498,11 @@ MEMORY_END
 static MEMORY_WRITE_START(videog1_writemem)
   { 0x0000, 0x3fff, MWA_ROM },
   { 0x4000, 0x47ff, MWA_RAM },
-  { 0x4800, 0x4be0, MWA_RAM, &mrgame_videoram, &videoram_size },
-  { 0x4be1, 0x7fff, MWA_RAM },
+  { 0x4800, 0x4be7, MWA_RAM, &mrgame_videoram, &videoram_size },
+  { 0x4be8, 0x4fff, MWA_RAM },
+  { 0x5000, 0x50ff, MWA_RAM, &mrgame_objectram },
+  { 0x5100, 0x7fff, MWA_RAM },
   { 0x8100, 0x8103, ppi8255_0_w},
-MEMORY_END
-static PORT_READ_START(videog1_readport)
-  { 0x00, 0xff, videog1_port_r },
-MEMORY_END
-static PORT_WRITE_START(videog1_writeport)
-  { 0x00, 0xff, videog1_port_w },
 MEMORY_END
 
 /*******************************/
@@ -509,22 +512,17 @@ static MEMORY_READ_START(videog2_readmem)
   { 0x0000, 0x7fff, MRA_ROM },
   { 0x8000, 0xbfff, MRA_RAM },
   { 0xc000, 0xc003, ppi8255_0_r},
-  //{ 0xa800, 0xa805, misc_r},
 MEMORY_END
 static MEMORY_WRITE_START(videog2_writemem)
   { 0x0000, 0x7fff, MWA_ROM },
   { 0x8000, 0x87ff, MWA_RAM },
   { 0x8800, 0x8be7, MWA_RAM, &mrgame_videoram, &videoram_size },
-  { 0x8bef, 0xbfff, MWA_RAM },
+  { 0x8bef, 0x8fff, MWA_RAM },
+  { 0x9000, 0x90ff, MWA_RAM, &mrgame_objectram },
+  { 0x9100, 0xbfff, MWA_RAM },
   { 0xc000, 0xc003, ppi8255_0_w},
-  //{ 0xa800, 0xa805, misc_w},
 MEMORY_END
-static PORT_READ_START(videog2_readport)
-  { 0x00, 0xff, videog2_port_r },
-MEMORY_END
-static PORT_WRITE_START(videog2_writeport)
-  { 0x00, 0xff, videog2_port_w },
-MEMORY_END
+
 /**********************************/
 /* Sound CPU #1 Gen #1 Memory Map */
 /**********************************/
@@ -567,6 +565,32 @@ MEMORY_END
 /* Manual starts with a switch # of 0 */
 static int mrgame_sw2m(int no) { return no+7+1; }
 static int mrgame_m2sw(int col, int row) { return col*8+row-7-1; }
+
+PALETTE_INIT( mrgame )
+{
+	int i;
+	for (i = 0;i < Machine->drv->total_colors;i++)
+	{
+		int bit0,bit1,bit2,r,g,b;
+		/* red component */
+		bit0 = (*color_prom >> 0) & 0x01;
+		bit1 = (*color_prom >> 1) & 0x01;
+		bit2 = (*color_prom >> 2) & 0x01;
+		r = 0x21 * bit0 + 0x47 * bit1 + 0x97 * bit2;
+		/* green component */
+		bit0 = (*color_prom >> 3) & 0x01;
+		bit1 = (*color_prom >> 4) & 0x01;
+		bit2 = (*color_prom >> 5) & 0x01;
+		g = 0x21 * bit0 + 0x47 * bit1 + 0x97 * bit2;
+		/* blue component */
+		bit0 = 0;
+		bit1 = (*color_prom >> 6) & 0x01;
+		bit2 = (*color_prom >> 7) & 0x01;
+		b = 0x21 * bit0 + 0x47 * bit1 + 0x97 * bit2;
+		palette_set_color(i,r,g,b);
+		color_prom++;
+	}
+}
 
 /*************************************
  *
@@ -611,16 +635,17 @@ static struct GfxDecodeInfo gfxdecodeinfo_g2[] =
 
 /* VIDEO GENERATION 1 DRIVER */
 MACHINE_DRIVER_START(mrgame_vid1)
-  MDRV_CPU_ADD(Z80, 3000000)	/*3 Mhz?*/
+  MDRV_CPU_ADD(Z80,18432000/6)	/* 3.072 MHz */
   MDRV_CPU_MEMORY(videog1_readmem, videog1_writemem)
-  MDRV_CPU_PORTS(videog1_readport, videog1_writeport)
+  MDRV_CPU_VBLANK_INT(nmi_line_pulse,1)
+  MDRV_FRAMES_PER_SECOND(60)
+  MDRV_VBLANK_DURATION(DEFAULT_60HZ_VBLANK_DURATION)
 MACHINE_DRIVER_END
 
 /* VIDEO GENERATION 2 DRIVER */
 MACHINE_DRIVER_START(mrgame_vid2)
   MDRV_CPU_ADD(Z80, 3000000)	/*3 Mhz?*/
   MDRV_CPU_MEMORY(videog2_readmem, videog2_writemem)
-  MDRV_CPU_PORTS(videog2_readport, videog2_writeport)
 MACHINE_DRIVER_END
 
 /* SOUND GENERATION 1 DRIVER */
@@ -670,7 +695,9 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(mrgame_video_common)
   MDRV_SCREEN_SIZE(640, 400)
   MDRV_VISIBLE_AREA(0, 255, 0, 399)
-  MDRV_VIDEO_ATTRIBUTES(VIDEO_TYPE_RASTER | VIDEO_MODIFIES_PALETTE)
+  MDRV_VIDEO_ATTRIBUTES(VIDEO_TYPE_RASTER)
+  MDRV_PALETTE_LENGTH(32)
+  MDRV_PALETTE_INIT(mrgame)
   MDRV_VIDEO_START(mrgame)
 MACHINE_DRIVER_END
 
