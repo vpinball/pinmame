@@ -136,9 +136,6 @@
 
 #define BY35_COMINPORT       CORE_COREINPORT
 
-/*-- BY35 switches are numbered from 1-64 (not column,row as WPC) --*/
-#define BY35_SWNO(x) (x)
-
 /*-- By35 switch numbers --*/
 #define BY35_SWSELFTEST   -7
 #define BY35_SWCPUDIAG    -6
@@ -220,7 +217,7 @@
 #define BY17_ROMEND ROM_END
 
 /*-- These are only here so the game structure can be in the game file --*/
-extern struct MachineDriver machine_driver_by35;
+extern const struct MachineDriver machine_driver_by35;
 #define by35_mBY17      by35
 #define by35_mBY35_32   by35
 #define by35_mBY35_50   by35
@@ -231,11 +228,11 @@ extern struct MachineDriver machine_driver_by35;
 #define by35_mBY35_54   by35
 #define by35_mBY35_56   by35 // XENON
 
-extern struct MachineDriver machine_driver_by35_32s;
-extern struct MachineDriver machine_driver_by35_51s;
-extern struct MachineDriver machine_driver_by35_61s;
-extern struct MachineDriver machine_driver_by35_56s;
-extern struct MachineDriver machine_driver_by35_45s;
+extern const struct MachineDriver machine_driver_by35_32s;
+extern const struct MachineDriver machine_driver_by35_51s;
+extern const struct MachineDriver machine_driver_by35_61s;
+extern const struct MachineDriver machine_driver_by35_56s;
+extern const struct MachineDriver machine_driver_by35_45s;
 #define by35_mBY17S     by35
 #define by35_mBY35_32S  by35_32s
 #define by35_mBY35_50S  by35_32s
@@ -245,6 +242,6 @@ extern struct MachineDriver machine_driver_by35_45s;
 #define by35_mBY35_81S  by35_61s
 #define by35_mBY35_54S  by35
 #define by35_mBY35_56S  by35_56s // XENON
-#define by35_mBY35_45S  by35_45s 
+#define by35_mBY35_45S  by35_45s
 #endif /* INC_BY35 */
 

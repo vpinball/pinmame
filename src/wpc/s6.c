@@ -2,8 +2,14 @@
 #include "cpu/m6800/m6800.h"
 #include "machine/6821pia.h"
 #include "core.h"
+#include "sndbrd.h"
 #include "s67s.h"
 #include "s6.h"
+
+#define S6_PIA0 0
+#define S6_PIA1 1
+#define S6_PIA2 2
+#define S6_PIA3 3
 
 #define S6_VBLANKFREQ    60 /* VBLANK frequency */
 #define S6_IRQFREQ     1000 /* IRQ Frequency*/
@@ -24,7 +30,7 @@
   16-21 =	Player 3
   24-29 =	Player 4
 */
-core_tLCDLayout s6_6digit_disp[] = {
+const core_tLCDLayout s6_6digit_disp[] = {
   // Player 1            Player 2
   {0, 0, 0,6,CORE_SEG7}, {0,18, 8,6,CORE_SEG7},
   // Player 3            Player 4
@@ -51,7 +57,7 @@ core_tLCDLayout s6_6digit_disp[] = {
   24 =		Right Side Right Digit
   25-31 =	Player 4 (Digits 1-7) */
 
-core_tLCDLayout s6_7digit_disp[] = {
+const core_tLCDLayout s6_7digit_disp[] = {
   // Player 1 Segment    Player 2 Segment
   {0, 0, 1,7,CORE_SEG7},{0,18, 9,7,CORE_SEG7},
   // Player 3 Segment    Player 4 Segment
@@ -67,7 +73,6 @@ static void s6_exit(void);
 static struct {
   int	 alphapos;
   int    vblankCount;
-  int    initDone;
   UINT32 solenoids;
   core_tSeg segments,pseg;
   int    lampRow, lampColumn;
@@ -83,12 +88,10 @@ static void s6_nvram(void *file, int write);
 static void s6_piaIrq(int state);
 
 static READ_HANDLER(s6_pia0ca1_r) {
-//  return !cpu_get_reg(M6800_IRQ_STATE) && !core_getSw(S6_SWADVANCE);
-  return cpu_get_reg(M6800_IRQ_STATE) && core_getSw(S6_SWADVANCE);
+  return activecpu_get_reg(M6800_IRQ_STATE) && core_getSw(S6_SWADVANCE);
 }
 static READ_HANDLER(s6_pia0cb1_r) {
-//  return !cpu_get_reg(M6800_IRQ_STATE) && !core_getSw(S6_SWUPDN);
-  return cpu_get_reg(M6800_IRQ_STATE) && core_getSw(S6_SWUPDN);
+  return activecpu_get_reg(M6800_IRQ_STATE) && core_getSw(S6_SWUPDN);
 }
 
 /*-- Dips: alphapos selects one 4 bank --*/
@@ -141,7 +144,7 @@ static WRITE_HANDLER(s6_sol1_8_w) {
 
 /*-- Solenoid 9-16 (9-13 used for sound) --*/
 static WRITE_HANDLER(s6_sol9_16_w) {
-  s67s_cmd(0, ~data); data &= 0xe0; /* mask of sound command bits */
+  sndbrd_0_data_w(0, ~data); data &= 0xe0; /* mask of sound command bits */
   s6locals.solenoids |= data<<8;
   coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffff00ff) | (data<<8);
 }
@@ -160,7 +163,7 @@ static WRITE_HANDLER(s6_specsol4_w) { setSSSol(data,3); }
 static WRITE_HANDLER(s6_specsol5_w) { setSSSol(data,4); }
 static WRITE_HANDLER(s6_specsol6_w) { setSSSol(data,5); }
 
-static struct pia6821_interface s6_pia_intf[] = {
+static const struct pia6821_interface s6_pia[] = {
 { /* PIA 1 - Display and other
   o  PA0-3:  16 Digit Strobing.. 1 # activates a digit.
   o  PA4-5:  Output LED's - When CA2 Output = 1
@@ -260,45 +263,38 @@ static void s6_updSw(int *inports) {
     coreGlobals.swMatrix[0] = (inports[S6_COMINPORT] & 0xff00)>>8;
   }
   /*-- Diagnostic buttons on CPU board --*/
-  if (core_getSw(S6_SWCPUDIAG))                          cpu_set_nmi_line(S6_CPUNO, PULSE_LINE);
-  if (coreGlobals.soundEn && core_getSw(S6_SWSOUNDDIAG)) cpu_set_nmi_line(S67S_CPUNO, PULSE_LINE);
+  cpu_set_nmi_line(0, core_getSw(S6_SWCPUDIAG) ? ASSERT_LINE : CLEAR_LINE);
+  sndbrd_0_diag(core_getSw(S6_SWSOUNDDIAG));
 
   /*-- coin door switches --*/
-//  pia_set_input_ca1(0, !cpu_get_reg(M6800_IRQ_STATE) && !core_getSw(S6_SWADVANCE));
-//  pia_set_input_cb1(0, !cpu_get_reg(M6800_IRQ_STATE) && !core_getSw(S6_SWUPDN));
-  pia_set_input_ca1(0, core_getSw(S6_SWADVANCE));
-  pia_set_input_cb1(0, core_getSw(S6_SWUPDN));
+  pia_set_input_ca1(S6_PIA0, core_getSw(S6_SWADVANCE));
+  pia_set_input_cb1(S6_PIA0, core_getSw(S6_SWUPDN));
   /* Show Status of Auto/Manual Switch */
   core_textOutf(40, 30, BLACK, core_getSw(S6_SWUPDN) ? "Auto  " : "Manual");
 }
 
-static core_tData s6Data = {
+static const core_tData s6Data = {
   8+16, /* 16 DIPs */
   s6_updSw,
   2 | DIAGLED_VERTICAL,
-  s67s_cmd, "s6",
+  sndbrd_0_data_w, "s6",
   core_swSeq2m, core_swSeq2m,core_m2swSeq,core_m2swSeq
 };
 
 static void s6_init(void) {
-  int ii;
-  if (s6locals.initDone) CORE_DOEXIT(s6_exit);
-
   memset(&s6locals, 0, sizeof(s6locals));
-  s6locals.initDone = TRUE;
   if (core_init(&s6Data)) return;
-
-  for (ii = 0; ii < 4; ii++)
-    pia_config(ii, PIA_STANDARD_ORDERING, &s6_pia_intf[ii]);
-  if (coreGlobals.soundEn) s67s_init();
+  pia_config(S6_PIA0, PIA_STANDARD_ORDERING, &s6_pia[0]);
+  pia_config(S6_PIA1, PIA_STANDARD_ORDERING, &s6_pia[1]);
+  pia_config(S6_PIA2, PIA_STANDARD_ORDERING, &s6_pia[2]);
+  pia_config(S6_PIA3, PIA_STANDARD_ORDERING, &s6_pia[3]);
+  sndbrd_0_init(SNDBRD_S67S, 1, NULL, NULL, NULL);
   pia_reset();
-
   s6locals.vblankCount = 1;
 }
 
 static void s6_exit(void) {
-  if (coreGlobals.soundEn) s67s_exit();
-  core_exit();
+  sndbrd_0_exit(); core_exit();
 }
 
 static WRITE_HANDLER(s6_CMOS_w) { s6_CMOS[offset] = data | 0xf0; }
@@ -308,10 +304,10 @@ static WRITE_HANDLER(s6_CMOS_w) { s6_CMOS[offset] = data | 0xf0; }
 /------------------------------------*/
 static MEMORY_READ_START(s6_readmem)
   { 0x0000, 0x01ff, MRA_RAM},
-  { 0x2200, 0x2203, pia_3_r },		/*Solenoids + Sound Commands*/
-  { 0x2400, 0x2403, pia_2_r }, 		/*Lamps*/
-  { 0x2800, 0x2803, pia_0_r },		/*Display + Other*/
-  { 0x3000, 0x3003, pia_1_r },		/*Switches*/
+  { 0x2200, 0x2203, pia_r(S6_PIA3) },		/*Solenoids + Sound Commands*/
+  { 0x2400, 0x2403, pia_r(S6_PIA2) }, 		/*Lamps*/
+  { 0x2800, 0x2803, pia_r(S6_PIA0) },		/*Display + Other*/
+  { 0x3000, 0x3003, pia_r(S6_PIA1) },		/*Switches*/
   { 0x6000, 0x8000, MRA_ROM },
   { 0x8000, 0xffff, MRA_ROM },		/*Doubled ROM region since only 15 address pins used!*/
 MEMORY_END
@@ -319,21 +315,21 @@ MEMORY_END
 static MEMORY_WRITE_START(s6_writemem)
   { 0x0000, 0x0100, MWA_RAM },
   { 0x0100, 0x01ff, s6_CMOS_w, &s6_CMOS },
-  { 0x2200, 0x2203, pia_3_w },		/*Solenoids + Sound Commands*/
-  { 0x2400, 0x2403, pia_2_w }, 		/*Lamps*/
-  { 0x2800, 0x2803, pia_0_w },		/*Display + Other*/
-  { 0x3000, 0x3003, pia_1_w },		/*Switches*/
+  { 0x2200, 0x2203, pia_w(S6_PIA3) },		/*Solenoids + Sound Commands*/
+  { 0x2400, 0x2403, pia_w(S6_PIA2) }, 		/*Lamps*/
+  { 0x2800, 0x2803, pia_w(S6_PIA0) },		/*Display + Other*/
+  { 0x3000, 0x3003, pia_w(S6_PIA1) },		/*Switches*/
   { 0x6000, 0x8000, MWA_ROM },
   { 0x8000, 0xffff, MWA_ROM },		/*Doubled ROM region since only 15 address pins used!*/
 MEMORY_END
 
-struct MachineDriver machine_driver_s6 = {
+const struct MachineDriver machine_driver_s6 = {
   {{  CPU_M6808, 3580000/4, /* 3.58/4 = 900hz */
       s6_readmem, s6_writemem, NULL, NULL,
       s6_vblank, 1, s6_irq, S6_IRQFREQ
   }},
   S6_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, s6_init, CORE_EXITFUNC(s6_exit)
+  50, s6_init, s6_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER, 0, NULL, NULL, gen_refresh,
@@ -341,14 +337,14 @@ struct MachineDriver machine_driver_s6 = {
   s6_nvram
 };
 
-struct MachineDriver machine_driver_s6s= {
+const struct MachineDriver machine_driver_s6s= {
   {{  CPU_M6808, 3580000/4, /* 3.58/4 = 900hz */
       s6_readmem, s6_writemem, NULL, NULL,
       s6_vblank, 1, s6_irq, S6_IRQFREQ
   }, S67S_SOUNDCPU
   },
   S6_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, s6_init, CORE_EXITFUNC(s6_exit)
+  50, s6_init, s6_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER, 0, NULL, NULL, gen_refresh,

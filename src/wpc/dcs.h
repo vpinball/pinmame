@@ -1,14 +1,7 @@
 #ifndef INC_DCS
 #define INC_DCS
 
-/* 200201 - added SOUNDROM5x for Dirty Harry */
-/* 151200 - added sample support (SJE) */
-
 #include "cpu/adsp2100/adsp2100.h"
-
-/* 161200 Added dcs_ctrl_w */
-/* 281100 Updated regions to MAME 37b9 */
-/* 171000 Added SOUNDROM5m (for NBA) */
 
 /*-- Sound ROM macros --*/
 /*-- standard regions --*/
@@ -128,16 +121,7 @@ extern const struct Memory_WriteAddress16 dcs2_writemem[];
 extern const struct Memory_ReadAddress16  dcs1_readmem[];
 extern const struct Memory_WriteAddress16 dcs1_writemem[];
 
-extern struct CustomSound_interface 	dcs_custInt;
-extern struct Samplesinterface 		samples_interface;
-
-
-/*-- Sound interface communications --*/
-extern READ_HANDLER (dcs_data_r);
-extern WRITE_HANDLER(dcs_data_w);
-extern WRITE_HANDLER(dcs_ctrl_w);
-extern READ_HANDLER (dcs_ctrl_r);
-extern void dcs_init(void);
+extern struct CustomSound_interface dcs_custInt;
 
 #define DCS1_SOUNDCPU ,{ \
   CPU_ADSP2105 | CPU_AUDIO_CPU,	\
@@ -153,8 +137,6 @@ extern void dcs_init(void);
   ignore_interrupt, 0 \
 }
 
-#define DCS_SOUND \
-  { SOUND_CUSTOM, &dcs_custInt }, \
-  { SOUND_SAMPLES, &samples_interface}
+#define DCS_SOUND { SOUND_CUSTOM, &dcs_custInt }, SAMPLESINTERFACE
 
 #endif /* INC_DCS */

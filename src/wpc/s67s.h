@@ -5,16 +5,14 @@ extern const struct Memory_ReadAddress  s67s_readmem[];
 extern const struct Memory_WriteAddress s67s_writemem[];
 extern struct DACinterface      s67s_dacInt;
 extern struct hc55516_interface s67s_hc55516Int;
-extern struct Samplesinterface  samples_interface;
 
 #define S67S_CPUNO        1
 #define S67S_MEMREG_SCPU  REGION_CPU2
 
 
-#define S67S_SOUND \
-  { SOUND_DAC,     &s67s_dacInt }, \
-  { SOUND_HC55516, &s67s_hc55516Int }, \
-  { SOUND_SAMPLES, &samples_interface}
+#define S67S_SOUND { SOUND_DAC,     &s67s_dacInt }, \
+                   { SOUND_HC55516, &s67s_hc55516Int }, \
+                   SAMPLESINTERFACE
 
 #define S67S_SOUNDCPU { \
   CPU_M6808 | CPU_AUDIO_CPU, 3579000/4, \
@@ -49,9 +47,5 @@ extern struct Samplesinterface  samples_interface;
     ROM_RELOAD(   0xc000, 0x1000) \
     ROM_LOAD(ic6, 0x5000, 0x1000, chk6) \
     ROM_RELOAD(   0xd000, 0x1000)
-
-extern WRITE_HANDLER(s67s_cmd);
-extern void s67s_init(void);
-extern void s67s_exit(void);
 
 #endif /* INC_S67S */

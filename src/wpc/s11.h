@@ -71,7 +71,7 @@
 #define S11_MEMREG_SROM2	REGION_SOUND2
 
 /*-- standard display layouts --*/
-extern core_tLCDLayout s11_dispS9[], s11_dispS11[], s11_dispS11a[], s11_dispS11b_2[];
+extern const core_tLCDLayout s11_dispS9[], s11_dispS11[], s11_dispS11a[], s11_dispS11b_2[];
 #define s11_dispS11b_1 s11_dispS11a
 #define s11_dispS11b_3 s11_dispS11b_2
 #define s11_dispS11c   s11_dispS11b_2
@@ -191,7 +191,7 @@ extern struct MachineDriver machine_driver_s11c_s;
 #define s11_mS11AS       s11a_2_s
 #define s11_mS11B_1S     s11a_2_s
 #define s11_mS11B_2S     s11a_2_s
-#define s11_mS11B_3S     s11b_3_s
+#define s11_mS11B_3S     s11a_2_s
 #define s11_mS11CS       s11c_s
 
 #endif /* INC_S11 */

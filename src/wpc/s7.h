@@ -41,9 +41,6 @@
 #define S7_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
 #define S7_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
 
-/*-- S7 switches are numbered from 1-64 (not column,row as WPC) --*/
-#define S7_SWNO(x) (x)
-
 /*-- S7 switch numbers --*/
 #define S7_SWADVANCE     -7
 #define S7_SWUPDN        -6
@@ -58,7 +55,7 @@
 #define S7_CPUNO   0
 
 /*-- Memory regions --*/
-#define S7_MEMREG_CPU		REGION_CPU1
+#define S7_MEMREG_CPU REGION_CPU1
 
 #define S7_ROMSTART8088(name,ver, ic14,chk14, ic17,chk17, ic20,chk20, ic26,chk26) \
   ROM_START(name##_##ver) \
@@ -84,12 +81,12 @@
 
 #define S7_ROMEND ROM_END
 /*-- These are only here so the game structure can be in the game file --*/
-extern struct MachineDriver machine_driver_s7;
+extern const struct MachineDriver machine_driver_s7;
 #define s7_mS7         s7
 
-extern struct MachineDriver machine_driver_s7_s;
+extern const struct MachineDriver machine_driver_s7_s;
 #define s7_mS7S        s7_s
-extern core_tLCDLayout s7_dispS7[];
+extern const core_tLCDLayout s7_dispS7[];
 
 #endif /* INC_S7 */
 

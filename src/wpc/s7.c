@@ -2,11 +2,18 @@
 #include "cpu/m6800/m6800.h"
 #include "machine/6821pia.h"
 #include "core.h"
+#include "sndbrd.h"
 #include "s67s.h"
 #include "s7.h"
 
 #define S7_VBLANKFREQ    60 /* VBLANK frequency */
 #define S7_IRQFREQ     1000
+#define S7_PIA0  0
+#define S7_PIA1  1
+#define S7_PIA2  2
+#define S7_PIA3  3
+#define S7_PIA4  4
+#define S7_BANK0 1
 
 static void s7_exit(void);
 static void s7_nvram(void *file, int write);
@@ -16,7 +23,6 @@ static void s7_nvram(void *file, int write);
 /-----------------*/
 static struct {
   int    vblankCount;
-  int    initDone;
   UINT32 solenoids;
   core_tSeg segments, pseg;
   int    lampRow, lampColumn;
@@ -118,8 +124,8 @@ static WRITE_HANDLER(pia0b_w) {
 /*--------------------
 /  Diagnostic buttons
 /---------------------*/
-static READ_HANDLER (pia3ca1_r) { return cpu_get_reg(M6808_IRQ_STATE) ? core_getSw(S7_SWADVANCE) : 0; }
-static READ_HANDLER (pia3cb1_r) { return cpu_get_reg(M6808_IRQ_STATE) ? core_getSw(S7_SWUPDN)    : 0; }
+static READ_HANDLER(pia3ca1_r) { return activecpu_get_reg(M6808_IRQ_STATE) ? core_getSw(S7_SWADVANCE) : 0; }
+static READ_HANDLER(pia3cb1_r) { return activecpu_get_reg(M6808_IRQ_STATE) ? core_getSw(S7_SWUPDN)    : 0; }
 
 /*------------
 /  Solenoids
@@ -150,18 +156,13 @@ static WRITE_HANDLER(pia3cb2_w) { setSSSol(data, 5); }
 static WRITE_HANDLER(pia4ca2_w) { setSSSol(data, 3); }
 static WRITE_HANDLER(pia4cb2_w) { setSSSol(data, 2); }
 
-/*-------
-/ Sound
-/-------*/
-static WRITE_HANDLER(pia0a_w) { s67s_cmd(0,data); }
-
 /*---------------
 / Switch reading
 /----------------*/
 static WRITE_HANDLER(pia4b_w) { s7locals.swCol = data; }
 static READ_HANDLER(pia4a_r)  { return core_getSwCol(s7locals.swCol); }
 
-static struct pia6821_interface s7_pia_intf[] = {
+static struct pia6821_interface s7_pia[] = {
 {  /* PIA 0 (2100)
     PA0-4 Sound
     PB5   CA1
@@ -171,7 +172,7 @@ static struct pia6821_interface s7_pia_intf[] = {
     CB2   SS7
     CA1,CB1 NC */
  /* in  : A/B,CA/B1,CA/B2 */ 0, 0, 0, 0, 0, 0,
- /* out : A/B,CA/B2       */ pia0a_w, pia0b_w, pia0ca2_w, pia0cb2_w,
+ /* out : A/B,CA/B2       */ sndbrd_0_data_w, pia0b_w, pia0ca2_w, pia0cb2_w,
  /* irq : A/B             */ s7_piaIrq, s7_piaIrq
 },{/* PIA 1 (2200)
     PA0-7 Sol 1-8
@@ -218,36 +219,33 @@ static void s7_updSw(int *inports) {
     coreGlobals.swMatrix[1] = inports[S7_COMINPORT];
   }
   /*-- Generate interupts for diganostic keys --*/
-  if (core_getSw(S7_SWCPUDIAG))   cpu_set_nmi_line(S7_CPUNO, PULSE_LINE);
-  if (coreGlobals.soundEn && core_getSw(S7_SWSOUNDDIAG)) cpu_set_nmi_line(S67S_CPUNO, PULSE_LINE);
-  pia_set_input_ca1(3, core_getSw(S7_SWADVANCE));
-  pia_set_input_cb1(3, core_getSw(S7_SWUPDN));
+  cpu_set_nmi_line(0, core_getSw(S7_SWCPUDIAG) ? ASSERT_LINE : CLEAR_LINE);
+  sndbrd_0_diag(core_getSw(S7_SWSOUNDDIAG));
+  pia_set_input_ca1(S7_PIA3, core_getSw(S7_SWADVANCE));
+  pia_set_input_cb1(S7_PIA3, core_getSw(S7_SWUPDN));
 }
 
-static core_tData s7Data = {
+const static core_tData s7Data = {
   2, /* On sound board */
-  s7_updSw, CORE_DIAG7SEG, s67s_cmd, "s7",
+  s7_updSw, CORE_DIAG7SEG, sndbrd_0_data_w, "s7",
   core_swSeq2m, core_swSeq2m,core_m2swSeq,core_m2swSeq
 };
 
 static void s7_init(void) {
-  int ii;
-
-  if (s7locals.initDone) CORE_DOEXIT(s7_exit);
-  s7locals.initDone = TRUE;
-
   if (core_gameData == NULL) return;
   if (core_init(&s7Data)) return;
-
-  for (ii = 0; ii < sizeof(s7_pia_intf)/sizeof(s7_pia_intf[0]); ii++)
-    pia_config(ii, PIA_STANDARD_ORDERING, &s7_pia_intf[ii]);
-  if (coreGlobals.soundEn) s67s_init();
+  pia_config(S7_PIA0, PIA_STANDARD_ORDERING, &s7_pia[0]);
+  pia_config(S7_PIA1, PIA_STANDARD_ORDERING, &s7_pia[1]);
+  pia_config(S7_PIA2, PIA_STANDARD_ORDERING, &s7_pia[2]);
+  pia_config(S7_PIA3, PIA_STANDARD_ORDERING, &s7_pia[3]);
+  pia_config(S7_PIA4, PIA_STANDARD_ORDERING, &s7_pia[4]);
+  sndbrd_0_init(SNDBRD_S67S, 1, NULL, NULL, NULL);
   pia_reset();
-  cpu_setbank(1, s7_rambankptr);
+  cpu_setbank(S7_BANK0, s7_rambankptr);
 }
 
 static void s7_exit(void) {
-  if (coreGlobals.soundEn) s67s_exit();
+  sndbrd_0_exit();
   core_exit();
 }
 
@@ -268,40 +266,40 @@ static WRITE_HANDLER(s7_CMOS_w) { s7_CMOS[offset] = data | 0xf0; }
   IC20 ROM (6800-6fff)
 -----------------------------------*/
 static MEMORY_READ_START(s7_readmem)
-  { 0x0000, 0x00ff, MRA_BANK1},
+  { 0x0000, 0x00ff, MRA_BANKNO(S7_BANK0)},
   { 0x0100, 0x01ff, MRA_RAM},
   { 0x1000, 0x13ff, MRA_RAM}, /* CMOS */
-  { 0x2100, 0x2103, pia_0_r},
-  { 0x2200, 0x2203, pia_1_r},
-  { 0x2400, 0x2403, pia_2_r},
-  { 0x2800, 0x2803, pia_3_r},
-  { 0x3000, 0x3003, pia_4_r},
+  { 0x2100, 0x2103, pia_r(S7_PIA0)},
+  { 0x2200, 0x2203, pia_r(S7_PIA1)},
+  { 0x2400, 0x2403, pia_r(S7_PIA2)},
+  { 0x2800, 0x2803, pia_r(S7_PIA3)},
+  { 0x3000, 0x3003, pia_r(S7_PIA4)},
   { 0x4000, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(s7_writemem)
-  { 0x0000, 0x00ff, MWA_BANK1 },
+  { 0x0000, 0x00ff, MWA_BANKNO(S7_BANK0) },
   { 0x0100, 0x01ff, s7_CMOS_w, &s7_CMOS },
   { 0x1000, 0x13ff, MWA_RAM, &s7_rambankptr }, /* CMOS */
-  { 0x2100, 0x2103, pia_0_w},
-  { 0x2200, 0x2203, pia_1_w},
-  { 0x2400, 0x2403, pia_2_w},
-  { 0x2800, 0x2803, pia_3_w},
-  { 0x3000, 0x3003, pia_4_w},
+  { 0x2100, 0x2103, pia_w(S7_PIA0)},
+  { 0x2200, 0x2203, pia_w(S7_PIA1)},
+  { 0x2400, 0x2403, pia_w(S7_PIA2)},
+  { 0x2800, 0x2803, pia_w(S7_PIA3)},
+  { 0x3000, 0x3003, pia_w(S7_PIA4)},
   { 0x4000, 0xffff, MWA_ROM },
 MEMORY_END
 
 /*-----------------
 /  Machine drivers
 /------------------*/
-struct MachineDriver machine_driver_s7_s = {
+const struct MachineDriver machine_driver_s7_s = {
   {{  CPU_M6808, 3.58e6/4,
       s7_readmem, s7_writemem, NULL, NULL,
       s7_vblank, 1, s7_irq, S7_IRQFREQ
   }, S67S_SOUNDCPU
   },
   S7_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, s7_init,CORE_EXITFUNC(s7_exit)
+  50, s7_init, s7_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
@@ -310,13 +308,13 @@ struct MachineDriver machine_driver_s7_s = {
   s7_nvram
 };
 
-struct MachineDriver machine_driver_s7 = {
+const struct MachineDriver machine_driver_s7 = {
   {{  CPU_M6808, 3.58e6/4,
       s7_readmem, s7_writemem, NULL, NULL,
       s7_vblank, 1, s7_irq, S7_IRQFREQ
   }},
   S7_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, s7_init,CORE_EXITFUNC(s7_exit)
+  50, s7_init, s7_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,

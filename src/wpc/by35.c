@@ -4,8 +4,13 @@
 #include "cpu/m6800/m6800.h"
 #include "machine/6821pia.h"
 #include "core.h"
-#include "by35.h"
+#include "sndbrd.h"
 #include "by35snd.h"
+#include "by35.h"
+
+#define BY35_PIA0 0
+#define BY35_PIA1 1
+
 #if 0
 void by35_soundInit(void) {}
 WRITE_HANDLER(by35_soundCmd) {}
@@ -13,7 +18,7 @@ WRITE_HANDLER(by35_soundCmd) {}
 
 #define BY35_VBLANKFREQ    60 /* VBLANK frequency */
 #define BY35_IRQFREQ      150 /* IRQ (via PIA) frequency*/
-#define BY35_ZCFREQ       120 /* Zero cross frequency */
+#define BY35_ZCFREQ       100 /* Zero cross frequency */
 
 static struct {
   int a0, a1, b1, ca20, ca21, cb20, cb21;
@@ -24,7 +29,6 @@ static struct {
   core_tSeg segments,pseg;
   int    diagnosticLed;
   int vblankCount;
-  int initDone;
   void *zctimer;
 } locals;
 
@@ -82,7 +86,7 @@ static WRITE_HANDLER(pia1a_w) {
   int tmp = locals.a1;
   locals.a1 = data;
 
-  by35_soundCmd(0, (locals.cb21<<5) | ((locals.a1 & 0x02)<<3) | (locals.b1 & 0x0f));
+  sndbrd_0_data_w(0, (locals.cb21<<5) | ((locals.a1 & 0x02)<<3) | (locals.b1 & 0x0f));
 
   if (!locals.ca20) {
     if (tmp & ~data & 0x01) { // Positive edge
@@ -132,7 +136,7 @@ static WRITE_HANDLER(pia1b_w) {
     { locals.bcd[5] = locals.a0>>4; by35_dispStrobe(0x20); }
   locals.b1 = data;
 
-  by35_soundCmd(0, (locals.cb21<<5) | ((locals.a1 & 0x02)<<3) | (data & 0x0f));
+  sndbrd_0_data_w(0, (locals.cb21<<5) | ((locals.a1 & 0x02)<<3) | (data & 0x0f));
   coreGlobals.pulsedSolState = 0;
   if (!locals.cb21)
     locals.solenoids |= coreGlobals.pulsedSolState = (1<<(data & 0x0f)) & 0x7fff;
@@ -147,7 +151,7 @@ static WRITE_HANDLER(pia1b_w) {
 static WRITE_HANDLER(pia1cb2_w) {
   //DBGLOG(("PIA1:CB2=%d\n",data));
   locals.cb21 = data;
-  by35_soundCmd(0, (locals.cb21<<5) | ((locals.a1 & 0x02)<<3) | (locals.b1 & 0x0f));
+  sndbrd_0_data_w(0, (locals.cb21<<5) | ((locals.a1 & 0x02)<<3) | (locals.b1 & 0x0f));
 }
 
 static int by35_vblank(void) {
@@ -194,11 +198,10 @@ static void by35_updSw(int *inports) {
                                 ((inports[BY35_COMINPORT]>>2) & 0x87);
   }
   /*-- Diagnostic buttons on CPU board --*/
-  if (core_getSw(BY35_SWCPUDIAG))  cpu_set_nmi_line(0, PULSE_LINE);
-  if ((core_gameData->gen & (GEN_BY35_51|GEN_BY35_56|GEN_BY35_61|GEN_BY35_61B|GEN_BY35_81|GEN_BY35_45)) &&
-      core_getSw(BY35_SWSOUNDDIAG)) cpu_set_nmi_line(BY35_SCPU1NO, PULSE_LINE);
+  cpu_set_nmi_line(0, core_getSw(BY35_SWCPUDIAG) ? ASSERT_LINE : CLEAR_LINE);
+  sndbrd_0_diag(core_getSw(BY35_SWSOUNDDIAG));
   /*-- coin door switches --*/
-  pia_set_input_ca1(0, !core_getSw(BY35_SWSELFTEST));
+  pia_set_input_ca1(BY35_PIA0, !core_getSw(BY35_SWSELFTEST));
 }
 
 /*PIA 1*/
@@ -236,7 +239,7 @@ static void by35_updSw(int *inports) {
 (out) CA2:	 Diag LED + Lamp Strobe #2 (Drives Aux. Lamp Driver - Backglass Lamps)
 (out) CB2:   Solenoid/Sound Bank Select
 	  IRQ:	 Wired to Main 6800 CPU IRQ.*/
-static struct pia6821_interface piaIntf[] = {{
+static struct pia6821_interface by35_pia[] = {{
 /* I:  A/B,CA1/B1,CA2/B2 */  0, pia0b_r, 0,0, 0,0,
 /* O:  A/B,CA2/B2        */  pia0a_w,0, pia0ca2_w,pia0cb2_w,
 /* IRQ: A/B              */  piaIrq,piaIrq
@@ -248,46 +251,51 @@ static struct pia6821_interface piaIntf[] = {{
 
 static int by35_irq(void) {
   static int last = 0;
-  pia_set_input_ca1(1, last = !last);
+  pia_set_input_ca1(BY35_PIA1, last = !last);
   return 0;
 }
 
 static core_tData by35Data = {
   32, /* 32 Dips */
-  by35_updSw, 1, by35_soundCmd, "by35",
+  by35_updSw, 1, sndbrd_0_data_w, "by35",
   core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
 };
 
 static void by35_zeroCross(int data) {
   /*- toggle zero/detection circuit-*/
-  pia_set_input_cb1(0, 0); pia_set_input_cb1(0, 1);
+  pia_pulse_cb1(BY35_PIA0, 0);
 }
 static void by35_init(void) {
-  if (locals.initDone) CORE_DOEXIT(by35_exit);
-
-  if (core_init(&by35Data)) return;
   memset(&locals, 0, sizeof(locals));
 
-  /* init PIAs */
-  pia_config(0, PIA_STANDARD_ORDERING, &piaIntf[0]);
-  pia_config(1, PIA_STANDARD_ORDERING, &piaIntf[1]);
-  if (coreGlobals.soundEn) by35_soundInit();
-  pia_reset();
+  if (core_init(&by35Data)) return;
+  pia_config(BY35_PIA0, PIA_STANDARD_ORDERING, &by35_pia[0]);
+  pia_config(BY35_PIA1, PIA_STANDARD_ORDERING, &by35_pia[1]);
+  { int sndType = SNDBRD_NONE;
+    switch (core_gameData->gen) {
+      case GEN_BY35_32: sndType = SNDBRD_BY32; break;
+      case GEN_BY35_50: sndType = SNDBRD_BY50; break;
+      case GEN_BY35_51: sndType = SNDBRD_BY51; break;
+      case GEN_BY35_61: sndType = SNDBRD_BY61; break;
+      case GEN_BY35_61B:sndType = SNDBRD_BY61B; break;
+      case GEN_BY35_81: sndType = SNDBRD_BY81; break;
+      case GEN_BY35_54: break;
+      case GEN_BY35_56: sndType = SNDBRD_BY56; break;
+      case GEN_BY35_45: sndType = SNDBRD_BY45; break;
+    }
+    sndbrd_0_init(sndType, 1, memory_region(BY35_MEMREG_SROM), NULL, NULL);
+  }
   locals.vblankCount = 1;
   locals.zctimer = timer_pulse(TIME_IN_HZ(BY35_ZCFREQ),0,by35_zeroCross);
   /* not very pretty or flexible but I don't want to change the gameData structure now */
   if (strcmp(Machine->gamedrv->name,"m_mpac") == 0) locals.displays = 6;
   else if (strcmp(Machine->gamedrv->name,"smman") == 0) locals.displays = 7;
   else locals.displays = 5;
-  locals.initDone = TRUE;
 }
 
 static void by35_exit(void) {
-#ifdef PINMAME_EXIT
   if (locals.zctimer) { timer_remove(locals.zctimer); locals.zctimer = NULL; }
-#endif
-  if (coreGlobals.soundEn) by35_soundExit();
-  core_exit();
+  sndbrd_0_exit(); core_exit();
 }
 static UINT8 *by35_CMOS;
 // Stern uses 8 bits, Bally 4 top bits
@@ -308,8 +316,8 @@ static WRITE_HANDLER(by35_CMOS_w) {
 static MEMORY_READ_START(by35_readmem)
   { 0x0000, 0x0080, MRA_RAM }, /* U7 128 Byte Ram*/
   { 0x0200, 0x02ff, MRA_RAM }, /* CMOS Battery Backed*/
-  { 0x0088, 0x008b, pia_0_r }, /* U10 PIA: Switchs + Display + Lamps*/
-  { 0x0090, 0x0093, pia_1_r }, /* U11 PIA: Solenoids/Sounds + Display Strobe */
+  { 0x0088, 0x008b, pia_r(BY35_PIA0) }, /* U10 PIA: Switchs + Display + Lamps*/
+  { 0x0090, 0x0093, pia_r(BY35_PIA1) }, /* U11 PIA: Solenoids/Sounds + Display Strobe */
   { 0x1000, 0x1fff, MRA_ROM },
   { 0x5000, 0x5fff, MRA_ROM },
   { 0xf000, 0xffff, MRA_ROM },
@@ -318,20 +326,20 @@ MEMORY_END
 static MEMORY_WRITE_START(by35_writemem)
   { 0x0000, 0x0080, MWA_RAM }, /* U7 128 Byte Ram*/
   { 0x0200, 0x02ff, by35_CMOS_w, &by35_CMOS }, /* CMOS Battery Backed*/
-  { 0x0088, 0x008b, pia_0_w }, /* U10 PIA: Switchs + Display + Lamps*/
-  { 0x0090, 0x0093, pia_1_w }, /* U11 PIA: Solenoids/Sounds + Display Strobe */
+  { 0x0088, 0x008b, pia_w(BY35_PIA0) }, /* U10 PIA: Switchs + Display + Lamps*/
+  { 0x0090, 0x0093, pia_w(BY35_PIA1) }, /* U11 PIA: Solenoids/Sounds + Display Strobe */
   { 0x1000, 0x1fff, MWA_ROM },
   { 0x5000, 0x5fff, MWA_ROM },
   { 0xf000, 0xffff, MWA_ROM },
 MEMORY_END
 
-struct MachineDriver machine_driver_by35 = {
+const struct MachineDriver machine_driver_by35 = {
   {{  CPU_M6800, 3580000/4, /* 3.58/4 = 900hz */
       by35_readmem, by35_writemem, NULL, NULL,
       by35_vblank, 1, by35_irq, BY35_IRQFREQ
   }},
   BY35_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, by35_init, CORE_EXITFUNC(by35_exit)
+  50, by35_init, by35_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
@@ -339,74 +347,74 @@ struct MachineDriver machine_driver_by35 = {
   0,0,0,0, {{0}},
   by35_nvram
 };
-struct MachineDriver machine_driver_by35_32s = {
+const struct MachineDriver machine_driver_by35_32s = {
   {{  CPU_M6800, 3580000/4, /* 3.58/4 = 900hz */
       by35_readmem, by35_writemem, NULL, NULL,
       by35_vblank, 1, by35_irq, BY35_IRQFREQ
   }},
   BY35_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, by35_init, CORE_EXITFUNC(by35_exit)
+  50, by35_init, by35_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
   NULL, NULL, gen_refresh,
-  0,0,0,0, {S32_SOUND},
+  0,0,0,0, {BY32_SOUND},
   by35_nvram
 };
-struct MachineDriver machine_driver_by35_51s = {
+const struct MachineDriver machine_driver_by35_51s = {
   {{  CPU_M6800, 3580000/4, /* 3.58/4 = 900hz */
       by35_readmem, by35_writemem, NULL, NULL,
       by35_vblank, 1, by35_irq, BY35_IRQFREQ
-  },SP51_SOUND_CPU},
+  },BY51_SOUND_CPU},
   BY35_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, by35_init, CORE_EXITFUNC(by35_exit)
+  50, by35_init, by35_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
   NULL, NULL, gen_refresh,
-  0,0,0,0, {SP51_SOUND},
+  0,0,0,0, {BY51_SOUND},
   by35_nvram
 };
-struct MachineDriver machine_driver_by35_56s = {
+const struct MachineDriver machine_driver_by35_56s = {
   {{  CPU_M6800, 3580000/4, /* 3.58/4 = 900hz */
       by35_readmem, by35_writemem, NULL, NULL,
       by35_vblank, 1, by35_irq, BY35_IRQFREQ
-  },SP56_SOUND_CPU},
+  },BY56_SOUND_CPU},
   BY35_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, by35_init, CORE_EXITFUNC(by35_exit)
+  50, by35_init, by35_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
   NULL, NULL, gen_refresh,
-  0,0,0,0, {SP56_SOUND},
+  0,0,0,0, {BY56_SOUND},
   by35_nvram
 };
-struct MachineDriver machine_driver_by35_61s = {
+const struct MachineDriver machine_driver_by35_61s = {
   {{  CPU_M6800, 3580000/4, /* 3.58/4 = 900hz */
       by35_readmem, by35_writemem, NULL, NULL,
       by35_vblank, 1, by35_irq, BY35_IRQFREQ
-  },SnT_SOUND_CPU},
+  },BY61_SOUND_CPU},
   BY35_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, by35_init, CORE_EXITFUNC(by35_exit)
+  50, by35_init, by35_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
   NULL, NULL, gen_refresh,
-  0,0,0,0, {SnT_SOUND},
+  0,0,0,0, {BY61_SOUND},
   by35_nvram
 };
-struct MachineDriver machine_driver_by35_45s = {
+const struct MachineDriver machine_driver_by35_45s = {
   {{  CPU_M6800, 3580000/4, /* 3.58/4 = 900hz */
       by35_readmem, by35_writemem, NULL, NULL,
       by35_vblank, 1, by35_irq, BY35_IRQFREQ
-  },SP45_SOUND_CPU},
+  },BY45_SOUND_CPU},
   BY35_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, by35_init, CORE_EXITFUNC(by35_exit)
+  50, by35_init, by35_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
   NULL, NULL, gen_refresh,
-  0,0,0,0, {SP45_SOUND},
+  0,0,0,0, {BY45_SOUND},
   by35_nvram
 };
 
