@@ -1,13 +1,13 @@
 /************************************************************************************************
   Capcom
   -----------------
-  by Martin Adrian, Steve Ellenoff, Gerrit Volkenborn (05/07/2002 - 09/25/2003)
+  by Martin Adrian, Steve Ellenoff, Gerrit Volkenborn (05/07/2002 - 11/10/2003)
 
   Hardware from 1995-1996
 
   CPU BOARD:
 	CPU: 68306 @ 16.67 Mhz
-	I/O: 68306 has 2 8-bit ports and a dual uart
+	I/O: 68306 has 2 8-bit ports and a dual uart with timer
 	DMD: Custom programmed U16 chip handles DMD Control Data and some timing 
 	Size: 128x32 (all games except Flipper Football - 256x64!)
 
@@ -15,6 +15,7 @@
 	CPU: 87c52 @ 12 Mhz
 	I/O: 87c52 has a uart
 	SND: 2 x TMS320AV120 MPG DECODER ( Only 1 on Breakshot )
+	VOL: x9241 Digital Volume Pot
 
   Capcom Standard Pins:
   Lamp Matrix     = 2 x (8x8 Matrixs) = 128 Lamps - NOTE: No GI - every single lamp is cpu controlled
@@ -29,20 +30,23 @@
   Sound: 1 Channel Mono Audio
 
   Milestones:
-  09/19-09/21/03 - U16 Test successfully bypassed, dmd and lamps working quite well
-  09/21-09/24/03 - DMD working 100% incuding 256x64 size, switches, solenoids working on most games except kp, and ff
-  09/25          - First time game booted without any errors.. (Even though in reality, the U16 would still fail if not hacked around)
-  Hacks & Issues that need to be looked into:
-  #1) U16 Needs to be better understood and emulated
-  #2) Once U16 better understood, remove hacks that bypass U16 startup check
-  #3) IRQ4 appears to do nothing, this seems odd
-  #4) 50V Line is being read as 0.0V for some reason, even though Signal Test passes (which involves the 50V Line check)
-  #6) Sound communication occurs via the 68306 UARTS (currently not really emulated in the 68306 core)
-  #7) Handle opto switches internally? Is this needed?
-  #8) Handle EOS switches internally? Is this needed?
-  #9) More complete M68306 emulation (although it's fairly good already)
-  #10) Lamps will eventually come on in Kingpin/Flipper Football, why does it take so long? And they flicker too fast!
+  09/19/03-09/21/03 - U16 Test successfully bypassed, dmd and lamps working quite well
+  09/21/03-09/24/03 - DMD working 100% incuding 256x64 size, switches, solenoids working on most games except kp, and ff
+  09/25/03          - First time game booted without any errors.. (Even though in reality, the U16 would still fail if not hacked around)
+  11/03/03          - First time sound was working almost fully (although still some glitches and much work left to do)
+  11/09/03		    - 50V Line finally reports a voltage & KP,FF fire hi-volt solenoids
+  11/10/03          - Seem to have found decent IRQ4 freq. to allow KP & FF to fire sols 1 & 2 properly
 
+  Hacks & Issues that need to be looked into:
+  #1) Why do we need to adjust the CPU Speed to get the animations to display at correct speed? U16 related bug?
+  #2) U16 Needs to be better understood and emulated more accurrately (should fix IRQ4 timing problems)
+  #3) IRQ4 appears to somehow control timing for 50V solenoids & Lamps in FF&KP, unknown effect in other games
+  #4) Handle opto switches internally? Is this needed?
+  #5) Handle EOS switches internally? Is this needed?
+  #6) More complete M68306 emulation (although it's fairly good already) - could use some optimization
+  #7) Lamps will eventually come on in Kingpin/Flipper Football, why does it take so long? Faster IRQ4 timing will improve response time ( cycles of 2000 for example, but screws up solenoids ) 
+  #8) Not sure best way to emulate 50V line, see TEST50V_TRYx macros below
+  #9) Firing of 50V solenoids seems sometimes inconsistent in FF&KP, but IRQ4 timing helps correct it
 **************************************************************************************/
 #include <stdarg.h>
 #include "driver.h"
@@ -53,6 +57,12 @@
 
 //Comment out to show all error messages at startup
 #define SKIP_ERROR_MSG
+
+//3 different ways to test 50V line (ONLY 1 can be uncommented at a time)
+//#define TEST50V_TRY1		//Gives varying readings, but most in the 50-85V range
+//#define TEST50V_TRY2		//Gives varying readings (only some games), but most in the 30V-50V range (note: 40V range raises check 50V interlock switch error message)
+#define TEST50V_TRY3		//Seems to give steady 99V reading
+
 //Comment out when not testing mpg audio
 //#define TEST_MPGAUDIO
 
@@ -67,9 +77,15 @@
 	#define CPU_CLOCK		16670000	/* Animation speed is more accurate at this speed, strange.. */
 #endif
 
-#define CC_VBLANKFREQ    60 /* VBLANK frequency */
-#define CC_SOLSMOOTH       3 /* Smooth the Solenoids over this numer of VBLANKS */
+#define CC_VBLANKFREQ     60 /* VBLANK frequency */
+#define CC_SOLSMOOTH       3 /* Smooth the Solenoids over this numer of VBLANKS */ 
 #define CC_LAMPSMOOTH      4 /* Smooth the lamps over this number of VBLANKS */
+
+#define CC_IRQ4FREQ		TIME_IN_CYCLES(8000,0)	//Seems to work well for both KP & FF
+
+
+//declares
+extern void capcoms_manual_reset(void);
 
 static struct {
   UINT32 solenoids;
@@ -89,6 +105,7 @@ static struct {
   int line_v;
   int greset;
   int pulse;
+  int first_sound_reset;
 } locals;
 
 static NVRAM_HANDLER(cc);
@@ -134,11 +151,18 @@ static SWITCH_UPDATE(cc) {
 /********************/
 /* IRQ & ZERO CROSS */
 /********************/
+//IRQ2 Generation (Zero X) - (callback)
 static void cc_zeroCross(int data) {
- //locals.line_v = !locals.line_v;
+
+#ifdef TEST50V_TRY1
+ locals.line_v = !locals.line_v;
+#endif
+
  locals.zero_cross = !locals.zero_cross;
  cpu_set_irq_line(0,MC68306_IRQ_2,ASSERT_LINE);
 }
+
+//IRQ1 Generation (callback)
 static void cc_u16irq1(int data) {
   locals.u16irqcount += 1;
   if (locals.u16irqcount == (0x08>>((locals.u16b[0] & 0xc0)>>6))) {
@@ -146,6 +170,8 @@ static void cc_u16irq1(int data) {
     locals.u16irqcount = 0;
   }
 }
+
+//IRQ4 Generation (callback)
 static void cc_u16irq4(int data) {
 	cpu_set_irq_line(0,MC68306_IRQ_4,PULSE_LINE);
 }
@@ -163,7 +189,20 @@ static void cc_u16irq4(int data) {
 //PA7   - GRESET(output only)
 static READ16_HANDLER(cc_porta_r) {
 	int data = 0;
+
+#ifdef TEST50V_TRY2
+	static int tot=0;
+	if(tot++==2) {
+		locals.line_v = 0;
+		tot = 0;
+	}
+	else
+		locals.line_v = 1;
+#endif
+#ifdef TEST50V_TRY3
 	locals.line_v = !locals.line_v;
+#endif
+
 	data = (1<<4) | (locals.line_v<<5);
 	if(!locals.pulse)	data ^= 0x10;
 	DBGLOG(("Port A read\n")); 
@@ -200,12 +239,20 @@ static READ16_HANDLER(cc_portb_r) {
 //PA6   - VSET   
 //PA7   - GRESET (to soundboard - Inverted?)
 static WRITE16_HANDLER(cc_porta_w) {
+  int reset = 0;
   if(data !=0x0048 && data !=0x0040 && data !=0x0008)
 	DBGLOG(("Port A write %04x\n",data));
 
   locals.diagnosticLed = ((~data)&0x08>>3);
   locals.vset = (data>>6)&1;
-  locals.greset = (data>>7)&1;
+  reset = (data>>7)&1;
+
+  //Manually reset the sound board on 1->0 transition (but don't do it the very first time, ie, when both cpu's first boot up)
+  if(locals.greset && !reset) {
+	  if(!locals.first_sound_reset) locals.first_sound_reset=1;
+	  else capcoms_manual_reset();
+  }
+  locals.greset = reset;
 
   if (!core_gameData->hw.lampCol)
 	locals.driverBoard = 0x0700; // this value is expected by Breakshot after port writes
@@ -309,10 +356,10 @@ static READ16_HANDLER(io_r) {
       data = (coreGlobals.swMatrix[swcol+4] << 8 | coreGlobals.swMatrix[swcol]) ^ 0xffff; //Switches are inverted
       break;
 
-    //Solenoid A & B Status???
+    //Solenoid A & B Status??? (returing a value here, removes waiting for short error msg, when IRQ4 set to 2000 cycles in KP)
     case 0x20000c:
     case 0x20000d:
-		data = 0;
+		data = 0xffff;
 		//printf("PC%08x - io_r: [%08x] (%04x) = %04x\n",activecpu_get_pc(),offset,mem_mask,data);
 		break;
 
@@ -423,7 +470,7 @@ static MACHINE_INIT(cc) {
 
   //Init soundboard
   sndbrd_0_init(core_gameData->hw.soundBoard, CAPCOMS_CPUNO, memory_region(CAPCOMS_ROMREGION),NULL,NULL);
-  
+ 
 #ifdef TEST_MPGAUDIO
   //Freeze cpu so it won't slow down the emulation
   cpunum_set_halt_line(0,1);
@@ -431,8 +478,9 @@ static MACHINE_INIT(cc) {
   //IRQ1 Maximum Frequency 
   timer_pulse(TIME_IN_CYCLES(2811,0),0,cc_u16irq1);		//Only value that passes IRQ1 test (DO NOT CHANGE UNTIL CURRENT HACK IS REPLACED)
   
-  //IRQ4 doesn't seem to do anything?!! Also, no idea of the frequency
-  timer_pulse(TIME_IN_HZ(60),0,cc_u16irq4);
+  //IRQ4 Frequency
+  timer_pulse(CC_IRQ4FREQ,0,cc_u16irq4);
+  
 #endif
 
   //Skip showing error messages?
