@@ -1,8 +1,8 @@
 What's new:
 -----------
 
-Version 1.10 (December 23, 2001)
------------------------------------------
+Version 1.10 (December 23, 2001) - Happy 30th Birthday Steve
+------------------------------------------------------------
 This may very well be the most anticipated release of PinMAME to date: 4 Letters - BSMT.
 
 What was once thought nearly impossible has become a reality for PinMAME,
