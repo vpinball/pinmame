@@ -34,7 +34,7 @@
       cause is still making other things wrong!
   #2) Timing of animations might be too slow..
   #3) M114S Sound chip not emulated (so no music)
-  #4) Mr. Game Logo not correct color in Motor Show ( Bad Color Prom Read? )
+
 ************************************************************************************************/
 #include "driver.h"
 #include "cpu/m68000/m68000.h"
