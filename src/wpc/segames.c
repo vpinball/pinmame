@@ -33,9 +33,8 @@ DE2S_SOUNDROM1444("apollo13.u7" ,0xe58a36b8,
                   "apollo13.u36",0xcede5e0f)
 SE_ROMEND
 #define input_ports_apollo13 input_ports_se
-CORE_GAMEDEFNV(apollo13,"Apollo 13",1994,"Sega",de_mSES3,GAME_NOCRC)
+CORE_GAMEDEFNV(apollo13,"Apollo 13",1995,"Sega",de_mSES3,GAME_NOCRC)
 
-//Snd Works but VERY SOFT
 /*-------------------------------------------------------------------
 / Goldeneye
 /-------------------------------------------------------------------*/
@@ -47,7 +46,7 @@ DE2S_SOUNDROM144("bondu7.bin" ,0x7581a349,
                  "bondu21.bin",0x5be0f205)
 SE_ROMEND
 #define input_ports_gldneye input_ports_se
-CORE_GAMEDEFNV(gldneye,"Goldeneye",1994,"Sega",de_mSES3,GAME_NOCRC)
+CORE_GAMEDEFNV(gldneye,"Goldeneye",1996,"Sega",de_mSES3,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Twister
@@ -60,7 +59,7 @@ DE2S_SOUNDROM144("twstsnd.u7" ,0x5ccf0798,
                  "twstsnd.u21",0xc3eae590)
 SE_ROMEND
 #define input_ports_twister input_ports_se
-CORE_GAMEDEFNV(twister,"Twister",1994,"Sega",de_mSES1,GAME_NOCRC)
+CORE_GAMEDEFNV(twister,"Twister",1996,"Sega",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / ID4: Independence Day
@@ -73,7 +72,7 @@ DE2S_SOUNDROM144 ("id4sndu7.512",0xdeeaed37,
                   "id4sdu21.400",0xf384a9ab)
 SE_ROMEND
 #define input_ports_id4 input_ports_se
-CORE_GAMEDEFNV(id4,"ID4: Independence Day",1994,"Sega",de_mSES1,GAME_NOCRC)
+CORE_GAMEDEFNV(id4,"ID4: Independence Day",1996,"Sega",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Space Jam
@@ -87,7 +86,7 @@ DE2S_SOUNDROM1444("spcjam.u7" ,0xc693d853,
                   "spcjam.u36",0x7d11e1eb)
 SE_ROMEND
 #define input_ports_spacejam input_ports_se
-CORE_GAMEDEFNV(spacejam,"Space Jam",1994,"Sega",de_mSES1,GAME_NOCRC)
+CORE_GAMEDEFNV(spacejam,"Space Jam",1997,"Sega",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Star Wars Trilogy
@@ -100,7 +99,7 @@ DE2S_SOUNDROM144("sw0219.u7" ,0xcd7c84d9,
                  "sw0211.u21",0x6be68450)
 SE_ROMEND
 #define input_ports_swtril input_ports_se
-CORE_GAMEDEFNV(swtril,"Star Wars Trilogy",1994,"Sega",de_mSES1,GAME_NOCRC)
+CORE_GAMEDEFNV(swtril,"Star Wars Trilogy",1997,"Sega",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / The Lost World: Jurassic Park
@@ -113,7 +112,7 @@ DE2S_SOUNDROM144("jp2_u7.bin" ,0x73b74c96,
                  "jp2_u21.bin",0xc670a997)
 SE_ROMEND
 #define input_ports_jplstwld input_ports_se
-CORE_GAMEDEFNV(jplstwld,"The Lost World: Jurassic Park",1994,"Sega",de_mSES1,GAME_NOCRC)
+CORE_GAMEDEFNV(jplstwld,"The Lost World: Jurassic Park",1997,"Sega",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / X-Files
@@ -126,7 +125,7 @@ DE2S_SOUNDROM144( "xfsndu7.512" ,0x01d65239,
                   "xfsndu21.c40",0xb56a5ca6)
 SE_ROMEND
 #define input_ports_xfiles input_ports_se
-CORE_GAMEDEFNV(xfiles,"X-Files",1994,"Sega",de_mSES1,GAME_NOCRC)
+CORE_GAMEDEFNV(xfiles,"X-Files",1997,"Sega",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Starship Troopers
@@ -140,7 +139,7 @@ DE2S_SOUNDROM1444("u7_b130.512" ,0xf1559e4f,
                   "u36_95a7.040",0xc1e4ca6a)
 SE_ROMEND
 #define input_ports_startrp input_ports_se
-CORE_GAMEDEFNV(startrp,"Starship Troopers",1994,"Sega",de_mSES1,GAME_NOCRC)
+CORE_GAMEDEFNV(startrp,"Starship Troopers",1997,"Sega",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Viper Night Drivin'
@@ -155,7 +154,7 @@ DE2S_SOUNDROM14444("vpru7.dat" ,0xf21617d7,
                   "vpru37.dat",0x0bf23e0e)
 SE_ROMEND
 #define input_ports_viprsega input_ports_se
-CORE_GAMEDEFNV(viprsega,"Viper Night Drivin'",1994,"Sega",de_mSES1,GAME_NOCRC)
+CORE_GAMEDEFNV(viprsega,"Viper Night Drivin'",1998,"Sega",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Lost in Space
@@ -170,7 +169,21 @@ DE2S_SOUNDROM14444("lisu7.100" ,0x96e6b3c4,
                   "lisu37.100",0xf9430c59)
 SE_ROMEND
 #define input_ports_lostspc input_ports_se
-CORE_GAMEDEFNV(lostspc,"Lost in Space",1994,"Sega",de_mSES1,GAME_NOCRC)
+CORE_GAMEDEFNV(lostspc,"Lost in Space",1998,"Sega",de_mSES1,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Golden Cue
+/-------------------------------------------------------------------*/
+INITGAME(goldcue,GEN_WS_1,se_dmd128x32,0)
+SE128_ROMSTART(goldcue,"gc_cpu.210",0x8447eaee)
+DE_DMD32ROM8x(        "gc_disp.u12",0x87f74b9d)
+DE2S_SOUNDROM1444(   "gc_sound.u7", 0x8b559e39,
+                     "gc_sound.u17",0x28c39bae,
+                     "gc_sound.u21",0xd3f43a37,
+                     "gc_sound.u36",0x81f27955)
+SE_ROMEND
+#define input_ports_goldcue input_ports_se
+CORE_GAMEDEFNV(goldcue,"Golden Cue",1998,"Sega",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Godzilla
@@ -185,8 +198,7 @@ DE2S_SOUNDROM14444("gdzu7.100" ,0xa0afe8b7,
                   "gdzu37.100",0x2c1acb14)
 SE_ROMEND
 #define input_ports_godzilla input_ports_se
-CORE_GAMEDEFNV(godzilla,"Godzilla",1994,"Sega",de_mSES1,GAME_NOCRC)
-
+CORE_GAMEDEFNV(godzilla,"Godzilla",1998,"Sega",de_mSES1,GAME_NOCRC)
 
 /********************* SEGA GAMES DISTRIBUTED BY STERN  **********************/
 
@@ -203,7 +215,7 @@ DE2S_SOUNDROM18888("spku7.101" ,0x3d831d3e,
                   "spku37.100",0x7d8f6bcb)
 SE_ROMEND
 #define input_ports_southpk input_ports_se
-CORE_GAMEDEFNV(southpk,"South Park",1998,"Sega",de_mSES1,GAME_NOCRC)
+CORE_GAMEDEFNV(southpk,"South Park",1999,"Sega",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Harley Davidson
@@ -218,7 +230,7 @@ DE2S_SOUNDROM18884("hdsnd.u7" ,0xb9accb75,
                   "hdvc4.u37",0xa1bc39f6)
 SE_ROMEND
 #define input_ports_harley input_ports_se
-CORE_GAMEDEFNV(harley,"Harley Davidson",1998,"Sega",de_mSES1,GAME_NOCRC)
+CORE_GAMEDEFNV(harley,"Harley Davidson",1999,"Sega",de_mSES1,GAME_NOCRC)
 
 
 /********************* STERN GAMES  **********************/
@@ -744,7 +756,7 @@ SE128_ROMSTART(simpprty, "spp-cpu.204",0x5bc155f7)
 DE_DMD32ROM8x(           "sppdspa.201",0xf55505a4)
 DE2S_SOUNDROM18888(      "spp101.u7",  0x32efcdf6,
                          "spp100.u17", 0x65e9344e,
-                         "spp100.U21", 0x17fee0f9,
+                         "spp100.u21", 0x17fee0f9,
                          "spp100.u36", 0xffb957b0,
                          "spp100.u37", 0x0738e1fc)
 SE_ROMEND
@@ -758,7 +770,7 @@ SE128_ROMSTART(simpprtd, "spp-cpu.204",0x5bc155f7)
 DE_DMD32ROM8x(           "sppdspi.201",0x00000000)
 DE2S_SOUNDROM18888(      "spp101.u7",  0x32efcdf6,
                          "spp100.u17", 0x65e9344e,
-                         "spp100.U21", 0x17fee0f9,
+                         "spp100.u21", 0x17fee0f9,
                          "spp100.u36", 0xffb957b0,
                          "spp100.u37", 0x0738e1fc)
 SE_ROMEND
@@ -773,7 +785,7 @@ SE128_ROMSTART(simpprte, "spp-cpu.204",0x5bc155f7)
 DE_DMD32ROM8x(           "sppdspl.201",0x78a67e23)
 DE2S_SOUNDROM18888(      "spp101.u7",  0x32efcdf6,
                          "spp100.u17", 0x65e9344e,
-                         "spp100.U21", 0x17fee0f9,
+                         "spp100.u21", 0x17fee0f9,
                          "spp100.u36", 0xffb957b0,
                          "spp100.u37", 0x0738e1fc)
 SE_ROMEND
@@ -788,7 +800,7 @@ SE128_ROMSTART(simpprtf, "spp-cpu.204",0x5bc155f7)
 DE_DMD32ROM8x(           "sppdspf.201",0xd1c0c484)
 DE2S_SOUNDROM18888(      "spp101.u7",  0x32efcdf6,
                          "spp100.u17", 0x65e9344e,
-                         "spp100.U21", 0x17fee0f9,
+                         "spp100.u21", 0x17fee0f9,
                          "spp100.u36", 0xffb957b0,
                          "spp100.u37", 0x0738e1fc)
 SE_ROMEND
@@ -803,7 +815,7 @@ SE128_ROMSTART(simpprti, "spp-cpu.204",0x5bc155f7)
 DE_DMD32ROM8x(           "sppdspi.201",0xb4594819)
 DE2S_SOUNDROM18888(      "spp101.u7",  0x32efcdf6,
                          "spp100.u17", 0x65e9344e,
-                         "spp100.U21", 0x17fee0f9,
+                         "spp100.u21", 0x17fee0f9,
                          "spp100.u36", 0xffb957b0,
                          "spp100.u37", 0x0738e1fc)
 SE_ROMEND

@@ -454,7 +454,7 @@ DRIVERNV(playboyd)      //Whitestar: 02/02 Playboy (German display)
 DRIVERNV(playboye)      //Whitestar: 02/02 Playboy (Spanish display)
 DRIVERNV(playboyf)      //Whitestar: 02/02 Playboy (French display)
 DRIVERNV(playboyi)      //Whitestar: 02/02 Playboy (Italian display)
-DRIVERNV(rctycn)        //Whitestar: 09/02 Roller Coaster Tycoon (6.00)
+DRIVERNV(rctycn)        //Whitestar: 09/02 Roller Coaster Tycoon (7.01)
 DRIVERNV(rctycnd)       //Whitestar: 09/02 Roller Coaster Tycoon (German display)
 DRIVERNV(rctycne)       //Whitestar: 09/02 Roller Coaster Tycoon (Spanish display)
 DRIVERNV(rctycnf)       //Whitestar: 09/02 Roller Coaster Tycoon (French display)
@@ -502,9 +502,10 @@ DRIVERNV(xfiles)        //Whitestar: 08/97 X-Files
 DRIVERNV(startrp)       //Whitestar: 11/97 Starship Troopers
 DRIVERNV(viprsega)      //Whitestar: 02/98 Viper Night Drivin'
 DRIVERNV(lostspc)       //Whitestar: 06/98 Lost in Space
+DRIVERNV(goldcue)       //Whitestar: 06/98 Golden Cue
 DRIVERNV(godzilla)      //Whitestar: 09/98 Godzilla
 DRIVERNV(southpk)       //Whitestar: 01/99 South Park
-DRIVERNV(harley)        //Whitestar: 08/99 Harley Davidon
+DRIVERNV(harley)        //Whitestar: 08/99 Harley Davidson
 
 // ---------------------
 // DATA EAST GAMES BELOW
