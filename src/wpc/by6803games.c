@@ -8,9 +8,9 @@
 /* 4 x 7 digit 7 Segment Display (6 Scoring Digits, & 1 Comma Digit)
    AND 1 x 6 digit 7 Segment for Ball & Credit (But appears as 2 x 2 digit*/
 static const core_tLCDLayout dispBy7C[] = {
-  {0, 0, 1,7,CORE_SEG7}, {0,16, 9,7,CORE_SEG7},
-  {2, 0,17,7,CORE_SEG7}, {2,16,25,7,CORE_SEG7},
-  {4, 4,35,2,CORE_SEG7}, {4,10,38,2,CORE_SEG7},{0}
+  {0, 0, 1,7,CORE_SEG87F}, {0,16, 9,7,CORE_SEG87F},
+  {2, 0,17,7,CORE_SEG87F}, {2,16,25,7,CORE_SEG87F},
+  {4, 4,35,2,CORE_SEG87},  {4,10,38,2,CORE_SEG87},{0}
 };
 
 /* 4 x 7 digit 9 Segment Display */
