@@ -64,7 +64,7 @@
        ROM_LOAD(n2, 0x1200, 0x0200, chk2) \
 	   ROM_RELOAD(  0x1600, 0x0200)       \
        ROM_LOAD(n3, 0x2000, 0x1000, chk3) \
-       ROM_LOAD(n4, 0x3000, 0x1000, chk4) \
+       ROM_LOAD(n4, 0x3000, 0x1000, chk4)
 
 /*-- S80/S80A Main CPU regions and ROM, 2 game PROM version --*/
 #define S80_1_ROMSTART(name, n1, chk1, n2, chk2, n3, chk3) \
@@ -72,22 +72,28 @@
      NORMALREGION(0x10000, S80_MEMREG_CPU) \
        ROM_LOAD(n1, 0x1000, 0x0800, chk1) \
        ROM_LOAD(n2, 0x2000, 0x1000, chk2) \
-       ROM_LOAD(n3, 0x3000, 0x1000, chk3) \
+       ROM_LOAD(n3, 0x3000, 0x1000, chk3)
 
-/*-- S80B Main CPU regions and ROM, 2K game PROM --*/
+/*-- S80B Main CPU regions and ROM, 8K single game PROM --*/
+#define S80B_8K_ROMSTART(name, n1, chk1) \
+   ROM_START(name) \
+     NORMALREGION(0x10000, S80_MEMREG_CPU) \
+       ROM_LOAD(n1, 0x2000, 0x2000, chk1)
+
+/*-- S80B Main CPU regions and ROM, 8K & 2K game PROM --*/
 #define S80B_2K_ROMSTART(name, n1, chk1, n2, chk2) \
    ROM_START(name) \
      NORMALREGION(0x10000, S80_MEMREG_CPU) \
        ROM_LOAD(n1, 0x1000, 0x0800, chk1) \
-       ROM_LOAD(n2, 0x2000, 0x2000, chk2) \
+       ROM_LOAD(n2, 0x2000, 0x2000, chk2)
 
-/*-- S80B Main CPU regions and ROM, 4K game PROM --*/
+/*-- S80B Main CPU regions and ROM, 8K & 4K game PROM --*/
 /*-- the second half of PROM2 is later copied to the right location */
 #define S80B_4K_ROMSTART(name, n1, chk1, n2, chk2) \
    ROM_START(name) \
      NORMALREGION(0x10000, S80_MEMREG_CPU) \
        ROM_LOAD(n1, 0x1000, 0x1000, chk1) \
-       ROM_LOAD(n2, 0x2000, 0x2000, chk2) \
+       ROM_LOAD(n2, 0x2000, 0x2000, chk2)
 
 /*-- TheS80 are only here so the game structure can be in the game file --*/
 extern struct MachineDriver machine_driver_S80;
