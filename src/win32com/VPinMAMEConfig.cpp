@@ -20,7 +20,7 @@ extern struct rc_option input_opts[];
 extern struct rc_option sound_opts[];
 extern struct rc_option video_opts[];
 
-int verbose					= 0;
+int verbose	= 0;
 
 /* fix me - need to have the core call osd_set_gamma with this value */
 /* instead of relying on the name of an osd variable */
@@ -111,17 +111,22 @@ static int video_verify_bpp(struct rc_option *option, const char *arg, int prior
 static int init_errorlog(struct rc_option *option, const char *arg, int priority)
 {
 	/* provide errorlog from here on */
-/*
-	if (errorlog && !logfile)
+
+	if ( errorlog )
 	{
-		logfile = fopen("error.log","wa");
-		if (!logfile)
-		{
-			perror("unable to open log file\n");
-			exit (1);
+		if ( !logfile ) {
+			logfile = fopen("error.log","wa");
+			if (!logfile)
+				perror("unable to open log file\n");
 		}
 	}
-*/
+	else {
+		if ( logfile ) {
+			fclose(logfile);
+			logfile = 0;
+		}
+	}
+
 	option->priority = priority;
 	return 0;
 }
@@ -204,144 +209,6 @@ static struct rc_option opts[] = {
 	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
 };
 
-/*
- * Penalty string compare, the result _should_ be a measure on
- * how "close" two strings ressemble each other.
- * The implementation is way too simple, but it sort of suits the
- * purpose.
- * This used to be called fuzzy matching, but there's no randomness
- * involved and it is in fact a penalty method.
- */
-
-int penalty_compare (const char *s, const char *l)
-{
-	int gaps = 0;
-	int match = 0;
-	int last = 1;
-
-	for (; *s && *l; l++)
-	{
-		if (*s == *l)
-			match = 1;
-		else if (*s >= 'a' && *s <= 'z' && (*s - 'a') == (*l - 'A'))
-			match = 1;
-		else if (*s >= 'A' && *s <= 'Z' && (*s - 'A') == (*l - 'a'))
-			match = 1;
-		else
-			match = 0;
-
-		if (match)
-			s++;
-
-		if (match != last)
-		{
-			last = match;
-			if (!match)
-				gaps++;
-		}
-	}
-
-	/* penalty if short string does not completely fit in */
-	for (; *s; s++)
-		gaps++;
-
-	return gaps;
-}
-
-/*
- * We compare the game name given on the CLI against the long and
- * the short game names supported
- */
-void show_approx_matches(void)
-{
-	struct { int penalty; int index; } topten[10];
-	int i,j;
-	int penalty; /* best fuzz factor so far */
-
-	for (i = 0; i < 10; i++)
-	{
-		topten[i].penalty = 9999;
-		topten[i].index = -1;
-	}
-
-	for (i = 0; (drivers[i] != 0); i++)
-	{
-		int tmp;
-
-		penalty = penalty_compare (gamename, drivers[i]->description);
-		tmp = penalty_compare (gamename, drivers[i]->name);
-		if (tmp < penalty) penalty = tmp;
-
-		/* eventually insert into table of approximate matches */
-		for (j = 0; j < 10; j++)
-		{
-			if (penalty >= topten[j].penalty) break;
-			if (j > 0)
-			{
-				topten[j-1].penalty = topten[j].penalty;
-				topten[j-1].index = topten[j].index;
-			}
-			topten[j].index = i;
-			topten[j].penalty = penalty;
-		}
-	}
-
-	for (i = 9; i >= 0; i--)
-	{
-		if (topten[i].index != -1)
-			fprintf (stderr, "%-10s%s\n", drivers[topten[i].index]->name, drivers[topten[i].index]->description);
-	}
-}
-
-/*
- * gamedrv  = NULL --> parse named configfile
- * gamedrv != NULL --> parse gamename.ini and all parent.ini's (recursively)
- * return 0 --> no problem
- * return 1 --> something went wrong
- */
-int parse_config (const char* filename, const struct GameDriver *gamedrv)
-{
-	FILE *f;
-	char buffer[128];
-	int retval = 0;
-
-	if (!readconfig) return 0;
-
-	if (gamedrv)
-	{
-		if (gamedrv->clone_of && strlen(gamedrv->clone_of->name))
-		{
-			retval = parse_config (NULL, gamedrv->clone_of);
-			if (retval)
-				return retval;
-		}
-		sprintf(buffer, "%s.ini", gamedrv->name);
-	}
-	else
-	{
-		sprintf(buffer, "%s", filename);
-	}
-
-	if (verbose)
-		fprintf(stderr, "trying to parse %s\n", buffer);
-
-	f = fopen (buffer, "r");
-	if (f)
-	{
-		if(rc_read(rc, f, buffer, 1, 1))
-		{
-			if (verbose)
-				fprintf (stderr, "problem parsing %s\n", buffer);
-			retval = 1;
-		}
-	}
-
-	if (f)
-		fclose (f);
-
-	return retval;
-}
-
 void cli_frontend_init()
 {
 	/* clear all core options */
@@ -370,6 +237,8 @@ void cli_frontend_init()
 		options.debug_height = 480;
 
 	options.gui_host = 1;
+
+	logfile = 0;
 }
 
 void cli_frontend_exit(void)
@@ -377,39 +246,18 @@ void cli_frontend_exit(void)
 	/* close open files */
 
 	if (options.playback) osd_fclose(options.playback);
+	options.playback = NULL;
+
 	if (options.record)   osd_fclose(options.record);
+	options.record = NULL;
+
 	if (options.language_file) osd_fclose(options.language_file);
-}
+	options.language_file = NULL;
 
-static int config_handle_arg(char *arg)
-{
-	static int got_gamename = 0;
+	if ( logfile ) fclose(logfile);
+	logfile = 0;
 
-	/* notice: for MESS game means system */
-	if (got_gamename)
-	{
-		fprintf(stderr,"error: duplicate gamename: %s\n", arg);
-		return -1;
-	}
-
-	rompath_extra = osd_dirname(arg);
-
-	if (rompath_extra && !strlen(rompath_extra))
-	{
-		free (rompath_extra);
-		rompath_extra = NULL;
-	}
-
-	gamename = arg;
-
-	if (!gamename || !strlen(gamename))
-	{
-		fprintf(stderr,"error: no gamename given in %s\n", arg);
-		return -1;
-	}
-
-	got_gamename = 1;
-	return 0;
+	errorlog = 0;
 }
 
 
@@ -423,10 +271,12 @@ void CLIB_DECL logerror(const char *text,...)
 
 	/* standard vfprintf stuff here */
 	va_start(arg, text);
-	if (errorlog) {
+	if ( errorlog ) {
         char szBuffer[512];
         _vsnprintf(szBuffer, sizeof(szBuffer) / sizeof(szBuffer[0]), text, arg);
         OutputDebugString(szBuffer);
+		if ( logfile )
+			fprintf(logfile, szBuffer);
 	}
 	va_end(arg);
 }
