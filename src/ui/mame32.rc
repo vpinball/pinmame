@@ -46,7 +46,7 @@ BEGIN
     END
     POPUP "&Help"
     BEGIN
-        MENUITEM "&About MAME32",               ID_ABOUT
+        MENUITEM "&About PinMAME32",               ID_ABOUT
     END
 END
 
@@ -111,8 +111,8 @@ BEGIN
         MENUITEM "&What's New",                 ID_HELP_WHATS_NEW32
         MENUITEM "&Support Document",           ID_HELP_SUPPORT
         MENUITEM SEPARATOR
-        MENUITEM "&Mame Release Notes",         ID_HELP_RELEASE
-        MENUITEM "&New Mame Features",          ID_HELP_WHATS_NEW
+        MENUITEM "&PinMAME Release Notes",         ID_HELP_RELEASE
+        MENUITEM "&New PinMAME Features",          ID_HELP_WHATS_NEW
         MENUITEM SEPARATOR
         MENUITEM "&About",                      ID_HELP_ABOUT
     END
@@ -196,8 +196,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,59,0,0
- PRODUCTVERSION 0,59,0,0
+ FILEVERSION 1,20,0,0
+ PRODUCTVERSION 1,20,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -212,17 +212,17 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "Author", "Michael Soderstrom and Christopher Kirmse\0"
-            VALUE "Comments", "Multiple Arcade Machine Emulator for Win32\0"
-            VALUE "CompanyName", "MAME Team\0"
-            VALUE "FileDescription", "Multiple Arcade Machine Emulator for Win32\0"
-            VALUE "FileVersion", "0, 59, 0, 0\0"
-            VALUE "InternalName", "MAME32\0"
-            VALUE "LegalCopyright", "Copyright © 1997-2002 Nicola Salmoria and the MAME team\0"
+            VALUE "Author", "Martin Adrian and Gerrit Volkenborn\0"
+            VALUE "Comments", "Multiple Pinball Machine Emulator for Win32\0"
+            VALUE "CompanyName", "PinMAME Team\0"
+            VALUE "FileDescription", "Multiple Pinball Machine Emulator for Win32\0"
+            VALUE "FileVersion", "1, 20, 0, 0\0"
+            VALUE "InternalName", "PinMAME32\0"
+            VALUE "LegalCopyright", "Copyright © 2001-2002 by the PinMAME Team\0"
             VALUE "LegalTrademarks", "\0"
-            VALUE "OriginalFilename", "MAME32.exe\0"
-            VALUE "ProductName", "MAME32\0"
-            VALUE "ProductVersion", "0, 59, 0, 0\0"
+            VALUE "OriginalFilename", "PinMAME32.exe\0"
+            VALUE "ProductName", "PinMAME32\0"
+            VALUE "ProductVersion", "1, 20, 0, 0\0"
         END
     END
     BLOCK "VarFileInfo"
@@ -246,23 +246,23 @@ IDI_WIN_ROMS            ICON    DISCARDABLE     "res/win_roms.ico"
 IDI_WIN_NOROMS          ICON    DISCARDABLE     "res/win_noro.ico"
 IDI_WIN_UNKNOWN         ICON    DISCARDABLE     "res/win_unkn.ico"
 IDI_WIN_REDX            ICON    DISCARDABLE     "res/win_redx.ico"
-IDI_FOLDER_AVAILABLE    ICON    DISCARDABLE     "res\\foldavail.ico"
-IDI_FOLDER              ICON    DISCARDABLE     "res\\folder.ico"
-IDI_FOLDER_MANUFACTURER ICON    DISCARDABLE     "res\\foldmanu.ico"
-IDI_FOLDER_OPEN         ICON    DISCARDABLE     "res\\foldopen.ico"
-IDI_FOLDER_UNAVAILABLE  ICON    DISCARDABLE     "res\\foldunav.ico"
-IDI_MANUFACTURER        ICON    DISCARDABLE     "res\\manufact.ico"
-IDI_FOLDER_FAVORITES    ICON    DISCARDABLE     "res\\custom.ico"
-IDI_FOLDER_YEAR         ICON    DISCARDABLE     "res\\foldyear.ico"
-IDI_WORKING             ICON    DISCARDABLE     "res\\working.ico"
-IDI_NONWORKING          ICON    DISCARDABLE     "res\\nonwork.ico"
-IDI_YEAR                ICON    DISCARDABLE     "res\\year.ico"
-IDI_NEOGEO              ICON    DISCARDABLE     "res\\neogeo.ico"
-IDI_KEYBOARD            ICON    DISCARDABLE     "Res\\keyboard.ico"
-IDI_JOYSTICK            ICON    DISCARDABLE     "Res\\joystick.ico"
-IDI_SOUND               ICON    DISCARDABLE     "Res\\samples.ico"
-IDI_DISPLAY             ICON    DISCARDABLE     "Res\\display.ico"
-IDI_CHECKMARK           ICON    DISCARDABLE     "Res\\checkmark.ico"
+IDI_FOLDER_AVAILABLE    ICON    DISCARDABLE     "res/foldavail.ico"
+IDI_FOLDER              ICON    DISCARDABLE     "res/folder.ico"
+IDI_FOLDER_MANUFACTURER ICON    DISCARDABLE     "res/foldmanu.ico"
+IDI_FOLDER_OPEN         ICON    DISCARDABLE     "res/foldopen.ico"
+IDI_FOLDER_UNAVAILABLE  ICON    DISCARDABLE     "res/foldunav.ico"
+IDI_MANUFACTURER        ICON    DISCARDABLE     "res/manufact.ico"
+IDI_FOLDER_FAVORITES    ICON    DISCARDABLE     "res/custom.ico"
+IDI_FOLDER_YEAR         ICON    DISCARDABLE     "res/foldyear.ico"
+IDI_WORKING             ICON    DISCARDABLE     "res/working.ico"
+IDI_NONWORKING          ICON    DISCARDABLE     "res/nonwork.ico"
+IDI_YEAR                ICON    DISCARDABLE     "res/year.ico"
+IDI_NEOGEO              ICON    DISCARDABLE     "res/neogeo.ico"
+IDI_KEYBOARD            ICON    DISCARDABLE     "res/keyboard.ico"
+IDI_JOYSTICK            ICON    DISCARDABLE     "res/joystick.ico"
+IDI_SOUND               ICON    DISCARDABLE     "res/samples.ico"
+IDI_DISPLAY             ICON    DISCARDABLE     "res/display.ico"
+IDI_CHECKMARK           ICON    DISCARDABLE     "res/checkmark.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -271,20 +271,20 @@ IDI_CHECKMARK           ICON    DISCARDABLE     "Res\\checkmark.ico"
 
 IDD_ABOUT DIALOG DISCARDABLE  0, 0, 296, 129
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "About MAME32"
+CAPTION "About PinMAME32"
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "&OK",IDOK,200,109,50,14,WS_GROUP
-    CTEXT           "Multiple Arcade Machine Emulator",IDC_STATIC,147,7,142,
+    CTEXT           "Multiple Pinball Machine Emulator",IDC_STATIC,147,7,142,
                     11,NOT WS_GROUP
     CTEXT           "Version 0",IDC_VERSION,147,18,142,11,NOT WS_GROUP
-    CTEXT           "Copyright (C) 1997-2002 The MAME Team",IDC_STATIC,147,
+    CTEXT           "(C) 2001-2002 The PinMAME Team",IDC_STATIC,147,
                     29,142,10,NOT WS_GROUP
-    CTEXT           "MAME32 version by",IDC_STATIC,147,51,142,10,NOT
+    CTEXT           "PinMAME32 version by",IDC_STATIC,147,51,142,10,NOT
                     WS_GROUP
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,147,44,142,1
     CTEXT           "Additional MAME32 code by",IDC_STATIC,147,74,142,9
-    CTEXT           "Michael Soderstrom and Christopher Kirmse",IDC_STATIC,
+    CTEXT           "Martin Adrian and Gerrit Volkenborn",IDC_STATIC,
                     147,62,142,9,NOT WS_GROUP
     CTEXT           "Mike Haaland, Andrew Kirmse, Jeff Miller",IDC_STATIC,
                     147,85,142,9
@@ -295,7 +295,7 @@ END
 
 IDD_HELP DIALOG DISCARDABLE  0, 0, 336, 178
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
-CAPTION "MAME32"
+CAPTION "PinMAME32"
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,143,163,50,14
@@ -304,7 +304,7 @@ END
 
 IDD_DIRECTX DIALOG DISCARDABLE  0, 0, 236, 69
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "MAME32"
+CAPTION "PinMAME32"
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "Go to Microsoft's DirectX Web Page",IDB_WEB_PAGE,48,52,
@@ -703,7 +703,7 @@ IDD_MAIN DIALOGEX 0, 0, 304, 206
 STYLE DS_3DLOOK | DS_NOFAILCREATE | WS_MINIMIZEBOX | WS_MAXIMIZEBOX |
     WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 EXSTYLE WS_EX_CONTROLPARENT
-CAPTION "MAME32"
+CAPTION "PinMAME32"
 CLASS MAMECLASSNAME
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -782,7 +782,7 @@ BEGIN
     CONTROL         "&Folder 'filters'",IDC_RESET_FILTERS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,18,62,146,10,0,
                     HIDC_RESET_FILTERS
-    CTEXT           "Select the options to be restored to the default settings.  The options will be restored when MAME32 is run next.",
+    CTEXT           "Select the options to be restored to the default settings.  The options will be restored when PinMAME32 is run next.",
                     IDC_STATIC,26,92,129,27
     PUSHBUTTON      "&OK",IDOK,37,133,50,14
     DEFPUSHBUTTON   "&Cancel",IDCANCEL,94,133,50,14
@@ -1035,15 +1035,15 @@ END
 // Bitmap
 //
 
-IDB_ABOUT               BITMAP  DISCARDABLE     "res\\about.bmp"
-IDB_TOOLBAR             BITMAP  DISCARDABLE     "res\\toolbar.bmp"
+IDB_ABOUT               BITMAP  DISCARDABLE     "res/about.bmp"
+IDB_TOOLBAR             BITMAP  DISCARDABLE     "res/toolbar.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Cursor
 //
 
-IDC_CURSOR_HSPLIT       CURSOR  DISCARDABLE     "Res\\Splith.cur"
+IDC_CURSOR_HSPLIT       CURSOR  DISCARDABLE     "res/splith.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1099,10 +1099,10 @@ BEGIN
     ID_FILE_PLAY_BACK       "Playback a recorded game"
     ID_VIEW_SCREEN_SHOT     "Show or hide the screen shot"
     ID_HELP_CONTENTS        "Display help contents"
-    ID_HELP_WHATS_NEW32     "What's new in MAME32"
+    ID_HELP_WHATS_NEW32     "What's new in PinMAME32"
     ID_HELP_SUPPORT         "Support Documentation"
-    ID_HELP_RELEASE         "MAME release notes"
-    ID_HELP_WHATS_NEW       "What's new in MAME"
+    ID_HELP_RELEASE         "PinMAME release notes"
+    ID_HELP_WHATS_NEW       "What's new in PinMAME"
     ID_HELP_CHEATS          "How cheats work"
 END
 
