@@ -1267,6 +1267,53 @@ static int  (*m68306intack)(int int_line); /* Interrupt Acknowledge */
 
 static struct { offs_t addr, mask; UINT16 rw; } m68306cs[10];
 
+/*Duart stuff*/
+
+//Comment out to fix the 68306 Receiver functions
+#define DISABLE_68306_RX
+
+#define VERBOSE
+
+#ifdef VERBOSE
+#define LOG(x)	logerror x
+//#define LOG(x)	printf x
+#else
+#define LOG(x)
+#endif
+
+//Registers for read only will be even numbered, write only will be odd numbered
+enum {  dirDUMR1A,dirDUMR2A,		//0,1 (exception, these are r&w, but there's 2 so it works out)
+		dirDUSRA,dirDUCSRA,			//2,3
+		dirDUCRA=5,					//4,5 (nothing for 4)
+		dirDURBA,dirDUTBA,			//6,7
+		dirDUIPCR,dirDUACR,			//8,9
+		dirDUISR,dirDUIMR,			//10,11
+		dirCNT_MSB,					//12,13 (13 is same as 12)
+		dirCNT_LSB=14,				//14,15 (15 is same as 14)
+		dirDUMR1B=16,dirDUMR2B,		//16,17 (exception, these are r&w, but there's 2 so it works out)
+		dirDUSRB,dirDUCSRB,			//18,19
+		dirDUCRB=21,				//20,21 (nothing for 20)
+		dirDURBB,dirDUTBB,			//22,23
+		dirDUIVR,					//24,25 (25 is same as 24)
+		dirDUIP=26,dirDUOPCR,		//26,27
+		dirDUOPS,dirDUOPRS			//28,29 (these are probably not needed)
+};
+static UINT16 m68306duartreg[0x20];							//Duart registers
+static m68306_duart_int=0;									//Is Interrupt triggered by DUART?
+static m68306_duart_mode_pointer[2] = {0,0};				//Mode Pointer for each UART
+static m68306_duart_tc_enable[2] = {0,0};					//Transmit Channel Enabled Status
+static m68306_duart_rc_enable[2] = {0,0};					//Receive Channel Enabled Status
+static void trigger_duart_int(int which);					//Cause a DUART Int to occur
+static void duart_command_register_w(int which,int data);	//Handle writes to command register
+static void m68306_duart_set_dusr(int which,int data);		//Set the DUSR register
+static void m68306_duart_set_duisr(int data);				//Set the DUISR register
+static void m68306_duart_check_int(void);					//Check for a DUART interrupt
+static void m68306_rx_cause_int(int param);					//Callback (internal) to fire an Receiver Interrupt
+
+//temporary hacks to get direct access to capcoms.c funcs
+extern void set_cts_line_to_8752(int data);			
+extern void send_data_to_8752(int data);
+
 //-------------------------------------------
 // Memory read/write functions
 //   Check for internal registers
@@ -1379,166 +1426,485 @@ static const struct m68k_memory_interface interface_m68306 = {
 	m68306_changepc
 };
 
-#define VERBOSE
-
-#ifdef VERBOSE
-#define LOG(x)	logerror x
-//#define LOG(x)	printf x
-#else
-#define LOG(x)
-#endif
-
 //--------------------------------
 //  DUART Internal register read
 //--------------------------------
 static data16_t m68306_duart_reg_r(offs_t address, int word) {
-	data16_t data = 0;
 	//odd word checks already handled!
+
+	data16_t data =	m68306duartreg[address-0xf7e1];		//Grab data from registers
+
 	switch(address) {
 		//F7E1 - MODE A REGISTERS (DUMR1A & DUMR2A)
 		case 0xf7e1:
-			LOG(("%8x:MODE A REGISTERS (DUMR1A & DUMR2A) Read =%x\n",activecpu_get_pc(),data));
+			//Mode pointer determines whether we return dumr1 or dumr2
+			data = m68306duartreg[dirDUMR1A+m68306_duart_mode_pointer[0]];
+			if(m68306_duart_mode_pointer[0])
+				LOG(("%8x:MODE A REGISTER - DUMR2A Read = %x\n",activecpu_get_pc(),data));
+			else
+				LOG(("%8x:MODE A REGISTER - DUMR1A Read = %x\n",activecpu_get_pc(),data));
+			//After reading, update the mode pointer (note, it can only go to 1)
+			m68306_duart_mode_pointer[0]=1;
 			break;
 		//F7E3 - STATUS REGISTER A (DUSRA)
 		case 0xf7e3:
-			LOG(("%8x:STATUS REGISTER A (DUSRA) Read =%x\n",activecpu_get_pc(),data));
+			LOG(("%8x:STATUS REGISTER A (DUSRA) Read = %x\n",activecpu_get_pc(),data));
 			break;
 		//F7E5 - N/A
 		case 0xf7e5:
-			LOG(("%8x:ILLEGAL DUART REGISTER Read =%x\n",activecpu_get_pc(),data));
+			LOG(("%8x:ILLEGAL DUART REGISTER Read = %x\n",activecpu_get_pc(),data));
 			break;
 		//F7E7 - RECEIVE BUFFER A(DURBA)
-		case 0xf7e7:
-			LOG(("%8x:RECEIVE BUFFER A(DURBA) Read =%x\n",activecpu_get_pc(),data));
+		case 0xf7e7: {
+			int stat = m68306duartreg[dirDUSRA];
+			LOG(("%8x:RECEIVE BUFFER A(DURBA) Read = %x\n",activecpu_get_pc(),data));
+			//Clear RxRDY status (bit 0)
+			stat &= ~1;
+			m68306_duart_set_dusr(0,stat);
 			break;
+		}
+
 		//F7E9 - INPUT PORT CHANGE REG (DUIPCR)
 		case 0xf7e9:
-			LOG(("%8x:INPUT PORT CHANGE REG (DUIPCR) Read =%x\n",activecpu_get_pc(),data));
+			LOG(("%8x:INPUT PORT CHANGE REG (DUIPCR) Read = %x\n",activecpu_get_pc(),data));
 			break;
 		//F7EB - INTERRUPT STATUS(DUISR)
 		case 0xf7eb:
-			LOG(("%8x:INTERRUPT STATUS(DUISR) Read =%x\n",activecpu_get_pc(),data));
+			LOG(("%8x:INTERRUPT STATUS(DUISR) Read = %x\n",activecpu_get_pc(),data));
 			break;
 		//F7ED - COUNTERMODE: MSB OF COUNTER
 		case 0xf7ed:
-			LOG(("%8x:COUNTERMODE: MSB OF COUNTER Read =%x\n",activecpu_get_pc(),data));
+			LOG(("%8x:COUNTERMODE: MSB OF COUNTER Read = %x\n",activecpu_get_pc(),data));
 			break;
 		//F7EF - COUNTERMODE: LSB OF COUNTER
 		case 0xf7ef:
-			LOG(("%8x:COUNTERMODE: LSB OF COUNTER Read =%x\n",activecpu_get_pc(),data));
+			LOG(("%8x:COUNTERMODE: LSB OF COUNTER Read = %x\n",activecpu_get_pc(),data));
 			break;
 		//F7F1 - MODE B (DUMR1B,DUMR2B)
 		case 0xf7f1:
-			LOG(("%8x:MODE B (DUMR1B,DUMR2B) Read =%x\n",activecpu_get_pc(),data));
+			//Mode pointer determines whether we return dumr1 or dumr2
+			data = m68306duartreg[dirDUMR1B+m68306_duart_mode_pointer[1]];
+			if(m68306_duart_mode_pointer[1])
+				LOG(("%8x:MODE B REGISTER - DUMR2B Read = %x\n",activecpu_get_pc(),data));
+			else
+				LOG(("%8x:MODE B REGISTER - DUMR1B Read = %x\n",activecpu_get_pc(),data));
+			//After reading, update the mode pointer (note, it can only go to 1)
+			m68306_duart_mode_pointer[1]=1;
 			break;
 		//F7F3 - STATUS REGISTER B (DUSRB)
 		case 0xf7f3:
-			LOG(("%8x:STATUS REGISTER B (DUSRB) Read =%x\n",activecpu_get_pc(),data));
+			LOG(("%8x:STATUS REGISTER B (DUSRB) Read = %x\n",activecpu_get_pc(),data));
 			break;
 		//F7F5 - N/A
 		case 0xf7f5:
-			LOG(("%8x:ILLEGAL DUART REGISTER Read =%x\n",activecpu_get_pc(),data));
+			LOG(("%8x:ILLEGAL DUART REGISTER Read = %x\n",activecpu_get_pc(),data));
 			break;
 		//F7F7 - RECEIVE BUFFER B(DURBB)
-		case 0xf7f7:
-			LOG(("%8x:RECEIVE BUFFER B(DURBB) Read =%x\n",activecpu_get_pc(),data));
+		case 0xf7f7: {
+			int stat = m68306duartreg[dirDUSRB];
+			LOG(("%8x:RECEIVE BUFFER B(DURBB) Read = %x\n",activecpu_get_pc(),data));
+			printf("%8x:RECEIVE BUFFER B(DURBB) Read = %x\n",activecpu_get_pc(),data);
+			//Clear RxRDY status (bit 0)
+			stat &= ~1;
+			m68306_duart_set_dusr(1,stat);
+			//Set CTS to 0, so we can receive more data..
+			set_cts_line_to_8752(0);
 			break;
+		}
 		//F7F9 - INTERRUPT VECTOR(DUIPVR)
 		case 0xf7f9:
-			LOG(("%8x:INTERRUPT VECTOR(DUIPVR) Read =%x\n",activecpu_get_pc(),data));
+			LOG(("%8x:INTERRUPT VECTOR(DUIPVR) Read = %x\n",activecpu_get_pc(),data));
 			break;
 		//F7FB - INPUT PORT REGISTER(DUIP)
 		case 0xf7fb:
-			LOG(("%8x:INPUT PORT REGISTER(DUIP) Read =%x\n",activecpu_get_pc(),data));
+			LOG(("%8x:INPUT PORT REGISTER(DUIP) Read = %x\n",activecpu_get_pc(),data));
 			break;
 		//F7FD - START COUNTER COMMAND
 		case 0xf7fd:
-			LOG(("%8x:START COUNTER COMMAND Read =%x\n",activecpu_get_pc(),data));
+			LOG(("%8x:START COUNTER COMMAND Read = %x\n",activecpu_get_pc(),data));
 			break;
 		//F7FF - STOP COUNTER COMMAND
 		case 0xf7ff:
-			LOG(("%8x:STOP COUNTER COMMAND Read =%x\n",activecpu_get_pc(),data));
+			LOG(("%8x:STOP COUNTER COMMAND Read = %x\n",activecpu_get_pc(),data));
 			break;
 
 		default:
-			LOG(("%8x:M68306UART_r[%04x]=%x\n",activecpu_get_pc(),address,data));
+			LOG(("%8x:M68306UART_r[%04x]= %x\n",activecpu_get_pc(),address,data));
 	}
 	return (word || (address & 1)) ? data : data>>8;
 }
 
 //--------------------------------
-//  DUART Internal register write
+//  DUART Internal register write 
 //--------------------------------
+//NOTE: These are really UINT8 values, not UINT16, ie, they are addressable as bytes only, not words!
 static void m68306_duart_reg_w(offs_t address, data16_t data, int word) {
 	//odd word checks already handled!
 	switch(address) {
 		//F7E1 - MODE A REGISTERS (DUMR1A & DUMR2A)
 		case 0xf7e1:
-			LOG(("%8x:MODE A REGISTERS (DUMR1A & DUMR2A) Write =%x\n",activecpu_get_pc(),data));
-			break;
+			//Mode pointer determines whether we return dumr1 or dumr2
+			m68306duartreg[dirDUMR1A+m68306_duart_mode_pointer[0]] = data;
+			if(m68306_duart_mode_pointer[0])
+				LOG(("%8x:MODE A REGISTER - DUMR2A Write = %x\n",activecpu_get_pc(),data));
+			else
+				LOG(("%8x:MODE A REGISTER - DUMR1A Write = %x\n",activecpu_get_pc(),data));
+			//After writing, update the mode pointer (note, it can only go to 1)
+			m68306_duart_mode_pointer[0]=1;
+			return;	//We're done
+
 		//F7E3 - CLOCK SELECT (DUCSRA)
 		case 0xf7e3:
-			LOG(("%8x:CLOCK SELECT (DUCSRA) Write =%x\n",activecpu_get_pc(),data));
-			break;
+			LOG(("%8x:CLOCK SELECT (DUCSRA) Write = %x\n",activecpu_get_pc(),data));
+			m68306duartreg[dirDUCSRA] = data;
+			return;	
+
 		//F7E5 - COMMAND REGISTER A (DUCRA)
 		case 0xf7e5:
-			LOG(("%8x:COMMAND REGISTER A (DUCRA) Write =%x\n",activecpu_get_pc(),data));
-			break;
+			duart_command_register_w(0,data);
+			return;
+
 		//F7E7 - TRANSMIT BUFFER A(DUTBA)
 		case 0xf7e7:
-			LOG(("%8x:TRANSMIT BUFFER A(DUTBA) Write =%x\n",activecpu_get_pc(),data));
-			break;
+			if(m68306_duart_tc_enable[0]) {
+				LOG(("%8x:TRANSMIT BUFFER A(DUTBA) Write = %x\n",activecpu_get_pc(),data));
+				printf("%8x:TRANSMIT BUFFER A(DUTBA) Write = %x\n",activecpu_get_pc(),data);
+				m68306duartreg[dirDUTBA] = data;
+			}
+			else
+				LOG(("%8x: TC DISABLED! - TRANSMIT BUFFER A(DUTBA) Write = %x\n",activecpu_get_pc(),data));
+			return;	
+
 		//F7E9 - AUX CONTROL REGISTER(DUACR)
 		case 0xf7e9:
-			LOG(("%8x:AUX CONTROL REGISTER(DUACR) Write =%x\n",activecpu_get_pc(),data));
-			break;
+			LOG(("%8x:AUX CONTROL REGISTER(DUACR) Write = %x\n",activecpu_get_pc(),data));
+			m68306duartreg[dirDUACR] = data;
+			return;	
+
 		//F7EB - INTERRUPT MASK (DUIMR)
 		case 0xf7eb:
-			LOG(("%8x:INTERRUPT MASK (DUIMR) Write =%x\n",activecpu_get_pc(),data));
-			break;
+			LOG(("%8x:INTERRUPT MASK (DUIMR) Write = %x\n",activecpu_get_pc(),data));
+			m68306duartreg[dirDUIMR] = data;
+			//Check if this will cause an interrupt
+			m68306_duart_check_int();
+			return;	
+
 		//F7ED - COUNTER/TIMER MSB
 		case 0xf7ed:
-			LOG(("%8x:COUNTER/TIMER MSB Write =%x\n",activecpu_get_pc(),data));
+			LOG(("%8x:COUNTER/TIMER MSB Write = %x\n",activecpu_get_pc(),data));
 			break;
 		//F7EF - COUNTER/TIMER LSB
 		case 0xf7ef:
-			LOG(("%8x:COUNTER/TIMER LSB Write =%x\n",activecpu_get_pc(),data));
+			LOG(("%8x:COUNTER/TIMER LSB Write = %x\n",activecpu_get_pc(),data));
 			break;
+
 		//F7F1 - MODE B (DUMR1B,DUMR2B)
 		case 0xf7f1:
-			LOG(("%8x:MODE B (DUMR1B,DUMR2B) Write =%x\n",activecpu_get_pc(),data));
-			break;
+			//Mode pointer determines whether we return dumr1 or dumr2
+			m68306duartreg[dirDUMR1B+m68306_duart_mode_pointer[1]] = data;
+			if(m68306_duart_mode_pointer[1])
+				LOG(("%8x:MODE B REGISTER - DUMR2B Write = %x\n",activecpu_get_pc(),data));
+			else
+				LOG(("%8x:MODE B REGISTER - DUMR1B Write = %x\n",activecpu_get_pc(),data));
+			//After writing, update the mode pointer (note, it can only go to 1)
+			m68306_duart_mode_pointer[1]=1;
+			return;	//We're done
+
 		//F7F3 - CLOCK SELECT (DUCSRB)
 		case 0xf7f3:
-			LOG(("%8x:CLOCK SELECT (DUCSRB) Write =%x\n",activecpu_get_pc(),data));
-			break;
+			LOG(("%8x:CLOCK SELECT (DUCSRB) Write = %x\n",activecpu_get_pc(),data));
+			m68306duartreg[dirDUCSRB] = data;
+			return;
+
 		//F7F5 - COMMAND REGISTER B (DUCRB)
 		case 0xf7f5:
-			LOG(("%8x:COMMAND REGISTER B (DUCRB) Write =%x\n",activecpu_get_pc(),data));
-			break;
+			duart_command_register_w(1,data);
+			return;
+
 		//F7F7 - TRANSMIT BUFFER B(DUTBB)
 		case 0xf7f7:
-			LOG(("%8x:TRANSMIT BUFFER B(DUTBB) Write =%x\n",activecpu_get_pc(),data));
-			break;
+			if(m68306_duart_tc_enable[1]) {
+				LOG(("%8x:TRANSMIT BUFFER B(DUTBB) Write = %x\n",activecpu_get_pc(),data));
+				//printf("%8x:TRANSMIT BUFFER B(DUTBB) Write = %x\n",activecpu_get_pc(),data);
+				send_data_to_8752(data);
+				m68306duartreg[dirDUTBB] = data;
+			}
+			else
+				LOG(("%8x: TC DISABLED! - TRANSMIT BUFFER B(DUTBB) Write = %x\n",activecpu_get_pc(),data));
+			return;
+
 		//F7F9 - INTERRUPT VECTOR(DUIPVR)
 		case 0xf7f9:
-			LOG(("%8x:INTERRUPT VECTOR(DUIPVR) Write =%x\n",activecpu_get_pc(),data));
+			LOG(("%8x:INTERRUPT VECTOR(DUIPVR) Write = %x\n",activecpu_get_pc(),data));
 			break;
 		//F7FB - OUTPUT PORT CONFIGURATION (DUOPCR)
 		case 0xf7fb:
-			LOG(("%8x:OUTPUT PORT CONFIGURATION (DUOPCR) Write =%x\n",activecpu_get_pc(),data));
+			LOG(("%8x:OUTPUT PORT CONFIGURATION (DUOPCR) Write = %x\n",activecpu_get_pc(),data));
 			break;
 		//F7FD - OUTPUT PORT(DUOP) BIT SET
 		case 0xf7fd:
-			LOG(("%8x:OUTPUT PORT(DUOP) BIT SET Write =%x\n",activecpu_get_pc(),data));
+			LOG(("%8x:OUTPUT PORT(DUOP) BIT SET Write = %x\n",activecpu_get_pc(),data));
+			printf("%8x:OUTPUT PORT(DUOP) BIT SET Write = %x\n",activecpu_get_pc(),data);
 			break;
 		//F7FF - OUTPUT PORT(DUOP) BIT RESET
 		case 0xf7ff:
-			LOG(("%8x:OUTPUT PORT(DUOP) BIT RESET Write =%x\n",activecpu_get_pc(),data));
+			LOG(("%8x:OUTPUT PORT(DUOP) BIT RESET Write = %x\n",activecpu_get_pc(),data));
+			printf("%8x:OUTPUT PORT(DUOP) BIT RESET Write = %x\n",activecpu_get_pc(),data);
 			break;
 
 		default:
-			LOG(("%8x:M68306UART_w[%04x]=%x\n",activecpu_get_pc(),address,data));
+			LOG(("%8x:M68306UART_w[%04x]= %x\n",activecpu_get_pc(),address,data));
+	}
+
+	//Store value
+	m68306duartreg[address-0xf7e1] = data;
+}
+
+void send_data_to_68306(int data)
+{
+#ifndef DISABLE_68306_RX
+	timer_set(TIME_NOW, data , m68306_rx_cause_int);
+	//timer_set(TIME_IN_CYCLES(10000,0), data , m68306_rx_cause_int);
+#endif
+}
+
+//Callback to generate an Receiver Interrupt
+static void m68306_rx_cause_int(int param)
+{
+	int push = 0;
+	int data = param;
+	int stat = 0;
+	if(m68306_duart_rc_enable[1]) {
+
+		//Set CTS to 1, so we can't receive any more data..
+		set_cts_line_to_8752(1);
+
+		//Force CPU 0 to be active - otherwise this doesn't work!
+		if(cpu_getactivecpu() != 0) {
+			//printf("pushing\n");
+			cpuintrf_push_context(0);
+			push = 1;
+		}
+		//printf("Active cpu = %x\n",cpu_getactivecpu());
+		printf("data to 68306 = %x\n",data);
+		//write data to receive buffer
+		m68306duartreg[dirDURBB]=data;
+		//Set RxRDY status (bit 0)
+		stat = m68306duartreg[dirDUSRB];
+		stat &= ~1;
+		stat |= 1;
+		m68306_duart_set_dusr(1,stat);
+		//I guess we need to pop back to the way it was!
+		if(push)
+			cpuintrf_pop_context();
+	}
+	else
+		LOG(("SEND_DATA_TO_68306 - RC DISABLED!\n"));
+}
+
+//Can we generate an interrupt?
+static void m68306_duart_check_int()
+{
+	//check if we should generate an interrupt (status bits must match interrupt mask bits)
+	if(m68306duartreg[dirDUISR] & m68306duartreg[dirDUIMR]) {
+		//Generate a timer interrupt? (bit 3)
+		if(m68306duartreg[dirDUISR] & 0x08)
+			trigger_duart_int(0);		//generate a timer irq
+		//Generate a serial interrupt? (Any bit besides 3 is set)
+		if(m68306duartreg[dirDUISR] & (~0x08))
+			trigger_duart_int(1);		//generate a serial irq
+	}
+}
+
+//Set DUISR status register
+//TODO: how to deal with a timer and serial interrupt occuring together? Timer has higher priority even if duart set to level 7 also!)
+static void m68306_duart_set_duisr(int data)
+{
+	//Update register
+	m68306duartreg[dirDUISR] = data;
+
+	//Check if an interrupt should occur
+	m68306_duart_check_int();
+}
+
+//Set DUSR status register
+static void m68306_duart_set_dusr(int which,int data)
+{
+	int txRDY=0;
+	int rxRDY=0;
+	m68306duartreg[dirDUSRA+(which*0x10)] = data;
+	//txRDY is duplicated in DUISR
+	txRDY = (m68306duartreg[dirDUSRA+(which*0x10)] & 0x04)>>2;	//TxRDY in DUSR is bit 2)
+	//txRDY in DUISR (bit 0 for channel a, bit 4 for channel b)
+	data = m68306duartreg[dirDUISR] & ~(1<<(which*4));
+	data |= txRDY<<(which*4);
+
+	//Either FFUL or RxRDY is duplicated in DUISR (bit 1 for channel a, bit 5 for channel b)
+	//(depending on how bit 6 is set in DUMR1)
+	data &= ~(1<<((which*4)+1));		//Mask out either bit 1 or bit 5
+	if(m68306duartreg[dirDUMR1A+(which*0x10)] & 0x40) {
+		//FFUL (bit 1) is duplicated
+		rxRDY = (m68306duartreg[dirDUSRA+(which*0x10)] & 0x02) >> 1;
+	}
+	else {
+		//RxRDY (bit 0) is duplicated
+		rxRDY = m68306duartreg[dirDUSRA+(which*0x10)] & 0x01;
+	}
+	//Update rxRDY
+	data |= rxRDY<<((which*4)+1);
+	//Update DUISR
+	m68306_duart_set_duisr(data);
+}
+
+//Trigger a DUART Interrupt (0 = Timer, 1 = Serial Port)
+static void trigger_duart_int(int which)
+{
+	m68306_duart_int = which+1;		//Store which interrupt (flags ack to avoid auto-vector also)
+	//Serial Port?
+	if(which){
+		//Determine Priority Level for Serial Port
+		int level=(m68306intreg[irSYSTEM] & 0x700)>>8;	//Bits 8-10 of System Register
+		m68306irq(level,1);
+		m68306irq(level,0);
+	}
+	else {
+		//Timer is always a Level 7 Priority
+		m68306irq(7,1);
+		m68306irq(7,0);
+	}
+	m68306_duart_int = 0;			//Clear flag
+}
+
+/* DUART COMMAND REGISTER WRITE */
+static void duart_command_register_w(int which, int data)
+{
+	int cmd = 0;
+	//Bit 7   = 0
+	//Bit 6-4 = MISC Commands
+	//Bit 3-2 = TC Command (Transmitter Channel)
+	//Bit 1-0 = RC Command (Receiver Channel)
+
+	if(which)
+		LOG(("%8x:COMMAND REGISTER B (DUCRB) Write = %x\n",activecpu_get_pc(),data));
+	else
+		LOG(("%8x:COMMAND REGISTER A (DUCRA) Write = %x\n",activecpu_get_pc(),data));
+
+	//PROCESS MISC COMMANDS
+	if(data & 0x70) {
+		cmd = (data & 0x70) >> 4;
+		//Misc Commands
+		//001 = Reset Mode Register Pointer
+		//010 = Reset Receiver
+		//011 = Reset Transmitter
+		//100 = Reset Error Status
+		//101 = Reset Break/Change Interrupt
+		//110 = Start Break
+		//111 = Stop Break
+		switch(cmd) {
+			//Reset Mode Register Pointer
+			case 1:
+				LOG(("- RESET MODE REGISTER!\n"));
+				m68306_duart_mode_pointer[which] = 0;						//Mode Pointer
+				break;
+			//Reset Receiver
+			case 2:
+				LOG(("- RESET RECEIVER(misc)!\n"));
+				//Disable receiver
+				m68306_duart_rc_enable[which]=0;
+				//Clear FFUL and RxRDY bits (bits 1 & 0) in DUSR
+				data = m68306duartreg[dirDUSRA+(which*0x10)] & (~0x03);
+				m68306_duart_set_dusr(which,data);
+				//FIFO Pointer re-initialized
+				break;
+			//Reset Transmitter
+			case 3:
+				LOG(("- RESET TRANSMITTER(misc)!\n"));
+				//Disable Transmitter
+				m68306_duart_tc_enable[which]=0;
+				//Clear txEMP,txRDY bits (bits 3 & 2) in DUSR
+				data = m68306duartreg[dirDUSRA+(which*0x10)] & (~0x0c);
+				m68306_duart_set_dusr(which,data);
+				break;
+			//Reset Error Status
+			case 4:
+				LOG(("- RESET ERROR STATUS!\n"));
+				//Clear RB,FE,PE,OE bits (bits 7-4) in DUSR
+				data = m68306duartreg[dirDUSRA+(which*0x10)] & (~0xf0);
+				m68306_duart_set_dusr(which,data);
+				break;
+
+			//Reset Break/Change Interrupt
+			case 5:
+				LOG(("- RESET BREAK/CHANGE INTERRUPT!\n"));
+				//Clear DBx bits (bits 6 & 2) in DUISR
+				data = m68306duartreg[dirDUISR] & (~0x44);
+				m68306_duart_set_duisr(data);
+				break;
+			//Start Break
+			case 6:
+				LOG(("- START BREAK!\n"));
+				break;
+			//Stop Break
+			case 7:
+				LOG(("- STOP BREAK!\n"));
+				break;
+		}
+	}
+
+	//PROCESS TRANSMITTER COMMANDS
+	if(data & 0x0c) {
+		cmd = (data & 0x0c) >> 2;
+		//Transmitter Commands
+		//01 = Enable Transmitter
+		//10 = Disable Transmitter
+		//11 = *Not used*
+		switch(cmd) {
+			//Enable Transmitter
+			case 1:
+				LOG(("- ENABLE TRANSMITTER!\n"));
+				//Enable Transmitter
+				m68306_duart_tc_enable[which]=1;
+				//Set txEMP,txRDY bits (bits 3 & 2) in DUSR
+				data = m68306duartreg[dirDUSRA+(which*0x10)] | 0x0c;
+				m68306_duart_set_dusr(which,data);
+				break;
+			//Disable Transmitter
+			case 2:
+				LOG(("- DISABLE TRANSMITTER!\n"));
+				//Disable Transmitter
+				m68306_duart_tc_enable[which]=0;
+				//Clear txEMP,txRDY bits (bits 3 & 2) in DUSR
+				data = m68306duartreg[dirDUSRA+(which*0x10)] & (~0x0c);
+				m68306_duart_set_dusr(which,data);
+				break;
+			//*Not used*
+			default:
+				LOG(("- INVALID TRANSMITTER COMMAND = %x\n",activecpu_get_pc(),cmd));
+		}
+	}
+
+	//PROCESS RECEIVER COMMANDS
+	if(data & 0x03) {
+		cmd = data & 0x03;
+		//Receiver Commands
+		//01 = Enable Receiver
+		//10 = Disable Receiver
+		//11 = *Not used*
+		switch(cmd) {
+			//Enable Receiver (No status flags changed)
+			case 1:
+				LOG(("- ENABLE RECEIVER!\n"));
+				m68306_duart_rc_enable[which]=1;
+				break;
+			//Disable Receiver (No status flags changed)
+			case 2:
+				LOG(("- DISABLE RECEIVER!\n"));
+				m68306_duart_rc_enable[which]=0;
+				break;
+			//*Not used*
+			default:
+				LOG(("- INVALID RECEIVER COMMAND = %x\n",activecpu_get_pc(),cmd));
+		}
 	}
 }
 
@@ -1587,12 +1953,14 @@ static void m68306_intreg_w(offs_t address, data16_t data, int word) {
         break;
       }
       case irICR: /* interrupt control */
+		LOG(("%8x:ICR=%04x\n",activecpu_get_pc(),data));
         m68306intreg[irICR] = data; m68306irq(0,0); // update irq level
         break;
       case irBUSERR: /* refresh + buserror */
         logerror("buserror_w %04x\n",data);
         break;
       case irSYSTEM: /* system */
+		LOG(("%8x:SYSTEM REG=%04x\n",activecpu_get_pc(),data));
         m68306intreg[irSYSTEM] = (oldval & 0x8000) | (data & 0x7fff); // BTERR bit ignored
         if (data & 0x4000) logerror("Bus Timeout Error not implmented %x\n",data);
         break;
@@ -1645,7 +2013,7 @@ static data16_t m68306_intreg_r(offs_t address, int word) {
     } /* switch */
   }
   else if (address >= 0xfffff7e0) { /* DUART */
-     m68306_duart_reg_r(address&0xffff,word);
+     data = m68306_duart_reg_r(address&0xffff,word);
   }
   return (word || (address & 1)) ? data : data>>8;
 }
@@ -1654,12 +2022,26 @@ static data16_t m68306_intreg_r(offs_t address, int word) {
 // Interrupt handling
 //---------------------
 static int m68306ack(int int_level) {
+  if (int_level > 7)
+	return M68K_INT_ACK_AUTOVECTOR;
   if (int_level) {
     UINT16 intbit = 1<<(int_level-1);
     if (m68306holdirq & intbit) { // lower irq line on ack
       m68306holdirq &= ~intbit;
       m68306irq(int_level, 0);
     }
+	//Special DUART int? (DOES NOT USE AUTO-VECTORS)
+	if(m68306_duart_int) {
+		int vector;
+		//Find Timer Vector
+		if(m68306_duart_int==1)
+			vector = m68306intreg[irSYSTEM] & 0x00FF;	//Lower byte of System Register
+		else
+		//Find Serial Vector
+			vector = m68306duartreg[dirDUIVR];			//Special DUART register for serial vector
+		return vector;
+	}
+	//Nope...external irq lines
     if (m68306intreg[irICR] & intbit) // use auto-vector?
       return M68K_INT_ACK_AUTOVECTOR;
     else { // no autovector, IACK is not emulated
@@ -1675,17 +2057,34 @@ static int m68306ack(int int_level) {
 static void m68306irq(int irqline, int state) {
   if (irqline) {
     if (state) {
-       m68306intreg[irISR] |= 0x0080<<irqline;
+	   //If Timer IRQ, set bit 15 of ISR
+	   if(m68306_duart_int==1)
+		m68306intreg[irISR] |= 0x8000;
+	   else
+	   //Set appropriate IRQ line of ISR
+		m68306intreg[irISR] |= 0x0080<<irqline;
        if (state == 2) m68306holdirq |= (1<<(irqline-1));
     }
-    else
-       m68306intreg[irISR] &= ~(0x0080<<irqline);
+	else {
+	   //If Timer IRQ, clear bit 15 of ISR
+	   if(m68306_duart_int==1)
+	    m68306intreg[irISR] &= ~0x8000;
+	   else
+		m68306intreg[irISR] &= ~(0x0080<<irqline);
+	}
   }
   CPU_INT_LEVEL = 0;
   // If port B4-B7 are input  set_irq_line works
   // if port B4-B7 are output writing to port works
   // ignore this for now.
-  irqline = (m68306intreg[irISR] & m68306intreg[irICR] & 0x7f00)>>7;
+  if(m68306_duart_int) { 
+	  //Timer IRQ can be disabled by bit 15 of ICR
+	  if(m68306_duart_int==1 && !(m68306intreg[irICR] & 0x8000))
+		  irqline = 0;
+	  //There doesn't seem to be a way to disable the DUART interrupt (oddly)
+  }
+  else
+	irqline = (m68306intreg[irISR] & m68306intreg[irICR] & 0x7f00)>>7;
   while (irqline >>= 1) CPU_INT_LEVEL += 1;
   CPU_INT_LEVEL <<= 8; m68ki_check_interrupts();
 }
@@ -1725,6 +2124,12 @@ void m68306_reset(void* param) {
   m68306intreg[irCS0H] = 0x0001;
   m68306intreg[irCS0L] = 0xff0e;
   m68306cs[0].rw = 0x8001;
+  //duart stuff
+  memset(m68306duartreg, 0, sizeof(m68306duartreg));
+  m68306_duart_mode_pointer[0] = 0;				//Mode Pointer
+  m68306_duart_mode_pointer[1] = 0;				//Mode Pointer
+  m68306_duart_tc_enable[0] = 0;				//Transmit Channel Enabled Status
+  m68306_duart_rc_enable[1] = 0;				//Receive Channel Enabled Status
   m68k_pulse_reset();
 }
 
