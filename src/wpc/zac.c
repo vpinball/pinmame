@@ -190,10 +190,15 @@ static void ZAC_updSw(int *inports) {
   //if (core_getSw(ZAC_SWSOUNDDIAG)) cpu_set_nmi_line(ZAC_SCPU1NO, PULSE_LINE);
 }
 
+static int irq_callback(int int_level) {
+	logerror("callback!\n");
+	return 0xbf;
+}
+
 //Generate the IRQ
 static int ZAC_irq(void) { 
 #if 1
-	logerror("IRQ\n");
+	logerror("%x: IRQ\n",cpu_getpreviouspc());
 	printf("IRQ\n");
 	return S2650_INT_IRQ;
 #else
@@ -220,6 +225,9 @@ static void ZAC_init(void) {
 
   if (core_init(&ZACData)) return;
   memset(&locals, 0, sizeof(locals));
+
+  /* Set IRQ Vector Routine */
+  cpu_set_irq_callback(0, irq_callback);
 
   /*Setup the Roms - What a mess */
   if(memory_region(ZAC_MEMREG_CPU))
@@ -248,6 +256,9 @@ static void ZAC_init2(void) {
 
   if (core_init(&ZACData)) return;
   memset(&locals, 0, sizeof(locals));
+
+  /* Set IRQ Vector Routine */
+  cpu_set_irq_callback(0, irq_callback);
 
   /*Setup the Roms - What a mess */
   if(memory_region(ZAC_MEMREG_CPU))
