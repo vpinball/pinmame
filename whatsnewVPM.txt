@@ -1,6 +1,11 @@
 What's new in Visual PinMAME:
 -----------------------------
 
+Version 1.x (mmm, xx, 2002)
+---------------------------
+- switched to link zlib 1.1.4 instead of 1.1.3
+
+
 Version 1.12.1 (April 14, 2002)
 -------------------------------
 - Nothing, the interface works fine
