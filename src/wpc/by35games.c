@@ -798,6 +798,14 @@ BY35_ROMEND
 #define input_ports_granslam input_ports_by35
 CORE_GAMEDEFNV(granslam,"Grand Slam",1983,"Bally",by35_mBY35_51S,0)
 
+BY35_ROMSTARTx00(gransla4, "gr_slam.u2b",CRC(552d9423) SHA1(16b86d5b7539fd803f458f1633ecc249ef15243d),
+                           "grndslam.u6",CRC(9e6ccea1) SHA1(5e158e021e0f3eed063577ae22cf5f1bc9655065))
+BY51_SOUNDROM0(            "grndslam.u4",CRC(ac34bc38) SHA1(376ceb53cb51d250b5bc222001291b0c85e42e8a))
+BY35_ROMEND
+#define init_gransla4 init_granslam
+#define input_ports_gransla4 input_ports_granslam
+CORE_CLONEDEFNV(gransla4,granslam,"Grand Slam (4 Players)",1983,"Bally",by35_mBY35_51S,0)
+
 /*----------------------------------------------------------
 / Gold Ball (BY35-???: 10/83)  - Uses AS2518-51 Sound Board
 /----------------------------------------------------------*/

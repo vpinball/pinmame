@@ -140,6 +140,7 @@ DRIVERNV(m_mpac  )      //BY35-872: 05/82 Mr. & Mrs. Pac-Man
 DRIVERNV(babypac )      //BY35-891  10/82 Baby Pac-Man
 DRIVERNV(bmx     )      //BY35-888: 11/82 BMX
 DRIVERNV(granslam)      //BY35-1311:01/83 Grand Slam
+DRIVERNV(gransla4)      //BY35-1311:01/83 Grand Slam (4 player)
 /*same as cenatur*/     //BY35      06/83 Centaur II
 DRIVERNV(goldball)      //BY35-1371:10/83 Gold Ball
 DRIVERNV(goldbalb)      //BY35:     03/04 Gold Ball (7-digit conversion)
@@ -444,6 +445,12 @@ DRIVERNV(shark)         //Shark
 DRIVERNV(empsback)      //Star Wars - The Empire Strike Back
 
 // ----------------
+// INDER GAMES
+// ----------------
+DRIVERNV(brvteam )      //Brave Team (1985)
+DRIVERNV(canasta )      //Canasta '86' (1986)
+
+// ----------------
 // MIDWAY GAMES
 // ----------------
 DRIVERNV(flicker )      //Flicker (Prototype, September 1974)
@@ -696,8 +703,8 @@ DRIVERNV(stest   )      //??/82 Speed Test
 DRIVERNV(lunelle )      //??/82 Lunelle (W Alien Poker, 10/80)
 DRIVERNV(rally   )      //??/82 Rally (B Skateball, 04/80)
 DRIVERNV(snake   )      //??/82 Snake Machine
+DRIVERNV(gork    )      //??/82 Gork
 DRIVERNV(voleybal)      //??/?? Voley Ball
-                        //??/82 Gork
                         //??/8? Ogar
 DRIVERNV(mrblack )		//??/84 Mr. Black (W Defender, 12/82)
 DRIVERNV(mrblack1)		//??/84 Mr. Black alternate set
