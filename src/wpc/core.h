@@ -171,21 +171,27 @@
 #define DMD_MAXX 192
 #define DMD_MAXY 64
 
+#define PINMAME_VIDEO_UPDATE(name) int (name)(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout)
+
+typedef UINT8 tDMDDot[DMD_MAXY+2][DMD_MAXX+2];
+
 /* Shortcuts for some common display sizes */
 #define DISP_SEG_16(row,type)    {4*row, 0, 20*row, 16, type}
 #define DISP_SEG_7(row,col,type) {4*row,16*col,row*20+col*8+1,7,type}
 #define DISP_SEG_CREDIT(no1,no2,type) {2,2,no1,1,type},{2,4,no2,1,type}
 #define DISP_SEG_BALLS(no1,no2,type)  {2,8,no1,1,type},{2,10,no2,1,type}
 /* display layout structure */
-typedef struct {
+struct core_dispLayout {
   UINT8  top, left, start, length;
   UINT16 type;
-} core_tLCDLayout, *core_ptLCDLayout;
+  PINMAME_VIDEO_UPDATE(*update);
+};
+typedef struct core_dispLayout core_tLCDLayout, *core_ptLCDLayout;
 
-typedef UINT8 tDMDDot[DMD_MAXY+2][DMD_MAXX+2];
-extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *cliprect, tDMDDot dotCol, const core_tLCDLayout *layout);
+extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *cliprect, tDMDDot dotCol, const struct core_dispLayout *layout);
 /* Generic display handler. requires LCD layout in GameData structure */
-extern VIDEO_UPDATE(core_led);
+extern VIDEO_UPDATE(core_gen);
+
 
 /*----------------------
 / WPC driver constants
@@ -358,7 +364,7 @@ extern struct pinMachine *coreData;
 /*-- fills in one of these in the game_init function --*/
 typedef struct {
   UINT64  gen;                /* Hardware Generation */
-  const core_tLCDLayout *lcdLayout; /* LCD display layout */
+  const struct core_dispLayout *lcdLayout; /* LCD display layout */
   struct {
     UINT32  flippers;      /* flippers installed (see defines below) */
     int     swCol, lampCol, custSol; /* Custom switch columns, lamp columns and solenoids */
@@ -392,7 +398,7 @@ extern const int core_bcd2seg7[]; /* BCD to 9 segment display */
 #define core_bcd2seg  core_bcd2seg7
 
 /*-- Exported Display handling functions--*/
-extern VIDEO_UPDATE(core_status);
+//extern VIDEO_UPDATE(core_status);
 void core_updateSw(int flipEn);
 
 /*-- text output functions --*/

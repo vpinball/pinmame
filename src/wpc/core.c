@@ -40,7 +40,8 @@ tPMoptions pmoptions;
 
 #define drawChar(bm,r,c,b,t) drawChar1(bm,r,c,*((UINT32 *)&b),t)
 static void drawChar1(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, int type);
-static UINT32 core_initDisplaySize(const core_tLCDLayout *layout);
+static UINT32 core_initDisplaySize(const struct core_dispLayout *layout);
+static VIDEO_UPDATE(core_status);
 
 core_tGlobals     coreGlobals;
 struct pinMachine *coreData;
@@ -145,9 +146,6 @@ static PALETTE_INIT(core) {
   }
 
   { /*-- Autogenerate antialias colours --*/
-#if MAMEVER < 3715
-#  define vector_flicker flicker
-#endif /* MAME_VER */
     int rStep, gStep, bStep;
 
     rStart = palette[DMD_DOTOFF*3+0];
@@ -158,10 +156,10 @@ static PALETTE_INIT(core) {
     bStep = (palette[DMD_DOTON*3+2] * pmoptions.dmd_antialias / 100 - bStart) / 6;
 
     for (ii = START_ANTIALIAS+1; ii < (START_ANTIALIAS+1)+6; ii++) {
-      rStart += rStep; gStart += gStep; bStart += bStep;
       palette[ii*3+0] = rStart;
       palette[ii*3+1] = gStart;
       palette[ii*3+2] = bStart;
+      rStart += rStep; gStart += gStep; bStart += bStep;
     }
   }
 }
@@ -169,17 +167,17 @@ static PALETTE_INIT(core) {
 /*-----------------------------------
 /  Generic DMD display handler
 /------------------------------------*/
-void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *cliprect, tDMDDot dotCol, const core_tLCDLayout *layout) {
+void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *cliprect, tDMDDot dotCol, const struct core_dispLayout *layout) {
   UINT32 *dmdColor = &CORE_COLOR(DMD_DOTOFF);
   UINT32 *aaColor  = &CORE_COLOR(START_ANTIALIAS);
-  BMTYPE **lines = ((BMTYPE **)bitmap->line) + layout->top;
+  BMTYPE **lines = ((BMTYPE **)bitmap->line) + (layout->top*locals.displaySize);
   int ii, jj;
 
   memset(&dotCol[layout->start+1][0], 0, sizeof(dotCol[0][0])*layout->length+1);
   memset(&dotCol[0][0], 0, sizeof(dotCol[0][0])*layout->length+1); // clear above
   for (ii = 0; ii < layout->start+1; ii++) {
-    BMTYPE *line = (*lines++) + layout->left;
-	dotCol[ii][layout->length] = 0;
+    BMTYPE *line = (*lines++) + (layout->left*locals.displaySize);
+    dotCol[ii][layout->length] = 0;
     if (ii > 0) {
       for (jj = 0; jj < layout->length; jj++) {
         *line++ = dmdColor[dotCol[ii][jj]];
@@ -189,7 +187,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
     }
     if (locals.displaySize > 1) {
       int col1 = dotCol[ii][0] + dotCol[ii+1][0];
-      line = (*lines++) + layout->left;
+      line = (*lines++) + (layout->left*locals.displaySize);
       for (jj = 0; jj < layout->length; jj++) {
         int col2 = dotCol[ii][jj+1] + dotCol[ii+1][jj+1];
         *line++ = aaColor[col1];
@@ -198,54 +196,50 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
       }
     }
   }
-  osd_mark_dirty(0,0,layout->length*locals.displaySize,layout->start*locals.displaySize);
+  osd_mark_dirty(layout->left*locals.displaySize,layout->top*locals.displaySize,
+                 (layout->left+layout->length)*locals.displaySize,(layout->top+layout->start)*locals.displaySize);
 }
 
 /*-----------------------------------
 /  Generic segement display handler
 /------------------------------------*/
-VIDEO_UPDATE(core_led) {
-  const core_tLCDLayout *layout = core_gameData->lcdLayout;
+static VIDEO_UPDATE(core_gen) {
+  struct core_dispLayout *layout = core_gameData->lcdLayout;
   if (layout == NULL) { DBGLOG(("gen_refresh without LCD layout\n")); return; }
-#if 0
-  /* Drawing is not optimised so just clear everything */
-  if (fullRefresh) {
-    fillbitmap(bitmap,Machine->pens[0],NULL);
-    memset(&locals.lastSeg, -1, sizeof(locals.lastSeg));
-  }
-#endif
-  while (layout->length) {
-    int zeros = layout->type/32; // dummy zeros
-    int left  = layout->left * (locals.segData[layout->type & CORE_SEGMASK].cols + 1) / 2;
-    int top   = layout->top  * (locals.segData[0].rows + 1) / 2;
-    int ii    = layout->length + zeros;
-    int *seg     = ((int *)coreGlobals.segments) + layout->start;
-    int *lastSeg = ((int *)locals.lastSeg)       + layout->start;
-    int step     = (layout->type & CORE_SEGREV) ? -1 : 1;
+  for (; layout->length; layout += 1) {
+    if (layout->update) if (!layout->update(bitmap,cliprect,layout)) continue;
+    {
+      int zeros = layout->type/32; // dummy zeros
+      int left  = layout->left * (locals.segData[layout->type & CORE_SEGMASK].cols + 1) / 2;
+      int top   = layout->top  * (locals.segData[0].rows + 1) / 2;
+      int ii    = layout->length + zeros;
+      int *seg     = ((int *)coreGlobals.segments) + layout->start;
+      int *lastSeg = ((int *)locals.lastSeg)       + layout->start;
+      int step     = (layout->type & CORE_SEGREV) ? -1 : 1;
 
-    if (step < 0) { seg += ii-1; lastSeg += ii-1; }
-    while (ii--) {
-      int tmpSeg = (ii < zeros) ? ((core_bcd2seg7[0]<<8) | (core_bcd2seg7[0])) : *seg;
-      int tmpType = layout->type & CORE_SEGMASK;
+      if (step < 0) { seg += ii-1; lastSeg += ii-1; }
+      while (ii--) {
+        int tmpSeg = (ii < zeros) ? ((core_bcd2seg7[0]<<8) | (core_bcd2seg7[0])) : *seg;
+        int tmpType = layout->type & CORE_SEGMASK;
 
-      if (tmpSeg != *lastSeg) {
-        tmpSeg >>= (layout->type & CORE_SEGHIBIT) ? 8 : 0;
+        if (tmpSeg != *lastSeg) {
+          tmpSeg >>= (layout->type & CORE_SEGHIBIT) ? 8 : 0;
 
-        if ((tmpType == CORE_SEG87) || (tmpType == CORE_SEG87F)) {
-          if ((ii > 0) && (ii % 3 == 0)) { // Handle Comma
-            tmpType = CORE_SEG8;
-            if ((tmpType == CORE_SEG87F) && tmpSeg) tmpSeg |= 0x80;
+          if ((tmpType == CORE_SEG87) || (tmpType == CORE_SEG87F)) {
+            if ((ii > 0) && (ii % 3 == 0)) { // Handle Comma
+              tmpType = CORE_SEG8;
+              if ((tmpType == CORE_SEG87F) && tmpSeg) tmpSeg |= 0x80;
+            }
+            else
+              tmpType = CORE_SEG7;
           }
-          else
-            tmpType = CORE_SEG7;
+          else if (tmpType == CORE_SEG9) tmpSeg |= (tmpSeg & 0x80)<<1;
+          drawChar1(bitmap,  top, left, tmpSeg, tmpType);
         }
-        else if (tmpType == CORE_SEG9) tmpSeg |= (tmpSeg & 0x80)<<1;
-        drawChar1(bitmap,  top, left, tmpSeg, tmpType);
+        left += locals.segData[layout->type & 0x0f].cols+1;
+        seg += step; lastSeg += step;
       }
-      left += locals.segData[layout->type & 0x0f].cols+1;
-      seg += step; lastSeg += step;
     }
-    layout += 1;
   }
   memcpy(locals.lastSeg,coreGlobals.segments,sizeof(locals.lastSeg));
   video_update_core_status(bitmap,cliprect);
@@ -425,7 +419,7 @@ void CLIB_DECL core_textOutf(int x, int y, int color, char *text, ...) {
 / Draw status display
 / Lamps, Switches, Solenoids, Diagnostic LEDs
 /---------------------------------------------*/
-VIDEO_UPDATE(core_status) {
+static VIDEO_UPDATE(core_status) {
   BMTYPE **lines = (BMTYPE **)bitmap->line;
   int firstRow = locals.firstSimRow;
   int ii, jj, bits;
@@ -990,17 +984,17 @@ void machine_add_timer(struct InternalMachineDriver *machine, void (*func)(int),
   machine->pinmame.timers[ii].rate = rate;
 }
 
-static UINT32 core_initDisplaySize(const core_tLCDLayout *layout) {
+static UINT32 core_initDisplaySize(const struct core_dispLayout *layout) {
   int maxX = 0, maxY = 0;
 
   locals.segData = &segData[locals.displaySize == 1][0];
   if (layout) {
     while (layout->length) {
       int tmp;
-      if (layout->type == CORE_DMD) tmp = layout->left + layout->length * locals.segData[CORE_DMD].cols + 1;
+      if (layout->type == CORE_DMD) tmp = (layout->left + layout->length) * locals.segData[CORE_DMD].cols + 1;
       else tmp = (layout->left + 2*layout->length) * (locals.segData[layout->type & 0x07].cols + 1) / 2;
       if (tmp > maxX) maxX = tmp;
-      if (layout->type == CORE_DMD) tmp = layout->top  + layout->start  * locals.segData[CORE_DMD].rows + 1;
+      if (layout->type == CORE_DMD) tmp = (layout->top  + layout->start)  * locals.segData[CORE_DMD].rows + 1;
       else tmp = (layout->top + 2) * (locals.segData[0].rows + 1) / 2;
       if (tmp > maxY) maxY = tmp;
       layout += 1;
@@ -1075,4 +1069,5 @@ MACHINE_DRIVER_START(PinMAME)
   MDRV_SWITCH_CONV(core_swSeq2m,core_m2swSeq)
   MDRV_LAMP_CONV(core_swSeq2m,core_m2swSeq)
   MDRV_MACHINE_INIT(core) MDRV_MACHINE_STOP(core)
+  MDRV_VIDEO_UPDATE(core_gen)
 MACHINE_DRIVER_END
