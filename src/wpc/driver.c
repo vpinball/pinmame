@@ -105,13 +105,13 @@ DRIVERNV(tmachzac)      //04/83 Time Machine
 DRIVERNV(farfalla)      //09/83 Farfalla
 DRIVERNV(dvlrider)      //04/84 Devil Riders
 DRIVERNV(mcastle)       //09/84 Magic Castle
+DRIVERNV(myststar)      //??/84 Mystic Star
 DRIVERNV(robot)         //01/85 Robot
 DRIVERNV(clown)         //07/85 Clown
 DRIVERNV(poolcham)      //12/85 Pool Champion
 DRIVERNV(bbeltzac)      //??/86 Blackbelt
 DRIVERNV(mexico)        //??/86 Mexico '86
 DRIVERNV(zankor)        //??/86 Zankor
-                        //??/86 Mystic Star
 DRIVERNV(spooky)        //??/87 Spooky
                         //??/87 Star's Phoenix
                         //??/86 New Star's Phoenix
@@ -185,18 +185,28 @@ DRIVERNV(startrek)      //BY35-745: 01/78 Star Trek
                         //??        02/78 Skateball (Prototype)
 DRIVERNV(kiss    )      //BY35-746: 04/78 Kiss
 DRIVERNV(ngndshkr)      //BY35-776: 05/78 Nitro Ground Shaker
+DRIVERNV(ngndshkb)      //BY35-776: 11/02 Nitro Ground Shaker (7-digit bootleg)
 DRIVERNV(slbmania)      //BY35-786: 06/78 Silverball Mania
+DRIVERNV(slbmanib)      //BY35-786: 11/02 Silverball Mania (7-digit bootleg)
 DRIVERNV(hglbtrtr)      //BY35-750: 08/78 Harlem Globetrotters On Tour
+DRIVERNV(hglbtrtb)      //BY35-750: 11/02 Harlem Globetrotters On Tour (7-digit bootleg)
 DRIVERNV(dollyptn)      //BY35-777: 10/78 Dolly Parton
+DRIVERNV(dollyptb)      //BY35-777: 11/02 Dolly Parton (7-digit bootleg)
 DRIVERNV(paragon )      //BY35-748: 12/78 Paragon
 DRIVERNV(futurspa)      //BY35-781: 03/79 Future Spa
+DRIVERNV(futurspb)      //BY35-781: 11/02 Future Spa (7-digit bootleg)
 DRIVERNV(spaceinv)      //BY35-792: 05/79 Space Invaders
+DRIVERNV(spaceinb)      //BY35-792: 11/02 Space Invaders (7-digit bootleg)
 DRIVERNV(rollston)      //BY35-796: 06/79 Rolling Stones
+DRIVERNV(rollstob)      //BY35-796: 11/02 Rolling Stones (7-digit bootleg)
 DRIVERNV(mystic  )      //BY35-798: 08/79 Mystic
+DRIVERNV(mysticb )      //BY35-798: 11/02 Mystic (7-digit bootleg)
 DRIVERNV(xenon   )      //BY35-811: 11/79 Xenon
 DRIVERNV(xenonf  )      //BY35-811: 11/79 Xenon (French)
 DRIVERNV(hotdoggn)      //BY35-809: 12/79 Hotdoggin'
+DRIVERNV(hotdoggb)      //BY35-809: 11/02 Hotdoggin' (7-digit bootleg)
 DRIVERNV(viking  )      //BY35-802: 12/79 Viking
+DRIVERNV(vikingb )      //BY35-802: 11/02 Viking (7-digit bootleg)
 DRIVERNV(skatebll)      //BY35-823: 04/80 Skateball
 DRIVERNV(frontier)      //BY35-819: 05/80 Frontier
 DRIVERNV(flashgdn)      //BY35-834: 05/80 Flash Gordon

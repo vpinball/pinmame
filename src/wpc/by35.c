@@ -52,6 +52,10 @@ static void piaIrq(int state) {
 static void by35_dispStrobe(int mask) {
   int digit = locals.a1 & 0xfe;
   int ii,jj;
+
+  if (locals.hw & BY35HW_SOUNDE)
+    digit = (digit & 0xf0) | ((digit & 0x0c) == 0x0c ? 0x02 : (digit & 0x0d));
+
   for (ii = 0; digit; ii++, digit>>=1)
     if (digit & 0x01) {
       UINT8 dispMask = mask;
@@ -484,7 +488,9 @@ static MACHINE_INIT(by35) {
     locals.bcd2seg = core_bcd2seg;
   }
   else if (core_gameData->gen & GEN_BY35) {
-    locals.hw = BY35HW_SOUNDE|BY35HW_DIP4;
+    locals.hw = BY35HW_DIP4;
+    if (!core_gameData->hw.gameSpecific1)
+      locals.hw |= BY35HW_SOUNDE;
     install_mem_write_handler(0,0x0200, 0x02ff, by35_CMOS_w);
     locals.bcd2seg = core_bcd2seg;
   }
