@@ -286,6 +286,26 @@ SOURCE=.\src\cpu\m68000\m68kopnz.c
 SOURCE=.\src\cpu\m68000\m68kops.c
 # End Source File
 # End Group
+# Begin Group "S2650"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\cpu\s2650\2650dasm.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\s2650\s2650.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\s2650\s2650.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\s2650\s2650cpu.h
+# End Source File
+# End Group
 # End Group
 # Begin Group "Machine"
 
@@ -1137,6 +1157,18 @@ SOURCE=.\src\wpc\gen.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\gp.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\gp.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\gpgames.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\gts3.c
 # End Source File
 # Begin Source File
@@ -1358,6 +1390,18 @@ SOURCE=.\src\wpc\wpcsound.c
 # Begin Source File
 
 SOURCE=.\src\wpc\wpcsound.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\zac.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\zac.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\zacgames.c
 # End Source File
 # End Group
 # Begin Group "Win32"
