@@ -385,6 +385,24 @@ GTS80_ROMEND
 #define input_ports_caveman input_ports_gts80vid
 CORE_GAMEDEFNV(caveman,"Caveman (Pinball/Video Combo)",1981,"Gottlieb",gl_mGTS80VID,0)
 
+INITGAME(cavemana, GEN_GTS80, gottlieb_dispNumeric3, 1, SNDBRD_GTS80SS)
+GTS80_1_ROMSTART(cavemana,"pv810-1.cpu", 0xdd8d516c,
+                         "u2_80a.bin",  0x241de1d4,
+                         "u3_80a.bin",  0x2d77ccdc)
+GTS80SS22_ROMSTART(      "pv810-s1.snd",0xa491664d,
+                         "pv810-s2.snd",0xd8654e6e)
+VIDEO_ROMSTART(          "v810-u8.bin", 0x514aa152,
+                         "v810-u7.bin", 0x74c6533e,
+                         "v810-u6.bin", 0x2fd0ee95,
+                         "v810-u5.bin", 0x2fb15da3,
+                         "v810-u4a.bin",0x3437c697,
+                         "v810-u3a.bin",0x729819f6,
+                         "v810-u2a.bin",0xab6193c2,
+                         "v810-u1a.bin",0x7c6410fb)
+GTS80_ROMEND
+#define input_ports_cavemana input_ports_caveman
+CORE_CLONEDEFNV(cavemana,caveman,"Caveman (Pinball/Video Combo) (set 2)",1981,"Gottlieb",gl_mGTS80VID,0)
+
 /*-------------------------------------------------------------------
 / Rocky (#672)
 /-------------------------------------------------------------------*/
