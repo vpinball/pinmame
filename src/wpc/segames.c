@@ -400,12 +400,12 @@ CORE_CLONEDEFNV(austin2,austin,"Austin Powers (2.0)",2001,"Stern",de_mSES2,GAME_
 
 //Strange that they went back to the 11 voice model here!
 /*-------------------------------------------------------------------
-/ Monopoly 2.33
+/ Monopoly 3.01
 /-------------------------------------------------------------------*/
 INITGAME(monopoly,GEN_WS)
-SE128_ROMSTART(monopoly,"moncpu.233",0xf20a5ca6)
-DE_DMD32ROM8x(     "mondsp-a.206",0x6df6e158)
-DE2S_SOUNDROM1888( "mnsndu7.100" ,0x400442e7,
+SE128_ROMSTART(monopoly,"moncpu.301",  0x24978872)
+DE_DMD32ROM8x(          "mondsp-a.301",0xc4e2e032)
+DE2S_SOUNDROM1888("mnsndu7.100" ,0x400442e7,
                   "mnsndu17.100",0xf9bc55e8,
                   "mnsndu21.100",0xe0727e1f,
                   "mnsndu36.100",0xc845aa97)
