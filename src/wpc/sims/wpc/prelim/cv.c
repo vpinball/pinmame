@@ -279,10 +279,19 @@ DCS_SOUNDROM5xm("s2v1_0.rom",0x79dbb8ee,
                 "s6v0_4.rom",0x36ca43d3)
 WPC_ROMEND
 
+WPC_ROMSTART(cv, 20h, "cv200H.rom", 0x100000, 0x138a0c3c)
+DCS_SOUNDROM5xm("s2v1_0.rom",0x79dbb8ee,
+                "s3v0_4.rom",0x8c6c0c56,
+                "s4v0_4.rom",0xa9014b78,
+                "s5v0_4.rom",0x7e07a2fc,
+                "s6v0_4.rom",0x36ca43d3)
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(cv,14,"Cirqus Voltaire (1.4)",1997,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(cv,20h, 14, "Cirqus Voltaire (2.0H)", 1997,"Bally",wpc_m95S,0)
 
 /*-----------------------
 / Simulation Definitions
