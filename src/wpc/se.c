@@ -29,6 +29,8 @@
 #define SE_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
 #define SE_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
 
+#define SUPPORT_TRACERAM 0
+
 static NVRAM_HANDLER(se);
 static WRITE_HANDLER(mcpu_ram8000_w);
 static READ_HANDLER(mcpu_ram8000_r);
@@ -46,11 +48,16 @@ struct {
   int	 flipsol, flipsolPulse;
   int    dmdStatus;
   UINT8 *ram8000;
-  UINT8 *ram100;
   int    auxdata;
   /* Mini DMD stuff */
   int    lastgiaux, miniidx, miniframe;
   int    minidata[7], minidmd[4][3][8];
+  /* trace ram related */
+#if SUPPORT_TRACERAM
+  UINT8 *traceRam;
+#endif
+  UINT8  curBank;                   /* current bank select */
+  #define TRACERAM_SELECTED 0x10    /* this bit set maps trace ram to 0x0000-0x1FFF */
 } selocals;
 
 static INTERRUPT_GEN(se_vblank) {
@@ -81,10 +88,10 @@ static INTERRUPT_GEN(se_vblank) {
 static SWITCH_UPDATE(se) {
   if (inports) {
     /*Switch Col 0 = Dedicated Switches - Coin Door Only - Begin at 6th Spot*/
-    CORE_SETKEYSW(inports[SE_COMINPORT]<<4, 0xf0, 0);
+    CORE_SETKEYSW(inports[SE_COMINPORT]<<4, 0xe0, 0);
     /*Switch Col 1 = Coin Switches - (Switches begin at 4th Spot)*/
     CORE_SETKEYSW(inports[SE_COMINPORT]>>5, 0x78, 1);
-    /*Copy Start, Tilt, and Slam Tilt to proper position in Matrix: Switchs 66,67,68*/
+    /*Copy Start, Tilt, and Slam Tilt to proper position in Matrix: Switches 54,55,56*/
     /*Clear bits 6,7,8 first*/
     CORE_SETKEYSW(inports[SE_COMINPORT]<<1, 0xe0, 7);
   }
@@ -101,15 +108,24 @@ static MACHINE_INIT(se) {
   // Sharkeys got some extra ram
   if (core_gameData->gen & GEN_WS_1) {
     selocals.ram8000 = install_mem_write_handler(0,0x8000,0x81ff,mcpu_ram8000_w);
-    install_mem_read_handler(0,0x8000,0x81ff,mcpu_ram8000_r);
+                       install_mem_read_handler (0,0x8000,0x81ff,mcpu_ram8000_r);
   }
-  // many games write to obscure memory locations.
-  selocals.ram100 = malloc(0x100);
   selocals.miniidx = selocals.lastgiaux = 0;
+
+#if SUPPORT_TRACERAM
+  selocals.traceRam = 0;
+  if (core_gameData->gen & GEN_WS_1) {
+    selocals.traceRam = malloc(0x2000);
+    if (selocals.traceRam) memset(selocals.traceRam,0,0x2000);
+  }
+#endif
 }
 
 static MACHINE_STOP(se) {
   sndbrd_0_exit(); sndbrd_1_exit();
+#if SUPPORT_TRACERAM
+  if (selocals.traceRam) free(selocals.traceRam);
+#endif
 }
 
 /*-- Main CPU Bank Switch --*/
@@ -117,9 +133,39 @@ static MACHINE_STOP(se) {
 // D6    Unused
 // D7    Diagnostic LED
 static WRITE_HANDLER(mcpu_bank_w) {
+  selocals.curBank = data;   /* keep track of current bank select for trace ram */
   // Should be 0x3f but memreg is only 512K */
   cpu_setbank(SE_ROMBANK0, memory_region(SE_ROMREGION) + (data & 0x1f)* 0x4000);
   selocals.diagnosticLed = data>>7;
+}
+
+// Ram 0x0000-0x1FFF Read Handler
+static READ_HANDLER(ram_r) {
+  if (   (core_gameData->gen & GEN_WS_1)
+      && (selocals.curBank & TRACERAM_SELECTED)) {
+    DBGLOG(("Read access to traceram[%04X] from pc=%04X",offset,activecpu_get_previouspc()));
+#if SUPPORT_TRACERAM
+    return selocals.traceRam ? selocals.traceRam[offset] : 0;
+#else
+    return 0;
+#endif
+  }
+  else
+    return memory_region(SE_CPUREGION)[offset];
+}
+
+// Ram 0x0000-0x1FFF Write Handler
+static WRITE_HANDLER(ram_w) {
+  if (   (core_gameData->gen & GEN_WS_1)
+      && (selocals.curBank & TRACERAM_SELECTED)) {
+#if SUPPORT_TRACERAM
+    if (selocals.traceRam) selocals.traceRam[offset] = data;
+#else
+    return;
+#endif
+  }
+  else
+    memory_region(SE_CPUREGION)[offset] = data;
 }
 
 /* Sharkey's ShootOut got some ram at 0x8000-0x81ff */
@@ -157,7 +203,10 @@ static READ_HANDLER(dedswitch_r) {
   /* CORE Defines flippers in order as: RFlipEOS, RFlip, LFlipEOS, LFlip*/
   /* We need to adjust to: LFlip, LFlipEOS, RFlip, RFlipEOS*/
   /* Swap the 4 lowest bits*/
-  return ~((coreGlobals.swMatrix[0]) | core_revnyb(coreGlobals.swMatrix[11] & 0x0f));
+  UINT8 cds = (coreGlobals.swMatrix[0] & 0xe0);        /* BGRx xxxx */
+  UINT8 fls = coreGlobals.swMatrix[CORE_FLIPPERSWCOL]; /* Uxxx LxRx */
+  fls = core_revnyb(fls & 0x0f) | ((fls & 0x80)>>3);   /* xxxU xRxL */
+  return ~(cds | fls);
 }
 
 /*-- Dip Switch SW300 - Country Settings --*/
@@ -168,7 +217,6 @@ static WRITE_HANDLER(solenoid_w) {
   static const int solmaskno[] = { 8, 0, 16, 24 };
   UINT32 mask = ~(0xff<<solmaskno[offset]);
   UINT32 sols = data<<solmaskno[offset];
-
   if (offset == 0) { /* move flipper power solenoids (L=15,R=16) to (R=45,L=47) */
     selocals.flipsol |= selocals.flipsolPulse = ((data & 0x80)>>7) | ((data & 0x40)>>4);
     sols &= 0xffff3fff; /* mask off flipper solenoids */
@@ -195,6 +243,7 @@ static READ_HANDLER(dmdie_r) { /*What is this for?*/
 
 static READ_HANDLER(auxboard_r) { return selocals.auxdata; }
 static WRITE_HANDLER(auxboard_w) { selocals.auxdata = data; }
+
 static WRITE_HANDLER(giaux_w) {
   if (core_gameData->hw.display & SE_MINIDMD) {
     if (data & ~selocals.lastgiaux & 0x80) { /* clock in data to minidmd */
@@ -409,72 +458,38 @@ PINMAME_VIDEO_UPDATE(seminidmd4_update) {
   return 0;
 }
 
-// A lot of addressing is going on that is not mapped, esp. on Sharkey/Golden Cue.
-// Might this be used for some kind of game protection???
-static READ_HANDLER(m110_r) {
-  return selocals.ram100[offset+0x10];
-}
-static READ_HANDLER(m1000_r) {
-  return selocals.ram100[offset%0x100];
-}
-static WRITE_HANDLER(m110_w) {
-  if (data) logerror("secret w: offset %02x, data %02x\n", offset+0x10, data);
-  selocals.ram100[offset+0x10] = data;
-}
-static WRITE_HANDLER(m1000_w) {
-  if (data) logerror("secret w: offset %02x, data %02x\n", offset%0x100, data);
-  selocals.ram100[offset%0x100] = data;
-}
-
 /*---------------------------
 /  Memory map for main CPU
 /----------------------------*/
+
 static MEMORY_READ_START(se_readmem)
-  { 0x0000, 0x1fff, MRA_RAM },
+  { 0x0000, 0x1fff, ram_r },
   { 0x2007, 0x2007, auxboard_r },
-  { 0x2010, 0x20ff, m110_r },
-  { 0x2100, 0x2fff, m1000_r },
   { 0x3000, 0x3000, dedswitch_r },
-  { 0x3010, 0x30ff, m110_r },
   { 0x3100, 0x3100, dip_r },
-  { 0x3110, 0x31ff, m110_r },
   { 0x3400, 0x3400, switch_r },
   { 0x3406, 0x3407, gilamp_r }, // GI lamps on SPP?
-  { 0x3410, 0x34ff, m110_r },
   { 0x3500, 0x3500, dmdie_r },
-  { 0x3510, 0x35ff, m110_r },
-  { 0x3610, 0x36ff, m110_r },
   { 0x3700, 0x3700, dmdstatus_r },
-  { 0x3710, 0x37ff, m110_r },
-  { 0x3800, 0x3fff, m1000_r },
   { 0x4000, 0x7fff, MRA_BANK1 },
   { 0x8000, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(se_writemem)
-  { 0x0000, 0x1fff, MWA_RAM },
+  { 0x0000, 0x1fff, ram_w },
   { 0x2000, 0x2003, solenoid_w },
   { 0x2006, 0x2007, auxboard_w },
   { 0x2008, 0x2008, lampstrb_w },
   { 0x2009, 0x2009, auxlamp_w },
   { 0x200a, 0x200a, lampdriv_w },
   { 0x200b, 0x200b, giaux_w },
-  { 0x2010, 0x20ff, m110_w },
-  { 0x2100, 0x31ff, m1000_w },
+//{ 0x201a, 0x201a, x201a_w },    // Golden Cue unknown device
   { 0x3200, 0x3200, mcpu_bank_w },
-  { 0x3210, 0x32ff, m110_w },
   { 0x3300, 0x3300, switch_w },
-  { 0x3310, 0x33ff, m110_w },
   { 0x3406, 0x3407, gilamp_w }, // GI lamps on SPP?
-  { 0x3410, 0x34ff, m110_w },
-  { 0x3510, 0x35ff, m110_w },
   { 0x3600, 0x3600, dmdlatch_w },
   { 0x3601, 0x3601, dmdreset_w },
-  { 0x3610, 0x36ff, m110_w },
-  { 0x3710, 0x37ff, m110_w },
   { 0x3800, 0x3800, sndbrd_1_data_w },
-  { 0x3810, 0x38ff, m110_w },
-  { 0x3900, 0xffff, m1000_w },
 MEMORY_END
 
 static MACHINE_DRIVER_START(se)
