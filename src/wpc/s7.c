@@ -109,10 +109,7 @@ static WRITE_HANDLER(pia2b_w) {
 /-----------------*/
 static WRITE_HANDLER(pia3a_w) {
   s7locals.digSel = data & 0x0f;
-  if (core_gameData->gen & (GEN_S7|GEN_S9))
-    s7locals.diagnosticLed |= core_bcd2seg[(data & 0x70)>>4];
-  else
-    s7locals.diagnosticLed |= (data & 0x10)>>4;
+  s7locals.diagnosticLed |= core_bcd2seg[data>>4];
 }
 static WRITE_HANDLER(pia3ca2_w) {
   DBGLOG(("pia3ca2_w\n"));
@@ -174,8 +171,8 @@ static void setSSSol(int data, int solNo) {
 }
 
 static WRITE_HANDLER(pia1b_w) {
-  coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffff00ff) | (data<<8);
-  s7locals.solenoids |= (data<<8);
+  coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffff00ff) | (((UINT16)data)<<8);
+  s7locals.solenoids |= (((UINT16)data)<<8);
 }
 static WRITE_HANDLER(pia1a_w) {
   coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffffff00) | data;
