@@ -202,10 +202,12 @@ static WRITE_HANDLER(pia3b_w) {
 }
 
 static READ_HANDLER(pia3b_dmd_r) {
-  if (core_gameData->gen & GEN_DEDMD32)
-    return (sndbrd_0_data_r(0) ? 0x80 : 0x00) | (sndbrd_0_ctrl_r(0)<<3);
-  else if (core_gameData->gen & GEN_DEDMD64)
-    return sndbrd_0_data_r(0) ? 0x80 : 0x00;
+  if (core_gameData->hw.soundBoard) {
+    if (core_gameData->gen & GEN_DEDMD32)
+      return (sndbrd_0_data_r(0) ? 0x80 : 0x00) | (sndbrd_0_ctrl_r(0)<<3);
+    else if (core_gameData->gen & GEN_DEDMD64)
+      return sndbrd_0_data_r(0) ? 0x80 : 0x00;
+  }
   return 0;
 }
 
@@ -223,10 +225,12 @@ static WRITE_HANDLER(pia2cb2_w) {
 }
 
 static READ_HANDLER(pia5a_r) {
-  if (core_gameData->gen & GEN_DEDMD64)
-    return sndbrd_0_ctrl_r(0);
-  else if (core_gameData->gen & GEN_DEDMD16)
-    return (sndbrd_0_data_r(0) ? 0x01 : 0x00) | (sndbrd_0_ctrl_r(0)<<1);
+  if (core_gameData->hw.soundBoard) {
+    if (core_gameData->gen & GEN_DEDMD64)
+      return sndbrd_0_ctrl_r(0);
+    else if (core_gameData->gen & GEN_DEDMD16)
+      return (sndbrd_0_data_r(0) ? 0x01 : 0x00) | (sndbrd_0_ctrl_r(0)<<1);
+  }
   return 0;
 }
 
@@ -272,24 +276,30 @@ static READ_HANDLER(pia4a_r)  { return core_getSwCol(locals.swCol); }
 /*-- Sound board sound command--*/
 static WRITE_HANDLER(pia5b_w) {
   //Data East 128x16 games need to eat the 0xfe command (especially Hook)
-  if (core_gameData->gen & GEN_DEDMD16 && data == 0xfe) return;
-  locals.sndCmd = data; sndbrd_1_data_w(0,data);
+  if (core_gameData->hw.soundBoard) {
+    if (core_gameData->gen & GEN_DEDMD16 && data == 0xfe) return;
+    locals.sndCmd = data; sndbrd_1_data_w(0,data);
+  }
 }
 
 /*-- Sound board sound command available --*/
 static WRITE_HANDLER(pia5cb2_w) {
   /* don't pass to sound board if a sound overlay board is available */
-  if ((core_gameData->hw.gameSpecific1 & S11_SNDOVERLAY) &&
-    ((locals.sndCmd & 0xe0) == 0)) {
-    if (!data) locals.extSol = (~locals.sndCmd) & 0x1f;
+  if (core_gameData->hw.soundBoard) {
+    if ((core_gameData->hw.gameSpecific1 & S11_SNDOVERLAY) &&
+      ((locals.sndCmd & 0xe0) == 0)) {
+      if (!data) locals.extSol = (~locals.sndCmd) & 0x1f;
+    }
+    else sndbrd_1_ctrl_w(0,data);
   }
-  else sndbrd_1_ctrl_w(0,data);
 }
 /*-- reset sound board CPU --*/
 static WRITE_HANDLER(pia5ca2_w) { /*
-  if (core_gameData->gen & ~(GEN_S11B_3|GEN_S9)) {
-    cpu_set_reset_line(S11_SCPU1NO, PULSE_LINE);
-    s11cs_reset();
+  if (core_gameData->hw.soundBoard) {
+    if (core_gameData->gen & ~(GEN_S11B_3|GEN_S9)) {
+      cpu_set_reset_line(S11_SCPU1NO, PULSE_LINE);
+      s11cs_reset();
+    }
   } */
 }
 static WRITE_HANDLER(s11_sndCmd_w) {
@@ -444,7 +454,7 @@ static MACHINE_INIT(s11) {
       sndbrd_1_init(SNDBRD_S11CS, 1, memory_region(S11CS_ROMREGION), pia_5_cb1_w, NULL);
       break;
     case GEN_DE:
-      sndbrd_1_init(SNDBRD_DE1S,  1, memory_region(DE1S_ROMREGION), pia_5_cb1_w, NULL);
+      if (core_gameData->hw.soundBoard) sndbrd_1_init(SNDBRD_DE1S,  1, memory_region(DE1S_ROMREGION), pia_5_cb1_w, NULL);
       break;
     case GEN_DEDMD16:
     case GEN_DEDMD32:
@@ -573,10 +583,8 @@ MACHINE_DRIVER_END
 
 /* DE alphanumeric Sound 1 */
 MACHINE_DRIVER_START(de_a1S)
-  MDRV_IMPORT_FROM(s11)
+  MDRV_IMPORT_FROM(de_a)
   MDRV_IMPORT_FROM(de1s)
-  MDRV_NVRAM_HANDLER(de)
-  MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_SOUND_CMD(de_sndCmd_w)
   MDRV_SOUND_CMDHEADING("DE")
 MACHINE_DRIVER_END
