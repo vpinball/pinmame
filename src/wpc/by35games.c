@@ -686,14 +686,14 @@ BY35_ROMSTARTx00(xsandos ,"x&os2732.u2",0x068dfe5a,
 BY45_SOUNDROMx2(          "720_u3.snd", 0x5d8e2adb)
 BY35_ROMEND
 #define input_ports_xsandos input_ports_by35
-CORE_GAMEDEFNV(xsandos ,"X's & O's",1983,"Bally",by35_mBY35_45S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(xsandos ,"X's & O's",1983,"Bally",by35_mBY35_45S,0)
 
 //??        ??/84 Mysterian
 
 /*-----------------------------------------------------------------
 / Granny and the Gators (Video/Pinball Combo) - (BY35-???: 01/84)
 /----------------------------------------------------------------*/
-INITGAMEVP(granny,0,VIDEO,FLIP_SWNO(0,1),0)
+INITGAMEVP(granny,0,VIDEO,FLIP_SW(FLIP_L),0)
 BYVP_ROMSTART100(granny,"cpu_u2.532",0xd45bb956,
                         "cpu_u6.532",0x306aa673,
                         "vid_u4.764",0x3a3d4c6b,
@@ -716,7 +716,7 @@ BY45_SOUNDROM11(          "kngsu3.snd", 0x11b02dca,
                           "kngsu4.snd", 0xf3e4d2f6)
 BY35_ROMEND
 #define input_ports_kosteel input_ports_by35
-CORE_GAMEDEFNV(kosteel ,"Kings of Steel",1984,"Bally",by35_mBY35_45S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(kosteel ,"Kings of Steel",1984,"Bally",by35_mBY35_45S,0)
 
 /*--------------------------------
 / Black Pyramid (BY35-???: 07/84)
@@ -728,7 +728,7 @@ BY45_SOUNDROM11(          "bp_u3.532",  0xa5005067,
                           "bp_u4.532",  0x57978b4a)
 BY35_ROMEND
 #define input_ports_blakpyra input_ports_by35
-CORE_GAMEDEFNV(blakpyra,"Black Pyramid",1984,"Bally",by35_mBY35_45S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(blakpyra,"Black Pyramid",1984,"Bally",by35_mBY35_45S,0)
 
 /*--------------------------------
 / Spy Hunter (BY35-???: 10/84)
@@ -740,7 +740,7 @@ BY45_SOUNDROM11(           "spy_u3.532", 0x95ffc1b8,
                            "spy_u4.532", 0xa43887d0)
 BY35_ROMEND
 #define input_ports_spyhuntr input_ports_by35
-CORE_GAMEDEFNV(spyhuntr,"Spy Hunter",1984,"Bally",by35_mBY35_45S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(spyhuntr,"Spy Hunter",1984,"Bally",by35_mBY35_45S,0)
 
 //??        ??/85 Hot Shotz
 
@@ -754,7 +754,7 @@ BY45_SOUNDROM11(          "fbcu3.snd",  0x1ad71775,
                           "fbcu4.snd",  0x697ab16f)
 BY35_ROMEND
 #define input_ports_fbclass input_ports_by35
-CORE_GAMEDEFNV(fbclass ,"Fireball Classic",1985,"Bally",by35_mBY35_45S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(fbclass ,"Fireball Classic",1985,"Bally",by35_mBY35_45S,0)
 
 /*--------------------------------
 / Cybernaut (BY35-???: 05/85)
@@ -765,7 +765,7 @@ BY35_ROMSTARTx00(cybrnaut,"cybe2732.u2",0x0610b0e0,
 BY45_SOUNDROMx2(          "cybu3.snd",  0xa3c1f6e7)
 BY35_ROMEND
 #define input_ports_cybrnaut input_ports_by35
-CORE_GAMEDEFNV(cybrnaut,"Cybernaut",1985,"Bally",by35_mBY35_45S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(cybrnaut,"Cybernaut",1985,"Bally",by35_mBY35_45S,0)
 
 /****************************************************/
 /* BALLY MPU-6803*/
@@ -810,7 +810,7 @@ CORE_GAMEDEFNV(beatclck,"Beat the Clock",1985,"Bally",by_mBY6803_61S,0)
 / Lady Luck (6803-0E34: 02/86) - Uses Cheap Squeek (Same as Last MPU-35 Line of games)
 /------------------------------------*/
 //CPU Works
-INITGAME6803(ladyluck,GEN_BY6803,dispBy7C,FLIP_SWNO(0,0),4,SNDBRD_BY45, BY6803_DISP7SEG)
+INITGAME6803(ladyluck,GEN_BY6803,dispBy7C,FLIP_SW(FLIP_L),4,SNDBRD_BY45, BY6803_DISP7SEG)
 BY6803_ROMSTARTx4(ladyluck,"u3.cpu",    0x129f41f5)
 BY45_SOUNDROM22(           "u3_snd.532",0x1bdd6e2b,
                            "u4_snd.532",0xe9ef01e6)
