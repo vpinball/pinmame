@@ -81,7 +81,7 @@ DRIVERNV(granslam)      //BY35-     01/83 Grand Slam
 DRIVERNV(goldball)      //BY35-     10/83 Gold Ball
 DRIVERNV(xsandos )      //BY35-     12/83 X's & O's
                         //??        ??/84 Mysterian
-                        //BY35-     01/84 Granny and the Gators
+DRIVERNV(granny )       //BY35-     01/84 Granny and the Gators
 DRIVERNV(kosteel )      //BY35-     05/84 Kings of Steel
 DRIVERNV(spyhuntr)      //BY35-     10/84 Spy Hunter
 DRIVERNV(blakpyra)      //BY35-     07/84 Black Pyramid
