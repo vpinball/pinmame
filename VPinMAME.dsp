@@ -1257,7 +1257,6 @@ SOURCE=.\src\wpc\wpcsam.h
 # Begin Source File
 
 SOURCE=.\src\wpc\zac.c
-# PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
@@ -1266,7 +1265,6 @@ SOURCE=.\src\wpc\zac.h
 # Begin Source File
 
 SOURCE=.\src\wpc\zacgames.c
-# PROP Exclude_From_Build 1
 # End Source File
 # End Group
 # Begin Group "MAME"
