@@ -43,6 +43,8 @@
 ** - uses plot_pixel (...) in TMS_sprites (...), which is rended in
 **   in a back buffer created with malloc (). Hmm..
 ** - Colours are incorrect. [fixed by R Nabet ?]
+**
+** MODIFIED: by Steve Ellenoff for multi-chip support (01/24/2002)
 */
 
 #include "driver.h"
@@ -130,27 +132,27 @@ unsigned short TMS9928A_colortable[] =
 /*
 ** Forward declarations of internal functions.
 */
-static void _TMS9928A_mode0 (struct osd_bitmap*);
-static void _TMS9928A_mode1 (struct osd_bitmap*);
-static void _TMS9928A_mode2 (struct osd_bitmap*);
-static void _TMS9928A_mode12 (struct osd_bitmap*);
-static void _TMS9928A_mode3 (struct osd_bitmap*);
-static void _TMS9928A_mode23 (struct osd_bitmap*);
-static void _TMS9928A_modebogus (struct osd_bitmap*);
-static void _TMS9928A_sprites (struct osd_bitmap*);
-static void _TMS9928A_change_register (int reg, UINT8 data);
-static void _TMS9928A_set_dirty (char);
+static void _TMS9928A_mode0 (int which,struct osd_bitmap*);
+static void _TMS9928A_mode1 (int which,struct osd_bitmap*);
+static void _TMS9928A_mode2 (int which,struct osd_bitmap*);
+static void _TMS9928A_mode12 (int which,struct osd_bitmap*);
+static void _TMS9928A_mode3 (int which,struct osd_bitmap*);
+static void _TMS9928A_mode23 (int which,struct osd_bitmap*);
+static void _TMS9928A_modebogus (int which,struct osd_bitmap*);
+static void _TMS9928A_sprites (int which, struct osd_bitmap*);
+static void _TMS9928A_change_register (int which, int reg, UINT8 data);
+static void _TMS9928A_set_dirty (int which, char);
 
-static void (*ModeHandlers[])(struct osd_bitmap*) = {
+static void (*ModeHandlers[])(int which, struct osd_bitmap*) = {
         _TMS9928A_mode0, _TMS9928A_mode1, _TMS9928A_mode2,  _TMS9928A_mode12,
         _TMS9928A_mode3, _TMS9928A_modebogus, _TMS9928A_mode23,
         _TMS9928A_modebogus };
 
 #define IMAGE_SIZE (256*192)        /* size of rendered image        */
 
-#define TMS_SPRITES_ENABLED ((tms.Regs[1] & 0x50) == 0x40)
-#define TMS_MODE ( (tms.model == TMS99x8A ? (tms.Regs[0] & 2) : 0) | \
-	((tms.Regs[1] & 0x10)>>4) | ((tms.Regs[1] & 8)>>1))
+#define TMS_SPRITES_ENABLED ((tms[which].Regs[1] & 0x50) == 0x40)
+#define TMS_MODE ( (tms[which].model == TMS99x8A ? (tms[which].Regs[0] & 2) : 0) | \
+	((tms[which].Regs[1] & 0x10)>>4) | ((tms[which].Regs[1] & 8)>>1))
 
 typedef struct {
     /* TMS9928A internal settings */
@@ -170,7 +172,7 @@ typedef struct {
     char *DirtyColour, *DirtyName, *DirtyPattern;
 } TMS9928A;
 
-static TMS9928A tms;
+static TMS9928A tms[MAX_VDP];
 
 /*
 ** initialize the palette 
@@ -184,215 +186,223 @@ void tms9928A_init_palette (unsigned char *palette,
 /*
 ** The init, reset and shutdown functions
 */
-void TMS9928A_reset () {
-    int  i;
+void TMS9928A_reset (int which) {
+	int  i;
 
-    for (i=0;i<8;i++) tms.Regs[i] = 0;
-    tms.StatusReg = 0;
-    tms.nametbl = tms.pattern = tms.colour = 0;
-    tms.spritepattern = tms.spriteattribute = 0;
-    tms.colourmask = tms.patternmask = 0;
-    tms.Addr = tms.ReadAhead = tms.INT = 0;
-    tms.mode = tms.BackColour = 0;
-    tms.Change = 1;
-    tms.FirstByte = 0;
-	tms.latch = 0;
-    _TMS9928A_set_dirty (1);
+	for (i=0;i<8;i++) tms[which].Regs[i] = 0;
+	tms[which].StatusReg = 0;
+	tms[which].nametbl = tms[which].pattern = tms[which].colour = 0;
+	tms[which].spritepattern = tms[which].spriteattribute = 0;
+	tms[which].colourmask = tms[which].patternmask = 0;
+	tms[which].Addr = tms[which].ReadAhead = tms[which].INT = 0;
+	tms[which].mode = tms[which].BackColour = 0;
+	tms[which].Change = 1;
+	tms[which].FirstByte = 0;
+	tms[which].latch = 0;
+	_TMS9928A_set_dirty (which,1);
 }
 
-int TMS9928A_start (int model, unsigned int vram) {
-    /* 4 or 16 kB vram please */
-    if (! ((vram == 0x1000) || (vram == 0x4000) || (vram == 0x2000)) )
-        return 1;
+int TMS9928A_start (int which, int model, unsigned int vram) {
+	/* 4 or 16 kB vram please */
+	if (! ((vram == 0x1000) || (vram == 0x4000) || (vram == 0x2000)) )
+		return 1;
 
-    tms.model = model;
+	tms[which].model = model;
 
-    /* Video RAM */
-    tms.vramsize = vram;
-    tms.vMem = (UINT8*) malloc (vram);
-    if (!tms.vMem) return (1);
-    memset (tms.vMem, 0, vram);
+	/* Video RAM */
+	tms[which].vramsize = vram;
+	tms[which].vMem = (UINT8*) malloc (vram);
+	if (!tms[which].vMem) return (1);
+	memset (tms[which].vMem, 0, vram);
 
-    /* Sprite back buffer */
-    tms.dBackMem = (UINT8*)malloc (IMAGE_SIZE);
-    if (!tms.dBackMem) {
-        free (tms.vMem);
-        return 1;
-    }
+	/* Sprite back buffer */
+	tms[which].dBackMem = (UINT8*)malloc (IMAGE_SIZE);
+	if (!tms[which].dBackMem) {
+		free (tms[which].vMem);
+		return 1;
+	}
 
-    /* dirty buffers */
-    tms.DirtyName = (char*)malloc (MAX_DIRTY_NAME);
-    if (!tms.DirtyName) {
-        free (tms.vMem);
-        free (tms.dBackMem);
-        return 1;
-    }
+	/* dirty buffers */
+	tms[which].DirtyName = (char*)malloc (MAX_DIRTY_NAME);
+	if (!tms[which].DirtyName) {
+		free (tms[which].vMem);
+		free (tms[which].dBackMem);
+		return 1;
+	}
 
-    tms.DirtyPattern = (char*)malloc (MAX_DIRTY_PATTERN);
-    if (!tms.DirtyPattern) {
-        free (tms.vMem);
-        free (tms.DirtyName);
-        free (tms.dBackMem);
-        return 1;
-    }
+	tms[which].DirtyPattern = (char*)malloc (MAX_DIRTY_PATTERN);
+	if (!tms[which].DirtyPattern) {
+		free (tms[which].vMem);
+		free (tms[which].DirtyName);
+		free (tms[which].dBackMem);
+		return 1;
+	}
 
-    tms.DirtyColour = (char*)malloc (MAX_DIRTY_COLOUR);
-    if (!tms.DirtyColour) {
-        free (tms.vMem);
-        free (tms.DirtyName);
-        free (tms.DirtyPattern);
-        free (tms.dBackMem);
-        return 1;
-    }
+	tms[which].DirtyColour = (char*)malloc (MAX_DIRTY_COLOUR);
+	if (!tms[which].DirtyColour) {
+		free (tms[which].vMem);
+		free (tms[which].DirtyName);
+		free (tms[which].DirtyPattern);
+		free (tms[which].dBackMem);
+		return 1;
+	}
 
-    /* back bitmap */
-    tms.tmpbmp = bitmap_alloc (256, 192);
-    if (!tms.tmpbmp) {
-        free (tms.vMem);
-        free (tms.dBackMem);
-        free (tms.DirtyName);
-        free (tms.DirtyPattern);
-        free (tms.DirtyColour);
-        return 1;
-    }
+	/* back bitmap */
+	tms[which].tmpbmp = bitmap_alloc (256, 192);
+	if (!tms[which].tmpbmp) {
+		free (tms[which].vMem);
+		free (tms[which].dBackMem);
+		free (tms[which].DirtyName);
+		free (tms[which].DirtyPattern);
+		free (tms[which].DirtyColour);
+		return 1;
+	}
 
-    TMS9928A_reset ();
-    tms.LimitSprites = 1;
+	TMS9928A_reset (which);
+	tms[which].LimitSprites = 1;
 
-	state_save_register_UINT8 ("tms9928a", 0, "R0", &tms.Regs[0], 1);
-	state_save_register_UINT8 ("tms9928a", 0, "R1", &tms.Regs[1], 1);
-	state_save_register_UINT8 ("tms9928a", 0, "R2", &tms.Regs[2], 1);
-	state_save_register_UINT8 ("tms9928a", 0, "R3", &tms.Regs[3], 1);
-	state_save_register_UINT8 ("tms9928a", 0, "R4", &tms.Regs[4], 1);
-	state_save_register_UINT8 ("tms9928a", 0, "R5", &tms.Regs[5], 1);
-	state_save_register_UINT8 ("tms9928a", 0, "R6", &tms.Regs[6], 1);
-	state_save_register_UINT8 ("tms9928a", 0, "R7", &tms.Regs[7], 1);
-	state_save_register_UINT8 ("tms9928a", 0, "S", &tms.StatusReg, 1);
-	state_save_register_UINT8 ("tms9928a", 0, "read_ahead", &tms.ReadAhead, 1);
-	state_save_register_UINT8 ("tms9928a", 0, "first_byte", &tms.FirstByte, 1);
-	state_save_register_UINT8 ("tms9928a", 0, "latch", &tms.latch, 1);
-	state_save_register_UINT16 ("tms9928a", 0, "vram_latch", (UINT16*)&tms.Addr, 1);
-	state_save_register_UINT8 ("tms9928a", 0, "interrupt_line", &tms.INT, 1);
-	state_save_register_UINT8 ("tms9928a", 0, "VRAM", tms.vMem, vram);
-
-    return 0;
+	state_save_register_UINT8 ("tms9928a", which, "R0", &tms[which].Regs[0], 1);
+	state_save_register_UINT8 ("tms9928a", which, "R1", &tms[which].Regs[1], 1);
+	state_save_register_UINT8 ("tms9928a", which, "R2", &tms[which].Regs[2], 1);
+	state_save_register_UINT8 ("tms9928a", which, "R3", &tms[which].Regs[3], 1);
+	state_save_register_UINT8 ("tms9928a", which, "R4", &tms[which].Regs[4], 1);
+	state_save_register_UINT8 ("tms9928a", which, "R5", &tms[which].Regs[5], 1);
+	state_save_register_UINT8 ("tms9928a", which, "R6", &tms[which].Regs[6], 1);
+	state_save_register_UINT8 ("tms9928a", which, "R7", &tms[which].Regs[7], 1);
+	state_save_register_UINT8 ("tms9928a", which, "S", &tms[which].StatusReg, 1);
+	state_save_register_UINT8 ("tms9928a", which, "read_ahead", &tms[which].ReadAhead, 1);
+	state_save_register_UINT8 ("tms9928a", which, "first_byte", &tms[which].FirstByte, 1);
+	state_save_register_UINT8 ("tms9928a", which, "latch", &tms[which].latch, 1);
+	state_save_register_UINT16 ("tms9928a", which, "vram_latch", (UINT16*)&tms[which].Addr, 1);
+	state_save_register_UINT8 ("tms9928a", which, "interrupt_line", &tms[which].INT, 1);
+	state_save_register_UINT8 ("tms9928a", which, "VRAM", tms[which].vMem, vram);
+	return 0;
 }
 
-void TMS9928A_post_load (void) {
+void TMS9928A_post_load (int which) {
 	int i;
 
 	/* mark the screen as dirty */
-	_TMS9928A_set_dirty (1);
+	_TMS9928A_set_dirty (which, 1);
 
 	/* all registers need to be re-written, so tables are recalculated */
 	for (i=0;i<8;i++)
-		_TMS9928A_change_register (i, tms.Regs[i]);
+		_TMS9928A_change_register (which, i, tms[which].Regs[i]);
 
 	/* make sure the back ground colour is reset */
-	tms.BackColour = -1;
+	tms[which].BackColour = -1;
 
 	/* make sure the interrupt request is set properly */
-	if (tms.INTCallback) tms.INTCallback (tms.INT);
+	if (tms[which].INTCallback) tms[which].INTCallback (tms[which].INT);
 }
 
 void TMS9928A_stop () {
-	free (tms.vMem); tms.vMem = NULL;
-    free (tms.dBackMem); tms.dBackMem = NULL;
-    free (tms.DirtyColour); tms.DirtyColour = NULL;
-    free (tms.DirtyName); tms.DirtyName = NULL;
-    free (tms.DirtyPattern); tms.DirtyPattern = NULL;
-    osd_free_bitmap (tms.tmpbmp); tms.tmpbmp = NULL;
+	int which;
+	/*For each chip*/
+	for (which = 0; which < MAX_VDP; which++) {
+		free (tms[which].vMem); tms[which].vMem = NULL;
+		free (tms[which].dBackMem); tms[which].dBackMem = NULL;
+		free (tms[which].DirtyColour); tms[which].DirtyColour = NULL;
+		free (tms[which].DirtyName); tms[which].DirtyName = NULL;
+		free (tms[which].DirtyPattern); tms[which].DirtyPattern = NULL;
+		osd_free_bitmap (tms[which].tmpbmp); tms[which].tmpbmp = NULL;
+	}
 }
 
 /*
 ** Set all dirty / clean
 */
-static void _TMS9928A_set_dirty (char dirty) {
-    tms.anyDirtyColour = tms.anyDirtyName = tms.anyDirtyPattern = dirty;
-    memset (tms.DirtyName, dirty, MAX_DIRTY_NAME);
-    memset (tms.DirtyColour, dirty, MAX_DIRTY_COLOUR);
-    memset (tms.DirtyPattern, dirty, MAX_DIRTY_PATTERN);
+static void _TMS9928A_set_dirty (int which, char dirty) {
+    tms[which].anyDirtyColour = tms[which].anyDirtyName = tms[which].anyDirtyPattern = dirty;
+    memset (tms[which].DirtyName, dirty, MAX_DIRTY_NAME);
+    memset (tms[which].DirtyColour, dirty, MAX_DIRTY_COLOUR);
+    memset (tms[which].DirtyPattern, dirty, MAX_DIRTY_PATTERN);
 }
 
 /*
 ** The I/O functions.
 */
-READ_HANDLER (TMS9928A_vram_r) {
+int TMS9928A_vram_r(int which,int offset)
+{
     UINT8 b;
-    b = tms.ReadAhead;
-    tms.ReadAhead = tms.vMem[tms.Addr];
-    tms.Addr = (tms.Addr + 1) & (tms.vramsize - 1);
-    tms.latch = 0;
+    b = tms[which].ReadAhead;
+    tms[which].ReadAhead = tms[which].vMem[tms[which].Addr];
+    tms[which].Addr = (tms[which].Addr + 1) & (tms[which].vramsize - 1);
+    tms[which].latch = 0;
     return b;
 }
 
-WRITE_HANDLER (TMS9928A_vram_w) {
+void TMS9928A_vram_w(int which,int offset,int data)
+{
     int i;
 
-    if (tms.vMem[tms.Addr] != data) {
-        tms.vMem[tms.Addr] = data;
-        tms.Change = 1;
+    if (tms[which].vMem[tms[which].Addr] != data) {
+        tms[which].vMem[tms[which].Addr] = data;
+        tms[which].Change = 1;
         /* dirty optimization */
-        if ( (tms.Addr >= tms.nametbl) &&
-            (tms.Addr < (tms.nametbl + MAX_DIRTY_NAME) ) ) {
-            tms.DirtyName[tms.Addr - tms.nametbl] = 1;
-            tms.anyDirtyName = 1;
+        if ( (tms[which].Addr >= tms[which].nametbl) &&
+            (tms[which].Addr < (tms[which].nametbl + MAX_DIRTY_NAME) ) ) {
+            tms[which].DirtyName[tms[which].Addr - tms[which].nametbl] = 1;
+            tms[which].anyDirtyName = 1;
         }
 
-        i = (tms.Addr - tms.colour) >> 3;
+        i = (tms[which].Addr - tms[which].colour) >> 3;
         if ( (i >= 0) && (i < MAX_DIRTY_COLOUR) ) {
-            tms.DirtyColour[i] = 1;
-            tms.anyDirtyColour = 1;
+            tms[which].DirtyColour[i] = 1;
+            tms[which].anyDirtyColour = 1;
         }
 
-        i = (tms.Addr - tms.pattern) >> 3;
+        i = (tms[which].Addr - tms[which].pattern) >> 3;
         if ( (i >= 0) && (i < MAX_DIRTY_PATTERN) ) {
-            tms.DirtyPattern[i] = 1;
-            tms.anyDirtyPattern = 1;
+            tms[which].DirtyPattern[i] = 1;
+            tms[which].anyDirtyPattern = 1;
         }
     }
-    tms.Addr = (tms.Addr + 1) & (tms.vramsize - 1);
-    tms.ReadAhead = data;
-    tms.latch = 0;
+    tms[which].Addr = (tms[which].Addr + 1) & (tms[which].vramsize - 1);
+    tms[which].ReadAhead = data;
+    tms[which].latch = 0;
 }
 
-READ_HANDLER (TMS9928A_register_r) {
+
+int TMS9928A_register_r(int which,int offset)
+{
     UINT8 b;
-    b = tms.StatusReg;
-    tms.StatusReg = 0x1f;
-    if (tms.INT) {
-        tms.INT = 0;
-        if (tms.INTCallback) tms.INTCallback (tms.INT);
+    b = tms[which].StatusReg;
+    tms[which].StatusReg = 0x1f;
+    if (tms[which].INT) {
+        tms[which].INT = 0;
+        if (tms[which].INTCallback) tms[which].INTCallback (tms[which].INT);
     }
-    tms.latch = 0;
+    tms[which].latch = 0;
     return b;
 }
 
-WRITE_HANDLER (TMS9928A_register_w) {
+void TMS9928A_register_w(int which,int offset,int data)
+{
 	int reg;
 
-    if (tms.latch) {
+    if (tms[which].latch) {
         if (data & 0x80) {
             /* register write */
 			reg = data & 7;
-			if (tms.FirstByte != tms.Regs[reg])
-	            _TMS9928A_change_register (reg, tms.FirstByte);
+			if (tms[which].FirstByte != tms[which].Regs[reg])
+	            _TMS9928A_change_register (which, reg, tms[which].FirstByte);
         } else {
             /* set read/write address */
-            tms.Addr = ((UINT16)data << 8 | tms.FirstByte) & (tms.vramsize - 1);
+            tms[which].Addr = ((UINT16)data << 8 | tms[which].FirstByte) & (tms[which].vramsize - 1);
             if ( !(data & 0x40) ) {
 				/* read ahead */
-				TMS9928A_vram_r	(0);
+				TMS9928A_vram_r	(which, 0);
             }
         }
-        tms.latch = 0;
+        tms[which].latch = 0;
     } else {
-        tms.FirstByte = data;
-		tms.latch = 1;
+        tms[which].FirstByte = data;
+		tms[which].latch = 1;
     }
 }
 
-static void _TMS9928A_change_register (int reg, UINT8 val) {
+static void _TMS9928A_change_register (int which, int reg, UINT8 val) {
     static const UINT8 Mask[8] =
         { 0x03, 0xfb, 0x0f, 0xff, 0x07, 0x7f, 0x07, 0xff };
     static const char *modes[] = {
@@ -404,78 +414,78 @@ static void _TMS9928A_change_register (int reg, UINT8 val) {
     int mode;
 
     val &= Mask[reg];
-    tms.Regs[reg] = val;
+    tms[which].Regs[reg] = val;
 
-    logerror("TMS9928A: Reg %d = %02xh\n", reg, (int)val);
-    tms.Change = 1;
+    logerror("TMS9928A #%x: Reg %d = %02xh\n", which,  reg, (int)val);
+    tms[which].Change = 1;
     switch (reg) {
     case 0:
         if (val & 2) {
             /* re-calculate masks and pattern generator & colour */
             if (val & 2) {
-                tms.colour = ((tms.Regs[3] & 0x80) * 64) & (tms.vramsize - 1);
-                tms.colourmask = (tms.Regs[3] & 0x7f) * 8 | 7;
-                tms.pattern = ((tms.Regs[4] & 4) * 2048) & (tms.vramsize - 1);
-                tms.patternmask = (tms.Regs[4] & 3) * 256 |
-				    (tms.colourmask & 255);
+                tms[which].colour = ((tms[which].Regs[3] & 0x80) * 64) & (tms[which].vramsize - 1);
+                tms[which].colourmask = (tms[which].Regs[3] & 0x7f) * 8 | 7;
+                tms[which].pattern = ((tms[which].Regs[4] & 4) * 2048) & (tms[which].vramsize - 1);
+                tms[which].patternmask = (tms[which].Regs[4] & 3) * 256 |
+				    (tms[which].colourmask & 255);
             } else {
-                tms.colour = (tms.Regs[3] * 64) & (tms.vramsize - 1);
-                tms.pattern = (tms.Regs[4] * 2048) & (tms.vramsize - 1);
+                tms[which].colour = (tms[which].Regs[3] * 64) & (tms[which].vramsize - 1);
+                tms[which].pattern = (tms[which].Regs[4] * 2048) & (tms[which].vramsize - 1);
             }
-            tms.mode = TMS_MODE;
-            logerror("TMS9928A: %s\n", modes[tms.mode]);
-            _TMS9928A_set_dirty (1);
+            tms[which].mode = TMS_MODE;
+            logerror("TMS9928A #%x: %s\n",which, modes[tms[which].mode]);
+            _TMS9928A_set_dirty (which, 1);
         }
         break;
     case 1:
         /* check for changes in the INT line */
-        b = (val & 0x20) && (tms.StatusReg & 0x80) ;
-        if (b != tms.INT) {
-            tms.INT = b;
-            if (tms.INTCallback) tms.INTCallback (tms.INT);
+        b = (val & 0x20) && (tms[which].StatusReg & 0x80) ;
+        if (b != tms[which].INT) {
+            tms[which].INT = b;
+            if (tms[which].INTCallback) tms[which].INTCallback (tms[which].INT);
         }
         mode = TMS_MODE;
-        if (tms.mode != mode) {
-            tms.mode = mode;
-            _TMS9928A_set_dirty (1);
-            logerror("TMS9928A: %s\n", modes[tms.mode]);
+        if (tms[which].mode != mode) {
+            tms[which].mode = mode;
+            _TMS9928A_set_dirty (which,1);
+            logerror("TMS9928A #%x: %s\n", which,  modes[tms[which].mode]);
         }
         break;
     case 2:
-        tms.nametbl = (val * 1024) & (tms.vramsize - 1);
-        tms.anyDirtyName = 1;
-        memset (tms.DirtyName, 1, MAX_DIRTY_NAME);
+        tms[which].nametbl = (val * 1024) & (tms[which].vramsize - 1);
+        tms[which].anyDirtyName = 1;
+        memset (tms[which].DirtyName, 1, MAX_DIRTY_NAME);
         break;
     case 3:
-        if (tms.Regs[0] & 2) {
-            tms.colour = ((val & 0x80) * 64) & (tms.vramsize - 1);
-            tms.colourmask = (val & 0x7f) * 8 | 7;
+        if (tms[which].Regs[0] & 2) {
+            tms[which].colour = ((val & 0x80) * 64) & (tms[which].vramsize - 1);
+            tms[which].colourmask = (val & 0x7f) * 8 | 7;
          } else {
-            tms.colour = (val * 64) & (tms.vramsize - 1);
+            tms[which].colour = (val * 64) & (tms[which].vramsize - 1);
         }
-        tms.anyDirtyColour = 1;
-        memset (tms.DirtyColour, 1, MAX_DIRTY_COLOUR);
+        tms[which].anyDirtyColour = 1;
+        memset (tms[which].DirtyColour, 1, MAX_DIRTY_COLOUR);
         break;
     case 4:
-        if (tms.Regs[0] & 2) {
-            tms.pattern = ((val & 4) * 2048) & (tms.vramsize - 1);
-            tms.patternmask = (val & 3) * 256 | 255;
+        if (tms[which].Regs[0] & 2) {
+            tms[which].pattern = ((val & 4) * 2048) & (tms[which].vramsize - 1);
+            tms[which].patternmask = (val & 3) * 256 | 255;
         } else {
-            tms.pattern = (val * 2048) & (tms.vramsize - 1);
+            tms[which].pattern = (val * 2048) & (tms[which].vramsize - 1);
         }
-        tms.anyDirtyPattern = 1;
-        memset (tms.DirtyPattern, 1, MAX_DIRTY_PATTERN);
+        tms[which].anyDirtyPattern = 1;
+        memset (tms[which].DirtyPattern, 1, MAX_DIRTY_PATTERN);
         break;
     case 5:
-        tms.spriteattribute = (val * 128) & (tms.vramsize - 1);
+        tms[which].spriteattribute = (val * 128) & (tms[which].vramsize - 1);
         break;
     case 6:
-        tms.spritepattern = (val * 2048) & (tms.vramsize - 1);
+        tms[which].spritepattern = (val * 2048) & (tms[which].vramsize - 1);
         break;
     case 7:
         /* The backdrop is updated at TMS9928A_refresh() */
-        tms.anyDirtyColour = 1;
-        memset (tms.DirtyColour, 1, MAX_DIRTY_COLOUR);
+        tms[which].anyDirtyColour = 1;
+        memset (tms[which].DirtyColour, 1, MAX_DIRTY_COLOUR);
         break;
     }
 }
@@ -484,24 +494,25 @@ static void _TMS9928A_change_register (int reg, UINT8 val) {
 ** Interface functions
 */
 
-void TMS9928A_int_callback (void (*callback)(int)) {
-    tms.INTCallback = callback;
+void TMS9928A_int_callback (int which, void (*callback)(int)) {
+    tms[which].INTCallback = callback;
 }
 
-void TMS9928A_set_spriteslimit (int limit) {
-    tms.LimitSprites = limit;
+void TMS9928A_set_spriteslimit (int which, int limit) {
+    tms[which].LimitSprites = limit;
 }
 
 /*
 ** Updates the screen (the dMem memory area).
 */
-void TMS9928A_refresh (struct osd_bitmap *bmp, int full_refresh) {
+//STEVE: Need to rework palette for multi chip support? How does this work?
+void TMS9928A_refresh (int which, struct osd_bitmap *bmp, int full_refresh) {
     int c;
 
-    if (tms.Change) {
-        c = tms.Regs[7] & 15; if (!c) c=1;
-        if (tms.BackColour != c) {
-            tms.BackColour = c;
+    if (tms[which].Change) {
+        c = tms[which].Regs[7] & 15; if (!c) c=1;
+        if (tms[which].BackColour != c) {
+            tms[which].BackColour = c;
             palette_change_color (0,
                 TMS9928A_palette[c * 3], TMS9928A_palette[c * 3 + 1],
                 TMS9928A_palette[c * 3 + 2]);
@@ -509,69 +520,69 @@ void TMS9928A_refresh (struct osd_bitmap *bmp, int full_refresh) {
     }
 
 	if (palette_recalc() ) {
-		_TMS9928A_set_dirty (1);
-		tms.Change = 1;
+		_TMS9928A_set_dirty (which,1);
+		tms[which].Change = 1;
 	}
 
-    if (tms.Change || full_refresh) {
-        if (! (tms.Regs[1] & 0x40) ) {
-            fillbitmap (bmp, Machine->pens[tms.BackColour],
+    if (tms[which].Change || full_refresh) {
+        if (! (tms[which].Regs[1] & 0x40) ) {
+            fillbitmap (bmp, Machine->pens[tms[which].BackColour],
                 &Machine->visible_area);
         } else {
-            if (tms.Change) ModeHandlers[tms.mode] (tms.tmpbmp);
-            copybitmap (bmp, tms.tmpbmp, 0, 0, 0, 0,
+            if (tms[which].Change) ModeHandlers[tms[which].mode] (which, tms[which].tmpbmp);
+            copybitmap (bmp, tms[which].tmpbmp, 0, 0, 0, 0,
                 &Machine->visible_area, TRANSPARENCY_NONE, 0);
             if (TMS_SPRITES_ENABLED) {
-                _TMS9928A_sprites (bmp);
+                _TMS9928A_sprites (which, bmp);
             }
         }
     } else {
-		tms.StatusReg = tms.oldStatusReg;
+		tms[which].StatusReg = tms[which].oldStatusReg;
     }
 
     /* store Status register, so it can be restored at the next frame
        if there are no changes (sprite collision bit is lost) */
-    tms.oldStatusReg = tms.StatusReg;
-    tms.Change = 0;
+    tms[which].oldStatusReg = tms[which].StatusReg;
+    tms[which].Change = 0;
 	return;
 }
 
-int TMS9928A_interrupt () {
+int TMS9928A_interrupt (int which) {
     int b;
 
     /* when skipping frames, calculate sprite collision */
     if (osd_skip_this_frame() ) {
-        if (tms.Change) {
+        if (tms[which].Change) {
             if (TMS_SPRITES_ENABLED) {
-                _TMS9928A_sprites (NULL);
+                _TMS9928A_sprites (which, NULL);
             }
         } else {
-	    	tms.StatusReg = tms.oldStatusReg;
+	    	tms[which].StatusReg = tms[which].oldStatusReg;
 		}
     }
 
-    tms.StatusReg |= 0x80;
-    b = (tms.Regs[1] & 0x20) != 0;
-    if (b != tms.INT) {
-        tms.INT = b;
-        if (tms.INTCallback) tms.INTCallback (tms.INT);
+    tms[which].StatusReg |= 0x80;
+    b = (tms[which].Regs[1] & 0x20) != 0;
+    if (b != tms[which].INT) {
+        tms[which].INT = b;
+        if (tms[which].INTCallback) tms[which].INTCallback (tms[which].INT);
     }
 
     return b;
 }
 
-static void _TMS9928A_mode1 (struct osd_bitmap *bmp) {
+static void _TMS9928A_mode1 (int which, struct osd_bitmap *bmp) {
     int pattern,x,y,yy,xx,name,charcode;
     UINT8 fg,bg,*patternptr;
 	struct rectangle rt;
 
-    if ( !(tms.anyDirtyColour || tms.anyDirtyName || tms.anyDirtyPattern) )
+    if ( !(tms[which].anyDirtyColour || tms[which].anyDirtyName || tms[which].anyDirtyPattern) )
          return;
 
-    fg = Machine->pens[tms.Regs[7] / 16];
-    bg = Machine->pens[tms.Regs[7] & 15];
+    fg = Machine->pens[tms[which].Regs[7] / 16];
+    bg = Machine->pens[tms[which].Regs[7] & 15];
 
-    if (tms.anyDirtyColour) {
+    if (tms[which].anyDirtyColour) {
 		/* colours at sides must be reset */
 		rt.min_y = 0; rt.max_y = 191;
 		rt.min_x = 0; rt.max_x = 7;
@@ -584,11 +595,11 @@ static void _TMS9928A_mode1 (struct osd_bitmap *bmp) {
     name = 0;
     for (y=0;y<24;y++) {
         for (x=0;x<40;x++) {
-            charcode = tms.vMem[tms.nametbl+name];
-            if ( !(tms.DirtyName[name++] || tms.DirtyPattern[charcode]) &&
-				!tms.anyDirtyColour)
+            charcode = tms[which].vMem[tms[which].nametbl+name];
+            if ( !(tms[which].DirtyName[name++] || tms[which].DirtyPattern[charcode]) &&
+				!tms[which].anyDirtyColour)
                 continue;
-            patternptr = tms.vMem + tms.pattern + (charcode*8);
+            patternptr = tms[which].vMem + tms[which].pattern + (charcode*8);
             for (yy=0;yy<8;yy++) {
                 pattern = *patternptr++;
                 for (xx=0;xx<6;xx++) {
@@ -599,21 +610,21 @@ static void _TMS9928A_mode1 (struct osd_bitmap *bmp) {
             }
         }
     }
-    _TMS9928A_set_dirty (0);
+    _TMS9928A_set_dirty (which,0);
 }
 
-static void _TMS9928A_mode12 (struct osd_bitmap *bmp) {
+static void _TMS9928A_mode12 (int which, struct osd_bitmap *bmp) {
     int pattern,x,y,yy,xx,name,charcode;
     UINT8 fg,bg,*patternptr;
 	struct rectangle rt;
 
-    if ( !(tms.anyDirtyColour || tms.anyDirtyName || tms.anyDirtyPattern) )
+    if ( !(tms[which].anyDirtyColour || tms[which].anyDirtyName || tms[which].anyDirtyPattern) )
          return;
 
-    fg = Machine->pens[tms.Regs[7] / 16];
-    bg = Machine->pens[tms.Regs[7] & 15];
+    fg = Machine->pens[tms[which].Regs[7] / 16];
+    bg = Machine->pens[tms[which].Regs[7] & 15];
 
-    if (tms.anyDirtyColour) {
+    if (tms[which].anyDirtyColour) {
 		/* colours at sides must be reset */
 		rt.min_y = 0; rt.max_y = 191;
 		rt.min_x = 0; rt.max_x = 7;
@@ -626,11 +637,11 @@ static void _TMS9928A_mode12 (struct osd_bitmap *bmp) {
     name = 0;
     for (y=0;y<24;y++) {
         for (x=0;x<40;x++) {
-            charcode = (tms.vMem[tms.nametbl+name]+(y/8)*256)&tms.patternmask;
-            if ( !(tms.DirtyName[name++] || tms.DirtyPattern[charcode]) &&
-					!tms.anyDirtyColour)
+            charcode = (tms[which].vMem[tms[which].nametbl+name]+(y/8)*256)&tms[which].patternmask;
+            if ( !(tms[which].DirtyName[name++] || tms[which].DirtyPattern[charcode]) &&
+					!tms[which].anyDirtyColour)
                 continue;
-            patternptr = tms.vMem + tms.pattern + (charcode*8);
+            patternptr = tms[which].vMem + tms[which].pattern + (charcode*8);
             for (yy=0;yy<8;yy++) {
                 pattern = *patternptr++;
                 for (xx=0;xx<6;xx++) {
@@ -641,22 +652,22 @@ static void _TMS9928A_mode12 (struct osd_bitmap *bmp) {
             }
         }
     }
-    _TMS9928A_set_dirty (0);
+    _TMS9928A_set_dirty (which, 0);
 }
 
-static void _TMS9928A_mode0 (struct osd_bitmap *bmp) {
+static void _TMS9928A_mode0 (int which, struct osd_bitmap *bmp) {
     int pattern,x,y,yy,xx,name,charcode,colour;
     UINT8 fg,bg,*patternptr;
 
     name = 0;
     for (y=0;y<24;y++) {
         for (x=0;x<32;x++) {
-            charcode = tms.vMem[tms.nametbl+name];
-            if ( !(tms.DirtyName[name++] || tms.DirtyPattern[charcode] ||
-                tms.DirtyColour[charcode/64]) )
+            charcode = tms[which].vMem[tms[which].nametbl+name];
+            if ( !(tms[which].DirtyName[name++] || tms[which].DirtyPattern[charcode] ||
+                tms[which].DirtyColour[charcode/64]) )
                 continue;
-            patternptr = tms.vMem + tms.pattern + charcode*8;
-            colour = tms.vMem[tms.colour+charcode/8];
+            patternptr = tms[which].vMem + tms[which].pattern + charcode*8;
+            colour = tms[which].vMem[tms[which].colour+charcode/8];
             fg = Machine->pens[colour / 16];
             bg = Machine->pens[colour & 15];
             for (yy=0;yy<8;yy++) {
@@ -669,28 +680,28 @@ static void _TMS9928A_mode0 (struct osd_bitmap *bmp) {
             }
         }
     }
-    _TMS9928A_set_dirty (0);
+    _TMS9928A_set_dirty (which,0);
 }
 
-static void _TMS9928A_mode2 (struct osd_bitmap *bmp) {
+static void _TMS9928A_mode2 (int which, struct osd_bitmap *bmp) {
     int colour,name,x,y,yy,pattern,xx,charcode;
     UINT8 fg,bg;
     UINT8 *colourptr,*patternptr;
 
-    if ( !(tms.anyDirtyColour || tms.anyDirtyName || tms.anyDirtyPattern) )
+    if ( !(tms[which].anyDirtyColour || tms[which].anyDirtyName || tms[which].anyDirtyPattern) )
          return;
 
     name = 0;
     for (y=0;y<24;y++) {
         for (x=0;x<32;x++) {
-            charcode = tms.vMem[tms.nametbl+name]+(y/8)*256;
-            colour = (charcode&tms.colourmask);
-            pattern = (charcode&tms.patternmask);
-            if ( !(tms.DirtyName[name++] || tms.DirtyPattern[pattern] ||
-                tms.DirtyColour[colour]) )
+            charcode = tms[which].vMem[tms[which].nametbl+name]+(y/8)*256;
+            colour = (charcode&tms[which].colourmask);
+            pattern = (charcode&tms[which].patternmask);
+            if ( !(tms[which].DirtyName[name++] || tms[which].DirtyPattern[pattern] ||
+                tms[which].DirtyColour[colour]) )
                 continue;
-            patternptr = tms.vMem+tms.pattern+colour*8;
-            colourptr = tms.vMem+tms.colour+pattern*8;
+            patternptr = tms[which].vMem+tms[which].pattern+colour*8;
+            colourptr = tms[which].vMem+tms[which].colour+pattern*8;
             for (yy=0;yy<8;yy++) {
                 pattern = *patternptr++;
                 colour = *colourptr++;
@@ -704,24 +715,24 @@ static void _TMS9928A_mode2 (struct osd_bitmap *bmp) {
             }
         }
     }
-    _TMS9928A_set_dirty (0);
+    _TMS9928A_set_dirty (which,0);
 }
 
-static void _TMS9928A_mode3 (struct osd_bitmap *bmp) {
+static void _TMS9928A_mode3 (int which, struct osd_bitmap *bmp) {
     int x,y,yy,yyy,name,charcode;
     UINT8 fg,bg,*patternptr;
 
-    if ( !(tms.anyDirtyColour || tms.anyDirtyName || tms.anyDirtyPattern) )
+    if ( !(tms[which].anyDirtyColour || tms[which].anyDirtyName || tms[which].anyDirtyPattern) )
          return;
 
     name = 0;
     for (y=0;y<24;y++) {
         for (x=0;x<32;x++) {
-            charcode = tms.vMem[tms.nametbl+name];
-            if ( !(tms.DirtyName[name++] || tms.DirtyPattern[charcode]) &&
-					!tms.anyDirtyColour)
+            charcode = tms[which].vMem[tms[which].nametbl+name];
+            if ( !(tms[which].DirtyName[name++] || tms[which].DirtyPattern[charcode]) &&
+					!tms[which].anyDirtyColour)
                 continue;
-            patternptr = tms.vMem+tms.pattern+charcode*8+(y&3)*2;
+            patternptr = tms[which].vMem+tms[which].pattern+charcode*8+(y&3)*2;
             for (yy=0;yy<2;yy++) {
                 fg = Machine->pens[(*patternptr / 16)];
                 bg = Machine->pens[((*patternptr++) & 15)];
@@ -738,25 +749,25 @@ static void _TMS9928A_mode3 (struct osd_bitmap *bmp) {
             }
         }
     }
-    _TMS9928A_set_dirty (0);
+    _TMS9928A_set_dirty (which,0);
 }
 
-static void _TMS9928A_mode23 (struct osd_bitmap *bmp) {
+static void _TMS9928A_mode23 (int which, struct osd_bitmap *bmp) {
     int x,y,yy,yyy,name,charcode;
     UINT8 fg,bg,*patternptr;
 
-    if ( !(tms.anyDirtyColour || tms.anyDirtyName || tms.anyDirtyPattern) )
+    if ( !(tms[which].anyDirtyColour || tms[which].anyDirtyName || tms[which].anyDirtyPattern) )
          return;
 
     name = 0;
     for (y=0;y<24;y++) {
         for (x=0;x<32;x++) {
-            charcode = tms.vMem[tms.nametbl+name];
-            if ( !(tms.DirtyName[name++] || tms.DirtyPattern[charcode]) &&
-		!tms.anyDirtyColour)
+            charcode = tms[which].vMem[tms[which].nametbl+name];
+            if ( !(tms[which].DirtyName[name++] || tms[which].DirtyPattern[charcode]) &&
+		!tms[which].anyDirtyColour)
                 continue;
-            patternptr = tms.vMem + tms.pattern +
-                ((charcode+(y&3)*2+(y/8)*256)&tms.patternmask)*8;
+            patternptr = tms[which].vMem + tms[which].pattern +
+                ((charcode+(y&3)*2+(y/8)*256)&tms[which].patternmask)*8;
             for (yy=0;yy<2;yy++) {
                 fg = Machine->pens[(*patternptr / 16)];
                 bg = Machine->pens[((*patternptr++) & 15)];
@@ -773,18 +784,18 @@ static void _TMS9928A_mode23 (struct osd_bitmap *bmp) {
             }
         }
     }
-    _TMS9928A_set_dirty (0);
+    _TMS9928A_set_dirty (which,0);
 }
 
-static void _TMS9928A_modebogus (struct osd_bitmap *bmp) {
+static void _TMS9928A_modebogus (int which, struct osd_bitmap *bmp) {
     UINT8 fg,bg;
     int x,y,n,xx;
 
-    if ( !(tms.anyDirtyColour || tms.anyDirtyName || tms.anyDirtyPattern) )
+    if ( !(tms[which].anyDirtyColour || tms[which].anyDirtyName || tms[which].anyDirtyPattern) )
          return;
 
-    fg = Machine->pens[tms.Regs[7] / 16];
-    bg = Machine->pens[tms.Regs[7] & 15];
+    fg = Machine->pens[tms[which].Regs[7] / 16];
+    bg = Machine->pens[tms[which].Regs[7] & 15];
 
     for (y=0;y<192;y++) {
         xx=0;
@@ -796,7 +807,7 @@ static void _TMS9928A_modebogus (struct osd_bitmap *bmp) {
         n=8; while (n--) plot_pixel (bmp, xx++, y, bg);
     }
 
-    _TMS9928A_set_dirty (0);
+    _TMS9928A_set_dirty (which,0);
 }
 
 /*
@@ -808,22 +819,22 @@ static void _TMS9928A_modebogus (struct osd_bitmap *bmp) {
 **
 ** This code should be optimized. One day.
 */
-static void _TMS9928A_sprites (struct osd_bitmap *bmp) {
+static void _TMS9928A_sprites (int which, struct osd_bitmap *bmp) {
     UINT8 *attributeptr,*patternptr,c;
     int p,x,y,size,i,j,large,yy,xx,limit[192],
         illegalsprite,illegalspriteline;
     UINT16 line,line2;
 
-    attributeptr = tms.vMem + tms.spriteattribute;
-    size = (tms.Regs[1] & 2) ? 16 : 8;
-    large = (int)(tms.Regs[1] & 1);
+    attributeptr = tms[which].vMem + tms[which].spriteattribute;
+    size = (tms[which].Regs[1] & 2) ? 16 : 8;
+    large = (int)(tms[which].Regs[1] & 1);
 
     for (x=0;x<192;x++) limit[x] = 4;
-    tms.StatusReg = 0x80;
+    tms[which].StatusReg = 0x80;
     illegalspriteline = 255;
     illegalsprite = 0;
 
-    memset (tms.dBackMem, 0, IMAGE_SIZE);
+    memset (tms[which].dBackMem, 0, IMAGE_SIZE);
     for (p=0;p<32;p++) {
         y = *attributeptr++;
         if (y == 208) break;
@@ -833,7 +844,7 @@ static void _TMS9928A_sprites (struct osd_bitmap *bmp) {
             y++;
         }
         x = *attributeptr++;
-        patternptr = tms.vMem + tms.spritepattern +
+        patternptr = tms[which].vMem + tms[which].spritepattern +
             ((size == 16) ? *attributeptr & 0xfc : *attributeptr) * 8;
         attributeptr++;
         c = (*attributeptr & 0x0f);
@@ -854,20 +865,20 @@ static void _TMS9928A_sprites (struct osd_bitmap *bmp) {
                             illegalsprite = p;
                         }
                     }
-                    if (tms.LimitSprites) continue;
+                    if (tms[which].LimitSprites) continue;
                 } else limit[yy]--;
                 line = 256*patternptr[yy-y] + patternptr[yy-y+16];
                 for (xx=x;xx<(x+size);xx++) {
                     if (line & 0x8000) {
                         if ((xx >= 0) && (xx < 256)) {
-                            if (tms.dBackMem[yy*256+xx]) {
-                                tms.StatusReg |= 0x20;
+                            if (tms[which].dBackMem[yy*256+xx]) {
+                                tms[which].StatusReg |= 0x20;
                             } else {
-                                tms.dBackMem[yy*256+xx] = 0x01;
+                                tms[which].dBackMem[yy*256+xx] = 0x01;
                             }
-                            if (c && ! (tms.dBackMem[yy*256+xx] & 0x02))
+                            if (c && ! (tms[which].dBackMem[yy*256+xx] & 0x02))
                             {
-                            	tms.dBackMem[yy*256+xx] |= 0x02;
+                            	tms[which].dBackMem[yy*256+xx] |= 0x02;
                             	if (bmp)
 									plot_pixel (bmp, xx, yy, Machine->pens[c]);
 							}
@@ -893,33 +904,33 @@ static void _TMS9928A_sprites (struct osd_bitmap *bmp) {
                                     illegalsprite = p;
                                 }
                             }
-                            if (tms.LimitSprites) continue;
+                            if (tms[which].LimitSprites) continue;
                         } else limit[yy]--;
                         line = line2;
                         for (xx=x;xx<(x+size*2);xx+=2) {
                             if (line & 0x8000) {
                                 if ((xx >=0) && (xx < 256)) {
-                                    if (tms.dBackMem[yy*256+xx]) {
-                                        tms.StatusReg |= 0x20;
+                                    if (tms[which].dBackMem[yy*256+xx]) {
+                                        tms[which].StatusReg |= 0x20;
                                     } else {
-                                        tms.dBackMem[yy*256+xx] = 0x01;
+                                        tms[which].dBackMem[yy*256+xx] = 0x01;
                                     }
-		                            if (c && ! (tms.dBackMem[yy*256+xx] & 0x02))
+		                            if (c && ! (tms[which].dBackMem[yy*256+xx] & 0x02))
         		                    {
-                		            	tms.dBackMem[yy*256+xx] |= 0x02;
+                		            	tms[which].dBackMem[yy*256+xx] |= 0x02;
                                         if (bmp)
                                         	plot_pixel (bmp, xx, yy, Machine->pens[c]);
                 		            }
                                 }
                                 if (((xx+1) >=0) && ((xx+1) < 256)) {
-                                    if (tms.dBackMem[yy*256+xx+1]) {
-                                        tms.StatusReg |= 0x20;
+                                    if (tms[which].dBackMem[yy*256+xx+1]) {
+                                        tms[which].StatusReg |= 0x20;
                                     } else {
-                                        tms.dBackMem[yy*256+xx+1] = 0x01;
+                                        tms[which].dBackMem[yy*256+xx+1] = 0x01;
                                     }
-		                            if (c && ! (tms.dBackMem[yy*256+xx+1] & 0x02))
+		                            if (c && ! (tms[which].dBackMem[yy*256+xx+1] & 0x02))
         		                    {
-                		            	tms.dBackMem[yy*256+xx+1] |= 0x02;
+                		            	tms[which].dBackMem[yy*256+xx+1] |= 0x02;
                                         if (bmp)
                                         	plot_pixel (bmp, xx+1, yy, Machine->pens[c]);
 									}
@@ -934,8 +945,18 @@ static void _TMS9928A_sprites (struct osd_bitmap *bmp) {
         }
     }
     if (illegalspriteline == 255) {
-        tms.StatusReg |= (p > 31) ? 31 : p;
+        tms[which].StatusReg |= (p > 31) ? 31 : p;
     } else {
-        tms.StatusReg |= 0x40 + illegalsprite;
+        tms[which].StatusReg |= 0x40 + illegalsprite;
     }
 }
+
+/* I/O Routetines */
+READ_HANDLER (TMS9928A_vram_0_r)		{ return TMS9928A_vram_r(0,offset); }
+WRITE_HANDLER (TMS9928A_vram_0_w)		{ TMS9928A_vram_w(0,offset,data); }
+READ_HANDLER (TMS9928A_register_0_r)	{ return TMS9928A_register_r(0,offset); }
+WRITE_HANDLER (TMS9928A_register_0_w)	{ TMS9928A_register_w(0,offset,data); }
+READ_HANDLER (TMS9928A_vram_1_r)		{ return TMS9928A_vram_r(1,offset); }
+WRITE_HANDLER (TMS9928A_vram_1_w)		{ TMS9928A_vram_w(1,offset,data); }
+READ_HANDLER (TMS9928A_register_1_r)	{ return TMS9928A_register_r(1,offset); }
+WRITE_HANDLER (TMS9928A_register_1_w)	{ TMS9928A_register_w(1,offset,data); }
