@@ -66,13 +66,8 @@
 
 
 /*-- Memory regions --*/
-#define SE_MEMREG_ROM	REGION_USER1
-#define SE_MEMREG_DROM1	REGION_USER2
-
-#define SE_MEMREG_CPU	REGION_CPU1
-#define SE_MEMREG_DCPU1 REGION_CPU2
-#define SE_MEMREG_SCPU1	REGION_CPU3
-#define SE_MEMREG_SROM1	REGION_SOUND1
+#define SE_CPUREGION	REGION_CPU1
+#define SE_ROMREGION	REGION_USER1
 
 
 /********************/
@@ -81,20 +76,12 @@
 /*-- Main CPU regions and ROM (Up to 512MB) --*/
 #define SE128_ROMSTART(name, n1, chk1) \
   ROM_START(name) \
-    NORMALREGION(0x10000, SE_MEMREG_CPU) \
-    NORMALREGIONE(0x80000, SE_MEMREG_ROM) \
+    NORMALREGION(0x10000, SE_CPUREGION) \
+    NORMALREGION(0x80000, SE_ROMREGION) \
       ROM_LOAD(n1, 0x00000, 0x20000, chk1) \
         ROM_RELOAD(0x20000, 0x20000) \
 	ROM_RELOAD(0x40000, 0x20000) \
 	ROM_RELOAD(0x60000, 0x20000)
-
-/**************************************/
-/** DMD (128x32) ROM 512K            **/
-/**************************************/
-#define SE_DMD524_ROMSTART(n1,chk1) \
-  NORMALREGION(0x10000, SE_MEMREG_DCPU1)\
-  NORMALREGIONE(0x80000, SE_MEMREG_DROM1) \
-    ROM_LOAD(n1, 0x00000, 0x80000, chk1)
 
 /*-- These are only here so the game structure can be in the game file --*/
 extern struct MachineDriver machine_driver_SE_1S;

@@ -1403,6 +1403,18 @@ SOURCE=src\wpc\sims\s7\full\tmfnt.c
 # End Group
 # Begin Source File
 
+SOURCE=.\src\wpc\atari.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\atari.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\atarigames.c
+# End Source File
+# Begin Source File
+
 SOURCE=src\wpc\by35.c
 # End Source File
 # Begin Source File
@@ -1444,14 +1456,6 @@ SOURCE=src\wpc\core.c
 # Begin Source File
 
 SOURCE=src\wpc\core.h
-# End Source File
-# Begin Source File
-
-SOURCE=src\wpc\dcs.c
-# End Source File
-# Begin Source File
-
-SOURCE=src\wpc\dcs.h
 # End Source File
 # Begin Source File
 
@@ -1575,14 +1579,6 @@ SOURCE=src\wpc\s11.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\s11csoun.c
-# End Source File
-# Begin Source File
-
-SOURCE=src\wpc\s11csoun.h
-# End Source File
-# Begin Source File
-
 SOURCE=src\wpc\s11games.c
 # End Source File
 # Begin Source File
@@ -1611,14 +1607,6 @@ SOURCE=src\wpc\s6.h
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\s67s.c
-# End Source File
-# Begin Source File
-
-SOURCE=src\wpc\S67s.h
-# End Source File
-# Begin Source File
-
 SOURCE=src\wpc\s6games.c
 # End Source File
 # Begin Source File
@@ -1644,14 +1632,6 @@ SOURCE=src\wpc\se.h
 # Begin Source File
 
 SOURCE=src\wpc\segames.c
-# End Source File
-# Begin Source File
-
-SOURCE=src\wpc\sesound.c
-# End Source File
-# Begin Source File
-
-SOURCE=src\wpc\sesound.h
 # End Source File
 # Begin Source File
 
@@ -1687,6 +1667,14 @@ SOURCE=src\wpc\vpintf.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\wmssnd.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\wmssnd.h
+# End Source File
+# Begin Source File
+
 SOURCE=src\wpc\wpc.c
 # End Source File
 # Begin Source File
@@ -1704,14 +1692,6 @@ SOURCE=src\wpc\wpcsam.c
 # Begin Source File
 
 SOURCE=src\wpc\wpcsam.h
-# End Source File
-# Begin Source File
-
-SOURCE=src\wpc\wpcsound.c
-# End Source File
-# Begin Source File
-
-SOURCE=src\wpc\wpcsound.h
 # End Source File
 # Begin Source File
 
