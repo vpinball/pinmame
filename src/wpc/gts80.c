@@ -146,8 +146,8 @@ static int GTS80_m2sw(int col, int row) {
 	else
 		return row*10+col-1;
 }
-static int GTS80_m2lamp(int no) { return no+8; }
-static int GTS80_lamp2m(int col, int row) { return (col-1)*8+row; }
+static int GTS80_lamp2m(int no) { return no+8; }
+static int GTS80_m2lamp(int col, int row) { return (col-1)*8+row; }
 
 
 static int GTS80_getSwRow(int row) {
@@ -634,7 +634,7 @@ static MACHINE_INIT(gts80) {
   memset(&GTS80locals, 0, sizeof GTS80locals);
 
   /* init ROM */
-  for(ii = 1; ii<4; ii++) 
+  for(ii = 1; ii<4; ii++)
 	memcpy(memory_region(GTS80_MEMREG_CPU)+0x2000+0x4000*ii, memory_region(GTS80_MEMREG_CPU)+0x2000, 0x2000);
 
   if ( core_gameData->gen & GEN_GTS80B4K ) {
@@ -642,7 +642,7 @@ static MACHINE_INIT(gts80) {
 	memcpy(memory_region(GTS80_MEMREG_CPU)+0xd000, memory_region(GTS80_MEMREG_CPU)+0x9000, 0x800);
   }
   else {
-	for(ii = 1; ii<4; ii++) 
+	for(ii = 1; ii<4; ii++)
 	  memcpy(memory_region(GTS80_MEMREG_CPU)+0x1000+0x4000*ii, memory_region(GTS80_MEMREG_CPU)+0x1000, 0x0800);
   }
 
@@ -708,7 +708,7 @@ MACHINE_DRIVER_START(gts80)
   MDRV_SWITCH_UPDATE(GTS80)
   MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_SWITCH_CONV(GTS80_sw2m,GTS80_m2sw)
-  MDRV_LAMP_CONV(GTS80_sw2m,GTS80_m2sw)
+  MDRV_LAMP_CONV(GTS80_lamp2m,GTS80_m2lamp)
   MDRV_SOUND_CMD(GTS80_sndCmd_w)
   MDRV_SOUND_CMDHEADING("GTS80")
 MACHINE_DRIVER_END
