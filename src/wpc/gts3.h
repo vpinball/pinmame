@@ -142,15 +142,19 @@
        ROM_LOAD(n1, 0x00000, 0x80000, chk1)
 
 /*-- These are only here so the game structure can be in the game file --*/
-extern struct MachineDriver machine_driver_GTS3_1;
+extern struct MachineDriver machine_driver_GTS3_1A;
+extern struct MachineDriver machine_driver_GTS3_1B;
 extern struct MachineDriver machine_driver_GTS3_2;
-extern struct MachineDriver machine_driver_GTS3_1S;
+extern struct MachineDriver machine_driver_GTS3_1AS;
+extern struct MachineDriver machine_driver_GTS3_1BS;
 extern struct MachineDriver machine_driver_GTS3_2S;
 
 extern void UpdateSoundLEDS(int num,int data);
 
-#define mGTS3         GTS3_1
-#define mGTS3S        GTS3_1S
+#define mGTS3         GTS3_1A
+#define mGTS3S        GTS3_1AS
+#define mGTS3B        GTS3_1B
+#define mGTS3BS       GTS3_1BS
 #define mGTS3DMD      GTS3_2
 #define mGTS3DMDS     GTS3_2S
 
