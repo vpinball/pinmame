@@ -236,6 +236,8 @@ import "ocidl.idl";
 		[propget, id(51), helpstring("property Games")] HRESULT Games([out, retval] IGames* *pVal);
 		[propget, id(52), helpstring("property Settings")] HRESULT Settings([out, retval] IControllerSettings * *pVal);
 		[propget, id(53), helpstring("property ChangedLEDs")] HRESULT ChangedLEDs([in] int nHigh, [in] int nLow, [out, retval] VARIANT *pVal);
+		[propget, id(54), helpstring("property Hidden")] HRESULT Hidden([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(54), helpstring("property Hidden")] HRESULT Hidden([in] VARIANT_BOOL newVal);
 	};
 
 	// WSHDlg and related interfaces
