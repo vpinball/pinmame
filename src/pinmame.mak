@@ -46,6 +46,7 @@ DRVLIBS += $(PINOBJ)/midway.o
 DRVLIBS += $(PINOBJ)/gts1.o
 DRVLIBS += $(PINOBJ)/alvg.o $(PINOBJ)/alvgdmd.o $(PINOBJ)/alvgs.o
 DRVLIBS += $(PINOBJ)/bingo.o
+DRVLIBS += $(PINOBJ)/techno.o
 #
 # Games
 #
