@@ -198,13 +198,6 @@ static WRITE_HANDLER(pia0_a_w)
 	locals.pia0_a = data;
 	locals.SwCol = core_BitColToNum(data & 0xf);
 	LOG(("%04x: EVERYTHING: pia0_a_w = %x \n",activecpu_get_previouspc(),data));
-//	printf("0:%02x ", data);
-	if (data & 0x80) {
-		locals.dispCol[0] = 0;
-		locals.dispCol[1] = 0;
-		locals.dispCol[2] = 0;
-		locals.dispCol[3] = 0;
-	}
 }
 /*  o  CA2:    Display Blank */
 static WRITE_HANDLER(pia0_ca2_w)
@@ -260,15 +253,23 @@ static const UINT16 core_ascii2seg[] = {
 */
 static WRITE_HANDLER(pia1_a_w)
 {
+	static int counter = 0;
+	LOG(("%04x: DISPLAY: pia1_a_w = %x \n",activecpu_get_previouspc(),data));
+	if (data & 0x80) { // 1st display strobe
+		if (locals.dispCol[0] < 20)
+			locals.segments[locals.dispCol[0]++].w = core_ascii2seg[locals.pia0_a & 0x7f];
+		counter++;
+		if (counter > 7) {
+			counter = 0;
+			locals.dispCol[0] = 0;
+			locals.dispCol[1] = 0;
+		}
+	} else if (data & 0x40) { // 2nd display strobe
+		counter = 0;
+		if (locals.dispCol[1] < 12)
+			locals.segments[20+(locals.dispCol[1]++)].w = core_ascii2seg[locals.pia0_a & 0x7f];
+	}
 	locals.pia1_a = data;
-	if (data & 0x80 && locals.dispCol[0] < 16)
-		locals.segments[locals.dispCol[0]++].w = core_ascii2seg[locals.pia0_a & 0x7f];
-	if (data & 0x40 && locals.dispCol[1] < 16)
-		locals.segments[16+(locals.dispCol[1]++)].w = core_ascii2seg[locals.pia0_a & 0x7f];
-	if (data & 0x20 && locals.dispCol[2] < 16)
-		locals.segments[32+(locals.dispCol[2]++)].w = core_ascii2seg[locals.pia0_a & 0x7f];
-	if (data & 0x10 && locals.dispCol[3] < 16)
-		locals.segments[48+(locals.dispCol[3]++)].w = core_ascii2seg[locals.pia0_a & 0x7f];
 }
 /*
   o  PB0:    A Solenoid
