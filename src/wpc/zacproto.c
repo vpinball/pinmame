@@ -60,6 +60,8 @@ static READ_HANDLER(dip_r) {
 static WRITE_HANDLER(disp_w) {
   locals.segments[9-offset*2].w = core_bcd2seg7e[data & 0x0f];
   locals.segments[8-offset*2].w = core_bcd2seg7e[data >> 4];
+  // fake single 0 digit
+  locals.segments[10].w = locals.segments[9].w ? core_bcd2seg7e[0] : 0;
 }
 
 static WRITE_HANDLER(sol_w) {
@@ -97,9 +99,9 @@ static MEMORY_WRITE_START(writemem)
 MEMORY_END
 
 static core_tLCDLayout disp[] = {
-  {0, 0, 4, 6,CORE_SEG7},
-  {3, 0, 0, 2,CORE_SEG7},
-  {3, 8, 2, 2,CORE_SEG7},
+  {0, 0, 4, 7,CORE_SEG87FD},
+  {3, 2, 0, 2,CORE_SEG7S},
+  {3,16, 2, 2,CORE_SEG7S},
   {0}
 };
 static core_tGameData strikeGameData = {GEN_ZAC1,disp};
@@ -180,9 +182,9 @@ INPUT_PORTS_START(strike) \
     COREPORT_DIPNAME( 0x0001, 0x0000, "Show High Score") \
       COREPORT_DIPSET(0x0000, " off" ) \
       COREPORT_DIPSET(0x0001, " on" ) \
-    COREPORT_DIPNAME( 0x0002, 0x0000, "S18") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0002, "1" ) \
+    COREPORT_DIPNAME( 0x0002, 0x0000, "Show High Score") \
+      COREPORT_DIPSET(0x0000, " off" ) \
+      COREPORT_DIPSET(0x0002, " on" ) \
     COREPORT_DIPNAME( 0x0004, 0x0000, "S19") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0004, "1" ) \
@@ -201,10 +203,10 @@ INPUT_PORTS_START(strike) \
     COREPORT_DIPNAME( 0x0080, 0x0000, "S24") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0080, "1" ) \
-    COREPORT_DIPNAME( 0x0100, 0x0000, "Roulette Feature") \
+    COREPORT_DIPNAME( 0x0100, 0x0000, "Random Millions") \
       COREPORT_DIPSET(0x0000, " on" ) \
       COREPORT_DIPSET(0x0100, " off" ) \
-    COREPORT_DIPNAME( 0x0600, 0x0200, "Balls in Play") \
+    COREPORT_DIPNAME( 0x0600, 0x0400, "Balls in Play") \
       COREPORT_DIPSET(0x0000, "1" ) \
       COREPORT_DIPSET(0x0200, "3" ) \
       COREPORT_DIPSET(0x0400, "5" ) \
