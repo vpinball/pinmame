@@ -1296,6 +1296,10 @@ SOURCE=.\src\wpc\taitos.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\techno.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\vpintf.c
 # End Source File
 # Begin Source File
@@ -1702,10 +1706,6 @@ SOURCE=.\src\cpu\scamp\scamp.c
 # Begin Source File
 
 SOURCE=.\src\cpu\scamp\scamp.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\scamp\scampcpu.h
 # End Source File
 # Begin Source File
 
