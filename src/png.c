@@ -13,6 +13,7 @@
   05/14/1999 Color type 2 and PNG save functions added
   05/15/1999 Handle RGB555 while saving, use osd_fxxx
              functions for writing MSH
+  04/27/2001 Simple MNG support MLR
 
   TODO : Fully comply with the "Recommendations for Decoders"
          of the W3C
@@ -25,7 +26,7 @@
 #include "png.h"
 
 extern char build_version[];
-extern UINT32 *shrinked_pens; /* Used to determine the RGB layout in direct modes */
+extern UINT32 direct_rgb_components[3]; /* Used to determine the RGB layout in direct modes */
 
 /* convert_uint is here so we don't have to deal with byte-ordering issues */
 static UINT32 convert_from_network_order (UINT8 *v)
@@ -536,6 +537,15 @@ void png_delete_unused_colors (struct png_info *p)
 
 ********************************************************************************/
 
+struct png_text
+{
+	char *data;
+	int length;
+	struct png_text *next;
+};
+
+static struct png_text *png_text_list = 0;
+
 static void convert_to_network_order (UINT32 i, UINT8 *v)
 {
 	v[0]=i>>24;
@@ -544,7 +554,28 @@ static void convert_to_network_order (UINT32 i, UINT8 *v)
 	v[3]=i&0xff;
 }
 
-static int png_write_chunk(void *fp, UINT32 chunk_type, UINT8 *chunk_data, UINT32 chunk_length)
+int png_add_text (const char *keyword, const char *text)
+{
+	struct png_text *pt;
+
+	pt = malloc (sizeof(struct png_text));
+	if (pt == 0)
+		return 0;
+
+	pt->length = strlen(keyword) + strlen(text) + 1;
+	pt->data = malloc (pt->length + 1);
+	if (pt->data == 0)
+		return 0;
+
+	strcpy (pt->data, keyword);
+	strcpy (pt->data + strlen(keyword) + 1, text);
+	pt->next = png_text_list;
+	png_text_list = pt;
+
+	return 1;
+}
+
+static int write_chunk(void *fp, UINT32 chunk_type, UINT8 *chunk_data, UINT32 chunk_length)
 {
 	UINT32 crc;
 	UINT8 v[4];
@@ -579,38 +610,21 @@ static int png_write_chunk(void *fp, UINT32 chunk_type, UINT8 *chunk_data, UINT3
 	return 1;
 }
 
-static int png_write_text(void *fp, const char *keyword, const char *text)
+int png_write_sig(void *fp)
 {
-	char *chunk;
-	int chunklength;
-
-	chunklength = strlen(keyword) + strlen(text) + 1;
-	if ((chunk = malloc(chunklength + 1)) == NULL)
-		return 0;
-
-	strcpy (chunk, keyword);
-	strcpy (chunk + strlen(keyword) + 1, text);
-
-	if (png_write_chunk(fp, PNG_CN_tEXt, (UINT8 *)chunk, chunklength)==0)
-	{
-		free (chunk);
-		return 0;
-	}
-	free (chunk);
-	return 1;
-}
-
-int png_write_file(void *fp, struct png_info *p)
-{
-	UINT8 ihdr[13];
-	char text[1024];
-
 	/* PNG Signature */
 	if (osd_fwrite(fp, PNG_Signature, 8) != 8)
 	{
 		logerror("PNG sig write failed\n");
 		return 0;
 	}
+	return 1;
+}
+
+int png_write_datastream(void *fp, struct png_info *p)
+{
+	UINT8 ihdr[13];
+	struct png_text *pt;
 
 	/* IHDR */
 	convert_to_network_order(p->width, ihdr);
@@ -621,33 +635,32 @@ int png_write_file(void *fp, struct png_info *p)
 	*(ihdr+11) = p->filter_method;
 	*(ihdr+12) = p->interlace_method;
 	logerror("Type(%d) Color Depth(%d)\n", p->color_type,p->bit_depth);
-	if (png_write_chunk(fp, PNG_CN_IHDR, ihdr, 13)==0)
+	if (write_chunk(fp, PNG_CN_IHDR, ihdr, 13)==0)
 		return 0;
 
 	/* PLTE */
 	if (p->num_palette > 0)
-		if (png_write_chunk(fp, PNG_CN_PLTE, p->palette, p->num_palette*3)==0)
+		if (write_chunk(fp, PNG_CN_PLTE, p->palette, p->num_palette*3)==0)
 			return 0;
 
 	/* IDAT */
-	if (png_write_chunk(fp, PNG_CN_IDAT, p->zimage, p->zlength)==0)
+	if (write_chunk(fp, PNG_CN_IDAT, p->zimage, p->zlength)==0)
 		return 0;
 
 	/* tEXt */
-#ifdef MESS
-	sprintf (text, "MESS %s", build_version);
-#else
-	sprintf (text, "MAME %s", build_version);
-#endif
-	if (png_write_text(fp, "Software", text) == 0)
-		return 0;
+	while (png_text_list)
+	{
+		pt = png_text_list;
+		if (write_chunk(fp, PNG_CN_tEXt, (UINT8 *)pt->data, pt->length)==0)
+			return 0;
+		free (pt->data);
 
-	sprintf (text, "%s %s", Machine->gamedrv->manufacturer, Machine->gamedrv->description);
-	if (png_write_text(fp, "Game", text) == 0)
-		return 0;
+		png_text_list = pt->next;
+		free (pt);
+	}
 
 	/* IEND */
-	if (png_write_chunk(fp, PNG_CN_IEND, NULL, 0)==0)
+	if (write_chunk(fp, PNG_CN_IEND, NULL, 0)==0)
 		return 0;
 
 	return 1;
@@ -732,15 +745,15 @@ static int png_pack_buffer (struct png_info *p)
 
 /*********************************************************************
 
-  Writes an osd_bitmap in a PNG file. If the depth of the bitmap
+  Writes an mame_bitmap in a PNG file. If the depth of the bitmap
   is 8, a color type 3 PNG with palette is written. Otherwise a
   color type 2 true color RGB PNG is written.
 
  *********************************************************************/
 
-int png_write_bitmap(void *fp, struct osd_bitmap *bitmap)
+static int png_create_datastream(void *fp, struct mame_bitmap *bitmap)
 {
-	int i, j, c;
+	int i, j;
 	int r, g, b;
 	UINT32 color;
 	UINT8 *ip;
@@ -751,10 +764,10 @@ int png_write_bitmap(void *fp, struct osd_bitmap *bitmap)
 	p.palette = p.trans = p.image = p.zimage = p.fimage = NULL;
 	p.width = bitmap->width;
 	p.height = bitmap->height;
-	p.color_type = (Machine->color_depth == 8 ? 3: 2);
 
-	if (p.color_type == 3)
+	if ((Machine->color_depth == 16) && (Machine->drv->total_colors <= 256))
 	{
+		p.color_type = 3;
 		if((p.palette = (UINT8 *)malloc (3*256))==NULL)
 		{
 			logerror("Out of memory\n");
@@ -763,10 +776,7 @@ int png_write_bitmap(void *fp, struct osd_bitmap *bitmap)
 		memset (p.palette, 0, 3*256);
 		/* get palette */
 		for (i = 0; i < Machine->drv->total_colors; i++)
-		{
-			c = Machine->pens[i];
-			osd_get_pen(c,&p.palette[3*c],&p.palette[3*c+1],&p.palette[3*c+2]);
-		}
+			palette_get_color(i,&p.palette[3*i],&p.palette[3*i+1],&p.palette[3*i+2]);
 
 		p.num_palette = 256;
 		if((p.image = (UINT8 *)malloc (p.height*p.width))==NULL)
@@ -776,7 +786,8 @@ int png_write_bitmap(void *fp, struct osd_bitmap *bitmap)
 		}
 
 		for (i = 0; i < p.height; i++)
-			memcpy(&p.image[i * p.width], bitmap->line[i], p.width);
+			for (j = 0; j < p.width; j++)
+				p.image[i * p.width + j] = ((UINT16 *)bitmap->line[i])[j];
 
 		png_delete_unused_colors (&p);
 		p.bit_depth = p.num_palette > 16 ? 8 : p.num_palette > 4 ? 4 : p.num_palette > 2 ? 2 : 1;
@@ -787,6 +798,7 @@ int png_write_bitmap(void *fp, struct osd_bitmap *bitmap)
 	}
 	else
 	{
+		p.color_type = 2;
 		p.rowbytes = p.width * 3;
 		p.bit_depth = 8;
 		if((p.image = (UINT8 *)malloc (p.height * p.rowbytes))==NULL)
@@ -803,7 +815,7 @@ int png_write_bitmap(void *fp, struct osd_bitmap *bitmap)
 			for (i = 0; i < p.height; i++)
 				for (j = 0; j < p.width; j++)
 				{
-					osd_get_pen(((UINT16 *)bitmap->line[i])[j],ip, ip+1, ip+2);
+					palette_get_color(((UINT16 *)bitmap->line[i])[j],ip, ip+1, ip+2);
 					ip += 3;
 				}
 			break;
@@ -813,9 +825,9 @@ int png_write_bitmap(void *fp, struct osd_bitmap *bitmap)
 				{
 					color = ((UINT16 *)bitmap->line[i])[j];
 
-					r = (color & shrinked_pens[0]) / (shrinked_pens[0] / 0x1f);
-					g = (color & shrinked_pens[1]) / (shrinked_pens[1] / 0x1f);
-					b = (color & shrinked_pens[2]) / (shrinked_pens[2] / 0x1f);
+					r = (color & direct_rgb_components[0]) / (direct_rgb_components[0] / 0x1f);
+					g = (color & direct_rgb_components[1]) / (direct_rgb_components[1] / 0x1f);
+					b = (color & direct_rgb_components[2]) / (direct_rgb_components[2] / 0x1f);
 
 					*ip++ = (r << 3) | (r >> 2);
 					*ip++ = (g << 3) | (g >> 2);
@@ -828,9 +840,9 @@ int png_write_bitmap(void *fp, struct osd_bitmap *bitmap)
 				{
 					color = ((UINT32 *)bitmap->line[i])[j];
 
-					r = (color & shrinked_pens[0]) / (shrinked_pens[0] / 0xff);
-					g = (color & shrinked_pens[1]) / (shrinked_pens[1] / 0xff);
-					b = (color & shrinked_pens[2]) / (shrinked_pens[2] / 0xff);
+					r = (color & direct_rgb_components[0]) / (direct_rgb_components[0] / 0xff);
+					g = (color & direct_rgb_components[1]) / (direct_rgb_components[1] / 0xff);
+					b = (color & direct_rgb_components[2]) / (direct_rgb_components[2] / 0xff);
 
 					*ip++ = r;
 					*ip++ = g;
@@ -848,7 +860,7 @@ int png_write_bitmap(void *fp, struct osd_bitmap *bitmap)
 	if (png_deflate_image(&p)==0)
 		return 0;
 
-	if (png_write_file(fp, &p)==0)
+	if (png_write_datastream(fp, &p)==0)
 		return 0;
 
 	if (p.palette) free (p.palette);
@@ -858,5 +870,91 @@ int png_write_bitmap(void *fp, struct osd_bitmap *bitmap)
 	return 1;
 }
 
-/* End of source */
+int png_write_bitmap(void *fp, struct mame_bitmap *bitmap)
+{
+	char text[1024];
+
+#ifdef MESS
+	sprintf (text, "MESS %s", build_version);
+#else
+	sprintf (text, "MAME %s", build_version);
+#endif
+	png_add_text("Software", text);
+	sprintf (text, "%s %s", Machine->gamedrv->manufacturer, Machine->gamedrv->description);
+	png_add_text("System", text);
+
+	if(png_write_sig(fp) == 0)
+		return 0;
+
+	if(png_create_datastream(fp, bitmap) == 0)
+		return 0;
+
+	return 1;
+}
+
+/********************************************************************************
+
+  MNG write functions
+
+********************************************************************************/
+
+static int mng_status;
+
+int mng_capture_start(void *fp, struct mame_bitmap *bitmap)
+{
+	UINT8 mhdr[28];
+/*	UINT8 term; */
+
+	if (osd_fwrite(fp, MNG_Signature, 8) != 8)
+	{
+		logerror("MNG sig write failed\n");
+		return 0;
+	}
+
+	memset (mhdr, 0, 28);
+	convert_to_network_order(bitmap->width, mhdr);
+	convert_to_network_order(bitmap->height, mhdr+4);
+	convert_to_network_order(Machine->drv->frames_per_second, mhdr+8);
+	convert_to_network_order(0x0041, mhdr+24); /* Simplicity profile */
+	/* frame count and play time unspecified because
+	   we don't know at this stage */
+	if (write_chunk(fp, MNG_CN_MHDR, mhdr, 28)==0)
+		return 0;
+
+/*	term = 0x03;    loop sequence    */
+/*	if (write_chunk(fp, MNG_CN_TERM, &term, 1)==0) */
+/*		return 0; */
+
+	mng_status = 1;
+	return 1;
+}
+
+int mng_capture_frame(void *fp, struct mame_bitmap *bitmap)
+{
+	if (mng_status)
+	{
+		if(png_create_datastream(fp, bitmap) == 0)
+			return 0;
+		return 1;
+	}
+	else
+	{
+		logerror("MNG recording not running\n");
+		return 0;
+	}
+}
+
+int mng_capture_stop(void *fp)
+{
+	if (write_chunk(fp, MNG_CN_MEND, NULL, 0)==0)
+		return 0;
+
+	mng_status = 0;
+	return 1;
+}
+
+int mng_capture_status(void)
+{
+	return mng_status;
+}
 

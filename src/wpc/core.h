@@ -3,6 +3,7 @@
 
 #include "wpcsam.h"
 #include "gen.h"
+#include "sim.h"
 
 /*-- some convenience macros --*/
 #ifndef FALSE
@@ -18,27 +19,10 @@
   #define DBGLOG(x)
 #endif
 
-#if defined(MAMEVER) && MAMEVER >= 3709
   #define NORMALREGION(size, reg)  ROM_REGION(size, reg, 0)
   #define NORMALREGIONE(size, reg) ROM_REGION(size, reg, ROMREGION_ERASE)
   #define SOUNDREGION(size ,reg)   ROM_REGION(size, reg, ROMREGION_SOUNDONLY)
   #define SOUNDREGIONE(size ,reg)  ROM_REGION(size, reg, ROMREGION_SOUNDONLY|ROMREGION_ERASE)
-#else /* MAMEVER */
-  #define NORMALREGION(size, reg)  ROM_REGION(size, reg)
-  #define NORMALREGIONE(size, reg) ROM_REGION(size, reg)
-  #define SOUNDREGION(size ,reg)   ROM_REGION(size, reg | REGIONFLAG_SOUNDONLY)
-  #define SOUNDREGIONE(size ,reg)  ROM_REGION(size, reg | REGIONFLAG_SOUNDONLY)
-  #define memory_set_opbase_handler(a,b) cpu_setOPbaseoverride(a,b)
-#endif /* MAMEVER */
-
-#ifdef PINMAME_EXIT
-  #define CORE_EXITFUNC(x) x,
-  #define CORE_DOEXIT(x)
-#else
-  #define CORE_EXITFUNC(x)
-  #define CORE_DOEXIT(x) x()
-#endif
-
 
 /*-- no of DMD frames to add together to create shades --*/
 /*-- (hardcoded, do not change)                        --*/
@@ -65,7 +49,6 @@
   GAMEX(year,name,cl,machine,name,name,ROT0,manuf,longname,flag)
 #define CORE_GAMEDEFNVR90(name, longname, year, manuf, machine, flag) \
   GAMEX(year,name,0,machine,name,name,ROT90,manuf,longname,flag)
-
 
 /*--------------
 /  Input ports
@@ -204,9 +187,9 @@ typedef struct {
 } core_tLCDLayout, *core_ptLCDLayout;
 
 typedef UINT8 tDMDDot[DMD_MAXY+2][DMD_MAXX+2];
-void dmd_draw(struct mame_bitmap *bitmap, tDMDDot dotCol, const core_tLCDLayout *layout);
+extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *cliprect, tDMDDot dotCol, const core_tLCDLayout *layout);
 /* Generic display handler. requires LCD layout in GameData structure */
-extern void gen_refresh(struct mame_bitmap *bitmap, int fullRefresh);
+extern VIDEO_UPDATE(core_led);
 
 /*----------------------
 / WPC driver constants
@@ -383,9 +366,6 @@ extern core_tGlobals coreGlobals;
 #define cg coreGlobals
 
 /*Exported variables*/
-
-extern unsigned char core_palette[(DMD_COLORS+(LAMP_COLORS*2)+7)][3];
-
 /*-- There are no custom fields in the game driver --*/
 /*-- so I have to invent some by myself. Each driver --*/
 /*-- fills in one of these in the game_init function --*/
@@ -440,9 +420,7 @@ extern const int core_bcd2seg9[]; /* BCD to 9 segment display */
 #define core_bcd2seg core_bcd2seg7
 
 /*-- Exported Display handling functions--*/
-void core_initpalette(unsigned char *game_palette, unsigned short *game_colortable,
-                     const unsigned char *color_prom);
-void drawStatus(struct mame_bitmap *bitmap, int fullRefresh);
+extern VIDEO_UPDATE(core_status);
 void core_updateSw(int flipEn);
 
 /*-- text output functions --*/
@@ -484,4 +462,5 @@ extern int core_getDip(int dipBank);
 int core_init(const core_tData *cd);
 void core_exit(void);
 
+extern MACHINE_DRIVER_EXTERN(PinMAME);
 #endif /* INC_CORE */

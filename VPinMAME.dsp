@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /G5 /MTd /W3 /Gm /ZI /Od /I "src" /I "src\zlib" /I "src\wpc" /I "src\vc" /I "src\win32c" /I "src\win32com" /I "src\win32com\autogen" /D "_DEBUG" /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE="static __inline" /D inline=__inline /D __inline__=__inline /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D "ZLIB_DLL" /D "VPINMAME" /D "PINMAME" /D MAMEVER=3716 /YX /FD /GZ /c
+# ADD CPP /nologo /G5 /MTd /W3 /Gm /ZI /Od /I "src" /I "src\zlib" /I "src\wpc" /I "src\vc" /I "src\win32c" /I "src\win32com" /I "src\win32com\autogen" /D "_DEBUG" /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE="static __inline" /D inline=__inline /D __inline__=__inline /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D "ZLIB_DLL" /D "VPINMAME" /D "PINMAME" /D MAMEVER=5900 /D "HAS_8080" /YX /FD /GZ /c
 # SUBTRACT CPP /Fr
 # ADD MTL /out ".\src\win32com\autogen"
 # ADD BASE RSC /l 0x407 /d "_DEBUG"
@@ -80,7 +80,7 @@ SOURCE="$(InputPath)"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_ATL_STATIC_REGISTRY" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /G5 /MT /W3 /O2 /I "src" /I "src\zlib" /I "src\wpc" /I "src\vc" /I "src\win32c" /I "src\win32com" /I "src\win32com\autogen" /D "NDEBUG" /D "_ATL_STATIC_REGISTRY" /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE="static __inline" /D inline=__inline /D __inline__=__inline /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D "ZLIB_DLL" /D "VPINMAME" /D "PINMAME" /D MAMEVER=3716 /D "USE_SOUND_C" /YX /FD /c
+# ADD CPP /nologo /G5 /MT /W3 /O2 /I "src" /I "src\zlib" /I "src\wpc" /I "src\vc" /I "src\win32c" /I "src\win32com" /I "src\win32com\autogen" /D "NDEBUG" /D "_ATL_STATIC_REGISTRY" /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE="static __inline" /D inline=__inline /D __inline__=__inline /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D "ZLIB_DLL" /D "VPINMAME" /D "PINMAME" /D MAMEVER=5900 /D "USE_SOUND_C" /YX /FD /c
 # ADD MTL /out ".\src\win32com\autogen"
 # ADD BASE RSC /l 0x407 /d "NDEBUG"
 # ADD RSC /l 0x409 /i ".\src\win32com\autogen" /d "NDEBUG"
@@ -120,678 +120,6 @@ BuildCmds= \
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
-# Begin Group "MAME"
-
-# PROP Default_Filter ""
-# Begin Group "CPU"
-
-# PROP Default_Filter ""
-# Begin Group "ADSP2100"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\src\cpu\adsp2100\2100dasm.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\adsp2100\adsp2100.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\adsp2100\adsp2100.h
-# End Source File
-# End Group
-# Begin Group "M6809"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\src\cpu\m6809\6809dasm.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m6809\m6809.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m6809\m6809.h
-# End Source File
-# End Group
-# Begin Group "M6800"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\src\cpu\m6800\6800dasm.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m6800\m6800.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m6800\m6800.h
-# End Source File
-# End Group
-# Begin Group "Z80"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\src\cpu\z80\z80.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\z80\z80.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\z80\z80daa.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\z80\z80dasm.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\z80\z80dasm.h
-# End Source File
-# End Group
-# Begin Group "M6502"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\src\cpu\m6502\6502dasm.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m6502\ill02.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m6502\m6502.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m6502\m6502.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m6502\ops02.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m6502\opsc02.h
-# End Source File
-# End Group
-# Begin Group "M68000"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\src\cpu\m68000\cpudefs.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m68000\m68000.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m68000\m68k.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m68000\m68kconf.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m68000\m68kcpu.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m68000\m68kcpu.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m68000\m68kdasm.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m68000\m68kmake.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m68000\m68kmame.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m68000\m68kmame.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m68000\m68kopac.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m68000\m68kopdm.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m68000\m68kopnz.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\m68000\m68kops.c
-# End Source File
-# End Group
-# Begin Group "S2650"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\src\cpu\s2650\2650dasm.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\s2650\s2650.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\s2650\s2650.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpu\s2650\s2650cpu.h
-# End Source File
-# End Group
-# End Group
-# Begin Group "Machine"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\src\machine\6522via.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\machine\6522via.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\machine\6530riot.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\machine\6530riot.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\machine\6532riot.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\machine\6532riot.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\machine\6821pia.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\machine\6821pia.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\machine\8255ppi.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\machine\8255ppi.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\machine\eeprom.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\machine\eeprom.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\machine\mathbox.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\machine\mathbox.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\machine\ticket.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\machine\ticket.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\machine\z80fmly.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\machine\z80fmly.h
-# End Source File
-# End Group
-# Begin Group "Sound"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\src\sound\2151intf.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\2151intf.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\5220intf.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\5220intf.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\adpcm.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\adpcm.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\ay8910.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\ay8910.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\bsmt2000.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\bsmt2000.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\dac.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\dac.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\fm.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\fm.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\hc55516.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\hc55516.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\mixer.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\mixer.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\msm5205.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\msm5205.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\samples.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\samples.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\streams.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\streams.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\tms5220.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\tms5220.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\votrax.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\votrax.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\ym2151.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\ym2151.h
-# End Source File
-# End Group
-# Begin Group "VidHrdw"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\src\vidhrdw\avgdvg.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\vidhrdw\avgdvg.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\vidhrdw\crtc6845.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\vidhrdw\crtc6845.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\vidhrdw\generic.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\vidhrdw\generic.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\vidhrdw\tms9928a.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\vidhrdw\tms9928a.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\vidhrdw\vector.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\vidhrdw\vector.h
-# End Source File
-# End Group
-# Begin Source File
-
-SOURCE=.\src\artwork.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\artwork.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\audit.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\audit.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cheat.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cheat.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\common.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\common.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpuintrf.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\cpuintrf.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\datafile.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\datafile.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\drawgfx.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\drawgfx.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\driver.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\filter.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\filter.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\gfxobj.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\hiscore.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\hiscore.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\info.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\info.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\inptport.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\inptport.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\input.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\input.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\legacy.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\mame.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\mame.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\mamedbg.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\mamedbg.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\memory.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\memory.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\network.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\network.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\osdepend.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\palette.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\palette.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\png.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\png.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\profiler.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\profiler.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sndintrf.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sndintrf.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sprite.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\state.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\state.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\tilemap.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\tilemap.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\timer.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\timer.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\ui_text.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\ui_text.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\unzip.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\unzip.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\usrintrf.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\usrintrf.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\version.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\window.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\window.h
-# End Source File
-# End Group
 # Begin Group "zlib"
 
 # PROP Default_Filter ""
@@ -1390,11 +718,46 @@ SOURCE=.\src\wpc\by6803.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\by6803games.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\byvidgames.c
+
+!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\byvidpin.c
+
+!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\byvidpin.h
+
+!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -1435,74 +798,236 @@ SOURCE=.\src\wpc\gen.h
 # Begin Source File
 
 SOURCE=.\src\wpc\gp.c
+
+!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\gp.h
+
+!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\gpgames.c
+
+!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\gts3.c
+
+!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\gts3.h
+
+!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\gts3dmd.c
+
+!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\gts3dmd.h
+
+!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\gts3games.c
+
+!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\gts80.c
+
+!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\gts80.h
+
+!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\gts80games.c
+
+!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\gts80s.c
+
+!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\gts80s.h
+
+!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\hnk.c
+
+!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\hnk.h
+
+!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\hnkgames.c
+
+!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\hnks.c
+
+!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\hnks.h
+
+!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -1606,6 +1131,22 @@ SOURCE=.\src\wpc\sndbrd.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\stgames.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\taito.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\taito.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\taitogames.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\vpintf.c
 # End Source File
 # Begin Source File
@@ -1643,14 +1184,769 @@ SOURCE=.\src\wpc\wpcsam.h
 # Begin Source File
 
 SOURCE=.\src\wpc\zac.c
+
+!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\zac.h
+
+!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\zacgames.c
+
+!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+
+!ENDIF 
+
+# End Source File
+# End Group
+# Begin Group "MAME"
+
+# PROP Default_Filter ""
+# Begin Group "CPU"
+
+# PROP Default_Filter ""
+# Begin Group "ADSP2100"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\cpu\adsp2100\2100dasm.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\adsp2100\adsp2100.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\adsp2100\adsp2100.h
+# End Source File
+# End Group
+# Begin Group "M6809"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\cpu\m6809\6809dasm.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m6809\m6809.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m6809\m6809.h
+# End Source File
+# End Group
+# Begin Group "M6800"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\cpu\m6800\6800dasm.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m6800\m6800.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m6800\m6800.h
+# End Source File
+# End Group
+# Begin Group "Z80"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\cpu\z80\z80.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\z80\z80.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\z80\z80daa.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\z80\z80dasm.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\z80\z80dasm.h
+# End Source File
+# End Group
+# Begin Group "M6502"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\cpu\m6502\6502dasm.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m6502\ill02.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m6502\m6502.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m6502\m6502.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m6502\ops02.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m6502\opsc02.h
+# End Source File
+# End Group
+# Begin Group "M68000"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\cpu\m68000\cpudefs.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m68000\m68000.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m68000\m68k.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m68000\m68kconf.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m68000\m68kcpu.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m68000\m68kcpu.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m68000\m68kdasm.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m68000\m68kmake.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m68000\m68kmame.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m68000\m68kmame.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m68000\m68kopac.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m68000\m68kopdm.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m68000\m68kopnz.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\m68000\m68kops.c
+# End Source File
+# End Group
+# Begin Group "S2650"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\cpu\s2650\2650dasm.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\s2650\s2650.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\s2650\s2650.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\s2650\s2650cpu.h
+# End Source File
+# End Group
+# Begin Group "I8085"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\cpu\i8085\8085dasm.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i8085\i8085.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i8085\i8085.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i8085\i8085cpu.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i8085\i8085daa.h
+# End Source File
+# End Group
+# End Group
+# Begin Group "Machine"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\machine\6522via.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\machine\6522via.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\machine\6530riot.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\machine\6530riot.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\machine\6532riot.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\machine\6532riot.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\machine\6821pia.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\machine\6821pia.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\machine\8255ppi.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\machine\8255ppi.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\machine\eeprom.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\machine\eeprom.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\machine\mathbox.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\machine\mathbox.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\machine\ticket.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\machine\ticket.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\machine\z80fmly.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\machine\z80fmly.h
+# End Source File
+# End Group
+# Begin Group "Sound"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\sound\2151intf.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\2151intf.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\5220intf.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\5220intf.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\adpcm.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\adpcm.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\ay8910.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\ay8910.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\bsmt2000.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\bsmt2000.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\dac.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\dac.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\fm.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\fm.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\hc55516.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\hc55516.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\mixer.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\mixer.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\msm5205.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\msm5205.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\samples.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\samples.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\streams.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\streams.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\tms5220.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\tms5220.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\votrax.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\votrax.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\ym2151.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\ym2151.h
+# End Source File
+# End Group
+# Begin Group "VidHrdw"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\vidhrdw\avgdvg.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\vidhrdw\avgdvg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\vidhrdw\crtc6845.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\vidhrdw\crtc6845.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\vidhrdw\generic.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\vidhrdw\generic.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\vidhrdw\tms9928a.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\vidhrdw\tms9928a.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\vidhrdw\vector.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\vidhrdw\vector.h
+# End Source File
+# End Group
+# Begin Source File
+
+SOURCE=.\src\artwork.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\artwork.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\audit.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\audit.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cheat.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cheat.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\common.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\common.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpuexec.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpuexec.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpuint.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpuint.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpuintrf.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpuintrf.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\datafile.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\datafile.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\drawgfx.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\drawgfx.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\driver.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\filter.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\filter.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\gfxobj.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\harddisk.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\harddisk.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\hiscore.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\hiscore.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\info.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\info.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\inptport.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\inptport.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\input.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\input.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\legacy.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\mame.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\mame.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\mamedbg.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\mamedbg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\md5.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\md5.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\memory.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\memory.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\network.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\network.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\osdepend.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\palette.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\palette.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\png.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\png.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\profiler.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\profiler.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sndintrf.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sndintrf.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sprite.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\state.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\state.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\tilemap.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\tilemap.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\timer.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\timer.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ui_text.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ui_text.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\unzip.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\unzip.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\usrintrf.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\usrintrf.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\version.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\window.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\window.h
 # End Source File
 # End Group
 # End Group

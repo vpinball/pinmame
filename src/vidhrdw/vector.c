@@ -25,6 +25,7 @@
  *        modified avgdvg.c and sega.c to support new line draw routine
  *        added two new tables Tinten and Tmerge (for 256 color support)
  *        added find_color routine to build above tables .ac
+ * 010903 added support for direct RGB modes MLR
  *
  **************************************************************************** */
 
@@ -65,10 +66,11 @@ static float intensity_correction = 1.5;
 typedef struct
 {
 	int x; int y;
-	int col;
+	rgb_t col;
 	int intensity;
 	int arg1; int arg2; /* start/end in pixel array or clipping info */
 	int status;         /* for dirty and clipping handling */
+	rgb_t (*callback)(void);
 } point;
 
 static point *new_list;
@@ -81,16 +83,8 @@ static unsigned int *pixel;
 static int p_index=0;
 
 static UINT32 *pTcosin;            /* adjust line width */
-static UINT8  *pTinten;            /* intensity         */
-static UINT16 *pTmerge;            /* mergeing pixels   */
-static UINT16 *invpens;            /* maps OS colors to pens */
-
-static UINT32 *pens;
-static UINT16 total_colors;
 
 #define Tcosin(x)   pTcosin[(x)]          /* adjust line width */
-#define Tinten(x,y) pTinten[(x)*total_colors+(y)]  /* intensity         */
-#define Tmerge(x,y) pTmerge[(x)*total_colors+(y)]  /* mergeing pixels   */
 
 #define ANTIALIAS_GUNBIT  6             /* 6 bits per gun in vga (1-8 valid) */
 #define ANTIALIAS_GUNNUM  (1<<ANTIALIAS_GUNBIT)
@@ -98,15 +92,17 @@ static UINT16 total_colors;
 static UINT8 Tgamma[256];         /* quick gamma anti-alias table  */
 static UINT8 Tgammar[256];        /* same as above, reversed order */
 
-static struct osd_bitmap *vecbitmap;
+static struct mame_bitmap *vecbitmap;
 static int vecwidth, vecheight;
 static int vecshift;
 static int xmin, ymin, xmax, ymax; /* clipping area */
 
 static int vector_runs;	/* vector runs per refresh */
 
-static void (*vector_pp)(struct osd_bitmap *bitmap,int x,int y,int pen);
-static int  (*vector_rp)(struct osd_bitmap *bitmap,int x,int y);
+static void (*vector_draw_aa_pixel)(int x, int y, rgb_t col, int dirty);
+
+static void vector_draw_aa_pixel_15 (int x, int y, rgb_t col, int dirty);
+static void vector_draw_aa_pixel_32 (int x, int y, rgb_t col, int dirty);
 
 /*
  * multiply and divide routines for drawing lines
@@ -149,45 +145,8 @@ INLINE int vec_div(int parm1, int parm2)
 }
 #endif
 
-static void vector_pp_8(struct osd_bitmap *b,int x,int y,int p)  { b->line[y][x] = p; }
-static void vector_pp_16(struct osd_bitmap *b,int x,int y,int p)  { ((unsigned short *)b->line[y])[x] = p; }
-static int vector_rp_8(struct osd_bitmap *b,int x,int y)  { return b->line[y][x]; }
-static int vector_rp_16(struct osd_bitmap *b,int x,int y)  { return ((unsigned short *)b->line[y])[x]; }
-
-/*
- * finds closest color and returns the index (for 256 color)
- */
-
-static UINT16 find_pen(unsigned char r,unsigned char g,unsigned char b)
-{
-	int i,bi,ii;
-	long x,y,z,bc;
-	ii = 32;
-	bi = 256;
-	bc = 0x01000000;
-
-	do
-	{
-		for( i = 0; i < total_colors; i++ )
-		{
-			unsigned char r1,g1,b1;
-
-			osd_get_pen(pens[i],&r1,&g1,&b1);
-			if((x=(long)(abs(r1-r)+1)) > ii) continue;
-			if((y=(long)(abs(g1-g)+1)) > ii) continue;
-			if((z=(long)(abs(b1-b)+1)) > ii) continue;
-			x = x*y*z;
-			if (x < bc)
-			{
-				bc = x;
-				bi = i;
-			}
-		}
-		ii<<=1;
-	} while (bi==256);
-
-	return(bi);
-}
+#define Tinten(intensity, col) \
+	MAKE_RGB((RGB_RED(col) * (intensity)) >> 8, (RGB_GREEN(col) * (intensity)) >> 8, (RGB_BLUE(col) * (intensity)) >> 8)
 
 /* MLR 990316 new gamma handling added */
 void vector_set_gamma(float _gamma)
@@ -234,9 +193,9 @@ float vector_get_intensity(void)
  * Initializes vector game video emulation
  */
 
-int vector_vh_start (void)
+VIDEO_START( vector )
 {
-	int h,i,j,k,c[3];
+	int i;
 
 	/* Grab the settings for this session */
 	antialias = options.antialias;
@@ -244,19 +203,6 @@ int vector_vh_start (void)
 	vector_set_flicker(options.vector_flicker);
 	beam = options.beam;
 
-	pens = Machine->pens;
-	total_colors = MIN(256, Machine->drv->total_colors);
-
-	if (Machine->color_depth == 8)
-	{
-		vector_pp = vector_pp_8;
-		vector_rp = vector_rp_8;
-	}
-	else
-	{
-		vector_pp = vector_pp_16;
-		vector_rp = vector_rp_16;
-	}
 
 	if (beam == 0x00010000)
 		beam_diameter_is_one = 1;
@@ -269,79 +215,34 @@ int vector_vh_start (void)
 	old_index = 0;
 	vector_runs = 0;
 
+	switch(Machine->color_depth)
+	{
+	case 15:
+		vector_draw_aa_pixel = vector_draw_aa_pixel_15;
+		break;
+	case 32:
+		vector_draw_aa_pixel = vector_draw_aa_pixel_32;
+		break;
+	default:
+		logerror ("Vector games have to use direct RGB modes!\n");
+		return 1;
+		break;
+	}
+
 	/* allocate memory for tables */
-	pTcosin = malloc ( (2048+1) * sizeof(INT32));   /* yes! 2049 is correct */
-	pTinten = malloc ( total_colors * 256 * sizeof(UINT8));
-	pTmerge = malloc (total_colors * total_colors * sizeof(UINT32));
-	invpens = malloc (65536 * sizeof(UINT16));
-	pixel = malloc (MAX_PIXELS * sizeof (UINT32));
-	old_list = malloc (MAX_POINTS * sizeof (point));
-	new_list = malloc (MAX_POINTS * sizeof (point));
+	pTcosin = auto_malloc ( (2048+1) * sizeof(INT32));   /* yes! 2049 is correct */
+	pixel = auto_malloc (MAX_PIXELS * sizeof (UINT32));
+	old_list = auto_malloc (MAX_POINTS * sizeof (point));
+	new_list = auto_malloc (MAX_POINTS * sizeof (point));
 
 	/* did we get the requested memory? */
-	if (!(pTcosin && pTinten && pTmerge && invpens && pixel && old_list && new_list))
-	{
-		/* vector_vh_stop should better be called by the main engine */
-		/* if vector_vh_start fails */
-		vector_vh_stop();
+	if (!(pTcosin && pixel && old_list && new_list))
 		return 1;
-	}
 
 	/* build cosine table for fixing line width in antialias */
 	for (i=0; i<=2048; i++)
 	{
 		Tcosin(i) = (int)((double)(1.0/cos(atan((double)(i)/2048.0)))*0x10000000 + 0.5);
-	}
-
-	memset (invpens, 0, 65536 * sizeof(unsigned short));
-	for( i = 0; i < total_colors ;i++ )
-		invpens[Machine->pens[i]] = i;
-
-	/* build anti-alias table */
-	h = 256 / ANTIALIAS_GUNNUM;           /* to generate table faster */
-	for (i = 0; i < 256; i += h )               /* intensity */
-	{
-		for (j = 0; j < total_colors; j++)               /* color */
-		{
-			UINT8 r1,g1,b1,pen,n;
-			osd_get_pen(pens[j],&r1,&g1,&b1);
-			pen = find_pen( (r1*(i+1))>>8, (g1*(i+1))>>8, (b1*(i+1))>>8 );
-			for (n = 0; n < h; n++ )
-			{
-				Tinten(i + n, j) = pen;
-			}
-		}
-	}
-
-	/* build merge color table */
-	for( i = 0; i < total_colors ;i++ )                /* color1 */
-	{
-		unsigned char rgb1[3],rgb2[3];
-
-		osd_get_pen(pens[i],&rgb1[0],&rgb1[1],&rgb1[2]);
-		for( j = 0; j <= i ;j++ )               /* color2 */
-		{
-			osd_get_pen(pens[j],&rgb2[0],&rgb2[1],&rgb2[2]);
-
-			for (k = 0; k < 3; k++)
-			if (translucency) /* add gun values */
-			{
-				int tmp;
-				tmp = rgb1[k] + rgb2[k];
-				if (tmp > 255)
-					c[k] = 255;
-				else
-					c[k] = tmp;
-			}
-			else /* choose highest gun value */
-			{
-				if (rgb1[k] > rgb2[k])
-					c[k] = rgb1[k];
-				else
-					c[k] = rgb2[k];
-			}
-			Tmerge(i,j) = Tmerge(j,i) = find_pen(c[0],c[1],c[2]);
-		}
 	}
 
 	vector_set_flip_x(0);
@@ -395,57 +296,72 @@ void vector_set_shift (int shift)
  */
 static void vector_clear_pixels (void)
 {
-	unsigned char bg=pens[0];
 	int i;
 	int coords;
 
-
-	for (i=p_index-1; i>=0; i--)
+	if (Machine->color_depth == 32)
 	{
-		coords = pixel[i];
-		vector_pp (vecbitmap, coords >> 16, coords & 0x0000ffff, bg);
+		for (i=p_index-1; i>=0; i--)
+		{
+			coords = pixel[i];
+			((UINT32 *)vecbitmap->line[coords & 0xffff])[coords >> 16] = 0;
+		}
 	}
-
+	else
+	{
+		for (i=p_index-1; i>=0; i--)
+		{
+			coords = pixel[i];
+			((UINT16 *)vecbitmap->line[coords & 0xffff])[coords >> 16] = 0;
+		}
+	}
 	p_index=0;
-
-}
-
-/*
- * Stop the vector video hardware emulation. Free memory.
- */
-void vector_vh_stop (void)
-{
-	if (pTcosin)
-		free (pTcosin);
-	pTcosin = NULL;
-	if (pTinten)
-		free (pTinten);
-	pTinten = NULL;
-	if (pTmerge)
-		free (pTmerge);
-	pTmerge = NULL;
-	if (pixel)
-		free (pixel);
-	pixel = NULL;
-	if (old_list)
-		free (old_list);
-	old_list = NULL;
-	if (new_list)
-		free (new_list);
-	new_list = NULL;
 }
 
 /*
  * draws an anti-aliased pixel (blends pixel with background)
  */
-INLINE void vector_draw_aa_pixel (int x, int y, int col, int dirty)
+#define LIMIT5(x) ((x < 0x1f)? x : 0x1f)
+#define LIMIT8(x) ((x < 0xff)? x : 0xff)
+
+static void vector_draw_aa_pixel_15 (int x, int y, rgb_t col, int dirty)
 {
+	UINT32 dst;
+
 	if (x < xmin || x >= xmax)
 		return;
 	if (y < ymin || y >= ymax)
 		return;
 
-	vector_pp (vecbitmap, x, y, pens[Tmerge(invpens[vector_rp(vecbitmap, x, y)], col)]);
+	dst = ((UINT16 *)vecbitmap->line[y])[x];
+	((UINT16 *)vecbitmap->line[y])[x] = LIMIT5((RGB_BLUE(col) >> 3) + (dst & 0x1f))
+		| (LIMIT5((RGB_GREEN(col) >> 3) + ((dst >> 5) & 0x1f)) << 5)
+		| (LIMIT5((RGB_RED(col) >> 3) + (dst >> 10)) << 10);
+
+	if (p_index<MAX_PIXELS)
+	{
+		pixel[p_index] = y | (x << 16);
+		p_index++;
+	}
+
+	/* Mark this pixel as dirty */
+	if (dirty)
+		osd_mark_vector_dirty (x, y);
+}
+
+static void vector_draw_aa_pixel_32 (int x, int y, rgb_t col, int dirty)
+{
+	UINT32 dst;
+
+	if (x < xmin || x >= xmax)
+		return;
+	if (y < ymin || y >= ymax)
+		return;
+
+	dst = ((UINT32 *)vecbitmap->line[y])[x];
+	((UINT32 *)vecbitmap->line[y])[x] = LIMIT8(RGB_BLUE(col) + (dst & 0xff))
+		| (LIMIT8(RGB_GREEN(col) + ((dst >> 8) & 0xff)) << 8)
+		| (LIMIT8(RGB_RED(col) + (dst >> 16)) << 16);
 
 	if (p_index<MAX_PIXELS)
 	{
@@ -471,17 +387,13 @@ INLINE void vector_draw_aa_pixel (int x, int y, int col, int dirty)
  * written by Andrew Caldwell
  */
 
-void vector_draw_to (int x2, int y2, int col, int intensity, int dirty)
+void vector_draw_to(int x2, int y2, rgb_t col, int intensity, int dirty, rgb_t (*color_callback)(void))
 {
 	unsigned char a1;
 	int dx,dy,sx,sy,cx,cy,width;
 	static int x1,yy1;
 	int xx,yy;
 	int xy_swap;
-
-#if 0
-	logerror("line:%d,%d nach %d,%d color %d\n",x1,yy1,x2,y2,col);
-#endif
 
 	/* [1] scale coordinates to display */
 
@@ -542,84 +454,88 @@ void vector_draw_to (int x2, int y2, int col, int intensity, int dirty)
 
 	if (intensity == 0) goto end_draw;
 
-	col = Tinten(intensity,col);
+	col = Tinten(intensity, col);
 
 	/* [5] draw line */
 
 	if (antialias)
 	{
 		/* draw an anti-aliased line */
-		dx=abs(x1-x2);
-		dy=abs(yy1-y2);
-		if (dx>=dy)
+		dx = abs(x1 - x2);
+		dy = abs(yy1 - y2);
+
+		if (dx >= dy)
 		{
-			sx = ((x1 <= x2) ? 1:-1);
-			sy = vec_div(y2-yy1,dx);
-			if (sy<0)
+			sx = ((x1 <= x2) ? 1 : -1);
+			sy = vec_div(y2 - yy1, dx);
+			if (sy < 0)
 				dy--;
 			x1 >>= 16;
-			xx = x2>>16;
-			width = vec_mult(beam<<4,Tcosin(abs(sy)>>5));
+			xx = x2 >> 16;
+			width = vec_mult(beam << 4, Tcosin(abs(sy) >> 5));
 			if (!beam_diameter_is_one)
-				yy1-= width>>1; /* start back half the diameter */
+				yy1 -= width >> 1; /* start back half the diameter */
 			for (;;)
 			{
+				if (color_callback) col = Tinten(intensity, (*color_callback)());
 				dx = width;    /* init diameter of beam */
-				dy = yy1>>16;
-				vector_draw_aa_pixel(x1,dy++,Tinten(Tgammar[0xff&(yy1>>8)],col), dirty);
-				dx -= 0x10000-(0xffff & yy1); /* take off amount plotted */
-				a1 = Tgamma[(dx>>8)&0xff];   /* calc remainder pixel */
+				dy = yy1 >> 16;
+				vector_draw_aa_pixel(x1, dy++, Tinten(Tgammar[0xff & (yy1 >> 8)], col), dirty);
+				dx -= 0x10000 - (0xffff & yy1); /* take off amount plotted */
+				a1 = Tgamma[(dx >> 8) & 0xff];   /* calc remainder pixel */
 				dx >>= 16;                   /* adjust to pixel (solid) count */
 				while (dx--)                 /* plot rest of pixels */
-					vector_draw_aa_pixel(x1,dy++,col, dirty);
-				vector_draw_aa_pixel(x1,dy,Tinten(a1,col), dirty);
+					vector_draw_aa_pixel(x1, dy++, col, dirty);
+				vector_draw_aa_pixel(x1, dy, Tinten(a1,col), dirty);
 				if (x1 == xx) break;
-				x1+=sx;
-				yy1+=sy;
+				x1 += sx;
+				yy1 += sy;
 			}
 		}
 		else
 		{
-			sy = ((yy1 <= y2) ? 1:-1);
-			sx = vec_div(x2-x1,dy);
-			if (sx<0)
+			sy = ((yy1 <= y2) ? 1: -1);
+			sx = vec_div(x2 - x1, dy);
+			if (sx < 0)
 				dx--;
 			yy1 >>= 16;
-			yy = y2>>16;
-			width = vec_mult(beam<<4,Tcosin(abs(sx)>>5));
-			if( !beam_diameter_is_one )
-				x1-= width>>1; /* start back half the width */
+			yy = y2 >> 16;
+			width = vec_mult(beam << 4,Tcosin(abs(sx) >> 5));
+			if (!beam_diameter_is_one)
+				x1 -= width >> 1; /* start back half the width */
 			for (;;)
 			{
+				if (color_callback) col = Tinten(intensity, (*color_callback)());
 				dy = width;    /* calc diameter of beam */
-				dx = x1>>16;
-				vector_draw_aa_pixel(dx++,yy1,Tinten(Tgammar[0xff&(x1>>8)],col), dirty);
-				dy -= 0x10000-(0xffff & x1); /* take off amount plotted */
-				a1 = Tgamma[(dy>>8)&0xff];   /* remainder pixel */
+				dx = x1 >> 16;
+				vector_draw_aa_pixel(dx++, yy1, Tinten(Tgammar[0xff & (x1 >> 8)], col), dirty);
+				dy -= 0x10000 - (0xffff & x1); /* take off amount plotted */
+				a1 = Tgamma[(dy >> 8) & 0xff];   /* remainder pixel */
 				dy >>= 16;                   /* adjust to pixel (solid) count */
 				while (dy--)                 /* plot rest of pixels */
-					vector_draw_aa_pixel(dx++,yy1,col, dirty);
-				vector_draw_aa_pixel(dx,yy1,Tinten(a1,col), dirty);
+					vector_draw_aa_pixel(dx++, yy1, col, dirty);
+				vector_draw_aa_pixel(dx, yy1, Tinten(a1, col), dirty);
 				if (yy1 == yy) break;
-				yy1+=sy;
-				x1+=sx;
+				yy1 += sy;
+				x1 += sx;
 			}
 		}
 	}
 	else /* use good old Bresenham for non-antialiasing 980317 BW */
 	{
-		dx = abs(x1-x2);
-		dy = abs(yy1-y2);
-		sx = (x1 <= x2) ? 1: -1;
-		sy = (yy1 <= y2) ? 1: -1;
-		cx = dx/2;
-		cy = dy/2;
+		dx = abs(x1 - x2);
+		dy = abs(yy1 - y2);
+		sx = (x1 <= x2) ? 1 : -1;
+		sy = (yy1 <= y2) ? 1 : -1;
+		cx = dx / 2;
+		cy = dy / 2;
 
-		if (dx>=dy)
+		if (dx >= dy)
 		{
 			for (;;)
 			{
-				vector_draw_aa_pixel (x1, yy1, col, dirty);
+				if (color_callback) col = Tinten(intensity, (*color_callback)());
+				vector_draw_aa_pixel(x1, yy1, col, dirty);
 				if (x1 == x2) break;
 				x1 += sx;
 				cx -= dy;
@@ -634,7 +550,8 @@ void vector_draw_to (int x2, int y2, int col, int intensity, int dirty)
 		{
 			for (;;)
 			{
-				vector_draw_aa_pixel (x1, yy1, col, dirty);
+				if (color_callback) col = Tinten(intensity, (*color_callback)());
+				vector_draw_aa_pixel(x1, yy1, col, dirty);
 				if (yy1 == y2) break;
 				yy1 += sy;
 				cy -= dx;
@@ -649,8 +566,8 @@ void vector_draw_to (int x2, int y2, int col, int intensity, int dirty)
 
 end_draw:
 
-	x1=x2;
-	yy1=y2;
+	x1 = x2;
+	yy1 = y2;
 }
 
 
@@ -658,9 +575,9 @@ end_draw:
  * Adds a line end point to the vertices list. The vector processor emulation
  * needs to call this.
  */
-void vector_add_point (int x, int y, int color, int intensity)
+void vector_add_point (int x, int y, rgb_t color, int intensity)
 {
-	point *new;
+	point *newpoint;
 
 	intensity *= intensity_correction;
 	if (intensity > 0xff)
@@ -674,12 +591,45 @@ void vector_add_point (int x, int y, int color, int intensity)
 		if (intensity > 0xff)
 			intensity = 0xff;
 	}
-	new = &new_list[new_index];
-	new->x = x;
-	new->y = y;
-	new->col = color;
-	new->intensity = intensity;
-	new->status = VDIRTY; /* mark identical lines as clean later */
+	newpoint = &new_list[new_index];
+	newpoint->x = x;
+	newpoint->y = y;
+	newpoint->col = color;
+	newpoint->intensity = intensity;
+	newpoint->callback = 0;
+	newpoint->status = VDIRTY; /* mark identical lines as clean later */
+
+	new_index++;
+	if (new_index >= MAX_POINTS)
+	{
+		new_index--;
+		logerror("*** Warning! Vector list overflow!\n");
+	}
+}
+
+void vector_add_point_callback (int x, int y, rgb_t (*color_callback)(void), int intensity)
+{
+	point *newpoint;
+
+	intensity *= intensity_correction;
+	if (intensity > 0xff)
+		intensity = 0xff;
+
+	if (flicker && (intensity > 0))
+	{
+		intensity += (intensity * (0x80-(rand()&0xff)) * flicker)>>16;
+		if (intensity < 0)
+			intensity = 0;
+		if (intensity > 0xff)
+			intensity = 0xff;
+	}
+	newpoint = &new_list[new_index];
+	newpoint->x = x;
+	newpoint->y = y;
+	newpoint->col = 1;
+	newpoint->intensity = intensity;
+	newpoint->callback = color_callback;
+	newpoint->status = VDIRTY; /* mark identical lines as clean later */
 
 	new_index++;
 	if (new_index >= MAX_POINTS)
@@ -694,14 +644,14 @@ void vector_add_point (int x, int y, int color, int intensity)
  */
 void vector_add_clip (int x1, int yy1, int x2, int y2)
 {
-	point *new;
+	point *newpoint;
 
-	new = &new_list[new_index];
-	new->x = x1;
-	new->y = yy1;
-	new->arg1 = x2;
-	new->arg2 = y2;
-	new->status = VCLIP;
+	newpoint = &new_list[new_index];
+	newpoint->x = x1;
+	newpoint->y = yy1;
+	newpoint->arg1 = x2;
+	newpoint->arg2 = y2;
+	newpoint->status = VCLIP;
 
 	new_index++;
 	if (new_index >= MAX_POINTS)
@@ -851,7 +801,8 @@ static void clever_mark_dirty (void)
 
 		/* If the clips match and the vectors match, update */
 		else if (clips_match && (new->x == old->x) && (new->y == old->y) &&
-			(new->col == old->col) && (new->intensity == old->intensity))
+			(new->col == old->col) && (new->intensity == old->intensity) &&
+			(!new->callback && !old->callback))
 		{
 			if (last_match)
 			{
@@ -892,15 +843,11 @@ static void clever_mark_dirty (void)
 	}
 }
 
-void vector_vh_screenrefresh(struct osd_bitmap *bitmap,int full_refresh)
+VIDEO_UPDATE( vector )
 {
 	int i;
 	int temp_x, temp_y;
-	point *new;
-
-
-	if (full_refresh)
-		fillbitmap(bitmap,Machine->uifont->colortable[0],NULL);
+	point *curpoint;
 
 
 	/* copy parameters */
@@ -909,8 +856,8 @@ void vector_vh_screenrefresh(struct osd_bitmap *bitmap,int full_refresh)
 	vecheight = bitmap->height;
 
 	/* setup scaling */
-	temp_x = (1<<(44-vecshift)) / (Machine->visible_area.max_x - Machine->visible_area.min_x);
-	temp_y = (1<<(44-vecshift)) / (Machine->visible_area.max_y - Machine->visible_area.min_y);
+	temp_x = (1 << (44 - vecshift)) / (Machine->visible_area.max_x - Machine->visible_area.min_x);
+	temp_y = (1 << (44 - vecshift)) / (Machine->visible_area.max_y - Machine->visible_area.min_y);
 
 	if ((Machine->orientation ^ vector_orientation) & ORIENTATION_SWAP_XY)
 	{
@@ -922,8 +869,12 @@ void vector_vh_screenrefresh(struct osd_bitmap *bitmap,int full_refresh)
 		vector_scale_x = temp_x * vecwidth;
 		vector_scale_y = temp_y * vecheight;
 	}
+
 	/* reset clipping area */
-	xmin = 0; xmax = vecwidth; ymin = 0; ymax = vecheight;
+	xmin = 0;
+	xmax = vecwidth;
+	ymin = 0;
+	ymax = vecheight;
 
 	/* next call to vector_clear_list() is allowed to swap the lists */
 	vector_runs = 0;
@@ -938,19 +889,19 @@ void vector_vh_screenrefresh(struct osd_bitmap *bitmap,int full_refresh)
 
 	/* Draw ALL lines into the hidden map. Mark only those lines with */
 	/* new->dirty = 1 as dirty. Remember the pixel start/end indices  */
-	new = new_list;
+	curpoint = new_list;
 	for (i = 0; i < new_index; i++)
 	{
-		if (new->status == VCLIP)
-			vector_set_clip (new->x, new->y, new->arg1, new->arg2);
+		if (curpoint->status == VCLIP)
+			vector_set_clip(curpoint->x, curpoint->y, curpoint->arg1, curpoint->arg2);
 		else
 		{
-			new->arg1 = p_index;
-			vector_draw_to (new->x, new->y, new->col, Tgamma[new->intensity], new->status);
+			curpoint->arg1 = p_index;
+			vector_draw_to(curpoint->x, curpoint->y, curpoint->col, Tgamma[curpoint->intensity], curpoint->status, curpoint->callback);
 
-			new->arg2 = p_index;
+			curpoint->arg2 = p_index;
 		}
-		new++;
+		curpoint++;
 	}
 }
 

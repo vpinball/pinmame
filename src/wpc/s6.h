@@ -1,14 +1,6 @@
 #ifndef INC_S6
 #define INC_S6
 
-#include "core.h"
-#include "wpcsam.h"
-#include "sim.h"
-
-#define S6_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
-#define S6_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
-#define S6_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
-
 /*-- Common Inports for S6 Games --*/
 #define S6_COMPORTS \
   PORT_START /* 0 */ \
@@ -103,49 +95,41 @@
 #define S6_SWSOUNDDIAG  -4
 #define S6_ENTER        -3
 
-/*-------------------------
-/ Machine driver constants
-/--------------------------*/
-#define S6_CPUNO   0
-
-/*-- Memory regions --*/
-#define S6_MEMREG_CPU		REGION_CPU1
+#define S6_CPUREGION	REGION_CPU1
 
 /*-- Main CPU regions and ROM --*/
 #define S6_ROMSTART(name, ver, ic14,chk14, ic20,chk20, ic17,chk17) \
   ROM_START(name##_##ver) \
-    NORMALREGION(0x10000, S6_MEMREG_CPU) \
-        ROM_LOAD(ic14, 0x6000, 0x0800, chk14) \
-        ROM_RELOAD(    0xe000, 0x0800) \
-        ROM_LOAD(ic17, 0x7800, 0x0800, chk17) \
-        ROM_RELOAD(    0xf800, 0x0800) \
-        ROM_LOAD(ic20, 0x7000, 0x0800, chk20) \
-        ROM_RELOAD(    0xf000, 0x0800)
+    NORMALREGION(0x10000, S6_CPUREGION) \
+      ROM_LOAD(ic14, 0x6000, 0x0800, chk14) \
+        ROM_RELOAD(  0xe000, 0x0800) \
+      ROM_LOAD(ic17, 0x7800, 0x0800, chk17) \
+        ROM_RELOAD(  0xf800, 0x0800) \
+      ROM_LOAD(ic20, 0x7000, 0x0800, chk20) \
+        ROM_RELOAD(  0xf000, 0x0800)
 
 #define S6_ROMSTARTPROM(name, ver, ic14,chk14, ic20,chk20, ic17,chk17, ic21,chk21, ic22,chk22, ic26,chk26) \
   ROM_START(name##_##ver) \
-    NORMALREGION(0x10000, S6_MEMREG_CPU) \
-        ROM_LOAD(ic14, 0x6800, 0x0800, chk14) \
-        ROM_RELOAD(    0xe800, 0x0800) \
-        ROM_LOAD(ic17, 0x7800, 0x0800, chk17) \
-        ROM_RELOAD(    0xf800, 0x0800) \
-        ROM_LOAD(ic20, 0x7000, 0x0800, chk20) \
-        ROM_RELOAD(    0xf000, 0x0800) \
-        ROM_LOAD(ic21, 0x6000, 0x0200, chk21) \
-        ROM_RELOAD(    0xe000, 0x0200) \
-        ROM_LOAD(ic22, 0x6200, 0x0200, chk22) \
-        ROM_RELOAD(    0xe000, 0x0200) \
-        ROM_LOAD(ic26, 0x6400, 0x0200, chk26) \
-        ROM_RELOAD(    0xe000, 0x0200)
+    NORMALREGION(0x10000, S6_CPUREGION) \
+      ROM_LOAD(ic14, 0x6800, 0x0800, chk14) \
+        ROM_RELOAD(  0xe800, 0x0800) \
+      ROM_LOAD(ic17, 0x7800, 0x0800, chk17) \
+        ROM_RELOAD(  0xf800, 0x0800) \
+      ROM_LOAD(ic20, 0x7000, 0x0800, chk20) \
+        ROM_RELOAD(  0xf000, 0x0800) \
+      ROM_LOAD(ic21, 0x6000, 0x0200, chk21) \
+        ROM_RELOAD(  0xe000, 0x0200) \
+      ROM_LOAD(ic22, 0x6200, 0x0200, chk22) \
+        ROM_RELOAD(  0xe000, 0x0200) \
+      ROM_LOAD(ic26, 0x6400, 0x0200, chk26) \
+        ROM_RELOAD(  0xe000, 0x0200)
 
 #define S6_ROMEND ROM_END
 
-/*-- These are only here so the game structure can be in the game file --*/
-extern const struct MachineDriver machine_driver_s6;
+extern MACHINE_DRIVER_EXTERN(s6);
+extern MACHINE_DRIVER_EXTERN(s6S);
 #define s6_mS6      s6
-
-extern const struct MachineDriver machine_driver_s6s;
-#define s6_mS6S     s6s
+#define s6_mS6S     s6S
 /* standard 6 digit display layout */
 extern const core_tLCDLayout s6_6digit_disp[],s6_7digit_disp[];
 

@@ -26,7 +26,8 @@ typedef struct
 	mem_write_handler portCwrite;
 	int groupA_mode;
 	int groupB_mode;
-	int io[3];		/* input output status */
+	int in_mask[3];	/* input mask */
+	int out_mask[3];/* output mask */
 	int latch[3];	/* data written to ports */
 } ppi8255;
 
@@ -38,7 +39,6 @@ static void set_mode(int which, int data, int call_handlers);
 void ppi8255_init( ppi8255_interface *intfce )
 {
 	int i;
-
 
 	num = intfce->num;
 
@@ -56,162 +56,138 @@ void ppi8255_init( ppi8255_interface *intfce )
 }
 
 
-int ppi8255_r( int which, int offset )
+int ppi8255_r(int which, int offset)
 {
-	ppi8255 *chip;
-
+	ppi8255 *chip = &chips[which];
+	int result = 0;
 
 	/* some bounds checking */
 	if (which > num)
 	{
-		logerror("Attempting to access an unmapped 8255 chip.  PC: %04X\n", cpu_get_pc());
+		logerror("Attempting to access an unmapped 8255 chip.  PC: %04X\n", activecpu_get_pc());
 		return 0xff;
 	}
-
-	chip = &chips[which];
-
 
 	if (offset > 3)
 	{
-		logerror("Attempting to access an invalid 8255 register.  PC: %04X\n", cpu_get_pc());
+		logerror("Attempting to access an invalid 8255 register.  PC: %04X\n", activecpu_get_pc());
 		return 0xff;
 	}
-
 
 	switch(offset)
 	{
-	case 0: /* Port A read */
-		if (chip->io[0] == 0)
-			return chip->latch[0];	/* output */
-		else
-			if (chip->portAread)  return (*chip->portAread)(0);	/* input */
-		break;
+		case 0: /* Port A read */
+			if (chip->in_mask[0] && chip->portAread)
+				result = (*chip->portAread)(0) & chip->in_mask[0];
+			result |= chip->latch[0] & chip->out_mask[0] & ~chip->in_mask[0];
+			break;
 
-	case 1: /* Port B read */
-		if (chip->io[1] == 0)
-			return chip->latch[1];	/* output */
-		else
-			if (chip->portBread)  return (*chip->portBread)(0);	/* input */
-		break;
+		case 1: /* Port B read */
+			if (chip->in_mask[1] && chip->portBread)
+				result = (*chip->portBread)(0) & chip->in_mask[1];
+			result |= chip->latch[1] & chip->out_mask[1] & ~chip->in_mask[1];
+			break;
 
-	case 2: /* Port C read */
-		if (chip->io[2] == 0)
-			return chip->latch[2];	/* output */
-		else
-			/* return data - combination of input and latched output depending on
-			   the input/output status of each half of port C */
-			if (chip->portCread)  return ((chip->latch[2] & ~chip->io[2]) | ((*chip->portCread)(0) & chip->io[2]));
-		break;
+		case 2: /* Port C read */
+			if (chip->in_mask[2] && chip->portCread)
+				result = (*chip->portCread)(0) & chip->in_mask[2];
+			result |= chip->latch[2] & chip->out_mask[2] & ~chip->in_mask[2];
+			break;
 
-	case 3: /* Control word */
-		return 0xff;
+		case 3: /* Control word */
+			result = 0xff;
+			break;
 	}
 
-	logerror("8255 chip %d: Port %c is being read but has no handler.  PC: %04X\n", which, 'A' + offset, cpu_get_pc());
-
-	return 0xff;
+	return result;
 }
 
 
 
 #define PPI8255_PORT_A_WRITE()							\
 {														\
-	int write_data;										\
-														\
-	write_data = (chip->latch[0] & ~chip->io[0]) |		\
-				 (0xff & chip->io[0]);					\
+	int write_data = (chip->latch[0] & chip->out_mask[0]) |	(0xff & ~chip->out_mask[0]);	\
 														\
 	if (chip->portAwrite)								\
 		(*chip->portAwrite)(0, write_data);				\
 	else												\
-		logerror("8255 chip %d: Port A is being written to but has no handler.  PC: %08X - %02X\n", which, cpu_get_pc(), write_data);	\
+		logerror("8255 chip %d: Port A is being written to but has no handler.  PC: %08X - %02X\n", which, activecpu_get_pc(), write_data);	\
 }
 
 #define PPI8255_PORT_B_WRITE()							\
 {														\
-	int write_data;										\
-														\
-	write_data = (chip->latch[1] & ~chip->io[1]) |		\
-				 (0xff & chip->io[1]);					\
+	int write_data = (chip->latch[1] & chip->out_mask[1]) |	(0xff & ~chip->out_mask[1]);	\
 														\
 	if (chip->portBwrite)								\
 		(*chip->portBwrite)(0, write_data);				\
 	else												\
-		logerror("8255 chip %d: Port B is being written to but has no handler.  PC: %08X - %02X\n", which, cpu_get_pc(), write_data);	\
+		logerror("8255 chip %d: Port B is being written to but has no handler.  PC: %08X - %02X\n", which, activecpu_get_pc(), write_data);	\
 }
 
 #define PPI8255_PORT_C_WRITE()							\
 {														\
-	int write_data;										\
-														\
-	write_data = (chip->latch[2] & ~chip->io[2]) |		\
-				 (0xff & chip->io[2]);					\
+	int write_data = (chip->latch[2] & chip->out_mask[2]) |	(0xff & ~chip->out_mask[2]);	\
 														\
 	if (chip->portCwrite)								\
 		(*chip->portCwrite)(0, write_data);				\
 	else												\
-		logerror("8255 chip %d: Port C is being written to but has no handler.  PC: %08X - %02X\n", which, cpu_get_pc(), write_data);	\
+		logerror("8255 chip %d: Port C is being written to but has no handler.  PC: %08X - %02X\n", which, activecpu_get_pc(), write_data);	\
 }
 
 
-void ppi8255_w( int which, int offset, int data )
+void ppi8255_w(int which, int offset, int data)
 {
-	ppi8255	*chip;
-
+	ppi8255	*chip = &chips[which];
 
 	/* Some bounds checking */
 	if (which > num)
 	{
-		logerror("Attempting to access an unmapped 8255 chip.  PC: %04X\n", cpu_get_pc());
+		logerror("Attempting to access an unmapped 8255 chip.  PC: %04X\n", activecpu_get_pc());
 		return;
 	}
-
-	chip = &chips[which];
-
 
 	if (offset > 3)
 	{
-		logerror("Attempting to access an invalid 8255 register.  PC: %04X\n", cpu_get_pc());
+		logerror("Attempting to access an invalid 8255 register.  PC: %04X\n", activecpu_get_pc());
 		return;
 	}
 
-
 	switch( offset )
 	{
-	case 0: /* Port A write */
-		chip->latch[0] = data;
-		PPI8255_PORT_A_WRITE();
-		break;
+		case 0: /* Port A write */
+			chip->latch[0] = data;
+			PPI8255_PORT_A_WRITE();
+			break;
 
-	case 1: /* Port B write */
-		chip->latch[1] = data;
-		PPI8255_PORT_B_WRITE();
-		break;
+		case 1: /* Port B write */
+			chip->latch[1] = data;
+			PPI8255_PORT_B_WRITE();
+			break;
 
-	case 2: /* Port C write */
-		chip->latch[2] = data;
-		PPI8255_PORT_C_WRITE();
-		break;
+		case 2: /* Port C write */
+			chip->latch[2] = data;
+			PPI8255_PORT_C_WRITE();
+			break;
 
-	case 3: /* Control word */
-		if ( data & 0x80 )
-		{
-			set_mode(which, data & 0x7f, 1);
-		}
-		else
-		{
-			/* bit set/reset */
-			int bit;
-
-			bit = (data >> 1) & 0x07;
-
-			if (data & 1)
-				chip->latch[2] |= (1<<bit);		/* set bit */
+		case 3: /* Control word */
+			if (data & 0x80)
+			{
+				set_mode(which, data & 0x7f, 1);
+			}
 			else
-				chip->latch[2] &= ~(1<<bit);	/* reset bit */
+			{
+				/* bit set/reset */
+				int bit;
 
-			if (chip->portCwrite)  PPI8255_PORT_C_WRITE();
-		}
+				bit = (data >> 1) & 0x07;
+
+				if (data & 1)
+					chip->latch[2] |= (1<<bit);		/* set bit */
+				else
+					chip->latch[2] &= ~(1<<bit);	/* reset bit */
+
+				if (chip->portCwrite)  PPI8255_PORT_C_WRITE();
+			}
 	}
 }
 
@@ -224,7 +200,7 @@ data8_t ppi8255_peek( int which, offs_t offset )
 	/* Some bounds checking */
 	if (which > num)
 	{
-		logerror("Attempting to access an unmapped 8255 chip.  PC: %04X\n", cpu_get_pc());
+		logerror("Attempting to access an unmapped 8255 chip.  PC: %04X\n", activecpu_get_pc());
 		return 0xff;
 	}
 
@@ -233,7 +209,7 @@ data8_t ppi8255_peek( int which, offs_t offset )
 
 	if (offset > 2)
 	{
-		logerror("Attempting to access an invalid 8255 port.  PC: %04X\n", cpu_get_pc());
+		logerror("Attempting to access an invalid 8255 port.  PC: %04X\n", activecpu_get_pc());
 		return 0xff;
 	}
 
@@ -245,99 +221,100 @@ data8_t ppi8255_peek( int which, offs_t offset )
 #endif
 
 
-void ppi8255_set_portAread( int which, mem_read_handler portAread)
+void ppi8255_set_portAread(int which, mem_read_handler portAread)
 {
-	ppi8255 *chip = &chips[which];
-
-	chip->portAread = portAread;
+	chips[which].portAread = portAread;
 }
 
-void ppi8255_set_portBread( int which, mem_read_handler portBread)
+void ppi8255_set_portBread(int which, mem_read_handler portBread)
 {
-	ppi8255 *chip = &chips[which];
-
-	chip->portBread = portBread;
+	chips[which].portBread = portBread;
 }
 
-void ppi8255_set_portCread( int which, mem_read_handler portCread)
+void ppi8255_set_portCread(int which, mem_read_handler portCread)
 {
-	ppi8255 *chip = &chips[which];
-
-	chip->portCread = portCread;
+	chips[which].portCread = portCread;
 }
 
 
-void ppi8255_set_portAwrite( int which, mem_write_handler portAwrite)
+void ppi8255_set_portAwrite(int which, mem_write_handler portAwrite)
 {
-	ppi8255 *chip = &chips[which];
-
-	chip->portAwrite = portAwrite;
+	chips[which].portAwrite = portAwrite;
 }
 
-void ppi8255_set_portBwrite( int which, mem_write_handler portBwrite)
+void ppi8255_set_portBwrite(int which, mem_write_handler portBwrite)
 {
-	ppi8255 *chip = &chips[which];
-
-	chip->portBwrite = portBwrite;
+	chips[which].portBwrite = portBwrite;
 }
 
-void ppi8255_set_portCwrite( int which, mem_write_handler portCwrite)
+void ppi8255_set_portCwrite(int which, mem_write_handler portCwrite)
 {
-	ppi8255 *chip = &chips[which];
-
-	chip->portCwrite = portCwrite;
+	chips[which].portCwrite = portCwrite;
 }
 
 
 static void set_mode(int which, int data, int call_handlers)
 {
-	ppi8255 *chip;
+	ppi8255 *chip = &chips[which];
 
+	chip->groupA_mode = (data >> 5) & 3;
+	chip->groupB_mode = (data >> 2) & 1;
 
-
-	chip = &chips[which];
-
-	chip->groupA_mode = ( data >> 5 ) & 3;
-	chip->groupB_mode = ( data >> 2 ) & 1;
-
-	if ((chip->groupA_mode != 0) || (chip->groupB_mode != 0))
+	if ((chip->groupA_mode == 1) || (chip->groupB_mode == 1))
 	{
-		logerror("8255 chip %d: Setting an unsupported mode %02X.  PC: %04X\n", which, data & 0x62, cpu_get_pc());
+		logerror("8255 chip %d: Setting an unsupported mode %02X.  PC: %04X\n", which, data & 0x62, activecpu_get_pc());
 		return;
 	}
 
-	/* Port A direction */
-	if ( data & 0x10 )
-		chip->io[0] = 0xff;		/* input */
-	else
-		chip->io[0] = 0x00;		/* output */
+	/* Group A mode 0 */
+	if (chip->groupA_mode == 0)
+	{
+		/* Port A direction */
+		if (data & 0x10)
+			chip->in_mask[0] = 0xff, chip->out_mask[0] = 0x00;	/* input */
+		else
+			chip->in_mask[0] = 0x00, chip->out_mask[0] = 0xff; 	/* output */
 
-	/* Port B direction */
-	if ( data & 0x02 )
-		chip->io[1] = 0xff;
-	else
-		chip->io[1] = 0x00;
+		/* Port C upper direction */
+		if (data & 0x08)
+			chip->in_mask[2] |= 0xf0, chip->out_mask[2] &= ~0xf0;	/* input */
+		else
+			chip->in_mask[2] &= ~0xf0, chip->out_mask[2] |= 0xf0;	/* output */
+	}
 
-	/* Port C upper direction */
-	if ( data & 0x08 )
-		chip->io[2] |= 0xf0;
+	/* Group A mode 2/3 */
 	else
-		chip->io[2] &= 0x0f;
+	{
+		chip->in_mask[0] = 0xff;
+		chip->out_mask[0] = 0xff;
 
-	/* Port C lower direction */
-	if ( data & 0x01 )
-		chip->io[2] |= 0x0f;
-	else
-		chip->io[2] &= 0xf0;
+		chip->in_mask[2] = 0xf7;
+		chip->out_mask[2] = 0xff;
+	}
+
+	/* Group B mode 0 */
+	{
+		/* Port B direction */
+		if (data & 0x02)
+			chip->in_mask[1] = 0xff, chip->out_mask[1] = 0x00;	/* input */
+		else
+			chip->in_mask[1] = 0x00, chip->out_mask[1] = 0xff; 	/* output */
+
+		/* Port C lower direction */
+		if (data & 0x01)
+			chip->in_mask[2] |= 0x0f, chip->out_mask[2] &= ~0x0f;	/* input */
+		else
+			chip->in_mask[2] &= ~0x0f, chip->out_mask[2] |= 0x0f;	/* output */
+	}
 
 	/* KT: 25-Dec-99 - 8255 resets latches when mode set */
 	chip->latch[0] = chip->latch[1] = chip->latch[2] = 0;
 
 	if (call_handlers)
 	{
-		if (chip->portAwrite)  PPI8255_PORT_A_WRITE();
-		if (chip->portBwrite)  PPI8255_PORT_B_WRITE();
-		if (chip->portCwrite)  PPI8255_PORT_C_WRITE();
+		if (chip->portAwrite) PPI8255_PORT_A_WRITE();
+		if (chip->portBwrite) PPI8255_PORT_B_WRITE();
+		if (chip->portCwrite) PPI8255_PORT_C_WRITE();
 	}
 }
 

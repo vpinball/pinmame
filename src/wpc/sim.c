@@ -1,4 +1,5 @@
 #include "driver.h"
+#include "core.h"
 #include "wpc.h"
 #include "sim.h"
 
@@ -204,7 +205,7 @@ nextStateBusy: ;
 /  Draw simulator data
 /  (ball status etc.)
 /------------------------*/
-void sim_draw(int fullRefresh, int firstRow) {
+void sim_draw(int firstRow) {
   struct rectangle rec;
   int ii;
 
@@ -224,7 +225,7 @@ void sim_draw(int fullRefresh, int firstRow) {
     rec.min_x = 161+locals.shooterSpeed/2; rec.max_x = 185;
     fillbitmap(Machine->scrbitmap, Machine->pens[BLACK], &rec);
   }
-  if (fullRefresh && simData->drawStatic)
+  if (simData->drawStatic)
     simData->drawStatic((void *)(&Machine->scrbitmap->line[firstRow]));
 }
 

@@ -11,6 +11,11 @@
 
 #define WPC_VBLANKDIV      4 /* How often to check the DMD FIRQ interrupt */
 
+/*-- Smoothing values --*/
+#define WPC_SOLSMOOTH      4 /* Smooth the Solenoids over this numer of VBLANKS */
+#define WPC_LAMPSMOOTH     2 /* Smooth the lamps over this number of VBLANKS */
+#define WPC_DISPLAYSMOOTH  2 /* Smooth the display over this number of VBLANKS */
+
 /*-- IRQ frequence, most WPC functions are performed at 1/16 of this frequency --*/
 #define WPC_IRQFREQ      976 /* IRQ Frequency-Timed by JD*/
 
@@ -22,21 +27,21 @@
 /  local WPC functions
 /----------------------*/
 /*-- interrupt handling --*/
-static int wpc_vblank(void);
-static int wpc_irq(void);
+static INTERRUPT_GEN(wpc_vblank);
+static INTERRUPT_GEN(wpc_irq);
 
 /*-- PIC security chip emulation --*/
-static int wpc_pic_r(void);
+static int  wpc_pic_r(void);
 static void wpc_pic_w(int data);
 static void wpc_serialCnv(const char no[21], UINT8 schip[16], UINT8 code[3]);
 /*-- DMD --*/
-static int  dmd_start(void);
-static void dmd_refresh(struct mame_bitmap *bitmap, int full_refresh);
+static VIDEO_START(wpc_dmd);
+static VIDEO_UPDATE(wpc_dmd);
 
 /*-- misc. --*/
-static void wpc_init(void);
-static void wpc_exit(void);
-static void wpc_nvram(void *file, int write);
+static MACHINE_INIT(wpc);
+static MACHINE_STOP(wpc);
+static NVRAM_HANDLER(wpc);
 
 /*------------------------
 /  DMD display registers
@@ -51,10 +56,10 @@ static void wpc_nvram(void *file, int write);
 /---------------------*/
 UINT8 *wpc_data;     /* WPC registers */
 int WPC_gWPC95;      /* dcs95 sound, used in ADSP2100 patch ? */
-core_tLCDLayout wpc_dispAlpha[] = {
+const core_tLCDLayout wpc_dispAlpha[] = {
   DISP_SEG_16(0,CORE_SEG16),DISP_SEG_16(1,CORE_SEG16),{0}
 };
-core_tLCDLayout wpc_dispDMD[] = {
+const core_tLCDLayout wpc_dispDMD[] = {
   {0,0,32,128,CORE_DMD}, {0}
 };
 
@@ -110,111 +115,65 @@ MEMORY_END
 /*-----------------
 /  Machine drivers
 /------------------*/
-const struct MachineDriver machine_driver_wpcDMD = {
-  {{  CPU_M6809, 2000000, /* 2 Mhz? */
-      wpc_readmem, wpc_writemem, NULL, NULL,
-      wpc_vblank, WPC_VBLANKDIV,
-      wpc_irq, WPC_IRQFREQ
-  }},
-  WPC_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  100, wpc_init, CORE_EXITFUNC(wpc_exit)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  dmd_start, NULL, dmd_refresh,
-  0,0,0,0, {{ 0,0 }},
-  wpc_nvram
-};
+static MACHINE_DRIVER_START(wpc)
+  MDRV_CPU_ADD(M6809, 2000000)
+  MDRV_CPU_MEMORY(wpc_readmem, wpc_writemem)
+  MDRV_CPU_VBLANK_INT(wpc_vblank, WPC_VBLANKDIV)
+  MDRV_CPU_PERIODIC_INT(wpc_irq, WPC_IRQFREQ)
+  MDRV_MACHINE_INIT(wpc) MDRV_MACHINE_STOP(wpc)
+  MDRV_NVRAM_HANDLER(wpc)
+MACHINE_DRIVER_END
 
-const struct MachineDriver machine_driver_wpcAlpha = {
-  {{  CPU_M6809, 2000000, /* 2 Mhz? */
-      wpc_readmem, wpc_writemem, NULL, NULL,
-      wpc_vblank, WPC_VBLANKDIV,
-      wpc_irq, WPC_IRQFREQ
-  }},
-  WPC_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  100, wpc_init, CORE_EXITFUNC(wpc_exit)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  NULL, NULL, gen_refresh,
-  0,0,0,0, {{ 0,0 }},
-  wpc_nvram
-};
+MACHINE_DRIVER_START(wpc_alpha)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_IMPORT_FROM(wpc)
+  MDRV_VIDEO_UPDATE(core_led)
+MACHINE_DRIVER_END
 
-const struct MachineDriver machine_driver_wpcDMD_s = {
-  {{  CPU_M6809, 2000000, /* 2 Mhz? */
-      wpc_readmem, wpc_writemem, NULL, NULL,
-      wpc_vblank, WPC_VBLANKDIV, wpc_irq, WPC_IRQFREQ
-  } WPCS_SOUNDCPU },
-  WPC_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  100, wpc_init, CORE_EXITFUNC(wpc_exit)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  dmd_start, NULL, dmd_refresh,
-  0, 0, 0, 0, { WPCS_SOUND },
-  wpc_nvram
-};
-const struct MachineDriver machine_driver_wpcAlpha1_s = {
-  {{  CPU_M6809, 2000000, /* 2 Mhz? */
-      wpc_readmem, wpc_writemem, NULL, NULL,
-      wpc_vblank, WPC_VBLANKDIV, wpc_irq, WPC_IRQFREQ
-  }, S11C_SOUNDCPU },
-  WPC_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  100, wpc_init, CORE_EXITFUNC(wpc_exit)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  NULL, NULL, gen_refresh,
-  0, 0, 0, 0, { S11C_SOUND },
-  wpc_nvram
-};
+MACHINE_DRIVER_START(wpc_alpha1S)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_IMPORT_FROM(wpc)
+  MDRV_VIDEO_UPDATE(core_led)
+  MDRV_IMPORT_FROM(wmssnd_s11cs)
+MACHINE_DRIVER_END
 
-const struct MachineDriver machine_driver_wpcAlpha_s = {
-  {{  CPU_M6809, 2000000, /* 2 Mhz? */
-      wpc_readmem, wpc_writemem, NULL, NULL,
-      wpc_vblank, WPC_VBLANKDIV, wpc_irq, WPC_IRQFREQ
-  }   WPCS_SOUNDCPU },
-  WPC_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  100, wpc_init, CORE_EXITFUNC(wpc_exit)
-  640, 400, { 0, 639, 0, 399 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  NULL, NULL, gen_refresh,
-  0, 0, 0, 0, { WPCS_SOUND },
-  wpc_nvram
-};
+MACHINE_DRIVER_START(wpc_alpha2S)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_IMPORT_FROM(wpc)
+  MDRV_VIDEO_UPDATE(core_led)
+  MDRV_IMPORT_FROM(wmssnd_wpcs)
+MACHINE_DRIVER_END
 
-const struct MachineDriver machine_driver_wpcDCS_s = {
-  {{  CPU_M6809, 2000000, /* 2 Mhz? */
-      wpc_readmem, wpc_writemem, NULL, NULL,
-      wpc_vblank, WPC_VBLANKDIV, wpc_irq, WPC_IRQFREQ
-  } DCS1_SOUNDCPU },
-  WPC_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  100, wpc_init, CORE_EXITFUNC(wpc_exit)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  dmd_start, NULL, dmd_refresh,
-  0, 0, 0, 0, { DCS_SOUND },
-  wpc_nvram
-};
+MACHINE_DRIVER_START(wpc_dmd)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_IMPORT_FROM(wpc)
+  MDRV_VIDEO_START(wpc_dmd)
+  MDRV_VIDEO_UPDATE(wpc_dmd)
+MACHINE_DRIVER_END
 
-const struct MachineDriver machine_driver_wpcDCS95_s = {
-  {{  CPU_M6809, 2000000, /* 2 Mhz? */
-      wpc_readmem, wpc_writemem, NULL, NULL,
-      wpc_vblank, WPC_VBLANKDIV, wpc_irq, WPC_IRQFREQ
-  } DCS2_SOUNDCPU },
-  WPC_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  100, wpc_init, CORE_EXITFUNC(wpc_exit)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  dmd_start, NULL, dmd_refresh,
-  0, 0, 0, 0, { DCS_SOUND },
-  wpc_nvram
-};
+MACHINE_DRIVER_START(wpc_dmdS)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_IMPORT_FROM(wpc)
+  MDRV_VIDEO_START(wpc_dmd)
+  MDRV_VIDEO_UPDATE(wpc_dmd)
+  MDRV_IMPORT_FROM(wmssnd_wpcs)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(wpc_dcsS)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_IMPORT_FROM(wpc)
+  MDRV_VIDEO_START(wpc_dmd)
+  MDRV_VIDEO_UPDATE(wpc_dmd)
+  MDRV_IMPORT_FROM(wmssnd_dcs1)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(wpc_95S)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_IMPORT_FROM(wpc)
+  MDRV_VIDEO_START(wpc_dmd)
+  MDRV_VIDEO_UPDATE(wpc_dmd)
+  MDRV_IMPORT_FROM(wmssnd_dcs2)
+MACHINE_DRIVER_END
 
 /*--------------------------------------------------------------
 / This is generated WPC_VBLANKDIV times per frame
@@ -222,7 +181,7 @@ const struct MachineDriver machine_driver_wpcDCS95_s = {
 / Generate a FIRQ if it matches the DMD line
 / Also do the smoothing of the solenoids and lamps
 /--------------------------------------------------------------*/
-static int wpc_vblank(void) {
+static INTERRUPT_GEN(wpc_vblank) {
   wpclocals.vblankCount = (wpclocals.vblankCount+1) % 16;
 
   if (core_gameData->gen & (GEN_ALLWPC & ~(GEN_WPCALPHA_1|GEN_WPCALPHA_2))) {
@@ -231,7 +190,7 @@ static int wpc_vblank(void) {
       wpc_firq(TRUE, WPC_FIRQ_DMD);
     if ((wpclocals.vblankCount % WPC_VBLANKDIV) == 0) {
       /*-- This is the real VBLANK interrupt --*/
-      coreGlobals_dmd.DMDFrames[coreGlobals_dmd.nextDMDFrame] = memory_region(WPC_MEMREG_DMD)+ (wpc_data[DMD_VISIBLEPAGE] & 0x0f) * 0x200;
+      coreGlobals_dmd.DMDFrames[coreGlobals_dmd.nextDMDFrame] = memory_region(WPC_DMDREGION)+ (wpc_data[DMD_VISIBLEPAGE] & 0x0f) * 0x200;
       coreGlobals_dmd.nextDMDFrame = (coreGlobals_dmd.nextDMDFrame + 1) % DMD_FRAMES;
     }
   }
@@ -298,12 +257,11 @@ static int wpc_vblank(void) {
   /-------------------------------*/
   if ((wpclocals.vblankCount % WPC_VBLANKDIV) == 0) /*-- update switches --*/
 	core_updateSw((core_gameData->gen & GEN_FLIPTRONFLIP) ? TRUE : (wpc_data[WPC_GILAMPS] & 0x80));
-  return 0;
 }
 
 /* The FIRQ line is wired between the WPC chip and all external I/Os (sound) */
 /* The DMD firq must be generated via the WPC but I don't how. */
-extern void wpc_firq(int set, int src) {
+void wpc_firq(int set, int src) {
   if (set)
     wpclocals.firqSrc |= src;
   else
@@ -345,7 +303,7 @@ READ_HANDLER(wpc_r) {
     case WPC_DIPSWITCH:
       return (core_getDip(0) & 0xfc) + 3;
     case WPC_RTCHOUR: {
-      UINT8 *timeMem = memory_region(WPC_MEMREG_CPU) + 0x1800;
+      UINT8 *timeMem = memory_region(WPC_CPUREGION) + 0x1800;
       UINT16 checksum = 0;
       time_t now;
       struct tm *systime;
@@ -400,7 +358,7 @@ WRITE_HANDLER(wpc_w) {
   switch (offset) {
     case WPC_ROMBANK: { /* change rom bank */
       int bank = data & wpclocals.pageMask;
-      cpu_setbank(1, memory_region(WPC_MEMREG_ROM)+ bank * 0x4000);
+      cpu_setbank(1, memory_region(WPC_ROMREGION)+ bank * 0x4000);
       break;
     }
     case WPC_FLIPPERS: /* Flipper coils */
@@ -482,13 +440,11 @@ WRITE_HANDLER(wpc_w) {
       data |= wpc_data[offset];
       break;
     case 0x3fd1-WPC_BASE:
-	  if (core_gameData->gen & GEN_WPCALPHA_1) {
-		  DBGLOG(("sdataX:%2x\n",data));
-		  sndbrd_0_data_w(0,data); sndbrd_0_ctrl_w(0,0); sndbrd_0_ctrl_w(0,1);
-		  snd_cmd_log(data);
-	  }
+	  DBGLOG(("sdataX:%2x\n",data));
+      sndbrd_0_data_w(0,data); sndbrd_0_ctrl_w(0,0); sndbrd_0_ctrl_w(0,1);
+	  snd_cmd_log(data);
 	  break;
-    case WPC_SOUNDIF:
+	case WPC_SOUNDIF:
 	  DBGLOG(("sdata:%2x\n",data));
       sndbrd_0_data_w(0,data); snd_cmd_log(data);
 	  if (sndbrd_0_type() == SNDBRD_S11CS) sndbrd_0_ctrl_w(0,0);
@@ -508,9 +464,9 @@ WRITE_HANDLER(wpc_w) {
       cpu_set_irq_line(WPC_CPUNO, M6809_IRQ_LINE, CLEAR_LINE);
       break;
     case DMD_PAGE3800: /* set the page that is visible at 0x3800 */
-      cpu_setbank(2, memory_region(WPC_MEMREG_DMD) + (data & 0x0f) * 0x200); break;
+      cpu_setbank(2, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
     case DMD_PAGE3A00: /* set the page that is visible at 0x3A00 */
-      cpu_setbank(3, memory_region(WPC_MEMREG_DMD) + (data & 0x0f) * 0x200); break;
+      cpu_setbank(3, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
     case DMD_FIRQLINE: /* set the line to generate FIRQ at. */
       wpc_firq(FALSE, WPC_FIRQ_DMD);
       break;
@@ -594,12 +550,11 @@ static void wpc_pic_w(int data) {
 /*-------------------------
 /  Generate IRQ interrupt
 /--------------------------*/
-static int wpc_irq(void) {
+static INTERRUPT_GEN(wpc_irq) {
   /*-- update rtc clock --*/
   if (++wpclocals.ticks >= 60*WPC_IRQFREQ)
     { wpclocals.time += 1; wpclocals.ticks = 0; }
   cpu_set_irq_line(WPC_CPUNO, M6809_IRQ_LINE, HOLD_LINE);
-  return 0;
 }
 
 static void wpc_updSw(int *inports) {
@@ -654,47 +609,45 @@ static WRITE_HANDLER(snd_data_cb) { // WPCS sound generates FIRQ on reply
   wpc_firq(TRUE, WPC_FIRQ_SOUND);
 }
 
-static void wpc_init(void) {
+static MACHINE_INIT(wpc) {
                               /*128K  256K        512K        768K       1024K*/
   static const int romLengthMask[] = {0x07, 0x0f, 0x00, 0x1f, 0x00, 0x00, 0x00, 0x3f};
-  int romLength = memory_region_length(WPC_MEMREG_ROM);
+  int romLength = memory_region_length(WPC_ROMREGION);
 
   /* for some strange reason is there no game_exit or machine_exit functions. */
   /* Don't know why the mame32 or MacMame people doesn't complain */
   /* fake an exit */
-  if (wpclocals.initDone) CORE_DOEXIT(wpc_exit);
   memset(&wpclocals, 0, sizeof(wpclocals));
   if (core_gameData == NULL)  return;
 
   switch (core_gameData->gen) {
     case GEN_WPCALPHA_1:
       if (core_init(&s11cs_coreData)) return;
-      sndbrd_0_init(SNDBRD_S11CS, WPC_SCPUNO, memory_region(WPC_MEMREG_SROM),NULL,NULL);
+      sndbrd_0_init(SNDBRD_S11CS, 1, memory_region(S11CS_ROMREGION),NULL,NULL);
       break;
     case GEN_WPCALPHA_2:
     case GEN_WPCDMD:
     case GEN_WPCFLIPTRON:
       if (core_init(&wpcs_coreData)) return;
-      sndbrd_0_init(SNDBRD_WPCS, WPC_SCPUNO, memory_region(WPC_MEMREG_SROM),snd_data_cb,NULL);
+      sndbrd_0_init(SNDBRD_WPCS, 1, memory_region(WPCS_ROMREGION),snd_data_cb,NULL);
       break;
     case GEN_WPCDCS:
     case GEN_WPCSECURITY:
     case GEN_WPC95DCS:
       if (core_init(&dcs_coreData))  return;
-      sndbrd_0_init(SNDBRD_DCS, WPC_SCPUNO, memory_region(WPC_MEMREG_SROM),NULL,NULL);
+      sndbrd_0_init(SNDBRD_DCS, 1, memory_region(DCS_ROMREGION),NULL,NULL);
       break;
     case GEN_WPC95:
       if (core_init(&dcs_coreData))  return;
-      sndbrd_0_init(SNDBRD_DCS95, WPC_SCPUNO, memory_region(WPC_MEMREG_SROM),NULL,NULL);
+      sndbrd_0_init(SNDBRD_DCS95, 1, memory_region(DCS_ROMREGION),NULL,NULL);
       break;
   }
-  wpclocals.initDone = TRUE;
 
   wpclocals.pageMask = romLengthMask[((romLength>>17)-1)&0x07];
 
   /* the non-paged ROM is at the end of the image. move it into the CPU region */
-  memcpy(memory_region(WPC_MEMREG_CPU) + 0x8000,
-         memory_region(WPC_MEMREG_ROM) + romLength - 0x8000, 0x8000);
+  memcpy(memory_region(WPC_CPUREGION) + 0x8000,
+         memory_region(WPC_ROMREGION) + romLength - 0x8000, 0x8000);
 
   /*-- sync counter with vblank --*/
   wpclocals.vblankCount = 1;
@@ -714,12 +667,12 @@ static void wpc_init(void) {
 
   if (options.cheat && !(core_gameData->gen & GEN_WPCALPHA_1)) {
     /*-- speed up startup by disable checksum --*/
-    *(memory_region(WPC_MEMREG_CPU) + 0xffec) = 0x00;
-    *(memory_region(WPC_MEMREG_CPU) + 0xffed) = 0xff;
+    *(memory_region(WPC_CPUREGION) + 0xffec) = 0x00;
+    *(memory_region(WPC_CPUREGION) + 0xffed) = 0xff;
   }
 }
 
-static void wpc_exit(void) {
+static MACHINE_STOP(wpc) {
   sndbrd_0_exit();
   if (wpc_printfile)
     { osd_fclose(wpc_printfile); wpc_printfile = NULL; }
@@ -734,8 +687,8 @@ static void wpc_exit(void) {
 / The RAM size was changed from 8K to 16K starting with
 / DCS generation
 /-------------------------------------------------*/
-void wpc_nvram(void *file, int write) {
-  core_nvram(file, write, memory_region(WPC_MEMREG_CPU),
+static NVRAM_HANDLER(wpc) {
+  core_nvram(file, read_or_write, memory_region(WPC_CPUREGION),
 	         (core_gameData->gen & (GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS)) ? 0x3800 : 0x2000,0xff);
 }
 
@@ -780,8 +733,8 @@ static void wpc_serialCnv(const char no[21], UINT8 pic[16], UINT8 code[3]) {
 /*----------------------------------*/
 /* Williams WPC 128x32 DMD Handling */
 /*----------------------------------*/
-static int dmd_start(void) {
-  UINT8 *RAM = memory_region(WPC_MEMREG_DMD);
+static VIDEO_START(wpc_dmd) {
+  UINT8 *RAM = memory_region(WPC_DMDREGION);
   int ii;
 
   for (ii = 0; ii < DMD_FRAMES; ii++)
@@ -790,12 +743,9 @@ static int dmd_start(void) {
   return 0;
 }
 
-static void dmd_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
+static VIDEO_UPDATE(wpc_dmd) {
   tDMDDot dotCol;
   int ii,jj,kk;
-
-  /* Drawing is not optimised so just clear everything */
-  if (fullRefresh) fillbitmap(bitmap,Machine->pens[0],NULL);
 
   /* Create a temporary buffer with all pixels */
   for (kk = 0, ii = 1; ii < 33; ii++) {
@@ -822,8 +772,114 @@ static void dmd_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
     }
     *line = 0; /* to simplify antialiasing */
   }
-  dmd_draw(bitmap, dotCol, core_gameData->lcdLayout ? core_gameData->lcdLayout : &wpc_dispDMD[0]);
+  video_update_core_dmd(bitmap, cliprect, dotCol, core_gameData->lcdLayout ? core_gameData->lcdLayout : &wpc_dispDMD[0]);
 
-  drawStatus(bitmap,fullRefresh);
+  video_update_core_status(bitmap, cliprect);
 }
+#if 0
+const struct MachineDriver machine_driver_wpcDMD = {
+  {{  CPU_M6809, 2000000, /* 2 Mhz? */
+      wpc_readmem, wpc_writemem, NULL, NULL,
+      wpc_vblank, WPC_VBLANKDIV,
+      wpc_irq, WPC_IRQFREQ
+  }},
+  WPC_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  100, wpc_init, CORE_EXITFUNC(wpc_exit)
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
+  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
+  dmd_start, NULL, dmd_refresh,
+  0,0,0,0, {{ 0,0 }},
+  wpc_nvram
+};
 
+const struct MachineDriver machine_driver_wpcAlpha = {
+  {{  CPU_M6809, 2000000, /* 2 Mhz? */
+      wpc_readmem, wpc_writemem, NULL, NULL,
+      wpc_vblank, WPC_VBLANKDIV,
+      wpc_irq, WPC_IRQFREQ
+  }},
+  WPC_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  100, wpc_init, CORE_EXITFUNC(wpc_exit)
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
+  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
+  NULL, NULL, gen_refresh,
+  0,0,0,0, {{ 0,0 }},
+  wpc_nvram
+};
+
+const struct MachineDriver machine_driver_wpcDMD_s = {
+  {{  CPU_M6809, 2000000, /* 2 Mhz? */
+      wpc_readmem, wpc_writemem, NULL, NULL,
+      wpc_vblank, WPC_VBLANKDIV, wpc_irq, WPC_IRQFREQ
+  } WPCS_SOUNDCPU },
+  WPC_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  100, wpc_init, CORE_EXITFUNC(wpc_exit)
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
+  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
+  dmd_start, NULL, dmd_refresh,
+  0, 0, 0, 0, { WPCS_SOUND },
+  wpc_nvram
+};
+const struct MachineDriver machine_driver_wpcAlpha1_s = {
+  {{  CPU_M6809, 2000000, /* 2 Mhz? */
+      wpc_readmem, wpc_writemem, NULL, NULL,
+      wpc_vblank, WPC_VBLANKDIV, wpc_irq, WPC_IRQFREQ
+  }, S11C_SOUNDCPU },
+  WPC_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  100, wpc_init, CORE_EXITFUNC(wpc_exit)
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
+  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
+  NULL, NULL, gen_refresh,
+  0, 0, 0, 0, { S11C_SOUND },
+  wpc_nvram
+};
+
+const struct MachineDriver machine_driver_wpcAlpha_s = {
+  {{  CPU_M6809, 2000000, /* 2 Mhz? */
+      wpc_readmem, wpc_writemem, NULL, NULL,
+      wpc_vblank, WPC_VBLANKDIV, wpc_irq, WPC_IRQFREQ
+  }   WPCS_SOUNDCPU },
+  WPC_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  100, wpc_init, CORE_EXITFUNC(wpc_exit)
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
+  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
+  NULL, NULL, gen_refresh,
+  0, 0, 0, 0, { WPCS_SOUND },
+  wpc_nvram
+};
+
+const struct MachineDriver machine_driver_wpcDCS_s = {
+  {{  CPU_M6809, 2000000, /* 2 Mhz? */
+      wpc_readmem, wpc_writemem, NULL, NULL,
+      wpc_vblank, WPC_VBLANKDIV, wpc_irq, WPC_IRQFREQ
+  } DCS1_SOUNDCPU },
+  WPC_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  100, wpc_init, CORE_EXITFUNC(wpc_exit)
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
+  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
+  dmd_start, NULL, dmd_refresh,
+  0, 0, 0, 0, { DCS_SOUND },
+  wpc_nvram
+};
+
+const struct MachineDriver machine_driver_wpcDCS95_s = {
+  {{  CPU_M6809, 2000000, /* 2 Mhz? */
+      wpc_readmem, wpc_writemem, NULL, NULL,
+      wpc_vblank, WPC_VBLANKDIV, wpc_irq, WPC_IRQFREQ
+  } DCS2_SOUNDCPU },
+  WPC_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  100, wpc_init, CORE_EXITFUNC(wpc_exit)
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
+  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
+  dmd_start, NULL, dmd_refresh,
+  0, 0, 0, 0, { DCS_SOUND },
+  wpc_nvram
+};
+#endif

@@ -48,13 +48,13 @@ DATA     OP| C2| C2| C2| C2| C2| C2| C2| C2| M1| M1| M1| M1| M1| M1| M1| M1| M2|
 
 YM2151 Test register (0x01):
 
-		+----------+-----+------+-----+-----+-----+------+------+-------+
-		| bit no.  |  7  |   6  |  5  |  4  |  3  |   2  |   1  |    0  |
-		+----------+-----+------+-----+-----+-----+------+------+-------+
-		| hex val. | 80  |  40  | 20  | 10  | 08  |  04  |  02  |   01  |
-		+----------+-----+------+-----+-----+-----+------+------+-------+
-		|          |LS/MS| RIen | HEG | NEG | HPG | uLFO | HLFO | u_clk |
-		+----------+-----+------+-----+-----+-----+------+------+-------+
+	+----------+-----+------+-----+-----+------+------+------+-------+
+	| bit no.  |  7  |   6  |  5  |  4  |   3  |   2  |   1  |    0  |
+	+----------+-----+------+-----+-----+------+------+------+-------+
+	| hex val. | 80  |  40  | 20  | 10  |  08  |  04  |  02  |   01  |
+	+----------+-----+------+-----+-----+------+------+------+-------+
+	|          |LS/MS| RIen | HEG | NEG | HPGL | ILFO | HLFO | u_clk |
+	+----------+-----+------+-----+-----+------+------+------+-------+
 
 
 bit 6 - RIen (Read Internal data Enable)
@@ -114,9 +114,10 @@ bit 4 - NEG (Negate output data)
 
 
 
-bit 3 - HPG (Halt Phase Generator)
+bit 3 - HPGL (Halt Phase Generator AND LFO amplitude modulation)
 
-	When 1 - Phase Generator is halted.
+	When 1 - Phase Generator is halted. Also amplitude modulation
+		(from LFO to Envelope Generator) is halted.
 
 	You can use this bit to analyse Envelope Generator work.
 	As it was in the case of HEG bit you need to know _EXACTLY_ when to set this bit.
@@ -125,19 +126,21 @@ bit 3 - HPG (Halt Phase Generator)
 
 
 
-bit 2 - uLFO (unknown, but LFO related)
+bit 2 - ILFO (Internal LFO related)
 
-	I do not know what this bit really does. I only noticed that when it is
-	set, _something_ LFO related happens.
-	I know for sure LFO Amplitude Modulation gets "tweaked" when this bit is set,
-	I do not know if it alters Phase Modulation in any way.
+	When 1 - LFO output (depends on selected waveform)
+
+	LFO outputs some internal signals...what are they ?
+	I did not test if this bit alters Phase Modulation in any way.
+
 	Also alters timer A somehow. At least it sounds like a restart.
 
 
 
 bit 1 - HLFO (Halt LFO)
 
-	When 1 - LFO gets HALTED.
+	When 1 - LFO gets HALTED (at maximum amplitude in case of AM).
+
 	On the 1 to 0 transition LFO will be RESET to startup of the waveform
 	(phase of the LFO _only_).
 

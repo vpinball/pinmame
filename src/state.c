@@ -4,9 +4,6 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdarg.h>
-#include "osd_cpu.h"
-#include "osdepend.h"
-#include "mame.h"
 #include "driver.h"
 #include "zlib.h"
 

@@ -1,14 +1,6 @@
 #ifndef INC_BY35
 #define INC_BY35
 
-#include "core.h"
-#include "wpcsam.h"
-#include "sim.h"
-
-#define BY35_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
-#define BY35_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
-#define BY35_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKS */
-
 /*-- Common Inports for BY35 Games --*/
 #define BY35_COMPORTS \
   PORT_START /* 0 */ \
@@ -144,81 +136,78 @@
 /*-------------------------
 / Machine driver constants
 /--------------------------*/
-#define BY35_CPUNO   0
-#define BY35_SCPU1NO 1
-#define BY35_SCPU2NO 2
-
 /*-- Memory regions --*/
-#define BY35_MEMREG_CPU		REGION_CPU1
-#define BY35_MEMREG_S1CPU	REGION_CPU2
-#define BY35_MEMREG_S2CPU	REGION_CPU3
-#define BY35_MEMREG_SROM        REGION_SOUND1
+#define BY35_CPUREGION	REGION_CPU1
 
 /*-- Main CPU regions and ROM --*/
 #define BY17_ROMSTART228(name,n1,chk1,n2,chk2,n3,chk3) \
   ROM_START(name) \
-    NORMALREGION(0x10000, BY35_MEMREG_CPU) \
+    NORMALREGION(0x10000, BY35_CPUREGION) \
       ROM_LOAD( n1, 0x1400, 0x0200, chk1) \
       ROM_LOAD( n2, 0x1600, 0x0200, chk2) \
       ROM_LOAD( n3, 0x1800, 0x0800, chk3) \
-      ROM_RELOAD(   0xf800, 0x0800)
+        ROM_RELOAD( 0xf800, 0x0800)
 
 #define BY17_ROMSTART8x8(name,n1,chk1,n3,chk3)\
   ROM_START(name) \
-    NORMALREGION(0x10000, BY35_MEMREG_CPU) \
+    NORMALREGION(0x10000, BY35_CPUREGION) \
       ROM_LOAD( n1, 0x1000, 0x0800, chk1) \
       ROM_LOAD( n3, 0x1800, 0x0800, chk3) \
-      ROM_RELOAD(   0xf800, 0x0800)
+        ROM_RELOAD( 0xf800, 0x0800)
 
 #define BY17_ROMSTARTx88(name,n2,chk2,n3,chk3)\
   ROM_START(name) \
-    NORMALREGION(0x10000, BY35_MEMREG_CPU) \
+    NORMALREGION(0x10000, BY35_CPUREGION) \
       ROM_LOAD( n2, 0x1000, 0x0800, chk2) \
       ROM_LOAD( n3, 0x1800, 0x0800, chk3) \
-      ROM_RELOAD(   0xf800, 0x0800)
+        ROM_RELOAD( 0xf800, 0x0800)
 
 #define BY35_ROMSTART888(name,n1,chk1,n2,chk2,n3,chk3)\
   ROM_START(name) \
-    NORMALREGION(0x10000, BY35_MEMREG_CPU) \
+    NORMALREGION(0x10000, BY35_CPUREGION) \
       ROM_LOAD( n1, 0x1000, 0x0800, chk1) \
       ROM_LOAD( n2, 0x5000, 0x0800, chk2) \
       ROM_LOAD( n3, 0x5800, 0x0800, chk3) \
-      ROM_RELOAD(   0xf800, 0x0800)
+        ROM_RELOAD( 0xf800, 0x0800)
 
 #define BY35_ROMSTART880(name,n1,chk1,n2,chk2,n3,chk3)\
   ROM_START(name) \
-    NORMALREGION(0x10000, BY35_MEMREG_CPU) \
+    NORMALREGION(0x10000, BY35_CPUREGION) \
       ROM_LOAD( n1, 0x1000, 0x0800, chk1) \
       ROM_LOAD( n2, 0x5000, 0x0800, chk2) \
       ROM_LOAD( n3, 0x1800, 0x0800, chk3) \
       ROM_CONTINUE( 0x5800, 0x0800 ) \
-      ROM_RELOAD(   0xf000, 0x1000 )
-
+        ROM_RELOAD( 0xf000, 0x1000 )
 
 #define BY35_ROMSTARTx00(name,n2,chk2,n3,chk3)\
   ROM_START(name) \
-    NORMALREGION(0x10000, BY35_MEMREG_CPU) \
+    NORMALREGION(0x10000, BY35_CPUREGION) \
       ROM_LOAD( n2, 0x1000, 0x0800, chk2) \
       ROM_CONTINUE( 0x5000, 0x0800) /* ?? */ \
       ROM_LOAD( n3, 0x1800, 0x0800, chk3 ) \
       ROM_CONTINUE( 0x5800, 0x0800) \
-      ROM_RELOAD(   0xf000, 0x1000)
+        ROM_RELOAD( 0xf000, 0x1000)
 
 #define ST200_ROMSTART8888(name,n1,chk1,n2,chk2,n3,chk3,n4,chk4)\
   ROM_START(name) \
-    NORMALREGION(0x10000, BY35_MEMREG_CPU) \
+    NORMALREGION(0x10000, BY35_CPUREGION) \
       ROM_LOAD( n1, 0x1000, 0x0800, chk1) \
       ROM_LOAD( n2, 0x1800, 0x0800, chk2) \
       ROM_LOAD( n3, 0x5000, 0x0800, chk3) \
       ROM_LOAD( n4, 0x5800, 0x0800, chk4) \
-      ROM_RELOAD(   0xf800, 0x0800)
+        ROM_RELOAD( 0xf800, 0x0800)
 
 #define BY35_ROMEND ROM_END
 #define BY17_ROMEND ROM_END
 
-/*-- These are only here so the game structure can be in the game file --*/
-extern const struct MachineDriver machine_driver_by35;
-extern const struct MachineDriver machine_driver_st200;
+extern MACHINE_DRIVER_EXTERN(by35);
+extern MACHINE_DRIVER_EXTERN(by35_32S);
+extern MACHINE_DRIVER_EXTERN(by35_51S);
+extern MACHINE_DRIVER_EXTERN(by35_56S);
+extern MACHINE_DRIVER_EXTERN(by35_61S);
+extern MACHINE_DRIVER_EXTERN(by35_45S);
+extern MACHINE_DRIVER_EXTERN(st200);
+
 #define by35_mBY17      by35
 #define by35_mBY35_32   by35
 #define by35_mBY35_50   by35
@@ -230,21 +219,14 @@ extern const struct MachineDriver machine_driver_st200;
 #define by35_mBY35_56   by35 // XENON
 #define by35_mST100     by35
 #define by35_mST200     st200
-
-extern const struct MachineDriver machine_driver_by35_32s;
-extern const struct MachineDriver machine_driver_by35_51s;
-extern const struct MachineDriver machine_driver_by35_61s;
-extern const struct MachineDriver machine_driver_by35_56s;
-extern const struct MachineDriver machine_driver_by35_45s;
 #define by35_mBY17S     by35
-#define by35_mBY35_32S  by35_32s
-#define by35_mBY35_50S  by35_32s
-#define by35_mBY35_51S  by35_51s
-#define by35_mBY35_61S  by35_61s
-#define by35_mBY35_61BS by35_61s
-#define by35_mBY35_81S  by35_61s
-#define by35_mBY35_54S  by35
-#define by35_mBY35_56S  by35_56s // XENON
-#define by35_mBY35_45S  by35_45s
+#define by35_mBY35_32S  by35_32S
+#define by35_mBY35_50S  by35_32S
+#define by35_mBY35_51S  by35_51S
+#define by35_mBY35_61S  by35_61S
+#define by35_mBY35_61BS by35_61S
+#define by35_mBY35_81S  by35_61S
+#define by35_mBY35_56S  by35_56S // XENON
+#define by35_mBY35_45S  by35_45S
 #endif /* INC_BY35 */
 

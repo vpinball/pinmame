@@ -31,8 +31,8 @@ struct OSDDisplay
 {
     int                 (*init)(PCONTROLLEROPTIONS pControllerOptions);
     void                (*exit)(void);
-    struct osd_bitmap*  (*alloc_bitmap)(int width, int height, int depth);
-    void                (*free_bitmap)(struct osd_bitmap* bitmap);
+    struct mame_bitmap*  (*alloc_bitmap)(int width, int height, int depth);
+    void                (*free_bitmap)(struct mame_bitmap* bitmap);
     int                 (*create_display)(int width, int height, int depth, int fps, int attributes, int orientation);
     void                (*close_display)(void);
     void                (*set_visible_area)(int min_x, int max_x, int min_y, int max_y);
@@ -47,13 +47,13 @@ struct OSDDisplay
     void                (*get_pen)(int pen, unsigned char* pRed, unsigned char* pGreen, unsigned char* pBlue);
     void                (*mark_dirty)(int x1, int y1, int x2, int y2);
     int                 (*skip_this_frame)(void);
-    void                (*update_display)(struct osd_bitmap *game_bitmap, struct osd_bitmap *debug_bitmap);
+    void                (*update_display)(struct mame_bitmap *game_bitmap, struct mame_bitmap *debug_bitmap);
     void                (*led_w)(int leds_status);
     void                (*set_gamma)(float gamma);
     float               (*get_gamma)(void);
     void                (*set_brightness)(int brightness);
     int                 (*get_brightness)(void);
-    void                (*save_snapshot)(struct osd_bitmap *bitmap);
+    void                (*save_snapshot)(struct mame_bitmap *bitmap);
 
     BOOL                (*OnMessage)(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam, LRESULT* pResult);
     void                (*Refresh)(void);
@@ -68,7 +68,7 @@ extern "C" {
 extern float Display_get_gamma(void);
 extern int   Display_get_brightness(void);
 extern void  Display_MapColor(unsigned char* pRed, unsigned char* pGreen, unsigned char* pBlue);
-extern void  Display_WriteBitmap(struct osd_bitmap* tBitmap, PALETTEENTRY* pPalEntries);
+extern void  Display_WriteBitmap(struct mame_bitmap* tBitmap, PALETTEENTRY* pPalEntries);
 extern BOOL  Display_Throttled(void);
 
 extern struct OSDDisplay Display;

@@ -238,6 +238,7 @@ INLINE void WWORD_PGM(UINT32 addr, UINT32 data)
 	addr <<= 2;
 	ADSP2100_WRPGM(&OP_ROM[ADSP2100_PGM_OFFSET + addr], data);
 }
+
 #define ROPCODE() RWORD_PGM(adsp2100.pc)
 
 
@@ -409,24 +410,21 @@ static void check_irqs(void)
 }
 
 
-void adsp2100_set_nmi_line(int state)
-{
-	/* no NMI line */
-}
-
-
 void adsp2100_set_irq_line(int irqline, int state)
 {
-	/* update the latched state */
-	if (state != CLEAR_LINE && adsp2100.irq_state[irqline] == CLEAR_LINE)
-    	adsp2100.irq_latch[irqline] = 1;
+	if (irqline < 4)
+	{
+		/* update the latched state */
+		if (state != CLEAR_LINE && adsp2100.irq_state[irqline] == CLEAR_LINE)
+	    	adsp2100.irq_latch[irqline] = 1;
 
-    /* update the absolute state */
-    adsp2100.irq_state[irqline] = state;
+	    /* update the absolute state */
+	    adsp2100.irq_state[irqline] = state;
 
-	/* check for IRQs */
-    if (state != CLEAR_LINE)
-    	check_irqs();
+		/* check for IRQs */
+	    if (state != CLEAR_LINE)
+	    	check_irqs();
+	}
 }
 
 
@@ -460,35 +458,6 @@ void adsp2100_set_context(void *src)
 
 	/* check for IRQs */
 	check_irqs();
-}
-
-
-
-/*###################################################################################################
-**	SPECIAL REGISTER GETTERS AND SETTERS
-**#################################################################################################*/
-
-unsigned adsp2100_get_pc(void)
-{
-	return adsp2100.pc;
-}
-
-
-void adsp2100_set_pc(unsigned val)
-{
-	adsp2100.pc = val;
-}
-
-
-unsigned adsp2100_get_sp(void)
-{
-	return adsp2100.pc_sp;
-}
-
-
-void adsp2100_set_sp(unsigned val)
-{
-	adsp2100.pc_sp = val;
 }
 
 
@@ -1473,6 +1442,7 @@ unsigned adsp2100_get_reg(int regnum)
 {
 	switch (regnum)
 	{
+		case REG_PC:
 		case ADSP2100_PC: return adsp2100.pc;
 
 		case ADSP2100_AX0: return adsp2100.core.ax0.u;
@@ -1530,6 +1500,7 @@ unsigned adsp2100_get_reg(int regnum)
 		case ADSP2100_SSTAT: return adsp2100.sstat;
 		case ADSP2100_MSTAT: return adsp2100.mstat;
 
+		case REG_SP:
 		case ADSP2100_PCSP: return adsp2100.pc_sp;
 		case ADSP2100_CNTRSP: return adsp2100.cntr_sp;
 		case ADSP2100_STATSP: return adsp2100.stat_sp;
@@ -1571,6 +1542,7 @@ void adsp2100_set_reg(int regnum, unsigned val)
 {
 	switch (regnum)
 	{
+		case REG_PC:
 		case ADSP2100_PC: adsp2100.pc = val; break;
 
 		case ADSP2100_AX0: wr_ax0(val); break;
@@ -1628,6 +1600,7 @@ void adsp2100_set_reg(int regnum, unsigned val)
 		case ADSP2100_SSTAT: wr_sstat(val); break;
 		case ADSP2100_MSTAT: wr_mstat(val); break;
 
+		case REG_SP:
 		case ADSP2100_PCSP: adsp2100.pc_sp = val; break;
 		case ADSP2100_CNTRSP: adsp2100.cntr_sp = val; break;
 		case ADSP2100_STATSP: adsp2100.stat_sp = val; break;
@@ -1883,13 +1856,8 @@ void adsp2105_exit(void)
 int adsp2105_execute(int cycles) { return adsp2100_execute(cycles); }
 unsigned adsp2105_get_context(void *dst) { return adsp2100_get_context(dst); }
 void adsp2105_set_context(void *src)  { adsp2100_set_context(src); }
-unsigned adsp2105_get_pc(void) { return adsp2100_get_pc(); }
-void adsp2105_set_pc(unsigned val) { adsp2100_set_pc(val); }
-unsigned adsp2105_get_sp(void) { return adsp2100_get_sp(); }
-void adsp2105_set_sp(unsigned val) { adsp2100_set_sp(val); }
 unsigned adsp2105_get_reg(int regnum) { return adsp2100_get_reg(regnum); }
 void adsp2105_set_reg(int regnum, unsigned val) { adsp2100_set_reg(regnum,val); }
-void adsp2105_set_nmi_line(int state) { adsp2100_set_nmi_line(state); }
 void adsp2105_set_irq_line(int irqline, int state) { adsp2100_set_irq_line(irqline,state); }
 void adsp2105_set_irq_callback(int (*callback)(int irqline)) { adsp2100_set_irq_callback(callback); }
 const char *adsp2105_info(void *context, int regnum)

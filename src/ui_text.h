@@ -120,6 +120,7 @@ enum
 	UI_memorywatch,
 	UI_generalhelp,
 	UI_options,
+	UI_reloaddatabase,
 	UI_watchpoint,
 	UI_disabled,
 	UI_cheats,
@@ -137,11 +138,16 @@ enum
 
 	/* watchpoint stuff */
 	UI_watchlength,
+	UI_watchdisplaytype,
 	UI_watchlabeltype,
 	UI_watchlabel,
 	UI_watchx,
 	UI_watchy,
 	UI_watch,
+
+	UI_hex,
+	UI_decimal,
+	UI_binary,
 
 	/* search stuff */
 	UI_search_lives,
@@ -154,6 +160,7 @@ enum
 	UI_search_speed_medium,
 	UI_search_speed_slow,
 	UI_search_speed_veryslow,
+	UI_search_speed_allmemory,
 	UI_search_select_memory_areas,
 	UI_search_matches_found,
 	UI_search_noinit,

@@ -73,7 +73,6 @@ enum
 **	INTERRUPT CONSTANTS
 **#################################################################################################*/
 
-#define ADSP2100_INT_NONE	-1		/* No interrupt requested */
 #define ADSP2100_IRQ0		0		/* IRQ0 */
 #define ADSP2100_IRQ1		1		/* IRQ1 */
 #define ADSP2100_IRQ2		2		/* IRQ2 */
@@ -97,13 +96,8 @@ extern void adsp2100_exit(void);
 extern int adsp2100_execute(int cycles);    /* NS 970908 */
 extern unsigned adsp2100_get_context(void *dst);
 extern void adsp2100_set_context(void *src);
-extern unsigned adsp2100_get_pc(void);
-extern void adsp2100_set_pc(unsigned val);
-extern unsigned adsp2100_get_sp(void);
-extern void adsp2100_set_sp(unsigned val);
 extern unsigned adsp2100_get_reg(int regnum);
 extern void adsp2100_set_reg(int regnum, unsigned val);
-extern void adsp2100_set_nmi_line(int state);
 extern void adsp2100_set_irq_line(int irqline, int state);
 extern void adsp2100_set_irq_callback(int (*callback)(int irqline));
 extern const char *adsp2100_info(void *context, int regnum);
@@ -143,7 +137,6 @@ extern unsigned DasmADSP2100(char *buffer, unsigned pc);
 
 #define adsp2105_icount adsp2100_icount
 
-#define ADSP2105_INT_NONE	-1		/* No interrupt requested */
 #define ADSP2105_IRQ0		0		/* IRQ0 */
 #define ADSP2105_IRQ1		1		/* IRQ1 */
 #define ADSP2105_IRQ2		2		/* IRQ2 */
@@ -154,13 +147,8 @@ extern void adsp2105_exit(void);
 extern int adsp2105_execute(int cycles);    /* NS 970908 */
 extern unsigned adsp2105_get_context(void *dst);
 extern void adsp2105_set_context(void *src);
-extern unsigned adsp2105_get_pc(void);
-extern void adsp2105_set_pc(unsigned val);
-extern unsigned adsp2105_get_sp(void);
-extern void adsp2105_set_sp(unsigned val);
 extern unsigned adsp2105_get_reg(int regnum);
 extern void adsp2105_set_reg(int regnum, unsigned val);
-extern void adsp2105_set_nmi_line(int state);
 extern void adsp2105_set_irq_line(int irqline, int state);
 extern void adsp2105_set_irq_callback(int (*callback)(int irqline));
 extern const char *adsp2105_info(void *context, int regnum);

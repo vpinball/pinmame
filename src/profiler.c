@@ -92,7 +92,7 @@ logerror("Profiler error: FILO buffer underflow\n");
 	}
 }
 
-void profiler_show(struct osd_bitmap *bitmap)
+void profiler_show(struct mame_bitmap *bitmap)
 {
 	int i,j;
 	UINT64 total,normalize;
@@ -114,8 +114,9 @@ void profiler_show(struct osd_bitmap *bitmap)
 		"Video  ",
 		"drawgfx",
 		"copybmp",
-		"tmupdat",
 		"tmdraw ",
+		"tmdrroz",
+		"tmupdat",
 		"Blit   ",
 		"Sound  ",
 		"Mixer  ",
@@ -130,6 +131,7 @@ void profiler_show(struct osd_bitmap *bitmap)
 		"Profilr",
 		"Idle   ",
 	};
+	static int showdelay[PROFILER_TOTAL];
 
 
 	if (!use_profiler) return;
@@ -163,8 +165,11 @@ void profiler_show(struct osd_bitmap *bitmap)
 			for (j = 0;j < MEMORY;j++)
 				computed += profile.count[j][i];
 		}
-		if (computed)
+		if (computed || showdelay[i])
 		{
+			if (computed) showdelay[i] = Machine->drv->frames_per_second;
+			showdelay[i]--;
+
 			if (i < PROFILER_PROFILER)
 				sprintf(buf,"%s%3d%%%3d%%",names[i],
 						(int)((computed * 100 + total/2) / total),

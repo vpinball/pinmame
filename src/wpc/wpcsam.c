@@ -12,13 +12,14 @@
    110301  Upper Flipper now only make sound if they are in
            the game FLIP_SOL()
    020801  Recoded proc_mechsound() to check for {-1} entry,
-           and to also not continue searching the map, after a 
+           and to also not continue searching the map, after a
 		   match is found! (SJE)
 */
 
 #include "driver.h"
-#include "wpcsam.h"
+#include "core.h"
 #include "wpc.h"
+#include "wpcsam.h"
 
 /*----------------
 / Samples

@@ -21,9 +21,6 @@ static int default_player;
 static int analog_player_port[MAX_INPUT_PORTS];
 #endif /* MAME_NET */
 
-/* Use the MRU code for 4way joysticks */
-#define MRU_JOYSTICK
-
 /* header identifying the version of the game.cfg file */
 /* mame 0.36b11 */
 #define MAMECFGSTRING_V5 "MAMECFG\5"
@@ -138,9 +135,6 @@ struct ipd inputport_defaults[] =
 	{ IPT_UI_THROTTLE,          "Throttle",				SEQ_DEF_1(KEYCODE_F10) },
 	{ IPT_UI_SHOW_FPS,          "Show FPS",				SEQ_DEF_5(KEYCODE_F11, CODE_NOT, KEYCODE_LCONTROL, CODE_NOT, KEYCODE_LSHIFT) },
 	{ IPT_UI_SHOW_PROFILER,     "Show Profiler",		SEQ_DEF_2(KEYCODE_F11, KEYCODE_LSHIFT) },
-#ifdef MAME_DEBUG
-	{ IPT_UI_SHOW_COLORS,       "Show Colors",			SEQ_DEF_2(KEYCODE_F11, KEYCODE_LCONTROL) },
-#endif
 #ifdef MESS
 	{ IPT_UI_TOGGLE_UI,         "UI Toggle",			SEQ_DEF_1(KEYCODE_SCRLOCK) },
 #endif
@@ -324,6 +318,10 @@ struct ipd inputport_defaults[] =
 	{ (IPT_AD_STICK_Y | IPF_PLAYER4)+IPT_EXTENSION,                "AD Stick Y 4", SEQ_DEF_1(JOYCODE_4_DOWN) },
 
 	{ IPT_UNKNOWN,             "UNKNOWN",         SEQ_DEF_0 },
+	{ IPT_OSD_RESERVED,        "",                SEQ_DEF_0 },
+	{ IPT_OSD_RESERVED,        "",                SEQ_DEF_0 },
+	{ IPT_OSD_RESERVED,        "",                SEQ_DEF_0 },
+	{ IPT_OSD_RESERVED,        "",                SEQ_DEF_0 },
 	{ IPT_END,                 0,                 SEQ_DEF_0 }	/* returned when there is no match */
 };
 
@@ -535,10 +533,13 @@ static void save_default_keys(void)
 		i = 0;
 		while (inputport_defaults[i].type != IPT_END)
 		{
-			writeint(f,inputport_defaults[i].type);
+			if (inputport_defaults[i].type != IPT_OSD_RESERVED)
+			{
+				writeint(f,inputport_defaults[i].type);
 
-			seq_write(f,&inputport_defaults_backup[i].seq);
-			seq_write(f,&inputport_defaults[i].seq);
+				seq_write(f,&inputport_defaults_backup[i].seq);
+				seq_write(f,&inputport_defaults[i].seq);
+			}
 
 			i++;
 		}
@@ -1315,26 +1316,137 @@ profiler_mark(PROFILER_INPUT);
 profiler_mark(PROFILER_END);
 }
 
+#define MAX_JOYSTICKS 3
+#define MAX_PLAYERS 4
+static int mJoyCurrent[MAX_JOYSTICKS*MAX_PLAYERS];
+static int mJoyPrevious[MAX_JOYSTICKS*MAX_PLAYERS];
+static int mJoy4Way[MAX_JOYSTICKS*MAX_PLAYERS];
+/*
+The above "Joy" states contain packed bits:
+	0001	up
+	0010	down
+	0100	left
+	1000	right
+*/
+
+static void
+ScanJoysticks( struct InputPort *in )
+{
+	int i;
+	int port = 0;
+
+	/* Save old Joystick state. */
+	memcpy( mJoyPrevious, mJoyCurrent, sizeof(mJoyPrevious) );
+
+	/* Initialize bits of mJoyCurrent to zero. */
+	memset( mJoyCurrent, 0, sizeof(mJoyCurrent) );
+
+	/* Now iterate over the input port structure to populate mJoyCurrent. */
+	while( in->type != IPT_END && port < MAX_INPUT_PORTS )
+	{
+		while (in->type != IPT_END && in->type != IPT_PORT)
+		{
+			if ((in->type & ~IPF_MASK) >= IPT_JOYSTICK_UP &&
+				(in->type & ~IPF_MASK) <= IPT_JOYSTICKLEFT_RIGHT)
+			{
+				InputSeq* seq;
+				seq = input_port_seq(in);
+				if( seq_pressed(seq) )
+				{
+					int joynum,joydir,player;
+					player = 0;
+					if ((in->type & IPF_PLAYERMASK) == IPF_PLAYER2)
+						player = 1;
+					else if ((in->type & IPF_PLAYERMASK) == IPF_PLAYER3)
+						player = 2;
+					else if ((in->type & IPF_PLAYERMASK) == IPF_PLAYER4)
+						player = 3;
+
+					joynum = player * MAX_JOYSTICKS +
+							 ((in->type & ~IPF_MASK) - IPT_JOYSTICK_UP) / 4;
+					joydir = ((in->type & ~IPF_MASK) - IPT_JOYSTICK_UP) % 4;
+
+					mJoyCurrent[joynum] |= 1<<joydir;
+				}
+			}
+			in++;
+		}
+		port++;
+		if (in->type == IPT_PORT) in++;
+	}
+
+	/* Process the joystick states, to filter out illegal combinations of switches. */
+	for( i=0; i<MAX_JOYSTICKS*MAX_PLAYERS; i++ )
+	{
+		if( (mJoyCurrent[i]&0x3)==0x3 ) /* both up and down are pressed */
+		{
+			mJoyCurrent[i]&=0xc; /* clear up and down */
+		}
+		if( (mJoyCurrent[i]&0xc)==0xc ) /* both left and right are pressed */
+		{
+			mJoyCurrent[i]&=0x3; /* clear left and right */
+		}
+
+		/* Only update mJoy4Way if the joystick has moved. */
+		if( mJoyCurrent[i]!=mJoyPrevious[i] )
+		{
+			mJoy4Way[i] = mJoyCurrent[i];
+
+			if( (mJoy4Way[i] & 0x3) && (mJoy4Way[i] & 0xc) )
+			{
+				/* If joystick is pointing at a diagonal, acknowledge that the player moved
+				 * the joystick by favoring a direction change.  This minimizes frustration
+				 * when using a keyboard for input, and maximizes responsiveness.
+				 *
+				 * For example, if you are holding "left" then switch to "up" (where both left
+				 * and up are briefly pressed at the same time), we'll transition immediately
+				 * to "up."
+				 *
+				 * Under the old "sticky" key implentation, "up" wouldn't be triggered until
+				 * left was released.
+				 *
+				 * Zero any switches that didn't change from the previous to current state.
+				 */
+				mJoy4Way[i] ^= (mJoy4Way[i] & mJoyPrevious[i]);
+			}
+
+			if( (mJoy4Way[i] & 0x3) && (mJoy4Way[i] & 0xc) )
+			{
+				/* If we are still pointing at a diagonal, we are in an indeterminant state.
+				 *
+				 * This could happen if the player moved the joystick from the idle position directly
+				 * to a diagonal, or from one diagonal directly to an extreme diagonal.
+				 *
+				 * The chances of this happening with a keyboard are slim, but we still need to
+				 * constrain this case.
+				 *
+				 * For now, just resolve randomly.
+				 */
+				if( rand()&1 )
+				{
+					mJoy4Way[i] &= 0x3; /* eliminate horizontal component */
+				}
+				else
+				{
+					mJoy4Way[i] &= 0xc; /* eliminate vertical component */
+				}
+			}
+		}
+	}
+} /* ScanJoysticks */
 
 void update_input_ports(void)
 {
 	int port,ib;
 	struct InputPort *in;
+
 #define MAX_INPUT_BITS 1024
-static int impulsecount[MAX_INPUT_BITS];
-static int waspressed[MAX_INPUT_BITS];
-static int pbwaspressed[MAX_INPUT_BITS];
-#define MAX_JOYSTICKS 3
-#define MAX_PLAYERS 4
-#ifdef MRU_JOYSTICK
-static int update_serial_number = 1;
-static int joyserial[MAX_JOYSTICKS*MAX_PLAYERS][4];
-#else
-int joystick[MAX_JOYSTICKS*MAX_PLAYERS][4];
-#endif
+	static int impulsecount[MAX_INPUT_BITS];
+	static int waspressed[MAX_INPUT_BITS];
+	static int pbwaspressed[MAX_INPUT_BITS];
 
 #ifdef MAME_NET
-int player;
+	int player;
 #endif /* MAME_NET */
 
 
@@ -1348,13 +1460,7 @@ profiler_mark(PROFILER_INPUT);
 		input_analog[port] = 0;
 	}
 
-#ifndef MRU_JOYSTICK
-	for (i = 0;i < 4*MAX_JOYSTICKS*MAX_PLAYERS;i++)
-		joystick[i/4][i%4] = 0;
-#endif
-
 	in = Machine->input_ports;
-
 	if (in->type == IPT_END) return; 	/* nothing to do */
 
 	/* make sure the InputPort definition is correct */
@@ -1363,61 +1469,12 @@ profiler_mark(PROFILER_INPUT);
 		logerror("Error in InputPort definition: expecting PORT_START\n");
 		return;
 	}
-	else in++;
-
-#ifdef MRU_JOYSTICK
-	/* scan all the joystick ports */
-	port = 0;
-	while (in->type != IPT_END && port < MAX_INPUT_PORTS)
+	else
 	{
-		while (in->type != IPT_END && in->type != IPT_PORT)
-		{
-			if ((in->type & ~IPF_MASK) >= IPT_JOYSTICK_UP &&
-				(in->type & ~IPF_MASK) <= IPT_JOYSTICKLEFT_RIGHT)
-			{
-				InputSeq* seq;
-
-				seq = input_port_seq(in);
-
-				if (seq_get_1(seq) != 0 && seq_get_1(seq) != CODE_NONE)
-				{
-					int joynum,joydir,player;
-
-					player = 0;
-					if ((in->type & IPF_PLAYERMASK) == IPF_PLAYER2)
-						player = 1;
-					else if ((in->type & IPF_PLAYERMASK) == IPF_PLAYER3)
-						player = 2;
-					else if ((in->type & IPF_PLAYERMASK) == IPF_PLAYER4)
-						player = 3;
-
-					joynum = player * MAX_JOYSTICKS +
-							 ((in->type & ~IPF_MASK) - IPT_JOYSTICK_UP) / 4;
-					joydir = ((in->type & ~IPF_MASK) - IPT_JOYSTICK_UP) % 4;
-
-					if (seq_pressed(seq))
-					{
-						if (joyserial[joynum][joydir] == 0)
-							joyserial[joynum][joydir] = update_serial_number;
-					}
-					else
-						joyserial[joynum][joydir] = 0;
-				}
-			}
-			in++;
-		}
-
-		port++;
-		if (in->type == IPT_PORT) in++;
+		in++;
 	}
-	update_serial_number += 1;
 
-	in = Machine->input_ports;
-
-	/* already made sure the InputPort definition is correct */
-	in++;
-#endif
-
+	ScanJoysticks( in ); /* populates mJoyCurrent[] */
 
 	/* scan all the input ports */
 	port = 0;
@@ -1425,8 +1482,6 @@ profiler_mark(PROFILER_INPUT);
 	while (in->type != IPT_END && port < MAX_INPUT_PORTS)
 	{
 		struct InputPort *start;
-
-
 		/* first of all, scan the whole input port definition and build the */
 		/* default value. I must do it before checking for input because otherwise */
 		/* multiple keys associated with the same input bit wouldn't work (the bit */
@@ -1486,9 +1541,7 @@ if (Machine->drv->vblank_duration == 0)
 				else
 				{
 					InputSeq* seq;
-
 					seq = input_port_seq(in);
-
 					if (seq_pressed(seq))
 					{
 						/* skip if coin input and it's locked out */
@@ -1501,7 +1554,9 @@ if (Machine->drv->vblank_duration == 0)
 
 						/* if IPF_RESET set, reset the first CPU */
 						if ((in->type & IPF_RESETCPU) && waspressed[ib] == 0 && !playback)
+						{
 							cpu_set_reset_line(0,PULSE_LINE);
+						}
 
 						if (in->type & IPF_IMPULSE)
 						{
@@ -1535,63 +1590,34 @@ if (IP_GET_IMPULSE(in) == 0)
 #endif /* !MAME_NET */
 							joynum = player * MAX_JOYSTICKS +
 									((in->type & ~IPF_MASK) - IPT_JOYSTICK_UP) / 4;
+
 							joydir = ((in->type & ~IPF_MASK) - IPT_JOYSTICK_UP) % 4;
 
 							mask = in->mask;
 
-#ifndef MRU_JOYSTICK
-							/* avoid movement in two opposite directions */
-							if (joystick[joynum][joydir ^ 1] != 0)
-								mask = 0;
-							else if (in->type & IPF_4WAY)
+							if( in->type & IPF_4WAY )
 							{
-								int dir;
-
-
-								/* avoid diagonal movements */
-								for (dir = 0;dir < 4;dir++)
+								/* apply 4-way joystick constraint */
+								if( ((mJoy4Way[joynum]>>joydir)&1) == 0 )
 								{
-									if (joystick[joynum][dir] != 0)
-										mask = 0;
-								}
-							}
-
-							joystick[joynum][joydir] = 1;
-#else
-							/* avoid movement in two opposite directions */
-							if (joyserial[joynum][joydir ^ 1] != 0)
-								mask = 0;
-							else if (in->type & IPF_4WAY)
-							{
-
-								int mru_dir = joydir;
-								int mru_serial = 0;
-								int dir;
-								int stickyflag=0; /* jmk */
-
-								/* avoid diagonal movements, use mru button */
-								for (dir = 0;dir < 4;dir++)
-								{
-									if (joyserial[joynum][dir] > mru_serial)
-									{
-										mru_serial = joyserial[joynum][dir];
-										mru_dir = dir;
-									}
-									if ((dir != joydir) && (joyserial[joynum][dir] != 0))	/* jmk */
-										stickyflag=1;					/* jmk */
-								}
-
-//								if (mru_dir != joydir) 			/* jmk */
-								if ((mru_dir == joydir) && stickyflag)	/* jmk */
 									mask = 0;
+								}
 							}
-#endif
+							else
+							{
+								/* filter up+down and left+right */
+								if( ((mJoyCurrent[joynum]>>joydir)&1) == 0 )
+								{
+									mask = 0;
+								}
+							}
 
 							input_port_value[port] ^= mask;
-						}
+						} /* joystick */
 						else
+						{
 							input_port_value[port] ^= in->mask;
-
+						}
 						waspressed[ib] = 1;
 					}
 					else

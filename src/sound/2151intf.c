@@ -38,7 +38,6 @@ static void timer_callback_2151(int param)
 	int n=param&0x7f;
 	int c=param>>7;
 
-	Timer[n][c] = 0;
 	YM2151TimerOver(n,c);
 }
 
@@ -47,20 +46,13 @@ static void TimerHandler(int n,int c,int count,double stepTime)
 {
 	if( count == 0 )
 	{	/* Reset FM Timer */
-		if( Timer[n][c] )
-		{
-	 		timer_remove (Timer[n][c]);
-			Timer[n][c] = 0;
-		}
+	 	timer_enable (Timer[n][c], 0);
 	}
 	else
 	{	/* Start FM Timer */
 		double timeSec = (double)count * stepTime;
-
-		if( Timer[n][c] == 0 )
-		{
-			Timer[n][c] = timer_set (timeSec, (c<<7)|n, timer_callback_2151 );
-		}
+		if (!timer_enable(Timer[n][c], 1))
+		 	timer_adjust (Timer[n][c], timeSec, (c<<7)|n, 0);
 	}
 }
 
@@ -108,7 +100,10 @@ static int my_YM2151_sh_start(const struct MachineSound *msound,int mode)
 		}
 		/* Set Timer handler */
 		for (i = 0; i < intf->num; i++)
-			Timer[i][0] =Timer[i][1] = 0;
+		{
+			Timer[i][0] = timer_alloc(timer_callback_2151);
+			Timer[i][1] = timer_alloc(timer_callback_2151);
+		}
 		if (OPMInit(intf->num,intf->baseclock,Machine->sample_rate,TimerHandler,IRQHandler) == 0)
 		{
 			/* set port handler */

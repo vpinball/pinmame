@@ -1,6 +1,6 @@
 //============================================================
 //
-//	osinline.c - Win32 inline functions
+//	osinline.h - Win32 inline functions
 //
 //============================================================
 
@@ -16,32 +16,57 @@
 
 #define osd_mark_vector_dirty MARK_DIRTY
 
+#define osd_pend	osd_pend
+#define pdo16		osd_pdo16
+#define pdt16		osd_pdt16
+#define pdt16np		osd_pdt16np
+
+
+//============================================================
+//	PROTOTYPES
+//============================================================
+
+void osd_pend(void);
+void osd_pdo16( UINT16 *dest, const UINT16 *source, int count, UINT8 *pri, UINT32 pcode );
+void osd_pdt16( UINT16 *dest, const UINT16 *source, const UINT8 *pMask, int mask, int value, int count, UINT8 *pri, UINT32 pcode );
+void osd_pdt16np( UINT16 *dest, const UINT16 *source, const UINT8 *pMask, int mask, int value, int count, UINT8 *pri, UINT32 pcode );
+
 
 //============================================================
 //	INLINE FUNCTIONS
 //============================================================
 
-#define vec_mult _vec_mult
-
 #ifdef _MSC_VER
 
+#define vec_mult _vec_mult
 INLINE int _vec_mult(int x, int y)
 {
-	__asm	mov		eax, x
-	__asm	imul	y					// do the multiply
-	__asm	mov		eax, edx			// the result has to go in eax (???)
+    int result;
 
-	// Note : I assume that MAME just wants the upper 32 bits, as per the 
-	// original _vec_mult() implementation below
+    __asm {
+        mov eax, x
+        imul y
+        mov result, edx
+    }
+
+    return result;
 }
 
 INLINE unsigned int osd_cycles(void)
 {
-	__asm rdtsc							// tsc = edx:eax
+	int result;
+
+	__asm {
+        rdtsc
+        mov result, eax
+    }
+
+    return result;
 }
 
-#else // original MAME implementations
+#else
 
+#define vec_mult _vec_mult
 INLINE int _vec_mult(int x, int y)
 {
 	int result;
@@ -71,6 +96,6 @@ INLINE unsigned int osd_cycles(void)
 	return result;
 }
 
-#endif	// __MSC_VER
+#endif /* _MSC_VER */
 
 #endif /* __OSINLINE__ */

@@ -1,14 +1,6 @@
 #ifndef INC_BY6803
 #define INC_BY6803
 
-#include "core.h"
-#include "wpcsam.h"
-#include "sim.h"
-
-#define BY6803_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
-#define BY6803_LAMPSMOOTH      6 /* Smooth the lamps over this number of VBLANKS */
-#define BY6803_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKS */
-
 /*-- Common Inports for BY6803 Games --*/
 #define BY6803_COMPORTS \
   PORT_START /* 2 */ \
@@ -87,21 +79,17 @@
 / Machine driver constants
 /--------------------------*/
 #define BY6803_CPUNO   0
-
-/*-- Memory regions --*/
-#define BY6803_MEMREG_CPU   REGION_CPU1
-#define BY6803_MEMREG_SCPU  REGION_CPU2
-#define BY6803_MEMREG_SROM  REGION_SOUND1
+#define BY6803_CPUREGION   REGION_CPU1
 
 /*-- Main CPU regions and ROM --*/
 #define BY6803_ROMSTARTx4(name, n1, chk1)\
   ROM_START(name) \
-    NORMALREGION(0x10000, BY6803_MEMREG_CPU) \
+    NORMALREGION(0x10000, BY6803_CPUREGION) \
       ROM_LOAD( n1, 0xc000, 0x4000, chk1 )
 
 #define BY6803_ROMSTART44(name,n1,chk1,n2,chk2)\
   ROM_START(name) \
-    NORMALREGION(0x10000, BY6803_MEMREG_CPU) \
+    NORMALREGION(0x10000, BY6803_CPUREGION) \
       ROM_LOAD( n1, 0x8000, 0x4000, chk1) \
       ROM_LOAD( n2, 0xc000, 0x4000, chk2 )
 #define BY6803_ROMEND ROM_END
@@ -110,13 +98,12 @@
 #define BY6803_DISP7SEG  0
 #define BY6803_DISPALPHA 1
 
-/*-- These are only here so the game structure can be in the game file --*/
-extern const struct MachineDriver machine_driver_by6803_61S;
-extern const struct MachineDriver machine_driver_by6803_45S;
-extern const struct MachineDriver machine_driver_by6803_TCSS;
-extern const struct MachineDriver machine_driver_by6803_TCS2S;
-extern const struct MachineDriver machine_driver_by6803_SDS;
-extern const struct MachineDriver machine_driver_by6803_S11CS;
+extern MACHINE_DRIVER_EXTERN(by6803_61S);
+extern MACHINE_DRIVER_EXTERN(by6803_45S);
+extern MACHINE_DRIVER_EXTERN(by6803_TCSS);
+extern MACHINE_DRIVER_EXTERN(by6803_TCS2S);
+extern MACHINE_DRIVER_EXTERN(by6803_SDS);
+extern MACHINE_DRIVER_EXTERN(by6803_S11CS);
 
 #define by_mBY6803_61S   by6803_61S
 #define by_mBY6803_45S   by6803_45S

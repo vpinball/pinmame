@@ -43,7 +43,10 @@ int mech_getSpeed(int mechNo) { return locals.mechData[mechNo].speed / locals.me
 void mech_addLong(int mechNo, int sol1, int sol2, int type, int length, int steps, mech_tSwData sw[]) {
   /* Can't find a way to call mech_init before game_init */
   /* This solution will only start the mech timer if a mech is added */
-  if (locals.mechTimer == NULL) locals.mechTimer = timer_pulse(TIME_IN_HZ(60*MECH_FASTPULSES), 0, mech_updateAll);
+  if (locals.mechTimer == NULL) {
+    locals.mechTimer = timer_alloc(mech_updateAll);
+    timer_adjust(locals.mechTimer,0,0, TIME_IN_HZ(60*MECH_FASTPULSES));
+  }
   if ((mechNo >= 0) && (mechNo < MECH_MAXMECH)) {
     ptMechData md = &locals.mechData[mechNo];
     int ii = 0;

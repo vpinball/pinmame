@@ -4,8 +4,25 @@
 //
 //============================================================
 
-#ifndef __WIN32_WINDOW__
-#define __WIN32_WINDOW__
+#ifndef __WIN_WINDOW__
+#define __WIN_WINDOW__
+
+#include "blit.h"
+
+
+//============================================================
+//	TYPE DEFINITIONS
+//============================================================
+
+struct win_effect_data
+{
+	const char *name;
+	int effect;
+	int min_xscale;
+	int min_yscale;
+	int max_xscale;
+	int max_yscale;
+};
 
 
 
@@ -14,42 +31,50 @@
 //============================================================
 
 // command line config
-extern int			window_mode;
-extern int			wait_vsync;
-extern int			use_ddraw;
-extern int			use_triplebuf;
-extern int			ddraw_stretch;
-extern int			gfx_width;
-extern int			gfx_height;
-extern int			gfx_depth;
-extern int			scanlines;
-extern int			switchres;
-extern int			switchbpp;
-extern int			maximize;
-extern int			keepaspect;
-extern int			gfx_refresh;
-extern int			matchrefresh;
-extern int			syncrefresh;
-extern float		gfx_brightness;
-extern int			bliteffect;
-extern float		screen_aspect;
+extern int			win_window_mode;
+extern int			win_wait_vsync;
+extern int			win_use_ddraw;
+extern int			win_triple_buffer;
+extern int			win_hw_stretch;
+extern int			win_gfx_width;
+extern int			win_gfx_height;
+extern int			win_gfx_depth;
+extern int			win_old_scanlines;
+extern int			win_switch_res;
+extern int			win_switch_bpp;
+extern int			win_start_maximized;
+extern int			win_keep_aspect;
+extern int			win_gfx_refresh;
+extern int			win_match_refresh;
+extern int			win_sync_refresh;
+extern float		win_gfx_brightness;
+extern int			win_blit_effect;
+extern float		win_screen_aspect;
 
 // windows
-extern HWND			video_window;
-extern HWND			debug_window;
+extern HWND			win_video_window;
+extern HWND			win_debug_window;
+
+// video bounds
+extern double		win_aspect_ratio_adjust;
+
+// visible bounds
+extern RECT			win_visible_rect;
+extern int			win_visible_width;
+extern int			win_visible_height;
 
 // 16bpp color conversion
-extern int			color16_rsrc_shift;
-extern int			color16_gsrc_shift;
-extern int			color16_bsrc_shift;
-extern int			color16_rdst_shift;
-extern int			color16_gdst_shift;
-extern int			color16_bdst_shift;
+extern int			win_color16_rsrc_shift;
+extern int			win_color16_gsrc_shift;
+extern int			win_color16_bsrc_shift;
+extern int			win_color16_rdst_shift;
+extern int			win_color16_gdst_shift;
+extern int			win_color16_bdst_shift;
 
 // 32bpp color conversion
-extern int			color32_rdst_shift;
-extern int			color32_gdst_shift;
-extern int			color32_bdst_shift;
+extern int			win_color32_rdst_shift;
+extern int			win_color32_gdst_shift;
+extern int			win_color32_bdst_shift;
 
 
 
@@ -57,85 +82,91 @@ extern int			color32_bdst_shift;
 //	PROTOTYPES
 //============================================================
 
-int win32_init_window(void);
-int create_window(int width, int height, int depth, int attributes, int orientation);
-void destroy_window(void);
-void update_cursor_state(void);
-void toggle_maximize(void);
-void toggle_full_screen(void);
+int win_init_window(void);
+int win_create_window(int width, int height, int depth, int attributes, int orientation);
+void win_destroy_window(void);
+void win_update_cursor_state(void);
+void win_toggle_maximize(void);
+void win_toggle_full_screen(void);
+void win_adjust_window(void);
 
-void adjust_window_for_visible(int min_x, int max_x, int min_y, int max_y);
-void wait_for_vsync(void);
+void win_constrain_to_aspect_ratio(RECT *rect, int adjustment);
+void win_adjust_window_for_visible(int min_x, int max_x, int min_y, int max_y);
+void win_wait_for_vsync(void);
 
-void update_video_window(struct osd_bitmap *bitmap);
-void update_debug_window(struct osd_bitmap *bitmap);
+void win_update_video_window(struct mame_bitmap *bitmap);
+void win_update_debug_window(struct mame_bitmap *bitmap);
 
-void set_palette_entry(int index, UINT8 red, UINT8 green, UINT8 blue);
+void win_set_palette_entry(int _index, UINT8 red, UINT8 green, UINT8 blue);
 
-void process_events(void);
-void process_events_periodic(void);
+int win_process_events(void);
+void win_process_events_periodic(void);
 void osd_set_leds(int state);
 int osd_get_leds(void);
 
-int lookup_effect(const char *arg);
+UINT32 *win_prepare_palette(struct win_blit_params *params);
+
+int win_lookup_effect(const char *arg);
+int win_determine_effect(const struct win_blit_params *params);
+void win_compute_multipliers(const RECT *rect, int *xmult, int *ymult);
 
 
 
 //============================================================
-//	color16
+//	win_color16
 //============================================================
 
-INLINE UINT16 color16(UINT8 r, UINT8 g, UINT8 b)
+INLINE UINT16 win_color16(UINT8 r, UINT8 g, UINT8 b)
 {
-	return ((r >> color16_rsrc_shift) << color16_rdst_shift) |
-		   ((g >> color16_gsrc_shift) << color16_gdst_shift) |
-		   ((b >> color16_bsrc_shift) << color16_bdst_shift);
+	return ((r >> win_color16_rsrc_shift) << win_color16_rdst_shift) |
+		   ((g >> win_color16_gsrc_shift) << win_color16_gdst_shift) |
+		   ((b >> win_color16_bsrc_shift) << win_color16_bdst_shift);
 }
 
-INLINE UINT8 red16(UINT16 color)
+INLINE UINT8 win_red16(UINT16 color)
 {
-	int val = (color >> color16_rdst_shift) << color16_rsrc_shift;
-	return val | (val >> (8 - color16_rsrc_shift));
+	int val = (color >> win_color16_rdst_shift) << win_color16_rsrc_shift;
+	return val | (val >> (8 - win_color16_rsrc_shift));
 }
 
-INLINE UINT8 green16(UINT16 color)
+INLINE UINT8 win_green16(UINT16 color)
 {
-	int val = (color >> color16_gdst_shift) << color16_gsrc_shift;
-	return val | (val >> (8 - color16_gsrc_shift));
+	int val = (color >> win_color16_gdst_shift) << win_color16_gsrc_shift;
+	return val | (val >> (8 - win_color16_gsrc_shift));
 }
 
-INLINE UINT8 blue16(UINT16 color)
+INLINE UINT8 win_blue16(UINT16 color)
 {
-	int val = (color >> color16_bdst_shift) << color16_bsrc_shift;
-	return val | (val >> (8 - color16_bsrc_shift));
+	int val = (color >> win_color16_bdst_shift) << win_color16_bsrc_shift;
+	return val | (val >> (8 - win_color16_bsrc_shift));
 }
 
 
 
 //============================================================
-//	color32
+//	win_color32
 //============================================================
 
-INLINE UINT32 color32(UINT8 r, UINT8 g, UINT8 b)
+INLINE UINT32 win_color32(UINT8 r, UINT8 g, UINT8 b)
 {
-	return (r << color32_rdst_shift) |
-		   (g << color32_gdst_shift) |
-		   (b << color32_bdst_shift);
+	return (r << win_color32_rdst_shift) |
+		   (g << win_color32_gdst_shift) |
+		   (b << win_color32_bdst_shift);
 }
 
-INLINE UINT8 red32(UINT32 color)
+INLINE UINT8 win_red32(UINT32 color)
 {
-	return color >> color32_rdst_shift;
+	return color >> win_color32_rdst_shift;
 }
 
-INLINE UINT8 green32(UINT32 color)
+INLINE UINT8 win_green32(UINT32 color)
 {
-	return color >> color32_gdst_shift;
+	return color >> win_color32_gdst_shift;
 }
 
-INLINE UINT8 blue32(UINT32 color)
+INLINE UINT8 win_blue32(UINT32 color)
 {
-	return color >> color32_bdst_shift;
+	return color >> win_color32_bdst_shift;
 }
 
 #endif

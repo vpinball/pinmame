@@ -6,7 +6,6 @@
 
 /* global access */
 
-int m68k_ICount;
 struct m68k_memory_interface m68k_memory_intf;
 
 #ifndef A68K0
@@ -279,31 +278,13 @@ void m68000_set_context(void *src)
 	m68k_set_context(src);
 }
 
-unsigned m68000_get_pc(void)
-{
-	return m68k_get_reg(NULL, M68K_REG_PC)&0x00ffffff;
-}
-
-void m68000_set_pc(unsigned val)
-{
-	m68k_set_reg(M68K_REG_PC, val&0x00ffffff);
-}
-
-unsigned m68000_get_sp(void)
-{
-	return m68k_get_reg(NULL, M68K_REG_SP);
-}
-
-void m68000_set_sp(unsigned val)
-{
-	m68k_set_reg(M68K_REG_SP, val);
-}
-
 unsigned m68000_get_reg(int regnum)
 {
 	switch( regnum )
 	{
+		case REG_PC:   return m68k_get_reg(NULL, M68K_REG_PC)&0x00ffffff;
 		case M68K_PC:  return m68k_get_reg(NULL, M68K_REG_PC);
+		case REG_SP:
 		case M68K_SP:  return m68k_get_reg(NULL, M68K_REG_SP);
 		case M68K_ISP: return m68k_get_reg(NULL, M68K_REG_ISP);
 		case M68K_USP: return m68k_get_reg(NULL, M68K_REG_USP);
@@ -343,7 +324,9 @@ void m68000_set_reg(int regnum, unsigned val)
 {
 	switch( regnum )
 	{
+		case REG_PC:   m68k_set_reg(M68K_REG_PC, val&0x00ffffff); break;
 		case M68K_PC:  m68k_set_reg(M68K_REG_PC, val); break;
+		case REG_SP:
 		case M68K_SP:  m68k_set_reg(M68K_REG_SP, val); break;
 		case M68K_ISP: m68k_set_reg(M68K_REG_ISP, val); break;
 		case M68K_USP: m68k_set_reg(M68K_REG_USP, val); break;
@@ -375,24 +358,10 @@ void m68000_set_reg(int regnum, unsigned val)
 	}
 }
 
-void m68000_set_nmi_line(int state)
-{
-	switch(state)
-	{
-		case CLEAR_LINE:
-			m68k_set_irq(0);
-			break;
-		case ASSERT_LINE:
-			m68k_set_irq(7);
-			break;
-		default:
-			m68k_set_irq(7);
-			break;
-	}
-}
-
 void m68000_set_irq_line(int irqline, int state)
 {
+	if (irqline == IRQ_LINE_NMI)
+		irqline = 7;
 	switch(state)
 	{
 		case CLEAR_LINE:
@@ -554,26 +523,6 @@ void m68010_set_context(void *src)
 	m68k_set_context(src);
 }
 
-unsigned m68010_get_pc(void)
-{
-	return m68k_get_reg(NULL, M68K_REG_PC)&0x00ffffff;
-}
-
-void m68010_set_pc(unsigned val)
-{
-	m68k_set_reg(M68K_REG_PC, val&0x00ffffff);
-}
-
-unsigned m68010_get_sp(void)
-{
-	return m68k_get_reg(NULL, M68K_REG_SP);
-}
-
-void m68010_set_sp(unsigned val)
-{
-	m68k_set_reg(M68K_REG_SP, val);
-}
-
 unsigned m68010_get_reg(int regnum)
 {
 	switch( regnum )
@@ -581,7 +530,9 @@ unsigned m68010_get_reg(int regnum)
 		case M68K_VBR: return m68k_get_reg(NULL, M68K_REG_VBR); /* 68010+ */
 		case M68K_SFC: return m68k_get_reg(NULL, M68K_REG_SFC); /* 68010" */
 		case M68K_DFC: return m68k_get_reg(NULL, M68K_REG_DFC); /* 68010+ */
+		case REG_PC:   return m68k_get_reg(NULL, M68K_REG_PC)&0x00ffffff;
 		case M68K_PC:  return m68k_get_reg(NULL, M68K_REG_PC);
+		case REG_SP:
 		case M68K_SP:  return m68k_get_reg(NULL, M68K_REG_SP);
 		case M68K_ISP: return m68k_get_reg(NULL, M68K_REG_ISP);
 		case M68K_USP: return m68k_get_reg(NULL, M68K_REG_USP);
@@ -624,7 +575,9 @@ void m68010_set_reg(int regnum, unsigned val)
 		case M68K_VBR: m68k_set_reg(M68K_REG_VBR, val); break; /* 68010+ */
 		case M68K_SFC: m68k_set_reg(M68K_REG_SFC, val); break; /* 68010+ */
 		case M68K_DFC: m68k_set_reg(M68K_REG_DFC, val); break; /* 68010+ */
+		case REG_PC:   m68k_set_reg(M68K_REG_PC, val&0x00ffffff); break;
 		case M68K_PC:  m68k_set_reg(M68K_REG_PC, val); break;
+		case REG_SP:
 		case M68K_SP:  m68k_set_reg(M68K_REG_SP, val); break;
 		case M68K_ISP: m68k_set_reg(M68K_REG_ISP, val); break;
 		case M68K_USP: m68k_set_reg(M68K_REG_USP, val); break;
@@ -656,24 +609,10 @@ void m68010_set_reg(int regnum, unsigned val)
 	}
 }
 
-void m68010_set_nmi_line(int state)
-{
-	switch(state)
-	{
-		case CLEAR_LINE:
-			m68k_set_irq(0);
-			break;
-		case ASSERT_LINE:
-			m68k_set_irq(7);
-			break;
-		default:
-			m68k_set_irq(7);
-			break;
-	}
-}
-
 void m68010_set_irq_line(int irqline, int state)
 {
+	if (irqline == IRQ_LINE_NMI)
+		irqline = 7;
 	switch(state)
 	{
 		case CLEAR_LINE:
@@ -844,26 +783,6 @@ void m68ec020_set_context(void *src)
 	m68k_set_context(src);
 }
 
-unsigned m68ec020_get_pc(void)
-{
-	return m68k_get_reg(NULL, M68K_REG_PC)&0x00ffffff;
-}
-
-void m68ec020_set_pc(unsigned val)
-{
-	m68k_set_reg(M68K_REG_PC, val&0x00ffffff);
-}
-
-unsigned m68ec020_get_sp(void)
-{
-	return m68k_get_reg(NULL, M68K_REG_SP);
-}
-
-void m68ec020_set_sp(unsigned val)
-{
-	m68k_set_reg(M68K_REG_SP, val);
-}
-
 unsigned m68ec020_get_reg(int regnum)
 {
 	switch( regnum )
@@ -874,7 +793,9 @@ unsigned m68ec020_get_reg(int regnum)
 		case M68K_VBR: return m68k_get_reg(NULL, M68K_REG_VBR); /* 68010+ */
 		case M68K_SFC: return m68k_get_reg(NULL, M68K_REG_SFC); /* 68010" */
 		case M68K_DFC: return m68k_get_reg(NULL, M68K_REG_DFC); /* 68010+ */
+		case REG_PC:   return m68k_get_reg(NULL, M68K_REG_PC)&0x00ffffff;
 		case M68K_PC:  return m68k_get_reg(NULL, M68K_REG_PC);
+		case REG_SP:
 		case M68K_SP:  return m68k_get_reg(NULL, M68K_REG_SP);
 		case M68K_ISP: return m68k_get_reg(NULL, M68K_REG_ISP);
 		case M68K_USP: return m68k_get_reg(NULL, M68K_REG_USP);
@@ -920,7 +841,9 @@ void m68ec020_set_reg(int regnum, unsigned val)
 		case M68K_VBR: m68k_set_reg(M68K_REG_VBR, val); break; /* 68010+ */
 		case M68K_SFC: m68k_set_reg(M68K_REG_SFC, val); break; /* 68010+ */
 		case M68K_DFC: m68k_set_reg(M68K_REG_DFC, val); break; /* 68010+ */
+		case REG_PC:   m68k_set_reg(M68K_REG_PC, val&0x00ffffff); break;
 		case M68K_PC:  m68k_set_reg(M68K_REG_PC, val); break;
+		case REG_SP:
 		case M68K_SP:  m68k_set_reg(M68K_REG_SP, val); break;
 		case M68K_ISP: m68k_set_reg(M68K_REG_ISP, val); break;
 		case M68K_USP: m68k_set_reg(M68K_REG_USP, val); break;
@@ -952,24 +875,10 @@ void m68ec020_set_reg(int regnum, unsigned val)
 	}
 }
 
-void m68ec020_set_nmi_line(int state)
-{
-	switch(state)
-	{
-		case CLEAR_LINE:
-			m68k_set_irq(0);
-			break;
-		case ASSERT_LINE:
-			m68k_set_irq(7);
-			break;
-		default:
-			m68k_set_irq(7);
-			break;
-	}
-}
-
 void m68ec020_set_irq_line(int irqline, int state)
 {
+	if (irqline == IRQ_LINE_NMI)
+		irqline = 7;
 	switch(state)
 	{
 		case CLEAR_LINE:
@@ -1136,26 +1045,6 @@ void m68020_set_context(void *src)
 	m68k_set_context(src);
 }
 
-unsigned m68020_get_pc(void)
-{
-	return m68k_get_reg(NULL, M68K_REG_PC);
-}
-
-void m68020_set_pc(unsigned val)
-{
-	m68k_set_reg(M68K_REG_PC, val);
-}
-
-unsigned m68020_get_sp(void)
-{
-	return m68k_get_reg(NULL, M68K_REG_SP);
-}
-
-void m68020_set_sp(unsigned val)
-{
-	m68k_set_reg(M68K_REG_SP, val);
-}
-
 unsigned m68020_get_reg(int regnum)
 {
 	switch( regnum )
@@ -1166,7 +1055,9 @@ unsigned m68020_get_reg(int regnum)
 		case M68K_VBR: return m68k_get_reg(NULL, M68K_REG_VBR); /* 68010+ */
 		case M68K_SFC: return m68k_get_reg(NULL, M68K_REG_SFC); /* 68010" */
 		case M68K_DFC: return m68k_get_reg(NULL, M68K_REG_DFC); /* 68010+ */
+		case REG_PC:
 		case M68K_PC:  return m68k_get_reg(NULL, M68K_REG_PC);
+		case REG_SP:
 		case M68K_SP:  return m68k_get_reg(NULL, M68K_REG_SP);
 		case M68K_ISP: return m68k_get_reg(NULL, M68K_REG_ISP);
 		case M68K_USP: return m68k_get_reg(NULL, M68K_REG_USP);
@@ -1212,7 +1103,9 @@ void m68020_set_reg(int regnum, unsigned val)
 		case M68K_VBR: m68k_set_reg(M68K_REG_VBR, val); break; /* 68010+ */
 		case M68K_SFC: m68k_set_reg(M68K_REG_SFC, val); break; /* 68010+ */
 		case M68K_DFC: m68k_set_reg(M68K_REG_DFC, val); break; /* 68010+ */
+		case REG_PC:
 		case M68K_PC:  m68k_set_reg(M68K_REG_PC, val); break;
+		case REG_SP:
 		case M68K_SP:  m68k_set_reg(M68K_REG_SP, val); break;
 		case M68K_ISP: m68k_set_reg(M68K_REG_ISP, val); break;
 		case M68K_USP: m68k_set_reg(M68K_REG_USP, val); break;
@@ -1244,24 +1137,10 @@ void m68020_set_reg(int regnum, unsigned val)
 	}
 }
 
-void m68020_set_nmi_line(int state)
-{
-	switch(state)
-	{
-		case CLEAR_LINE:
-			m68k_set_irq(0);
-			break;
-		case ASSERT_LINE:
-			m68k_set_irq(7);
-			break;
-		default:
-			m68k_set_irq(7);
-			break;
-	}
-}
-
 void m68020_set_irq_line(int irqline, int state)
 {
+	if (irqline == IRQ_LINE_NMI)
+		irqline = 7;
 	switch(state)
 	{
 		case CLEAR_LINE:

@@ -30,40 +30,12 @@ static struct
 
 /*****************************************************************************/
 
-#define MEMORY_READ(index,offset) \
-    ((*cpuintf[Machine->drv->cpu[index].cpu_type & ~CPU_FLAGS_MASK]. \
-    memory_read)(offset))
-#define MEMORY_WRITE(index,offset,data) \
-    ((*cpuintf[Machine->drv->cpu[index].cpu_type & ~CPU_FLAGS_MASK]. \
-    memory_write)(offset,data))
-
-void computer_writemem_byte(int cpu, int addr, int value)
-{
-    int oldcpu = cpu_getactivecpu();
-    memory_set_context(cpu);
-    MEMORY_WRITE(cpu, addr, value);
-    if (oldcpu != cpu)
-		memory_set_context(oldcpu);
-}
-
-int computer_readmem_byte(int cpu, int addr)
-{
-    int oldcpu = cpu_getactivecpu(), result;
-    memory_set_context(cpu);
-    result = MEMORY_READ(cpu, addr);
-    if (oldcpu != cpu)
-    	memory_set_context(oldcpu);
-    return result;
-}
-
-/*****************************************************************************/
-
 static void copy_to_memory (int cpu, int addr, const UINT8 *source, int num_bytes)
 {
 	int i;
 	for (i=0; i<num_bytes; i++)
 	{
-		computer_writemem_byte (cpu, addr+i, source[i]);
+		cpunum_write_byte (cpu, addr+i, source[i]);
 	}
 }
 
@@ -72,7 +44,7 @@ static void copy_from_memory (int cpu, int addr, UINT8 *dest, int num_bytes)
 	int i;
 	for (i=0; i<num_bytes; i++)
 	{
-		dest[i] = computer_readmem_byte (cpu, addr+i);
+		dest[i] = cpunum_read_byte (cpu, addr+i);
 	}
 }
 
@@ -162,12 +134,12 @@ static int safe_to_load (void)
 	struct mem_range *mem_range = state.mem_range;
 	while (mem_range)
 	{
-		if (computer_readmem_byte (mem_range->cpu, mem_range->addr) !=
+		if (cpunum_read_byte (mem_range->cpu, mem_range->addr) !=
 			mem_range->start_value)
 		{
 			return 0;
 		}
-		if (computer_readmem_byte (mem_range->cpu, mem_range->addr + mem_range->num_bytes - 1) !=
+		if (cpunum_read_byte (mem_range->cpu, mem_range->addr + mem_range->num_bytes - 1) !=
 			mem_range->end_value)
 		{
 			return 0;
@@ -323,13 +295,13 @@ void hs_init (void)
 
 	while (mem_range)
 	{
-		computer_writemem_byte(
+		cpunum_write_byte(
 			mem_range->cpu,
 			mem_range->addr,
 			~mem_range->start_value
 		);
 
-		computer_writemem_byte(
+		cpunum_write_byte(
 			mem_range->cpu,
 			mem_range->addr + mem_range->num_bytes-1,
 			~mem_range->end_value

@@ -29,18 +29,18 @@ const struct sndbrdIntf de1sIntf = {
   de1s_init, NULL, NULL, de1s_data_w, NULL, de1s_ctrl_w, NULL
 };
 
-struct MSM5205interface de1s_msm5205Int = {
+static struct MSM5205interface de1s_msm5205Int = {
 /* chip          interrupt */
      1, 384000,	{ de1s_msmIrq }, { MSM5205_S48_4B }, { 60 }
 };
 
-struct YM2151interface de1s_ym2151Int = {
+static struct YM2151interface de1s_ym2151Int = {
   1, 3579545, /* Hz */
   { YM3012_VOL(40,MIXER_PAN_LEFT,40,MIXER_PAN_RIGHT) },
   { de1s_ym2151IRQ }, { de1s_ym2151Port }
 };
 
-MEMORY_READ_START(de1s_readmem)
+static MEMORY_READ_START(de1s_readmem)
   { 0x0000, 0x1fff, MRA_RAM },
   { 0x2001, 0x2001, YM2151_status_port_0_r },
   { 0x2400, 0x2400, de1s_cmd_r },
@@ -49,7 +49,7 @@ MEMORY_READ_START(de1s_readmem)
   { 0x8000, 0xffff, MRA_ROM },
 MEMORY_END
 
-MEMORY_WRITE_START(de1s_writemem)
+static MEMORY_WRITE_START(de1s_writemem)
   { 0x0000, 0x1fff, MWA_RAM },
   { 0x2000, 0x2000, YM2151_register_port_0_w },
   { 0x2001, 0x2001, YM2151_data_port_0_w },
@@ -59,6 +59,16 @@ MEMORY_WRITE_START(de1s_writemem)
   { 0x3800, 0x3800, watchdog_reset_w },
   { 0x4000, 0xffff, MWA_ROM },
 MEMORY_END
+
+MACHINE_DRIVER_START(de1s)
+  MDRV_CPU_ADD(M6809, 2000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(de1s_readmem, de1s_writemem)
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD(YM2151,  de1s_ym2151Int)
+  MDRV_SOUND_ADD(MSM5205, de1s_msm5205Int)
+  MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
+MACHINE_DRIVER_END
 
 static struct {
   struct sndbrdData brdData;
@@ -79,8 +89,7 @@ static WRITE_HANDLER(de1s_data_w) {
 }
 
 static WRITE_HANDLER(de1s_ctrl_w) {
-	if(~data&0x1)
-		cpu_set_irq_line(de1slocals.brdData.cpuNo, M6809_FIRQ_LINE, ASSERT_LINE);
+  if (~data&0x1) cpu_set_irq_line(de1slocals.brdData.cpuNo, M6809_FIRQ_LINE, ASSERT_LINE);
 }
 
 static READ_HANDLER(de1s_cmd_r) {
@@ -178,7 +187,7 @@ static READ_HANDLER(de2s_bsmtready_r);
 static WRITE_HANDLER(de2s_bsmtreset_w);
 static WRITE_HANDLER(de2s_bsmtcmdHi_w);
 static WRITE_HANDLER(de2s_bsmtcmdLo_w);
-int ses_irq(void);
+static INTERRUPT_GEN(de2s_firq);
 
 const struct sndbrdIntf de2sIntf = {
   de2s_init, NULL, NULL, soundlatch_w, NULL, NULL, NULL, SNDBRD_NODATASYNC
@@ -186,26 +195,26 @@ const struct sndbrdIntf de2sIntf = {
 
 /* Older 11 Voice Style BSMT Chip */
 //NOTE: Do not put a volume adjustment here, otherwise 128x16 games have audible junk played at the beggining
-struct BSMT2000interface de2s_bsmt2000aInt = {
+static struct BSMT2000interface de2s_bsmt2000aInt = {
   1, {24000000}, {11}, {DE2S_ROMREGION}, {100}, {0000}
 };
 /* Newer 12 Voice Style BSMT Chip */
-struct BSMT2000interface de2s_bsmt2000bInt = {
+static struct BSMT2000interface de2s_bsmt2000bInt = {
   1, {24000000}, {12}, {DE2S_ROMREGION}, {100}, {2000}
 };
 /* Older 11 Voice Style BSMT Chip but needs large volume adjustment */
-struct BSMT2000interface de2s_bsmt2000cInt = {
+static struct BSMT2000interface de2s_bsmt2000cInt = {
   1, {24000000}, {11}, {DE2S_ROMREGION}, {100}, {4000}
 };
 
-MEMORY_READ_START(de2s_readmem)
+static MEMORY_READ_START(de2s_readmem)
   { 0x0000, 0x1fff, MRA_RAM },
   { 0x2002, 0x2003, soundlatch_r },
   { 0x2006, 0x2007, de2s_bsmtready_r },
   { 0x4000, 0xffff, MRA_ROM },
 MEMORY_END
 
-MEMORY_WRITE_START(de2s_writemem)
+static MEMORY_WRITE_START(de2s_writemem)
   { 0x0000, 0x1fff, MWA_RAM },
   { 0x2000, 0x2001, de2s_bsmtreset_w },
   { 0x2008, 0x5fff, MWA_ROM },
@@ -214,6 +223,26 @@ MEMORY_WRITE_START(de2s_writemem)
   { 0xa000, 0xa0ff, de2s_bsmtcmdLo_w },
   { 0xa100, 0xffff, MWA_ROM },
 MEMORY_END
+
+MACHINE_DRIVER_START(de2as)
+  MDRV_CPU_ADD(M6809, 2000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(de2s_readmem, de2s_writemem)
+  MDRV_CPU_PERIODIC_INT(de2s_firq, 489) /* Fixed FIRQ of 489Hz as measured on real machine*/
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD_TAG("bsmt", BSMT2000, de2s_bsmt2000aInt)
+  MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(de2bs)
+  MDRV_IMPORT_FROM(de2as)
+  MDRV_SOUND_REPLACE("bsmt", BSMT2000, de2s_bsmt2000bInt)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(de2cs)
+  MDRV_IMPORT_FROM(de2as)
+  MDRV_SOUND_REPLACE("bsmt", BSMT2000, de2s_bsmt2000cInt)
+MACHINE_DRIVER_END
 
 /*-- local data --*/
 static struct {
@@ -236,9 +265,8 @@ static WRITE_HANDLER(de2s_bsmtcmdLo_w) {
 static READ_HANDLER(de2s_bsmtready_r) { return 0x80; } // BSMT is always ready
 static WRITE_HANDLER(de2s_bsmtreset_w) { /* Writing 0x80 here resets BSMT ?*/ }
 
-int de2s_irq(void) {
+static INTERRUPT_GEN(de2s_firq) {
   //NOTE: Odd that it will NOT WORK without HOLD_LINE - although we don't clear it anywaywhere!
   cpu_set_irq_line(de2slocals.brdData.cpuNo, M6809_FIRQ_LINE, HOLD_LINE);
-  return 0;
 }
 

@@ -33,26 +33,29 @@
 #define __extension__
 #endif
 
+#ifdef _MSC_VER
+//#undef INLINE
+//#define INLINE static inline
+#define strcasecmp stricmp
+#endif
+
+int index;	/* avoid a common "shadows global declaration" warning in the DOS build */
+
 
 typedef unsigned char						UINT8;
-typedef unsigned short						UINT16;
-#ifndef _WINDOWS_H
-typedef unsigned int						UINT32;
-#ifdef _MSC_VER
-typedef unsigned __int64					UINT64;
-#else /* _MSC_VER */
-__extension__ typedef unsigned long long	UINT64;
-#endif /* _MSC_VER */
-#endif
 typedef signed char 						INT8;
+typedef unsigned short						UINT16;
 typedef signed short						INT16;
 #ifndef _WINDOWS_H
+typedef unsigned int						UINT32;
 typedef signed int							INT32;
 #ifdef _MSC_VER
 typedef signed __int64						INT64;
-#else /* _MSC_VER */
+typedef unsigned __int64					UINT64;
+#else
+__extension__ typedef unsigned long long	UINT64;
 __extension__ typedef signed long long		INT64;
-#endif /* _MSC_VER */
+#endif
 #endif
 
 /* Combine two 32-bit integers into a 64-bit integer */

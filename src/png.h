@@ -4,6 +4,7 @@
 
 
 #define PNG_Signature       "\x89\x50\x4E\x47\x0D\x0A\x1A\x0A"
+#define MNG_Signature       "\x8A\x4D\x4E\x47\x0D\x0A\x1A\x0A"
 
 #define PNG_CN_IHDR 0x49484452L     /* Chunk names */
 #define PNG_CN_PLTE 0x504C5445L
@@ -27,6 +28,12 @@
 #define PNG_PF_Up       2
 #define PNG_PF_Average  3
 #define PNG_PF_Paeth    4
+
+#define MNG_CN_MHDR 0x4D484452L     /* MNG Chunk names */
+#define MNG_CN_MEND 0x4D454E44L
+#define MNG_CN_TERM 0x5445524DL
+#define MNG_CN_BACK 0x4241434BL
+
 
 /* PNG support */
 struct png_info {
@@ -66,11 +73,16 @@ int png_read_file(void *fp, struct png_info *p);
 int png_read_info(void *fp, struct png_info *p);
 int png_expand_buffer_8bit (struct png_info *p);
 void png_delete_unused_colors (struct png_info *p);
+int png_add_text (const char *keyword, const char *text);
 int png_unfilter(struct png_info *p);
 int png_filter(struct png_info *p);
 int png_deflate_image(struct png_info *p);
-int png_write_file(void *fp, struct png_info *p);
-int png_write_bitmap(void *fp, struct osd_bitmap *bitmap);
-
+int png_write_sig(void *fp);
+int png_write_datastream(void *fp, struct png_info *p);
+int png_write_bitmap(void *fp, struct mame_bitmap *bitmap);
+int mng_capture_start(void *fp, struct mame_bitmap *bitmap);
+int mng_capture_frame(void *fp, struct mame_bitmap *bitmap);
+int mng_capture_stop(void *fp);
+int mng_capture_status(void);
 #endif
 

@@ -40,13 +40,7 @@ enum {
 	M65CE02_NMI_STATE, M65CE02_IRQ_STATE
 };
 
-#define M65CE02_INT_NONE	M6502_INT_NONE
-#define M65CE02_INT_IRQ 	M6502_INT_IRQ
-#define M65CE02_INT_NMI 	M6502_INT_NMI
-
-#define M65CE02_NMI_VEC 	M6502_NMI_VEC
-#define M65CE02_RST_VEC 	M6502_RST_VEC
-#define M65CE02_IRQ_VEC 	M6502_IRQ_VEC
+#define M65CE02_IRQ_LINE				M6502_IRQ_LINE
 
 extern int m65ce02_ICount;				/* cycle count */
 
@@ -55,13 +49,8 @@ extern void m65ce02_exit(void);
 extern int	m65ce02_execute(int cycles);
 extern unsigned m65ce02_get_context (void *dst);
 extern void m65ce02_set_context (void *src);
-extern unsigned m65ce02_get_pc (void);
-extern void m65ce02_set_pc (unsigned val);
-extern unsigned m65ce02_get_sp (void);
-extern void m65ce02_set_sp (unsigned val);
 extern unsigned m65ce02_get_reg (int regnum);
 extern void m65ce02_set_reg (int regnum, unsigned val);
-extern void m65ce02_set_nmi_line(int state);
 extern void m65ce02_set_irq_line(int irqline, int state);
 extern void m65ce02_set_irq_callback(int (*callback)(int irqline));
 extern void m65ce02_state_save(void *file);

@@ -78,7 +78,7 @@ static struct {
 /*--------
 / Palette
 /---------*/
-unsigned char core_palette[(DMD_COLORS+(LAMP_COLORS*2)+7)][3] = {
+static unsigned char core_palette[(DMD_COLORS+(LAMP_COLORS*2)+7)][3] = {
 {/*  0 */ 0x00,0x00,0x00}, /* Background */
 /* -- DMD DOT COLORS-- */
 {/*  1 */ 0x30,0x00,0x00}, /* "Black" Dot - DMD Background */
@@ -97,8 +97,7 @@ unsigned char core_palette[(DMD_COLORS+(LAMP_COLORS*2)+7)][3] = {
 };
 
 /* Initialize the game palette */
-void core_initpalette(unsigned char *game_palette, unsigned short *game_colortable,
-                     const unsigned char *color_prom) {
+static PALETTE_INIT(core) {
   int rStart = 0xff;
   int gStart = 0xe0;
   int bStart = 0x20;
@@ -106,6 +105,7 @@ void core_initpalette(unsigned char *game_palette, unsigned short *game_colortab
   int perc33 = 33;
   int perc0  = 20;
   int ii;
+
 #ifdef PINMAME_EXT
   if ((pmoptions.dmd_red > 0) || (pmoptions.dmd_green > 0) || (pmoptions.dmd_blue > 0)) {
     rStart = pmoptions.dmd_red;
@@ -118,26 +118,29 @@ void core_initpalette(unsigned char *game_palette, unsigned short *game_colortab
     perc0  = pmoptions.dmd_perc0;
   }
 #endif /* PINMAME_EXT */
+  /*-- Copy the WPC palette to the MAME game palette --*/
+  memcpy(palette, core_palette, sizeof(core_palette));
+
   /*-- Autogenerate DMD Color Shades--*/
-  core_palette[DMD_DOTOFF][0] = rStart * perc0 / 100;
-  core_palette[DMD_DOTOFF][1] = gStart * perc0 / 100;
-  core_palette[DMD_DOTOFF][2] = bStart * perc0 / 100;
-  core_palette[DMD_DOT33][0]  = rStart * perc33 / 100;
-  core_palette[DMD_DOT33][1]  = gStart * perc33 / 100;
-  core_palette[DMD_DOT33][2]  = bStart * perc33 / 100;
-  core_palette[DMD_DOT66][0]  = rStart * perc66 / 100;
-  core_palette[DMD_DOT66][1]  = gStart * perc66 / 100;
-  core_palette[DMD_DOT66][2]  = bStart * perc66 / 100;
-  core_palette[DMD_DOTON][0]  = rStart;
-  core_palette[DMD_DOTON][1]  = gStart;
-  core_palette[DMD_DOTON][2]  = bStart;
+  palette[DMD_DOTOFF*3+0] = rStart * perc0 / 100;
+  palette[DMD_DOTOFF*3+1] = gStart * perc0 / 100;
+  palette[DMD_DOTOFF*3+2] = bStart * perc0 / 100;
+  palette[DMD_DOT33*3+0]  = rStart * perc33 / 100;
+  palette[DMD_DOT33*3+1]  = gStart * perc33 / 100;
+  palette[DMD_DOT33*3+2]  = bStart * perc33 / 100;
+  palette[DMD_DOT66*3+0]  = rStart * perc66 / 100;
+  palette[DMD_DOT66*3+1]  = gStart * perc66 / 100;
+  palette[DMD_DOT66*3+2]  = bStart * perc66 / 100;
+  palette[DMD_DOTON*3+0]  = rStart;
+  palette[DMD_DOTON*3+1]  = gStart;
+  palette[DMD_DOTON*3+2]  = bStart;
 
   /*-- Autogenerate Dark Playfield Lamp Colors --*/
   for (ii = 0; ii < LAMP_COLORS; ii++) {
     /* Reduce by 75% */
-    core_palette[DMD_COLORS+LAMP_COLORS+ii][0] = (core_palette[DMD_COLORS+ii][0] * 25) / 100;
-    core_palette[DMD_COLORS+LAMP_COLORS+ii][1] = (core_palette[DMD_COLORS+ii][1] * 25) / 100;
-    core_palette[DMD_COLORS+LAMP_COLORS+ii][2] = (core_palette[DMD_COLORS+ii][2] * 25) / 100;
+    palette[(DMD_COLORS+LAMP_COLORS+ii)*3+0] = (palette[(DMD_COLORS+ii)*3+0] * 25) / 100;
+    palette[(DMD_COLORS+LAMP_COLORS+ii)*3+1] = (palette[(DMD_COLORS+ii)*3+1] * 25) / 100;
+    palette[(DMD_COLORS+LAMP_COLORS+ii)*3+2] = (palette[(DMD_COLORS+ii)*3+2] * 25) / 100;
   }
 
   { /*-- Autogenerate antialias colours --*/
@@ -146,28 +149,26 @@ void core_initpalette(unsigned char *game_palette, unsigned short *game_colortab
 #endif /* MAME_VER */
     int rStep, gStep, bStep;
 
-    rStart = core_palette[DMD_DOTOFF][0];
-    gStart = core_palette[DMD_DOTOFF][1];
-    bStart = core_palette[DMD_DOTOFF][2];
-    rStep = (core_palette[DMD_DOTON][0] * options.vector_flicker / 0xff - rStart) / 6;
-    gStep = (core_palette[DMD_DOTON][1] * options.vector_flicker / 0xff - gStart) / 6;
-    bStep = (core_palette[DMD_DOTON][2] * options.vector_flicker / 0xff - bStart) / 6;
+    rStart = palette[DMD_DOTOFF*3+0];
+    gStart = palette[DMD_DOTOFF*3+1];
+    bStart = palette[DMD_DOTOFF*3+2];
+    rStep = (palette[DMD_DOTON*3+0] * options.vector_flicker / 0xff - rStart) / 6;
+    gStep = (palette[DMD_DOTON*3+1] * options.vector_flicker / 0xff - gStart) / 6;
+    bStep = (palette[DMD_DOTON*3+2] * options.vector_flicker / 0xff - bStart) / 6;
 
     for (ii = START_ANTIALIAS+1; ii < (START_ANTIALIAS+1)+6; ii++) {
       rStart += rStep; gStart += gStep; bStart += bStep;
-      core_palette[ii][0] = rStart;
-      core_palette[ii][1] = gStart;
-      core_palette[ii][2] = bStart;
+      palette[ii*3+0] = rStart;
+      palette[ii*3+1] = gStart;
+      palette[ii*3+2] = bStart;
     }
   }
-  /*-- Copy the WPC palette to the MAME game palette --*/
-  memcpy(game_palette, core_palette, sizeof(core_palette));
 }
 
 /*-----------------------------------
 /  Generic DMD display handler
 /------------------------------------*/
-void dmd_draw(struct mame_bitmap *bitmap, tDMDDot dotCol, const core_tLCDLayout *layout) {
+void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *cliprect, tDMDDot dotCol, const core_tLCDLayout *layout) {
   UINT32 *dmdColor = &CORE_COLOR(DMD_DOTOFF);
   UINT32 *aaColor  = &CORE_COLOR(START_ANTIALIAS);
   BMTYPE **lines = ((BMTYPE **)bitmap->line) + layout->top;
@@ -202,15 +203,16 @@ void dmd_draw(struct mame_bitmap *bitmap, tDMDDot dotCol, const core_tLCDLayout 
 /*-----------------------------------
 /  Generic segement display handler
 /------------------------------------*/
-void gen_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
+VIDEO_UPDATE(core_led) {
   const core_tLCDLayout *layout = core_gameData->lcdLayout;
   if (layout == NULL) { DBGLOG(("gen_refresh without LCD layout\n")); return; }
-
+#if 0
   /* Drawing is not optimised so just clear everything */
   if (fullRefresh) {
     fillbitmap(bitmap,Machine->pens[0],NULL);
     memset(&locals.lastSeg, -1, sizeof(locals.lastSeg));
   }
+#endif
   while (layout->length) {
     int zeros = layout->type/32; // dummy zeros
     int left  = layout->left * (locals.segData[layout->type & CORE_SEGMASK].cols + 1) / 2;
@@ -245,7 +247,7 @@ void gen_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
     layout += 1;
   }
   memcpy(locals.lastSeg,coreGlobals.segments,sizeof(locals.lastSeg));
-  drawStatus(bitmap,fullRefresh);
+  video_update_core_status(bitmap,cliprect);
 }
 
 /*---------------------
@@ -422,7 +424,7 @@ void CLIB_DECL core_textOutf(int x, int y, int color, char *text, ...) {
 / Draw status display
 / Lamps, Switches, Solenoids, Diagnostic LEDs
 /---------------------------------------------*/
-void drawStatus(struct mame_bitmap *bitmap, int fullRefresh) {
+VIDEO_UPDATE(core_status) {
   BMTYPE **lines = (BMTYPE **)bitmap->line;
   int firstRow = locals.firstSimRow;
   int ii, jj, bits;
@@ -431,7 +433,7 @@ void drawStatus(struct mame_bitmap *bitmap, int fullRefresh) {
 
   /*-- anything to do ? --*/
   if ((coreGlobals_dmd.dmdOnly) ||
-      (coreGlobals.soundEn && (!manual_sound_commands(bitmap, &fullRefresh))))
+      (coreGlobals.soundEn && (!manual_sound_commands(bitmap))))
     return;
 
   dotColor[0] = CORE_COLOR(DMD_DOTOFF); dotColor[1] = CORE_COLOR(DMD_DOTON);
@@ -548,7 +550,7 @@ void drawStatus(struct mame_bitmap *bitmap, int fullRefresh) {
       lines[firstRow][ii*2] = dotColor[coreGlobals.gi[ii]>0];
     osd_mark_dirty(0, firstRow, 2*CORE_MAXGI+1, firstRow+2);
   }
-  if (coreGlobals.simAvail) sim_draw(fullRefresh, locals.firstSimRow);
+  if (coreGlobals.simAvail) sim_draw(locals.firstSimRow);
   /*-- draw game specific mechanics --*/
   if (core_gameData->hw.drawMech) core_gameData->hw.drawMech((void *)&bitmap->line[locals.firstSimRow]);
 }
@@ -1033,3 +1035,11 @@ void core_nvram(void *file, int write, void *mem, int length, UINT8 init) {
   }
 }
 
+MACHINE_DRIVER_START(PinMAME)
+  MDRV_VIDEO_ATTRIBUTES(VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY)
+  MDRV_SCREEN_SIZE(CORE_SCREENX,CORE_SCREENY)
+  MDRV_VISIBLE_AREA(0, CORE_SCREENX-1, 0, CORE_SCREENY-1)
+  MDRV_PALETTE_INIT(core)
+  MDRV_PALETTE_LENGTH(sizeof(core_palette)/sizeof(core_palette[0][0])/3)
+  MDRV_FRAMES_PER_SECOND(60)
+MACHINE_DRIVER_END

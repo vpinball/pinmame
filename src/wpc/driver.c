@@ -33,7 +33,7 @@ DRIVERNV(hercules)      //Hercules (May 1979)
                                         //Neutron Star (1981)
                                         //4x4 (1983)
                                         //Triangle (19??)
-
+#if 0
 // ---------------------
 // GAME PLAN GAMES BELOW
 // ---------------------
@@ -114,6 +114,12 @@ DRIVERNV(orbit1)      //Orbit 1
 DRIVERNV(howzat)      //Howzat
 DRIVERNV(shark)       //Shark
 DRIVERNV(empsback)    //Star Wars - The Empire Strike Back
+#endif
+// ---------------------
+// TAITO GAMES BELOW
+// ---------------------
+DRIVERNV(zarza   )    // Zarza (Xenon Clone)
+
 
 // ---------------------
 // BALLY GAMES BELOW
@@ -171,7 +177,6 @@ DRIVERNV(speakesy)    //BY35-877: 08/82 Speakeasy
 DRIVERNV(speakes4)    //BY35-877: 08/82 Speakeasy 4 (4 player)
 DRIVERNV(rapidfir)    //BY35-869: 06/81 Rapid Fire
 DRIVERNV(m_mpac  )    //BY35-872: 05/82 Mr. & Mrs. Pac-Man
-DRIVERNV(babypac )    //??        10/82 Baby Pac-Man
 /*same as eballdlx*/  //BY35      10/82 Eight Ball Deluxe Limited Edition
 DRIVERNV(bmx     )    //BY35-888: 11/82 BMX
 DRIVERNV(granslam)    //BY35-     01/83 Grand Slam
@@ -179,13 +184,17 @@ DRIVERNV(granslam)    //BY35-     01/83 Grand Slam
 DRIVERNV(goldball)    //BY35-     10/83 Gold Ball
 DRIVERNV(xsandos )    //BY35-     12/83 X's & O's
                       //??        ??/84 Mysterian
+#if 0
+DRIVERNV(babypac )    //??        10/82 Baby Pac-Man
 DRIVERNV(granny )     //BY35-     01/84 Granny and the Gators
+#endif
 DRIVERNV(kosteel )    //BY35-     05/84 Kings of Steel
 DRIVERNV(blakpyra)    //BY35-     07/84 Black Pyramid
 DRIVERNV(spyhuntr)    //BY35-     10/84 Spy Hunter
                       //??        ??/85 Hot Shotz
 DRIVERNV(fbclass )    //BY35-     02/85 Fireball Classic
 DRIVERNV(cybrnaut)    //BY35-     05/85 Cybernaut
+#if 0
 //MPU-6803
 DRIVERNV(eballchp)    //6803-0B38: 09/85 Eight Ball Champ
 DRIVERNV(eballch2)    //                 Eight Ball Champ (cheap squeak)
@@ -264,7 +273,7 @@ DRIVERNV(icefever)    //S80a-695: 02/85 Ice Fever
 //System 80b
 DRIVERNV(triplay)     //S80b-696: 05/85 Chicago Cubs Triple Play
 DRIVERNV(bountyh)     //S80b-694: 07/85 Bounty Hunter
-DRIVERNV(tagteam)     //S80b-698: 09/85 Tag Team Wrestling
+                      //S80b-698: 09/85 Tag Team Pinball
 DRIVERNV(rock)        //S80b-697: 10/85 Rock
 DRIVERNV(raven)       //S80b-702: 03/86 Raven
                       //S80b-704: 04/86 Rock Encore
@@ -320,6 +329,7 @@ DRIVERNV(waterwld)    //S3-746:   10/95 Waterworld
 DRIVERNV(andretti)    //S3-747:   12/95 Mario Andretti
 DRIVERNV(barbwire)    //S3-748:   04/96 Barb Wire
 //Never produced      //S3-???:         Brooks & Dunn
+#endif
 // ---------------------
 // STERN GAMES BELOW
 // ---------------------
@@ -358,7 +368,7 @@ DRIVERNV(lightnin)    //MPU-200: 03/81 Lightning
 DRIVERNV(orbitor1)    //MPU-200: 04/82 Orbitor One
 DRIVERNV(cue)         //MPU-200: ??/82 Cue            (Proto - Never released)
 DRIVERNV(lazrlord)    //MPU-200: 10/84 Lazer Lord     (Proto - Never released)
-
+#if 0
 // Whitestar System
 DRIVERNV(strikext)    //Whitestar: 03/00 Striker Extreme
 DRIVERNV(strxt_uk)    //Whitestar: 03/00 Striker Extreme (UK)
@@ -379,6 +389,7 @@ DRIVERNV(playboye)    //Whitestar: 02/02 Playboy (Spanish display)
 DRIVERNV(playboyf)    //Whitestar: 02/02 Playboy (French display)
 DRIVERNV(playboyi)    //Whitestar: 02/02 Playboy (Italian display)
 #endif /* VPINMAME */
+#endif
 // ---------------------
 // SEGA GAMES BELOW
 // ---------------------
@@ -401,6 +412,7 @@ DRIVERNV(bmf_no)      //DE/Sega MPU: 07/95 Batman Forever (Norway)
 DRIVERNV(bmf_sv)      //DE/Sega MPU: 07/95 Batman Forever (Sweden)
 DRIVERNV(bmf_jp)      //DE/Sega MPU: 07/95 Batman Forever (Japan)
 DRIVERNV(bmf_time)    //DE/Sega MPU: 07/95 Batman Forever (Timed Version)
+#if 0
 //Whitestar Hardware DMD 128x32
 DRIVERNV(apollo13)    //Whitestar: 11/95 Apollo 13
 DRIVERNV(gldneye)     //Whitestar: 02/96 Golden Eye
@@ -416,7 +428,7 @@ DRIVERNV(lostspc)     //Whitestar: 06/98 Lost in Space
 DRIVERNV(godzilla)    //Whitestar: 09/98 Godzilla
 DRIVERNV(southpk)     //Whitestar: 01/99 South Park
 DRIVERNV(harley)      //Whitestar: 08/99 Harley Davidon
-
+#endif
 // ---------------------
 // DATA EAST GAMES BELOW
 // ---------------------
@@ -452,8 +464,6 @@ DRIVERNV(gnr)         //Data East MPU: 07/94 Guns N Roses
 DRIVERNV(maverick)    //Data East MPU: 09/94 Maverick
 //MISC
 DRIVERNV(detest)      //Data East MPU: ??/?? DE Test Chip
-
-
 
 
 // -------------------------------------
@@ -541,7 +551,6 @@ DRIVER(pool,l7)     //S11-1848: 06/90 B Pool Sharks (Shark?)
 DRIVER(diner,l4)    //S11-571:  09/90 W Diner
 DRIVER(radcl,l1)    //S11-1904: 09/90 B Radical!
 DRIVER(dd,l2)       //S11-737:  11/90 B Dr. Dude
-
 DRIVER(dd,p7)       //WPC:      11/90 B Dr. Dude
 DRIVER(fh,l9)       //WPC-503:  12/90 W Funhouse
 DRIVER(bbnny,l2)    //S11-396:  01/91 B Bugs Bunny's Birthday Ball
@@ -608,7 +617,6 @@ DRIVER(nbaf,31a)
 DRIVER(mm,109)      //WPC-559:  06/97 W Medieval Madness
 DRIVER(mm,10)
 DRIVER(cv,14)       //WPC-562:  10/97 B Cirqus Voltaire
-DRIVER(cv,20h)      //WPC-562:  04/02 B Cirqus Voltaire (Home Roms)
 DRIVER(ngg,13)      //WPC-561:  12/97 W No Good Gofers
 DRIVER(cp,16)       //WPC-563:  04/98 B The Champion Pub
 DRIVER(mb,106)      //WPC-565:  07/98 W Monster Bash

@@ -32,6 +32,11 @@
 #include "ill02.h"
 
 
+#define M6502_NMI_VEC	0xfffa
+#define M6502_RST_VEC	0xfffc
+#define M6502_IRQ_VEC	0xfffe
+
+
 #define VERBOSE 0
 
 #if VERBOSE
@@ -48,7 +53,7 @@
 
 struct cpu_interface
 m6502_interface=
-CPU0(M6502,    m6502,    1,  0,1.00,M6502_INT_NONE,    M6502_INT_IRQ,  M6502_INT_NMI,  8, 16,     0,16,LE,1, 3),
+CPU0(M6502,    m6502,    1,  0,1.00,M6502_INT_NONE,    M6502_IRQ_LINE,  IRQ_LINE_NMI,  8, 16,     0,16,LE,1, 3),
 	m65c02_interface=
 CPU0(M65C02,   m65c02,   1,  0,1.00,M65C02_INT_NONE,   M65C02_INT_IRQ, M65C02_INT_NMI, 8, 16,     0,16,LE,1, 3),
 	m65sc02_interface=
@@ -216,32 +221,13 @@ void m6502_set_context (void *src)
 	}
 }
 
-unsigned m6502_get_pc (void)
-{
-	return PCD;
-}
-
-void m6502_set_pc (unsigned val)
-{
-	PCW = val;
-	change_pc16(PCD);
-}
-
-unsigned m6502_get_sp (void)
-{
-	return S;
-}
-
-void m6502_set_sp (unsigned val)
-{
-	S = val;
-}
-
 unsigned m6502_get_reg (int regnum)
 {
 	switch( regnum )
 	{
+		case REG_PC: return PCD;
 		case M6502_PC: return m6502.pc.w.l;
+		case REG_SP: return S;
 		case M6502_S: return m6502.sp.b.l;
 		case M6502_P: return m6502.p;
 		case M6502_A: return m6502.a;
@@ -269,7 +255,9 @@ void m6502_set_reg (int regnum, unsigned val)
 {
 	switch( regnum )
 	{
+		case REG_PC: PCW = val; change_pc16(PCD); break;
 		case M6502_PC: m6502.pc.w.l = val; break;
+		case REG_SP: S = val; break;
 		case M6502_S: m6502.sp.b.l = val; break;
 		case M6502_P: m6502.p = val; break;
 		case M6502_A: m6502.a = val; break;
@@ -277,7 +265,7 @@ void m6502_set_reg (int regnum, unsigned val)
 		case M6502_Y: m6502.y = val; break;
 		case M6502_EA: m6502.ea.w.l = val; break;
 		case M6502_ZP: m6502.zp.w.l = val; break;
-		case M6502_NMI_STATE: m6502_set_nmi_line( val ); break;
+		case M6502_NMI_STATE: m6502_set_irq_line( IRQ_LINE_NMI, val ); break;
 		case M6502_IRQ_STATE: m6502_set_irq_line( 0, val ); break;
 		case M6502_SO_STATE: m6502_set_irq_line( M6502_SET_OVERFLOW, val ); break;
 		default:
@@ -369,43 +357,45 @@ int m6502_execute(int cycles)
 	return cycles - m6502_ICount;
 }
 
-void m6502_set_nmi_line(int state)
-{
-	if (m6502.nmi_state == state) return;
-	m6502.nmi_state = state;
-	if( state != CLEAR_LINE )
-	{
-		LOG(( "M6502#%d set_nmi_line(ASSERT)\n", cpu_getactivecpu()));
-		EAD = M6502_NMI_VEC;
-		m6502_ICount -= 7;
-		PUSH(PCH);
-		PUSH(PCL);
-		PUSH(P & ~F_B);
-		P |= F_I;		/* set I flag */
-		PCL = RDMEM(EAD);
-		PCH = RDMEM(EAD+1);
-		LOG(("M6502#%d takes NMI ($%04x)\n", cpu_getactivecpu(), PCD));
-		change_pc16(PCD);
-	}
-}
-
 void m6502_set_irq_line(int irqline, int state)
 {
-	if( irqline == M6502_SET_OVERFLOW )
+	if (irqline == IRQ_LINE_NMI)
 	{
-		if( m6502.so_state && !state )
+		if (m6502.nmi_state == state) return;
+		m6502.nmi_state = state;
+		if( state != CLEAR_LINE )
 		{
-			LOG(( "M6502#%d set overflow\n", cpu_getactivecpu()));
-			P|=F_V;
+			LOG(( "M6502#%d set_nmi_line(ASSERT)\n", cpu_getactivecpu()));
+			EAD = M6502_NMI_VEC;
+			m6502_ICount -= 7;
+			PUSH(PCH);
+			PUSH(PCL);
+			PUSH(P & ~F_B);
+			P |= F_I;		/* set I flag */
+			PCL = RDMEM(EAD);
+			PCH = RDMEM(EAD+1);
+			LOG(("M6502#%d takes NMI ($%04x)\n", cpu_getactivecpu(), PCD));
+			change_pc16(PCD);
 		}
-		m6502.so_state=state;
-		return;
 	}
-	m6502.irq_state = state;
-	if( state != CLEAR_LINE )
+	else
 	{
-		LOG(( "M6502#%d set_irq_line(ASSERT)\n", cpu_getactivecpu()));
-		m6502.pending_irq = 1;
+		if( irqline == M6502_SET_OVERFLOW )
+		{
+			if( m6502.so_state && !state )
+			{
+				LOG(( "M6502#%d set overflow\n", cpu_getactivecpu()));
+				P|=F_V;
+			}
+			m6502.so_state=state;
+			return;
+		}
+		m6502.irq_state = state;
+		if( state != CLEAR_LINE )
+		{
+			LOG(( "M6502#%d set_irq_line(ASSERT)\n", cpu_getactivecpu()));
+			m6502.pending_irq = 1;
+		}
 	}
 }
 
@@ -505,13 +495,8 @@ void n2a03_exit  (void) { m6502_exit(); }
 int  n2a03_execute(int cycles) { return m6502_execute(cycles); }
 unsigned n2a03_get_context (void *dst) { return m6502_get_context(dst); }
 void n2a03_set_context (void *src) { m6502_set_context(src); }
-unsigned n2a03_get_pc (void) { return m6502_get_pc(); }
-void n2a03_set_pc (unsigned val) { m6502_set_pc(val); }
-unsigned n2a03_get_sp (void) { return m6502_get_sp(); }
-void n2a03_set_sp (unsigned val) { m6502_set_sp(val); }
 unsigned n2a03_get_reg (int regnum) { return m6502_get_reg(regnum); }
 void n2a03_set_reg (int regnum, unsigned val) { m6502_set_reg(regnum,val); }
-void n2a03_set_nmi_line(int state) { m6502_set_nmi_line(state); }
 void n2a03_set_irq_line(int irqline, int state) { m6502_set_irq_line(irqline,state); }
 void n2a03_set_irq_callback(int (*callback)(int irqline)) { m6502_set_irq_callback(callback); }
 const char *n2a03_info(void *context, int regnum)
@@ -577,13 +562,8 @@ void m6510_exit  (void) { m6502_exit(); }
 int  m6510_execute(int cycles) { return m6502_execute(cycles); }
 unsigned m6510_get_context (void *dst) { return m6502_get_context(dst); }
 void m6510_set_context (void *src) { m6502_set_context(src); }
-unsigned m6510_get_pc (void) { return m6502_get_pc(); }
-void m6510_set_pc (unsigned val) { m6502_set_pc(val); }
-unsigned m6510_get_sp (void) { return m6502_get_sp(); }
-void m6510_set_sp (unsigned val) { m6502_set_sp(val); }
 unsigned m6510_get_reg (int regnum) { return m6502_get_reg(regnum); }
 void m6510_set_reg (int regnum, unsigned val) { m6502_set_reg(regnum,val); }
-void m6510_set_nmi_line(int state) { m6502_set_nmi_line(state); }
 void m6510_set_irq_line(int irqline, int state) { m6502_set_irq_line(irqline,state); }
 void m6510_set_irq_callback(int (*callback)(int irqline)) { m6502_set_irq_callback(callback); }
 const char *m6510_info(void *context, int regnum)
@@ -744,34 +724,34 @@ int m65c02_execute(int cycles)
 
 unsigned m65c02_get_context (void *dst) { return m6502_get_context(dst); }
 void m65c02_set_context (void *src) { m6502_set_context(src); }
-unsigned m65c02_get_pc (void) { return m6502_get_pc(); }
-void m65c02_set_pc (unsigned val) { m6502_set_pc(val); }
-unsigned m65c02_get_sp (void) { return m6502_get_sp(); }
-void m65c02_set_sp (unsigned val) { m6502_set_sp(val); }
 unsigned m65c02_get_reg (int regnum) { return m6502_get_reg(regnum); }
 void m65c02_set_reg (int regnum, unsigned val) { m6502_set_reg(regnum,val); }
 
-void m65c02_set_nmi_line(int state)
+void m65c02_set_irq_line(int irqline, int state)
 {
-	if (m6502.nmi_state == state) return;
-	m6502.nmi_state = state;
-	if( state != CLEAR_LINE )
+	if (irqline == IRQ_LINE_NMI)
 	{
-		LOG(( "M6502#%d set_nmi_line(ASSERT)\n", cpu_getactivecpu()));
-		EAD = M6502_NMI_VEC;
-		m6502_ICount -= 7;
-		PUSH(PCH);
-		PUSH(PCL);
-		PUSH(P & ~F_B);
-		P = (P & ~F_D) | F_I;		/* knock out D and set I flag */
-		PCL = RDMEM(EAD);
-		PCH = RDMEM(EAD+1);
-		LOG(("M6502#%d takes NMI ($%04x)\n", cpu_getactivecpu(), PCD));
-		change_pc16(PCD);
+		if (m6502.nmi_state == state) return;
+		m6502.nmi_state = state;
+		if( state != CLEAR_LINE )
+		{
+			LOG(( "M6502#%d set_nmi_line(ASSERT)\n", cpu_getactivecpu()));
+			EAD = M6502_NMI_VEC;
+			m6502_ICount -= 7;
+			PUSH(PCH);
+			PUSH(PCL);
+			PUSH(P & ~F_B);
+			P = (P & ~F_D) | F_I;		/* knock out D and set I flag */
+			PCL = RDMEM(EAD);
+			PCH = RDMEM(EAD+1);
+			LOG(("M6502#%d takes NMI ($%04x)\n", cpu_getactivecpu(), PCD));
+			change_pc16(PCD);
+		}
 	}
+	else
+		m6502_set_irq_line(irqline,state);
 }
 
-void m65c02_set_irq_line(int irqline, int state) { m6502_set_irq_line(irqline,state); }
 void m65c02_set_irq_callback(int (*callback)(int irqline)) { m6502_set_irq_callback(callback); }
 const char *m65c02_info(void *context, int regnum)
 {
@@ -827,13 +807,8 @@ void m65sc02_exit  (void) { m6502_exit(); }
 int  m65sc02_execute(int cycles) { return m65c02_execute(cycles); }
 unsigned m65sc02_get_context (void *dst) { return m6502_get_context(dst); }
 void m65sc02_set_context (void *src) { m6502_set_context(src); }
-unsigned m65sc02_get_pc (void) { return m6502_get_pc(); }
-void m65sc02_set_pc (unsigned val) { m6502_set_pc(val); }
-unsigned m65sc02_get_sp (void) { return m6502_get_sp(); }
-void m65sc02_set_sp (unsigned val) { m6502_set_sp(val); }
 unsigned m65sc02_get_reg (int regnum) { return m6502_get_reg(regnum); }
 void m65sc02_set_reg (int regnum, unsigned val) { m6502_set_reg(regnum,val); }
-void m65sc02_set_nmi_line(int state) { m6502_set_nmi_line(state); }
 void m65sc02_set_irq_line(int irqline, int state) { m6502_set_irq_line(irqline,state); }
 void m65sc02_set_irq_callback(int (*callback)(int irqline)) { m6502_set_irq_callback(callback); }
 const char *m65sc02_info(void *context, int regnum)

@@ -58,17 +58,11 @@ enum {
 	M6502_SUBTYPE
 };
 
-#define M6502_INT_NONE	0
-#define M6502_INT_IRQ	1
-#define M6502_INT_NMI	2
+#define M6502_IRQ_LINE		0
 /* use cpu_set_irq_line(cpu, M6502_SET_OVERFLOW, level)
    to change level of the so input line
    positiv edge sets overflow flag */
-#define M6502_SET_OVERFLOW 3
-
-#define M6502_NMI_VEC	0xfffa
-#define M6502_RST_VEC	0xfffc
-#define M6502_IRQ_VEC	0xfffe
+#define M6502_SET_OVERFLOW	1
 
 extern int m6502_ICount;				/* cycle count */
 
@@ -78,13 +72,8 @@ extern void m6502_exit(void);
 extern int	m6502_execute(int cycles);
 extern unsigned m6502_get_context(void *dst);
 extern void m6502_set_context(void *src);
-extern unsigned m6502_get_pc(void);
-extern void m6502_set_pc(unsigned val);
-extern unsigned m6502_get_sp(void);
-extern void m6502_set_sp(unsigned val);
 extern unsigned m6502_get_reg(int regnum);
 extern void m6502_set_reg(int regnum, unsigned val);
-extern void m6502_set_nmi_line(int state);
 extern void m6502_set_irq_line(int irqline, int state);
 extern void m6502_set_irq_callback(int (*callback)(int irqline));
 extern const char *m6502_info(void *context, int regnum);
@@ -105,13 +94,7 @@ extern unsigned m6502_dasm(char *buffer, unsigned pc);
 #define M6510_NMI_STATE 				M6502_NMI_STATE
 #define M6510_IRQ_STATE 				M6502_IRQ_STATE
 
-#define M6510_INT_NONE					M6502_INT_NONE
-#define M6510_INT_IRQ					M6502_INT_IRQ
-#define M6510_INT_NMI					M6502_INT_NMI
-
-#define M6510_NMI_VEC					M6502_NMI_VEC
-#define M6510_RST_VEC					M6502_RST_VEC
-#define M6510_IRQ_VEC					M6502_IRQ_VEC
+#define M6510_IRQ_LINE					M6502_IRQ_LINE
 
 #define m6510_ICount					m6502_ICount
 
@@ -121,13 +104,8 @@ extern void m6510_exit(void);
 extern int	m6510_execute(int cycles);
 extern unsigned m6510_get_context(void *dst);
 extern void m6510_set_context(void *src);
-extern unsigned m6510_get_pc(void);
-extern void m6510_set_pc(unsigned val);
-extern unsigned m6510_get_sp(void);
-extern void m6510_set_sp(unsigned val);
 extern unsigned m6510_get_reg(int regnum);
 extern void m6510_set_reg(int regnum, unsigned val);
-extern void m6510_set_nmi_line(int state);
 extern void m6510_set_irq_line(int irqline, int state);
 extern void m6510_set_irq_callback(int (*callback)(int irqline));
 extern const char *m6510_info(void *context, int regnum);
@@ -151,13 +129,7 @@ extern unsigned int Dasm6510( char *dst, unsigned pc );
 #define M6510T_NMI_STATE				M6502_NMI_STATE
 #define M6510T_IRQ_STATE				M6502_IRQ_STATE
 
-#define M6510T_INT_NONE 				M6502_INT_NONE
-#define M6510T_INT_IRQ					M6502_INT_IRQ
-#define M6510T_INT_NMI					M6502_INT_NMI
-
-#define M6510T_NMI_VEC					M6502_NMI_VEC
-#define M6510T_RST_VEC					M6502_RST_VEC
-#define M6510T_IRQ_VEC					M6502_IRQ_VEC
+#define M6510T_IRQ_LINE					M6502_IRQ_LINE
 
 #define m6510t_ICount                   m6502_ICount
 
@@ -167,13 +139,8 @@ extern unsigned int Dasm6510( char *dst, unsigned pc );
 #define m6510t_execute m6510_execute
 #define m6510t_get_context m6510_get_context
 #define m6510t_set_context m6510_set_context
-#define m6510t_get_pc m6510_get_pc
-#define m6510t_set_pc m6510_set_pc
-#define m6510t_get_sp m6510_get_sp
-#define m6510t_set_sp m6510_set_sp
 #define m6510t_get_reg m6510_get_reg
 #define m6510t_set_reg m6510_set_reg
-#define m6510t_set_nmi_line m6510_set_nmi_line
 #define m6510t_set_irq_line m6510_set_irq_line
 #define m6510t_set_irq_callback m6510_set_irq_callback
 #define m6510t_state_save m6510_state_save
@@ -194,13 +161,7 @@ extern const char *m6510t_info(void *context, int regnum);
 #define M7501_NMI_STATE 				M6502_NMI_STATE
 #define M7501_IRQ_STATE 				M6502_IRQ_STATE
 
-#define M7501_INT_NONE					M6502_INT_NONE
-#define M7501_INT_IRQ					M6502_INT_IRQ
-#define M7501_INT_NMI					M6502_INT_NMI
-
-#define M7501_NMI_VEC					M6502_NMI_VEC
-#define M7501_RST_VEC					M6502_RST_VEC
-#define M7501_IRQ_VEC					M6502_IRQ_VEC
+#define M7501_IRQ_LINE					M6502_IRQ_LINE
 
 #define m7501_ICount                    m6502_ICount
 
@@ -210,13 +171,8 @@ extern const char *m6510t_info(void *context, int regnum);
 #define m7501_execute m6510_execute
 #define m7501_get_context m6510_get_context
 #define m7501_set_context m6510_set_context
-#define m7501_get_pc m6510_get_pc
-#define m7501_set_pc m6510_set_pc
-#define m7501_get_sp m6510_get_sp
-#define m7501_set_sp m6510_set_sp
 #define m7501_get_reg m6510_get_reg
 #define m7501_set_reg m6510_set_reg
-#define m7501_set_nmi_line m6510_set_nmi_line
 #define m7501_set_irq_line m6510_set_irq_line
 #define m7501_set_irq_callback m6510_set_irq_callback
 #define m7501_state_save m6510_state_save
@@ -237,13 +193,7 @@ extern const char *m7501_info(void *context, int regnum);
 #define M8502_NMI_STATE 				M6502_NMI_STATE
 #define M8502_IRQ_STATE 				M6502_IRQ_STATE
 
-#define M8502_INT_NONE					M6502_INT_NONE
-#define M8502_INT_IRQ					M6502_INT_IRQ
-#define M8502_INT_NMI					M6502_INT_NMI
-
-#define M8502_NMI_VEC					M6502_NMI_VEC
-#define M8502_RST_VEC					M6502_RST_VEC
-#define M8502_IRQ_VEC					M6502_IRQ_VEC
+#define M8502_IRQ_LINE					M6502_IRQ_LINE
 
 #define m8502_ICount                    m6502_ICount
 
@@ -253,13 +203,8 @@ extern const char *m7501_info(void *context, int regnum);
 #define m8502_execute m6510_execute
 #define m8502_get_context m6510_get_context
 #define m8502_set_context m6510_set_context
-#define m8502_get_pc m6510_get_pc
-#define m8502_set_pc m6510_set_pc
-#define m8502_get_sp m6510_get_sp
-#define m8502_set_sp m6510_set_sp
 #define m8502_get_reg m6510_get_reg
 #define m8502_set_reg m6510_set_reg
-#define m8502_set_nmi_line m6510_set_nmi_line
 #define m8502_set_irq_line m6510_set_irq_line
 #define m8502_set_irq_callback m6510_set_irq_callback
 #define m8502_state_save m6510_state_save
@@ -284,13 +229,7 @@ extern const char *m8502_info(void *context, int regnum);
 #define N2A03_NMI_STATE 				M6502_NMI_STATE
 #define N2A03_IRQ_STATE 				M6502_IRQ_STATE
 
-#define N2A03_INT_NONE					M6502_INT_NONE
-#define N2A03_INT_IRQ					M6502_INT_IRQ
-#define N2A03_INT_NMI					M6502_INT_NMI
-
-#define N2A03_NMI_VEC					M6502_NMI_VEC
-#define N2A03_RST_VEC					M6502_RST_VEC
-#define N2A03_IRQ_VEC					M6502_IRQ_VEC
+#define N2A03_IRQ_LINE					M6502_IRQ_LINE
 
 #define n2a03_ICount					m6502_ICount
 
@@ -300,13 +239,8 @@ extern void n2a03_exit(void);
 extern int	n2a03_execute(int cycles);
 extern unsigned n2a03_get_context(void *dst);
 extern void n2a03_set_context(void *src);
-extern unsigned n2a03_get_pc(void);
-extern void n2a03_set_pc(unsigned val);
-extern unsigned n2a03_get_sp(void);
-extern void n2a03_set_sp(unsigned val);
 extern unsigned n2a03_get_reg(int regnum);
 extern void n2a03_set_reg (int regnum, unsigned val);
-extern void n2a03_set_nmi_line(int state);
 extern void n2a03_set_irq_line(int irqline, int state);
 extern void n2a03_set_irq_callback(int (*callback)(int irqline));
 extern const char *n2a03_info(void *context, int regnum);
@@ -338,13 +272,7 @@ extern void n2a03_irq(void);
 #define M65C02_NMI_STATE				M6502_NMI_STATE
 #define M65C02_IRQ_STATE				M6502_IRQ_STATE
 
-#define M65C02_INT_NONE 				M6502_INT_NONE
-#define M65C02_INT_IRQ					M6502_INT_IRQ
-#define M65C02_INT_NMI					M6502_INT_NMI
-
-#define M65C02_NMI_VEC					M6502_NMI_VEC
-#define M65C02_RST_VEC					M6502_RST_VEC
-#define M65C02_IRQ_VEC					M6502_IRQ_VEC
+#define M65C02_IRQ_LINE					M6502_IRQ_LINE
 
 #define m65c02_ICount					m6502_ICount
 
@@ -354,13 +282,8 @@ extern void m65c02_exit(void);
 extern int	m65c02_execute(int cycles);
 extern unsigned m65c02_get_context(void *dst);
 extern void m65c02_set_context(void *src);
-extern unsigned m65c02_get_pc(void);
-extern void m65c02_set_pc(unsigned val);
-extern unsigned m65c02_get_sp(void);
-extern void m65c02_set_sp(unsigned val);
 extern unsigned m65c02_get_reg(int regnum);
 extern void m65c02_set_reg(int regnum, unsigned val);
-extern void m65c02_set_nmi_line(int state);
 extern void m65c02_set_irq_line(int irqline, int state);
 extern void m65c02_set_irq_callback(int (*callback)(int irqline));
 extern const char *m65c02_info(void *context, int regnum);
@@ -382,13 +305,7 @@ extern unsigned m65c02_dasm(char *buffer, unsigned pc);
 #define M65SC02_NMI_STATE				M6502_NMI_STATE
 #define M65SC02_IRQ_STATE				M6502_IRQ_STATE
 
-#define M65SC02_INT_NONE				M6502_INT_NONE
-#define M65SC02_INT_IRQ 				M6502_INT_IRQ
-#define M65SC02_INT_NMI 				M6502_INT_NMI
-
-#define M65SC02_NMI_VEC 				M6502_NMI_VEC
-#define M65SC02_RST_VEC 				M6502_RST_VEC
-#define M65SC02_IRQ_VEC 				M6502_IRQ_VEC
+#define M65SC02_IRQ_LINE				M6502_IRQ_LINE
 
 #define m65sc02_ICount					m6502_ICount
 
@@ -398,13 +315,8 @@ extern void m65sc02_exit(void);
 extern int	m65sc02_execute(int cycles);
 extern unsigned m65sc02_get_context(void *dst);
 extern void m65sc02_set_context(void *src);
-extern unsigned m65sc02_get_pc(void);
-extern void m65sc02_set_pc(unsigned val);
-extern unsigned m65sc02_get_sp(void);
-extern void m65sc02_set_sp(unsigned val);
 extern unsigned m65sc02_get_reg(int regnum);
 extern void m65sc02_set_reg(int regnum, unsigned val);
-extern void m65sc02_set_nmi_line(int state);
 extern void m65sc02_set_irq_line(int irqline, int state);
 extern void m65sc02_set_irq_callback(int (*callback)(int irqline));
 extern const char *m65sc02_info(void *context, int regnum);

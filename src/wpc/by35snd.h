@@ -33,25 +33,10 @@
 */
 
 /* Squawk n Talk */
-extern const struct Memory_ReadAddress  snt_readmem[];
-extern const struct Memory_WriteAddress snt_writemem[];
-extern struct TMS5220interface    snt_tms5220Int;
-extern struct DACinterface        snt_dacInt;
-extern struct AY8910interface     snt_ay8910Int;
-
 #define BY61_CPUNO     1
 #define BY61_CPUREGION (REGION_CPU1+BY61_CPUNO)
 
-#define BY61_SOUND_CPU { \
-  CPU_M6802 | CPU_AUDIO_CPU, 3580000/4,	/* .8 MHz */					\
-  snt_readmem, snt_writemem, 0, 0, \
-  ignore_interrupt,1 \
-}
-
-#define BY61_SOUND { SOUND_TMS5220, &snt_tms5220Int },\
-                   { SOUND_DAC,     &snt_dacInt }, \
-                   { SOUND_AY8910,  &snt_ay8910Int }, \
-                   SAMPLESINTERFACE
+extern MACHINE_DRIVER_EXTERN(by61);
 
 #define BY61_SOUNDROMxxx0(u5,chk5) \
   SOUNDREGION(0x10000, BY61_CPUREGION) \
@@ -101,43 +86,22 @@ extern struct AY8910interface     snt_ay8910Int;
     ROM_LOAD(u5, 0xf000, 0x1000, chk5)
 
 /* -32, -50 Sound module */
-extern struct CustomSound_interface by32_custInt;
-
-#define BY32_SOUND {SOUND_CUSTOM,&by32_custInt}, SAMPLESINTERFACE
+#define BY32_ROMREGION REGION_SOUND1
+extern MACHINE_DRIVER_EXTERN(by32);
 
 #define BY32_SOUNDROM(n1,chk1) \
-  SOUNDREGION(0x0020, BY35_MEMREG_SROM) \
+  SOUNDREGION(0x0020, BY32_ROMREGION) \
     ROM_LOAD( n1, 0x0000, 0x0020, chk1)
 
 #define BY50_SOUNDROM(n1,chk1) \
-  SOUNDREGION(0x0020, BY35_MEMREG_SROM) \
+  SOUNDREGION(0x0020, BY32_ROMREGION) \
     ROM_LOAD( n1, 0x0000, 0x0020, chk1)
 
 /* Sounds Plus -51, -56 */
-extern const struct Memory_ReadAddress sp51_readmem[];
-extern const struct Memory_ReadAddress sp56_readmem[];
-extern const struct Memory_WriteAddress sp_writemem[];
-extern struct AY8910interface   sp_ay8910Int;
-extern struct hc55516_interface sp_hc55516Int;
-
 #define BY51_CPUNO     1
 #define BY51_CPUREGION (REGION_CPU1+BY51_CPUNO)
-
-#define BY51_SOUND_CPU { \
-  CPU_M6802 | CPU_AUDIO_CPU, 3580000/4,	/* .8 MHz */					\
-  sp51_readmem, sp_writemem, 0, 0, \
-  ignore_interrupt,1 \
-}
-#define BY56_SOUND_CPU { \
-  CPU_M6802 | CPU_AUDIO_CPU, 3580000/4,	/* .8 MHz */					\
-  sp56_readmem, sp_writemem, 0, 0, \
-  ignore_interrupt,1 \
-}
-
-#define BY51_SOUND { SOUND_AY8910,  &sp_ay8910Int }, SAMPLESINTERFACE
-#define BY56_SOUND { SOUND_AY8910,  &sp_ay8910Int }, \
-                   { SOUND_HC55516, &sp_hc55516Int }, \
-                   SAMPLESINTERFACE
+extern MACHINE_DRIVER_EXTERN(by51);
+extern MACHINE_DRIVER_EXTERN(by56);
 
 #define BY51_SOUNDROM8(n1,chk1) \
   SOUNDREGION(0x10000, BY51_CPUREGION) \
@@ -165,22 +129,9 @@ extern struct hc55516_interface sp_hc55516Int;
     ROM_LOAD(n7, 0xe000, 0x1000, chk7)
 
 /* Cheap Squeak -45 */
-extern const struct Memory_ReadAddress cs_readmem[];
-extern const struct Memory_WriteAddress cs_writemem[];
-extern const struct IO_ReadPort cs_readport[];
-extern const struct IO_WritePort cs_writeport[];
-extern struct DACinterface cs_dacInt;
-
 #define BY45_CPUNO     1
 #define BY45_CPUREGION (REGION_CPU1+BY45_CPUNO)
-
-#define BY45_SOUND_CPU { \
-  CPU_M6803 | CPU_AUDIO_CPU, 3580000/4,	/* .8 MHz */  			  \
-  cs_readmem, cs_writemem, cs_readport, cs_writeport, \
-  ignore_interrupt,1 \
-}
-
-#define BY45_SOUND { SOUND_DAC, &cs_dacInt }, SAMPLESINTERFACE
+extern MACHINE_DRIVER_EXTERN(by45);
 
 #define BY45_SOUNDROMx2(n1,chk1) \
   SOUNDREGION(0x10000, BY45_CPUREGION) \
@@ -208,27 +159,10 @@ extern struct DACinterface cs_dacInt;
       ROM_RELOAD(0xe000, 0x2000)
 
 /* Turbo Cheap Squeak */
-extern const struct Memory_ReadAddress  tcs_readmem[];
-extern const struct Memory_WriteAddress tcs_writemem[];
-extern const struct Memory_ReadAddress  tcs2_readmem[];
-extern const struct Memory_WriteAddress tcs2_writemem[];
-extern struct DACinterface        tcs_dacInt;
-
 #define BYTCS_CPUNO     1
 #define BYTCS_CPUREGION (REGION_CPU1+BYTCS_CPUNO)
-
-#define BYTCS_SOUND_CPU { \
-  CPU_M6809 | CPU_AUDIO_CPU, 2000000,	/* 2MHz */					\
-  tcs_readmem, tcs_writemem, 0, 0, \
-  ignore_interrupt,1 \
-}
-#define BYTCS2_SOUND_CPU { \
-  CPU_M6809 | CPU_AUDIO_CPU, 2000000,	/* 2MHz */					\
-  tcs2_readmem, tcs2_writemem, 0, 0, \
-  ignore_interrupt,1 \
-}
-
-#define BYTCS_SOUND { SOUND_DAC, &tcs_dacInt }, SAMPLESINTERFACE
+extern MACHINE_DRIVER_EXTERN(byTCS);
+extern MACHINE_DRIVER_EXTERN(byTCS2);
 
 /* Turbo Cheak Squalk - 1 x 16K ROM */
 #define BYTCS_SOUNDROM4(n1,chk1) \
@@ -247,19 +181,9 @@ extern struct DACinterface        tcs_dacInt;
     ROM_LOAD(n1, 0x0000, 0x10000, chk1)
 
 /* Sounds Delux */
-extern const struct Memory_ReadAddress16  sd_readmem[];
-extern const struct Memory_WriteAddress16 sd_writemem[];
-extern struct DACinterface          sd_dacInt;
-
 #define BYSD_CPUNO     1
 #define BYSD_CPUREGION (REGION_CPU1+BYSD_CPUNO)
-
-#define BYSD_SOUND_CPU { \
-  CPU_M68000 | CPU_AUDIO_CPU, 8000000,	/* 8MHz */					\
-  sd_readmem, sd_writemem, 0, 0, \
-  ignore_interrupt,1 \
-}
-#define BYSD_SOUND { SOUND_DAC, &sd_dacInt }, SAMPLESINTERFACE
+extern MACHINE_DRIVER_EXTERN(bySD);
 
 #define BYSD_SOUNDROM0000(n1,chk1, n2, chk2, n3,chk3, n4, chk4) \
   SOUNDREGION(0x01000000, BYSD_CPUREGION) \

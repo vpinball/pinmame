@@ -1,3 +1,11 @@
+/***************************************************************************
+
+	mame.h
+
+	Controls execution of the core MAME system.
+
+***************************************************************************/
+
 #ifndef MACHINE_H
 #define MACHINE_H
 
@@ -6,6 +14,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "palette.h"
 
 #ifdef MESS
 #include "mess.h"
@@ -15,6 +24,14 @@ extern char build_version[];
 
 #define MAX_GFX_ELEMENTS 32
 #define MAX_MEMORY_REGIONS 32
+
+
+
+/***************************************************************************
+
+	Core description of the currently-running machine
+
+***************************************************************************/
 
 struct RegionInfo
 {
@@ -28,19 +45,20 @@ struct RunningMachine
 {
 	struct RegionInfo memory_region[MAX_MEMORY_REGIONS];
 	struct GfxElement *gfx[MAX_GFX_ELEMENTS];	/* graphic sets (chars, sprites) */
-	struct osd_bitmap *scrbitmap;	/* bitmap to draw into */
+	struct mame_bitmap *scrbitmap;	/* bitmap to draw into */
 	struct rectangle visible_area;
-	UINT32 *pens;	/* remapped palette pen numbers. When you write */
+	pen_t *pens;	/* remapped palette pen numbers. When you write */
 					/* directly to a bitmap, never use absolute values, */
 					/* use this array to get the pen number. For example, */
 					/* if you want to use color #6 in the palette, use */
 					/* pens[6] instead of just 6. */
+	rgb_t *palette;
 	UINT16 *game_colortable;	/* lookup table used to map gfx pen numbers */
 								/* to color numbers */
-	UINT32 *remapped_colortable;	/* the above, already remapped through */
-									/* Machine->pens */
+	pen_t *remapped_colortable;	/* the above, already remapped through */
+								/* Machine->pens */
 	const struct GameDriver *gamedrv;	/* contains the definition of the game machine */
-	const struct MachineDriver *drv;	/* same as gamedrv->drv */
+	const struct InternalMachineDriver *drv;	/* same as gamedrv->drv */
 	int color_depth;	/* video color depth: 8, 16, 15 or 32 */
 	int sample_rate;	/* the digital audio sample rate; 0 if sound is disabled. */
 						/* This is set to a default value, or a value specified by */
@@ -60,11 +78,19 @@ struct RunningMachine
 	struct rectangle absolute_visible_area;	/* as passed to osd_set_visible_area() */
 
 	/* stuff for the debugger */
-	struct osd_bitmap *debug_bitmap;
-	UINT32 *debug_pens;
-	UINT32 *debug_remapped_colortable;
+	struct mame_bitmap *debug_bitmap;
+	pen_t *debug_pens;
+	pen_t *debug_remapped_colortable;
 	struct GfxElement *debugger_font;
 };
+
+
+
+/***************************************************************************
+
+	Options passed from the frontend to the main core
+
+***************************************************************************/
 
 #ifdef MESS
 #define MAX_IMAGES	32
@@ -72,7 +98,8 @@ struct RunningMachine
  * This is a filename and it's associated peripheral type
  * The types are defined in mess.h (IO_...)
  */
-struct ImageFile {
+struct ImageFile
+{
 	const char *name;
 	int type;
 };
@@ -80,7 +107,8 @@ struct ImageFile {
 
 /* The host platform should fill these fields with the preferences specified in the GUI */
 /* or on the commandline. */
-struct GameOptions {
+struct GameOptions
+{
 	void *record;
 	void *playback;
 	void *language_file; /* LBO 042400 */
@@ -119,12 +147,36 @@ struct GameOptions {
 	#endif
 };
 
+
+
+/***************************************************************************
+
+	Globals referencing the current machine and the global options
+
+***************************************************************************/
+
 extern struct GameOptions options;
 extern struct RunningMachine *Machine;
+extern int partial_update_count;
 
-int run_game (int game);
+
+
+/***************************************************************************
+
+	Function prototypes
+
+***************************************************************************/
+
+int run_game(int game);
 int updatescreen(void);
 void draw_screen(void);
+
+/* force a partial update of the screen up to and including the
+   requested scanline */
+void force_partial_update(int scanline);
+
+/* called by cpuexec.c to reset updates at the end of VBLANK */
+void reset_partial_updates(void);
 
 /* next time vh_screenrefresh is called, full_refresh will be true,
    thus requesting a redraw of the entire screen */
@@ -134,5 +186,9 @@ void update_video_and_audio(void);
 /* osd_fopen() must use this to know if high score files can be used */
 int mame_highscore_enabled(void);
 void set_led_status(int num,int on);
+
+/* expansion of tag/data pairs */
+struct InternalMachineDriver;
+void expand_machine_driver(void (*constructor)(struct InternalMachineDriver *), struct InternalMachineDriver *output);
 
 #endif

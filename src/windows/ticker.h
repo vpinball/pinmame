@@ -4,8 +4,8 @@
 //
 //============================================================
 
-#ifndef __WIN32_TICKER__
-#define __WIN32_TICKER__
+#ifndef __WIN_TICKER__
+#define __WIN_TICKER__
 
 #include "osd_cpu.h"
 

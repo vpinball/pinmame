@@ -13,6 +13,8 @@
 extern "C" {
 #endif
 
+#include "palette.h"
+
 #define MAX_GFX_PLANES 8
 #define MAX_GFX_SIZE 64
 
@@ -61,7 +63,7 @@ struct GfxElement
 	unsigned int total_elements;	/* total number of characters/sprites */
 	int color_granularity;	/* number of colors for each color code */
 							/* (for example, 4 for 2 bitplanes gfx) */
-	UINT32 *colortable;	/* map color codes to screen pens */
+	pen_t *colortable;	/* map color codes to screen pens */
 	int total_colors;
 	UINT32 *pen_usage;	/* an array of total_elements entries. */
 						/* It is a table of the pens each character uses */
@@ -132,51 +134,52 @@ enum
 	DRAWMODE_SHADOW
 };
 
+/* By default, when drawing sprites with pdrawgfx, shadows affect the sprites below them. */
+/* Set this flag to 1 to make shadows only affect the background, leaving sprites at full brightness. */
+extern int pdrawgfx_shadow_lowpri;
 
-typedef void (*plot_pixel_proc)(struct osd_bitmap *bitmap,int x,int y,UINT32 pen);
-typedef int  (*read_pixel_proc)(struct osd_bitmap *bitmap,int x,int y);
-typedef void (*plot_box_proc)(struct osd_bitmap *bitmap,int x,int y,int width,int height,UINT32 pen);
+
 typedef void (*mark_dirty_proc)(int sx,int sy,int ex,int ey);
+extern mark_dirty_proc mark_dirty;
 
 
 /* pointers to pixel functions.  They're set based on orientation, depthness and whether
    dirty rectangle handling is enabled */
-extern plot_pixel_proc plot_pixel;
-extern read_pixel_proc read_pixel;
-extern plot_box_proc plot_box;
-extern mark_dirty_proc mark_dirty;
+#define plot_pixel(bm,x,y,p)	(*(bm)->plot)(bm,x,y,p)
+#define read_pixel(bm,x,y)		(*(bm)->read)(bm,x,y)
+#define plot_box(bm,x,y,w,h,p)	(*(bm)->plot_box)(bm,x,y,w,h,p)
 
 void decodechar(struct GfxElement *gfx,int num,const unsigned char *src,const struct GfxLayout *gl);
 struct GfxElement *decodegfx(const unsigned char *src,const struct GfxLayout *gl);
-void set_pixel_functions(void);
+void set_pixel_functions(struct mame_bitmap *bitmap);
 void freegfx(struct GfxElement *gfx);
-void drawgfx(struct osd_bitmap *dest,const struct GfxElement *gfx,
+void drawgfx(struct mame_bitmap *dest,const struct GfxElement *gfx,
 		unsigned int code,unsigned int color,int flipx,int flipy,int sx,int sy,
 		const struct rectangle *clip,int transparency,int transparent_color);
-void pdrawgfx(struct osd_bitmap *dest,const struct GfxElement *gfx,
-		unsigned int code,unsigned int color,int flipx,int flipy,int sx,int sy,
-		const struct rectangle *clip,int transparency,int transparent_color,
-		UINT32 priority_mask);
-void mdrawgfx(struct osd_bitmap *dest,const struct GfxElement *gfx,
+void pdrawgfx(struct mame_bitmap *dest,const struct GfxElement *gfx,
 		unsigned int code,unsigned int color,int flipx,int flipy,int sx,int sy,
 		const struct rectangle *clip,int transparency,int transparent_color,
 		UINT32 priority_mask);
-void copybitmap(struct osd_bitmap *dest,struct osd_bitmap *src,int flipx,int flipy,int sx,int sy,
+void mdrawgfx(struct mame_bitmap *dest,const struct GfxElement *gfx,
+		unsigned int code,unsigned int color,int flipx,int flipy,int sx,int sy,
+		const struct rectangle *clip,int transparency,int transparent_color,
+		UINT32 priority_mask);
+void copybitmap(struct mame_bitmap *dest,struct mame_bitmap *src,int flipx,int flipy,int sx,int sy,
 		const struct rectangle *clip,int transparency,int transparent_color);
-void copybitmap_remap(struct osd_bitmap *dest,struct osd_bitmap *src,int flipx,int flipy,int sx,int sy,
+void copybitmap_remap(struct mame_bitmap *dest,struct mame_bitmap *src,int flipx,int flipy,int sx,int sy,
 		const struct rectangle *clip,int transparency,int transparent_color);
-void copyscrollbitmap(struct osd_bitmap *dest,struct osd_bitmap *src,
+void copyscrollbitmap(struct mame_bitmap *dest,struct mame_bitmap *src,
 		int rows,const int *rowscroll,int cols,const int *colscroll,
 		const struct rectangle *clip,int transparency,int transparent_color);
-void copyscrollbitmap_remap(struct osd_bitmap *dest,struct osd_bitmap *src,
+void copyscrollbitmap_remap(struct mame_bitmap *dest,struct mame_bitmap *src,
 		int rows,const int *rowscroll,int cols,const int *colscroll,
 		const struct rectangle *clip,int transparency,int transparent_color);
-void draw_scanline8(struct osd_bitmap *bitmap,int x,int y,int length,const UINT8 *src,UINT32 *pens,int transparent_pen);
-void draw_scanline16(struct osd_bitmap *bitmap,int x,int y,int length,const UINT16 *src,UINT32 *pens,int transparent_pen);
-void pdraw_scanline8(struct osd_bitmap *bitmap,int x,int y,int length,const UINT8 *src,UINT32 *pens,int transparent_pen,UINT32 orient,int pri);
-void pdraw_scanline16(struct osd_bitmap *bitmap,int x,int y,int length,const UINT16 *src,UINT32 *pens,int transparent_pen,UINT32 orient,int pri);
-void extract_scanline8(struct osd_bitmap *bitmap,int x,int y,int length,UINT8 *dst);
-void extract_scanline16(struct osd_bitmap *bitmap,int x,int y,int length,UINT16 *dst);
+void draw_scanline8(struct mame_bitmap *bitmap,int x,int y,int length,const UINT8 *src,pen_t *pens,int transparent_pen);
+void draw_scanline16(struct mame_bitmap *bitmap,int x,int y,int length,const UINT16 *src,pen_t *pens,int transparent_pen);
+void pdraw_scanline8(struct mame_bitmap *bitmap,int x,int y,int length,const UINT8 *src,pen_t *pens,int transparent_pen,UINT32 orient,int pri);
+void pdraw_scanline16(struct mame_bitmap *bitmap,int x,int y,int length,const UINT16 *src,pen_t *pens,int transparent_pen,UINT32 orient,int pri);
+void extract_scanline8(struct mame_bitmap *bitmap,int x,int y,int length,UINT8 *dst);
+void extract_scanline16(struct mame_bitmap *bitmap,int x,int y,int length,UINT16 *dst);
 
 
 /* Alpha blending functions */
@@ -235,25 +238,34 @@ INLINE UINT32 alpha_blend32( UINT32 d, UINT32 s )
   Optionally the bitmap can be tiled across the screen instead of doing a single
   copy. This is obtained by setting the wraparound parameter to true.
  */
-void copyrozbitmap(struct osd_bitmap *dest,struct osd_bitmap *src,
+void copyrozbitmap(struct mame_bitmap *dest,struct mame_bitmap *src,
 		UINT32 startx,UINT32 starty,int incxx,int incxy,int incyx,int incyy,int wraparound,
 		const struct rectangle *clip,int transparency,int transparent_color,UINT32 priority);
 
-void fillbitmap(struct osd_bitmap *dest,int pen,const struct rectangle *clip);
-void plot_pixel2(struct osd_bitmap *bitmap1,struct osd_bitmap *bitmap2,int x,int y,int pen);
-void drawgfxzoom( struct osd_bitmap *dest_bmp,const struct GfxElement *gfx,
+void fillbitmap(struct mame_bitmap *dest,pen_t pen,const struct rectangle *clip);
+void plot_pixel2(struct mame_bitmap *bitmap1,struct mame_bitmap *bitmap2,int x,int y,pen_t pen);
+void drawgfxzoom( struct mame_bitmap *dest_bmp,const struct GfxElement *gfx,
 		unsigned int code,unsigned int color,int flipx,int flipy,int sx,int sy,
 		const struct rectangle *clip,int transparency,int transparent_color,int scalex,int scaley);
-void pdrawgfxzoom( struct osd_bitmap *dest_bmp,const struct GfxElement *gfx,
+void pdrawgfxzoom( struct mame_bitmap *dest_bmp,const struct GfxElement *gfx,
 		unsigned int code,unsigned int color,int flipx,int flipy,int sx,int sy,
 		const struct rectangle *clip,int transparency,int transparent_color,int scalex,int scaley,
 		UINT32 priority_mask);
-void mdrawgfxzoom( struct osd_bitmap *dest_bmp,const struct GfxElement *gfx,
+void mdrawgfxzoom( struct mame_bitmap *dest_bmp,const struct GfxElement *gfx,
 		unsigned int code,unsigned int color,int flipx,int flipy,int sx,int sy,
 		const struct rectangle *clip,int transparency,int transparent_color,int scalex,int scaley,
 		UINT32 priority_mask);
 
-void draw_crosshair(struct osd_bitmap *bitmap,int x,int y,const struct rectangle *clip);
+void draw_crosshair(struct mame_bitmap *bitmap,int x,int y,const struct rectangle *clip);
+
+INLINE void sect_rect(struct rectangle *dst, const struct rectangle *src)
+{
+	if (src->min_x > dst->min_x) dst->min_x = src->min_x;
+	if (src->max_x < dst->max_x) dst->max_x = src->max_x;
+	if (src->min_y > dst->min_y) dst->min_y = src->min_y;
+	if (src->max_y < dst->max_y) dst->max_y = src->max_y;
+}
+
 
 #ifdef __cplusplus
 }

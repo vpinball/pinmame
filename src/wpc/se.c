@@ -25,9 +25,11 @@
 #define SE_IRQFREQ        976 /* FIRQ Frequency according to Theory of Operation */
 #define SE_ROMBANK0         1
 
-static void SE_init(void);
-static void SE_exit(void);
-static void SE_nvram(void *file, int write);
+#define SE_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
+#define SE_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
+#define SE_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
+
+static NVRAM_HANDLER(se);
 static WRITE_HANDLER(mcpu_ram8000_w);
 /*----------------
 /  Local varibles
@@ -42,40 +44,34 @@ struct {
   int	 flipsol, flipsolPulse;
   int    dmdStatus;
   UINT8 *ram8000;
-} SElocals;
+} selocals;
 
-static int SE_irq(void) {
-  cpu_set_irq_line(0, M6809_FIRQ_LINE,PULSE_LINE);
-  return ignore_interrupt();	//NO INT OR NMI GENERATED!
-}
-
-static int SE_vblank(void) {
+static INTERRUPT_GEN(se_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
-  SElocals.vblankCount = (SElocals.vblankCount+1) % 16;
+  selocals.vblankCount = (selocals.vblankCount+1) % 16;
 
   /*-- lamps --*/
-  if ((SElocals.vblankCount % SE_LAMPSMOOTH) == 0) {
+  if ((selocals.vblankCount % SE_LAMPSMOOTH) == 0) {
     memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
     memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
   /*-- solenoids --*/
-  coreGlobals.solenoids2 = SElocals.flipsol; SElocals.flipsol = SElocals.flipsolPulse;
-  if ((SElocals.vblankCount % SE_SOLSMOOTH) == 0) {
-    coreGlobals.solenoids = SElocals.solenoids;
-    SElocals.solenoids = coreGlobals.pulsedSolState;
+  coreGlobals.solenoids2 = selocals.flipsol; selocals.flipsol = selocals.flipsolPulse;
+  if ((selocals.vblankCount % SE_SOLSMOOTH) == 0) {
+    coreGlobals.solenoids = selocals.solenoids;
+    selocals.solenoids = coreGlobals.pulsedSolState;
   }
   /*-- display --*/
-  if ((SElocals.vblankCount % SE_DISPLAYSMOOTH) == 0) {
-    coreGlobals.diagnosticLed = SElocals.diagnosticLed;
-    SElocals.diagnosticLed = 0;
+  if ((selocals.vblankCount % SE_DISPLAYSMOOTH) == 0) {
+    coreGlobals.diagnosticLed = selocals.diagnosticLed;
+    selocals.diagnosticLed = 0;
   }
   core_updateSw(TRUE); /* flippers are CPU controlled */
-  return 0;
 }
 
-static void SE_updSw(int *inports) {
+static void se_updSw(int *inports) {
   if (inports) {
     /*Switch Col 0 = Dedicated Switches - Coin Door Only - Begin at 6th Spot*/
     coreGlobals.swMatrix[0] = (inports[SE_COMINPORT] & 0x000f)<<4;
@@ -88,16 +84,16 @@ static void SE_updSw(int *inports) {
   }
 }
 
-static core_tData SEData = {
+static core_tData seData = {
   8, /* 8 DIPs */
-  SE_updSw,
+  se_updSw,
   1,
-  sndbrd_1_data_w, "SE",
+  sndbrd_1_data_w, "se",
   core_swSeq2m, core_swSeq2m,core_m2swSeq,core_m2swSeq
 };
 
-static void SE_init(void) {
-  if (core_init(&SEData)) return;
+static MACHINE_INIT(se) {
+  if (core_init(&seData)) return;
   /* Copy Last 32K into last 32K of CPU space */
   memcpy(memory_region(SE_CPUREGION) + 0x8000,
          memory_region(SE_ROMREGION) +
@@ -107,10 +103,10 @@ static void SE_init(void) {
 
   // Sharkeys got some extra ram
   if (core_gameData->gen & GEN_WS_1)
-    SElocals.ram8000 = install_mem_write_handler(0,0x8000,0x81ff,mcpu_ram8000_w);
+    selocals.ram8000 = install_mem_write_handler(0,0x8000,0x81ff,mcpu_ram8000_w);
 }
 
-static void SE_exit(void) {
+static MACHINE_STOP(se) {
   sndbrd_0_exit(); sndbrd_1_exit(); core_exit();
 }
 
@@ -121,23 +117,23 @@ static void SE_exit(void) {
 static WRITE_HANDLER(mcpu_bank_w) {
   // Should be 0x3f but memreg is only 512K */
   cpu_setbank(SE_ROMBANK0, memory_region(SE_ROMREGION) + (data & 0x1f)* 0x4000);
-  SElocals.diagnosticLed = data>>7;
+  selocals.diagnosticLed = data>>7;
 }
 
 /* Sharkey's ShootOut got some ram at 0x8000-0x81ff */
-static WRITE_HANDLER(mcpu_ram8000_w) { SElocals.ram8000[offset] = data; }
+static WRITE_HANDLER(mcpu_ram8000_w) { selocals.ram8000[offset] = data; }
 
 /*-- Lamps --*/
 static WRITE_HANDLER(lampdriv_w) {
-  SElocals.lampRow = core_revbyte(data);
-  core_setLamp(coreGlobals.tmpLampMatrix, SElocals.lampColumn, SElocals.lampRow);
+  selocals.lampRow = core_revbyte(data);
+  core_setLamp(coreGlobals.tmpLampMatrix, selocals.lampColumn, selocals.lampRow);
 }
-static WRITE_HANDLER(lampstrb_w) { core_setLamp(coreGlobals.tmpLampMatrix, SElocals.lampColumn = (SElocals.lampColumn & 0xff00) | data, SElocals.lampRow);}
-static WRITE_HANDLER(auxlamp_w) { core_setLamp(coreGlobals.tmpLampMatrix, SElocals.lampColumn = (SElocals.lampColumn & 0x00ff) | (data<<8), SElocals.lampRow);}
+static WRITE_HANDLER(lampstrb_w) { core_setLamp(coreGlobals.tmpLampMatrix, selocals.lampColumn = (selocals.lampColumn & 0xff00) | data, selocals.lampRow);}
+static WRITE_HANDLER(auxlamp_w) { core_setLamp(coreGlobals.tmpLampMatrix, selocals.lampColumn = (selocals.lampColumn & 0x00ff) | (data<<8), selocals.lampRow);}
 
 /*-- Switches --*/
-static READ_HANDLER(switch_r)	{ return ~core_getSwCol(SElocals.swCol); }
-static WRITE_HANDLER(switch_w)	{ SElocals.swCol = data; }
+static READ_HANDLER(switch_r)	{ return ~core_getSwCol(selocals.swCol); }
+static WRITE_HANDLER(switch_w)	{ selocals.swCol = data; }
 
 /*-- Dedicated Switches --*/
 // Note: active low
@@ -166,11 +162,11 @@ static WRITE_HANDLER(solenoid_w) {
   UINT32 sols = data<<solmaskno[offset];
 
   if (offset == 0) { /* move flipper power solenoids (L=15,R=16) to (R=45,L=47) */
-    SElocals.flipsol |= SElocals.flipsolPulse = ((data & 0x80)>>7) | ((data & 0x40)>>4);
+    selocals.flipsol |= selocals.flipsolPulse = ((data & 0x80)>>7) | ((data & 0x40)>>4);
     sols &= 0xffff3fff; /* mask off flipper solenoids */
   }
   coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & mask) | sols;
-  SElocals.solenoids |= sols;
+  selocals.solenoids |= sols;
 }
 /*-- DMD communication --*/
 static WRITE_HANDLER(dmdlatch_w) {
@@ -185,7 +181,7 @@ static READ_HANDLER(dmdstatus_r) {
 }
 
 static READ_HANDLER(dmdie_r) { /*What is this for?*/
-  DBGLOG(("DMD Input Enable Read PC=%x\n",cpu_getpreviouspc())); return 0x00;
+  DBGLOG(("DMD Input Enable Read PC=%x\n",activecpu_get_previouspc())); return 0x00;
 }
 
 static WRITE_HANDLER(auxboard_w) { /* logerror("Aux Board Write: Offset: %x Data: %x\n",offset,data); */}
@@ -194,7 +190,7 @@ static WRITE_HANDLER(giaux_w)    { /* logerror("GI/Aux Board Write: Offset: %x D
 /*---------------------------
 /  Memory map for main CPU
 /----------------------------*/
-static MEMORY_READ_START(SE_readmem)
+static MEMORY_READ_START(se_readmem)
   { 0x0000, 0x1fff, MRA_RAM },
   { 0x3000, 0x3000, dedswitch_r },
   { 0x3100, 0x3100, dip_r },
@@ -205,7 +201,7 @@ static MEMORY_READ_START(SE_readmem)
   { 0x8000, 0xffff, MRA_ROM },
 MEMORY_END
 
-static MEMORY_WRITE_START(SE_writemem)
+static MEMORY_WRITE_START(se_writemem)
   { 0x0000, 0x1fff, MWA_RAM },
   { 0x2000, 0x2003, solenoid_w },
   { 0x2006, 0x2007, auxboard_w },
@@ -222,60 +218,91 @@ static MEMORY_WRITE_START(SE_writemem)
   { 0x8000, 0xffff, MWA_ROM },
 MEMORY_END
 
-struct MachineDriver machine_driver_SE_1S = {
-  {{  CPU_M6809, 2000000, /* 2 Mhz */
-      SE_readmem, SE_writemem, NULL, NULL,
-      SE_vblank, 1,
-      SE_irq, SE_IRQFREQ
-  }, DE2S_SOUNDCPU, DE_DMD32CPU },
-  SE_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, SE_init, SE_exit,
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  DE_DMD32VIDEO,
-  SOUND_SUPPORTS_STEREO,0,0,0,{ DE2S_SOUNDA },
-  SE_nvram
-};
+static MACHINE_DRIVER_START(se)
+  MDRV_CPU_ADD(M6809, 2000000)
+  MDRV_CPU_MEMORY(se_readmem, se_writemem)
+  MDRV_CPU_VBLANK_INT(se_vblank, 1)
+  MDRV_CPU_PERIODIC_INT(irq1_line_pulse, SE_IRQFREQ)
+  MDRV_MACHINE_INIT(se) MDRV_MACHINE_STOP(se)
+  MDRV_NVRAM_HANDLER(se)
+MACHINE_DRIVER_END
 
-struct MachineDriver machine_driver_SE_2S = {
-  {{  CPU_M6809, 2000000, /* 2 Mhz */
-      SE_readmem, SE_writemem, NULL, NULL,
-      SE_vblank, 1,
-      SE_irq, SE_IRQFREQ
-  }, DE2S_SOUNDCPU, DE_DMD32CPU },
-  SE_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, SE_init, SE_exit,
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  DE_DMD32VIDEO,
-  SOUND_SUPPORTS_STEREO,0,0,0,{ DE2S_SOUNDB },
-  SE_nvram
-};
+MACHINE_DRIVER_START(se2aS)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_IMPORT_FROM(se)
+  MDRV_IMPORT_FROM(de2as)
+  MDRV_IMPORT_FROM(de_dmd32)
+MACHINE_DRIVER_END
 
-struct MachineDriver machine_driver_SE_3S = {
-  {{  CPU_M6809, 2000000, /* 2 Mhz */
-      SE_readmem, SE_writemem, NULL, NULL,
-      SE_vblank, 1,
-      SE_irq, SE_IRQFREQ
-  }, DE2S_SOUNDCPU, DE_DMD32CPU },
-  SE_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, SE_init, SE_exit,
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  DE_DMD32VIDEO,
-  SOUND_SUPPORTS_STEREO,0,0,0,{ DE2S_SOUNDC },
-  SE_nvram
-};
+MACHINE_DRIVER_START(se2bS)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_IMPORT_FROM(se)
+  MDRV_IMPORT_FROM(de2bs)
+  MDRV_IMPORT_FROM(de_dmd32)
+MACHINE_DRIVER_END
 
+MACHINE_DRIVER_START(se2cS)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_IMPORT_FROM(se)
+  MDRV_IMPORT_FROM(de2cs)
+  MDRV_IMPORT_FROM(de_dmd32)
+MACHINE_DRIVER_END
 
 /*-----------------------------------------------
 / Load/Save static ram
 / Save RAM & CMOS Information
 /-------------------------------------------------*/
-static void SE_nvram(void *file, int write) {
-  core_nvram(file, write, memory_region(SE_CPUREGION), 0x2000, 0xff);
+static NVRAM_HANDLER(se) {
+  core_nvram(file, read_or_write, memory_region(SE_CPUREGION), 0x2000, 0xff);
 }
 
+#if 0
+struct MachineDriver machine_driver_se_1S = {
+  {{  CPU_M6809, 2000000, /* 2 Mhz */
+      se_readmem, se_writemem, NULL, NULL,
+      se_vblank, 1,
+      se_irq, se_IRQFREQ
+  }, DE2S_SOUNDCPU, DE_DMD32CPU },
+  SE_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  50, se_init, se_exit,
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
+  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
+  DE_DMD32VIDEO,
+  SOUND_SUPPORTS_STEREO,0,0,0,{ DE2S_SOUNDA },
+  se_nvram
+};
+
+struct MachineDriver machine_driver_se_2S = {
+  {{  CPU_M6809, 2000000, /* 2 Mhz */
+      se_readmem, se_writemem, NULL, NULL,
+      se_vblank, 1,
+      se_irq, SE_IRQFREQ
+  }, DE2S_SOUNDCPU, DE_DMD32CPU },
+  SE_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  50, se_init, se_exit,
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
+  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
+  DE_DMD32VIDEO,
+  SOUND_SUPPORTS_STEREO,0,0,0,{ DE2S_SOUNDB },
+  se_nvram
+};
+
+struct MachineDriver machine_driver_se_3S = {
+  {{  CPU_M6809, 2000000, /* 2 Mhz */
+      se_readmem, se_writemem, NULL, NULL,
+      se_vblank, 1,
+      se_irq, SE_IRQFREQ
+  }, DE2S_SOUNDCPU, DE_DMD32CPU },
+  SE_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  50, se_init, se_exit,
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
+  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
+  DE_DMD32VIDEO,
+  SOUND_SUPPORTS_STEREO,0,0,0,{ DE2S_SOUNDC },
+  se_nvram
+};
+
+#endif

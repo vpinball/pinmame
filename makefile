@@ -14,7 +14,7 @@ endif
 # DEBUG = 1
 
 # uncomment next line to include the symbols for symify
-# SYMBOLS = 1
+SYMBOLS = 1
 
 # uncomment next line to generate a link map for exception handling in windows
 MAP = 1
@@ -27,9 +27,9 @@ MAP = 1
 
 # set this the operating system you're building for
 # MAMEOS = msdos
-MAMEOS = windows
+# MAMEOS = windows
 ifeq ($(MAMEOS),)
-MAMEOS = msdos
+MAMEOS = windows
 endif
 
 # extension for executables
@@ -50,24 +50,24 @@ RM = @rm -f
 #PERL = @perl -w
 
 
-ifeq ($(MAMEOS),windows)
-SUFFIX = w
+ifeq ($(MAMEOS),msdos)
+PREFIX = d
 else
-SUFFIX =
+PREFIX =
 endif
 
 ifdef DEBUG
-NAME = $(TARGET)$(SUFFIX)d
+NAME = $(PREFIX)$(TARGET)$(SUFFIX)d
 else
 ifdef K6
-NAME = $(TARGET)$(SUFFIX)k6
+NAME = $(PREFIX)$(TARGET)$(SUFFIX)k6
 ARCH = -march=k6
 else
 ifdef I686
-NAME = $(TARGET)$(SUFFIX)pp
+NAME = $(PREFIX)$(TARGET)$(SUFFIX)pp
 ARCH = -march=pentiumpro
 else
-NAME = $(TARGET)$(SUFFIX)
+NAME = $(PREFIX)$(TARGET)$(SUFFIX)
 ARCH = -march=pentium
 endif
 endif
@@ -80,10 +80,6 @@ OBJ = obj/$(NAME)
 EMULATOR = $(NAME)$(EXE)
 
 DEFS = -DX86_ASM -DLSB_FIRST -DINLINE="static __inline__" -Dasm=__asm__
-
-ifeq ($(MAMEOS),msdos)
-DEFS += -DM_PI=3.14159265358979323846
-endif
 
 ifdef SYMBOLS
 CFLAGS = -Isrc -Isrc/includes -Isrc/$(MAMEOS) -I$(OBJ)/cpu/m68000 -Isrc/cpu/m68000 \
@@ -145,7 +141,7 @@ DBGDEFS =
 DBGOBJS =
 endif
 
-extra:	romcmp$(EXE) $(TOOLS) $(TEXTS)
+extra:	$(TOOLS) $(TEXTS)
 
 # combine the various definitions to one
 CDEFS = $(DEFS) $(COREDEFS) $(CPUDEFS) $(SOUNDDEFS) $(ASMDEFS) $(DBGDEFS)
@@ -161,6 +157,10 @@ ifndef DEBUG
 endif
 
 romcmp$(EXE): $(OBJ)/romcmp.o $(OBJ)/unzip.o
+	@echo Linking $@...
+	$(LD) $(LDFLAGS) $^ -lz -o $@
+
+hdcomp$(EXE): $(OBJ)/hdcomp.o $(OBJ)/harddisk.o $(OBJ)/md5.o
 	@echo Linking $@...
 	$(LD) $(LDFLAGS) $^ -lz -o $@
 

@@ -1,15 +1,9 @@
 #ifndef INC_SE
 #define INC_SE
 
-#include "core.h"
-#include "wpcsam.h"
-#include "sim.h"
-
 /*-------------------------
 / Machine driver constants
 /--------------------------*/
-#define SE_ROMEND	ROM_END
-
 /*-- Common Inports for SEGames --*/
 #define SE_COMPORTS \
   PORT_START /* 0 */ \
@@ -55,20 +49,14 @@
 
 #define SE_COMINPORT       CORE_COREINPORT
 
-#define SE_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
-#define SE_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
-#define SE_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
-
 /*-- SE switch numbers --*/
 #define SE_SWBLACK   -7
 #define SE_SWGREEN   -6
 #define SE_SWRED     -5
 
-
 /*-- Memory regions --*/
 #define SE_CPUREGION	REGION_CPU1
 #define SE_ROMREGION	REGION_USER1
-
 
 /********************/
 /** 128K CPU ROM   **/
@@ -83,13 +71,13 @@
 	ROM_RELOAD(0x40000, 0x20000) \
 	ROM_RELOAD(0x60000, 0x20000)
 
-/*-- These are only here so the game structure can be in the game file --*/
-extern struct MachineDriver machine_driver_SE_1S;
-extern struct MachineDriver machine_driver_SE_2S;
-extern struct MachineDriver machine_driver_SE_3S;
+#define SE_ROMEND ROM_END
 
-#define de_mSES1        SE_1S
-#define de_mSES2        SE_2S
-#define de_mSES3        SE_3S
+extern MACHINE_DRIVER_EXTERN(se2aS);
+extern MACHINE_DRIVER_EXTERN(se2bS);
+extern MACHINE_DRIVER_EXTERN(se2cS);
+#define de_mSES1 se2aS
+#define de_mSES2 se2bS
+#define de_mSES3 se2cS
 #endif /* INC_SE */
 

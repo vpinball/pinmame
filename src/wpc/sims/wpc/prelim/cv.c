@@ -22,6 +22,7 @@
 ------------------------------------------------------------------------------*/
 
 #include "driver.h"
+#include "core.h"
 #include "wpc.h"
 #include "sim.h"
 #include "wmssnd.h"
@@ -279,7 +280,7 @@ DCS_SOUNDROM5xm("s2v1_0.rom",0x79dbb8ee,
                 "s6v0_4.rom",0x36ca43d3)
 WPC_ROMEND
 
-WPC_ROMSTART(cv, 20h, "cv200H.rom", 0x100000, 0x138a0c3c)
+WPC_ROMSTART(cv, 20h, "cv200h.rom", 0x100000, 0x138a0c3c)
 DCS_SOUNDROM5xm("s2v1_0.rom",0x79dbb8ee,
                 "s3v0_4.rom",0x8c6c0c56,
                 "s4v0_4.rom",0xa9014b78,

@@ -32,14 +32,15 @@ extern size_t spriteram_3_size;
 extern data8_t *dirtybuffer;
 extern data16_t *dirtybuffer16;
 extern data32_t *dirtybuffer32;
-extern struct osd_bitmap *tmpbitmap;
+extern struct mame_bitmap *tmpbitmap;
 
 
-int generic_vh_start(void);
-int generic_bitmapped_vh_start(void);
-void generic_vh_stop(void);
-void generic_bitmapped_vh_stop(void);
-void generic_bitmapped_vh_screenrefresh(struct osd_bitmap *bitmap,int full_refresh);
+VIDEO_START( generic );
+VIDEO_START( generic_bitmapped );
+void video_stop_generic(void);
+void video_stop_generic_bitmapped(void);
+VIDEO_UPDATE( generic_bitmapped );
+
 READ_HANDLER( videoram_r );
 READ_HANDLER( colorram_r );
 WRITE_HANDLER( videoram_w );
@@ -58,6 +59,18 @@ WRITE16_HANDLER( buffer_spriteram16_2_w );
 WRITE32_HANDLER( buffer_spriteram32_2_w );
 void buffer_spriteram(unsigned char *ptr,int length);
 void buffer_spriteram_2(unsigned char *ptr,int length);
+
+/* screen flipping */
+extern int flip_screen_x, flip_screen_y;
+void flip_screen_set(int on);
+void flip_screen_x_set(int on);
+void flip_screen_y_set(int on);
+#define flip_screen flip_screen_x
+
+/* sets a variable and schedules a full screen refresh if it changed */
+void set_vh_global_attribute(int *addr, int data);
+int get_vh_global_attribute_changed(void);
+
 
 #ifdef __cplusplus
 }

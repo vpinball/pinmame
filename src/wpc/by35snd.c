@@ -23,7 +23,11 @@ static void by32_sh_stop(void);
 const struct sndbrdIntf by32Intf = {
   by32_init, NULL, NULL, by32_data_w, NULL, by32_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
-struct CustomSound_interface by32_custInt = {by32_sh_start, by32_sh_stop};
+static struct CustomSound_interface by32_custInt = {by32_sh_start, by32_sh_stop};
+
+MACHINE_DRIVER_START(by32)
+  MDRV_SOUND_ADD(CUSTOM, by32_custInt)
+MACHINE_DRIVER_END
 
 #define BY32_DECAYFREQ   50
 #define BY32_EXPFACTOR   95   // %
@@ -37,7 +41,6 @@ static const UINT8 sineWave[] = {
 static struct {
   struct sndbrdData brdData;
   int volume, lastCmd, channel, strobe;
-  void *vTimer;
 } by32locals;
 
 static void by32_decay(int param) {
@@ -50,13 +53,12 @@ static int by32_sh_start(const struct MachineSound *msound) {
   by32locals.channel = mixer_allocate_channel(15);
   mixer_set_volume(by32locals.channel,0);
   mixer_play_sample(by32locals.channel, (signed char *)sineWave, sizeof(sineWave), 1000, 1);
-  by32locals.vTimer = timer_pulse(TIME_IN_HZ(BY32_DECAYFREQ),0,by32_decay);
+  timer_pulse(TIME_IN_HZ(BY32_DECAYFREQ),0,by32_decay);
   return 0;
 }
 
 static void by32_sh_stop(void) {
   mixer_stop_sample(by32locals.channel);
-  if (by32locals.vTimer) { timer_remove(by32locals.vTimer); by32locals.vTimer = NULL; }
 }
 
 static void setfreq(int cmd) {
@@ -122,27 +124,42 @@ const struct sndbrdIntf by51Intf = {
   sp_init, NULL, NULL, sp51_data_w, NULL, sp51_ctrl_w, NULL,
 };
 
-struct AY8910interface sp_ay8910Int = { 1, 3580000/4, {20}, {sp_8910a_r} };
-struct hc55516_interface sp_hc55516Int = { 1, {100}};
-MEMORY_READ_START(sp51_readmem)
+static struct AY8910interface   sp_ay8910Int  = { 1, 3580000/4, {20}, {sp_8910a_r} };
+static struct hc55516_interface sp_hc55516Int = { 1, {100}};
+static MEMORY_READ_START(sp51_readmem)
   { 0x0000, 0x007f, MRA_RAM },
   { 0x0080, 0x00ff, pia_r(SP_PIA0) },
   { 0x1000, 0x1fff, MRA_ROM },
   { 0xf000, 0xffff, MRA_ROM },
 MEMORY_END
 
-MEMORY_READ_START(sp56_readmem)
+static MEMORY_READ_START(sp56_readmem)
   { 0x0000, 0x007f, MRA_RAM },
   { 0x0080, 0x00ff, pia_r(SP_PIA0) },
   { 0x8000, 0xffff, MRA_ROM },
 MEMORY_END
 
-MEMORY_WRITE_START(sp_writemem)
+static MEMORY_WRITE_START(sp_writemem)
   { 0x0000, 0x007f, MWA_RAM },
   { 0x0080, 0x00ff, pia_w(SP_PIA0) },
   { 0x1000, 0x1fff, MWA_ROM },
   { 0x8000, 0xffff, MWA_ROM },
 MEMORY_END
+
+MACHINE_DRIVER_START(by51)
+  MDRV_CPU_ADD_TAG("scpu", M6802, 3580000/4)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(sp51_readmem, sp_writemem)
+  MDRV_INTERLEAVE(500)
+  MDRV_SOUND_ADD(AY8910, sp_ay8910Int)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(by56)
+  MDRV_IMPORT_FROM(by51)
+  MDRV_CPU_MODIFY("scpu")
+  MDRV_CPU_MEMORY(sp56_readmem, sp_writemem)
+  MDRV_SOUND_ADD(HC55516, sp_hc55516Int)
+MACHINE_DRIVER_END
 
 static READ_HANDLER(sp_8910r);
 static WRITE_HANDLER(sp_pia0a_w);
@@ -249,24 +266,34 @@ static READ_HANDLER(snt_8910a_r);
 const struct sndbrdIntf by61Intf = {
   snt_init, NULL, snt_diag, snt_data_w, NULL, snt_ctrl_w, NULL, 0//SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
-struct TMS5220interface snt_tms5220Int = { 640000, 50, snt_5220Irq };
-struct DACinterface snt_dacInt = { 1, { 20 }};
-struct AY8910interface snt_ay8910Int = { 1, 3580000/4, {25}, {snt_8910a_r}};
+static struct TMS5220interface snt_tms5220Int = { 640000, 50, snt_5220Irq };
+static struct DACinterface     snt_dacInt = { 1, { 20 }};
+static struct AY8910interface  snt_ay8910Int = { 1, 3580000/4, {25}, {snt_8910a_r}};
 
-MEMORY_READ_START(snt_readmem)
+static MEMORY_READ_START(snt_readmem)
   { 0x0000, 0x007f, MRA_RAM },
   { 0x0080, 0x0083, pia_r(SNT_PIA0) },
   { 0x0090, 0x0093, pia_r(SNT_PIA1) },
   { 0xc000, 0xffff, MRA_ROM },
 MEMORY_END
 
-MEMORY_WRITE_START(snt_writemem)
+static MEMORY_WRITE_START(snt_writemem)
   { 0x0000, 0x007f, MWA_RAM },
   { 0x0080, 0x0083, pia_w(SNT_PIA0) },
   { 0x0090, 0x0093, pia_w(SNT_PIA1) },
   { 0x1000, 0x1000, DAC_0_data_w },
   { 0xc000, 0xffff, MWA_ROM },
 MEMORY_END
+
+MACHINE_DRIVER_START(by61)
+  MDRV_CPU_ADD(M6802, 3580000/4)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(snt_readmem, snt_writemem)
+  MDRV_INTERLEAVE(500)
+  MDRV_SOUND_ADD(TMS5220, snt_tms5220Int)
+  MDRV_SOUND_ADD(DAC,     snt_dacInt)
+  MDRV_SOUND_ADD(AY8910,  snt_ay8910Int)
+MACHINE_DRIVER_END
 
 static READ_HANDLER(snt_pia0a_r);
 static WRITE_HANDLER(snt_pia0a_w);
@@ -352,25 +379,34 @@ static READ_HANDLER(cs_port1_r);
 const struct sndbrdIntf by45Intf = {
   cs_init, NULL, NULL, cs_cmd_w, NULL, cs_ctrl_w, NULL, 0
 };
-struct DACinterface cs_dacInt = { 1, { 20 }};
-MEMORY_READ_START(cs_readmem)
+static struct DACinterface cs_dacInt = { 1, { 20 }};
+static MEMORY_READ_START(cs_readmem)
   { 0x0000, 0x001f, m6803_internal_registers_r },
   { 0x0080, 0x00ff, MRA_RAM },	/*Internal RAM*/
   { 0xb000, 0xdfff, MRA_ROM },
   { 0xe000, 0xffff, MRA_ROM },
 MEMORY_END
-MEMORY_WRITE_START(cs_writemem)
+static MEMORY_WRITE_START(cs_writemem)
   { 0x0000, 0x001f, m6803_internal_registers_w },
   { 0x0080, 0x00ff, MWA_RAM },	/*Internal RAM*/
   { 0xb000, 0xdfff, MWA_ROM },
   { 0xe000, 0xffff, MWA_ROM },
 MEMORY_END
-PORT_READ_START(cs_readport )
+static PORT_READ_START(cs_readport)
   { M6803_PORT2, M6803_PORT2, cs_port1_r },
 PORT_END
-PORT_WRITE_START( cs_writeport )
+static PORT_WRITE_START(cs_writeport)
   { M6803_PORT1, M6803_PORT1, DAC_0_data_w },
 PORT_END
+
+MACHINE_DRIVER_START(by45)
+  MDRV_CPU_ADD(M6803, 3580000/4)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(cs_readmem, cs_writemem)
+  MDRV_CPU_PORTS(cs_readport, cs_writeport)
+  MDRV_INTERLEAVE(500)
+  MDRV_SOUND_ADD(DAC, cs_dacInt)
+MACHINE_DRIVER_END
 
 static struct {
   struct sndbrdData brdData;
@@ -400,27 +436,41 @@ static READ_HANDLER(tcs_status_r);
 const struct sndbrdIntf byTCSIntf = {
   tcs_init, NULL, tcs_diag, tcs_cmd_w, tcs_status_r, tcs_ctrl_w, NULL, SNDBRD_NOCBSYNC
 };
-struct DACinterface tcs_dacInt = { 1, { 20 }};
-MEMORY_READ_START(tcs_readmem)
+static struct DACinterface tcs_dacInt = { 1, { 20 }};
+static MEMORY_READ_START(tcs_readmem)
   { 0x0000, 0x1fff, MRA_RAM },
   { 0x6000, 0x6003, pia_r(TCS_PIA0) },
   { 0x8000, 0xffff, MRA_ROM },
 MEMORY_END
-MEMORY_WRITE_START(tcs_writemem)
+static MEMORY_WRITE_START(tcs_writemem)
   { 0x0000, 0x1fff, MWA_RAM },
   { 0x6000, 0x6003, pia_w(TCS_PIA0) },
   { 0x8000, 0xffff, MWA_ROM },
 MEMORY_END
-MEMORY_READ_START(tcs2_readmem)
+static MEMORY_READ_START(tcs2_readmem)
   { 0x0000, 0x07ff, MRA_RAM },
   { 0x0800, 0x0803, pia_r(TCS_PIA0) },
   { 0x0c00, 0xffff, MRA_ROM },
 MEMORY_END
-MEMORY_WRITE_START(tcs2_writemem)
+static MEMORY_WRITE_START(tcs2_writemem)
   { 0x0000, 0x07ff, MWA_RAM },
   { 0x0800, 0x0803, pia_w(TCS_PIA0) },
   { 0x0c00, 0xffff, MWA_ROM },
 MEMORY_END
+
+MACHINE_DRIVER_START(byTCS)
+  MDRV_CPU_ADD_TAG("scpu", M6809, 2000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(tcs_readmem, tcs_writemem)
+  MDRV_INTERLEAVE(500)
+  MDRV_SOUND_ADD(DAC, tcs_dacInt)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(byTCS2)
+  MDRV_IMPORT_FROM(byTCS)
+  MDRV_CPU_MODIFY("scpu")
+  MDRV_CPU_MEMORY(tcs2_readmem, tcs2_writemem)
+MACHINE_DRIVER_END
 
 static WRITE_HANDLER(tcs_pia0cb2_w);
 static READ_HANDLER(tcs_pia0b_r);
@@ -477,17 +527,26 @@ static READ_HANDLER(sd_status_r);
 const struct sndbrdIntf bySDIntf = {
   sd_init, NULL, sd_diag, sd_cmd_w, sd_status_r, sd_ctrl_w, NULL, 0//SNDBRD_NODATASYNC|SNDBRD_NOCBSYNC
 };
-struct DACinterface sd_dacInt = { 1, { 80 }};
-MEMORY_READ16_START(sd_readmem)
+static struct DACinterface sd_dacInt = { 1, { 80 }};
+static MEMORY_READ16_START(sd_readmem)
   {0x00000000, 0x0003ffff, MRA16_ROM},		/*ROM (4 X 64K)*/
   {0x00060000, 0x00060007, pia_msb_r(SD_PIA0) },	/*PIA - CPU D8-15 connected to PIA D0-7*/
   {0x00070000, 0x0007ffff, MRA16_RAM},		/*RAM*/
 MEMORY_END
-MEMORY_WRITE16_START(sd_writemem)
+static MEMORY_WRITE16_START(sd_writemem)
   {0x00000000, 0x0003ffff, MWA16_ROM},		/*ROM (4 X 64K)*/
   {0x00060000, 0x00060007, pia_msb_w(SD_PIA0)},	/*PIA - CPU D8-15 connected to PIA D0-7*/
   {0x00070000, 0x0007ffff, MWA16_RAM},		/*RAM*/
 MEMORY_END
+
+MACHINE_DRIVER_START(bySD)
+  MDRV_CPU_ADD(M68000, 8000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(sd_readmem, sd_writemem)
+  MDRV_INTERLEAVE(500)
+  MDRV_SOUND_ADD(DAC, sd_dacInt)
+MACHINE_DRIVER_END
+
 static WRITE_HANDLER(sd_pia0cb2_w);
 static READ_HANDLER(sd_pia0b_r);
 static WRITE_HANDLER(sd_pia0a_w);

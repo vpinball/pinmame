@@ -456,14 +456,14 @@ INLINE void wai( void )
 	 * WAI stacks the entire machine state on the
 	 * hardware stack, then waits for an interrupt.
 	 */
-	m6808.wai_state |= M6808_WAI;
+	m6808.wai_state |= M6800_WAI;
 	PUSHWORD(pPC);
 	PUSHWORD(pX);
 	PUSHBYTE(A);
 	PUSHBYTE(B);
 	PUSHBYTE(CC);
 	CHECK_IRQ_LINES();
-	if (m6808.wai_state & M6808_WAI) EAT_CYCLES;
+	if (m6808.wai_state & M6800_WAI) EAT_CYCLES;
 }
 
 /* $3f SWI absolute indirect ----- */

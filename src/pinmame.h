@@ -42,7 +42,7 @@
 #define HAS_DAC        1
 #if MAMEVER > 3716
 #define HAS_YM2151_ALT 1
-#define HAS_YM2610     1 // To avoid compile errors in fm.c
+//#define HAS_YM2610     1 // To avoid compile errors in fm.c
 #else /* MAMEVER */
 #define HAS_YM2151     1
 #endif /* MAMEVER */

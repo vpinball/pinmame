@@ -13,11 +13,13 @@
 #include "driver.h"
 #include "ay8910.h"
 
-
 #define MAX_OUTPUT 0x7fff
 
 #define STEP 0x8000
 
+
+int ay8910_index_ym;
+static int num = 0, ym_num = 0;
 
 struct AY8910
 {
@@ -29,6 +31,7 @@ struct AY8910
 	mem_write_handler PortBwrite;
 	int register_latch;
 	unsigned char Regs[16];
+	int lastEnable;
 	unsigned int UpdateStep;
 	int PeriodA,PeriodB,PeriodC,PeriodN,PeriodE;
 	int CountA,CountB,CountC,CountN,CountE;
@@ -120,6 +123,25 @@ void _AYWriteReg(int n, int r, int v)
 		PSG->CountN += PSG->PeriodN - old;
 		if (PSG->CountN <= 0) PSG->CountN = 1;
 		break;
+	case AY_ENABLE:
+		if ((PSG->lastEnable == -1) ||
+		    ((PSG->lastEnable & 0x40) != (PSG->Regs[AY_ENABLE] & 0x40)))
+		{
+			/* write out 0xff if port set to input */
+			if (PSG->PortAwrite)
+				(*PSG->PortAwrite)(0, (PSG->Regs[AY_ENABLE] & 0x40) ? PSG->Regs[AY_PORTA] : 0xff);
+		}
+
+		if ((PSG->lastEnable == -1) ||
+		    ((PSG->lastEnable & 0x80) != (PSG->Regs[AY_ENABLE] & 0x80)))
+		{
+			/* write out 0xff if port set to input */
+			if (PSG->PortBwrite)
+				(*PSG->PortBwrite)(0, (PSG->Regs[AY_ENABLE] & 0x80) ? PSG->Regs[AY_PORTB] : 0xff);
+		}
+
+		PSG->lastEnable = PSG->Regs[AY_ENABLE];
+		break;
 	case AY_AVOL:
 		PSG->Regs[AY_AVOL] &= 0x1f;
 		PSG->EnvelopeA = PSG->Regs[AY_AVOL] & 0x10;
@@ -192,16 +214,30 @@ void _AYWriteReg(int n, int r, int v)
 		if (PSG->EnvelopeC) PSG->VolC = PSG->VolE;
 		break;
 	case AY_PORTA:
-		if ((PSG->Regs[AY_ENABLE] & 0x40) == 0)
-logerror("warning: write to 8910 #%d Port A set as input\n",n);
-if (PSG->PortAwrite) (*PSG->PortAwrite)(0,v);
-else logerror("PC %04x: warning - write %02x to 8910 #%d Port A\n",cpu_get_pc(),v,n);
+		if (PSG->Regs[AY_ENABLE] & 0x40)
+		{
+			if (PSG->PortAwrite)
+				(*PSG->PortAwrite)(0, PSG->Regs[AY_PORTA]);
+			else
+				logerror("PC %04x: warning - write %02x to 8910 #%d Port A\n",activecpu_get_pc(),PSG->Regs[AY_PORTA],n);
+		}
+		else
+		{
+			logerror("warning: write to 8910 #%d Port A set as input - ignored\n",n);
+		}
 		break;
 	case AY_PORTB:
-		if ((PSG->Regs[AY_ENABLE] & 0x80) == 0)
-logerror("warning: write to 8910 #%d Port B set as input\n",n);
-if (PSG->PortBwrite) (*PSG->PortBwrite)(0,v);
-else logerror("PC %04x: warning - write %02x to 8910 #%d Port B\n",cpu_get_pc(),v,n);
+		if (PSG->Regs[AY_ENABLE] & 0x80)
+		{
+			if (PSG->PortBwrite)
+				(*PSG->PortBwrite)(0, PSG->Regs[AY_PORTB]);
+			else
+				logerror("PC %04x: warning - write %02x to 8910 #%d Port B\n",activecpu_get_pc(),PSG->Regs[AY_PORTB],n);
+		}
+		else
+		{
+			logerror("warning: write to 8910 #%d Port B set as input - ignored\n",n);
+		}
 		break;
 	}
 }
@@ -232,21 +268,22 @@ unsigned char AYReadReg(int n, int r)
 {
 	struct AY8910 *PSG = &AYPSG[n];
 
+
 	if (r > 15) return 0;
 
 	switch (r)
 	{
 	case AY_PORTA:
 		if ((PSG->Regs[AY_ENABLE] & 0x40) != 0)
-logerror("warning: read from 8910 #%d Port A set as output\n",n);
-if (PSG->PortAread) PSG->Regs[AY_PORTA] = (*PSG->PortAread)(0);
-else logerror("PC %04x: warning - read 8910 #%d Port A\n",cpu_get_pc(),n);
+			logerror("warning: read from 8910 #%d Port A set as output\n",n);
+		else if (PSG->PortAread) PSG->Regs[AY_PORTA] = (*PSG->PortAread)(0);
+		else logerror("PC %04x: warning - read 8910 #%d Port A\n",activecpu_get_pc(),n);
 		break;
 	case AY_PORTB:
 		if ((PSG->Regs[AY_ENABLE] & 0x80) != 0)
-logerror("warning: read from 8910 #%d Port B set as output\n",n);
-if (PSG->PortBread) PSG->Regs[AY_PORTB] = (*PSG->PortBread)(0);
-else logerror("PC %04x: warning - read 8910 #%d Port B\n",cpu_get_pc(),n);
+			logerror("warning: read from 8910 #%d Port B set as output\n",n);
+		else if (PSG->PortBread) PSG->Regs[AY_PORTB] = (*PSG->PortBread)(0);
+		else logerror("PC %04x: warning - read 8910 #%d Port B\n",activecpu_get_pc(),n);
 		break;
 	}
 	return PSG->Regs[r];
@@ -648,20 +685,28 @@ void AY8910_reset(int chip)
 	int i;
 	struct AY8910 *PSG = &AYPSG[chip];
 
-
 	PSG->register_latch = 0;
 	PSG->RNG = 1;
 	PSG->OutputA = 0;
 	PSG->OutputB = 0;
 	PSG->OutputC = 0;
 	PSG->OutputN = 0xff;
+	PSG->lastEnable = -1;	/* force a write */
 	for (i = 0;i < AY_PORTA;i++)
 		_AYWriteReg(chip,i,0);	/* AYWriteReg() uses the timer system; we cannot */
 								/* call it at this time because the timer system */
 								/* has not been initialized. */
 }
 
-static int AY8910_init(const struct MachineSound *msound,int chip,
+void AY8910_sh_reset(void)
+{
+	int i;
+
+	for (i = 0;i < num + ym_num;i++)
+		AY8910_reset(i);
+}
+
+static int AY8910_init(const char *chip_name,int chip,
 		int clock,int volume,int sample_rate,
 		mem_read_handler portAread,mem_read_handler portBread,
 		mem_write_handler portAwrite,mem_write_handler portBwrite)
@@ -683,7 +728,7 @@ static int AY8910_init(const struct MachineSound *msound,int chip,
 	{
 		vol[i] = volume;
 		name[i] = buf[i];
-		sprintf(buf[i],"%s #%d Ch %c",sound_name(msound),chip,'A'+i);
+		sprintf(buf[i],"%s #%d Ch %c",chip_name,chip,'A'+i);
 	}
 	PSG->Channel = stream_init_multi(3,name,vol,sample_rate,chip,AY8910Update);
 
@@ -691,11 +736,9 @@ static int AY8910_init(const struct MachineSound *msound,int chip,
 		return 1;
 
 	AY8910_set_clock(chip,clock);
-	AY8910_reset(chip);
 
 	return 0;
 }
-
 
 
 int AY8910_sh_start(const struct MachineSound *msound)
@@ -703,16 +746,49 @@ int AY8910_sh_start(const struct MachineSound *msound)
 	int chip;
 	const struct AY8910interface *intf = msound->sound_interface;
 
+	num = intf->num;
 
-	for (chip = 0;chip < intf->num;chip++)
+	for (chip = 0;chip < num;chip++)
 	{
-		if (AY8910_init(msound,chip,intf->baseclock,
+		if (AY8910_init(sound_name(msound),chip+ym_num,intf->baseclock,
 				intf->mixing_level[chip] & 0xffff,
 				Machine->sample_rate,
 				intf->portAread[chip],intf->portBread[chip],
 				intf->portAwrite[chip],intf->portBwrite[chip]) != 0)
 			return 1;
-		build_mixer_table(chip);
+		build_mixer_table(chip+ym_num);
 	}
 	return 0;
 }
+
+void AY8910_sh_stop(void)
+{
+	num = 0;
+}
+
+int AY8910_sh_start_ym(const struct MachineSound *msound)
+{
+	int chip;
+	const struct AY8910interface *intf = msound->sound_interface;
+
+	ym_num = intf->num;
+	ay8910_index_ym = num;
+
+	for (chip = 0;chip < ym_num;chip++)
+	{
+		if (AY8910_init(sound_name(msound),chip+num,intf->baseclock,
+				intf->mixing_level[chip] & 0xffff,
+				Machine->sample_rate,
+				intf->portAread[chip],intf->portBread[chip],
+				intf->portAwrite[chip],intf->portBwrite[chip]) != 0)
+			return 1;
+		build_mixer_table(chip+num);
+	}
+	return 0;
+}
+
+void AY8910_sh_stop_ym(void)
+{
+	ym_num = 0;
+}
+

@@ -9,9 +9,6 @@ enum {
 	S2650_HALT, S2650_IRQ_STATE, S2650_SI, S2650_FO
 };
 
-#define S2650_INT_NONE  0
-#define S2650_INT_IRQ	1
-
 /* fake control port   M/~IO=0 D/~C=0 E/~NE=0 */
 #define S2650_CTRL_PORT 0x100
 
@@ -32,13 +29,8 @@ extern void s2650_exit(void);
 extern int s2650_execute(int cycles);
 extern unsigned s2650_get_context(void *dst);
 extern void s2650_set_context(void *src);
-extern unsigned s2650_get_pc(void);
-extern void s2650_set_pc(unsigned val);
-extern unsigned s2650_get_sp(void);
-extern void s2650_set_sp(unsigned val);
 extern unsigned s2650_get_reg(int regnum);
 extern void s2650_set_reg(int regnum, unsigned val);
-extern void s2650_set_nmi_line(int state);
 extern void s2650_set_irq_line(int irqline, int state);
 extern void s2650_set_irq_callback(int (*callback)(int irqline));
 extern void s2650_state_save(void *file);

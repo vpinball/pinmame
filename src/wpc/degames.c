@@ -66,10 +66,10 @@
 */
 
 #include "driver.h"
-#include "sim.h"
+#include "core.h"
+#include "sndbrd.h"
 #include "desound.h"
 #include "dedmd.h"
-#include "sndbrd.h"
 #include "s11.h"
 
 #define INITGAMES11(name, gen, disptype, flippers, sb, db, gs1) \
@@ -165,9 +165,9 @@ CORE_GAMEDEFNV(torpe,"Torpedo Alley",1988,"Data East",de_mDEAS1, 0)
 INITGAMES11(tmach, GEN_DE, de_dispAlpha2, FLIP1516, SNDBRD_DE1S, 0, 0)
 DE_ROMSTART48(tmach,"tmach2-4.b5",0x6ef3cf07,
                     "tmach2-4.c5",0xb61035f5)
-DE1S_SOUNDROM244(   "tmachf7.rom",0x0f518bd4,      //F7 on schem (sound)
-                    "tmachf6.rom",0x47e61641,      //F6 on schem (voice1)
-                    "tmachf4.rom",0x51e3aade)      //F4 on schem (voice2)
+DE1S_SOUNDROM244(   "tmachf7.rom",0x5d4994bb,      //F7 on schem (sound)
+                    "tmachf6.rom",0xc04b07ad,      //F6 on schem (voice1)
+                    "tmachf4.rom",0x70f70888)      //F4 on schem (voice2)
 DE_ROMEND
 #define input_ports_tmach input_ports_des11
 CORE_GAMEDEFNV(tmach, "Time Machine",1988,"Data East",de_mDEAS1, 0)

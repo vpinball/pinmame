@@ -7,7 +7,7 @@ struct tilemap; /* appease compiler */
 
 #define ALL_TILEMAPS	0
 /* ALL_TILEMAPS may be used with:
-	tilemap_update, tilemap_set_flip, tilemap_mark_all_tiles_dirty
+	tilemap_set_flip, tilemap_mark_all_tiles_dirty
 */
 
 #define TILEMAP_OPAQUE					0x00
@@ -15,6 +15,9 @@ struct tilemap; /* appease compiler */
 #define TILEMAP_SPLIT					0x02
 #define TILEMAP_BITMASK					0x04
 #define TILEMAP_TRANSPARENT_COLOR		0x08
+
+/* Set transparency_pen to a mask.  pen&mask determines whether each pixel is in front or back half */
+#define TILEMAP_SPLIT_PENBIT			0x10
 /*
 	TILEMAP_SPLIT should be used if the pixels from a single tile
 	can appear in more than one plane.
@@ -36,13 +39,6 @@ struct tilemap; /* appease compiler */
 	available in alpha mode, ignore_transparency isn't.
 */
 
-/* These are special values that may be provided for TILEMAP_MASK to designate a wholly
- * opaque or transparent tile, when this is known in advance.  You don't have to use these
- * if you don't want to, but a bit of computation can be avoided when they are used.
- */
-#define TILEMAP_BITMASK_TRANSPARENT (0)
-#define TILEMAP_BITMASK_OPAQUE ((UINT8 *)~0)
-
 extern struct tile_info
 {
 	/*
@@ -52,13 +48,13 @@ extern struct tile_info
 		games that don't need them don't need to explicitly set them to 0
 	*/
 	const UINT8 *pen_data;
-	const UINT32 *pal_data;
-	UINT32 tile_number;
-	UINT32 pen_usage;
-	UINT32 flags;	/* flipx, flipy, ignore_transparency, split */
-	UINT32 priority;
-	UINT8 *mask_data; /* for TILEMAP_BITMASK transparency */
+	const pen_t *pal_data;
+	UINT32 flags;
 	int skip;
+	UINT32 tile_number;		/* needed for tilemap_mark_gfxdata_dirty */
+	UINT32 pen_usage;		/* TBR */
+	UINT32 priority;		/* tile priority */
+	UINT8 *mask_data;		/* for TILEMAP_BITMASK */
 } tile_info;
 
 #define SET_TILE_INFO(GFX,CODE,COLOR,FLAGS) { \
@@ -74,15 +70,18 @@ extern struct tile_info
 }
 
 /* tile flags, set by get_tile_info callback */
-/* TILE_IGNORE_TRANSPARENCY is used if you need an opaque tile in a transparent layer */
-/* TILE_SPLIT is for use with TILEMAP_SPLIT layers.  It selects transparency type. */
+/* TILE_IGNORE_TRANSPARENCY is used if you need an opaque tile in a transparent layer. */
 #define TILE_FLIPX					0x01
 #define TILE_FLIPY					0x02
 #define TILE_SWAPXY					0x04
 #define TILE_IGNORE_TRANSPARENCY	0x08
 #define TILE_4BPP					0x10
+/*		TILE_SPLIT					0x60 */
+
+/* TILE_SPLIT is for use with TILEMAP_SPLIT layers.  It selects transparency type. */
 #define TILE_SPLIT_OFFSET			5
 #define TILE_SPLIT(T)				((T)<<TILE_SPLIT_OFFSET)
+
 #define TILE_FLIPYX(YX)				(YX)
 #define TILE_FLIPXY(XY)				((((XY)>>1)|((XY)<<1))&3)
 /*
@@ -93,27 +92,19 @@ extern struct tile_info
 
 #define TILE_LINE_DISABLED 0x80000000
 
-extern struct osd_bitmap *priority_bitmap;
+extern struct mame_bitmap *priority_bitmap;
 
 /* don't call these from drivers - they are called from mame.c */
 int tilemap_init( void );
 void tilemap_close( void );
-
-void tilemap_debug( struct tilemap *tilemap );
+void tilemap_dispose( struct tilemap *tilemap );
 
 struct tilemap *tilemap_create(
 	void (*tile_get_info)( int memory_offset ),
 	UINT32 (*get_memory_offset)( UINT32 col, UINT32 row, UINT32 num_cols, UINT32 num_rows ),
 	int type,
-	int tile_width, int tile_height, /* in pixels */
-	int num_cols, int num_rows /* in tiles */
-);
-
-void tilemap_dispose( struct tilemap *tilemap );
-/*	you shouldn't call this in vh_close; all tilemaps will be automatically
-	disposed.  tilemap_dispose is supplied for games that need to change
-	tile size or cols/rows dynamically.
-*/
+	int tile_width, int tile_height,
+	int num_cols, int num_rows );
 
 void tilemap_set_transparent_pen( struct tilemap *tilemap, int pen );
 void tilemap_set_transmask( struct tilemap *tilemap, int which, UINT32 fgmask, UINT32 bgmask );
@@ -121,9 +112,7 @@ void tilemap_set_depth( struct tilemap *tilemap, int tile_depth, int tile_granul
 
 void tilemap_mark_tile_dirty( struct tilemap *tilemap, int memory_offset );
 void tilemap_mark_all_tiles_dirty( struct tilemap *tilemap );
-
-void tilemap_dirty_palette( const UINT8 *dirty_pens );
-void tilemap_dirty_color( int color );
+void tilemap_mark_gfxdata_dirty( struct tilemap *tilemap, UINT8 *dirty_array ); /* TBA */
 
 void tilemap_set_scroll_rows( struct tilemap *tilemap, int scroll_rows ); /* default: 1 */
 void tilemap_set_scrolldx( struct tilemap *tilemap, int dx, int dx_if_flipped );
@@ -133,20 +122,41 @@ void tilemap_set_scroll_cols( struct tilemap *tilemap, int scroll_cols ); /* def
 void tilemap_set_scrolldy( struct tilemap *tilemap, int dy, int dy_if_flipped );
 void tilemap_set_scrolly( struct tilemap *tilemap, int col, int value );
 
+void tilemap_set_palette_offset( struct tilemap *tilemap, int offset );
+
 #define TILEMAP_FLIPX 0x1
 #define TILEMAP_FLIPY 0x2
 void tilemap_set_flip( struct tilemap *tilemap, int attributes );
-void tilemap_set_clip( struct tilemap *tilemap, const struct rectangle *clip );
 void tilemap_set_enable( struct tilemap *tilemap, int enable );
 
-void tilemap_update( struct tilemap *tilemap );
-void tilemap_draw( struct osd_bitmap *dest, struct tilemap *tilemap, UINT32 flags, UINT32 priority );
+void tilemap_draw( struct mame_bitmap *dest, const struct rectangle *cliprect, struct tilemap *tilemap, UINT32 flags, UINT32 priority );
 
-struct osd_bitmap *tilemap_get_pixmap( struct tilemap * tilemap );
+void tilemap_draw_roz(struct mame_bitmap *dest,const struct rectangle *cliprect,struct tilemap *tilemap,
+		UINT32 startx,UINT32 starty,int incxx,int incxy,int incyx,int incyy,
+		int wraparound,
+		UINT32 flags, UINT32 priority );
+
+/* ----xxxx tile priority
+ * ---x---- opaque in foreground
+ * --x----- opaque in background
+ * -x------ reserved
+ * x------- tile-is-dirty
+ */
+#define TILE_FLAG_TILE_PRIORITY	(0x0f)
+#define TILE_FLAG_FG_OPAQUE		(0x10)
+#define TILE_FLAG_BG_OPAQUE		(0x20)
+
+struct mame_bitmap *tilemap_get_pixmap( struct tilemap * tilemap );
+struct mame_bitmap *tilemap_get_transparency_bitmap( struct tilemap * tilemap );
 
 /*********************************************************************/
 
 UINT32 tilemap_scan_cols( UINT32 col, UINT32 row, UINT32 num_cols, UINT32 num_rows );
 UINT32 tilemap_scan_rows( UINT32 col, UINT32 row, UINT32 num_cols, UINT32 num_rows );
+
+/* For showcharset()'s sake */
+UINT32 tilemap_count( void );
+void tilemap_nb_size( UINT32 number, UINT32 *width, UINT32 *height );
+void tilemap_nb_draw( struct mame_bitmap *dest, UINT32 number, UINT32 scrollx, UINT32 scrolly );
 
 #endif

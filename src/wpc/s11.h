@@ -1,10 +1,6 @@
 #ifndef INC_S11
 #define INC_S11
 
-#include "core.h"
-#include "wpcsam.h"
-#include "sim.h"
-
 /*-- Common Inports for S11Games --*/
 #define S11_COMPORTS \
   PORT_START /* 0 */ \
@@ -186,37 +182,29 @@ extern const core_tLCDLayout s11_dispS9[], s11_dispS11[], s11_dispS11a[], s11_di
      NORMALREGION(0x10000, DE_CPUREGION) \
        ROM_LOAD(n1, 0x0000, 0x10000, chk1)
 
-/*-- These are only here so the game structure can be in the game file --*/
-extern const struct MachineDriver machine_driver_s9;
-extern const struct MachineDriver machine_driver_s11;
-#define s9_mS9           s9
-#define s11_mS11         s11
-#define s11_mS11A        s11
-#define s11_mS11B        s11
-#define s11_mS11B2       s11
-#define s11_mS11C        s11
-#define de_mDEA          s11
+extern MACHINE_DRIVER_EXTERN(s11_s9S);
+extern MACHINE_DRIVER_EXTERN(s11_s11S);
+extern MACHINE_DRIVER_EXTERN(s11_s11b2S);
+extern MACHINE_DRIVER_EXTERN(s11_s11cS);
+extern MACHINE_DRIVER_EXTERN(de_a);
+extern MACHINE_DRIVER_EXTERN(de_a1S);
+extern MACHINE_DRIVER_EXTERN(de_dmd161S);
+extern MACHINE_DRIVER_EXTERN(de_dmd162aS);
+extern MACHINE_DRIVER_EXTERN(de_dmd322aS);
+extern MACHINE_DRIVER_EXTERN(de_dmd642aS);
 
-extern const struct MachineDriver machine_driver_s9_s;
-extern const struct MachineDriver machine_driver_s11_s;
-extern const struct MachineDriver machine_driver_s11b2_s;
-extern const struct MachineDriver machine_driver_s11c_s;
-extern const struct MachineDriver machine_driver_deas1_s;
-extern const struct MachineDriver machine_driver_dedmd16s1_s;
-extern const struct MachineDriver machine_driver_dedmd16s2a_s;
-extern const struct MachineDriver machine_driver_dedmd32s2a_s;
-extern const struct MachineDriver machine_driver_dedmd64s2a_s;
-#define s9_mS9S          s9_s
-#define s11_mS11S        s11_s
-#define s11_mS11AS       s11_s
-#define s11_mS11BS       s11_s
-#define s11_mS11B2S      s11b2_s
-#define s11_mS11CS       s11c_s
-#define de_mDEAS1        deas1_s
-#define de_mDEDMD16S1    dedmd16s1_s
-#define de_mDEDMD16S2A   dedmd16s2a_s
-#define de_mDEDMD32S2A   dedmd32s2a_s
-#define de_mDEDMD64S2A   dedmd64s2a_s
+#define s9_mS9S          s11_s9S
+#define s11_mS11S        s11_s11S
+#define s11_mS11AS       s11_s11S
+#define s11_mS11BS       s11_s11S
+#define s11_mS11B2S      s11_s11b2S
+#define s11_mS11CS       s11_s11cS
+#define de_mDEA          de_a
+#define de_mDEAS1        de_a1S
+#define de_mDEDMD16S1    de_dmd161S
+#define de_mDEDMD16S2A   de_dmd162aS
+#define de_mDEDMD32S2A   de_dmd322aS
+#define de_mDEDMD64S2A   de_dmd642aS
 
 #define S11_BCDDIAG      0x01 // 7seg diagnostic led
 #define S11_BCDDISP      0x02 // BCD display

@@ -1853,9 +1853,11 @@ static void d68000_movem_pd_16(void)
 		{
 			first = i;
 			run_length = 0;
-			for(i++;i<8;i++)
-				if(data&(1<<(15-i)))
-					run_length++;
+			while(i<7 && (data&(1<<(15-(i+1)))))
+			{
+				i++;
+				run_length++;
+			}
 			if(buffer[0] != 0)
 				strcat(buffer, "/");
 			sprintf(buffer+strlen(buffer), "D%d", first);
@@ -1869,9 +1871,11 @@ static void d68000_movem_pd_16(void)
 		{
 			first = i;
 			run_length = 0;
-			for(i++;i<8;i++)
-				if(data&(1<<(7-i)))
-					run_length++;
+			while(i<7 && (data&(1<<(7-(i+1)))))
+			{
+				i++;
+				run_length++;
+			}
 			if(buffer[0] != 0)
 				strcat(buffer, "/");
 			sprintf(buffer+strlen(buffer), "A%d", first);
@@ -1897,9 +1901,11 @@ static void d68000_movem_pd_32(void)
 		{
 			first = i;
 			run_length = 0;
-			for(i++;i<8;i++)
-				if(data&(1<<(15-i)))
-					run_length++;
+			while(i<7 && (data&(1<<(15-(i+1)))))
+			{
+				i++;
+				run_length++;
+			}
 			if(buffer[0] != 0)
 				strcat(buffer, "/");
 			sprintf(buffer+strlen(buffer), "D%d", first);
@@ -1913,9 +1919,11 @@ static void d68000_movem_pd_32(void)
 		{
 			first = i;
 			run_length = 0;
-			for(i++;i<8;i++)
-				if(data&(1<<(7-i)))
-					run_length++;
+			while(i<7 && (data&(1<<(7-(i+1)))))
+			{
+				i++;
+				run_length++;
+			}
 			if(buffer[0] != 0)
 				strcat(buffer, "/");
 			sprintf(buffer+strlen(buffer), "A%d", first);
@@ -1941,9 +1949,11 @@ static void d68000_movem_er_16(void)
 		{
 			first = i;
 			run_length = 0;
-			for(i++;i<8;i++)
-				if(data&(1<<i))
-					run_length++;
+			while(i<7 && (data&(1<<(i+1))))
+			{
+				i++;
+				run_length++;
+			}
 			if(buffer[0] != 0)
 				strcat(buffer, "/");
 			sprintf(buffer+strlen(buffer), "D%d", first);
@@ -1957,9 +1967,11 @@ static void d68000_movem_er_16(void)
 		{
 			first = i;
 			run_length = 0;
-			for(i++;i<8;i++)
-				if(data&(1<<(i+8)))
-					run_length++;
+			while(i<7 && (data&(1<<(i+8+1))))
+			{
+				i++;
+				run_length++;
+			}
 			if(buffer[0] != 0)
 				strcat(buffer, "/");
 			sprintf(buffer+strlen(buffer), "A%d", first);
@@ -1985,9 +1997,11 @@ static void d68000_movem_er_32(void)
 		{
 			first = i;
 			run_length = 0;
-			for(i++;i<8;i++)
-				if(data&(1<<i))
-					run_length++;
+			while(i<7 && (data&(1<<(i+1))))
+			{
+				i++;
+				run_length++;
+			}
 			if(buffer[0] != 0)
 				strcat(buffer, "/");
 			sprintf(buffer+strlen(buffer), "D%d", first);
@@ -2001,9 +2015,11 @@ static void d68000_movem_er_32(void)
 		{
 			first = i;
 			run_length = 0;
-			for(i++;i<8;i++)
-				if(data&(1<<(i+8)))
-					run_length++;
+			while(i<7 && (data&(1<<(i+8+1))))
+			{
+				i++;
+				run_length++;
+			}
 			if(buffer[0] != 0)
 				strcat(buffer, "/");
 			sprintf(buffer+strlen(buffer), "A%d", first);
@@ -2029,9 +2045,11 @@ static void d68000_movem_re_16(void)
 		{
 			first = i;
 			run_length = 0;
-			for(i++;i<8;i++)
-				if(data&(1<<i))
-					run_length++;
+			while(i<7 && (data&(1<<(i+1))))
+			{
+				i++;
+				run_length++;
+			}
 			if(buffer[0] != 0)
 				strcat(buffer, "/");
 			sprintf(buffer+strlen(buffer), "D%d", first);
@@ -2045,9 +2063,11 @@ static void d68000_movem_re_16(void)
 		{
 			first = i;
 			run_length = 0;
-			for(i++;i<8;i++)
-				if(data&(1<<(i+8)))
-					run_length++;
+			while(i<7 && (data&(1<<(i+8+1))))
+			{
+				i++;
+				run_length++;
+			}
 			if(buffer[0] != 0)
 				strcat(buffer, "/");
 			sprintf(buffer+strlen(buffer), "A%d", first);
@@ -2073,9 +2093,11 @@ static void d68000_movem_re_32(void)
 		{
 			first = i;
 			run_length = 0;
-			for(i++;i<8;i++)
-				if(data&(1<<i))
-					run_length++;
+			while(i<7 && (data&(1<<(i+1))))
+			{
+				i++;
+				run_length++;
+			}
 			if(buffer[0] != 0)
 				strcat(buffer, "/");
 			sprintf(buffer+strlen(buffer), "D%d", first);
@@ -2089,9 +2111,11 @@ static void d68000_movem_re_32(void)
 		{
 			first = i;
 			run_length = 0;
-			for(i++;i<8;i++)
-				if(data&(1<<(i+8)))
-					run_length++;
+			while(i<7 && (data&(1<<(i+8+1))))
+			{
+				i++;
+				run_length++;
+			}
 			if(buffer[0] != 0)
 				strcat(buffer, "/");
 			sprintf(buffer+strlen(buffer), "A%d", first);

@@ -1,6 +1,8 @@
 #ifndef __FILTER_H
 #define __FILTER_H
 
+#include "osd_cpu.h"
+
 /* Max filter order */
 #define FILTER_ORDER_MAX 51
 

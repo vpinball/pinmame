@@ -40,17 +40,11 @@ enum {
 	M6509_PC_BANK, M6509_IND_BANK
 };
 
-#define M6509_INT_NONE	0
-#define M6509_INT_IRQ	1
-#define M6509_INT_NMI	2
+#define M6509_IRQ_LINE					M6502_IRQ_LINE
 /* use cpu_set_irq_line(cpu, M6509_SET_OVERFLOW, level)
    to change level of the so input line
    positiv edge sets overflow flag */
 #define M6509_SET_OVERFLOW 3
-
-#define M6509_NMI_VEC	M6502_NMI_VEC
-#define M6509_RST_VEC	M6502_RST_VEC
-#define M6509_IRQ_VEC	M6502_IRQ_VEC
 
 extern int m6509_ICount;				/* cycle count */
 
@@ -60,13 +54,8 @@ extern void m6509_exit(void);					/* Shut down CPU core */
 extern int	m6509_execute(int cycles);			/* Execute cycles - returns number of cycles actually run */
 extern unsigned m6509_get_context (void *dst);	/* Get registers, return context size */
 extern void m6509_set_context (void *src);		/* Set registers */
-extern unsigned m6509_get_pc (void);			/* Get program counter */
-extern void m6509_set_pc (unsigned val);		/* Set program counter */
-extern unsigned m6509_get_sp (void);			/* Get stack pointer */
-extern void m6509_set_sp (unsigned val);		/* Set stack pointer */
 extern unsigned m6509_get_reg (int regnum);
 extern void m6509_set_reg (int regnum, unsigned val);
-extern void m6509_set_nmi_line(int state);
 extern void m6509_set_irq_line(int irqline, int state);
 extern void m6509_set_irq_callback(int (*callback)(int irqline));
 extern void m6509_state_save(void *file);

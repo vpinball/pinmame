@@ -382,7 +382,6 @@ extern	UINT8	*RAM;
  ***************************************************************/
 #define CLI 													\
 	if ((m6502.irq_state != CLEAR_LINE) && (P & F_I)) { 		\
-		logerror("M6502#%d CLI sets after_cli\n",cpu_getactivecpu()); \
 		m6502.after_cli = 1;									\
 	}															\
 	P &= ~F_I
