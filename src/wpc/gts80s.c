@@ -16,8 +16,6 @@
 
 //SJE: 03/01/03 - This driver needs to be cleaned up, I just don't have time yet..
 
-//#define GTS80BS_DAC_SPEEDUP		//Use this to help speed up emulation (reduces fps to 50)
-
 /*
     Gottlieb System 80 Sound Boards
 
@@ -572,12 +570,13 @@ WRITE_HANDLER(s80bs_sh_w)
 		soundlatch_w(offset,data);
 		cpu_set_irq_line(cpu_gettotalcpu()-1, 0, HOLD_LINE);
 		cpu_set_irq_line(cpu_gettotalcpu()-2, 0, HOLD_LINE);
+		cpu_boost_interleave(TIME_IN_HZ(1650), 0.01);
 	}
 #else
 	int clear_irq = 0;
 
 	/*GTS3 Specific stuff*/
-	if(core_gameData->hw.soundBoard & SNDBRD_GTS3) 
+	if (core_gameData->hw.soundBoard & SNDBRD_GTS3)
 	{
 		clear_irq = (data==0xff);  /* clear the IRQ when ALL bits are specified */
 	}
@@ -595,6 +594,7 @@ WRITE_HANDLER(s80bs_sh_w)
 		soundlatch_w(offset,data);
 		cpu_set_irq_line(cpu_gettotalcpu()-1, 0, HOLD_LINE);
 		cpu_set_irq_line(cpu_gettotalcpu()-2, 0, HOLD_LINE);
+		cpu_boost_interleave(TIME_IN_HZ(1650), 0.01);
 	}
 #endif
 }
@@ -912,7 +912,7 @@ static WRITE_HANDLER(sound_control_w)
 
 	//Process common bits (D0 for NMI, D7 for YM2151)
 	s80bs3_sound_control_w(offset,data);
-	
+
 	//D1 = LED
 	UpdateSoundLEDS(0,(data>>1)&1);
 
@@ -946,7 +946,7 @@ static WRITE_HANDLER(sound_control_w)
 
 		//D2 = 6295 Chip Select (Active Low)
 		GTS80BS_locals.enable_cs = ((~GTS80BS_locals.u2_latch)>>2)&1;
-		//logerror("~cs = %x\n", (GTS80BS_locals.u2_latch>>2)&1);		
+		//logerror("~cs = %x\n", (GTS80BS_locals.u2_latch>>2)&1);
 
 		//D3 = ROM Select (0 = Rom1, 1 = Rom2)
 		GTS80BS_locals.rom_cs = (GTS80BS_locals.u2_latch>>3)&1;
@@ -957,7 +957,7 @@ static WRITE_HANDLER(sound_control_w)
 
 		//D4 = 6295 - SS (Data = 1 = 8Khz; Data = 0 = 6.4Khz frequency)
 		OKIM6295_set_frequency(0,((GTS80BS_locals.u2_latch>>4)&1)?8000:6400);
-		
+
 		//D5 = LED (Active low?)
 		UpdateSoundLEDS(1,~(GTS80BS_locals.u2_latch>>5)&1);
 
@@ -1058,14 +1058,6 @@ MACHINE_DRIVER_START(gts80s_b1)
   MDRV_CPU_ADD_TAG("y-cpu", M6502, 2000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(GTS80BS1_readmem, GTS80BS1_writemem)
-
-    //MDRV_INTERLEAVE(50)
-#ifdef GTS80BS_DAC_SPEEDUP
-  MDRV_FRAMES_PER_SECOND(50)
-  MDRV_INTERLEAVE(2200)		//Min. Value when 50FPS is used
-#else
-  MDRV_INTERLEAVE(1650)		//Min. Value when 60FPS is used
-#endif
   MDRV_SOUND_ADD(AY8910, GTS80BS_ay8910Int)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END
@@ -1079,14 +1071,6 @@ MACHINE_DRIVER_START(gts80s_b2)
   MDRV_CPU_ADD_TAG("y-cpu", M6502, 2000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(GTS80BS2_readmem, GTS80BS2_writemem)
-
-  //MDRV_INTERLEAVE(50)
-#ifdef GTS80BS_DAC_SPEEDUP
-  MDRV_FRAMES_PER_SECOND(50)
-  MDRV_INTERLEAVE(2200)		//Min. Value when 50FPS is used
-#else
-  MDRV_INTERLEAVE(1650)		//Min. Value when 60FPS is used
-#endif
   MDRV_SOUND_ADD(AY8910, GTS80BS_ay8910Int)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END
@@ -1100,14 +1084,6 @@ MACHINE_DRIVER_START(gts80s_b3)
   MDRV_CPU_ADD_TAG("y-cpu", M6502, 2000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(GTS80BS3_readmem, GTS80BS3_writemem)
-
-  //MDRV_INTERLEAVE(50)
-#ifdef GTS80BS_DAC_SPEEDUP
-  MDRV_FRAMES_PER_SECOND(50)
-  MDRV_INTERLEAVE(2200)		//Min. Value when 50FPS is used
-#else
-  MDRV_INTERLEAVE(1650)		//Min. Value when 60FPS is used
-#endif
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
   MDRV_SOUND_ADD(YM2151, GTS80BS_ym2151Int)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
@@ -1122,18 +1098,8 @@ MACHINE_DRIVER_START(gts80s_s3)
   MDRV_CPU_ADD_TAG("y-cpu", M6502, 2000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(GTS3_yreadmem, GTS3_ywritemem)
-
-#if 1
-#ifdef GTS80BS_DAC_SPEEDUP
-  MDRV_FRAMES_PER_SECOND(50)
-  MDRV_INTERLEAVE(2200)		//Min. Value when 50FPS is used
-#else
-  MDRV_INTERLEAVE(1650)		//Min. Value when 60FPS is used
-#endif
-#endif
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
   MDRV_SOUND_ADD(YM2151,  GTS80BS_ym2151Int)
   MDRV_SOUND_ADD(OKIM6295,GTS3_okim6295_interface)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
-  
 MACHINE_DRIVER_END
