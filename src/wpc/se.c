@@ -16,17 +16,14 @@
 #include "driver.h"
 #include "cpu/m6809/m6809.h"
 #include "core.h"
+#include "sndbrd.h"
 #include "dedmd.h"
 #include "se.h"
-#include "sesound.h"
-#include "vidhrdw/crtc6845.h"
+#include "desound.h"
 
 #define SE_VBLANKFREQ      60 /* VBLANK frequency */
 #define SE_IRQFREQ        976 /* FIRQ Frequency according to Theory of Operation */
-#define SE_DMDFIRQFREQ	  120 /* FIRQ Handler (Guessed!) */
-
-#define SE_CPUNO	0
-#define SE_DCPU1	1
+#define SE_ROMBANK0         1
 
 static void SE_init(void);
 static void SE_exit(void);
@@ -48,12 +45,8 @@ struct {
 } SElocals;
 
 static int SE_irq(void) {
-  cpu_set_irq_line(SE_CPUNO, M6809_FIRQ_LINE,PULSE_LINE);
+  cpu_set_irq_line(0, M6809_FIRQ_LINE,PULSE_LINE);
   return ignore_interrupt();	//NO INT OR NMI GENERATED!
-}
-
-static void dmdfirq(int data) {
-  cpu_set_irq_line(SE_DCPU1, M6809_FIRQ_LINE, HOLD_LINE);
 }
 
 static int SE_vblank(void) {
@@ -99,36 +92,26 @@ static core_tData SEData = {
   8, /* 8 DIPs */
   SE_updSw,
   1,
-  ses_soundCmd_w, "SE",
+  sndbrd_1_data_w, "SE",
   core_swSeq2m, core_swSeq2m,core_m2swSeq,core_m2swSeq
 };
 
 static void SE_init(void) {
-  if (SElocals.initDone) CORE_DOEXIT(SE_exit)
-  SElocals.initDone = TRUE;
-
+  if (core_init(&SEData)) return;
   /* Copy Last 32K into last 32K of CPU space */
-  memcpy(memory_region(SE_MEMREG_CPU) + 0x8000,
-         memory_region(SE_MEMREG_ROM) +
-	 (memory_region_length(SE_MEMREG_ROM) - 0x8000), 0x8000);
+  memcpy(memory_region(SE_CPUREGION) + 0x8000,
+         memory_region(SE_ROMREGION) +
+	 (memory_region_length(SE_ROMREGION) - 0x8000), 0x8000);
+  sndbrd_0_init(SNDBRD_DEDMD32, 2, memory_region(DE_DMD32ROMREGION),NULL,NULL);
+  sndbrd_1_init(SNDBRD_DE2S,    1, memory_region(DE2S_ROMREGION), NULL, NULL);
 
-  /*DMD*/
-  /* copy last 16K of ROM into last 16K of CPU region*/
-  memcpy(memory_region(SE_MEMREG_DCPU1)+0x8000,
-         memory_region(SE_MEMREG_DROM1) +
-         (memory_region_length(SE_MEMREG_DROM1) - 0x8000), 0x8000);
-  /*Set DMD to point to our DMD memory*/
-  coreGlobals_dmd.DMDFrames[0] = memory_region(SE_MEMREG_DCPU1);
-
-  timer_pulse(TIME_IN_HZ(SE_DMDFIRQFREQ), 0, dmdfirq);
   // Sharkeys got some extra ram
   if (core_gameData->gen & GEN_WS_1)
-    SElocals.ram8000 = install_mem_write_handler(SE_CPUNO,0x8000,0x81ff,mcpu_ram8000_w);
-  if (core_init(&SEData)) return;
+    SElocals.ram8000 = install_mem_write_handler(0,0x8000,0x81ff,mcpu_ram8000_w);
 }
 
 static void SE_exit(void) {
-  core_exit();
+  sndbrd_0_exit(); sndbrd_1_exit(); core_exit();
 }
 
 /*-- Main CPU Bank Switch --*/
@@ -137,7 +120,7 @@ static void SE_exit(void) {
 // D7    Diagnostic LED
 static WRITE_HANDLER(mcpu_bank_w) {
   // Should be 0x3f but memreg is only 512K */
-  cpu_setbank(1, memory_region(SE_MEMREG_ROM) + (data & 0x1f)* 0x4000);
+  cpu_setbank(SE_ROMBANK0, memory_region(SE_ROMREGION) + (data & 0x1f)* 0x4000);
   SElocals.diagnosticLed = data>>7;
 }
 
@@ -191,36 +174,22 @@ static WRITE_HANDLER(solenoid_w) {
 }
 /*-- DMD communication --*/
 static WRITE_HANDLER(dmdlatch_w) {
-  soundlatch_w(0, data);
-  cpu_set_irq_line(SE_DCPU1, M6809_IRQ_LINE, ASSERT_LINE);
-  SElocals.dmdStatus |= 0x80; // BUSY
+  sndbrd_0_data_w(0,data);
+  sndbrd_0_ctrl_w(0,0); sndbrd_0_ctrl_w(0,1);
 }
 static WRITE_HANDLER(dmdreset_w) {
-  cpu_set_reset_line(SE_DCPU1, PULSE_LINE);
-  SElocals.dmdStatus = 0x00;
-  cpu_set_irq_line(SE_DCPU1, M6809_IRQ_LINE, CLEAR_LINE);
+  sndbrd_0_ctrl_w(0,data?0x02:0x00);
 }
-static READ_HANDLER(dmdstatus_r) { return SElocals.dmdStatus; }
+static READ_HANDLER(dmdstatus_r) {
+  return (sndbrd_0_data_r(0) ? 0x80 : 0x00) | (sndbrd_0_ctrl_r(0)<<3);
+}
 
 static READ_HANDLER(dmdie_r) { /*What is this for?*/
   DBGLOG(("DMD Input Enable Read PC=%x\n",cpu_getpreviouspc())); return 0x00;
 }
-static READ_HANDLER(dmdlatch_r) {
-  SElocals.dmdStatus &= 0x7f; // Clear BUSY
-  cpu_set_irq_line(SE_DCPU1, M6809_IRQ_LINE, CLEAR_LINE);
-  return soundlatch_r(0);
-}
-static WRITE_HANDLER(dmdstatus_w) {
-  SElocals.dmdStatus = (SElocals.dmdStatus & 0x80) | ((data & 0x0f) << 3);
-}
 
 static WRITE_HANDLER(auxboard_w) { /* logerror("Aux Board Write: Offset: %x Data: %x\n",offset,data); */}
 static WRITE_HANDLER(giaux_w)    { /* logerror("GI/Aux Board Write: Offset: %x Data: %x\n",offset,data); */}
-
-/*-- DMD CPU Bank Switch */
-static WRITE_HANDLER(dmdcpu_bank_w) {
-  cpu_setbank(2, memory_region(SE_MEMREG_DROM1) + (data & 0x1f)*0x4000);
-}
 
 /*---------------------------
 /  Memory map for main CPU
@@ -248,30 +217,8 @@ static MEMORY_WRITE_START(SE_writemem)
   { 0x3300, 0x3300, switch_w },
   { 0x3600, 0x3600, dmdlatch_w },
   { 0x3601, 0x3601, dmdreset_w },
-  { 0x3800, 0x3800, ses_soundCmd_w },
+  { 0x3800, 0x3800, sndbrd_1_data_w },
   { 0x4000, 0x7fff, MWA_ROM },
-  { 0x8000, 0xffff, MWA_ROM },
-MEMORY_END
-
-/*---------------------------
-/  Memory map for DMD CPU
-/----------------------------*/
-static MEMORY_READ_START(se_dmdreadmem)
-  { 0x0000, 0x1fff, MRA_RAM },
-  { 0x2000, 0x2fff, MRA_RAM }, /* DMD RAM PAGE 0-7 512 bytes each */
-  { 0x3000, 0x3000, crtc6845_register_r },
-  { 0x3003, 0x3003, dmdlatch_r },
-  { 0x4000, 0x7fff, MRA_BANK2 }, /* Banked ROM */
-  { 0x8000, 0xffff, MRA_ROM },
-MEMORY_END
-
-static MEMORY_WRITE_START(se_dmdwritemem)
-  { 0x0000, 0x1fff, MWA_RAM },
-  { 0x2000, 0x2fff, MWA_RAM }, /* DMD RAM PAGE 0-7 512 bytes each*/
-  { 0x3000, 0x3000, crtc6845_address_w },
-  { 0x3001, 0x3001, crtc6845_register_w },
-  { 0x3002, 0x3002, dmdcpu_bank_w }, /* DMD Bank Switching*/
-  { 0x4000, 0x4000, dmdstatus_w },   /* DMD Status*/
   { 0x8000, 0xffff, MWA_ROM },
 MEMORY_END
 
@@ -280,18 +227,14 @@ struct MachineDriver machine_driver_SE_1S = {
       SE_readmem, SE_writemem, NULL, NULL,
       SE_vblank, 1,
       SE_irq, SE_IRQFREQ
-  },{ CPU_M6809, 4000000, /* 4 Mhz*/
-      se_dmdreadmem, se_dmdwritemem, NULL, NULL,
-      NULL, 0,
-      ignore_interrupt, 0
-  } SES_SOUNDCPU },
+  }, DE2S_SOUNDCPU, DE_DMD32CPU },
   SE_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, SE_init, CORE_EXITFUNC(SE_exit)
+  50, SE_init, SE_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
   NULL, NULL, de_dmd128x32_refresh,
-  SOUND_SUPPORTS_STEREO,0,0,0,{ SES_SOUND1 },
+  SOUND_SUPPORTS_STEREO,0,0,0,{ DE2S_SOUNDA },
   SE_nvram
 };
 
@@ -300,18 +243,14 @@ struct MachineDriver machine_driver_SE_2S = {
       SE_readmem, SE_writemem, NULL, NULL,
       SE_vblank, 1,
       SE_irq, SE_IRQFREQ
-  },{ CPU_M6809, 4000000, /* 4 Mhz*/
-      se_dmdreadmem, se_dmdwritemem, NULL, NULL,
-      NULL, 0,
-      ignore_interrupt, 0
-  } SES_SOUNDCPU },
+  }, DE2S_SOUNDCPU, DE_DMD32CPU },
   SE_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, SE_init, CORE_EXITFUNC(SE_exit)
+  50, SE_init, SE_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
   NULL, NULL, de_dmd128x32_refresh,
-  SOUND_SUPPORTS_STEREO,0,0,0,{ SES_SOUND2 },
+  SOUND_SUPPORTS_STEREO,0,0,0,{ DE2S_SOUNDB },
   SE_nvram
 };
 
@@ -320,18 +259,14 @@ struct MachineDriver machine_driver_SE_3S = {
       SE_readmem, SE_writemem, NULL, NULL,
       SE_vblank, 1,
       SE_irq, SE_IRQFREQ
-  },{ CPU_M6809, 4000000, /* 4 Mhz*/
-      se_dmdreadmem, se_dmdwritemem, NULL, NULL,
-      NULL, 0,
-      ignore_interrupt, 0
-  } SES_SOUNDCPU },
+  }, DE2S_SOUNDCPU, DE_DMD32CPU },
   SE_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, SE_init, CORE_EXITFUNC(SE_exit)
+  50, SE_init, SE_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
   NULL, NULL, de_dmd128x32_refresh,
-  SOUND_SUPPORTS_STEREO,0,0,0,{ SES_SOUND3 },
+  SOUND_SUPPORTS_STEREO,0,0,0,{ DE2S_SOUNDC },
   SE_nvram
 };
 
@@ -341,5 +276,6 @@ struct MachineDriver machine_driver_SE_3S = {
 / Save RAM & CMOS Information
 /-------------------------------------------------*/
 static void SE_nvram(void *file, int write) {
-  core_nvram(file, write, memory_region(SE_MEMREG_CPU), 0x2000, 0xff);
+  core_nvram(file, write, memory_region(SE_CPUREGION), 0x2000, 0xff);
 }
+
