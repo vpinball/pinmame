@@ -209,7 +209,13 @@ S11_ROMEND
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF(eatpm, l4, "Elvira and the Party Monsters (L-4)", 1989, "Bally", s11_mS11BS,0)
+static MACHINE_DRIVER_START(elvira)
+  MDRV_IMPORT_FROM(s11_s11aS)
+  MDRV_SCREEN_SIZE(640, 400)
+  MDRV_VISIBLE_AREA(0, 639, 0, 399)
+MACHINE_DRIVER_END
+
+CORE_GAMEDEF(eatpm, l4, "Elvira and the Party Monsters (L-4)", 1989, "Bally", elvira, 0)
 
 /*-----------------------
 / Simulation Definitions
