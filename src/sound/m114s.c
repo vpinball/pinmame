@@ -19,8 +19,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "m114s.h"
 #include "driver.h"
+#include "m114s.h"
 
 #if 0
 #define LOG(x) printf x
