@@ -34,15 +34,17 @@ void sndbrd_init(int brdNo, int brdType, int cpuNo, UINT8 *romRegion,
 }
 
 void sndbrd_exit(int board) {
-  if (coreGlobals.soundEn && intf[board].brdIntf->exit) intf[board].brdIntf->exit(board);
+  if (coreGlobals.soundEn && intf[board].brdIntf && intf[board].brdIntf->exit)
+    intf[board].brdIntf->exit(board);
   memset(&intf[board],0,sizeof(intf[0]));
 }
 void sndbrd_diag(int board, int button) {
-  if (coreGlobals.soundEn && intf[board].brdIntf->diag) intf[board].brdIntf->diag(button);
+  if (coreGlobals.soundEn && intf[board].brdIntf && intf[board].brdIntf->diag)
+    intf[board].brdIntf->diag(button);
 }
 
 WRITE_HANDLER(sndbrd_data_w) {
-  if (coreGlobals.soundEn && intf[offset].brdIntf->data_w) {
+  if (coreGlobals.soundEn && intf[offset].brdIntf && intf[offset].brdIntf->data_w) {
     if (intf[offset].brdIntf->flags & SNDBRD_NODATASYNC)
       intf[offset].brdIntf->data_w(offset, data);
     else
@@ -50,10 +52,11 @@ WRITE_HANDLER(sndbrd_data_w) {
   }
 }
 READ_HANDLER(sndbrd_data_r) {
-  return (coreGlobals.soundEn && intf[offset].brdIntf->data_r) ? intf[offset].brdIntf->data_r(offset) : 0;
+  return (coreGlobals.soundEn && intf[offset].brdIntf && intf[offset].brdIntf->data_r) ? 
+         intf[offset].brdIntf->data_r(offset) : 0;
 }
 WRITE_HANDLER(sndbrd_ctrl_w) {
-  if (coreGlobals.soundEn && intf[offset].brdIntf->ctrl_w) {
+  if (coreGlobals.soundEn && intf[offset].brdIntf && intf[offset].brdIntf->ctrl_w) {
     if (intf[offset].brdIntf->flags & SNDBRD_NOCTRLSYNC)
       intf[offset].brdIntf->ctrl_w(offset, data);
     else
@@ -61,11 +64,12 @@ WRITE_HANDLER(sndbrd_ctrl_w) {
   }
 }
 READ_HANDLER(sndbrd_ctrl_r) {
-  return (coreGlobals.soundEn && intf[offset].brdIntf->ctrl_r) ? intf[offset].brdIntf->ctrl_r(offset) : 0;
+  return (coreGlobals.soundEn && intf[offset].brdIntf && intf[offset].brdIntf->ctrl_r) ?
+         intf[offset].brdIntf->ctrl_r(offset) : 0;
 }
 WRITE_HANDLER(sndbrd_ctrl_cb) {
   if (intf[offset].ctrl_cb) {
-    if (intf[offset].brdIntf->flags & SNDBRD_NOCBSYNC)
+    if (intf[offset].brdIntf && (intf[offset].brdIntf->flags & SNDBRD_NOCBSYNC))
       intf[offset].ctrl_cb(offset, data);
     else
       sndbrd_sync_w(intf[offset].ctrl_cb, offset, data);
@@ -73,7 +77,7 @@ WRITE_HANDLER(sndbrd_ctrl_cb) {
 }
 WRITE_HANDLER(sndbrd_data_cb) {
   if (intf[offset].data_cb) {
-    if (intf[offset].brdIntf->flags & SNDBRD_NOCBSYNC)
+    if (intf[offset].brdIntf && (intf[offset].brdIntf->flags & SNDBRD_NOCBSYNC))
       intf[offset].data_cb(offset, data);
     else
       sndbrd_sync_w(intf[offset].data_cb, offset, data);
