@@ -740,7 +740,9 @@ DRIVER(spstn,l5)        //S11-552:  12/87 W Space Station
 DRIVER(gmine,l2)        //S11-920:  ??/88 W Gold Mine (Bowler)
 DRIVER(tdawg,l1)        //S11-921:  ??/88 W Top Dawg (Bowler)
 DRIVER(cycln,l5)        //S11-564:  02/88 W Cyclone
-DRIVER(bnzai,l3)        //S11-566:  05/88 W Banzai Run
+DRIVER(bnzai,l3)        //S11-566:  05/88 W Banzai Run (L-3)
+DRIVER(bnzai,l1)        //S11-566:  05/88 W Banzai Run (L-1)
+DRIVER(bnzai,pa1)       //S11-566:  05/88 W Banzai Run (PA-1)
 DRIVER(swrds,l2)        //S11-559:  06/88 W Swords of Fury
 DRIVER(taxi,l4)         //S11-553:  08/88 W Taxi (Lola)
 DRIVER(taxi,l3)                           // Marylin
@@ -837,6 +839,8 @@ DRIVER(rs,lx2)          //WPC-524:  10/94 W Red & Ted's Road Show (Lx_2)
 DRIVER(rs,l6)           //WPC-524:  10/94 W Red & Ted's Road Show (L_6)
 DRIVER(rs,lx4)							  // (Lx-4)
 DRIVER(tafg,lx3)        //WPC:      10/94 B The Addams Family Special Collectors Edition
+DRIVER(tafg,la2)        //WPC:      10/94 B The Addams Family Special Collectors Edition (LA-2)
+DRIVER(tafg,la3)        //WPC:      10/94 B The Addams Family Special Collectors Edition (LA-3)
 DRIVER(tafg,h3)							  // Home version
 DRIVER(ts,lx5)          //WPC-532:  11/94 B The Shadow
 DRIVER(ts,lh6)							  // Home version
@@ -851,6 +855,7 @@ DRIVER(wd,12g)                            // German
 DRIVER(jb,10r)          //WPC-551:  10/95 W Jack*Bot
 DRIVER(jb,10b)                            // Belgium/Canada
 DRIVER(congo,21)        //WPC-550:  11/95 W Congo
+DRIVER(afm,10)         //WPC-541:  12/95 B Attack from Mars (1.0)
 DRIVER(afm,11)          //WPC-541:  12/95 B Attack from Mars
 DRIVER(afm,113)							  // Home version
 DRIVER(lc,11)           //WPC:      ??/96 B League Champ (Shuffle Alley)
