@@ -26,7 +26,7 @@
      Q  Drain
      I  Upper Left Loop
    ASD  Green Light Targets (1-3)
-   FGH  Yellow Light Targets (1-3)    	
+   FGH  Yellow Light Targets (1-3)
    JKL  Red Light Targets (1-3)
    ,./  RBank Targets (1-3)
    BNM  LBank Targets (1-3)
@@ -69,8 +69,8 @@ static struct {
 
 WPC_INPUT_PORTS_START(gw,3)
   PORT_START /* 0 */
-    COREPORT_BIT(   0x0001,"Left Qualifier",  	KEYCODE_LSHIFT)
-    COREPORT_BIT(   0x0002,"Right Qualifier", 	KEYCODE_RSHIFT)
+    COREPORT_BIT(   0x0001,"Left Qualifier",  	KEYCODE_LCONTROL)
+    COREPORT_BIT(   0x0002,"Right Qualifier", 	KEYCODE_RCONTROL)
     COREPORT_BITIMP(0x0004,"L/R Ramp",        	KEYCODE_R)
     COREPORT_BITIMP(0x0008,"L/R Outlane",     	KEYCODE_O)
     COREPORT_BITIMP(0x0010,"L/R Loop",       	KEYCODE_L)
@@ -115,7 +115,7 @@ WPC_INPUT_PORTS_END
 #define swSlamTilt   		21
 #define swCoinDoor   		22
 #define swTicket     		23
-#define swNotUsed		24	
+#define swNotUsed		24
 #define swLOut			25
 #define swLIn			26
 #define swRIn			27
@@ -126,10 +126,10 @@ WPC_INPUT_PORTS_END
 #define swGearLo		33
 #define swGearHi		34
 /*35 Not Used*/
-#define swTopRed		36	
+#define swTopRed		36
 #define swMidRed		37
 #define swBotRed		38
-	
+
 #define swTopYellow		41
 #define swMidYellow		42
 #define swBotYellow		43

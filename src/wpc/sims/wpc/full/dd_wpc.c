@@ -55,8 +55,8 @@ static void init_dd(void);
 WPC_INPUT_PORTS_START(dd,3)
 
   PORT_START /* 0 */
-    COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LSHIFT)
-    COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RSHIFT)
+    COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LCONTROL)
+    COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RCONTROL)
     COREPORT_BIT(0x0004,"MixMaster",	        KEYCODE_R)
     COREPORT_BIT(0x0008,"L/R Outlane",		KEYCODE_O)
     COREPORT_BIT(0x0010,"L/R Slingshot",		KEYCODE_MINUS)
@@ -118,12 +118,12 @@ WPC_INPUT_PORTS_END
 #define swRDrop2	36
 #define swRDrop3	37
 #define swRDrop4	38 /* Bottom */
-	
+
 #define swrefleX	41
 #define swreflEx	42
 #define swrefLex	43
 #define swreFlex	44
-#define swrEflex	45	
+#define swrEflex	45
 #define swReflex	46
 #define swBigShot	47
 #define swRPopper	48
@@ -132,7 +132,7 @@ WPC_INPUT_PORTS_END
 #define swMixerGabM	52
 #define swMixerGabB	53
 #define swMixerHeartL	54
-#define swMixerHeartM	55	
+#define swMixerHeartM	55
 #define swMixerHeartR	56
 #define swTopLeft10	57
 
@@ -140,7 +140,7 @@ WPC_INPUT_PORTS_END
 #define swMixerMagM	62
 #define swMixerMagB	63
 #define swMidMid10	66
-#define swMidBot10	67	
+#define swMidBot10	67
 #define swMidTop10	68
 
 #define swITest		71

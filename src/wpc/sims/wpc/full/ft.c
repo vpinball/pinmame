@@ -71,8 +71,8 @@ static struct {
 
 WPC_INPUT_PORTS_START(ft,3)
   PORT_START /* 0 */
-    COREPORT_BIT(   0x0001,"Left Qualifier",  	KEYCODE_LSHIFT)
-    COREPORT_BIT(   0x0002,"Right Qualifier", 	KEYCODE_RSHIFT)
+    COREPORT_BIT(   0x0001,"Left Qualifier",  	KEYCODE_LCONTROL)
+    COREPORT_BIT(   0x0002,"Right Qualifier", 	KEYCODE_RCONTROL)
     COREPORT_BITIMP(0x0004,"L/R Ramp",        	KEYCODE_R)
     COREPORT_BIT(   0x0008,"L/R Inlane",		KEYCODE_I)
     COREPORT_BITIMP(0x0010,"L/R Outlane",     	KEYCODE_O)
@@ -109,7 +109,7 @@ WPC_INPUT_PORTS_END
 #define swSlamTilt   		21
 #define swCoinDoor   		22
 #define swTicket     		23
-#define swNotUsed		24	
+#define swNotUsed		24
 #define swLOut			25
 #define swLIn			26
 #define swLDT1			27
@@ -120,10 +120,10 @@ WPC_INPUT_PORTS_END
 #define swRBoatExit		33
 #define swSpinner		34
 #define swReelEntry		35
-#define swCatapult		36	
+#define swCatapult		36
 #define swReel1Opto		37
 #define swReel2Opto		38
-	
+
 #define swCaptiveBall		41
 #define swRBoatEntry		42
 #define swLBoatEntry		43
@@ -337,7 +337,7 @@ static int ft_handleBallState(sim_tBallStatus *ball, int *inports) {
 			else
 				{
 				/*Knock Drop Target Down*/
-				locals.dtPos = DOWN;	
+				locals.dtPos = DOWN;
 				return setState(stFree,1);
 				}
 

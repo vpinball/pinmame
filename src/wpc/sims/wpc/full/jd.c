@@ -79,8 +79,8 @@ static struct {
 
 WPC_INPUT_PORTS_START(jd,6)
   PORT_START /* 0 */
-    COREPORT_BIT(   0x0001,"Left Qualifier",  KEYCODE_LSHIFT)
-    COREPORT_BIT(   0x0002,"Right Qualifier", KEYCODE_RSHIFT)
+    COREPORT_BIT(   0x0001,"Left Qualifier",  KEYCODE_LCONTROL)
+    COREPORT_BIT(   0x0002,"Right Qualifier", KEYCODE_RCONTROL)
     COREPORT_BITIMP(0x0004,"L/R Ramp",        KEYCODE_R)
     COREPORT_BITIMP(0x0008,"L/R Outlane",     KEYCODE_O)
     COREPORT_BITIMP(0x0010,"L/R Loop",        KEYCODE_L)
@@ -138,7 +138,7 @@ WPC_INPUT_PORTS_END
 #define swLPost			36		//Left EB Target
 #define swSubway		37
 #define swSubway2		38
-	
+
 #define swRShooter		41
 #define swROut			42
 #define swRIn			43
@@ -149,7 +149,7 @@ WPC_INPUT_PORTS_END
 #define swRSling		52
 #define swCapBall2		53
 #define sw_Judge		54
-#define swJ_udge		55	
+#define swJ_udge		55
 #define swJu_dge		56
 #define swJud_ge		57
 #define swJudg_e		58
@@ -176,7 +176,7 @@ WPC_INPUT_PORTS_END
 #define swTrough5		82
 #define swTrough4		83
 #define swTrough3		84
-#define swTrough2		85	
+#define swTrough2		85
 #define swTrough1		86
 #define swTroughTop		87
 /*88 Not Used*/

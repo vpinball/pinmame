@@ -69,8 +69,8 @@ the first because it is shorter :)
 --------------------------------------------------------------------------------------------------*/
 WPC_INPUT_PORTS_START(pz,3)
   PORT_START /* 0 */
-    COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LSHIFT)
-    COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RSHIFT)
+    COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LCONTROL)
+    COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RCONTROL)
     COREPORT_BIT(0x0004,"Ozone Ramp",		KEYCODE_R)
     COREPORT_BIT(0x0008,"L/R Outlane",		KEYCODE_O)
     COREPORT_BIT(0x0010,"L/R Slingshot",		KEYCODE_MINUS)
@@ -131,10 +131,10 @@ possible switches, write down the number and enter it here.
 #define swBackRamp	31
 #define swEDM1		34
 #define swEDM2		35
-#define swEDM3		36	
+#define swEDM3		36
 #define swEDM4		37
 #define swEDM5		38
-	
+
 #define swBackPopper	41
 #define swRightPopper	42
 #define swLeftJet	43

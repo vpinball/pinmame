@@ -73,8 +73,8 @@ static struct {
 WPC_INPUT_PORTS_START(tom,5)
 
   PORT_START /* 0 */
-    COREPORT_BIT(0x0001,"Left Qualifier",		KEYCODE_LSHIFT)
-    COREPORT_BIT(0x0002,"Right Qualifier",		KEYCODE_RSHIFT)
+    COREPORT_BIT(0x0001,"Left Qualifier",		KEYCODE_LCONTROL)
+    COREPORT_BIT(0x0002,"Right Qualifier",		KEYCODE_RCONTROL)
     COREPORT_BITIMP(0x0004,"L/R Ramp",			KEYCODE_R)
     COREPORT_BIT(0x0008,"L/R Outlane",			KEYCODE_O)
     COREPORT_BIT(0x0010,"L/R Slingshot",			KEYCODE_MINUS)
@@ -124,16 +124,16 @@ WPC_INPUT_PORTS_END
 #define swTrough1		32
 #define swTrough2		33
 #define swTrough3		34
-#define swTrough4		35	
+#define swTrough4		35
 #define swSubwayOpto	36
 #define swSpinner		37
 #define swRLTarget		38
-	
+
 #define swLock1			41
 #define swLock2			42
 #define swLock3			43
 #define swPopper		44
-#define swLDrain		45	
+#define swLDrain		45
 #define swNotUsed5		46
 #define swSubwayMicro	47
 #define swRDrain		48
@@ -142,7 +142,7 @@ WPC_INPUT_PORTS_END
 #define swCapRest		52
 #define swRLaneEnter	53
 #define swLLaneEnter	54
-#define swCubePos4		55	
+#define swCubePos4		55
 #define swCubePos1		56
 #define swCubePos2		57
 #define swCubePos3		58
@@ -151,7 +151,7 @@ WPC_INPUT_PORTS_END
 #define swRightSling	62
 #define swBottomJet		63
 #define swMiddleJet		64
-#define swTopJet		65	
+#define swTopJet		65
 #define swTopLane1		66
 #define swTopLane2		67
 #define swNotUsed6		68
@@ -160,7 +160,7 @@ WPC_INPUT_PORTS_END
 #define swNotUsed7		72
 #define swRRampExit		73
 #define swRRampExit2	74
-#define swCRampEnter	75	
+#define swCRampEnter	75
 #define swRRampEnter	76
 #define swCapTop		77
 #define swLLoop			78
@@ -169,7 +169,7 @@ WPC_INPUT_PORTS_END
 #define swCRampTargets	82
 #define swVanishLock1	83
 #define swVanishLock2	84
-#define swTrunkHit		85	
+#define swTrunkHit		85
 #define swRLaneExit		86
 #define swLLaneExit		87
 #define swNotUsed8		88
@@ -324,7 +324,7 @@ static sim_tState tom_stateDef[] = {
 
 static int tom_handleBallState(sim_tBallStatus *ball, int *inports) {
 	switch (ball->state) {
-	
+
 	case stBallLane:
 		if(ball->speed < 25)
 			return setState(stNotEnough,25);	/*Ball not plunged hard enough*/

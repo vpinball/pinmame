@@ -70,8 +70,8 @@ static struct {
 WPC_INPUT_PORTS_START(gi,2)
 
   PORT_START /* 0 */
-    COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LSHIFT)
-    COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RSHIFT)
+    COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LCONTROL)
+    COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RCONTROL)
     COREPORT_BIT(0x0004,"Ramp",		        KEYCODE_R)
     COREPORT_BIT(0x0008,"L/R Outlane",		KEYCODE_O)
     COREPORT_BIT(0x0010,"L/R Slingshot",		KEYCODE_MINUS)
@@ -129,7 +129,7 @@ WPC_INPUT_PORTS_END
 #define swLPineapple	36
 #define swMPineapple	37
 #define swRPineapple	38
-	
+
 #define swLeftJet	41
 #define swRightJet	42
 #define swBottomJet	43

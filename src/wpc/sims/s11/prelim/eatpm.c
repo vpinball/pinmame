@@ -34,8 +34,8 @@ static void eatpm_drawStatic(BMTYPE **line);
 /---------------------------*/
 S11_INPUT_PORTS_START(eatpm,3)
   PORT_START /* 0 */
-    COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LSHIFT)
-    COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RSHIFT)
+    COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LCONTROL)
+    COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RCONTROL)
     COREPORT_BIT(0x0008,"L/R Outlane",		KEYCODE_O)
     COREPORT_BIT(0x0010,"L/R Slingshot",		KEYCODE_MINUS)
     COREPORT_BIT(0x0020,"L/R Inlane",		KEYCODE_I)

@@ -62,8 +62,8 @@ static struct {
 WPC_INPUT_PORTS_START(corv,4)
 
   PORT_START /* 0 */
-    COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LSHIFT)
-    COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RSHIFT)
+    COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LCONTROL)
+    COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RCONTROL)
     COREPORT_BIT(0x0004,"",		        KEYCODE_R)
     COREPORT_BIT(0x0008,"L/R Outlane",		KEYCODE_O)
     COREPORT_BIT(0x0010,"L/R Slingshot",		KEYCODE_MINUS)
@@ -151,7 +151,7 @@ WPC_INPUT_PORTS_END
 #define swLeftSling		61
 #define swRightSling	62
 #define swLeftJet		63
-#define swBottomJet		64	
+#define swBottomJet		64
 #define swRightJet		65
 
 /*---------------------
@@ -398,13 +398,13 @@ static void corv_handleMech(int mech) {
 		}
 		else
 			core_setSw(swLREncoder,0);
-	
+
 		/*--Is Car Moving?--*/
 		if (core_getSol(sLTRaceEnable)){
 			locals.active_blue++;
 			locals.bluecarPos += (locals.direction==FORWARD)?1:-1;
 		}
-	}	
+	}
 
 	/* RED CAR*/
 	if (mech & 0x02) {
@@ -421,13 +421,13 @@ static void corv_handleMech(int mech) {
 		}
 		else
 			core_setSw(swRREncoder,0);
-	
+
 		/*--Is Car Moving?--*/
 		if (core_getSol(sRTRaceEnable)){
 			locals.active_red++;
 			locals.redcarPos += (locals.direction==FORWARD)?1:-1;
 		}
-	}	
+	}
 
 	/*Make sure positions never go negative!*/
 	if(locals.bluecarPos < 0) locals.bluecarPos = 0;

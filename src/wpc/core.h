@@ -108,10 +108,8 @@
     COREPORT_BIT(0x4000, "Row 7",     KEYCODE_J) \
     COREPORT_BIT(0x8000, "Row 8",     KEYCODE_K) \
   PORT_START /* 1 */ \
-    COREPORT_BIT(0x0001, "Left Flipper",   KEYCODE_LCONTROL)  \
-    COREPORT_BIT(0x0002, "Right Flipper",  KEYCODE_RCONTROL) \
-    COREPORT_BIT(0x0004, "U Left Flipper", KEYCODE_LEFT)  \
-    COREPORT_BIT(0x0008, "U Right Flipper",KEYCODE_RIGHT)
+    COREPORT_BIT(0x0001, "Left Flipper",   KEYCODE_LSHIFT)  \
+    COREPORT_BIT(0x0002, "Right Flipper",  KEYCODE_RSHIFT)
 
 /*-----------------------
 / Access to common ports

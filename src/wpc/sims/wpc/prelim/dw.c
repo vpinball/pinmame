@@ -47,8 +47,8 @@ static struct {
 WPC_INPUT_PORTS_START(dw,3)
 
   PORT_START /* 0 */
-    COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LSHIFT)
-    COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RSHIFT)
+    COREPORT_BIT(0x0001,"Left Qualifier",	KEYCODE_LCONTROL)
+    COREPORT_BIT(0x0002,"Right Qualifier",	KEYCODE_RCONTROL)
     COREPORT_BIT(0x0004,"",		        KEYCODE_R)
     COREPORT_BIT(0x0008,"L/R Outlane",		KEYCODE_O)
     COREPORT_BIT(0x0010,"L/R Slingshot",		KEYCODE_MINUS)
@@ -106,16 +106,16 @@ WPC_INPUT_PORTS_END
 #define swMPFHome	32
 #define swEnterLRamp	33
 #define swLaunch	34
-#define swLRampMade	35	
+#define swLRampMade	35
 #define swEnterRRamp	36
 #define swRRampMade	37
 #define swMPFMidDoor	38
-	
+
 #define swEscape	41
 #define sweScape	42
 #define swesCape	43
 #define swescApe	44
-#define swescaPe	45	
+#define swescaPe	45
 #define swescapE	46
 #define swHangOnMade	47
 #define swSelectDoctor	48
@@ -124,7 +124,7 @@ WPC_INPUT_PORTS_END
 #define swrEpair	52
 #define swrePair	53
 #define swrepAir	54
-#define swrepaIr	55	
+#define swrepaIr	55
 #define swrepaiR	56
 #define swTrapDoorDown	57
 #define swActTransmat	58
@@ -133,7 +133,7 @@ WPC_INPUT_PORTS_END
 #define swRightJet	62
 #define swBottomJet	63
 #define swLeftOutlane	64
-#define swLeftInlane	65	
+#define swLeftInlane	65
 #define swRightInlane	66
 #define swRightOutlane	67
 #define swMPFLeftDoor	68
@@ -142,7 +142,7 @@ WPC_INPUT_PORTS_END
 #define swMPFTargetR2	72
 #define swMPFTargetM	73
 #define swMPFTargetL2	74
-#define swMPFTargetL	75	
+#define swMPFTargetL	75
 #define swLeftLock	76
 #define swRightLock	77
 #define swLightLock	78
