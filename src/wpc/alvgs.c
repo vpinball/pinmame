@@ -9,33 +9,52 @@
 #include "machine/6821pia.h"
 #include "sndbrd.h"
 
+/*Declarations*/
 extern WRITE_HANDLER(alvg_sndCmd_w);
-
 static void alvgs_init(struct sndbrdData *brdData);
 static INTERRUPT_GEN(alvgs_firq);
+static WRITE_HANDLER(alvgs_data_w);
+static WRITE_HANDLER(alvgs_ctrl_w);
+static READ_HANDLER(alvgs_ctrl_r);
 
+/*Interfaces*/
+
+/* Newer 12 Voice Style BSMT Chip */
+static struct BSMT2000interface alvgs_bsmt2000Int = {
+  1, {24000000}, {12}, {ALVGS_ROMREGION}, {100}, {0000}, 0, 1
+};
+/* Sound board */
+const struct sndbrdIntf alvgsIntf = {
+   "BSMT", alvgs_init, NULL, NULL, alvg_sndCmd_w, alvgs_data_w, NULL, alvgs_ctrl_w, alvgs_ctrl_r, SNDBRD_NODATASYNC
+};
+
+/*-- local data --*/
+static struct {
+  struct sndbrdData brdData;
+  int data_to_main_cpu;
+} alvgslocals;
+
+/*Functions*/
+
+//WATCHDOG AND LED CHIP WRITE
 //D6 = Watchdog
 //D5 = Sound LED
 static WRITE_HANDLER(watch_w)
 {
 	alvg_UpdateSoundLEDS(0,(data&0x40)>>6);
+	//if(data & 0x80) watchdog_reset_w(1,0);
 	if(data > 0 && !(data&0x60 || data&0x40))
 		logerror("UNKNOWN DATA IN SOUND WATCH_W: data=%x\n",data);
 }
 
-const struct sndbrdIntf alvgsIntf = {
-   "BSMT", alvgs_init, NULL, NULL, alvg_sndCmd_w, alvg_sndCmd_w, NULL, NULL, NULL, SNDBRD_NODATASYNC
-  //"BSMT", alvgs_init, NULL, NULL, soundlatch_w, soundlatch_w, NULL, NULL, NULL, SNDBRD_NODATASYNC
-};
+//SOUND DATA & CONTROL FUNCTIONS
+static WRITE_HANDLER(alvgs_data_w){ soundlatch_w(0,data); }
+static WRITE_HANDLER(alvgs_ctrl_w){	cpu_set_irq_line(ALVGS_CPUNO, 0, PULSE_LINE); }
+static READ_HANDLER(alvgs_ctrl_r){	return alvgslocals.data_to_main_cpu; }
+static WRITE_HANDLER(data_to_main_cpu) { alvgslocals.data_to_main_cpu = data; }
 
-/* Newer 12 Voice Style BSMT Chip */
-static struct BSMT2000interface alvgs_bsmt2000Int = {
-  1, {24000000}, {12}, {ALVGS_ROMREGION}, {100}, {6000}, 0
-};
-
-WRITE_HANDLER(data_to_main_cpu) { logerror("SOUND DATA TO MAIN %x\n",data); }
-
-WRITE_HANDLER(bsmt_write)
+//BSMT DATA
+static WRITE_HANDLER(bsmt_write)
 {
 	static int data_hi = 0;
 	static int addr = 0;
@@ -78,15 +97,11 @@ MACHINE_DRIVER_START(alvgs)
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
 MACHINE_DRIVER_END
 
-/*-- local data --*/
-static struct {
-  struct sndbrdData brdData;
-  int bsmtData;
-} alvgslocals;
 
 static void alvgs_init(struct sndbrdData *brdData) {
   memset(&alvgslocals, 0, sizeof(alvgslocals));
   alvgslocals.brdData = *brdData;
+  //watchdog_reset_w(1,0);
 }
 
 static INTERRUPT_GEN(alvgs_firq) {
