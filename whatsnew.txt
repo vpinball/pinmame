@@ -11,7 +11,7 @@ Bugs Fixed
  [Steve Ellenoff]
 
 -Mech Handler bugs corrected
--Scratchy Sound issues (see new sound limit option under new features)
+-Scratchy Sound issues
  [Martin Adrian]
 
 New Features
@@ -36,15 +36,14 @@ New Features
  [Steve Ellenoff]
  [Martin Adrian]
  [Gerrit Volkenborn]
- 
--New Sound Speed Limit Option
- When 'ON' should eliminate scratchy sound introduced in 1.10 release
- When 'OFF' should help eliminate sound slow downs reported from version 1.0 Beta 2
- Users should set this value to whichever sounds better for their computer setup
- [Martin Adrian]
- [Steve Ellenoff]
 
--Support for 9 & 10 Segments displays
+- Support for 9 & 10 Segments displays
+- PinMAME can now be compiled with VC++
+- 6803 core: fixed OCF interrupt bug and added OLVL support
+- PinMAME DOS compile now works
+- Adjusted volume for Squawk'n'Talk sound chips
+- Corrected memory bug in DMD drawing
+- Speeded up Bally -17/-35 games. Let me know if it is too fast now
  [Martin Adrian]
 
 -Updated Gottlieb games to use 9 segments displays
@@ -65,7 +64,7 @@ Gottlieb games also received a huge update: Finally solved the many issues with 
 games to work. In addition, sound support was added for all System 80b games as well as the newer System 3 games.
 
 As you can also see, we've realized, much like the MAME team, that using Beta naming is
-rather tedious and annoying, so we've dropped it. 
+rather tedious and annoying, so we've dropped it.
 
 We know you'll enjoy this latest version of PinMAME as much as we do!!
 
@@ -138,7 +137,7 @@ New Features
 -Added a lot of clones for existing WPC/DataEast/Sega/new Stern games!
 -Updated several custom display layouts.
  [Gerrit Volkenborn]
- 
+
 
 Version 1.0 Beta 2   (September 28, 2001)
 -----------------------------------------
