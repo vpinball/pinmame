@@ -484,11 +484,14 @@ WPC_ROMSTART(gw,l5,"getaw_l5.rom",0x80000,0xb97f3d62)
 WPCS_SOUNDROM8xx("u18snd",0x37bbe485)
 WPC_ROMEND
 
+WPC_ROMSTART(gw,l2,"get_l2.u6",0x80000,0x9efc0005)
+WPCS_SOUNDROM8xx("u18snd",0x37bbe485)
+WPC_ROMEND
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(gw,l5,"The Getaway: High Speed II (L-5)",1992, "Williams",wpc_mFliptronS,0)
-
+CORE_CLONEDEF(gw,l2,l5,"The Getaway: High Speed II (L-2)",1992,"Bally",wpc_mFliptronS,0)
 
 /*-----------------------
 / Simulation Definitions
