@@ -863,14 +863,9 @@ static MACHINE_INIT(core) {
       }
     }
     /*-- Sound enabled ? */
-    if (((Machine->gamedrv->flags & GAME_NO_SOUND) == 0) && Machine->sample_rate) {
+    if (((Machine->gamedrv->flags & GAME_NO_SOUND) == 0) && Machine->sample_rate)
       coreGlobals.soundEn = TRUE;
-      /*-- init sound commander --*/
-      snd_cmd_init(coreData->sndCmd, coreData->sndHead);
-    }
-    else
-      snd_cmd_init(NULL, NULL);
-
+  
     /*-- init simulator --*/
     if (g_fHandleKeyboard && core_gameData->simData) {
       int inports[CORE_MAXPORTS];
@@ -884,6 +879,8 @@ static MACHINE_INIT(core) {
     }
     /*-- finally init the core --*/
     if (coreData->init) coreData->init();
+    /*-- init sound commander --*/
+    snd_cmd_init();
   }
   /*-- now reset everything --*/
   if (coreData->reset) coreData->reset();

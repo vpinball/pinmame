@@ -109,6 +109,9 @@ static WRITE_HANDLER(hnks_data_w) { pia_set_input_a(SP_PIA0, data&0x0f); }
 /* sound strobe */
 static WRITE_HANDLER(hnks_ctrl_w) { pia_set_input_ca1(SP_PIA0, data); }
 
+static WRITE_HANDLER(hnks_manCmd_w) {
+  hnks_data_w(0, data); hnks_ctrl_w(0,1); hnks_ctrl_w(0,0);
+}
 static void hnks_init(struct sndbrdData *brdData) {
   int ii;
   memset(&locals, 0x0, sizeof(locals));
@@ -133,7 +136,7 @@ static void hnks_sh_stop(void) {
 / exported interface
 /--------------------*/
 const struct sndbrdIntf hankinIntf = {
-  hnks_init, NULL, NULL, hnks_data_w, NULL, hnks_ctrl_w, NULL
+  "HNK", hnks_init, NULL, NULL, hnks_manCmd_w, hnks_data_w, NULL, hnks_ctrl_w, NULL
 };
 
 static struct CustomSound_interface hnks_custInt = {hnks_sh_start, hnks_sh_stop};

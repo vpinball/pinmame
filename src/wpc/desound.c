@@ -17,6 +17,7 @@
 static void de1s_init(struct sndbrdData *brdData);
 static WRITE_HANDLER(de1s_data_w);
 static WRITE_HANDLER(de1s_ctrl_w);
+static WRITE_HANDLER(de1s_manCmd_w);
 static READ_HANDLER(de1s_cmd_r);
 static void de1s_msmIrq(int data);
 static void de1s_ym2151IRQ(int state);
@@ -26,7 +27,7 @@ static WRITE_HANDLER(de1s_4052_w);
 static WRITE_HANDLER(de1s_MSM5025_w);
 
 const struct sndbrdIntf de1sIntf = {
-  de1s_init, NULL, NULL, de1s_data_w, NULL, de1s_ctrl_w, NULL
+  "DE", de1s_init, NULL, NULL, de1s_manCmd_w, de1s_data_w, NULL, de1s_ctrl_w, NULL
 };
 
 static struct MSM5205interface de1s_msm5205Int = {
@@ -85,13 +86,15 @@ static void de1s_init(struct sndbrdData *brdData) {
 }
 
 static WRITE_HANDLER(de1s_data_w) {
-	de1slocals.cmd = data;
+  de1slocals.cmd = data;
 }
 
 static WRITE_HANDLER(de1s_ctrl_w) {
   if (~data&0x1) cpu_set_irq_line(de1slocals.brdData.cpuNo, M6809_FIRQ_LINE, ASSERT_LINE);
 }
-
+static WRITE_HANDLER(de1s_manCmd_w) {
+  de1s_data_w(0,data); de1s_ctrl_w(0,0);
+}
 static READ_HANDLER(de1s_cmd_r) {
   cpu_set_irq_line(de1slocals.brdData.cpuNo, M6809_FIRQ_LINE, CLEAR_LINE);
   return de1slocals.cmd;
@@ -191,7 +194,7 @@ static WRITE_HANDLER(de2s_bsmtcmdLo_w);
 static INTERRUPT_GEN(de2s_firq);
 
 const struct sndbrdIntf de2sIntf = {
-  de2s_init, NULL, NULL, soundlatch_w, NULL, NULL, NULL, SNDBRD_NODATASYNC
+  "BSMT", de2s_init, NULL, NULL, soundlatch_w, soundlatch_w, NULL, NULL, NULL, SNDBRD_NODATASYNC
 };
 
 /* Older 11 Voice Style BSMT Chip */

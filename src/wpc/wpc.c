@@ -155,15 +155,11 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(wpc_alpha1S)
   MDRV_IMPORT_FROM(wpc)
   MDRV_IMPORT_FROM(wmssnd_s11cs)
-  MDRV_SOUND_CMD(sndbrd_1_data_w)
-  MDRV_SOUND_CMDHEADING("s11cs")
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(wpc_alpha2S)
   MDRV_IMPORT_FROM(wpc)
   MDRV_IMPORT_FROM(wmssnd_wpcs)
-  MDRV_SOUND_CMD(sndbrd_1_data_w)
-  MDRV_SOUND_CMDHEADING("wpcs")
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(wpc_dmd)
@@ -175,24 +171,18 @@ MACHINE_DRIVER_START(wpc_dmdS)
   MDRV_IMPORT_FROM(wpc)
   MDRV_VIDEO_START(wpc_dmd)
   MDRV_IMPORT_FROM(wmssnd_wpcs)
-  MDRV_SOUND_CMD(sndbrd_1_data_w)
-  MDRV_SOUND_CMDHEADING("wpcs")
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(wpc_dcsS)
   MDRV_IMPORT_FROM(wpc)
   MDRV_VIDEO_START(wpc_dmd)
   MDRV_IMPORT_FROM(wmssnd_dcs1)
-  MDRV_SOUND_CMD(sndbrd_1_data_w)
-  MDRV_SOUND_CMDHEADING("dcs")
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(wpc_95S)
   MDRV_IMPORT_FROM(wpc)
   MDRV_VIDEO_START(wpc_dmd)
   MDRV_IMPORT_FROM(wmssnd_dcs2)
-  MDRV_SOUND_CMD(sndbrd_1_data_w)
-  MDRV_SOUND_CMDHEADING("dcs")
 MACHINE_DRIVER_END
 
 /*--------------------------------------------------------------
@@ -458,12 +448,11 @@ WRITE_HANDLER(wpc_w) {
       //DBGLOG(("sdataX:%2x\n",data));
       if (core_gameData->gen & GEN_WPCALPHA_1) {
         sndbrd_0_data_w(0,data); sndbrd_0_ctrl_w(0,0); sndbrd_0_ctrl_w(0,1);
-    snd_cmd_log(data);
       }
       break;
     case WPC_SOUNDIF:
       //DBGLOG(("sdata:%2x\n",data));
-      sndbrd_0_data_w(0,data); snd_cmd_log(data);
+      sndbrd_0_data_w(0,data);
       if (sndbrd_0_type() == SNDBRD_S11CS) sndbrd_0_ctrl_w(0,0);
       break;
     case WPC_SOUNDBACK:

@@ -269,15 +269,11 @@ static READ_HANDLER(pia4a_r)  { return core_getSwCol(locals.swCol); }
 /*-------
 /  Sound
 /--------*/
-/*-- CPU board sound command --*/
-//NOTE: Not Used by Data East
-static WRITE_HANDLER(pia0a_w) { snd_cmd_log(0); snd_cmd_log(data); sndbrd_0_data_w(0,data); }
-
 /*-- Sound board sound command--*/
 static WRITE_HANDLER(pia5b_w) {
   //Data East 128x16 games need to eat the 0xfe command (especially Hook)
   if (core_gameData->gen & GEN_DEDMD16 && data == 0xfe) return;
-  locals.sndCmd = data; snd_cmd_log(1); snd_cmd_log(data); sndbrd_1_data_w(0,data);
+  locals.sndCmd = data; sndbrd_1_data_w(0,data);
 }
 
 /*-- Sound board sound command available --*/
@@ -322,7 +318,7 @@ static struct pia6821_interface s11_pia[] = {
   /* CA2       Sound H.S.  */
  /* CB2       Enable Special Solenoids */
  /* in  : A/B,CA/B1,CA/B2 */ 0, 0, 0, 0, 0, 0,
- /* out : A/B,CA/B2       */ pia0a_w, pia0b_w, pia0ca2_w, pia0cb2_w,
+ /* out : A/B,CA/B2       */ sndbrd_0_data_w, pia0b_w, pia0ca2_w, pia0cb2_w,
  /* irq : A/B             */ s11_piaMainIrq, s11_piaMainIrq
 },{ /* PIA 1 (2400) */
  /* PA0 - PA7 Lamp Matrix Strobe */

@@ -2,6 +2,7 @@
 #  define SNDBRD_RECURSIVE
 #  include "driver.h"
 #  include "core.h"
+#  include "snd_cmd.h"
 #  include "sndbrd.h"
 #  define SNDBRDINTF(name) extern const struct sndbrdIntf name##Intf;
 #  include "sndbrd.c"
@@ -34,6 +35,14 @@ void sndbrd_init(int brdNo, int brdType, int cpuNo, UINT8 *romRegion,
     b->init(&brdData);
 }
 
+int sndbrd_exists(int board) { 
+  return (intf[board].brdIntf && 
+          ((intf[board].brdIntf->flags & SNDBRD_NOTSOUND) == 0));
+}
+const char* sndbrd_typestr(int board) {
+  return intf[board].brdIntf ? intf[board].brdIntf->typestr : NULL;
+}
+
 void sndbrd_exit(int board) {
   const struct sndbrdIntf *b = intf[board].brdIntf;
   if (b && (coreGlobals.soundEn || (b->flags & SNDBRD_NOTSOUND)) && b->exit)
@@ -49,6 +58,7 @@ void sndbrd_diag(int board, int button) {
 void sndbrd_data_w(int board, int data) {
   const struct sndbrdIntf *b = intf[board].brdIntf;
   if (b && (coreGlobals.soundEn || (b->flags & SNDBRD_NOTSOUND)) && b->data_w) {
+    snd_cmd_log(board, data);
     if (b->flags & SNDBRD_NODATASYNC)
       b->data_w(board, data);
     else
@@ -92,7 +102,11 @@ void sndbrd_data_cb(int board, int data) {
       sndbrd_sync_w(intf[board].data_cb, board, data);
   }
 }
-
+void sndbrd_manCmd(int board, int cmd) {
+  const struct sndbrdIntf *b = intf[board].brdIntf;
+  if (b && (coreGlobals.soundEn || (b->flags & SNDBRD_NOTSOUND)) && b->manCmd_w)
+    b->manCmd_w(0, cmd);
+}  
 void sndbrd_0_init(int brdType, int cpuNo, UINT8 *romRegion,
                    WRITE_HANDLER((*data_cb)),WRITE_HANDLER((*ctrl_cb))) {
   sndbrd_init(0, brdType, cpuNo, romRegion, data_cb, ctrl_cb);

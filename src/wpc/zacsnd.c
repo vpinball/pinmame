@@ -69,7 +69,7 @@ static struct SN76477interface  zac1125_sn76477Int = { 1, { 25 }, /* mixing leve
 / exported interface
 /--------------------*/
 const struct sndbrdIntf zac1125Intf = {
-  zac1125_init, NULL, NULL, zac1125_data_w, NULL, zac1125_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "ZAC1125", zac1125_init, NULL, NULL, NULL, zac1125_data_w, NULL, zac1125_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
 MACHINE_DRIVER_START(zac1125)
@@ -109,11 +109,12 @@ static void zac1125_init(struct sndbrdData *brdData) {
 static void sp_init(struct sndbrdData *brdData);
 static WRITE_HANDLER(sp1346_data_w);
 static WRITE_HANDLER(sp1346_ctrl_w);
+static WRITE_HANDLER(sp1346_manCmd_w);
 /*-------------------
 / exported interface
 /--------------------*/
 const struct sndbrdIntf zac1346Intf = {
-  sp_init, NULL, NULL, sp1346_data_w, NULL, sp1346_ctrl_w, NULL, 0
+  "ZAC1346", sp_init, NULL, NULL, sp1346_manCmd_w, sp1346_data_w, NULL, sp1346_ctrl_w, NULL, 0
 };
 
 static struct {
@@ -134,7 +135,9 @@ static WRITE_HANDLER(sp1346_data_w) {
 static WRITE_HANDLER(sp1346_ctrl_w) {
   splocals.lastcmd = (splocals.lastcmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00);
 }
-
+static WRITE_HANDLER(sp1346_manCmd_w) {
+  splocals.lastcmd = data;
+}
 static void sp_irq(int state) {
   cpu_set_irq_line(splocals.brdData.cpuNo, I8085_INTR_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
@@ -187,13 +190,13 @@ static READ_HANDLER(sns_8910a_r);
 static READ_HANDLER(sns2_8910a_r);
 
 const struct sndbrdIntf zac1370Intf = {
-  sns_init, NULL, sns_diag, sns_data_w, NULL, sns_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "ZAC1370", sns_init, NULL, sns_diag, NULL, sns_data_w, NULL, sns_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 const struct sndbrdIntf zac13136Intf = {
-  sns_init, NULL, sns_diag, sns_data_w, NULL, sns_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "ZAC13136", sns_init, NULL, sns_diag, NULL, sns_data_w, NULL, sns_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 const struct sndbrdIntf zac11178Intf = {
-  sns_init, NULL, sns_diag, sns_data_w, NULL, sns_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "ZAC11178", sns_init, NULL, sns_diag, NULL, sns_data_w, NULL, sns_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 static struct TMS5220interface sns_tms5220Int = { 640000, 50, sns_5220Irq };
 static struct DACinterface     sns_dacInt = { 1, { 20 }};

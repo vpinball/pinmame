@@ -146,7 +146,7 @@ struct VOTRAXSC01interface TAITO_votrax_sc01_interface = {
 / exported interface
 /--------------------*/
 const struct sndbrdIntf taitoIntf = {
-  taitos_init, NULL, NULL, taitos_data_w, NULL, taitos_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "TAITO", taitos_init, NULL, NULL, taitos_data_w, taitos_data_w, NULL, taitos_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
 MACHINE_DRIVER_START(taitos_sintetizador)
