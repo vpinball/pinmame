@@ -404,6 +404,7 @@ extern const core_tGameData *core_gameData;
 
 extern const int core_bcd2seg9[]; /* BCD to 9 segment display */
 extern const int core_bcd2seg7[]; /* BCD to 7 segment display */
+extern const int core_bcd2seg7e[]; /* BCD to 7 segment display with A to E letters */
 #define core_bcd2seg  core_bcd2seg7
 
 /*-- Exported Display handling functions--*/
