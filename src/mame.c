@@ -506,8 +506,10 @@ void run_machine_core(void)
 	/* if we didn't find a settings file, show the disclaimer */
 	if (settingsloaded || options.skip_disclaimer || showcopyright(artwork_get_ui_bitmap()) == 0)
 	{
+#ifndef VPINMAME
 		/* show info about incorrect behaviour (wrong colors etc.) */
 		if (showgamewarnings(artwork_get_ui_bitmap()) == 0)
+#endif /* VPINMAME */
 		{
 			/* show info about the game */
 			if (options.skip_gameinfo || showgameinfo(artwork_get_ui_bitmap()) == 0)
