@@ -1,16 +1,7 @@
 #ifndef INC_WPCSOUND
 #define INC_WPCSOUND
 
-/* 161200 - added wpcs_ctrl_w */
-/* 151200 - added sample support (SJE) */
-/* 281100 - Updated regions for MAME 37b9 */
-/* 271100 - Added SOUNDROM888 (for Dracula) - (SJE) */
-/* 191100 - Added SOUNDROM224 (for PZ) - (SJE) */
-/* 291000 - Added SOUNDROM248 (fow WW) */
-/* 161000 - Added SOUNDROM84  (for TAFG) */
-/* 171000 - Added SOUNDROM8   (for FT) */
 /*-- Sound rom macros --*/
-
 #define WPCS_STDREG \
   SOUNDREGION(0x010000, WPC_MEMREG_SCPU) \
   SOUNDREGION(0x180000, WPC_MEMREG_SROM)
@@ -77,15 +68,6 @@ extern const struct Memory_WriteAddress wpcs_writemem[];
 extern struct DACinterface      wpcs_dacInt;
 extern struct YM2151interface   wpcs_ym2151Int;
 extern struct hc55516_interface wpcs_hc55516Int;
-extern struct Samplesinterface	samples_interface;
-
-/*-- Sound interface communications --*/
-extern READ_HANDLER(wpcs_data_r);
-extern WRITE_HANDLER(wpcs_data_w);
-extern READ_HANDLER(wpcs_ctrl_r);
-extern WRITE_HANDLER(wpcs_ctrl_w);
-
-extern void wpcs_init(void);
 
 #define WPCS_SOUNDCPU ,{ \
   CPU_M6809 | CPU_AUDIO_CPU, \
@@ -95,8 +77,7 @@ extern void wpcs_init(void);
 }
 
 #define WPCS_SOUND \
-  { SOUND_YM2151,  &wpcs_ym2151Int }, \
-  { SOUND_DAC,     &wpcs_dacInt }, \
-  { SOUND_HC55516, &wpcs_hc55516Int }, \
-  { SOUND_SAMPLES, &samples_interface}
+  { SOUND_YM2151,  &wpcs_ym2151Int }, { SOUND_DAC,     &wpcs_dacInt }, \
+  { SOUND_HC55516, &wpcs_hc55516Int }, SAMPLESINTERFACE
+
 #endif /* INC_WPCSOUND */

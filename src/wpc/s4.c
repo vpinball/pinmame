@@ -4,34 +4,30 @@
 #include "cpu/m6800/m6800.h"
 #include "machine/6821pia.h"
 #include "core.h"
-#include "s4.h"
+#include "sndbrd.h"
 #include "s67s.h"
+#include "s4.h"
+
+#define S4_PIA0 0
+#define S4_PIA1 1
+#define S4_PIA2 2
+#define S4_PIA3 3
 
 #define S4_VBLANKFREQ    60 /* VBLANK frequency */
 #define S4_IRQFREQ    1000  /* IRQ Frequency*/
 
-#define CONFIGURE_PIAS4(a,b,c,d) \
-	pia_unconfig();\
-	pia_config(0, PIA_STANDARD_ORDERING, &a);\
-	pia_config(1, PIA_STANDARD_ORDERING, &b);\
-	pia_config(2, PIA_STANDARD_ORDERING, &c);\
-	pia_config(3, PIA_STANDARD_ORDERING, &d);
-
 static void s4_exit(void);
 static void s4_init(void);
-static void s3c_init(void);		//Special Init Routine for Chime based sound hardware.
 
 static struct {
   int	 alphapos;
   int    vblankCount;
-  int    initDone;
   UINT32 solenoids;
   core_tSeg segments, pseg;
   int    lampRow, lampColumn;
   int    diagnosticLed;
   int    swCol;
   int    ssEn;
-  int	 hasChimes;
 } s4locals;
 
 static data8_t *s4_CMOS;
@@ -46,7 +42,7 @@ static data8_t *s4_CMOS;
 	   (14)(15)   (06)(97)
 */
 //Structure is: top, left, start, length, type
-core_tLCDLayout s4_disp[] = {
+const core_tLCDLayout s4_disp[] = {
   // Player 1            Player 2
   {0, 0, 0,6,CORE_SEG7}, {0,18, 8,6,CORE_SEG7},
   // Player 3            Player 4
@@ -91,27 +87,19 @@ static READ_HANDLER(s4_dips_r) {
   return (core_getDip(dipcol/2+1)<<(4*(1-(dipcol&0x01)))) & 0xf0;
 }
 
-/*********************/
-/*DIAGNOSTIC SWITCHES*/
-/*********************/
-static READ_HANDLER(s4_diagsw1_r) { /*ADVANCE SWITCH - (CA1)*/
-  return cpu_get_reg(M6800_IRQ_STATE) ? core_getSw(S4_SWADVANCE) : 0;
+/************/
+/* SWITCHES */
+/************/
+static READ_HANDLER(s4_diagsw1_r) { /* ADVANCE SWITCH - (CA1)*/
+  return activecpu_get_reg(M6800_IRQ_STATE) ? core_getSw(S4_SWADVANCE) : 0;
 }
-
-static READ_HANDLER(s4_diagsw2_r) { /*AUTO/MANUAL SWITCH - (CB1)*/
-  return cpu_get_reg(M6800_IRQ_STATE) ? core_getSw(S4_SWUPDN) : 0;
+static READ_HANDLER(s4_diagsw2_r) { /* AUTO/MANUAL SWITCH - (CB1)*/
+  return activecpu_get_reg(M6800_IRQ_STATE) ? core_getSw(S4_SWUPDN) : 0;
 }
-
-/***********************************/
-/*ENTER                            */
-/***********************************/
-static READ_HANDLER(s4_entersw_r) {
+static READ_HANDLER(s4_entersw_r) { /* Enter */
   return core_getSw(S4_ENTER);
 }
-
-/********************/
-/*SWITCH MATRIX     */
-/********************/
+/* SWITCH MATRIX */
 static READ_HANDLER(s4_swrow_r) { return core_getSwCol(s4locals.swCol); }
 static WRITE_HANDLER(s4_swcol_w) { s4locals.swCol = data; }
 
@@ -151,10 +139,7 @@ static WRITE_HANDLER(s4_sol1_8_w) {
 /* REGULAR SOLENOIDS #9-16 - USED AS SOUND COMMANDS! (9-14)*/
 /***********************************************************/
 static WRITE_HANDLER(s4_sol9_16_w) {
-  /* If machine does not use Chimes, mask off sound command bits */
-  if(!s4locals.hasChimes) {
-    s67s_cmd(0, ~data); data &= 0xe0;
-  }
+  if (!(core_gameData->gen & GEN_S3C)) { sndbrd_0_data_w(0, ~data); data &= 0xe0; }
   coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffff00ff) | (data<<8);
   s4locals.solenoids |= (data<<8);
 }
@@ -179,6 +164,7 @@ static WRITE_HANDLER(s4_specsol6_w) { setSSSol(data, 5); }
 /*******************/
 WRITE_HANDLER(s4_gameon_w) { s4locals.ssEn = data; }
 
+static const struct pia6821_interface s4_pia[] = {{
 /*PIA 1 - Display and other*/
 /*PIA I:
 (out)	PA0-3: 	16 Digit Strobing.. 1 # activates a digit.
@@ -198,11 +184,10 @@ WRITE_HANDLER(s4_gameon_w) { s4locals.ssEn = data; }
 		  7,8,16 = (Status)5,6,(2&3)
 		  9-14 = (P2&4)1-6
 */
-static struct pia6821_interface pia_1_intf = {
  /* i : A/B,CA1/B1,CA2/B2 */ s4_dips_r, 0, s4_diagsw1_r, s4_diagsw2_r, s4_entersw_r, 0,
  /* o : A/B,CA2/B2        */ s4_pa_w, s4_alpha_w, 0, s4_specsol6_w,
  /* irq: A/B              */ 0, 0
-};
+},{
 /*PIA 2 - Switch Matrix*/
 /*PIA II:
 (in)	PA0-7:	Switch Rows
@@ -213,11 +198,10 @@ static struct pia6821_interface pia_1_intf = {
 (out)	CA2:	Special Solenoid #4
 (out)	CB2:	Special Solenoid #3
 */
-static struct pia6821_interface pia_2_intf = {
   /* i : A/B,CA1/B1,CA2/B2 */ s4_swrow_r, 0, 0, 0, 0, 0,
   /* o : A/B,CA2/B2        */ 0, s4_swcol_w, s4_specsol4_w, s4_specsol3_w,
   /* irq: A/B             */  0, 0
-};
+},{
 /*PIA 3 - Lamp Matrix*/
 /*
 PIA III:
@@ -229,11 +213,10 @@ PIA III:
 (out)	CA2:	Special Solenoid #2
 (out)	CB2:	Special Solenoid #1
 */
-static struct pia6821_interface pia_3_intf = {
   /* i : A/B,CA1/B1,CA2/B2 */ 0, 0, 0, 0, 0, 0,
   /* o : A/B,CA2/B2        */ s4_lamprow_w, s4_lampcol_w, s4_specsol2_w,s4_specsol1_w,
   /* irq: A/B              */ 0, 0
-};
+},{
 /*PIA 4 - Standard Solenoids*/
 /*
 PIA IV:
@@ -244,15 +227,13 @@ PIA IV:
 	CA2:	Special Solenoid #5
 	CB2:	Game On Signal
 */
-static struct pia6821_interface pia_4_intf = {
   /* i : A/B,CA1/B1,CA2/B2 */ 0, 0, 0, 0, 0, 0,
   /* o : A/B,CA2/B2        */ s4_sol1_8_w, s4_sol9_16_w,s4_specsol5_w, s4_gameon_w,
   /* irq: A/B              */ 0, 0
-};
+}};
 
 static int s4_irq(void) {
-  cpu_set_irq_line(0, M6800_IRQ_LINE, PULSE_LINE);
-  return 0;
+  cpu_set_irq_line(0, M6800_IRQ_LINE, PULSE_LINE); return 0;
 }
 
 static int s4_vblank(void) {
@@ -300,51 +281,42 @@ static void s4_updSw(int *inports) {
     coreGlobals.swMatrix[0] = (inports[S4_COMINPORT] & 0xff00)>>8;
   }
   /*-- Diagnostic buttons on CPU board --*/
-  if (core_getSw(S4_SWCPUDIAG))   cpu_set_nmi_line(0, PULSE_LINE);
-  if (core_getSw(S4_SWSOUNDDIAG)) cpu_set_nmi_line(1, PULSE_LINE);
+  cpu_set_nmi_line(0, core_getSw(S4_SWCPUDIAG) ? ASSERT_LINE : CLEAR_LINE);
+  sndbrd_0_diag(core_getSw(S4_SWSOUNDDIAG));
 
   /*-- coin door switches --*/
-  pia_set_input_ca1(0, core_getSw(S4_SWADVANCE));
-  pia_set_input_cb1(0, core_getSw(S4_SWUPDN));
+  pia_set_input_ca1(S4_PIA0, core_getSw(S4_SWADVANCE));
+  pia_set_input_cb1(S4_PIA0, core_getSw(S4_SWUPDN));
 
   /* Show Status of Auto/Manual Switch */
   core_textOutf(40, 30, BLACK, core_getSw(S4_SWUPDN) ? "Auto  " : "Manual");
 }
 
-static core_tData s4Data = {
+static const core_tData s4Data = {
   8+16, /* 16 Dips */
   s4_updSw,
   2 | DIAGLED_VERTICAL,
-  s67s_cmd, "s4",
+  sndbrd_0_data_w, "s4",
   core_swSeq2m, core_swSeq2m,core_m2swSeq,core_m2swSeq
 };
 
-static void s3c_init(void) {
-  s4_init();
-  s4locals.hasChimes = 1;
-}
-
 static void s4_init(void) {
-  if (s4locals.initDone) CORE_DOEXIT(s4_exit);
-  s4locals.initDone = TRUE;
-
-  if (core_init(&s4Data)) return;
   memset(&s4locals, 0, sizeof(s4locals));
-
-  /* init PIAs */
-  CONFIGURE_PIAS4(pia_1_intf, pia_2_intf, pia_3_intf, pia_4_intf);
+  if (core_init(&s4Data)) return;
+  pia_config(S4_PIA0, PIA_STANDARD_ORDERING, &s4_pia[0]);
+  pia_config(S4_PIA1, PIA_STANDARD_ORDERING, &s4_pia[1]);
+  pia_config(S4_PIA2, PIA_STANDARD_ORDERING, &s4_pia[2]);
+  pia_config(S4_PIA3, PIA_STANDARD_ORDERING, &s4_pia[3]);
+  if (core_gameData->gen & GEN_S3C)
+    sndbrd_0_init(SNDBRD_NONE, 0, NULL, NULL, NULL);
+  else
+    sndbrd_0_init(SNDBRD_S67S, 1, NULL, NULL, NULL);
   pia_reset();
-
   s4locals.vblankCount = 1;
-
-  if (coreGlobals.soundEn) s67s_init();
-  pia_reset();
-
 }
 
 static void s4_exit(void) {
-  if (coreGlobals.soundEn) s67s_exit();
-  core_exit();
+  sndbrd_0_exit(); core_exit();
 }
 
 static WRITE_HANDLER(s4_CMOS_w) { s4_CMOS[offset] = data | 0xf0; }
@@ -354,10 +326,10 @@ static WRITE_HANDLER(s4_CMOS_w) { s4_CMOS[offset] = data | 0xf0; }
 /------------------------------------*/
 static MEMORY_READ_START(s4_readmem)
   { 0x0000, 0x01ff, MRA_RAM},
-  { 0x2200, 0x2203, pia_3_r },		/*Solenoids + Sound Commands*/
-  { 0x2400, 0x2403, pia_2_r }, 		/*Lamps*/
-  { 0x2800, 0x2803, pia_0_r },		/*Display + Other*/
-  { 0x3000, 0x3003, pia_1_r },		/*Switches*/
+  { 0x2200, 0x2203, pia_r(S4_PIA3) },		/*Solenoids + Sound Commands*/
+  { 0x2400, 0x2403, pia_r(S4_PIA2) }, 		/*Lamps*/
+  { 0x2800, 0x2803, pia_r(S4_PIA0) },		/*Display + Other*/
+  { 0x3000, 0x3003, pia_r(S4_PIA1) },		/*Switches*/
   { 0x6000, 0x8000, MRA_ROM },
   { 0x8000, 0xffff, MRA_ROM },		/*Doubled ROM region since only 15 address pins used!*/
 MEMORY_END
@@ -365,23 +337,23 @@ MEMORY_END
 static MEMORY_WRITE_START(s4_writemem)
   { 0x0000, 0x00ff, MWA_RAM },
   { 0x0100, 0x01ff, s4_CMOS_w, &s4_CMOS },
-  { 0x2200, 0x2203, pia_3_w },		/*Solenoids + Sound Commands*/
-  { 0x2400, 0x2403, pia_2_w }, 		/*Lamps*/
-  { 0x2800, 0x2803, pia_0_w },		/*Display + Other*/
-  { 0x3000, 0x3003, pia_1_w },		/*Switches*/
+  { 0x2200, 0x2203, pia_w(S4_PIA3) },		/*Solenoids + Sound Commands*/
+  { 0x2400, 0x2403, pia_w(S4_PIA2) }, 		/*Lamps*/
+  { 0x2800, 0x2803, pia_w(S4_PIA0) },		/*Display + Other*/
+  { 0x3000, 0x3003, pia_w(S4_PIA1) },		/*Switches*/
   { 0x6000, 0x8000, MWA_ROM },
   { 0x8000, 0xffff, MWA_ROM },		/*Doubled ROM region since only 15 address pins used!*/
 MEMORY_END
 
 //Special System 3 Machine for games using Chimes instead of Solid State Sound Hardware
-struct MachineDriver machine_driver_s3c = {
+const struct MachineDriver machine_driver_s3c = {
   {{  CPU_M6800, 3580000/4, /* 3.58/4 = 900hz */
       s4_readmem, s4_writemem, NULL, NULL,
       s4_vblank, 1, s4_irq, S4_IRQFREQ
   }},
   S4_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50,
-  s3c_init, CORE_EXITFUNC(NULL)
+  s4_init, s4_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER, 0,
@@ -390,14 +362,14 @@ struct MachineDriver machine_driver_s3c = {
   s4_nvram
 };
 
-struct MachineDriver machine_driver_s4 = {
+const struct MachineDriver machine_driver_s4 = {
   {{  CPU_M6800, 3580000/4, /* 3.58/4 = 900hz */
       s4_readmem, s4_writemem, NULL, NULL,
       s4_vblank, 1, s4_irq, S4_IRQFREQ
   }},
   S4_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50,
-  s4_init, CORE_EXITFUNC(NULL)
+  s4_init, s4_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER, 0,
@@ -406,7 +378,7 @@ struct MachineDriver machine_driver_s4 = {
   s4_nvram
 };
 
-struct MachineDriver machine_driver_s4s= {
+const struct MachineDriver machine_driver_s4s= {
   {{ CPU_M6800, 3580000/4, /* 3.58/4 = 900hz */
      s4_readmem, s4_writemem, NULL, NULL,
      s4_vblank, 1, s4_irq, S4_IRQFREQ
@@ -414,7 +386,7 @@ struct MachineDriver machine_driver_s4s= {
   },
   S4_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50,
-  s4_init, CORE_EXITFUNC(NULL)
+  s4_init, s4_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER, 0,

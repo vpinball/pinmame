@@ -1,25 +1,9 @@
 #include "driver.h"
 #include "cpu/adsp2100/adsp2100.h"
 #include "wpc.h"
+#include "sndbrd.h"
 #include "dcs.h"
 
-/* 310101 Added dcs_speedup to do sound decompression in C */
-/* 280101 Corrected bug which caused garbled sound at regular intervals. */
-/*        (It was a stupid cut & paste bug '>=' instead of '>') */
-/*        changed handling of ROM and RAM banks (slightly faster by caching */
-/*        bank address but real reason is that the new speedup code needs the pointer */
-/* 041200 Added adsp_init to handle restarts (MAME32) */
-/* 281100 Updated to MAME 37b9 */
-/*        Removed FORCESOUNDCPU */
-/* 261100 Added a speedup hack within WPCDCSSPEEDUP */
-/*        requires additional code in ADSP2100.c */
-/* 261000 Buffer is now tranmitted in DCS_IRQSTEPS parts */
-/*        Hopefully this will correct som garbled sound */
-/*        The problem is that the ADSP uses the same buffer */
-/*        all the time and fills it in while playing */
-/*        The program waits until the transmission passes */
-/*        a certain point and then starts to fill the buffer */
-/*        with new data. */
 /*-- ADSP core functions --*/
 static void adsp_init(UINT32 *(*getBootROM)(void),
                void (*txData)(UINT16 start, UINT16 size, UINT16 memStep, int sRate));
@@ -49,6 +33,12 @@ static void dcs_custStop(void);
 static void dcs_dacUpdate(int num, INT16 *buffer, int length);
 static void dcs_txData(UINT16 start, UINT16 size, UINT16 memStep, int sRate);
 
+/*-- external interface --*/
+static READ_HANDLER(dcs_data_r);
+static WRITE_HANDLER(dcs_data_w);
+static READ_HANDLER(dcs_ctrl_r);
+static void dcs_init(struct sndbrdData *brdData);
+
 /*-- local data --*/
 #define DCS_BUFFER_SIZE	  4096
 #define DCS_BUFFER_MASK	  (DCS_BUFFER_SIZE - 1)
@@ -61,12 +51,13 @@ static struct {
 } dcs_dac;
 
 static struct {
- UINT16  ROMbank1;
- UINT16  ROMbank2;
- UINT16  RAMbank;
- UINT8  *ROMbankPtr;
- UINT16 *RAMbankPtr;
- int     replyAvail;
+  struct sndbrdData brdData;
+  UINT8  *cpuRegion;
+  UINT16  ROMbank1, ROMbank2;
+  UINT16  RAMbank;
+  UINT8  *ROMbankPtr;
+  UINT16 *RAMbankPtr;
+  int     replyAvail;
 } locals;
 
 /*--------------
@@ -117,17 +108,23 @@ MEMORY_WRITE16_START(dcs1_writemem)
   { ADSP_PGM_ADDR_RANGE (0x3000, 0x3000), dcs_latch_w },
 MEMORY_END
 
+/*----------------
+/ Sound interface
+/-----------------*/
+struct CustomSound_interface dcs_custInt = { dcs_custStart, dcs_custStop, 0 };
+
+const struct sndbrdIntf dcsIntf = { dcs_init, NULL, NULL, dcs_data_w, dcs_data_r, NULL, dcs_ctrl_r };
+
 /*---------------
 /  Bank handlers
 /----------------*/
 #define DCS1_ROMBANKBASE(bank) \
-  ((UINT8 *)(memory_region(WPC_MEMREG_SROM) + (((bank) & 0x7ff)<<12)))
+  (locals.brdData.romRegion + (((bank) & 0x7ff)<<12))
 #define DCS2_ROMBANKBASE(bankH, bankL) \
-  ((UINT8 *)(memory_region(WPC_MEMREG_SROM) + \
-             (((bankH) & 0x1c)<<18) + (((bankH) & 0x01)<<19) + (((bankL) & 0xff)<<11)))
+  (locals.brdData.romRegion + (((bankH) & 0x1c)<<18) + (((bankH) & 0x01)<<19) + (((bankL) & 0xff)<<11))
 #define DCS2_RAMBANKBASE(bank) \
   ((UINT16 *)(((bank) & 0x08) ? memory_region(WPC_MEMREG_SBANK) : \
-              (memory_region(WPC_MEMREG_SCPU) + ADSP2100_DATA_OFFSET + (0x2000<<1))))
+              (locals.cpuRegion + ADSP2100_DATA_OFFSET + (0x2000<<1))))
 
 static WRITE16_HANDLER(dcs1_ROMbankSelect1_w) {
   locals.ROMbank1 = data;
@@ -149,17 +146,14 @@ static READ16_HANDLER (dcs2_RAMbankSelect_r) {
   return locals.RAMbank;
 }
 
-static READ16_HANDLER(dcs_ROMbank_r)
-  { return locals.ROMbankPtr[offset]; }
+static READ16_HANDLER(dcs_ROMbank_r)   { return locals.ROMbankPtr[offset]; }
 
-static READ16_HANDLER(dcs2_RAMbank_r)
-  { return locals.RAMbankPtr[offset]; }
+static READ16_HANDLER(dcs2_RAMbank_r)  { return locals.RAMbankPtr[offset]; }
 
-static WRITE16_HANDLER(dcs2_RAMbank_w)
-  { locals.RAMbankPtr[offset] = data; }
+static WRITE16_HANDLER(dcs2_RAMbank_w) { locals.RAMbankPtr[offset] = data; }
 
 static UINT32 *dcs_getBootROM(void) {
-  return (UINT32 *)(memory_region(WPC_MEMREG_SROM) + ((locals.ROMbank1 & 0xff)<<12));
+  return (UINT32 *)(locals.brdData.romRegion + ((locals.ROMbank1 & 0xff)<<12));
 }
 
 /*----------------------
@@ -168,22 +162,16 @@ static UINT32 *dcs_getBootROM(void) {
 /* These should be static but the patched ADSP core requires them */
 
 /*static*/ READ16_HANDLER(dcs_latch_r) {
-  cpu_set_irq_line(WPC_SCPUNO, ADSP2105_IRQ2, CLEAR_LINE);
+  cpu_set_irq_line(locals.brdData.cpuNo, ADSP2105_IRQ2, CLEAR_LINE);
   return soundlatch_r(0);
 }
 
 /*static*/ WRITE16_HANDLER(dcs_latch_w) {
-  DBGLOG(("dcs_latch_w: %4x\n",data));
   soundlatch2_w(0, data);
   locals.replyAvail = TRUE;
+  sndbrd_data_cb(locals.brdData.boardNo, data);
 }
 
-/*----------------
-/ Sound interface
-/-----------------*/
-struct CustomSound_interface dcs_custInt = {
-  dcs_custStart, dcs_custStop, 0
-};
 
 static int dcs_custStart(const struct MachineSound *msound) {
   /*-- clear DAC data --*/
@@ -216,14 +204,6 @@ static void dcs_dacUpdate(int num, INT16 *buffer, int length) {
       buffer[ii] = dcs_dac.buffer[dcs_dac.sOut];
       dcs_dac.sOut = (dcs_dac.sOut + 1) & DCS_BUFFER_MASK;
     }
-#if 0
-    if (ii < length)
-      logerror("DCS: %d samples of %d missing \n",length-ii, length);
-    else {
-      int sampleLeft = ((dcs_dac.sIn + DCS_BUFFER_SIZE) - dcs_dac.sOut) & DCS_BUFFER_MASK;
-      logerror("Samples left = %d after %d\n",sampleLeft,length);
-    }
-#endif
     /* fill the rest with the last sample */
     for ( ; ii < length; ii++)
       buffer[ii] = dcs_dac.buffer[(dcs_dac.sOut - 1) & DCS_BUFFER_MASK];
@@ -233,21 +213,18 @@ static void dcs_dacUpdate(int num, INT16 *buffer, int length) {
 /*-------------------
 / Exported interface
 /---------------------*/
-READ_HANDLER(dcs_data_r) {
+static READ_HANDLER(dcs_data_r) {
   locals.replyAvail = FALSE;
   return soundlatch2_r(0) & 0xff;
 }
 
-WRITE_HANDLER(dcs_data_w) {
+static WRITE_HANDLER(dcs_data_w) {
   soundlatch_w(0, data);
-  cpu_set_irq_line(WPC_SCPUNO, ADSP2105_IRQ2, ASSERT_LINE);
+  cpu_set_irq_line(locals.brdData.cpuNo, ADSP2105_IRQ2, ASSERT_LINE);
 }
 
-READ_HANDLER(dcs_ctrl_r) {
+static READ_HANDLER(dcs_ctrl_r) {
   return locals.replyAvail ? 0x80 : 0x00;
-}
-
-WRITE_HANDLER(dcs_ctrl_w) {
 }
 
 /*----------------------------
@@ -262,19 +239,21 @@ WRITE_HANDLER(dcs_ctrl_w) {
 /*-- handle bug in ADSP core */
 static OPBASE_HANDLER(opbaseoveride) { return -1; }
 
-void dcs_init(void) {
-  memory_set_opbase_handler(WPC_SCPUNO, opbaseoveride);
-  /*-- initialize our structure --*/
+static void dcs_init(struct sndbrdData *brdData) {
   memset(&locals, 0, sizeof(locals));
-  locals.ROMbankPtr = (UINT8  *)memory_region(WPC_MEMREG_SROM);
+  locals.brdData = *brdData;
+  locals.cpuRegion = memory_region(REGION_CPU1+locals.brdData.cpuNo);
+  memory_set_opbase_handler(locals.brdData.cpuNo, opbaseoveride);
+  /*-- initialize our structure --*/
+  locals.ROMbankPtr = locals.brdData.romRegion;
   locals.RAMbankPtr = (UINT16 *)memory_region(WPC_MEMREG_SBANK);
 
   adsp_init(dcs_getBootROM, dcs_txData);
 
   /*-- clear all interrupts --*/
-  cpu_set_irq_line(WPC_SCPUNO, ADSP2105_IRQ0, CLEAR_LINE );
-  cpu_set_irq_line(WPC_SCPUNO, ADSP2105_IRQ1, CLEAR_LINE );
-  cpu_set_irq_line(WPC_SCPUNO, ADSP2105_IRQ2, CLEAR_LINE );
+  cpu_set_irq_line(locals.brdData.cpuNo, ADSP2105_IRQ0, CLEAR_LINE );
+  cpu_set_irq_line(locals.brdData.cpuNo, ADSP2105_IRQ1, CLEAR_LINE );
+  cpu_set_irq_line(locals.brdData.cpuNo, ADSP2105_IRQ2, CLEAR_LINE );
 
   /*-- speed up startup by disable checksum --*/
 #if 0
@@ -295,7 +274,7 @@ void dcs_init(void) {
 /*-- autobuffer SPORT transmission  --*/
 /*-- copy data to transmit into dac buffer --*/
 static void dcs_txData(UINT16 start, UINT16 size, UINT16 memStep, int sRate) {
-  UINT16 *mem = ((UINT16 *)(memory_region(WPC_MEMREG_SCPU) + ADSP2100_DATA_OFFSET)) + start;
+  UINT16 *mem = ((UINT16 *)(locals.cpuRegion + ADSP2100_DATA_OFFSET)) + start;
   int idx;
 
   stream_update(dcs_dac.stream, 0);
@@ -355,7 +334,7 @@ static void adsp_init(UINT32 *(*getBootROM)(void),
 
 static void adsp_boot(void) {
   UINT32 *src = adsp.getBootROM();
-  UINT32 *dst = (UINT32 *)(memory_region(WPC_MEMREG_SCPU) + ADSP2100_PGM_OFFSET);
+  UINT32 *dst = (UINT32 *)(locals.cpuRegion + ADSP2100_PGM_OFFSET);
   UINT32  data = src[0];
   UINT32  size;
   UINT32  ii;
@@ -386,7 +365,7 @@ static WRITE16_HANDLER(adsp_control_w) {
       if (data & 0x0200) {
         /* boot force */
         DBGLOG(("boot force\n"));
-        cpu_set_reset_line(WPC_SCPUNO, PULSE_LINE);
+        cpu_set_reset_line(locals.brdData.cpuNo, PULSE_LINE);
         adsp_boot();
         adsp.ctrlRegs[SYSCONTROL_REG] &= ~0x0200;
       }
@@ -432,19 +411,19 @@ static void adsp_irqGen(int dummy) {
     adsp_aBufData.irqCount += 1;
 #ifdef WPCDCSSPEEDUP
     /* wake up suspended cpu by simulating an interrupt trigger */
-    cpu_trigger(-2000 + WPC_SCPUNO);
+    cpu_triggerint(locals.brdData.cpuNo);
 #endif /* WPCDCSSPEEDUP */
   }
   else {
     adsp_aBufData.irqCount = 1;
     adsp_aBufData.last = 0;
-    cpu_set_irq_line(WPC_SCPUNO, ADSP2105_IRQ1, PULSE_LINE);
+    cpu_set_irq_line(locals.brdData.cpuNo, ADSP2105_IRQ1, PULSE_LINE);
   }
 
   next = (adsp_aBufData.size / adsp_aBufData.step * adsp_aBufData.irqCount /
           DCS_IRQSTEPS - 1) * adsp_aBufData.step;
 
-  cpunum_set_reg(WPC_SCPUNO, ADSP2100_I0 + adsp_aBufData.iReg,
+  cpunum_set_reg(locals.brdData.cpuNo, ADSP2100_I0 + adsp_aBufData.iReg,
                  adsp_aBufData.start + next);
 
   adsp.txData(adsp_aBufData.start + adsp_aBufData.last, (next - adsp_aBufData.last),
@@ -471,11 +450,11 @@ static void adsp_txCallback(int port, INT32 data) {
     mreg = ((adsp.ctrlRegs[S1_AUTOBUF_REG]>>7) & 3) | (ireg & 0x04);
 
     /* start = In, size = Ln, step = Mn */
-    adsp_aBufData.step  = cpu_get_reg(ADSP2100_M0 + mreg);
-    adsp_aBufData.size  = cpu_get_reg(ADSP2100_L0 + ireg);
+    adsp_aBufData.step  = activecpu_get_reg(ADSP2100_M0 + mreg);
+    adsp_aBufData.size  = activecpu_get_reg(ADSP2100_L0 + ireg);
     /*-- assume that the first sample comes from the memory position before --*/
-    adsp_aBufData.start = cpu_get_reg(ADSP2100_I0 + ireg) - adsp_aBufData.step;
-    adsp_aBufData.sRate = Machine->drv->cpu[WPC_SCPUNO].cpu_clock /
+    adsp_aBufData.start = activecpu_get_reg(ADSP2100_I0 + ireg) - adsp_aBufData.step;
+    adsp_aBufData.sRate = Machine->drv->cpu[locals.brdData.cpuNo].cpu_clock /
                           (2 * (adsp.ctrlRegs[S1_SCLKDIV_REG] + 1)) / 16;
     adsp_aBufData.iReg = ireg;
     adsp_aBufData.irqCount = adsp_aBufData.last = 0;
@@ -501,7 +480,7 @@ UINT32 dcs_speedup(UINT32 pc) {
   if (pc > 0x2000) {
     UINT32 volumeOP = *(UINT32 *)&OP_ROM[ADSP2100_PGM_OFFSET + ((pc+0x2b84-0x2b44)<<2)];
 
-    ram1source = (UINT16 *)(memory_region(WPC_MEMREG_SCPU) + ADSP2100_DATA_OFFSET + (0x1000<<1));
+    ram1source = (UINT16 *)(locals.cpuRegion + ADSP2100_DATA_OFFSET + (0x1000<<1));
     ram2source = locals.RAMbankPtr;
     volume = ram1source[((volumeOP>>4)&0x3fff)-0x1000];
     /*DBGLOG(("OP=%6x addr=%4x V=%4x\n",volumeOP,(volumeOP>>4)&0x3fff,volume));*/
@@ -509,12 +488,11 @@ UINT32 dcs_speedup(UINT32 pc) {
   else {
     UINT32 volumeOP = *(UINT32 *)&OP_ROM[ADSP2100_PGM_OFFSET + ((pc+0x2b84-0x2b44)<<2)];
 
-    ram1source = (UINT16 *)(memory_region(WPC_MEMREG_SCPU) + ADSP2100_DATA_OFFSET + (0x0700<<1));
-    ram2source = (UINT16 *)(memory_region(WPC_MEMREG_SCPU) + ADSP2100_DATA_OFFSET + (0x3800<<1));
+    ram1source = (UINT16 *)(locals.cpuRegion + ADSP2100_DATA_OFFSET + (0x0700<<1));
+    ram2source = (UINT16 *)(locals.cpuRegion + ADSP2100_DATA_OFFSET + (0x3800<<1));
     volume = ram2source[((volumeOP>>4)&0x3fff)-0x3800];
     /*DBGLOG(("OP=%6x addr=%4x V=%4x\n",volumeOP,(volumeOP>>4)&0x3fff,volume));*/
   }
-
   {
     UINT16 *i0, *i2;
 			/* 2B44     I0 = $2000 >>> (3800) <<< */
@@ -682,7 +660,7 @@ UINT32 dcs_speedup(UINT32 pc) {
       *i0++ = mr>>16;
     }
   }
-  cpu_set_reg(ADSP2100_PC, pc + 0x2b89 - 0x2b44);
+  activecpu_set_reg(ADSP2100_PC, pc + 0x2b89 - 0x2b44);
   return 0; /* execute a NOP */
 }
 

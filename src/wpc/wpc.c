@@ -2,9 +2,11 @@
 #include <time.h>
 #include "driver.h"
 #include "cpu/m6809/m6809.h"
+#include "sndbrd.h"
+#include "snd_cmd.h"
 #include "wpcsound.h"
 #include "dcs.h"
-#include "snd_cmd.h"
+#include "s11csoun.h"
 #include "sim.h"
 #include "core.h"
 #include "wpc.h"
@@ -28,8 +30,7 @@ static int wpc_irq(void);
 /*-- PIC security chip emulation --*/
 static int wpc_pic_r(void);
 static void wpc_pic_w(int data);
-static void wpc_serialCnv(char no[21], UINT8 schip[16],
-                          UINT8 code[3]);
+static void wpc_serialCnv(const char no[21], UINT8 schip[16], UINT8 code[3]);
 /*-- DMD --*/
 static int  dmd_start(void);
 static void dmd_refresh(struct mame_bitmap *bitmap, int full_refresh);
@@ -111,7 +112,7 @@ MEMORY_END
 /*-----------------
 /  Machine drivers
 /------------------*/
-struct MachineDriver machine_driver_wpcDMD = {
+const struct MachineDriver machine_driver_wpcDMD = {
   {{  CPU_M6809, 2000000, /* 2 Mhz? */
       wpc_readmem, wpc_writemem, NULL, NULL,
       wpc_vblank, WPC_VBLANKDIV,
@@ -127,7 +128,7 @@ struct MachineDriver machine_driver_wpcDMD = {
   wpc_nvram
 };
 
-struct MachineDriver machine_driver_wpcAlpha = {
+const struct MachineDriver machine_driver_wpcAlpha = {
   {{  CPU_M6809, 2000000, /* 2 Mhz? */
       wpc_readmem, wpc_writemem, NULL, NULL,
       wpc_vblank, WPC_VBLANKDIV,
@@ -143,7 +144,7 @@ struct MachineDriver machine_driver_wpcAlpha = {
   wpc_nvram
 };
 
-struct MachineDriver machine_driver_wpcDMD_s = {
+const struct MachineDriver machine_driver_wpcDMD_s = {
   {{  CPU_M6809, 2000000, /* 2 Mhz? */
       wpc_readmem, wpc_writemem, NULL, NULL,
       wpc_vblank, WPC_VBLANKDIV, wpc_irq, WPC_IRQFREQ
@@ -157,7 +158,22 @@ struct MachineDriver machine_driver_wpcDMD_s = {
   0, 0, 0, 0, { WPCS_SOUND },
   wpc_nvram
 };
-struct MachineDriver machine_driver_wpcAlpha_s = {
+const struct MachineDriver machine_driver_wpcAlpha1_s = {
+  {{  CPU_M6809, 2000000, /* 2 Mhz? */
+      wpc_readmem, wpc_writemem, NULL, NULL,
+      wpc_vblank, WPC_VBLANKDIV, wpc_irq, WPC_IRQFREQ
+  }, S11C_SOUNDCPU },
+  WPC_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  100, wpc_init, CORE_EXITFUNC(wpc_exit)
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
+  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
+  NULL, NULL, gen_refresh,
+  0, 0, 0, 0, { S11C_SOUND },
+  wpc_nvram
+};
+
+const struct MachineDriver machine_driver_wpcAlpha_s = {
   {{  CPU_M6809, 2000000, /* 2 Mhz? */
       wpc_readmem, wpc_writemem, NULL, NULL,
       wpc_vblank, WPC_VBLANKDIV, wpc_irq, WPC_IRQFREQ
@@ -172,7 +188,7 @@ struct MachineDriver machine_driver_wpcAlpha_s = {
   wpc_nvram
 };
 
-struct MachineDriver machine_driver_wpcDCS_s = {
+const struct MachineDriver machine_driver_wpcDCS_s = {
   {{  CPU_M6809, 2000000, /* 2 Mhz? */
       wpc_readmem, wpc_writemem, NULL, NULL,
       wpc_vblank, WPC_VBLANKDIV, wpc_irq, WPC_IRQFREQ
@@ -187,7 +203,7 @@ struct MachineDriver machine_driver_wpcDCS_s = {
   wpc_nvram
 };
 
-struct MachineDriver machine_driver_wpcDCS95_s = {
+const struct MachineDriver machine_driver_wpcDCS95_s = {
   {{  CPU_M6809, 2000000, /* 2 Mhz? */
       wpc_readmem, wpc_writemem, NULL, NULL,
       wpc_vblank, WPC_VBLANKDIV, wpc_irq, WPC_IRQFREQ
@@ -361,21 +377,11 @@ READ_HANDLER(wpc_r) {
     case WPC_WATCHDOG:
       break;
     case WPC_SOUNDIF:
-      if (coreGlobals.soundEn) {
-        DBGLOG(("soundif_r: (PC=%4x)\n",cpu_get_pc()));
-        return (core_gameData->gen &
-                (GEN_WPCALPHA_2 | GEN_WPCDMD | GEN_WPCFLIPTRON)) ? wpcs_data_r(0) :
-                                                                   dcs_data_r(0);
-      }
-      return 0;
+      return sndbrd_0_data_r(0);
     case WPC_SOUNDBACK:
-      if (coreGlobals.soundEn) {
-        DBGLOG(("soundback_r: (PC=%4x)\n",cpu_get_pc()));
-        return (core_gameData->gen &
-                (GEN_WPCALPHA_2 | GEN_WPCDMD | GEN_WPCFLIPTRON)) ? wpcs_ctrl_r(0) :
-                                                                   dcs_ctrl_r(0);
-      }
-      return 0;
+      if (core_gameData->gen & (GEN_WPCALPHA_2|GEN_WPCDMD|GEN_WPCFLIPTRON))
+        wpc_firq(FALSE, WPC_FIRQ_SOUND); // Ack FIRQ on read?
+      return sndbrd_0_ctrl_r(0);
     case WPC_PRINTBUSY:
       return 0;
     case DMD_VISIBLEPAGE:
@@ -477,21 +483,21 @@ WRITE_HANDLER(wpc_w) {
       coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFFFF00FF) | (data<<8);
       data |= wpc_data[offset];
       break;
-    case WPC_SOUNDIF:
-      if (coreGlobals.soundEn) {
-        //DBGLOG(("Sound cmd: %2x\n",data));
-        snd_cmd_log(data);
-        if (core_gameData->gen &
-            (GEN_WPCALPHA_2 | GEN_WPCDMD | GEN_WPCFLIPTRON)) wpcs_data_w(0,data);
-        else                                                 dcs_data_w(0,data);
-      }
+    case 0x3fd1-WPC_BASE:
+	  DBGLOG(("sdataX:%2x\n",data));
+      sndbrd_0_data_w(0,data); sndbrd_0_ctrl_w(0,0); sndbrd_0_ctrl_w(0,1);
+	  snd_cmd_log(data);
+	  break;
+	case WPC_SOUNDIF:
+	  DBGLOG(("sdata:%2x\n",data));
+      sndbrd_0_data_w(0,data); snd_cmd_log(data);
+	  if (sndbrd_0_type() == SNDBRD_S11CS) sndbrd_0_ctrl_w(0,0);
       break;
     case WPC_SOUNDBACK:
-      if (coreGlobals.soundEn) {
-        if (core_gameData->gen &
-            (GEN_WPCALPHA_2 | GEN_WPCDMD | GEN_WPCFLIPTRON)) wpcs_ctrl_w(0,data);
-        else                                                 dcs_ctrl_w(0,data);
-      }
+	  DBGLOG(("sctrl:%2x\n",data));
+	  if (sndbrd_0_type() == SNDBRD_S11CS)
+		{ sndbrd_0_data_w(0,data); sndbrd_0_ctrl_w(0,1); }
+      else sndbrd_0_ctrl_w(0,data);
       break;
     case WPC_WATCHDOG:
       break; /* Just ignore for now */
@@ -619,18 +625,12 @@ static void wpc_updSw(int *inports) {
 // i.e. 11=8,12=9,21=16
 static int wpc_sw2m(int no) { return (no/10)*8+(no%10-1); }
 static int wpc_m2sw(int col, int row) { return col*10+row+1; }
-static void wpc_sndCmd(int cmd) {
-  if (core_gameData->gen & (GEN_WPCDCS|GEN_WPCSECURITY|GEN_WPC95|GEN_WPC95DCS))
-    dcs_data_w(0,cmd);
-  else
-    wpcs_data_w(0,cmd);
-}
 
 static core_tData dcs_coreData = {
   8, /* 8 DIPs */
   wpc_updSw,
   1,
-  dcs_data_w,
+  sndbrd_0_data_w,
   "dcs",
   wpc_sw2m, wpc_sw2m,wpc_m2sw,wpc_m2sw
 };
@@ -638,10 +638,22 @@ static core_tData wpcs_coreData = {
   8, /* 8 DIPs */
   wpc_updSw,
   1,
-  wpcs_data_w,
+  sndbrd_0_data_w,
   "wpcs",
   wpc_sw2m, wpc_sw2m,wpc_m2sw,wpc_m2sw
 };
+static core_tData s11cs_coreData = {
+  8, /* 8 DIPs */
+  wpc_updSw,
+  1,
+  sndbrd_0_data_w,
+  "s11cs",
+  wpc_sw2m, wpc_sw2m,wpc_m2sw,wpc_m2sw
+};
+static WRITE_HANDLER(snd_data_cb) { // WPCS sound generates FIRQ on reply
+  wpc_firq(TRUE, WPC_FIRQ_SOUND);
+}
+
 static void wpc_init(void) {
                               /*128K  256K        512K        768K       1024K*/
   static const int romLengthMask[] = {0x07, 0x0f, 0x00, 0x1f, 0x00, 0x00, 0x00, 0x3f};
@@ -651,14 +663,31 @@ static void wpc_init(void) {
   /* Don't know why the mame32 or MacMame people doesn't complain */
   /* fake an exit */
   if (wpclocals.initDone) CORE_DOEXIT(wpc_exit);
+  memset(&wpclocals, 0, sizeof(wpclocals));
   if (core_gameData == NULL)  return;
 
-  if (core_gameData->gen & (GEN_WPCDCS|GEN_WPCSECURITY|GEN_WPC95|GEN_WPC95DCS))
-    { if (core_init(&dcs_coreData))  return; }
-  else
-    { if (core_init(&wpcs_coreData)) return; }
-
-  memset(&wpclocals, 0, sizeof(wpclocals));
+  switch (core_gameData->gen) {
+    case GEN_WPCALPHA_1:
+      if (core_init(&s11cs_coreData)) return;
+      sndbrd_0_init(SNDBRD_S11CS, WPC_SCPUNO, memory_region(WPC_MEMREG_SROM),NULL,NULL);
+      break;
+    case GEN_WPCALPHA_2:
+    case GEN_WPCDMD:
+    case GEN_WPCFLIPTRON:
+      if (core_init(&wpcs_coreData)) return;
+      sndbrd_0_init(SNDBRD_WPCS, WPC_SCPUNO, memory_region(WPC_MEMREG_SROM),snd_data_cb,NULL);
+      break;
+    case GEN_WPCDCS:
+    case GEN_WPCSECURITY:
+    case GEN_WPC95DCS:
+      if (core_init(&dcs_coreData))  return;
+      sndbrd_0_init(SNDBRD_DCS, WPC_SCPUNO, memory_region(WPC_MEMREG_SROM),NULL,NULL);
+      break;
+    case GEN_WPC95:
+      if (core_init(&dcs_coreData))  return;
+      sndbrd_0_init(SNDBRD_DCS95, WPC_SCPUNO, memory_region(WPC_MEMREG_SROM),NULL,NULL);
+      break;
+  }
   wpclocals.initDone = TRUE;
 
   wpclocals.pageMask = romLengthMask[((romLength>>17)-1)&0x07];
@@ -669,14 +698,6 @@ static void wpc_init(void) {
 
   /*-- sync counter with vblank --*/
   wpclocals.vblankCount = 1;
-
-  /*-- init sound (if present) --*/
-  if (coreGlobals.soundEn) {
-    WPC_gWPC95 = (core_gameData->gen & GEN_WPC95) > 0;
-    if (core_gameData->gen &
-        (GEN_WPCALPHA_2 | GEN_WPCFLIPTRON | GEN_WPCDMD)) wpcs_init();
-    else                                                 dcs_init();
-  }
 
   coreGlobals.swMatrix[2] |= 0x08; /* Always closed switch */
 
@@ -699,6 +720,7 @@ static void wpc_init(void) {
 }
 
 static void wpc_exit(void) {
+  sndbrd_0_exit();
   if (wpc_printfile)
     { osd_fclose(wpc_printfile); wpc_printfile = NULL; }
   core_exit();
@@ -717,7 +739,7 @@ void wpc_nvram(void *file, int write) {
 	         (core_gameData->gen & (GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS)) ? 0x3800 : 0x2000,0xff);
 }
 
-static void wpc_serialCnv(char no[21], UINT8 pic[16], UINT8 code[3]) {
+static void wpc_serialCnv(const char no[21], UINT8 pic[16], UINT8 code[3]) {
   int x;
 
   pic[10] = 0x12; /* whatever */

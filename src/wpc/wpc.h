@@ -213,8 +213,8 @@ extern WRITE_HANDLER(wpc_w);
 extern void wpc_firq(int set, int src);
 
 /*-- These are only here so the game structure can be in the game file --*/
-extern struct MachineDriver machine_driver_wpcDMD;
-extern struct MachineDriver machine_driver_wpcAlpha;
+extern const struct MachineDriver machine_driver_wpcDMD;
+extern const struct MachineDriver machine_driver_wpcAlpha;
 #define wpc_mAlpha      wpcAlpha
 #define wpc_mFliptron   wpcDMD
 #define wpc_mDMD        wpcDMD
@@ -223,10 +223,13 @@ extern struct MachineDriver machine_driver_wpcAlpha;
 #define wpc_m95DCS      wpcDMD
 #define wpc_m95         wpcDMD
 
-extern struct MachineDriver machine_driver_wpcAlpha_s;
-extern struct MachineDriver machine_driver_wpcDMD_s;
-extern struct MachineDriver machine_driver_wpcDCS_s;
-extern struct MachineDriver machine_driver_wpcDCS95_s;
+extern const struct MachineDriver machine_driver_wpcAlpha1_s;
+extern const struct MachineDriver machine_driver_wpcAlpha_s;
+extern const struct MachineDriver machine_driver_wpcDMD_s;
+extern const struct MachineDriver machine_driver_wpcDCS_s;
+extern const struct MachineDriver machine_driver_wpcDCS95_s;
+#define wpc_mAlpha1S     wpcAlpha1_s
+#define wpc_mAlpha2S     wpcAlpha_s
 #define wpc_mAlphaS      wpcAlpha_s
 #define wpc_mFliptronS   wpcDMD_s
 #define wpc_mDMDS        wpcDMD_s

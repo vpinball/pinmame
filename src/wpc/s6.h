@@ -141,13 +141,13 @@
 #define S6_ROMEND ROM_END
 
 /*-- These are only here so the game structure can be in the game file --*/
-extern struct MachineDriver machine_driver_s6;
+extern const struct MachineDriver machine_driver_s6;
 #define s6_mS6      s6
 
-extern struct MachineDriver machine_driver_s6s;
+extern const struct MachineDriver machine_driver_s6s;
 #define s6_mS6S     s6s
 /* standard 6 digit display layout */
-extern core_tLCDLayout s6_6digit_disp[],s6_7digit_disp[];
+extern const core_tLCDLayout s6_6digit_disp[],s6_7digit_disp[];
 
 #endif /* INC_S6 */
 

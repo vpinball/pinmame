@@ -4,7 +4,7 @@
 #include "s67s.h"
 #include "s7.h"
 
-core_tLCDLayout s7_dispS7[] = {
+const core_tLCDLayout s7_dispS7[] = {
   DISP_SEG_7(0,0,CORE_SEG87),DISP_SEG_7(0,1,CORE_SEG87),
   DISP_SEG_7(1,0,CORE_SEG87),DISP_SEG_7(1,1,CORE_SEG87),
   DISP_SEG_CREDIT(20,28,CORE_SEG7S),DISP_SEG_BALLS(0,8,CORE_SEG7S),{0}
@@ -94,7 +94,7 @@ CORE_GAMEDEF(solar,l2,"Solar Fire (L-2)",1981,"Williams",s7_mS7S,0)
 / Hyperball - Sys.7 - (Game #509)
 /-------------------------------*/
 //INITGAME(hypbl,FLIP_SW(FLIP_L),3)
-INITGAME(hypbl,FLIP_SWNO(0,S7_SWNO(59)),3)
+INITGAME(hypbl,FLIP_SWNO(0,59),3)
 S7_ROMSTART000x(hypbl,l4, "ic14.532",    0x8090fe71,
                           "ic17.532",    0x6f4c0c4c,
                           "ic20.532",    0xd13962e8)
@@ -146,7 +146,7 @@ CORE_GAMEDEF(wrlok,l3,"Warlok (L-3)",1982,"Williams",s7_mS7S,0)
 /*----------------------------
 / Defender - Sys.7 (Game #517)
 /----------------------------*/
-INITGAME(dfndr,FLIP_SWNO(0,S7_SWNO(59)),3)
+INITGAME(dfndr,FLIP_SWNO(0,59),3)
 S7_ROMSTART000x(dfndr,l4, "ic14.532",   0x959ec419,
                           "ic17.532",   0xbb571a17,
                           "ic20.532",   0xe99e64a2)
@@ -195,7 +195,7 @@ CORE_GAMEDEF(fpwr2,l2,"Firepower II (L-2)",1983,"Williams",s7_mS7S,0)
 / Starlight - Sys.7 (Game #530)
 /-----------------------------*/
 //INITGAME(strlt,FLIP_SW(FLIP_L),3)
-INITGAME(strlt,FLIP_SWNO(0,S7_SWNO(59)),3)
+INITGAME(strlt,FLIP_SWNO(0,59),3)
 S7_ROMSTART000x(strlt,l1,"ic14.532",   0x638e3bad,
                          "ic17.532",   0xa43d8518,
                          "ic20.532",   0xb750ddc0)
