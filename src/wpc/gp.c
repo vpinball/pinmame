@@ -98,10 +98,10 @@ static void GP_lampStrobe2(int lampadr, int lampdata) {
 }
 
 static void GP_UpdateSolenoids (int bank, int soldata) {
-  UINT64 mask = 0xffffffff << 31;
+  UINT32 mask = 0x80008000;
   UINT32 sols = 0;
   logerror("soldata = %x\n",soldata);
-  //Solenoids 1-16
+  //Solenoids 1-15, 17-31
   soldata &= 0x0f;
   if (soldata != 0x0f) {
 	sols = (1<<(soldata + (bank*16)));
@@ -316,10 +316,11 @@ PORT C WRITE
 (out) P3 : LED
 (out) P4 : Display Enable (Active Low)
 (out) P5 : NA (J7-7)
-(out) P6 : Chuck-a-luck? (J7-9) - What is this?
-(out) P7 : Flipper? (J7-8) - What does this do?
+(out) P6 : Chuck-a-luck (J7-9) - What is this? (mapped as solenoid #32 now);
+(out) P7 : Flipper enable (J7-8) - Mapped as solenoid #16
 */
 static WRITE_HANDLER(ppi0_pc_w) {
+	int sol16, sol32;
 	int col = data & 0x07;			//Display column in bits 0-2
 	locals.diagnosticLed = (data>>3)&1;
 	//Display Enabled only when this value is 0
@@ -331,6 +332,10 @@ static WRITE_HANDLER(ppi0_pc_w) {
 	logerror("disp_enable = %x\n",locals.disp_enable);
 	logerror("col: %x \n",col);
 	logerror("PC_W: %x\n",data);
+	sol16 = (data>>7)&1;
+	sol32 = (data>>6)&1;
+	if (sol16) locals.solenoids |= 0x8000; else locals.solenoids &= ~0x8000;
+	if (sol32) locals.solenoids |= 0x80000000; else locals.solenoids &= ~0x80000000;
 }
 
 /*
@@ -382,8 +387,8 @@ Port C:
 (out) P3 : LED
 (out) P4 : Display Enable (Active Low)
 (out) P5 : NA (J7-7)
-(out) P6 : Chuck-a-luck? (J7-9)
-(out) P7 : Flipper? (J7-8)
+(out) P6 : Chuck-a-luck (J7-9)
+(out) P7 : Flipper enable (J7-8)
 */
 static ppi8255_interface ppi8255_intf =
 {
