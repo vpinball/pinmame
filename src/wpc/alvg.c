@@ -10,7 +10,7 @@
 	I/O: 2 x 6522 VIA, 3 X 8255
 
   SOUND BOARD:
-	CPU: 68B09 @ 2 Mhz?
+	CPU: 68B09 @ 1 Mhz? (Sound best @ 1Mhz)
 	I/O: buffers
 	SND: BSMT2000 @ 24Mhz
 
@@ -418,24 +418,6 @@ static SWITCH_UPDATE(alvg) {
   alvglocals.swEnter = (core_getSw(ALVG_SWENTER)>0?1:0);
   alvglocals.swVolUp = (core_getSw(ALVG_SWVOLUP)>0?1:0);
   alvglocals.swVolDn = (core_getSw(ALVG_SWVOLDN)>0?1:0);
-
-#if 1
-  //handle my own fake sound command mode
-
-  if ((keyboard_pressed_memory_repeat(KEYCODE_SPACE, 200))) {
-    alvg_sndCmd_w(0,sndcmd);
-  }
-  if ((keyboard_pressed_memory_repeat(KEYCODE_S, 200))) {
-    alvg_sndCmd_w(0,--sndcmd);
-  }
-  if ((keyboard_pressed_memory_repeat(KEYCODE_A, 200))) {
-    alvg_sndCmd_w(0,++sndcmd);
-  }
-  if ((keyboard_pressed_memory_repeat(KEYCODE_D, 75))) {
-    alvg_sndCmd_w(0,0);
-  }
-#endif 
-
 }
 
 WRITE_HANDLER(alvg_sndCmd_w)

@@ -69,10 +69,10 @@ static MEMORY_WRITE_START(alvgs_writemem)
 MEMORY_END
 
 MACHINE_DRIVER_START(alvgs)
-  MDRV_CPU_ADD(M6809, 2000000)
+  MDRV_CPU_ADD(M6809, 1000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(alvgs_readmem, alvgs_writemem)
-  MDRV_CPU_PERIODIC_INT(alvgs_firq, 2000000/2048) /*Not sure what the freq is.. based on a jumper setting */
+  MDRV_CPU_PERIODIC_INT(alvgs_firq, 1000000/2048) /*Not sure what the freq is.. based on a jumper setting */
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD_TAG("bsmt", BSMT2000, alvgs_bsmt2000Int)
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
