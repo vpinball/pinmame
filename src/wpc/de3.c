@@ -792,7 +792,7 @@ struct MachineDriver machine_driver_DE_DMD2S1 = {
   VIDEO_TYPE_RASTER,
   0,
   NULL, NULL, de_dmd128x32_refresh,
-  0,0,0,0, {DES_SOUND},
+  SOUND_SUPPORTS_STEREO,0,0,0, {DES_SOUND},
   de_nvram
 };
 
@@ -820,7 +820,7 @@ struct MachineDriver machine_driver_DE_DMD3S1 = {
   VIDEO_TYPE_RASTER,
   0,
   NULL, NULL, de_dmd192x64_refresh,
-  0,0,0,0, {DES_SOUND},
+  SOUND_SUPPORTS_STEREO,0,0,0, {DES_SOUND},
   de_nvram
 };
 
