@@ -770,13 +770,17 @@ static void tms320av120_data_write(struct TMS320AV120Chip *chip, data8_t data)
 void TMS320AV120_set_mute(int chipnum, int state)
 {
 	tms320av120[chipnum].mute = state;
+	//printf("TMS320AV120 #%d mute line set to %d!\n",chipnum,state);
 }
 
 /**********************************************************************************************
-     TMS320AV120_reset -- Resets the chip
+     //TMS320AV120_reset -- Resets the chip
+	TMS320AV120_set_reset -- set/clear reset pin
 ***********************************************************************************************/
-void TMS320AV120_reset(int chipnum)
+//void TMS320AV120_reset(int chipnum)
+void TMS320AV120_set_reset(int chipnum, int state)
 {
+	//printf("TMS320AV120 #%d reset line set to %d!\n",chipnum,state);
 	//Todo: put reset code here..
 }
 
