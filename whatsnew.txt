@@ -18,8 +18,9 @@ New Features
 - Simulator for Black Knight
   [Martin Adrian]
 
-- Alvin G. and Co. emulation including sound (No DMD Support yet)
+- Alvin G. and Co. emulation including sound and dmd (still quite a few issues to fix)
   (Big thanks to Joep for the manual and help in checking on his real machine)
+- Intel 8051 CPU Core emulation (required for Alvin G DMD)
   [Steve Ellenoff]
 
 Version 1.21 (March 31, 2002)
