@@ -818,11 +818,26 @@ static void check_inputs(void)
 //============================================================
 //	throttle_speed
 //============================================================
+#ifdef VPINMAME
+extern HANDLE g_hEnterThrottle;
+extern int    g_iSyncFactor;
+int           iCurrentSyncValue = 512;
+#endif
 
 static void throttle_speed(void)
 {
 	static double ticks_per_sleep_msec = 0;
 	TICKER target, curr;
+
+#ifdef VPINMAME
+	if ( (g_hEnterThrottle!=INVALID_HANDLE_VALUE) && g_iSyncFactor ) {
+		iCurrentSyncValue += g_iSyncFactor;
+		if ( iCurrentSyncValue>=1024 ) {
+			SetEvent(g_hEnterThrottle);
+			iCurrentSyncValue -= 1024;
+		}
+	}
+#endif
 
 	// if we're only syncing to the refresh, bail now
 	if (win_sync_refresh)
