@@ -291,21 +291,96 @@ CORE_CLONEDEF(sprk,090,103,"South Park (0.90)",1999,"Sega",de_mSES1,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / Harley Davidson
 /-------------------------------------------------------------------*/
-INITGAME(harley,GEN_WS,se_dmd128x32,0)
-SE128_ROMSTART(harley,"harcpu.103",CRC(2a812c75) SHA1(46e1f18e1c9992ca1823f7818b6d51c001f5a934))
-DE_DMD32ROM8x(   "hddsp.100",CRC(bdeac0fd) SHA1(5aa1392a13f3c632b660ea6cb3dee23327404d80))
-DE2S_SOUNDROM18884("hdsnd.u7" ,CRC(b9accb75) SHA1(9575f1c372ec5603322255778fc003047acc8b01),
-                  "hdvc1.u17",CRC(0265fe72) SHA1(7bd7b321bfa2a5092cdf273dfaf4ccdb043c06e8),
-                  "hdvc2.u21",CRC(89230898) SHA1(42d225e33ac1d679415e9dbf659591b7c4109740),
-                  "hdvc3.u36",CRC(41239811) SHA1(94fceff4dbefd3467ecb8b19e4b8baf24ddd68a3),
+#define HARLEY_SOUND \
+DE2S_SOUNDROM18884("hdsnd.u7",CRC(b9accb75) SHA1(9575f1c372ec5603322255778fc003047acc8b01), \
+                  "hdvc1.u17",CRC(0265fe72) SHA1(7bd7b321bfa2a5092cdf273dfaf4ccdb043c06e8), \
+                  "hdvc2.u21",CRC(89230898) SHA1(42d225e33ac1d679415e9dbf659591b7c4109740), \
+                  "hdvc3.u36",CRC(41239811) SHA1(94fceff4dbefd3467ecb8b19e4b8baf24ddd68a3), \
                   "hdvc4.u37",CRC(a1bc39f6) SHA1(25af40cb3d8f774e1e37cbef9166e41753440460))
-SE_ROMEND
-#define input_ports_harley input_ports_se
-CORE_GAMEDEFNV(harley,"Harley Davidson",1999,"Sega",de_mSES1,GAME_NOCRC)
+#define input_ports_harl input_ports_se
 
+INITGAME(harl,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(harl_a13,"harcpu.103",CRC(2a812c75) SHA1(46e1f18e1c9992ca1823f7818b6d51c001f5a934))
+DE_DMD32ROM8x("hddispa.104",CRC(fc7c2924) SHA1(172fceb4d3221608f48a4abe4c4c5f3043834957)) HARLEY_SOUND
+SE_ROMEND
+CORE_GAMEDEF(harl,a13,"Harley Davidson (1.03)",1999,"Sega",de_mSES1,GAME_NOCRC)
+
+SE128_ROMSTART(harl_a10,"harcpu.103",CRC(2a812c75) SHA1(46e1f18e1c9992ca1823f7818b6d51c001f5a934))
+DE_DMD32ROM8x("hddispa.100",CRC(bdeac0fd) SHA1(5aa1392a13f3c632b660ea6cb3dee23327404d80)) HARLEY_SOUND
+SE_ROMEND
+CORE_CLONEDEF(harl,a10,a13,"Harley Davidson (1.03, Display rev. 1.00)",1999,"Sega",de_mSES1,GAME_NOCRC)
+
+SE128_ROMSTART(harl_f13,"harcpu.103",CRC(2a812c75) SHA1(46e1f18e1c9992ca1823f7818b6d51c001f5a934))
+DE_DMD32ROM8x("hddispf.104",CRC(5f80436e) SHA1(e89e561807670118c3d9e623d4aec2321c774576)) HARLEY_SOUND
+SE_ROMEND
+CORE_CLONEDEF(harl,f13,a13,"Harley Davidson (1.03, France)",1999,"Sega",de_mSES1,GAME_NOCRC)
+
+SE128_ROMSTART(harl_g13,"harcpu.103",CRC(2a812c75) SHA1(46e1f18e1c9992ca1823f7818b6d51c001f5a934))
+DE_DMD32ROM8x("hddispg.104",CRC(c7f197a0) SHA1(3b7f0699c08d387c67ff6cd185360e60fcd21b9e)) HARLEY_SOUND
+SE_ROMEND
+CORE_CLONEDEF(harl,g13,a13,"Harley Davidson (1.03, Germany)",1999,"Sega",de_mSES1,GAME_NOCRC)
+
+SE128_ROMSTART(harl_i13,"harcpu.103",CRC(2a812c75) SHA1(46e1f18e1c9992ca1823f7818b6d51c001f5a934))
+DE_DMD32ROM8x("hddispi.104",CRC(387a5aad) SHA1(a0eb99b240f6044db05668c4504e908aee205220)) HARLEY_SOUND
+SE_ROMEND
+CORE_CLONEDEF(harl,i13,a13,"Harley Davidson (1.03, Italy)",1999,"Sega",de_mSES1,GAME_NOCRC)
+
+SE128_ROMSTART(harl_l13,"harcpu.103",CRC(2a812c75) SHA1(46e1f18e1c9992ca1823f7818b6d51c001f5a934))
+DE_DMD32ROM8x("hddisps.104",CRC(2d26514a) SHA1(f15b22cad6329f29cd5cccfb91a2ba7ca2cd6d59)) HARLEY_SOUND
+SE_ROMEND
+CORE_CLONEDEF(harl,l13,a13,"Harley Davidson (1.03, Spain)",1999,"Sega",de_mSES1,GAME_NOCRC)
 
 /********************* STERN GAMES  **********************/
 
+SE128_ROMSTART(harl_a30,"harcpu.300",CRC(c4ba9df5) SHA1(6bdcd555db946e396b630953db1ba50677177137))
+DE_DMD32ROM8x("hddispa.300",CRC(61b274f8) SHA1(954e4b3527cefcb24376de9f6f7e5f9192ab3304)) HARLEY_SOUND
+SE_ROMEND
+CORE_GAMEDEF(harl,a30,"Harley Davidson (3.00)",2004,"Stern",de_mSES1,GAME_NOCRC)
+
+SE128_ROMSTART(harl_f30,"harcpu.300",CRC(c4ba9df5) SHA1(6bdcd555db946e396b630953db1ba50677177137))
+DE_DMD32ROM8x("hddispf.300",CRC(106f7f1f) SHA1(92a8ab7d834439a2211208e0812cdb1199acb21d)) HARLEY_SOUND
+SE_ROMEND
+CORE_CLONEDEF(harl,f30,a30,"Harley Davidson (3.00, France)",2004,"Stern",de_mSES1,GAME_NOCRC)
+
+SE128_ROMSTART(harl_g30,"harcpu.300",CRC(c4ba9df5) SHA1(6bdcd555db946e396b630953db1ba50677177137))
+DE_DMD32ROM8x("hddispg.300",CRC(8f7da748) SHA1(fee1534b76769517d4e6dbed373583e573fb95b6)) HARLEY_SOUND
+SE_ROMEND
+CORE_CLONEDEF(harl,g30,a30,"Harley Davidson (3.00, Germany)",2004,"Stern",de_mSES1,GAME_NOCRC)
+
+SE128_ROMSTART(harl_i30,"harcpu.300",CRC(c4ba9df5) SHA1(6bdcd555db946e396b630953db1ba50677177137))
+DE_DMD32ROM8x("hddispi.300",CRC(686d3cf6) SHA1(fb27e2e4b39abb56deb1e66f012d151126971474)) HARLEY_SOUND
+SE_ROMEND
+CORE_CLONEDEF(harl,i30,a30,"Harley Davidson (3.00, Italy)",2004,"Stern",de_mSES1,GAME_NOCRC)
+
+SE128_ROMSTART(harl_l30,"harcpu.300",CRC(c4ba9df5) SHA1(6bdcd555db946e396b630953db1ba50677177137))
+DE_DMD32ROM8x("hddispl.300",CRC(4cc7251b) SHA1(7660fca37ac9fb442a059ddbafc2fa13f94dfae1)) HARLEY_SOUND
+SE_ROMEND
+CORE_CLONEDEF(harl,l30,a30,"Harley Davidson (3.00, Spain)",2004,"Stern",de_mSES1,GAME_NOCRC)
+
+SE128_ROMSTART(harl_a18,"harcpu.108",CRC(a8e24328) SHA1(cc32d97521f706e3d8ddcf4117ec0c0e7424a378))
+DE_DMD32ROM8x("hddispa.105",CRC(401a7b9f) SHA1(37e99a42738c1147c073585391772ecc55c9a759)) HARLEY_SOUND
+SE_ROMEND
+CORE_CLONEDEF(harl,a18,a30,"Harley Davidson (1.08)",2003,"Stern",de_mSES1,GAME_NOCRC)
+
+SE128_ROMSTART(harl_f18,"harcpu.108",CRC(a8e24328) SHA1(cc32d97521f706e3d8ddcf4117ec0c0e7424a378))
+DE_DMD32ROM8x("hddispf.105",CRC(31c77078) SHA1(8a0e2dbb698da77dffa1ab01df0f360fecf6c4c7)) HARLEY_SOUND
+SE_ROMEND
+CORE_CLONEDEF(harl,f18,a30,"Harley Davidson (1.08, France)",2003,"Stern",de_mSES1,GAME_NOCRC)
+
+SE128_ROMSTART(harl_g18,"harcpu.108",CRC(a8e24328) SHA1(cc32d97521f706e3d8ddcf4117ec0c0e7424a378))
+DE_DMD32ROM8x("hddispg.105",CRC(aed5a82f) SHA1(4c44b052a9b1fa702ff49c9b2fb7cf48173459d2)) HARLEY_SOUND
+SE_ROMEND
+CORE_CLONEDEF(harl,g18,a30,"Harley Davidson (1.08, Germany)",2003,"Stern",de_mSES1,GAME_NOCRC)
+
+SE128_ROMSTART(harl_i18,"harcpu.108",CRC(a8e24328) SHA1(cc32d97521f706e3d8ddcf4117ec0c0e7424a378))
+DE_DMD32ROM8x("hddispi.105",CRC(49c53391) SHA1(98f88eb8a49bbc59f78996d713c72ec495ba806f)) HARLEY_SOUND
+SE_ROMEND
+CORE_CLONEDEF(harl,i18,a30,"Harley Davidson (1.08, Italy)",2003,"Stern",de_mSES1,GAME_NOCRC)
+
+SE128_ROMSTART(harl_l18,"harcpu.108",CRC(a8e24328) SHA1(cc32d97521f706e3d8ddcf4117ec0c0e7424a378))
+DE_DMD32ROM8x("hddisps.105",CRC(6d6f2a7c) SHA1(1609c69a1584398c3504bb5a0c46f878e8dd547c)) HARLEY_SOUND
+SE_ROMEND
+CORE_CLONEDEF(harl,l18,a30,"Harley Davidson (1.08, Spain)",2003,"Stern",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Striker Extreme (USA)
@@ -965,7 +1040,7 @@ SE_ROMEND
 CORE_CLONEDEFNV(lotr_it,lotr,"Lord Of The Rings, The (Italy)",2003,"Stern",de_mSES3,GAME_NO_SOUND|GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ Ripley's Believe It or Not! (3.00)
+/ Ripley's Believe It or Not! (3.02)
 /-------------------------------------------------------------------*/
 static struct core_dispLayout dispBION[] = {
   DISP_SEG_IMPORT(se_dmd128x32),
@@ -974,23 +1049,23 @@ static struct core_dispLayout dispBION[] = {
   {34,26, 7, 5, CORE_DMD, (void *)seminidmd1c_update}, {0}
 };
 INITGAME(ripleys,GEN_WS,dispBION,SE_MINIDMD)
-SE128_ROMSTART(ripleys, "ripcpu.300",CRC(8c4bf2a9) SHA1(260dd5a99a36de541b5f852047ae4166afc621cc))
+SE128_ROMSTART(ripleys, "ripcpu.302",CRC(ee79d9eb) SHA1(79b45ceac00ebd414a9fb1d97c05252d9f953872))
 DE_DMD32ROM8x(        "ripdispa.300",CRC(016907c9) SHA1(d37f1ca5ebe089fca879339cdaffc3fabf09c15c))
-DE3S_SOUNDROM18888(      "ripsnd.u7",CRC(e5c7edea) SHA1(c0075fb35c746afe54808d4901ddb61ba396f36d),
+DE3S_SOUNDROM18888(      "ripsnd.u7",CRC(4573a759) SHA1(189c1a2eaf9d92c40a1bc145f59ac428c74a7318),
                         "ripsnd.u17",CRC(d518f2da) SHA1(e7d75c6b7b45571ae6d39ed7405b1457e475b52a),
                         "ripsnd.u21",CRC(3d8680d7) SHA1(1368965106094d78be6540eb87a478f853ba774f),
                         "ripsnd.u36",CRC(b697b5cb) SHA1(b5cb426201287a6d1c40db8c81a58e2c656d1d81),
                         "ripsnd.u37",CRC(01b9f20e) SHA1(cffb6a0136d7d17ab4450b3bfd97632d8b669d39))
 SE_ROMEND
 #define input_ports_ripleys input_ports_se
-CORE_GAMEDEFNV(ripleys,"Ripley's Believe It or Not! (3.00)",2004,"Stern",de_mSES3,GAME_NO_SOUND|GAME_NOCRC)
+CORE_GAMEDEFNV(ripleys,"Ripley's Believe It or Not! (3.02)",2004,"Stern",de_mSES3,GAME_NO_SOUND|GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Ripley's Believe It or Not! (France)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(ripleysf,"ripcpu.300",CRC(8c4bf2a9) SHA1(260dd5a99a36de541b5f852047ae4166afc621cc))
-DE_DMD32ROM8x(        "ripdispf.300",CRC(b9901941) SHA1(653997ff5d63e7ee0270db08cad952ac8293a8cd))
-DE3S_SOUNDROM18888(     "ripsndf.u7",CRC(00fc94de) SHA1(207ceea5ccd39a99c5b5ed1f945dce3f1fc076d7),
+SE128_ROMSTART(ripleysf,"ripcpu.302",CRC(ee79d9eb) SHA1(79b45ceac00ebd414a9fb1d97c05252d9f953872))
+DE_DMD32ROM8x(        "ripdispf.301",CRC(e5ae9d99) SHA1(74929b324b457d08a925c641430e6a7036c7039d))
+DE3S_SOUNDROM18888(     "ripsndf.u7",CRC(5808e3fc) SHA1(0c83399e8dc846607c469b7dd95878f3c2b9cb82),
                        "ripsndf.u17",CRC(a6793b85) SHA1(96058777346be6e9ea7b1340d9aaf945ac3c853a),
                        "ripsndf.u21",CRC(60c02170) SHA1(900d9de3ccb541019e5f1528e01c57ad96dac262),
                        "ripsndf.u36",CRC(0a57f2fd) SHA1(9dd057888294ee8abeb582e8f6650fd6e32cc9ff),
@@ -1003,9 +1078,9 @@ CORE_CLONEDEFNV(ripleysf,ripleys,"Ripley's Believe It or Not! (France)",2004,"St
 /*-------------------------------------------------------------------
 / Ripley's Believe It or Not! (Germany)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(ripleysg,"ripcpu.300",CRC(8c4bf2a9) SHA1(260dd5a99a36de541b5f852047ae4166afc621cc))
+SE128_ROMSTART(ripleysg,"ripcpu.302",CRC(ee79d9eb) SHA1(79b45ceac00ebd414a9fb1d97c05252d9f953872))
 DE_DMD32ROM8x(        "ripdispg.300",CRC(1a75883b) SHA1(0ef2f4af72e435e5be9d3d8a6b69c66ae18271a1))
-DE3S_SOUNDROM18888(     "ripsndg.u7",CRC(ff7b6b55) SHA1(e2e0e1f6cfae0fbcb5151bf2cb17fbb52f2d9f23),
+DE3S_SOUNDROM18888(     "ripsndg.u7",CRC(400b8a45) SHA1(62101995e632264df3c014b746cc4b2ae72676d4),
                        "ripsndg.u17",CRC(c387dcf0) SHA1(d4ef65d3f33ab82b63bf2782f335858ab4ad210a),
                        "ripsndg.u21",CRC(6388ae8d) SHA1(a39c7977194daabf3f5b10d0269dcd4118a939bc),
                        "ripsndg.u36",CRC(3143f9d3) SHA1(bd4ce64b245b5fcb9b9694bd8f71a9cd98303cae),
@@ -1018,9 +1093,9 @@ CORE_CLONEDEFNV(ripleysg,ripleys,"Ripley's Believe It or Not! (Germany)",2004,"S
 /*-------------------------------------------------------------------
 / Ripley's Believe It or Not! (Italy)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(ripleysi,"ripcpu.300",CRC(8c4bf2a9) SHA1(260dd5a99a36de541b5f852047ae4166afc621cc))
+SE128_ROMSTART(ripleysi,"ripcpu.302",CRC(ee79d9eb) SHA1(79b45ceac00ebd414a9fb1d97c05252d9f953872))
 DE_DMD32ROM8x(        "ripdispi.300",CRC(c3541c04) SHA1(26256e8dee77bcfa96326d2e3f67b6fd3696c0c7))
-DE3S_SOUNDROM18888(     "ripsndi.u7",CRC(b966a2c1) SHA1(1aa83dc5b87fc16fc4281f577e61eb2661cfad09),
+DE3S_SOUNDROM18888(     "ripsndi.u7",CRC(86b1b2b2) SHA1(9e2cf7368b31531998d546a1be2af274a9cbbd2f),
                        "ripsndi.u17",CRC(a2911df4) SHA1(acb7956a6a30142c8da905b04778a074cb335807),
                        "ripsndi.u21",CRC(1467eaff) SHA1(c6c4ea2abdad4334efbe3a084693e9e4d0dd0fd2),
                        "ripsndi.u36",CRC(6a124fa6) SHA1(752c3d227b9a98dd859e4778ddd527edaa3cf512),
@@ -1033,9 +1108,9 @@ CORE_CLONEDEFNV(ripleysi,ripleys,"Ripley's Believe It or Not! (Italy)",2004,"Ste
 /*-------------------------------------------------------------------
 / Ripley's Believe It or Not! (Spain)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(ripleysl,"ripcpu.300",CRC(8c4bf2a9) SHA1(260dd5a99a36de541b5f852047ae4166afc621cc))
-DE_DMD32ROM8x(        "ripdispl.300",CRC(d2f496bb) SHA1(48622e25171030b83d8d1736735e97a13c5f47c6))
-DE3S_SOUNDROM18888(     "ripsndl.u7",CRC(66bfcb7c) SHA1(8bdfaf01f367de8ccf15da59000ecff5268e0a4f),
+SE128_ROMSTART(ripleysl,"ripcpu.302",CRC(ee79d9eb) SHA1(79b45ceac00ebd414a9fb1d97c05252d9f953872))
+DE_DMD32ROM8x(        "ripdispl.301",CRC(47c87ad4) SHA1(eb372b9f17b28d0781c49a28cb850916ccec323d))
+DE3S_SOUNDROM18888(     "ripsndl.u7",CRC(25fb729a) SHA1(46b9ca8fd5fb5a692adbdb7495af34a1db89dc37),
                        "ripsndl.u17",CRC(a98f4514) SHA1(e87ee8f5a87a8ae9ec996473bf9bc745105ea334),
                        "ripsndl.u21",CRC(141f2b77) SHA1(15bab623beda8ae7ed9908f492ff2baab0a7954e),
                        "ripsndl.u36",CRC(c5461b63) SHA1(fc574d44ad88ce1db590ea371225092c03fc6f80),
