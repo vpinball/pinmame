@@ -68,26 +68,29 @@ public:
 			*pCeltFetched = 0;
 
 		int i = 0;
+
 		while ( m_lCurrent<m_lMax && celt ) {
 			CComVariant varCelt(m_lCurrent++);
-			rgVar[i].vt = VT_EMPTY;
+			VariantInit(&rgVar[i]);
 
 			IGame* pGame;
-
 			hr = m_pGames->get_Item(&varCelt, &pGame);
 			if ( FAILED(hr) )
 				return hr;
 
 			rgVar[i].vt = VT_DISPATCH;
+			rgVar[i].ppdispVal = new IDispatch*;
 			hr = pGame->QueryInterface(IID_IDispatch, (void**) &rgVar[i].pdispVal);
-			if ( FAILED(hr) ) {
-				pGame->Release();
+			pGame->Release();
+			
+			if ( FAILED(hr) ) 
 				return hr;
-			}
 
 			celt--;
 			if ( pCeltFetched )
 				(*pCeltFetched)++;
+
+			i++;
 		}
 
 		return celt ? S_FALSE : S_OK;

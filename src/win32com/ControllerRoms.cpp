@@ -71,24 +71,25 @@ public:
 		int i = 0;
 		while ( m_lCurrent<m_lMax && celt ) {
 			CComVariant varCelt(m_lCurrent++);
-			rgVar[i].vt = VT_EMPTY;
+			VariantInit(&rgVar[i]);
 
 			IRom* pRom;
-
 			hr = m_pRoms->get_Item(&varCelt, &pRom);
 			if ( FAILED(hr) )
 				return hr;
 
 			rgVar[i].vt = VT_DISPATCH;
 			hr = pRom->QueryInterface(IID_IDispatch, (void**) &rgVar[i].pdispVal);
-			if ( FAILED(hr) ) {
-				pRom->Release();
+			pRom->Release();
+
+			if ( FAILED(hr) ) 
 				return hr;
-			}
 
 			celt--;
 			if ( pCeltFetched )
 				(*pCeltFetched)++;
+
+			i++;
 		}
 
 		return celt ? S_FALSE : S_OK;
