@@ -904,7 +904,8 @@ DRIVER(jy,12)           //WPC-552:  12/96 W Junk Yard (1.2)
 DRIVER(jy,11)           //WPC-552:  12/96 W Junk Yard (1.1)
 DRIVER(nbaf,31)         //WPC-553:  03/97 B NBA Fastbreak
 DRIVER(nbaf,31a)
-DRIVER(mm,10)           //WPC-559:  06/97 W Medieval Madness
+DRIVER(mm,10)           //WPC-559:  06/97 W Medieval Madness (1.00)
+DRIVER(mm,050)          //WPC-559:  06/97 W Medieval Madness (0.50)
 DRIVER(mm,109)                            // Home version
 DRIVER(cv,14)           //WPC-562:  10/97 B Cirqus Voltaire (1.4)
 DRIVER(cv,10)           //WPC-562:  10/97 B Cirqus Voltaire (1.0)
