@@ -141,7 +141,10 @@ endif
 LIBS = -lz
 
 OBJDIRS = obj $(OBJ) $(OBJ)/cpu $(OBJ)/sound $(OBJ)/$(MAMEOS) \
-	$(OBJ)/drivers $(OBJ)/machine $(OBJ)/vidhrdw $(OBJ)/sndhrdw
+	$(OBJ)/machine $(OBJ)/vidhrdw
+ifneq ($(TARGET),pinmame)
+OBJDIRS += $(OBJ)/drivers $(OBJ)/sndhrdw
+endif
 ifdef MESS
 OBJDIRS += $(OBJ)/mess $(OBJ)/mess/systems $(OBJ)/mess/machine \
 	$(OBJ)/mess/vidhrdw $(OBJ)/mess/sndhrdw $(OBJ)/mess/tools
