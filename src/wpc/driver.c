@@ -38,6 +38,9 @@ DRIVERNV(hercules)      //Hercules (May 1979)
                         //Neutron Star (Prototype, 1981)
                         //4x4 (Prototype, 1983)
 
+// LTD System III games
+DRIVERNV(bhol_ltd)      //Black Hole
+
 // MIDWAY GAMES
 DRIVERNV(flicker )      //Flicker (Prototype, September 1974)
 DRIVERNV(rotation)      //Rotation VIII (September 1978)
@@ -143,18 +146,18 @@ DRIVERNV(stest   )      //??/?? Speed Test
                         //??/?? Voley Ball
                         //??/?? Hot Ball (B Eight Ball, 01/77)
                         //??/?? Vegas / Lady Luck (B Mata Hari, 09/77)
-                        //??/?? Oba Oba (B Playboy, 10/77)
+DRIVERNV(obaoba  )      //??/?? Oba Oba (B Playboy, 10/77)
                         //??/?? Sultan (G Sinbad, 05/78)
                         //??/?? Shock (W Flash, 01/79)
 DRIVERNV(meteort )      //??/?? Meteor (S Meteor, 09/79)
 DRIVERNV(drakor  )      //??/?? Drakor (W Gorgar, 11/79)
 DRIVERNV(zarza   )      //??/?? Zarza (B Xenon, 11/79)
 DRIVERNV(cosmic  )      //??/?? Cosmic (S Galaxy, 01/80)
-                        //??/?? Fire Action (W Firepower, 02/80)
+DRIVERNV(fireact )      //??/?? Fire Action (W Firepower, 02/80)
 DRIVERNV(vortex  )      //??/?? Vortex (W Blackout, 06/80)
-                        //??/?? Sure Shot (B Eight Ball Deluxe, 09/80)
+DRIVERNV(sureshot)      //??/?? Sure Shot (B Eight Ball Deluxe, 09/80)
 DRIVERNV(hawkman )		//??/?? Hawkman (B Fathom, 12/80)
-                        //??/81 Cavaleiro Negro (W Black Knight, 11/80)
+DRIVERNV(cavnegro)      //??/81 Cavaleiro Negro (W Black Knight, 11/80)
 DRIVERNV(gemini  )      //??/?? Gemini 2000 (B Centaur, 02/81)
 DRIVERNV(titan   )      //??/?? Titan (W Barracora, 09/81)
 DRIVERNV(sharkt  )      //??/82 Shark

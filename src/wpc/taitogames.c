@@ -31,6 +31,34 @@ static core_tGameData name##GameData = {0,dispTaito,{FLIP_SW(FLIP_L),0,0,0,sb,0}
 static void init_##name(void) { core_gameData = &name##GameData; }
 
 /*--------------------------------
+/ Oba-Oba
+/-------------------------------*/
+INITGAME(obaoba,SNDBRD_TAITO_SINTEVOX)
+TAITO_ROMSTART22_2(obaoba,"ob1.bin",CRC(85cddf4f),
+                          "ob2.bin",CRC(7a110b82),
+                          "ob3.bin",CRC(8f32a7c0))
+TAITO_SOUNDROMS22("ob_s1.bin", CRC(812a362b),
+                  "ob_s2.bin", CRC(f7dbb715))
+TAITO_ROMEND
+#define input_ports_obaoba input_ports_taito
+CORE_GAMEDEFNV(obaoba,"Oba-Oba",1980,"Taito",taito_sintevox,GAME_NOT_WORKING)
+
+/*--------------------------------
+/ Drakor
+/-------------------------------*/
+INITGAME(drakor,SNDBRD_TAITO_SINTEVOX)
+// roms are reversed!
+TAITO_ROMSTART22_2(drakor,"drakor3.bin",CRC(7ecf377b),
+                          "drakor2.bin",CRC(91dbb199),
+                          "drakor1.bin",CRC(b0ba866e))
+// NOT AVAILABLE
+TAITO_SOUNDROMS22("drakors1.bin", NO_DUMP,
+                  "drakors2.bin", NO_DUMP)
+TAITO_ROMEND
+#define input_ports_drakor input_ports_taito
+CORE_GAMEDEFNV(drakor,"Drakor",1980,"Taito",taito_sintevox,GAME_NOT_WORKING)
+
+/*--------------------------------
 / Meteor
 /-------------------------------*/
 INITGAME(meteort,SNDBRD_TAITO_SINTEVOX)
@@ -40,7 +68,51 @@ TAITO_ROMSTART22_2(meteort,"meteor1.bin",CRC(301a9f94),
 TAITO_SOUNDROMS2("meteo_s1.bin", CRC(23971d1e))
 TAITO_ROMEND
 #define input_ports_meteort input_ports_taito
-CORE_GAMEDEFNV(meteort,"Meteor (Taito)",198?,"Taito",taito_sintevox,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(meteort,"Meteor (Taito)",1980,"Taito",taito_sintevox,GAME_NOT_WORKING)
+
+/*--------------------------------
+/ Fire Action
+/-------------------------------*/
+INITGAME(fireact,SNDBRD_TAITO_SINTETIZADOR)
+TAITO_ROMSTART2222(fireact,"fire1.bin",CRC(2f923913),
+                           "fire2.bin",CRC(4d268048),
+                           "fire3.bin",CRC(f5e07ed1),
+                           "fire4.bin",CRC(da1a4ed5))
+// NOT AVAILABLE
+TAITO_SOUNDROMS22("fire_s1.bin", NO_DUMP,
+                  "fire_s2.bin", NO_DUMP)
+TAITO_ROMEND
+#define input_ports_fireact input_ports_taito
+CORE_GAMEDEFNV(fireact,"Fire Action",1981,"Taito",taito_sintetizador,GAME_IMPERFECT_SOUND)
+
+/*--------------------------------
+/ Cavaleiro Negro
+/-------------------------------*/
+INITGAME(cavnegro,SNDBRD_TAITO_SINTETIZADOR)
+TAITO_ROMSTART2222(cavnegro,"cn1.bin",CRC(6b414089),
+                            "cn2.bin",CRC(9641f2e5),
+                            "cn3.bin",CRC(e1c5afd8),
+                            "cn4.bin",CRC(0cf4c1fa))
+TAITO_SOUNDROMS22("cn_s1.bin", CRC(aec5069a),
+                  "cn_s2.bin", CRC(a0508863))
+TAITO_ROMEND
+#define input_ports_cavnegro input_ports_taito
+CORE_GAMEDEFNV(cavnegro,"Cavaleiro Negro",1981,"Taito",taito_sintetizador,GAME_IMPERFECT_SOUND)
+
+/*--------------------------------
+/ Sure Shot
+/-------------------------------*/
+INITGAME(sureshot,SNDBRD_TAITO_SINTEVOX)
+TAITO_ROMSTART2222(sureshot,"ssh1.bin",CRC(46b96e00),
+                            "ssh2.bin",CRC(655a7ff2),
+                            "ssh3.bin",CRC(4dec25d6),
+                            "ssh4.bin",CRC(ced8f9df))
+TAITO_SOUNDROMS222("ssh_s1.bin", CRC(acb7e92f),
+                   "ssh_s2.bin", CRC(c1351b31),
+				   "ssh_s3.bin", CRC(5e7f5275))
+TAITO_ROMEND
+#define input_ports_sureshot input_ports_taito
+CORE_GAMEDEFNV(sureshot,"Sure Shot",1981,"Taito",taito_sintevox,GAME_IMPERFECT_SOUND)
 
 /*--------------------------------
 / Zarza
@@ -54,7 +126,7 @@ TAITO_SOUNDROMS22("zarza_s1.bin", CRC(f076c2a8),
                   "zarza_s2.bin", CRC(a98e13b7))
 TAITO_ROMEND
 #define input_ports_zarza input_ports_taito
-CORE_GAMEDEFNV(zarza,"Zarza",198?,"Taito",taito_sintevox,0)
+CORE_GAMEDEFNV(zarza,"Zarza",1983,"Taito",taito_sintevox,0)
 
 /*--------------------------------
 / Gemini 2000
@@ -68,7 +140,7 @@ TAITO_SOUNDROMS22("gemin_s1.bin", CRC(b9a80ab2),
                   "gemin_s2.bin", CRC(312a5c35))
 TAITO_ROMEND
 #define input_ports_gemini input_ports_taito
-CORE_GAMEDEFNV(gemini,"Gemini 2000",198?,"Taito",taito_sintevox,0)
+CORE_GAMEDEFNV(gemini,"Gemini 2000",1982,"Taito",taito_sintevox,0)
 
 /*--------------------------------
 / Cosmic
@@ -82,12 +154,12 @@ TAITO_SOUNDROMS22("cosmc_s1.bin", CRC(09f082c1),
                   "cosmc_s2.bin", CRC(84b98b95))
 TAITO_ROMEND
 #define input_ports_cosmic input_ports_taito
-CORE_GAMEDEFNV(cosmic,"Cosmic",198?,"Taito",taito_sintevox,0)
+CORE_GAMEDEFNV(cosmic,"Cosmic",1982,"Taito",taito_sintevox,0)
 
 /*--------------------------------
 / Hawkman
 /-------------------------------*/
-INITGAME(hawkman,SNDBRD_TAITO_SINTEVOX)
+INITGAME(hawkman,SNDBRD_TAITO_SINTETIZADOR)
 TAITO_ROMSTART2222(hawkman,"hawk1.bin",CRC(cf991a68),
                            "hawk2.bin",CRC(568ac529),
                            "hawk3.bin",CRC(14be7e31),
@@ -96,12 +168,12 @@ TAITO_SOUNDROMS22("hawk_s1.bin", CRC(47549394),
                   "hawk_s2.bin", CRC(29bef82f))
 TAITO_ROMEND
 #define input_ports_hawkman input_ports_taito
-CORE_GAMEDEFNV(hawkman,"Hawkman",198?,"Taito",taito_sintevox,0)
+CORE_GAMEDEFNV(hawkman,"Hawkman",1983,"Taito",taito_sintetizador,GAME_IMPERFECT_SOUND)
 
 /*--------------------------------
 / Rally
 /-------------------------------*/
-INITGAME(rally,SNDBRD_TAITO_SINTETIZADOR)
+INITGAME(rally,SNDBRD_TAITO_SINTEVOX)
 TAITO_ROMSTART2222(rally,"rally1.bin",CRC(d0d6b32e),
                          "rally2.bin",CRC(e7611e06),
                          "rally3.bin",CRC(45d28cd3),
@@ -110,7 +182,7 @@ TAITO_SOUNDROMS22("rally_s1.bin", CRC(0c7ca1bc),
                   "rally_s2.bin", CRC(a409d9d1))
 TAITO_ROMEND
 #define input_ports_rally input_ports_taito
-CORE_GAMEDEFNV(rally,"Rally",1983,"Taito",taito_sintetizador,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(rally,"Rally",1983,"Taito",taito_sintevox,0)
 
 /*--------------------------------
 / Shark (Taito)
@@ -138,7 +210,7 @@ TAITO_SOUNDROMS22("snake_s1.bin", NO_DUMP,
                   "snake_s2.bin", NO_DUMP)
 TAITO_ROMEND
 #define input_ports_snake input_ports_taito
-CORE_GAMEDEFNV(snake,"Snake Machine",198?,"Taito",taito_sintevox,0)
+CORE_GAMEDEFNV(snake,"Snake Machine",1983,"Taito",taito_sintevox,0)
 
 /*--------------------------------
 / Titan
@@ -152,7 +224,7 @@ TAITO_SOUNDROMS22("titan_s1.bin", CRC(36b5c196),
                   "titan_s2.bin", CRC(3bd0e6ab))
 TAITO_ROMEND
 #define input_ports_titan input_ports_taito
-CORE_GAMEDEFNV(titan,"Titan",198?,"Taito",taito_sintetizador,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(titan,"Titan",1983,"Taito",taito_sintetizador,GAME_IMPERFECT_SOUND)
 
 /*--------------------------------
 / Vortex
@@ -166,7 +238,7 @@ TAITO_SOUNDROMS22("vrtex_s1.bin", CRC(740bdd3e),
                   "vrtex_s2.bin", CRC(4250e02e))
 TAITO_ROMEND
 #define input_ports_vortex input_ports_taito
-CORE_GAMEDEFNV(vortex,"Vortex",198?,"Taito",taito_sintevox,0)
+CORE_GAMEDEFNV(vortex,"Vortex",1982,"Taito",taito_sintevox,0)
 
 /*--------------------------------
 / Speed Test
@@ -180,7 +252,7 @@ TAITO_SOUNDROMS22("stest_s1.bin", CRC(dc71d4b2),
                   "stest_s2.bin", CRC(d7ac9369))
 TAITO_ROMEND
 #define input_ports_stest input_ports_taito
-CORE_GAMEDEFNV(stest,"Speed Test",198?,"Taito",taito_sintetizador,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(stest,"Speed Test",1983,"Taito",taito_sintetizador,GAME_IMPERFECT_SOUND)
 
 /*--------------------------------
 / Space Shuttle
@@ -193,21 +265,7 @@ TAITO_SOUNDROMS22("sshtl_s1.bin", CRC(0c7ca1bc),
                   "sshtl_s2.bin", CRC(a409d9d1))
 TAITO_ROMEND
 #define input_ports_sshuttle input_ports_taito
-CORE_GAMEDEFNV(sshuttle,"Space Shuttle (Taito)",1985,"Taito",taito_sintetizador,GAME_IMPERFECT_SOUND)
-
-/*--------------------------------
-/ Drakor
-/-------------------------------*/
-INITGAME(drakor,SNDBRD_TAITO_SINTETIZADOR)
-// roms are reversed!
-TAITO_ROMSTART22_2(drakor,"drakor3.bin",CRC(7ecf377b),
-                          "drakor2.bin",CRC(91dbb199),
-                          "drakor1.bin",CRC(b0ba866e))
-TAITO_SOUNDROMS22("drakors1.bin", NO_DUMP,
-                  "drakors2.bin", NO_DUMP)
-TAITO_ROMEND
-#define input_ports_drakor input_ports_taito
-CORE_GAMEDEFNV(drakor,"Drakor (Taito)",1985,"Taito",taito_sintetizador,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(sshuttle,"Space Shuttle (Taito)",1985,"Taito",taito_sintetizador,GAME_NOT_WORKING|GAME_IMPERFECT_SOUND)
 
 /*--------------------------------
 / Polar Explorer

@@ -8,21 +8,21 @@
 #include "taitos.h"
 
 /*----------------------------------------
-/ Taito Sound System 
+/ Taito Sound System
 / Taito uses three different sound board:
 / - sintevox
 / - sintetizator (sitevox with an additonal SC-01)
 / - sintevox with a daugher board installed
 /
 / cpu: 6802
-/ 
-/ 0x0000 - 0x0000: PIA 
+/
+/ 0x0000 - 0x0000: PIA
 / 0x1000 - 0x17FF: ROM 2
 / 0x1800 - 0x1fff: ROM 1
-/ 
+/
 / sintetizator:
 / SC-01 connected to output of PIA Port B
-/ 
+/
 /-----------------------------------------*/
 
 #define SINTEVOX		0
@@ -36,18 +36,15 @@ static struct {
 #define SP_PIA0  0
 
 MEMORY_READ_START(taitos_readmem)
-  { 0x0000, 0x007f, MRA_RAM },
+  { 0x0000, 0x00ff, MRA_RAM },
   { 0x0400, 0x0403, pia_r(SP_PIA0) },
-  { 0x1000, 0x1fff, MRA_ROM },
-//  { 0x2000, 0x2fff, MRA_ROM },
-  { 0xf000, 0xffff, MRA_ROM }, /* reset vector */
+  { 0x0800, 0xffff, MRA_ROM },
 MEMORY_END
 
 MEMORY_WRITE_START(taitos_writemem)
-  { 0x0000, 0x007f, MWA_RAM },
+  { 0x0000, 0x00ff, MWA_RAM },
   { 0x0400, 0x0403, pia_w(SP_PIA0) },
-  { 0x1000, 0x1fff, MWA_ROM },
-  { 0xf000, 0xffff, MWA_ROM }, /* reset vector */
+  { 0x0800, 0xffff, MWA_ROM },
 MEMORY_END
 
 static void taitos_irq(int state) {
@@ -125,21 +122,16 @@ static void taitos_init(struct sndbrdData *brdData)
 	memset(&taitos_locals, 0x00, sizeof(taitos_locals));
 	taitos_locals.brdData = *brdData;
 
-	if ( taitos_locals.brdData.subType!=SITEVOX_PP )
-		memcpy(memory_region(TAITO_MEMREG_SCPU)+0xf000, memory_region(TAITO_MEMREG_SCPU)+0x1000, 0x1000);
-	else
-		memcpy(memory_region(TAITO_MEMREG_SCPU)+0xf000, memory_region(TAITO_MEMREG_SCPU)+0x7000, 0x1000);
-
 	pia_config(SP_PIA0, PIA_STANDARD_ORDERING, &sp_pia);
 }
 
 struct DACinterface TAITO_dacInt =
-{ 
+{
   1,			/* 1 Chip */
   {100}		    /* Volume */
 };
 
-struct VOTRAXSC01interface TAITO_votrax_sc01_interface = {															
+struct VOTRAXSC01interface TAITO_votrax_sc01_interface = {
 	1,						/* 1 chip */
 	{ 100 },				/* master volume */
 	{ 8000 },				/* dynamically changing this is currently not supported */
@@ -198,6 +190,16 @@ static WRITE_HANDLER(unknown2000)
 {
 }
 
+static READ_HANDLER(unknown1007)
+{
+	return 0;
+}
+
+static READ_HANDLER(unknown100d)
+{
+	return 0;
+}
+
 struct AY8910interface TAITO_ay8910Int = {
 	2,			/* 2 chips */
 	2000000,	/* 2 MHz */
@@ -211,6 +213,8 @@ struct AY8910interface TAITO_ay8910Int = {
 MEMORY_READ_START(taitospp_readmem)
   { 0x0000, 0x007f, MRA_RAM },
   { 0x0400, 0x0403, pia_r(SP_PIA0) },
+  { 0x1007, 0x1007, unknown1007 },
+  { 0x100d, 0x100d, unknown100d },
   { 0x5000, 0x7fff, MRA_ROM },
   { 0xf000, 0xffff, MRA_ROM }, /* reset vector */
 MEMORY_END
