@@ -1450,14 +1450,6 @@ SOURCE=.\src\wpc\gts80.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\gts80bs.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\wpc\gts80bs.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\wpc\gts80games.c
 # End Source File
 # Begin Source File
@@ -1467,14 +1459,6 @@ SOURCE=.\src\wpc\gts80s.c
 # Begin Source File
 
 SOURCE=.\src\wpc\gts80s.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\wpc\gts80ss.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\wpc\gts80ss.h
 # End Source File
 # Begin Source File
 

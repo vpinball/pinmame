@@ -2,8 +2,6 @@
 #include "sim.h"
 #include "gts80.h"
 #include "gts80s.h"
-#include "gts80ss.h"
-#include "gts80bs.h"
 
 //	static core_tGameData name##GameData = {gen, disptype, {FLIP_SWNO(GTS80_SWNO(8), GTS80_SWNO(18))}};
 
@@ -185,10 +183,10 @@ CORE_GAMEDEFNV(pnkpnthr,"Pink Panther",1981,"Gottlieb",gl_mGTS80S,0)
 /-------------------------------------------------------------------*/
 INITGAME(mars,GEN_GTS80SS,gottlieb_dispNumeric1, 3)
 GTS80_1_ROMSTART(mars, "666-1.cpu",  0xbb7d476a,
-                     "u2_80.bin",  0x4f0bc7b1,
-                     "u3_80.bin",  0x1e69f9d0)
-GTS80SS22_ROMSTART( "666-s1.snd", 0xd33dc8a5,
-                     "666-s2.snd", 0xe5616f3e)
+                       "u2_80.bin",  0x4f0bc7b1,
+                       "u3_80.bin",  0x1e69f9d0)
+GTS80SS22_ROMSTART("666-s1.snd", 0xd33dc8a5,
+                   "666-s2.snd", 0xe5616f3e)
 GTS80_ROMEND
 CORE_GAMEDEFNV(mars,"Mars - God of War",1981,"Gottlieb",gl_mGTS80SS,0)
 
@@ -648,8 +646,8 @@ CORE_GAMEDEFNV(bountyh, "Bounty Hunter",1985,"Gottlieb",gl_mGTS80B,GAME_IMPERFEC
 //(I assume these are using Gen.1 hardware, but there's 1 less rom, so who knows)
 INITGAME(rock,GEN_GTS80B2K,gottlieb_dispAlpha, 1)
 GTS80B_8K_ROMSTART(rock,	"prom1.cpu", 0x1146c1d3)
-GTS80BSSOUND88(			"drom1.snd", 0x03830e81,
-						"yrom1.snd", 0xeffba2ad)
+GTS80BSSOUND88("drom1.snd", 0x03830e81,
+			   "yrom1.snd", 0xeffba2ad)
 GTS80_ROMEND
 CORE_GAMEDEFNV(rock, "Rock",1986,"Gottlieb",gl_mGTS80BS1,0)
 
