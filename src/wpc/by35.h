@@ -235,6 +235,7 @@ extern struct MachineDriver machine_driver_by35_32s;
 extern struct MachineDriver machine_driver_by35_51s;
 extern struct MachineDriver machine_driver_by35_61s;
 extern struct MachineDriver machine_driver_by35_56s;
+extern struct MachineDriver machine_driver_by35_45s;
 #define by35_mBY17S     by35
 #define by35_mBY35_32S  by35_32s
 #define by35_mBY35_50S  by35_32s
@@ -244,5 +245,6 @@ extern struct MachineDriver machine_driver_by35_56s;
 #define by35_mBY35_81S  by35_61s
 #define by35_mBY35_54S  by35
 #define by35_mBY35_56S  by35_56s // XENON
+#define by35_mBY35_45S  by35_45s 
 #endif /* INC_BY35 */
 
