@@ -125,7 +125,7 @@ STDMETHODIMP CWSHDlg::put_Title(BSTR newVal)
 	return S_OK;
 }
 
-STDMETHODIMP CWSHDlg::AddCtrl(BSTR sType, long x, long y, long w, long h, BSTR sTitle, VARIANT vValue, long options, IUnknown **pRetVal)
+STDMETHODIMP CWSHDlg::AddCtrl(BSTR sType, long x, long y, long w, long h, BSTR sTitle, IUnknown **pRetVal)
 {
 	if ( !pRetVal )
 		return S_FALSE;
@@ -137,7 +137,7 @@ STDMETHODIMP CWSHDlg::AddCtrl(BSTR sType, long x, long y, long w, long h, BSTR s
 	if ( FAILED(hr) ) 
 		return hr;
 
-	hr = pNewCtrl->Init(sType, x, y, w, h, sTitle, vValue, options);
+	hr = pNewCtrl->Init(sType, x, y, w, h, sTitle);
 	if ( FAILED(hr) )
 		return hr;
 
@@ -202,11 +202,11 @@ void SaveDlgValues(HWND hDlg, CWSHDlgCtrls *pWSHDlgCtrls)
 {
 	for (int i=0; i<pWSHDlgCtrls->m_lCount; i++) {
 		switch ( pWSHDlgCtrls->m_pCtrlList[i]->m_iType ) {
-		case 1:
-		case 2:
+		case CTRLTYPE_CHECKBOX:
+		case CTRLTYPE_RADIONBUTTON:
 			pWSHDlgCtrls->m_pCtrlList[i]->m_vValue.Clear();
-			pWSHDlgCtrls->m_pCtrlList[i]->m_vValue.vt = VT_BOOL;
-			pWSHDlgCtrls->m_pCtrlList[i]->m_vValue.boolVal = IsDlgButtonChecked(hDlg, CTRLID_START+i)?VARIANT_TRUE:VARIANT_FALSE;
+			pWSHDlgCtrls->m_pCtrlList[i]->m_vValue.vt = VT_I4;
+			pWSHDlgCtrls->m_pCtrlList[i]->m_vValue.lVal = IsDlgButtonChecked(hDlg, CTRLID_START+i);
 			break;
 		}
 	}
@@ -216,12 +216,15 @@ INT_PTR CALLBACK WSHDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	static CWSHDlg		*pWSHDlg = NULL;
 	static CWSHDlgCtrls *pWSHDlgCtrls = NULL;
+	static int iIDOkButton		= -1;
+	static int iIDCancelButton	= -1;
 
 	long i;
 	int  iPreviousType;
 	RECT Rect;
 	int  iBorderX, iBorderY;
 	HFONT hFont;
+	bool fPlaceStandardButtons;
 
 	switch ( uMsg ) {
 	case WM_INITDIALOG:
@@ -240,58 +243,200 @@ INT_PTR CALLBACK WSHDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		SetRectEmpty(&Rect);
 		Rect.right = 1;
 		Rect.bottom = 1;
-		iBorderX = 0;
-		iBorderY = 0;
+		iBorderX = 32767;
+		iBorderY = 32767;
 
 		iPreviousType = -1;
+		iIDOkButton = -1;
+		iIDCancelButton = -1;
+		fPlaceStandardButtons = false;
+
 		for (i=0; i<pWSHDlgCtrls->m_lCount; i++) {
-			pWSHDlgCtrls->m_pCtrlList[i]->CreateControlWindow(hDlg,CTRLID_START+i,(pWSHDlgCtrls->m_pCtrlList[i]->m_iType!=iPreviousType));
-			SendDlgItemMessage(hDlg, CTRLID_START+i, WM_SETFONT, (WPARAM) hFont, 1);
-			iPreviousType = pWSHDlgCtrls->m_pCtrlList[i]->m_iType;
-			if ( !iPreviousType ) // pushbutton
-				iPreviousType = -1;
+			HWND  hWnd = 0;
+			int iCommonOptions = WS_CHILD | WS_VISIBLE | ((iPreviousType!=pWSHDlgCtrls->m_pCtrlList[i]->m_iType)?WS_GROUP|WS_TABSTOP:0);
+			
+			int x = pWSHDlgCtrls->m_pCtrlList[i]->m_x;
+			int y = pWSHDlgCtrls->m_pCtrlList[i]->m_y;
+			int w = pWSHDlgCtrls->m_pCtrlList[i]->m_w;
+			int h = pWSHDlgCtrls->m_pCtrlList[i]->m_h;
 
 			RECT ControlRect;
-			SetRect(&ControlRect,
-				pWSHDlgCtrls->m_pCtrlList[i]->m_x,
-				pWSHDlgCtrls->m_pCtrlList[i]->m_y,
-				pWSHDlgCtrls->m_pCtrlList[i]->m_x + pWSHDlgCtrls->m_pCtrlList[i]->m_w,
-				pWSHDlgCtrls->m_pCtrlList[i]->m_y + pWSHDlgCtrls->m_pCtrlList[i]->m_h
-			);
-			UnionRect(&Rect, &Rect, &ControlRect);
+			SetRect(&ControlRect, x, y, x + w, y + h);
 
-			if ( (i==0) || (iBorderX>pWSHDlgCtrls->m_pCtrlList[i]->m_x) )
-				iBorderX = pWSHDlgCtrls->m_pCtrlList[i]->m_x;
-			if ( (i==0) || iBorderY>pWSHDlgCtrls->m_pCtrlList[i]->m_y )
-				iBorderY = pWSHDlgCtrls->m_pCtrlList[i]->m_y;
+			switch ( pWSHDlgCtrls->m_pCtrlList[i]->m_iType ) {
+			case CTRLTYPE_PUSHBUTTON:
+				hWnd = CreateWindow("button", pWSHDlgCtrls->m_pCtrlList[i]->m_szTitle, BS_PUSHBUTTON|iCommonOptions, x, y, w, h, hDlg, (HMENU) (CTRLID_START+i), _Module.m_hInst, NULL);
+				UnionRect(&Rect, &Rect, &ControlRect);
+				if ( iBorderX>x ) iBorderX = x;
+				if ( iBorderY>y ) iBorderY = y;
+				
+				iPreviousType = -1;
+				break;
+
+			case CTRLTYPE_OKBUTTON:
+				hWnd = CreateWindow("button", pWSHDlgCtrls->m_pCtrlList[i]->m_szTitle, BS_DEFPUSHBUTTON|iCommonOptions, x, y, w, h, hDlg, (HMENU) (CTRLID_START+i), _Module.m_hInst, NULL);
+				iIDOkButton = CTRLID_START+i;
+				if ( (x>=0) || (y>=0) ) {
+					UnionRect(&Rect, &Rect, &ControlRect);
+					if ( iBorderX>x ) iBorderX = x;
+					if ( iBorderY>y ) iBorderY = y;
+				}
+				else
+					fPlaceStandardButtons = true;
+
+				iPreviousType = -1;
+				break;
+
+			case CTRLTYPE_CANCELBUTTON:
+				hWnd = CreateWindow("button", pWSHDlgCtrls->m_pCtrlList[i]->m_szTitle, BS_PUSHBUTTON|iCommonOptions, x, y, w, h, hDlg, (HMENU) (CTRLID_START+i), _Module.m_hInst, NULL);
+				iIDCancelButton = CTRLID_START+i;
+				if ( (x>=0) || (y>=0) ) {
+					UnionRect(&Rect, &Rect, &ControlRect);
+					if ( iBorderX>x ) iBorderX = x;
+					if ( iBorderY>y ) iBorderY = y;
+				}
+				else
+					fPlaceStandardButtons = true;
+
+				iPreviousType = -1;
+				break;
+
+			case CTRLTYPE_CHECKBOX:
+				hWnd = CreateWindow("button", pWSHDlgCtrls->m_pCtrlList[i]->m_szTitle, BS_AUTOCHECKBOX|iCommonOptions, x, y, w, h, hDlg, (HMENU) (CTRLID_START+i), _Module.m_hInst, NULL);
+				if ( hWnd )
+					SendMessage(hWnd, BM_SETCHECK, pWSHDlgCtrls->m_pCtrlList[i]->m_vValue.lVal, 0);
+				
+				UnionRect(&Rect, &Rect, &ControlRect);
+				if ( iBorderX>x ) iBorderX = x;
+				if ( iBorderY>y ) iBorderY = y;
+				
+				iPreviousType = pWSHDlgCtrls->m_pCtrlList[i]->m_iType;
+				break;
+
+			case CTRLTYPE_RADIONBUTTON:
+				hWnd = CreateWindow("button", pWSHDlgCtrls->m_pCtrlList[i]->m_szTitle, BS_AUTORADIOBUTTON|iCommonOptions, x, y, w, h, hDlg, (HMENU) (CTRLID_START+i), _Module.m_hInst, NULL);
+				if ( hWnd )
+					SendMessage(hWnd, BM_SETCHECK, pWSHDlgCtrls->m_pCtrlList[i]->m_vValue.lVal, 0);
+
+				UnionRect(&Rect, &Rect, &ControlRect);
+				if ( iBorderX>x ) iBorderX = x;
+				if ( iBorderY>y ) iBorderY = y;
+				
+				iPreviousType = pWSHDlgCtrls->m_pCtrlList[i]->m_iType;
+				break;
+
+			case CTRLTYPE_GROUPBOX:
+				hWnd = CreateWindow("button", pWSHDlgCtrls->m_pCtrlList[i]->m_szTitle, BS_GROUPBOX|iCommonOptions&~WS_TABSTOP, x, y, w, h, hDlg, (HMENU) (CTRLID_START+i), _Module.m_hInst, NULL);
+
+				UnionRect(&Rect, &Rect, &ControlRect);
+				if ( iBorderX>x ) iBorderX = x;
+				if ( iBorderY>y ) iBorderY = y;
+
+				iPreviousType = pWSHDlgCtrls->m_pCtrlList[i]->m_iType;
+				break;
+
+			case CTRLTYPE_LABEL:
+				hWnd = CreateWindow("static", pWSHDlgCtrls->m_pCtrlList[i]->m_szTitle, iCommonOptions&~WS_TABSTOP, x, y, w, h, hDlg, (HMENU) (CTRLID_START+i), _Module.m_hInst, NULL);
+
+				UnionRect(&Rect, &Rect, &ControlRect);
+				if ( iBorderX>x ) iBorderX = x;
+				if ( iBorderY>y ) iBorderY = y;
+
+				iPreviousType = pWSHDlgCtrls->m_pCtrlList[i]->m_iType;
+				break;
+			}
+			if ( hWnd )
+				SendMessage(hWnd, WM_SETFONT, (WPARAM) hFont, 1);
 		}
+		if ( iBorderX==32767 )
+			iBorderX = 0;
 		Rect.right += iBorderX;
+		
+		if ( iBorderY==32767 )
+			iBorderY = 0;
 		Rect.bottom += iBorderY;
-	    AdjustWindowRect(&Rect, GetWindowLong(hDlg, GWL_STYLE), FALSE);
+
 		if ( pWSHDlg->m_w>0 )
 			Rect.right = pWSHDlg->m_w;
 		if ( pWSHDlg->m_h>0 )
 			Rect.bottom = pWSHDlg->m_h;
 
+		if ( fPlaceStandardButtons ) {
+			int iButtonHeight = 0;
+			int iButtonWidth = 0;
+			if ( iIDOkButton!=-1 )
+				iButtonWidth = pWSHDlgCtrls->m_pCtrlList[iIDOkButton-CTRLID_START]->m_w;
+			if ( iIDCancelButton!=-1 ) {
+				if ( iButtonWidth ) iButtonWidth += 5;
+				iButtonWidth += pWSHDlgCtrls->m_pCtrlList[iIDCancelButton-CTRLID_START]->m_w;
+			}
+			int iPosX = (Rect.right - iButtonWidth) / 2;
+
+			if ( iIDOkButton!=-1 ) {
+				iButtonHeight = pWSHDlgCtrls->m_pCtrlList[iIDOkButton-CTRLID_START]->m_h;
+				SetWindowPos(
+					GetDlgItem(hDlg, iIDOkButton), 
+					0,
+					iPosX,
+					Rect.bottom,
+					0,0,SWP_NOZORDER|SWP_NOSIZE);
+				iPosX += 5 + pWSHDlgCtrls->m_pCtrlList[iIDOkButton-CTRLID_START]->m_w;
+			}
+
+			if ( iIDCancelButton!=-1 ) {
+				if ( iButtonHeight<pWSHDlgCtrls->m_pCtrlList[iIDCancelButton-CTRLID_START]->m_h )
+					iButtonHeight = pWSHDlgCtrls->m_pCtrlList[iIDCancelButton-CTRLID_START]->m_h;
+				SetWindowPos(
+					GetDlgItem(hDlg, iIDCancelButton), 
+					0,
+					iPosX,
+					Rect.bottom,
+					0,0,SWP_NOZORDER|SWP_NOSIZE);
+			}
+
+			Rect.bottom += (iButtonHeight + iBorderY);
+		}
+
+		AdjustWindowRect(&Rect, GetWindowLong(hDlg, GWL_STYLE), FALSE);
 		SetWindowPos(hDlg, 0, pWSHDlg->m_x, pWSHDlg->m_y, Rect.right-Rect.left, Rect.bottom-Rect.top, SWP_NOZORDER);
 
 		return 0;
 
 	case WM_COMMAND:
-		if ( HIWORD(wParam)!=BN_CLICKED )
-			break;
-
-		if ( LOWORD(wParam)>=CTRLID_START ) {
-			if ( pWSHDlgCtrls->m_pCtrlList[LOWORD(wParam)-CTRLID_START]->m_iType==0) {
+		if ( HIWORD(wParam)==BN_CLICKED ) {
+			switch (LOWORD(wParam)) {
+			case IDOK:
 				SaveDlgValues(hDlg, pWSHDlgCtrls);
-				EndDialog(hDlg, pWSHDlgCtrls->m_pCtrlList[LOWORD(wParam)-CTRLID_START]->m_vValue.lVal);
+				if ( iIDOkButton==-1 )
+					EndDialog(hDlg, IDOK);
+				else
+					EndDialog(hDlg, pWSHDlgCtrls->m_pCtrlList[iIDOkButton-CTRLID_START]->m_vValue.lVal);
+				break;
+
+			case IDCANCEL:
+				if ( iIDCancelButton==-1 )
+					EndDialog(hDlg, IDCANCEL);
+				else
+					EndDialog(hDlg, pWSHDlgCtrls->m_pCtrlList[iIDCancelButton-CTRLID_START]->m_vValue.lVal);
+				break;
+
+			default:
+				if ( LOWORD(wParam)<CTRLID_START )
+					break;
+
+				switch ( pWSHDlgCtrls->m_pCtrlList[LOWORD(wParam)-CTRLID_START]->m_iType ) {
+				case CTRLTYPE_PUSHBUTTON:
+				case CTRLTYPE_OKBUTTON:
+					SaveDlgValues(hDlg, pWSHDlgCtrls);
+					EndDialog(hDlg, pWSHDlgCtrls->m_pCtrlList[LOWORD(wParam)-CTRLID_START]->m_vValue.lVal);
+					break;
+
+				case CTRLTYPE_CANCELBUTTON:
+					EndDialog(hDlg, pWSHDlgCtrls->m_pCtrlList[LOWORD(wParam)-CTRLID_START]->m_vValue.lVal);
+					break;
+				}
+				break;
 			}
-		}
-		else {
-			if ( LOWORD(wParam)==1 )
-				SaveDlgValues(hDlg, pWSHDlgCtrls);
-
- 			EndDialog(hDlg, LOWORD(wParam));
 		}
 		break;
 

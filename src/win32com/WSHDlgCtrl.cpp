@@ -21,7 +21,7 @@ STDMETHODIMP CWSHDlgCtrl::InterfaceSupportsErrorInfo(REFIID riid)
 }
 
 const char* pszCtrlTypes[] = {
-	"cmdbtn", "chkbox", "optbtn", "frame", "label", 0
+	"cmdbtn", "okbtn", "cancelbtn", "chkbox", "optbtn", "frame", "label", 0
 };
 
 CWSHDlgCtrl::CWSHDlgCtrl()
@@ -33,7 +33,6 @@ CWSHDlgCtrl::CWSHDlgCtrl()
 	strcpy(m_szTitle, "");
 	m_iType = -1;
 	m_vValue = 0;
-	m_options = 0;
 }
 
 CWSHDlgCtrl::~CWSHDlgCtrl()
@@ -64,7 +63,18 @@ STDMETHODIMP CWSHDlgCtrl::get_Value(VARIANT *pVal)
 
 STDMETHODIMP CWSHDlgCtrl::put_Value(VARIANT newVal)
 {
-	m_vValue = newVal;
+	switch ( m_iType ) {
+	case CTRLTYPE_PUSHBUTTON:
+	case CTRLTYPE_OKBUTTON:
+	case CTRLTYPE_CANCELBUTTON:
+	case CTRLTYPE_CHECKBOX:
+	case CTRLTYPE_RADIONBUTTON:
+		VariantChangeType(&m_vValue, &newVal, 0, VT_I4);
+		break;
+
+	default:
+		m_vValue = newVal;
+	}
 
 	return S_OK;
 }
@@ -87,7 +97,7 @@ STDMETHODIMP CWSHDlgCtrl::put_Title(BSTR newVal)
 	return S_OK;
 }
 
-STDMETHODIMP CWSHDlgCtrl::Init(BSTR sType, long x, long y, long w, long h, BSTR sTitle, VARIANT vValue, long options)
+STDMETHODIMP CWSHDlgCtrl::Init(BSTR sType, long x, long y, long w, long h, BSTR sTitle)
 {
 	CComBSTR sHelp(sType);
 
@@ -98,19 +108,15 @@ STDMETHODIMP CWSHDlgCtrl::Init(BSTR sType, long x, long y, long w, long h, BSTR 
 	while ( pszCtrlTypes[m_iType] ) {
 		if ( strcmpi(szType, pszCtrlTypes[m_iType])==0 ) {
 			switch (m_iType) {
-			case 0:
-				VariantChangeType(&m_vValue, &vValue, 0, VT_I4);
+			case CTRLTYPE_OKBUTTON:
+				m_vValue = 1;
 				break;
 
-			case 1:
-			case 2:
-				VariantChangeType(&m_vValue, &vValue, 0, VT_BOOL);
-				break;
-
-			default:
-				m_vValue.Copy(&vValue);
+			case CTRLTYPE_CANCELBUTTON:
+				m_vValue = 2;
 				break;
 			}
+
 			break;
 		}
 		else
@@ -125,41 +131,6 @@ STDMETHODIMP CWSHDlgCtrl::Init(BSTR sType, long x, long y, long w, long h, BSTR 
 	m_w = w;
 	m_h = h;
 	WideCharToMultiByte(CP_ACP, 0, sTitle, -1, m_szTitle, sizeof m_szTitle, NULL, NULL);
-	m_options = options;
 
 	return S_OK;
-}
-
-HWND CWSHDlgCtrl::CreateControlWindow(HWND hParent, int iCtrlID, bool fStartGroup)
-{
-	HWND hWnd = 0;
-	int iCommonOptions = WS_CHILD | WS_VISIBLE | (fStartGroup?WS_GROUP|WS_TABSTOP:0);
-
-	switch ( m_iType ) {
-	case 0:
-		hWnd = CreateWindow("button", m_szTitle, m_options|iCommonOptions, m_x, m_y, m_w, m_h, hParent, (HMENU) iCtrlID, _Module.m_hInst, NULL);
-		break;
-
-	case 1:
-		hWnd = CreateWindow("button", m_szTitle, BS_AUTOCHECKBOX|m_options|iCommonOptions, m_x, m_y, m_w, m_h, hParent, (HMENU) iCtrlID, _Module.m_hInst, NULL);
-		if ( hWnd )
-			SendMessage(hWnd, BM_SETCHECK, (m_vValue.boolVal==VARIANT_TRUE)?1:0, 0);
-		break;
-
-	case 2:
-		hWnd = CreateWindow("button", m_szTitle, BS_AUTORADIOBUTTON|m_options|iCommonOptions, m_x, m_y, m_w, m_h, hParent, (HMENU) iCtrlID, _Module.m_hInst, NULL);
-		if ( hWnd )
-			SendMessage(hWnd, BM_SETCHECK, (m_vValue.boolVal==VARIANT_TRUE)?1:0, 0);
-		break;
-
-	case 3:
-		hWnd = CreateWindow("button", m_szTitle, BS_GROUPBOX|m_options|iCommonOptions&~WS_TABSTOP, m_x, m_y, m_w, m_h, hParent, (HMENU) iCtrlID, _Module.m_hInst, NULL);
-		break;
-
-	case 4:
-		hWnd = CreateWindow("static", m_szTitle, m_options|iCommonOptions&~WS_TABSTOP, m_x, m_y, m_w, m_h, hParent, (HMENU) iCtrlID, _Module.m_hInst, NULL);
-		break;
-	}
-
-	return hWnd;
 }
