@@ -160,7 +160,7 @@ INLINE void anl_c_nbitaddr(void)
 {
 	UINT8 addr = ROP_ARG(PC++);				//Grab bit address
 	UINT8 bit = BIT_R(addr);				//Grab bit data from bit address
-	SET_CY(GET_CY & (~(bit&1)));			//Set Carry flag to Carry Flag Value Logical AND with Complemented Bit
+	SET_CY(GET_CY & ((~bit)&1));			//Set Carry flag to Carry Flag Value Logical AND with Complemented Bit
 }
 
 //CJNE A, #data, code addr					/* 1: 1011 0100 */
@@ -241,7 +241,8 @@ INLINE void clr_a(void)
 INLINE void cpl_bitaddr(void)
 {
 	UINT8 addr = ROP_ARG(PC++);				//Grab bit address
-	BIT_W(addr,((~BIT_R(addr))&1));			//Complement bit at specified bit address
+	UINT8 data = (~BIT_R(addr))&1;
+	BIT_W(addr,data);						//Complement bit at specified bit address
 }
 
 //CPL C										/* 1: 1011 0011 */
@@ -254,7 +255,8 @@ INLINE void cpl_c(void)
 //CPL A										/* 1: 1111 0100 */
 INLINE void cpl_a(void)
 {
-	SFR_W(ACC,((~R_ACC)&0xff));				//Complement Accumulator
+	UINT8 data = ((~R_ACC)&0xff);
+	SFR_W(ACC,data);						//Complement Accumulator
 }
 
 //DA A										/* 1: 1101 0100 */
@@ -288,13 +290,15 @@ INLINE void dec_a(void)
 INLINE void dec_mem(void)
 {
 	UINT8 addr = ROP_ARG(PC++);				//Grab data address
-	IRAM_W(addr,(UINT8)IRAM_R(addr)-1);
+	UINT8 data = IRAM_R(addr);
+	IRAM_W(addr,data-1);
 }
 
 //DEC @R0/@R1								/* 1: 0001 011i */
 INLINE void dec_ir(int r)
 {
-	IRAM_W(R_R(r),(UINT8)IRAM_R(R_R(r))-1);
+	UINT8 data = IRAM_R(R_R(r));
+	IRAM_W(R_R(r),data-1);
 }
 
 //DEC R0 to R7								/* 1: 0001 1rrr */
@@ -348,36 +352,34 @@ INLINE void djnz_r(int r)
 //INC A										/* 1: 0000 0100 */
 INLINE void inc_a(void)
 {
-	//NOTE: If value is 0xff, value becomes 0 (Handled by C++ automatically)
 	SFR_W(ACC,R_ACC+1);
 }
 
 //INC data addr								/* 1: 0000 0101 */
 INLINE void inc_mem(void)
 {
-	//NOTE: If value is 0xff, value becomes 0 (Handled by C++ automatically)
 	UINT8 addr = ROP_ARG(PC++);				//Grab data address
-	IRAM_W(addr,(UINT8)IRAM_R(addr)+1);
+	UINT8 data = IRAM_R(addr); 
+	IRAM_W(addr,data+1);
 }
 
 //INC @R0/@R1								/* 1: 0000 011i */
 INLINE void inc_ir(int r)
 {
-	//NOTE: If value is 0xff, value becomes 0 (Handled by C++ automatically)
-	IRAM_W(R_R(r),(UINT8)IRAM_R(R_R(r))+1);
+	UINT8 data = IRAM_R(R_R(r));
+	IRAM_W(R_R(r),data+1);
 }
 
 //INC R0 to R7								/* 1: 0000 1rrr */
 INLINE void inc_r(int r)
 {
-	//NOTE: If value is 0xff, value becomes 0 (Handled by C++ automatically)
-	R_R(r) = R_R(r) + 1;
+	UINT8 data = R_R(r);
+	R_R(r) = data + 1;
 }
 
 //INC DPTR									/* 1: 1010 0011 */
 INLINE void inc_dptr(void)
 {
-	//NOTE: If value is 0xffff, value becomes 0 (Handled by C++ automatically)
 	UINT16 dptr = (R_DPTR)+1;
 	DPTR_W(dptr);
 }
@@ -715,7 +717,7 @@ INLINE void orl_c_nbitaddr(void)
 {
 	UINT8 addr = ROP_ARG(PC++);				//Grab bit address
 	UINT8 bit = BIT_R(addr);				//Grab bit data from bit address
-	SET_CY(GET_CY | (~(bit&1)));			//Set Carry flag to Carry Flag Value Logical OR with Complemented Bit
+	SET_CY(GET_CY | ((~bit)&1));			//Set Carry flag to Carry Flag Value Logical OR with Complemented Bit
 }
 
 //POP data addr								/* 1: 1101 0000 */
@@ -858,37 +860,37 @@ INLINE void swap_a(void)
 //XCH A, data addr							/* 1: 1100 0101 */
 INLINE void xch_a_mem(void)
 {
-	UINT8 addr = ROP_ARG(PC++);		//Grab data address
-	UINT8 data = IRAM_R(addr);		//Grab data
-	UINT8 oldACC = R_ACC;			//Hold value of ACC
-	SFR_W(ACC,data);				//Sets ACC to data
-	IRAM_W(addr,oldACC);			//Sets data address to old value of ACC
+	UINT8 addr = ROP_ARG(PC++);				//Grab data address
+	UINT8 data = IRAM_R(addr);				//Grab data
+	UINT8 oldACC = R_ACC;					//Hold value of ACC
+	SFR_W(ACC,data);						//Sets ACC to data
+	IRAM_W(addr,oldACC);					//Sets data address to old value of ACC
 }
 
 //XCH A, @RO/@R1							/* 1: 1100 011i */
 INLINE void xch_a_ir(int r)
 {
-	UINT8 data = IRAM_R(R_R(r));	//Grab data pointed to by R0 or R1
-	UINT8 oldACC = R_ACC;			//Hold value of ACC
-	SFR_W(ACC,data);				//Sets ACC to data
-	IRAM_W(R_R(r),oldACC);			//Sets data address to old value of ACC
+	UINT8 data = IRAM_R(R_R(r));			//Grab data pointed to by R0 or R1
+	UINT8 oldACC = R_ACC;					//Hold value of ACC
+	SFR_W(ACC,data);						//Sets ACC to data
+	IRAM_W(R_R(r),oldACC);					//Sets data address to old value of ACC
 }
 
 //XCH A, RO to R7							/* 1: 1100 1rrr */
 INLINE void xch_a_r(int r)
 {
-	UINT8 data = R_R(r);			//Grab data from R0-R7
-	UINT8 oldACC = R_ACC;			//Hold value of ACC
-	SFR_W(ACC,data);				//Sets ACC to data
-	R_R(r) = oldACC;				//Sets data address to old value of ACC
+	UINT8 data = R_R(r);					//Grab data from R0-R7
+	UINT8 oldACC = R_ACC;					//Hold value of ACC
+	SFR_W(ACC,data);						//Sets ACC to data
+	R_R(r) = oldACC;						//Sets data address to old value of ACC
 }
 
 //XCHD A, @R0/@R1							/* 1: 1101 011i */
 INLINE void xchd_a_ir(int r)
 {
 	UINT8 acc, ir_data;
-	ir_data = IRAM_R(R_R(r));							//Grab data pointed to by R0 or R1
-	acc = R_ACC;										//Grab ACC value
+	ir_data = IRAM_R(R_R(r));				//Grab data pointed to by R0 or R1
+	acc = R_ACC;							//Grab ACC value
 	SFR_W(ACC, (acc & 0xf0) | (ir_data & 0x0f) );		//Set ACC to lower nibble of data pointed to by R0 or R1
 	IRAM_W(R_R(r), (ir_data & 0xf0) | (acc & 0x0f) );	//Set data pointed to by R0 or R1 to lower nibble of ACC
 }
@@ -896,47 +898,47 @@ INLINE void xchd_a_ir(int r)
 //XRL data addr, A							/* 1: 0110 0010 */
 INLINE void xrl_mem_a(void)
 {
-	UINT8 addr = ROP_ARG(PC++);		//Grab data address
-	UINT8 data = IRAM_R(addr);		//Grab data from data address
-	IRAM_W(addr,data ^ R_ACC);		//Set data address value to it's value Logical XOR with ACC
+	UINT8 addr = ROP_ARG(PC++);				//Grab data address
+	UINT8 data = IRAM_R(addr);				//Grab data from data address
+	IRAM_W(addr,data ^ R_ACC);				//Set data address value to it's value Logical XOR with ACC
 }
 
 //XRL data addr, #data						/* 1: 0110 0011 */
 INLINE void xrl_mem_byte(void)
 {
-	UINT8 addr = ROP_ARG(PC++);		//Grab data address
-	UINT8 data = ROP_ARG(PC++);		//Grab data
-	UINT8 srcdata = IRAM_R(addr);	//Grab data from data address
-	IRAM_W(addr,srcdata ^ data);	//Set data address value to it's value Logical XOR with Data
+	UINT8 addr = ROP_ARG(PC++);				//Grab data address
+	UINT8 data = ROP_ARG(PC++);				//Grab data
+	UINT8 srcdata = IRAM_R(addr);			//Grab data from data address
+	IRAM_W(addr,srcdata ^ data);			//Set data address value to it's value Logical XOR with Data
 }
 
 //XRL A, #data								/* 1: 0110 0100 */
 INLINE void xrl_a_byte(void)
 {
-	UINT8 data = ROP_ARG(PC++);		//Grab data
-	SFR_W(ACC,R_ACC ^ data);		//Set ACC to value of ACC Logical XOR with Data
+	UINT8 data = ROP_ARG(PC++);				//Grab data
+	SFR_W(ACC,R_ACC ^ data);				//Set ACC to value of ACC Logical XOR with Data
 }
 
 //XRL A, data addr							/* 1: 0110 0101 */
 INLINE void xrl_a_mem(void)
 {
-	UINT8 addr = ROP_ARG(PC++);		//Grab data address
-	UINT8 data = IRAM_R(addr);		//Grab data from data address
-	SFR_W(ACC,R_ACC ^ data);		//Set ACC to value of ACC Logical XOR with Data
+	UINT8 addr = ROP_ARG(PC++);				//Grab data address
+	UINT8 data = IRAM_R(addr);				//Grab data from data address
+	SFR_W(ACC,R_ACC ^ data);				//Set ACC to value of ACC Logical XOR with Data
 }
 
 //XRL A, @R0/@R1							/* 1: 0110 011i */
 INLINE void xrl_a_ir(int r)
 {
-	UINT8 data = IRAM_R(R_R(r));	//Grab data from address R0 or R1 points to
-	SFR_W(ACC,R_ACC ^ data);		//Set ACC to value of ACC Logical XOR with Data
+	UINT8 data = IRAM_R(R_R(r));			//Grab data from address R0 or R1 points to
+	SFR_W(ACC,R_ACC ^ data);				//Set ACC to value of ACC Logical XOR with Data
 }
 
 //XRL A, R0 to R7							/* 1: 0110 1rrr */
 INLINE void xrl_a_r(int r)
 {
-	UINT8 data = R_R(r);			//Grab data from R0 - R7
-	SFR_W(ACC,R_ACC ^ data);		//Set ACC to value of ACC Logical XOR with Data
+	UINT8 data = R_R(r);					//Grab data from R0 - R7
+	SFR_W(ACC,R_ACC ^ data);				//Set ACC to value of ACC Logical XOR with Data
 }
 
 //illegal opcodes

@@ -28,12 +28,21 @@
  *  #2) 8051 simulator by Travis Marlatte
  *  #3) Portable UPI-41/8041/8741/8042/8742 emulator V0.1 by Juergen Buchmueller (MAME CORE)
  *
+ *****************************************************************************/
+
+/******************************************************************************
  *  Notes:
  *		  *Important*: Internal ROM needs to be treated the same as external rom by the programmer 
  *		               creating the driver (ie, use standard cpu rom region)
  *
  *        August 27,2003: Currently support for only 8031/8051/8751 chips (ie 128 RAM)
- *		  Todo: Timer support, Serial Data support, Setting Interrupt Priority
+ *		  Todo: Full Timer support, Serial Data support, Setting Interrupt Priority
+ *
+ *		  Not Implemented: RAM paging using hardware configured addressing...
+ *                         the "MOVX a,@R0/R1" and "MOVX @R0/R1,a" commands can use any of the other ports
+ *						   to output a page offset into ram, but it is totally based on the hardware setup.
+ *
+ *		  Not sure how to deal with Port Reads, ie, reading from the latch versus the pin (see more notes in ops file)
  *
  *****************************************************************************/
 
@@ -43,7 +52,7 @@
 #include "mamedbg.h"
 #include "i8051.h"
 
-#if 1 //VERBOSE
+#if VERBOSE
 #define LOG(x)	logerror x
 #else
 #define LOG(x)
@@ -73,7 +82,7 @@ typedef struct {
 	UINT16	ppc;			//previous pc
 	UINT16	pc;				//current pc
 	UINT16	subtype;		//specific version of the cpu, ie 8031, or 8051 for example
-	UINT8   executing;		//Flag to determine if an instruction is executing (needed for proper port operation)
+	UINT8   executing;		//Flag to determine if an instruction is executing (might be needed for proper port operation)
 	UINT8	cur_irq;		//Holds value of any current IRQ being serviced
 
 	//SFR Registers			(Note: Appear in order as they do in memory)
@@ -126,10 +135,10 @@ static UINT8 i8051_reg_layout[] = {
 
 /* Layout of the debugger windows x,y,w,h */
 static UINT8 i8051_win_layout[] = {
-	 0, 0,80, 3,	/* register window (top rows) */
-	 0, 4,24,18,	/* disassembler window (left colums) */
-	25, 4,55, 8,	/* memory #1 window (right, upper middle) */
-	25,13,55, 8,	/* memory #2 window (right, lower middle) */
+	 0, 0,80, 2,	/* register window (top rows) */
+	 0, 3,24,19,	/* disassembler window (left colums) */
+	25, 3,55,10,	/* memory #1 window (right, upper middle) */
+	25,14,55, 8,	/* memory #2 window (right, lower middle) */
 	 0,23,80, 1,	/* command line window (bottom rows) */
 };
 
@@ -185,8 +194,8 @@ static UINT8 i8051_win_layout[] = {
  * Easy macro for working with 16 bit DPTR
  ***************************************************************/
 #define R_DPTR			((R_DPH<<8) | R_DPL)
-#define DPTR_W(n)		SFR_W(DPH, ((n>>8)&0xff));\
-						SFR_W(DPL, (n&0xff));
+#define DPTR_W(n)		SFR_W(DPH, ((n)>>8)&0xff);\
+						SFR_W(DPL, ((n)&0xff));
 /***************************************************************
  * Easy macros for Setting Flags
  ***************************************************************/
@@ -405,7 +414,6 @@ static UINT8 i8051_cycles[] = {
 /* Include Opcode functions */
 #include "i8051ops.c"
 
-//SJE: Check this function carefully, with the macros
 void i8051_init(void)
 {
 	int cpu = cpu_getactivecpu();
@@ -1348,7 +1356,7 @@ INLINE UINT8 check_interrupts(void)
 {
 	static UINT8 int_vec = 0;		//static should help execution time
 
-	//If All Inerrupts Disabled or no pending, clear all pending flags, and abort..
+	//If All Inerrupts Disabled or no pending abort..
 	if(!GET_EA) {
 		LOG(("Skipping Interrupts\n"));
 		return 0;
@@ -1397,6 +1405,7 @@ INLINE UINT8 check_interrupts(void)
 		//Set vector and clear pending flag
 		int_vec = V_TF1;
 		SET_TF1(0);
+		//remove this line when support is added
 		return 0;
 	}
 	//Serial Interrupt
@@ -1406,6 +1415,8 @@ INLINE UINT8 check_interrupts(void)
 		int_vec = V_RITI;
 		// no flags are cleared, TI and RI
 		// remain active until reset by software
+
+		//remove this line when support is added
 		return 0;
 	}
 #if (HAS_I8052)
@@ -1514,7 +1525,7 @@ static WRITE_HANDLER(sfr_write)
 	{
 		case P0:
 			R_P0 = data;
-			if (EXEC)	OUT(0,data);	//If executing an instruction, read from the port
+			if (EXEC)	OUT(0,data);	//If executing an instruction, write to the port
 			break;
 
 		case SP: 
@@ -1536,7 +1547,7 @@ static WRITE_HANDLER(sfr_write)
 
 		case P1:
 			R_P1 = data;
-			if (EXEC)	OUT(1,data);	//If executing an instruction, read from the port
+			if (EXEC)	OUT(1,data);	//If executing an instruction, write to the port
 			break;
 
 		case SCON:
@@ -1557,14 +1568,14 @@ static WRITE_HANDLER(sfr_write)
 
 		case P2:
 			R_P2 = data;
-			if (EXEC)	OUT(2,data);	//If executing an instruction, read from the port
+			if (EXEC)	OUT(2,data);	//If executing an instruction, write to the port
 			break;
 
 		case IE:		R_IE  = data; break;
 
 		case P3:
 			R_P3 = data;
-			if (EXEC)	OUT(3,data);	//If executing an instruction, read from the port
+			if (EXEC)	OUT(3,data);	//If executing an instruction, write to the port
 			break;
 
 		case IP:		R_IP  = data; break;
@@ -1601,7 +1612,9 @@ static READ_HANDLER(sfr_read)
 {
 	switch (offset)
 	{
-		case P0:		return R_P0;
+		case P0:		
+			return R_P0;					//Read directly from port latch
+			//return IN(0);					//Read from actual port
 		case SP:		return R_SP;
 		case DPL:		return R_DPL;
 		case DPH:		return R_DPH;
@@ -1612,12 +1625,18 @@ static READ_HANDLER(sfr_read)
 		case TL1:		return R_TL1;
 		case TH0:		return R_TH0;
 		case TH1:		return R_TH1;
-		case P1:		return R_P1;
+		case P1:		
+			return R_P1;					//Read directly from port latch
+			//return IN(1);					//Read from actual port
 		case SCON:		return R_SCON;
 		case SBUF:		return R_SBUF;
-		case P2:		return R_P2;
+		case P2:		
+			return R_P2;					//Read directly from port latch
+			//return IN(2);					//Read from actual port
 		case IE:		return R_IE;
-		case P3:		return R_P3;
+		case P3:		
+			return R_P3;					//Read directly from port latch
+			//return IN(3);					//Read from actual port
 		case IP:		return R_IP;
 	//8052 Only registers
 	#if (HAS_I8052)
@@ -1816,19 +1835,19 @@ INLINE void do_add_flags(UINT8 a, UINT8 data, UINT8 c)
 
 INLINE void do_sub_flags(UINT8 a, UINT8 data, UINT8 c)
 {
-	INT16 result1 = (INT8)a-(INT8)(data-c);
+	UINT16 result = a-(data+c);
+	INT16 result1 = (INT8)a-(INT8)(data+c);
 	int cy, ac, ov;
-
-	cy = ((data-c)>a);						//Set if unsigned value being subtracted is greater than the ACC value
-	ac = (((data-c)&0x0f) > (a&0x0f));		//Set if nibble of unsigned value being subtracted is greater than the nibble of ACC value
+	cy = (result & 0x100) >> 8;
+	result = (a&0x0f)-((data&0x0f)+c);
+	ac = (result & 0x10) >> 4;
 	ov = (result1 < -128 || result1 > 127);
-
 	SET_CY(cy);
 	SET_AC(ac);
 	SET_OV(ov);
 
 #ifdef MAME_DEBUG
-//	printf("sub: result=%x, c=%x, ac=%x, ov=%x\n",a-data-c,cy,ac,ov);
+//	printf("sub: a=%x, d=%x, c=%x, result=%x, cy=%x, ac=%x, ov=%x\n",a,data,c,a-data-c,cy,ac,ov);
 #endif
 }
 
