@@ -43,7 +43,7 @@ const struct core_dispLayout s11_dispS9[] = {
 const struct core_dispLayout s11_dispS11[] = {
   DISP_SEG_7(0,0,CORE_SEG16),DISP_SEG_7(0,1,CORE_SEG16),
   DISP_SEG_7(1,0,CORE_SEG8), DISP_SEG_7(1,1,CORE_SEG8),
-  DISP_SEG_CREDIT(0,8,CORE_SEG7S),DISP_SEG_BALLS(20,28,CORE_SEG7S),{0}
+  {2,8,0,1,CORE_SEG7S},{2,10,8,1,CORE_SEG7S}, {2,2,20,1,CORE_SEG7S},{2,4,28,1,CORE_SEG7S}, {0}
 };
 const struct core_dispLayout s11_dispS11a[] = {
   DISP_SEG_7(0,0,CORE_SEG16),DISP_SEG_7(0,1,CORE_SEG16),
@@ -588,7 +588,7 @@ MACHINE_DRIVER_START(s11_s9S)
   MDRV_SOUND_CMDHEADING("s11")
 MACHINE_DRIVER_END
 
-/* System 11 with S11C sound board*/
+/* System 11 with S11C sound board, diagnostic digit */
 MACHINE_DRIVER_START(s11_s11XS)
   MDRV_IMPORT_FROM(s11)
   MDRV_IMPORT_FROM(wmssnd_s11xs)
@@ -596,6 +596,12 @@ MACHINE_DRIVER_START(s11_s11XS)
   MDRV_DIAGNOSTIC_LED7
   MDRV_SOUND_CMD(s11_sndCmd_w)
   MDRV_SOUND_CMDHEADING("s11")
+MACHINE_DRIVER_END
+
+/* System 11 with S11C sound board, diagnostic LED only */
+MACHINE_DRIVER_START(s11_s11XSL)
+  MDRV_IMPORT_FROM(s11_s11XS)
+  MDRV_DIAGNOSTIC_LEDH(1)
 MACHINE_DRIVER_END
 
 /* System 11a without external sound board*/
