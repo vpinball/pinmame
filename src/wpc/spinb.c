@@ -33,7 +33,7 @@
   Roms: IC9 (8192 Bytes), IC15, IC16, IC17 (524288 Bytes)
   Ram: 6116 - 2048 Bytes Hooked to the PIA
   Audio: MSM6586 (Upgraded 5205) - Toggles between 4Khz, 8Khz from PIA - PC5 Pin
-  
+
   Page 2 - Music Section
   CPU: Z80
   Clock: 5Mhz/2 = 2.5Mhz or 6Mhz/2 = 3Mhz
@@ -128,7 +128,7 @@ SND CPU #1 8255 PPI
   (out) Address 0-7 for DATA ROM		(manual showes this as Port A incorrectly!)
 
   Port C:
-  (out) 
+  (out)
     (IN)(P0)    - Detects nibble feeds to MSM6585
 		(P1-P3) - Not Used?
 		(P4)    - Ready Status to Main CPU
@@ -145,13 +145,13 @@ SND CPU #2 8255 PPI
   (out) Address 0-7 for DATA ROM		(manual showes this as Port A incorrectly!)
 
   Port C:
-  (out) 
+  (out)
 		(IN)(P0)- Detects nibble feeds to MSM6585
 		(P1-P3) - Not Used?
 		(P4)    - Not Used?
 		(P5)    - S1 Pin on MSM6858 (Sample Rate Select 1)
 		(P6)    - Reset on MSM6858
-		(P7)    - Not Used?  
+		(P7)    - Not Used?
 
 ***************************************************************************************/
 
@@ -183,7 +183,8 @@ SND CPU #2 8255 PPI
 #define SPINB_8051CPU_FREQ 16000000
 
 #define SPINB_VBLANKFREQ      60 /* VBLANK frequency*/
-#define SPINB_INTFREQ        250 /* Z80 Interrupt frequency*/
+#define SPINB_INTFREQ        200 /* Z80 Interrupt frequency*/
+#define SPINB_NMIFREQ       2500 /* Z80 NMI frequency*/
 
 #define MATRIX_STROBE 0
 #define DIPCOL_STROBE 1
@@ -611,10 +612,10 @@ SND CPU #1 8255 PPI
 */
 READ_HANDLER(snd1_porta_r) { LOGSND(("SND1_PORTA_R\n")); return 0; }
 READ_HANDLER(snd1_portb_r) { LOGSND(("SND1_PORTB_R\n")); return 0; }
-READ_HANDLER(snd1_portc_r) { 
+READ_HANDLER(snd1_portc_r) {
 	int data = SPINBlocals.S1_PC0;
-//	LOGSND(("SND1_PORTC_R = %x\n",data)); 
-	return data; 
+//	LOGSND(("SND1_PORTC_R = %x\n",data));
+	return data;
 }
 
 /*
@@ -627,10 +628,10 @@ SND CPU #1 8255 PPI
   (out) Address 0-7 for DATA ROM		(manual showes this as Port A incorrectly!)
 
   Port C:
-  (out) 
+  (out)
     (IN)(P0)    - Detects nibble feeds to MSM6585
 		(P1-P3) - Not Used?
-		(P4)    - Ready Status to Main CPU 
+		(P4)    - Ready Status to Main CPU
 		(P5)    - S1 Pin on MSM6858 (Sample Rate Select 1)
 		(P6)    - Reset on MSM6858
 		(P7)    - Not Used?
@@ -642,18 +643,18 @@ WRITE_HANDLER(snd1_portc_w)
 //	LOGSND(("SND1_PORTC_W = %02x\n",data));
 	SPINBlocals.SoundReady = GET_BIT4;
 
-	//Set Reset Line on the chip 
+	//Set Reset Line on the chip
 	MSM5205_reset_w(0, GET_BIT6);
 
 	//PC0 = 1 on Reset
-	if(GET_BIT6) 
+	if(GET_BIT6)
 		SPINBlocals.S1_PC0 = 1;
 	else {
 	//Read Data from ROM & Write Data To MSM Chip
 		int msmdata = SPINB_S1_MSM5025_READROM(0);
 		SPINB_S1_MSM5025_w(0,msmdata);
 	}
-	//Store reset value 
+	//Store reset value
 	SPINBlocals.S1_Reset = GET_BIT6;
 }
 
@@ -668,21 +669,21 @@ SND CPU #2 8255 PPI
   (out) Address 0-7 for DATA ROM		(manual showes this as Port A incorrectly!)
 
   Port C:
-  (out) 
+  (out)
     (IN)(P0)    - Detects nibble feeds to MSM6585
 		(P1-P3) - Not Used?
 		(P4)    - Not Used?
 		(P5)    - S1 Pin on MSM6858 (Sample Rate Select 1)
 		(P6)    - Reset on MSM6858
-		(P7)    - Not Used?  
+		(P7)    - Not Used?
 */
 READ_HANDLER(snd2_porta_r) { LOGSND(("SND2_PORTA_R\n")); return 0; }
 READ_HANDLER(snd2_portb_r) { LOGSND(("SND2_PORTB_R\n")); return 0; }
-READ_HANDLER(snd2_portc_r) 
-{ 
+READ_HANDLER(snd2_portc_r)
+{
 	int data = SPINBlocals.S2_PC0;
-	//LOGSND(("SND2_PORTC_R = %x\n",data)); 
-	return data; 
+	//LOGSND(("SND2_PORTC_R = %x\n",data));
+	return data;
 
 }
 
@@ -693,7 +694,7 @@ WRITE_HANDLER(snd2_portc_w)
 {
 	//LOGSND(("SND2_PORTC_W = %02x\n",data));
 
-	//Set Reset Line on the chip 
+	//Set Reset Line on the chip
 	MSM5205_reset_w(1, GET_BIT6);
 
 	//PC0 = 1 on Reset
@@ -704,7 +705,7 @@ WRITE_HANDLER(snd2_portc_w)
 		int msmdata = SPINB_S2_MSM5025_READROM(0);
 		SPINB_S2_MSM5025_w(0,msmdata);
 	}
-	//Store reset value 
+	//Store reset value
 	SPINBlocals.S2_Reset = GET_BIT6;
 }
 
@@ -791,6 +792,8 @@ static int spinb_m2sw(int col, int row) {
 }
 
 static void spinb_z80int(int data) {  cpu_set_irq_line(0, 0, PULSE_LINE); }
+
+static INTERRUPT_GEN(spinb_z80nmi) {  cpu_set_nmi_line(0, PULSE_LINE); }
 
 /*Machine Init*/
 static MACHINE_INIT(spinb) {
@@ -987,9 +990,9 @@ WRITE_HANDLER(sndctrl_2_w)
 static READ_HANDLER(SPINB_S1_MSM5025_READROM)
 {
 	int addr, data;
-	addr = (SPINBlocals.S1_CS2<<20) | (SPINBlocals.S1_CS1<<19) | 
-		   (SPINBlocals.S1_A18<<18) | (SPINBlocals.S1_A17<<17) | 
-		   (SPINBlocals.S1_A16<<16) | (SPINBlocals.S1_AHI<<8) | 
+	addr = (SPINBlocals.S1_CS2<<20) | (SPINBlocals.S1_CS1<<19) |
+		   (SPINBlocals.S1_A18<<18) | (SPINBlocals.S1_A17<<17) |
+		   (SPINBlocals.S1_A16<<16) | (SPINBlocals.S1_AHI<<8) |
 		   (SPINBlocals.S1_ALO);
 	data = (UINT8)*(memory_region(REGION_USER1) + addr);
 	return data;
@@ -998,9 +1001,9 @@ static READ_HANDLER(SPINB_S1_MSM5025_READROM)
 static READ_HANDLER(SPINB_S2_MSM5025_READROM)
 {
 	int addr, data;
-	addr = (SPINBlocals.S2_CS2<<20) | (SPINBlocals.S2_CS1<<19) | 
-		   (SPINBlocals.S2_A18<<18) | (SPINBlocals.S2_A17<<17) | 
-		   (SPINBlocals.S2_A16<<16) | (SPINBlocals.S2_AHI<<8)  | 
+	addr = (SPINBlocals.S2_CS2<<20) | (SPINBlocals.S2_CS1<<19) |
+		   (SPINBlocals.S2_A18<<18) | (SPINBlocals.S2_A17<<17) |
+		   (SPINBlocals.S2_A16<<16) | (SPINBlocals.S2_AHI<<8)  |
 		   (SPINBlocals.S2_ALO);
 	data = (UINT8)*(memory_region(REGION_USER2) + addr);
 	return data;
@@ -1016,7 +1019,7 @@ static WRITE_HANDLER(SPINB_S2_MSM5025_w) {
 
 /* MSM5205 interrupt callback */
 static void SPINB_S1_msmIrq(int data) {
-  //Write data 
+  //Write data
   if(!SPINBlocals.S1_Reset) {
 	int mdata = SPINBlocals.S1_MSMDATA>>(4*SPINBlocals.S1_PC0);	//PC0 determines if lo or hi nibble is fed
 	MSM5205_data_w(0, mdata&0x0f);
@@ -1027,7 +1030,7 @@ static void SPINB_S1_msmIrq(int data) {
 
 /* MSM5205 interrupt callback */
 static void SPINB_S2_msmIrq(int data) {
-  //Write data 
+  //Write data
   if(!SPINBlocals.S2_Reset) {
 	int mdata = SPINBlocals.S2_MSMDATA>>(4*SPINBlocals.S2_PC0);	//PC0 determines if lo or hi nibble is fed
 	MSM5205_data_w(1, mdata&0x0f);
@@ -1157,7 +1160,7 @@ MACHINE_DRIVER_START(spinb)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(spinb,spinb,spinb)
   MDRV_NVRAM_HANDLER(generic_0fill)
-  MDRV_CPU_ADD(Z80, SPINB_Z80CPU_FREQ)
+  MDRV_CPU_ADD_TAG("mcpu", Z80, SPINB_Z80CPU_FREQ)
   MDRV_CPU_MEMORY(spinb_readmem, spinb_writemem)
   MDRV_CPU_VBLANK_INT(spinb_vblank, SPINB_VBLANKFREQ)
 
@@ -1165,9 +1168,20 @@ MACHINE_DRIVER_START(spinb)
   MDRV_SWITCH_CONV(spinb_sw2m,spinb_m2sw)
 MACHINE_DRIVER_END
 
-//Main CPU, DMD, Sound hardware Driver
+//Main CPU without NMI, DMD, Sound hardware Driver
 MACHINE_DRIVER_START(spinbs1)
   MDRV_IMPORT_FROM(spinb)
+  MDRV_IMPORT_FROM(spinbdmd)
+  MDRV_IMPORT_FROM(spinbs)
+  MDRV_SOUND_CMD(spinb_sndCmd_w)
+  MDRV_SOUND_CMDHEADING("spinb")
+MACHINE_DRIVER_END
+
+//Main CPU with NMI, DMD, Sound hardware Driver
+MACHINE_DRIVER_START(spinbs1n)
+  MDRV_IMPORT_FROM(spinb)
+  MDRV_CPU_MODIFY("mcpu")
+  MDRV_CPU_PERIODIC_INT(spinb_z80nmi, SPINB_NMIFREQ)
   MDRV_IMPORT_FROM(spinbdmd)
   MDRV_IMPORT_FROM(spinbs)
   MDRV_SOUND_CMD(spinb_sndCmd_w)
@@ -1178,7 +1192,7 @@ MACHINE_DRIVER_END
 /* DMD DRAWING ROUTINES */
 /* -------------------- */
 
-//DRAW DMD FROM RAM OPTION 
+//DRAW DMD FROM RAM OPTION
 
 #if DMD_FROM_RAM
 PINMAME_VIDEO_UPDATE(SPINBdmd_update) {
@@ -1249,7 +1263,7 @@ PINMAME_VIDEO_UPDATE(SPINBdmd_update) {
   int ii,jj;
   RAM2 = RAM;
   RAM2 = RAM+0x200;
-  
+
   for (ii = 1; ii <= 32; ii++) {
     UINT8 *line = &dotCol[ii][0];
     for (jj = 0; jj < (128/8); jj++) {
