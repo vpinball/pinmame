@@ -9,10 +9,14 @@ extern UINT8 DMDFrames[GTS3DMD_FRAMES][0x200];
 extern int crtc6845_start_addr;
 
 #if 1
+static core_tLCDLayout gts_128x32DMD[] = {
+	{0,0,32,128,CORE_DMD}, {0}
+};
+
 void gts3_dmd128x32_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
-  //tDMDDot dotCol;
+  tDMDDot dotCol;
+  UINT8 *frameData = &DMDFrames[0][0];
   int ii,jj,kk,ll;
-  BMTYPE **lines = (BMTYPE **)bitmap->line;
 #ifdef DEBUGSWAP
   char temp[250];
   sprintf(temp,"location=%04x   %04x",0x1000+(crtc6845_start_addr>>2), crtc6845_start_addr);
@@ -22,29 +26,27 @@ void gts3_dmd128x32_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
   /* Drawing is not optimised so just clear everything */
   if (fullRefresh) fillbitmap(bitmap,Machine->pens[0],NULL);
 
-  for (ii = 0; ii < 32; ii++) {
-      BMTYPE *line = *lines++;
-	  for (jj = 0; jj < 128/8; jj++) {
-		  for(kk=7;kk>=0;kk--) {
-			  int data = 0;
-			  for(ll=0;ll<GTS3DMD_FRAMES;ll++) {
-				data += ((DMDFrames[ll][(ii*128/8)+jj])>>kk)&1;
-			  }
-			  if(data>(GTS3DMD_FRAMES-(FRAMEDIV*1))
-				*line++ = CORE_COLOR(DMD_DOTON);
-			  else 
-			  if(data>(GTS3DMD_FRAMES-(FRAMEDIV*2))
-				*line++ = CORE_COLOR(DMD_DOT66);
-			  else
-			  if(data>1)
-				*line++ = CORE_COLOR(DMD_DOT33);
-			  else
-				*line++ = CORE_COLOR(DMD_DOTOFF);
-		  line++;
-		  }
-	  }
-	  lines++;
+  memset(dotCol,0,sizeof(tDMDDot));
+  for (ii = 0; ii < GTS3DMD_FRAMES; ii++) { // 24 frames
+    for (jj = 1; jj <= 32; jj++) {           // 32 lines
+      UINT8 *line = &dotCol[jj][0];
+      for (kk = 0; kk < 16; kk++) {      // 16 columns/line
+        UINT8 data = *frameData++;
+        for (ll = 0; ll < 8; ll++)          // 8 pixels/column
+          { (*line++) += (data>>7); data <<= 1; }
+      }
+    }
   }
+  for (ii = 1; ii <= 32; ii++)               // 32 lines
+    for (jj = 0; jj < 128; jj++) {          // 128 pixels/line
+      UINT8 data = dotCol[ii][jj];
+      if (data > 18)     data = 3;
+      else if(data > 11) data = 2;
+      else if(data > 2)  data = 1;
+      else               data = 0;
+      dotCol[ii][jj] = data;
+  }
+  dmd_draw(bitmap, dotCol, gts_128x32DMD);
   drawStatus(bitmap,fullRefresh);
 }
 
