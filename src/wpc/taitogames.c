@@ -166,7 +166,7 @@ TAITO_SOUNDROMS22("cosmc_s1.bin", CRC(09f082c1) SHA1(653d6f9f9cc62b46aa2df2fa8dd
                   "cosmc_s2.bin", CRC(84b98b95) SHA1(1946856de6d1ae05888826416bef9bdb25d652ed))
 TAITO_ROMEND
 #define input_ports_cosmic input_ports_taito
-CORE_GAMEDEFNV(cosmic,"Cosmic",1982,"Taito",taito_sintetizador,0)
+CORE_GAMEDEFNV(cosmic,"Cosmic",1981,"Taito",taito_sintetizador,0)
 
 /*--------------------------------
 / Gemini 2000
@@ -358,18 +358,16 @@ CORE_GAMEDEFNV(fireactd,"Fire Action Deluxe",198?,"Taito",taito_sintevoxpp,GAME_
 /*--------------------------------
 / Space Shuttle
 /-------------------------------*/
-INITGAME(sshuttle,SNDBRD_TAITO_SINTETIZADORPP)
-TAITO_ROMSTART22222(sshuttle,"sshtl1.bin",CRC(ab67ed50) SHA1(0f627b007d74b81aba6b4ad0f4cf6782e42e24c9),
-                             "sshtl2.bin",CRC(ed5130a4) SHA1(3e99c151d6649c4b19d59ab2128ee3160c6462a9),
-                             "sshtl3.bin",CRC(b1ddb78b) SHA1(ffa2aa6f501a06b2a3a92b1926050bd3ca053d0d),
-                             "sshtl4.bin",NO_DUMP,
-                             "sshtl5.bin",NO_DUMP)
-TAITO_SOUNDROMS444("sshtl_s1.bin", NO_DUMP,
-                   "sshtl_s2.bin", NO_DUMP,
-                   "sshtl_s3.bin", NO_DUMP)
+INITGAME(sshuttle,SNDBRD_TAITO_SINTETIZADOR)
+TAITO_ROMSTART2222(sshuttle,"sshtl1.bin",CRC(ab67ed50) SHA1(0f627b007d74b81aba6b4ad0f4cf6782e42e24c9),
+                            "sshtl2.bin",CRC(ed5130a4) SHA1(3e99c151d6649c4b19d59ab2128ee3160c6462a9),
+                            "sshtl3.bin",CRC(17d43a16) SHA1(dd9a503460db9af64d6e22303d8a5b5b578ff950),
+                            "sshtl4.bin",CRC(2719dbac) SHA1(3519dbac6fc0314d3277d59211bad4abf844ee02))
+TAITO_SOUNDROMS22("rally_s1.bin", CRC(0c7ca1bc) SHA1(09df10b1b295b9a7f5c337eb4f1e1e4db0f3d113),
+                  "rally_s2.bin", CRC(a409d9d1) SHA1(3005cfaedd6edf3d80cac539563655f3bcc342ca))
 TAITO_ROMEND
 #define input_ports_sshuttle input_ports_taito
-CORE_GAMEDEFNV(sshuttle,"Space Shuttle (Taito)",1985,"Taito",taito_sintetizadorpp,0)
+CORE_GAMEDEFNV(sshuttle,"Space Shuttle (Taito)",1985,"Taito",taito_sintetizador,0)
 
 /*--------------------------------
 / Polar Explorer
