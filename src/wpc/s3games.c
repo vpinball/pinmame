@@ -42,7 +42,7 @@ CORE_GAMEDEF(lucky,l1,"Lucky Seven (L-1)",1977,"Williams",s3_mS3C,GAME_USES_CHIM
 /*-------------------------------------
 / World Cup Soccer - Sys.3 (Game #481)
 /-------------------------------------*/
-INITGAME(wldcp, GEN_S3,s4_disp)
+INITGAMEFULL(wldcp, GEN_S3,s4_disp,0,0,38,37,0,0,0,0)
 S4_ROMSTART(wldcp,l1,"gamerom.716", CRC(c8071956) SHA1(0452aaf2ec1bcc5717fe52a6c541d79402bebb17),
                      "white1.716",  CRC(9bbbf14f) SHA1(b0542ffdd683fa0ea4a9819576f3789cd5a4b2eb),
                      "white2wc.716",CRC(618d15b5) SHA1(527387893eeb2cd4aa563a4cfb1948a15d2ed741))
