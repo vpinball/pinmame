@@ -25,8 +25,9 @@ Bugs Fixed
 
 New Features
 ------------
--Granny & The Gators Working Emulation (Including Sound - Still some graphical glitches)
+-Granny & The Gators Working Emulation (Including Sound)
  [Steve Ellenoff]
+ [Gerrit Volkenborn]
 
 -Hankin: Full working Sound Support (Orbit 1 and FJ Holden only particially working)
 -Gottlieb System 80: Sound (not speech!) for Sound-only games now fully working
