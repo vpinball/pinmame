@@ -143,7 +143,7 @@ static char* RunningGameSettings[] = {
 	NULL
 };
 
-void vpm_frontend_init(void) {
+void cli_frontend_init(void) {
   /* clear all core options */
   memset(&options,0,sizeof(options));
 #if MAMEVER < 6100
@@ -169,7 +169,7 @@ void vpm_frontend_init(void) {
   logfile = config_get_logfile();
 }
 
-void vpm_frontend_exit(void) {
+void cli_frontend_exit(void) {
   /* close open files */
   if (options.language_file) /* this seems to never be opened in Win32 version */
     { osd_fclose(options.language_file); options.language_file = NULL; }
