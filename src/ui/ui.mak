@@ -61,7 +61,7 @@ DEFS += -DDIRECTSOUND_VERSION=0x0300 \
 #####################################################################
 # Resources
 
-RC = windres
+RC = windres --use-temp-file
 
 RCDEFS = -DNDEBUG -D_WIN32_IE=0x0400
 

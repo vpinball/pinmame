@@ -13,9 +13,6 @@
 #ifndef TREEVIEW_H
 #define TREEVIEW_H
 
-#include "Bitmask.h"
-#include "Win32ui.h"
-
 /* corrections for commctrl.h */
 
 #if defined(__GNUC__)
@@ -49,14 +46,15 @@
 
 typedef struct
 {
-	const char *m_lpTitle;                               /* Folder Title */
-	UINT        m_nFolderId;                             /* ID */
+	const char *m_lpTitle; // Folder Title
+	const char *short_name;  // for saving in the .ini
+	UINT        m_nFolderId; // ID
 	UINT        m_nIconId; // if >= 0, resource id of icon (IDI_xxx), otherwise index in image list
-	DWORD       m_dwUnset;                               /* Excluded filters */
-	DWORD       m_dwSet;                                 /* Implied filters */
-	void        (*m_pfnCreateFolders)(int parent_index); /* Constructor for special folders */
-	BOOL        (*m_pfnQuery)(int nDriver);              /* Query function */
-	BOOL        m_bExpectedResult;                       /* Expected query result */
+	DWORD       m_dwUnset; // Excluded filters
+	DWORD       m_dwSet;   // Implied filters
+	void        (*m_pfnCreateFolders)(int parent_index); // Constructor for special folders
+	BOOL        (*m_pfnQuery)(int nDriver);              // Query function
+	BOOL        m_bExpectedResult;                       // Expected query result
 } FOLDERDATA, *LPFOLDERDATA;
 
 typedef struct
@@ -76,12 +74,13 @@ void CreateYearFolders(int parent_index);
 void CreateSourceFolders(int parent_index);
 void CreateCPUFolders(int parent_index);
 void CreateSoundFolders(int parent_index);
+void CreateOrientationFolders(int parent_index);
 
 /***************************************************************************/
 
 
 /* TreeView structures */
-enum FolderIds
+enum
 {
 	FOLDER_NONE = 0,
 	FOLDER_ALLGAMES,
@@ -99,7 +98,6 @@ enum FolderIds
 	FOLDER_SND,
 	FOLDER_WORKING,
 	FOLDER_NONWORKING,
-	FOLDER_CUSTOM,
 	FOLDER_ORIGINAL,
 	FOLDER_CLONES,
 	FOLDER_RASTER,
@@ -107,7 +105,8 @@ enum FolderIds
 	FOLDER_TRACKBALL,
 	FOLDER_STEREO,
 	FOLDER_HARDDISK,
-	FOLDER_END
+	FOLDER_ORIENTATION,
+	MAX_FOLDERS,
 };
 
 typedef enum
@@ -126,12 +125,12 @@ typedef enum
 	F_MODIFIED      = 0x00000800,
 #endif
 	F_MASK          = 0x00000FFF,
-	F_CUSTOM        = 0x01000000  /* for current .ini custom folders */
+	F_CUSTOM        = 0x01000000  // for current .ini custom folders
 } FOLDERFLAG;
 
 typedef struct
 {
-    LPSTR       m_lpTitle;        // String contains the folder name
+    LPSTR m_lpTitle;        // String contains the folder name
     UINT        m_nFolderId;      // Index / Folder ID number
     int         m_nParent;        // Parent folder index in treeFolders[]
     int         m_nIconId;        // negative icon index into the ImageList, or IDI_xxx resource id
@@ -149,38 +148,41 @@ typedef struct
     int         m_nSubIconId;   // negative icon index into the ImageList, or IDI_xxx resource id
 } EXFOLDERDATA, *LPEXFOLDERDATA;
 
-extern void FreeFolders(void);
+void FreeFolders(void);
 
-extern void SetCurrentFolder(LPTREEFOLDER lpFolder);
-extern UINT GetCurrentFolderID(void);
+void SetCurrentFolder(LPTREEFOLDER lpFolder);
+UINT GetCurrentFolderID(void);
 
-extern LPTREEFOLDER GetCurrentFolder(void);
-extern int GetNumFolders(void);
-extern LPTREEFOLDER GetFolder(UINT nFolder);
-extern LPTREEFOLDER GetFolderByID(UINT nID);
+LPTREEFOLDER GetCurrentFolder(void);
+int GetNumFolders(void);
+LPTREEFOLDER GetFolder(UINT nFolder);
+LPTREEFOLDER GetFolderByID(UINT nID);
 
-extern void AddGame(LPTREEFOLDER lpFolder, UINT nGame);
-extern void RemoveGame(LPTREEFOLDER lpFolder, UINT nGame);
-extern int  FindGame(LPTREEFOLDER lpFolder, int nGame);
+void AddGame(LPTREEFOLDER lpFolder, UINT nGame);
+void RemoveGame(LPTREEFOLDER lpFolder, UINT nGame);
+int  FindGame(LPTREEFOLDER lpFolder, int nGame);
 
-extern void InitTree(LPFOLDERDATA lpFolderData, LPFILTER_ITEM lpFilterList);
-extern void ResetWhichGamesInFolders(void);
+void InitTree(LPFOLDERDATA lpFolderData, LPFILTER_ITEM lpFilterList);
+void ResetWhichGamesInFolders(void);
 
-extern BOOL GameFiltered(int nGame, DWORD dwFlags);
+BOOL GameFiltered(int nGame, DWORD dwFlags);
 
 INT_PTR CALLBACK ResetDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK FilterDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK InterfaceDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam);
 
-extern void SetTreeIconSize(HWND hWnd, BOOL bLarge);
-extern BOOL GetTreeIconSize(void);
+void SetTreeIconSize(HWND hWnd, BOOL bLarge);
+BOOL GetTreeIconSize(void);
 
-extern void GetFolders(TREEFOLDER ***folders,int *num_folders);
-extern BOOL TryRenameCustomFolder(LPTREEFOLDER lpFolder,const char *new_name);
-extern void AddToCustomFolder(LPTREEFOLDER lpFolder,int driver_index);
-extern void RemoveFromCustomFolder(LPTREEFOLDER lpFolder,int driver_index);
+void GetFolders(TREEFOLDER ***folders,int *num_folders);
+BOOL TryRenameCustomFolder(LPTREEFOLDER lpFolder,const char *new_name);
+void AddToCustomFolder(LPTREEFOLDER lpFolder,int driver_index);
+void RemoveFromCustomFolder(LPTREEFOLDER lpFolder,int driver_index);
 
-extern HIMAGELIST GetTreeViewIconList(void);
-extern int GetTreeViewIconIndex(int icon_id);
+HIMAGELIST GetTreeViewIconList(void);
+int GetTreeViewIconIndex(int icon_id);
+
+void ResetTreeViewFolders(void);
+void SelectTreeViewFolder(int folder_id);
 
 #endif /* TREEVIEW_H */

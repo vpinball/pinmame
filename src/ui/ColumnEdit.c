@@ -26,6 +26,9 @@
 #include <commdlg.h>
 
 #include "resource.h"
+#include "bitmask.h"
+#include "options.h"
+#include "screenshot.h"
 #include "win32ui.h"
 
 // Returns TRUE if successful
@@ -463,6 +466,9 @@ INT_PTR CALLBACK ColumnDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lPa
 {
 	static int shown[COLUMN_MAX];
 	static int order[COLUMN_MAX];
+	extern const char *column_names[COLUMN_MAX]; // from win32ui.c, should improve
+
+
 	return InternalColumnDialogProc(hDlg, Msg, wParam, lParam, COLUMN_MAX,
 		shown, order, column_names, GetRealColumnOrder, GetColumnInfo, SetColumnInfo);
 }

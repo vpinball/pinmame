@@ -30,6 +30,7 @@
 #include <osdepend.h>
 #include "screenshot.h"
 #include "file.h"
+#include "bitmask.h"
 #include "options.h"
 #include "m32util.h"
 #include "win32ui.h"
@@ -240,26 +241,33 @@ BOOL LoadDIB(LPCTSTR filename, HGLOBAL *phDIB, HPALETTE *pPal, int pic_type)
 
 	switch (pic_type)
 	{
-	case PICT_SCREENSHOT :
+	case TAB_SCREENSHOT :
 		set_pathlist(FILETYPE_ARTWORK,GetImgDir());
 		zip_name = "snap";
 		break;
-	case PICT_FLYER :
+	case TAB_FLYER :
 		set_pathlist(FILETYPE_ARTWORK,GetFlyerDir());
 		zip_name = "flyers";
 		break;
-	case PICT_CABINET :
+	case TAB_CABINET :
 		set_pathlist(FILETYPE_ARTWORK,GetCabinetDir());
 		zip_name = "cabinets";
 		break;
-	case PICT_MARQUEE :
+	case TAB_MARQUEE :
 		set_pathlist(FILETYPE_ARTWORK,GetMarqueeDir());
 		zip_name = "marquees";
 		break;
-	case PICT_TITLES :
+	case TAB_TITLE :
 		set_pathlist(FILETYPE_ARTWORK,GetTitlesDir());
 		zip_name = "titles";
 		break;
+	case TAB_CONTROL_PANEL :
+		set_pathlist(FILETYPE_ARTWORK,GetControlPanelDir());
+		zip_name = "cpanel";
+		break;
+	default :
+		// in case a non-image tab gets here, which can happen
+		return FALSE;
 	}
 	
 	// look for the raw file

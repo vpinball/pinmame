@@ -22,7 +22,9 @@
 #include <shlwapi.h>
 #include <assert.h>
 #include <stdio.h>
+
 #include "unzip.h"
+#include "screenshot.h"
 #include "MAME32.h"
 #include "M32Util.h"
 
@@ -306,22 +308,9 @@ BOOL DriverIsHarddisk(int driver_index)
 
 BOOL DriverHasOptionalBIOS(int driver_index)
 {
-	const struct RomModule *region, *rom;
-
 	const struct GameDriver *gamedrv = drivers[driver_index];
 
-	for (region = rom_first_region(gamedrv); region; region = rom_next_region(region))
-		if (ROMREGION_ISROMDATA(region))
-		{
-			for (rom=rom_first_file(region);rom;rom=rom_next_file(rom))
-			{
-				//dprintf("%s %i %i",ROM_GETNAME(rom),ROM_GETFLAGS(rom),ROM_BIOSFLAGS(rom));
-				if (ROM_GETBIOSFLAGS(rom) != 0)
-					return TRUE;
-			}
-		}
-
-	return FALSE;	
+	return gamedrv->bios != NULL;
 }
 
 BOOL DriverIsStereo(int driver_index)
@@ -336,6 +325,17 @@ BOOL DriverIsVector(int driver_index)
     struct InternalMachineDriver drv;
     expand_machine_driver(drivers[driver_index]->drv, &drv);
 	return (drv.video_attributes & VIDEO_TYPE_VECTOR) != 0;
+}
+
+BOOL DriverUsesRoms(int driver_index)
+{
+	const struct GameDriver *gamedrv = drivers[driver_index];
+	const struct RomModule *region, *rom;
+
+	for (region = rom_first_region(gamedrv); region; region = rom_next_region(region))
+		for (rom = rom_first_file(region); rom; rom = rom_next_file(rom))
+			return TRUE;
+	return FALSE;
 }
 
 BOOL DriverUsesSamples(int driver_index)

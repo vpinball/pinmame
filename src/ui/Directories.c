@@ -23,6 +23,8 @@
 #include <shlobj.h>
 #include <sys/stat.h>
 #include <assert.h>
+
+#include "screenshot.h"
 #include "MAME32.h"
 #include "Directories.h"
 #include "resource.h"
@@ -715,7 +717,7 @@ BOOL BrowseForDirectory(HWND hwnd, const char* pStartDir, char* pResult)
 	Info.pidlRoot		= NULL;
 	Info.pszDisplayName = buf;
 	Info.lpszTitle		= (LPCSTR)"Directory name:";
-	Info.ulFlags		= BIF_RETURNONLYFSDIRS | BIF_EDITBOX | BIF_VALIDATE;
+	Info.ulFlags		= BIF_RETURNONLYFSDIRS;
 	Info.lpfn			= BrowseCallbackProc;
 	Info.lParam 		= (LPARAM)pStartDir;
 

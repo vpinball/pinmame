@@ -14,8 +14,6 @@
 #define WIN32UI_H
 
 #include <driver.h>
-#include "options.h"
-#include "ScreenShot.h"
 
 enum
 {
@@ -31,29 +29,24 @@ typedef struct
 	const char *icon_name;
 } ICONDATA;
 
-/* global variables */
-extern const char *column_names[COLUMN_MAX];
-
-extern const ICONDATA g_iconData[];
-
-extern HWND GetMainWindow(void);
-extern HWND GetTreeView(void);
-extern int GetNumGames(void);
-extern void GetRealColumnOrder(int order[]);
-extern HICON LoadIconFromFile(const char *iconname);
-extern void UpdateScreenShot(void);
-extern void ResizePickerControls(HWND hWnd);
+HWND GetMainWindow(void);
+HWND GetTreeView(void);
+int GetNumGames(void);
+void GetRealColumnOrder(int order[]);
+HICON LoadIconFromFile(const char *iconname);
+void UpdateScreenShot(void);
+void ResizePickerControls(HWND hWnd);
 
 // Move The in "The Title (notes)" to "Title, The (notes)"
-extern char *ModifyThe(const char *str);
+char * ModifyThe(const char *str);
 
 // Convert Ampersand so it can display in a static control
-extern char* ConvertAmpersandString(const char *s);
+char * ConvertAmpersandString(const char *s);
 
 // globalized for painting tree control
-extern HBITMAP GetBackgroundBitmap(void);
-extern HPALETTE GetBackgroundPalette(void);
-extern MYBITMAPINFO * GetBackgroundInfo(void);
+HBITMAP GetBackgroundBitmap(void);
+HPALETTE GetBackgroundPalette(void);
+MYBITMAPINFO * GetBackgroundInfo(void);
 
 int GetMinimumScreenShotWindowWidth(void);
 
@@ -65,5 +58,7 @@ int GetIndexFromSortedIndex(int sorted_index);
 int Mame32Main(HINSTANCE    hInstance,
                    LPSTR        lpCmdLine,
                    int          nCmdShow);
+
+BOOL MouseHasBeenMoved(void);
 
 #endif

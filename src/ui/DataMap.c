@@ -10,6 +10,7 @@
 
 #include "resource.h"
 #include "m32util.h"
+#include "bitmask.h"
 #include "options.h"
 #include "DataMap.h"
 
