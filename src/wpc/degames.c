@@ -452,7 +452,7 @@ DE2S_SOUNDROM1444(    "frsnd.u7"  ,  0x084f856c,
                       "frsnd.u21" ,  0x14d4bc12,
                       "frsnd.u36" ,  0x9964d721)
 DE_ROMEND
-#define input_ports_frankst input_ports_des112
+#define input_ports_frankst input_ports_des11
 CORE_GAMEDEFNV(frankst,"Mary Shelley's Frankenstein",1994,"Sega",de_mDEDMD64S2A,0)
 
 //Start of the Portals Diagnostic Menu System
