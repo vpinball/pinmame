@@ -482,6 +482,7 @@ static VIDEO_UPDATE(core_status) {
       bits = coreGlobals.lampMatrix[ii];
 
       for (jj = 0; jj < 8; jj++) {
+
         line[0][ii*2] = dotColor[bits & 0x01];
         line += 2; bits >>= 1;
       }
@@ -943,8 +944,9 @@ static MACHINE_INIT(core) {
     /*-- command line options --*/
     locals.displaySize = pmoptions.dmd_compact ? 1 : 2;
     // Skip core_initDisplaySize if using CORE_VIDEO flag.. but this code must also run if NO layout defined
-    if (!(core_gameData->lcdLayout) ||
-  	   (core_gameData->lcdLayout && core_gameData->lcdLayout->type != CORE_VIDEO))
+
+//    if (!(core_gameData->lcdLayout) ||
+//  	   (core_gameData->lcdLayout && core_gameData->lcdLayout->type != CORE_VIDEO))
 	{
       UINT32 size = core_initDisplaySize(core_gameData->lcdLayout) >> 16;
   	  if ((size > CORE_SCREENX) && (locals.displaySize > 1)) {
@@ -1013,33 +1015,29 @@ static UINT32 core_initDisplaySize(const struct core_dispLayout *layout) {
   if (layout) {
     while (layout->length) {
       int tmp;
-	  if ((layout->type & CORE_SEGMASK) >= CORE_DMD) tmp = (layout->left + layout->length) * locals.segData[layout->type].cols + 1;
+      if ((layout->type & CORE_SEGMASK) >= CORE_DMD) tmp = (layout->left + layout->length) * locals.segData[layout->type].cols + 1;
       else tmp = (layout->left + 2*layout->length) * (locals.segData[layout->type & 0x07].cols + 1) / 2;
       if (tmp > maxX) maxX = tmp;
       if ((layout->type  & CORE_SEGMASK) >= CORE_DMD) tmp = (layout->top + layout->start)  * locals.segData[layout->type].rows + 1;
-	  else tmp = (layout->top + 2) * (locals.segData[0].rows + 1) / 2;
+      else tmp = (layout->top + 2) * (locals.segData[0].rows + 1) / 2;
       if (tmp > maxY) maxY = tmp;
       layout += 1;
     }
+#ifndef VPINMAME
+    if (maxX == 257) maxX = 256;
+#endif /* VPINMAME */
   }
   else if (locals.displaySize > 1)
-#ifndef VPINMAME
-    { maxX = 256; maxY = 65; }
-#else
+#ifdef VPINMAME
     { maxX = 257; maxY = 65; }
+#else
+    { maxX = 256; maxY = 65; }
 #endif /* VPINMAME */
   else
     { maxX = 129; maxY = 33; }
-  locals.firstSimRow = maxY + 5;
-  if (!pmoptions.dmd_only) {
-    maxY += 180;
-    if (maxX < 256) maxX = 256;
-  }
-  if (maxY >= CORE_SCREENY) maxY = CORE_SCREENY-1;
-#ifndef VPINMAME
-  if (maxX == 257) maxX = 256;
-#endif /* VPINMAME */
-  if (!(Machine->drv->video_attributes & VIDEO_FIXED_SIZE))
+  locals.firstSimRow = maxY + 3;
+  if (pmoptions.dmd_only && !(Machine->drv->video_attributes & VIDEO_FIXED_SIZE) &&
+      !Machine->orientation)
     set_visible_area(0, maxX-1, 0, maxY);
   return (maxX<<16) | maxY;
 }

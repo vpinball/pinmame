@@ -186,8 +186,8 @@ typedef UINT8 tDMDDot[DMD_MAXY+2][DMD_MAXX+2];
    handles all kinds of displays so we call it dispLayout.
    Keep the typedef of core_tLCDLayout for some time. */
 struct core_dispLayout {
-  UINT8  top, left, start, length;
-  UINT16 type;
+  UINT8  top, left;
+  UINT16 start, length, type;
   PINMAME_VIDEO_UPDATE(*update);
 };
 typedef struct core_dispLayout core_tLCDLayout, *core_ptLCDLayout;
