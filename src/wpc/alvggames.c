@@ -2,24 +2,17 @@
 #include "sim.h"
 #include "alvg.h"
 #include "alvgs.h"
+#include "alvgdmd.h"
 #include "sndbrd.h"
 
-//#define DMD       alvg_dispDMD
-#define DMD			alvg_NoDMD
+#define DMD       alvg_dispDMD
 
 #define FLIP78   FLIP_SWNO(6,7)		//really 7,8 in the matrix, but for some reason isn't showing properly
 
-//Here for testing, until we code up the DMD section (VPM doesn't like it, if we leave the structure empty, so we use alpha display)
-static struct core_dispLayout alvg_NoDMD[] = { /* 2 X 16 AlphaNumeric Rows */
-  DISP_SEG_16(0,CORE_SEG16),DISP_SEG_16(1,CORE_SEG16),{0}
-};
-
-#if 0
 /* Dot-Matrix display */
 static struct core_dispLayout alvg_dispDMD[] = {
-  {0,0,32,128,CORE_DMD,(void *)alvg_dmd128x32}, {0}
+  {0,0,32,128,CORE_DMD,(void *)alvgdmd_update}, {0}
 };
-#endif
 
 #define INITGAME(name, disptype, flippers, balls, sb, lamps) \
 	ALVG_INPUT_PORTS_START(name, balls) ALVG_INPUT_PORTS_END \
