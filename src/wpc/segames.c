@@ -749,11 +749,11 @@ CORE_CLONEDEFNV(rctycne,rctycn,"Roller Coaster Tycoon (Spain)",2002,"Stern",de_m
 
 //And back to the 12 voice model here!
 /*-------------------------------------------------------------------
-/ The Simpsons Pinball Party (2.04)
+/ The Simpsons Pinball Party (4.00)
 /-------------------------------------------------------------------*/
 INITGAME(simpprty,GEN_WS,se_dmd128x32,0)
-SE128_ROMSTART(simpprty, "spp-cpu.204",CRC(5bc155f7) SHA1(78d793cecbc6561a891ff8007f33c63ec5515e9f))
-DE_DMD32ROM8x(           "sppdspa.201",CRC(f55505a4) SHA1(5616959caafc836d13db9c1a1e93cb4954f0c321))
+SE128_ROMSTART(simpprty, "spp-cpu.400",CRC(530b9782) SHA1(573b20cac205b7989cdefceb2c31cb7d88c2951a))
+DE_DMD32ROM8x(           "sppdspa.400",CRC(cd5eaab7) SHA1(a06bef6fc0e7f3c0616439cb0e0431a3d52cdfa1))
 DE2S_SOUNDROM18888(      "spp101.u7",  CRC(32efcdf6) SHA1(1d437e8649408be91e0dd10598cc67336203077f),
                          "spp100.u17", CRC(65e9344e) SHA1(fe4797ccb71b31aa39d6a5d373a01fc22f9d055c),
                          "spp100.u21", CRC(17fee0f9) SHA1(5b5ceb667f3bc9bde4ea08a1ef837e3b56c01977),
@@ -766,8 +766,8 @@ CORE_GAMEDEFNV(simpprty,"The Simpsons Pinball Party",2003,"Stern",de_mSES2,GAME_
 /*-------------------------------------------------------------------
 / The Simpsons Pinball Party (Germany)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(simpprtd, "spp-cpu.204",CRC(5bc155f7) SHA1(78d793cecbc6561a891ff8007f33c63ec5515e9f))
-DE_DMD32ROM8x(           "sppdspg.201",NO_DUMP)
+SE128_ROMSTART(simpprtd, "spp-cpu.400",CRC(530b9782) SHA1(573b20cac205b7989cdefceb2c31cb7d88c2951a))
+DE_DMD32ROM8x(           "sppdspg.400",NO_DUMP)
 DE2S_SOUNDROM18888(      "spp101.u7",  CRC(32efcdf6) SHA1(1d437e8649408be91e0dd10598cc67336203077f),
                          "spp100.u17", CRC(65e9344e) SHA1(fe4797ccb71b31aa39d6a5d373a01fc22f9d055c),
                          "spp100.u21", CRC(17fee0f9) SHA1(5b5ceb667f3bc9bde4ea08a1ef837e3b56c01977),
@@ -781,8 +781,8 @@ CORE_CLONEDEFNV(simpprtd,simpprty,"The Simpsons Pinball Party (Germany)",2003,"S
 /*-------------------------------------------------------------------
 / The Simpsons Pinball Party (Spain)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(simpprte, "spp-cpu.204",CRC(5bc155f7) SHA1(78d793cecbc6561a891ff8007f33c63ec5515e9f))
-DE_DMD32ROM8x(           "sppdspl.201",CRC(78a67e23) SHA1(c4ef2b0301104280410aefdacc847e74a8c6a49f))
+SE128_ROMSTART(simpprte, "spp-cpu.400",CRC(530b9782) SHA1(573b20cac205b7989cdefceb2c31cb7d88c2951a))
+DE_DMD32ROM8x(           "sppdspl.400",CRC(a0bf567e) SHA1(ce6eb65da6bff15aeb787fd2cdac7cf6b4300108))
 DE2S_SOUNDROM18888(      "spp101.u7",  CRC(32efcdf6) SHA1(1d437e8649408be91e0dd10598cc67336203077f),
                          "spp100.u17", CRC(65e9344e) SHA1(fe4797ccb71b31aa39d6a5d373a01fc22f9d055c),
                          "spp100.u21", CRC(17fee0f9) SHA1(5b5ceb667f3bc9bde4ea08a1ef837e3b56c01977),
@@ -796,8 +796,8 @@ CORE_CLONEDEFNV(simpprte,simpprty,"The Simpsons Pinball Party (Spain)",2003,"Ste
 /*-------------------------------------------------------------------
 / The Simpsons Pinball Party (France)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(simpprtf, "spp-cpu.204",CRC(5bc155f7) SHA1(78d793cecbc6561a891ff8007f33c63ec5515e9f))
-DE_DMD32ROM8x(           "sppdspf.201",CRC(d1c0c484) SHA1(615e3a8ba62b3f6d0ba53fbaf4b7d9e7fcdc9d82))
+SE128_ROMSTART(simpprtf, "spp-cpu.400",CRC(530b9782) SHA1(573b20cac205b7989cdefceb2c31cb7d88c2951a))
+DE_DMD32ROM8x(           "sppdspf.400",CRC(6cc306e2) SHA1(bfe6ef0cd5d0cb5e3b29d85ade1700005e22d81b))
 DE2S_SOUNDROM18888(      "spp101.u7",  CRC(32efcdf6) SHA1(1d437e8649408be91e0dd10598cc67336203077f),
                          "spp100.u17", CRC(65e9344e) SHA1(fe4797ccb71b31aa39d6a5d373a01fc22f9d055c),
                          "spp100.u21", CRC(17fee0f9) SHA1(5b5ceb667f3bc9bde4ea08a1ef837e3b56c01977),
@@ -811,8 +811,8 @@ CORE_CLONEDEFNV(simpprtf,simpprty,"The Simpsons Pinball Party (France)",2003,"St
 /*-------------------------------------------------------------------
 / The Simpsons Pinball Party (Italy)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(simpprti, "spp-cpu.204",CRC(5bc155f7) SHA1(78d793cecbc6561a891ff8007f33c63ec5515e9f))
-DE_DMD32ROM8x(           "sppdspi.201",CRC(b4594819) SHA1(4ab83f3b6466eebdec802e57d6542ad4a3cf3fb0))
+SE128_ROMSTART(simpprti, "spp-cpu.400",CRC(530b9782) SHA1(573b20cac205b7989cdefceb2c31cb7d88c2951a))
+DE_DMD32ROM8x(           "sppdspi.400",CRC(ebe45dee) SHA1(4cdf0f01b1df1fa35df67f19c67b82a39d887be8))
 DE2S_SOUNDROM18888(      "spp101.u7",  CRC(32efcdf6) SHA1(1d437e8649408be91e0dd10598cc67336203077f),
                          "spp100.u17", CRC(65e9344e) SHA1(fe4797ccb71b31aa39d6a5d373a01fc22f9d055c),
                          "spp100.u21", CRC(17fee0f9) SHA1(5b5ceb667f3bc9bde4ea08a1ef837e3b56c01977),
@@ -824,11 +824,11 @@ SE_ROMEND
 CORE_CLONEDEFNV(simpprti,simpprty,"The Simpsons Pinball Party (Italy)",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ Terminator 3: Rise of the Machines (2.00)
+/ Terminator 3: Rise of the Machines (2.05)
 /-------------------------------------------------------------------*/
 INITGAME(term3,GEN_WS,se_dmd128x32,0)
-SE128_ROMSTART(term3,	 "t3cpu.200",CRC(b5cc4e24) SHA1(b027a57f44ae010ae9d8f308fd6ea75cfdbf4863))
-DE_DMD32ROM8x(           "t3dispa.200",CRC(d664574c) SHA1(a3dc82727b236462e24b7f7b5683234a21f9b7eb))
+SE128_ROMSTART(term3,	 "t3cpu.205",  CRC(219d8155) SHA1(dac3c390d238872703a0ec65cb3dddc89630359c))
+DE_DMD32ROM8x(           "t3dispa.201",CRC(a314acd1) SHA1(4d5072e65f8041d24c1bab2985ef5b30e1895bf3))
 DE2S_SOUNDROM18888(      "t3100.u7",  CRC(7f99e3af) SHA1(4916c074e2a4c947d1a658300f9f9629da1a8bb8),
                          "t3100.u17", CRC(f0c71b5d) SHA1(e9f726a232fbd4f34b8b07069f337dbb3daf394a),
                          "t3100.u21", CRC(694331f7) SHA1(e9ae8c5db2e59c0f9df923c98f6e75896e150807),
@@ -843,8 +843,8 @@ CORE_GAMEDEFNV(term3,"Terminator 3: Rise of the Machines",2003,"Stern",de_mSES2,
 / Terminator 3: Rise of the Machines (Germany)
 /-------------------------------------------------------------------*/
 INITGAME(term3g,GEN_WS,se_dmd128x32,0)
-SE128_ROMSTART(term3g,	 "t3cpu.200",CRC(b5cc4e24) SHA1(b027a57f44ae010ae9d8f308fd6ea75cfdbf4863))
-DE_DMD32ROM8x(           "t3dispg.200",NO_DUMP)
+SE128_ROMSTART(term3g,	 "t3cpu.205",  CRC(219d8155) SHA1(dac3c390d238872703a0ec65cb3dddc89630359c))
+DE_DMD32ROM8x(           "t3dispg.201",NO_DUMP)
 DE2S_SOUNDROM18888(      "t3100.u7",  CRC(7f99e3af) SHA1(4916c074e2a4c947d1a658300f9f9629da1a8bb8),
                          "t3100.u17", CRC(f0c71b5d) SHA1(e9f726a232fbd4f34b8b07069f337dbb3daf394a),
                          "t3100.u21", CRC(694331f7) SHA1(e9ae8c5db2e59c0f9df923c98f6e75896e150807),
@@ -859,8 +859,8 @@ CORE_CLONEDEFNV(term3g,term3,"Terminator 3: Rise of the Machines (Germany)",2003
 / Terminator 3: Rise of the Machines (Spain)
 /-------------------------------------------------------------------*/
 INITGAME(term3l,GEN_WS,se_dmd128x32,0)
-SE128_ROMSTART(term3l,	 "t3cpu.200",CRC(b5cc4e24) SHA1(b027a57f44ae010ae9d8f308fd6ea75cfdbf4863))
-DE_DMD32ROM8x(           "t3displ.200",CRC(41f14c9d) SHA1(e7cea301f46c8a186dcce5a152acafc13073707d))
+SE128_ROMSTART(term3l,	 "t3cpu.205",  CRC(219d8155) SHA1(dac3c390d238872703a0ec65cb3dddc89630359c))
+DE_DMD32ROM8x(           "t3displ.201",CRC(180b55a2) SHA1(1d8161fc806804e0712ee8a07a2cac0561949f0c))
 DE2S_SOUNDROM18888(      "t3100.u7",  CRC(7f99e3af) SHA1(4916c074e2a4c947d1a658300f9f9629da1a8bb8),
                          "t3100.u17", CRC(f0c71b5d) SHA1(e9f726a232fbd4f34b8b07069f337dbb3daf394a),
                          "t3100.u21", CRC(694331f7) SHA1(e9ae8c5db2e59c0f9df923c98f6e75896e150807),
@@ -875,8 +875,8 @@ CORE_CLONEDEFNV(term3l,term3,"Terminator 3: Rise of the Machines (Spain)",2003,"
 / Terminator 3: Rise of the Machines (France)
 /-------------------------------------------------------------------*/
 INITGAME(term3f,GEN_WS,se_dmd128x32,0)
-SE128_ROMSTART(term3f,	 "t3cpu.200",CRC(b5cc4e24) SHA1(b027a57f44ae010ae9d8f308fd6ea75cfdbf4863))
-DE_DMD32ROM8x(           "t3dispf.200",CRC(0d3e4c77) SHA1(dfffdf68f1fd9aa4ae8e94a608faef1b78d60e41))
+SE128_ROMSTART(term3f,	 "t3cpu.205",  CRC(219d8155) SHA1(dac3c390d238872703a0ec65cb3dddc89630359c))
+DE_DMD32ROM8x(           "t3dispf.201",CRC(ced87154) SHA1(893c071bb2427429ca45f4d2088b015c5f638207))
 DE2S_SOUNDROM18888(      "t3100.u7",  CRC(7f99e3af) SHA1(4916c074e2a4c947d1a658300f9f9629da1a8bb8),
                          "t3100.u17", CRC(f0c71b5d) SHA1(e9f726a232fbd4f34b8b07069f337dbb3daf394a),
                          "t3100.u21", CRC(694331f7) SHA1(e9ae8c5db2e59c0f9df923c98f6e75896e150807),
@@ -892,8 +892,8 @@ CORE_CLONEDEFNV(term3f,term3,"Terminator 3: Rise of the Machines (France)",2003,
 / Terminator 3: Rise of the Machines (Italy)
 /-------------------------------------------------------------------*/
 INITGAME(term3i,GEN_WS,se_dmd128x32,0)
-SE128_ROMSTART(term3i,	 "t3cpu.200",CRC(b5cc4e24) SHA1(b027a57f44ae010ae9d8f308fd6ea75cfdbf4863))
-DE_DMD32ROM8x(           "t3dispi.200",CRC(39dd7f6e) SHA1(3411a9313896ffb550a627c57c835ad74188f1c7))
+SE128_ROMSTART(term3i,	 "t3cpu.205",  CRC(219d8155) SHA1(dac3c390d238872703a0ec65cb3dddc89630359c))
+DE_DMD32ROM8x(           "t3dispi.201",CRC(c1f3604f) SHA1(8a391e6471ced52662aa69261ac29a279c7b8a7d))
 DE2S_SOUNDROM18888(      "t3100.u7",  CRC(7f99e3af) SHA1(4916c074e2a4c947d1a658300f9f9629da1a8bb8),
                          "t3100.u17", CRC(f0c71b5d) SHA1(e9f726a232fbd4f34b8b07069f337dbb3daf394a),
                          "t3100.u21", CRC(694331f7) SHA1(e9ae8c5db2e59c0f9df923c98f6e75896e150807),
