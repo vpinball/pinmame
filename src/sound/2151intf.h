@@ -3,9 +3,8 @@
 
 #define MAX_2151 2
 
-#ifndef VOL_YM3012
-/* YM2151interface->volume optionaly macro */
-/* #define YM3014_VOL(Vol,Pan) VOL_YM3012((Vol)/2,Pan,(Vol)/2,Pan) */
+#ifndef YM3012_VOL
+/* YM2151interface->volume macro */
 #define YM3012_VOL(LVol,LPan,RVol,RPan) (MIXER(LVol,LPan)|(MIXER(RVol,RPan) << 16))
 #endif
 
@@ -13,7 +12,7 @@ struct YM2151interface
 {
 	int num;
 	int baseclock;
-	int volume[MAX_2151]; /* need for use YM3012()_VOL macro */
+	int volume[MAX_2151]; /* use YM3012_VOL() macro to fill this field */
 	void (*irqhandler[MAX_2151])(int irq);
 	mem_write_handler portwritehandler[MAX_2151];
 };
