@@ -52,7 +52,7 @@ const struct core_dispLayout s11_dispS11b2[] = {
 };
 
 /*----------------
-/  Local varibles
+/  Local variables
 /-----------------*/
 static struct {
   int    vblankCount;
@@ -67,6 +67,11 @@ static struct {
   int    sndCmd;	/* external sound board cmd */
   int    piaIrq;
   int	 deGame;	/*Flag to see if it's a Data East game running*/
+  #define MINSOL_STAGES 3
+  UINT16 solRawData;              /* last sol data set by game                       */
+  UINT32 solFiltered;             /* sol state filtered by minsol and MUX-translated */
+  int    minsolcount;             /* minsol array index                              */
+  UINT32 minsol[MINSOL_STAGES];   /* minsol array                                    */
 } locals;
 
 static void s11_irqline(int state) {
@@ -117,22 +122,14 @@ static INTERRUPT_GEN(s11_vblank) {
         locals.solenoids |= CORE_SOLBIT(CORE_FIRSTSSSOL+ii);
     }
   }
-  if ((core_gameData->sxx.muxSol) &&
-      (locals.solenoids & CORE_SOLBIT(core_gameData->sxx.muxSol))) {
-    if (core_gameData->hw.gameSpecific1 & S11_RKMUX)
-      locals.solenoids = (locals.solenoids & 0x00ff8fef) |
-                         ((locals.solenoids & 0x00000010)<<20) |
-                         ((locals.solenoids & 0x00007000)<<13);
-    else
-      locals.solenoids = (locals.solenoids & 0x00ffff00) | (locals.solenoids<<24);
-  }
+
   locals.solsmooth[locals.vblankCount % S11_SOLSMOOTH] = locals.solenoids;
 #if S11_SOLSMOOTH != 2
 #  error "Need to update smooth formula"
 #endif
   coreGlobals.solenoids  = locals.solsmooth[0] | locals.solsmooth[1];
   coreGlobals.solenoids2 = locals.extSol << 8;
-  locals.solenoids = coreGlobals.pulsedSolState;
+  locals.solenoids = locals.solFiltered;  /* hold over filtered solenoids only */
   locals.extSol = locals.extSolPulse;
   /*-- display --*/
   if ((locals.vblankCount % S11_DISPLAYSMOOTH) == 0) {
@@ -252,6 +249,33 @@ static READ_HANDLER(pia5a_r) {
 /*------------
 /  Solenoids
 /-------------*/
+/*
+We are facing the problem that the MUX and it's affected solenoids are not
+updated at the same time leaving us with inconsistent states between Pia and
+Latch update. For example Data East Playboy 35th updates the Pia on even IRQs
+and Latch on odd IRQs giving a gap of 1 msec where the MUX is already updated
+but the corresponding solenoids 1-8 are not (or vice versa).
+
+Here is how we solve it:
+
+o  The game rom writes to Latch2200 and Pia0b to update solenoids 1-8 (Latch)
+   and 9-16 (Pia). We track this raw data in locals.solRawData so we can avoid
+   processing if nothing has changed.
+o  When a solenoid changes state, updsol() does MUX translation (#1+MUX = #24)
+   and stores the new state in coreGlobals.pulsedSolState ready for the timer
+   routine to pick it up.
+o  solUpdTimer is invoked every 2 msec and keeps track of 3 (=MINSOL_STAGES)
+   consecutive solenoid states as seen in coreGlobals.pulsedSolState. Only
+   solenoids which are found in all three stages are copied to locals.solFiltered
+   and locals.solenoids. This way we get rid of short (< 3*2 msec) solenoid
+   pulses caused by the above mentioned inconsistency.
+o  So at any point in time we have
+   locals.solRawData          = untranslated  , might be inconsistent  , no SSSol included
+   coreGlobals.pulsedSolState = MUX-translated, might be inconsistent  , includes SSSol
+   locals.solFiltered         = MUX-translated, consistent by filtering, includes SSSol
+   locals.solenoids           = MUX-translated, consistent and smoothed, includes SSSol
+*/
+
 static void setSSSol(int data, int solNo) {
                                     /*    WMS          DE */
   static const int ssSolNo[2][6] = {{5,4,1,2,0,3},{3,4,5,1,0,2}};
@@ -262,14 +286,46 @@ static void setSSSol(int data, int solNo) {
     coreGlobals.pulsedSolState &= ~bit;
 }
 
+void solUpdTimer(int data) {
+  locals.minsol[locals.minsolcount] = coreGlobals.pulsedSolState;
+#if MINSOL_STAGES != 3
+  #error "Adjust statement to [0]..[MINSOL_STAGES-1]"
+#endif
+  locals.solFiltered = locals.minsol[0] & locals.minsol[1] & locals.minsol[2];
+  locals.solenoids  |= locals.solFiltered;
+  locals.minsolcount = (locals.minsolcount + 1) % MINSOL_STAGES; 
+}
+
+static void updsol(UINT16 newsol) {
+  locals.solRawData          = newsol;
+  /* set new solenoids, preserve SSSol */
+  coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x00ff0000) | newsol;
+
+  /* if game has a MUX and it's active... */
+  if ((core_gameData->sxx.muxSol) &&
+      (coreGlobals.pulsedSolState & CORE_SOLBIT(core_gameData->sxx.muxSol))) {
+    if (core_gameData->hw.gameSpecific1 & S11_RKMUX) /* special case WMS Road Kings */
+      coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x00ff8fef)      |
+                                  ((coreGlobals.pulsedSolState & 0x00000010)<<20) |
+                                  ((coreGlobals.pulsedSolState & 0x00007000)<<13);
+    else
+      coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x00ffff00) |
+                                   (coreGlobals.pulsedSolState << 24);
+  }
+}
+
 static WRITE_HANDLER(pia0b_w) {
-  coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffff00ff) | (data<<8);
-  locals.solenoids |= (data<<8);
+  /* we only call updsol if any solenoid has actually changed state */
+  if (data != (locals.solRawData>>8))
+    updsol((locals.solRawData & 0x00ff) | (data<<8));
 }
+
 static WRITE_HANDLER(latch2200) {
-  coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffffff00) | data;
-  locals.solenoids |= data;
+  /* we only call updsol if any solenoid has actually changed state */
+  if (data != (locals.solRawData & 0x00ff))
+    updsol((locals.solRawData & 0xff00) | data);
 }
+
 static WRITE_HANDLER(pia0cb2_w) { locals.ssEn = !data;}
 
 static WRITE_HANDLER(pia1ca2_w) { setSSSol(data, 0); }
@@ -519,6 +575,7 @@ static MACHINE_DRIVER_START(s11)
   MDRV_CPU_PERIODIC_INT(s11_irq, S11_IRQFREQ)
   MDRV_DIPS(1) /* (actually a jumper) */
   MDRV_SWITCH_UPDATE(s11)
+  MDRV_TIMER_ADD(solUpdTimer, 500)     /* timer routine for solenoid update */
 MACHINE_DRIVER_END
 
 /* System 9 */
