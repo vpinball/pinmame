@@ -30,17 +30,6 @@
 #define GTS80_SOLSMOOTH       4 /* Smooth the Solenoids over this number of VBLANKS */
 #define GTS80_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
 
-static PINMAME_VIDEO_UPDATE(caveman_update);
-/* 4 x 7 BCD + Ball,Credit */
-core_tLCDLayout GTS80_dispCaveman[] = {
-  {0, 0,10,6,CORE_SEG9}, {0,12, 0,1,CORE_SEG9},
-  {0,16, 4,6,CORE_SEG9}, {0,28, 3,1,CORE_SEG9},
-  {4, 0,30,6,CORE_SEG9}, {4,12,20,1,CORE_SEG9},
-  {4,16,24,6,CORE_SEG9}, {4,28,23,1,CORE_SEG9},
-  DISP_SEG_CREDIT(40,41,CORE_SEG9), DISP_SEG_BALLS(42,43,CORE_SEG9),
-  {70,0,240,256,CORE_VIDEO,(void *)caveman_update},{0}
-};
-
 static const UINT16 core_ascii2seg[] = {
   /* 0x00-0x07 */ 0x0000, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
   /* 0x08-0x0f */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
@@ -134,11 +123,11 @@ static SWITCH_UPDATE(GTS80) {
   riot6532_set_input_a(1, (coreGlobals.swMatrix[0] & 0x80) ^ 0x80);
   if (core_gameData->hw.display & GTS80_DISPVIDEO) { // Also triggers NMI on video CPU
     cpu_set_irq_line(GTS80_VIDCPU, IRQ_LINE_NMI, (coreGlobals.swMatrix[0] & 0x80) ? ASSERT_LINE : CLEAR_LINE);
-    // Don't know what this is for
-//    if (!(GTS80locals.vblankCount % 5)) {
-//      int ii;
-//      for(ii = 1; ii < 8; ii++) coreGlobals.swMatrix[ii] &= 0xfc;
-//    }
+    // Reset game switches activated by video part
+    if (!(GTS80locals.vblankCount % 5)) {
+      int ii;
+      for(ii = 1; ii < 8; ii++) coreGlobals.swMatrix[ii] &= 0xfc;
+    }
   }
 }
 
@@ -508,9 +497,8 @@ MACHINE_DRIVER_END
         0x0084 -> #0x21
         0x009c -> #0x27 (same address as 0x21)
 
-        I picked 0x20, because this way, the language selection
-        as described below works. No idea what the other IRQs
-        are used for yet...
+        This is handled by the 8259 interrupt controller now,
+        thanks to Martin, so we don't have to worry about it.
 
         Next, the command to be transmitted to the video board
         is determined by a certain lamp pattern at strobe time.
@@ -549,8 +537,8 @@ static WRITE_HANDLER(vram_w) {
 
   plot_pixel(tmpbitmap, x++, y, 5 + ((data>>6) & 0x03));
   plot_pixel(tmpbitmap, x++, y, 5 + ((data>>4) & 0x03));
-  plot_pixel(tmpbitmap, x++, y, 5 + ((data>>4) & 0x03));
-  plot_pixel(tmpbitmap, x,   y, 5 + ((data)    & 0x03));
+  plot_pixel(tmpbitmap, x++, y, 5 + ((data>>2) & 0x03));
+  plot_pixel(tmpbitmap, x,   y, 5 + (data & 0x03));
 
   GTS80_vRAM[offset] = data;
 }
@@ -597,26 +585,31 @@ static READ_HANDLER(port102r)  { DBGLOG(("HD46505 read\n")); return 0; }
 /* output to game switches, row 0 */
 static WRITE_HANDLER(port200w) {
   int ii;
-  for (ii = 1; ii < 8; ii++, data >>= 1)
-    coreGlobals.swMatrix[ii] = (coreGlobals.swMatrix[ii] & 0xfe) | (data & 0x01);
+  if (data)
+    for (ii = 1; ii < 8; ii++, data >>= 1)
+      coreGlobals.swMatrix[ii] = (coreGlobals.swMatrix[ii] & 0xfe) | (data & 0x01);
 }
 /* output to game switches, row 1 */
 static WRITE_HANDLER(port300w) {
   int ii;
-  data <<= 1;
-  for (ii = 1; ii < 8; ii++, data >>= 1)
-    coreGlobals.swMatrix[ii] = (coreGlobals.swMatrix[ii] & 0xfd) | (data & 0x02);
+  if (data) {
+    data <<= 1;
+    for (ii = 1; ii < 8; ii++, data >>= 1)
+      coreGlobals.swMatrix[ii] = (coreGlobals.swMatrix[ii] & 0xfd) | (data & 0x02);
+  }
 }
 
-static READ_HANDLER(port200r) {
 /* no idea what it is for, but its high nibble
    has got to be all 1 after IRQ 0x20 is called,
    or else the video code enters an endless loop. */
+static READ_HANDLER(port200r) {
    logerror("read  port 200\n");
    return 0xf0;
 }
+
 /* joystick inports */
 static READ_HANDLER(port400r) { return coreGlobals.swMatrix[0] & 0x0f; }
+
 /* set up game colors. 4 colors at a time only, out of 16 possible! */
 static WRITE_HANDLER(port50xw) {
   palette_set_color(5+offset/2, rgb[data*3], rgb[data*3+1], rgb[data*3+2]);
@@ -656,6 +649,16 @@ static MEMORY_WRITE_START(video_writemem)
   {0x08000,0x0ffff, MWA_ROM},
   {0xf8000,0xfffff, MWA_ROM},
 MEMORY_END
+
+/* 4 x 7 BCD + Ball,Credit */
+core_tLCDLayout GTS80_dispCaveman[] = {
+  {0, 0,10,6,CORE_SEG9}, {0,12, 0,1,CORE_SEG9},
+  {0,16, 4,6,CORE_SEG9}, {0,28, 3,1,CORE_SEG9},
+  {4, 0,30,6,CORE_SEG9}, {4,12,20,1,CORE_SEG9},
+  {4,16,24,6,CORE_SEG9}, {4,28,23,1,CORE_SEG9},
+  DISP_SEG_CREDIT(40,41,CORE_SEG9), DISP_SEG_BALLS(42,43,CORE_SEG9),
+  {70,0,240,256,CORE_VIDEO,(void *)caveman_update},{0}
+};
 
 MACHINE_DRIVER_START(gts80vid)
   MDRV_IMPORT_FROM(gts80ss)
