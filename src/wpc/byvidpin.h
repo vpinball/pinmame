@@ -187,9 +187,6 @@
 
 #define BYVP_COMINPORT       CORE_COREINPORT
 
-/*-- BYVP switches are numbered from 1-64 (not column,row as WPC) --*/
-#define BYVP_SWNO(x) (x)
-
 /*-- BYVP switch numbers --*/
 #define BYVP_SWSELFTEST   -7	//SW Col 0 - Switch #1
 #define BYVP_SWCPUDIAG    -6	//SW Col 0 - Switch #2

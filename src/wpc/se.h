@@ -59,9 +59,6 @@
 #define SE_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
 #define SE_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
 
-/*-- SE switches are numbered from 1-64 (not column,row as WPC) --*/
-#define SE_SWNO(x) (x)
-
 /*-- SE switch numbers --*/
 #define SE_SWBLACK   -7
 #define SE_SWGREEN   -6

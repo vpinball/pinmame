@@ -95,9 +95,6 @@
 #define DE_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
 #define DE_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
 
-/*-- DE switches are numbered from 1-64 (not column,row as WPC) --*/
-#define DE_SWNO(x) (x)
-
 /*-- To access C-side multiplexed solenoid/flasher --*/
 #define DE_CSOL(x) ((x)+24)
 

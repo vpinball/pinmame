@@ -182,9 +182,6 @@
 
 #define GP_COMINPORT       CORE_COREINPORT
 
-/*-- GP switches are numbered from 1-64 (not column,row as WPC) --*/
-#define GP_SWNO(x) (x)
-
 /*-- GP switch numbers --*/
 #define GP_SWSOUNDDIAG  -7
 

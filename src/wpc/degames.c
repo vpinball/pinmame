@@ -24,10 +24,10 @@ DE2_INPUT_PORTS_START(name, balls) DE_INPUT_PORTS_END
 
 
 /*Common Flipper Switch Settings*/
-#define FLIP4746    FLIP_SWNO(DE_SWNO(47),DE_SWNO(46))
-#define FLIP3031	FLIP_SWNO(DE_SWNO(30),DE_SWNO(31))
-#define FLIP1516	FLIP_SWNO(DE_SWNO(15),DE_SWNO(16))
-#define FLIP6364	FLIP_SWNO(DE_SWNO(63),DE_SWNO(64))
+#define FLIP4746    FLIP_SWNO(47,46)
+#define FLIP3031	FLIP_SWNO(30,31)
+#define FLIP1516	FLIP_SWNO(15,16)
+#define FLIP6364	FLIP_SWNO(63,64)
 
 /* NO OUTPUT */
 core_tLCDLayout de_NoOutput[] = {{0}};
@@ -359,7 +359,7 @@ static int tommy_getSol(int solNo) {
 static core_tGameData tommyGameData = {
 	DE_CPUREV3b, 0, {
     FLIP6364,
-    0,0,1,				//We need 1 custom solenoids!
+    0,0,1,0,0,0,0,//We need 1 custom solenoids!
     tommy_getSol,NULL, NULL, NULL,
     NULL,NULL
   },
@@ -415,7 +415,7 @@ static int gnr_getSol(int solNo) {
 static core_tGameData gnrGameData = {
 	DE_CPUREV3b, 0, {
     FLIP6364,
-    0,0,3,				//We need 3 custom solenoids!
+    0,0,3,0,0,0,0,				//We need 3 custom solenoids!
     gnr_getSol,NULL, NULL, NULL,
     NULL,NULL
   },
