@@ -1274,12 +1274,12 @@ static struct { offs_t addr, mask; UINT16 rw; } m68306cs[10];
 //#define DISABLE_68306_RX
 //#define DISABLE_68306_TX
 
-#define VERBOSE
-//#define DEBUGGING
+//#define VERBOSE
+#define DEBUGGING
 
 #ifdef VERBOSE
-#define LOG(x)	logerror x
-//#define LOG(x)	printf x
+//#define LOG(x)	logerror x
+#define LOG(x)	printf x
 #else
 #define LOG(x)
 #endif
@@ -1875,12 +1875,35 @@ static void m68306_duart_check_int()
 {
 	//check if we should generate an interrupt (status bits must match interrupt mask bits)
 	if(m68306duartreg[dirDUISR] & m68306duartreg[dirDUIMR]) {
-		//Generate a timer interrupt? (bit 3)
-		if(m68306duartreg[dirDUISR] & 0x08)
-			trigger_duart_int(0);		//generate a timer irq
-		//Generate a serial interrupt? (Any bit besides 3 is set)
-		if(m68306duartreg[dirDUISR] & (~0x08))
-			trigger_duart_int(1);		//generate a serial irq
+		//Check for a Timer Interrupt.. (bit 3 in status)
+		if(m68306duartreg[dirDUISR] & 0x08) {
+			
+			/*--Timer can either trigger /TIRQ, or regular serial /IRQ depending on MASK & IENT flags--*/
+			
+			//Timer generates an IRQ?
+			int irq = (m68306duartreg[dirDUIMR] & 0x08) >> 3;
+			//Timer generates an TIRQ?
+			int tirq =(m68306intreg[irICR] & 0x8000) >> 14;
+
+			switch (irq+tirq) {
+				//NONE - It's Disabled
+				case 0:
+					break;
+				//IRQ - Enabled
+				case 1:
+					LOG(("Timer /IRQ \n"));
+					break;	//do nothing, and fall through to IRQ code below for handling
+				//TIRQ
+				case 2:
+					trigger_duart_int(0);
+					return;
+				case 3:
+					LOG(("PROBLEM: Both /IRQ & /TIRQ Enabled for a 68306 Timer Overflow Interrupt!\n"));
+					return;
+			}
+		}
+		//Generate a serial interrupt? (/IRQ line from DUART)
+		trigger_duart_int(1);
 	}
 }
 
@@ -1930,7 +1953,7 @@ static void m68306_duart_set_dusr(int which,int data)
 	m68306_duart_set_duisr(data);
 }
 
-//Trigger a DUART Interrupt (0 = Timer, 1 = Serial Port)
+//Trigger a DUART Interrupt (0 = Timer (/TIRQ), 1 = Serial Port (/IRQ))
 static void trigger_duart_int(int which)
 {
 	int push=0;
@@ -1941,13 +1964,15 @@ static void trigger_duart_int(int which)
 	}
 
 	m68306_duart_int = which+1;		//Store which interrupt (flags ack to avoid auto-vector also)
-	//Serial Port?
+
+	//Serial Port? (/IRQ Line from DUART)
 	if(which){
-		//Determine Priority Level for Serial Port
+		//Determine Priority Level for Serial Port IRQ
 		int level=(m68306intreg[irSYSTEM] & 0x700)>>8;	//Bits 8-10 of System Register
 		m68306irq(level,1);
 		m68306irq(level,0);
 	}
+	//Timer (/TIRQ)
 	else {
 		//Timer is always a Level 7 Priority
 		m68306irq(7,1);
