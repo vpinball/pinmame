@@ -42,6 +42,8 @@
 */
 
 #include "driver.h"
+#include "sndbrd.h"
+#include "gts80.h"
 #include "cpu/m6502/m65ce02.h"
 #include "sound/2151intf.h"
 #include "sound/dac.h"
@@ -210,9 +212,9 @@ struct OKIM6295interface GTS3_okim6295_interface = {
 };
 
 void GTS3_sinit(int num) {
-	GTS80BS_init();
+	sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(GTS80_MEMREG_SCPU1), NULL, NULL);
 }
 
 void GTS3_sound_exit(void) {
-	GTS80BS_exit();
+	sndbrd_0_exit();
 }
