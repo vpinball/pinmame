@@ -207,14 +207,16 @@ extern MACHINE_DRIVER_EXTERN(de_dmd642aS);
 #define de_mDEDMD32S2A   de_dmd322aS
 #define de_mDEDMD64S2A   de_dmd642aS
 
+// Display options
 #define S11_BCDDIAG      0x01 // 7seg diagnostic led
 #define S11_BCDDISP      0x02 // BCD display
 #define S11_LOWALPHA     0x04 // Alphanumeric second line display
 #define S11_DISPINV      0x08 // Display signals are inverted
-#define S11_ONELINE      0x10 // All display segments on a single line
-#define S11_MUXSW2       0x01 // MUX Solenoid activates
+// Game specific options
+#define S11_MUXSW2       0x01 // MUX Solenoid activates switch 2
 #define S11_SNDOVERLAY   0x02 // Overlay solenoid board
 #define S11_PRINTERLINE  0x04 // Got printer lines
+#define S11_RKMUX        0x08 // Road Kings muxes different solenoids
 #if 0
 GEN_S9      BCDDISP
 GEN_S11
