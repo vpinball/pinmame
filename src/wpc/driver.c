@@ -749,8 +749,9 @@ DRIVER(bnzai,l3)        //S11-566:  05/88 W Banzai Run (L-3)
 DRIVER(bnzai,l1)        //S11-566:  05/88 W Banzai Run (L-1)
 DRIVER(bnzai,p1)        //S11-566:  05/88 W Banzai Run (P-1)
 DRIVER(swrds,l2)        //S11-559:  06/88 W Swords of Fury
+DRIVER(taxi,lg1)        //S11-553:  08/88 W Taxi (Marilyn L-1) Germany
 DRIVER(taxi,l4)         //S11-553:  08/88 W Taxi (Lola)
-DRIVER(taxi,l3)                           // Marylin
+DRIVER(taxi,l3)                           // Marilyn
 DRIVER(jokrz,l6)        //S11-567:  12/88 W Jokerz! (L-6)
 DRIVER(jokrz,l3)        //S11-567:  12/88 W Jokerz! (L-3)
 DRIVER(esha,la3)        //S11-568:  02/89 W Earthshaker
