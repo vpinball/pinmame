@@ -1172,6 +1172,18 @@ SOURCE=.\src\wpc\midway.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\mrgame.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\mrgame.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\mrgamegames.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\pinmame.h
 # End Source File
 # Begin Source File
