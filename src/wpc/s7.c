@@ -76,7 +76,7 @@ static INTERRUPT_GEN(s7_vblank) {
   /*-- solenoids --*/
   if (s7locals.ssEn) {
     int ii;
-    s7locals.solenoids |= CORE_SOLBIT(CORE_SSFLIPENSOL);
+    s7locals.solenoids |= CORE_SOLBIT(S7_GAMEONSOL);
     /*-- special solenoids updated based on switches --*/
     for (ii = 0; ii < 8; ii++) {
       if (core_gameData->sxx.ssSw[ii] && core_getSw(core_gameData->sxx.ssSw[ii]))
