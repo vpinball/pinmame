@@ -862,6 +862,8 @@ static void throttle_speed(void)
 			curr = ticker();
 		}
 	}
+	else
+		Sleep(0);
 
 	// idle time done
 	profiler_mark(PROFILER_END);
