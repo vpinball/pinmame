@@ -30,7 +30,7 @@
 
 typedef struct tagGTS80SL {
   int   stream;
-  UINT16 buffer[GTS80S_BUFFER_SIZE+1];
+  INT16 buffer[GTS80S_BUFFER_SIZE+1];
   double clock[GTS80S_BUFFER_SIZE+1];
   int   buf_pos;
 
@@ -150,7 +150,7 @@ void GTS80S_init(void) {
 
 	/* init sound buffer */
 	GTS80S_locals.clock[0]  = 0;
-	GTS80S_locals.buffer[0] = 0x8000;
+	GTS80S_locals.buffer[0] = 0;
 	GTS80S_locals.buf_pos   = 1;
 
 	/* init RAM */
@@ -442,7 +442,7 @@ void GTS80SS_init(void) {
 	riot6532_set_clock(3, Machine->drv->cpu[GTS80_SCPU1].cpu_clock);
 
 	GTS80SS_locals.clock[0]  = 0;
-	GTS80SS_locals.buffer[0] = 0x8000;
+	GTS80SS_locals.buffer[0] = 0;
 	GTS80SS_locals.buf_pos   = 1;
 
 	for(i = 0; i<8; i++)
