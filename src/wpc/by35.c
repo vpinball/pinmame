@@ -312,14 +312,14 @@ static void by35_zeroCross(int data) { pia_pulse_cb1(BY35_PIA0, 0); }
 
 static WRITE_HANDLER(piap0a_w) {
   // lamp row & strobe
-  int which = locals.lampadr2 * 10 + locals.lampadr1;
-  coreGlobals.tmpLampMatrix[8*locals.ca20 + which / 2] = (which % 2 ? (data & 0xf0) ^ 0xf0 : (data >> 4) ^ 0x0f);
+  locals.a0 = data;
+  if (!locals.ca20)
+    by35_lampStrobe(0,locals.lampadr1);
   if (locals.lampadr1 < 0x0f)
     locals.lampadr1++;
   // display data
   if (locals.lastbcd)
     locals.bcd[--locals.lastbcd] = data & 0x0f;
-  locals.a0 = data;
 }
 // switches & dips (inverted)
 static READ_HANDLER(piap0b_r) {
@@ -341,10 +341,6 @@ static WRITE_HANDLER(piap0ca2_w) {
 }
 
 static WRITE_HANDLER(piap0cb2_w) {
-  if (data & ~locals.cb20) {
-    locals.lampadr2 = (locals.lampadr1 < 6) ? 0 : 1;
-    locals.lampadr1 = 0;
-  }
   locals.cb20 = data;
 }
 // set display row
@@ -354,6 +350,8 @@ static WRITE_HANDLER(piap1a_w) {
 }
 // solenoids
 static WRITE_HANDLER(piap1b_w) {
+  locals.lampadr1 = 0;
+
   locals.b1 = data;
   coreGlobals.pulsedSolState = 0;
   if (locals.cb21)
@@ -381,12 +379,10 @@ static struct pia6821_interface by35Proto_pia[] = {{
 /* IRQ: A/B              */  piaIrq,0
 }};
 
-static INTERRUPT_GEN(byProto_irq) {
-  static int last = -1;
-  last++; if (last > 3) last = 0;
-  pia_set_input_ca1(BY35_PIA0, last % 2);
-  pia_set_input_ca1(BY35_PIA1, last & 2);
-}
+static INTERRUPT_GEN(byProto_irq) { pia_pulse_ca1(BY35_PIA0, 0); }
+
+static void by35p_zeroCross(int data) { pia_pulse_ca1(BY35_PIA1, 0); }
+
 
 /*-----------------------------------------------
 / Load/Save static ram
@@ -499,14 +495,15 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(byProto)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(by35Proto,by35,NULL)
-  MDRV_CPU_ADD_TAG("mcpu", M6800, 500000)
+  MDRV_CPU_ADD_TAG("mcpu", M6800, 560000)
   MDRV_CPU_MEMORY(by35_readmem, by35_writemem)
   MDRV_CPU_VBLANK_INT(by35_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(byProto_irq, 600)
+  MDRV_CPU_PERIODIC_INT(byProto_irq, 316)
   MDRV_NVRAM_HANDLER(by35)
   MDRV_DIPS(32)
   MDRV_SWITCH_UPDATE(by35)
   MDRV_DIAGNOSTIC_LEDH(1)
+  MDRV_TIMER_ADD(by35p_zeroCross, 120)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(by35_32S)
