@@ -125,8 +125,10 @@ static WRITE_HANDLER(dma_display)
 {
 	locals.pDisplayRAM[offset] = data;
 
-	((int*) locals.segments)[2*offset+segMap[offset]]   = core_bcd2seg[(data>>4)&0x0f];
-	((int*) locals.segments)[2*offset+segMap[offset]+1] = core_bcd2seg[data&0x0f];
+	if ( offset<14 ) {
+		((int*) locals.segments)[2*offset+segMap[offset]]   = core_bcd2seg[(data>>4)&0x0f];
+		((int*) locals.segments)[2*offset+segMap[offset]+1] = core_bcd2seg[data&0x0f];
+	}
 }
 
 static WRITE_HANDLER(dma_commands)
