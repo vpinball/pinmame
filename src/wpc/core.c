@@ -615,7 +615,7 @@ static VIDEO_UPDATE(core_status) {
   if (startRow + 16 >= locals.maxSimRows) { startRow = 0; thisCol = nextCol; }
 
   if (coreData->diagLEDs == 0xff) { /* 7 SEG */
-    drawChar(bitmap, locals.firstSimRow + startRow, thisCol, coreGlobals.diagnosticLed, 2);
+    drawChar(bitmap, locals.firstSimRow + startRow, thisCol, coreGlobals.diagnosticLed, CORE_SEG7);
     startRow += 16; if (thisCol + 12 > nextCol) nextCol = thisCol + 12;
   }
   else {
