@@ -26,18 +26,11 @@ static core_tLCDLayout dispSshtl[] = { \
   { 0, 0,21,7, CORE_SEG87},
   { 2, 0,29,7, CORE_SEG87},
   { 4, 0, 1,7, CORE_SEG87}, { 4,26, 9,7,CORE_SEG87},
-  { 5,18, 0,1, CORE_SEG7},  { 5,20, 8,1,CORE_SEG7},
-  { 5,23,20,1, CORE_SEG7},  { 5,25,28,1,CORE_SEG7},{0}
+  { 5,16, 0,1, CORE_SEG7},  { 5,18, 8,1,CORE_SEG7},
+  { 5,21,20,1, CORE_SEG7},  { 5,23,28,1,CORE_SEG7},{0}
 };
 INITGAMEFULL(sshtl, GEN_S9, dispSshtl, 0, FLIP_SWNO(0,41),
              S11_BCDDIAG|S11_BCDDISP,0,39, 40, 27, 26, 25, 0)
-#if 0
-static core_tGameData sshtlGameData = {
-  GEN_S9, dispSshtl, {FLIP_SWNO(0,41),0,0,0,0,S11_BCDDIAG|S11_BCDDISP,0},
-  NULL,{{0}},{0, {39,40, 27, 26, 25, 0}}
-};
-static void init_sshtl(void) { core_gameData = &sshtlGameData; }
-#endif
 S9_ROMSTARTx4(sshtl,l7,"cpu_u20.128", 0x848ad54c)
 S9S_SOUNDROM4111(      "cpu_u49.128", 0x20e77990,
                        "spch_u4.732", 0xb0d03c5e,
@@ -64,41 +57,16 @@ S9_ROMEND
 CORE_GAMEDEF(sorcr, l1, "Sorcerer (L-1)", 1985, "Williams", s9_mS9S,0)
 
 /*--------------------
-/ Pennant Fever
-/--------------------*/
-static core_tLCDLayout dispPfever[] = { \
-  { 0, 0,21, 3, CORE_SEG7},  { 0, 8,25, 3, CORE_SEG7}, { 0,16,12, 4, CORE_SEG7},
-  { 2, 2, 0, 1, CORE_SEG7},  { 2, 4, 8, 1, CORE_SEG7},
-  { 2, 8,20, 1, CORE_SEG7},  { 2,10,28, 1, CORE_SEG7},
-  { 4, 4,33, 1, CORE_SEG7},  { 4, 8,35, 1, CORE_SEG7}, {0}
-};
-INITGAME(pfevr, GEN_S9, dispPfever, 0, FLIP_SW(FLIP_L), S11_BCDDIAG|S11_BCDDISP, 0)
-S9_ROMSTART12(pfevr,p3,"cpu_u19.732", 0x03796c6d,
-                       "cpu_u20.764", 0x3a3acb39)
-S9S_SOUNDROM4("cpu_u49.128", 0xb0161712)
-S9_ROMEND
-#define input_ports_pfevr input_ports_s11
-CORE_GAMEDEF(pfevr, p3, "Pennant Fever Baseball (P-3)", 1984, "Williams", s9_mS9S,GAME_IMPERFECT_SOUND)
-
-/*--------------------
 / Comet (S9) 06/85
 /--------------------*/
 static core_tLCDLayout dispComet[] = { \
   {  0, 0,21, 7, CORE_SEG87}, {3, 0,29,7,CORE_SEG87},
   {  0,18, 1, 7, CORE_SEG87}, {3,18, 9,7,CORE_SEG87},
-  {  6, 3,20, 1, CORE_SEG7 }, {6, 5,28,1,CORE_SEG7},
-  {  6, 8, 0, 1, CORE_SEG7 }, {6,10, 8,1,CORE_SEG7}, {0}
+  {  6, 8,20, 1, CORE_SEG7 }, {6,10,28,1,CORE_SEG7},
+  {  6, 3, 0, 1, CORE_SEG7 }, {6, 5, 8,1,CORE_SEG7}, {0}
 };
 INITGAMEFULL(comet, GEN_S9, dispComet, 0, FLIP_SWNO(0,30),
              S11_BCDDIAG|S11_BCDDISP,0,47,48,40,41,42,0)
-#if 0
-static core_tGameData cometGameData = {
-  GEN_S9, dispComet,
-  {FLIP_SWNO(0,30),0,0,0,0,S11_BCDDIAG|S11_BCDDISP,0},
-  NULL, {{0}}, {0, {47,48, 40, 41, 42, 0}}
-};
-static void init_comet(void) { core_gameData = &cometGameData; }
-#endif
 S9_ROMSTARTx4(comet,l4,"cpu_u20.128", 0x36193600)
 S9S_SOUNDROM41111(     "cpu_u49.128", 0xf1db0cbe,
                        "spch_u4.732", 0xd0215c49,
@@ -114,14 +82,6 @@ CORE_GAMEDEF(comet, l4, "Comet (L-4)", 1985, "Williams", s9_mS9S,0)
 /--------------------*/
 INITGAMEFULL(hs, GEN_S11, s11_dispS11, 0, FLIP_SWNO(37,38),
              S11_BCDDIAG,0,49,50,35,34,33,0)
-#if 0
-static core_tGameData hsGameData = {
-  GEN_S11, s11_dispS11,
-  {FLIP_SWNO(37,38),0,0,0,0,S11_BCDDIAG},
-  NULL, {{0}}, {0, {49, 50, 35, 34, 33}}
-};
-static void init_hs(void) { core_gameData = &hsGameData; }
-#endif
 S11_ROMSTART28(hs,l4,"hs_u26.l4", 0x38b73830,
                      "hs_u27.l4", 0x24c6f7f0)
 S11S_SOUNDROM88(     "hs_u21.l2", 0xc0580037,
@@ -164,14 +124,6 @@ CORE_GAMEDEF(rdkng, l4, "Road Kings (L-4)", 1986, "Williams", s11_mS11S,0)
 /--------------------*/
 INITGAMEFULL(pb, GEN_S11, s11_dispS11, 14, FLIP_SWNO(10,11),
              0,0, 53, 0, 48, 54, 55,52)
-#if 0
-static core_tGameData pbGameData = {
-  GEN_S11, s11_dispS11,
-  {FLIP_SWNO(10,11),0,0,0,0,0,0},
-  NULL, {{0}}, {14, {53, 0, 48, 54, 55,52}}
-};
-static void init_pb(void) { core_gameData = &pbGameData; }
-#endif
 S11_ROMSTART48(pb,l5,"pbot_u26.l5", 0xdaa0c8e4,
                      "pbot_u27.l5", 0xe625d6ce)
 S11S_SOUNDROM88(     "pbot_u21.l1", 0x3eab88d9,
@@ -187,14 +139,6 @@ CORE_GAMEDEF(pb, l5, "Pinbot (L-5)", 1987, "Williams", s11_mS11S,0)
 /--------------------*/
 INITGAMEFULL(f14, GEN_S11A, s11_dispS11a, 14, FLIP_SWNO(15,63),
              0,0, 57, 58, 0, 28, 0, 0)
-#if 0
-static core_tGameData f14GameData = {
-  GEN_S11A, s11_dispS11a,
-  {FLIP_SWNO(15,63),0,0,0,0,0,0},
-  NULL, {{0}}, {14, {57, 58, 0, 28}}
-};
-static void init_f14(void) { core_gameData = &f14GameData; }
-#endif
 S11_ROMSTART48(f14,l1,"f14_u26.l1", 0x62c2e615,
                       "f14_u27.l1", 0xda1740f7)
 S11S_SOUNDROM88(      "f14_u21.l1", 0xe412300c,
@@ -210,14 +154,6 @@ CORE_GAMEDEF(f14, l1, "F14 Tomcat (L-1)", 1987, "Williams", s11_mS11AS,0)
 /--------------------*/
 INITGAMEFULL(fire, GEN_S11A, s11_dispS11a, 12, FLIP_SWNO(23,24),
              0,0, 0,0, 61, 62, 57, 58)
-#if 0
-static core_tGameData fireGameData = {
-  GEN_S11A, s11_dispS11a,
-  {FLIP_SWNO(23,24),0,0,0,0,0,0},
-  NULL, {{0}}, {12, {0,0, 61, 62, 57, 58}}
-};
-static void init_fire(void) { core_gameData = &fireGameData; }
-#endif
 S11_ROMSTART48(fire,l3,"fire_u26.l3", 0x48abae33,
                        "fire_u27.l3", 0x4ebf4888)
 S11S_SOUNDROM88(       "fire_u21.l2", 0x2edde0a4,
@@ -570,17 +506,7 @@ S11_ROMEND
 #define input_ports_bbnny input_ports_s11
 
 CORE_GAMEDEF(bbnny, l2, "Bugs Bunny Birthday Ball (L-2)", 1990, "Bally", s11_mS11CS,0)
-#if 0
-/*--------------------
-/ Dr. Dude
-/--------------------*/
-INITGAME(dd,GEN_S11C,12,3/*?*/)
-S11_ROMSTART48(dd,l2,"dude_u26.l2", 0xd1e19fc2,
-                     "dude_u27.l2", 0x654b5d4c)
-S11CS_SOUNDROM000(   "dude_u4.l1",  0x3eeef714,
-                     "dude_u19.l1", 0xdc7b985b,
-                     "dude_u20.l1", 0xa83d53dd)
-S11_ROMEND
 
-CORE_GAMEDEF(dd, l2, "Dr. Dude (L-2)", 1990, "Bally", s11_mS11CS,0)
-#endif
+/*--------------------
+/ Dr. Dude - moved to own simulator
+/--------------------*/
