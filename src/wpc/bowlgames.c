@@ -98,7 +98,7 @@ CORE_GAMEDEF(tstrk,l1,"Triple Strike (Bowler) (L-1)",1983,"Williams",s4_mS4S,0)
 /*----------------------------
 / Black Beauty
 /----------------------------*/
-static core_tGameData blbeautyGameData = {GEN_BOWLING,dispBowl,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_ST300,0}};
+static core_tGameData blbeautyGameData = {GEN_BOWLING,dispBowl,{FLIP_SW(FLIP_L),0,0,0,SNDBRD_ST100,0}};
 static void init_blbeauty(void) { core_gameData = &blbeautyGameData; }
 ST200_ROMSTART8888(blbeauty,"cpu_u1.716",CRC(e2550957) SHA1(e445548b650fec5d593ca7da587300799ef94991),
                             "cpu_u5.716",CRC(70fcd9f7) SHA1(ca5c2ea09f45f5ba50526880c158aaac61f007d5),
