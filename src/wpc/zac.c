@@ -24,15 +24,13 @@
 
 static WRITE_HANDLER(ZAC_soundCmd) { }
 static void ZAC_soundInit(void) {
-  if (core_gameData->hw.soundBoard)
-    if(core_gameData->hw.soundBoard == SNDBRD_TECHNO)
-		sndbrd_0_init(core_gameData->hw.soundBoard, ZACSND_CPUA, memory_region(ZACSND_CPUBREGION), NULL, NULL);
-	else
-		sndbrd_0_init(core_gameData->hw.soundBoard, ZACSND_CPUA, memory_region(ZACSND_CPUAREGION), NULL, NULL);
+  if (core_gameData->hw.soundBoard == SNDBRD_TECHNO)
+    sndbrd_0_init(core_gameData->hw.soundBoard, ZACSND_CPUA, memory_region(ZACSND_CPUBREGION), NULL, NULL);
+  else
+    sndbrd_0_init(core_gameData->hw.soundBoard, ZACSND_CPUA, memory_region(ZACSND_CPUAREGION), NULL, NULL);
 }
 static void ZAC_soundExit(void) {
-  if (core_gameData->hw.soundBoard)
-    sndbrd_0_exit();
+  sndbrd_0_exit();
 }
 
 static struct {
@@ -250,8 +248,7 @@ static WRITE_HANDLER(ctrl_port_w)
 /*   DATA PORT : WRITE = Sound Data 0-7 */
 static WRITE_HANDLER(data_port_w)
 {
-  if (core_gameData->hw.soundBoard)
-    sndbrd_0_data_w(ZACSND_CPUA, data);
+  sndbrd_0_data_w(ZACSND_CPUA, data);
   logerror("%x: Sound Data Write=%x\n",activecpu_get_previouspc(),data);
 }
 
