@@ -276,7 +276,13 @@ static SWITCH_UPDATE(s6) {
     coreGlobals.swMatrix[0] = (inports[S6_COMINPORT] & 0xff00)>>8;
   }
   /*-- Diagnostic buttons on CPU board --*/
-  cpu_set_nmi_line(0, core_getSw(S6_SWCPUDIAG) ? ASSERT_LINE : CLEAR_LINE);
+  if (core_getSw(S6_SWCPUDIAG)) {
+    cpu_set_nmi_line(0, ASSERT_LINE);
+    memset(&s6locals.pseg,0,sizeof(s6locals.pseg));
+  }
+  else
+    cpu_set_nmi_line(0, CLEAR_LINE);
+
   sndbrd_0_diag(core_getSw(S6_SWSOUNDDIAG));
 
   /* Show Status of Auto/Manual Switch */
