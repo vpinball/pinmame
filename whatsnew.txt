@@ -14,6 +14,11 @@ Version 1.20
  [Martin Adrian]
 
 - Fixed Gottlieb Sys80B games with 4K game PROMS (i.e. Bone Buster, Badgirls, etc.)
+ [Tom Haukap]
+
+- Added support for Taito games (lamps missing at the moment)
+[Tom Haukap, Gerrit Volkenborn]
+
 
 Version 1.12.1 (April 14, 2002)
 -------------------------------
