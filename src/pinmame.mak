@@ -17,7 +17,7 @@ DRVLIBS += $(PINOBJ)/sndbrd.o
 COREOBJS += $(PINOBJ)/driver.o $(OBJ)/cheat.o $(PINOBJ)/mech.o
 
 # why isn't this part of the core
-DRVLIBS += $(OBJ)/vidhrdw/crtc6845.o $(OBJ)/machine/6532riot.o
+DRVLIBS += $(OBJ)/vidhrdw/crtc6845.o $(OBJ)/machine/6532riot.o $(OBJ)/machine/6530riot.o
 DRVLIBS += $(OBJ)/vidhrdw/tms9928a.o
 
 #
