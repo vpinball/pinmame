@@ -101,6 +101,8 @@
 
 /*-- These are only here so the game structure can be in the game file --*/
 extern struct MachineDriver machine_driver_SE_1;
+extern struct MachineDriver machine_driver_SE_1S;
 #define de_mSE         SE_1
+#define de_mSES        SE_1S
 #endif /* INC_SE */
 
