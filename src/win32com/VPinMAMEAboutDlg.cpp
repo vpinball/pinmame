@@ -81,6 +81,25 @@ private:
 		char szVersionText[256], szBuildDateText[256], szFormat[256];  
 		GetDlgItemText(IDC_VERSION, szFormat, sizeof szVersionText);
 		wsprintf(szVersionText, szFormat, szVersion);
+
+		//Add compile time specific strings to version string
+		char szAdjust[MAX_PATH];
+		wsprintf(szAdjust,"%s","");
+#ifdef MAME_DEBUG
+		wsprintf(szAdjust,"%s","DEBUG");
+#else
+	#ifdef TEST_NEW_STERN
+		wsprintf(szAdjust,"%s","STERN");
+	#endif
+	#ifdef NO_EXPIRATION_DATE
+		if(strcmp(szAdjust,"STERN")==0)
+			wsprintf(szAdjust,"%s","DEV");
+		else
+			wsprintf(szAdjust,"%s%s",szAdjust,"NO EXPIRE");
+	#endif
+#endif
+		if(strlen(szAdjust)) wsprintf(szVersionText, "%s (%s)",szVersionText,szAdjust);
+		//
 		SetDlgItemText(IDC_VERSION, szVersionText);
 		wsprintf(szBuildDateText,GetBuildDateString());
 		SetDlgItemText(IDC_BUILDDATE, szBuildDateText);
