@@ -45,7 +45,6 @@ const struct sndbrdIntf zac1311Intf = {0};
 /-----------------------------------------*/
 static void zac1125_init(struct sndbrdData *brdData);
 static WRITE_HANDLER(zac1125_data_w);
-static WRITE_HANDLER(zac1125_ctrl_w);
 
 static struct SN76477interface  zac1125_sn76477Int = { 1, { 50 }, /* mixing level */
 /*						   pin description		*/
@@ -71,7 +70,7 @@ static struct SN76477interface  zac1125_sn76477Int = { 1, { 50 }, /* mixing leve
 / exported interface
 /--------------------*/
 const struct sndbrdIntf zac1125Intf = {
-  "ZAC1125", zac1125_init, NULL, NULL, NULL, zac1125_data_w, NULL, zac1125_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "ZAC1125", zac1125_init, NULL, NULL, zac1125_data_w, zac1125_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
 MACHINE_DRIVER_START(zac1125)
@@ -80,14 +79,51 @@ MACHINE_DRIVER_END
 
 static struct {
   UINT8 ctrl;
+  double ne555_voltage;
+  mame_timer *ne555;
 } s1125locals;
 
-static WRITE_HANDLER(zac1125_data_w) {
-  logerror("snd write %d = %d\n", s1125locals.ctrl, data);
+static void ne555_timer(int n) {
+  s1125locals.ne555_voltage += 0.02;
+  SN76477_set_vco_voltage(0, s1125locals.ne555_voltage);
+  if (s1125locals.ne555_voltage > 4.99) // stop timer if maximum voltage is reached
+    timer_adjust(s1125locals.ne555, TIME_NEVER, 0, TIME_NEVER);
 }
 
-static WRITE_HANDLER(zac1125_ctrl_w) {
-  s1125locals.ctrl = data;
+static WRITE_HANDLER(zac1125_data_w) {
+  static double states[8][5] = { // pins 7, 18, 20, 24, and optional timer interval
+    { RES_K(468), RES_K(100),RES_M(1), RES_K(9.9) },
+    { RES_K(4.7), RES_K(32), RES_M(1), RES_K(136) },
+    { RES_K(468), RES_K(25), RES_M(1), RES_K(9.9) },
+    { RES_K(468), RES_K(32), RES_M(1), RES_K(9.9) },
+    { RES_K(192), RES_K(4.5),RES_M(1), RES_M(1.5), 0.015 },
+    { RES_K(26.5),RES_K(4.5),RES_M(1), RES_K(9.9), 0.0003 },
+    { RES_M(1.5), RES_K(100),RES_M(1), RES_K(358) },
+    { RES_K(192), RES_K(9.1),RES_K(32),RES_K(94)  }
+  };
+  static int vco[8] = { 1, 1, 1, 1, 0, 0, 1, 1 };
+  static int mix[8] = { 0, 0, 0, 0, 0, 0, 2, 0 };
+
+  int ctrl = data >> 4;
+  int state = ctrl & 0x07; // need to find out how this is calculated...
+  data = data & 0x0f;
+  logerror("Sound #%x plays %x\n", ctrl, data);
+
+  if (data) {
+    SN76477_enable_w       (0, 1);
+    SN76477_mixer_w        (0, mix[state]);
+    SN76477_set_decay_res  (0, states[state][0]); /* 7 */
+    SN76477_set_vco_res    (0, states[state][1]); /* 18 */
+    SN76477_set_slf_res    (0, states[state][2]); /* 20 */
+    SN76477_set_oneshot_res(0, states[state][3]); /* 24 */
+    SN76477_vco_w          (0, vco[state]);
+    if (!vco[state]) { // simulate the loading of the capacitors by using a timer
+      SN76477_set_vco_voltage(0, 0);
+      s1125locals.ne555_voltage = 0;
+      timer_adjust(s1125locals.ne555, states[state][4], 0, states[state][4]);
+    }
+    SN76477_enable_w       (0, 0);
+  }
 }
 
 static void zac1125_init(struct sndbrdData *brdData) {
@@ -98,6 +134,7 @@ static void zac1125_init(struct sndbrdData *brdData) {
   /* fake: pulse the enable line to get rid of the constant noise */
 //  SN76477_enable_w(0, 1);
 //  SN76477_enable_w(0, 0);
+  s1125locals.ne555 = timer_alloc(ne555_timer);
 }
 
 /*----------------------------------------
@@ -347,6 +384,7 @@ static struct {
   struct sndbrdData brdData;
   int pia0a, pia0b, pia1a, pia1b, pia2a, pia2b;
   int cmd[2], lastcmd, cmdin, cmdout, lastctrl;
+  void* cb1timer;
 } snslocals;
 
 static const struct pia6821_interface sns_pia[] = {{
@@ -363,6 +401,10 @@ static const struct pia6821_interface sns_pia[] = {{
   /*irq: A/B           */ 0, 0
 }};
 
+static void timer_callback(int n) {
+  pia_set_input_cb1(2, n);
+}
+
 static void sns_init(struct sndbrdData *brdData) {
   snslocals.brdData = *brdData;
   pia_config(SNS_PIA0, PIA_STANDARD_ORDERING, &sns_pia[0]);
@@ -370,6 +412,10 @@ static void sns_init(struct sndbrdData *brdData) {
   if (brdData->boardNo == SNDBRD_ZAC13136)
     pia_config(SNS_PIA2, PIA_STANDARD_ORDERING, &sns_pia[2]);
   snslocals.cmdin = snslocals.cmdout = 2;
+  snslocals.cb1timer = timer_alloc(timer_callback);
+  if (snslocals.brdData.boardNo == SNDBRD_ZAC11178) {
+    timer_adjust(snslocals.cb1timer, 1.0/874.0, 0, 1.0/874.0);
+  }
 }
 
 static void sns_diag(int button) {
