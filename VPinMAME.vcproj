@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.00"
 	Name="Visual PinMame"
+	ProjectGUID="{3D23B9C4-C0A4-48C2-8D45-B94676FF64C0}"
 	SccProjectName=""
 	SccLocalPath=""
 	Keyword="AtlProj">
@@ -301,101 +302,7 @@ echo regsvr32 exec. time &gt; &quot;$(IntDir)\regsvr32.trg&quot;
 					RelativePath=".\src\win32com\Controller.cpp">
 				</File>
 				<File
-					RelativePath=".\src\win32com\Controller.cpp.crypt">
-					<FileConfiguration
-						Name="Release|Win32">
-						<Tool
-							Name="VCCustomBuildTool"
-							Description="Decrypting $(InputPath)"
-							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
-cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
-echo &gt;NUL
-"
-							Outputs="$(InputDir)$(InputName)"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="MAME Debug|Win32">
-						<Tool
-							Name="VCCustomBuildTool"
-							Description="Decrypting $(InputPath)"
-							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
-cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
-echo &gt;NUL
-"
-							Outputs="$(InputDir)$(InputName)"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="VC+MAME Debug|Win32">
-						<Tool
-							Name="VCCustomBuildTool"
-							Description="Decrypting $(InputPath)"
-							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
-cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
-echo &gt;NUL
-"
-							Outputs="$(InputDir)$(InputName)"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCustomBuildTool"
-							Description="Decrypting $(InputPath)"
-							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
-cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
-echo &gt;NUL
-"
-							Outputs="$(InputDir)$(InputName)"/>
-					</FileConfiguration>
-				</File>
-				<File
 					RelativePath=".\src\win32com\Controller.h">
-				</File>
-				<File
-					RelativePath=".\src\win32com\Controller.h.crypt">
-					<FileConfiguration
-						Name="Release|Win32">
-						<Tool
-							Name="VCCustomBuildTool"
-							Description="Decrypting $(InputPath)"
-							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
-cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
-echo &gt;NUL
-"
-							Outputs="$(InputDir)$(InputName)"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="MAME Debug|Win32">
-						<Tool
-							Name="VCCustomBuildTool"
-							Description="Decrypting $(InputPath)"
-							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
-cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
-echo &gt;NUL
-"
-							Outputs="$(InputDir)$(InputName)"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="VC+MAME Debug|Win32">
-						<Tool
-							Name="VCCustomBuildTool"
-							Description="Decrypting $(InputPath)"
-							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
-cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
-echo &gt;NUL
-"
-							Outputs="$(InputDir)$(InputName)"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCustomBuildTool"
-							Description="Decrypting $(InputPath)"
-							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
-cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
-echo &gt;NUL
-"
-							Outputs="$(InputDir)$(InputName)"/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\src\win32com\ControllerDisclaimerDlg.cpp">
@@ -440,53 +347,6 @@ echo &gt;NUL
 					RelativePath=".\src\win32com\ControllerRun.cpp">
 				</File>
 				<File
-					RelativePath=".\src\win32com\ControllerRun.cpp.crypt">
-					<FileConfiguration
-						Name="Release|Win32">
-						<Tool
-							Name="VCCustomBuildTool"
-							Description="Decrypting $(InputPath)"
-							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
-cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
-echo &gt;NUL
-"
-							Outputs="$(InputDir)$(InputName)"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="MAME Debug|Win32">
-						<Tool
-							Name="VCCustomBuildTool"
-							Description="Decrypting $(InputPath)"
-							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
-cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
-echo &gt;NUL
-"
-							Outputs="$(InputDir)$(InputName)"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="VC+MAME Debug|Win32">
-						<Tool
-							Name="VCCustomBuildTool"
-							Description="Decrypting $(InputPath)"
-							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
-cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
-echo &gt;NUL
-"
-							Outputs="$(InputDir)$(InputName)"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCustomBuildTool"
-							Description="Decrypting $(InputPath)"
-							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
-cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
-echo &gt;NUL
-"
-							Outputs="$(InputDir)$(InputName)"/>
-					</FileConfiguration>
-				</File>
-				<File
 					RelativePath=".\src\win32com\ControllerSettings.cpp">
 				</File>
 				<File
@@ -506,53 +366,6 @@ echo &gt;NUL
 				</File>
 				<File
 					RelativePath=".\src\win32com\VPinMAME.cpp">
-				</File>
-				<File
-					RelativePath=".\src\win32com\VPinMAME.cpp.crypt">
-					<FileConfiguration
-						Name="Release|Win32">
-						<Tool
-							Name="VCCustomBuildTool"
-							Description="Decrypting $(InputPath)"
-							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
-cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
-echo &gt;NUL
-"
-							Outputs="$(InputDir)$(InputName)"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="MAME Debug|Win32">
-						<Tool
-							Name="VCCustomBuildTool"
-							Description="Decrypting $(InputPath)"
-							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
-cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
-echo &gt;NUL
-"
-							Outputs="$(InputDir)$(InputName)"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="VC+MAME Debug|Win32">
-						<Tool
-							Name="VCCustomBuildTool"
-							Description="Decrypting $(InputPath)"
-							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
-cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
-echo &gt;NUL
-"
-							Outputs="$(InputDir)$(InputName)"/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32">
-						<Tool
-							Name="VCCustomBuildTool"
-							Description="Decrypting $(InputPath)"
-							CommandLine="if exist &quot;$(InputDir)$(InputName)&quot; copy &quot;$(InputDir)$(InputName)&quot; &quot;$(InputDir)$(InputName).bak&quot; &gt;NUL
-cryptf -D &quot;$(InputPath)&quot; &quot;$(InputDir)$(InputName)&quot; crypt.ini
-echo &gt;NUL
-"
-							Outputs="$(InputDir)$(InputName)"/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\src\win32com\VPinMAME.def">
@@ -690,6 +503,9 @@ echo &gt;NUL
 				</File>
 				<File
 					RelativePath=".\src\wpc\atarisnd.c">
+				</File>
+				<File
+					RelativePath="src\wpc\bowlgames.c">
 				</File>
 				<File
 					RelativePath=".\src\wpc\by35.c">
@@ -1638,6 +1454,12 @@ echo &gt;NUL
 						RelativePath=".\src\machine\mathbox.h">
 					</File>
 					<File
+						RelativePath="src\machine\pic8259.c">
+					</File>
+					<File
+						RelativePath="src\machine\pic8259.h">
+					</File>
+					<File
 						RelativePath=".\src\machine\ticket.c">
 					</File>
 					<File
@@ -1857,6 +1679,9 @@ echo &gt;NUL
 				</File>
 				<File
 					RelativePath=".\src\windows\blit.h">
+				</File>
+				<File
+					RelativePath="src\windows\config.c">
 				</File>
 				<File
 					RelativePath=".\src\windows\dirty.h">
