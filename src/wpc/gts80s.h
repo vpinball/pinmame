@@ -112,18 +112,18 @@ extern MACHINE_DRIVER_EXTERN(gts80s_b3);
   SOUNDREGION(0x10000, GTS3_MEMREG_SCPU1) \
 	ROM_LOAD(n2, 0x8000,  0x8000, chk2)
 
-//This code did not work for both 128K Rom games
+//This code did not work for the 128K Rom games
 #if 0
-/*-- 2 x 32K Sound CPU Roms, 2 x 128K Voice Roms --*/
-//Purposely load in n2 first!
-#define GTS3SOUND32128(n2,chk2,n1,chk1,n3,chk3, n4, chk4) \
-  SOUNDREGION(0x10000, GTS3_MEMREG_DCPU1) \
-    ROM_LOAD(n1, 0x8000,  0x8000, chk1) \
-  SOUNDREGION(0x100000, GTS3_MEMREG_SROM1) \
-	GTS3S_ROMLOAD1(0x00000, n3, chk3) \
-	GTS3S_ROMLOAD1(0x80000, n4, chk4) \
-  SOUNDREGION(0x10000, GTS3_MEMREG_SCPU1) \
-	ROM_LOAD(n2, 0x8000,  0x8000, chk2)
+	/*-- 2 x 32K Sound CPU Roms, 2 x 128K Voice Roms --*/
+	//Purposely load in n2 first!
+	#define GTS3SOUND32128(n2,chk2,n1,chk1,n3,chk3, n4, chk4) \
+	  SOUNDREGION(0x10000, GTS3_MEMREG_DCPU1) \
+		ROM_LOAD(n1, 0x8000,  0x8000, chk1) \
+	  SOUNDREGION(0x100000, GTS3_MEMREG_SROM1) \
+		GTS3S_ROMLOAD1(0x00000, n3, chk3) \
+		GTS3S_ROMLOAD1(0x80000, n4, chk4) \
+	  SOUNDREGION(0x10000, GTS3_MEMREG_SCPU1) \
+		ROM_LOAD(n2, 0x8000,  0x8000, chk2)
 #endif
 
 /*-- 2 x 32K Sound CPU Roms, 2 x 128K Voice Roms BUT TREATED AS 1x256 ROM --*/
