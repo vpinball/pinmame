@@ -7,6 +7,8 @@ Version 1.20
 -new options "-dmd_only" "-dmd_compact" "-dmd_antialias xx"
  (replaces the old MAME options translucency,antialias,flicker)
 -Fixed dying sound in DCS games (e.g. STTNG, Shadow)
+-Added mini DMD support to the whitestar hardware (monopoly)
+-Handles pulsed switches better in mech handler and increased size to 20 switches
  [Martin Adrian]
 
 Version 1.12.1 (April 14, 2002)
