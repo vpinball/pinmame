@@ -90,7 +90,6 @@ static INTERRUPT_GEN(s7_vblank) {
     memcpy(coreGlobals.segments, s7locals.segments, sizeof(coreGlobals.segments));
     memcpy(s7locals.segments, s7locals.pseg, sizeof(s7locals.segments));
     coreGlobals.diagnosticLed = s7locals.diagnosticLed;
-    s7locals.diagnosticLed = 0;
   }
   core_updateSw(s7locals.ssEn);
 }
@@ -110,7 +109,7 @@ static WRITE_HANDLER(pia2b_w) {
 /-----------------*/
 static WRITE_HANDLER(pia3a_w) {
   s7locals.digSel = data & 0x0f;
-  s7locals.diagnosticLed |= core_bcd2seg[data>>4];
+  s7locals.diagnosticLed = core_bcd2seg7e[(data>>4)^15];
 }
 static WRITE_HANDLER(pia3ca2_w) {
   DBGLOG(("pia3ca2_w\n"));
@@ -201,6 +200,23 @@ static WRITE_HANDLER(pia3cb2_w) { setSSSol(data, 5); }
 static WRITE_HANDLER(pia4ca2_w) { setSSSol(data, 3); }
 static WRITE_HANDLER(pia4cb2_w) { setSSSol(data, 2); }
 
+/*-----------------------------------------------------------------
+  Dip switch support
+-------------------------------------------------------------------
+  Dips are returned to a4-7 and are read by pulsing of a0-3 (same as digSel).
+  Dips are matrixed.. Column 0 = Function Switches 1-4, Column 1 = Function Switches 5-8
+  		      Column 2 = Data Switches 1-4, Column 3 = Data Switches 5-8
+  Game expects on=0, off=1 from dip switches.
+  Game expects 0xFF for function dips when ENTER-key is not pressed.
+*/
+static READ_HANDLER(s7_dips_r) {
+  int val=0;
+  int dipcol = (s7locals.digSel & 0x03);  /* which column is requested */
+  if (core_getSw(S7_ENTER))               /* enter switch must be down to return dips */
+    val = (core_getDip(dipcol/2+1) << (4*(1-(dipcol&0x01)))) & 0xf0;
+  return ~val;                            /* game wants bits inverted */
+}
+
 /*---------------
 / Switch reading
 /----------------*/
@@ -245,7 +261,7 @@ static struct pia6821_interface s7_pia[] = {
     CB1    Diag In
     CB2    SS6
     CA2    Diagnostic LED control? */
- /* in  : A/B,CA/B1,CA/B2 */ 0, 0, 0, 0, 0, 0,
+ /* in  : A/B,CA/B1,CA/B2 */ s7_dips_r, 0, 0, 0, 0, 0,
  /* out : A/B,CA/B2       */ pia3a_w, pia3b_w, pia3ca2_w, pia3cb2_w,
  /* irq : A/B             */ s7_piaIrq, s7_piaIrq
 },{/* PIA 4 (3000)
@@ -270,7 +286,13 @@ static SWITCH_UPDATE(s7) {
     coreGlobals.swMatrix[1] = inports[S7_COMINPORT];
   }
   /*-- Generate interupts for diganostic keys --*/
-  cpu_set_nmi_line(0, core_getSw(S7_SWCPUDIAG) ? ASSERT_LINE : CLEAR_LINE);
+  if (core_getSw(S7_SWCPUDIAG)) {
+    cpu_set_nmi_line(0, ASSERT_LINE);
+    memset(&s7locals.pseg,0,sizeof(s7locals.pseg)); /* clear digits in cache */
+  }
+  else
+    cpu_set_nmi_line(0, CLEAR_LINE);
+
   sndbrd_0_diag(core_getSw(S7_SWSOUNDDIAG));
 }
 
@@ -352,7 +374,7 @@ MACHINE_DRIVER_START(s7)
   MDRV_CPU_VBLANK_INT(s7_vblank, 1)
   MDRV_CPU_PERIODIC_INT(s7_irq, S7_IRQFREQ)
   MDRV_NVRAM_HANDLER(s7)
-  MDRV_DIPS(2) /* On sound board */
+  MDRV_DIPS(8+16) /* 0:sound & speech, 1:function dips, 2:data dips*/
   MDRV_SWITCH_UPDATE(s7)
   MDRV_DIAGNOSTIC_LED7
 MACHINE_DRIVER_END
