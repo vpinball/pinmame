@@ -1,5 +1,20 @@
 What's new:
-Version 1.20 Beta 2 (date)
+
+Version 1.21 (March 31, 2002)
+-----------------------------
+Happy late 2nd birthday greetings to PinMAME!
+Yes, 2 years and 2 days ago, PinMAME was officially released for the first time.
+Hard to believe two years have passed since but then, not so hard when you
+look at how much has changed in between!
+PinMAME 0.99 didn't have support for a single working Bally game, and look
+what it can do today: A total of 548 sets are supported, including 106 clones,
+so excluding some test sets, there are some 430 individual working games in there.
+Considering the worldwide total of solid state pinball games ever produced is
+about 900, I'd say we're right on course... :)
+
+This latest release is a much stabilized version of 1.20, only so much
+has changed since that we decided to call the new version 1.21, to avoid
+any more confusion than necessary...
 
 Bugs Fixed
 ----------
@@ -18,6 +33,12 @@ Bugs Fixed
   [Martin Adrian]
   [Steve Ellenoff]
 
+- Improved Gottlieb System 80B sound
+- Added comma segments to GTS80A games
+- Increased CPU speed for Midway's Rotation VIII
+- Finally, truly, sincerely, Caveman is really working! :)
+  [Gerrit Volkenborn]
+
 New Features
 ------------
 - Added GameOn solenoid for WPC games (Sol 31)
@@ -33,6 +54,12 @@ New Features
 - Added rom support for Stern Simpsons Party Machine
 - Some sound working on Zaccaria Games, but still much work to be done
   [Steve Ellenoff]
+
+- Added skewed, anti-aliased LED digits for greater authenticity
+- Added support for alphanumeric digit display on Hyperball
+- Added lots of romsets for bowlers, shuffle alleys, prototypes, some bootlegs too.
+  [Gerrit Volkenborn]
+
 
 Version 1.20 Beta (September 29, 2002)
 --------------------------------------

@@ -32,12 +32,4 @@ Bugs in Pinmame that we are aware of:
 
 #11) Data East/Sega/Stern DMD support is not 100% accurate.
 
-#12) Sound issues on all Gottlieb System 3 games.
-
-#13) Volume issues with BSMT games; most of them are too low.
-
-#14) Following DCS Games have sound issues:
-     a) Indy 500 - Sound dies on ball 2
-     b) STTNG - sound stops for extra ball.
-     c) The Shadow - Sound stops on every ball except the first until a trigger is hit.
-     d) Judge Dredd - Sound volume varies between different balls.
+#12) Volume issues with BSMT games; most of them are too low.
