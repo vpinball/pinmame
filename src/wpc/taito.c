@@ -269,6 +269,19 @@ static MEMORY_WRITE_START(taito_writemem)
   { 0x4800, 0xffff, MWA_ROM },
 MEMORY_END
 
+static MEMORY_READ_START(taito_readmem_old)
+  { 0x0000, 0x0fff, MRA_ROM },
+  { 0x1000, 0x10ff, MRA_RAM },
+  { 0x1400, 0x1406, switches_r },
+  { 0x1800, 0x1bff, MRA_ROM },
+MEMORY_END
+
+static MEMORY_WRITE_START(taito_writemem_old)
+  { 0x1000, 0x10ff, MWA_RAM },
+//  { 0x4080, 0x408f, dma_display },
+//  { 0x4090, 0x409f, dma_commands },
+MEMORY_END
+
 MACHINE_DRIVER_START(taito)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(taito,NULL,taito)
@@ -313,6 +326,13 @@ MACHINE_DRIVER_START(taito_sintevoxpp)
   MDRV_IMPORT_FROM(taitos_sintevoxpp)
   MDRV_SOUND_CMD(taito_sndCmd_w)
   MDRV_SOUND_CMDHEADING("taito")
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(taito_old)
+  MDRV_IMPORT_FROM(taito_sintetizador)
+
+  MDRV_CPU_MODIFY("mcpu")
+  MDRV_CPU_MEMORY(taito_readmem_old, taito_writemem_old)
 MACHINE_DRIVER_END
 
 //-----------------------------------------------
