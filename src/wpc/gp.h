@@ -1,7 +1,7 @@
 #ifndef INC_GP
 #define INC_GP
 
-/* DIP SWITCH SETTINGS: 
+/* DIP SWITCH SETTINGS:
 
  05 04 03 02 01 (Coin Chute #1)		Credits Per Coin
  21 20 19 18 17 (Coin Chute #3)
@@ -27,7 +27,7 @@
   16 =	  TUNE OPTION (On = Play Tune for credit, Off = Play Chime?)
   17 - 21 (See Coin Settings Above)
   22 - 24 ??
-  
+
   27 26 25 (MAX # of Credits)
   --------
    0  0  0  5 Credits
@@ -212,7 +212,7 @@
 	NORMALREGION(0x10000, GP_MEMREG_CPU) \
       ROM_LOAD( n1, 0x0000, 0x0800, chk1) \
       ROM_LOAD( n2, 0x0800, 0x0800, chk2) \
-      ROM_LOAD( n3, 0x1000, 0x0800, chk3) 
+      ROM_LOAD( n3, 0x1000, 0x0800, chk3)
 
 /* 1 X 4K ROM & 1 X 2K ROM */
 #define GP_ROMSTART08(name,n1,chk1,n2,chk2) \
@@ -227,12 +227,14 @@
 	NORMALREGION(0x10000, GP_MEMREG_CPU) \
       ROM_LOAD( n1, 0x0000, 0x1000, chk1) \
       ROM_LOAD( n2, 0x1000, 0x1000, chk2)
-      
+
 #define GP_ROMEND ROM_END
 
 /*-- These are only here so the game structure can be in the game file --*/
-extern struct MachineDriver machine_driver_GP1;
-extern struct MachineDriver machine_driver_GP2;
+extern MACHINE_DRIVER_EXTERN(GP1);
+extern MACHINE_DRIVER_EXTERN(GP2);
+
 #define mGP1     GP1
 #define mGP2     GP2
+
 #endif /* INC_GP */
