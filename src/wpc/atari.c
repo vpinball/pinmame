@@ -16,7 +16,6 @@
 #include <stdarg.h>
 #include "driver.h"
 #include "cpu/m6800/m6800.h"
-#include "cpu/m6809/m6809.h"
 #include "core.h"
 #include "sndbrd.h"
 #include "atari.h"
@@ -33,16 +32,20 @@ static struct {
   int    diagnosticLed;
   int    soldisable;
   UINT32 solenoids;
-  UINT8  swMatrix[CORE_MAXSWCOL];
-  UINT8  lampMatrix[CORE_MAXLAMPCOL];
   core_tSeg segments, pseg;
 } locals;
 
 static int dispPos[] = { 49, 1, 9, 21, 29, 41, 61, 69 };
 
+static int toggle = 0;
 static INTERRUPT_GEN(ATARI1_nmihi) {
-  //cpu_set_nmi_line(ATARI_CPU, state ? ASSERT_LINE : CLEAR_LINE);
-	cpu_set_nmi_line(ATARI_CPU, PULSE_LINE);
+	static int dmaCount = 0;
+//	cpu_set_nmi_line(ATARI_CPU, PULSE_LINE);
+	dmaCount++;
+	if (dmaCount > 3) {
+		dmaCount = 0;
+		toggle = !toggle;
+	}
 }
 
 static void ATARI2_irq(int state) {
@@ -62,19 +65,34 @@ static WRITE_HANDLER(watchdog_w) {
 //logerror("Watchdog reset!\n");
 }
 
-static INTERRUPT_GEN(ATARI_vblank) {
-  /*-------------------------------
-  /  copy local data to interface
-  /--------------------------------*/
+/*-------------------------------
+/  copy local data to interface
+/--------------------------------*/
+static INTERRUPT_GEN(ATARI1_vblank) {
+  locals.vblankCount++;
 
-  locals.vblankCount += 1;
+  /*-- solenoids --*/
+  coreGlobals.solenoids = locals.solenoids;
+  locals.solenoids = coreGlobals.pulsedSolState;
+
+  /*-- display --*/
+  if ((locals.vblankCount % ATARI_DISPLAYSMOOTH) == 0) {
+    memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
+  }
+
+  //Flippers are activated differently for almost every pinball of this generation...
+  core_updateSw(core_getSol(4) || core_getSol(7) || core_getSol(16) || core_getSol(17));
+}
+
+static INTERRUPT_GEN(ATARI2_vblank) {
+  locals.vblankCount ++;
+
   /*-- lamps --*/
   if ((locals.vblankCount % ATARI_LAMPSMOOTH) == 0) {
-    memcpy(coreGlobals.lampMatrix, locals.lampMatrix, sizeof(locals.lampMatrix));
-//	memset(locals.lampMatrix, 0, sizeof(locals.lampMatrix));
+    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   }
-  /*-- solenoids --*/
 
+  /*-- solenoids --*/
   if ((locals.vblankCount % ATARI_SOLSMOOTH) == 0) {
     coreGlobals.solenoids = locals.solenoids;
     if (locals.soldisable) locals.solenoids = coreGlobals.pulsedSolState;
@@ -85,14 +103,18 @@ static INTERRUPT_GEN(ATARI_vblank) {
   {
     memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
 	memset(locals.segments, 0x00, sizeof locals.segments);
-//  memcpy(locals.segments, locals.pseg, sizeof(locals.segments));
-
   }
 
   /*update leds*/
   coreGlobals.diagnosticLed = locals.diagnosticLed;
 
   core_updateSw(core_getSol(16));
+}
+
+static SWITCH_UPDATE(ATARI0) {
+	if (inports) {
+		coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0xc0) | (inports[ATARI_COMINPORT] & 0x0f) | ((inports[ATARI_COMINPORT] & 0x0300) >> 4);
+	}
 }
 
 static SWITCH_UPDATE(ATARI1) {
@@ -119,7 +141,8 @@ static int ATARI_m2sw(int col, int row) {
 /* Switch reading */
 // Gen 1
 static READ_HANDLER(swg1_r) {
-	return (coreGlobals.swMatrix[1+(offset/8)] & (1 << (offset % 8)))?0:0xff;
+	UINT8 sw = (coreGlobals.swMatrix[1+(offset/8)] & (1 << (offset % 8))) ? 0xff : 0;
+	return sw;
 }
 
 static WRITE_HANDLER(swg1_w) {
@@ -127,7 +150,14 @@ static WRITE_HANDLER(swg1_w) {
 }
 
 static READ_HANDLER(dipg1_r) {
-	return (core_getDip(offset/8) & (1 << (offset % 8)))?0:0xff;
+	int i, dip2 = core_getDip(2);
+	UINT8 sw = (core_getDip(offset/8) & (1 << (offset % 8))) ? 0xff : 0;
+	for (i=0; i < 4; i++) {
+		core_setSw(ATARI_m2sw(8, 5+i), dip2 & (1 << i));
+	}
+	if (offset)
+		return sw;
+	return (toggle ? 0xff : 0x00);
 }
 // Gen 2
 static READ_HANDLER(sw_r) {
@@ -139,6 +169,39 @@ static READ_HANDLER(dip_r)  {
 }
 
 /* display */
+// Gen 1
+static UINT8 *ram;
+
+static WRITE_HANDLER(ram_w) {
+	ram[offset] = data;
+	if (offset < 0x10) {
+		if (offset % 4 == 3) {
+			if ((data & 0x0f) == 0x08)
+				coreGlobals.lampMatrix[8] |= (0x08 >> (offset/4));
+			else
+				coreGlobals.lampMatrix[8] &= ~(0x08 >> (offset/4));
+		} else {
+			((int *)locals.segments)[30 - offset*2] = core_bcd2seg[data >> 4];
+			((int *)locals.segments)[31 - offset*2] = core_bcd2seg[data & 0x0f];
+		}
+	} else if (offset == 0x1c || offset == 0x1d) {
+		offset -= 0x1c;
+		((int *)locals.segments)[32 + offset*2] = core_bcd2seg[data >> 4];
+		((int *)locals.segments)[33 + offset*2] = core_bcd2seg[data & 0x0f];
+	} else if (offset > 0x2f && offset < 0x40) {
+		int col;
+		offset -= 0x30;
+		col = (offset%4)*2 + offset/8;
+		if (offset % 8 < 4)
+			coreGlobals.lampMatrix[col] = (coreGlobals.lampMatrix[col] & 0xf0) | (data & 0x0f);
+		else
+			coreGlobals.lampMatrix[col] = (coreGlobals.lampMatrix[col] & 0x0f) | (data << 4);
+	}
+}
+
+static READ_HANDLER(ram_r) {
+	return ram[offset];
+}
 // Gen 2
 static WRITE_HANDLER(disp0_w) {
 	((int *)locals.pseg)[offset] = core_bcd2seg[data & 0x0f];
@@ -153,6 +216,62 @@ static WRITE_HANDLER(disp1_w) {
 }
 
 /* solenoids */
+// Gen 1
+static UINT8 latch[] = {
+	0, 0, 0, 0, 0, 0, 0, 0
+};
+
+static WRITE_HANDLER(latch1080_w) {
+	latch[0] = data;
+	if (data & 0xf0) {
+		locals.solenoids |= ((data & 0xf0) << 8);
+		logerror("Write to Latch 1080 = %02x\n", data);
+	}
+}
+static WRITE_HANDLER(latch1084_w) {
+	latch[1] = data;
+	if (data & 0xf0) {
+		locals.solenoids |= ((data & 0xf0) << 4);
+		logerror("Write to Latch 1084 = %02x\n", data);
+	}
+}
+static WRITE_HANDLER(latch1088_w) {
+	latch[2] = data;
+	if (data & 0xf0) {
+		locals.solenoids |= (data & 0xf0);
+		logerror("Write to Latch 1088 = %02x\n", data);
+	}
+}
+static WRITE_HANDLER(latch108c_w) {
+	latch[3] = data;
+	if (data) {
+		locals.solenoids |= ((data & 0xf0) >> 4) | ((data & 0x0f) << 16);
+		logerror("Write to Latch 108c = %02x\n", data);
+	}
+}
+
+static READ_HANDLER(latch1080_r) {
+	return latch[0];
+}
+static READ_HANDLER(latch1084_r) {
+	return latch[1];
+}
+static READ_HANDLER(latch1088_r) {
+	return latch[2];
+}
+static READ_HANDLER(latch108c_r) {
+	return latch[3];
+}
+/* Additional outputs on Time 2000 */
+static WRITE_HANDLER(latch5x_w) {
+	latch[offset/4 + 4] = data;
+	if (data) {
+		if (offset == 12) {
+			locals.solenoids |= (data << 20);
+		}
+		logerror("Write to Latch %x = %02x\n", 0x5080 + offset, data);
+	}
+}
 // Gen 2
 static WRITE_HANDLER(sol0_w) {
 	data &= 0x0f;
@@ -170,52 +289,22 @@ static WRITE_HANDLER(sol1_w) {
 }
 
 /* lamps */
-// Gen 1 (all outputs)
-static WRITE_HANDLER(latch10_w) {
-	locals.lampMatrix[0] = data;
-}
-
-static WRITE_HANDLER(latch14_w) {
-	locals.lampMatrix[1] = data;
-}
-
-static WRITE_HANDLER(latch18_w) {
-	locals.lampMatrix[2] = data;
-}
-
-static WRITE_HANDLER(latch1c_w) {
-	locals.lampMatrix[3] = data;
-}
-
-static WRITE_HANDLER(latch50_w) {
-	locals.lampMatrix[4] = data;
-}
-
-static WRITE_HANDLER(latch54_w) {
-	locals.lampMatrix[5] = data;
-}
-
-static WRITE_HANDLER(latch58_w) {
-	locals.lampMatrix[6] = data;
-}
-
-static WRITE_HANDLER(latch5c_w) {
-	locals.lampMatrix[7] = data;
-}
-
+// Gen 1 (handled by display routine, see ram_w)
 // Gen 2
 static WRITE_HANDLER(lamp_w) {
-	locals.lampMatrix[offset] = data;
+	coreGlobals.tmpLampMatrix[offset] = data;
 }
 
 /* sound */
 // Gen 1
 static WRITE_HANDLER(soundg1_w) {
 	logerror("Play sound %2x\n", data);
+	sndbrd_0_data_w(0, data);
 }
 
 static WRITE_HANDLER(audiog1_w) {
-	logerror("Audio Reset %2x\n", data);
+//	logerror("Audio Reset %2x\n", data);
+	sndbrd_0_data_w(0, 0);
 }
 // Gen 2
 static WRITE_HANDLER(sound0_w) {
@@ -231,22 +320,17 @@ static WRITE_HANDLER(sound1_w) {
 / Load/Save static ram
 / Save RAM & CMOS Information
 /-------------------------------------------------*/
-static UINT8 *ATARI1_CMOS;
-static WRITE_HANDLER(ATARI1_CMOS_w) {
-  ATARI1_CMOS[offset] = data;
-}
-
 static NVRAM_HANDLER(ATARI1) {
-	core_nvram(file, read_or_write, ATARI1_CMOS, 512, 0x00);
+	core_nvram(file, read_or_write, ram, 512, 0x00);
 }
 
-static UINT8 *ATARI2_CMOS;
-static WRITE_HANDLER(ATARI2_CMOS_w) {
-  ATARI2_CMOS[offset] = data;
+static UINT8 *ATARI_CMOS;
+static WRITE_HANDLER(ATARI_CMOS_w) {
+  ATARI_CMOS[offset] = data;
 }
 
 static NVRAM_HANDLER(ATARI2) {
-	core_nvram(file, read_or_write, ATARI2_CMOS, 256, 0x00);
+	core_nvram(file, read_or_write, ATARI_CMOS, 256, 0x00);
 }
 
 /*-----------------------------------------
@@ -263,31 +347,36 @@ static NVRAM_HANDLER(ATARI2) {
 6000-????  Audio Reset
 */
 static MEMORY_READ_START(ATARI1_readmem)
-{0x0000,0x01ff,	MRA_RAM},	/* NVRAM */
-{0x1000,0x10ff,	MRA_RAM},	/* RAM */
-{0x1800,0x18ff,	MRA_RAM},	/* RAM */
-{0x2000,0x200f,	dipg1_r},	/* dips */
-{0x2010,0x204f,	swg1_r},	/* inputs */
-{0x7000,0x7fff,	MRA_ROM},	/* ROM */
-{0xf800,0xffff,	MRA_ROM},	/* reset vector */
+{0x0000,0x01ff, ram_r},			/* RAM */
+{0x1080,0x1080,	latch1080_r},	/* solenoids */
+{0x1084,0x1084,	latch1084_r},	/* solenoids */
+{0x1088,0x1088,	latch1088_r},	/* solenoids */
+{0x108c,0x108c,	latch108c_r},	/* solenoids */
+{0x2000,0x200f,	dipg1_r},		/* dips */
+{0x2010,0x204f,	swg1_r},		/* inputs */
+{0x7000,0x7fff,	MRA_ROM},		/* ROM */
+{0xf800,0xffff,	MRA_ROM},		/* reset vector */
 MEMORY_END
 
 static MEMORY_WRITE_START(ATARI1_writemem)
-{0x0000,0x01ff,	ATARI1_CMOS_w, &ATARI1_CMOS},	/* NVRAM */
-{0x1080,0x1080,	latch10_w},	/* output */
-{0x1084,0x1084,	latch14_w},	/* output */
-{0x1088,0x1088,	latch18_w},	/* output */
-{0x108c,0x108c,	latch1c_w},	/* output */
-{0x200b,0x200b,	swg1_w},	/* test switch write? */
-{0x3000,0x3000,	soundg1_w},	/* audio enable? */
-{0x4000,0x4000,	watchdog_w},/* watchdog reset? */
-{0x5080,0x5080,	latch50_w},	/* output */
-{0x5084,0x5084,	latch54_w},	/* output */
-{0x5088,0x5088,	latch58_w},	/* output */
-{0x508c,0x508c,	latch5c_w},	/* output */
-{0x6000,0x6000,	audiog1_w},	/* audio reset? */
-{0x7000,0x7fff,	MWA_ROM},	/* ROM */
-{0xf800,0xffff,	MWA_ROM},	/* reset vector */
+{0x0000,0x01ff, ram_w, &ram},	/* RAM */
+{0x1010,0x107f, MWA_NOP},		/* Middle Earth writes here */
+{0x1080,0x1080,	latch1080_w},	/* solenoids */
+{0x1081,0x1083, MWA_NOP},		/* Middle Earth writes here */
+{0x1084,0x1084,	latch1084_w},	/* solenoids */
+{0x1085,0x1087, MWA_NOP},		/* Middle Earth writes here */
+{0x1088,0x1088,	latch1088_w},	/* solenoids */
+{0x1089,0x108b, MWA_NOP},		/* Middle Earth writes here */
+{0x108c,0x108c,	latch108c_w},	/* solenoids */
+{0x108d,0x11ff, MWA_NOP},		/* Middle Earth writes here */
+{0x200b,0x200b,	swg1_w},		/* test switch write? */
+{0x3000,0x3000,	soundg1_w},		/* audio enable */
+{0x4000,0x4000,	watchdog_w},	/* watchdog reset? */
+{0x5080,0x508c,	latch5x_w},		/* additional solenoids, on Time 2000 only */
+{0x6000,0x6000,	audiog1_w},		/* audio reset */
+{0x7000,0x7fff,	MWA_ROM},		/* ROM */
+{0xf800,0xfffe,	MWA_ROM},		/* reset vector */
+{0xffff,0xffff,	MWA_RAM},		/* reset vector write! Needed for Middle Earth */
 MEMORY_END
 
 /*-----------------------------------------
@@ -309,7 +398,7 @@ static MEMORY_WRITE_START(ATARI2_writemem)
 {0x0000,0x00ff,	MWA_RAM},	/* RAM */
 {0x0100,0x0100,	MWA_NOP},	/* unmapped RAM */
 {0x0700,0x07ff,	MWA_NOP},	/* unmapped RAM */
-{0x0800,0x08ff,	ATARI2_CMOS_w, &ATARI2_CMOS},	/* NVRAM */
+{0x0800,0x08ff,	ATARI_CMOS_w, &ATARI_CMOS},	/* NVRAM */
 {0x1800,0x1800,	sound0_w},	/* sound */
 {0x1820,0x1820,	sound1_w},	/* sound */
 {0x1840,0x1846,	disp0_w},	/* display data output */
@@ -324,19 +413,12 @@ static MEMORY_WRITE_START(ATARI2_writemem)
 {0xf800,0xffff,	MWA_ROM},	/* reset vector */
 MEMORY_END
 
-static MACHINE_INIT(ATARI1) {
-  memset(&locals, 0, sizeof locals);
-}
-
-static MACHINE_STOP(ATARI1) {
-}
-
-static MACHINE_INIT(ATARI2) {
+static MACHINE_INIT(ATARI) {
   memset(&locals, 0, sizeof locals);
   sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(REGION_SOUND1), NULL, NULL);
 }
 
-static MACHINE_STOP(ATARI2) {
+static MACHINE_STOP(ATARI) {
   sndbrd_0_exit();
 }
 
@@ -344,24 +426,30 @@ MACHINE_DRIVER_START(ATARI1)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CPU_ADD_TAG("mcpu", M6800, 1000000)
   MDRV_CPU_MEMORY(ATARI1_readmem, ATARI1_writemem)
-  MDRV_CPU_VBLANK_INT(ATARI_vblank, 1)
+  MDRV_CPU_VBLANK_INT(ATARI1_vblank, 1)
   MDRV_CPU_PERIODIC_INT(ATARI1_nmihi, ATARI_NMIFREQ)
-  MDRV_CORE_INIT_RESET_STOP(ATARI1,NULL,ATARI1)
+  MDRV_CORE_INIT_RESET_STOP(ATARI,NULL,ATARI)
   MDRV_NVRAM_HANDLER(ATARI1)
-  MDRV_DIPS(16)
+  MDRV_DIPS(20)
   MDRV_SWITCH_UPDATE(ATARI1)
-  MDRV_DIAGNOSTIC_LEDH(4)
+
+  MDRV_IMPORT_FROM(atari1s)
   MDRV_SOUND_CMD(sndbrd_0_data_w)
   MDRV_SOUND_CMDHEADING("ATARI1")
 MACHINE_DRIVER_END
 
+MACHINE_DRIVER_START(ATARI0)
+  MDRV_IMPORT_FROM(ATARI1)
+  MDRV_SWITCH_UPDATE(ATARI0)
+MACHINE_DRIVER_END
+
 MACHINE_DRIVER_START(ATARI2)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CORE_INIT_RESET_STOP(ATARI2,NULL,ATARI2)
   MDRV_CPU_ADD_TAG("mcpu", M6800, 1000000)
   MDRV_CPU_MEMORY(ATARI2_readmem, ATARI2_writemem)
-  MDRV_CPU_VBLANK_INT(ATARI_vblank, 1)
+  MDRV_CPU_VBLANK_INT(ATARI2_vblank, 1)
   MDRV_CPU_PERIODIC_INT(ATARI2_irqhi, ATARI_IRQFREQ)
+  MDRV_CORE_INIT_RESET_STOP(ATARI,NULL,ATARI)
   MDRV_NVRAM_HANDLER(ATARI2)
   MDRV_DIPS(32)
   MDRV_SWITCH_UPDATE(ATARI2)
@@ -372,49 +460,3 @@ MACHINE_DRIVER_START(ATARI2)
   MDRV_SOUND_CMD(sndbrd_0_data_w)
   MDRV_SOUND_CMDHEADING("ATARI2")
 MACHINE_DRIVER_END
-
-#if 0
-struct MachineDriver machine_driver_ATARI1 = {
-  {
-    {
-      CPU_M6800, 1000000, /* 1 Mhz */
-      ATARI1_readmem, ATARI1_writemem, NULL, NULL,
-	  ATARI_vblank, 1,
-	  NULL, 0
-	},
-	{ 0 }, /* ATARIS_SOUNDCPU */
-  },
-  ATARI_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50,
-  ATARI1_init,CORE_EXITFUNC(ATARI1_exit)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_TYPE_RASTER,
-  0,
-  NULL, NULL, gen_refresh,
-  0,0,0,0,{{0}},
-  ATARI1_nvram
-};
-
-struct MachineDriver machine_driver_ATARI2 = {
-  {
-    {
-      CPU_M6800, 1000000, /* 1 Mhz */
-      ATARI2_readmem, ATARI2_writemem, NULL, NULL,
-	  ATARI_vblank, 1,
-	  NULL, 0
-	},
-	{ 0 }, /* ATARIS_SOUNDCPU */
-  },
-  ATARI_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50,
-  ATARI2_init,CORE_EXITFUNC(ATARI2_exit)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_TYPE_RASTER,
-  0,
-  NULL, NULL, gen_refresh,
-  0,0,0,0,{ATARI_SOUND},
-  ATARI2_nvram
-};
-#endif
