@@ -50,20 +50,20 @@ OP(80) { int tmp;							 BRA(1);	  } /* 2 BRA */
 #define m65c02_01 m6502_01									/* 6 ORA IDX */
 #define m65c02_21 m6502_21									/* 6 AND IDX */
 #define m65c02_41 m6502_41									/* 6 EOR IDX */
-#define m65c02_61 m6502_61									/* 6 ADC IDX */
+OP(61) { int tmp; m6502_ICount -= 6; RD_IDX; ADC;		  } /* 6 ADC IDX */
 #define m65c02_81 m6502_81									/* 6 STA IDX */
 #define m65c02_a1 m6502_a1									/* 6 LDA IDX */
 #define m65c02_c1 m6502_c1									/* 6 CMP IDX */
-#define m65c02_e1 m6502_e1									/* 6 SBC IDX */
+OP(e1) { int tmp; m6502_ICount -= 6; RD_IDX; SBC;		  } /* 6 SBC IDX */
 
 #define m65c02_11 m6502_11									/* 5 ORA IDY; */
 #define m65c02_31 m6502_31									/* 5 AND IDY; */
 #define m65c02_51 m6502_51									/* 5 EOR IDY; */
-#define m65c02_71 m6502_71									/* 5 ADC IDY; */
+OP(71) { int tmp; m6502_ICount -= 5; RD_IDY; ADC;		  } /* 5 ADC IDY */
 #define m65c02_91 m6502_91									/* 6 STA IDY; */
 #define m65c02_b1 m6502_b1									/* 5 LDA IDY; */
 #define m65c02_d1 m6502_d1									/* 5 CMP IDY; */
-#define m65c02_f1 m6502_f1									/* 5 SBC IDY; */
+OP(f1) { int tmp; m6502_ICount -= 5; RD_IDY; SBC;		  } /* 5 SBC IDY */
 
 #define m65c02_02 m6502_02									/* 2 ILL */
 #define m65c02_22 m6502_22									/* 2 ILL */
@@ -124,20 +124,20 @@ OP(74) { int tmp; m6502_ICount -= 4;		 STZ; WR_ZPX; } /* 4 STZ ZPX */
 #define m65c02_05 m6502_05									/* 3 ORA ZPG */
 #define m65c02_25 m6502_25									/* 3 AND ZPG */
 #define m65c02_45 m6502_45									/* 3 EOR ZPG */
-#define m65c02_65 m6502_65									/* 3 ADC ZPG */
+OP(65) { int tmp; m6502_ICount -= 3; RD_ZPG; ADC;		  } /* 3 ADC ZPG */
 #define m65c02_85 m6502_85									/* 3 STA ZPG */
 #define m65c02_a5 m6502_a5									/* 3 LDA ZPG */
 #define m65c02_c5 m6502_c5									/* 3 CMP ZPG */
-#define m65c02_e5 m6502_e5									/* 3 SBC ZPG */
+OP(e5) { int tmp; m6502_ICount -= 3; RD_ZPG; SBC;		  } /* 3 SBC ZPG */
 
 #define m65c02_15 m6502_15									/* 4 ORA ZPX */
 #define m65c02_35 m6502_35									/* 4 AND ZPX */
 #define m65c02_55 m6502_55									/* 4 EOR ZPX */
-#define m65c02_75 m6502_75									/* 4 ADC ZPX */
+OP(75) { int tmp; m6502_ICount -= 4; RD_ZPX; ADC;		  } /* 4 ADC ZPX */
 #define m65c02_95 m6502_95									/* 4 STA ZPX */
 #define m65c02_b5 m6502_b5									/* 4 LDA ZPX */
 #define m65c02_d5 m6502_d5									/* 4 CMP ZPX */
-#define m65c02_f5 m6502_f5									/* 4 SBC ZPX */
+OP(f5) { int tmp; m6502_ICount -= 4; RD_ZPX; SBC;		  } /* 4 SBC ZPX */
 
 #define m65c02_06 m6502_06									/* 5 ASL ZPG */
 #define m65c02_26 m6502_26									/* 5 ROL ZPG */
@@ -196,20 +196,20 @@ OP(f7) { int tmp; m6502_ICount -= 5; RD_ZPG; SMB(7);WB_EA;} /* 5 SMB7 ZPG */
 #define m65c02_09 m6502_09									/* 2 ORA IMM */
 #define m65c02_29 m6502_29									/* 2 AND IMM */
 #define m65c02_49 m6502_49									/* 2 EOR IMM */
-#define m65c02_69 m6502_69									/* 2 ADC IMM */
+OP(69) { int tmp; m6502_ICount -= 2; RD_IMM; ADC;		  } /* 2 ADC IMM */
 OP(89) { int tmp; m6502_ICount -= 2; RD_IMM; BIT;		  } /* 2 BIT IMM */
 #define m65c02_a9 m6502_a9									/* 2 LDA IMM */
 #define m65c02_c9 m6502_c9									/* 2 CMP IMM */
-#define m65c02_e9 m6502_e9									/* 2 SBC IMM */
+OP(e9) { int tmp; m6502_ICount -= 2; RD_IMM; SBC;		  } /* 2 SBC IMM */
 
 #define m65c02_19 m6502_19									/* 4 ORA ABY */
 #define m65c02_39 m6502_39									/* 4 AND ABY */
 #define m65c02_59 m6502_59									/* 4 EOR ABY */
-#define m65c02_79 m6502_79									/* 4 ADC ABY */
+OP(79) { int tmp; m6502_ICount -= 4; RD_ABY; ADC;		  } /* 4 ADC ABY */
 #define m65c02_99 m6502_99									/* 5 STA ABY */
 #define m65c02_b9 m6502_b9									/* 4 LDA ABY */
 #define m65c02_d9 m6502_d9									/* 4 CMP ABY */
-#define m65c02_f9 m6502_f9									/* 4 SBC ABY */
+OP(f9) { int tmp; m6502_ICount -= 4; RD_ABY; SBC;		  } /* 4 SBC ABY */
 
 #define m65c02_0a m6502_0a									/* 2 ASL */
 #define m65c02_2a m6502_2a									/* 2 ROL */
@@ -268,20 +268,20 @@ OP(9c) { int tmp; m6502_ICount -= 4;		 STZ; WR_ABS; } /* 4 STZ ABS */
 #define m65c02_0d m6502_0d									/* 4 ORA ABS */
 #define m65c02_2d m6502_2d									/* 4 AND ABS */
 #define m65c02_4d m6502_4d									/* 4 EOR ABS */
-#define m65c02_6d m6502_6d									/* 4 ADC ABS */
+OP(6d) { int tmp; m6502_ICount -= 4; RD_ABS; ADC;		  } /* 4 ADC ABS */
 #define m65c02_8d m6502_8d									/* 4 STA ABS */
 #define m65c02_ad m6502_ad									/* 4 LDA ABS */
 #define m65c02_cd m6502_cd									/* 4 CMP ABS */
-#define m65c02_ed m6502_ed									/* 4 SBC ABS */
+OP(ed) { int tmp; m6502_ICount -= 4; RD_ABS; SBC;		  } /* 4 SBC ABS */
 
 #define m65c02_1d m6502_1d									/* 4 ORA ABX */
 #define m65c02_3d m6502_3d									/* 4 AND ABX */
 #define m65c02_5d m6502_5d									/* 4 EOR ABX */
-#define m65c02_7d m6502_7d									/* 4 ADC ABX */
+OP(7d) { int tmp; m6502_ICount -= 4; RD_ABX; ADC;		  } /* 4 ADC ABX */
 #define m65c02_9d m6502_9d									/* 5 STA ABX */
 #define m65c02_bd m6502_bd									/* 4 LDA ABX */
 #define m65c02_dd m6502_dd									/* 4 CMP ABX */
-#define m65c02_fd m6502_fd									/* 4 SBC ABX */
+OP(fd) { int tmp; m6502_ICount -= 4; RD_ABX; SBC;		  } /* 4 SBC ABX */
 
 #define m65c02_0e m6502_0e									/* 6 ASL ABS */
 #define m65c02_2e m6502_2e									/* 6 ROL ABS */
