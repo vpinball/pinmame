@@ -160,7 +160,7 @@ const core_tLCDLayout cc_dispDMD[] = {
   {0,0,32,128,CORE_DMD}, {0}
 };
 static VIDEO_UPDATE(cc_dmd) {
-  static UINT32 offset = 0;
+  static UINT32 offset = 0x38000;
   tDMDDot dotCol;
   int ii, jj, kk, ll;
   UINT16 *RAM;
@@ -176,6 +176,9 @@ static VIDEO_UPDATE(cc_dmd) {
     UINT8 *line = &dotCol[ii][0];
     for (jj = 0; jj < 8; jj++) {
       UINT16 d = RAM[kk++];
+	  UINT8 lo = d&0xffff;
+	  UINT8 hi = d>>8;
+	  d = core_revbyte(lo) | core_revbyte(hi)<<8;
       for (ll = 0; ll < 16; ll++)
         { *line++ = d & 0x01; d>>=1; }
     }
