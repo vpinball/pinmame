@@ -263,9 +263,9 @@ REG_OPTIONS regGameOpts[] = {
    ,{"DMDRed",              RO_INT,     &gOpts.pmoptions.dmd_red,   0,0},
     {"DMDGreen",            RO_INT,     &gOpts.pmoptions.dmd_green, 0,0},
     {"DMDBlue",             RO_INT,     &gOpts.pmoptions.dmd_blue,  0,0},
-    {"DMDPerc1",            RO_INT,     &gOpts.pmoptions.dmd_perc1, 0,0},
-    {"DMDPerc2",            RO_INT,     &gOpts.pmoptions.dmd_perc2, 0,0},
-    {"DMDPerc3",            RO_INT,     &gOpts.pmoptions.dmd_perc3, 0,0}
+    {"DMDPerc0",            RO_INT,     &gOpts.pmoptions.dmd_perc0, 0,0},
+    {"DMDPerc33",           RO_INT,     &gOpts.pmoptions.dmd_perc33, 0,0},
+    {"DMDPerc66",           RO_INT,     &gOpts.pmoptions.dmd_perc66, 0,0}
 #endif /* PINMAME_EXT */
 };
 
@@ -436,9 +436,9 @@ void OptionsInit(int total_games)
     global.pmoptions.dmd_red   = 225;
     global.pmoptions.dmd_green = 224;
     global.pmoptions.dmd_blue  = 32;
-    global.pmoptions.dmd_perc1 = 20;
-    global.pmoptions.dmd_perc2 = 33;
-    global.pmoptions.dmd_perc3 = 67;
+    global.pmoptions.dmd_perc0 = 20;
+    global.pmoptions.dmd_perc33 = 33;
+    global.pmoptions.dmd_perc66 = 67;
 #endif /* PINMAME_EXT */
 
     /* This allocation should be checked */
