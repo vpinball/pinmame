@@ -513,6 +513,7 @@ MACHINE_DRIVER_START(wmssnd_wpcs)
   MDRV_SOUND_ADD(YM2151, wpcs_ym2151Int)
   MDRV_SOUND_ADD(DAC,    wpcs_dacInt)
   MDRV_SOUND_ADD(HC55516,wpcs_hc55516Int)
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END
 
 /*---------------------
@@ -664,6 +665,7 @@ MACHINE_DRIVER_START(wmssnd_dcs2)
   MDRV_CPU_MEMORY(dcs2_readmem, dcs2_writemem)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(CUSTOM, dcs_custInt)
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END
 
 /*----------------
