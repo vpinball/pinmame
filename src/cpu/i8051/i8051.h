@@ -114,18 +114,6 @@ READ_HANDLER( i8051_internal_r );
 extern unsigned Dasm8051( char *dst, unsigned pc );
 #endif
 
-static void push_pc(void);
-static void pop_pc(void);
-static void set_parity(void);
-static READ_HANDLER(internal_ram_read);
-static WRITE_HANDLER(internal_ram_write);
-static READ_HANDLER(sfr_read);
-static WRITE_HANDLER(sfr_write);
-static WRITE_HANDLER( bit_address_w );
-static READ_HANDLER( bit_address_r );
-void do_add_flags(UINT8 a, UINT8 data, UINT8 c);
-void do_sub_flags(UINT8 a, UINT8 data, UINT8 c);
-
 #endif /* _I8051_H */
 
 
