@@ -381,7 +381,7 @@ GTS80SS22_ROMSTART("672-s1.snd", 0x10ba523c,
                    "672-s2.snd", 0x5e77117a)
 GTS80_ROMEND
 #define input_ports_rocky input_ports_gts80
-CORE_GAMEDEFNV(rocky,"Rocky",1982,"Gottlieb",gl_mGTS80SS,0)
+CORE_GAMEDEFNV(rocky,"Rocky",1982,"Gottlieb",gl_mGTS80SS,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
 / Caveman (#810?)
