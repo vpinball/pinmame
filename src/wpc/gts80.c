@@ -328,7 +328,7 @@ static WRITE_HANDLER(riot6532_1b_w)
 {
 //	logerror("riot6532_1b_w: 0x%02x\n", data);
 	GTS80locals.OpSwitchEnable = (data&0x80);
-	if ( core_gameData->gen & (GEN_GTS80B2K|GEN_GTS80B4K||GEN_GTS80B8K) ) {
+	if ( core_gameData->gen & (GEN_GTS80B2K|GEN_GTS80B4K|GEN_GTS80B8K) ) {
 		int value;
 
 		GTS80locals.disData = (data&0x3f);
