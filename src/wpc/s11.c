@@ -189,7 +189,7 @@ static WRITE_HANDLER(pia3a_w) {
 }
 static WRITE_HANDLER(pia3b_w) {
   if (core_gameData->gen & (GEN_DEDMD16|GEN_DEDMD32|GEN_DEDMD64))
-    { sndbrd_0_ctrl_w(0, data); DBGLOG(("ctrl_w=%x\n",data)); }
+    sndbrd_0_ctrl_w(0, data);
   else {
     if (core_gameData->hw.display & S11_DISPINV) data = ~data;
     s11locals.segments[0][s11locals.digSel].hi |=
@@ -455,13 +455,14 @@ MEMORY_END
 /*-----------------
 /  Machine drivers
 /------------------*/
-
+#define S11_CPU { \
+  CPU_M6808, 1000000, /* 1 Mhz */ \
+  s11_readmem, s11_writemem, NULL, NULL, \
+  s11_vblank, 1, s11_irq, S11_IRQFREQ \
+}
 /* Williams System 9 */
 const struct MachineDriver machine_driver_s9_s = {
-  {{  CPU_M6808, 1000000, /* 1 Mhz */
-      s11_readmem, s11_writemem, NULL, NULL,
-      s11_vblank, 1, s11_irq, S11_IRQFREQ
-  },S9_SOUNDCPU },
+  { S11_CPU, S9_SOUNDCPU },
   S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50, s11_init, s11_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
@@ -474,10 +475,7 @@ const struct MachineDriver machine_driver_s9_s = {
 
 /* Williams System 11 */
 const struct MachineDriver machine_driver_s11_s = {
-  {{  CPU_M6808, 1000000, /* 1 Mhz */
-      s11_readmem, s11_writemem, NULL, NULL,
-      s11_vblank, 1, s11_irq, S11_IRQFREQ
-  }, S11C_SOUNDCPU, S11_SOUNDCPU },
+  { S11_CPU, S11C_SOUNDCPU, S11_SOUNDCPU },
   S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50, s11_init, s11_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
@@ -490,10 +488,7 @@ const struct MachineDriver machine_driver_s11_s = {
 
 /* Williams System 11b */
 const struct MachineDriver machine_driver_s11b2_s = {
-  {{  CPU_M6808, 1000000, /* 1 Mhz */
-      s11_readmem, s11_writemem, NULL, NULL,
-      s11_vblank, 1, s11_irq, S11_IRQFREQ
-  }, S11_SOUNDCPU },
+  { S11_CPU, S11_SOUNDCPU },
   S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50, s11_init, s11_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
@@ -506,10 +501,7 @@ const struct MachineDriver machine_driver_s11b2_s = {
 
 /* Williams System 11c */
 const struct MachineDriver machine_driver_s11c_s = {
-  {{  CPU_M6808, 1000000, /* 1 Mhz */
-      s11_readmem, s11_writemem, NULL, NULL,
-      s11_vblank, 1, s11_irq, S11_IRQFREQ
-  }, S11C_SOUNDCPU },
+  { S11_CPU, S11C_SOUNDCPU },
   S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50, s11_init, s11_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
@@ -522,10 +514,7 @@ const struct MachineDriver machine_driver_s11c_s = {
 
 /* Data East - Alpha Numeric */
 const struct MachineDriver machine_driver_deas1_s = {
-  {{  CPU_M6808, 1000000, /* 1 Mhz */
-      s11_readmem, s11_writemem, NULL, NULL,
-      s11_vblank, 1, s11_irq, S11_IRQFREQ
-  }, DE1S_SOUNDCPU },
+  { S11_CPU, DE1S_SOUNDCPU },
   S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50, s11_init, s11_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
@@ -538,10 +527,7 @@ const struct MachineDriver machine_driver_deas1_s = {
 
 /* Data East - DMD 128x16 - Generation #1 Sound Hardware */
 const struct MachineDriver machine_driver_dedmd16s1_s = {
-  {{  CPU_M6808, 1000000, /* 1 Mhz */
-      s11_readmem, s11_writemem, NULL, NULL,
-      s11_vblank, 1, s11_irq, S11_IRQFREQ
-  }, DE1S_SOUNDCPU, DE_DMD16CPU },
+  { S11_CPU, DE1S_SOUNDCPU, DE_DMD16CPU },
   S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50, s11_init, s11_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
@@ -554,10 +540,7 @@ const struct MachineDriver machine_driver_dedmd16s1_s = {
 
 /* Data East - Alpha Numeric - Generation #2 Sound Hardware */
 const struct MachineDriver machine_driver_dedmd16s2a_s = {
-  {{  CPU_M6808, 1000000, /* 1 Mhz */
-      s11_readmem, s11_writemem, NULL, NULL,
-      s11_vblank, 1, s11_irq, S11_IRQFREQ
-  }, DE2S_SOUNDCPU, DE_DMD16CPU },
+  { S11_CPU, DE2S_SOUNDCPU, DE_DMD16CPU },
   S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50, s11_init, s11_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
@@ -570,10 +553,7 @@ const struct MachineDriver machine_driver_dedmd16s2a_s = {
 
 /* Data East/Sega - DMD 128x32 */
 const struct MachineDriver machine_driver_dedmd32s2a_s = {
-  {{  CPU_M6808, 1000000, /* 1 Mhz */
-      s11_readmem, s11_writemem, NULL, NULL,
-      s11_vblank, 1, s11_irq, S11_IRQFREQ
-  }, DE2S_SOUNDCPU, DE_DMD32CPU },
+  { S11_CPU, DE2S_SOUNDCPU, DE_DMD32CPU },
   S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50, s11_init, s11_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
@@ -585,10 +565,7 @@ const struct MachineDriver machine_driver_dedmd32s2a_s = {
 };
 /* Data East/Sega - DMD 192x64 */
 const struct MachineDriver machine_driver_dedmd64s2a_s = {
-  {{  CPU_M6808, 1000000, /* 1 Mhz */
-      s11_readmem, s11_writemem, NULL, NULL,
-      s11_vblank, 1, s11_irq, S11_IRQFREQ
-  }, DE2S_SOUNDCPU, DE_DMD64CPU },
+  { S11_CPU, DE2S_SOUNDCPU, DE_DMD64CPU },
   S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50, s11_init, s11_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
@@ -600,10 +577,7 @@ const struct MachineDriver machine_driver_dedmd64s2a_s = {
 };
 /* No Sound machine */
 const struct MachineDriver machine_driver_s11 = {
-  {{  CPU_M6808, 1000000, /* 1 Mhz */
-      s11_readmem, s11_writemem, NULL, NULL,
-      s11_vblank, 1, s11_irq, S11_IRQFREQ
-  }},
+  { S11_CPU },
   S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50, s11_init, CORE_EXITFUNC(s11_exit)
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },

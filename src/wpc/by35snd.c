@@ -4,9 +4,8 @@
 #include "cpu/m68000/m68000.h"
 #include "cpu/m6809/m6809.h"
 #include "core.h"
-#include "by35.h"
-#include "snd_cmd.h"
 #include "sndbrd.h"
+#include "by35.h"
 #include "by35snd.h"
 
 /*----------------------------------------
@@ -114,18 +113,13 @@ static void by32_init(struct sndbrdData *brdData) {
 
 static void sp_init(struct sndbrdData *brdData);
 static WRITE_HANDLER(sp51_data_w);
-static WRITE_HANDLER(sp56_data_w);
 static WRITE_HANDLER(sp51_ctrl_w);
-static WRITE_HANDLER(sp56_ctrl_w);
 static READ_HANDLER(sp_8910a_r);
 /*-------------------
 / exported interface
 /--------------------*/
 const struct sndbrdIntf by51Intf = {
   sp_init, NULL, NULL, sp51_data_w, NULL, sp51_ctrl_w, NULL,
-};
-const struct sndbrdIntf by56Intf = {
-  sp_init, NULL, NULL, sp56_data_w, NULL, sp56_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
 struct AY8910interface sp_ay8910Int = { 1, 3580000/4, {10}, {sp_8910a_r} };
@@ -197,32 +191,7 @@ static WRITE_HANDLER(sp51_ctrl_w) {
   pia_set_input_ca1(SP_PIA0, data & 0x01);
 }
 
-static WRITE_HANDLER(sp56_data_w) {
-  splocals.lastcmd = (splocals.lastcmd & 0x10) | (data & 0x0f);
-  DBGLOG(("data_w [%d]=%x\n",splocals.cmdin,splocals.lastcmd));
-  if (splocals.cmdin < 2) {
-    splocals.cmd[splocals.cmdin++] = ~splocals.lastcmd & 0x1f;
-    if (splocals.cmdin == 2) {
-      pia_pulse_ca1(SP_PIA0, 0); splocals.cmdout = 0;
-    }
-  }
-}
-static WRITE_HANDLER(sp56_ctrl_w) {
-  DBGLOG(("ctrl_w %d\n",data));
-  // Not possible to know if the SoundE bit belongs to previous command or next
-  // assume next
-  splocals.lastcmd = (splocals.lastcmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00);
-//  splocals.cmd[splocals.cmdin] = splocals.lastcmd;
-  if (~splocals.lastctrl & data & 0x01) splocals.cmdin = 0;
-  splocals.lastctrl = data;
-}
-static READ_HANDLER(sp_8910a_r) {
-  DBGLOG(("cmd_r [%d]=%x\n",splocals.cmdout,splocals.cmd[splocals.cmdout]));
-  if ((splocals.brdData.subType == 1) && (splocals.cmdout < 2)) // -56 board
-    return splocals.cmd[splocals.cmdout++];
-  else
-    return ~splocals.lastcmd & 0x1f;
-}
+static READ_HANDLER(sp_8910a_r) { return ~splocals.lastcmd; }
 
 static void sp_irq(int state) {
   cpu_set_irq_line(splocals.brdData.cpuNo, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
@@ -278,7 +247,7 @@ static void snt_5220Irq(int state);
 static READ_HANDLER(snt_8910a_r);
 
 const struct sndbrdIntf by61Intf = {
-  snt_init, NULL, snt_diag, snt_data_w, NULL, snt_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  snt_init, NULL, snt_diag, snt_data_w, NULL, snt_ctrl_w, NULL, 0//SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 struct TMS5220interface snt_tms5220Int = { 640000, 50, snt_5220Irq };
 struct DACinterface snt_dacInt = { 1, { 20 }};
@@ -358,39 +327,20 @@ static WRITE_HANDLER(snt_pia1b_w) {
 
 static WRITE_HANDLER(snt_data_w) {
   sntlocals.lastcmd = (sntlocals.lastcmd & 0x10) | (data & 0x0f);
-  DBGLOG(("snt_data_w (%04x): cmd=%02x cmdin=%d\n",cpu_get_pc(),sntlocals.lastcmd,sntlocals.cmdin));
-  if (sntlocals.cmdin < 2) {
-    sntlocals.cmd[sntlocals.cmdin++] = sntlocals.lastcmd;
-    if (sntlocals.cmdin == 2) {
-      pia_pulse_cb1(SNT_PIA0,0); sntlocals.cmdout = 0;
-    }
-  }
 }
 static WRITE_HANDLER(snt_ctrl_w) {
-//  if (sntlocals.cmdin > 0) 
-//    sntlocals.cmd[sntlocals.cmdin-1] = (sntlocals.cmd[sntlocals.cmdin-1] & 0x0f) | ((data & 0x02) ? 0x10 : 0x00);
   sntlocals.lastcmd = (sntlocals.lastcmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00);
-  DBGLOG(("snt_ctrl_w (%04x): data=%x\n",cpu_get_pc(),data));
-  if (sntlocals.lastctrl & ~data & 0x01) sntlocals.cmdin = 0;
-  sntlocals.lastctrl = data;
+  pia_set_input_cb1(SNT_PIA0, ~data & 0x01);
 }
-
-static READ_HANDLER(snt_8910a_r) {
-  if (sntlocals.cmdout < 2) DBGLOG(("snt_8910a_r (%04x): cmdout=%d cmd=%02x\n",cpu_get_pc(),sntlocals.cmdout,
-         (sntlocals.cmdout < 2)?sntlocals.cmd[sntlocals.cmdout]:sntlocals.lastcmd));
-  if (sntlocals.cmdout < 2) return ~sntlocals.cmd[sntlocals.cmdout++];
-  return ~sntlocals.lastcmd;
-}
+static READ_HANDLER(snt_8910a_r) { return ~sntlocals.lastcmd; }
 
 static WRITE_HANDLER(snt_pia0ca2_w) { sndbrd_ctrl_cb(sntlocals.brdData.boardNo,data); } // diag led
 
 static void snt_irq(int state) {
-  DBGLOG(("snt_irq: state=%d\n",state));
   cpu_set_irq_line(sntlocals.brdData.cpuNo, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
-static void snt_5220Irq(int state) {
-  pia_set_input_cb1(SNT_PIA1, !state);
-}
+static void snt_5220Irq(int state) { pia_set_input_cb1(SNT_PIA1, !state); }
+
 /*----------------------------------------
 /    Cheap Squalk  -45
 /-----------------------------------------*/
@@ -431,15 +381,12 @@ static void cs_init(struct sndbrdData *brdData) {
   cslocals.brdData = *brdData;
 }
 
-// there is no way to write into a port
-// so we save the value and use it in the read handler
-static WRITE_HANDLER(cs_cmd_w) {
-  cslocals.cmd = data;
-}
+static WRITE_HANDLER(cs_cmd_w) { cslocals.cmd = data; }
 static WRITE_HANDLER(cs_ctrl_w) {
   cpu_set_irq_line(cslocals.brdData.cpuNo, M6803_TIN_LINE, (data & 0x01) ? ASSERT_LINE : CLEAR_LINE);
 }
 static READ_HANDLER(cs_port1_r) { return cslocals.cmd; }
+
 /*----------------------------------------
 /    Turbo Cheap Squalk
 /-----------------------------------------*/
@@ -494,17 +441,10 @@ static void tcs_init(struct sndbrdData *brdData) {
   tcslocals.brdData = *brdData;
   pia_config(TCS_PIA0, PIA_ALTERNATE_ORDERING, &tcs_pia);
 }
-static WRITE_HANDLER(tcs_pia0cb2_w) {
-  sndbrd_ctrl_cb(tcslocals.brdData.boardNo,data);
-}
+static WRITE_HANDLER(tcs_pia0cb2_w) { sndbrd_ctrl_cb(tcslocals.brdData.boardNo,data); }
 static void tcs_diag(int button) { cpu_set_nmi_line(tcslocals.brdData.cpuNo, button ? ASSERT_LINE : CLEAR_LINE); }
-
-static WRITE_HANDLER(tcs_cmd_w) {
-  tcslocals.cmd = data;
-}
-static WRITE_HANDLER(tcs_ctrl_w) {
-  pia_set_input_ca1(TCS_PIA0, data & 0x01);
-}
+static WRITE_HANDLER(tcs_cmd_w) { tcslocals.cmd = data; }
+static WRITE_HANDLER(tcs_ctrl_w) { pia_set_input_ca1(TCS_PIA0, data & 0x01); }
 static READ_HANDLER(tcs_status_r) { return tcslocals.status; }
 static READ_HANDLER(tcs_pia0b_r) {
   int ret = tcslocals.cmd & 0x0f;
@@ -556,7 +496,7 @@ static void sd_pia0irq(int state);
 
 static struct {
   struct sndbrdData brdData;
-  int cmd[2], dacdata, status, cmdsync, irqnext;
+  int cmd, dacdata, status;
 } sdlocals;
 
 static const struct pia6821_interface sd_pia = {
@@ -574,18 +514,11 @@ static WRITE_HANDLER(sd_pia0cb2_w) {
 static void sd_diag(int button) {
   cpu_set_irq_line(sdlocals.brdData.cpuNo, MC68000_IRQ_3, button ? ASSERT_LINE : CLEAR_LINE);
 }
-static WRITE_HANDLER(sd_cmd_w) {
-  sdlocals.cmd[sdlocals.cmdsync ^= 1] = data;
-  if (sdlocals.irqnext) { pia_pulse_ca1(SD_PIA0,0); sdlocals.irqnext = 0; }
-}
-static WRITE_HANDLER(sd_ctrl_w) {
-  if (!(data & 0x01)) sdlocals.irqnext = 1;
-}
+static WRITE_HANDLER(sd_cmd_w) { sdlocals.cmd = data; }
+static WRITE_HANDLER(sd_ctrl_w) { pia_set_input_ca1(SD_PIA0, data & 0x01); }
 static READ_HANDLER(sd_status_r) { return sdlocals.status; }
+static READ_HANDLER(sd_pia0b_r) { return sdlocals.cmd; }
 
-static READ_HANDLER(sd_pia0b_r) {
-  return sdlocals.cmd[sdlocals.cmdsync ^= 1];
-}
 static WRITE_HANDLER(sd_pia0a_w) {
   sdlocals.dacdata = (sdlocals.dacdata & ~0x3fc) | (((UINT16)data) << 2);
   DAC_signed_data_16_w(0, sdlocals.dacdata << 6);

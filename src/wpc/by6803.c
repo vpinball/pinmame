@@ -113,13 +113,8 @@ static struct {
   int diagnosticLed;
   int sounddiagnosticLed;
   int vblankCount;
-  int initDone;
   int phase_a, p21;
   void *zctimer;
-  void (*SOUNDINIT)(void);
-  void (*SOUNDEXIT)(void);
-  WRITE_HANDLER((*SOUNDCOMMAND));
-  void (*SOUNDDIAG)(void);
   void (*DISPSTROBE)(int mask);
   WRITE_HANDLER((*SEGWRITE));
   WRITE_HANDLER((*DISPDATA));
@@ -455,58 +450,25 @@ static void by6803_zeroCross(int data) {
   DBGLOG(("phase=%d\n",locals.phase_a));
 }
 
-static void by6803_init_common(void) {
+static void by6803_init(void) {
+  memset(&locals, 0, sizeof(locals));
   if (core_init((core_gameData->gen & GEN_BY6803A) ? &by6803aData : &by6803Data)) return;
   sndbrd_0_init(core_gameData->hw.soundBoard,1,memory_region(BY6803_MEMREG_SROM),NULL,by6803_soundLED);
-  /* init PIAs */
   pia_config(BY6803_PIA0, PIA_STANDARD_ORDERING, &piaIntf[0]);
   pia_config(BY6803_PIA1, PIA_STANDARD_ORDERING, &piaIntf[1]);
   pia_reset();
   locals.vblankCount = 1;
   locals.zctimer = timer_pulse(TIME_IN_HZ(BY6803_ZCFREQ),0,by6803_zeroCross);
-}
-
-static void by6803_init1(void) {
-  memset(&locals, 0, sizeof(locals));
-  locals.DISPSTROBE = by6803_dispStrobe1;
-  locals.SEGWRITE = by6803_segwrite1;
-  locals.DISPDATA = by6803_dispdata1;
-  by6803_init_common();
-}
-static void by6803_init1a(void) {
-  memset(&locals, 0, sizeof(locals));
-  locals.DISPSTROBE = by6803_dispStrobe1;
-  locals.SEGWRITE = by6803_segwrite1;
-  locals.DISPDATA = by6803_dispdata1;
-  by6803_init_common();
-}
-static void by6803_init2(void) {
-  memset(&locals, 0, sizeof(locals));
-  locals.DISPSTROBE = by6803_dispStrobe2;
-  locals.SEGWRITE = by6803_segwrite2;
-  locals.DISPDATA = by6803_dispdata2;
-  by6803_init_common();
-}
-static void by6803_init3(void) {
-  memset(&locals, 0, sizeof(locals));
-  locals.DISPSTROBE = by6803_dispStrobe2;
-  locals.SEGWRITE = by6803_segwrite2;
-  locals.DISPDATA = by6803_dispdata2;
-  by6803_init_common();
-}
-static void by6803_init3a(void) {
-  memset(&locals, 0, sizeof(locals));
-  locals.DISPSTROBE = by6803_dispStrobe2;
-  locals.SEGWRITE = by6803_segwrite2;
-  locals.DISPDATA = by6803_dispdata2;
-  by6803_init_common();
-}
-static void by6803_init4(void) {
-  memset(&locals, 0, sizeof(locals));
-  locals.DISPSTROBE = by6803_dispStrobe2;
-  locals.SEGWRITE = by6803_segwrite2;
-  locals.DISPDATA = by6803_dispdata2;
-  by6803_init_common();
+  if (core_gameData->hw.display == BY6803_DISPALPHA) {
+    locals.DISPSTROBE = by6803_dispStrobe2;
+    locals.SEGWRITE = by6803_segwrite2;
+    locals.DISPDATA = by6803_dispdata2;
+  }
+  else {
+    locals.DISPSTROBE = by6803_dispStrobe1;
+    locals.SEGWRITE = by6803_segwrite1;
+    locals.DISPDATA = by6803_dispdata1;
+  }
 }
 
 static void by6803_exit(void) {
@@ -584,111 +546,85 @@ static PORT_WRITE_START( by6803_writeport )
   { M6803_PORT2, M6803_PORT2, port2_w },
 PORT_END
 
+#define BY6803_CPU { \
+  CPU_M6803, 3580000/4, /* 3.58/4 = 900hz */ \
+  by6803_readmem, by6803_writemem, by6803_readport, by6803_writeport, \
+  by6803_vblank, 1, by6803_irq, BY6803_IRQFREQ }
+
 //6803 - Generation 1 Sound (Squawk & Talk)
-struct MachineDriver machine_driver_by6803S1 = {
-  {{  CPU_M6803, 3580000/4, /* 3.58/4 = 900hz */
-      by6803_readmem, by6803_writemem, by6803_readport, by6803_writeport,
-      by6803_vblank, 1, by6803_irq, BY6803_IRQFREQ
-  }, BY61_SOUND_CPU},
+const struct MachineDriver machine_driver_by6803_61S = {
+  { BY6803_CPU, BY61_SOUND_CPU },
   BY6803_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, by6803_init1, by6803_exit,
+  500, by6803_init, by6803_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
   NULL, NULL, gen_refresh,
-  0,0,0,0, {BY61_SOUND},
+  0,0,0,0, { BY61_SOUND },
   by6803_nvram
 };
 
 //6803 - Generation 1A Sound (Cheap Squeak)
-struct MachineDriver machine_driver_by6803S1a = {
-  {{  CPU_M6803, 3580000/4, /* 3.58/4 = 900hz */
-      by6803_readmem, by6803_writemem, by6803_readport, by6803_writeport,
-      by6803_vblank, 1, by6803_irq, BY6803_IRQFREQ
-  },  BY45_SOUND_CPU },
+const struct MachineDriver machine_driver_by6803_45S = {
+  { BY6803_CPU, BY45_SOUND_CPU },
   BY6803_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, by6803_init1a, by6803_exit,
+  500, by6803_init, by6803_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
   NULL, NULL, gen_refresh,
-  0,0,0,0, {BY45_SOUND},
+  0,0,0,0, { BY45_SOUND },
   by6803_nvram
 };
 
 //6803 - Generation 2 Sound (Turbo Cheap Squeak)
-struct MachineDriver machine_driver_by6803S2 = {
-  {{  CPU_M6803, 3580000/4, /* 3.58/4 = 900hz */
-      by6803_readmem, by6803_writemem, by6803_readport, by6803_writeport,
-      by6803_vblank, 1, by6803_irq, BY6803_IRQFREQ
-  }, BYTCS_SOUND_CPU },
+const struct MachineDriver machine_driver_by6803_TCSS = {
+  { BY6803_CPU, BYTCS_SOUND_CPU },
   BY6803_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, by6803_init2, by6803_exit,
+  500, by6803_init, by6803_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
   NULL, NULL, gen_refresh,
-  0,0,0,0, {BYTCS_SOUND},
+  0,0,0,0, { BYTCS_SOUND },
   by6803_nvram
 };
-//6803 - Generation 2A Sound (Turbo Cheap Squeak)
-struct MachineDriver machine_driver_by6803S2a = {
-  {{  CPU_M6803, 3580000/4, /* 3.58/4 = 900hz */
-      by6803_readmem, by6803_writemem, by6803_readport, by6803_writeport,
-      by6803_vblank, 1, by6803_irq, BY6803_IRQFREQ
-  }, BYTCS2_SOUND_CPU},
+//6803 - Generation 2A Sound (Turbo Cheap Squeak 2)
+const struct MachineDriver machine_driver_by6803_TCS2S = {
+  { BY6803_CPU, BYTCS2_SOUND_CPU },
   BY6803_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, by6803_init2, by6803_exit,
+  500, by6803_init, by6803_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
   NULL, NULL, gen_refresh,
-  0,0,0,0, {BYTCS_SOUND},
+  0,0,0,0, { BYTCS_SOUND },
   by6803_nvram
 };
+
 //6803 - Generation 3 Sound (Sounds Deluxe) with keypad
-struct MachineDriver machine_driver_by6803S3 = {
-  {{  CPU_M6803, 3580000/4, /* 3.58/4 = 900hz */
-      by6803_readmem, by6803_writemem, by6803_readport, by6803_writeport,
-      by6803_vblank, 1, by6803_irq, BY6803_IRQFREQ
-  }, BYSD_SOUND_CPU},
+const struct MachineDriver machine_driver_by6803_SDS = {
+  { BY6803_CPU, BYSD_SOUND_CPU },
   BY6803_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, by6803_init3, by6803_exit,
+  500, by6803_init, by6803_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
   NULL, NULL, gen_refresh,
-  0,0,0,0, {BYSD_SOUND},
+  0,0,0,0, { BYSD_SOUND },
   by6803_nvram
 };
-//6803 - Generation 3 Sound (Sounds Deluxe) without keypad
-struct MachineDriver machine_driver_by6803S3a = {
-  {{  CPU_M6803, 3580000/4, /* 3.58/4 = 900hz */
-      by6803_readmem, by6803_writemem, by6803_readport, by6803_writeport,
-      by6803_vblank, 1, by6803_irq, BY6803_IRQFREQ
-  }, BYSD_SOUND_CPU},
-  BY6803_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, by6803_init3a, by6803_exit,
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
-  NULL, NULL, gen_refresh,
-  0,0,0,0, {BYSD_SOUND},
-  by6803_nvram
-};
+
 //6803 - Generation 4 Sound (Williams System 11C) without keypad
-struct MachineDriver machine_driver_by6803S4 = {
-  {{  CPU_M6803, 3580000/4, /* 3.58/4 = 900hz */
-      by6803_readmem, by6803_writemem, by6803_readport, by6803_writeport,
-      by6803_vblank, 1, by6803_irq, BY6803_IRQFREQ
-  }, S11C_SOUNDCPU},
+const struct MachineDriver machine_driver_by6803_S11CS = {
+  { BY6803_CPU, S11C_SOUNDCPU },
   BY6803_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, by6803_init4, by6803_exit,
+  500, by6803_init, by6803_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
   NULL, NULL, gen_refresh,
-  0,0,0,0, {S11C_SOUND},
+  0,0,0,0, { S11C_SOUND },
   by6803_nvram
 };
 

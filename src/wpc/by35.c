@@ -308,13 +308,19 @@ static MEMORY_WRITE_START(by35_writemem)
   { 0xf000, 0xffff, MWA_ROM },
 MEMORY_END
 
+#define BY35_CPU { \
+  CPU_M6800, 500000, /* 500KHz */ \
+  by35_readmem, by35_writemem, 0, 0, \
+  by35_vblank, 1, by35_irq, BY35_IRQFREQ }
+#define ST200_CPU { \
+  CPU_M6800, 1000000, /* 1MHz */ \
+  by35_readmem, by35_writemem, 0, 0, \
+  by35_vblank, 1, by35_irq, BY35_IRQFREQ }
+
 const struct MachineDriver machine_driver_by35 = {
-  {{  CPU_M6800, 3580000/4, /* 3.58/4 = 900hz */
-      by35_readmem, by35_writemem, NULL, NULL,
-      by35_vblank, 1, by35_irq, BY35_IRQFREQ
-  }},
+  { BY35_CPU },
   BY35_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, by35_init, by35_exit,
+  1, by35_init, by35_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
@@ -323,12 +329,9 @@ const struct MachineDriver machine_driver_by35 = {
   by35_nvram
 };
 const struct MachineDriver machine_driver_by35_32s = {
-  {{  CPU_M6800, 3580000/4, /* 3.58/4 = 900hz */
-      by35_readmem, by35_writemem, NULL, NULL,
-      by35_vblank, 1, by35_irq, BY35_IRQFREQ
-  }},
+  { BY35_CPU },
   BY35_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, by35_init, by35_exit,
+  1, by35_init, by35_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
@@ -337,12 +340,9 @@ const struct MachineDriver machine_driver_by35_32s = {
   by35_nvram
 };
 const struct MachineDriver machine_driver_by35_51s = {
-  {{  CPU_M6800, 3580000/4, /* 3.58/4 = 900hz */
-      by35_readmem, by35_writemem, NULL, NULL,
-      by35_vblank, 1, by35_irq, BY35_IRQFREQ
-  },BY51_SOUND_CPU},
+  { BY35_CPU, BY51_SOUND_CPU },
   BY35_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, by35_init, by35_exit,
+  500, by35_init, by35_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
@@ -351,12 +351,9 @@ const struct MachineDriver machine_driver_by35_51s = {
   by35_nvram
 };
 const struct MachineDriver machine_driver_by35_56s = {
-  {{  CPU_M6800, 3580000/4, /* 3.58/4 = 900hz */
-      by35_readmem, by35_writemem, NULL, NULL,
-      by35_vblank, 1, by35_irq, BY35_IRQFREQ
-  },BY56_SOUND_CPU},
+  { BY35_CPU, BY56_SOUND_CPU },
   BY35_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, by35_init, by35_exit,
+  500, by35_init, by35_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
@@ -365,12 +362,9 @@ const struct MachineDriver machine_driver_by35_56s = {
   by35_nvram
 };
 const struct MachineDriver machine_driver_by35_61s = {
-  {{  CPU_M6800, 3580000/4, /* 3.58/4 = 900hz */
-      by35_readmem, by35_writemem, NULL, NULL,
-      by35_vblank, 1, by35_irq, BY35_IRQFREQ
-  },BY61_SOUND_CPU},
+  { BY35_CPU, BY61_SOUND_CPU },
   BY35_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, by35_init, by35_exit,
+  500, by35_init, by35_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
@@ -379,17 +373,26 @@ const struct MachineDriver machine_driver_by35_61s = {
   by35_nvram
 };
 const struct MachineDriver machine_driver_by35_45s = {
-  {{  CPU_M6800, 3580000/4, /* 3.58/4 = 900hz */
-      by35_readmem, by35_writemem, NULL, NULL,
-      by35_vblank, 1, by35_irq, BY35_IRQFREQ
-  },BY45_SOUND_CPU},
+  { BY35_CPU, BY45_SOUND_CPU },
   BY35_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, by35_init, by35_exit,
+  500, by35_init, by35_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
   NULL, NULL, gen_refresh,
   0,0,0,0, {BY45_SOUND},
+  by35_nvram
+};
+
+const struct MachineDriver machine_driver_st200 = {
+  { ST200_CPU },
+  BY35_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  500, by35_init, by35_exit,
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
+  VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
+  NULL, NULL, gen_refresh,
+  0,0,0,0, {{0}},
   by35_nvram
 };
 
