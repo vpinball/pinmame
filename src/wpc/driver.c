@@ -524,7 +524,11 @@ DRIVER  (harl,l13)      //Whitestar: 10/99 Harley Davidson (1.03 Spain)
 // ---------------
 // SPINBALL GAMES
 // ---------------
-DRIVERNV(jolypark)      //Jolly Park
+DRIVERNV(bushido)		//1993 - Bushido     ( Last game by Inder - before becomming Spinball - but same hardware)
+DRIVERNV(mach2)			//1995 - Mach 2
+DRIVERNV(jolypark)      //1996 - Jolly Park
+DRIVERNV(vrnwrld)		//1996 - Verne's World
+
 
 // ---------------
 // STERN GAMES
