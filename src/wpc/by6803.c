@@ -243,7 +243,7 @@ static void by6803_lampStrobe(int board, int lampadr) {
     UINT8 *matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)+6*board];
     int bit = 1<<(lampadr & 0x07);
 
-    DBGLOG(("adr=%x data=%x\n",lampadr,lampdata));
+    //DBGLOG(("adr=%x data=%x\n",lampadr,lampdata));
     while (lampdata) {
       if (lampdata & 0x01) *matrix |= bit;
       lampdata >>= 1; matrix += 2;
@@ -275,8 +275,10 @@ static WRITE_HANDLER(pia0a_w) {
 static WRITE_HANDLER(pia1a_w) { locals.SEGWRITE(offset,data); }
 
 /* PIA0:B-R  Switch & Cabinet Returns */
+/* p0_a bits 0-4 ==> switch columns 1-5
+   p1_b bit    4 ==> switch column    6 */
 static READ_HANDLER(pia0b_r) {
-  return core_getSwCol((locals.p0_a & 0x1f) | ((locals.p1_b & 0x80)>>2));
+  return core_getSwCol((locals.p0_a & 0x1f) | ((locals.p1_b & 0x10)<<1));
 }
 
 /* PIA0:CB2-W Lamp Strobe #1, DIPBank3 STROBE */
@@ -450,7 +452,7 @@ static void by6803_zeroCross(int data) {
   locals.phase_a = (locals.phase_a + 1) & 3;
   pia_set_input_cb1(BY6803_PIA0, !((locals.phase_a == 1) || (locals.phase_a == 2)));
   cpu_set_irq_line(0, M6800_TIN_LINE, (locals.phase_a<2 && !locals.p21) ? ASSERT_LINE : CLEAR_LINE);
-  DBGLOG(("phase=%d\n",locals.phase_a));
+  //DBGLOG(("phase=%d\n",locals.phase_a));
 }
 
 static MACHINE_INIT(by6803) {
