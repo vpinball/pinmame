@@ -148,8 +148,8 @@ static READ_HANDLER (pia2a_r) { return core_getDip(0)<<7; }
 / Display handling
 /-----------------*/
 /*NOTE: Data East DMD Games:     data = 0x01, CN1-Pin 7 (Strobe) goes low
-								 data = 0x04, CN2-Pin 1 (Enable) goes low
-								 (currently we don't need to read these values)*/
+				 data = 0x04, CN2-Pin 1 (Enable) goes low
+			(currently we don't need to read these values)*/
 static WRITE_HANDLER(pia2a_w) {
   locals.digSel = data & 0x0f;
   if (core_gameData->hw.display & S11_BCDDIAG)
@@ -160,12 +160,12 @@ static WRITE_HANDLER(pia2a_w) {
 
 static WRITE_HANDLER(pia2b_w) {
   /* Data East writes auxiliary solenoids here for DMD games
-	 CN3 Printer Data Lines (Used by various games)
-	 data = 0x01, CN3-Pin 9 (GNR Magnet 3)
-	 data = 0x02, CN3-Pin 8 (GNR Magnet 2)
-	 data = 0x04, CN3-Pin 7 (GNR Magnet 1)
-	 ....
-	 data = 0x80, CN3-Pin 1 (Blinder on Tommy)*/
+     CN3 Printer Data Lines (Used by various games)
+       data = 0x01, CN3-Pin 9 (GNR Magnet 3)
+       data = 0x02, CN3-Pin 8 (GNR Magnet 2)
+       data = 0x04, CN3-Pin 7 (GNR Magnet 1)
+       ....
+       data = 0x80, CN3-Pin 1 (Blinder on Tommy)*/
   if (core_gameData->gen & (GEN_DEDMD16|GEN_DEDMD32|GEN_DEDMD64))
     locals.extSol = data;
   else {
@@ -191,24 +191,15 @@ static WRITE_HANDLER(pia5a_w) { // Not used for DMD
          locals.pseg[1][locals.digSel].lo = data;
 }
 static WRITE_HANDLER(pia3a_w) {
-  if (core_gameData->gen & (GEN_DEDMD16|GEN_DEDMD32|GEN_DEDMD64))
-    sndbrd_0_data_w(0, data);
-  else {
-    if (core_gameData->hw.display & S11_DISPINV) data = ~data;
-    locals.segments[0][locals.digSel].lo |=
-        locals.pseg[0][locals.digSel].lo = data;
-  }
+  if (core_gameData->hw.display & S11_DISPINV) data = ~data;
+  locals.segments[0][locals.digSel].lo |= locals.pseg[0][locals.digSel].lo = data;
 }
 static WRITE_HANDLER(pia3b_w) {
-  if (core_gameData->gen & (GEN_DEDMD16|GEN_DEDMD32|GEN_DEDMD64))
-    sndbrd_0_ctrl_w(0, data);
-  else {
-    if (core_gameData->hw.display & S11_DISPINV) data = ~data;
-    locals.segments[0][locals.digSel].hi |=
-        locals.pseg[0][locals.digSel].hi = data;
-  }
+  if (core_gameData->hw.display & S11_DISPINV) data = ~data;
+  locals.segments[0][locals.digSel].hi |= locals.pseg[0][locals.digSel].hi = data;
 }
-static READ_HANDLER(pia3b_r) {
+
+static READ_HANDLER(pia3b_dmd_r) {
   if (core_gameData->gen & GEN_DEDMD32)
     return (sndbrd_0_data_r(0) ? 0x80 : 0x00) | (sndbrd_0_ctrl_r(0)<<3);
   else if (core_gameData->gen & GEN_DEDMD64)
@@ -243,7 +234,7 @@ static READ_HANDLER(pia5a_r) {
 static void setSSSol(int data, int solNo) {
                                     /*    WMS          DE */
   static const int ssSolNo[2][6] = {{5,4,1,2,0,4},{3,4,5,1,0,2}};
-  int bit = CORE_SOLBIT(CORE_FIRSTSSSOL + ssSolNo[(core_gameData->gen & GEN_ALLS11) == 0][solNo]);
+  int bit = CORE_SOLBIT(CORE_FIRSTSSSOL + ssSolNo[locals.deGame][solNo]);
   if (locals.ssEn & (~data & 1))
     { coreGlobals.pulsedSolState |= bit;  locals.solenoids |= bit; }
   else
@@ -359,7 +350,7 @@ static struct pia6821_interface s11_pia[] = {
  /* CB1       Widget I/O LCB1 */
  /* CA2       (I) B SST2 */
  /* CB2       (I) C SST3 */
- /* in  : A/B,CA/B1,CA/B2 */ 0, pia3b_r, 0, 0, 0, 0,
+ /* in  : A/B,CA/B1,CA/B2 */ 0, 0, 0, 0, 0, 0,
  /* out : A/B,CA/B2       */ pia3a_w, pia3b_w, pia3ca2_w, pia3cb2_w,
  /* irq : A/B             */ s11_piaMainIrq, s11_piaMainIrq
 },{ /* PIA 4 (3000) */
@@ -381,7 +372,18 @@ static struct pia6821_interface s11_pia[] = {
  /* in  : A/B,CA/B1,CA/B2 */ pia5a_r, pia5b_r, 0, 0, 0, 0,
  /* out : A/B,CA/B2       */ pia5a_w, pia5b_w, pia5ca2_w, pia5cb2_w,
  /* irq : A/B             */ s11_piaMainIrq, s11_piaMainIrq
-}};
+},{ /* PIA 3 (2c00) for DMD games*/
+ /* PA0 - PA7 DMD data */
+ /* PB0 - PB7 DMD ctrl */
+ /* CA1       NC */
+ /* CB1       NC */
+ /* CA2       (O) B SST2 */
+ /* CB2       (O) C SST3 */
+ /* in  : A/B,CA/B1,CA/B2 */ 0, pia3b_dmd_r, 0, 0, 0, 0,
+ /* out : A/B,CA/B2       */ sndbrd_0_data_w, sndbrd_0_ctrl_w, pia3ca2_w, pia3cb2_w,
+ /* irq : A/B             */ s11_piaMainIrq, s11_piaMainIrq
+}
+};
 
 static void s11_updSw(int *inports) {
   if (inports) {
@@ -393,32 +395,17 @@ static void s11_updSw(int *inports) {
   sndbrd_0_diag(core_getSw(S11_SWSOUNDDIAG));
   if ((core_gameData->hw.gameSpecific1 & S11_MUXSW2) && core_gameData->sxx.muxSol)
     core_setSw(2, core_getSol(core_gameData->sxx.muxSol));
-
-  if(locals.deGame) {
-	  /* Show Status of Black Advance Switch */
-	  if(core_getSw(DE_SWADVANCE))
-			  core_textOutf(40, 20, BLACK, "%-7s","B-Down");
-	  else
-			  core_textOutf(40, 20, BLACK, "%-7s","B-Up");
-
-	  /* Show Status of Green Up/Down Switch */
-	  if(core_getSw(DE_SWUPDN))
-			  core_textOutf(40, 30, BLACK, "%-7s","G-Down");
-	  else
-			  core_textOutf(40, 30, BLACK, "%-7s","G-Up");
+  if (locals.deGame) {
+    /* Show Status of Black Advance Switch */
+    core_textOutf(40,20,BLACK,core_getSw(DE_SWADVANCE) ? "B-Down" : "B-Up  ");
+    /* Show Status of Green Up/Down Switch */
+    core_textOutf(40,30,BLACK,core_getSw(DE_SWUPDN)    ? "G-Down" : "G-Up  ");
   }
   else {
-	  /* Show Status of Advance Switch */
-	  if(core_getSw(S11_SWADVANCE))
-			  core_textOutf(40, 20, BLACK, "%-7s","A-Down");
-	  else
-			  core_textOutf(40, 20, BLACK, "%-7s","A-Up");
-
-	  /* Show Status of Green Up/Down Switch */
-	  if(core_getSw(S11_SWUPDN))
-			  core_textOutf(40, 30, BLACK, "%-10s","U/D-Down");
-	  else
-			  core_textOutf(40, 30, BLACK, "%-10s","U/D-Up");
+    /* Show Status of Advance Switch */
+    core_textOutf(40,20,BLACK,core_getSw(S11_SWADVANCE) ? "A-Down" : "A-Up  ");
+    /* Show Status of Green Up/Down Switch */
+    core_textOutf(40,30,BLACK,core_getSw(S11_SWUPDN)    ? "G-Down" : "G-Up  ");
   }
 }
 
@@ -446,6 +433,13 @@ static core_tData DEData = {
 
 static void s11_init(void) {
   if (core_gameData == NULL)  return;
+  /*Init Core data*/
+  if (core_gameData->gen & (GEN_DE | GEN_DEDMD16 | GEN_DEDMD32 | GEN_DEDMD64)) {
+    locals.deGame = 1; if (core_init(&DEData)) return;
+  }
+  else {
+    if (core_init((core_gameData->hw.display & S11_BCDDIAG) ? &s11Data : &s11AData)) return;
+  }
   pia_config(S11_PIA0, PIA_STANDARD_ORDERING, &s11_pia[0]);
   pia_config(S11_PIA1, PIA_STANDARD_ORDERING, &s11_pia[1]);
   pia_config(S11_PIA2, PIA_STANDARD_ORDERING, &s11_pia[2]);
@@ -453,14 +447,6 @@ static void s11_init(void) {
   pia_config(S11_PIA4, PIA_STANDARD_ORDERING, &s11_pia[4]);
   pia_config(S11_PIA5, PIA_STANDARD_ORDERING, &s11_pia[5]);
 
-  /*Init Core data*/
-  if(core_gameData->gen & (GEN_DE | GEN_DEDMD16 | GEN_DEDMD32 | GEN_DEDMD64)) {
-	  locals.deGame = 1;
-	  if (core_init(&DEData)) return;
-  }
-  else {
-	if (core_init((core_gameData->hw.display & S11_BCDDIAG) ? &s11Data : &s11AData)) return;
-  }
   
   /*Additional hardware dependent init code*/
   switch (core_gameData->gen) {
@@ -484,6 +470,7 @@ static void s11_init(void) {
     case GEN_DEDMD16:
     case GEN_DEDMD32:
     case GEN_DEDMD64:
+      pia_config(S11_PIA3, PIA_STANDARD_ORDERING, &s11_pia[6]); // PIA 3 is different for DMD games
       sndbrd_0_init(core_gameData->hw.display,    2, memory_region(DE_DMD16ROMREGION),NULL,NULL);
       sndbrd_1_init(core_gameData->hw.soundBoard, 1, memory_region(DE1S_ROMREGION), pia_5_cb1_w, NULL);
       break;
