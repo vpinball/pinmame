@@ -18,6 +18,14 @@ const struct GameDriver *drivers[] = {
 };
 #else /* DRIVER_RECURSIVE */
 
+// ---------------------
+// HANKIN GAMES BELOW
+// ---------------------
+DRIVERNV(fjholden)	//FJ Holden
+DRIVERNV(orbit1)	//Orbit 1
+DRIVERNV(howzat)	//Howzat
+DRIVERNV(shark)		//Shark
+DRIVERNV(empsback)	//Star Wars - The Empire Strike Back
 
 // ---------------------
 // BALLY GAMES BELOW
