@@ -2325,7 +2325,12 @@ void osd_update_video_and_audio(struct mame_bitmap *game_bitmap,struct mame_bitm
 			vups = vector_updates;
 			vector_updates = 0;
 		}
-
+#ifdef PINMAME
+        {
+          extern void pm_wave_disp(struct mame_bitmap *abitmap);
+          pm_wave_disp(bitmap);
+        }
+#endif /* PINMAME */
 		if (!show_debugger && (showfps || showfpstemp))
 		{
 			int fps;

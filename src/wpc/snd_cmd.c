@@ -24,13 +24,6 @@
 #define MAX_LINE_LENGTH 100
 #define SMDCMD_DIGITTOGGLE SMDCMD_ZERO
 
-//Don't love this idea. Let's get a group vote! SJE
-
-#if 0
-/* Use memcard directory for wavefiles */
-#define OSD_FILETYPE_WAVEFILE OSD_FILETYPE_MEMCARD
-#endif
-
 static int playCmd(int length, int *cmd);
 static int checkName(const char *buf, const char *name);
 static void readCmds(char *head);
@@ -55,14 +48,9 @@ static struct {
   mem_write_handler soundCmd;
 } locals;
 
-#ifdef PINMAME_EXT
-static void handle_recording(void);
-static void wave_close(void);
-#else
-#define handle_recording()
-#define wave_close()
-#endif /* PINMAME_EXT */
-
+static void wave_init(void);
+static void wave_exit(void);
+static void wave_handle(void);
 /*---------------------------------*/
 /*-- init manual sound commands  --*/
 /*---------------------------------*/
@@ -73,6 +61,7 @@ void snd_cmd_init(mem_write_handler soundCmd, char *head) {
   locals.soundCmd = soundCmd;
   if (soundCmd) readCmds(head);
   for (ii = 0; ii < MAX_CMD_LENGTH*2; ii++) locals.digits[ii] = 0x10;
+  wave_init();
 }
 
 /*----------------------------------------*/
@@ -80,7 +69,7 @@ void snd_cmd_init(mem_write_handler soundCmd, char *head) {
 /*----------------------------------------*/
 void snd_cmd_exit(void) {
   clrCmds();
-  wave_close();
+  wave_exit();
 }
 
 /*----------------
@@ -109,7 +98,9 @@ int manual_sound_commands(struct mame_bitmap *bitmap) {
   /*-- we must have something to play with --*/
   if (!locals.soundCmd) return TRUE;
 
-  handle_recording();
+  /*-- handle recording --*/
+  if (keyboard_pressed_memory_repeat(SMDCMD_RECORDTOGGLE,REPEATKEY))
+    wave_handle();
 
   /* Toggle command mode */
   if (keyboard_pressed_memory_repeat(SMDCMD_MODETOGGLE, REPEATKEY) &&
@@ -316,145 +307,152 @@ static int playCmd(int length, int *cmd) {
 
 
 /*---------------------------------------------------------------------------*/
-/* This is just copied from SJE's file */
-#ifdef PINMAME_EXT
-
-
 /* Local Functions */
-static int  wave_open(char *filename);
+static int wave_open(char *filename);
+static void wave_close(void);
+static struct {
+  void  *file;
+  UINT32 offs;
+  int recording;
+  int spinner;
+  int nextWaveFileNo;
+} wavelocals;
 
-static void *wave_file = NULL;
-static unsigned wave_offs;
+static void wave_init(void) {
+  memset(&wavelocals, 0, sizeof(wavelocals));
+}
+static void wave_exit(void) {
+  if (wavelocals.recording == 1) {
+    wave_close(); wavelocals.recording = 0;
+  }
+}
 
-//NOT STATIC so that video.c can access it.
-int recording=0; /*Flag signifying if we're currently recording a wav file!*/
-
-#define is_stereo ((Machine->drv->sound_attributes & SOUND_SUPPORTS_STEREO) != 0)
 /*------------------------------------
   Handle Wave Recording
   ----------------------------------------*/
-static void handle_recording(void) {
-  /*If Wave Toggle Key pressed, toggle Recording of Wave File*/
-  if(keyboard_pressed_memory_repeat(SMDCMD_RECORDTOGGLE,REPEATKEY)) {
-    if (wave_file)
-      { wave_close(); recording = 2; } /*finished recording*/
-    else {
-      static int nextWaveFileNo = 0; /* static makes it faster second time */
-      char name[120];
-      /* avoid overwriting existing files */
-      /* first of all try with "gamename.wav" */
-      sprintf(name,"%.8s.wav", Machine->gamedrv->name);
-      if (osd_faccess(name,OSD_FILETYPE_WAVEFILE)) {
-        do {
-          /* otherwise use "nameNNNN.wav" */
-          sprintf(name,"%.4s%04d.wav",Machine->gamedrv->name,++nextWaveFileNo);
-        } while (osd_faccess(name, OSD_FILETYPE_WAVEFILE));
-      }
-      logerror("Using %s for wave filename!\n", name);
-      /*Able to start recording?*/
-      if (wave_open(name) > 0) recording = 1; /*recording succeeded*/
-      else                    recording =-1; /*failed to record..*/
+static void wave_handle(void) {
+  if (wavelocals.recording == 1)
+    { wave_close(); wavelocals.recording = 0; } /*finished recording*/
+  else {
+    char name[120];
+    /* avoid overwriting existing files */
+    /* first of all try with "gamename.wav" */
+    sprintf(name,"%.8s", Machine->gamedrv->name);
+    if (osd_faccess(name,OSD_FILETYPE_WAVEFILE)) {
+      do { /* otherwise use "nameNNNN.wav" */
+        sprintf(name,"%.4s%04d",Machine->gamedrv->name,++wavelocals.nextWaveFileNo);
+      } while (osd_faccess(name, OSD_FILETYPE_WAVEFILE));
     }
+    wavelocals.recording = wave_open(name);
   }
 }
 
-#ifdef	LSB_FIRST
-#define intel(x)    (x)
+#ifdef LSB_FIRST
+#define intel32(x) (x)
+#define intel16(x) (x)
 #else
-#define intel(x)	((x)<<24)|((x)&0xff00)<<8)|((x)&0xff0000)>>8)|((x)>>24)
+#define intel32(x) ((((x)<<24) | (((UINT32)(x))>>24) | (((x) & 0x0000ff00)<<8) | (((x) & 0x00ff0000)>>8)))
+#define intel16(x) (((x)<<8) | ((x)>>8))
 #endif
+#define CHANNELCOUNT ((Machine->drv->sound_attributes & SOUND_SUPPORTS_STEREO) ? 2 : 1)
+static int wave_open(char *filename) {
+  const int channels = CHANNELCOUNT;
+  UINT16 temp16;
+  UINT32 temp32;
+
+  wavelocals.file = osd_fopen(Machine->gamedrv->name, filename, OSD_FILETYPE_WAVEFILE, 1);
+
+  if (!wavelocals.file) return -1;
+  /* write the core header for a WAVE file */
+  wavelocals.offs = osd_fwrite(wavelocals.file, "RIFF", 4);
+  /* filesize, updated when the file is closed */
+  temp32 = 0;
+  wavelocals.offs += osd_fwrite(wavelocals.file, &temp32, 4);
+  /* write the RIFF file type 'WAVE' */
+  wavelocals.offs += osd_fwrite(wavelocals.file, "WAVE", 4);
+  /* write a format tag */
+  wavelocals.offs += osd_fwrite(wavelocals.file, "fmt ", 4);
+  /* size of the following 'fmt ' fields */
+  temp32 = intel32(16);
+  wavelocals.offs += osd_fwrite(wavelocals.file, &temp32, 4);
+  /* format: PCM */
+  temp16 = intel16(1);
+  wavelocals.offs += osd_fwrite(wavelocals.file, &temp16, 2);
+  /* channels: one or two?  */
+  temp16 = intel16(channels);
+  wavelocals.offs += osd_fwrite(wavelocals.file, &temp16, 2);
+  /* sample rate */
+  temp32 = intel32(Machine->sample_rate);
+  wavelocals.offs += osd_fwrite(wavelocals.file, &temp32, 4);
+  /* byte rate */
+  temp32 = intel32(channels * Machine->sample_rate * 2);
+  wavelocals.offs += osd_fwrite(wavelocals.file, &temp32, 4);
+  /* block align */
+  temp16 = intel16(2*channels);
+  wavelocals.offs += osd_fwrite(wavelocals.file, &temp16, 2);
+  /* resolution */
+  temp16 = intel16(16);
+  wavelocals.offs += osd_fwrite(wavelocals.file, &temp16, 2);
+  /* 'data' tag */
+  wavelocals.offs += osd_fwrite(wavelocals.file, "data", 4);
+  /* data size */
+  temp32 = 0;
+  wavelocals.offs += osd_fwrite(wavelocals.file, &temp32, 4);
+  if (wavelocals.offs < 44) return -1;
+  return 1;
+}
 
 static void wave_close(void) {
-  UINT32 filesize, wavesize, temp32;
+  if (wavelocals.recording == 1) {
+    UINT32 temp32;
+    osd_fseek(wavelocals.file, 4, SEEK_SET);
+    temp32 = intel32(wavelocals.offs);
+    osd_fwrite(wavelocals.file, &temp32, 4);
 
-  if (wave_file) {
-    filesize = wave_offs;
-    osd_fseek(wave_file, 4, SEEK_SET);
-    temp32 = intel(filesize);
-    osd_fwrite(wave_file, &temp32, 4);
+    osd_fseek(wavelocals.file, 40, SEEK_SET);
+    temp32 = intel32(wavelocals.offs-44);
+    osd_fwrite(wavelocals.file, &temp32, 4);
 
-    wavesize = wave_offs - 44;
-    osd_fseek(wave_file, 40, SEEK_SET);
-    temp32 = intel(wavesize);
-    osd_fwrite(wave_file, &temp32, 4);
-
-    osd_fclose(wave_file);
-    wave_file = NULL;
+    osd_fclose(wavelocals.file);
+    wavelocals.file = NULL;
   }
 }
-
-static int wave_open(char *filename) {
-  UINT32 filesize, temp32;
-  UINT16 temp16;
-
-  wave_file = osd_fopen(Machine->gamedrv->name, filename, OSD_FILETYPE_WAVEFILE, 1);
-
-  if (!wave_file) {
-    logerror("Unable to create new wave file %s\n",filename);
-    return -1;
-  }
-
-    filesize =
-		4 + 	/* 'RIFF' */
-		4 + 	/* size of entire file */
-		4 + 	/* 'WAVE' */
-		4 + 	/* size of WAVE tag */
-		16 +	/* WAVE tag (including 'fmt ' tag) */
-		4 + 	/* 'data' */
-		4;		/* size of data */
-
-    /* write the core header for a WAVE file */
-    wave_offs += osd_fwrite(wave_file, "RIFF", 4);
-    /* filesize (40 bytes so far, this is updated when the file is closed) */
-    temp32 = intel(filesize);
-    wave_offs += osd_fwrite(wave_file, &temp32, 4);
-    /* write the RIFF file type 'WAVE' */
-    wave_offs += osd_fwrite(wave_file, "WAVE", 4);
-    /* write a format tag */
-    wave_offs += osd_fwrite(wave_file, "fmt ", 4);
-    /* size of the following 'fmt ' fields */
-    temp32 = intel(16);
-    wave_offs += osd_fwrite(wave_file, &temp32, 4);
-    /* format: PCM */
-    temp16 = 1;
-    wave_offs += osd_fwrite_lsbfirst(wave_file, &temp16, 2);
-    /* channels: one or two?  */
-    temp16 = is_stereo ? 2 : 1;
-    wave_offs += osd_fwrite_lsbfirst(wave_file, &temp16, 2);
-    /* sample rate */
-    temp32 = intel(Machine->sample_rate);
-    wave_offs += osd_fwrite(wave_file, &temp32, 4);
-    /* byte rate */
-    temp32 = intel(Machine->sample_rate * 16 * (is_stereo ? 2 : 1) / 8);
-    wave_offs += osd_fwrite(wave_file, &temp32, 4);
-    /* block align */
-    temp16 = 2;
-    wave_offs += osd_fwrite_lsbfirst(wave_file, &temp16, 2);
-    /* resolution */
-    temp16 = 16;
-    wave_offs += osd_fwrite_lsbfirst(wave_file, &temp16, 2);
-    /* 'data' tag */
-    wave_offs += osd_fwrite(wave_file, "data", 4);
-    /* data size */
-    temp32 = 0;
-    wave_offs += osd_fwrite(wave_file, &temp32, 4);
-    if (wave_offs < 44) {
-      logerror("WAVE write error at offs %d\n", wave_offs); return -1;
-    }
-    return 1;
-}
-
+/*--------------------*/
+/* exported functions */
+/*--------------------*/
+/* called from mixer.c */
 void pm_wave_record(INT16 *buffer, int samples) {
-  if (wave_file) {
-    int written = osd_fwrite_lsbfirst(wave_file, buffer, samples * 2);
-    wave_offs += written;
+  if (wavelocals.recording == 1) {
+    int written = osd_fwrite_lsbfirst(wavelocals.file, buffer, samples * 2 * CHANNELCOUNT);
+    wavelocals.offs += written;
     if (written < samples * 2) {
-      /* oops! the disk is full, better stop now */
-      logerror("WAVE write error at offs %d\n", wave_offs);
-      wave_close();
+      wave_close(); wavelocals.recording = -1;
     }
   }
 }
 
-#endif /* PINMAME_EXT */
-
+/* called from video update */
+void pm_wave_disp(struct mame_bitmap *abitmap) {
+  char buf[25];
+  if (wavelocals.recording == 0) {
+    if (wavelocals.spinner == 0) return;
+    strcpy(buf,"                  ");
+    wavelocals.spinner = 0;
+  }
+  else {
+    wavelocals.spinner = (wavelocals.spinner + 1);
+    if (wavelocals.recording == -1) {
+      if (wavelocals.spinner == 180)
+        wavelocals.recording = 0;
+      else {
+        strcpy(buf, "Wave record error!");
+        wavelocals.spinner = 0;
+      }
+    }
+    else {
+      const char spinner[4] = {'|','/','-','\\'};
+      sprintf(buf,"Recording %c", spinner[(wavelocals.spinner/10) & 3]);
+    }
+  }
+  ui_text(abitmap, buf, 0, 0);
+}
