@@ -127,7 +127,6 @@ static char* IgnoredSettings[] = {
 	"maximize",
 	"throttle",
 	"sleep",
-    "debug",
 	"log",
 	
 	NULL
@@ -165,16 +164,22 @@ void vpm_frontend_init(void) {
   options.debug_depth = 8; // Debugger only works with 8 bits?
 #endif /* MAMEVER */
   options.gui_host = 1;
-#ifdef MAME_DEBUG
-  options.mame_debug = 1;
-#endif /* MAME_DEBUG */
-#ifdef DEBUG
+//#ifdef MAME_DEBUG
+//  options.mame_debug = 1;
+//#endif /* MAME_DEBUG */
+#if (defined(DEBUG) || defined(_DEBUG))
   set_option("log","1",0);
 #endif /* DEBUG */
-  logfile = config_get_logfile();
 }
 
 void vpm_frontend_exit(void) {
+}
+
+void vpm_game_init() {
+  logfile = config_get_logfile();
+}
+
+void vpm_game_exit() {
   /* close open files */
   if (options.language_file) /* this seems to never be opened in Win32 version */
     { mame_fclose(options.language_file); options.language_file = NULL; }
@@ -182,7 +187,7 @@ void vpm_frontend_exit(void) {
     { fclose(logfile); logfile = NULL; }
 }
 
-#if (!defined(PINMAME) || defined(MAME_DEBUG)) // In PinMAME, log only in debug mode.
+#if (!defined(PINMAME) || defined(MAME_DEBUG) || defined(_DEBUG)) // In PinMAME, log only in debug mode.
 void CLIB_DECL logerror(const char *text,...) {
   va_list arg;
   /* standard vfprintf stuff here */
