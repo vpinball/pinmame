@@ -192,7 +192,7 @@ BY35_ROMEND
 #define input_ports_meteor input_ports_st
 CORE_GAMEDEFNV(meteor,"Meteor",1979,"Stern",by35_mST200,0)
 /*--------------------------------
-/ Meteor (7-digit bootleg)
+/ Meteor (7-digit conversion)
 /-------------------------------*/
 INITGAME(meteorb,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
 ST200_ROMSTART8888(meteorb,"cpu_u1.716",CRC(e0fd8452) SHA1(a13215378a678e26a565742d81fdadd2e161ba7a),
@@ -200,8 +200,8 @@ ST200_ROMSTART8888(meteorb,"cpu_u1.716",CRC(e0fd8452) SHA1(a13215378a678e26a5657
                           "cpu_u2b.716",CRC(62cd0484) SHA1(754bb6a7c3c6024b642dba4bc148ed110ab14295),
                           "cpu_u6b.716",CRC(10cb5d60) SHA1(1d3da195fbe06b49d08e4ce2ebc5d9d811126aa6))
 BY35_ROMEND
-#define input_ports_meteorb input_ports_st
-CORE_CLONEDEFNV(meteorb,meteor,"Meteor (7-digit bootleg)",2003,"Stern / Oliver",by35_mST200,0)
+#define input_ports_meteorb input_ports_meteor
+CORE_CLONEDEFNV(meteorb,meteor,"Meteor (7-digit conversion)",2003,"Stern / Oliver",by35_mST200,0)
 
 /*--------------------------------
 / Galaxy
@@ -214,6 +214,17 @@ ST200_ROMSTART8888(galaxy,"cpu_u1.716",CRC(35656b67) SHA1(e1ad9456c561d19220f860
 BY35_ROMEND
 #define input_ports_galaxy input_ports_st
 CORE_GAMEDEFNV(galaxy,"Galaxy",1980,"Stern",by35_mST200,0)
+/*--------------------------------
+/ Galaxy (7-digit conversion)
+/-------------------------------*/
+INITGAME(galaxyb,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ST200_ROMSTART8888(galaxyb,"cpu_u1b.716",CRC(53f7c0c9) SHA1(c3ee8bbdd1eca7a044c7abf4e0ba6059f523c323),
+                           "cpu_u5b.716",CRC(1b1cd31b) SHA1(65a6a58d2c509419fce3142a9ae88d8ea7d25f1c),
+                           "cpu_u2b.716",CRC(f0b4e60b) SHA1(e1628ec94585fbf4935e824721472cc9c91bbf89),
+                           "cpu_u6b.716",CRC(be4eacc1) SHA1(3d95e8e859312ef0a7ed52356dabe35ed0bebdef))
+BY35_ROMEND
+#define input_ports_galaxyb input_ports_galaxy
+CORE_CLONEDEFNV(galaxyb,galaxy,"Galaxy (7-digit bootleg)",2004,"Stern / Oliver",by35_mST200,0)
 
 /*--------------------------------
 / Ali
