@@ -140,21 +140,21 @@ static PALETTE_INIT(core) {
   tmpPalette[COL_DMDON][1]    = gStart;
   tmpPalette[COL_DMDON][2]    = bStart;
   /*-- segment display antialias colors --*/
-  tmpPalette[COL_SEGAAON1][0] = rStart * 70 / 100;
-  tmpPalette[COL_SEGAAON1][1] = gStart * 70 / 100;
-  tmpPalette[COL_SEGAAON1][2] = bStart * 70 / 100;
-  tmpPalette[COL_SEGAAON2][0] = rStart * 30 / 100;
-  tmpPalette[COL_SEGAAON2][1] = gStart * 30 / 100;
-  tmpPalette[COL_SEGAAON2][2] = bStart * 30 / 100;
+  tmpPalette[COL_SEGAAON1][0] = rStart * 72 / 100;
+  tmpPalette[COL_SEGAAON1][1] = gStart * 72 / 100;
+  tmpPalette[COL_SEGAAON1][2] = bStart * 72 / 100;
+  tmpPalette[COL_SEGAAON2][0] = rStart * 33 / 100;
+  tmpPalette[COL_SEGAAON2][1] = gStart * 33 / 100;
+  tmpPalette[COL_SEGAAON2][2] = bStart * 33 / 100;
   rStart = tmpPalette[COL_DMDOFF][0];
   gStart = tmpPalette[COL_DMDOFF][1];
   bStart = tmpPalette[COL_DMDOFF][2];
-  tmpPalette[COL_SEGAAOFF1][0] = rStart * 70 / 100;
-  tmpPalette[COL_SEGAAOFF1][1] = gStart * 70 / 100;
-  tmpPalette[COL_SEGAAOFF1][2] = bStart * 70 / 100;
-  tmpPalette[COL_SEGAAOFF2][0] = rStart * 30 / 100;
-  tmpPalette[COL_SEGAAOFF2][1] = gStart * 30 / 100;
-  tmpPalette[COL_SEGAAOFF2][2] = bStart * 30 / 100;
+  tmpPalette[COL_SEGAAOFF1][0] = rStart * 72 / 100;
+  tmpPalette[COL_SEGAAOFF1][1] = gStart * 72 / 100;
+  tmpPalette[COL_SEGAAOFF1][2] = bStart * 72 / 100;
+  tmpPalette[COL_SEGAAOFF2][0] = rStart * 33 / 100;
+  tmpPalette[COL_SEGAAOFF2][1] = gStart * 33 / 100;
+  tmpPalette[COL_SEGAAOFF2][2] = bStart * 33 / 100;
 
   /*-- Autogenerate Dark Playfield Lamp Colors --*/
   for (ii = 0; ii < COL_LAMPCOUNT; ii++) { /* Reduce by 75% */
