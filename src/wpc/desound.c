@@ -1,3 +1,8 @@
+/*Data East/Sega/Stern Sound Hardware:
+  ------------------------------------
+  Generation 1: YM2151 & MSM5205 (Games up to TMNT)
+  Generation 2: BSMT 2000 (Games from Batman and beyond)
+*/
 #include "driver.h"
 #include "core.h"
 #include "cpu/m6809/m6809.h"
@@ -139,6 +144,11 @@ static WRITE_HANDLER(de1s_ym2151Port) {
   sndbrd_ctrl_cb(de1slocals.brdData.boardNo, data & 0x02);
 }
 
+
+/****************************************/
+/** GENERATION 2 - BSMT SOUND HARDWARE **/
+/****************************************/
+
 // Missing things
 // When a sound command is written from the Main CPU it generates a BUF-FULL signal
 // and latches the data into U5
@@ -174,15 +184,16 @@ const struct sndbrdIntf de2sIntf = {
   de2s_init, NULL, NULL, soundlatch_w, NULL, NULL, NULL, SNDBRD_NODATASYNC
 };
 
-//Older 11 Voice Style BSMT Chip
+/* Older 11 Voice Style BSMT Chip */
+//NOTE: Do not put a volume adjustment here, otherwise 128x16 games have audible junk played at the beggining
 struct BSMT2000interface de2s_bsmt2000aInt = {
-  1, {24000000}, {11}, {DE2S_ROMREGION}, {100}, {2000}
+  1, {24000000}, {11}, {DE2S_ROMREGION}, {100}, {0000}
 };
-//Newer 12 Voice Style BSMT Chip
+/* Newer 12 Voice Style BSMT Chip */
 struct BSMT2000interface de2s_bsmt2000bInt = {
   1, {24000000}, {12}, {DE2S_ROMREGION}, {100}, {2000}
 };
-//Older 11 Voice Style BSMT Chip but needs large volume adjustment
+/* Older 11 Voice Style BSMT Chip but needs large volume adjustment */
 struct BSMT2000interface de2s_bsmt2000cInt = {
   1, {24000000}, {11}, {DE2S_ROMREGION}, {100}, {4000}
 };
@@ -200,7 +211,8 @@ MEMORY_WRITE_START(de2s_writemem)
   { 0x2008, 0x5fff, MWA_ROM },
   { 0x6000, 0x6000, de2s_bsmtcmdHi_w },
   { 0x6001, 0x9fff, MWA_ROM },
-  { 0xa000, 0xffff, de2s_bsmtcmdLo_w },
+  { 0xa000, 0xa0ff, de2s_bsmtcmdLo_w },
+  { 0xa100, 0xffff, MWA_ROM },
 MEMORY_END
 
 /*-- local data --*/
@@ -210,12 +222,14 @@ static struct {
 } de2slocals;
 
 static void de2s_init(struct sndbrdData *brdData) {
+  memset(&de2slocals, 0, sizeof(de2slocals));
   de2slocals.brdData = *brdData;
 }
 
 static WRITE_HANDLER(de2s_bsmtcmdHi_w) { de2slocals.bsmtData = data; }
 static WRITE_HANDLER(de2s_bsmtcmdLo_w) {
   BSMT2000_data_0_w((~offset & 0xff), ((de2slocals.bsmtData<<8)|data), 0);
+  //NOTE: Odd that it will NOT WORK without HOLD_LINE - although we don't clear it anywaywhere!
   cpu_set_irq_line(de2slocals.brdData.cpuNo, M6809_IRQ_LINE, HOLD_LINE);
 }
 
@@ -223,6 +237,7 @@ static READ_HANDLER(de2s_bsmtready_r) { return 0x80; } // BSMT is always ready
 static WRITE_HANDLER(de2s_bsmtreset_w) { /* Writing 0x80 here resets BSMT ?*/ }
 
 int de2s_irq(void) {
+  //NOTE: Odd that it will NOT WORK without HOLD_LINE - although we don't clear it anywaywhere!
   cpu_set_irq_line(de2slocals.brdData.cpuNo, M6809_FIRQ_LINE, HOLD_LINE);
   return 0;
 }
