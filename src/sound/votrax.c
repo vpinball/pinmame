@@ -41,12 +41,31 @@ static const char *VotraxTable[65] =
  0
 };
 
+static const char *VotraxNameTable[] =
+{
+ "*votrax",
+ "EH3.WAV","EH2.WAV","EH1.WAV","PA0.WAV","DT.WAV" ,"A1.WAV" ,"A2.WAV" ,"ZH.WAV",
+ "AH2.WAV","I3.WAV" ,"I2.WAV" ,"I1.WAV" ,"M.WAV"  ,"N.WAV"  ,"B.WAV"  ,"V.WAV",
+ "CH.WAV" ,"SH.WAV" ,"Z.WAV"  ,"AW1.WAV","NG.WAV" ,"AH1.WAV","OO1.WAV","OO.WAV",
+ "L.WAV"  ,"K.WAV"  ,"J.WAV"  ,"H.WAV"  ,"G.WAV"  ,"F.WAV"  ,"D.WAV"  ,"S.WAV",
+ "A.WAV"  ,"AY.WAV" ,"Y1.WAV" ,"UH3.WAV","AH.WAV" ,"P.WAV"  ,"O.WAV"  ,"I.WAV",
+ "U.WAV"  ,"Y.WAV"  ,"T.WAV"  ,"R.WAV"  ,"E.WAV"  ,"W.WAV"  ,"AE.WAV" ,"AE1.WAV",
+ "AW2.WAV","UH2.WAV","UH1.WAV","UH.WAV" ,"O2.WAV" ,"O1.WAV" ,"IU.WAV" ,"U1.WAV",
+ "THV.WAV","TH.WAV" ,"ER.WAV" ,"EH.WAV" ,"E1.WAV" ,"AW.WAV" ,"PA1.WAV","STOP.WAV",
+ 0
+};
+
+struct Samplesinterface votrax_interface = {
+  1, 100, 
+  VotraxNameTable
+};
+
 void votrax_w(int data);
 int votrax_status_r(void);
 
 void sh_votrax_start(int Channel)
 {
-	VotraxSamples = readsamples(VotraxTable,"votrax");
+//	VotraxSamples = readsamples(VotraxTable,"votrax");
     VotraxBaseFrequency = 8000;
     VotraxBaseVolume = 230;
     VotraxChannel = Channel;
@@ -54,7 +73,7 @@ void sh_votrax_start(int Channel)
 
 void sh_votrax_stop(void)
 {
-	freesamples(VotraxSamples);
+//	freesamples(VotraxSamples);
 }
 
 void repeat_votrax_w(int dummy)
@@ -83,14 +102,7 @@ void votrax_w(int data)
 		if(Phoneme==63)
 			mixer_stop_sample(VotraxChannel);
 */
-		if(VotraxSamples->sample[Phoneme])
-		{
-			mixer_set_volume(VotraxChannel,VotraxBaseVolume+(8*Intonation)*100/255);
-			mixer_play_sample(VotraxChannel,VotraxSamples->sample[Phoneme]->data,
-					  VotraxSamples->sample[Phoneme]->length,
-					  14000 /*VotraxBaseFrequency+(256*Intonation)*/,
-					  0);
-		}
+	    sample_start(0,Phoneme,0);
 	} else
 		timer_set(TIME_IN_USEC(24000),0,repeat_votrax_w);
 }
