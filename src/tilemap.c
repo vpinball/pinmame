@@ -615,11 +615,11 @@ INLINE tilemap_draw_func pick_draw_func( struct mame_bitmap *dest )
 	switch (dest ? dest->depth : Machine->scrbitmap->depth)
 	{
 		case 32:
-			return draw32BPP;
+			return &draw32BPP;
 
 		case 16:
 		case 15:
-			return draw16BPP;
+			return &draw16BPP;
 	}
 	exit(1);
 	return NULL;
