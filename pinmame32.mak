@@ -1,6 +1,6 @@
 #####################################################################
 
-ZLIB_LIBPATH = ../zlib
+ZLIB_LIBPATH = zlib
 DEFS += -DMAME32NAME='"PINMAME32"' -DMAMENAME='"PINMAME"'
 
 # set this to mame, mess or the destination you want to build
