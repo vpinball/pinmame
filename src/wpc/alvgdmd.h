@@ -60,6 +60,14 @@ extern PINMAME_VIDEO_UPDATE(alvgdmd_update);
   CPU_REGION(ALVGDMD_CPUREGION) \
 	ROM_COPY(ALVGDMD_ROMREGION,0x108000,0x0000,0x8000)
 
+//Main CPU 64K (Full Rom), DMD Data Roms (1 X 256K) - 
+#define ALVGDMD_ROM2R(n1,chk1,n2,chk2) \
+  CPU_REGION(ALVGDMD_CPUREGION) \
+	ROM_LOAD(n1, 0x00000, 0x10000, chk1) \
+    NORMALREGION(0x100000, ALVGDMD_ROMREGION) \
+    ROM_LOAD(n2, 0x00000, 0x40000, chk2) \
+	ROM_RELOAD(  0x40000, 0x40000) 
+
 //Use only for testing the 8031 core emulation
 #ifdef MAME_DEBUG
 

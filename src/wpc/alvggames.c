@@ -42,17 +42,15 @@ CORE_GAMEDEFNV(wtgband,"World Tour Garage Band",1992,"Alvin G",mALVGS,GAME_IMPER
 /*-------------------------------------------------------------------
 / Mystery Castle
 /-------------------------------------------------------------------*/
-//Need CPU & DMD Roms
 INITGAME(mystcast, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS, SNDBRD_ALVGDMD, 5)
-ALVGROMSTART(mystcast,	"mcast_c0.rom", NO_DUMP)
-ALVGS_SOUNDROM(		"s081r03_.rom" , CRC(bd4849ac) SHA1(f477ea369539a65c0960be1f1c3b4c5503dd6b75),
-					"mcast_s0.rom" , CRC(0855cc73) SHA1(c46e08432bcff24594c33171f20669ba63828931),
-					"mcast_s1.rom" , CRC(3b5d76e0) SHA1(b2e1bca3c596eba89feda868fa56c71a6b22414c),
-					"mcast_s2.rom" , CRC(c3ffd277) SHA1(d16d1b22089b89bbf0db7d2b66c9745a56034322),
-					"mcast_s3.rom" , CRC(1fa20ff1) SHA1(2bad7cddb4c8fc08780740b077f74cdf47fc2e5c))
-ALVGDMD_ROM(		"mcast_u4.512", NO_DUMP,
-					"mcast_u5.c20", NO_DUMP,
-					"mcast_u6.c20", NO_DUMP)
+ALVGROMSTART(mystcast,	"mcastle.cpu", CRC(936e6799) SHA1(aa29fb5f12f34c695d1556232744f65cd576a2b1))
+ALVGS_SOUNDROM(			"mcastle.102", CRC(752822d0) SHA1(36461ef03cac5aefa0c03dfdc63c3d294a3b9c09),
+						"mcastle.sr0", CRC(0855cc73) SHA1(c46e08432bcff24594c33171f20669ba63828931),
+						"mcastle.sr1", CRC(3b5d76e0) SHA1(b2e1bca3c596eba89feda868fa56c71a6b22414c),			   
+						"mcastle.sr2", CRC(c3ffd277) SHA1(d16d1b22089b89bbf0db7d2b66c9745a56034322),
+						"mcastle.sr3", CRC(740858bb) SHA1(d2e9a0a178977dcc873368b042cea7052578df66))
+ALVGDMD_ROM2R(			"mcastle.du4", CRC(686e253a) SHA1(28aff34c120c61e231e2111dc396df515bcbbb89),
+						"mcastle.du5", CRC(9095c367) SHA1(9d3e9416f662ee2aad891eef059278c530448fcc))
 ALVG_ROMEND
 CORE_GAMEDEFNV(mystcast,"Mystery Castle",1993,"Alvin G",mALVGS,GAME_IMPERFECT_GRAPHICS)
 
