@@ -339,7 +339,7 @@ static void cpu_pre_run(void)
 	/* now reset each CPU */
 	for (cpunum = 0; cpunum < cpu_gettotalcpu(); cpunum++)
 #ifdef PINMAME
-        	if (!(Machine->drv->cpu[cpunum].cpu_type & CPU_AUDIO_CPU) || Machine->sample_rate != 0)
+        	if (!(Machine->drv->cpu[cpunum].cpu_flags & CPU_AUDIO_CPU) || Machine->sample_rate != 0)
 #endif /* PINMAME */
 		cpunum_reset(cpunum, Machine->drv->cpu[cpunum].reset_param, cpu_irq_callbacks[cpunum]);
 
