@@ -556,6 +556,12 @@ DRIVERNV(polar   )      //??/8? Polar Explorer
 DRIVERNV(taitest )      //??/8? Test Fixture
 
 // ----------------
+// TECHNOPLAY GAMES
+// ----------------
+
+DRIVERNV(scram_tp)      //??/87 Scramble
+
+// ----------------
 // UNITED GAMES
 // ----------------
 DRIVERNV(bbbowlin)      //Big Ball Bowling - using Bally hardware

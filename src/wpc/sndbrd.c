@@ -35,8 +35,8 @@ void sndbrd_init(int brdNo, int brdType, int cpuNo, UINT8 *romRegion,
     b->init(&brdData);
 }
 
-int sndbrd_exists(int board) { 
-  return (intf[board].brdIntf && 
+int sndbrd_exists(int board) {
+  return (intf[board].brdIntf &&
           ((intf[board].brdIntf->flags & SNDBRD_NOTSOUND) == 0));
 }
 const char* sndbrd_typestr(int board) {
@@ -106,7 +106,7 @@ void sndbrd_manCmd(int board, int cmd) {
   const struct sndbrdIntf *b = intf[board].brdIntf;
   if (b && (coreGlobals.soundEn || (b->flags & SNDBRD_NOTSOUND)) && b->manCmd_w)
     b->manCmd_w(0, cmd);
-}  
+}
 void sndbrd_0_init(int brdType, int cpuNo, UINT8 *romRegion,
                    WRITE_HANDLER((*data_cb)),WRITE_HANDLER((*ctrl_cb))) {
   sndbrd_init(0, brdType, cpuNo, romRegion, data_cb, ctrl_cb);
@@ -189,6 +189,7 @@ const struct sndbrdIntf NULLIntf = { 0 }; // remove when all boards below works.
   SNDBRDINTF(zac1125)
   SNDBRDINTF(zac1346)
   SNDBRDINTF(zac1370)
+  SNDBRDINTF(techno)
   SNDBRDINTF(st100)
   SNDBRDINTF(st300)
   SNDBRDINTF(astro)
