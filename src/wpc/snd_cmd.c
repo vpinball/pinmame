@@ -290,7 +290,7 @@ found:      ;
                (buffer[0] == '\n') || (buffer[0] == ' '))
         continue;
       else {
-        if (checkName(buffer, head))
+        if (head && checkName(buffer, head))
           getData = 2;
         else
           getData = (boardNo != 0) &&
