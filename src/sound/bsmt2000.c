@@ -205,8 +205,10 @@ static void generate_samples(struct BSMT2000Chip *chip, INT32 *left, INT32 *righ
 
   	/* compressed voice (11-voice model only) */
   	voice = &chip->compressed;
+logerror("chip->voices=%d voice->bank=%d\n", chip->voices, voice->bank);
 #ifdef PINMAME
-	if (chip->voices == 11 && (voice->bank < chip->total_banks) && (voice->adjusted_rate > 0))
+//	if (chip->voices == 11 && (voice->bank < chip->total_banks) && (voice->adjusted_rate > 0))
+	if (chip->voices == 11 && (voice->bank < chip->total_banks))
 #else
 	if (chip->voices == 11 && voice->reg[REG_BANK] < chip->total_banks)
 #endif
@@ -222,6 +224,8 @@ static void generate_samples(struct BSMT2000Chip *chip, INT32 *left, INT32 *righ
   		INT32 lvol = voice->reg[REG_LEFTVOL];
   		INT32 rvol = voice->reg[REG_RIGHTVOL];
   		int remaining = samples;
+
+logerror("pos=%08X stop=%08X remaining=%d\n", pos, voice->loop_stop_position, remaining);
   
   		/* loop while we still have samples to generate */
   		while (remaining-- && pos < voice->loop_stop_position)
@@ -568,6 +572,7 @@ static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_
  			case 0x6d:
  				COMBINE_DATA(&voice->reg[REG_LOOPEND]);
  				voice->loop_stop_position = voice->reg[REG_LOOPEND] << 16;
+logerror("REG_LOOPEND=%04X voice->loop_stop_position=%08X\n", voice->reg[REG_LOOPEND], voice->loop_stop_position);
  				break;
  				
  			case 0x6f:
@@ -577,19 +582,23 @@ static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_
 			              ((voice->reg[REG_BANK] & 0x18)<<1) |
                           ((voice->reg[REG_BANK] & 0x20)>>2);
 			#endif
+logerror("REG_BANK=%04X voice->bank=%08X\n", voice->reg[REG_BANK], voice->bank);
 				break;
  			
  			case 0x74:
  				COMBINE_DATA(&voice->reg[REG_RIGHTVOL]);
+logerror("REG_RIGHTVOL=%04X\n", voice->reg[REG_RIGHTVOL]);
  				break;
  
  			case 0x75:
  				COMBINE_DATA(&voice->reg[REG_CURRPOS]);
  				voice->position = voice->reg[REG_CURRPOS] << 16;
+logerror("REG_CURRPOS=%04X voice->loop_stop_position=%08X\n", voice->reg[REG_CURRPOS], voice->position);
  				break;
  
  			case 0x78:
  				COMBINE_DATA(&voice->reg[REG_LEFTVOL]);
+logerror("REG_LEFTVOL=%04X\n", voice->reg[REG_LEFTVOL]);
  				break;
  		}
 	}
