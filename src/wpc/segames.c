@@ -438,7 +438,7 @@ CORE_CLONEDEFNV(hirol_fr,hirolcas,"High Roller Casino (France)",2001,"Stern",de_
 / High Roller Casino (Germany)
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(hirol_gr,"hrccpu.300",CRC(0d1117fa) SHA1(a19f9dfc2288fc16cb8e992ffd7f13e70ef042c7))
-DE_DMD32ROM8x(        "hrcdispg.300",NO_DUMP)
+DE_DMD32ROM8x(        "hrcdispg.201",CRC(57b95712) SHA1(f7abe7511aa8b258615cd844dc76f3d2f9b47c31))
 DE2S_SOUNDROM18888(    "hrsndu7.100",CRC(c41f91a7) SHA1(2af3be10754ea633558bdbeded21c6f82d85cd1d),
                       "hrsndu17.100",CRC(5858dfd0) SHA1(0d88daf3b480f0e0a2653d9be37cafed79036a48),
                       "hrsndu21.100",CRC(c653de96) SHA1(352567f4f4f973ed3d8c018c9bf37aeecdd101bf),
