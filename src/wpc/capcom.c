@@ -509,7 +509,7 @@ static void U16_Tests_ByPass(void){
 void cap_UpdateSoundLEDS(int data)
 {
 	locals.diagnosticLedS = data;
-	printf("setting led to %x\n",data);
+//	printf("setting led to %x\n",data);
 }
 
 /*-----------------------------------
