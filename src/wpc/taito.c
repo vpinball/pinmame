@@ -135,29 +135,29 @@ static WRITE_HANDLER(dma_display)
 
 	if ( offset<12 ) {
 		// player 1-4, 6 digits per player
-		((int*) TAITOlocals.segments)[2*offset+segMap[offset]]   = core_bcd2seg[(data>>4)&0x0f];
-		((int*) TAITOlocals.segments)[2*offset+segMap[offset]+1] = core_bcd2seg[data&0x0f];
+		TAITOlocals.segments[2*offset+segMap[offset]].w   = core_bcd2seg[(data>>4)&0x0f];
+		TAITOlocals.segments[2*offset+segMap[offset]+1].w = core_bcd2seg[data&0x0f];
 	}
 	else {
 		switch ( offset ) {
 		case 12:
 			// balls in play
-			((int*) TAITOlocals.segments)[2*12+segMap[12]] = core_bcd2seg[data&0x0f];
+			TAITOlocals.segments[2*12+segMap[12]].w = core_bcd2seg[data&0x0f];
 			break;
 		
 		case 13:
 			// credits
-			((int*) TAITOlocals.segments)[2*12+segMap[12]+1] = core_bcd2seg[data&0x0f];
+			TAITOlocals.segments[2*12+segMap[12]+1].w = core_bcd2seg[data&0x0f];
 			break;
 		
 		case 14:
 			// match
-			((int*) TAITOlocals.segments)[2*13+segMap[13]] = core_bcd2seg[data&0x0f];
+			TAITOlocals.segments[2*13+segMap[13]].w = core_bcd2seg[data&0x0f];
 			break;
 
 		case 15:
 			// active player
-			((int*) TAITOlocals.segments)[2*13+segMap[13]+1] = core_bcd2seg[data&0x0f];
+			TAITOlocals.segments[2*13+segMap[13]+1].w = core_bcd2seg[data&0x0f];
 			break;
 		}
 	}
