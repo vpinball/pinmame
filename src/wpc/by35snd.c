@@ -51,6 +51,7 @@ static void by32_decay(int param) {
 
 static int by32_sh_start(const struct MachineSound *msound) {
   by32locals.channel = mixer_allocate_channel(15);
+//  mixer_set_lowpass_frequency(by32locals.channel, 2000);
   mixer_set_volume(by32locals.channel,0);
   mixer_play_sample(by32locals.channel, (signed char *)sineWave, sizeof(sineWave), 1000, 1);
   timer_pulse(TIME_IN_HZ(BY32_DECAYFREQ),0,by32_decay);
@@ -410,7 +411,7 @@ MACHINE_DRIVER_END
 
 static struct {
   struct sndbrdData brdData;
-  int cmd;
+  int cmd, ctrl;
 } cslocals;
 
 static void cs_init(struct sndbrdData *brdData) {
@@ -419,9 +420,10 @@ static void cs_init(struct sndbrdData *brdData) {
 
 static WRITE_HANDLER(cs_cmd_w) { cslocals.cmd = data; }
 static WRITE_HANDLER(cs_ctrl_w) {
-  cpu_set_irq_line(cslocals.brdData.cpuNo, M6803_TIN_LINE, (data & 0x01) ? ASSERT_LINE : CLEAR_LINE);
+  cslocals.ctrl = (data != 0);
+  cpu_set_irq_line(cslocals.brdData.cpuNo, M6803_TIN_LINE, data ? ASSERT_LINE : CLEAR_LINE);
 }
-static READ_HANDLER(cs_port1_r) { return cslocals.cmd; }
+static READ_HANDLER(cs_port1_r) { return cslocals.ctrl | (cslocals.cmd << 1); }
 
 /*----------------------------------------
 /    Turbo Cheap Squalk
