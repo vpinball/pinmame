@@ -246,6 +246,7 @@ static void monopoly_drawStatic(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
+
 /*-------------------------------------------------------------------
 / Monopoly (3.03)
 /-------------------------------------------------------------------*/
@@ -256,6 +257,23 @@ DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5
                       "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
                       "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
 SE_ROMEND
+
+#ifdef TEST_NEW_SOUND
+/*-------------------------------------------------------------------
+/ Monopoly (3.03) (ARM7 Sound Board)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(mononew,"moncpu.303",CRC(4a66c9e4) SHA1(a368b0ced32f1017e781a59108670b979b50c9d7))
+DE_DMD32ROM8x(         "mondsp-a.301",CRC(c4e2e032) SHA1(691f7b6ed0616338683f7e3f316d64a70db58dd4))
+DE3S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
+                       "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
+                       "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
+                       "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
+SE_ROMEND
+#define input_ports_mononew input_ports_monopoly
+#define init_mononew init_monopoly
+CORE_CLONEDEFNV(mononew,monopoly,"Monopoly (ARM7 Sound Board)",2002,"Stern",de_mSES3,GAME_NOCRC)
+#endif
+
 
 /*-------------------------------------------------------------------
 / Monopoly (France)

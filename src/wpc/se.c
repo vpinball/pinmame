@@ -1,7 +1,11 @@
 /************************************************************************************************
   Sega/Stern Pinball
+  by Steve Ellenoff
 
-  Hardware from 1994-????
+  Additional work by Martin Adrian, Gerrit Volkenborn, Tom Behrens
+************************************************************************************************
+
+Hardware from 1994-present
 
   CPU Boards: Whitestar System
 
@@ -10,6 +14,9 @@
 
   Sound Board Revisions:
     Integrated with CPU. Similar cap. as 520-5126-xx Series: (Baywatch to Batman Forever)
+
+    11/2003 -New CPU/Sound board (520-5300-00) with an Atmel AT91 (ARM7DMI Variant) CPU for sound & Xilinx FPGA
+             emulating the BSMT2000 as well as added 16 bit sample playback and ADPCM compression.
 
 *************************************************************************************************/
 #include <stdarg.h>
@@ -20,6 +27,8 @@
 #include "dedmd.h"
 #include "se.h"
 #include "desound.h"
+#include "cpu/at91/at91.h"
+#include "sound/wavwrite.h"
 
 #define SE_VBLANKFREQ      60 /* VBLANK frequency */
 #define SE_IRQFREQ        976 /* FIRQ Frequency according to Theory of Operation */
@@ -97,11 +106,12 @@ static SWITCH_UPDATE(se) {
   }
 }
 
+static MACHINE_INIT(se3) {
+	sndbrd_0_init(SNDBRD_DEDMD32, 2, memory_region(DE_DMD32ROMREGION),NULL,NULL);
+	sndbrd_1_init(SNDBRD_DE3S,    1, memory_region(DE2S_ROMREGION), NULL, NULL);
+}
+
 static MACHINE_INIT(se) {
-  /* Copy Last 32K into last 32K of CPU space */
-  memcpy(memory_region(SE_CPUREGION) + 0x8000,
-         memory_region(SE_ROMREGION) +
-	 (memory_region_length(SE_ROMREGION) - 0x8000), 0x8000);
   sndbrd_0_init(SNDBRD_DEDMD32, 2, memory_region(DE_DMD32ROMREGION),NULL,NULL);
   sndbrd_1_init(SNDBRD_DE2S,    1, memory_region(DE2S_ROMREGION), NULL, NULL);
 
@@ -524,6 +534,25 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(se2cS)
   MDRV_IMPORT_FROM(se)
   MDRV_IMPORT_FROM(de2cs)
+  MDRV_IMPORT_FROM(de_dmd32)
+  MDRV_SOUND_CMD(sndbrd_1_data_w)
+  MDRV_SOUND_CMDHEADING("se")
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(se3aS)
+//from se driver - but I need a different init routine
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CPU_ADD(M6809, 2000000)
+  MDRV_CORE_INIT_RESET_STOP(se3,NULL,se)
+  MDRV_CPU_MEMORY(se_readmem, se_writemem)
+  MDRV_CPU_VBLANK_INT(se_vblank, 1)
+  MDRV_CPU_PERIODIC_INT(irq1_line_pulse, SE_IRQFREQ)
+  MDRV_NVRAM_HANDLER(se)
+  MDRV_DIPS(8)
+  MDRV_SWITCH_UPDATE(se)
+  MDRV_DIAGNOSTIC_LEDH(1)
+//
+  MDRV_IMPORT_FROM(de3as)
   MDRV_IMPORT_FROM(de_dmd32)
   MDRV_SOUND_CMD(sndbrd_1_data_w)
   MDRV_SOUND_CMDHEADING("se")
