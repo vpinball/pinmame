@@ -54,8 +54,6 @@ const core_tLCDLayout s4_disp[] = {
 static void s4_nvram(void *file, int write);
 
 static READ_HANDLER(s4_dips_r);
-static READ_HANDLER(s4_diagsw1_r);
-static READ_HANDLER(s4_diagsw2_r);
 static READ_HANDLER(s4_entersw_r);
 static READ_HANDLER(s4_swrow_r);
 static WRITE_HANDLER(s4_swcol_w);
@@ -72,6 +70,25 @@ static WRITE_HANDLER(s4_sol1_8_w);
 static WRITE_HANDLER(s4_sol9_16_w);
 static WRITE_HANDLER(s4_specsol5_w);
 static WRITE_HANDLER(s4_gameon_w);
+
+static void s4_irqline(int state) {
+  if (state) {
+    cpu_set_irq_line(S4_CPUNO, M6800_IRQ_LINE, ASSERT_LINE);
+    pia_set_input_ca1(S4_PIA0, core_getSw(S4_SWADVANCE));
+    pia_set_input_cb1(S4_PIA0, core_getSw(S4_SWUPDN));
+  }
+  else {
+    cpu_set_irq_line(S4_CPUNO, M6800_IRQ_LINE, CLEAR_LINE);
+    pia_set_input_ca1(S4_PIA0, 0);
+    pia_set_input_cb1(S4_PIA0, 0);
+  }
+}
+
+static int s4_irq(void) {
+  s4_irqline(1);
+  timer_set(TIME_IN_CYCLES(32,0),S4_CPUNO,s4_irqline);
+  return 0;
+}
 
 /*********************/
 /*DIPS SWITCHES?     */
@@ -90,15 +107,7 @@ static READ_HANDLER(s4_dips_r) {
 /************/
 /* SWITCHES */
 /************/
-static READ_HANDLER(s4_diagsw1_r) { /* ADVANCE SWITCH - (CA1)*/
-  return activecpu_get_reg(M6800_IRQ_STATE) ? core_getSw(S4_SWADVANCE) : 0;
-}
-static READ_HANDLER(s4_diagsw2_r) { /* AUTO/MANUAL SWITCH - (CB1)*/
-  return activecpu_get_reg(M6800_IRQ_STATE) ? core_getSw(S4_SWUPDN) : 0;
-}
-static READ_HANDLER(s4_entersw_r) { /* Enter */
-  return core_getSw(S4_ENTER);
-}
+static READ_HANDLER(s4_entersw_r) { return core_getSw(S4_ENTER); }
 /* SWITCH MATRIX */
 static READ_HANDLER(s4_swrow_r) { return core_getSwCol(s4locals.swCol); }
 static WRITE_HANDLER(s4_swcol_w) { s4locals.swCol = data; }
@@ -184,7 +193,7 @@ static const struct pia6821_interface s4_pia[] = {{
 		  7,8,16 = (Status)5,6,(2&3)
 		  9-14 = (P2&4)1-6
 */
- /* i : A/B,CA1/B1,CA2/B2 */ s4_dips_r, 0, s4_diagsw1_r, s4_diagsw2_r, s4_entersw_r, 0,
+ /* i : A/B,CA1/B1,CA2/B2 */ s4_dips_r, 0, 0,0, s4_entersw_r, 0,
  /* o : A/B,CA2/B2        */ s4_pa_w, s4_alpha_w, 0, s4_specsol6_w,
  /* irq: A/B              */ 0, 0
 },{
@@ -231,10 +240,6 @@ PIA IV:
   /* o : A/B,CA2/B2        */ s4_sol1_8_w, s4_sol9_16_w,s4_specsol5_w, s4_gameon_w,
   /* irq: A/B              */ 0, 0
 }};
-
-static int s4_irq(void) {
-  cpu_set_irq_line(0, M6800_IRQ_LINE, PULSE_LINE); return 0;
-}
 
 static int s4_vblank(void) {
   /*-------------------------------
@@ -283,10 +288,6 @@ static void s4_updSw(int *inports) {
   /*-- Diagnostic buttons on CPU board --*/
   cpu_set_nmi_line(0, core_getSw(S4_SWCPUDIAG) ? ASSERT_LINE : CLEAR_LINE);
   sndbrd_0_diag(core_getSw(S4_SWSOUNDDIAG));
-
-  /*-- coin door switches --*/
-  pia_set_input_ca1(S4_PIA0, core_getSw(S4_SWADVANCE));
-  pia_set_input_cb1(S4_PIA0, core_getSw(S4_SWUPDN));
 
   /* Show Status of Auto/Manual Switch */
   core_textOutf(40, 30, BLACK, core_getSw(S4_SWUPDN) ? "Auto  " : "Manual");

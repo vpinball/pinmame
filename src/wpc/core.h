@@ -73,10 +73,14 @@
 /* strange but there are no way to define IMP and TOG with key without using BITX */
 #define COREPORT_BIT(mask, name, key) \
    PORT_BITX(mask,IP_ACTIVE_HIGH,IPT_BUTTON1,name,key,IP_JOY_NONE)
+#define COREPORT_BITINV(mask, name, key) \
+   PORT_BITX(mask,IP_ACTIVE_LOW,IPT_BUTTON1,name,key,IP_JOY_NONE)
 #define COREPORT_BITIMP(mask, name, key) \
    PORT_BITX(mask,IP_ACTIVE_HIGH,IPT_BUTTON1 | IPF_IMPULSE | (1<<8),name,key,IP_JOY_NONE)
 #define COREPORT_BITTOG(mask, name, key) \
    PORT_BITX(mask,IP_ACTIVE_HIGH,IPT_BUTTON1 | IPF_TOGGLE,name,key,IP_JOY_NONE)
+#define COREPORT_BITTOGINV(mask, name, key) \
+   PORT_BITX(mask,IP_ACTIVE_LOW,IPT_BUTTON1 | IPF_TOGGLE,name,key,IP_JOY_NONE)
 #define COREPORT_DIPNAME(mask,default,name) \
    PORT_DIPNAME(mask,default,name)
 #define COREPORT_DIPSET(mask,name) \

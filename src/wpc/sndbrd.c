@@ -34,53 +34,61 @@ void sndbrd_init(int brdNo, int brdType, int cpuNo, UINT8 *romRegion,
 }
 
 void sndbrd_exit(int board) {
-  if (coreGlobals.soundEn && intf[board].brdIntf && intf[board].brdIntf->exit)
-    intf[board].brdIntf->exit(board);
+  const struct sndbrdIntf *b = intf[board].brdIntf;
+  if (b && (coreGlobals.soundEn || (b->flags & SNDBRD_NOTSOUND)) && b->exit)
+    b->exit(board);
   memset(&intf[board],0,sizeof(intf[0]));
 }
 void sndbrd_diag(int board, int button) {
-  if (coreGlobals.soundEn && intf[board].brdIntf && intf[board].brdIntf->diag)
-    intf[board].brdIntf->diag(button);
+  const struct sndbrdIntf *b = intf[board].brdIntf;
+  if (b && (coreGlobals.soundEn || (b->flags & SNDBRD_NOTSOUND)) && b->diag)
+    b->diag(button);
 }
 
-WRITE_HANDLER(sndbrd_data_w) {
-  if (coreGlobals.soundEn && intf[offset].brdIntf && intf[offset].brdIntf->data_w) {
-    if (intf[offset].brdIntf->flags & SNDBRD_NODATASYNC)
-      intf[offset].brdIntf->data_w(offset, data);
+void sndbrd_data_w(int board, int data) {
+  const struct sndbrdIntf *b = intf[board].brdIntf;
+  if (b && (coreGlobals.soundEn || (b->flags & SNDBRD_NOTSOUND)) && b->data_w) {
+    if (b->flags & SNDBRD_NODATASYNC)
+      b->data_w(board, data);
     else
-      sndbrd_sync_w(intf[offset].brdIntf->data_w, offset, data);
+      sndbrd_sync_w(b->data_w, board, data);
   }
 }
-READ_HANDLER(sndbrd_data_r) {
-  return (coreGlobals.soundEn && intf[offset].brdIntf && intf[offset].brdIntf->data_r) ?
-         intf[offset].brdIntf->data_r(offset) : 0;
+int sndbrd_data_r(int board) {
+  const struct sndbrdIntf *b = intf[board].brdIntf;
+  if (b && (coreGlobals.soundEn || (b->flags & SNDBRD_NOTSOUND)) && b->data_r)
+    return b->data_r(board);
+  return 0;
 }
-WRITE_HANDLER(sndbrd_ctrl_w) {
-  if (coreGlobals.soundEn && intf[offset].brdIntf && intf[offset].brdIntf->ctrl_w) {
-    if (intf[offset].brdIntf->flags & SNDBRD_NOCTRLSYNC)
-      intf[offset].brdIntf->ctrl_w(offset, data);
+void sndbrd_ctrl_w(int board, int data) {
+  const struct sndbrdIntf *b = intf[board].brdIntf;
+  if (b && (coreGlobals.soundEn || (b->flags & SNDBRD_NOTSOUND)) && b->ctrl_w) {
+    if (b->flags & SNDBRD_NOCTRLSYNC)
+      b->ctrl_w(board, data);
     else
-      sndbrd_sync_w(intf[offset].brdIntf->ctrl_w, offset, data);
+      sndbrd_sync_w(b->ctrl_w, board, data);
   }
 }
-READ_HANDLER(sndbrd_ctrl_r) {
-  return (coreGlobals.soundEn && intf[offset].brdIntf && intf[offset].brdIntf->ctrl_r) ?
-         intf[offset].brdIntf->ctrl_r(offset) : 0;
+int sndbrd_ctrl_r(int board) {
+  const struct sndbrdIntf *b = intf[board].brdIntf;
+  if (b && (coreGlobals.soundEn || (b->flags & SNDBRD_NOTSOUND)) && b->ctrl_r)
+    return b->ctrl_r(board);
+  return 0;
 }
-WRITE_HANDLER(sndbrd_ctrl_cb) {
-  if (intf[offset].ctrl_cb) {
-    if (intf[offset].brdIntf && (intf[offset].brdIntf->flags & SNDBRD_NOCBSYNC))
-      intf[offset].ctrl_cb(offset, data);
+void sndbrd_ctrl_cb(int board, int data) {
+  if (intf[board].ctrl_cb) {
+    if (intf[board].brdIntf && (intf[board].brdIntf->flags & SNDBRD_NOCBSYNC))
+      intf[board].ctrl_cb(board, data);
     else
-      sndbrd_sync_w(intf[offset].ctrl_cb, offset, data);
+      sndbrd_sync_w(intf[board].ctrl_cb, board, data);
   }
 }
-WRITE_HANDLER(sndbrd_data_cb) {
-  if (intf[offset].data_cb) {
-    if (intf[offset].brdIntf && (intf[offset].brdIntf->flags & SNDBRD_NOCBSYNC))
-      intf[offset].data_cb(offset, data);
+void sndbrd_data_cb(int board, int data) {
+  if (intf[board].data_cb) {
+    if (intf[board].brdIntf && (intf[board].brdIntf->flags & SNDBRD_NOCBSYNC))
+      intf[board].data_cb(board, data);
     else
-      sndbrd_sync_w(intf[offset].data_cb, offset, data);
+      sndbrd_sync_w(intf[board].data_cb, board, data);
   }
 }
 

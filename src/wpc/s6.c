@@ -79,19 +79,33 @@ static struct {
   int    diagnosticLed;
   int    swCol;
   int    ssEn;
-  int    mainIrq;
+  int    piaIrq;
   int    ca20,a0;
 } s6locals;
 static data8_t *s6_CMOS;
 
 static void s6_nvram(void *file, int write);
-static void s6_piaIrq(int state);
-
-static READ_HANDLER(s6_pia0ca1_r) {
-  return activecpu_get_reg(M6800_IRQ_STATE) && core_getSw(S6_SWADVANCE);
+static void s6_irqline(int state) {
+  if (state) {
+    cpu_set_irq_line(S6_CPUNO, M6808_IRQ_LINE, ASSERT_LINE);
+    pia_set_input_ca1(S6_PIA0, core_getSw(S6_SWADVANCE));
+    pia_set_input_cb1(S6_PIA0, core_getSw(S6_SWUPDN));
+  }
+  else if (!s6locals.piaIrq) {
+    cpu_set_irq_line(S6_CPUNO, M6808_IRQ_LINE, CLEAR_LINE);
+    pia_set_input_ca1(S6_PIA0, 0);
+    pia_set_input_cb1(S6_PIA0, 0);
+  }
 }
-static READ_HANDLER(s6_pia0cb1_r) {
-  return activecpu_get_reg(M6800_IRQ_STATE) && core_getSw(S6_SWUPDN);
+
+static void s6_piaIrq(int state) {
+  s6_irqline(s6locals.piaIrq = state);
+}
+
+static int s6_irq(void) {
+  s6_irqline(1);
+  timer_set(TIME_IN_CYCLES(32,S6_CPUNO),0,s6_irqline);
+  return 0;
 }
 
 /*-- Dips: alphapos selects one 4 bank --*/
@@ -173,7 +187,7 @@ static const struct pia6821_interface s6_pia[] = {
   i  CB1:    Diagnostic Switch - On interrupt: Auto/Manual Switch
   i  CA2:    Read Master Command Enter Switch
   o  CB2:    Special Solenoid #6 */
- /* in  : A/B,CA1/B1,CA2/B2 */ s6_dips_r, 0, s6_pia0ca1_r, s6_pia0cb1_r, 0, 0,
+ /* in  : A/B,CA1/B1,CA2/B2 */ s6_dips_r, 0, 0,0, 0, 0,
  /* out : A/B,CA2/B2        */ s6_pa_w, s6_alpha_w, s6_pia0ca2_w, s6_specsol6_w,
  /* irq : A/B               */ s6_piaIrq, s6_piaIrq
 },{/*PIA 2 - Switch Matrix
@@ -206,17 +220,6 @@ static const struct pia6821_interface s6_pia[] = {
  /* out : A/B,CA2/B2        */ s6_sol1_8_w, s6_sol9_16_w,s6_specsol5_w, s6_gameon_w,
  /* irq : A/B               */ s6_piaIrq, s6_piaIrq
 }};
-
-static void s6_piaIrq(int state) {
-  s6locals.mainIrq = state;
-  cpu_set_irq_line(0, M6808_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
-}
-
-static int s6_irq(void) {
-  if (s6locals.mainIrq == 0) /* Don't send IRQ if already active */
-    cpu_set_irq_line(0, M6808_IRQ_LINE, HOLD_LINE);
-  return 0;
-}
 
 static int s6_vblank(void) {
   /*-------------------------------
@@ -266,9 +269,6 @@ static void s6_updSw(int *inports) {
   cpu_set_nmi_line(0, core_getSw(S6_SWCPUDIAG) ? ASSERT_LINE : CLEAR_LINE);
   sndbrd_0_diag(core_getSw(S6_SWSOUNDDIAG));
 
-  /*-- coin door switches --*/
-  pia_set_input_ca1(S6_PIA0, core_getSw(S6_SWADVANCE));
-  pia_set_input_cb1(S6_PIA0, core_getSw(S6_SWUPDN));
   /* Show Status of Auto/Manual Switch */
   core_textOutf(40, 30, BLACK, core_getSw(S6_SWUPDN) ? "Auto  " : "Manual");
 }

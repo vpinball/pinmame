@@ -38,8 +38,8 @@
     COREPORT_BITDEF(  0x0020, IPT_COIN3,          KEYCODE_3) \
     COREPORT_BIT(     0x0040, "Slam Tilt",        KEYCODE_HOME)  \
     /* These are put in switch column 0 */ \
-    COREPORT_BIT(     0x0100, "Black Button",     KEYCODE_8) \
-    COREPORT_BITTOG(  0x0200, "Green Button",     KEYCODE_7)
+    COREPORT_BIT(      0x0100, "Black Button",     KEYCODE_8) \
+    COREPORT_BITTOGINV(0x0200, "Green Button",     KEYCODE_7)
 
 #define DE_COMPORTS2 \
   PORT_START /* 0 */ \
@@ -53,7 +53,7 @@
     COREPORT_BIT(     0x0040, "Slam Tilt",        KEYCODE_HOME)  \
     /* These are put in switch column 0 */ \
     COREPORT_BIT(     0x0100, "Black Button",     KEYCODE_8) \
-    COREPORT_BIT(     0x0200, "Green Button",     KEYCODE_7) \
+    COREPORT_BITINV(  0x0200, "Green Button",     KEYCODE_7) \
 
 
 /*-- Standard input ports --*/

@@ -62,16 +62,29 @@ static struct {
   int    swCol;
   int    ssEn; /* Special solenoids and flippers enabled ? */
   int    sndCmd, extSol; /* external sound board cmd */
-  int    mainIrq;
+  int    piaIrq;
 } s11locals;
 
-static void s11_piaMainIrq(int state) {
-  s11locals.mainIrq = state;
-  cpu_set_irq_line(0, M6808_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
+static void s11_irqline(int state) {
+  if (state) {
+    cpu_set_irq_line(0, M6808_IRQ_LINE, ASSERT_LINE);
+    pia_set_input_ca1(S11_PIA2, core_getSw(S11_SWADVANCE));
+    pia_set_input_cb1(S11_PIA2, core_getSw(S11_SWUPDN));
+  }
+  else if (!s11locals.piaIrq) {
+    cpu_set_irq_line(0, M6808_IRQ_LINE, CLEAR_LINE);
+    pia_set_input_ca1(S11_PIA2, 0);
+    pia_set_input_cb1(S11_PIA2, 0);
+  }
 }
+
+static void s11_piaMainIrq(int state) {
+  s11_irqline(s11locals.piaIrq = state);
+}
+
 static int s11_irq(void) {
-  if (s11locals.mainIrq == 0) /* Don't send IRQ if already active */
-    cpu_set_irq_line(0, M6808_IRQ_LINE, HOLD_LINE);
+  s11_irqline(1);
+  timer_set(TIME_IN_CYCLES(32,0),0,s11_irqline);
   return 0;
 }
 
@@ -181,13 +194,11 @@ static WRITE_HANDLER(pia3b_w) {
   }
 }
 static READ_HANDLER(pia3b_r) {
-  int data = 0;
   if (core_gameData->gen & GEN_DEDMD32)
-    data = (sndbrd_0_data_r(0) ? 0x80 : 0x00) | (sndbrd_0_ctrl_r(0)<<3);
+    return (sndbrd_0_data_r(0) ? 0x80 : 0x00) | (sndbrd_0_ctrl_r(0)<<3);
   else if (core_gameData->gen & GEN_DEDMD64)
-    data = (sndbrd_0_data_r(0) ? 0x80 : 0x00);
-  DBGLOG(("DMDstatus=%x\n",data));
-  return data;
+    return sndbrd_0_data_r(0) ? 0x80 : 0x00;
+  return 0;
 }
 
 static WRITE_HANDLER(pia2ca2_w) {
@@ -203,17 +214,11 @@ static WRITE_HANDLER(pia2cb2_w) {
 
 static READ_HANDLER(pia5a_r) {
   if (core_gameData->gen & GEN_DEDMD64)
-    { int data = sndbrd_0_ctrl_r(0)<<3; DBGLOG(("status = %x\n",data)); return data;}
+    return sndbrd_0_ctrl_r(0);
   else if (core_gameData->gen & GEN_DEDMD16)
     return (sndbrd_0_data_r(0) ? 0x80 : 0x00) | (sndbrd_0_ctrl_r(0)<<1);
   return 0;
 }
-
-/*--------------------
-/  Diagnostic buttons
-/---------------------*/
-static READ_HANDLER (pia2ca1_r) { return activecpu_get_reg(M6808_IRQ_STATE) ? core_getSw(S11_SWADVANCE) : 0; }
-static READ_HANDLER (pia2cb1_r) { return activecpu_get_reg(M6808_IRQ_STATE) ? core_getSw(S11_SWUPDN)    : 0; }
 
 /*------------
 /  Solenoids
@@ -314,7 +319,7 @@ static struct pia6821_interface s11_pia[] = {
  /* CB1       (I) Diagnostic Up/dn */
  /* CA2       Comma 3+4 */
  /* CB2       Comma 1+2 */
- /* in  : A/B,CA/B1,CA/B2 */ pia2a_r, 0, pia2ca1_r, pia2cb1_r, 0, 0,
+ /* in  : A/B,CA/B1,CA/B2 */ pia2a_r, 0, 0,0, 0, 0,
  /* out : A/B,CA/B2       */ pia2a_w, pia2b_w, pia2ca2_w, pia2cb2_w,
  /* irq : A/B             */ s11_piaMainIrq, s11_piaMainIrq
 },{ /* PIA 3 (2c00) */
@@ -358,8 +363,10 @@ static void s11_updSw(int *inports) {
   sndbrd_0_diag(core_getSw(S11_SWSOUNDDIAG));
   if ((core_gameData->hw.gameSpecific1 & S11_MUXSW2) && core_gameData->sxx.muxSol)
     core_setSw(2, core_getSol(core_gameData->sxx.muxSol));
-  pia_set_input_ca1(S11_PIA2, core_getSw(S11_SWADVANCE));
-  pia_set_input_cb1(S11_PIA2, core_getSw(S11_SWUPDN));
+//  if (core_getSw(S11_SWADVANCE)) pia_set_input_ca1(S11_PIA2, 1);
+//  if (core_getSw(S11_SWUPDN))    pia_set_input_cb1(S11_PIA2, 1);
+//  pia_set_input_ca1(S11_PIA2, core_getSw(S11_SWADVANCE));
+//  pia_set_input_cb1(S11_PIA2, core_getSw(S11_SWUPDN));
 }
 
 // convert lamp and switch numbers
