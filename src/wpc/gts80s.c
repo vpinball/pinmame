@@ -112,7 +112,7 @@ static void GTS80S_Update(int num, INT16 *buffer, int length)
 {
 	double dActClock, dInterval, dCurrentClock;
 	int i;
-
+		
 	dCurrentClock = GTS80S_locals.clock[0];
 
 	dActClock = timer_get_time();
@@ -232,7 +232,7 @@ WRITE_HANDLER(riot3a_w) { logerror("riot3a_w: 0x%02x\n", data);}
 /* Switch settings, test switch and NMI */
 READ_HANDLER(riot3b_r)  {
 	// 0x40: test switch SW1
-	return (votrax_status_r()?0x80:0x80) | 0x40 | (GTS80SS_locals.dips^0x3f);
+	return (votrax_status_r()?0x80:0x00) | 0x40 | (GTS80SS_locals.dips^0x3f);
 }
 
 WRITE_HANDLER(riot3b_w) { logerror("riot3b_w: 0x%02x\n", data);}
@@ -353,7 +353,8 @@ MEMORY_WRITE_START(GTS80SS_writemem)
 { 0x5000, 0x5fff, ext_board_2_w},
 { 0x6000, 0x6fff, ext_board_3_w},
 { 0x7000, 0x7fff, MWA_ROM},
-{ 0x8000, 0xffff, MWA_ROM},
+{ 0x8000, 0xfdff, MWA_ROM},
+{ 0xff00, 0xffff, MWA_ROM},
 MEMORY_END
 
 WRITE_HANDLER(gts80ss_data_w)
