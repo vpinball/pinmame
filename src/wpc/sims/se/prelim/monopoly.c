@@ -54,6 +54,8 @@ extern struct {
  ------------------------*/
 static struct {
   int flipperPos;
+  int flipperDir;
+  int flipperSpeed;
 } locals;
 
 /*--------------------------
@@ -388,7 +390,20 @@ static WRITE_HANDLER(monopoly_w) {
   }
   coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & mask) | sols;
   selocals.solenoids |= sols;
-  if (offset == 3) monopoly_handleMech(data);
+  if (offset == 3) {
+    locals.flipperDir = ((data & 0x04) >> 1) - 1; // so +1 for cw, -1 for ccw
+	if (data & 0x01) { // increase flipper speed if set
+      if (locals.flipperSpeed < 4) locals.flipperSpeed++;
+    } else { // decrease flipper speed if not set
+      if (locals.flipperSpeed) locals.flipperSpeed--;
+    }
+    locals.flipperPos += locals.flipperDir * locals.flipperSpeed;
+    if (locals.flipperPos < 0) locals.flipperPos += 5000;
+    if (locals.flipperPos > 4999) locals.flipperPos -= 5000;
+#ifndef VPINMAME // must be disabled, as the switch is set by script in VPM
+    core_setSw(30, locals.flipperPos < 33);
+#endif
+  }
 }
 
 /*---------------
@@ -400,21 +415,17 @@ static void init_monopoly(void) {
 }
 
 static void monopoly_drawMech(BMTYPE **line) {
-  core_textOutf(30,  0,BLACK,"WtrWks Flipper:%4d", monopoly_getMech(0));
+  core_textOutf(30,  0,BLACK,"WaterWorks Flipper");
+  core_textOutf(30, 10,BLACK,"pos:%4d, speed:%2d", monopoly_getMech(0), monopoly_getMech(1));
 }
 
 static void monopoly_handleMech(int mech) {
-  if (mech & 1) {
-    locals.flipperPos += ((mech & 0x04) >> 1) - 1;
-    if (locals.flipperPos < 0) locals.flipperPos = 999;
-    if (locals.flipperPos > 999) locals.flipperPos = 0;
-  }
-  core_setSw(30, locals.flipperPos < 16 || locals.flipperPos > 984);
 }
 
 static int monopoly_getMech(int mechNo){
   switch (mechNo) {
-    case 0: return locals.flipperPos;
+    case 0: return locals.flipperPos / 5;
+    case 1: return locals.flipperDir * locals.flipperSpeed;
   }
   return 0;
 }
