@@ -195,6 +195,10 @@
 #define BYVP_SWCPUDIAG    -6	//SW Col 0 - Switch #2
 #define BYVP_SWSOUNDDIAG  -5	//SW Col 0 - Switch #3
 #define BYVP_SWVIDEODIAG  -4	//SW Col 0 - Switch #4
+#define BYVP_SWJOYRIGHT   -3	//SW Col 0 - Switch #5
+#define BYVP_SWJOYLEFT    -2	//SW Col 0 - Switch #6
+#define BYVP_SWJOYDOWN	  -1	//SW Col 0 - Switch #7
+#define BYVP_SWJOYUP	  -0	//SW Col 0 - Switch #8
 
 /*-------------------------
 / Machine driver constants
