@@ -266,6 +266,8 @@ INLINE int wnd_extra_left(void)
 INLINE int get_aligned_window_pos(int x)
 {
 	// get a DC for the screen
+
+#ifndef PINMAME
 	HDC dc = GetDC(NULL);
 	if (dc)
 	{
@@ -282,6 +284,7 @@ INLINE int get_aligned_window_pos(int x)
 		// release the DC
 		ReleaseDC(NULL, dc);
 	}
+#endif
 	return x;
 }
 
