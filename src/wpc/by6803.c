@@ -264,11 +264,12 @@ static void by6803_updSw(int *inports) {
 (out) PA7 = J2-2 = SEG DATA G
 (out) PB0-3: Momentary Solenoid												(SAME AS BALLY MPU35 Except no sound data)
 (out) PB4-7: Continuous Solenoid											(SAME AS BALLY MPU35)
+(out) PB4:   Switch Strobe 5 (only when JW9 installed)
 CA1 = N/A
 CB1 = N/A
 CA2 = N/A
 (out) CB2 = Solenoid Select, 0=SOL1-8,1=SOL9-16								(SAME AS BALLY MPU35 Except no sound data)
-IRQ:	 Wired to Main 6803 CPU IRQ.
+IRQ:  NOT? Wired to Main 6803 CPU IRQ.
 */
 static struct pia6821_interface piaIntf[] = {{
 /* I:  A/B,CA1/B1,CA2/B2 */  0, pia0b_r, 0,0, 0,0,
@@ -277,7 +278,7 @@ static struct pia6821_interface piaIntf[] = {{
 },{
 /* I:  A/B,CA1/B1,CA2/B2 */  0,0, 0,0, 0,0,
 /* O:  A/B,CA2/B2        */  pia1a_w,pia1b_w,0,pia1cb2_w,
-/* IRQ: A/B              */  piaIrq,piaIrq
+/* IRQ: A/B              */  0,0
 }};
 
 static int by6803_irq(void) {
@@ -299,9 +300,14 @@ static core_tData by6803Data = {
 static void by6803_zeroCross(int data) {
   /*- toggle zero/detection circuit-*/
   int state = locals.phase_a;
-  pia_set_input_cb1(0, 0); pia_set_input_cb1(0, 1);
+
   /*toggle phase_a*/
   locals.phase_a = !locals.phase_a;
+
+  /*set phase b - opposite of phase a*/
+  pia_set_input_cb1(0,!locals.phase_a);
+  //pia_set_input_cb1(0, 0); pia_set_input_cb1(0, 1);
+
   /*set 6803 P20 line*/
   cpu_set_irq_line(0, M6800_TIN_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
@@ -371,9 +377,10 @@ static READ_HANDLER(port1_r) {
 }
 
 //Read Phase A Status? (Not sure if this is used)
+//JW7 (PB3) should not be set, which breaks the gnd connection, so we set the line high.
 static READ_HANDLER(port2_r) { 
-	int data = locals.phase_a;
-	logerror("port 2 read: %x\n",data);
+	int data = locals.phase_a | 0x08;
+	mlogerror("%x: port 2 read: %x\n",cpu_getpreviouspc(),data);
 	return data;
 }
 
