@@ -56,8 +56,6 @@
  *
  *		  Timing needs to be implemented via MAME timers
  *
- *		  Need to implement proper Read/Modify/Write support
- *
  *****************************************************************************/
 
 #include <stdio.h>
@@ -105,9 +103,8 @@ typedef struct {
 	UINT16	ppc;			//previous pc
 	UINT16	pc;				//current pc
 	UINT16	subtype;		//specific version of the cpu, ie 8031, or 8051 for example
-	UINT8   executing;		//Flag to determine if an instruction is executing (might be needed for proper port operation)
 	UINT8	cur_irq;		//Holds value of any current IRQ being serviced
-	int		rwm;			//Signals that the current instruction is a read/write/modify instruction
+	UINT8	rwm;			//Signals that the current instruction is a read/write/modify instruction
 
 	//SFR Registers			(Note: Appear in order as they do in memory)
 	UINT8	po;				//Port 0
@@ -395,7 +392,6 @@ static UINT8 i8051_win_layout[] = {
 #define PPC 	i8051.ppc
 #define PC		i8051.pc
 #define TYPE	i8051.subtype
-#define EXEC	i8051.executing
 #define RWM		i8051.rwm
 
 //SFR Registers
@@ -460,7 +456,7 @@ void i8051_init(void)
 	state_save_register_UINT16("i8051", cpu, "PPC",       &i8051.ppc,    1);
 	state_save_register_UINT16("i8051", cpu, "PC",        &i8051.pc,     1);
 	state_save_register_UINT16("i8051", cpu, "SUBTYPE",   &i8051.subtype,1);
-	state_save_register_UINT8 ("i8051", cpu, "EXEC",      &i8051.executing ,1);
+	state_save_register_UINT8 ("i8051", cpu, "RWM",       &i8051.rwm ,1);
 	state_save_register_UINT8 ("i8051", cpu, "CUR_IRQ",   &i8051.cur_irq ,1);
 	//SFR Registers	
 	state_save_register_UINT8 ("i8051", cpu, "PO",        &i8051.po,     1);
@@ -569,9 +565,6 @@ int i8051_execute(int cycles)
 
 		PC += 1;
 		i8051_icount -= (i8051_cycles[op]);
-
-		//Flag Execution
-		EXEC = 1;
 
 		switch( op )
 		{
@@ -1240,8 +1233,6 @@ int i8051_execute(int cycles)
 			default:
 				illegal();
 		}
-		//Flag Execution
-		EXEC = 0;
 
 		//Update Timer (if any timers are running)
 		if(R_TCON & 0x50)
@@ -1568,13 +1559,12 @@ static WRITE_HANDLER(sfr_write)
 	{
 		case P0:
 			R_P0 = data;
-			if (EXEC)	OUT(0,data);	//If executing an instruction, write to the port
+			OUT(0,data);
 			break;
 
 		case SP: 
-//			if(offset > 0x127)
-//				LOG(("i8051 #%d: attemping to write value to SP past 128 bytes at 0x%04x\n", cpu_getactivecpu(), PC));
-//			else
+			if(offset > 0xff)
+				LOG(("i8051 #%d: attemping to write value to SP past 256 bytes at 0x%04x\n", cpu_getactivecpu(), PC));
 			R_SP = data&0xff; //keep sp w/in 256 bytes
 			break;
 
@@ -1590,7 +1580,7 @@ static WRITE_HANDLER(sfr_write)
 
 		case P1:
 			R_P1 = data;
-			if (EXEC)	OUT(1,data);	//If executing an instruction, write to the port
+			OUT(1,data);
 			break;
 
 		case SCON:
@@ -1611,14 +1601,14 @@ static WRITE_HANDLER(sfr_write)
 
 		case P2:
 			R_P2 = data;
-			if (EXEC)	OUT(2,data);	//If executing an instruction, write to the port
+			OUT(2,data);
 			break;
 
 		case IE:		R_IE  = data; break;
 
 		case P3:
 			R_P3 = data;
-			if (EXEC)	OUT(3,data);	//If executing an instruction, write to the port
+			OUT(3,data);
 			break;
 
 		case IP:		R_IP  = data; break;
@@ -1655,9 +1645,11 @@ static READ_HANDLER(sfr_read)
 {
 	switch (offset)
 	{
-		case P0:		
-			return R_P0;					//Read directly from port latch
-			//return IN(0);					//Read from actual port
+		case P0:	
+			if(RWM)
+				return R_P0;					//Read directly from port latch
+			else
+				return IN(0);					//Read from actual port
 		case SP:		return R_SP;
 		case DPL:		return R_DPL;
 		case DPH:		return R_DPH;
@@ -1669,17 +1661,23 @@ static READ_HANDLER(sfr_read)
 		case TH0:		return R_TH0;
 		case TH1:		return R_TH1;
 		case P1:		
-			return R_P1;					//Read directly from port latch
-			//return IN(1);					//Read from actual port
+			if(RWM)
+				return R_P1;					//Read directly from port latch
+			else
+				return IN(1);					//Read from actual port
 		case SCON:		return R_SCON;
 		case SBUF:		return R_SBUF;
 		case P2:		
-			return R_P2;					//Read directly from port latch
-			//return IN(2);					//Read from actual port
+			if(RWM)
+				return R_P2;					//Read directly from port latch
+			else
+				return IN(2);					//Read from actual port
 		case IE:		return R_IE;
-		case P3:		
-			return R_P3;					//Read directly from port latch
-			//return IN(3);					//Read from actual port
+		case P3:
+			if(RWM)
+				return R_P3;					//Read directly from port latch
+			else
+				return IN(3);					//Read from actual port
 		case IP:		return R_IP;
 	//8052 Only registers
 	#if (HAS_I8052 || HAS_I8752)
@@ -1751,12 +1749,12 @@ INLINE void push_pc()
 	tmpSP++;									// ""
 	SFR_W(SP,tmpSP);							// ""
     if (tmpSP == R_SP)							//Ensure it was able to write to new stack location
-		IRAM_IW(tmpSP, (PC & 0xff));			//Store low byte of PC to Internal Ram
+		IRAM_IW(tmpSP, (PC & 0xff));			//Store low byte of PC to Internal Ram (Use IRAM_IW to store stack above 128 bytes)
 	tmpSP = R_SP;								//Increment Stack Pointer
 	tmpSP++;									// ""
 	SFR_W(SP,tmpSP);							// ""
 	if (tmpSP == R_SP)							//Ensure it was able to write to new stack location
-		IRAM_IW(tmpSP, ( (PC & 0xff00) >> 8));	//Store hi byte of PC to next address in Internal Ram
+		IRAM_IW(tmpSP, ( (PC & 0xff00) >> 8));	//Store hi byte of PC to next address in Internal Ram (Use IRAM_IW to store stack above 128 bytes)
 }
 
 /*Pop the current PC off the stack and into the pc*/
@@ -1839,14 +1837,12 @@ static WRITE_HANDLER(bit_address_w)
 	bit_pos = offset & 0x7;
 	data = (data & 0x1) << bit_pos;
 	mask = ~(1 << bit_pos) & 0xff;
-	//rwinst = TRUE;
 	result = IRAM_R(word) & mask;	//Do not use IRAM_IR
-	//rwinst = FALSE;
 	result = result | data;
 	IRAM_W(word, result);			//Do not use IRAM_IW
 }
 
-/* The following to handlers are used by the MAME Debugger Memory Window...
+/* The following two handlers are used by the MAME Debugger Memory Window...
    By keeping these functions separate from the internally used IRAM_W/IRAM_R functions,
    we can manipulate and display internal memory in the debugger memory window in a layout
    that is not necessarily how the real memory is.. this will be especially useful for
@@ -1986,13 +1982,12 @@ void i8752_reset (void *param)
 	SFR_W(TL1, 0);
 	SFR_W(TL0, 0);
 	//8052 Only registers
-	#if (HAS_I8052 || HAS_I8752)
-		SFR_W(T2CON, 0);
-		SFR_W(RCAP2L, 0);
-		SFR_W(RCAP2H, 0);
-		SFR_W(TL2, 0);
-		SFR_W(TH2, 0);
-	#endif
+	SFR_W(T2CON, 0);
+	SFR_W(RCAP2L, 0);
+	SFR_W(RCAP2H, 0);
+	SFR_W(TL2, 0);
+	SFR_W(TH2, 0);
+
 	/* set the port configurations to all 1's */
 	SFR_W(P3, 0xff);
 	SFR_W(P2, 0xff);
@@ -2043,7 +2038,7 @@ unsigned i8752_dasm(char *buffer, unsigned pc)
 #endif
 }
 
-/* The following to handlers are used by the MAME Debugger Memory Window...
+/* The following two handlers are used by the MAME Debugger Memory Window...
    By keeping these functions separate from the internally used IRAM_W/IRAM_R functions,
    we can manipulate and display internal memory in the debugger memory window in a layout
    that is not necessarily how the real memory is.. this will be especially useful for
