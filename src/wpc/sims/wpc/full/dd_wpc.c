@@ -39,6 +39,7 @@ ASDFGH  Reflex Targets
 #include "wpc.h"
 #include "sim.h"
 #include "wpcsam.h"
+#include "s11csoun.h"
 
 /*------------------
 /  Local functions
@@ -389,15 +390,16 @@ static wpc_tSamSolMap dd_samsolmap[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(dd,p7,"dude_u6.p7",0x020000,0xb6c35b98)
-// uses system 11 sound
-
+WPC_ROMSTART(dd,p7,  "dude_u6.p7",0x020000,0xb6c35b98)
+S11CS_SOUNDROMWPC000("dude_u4.l1",  0x3eeef714,
+                     "dude_u19.l1", 0xdc7b985b,
+                     "dude_u20.l1", 0xa83d53dd)
 WPC_ROMEND
 
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF(dd,p7,"Dr. Dude (P-7)",1990,"Bally",wpc_mAlpha,GAME_NO_SOUND)
+CORE_GAMEDEF(dd,p7,"Dr. Dude (P-7)",1990,"Bally",wpc_mAlpha1S,0)
 
 /*-----------------------
 / Simulation Definitions
