@@ -27,6 +27,36 @@
 ; Note that DCS requires an even number of bytes in the command.
 ;-----------------------------------------------------------------------
 
+bbb109:
+; da 04 07 0f 0000
+; da = command
+;    04 = ??
+;       07 = don't loop?
+;       06 = loop
+;          0f = volume?
+;             0000 = sample #
+:da0407010059: Main Music
+:da020301: Stop sound?
+:da04070f0035: Silence
+:da04070f0000: Startup Sound
+:da04060f0000: Startup Sound (Repeating)
+:da04070f0001: Whistle
+:da04070f0002: Menu Click
+:da04070f0003: Pop
+:da040726004a: No Credit
+:da04070f00fe: See the guy upstairs
+:da04070f00fd: Dig It
+:da04070f00fb: Let's Go Baby
+:da04070f00fa: Oh My
+:da04070f0202: Shake It Baby
+:da04070f0203: Yeah
+:da04070f0291: Foursome
+:da04070f0298: Upstairs
+:da0406010059: Main Music (Repeating)
+:da0407010069: Tube Tune
+:da040701006a: This is what I call Fourplay
+:da04070100a4: Hey Pal there's a cover charge here
+
 ; Common for all DCS games.
 ; Additions made 01/21/01 by Dorsola (dorsola@descent2.com)
 ; -------------
