@@ -17,7 +17,7 @@
 		IO:      DMA for earlier games,
 		         PIAs for later ones.
 		DISPLAY: 6-digit or 7-digit 7-segment panels with direct segment access
-		SOUND:	 TI76489 @ 2 MHz for Brave Team
+		SOUND:	 TI76489 @ 2 or 4 MHz for Brave Team
 				 AY8910 @ 2 MHz for Canasta86,
 		         MSM5205 @ 384 kHz on Z80 CPU for later games.
  ************************************************************************************************/
@@ -131,6 +131,7 @@ struct SN76496interface INDER_ti76489Int = {
 	{ 2000000 },	/* base clock 2 MHz (or 4 MHz?) */
 	{ 75 }	/* volume */
 };
+static WRITE_HANDLER(ti76489_0_w)	{ SN76496_0_w(0, core_revbyte(data)); }
 
 /*--------------------------------------------------
 / Canasta 86: Using a AY8910 chip, no extra ROMs.
@@ -140,9 +141,8 @@ struct AY8910interface INDER_ay8910Int = {
 	2000000,	/* 2 MHz */
 	{ 30 },		/* Volume */
 };
-static WRITE_HANDLER(ay8910_0_ctrl_w)   { AY8910Write(0,0,data); logerror("sound ctrl_w:%02x\n", data); }
-static WRITE_HANDLER(ay8910_0_data_w)   { AY8910Write(0,1,data); logerror("sound data_w:%02x\n", data); }
-static WRITE_HANDLER(ay8910_0_common_w) { AY8910Write(0,0,~data); AY8910Write(0,1,data); logerror("sound w:%02x\n", data); }
+static WRITE_HANDLER(ay8910_0_ctrl_w)   { AY8910Write(0,0,data); }
+static WRITE_HANDLER(ay8910_0_data_w)   { AY8910Write(0,1,data); }
 static READ_HANDLER (ay8910_0_r)        { return AY8910Read(0); }
 
 /*-----------------------------------------------
@@ -308,10 +308,6 @@ static MEMORY_WRITE_START(INDER1_writemem)
   {0x4b02,0x4b02, ay8910_0_data_w },
 MEMORY_END
 
-static WRITE_HANDLER(sound_old_w) {
-  SN76496_0_w(0, core_revbyte(data));
-}
-
 static MEMORY_READ_START(INDER0_readmem)
   {0x0000,0x1fff, MRA_ROM},
   {0x4000,0x43ff, MRA_RAM},
@@ -328,7 +324,7 @@ static MEMORY_WRITE_START(INDER0_writemem)
   {0x4806,0x480a, sw_w},
   {0x4900,0x4900, sol_w},
   {0x4901,0x4907, lamp_w},
-  {0x4b00,0x4b00, sound_old_w},
+  {0x4b00,0x4b00, ti76489_0_w},
 MEMORY_END
 
 static MACHINE_INIT(INDER) {
