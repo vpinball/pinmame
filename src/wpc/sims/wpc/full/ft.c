@@ -450,6 +450,10 @@ WPC_ROMSTART(ft,l5,"fshtl_5.rom",0x80000,CRC(88847775) SHA1(ab323980b914678e1e3c
 WPCS_SOUNDROM8xx("ft_u18.l1",CRC(48d2760a) SHA1(701b0bbb68f99332493ee1276e5a1cef5c85d499))
 WPC_ROMEND
 
+WPC_ROMSTART(ft,l3,"ft-l3.u6",0x80000,CRC(db1d3b4d) SHA1(a38afa42014140b566bc8923db9025ebdee16068))
+WPCS_SOUNDROM8xx("ft_u18.l1",CRC(48d2760a) SHA1(701b0bbb68f99332493ee1276e5a1cef5c85d499))
+WPC_ROMEND
+
 WPC_ROMSTART(ft,l4,"fshtl_4.rom",0x80000,CRC(beb147b6) SHA1(543eea2e14283485221c1a28c3fdf3c87df8acc7))
 WPCS_SOUNDROM8xx("ft_u18.l1",CRC(48d2760a) SHA1(701b0bbb68f99332493ee1276e5a1cef5c85d499))
 WPC_ROMEND
@@ -462,6 +466,7 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(ft,l5,"Fish Tales (L-5)",1992, "Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(ft,l3,l5,"Fish Tales (L-3)",1992, "Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(ft,l4,l5,"Fish Tales (L-4)",1992, "Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(ft,p4,l5,"Fish Tales (P-4)",1992, "Williams",wpc_mFliptronS,0)
 
