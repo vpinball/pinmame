@@ -57,7 +57,7 @@
 #include "alvgs.h"
 #include "alvgdmd.h"
 
-#if VERBOSE
+#ifdef VERBOSE
 #define LOG(x)	logerror x
 #else
 #define LOG(x)

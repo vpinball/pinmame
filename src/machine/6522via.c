@@ -27,7 +27,7 @@
 
 //#define TRACE_VIA
 
-#if VERBOSE
+#ifdef VERBOSE
 #define LOG(x)	LOG( x
 #else
 #define LOG(x)
