@@ -664,6 +664,66 @@ SOURCE=.\src\cpu\i8085\i8085cpu.h
 SOURCE=.\src\cpu\i8085\i8085daa.h
 # End Source File
 # End Group
+# Begin Group "I86"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\cpu\i86\ea.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i86\host.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i86\i86.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i86\i86.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i86\i86dasm.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i86\i86intf.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i86\modrm.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i86\table86.h
+# End Source File
+# End Group
+# Begin Group "I4004"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\cpu\i4004\4004dasm.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i4004\i4004.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i4004\i4004.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i4004\i4004cpu.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i4004\i4004daa.h
+# End Source File
+# End Group
 # End Group
 # Begin Group "Machine"
 
@@ -3697,49 +3757,14 @@ SOURCE=src\wpc\gen.h
 # Begin Source File
 
 SOURCE=.\src\wpc\gp.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-# PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Exclude_From_Build 1
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\gp.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Exclude_From_Build 1
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\gpgames.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-# PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Exclude_From_Build 1
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -3971,6 +3996,18 @@ SOURCE=src\wpc\mech.h
 
 !ENDIF 
 
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\midgames.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\midway.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\midway.h
 # End Source File
 # Begin Source File
 
