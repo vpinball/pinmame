@@ -69,7 +69,7 @@ DRIVERNV(vegasgp)       //Vegas (August 1979)
 DRIVERNV(coneyis)       //Coney Island! (December 1979)
 DRIVERNV(lizard)        //Lizard (July 1980)
 DRIVERNV(gwarfare)      //Global Warfare (June 1981)
-                        //Mike Bossy - The Scoring Machine (January 1982)
+DRIVERNV(mbossy)        //Mike Bossy - The Scoring Machine (January 1982)
 DRIVERNV(suprnova)      //Super Nova (May 1982)
 DRIVERNV(sshootr2)      //Sharp Shooter II (November 1983)
 DRIVERNV(attila)        //Attila the Hun (April 1984)
@@ -130,38 +130,39 @@ DRIVERNV(empsback)      //Star Wars - The Empire Strike Back
 // ---------------------
 // TAITO GAMES BELOW
 // ---------------------
+                        //??/?? Criterium 77
+                        //??/?? Voley Ball
                         //??/?? Apache!
                         //??/?? Football
-                        //??/?? Gork
-                        //??/?? Lunelle
-                        //??/?? Ogar
-DRIVERNV(polar   )      //??/?? Polar Explorer
-                        //??/?? Roman Victory
-DRIVERNV(snake   )      //??/?? Snake Machine
-                        //??/?? Space Patrol
-DRIVERNV(stest   )      //??/?? Speed Test
-                        //??/?? Voley Ball
-                        //??/?? Hot Ball (B Eight Ball, 01/77)
-                        //??/?? Vegas / Lady Luck (B Mata Hari, 09/77)
-DRIVERNV(obaoba  )      //??/?? Oba Oba (B Playboy, 10/77)
+                        //??/79 Hot Ball (B Eight Ball, 01/77)
+                        //??/79 Shock (W Flash, 01/79)
                         //??/?? Sultan (G Sinbad, 05/78)
-                        //??/?? Shock (W Flash, 01/79)
-DRIVERNV(meteort )      //??/?? Meteor (S Meteor, 09/79)
-DRIVERNV(drakor  )      //??/?? Drakor (W Gorgar, 11/79)
-DRIVERNV(zarza   )      //??/?? Zarza (B Xenon, 11/79)
-DRIVERNV(cosmic  )      //??/?? Cosmic (S Galaxy, 01/80)
-DRIVERNV(fireact )      //??/?? Fire Action (W Firepower, 02/80)
-DRIVERNV(vortex  )      //??/?? Vortex (W Blackout, 06/80)
-DRIVERNV(sureshot)      //??/?? Sure Shot (B Eight Ball Deluxe, 09/80)
-DRIVERNV(hawkman )		//??/?? Hawkman (B Fathom, 12/80)
+DRIVERNV(obaoba  )      //??/80 Oba Oba (B Playboy, 10/77)
+DRIVERNV(drakor  )      //??/80 Drakor (W Gorgar, 11/79)
+                        //??/?? Roman Victory
+                        //??/?? Space Patrol
+DRIVERNV(meteort )      //??/80 Meteor (S Meteor, 09/79)
+                        //??/81 Fire Action (W Firepower, 02/80)
 DRIVERNV(cavnegro)      //??/81 Cavaleiro Negro (W Black Knight, 11/80)
-DRIVERNV(gemini  )      //??/?? Gemini 2000 (B Centaur, 02/81)
-DRIVERNV(titan   )      //??/?? Titan (W Barracora, 09/81)
+DRIVERNV(sureshot)      //??/81 Sure Shot (B Eight Ball Deluxe, 09/80)
+                        //??/81 Vegas / Lady Luck (B Mata Hari, 09/77)
+DRIVERNV(cosmic  )      //??/81 Cosmic (S Galaxy, 01/80)
+DRIVERNV(gemini  )      //??/82 Gemini 2000 (B Centaur, 02/81)
+DRIVERNV(vortex  )      //??/82 Vortex (W Blackout, 06/80)
+DRIVERNV(titan   )      //??/82 Titan (W Barracora, 09/81)
+DRIVERNV(zarza   )      //??/82 Zarza (B Xenon, 11/79)
 DRIVERNV(sharkt  )      //??/82 Shark
-                        //??/?? Mr. Black (W Defender, 12/82)
-DRIVERNV(rally   )      //??/83 Rally (B Skateball, 04/80)
-                        //??/?? Fire Action De Luxe (W Firepower II, 08/83)
+DRIVERNV(hawkman )		//??/82 Hawkman (B Fathom, 12/80)
+DRIVERNV(stest   )      //??/82 Speed Test
+                        //??/82 Lunelle (W Alien Poker, 10/80)
+DRIVERNV(rally   )      //??/82 Rally (B Skateball, 04/80)
+DRIVERNV(snake   )      //??/82 Snake Machine
+                        //??/82 Gork
+                        //??/8? Ogar
+                        //??/84 Mr. Black (W Defender, 12/82)
+DRIVERNV(fireactd)      //??/8? Fire Action De Luxe (W Firepower II, 08/83)
 DRIVERNV(sshuttle)      //??/85 Space Shuttle (W Space Shuttle, 12/84)
+DRIVERNV(polar   )      //??/8? Polar Explorer
 
 // ---------------------
 // BALLY GAMES BELOW
