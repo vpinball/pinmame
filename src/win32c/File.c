@@ -243,15 +243,15 @@ int File_faccess(const char *newfilename, int filetype)
         }
         break;
 
-/*	case OSD_FILETYPE_WAVEFILE:
+	case OSD_FILETYPE_WAVEFILE:
         dirname = g_pControllerPathes->szSampleDirs;
         {
-			sprintf(name, "%s/%s.wav", dirname, filename);
+			sprintf(name, "%s/%s", dirname, filename);
             if (stat(name, &file_stat) == 0)
 				return 1;
         }
         break;
-*/
+
     case OSD_FILETYPE_HIGHSCORE:
     case OSD_FILETYPE_NVRAM:
     case OSD_FILETYPE_CONFIG:
@@ -486,7 +486,6 @@ static void *File_fopen(const char *gamename,const char *filename,int filetype,i
 			found = TRUE;
         break;
 
-/*
 	case OSD_FILETYPE_WAVEFILE:
 		if ( !write )
 			return 0;
@@ -498,11 +497,11 @@ static void *File_fopen(const char *gamename,const char *filename,int filetype,i
             if (stat(dirname, &s) != 0)
                 mkdir(dirname);
         }
-		sprintf(name, "%s/%s.wav", dirname, filename);
+		sprintf(name, "%s/%s", dirname, filename);
 		if ((mf->fptr = fopen(name, "wb")) != NULL)
 			found = TRUE;
         break;
-*/
+
     case OSD_FILETYPE_INPUTLOG:
     case OSD_FILETYPE_FLYER:
     case OSD_FILETYPE_HIGHSCORE_DB:
