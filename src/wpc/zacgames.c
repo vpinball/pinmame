@@ -335,7 +335,7 @@ ZAC_ROMSTART1820(mexico,	"mex86_1.lgc",CRC(60d559b1) SHA1(1097f32dd0c89b6e3653a6
 ZAC_SOUNDROM_e2f4(			"mex86_e.snd",CRC(a985e8db) SHA1(11f91179fa1d46c1c83cdd4fbcf8ebdfd2a41f3f),
 							"mex86_f.snd",CRC(301c2b63) SHA1(df4a4cb48d28d53c3728066d3e3fa9eac17c78c5))
 ZAC_ROMEND
-CORE_GAMEDEFNV(mexico,"Mexico '86",1986,"Zaccaria",mZAC2FS,SOUNDFLAG)
+CORE_GAMEDEFNV(mexico,"Mexico '86",1986,"Zaccaria",mZAC2DS,SOUNDFLAG)
 
 /*--------------------------------
 / Zankor (12/86)
