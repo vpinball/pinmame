@@ -36,8 +36,7 @@ public:
 	STDMETHOD(put_Value)(/*[in]*/ BSTR sName, /*[in]*/ VARIANT newVal);
 	STDMETHOD(Clear)();
 	STDMETHOD(ShowSettingsDlg)(/* [in,defaultvalue(0)] */ long hParentWnd);
-	STDMETHOD(DisplayPositionX)(/*[in]*/ VARIANT newVal, /* [in,defaultvalue(0)] */ long hParentWnd);
-	STDMETHOD(DisplayPositionY)(/*[in]*/ VARIANT newVal, /* [in,defaultvalue(0)] */ long hParentWnd);
+	STDMETHOD(SetDisplayPosition)(/*[in]*/ VARIANT newValX, /*[in]*/ VARIANT newValY,/* [in,defaultvalue(0)] */ long hWnd);
 	void Init(IGame * pGame);
 
 private:
