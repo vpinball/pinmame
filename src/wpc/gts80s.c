@@ -47,6 +47,8 @@ struct {
 
 	int   dips;
 	int	IRQEnabled;
+
+	UINT8 riot6530_0a_value;
 } GTS80S_locals;
 
 WRITE_HANDLER(gts80s_data_w)
@@ -61,15 +63,18 @@ WRITE_HANDLER(gts80s_data_w)
 		cpu_set_irq_line(GTS80S_locals.boardData.cpuNo, M6502_INT_IRQ, PULSE_LINE);
 }
 
+UINT8 temp;
+
 /* configured as output, shouldn't be read at all */
 READ_HANDLER(riot6530_0a_r)  {
-	logerror("riot6530_0a_r\n");
-	return 0x00;
+//	logerror("riot6530_0a_r\n");
+	return GTS80S_locals.riot6530_0a_value;
 }
 
 /* digital sound data output */
 WRITE_HANDLER(riot6530_0a_w) {
 //	logerror("riot6530_0a_w: 0x%02x\n", data);
+	GTS80S_locals.riot6530_0a_value = data;
 
 	if ( GTS80S_locals.buf_pos>=GTS80S_BUFFER_SIZE )
 		return;
@@ -94,19 +99,32 @@ struct riot6530_interface GTS80S_riot6530_intf = {
  /* irq :      */ NULL
 };
 
-
 /*--------------
 /  Memory map
 /---------------*/
 MEMORY_READ_START(GTS80S_readmem)
-{ 0x0000, 0x01ff, MRA_RAM},
+{ 0x0000, 0x003f, MRA_BANK1}, // 64 Byte RIOT Memory
+{ 0x0040, 0x007f, MRA_BANK2}, // 64 Byte RIOT memory, repeated, base will be set in the init function
+{ 0x0080, 0x00bf, MRA_BANK3}, // 64 Byte RIOT memory, repeated, base will be set in the init function
+{ 0x00c0, 0x00ff, MRA_BANK4}, // 64 Byte RIOT memory, repeated, base will be set in the init function
+{ 0x0000, 0x013f, MRA_BANK5}, // 64 Byte RIOT memory, repeated, base will be set in the init function
+{ 0x0040, 0x017f, MRA_BANK6}, // 64 Byte RIOT memory, repeated, base will be set in the init function
+{ 0x0080, 0x01bf, MRA_BANK7}, // 64 Byte RIOT memory, repeated, base will be set in the init function
+{ 0x00c0, 0x01ff, MRA_BANK8}, // 64 Byte RIOT memory, repeated, base will be set in the init function
 { 0x0200, 0x02ff, riot6530_0_r},
 { 0x0400, 0x0fff, MRA_ROM},
 { 0xf800, 0xffff, MRA_ROM},
 MEMORY_END
 
 MEMORY_WRITE_START(GTS80S_writemem)
-{ 0x0000, 0x01ff, MWA_RAM},
+{ 0x0000, 0x003f, MWA_BANK1}, // 64 Byte RIOT Memory
+{ 0x0040, 0x007f, MWA_BANK2}, // 64 Byte RIOT memory, repeated, base will be set in the init function
+{ 0x0080, 0x00bf, MWA_BANK3}, // 64 Byte RIOT memory, repeated, base will be set in the init function
+{ 0x00c0, 0x00ff, MWA_BANK4}, // 64 Byte RIOT memory, repeated, base will be set in the init function
+{ 0x0000, 0x013f, MWA_BANK5}, // 64 Byte RIOT memory, repeated, base will be set in the init function
+{ 0x0040, 0x017f, MWA_BANK6}, // 64 Byte RIOT memory, repeated, base will be set in the init function
+{ 0x0080, 0x01bf, MWA_BANK7}, // 64 Byte RIOT memory, repeated, base will be set in the init function
+{ 0x00c0, 0x01ff, MWA_BANK8}, // 64 Byte RIOT memory, repeated, base will be set in the init function
 { 0x0200, 0x02ff, riot6530_0_w},
 { 0x0400, 0x0fff, MWA_ROM},
 { 0xf800, 0xffff, MWA_ROM},
@@ -168,6 +186,15 @@ void gts80s_init(struct sndbrdData *brdData) {
 			*pMem++ = (*pMem&0x0f);
 	}
 
+	/* 
+		Init RAM, i.e. set base of all bank to the base of bank 1, 
+		the memory repeats ever 64 bytes; haven't found another way to 
+		tell the MAME core this situation; the problem is that the cpu *will*
+		execute code in this area, so a usually read/writer handler fails
+	*/
+	for (i=1;i<=8;i++)
+		cpu_setbank(i, memory_region(STATIC_BANK1));
+
 	/* init the RIOT */
     riot6530_config(0, &GTS80S_riot6530_intf);
 	riot6530_set_clock(0, Machine->drv->cpu[GTS80S_locals.boardData.cpuNo].cpu_clock);
@@ -181,6 +208,11 @@ void gts80s_exit(int boardNo)
 {
 	riot6530_unconfig();
 }
+
+/* only in at the moment for the pinmame startup information */
+struct CustomSound_interface GTS80S_customsoundinterface = {
+	NULL, NULL, NULL
+};
 
 const struct sndbrdIntf gts80sIntf = {
 	gts80s_init, gts80s_exit, NULL, gts80s_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
@@ -218,24 +250,12 @@ void GTS80SS_nmi(int state)
 		cpu_set_irq_line(GTS80SS_locals.boardData.cpuNo, M6502_INT_NMI, PULSE_LINE);
 }
 
-UINT8 RIOT6532_3_RAM[256];
-
-READ_HANDLER( riot6532_3_ram_r )
-{
-    return RIOT6532_3_RAM[offset&0x7f];
-}
-
-WRITE_HANDLER( riot6532_3_ram_w )
-{
-	RIOT6532_3_RAM[offset&0x7f] = data;
-}
-
 WRITE_HANDLER(riot3a_w) { logerror("riot3a_w: 0x%02x\n", data);}
 
 /* Switch settings, test switch and NMI */
 READ_HANDLER(riot3b_r)  {
 	// 0x40: test switch SW1
-	return (votrax_status_r()?0x80:0x00) | 0x40 | (GTS80SS_locals.dips^0x3f);
+	return (votraxsc01_status_r(0)?0x80:0x00) | 0x40 | (GTS80SS_locals.dips^0x3f);
 }
 
 WRITE_HANDLER(riot3b_w) { logerror("riot3b_w: 0x%02x\n", data);}
@@ -243,6 +263,7 @@ WRITE_HANDLER(riot3b_w) { logerror("riot3b_w: 0x%02x\n", data);}
 /* D/A converters */
 WRITE_HANDLER(da1_latch_w) {
 //	logerror("da1_w: 0x%02x\n", data);
+
 	if ( GTS80SS_locals.buf_pos>=GTS80SS_BUFFER_SIZE )
 		return;
 
@@ -286,7 +307,7 @@ WRITE_HANDLER(ext_board_3_w) {
 
 /* voice synt latch */
 WRITE_HANDLER(vs_latch_w) {
-	votrax_w(data^0xff);
+	votraxsc01_w(0, data^0xff);
 }
 
 struct riot6532_interface GTS80SS_riot6532_intf = {
@@ -300,7 +321,10 @@ struct riot6532_interface GTS80SS_riot6532_intf = {
 /  Memory map
 /---------------*/
 MEMORY_READ_START(GTS80SS_readmem)
-{ 0x0000, 0x01ff, riot6532_3_ram_r},
+{ 0x0000, 0x007f, MRA_BANK1}, // 128 Byte RIOT memory
+{ 0x0080, 0x00ff, MRA_BANK2}, // 128 Byte RIOT memory, repeated, base will be set in the init function
+{ 0x0100, 0x017f, MRA_BANK3}, // 128 Byte RIOT memory, repeated, base will be set in the init function
+{ 0x0180, 0x01ff, MRA_BANK4}, // 128 Byte RIOT memory, repeated, base will be set in the init function
 { 0x0200, 0x027f, riot6532_3_r},
 { 0x4000, 0x4fff, ext_board_1_r},
 { 0x5000, 0x5fff, ext_board_2_r},
@@ -310,7 +334,10 @@ MEMORY_READ_START(GTS80SS_readmem)
 MEMORY_END
 
 MEMORY_WRITE_START(GTS80SS_writemem)
-{ 0x0000, 0x01ff, riot6532_3_ram_w},
+{ 0x0000, 0x007f, MWA_BANK1}, // 128 Byte RIOT memory
+{ 0x0080, 0x00ff, MWA_BANK2}, // 128 Byte RIOT memory, repeated, base will be set in the init function
+{ 0x0100, 0x017f, MWA_BANK3}, // 128 Byte RIOT memory, repeated, base will be set in the init function
+{ 0x0180, 0x01ff, MWA_BANK4}, // 128 Byte RIOT memory, repeated, base will be set in the init function
 { 0x0200, 0x027f, riot6532_3_w},
 { 0x1000, 0x1fff, da1_latch_w},
 { 0x2000, 0x2fff, vs_latch_w},
@@ -318,9 +345,7 @@ MEMORY_WRITE_START(GTS80SS_writemem)
 { 0x4000, 0x4fff, ext_board_1_w},
 { 0x5000, 0x5fff, ext_board_2_w},
 { 0x6000, 0x6fff, ext_board_3_w},
-{ 0x7000, 0x7fff, MWA_ROM},
-{ 0x8000, 0xfdff, MWA_ROM},
-{ 0xff00, 0xffff, MWA_ROM},
+{ 0x7000, 0xffff, MWA_NOP}, // the soundboard does fake writes to the ROM area (used for a delay function)
 MEMORY_END
 
 WRITE_HANDLER(gts80ss_data_w)
@@ -378,10 +403,15 @@ void gts80ss_init(struct sndbrdData *brdData) {
 /*		| ((core_getDip(4)&0x80) ? 0x08:0x00)    S8: not used (goes to the expansion board, pin J1-I7)*/
     ;
 
+	/* 
+		Init RAM, i.e. set base of all banks to the base of bank 1, 
+		the memory repeats ever 128 bytes; haven't found another way to 
+		tell the MAME core this situation; the problem is that the cpu *may*
+		execute code in this area, so a usually read/writer handler fails
+	*/
+	for (i=1;i<=4;i++)
+		cpu_setbank(i, memory_region(STATIC_BANK1));
 
-	/* init RAM */
-	memset(RIOT6532_3_RAM, 0x00, sizeof RIOT6532_3_RAM);
-	
 	/* init RIOT */
     riot6532_config(3, &GTS80SS_riot6532_intf);
 	riot6532_set_clock(3, Machine->drv->cpu[GTS80S_locals.boardData.cpuNo].cpu_clock);
@@ -396,9 +426,11 @@ void gts80ss_init(struct sndbrdData *brdData) {
 	GTS80SS_locals.stream = stream_init("SND DAC", 100, 11025, 0, GTS80_ss_Update); 
 	set_RC_filter(GTS80SS_locals.stream, 270000, 15000, 0, 10000);
 
+/*
 	votrax_set_busy_func(GTS80SS_nmi);
 	votrax_set_base_freqency(7000);
 	GTS80SS_nmi(0);
+*/
 }
 
 void gts80ss_exit(int boardNo)
@@ -408,6 +440,18 @@ void gts80ss_exit(int boardNo)
 		GTS80SS_locals.timer = 0;
 	}
 }
+
+/* only in at the moment for the pinmame startup information */
+struct CustomSound_interface GTS80SS_customsoundinterface = {
+	NULL, NULL, NULL
+};
+
+struct VOTRAXSC01interface GTS80SS_votrax_sc01_interface = {															
+	1,						/* 1 chip */
+	{ 100 },				/* master volume */
+	{ 7000 },				/* dynamically changing this is currently not supported */
+	{ &GTS80SS_nmi }		/* set NMI when busy signal get's low */
+};
 
 const struct sndbrdIntf gts80ssIntf = {
   gts80ss_init, gts80ss_exit, NULL, gts80ss_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC

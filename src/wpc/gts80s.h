@@ -42,6 +42,12 @@ extern const struct Memory_WriteAddress GTS80S_writemem[];
   ignore_interrupt, 0 \
 }
 
+extern struct CustomSound_interface GTS80S_customsoundinterface;
+
+#define GTS80S_SOUND \
+{ SOUND_CUSTOM, &GTS80SS_customsoundinterface }, \
+{ SOUND_SAMPLES, &samples_interface}
+
 /* Gottlieb System 80/80A Sound & Speech Board */
 
 /*-- Sound & Speeh Board, 2 X 2K Voice/Sound Roms --*/
@@ -61,8 +67,13 @@ extern const struct Memory_WriteAddress GTS80SS_writemem[];
   ignore_interrupt, 0 \
 }
 
+extern struct CustomSound_interface GTS80SS_customsoundinterface;
+extern struct VOTRAXSC01interface GTS80SS_votrax_sc01_interface;
+
 #define GTS80SS_SOUND \
-VOTRAXINTERFACE, SAMPLESINTERFACE
+{ SOUND_CUSTOM, &GTS80SS_customsoundinterface }, \
+{ SOUND_VOTRAXSC01,&GTS80SS_votrax_sc01_interface },\
+{ SOUND_SAMPLES, &samples_interface}
 
 /* Gottlieb System 80B Sound board Hardware Versions:
    -----------------------------------------
