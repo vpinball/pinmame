@@ -3567,7 +3567,15 @@ SOURCE=src\wpc\byvidpin.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\Capcom.c
+SOURCE=.\src\wpc\capcom.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\capcom.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\capgames.c
 # End Source File
 # Begin Source File
 
