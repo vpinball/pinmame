@@ -252,11 +252,17 @@ DCS_SOUNDROM3m("cgs2v1_1.rom",CRC(2b7637ae) SHA1(5b5d7214c632a506b986c892b39b135
                "cgs4v1_0.rom",CRC(2a1980e7) SHA1(0badf27c2b8bc7b0074dc5e606d64490470bc108))
 WPC_ROMEND
 
+WPC_ROMSTART(congo,20,"cong2_00.rom",0x80000,CRC(e1a256ac) SHA1(f1f7a1865b5a0220e2f2ef492059df158451ca5b))
+DCS_SOUNDROM3m("cgs2v1_1.rom",CRC(2b7637ae) SHA1(5b5d7214c632a506b986c892b39b1356b2909598),
+               "cgs3v1_0.rom",CRC(6cfd9fe0) SHA1(a76267f865c645648c8cb27aec2d05062a4a20b5),
+               "cgs4v1_0.rom",CRC(2a1980e7) SHA1(0badf27c2b8bc7b0074dc5e606d64490470bc108))
+WPC_ROMEND
 
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF (congo,21,"Congo (2.1)",1995,"Williams",wpc_m95S,0)
+CORE_CLONEDEF (congo,20,21,"Congo (2.0)",1995,"Williams",wpc_m95S,0)
 
 /*-----------------------
 / Simulation Definitions
