@@ -1,8 +1,8 @@
 **************************************************************************************
 		                       PinMAME
 		      (Pinball Multiple Arcade Machine Emulator)
-				     Version 1.21 
-			           (March 30, 2003)
+				     Version 1.?
+			           (October 31, 2003)
                                  http://www.pinmame.com
 **************************************************************************************
 
@@ -12,12 +12,12 @@ Latest Info
 
 What is it?
 -----------
-  PinMAME emulates the hardware found in many solid state pinball machines created from 
+  PinMAME emulates the hardware found in many solid state pinball machines created from
   the mid 1970's through 2003. Currently, the following pinball hardware is emulated:
 
   Williams/Bally WPC, Williams/Bally System 11, Williams System 9, Williams System 7,
-  Williams System 6, Williams System 4, Williams System 3, 
-  Data East AlphaNumeric System, Data East 128x16 DMD, Data East 128x32 DMD, 
+  Williams System 6, Williams System 4, Williams System 3,
+  Data East AlphaNumeric System, Data East 128x16 DMD, Data East 128x32 DMD,
   Data East/Sega 192x64 DMD, Sega/Stern Whitestar System, Stern MPU-100, Stern MPU-200,
   Bally MPU-17 & MPU-35, Bally Video/Pinball, Bally 6803,
   Gottlieb System 80, 80a, 80b, System 3, Hankin, Gameplan MPU-1 & MPU-2, Atari,
@@ -171,7 +171,9 @@ PinMAME Specific Command line switches
   -dmd_perc33 0-100 (Sets the Percentage to display a DMD Dot which is lit
                     at 33%, Default = 34%)
   -dmd_perc0  0-100 (Sets the Percentage to display a DMD Dot when NOT lit.
-
+  -dmd_antialias 0-100 (sets the dmd antialiasing intensity)
+  -dmd_only         (don't display lamp/switch/solenoid matrices)
+  -dmd_compact      (display dmd and led displays in a more compact format)
   (for more information on the settings above, see "Changing the Look of the DMD")
 
 
@@ -205,7 +207,7 @@ DIP settings
 Display
 -------
   The display shows the DMD or the Alphanumeric LEDs and optionally
-  (via the -[no]translucecy command line option) three matrices:
+  (via the -[no]dmd_only command line option) three matrices:
 
   Top:		Lamp Matrix
   Middle:	Switche Matrix
@@ -236,14 +238,14 @@ Changing the Look of the DMD
 
  Changing the Intensity of the DMD Dots:
 
-   The DMD uses 3 different levels of intensity (100%,66%,33%) to create
-   graphics on the display. 100% are dots that are fully lit, where as
-   66% & 33% will each be darker than the fully lit dot, by a certain
-   percentage.
+   The DMD uses 3 levels of intensity (100%,66%,33%) plus an "unlit" state
+   to create graphics on the display. 100% are dots that are fully lit,
+   where as 66%, 33%, 0% will each be darker than the fully lit dot,
+   by a certain percentage.
 
    You can control these percentages yourself to change the appearance
-   of the DMD. You can change the 2nd & 3rd intensities, using dmd_perc66
-   & dmd_perc33. You cannot change a fully lit dot's intensity. It must
+   of the DMD. You can change the intensities, using dmd_perc66, dmd_perc33
+   and dmd_perc0. You cannot change a fully lit dot's intensity. It must
    always be 100%.
 
    For example, to make the DMD Dots much closer in intensity, you could adjust
@@ -343,10 +345,10 @@ Accessing Williams/Bally WPC - Hidden Menu
 ------------------------------------------
 
   Did you know that all WPC Machines have a hidden menu?
-  Yes, it's true. To access it, you must press 'Enter' twice, so that you are
-  sitting at the main menu and B.Bookkeeping is flashing as the selected choice.
-  Now press all 4 buttons Escapte, Down, Up, and Enter (normally mapped to
-  keys 7,8,9,0) ALL AT THE SAME TIME!
+  Yes, it's true. To access it, you must leave the bookkeeping menu while
+  holding down 'up' [9] and 'down' [8] buttons. i.e. press 'Enter' [0] three
+  times, so that "B1. Main Audits" is flashing as the selected choice
+  Now hold down 'up' [9] and 'down' [8] and press 'escape' [7].
   If you did it correctly, you should see a new choice on the menu:
   EXEC LOCKUPS - B.1 01..... Using the normal Up/Down keys you can cycle through
   the other new choices...Try this on your real machine at home too!
