@@ -143,6 +143,7 @@
        ROM_LOAD(n1, 0x00000, 0x80000, chk1)
 
 extern void UpdateSoundLEDS(int num,int data);
+extern PINMAME_VIDEO_UPDATE(gts3_dmd128x32);
 
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(gts3_1a);

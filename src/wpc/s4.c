@@ -43,7 +43,7 @@ static data8_t *s4_CMOS;
 	   (14)(15)   (06)(97)
 */
 //Structure is: top, left, start, length, type
-const core_tLCDLayout s4_disp[] = {
+const struct core_dispLayout s4_disp[] = {
   // Player 1            Player 2
   {0, 0, 0,6,CORE_SEG7}, {0,18, 8,6,CORE_SEG7},
   // Player 3            Player 4
@@ -346,7 +346,6 @@ MACHINE_DRIVER_START(s4)
   MDRV_CPU_MEMORY(s4_readmem, s4_writemem)
   MDRV_CPU_VBLANK_INT(s4_vblank, 1)
   MDRV_CPU_PERIODIC_INT(s4_irq, S4_IRQFREQ)
-  MDRV_VIDEO_UPDATE(core_led)
   MDRV_NVRAM_HANDLER(s4)
   MDRV_DIPS(8+16)
   MDRV_SWITCH_UPDATE(s4)
