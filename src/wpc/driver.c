@@ -138,21 +138,20 @@ DRIVERNV(m_mpac  )      //BY35-872: 05/82 Mr. & Mrs. Pac-Man
 /*same as eballdlx*/    //BY35      10/82 Eight Ball Deluxe Limited Edition
 DRIVERNV(babypac )      //BY35-891  10/82 Baby Pac-Man
 DRIVERNV(bmx     )      //BY35-888: 11/82 BMX
-DRIVERNV(granslam)      //BY35-     01/83 Grand Slam
+DRIVERNV(granslam)      //BY35-1311:01/83 Grand Slam
 /*same as cenatur*/     //BY35      06/83 Centaur II
-DRIVERNV(goldball)      //BY35-     10/83 Gold Ball
-DRIVERNV(goldbalb)      //BY35-     03/04 Gold Ball (7-digit conversion)
-DRIVERNV(goldbaln)      //BY35-     10/83 Gold Ball (alternate)
-DRIVERNV(xsandos )      //BY35-     12/83 X's & O's
+DRIVERNV(goldball)      //BY35-1371:10/83 Gold Ball
+DRIVERNV(goldbalb)      //BY35:     03/04 Gold Ball (7-digit conversion)
+DRIVERNV(goldbaln)      //BY35-1371:10/83 Gold Ball (alternate)
+DRIVERNV(xsandos )      //BY35-1391:12/83 X's & O's
                         //??        ??/84 Mysterian
-DRIVERNV(granny )       //BY35-     01/84 Granny and the Gators
-DRIVERNV(kosteel )      //BY35-     05/84 Kings of Steel
-DRIVERNV(blakpyra)      //BY35-     07/84 Black Pyramid
-DRIVERNV(spyhuntr)      //BY35-     10/84 Spy Hunter
+DRIVERNV(granny )       //BY35-1369:01/84 Granny and the Gators
+DRIVERNV(kosteel )      //BY35-1390:05/84 Kings of Steel
+DRIVERNV(blakpyra)      //BY35-0A44 04/84 Black Pyramid
+DRIVERNV(spyhuntr)      //BY35-0A17:07/84 Spy Hunter
                         //??        ??/85 Hot Shotz
-DRIVERNV(fbclass )      //BY35-     02/85 Fireball Classic
-DRIVERNV(cybrnaut)      //BY35-     05/85 Cybernaut
-DRIVERNV(spacehaw)      //BY35-     05/85 Nuova Bell Italy Cybernaut Clone
+DRIVERNV(fbclass )      //BY35-0A40 10/84 Fireball Classic
+DRIVERNV(cybrnaut)      //BY35-0B42 02/85 Cybernaut
 //MPU-6803
 DRIVERNV(eballchp)      //6803-0B38: 09/85 Eight Ball Champ
 DRIVERNV(eballch2)      //                 Eight Ball Champ (cheap squeak)
@@ -164,13 +163,13 @@ DRIVERNV(blackblt)      //6803-0E52: 07/86 Black Belt
 DRIVERNV(specforc)      //6803-0E47: 08/86 Special Force
 DRIVERNV(strngsci)      //6803-0E35: 10/86 Strange Science
 DRIVERNV(cityslck)      //6803-0E79: 03/87 City Slicker
-DRIVERNV(hardbody)      //6803-0E94: 03/87 Hardbody
+DRIVERNV(hardbody)      //6803-0E94: 02/87 Hardbody
 DRIVERNV(hardbdyg)      //6803-0E94: 03/87 Hardbody (German)
 DRIVERNV(prtyanim)      //6803-0H01: 05/87 Party Animal
 DRIVERNV(hvymetal)      //6803-0H03: 08/87 Heavy Metal Meltdown
 DRIVERNV(dungdrag)      //6803-0H06: 10/87 Dungeons & Dragons
-DRIVERNV(esclwrld)      //6803-0H05: 01/88 Escape from the Lost World
-DRIVERNV(esclwrlg)      //6803-0H05: 01/88 Escape from the Lost World (German)
+DRIVERNV(esclwrld)      //6803-0H05: 12/87 Escape from the Lost World
+DRIVERNV(esclwrlg)      //6803-0H05: 12/87 Escape from the Lost World (German)
 DRIVERNV(black100)      //6803-0H07: 03/88 Blackwater 100
                         //??         06/88 Ramp Warrior (Became Truck Stop after Merger)
 //Williams Merger begins here.. but these are still under the Bally name
@@ -178,6 +177,12 @@ DRIVERNV(trucksp2)      //6803-2001: 11/88 Truck Stop (P-2)
 DRIVERNV(trucksp3)      //6803-2001: 12/88 Truck Stop (P-3)
 DRIVERNV(atlantis)      //6803-2006: 03/89 Atlantis
                         //??         05/89 Ice Castle
+
+// ------------------
+// (NUOVA) BELL GAMES
+// ------------------
+DRIVERNV(saturn2)       //BY35:     08/85 Saturn 2, Bally Spy Hunter Clone
+DRIVERNV(spacehaw)      //BY35:     04/86 Space Hawks, Bally Cybernaut Clone
 
 // ----------------
 // CAPCOM GAMES
