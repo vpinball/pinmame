@@ -896,7 +896,7 @@ static READ_HANDLER(port300r) {
 }
 /* joystick inports */
 static READ_HANDLER(port400r) {
-	return coreGlobals.swMatrix[0] >> 4;
+	return coreGlobals.swMatrix[0] & 0x0f;
 }
 /* set up game colors. 4 colors at a time only, out of 16 possible! */
 static WRITE_HANDLER(port50xw) {
