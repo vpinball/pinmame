@@ -330,7 +330,7 @@ static void dopr (char *buffer, size_t maxlen, const char *format, va_list args)
 	  fvalue = va_arg (args, double);
 	break;
       case 'c':
-	dopr_outch (buffer, &currlen, maxlen, va_arg (args, int));
+	dopr_outch (buffer, &currlen, maxlen, (char) va_arg (args, int));
 	break;
       case 's':
 	strvalue = va_arg (args, char *);
@@ -497,7 +497,7 @@ static void fmtint (char *buffer, size_t *currlen, size_t maxlen,
 
   /* Sign */
   if (signvalue)
-    dopr_outch (buffer, currlen, maxlen, signvalue);
+    dopr_outch (buffer, currlen, maxlen, (char) signvalue);
 
   /* Zeros */
   if (zpadlen > 0)
@@ -648,7 +648,7 @@ static void fmtfp (char *buffer, size_t *currlen, size_t maxlen,
   {
     if (signvalue)
     {
-      dopr_outch (buffer, currlen, maxlen, signvalue);
+      dopr_outch (buffer, currlen, maxlen, (char) signvalue);
       --padlen;
       signvalue = 0;
     }
@@ -664,7 +664,7 @@ static void fmtfp (char *buffer, size_t *currlen, size_t maxlen,
     --padlen;
   }
   if (signvalue)
-    dopr_outch (buffer, currlen, maxlen, signvalue);
+    dopr_outch (buffer, currlen, maxlen, (char) signvalue);
 
   while (iplace > 0)
     dopr_outch (buffer, currlen, maxlen, iconvert[--iplace]);
