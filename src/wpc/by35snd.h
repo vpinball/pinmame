@@ -1,5 +1,37 @@
 #ifndef INC_BY35SND
 #define INC_BY35SND
+
+/*Bally Sound Hardware Info:
+
+  Sound module -32 & -50 
+  ---------------------
+  Custom Chips
+
+  Sounds Plus -51
+  ---------------
+  M6802/M6808
+  AY8910 Sound Generator
+  ?NO DAC?
+
+  Sounds Plus -56, Vocalizer -57
+  ------------------------------
+  M6802/M6808
+  AY8910 Sound Generator
+  HC55516 DAC
+
+  Squalk N Talk -61
+  -------------
+  M6809 CPU
+  TMS5220 Speach Generator
+  AY8910 Sound Generator
+  DAC
+
+  Cheap Squeak  -45
+  ------------
+  M6803 CPU
+  DAC
+*/
+
 /* Squawk n Talk */
 extern const struct Memory_ReadAddress snt_readmem[];
 extern const struct Memory_WriteAddress snt_writemem[];
@@ -125,6 +157,31 @@ extern struct AY8910interface  sp_ay8910Int;
     ROM_LOAD(n5, 0xc000, 0x1000, chk5) \
     ROM_LOAD(n6, 0xd000, 0x1000, chk6) \
     ROM_LOAD(n7, 0xe000, 0x1000, chk7)
+
+/* Cheap Squeak -45 */
+extern const struct Memory_ReadAddress sp45_readmem[];
+extern const struct Memory_WriteAddress sp45_writemem[];
+extern const struct IO_ReadPort by35_45_readport[];
+extern const struct IO_WritePort by35_45_writeport[];
+
+#define SP45_SOUND { SOUND_DAC,     &snt_dacInt }
+
+#define SP45_SOUND_CPU { \
+  CPU_M6803 | CPU_AUDIO_CPU, 3580000/4,	/* .8 MHz */  			  \
+  sp45_readmem, sp45_writemem, by35_45_readport, by35_45_writeport, \
+  ignore_interrupt,1 \
+}
+
+#define BY35_SOUND45ROMx0(n2,chk2) \
+  SOUNDREGION(0x10000, BY35_MEMREG_S1CPU) \
+    ROM_LOAD(n2, 0xf000, 0x1000, chk2)
+
+#define BY35_SOUND45ROM00(n1,chk1,n2,chk2) \
+  SOUNDREGION(0x10000, BY35_MEMREG_S1CPU) \
+    ROM_LOAD(n2, 0xb000, 0x1000, chk2) \
+	ROM_RELOAD(  0xc000, 0x1000) \
+    ROM_LOAD(n1, 0xe000, 0x1000, chk1) \
+	ROM_RELOAD(  0xf000, 0x1000) 
 
 /* generic handler */
 void by35_soundInit(void);

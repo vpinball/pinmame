@@ -13,27 +13,7 @@ static void snt_cmd(int data);
 static void s32_cmd(int data);
 static void sp51_cmd(int data);
 static void sp56_cmd(int data);
-/*------ */
-void by35_soundInit(void) {
-  if (coreGlobals.soundEn) {
-    switch (core_gameData->gen) {
-      case GEN_BY35_32:
-      case GEN_BY35_50:
-        break;
-      case GEN_BY35_61:
-      case GEN_BY35_61B:
-      case GEN_BY35_81:
-        pia_config(2, PIA_STANDARD_ORDERING, &snt_pia[0]);
-        pia_config(3, PIA_STANDARD_ORDERING, &snt_pia[1]);
-        break;
-      case GEN_BY35_51:
-      case GEN_BY35_56:
-        pia_config(2, PIA_STANDARD_ORDERING, &sp_pia);
-        break;
-    }
-  }
-}
-void by35_soundExit(void) {}
+static void sp45_cmd(int data);
 
 /*-- note that the sound command includes the soundEnable (0x20) --*/
 WRITE_HANDLER(by35_soundCmd) {
@@ -50,6 +30,8 @@ WRITE_HANDLER(by35_soundCmd) {
         sp51_cmd(data); break;
       case GEN_BY35_56:
         sp56_cmd(data); break;
+      case GEN_BY35_45:
+        sp45_cmd(data); break;
     }
   }
 }
@@ -389,6 +371,60 @@ static void snt_5220Irq(int state) {
   pia_set_input_cb1(3, !state);
 }
 
+static void sp45_cmd(int data) {
+	snd_cmd_log(data);
+	splocals.currcmd = data;
+	/*set 6803 P20 line*/
+	cpu_set_irq_line(BY35_SCPU1NO, M6800_TIN_LINE, PULSE_LINE);
+}
+
+static READ_HANDLER(port1_r) { 
+	//int data = splocals.currcmd;
+	int data = 0;
+	//if(data)
+		logerror("port 1 read: %x\n",data);
+	return data;
+}
+static READ_HANDLER(port2_r) { 
+	//int data = 0;
+	int data = splocals.currcmd;
+	logerror("port 2 read: %x\n",data);
+	return data;
+}
+static WRITE_HANDLER(port1_w) { 
+	//logerror("port 1 write = %x\n",data);
+	DAC_0_data_w(0,data);
+}
+//Diagnostic LED?
+static WRITE_HANDLER(port2_w) {
+	logerror("port 2 write = %x\n",data);
+}
+
+/*------ */
+void by35_soundInit(void) {
+  if (coreGlobals.soundEn) {
+	memset(&s32locals, 0, sizeof(s32locals));
+	memset(&splocals, 0, sizeof(splocals));
+    switch (core_gameData->gen) {
+      case GEN_BY35_32:
+      case GEN_BY35_50:
+      case GEN_BY35_45:
+        break;
+      case GEN_BY35_61:
+      case GEN_BY35_61B:
+      case GEN_BY35_81:
+        pia_config(2, PIA_STANDARD_ORDERING, &snt_pia[0]);
+        pia_config(3, PIA_STANDARD_ORDERING, &snt_pia[1]);
+        break;
+      case GEN_BY35_51:
+      case GEN_BY35_56:
+        pia_config(2, PIA_STANDARD_ORDERING, &sp_pia);
+        break;
+    }
+  }
+}
+void by35_soundExit(void) {}
+
 MEMORY_READ_START(snt_readmem)
   { 0x0000, 0x007f, MRA_RAM },
   { 0x0080, 0x0083, pia_2_r },
@@ -404,4 +440,53 @@ MEMORY_WRITE_START(snt_writemem)
   { 0xc000, 0xffff, MWA_ROM },
 MEMORY_END
 
+/*
+  RES: FFFE-F
+  NMI: FFFC-D (Used) F6D8 On Black Pyramid
+  SWI: FFFA-B Software Interrupt (Not Used)
+  IRQ: FFF8-9 (Not Used)
+  ICF: FFF6-7 (Input Capture)~IRQ2 (Used) - F6EC On Black Pyramid
+  OCF: FFF4-5 (Output Compare)~IRQ2 (Not Used)
+  TOF: FFF2-3 (Timer Overflow)~IRQ2 (Not Used)
+  SCI: FFF0-1 (Input Capture)~IRQ2  (Not Used)
+*/
+/*-----------------------------------
+/  Memory map for Cheap Squeak board
+/------------------------------------*/
+/*
+NMI: = SW1?
+Port 1:
+(in) P10-17 = ?
+(out)P10-P17 = DAC Write
 
+Port 2:
+(in) P20 = Read Sound Latch?
+(in) P21 = Read Sound Latch?
+(in) P22 = Read Sound Latch?
+(in) P23 = Read Sound Latch?
+(out)P20 = Drives LED?
+(out)P21 = ?
+(out)P22 = ?
+(out)P23 = ?
+(out)P24 = ?
+*/
+MEMORY_READ_START(sp45_readmem)
+	{ 0x0000, 0x001f, m6803_internal_registers_r },
+	{ 0x0080, 0x00ff, MRA_RAM },	/*Internal 128K RAM*/
+	{ 0xb000, 0xdfff, MRA_ROM },
+	{ 0xe000, 0xffff, MRA_ROM },
+MEMORY_END
+MEMORY_WRITE_START(sp45_writemem)
+	{ 0x0000, 0x001f, m6803_internal_registers_w },
+	{ 0x0080, 0x00ff, MWA_RAM },	/*Internal 128K RAM*/
+	{ 0xb000, 0xdfff, MWA_ROM },
+	{ 0xe000, 0xffff, MWA_ROM },
+MEMORY_END
+PORT_READ_START( by35_45_readport )
+	{ M6803_PORT1, M6803_PORT1, port1_r },
+	{ M6803_PORT2, M6803_PORT2, port2_r },
+PORT_END
+PORT_WRITE_START( by35_45_writeport )
+	{ M6803_PORT1, M6803_PORT1, port1_w },
+	{ M6803_PORT2, M6803_PORT2, port2_w },
+PORT_END

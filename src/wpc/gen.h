@@ -36,22 +36,23 @@
 #define GEN_BY35_61B    U64(0x0002000000) /* Squawk'n'talk without AY8910 */
 #define GEN_BY35_81     U64(0x0004000000)
 #define GEN_BY35_54     U64(0x0008000000)
-#define GEN_BY35_56     U64(0x0010000000) // Sounds Plus
-#define GEN_STMPU100	U64(0x0020000000)
-#define GEN_STMPU200	U64(0x0040000000)
-#define GEN_S80		    U64(0x0080000000) /* Sound Board */
-#define GEN_S80SS	    U64(0x0100000000) /* Sound & Speech Board */
-#define GEN_S80B2K	    U64(0x0200000000) /* Sys80B, 2KROM */
-#define GEN_S80B4K	    U64(0x0400000000) /* Sys80B, 4KROM, slam switch is reversed */
-#define GEN_WS          U64(0x0800000000) /* Whitestar */
-#define GEN_WS_1        U64(0x1000000000) /* Whitestar with extra RAM */
-#define GEN_WS_2        U64(0x2000000000) /* Whitestar with extra DMD */
+#define GEN_BY35_56     U64(0x0010000000) /* Sounds Plus */
+#define GEN_BY35_45     U64(0x0020000000) /* Cheap Squeak */
+#define GEN_STMPU100	U64(0x0040000000) /* Stern MPU - 100*/
+#define GEN_STMPU200	U64(0x0080000000) /* Stern MPU - 200*/
+#define GEN_S80		    U64(0x0100000000) /* S80 - Sound Board */
+#define GEN_S80SS	    U64(0x0200000000) /* S80 - Sound & Speech Board */
+#define GEN_S80B2K	    U64(0x0400000000) /* Sys80B, 2KROM */
+#define GEN_S80B4K	    U64(0x0800000000) /* Sys80B, 4KROM, slam switch is reversed */
+#define GEN_WS          U64(0x1000000000) /* Whitestar */
+#define GEN_WS_1        U64(0x2000000000) /* Whitestar with extra RAM */
+#define GEN_WS_2        U64(0x4000000000) /* Whitestar with extra DMD */
 
 #define GEN_ALLWPC      U64(0x00000000ff)
 #define GEN_ALLS11      U64(0x0000007f00)
-#define GEN_ALLBY35     U64(0x001ff00000)
-#define GEN_ALLS80	U64(0x0780000000)
-#define GEN_ALLWS	U64(0x3800000000)
+#define GEN_ALLBY35     U64(0x003ff00000)
+#define GEN_ALLS80		U64(0x00F0000000)
+
 
 #endif /* INC_GEN */
 
