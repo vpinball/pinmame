@@ -205,12 +205,9 @@ static void riot_timeout(int which)
 {
 	struct riot6530 *p = riot + which;
 
-	if ( p->irq_state & RIOT_TIMERIRQ ) {
-		logerror("RIOT6530-%d: Timeout reached.\n", which);
+	if ( p->irq_state & RIOT_TIMERIRQ )
 		p->t = 0;
-	}
 	else {
-		logerror("RIOT6530-%d: Timer IRQ.\n", which);
 		timer_reset(p->t, V_CYCLES_TO_TIME(255));
 		p->time = timer_get_time();
 
