@@ -27,12 +27,18 @@
 ; Note that DCS requires an even number of bytes in the command.
 ;-----------------------------------------------------------------------
 
+stwr_103:
+:94:Yahoo
+:95:I got him
+:96:This is no cave
+:97:R2-D2 Beeping
+
 kpv106:
-:da0407010112: Trixy Death
-:da0407010178: Take a right loop
-:da0407010185: So you're the kid
-:da0407010008: Main Music
-:da040701003b: Cool groove
+:da0407010112:Trixy Death
+:da0407010178:Take a right loop
+:da0407010185:So you're the kid
+:da0407010008:Main Music
+:da040701003b:Cool groove
 
 bbb109:
 ; da 04 07 0f 0000
