@@ -745,11 +745,15 @@ static void OKIM6295_data_w(int num, int data)
 
 				/* determine the start/stop positions */
 				base = &voice->region_base[ okim6295_base[num][i] + okim6295_command[num] * 8];
-				start = ((base[0] << 16) + (base[1] << 8) + base[2]) & 0x3ffff;
-				stop  = ((base[3] << 16) + (base[4] << 8) + base[5]) & 0x3ffff;
+				if ((int)base < 0x400) { // avoid access violations
+					start = stop = 0x40000;
+				} else {
+	  				start = (base[0] << 16) + (base[1] << 8) + base[2];
+  					stop = (base[3] << 16) + (base[4] << 8) + base[5];
+				}
 
 				/* set up the voice to play this sample */
-				if (start < stop)
+				if (start < 0x40000 && stop < 0x40000)
 				{
 					if (!voice->playing) /* fixes Got-cha and Steel Force */
 					{
