@@ -64,6 +64,7 @@ void pia_set_input_b(int which, int data);
 void pia_set_input_cb1(int which, int data);
 void pia_set_input_cb2(int which, int data);
 
+#define PIA_UNUSED_VAL(x) ((mem_read_handler)(x+1))
 /******************* Standard 8-bit CPU interfaces, D0-D7 *******************/
 
 READ_HANDLER( pia_0_r );
