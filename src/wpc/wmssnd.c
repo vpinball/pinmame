@@ -501,7 +501,7 @@ static void wpcs_ym2151IRQ(int state) {
 #ifdef PREDCS_FIRQ_HACK
 
 	//This value is based on a lot of trial and error and comparing the same voice sample played with and without music playing
-	#define FIRQ_HACK_RATE        2000
+	#define FIRQ_HACK_RATE        2400
 
 	extern int YM2151ReadOutputFlag(int chip);
 
@@ -544,11 +544,12 @@ static MEMORY_WRITE_START(wpcs_writemem)
   { 0x3c00, 0x3c00, wpcs_latch_w },  /* 3c00-3fff */
   { 0x4000, 0xffff, MWA_ROM },
 MEMORY_END
-static struct DACinterface      wpcs_dacInt     = { 1, { 50 }};
+//NOTE: These volume levels sound really good compared to my own Funhouse and T2. (Dac=100%,CVSD=80%,2151=15%)
+static struct DACinterface      wpcs_dacInt     = { 1, { 100 }};
 static struct hc55516_interface wpcs_hc55516Int = { 1, { 80 }};
 static struct YM2151interface   wpcs_ym2151Int  = {
   1, 3579545, /* Hz */
-  { YM3012_VOL(10,MIXER_PAN_CENTER,30,MIXER_PAN_CENTER) },
+  { YM3012_VOL(15,MIXER_PAN_CENTER,15,MIXER_PAN_CENTER) },
   { wpcs_ym2151IRQ }
 };
 
