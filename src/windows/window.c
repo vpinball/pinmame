@@ -412,7 +412,10 @@ int win_init_window(void)
 			return 1;
 
 		// possibly register the debug window class
+		// in case this is VPM, register the class regardless of the MAME options
+		#ifndef VPINMAME
 		if (options.mame_debug)
+		#endif
 		{
 			wc.lpszClassName 	= "MAMEDebug";
 			wc.lpfnWndProc		= debug_window_proc;
