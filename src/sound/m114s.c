@@ -14,7 +14,13 @@
  *   the chip to play lower frequencies due to the fact that the table represents 1 full period,ie
  *   1 full sine wave, if that's what the rom data happens to contain.
  *
+ *   It would seem that the chip comes in two versions - the 4Mhz & 6Mhz versions. Unlike other sound chips which
+ *   allow for clock variations on the same chip, this chip seems to use hard coded frequency tables
+ *   in an internal ROM based on which version of the chip is being used.
+ *
  *   Some ideas were taken from the source from BSMT2000 & AY8910
+ *
+ *   Note: No support yet for the 6Mhz version of the chip
  **********************************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
@@ -93,14 +99,17 @@ struct M114SChannel
 /* struct describing the entire M114S chip */
 struct M114SChip
 {
+	/* vars to be reset when the chip is reset */
+	int							bytes_read;					/* # of bytes read */
+	int							channel;					/* Which channel is being programmed via the data bus */
+	struct M114SChannelRegs		tempch_regs;				/* temporary channel register data for gathering the data programming */
+	struct M114SChannel			channels[M114S_CHANNELS];	/* All the chip's internal channels */
+	/* static vars, ie do not reset values */
 	int							stream;						/* which stream are we using */
 	INT8 *						region_base;				/* pointer to the base of the ROM region */
 	struct M114Sinterface*		intf;						/* Pointer to the interface */
-	int							eatbytes;					/* # of bytes to eat at start up before processing data */
-	int							bytes_read;					/* # of bytes read */
-	int							channel;					/* Which channel is being programmed via the data bus */
-	struct M114SChannel			channels[M114S_CHANNELS];	/* All the chip's internal channels */
-	struct M114SChannelRegs		tempch_regs;				/* temporary channel register data for gathering the data programming */
+	double						reset_cycles;				/* # of cycles that must pass between programming bytes to auto reset the chip */
+	int							cpu_num;					/* # of the cpu controlling the M114S */
 };
 
 
@@ -401,6 +410,8 @@ INLINE void init_all_channels(struct M114SChip *chip)
 	memset(&chip->tempch_regs,0,sizeof(&chip->tempch_regs));
 	chip->channel = 0;
 	chip->bytes_read = 0;
+	memset(&tb1,0,sizeof(tb1));
+	memset(&tb2,0,sizeof(tb2));
  }
 
 
@@ -412,9 +423,7 @@ int M114S_sh_start(const struct MachineSound *msound)
 	int vol[M114S_OUTPUT_CHANNELS];
 	int i,j;
 
-	memset(&tb1,0,sizeof(tb1));
-	memset(&tb2,0,sizeof(tb2));
-
+	/* create the volume table */
 	build_vol_table();
 	
 	/* initialize the chips */
@@ -428,12 +437,29 @@ int M114S_sh_start(const struct MachineSound *msound)
 			vol[j] = 25;
 		}
 
+		/* Chip specific setup based on clock speed */
+		switch(intf->baseclock[i]) {
+			// 4 Mhz
+			case 4000000:
+				m114schip[i].reset_cycles = 4000000 * 0.000128;	// Chip resets in 128us (microseconds)
+				break;
+			// 6 Mhz
+			case 6000000:
+				m114schip[i].reset_cycles = 6000000 * 0.000085;	// Chip resets in 85us (microseconds)
+				LOG(("M114S Chip #%d - 6Mhz chip clock not supported at this time!\n",i));
+				return 1;
+			default:
+				LOG(("M114S Chip #%d - Invalid Base Clock value specified! Only 4Mhz & 6Mhz values allowed!\n",i));
+				return 1;
+		}
+
 		/* create the stream */
 		m114schip[i].stream = stream_init_multi(M114S_OUTPUT_CHANNELS, stream_name_ptrs, vol, Machine->sample_rate, i, m114s_update);
 		if (m114schip[i].stream == -1)
 			return 1;
 
-		/* initialize the regions */
+		/* initialize the region & interface info */
+		m114schip[i].cpu_num = intf->cpunum[i];
 		m114schip[i].region_base = (INT8 *)memory_region(intf->region[i]);
 		m114schip[i].intf = (struct M114Sinterface *)intf;
 
@@ -469,8 +495,6 @@ void M114S_sh_reset(void)
 	for (i = 0; i < MAX_M114S; i++) {
 		/* reset all channels */
 		init_all_channels(&m114schip[i]);
-		/* set up # of bytes to eat */
-		m114schip[i].eatbytes = m114schip[i].intf->eatbytes[i];
 	}
 }
 
@@ -660,9 +684,21 @@ if(chip->channel == 2) {
 	 - thus 48 bits of programming! All data must be fed in order, so we make a few assumptions.
 
 ***********************************************************************************************/
-
 static void m114s_data_write(struct M114SChip *chip, data8_t data)
 {
+	/* Check if the chip needs to 'auto-reset' - this occurs if during the programming sequence (ie before all 8 bytes read)
+	   a certain amount of time elapses without receiving another byte of programming... 
+	   128us in the 4Mhz chip, 85us in the 6Mhz chip. 
+	*/
+	static double last_totcyc = 0;
+	double curr_totcyc = cpu_gettotalcycles(chip->cpu_num);
+	double diff = abs(curr_totcyc-last_totcyc);
+	last_totcyc = curr_totcyc;
+	if(chip->bytes_read && diff > chip->reset_cycles) {
+		LOG(("M114S #%0d: Auto Reset - bytes read=%0d - data=%0x, elapsed cycles = %f\n",chip->bytes_read,data&0x3f,diff));
+		M114S_sh_reset();
+	}
+
 	data &= 0x3f;						//Strip off bits 7-8 (only 6 bits for the data bus to the chip)
 	chip->bytes_read++;
 	switch(chip->bytes_read)
@@ -671,7 +707,6 @@ static void m114s_data_write(struct M114SChip *chip, data8_t data)
 	    Bits 0-5: Attenuation Value (0-63) - 0 = No Attenuation, 3E = Max, 3F = Silence active channel */
 		case 1:
 			chip->tempch_regs.atten = data;
-			//LOG(("%02x: M114S = %02x, ATTEN = %02x(%02d)\n",locals.chip->bytes_read,data,chip->tempch_regs.atten,chip->tempch_regs.atten));
 			break;
 		
 	/*  BYTE #2 - 
@@ -682,21 +717,18 @@ static void m114s_data_write(struct M114SChip *chip, data8_t data)
 			chip->tempch_regs.table2_addr = (data & 0x03)<<6;
 			chip->tempch_regs.table1_addr = (data & 0x0c)<<4;
 			chip->tempch_regs.outputs = (data & 0x30)>>4;
-			//LOG(("%02x: M114S = %02x, OUTPUTS = %02x, T1ADDR_MSB = %02x, T2ADDR_MSB = %02x\n",locals.chip->bytes_read,data,chip->tempch_regs.outputs,chip->tempch_regs.table1_addr,chip->tempch_regs.table2_addr));
 			break;
 
 	/*  BYTE #3 -
 		Bits 0-5: Table 2 Address (Bits 0-5) */
 		case 3:
 			chip->tempch_regs.table2_addr |= data;
-			//LOG(("%02x: M114S = %02x, T2ADDR_LSB = %02x - T2ADDR=%02x\n",locals.chip->bytes_read,data,data,chip->tempch_regs.table2_addr));
 			break;
 
 	/*	BYTE #4 -
 		Bits 0-5: Table 1 Address (Bits 0-5) */
 		case 4:
 			chip->tempch_regs.table1_addr |= data;
-			//LOG(("%02x: M114S = %02x, T1ADDR_LSB = %02x - T1ADDR=%02x\n",locals.chip->bytes_read,data,data,chip->tempch_regs.table1_addr));
 			break;
 
 	/*  BYTE #5 -
@@ -705,7 +737,6 @@ static void m114s_data_write(struct M114SChip *chip, data8_t data)
 		case 5:
 			chip->tempch_regs.read_meth = data & 0x07;
 			chip->tempch_regs.table_len = (data & 0x38)>>3;
-			//LOG(("%02x: M114S = %02x, TABLE LEN = %02x, READ METH = %02x\n",locals.chip->bytes_read,data,chip->tempch_regs.table_len,chip->tempch_regs.read_meth));
 			break;
 
 	/*	BYTE #6 -
@@ -716,7 +747,6 @@ static void m114s_data_write(struct M114SChip *chip, data8_t data)
 			chip->tempch_regs.oct_divisor = data & 1;
 			chip->tempch_regs.env_enable = (data & 2)>>1;
 			chip->tempch_regs.interp = (data & 0x3c)>>2; 
-			//LOG(("%02x: M114S = %02x, INTERP = %02x, ENV ENA = %02x, OCT DIV = %02x\n",locals.chip->bytes_read,data,chip->tempch_regs.interp,chip->tempch_regs.env_enable,chip->tempch_regs.oct_divisor));
 			break;
 
 	/*	BYTE #7 -
@@ -725,18 +755,14 @@ static void m114s_data_write(struct M114SChip *chip, data8_t data)
 		case 7:
 			chip->tempch_regs.frequency = (data&0x03);
 			chip->channel = (data & 0x3c)>>2; 
-			//LOG(("%02x: M114S = %02x, CHANNEL = %02d, FREQ D0-D1= %02x\n",locals.chip->bytes_read,data,chip->tempch_regs.channel,chip->tempch_regs.frequency));
 			break;
 
 	/*	BYTE #8 -
 		Bits 0-5: Frequency (Bits 2-7) */
 		case 8:
 			chip->tempch_regs.frequency |= (data<<2);
-			//LOG(("%02x: M114S = %02x, FREQ D2-D7 = %02x - FREQ=%02x\n",locals.chip->bytes_read,data,data,chip->tempch_regs.frequency));
-
 			/* Process the channel data */
 			process_channel_data(chip);
-
 			break;
 
 		default:
@@ -751,11 +777,7 @@ static void m114s_data_write(struct M114SChip *chip, data8_t data)
      M114S_data_0_w -- handle a write to the current register
 
 ***********************************************************************************************/
-
 WRITE_HANDLER( M114S_data_w )
 {
-	if(m114schip[offset].eatbytes)
-		m114schip[offset].eatbytes--;
-	else
-		m114s_data_write(&m114schip[offset], data);
+	m114s_data_write(&m114schip[offset], data);
 }

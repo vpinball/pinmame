@@ -32,10 +32,10 @@
 struct M114Sinterface
 {
         int num;                             /* total number of chips */
-        int baseclock[MAX_M114S];            /* input clock */
+        int baseclock[MAX_M114S];            /* input clock - Allowed values are 4Mhz & 6Mhz only! */
         int region[MAX_M114S];               /* memory region where the sample ROM lives */
         int mixing_level[MAX_M114S];         /* master volume */
-		int eatbytes[MAX_M114S];			 /* # of bytes to eat (ignore) at start up before storing data to registers*/
+		int cpunum[MAX_M114S];				 /* # of the cpu controlling the M114S */
 };
 
 int M114S_sh_start(const struct MachineSound *msound);

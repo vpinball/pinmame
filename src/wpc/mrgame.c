@@ -147,7 +147,7 @@ struct M114Sinterface mrgame_m114sInt = {
 	{4000000},			/* Clock Frequency 4Mhz */
 	{REGION_USER1},		/* ROM Region for samples */
 	{100},				/* Volume Level */
-	{1},				/* # of bytes to eat at start up */
+	{2},				/* cpu # controlling M114S */
 };
 
 /* Sound board */
@@ -532,6 +532,7 @@ static WRITE_HANDLER(soundg1_1_port_w) {
 			break;
 		case 3:
 #ifndef NO_M114S
+			//LOG(("%04x: Data to M114S = %02x\n",activecpu_get_pc(),data));
 			M114S_data_w(0,data);
 #endif
 			break;
