@@ -48,8 +48,8 @@ struct pinMachine    *coreData;
 const core_tGameData *core_gameData = NULL;  /* data about the running game */
 
 /*---------------------
-/  Global constants 
-/----------------------*/   
+/  Global constants
+/----------------------*/
 const int core_bcd2seg7[16] = {
 /* 0    1    2    3    4    5    6    7    8    9  */
   0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f
@@ -91,7 +91,7 @@ static const unsigned char core_palette[(DMD_COLORS+(LAMP_COLORS*2)+7)][3] = {
 };
 
 /*-------------------
-/  local variables 
+/  local variables
 /-------------------*/
 typedef UINT32 tSegRow[17];
 typedef struct { int rows, cols; tSegRow *segs; } tSegData;
@@ -212,7 +212,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 INLINE int inRect(const struct rectangle *r, int left, int top, int width, int height) {
   return (r->max_x >= left) && (r->max_y >= top) &&
          (r->min_x <= left + width) && (r->min_y <= top + height);
-};
+}
 
 /*-----------------------------------
 /  Generic segement display handler
@@ -225,7 +225,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
       { updateDisplay(bitmap, cliprect, (const struct core_dispLayout *)layout->ptr, pos); continue; }
     if (layout->ptr)
       if (((ptPinMAMEvidUpdate)(layout->ptr))(bitmap,cliprect,layout) == 0) continue;
-    { 
+    {
       int zeros = layout->type/32; // dummy zeros
       int left  = layout->left * (locals.segData[layout->type & CORE_SEGMASK].cols + 1) / 2;
       int top   = layout->top  * (locals.segData[0].rows + 1) / 2;
@@ -239,7 +239,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
         UINT16 tmpSeg = (ii < zeros) ? ((core_bcd2seg7[0]<<8) | (core_bcd2seg7[0])) : *seg;
         int tmpType = layout->type & CORE_SEGMASK;
 
-        if ((tmpSeg != *lastSeg) || 
+        if ((tmpSeg != *lastSeg) ||
             inRect(cliprect,left,top,locals.segData[layout->type & 0x0f].cols,locals.segData[layout->type & 0x0f].rows)) {
           tmpSeg >>= (layout->type & CORE_SEGHIBIT) ? 8 : 0;
 
@@ -364,7 +364,7 @@ void core_updateSw(int flipEn) {
         if (chgSol & 0x01) {
           /*-- solenoid has changed state --*/
           OnSolenoid(ii, allSol & 0x01);
-          /*-- log solenoid number on the display --*/ 
+          /*-- log solenoid number on the display --*/
           if (!pmoptions.dmd_only && (allSol & 0x01)) {
             locals.solLog[locals.solLogCount] = ii;
 	    core_textOutf(Machine->visible_area.max_x - 12*8,0,BLACK,"%2d %2d %2d %2d",
@@ -462,13 +462,13 @@ static VIDEO_UPDATE(core_status) {
   BMTYPE dotColor[2];
 
   /*-- anything to do ? --*/
-  if ((pmoptions.dmd_only) || (locals.maxSimRows < 16) || 
+  if ((pmoptions.dmd_only) || (locals.maxSimRows < 16) ||
       (coreGlobals.soundEn && (!manual_sound_commands(bitmap))))
     return;
 
   dotColor[0] = CORE_COLOR(DMD_DOTOFF); dotColor[1] = CORE_COLOR(DMD_DOTON);
   /*--  Draw lamps --*/
-  if ((core_gameData->hw.lampData) && 
+  if ((core_gameData->hw.lampData) &&
       (startRow + core_gameData->hw.lampData->startpos.x + core_gameData->hw.lampData->size.x < locals.maxSimRows)) {
     core_tLampDisplay *drawData = core_gameData->hw.lampData;
     int startx = drawData->startpos.x;
@@ -553,7 +553,7 @@ static VIDEO_UPDATE(core_status) {
   if (coreData->diagLEDs == 0xff) { /* 7 SEG */
     drawChar(bitmap, locals.firstSimRow + startRow, thisCol, coreGlobals.diagnosticLed, 2);
     startRow += 16; if (thisCol + 12 > nextCol) nextCol = thisCol + 12;
-  }      
+  }
   else {
     BMTYPE **line = &lines[locals.firstSimRow + startRow];
     bits = coreGlobals.diagnosticLed;
@@ -663,7 +663,7 @@ int core_getSol(int solNo) {
       return coreGlobals.solenoids & CORE_SOLBIT(solNo);
     else if (core_gameData->gen & GEN_ALLWPC)
       return coreGlobals.solenoids2 & (1<<(solNo-29+8)); // GameOn
-  }    
+  }
   else if (solNo <= 36) { // 33-36 Upper flipper (WPC only)
     if (core_gameData->gen & GEN_ALLWPC) {
       int mask = 1<<(solNo - 33);
@@ -722,7 +722,7 @@ UINT64 core_getAllSol(void) {
   }
   if (core_gameData->gen & GEN_ALLS11) // 37-44 S11 extra
     sol |= ((UINT64)(coreGlobals.solenoids2 & 0xff00))<<28;
-  { // 33-36, 45-48 flipper solenoids  
+  { // 33-36, 45-48 flipper solenoids
     UINT8 lFlip = (coreGlobals.solenoids2 & (CORE_LRFLIPSOLBITS|CORE_LLFLIPSOLBITS));
     UINT8 uFlip = (coreGlobals.solenoids2 & (CORE_URFLIPSOLBITS|CORE_ULFLIPSOLBITS));
     // hold coil is set if either coil is set
@@ -900,7 +900,7 @@ static UINT32 core_initDisplaySize(const struct core_dispLayout *layout) {
   int maxX = 0, maxY = 0;
 
   locals.segData = &segData[locals.displaySize == 1][0];
-  if (layout) 
+  if (layout)
     core_findSize(layout, &maxX, &maxY);
   else if (locals.displaySize > 1)
 #ifdef VPINMAME

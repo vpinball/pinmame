@@ -429,10 +429,10 @@ static MEMORY_WRITE_START(byVPGG_video_writemem)
 MEMORY_END
 
 const struct core_dispLayout byVP_dispBabyPac[] = {
-  {0,0,256,192,CORE_VIDEO,byVP_update}, {0}
+  {0,0,256,192,CORE_VIDEO,(void *)byVP_update}, {0}
 };
 const struct core_dispLayout byVP_dispGranny[] = {
-  {0,0,192,256,CORE_VIDEO,byVP_update}, {0}
+  {0,0,192,256,CORE_VIDEO,(void *)byVP_update}, {0}
 };
 /*--------------------*/
 /* Machine Definition */
