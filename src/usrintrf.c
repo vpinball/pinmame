@@ -1339,7 +1339,7 @@ static int setdipswitches(struct osd_bitmap *bitmap,int selected)
 	const char *menu_item[128];
 	const char *menu_subitem[128];
 	struct InputPort *entry[128];
-	char flag[40];
+	char flag[128];
 	int i,sel;
 	struct InputPort *in;
 	int total;
