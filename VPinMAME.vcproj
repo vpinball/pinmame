@@ -625,12 +625,6 @@ echo regsvr32 exec. time &gt; &quot;$(IntDir)\regsvr32.trg&quot;
 					RelativePath=".\src\wpc\gts80s.h">
 				</File>
 				<File
-					RelativePath=".\src\wpc\hnk.c">
-				</File>
-				<File
-					RelativePath=".\src\wpc\hnk.h">
-				</File>
-				<File
 					RelativePath=".\src\wpc\hnkgames.c">
 				</File>
 				<File
