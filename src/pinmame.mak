@@ -87,7 +87,7 @@ DRVLIBS += $(PINOBJ)/s6.o $(PINOBJ)/s67s.o
 DRVLIBS += $(PINOBJ)/s4.o
 DRVLIBS += $(PINOBJ)/de.o $(PINOBJ)/de1sound.o $(PINOBJ)/de2sound.o
 DRVLIBS += $(PINOBJ)/de2.o $(PINOBJ)/de3.o $(PINOBJ)/dedmd.o
-DRVLIBS += $(PINOBJ)/gts3.o $(PINOBJ)/gts3dmd.o
+DRVLIBS += $(PINOBJ)/gts3.o $(PINOBJ)/gts3dmd.o $(PINOBJ)/gts3sound.o
 DRVLIBS += $(PINOBJ)/se.o $(PINOBJ)/sesound.o
 DRVLIBS += $(PINOBJ)/s80.o $(PINOBJ)/s80sound0.o $(PINOBJ)/s80sound1.o
 DRVLIBS += $(PINOBJ)/by35.o $(PINOBJ)/by35snd.o
@@ -174,6 +174,8 @@ SOUNDS += AY8910@
 SOUNDS += MSM5205@
 SOUNDS += CUSTOM@
 SOUNDS += BSMT2000@
+SOUNDS += OKIM6295@
+SOUNDS += ADPCM@
 
 OBJDIRS += $(PINOBJ)
 OBJDIRS += $(PINOBJ)/sims
