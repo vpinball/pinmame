@@ -1379,6 +1379,169 @@ static const struct m68k_memory_interface interface_m68306 = {
 	m68306_changepc
 };
 
+#define VERBOSE
+
+#ifdef VERBOSE
+#define LOG(x)	logerror x
+//#define LOG(x)	printf x
+#else
+#define LOG(x)
+#endif
+
+//--------------------------------
+//  DUART Internal register read
+//--------------------------------
+static data16_t m68306_duart_reg_r(offs_t address, int word) {
+	data16_t data = 0;
+	//odd word checks already handled!
+	switch(address) {
+		//F7E1 - MODE A REGISTERS (DUMR1A & DUMR2A)
+		case 0xf7e1:
+			LOG(("%8x:MODE A REGISTERS (DUMR1A & DUMR2A) Read =%x\n",activecpu_get_pc(),data));
+			break;
+		//F7E3 - STATUS REGISTER A (DUSRA)
+		case 0xf7e3:
+			LOG(("%8x:STATUS REGISTER A (DUSRA) Read =%x\n",activecpu_get_pc(),data));
+			break;
+		//F7E5 - N/A
+		case 0xf7e5:
+			LOG(("%8x:ILLEGAL DUART REGISTER Read =%x\n",activecpu_get_pc(),data));
+			break;
+		//F7E7 - RECEIVE BUFFER A(DURBA)
+		case 0xf7e7:
+			LOG(("%8x:RECEIVE BUFFER A(DURBA) Read =%x\n",activecpu_get_pc(),data));
+			break;
+		//F7E9 - INPUT PORT CHANGE REG (DUIPCR)
+		case 0xf7e9:
+			LOG(("%8x:INPUT PORT CHANGE REG (DUIPCR) Read =%x\n",activecpu_get_pc(),data));
+			break;
+		//F7EB - INTERRUPT STATUS(DUISR)
+		case 0xf7eb:
+			LOG(("%8x:INTERRUPT STATUS(DUISR) Read =%x\n",activecpu_get_pc(),data));
+			break;
+		//F7ED - COUNTERMODE: MSB OF COUNTER
+		case 0xf7ed:
+			LOG(("%8x:COUNTERMODE: MSB OF COUNTER Read =%x\n",activecpu_get_pc(),data));
+			break;
+		//F7EF - COUNTERMODE: LSB OF COUNTER
+		case 0xf7ef:
+			LOG(("%8x:COUNTERMODE: LSB OF COUNTER Read =%x\n",activecpu_get_pc(),data));
+			break;
+		//F7F1 - MODE B (DUMR1B,DUMR2B)
+		case 0xf7f1:
+			LOG(("%8x:MODE B (DUMR1B,DUMR2B) Read =%x\n",activecpu_get_pc(),data));
+			break;
+		//F7F3 - STATUS REGISTER B (DUSRB)
+		case 0xf7f3:
+			LOG(("%8x:STATUS REGISTER B (DUSRB) Read =%x\n",activecpu_get_pc(),data));
+			break;
+		//F7F5 - N/A
+		case 0xf7f5:
+			LOG(("%8x:ILLEGAL DUART REGISTER Read =%x\n",activecpu_get_pc(),data));
+			break;
+		//F7F7 - RECEIVE BUFFER B(DURBB)
+		case 0xf7f7:
+			LOG(("%8x:RECEIVE BUFFER B(DURBB) Read =%x\n",activecpu_get_pc(),data));
+			break;
+		//F7F9 - INTERRUPT VECTOR(DUIPVR)
+		case 0xf7f9:
+			LOG(("%8x:INTERRUPT VECTOR(DUIPVR) Read =%x\n",activecpu_get_pc(),data));
+			break;
+		//F7FB - INPUT PORT REGISTER(DUIP)
+		case 0xf7fb:
+			LOG(("%8x:INPUT PORT REGISTER(DUIP) Read =%x\n",activecpu_get_pc(),data));
+			break;
+		//F7FD - START COUNTER COMMAND
+		case 0xf7fd:
+			LOG(("%8x:START COUNTER COMMAND Read =%x\n",activecpu_get_pc(),data));
+			break;
+		//F7FF - STOP COUNTER COMMAND
+		case 0xf7ff:
+			LOG(("%8x:STOP COUNTER COMMAND Read =%x\n",activecpu_get_pc(),data));
+			break;
+
+		default:
+			LOG(("%8x:M68306UART_r[%04x]=%x\n",activecpu_get_pc(),address,data));
+	}
+	return (word || (address & 1)) ? data : data>>8;
+}
+
+//--------------------------------
+//  DUART Internal register write
+//--------------------------------
+static void m68306_duart_reg_w(offs_t address, data16_t data, int word) {
+	//odd word checks already handled!
+	switch(address) {
+		//F7E1 - MODE A REGISTERS (DUMR1A & DUMR2A)
+		case 0xf7e1:
+			LOG(("%8x:MODE A REGISTERS (DUMR1A & DUMR2A) Write =%x\n",activecpu_get_pc(),data));
+			break;
+		//F7E3 - CLOCK SELECT (DUCSRA)
+		case 0xf7e3:
+			LOG(("%8x:CLOCK SELECT (DUCSRA) Write =%x\n",activecpu_get_pc(),data));
+			break;
+		//F7E5 - COMMAND REGISTER A (DUCRA)
+		case 0xf7e5:
+			LOG(("%8x:COMMAND REGISTER A (DUCRA) Write =%x\n",activecpu_get_pc(),data));
+			break;
+		//F7E7 - TRANSMIT BUFFER A(DUTBA)
+		case 0xf7e7:
+			LOG(("%8x:TRANSMIT BUFFER A(DUTBA) Write =%x\n",activecpu_get_pc(),data));
+			break;
+		//F7E9 - AUX CONTROL REGISTER(DUACR)
+		case 0xf7e9:
+			LOG(("%8x:AUX CONTROL REGISTER(DUACR) Write =%x\n",activecpu_get_pc(),data));
+			break;
+		//F7EB - INTERRUPT MASK (DUIMR)
+		case 0xf7eb:
+			LOG(("%8x:INTERRUPT MASK (DUIMR) Write =%x\n",activecpu_get_pc(),data));
+			break;
+		//F7ED - COUNTER/TIMER MSB
+		case 0xf7ed:
+			LOG(("%8x:COUNTER/TIMER MSB Write =%x\n",activecpu_get_pc(),data));
+			break;
+		//F7EF - COUNTER/TIMER LSB
+		case 0xf7ef:
+			LOG(("%8x:COUNTER/TIMER LSB Write =%x\n",activecpu_get_pc(),data));
+			break;
+		//F7F1 - MODE B (DUMR1B,DUMR2B)
+		case 0xf7f1:
+			LOG(("%8x:MODE B (DUMR1B,DUMR2B) Write =%x\n",activecpu_get_pc(),data));
+			break;
+		//F7F3 - CLOCK SELECT (DUCSRB)
+		case 0xf7f3:
+			LOG(("%8x:CLOCK SELECT (DUCSRB) Write =%x\n",activecpu_get_pc(),data));
+			break;
+		//F7F5 - COMMAND REGISTER B (DUCRB)
+		case 0xf7f5:
+			LOG(("%8x:COMMAND REGISTER B (DUCRB) Write =%x\n",activecpu_get_pc(),data));
+			break;
+		//F7F7 - TRANSMIT BUFFER B(DUTBB)
+		case 0xf7f7:
+			LOG(("%8x:TRANSMIT BUFFER B(DUTBB) Write =%x\n",activecpu_get_pc(),data));
+			break;
+		//F7F9 - INTERRUPT VECTOR(DUIPVR)
+		case 0xf7f9:
+			LOG(("%8x:INTERRUPT VECTOR(DUIPVR) Write =%x\n",activecpu_get_pc(),data));
+			break;
+		//F7FB - OUTPUT PORT CONFIGURATION (DUOPCR)
+		case 0xf7fb:
+			LOG(("%8x:OUTPUT PORT CONFIGURATION (DUOPCR) Write =%x\n",activecpu_get_pc(),data));
+			break;
+		//F7FD - OUTPUT PORT(DUOP) BIT SET
+		case 0xf7fd:
+			LOG(("%8x:OUTPUT PORT(DUOP) BIT SET Write =%x\n",activecpu_get_pc(),data));
+			break;
+		//F7FF - OUTPUT PORT(DUOP) BIT RESET
+		case 0xf7ff:
+			LOG(("%8x:OUTPUT PORT(DUOP) BIT RESET Write =%x\n",activecpu_get_pc(),data));
+			break;
+
+		default:
+			LOG(("%8x:M68306UART_w[%04x]=%x\n",activecpu_get_pc(),address,data));
+	}
+}
+
 //----------------------------
 //  Internal register write
 //----------------------------
@@ -1435,8 +1598,8 @@ static void m68306_intreg_w(offs_t address, data16_t data, int word) {
         break;
     } /* switch */
   }
-  else if (address >= 0xfffff7e0) { /* UART */
-    logerror("M68306UART_w: %02x=%02x\n",address & 0x1f, data & 0xff);
+  else if (address >= 0xfffff7e0) { /* DUART */
+	m68306_duart_reg_w(address&0xffff,data,word);
   }
 }
 //----------------------------
@@ -1481,8 +1644,8 @@ static data16_t m68306_intreg_r(offs_t address, int word) {
         break;
     } /* switch */
   }
-  else if (address >= 0xfffff7e0) { /* UART */
-    logerror("M68306UART_r: %02x\n",address & 0x1f);
+  else if (address >= 0xfffff7e0) { /* DUART */
+     m68306_duart_reg_r(address&0xffff,word);
   }
   return (word || (address & 1)) ? data : data>>8;
 }
