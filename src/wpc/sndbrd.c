@@ -69,8 +69,13 @@ void sndbrd_diag(int board, int button) {
 
 void sndbrd_data_w(int board, int data) {
   const struct sndbrdIntf *b = intf[board].brdIntf;
+    if((b->flags & SNDBRD_NOTSOUND)==0)
+		snd_cmd_log(board, data);
   if (b && (coreGlobals.soundEn || (b->flags & SNDBRD_NOTSOUND)) && b->data_w) {
-    snd_cmd_log(board, data);
+#if 0
+    if((b->flags & SNDBRD_NOTSOUND)==0)
+		snd_cmd_log(board, data);
+#endif
     if (b->flags & SNDBRD_NODATASYNC)
       b->data_w(board, data);
     else
@@ -212,7 +217,8 @@ const struct sndbrdIntf NULLIntf = { 0 }; // remove when all boards below works.
   SNDBRDINTF(gpSSU2)
   SNDBRDINTF(gpMSU1)
   SNDBRDINTF(gpMSU3)
-  SNDBRDINTF(alvgs)
+  SNDBRDINTF(alvgs1)
+  SNDBRDINTF(alvgs2)
   SNDBRDINTF(alvgdmd)
   SNDBRDINTF(capcoms)
   SNDBRDINTF(spinb)

@@ -231,7 +231,7 @@ static READ_HANDLER( xvia_1_b_r ) {
 	data = ((data&0xf7) | alvglocals.DMDEnable) +
 		   ((data&0xef) | alvglocals.DMDClock)  +
 		   ((data&0xdf) | alvglocals.DMDData);
-	//printf("%x:U8-PB-R: data = %x\n",activecpu_get_previouspc(),data);
+//	printf("%x:U8-PB-R: data = %x\n",activecpu_get_previouspc(),data);
 	return data;
 }
 //CA1: (IN) - Sound Control
@@ -259,6 +259,7 @@ PB0        = NU
 */
 static WRITE_HANDLER( xvia_1_b_w ) {
 	alvglocals.via_1_b = data;			//Probably not necessary
+	//printf("%x:U8-PB-W: data = %x\n",activecpu_get_previouspc(),data);
 
 	//On clock transition - write to sound latch
 	if(!alvglocals.sound_strobe && (data & 0x02))	sndbrd_0_ctrl_w(0,0);
@@ -605,6 +606,21 @@ static NVRAM_HANDLER(alvg) {
   core_nvram(file, read_or_write, memory_region(ALVG_MEMREG_CPU), 0x2000, 0x00);
 }
 
+//Hack to get Punchy & Other Older generation games to pass the U8 startup test..
+READ_HANDLER(cust_via_1_r)
+{
+	if(offset==0)
+	{
+ 		int data = via_1_r(offset);
+		if (data == 0)
+			return 0x10;
+		else
+			return data;
+	}
+	else
+		return via_1_r(offset);
+}
+
 /*---------------------------
 /  Memory map for main CPU
 /----------------------------
@@ -617,12 +633,15 @@ static NVRAM_HANDLER(alvg) {
 1  1  0  = Y6 = 0x3800 = U8 - 6255 Enable
 1  1  1  = Y7 = 0x3C00 = U7 - 6255 Enable
 */
+
+//NOTE: LED 5 Flashes Test of U8 begins @ line 40FC
 static MEMORY_READ_START(alvg_readmem)
 {0x0000,0x1fff,MRA_RAM},
 {0x2000,0x2003,ppi8255_0_r},
 {0x2400,0x2403,ppi8255_1_r},
 {0x2800,0x2803,ppi8255_2_r},
-{0x3800,0x380f,via_1_r},
+//{0x3800,0x380f,via_1_r},
+{0x3800,0x380f,cust_via_1_r},
 {0x3c00,0x3c0f,via_0_r},
 {0x4000,0xffff,MRA_ROM},
 MEMORY_END
@@ -650,19 +669,19 @@ MACHINE_DRIVER_START(alvg)
   MDRV_SWITCH_CONV(alvg_sw2m,alvg_m2sw)
 MACHINE_DRIVER_END
 
-//Main CPU, Sound hardware Driver
-MACHINE_DRIVER_START(alvgs0)
+//Main CPU, Sound hardware Driver (generation 1)
+MACHINE_DRIVER_START(alvgs1)
   MDRV_IMPORT_FROM(alvg)
-  MDRV_IMPORT_FROM(alvgs)
+  MDRV_IMPORT_FROM(alvg_s1)
   MDRV_CORE_INIT_RESET_STOP(alvg,NULL,alvg)
   MDRV_SOUND_CMD(alvg_sndCmd_w)
   MDRV_SOUND_CMDHEADING("alvg")
 MACHINE_DRIVER_END
 
-//Main CPU, DMD, Sound hardware Driver
-MACHINE_DRIVER_START(alvgs1)
+//Main CPU, DMD, Sound hardware Driver (generation 2)
+MACHINE_DRIVER_START(alvgs2)
   MDRV_IMPORT_FROM(alvg)
-  MDRV_IMPORT_FROM(alvgs)
+  MDRV_IMPORT_FROM(alvg_s2)
   MDRV_IMPORT_FROM(alvgdmd)
   MDRV_CORE_INIT_RESET_STOP(alvgdmd,NULL,alvg)
   MDRV_SOUND_CMD(alvg_sndCmd_w)

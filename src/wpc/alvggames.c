@@ -14,9 +14,10 @@ static struct core_dispLayout alvg_dispDMD[] = {
   {0,0,32,128,CORE_DMD,(void *)alvgdmd_update}, {0}
 };
 
-static const core_tLCDLayout disp_led[] = {
-  {0, 0, 0,16, CORE_SEG16}, {3, 0,16,16, CORE_SEG16},
-  {0}
+/* Alpha Numeric Display (2 X 20 Alpha-Numeric) */
+//Gerrit - please adjust this to 20 digits, instead of 16, thanks.
+static const core_tLCDLayout alvg_alpha[] = {
+  DISP_SEG_16(0,CORE_SEG16R),DISP_SEG_16(1,CORE_SEG16R),{0}
 };
 
 #define INITGAME(name, disptype, flippers, balls, sb, db, lamps) \
@@ -31,17 +32,17 @@ static const core_tLCDLayout disp_led[] = {
 /*-------------------------------------------------------------------
 / A.G. Soccer Ball
 /-------------------------------------------------------------------*/
-INITGAME(agsoccer, disp_led, FLIP78, 3/*?*/, SNDBRD_ALVGS, 0, 0)
+INITGAME(agsoccer, alvg_alpha, FLIP78, 3/*?*/, SNDBRD_ALVGS1, 0, 0)
 ALVGROMSTART(agsoccer,	"agscpu1r.18u", CRC(37affcf4) SHA1(017d47f54d5b34a4b71c2f5b84ba9bdb1c924299))
 ALVGS_SOUNDROM11(		"ags_snd.v21",  CRC(aa30bfe4) SHA1(518f7019639a0284461e83ad849bee0be5371580),
 						"ags_voic.v12", CRC(bac70b18) SHA1(0a699eb95d7d6b071b2cd9d0bf73df355e2ffce8))
 ALVG_ROMEND
-CORE_GAMEDEFNV(agsoccer,"A.G. Soccer Ball",1991,"Alvin G",mALVGS0,0)
+CORE_GAMEDEFNV(agsoccer,"A.G. Soccer Ball",1991,"Alvin G",mALVGS1,0)
 
 /*-------------------------------------------------------------------
 / Al's Garage Band Goes On A World Tour
 /-------------------------------------------------------------------*/
-INITGAME(wrldtour, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS, SNDBRD_ALVGDMD, 0)
+INITGAME(wrldtour, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 0)
 ALVGROMSTART(wrldtour,	"cpu27c.512", CRC(c9572fb5) SHA1(47a3e8943ef4207011a33f4a03a6e722c937cc48))
 ALVGS_SOUNDROM(			"soundc.512", CRC(b44bee01) SHA1(795d8500e5bd73ce23756bf1f5c96db1a3621a70),
 						"samp_0.c21", CRC(37beb831) SHA1(2b90d2be0a1bd7c59469846631d2b44bdf9f5f9d),
@@ -52,12 +53,12 @@ ALVGDMD_SPLIT_ROM(		"dot27c.512", CRC(c8bd48e7) SHA1(e2dc513dd42c05c2018e6d8c0b6
 						"romdef1.c20",CRC(045b21c1) SHA1(134b7eb0f71506d12d9ded24999d530126c558fc),
 						"romdef2.c20",CRC(23c32ee5) SHA1(429b3b069251bb8b681bbc6382ceb6b85125eb79))
 ALVG_ROMEND
-CORE_GAMEDEFNV(wrldtour,"Al's Garage Band Goes On A World Tour",1992,"Alvin G",mALVGS,0)
+CORE_GAMEDEFNV(wrldtour,"Al's Garage Band Goes On A World Tour",1992,"Alvin G",mALVGS2,0)
 
 /*-------------------------------------------------------------------
 / Mystery Castle
 /-------------------------------------------------------------------*/
-INITGAME(mystcast, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS, SNDBRD_ALVGDMD, 0)
+INITGAME(mystcast, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 0)
 ALVGROMSTART(mystcast,	"mcastle.cpu", CRC(936e6799) SHA1(aa29fb5f12f34c695d1556232744f65cd576a2b1))
 ALVGS_SOUNDROM(			"mcastle.102", CRC(752822d0) SHA1(36461ef03cac5aefa0c03dfdc63c3d294a3b9c09),
 						"mcastle.sr0", CRC(0855cc73) SHA1(c46e08432bcff24594c33171f20669ba63828931),
@@ -67,12 +68,12 @@ ALVGS_SOUNDROM(			"mcastle.102", CRC(752822d0) SHA1(36461ef03cac5aefa0c03dfdc63c
 ALVGDMD_ROM2R(			"mcastle.du4", CRC(686e253a) SHA1(28aff34c120c61e231e2111dc396df515bcbbb89),
 						"mcastle.du5", CRC(9095c367) SHA1(9d3e9416f662ee2aad891eef059278c530448fcc))
 ALVG_ROMEND
-CORE_GAMEDEFNV(mystcast,"Mystery Castle",1993,"Alvin G",mALVGS,0)
+CORE_GAMEDEFNV(mystcast,"Mystery Castle",1993,"Alvin G",mALVGS2,0)
 
 /*-------------------------------------------------------------------
 / Pistol Poker
 /-------------------------------------------------------------------*/
-INITGAME(pstlpkr, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS, SNDBRD_ALVGDMD, 1)
+INITGAME(pstlpkr, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 1)
 ALVGROMSTART(pstlpkr,	"p_peteu2.512", CRC(490a1e2d) SHA1(907dd858ed948681e7366a64a0e7537ebe301d6b))
 ALVGS_SOUNDROM(			"p_pu102.512" , CRC(b8fb806e) SHA1(c2dc19820ea22bbcf5808db2fb4be76a4033d6ea),
 						"p_parom0.c20", CRC(99986af2) SHA1(52fa7d2979f7f2d6d65ab6d4f7bbfbed16303991),
@@ -83,24 +84,27 @@ ALVGDMD_ROM(			"p_peteu4.512", CRC(caa0cabd) SHA1(caff6ca4a9cce4e3d846502696c883
 						"p_peteu5.c20", CRC(1d2cecd8) SHA1(6072a0f744fb9eef728fe7cf5e17d0007edbddd7),
 						"p_peteu6.c20", CRC(3a56376c) SHA1(69febc17b8416c03a58e651447bbe1e14ff27e50))
 ALVG_ROMEND
-CORE_GAMEDEFNV(pstlpkr,"Pistol Poker",1993,"Alvin G",mALVGS,0)
+CORE_GAMEDEFNV(pstlpkr,"Pistol Poker",1993,"Alvin G",mALVGS2,0)
 
 /*-------------------------------------------------------------------
 / Punchy The Clown
 /-------------------------------------------------------------------*/
-INITGAME(punchy, disp_led, FLIP78, 3/*?*/, SNDBRD_ALVGS, 0, 0)
-ALVGROMSTART(punchy,	"epc061r2.bin", CRC(732fca88) SHA1(dff0aa4b856bafb95b08dae675dd2ad59e1860e1))
-ALVGS_SOUNDROM11(		"eps061r2.bin", CRC(cfde1b9a) SHA1(cbf9e67df6a6762843272493c2caa1413f70fb27),
-						"eps062r2.bin", CRC(7462a5cd) SHA1(05141bcc91b1a786444bff7fa8ba2a785dc0d376))
+INITGAME(punchy, alvg_alpha, FLIP78, 3/*?*/, SNDBRD_ALVGS1, 0, 0)
+ALVGROMSTART(punchy,	"epc061.r02", CRC(732fca88) SHA1(dff0aa4b856bafb95b08dae675dd2ad59e1860e1))
+ALVGS_SOUNDROM11(		"eps061.r02", CRC(cfde1b9a) SHA1(cbf9e67df6a6762843272493c2caa1413f70fb27),
+						"eps062.r02", CRC(7462a5cd) SHA1(05141bcc91b1a786444bff7fa8ba2a785dc0d376))
 ALVG_ROMEND
-CORE_GAMEDEFNV(punchy,"Punchy The Clown",1993,"Alvin G",mALVGS0,0)
+CORE_GAMEDEFNV(punchy,"Punchy The Clown",1993,"Alvin G",mALVGS1,0)
+
+
+
 
 //Use only for testing the 8031 core emulation
 #ifdef MAME_DEBUG
 /*-------------------------------------------------------------------
 / Test 8031 CPU Core (uses either Pistol Poker dmd roms or World Tour)
 /-------------------------------------------------------------------*/
-INITGAME(test8031, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS, 0, 1)
+INITGAME(test8031, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS2, 0, 1)
 ROM_START(test8031)
 
 TEST8031_ROM(			"addsub.bin", NO_DUMP,
