@@ -50,8 +50,6 @@ struct {
   int    minidata[4], minidmd[3][5];
 } selocals;
 
-static void printdmd(void);
-
 static INTERRUPT_GEN(se_vblank) {
   /*-------------------------------
   /  copy local data to interface

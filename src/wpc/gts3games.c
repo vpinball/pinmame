@@ -33,11 +33,6 @@ static struct core_dispLayout GTS3_dispAlpha[] = {
 	GDISP_SEG_20(0,CORE_SEG16),GDISP_SEG_20(1,CORE_SEG16),{0}
 };
 
-/* 2 X 20 AlphaNumeric Rows & LED Board with 4x2 7 Segments*/
-static struct core_dispLayout GTS3_dispAlpha1[] = {
-	GDISP_SEG_20(0,CORE_SEG16),GDISP_SEG_20(1,CORE_SEG16),{4,0,1,8,CORE_SEG7},{0}
-};
-
 #define INITGAME(name, disptype, flippers, balls, sb) \
 	GTS3_INPUT_PORTS_START(name, balls) GTS3_INPUT_PORTS_END \
 	static core_tGameData name##GameData = {GEN_GTS3,disptype,{flippers,4,4,0,sb,0}}; \
