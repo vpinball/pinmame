@@ -888,11 +888,6 @@ static s_command commands[] = {
 	"",
 	"Enables Sound when debugger window is active",
 	cmd_sound_enable },
-{	(1<<EDIT_CMDS),
-	0,     0,          KEYCODE_ENTER,
-	"",
-	"\r[SHIFT+ENTER]\tSimilar to F10, but also skips loops, function calls, etc.",
-	cmd_jumpover },
 #endif
 {	(1<<EDIT_CMDS),
 	"IGNORE",       0,          CODE_NONE,
@@ -1074,6 +1069,13 @@ static s_command commands[] = {
 	"",
 	"Go!",
 	cmd_go },
+#ifdef PINMAME
+{	ALL,
+	0,              0,          KEYCODE_ENTER,
+	"",
+	"\r[SHIFT+ENTER]\tLike F10, but also skips loops, function calls, etc.",
+	cmd_jumpover },
+#endif
 /* This is the end of the list! */
 { 0,	},
 };
@@ -3541,7 +3543,11 @@ static void cmd_help( void )
 {
 	UINT32 win = WIN_HELP;
 	const char *title = "";
+#ifdef PINMAME
+	char *help = malloc(4096+1), *dst;
+#else /* more space for additional commands */
 	char *help = malloc(8192), *dst;
+#endif
 	const char *src;
 	unsigned w, h;
 	int cmd = INVALID;
