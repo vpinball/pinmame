@@ -15,8 +15,7 @@
 		   (at startup (for vegasgp), notice how credit display = 0 while others are blank)
 		   (occurs especially in the ball/credit areas, but also occurs during lamp test for other digits)
 		b) No idea how solenoids 16-18 get triggered
-		c) Sound commands not hooked in
-		d) Current emulation only accurate/implemented for Cocktail Models 140 and lower.
+		c) Solenoid ordering not adjusted for all games
 */
 #include <stdarg.h>
 #include <time.h>
@@ -35,11 +34,11 @@
 
 #define GP_VBLANKFREQ    60 /* VBLANK frequency */
 #define GP_IRQFREQ      150 /* IRQ (via PIA) frequency*/
-#define GP_ZCFREQ        85 /* Zero cross frequency */
+#define GP_ZCFREQ       120 /* Zero cross frequency (guessed) */
 
 /* Adjustment Table for Strange Solenoid Ordering used 
    --Sols 16,17,18 are not working yet - so order here is wrong */
-static const int sol_adjust[] = 
+static const int sol_adjust1[] = 
 //00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17
 {  3, 4, 1, 8,12, 5, 2, 0,14,13, 6,11, 7,10, 9,20,20,20};
 
@@ -59,6 +58,7 @@ static struct {
   int disp_enable;		//Is Display Enabled
   int disp_col;			//Current Display Column/Digit Selected
   int last_clk;			//Last Digit Clock Line to go low
+  WRITE_HANDLER((*PORTA_WRITE));
 } locals;
 
 static void GP_exit(void);
@@ -74,14 +74,27 @@ static void GP_dispStrobe(int mask) {
   ((int *)locals.segments)[jj*8+ii] |= ((int *)locals.pseg)[jj*8+ii] = core_bcd2seg[locals.bcd[jj]];
 }
 
-static void GP_lampStrobe(int lampadr, int lampdata) {
+static void GP_lampStrobe1(int lampadr, int lampdata) {
   UINT8 *matrix;
   int bit;
   if (lampadr != 0x0f) {
-    lampdata ^= 0x0f;
+    lampdata ^= 0x07;	//3 Enable Lines
     matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)];
     bit = 1<<(lampadr & 0x07);
-    //DBGLOG(("adr=%x data=%x\n",lampadr,lampdata));
+    while (lampdata) {
+      if (lampdata & 0x01) *matrix |= bit;
+      lampdata >>= 1; matrix += 2;
+    }
+  }
+}
+
+static void GP_lampStrobe2(int lampadr, int lampdata) {
+  UINT8 *matrix;
+  int bit;
+  if (lampadr != 0x0f) {
+    lampdata ^= 0x0f;		//4 Enable Lines
+    matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)];
+    bit = 1<<(lampadr & 0x07);
     while (lampdata) {
       if (lampdata & 0x01) *matrix |= bit;
       lampdata >>= 1; matrix += 2;
@@ -94,7 +107,7 @@ static void GP_UpdateSolenoids (int bank, int soldata) {
   UINT16 mask = ~(0xffff);
   UINT16 sols = 0;
   logerror("soldata = %x\n",soldata);
-  soldata = sol_adjust[soldata];
+  soldata = sol_adjust1[soldata];
   logerror("soldata2 = %x\n",soldata);
   //Solenoids 1-16
   sols = (1<<(soldata & 0xffff)) & 0xffff;
@@ -128,7 +141,7 @@ static int GP_vblank(void) {
     coreGlobals.diagnosticLed = locals.diagnosticLed;
     locals.diagnosticLed = 0;
   }
-  core_updateSw(core_getSol(19));
+  core_updateSw(core_getSol(16));
   return ignore_interrupt();
 }
 
@@ -157,7 +170,12 @@ static READ_HANDLER(ppi0_pb_r) {
 	return core_getSwCol(locals.swCol);
 }
 
-/*
+/*PORT A WRITE - Generation Specific*/
+static WRITE_HANDLER(ppi0_pa_w) {
+	locals.PORTA_WRITE(offset,data);
+}
+
+/************************  MPU-1 GENERATION ********************************
 PORT A WRITE
 (out) P0-P3: 
 	a) Lamp Address 1-4
@@ -170,7 +188,8 @@ PORT A WRITE
 	0) = NA
 	1) = Solenoid Address 1-4 Enable
 	2) = Solenoid Address 5-8 Enable
-	3-6) = Lamp Data 1-4
+	3-5) = Lamp Enable/Data 1-3
+	6) = NA
 	7) = Switch Strobe 0
 	8) = Switch Strobe 1 AND Display Clock 1
 	9) = Switch Strobe 2 AND Display Clock 2
@@ -178,7 +197,7 @@ PORT A WRITE
 	11) = Display Clock 4
 	12-15) Dip Column Strobes
 */
-static WRITE_HANDLER(ppi0_pa_w) {
+static WRITE_HANDLER(mpu1_pa_w) {
 	int addrdata = data & 0x0f;	//Take P0-P3
 	int tmpdata =  data>>4;		//Take P4-P7
 	int disp_clk = tmpdata - 8;	//Track Display Clock line
@@ -194,7 +213,7 @@ static WRITE_HANDLER(ppi0_pa_w) {
 		}
 	}
 
-	/*Enabling Solenoids?*/
+	/*Enabling Solenoids? (Address Line 1,2)*/
 	if(tmpdata>0 && tmpdata<3) {
 		//No solenoid is wired for 15
 		if(addrdata !=0xf) {
@@ -203,22 +222,90 @@ static WRITE_HANDLER(ppi0_pa_w) {
 		}
 	}
 
-	/*Updating Lamps?*/
-	if(tmpdata>2 && tmpdata<6) {
-		GP_lampStrobe(~addrdata,tmpdata);
-	}
+	/*Updating Lamps? (Address Line 3-5)*/
+	if(tmpdata>2 && tmpdata<6)
+		GP_lampStrobe1(addrdata,1<<(tmpdata-3));
 
-	/*Strobing Switches?*/
-	if(tmpdata>6 && tmpdata<12) {	
+	/*Strobing Switches? (Address Line 7-10)*/
+	if(tmpdata>6 && tmpdata<11)
 		locals.swCol = 1<<(tmpdata-7);
-	}
 
-	/*Strobing Digit Displays?
+	/*Strobing Digit Displays? (Address Line 8-11)
 	  ------------------------
 	  Clock lines go low on selection, but are clocked in on lo->hi transition...
 	  So we track the last clock line to go lo, and when it changes, we write in bcd data
 	*/
 	if(tmpdata>7 && tmpdata<12) {
+		if(locals.disp_enable) {
+			locals.last_clk = disp_clk;
+			logerror("%x: disp clock #%x, data=%x\n",cpu_getpreviouspc(),disp_clk,addrdata);
+		}
+	}
+
+	logerror("PA_W: P4-7 %x = %d\n",tmpdata,tmpdata);
+	logerror("PA_W: P0-3 %x = %d\n",addrdata,addrdata);
+}
+
+/************************  MPU-2 GENERATION ********************************
+PORT A WRITE
+(out) P0-P3: 
+	a) Lamp Address 1-4
+	b) Display BCD Data? (Shared with Lamp Address 1-4)
+	c) Solenoid Address 1-4 (must be enabled from above)
+	d) Solenoid Address 5-8 (must be enabled from above)??? Not sure
+
+(out) P4-P7P: Address Data 
+  (1-16 Demultiplexed - Output are all active low)
+	0) = NA
+	1) = Solenoid Address 1-4 Enable
+	2) = Solenoid Address 5-8 Enable
+	3-6) = Lamp Data 1-4
+	7) = Swicht Strobe 0 AND BDU - Clock 1
+	8) = Switch Strobe 1 AND Display Clock 1 AND BDU - Clock 2
+	9) = Switch Strobe 2 AND Display Clock 2 AND BDU - Clock 3
+	10) = Switch Strobe 3 AND Display Clock 3 AND BDU - Clock 4
+	11) = Switch Strobe 4 AND Display Clock 4 AND BDU - Clock 5
+	12-15) Dip Column Strobes
+*/
+static WRITE_HANDLER(mpu2_pa_w) {
+	int addrdata = data & 0x0f;	//Take P0-P3
+	int tmpdata =  data>>4;		//Take P4-P7
+	int disp_clk = tmpdata - 7;	//Track Display Clock line
+	locals.p0_a = data;
+
+	/*Pin 1 not connected, but is used after a display clock line goes low
+	  to trigger the lo->hi transition, and load in bcd data*/
+	if(tmpdata == 0 && (locals.last_clk ^ 0x80)) {
+		if(locals.disp_enable) {
+				locals.bcd[locals.last_clk] = addrdata;
+				GP_dispStrobe(locals.last_clk);
+				locals.last_clk = 0x80;		//Set flag so that this routine only runs AFTER a valid display clock line was set!
+		}
+	}
+
+	/*Enabling Solenoids? (Address Line 1,2)*/
+	if(tmpdata>0 && tmpdata<3) {
+		//No solenoid is wired for 15
+		if(addrdata !=0xf) {
+			logerror("%x: sol en: %x addr %x \n",cpu_getpreviouspc(),tmpdata-1,addrdata);
+			GP_UpdateSolenoids(tmpdata-1,addrdata);
+		}
+	}
+
+	/*Updating Lamps? (Address Line 3-6)*/
+	if(tmpdata>2 && tmpdata<7)
+		GP_lampStrobe2(addrdata,1<<(tmpdata-3));
+
+	/*Strobing Switches? (Address Line 7-11)*/
+	if(tmpdata>6 && tmpdata<12)
+		locals.swCol = 1<<(tmpdata-7);
+
+	/*Strobing Digit Displays? (Address Line 7-11)
+	  ------------------------
+	  Clock lines go low on selection, but are clocked in on lo->hi transition...
+	  So we track the last clock line to go lo, and when it changes, we write in bcd data
+	*/
+	if(tmpdata>6 && tmpdata<12) {
 		if(locals.disp_enable) {
 			locals.last_clk = disp_clk;
 			logerror("%x: disp clock #%x, data=%x\n",cpu_getpreviouspc(),disp_clk,addrdata);
@@ -264,18 +351,32 @@ Port A:
 	c) Solenoid Address 1-4 (must be enabled from above)
 	d) Solenoid Address 5-8 (must be enabled from above)
 
+***  MPU-1 GENERATION ***
 (out) P4-P7P: Address Data 
 	  (1-16 Demultiplexed - Output are all active low)
-	0) = NA?
+	0) = NA
 	1) = Solenoid Address 1-4 Enable
 	2) = Solenoid Address 5-8 Enable
-	3-6) = Lamp Data 1-4
+	3-5) = Lamp Data 1-3
+	6) = NA
 	7) = Swicht Strobe 0
 	8) = Switch Strobe 1 AND Display Clock 1
 	9) = Switch Strobe 2 AND Display Clock 2
 	10) = Switch Strobe 3 AND Display Clock 3
-	11) = Switch Strobe 4 AND Display Clock 4
+	11) = Display Clock 4
 	12-15) Dip Column Strobes
+
+***  MPU-2 GENERATION***
+Differences Summary: Extra Lamp & Switch Strobe, and 5 Strobes for BDU
+Differences Details:
+(out) P4-P7P: Address Data 
+	  (1-16 Demultiplexed - Output are all active low)
+	3-6) = Lamp Data 1-4
+	7) = Swicht Strobe 0 AND BDU - Clock 1
+	8) = Switch Strobe 1 AND Display Clock 1 AND BDU - Clock 2
+	9) = Switch Strobe 2 AND Display Clock 2 AND BDU - Clock 3
+	10) = Switch Strobe 3 AND Display Clock 3 AND BDU - Clock 4
+	11) = Switch Strobe 4 AND Display Clock 4 AND BDU - Clock 5
 
 Port B:
 -------
@@ -335,7 +436,7 @@ static void GP_zeroCross(int data) {
   z80ctc_0_trg2_w(0, 0);
 }
 
-static void GP_init(void) {
+static void GP_common_init(void) {
   if (locals.initDone) CORE_DOEXIT(GP_exit);
 
   if (core_init(&GPData)) return;
@@ -354,6 +455,18 @@ static void GP_init(void) {
 
   locals.initDone = TRUE;
 }
+
+/*MPU-1 Generation Init*/
+static void GP1_init(void) {
+	GP_common_init();
+	locals.PORTA_WRITE = mpu1_pa_w;
+}
+/*MPU-2 Generation Init*/
+static void GP2_init(void) {
+	GP_common_init();
+	locals.PORTA_WRITE = mpu2_pa_w;
+}
+
 
 static void GP_exit(void) {
 #ifdef PINMAME_EXIT
@@ -402,7 +515,7 @@ struct MachineDriver machine_driver_GP1 = {
       GP_vblank, 1, GP_irq, GP_IRQFREQ, GP_DaisyChain
   }},
   GP_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, GP_init, CORE_EXITFUNC(GP_exit)
+  50, GP1_init, CORE_EXITFUNC(GP_exit)
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
@@ -414,11 +527,11 @@ struct MachineDriver machine_driver_GP1 = {
 /*MPU-2*/
 struct MachineDriver machine_driver_GP2 = {
   {{  CPU_Z80, 2000000, /* 2Mhz */
-      GP_readmem, GP_writemem, NULL, NULL,
-      GP_vblank, 1, GP_irq, GP_IRQFREQ
+      GP_readmem, GP_writemem, GP_readport, GP_writeport,
+      GP_vblank, 1, GP_irq, GP_IRQFREQ, GP_DaisyChain
   }},
   GP_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, GP_init, CORE_EXITFUNC(GP_exit)
+  50, GP2_init, CORE_EXITFUNC(GP_exit)
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
@@ -426,7 +539,6 @@ struct MachineDriver machine_driver_GP2 = {
   0,0,0,0, {{0}},
   GP_nvram
 };
-
 
 /*-----------------------------------------------
 / Load/Save static ram
