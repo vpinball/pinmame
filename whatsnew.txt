@@ -7,8 +7,12 @@ This may very well be the most anticipated release of PinMAME to date. 4 Letters
 What was once thought nearly impossible has become a reality for PinMAME,
 thanks in large part to emulation wizard Aaron Giles(of MAME fame).
 35 New Games now have fully working sound!
+Thank you to the following for their help and support in trying to emulate the BSMT:
+Destruk, Worf, DesAngel, RevenantUK, Guru
+Another nice surprise was finally solving the many issues with getting Gottlieb System 3
+games to work. While there's still a large # of issues remaining, it's at least working now.
 As you can also see, we've realized, much like the MAME team, that using Beta naming is
-rather tedious and annoying, so we've dropped it.
+rather tedious and annoying, so we've dropped it. 
 
 Bugs Fixed
 ----------
@@ -36,7 +40,6 @@ Bugs Fixed
 -Fixed 7th digit on Gottlieb System80a games
 -Changed several MAME error messages to say PinMAME instead
 -Changed version number to say PinMAME version instead of MAME version
-(Martin: Isn't this a violation to the MAME licence)
 -Removed "sound not emulated yet" error message from games with only chimes
  (There is no sound to emulate)
  [Gerrit Volkenborn]
@@ -46,14 +49,17 @@ New Features
 ------------
 -BSMT 2000 Emulation
 -Sound now works for ALL DATA EAST/SEGA/STERN (post 1998) Games!!
-(Note: Emulation is not 100% perfect. Still some problems with compressed samples).
+ (Note: Emulation is not 100% perfect. Still some problems with compressed samples).
  [Aaron Giles]
  [Steve Ellenoff]
  [Martin Adrian]
 
--Added Stereo Sound support for pre-BSMT Data East games
+-Gottlieb/Premiere System 3 Emulation working!!!! (no sound support yet)
+ (Still a bunch of issues to work out, especially DMD related).
+-Added Stereo Sound support for pre-BSMT Data East games .
  (still not fully emulated, but better than previous mono output).
--Added support for Sound Roms for remaining Data East/Sega/Stern(Post 1998) Games!
+-Added support for Sound Roms for remaining Data East/Sega/Stern(Post 1998) Games.
+-Added support for Gottlieb System 3 games.
  [Steve Ellenoff]
 
 -New option to set the intensity of segments when they are off.
@@ -72,54 +78,7 @@ New Features
 -Added Strike Master to WPC games (no sound)
 -Added a lot of clones for existing WPC/DataEast/Sega/new Stern games!
 -Update several custom display layouts.
-(Martin: It seems like digits now overlap in Mr. & Mrs. Pac-Man non-compact display)
  [Gerrit Volkenborn]
-
-New Games
----------
-Bally -35
-  Xenon (French)
-System80
-  James Bond (3/5 ball)
-  Force II
-  Black Hole (Rev 2)
-  Black Hole (Sound Only)
-  Test Fixture
-System80a
-  Devils Dare (Sound & Speech)
-  Devils Dare (Sound only)
-  Caveman
-  Rocky
-  Punk
-  Striker
-  Krull
-  Q*bert's Quest
-  Super Orbit
-  Royal Flush Deluxe
-  Goin' Nuts
-  Amazon Hunt
-  Rack 'Em Up
-  Ready Aim Fire
-  Jacks to Open
-  Alien Star
-  Touchdown
-  El Dorado
-  Ice Fever
-System80b
-  Chicago Cubs Triple Play
-  Bounty Hunter
-  Gold Wings
-  Spring Break
-  Arena
-  Diamond Lady
-  Excalibur
-System9
-  Pennant Fever (pitch & bat)
-WPC
-  Strike Master
-  The Addams Family L-6
-  Who dunnit (German)
-  Safe Cracker (New)
 
 Version 1.0 Beta 2   (September 28, 2001)
 -----------------------------------------
