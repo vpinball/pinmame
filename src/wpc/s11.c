@@ -170,32 +170,32 @@ static WRITE_HANDLER(pia2b_w) {
   else {
     if (core_gameData->hw.display & S11_DISPINV) data = ~data;
     if (core_gameData->hw.display & S11_BCDDISP) {
-      locals.segments[0][locals.digSel].lo |=
-           locals.pseg[0][locals.digSel].lo = core_bcd2seg[data&0x0f];
-      locals.segments[1][locals.digSel].lo |=
-           locals.pseg[1][locals.digSel].lo = core_bcd2seg[data>>4];
+      locals.segments[locals.digSel].w |=
+           locals.pseg[locals.digSel].w = core_bcd2seg[data&0x0f];
+      locals.segments[20+locals.digSel].w |=
+           locals.pseg[20+locals.digSel].w = core_bcd2seg[data>>4];
     }
     else if (core_gameData->hw.display & S11_LOWALPHA)
-      locals.segments[1][locals.digSel].hi |=
-          locals.pseg[1][locals.digSel].hi = data;
+      locals.segments[20+locals.digSel].b.lo |=
+          locals.pseg[20+locals.digSel].b.lo = data;
     else
-      locals.segments[1][locals.digSel].lo |=
-          locals.pseg[1][locals.digSel].lo = data;
+      locals.segments[20+locals.digSel].b.hi |=
+          locals.pseg[20+locals.digSel].b.hi = data;
   }
 }
 static WRITE_HANDLER(pia5a_w) { // Not used for DMD
   if (core_gameData->hw.display & S11_DISPINV) data = ~data;
   if (core_gameData->hw.display & S11_LOWALPHA)
-    locals.segments[1][locals.digSel].lo |=
-         locals.pseg[1][locals.digSel].lo = data;
+    locals.segments[20+locals.digSel].b.hi |=
+         locals.pseg[20+locals.digSel].b.hi = data;
 }
 static WRITE_HANDLER(pia3a_w) {
   if (core_gameData->hw.display & S11_DISPINV) data = ~data;
-  locals.segments[0][locals.digSel].lo |= locals.pseg[0][locals.digSel].lo = data;
+  locals.segments[locals.digSel].b.hi |= locals.pseg[locals.digSel].b.hi = data;
 }
 static WRITE_HANDLER(pia3b_w) {
   if (core_gameData->hw.display & S11_DISPINV) data = ~data;
-  locals.segments[0][locals.digSel].hi |= locals.pseg[0][locals.digSel].hi = data;
+  locals.segments[locals.digSel].b.lo |= locals.pseg[locals.digSel].b.lo = data;
 }
 
 static READ_HANDLER(pia3b_dmd_r) {
@@ -209,14 +209,14 @@ static READ_HANDLER(pia3b_dmd_r) {
 //NOTE: Unusued in Data East Alpha Games
 static WRITE_HANDLER(pia2ca2_w) {
   data = data ? 0x80 : 0x00;
-  locals.segments[1][locals.digSel].lo |= data;
-  locals.pseg[1][locals.digSel].lo = (locals.pseg[1][locals.digSel].lo & 0x7f) | data;
+  locals.segments[20+locals.digSel].b.lo |= data;
+  locals.pseg[20+locals.digSel].b.lo = (locals.pseg[locals.digSel].b.lo & 0x7f) | data;
 }
 //NOTE: Pin 10 of CN3 for Data East DMD Games (Currently we don't need to read this value)
 static WRITE_HANDLER(pia2cb2_w) {
   data = data ? 0x80 : 0x00;
-  locals.segments[0][locals.digSel].lo |= data;
-  locals.pseg[0][locals.digSel].lo = (locals.pseg[0][locals.digSel].lo & 0x7f) | data;
+  locals.segments[locals.digSel].b.lo |= data;
+  locals.pseg[locals.digSel].b.lo = (locals.pseg[locals.digSel].b.lo & 0x7f) | data;
 }
 
 static READ_HANDLER(pia5a_r) {

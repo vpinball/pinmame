@@ -116,10 +116,10 @@ static WRITE_HANDLER(s4_swcol_w) { s4locals.swCol = data; }
 /*DISPLAY ALPHA  */
 /*****************/
 static WRITE_HANDLER(s4_alpha_w) {
-  s4locals.segments[0][s4locals.alphapos].lo |=
-    s4locals.pseg[0][s4locals.alphapos].lo = core_bcd2seg[data>>4];
-  s4locals.segments[1][s4locals.alphapos].lo |=
-    s4locals.pseg[1][s4locals.alphapos].lo = core_bcd2seg[data&0x0f];
+  s4locals.segments[s4locals.alphapos].w |=
+    s4locals.pseg[s4locals.alphapos].w = core_bcd2seg[data>>4];
+  s4locals.segments[20+s4locals.alphapos].w |=
+    s4locals.pseg[20+s4locals.alphapos].w = core_bcd2seg[data&0x0f];
 }
 
 static WRITE_HANDLER(s4_pa_w) {

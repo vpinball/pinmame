@@ -117,21 +117,21 @@ static WRITE_HANDLER(pia3ca2_w) {
 }
 
 static WRITE_HANDLER(pia3b_w) {
-  s7locals.segments[0][s7locals.digSel].lo |=
-    s7locals.pseg[0][s7locals.digSel].lo = core_bcd2seg[data&0x0f];
-  s7locals.segments[1][s7locals.digSel].lo |=
-    s7locals.pseg[1][s7locals.digSel].lo = core_bcd2seg[data>>4];
+  s7locals.segments[s7locals.digSel].w |=
+    s7locals.pseg[s7locals.digSel].w = core_bcd2seg[data&0x0f];
+  s7locals.segments[20+s7locals.digSel].w |=
+    s7locals.pseg[20+s7locals.digSel].w = core_bcd2seg[data>>4];
 }
 static WRITE_HANDLER(pia0b_w) {
-  s7locals.pseg[0][s7locals.digSel].lo &= 0x7f;
-  s7locals.pseg[1][s7locals.digSel].lo &= 0x7f;
+  s7locals.pseg[s7locals.digSel].w &= 0x7f;
+  s7locals.pseg[20+s7locals.digSel].w &= 0x7f;
   if (data & 0x80) {
-    s7locals.segments[1][s7locals.digSel].lo |= 0x80;
-    s7locals.pseg[1][s7locals.digSel].lo |= 0x80;
+    s7locals.segments[20+s7locals.digSel].w |= 0x80;
+    s7locals.pseg[20+s7locals.digSel].w |= 0x80;
   }
   if (data & 0x40) {
-    s7locals.segments[0][s7locals.digSel].lo |= 0x80;
-    s7locals.pseg[0][s7locals.digSel].lo |= 0x80;
+    s7locals.segments[s7locals.digSel].w |= 0x80;
+    s7locals.pseg[s7locals.digSel].w |= 0x80;
   }
 }
 

@@ -336,9 +336,9 @@ typedef struct {
 } core_tLampDisplay;
 
 #ifdef LSB_FIRST
-typedef struct { UINT8 lo, hi, dmy1, dmy2; } core_tSeg[3][20];
+typedef union { struct { UINT8 lo, hi; } b; UINT16 w; } core_tSeg[60];
 #else /* LSB_FIRST */
-typedef struct { UINT8 dmy2, dmy1, hi, lo; } core_tSeg[3][20];
+typedef union { struct { UINT8 hi, lo; } b; UINT16 w; } core_tSeg[60];
 #endif /* LSB_FIRST */
 typedef struct {
   UINT8  swMatrix[CORE_MAXSWCOL];
