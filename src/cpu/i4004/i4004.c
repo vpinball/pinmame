@@ -30,8 +30,9 @@ static UINT8 i4004_win_layout[] = {
 	 0,23,80, 1,	/* command line window (bottom rows) */
 };
 
+/* no idea what the original mapping is */
 static UINT8 kbptable[] = {
-	0x03, 0x03, 0x03, 0x03, 0x02, 0x02, 0x02, 0x02, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00
+	0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07
 };
 
 typedef struct {
@@ -44,8 +45,6 @@ typedef struct {
 int i4004_ICount = 0;
 
 static i4004_Regs I;
-static UINT8 ZS[256];
-static UINT8 ZSP[256];
 
 static UINT8 ROP(void)
 {
@@ -759,9 +758,10 @@ INLINE void execute_one(int opcode)
 			I.carry = 1;
 			break;
 		case 0xfb: /* DAA */
+			/* no idea what the original mapping is */
 			if (I.accu > 9) {
-				I.carry = 1;
 				I.accu -= 10;
+				I.carry = 1;
 			} else
 				I.carry = 0;
 			break;
