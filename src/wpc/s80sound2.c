@@ -31,6 +31,14 @@ void S80Bs_sound_init(void) {
 	memset(&s80bslocals, 0, sizeof(s80bslocals));
 }
 
+//Cleanup
+void S80Bs_sound_exit(void) { 
+	if(s80bslocals.nmi_timer)
+		timer_remove(s80bslocals.nmi_timer);
+	s80bslocals.nmi_timer = NULL;
+}
+
+
 //Setup NMI timer and triggering code: Timed NMI occurs for the Y-CPU. Y-CPU triggers D-CPU NMI
 void nmi_generate(int param) { cpu_cause_interrupt(1,M6502_INT_NMI); }
 static void nmi_callback(int param) { cpu_cause_interrupt(cpu_gettotalcpu()-1, M6502_INT_NMI); }

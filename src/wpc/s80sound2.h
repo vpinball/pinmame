@@ -59,6 +59,7 @@ extern struct Samplesinterface	samples_interface;
 
 /*-- Sound interface communications --*/
 extern void S80Bs_sound_init(void);
+extern void S80Bs_sound_exit(void);
 extern void S80Bs_soundlatch(int data);
 
 /****************/
