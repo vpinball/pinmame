@@ -14,13 +14,13 @@
   SOUND BOARD:
 	CPU: 87c52 @ 12 Mhz
 	I/O: 87c52 has a uart
-	SND: 2 x TMS320AV120 MPG DECODER
+	SND: 2 x TMS320AV120 MPG DECODER ( Only 1 on Breakshot )
 
   Capcom Standard Pins:
   Lamp Matrix     = 2 x (8x8 Matrixs) = 128 Lamps - NOTE: No GI - every single lamp is cpu controlled
   Switch Matrix   = 64 Switches on switch board + 16 Cabinet Switches
   Solenoids	= 32 Solenoids/Flashers
-  Sound: 3 Channel Mono Audio (Left, Center, Right)
+  Sound: 2 Channel Mono Audio
 
   Capcom "Classic" Pins: (Breakshot)
   Lamp Matrix     = 1 x (8x8 Matrixs) = 64 Lamps - 64 GI Lamps (not directly cpu controlled?)
@@ -48,6 +48,7 @@
 #include "driver.h"
 #include "cpu/m68000/m68000.h"
 #include "core.h"
+#include "capcoms.h"
 
 //Comment out to remove U16 Test bypass..
 #define USE_U16_TEST_BYPASS
@@ -623,6 +624,7 @@ MACHINE_DRIVER_START(cc)
   MDRV_SWITCH_CONV(cc_sw2m,cc_m2sw)
   MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_TIMER_ADD(cc_zeroCross, CC_ZCFREQ)
+  MDRV_IMPORT_FROM(capcoms)
 MACHINE_DRIVER_END
 
 /********************************/
