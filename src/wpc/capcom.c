@@ -131,7 +131,7 @@ static SWITCH_UPDATE(cc) {
 /* IRQ & ZERO CROSS */
 /********************/
 static void cc_zeroCross(int data) {
- locals.line_v = !locals.line_v;
+ //locals.line_v = !locals.line_v;
  locals.zero_cross = !locals.zero_cross;
  cpu_set_irq_line(0,MC68306_IRQ_2,ASSERT_LINE);
 }
@@ -159,8 +159,9 @@ static void cc_u16irq4(int data) {
 //PA7   - GRESET(output only)
 static READ16_HANDLER(cc_porta_r) {
 	int data = 0;
+	locals.line_v = !locals.line_v;
 	data = (1<<4) | (locals.line_v<<5);
-	if(!locals.pulse)	data ^= 0xff;
+	if(!locals.pulse)	data ^= 0x10;
 	DBGLOG(("Port A read\n")); 
 	//printf("[%08x] Port A read = %x\n",activecpu_get_previouspc(),data);
 	return data; 
@@ -197,10 +198,13 @@ static READ16_HANDLER(cc_portb_r) {
 static WRITE16_HANDLER(cc_porta_w) {
   if(data !=0x0048 && data !=0x0040 && data !=0x0008)
 	DBGLOG(("Port A write %04x\n",data));
-  locals.driverBoard = 0x0700; // this value is expected by Breakshot after port writes
+
   locals.diagnosticLed = ((~data)&0x08>>3);
   locals.vset = (data>>6)&1;
   locals.greset = (data>>7)&1;
+
+  if (!core_gameData->hw.lampCol)
+	locals.driverBoard = 0x0700; // this value is expected by Breakshot after port writes
 }
 /****************/
 /* PORT B WRITE */
@@ -227,6 +231,7 @@ static WRITE16_HANDLER(cc_portb_w) {
 static READ16_HANDLER(u16_r) {
   offset &= 0x203;
   //DBGLOG(("U16r [%03x] (%04x)\n",offset,mem_mask));
+  //printf("U16r [%03x] (%04x)\n",offset,mem_mask);
 
   switch (offset) {
     case 0x000: case 0x001: 
@@ -249,6 +254,7 @@ static READ16_HANDLER(u16_r) {
 static WRITE16_HANDLER(u16_w) {
   offset &= 0x203;
    // DBGLOG(("U16w [%03x]=%04x (%04x)\n",offset,data,mem_mask));
+  //printf("U16w [%03x]=%04x (%04x)\n",offset,data,mem_mask);
 
   //DMD Visible Block offset
   if (offset==2)
@@ -298,7 +304,15 @@ static READ16_HANDLER(io_r) {
       swcol = offset-0x200007;
       data = (coreGlobals.swMatrix[swcol+4] << 8 | coreGlobals.swMatrix[swcol]) ^ 0xffff; //Switches are inverted
       break;
-    //Cabinet/Coin Door Switches OR (ALL SWITCH READS FOR GAMES USING ONLY LAMP B MATRIX)
+
+    //Solenoid A & B Status???
+    case 0x20000c:
+    case 0x20000d:
+		data = 0;
+		//printf("PC%08x - io_r: [%08x] (%04x) = %04x\n",activecpu_get_pc(),offset,mem_mask,data);
+		break;
+
+	//Cabinet/Coin Door Switches OR (ALL SWITCH READS FOR GAMES USING ONLY LAMP B MATRIX)
     case 0x400000:
       if (!core_gameData->hw.lampCol) {
         //Cabinet/Coin Door Switches are read as the lower byte on all switch reads
@@ -573,7 +587,7 @@ static int cc_m2sw(int col, int row) {
 
 static data16_t *ramptr;
 static MEMORY_READ16_START(cc_readmem)
-  { 0x00000000, 0x00ffffff, MRA16_RAM },
+  { 0x00000000, 0x00ffffff, MRA16_ROM },
   { 0x01000000, 0x0107ffff, MRA16_RAM },			/* DRAM */
   { 0x02000000, 0x02bfffff, io_r },					/* I/O */
   { 0x02C00000, 0x02C007ff, u16_r },				/* U16 (A10,A2,A1)*/
@@ -581,7 +595,7 @@ static MEMORY_READ16_START(cc_readmem)
 MEMORY_END
 
 static MEMORY_WRITE16_START(cc_writemem)
-  { 0x00000000, 0x00ffffff, MWA16_RAM },
+  { 0x00000000, 0x00ffffff, MWA16_ROM },
   { 0x01000000, 0x0107ffff, MWA16_RAM, &ramptr },	/* DRAM */
   { 0x02000000, 0x02bfffff, io_w },					/* I/O */
   { 0x02C00000, 0x02C007ff, u16_w },				/* U16 (A10,A2,A1)*/
