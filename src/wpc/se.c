@@ -18,6 +18,7 @@
 #include "core.h"
 #include "dedmd.h"
 #include "se.h"
+#include "sesound.h"
 #include "vidhrdw/crtc6845.h"
 
 #define SE_VBLANKFREQ      60 /* VBLANK frequency */
@@ -94,14 +95,11 @@ static void SE_updSw(int *inports) {
   }
 }
 
-static WRITE_HANDLER(SE_sndCmd_w) {
-}
-
 static core_tData SEData = {
   8, /* 8 DIPs */
   SE_updSw,
   1,
-  SE_sndCmd_w,
+  ses_soundCmd_w,
   "SE"
 };
 
@@ -250,6 +248,7 @@ static MEMORY_WRITE_START(SE_writemem)
   { 0x3300, 0x3300, switch_w },
   { 0x3600, 0x3600, dmdlatch_w },
   { 0x3601, 0x3601, dmdreset_w },
+  { 0x3800, 0x3800, ses_soundCmd_w },
   { 0x4000, 0x7fff, MWA_ROM },
   { 0x8000, 0xffff, MWA_ROM },
 MEMORY_END
@@ -293,6 +292,26 @@ struct MachineDriver machine_driver_SE_1 = {
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
   NULL, NULL, de_dmd128x32_refresh,
   0,0,0,0,{{ 0 }},
+  SE_nvram
+};
+
+struct MachineDriver machine_driver_SE_1S = {
+  {{  CPU_M6809, 2000000, /* 2 Mhz */
+      SE_readmem, SE_writemem, NULL, NULL,
+      SE_vblank, 1,
+      SE_irq, SE_IRQFREQ
+  },{ CPU_M6809, 4000000, /* 4 Mhz*/
+      se_dmdreadmem, se_dmdwritemem, NULL, NULL,
+      NULL, 0,
+      ignore_interrupt, 0
+  } SES_SOUNDCPU },
+  SE_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  50, SE_init, CORE_EXITFUNC(SE_exit)
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
+  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
+  NULL, NULL, de_dmd128x32_refresh,
+  0,0,0,0,{ SES_SOUND },
   SE_nvram
 };
 
