@@ -46,10 +46,10 @@ UINT8 DMDFrames[GTS3DMD_FRAMES][0x200];
 /* FORCE The 16 Segment Layout to match the output order expected by core.c */
 static const int alpha_adjust[16] =   {0,1,2,3,4,5,9,10,11,12,13,14,6,8,15,7};
 
-static void GTS3_init(void);
-static void GTS3_init2(void);
-static void GTS3_exit(void);
-static void GTS3_nvram(void *file, int write);
+//static void GTS3_init(void);
+//static void GTS3_init2(void);
+//static void GTS3_exit(void);
+//static void GTS3_nvram(void *file, int write);
 static WRITE_HANDLER(display_control);
 
 /*Alpha Display Generation Specific*/
@@ -431,12 +431,7 @@ static struct via6522_interface via_1_interface =
 	/*irq                  */ via_irq
 };
 
-static int GTS3_irq(void) {
-	return 0;
-	// return ignore_interrupt();	// !!! NO INT OR NMI GENERATED - External Devices Trigger it!
-}
-
-static int GTS3_vblank(void) {
+static INTERRUPT_GEN(GTS3_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
@@ -482,7 +477,6 @@ static int GTS3_vblank(void) {
 	  }
 	  core_updateSw(GTS3locals.solenoids & 0x80000000);
   }
-  return 0;
 }
 
 static void GTS3_updSw(int *inports) {
@@ -901,7 +895,6 @@ MACHINE_DRIVER_START(gts3)
   MDRV_CPU_ADD(M65C02, 2000000)
   MDRV_CPU_MEMORY(GTS3_readmem, GTS3_writemem)
   MDRV_CPU_VBLANK_INT(GTS3_vblank, GTS3_VBLANKDIV)
-  MDRV_CPU_PERIODIC_INT(GTS3_irq, GTS3_IRQFREQ)
 
   MDRV_NVRAM_HANDLER(gts3)
   MDRV_VIDEO_UPDATE(core_led)
