@@ -8,10 +8,6 @@
 /*-------------------------
 / Machine driver constants
 /--------------------------*/
-#define GTS80_CPUNO	0
-
-#define GTS80_ROMEND	ROM_END
-
 /*-- Common Inports for GTS80Games --*/
 #define GTS80_COMPORTS \
   PORT_START /* 0 */ \
@@ -184,13 +180,6 @@
 
 #define GTS80_COMINPORT       CORE_COREINPORT
 
-#define GTS80_SOLSMOOTH       4 /* Smooth the Solenoids over this number of VBLANKS */
-#define GTS80_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
-#define GTS80_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
-
-/*-- To access C-side multiplexed solenoid/flasher --*/
-#define GTS80_CSOL(x) ((x)+24)
-
 /*-- GTS80 switch numbers --*/
 #define GTS80_SWSLAMTILT	  -1
 
@@ -208,26 +197,70 @@
 
 /*-- GTS80/GTS80A Main CPU regions and ROM, 2 game PROM version --*/
 #define GTS80_2_ROMSTART(name, n1, chk1, n2, chk2, n3, chk3, n4, chk4) \
-   ROM_START(name) \
-     NORMALREGION(0x10000, GTS80_MEMREG_CPU) \
-       ROM_LOAD(n1, 0x1000, 0x0200, chk1) \
-	   ROM_RELOAD(  0x1400, 0x0200)       \
-       ROM_LOAD(n2, 0x1200, 0x0200, chk2) \
-	   ROM_RELOAD(  0x1600, 0x0200)       \
-       ROM_LOAD(n3, 0x2000, 0x1000, chk3) \
-       ROM_LOAD(n4, 0x3000, 0x1000, chk4)
+  ROM_START(name) \
+    NORMALREGION(0x10000, GTS80_MEMREG_CPU) \
+      ROM_LOAD(n1, 0x1000, 0x0200, chk1) \
+        ROM_RELOAD(0x1400, 0x0200)       \
+        ROM_RELOAD(0x5000, 0x0200)       \
+        ROM_RELOAD(0x5400, 0x0200)       \
+        ROM_RELOAD(0x9000, 0x0200)       \
+        ROM_RELOAD(0x9400, 0x0200)       \
+        ROM_RELOAD(0xd000, 0x0200)       \
+        ROM_RELOAD(0xd400, 0x0200)       \
+      ROM_LOAD(n2, 0x1200, 0x0200, chk2) \
+        ROM_RELOAD(0x1600, 0x0200)       \
+        ROM_RELOAD(0x5000, 0x0200)       \
+        ROM_RELOAD(0x5600, 0x0200)       \
+        ROM_RELOAD(0x9000, 0x0200)       \
+        ROM_RELOAD(0x9600, 0x0200)       \
+        ROM_RELOAD(0xd000, 0x0200)       \
+        ROM_RELOAD(0xd600, 0x0200)       \
+      ROM_LOAD(n3, 0x2000, 0x1000, chk3) \
+        ROM_RELOAD(0x6000, 0x1000)       \
+        ROM_RELOAD(0xa000, 0x1000)       \
+        ROM_RELOAD(0xe000, 0x1000)       \
+      ROM_LOAD(n4, 0x3000, 0x1000, chk4) \
+        ROM_RELOAD(0x7000, 0x1000)       \
+        ROM_RELOAD(0xb000, 0x1000)       \
+        ROM_RELOAD(0xf000, 0x1000)
 
 /*-- GTS80/GTS80A Main CPU regions and ROM, 1 game PROM version --*/
 #define GTS80_1_ROMSTART(name, n1, chk1, n2, chk2, n3, chk3) \
-   ROM_START(name) \
-     NORMALREGION(0x10000, GTS80_MEMREG_CPU) \
-       ROM_LOAD(n1, 0x1000, 0x0800, chk1) \
-       ROM_LOAD(n2, 0x2000, 0x1000, chk2) \
-       ROM_LOAD(n3, 0x3000, 0x1000, chk3)
+  ROM_START(name) \
+    NORMALREGION(0x10000, GTS80_MEMREG_CPU) \
+      ROM_LOAD(n1, 0x1000, 0x0800, chk1) \
+        ROM_RELOAD(0x5000, 0x0800)       \
+        ROM_RELOAD(0x9000, 0x0800)       \
+        ROM_RELOAD(0xd000, 0x0800)       \
+      ROM_LOAD(n2, 0x2000, 0x1000, chk2) \
+        ROM_RELOAD(0x6000, 0x1000)       \
+        ROM_RELOAD(0xa000, 0x1000)       \
+        ROM_RELOAD(0xe000, 0x1000)       \
+      ROM_LOAD(n3, 0x3000, 0x1000, chk3) \
+        ROM_RELOAD(0x7000, 0x1000)       \
+        ROM_RELOAD(0xb000, 0x1000)       \
+        ROM_RELOAD(0xf000, 0x1000)      
 
 /*-- Video roms for Caveman, they are copied to their right place by the driver --*/
 #define VIDEO_ROMSTART(n1,chk1,n2,chk2,n3,chk3,n4,chk4,n5,chk5,n6,chk6,n7,chk7,n8,chk8) \
      NORMALREGION(0x1000000, GTS80_MEMREG_VIDCPU) \
+       ROM_LOAD16_BYTE(n1, 0x08000, 0x1000, chk1) \
+         ROM_RELOAD(       0xf8000, 0x1000) \
+       ROM_LOAD16_BYTE(n2, 0x08001, 0x1000, chk2) \
+         ROM_RELOAD(       0xf8001, 0x1000) \
+       ROM_LOAD16_BYTE(n3, 0x0a000, 0x1000, chk3) \
+         ROM_RELOAD(       0xfa000, 0x1000) \
+       ROM_LOAD16_BYTE(n4, 0x0a001, 0x1000, chk4) \
+         ROM_RELOAD(       0xfa001, 0x1000) \
+       ROM_LOAD16_BYTE(n5, 0x0c000, 0x1000, chk5) \
+         ROM_RELOAD(       0xfc000, 0x1000) \
+       ROM_LOAD16_BYTE(n6, 0x0c001, 0x1000, chk6) \
+         ROM_RELOAD(       0xfc001, 0x1000) \
+       ROM_LOAD16_BYTE(n7, 0x0e000, 0x1000, chk7) \
+         ROM_RELOAD(       0xfe000, 0x1000) \
+       ROM_LOAD16_BYTE(n8, 0x0e001, 0x1000, chk8) \
+         ROM_RELOAD(       0xfe001, 0x1000)
+#if 0
        ROM_LOAD(n1, 0x08000, 0x1000, chk1) \
        ROM_LOAD(n2, 0x09000, 0x1000, chk2) \
        ROM_LOAD(n3, 0x0a000, 0x1000, chk3) \
@@ -236,27 +269,43 @@
        ROM_LOAD(n6, 0x0d000, 0x1000, chk6) \
        ROM_LOAD(n7, 0x0e000, 0x1000, chk7) \
        ROM_LOAD(n8, 0x0f000, 0x1000, chk8)
-
+#endif
 /*-- GTS80B Main CPU regions and ROM, 8K single game PROM --*/
 #define GTS80B_8K_ROMSTART(name, n1, chk1) \
-   ROM_START(name) \
-     NORMALREGION(0x10000, GTS80_MEMREG_CPU) \
-       ROM_LOAD(n1, 0x2000, 0x2000, chk1)
+  ROM_START(name) \
+    NORMALREGION(0x10000, GTS80_MEMREG_CPU) \
+      ROM_LOAD(n1, 0x2000, 0x2000, chk1) \
+        ROM_RELOAD(0x6000, 0x2000)       \
+        ROM_RELOAD(0xa000, 0x2000)       \
+        ROM_RELOAD(0xe000, 0x2000)
 
 /*-- GTS80B Main CPU regions and ROM, 8K & 2K game PROM --*/
 #define GTS80B_2K_ROMSTART(name, n1, chk1, n2, chk2) \
-   ROM_START(name) \
-     NORMALREGION(0x10000, GTS80_MEMREG_CPU) \
-       ROM_LOAD(n1, 0x1000, 0x0800, chk1) \
-       ROM_LOAD(n2, 0x2000, 0x2000, chk2)
+  ROM_START(name) \
+    NORMALREGION(0x10000, GTS80_MEMREG_CPU) \
+      ROM_LOAD(n1, 0x1000, 0x0800, chk1) \
+        ROM_RELOAD(0x5000, 0x0800)       \
+        ROM_RELOAD(0x9000, 0x0800)       \
+        ROM_RELOAD(0xd000, 0x0800)       \
+      ROM_LOAD(n2, 0x2000, 0x2000, chk2) \
+        ROM_RELOAD(0x6000, 0x2000)       \
+        ROM_RELOAD(0xa000, 0x2000)       \
+        ROM_RELOAD(0xe000, 0x2000)
 
 /*-- GTS80B Main CPU regions and ROM, 8K & 4K game PROM --*/
 #define GTS80B_4K_ROMSTART(name, n1, chk1, n2, chk2) \
-   ROM_START(name) \
-     NORMALREGION(0x10000, GTS80_MEMREG_CPU) \
-       ROM_LOAD(n1, 0x1000, 0x0800, chk1) \
-	   ROM_CONTINUE(0x9000, 0x0800)       \
-       ROM_LOAD(n2, 0x2000, 0x2000, chk2) \
+  ROM_START(name) \
+    NORMALREGION(0x10000, GTS80_MEMREG_CPU) \
+      ROM_LOAD(n1, 0x1000, 0x0800, chk1) \
+        ROM_CONTINUE(0x9000, 0x0800)     \
+        ROM_RELOAD(0x5000, 0x0800)       \
+        ROM_CONTINUE(0xd000, 0x0800)     \
+      ROM_LOAD(n2, 0x2000, 0x2000, chk2) \
+        ROM_RELOAD(0x6000, 0x2000)       \
+        ROM_RELOAD(0xa000, 0x2000)       \
+        ROM_RELOAD(0xe000, 0x2000)
+
+#define GTS80_ROMEND	ROM_END
 
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(gts80s);
@@ -274,5 +323,12 @@ extern MACHINE_DRIVER_EXTERN(gts80bs3);
 #define gl_mGTS80BS1	gts80bs1
 #define gl_mGTS80BS2	gts80bs2
 #define gl_mGTS80BS3	gts80bs3
+
+/* Display types */
+#define GTS80_DISPBCD   0x00
+#define GTS80_DISPALPHA 0x01
+#define GTS80_DISPVIDEO 0x02
+
+extern core_tLCDLayout GTS80_dispCaveman[];
 
 #endif /* INC_GTS80 */
