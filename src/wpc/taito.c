@@ -8,7 +8,7 @@
 #include "taitos.h"
 
 // Taito Pinball System
-// cpu: 8080 @ 4 MHz (???)
+// cpu: 8080 @ 1.888888 MHz (17 MHz / 9)
 //
 // Switch matrix: (D0-D7)*10 + V0-V7
 // Lamp matrix:   (ST0-ST15)*10 + L3-L0
@@ -273,7 +273,7 @@ MEMORY_END
 MACHINE_DRIVER_START(taito)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(taito,NULL,taito)
-  MDRV_CPU_ADD_TAG("mcpu", 8080, 1000000) // ??
+  MDRV_CPU_ADD_TAG("mcpu", 8080, 1888888) // 17 MHz / 9
   MDRV_CPU_MEMORY(taito_readmem, taito_writemem)
   MDRV_CPU_VBLANK_INT(taito_vblank, TAITO_VBLANKFREQ)
   MDRV_NVRAM_HANDLER(taito)
