@@ -44,7 +44,9 @@ CC_ROMSTART_4(pmv112,  "u1l_v112.bin",CRC(c8362623),
                        "u1h_v112.bin",CRC(f6232c74),
                        "u2l_v10.bin", CRC(d3e4241d),
                        "u2h_v10.bin", CRC(9276fd62))
-CAPCOMS_SOUNDROM3("u24_v10.bin", NO_DUMP,\
+//CAPCOMS_SOUNDROM3("u24_v10.bin", NO_DUMP,
+//It seems PM uses the same U24 image.. (still unconfirmed, but it seems to work)
+CAPCOMS_SOUNDROM3("u24_v11.bin", CRC(d46212f4) SHA1(50f1279d995b597c468805b323e0252800b28274),\
 				  "u28_v11.bin", CRC(5c12fc2f) SHA1(2e768fb1b5bf56f97af16c4e5542446ef740db58), \
 				  "u29_v11.bin", CRC(74352bcd) SHA1(dc62fd651cf8408330f41b2e5387daecfe1d93d7), \
 				  "u30_v16.bin", CRC(a7c29b8f) SHA1(1d623c3a67a8e4bf39c22bbf0e008fb2f8920351)) 
