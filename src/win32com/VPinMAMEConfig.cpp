@@ -43,6 +43,8 @@ int dmd_doublesize = 0;
 int dmd_width = 0;
 int dmd_height = 0;
 
+int threadpriority = 1;
+
 static int config_handle_arg(char *arg);
 
 static FILE *logfile;
@@ -218,8 +220,9 @@ static struct rc_option misc_opts[] = {
 	{ "log", NULL, rc_bool, &errorlog, "1", 0, 0, init_errorlog, "turn on error loging to console or file" },
 #else
 	{ "log", NULL, rc_bool, &errorlog, "0", 0, 0, init_errorlog, "turn on error loging to console or file" },
-	{ "errorlogfile", NULL, rc_bool, &errorlogfile, "1", 0, 0, init_errorlog, "generate error.log" },
 #endif
+	{ "errorlogfile", NULL, rc_bool, &errorlogfile, "1", 0, 0, init_errorlog, "generate error.log" },
+	{ "threadpriority", NULL, rc_int, &threadpriority, "1", 0, 3, init_errorlog, "sets the thread priority for the worker thread" },
 	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
 };
 
@@ -264,6 +267,8 @@ static char* GlobalSettings[] = {
 	"mouse",
 	"joystick",
 	"steadykey",
+
+	"threadpriority",
 	
 	NULL
 };
