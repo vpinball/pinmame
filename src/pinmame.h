@@ -112,6 +112,7 @@
 #define HAS_ADPCM      1
 #define HAS_VOTRAXSC01 1
 #define HAS_SN76477    1
+#define HAS_SN76496    1
 #define HAS_DISCRETE   1
 #define HAS_SP0250     1
 #define HAS_TMS320AV120 1
