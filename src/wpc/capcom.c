@@ -1,7 +1,7 @@
 /************************************************************************************************
   Capcom
   -----------------
-  by Martin Adrian, Steve Ellenoff, Gerrit Volkenborn (05/07/2002 - 09/24/2003)
+  by Martin Adrian, Steve Ellenoff, Gerrit Volkenborn (05/07/2002 - 09/25/2003)
 
   Hardware from 1995-1996
 
@@ -20,7 +20,7 @@
   Lamp Matrix     = 2 x (8x8 Matrixs) = 128 Lamps - NOTE: No GI - every single lamp is cpu controlled
   Switch Matrix   = 64 Switches on switch board + 16 Cabinet Switches
   Solenoids	= 32 Solenoids/Flashers
-  Sound: 3 Channel Mono Audio
+  Sound: 3 Channel Mono Audio (Left, Center, Right)
 
   Capcom "Classic" Pins: (Breakshot)
   Lamp Matrix     = 1 x (8x8 Matrixs) = 64 Lamps - 64 GI Lamps (not directly cpu controlled?)
@@ -31,13 +31,12 @@
   Milestones:
   09/19-09/21/03 - U16 Test successfully bypassed, dmd and lamps working quite well
   09/21-09/24/03 - DMD working 100% incuding 256x64 size, switches, solenoids working on most games except kp, and ff
-
+  09/25          - First time game booted without any errors.. (Even though in reality, the U16 would still fail if not hacked around)
   Hacks & Issues that need to be looked into:
   #1) U16 Needs to be better understood and emulated
   #2) Once U16 better understood, remove hacks that bypass U16 startup check
   #3) IRQ4 appears to do nothing, this seems odd
-  #4) High Power Solenoids don't work in Flipper Football and Kingpin (related to Signals Error)
-  #5) Power Line Detection needs to be implemented (Causes Bad Signals Error Msg on Startup)
+  #4) 50V Line is being read as 0.0V for some reason, even though Signal Test passes (which involves the 50V Line check)
   #6) Sound communication occurs via the 68306 UARTS (currently not really emulated in the 68306 core)
   #7) Handle opto switches internally? Is this needed?
   #8) Handle EOS switches internally? Is this needed?
@@ -50,9 +49,21 @@
 #include "cpu/m68000/m68000.h"
 #include "core.h"
 
-#define CC_VBLANKFREQ    60 /* VBLANK frequency */
-#define CC_ZCFREQ        87 /* Zero cross frequency?? Reports ~60Hz on the Solenoid/Line Voltage Test */
+//Comment out to remove U16 Test bypass..
+#define USE_U16_TEST_BYPASS
 
+//Comment out to use the correct actual frequency values, but the animations are much too slow..
+#define USE_ADJUSTED_FREQ		
+
+#ifdef USE_ADJUSTED_FREQ
+	#define CC_ZCFREQ       124			/* Zero cross frequency - Reports ~60Hz on the Solenoid/Line Voltage Test */
+	#define CPU_CLOCK		24000000	/* Animation speed is more accurate at this speed, strange.. */
+#else
+	#define CC_ZCFREQ       87			/* Zero cross frequency - Reports ~60Hz on the Solenoid/Line Voltage Test */
+	#define CPU_CLOCK		16670000	/* Animation speed is more accurate at this speed, strange.. */
+#endif
+
+#define CC_VBLANKFREQ    60 /* VBLANK frequency */
 #define CC_SOLSMOOTH       3 /* Smooth the Solenoids over this numer of VBLANKS */
 #define CC_LAMPSMOOTH      4 /* Smooth the lamps over this number of VBLANKS */
 
@@ -78,7 +89,7 @@ static struct {
 static UINT32 fixaddr = 0;
 
 static NVRAM_HANDLER(cc);
-static void U16_Tests_Hack(void);
+static void U16_Tests_ByPass(void);
 
 static INTERRUPT_GEN(cc_vblank) {
   /*-------------------------------
@@ -120,6 +131,7 @@ static SWITCH_UPDATE(cc) {
 /* IRQ & ZERO CROSS */
 /********************/
 static void cc_zeroCross(int data) {
+ locals.line_v = !locals.line_v;
  locals.zero_cross = !locals.zero_cross;
  cpu_set_irq_line(0,MC68306_IRQ_2,ASSERT_LINE);
 }
@@ -147,11 +159,10 @@ static void cc_u16irq4(int data) {
 //PA7   - GRESET(output only)
 static READ16_HANDLER(cc_porta_r) {
 	int data = 0;
-	locals.line_v = !locals.line_v;		//This should be cycling fast, but it's also somehow related to Pulse signal from cpu, but don't know how
 	data = (1<<4) | (locals.line_v<<5);
-	data ^= 0xff;	//Data inverted?
+	if(!locals.pulse)	data ^= 0xff;
 	DBGLOG(("Port A read\n")); 
-//	printf("[%08x] Port A read = %x\n",activecpu_get_previouspc(),data);
+	//printf("[%08x] Port A read = %x\n",activecpu_get_previouspc(),data);
 	return data; 
 }
 /***************/
@@ -208,7 +219,7 @@ static WRITE16_HANDLER(cc_portb_w) {
   if (data & ~locals.lastb & 0x01)
 	  cpu_set_irq_line(0,MC68306_IRQ_2,CLEAR_LINE);
   locals.lastb = data;
-//  if(locals.pulse) printf("pulse=1\n"); else printf("pulse=0\n");
+  //if(locals.pulse) printf("pulse=1\n"); else printf("pulse=0\n");
 }
 /************/
 /* U16 READ */
@@ -270,7 +281,7 @@ static READ16_HANDLER(io_r) {
     //Read from other boards
     case 0x000006:
     case 0x00000a:
-	  data=0;
+	  data=0xffff;
       DBGLOG(("PC%08x - io_r: [%08x] (%04x)\n",activecpu_get_pc(),offset,mem_mask));
 	  //printf("PC%08x - io_r: [%08x] (%04x)\n",activecpu_get_pc(),offset,mem_mask);
       break;
@@ -391,14 +402,20 @@ static MACHINE_INIT(cc) {
   memset(&locals, 0, sizeof(locals));
   locals.u16a[0] = 0x00bc;
   locals.vblankCount = 1;
+  
+  //IRQ1 Maximum Frequency 
   timer_pulse(TIME_IN_CYCLES(2811,0),0,cc_u16irq1);		//Only value that passes IRQ1 test (DO NOT CHANGE UNTIL CURRENT HACK IS REPLACED)
+  
   //IRQ4 doesn't seem to do anything?!! Also, no idea of the frequency
-  timer_pulse(TIME_IN_HZ(120),0,cc_u16irq4);
+  timer_pulse(TIME_IN_HZ(60),0,cc_u16irq4);
+
   //Force U16 Tests on startup to succeed
-  U16_Tests_Hack();
+  #ifdef USE_U16_TEST_BYPASS
+	U16_Tests_ByPass();
+  #endif
 }
 
-void U16_Tests_Hack(void){
+static void U16_Tests_ByPass(void){
 	UINT16 jmp1 = 0;
 	UINT16 jmp2 = 0;
 	switch (core_gameData->hw.gameSpecific1) {
@@ -583,7 +600,7 @@ PORT_END
 MACHINE_DRIVER_START(cc)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(cc, NULL, NULL)
-  MDRV_CPU_ADD(M68306, 16670000/1)
+  MDRV_CPU_ADD(M68306, CPU_CLOCK)
   MDRV_CPU_MEMORY(cc_readmem, cc_writemem)
   MDRV_CPU_PORTS(cc_readport, cc_writeport)
   MDRV_CPU_VBLANK_INT(cc_vblank, 1)
