@@ -11,6 +11,9 @@ ifeq ($(TARGET),)
 TARGET = pinmame
 endif
 
+# uncomment next line to include running older stern whitestar games in new at91 cpu board for testing
+# TEST_NEW_SOUND = 1
+
 # uncomment next line to include the debugger
 # DEBUG = 1
 
@@ -167,6 +170,10 @@ DBGDEFS = -DMAME_DEBUG
 else
 DBGDEFS =
 DBGOBJS =
+endif
+
+ifdef TEST_NEW_SOUND
+DBGDEFS += -DTEST_NEW_SOUND
 endif
 
 ifdef COMPILESYSTEM_CYGWIN
