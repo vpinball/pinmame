@@ -67,7 +67,7 @@ S80_2_ROMSTART(spidermn, "653-1.cpu",    0x674ddc58,
 S80SOUND1K_ROMSTART(     "653.snd",      0xf5650c46,
                          "6530sy80.bin", 0xc8ba951d)
 S80_ROMEND
-CORE_GAMEDEFNV(spidermn,"Spiderman",1980,"Gottlieb",gl_mS80,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(spidermn,"Spiderman",1980,"Gottlieb",gl_mS80,0)
 
 /*-------------------------------------------------------------------
 / Panthera
@@ -79,7 +79,7 @@ S80_1_ROMSTART(panthera, "652.cpu",      0x5386e5fb,
 S80SOUND1K_ROMSTART(     "652.snd",      0x4d0cf2c0,
                          "6530sy80.bin", 0xc8ba951d)
 S80_ROMEND
-CORE_GAMEDEFNV(panthera,"Panthera",1980,"Gottlieb",gl_mS80,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(panthera,"Panthera",1980,"Gottlieb",gl_mS80,0)
 
 /*-------------------------------------------------------------------
 / Circus
@@ -92,7 +92,7 @@ S80_2_ROMSTART(circus, "654-1.cpu",    0x0eeb2731,
 S80SOUND1K_ROMSTART(   "654.snd",      0x75c3ad67,
                        "6530sy80.bin", 0xc8ba951d)
 S80_ROMEND
-CORE_GAMEDEFNV(circus,"Circus",1980,"Gottlieb",gl_mS80,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(circus,"Circus",1980,"Gottlieb",gl_mS80,0)
 
 /*-------------------------------------------------------------------
 / Counterforce
@@ -105,7 +105,7 @@ S80_2_ROMSTART(cntforce, "656-1.cpu",    0x42baf51d,
 S80SOUND1K_ROMSTART(     "656.snd",      0x0be2cbe9,
                          "6530sy80.bin", 0xc8ba951d)
 S80_ROMEND
-CORE_GAMEDEFNV(cntforce,"Counterforce",1980,"Gottlieb",gl_mS80,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(cntforce,"Counterforce",1980,"Gottlieb",gl_mS80,0)
 
 /*-------------------------------------------------------------------
 / Star Race
@@ -118,7 +118,7 @@ S80_2_ROMSTART(starrace, "657-1.cpu",    0x27081372,
 S80SOUND1K_ROMSTART(     "657.snd",      0x3a1d3995,
                          "6530sy80.bin", 0xc8ba951d)
 S80_ROMEND
-CORE_GAMEDEFNV(starrace,"Star Race",1980,"Gottlieb",gl_mS80,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(starrace,"Star Race",1980,"Gottlieb",gl_mS80,0)
 
 /*-------------------------------------------------------------------
 / James Bond (Timed Play)
@@ -130,7 +130,7 @@ S80_1_ROMSTART(jamesb, "658-1.cpu",    0xb841ad7a,
 S80SOUND1K_ROMSTART(   "658.snd",      0x962c03df,
                        "6530sy80.bin", 0xc8ba951d)
 S80_ROMEND
-CORE_GAMEDEFNV(jamesb,"James Bond (Timed Play)",1980,"Gottlieb",gl_mS80,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(jamesb,"James Bond (Timed Play)",1980,"Gottlieb",gl_mS80,0)
 
 /*-------------------------------------------------------------------
 / James Bond (3/5 Ball Play)
@@ -142,7 +142,7 @@ S80_1_ROMSTART(jamesb2, "658-x.cpu",    0xe7e0febf,
 S80SOUND1K_ROMSTART(    "658.snd",      0x962c03df,
                         "6530sy80.bin", 0xc8ba951d)
 S80_ROMEND
-CORE_CLONEDEFNV(jamesb2,jamesb,"James Bond (3/5-Ball)",1980,"Gottlieb",gl_mS80,GAME_IMPERFECT_SOUND)
+CORE_CLONEDEFNV(jamesb2,jamesb,"James Bond (3/5-Ball)",1980,"Gottlieb",gl_mS80,0)
 
 /*-------------------------------------------------------------------
 / Time Line
@@ -154,7 +154,7 @@ S80_1_ROMSTART(timeline, "659.cpu",      0x0d6950e3b,
 S80SOUND1K_ROMSTART(     "659.snd",      0x28185568,
                          "6530sy80.bin", 0xc8ba951d)
 S80_ROMEND
-CORE_GAMEDEFNV(timeline,"Time Line",1980,"Gottlieb",gl_mS80,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(timeline,"Time Line",1980,"Gottlieb",gl_mS80,0)
 
 /*-------------------------------------------------------------------
 / Force II
@@ -166,7 +166,7 @@ S80_1_ROMSTART(forceii, "661-2.cpu",    0xa4fa42a4,
 S80SOUND1K_ROMSTART(    "661.snd",      0x650158a7,
                         "6530sy80.bin", 0xc8ba951d)
 S80_ROMEND
-CORE_GAMEDEFNV(forceii,"Force II",1981,"Gottlieb",gl_mS80,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(forceii,"Force II",1981,"Gottlieb",gl_mS80,0)
 
 /*-------------------------------------------------------------------
 / Pink Panther
@@ -178,7 +178,7 @@ S80_1_ROMSTART(pnkpnthr, "664-1.cpu",    0xa0d3e69a,
 S80SOUND1K_ROMSTART(     "664.snd",      0x18f4abfd,
                          "6530sy80.bin", 0xc8ba951d)
 S80_ROMEND
-CORE_GAMEDEFNV(pnkpnthr,"Pink Panther",1981,"Gottlieb",gl_mS80,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(pnkpnthr,"Pink Panther",1981,"Gottlieb",gl_mS80,0)
 
 /*-------------------------------------------------------------------
 / Mars - God of War
@@ -214,7 +214,7 @@ S80_1_ROMSTART(vlcno_1b,"667-1b.cpu" ,  0xa422d862,
 S80SOUND1K_ROMSTART(    "667-a-s.snd",  0x894b4e2e,
                         "6530sy80.bin", 0xc8ba951d)
 S80_ROMEND
-CORE_CLONEDEFNV(vlcno_1b,vlcno_ax,"Volcano (Sound Only)",1981,"Gottlieb",gl_mS80,GAME_IMPERFECT_SOUND)
+CORE_CLONEDEFNV(vlcno_1b,vlcno_ax,"Volcano (Sound Only)",1981,"Gottlieb",gl_mS80,0)
 
 /*-------------------------------------------------------------------
 / Black Hole (Rev. 4)
@@ -250,7 +250,7 @@ S80_1_ROMSTART(blkholea, "668-a2.cpu" ,  0xdf56f896,
 S80SOUND1K_ROMSTART(     "668-a-s.snd",  0x5175f307,
                          "6530sy80.bin", 0xc8ba951d)
 S80_ROMEND
-CORE_CLONEDEFNV(blkholea,blckhole,"Black Hole (Sound Only)",1981,"Gottlieb",gl_mS80,GAME_IMPERFECT_SOUND)
+CORE_CLONEDEFNV(blkholea,blckhole,"Black Hole (Sound Only)",1981,"Gottlieb",gl_mS80,0)
 
 /*-------------------------------------------------------------------
 / Haunted House, since serial no. 5000
@@ -262,7 +262,7 @@ S80_1_ROMSTART(hh,  "669-2.cpu",  0xf3085f77,
 S80SOUND22_ROMSTART("669-s1.snd", 0x52ec7335,
                     "669-s2.snd", 0xa3317b4b)
 S80_ROMEND
-CORE_GAMEDEFNV(hh,"Haunted House (Rev 2)",1982,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(hh,"Haunted House (Rev 2)",1982,"Gottlieb",gl_mS80SS,0)
 
 /*-------------------------------------------------------------------
 / Haunted House up to serial no. 4999
@@ -274,7 +274,7 @@ S80_1_ROMSTART(hh_1, "669-1.cpu",  0x96e72b93,
 S80SOUND22_ROMSTART( "669-s1.snd", 0x52ec7335,
                      "669-s2.snd", 0xa3317b4b)
 S80_ROMEND
-CORE_CLONEDEFNV(hh_1,hh,"Haunted House (Rev 1)",1982,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
+CORE_CLONEDEFNV(hh_1,hh,"Haunted House (Rev 1)",1982,"Gottlieb",gl_mS80SS,0)
 
 /*-------------------------------------------------------------------
 / Eclipse
@@ -286,7 +286,7 @@ S80_1_ROMSTART(eclipse, "671-a.cpu",    0xefad7312,
 S80SOUND1K_ROMSTART(    "671-a-s.snd",  0x5175f307,
                         "6530sy80.bin", 0xc8ba951d)
 S80_ROMEND
-CORE_GAMEDEFNV(eclipse,"Eclipse",1981,"Gottlieb",gl_mS80,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(eclipse,"Eclipse",1981,"Gottlieb",gl_mS80,0)
 
 /*-------------------------------------------------------------------
 / System 80 Test Fixture
@@ -334,7 +334,7 @@ S80_1_ROMSTART(dvlsdre2, "670-a.cpu",    0x353b2e18,
 S80SOUND1K_ROMSTART(     "670-a-s.snd",  0xf141d535,
                          "6530sy80.bin", 0xc8ba951d)
 S80_ROMEND
-CORE_CLONEDEFNV(dvlsdre2,dvlsdre,"Devil's Dare (Sound Only)",1981,"Gottlieb",gl_mS80,GAME_IMPERFECT_SOUND)
+CORE_CLONEDEFNV(dvlsdre2,dvlsdre,"Devil's Dare (Sound Only)",1981,"Gottlieb",gl_mS80,0)
 
 /*-------------------------------------------------------------------
 / Rocky (#672)
@@ -544,7 +544,7 @@ S80_1_ROMSTART(raimfire, "686.cpu",    0xd1e7a0de,
 S80SOUND2K_ROMSTART(     "686-s.snd",  0x09740682,
                        "6530sy80.bin", 0xc8ba951d)
 S80_ROMEND
-CORE_GAMEDEFNV(raimfire,"Ready...Aim...Fire!",1983,"Gottlieb",gl_mS80,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(raimfire,"Ready...Aim...Fire!",1983,"Gottlieb",gl_mS80,0)
 
 /*-------------------------------------------------------------------
 / Jacks To Open
@@ -568,7 +568,7 @@ S80_1_ROMSTART(alienstr, "689.cpu",    0x4262006b,
 S80SOUND2K_ROMSTART(     "689-s.snd",  0xe1e7a610,
                        "6530sy80.bin", 0xc8ba951d)
 S80_ROMEND
-CORE_GAMEDEFNV(alienstr,"Alien Star",1984,"Gottlieb",gl_mS80,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(alienstr,"Alien Star",1984,"Gottlieb",gl_mS80,0)
 
 /*-------------------------------------------------------------------
 / The Games

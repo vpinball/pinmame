@@ -7,20 +7,22 @@
 
 static int s80ss_sndCPUNo;
 
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 4096
 
 struct {
 	int	NMIState;
 	int soundInput;
 
 	int stream;
-	INT16 buffer[BUFFER_SIZE];
+	INT16  buffer[BUFFER_SIZE+1];
+	double clock[BUFFER_SIZE+1];
+
 	int	buf_pos;
 } S80sound1_locals;
 
 void S80SS_irq(int state) {
-  S80sound1_locals.NMIState = 1;
-  cpu_set_irq_line(s80ss_sndCPUNo, M6502_INT_IRQ, state ? ASSERT_LINE : CLEAR_LINE);
+	logerror("IRQ: %i\n",state);
+	cpu_set_irq_line(s80ss_sndCPUNo, M6502_INT_IRQ, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
 void S80SS_nmi(int state)
@@ -45,7 +47,7 @@ WRITE_HANDLER( riot_3_ram_w )
 
 /* input */
 READ_HANDLER(riot3a_r)  {
-//	logerror("riot3a_r\n");
+	logerror("riot3a_r\n");
 	return (S80sound1_locals.soundInput&0x0f?0x80:0x00) | 0x40 | S80sound1_locals.soundInput;
 }
 WRITE_HANDLER(riot3a_w) { logerror("riot3a_w: 0x%02x\n", data);}
@@ -54,7 +56,7 @@ WRITE_HANDLER(riot3a_w) { logerror("riot3a_w: 0x%02x\n", data);}
 /* Switch settings, test switch and NMI */
 READ_HANDLER(riot3b_r)  {
 	// logerror("riot3b_r\n");
-	return (S80sound1_locals.NMIState?0x00:0x80) | 0x54;
+	return ((S80sound1_locals.NMIState?0x80:0x00) | 0x22)^0xff;
 }
 
 WRITE_HANDLER(riot3b_w) { logerror("riot3b_w: 0x%02x\n", data);}
@@ -65,6 +67,7 @@ WRITE_HANDLER(da1_latch_w) {
 	if ( S80sound1_locals.buf_pos>=BUFFER_SIZE )
 		return;
 
+	S80sound1_locals.clock[S80sound1_locals.buf_pos] = timer_get_time();
 	S80sound1_locals.buffer[S80sound1_locals.buf_pos++] = (0x80-data)*0x100;
 }
 
@@ -156,18 +159,31 @@ void sys80_sound_latch_ss(int data)
 
 static void s80_ss_Update(int num, INT16 *buffer, int length)
 {
-//	int i = 0;
-	// logerror("%i  %i\n", length, S80sound1_locals.buf_pos);
-	memset(buffer,0x00,length*sizeof(INT16));
+	double dActClock, dInterval, dCurrentClock;
+	int i;
+		
+	dCurrentClock = S80sound1_locals.clock[0];
 
-	if ( S80sound1_locals.buf_pos ) {
-		memset(buffer,S80sound1_locals.buffer[0],length*sizeof(INT16));
-		if ( S80sound1_locals.buf_pos<length )
-			length = S80sound1_locals.buf_pos;
+	dActClock = timer_get_time();
+	dInterval = (dActClock-S80sound1_locals.clock[0]) / length;
 
-		memcpy(buffer, &S80sound1_locals.buffer, 2*length);
-		S80sound1_locals.buf_pos = 0;
+	if ( S80sound1_locals.buf_pos>1 )
+		S80sound1_locals.buf_pos = S80sound1_locals.buf_pos;
+
+	i = 0;
+	S80sound1_locals.clock[S80sound1_locals.buf_pos] = 9e99;
+	while ( length ) {
+		*buffer++ = S80sound1_locals.buffer[i];
+		length--;
+		dCurrentClock += dInterval;
+
+		while ( (S80sound1_locals.clock[i+1]<=dCurrentClock) )
+			i++;
 	}
+
+	S80sound1_locals.clock[0] = dActClock;
+	S80sound1_locals.buffer[0] = S80sound1_locals.buffer[S80sound1_locals.buf_pos-1];
+	S80sound1_locals.buf_pos = 1;
 }
 
 /*--------------
@@ -179,7 +195,11 @@ void S80SS_sinit(int num) {
 	memset(&S80sound1_locals, 0x00, sizeof S80sound1_locals);
 	riot_set_clock(3, Machine->drv->cpu[s80ss_sndCPUNo].cpu_clock);
 
-	S80sound1_locals.stream = stream_init("SND DAC", 100, 6950, 0, s80_ss_Update);
+	S80sound1_locals.clock[0]  = 0;
+	S80sound1_locals.buffer[0] = 0;
+	S80sound1_locals.buf_pos   = 1;
+
+	S80sound1_locals.stream = stream_init("SND DAC", 100, 11025, 0, s80_ss_Update); 
 }
 
 
