@@ -2,8 +2,58 @@
  *
  *   Texas Instruments TMS320AV120 MPG Decoder
  *   by Steve Ellenoff
+ *   10/14/2003
  *
+ *   MPEG Decoding based on the book:
+*    "The Programmer's Guide to Sound" by Tim Kientzle (see copyright below)
+ **********************************************************************************************/ 
+/**********************************************************************************************
+ *   NOTE: Supports ONLY MPEG1 Layer 2 data @ 32KHz/32kbps at this time!
+ *         Not configurable to anything else, for speed purposes at this time!
+ *
+ *   TODO:
+ *		   1) Implement multichip support
+ *         2) Redo buffers
+ *         3) Implement /BOF and /SREQ callbacks
+ *         4) Implement data handlers
+ *         5) Remove current hack to feed data to the chip for playback
  **********************************************************************************************/
+
+
+//MPEG DECODING:    "The Programmer's Guide to Sound" by Tim Kientzle
+/***********************************************************************************************
+   Copyright 1997 Tim Kientzle.  All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+3. All advertising materials mentioning features or use of this software
+   must display the following acknowledgement:
+      This product includes software developed by Tim Kientzle
+      and published in ``The Programmer's Guide to Sound.''
+4. Neither the names of Tim Kientzle nor Addison-Wesley
+   may be used to endorse or promote products derived from this software
+   without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED
+WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+IN NO EVENT SHALL TIM KIENTZLE OR ADDISON-WESLEY BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+**********************************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -11,9 +61,7 @@
 #include "tms320av120.h"
 
 /**********************************************************************************************
-
      CONSTANTS
-
 ***********************************************************************************************/
 #define CAP_PCMBUFFER_SIZE			1152						//Hold 1 decoded frame
 #define CAP_OUTBUFFER_SIZE			4096						//Output buffer
@@ -23,14 +71,11 @@
 #define LOOP_MPG_SAMPLE				0
 
 /**********************************************************************************************
-
      INTERNAL DATA STRUCTURES
-
 ***********************************************************************************************/
 struct TMS320AV120Chip
 {
- //INT16  *pcmbuffer[CAP_MAXCHANNELS];//Decoded PCM buffer
- INT16  pcmbuffer[CAP_MAXCHANNELS][CAP_PCMBUFFER_SIZE];
+ INT16  pcmbuffer[CAP_PCMBUFFER_SIZE];
  INT16  *buffer;					//Output Buffer
  UINT32 sIn;						//Position of next sample to load into buffer
  UINT32 sOut;						//Position of next sample to read out of the buffer
@@ -168,9 +213,7 @@ static long SynthesisWindowCoefficients[] = // 2.16 fixed-point values
 3, 3, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1};
 
 /**********************************************************************************************
-
      GLOBALS
-
 ***********************************************************************************************/
 
 static struct TMS320AV120Chip tms320av120[MAX_TMS320AV120];
@@ -179,12 +222,14 @@ static long *_V[2][16];					// Synthesis window for left/right channel
 static int  _bitsRemaining = 0;			// Keep track of # of bits we've read from frame buffer
 static int bitmasks[] = {0,1,3,7,0xF,0x1F,0x3F,0x7F,0xFF};
 
+/**********************************************************************************************
+     MPEG DATA HANDLING
+***********************************************************************************************/
+
 // return 2.16 requantized and scaled value
 INLINE long Layer2Requant(long sample, long levels, int scaleIndex) {
    return (layer1ScaleFactors[scaleIndex] * (((sample+sample+1 - levels)<<15)/levels)) >> 14;
 }
-
-
 
 // subbandSamples input are 2.16
 static void Matrix(long *V, long *subbandSamples, int numSamples) {
@@ -294,7 +339,7 @@ static void Matrix(long *V, long *subbandSamples, int numSamples) {
       for(n=1;n<16;n++) V[48+n] = V[48-n];
    }
 }
-
+//Convert Layer 1 or Layer 2 subband samples into pcm samples and put into pcm buffer
 void Layer12Synthesis(  long *V[16],
                         long *subbandSamples,
                         int numSubbandSamples,
@@ -338,7 +383,6 @@ void Layer12Synthesis(  long *V[16],
    }
 }
 
-
 //Return bits from the frame buffer
 static long GetBits(int numBits) {
    long result;
@@ -375,9 +419,6 @@ int sb, ch, sf, gp;
 int scale_factor = 0;				//Current scale factor index
 long levels = 0;					//Quantization level
 Layer2BitAllocationTableEntry *allocationMap;
-
-//clear current pcm buffer (necessary?)
-//memset(tms320av120[0].pcmbuffer,0,sizeof(tms320av120[0].pcmbuffer));
 
 //Reset bits flag
 _bitsRemaining = 8;
@@ -464,26 +505,19 @@ for(sf=0;sf<3;sf++) { // Diff't scale factors for each 1/3
 						sbSamples[2][ch][sb] = Layer2Requant(s,levels,scale_factor);
 					}
 				}
-
-//			if(lineno>395)
-//				fclose(fp);
-
-//			fprintf(fp,"%i: sbSamples[0][%d][%d] = %i\n",lineno++,ch,sb,sbSamples[0][ch][sb]);
-//			fprintf(fp,"%i: sbSamples[1][%d][%d] = %i\n",lineno++,ch,sb,sbSamples[1][ch][sb]);
-//			fprintf(fp,"%i: sbSamples[2][%d][%d] = %i\n",lineno++,ch,sb,sbSamples[2][ch][sb]);
 			}
 		}
 
 		// Now, feed three sets of subband samples into synthesis engine
 		for(ch=0;ch < tms320av120[0].channels;ch++) {
 			INT16 *pcm;
-			pcm = &tms320av120[0].pcmbuffer[ch][tms320av120[0].pcm_pos];
+			pcm = &tms320av120[0].pcmbuffer[tms320av120[0].pcm_pos];
 			Layer12Synthesis(_V[ch],sbSamples[0][ch],sblimit,pcm);
 			tms320av120[0].pcm_pos += 32;
-			pcm = &tms320av120[0].pcmbuffer[ch][tms320av120[0].pcm_pos];
+			pcm = &tms320av120[0].pcmbuffer[tms320av120[0].pcm_pos];
 			Layer12Synthesis(_V[ch],sbSamples[1][ch],sblimit,pcm);
 			tms320av120[0].pcm_pos += 32;
-			pcm = &tms320av120[0].pcmbuffer[ch][tms320av120[0].pcm_pos];
+			pcm = &tms320av120[0].pcmbuffer[tms320av120[0].pcm_pos];
 			Layer12Synthesis(_V[ch],sbSamples[2][ch],sblimit,pcm);
 			tms320av120[0].pcm_pos += 32;
 		}
@@ -589,7 +623,7 @@ static INT16 cap_GetNextWord()
    }
 
    //Return the next word from pcm buffer
-   return (INT16)tms320av120[0].pcmbuffer[0][tms320av120[0].pcm_pos++];
+   return (INT16)tms320av120[0].pcmbuffer[tms320av120[0].pcm_pos++];
 }
 
 //Fill our pcm buffer with decoded data until buffer is full or until we catch up to last sample output from buffer
@@ -633,9 +667,8 @@ static void tms320av120_update(int num, INT16 *buffer, int length)
     buffer[ii] = tms320av120[0].buffer[tms320av120[0].sOut];
     tms320av120[0].sOut = (tms320av120[0].sOut + 1) & CAP_BUFFER_MASK;	//Increment current samples out position
     }
- /* fill the rest with the last sample */
+ /* fill the rest with the silence */
  for ( ; ii < length; ii++)
-    //buffer[ii] = tms320av120[0].buffer[(tms320av120[0].sOut - 1) & CAP_BUFFER_MASK];
 	buffer[ii] = 0;
 }
 
@@ -649,6 +682,7 @@ int TMS320AV120_sh_start(const struct MachineSound *msound)
 {
 	const struct TMS320AV120interface *intf = msound->sound_interface;
 	int i, j, ch, failed=0;
+	char stream_name[MAX_TMS320AV120][40];
 
 	/* initialize the chips */
 	memset(&tms320av120, 0, sizeof(tms320av120));
@@ -662,21 +696,11 @@ int TMS320AV120_sh_start(const struct MachineSound *msound)
 	memset(&cap_locals,0,sizeof(cap_locals));
 
 	/*-- allocate a DAC stream at 32KHz --*/
-	tms320av120[0].stream = stream_init("CAP DAC", 100, 32000, 0, tms320av120_update);
+	sprintf(stream_name[0], "TMS320AV120 #%d",0); 
+	tms320av120[0].stream = stream_init(stream_name[0], 100, 32000, 0, tms320av120_update);
 
 	/*-- allocate memory for our buffer --*/
 	tms320av120[0].buffer = malloc(CAP_OUTBUFFER_SIZE * sizeof(INT16));
-
-#if 0
-	/*-- allocate memory for our buffer --*/
-	for(ch=0;ch<CAP_MAXCHANNELS;ch++) {
-		tms320av120[0].pcmbuffer[ch] = malloc(CAP_PCMBUFFER_SIZE * sizeof(INT16));
-		if(!tms320av120[0].pcmbuffer[ch]) {
-			failed = 1;
-			break;
-		}
-	}
-#endif
 
 	//Create Scale Factor values
 	for(i=0;i<63;i++) {
@@ -732,14 +756,6 @@ int TMS320AV120_sh_start(const struct MachineSound *msound)
 
 void TMS320AV120_sh_stop(void)
 {
-
-//for (i = 0; i < MAX_BSMT2000; i++)
-//	{
-//		if (bsmt2000[i].voice)
-//			free(bsmt2000[i].voice);
-//		bsmt2000[i].voice = NULL;
-//	}
-
   int ch, i;
 
   /*-- Delete our buffer --*/
@@ -747,16 +763,6 @@ void TMS320AV120_sh_stop(void)
 		free(tms320av120[0].buffer);
 		tms320av120[0].buffer = NULL; 
   }
-
-#if 0
-  /*-- Delete our buffer --*/
-  for(ch=0;ch<CAP_MAXCHANNELS;ch++) {
-	if (tms320av120[0].pcmbuffer[ch]) { 
-			free(tms320av120[0].pcmbuffer[ch]);
-			tms320av120[0].pcmbuffer[ch] = NULL; 
-	}
-  }
-#endif
 
   /*-- Delete Synth windows data --*/
   for(ch=0;ch<2;ch++)
