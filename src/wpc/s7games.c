@@ -226,10 +226,10 @@ CORE_GAMEDEF(fpwr2,l2,"Firepower II (L-2)",1983,"Williams",s7_mS7S,0)
 / Starlight - Sys.7 (Game #530)
 /-----------------------------*/
 INITGAMEFULL(strlt,s7_dispS7,0,54,50,51,41,42,43,0)
-S7_ROMSTART000x(strlt,l1,"ic14.532",   NO_DUMP,
+S7_ROMSTART000x(strlt,l1,"ic14.532",   CRC(292f1c4a),
                          "ic17.532",   CRC(a43d8518),
-                         "ic20.532",   CRC(b750ddc0))
-S67S_SOUNDROMS8(         "sound12.716",NO_DUMP)
+                         "ic20.532",   CRC(66876b56))
+S67S_SOUNDROMS8(         "sound12.716",CRC(55a10d13))
 S7_ROMEND
 #define input_ports_strlt input_ports_s7
 CORE_GAMEDEF(strlt,l1,"Starlight (L-1)",1984,"Williams",s7_mS7S,0)
