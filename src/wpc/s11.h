@@ -184,6 +184,7 @@ extern const core_tLCDLayout s11_dispS9[], s11_dispS11[], s11_dispS11a[], s11_di
 
 extern MACHINE_DRIVER_EXTERN(s11_s9S);
 extern MACHINE_DRIVER_EXTERN(s11_s11S);
+extern MACHINE_DRIVER_EXTERN(s11_s11aS);
 extern MACHINE_DRIVER_EXTERN(s11_s11b2S);
 extern MACHINE_DRIVER_EXTERN(s11_s11cS);
 extern MACHINE_DRIVER_EXTERN(de_a);
@@ -195,8 +196,8 @@ extern MACHINE_DRIVER_EXTERN(de_dmd642aS);
 
 #define s9_mS9S          s11_s9S
 #define s11_mS11S        s11_s11S
-#define s11_mS11AS       s11_s11S
-#define s11_mS11BS       s11_s11S
+#define s11_mS11AS       s11_s11aS
+#define s11_mS11BS       s11_s11aS
 #define s11_mS11B2S      s11_s11b2S
 #define s11_mS11CS       s11_s11cS
 #define de_mDEA          de_a
@@ -214,8 +215,8 @@ extern MACHINE_DRIVER_EXTERN(de_dmd642aS);
 #define S11_SNDOVERLAY   0x02 // Overlay solenoid board
 #define S11_PRINTERLINE  0x04 // Got printer lines
 #if 0
-GEN_S9      BCDDIAG | BCDDISP
-GEN_S11     BCDDIAG
+GEN_S9      BCDDISP
+GEN_S11
 GEN_S11A
 GEN_S11B_1
 GEN_S11B_2  LOWALPHA | INV                MUX2
