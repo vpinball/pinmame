@@ -155,17 +155,20 @@ static WRITE_HANDLER(pia1cb2_w) {
 static int sound_flag = FALSE;
 
 static WRITE_HANDLER(e_sol1_w) {
-  static int mute_22 = FALSE;
+  static int mute_20 = FALSE;
 
   if (!sound_flag && offset > 0)
     sound_flag = TRUE;
-  if (offset == 0 && data == 0x92 && !mute_22) {
+  if (offset == 0) {
+	if (data == 0x92 && !mute_20)
       locals.solenoids |= (1 << 22);
+    else if (!sound_flag)
+      locals.solenoids |= (data << 24);
   } else if (offset == 1) {
 	if (data == 0)
-	  mute_22 = TRUE;
+	  mute_20 = TRUE;
 	else if (data == 1)
-	  mute_22 = FALSE;
+	  mute_20 = FALSE;
 	else if (data == 0x93)
       locals.solenoids |= (1 << 23);
   }
