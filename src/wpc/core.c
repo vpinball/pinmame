@@ -847,6 +847,7 @@ static void drawChar1(struct mame_bitmap *bitmap, int row, int col, UINT32 bits,
 }
 
 int core_init(core_tData *cd) {
+  UINT32 size;
   /*-- init variables --*/
   memset(&coreGlobals, 0, sizeof(coreGlobals));
   memcpy(&coreData, cd, sizeof(coreData));
@@ -859,8 +860,8 @@ int core_init(core_tData *cd) {
   /*-- command line options --*/
   coreGlobals_dmd.DMDsize = options.antialias ? 2 : 1;
   coreGlobals_dmd.dmdOnly = !options.translucency;
-  if (((core_initDisplaySize(core_gameData->lcdLayout)>>16) > CORE_SCREENX) &&
-      (coreGlobals_dmd.DMDsize > 1)) {
+  size = core_initDisplaySize(core_gameData->lcdLayout) >> 16;
+  if ((size > CORE_SCREENX) && (coreGlobals_dmd.DMDsize > 1)) {
     /* force small display */
     coreGlobals_dmd.DMDsize = 1;
     core_initDisplaySize(core_gameData->lcdLayout);
@@ -914,15 +915,22 @@ static UINT32 core_initDisplaySize(core_ptLCDLayout layout) {
     }
   }
   else if (coreGlobals_dmd.DMDsize > 1)
+#ifndef VPINMAME
     { maxX = 256; maxY = 65; }
+#else
+    { maxX = 257; maxY = 65; }
+#endif /* VPINMAME */
   else
-    { maxX = 129; maxY = 32; }
+    { maxX = 129; maxY = 33; }
   locals.firstSimRow = maxY + 5;
   if (!coreGlobals_dmd.dmdOnly) {
     maxY += 180;
     if (maxX < 256) maxX = 256;
   }
   set_visible_area(0, maxX-1, 0, maxY);
+#ifndef VPINMAME
+  if (maxX == 257) maxX = 256;
+#endif /* VPINMAME */
   return (maxX<<16) | maxY;
 }
 
