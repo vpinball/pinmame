@@ -1,5 +1,6 @@
-#undef  DIRECTINPUT_VERSION
+#ifndef DIRECTINPUT_VERSION
 #define DIRECTINPUT_VERSION 0x0700
+#endif
 
 //============================================================
 //
