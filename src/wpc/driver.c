@@ -737,6 +737,7 @@ DRIVER(fh,l9)           //WPC-503:  12/90 W Funhouse
 DRIVER(fh,l9b)                            // bootleg with correct German translation
 DRIVER(bbnny,l2)        //S11-396:  01/91 B Bugs Bunny's Birthday Ball
 DRIVER(bop,l7)          //WPC-502:  02/91 W The Machine: Bride of Pinbot
+DRIVER(bop,l4)          //WPC-502:  02/91 W The Machine: Bride of Pinbot (L-4)
 DRIVER(hd,l3)           //WPC:      02/91 B Harley Davidson
 DRIVER(sf,l1)           //WPC-601:  03/91 W SlugFest
 DRIVER(t2,l6)           //WPC-513:  10/91 W Terminator 2: Judgement Day (L-6)
