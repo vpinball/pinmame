@@ -7,7 +7,6 @@
 
 #define BYVP_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
 #define BYVP_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
-#define BYVP_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKS */
 
 /* BABY PACMAN DIP SWITCH SETTINGS:
 
@@ -356,8 +355,6 @@
 / Machine driver constants
 /--------------------------*/
 #define BYVP_CPUNO   0
-#define BYVP_SCPU1NO 1
-#define BYVP_SCPU2NO 2
 
 /*-- Memory regions --*/
 #define BYVP_MEMREG_CPU		REGION_CPU1
@@ -391,23 +388,25 @@
       ROM_CONTINUE( 0x5800, 0x0800) \
       ROM_RELOAD(   0xf000, 0x1000) \
     NORMALREGION(0x10000, BYVP_MEMREG_VCPU) \
-	  ROM_LOAD( n3, 0x4000, 0x2000, chk3) \
-	  ROM_LOAD( n4, 0x6000, 0x2000, chk4) \
-	  ROM_LOAD( n5, 0x8000, 0x2000, chk5) \
-	  ROM_LOAD( n6, 0xa000, 0x2000, chk6) \
-	  ROM_LOAD( n7, 0xc000, 0x2000, chk7) \
-	  ROM_LOAD( n8, 0xe000, 0x2000, chk8) \
+      ROM_LOAD( n3, 0x4000, 0x2000, chk3) \
+      ROM_LOAD( n4, 0x6000, 0x2000, chk4) \
+      ROM_LOAD( n5, 0x8000, 0x2000, chk5) \
+      ROM_LOAD( n6, 0xa000, 0x2000, chk6) \
+      ROM_LOAD( n7, 0xc000, 0x2000, chk7) \
+      ROM_LOAD( n8, 0xe000, 0x2000, chk8) \
     NORMALREGION(0x10000, BYVP_MEMREG_SCPU) \
-	  ROM_LOAD( n9, 0xe000, 0x2000, chk9)
+      ROM_LOAD( n9, 0xe000, 0x2000, chk9)
 
 #define BYVP_ROMEND ROM_END
 
+extern const struct core_dispLayout byVP_dispBabyPac[];
+extern const struct core_dispLayout byVP_dispGranny[];
 
 /*-- These are only here so the game structure can be in the game file --*/
-extern MACHINE_DRIVER_EXTERN(byVP);
+extern MACHINE_DRIVER_EXTERN(byVP1);
 extern MACHINE_DRIVER_EXTERN(byVP2);
 
-#define byVP_mVP1		byVP
+#define byVP_mVP1		byVP1
 #define byVP_mVP2		byVP2
 
 #endif /* INC_BYVP */
