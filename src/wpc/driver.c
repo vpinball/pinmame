@@ -174,7 +174,8 @@ DRIVERNV(esclwrlg)      //6803-0H05: 01/88 Escape from the Lost World (German)
 DRIVERNV(black100)      //6803-0H07: 03/88 Blackwater 100
                         //??         06/88 Ramp Warrior (Became Truck Stop after Merger)
 //Williams Merger begins here.. but these are still under the Bally name
-DRIVERNV(truckstp)      //6803-2001: 12/88 Truck Stop
+DRIVERNV(trucksp2)      //6803-2001: 11/88 Truck Stop (P-2)
+DRIVERNV(trucksp3)      //6803-2001: 12/88 Truck Stop (P-3)
 DRIVERNV(atlantis)      //6803-2006: 03/89 Atlantis
                         //??         05/89 Ice Castle
 
@@ -520,8 +521,9 @@ DRIVERNV(magic)         //MPU-100: 08/79 Magic
 DRIVERNV(princess)      //MPU-100: 08/79 Cosmic Princess
 // MPU-200 - Sound Board: SB-300
 DRIVERNV(meteor)        //MPU-200: 09/79 Meteor
-DRIVERNV(meteorb)       //MPU-200: 09/79 Meteor (7-Digit conversion)
+DRIVERNV(meteorb)       //MPU-200: 11/03 Meteor (7-Digit conversion)
 DRIVERNV(galaxy)        //MPU-200: 01/80 Galaxy
+DRIVERNV(galaxyb)       //MPU-200: ??/04 Galaxy (7-Digit conversion)
 DRIVERNV(ali)           //MPU-200: 03/80 Ali
 DRIVERNV(biggame)       //MPU-200: 03/80 Big Game
 DRIVERNV(seawitch)      //MPU-200: 05/80 Seawitch

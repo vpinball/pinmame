@@ -263,15 +263,25 @@ CORE_GAMEDEFNV(black100,"Blackwater 100",1988,"Bally",by_mBY6803_SDS,0)
 / Truck Stop (6803-2001: 12/88) - These are ProtoType ROMS?
 /-------------------------------------------------------------*/
 //CPU & Sound Works?
-INITGAME6803(truckstp,GEN_BY6803A,dispBy104,FLIP6803,4,SNDBRD_S11CS, BY6803_DISPALPHA)
-BY6803_ROMSTART44(truckstp,"u2_p2.128",   CRC(3c397dec) SHA1(2fc86ad39c935ce8615eafd67e571ac94c938cd7),
+INITGAME6803(trucksp3,GEN_BY6803A,dispBy104,FLIP6803,4,SNDBRD_S11CS, BY6803_DISPALPHA)
+BY6803_ROMSTART44(trucksp3,"u2_p3.128",   CRC(79b2a5b1) SHA1(d3de91bfadc9684302b2367cfcb30ed0d6faa020),
+                           "u3_p3.128",   CRC(2993373c) SHA1(26490f1dd8a5329a88a2ceb1e6044711a29f1445))
+S11CS_SOUNDROM888(         "u4sndp1.256", CRC(120a386f) SHA1(51b3b45eb7ea63758b21aad404ba12a9607fec44),
+                           "u19sndp1.256",CRC(5cd43dda) SHA1(23dd8a52ea1340fc239a246af0d94da905464efb),
+                           "u20sndp1.256",CRC(93ac5c33) SHA1(f6dc84eca4678188a58ba3c8ef18975164dd29b0))
+BY6803_ROMEND
+#define input_ports_trucksp3 input_ports_by6803a
+CORE_GAMEDEFNV(trucksp3,"Truck Stop (P-3)",1988,"Bally",by_mBY6803_S11CS,0)
+
+BY6803_ROMSTART44(trucksp2,"u2_p2.128",   CRC(3c397dec) SHA1(2fc86ad39c935ce8615eafd67e571ac94c938cd7),
                            "u3_p2.128",   CRC(d7ac519a) SHA1(612bf9fee0d54e8b1215508bd6c1ea61dcb99951))
 S11CS_SOUNDROM888(         "u4sndp1.256", CRC(120a386f) SHA1(51b3b45eb7ea63758b21aad404ba12a9607fec44),
                            "u19sndp1.256",CRC(5cd43dda) SHA1(23dd8a52ea1340fc239a246af0d94da905464efb),
                            "u20sndp1.256",CRC(93ac5c33) SHA1(f6dc84eca4678188a58ba3c8ef18975164dd29b0))
 BY6803_ROMEND
-#define input_ports_truckstp input_ports_by6803a
-CORE_GAMEDEFNV(truckstp,"Truck Stop",1988,"Bally",by_mBY6803_S11CS,0)
+#define init_trucksp2 init_trucksp3
+#define input_ports_trucksp2 input_ports_trucksp3
+CORE_CLONEDEFNV(trucksp2,trucksp3,"Truck Stop (P-2)",1988,"Bally",by_mBY6803_S11CS,0)
 
 /*-----------------------------------------------------------
 / Atlantis (6803-2006: 03/89)
