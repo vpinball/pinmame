@@ -382,14 +382,37 @@ static MEMORY_WRITE_START(ATARI1_writemem)
 {0xf800,0xffff,	MWA_ROM},		/* reset vector */
 MEMORY_END
 
+// Gen 2 memory handling - RAM and NVRAM is mirrored!
+static UINT8 *atari_RAM, *atari_CMOS;
+static NVRAM_HANDLER(ATARI) {
+  core_nvram(file, read_or_write, atari_CMOS, 0x100, 0x00);
+}
+static READ_HANDLER(ram2_r) { return atari_RAM[offset]; }
+static WRITE_HANDLER(ram2_w) { atari_RAM[offset] = data; }
+// NVRAM only uses bottom nybble
+static READ_HANDLER(nvram_r) { return atari_CMOS[offset]; }
+static WRITE_HANDLER(nvram_w) { atari_CMOS[offset] = data & 0x0f; }
+
 /*-----------------------------------------
 /  Memory map for CPU board (GENERATION 2)
 /------------------------------------------*/
 static MEMORY_READ_START(ATARI2_readmem)
-{0x0000,0x00ff,	MRA_RAM},	/* RAM */
-{0x0100,0x01ff,	MRA_NOP},	/* unmapped RAM */
-{0x0800,0x08ff,	MRA_RAM},	/* NVRAM */
-{0x0900,0x09ff,	MRA_NOP},	/* unmapped RAM */
+{0x0000,0x00ff,	ram2_r},	/* RAM */
+{0x0100,0x01ff,	ram2_r},	/* mirrored RAM */
+{0x0200,0x02ff,	ram2_r},	/* mirrored RAM */
+{0x0300,0x03ff,	ram2_r},	/* mirrored RAM */
+{0x0400,0x04ff,	ram2_r},	/* mirrored RAM */
+{0x0500,0x05ff,	ram2_r},	/* mirrored RAM */
+{0x0600,0x06ff,	ram2_r},	/* mirrored RAM */
+{0x0700,0x07ff,	ram2_r},	/* mirrored RAM */
+{0x0800,0x08ff,	nvram_r},	/* NVRAM */
+{0x0900,0x09ff,	nvram_r},	/* mirrored NVRAM */
+{0x0a00,0x0aff,	nvram_r},	/* mirrored NVRAM */
+{0x0b00,0x0bff,	nvram_r},	/* mirrored NVRAM */
+{0x0c00,0x0cff,	nvram_r},	/* mirrored NVRAM */
+{0x0d00,0x0dff,	nvram_r},	/* mirrored NVRAM */
+{0x0e00,0x0eff,	nvram_r},	/* mirrored NVRAM */
+{0x0f00,0x0fff,	nvram_r},	/* mirrored NVRAM */
 {0x1000,0x1007,	sw_r},		/* inputs */
 {0x2000,0x2003,	dip_r},		/* dip switches */
 {0x2800,0x3fff,	MRA_ROM},	/* ROM */
@@ -398,10 +421,22 @@ static MEMORY_READ_START(ATARI2_readmem)
 MEMORY_END
 
 static MEMORY_WRITE_START(ATARI2_writemem)
-{0x0000,0x00ff,	MWA_RAM},	/* RAM */
-{0x0100,0x0100,	MWA_NOP},	/* unmapped RAM */
-{0x0700,0x07ff,	MWA_NOP},	/* unmapped RAM */
-{0x0800,0x08ff,	MWA_RAM, &generic_nvram, &generic_nvram_size},	/* NVRAM */
+{0x0000,0x00ff,	ram2_w, &atari_RAM},	/* RAM */
+{0x0100,0x01ff,	ram2_w},	/* mirrored RAM */
+{0x0200,0x02ff,	ram2_w},	/* mirrored RAM */
+{0x0300,0x03ff,	ram2_w},	/* mirrored RAM */
+{0x0400,0x04ff,	ram2_w},	/* mirrored RAM */
+{0x0500,0x05ff,	ram2_w},	/* mirrored RAM */
+{0x0600,0x06ff,	ram2_w},	/* mirrored RAM */
+{0x0700,0x07ff,	ram2_w},	/* mirrored RAM */
+{0x0800,0x08ff,	nvram_w, &atari_CMOS},	/* NVRAM */
+{0x0900,0x09ff,	nvram_w},	/* mirrored NVRAM */
+{0x0a00,0x0aff,	nvram_w},	/* mirrored NVRAM */
+{0x0b00,0x0bff,	nvram_w},	/* mirrored NVRAM */
+{0x0c00,0x0cff,	nvram_w},	/* mirrored NVRAM */
+{0x0d00,0x0dff,	nvram_w},	/* mirrored NVRAM */
+{0x0e00,0x0eff,	nvram_w},	/* mirrored NVRAM */
+{0x0f00,0x0fff,	nvram_w},	/* mirrored NVRAM */
 {0x1800,0x1800,	sound0_w},	/* sound */
 {0x1820,0x1820,	sound1_w},	/* sound */
 {0x1840,0x1846,	disp0_w},	/* display data output */
@@ -472,7 +507,7 @@ MACHINE_DRIVER_START(ATARI2)
   MDRV_CPU_VBLANK_INT(ATARI2_vblank, 1)
   MDRV_CPU_PERIODIC_INT(ATARI2_irqhi, ATARI_IRQFREQ)
   MDRV_CORE_INIT_RESET_STOP(ATARI2,NULL,ATARI)
-  MDRV_NVRAM_HANDLER(generic_0fill)
+  MDRV_NVRAM_HANDLER(ATARI)
   MDRV_DIPS(32)
   MDRV_SWITCH_UPDATE(ATARI2)
   MDRV_DIAGNOSTIC_LEDH(4)
