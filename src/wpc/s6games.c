@@ -21,7 +21,7 @@ INITGAME(lzbal,s6_6digit_disp)
 S6_ROMSTART(lzbal,l2, "gamerom.716", CRC(9c5ffe2f) SHA1(f0db627abaeb8c023a3ccc75262e236c998a5d6f),
                       "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
                       "green2.716",  CRC(1c978a4a) SHA1(1959184764643d58f1740c54bb74c2aad7d667d2))
-S67S_SOUNDROMS8(      "sound1.716",  CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
+S67S_SOUNDROMS8(	  "sound2.716",  CRC(c9103a68) SHA1(cc77af54fdb192f0b334d9d1028210618c3f1d95))
 S6_ROMEND
 #define input_ports_lzbal input_ports_s6
 CORE_GAMEDEF(lzbal,l2,"Laser Ball (L-2)",1979,"Williams",s6_mS6S,0)
