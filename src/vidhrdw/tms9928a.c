@@ -25,12 +25,12 @@
 ** - fixed bug in tms.patternmask
 **
 ** 3 nov 2000, Raphael Nabet:
-** - fixed a nasty bug in _TMS9928A_sprites. A transparent sprite caused 
+** - fixed a nasty bug in _TMS9928A_sprites. A transparent sprite caused
 **   sprites at lower levels not to be displayed, which is wrong.
 **
 ** 3 jan 2001, Sean Young:
 ** - A few minor cleanups
-** - Changed TMS9928A_vram_[rw] and  TMS9928A_register_[rw] to READ_HANDLER 
+** - Changed TMS9928A_vram_[rw] and  TMS9928A_register_[rw] to READ_HANDLER
 **   and WRITE_HANDLER.
 ** - Got rid of the color table, unused. Also got rid of the old colors,
 **   which where commented out anyways.
@@ -179,9 +179,9 @@ typedef struct {
 static TMS9928A tms[MAX_VDP];
 
 /*
-** initialize the palette 
+** initialize the palette
 */
-void tms9928A_init_palette (unsigned char *palette, 
+void palette_init_TMS9928A (unsigned char *palette,
 	unsigned short *colortable,const unsigned char *color_prom) {
     memcpy (palette, &TMS9928A_palette, sizeof(TMS9928A_palette));
 }
@@ -557,9 +557,9 @@ void TMS9928A_refresh (int num_chips, struct mame_bitmap *bmp, int full_refresh)
 		for (which = 0; which < num_chips; which++) {
 			if (! (tms[which].Regs[1] & 0x40) ) {
 				fillbitmap (bmp, Machine->pens[tms[which].BackColour],&Machine->visible_area);
-			} 
+			}
 			else {
-				if (tms[which].Change) 
+				if (tms[which].Change)
 					ModeHandlers[tms[which].mode] (which, tms[which].tmpbmp);
 			}
 		}
@@ -570,7 +570,7 @@ void TMS9928A_refresh (int num_chips, struct mame_bitmap *bmp, int full_refresh)
 			/* Any other slave chips will have transparent color 0 */
 			copybitmap (bmp, tms[which].tmpbmp, 0, 0, 0, 0,&Machine->visible_area,
 			  (which ? TRANSPARENCY_COLOR : TRANSPARENCY_NONE), 0);
-			if (TMS_SPRITES_ENABLED) 
+			if (TMS_SPRITES_ENABLED)
 				_TMS9928A_sprites (which, bmp);
 		}
 	}
@@ -586,7 +586,7 @@ void TMS9928A_refresh (int num_chips, struct mame_bitmap *bmp, int full_refresh)
 }
 
 /*This version basically draws a composite screen on the left,
-  then master output in the middle, and slave output on the right, for 
+  then master output in the middle, and slave output on the right, for
   comparison
   NOTE: For this to work with sprites, we needed to add a temporary sprite bitmap
         called tmpsbmp
@@ -627,9 +627,9 @@ void TMS9928A_refresh_test (int num_chips, struct mame_bitmap *bmp, int full_ref
 		for (which = 0; which < MAX_VDP; which++) {
 			if (! (tms[which].Regs[1] & 0x40) ) {
 				fillbitmap (bmp, Machine->pens[tms[which].BackColour],&Machine->visible_area);
-			} 
+			}
 			else {
-				if (tms[which].Change) 
+				if (tms[which].Change)
 					ModeHandlers[tms[which].mode] (which, tms[which].tmpbmp);
 			}
 		}

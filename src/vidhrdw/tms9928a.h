@@ -24,7 +24,7 @@
 int TMS9928A_start (int which, int model, unsigned int vram);
 void TMS9928A_reset (int which);
 void TMS9928A_stop (int num_chips);
-void tms9928A_init_palette(unsigned char *palette, unsigned short *colortable,const unsigned char *color_prom);
+void palette_init_TMS9928A(unsigned char *palette, unsigned short *colortable,const unsigned char *color_prom);
 
 /*
 ** The I/O functions
@@ -67,7 +67,7 @@ void TMS9928A_int_callback (int which, void (*callback)(int));
 void TMS9928A_set_spriteslimit (int which, int);
 
 /*
-** After loading a state, call this function 
+** After loading a state, call this function
 */
 void TMS9928A_post_load (int which);
 
