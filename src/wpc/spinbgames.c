@@ -2,7 +2,6 @@
 #include "sim.h"
 #include "spinb.h"
 //#include "spinbs.h"
-//#include "spinbdmd.h"
 //#include "sndbrd.h"
 
 #define GEN_SPINB GEN_ALVG
@@ -16,9 +15,9 @@ static struct core_dispLayout spinb_dispDMD[] = {
   {0,0,32,128,CORE_DMD,(void *)SPINBdmd_update}, {0}
 };
 
-#define INITGAME(name, disptype, flippers, balls, sb, db, lamps) \
+#define INITGAME(name, disptype, flippers, balls, sb, db) \
 	SPINB_INPUT_PORTS_START(name, balls) SPINB_INPUT_PORTS_END \
-	static core_tGameData name##GameData = {GEN_SPINB,disptype,{flippers,4,4,0,sb,db,lamps}}; \
+	static core_tGameData name##GameData = {GEN_SPINB,disptype,{flippers,0,3,0,sb,db}}; \
 	static void init_##name(void) { \
 		core_gameData = &name##GameData; \
 	}
@@ -28,7 +27,7 @@ static struct core_dispLayout spinb_dispDMD[] = {
 /*-------------------------------------------------------------------
 / Jolly Park
 /-------------------------------------------------------------------*/
-INITGAME(jolypark, DMD, FLIP78, 3/*?*/, 0, 0, 1)
+INITGAME(jolypark, DMD, FLIP78, 3/*?*/, 0, 0)
 SPINB_ROMSTART(jolypark,	"jpcpu0.rom", CRC(061967af) SHA1(45048e1d9f17efa3382460fd474a5aeb4191d617),
 							"jpcpu1.rom", CRC(ea99202f) SHA1(e04825e73fd25f6469b3315f063f598ea1ab44c7))
 SPINB_DMDROM(			    "jpdmd0.rom", CRC(b57565cb) SHA1(3fef66d298893029de78fdb6ecdb562c33d76180),

@@ -5,10 +5,10 @@
 
   Hardware from 1995-1996
 
-  Main CPU Board: 
+  Main CPU Board:
 
   CPU: Z80
-  Clock: 5Mhz/?
+  Clock: 5Mhz/2 = 2.5Mhz
   Interrupt: Tied to a Fixed? System Timer?
   I/O: PIA 8255 (x4)
   Roms: ROM0 (8192 Bytes), ROM1 (8192 Bytes)
@@ -26,21 +26,21 @@
   Sound Board: (2 Sections - Sound Effects & Music)
   Page 1 - ??
   CPU: Z80
-  Clock: 5Mhz/2 = 2.5Mhz? 
+  Clock: 5Mhz/2 = 2.5Mhz?
   Interrupt: Hooked to a Timer 555
   I/O: PIA 8255
   Roms: IC9 (8192 Bytes), IC15, IC16, IC17 (524288 Bytes)
-  Ram: 6116 - 2048 Bytes Hooked to the PIA 
+  Ram: 6116 - 2048 Bytes Hooked to the PIA
   Audio: MSM6586 (Upgraded 5205) - Toggles between 4Khz, 8Khz from PIA - PC5 Pin
   (But sounds good at 11025Hz in Goldwave)
 
   Page 2 - ??
   CPU: Z80
-  Clock: 5Mhz/2 = 2.5Mhz? 
+  Clock: 5Mhz/2 = 2.5Mhz?
   Interrupt: Not used?!
   I/O: PIA 8255
   Roms: IC30 (8192 Bytes), IC25, IC26, IC27 (524288 Bytes)
-  Ram: 6116 - 2048 Bytes Hooked to the PIA 
+  Ram: 6116 - 2048 Bytes Hooked to the PIA
   Audio: MSM6586 (Upgraded 5205) - Toggles between 4Khz, 8Khz from PIA - PC5 Pin
   (But sounds good at 11025Hz in Goldwave)
 
@@ -51,14 +51,14 @@
   The following combination does something interesting: INT = 750, NMI = 100, Z80=3.6Mhz, 8051=16Mhz*3
 
   To get past "Introduzca Bola" - set the 4 ball switches to 1 in column 7, switches 1 - 4 (keys: T+A,T+S,T+D,T+F)
-  To begin a game, press start, then eventually remove all ball switches 1-4, and then activate 
+  To begin a game, press start, then eventually remove all ball switches 1-4, and then activate
   switches 5,6,7,8, in order, 1 at a time, and you should register some stuff..
   To drain, reapply in order, ball switches 1,2,3,4.
 
-  Issues: 
+  Issues:
   #1) Timing all guessed, and still far from good as a result:
       a) switch registering doesn't always seem to work (although it's pretty decent now)
-	  b) game sometimes freezes up - especially at boot up 
+	  b) game sometimes freezes up - especially at boot up
   #2) DMD Page flipping not implemented - can't determine how it does it.
   #3) Serial Port should transmit data, but it doesn't - could have used it to help with DMD perhaps
   #4) Sound not implemented
@@ -82,8 +82,8 @@
 #endif
 
 #define SPINB_VBLANKFREQ      60 /* VBLANK frequency*/
-#define SPINB_INTFREQ        750 /* Z80 Interrupt frequency*/
-#define SPINB_NMIFREQ       1000/* Z80 Interrupt frequency*/
+#define SPINB_INTFREQ        600 /* Z80 Interrupt frequency*/
+#define SPINB_NMIFREQ       1080 /* Z80 NMI frequency (shouldn't be used according to schematics!?) */
 
 WRITE_HANDLER(spinb_sndCmd_w);
 
@@ -108,15 +108,59 @@ struct {
   int    DMDRom1Enabled;
   int    DMDA16Enabled;
   int    DMDA17Enabled;
+  int    DMDPage;
   int    sound_strobe;
   int    SoundReady;
   int    TestContactos;
   int    LastStrobeType;
+  mame_timer *irqtimer;
+  mame_timer *nmitimer;
+  int irqfreq;
+  int nmifreq;
 } SPINBlocals;
 
+#ifdef MAME_DEBUG
+static void adjust_timer(int which, int offset) {
+  static char s[4];
+  if (which) { // 0 = NMI, others = IRQ
+    SPINBlocals.irqfreq += offset;
+    if (SPINBlocals.irqfreq < 1) SPINBlocals.irqfreq = 1;
+    sprintf(s, "IRQ:%4d", SPINBlocals.irqfreq);
+    core_textOut(s, 8, 40, 0, 5);
+    timer_adjust(SPINBlocals.irqtimer, 1.0/(double)SPINBlocals.irqfreq, 0, 1.0/(double)SPINBlocals.irqfreq);
+  } else {
+    SPINBlocals.nmifreq += offset;
+    if (SPINBlocals.nmifreq < 1) SPINBlocals.nmifreq = 1;
+    sprintf(s, "NMI:%4d", SPINBlocals.nmifreq);
+    core_textOut(s, 8, 40, 10, 5);
+    timer_adjust(SPINBlocals.nmitimer, 1.0/(double)SPINBlocals.nmifreq, 0, 1.0/(double)SPINBlocals.nmifreq);
+  }
+}
+#endif /* MAME_DEBUG */
+
+//Total hack to determine where in RAM the 8031 is reading data to send via the serial port to the DMD Display
 void dmd_serial_callback(int data)
 {
-	printf("Serial = %x\n",data);
+	int r5;
+	r5 = i8051_internal_r(0x05);		//Controls the hi byte into RAM.
+#if 0
+	if(last_r5 != r5) {
+		last_r5 = r5;
+		printf("r5 = %x\n",r5);
+	}
+#endif
+
+	//yucky code to determine the starting dmd page in ram for display
+	if(r5 >= 6 && r5 <= 9) SPINBlocals.DMDPage = 0x600;
+	if(r5 >= 10 && r5 <= 13) SPINBlocals.DMDPage = 0xa00;
+	if(r5 >= 14 && r5 <= 17) SPINBlocals.DMDPage = 0xe00;
+	if(r5 >= 18 && r5 <= 21) SPINBlocals.DMDPage = 0x1200;
+	if(r5 >= 22 && r5 <= 25) SPINBlocals.DMDPage = 0x1600;
+	if(r5 >= 26 && r5 <= 29) SPINBlocals.DMDPage = 0x1a00;
+    if(r5 >= 30 && r5 <= 33) SPINBlocals.DMDPage = 0x1e00;
+
+	//if(data > 0)
+	//printf("r4,5:%02x%02x  - Serial = %x\n",r5,r4,data);
 }
 
 
@@ -146,7 +190,7 @@ READ32_HANDLER(dmd_eram_address)
 	//DMD Command?
 	if(!SPINBlocals.DMDRamEnabled && !SPINBlocals.DMDRom1Enabled)
 		addr = 0x22000;		//Fixed location we use
-	else 
+	else
 	{
 		//If 8 bit offset, add port2 as upper 8 bits.
 		if(mem_mask < 0x100)
@@ -175,7 +219,13 @@ static WRITE_HANDLER(solenoid_w)
 			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFF00FFFF) | (data<<16);
             break;
 		case 3:
-			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x00FFFFFF) | (data<<24);
+			coreGlobals.tmpLampMatrix[8] = data;
+			break;
+		case 4:
+			coreGlobals.tmpLampMatrix[10] = data;
+			break;
+		case 5:
+			coreGlobals.tmpLampMatrix[9] = data;
 			break;
 		default:
 			LOG(("Solenoid_W Logic Error\n"));
@@ -203,9 +253,9 @@ static void UpdateLampCol(int col) {
 	tmp = col;
 	while(tmp)
 	{
-		i++;
 		if(tmp&1) lmpCol+=i;
 		tmp = tmp>>1;
+		i++;
 	}
 	SPINBlocals.lampColumn = lmpCol;
 	//printf("COL = %x LampColumn = %d\n",SPINBlocals.lampColumn,col);
@@ -217,7 +267,7 @@ READ_HANDLER(ci20_porta_r) { LOG(("UNDOCUMENTED: ci20_porta_r\n")); return 0; }
 READ_HANDLER(ci20_portb_r) { LOG(("UNDOCUMENTED: ci20_portb_r\n")); return 0; }
 
 //Switch Returns
-READ_HANDLER(ci20_portc_r) { 
+READ_HANDLER(ci20_portc_r) {
 	int data = 0;
 	if(SPINBlocals.LastStrobeType == 0)
 		return coreGlobals.swMatrix[SPINBlocals.swCol];
@@ -227,7 +277,7 @@ READ_HANDLER(ci20_portc_r) {
 		if(SPINBlocals.DipCol & 2) return core_getDip(1); // Dip Bank #2
 		if(SPINBlocals.DipCol & 4) return core_getDip(2); // Dip Bank #3
 	}
-	//LOG(("ci20_portc_r\n")); 
+	//LOG(("ci20_portc_r\n"));
 	//printf("%4x: reading switches col: %x = %x\n",activecpu_get_pc(),SPINBlocals.swCol,data);
 	return data;
 }
@@ -247,9 +297,9 @@ CI-23 8255 PPI
 		(P2)   Pin  9     : To DMD Board (Busy)
 		(P3)   Pin 10     : Test De Contactos
 */
-READ_HANDLER(ci23_portc_r) { 
+READ_HANDLER(ci23_portc_r) {
 	int data = 0;
-	LOG(("UNDOCUMENTED: ci23_portc_r\n")); 
+	LOG(("UNDOCUMENTED: ci23_portc_r\n"));
 		data |= (SPINBlocals.DMDStat0)<<0;
 		data |= (SPINBlocals.DMDStat1)<<1;
 		data |= !(SPINBlocals.DMDBusy)<<2;
@@ -274,8 +324,8 @@ CI-20 8255 PPI
 (out) P0-P2: Dip Switch Strobe
 (out) P3-P7: J2 - Pins 6 - 10 (Marked Nivel C03-C07) - Switch Strobe (5 lines)
 */
-WRITE_HANDLER(ci20_porta_w) { 
-	//LOG("ci20_porta_w = %x\n",data); 
+WRITE_HANDLER(ci20_porta_w) {
+	//LOG("ci20_porta_w = %x\n",data);
 	if(data & 0x7) {
 		SPINBlocals.DipCol = data & 0x7;
 		SPINBlocals.LastStrobeType = 1;
@@ -296,8 +346,8 @@ CI-20 8255 PPI
   (out) P0-P3: J2 - Pins 1 - 4 (Marked Nivel C08-C11) - Switch Strobe (4 lines)
   (xxx) P4-P7: Not Used?
 */
-WRITE_HANDLER(ci20_portb_w) { 
-	//LOG("ci20_portb_w = %x\n",data); 
+WRITE_HANDLER(ci20_portb_w) {
+	//LOG("ci20_portb_w = %x\n",data);
 	//LOG(("switch strobe 8-11 = %x\n",data));
 	SPINBlocals.LastStrobeType = 0;
 	SPINBlocals.swColumn = (SPINBlocals.swColumn&0x00ff) | (data<<5);
@@ -314,9 +364,9 @@ CI-23 8255 PPI
   (out) P2-P7 : J4 - Pins 13-19 (no 17) (Bit Luces 2-7) - Lamp Data 2-7
   Summary: P0-P7 - Lamp Data Bits 0-7
 */
-WRITE_HANDLER(ci23_porta_w) { 
-	//LOG("ci23_porta_w = %x\n",data); 
-	LOG(("Lamp Data = %x\n",data)); 
+WRITE_HANDLER(ci23_porta_w) {
+	//LOG("ci23_porta_w = %x\n",data);
+	LOG(("Lamp Data = %x\n",data));
 	coreGlobals.tmpLampMatrix[SPINBlocals.lampColumn] = data;
 }
 
@@ -326,9 +376,9 @@ CI-23 8255 PPI
   Port B:
   (out) P0-P7 : J3 - Pins 11 - 19 (no 18) (Nivel Luces 0-7) - Lamp Column Strobe 0 - 7
 */
-WRITE_HANDLER(ci23_portb_w) { 
-	//LOG("ci23_portb_w = %x\n",data); 
-	LOG(("Lamp Strobe = %x\n",data)); 
+WRITE_HANDLER(ci23_portb_w) {
+	//LOG("ci23_portb_w = %x\n",data);
+	LOG(("Lamp Strobe = %x\n",data));
 	UpdateLampCol(data);
 }
 
@@ -344,7 +394,7 @@ CI-23 8255 PPI
 		(P2)   Pin  9     : To DMD Board (Busy)
 		(P3)   Pin 10     : Test De Contactos
 */
-WRITE_HANDLER(ci23_portc_w) { 
+WRITE_HANDLER(ci23_portc_w) {
 	//LOG("ci23_portc_w = %x\n",data);
 	if(data & 0xe0) LOG(("CI23 - Not Connected = %x\n",data));
 	if(data & 0x10) LOG(("Sound Board Ready = %x\n",data & 0x10));
@@ -359,9 +409,10 @@ CI-22 8255 PPI
   Port A:
   (out) P0-P7 : J5 - Pins 7 - 14 (Marked Various) - Fixed Lamps Head & Playfield (??)
 */
-WRITE_HANDLER(ci22_porta_w) { 
-	//LOG("ci22_porta_w = %x\n",data); 
+WRITE_HANDLER(ci22_porta_w) {
+	//LOG("ci22_porta_w = %x\n",data);
 	//LOG(("Fixed Lamps 7-14 = %x\n",data));
+	solenoid_w(3,data);
 }
 /*
 CI-22 8255 PPI
@@ -369,9 +420,10 @@ CI-22 8255 PPI
   Port B:
   (out) P0-P7 : J4 - Pins 5 - 12 (Marked Various) - Flasher Control 5-12
 */
-WRITE_HANDLER(ci22_portb_w) { 
-	//LOG("ci22_portb_w = %x\n",data); 
+WRITE_HANDLER(ci22_portb_w) {
+	//LOG("ci22_portb_w = %x\n",data);
 	//LOG(("Flasher Control 5-12 = %x\n",data));
+	solenoid_w(5,data);
 }
 /*
 CI-22 8255 PPI
@@ -380,8 +432,9 @@ CI-22 8255 PPI
   (out) P0-P3 : J4 - Pins 1 - 4 (Marked Various) - Flasher Control 1-4
   (out) P4-P7 : J5 - Pins 15-19 (no 16) (Marked Various) - Fixed Lamps Head & Playfield (??)
 */
-WRITE_HANDLER(ci22_portc_w) { 
-	//LOG("ci22_portc_w = %x\n",data); 
+WRITE_HANDLER(ci22_portc_w) {
+	//LOG("ci22_portc_w = %x\n",data);
+	solenoid_w(4,data);
 #if 0
 	if(data & 0x0f)
 		LOG(("Flasher Control 1-4 = %x\n",data));
@@ -396,10 +449,10 @@ CI-21 8255 PPI
   Port A:
   (out) P0-P7 : J6 - Pins 1 - 8 (Marked Various) - Solenoids 1-8
 */
-WRITE_HANDLER(ci21_porta_w) { 
+WRITE_HANDLER(ci21_porta_w) {
 	//LOG("ci21_porta_w = %x\n",data);
 	//LOG(("solenoids 1-8 = %x\n",data));
-	solenoid_w(0,data);
+	solenoid_w(0,~data);
 }
 /*
 CI-21 8255 PPI
@@ -408,10 +461,10 @@ CI-21 8255 PPI
   (out) P0-P5 : J5 - Pins 1 - 6 (Marked Various) - Solenoids 19-24?
   (out) P6-P7 : J6 - Pins 18-19 (Marked Various) - Solenoids 17-18?
 */
-WRITE_HANDLER(ci21_portb_w) { 
-	//LOG("ci21_portb_w = %x\n",data); 
+WRITE_HANDLER(ci21_portb_w) {
+	//LOG("ci21_portb_w = %x\n",data);
 	//LOG(("solenoids 17-24 = %x\n",data));
-//	solenoid_w(2,data);
+	solenoid_w(2,data);
 }
 /*
 CI-21 8255 PPI
@@ -419,10 +472,10 @@ CI-21 8255 PPI
   Port C:
   (out) P0-P7 : J6 - Pins 9 - 17 (no 15) (Marked Various) - Solenoids 9-16
 */
-WRITE_HANDLER(ci21_portc_w) { 
-	//LOG("ci21_portc_w = %x\n",data); 
+WRITE_HANDLER(ci21_portc_w) {
+	//LOG("ci21_portc_w = %x\n",data);
 	//LOG(("solenoids 9-16 = %x\n",data));
-	solenoid_w(1,data);
+	solenoid_w(1,~data);
 }
 
 //Switch Strobe Info: - Switch Matrix marked as Nivel 03-09 (7 x 8 Matrix)
@@ -464,7 +517,7 @@ CI-22 8255 PPI
   Port C:
   (out) P0-P3 : J4 - Pins 1 - 4 (Marked Various) - Flasher Control 1-4
   (out) P4-P7 : J5 - Pins 15-19 (no 16) (Marked Various) - Fixed Lamps Head & Playfield (??)
-  
+
 CI-23 8255 PPI
 -------
   Port A:
@@ -499,13 +552,13 @@ static ppi8255_interface ppi8255_intf =
 static WRITE_HANDLER(soundbd_w)
 {
 	//LOG(("SOUND WRITE = %x\n",data));
-	printf("SOUND WRITE = %x\n",data);
+	//printf("SOUND WRITE = %x\n",data);
 }
 
 static WRITE_HANDLER(dmdbd_w)
 {
 	//LOG(("DMD WRITE = %x\n",data));
-	printf("DMD WRITE = %x\n",data);
+	//printf("DMD WRITE = %x\n",data);
 	SPINBlocals.DMDData = data;
 	SPINBlocals.DMDBusy = 0;
 	//Trigger an interrupt on INT0
@@ -521,7 +574,7 @@ static INTERRUPT_GEN(spinb_vblank) {
   /*-- lamps --*/
   if ((SPINBlocals.vblankCount % SPINB_LAMPSMOOTH) == 0) {
 	memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
-	memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
+//	memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
   /*-- solenoids --*/
   coreGlobals.solenoids = SPINBlocals.solenoids;
@@ -540,6 +593,20 @@ static INTERRUPT_GEN(spinb_vblank) {
 }
 
 static SWITCH_UPDATE(spinb) {
+#ifdef MAME_DEBUG
+  int which = 0;
+  if(!debugger_focus) {
+    if (keyboard_pressed(KEYCODE_SPACE)) which = 1; // toggle NMI/IRQ
+    if      (keyboard_pressed_memory_repeat(KEYCODE_O, 60))
+      adjust_timer(which, -10);
+    else if (keyboard_pressed_memory_repeat(KEYCODE_L, 60))
+      adjust_timer(which, -1);
+    else if (keyboard_pressed_memory_repeat(KEYCODE_COLON, 60))
+      adjust_timer(which, 1);
+    else if (keyboard_pressed_memory_repeat(KEYCODE_P, 60))
+      adjust_timer(which, 10);
+  }
+#endif /* MAME_DEBUG */
   if (inports) {
 	  coreGlobals.swMatrix[0] = (inports[SPINB_COMINPORT] & 0x0100)>>8;  //Column 0 Switches
 	  coreGlobals.swMatrix[1] = (inports[SPINB_COMINPORT] & 0x00ff);     //Column 1 Switches
@@ -563,9 +630,26 @@ static int spinb_m2sw(int col, int row) {
 	return col*8 + row - 9;
 }
 
+static void spinb_z80int(int data) {
+  LOG(("z80int\n"));
+  cpu_set_irq_line(0, 0, PULSE_LINE);
+}
+
+static void spinb_z80nmi(int data) {
+  LOG(("z80nmi\n"));
+  cpu_set_irq_line(0, 127, PULSE_LINE);
+}
+
 /*Machine Init*/
 static MACHINE_INIT(spinb) {
   memset(&SPINBlocals, 0, sizeof(SPINBlocals));
+
+  SPINBlocals.irqtimer = timer_alloc(spinb_z80int);
+  SPINBlocals.irqfreq = SPINB_INTFREQ;
+  timer_adjust(SPINBlocals.irqtimer, 1.0/(double)SPINBlocals.irqfreq, 0, 1.0/(double)SPINBlocals.irqfreq);
+  SPINBlocals.nmitimer = timer_alloc(spinb_z80nmi);
+  SPINBlocals.nmifreq = SPINB_NMIFREQ;
+  timer_adjust(SPINBlocals.nmitimer, 1.0/(double)SPINBlocals.nmifreq, 0, 1.0/(double)SPINBlocals.nmifreq);
 
   /* init PPI */
   ppi8255_init(&ppi8255_intf);
@@ -586,33 +670,12 @@ static MACHINE_STOP(spinb) {
 }
 
 #if 0
-//Show Sound & DMD Diagnostic LEDS
-void spinb_UpdateSoundLEDS(int num,int data)
-{
-	if(num==0)
-		SPINBlocals.diagnosticLeds1 = data;
-	else
-		SPINBlocals.diagnosticLeds2 = data;
-}
-#endif
-
-#if 0
 //Send data to the DMD CPU
 static WRITE_HANDLER(DMD_LATCH) {
 	sndbrd_0_data_w(0,data);
 	sndbrd_0_ctrl_w(0,0);
 }
 #endif
-
-static void spinb_z80int(int data) {
-LOG(("z80int\n"));
-cpu_set_irq_line(0, 0, PULSE_LINE);
-}
-
-static void spinb_z80nmi(int data) {
-LOG(("z80nmi\n"));
-cpu_set_irq_line(0, 127, PULSE_LINE);
-}
 
 //Only the INT0 pin is configured for read access and we handle that in the dmd command handler
 static READ_HANDLER(i8031_port_read)
@@ -750,7 +813,7 @@ MACHINE_DRIVER_START(spinb)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(spinb,NULL,spinb)
   MDRV_NVRAM_HANDLER(generic_0fill)
-  MDRV_CPU_ADD(Z80, 1600000)
+  MDRV_CPU_ADD(Z80, 2500000)
   MDRV_CPU_MEMORY(spinb_readmem, spinb_writemem)
   MDRV_CPU_PORTS(spinb_readport,spinb_writeport)
   MDRV_CPU_VBLANK_INT(spinb_vblank, SPINB_VBLANKFREQ)
@@ -780,7 +843,9 @@ PINMAME_VIDEO_UPDATE(SPINBdmd_update) {
   UINT8 *RAM2;
   tDMDDot dotCol;
   int ii,jj;
-  RAM  = RAM + 0x600;	//Display may start here?
+
+  RAM = RAM + SPINBlocals.DMDPage;
+  //RAM  = RAM + 0x600;	//Display may start here?
   RAM2 = RAM + 0x200;
   //RAM2 = RAM;
 
@@ -803,6 +868,7 @@ PINMAME_VIDEO_UPDATE(SPINBdmd_update) {
 	  offset+=0x100;
   if(keyboard_pressed_memory_repeat(KEYCODE_M,2))
   {
+	  offset-=0x100;
 //	  dmd32_data_w(0,offset);
 //	  dmd32_ctrl_w(0,0);
   }
