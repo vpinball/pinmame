@@ -454,6 +454,11 @@ DRIVERNV(motrshow)		//Motor Show (1988?)
 DRIVERNV(macattck)		//Mac Attack (1989?)
 DRIVERNV(wcup90)		//World Cup 90 (1990)
 
+// ----------------
+// NUOVA BELL GAMES
+// ----------------
+DRIVERNV(f1gp)			//F1 Grand Prix (1987)
+
 // --------------
 // SEGA GAMES
 // --------------
@@ -595,6 +600,23 @@ DRIVERNV(term3g)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (G
 DRIVERNV(term3l)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (Spain)
 DRIVERNV(term3f)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (France)
 DRIVERNV(term3i)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (Italy)
+
+//The following are all Stern Whitestar games using 8MB Roms running on the new ARM7 sound board for testing the ARM7
+#ifdef TEST_NEW_SOUND
+DRIVERNV(lotrsnd)		//Test ARM7 cpu/sound core
+//
+DRIVERNV(strknew)
+DRIVERNV(shrknew)
+DRIVERNV(hironew)
+DRIVERNV(austnew)
+DRIVERNV(mononew)
+DRIVERNV(playnew)
+DRIVERNV(rctnew)
+DRIVERNV(simpnew)
+DRIVERNV(t3new)
+#endif
+
+// New CPU/Sound Board with ARM7 CPU + Xilinx FPGA controlling sound
 DRIVERNV(lotr)          //Whitestar: 11/03 Lord Of The Rings
 DRIVERNV(lotr_gr)       //Whitestar: 11/03 Lord Of The Rings (Germany)
 DRIVERNV(lotr_sp)       //Whitestar: 11/03 Lord Of The Rings (Spain)
