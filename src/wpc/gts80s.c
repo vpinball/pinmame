@@ -159,7 +159,7 @@ void gts80s_init(struct sndbrdData *brdData) {
 		/* the 6530 RIOT ROM is not used by the boards which have a PiggyPack installed */
 		pMem = memory_region(GTS80S_locals.boardData.cpuNo)+0x0400;
 		for(i=0x0400; i<0x0bff; i++)
-			*pMem++ = (*pMem&0x0f);
+			*pMem++ &= 0x0f;
 
 		memcpy(memory_region(GTS80S_locals.boardData.cpuNo)+0x1000, memory_region(GTS80S_locals.boardData.cpuNo)+0x0700, 0x100);
 	}
