@@ -92,6 +92,7 @@
 #define HAS_I8752    1
 #define HAS_TMS7000  1
 #define HAS_AT91     1
+#define HAS_ARM7	 1
 
 // Sound
 #define HAS_DAC        1
@@ -115,6 +116,7 @@
 #define HAS_SP0250     1
 #define HAS_TMS320AV120 1
 #define HAS_M114S 1
+#define HAS_YM3812 1
 #endif /* _MSC_VER */
 
 #ifdef _MSC_VER // Disable some VC++ warnings

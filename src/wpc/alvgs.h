@@ -5,7 +5,8 @@
 #define ALVGS_CPUREGION (REGION_CPU1+ALVGS_CPUNO)
 #define ALVGS_ROMREGION (REGION_SOUND1)
 
-extern MACHINE_DRIVER_EXTERN(alvgs);
+extern MACHINE_DRIVER_EXTERN(alvg_s1);
+extern MACHINE_DRIVER_EXTERN(alvg_s2);
 
 /*-- Sound rom macros --*/
 /*-- 64K Sound CPU Rom, 4 X 256K Voice Roms --*/

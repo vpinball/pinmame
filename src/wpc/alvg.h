@@ -68,11 +68,11 @@ extern void alvg_UpdateSoundLEDS(int num,int data);
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(alvg);
 extern MACHINE_DRIVER_EXTERN(alvgs1);
-extern MACHINE_DRIVER_EXTERN(alvgs0);
+extern MACHINE_DRIVER_EXTERN(alvgs2);
 
 #define mALVG         alvg
-#define mALVGS		  alvgs1
-#define mALVGS0		  alvgs0
+#define mALVGS1		  alvgs1
+#define mALVGS2		  alvgs2
 
 //Use only for testing the 8031 core emulation
 #ifdef MAME_DEBUG
