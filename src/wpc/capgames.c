@@ -48,7 +48,7 @@ CAPCOMS_SOUNDROM3("u24_v10.bin", NO_DUMP,\
 				  "u29_v11.bin", CRC(74352bcd) SHA1(dc62fd651cf8408330f41b2e5387daecfe1d93d7), \
 				  "u30_v16.bin", CRC(a7c29b8f) SHA1(1d623c3a67a8e4bf39c22bbf0e008fb2f8920351)) 
 CC_ROMEND
-CORE_GAMEDEFNV(pmv112,"Pinball Magic",1995,"Capcom",cc,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(pmv112,"Pinball Magic",1995,"Capcom",cc2,GAME_IMPERFECT_SOUND)
 //Redemption Version 1.12
 INITGAME(pmv112r, 2, cc_dispDMD128x32, 3, 8)
 CC_ROMSTART_4(pmv112r, "u1lv112i.bin",CRC(28d35969),
@@ -60,7 +60,7 @@ CAPCOMS_SOUNDROM3("u24_v10.bin", NO_DUMP,\
 				  "u29_v11.bin", CRC(74352bcd) SHA1(dc62fd651cf8408330f41b2e5387daecfe1d93d7), \
 				  "u30_v16.bin", CRC(a7c29b8f) SHA1(1d623c3a67a8e4bf39c22bbf0e008fb2f8920351)) 
 CC_ROMEND
-CORE_CLONEDEFNV(pmv112r,pmv112,"Pinball Magic (Redemption)",1995,"Capcom",cc,GAME_IMPERFECT_SOUND)
+CORE_CLONEDEFNV(pmv112r,pmv112,"Pinball Magic (Redemption)",1995,"Capcom",cc2,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
 / Airborne (03/96)
@@ -76,7 +76,7 @@ CAPCOMS_SOUNDROM3("u24_v11.bin", NO_DUMP,\
 				  "u29_v10.bin", CRC(8989d566) SHA1(f1827fb5c1d917a324fffe2035e87fcca77f362f), \
 				  "u30_v11.bin", CRC(e16f1c4d) SHA1(9aa0ff87c303c6a8c95ef1c0e5382abad6179e21)) 
 CC_ROMEND
-CORE_GAMEDEFNV(abv106,"Airborne",1996,"Capcom",cc,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(abv106,"Airborne",1996,"Capcom",cc2,GAME_IMPERFECT_SOUND)
 //Redemption Version 1.06
 INITGAME(abv106r, 4, cc_dispDMD128x32, 3, 8)
 CC_ROMSTART_4(abv106r, "u1l_v16i.bin",CRC(7d7d2d85),
@@ -88,7 +88,7 @@ CAPCOMS_SOUNDROM3("u24_v11.bin", NO_DUMP,\
 				  "u29_v10.bin", CRC(8989d566) SHA1(f1827fb5c1d917a324fffe2035e87fcca77f362f), \
 				  "u30_v11.bin", CRC(e16f1c4d) SHA1(9aa0ff87c303c6a8c95ef1c0e5382abad6179e21)) 
 CC_ROMEND
-CORE_CLONEDEFNV(abv106r,abv106,"Airborne (Redemption)",1996,"Capcom",cc,GAME_IMPERFECT_SOUND)
+CORE_CLONEDEFNV(abv106r,abv106,"Airborne (Redemption)",1996,"Capcom",cc2,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
 / Breakshot (05/96)
@@ -101,7 +101,7 @@ CAPCOMS_SOUNDROM2("u24_v1x.bin", NO_DUMP,\
 				  "u28_v11.bin", CRC(b076ad2e) SHA1(1be8e3bda2890545253f6f7e4825d2db1d925255), \
 				  "u29_v11.bin", CRC(b251a27c) SHA1(bc30791cb9b5497c11f1cff06c89a729a07b5d4a)) 
 CC_ROMEND
-CORE_GAMEDEFNV(bsv103,"Breakshot (1.3)",1996,"Capcom",cc,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(bsv103,"Breakshot (1.3)",1996,"Capcom",cc1,GAME_IMPERFECT_SOUND)
 //Redemption Version 1.00
 INITGAME(bsv100r, 6, cc_dispDMD128x32, 3, 0)
 CC_ROMSTART_2(bsv100r, "u1l_v10i.bin",CRC(304b4da8),
@@ -110,7 +110,7 @@ CAPCOMS_SOUNDROM2("u24_v1x.bin", NO_DUMP,\
 				  "u28_v11.bin", CRC(b076ad2e) SHA1(1be8e3bda2890545253f6f7e4825d2db1d925255), \
 				  "u29_v11.bin", CRC(b251a27c) SHA1(bc30791cb9b5497c11f1cff06c89a729a07b5d4a)) 
 CC_ROMEND
-CORE_CLONEDEFNV(bsv100r,bsv103,"Breakshot (Redemption 1.0)",1996,"Capcom",cc,GAME_IMPERFECT_SOUND)
+CORE_CLONEDEFNV(bsv100r,bsv103,"Breakshot (Redemption 1.0)",1996,"Capcom",cc1,GAME_IMPERFECT_SOUND)
 //Redemption Version 1.02
 INITGAME(bsv102r, 7, cc_dispDMD128x32, 3, 0)
 CC_ROMSTART_2(bsv102r, "u1l_v12i.bin",CRC(ed09e463),
@@ -119,7 +119,7 @@ CAPCOMS_SOUNDROM2("u24_v1x.bin", NO_DUMP,\
 				  "u28_v11.bin", CRC(b076ad2e) SHA1(1be8e3bda2890545253f6f7e4825d2db1d925255), \
 				  "u29_v11.bin", CRC(b251a27c) SHA1(bc30791cb9b5497c11f1cff06c89a729a07b5d4a)) 
 CC_ROMEND
-CORE_CLONEDEFNV(bsv102r,bsv103,"Breakshot (Redemption 1.2)",1996,"Capcom",cc,GAME_IMPERFECT_SOUND)
+CORE_CLONEDEFNV(bsv102r,bsv103,"Breakshot (Redemption 1.2)",1996,"Capcom",cc1,GAME_IMPERFECT_SOUND)
 //Beta Version 1.05
 INITGAME(bsb105, 8, cc_dispDMD128x32, 3, 0)
 CC_ROMSTART_2(bsb105,  "bsu1l_b1.05", CRC(053684c7),
@@ -128,7 +128,7 @@ CAPCOMS_SOUNDROM2("u24_v1x.bin", NO_DUMP,\
 				  "u28_v11.bin", CRC(b076ad2e) SHA1(1be8e3bda2890545253f6f7e4825d2db1d925255), \
 				  "u29_v11.bin", CRC(b251a27c) SHA1(bc30791cb9b5497c11f1cff06c89a729a07b5d4a)) 
 CC_ROMEND
-CORE_CLONEDEFNV(bsb105,bsv103,"Breakshot (Beta 1.5)",1996,"Capcom",cc,GAME_IMPERFECT_SOUND)
+CORE_CLONEDEFNV(bsb105,bsv103,"Breakshot (Beta 1.5)",1996,"Capcom",cc1,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
 / Flipper Football (10/96)
@@ -149,7 +149,7 @@ CAPCOMS_SOUNDROM4a("u24_v11.bin", NO_DUMP,\
 				   "u30_v101.bin", CRC(f5432518) SHA1(8c26a267335289145f29db822bf7dfcb4730b208), \
 				   "u31_v101.bin", CRC(2b14e032) SHA1(c423ae5ed2fcc582201606bac3e766ec332b395a)) 
 CC_ROMEND
-CORE_GAMEDEFNV(ffv104,"Flipper Football",1996,"Capcom",cc,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(ffv104,"Flipper Football",1996,"Capcom",cc2,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
 / Big Bang Bar - Beta (11/96)
@@ -166,7 +166,7 @@ CAPCOMS_SOUNDROM4b("u24_v11.bin", NO_DUMP,\
 				   "u30_b17.bin", CRC(b4b6011b) SHA1(362c11353390f9ed2ee788847e6a2078b29c8806), \
 				   "u31_b17.bin", CRC(3016563f) SHA1(432e89dd975559017771da3543e9fe36e425a32b)) 
 CC_ROMEND
-CORE_GAMEDEFNV(bbb109,"Big Bang Bar (Beta)",1996,"Capcom",cc,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(bbb109,"Big Bang Bar (Beta)",1996,"Capcom",cc2,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
 / Kingpin (12/96)
@@ -181,4 +181,4 @@ CAPCOMS_SOUNDROM4b("u24_v11.bin", NO_DUMP,\
 				   "u30_b11.bin", CRC(fa35a177) SHA1(3c54c12db8e17a8c316a22b9b7ac80b6b3af8474), \
 				   "u31_b18.bin", CRC(07a7d514) SHA1(be8cb4b6d70ccae7821110689b714612c8a0b460)) 
 CC_ROMEND
-CORE_GAMEDEFNV(kpv106,"Kingpin",1996,"Capcom",cc,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(kpv106,"Kingpin",1996,"Capcom",cc2,GAME_IMPERFECT_SOUND)
