@@ -164,7 +164,7 @@ static void playsam(int cmd) {
 		lastchan++;
 		if (lastchan > 2) lastchan = 0;
   		sample_start(6+lastchan,samplex,0);
-//  		by32locals.startit = 0;
+		//  		by32locals.startit = 0;
 //	}
 //       sample_start(0,samplex,0);
   } else   if ((cmd & 0x0f) == 0x0f)     {
@@ -176,7 +176,7 @@ static void playsam(int cmd) {
 }
 
 static WRITE_HANDLER(by32_data_w) {
-//      	logerror("%04x: by_data_w data %02x \n", activecpu_get_previouspc(), data);
+      	logerror("%04x: by_data_w data %02x \n", activecpu_get_previouspc(), data);
       	if (~by32locals.strobe & 0x01)
  	{
  		by32locals.lastCmd =	(by32locals.lastCmd & 0x10) | (data & 0x0f); // case d
@@ -190,22 +190,22 @@ static WRITE_HANDLER(by32_ctrl_w) {
 int i;
   if (~by32locals.strobe & 0x01)
 	{
-//        playsam((by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00)); // case b
+ //        playsam((by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00)); // case b
 // sound e bit is swaped !!!!
           playsam((by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x00 : 0x10)); // case b
 	}
   else
     	if (~data & 0x01)
            {
-//	   by32locals.lastCmd = (by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00); // case a
- 	   by32locals.lastCmd = (by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x00 : 0x10); // case a
+// 	   by32locals.lastCmd = (by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00); // case a
+  	   by32locals.lastCmd = (by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x00 : 0x10); // case a
 	   for (i = 0;i < 3;i++) {
            if (i != lastchan) sample_stop(6+i);
         }
 
            }
 
-//  logerror("%04x: by_ctrl32_w data %02x startit %d\n", activecpu_get_previouspc(), data,by32locals.startit);
+  logerror("%04x: by_ctrl32_w data %02x startit %d\n", activecpu_get_previouspc(), data,by32locals.startit);
   by32locals.strobe = data;	// case e
 }
 
@@ -219,13 +219,13 @@ static void by32_init(struct sndbrdData *brdData) {
   w = core_revbyte(*(by32locals.brdData.romRegion));
     if (w == 0xfe)
     {
-    	by32locals.sampleoff	= 1 + 18;		// 751-18 game rom detected (star trek,playboy...)
+    	by32locals.sampleoff	= 18;		// 751-18 game rom detected (star trek,playboy...)
     }
-    else
+    else  
     {
-    	by32locals.sampleoff	= 33 + 18;		// 751-51 game rom detected (harlem, dolly...)
+    	by32locals.sampleoff	= 32 + 18;		// 751-51 game rom detected (harlem, dolly...)
     }
-//    logerror("%04x: by_ctrl32_int %02x \n", activecpu_get_previouspc(),w );
+    logerror("%04x: by_ctrl32_int %02x \n", activecpu_get_previouspc(),w );
 }
 
 
