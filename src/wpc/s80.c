@@ -790,6 +790,12 @@ static void S80_init(void) {
 }
 
 static void S80_exit(void) {
+  /* Sound Enabled? */
+  if (((Machine->gamedrv->flags & GAME_NO_SOUND)==0) && Machine->sample_rate)
+  {
+	  if ( core_gameData->gen & GEN_S80B2K || core_gameData->gen & GEN_S80B4K )
+	    S80Bs_sound_exit();
+  }
   riot_unconfig();
   core_exit();
 }
