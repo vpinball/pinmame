@@ -43,6 +43,6 @@ since version 1.31:
 
 old name                new name for romset
 -------------------------------------------
-gnr              =      gnr_300
+eshak_l3         =      esha_la3
 southpk          =      sprk_103
 twister          =      twst_405
