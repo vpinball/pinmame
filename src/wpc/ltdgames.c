@@ -25,12 +25,12 @@ LTD_ROMEND
 CORE_GAMEDEFNV(bhol_ltd,"Black Hole (LTD)",19??,"LTD",gl_mLTD,0)
 
 /*-------------------------------------------------------------------
-/ Vulcano
+/ Pec Man
 /-------------------------------------------------------------------*/
-INITGAME(vulcano, ltd_disp, 1)
-LTD_2_ROMSTART(vulcano, "vulcano.bin", CRC(5931c6f7) SHA1(e104a6c3ca2175bb49199e06963e26185dd563d2))
+INITGAME(pecman, ltd_disp, 1)
+LTD_2_ROMSTART(pecman, "pecman.bin", NO_DUMP)
 LTD_ROMEND
-CORE_GAMEDEFNV(vulcano,"Vulcano",19??,"LTD",gl_mLTD,0)
+CORE_GAMEDEFNV(pecman,"Pec Man",19??,"LTD",gl_mLTD,0)
 
 /*-------------------------------------------------------------------
 / Zephy

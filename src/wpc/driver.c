@@ -473,7 +473,7 @@ DRIVERNV(petaco2 )      //Petaco 2
 // LTD (Brazil)
 // ----------------
 DRIVERNV(bhol_ltd)      //Black Hole (clone of Gottlieb Black Hole)
-DRIVERNV(vulcano )      //Volcano (clone of Gottlieb Volcano?)
+DRIVERNV(pecman  )      //Pec Man
 DRIVERNV(zephy   )      //Zephy (Xenon clone)
 DRIVERNV(cauboy  )      //Cauboy
 

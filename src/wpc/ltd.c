@@ -15,7 +15,7 @@ static struct {
   UINT8 pseg1, pseg2;
 } locals;
 
-#define LTD_CPUFREQ	1000000
+#define LTD_CPUFREQ	3579545/4
 #define LTD_IRQFREQ 250
 
 /*-------------------------------
@@ -160,10 +160,10 @@ static MACHINE_INIT(LTD) {
 
 MACHINE_DRIVER_START(LTD)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CPU_ADD_TAG("mcpu", M6800, 1000000)
+  MDRV_CPU_ADD_TAG("mcpu", M6800, LTD_CPUFREQ)
   MDRV_CPU_MEMORY(LTD_readmem, LTD_writemem)
   MDRV_CPU_VBLANK_INT(LTD_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(ltd_irq, 250)
+  MDRV_CPU_PERIODIC_INT(ltd_irq, LTD_IRQFREQ)
   MDRV_CORE_INIT_RESET_STOP(LTD,NULL,NULL)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_DIPS(32)
