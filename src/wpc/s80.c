@@ -144,12 +144,8 @@ static int S80_vblank(void) {
 
 static void S80_updSw(int *inports) {
 	if (inports) {
-//		if ( core_gameData->gen & GEN_S80B4K )
-			coreGlobals.swMatrix[0] = ((inports[S80_COMINPORT] & 0xff00)>>8);
-//		else
-//			coreGlobals.swMatrix[0] = ((inports[S80_COMINPORT] & 0xff00)>>8)^0x01;
-
-                coreGlobals.swMatrix[8] = (coreGlobals.swMatrix[8]&0xc0) | (inports[S80_COMINPORT] & 0x003f);
+		coreGlobals.swMatrix[0] = ((inports[S80_COMINPORT] & 0xff00)>>8);
+        coreGlobals.swMatrix[8] = (coreGlobals.swMatrix[8]&0xc0) | (inports[S80_COMINPORT] & 0x003f);
 	}
 
   /*-- slam tilt --*/
@@ -208,7 +204,6 @@ static int revertByte(int value) {
 /*---------------
 / Switch reading
 /----------------*/
-// static READ_HANDLER(riot0a_r)  { return S80locals.OpSwitchEnable?opSwitches[S80locals.swColOp]:(S80_getSwRow(S80locals.swRow)&0xff);}
 static READ_HANDLER(riot0a_r)  { return S80locals.OpSwitchEnable?revertByte(core_getDip(S80locals.swColOp)):(S80_getSwRow(S80locals.swRow)&0xff);}
 static WRITE_HANDLER(riot0a_w) { logerror("riot0a_w: 0x%02x\n", data); }
 
@@ -470,17 +465,6 @@ struct riot6532_interface s80_riot_intf[] = {
  /* out : A/B, */ riot3a_w, riot3b_w,
  /* irq :      */ S80SS_irq
 }};
-
-static void RIOT_clock(int param)
-{
-  riot_clk(0);
-  riot_clk(1);
-  riot_clk(2);
-//  int i;
-
-//  for (i = 0; i < 3 /* sizeof(s80_riot_intf)/sizeof(s80_riot_intf[0])*/; i++)
-//    riot_clk(i);
-}
 
 static UINT8 RAM_256[0x100];
 static READ_HANDLER(ram_256r) {
@@ -798,7 +782,6 @@ static void S80_init(void) {
   }
 
   riot_reset();
-  timer_pulse(TIME_IN_HZ(850000/2.5), 0, RIOT_clock);
 }
 
 static void S80_exit(void) {

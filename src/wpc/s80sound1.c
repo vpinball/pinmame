@@ -19,7 +19,6 @@ struct {
 } S80sound1_locals;
 
 void S80SS_irq(int state) {
-  // logerror("set sound irq\n");
   S80sound1_locals.NMIState = 1;
   cpu_set_irq_line(s80ss_sndCPUNo, M6502_INT_IRQ, state ? ASSERT_LINE : CLEAR_LINE);
 }
@@ -171,11 +170,6 @@ static void s80_ss_Update(int num, INT16 *buffer, int length)
 	}
 }
 
-static void RIOT_clock(int param)
-{
-	riot_clk(3);
-}
-
 /*--------------
 /  init
 /---------------*/
@@ -183,9 +177,9 @@ void S80SS_sinit(int num) {
 	s80ss_sndCPUNo = num;
 
 	memset(&S80sound1_locals, 0x00, sizeof S80sound1_locals);
+	riot_set_clock(3, Machine->drv->cpu[s80ss_sndCPUNo].cpu_clock);
 
 	S80sound1_locals.stream = stream_init("SND DAC", 100, 6950, 0, s80_ss_Update);
-//	timer_pulse(TIME_IN_HZ(200000), 0, RIOT_clock);
 }
 
 
