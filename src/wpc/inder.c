@@ -181,7 +181,7 @@ static WRITE_HANDLER(ci20_porta_w) {
 }
 // (always 00?)
 static WRITE_HANDLER(ci20_portb_w) {
-	locals.solenoids = (locals.solenoids & 0xffff00ff) | (data << 8);
+	locals.solenoids |= data << 8;
 }
 // (always ff?)
 static WRITE_HANDLER(ci20_portc_w) {
@@ -190,7 +190,7 @@ static WRITE_HANDLER(ci20_portc_w) {
 
 // sols
 static WRITE_HANDLER(ci21_porta_w) {
-	locals.solenoids = (locals.solenoids & 0xffffff00) | (data ^ 0xee);
+	locals.solenoids |= data ^ 0xee;
 }
 // lamps
 static WRITE_HANDLER(ci21_portb_w) {
