@@ -25,4 +25,7 @@ copy tftc.zip tftc_303.zip > nul
 copy tommy.zip tomy_400.zip > nul
 copy wwfrumb.zip wwfr_103.zip > nul
 copy gnr.zip gnr_300.zip > nul
+copy eshak_l3.zip esha_la3.zip > nul
+copy southpk.zip sprk_103.zip > nul
+copy twister.zip twst_405.zip > nul
 cd ..
