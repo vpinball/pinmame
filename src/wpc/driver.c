@@ -142,10 +142,10 @@ DRIVERNV(drakor  )      //??/80 Drakor (W Gorgar, 11/79)
                         //??/?? Roman Victory
                         //??/?? Space Patrol
 DRIVERNV(meteort )      //??/80 Meteor (S Meteor, 09/79)
-                        //??/81 Fire Action (W Firepower, 02/80)
+DRIVERNV(fireact )      //??/81 Fire Action (W Firepower, 02/80)
 DRIVERNV(cavnegro)      //??/81 Cavaleiro Negro (W Black Knight, 11/80)
 DRIVERNV(sureshot)      //??/81 Sure Shot (B Eight Ball Deluxe, 09/80)
-                        //??/81 Vegas / Lady Luck (B Mata Hari, 09/77)
+DRIVERNV(vegast  )      //??/81 Vegas / Lady Luck (B Mata Hari, 09/77)
 DRIVERNV(cosmic  )      //??/81 Cosmic (S Galaxy, 01/80)
 DRIVERNV(gemini  )      //??/82 Gemini 2000 (B Centaur, 02/81)
 DRIVERNV(vortex  )      //??/82 Vortex (W Blackout, 06/80)
@@ -159,7 +159,7 @@ DRIVERNV(rally   )      //??/82 Rally (B Skateball, 04/80)
 DRIVERNV(snake   )      //??/82 Snake Machine
                         //??/82 Gork
                         //??/8? Ogar
-                        //??/84 Mr. Black (W Defender, 12/82)
+DRIVERNV(mrblack )		//??/84 Mr. Black (W Defender, 12/82)
 DRIVERNV(fireactd)      //??/8? Fire Action De Luxe (W Firepower II, 08/83)
 DRIVERNV(sshuttle)      //??/85 Space Shuttle (W Space Shuttle, 12/84)
 DRIVERNV(polar   )      //??/8? Polar Explorer
