@@ -6,10 +6,6 @@
   Earlier games used 2 - 20 column 16 segment alphanumeric displays.
   Later games used a 128x32 DMD.
 
-  There maybe an additional hardware change from games prior to deadly weapon, since
-  some of the games don't seem to respond to the Diagnostic switch and are marked game not working.
-
-
   65c02: Vectors: FFFE&F = IRQ, FFFA&B = NMI, FFFC&D = RESET
   //Cueball: CPU0: RST = FEF0, IRQ=462F, NMI=477A
 **************************************************************************************/
@@ -28,7 +24,7 @@ UINT8 DMDFrames[GTS3DMD_FRAMES][0x200];
 #define GTS3_VBLANKFREQ      60 /* VBLANK frequency*/
 #define GTS3_IRQFREQ        975 /* IRQ Frequency (Guessed)*/
 #define GTS3_DMDNMIFREQ     720 /* DMD NMI Frequency (Guessed, must be multiple of vblank freq.)*/
-#define GTS3_ALPHANMIFREQ   175 /* Alpha NMI Frequency (Guessed)*/
+#define GTS3_ALPHANMIFREQ   300 /* Alpha NMI Frequency (Guessed)*/
 
 #define GTS3_CPUNO	0
 #define GTS3_DCPUNO 1
@@ -204,19 +200,24 @@ static WRITE_HANDLER( xvia_0_b_w ) { GTS3locals.U4_PB_W(offset,data); }
 #define DBLNK 0x80
 
 static WRITE_HANDLER(alpha_u4_pb_w) {
+	static int ledOK = 0;
+	int lampBits = data & 0x0f;
+	int dispBits = data & 0xf0;
 	//logerror("lampcolumn=%4x STRB=%d LCLR=%d\n",GTS3locals.lampColumn,data&LSTRB,data&LCLR);
 	core_setLamp(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
-	if (data & ~GTS3locals.u4pb & LSTRB) { // Positive edge
-		if ((data & LCLR) && (data & LDATA))
-			GTS3locals.lampColumn = 1;
-		else
-			GTS3locals.lampColumn = ((GTS3locals.lampColumn << 1) & 0x0fff);
-	}
+	if (lampBits == 0x07)
+		GTS3locals.lampColumn = 1;
+	else if (lampBits == 0x06 && (GTS3locals.u4pb & 0x0f) == 0x04)
+		GTS3locals.lampColumn = ((GTS3locals.lampColumn << 1) & 0x0fff);
 
-	if ((data & ~GTS3locals.u4pb & DSTRB)) { // Positive edge
-		if ((data & DBLNK) && (data & DDATA)) { GTS3locals.acol = -1; }
-		if (GTS3locals.acol < 19) { GTS3locals.acol++; } else { GTS3locals.acol = 0; }
+	if (GTS3locals.u4pb == data && ledOK && lampBits != 0x06) {
+		ledOK = 0;
+		coreGlobals.tmpLampMatrix[12] = data;
 	}
+	if (lampBits == 0x06 && (GTS3locals.u4pb & 0x0f) == 0x02) ledOK = 1;
+
+	if (dispBits == 0xe0) { GTS3locals.acol = 0; }
+	else if (dispBits == 0xc0) { GTS3locals.acol++; }
 
 	GTS3locals.u4pb = data;
 }
@@ -229,6 +230,8 @@ static WRITE_HANDLER(alpha_u4_pb_w) {
   PB6:  Display Strobe (DSTRB)
 */
 static WRITE_HANDLER(dmd_u4_pb_w) {
+	static int ledOK = 0;
+	int lampBits = data & 0x0f;
 	core_setLamp(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
 	if (data & ~GTS3locals.u4pb & LSTRB) { // Positive edge
 		if ((data & LCLR) && (data & LDATA))
@@ -236,6 +239,12 @@ static WRITE_HANDLER(dmd_u4_pb_w) {
 		else
 			GTS3locals.lampColumn = ((GTS3locals.lampColumn << 1) & 0x0fff);
 	}
+
+	if (GTS3locals.u4pb == data && ledOK && lampBits != 0x06) {
+		ledOK = 0;
+		coreGlobals.tmpLampMatrix[12] = data;
+	}
+	if (lampBits == 0x06 && (GTS3locals.u4pb & 0x0f) == 0x02) ledOK = 1;
 
 	GTS3_dmdlocals.dstrb = (data & DSTRB) != 0;
 	GTS3locals.u4pb = data;
