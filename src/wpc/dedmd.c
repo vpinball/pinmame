@@ -22,7 +22,6 @@ void de_dmd192x64_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
   int ii,jj,kk;
 
   if (fullRefresh) fillbitmap(bitmap,Machine->pens[0],NULL);
-  DBGLOG(("6845start=%x\n",crtc6845_start_addr));
   for (kk = 0, ii = 1; ii <= 64; ii++) {
     UINT8 *line = &dotCol[ii][0];
     for (jj = 0; jj < (192/16); jj++) {
@@ -129,42 +128,39 @@ void de_dmd128x16_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
 /*------------------------------*/
 /*Data East 128x16 DMD Handling*/
 /*------------------------------*/
+static core_tLCDLayout de_128x16DMD[] = {
+  {0,0,16,128,CORE_DMD}, {0}
+};
 void de2_dmd128x16_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
   UINT8 *RAM  = (UINT8 *)dmd16RAM;
-  UINT8 *RAM2 = RAM + 0x0100;
-  BMTYPE **lines = (BMTYPE **)bitmap->line;
+  UINT8 *RAM2 = RAM;
+  tDMDDot dotCol;
   int ii,jj,kk;
-  int anydata = 0;
 
   if (fullRefresh) fillbitmap(bitmap,Machine->pens[0],NULL);
 
   /* See if ANY data has been written to DMD region #2 0x8100-0x8200*/
   for (ii = 0; ii < 16*128/8; ii++)
-    if (RAM2[ii]) { anydata = 1; break; }
+    if (RAM[ii+0x0100]) { RAM2 = RAM + 0x0100; break; }
 
-  for (ii = 0; ii < 16; ii++) {
-    BMTYPE *line = *lines++;
+  for (kk = 0, ii = 1; ii <= 16; ii++) {
+    UINT8 *line = &dotCol[ii][0];
     for (jj = 0; jj < (128/8); jj++) {
-      int data  = RAM[(ii*(128/8))+jj];
-      int data2 = RAM2[(ii*(128/8))+jj];
-      for (kk = 7; kk >= 0; kk--) {
-	int ndata = ((data>>kk)&0x01) + ((data2>>kk)&0x01);
-	if (ndata > 0)
-	  if (anydata>0) /* If Data has been written to both DMD segments..*/
-	    if (ndata==1)
-	      *line++ = CORE_COLOR(DMD_DOT33);
-	    else
-	      *line++ = CORE_COLOR(DMD_DOTON);
-	  else
-	    *line++ = CORE_COLOR(DMD_DOTON);
-	else
-	  *line++ = CORE_COLOR(DMD_DOTOFF);
-	line++;
-      } /* kk */
-    } /* jj */
-    lines++;
-  } /* ii */
-  osd_mark_dirty(0,0, 128*coreGlobals_dmd.DMDsize,16*coreGlobals_dmd.DMDsize);
+      UINT8 intens1 = 2*(RAM[kk] & 0x55) + (RAM2[kk] & 0x55);
+      UINT8 intens2 =   (RAM[kk] & 0xaa) + (RAM2[kk] & 0xaa)/2;
+      *line++ = (intens2>>6) & 0x03;
+      *line++ = (intens1>>6) & 0x03;
+      *line++ = (intens2>>4) & 0x03;
+      *line++ = (intens1>>4) & 0x03;
+      *line++ = (intens2>>2) & 0x03;
+      *line++ = (intens1>>2) & 0x03;
+      *line++ = (intens2)    & 0x03;
+      *line++ = (intens1)    & 0x03;
+      kk += 1;
+    }
+    *line = 0;
+  }
+  dmd_draw(bitmap, dotCol, de_128x16DMD);
   drawStatus(bitmap,fullRefresh);
 }
 
@@ -187,8 +183,7 @@ static void dmd32_init(struct sndbrdData *brdData);
 
 const struct sndbrdIntf dedmd32Intf = {
   dmd32_init, NULL, NULL,
-  dmd_data_w, dmd_busy_r,
-  dmd32_ctrl_w, dmd_status_r
+  dmd_data_w, dmd_busy_r, dmd32_ctrl_w, dmd_status_r, SNDBRD_NOTSOUND
 };
 
 static WRITE_HANDLER(dmd32_bank_w);
@@ -249,7 +244,6 @@ static WRITE_HANDLER(dmd32_bank_w) {
   cpu_setbank(DMD32_BANK0, dmdlocals.brdData.romRegion + (data & 0x1f)*0x4000);
 }
 static READ_HANDLER(dmd32_latch_r) {
-  DBGLOG(("busy = 0\n"));
   sndbrd_data_cb(dmdlocals.brdData.boardNo, dmdlocals.busy = 0); // Clear Busy
   cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_IRQ_LINE, CLEAR_LINE);
   return dmdlocals.cmd;
@@ -267,8 +261,7 @@ static void dmd64_init(struct sndbrdData *brdData);
 
 const struct sndbrdIntf dedmd64Intf = {
   dmd64_init, NULL, NULL,
-  dmd_data_w, dmd_busy_r,
-  dmd64_ctrl_w, dmd_status_r
+  dmd_data_w, dmd_busy_r, dmd64_ctrl_w, dmd_status_r, SNDBRD_NOTSOUND
 };
 
 static WRITE16_HANDLER(crtc6845_msb_address_w);
@@ -301,23 +294,12 @@ static void dmd64_init(struct sndbrdData *brdData) {
 }
 
 static WRITE_HANDLER(dmd64_ctrl_w) {
-  if (~data & dmdlocals.ctrl & 0x01) {
+  if (data & ~dmdlocals.ctrl & 0x01) {
     cpu_set_irq_line(dmdlocals.brdData.cpuNo, MC68000_IRQ_1, ASSERT_LINE);
     sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, dmdlocals.busy = 1);
     dmdlocals.cmd = dmdlocals.ncmd;
-    DBGLOG(("busy=1 cmd=%d\n",dmdlocals.ncmd));
   }
-#if 0
-  if ((data | dmdlocals.ctrl) & 0x01) {
-    if ((data & 0x01) == 0) {
-      cpu_set_irq_line(dmdlocals.brdData.cpuNo, MC68000_IRQ_1, (data & 0x01) ? CLEAR_LINE : ASSERT_LINE);
-      DBGLOG(("busy=1 cmd=%d\n",dmdlocals.ncmd));
-      sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, dmdlocals.busy = 1);
-      dmdlocals.cmd = dmdlocals.ncmd;
-    }
-  }
-#endif
-  if (~data & dmdlocals.ctrl & 0x02)
+  if (data & ~dmdlocals.ctrl & 0x02)
     cpu_set_reset_line(dmdlocals.brdData.cpuNo, PULSE_LINE);
   dmdlocals.ctrl = data;
 }
@@ -329,7 +311,6 @@ static WRITE16_HANDLER(dmd64_status_w) {
 static READ16_HANDLER(dmd64_latch_r) {
   sndbrd_data_cb(dmdlocals.brdData.boardNo, dmdlocals.busy = 0);
   cpu_set_irq_line(dmdlocals.brdData.cpuNo, MC68000_IRQ_1, CLEAR_LINE);
-  DBGLOG(("busy=0 cmd=%x\n",dmdlocals.cmd));
   return dmdlocals.cmd;
 }
 static void dmd64irq2(int data) {
@@ -351,8 +332,7 @@ static WRITE_HANDLER(dmd16_ctrl_w);
 
 const struct sndbrdIntf dedmd16Intf = {
   dmd16_init, NULL, NULL,
-  dmd_data_w, dmd_busy_r,
-  dmd16_ctrl_w, dmd_status_r
+  dmd_data_w, dmd_busy_r, dmd16_ctrl_w, dmd_status_r, SNDBRD_NOTSOUND
 };
 
 static READ_HANDLER(dmd16_port_r);
