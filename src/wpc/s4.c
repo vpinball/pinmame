@@ -16,7 +16,7 @@
 #define S4_VBLANKFREQ    60 /* VBLANK frequency */
 #define S4_IRQFREQ    1000  /* IRQ Frequency*/
 
-#define S4_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
+#define S4_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
 #define S4_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
 #define S4_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
 
@@ -24,6 +24,7 @@ static struct {
   int	 alphapos;
   int    vblankCount;
   UINT32 solenoids;
+  UINT32 solsmooth[S4_SOLSMOOTH];
   core_tSeg segments, pseg;
   int    lampRow, lampColumn;
   int    diagnosticLed;
@@ -151,7 +152,8 @@ static WRITE_HANDLER(s4_sol1_8_w) {
 /* REGULAR SOLENOIDS #9-16 - USED AS SOUND COMMANDS! (9-14)*/
 /***********************************************************/
 static WRITE_HANDLER(s4_sol9_16_w) {
-  if (!(core_gameData->gen & GEN_S3C)) { sndbrd_0_data_w(0, ~data); data &= 0xe0; }
+  // WPCMAME 20040816 - sound lines also trigger solenoids (for chimes)
+  if (!(core_gameData->gen & GEN_S3C)) sndbrd_0_data_w(0, ~data);
   coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffff00ff) | (data<<8);
   s4locals.solenoids |= (data<<8);
 }
@@ -257,18 +259,22 @@ static INTERRUPT_GEN(s4_vblank) {
   }
 
   /*-- solenoids --*/
-  if ((s4locals.vblankCount % S4_SOLSMOOTH) == 0) {
-    coreGlobals.solenoids = s4locals.solenoids;
-    if (s4locals.ssEn) {
-      int ii;
-      coreGlobals.solenoids |= CORE_SOLBIT(CORE_SSFLIPENSOL);
-      /*-- special solenoids updated based on switches --*/
-      for (ii = 0; ii < 6; ii++)
-        if (core_gameData->sxx.ssSw[ii] && core_getSw(core_gameData->sxx.ssSw[ii]))
-          coreGlobals.solenoids |= CORE_SOLBIT(CORE_FIRSTSSSOL+ii);
+  if (s4locals.ssEn) {
+    int ii;
+    s4locals.solenoids |= CORE_SOLBIT(CORE_SSFLIPENSOL);
+    /*-- special solenoids updated based on switches --*/
+    for (ii = 0; ii < 6; ii++) {
+      if (core_gameData->sxx.ssSw[ii] && core_getSw(core_gameData->sxx.ssSw[ii]))
+        s4locals.solenoids |= CORE_SOLBIT(CORE_FIRSTSSSOL+ii);
     }
-    s4locals.solenoids = coreGlobals.pulsedSolState;
   }
+  s4locals.solsmooth[s4locals.vblankCount % S4_SOLSMOOTH] = s4locals.solenoids;
+#if S4_SOLSMOOTH != 2
+#  error "Need to update smooth formula"
+#endif
+  coreGlobals.solenoids = s4locals.solsmooth[0] | s4locals.solsmooth[1];
+  s4locals.solenoids = coreGlobals.pulsedSolState;
+
   /*-- display --*/
   if ((s4locals.vblankCount % S4_DISPLAYSMOOTH) == 0) {
     memcpy(coreGlobals.segments, s4locals.segments, sizeof(coreGlobals.segments));
@@ -277,7 +283,6 @@ static INTERRUPT_GEN(s4_vblank) {
     /*update leds*/
     coreGlobals.diagnosticLed = s4locals.diagnosticLed;
     s4locals.diagnosticLed = 0;
-
   }
   core_updateSw(s4locals.ssEn);
 }
@@ -295,6 +300,7 @@ static SWITCH_UPDATE(s4) {
   else
     cpu_set_nmi_line(0, CLEAR_LINE);
 
+  cpu_set_nmi_line(0, core_getSw(S4_SWCPUDIAG) ? ASSERT_LINE : CLEAR_LINE);
   sndbrd_0_diag(core_getSw(S4_SWSOUNDDIAG));
 
   /* Show Status of Auto/Manual Switch */

@@ -81,10 +81,6 @@
     SIM_PORTS(balls) \
     DE_COMPORTS2
 
-#define S11_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
-#define S11_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
-#define S11_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
-
 /*-- To access C-side multiplexed solenoid/flasher --*/
 #define S11_CSOL(x) ((x)+(WPC_FIRSTFLIPPERSOL-1))
 #define DE_CSOL(x) ((x)+24)

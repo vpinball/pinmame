@@ -16,7 +16,7 @@
 #define S7_PIA5  5
 #define S7_BANK0 1
 
-#define S7_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
+#define S7_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
 #define S7_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
 #define S7_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
 
@@ -28,6 +28,7 @@ static NVRAM_HANDLER(s7);
 static struct {
   int    vblankCount;
   UINT32 solenoids;
+  UINT32 solsmooth[S7_SOLSMOOTH];
   core_tSeg segments, pseg;
   UINT16 alphaSegs;
   int    lampRow, lampColumn;
@@ -73,18 +74,21 @@ static INTERRUPT_GEN(s7_vblank) {
     memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
   /*-- solenoids --*/
-  if ((s7locals.vblankCount % S7_SOLSMOOTH) == 0) {
-    coreGlobals.solenoids = s7locals.solenoids;
-    if (s7locals.ssEn) {
-      int ii;
-      coreGlobals.solenoids |= CORE_SOLBIT(S7_GAMEONSOL);
-      /*-- special solenoids updated based on switches --*/
-      for (ii = 0; ii < 8; ii++)
-        if (core_gameData->sxx.ssSw[ii] && core_getSw(core_gameData->sxx.ssSw[ii]))
-          coreGlobals.solenoids |= CORE_SOLBIT(CORE_FIRSTSSSOL+ii);
+  if (s7locals.ssEn) {
+    int ii;
+    s7locals.solenoids |= CORE_SOLBIT(CORE_SSFLIPENSOL);
+    /*-- special solenoids updated based on switches --*/
+    for (ii = 0; ii < 8; ii++) {
+      if (core_gameData->sxx.ssSw[ii] && core_getSw(core_gameData->sxx.ssSw[ii]))
+        s7locals.solenoids |= CORE_SOLBIT(CORE_FIRSTSSSOL+ii);
     }
-    s7locals.solenoids = coreGlobals.pulsedSolState;
   }
+  s7locals.solsmooth[s7locals.vblankCount % S7_SOLSMOOTH] = s7locals.solenoids;
+#if S7_SOLSMOOTH != 2
+#  error "Need to update smooth formula"
+#endif
+  coreGlobals.solenoids = s7locals.solsmooth[0] | s7locals.solsmooth[1];
+  s7locals.solenoids = coreGlobals.pulsedSolState;
   /*-- display --*/
   if ((s7locals.vblankCount % S7_DISPLAYSMOOTH) == 0) {
     memcpy(coreGlobals.segments, s7locals.segments, sizeof(coreGlobals.segments));
