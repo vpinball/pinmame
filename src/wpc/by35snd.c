@@ -422,7 +422,7 @@ static void cs_init(struct sndbrdData *brdData) {
 
 static WRITE_HANDLER(cs_cmd_w) { cslocals.cmd = data; }
 static WRITE_HANDLER(cs_ctrl_w) {
-  cslocals.ctrl = ((data & 1) == 0);
+  cslocals.ctrl = ((data & 1) == cslocals.brdData.subType);
   cpu_set_irq_line(cslocals.brdData.cpuNo, M6803_TIN_LINE, (data & 1) ? ASSERT_LINE : CLEAR_LINE);
 }
 static READ_HANDLER(cs_port1_r) { return cslocals.ctrl | (cslocals.cmd << 1); }
