@@ -475,7 +475,7 @@ static WRITE_HANDLER(sd_ctrl_w);
 static READ_HANDLER(sd_status_r);
 
 const struct sndbrdIntf bySDIntf = {
-  sd_init, NULL, sd_diag, sd_cmd_w, sd_status_r, sd_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCBSYNC
+  sd_init, NULL, sd_diag, sd_cmd_w, sd_status_r, sd_ctrl_w, NULL, 0//SNDBRD_NODATASYNC|SNDBRD_NOCBSYNC
 };
 struct DACinterface sd_dacInt = { 1, { 20 }};
 MEMORY_READ16_START(sd_readmem)
@@ -496,7 +496,7 @@ static void sd_pia0irq(int state);
 
 static struct {
   struct sndbrdData brdData;
-  int cmd, dacdata, status;
+  int cmd[2], dacdata, status, cmdsync, irqnext;
 } sdlocals;
 
 static const struct pia6821_interface sd_pia = {
@@ -514,10 +514,18 @@ static WRITE_HANDLER(sd_pia0cb2_w) {
 static void sd_diag(int button) {
   cpu_set_irq_line(sdlocals.brdData.cpuNo, MC68000_IRQ_3, button ? ASSERT_LINE : CLEAR_LINE);
 }
-static WRITE_HANDLER(sd_cmd_w) { sdlocals.cmd = data; }
-static WRITE_HANDLER(sd_ctrl_w) { pia_set_input_ca1(SD_PIA0, data & 0x01); }
+static WRITE_HANDLER(sd_cmd_w) {
+  sdlocals.cmd[sdlocals.cmdsync ^= 1] = data;
+  if (sdlocals.irqnext) { pia_pulse_ca1(SD_PIA0,0); sdlocals.irqnext = 0; }
+}
+static WRITE_HANDLER(sd_ctrl_w) {
+  if (!(data & 0x01)) sdlocals.irqnext = 1;
+}
 static READ_HANDLER(sd_status_r) { return sdlocals.status; }
-static READ_HANDLER(sd_pia0b_r) { return sdlocals.cmd; }
+
+static READ_HANDLER(sd_pia0b_r) {
+  return sdlocals.cmd[sdlocals.cmdsync ^= 1];
+}
 
 static WRITE_HANDLER(sd_pia0a_w) {
   sdlocals.dacdata = (sdlocals.dacdata & ~0x3fc) | (((UINT16)data) << 2);
