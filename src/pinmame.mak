@@ -35,9 +35,10 @@ DRVLIBS += $(PINOBJ)/by6803.o
 DRVLIBS += $(PINOBJ)/capcom.o
 DRVLIBS += $(PINOBJ)/hnk.o $(PINOBJ)/hnks.o
 #DRVLIBS += $(PINOBJ)/zac.o
-#DRVLIBS += $(PINOBJ)/gp.o
+DRVLIBS += $(PINOBJ)/gp.o
 DRVLIBS += $(PINOBJ)/atari.o $(PINOBJ)/atarisnd.o
 DRVLIBS += $(PINOBJ)/taito.o
+DRVLIBS += $(PINOBJ)/midway.o
 #
 # Games
 #
@@ -53,10 +54,11 @@ PINGAMES += $(PINOBJ)/segames.o
 PINGAMES += $(PINOBJ)/wpcgames.o
 PINGAMES += $(PINOBJ)/hnkgames.o
 #PINGAMES += $(PINOBJ)/zacgames.o
-#PINGAMES += $(PINOBJ)/gpgames.o
+PINGAMES += $(PINOBJ)/gpgames.o
 PINGAMES += $(PINOBJ)/atarigames.o
 PINGAMES += $(PINOBJ)/taitogames.o
 PINGAMES += $(PINOBJ)/capgames.o
+PINGAMES += $(PINOBJ)/midgames.o
 #
 # Simulators
 #
@@ -125,6 +127,8 @@ CPUS += M68000@
 CPUS += M68306@
 CPUS += S2650@
 CPUS += 8080@
+CPUS += I86@
+CPUS += 4004@
 
 SOUNDS += DAC@
 SOUNDS += YM2151_ALT@
