@@ -513,7 +513,6 @@ void parse_cmdline (int argc, char **argv, int game_index, char *override_defaul
         pmoptions.dmd_only = get_bool("config", "dmd_only", NULL, 0);
         pmoptions.dmd_compact = get_bool("config", "dmd_compact", NULL, 0);
         pmoptions.dmd_antialias = get_int("config", "dmd_antialias", NULL, 50);
-        pmoptions.soundlimit = get_bool("config", "soundlimit", NULL, 1);
         if(pmoptions.dmd_red   < 0)   pmoptions.dmd_red   = 0;
         if(pmoptions.dmd_red   > 255) pmoptions.dmd_red   = 255;
         if(pmoptions.dmd_green < 0)   pmoptions.dmd_green = 0;
