@@ -34,7 +34,7 @@ Bugs in Pinmame that we are aware of:
 
 #12) Sound gets cut off in Alvin G games sometimes, and some weird notes in World Tour occasionally
 
-#13) All Gottlieb System80a games are not working correctly right now. We're on it!!!
+#13) Some Bally games using the 6803 processor don't work correctly.
 
 #14) No sound on some Hankin games.
 
