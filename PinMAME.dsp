@@ -3702,32 +3702,6 @@ SOURCE=src\wpc\gts3games.c
 # End Source File
 # Begin Source File
 
-SOURCE=src\wpc\gts3sound.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=src\wpc\gts3sound.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\wpc\gts80.c
 
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
