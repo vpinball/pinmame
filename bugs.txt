@@ -30,6 +30,8 @@ Bugs in Pinmame that we are aware of:
 
 #11) Sound gets cut off in Alvin G games sometimes, and some weird notes in World Tour occasionally
 
+#13) Switch problems with Dataeast Playboy and the Grotto/VUK
+
 #14) Occasional pops/clicks on Capcom sound
 
 #15) Some games have no sound emulated, but the core prevents us from using the GAME_NO_SOUND flag.
