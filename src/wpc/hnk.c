@@ -14,7 +14,7 @@
 #define HNK_IRQFREQ      150 /* IRQ (via PIA) frequency*/
 #define HNK_ZCFREQ        85 /* Zero cross frequency */
 
-static WRITE_HANDLER(hnk_soundCmd) { }
+static WRITE_HANDLER(hnk_soundCmd) { logerror("sound cmd = 0x%02x\n",data); }
 static void hnk_soundInit(void) {}
 static void hnk_soundExit(void) {}
 
@@ -41,7 +41,7 @@ static void piaIrq(int state) {
 static void hnk_dispStrobe(int mask) {
   int digit = locals.p1_a & 0xfc; //PA2-7 Selects Digits 1-6
   int ii,jj;
-  logerror("digit = %x (%x,%x,%x,%x,%x)\n",digit,locals.bcd[0],locals.bcd[1],locals.bcd[2],locals.bcd[3],locals.bcd[4]);
+//  logerror("digit = %x (%x,%x,%x,%x,%x)\n",digit,locals.bcd[0],locals.bcd[1],locals.bcd[2],locals.bcd[3],locals.bcd[4]);
   for (ii = 0; digit; ii++, digit>>=1)
     if (digit & 0x01) {
       UINT8 dispMask = mask;
@@ -86,7 +86,7 @@ static WRITE_HANDLER(pia0a_w) {
     hnk_dispStrobe(data&0x0f);
   }
   locals.p0_a = data;
-  logerror("bcd data=%x\n",data);
+//  logerror("bcd data=%x\n",data);
   hnk_lampStrobe(0,locals.lampadr1);
 }
 /* PIA1:A-W  0   Display Latch #5
@@ -95,13 +95,13 @@ static WRITE_HANDLER(pia0a_w) {
 */
 static WRITE_HANDLER(pia1a_w) {
   int tmp = locals.p1_a;
-  logerror("digit_w: %x\n",data);
+//  logerror("digit_w: %x\n",data);
   locals.p1_a = data;
-  logerror("setting digit to %x\n",locals.p1_a);
+//  logerror("setting digit to %x\n",locals.p1_a);
   return;
   //if (!locals.p0_ca2) {		  // If Display Blanking cleared
     if (tmp & ~data & 0x01) { // Positive Edge
-	  logerror("Latch #5: ca2 = %x, p0_a = %x\n",locals.p0_ca2,locals.p0_a);
+//	  logerror("Latch #5: ca2 = %x, p0_a = %x\n",locals.p0_ca2,locals.p0_a);
       locals.bcd[4] = locals.p0_a>>4;
       hnk_dispStrobe(0x10);
     }
@@ -113,7 +113,10 @@ static READ_HANDLER(pia0b_r) {
   if (locals.p0_a & 0x20) return core_getDip(0); // DIP#1 1-8
   if (locals.p0_a & 0x40) return core_getDip(1); // DIP#2 9-16
   if (locals.p0_a & 0x80) return core_getDip(2); // DIP#3 17-24
-  return core_getSwCol((locals.p0_a & 0x1f) | ((locals.p1_b & 0x80)>>2));
+
+  if ( (locals.p1_b & 0x80)>>2 )
+	locals.p1_b = locals.p1_b;
+  return core_revbyte(core_getSwCol((locals.p0_a & 0x1f) | ((locals.p1_b & 0x80)>>2)));
 }
 
 /* PIA0:CB2-W Lamp Strobe #1 */
@@ -183,11 +186,20 @@ static int hnk_vblank(void) {
 
 static void hnk_updSw(int *inports) {
   if (inports) {
-    coreGlobals.swMatrix[0] = (inports[HNK_COMINPORT]>>10) & 0x07;
-    coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & (~0x60)) |
-                              ((inports[HNK_COMINPORT]<<5) & 0x60);
-    coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & (~0x87)) |
-                                ((inports[HNK_COMINPORT]>>2) & 0x87);
+      coreGlobals.swMatrix[0] = (inports[HNK_COMINPORT]>>5) & 0x07;
+      coreGlobals.swMatrix[1] =   (coreGlobals.swMatrix[1] & 0xf9)
+								| ((inports[HNK_COMINPORT]<<1) & 0x06);
+      coreGlobals.swMatrix[2] =   (coreGlobals.swMatrix[2] & 0x7e)
+								| ((inports[HNK_COMINPORT]>>2) & 0x01)
+								| ((inports[HNK_COMINPORT]<<4) & 0x80);
+      coreGlobals.swMatrix[5] =   (coreGlobals.swMatrix[5] & 0x7e)
+								| ((inports[HNK_COMINPORT]<<3) & 0x80);
+
+//	  coreGlobals.swMatrix[0] = (inports[HNK_COMINPORT]>>10) & 0x07;
+//    coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & (~0x60)) |
+//                              ((inports[HNK_COMINPORT]<<5) & 0x60);
+//    coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & (~0x87)) |
+//                                ((inports[HNK_COMINPORT]>>2) & 0x87);
   }
   /*-- Diagnostic buttons on CPU board --*/
   if (core_getSw(HNK_SWCPUDIAG))  cpu_set_nmi_line(0, PULSE_LINE);
