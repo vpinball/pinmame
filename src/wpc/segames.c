@@ -22,11 +22,6 @@ static void init_##name(void) { \
 } \
 SE_INPUT_PORTS_START(name, balls) SE_INPUT_PORTS_END
 
-#ifndef VPINMAME
-   #define GAME_NOCRC 0
-#endif
-
-
 /* GAMES APPEAR IN PRODUCTION ORDER (MORE OR LESS) */
 
 //Snd Works but VERY SOFT
