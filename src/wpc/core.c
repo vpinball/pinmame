@@ -691,17 +691,19 @@ int core_getSol(int solNo) {
   else if (solNo <= 32) { // 29-32
     if (core_gameData->gen & GEN_ALLS11)
       return coreGlobals.solenoids & CORE_SOLBIT(solNo);
-    else if (core_gameData->gen & GEN_ALLWPC)
+    else if (core_gameData->gen & GEN_ALLWPC) // GI circuits
       return coreGlobals.solenoids2 & (1<<(solNo-29+8)); // GameOn
   }
   else if (solNo <= 36) { // 33-36 Upper flipper (WPC only)
     if (core_gameData->gen & GEN_ALLWPC) {
-      int mask = 1<<(solNo - 33);
+      int mask;
       /*-- flipper coils --*/
       if      ((solNo == sURFlip) && (core_gameData->hw.flippers & FLIP_SOL(FLIP_UR)))
         mask = CORE_URFLIPSOLBITS;
       else if ((solNo == sULFlip) && (core_gameData->hw.flippers & FLIP_SOL(FLIP_UL)))
         mask = CORE_ULFLIPSOLBITS;
+      else
+        mask = 1<<(solNo - 33 + 4);
       return coreGlobals.solenoids2 & mask;
     }
   }
