@@ -205,7 +205,7 @@ static WRITE_HANDLER(pia1b_w) {
   if (~locals.b1 & data & core_gameData->hw.display & 0xf0)
     { locals.bcd[5] = locals.a0>>4; by35_dispStrobe(0x20); }
   locals.b1 = data;
-  if ((sb & 0xff00) != SNDBRD_ST300)  sndbrd_0_data_w(0, data & 0x0f); 	// ok
+  if ((sb & 0xff00) != SNDBRD_ST300 && sb != SNDBRD_ASTRO)  sndbrd_0_data_w(0, data & 0x0f); 	// ok
   coreGlobals.pulsedSolState = 0;
   if (!locals.cb21)
     locals.solenoids |= coreGlobals.pulsedSolState = (1<<(data & 0x0f)) & 0x7fff;
@@ -218,7 +218,7 @@ static WRITE_HANDLER(pia1b_w) {
 static WRITE_HANDLER(pia1cb2_w) {
   int sb = core_gameData->hw.soundBoard;		// ok
   locals.cb21 = data;
-  if (((locals.hw & BY35HW_SCTRL) == 0) && ((sb & 0xff00) != SNDBRD_ST300)) 	// ok
+  if (((locals.hw & BY35HW_SCTRL) == 0) && ((sb & 0xff00) != SNDBRD_ST300) && (sb != SNDBRD_ASTRO)) 	// ok
     sndbrd_0_ctrl_w(1, (data ? 1 : 0) | (locals.a1 & 0x02));
 }
 
@@ -446,29 +446,8 @@ WRITE_HANDLER(extra_sol_w) {
   locals.solenoids = (locals.solenoids & 0x00ffffff) | coreGlobals.pulsedSolState;
 }
 
-// Although the M6840 seems to be hooked up correctly, here is an yet another output!
-WRITE_HANDLER(stern200_sol_w) {
-  data ^= 0xff;
-  if ((data & 0x0f) + 8 == (data >> 4))
-    coreGlobals.pulsedSolState = 1 << (31 - (data & 0x0f));
-  locals.solenoids = (locals.solenoids & 0x00ffffff) | coreGlobals.pulsedSolState;
-}
 WRITE_HANDLER(stern100_sol_w) {
   extra_sol_w(offset, data ^ 0xff);
-}
-
-// This game can work either with SB-100 OR SB-300!
-WRITE_HANDLER(astro_sol_w) {
-  if ((data & 0xf0) == 0x30)
-    coreGlobals.pulsedSolState = 0x00200000 | (1 << (16 + (data & 0x0f)));
-  else if (data != 0) {
-    if ((data & 0xf0) == 0xf0) data ^= 0xff;
-    coreGlobals.pulsedSolState = data << 28;
-  }
-  locals.solenoids = (locals.solenoids & 0x001fffff) | coreGlobals.pulsedSolState;
-}
-static READ_HANDLER(astro_sol_r) {
-  return 0;
 }
 
 static MACHINE_INIT(by35) {
@@ -530,7 +509,7 @@ static MACHINE_INIT(by35Proto) {
 
 static MACHINE_RESET(by35) { pia_reset(); }
 static MACHINE_STOP(by35) {
-  if ((core_gameData->hw.soundBoard & 0xff00) != SNDBRD_ST300)
+  if ((core_gameData->hw.soundBoard & 0xff00) != SNDBRD_ST300 && core_gameData->hw.soundBoard != SNDBRD_ASTRO)
     sndbrd_0_exit();
 }
 
