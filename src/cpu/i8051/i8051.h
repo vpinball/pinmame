@@ -116,6 +116,7 @@ READ_HANDLER( i8051_internal_r );
 
 extern void i8051_set_serial_tx_callback(void (*callback)(int data));
 extern void i8051_set_serial_rx_callback(int (*callback)(void));
+extern void i8051_set_eram_iaddr_callback(READ32_HANDLER((*callback)));
 
 #ifdef MAME_DEBUG
 extern unsigned Dasm8051( char *dst, unsigned pc );
