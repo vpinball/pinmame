@@ -35,7 +35,11 @@
  *		  *Important*: Internal ROM needs to be treated the same as external rom by the programmer 
  *		               creating the driver (ie, use standard cpu rom region)
  *
+ *		  The term cycles is used here to really refer to clock oscilations, because 1 machine cycle
+ *		  actually takes 12 oscilations.
+ *
  *        August 27,2003: Currently support for only 8031/8051/8751 chips (ie 128 RAM)
+ *
  *		  Todo: Full Timer support, Serial Data support, Setting Interrupt Priority
  *
  *		  Not Implemented: RAM paging using hardware configured addressing...
@@ -44,6 +48,7 @@
  *
  *		  Not sure how to deal with Port Reads, ie, reading from the latch versus the pin (see more notes in ops file)
  *
+ *		  Timing needs to be implemented via MAME timers
  *****************************************************************************/
 
 #include <stdio.h>
@@ -393,24 +398,24 @@ static UINT8 i8051_win_layout[] = {
 #define R_ACC	i8051.acc
 #define R_B		i8051.b
 
-/* # of instructions each opcode takes up */
+/* # of oscilations each opcode requires*/
 static UINT8 i8051_cycles[] = {
-	1,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,
-	2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,
-	2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,
-	2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,
-	2,2,1,2,1,1,1,1,1,1,1,1,1,1,1,1,
-	2,2,1,2,1,1,1,1,1,1,1,1,1,1,1,1,
-	2,2,1,2,1,1,1,1,1,1,1,1,1,1,1,1,
-	2,2,2,2,1,2,1,1,2,2,2,2,2,2,2,2,
-	2,2,2,2,4,2,2,2,2,2,2,2,2,2,2,2,
-	2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,
-	2,2,1,2,4,0,2,2,1,1,1,1,1,1,1,1,
-	2,2,1,1,2,2,2,2,2,2,2,2,2,2,2,2,
-	2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-	2,2,1,1,1,2,1,1,2,2,2,2,2,2,2,2,
-	2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,
-	2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1 
+	12,24,24,12,12,12,12,12,12,12,12,12,12,12,12,12,
+	24,24,24,12,12,12,12,12,12,12,12,12,12,12,12,12,
+	24,24,24,12,12,12,12,12,12,12,12,12,12,12,12,12,
+	24,24,24,12,12,12,12,12,12,12,12,12,12,12,12,12,
+	24,24,12,24,12,12,12,12,12,12,12,12,12,12,12,12,
+	24,24,12,24,12,12,12,12,12,12,12,12,12,12,12,12,
+	24,24,12,24,12,12,12,12,12,12,12,12,12,12,12,12,
+	24,24,24,24,12,24,12,12,24,24,24,24,24,24,24,24,
+	24,24,24,24,48,24,24,24,24,24,24,24,24,24,24,24,
+	24,24,24,24,12,12,12,12,12,12,12,12,12,12,12,12,
+	24,24,12,24,48,12,24,24,12,12,12,12,12,12,12,12,
+	24,24,12,12,24,24,24,24,24,24,24,24,24,24,24,24,
+	24,24,12,12,12,12,12,12,12,12,12,12,12,12,12,12,
+	24,24,12,12,12,24,12,12,24,24,24,24,24,24,24,24,
+	24,24,24,24,12,12,12,12,12,12,12,12,12,12,12,12,
+	24,24,24,24,12,12,12,12,12,12,12,12,12,12,12,12 
 };
 
 /* Include Opcode functions */
@@ -536,7 +541,7 @@ int i8051_execute(int cycles)
 		if(PC != PPC)	op = cpu_readop(PC);
 
 		PC += 1;
-		i8051_icount -= i8051_cycles[op];
+		i8051_icount -= (i8051_cycles[op]);
 
 		//Flag Execution
 		EXEC = 1;
@@ -1190,7 +1195,7 @@ int i8051_execute(int cycles)
 		//Update Serial Port
 		update_serial(i8051_cycles[op]);
 
-		//Check for pending interrupts & handle - remove machine cycles used
+		//Check for pending interrupts & handle - remove cycles used
 		i8051_icount-=check_interrupts();
 
 	} while( i8051_icount > 0 );
@@ -1238,18 +1243,8 @@ unsigned i8051_get_reg(int regnum)
 	case I8051_R6:	return R_R(6);
 	case I8051_R7:	return R_R(7);
 	case I8051_RB:	return GET_RS;
-
 	default:
-		if( regnum <= REG_SP_CONTENTS )
-		{
-			//What's supposed to happen here?
-			#if 0
-				unsigned offset = (PSW & SP) + (REG_SP_CONTENTS - regnum);
-				if( offset < 8 )
-					return RM( M_STACK + offset ) | ( RM( M_STACK + offset + 1 ) << 8 );
-					return 0;
-			#endif
-		}
+		return 0;
 	}
 	return 0;
 }
@@ -1281,18 +1276,7 @@ void i8051_set_reg (int regnum, unsigned val)
 	case I8051_RB:  SET_RS( (val&3) ); break;
 
 	default:
-		if( regnum <= REG_SP_CONTENTS )
-		{
-			//What's supposed to happen here?
-			#if 0
-				unsigned offset = (PSW & SP) + (REG_SP_CONTENTS - regnum);
-				if( offset < 8 )
-				{
-					WM( M_STACK + offset, val & 0xff );
-					WM( M_STACK + offset + 1, (val >> 8) & 0xff );
-				}
-			#endif
-		}
+		return;
 	}
 }
 
@@ -1435,7 +1419,8 @@ INLINE UINT8 check_interrupts(void)
 	PC = int_vec;
 	i8051.cur_irq = int_vec;
 	int_vec = 0;
-	return 2;		//All interrupts use 2 machine cycles
+//	return 2;
+	return 24;		//All interrupts use 2 machine cycles
 }
 
 
@@ -1858,22 +1843,26 @@ INLINE void update_timer(int cyc)
 	//Todo: Add checks for Timer2
 	//Todo: Probably better to store the current mode of the timer on a write, so we don't waste time reading it.
 
+	//Note: Counting modes increment on 1 machine cycle (12 oscilator periods)
+
 	//Update Timer 0
 	if(GET_TR0) {
 		//Determine Mode
 		int mode = GET_M0_0 + GET_M0_1;
+		int overflow;
 		UINT16 count = ((R_TH0<<8) | R_TL0);
 		switch(mode) {
 			case 0:			//13 Bit Timer Mode
-				break;
+				overflow = 0x3fff;
 			case 1:			//16 Bit Timer Mode
+				overflow = 0xffff;
 				//Check for overflow
-				if((UINT32)(count+cyc)>0xffff) {
+				if((UINT32)(count+(cyc/12))>overflow) {
 					count = 0;
                     SET_TF0(1);
 				}
 				else
-					count+=cyc;
+					count+=(cyc/12);
 				R_TH0 = (count>>8) & 0xff;
 				R_TL0 = count & 0xff;
 				break;
