@@ -800,6 +800,7 @@ DRIVER(fs,lx4)          //WPC-529:  09/94 W The Flintstones (LX-4)
 DRIVER(fs,lx5)          //WPC-529:  11/94 W The Flintstones (LX-5)
 DRIVER(corv,21)         //WPC-536:  08/94 B Corvette
                         //WPC-617:  10/94 W Hot Shots
+DRIVER(rs,lx2)          //WPC-524:  10/94 W Red & Ted's Road Show (Lx_2)
 DRIVER(rs,l6)           //WPC-524:  10/94 W Red & Ted's Road Show (L_6)
 DRIVER(rs,lx4)							  // (Lx-4)
 DRIVER(tafg,lx3)        //WPC:      10/94 B The Addams Family Special Collectors Edition
