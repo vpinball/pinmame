@@ -22,13 +22,7 @@
 #include "m114s.h"
 #include "driver.h"
 
-#define LOG_DATA_IN 0
-
-#if LOG_DATA_IN	
-static FILE *fp;	//For logging
-#endif
-
-#if 1
+#if 0
 #define LOG(x) printf x
 #else
 #define LOG(x) logerror x
@@ -119,6 +113,8 @@ struct M114SChip
 static struct M114SChip m114schip[MAX_M114S];		//Each M114S chip
 
 static unsigned int VolTable[63];					//Store Volume Adjustment Table
+static INT8 tb1[4096];								//Temp buffer for Table 1
+static INT8 tb2[4096];								//Temp buffer for Table 2
 
 /* Table 1 & Table 2 Repetition Values based on Mode */
 static const int mode_to_rep[8][2] = {
@@ -215,27 +211,14 @@ static void build_vol_table(void)
 	VolTable[62] = 0;
 }
 
-static INT8 tb1[4096];
-static INT8 tb2[4096];
+/**********************************************************************************************
 
-static void record_it(int len)
-{
-	#if LOG_DATA_IN	
-		static int recorded=0;
-		if(fp && !recorded)
-		{
-			int i;
-			INT8 data;
-			recorded = 0;
-			for(i=0;i<len;i++)
-			{
-			data = out[i];
-			fputc(data,fp);
-			}
-		}
-	#endif
-}
+     read_sample -- returns 1 sample from the channel's output buffer, but upsamples the data
+	 as necessary to match the Machine driver's output sample rate. 
+	 
+	 Note: eventually we should put some interpolation here to improve the sound quality.
 
+***********************************************************************************************/
 static INT16 read_sample(struct M114SChannel *channel, int sample_rate, int length)
 {
 	UINT32 incr = (sample_rate<<FRAC_BITS)/Machine->sample_rate;
@@ -254,6 +237,16 @@ static INT16 read_sample(struct M114SChannel *channel, int sample_rate, int leng
 	return sample;
 }
 
+/**********************************************************************************************
+
+     read_table -- Reads the two tables of rom data into a temporary buffer, 
+	 mixes the samples using the chip's internal interpolation equation,
+	 applies the volume, and writes the single mixed sample to the output buffer for the channel.
+	 It processes the entire table1 length of data.
+     
+	 Note: Eventually this should flag an End of Table, and should process new table data
+
+***********************************************************************************************/
 static void read_table(struct M114SChip *chip, struct M114SChannel *channel)
 {
 	int t1start, t2start, lent1,lent2, rep1, rep2, i,j,intp;
@@ -299,8 +292,6 @@ static void read_table(struct M114SChip *chip, struct M114SChannel *channel)
 		//write to output buffer
 		channel->output[i] = d;
 	}
-	//freq out is the value from the frequency table.. only divided by octave bit.
-	//record_it(lent1*rep1);
 }
 
 #if USE_REAL_OUTPUTS
@@ -309,21 +300,19 @@ static void read_table(struct M114SChip *chip, struct M114SChannel *channel)
      m114s_update -- update the sound chip so that it is in sync with CPU execution
 
 ***********************************************************************************************/
-//Seems this is pretty staticy..
+//Seems this sometimes still produces some static, but I don't know why!
 static void m114s_update(int num, INT16 **buffer, int samples)
 {
 	struct M114SChip *chip = &m114schip[num];
 	struct M114SChannel *channel;
 	INT16 sample;
-	INT16 accum[4];
-	//Eventually the volume needs to be calculated for each channel and it's appropriate envelope
-	INT16 vol = 0x7f;		
+	INT16 accum[M114S_OUTPUT_CHANNELS];
 	int c;
 	while (samples > 0)
 	{
 
 		/* clear accum */
-		for( c = 0; c < 4; c++)
+		for( c = 0; c < M114S_OUTPUT_CHANNELS; c++)
 			accum[c] = 0;
 
 		/* loop over channels */
@@ -334,12 +323,13 @@ static void m114s_update(int num, INT16 **buffer, int samples)
 			if(channel->active)	{
 				//We use Table 1 to drive everything, as Table 2 is really for mixing into Table 1..
 				sample = read_sample(channel, channel->table1.sample_rate, channel->table1.total_length);
-				accum[channel->regs.outputs]+= (INT16)(sample * vol);			
+				//Mix the output of this channel to the appropriate output channel
+				accum[channel->regs.outputs]+= sample;			
 			}
 		}
 
 		/* Update the buffer & Ensure we don't clip */
-		for( c = 0; c < 4; c++)
+		for( c = 0; c < M114S_OUTPUT_CHANNELS; c++)
 			*buffer[c]++ = (accum[c] < -16384) ? -16384 : (accum[c] > 16384) ? 16384 : accum[c];
 
 		samples--;
@@ -360,9 +350,8 @@ static void m114s_update(int num, INT16 **buffer, int samples)
 	while (samples > 0)
 	{
 
-		/* loop over channels */
-		//for (c = 0; c < M114S_CHANNELS; c++)
-		for (c = 0; c < M114S_OUTPUT_CHANNELS; c++)
+		/* loop over channels - each channel write's to it's own output mixer channel  (not accurate for emulation)*/
+		for (c = 0; c < M114S_CHANNELS; c++)
 		{
 			sample = 0;
 			channel = &chip->channels[c];
@@ -452,11 +441,6 @@ int M114S_sh_start(const struct MachineSound *msound)
 		init_all_channels(&m114schip[i]);
 	}
 
-	//Open for logging data
-	#if LOG_DATA_IN	
-	fp = fopen("c:\\m114s.raw","wb");
-	#endif
-
 	/* success */
 	return 0;
 }
@@ -469,10 +453,6 @@ int M114S_sh_start(const struct MachineSound *msound)
 
 void M114S_sh_stop(void)
 {
-  //Close logging file
-  #if LOG_DATA_IN	
-  if(fp)	fclose(fp);
-  #endif
 }
 
 
