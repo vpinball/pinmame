@@ -19,6 +19,10 @@
 #include "sndbrd.h"
 #include "snd_cmd.h"
 
+#ifdef MAME_DEBUG
+extern UINT8 debugger_focus;
+#endif
+
 #define MAX_CMD_LENGTH   6
 #define MAX_NAME_LENGTH 30
 #define MAX_LINE_LENGTH 100
@@ -110,7 +114,12 @@ int manual_sound_commands(struct mame_bitmap *bitmap) {
   int ii;
 
   /*-- we must have something to play with --*/
-  if (mame_debug || !locals.boards) return TRUE; // F4 interferes with mame debugger
+  if (!locals.boards) return TRUE;
+
+#ifdef MAME_DEBUG
+  /*-- Keypresses interferes with mame debugger (while it's active) --*/
+  if(mame_debug && debugger_focus)	return TRUE;
+#endif
 
   /*-- handle recording --*/
   if (keyboard_pressed_memory_repeat(SMDCMD_RECORDTOGGLE,REPEATKEY))
