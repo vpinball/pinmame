@@ -102,7 +102,7 @@ DRIVERNV(robot)         //01/85 Robot
 DRIVERNV(clown)         //07/85 Clown
 DRIVERNV(poolcham)      //12/85 Pool Champion
 DRIVERNV(bbeltzac)      //??/86 Blackbelt
-                        //??/86 Mexico '86
+DRIVERNV(mexico)        //??/86 Mexico '86
 DRIVERNV(zankor)        //??/86 Zankor
                         //??/86 Mystic Star
 DRIVERNV(spooky)        //??/87 Spooky
