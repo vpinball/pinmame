@@ -73,11 +73,8 @@ static SWITCH_UPDATE(ZAC1) {
 
 static SWITCH_UPDATE(ZAC2) {
   if (inports) {
-    sndbrd_0_diag(core_getSw(-1));
-    if (core_gameData->hw.soundBoard == SNDBRD_ZAC13136) {
-      sndbrd_1_diag(core_getSw(-1));
-    }
     coreGlobals.swMatrix[0] = (inports[ZAC_COMINPORT] & 0x1000) >> 5;
+    sndbrd_0_diag(core_getSw(-1));
     coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0x80) | (inports[ZAC_COMINPORT] & 0xff);
     coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0x79) | ((inports[ZAC_COMINPORT] & 0xefff) >> 8);
   }
@@ -338,7 +335,10 @@ static WRITE_HANDLER(ram1_w) {
 		offset -= 0x40;
 		if (core_gameData->hw.soundBoard == SNDBRD_ZAC1311 && offset > 19 && offset < 25)
 			discrete_sound_w(1 << (offset-20), data);
-		else {
+		else if (core_gameData->hw.soundBoard == SNDBRD_ZAC1125 && offset > 27) {
+			sndbrd_0_ctrl_w(0, offset-28);
+			sndbrd_0_data_w(0, data);
+		} else {
 			UINT32 sol = 1 << offset;
 			if (data)
 				locals.solenoids |= sol;
@@ -582,14 +582,26 @@ MACHINE_DRIVER_START(ZAC2C)
   MDRV_CPU_PERIODIC_INT(ZAC_irq, ZAC_IRQFREQ_C)
 MACHINE_DRIVER_END
 
-MACHINE_DRIVER_START(ZAC2D)
+MACHINE_DRIVER_START(ZAC2F)
   MDRV_IMPORT_FROM(ZAC2X)
+  MDRV_CPU_MODIFY("mcpu")
+  MDRV_CPU_PERIODIC_INT(ZAC_irq, ZAC_IRQFREQ_F)
+MACHINE_DRIVER_END
+
+//Sound board 11178
+MACHINE_DRIVER_START(ZAC2XS)
+  MDRV_IMPORT_FROM(ZAC2NS)
+  MDRV_IMPORT_FROM(zac11178)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(ZAC2DS)
+  MDRV_IMPORT_FROM(ZAC2XS)
   MDRV_CPU_MODIFY("mcpu")
   MDRV_CPU_PERIODIC_INT(ZAC_irq, ZAC_IRQFREQ_D)
 MACHINE_DRIVER_END
 
-MACHINE_DRIVER_START(ZAC2F)
-  MDRV_IMPORT_FROM(ZAC2X)
+MACHINE_DRIVER_START(ZAC2FS)
+  MDRV_IMPORT_FROM(ZAC2XS)
   MDRV_CPU_MODIFY("mcpu")
   MDRV_CPU_PERIODIC_INT(ZAC_irq, ZAC_IRQFREQ_F)
 MACHINE_DRIVER_END

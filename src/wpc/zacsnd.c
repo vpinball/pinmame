@@ -44,10 +44,8 @@ const struct sndbrdIntf zac1311Intf = {0};
 static void zac1125_init(struct sndbrdData *brdData);
 static WRITE_HANDLER(zac1125_data_w);
 static WRITE_HANDLER(zac1125_ctrl_w);
-static int zac1125_sh_start(const struct MachineSound *msound);
-static void zac1125_sh_stop(void);
 
-const struct SN76477interface zac1125_sn76477Int = { 1,	{ 25 }, /* mixing level */
+static struct SN76477interface  zac1125_sn76477Int = { 1, { 25 }, /* mixing level */
 /*                         pin description		 */
 	{ RES_K(47)  },		/*	4  noise_res		 */
 	{ RES_K(220) },		/*	5  filter_res		 */
@@ -73,32 +71,31 @@ const struct SN76477interface zac1125_sn76477Int = { 1,	{ 25 }, /* mixing level 
 const struct sndbrdIntf zac1125Intf = {
   zac1125_init, NULL, NULL, zac1125_data_w, NULL, zac1125_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
-static struct CustomSound_interface zac1125_custInt = {zac1125_sh_start, zac1125_sh_stop};
 
 MACHINE_DRIVER_START(zac1125)
-//  MDRV_SOUND_ADD(SN76477, zac1125_sn76477Int)
-  MDRV_SOUND_ADD(CUSTOM, zac1125_custInt)
+  MDRV_SOUND_ADD(SN76477, zac1125_sn76477Int)
 MACHINE_DRIVER_END
 
+static struct {
+  UINT8 ctrl;
+} s1125locals;
+
 static WRITE_HANDLER(zac1125_data_w) {
-  logerror("data=%2x\n", data);
-//  SN76477_sh_update();
+  logerror("snd ctrl %d = %d\n", s1125locals.ctrl, data);
 }
 
 static WRITE_HANDLER(zac1125_ctrl_w) {
-  logerror("ctrl=%2x\n", data);
+  s1125locals.ctrl = data;
 }
 
 static void zac1125_init(struct sndbrdData *brdData) {
-}
-
-static int zac1125_sh_start(const struct MachineSound *msound) {
-//  SN76477_sh_start(msound);
-  return 0;
-}
-
-static void zac1125_sh_stop(void) {
-//  SN76477_sh_stop();
+  /* MIXER A & C = GND */
+  SN76477_mixer_w(0, 0);
+  /* ENVELOPE is constant: pin1 = hi, pin 28 = lo */
+  SN76477_envelope_w(0, 1);
+  /* fake: pulse the enable line to get rid of the constant noise */
+//  SN76477_enable_w(0, 1);
+//  SN76477_enable_w(0, 0);
 }
 
 /*----------------------------------------
@@ -152,9 +149,12 @@ READ_HANDLER(rom_r) {
 
 static MEMORY_READ_START(i8085_readmem)
   { 0x0000, 0x07ff, rom_r },
+  { 0x0800, 0x08ff, MRA_RAM },
 MEMORY_END
 
 static MEMORY_WRITE_START(i8085_writemem)
+  { 0x0000, 0x0001, MWA_NOP },
+  { 0x0800, 0x08ff, MWA_RAM },
 MEMORY_END
 
 MACHINE_DRIVER_START(zac1346)
@@ -192,10 +192,20 @@ const struct sndbrdIntf zac1370Intf = {
 const struct sndbrdIntf zac13136Intf = {
   sns_init, NULL, sns_diag, sns_data_w, NULL, sns_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
+const struct sndbrdIntf zac11178Intf = {
+  sns_init, NULL, sns_diag, sns_data_w, NULL, sns_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+};
 static struct TMS5220interface sns_tms5220Int = { 640000, 50, sns_5220Irq };
 static struct DACinterface     sns_dacInt = { 1, { 20 }};
 static struct AY8910interface  sns_ay8910Int = { 1, 3580000/4, {25}, {sns_8910a_r}};
 static struct AY8910interface  sns2_ay8910Int = { 2, 3580000/4, {25, 25}, {sns_8910a_r, sns2_8910a_r}};
+
+static WRITE_HANDLER(ram80_w) {
+  logerror("CEM3374 offset=%d, data=%02x\n", offset, data);
+}
+static WRITE_HANDLER(rama0_w) {
+  logerror("CEM3372 offset=%d, data=%02x\n", offset, data);
+}
 
 static MEMORY_READ_START(sns_readmem)
   { 0x0000, 0x007f, MRA_RAM },
@@ -211,6 +221,13 @@ static MEMORY_READ_START(sns2_readmem)
   { 0x0084, 0x0087, pia_r(SNS_PIA2) },
   { 0x0090, 0x0093, pia_r(SNS_PIA1) },
   { 0x1800, 0x1800, sns2_8910a_r },
+  { 0x2000, 0x2000, sns_8910a_r },
+  { 0x4000, 0xffff, MRA_ROM },
+MEMORY_END
+
+static MEMORY_READ_START(sns3_readmem)
+  { 0x0000, 0x007f, MRA_RAM },
+  { 0x0090, 0x0093, pia_r(SNS_PIA1) },
   { 0x4000, 0xffff, MRA_ROM },
 MEMORY_END
 
@@ -219,6 +236,15 @@ static MEMORY_WRITE_START(sns_writemem)
   { 0x0080, 0x0083, pia_w(SNS_PIA0) },
   { 0x0084, 0x0087, pia_w(SNS_PIA2) }, // 13136 only
   { 0x0090, 0x0093, pia_w(SNS_PIA1) },
+  { 0x1000, 0x1000, DAC_0_data_w },
+  { 0x4000, 0xffff, MWA_ROM },
+MEMORY_END
+
+static MEMORY_WRITE_START(sns3_writemem)
+  { 0x0000, 0x007f, MWA_RAM },
+  { 0x0080, 0x0087, ram80_w },
+  { 0x0090, 0x0093, pia_w(SNS_PIA1) },
+  { 0x00a0, 0x00a7, rama0_w },
   { 0x1000, 0x1000, DAC_0_data_w },
   { 0x4000, 0xffff, MWA_ROM },
 MEMORY_END
@@ -245,6 +271,16 @@ MACHINE_DRIVER_START(zac13136)
   MDRV_SOUND_ADD(AY8910,  sns2_ay8910Int)
 MACHINE_DRIVER_END
 
+MACHINE_DRIVER_START(zac11178)
+  MDRV_CPU_ADD(M6802, 3580000/4)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(sns3_readmem, sns3_writemem)
+
+  MDRV_INTERLEAVE(500)
+  MDRV_SOUND_ADD(TMS5220, sns_tms5220Int)
+  MDRV_SOUND_ADD(DAC,     sns_dacInt)
+MACHINE_DRIVER_END
+
 static READ_HANDLER(sns_pia0a_r);
 static WRITE_HANDLER(sns_pia0a_w);
 static WRITE_HANDLER(sns_pia0b_w);
@@ -256,7 +292,8 @@ static WRITE_HANDLER(sns_pia2a_w);
 static WRITE_HANDLER(sns_pia2b_w);
 static WRITE_HANDLER(sns_pia2ca2_w);
 
-static void sns_irq(int state);
+static void sns_irqa(int state);
+static void sns_irqb(int state);
 
 static struct {
   struct sndbrdData brdData;
@@ -267,11 +304,11 @@ static struct {
 static const struct pia6821_interface sns_pia[] = {{
   /*i: A/B,CA/B1,CA/B2 */ sns_pia0a_r, 0, 0, 0, 0, 0,
   /*o: A/B,CA/B2       */ sns_pia0a_w, sns_pia0b_w, sns_pia0ca2_w, 0,
-  /*irq: A/B           */ sns_irq, sns_irq
+  /*irq: A/B           */ sns_irqa, sns_irqb
 },{
   /*i: A/B,CA/B1,CA/B2 */ 0, 0, 0, 0, 0, 0,
   /*o: A/B,CA/B2       */ sns_pia1a_w, sns_pia1b_w, 0, 0,
-  /*irq: A/B           */ sns_irq, sns_irq
+  /*irq: A/B           */ sns_irqa, sns_irqb
 },{
   /*i: A/B,CA/B1,CA/B2 */ sns_pia2a_r, 0, 0, 0, 0, 0,
   /*o: A/B,CA/B2       */ sns_pia2a_w, sns_pia2b_w, sns_pia2ca2_w, 0,
@@ -328,11 +365,11 @@ static READ_HANDLER(sns_pia2a_r) {
 }
 static WRITE_HANDLER(sns_pia2a_w) {
   snslocals.pia2a = data;
-  if (snslocals.pia2b & 0x02) AY8910Write(1, snslocals.pia2b, snslocals.pia2a);
+  if (snslocals.pia2b & 0x02) AY8910Write(1, snslocals.pia2b ^ 0x01, snslocals.pia2a);
 }
 static WRITE_HANDLER(sns_pia2b_w) {
   snslocals.pia2b = data;
-  if (snslocals.pia2b & 0x02) AY8910Write(1, snslocals.pia2b, snslocals.pia2a);
+  if (snslocals.pia2b & 0x02) AY8910Write(1, snslocals.pia2b ^ 0x01, snslocals.pia2a);
 }
 static WRITE_HANDLER(sns_pia2ca2_w) {
     UpdateZACSoundLED(2, data);
@@ -358,8 +395,17 @@ static READ_HANDLER(sns_8910a_r) { return ~snslocals.lastcmd; }
 
 static READ_HANDLER(sns2_8910a_r) { return ~snslocals.lastcmd; }
 
-static void sns_irq(int state) {
-  logerror("sns_irq: state=%x\n",state);
+static void sns_irqa(int state) {
+  logerror("sns_irqA: state=%x\n",state);
+  if (snslocals.brdData.boardNo == SNDBRD_ZAC1370) {
+    cpu_set_irq_line(ZACSND_CPUA, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
+  }
+  if (snslocals.brdData.boardNo == SNDBRD_ZAC11178) {
+    sns_diag(state);
+  }
+}
+static void sns_irqb(int state) {
+  logerror("sns_irqB: state=%x\n",state);
   cpu_set_irq_line(ZACSND_CPUA, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
