@@ -201,18 +201,28 @@ static WRITE_HANDLER(giaux_w) {
     selocals.lastgiaux = data;
   }
 }
-  
+
 // MINI DMD Type 1 (HRC) (15x7)
 PINMAME_VIDEO_UPDATE(seminidmd1_update) {
   tDMDDot dotCol;
   int ii,jj,kk,bits;
-     
+
   for (ii = 0, bits = 0x40; ii < 7; ii++, bits >>= 1) {
     UINT8 *line = &dotCol[ii+1][0];
     for (jj = 2; jj >= 0; jj--)
-      for (kk = 0; kk < 5; kk++)
+      for (kk = 0; kk < 5; kk++) {
         *line++ = ((selocals.minidmd[0][jj][kk] & bits) + (selocals.minidmd[1][jj][kk] & bits) +
                    (selocals.minidmd[2][jj][kk] & bits))/bits;
+      }
+  }
+  { // try to see if drawSeg can be used to access the miniDMD
+    UINT16 *seg = &coreGlobals.drawSeg[0];
+    for (ii = 0; ii < 21; ii++) {
+      bits = 0;
+      for (jj = 0; jj < 7; jj++)
+        bits = (bits<<2) | dotCol[jj+1][ii];
+      *seg++ = bits;
+    }
   }
   video_update_core_dmd(bitmap, cliprect, dotCol, layout);
   return 0;
@@ -238,7 +248,7 @@ PINMAME_VIDEO_UPDATE(seminidmd3_update) {
   memset(&dotCol,0,sizeof(dotCol));
   for (kk = 0; kk < 5; kk++) {
     UINT8 *line = &dotCol[kk+1][0];
-    for (jj = 0; jj < 3; jj++) 
+    for (jj = 0; jj < 3; jj++)
       for (ii = 0, bits = 0x01; ii < 7; ii++, bits <<= 1)
         *line++ = ((selocals.minidmd[0][jj][kk] & bits) + (selocals.minidmd[1][jj][kk] & bits) +
                    (selocals.minidmd[2][jj][kk] & bits))/bits;
