@@ -7,12 +7,12 @@ extern void sndbrd_init(int brdNo, int brdType, int cpuNo, UINT8 *romRegion,
                        WRITE_HANDLER((*data_cb)),WRITE_HANDLER((*ctrl_cb)));
 extern void sndbrd_exit(int board);
 extern void sndbrd_diag(int board, int button);
-extern WRITE_HANDLER(sndbrd_data_w);
-extern READ_HANDLER(sndbrd_data_r);
-extern WRITE_HANDLER(sndbrd_ctrl_w);
-extern READ_HANDLER(sndbrd_ctrl_r);
-extern WRITE_HANDLER(sndbrd_ctrl_cb);
-extern WRITE_HANDLER(sndbrd_data_cb);
+extern void sndbrd_data_w(int board, int data);
+extern int sndbrd_data_r(int board);
+extern void sndbrd_ctrl_w(int board, int data);
+extern int sndbrd_ctrl_r(int board);
+extern void sndbrd_ctrl_cb(int board, int data);
+extern void sndbrd_data_cb(int board, int data);
 extern void sndbrd_0_init(int brdType, int cpuNo, UINT8 *romRegion,
                           WRITE_HANDLER((*data_cb)),WRITE_HANDLER((*ctrl_cb)));
 extern void sndbrd_1_init(int brdType, int cpuNo, UINT8 *romRegion,
@@ -49,12 +49,10 @@ struct sndbrdIntf {
   UINT32 flags;
 };
 
-#define SNDBRD_NODATASYNC 0x01
-#define SNDBRD_NOCTRLSYNC 0x02
-#define SNDBRD_NOCBSYNC   0x04
-
-extern WRITE_HANDLER(sndbrd_ctrl_cb);
-extern WRITE_HANDLER(sndbrd_data_cb);
+#define SNDBRD_NODATASYNC 0x0001
+#define SNDBRD_NOCTRLSYNC 0x0002
+#define SNDBRD_NOCBSYNC   0x0004
+#define SNDBRD_NOTSOUND   0x0100
 
 #define SNDBRD_TYPE(main,sub) (((main)<<8)|(sub))
 

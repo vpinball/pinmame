@@ -30,17 +30,30 @@ static struct {
   int    diagnosticLed;
   int    swCol;
   int    ssEn; /* Special solenoids and flippers enabled ? */
-  int    mainIrq;
+  int    piaIrq;
 } s7locals;
 static data8_t *s7_rambankptr, *s7_CMOS;
 
-static void s7_piaIrq(int state) {
-  s7locals.mainIrq = state;
-  cpu_set_irq_line(S7_CPUNO, M6808_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
+static void s7_irqline(int state) {
+  if (state) {
+    cpu_set_irq_line(S7_CPUNO, M6808_IRQ_LINE, ASSERT_LINE);
+    pia_set_input_ca1(S7_PIA3, core_getSw(S7_SWADVANCE));
+    pia_set_input_cb1(S7_PIA3, core_getSw(S7_SWUPDN));
+  }
+  else if (!s7locals.piaIrq) {
+    cpu_set_irq_line(S7_CPUNO, M6808_IRQ_LINE, CLEAR_LINE);
+    pia_set_input_ca1(S7_PIA3, 0);
+    pia_set_input_cb1(S7_PIA3, 0);
+  }
 }
+
+static void s7_piaIrq(int state) {
+  s7_irqline(s7locals.piaIrq = state);
+}
+
 static int s7_irq(void) {
-  if (s7locals.mainIrq == 0) /* Don't send IRQ if already active */
-    cpu_set_irq_line(S7_CPUNO, M6808_IRQ_LINE, HOLD_LINE);
+  s7_irqline(1);
+  timer_set(TIME_IN_CYCLES(32,0),0,s7_irqline);
   return 0;
 }
 
@@ -121,12 +134,6 @@ static WRITE_HANDLER(pia0b_w) {
   }
 }
 
-/*--------------------
-/  Diagnostic buttons
-/---------------------*/
-static READ_HANDLER(pia3ca1_r) { return activecpu_get_reg(M6808_IRQ_STATE) ? core_getSw(S7_SWADVANCE) : 0; }
-static READ_HANDLER(pia3cb1_r) { return activecpu_get_reg(M6808_IRQ_STATE) ? core_getSw(S7_SWUPDN)    : 0; }
-
 /*------------
 /  Solenoids
 /-------------*/
@@ -200,7 +207,7 @@ static struct pia6821_interface s7_pia[] = {
     CB1    Diag In
     CB2    SS6
     CA2    Diagnostic LED control? */
- /* in  : A/B,CA/B1,CA/B2 */ 0, 0, pia3ca1_r, pia3cb1_r, 0, 0,
+ /* in  : A/B,CA/B1,CA/B2 */ 0, 0, 0,0, 0, 0,
  /* out : A/B,CA/B2       */ pia3a_w, pia3b_w, pia3ca2_w, pia3cb2_w,
  /* irq : A/B             */ s7_piaIrq, s7_piaIrq
 },{/* PIA 4 (3000)
@@ -221,8 +228,6 @@ static void s7_updSw(int *inports) {
   /*-- Generate interupts for diganostic keys --*/
   cpu_set_nmi_line(0, core_getSw(S7_SWCPUDIAG) ? ASSERT_LINE : CLEAR_LINE);
   sndbrd_0_diag(core_getSw(S7_SWSOUNDDIAG));
-  pia_set_input_ca1(S7_PIA3, core_getSw(S7_SWADVANCE));
-  pia_set_input_cb1(S7_PIA3, core_getSw(S7_SWUPDN));
 }
 
 const static core_tData s7Data = {
@@ -245,8 +250,7 @@ static void s7_init(void) {
 }
 
 static void s7_exit(void) {
-  sndbrd_0_exit();
-  core_exit();
+  sndbrd_0_exit(); core_exit();
 }
 
 /*---------------------------
