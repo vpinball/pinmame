@@ -24,10 +24,10 @@ static struct core_dispLayout alvg_dispDMD[] = {
 /* GAMES APPEAR IN PRODUCTION ORDER (MORE OR LESS) */
 
 /*-------------------------------------------------------------------
-/ World Tour Garage Band
+/ Al's Garage Band Goes On A World Tour
 /-------------------------------------------------------------------*/
-INITGAME(wtgband, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS, SNDBRD_ALVGDMD, 5)
-ALVGROMSTART(wtgband,	"cpu27c.512", CRC(c9572fb5) SHA1(47a3e8943ef4207011a33f4a03a6e722c937cc48))
+INITGAME(wrldtour, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS, SNDBRD_ALVGDMD, 5)
+ALVGROMSTART(wrldtour,	"cpu27c.512", CRC(c9572fb5) SHA1(47a3e8943ef4207011a33f4a03a6e722c937cc48))
 ALVGS_SOUNDROM(			"soundc.512", CRC(b44bee01) SHA1(795d8500e5bd73ce23756bf1f5c96db1a3621a70),
 						"samp_0.c21", CRC(37beb831) SHA1(2b90d2be0a1bd7c59469846631d2b44bdf9f5f9d),
 						"samp_1.c21", CRC(621533c6) SHA1(ca0ed9e89c340cb3b08f9a9002af9997372c1cbf),
@@ -37,7 +37,7 @@ ALVGDMD_SPLIT_ROM(		"dot27c.512", CRC(c8bd48e7) SHA1(e2dc513dd42c05c2018e6d8c0b6
 						"romdef1.c20",CRC(045b21c1) SHA1(134b7eb0f71506d12d9ded24999d530126c558fc),
 						"romdef2.c20",CRC(23c32ee5) SHA1(429b3b069251bb8b681bbc6382ceb6b85125eb79))
 ALVG_ROMEND
-CORE_GAMEDEFNV(wtgband,"World Tour Garage Band",1992,"Alvin G",mALVGS,0)
+CORE_GAMEDEFNV(wrldtour,"Al's Garage Band Goes On A World Tour",1992,"Alvin G",mALVGS,0)
 
 /*-------------------------------------------------------------------
 / Mystery Castle
