@@ -94,6 +94,13 @@ extern struct AY8910interface  snt_ay8910Int;
     { SOUND_AY8910,  &snt_ay8910Int }, \
 	{ SOUND_SAMPLES, &samples_interface }
 
+/******************************************************/
+/********** GENERATION 1A - CHEAP SQUEAK **************/
+/******************************************************/
+
+#define BY6803_GEN1A_SOUND		SP45_SOUND
+#define BY6803_SOUNDCPU1A		,SP45_SOUND_CPU
+
 /***********************************************************/
 /********** GENERATION 2 - TURBO CHEAP SQUALK **************/
 /***********************************************************/
@@ -159,6 +166,11 @@ extern void by6803_sndinit1(void);
 extern void by6803_sndexit1(void);
 extern WRITE_HANDLER(by6803_sndcmd1);
 extern void by6803_snddiag1(void);
+
+extern void by6803_sndinit1a(void);
+extern void by6803_sndexit1a(void);
+extern WRITE_HANDLER(by6803_sndcmd1a);
+extern void by6803_snddiag1a(void);
 
 extern void by6803_sndinit2(void);
 extern void by6803_sndexit2(void);

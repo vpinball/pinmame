@@ -90,6 +90,7 @@
 
 /*-- These are only here so the game structure can be in the game file --*/
 extern struct MachineDriver machine_driver_by6803S1;
+extern struct MachineDriver machine_driver_by6803S1a;
 extern struct MachineDriver machine_driver_by6803S2;
 extern struct MachineDriver machine_driver_by6803S2a;
 extern struct MachineDriver machine_driver_by6803S3;
@@ -97,6 +98,7 @@ extern struct MachineDriver machine_driver_by6803S4;
 extern void BY6803_UpdateSoundLED(int data);
 
 #define by_mBY6803S1	by6803S1
+#define by_mBY6803S1A	by6803S1a
 #define by_mBY6803S2	by6803S2
 #define by_mBY6803S2A	by6803S2a
 #define by_mBY6803S3	by6803S3

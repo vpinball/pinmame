@@ -197,6 +197,15 @@ extern const struct IO_WritePort by35_45_writeport[];
     BY35_ROMLOAD1(0x8000, n1, chk1) \
     BY35_ROMLOAD1(0xc000, n2, chk2) 
 
+/* 2 x 8K ROMS */
+#define BY35_SOUND45ROM22(n2,chk2,n1,chk1) \
+  SOUNDREGION(0x10000, BY35_MEMREG_S1CPU) \
+  ROM_LOAD(n1, 0x8000, 0x2000, chk1) \
+  ROM_RELOAD(  0xa000, 0x2000) \
+  ROM_LOAD(n2, 0xc000, 0x2000, chk2) \
+  ROM_RELOAD(  0xe000, 0x2000) 
+    
+
 /* generic handler */
 void by35_soundInit(void);
 void by35_soundExit(void);
