@@ -37,10 +37,9 @@
 #define GEN_BY6803A     U64(0x00001000000)
 #define GEN_STMPU100	U64(0x00080000000) /* Stern MPU - 100*/
 #define GEN_STMPU200	U64(0x00100000000) /* Stern MPU - 200*/
-#define GEN_GTS80       U64(0x00200000000) /* GTS80 - Sound Board */
-#define GEN_GTS80B2K	U64(0x00400000000) /* GTS80B, 2KROM */
-#define GEN_GTS80B4K	U64(0x00800000000) /* GTS80B, 4KROM, slam switch is reversed */
-#define GEN_GTS80B8K    U64(0x01000000000) /* GTS80B, 8KROM */
+#define GEN_GTS80       U64(0x00200000000) /* GTS80 */
+#define GEN_GTS80A      GEN_GTS80
+#define GEN_GTS80B	U64(0x00400000000) /* GTS80B */
 #define GEN_WS          U64(0x04000000000) /* Whitestar */
 #define GEN_WS_1        U64(0x08000000000) /* Whitestar with extra RAM */
 #define GEN_WS_2        U64(0x10000000000) /* Whitestar with extra DMD */
