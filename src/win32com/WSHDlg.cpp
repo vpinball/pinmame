@@ -398,7 +398,18 @@ int _stdcall WSHDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 
 		AdjustWindowRect(&Rect, GetWindowLong(hDlg, GWL_STYLE), FALSE);
-		SetWindowPos(hDlg, 0, pWSHDlg->m_x, pWSHDlg->m_y, Rect.right-Rect.left, Rect.bottom-Rect.top, SWP_NOZORDER);
+
+		int x,y;
+
+		x = pWSHDlg->m_x;
+		if ( x<0 ) 
+			x = (GetSystemMetrics(SM_CXSCREEN)-(Rect.right-Rect.left)) / 2;
+
+		y = pWSHDlg->m_y;
+		if ( y<0 ) 
+			y = (GetSystemMetrics(SM_CYSCREEN)-(Rect.bottom-Rect.top)) / 2;
+
+		SetWindowPos(hDlg, 0, x, y, Rect.right-Rect.left, Rect.bottom-Rect.top, SWP_NOZORDER);
 
 		return 0;
 
