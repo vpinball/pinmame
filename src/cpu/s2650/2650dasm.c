@@ -662,7 +662,7 @@ int Dasm2650(char * buff, int PC)
 			break;
 		case 0xb5:
 #if HJB
-			sprintf(buff, "bit  psl,%s", IMM_PSU(pc));
+			sprintf(buff, "bit  psl,%s", IMM_PSL(pc));
 #else
             sprintf(buff, "tpsl   %s", IMM_PSL(pc));
 #endif
