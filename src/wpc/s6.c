@@ -284,8 +284,6 @@ static MACHINE_INIT(s6) {
 }
 static MACHINE_RESET(s6) {
   pia_reset();
-  // These must be intialized to 0 since they are only updated on irq
-  pia_set_input_ca1(S6_PIA0, 0); pia_set_input_cb1(S6_PIA0, 0);
 }
 
 static MACHINE_STOP(s6) {
