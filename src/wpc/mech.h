@@ -37,17 +37,18 @@
 #define MECH_MAXMECH 10
 
 typedef struct {
-  int swNo, startPos, endPos;
+  int swNo, startPos, endPos, pulse;
 } mech_tSwData;
 typedef struct {
   int sol1, sol2;
   int type;
   int length, steps;
-  mech_tSwData sw[10];
+  mech_tSwData sw[20];
 } mech_tInitData, *mech_ptInitData;
 
 extern void mech_init(void);
-extern void mech_exit(void);
+extern void mech_emuInit(void);
+extern void mech_emuExit(void);
 extern void mech_addLong(int mechNo, int sol1, int sol2, int type, int length, int steps, mech_tSwData sw[]);
 extern void mech_add(int mechNo, mech_ptInitData id);
 extern int  mech_getPos(int mechNo);
