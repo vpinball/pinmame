@@ -924,6 +924,10 @@ static void core_findSize(const struct core_dispLayout *layout, int *maxX, int *
       if (tmpX > *maxX) *maxX = tmpX;
       if (tmpY > *maxY) *maxY = tmpY;
     }
+#ifndef VPINMAME
+    if (*maxX < 256) *maxX = 256;
+    if (*maxY < 192) *maxY = 192;
+#endif
   }
 }
 
