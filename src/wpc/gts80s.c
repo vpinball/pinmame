@@ -533,7 +533,7 @@ static void nmi_callback(int param)
 	if(GTS80BS_locals.nmi_enable) {
 		//logerror("PULSING NMI for Y-CPU\n");
 		//timer_set(TIME_NOW, 1, NULL);
-		cpu_boost_interleave(TIME_IN_HZ(1650*60), TIME_IN_MSEC(2));
+		cpu_boost_interleave(TIME_IN_USEC(10), TIME_IN_USEC(800));
 		cpu_set_nmi_line(cpu_gettotalcpu()-1, PULSE_LINE);
 	}
 }
