@@ -25,7 +25,8 @@
  *
  *	This work is based on:
  *	#1) 'Intel(tm) MC51 Microcontroller Family Users Manual' and
- *  #2) Portable UPI-41/8041/8741/8042/8742 emulator V0.1 by Juergen Buchmueller (MAME CORE)
+ *  #2) 8051 simulator by Travis Marlatte
+ *  #3) Portable UPI-41/8041/8741/8042/8742 emulator V0.1 by Juergen Buchmueller (MAME CORE)
  *
  *****************************************************************************
  * Symbol Memory Name Tables borrowed from:
