@@ -13,22 +13,22 @@ unsigned Dasm4004(char *buff, unsigned pc)
 	{
 		case 0x00: sprintf (buff,"nop");                             break;
 
-		case 0x10: sprintf (buff,"jcn (*),$%X%02X", pc >> 8, ARG(++pc)); break;
-		case 0x11: sprintf (buff,"jcn (~T),$%X%02X", pc >> 8, ARG(++pc)); break;
-		case 0x12: sprintf (buff,"jcn (C),$%X%02X", pc >> 8, ARG(++pc)); break;
-		case 0x13: sprintf (buff,"jcn (C~T),$%X%02X", pc >> 8, ARG(++pc)); break;
-		case 0x14: sprintf (buff,"jcn (~A),$%X%02X", pc >> 8, ARG(++pc)); break;
-		case 0x15: sprintf (buff,"jcn (~A~T),$%X%02X", pc >> 8, ARG(++pc)); break;
-		case 0x16: sprintf (buff,"jcn (C~A),$%X%02X", pc >> 8, ARG(++pc)); break;
-		case 0x17: sprintf (buff,"jcn (C~A~T),$%X%02X", pc >> 8, ARG(++pc)); break;
-		case 0x18: sprintf (buff,"jcn (~*),$%X%02X", pc >> 8, ARG(++pc)); break;
-		case 0x19: sprintf (buff,"jcn (T),$%X%02X", pc >> 8, ARG(++pc)); break;
-		case 0x1a: sprintf (buff,"jcn (~C),$%X%02X", pc >> 8, ARG(++pc)); break;
-		case 0x1b: sprintf (buff,"jcn (T~C),$%X%02X", pc >> 8, ARG(++pc)); break;
-		case 0x1c: sprintf (buff,"jcn (A),$%X%02X", pc >> 8, ARG(++pc)); break;
-		case 0x1d: sprintf (buff,"jcn (AT),$%X%02X", pc >> 8, ARG(++pc)); break;
-		case 0x1e: sprintf (buff,"jcn (A~C),$%X%02X", pc >> 8, ARG(++pc)); break;
-		case 0x1f: sprintf (buff,"jcn (AT~C),$%X%02X", pc >> 8, ARG(++pc)); break;
+		case 0x10: sprintf (buff,"jcn (*),$%X%02X", PC >> 8, ARG(++pc)); break;
+		case 0x11: sprintf (buff,"jcn (~T),$%X%02X", PC >> 8, ARG(++pc)); break;
+		case 0x12: sprintf (buff,"jcn (C),$%X%02X", PC >> 8, ARG(++pc)); break;
+		case 0x13: sprintf (buff,"jcn (C~T),$%X%02X", PC >> 8, ARG(++pc)); break;
+		case 0x14: sprintf (buff,"jcn (~A),$%X%02X", PC >> 8, ARG(++pc)); break;
+		case 0x15: sprintf (buff,"jcn (~A~T),$%X%02X", PC >> 8, ARG(++pc)); break;
+		case 0x16: sprintf (buff,"jcn (C~A),$%X%02X", PC >> 8, ARG(++pc)); break;
+		case 0x17: sprintf (buff,"jcn (C~A~T),$%X%02X", PC >> 8, ARG(++pc)); break;
+		case 0x18: sprintf (buff,"jcn (~*),$%X%02X", PC >> 8, ARG(++pc)); break;
+		case 0x19: sprintf (buff,"jcn (T),$%X%02X", PC >> 8, ARG(++pc)); break;
+		case 0x1a: sprintf (buff,"jcn (~C),$%X%02X", PC >> 8, ARG(++pc)); break;
+		case 0x1b: sprintf (buff,"jcn (T~C),$%X%02X", PC >> 8, ARG(++pc)); break;
+		case 0x1c: sprintf (buff,"jcn (A),$%X%02X", PC >> 8, ARG(++pc)); break;
+		case 0x1d: sprintf (buff,"jcn (AT),$%X%02X", PC >> 8, ARG(++pc)); break;
+		case 0x1e: sprintf (buff,"jcn (A~C),$%X%02X", PC >> 8, ARG(++pc)); break;
+		case 0x1f: sprintf (buff,"jcn (AT~C),$%X%02X", PC >> 8, ARG(++pc)); break;
 
 		case 0x20: sprintf (buff,"fim [01],#$%02x", ARG(++pc));      break;
 		case 0x22: sprintf (buff,"fim [23],#$%02x", ARG(++pc));      break;
@@ -80,7 +80,7 @@ unsigned Dasm4004(char *buff, unsigned pc)
 
 		case 0x70: case 0x71: case 0x72: case 0x73: case 0x74: case 0x75: case 0x76: case 0x77:
 		case 0x78: case 0x79: case 0x7a: case 0x7b: case 0x7c: case 0x7d: case 0x7e: case 0x7f:
-			sprintf (buff,"isz [%X],$%X%02X", (op & 0x0f), pc >> 8, ARG(++pc)); break;
+			sprintf (buff,"isz [%X],$%X%02X", (op & 0x0f), PC >> 8, ARG(++pc)); break;
 
 		case 0x80: case 0x81: case 0x82: case 0x83: case 0x84: case 0x85: case 0x86: case 0x87:
 		case 0x88: case 0x89: case 0x8a: case 0x8b: case 0x8c: case 0x8d: case 0x8e: case 0x8f:
