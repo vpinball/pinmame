@@ -555,6 +555,9 @@ int win_init_input(void)
 	if (verbose)
 		fprintf(stderr, "Using DirectInput %d\n", dinput_version >> 8);
 
+	// initialize this global variable (for VPinMAME)
+	win_trying_to_quit = 0;
+
 	// initialize keyboard devices
 	keyboard_count = 0;
 	result = IDirectInput_EnumDevices(dinput, DIDEVTYPE_KEYBOARD, enum_keyboard_callback, 0, DIEDFL_ATTACHEDONLY);

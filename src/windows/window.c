@@ -449,7 +449,12 @@ int win_init_window(void)
 	return 0;
 }
 
+// moved them here (from local static vars in draw_video_contents and 
+// draw_debug_contents) so they can be initialized in win_create_window
+// (th, vpm team)
 
+static struct mame_bitmap *last_video_bitmap = NULL;
+static struct mame_bitmap *last_debug_bitmap = NULL;
 
 //============================================================
 //	win_create_window
@@ -458,6 +463,10 @@ int win_init_window(void)
 int win_create_window(int width, int height, int depth, int attributes, int orientation)
 {
 	int i, result;
+
+	// clear the last drawn bitmaps
+	last_video_bitmap  = NULL;
+	last_debug_bitmap = NULL;
 
 	// clear the initial state
 	visible_area_set = 0;
@@ -632,11 +641,9 @@ void win_update_video_window(struct mame_bitmap *bitmap)
 
 static void draw_video_contents(HDC dc, struct mame_bitmap *bitmap, int update)
 {
-	static struct mame_bitmap *last;
-
 	// if no bitmap, use the last one we got
 	if (bitmap == NULL)
-		bitmap = last;
+		bitmap = last_video_bitmap;
 
 	// if no bitmap, just fill
 	if (bitmap == NULL)
@@ -646,7 +653,7 @@ static void draw_video_contents(HDC dc, struct mame_bitmap *bitmap, int update)
 		FillRect(dc, &fill, (HBRUSH)GetStockObject(BLACK_BRUSH));
 		return;
 	}
-	last = bitmap;
+	last_video_bitmap = bitmap;
 
 	// if we're iconic, don't bother
 	if (IsIconic(win_video_window))
@@ -1571,13 +1578,12 @@ void win_update_debug_window(struct mame_bitmap *bitmap)
 
 static void draw_debug_contents(HDC dc, struct mame_bitmap *bitmap)
 {
-	static struct mame_bitmap *last;
 	UINT8 *bitmap_base;
 	int i;
 
 	// if no bitmap, use the last one we got
 	if (bitmap == NULL)
-		bitmap = last;
+		bitmap = last_debug_bitmap;
 
 	// if no bitmap, just fill
 	if (bitmap == NULL || !debug_focus || bitmap->depth != 8)
@@ -1587,7 +1593,7 @@ static void draw_debug_contents(HDC dc, struct mame_bitmap *bitmap)
 		FillRect(dc, &fill, (HBRUSH)GetStockObject(BLACK_BRUSH));
 		return;
 	}
-	last = bitmap;
+	last_debug_bitmap = bitmap;
 
 	// if we're iconic, don't bother
 	if (IsIconic(win_debug_window))

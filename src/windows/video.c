@@ -442,6 +442,9 @@ int osd_create_display(int width, int height, int depth, int fps, int attributes
 	dirty_bright		= 1;
 	leds_old			= -1;
 
+	// added this one (th, vpm team)
+	screen_colors       = 0;
+
 	// clamp the frameskip value to within range
 	if (frameskip < 0)
 		frameskip = 0;
