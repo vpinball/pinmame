@@ -11,13 +11,13 @@ TARGET = mame
 endif
 
 # uncomment next line to include the debugger
-# DEBUG = 1
+DEBUG = 1
 
 # uncomment next line to include the symbols for symify
 # SYMBOLS = 1
 
 # uncomment next line to generate a link map for exception handling in windows
-# MAP = 1
+MAP = 1
 
 # uncomment next line to use Assembler 68000 engine
 # X86_ASM_68000 = 1
@@ -26,7 +26,7 @@ endif
 # X86_ASM_68020 = 1
 
 # set this the operating system you're building for
-#MAMEOS = msdos
+# MAMEOS = msdos
 MAMEOS = windows
 ifeq ($(MAMEOS),)
 MAMEOS = msdos
@@ -80,6 +80,10 @@ OBJ = obj/$(NAME)
 EMULATOR = $(NAME)$(EXE)
 
 DEFS = -DX86_ASM -DLSB_FIRST -DINLINE="static __inline__" -Dasm=__asm__
+
+ifeq ($(MAMEOS),msdos)
+DEFS += -DM_PI=3.14159265358979323846
+endif
 
 ifdef SYMBOLS
 CFLAGS = -Isrc -Isrc/includes -Isrc/$(MAMEOS) -I$(OBJ)/cpu/m68000 -Isrc/cpu/m68000 \
