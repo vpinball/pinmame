@@ -92,7 +92,7 @@ DRVLIBS += $(PINOBJ)/gts3.o $(PINOBJ)/gts3dmd.o $(PINOBJ)/gts3sound.o
 DRVLIBS += $(PINOBJ)/se.o $(PINOBJ)/sesound.o
 DRVLIBS += $(PINOBJ)/s80.o $(PINOBJ)/s80sound0.o $(PINOBJ)/s80sound1.o $(PINOBJ)/s80sound2.o
 DRVLIBS += $(PINOBJ)/by35.o $(PINOBJ)/by35snd.o $(PINOBJ)/byvidpin.o
-DRVLIBS += $(PINOBJ)/by6803.o 
+DRVLIBS += $(PINOBJ)/by6803.o $(PINOBJ)/by6803snd.o
 #
 # Games
 #

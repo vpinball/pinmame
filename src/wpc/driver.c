@@ -22,24 +22,27 @@ const struct GameDriver *drivers[] = {
 // ---------------------
 // BALLY GAMES BELOW
 // ---------------------
+//MPU-17
 DRIVERNV(freedom )      //BY17-720: 08/76 Freedom
 DRIVERNV(nightrdr)      //BY17-721: 01/76 Night Rider (EM release date)
 DRIVERNV(blackjck)      //BY17-728: 05/76 Black Jack  (EM release date)
 DRIVERNV(evelknie)      //BY17-722: 09/76 Evel Knievel
 DRIVERNV(matahari)      //BY17-725: 09/77 Mata Hari
-						//??        10/76 Star Ship
+                        //??        10/76 Fireball
+                        //??        10/76 Star Ship
 DRIVERNV(sst     )      //BY35-741: 10/76 Supersonic
 DRIVERNV(eightbll)      //BY17-723: 01/77 Eight Ball
 DRIVERNV(pwerplay)      //BY17-724: 02/77 Power Play
 DRIVERNV(stk_sprs)      //BY17-740: 08/77 Strikes and Spares
+//MPU-35
 DRIVERNV(lostwrld)      //BY35-729: 02/77 Lost World
 DRIVERNV(smman   )      //BY35-742: 08/77 The Six Million Dollar Man
 DRIVERNV(playboy )      //BY35-743: 09/76 Playboy
-						//??          /78 Big Foot
-						//??          /78 Galaxy
+                        //??          /78 Big Foot
+                        //??          /78 Galaxy
 DRIVERNV(startrek)      //BY35-745: 01/78 Star Trek
 DRIVERNV(voltan  )      //BY35-744: 01/78 Voltan Escapes Cosmic Doom
-						//??        02/78 Skateball
+                        //??        02/78 Skateball
 DRIVERNV(paragon )      //BY35-748: 12/78 Paragon
 DRIVERNV(hglbtrtr)      //BY35-750: 08/78 Harlem Globetrotters On Tour
 DRIVERNV(dollyptn)      //BY35-777: 10/78 Dolly Parton
@@ -73,43 +76,46 @@ DRIVERNV(speakes4)      //BY35-877: 08/82 Speakeasy 4 (4 player)
 DRIVERNV(rapidfir)      //BY35-869: 06/81 Rapid Fire
 DRIVERNV(m_mpac  )      //BY35-872: 05/82 Mr. & Mrs. Pac-Man
 DRIVERNV(babypac )      //??        10/82 Baby Pac-Man
-/*same as eballdlx*/	//BY35      10/82 Eight Ball Deluxe Limited Edition
-DRIVERNV(bmx     )		//BY35-888: 11/82 BMX
-DRIVERNV(granslam)		//BY35-     01/83 Grand Slam
-/*same as cenatur*/		//BY35      06/83 Centaur II
-DRIVERNV(goldball)		//BY35-     10/83 Gold Ball
-DRIVERNV(xsandos )		//BY35-     12/83 X's & O's
-						//??        ??/84 Mysterian
-DRIVERNV(granny  )		//BY35-     01/84 Granny and the Gators
-DRIVERNV(kosteel )		//BY35-     05/84 Kings of Steel
-DRIVERNV(spyhuntr)		//BY35-     10/84 Spy Hunter
-DRIVERNV(blakpyra)		//BY35-     07/84 Black Pyramid
-						//??        ??/85 Hot Shotz
-DRIVERNV(fbclass )		//BY35-     02/85 Fireball Classic
-DRIVERNV(cybrnaut)		//BY35-     05/85 Cybernaut
-						//6803-     09/85 Eight Ball Champ
-						//6803-     11/85 Beat The Clock
-						//6803-     02/86 Lady Luck
-DRIVERNV(motrdome)		//6803-     05/86 MotorDome
-						//6803-     06/86 Karate Fight
-						//6803-     07/86 Black Belt
-						//6803-     08/86 Special Force
-						//6803-     10/86 Strange Science
-						//6803-     03/87 City Slicker
-						//6803-     03/87 Hardbody
-DRIVERNV(prtyanim)		//6803-     05/87 Party Animal
-DRIVERNV(hvymetal)		//6803-     08/87 Heavy Metal Meltdown
-						//6803-     10/87 Dungeons & Dragons
-						//6803-     01/88 Escape from the Lost World
-DRIVERNV(bw100   )		//6803-     03/88 Blackwater 100
-						//??        06/88 Ramp Warrior
-						//??        12/88 Truck Stop
-DRIVERNV(atlantis)		//6803-     03/89 Atlantis
-						//??        05/89 Ice Castle
+/*same as eballdlx*/    //BY35      10/82 Eight Ball Deluxe Limited Edition
+DRIVERNV(bmx     )      //BY35-888: 11/82 BMX
+DRIVERNV(granslam)      //BY35-     01/83 Grand Slam
+/*same as cenatur*/     //BY35      06/83 Centaur II
+DRIVERNV(goldball)      //BY35-     10/83 Gold Ball
+DRIVERNV(xsandos )      //BY35-     12/83 X's & O's
+                        //??        ??/84 Mysterian
+DRIVERNV(granny )       //BY35-     01/84 Granny and the Gators
+DRIVERNV(kosteel )      //BY35-     05/84 Kings of Steel
+DRIVERNV(blakpyra)      //BY35-     07/84 Black Pyramid
+DRIVERNV(spyhuntr)      //BY35-     10/84 Spy Hunter
+                        //??        ??/85 Hot Shotz
+DRIVERNV(fbclass )      //BY35-     02/85 Fireball Classic
+DRIVERNV(cybrnaut)      //BY35-     05/85 Cybernaut
+//MPU-6803
+DRIVERNV(eballchp)		//6803-0B38: 09/85 Eight Ball Champ
+DRIVERNV(beatclck)		//6803-0C70: 11/85 Beat the Clock
+DRIVERNV(ladyluck)		//6803-0E34: 02/86 Lady Luck
+DRIVERNV(motrdome)		//6803-0E14: 05/86 MotorDome
+						//6803-????: 06/86 Karate Fight (Prototype for Black Belt?)
+DRIVERNV(blackblt)		//6803-0E52: 07/86 Black Belt
+DRIVERNV(specforc)		//6803-0E47: 08/86 Special Force
+DRIVERNV(strngsci)		//6803-0E35: 10/86 Strange Science
+DRIVERNV(cityslck)		//6803-0E79: 03/87 City Slicker
+DRIVERNV(hardbody)		//6803-0E94: 03/87 Hardbody
+DRIVERNV(prtyanim)		//6803-0H01: 05/87 Party Animal
+DRIVERNV(hvymetal)		//6803-0H03: 08/87 Heavy Metal Meltdown
+DRIVERNV(dungdrag)		//6803-0H06: 10/87 Dungeons & Dragons
+DRIVERNV(esclwrld)		//6803-0H05: 01/88 Escape from the Lost World
+DRIVERNV(black100)		//6803-0H07: 03/88 Blackwater 100
+						//??         06/88 Ramp Warrior (Became Truck Stop after Merger)
+//Williams Merger begins here..
+DRIVERNV(truckstp)		//6803-2001: 12/88 Truck Stop
+DRIVERNV(atlantis)		//6803-2006: 03/89 Atlantis
+						//??         05/89 Ice Castle
 
 // ---------------------
 // GOTTLIEB GAMES BELOW
 // ---------------------
+//System 80
 DRIVERNV(spidermn)    //System 80: Spiderman
 DRIVERNV(panthera)    //System 80: Panthera
 DRIVERNV(circus)      //System 80: Circus
@@ -130,7 +136,7 @@ DRIVERNV(hh)          //System 80: Haunted House (Rev 2)
 DRIVERNV(hh_1)        //System 80: Haunted House (Rev 1)
 DRIVERNV(eclipse)     //System 80: Eclipse
 DRIVERNV(s80tst)      //System 80: Text Fixture
-
+//System 80a
 DRIVERNV(dvlsdre)     //System 80a: Devils Dare (Sound & Speech)
 DRIVERNV(dvlsdre2)    //System 80a: Devils Dare (Sound Only)
 DRIVERNV(caveman)     //System 80a: Caveman
@@ -152,7 +158,7 @@ DRIVERNV(thegames)    //System 80a: The Games
 DRIVERNV(touchdn)     //System 80a: Touchdown
 DRIVERNV(eldorado)    //System 80a: El Dorado
 DRIVERNV(icefever)    //System 80a: Ice Fever
-
+//System 80b
 DRIVERNV(triplay)     //System 80b: Chicago Cubs Triple Play
 DRIVERNV(bountyh)     //System 80b: Bounty Hunter
                       //System 80b: Tag Team
@@ -176,7 +182,7 @@ DRIVERNV(badgirls)    //System 80b: Bad Girls
                       //System 80b: Hot Shots
 DRIVERNV(bighouse)    //System 80b: Big House
 DRIVERNV(bonebstr)    //System 80b: Bone Busters
-
+//System 3 Alphanumeric
 DRIVERNV(lca)	      //System 3: Lights, Camera, Action 1989
 DRIVERNV(bellring)    //System 3: Bell Ringer 1990
 DRIVERNV(silvslug)    //System 3: Silver Slugger 1990
@@ -190,6 +196,7 @@ DRIVERNV(cactjack)    //System 3: Cactus Jacks 1991
 DRIVERNV(clas1812)    //System 3: Class of 1812 1991
 DRIVERNV(surfnsaf)    //System 3: Surf'n Safari 1991
 DRIVERNV(opthund)     //System 3: Operation: Thunder
+//System 3 128x32 DMD
 DRIVERNV(smb)         //System 3: Super Mario Brothers
 DRIVERNV(smbmush)     //System 3: Super Mario Brothers Mushroom World
 DRIVERNV(cueball)     //System 3: Cue Ball Wizard
@@ -213,7 +220,6 @@ DRIVERNV(barbwire)    //System 3: Barb Wire
 // STERN GAMES BELOW
 // ---------------------
 // MPU-100 - Chime Sound
-
 DRIVERNV(stingray)		//MPU-100: 03/77 Stingray
 DRIVERNV(pinball)		//MPU-100: 07/77 Pinball
 DRIVERNV(stars)			//MPU-100: 03/78 Stars
@@ -296,7 +302,7 @@ DRIVERNV(swtril)        //Whitestar: 02/97 Star Wars Trilogy
 DRIVERNV(jplstwld)      //Whitestar: 06/97 The Lost World: Jurassic Park
 DRIVERNV(xfiles)        //Whitestar: 08/97 X-Files
 DRIVERNV(startrp)       //Whitestar: 11/97 Starship Troopers
-DRIVERNV(viprsega)	//Whitestar: 02/98 Viper Night Drivin'
+DRIVERNV(viprsega)		//Whitestar: 02/98 Viper Night Drivin'
 DRIVERNV(lostspc)       //Whitestar: 06/98 Lost in Space
 DRIVERNV(godzilla)      //Whitestar: 09/98 Godzilla
 DRIVERNV(southpk)       //Whitestar: 01/99 South Park
@@ -408,6 +414,7 @@ DRIVER(jokrz,l6)    //S11-567:  12/88 W Jokerz!
 DRIVER(eshak,f1)    //S11-568:  02/89 W Earthshaker
 DRIVER(eshak,l3)
 DRIVER(bk2k,l4)     //S11-563:  04/89 W Black Knight 2000
+//First Game produced entirely by Williams after Merger to use Bally Name
 DRIVER(tsptr,l3)    //S11-2630: 04/89 B Transporter the Rescue
                     //S11:      05/89 W Pool
 DRIVER(polic,l4)    //S11-573:  08/89 W Police Force
