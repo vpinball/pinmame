@@ -57,8 +57,8 @@
 #define CC_VBLANKFREQ    60 /* VBLANK frequency */
 #define CC_ZCFREQ        60 /* Zero cross frequency?? */
 
-#define CC_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
-#define CC_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
+#define CC_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
+#define CC_LAMPSMOOTH      4 /* Smooth the lamps over this number of VBLANKS */
 #define CC_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKS */
 
 static struct {
@@ -70,7 +70,6 @@ static struct {
   UINT8 visible_page;
   int zero_cross;
   int blanking;
-  int lampb_only;
   int swCol;
   UINT8 lastb;
 } locals;
@@ -109,7 +108,10 @@ static INTERRUPT_GEN(cc_vblank) {
 static SWITCH_UPDATE(cc) {
   if (inports) {
     CORE_SETKEYSW(inports[CORE_COREINPORT],0xcf,9);
-    CORE_SETKEYSW(inports[CORE_COREINPORT]>>8,0xff,0);
+    if (core_gameData->hw.lampCol)
+      CORE_SETKEYSW(inports[CORE_COREINPORT]>>8,0xff,0);
+    else
+      CORE_SETKEYSW(((inports[CORE_COREINPORT]>>8)<<4),0xf0,2);
   }
 }
 
@@ -258,40 +260,39 @@ static READ16_HANDLER(io_r) {
 
   switch (offset) {
     //Lamp A & B Matrix Row Status? Used to determine non-functioning bulbs?
-	case 0x00000c:
-	case 0x00000d:
-		data = (!locals.blanking) * 0xffff;
-		break;
-	//Playfield Switches
+    case 0x00000c:
+    case 0x00000d:
+      data = (!locals.blanking) * 0xffff;
+      break;
+    //Playfield Switches
     case 0x200008:
     case 0x200009:
     case 0x20000a:
     case 0x20000b:
-		swcol = offset-0x200007;
-		data = coreGlobals.swMatrix[swcol+4] << 8 | coreGlobals.swMatrix[swcol];
-		break;
+      swcol = offset-0x200007;
+      data = coreGlobals.swMatrix[swcol+4] << 8 | coreGlobals.swMatrix[swcol];
+      break;
     //Cabinet/Coin Door Switches OR (ALL SWITCH READS FOR GAMES USING ONLY LAMP B MATRIX)
     case 0x400000:
-		if(locals.lampb_only) {
-			//Cabinet/Coin Door Switches are read as the lower byte on all switch reads
-			data = coreGlobals.swMatrix[9];
-			switch(locals.swCol) {
-				case 0x80:	data |= coreGlobals.swMatrix[1]<<8; break;
-				case 0x40:	data |= coreGlobals.swMatrix[2]<<8; break;
-				case 0x20:	data |= coreGlobals.swMatrix[3]<<8; break;
-				case 0x10:	data |= coreGlobals.swMatrix[4]<<8; break;
-				case 0x08:	data |= coreGlobals.swMatrix[5]<<8; break;
-				case 0x04:	data |= coreGlobals.swMatrix[6]<<8; break;
-				case 0x02:	data |= coreGlobals.swMatrix[7]<<8; break;
-				case 0x01:	data |= coreGlobals.swMatrix[8]<<8; break;
-			}
-		}
-		else
-			data = coreGlobals.swMatrix[0] << 8 | coreGlobals.swMatrix[9];
-		break;
+      if (!core_gameData->hw.lampCol) {
+        //Cabinet/Coin Door Switches are read as the lower byte on all switch reads
+        data = coreGlobals.swMatrix[9];
+        switch(locals.swCol) {
+          case 0x80: data |= coreGlobals.swMatrix[1]<<8; break;
+          case 0x40: data |= coreGlobals.swMatrix[2]<<8; break;
+          case 0x20: data |= coreGlobals.swMatrix[3]<<8; break;
+          case 0x10: data |= coreGlobals.swMatrix[4]<<8; break;
+          case 0x08: data |= coreGlobals.swMatrix[5]<<8; break;
+          case 0x04: data |= coreGlobals.swMatrix[6]<<8; break;
+          case 0x02: data |= coreGlobals.swMatrix[7]<<8; break;
+          case 0x01: data |= coreGlobals.swMatrix[8]<<8; break;
+        }
+      } else
+        data = coreGlobals.swMatrix[0] << 8 | coreGlobals.swMatrix[9];
+      break;
 
-	default:
-		DBGLOG(("io_r: [%08x] (%04x)\n",offset,mem_mask));
+     default:
+       DBGLOG(("io_r: [%08x] (%04x)\n",offset,mem_mask));
   }
   return data^0xffff;		//Switches are inverted
 }
@@ -306,61 +307,59 @@ static WRITE16_HANDLER(io_w) {
   switch (offset) {
     //Blanking (for lamps & solenoids?)
     case 0x00000008:
-		locals.blanking = (data & 0x0c)?1:0;
-        break;
-	//Lamp A Matrix OR Switch Strobe Column (Games with only Lamp B Matrix)
+      locals.blanking = (data & 0x0c)?1:0;
+      break;
+    //Lamp A Matrix OR Switch Strobe Column (Games with only Lamp B Matrix)
     case 0x0000000c:
-	  if (locals.lampb_only)
-		  locals.swCol = data;
-	  else {
-		if (!locals.blanking) {
-			if (data & 0x0100) coreGlobals.tmpLampMatrix[0] = (~data & 0xff);
-			if (data & 0x0200) coreGlobals.tmpLampMatrix[1] = (~data & 0xff);
-			if (data & 0x0400) coreGlobals.tmpLampMatrix[2] = (~data & 0xff);
-			if (data & 0x0800) coreGlobals.tmpLampMatrix[3] = (~data & 0xff);
-			if (data & 0x1000) coreGlobals.tmpLampMatrix[4] = (~data & 0xff);
-			if (data & 0x2000) coreGlobals.tmpLampMatrix[5] = (~data & 0xff);
-			if (data & 0x4000) coreGlobals.tmpLampMatrix[6] = (~data & 0xff);
-			if (data & 0x8000) coreGlobals.tmpLampMatrix[7] = (~data & 0xff);
-		}
-	  }
+      if (!core_gameData->hw.lampCol)
+        locals.swCol = data;
+      else if (!locals.blanking) {
+        if (data & 0x0100) coreGlobals.tmpLampMatrix[0] = (~data & 0xff);
+        if (data & 0x0200) coreGlobals.tmpLampMatrix[1] = (~data & 0xff);
+        if (data & 0x0400) coreGlobals.tmpLampMatrix[2] = (~data & 0xff);
+        if (data & 0x0800) coreGlobals.tmpLampMatrix[3] = (~data & 0xff);
+        if (data & 0x1000) coreGlobals.tmpLampMatrix[4] = (~data & 0xff);
+        if (data & 0x2000) coreGlobals.tmpLampMatrix[5] = (~data & 0xff);
+        if (data & 0x4000) coreGlobals.tmpLampMatrix[6] = (~data & 0xff);
+        if (data & 0x8000) coreGlobals.tmpLampMatrix[7] = (~data & 0xff);
+      }
       break;
     //Lamp B Matrix (for games that only have lamp b, shift to lower half of our lamp matrix for easier numbering)
     case 0x0000000d:
       if (!locals.blanking) {
-        if (data & 0x0100) coreGlobals.tmpLampMatrix[8-(8*locals.lampb_only)] = (~data & 0xff);
-        if (data & 0x0200) coreGlobals.tmpLampMatrix[9-(8*locals.lampb_only)] = (~data & 0xff);
-        if (data & 0x0400) coreGlobals.tmpLampMatrix[10-(8*locals.lampb_only)] = (~data & 0xff);
-        if (data & 0x0800) coreGlobals.tmpLampMatrix[11-(8*locals.lampb_only)] = (~data & 0xff);
-        if (data & 0x1000) coreGlobals.tmpLampMatrix[12-(8*locals.lampb_only)] = (~data & 0xff);
-        if (data & 0x2000) coreGlobals.tmpLampMatrix[13-(8*locals.lampb_only)] = (~data & 0xff);
-        if (data & 0x4000) coreGlobals.tmpLampMatrix[14-(8*locals.lampb_only)] = (~data & 0xff);
-        if (data & 0x8000) coreGlobals.tmpLampMatrix[15-(8*locals.lampb_only)] = (~data & 0xff);
+        if (data & 0x0100) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol] = (~data & 0xff);
+        if (data & 0x0200) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol+1] = (~data & 0xff);
+        if (data & 0x0400) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol+2] = (~data & 0xff);
+        if (data & 0x0800) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol+3] = (~data & 0xff);
+        if (data & 0x1000) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol+4] = (~data & 0xff);
+        if (data & 0x2000) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol+5] = (~data & 0xff);
+        if (data & 0x4000) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol+6] = (~data & 0xff);
+        if (data & 0x8000) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol+7] = (~data & 0xff);
       }
       break;
 
     //??
-	case 0x00200008:
-		DBGLOG(("io_w: [%08x] (%04x) = %x\n",offset,mem_mask,data));
-		break;
+    case 0x00200008:
+      DBGLOG(("io_w: [%08x] (%04x) = %x\n",offset,mem_mask,data));
+      break;
 
     //Sols: 1-8 (hi byte) & 17-24 (lo byte)
     case 0x0020000c:
-	  soldata = core_revword(data^0xffff);
-	  coreGlobals.pulsedSolState |= (soldata & 0x00ff)<<16;
-	  coreGlobals.pulsedSolState |= (soldata & 0xff00)>>8;
+      soldata = core_revword(data^0xffff);
+      coreGlobals.pulsedSolState |= (soldata & 0x00ff)<<16;
+      coreGlobals.pulsedSolState |= (soldata & 0xff00)>>8;
       locals.solenoids = coreGlobals.pulsedSolState;
       break;
-	//Sols: 9-16 (hi byte) & 24-32 (lo byte)
-	case 0x0020000d:
-	  soldata = core_revword(data^0xffff);
-	  coreGlobals.pulsedSolState |= (soldata & 0x00ff)<<24;
-	  coreGlobals.pulsedSolState |= (soldata & 0xff00)>>0;
+    //Sols: 9-16 (hi byte) & 24-32 (lo byte)
+    case 0x0020000d:
+      soldata = core_revword(data^0xffff);
+      coreGlobals.pulsedSolState |= (soldata & 0x00ff)<<24;
+      coreGlobals.pulsedSolState |= (soldata & 0xff00)>>0;
       locals.solenoids = coreGlobals.pulsedSolState;
       break;
 
-	default:
-		DBGLOG(("io_w: [%08x] (%04x) = %x\n",offset,mem_mask,data));
+    default:
+      DBGLOG(("io_w: [%08x] (%04x) = %x\n",offset,mem_mask,data));
   }
 }
 
@@ -392,7 +391,6 @@ void U16_Tests_Hack(void){
 			break;
 		case 5:
 			fixaddr = 0x0008b198; //BS
-			locals.lampb_only = 1;
 			break;
 		case 6:
 		case 7:
