@@ -546,7 +546,7 @@ static READ_HANDLER(wpcs_ctrl_r) {
 }
 
 static WRITE_HANDLER(wpcs_ctrl_w) { /*-- a write here resets the CPU --*/
-  cpu_set_reset_line(locals.brdData.cpuNo, PULSE_LINE);
+  cpunum_set_reset_line(locals.brdData.cpuNo, PULSE_LINE);
 }
 
 static void wpcs_init(struct sndbrdData *brdData) {
@@ -796,13 +796,24 @@ static READ_HANDLER(dcs_data_r) {
 }
 
 static WRITE_HANDLER(dcs_data_w) {
+  DBGLOG(("Latch_w: %02x\n",data));
   soundlatch_w(0, data); cpu_set_irq_line(dcslocals.brdData.cpuNo, ADSP2105_IRQ2, ASSERT_LINE);
 }
 
 static WRITE_HANDLER(dcs_ctrl_w) {
   if (dcslocals.brdData.subType == 0) {
-    cpu_set_reset_line(dcslocals.brdData.cpuNo, PULSE_LINE);
-    adsp_boot(0);
+    DBGLOG(("ctrl_w: %02x\n",data));
+    if (data) {
+#ifdef WPCDCSSPEEDUP
+    // probably a bug in the mame reset handler
+    // if a cpu is suspended for some reason a reset will not wake it up
+    cpu_triggerint(dcslocals.brdData.cpuNo);
+#endif /* WPCDCSSPEEDUP */
+      cpunum_set_reset_line(dcslocals.brdData.cpuNo, ASSERT_LINE);
+      adsp_boot(0);
+    }
+    else
+      cpunum_set_reset_line(dcslocals.brdData.cpuNo, CLEAR_LINE);
   }
 }
 
@@ -943,7 +954,7 @@ static WRITE16_HANDLER(adsp_control_w) {
       if (data & 0x0200) {
         /* boot force */
         DBGLOG(("boot force\n"));
-        cpu_set_reset_line(dcslocals.brdData.cpuNo, PULSE_LINE);
+        cpunum_set_reset_line(dcslocals.brdData.cpuNo, PULSE_LINE);
         adsp_boot(1);
         adsp.ctrlRegs[SYSCONTROL_REG] &= ~0x0200;
       }
