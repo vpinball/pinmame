@@ -1884,7 +1884,6 @@ int rom_load(const struct RomModule *romp)
 			// if loading of rom for this region fails, check if this is a SOUNDONLY region; 
 			// if so, disable sound
 			int lastErrorCount = romdata.errors;
-			int f = ROMREGION_ISSOUNDONLY(region);
 			if (!process_rom_entries(&romdata, region + 1))
 				return 1;
 
