@@ -1,10 +1,18 @@
 What's new:
 -----------
 
-Version 1.1x (xxx)
+Version 1.11 (February 3, 2002)
 ------------------
-A solid new release with working support from 2 new manufacturers (Hankin & Gameplan), as well as preliminary support for 1 more (Zaccaria). Of course, we're thrilled to be able to add working Baby Pacman support, which has been a long standing request going back to the very first few versions of PinMAME. Finally, we close the book on missing Bally support, by adding working 6803 emulation. Hope you enjoy this latest release.
-
+A good sized new release with working support from 2 new manufacturers (Hankin & Gameplan), as 
+well as preliminary support for 1 more (Zaccaria). Of course, we're thrilled to be able to 
+add working fully working Baby Pacman emulation, which has been a long standing request going back to the 
+very first few versions of PinMAME. 
+Finally, we close the book on missing Bally support, by adding working 6803 emulation. 
+Hope you enjoy this latest release.
+*IMPORTANT NOTE: 
+  This release has not been beta tested and may contan many bugs! 
+  We wanted to get a release out now, because for the next month or so, we won't have time.
+                 
 Bugs Fixed
 ----------
 -Fixed reversed diag & slam tilt switches in earlier Gottlieb System 3 Alphanumeric games
