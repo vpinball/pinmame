@@ -2,7 +2,7 @@
 #include "sim.h"
 #include "capcom.h"
 
-#define FLIP    FLIP_SWNO(69,70)
+#define FLIP    FLIP_SWNO(5,6)
 
 const core_tLCDLayout cc_dispDMD128x32[] = {
   {0,0,32,128,CORE_DMD,(void *)cc_dmd128x32}, {0}
