@@ -258,6 +258,7 @@ static INTERRUPT_GEN(wpc_vblank) {
   if ((wpclocals.vblankCount % (WPC_VBLANKDIV*WPC_DISPLAYSMOOTH)) == 0) {
     if ((core_gameData->gen & GENWPC_HASDMD) == 0) {
       memcpy(coreGlobals.segments, wpclocals.alphaSeg, sizeof(coreGlobals.segments));
+      coreGlobals.segments[15].w &= ~0x8080; coreGlobals.segments[35].w &= ~0x8080;
       memset(wpclocals.alphaSeg, 0, sizeof(wpclocals.alphaSeg));
     }
     coreGlobals.diagnosticLed = wpclocals.diagnostic;
@@ -515,7 +516,7 @@ WRITE_HANDLER(wpc_w) {
 / Protected memory
 /---------------------------*/
 static WRITE_HANDLER(wpc_ram_w) {
-  if ((wpc_data[WPC_PROTMEM] == WPC_PROTMEMCODE) || 
+  if ((wpc_data[WPC_PROTMEM] == WPC_PROTMEMCODE) ||
       ((offset & wpclocals.memProtMask) != wpclocals.memProtMask))
     wpc_ram[offset] = data;
   else DBGLOG(("mem prot violation. PC=%04x a=%04x d=%02x\n",activecpu_get_pc(), offset, data));
