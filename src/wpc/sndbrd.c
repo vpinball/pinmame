@@ -175,7 +175,6 @@ const struct sndbrdIntf NULLIntf = { 0 }; // remove when all boards below works.
   SNDBRDINTF(zac1125)
   SNDBRDINTF(zac1346)
   SNDBRDINTF(zac1370)
-  SNDBRDINTF(zac13136)
   SNDBRDINTF(st100)
   SNDBRDINTF(st300)
   SNDBRDINTF(astro)
