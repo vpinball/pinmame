@@ -1,5 +1,5 @@
 /* HANKIN Pinball*/
-/* 
+/*
    Hardare is EXTREMELY SIMILAR to Bally MPU-35!
    Display, however, uses 9 Segments, rather than Bally's 7 and works *slightly* different
    There are only 3 x 8 Dip Banks (Dips 1-24), rather than Bally's 4 x 8 = 32.
@@ -13,7 +13,6 @@
 #include "hnks.h"
 
 #define HNK_VBLANKFREQ    60 /* VBLANK frequency */
-#define HNK_IRQFREQ      150 /* IRQ (via PIA) frequency*/
 #define HNK_ZCFREQ        85 /* Zero cross frequency */
 
 static struct {
@@ -28,9 +27,6 @@ static struct {
   void *zctimer;
 } locals;
 
-static void hnk_exit(void);
-static void hnk_nvram(void *file, int write);
-
 static void piaIrq(int state) {
   //DBGLOG(("IRQ = %d\n",state));
   cpu_set_irq_line(0, M6800_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
@@ -44,7 +40,7 @@ static void hnk_dispStrobe(int mask) {
     if (digit & 0x01) {
       UINT8 dispMask = mask;
       for (jj = 0; dispMask; jj++, dispMask>>=1)
-		if (dispMask & 0x01) 
+		if (dispMask & 0x01)
           ((int *)locals.segments)[jj*8+ii] = core_bcd2seg9[locals.bcd[jj]];
     }
 }
@@ -71,7 +67,7 @@ static WRITE_HANDLER(hnk_sndCmd_w) {
     sndbrd_0_data_w(0, data);
 }
 
-/* PIA0:A-W  Control what is read from PIA0:B 
+/* PIA0:A-W  Control what is read from PIA0:B
 -----------------------------------------------
 (out) PA0-1: Cabinet Switches Strobe (shared below)
 (out) PA0-4: Switch Strobe(Columns)
@@ -100,7 +96,7 @@ static WRITE_HANDLER(pia0a_w) {
 */
 static WRITE_HANDLER(pia1a_w) {
   locals.p1_a = data;
-  
+
   if (!locals.p0_ca2) {		  // If Display Blanking cleared
 //	  logerror("Latch #5: ca2 = %x, p0_a = %x\n",locals.p0_ca2,locals.p0_a);
       locals.bcd[4] = locals.p0_a>>4;
@@ -158,7 +154,7 @@ static WRITE_HANDLER(pia1cb2_w) {
   locals.p1_cb2 = data;
 }
 
-static int hnk_vblank(void) {
+static INTERRUPT_GEN(hnk_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
@@ -184,7 +180,6 @@ static int hnk_vblank(void) {
     locals.diagnosticLed = 0;
   }
   core_updateSw(core_getSol(19));
-  return 0;
 }
 
 static void hnk_updSw(int *inports) {
@@ -212,7 +207,7 @@ static void hnk_updSw(int *inports) {
 
 /*PIA 1*/
 /*PIA U10:
-(in)  PB0-7: Switch Returns/Rows and Cabinet Switch Returns/Rows 
+(in)  PB0-7: Switch Returns/Rows and Cabinet Switch Returns/Rows
 (in)  PB0-7: Dip Returns
 (in)  CA1:   Self Test Switch
 (in)  CB1:   Zero Cross Detection
@@ -254,8 +249,6 @@ static struct pia6821_interface piaIntf[] = {{
 /* IRQ: A/B              */  piaIrq,piaIrq
 }};
 
-static int hnk_irq(void) { return 0; }
-
 static core_tData hnkData = {
   24, /* 24 Dips */
   hnk_updSw, 1, hnk_sndCmd_w, "hnk",
@@ -274,7 +267,7 @@ static MACHINE_INIT(hnk) {
   /* init PIAs */
   pia_config(0, PIA_STANDARD_ORDERING, &piaIntf[0]);
   pia_config(1, PIA_STANDARD_ORDERING, &piaIntf[1]);
-  
+
   sndbrd_0_init(core_gameData->hw.soundBoard, HNK_SCPU1, memory_region(HNK_MEMREG_SCPU), NULL, NULL);
 
   pia_reset();
@@ -330,7 +323,6 @@ MACHINE_DRIVER_START(hnk)
   MDRV_CPU_ADD(M6800, 3580000/4)
   MDRV_CPU_MEMORY(hnk_readmem, hnk_writemem)
   MDRV_CPU_VBLANK_INT(hnk_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(hnk_irq, HNK_IRQFREQ)
   MDRV_MACHINE_INIT(hnk) MDRV_MACHINE_STOP(hnk)
   MDRV_NVRAM_HANDLER(hnk)
   MDRV_VIDEO_UPDATE(core_led)
