@@ -101,7 +101,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib zlibstatmt.lib"
-				OutputFile=".\obj/PinMAME/Release/PinMAME.exe"
+				OutputFile=".\obj/PinMAME/Release/PinMAMEVC.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="zlib"
