@@ -179,7 +179,7 @@ static int S80_sw2m(int no) {
 }
 
 static int S80_m2sw(int col, int row) { 
-	if ( (col>9) || (col=9) && (row>=6) )
+	if (col > 9 || (col == 9 && row >= 6))
 		return col*8+row;
 	else
 		return row*10+col-1;
