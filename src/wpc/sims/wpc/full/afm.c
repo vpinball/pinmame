@@ -3,7 +3,9 @@
 #include "wpc.h"
 #include "sim.h"
 #include "wmssnd.h"
+#include "machine/4094.h"
 
+/* 150904 Added Saucer LEDs (GV) */
 /* 231100 Added Sound Support (SJE) */
 /* 161000 Cleaned up BITIMP use */
 /* 181000 Corrected year to 1995 according to IPD */
@@ -366,7 +368,7 @@ static core_tGameData afmGameData = {
   GEN_WPC95, wpc_dispDMD,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
-    0,0,3,0,0,0,0,
+    0,2,3,0,0,0,0, // 2 extra lamp columns for the LEDs
     afm_getSol, afm_handleMech, afm_getMech, afm_drawMech,
     NULL, NULL
   },
@@ -374,17 +376,46 @@ static core_tGameData afmGameData = {
   {
     "541 123456 12345 123",
     /*Coin    1     2     3     4     5     6     7     8     9    10   Cab.  Cust */
-    { 0x00, 0x00, 0x00, 0x7f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, /* inverted swictes */
+    { 0x00, 0x00, 0x00, 0x7f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, /* inverted switches */
     /*Start    Tilt    SlamTilt    CoinDoor    Shooter */
     { swStart, swTilt, swSlamTilt, swCoinDoor, swLaunch},
   }
 };
 
+static WRITE_HANDLER(parallel_0_out) {
+  static int lastValue = 0;
+  coreGlobals.lampMatrix[8] = coreGlobals.tmpLampMatrix[8] = data;
+  HC4094_data_w (1, lastValue);
+  HC4094_strobe_w(1, 1);
+  HC4094_oe_w(1, 1);
+  lastValue = data >> 7;
+}
+static WRITE_HANDLER(parallel_1_out) {
+  coreGlobals.lampMatrix[9] = coreGlobals.tmpLampMatrix[9] = data;
+}
+
+static HC4094interface hc4094afm = {
+  2, // 2 chips
+  { parallel_0_out, parallel_1_out }
+};
+
+static WRITE_HANDLER(afm_wpc_w) {
+  wpc_w(offset, data);
+  if (offset == WPC_SOLENOID1) {
+    HC4094_data_w (0, GET_BIT5);
+    HC4094_clock_w(0, GET_BIT4);
+    HC4094_clock_w(1, GET_BIT4);
+    HC4094_strobe_w(0, 1);
+    HC4094_oe_w(0, 1);
+  }
+}
 
 /*---------------
 /  Game handling
 /----------------*/
 static void init_afm(void) {
   core_gameData = &afmGameData;
+  install_mem_write_handler(0, 0x3fb0, 0x3fff, afm_wpc_w);
+  HC4094_init(&hc4094afm);
 }
 
