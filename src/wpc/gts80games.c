@@ -657,7 +657,7 @@ GTS80B_8K_ROMSTART(triplay,	"prom1.cpu", 0x42b29b01)
 GTS80S2K_ROMSTART("696-s.snd",0xdeedea61)
 GTS80_ROMEND
 #define input_ports_triplay input_ports_gts80
-CORE_GAMEDEFNV(triplay, "Triple Play",1985,"Gottlieb",gl_mGTS80B,0)
+CORE_GAMEDEFNV(triplay, "Triple Play",1985,"Gottlieb",gl_mGTS80S,0)
 
 /*-------------------------------------------------------------------
 / Bounty Hunter (#694)
@@ -668,7 +668,7 @@ GTS80B_8K_ROMSTART(bountyh,	"prom1.cpu", 0xe8190df7)
 GTS80S2K_ROMSTART("694-s.snd", 0xa0383e41)
 GTS80_ROMEND
 #define input_ports_bountyh input_ports_gts80
-CORE_GAMEDEFNV(bountyh, "Bounty Hunter",1985,"Gottlieb",gl_mGTS80B,0)
+CORE_GAMEDEFNV(bountyh, "Bounty Hunter",1985,"Gottlieb",gl_mGTS80S,0)
 
 /*-------------------------------------------------------------------
 / Tag-Team Wrestling (#698)
@@ -679,7 +679,7 @@ GTS80B_2K_ROMSTART(tagteam, "prom2.cpu", 0xfd1615ce,
 GTS80S2K_ROMSTART("698-s.snd", 0x9c8191b7)
 GTS80_ROMEND
 #define input_ports_tagteam input_ports_gts80
-CORE_GAMEDEFNV(tagteam, "Tag-Team Wrestling",1985,"Gottlieb",gl_mGTS80B,0)
+CORE_GAMEDEFNV(tagteam, "Tag-Team Wrestling",1985,"Gottlieb",gl_mGTS80S,0)
 
 /*-------------------------------------------------------------------
 / Rock (#697)
