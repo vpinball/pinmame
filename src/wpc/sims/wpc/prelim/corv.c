@@ -445,7 +445,7 @@ static void corv_handleMech(int mech) {
 	}
 
 	/* magnet at engine, or lights inside the engine maybe? */
-	coreGlobals.solenoids = (coreGlobals.solenoids & 0x00ffffff) | (wpc_data[WPC_EXTBOARD3] << 24);
+	coreGlobals.solenoids = (coreGlobals.solenoids & 0xf0ffffff) | (wpc_data[WPC_EXTBOARD3] << 24);
 }
 
 static int corv_getMech(int mechNo){
