@@ -215,7 +215,7 @@ DE1632_ROMSTART(tmnt,	"tmntb5a.104",0xf508eeee,
 DE_DMD64_ROMSTART(		"tmntdsp.104",0x545686b7)
 DESOUND32128D_ROMSTART(	"tmntf7.rom",0x59ba0153,	//7f
 						"tmntf6.rom",0x5668d45a,	//6f
-						"tmntf4.rom",0xf96b0539)	//4f
+						"tmntf4.rom",0x6c38cd84)	//4f
 
 DE_ROMEND
 CORE_GAMEDEFNV(tmnt,"Teenage Mutant Ninja Turtles",1991,"Data East",de_mDE_DMD1S1,0)
