@@ -141,7 +141,7 @@ static WRITE_HANDLER(dma_display)
 	else {
 		switch ( offset ) {
 		case 12:
-			// active player
+			// balls in play
 			((int*) TAITOlocals.segments)[2*12+segMap[12]] = core_bcd2seg[data&0x0f];
 			break;
 		
@@ -156,7 +156,7 @@ static WRITE_HANDLER(dma_display)
 			break;
 
 		case 15:
-			// ball in play
+			// active player
 			((int*) TAITOlocals.segments)[2*13+segMap[13]+1] = core_bcd2seg[data&0x0f];
 			break;
 		}

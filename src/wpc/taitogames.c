@@ -10,7 +10,7 @@ static const core_tLCDLayout dispTaito[] = {
   { 3, 0,  6, 3, CORE_SEG87 }, { 3, 6,  9, 3, CORE_SEG87 },
   { 6, 0, 12, 3, CORE_SEG87 }, { 6, 6, 15, 3, CORE_SEG87 },
   { 9, 0, 18, 3, CORE_SEG87 }, { 9, 6, 21, 3, CORE_SEG87 },
-  {13, 1, 27, 1, CORE_SEG87 }, {13, 9, 25, 1, CORE_SEG87 },
+  {13, 1, 24, 1, CORE_SEG87 }, {13, 9, 25, 1, CORE_SEG87 },
   {0}
 };
 
