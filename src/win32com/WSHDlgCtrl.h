@@ -5,6 +5,14 @@
 
 #include "resource.h"       // main symbols
 
+#define CTRLTYPE_PUSHBUTTON		0
+#define CTRLTYPE_OKBUTTON		1
+#define CTRLTYPE_CANCELBUTTON	2
+#define CTRLTYPE_CHECKBOX		3
+#define CTRLTYPE_RADIONBUTTON	4
+#define CTRLTYPE_GROUPBOX		5
+#define CTRLTYPE_LABEL			6
+
 /////////////////////////////////////////////////////////////////////////////
 // CWSHDlgCtrl
 class ATL_NO_VTABLE CWSHDlgCtrl : 
@@ -46,10 +54,8 @@ public:
 	char m_szTitle[256];
 	int  m_iType;
 	CComVariant m_vValue;
-	long m_options;
 
-	STDMETHODIMP Init(BSTR sType, long x, long y, long w, long h, BSTR sTitle, VARIANT vValue, long options);
-	HWND CreateControlWindow(HWND hParent, int iCtrlID, bool fStartGroup);
+	STDMETHODIMP Init(BSTR sType, long x, long y, long w, long h, BSTR sTitle);
 };
 
 #endif //__WSHDLGCTRL_H_
