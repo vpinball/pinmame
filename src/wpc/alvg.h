@@ -22,11 +22,11 @@
 	/* Switch Column 2 */ \
     COREPORT_BITDEF(  0x0020, IPT_START1,         IP_KEY_DEFAULT) \
 	COREPORT_BIT(     0x0040, "Ball Tilt",        KEYCODE_INSERT) \
+    COREPORT_BIT(     0x0800, "Volume +",         KEYCODE_9) \
+	COREPORT_BIT(     0x1000, "Volume -",         KEYCODE_0) \
     /* These are put in switch column 0 since they are not read in the regular switch matrix */ \
     COREPORT_BIT(     0x0100, "Test",			  KEYCODE_7) \
-    COREPORT_BIT(     0x0200, "Enter",			  KEYCODE_8) \
-    COREPORT_BIT(     0x0400, "Volume +",         KEYCODE_9) \
-	COREPORT_BIT(     0x0800, "Volume -",         KEYCODE_0)
+    COREPORT_BIT(     0x0200, "Enter",			  KEYCODE_8) 
 
 /*-- Standard input ports --*/
 #define ALVG_INPUT_PORTS_START(name,balls) \
@@ -49,8 +49,6 @@
 /*-- switch numbers --*/
 #define ALVG_SWTEST     -8
 #define ALVG_SWENTER    -7
-#define ALVG_SWVOLUP    -6
-#define ALVG_SWVOLDN    -5
 
 /*-- Memory regions --*/
 #define ALVG_MEMREG_CPU		REGION_CPU1
