@@ -822,7 +822,7 @@ static struct core_dispLayout dispRCT[] = {
   DISP_SEG_IMPORT(se_dmd128x32),
   {34,10, 5,21, CORE_DMD|CORE_DMDNOAA, (void *)seminidmd3_update}, {0}
 };
-INITGAME(rctycn, GEN_WS, dispRCT, SE_MINIDMD)
+INITGAME(rctycn, GEN_WS, dispRCT, SE_MINIDMD3)
 SE128_ROMSTART(rctycn, "rctcpu.701",CRC(e1fe89f6) SHA1(9a76a5c267e055fcf0418394762bcea758da02d6))
 DE_DMD32ROM8x(       "rctdispa.700",CRC(6a8925d7) SHA1(82a6c069f1e8f8e053fec708f56c8ffe56d70fc8))
 DE2S_SOUNDROM1888(    "rcsndu7.100",CRC(e6cde9b1) SHA1(cbaadafd18ad9c0338bf2cce94b2c2a89e734778),
@@ -1010,7 +1010,7 @@ CORE_CLONEDEFNV(simpprti,simpprty,"The Simpsons Pinball Party (Italy)",2003,"Ste
 /*-------------------------------------------------------------------
 / Terminator 3: Rise of the Machines (4.00)
 /-------------------------------------------------------------------*/
-INITGAME(term3,GEN_WS,se_dmd128x32,0)
+INITGAME(term3,GEN_WS,se_dmd128x32,SE_LED)
 SE128_ROMSTART(term3, "t3cpu.400", CRC(872f9351) SHA1(8fa8b503d8c3dbac66df1cb0ba400dbd58ee28ee))
 DE_DMD32ROM8x(      "t3dispa.400", CRC(6b7cc4f8) SHA1(214e9b3e45b778841fc166acf4ff5fd634ae2670))
 DE2S_SOUNDROM18888(      "t3100.u7",  CRC(7f99e3af) SHA1(4916c074e2a4c947d1a658300f9f9629da1a8bb8),
@@ -1189,7 +1189,7 @@ static struct core_dispLayout dispBION[] = {
   {34,18, 7, 5, CORE_DMD, (void *)seminidmd1b_update},
   {34,26, 7, 5, CORE_DMD, (void *)seminidmd1c_update}, {0}
 };
-INITGAME(ripleys,GEN_WS,dispBION,SE_MINIDMD)
+INITGAME(ripleys,GEN_WS,dispBION,SE_MINIDMD3)
 SE128_ROMSTART(ripleys, "ripcpu.302",CRC(ee79d9eb) SHA1(79b45ceac00ebd414a9fb1d97c05252d9f953872))
 DE_DMD32ROM8x(        "ripdispa.300",CRC(016907c9) SHA1(d37f1ca5ebe089fca879339cdaffc3fabf09c15c))
 DE3S_SOUNDROM18888(      "ripsnd.u7",CRC(4573a759) SHA1(189c1a2eaf9d92c40a1bc145f59ac428c74a7318),

@@ -84,7 +84,7 @@ static INTERRUPT_GEN(se_vblank) {
     memset(coreGlobals.tmpLampMatrix, 0, 10);
   }
   /*-- solenoids --*/
-  coreGlobals.solenoids2 = selocals.flipsol; selocals.flipsol = selocals.flipsolPulse;
+  coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xfff0) | selocals.flipsol; selocals.flipsol = selocals.flipsolPulse;
   if ((selocals.vblankCount % SE_SOLSMOOTH) == 0) {
     coreGlobals.solenoids = selocals.solenoids;
     selocals.solenoids = coreGlobals.pulsedSolState;
@@ -258,7 +258,7 @@ static READ_HANDLER(auxboard_r) { return selocals.auxdata; }
 static WRITE_HANDLER(auxboard_w) { selocals.auxdata = data; }
 
 static WRITE_HANDLER(giaux_w) {
-  if (core_gameData->hw.display & SE_MINIDMD) {
+  if (core_gameData->hw.display & (SE_MINIDMD|SE_MINIDMD3)) {
     if (data & ~selocals.lastgiaux & 0x80) { /* clock in data to minidmd */
       selocals.minidata[selocals.miniidx] = selocals.auxdata & 0x7f;
       selocals.miniidx = (selocals.miniidx + 1) % 4;
@@ -276,6 +276,11 @@ static WRITE_HANDLER(giaux_w) {
         }
       }
     }
+    if (core_gameData->hw.display & SE_MINIDMD3) {
+      if (data == 0xbe)
+        coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | (selocals.auxdata << 4);
+    } else
+      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | ((data & 0x38) << 1);
     selocals.lastgiaux = data;
   }
   else if (core_gameData->hw.display & SE_MINIDMD2) {
@@ -295,6 +300,8 @@ static WRITE_HANDLER(giaux_w) {
         }
       }
     }
+    if (data == 0xbe)
+      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | (selocals.auxdata << 4);
     selocals.lastgiaux = data;
   }
   else if (core_gameData->hw.display & SE_LED) { // map LEDs as extra lamp columns
@@ -304,9 +311,11 @@ static WRITE_HANDLER(giaux_w) {
       if (order[selocals.miniidx])
         coreGlobals.tmpLampMatrix[9 + order[selocals.miniidx]] = selocals.auxdata;
       if (selocals.miniidx < 6) selocals.miniidx++;
-    }
+    } else if (data == 0xbe)
+      coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | (selocals.auxdata << 4);
     selocals.lastgiaux = selocals.auxdata;
-  }
+  } else
+    coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | (selocals.auxdata << 4);
 }
 
 // MINI DMD Type 1 (HRC) (15x7)
