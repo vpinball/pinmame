@@ -109,7 +109,7 @@ int des_irq(void) {
 }
 
 //Init codes here if needed
-void des_init(void) {}
+int des_init(void) { return 0; }
 
 WRITE_HANDLER(des_soundCmd_w) {
   /* DBGLOG(("soundCmd:%2x\n",data)); */
