@@ -666,15 +666,15 @@ CORE_CLONEDEFNV(playboye,playboys,"Playboy (Spain)",2002,"Stern",de_mSES2,GAME_N
 
 //Strange that they went back to the 11 voice model here!
 /*-------------------------------------------------------------------
-/ Roller Coaster Tycoon (6.00)
+/ Roller Coaster Tycoon (7.01)
 /-------------------------------------------------------------------*/
 static struct core_dispLayout dispRCT[] = {
   DISP_SEG_IMPORT(se_dmd128x32),
   {34,10, 5,21, CORE_DMD, (void *)seminidmd3_update}, {0}
 };
 INITGAME(rctycn, GEN_WS, dispRCT, SE_MINIDMD)
-SE128_ROMSTART(rctycn, "rctcpu.600",0x2ada30e5)
-DE_DMD32ROM8x(       "rctdispa.600",0xdbd294e1)
+SE128_ROMSTART(rctycn, "rctcpu.701",0xe1fe89f6)
+DE_DMD32ROM8x(       "rctdispa.700",0x6a8925d7)
 DE2S_SOUNDROM1888(    "rcsndu7.100",0xe6cde9b1,
                      "rcsndu17.100",0x18ba20ec,
                      "rcsndu21.100",0x64b19c11,
@@ -686,8 +686,8 @@ CORE_GAMEDEFNV(rctycn,"Roller Coaster Tycoon",2002,"Stern",de_mSES1,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / Roller Coaster Tycoon (Germany)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(rctycnd,"rctcpu.600",0x2ada30e5)
-DE_DMD32ROM8x(       "rctdispg.600",0x0)
+SE128_ROMSTART(rctycnd,"rctcpu.701",0xe1fe89f6)
+DE_DMD32ROM8x(       "rctdispg.700",0x0babf1ed)
 DE2S_SOUNDROM1888(    "rcsndu7.100",0xe6cde9b1,
                      "rcsndu17.100",0x18ba20ec,
                      "rcsndu21.100",0x64b19c11,
@@ -700,8 +700,8 @@ CORE_CLONEDEFNV(rctycnd,rctycn,"Roller Coaster Tycoon (Germany)",2002,"Stern",de
 /*-------------------------------------------------------------------
 / Roller Coaster Tycoon (France)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(rctycnf,"rctcpu.600",0x2ada30e5)
-DE_DMD32ROM8x(       "rctdispf.600",0x50aa2f48)
+SE128_ROMSTART(rctycnf,"rctcpu.701",0xe1fe89f6)
+DE_DMD32ROM8x(       "rctdispf.700",0x2de0eec8)
 DE2S_SOUNDROM1888(    "rcsndu7.100",0xe6cde9b1,
                      "rcsndu17.100",0x18ba20ec,
                      "rcsndu21.100",0x64b19c11,
@@ -715,8 +715,8 @@ CORE_CLONEDEFNV(rctycnf,rctycn,"Roller Coaster Tycoon (France)",2002,"Stern",de_
 /*-------------------------------------------------------------------
 / Roller Coaster Tycoon (Italy)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(rctycni,"rctcpu.600",0x2ada30e5)
-DE_DMD32ROM8x(       "rctdispi.600",0xa55a86c1)
+SE128_ROMSTART(rctycni,"rctcpu.701",0xe1fe89f6)
+DE_DMD32ROM8x(       "rctdispi.700",0x0d07d8f2)
 DE2S_SOUNDROM1888(    "rcsndu7.100",0xe6cde9b1,
                      "rcsndu17.100",0x18ba20ec,
                      "rcsndu21.100",0x64b19c11,
@@ -729,8 +729,8 @@ CORE_CLONEDEFNV(rctycni,rctycn,"Roller Coaster Tycoon (Italy)",2002,"Stern",de_m
 /*-------------------------------------------------------------------
 / Roller Coaster Tycoon (Spain)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(rctycne,"rctcpu.600",0x2ada30e5)
-DE_DMD32ROM8x(       "rctdisps.600",0x84a970a3)
+SE128_ROMSTART(rctycne,"rctcpu.701",0xe1fe89f6)
+DE_DMD32ROM8x(       "rctdisps.700",0x6921d8cc)
 DE2S_SOUNDROM1888(    "rcsndu7.100",0xe6cde9b1,
                      "rcsndu17.100",0x18ba20ec,
                      "rcsndu21.100",0x64b19c11,
