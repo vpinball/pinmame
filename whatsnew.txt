@@ -11,7 +11,7 @@ Bugs Fixed
 
 - Hack implemented which fixes Data East Robocop Music (should be 100% as far as I can tell)
 - Greatly improved lamps in Baby Pacman, although there are still some issues.
-- Improved music in GTS3 games, but still a long, long way to go.
+- Gottlieb System 3 music and speech FINALLY working!! (Still some music tempo problems though)
   [Steve Ellenoff]
 
 New Features
