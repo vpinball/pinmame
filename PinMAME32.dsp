@@ -823,10 +823,6 @@ SOURCE=.\src\cpu\scamp\scamp.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\scamp\scampcpu.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\cpu\scamp\scampdsm.c
 # End Source File
 # End Group
@@ -4642,6 +4638,10 @@ SOURCE=.\src\wpc\taitos.c
 # Begin Source File
 
 SOURCE=.\src\wpc\taitos.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\techno.c
 # End Source File
 # Begin Source File
 
