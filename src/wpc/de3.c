@@ -71,9 +71,6 @@ static void de_exit(void);
 static void de_nvram(void *file, int write);
 static int UsingSound = 0;
 
-//Sound Ddeclarations
-extern int des_init();
-
 /*----------------
 /  Global varibles
 /-----------------*/
