@@ -276,6 +276,7 @@ import "ocidl.idl";
 /* ! */	[propget, id(50), helpstring("property NewSoundCommands")] HRESULT NewSoundCommands([out, retval] VARIANT *pVal);
 		[propget, id(51), helpstring("property Games")] HRESULT Games([out, retval] IGames* *pVal);
 		[propget, id(52), helpstring("property Settings")] HRESULT Settings([out, retval] IControllerSettings * *pVal);
+		[propget, id(53), helpstring("property LEDigits")] HRESULT LEDigits([out, retval] VARIANT *pVal);
 	};
 
 	// WSHDlg and related interfaces

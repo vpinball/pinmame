@@ -10,9 +10,13 @@ void *get_option(const char *name);
 BOOL  WriteRegistry(char* pszKey, char* pszName, DWORD dwValue);
 DWORD ReadRegistry(char* pszKey, char* pszName, DWORD dwDefault);
 
-void Load_fileio_opts();
-void Save_fileio_opts();
-void Delete_fileio_opts();
+void LoadGlobalSettings();
+void SaveGlobalSettings();
+void DeleteGlobalSettings();
+
+void LoadGameSettings(char *szName);
+void SaveGameSettings(char *szName);
+void DeleteGameSettings(char *szName);
 
 char* GetInstallDir(char *pszInstallDir, int iSize);
 

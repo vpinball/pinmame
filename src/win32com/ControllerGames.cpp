@@ -242,14 +242,16 @@ STDMETHODIMP CGames::get_Item(VARIANT *pKey, IGame **pGame)
 			sKey = *pKey->pbstrVal;
 		else
 			sKey = pKey->bstrVal;
-		sKey.ToLower();
+		if ( sKey.Length() )
+			sKey.ToLower();
 
 		int i = 0;
 		while ( i<m_lGames ) {
 			if ( m_pGamesList[i] ) {
 				CComBSTR sGameName;
 				m_pGamesList[i]->get_Name(&sGameName);
-				sGameName.ToLower();
+				if ( sGameName.Length() )
+					sGameName.ToLower();
 				if ( sGameName==sKey )
 					break;
 			}
