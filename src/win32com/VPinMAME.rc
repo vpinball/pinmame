@@ -175,28 +175,31 @@ BEGIN
     CONTROL         100,IDC_STATIC,"Static",SS_BITMAP,7,7,133,123
     CTEXT           "Visual PinMAME\n",IDC_STATIC,150,6,160,8
     CTEXT           "Version %s",IDC_VERSION,150,16,160,8
-    CTEXT           "Based on MAME and PinMAME",IDC_STATIC,150,42,160,8
-    CTEXT           "Portions taken from MAME32 and MAMEW",IDC_STATIC,150,52,
+    CTEXT           "Based on MAME and PinMAME",IDC_STATIC,148,89,160,8
+    CTEXT           "Portions taken from MAME32 and MAMEW",IDC_STATIC,148,97,
                     160,8
-    CTEXT           "Visual PinMAME written by\nSteve Ellenoff, Tom Haukap,\n Martin Adrian and Gerrit Volkenborn",
-                    IDC_STATIC,150,87,160,24
+    CTEXT           "Visual PinMAME written by",IDC_STATIC,150,42,160,8
     CTEXT           "Copyright © 1997-2003 by the authors of MAME, MAME32, MAMEW and PinMAME",
-                    IDC_STATIC,150,63,160,16
+                    IDC_STATIC,148,111,160,16
     CTEXT           "Visual PinMAME is a COM class, designed to use the functionality of PinMAME in scripting languages.",
-                    IDC_STATIC,7,137,134,24
+                    IDC_STATIC,7,135,134,24
     CTEXT           "Copyright © 2001-2003 by the authors.",IDC_STATIC,150,
-                    116,160,8
+                    73,160,8
     CTEXT           "Thanks goes to all people involved producing MAME, MAME32, MAMEW and PinMAME for their GREAT work!!!",
                     IDC_STATIC,150,137,160,24
     CTEXT           "Build Date %s",IDC_BUILDDATE,150,27,160,8
     CONTROL         "",IDC_STATIC,"Static",SS_GRAYRECT | SS_SUNKEN,148,38,
                     162,1
-    CONTROL         "",IDC_STATIC,"Static",SS_GRAYRECT | SS_SUNKEN,148,82,
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYRECT | SS_SUNKEN,148,86,
                     162,1
     CONTROL         "",IDC_STATIC,"Static",SS_GRAYRECT | SS_SUNKEN,148,130,
                     162,1
-    CONTROL         "For the latest info: http://www.pinmame.com",IDC_STATIC,
-                    "Static",SS_LEFTNOWORDWRAP,8,168,142,9
+    CONTROL         "For the latest info:",IDC_STATIC,"Static",
+                    SS_LEFTNOWORDWRAP,8,168,55,9
+    CONTROL         "http://www.pinmame.com",IDC_HOMEPAGELINK,"Static",
+                    SS_LEFTNOWORDWRAP,68,168,83,9
+    CTEXT           "Steve Ellenoff, Tom Haukap,\n Martin Adrian and Gerrit Volkenborn",
+                    IDC_STATIC,150,53,160,15
 END
 
 IDD_DISCLAIMERDLG DIALOG  0, 0, 213, 111
