@@ -1342,6 +1342,13 @@ int osd_is_joy_pressed(int joycode)
 	switch (joytype)
 	{
 		case JOYTYPE_MOUSEBUTTON:
+			/* ActLabs lightgun - remap button 2 (shot off-screen) as button 1 */
+			if (use_lightgun && joynum==0) {
+				if (joyindex==0 && (mouse_state[0].rgbButtons[1]&0x80))
+					return 1;
+				if (joyindex==1 && (mouse_state[0].rgbButtons[1]&0x80))
+					return 0;
+			}
 			return mouse_state[joynum].rgbButtons[joyindex] >> 7;
 
 		case JOYTYPE_BUTTON:
@@ -1472,6 +1479,13 @@ void osd_lightgun_read(int player,int *deltax,int *deltay)
 	// Warning message to users - design wise this probably isn't the best function to put this in...
 	if (win_window_mode)
 		usrintf_showmessage("Lightgun not supported in windowed mode");
+
+	// Hack - if button 2 is pressed on lightgun, then return 0,0 (off-screen) to simulate reload
+	if (mouse_state[0].rgbButtons[1]&0x80) {
+		*deltax = -128;
+		*deltay = -128;
+		return;
+	}
 
 	// I would much prefer to use DirectInput to read the gun values but there seem to be
 	// some problems...  DirectInput (8.0 tested) on Win98 returns garbage for both buffered
@@ -1755,6 +1769,7 @@ void osd_customize_inputport_defaults(struct ipd *defaults)
 		{
 			seq_copy(&idef->seq, &no_alt_tab_seq);
 		}
+
 #ifdef MESS
 		if (idef->type == IPT_UI_THROTTLE)
 		{
@@ -1848,6 +1863,7 @@ void osd_customize_inputport_defaults(struct ipd *defaults)
 		// process the game-specific files for this controller
 		process_ctrlr_game (rc, ctrlrtype, Machine->gamedrv);
 
+
 		while ((input->type & ~IPF_MASK) != IPT_END)
 		{
 			switch (input->type & ~IPF_MASK)
@@ -1932,6 +1948,7 @@ void osd_customize_inputport_defaults(struct ipd *defaults)
 }
 
 
+
 //============================================================
 //	osd_get_leds
 //============================================================
@@ -1948,13 +1965,13 @@ int osd_get_leds(void)
 	{
 		BYTE key_states[256];
 
-	// get the current state
-	GetKeyboardState(&key_states[0]);
+		// get the current state
+		GetKeyboardState(&key_states[0]);
 
 		// set the numlock bit
-	result |= (key_states[VK_NUMLOCK] & 1);
-	result |= (key_states[VK_CAPITAL] & 1) << 1;
-	result |= (key_states[VK_SCROLL] & 1) << 2;
+		result |= (key_states[VK_NUMLOCK] & 1);
+		result |= (key_states[VK_CAPITAL] & 1) << 1;
+		result |= (key_states[VK_SCROLL] & 1) << 2;
 	}
 	else // WinNT/2K/XP, use DeviceIoControl
 	{
@@ -1996,8 +2013,8 @@ void osd_set_leds(int state)
 		// thanks to Lee Taylor for the original version of this code
 		BYTE key_states[256];
 
-	// get the current state
-	GetKeyboardState(&key_states[0]);
+		// get the current state
+		GetKeyboardState(&key_states[0]);
 
 		// mask states and set new states
 		key_states[VK_NUMLOCK] = (key_states[VK_NUMLOCK] & ~1) | ((state >> 0) & 1);

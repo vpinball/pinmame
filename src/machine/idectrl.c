@@ -43,9 +43,11 @@
 #define IDE_DISK_SECTOR_SIZE		512
 
 #define TIME_PER_SECTOR			(TIME_IN_USEC(100))
-#define TIME_PER_MULTISECTOR		(TIME_IN_USEC(145))
 #define TIME_PER_ROTATION		(TIME_IN_HZ(5400/60))
 #define TIME_SECURITY_ERROR		(TIME_IN_MSEC(1000))
+
+#define TIME_SEEK_MULTISECTOR		(TIME_IN_MSEC(13))
+#define TIME_NO_SEEK_MULTISECTOR	(TIME_IN_USEC(16.3))
 
 #define IDE_STATUS_ERROR			0x01
 #define IDE_STATUS_HIT_INDEX		0x02
@@ -137,6 +139,8 @@ struct ide_state
 	UINT8	cur_head;
 	UINT8	cur_head_reg;
 
+	UINT32	cur_lba;
+
 	UINT16	num_cylinders;
 	UINT8	num_sectors;
 	UINT8	num_heads;
@@ -180,6 +184,7 @@ static void ide_build_features(struct ide_state *ide);
 
 static void continue_read(struct ide_state *ide);
 static void read_sector_done(int which);
+static void read_first_sector(struct ide_state *ide);
 static void read_next_sector(struct ide_state *ide);
 
 static UINT32 ide_controller_read(struct ide_state *ide, offs_t offset, int size);
@@ -293,6 +298,8 @@ int ide_controller_init_custom(int which, struct ide_interface *intf, void *disk
 	state_save_register_UINT8 ("ide", which, "cur_sector",             &ide->cur_sector,            1);
 	state_save_register_UINT8 ("ide", which, "cur_head",               &ide->cur_head,              1);
 	state_save_register_UINT8 ("ide", which, "cur_head_reg",           &ide->cur_head_reg,          1);
+
+	state_save_register_UINT32("ide", which, "cur_lba",                &ide->cur_lba,               1);
 
 	state_save_register_UINT16("ide", which, "num_cylinders",          &ide->num_cylinders,         1);
 	state_save_register_UINT8 ("ide", which, "num_sectors",            &ide->num_sectors,           1);
@@ -417,6 +424,25 @@ INLINE int convert_to_offset_and_size16(offs_t *offset, data32_t mem_mask)
 
 /*************************************
  *
+ *	Compute the LBA address
+ *
+ *************************************/
+
+INLINE UINT32 lba_address(struct ide_state *ide)
+{
+	/* LBA direct? */
+	if (ide->cur_head_reg & 0x40)
+		return ide->cur_sector + ide->cur_cylinder * 256 + ide->cur_head * 16777216;
+
+	/* standard CHS */
+	else
+		return (ide->cur_cylinder * ide->num_heads + ide->cur_head) * ide->num_sectors + ide->cur_sector - 1;
+}
+
+
+
+/*************************************
+ *
  *	Advance to the next sector
  *
  *************************************/
@@ -452,25 +478,8 @@ INLINE void next_sector(struct ide_state *ide)
 			}
 		}
 	}
-}
 
-
-
-/*************************************
- *
- *	Compute the LBA address
- *
- *************************************/
-
-INLINE UINT32 lba_address(struct ide_state *ide)
-{
-	/* LBA direct? */
-	if (ide->cur_head_reg & 0x40)
-		return ide->cur_sector + ide->cur_cylinder * 256 + ide->cur_head * 16777216;
-
-	/* standard CHS */
-	else
-		return (ide->cur_cylinder * ide->num_heads + ide->cur_head) * ide->num_sectors + ide->cur_sector - 1;
+	ide->cur_lba = lba_address(ide);
 }
 
 
@@ -747,6 +756,28 @@ static void read_sector_done(int which)
 }
 
 
+static void read_first_sector(struct ide_state *ide)
+{
+	/* mark ourselves busy */
+	ide->status |= IDE_STATUS_BUSY;
+
+	/* just set a timer */
+	if (ide->command == IDE_COMMAND_READ_MULTIPLE_BLOCK)
+	{
+		double seek_time;
+
+		if (ide->cur_lba == lba_address(ide))
+			seek_time = TIME_NO_SEEK_MULTISECTOR;
+		else
+			seek_time = TIME_SEEK_MULTISECTOR;
+
+		timer_set(seek_time, ide - idestate, read_sector_done);
+	}
+	else
+		timer_set(TIME_PER_SECTOR, ide - idestate, read_sector_done);
+}
+
+
 static void read_next_sector(struct ide_state *ide)
 {
 	/* mark ourselves busy */
@@ -755,11 +786,11 @@ static void read_next_sector(struct ide_state *ide)
 	if (ide->command == IDE_COMMAND_READ_MULTIPLE_BLOCK)
 	{
 		if (ide->sectors_until_int != 1)
-			/* DJ main board needs next buffer immediately */
+			/* make ready now */
 			read_sector_done(ide - idestate);
 		else
 			/* just set a timer */
-			timer_set(TIME_PER_MULTISECTOR, ide - idestate, read_sector_done);
+			timer_set(TIME_IN_USEC(1), ide - idestate, read_sector_done);
 	}
 	else
 		/* just set a timer */
@@ -788,15 +819,21 @@ static void continue_write(struct ide_state *ide)
 	if (ide->command == IDE_COMMAND_WRITE_MULTIPLE_BLOCK)
 	{
 		if (ide->sectors_until_int != 1)
-			/* DJ main board needs next buffer immediately */
+		{
+			/* ready to write now */
 			write_sector_done(ide - idestate);
+		}
 		else
+		{
 			/* set a timer to do the write */
-			timer_set(TIME_PER_MULTISECTOR, ide - idestate, write_sector_done);
+			timer_set(TIME_PER_SECTOR, ide - idestate, write_sector_done);
+		}
 	}
 	else
+	{
 		/* set a timer to do the write */
 		timer_set(TIME_PER_SECTOR, ide - idestate, write_sector_done);
+	}
 }
 
 
@@ -937,7 +974,7 @@ void handle_command(struct ide_state *ide, UINT8 command)
 			ide->dma_active = 0;
 
 			/* start the read going */
-			read_next_sector(ide);
+			read_first_sector(ide);
 			break;
 
 		case IDE_COMMAND_READ_MULTIPLE_BLOCK:
@@ -950,7 +987,7 @@ void handle_command(struct ide_state *ide, UINT8 command)
 			ide->dma_active = 0;
 
 			/* start the read going */
-			read_next_sector(ide);
+			read_first_sector(ide);
 			break;
 
 		case IDE_COMMAND_READ_DMA:
@@ -964,7 +1001,7 @@ void handle_command(struct ide_state *ide, UINT8 command)
 
 			/* start the read going */
 			if (ide->bus_master_command & 1)
-				read_next_sector(ide);
+				read_first_sector(ide);
 			break;
 
 		case IDE_COMMAND_WRITE_MULTIPLE:

@@ -6,7 +6,7 @@
 
 ***************************************************************************/
 
-#include <signal.h>
+#include <math.h>
 #include "driver.h"
 #include "timer.h"
 #include "state.h"
@@ -1231,7 +1231,8 @@ void cpu_compute_scanline_timing(void)
 
 int cpu_getscanline(void)
 {
-	return (int)(timer_timeelapsed(refresh_timer) * scanline_period_inv);
+	double result = floor(timer_timeelapsed(refresh_timer) * scanline_period_inv);
+	return (int)result;
 }
 
 
@@ -1257,7 +1258,7 @@ double cpu_getscanlinetime(int scanline)
 
 	/* if it's small, just count a whole frame */
 	if (result < TIME_IN_NSEC(1))
-		result = TIME_IN_HZ(Machine->drv->frames_per_second);
+		result += TIME_IN_HZ(Machine->drv->frames_per_second);
 	return result;
 }
 

@@ -489,7 +489,9 @@ int frontend_help (const char *gamename)
 				"        MAME -showusage    for a brief list of options\n"
 				"        MAME -showconfig   for a list of configuration options\n"
 				"        MAME -createconfig to create a mame.ini\n\n"
-				"See readme.txt for a complete list of options.\n");
+				"For usage instructions, please consult the corresponding readme.\n\n"
+				"MS-DOS:   msdos.txt\n"
+				"Windows:  windows.txt\n");
 #endif /* PINMAME */
 		#else
 		showmessinfo();

@@ -3,7 +3,7 @@
 COREOBJS = $(OBJ)/version.o $(OBJ)/mame.o \
 	$(OBJ)/drawgfx.o $(OBJ)/common.o $(OBJ)/usrintrf.o $(OBJ)/ui_text.o \
 	$(OBJ)/cpuintrf.o $(OBJ)/cpuexec.o $(OBJ)/cpuint.o $(OBJ)/memory.o $(OBJ)/timer.o \
-	$(OBJ)/palette.o $(OBJ)/input.o $(OBJ)/inptport.o $(OBJ)/unzip.o \
+	$(OBJ)/palette.o $(OBJ)/input.o $(OBJ)/inptport.o $(OBJ)/config.o $(OBJ)/unzip.o \
 	$(OBJ)/audit.o $(OBJ)/info.o $(OBJ)/png.o $(OBJ)/artwork.o \
 	$(OBJ)/tilemap.o $(OBJ)/fileio.o \
 	$(OBJ)/state.o $(OBJ)/datafile.o $(OBJ)/hiscore.o \

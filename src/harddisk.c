@@ -694,6 +694,41 @@ cleanup:
 	return last_error;
 }
 
+/* DUPE BLOCK - helper method */
+/* this isn't a normal binary search method. */
+/* this allows for duplicate entries appearing next to eachother */
+/* will ALWAYS return the first entry that matches hash */
+int hard_disk_binary_search(struct hard_disk_block *blocks, UINT8 hash[16], int low, int high)
+{
+	high--;
+	while (low <= high) {
+		int mid = (low + high) >> 1;
+		int x=hard_disk_compare_hash(blocks[mid].hash, hash);
+		if (x < 0) low = mid + 1;
+		else if (x > 0) high = mid - 1;
+		else {
+			while (memcmp(blocks[mid-1].hash, blocks[mid].hash, 16) == 0) {
+				mid--;
+			}
+			return mid;
+		}
+	}
+/* this return value is specific. */
+/* this allows you to easily add the hash into this array and keep it sorted */
+/* doing a -return-1 will give you the value at which hash SHOULD reside */
+	return - (low + 1);
+}
+
+/* this method compares to byte arrays and returns which one is larger */
+/* no check is done on their length as they SHOULD be the same length */
+int hard_disk_compare_hash(const UINT8 one[16], const UINT8 two[16])
+{
+	int i;
+	for (i=0; i<16; i++) {
+		if (one[i] != two[i]) return two[i] - one[i];
+	}
+	return 0;
+}
 
 
 /*************************************
@@ -713,42 +748,73 @@ int hard_disk_compress(const char *rawfile, UINT32 offset, const char *newfile, 
 	struct MD5Context md5;
 	UINT32 blocksizebytes;
 	int totalsectors;
-	int err, block = 0;
 	clock_t lastupdate;
+	int err=0;
+	int i;
+	int block = 0;
+	UINT8 bytes;
+
+/* DUPE BLOCK */
+	/* pointer to the array of unique blocks */
+	struct hard_disk_block * unique_blocks;
+
+	/* temp cache variable used for reading blocks to confirm hashes */
+	UINT8 * temp_cache;
+
+	/* duplicate_block contains the index that the current block is a duplicate of */
+	int duplicate_block = -1;
+
+	/* temp entry used in setting the duplicate blocks map entries */
+	mapentry_t entry;
+
+	/* Md5 struct for calculating the hashes of the blocks */
+	struct MD5Context blk;
+
+	/* md5 array used */
+	UINT8 temp_md5[16];
+
+	/* identifies the last crc in the unique block list */
+	int last_crc=0;
+/* END DUPE BLOCK */
 
 	/* punt if no interface */
-	if (!interface.open)
-		SET_ERROR_AND_CLEANUP(HDERR_NO_INTERFACE);
+	if (!interface.open) SET_ERROR_AND_CLEANUP(HDERR_NO_INTERFACE);
 
 	/* verify parameters */
-	if (!rawfile || !newfile || !header)
-		SET_ERROR_AND_CLEANUP(HDERR_INVALID_PARAMETER);
+	if (!rawfile || !newfile || !header) SET_ERROR_AND_CLEANUP(HDERR_INVALID_PARAMETER);
 
 	/* open the raw file */
 	sourcefile = (*interface.open)(rawfile, "rb");
-	if (!sourcefile)
-		SET_ERROR_AND_CLEANUP(HDERR_FILE_NOT_FOUND);
+	if (!sourcefile) SET_ERROR_AND_CLEANUP(HDERR_FILE_NOT_FOUND);
 
 	/* open the diff file */
 	if (difffile)
 	{
 		comparefile = hard_disk_open(difffile, 0, NULL);
-		if (!comparefile)
-			SET_ERROR_AND_CLEANUP(HDERR_FILE_NOT_FOUND);
+		if (!comparefile) SET_ERROR_AND_CLEANUP(HDERR_FILE_NOT_FOUND);
 	}
 
 	/* create a new writeable disk with the header */
 	tempheader = *header;
 	tempheader.flags |= HDFLAGS_IS_WRITEABLE;
 	err = hard_disk_create(newfile, &tempheader);
-	if (err != HDERR_NONE)
-		SET_ERROR_AND_CLEANUP(err);
+	if (err != HDERR_NONE) SET_ERROR_AND_CLEANUP(err);
 
 	/* now open it writeable */
 	destfile = hard_disk_open(newfile, 1, comparefile);
-	if (!destfile)
-		SET_ERROR_AND_CLEANUP(HDERR_CANT_CREATE_FILE);
+	if (!destfile) SET_ERROR_AND_CLEANUP(HDERR_CANT_CREATE_FILE);
 	readbackheader = hard_disk_get_header(destfile);
+
+/* DUPE BLOCK */
+	/* allocate the unique blocks array.
+	we need enough blocks to be allocated in case each block is completely different */
+	/* NOTE: this array can be BIG bmcompm2 has over a million blocks */
+	/* if this could be allocated dynamically as needed it would be good */
+	/* but i don't know how to do that in C */
+	unique_blocks=malloc(sizeof(struct hard_disk_block) * readbackheader->totalblocks);
+	/* allocate the temp cache array */
+	temp_cache=malloc(destfile->header.blocksize * destfile->header.seclen);
+/* END DUPE BLOCK */
 
 	/* init the MD5 computation */
 	MD5Init(&md5);
@@ -757,7 +823,12 @@ int hard_disk_compress(const char *rawfile, UINT32 offset, const char *newfile, 
 	totalsectors = destfile->header.cylinders * destfile->header.heads * destfile->header.sectors;
 	blocksizebytes = destfile->header.blocksize * destfile->header.seclen;
 	memset(destfile->cache, 0, blocksizebytes);
+/* DUPE BLOCK */
+	/* zero out the cache array */
+	memset(temp_cache, 0, blocksizebytes);
+/* END DUPE BLOCK */
 	lastupdate = 0;
+
 	while (block < readbackheader->totalblocks)
 	{
 		int write_this_block = 1;
@@ -787,6 +858,92 @@ int hard_disk_compress(const char *rawfile, UINT32 offset, const char *newfile, 
 
 		/* update the MD5 */
 		MD5Update(&md5, destfile->cache, bytestomd5);
+
+/* DUPE BLOCK */
+		/* only allow duplicate block compression if the chd is NOT writable */
+		/* concerns were brought up with this and diff file writing */
+		/* this compression SHOULDn't affect anything as blocks are still loaded */
+		/* by block number, and NOT by file_offset */
+		if ((header->flags & HDFLAGS_IS_WRITEABLE)==0)
+		{
+			/* initialize our MD5 struct and MD5 the current uncompressed block */
+			/* this has some interesting effects on the very last block */
+			/* since we zero out the cache block before reading and the last */
+			/* block may not be the same size as the cache block */
+			/* we are effectively compressing zeros to the end of our raw file */
+			/* and simply ignoring them because they are excess when we decompress */
+			MD5Init(&blk);
+			MD5Update(&blk, destfile->cache, bytestomd5);
+			MD5Final(temp_md5,&blk);
+
+			/* search through the unique_blocks[?].hash list and find if the md5 */
+			/* last_crc identifies the last good element in this list */
+			duplicate_block=hard_disk_binary_search(unique_blocks,temp_md5,0,last_crc);
+
+			/* if the block doesn't exist it needs to be added, then encoded in */
+			if (duplicate_block < 0)
+			{
+				/* for this, check the binary search method above */
+				duplicate_block = -duplicate_block - 1;
+				/* move the array down one. */
+				/* i don't know if this can be done easier, or quicker */
+				/* but this works */
+				for (i=last_crc-1; i>=duplicate_block; i--) unique_blocks[i+1]=unique_blocks[i];
+
+				/* create the new record in unique blocks for this entry */
+				memcpy(unique_blocks[duplicate_block].hash,temp_md5,16);
+				unique_blocks[duplicate_block].ptr=block;
+
+				/* and update last_crc */
+				last_crc++;
+			}
+			/* else check to see if it is a good block */
+			else if (block != unique_blocks[duplicate_block].ptr)
+			{
+				/* check this hash against the one found */
+				/* we do this by reading the block at */
+				/* unique_blocks[duplicate_block].ptr into temp_cache */
+				/* and comparing them if they are equal then we proceed */
+				/* if not, then we add a new entry */
+				int current_is_good = 0;
+				do
+				{
+					/* the hash has been found. check it */
+					memset(temp_cache, 0, blocksizebytes);
+					(*interface.read)(sourcefile, unique_blocks[duplicate_block].ptr * blocksizebytes, blocksizebytes, temp_cache);
+					if (memcmp(temp_cache, destfile->cache, blocksizebytes)==0) current_is_good=1;
+					else duplicate_block++;
+				} while (current_is_good==0 && memcmp(unique_blocks[duplicate_block].hash,unique_blocks[duplicate_block+1].hash,16)==0 && duplicate_block < last_crc);
+
+				/* if the cache's don't match, then we need to add a new block */
+				/* they will have the same md5, but the above loop will find the right one */
+				/* NOTE: finding 2 md5's with different blocks proved hard */
+				/* this block SHOULD be right, but it isn't tested */
+				if (!current_is_good)
+				{
+					for (i=last_crc-1; i>=duplicate_block; i--) unique_blocks[i+1]=unique_blocks[i];
+
+					memcpy(unique_blocks[duplicate_block].hash,temp_md5,16);
+					unique_blocks[duplicate_block].ptr=block;
+					last_crc++;
+				}
+			}
+
+			/* redo the if statement because of the above may have changed it */
+			if (block != unique_blocks[duplicate_block].ptr)
+			{
+				/* update the entry */
+				destfile->map[block]=destfile->map[unique_blocks[duplicate_block].ptr];
+
+				/* update the map on disk */
+				entry = destfile->map[block];
+				byteswap_mapentry(&entry);
+				bytes = (*interface.write)(destfile->file, destfile->header.length + block * sizeof(destfile->map[0]), sizeof(entry), &entry);
+				if (bytes != sizeof(entry)) return HDERR_WRITE_ERROR;
+				write_this_block = 0;
+			}
+		}
+/* END DUPE BLOCK */
 
 		/* see if we have an exact match */
 		if (comparefile)
@@ -822,8 +979,8 @@ int hard_disk_compress(const char *rawfile, UINT32 offset, const char *newfile, 
 	if (progress)
 	{
 		UINT64 sourcepos = (UINT64)block * blocksizebytes;
-		if (sourcepos)
-			(*progress)("Compression complete ... final ratio = %d%%            \n", 100 - destfile->eof * 100 / sourcepos);
+		if (sourcepos) (*progress)("Compression complete ... final ratio = %d%%            \n", 100 - destfile->eof * 100 / sourcepos);
+		printf("Unique blocks found %d.\n",last_crc);
 	}
 
 	/* close the drives */
@@ -831,6 +988,14 @@ int hard_disk_compress(const char *rawfile, UINT32 offset, const char *newfile, 
 	if (comparefile)
 		hard_disk_close(comparefile);
 	(*interface.close)(sourcefile);
+
+/* DUPE BLOCK */
+/* kill our arrays */
+printf("freeing unique blocks\n");
+if (unique_blocks) free(unique_blocks);
+printf("freeing temp_cache\n");
+if (temp_cache) free(temp_cache);
+/* END DUPE BLOCK */
 
 	return HDERR_NONE;
 

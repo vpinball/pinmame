@@ -39,8 +39,8 @@
 #define ADDR_RST75      0x003c
 #define ADDR_INTR       0x0038
 
-#define M_INR(R) ++R; I.AF.b.l=(I.AF.b.l&CF)|ZS[R]|((R==0x80)?VF:0)|((R&0x0F)?0:HF)
-#define M_DCR(R) I.AF.b.l=(I.AF.b.l&CF)|NF|((R==0x80)?VF:0)|((R&0x0F)?0:HF); I.AF.b.l|=ZS[--R]
+#define M_INR(R) ++R; I.AF.b.l=(I.AF.b.l&CF)|ZSP[R]|((R==0x80)?VF:0)|((R&0x0F)?0:HF)
+#define M_DCR(R) I.AF.b.l=(I.AF.b.l&CF)|NF|((R==0x80)?VF:0)|((R&0x0F)?0:HF); I.AF.b.l|=ZSP[--R]
 #define M_MVI(R) R=ARG()
 
 #define M_ANA(R) I.AF.b.h&=R; I.AF.b.l=ZSP[I.AF.b.h]|HF
@@ -69,6 +69,15 @@
 	I.AF.b.h = (I.AF.b.h >> 1) | c; 							\
 }
 
+#if I8080_EXACT
+#define M_ADD(R) {							\
+int q = I.AF.b.h+R; 							\
+	I.AF.b.l=ZSP[q&255]|((q>>8)&CF)| 				\
+		((I.AF.b.h^q^R)&HF)|					\
+		(((R^I.AF.b.h^SF)&(R^q)&SF)>>5);			\
+	I.AF.b.h=q; 							\
+}
+#else
 #ifdef X86_ASM
 #define M_ADD(R)												\
  asm (															\
@@ -84,11 +93,12 @@
 #else
 #define M_ADD(R) {												\
 int q = I.AF.b.h+R; 											\
-	I.AF.b.l=ZS[q&255]|((q>>8)&CF)| 							\
+	I.AF.b.l=ZSP[q&255]|((q>>8)&CF)| 				\
 		((I.AF.b.h^q^R)&HF)|									\
 		(((R^I.AF.b.h^SF)&(R^q)&SF)>>5);						\
 	I.AF.b.h=q; 												\
 }
+#endif
 #endif
 
 #if I8080_EXACT
@@ -124,6 +134,15 @@ int q = I.AF.b.h+R; 											\
 #endif
 #endif
 
+#if I8080_EXACT
+#define M_SUB(R) {							\
+	int q = I.AF.b.h-R; 						\
+	I.AF.b.l=ZSP[q&255]|((q>>8)&CF)|NF|				\
+		((I.AF.b.h^q^R)&HF)|					\
+		(((R^I.AF.b.h)&(I.AF.b.h^q)&SF)>>5);			\
+	I.AF.b.h=q; 							\
+}
+#else
 #ifdef X86_ASM
 #define M_SUB(R)												\
  asm (															\
@@ -140,11 +159,12 @@ int q = I.AF.b.h+R; 											\
 #else
 #define M_SUB(R) {												\
 	int q = I.AF.b.h-R; 										\
-	I.AF.b.l=ZS[q&255]|((q>>8)&CF)|NF|							\
+	I.AF.b.l=ZSP[q&255]|((q>>8)&CF)|NF|				\
 		((I.AF.b.h^q^R)&HF)|									\
 		(((R^I.AF.b.h)&(I.AF.b.h^q)&SF)>>5);					\
 	I.AF.b.h=q; 												\
 }
+#endif
 #endif
 
 #if I8080_EXACT
@@ -181,6 +201,14 @@ int q = I.AF.b.h+R; 											\
 #endif
 #endif
 
+#if I8080_EXACT
+#define M_CMP(R) {                                              	\
+	int q = I.AF.b.h-R; 						\
+	I.AF.b.l=ZSP[q&255]|((q>>8)&CF)|NF|				\
+		((I.AF.b.h^q^R)&HF)|					\
+		(((R^I.AF.b.h)&(I.AF.b.h^q)&SF)>>5);			\
+}
+#else
 #ifdef X86_ASM
 #define M_CMP(R)												\
  asm (															\
@@ -197,10 +225,11 @@ int q = I.AF.b.h+R; 											\
 #else
 #define M_CMP(R) {                                              \
 	int q = I.AF.b.h-R; 										\
-	I.AF.b.l=ZS[q&255]|((q>>8)&CF)|NF|							\
+	I.AF.b.l=ZSP[q&255]|((q>>8)&CF)|NF|				\
 		((I.AF.b.h^q^R)&HF)|									\
 		(((R^I.AF.b.h)&(I.AF.b.h^q)&SF)>>5);					\
 }
+#endif
 #endif
 
 #define M_IN													\
@@ -278,7 +307,6 @@ int q = I.AF.b.h+R; 											\
 	I.PC.d = 8 * nn;											\
 	change_pc16(I.PC.d);										\
 }
-
 
 #define M_DSUB() {												\
 	int q = I.HL.b.l-I.BC.b.l;									\

@@ -103,6 +103,16 @@ void mixer_set_mixing_level(int channel,int level);
 int mixer_get_mixing_level(int level);
 int mixer_get_default_mixing_level(int level);
 
+/* configuration functions */
+
+struct mixer_config
+{
+	UINT8 default_levels[MIXER_MAX_CHANNELS];
+	UINT8 mixing_levels[MIXER_MAX_CHANNELS];
+};
+
+void mixer_load_config(const struct mixer_config *config);
+void mixer_save_config(struct mixer_config *config);
 void mixer_read_config(mame_file *f);
 void mixer_write_config(mame_file *f);
 

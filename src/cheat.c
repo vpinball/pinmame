@@ -381,6 +381,11 @@ is selected
 #include "machine/eeprom.h"
 #include <ctype.h>
 
+#ifdef MESS
+#include "cheatms.h"
+#endif
+
+
 #define OSD_READKEY_KLUDGE	1
 
 /**** Macros *****************************************************************/
@@ -870,13 +875,6 @@ static int					useClassicSearchBox = 1;
 static int					dontPrintNewLabels = 0;
 static int					autoSaveEnabled = 0;
 
-#ifdef MESS
-static UINT32				* deviceCRCList = NULL;
-static INT32				deviceCRCListLength = 0;
-
-static UINT32				thisGameCRC = 0;
-#endif
-
 extern int					uirotcharwidth, uirotcharheight;
 
 static const char *	kCheatNameTemplates[] =
@@ -1234,12 +1232,6 @@ static void		UpdateCheatInfo(CheatEntry * entry, UINT8 isLoadTime);
 static int		IsAddressInRange(CheatAction * action, UINT32 length);
 
 static void		BuildCPUInfoList(void);
-
-#ifdef MESS
-static void		BuildCRCTable(void);
-
-static int		MatchesCRCTable(UINT32 crc);
-#endif
 
 /**** Imports ****************************************************************/
 
@@ -1705,11 +1697,7 @@ void InitCheat(void)
 	searchListLength =		0;
 
 #ifdef MESS
-	deviceCRCList =			NULL;
-	deviceCRCListLength =	0;
-	thisGameCRC =			0;
-
-	BuildCRCTable();
+	InitMessCheats();
 #endif
 
 	currentSearchIdx =		0;
@@ -1777,11 +1765,7 @@ void StopCheat(void)
 	menuItemInfo = NULL;
 
 #ifdef MESS
-	free(deviceCRCList);
-	deviceCRCList = NULL;
-
-	deviceCRCListLength = 0;
-	thisGameCRC = 0;
+	StopMessCheats();
 #endif
 
 	cheatListLength =		0;
@@ -10435,61 +10419,4 @@ static void BuildCPUInfoList(void)
 		}
 	}
 }
-
-#ifdef MESS
-
-static void BuildCRCTable(void)
-{
-	int	deviceType, deviceID, listIdx;
-
-	free(deviceCRCList);
-
-	// allocate list with single member (0x00000000)
-	deviceCRCList = calloc(1, sizeof(UINT32));
-	deviceCRCListLength = 1;
-
-	for(deviceType = 0; deviceType < IO_COUNT; deviceType++)
-	{
-		for(deviceID = 0; deviceID < device_count(deviceType); deviceID++)
-		{
-			mess_image *img = image_from_devtype_and_index(deviceType, deviceID);
-			UINT32	crc = image_crc(img);
-			int		isUnique = 1;
-
-			for(listIdx = 0; listIdx < deviceCRCListLength; listIdx++)
-			{
-				if(deviceCRCList[listIdx] == crc)
-				{
-					isUnique = 0;
-
-					break;
-				}
-			}
-
-			if(isUnique)
-			{
-				if(!thisGameCRC)
-					thisGameCRC = crc;
-
-				deviceCRCList = realloc(deviceCRCList, (deviceCRCListLength + 1) * sizeof(UINT32));
-
-				deviceCRCList[deviceCRCListLength] = crc;
-				deviceCRCListLength++;
-			}
-		}
-	}
-}
-
-static int MatchesCRCTable(UINT32 crc)
-{
-	int	i;
-
-	for(i = 0; i < deviceCRCListLength; i++)
-		if(deviceCRCList[i] == crc)
-			return 1;
-
-	return 0;
-}
-
-#endif
 

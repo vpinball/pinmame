@@ -59,7 +59,7 @@
  * - modified interrupt handler to properly process 8085-specific IRQ's
  * - corrected interrupt masking, RIM and SIM behaviors according to Intel's documentation
  *
- * 20-07-2002 Krzysztof Strzecha
+ * 20-Jul-2002 Krzysztof Strzecha
  *
  * - SBB r instructions should affect parity flag.
  *   Fixed only for non x86 asm version (#define i8080_EXACT 1).
@@ -72,11 +72,16 @@
  *   0DDh, 0EDh, 0FDh                   -  CALL
  *   Thanks for the info go to Anton V. Ignatichev.
  *
- * 08-12-2002 Krzysztof Strzecha
+ * 08-Dec-2002 Krzysztof Strzecha
  *
  * - ADC r instructions should affect parity flag.
  *   Fixed only for non x86 asm version (#define i8080_EXACT 1).
  *   There are probably more opcodes which should affect this flag, but don't.
+ *
+ * 05-Sep-2003 Krzysztof Strzecha
+ *
+ * - INR r, DCR r, ADD r, SUB r, CMP r instructions should affect parity flag.
+ *   Fixed only for non x86 asm version (#define i8080_EXACT 1).
  * 
  *****************************************************************************/
 

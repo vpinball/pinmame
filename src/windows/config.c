@@ -405,6 +405,23 @@ int parse_config (const char* filename, const struct GameDriver *gamedrv)
 	return retval;
 }
 
+struct rc_struct *cli_rc_create(void)
+{
+	struct rc_struct *result;
+
+	result = rc_create();
+	if (!result)
+		return NULL;
+
+	if (rc_register(result, opts))
+	{
+		rc_destroy(result);
+		return NULL;
+	}
+
+	return result;
+}
+
 int cli_frontend_init (int argc, char **argv)
 {
 	struct InternalMachineDriver drv;
@@ -420,15 +437,10 @@ int cli_frontend_init (int argc, char **argv)
 	memset(&options,0,sizeof(options));
 
 	/* create the rc object */
-	if (!(rc = rc_create()))
+	rc = cli_rc_create();
+	if (!rc)
 	{
 		fprintf (stderr, "error on rc creation\n");
-		exit(1);
-	}
-
-	if (rc_register(rc, opts))
-	{
-		fprintf (stderr, "error on registering opts\n");
 		exit(1);
 	}
 
@@ -829,7 +841,7 @@ void CLIB_DECL logerror(const char *text,...) {
 	if (erroroslog)
 	{
 		//extern int vsnprintf(char *s, size_t maxlen, const char *fmt, va_list _arg);
-		char buffer[256];
+		char buffer[2048];
 		_vsnprintf(buffer, sizeof(buffer) / sizeof(buffer[0]), text, arg);
 		OutputDebugString(buffer);
 	}
