@@ -150,17 +150,19 @@
 /  Generic Display layout data
 /------------------------------*/
 /* The different kind of display units */
-#define CORE_SEG16    0 // 16 segements
+#define CORE_SEG16    0 // 16 segments
 #define CORE_SEG10    1 // 10 segments
 #define CORE_SEG9     2 // 10 segments
 #define CORE_SEG8     3 // 8  segments
 #define CORE_SEG7     4 // 7  segments
 #define CORE_SEG87    5 // 7  segments, comma every three
 #define CORE_SEG87F   6 // 7  segments, forced comma every three
-#define CORE_SEG7S    7 // 7  segements, small
-#define CORE_DMD      8 // DMD Display
-#define CORE_DMD2     9 // Another DMD Display
-#define CORE_VIDEO  0xa // VIDEO displ
+#define CORE_SEG98    7 // 9  segments, comma every three
+#define CORE_SEG98F   8 // 9  segments, forced comma every three
+#define CORE_SEG7S    9 // 7  segments, small
+#define CORE_DMD    0xa // DMD Display
+#define CORE_DMD2   0xb // another DMD Display
+#define CORE_VIDEO  0xc // VIDEO Display
 #define CORE_IMPORT 0xf // Link to another display layout
 
 #define CORE_SEGHIBIT 0x10
