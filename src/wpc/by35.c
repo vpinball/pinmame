@@ -57,7 +57,7 @@ static void by35_dispStrobe(int mask) {
       UINT8 dispMask = mask;
       for (jj = 0; dispMask; jj++, dispMask>>=1)
         if (dispMask & 0x01)
-          locals.segments[jj*8+ii].w |= locals.pseg[jj*8+ii].w = locals.bcd2seg[locals.bcd[jj]];
+          locals.segments[jj*8+ii].w |= locals.pseg[jj*8+ii].w = locals.bcd2seg[locals.bcd[jj] & 0x0f];
     }
 }
 
@@ -305,27 +305,31 @@ static void by35_zeroCross(int data) { pia_pulse_cb1(BY35_PIA0, 0); }
 
 
 /* Bally Prototype changes below.
-   Issues:
-   - where is the ball in play digit connected?
-   - lamps are wrong
+   Note there is no extra display for ball in play,
+   they just used 5 lights on the backglass.
+   Also the lamps are accessed along with the displays!
+   Since this required a different lamp strobing,
+   I introduced a new way of arranging the lamps which
+   makes it easier to map the lights, and saves a row.
  */
 
-static WRITE_HANDLER(piap0a_w) {
-  // lamp row & strobe
-  locals.a0 = data;
-  if (!locals.ca20) {
-    by35_lampStrobe(locals.lampadr2, locals.lampadr1);
-    // this is weird; can a counter be that accurate?
-    if (locals.lampadr1 < 0x0e)
-   	  locals.lampadr1++;
-   	else {
-      locals.lampadr1 = 0;
-      locals.lampadr2 = !locals.lampadr2;
-    }
+static void by35p_lampStrobe() {
+  int strobe = locals.a1 >> 2;
+  int ii,jj;
+  for (ii = 0; strobe; ii++, strobe>>=1) {
+    if (strobe & 0x01)
+      for (jj = 0; jj < 5; jj++) {
+        int lampdata = (locals.bcd[jj]>>4)^0x0f;
+        int lampadr = ii*5 + jj;
+        coreGlobals.tmpLampMatrix[lampadr/2] |= (lampadr%2 ? lampdata << 4 : lampdata);
+      }
   }
-  // display data
-  if (locals.lastbcd)
-    locals.bcd[--locals.lastbcd] = data & 0x0f;
+}
+// buffer lamps & display digits
+static WRITE_HANDLER(piap0a_w) {
+  locals.a0 = data;
+  if (!locals.ca20 && locals.lastbcd)
+    locals.bcd[--locals.lastbcd] = data;
 }
 // switches & dips (inverted)
 static READ_HANDLER(piap0b_r) {
@@ -340,9 +344,11 @@ static READ_HANDLER(piap0b_r) {
 // display strobe
 static WRITE_HANDLER(piap0ca2_w) {
   if (data & ~locals.ca20) {
+    locals.lastbcd = 5;
+  } else if (~data & locals.ca20) {
     by35_dispStrobe(0x1f);
+    by35p_lampStrobe();
   }
-  locals.lastbcd = 5;
   locals.ca20 = data;
 }
 // set display row
@@ -360,9 +366,8 @@ static WRITE_HANDLER(piap1b_w) {
   coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xfff87fff) | ((data & 0xf0)<<11);
   locals.solenoids |= (data & 0xf0)<<11;
 }
-//diag. LED, also lamp row reset?
+//diag. LED
 static WRITE_HANDLER(piap1ca2_w) {
-  locals.lampadr1 = locals.lampadr2 = 0;
   locals.ca21 = locals.diagnosticLed = data;
 }
 // solenoid control?
