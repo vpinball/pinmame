@@ -6,7 +6,6 @@
 #include "ControllerOptionsDlg.h"
 #include "ControllerOptions.h"
 
-#include "Registry.h"
 #include <shlobj.h>
 
 #include <atlwin.h>
@@ -318,7 +317,7 @@ public:
 
 private:
 	Controller*			m_pController;
-	PCONTROLLERPATHES	m_pControllerPathes;
+	PCONTROLLERPATHS	m_pControllerPaths;
 	bool				m_fChanged;
 
 	// helper functions
@@ -328,19 +327,19 @@ private:
 		/******************************************/
 
 		// Path Values
-		SetDlgItemText(IDC_ROMDIRS,    m_pControllerPathes->szRomDirs);
-		SetDlgItemText(IDC_CFGDIR,	   m_pControllerPathes->szCfgDir);
-		SetDlgItemText(IDC_NVRAMDIR,   m_pControllerPathes->szNVRamDir);
-		SetDlgItemText(IDC_SAMPLEDIRS, m_pControllerPathes->szSampleDirs);
-		SetDlgItemText(IDC_IMGDIR,     m_pControllerPathes->szImgDir);
+		SetDlgItemText(IDC_ROMDIRS,    m_pControllerPaths->szRomDirs);
+		SetDlgItemText(IDC_CFGDIR,	   m_pControllerPaths->szCfgDir);
+		SetDlgItemText(IDC_NVRAMDIR,   m_pControllerPaths->szNVRamDir);
+		SetDlgItemText(IDC_SAMPLEDIRS, m_pControllerPaths->szSampleDirs);
+		SetDlgItemText(IDC_IMGDIR,     m_pControllerPaths->szImgDir);
 	}
 
 	void GetControlValues() {
-		GetDlgItemText(IDC_ROMDIRS,    m_pControllerPathes->szRomDirs,    sizeof(m_pControllerPathes->szRomDirs));
-		GetDlgItemText(IDC_CFGDIR,     m_pControllerPathes->szCfgDir,     sizeof(m_pControllerPathes->szCfgDir));
-		GetDlgItemText(IDC_NVRAMDIR,   m_pControllerPathes->szNVRamDir,   sizeof(m_pControllerPathes->szNVRamDir));
-		GetDlgItemText(IDC_SAMPLEDIRS, m_pControllerPathes->szSampleDirs, sizeof(m_pControllerPathes->szSampleDirs));
-		GetDlgItemText(IDC_IMGDIR,     m_pControllerPathes->szImgDir,     sizeof(m_pControllerPathes->szImgDir));
+		GetDlgItemText(IDC_ROMDIRS,    m_pControllerPaths->szRomDirs,    sizeof(m_pControllerPaths->szRomDirs));
+		GetDlgItemText(IDC_CFGDIR,     m_pControllerPaths->szCfgDir,     sizeof(m_pControllerPaths->szCfgDir));
+		GetDlgItemText(IDC_NVRAMDIR,   m_pControllerPaths->szNVRamDir,   sizeof(m_pControllerPaths->szNVRamDir));
+		GetDlgItemText(IDC_SAMPLEDIRS, m_pControllerPaths->szSampleDirs, sizeof(m_pControllerPaths->szSampleDirs));
+		GetDlgItemText(IDC_IMGDIR,     m_pControllerPaths->szImgDir,     sizeof(m_pControllerPaths->szImgDir));
 	}
 
 	/***************************************************************/
@@ -396,7 +395,7 @@ private:
 			return 1;
 
 		// init pControllerOptions
-		m_pControllerPathes = &m_pController->m_ControllerPathes;
+		m_pControllerPaths = &m_pController->m_ControllerPaths;
 
 		/*Init Dialog*/
 		SetControlValues();
@@ -416,7 +415,7 @@ private:
 			GetControlValues();
 
 			// save them
-			PutPathes(m_pControllerPathes);
+			PutPaths(m_pControllerPaths);
 
 			// emulation is running?
 			if ( WaitForSingleObject(m_pController->m_hEmuIsRunning, 0)==WAIT_OBJECT_0 )
@@ -437,9 +436,9 @@ private:
 	}
 
 	LRESULT OnResetToDefault(WORD, UINT, HWND, BOOL&) {
-		/* Delete Pathes settings for the registry and reload them */
-		DelPathes();
-		GetPathes(m_pControllerPathes);
+		/* Delete Paths settings for the registry and reload them */
+		DelPaths();
+		GetPaths(m_pControllerPaths);
 
 		SetControlValues();
 		SetChanged(false);
@@ -473,9 +472,9 @@ private:
 	}
 };
 
-/**************************/
-/*LAUNCH THE PATHES DIALOG*/
-/**************************/
+/*************************/
+/*LAUNCH THE PATHS DIALOG*/
+/*************************/
 void ShowPathesDlg(HWND hParentWnd, Controller* pController) {
 	CPathesDlg PathesDlg;
 	PathesDlg.DoModal(hParentWnd, (LPARAM) pController);
