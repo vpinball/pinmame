@@ -251,41 +251,41 @@ static WRITE_HANDLER(disp1_w) {
 static UINT8 latch[] = {
 	0, 0, 0, 0, 0
 };
-
-static WRITE_HANDLER(latch1080_w) {
-	latch[0] = data;
-	if (data & 0xf0) {
-		locals.solenoids |= ((data & 0xf0) << 8);
-//		logerror("Write to Latch 1080 = %02x\n", data);
+static void setLatch(int no, UINT8 data, UINT8 mask, int cnt) {
+	/* table to adjust for original Atari sol numbers */
+	static UINT32 solTable[] = {
+		0x00001, 0x00010, 0x04000, 0x00040,
+		0x00002, 0x00020, 0x00008, 0x08000,
+		0x00800, 0x00004, 0x00080, 0x02000,
+		0x00400, 0x00200, 0x00100, 0x01000,
+		0x20000, 0x10000, 0x40000, 0x80000
+	};
+	latch[no] = data;
+	if (data & mask) {
+		int i;
+		for (i=0; i < cnt; i++) {
+			if (data & (0x80 >> i))
+				locals.solenoids |= solTable[4*no + i];
+		}
 	}
+}
+static WRITE_HANDLER(latch1080_w) {
+	setLatch(0, data, 0xf0, 4);
 }
 static WRITE_HANDLER(latch1084_w) {
-	latch[1] = data;
-	if (data & 0xf0) {
-		locals.solenoids |= ((data & 0xf0) << 4);
-//		logerror("Write to Latch 1084 = %02x\n", data);
-	}
+	setLatch(1, data, 0xf0, 4);
 }
 static WRITE_HANDLER(latch1088_w) {
-	latch[2] = data;
-	if (data & 0xf0) {
-		locals.solenoids |= (data & 0xf0);
-//		logerror("Write to Latch 1088 = %02x\n", data);
-	}
+	setLatch(2, data, 0xf0, 4);
 }
 static WRITE_HANDLER(latch108c_w) {
-	latch[3] = data;
-	if (data) {
-		locals.solenoids |= ((data & 0xf0) >> 4) | ((data & 0x0f) << 16);
-//		logerror("Write to Latch 108c = %02x\n", data);
-	}
+	setLatch(3, data, 0xff, 8);
 }
 /* Additional outputs on Time 2000 */
 static WRITE_HANDLER(latch508c_w) {
 	latch[4] = data;
 	if (data) {
 		locals.solenoids |= (data << 20);
-//		logerror("Write to Latch %x = %02x\n", 0x5080 + offset, data);
 	}
 }
 
