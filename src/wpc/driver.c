@@ -197,6 +197,7 @@ DRIVERNV(flashgdf)      //BY35-834: 05/80 Flash Gordon (French)
 DRIVERNV(eballdlx)      //BY35-838: 09/80 Eight Ball Deluxe
 DRIVERNV(fball_ii)      //BY35-839: 09/80 Fireball II
 DRIVERNV(embryon )      //BY35-841: 09/80 Embryon
+DRIVERNV(embryonb)      //BY35-841: 10/02 Embryon (7-digit bootleg)
 DRIVERNV(fathom  )      //BY35-842: 12/80 Fathom
 DRIVERNV(medusa  )      //BY35-845: 02/81 Medusa
 DRIVERNV(centaur )      //BY35-848: 02/81 Centaur
