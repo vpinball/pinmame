@@ -449,6 +449,7 @@ DRIVERNV(empsback)      //Star Wars - The Empire Strike Back
 // ----------------
 DRIVERNV(brvteam )      //Brave Team (1985)
 DRIVERNV(canasta )      //Canasta '86' (1986)
+DRIVERNV(pinclown)      //Pinball Clown (1988)
 
 // ----------------
 // MIDWAY GAMES

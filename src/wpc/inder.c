@@ -14,9 +14,11 @@
    ---------
 		CPU:     Z80 @ 2.5 MHz
 			INT: IRQ @ 250 Hz (4 ms)
-		IO:      DMA only
-		DISPLAY: 5 x 7 digit 7-segment panels (6 digits on Brave Team)
-		SOUND:	 AY8910 @ 2 MHz
+		IO:      DMA for earlier games,
+		         PIAs for later ones.
+		DISPLAY: 6-digit or 7-digit 7-segment panels with direct segment access
+		SOUND:	 AY8910 @ 2 MHz for earlier games,
+		         MSM6585 @ 384 kHz on Z80 CPU for later games.
  ************************************************************************************************/
 
 #include "driver.h"
@@ -24,10 +26,20 @@
 #include "core.h"
 #include "inder.h"
 #include "sound/ay8910.h"
+#include "sound/msm5205.h"
+#include "sndbrd.h"
+#include "machine/8255ppi.h"
 
 #define INDER_VBLANKFREQ   60 /* VBLANK frequency */
 #define INDER_IRQFREQ     250 /* IRQ frequency */
 #define INDER_CPUFREQ 2500000 /* CPU clock frequency */
+
+static READ_HANDLER(snd_porta_r);
+static READ_HANDLER(snd_portb_r);
+static READ_HANDLER(snd_portc_r);
+static WRITE_HANDLER(snd_porta_w);
+static WRITE_HANDLER(snd_portb_w);
+static WRITE_HANDLER(snd_portc_w);
 
 /*----------------
 /  Local variables
@@ -38,18 +50,12 @@ static struct {
   UINT8  dispSeg[5];
   UINT8  swCol[5];
   core_tSeg segments;
+  UINT8  sndCmd;
 } locals;
 
 // switches start at 50 for column 1, and each column adds 10.
 static int INDER_sw2m(int no) { return (no/10 - 4)*8 + no%10; }
 static int INDER_m2sw(int col, int row) { return 40 + col*10 + row; }
-
-static MACHINE_INIT(INDER) {
-  memset(&locals, 0, sizeof locals);
-}
-
-static MACHINE_STOP(INDER) {
-}
 
 static INTERRUPT_GEN(INDER_irq) {
   cpu_set_irq_line(INDER_CPU, 0, PULSE_LINE);
@@ -141,6 +147,109 @@ static NVRAM_HANDLER(INDER) {
 static WRITE_HANDLER(INDER_CMOS_w) { INDER_CMOS[offset] = data; }
 static READ_HANDLER(INDER_CMOS_r)  { return INDER_CMOS[offset]; }
 
+/*------------------
+/ PIA definitions
+/-------------------*/
+static READ_HANDLER(ci20_porta_r) { logerror("UNDOCUMENTED: ci20_porta_r\n"); return 0; }
+static READ_HANDLER(ci20_portb_r) { logerror("UNDOCUMENTED: ci20_portb_r\n"); return 0; }
+// switch & dip reading
+static READ_HANDLER(ci20_portc_r) {
+	if (locals.swCol[0] > 2)
+		return coreGlobals.swMatrix[locals.swCol[0]-2];
+	else
+		return core_getDip(locals.swCol[0]);
+}
+
+static READ_HANDLER(ci21_porta_r) { logerror("UNDOCUMENTED: ci21_porta_r\n"); return 0; }
+static READ_HANDLER(ci21_portb_r) { logerror("UNDOCUMENTED: ci21_portb_r\n"); return 0; }
+static READ_HANDLER(ci21_portc_r) { logerror("UNDOCUMENTED: ci21_portc_r\n"); return 0; }
+
+static READ_HANDLER(ci22_porta_r) { logerror("UNDOCUMENTED: ci22_porta_r\n"); return 0; }
+static READ_HANDLER(ci22_portb_r) { logerror("UNDOCUMENTED: ci22_portb_r\n"); return 0; }
+static READ_HANDLER(ci22_portc_r) { logerror("UNDOCUMENTED: ci22_portc_r\n"); return 0; }
+
+static READ_HANDLER(ci23_porta_r) { logerror("UNDOCUMENTED: ci23_porta_r\n"); return 0; }
+static READ_HANDLER(ci23_portb_r) { logerror("UNDOCUMENTED: ci23_portb_r\n"); return 0; }
+static READ_HANDLER(ci23_portc_r) { logerror("UNDOCUMENTED: ci23_portc_r\n"); return 0; }
+
+// define switch column
+static WRITE_HANDLER(ci20_porta_w) {
+	if (data < 0xff)
+		locals.swCol[0] = core_BitColToNum(data);
+	else
+		locals.swCol[0] = 6;
+}
+// (always 00?)
+static WRITE_HANDLER(ci20_portb_w) {
+	locals.solenoids = (locals.solenoids & 0xffff00ff) | (data << 8);
+}
+// (always ff?)
+static WRITE_HANDLER(ci20_portc_w) {
+	coreGlobals.tmpLampMatrix[7] = data ^ 0xff;
+}
+
+// sols
+static WRITE_HANDLER(ci21_porta_w) {
+	locals.solenoids = (locals.solenoids & 0xffffff00) | (data ^ 0xee);
+}
+// lamps
+static WRITE_HANDLER(ci21_portb_w) {
+	coreGlobals.tmpLampMatrix[0] = data;
+}
+// lamps
+static WRITE_HANDLER(ci21_portc_w) {
+	coreGlobals.tmpLampMatrix[1] = data ^ 0x80;
+}
+
+// lamps
+static WRITE_HANDLER(ci22_porta_w) {
+	coreGlobals.tmpLampMatrix[2] = data;
+}
+// lamps
+static WRITE_HANDLER(ci22_portb_w) {
+	coreGlobals.tmpLampMatrix[6] = data;
+}
+// lamps
+static WRITE_HANDLER(ci22_portc_w) {
+	coreGlobals.tmpLampMatrix[3] = data;
+}
+
+// lamps
+static WRITE_HANDLER(ci23_porta_w) {
+	coreGlobals.tmpLampMatrix[4] = data ^ 0x80;
+}
+// lamps
+static WRITE_HANDLER(ci23_portb_w) {
+	coreGlobals.tmpLampMatrix[5] = data ^ 0x55;
+}
+// display strobes
+static WRITE_HANDLER(ci23_portc_w) {
+  int i;
+  if ((data & 0x0f) < 8)
+    for (i=0; i < 5; i++)
+      locals.segments[8*i + (data & 0x07)].w = locals.dispSeg[i];
+}
+
+// display data
+static WRITE_HANDLER(disp16_w) {
+  locals.dispSeg[offset] = data;
+}
+
+static WRITE_HANDLER(snd_w) {
+  locals.sndCmd = data;
+}
+
+static ppi8255_interface ppi8255_intf =
+{
+	4+1,					/* 4 chips for CPU board + 1 chip for sound */
+	{ci20_porta_r, ci23_porta_r, ci22_porta_r, ci21_porta_r, snd_porta_r},	/* Port A read */
+	{ci20_portb_r, ci23_portb_r, ci22_portb_r, ci21_portb_r, snd_portb_r},	/* Port B read */
+	{ci20_portc_r, ci23_portc_r, ci22_portc_r, ci21_portc_r, snd_portc_r},	/* Port C read */
+	{ci20_porta_w, ci23_porta_w, ci22_porta_w, ci21_porta_w, snd_porta_w},	/* Port A write */
+	{ci20_portb_w, ci23_portb_w, ci22_portb_w, ci21_portb_w, snd_portb_w},	/* Port B write */
+	{ci20_portc_w, ci23_portc_w, ci22_portc_w, ci21_portc_w, snd_portc_w},	/* Port C write */
+};
+
 static MEMORY_READ_START(INDER_readmem)
   {0x0000,0x1fff, MRA_ROM},
   {0x4000,0x43ff, MRA_RAM},
@@ -148,6 +257,10 @@ static MEMORY_READ_START(INDER_readmem)
   {0x4800,0x4802, dip_r},
   {0x4805,0x4809, sw_r},
   {0x4b01,0x4b01, ay8910_0_r },
+  {0x6000,0x6003, ppi8255_0_r},
+  {0x6400,0x6403, ppi8255_1_r},
+  {0x6800,0x6803, ppi8255_2_r},
+  {0x6c00,0x6c03, ppi8255_3_r},
 MEMORY_END
 
 static MEMORY_WRITE_START(INDER_writemem)
@@ -160,6 +273,13 @@ static MEMORY_WRITE_START(INDER_writemem)
   {0x4901,0x4907, lamp_w},
   {0x4b00,0x4b00, ay8910_0_ctrl_w },
   {0x4b02,0x4b02, ay8910_0_data_w },
+  {0x6000,0x6003, ppi8255_0_w},
+  {0x6400,0x6403, ppi8255_1_w},
+  {0x6800,0x6803, ppi8255_2_w},
+  {0x6c00,0x6c03, ppi8255_3_w},
+  {0x6c20,0x6c20, snd_w},
+  {0x6c60,0x6c66, disp16_w},
+//{0x6ce0,0x6ce0, ?},
 MEMORY_END
 
 static MEMORY_WRITE_START(INDER_writemem_old)
@@ -173,7 +293,14 @@ static MEMORY_WRITE_START(INDER_writemem_old)
   {0x4b00,0x4b00, ay8910_0_common_w },
 MEMORY_END
 
-MACHINE_DRIVER_START(INDER1)
+static MACHINE_INIT(INDER) {
+  memset(&locals, 0, sizeof locals);
+}
+
+static MACHINE_STOP(INDER) {
+}
+
+MACHINE_DRIVER_START(INDER)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CPU_ADD_TAG("mcpu", Z80, INDER_CPUFREQ)
   MDRV_CPU_MEMORY(INDER_readmem, INDER_writemem)
@@ -184,11 +311,147 @@ MACHINE_DRIVER_START(INDER1)
   MDRV_DIPS(24)
   MDRV_SWITCH_CONV(INDER_sw2m,INDER_m2sw)
   MDRV_SWITCH_UPDATE(INDER)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(INDER1)
+  MDRV_IMPORT_FROM(INDER)
   MDRV_SOUND_ADD(AY8910, INDER_ay8910Int)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(INDER0)
-  MDRV_IMPORT_FROM(INDER1)
+  MDRV_IMPORT_FROM(INDER)
   MDRV_CPU_MODIFY("mcpu")
   MDRV_CPU_MEMORY(INDER_readmem, INDER_writemem_old)
+  MDRV_SOUND_ADD(AY8910, INDER_ay8910Int)
+MACHINE_DRIVER_END
+
+
+// MSM sound board section
+
+static struct {
+	int ALO;
+	int AHI;
+	int CS;
+	int PC0;
+	int MSMDATA;
+	int Reset;
+	int SoundReady;
+} sndlocals;
+
+/* MSM6585 interrupt callback */
+static void INDER_msmIrq(int data) {
+	//Write data
+	if(!sndlocals.Reset) {
+		int mdata = sndlocals.MSMDATA>>(4*sndlocals.PC0);	//PC0 determines if lo or hi nibble is fed
+		MSM5205_data_w(0, mdata&0x0f);
+	}
+	//Flip it..
+	sndlocals.PC0 = !sndlocals.PC0;
+}
+
+/* MSM6585 ADPCM CHIP INTERFACE */
+static struct MSM5205interface INDER_msm6585Int = {
+	1,					//# of chips
+	384000,				//384Khz Clock Frequency?
+	{INDER_msmIrq},		//VCLK Int. Callback
+	{MSM5205_S48_4B},	//Sample Mode
+	{75}				//Volume
+};
+
+static READ_HANDLER(INDER_MSM6585_READROM) {
+	int addr, data;
+	addr = (sndlocals.CS<<16) | (sndlocals.AHI<<8) | (sndlocals.ALO);
+	logerror("snd data=%05x\n", addr);
+	data = (UINT8)*(memory_region(REGION_USER1) + addr);
+	return data;
+}
+
+static WRITE_HANDLER(INDER_MSM6585_w) {
+	sndlocals.MSMDATA = data;
+}
+
+static READ_HANDLER(snd_porta_r) { logerror(("SND1_PORTA_R\n")); return 0; }
+static READ_HANDLER(snd_portb_r) { logerror(("SND1_PORTB_R\n")); return 0; }
+static READ_HANDLER(snd_portc_r) {
+	int data = sndlocals.PC0;
+	return data;
+}
+
+static WRITE_HANDLER(snd_porta_w) {
+	sndlocals.ALO = data;
+}
+
+static WRITE_HANDLER(snd_portb_w) {
+	sndlocals.AHI = data;
+}
+
+static WRITE_HANDLER(snd_portc_w) {
+	sndlocals.SoundReady = GET_BIT4;
+
+	//Set Reset Line on the chip
+	MSM5205_reset_w(0, GET_BIT6);
+
+	//PC0 = 1 on Reset
+	if(GET_BIT6)
+		sndlocals.PC0 = 1;
+	else {
+	//Read Data from ROM & Write Data To MSM Chip
+		int msmdata = INDER_MSM6585_READROM(0);
+		INDER_MSM6585_w(0,msmdata);
+	}
+	//Store reset value
+	sndlocals.Reset = GET_BIT6;
+}
+
+static READ_HANDLER(sndcmd_r) {
+	return locals.sndCmd;
+}
+
+static WRITE_HANDLER(sndctrl_w) {
+	sndlocals.CS = core_BitColToNum(data^0xff);
+}
+
+static MACHINE_INIT(INDERS) {
+	memset(&locals, 0, sizeof locals);
+	memset(&sndlocals, 0, sizeof sndlocals);
+
+	/* init PPI */
+	ppi8255_init(&ppi8255_intf);
+	/* init sound */
+	sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(INDER_MEMREG_SND),NULL,NULL);
+}
+
+static MACHINE_STOP(INDERS) {
+	sndbrd_0_exit();
+}
+
+static MEMORY_READ_START(indersnd_readmem)
+	{ 0x0000, 0x1fff, MRA_ROM },
+	{ 0x2000, 0x23ff, MRA_RAM },
+	{ 0x2900, 0x2900, MRA_RAM },
+	{ 0x4000, 0x4003, ppi8255_4_r},
+	{ 0x4004, 0x7fff, MRA_NOP },
+	{ 0x8000, 0x8000, sndcmd_r},
+	{ 0x8001, 0xffff, MRA_NOP },
+MEMORY_END
+
+static MEMORY_WRITE_START(indersnd_writemem)
+	{ 0x0000, 0x1fff, MWA_NOP },
+	{ 0x2000, 0x23ff, MWA_RAM },
+	{ 0x2900, 0x2900, MWA_RAM },
+	{ 0x32af, 0x32b0, MWA_NOP },
+	{ 0x4000, 0x4003, ppi8255_4_w},
+	{ 0x4004, 0x5fff, MWA_NOP },
+	{ 0x6000, 0x6000, sndctrl_w},
+	{ 0x6001, 0xffff, MWA_NOP },
+MEMORY_END
+
+MACHINE_DRIVER_START(INDERS)
+  MDRV_IMPORT_FROM(INDER)
+  MDRV_CPU_ADD_TAG("scpu", Z80, 2500000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CORE_INIT_RESET_STOP(INDERS,NULL,INDERS)
+  MDRV_CPU_MEMORY(indersnd_readmem, indersnd_writemem)
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD(MSM5205, INDER_msm6585Int)
 MACHINE_DRIVER_END
