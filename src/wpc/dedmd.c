@@ -153,8 +153,12 @@ void de2_dmd128x16_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
 
   /* See if ANY data has been written to DMD region #2 0x8100-0x8200*/
   for (ii = 0; ii < rows; ii++)
-	  for (jj = 0; jj < (cols/8); jj++)
-		  anydata += RAM2[(ii*(cols/8))+jj];
+	  for (jj = 0; jj < (cols/8); jj++) {
+		  if(RAM2[(ii*(cols/8))+jj]) {
+			  anydata=1;
+			  break;
+		  }
+	  }
 
   for (ii = 0; ii < rows; ii++) {
 	  BMTYPE *line = *lines++;
