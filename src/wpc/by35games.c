@@ -4,6 +4,7 @@
 #include "by35snd.h"
 #include "byvidpin.h"
 #include "by6803.h"
+#include "by6803snd.h"
 
 //#define DISPLAYALL
 #ifdef DISPLAYALL
@@ -40,6 +41,11 @@ static void init_##name(void) { \
   core_gameData = &name##GameData; \
 } \
 BYVP_INPUT_PORTS_START(name, 1) BYVP_INPUT_PORTS_END
+
+
+/* -------------------------------------------------------------*/
+/* All games below use CHIMES for sound - ie, no sound hardware */
+/* -------------------------------------------------------------*/
 
 /*--------------------------------
 / Freedom
@@ -106,6 +112,11 @@ BY17_ROMSTARTx88(blackjck,"728-32_2.716",0x1333c9d1,
 			  "720-20_6.716",0x0c17aa4d)
 BY17_ROMEND
 CORE_GAMEDEFNV(blackjck,"Black Jack",1978,"Bally",by35_mBY17,GAME_USES_CHIMES)
+
+/* -------------------------------------*/
+/* All games below use Sound Module -32 */
+/* -------------------------------------*/
+
 /*--------------------------------
 / Lost World
 /-------------------------------*/
@@ -157,6 +168,10 @@ BY35_SOUND32ROM("729-18_3.123",0x7b6b7d45)
 BY35_ROMEND
 CORE_GAMEDEFNV(sst,"Supersonic",1979,"Bally",by35_mBY35_32S,0)
 
+/* -------------------------------------*/
+/* All games below use Sound Module -50 */
+/* -------------------------------------*/
+
 /*--------------------------------
 / Star Trek
 /-------------------------------*/
@@ -207,6 +222,10 @@ BY35_ROMSTART888(kiss,"746-11_1.716",0x78ec7fad,
 BY35_SOUND50ROM("729-18_3.123",0x7b6b7d45)
 BY35_ROMEND
 CORE_GAMEDEFNV(kiss,"Kiss",1979,"Bally",by35_mBY35_50S,0)
+
+/* -------------------------------------*/
+/* All games below use Sound Module -51 */
+/* -------------------------------------*/
 
 /*--------------------------------
 / Future Spa
@@ -309,6 +328,10 @@ BY35_SOUND51ROM("819-09_4.716",0xa62059ca)
 BY35_ROMEND
 CORE_GAMEDEFNV(frontier,"Frontier",1980,"Bally",by35_mBY35_51S,0)
 
+/* -------------------------------------*/
+/* All games below use Sound Module -56 */
+/* -------------------------------------*/
+
 /*--------------------------------
 / Xenon
 /-------------------------------*/
@@ -344,6 +367,10 @@ BY35_SOUND57ROM("811-22_1.532",0xc49a968e,
                 "811-32_7.532",0x987e6118)
 BY35_ROMEND
 CORE_CLONEDEFNV(xenonf,xenon,"Xenon (French)",1980,"Bally",by35_mBY35_56S,0)
+
+/* -----------------------------------------------------------*/
+/* All games below use Squalk N Talk -61 (except where noted) */
+/* -----------------------------------------------------------*/
 
 /*--------------------------------
 / Flash Gordon
@@ -411,8 +438,8 @@ CORE_GAMEDEFNV(fathom  ,"Fathom",1981,"Bally",by35_mBY35_61BS,0)
 / Medusa
 /-------------------------------*/
 INITGAME(medusa  ,GEN_BY35_61B,dispBy7,FLIP_SW(FLIP_L),8)
-BY35_ROMSTARTx00(medusa  ,"845-16_2.732", 0xb0fbd1ac,
-			  "720-53_6.732", 0xc2e92f80)
+BY35_ROMSTARTx00(medusa  ,	"845-16_2.732", 0xb0fbd1ac,
+							"720-53_6.732", 0xc2e92f80)
 BY35_SOUND61ROMx008("845-01_3.532",0x32200e02,
                     "845-02_4.532",0xab95885a,
                     "845-05_5.716",0x3792a812)
@@ -473,9 +500,9 @@ BY35_SOUND61ROMx008("868-01_3.532",0xc3a16c66,
 BY35_ROMEND
 CORE_CLONEDEFNV(spectru4,spectrum, "Spectrum 4 Player",1982,"Bally",by35_mBY35_61BS,0)
 
-/*--------------------------------
-/ Speak Easy 2 Player
-/-------------------------------*/
+/*--------------------------------------------------
+/ Speak Easy 2 Player - Uses AS2518-51 Sound Board
+/--------------------------------------------------*/
 INITGAME(speakesy,GEN_BY35_51,dispBy7,FLIP_SW(FLIP_L),0)
 BY35_ROMSTARTx00(speakesy,"877-03_2.732", 0x34b28bbc,
                           "720-53_6.732", 0xc2e92f80)
@@ -483,9 +510,9 @@ BY35_SOUND51ROM("877-01_4.716",0x6534e826)
 BY35_ROMEND
 CORE_GAMEDEFNV(speakesy,"Speakeasy",1982,"Bally",by35_mBY35_51S,0)
 
-/*--------------------------------
-/ Speak Easy 4 Player
-/-------------------------------*/
+/*-------------------------------------------------
+/ Speak Easy 4 Player - Uses AS2518-51 Sound Board
+/-------------------------------------------------*/
 #define input_ports_speakes4 input_ports_speakesy
 #define init_speakes4        init_speakesy
 BY35_ROMSTARTx00(speakes4,"877-04_2.732", 0x8926f2bb,
@@ -508,9 +535,10 @@ BY35_ROMSTARTx00(rapidfir,"869-04_2.732", 0x26fdf048,
 BY35_SOUND61ROMxxx0("869-02_5.532",0x5a74cb86)
 BY35_ROMEND
 CORE_GAMEDEFNV(rapidfir,"Rapid Fire",1982,"Bally",by35_mBY35_61BS,0)
-/*--------------------------------
-/ Mr. and Mrs. Pacman
-/-------------------------------*/
+
+/*--------------------------------------
+/ Mr. and Mrs. Pacman (BY35-872: 05/82)
+/--------------------------------------*/
 static core_tLCDLayout m_mpacDisp[] = {
 { 0, 0, 1,7,CORE_SEG87},{ 0,27,17,7,CORE_SEG87},
 { 3, 0, 9,7,CORE_SEG87},{ 3,27,25,7,CORE_SEG87},
@@ -527,9 +555,9 @@ BY35_SOUND61ROMxx00("872-01_4.532",0xd21ce16d,
 BY35_ROMEND
 CORE_GAMEDEFNV(m_mpac  ,"Mr. and Mrs. PacMan",1982,"Bally",by35_mBY35_61S,0)
 
-/*----------------------------------
-/ Baby Pacman (Video/Pinball Combo)
-/----------------------------------*/
+/*-----------------------------------------------------
+/ Baby Pacman (Video/Pinball Combo) (BY133-???:  10/82)
+/-----------------------------------------------------*/
 INITGAMEVP(babypac,0,by_NoOutput,FLIP_SW(FLIP_L),0)
 BYVP_ROMSTARTx00(babypac,	"891-u2.732", 0x7f7242d1,
 							"891-u6.732", 0x6136d636,
@@ -542,9 +570,57 @@ BYVP_ROMEND
 CORE_GAMEDEFNV(babypac,"Baby Pacman (Video/Pinball Combo)",1982,"Bally",byVP_mVP1,GAME_NOT_WORKING)
 //CORE_GAMEDEFNVR90(babypac,"Baby Pacman (Video/Pinball Combo)",1982,"Bally",byVP_mVP1,GAME_NOT_WORKING)
 
-/*---------------------------------------------
-/ Granny and the Gators (Video/Pinball Combo)
-/--------------------------------------------*/
+/*same as eballdlx*/    //BY35      10/82 Eight Ball Deluxe Limited Edition
+
+/*---------------------------------------------------
+/ BMX (BY35-888: 11/82) - Uses AS2518-51 Sound Board
+/----------------------------------------------------*/
+INITGAME(bmx,GEN_BY35_51,dispBy7,FLIP_SW(FLIP_L),0)
+BY35_ROMSTARTx00(bmx,"888-03_2.732", 0x038cf1be,
+                     "720-53_6.732", 0xc2e92f80)
+BY35_SOUND51ROM0("888-02_4.532",0x5692c679)
+BY35_ROMEND
+CORE_GAMEDEFNV(bmx,"BMX",1983,"Bally",by35_mBY35_51S,0)
+
+/*-----------------------------------------------------------
+/ Grand Slam (BY35-???: 01/83) - Uses AS2888-51 Sound Board 
+/-----------------------------------------------------------*/
+INITGAME(granslam ,GEN_BY35_51,dispBy7,FLIP_SW(FLIP_L),0)
+BY35_ROMSTARTx00(granslam,	"grndslam.u2", 0x66aea9dc,
+							"grndslam.u6", 0x9e6ccea1)
+BY35_ROMEND
+CORE_GAMEDEFNV(granslam,"Grand Slam",1983,"Bally",by35_mBY35_51,GAME_NO_SOUND)
+
+/*same as cenatur*/     //BY35      06/83 Centaur II
+
+/*----------------------------------------------------------
+/ Gold Ball (BY35-???: 10/83)  - Uses AS2518-51 Sound Board
+/----------------------------------------------------------*/
+INITGAME(goldball,GEN_BY35_51,dispBy7,FLIP_SW(FLIP_L),0)
+BY35_ROMSTARTx00(goldball,	"gold2732.u2", 0x3169493c,
+							"720-5332.u6", 0xc2e92f80)
+BY35_SOUND51ROM0(			"gb_u4.532",0x2dcb0315)
+BY35_ROMEND
+CORE_GAMEDEFNV(goldball,"Gold Ball",1983,"Bally",by35_mBY35_51S,GAME_NOT_WORKING)
+
+/*********************************************************************************/
+/******* Games Below use Cheap Squeak Sound Board (Except Granny & Gators) *******/
+/*********************************************************************************/
+
+/*--------------------------------
+/ X's & O's (BY35-???: 12/83)
+/-------------------------------*/
+INITGAME(xsandos ,GEN_BY35_45,dispBy7,FLIP_SW(FLIP_L),0)
+BY35_ROMSTARTx00(xsandos ,	"x&os2732.u2", 0x068dfe5a,
+							"720-5332.u6", 0xc2e92f80)
+BY35_ROMEND
+CORE_GAMEDEFNV(xsandos ,"X's & O's",1983,"Bally",by35_mBY35_51,GAME_NO_SOUND)
+
+//??        ??/84 Mysterian
+
+/*-----------------------------------------------------------------
+/ Granny and the Gators (Video/Pinball Combo) - (BY35-???: 01/84)
+/----------------------------------------------------------------*/
 INITGAMEVP(granny,0,by_NoOutput,FLIP_SW(FLIP_L),0)
 BYVP_ROMSTART100(granny,	"cpu_u2.532", 0xd45bb956,
 							"cpu_u6.532", 0x306aa673,
@@ -559,134 +635,286 @@ BYVP_ROMEND
 CORE_GAMEDEFNV(granny,"Granny and the Gators (Video/Pinball Combo)",1984,"Bally",byVP_mVP2,GAME_NOT_WORKING)
 //CORE_GAMEDEFNVR90(granny,"Granny and the Gators (Video/Pinball Combo)",1984,"Bally",byVP_mVP2,GAME_NOT_WORKING)
 
-
 /*--------------------------------
-/ BMX
+/ Kings of Steel (BY35-???: 05/84)
 /-------------------------------*/
-INITGAME(bmx,GEN_BY35_51,dispBy7,FLIP_SW(FLIP_L),0)
-BY35_ROMSTARTx00(bmx,"888-03_2.732", 0x038cf1be,
-                     "720-53_6.732", 0xc2e92f80)
-BY35_SOUND51ROM0("888-02_4.532",0x5692c679)
-BY35_ROMEND
-CORE_GAMEDEFNV(bmx,"BMX",1983,"Bally",by35_mBY35_51S,0)
-
-/*--------------------------------
-/ Black Pyramid
-/-------------------------------*/
-INITGAME(blakpyra,GEN_BY35_51,dispBy7,FLIP_SW(FLIP_L),0)
-BY35_ROMSTARTx00(blakpyra,"blkp2732.u2", 0x600535b0,
-	                  "720-5332.u6", 0xc2e92f80)
-BY35_ROMEND
-CORE_GAMEDEFNV(blakpyra,"Black Pyramid",1984,"Bally",by35_mBY35_51,GAME_NO_SOUND)
-/*--------------------------------
-/ Cybernaut
-/-------------------------------*/
-INITGAME(cybrnaut,GEN_BY35_51,dispBy7,FLIP_SW(FLIP_L),0)
-BY35_ROMSTARTx00(cybrnaut,"cybe2732.u2", 0x0610b0e0,
-	                  "720-5332.u6", 0xc2e92f80)
-BY35_ROMEND
-CORE_GAMEDEFNV(cybrnaut,"Cybernaut",1985,"Bally",by35_mBY35_51,GAME_NO_SOUND)
-/*--------------------------------
-/ Fireball Classic
-/-------------------------------*/
-INITGAME(fbclass ,GEN_BY35_51,dispBy7,FLIP_SW(FLIP_L),0)
-BY35_ROMSTARTx00(fbclass ,"fb-class.u2", 0x32faac6c,
-	                  "720-5332.u6", 0xc2e92f80)
-BY35_ROMEND
-CORE_GAMEDEFNV(fbclass ,"Fireball Classic",1985,"Bally",by35_mBY35_51,GAME_NO_SOUND)
-/*--------------------------------
-/ Gold Ball
-/-------------------------------*/
-INITGAME(goldball,GEN_BY35_51,dispBy7,FLIP_SW(FLIP_L),0)
-BY35_ROMSTARTx00(goldball,"gold2732.u2", 0x3169493c,
-	                  "720-5332.u6", 0xc2e92f80)
-BY35_ROMEND
-CORE_GAMEDEFNV(goldball,"Gold Ball",1983,"Bally",by35_mBY35_51,GAME_NOT_WORKING)
-/*--------------------------------
-/ Kings of Steel
-/-------------------------------*/
-INITGAME(kosteel ,GEN_BY35_51,dispBy7,FLIP_SW(FLIP_L),0)
-BY35_ROMSTARTx00(kosteel ,"kngs2732.u2", 0xf876d8f2,
-	                  "720-5332.u6", 0xc2e92f80)
+INITGAME(kosteel ,GEN_BY35_45,dispBy7,FLIP_SW(FLIP_L),0)
+BY35_ROMSTARTx00(kosteel ,	"kngs2732.u2", 0xf876d8f2,
+							"720-5332.u6", 0xc2e92f80)
 BY35_ROMEND
 CORE_GAMEDEFNV(kosteel ,"Kings of Steel",1984,"Bally",by35_mBY35_51,GAME_NO_SOUND)
+
 /*--------------------------------
-/ Spy Hunter
+/ Black Pyramid (BY35-???: 07/84)
 /-------------------------------*/
-INITGAME(spyhuntr,GEN_BY35_51,dispBy7,FLIP_SW(FLIP_L),0)
-BY35_ROMSTARTx00(spyhuntr,"spy-2732.u2", 0x9e930f2d,
-	                  "720-5332.u6", 0xc2e92f80)
+INITGAME(blakpyra,GEN_BY35_45,dispBy7,FLIP_SW(FLIP_L),0)
+BY35_ROMSTARTx00(blakpyra,	"blkp2732.u2", 0x600535b0,
+							"720-5332.u6", 0xc2e92f80)
+BY35_SOUND45ROM00(			"bp_u3.532",0xa5005067,
+							"bp_u4.532",0x57978b4a)
 BY35_ROMEND
-CORE_GAMEDEFNV(spyhuntr,"Spy Hunter",1984,"Bally",by35_mBY35_51,GAME_NO_SOUND)
+CORE_GAMEDEFNV(blakpyra,"Black Pyramid",1984,"Bally",by35_mBY35_45S,GAME_IMPERFECT_SOUND)
+
 /*--------------------------------
-/ X's & O's
+/ Spy Hunter (BY35-???: 10/84)
 /-------------------------------*/
-INITGAME(xsandos ,GEN_BY35_51,dispBy7,FLIP_SW(FLIP_L),0)
-BY35_ROMSTARTx00(xsandos ,"x&os2732.u2", 0x068dfe5a,
-		          "720-5332.u6", 0xc2e92f80)
+INITGAME(spyhuntr,GEN_BY35_45,dispBy7,FLIP_SW(FLIP_L),0)
+BY35_ROMSTARTx00(spyhuntr,	"spy-2732.u2", 0x9e930f2d,
+							"720-5332.u6", 0xc2e92f80)
+BY35_SOUND45ROM00(			"spy_u3.532",0x95ffc1b8,
+							"spy_u4.532",0xa43887d0)
 BY35_ROMEND
-CORE_GAMEDEFNV(xsandos ,"X's & O's",1983,"Bally",by35_mBY35_51,GAME_NO_SOUND)
+CORE_GAMEDEFNV(spyhuntr,"Spy Hunter",1984,"Bally",by35_mBY35_45S,GAME_IMPERFECT_SOUND)
+
+//??        ??/85 Hot Shotz
+
+/*-------------------------------------
+/ Fireball Classic (BY35-???: 02/85)
+/------------------------------------*/
+INITGAME(fbclass ,GEN_BY35_45,dispBy7,FLIP_SW(FLIP_L),0)
+BY35_ROMSTARTx00(fbclass ,	"fb-class.u2", 0x32faac6c,
+							"720-5332.u6", 0xc2e92f80)
+BY35_SOUND45ROM00(			"fbc_u3.532",0x0,
+							"fbc_u4.532",0x0)
+BY35_ROMEND
+CORE_GAMEDEFNV(fbclass ,"Fireball Classic",1985,"Bally",by35_mBY35_51,GAME_NO_SOUND)
+
 /*--------------------------------
-/ Grand Slam
+/ Cybernaut (BY35-???: 05/85)
 /-------------------------------*/
-INITGAME(granslam ,GEN_BY35_51,dispBy7,FLIP_SW(FLIP_L),0)
-BY35_ROMSTARTx00(granslam,"grndslam.u2", 0x66aea9dc,
-		          "grndslam.u6", 0x9e6ccea1)
+INITGAME(cybrnaut,GEN_BY35_45,dispBy7,FLIP_SW(FLIP_L),0)
+BY35_ROMSTARTx00(cybrnaut,	"cybe2732.u2", 0x0610b0e0,
+							"720-5332.u6", 0xc2e92f80)
+BY35_SOUND45ROM00(			"cyb_u3.532",0x0,
+							"cyb_u4.532",0x0)
 BY35_ROMEND
-CORE_GAMEDEFNV(granslam,"Grand Slam",1983,"Bally",by35_mBY35_51,GAME_NO_SOUND)
+CORE_GAMEDEFNV(cybrnaut,"Cybernaut",1985,"Bally",by35_mBY35_51,GAME_NO_SOUND)
 
 /****************************************************/
 /* BALLY MPU-6803*/
 /****************************************************/
 
+//Games below use Squalk & Talk Sound Hardware
+
+/*------------------------------------
+/ Eight Ball Champ (6803-0B38: 09/85) - Manual says can work with Cheap Squeek also via operator setting
+/------------------------------------*/
+//CPU Works
+INITGAME(eballchp,0,dispBy7,FLIP_SW(FLIP_L),0)
+BY6803_ROMSTARTx4(eballchp, "u3_cpu.128", 0x025f3008)
+BY6803_SOUND_S1_x111(		"u3_snd.532", 0x4836d70d,
+							"u4_snd.532", 0x4b49d94d,
+							"u5_snd.532", 0x655441df)
+BY6803_ROMEND
+CORE_GAMEDEFNV(eballchp,"Eight Ball Champ",1985,"Bally",by_mBY6803S1,0)
+
+/*------------------------------------
+/ Beat the Clock (6803-0C70: 11/85) - ??
+/------------------------------------*/
+//CPU Works
+INITGAME(beatclck,0,dispBy7,FLIP_SW(FLIP_L),0)
+BY6803_ROMSTARTx4(beatclck,	"btc_u3.cpu", 0x9ba822ab)
+BY6803_SOUND_S1_1111(		"btc_u2.snd", 0xfd22fd2a,
+							"btc_u3.snd", 0x22311a4a,
+							"btc_u4.snd", 0xaf1cf23b,
+							"btc_u5.snd", 0x230cf329)
+BY6803_ROMEND
+CORE_GAMEDEFNV(beatclck,"Beat the Clock",1985,"Bally",by_mBY6803S1,0)
+
+/*------------------------------------
+/ Lady Luck (6803-0E34: 02/86) - Uses Cheap Squeek (Same as Last MPU-35 Line of games)
+/------------------------------------*/
+//CPU Works
+INITGAME(ladyluck,0,dispBy7,FLIP_SW(FLIP_L),0)
+BY6803_ROMSTARTx4(ladyluck,	"u3.cpu", 0x129f41f5)
+BY35_SOUND45ROM00(			"u3_snd.532", 0x1bdd6e2b,
+							"u4_snd.532", 0xe9ef01e6)
+BY6803_ROMEND
+CORE_GAMEDEFNV(ladyluck,"Lady Luck",1986,"Bally",by_mBY6803S1,GAME_NO_SOUND)
+
+// Games below use Turbo Cheap Squalk Sound Hardware
+
 /*--------------------------------
-/ MotorDome
+/ MotorDome (6803-0E14: 05/86)
 /-------------------------------*/
+//CPU & Sound Works?
 INITGAME(motrdome,0,dispBy7,FLIP_SW(FLIP_L),0)
-BY6803_ROMSTART(motrdome,	"cpu_u2.128", 0x820ca073,
-							"cpu_u3.128", 0xaae7c418)
+BY6803_ROMSTART44(motrdome,	"modm_u2.dat", 0x820ca073,
+							"modm_u3.dat", 0xaae7c418)
+BY6803_SOUND_S2_8(			"modm_u7.snd", 0x29ce4679)
 BY6803_ROMEND
-CORE_GAMEDEFNV(motrdome,"MotorDome",1986,"Bally",by_mBY6803,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(motrdome,"MotorDome",1986,"Bally",by_mBY6803S2,0)
+
+/*------------------------------------
+/ Karate Fight (6803-????: 06/86) - Proto for Black Belt?
+/------------------------------------*/
+
+/*------------------------------------
+/ Black Belt (6803-0E52: 07/86)
+/------------------------------------*/
+//CPU & Sound DOES NOT WORK! - Bad rom?
+INITGAME(blackblt,0,dispBy7,FLIP_SW(FLIP_L),0)
+BY6803_ROMSTART44(blackblt,	"u2.cpu", 0x7c771910,
+							"u3.cpu", 0xbad0f4c3)
+BY6803_SOUND_S2_8(			"blck_u7.snd",0xdb8bce07)
+BY6803_ROMEND
+CORE_GAMEDEFNV(blackblt,"Black Belt",1986,"Bally",by_mBY6803S2,0)
+
+// 1st Game to use Sounds Deluxe Sound Hardware
+
+/*------------------------------------
+/ Special Force (6803-0E47: 08/86)
+/------------------------------------*/
+//CPU & Sound Works?
+INITGAME(specforc,0,dispBy7,FLIP_SW(FLIP_L),0)
+BY6803_ROMSTART44(specforc,	"u2_revc.128", 0xd042af04,
+							"u3_revc.128", 0xd48a5eaf)
+BY6803_SOUND_S3_0000(		"u12_snd.512", 0x4f48a490,
+							"u11_snd.512", 0xb16eb713,
+							"u14_snd.512", 0x6911fa51,
+							"u13_snd.512", 0x3edda92d)
+BY6803_ROMEND
+CORE_GAMEDEFNV(specforc,"Special Force",1986,"Bally",by_mBY6803S3,0)
+
+/*------------------------------------
+/ Strange Science (6803-0E35: 10/86)
+/------------------------------------*/
+//CPU & Sound Works?
+INITGAME(strngsci,0,dispBy7,FLIP_SW(FLIP_L),0)
+BY6803_ROMSTART44(strngsci,	"cpu_u2.128", 0x2ffcf284,
+							"cpu_u3.128", 0x35257931)
+BY6803_SOUND_S2_8(			"sound_u7.256",0xbc33901e)
+BY6803_ROMEND
+CORE_GAMEDEFNV(strngsci,"Strange Science",1986,"Bally",by_mBY6803S2,0)
+
+/*------------------------------------
+/ City Slicker (6803-0E79: 03/87) 
+/------------------------------------*/
+//CPU & Sound Works?
+INITGAME(cityslck,0,dispBy7,FLIP_SW(FLIP_L),0)
+BY6803_ROMSTART44(cityslck,	"u2.128", 0x94bcf162,
+							"u3.128", 0x97cb2bca)
+BY6803_SOUND_S2_0(			"u7_snd.512",0x6941d68a)
+BY6803_ROMEND
+CORE_GAMEDEFNV(cityslck,"City Slicker",1987,"Bally",by_mBY6803S2A,0)
+
+/*------------------------------------
+/ Hardbody (6803-0E94: 03/87)
+/------------------------------------*/
+//CPU & Sound Works?
+//Switchs 8 in column 5 & Entire Column 6 must be closed for lamps to operate
+//(Might be less than switches listed, but haven't figured out which)
+INITGAME(hardbody,0,dispBy7,FLIP_SW(FLIP_L),0)
+BY6803_ROMSTART44(hardbody,	"cpu_u2.128", 0xc9248b47,
+							"cpu_u3.128", 0x31c255d0)
+BY6803_SOUND_S2_0(			"sound_u7.512",0xc96f91af)
+BY6803_ROMEND
+CORE_GAMEDEFNV(hardbody,"Hardbody",1987,"Bally",by_mBY6803S2A,0)
+
+// Games below use Sounds Deluxe Sound Hardware
 
 /*--------------------------------
-/ Party Animal
+/ Party Animal (6803-0H01: 05/87)
 /-------------------------------*/
+//CPU & Sound Works?
 INITGAME(prtyanim,0,dispBy7,FLIP_SW(FLIP_L),0)
-BY6803_ROMSTART(prtyanim,	"cpu_u2.128", 0xabdc0b2d,
+BY6803_ROMSTART44(prtyanim,	"cpu_u2.128", 0xabdc0b2d,
 							"cpu_u3.128", 0xe48b2d63)
+BY6803_SOUND_S3_0000(		"snd_u12.512", 0x265a9494,
+							"snd_u11.512", 0x20be998f,
+							"snd_u14.512", 0x639b3db1,
+							"snd_u13.512", 0xb652597b)
 BY6803_ROMEND
-CORE_GAMEDEFNV(prtyanim,"Party Animal",1987,"Bally",by_mBY6803,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(prtyanim,"Party Animal",1987,"Bally",by_mBY6803S3,0)
 
-/*--------------------------------
-/ Heavy Metal Meltdown
-/-------------------------------*/
+/*-----------------------------------------
+/ Heavy Metal Meltdown (6803-0H03: 08/87)
+/-----------------------------------------*/
+//CPU Works & Sound Does NOT Work!
+//
+//3 Different Sources claim that this games only uses U11&U12..
+//Must be correct, as it DOES pass the start up test.
 INITGAME(hvymetal,0,dispBy7,FLIP_SW(FLIP_L),0)
-BY6803_ROMSTART(hvymetal,	"cpu_u2.128", 0x53466e4e,
-							"cpu_u3.128", 0x0a08ae7e)
+BY6803_ROMSTART44(hvymetal,	"u2.rom", 0x53466e4e,
+							"u3.rom", 0x0a08ae7e)
+BY6803_SOUND_S3_00xx(		"u12.rom",0x77933258,
+							"u11.rom",0xb7e4de7d)
 BY6803_ROMEND
-CORE_GAMEDEFNV(hvymetal,"Heavy Metal Meltdown",1987,"Bally",by_mBY6803,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(hvymetal,"Heavy Metal Meltdown",1987,"Bally",by_mBY6803S3,0)
 
-/*--------------------------------
-/ Blackwater 100
-/-------------------------------*/
-INITGAME(bw100,0,dispBy7,FLIP_SW(FLIP_L),0)
-BY6803_ROMSTART(bw100,	"cpu_u2.128", 0x411fa773,
-						"cpu_u3.128", 0xd6f6f890)
+/*------------------------------------
+/ Dungeons & Dragons (6803-0H06: 10/87)
+/------------------------------------*/
+//CPU & Sound Works?
+INITGAME(dungdrag,0,dispBy7,FLIP_SW(FLIP_L),0)
+BY6803_ROMSTART44(dungdrag,	"cpu_u2.128", 0xcefd4330,
+							"cpu_u3.128", 0x4bacc7f5)
+BY6803_SOUND_S3_0000(		"snd_u12.512", 0xdd95f851,
+							"snd_u11.512", 0xdcd461b3,
+							"snd_u14.512", 0xdd9e61eb,
+							"snd_u13.512", 0x1e2d9211)
 BY6803_ROMEND
-CORE_GAMEDEFNV(bw100,"Blackwater 100",1988,"Bally",by_mBY6803,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(dungdrag,"Dungeons & Dragons",1987,"Bally",by_mBY6803S3,0)
 
-/*--------------------------------
-/ Atlantis
-/-------------------------------*/
+/*------------------------------------------------
+/ Escape from the Lost World (6803-0H05: 01/88)
+/-----------------------------------------------*/
+//CPU & Sound Works?
+INITGAME(esclwrld,0,dispBy7,FLIP_SW(FLIP_L),0)
+BY6803_ROMSTART44(esclwrld,	"u2.128", 0xb11a97ea,
+							"u3.128", 0x5385a562)
+BY6803_SOUND_S3_0000(		"u12.512", 0x0c003473,
+							"u11.512", 0x360f6658,
+							"u14.512", 0x0b92afff,
+							"u13.512", 0xb056842e)
+BY6803_ROMEND
+CORE_GAMEDEFNV(esclwrld,"Escape from the Lost World",1988,"Bally",by_mBY6803S3,0)
+
+/*------------------------------------
+/ Blackwater 100 (6803-0H07: 03/88)
+/------------------------------------*/
+//CPU & Sound Works?
+INITGAME(black100,0,dispBy7,FLIP_SW(FLIP_L),0)
+BY6803_ROMSTART44(black100,	"u2.cpu", 0x411fa773,
+							"u3.cpu", 0xd6f6f890)
+BY6803_SOUND_S3_0000(		"u12.bin", 0xa0ecb282,
+							"u11.bin", 0x3f117ba3,
+							"u14.bin", 0xb45bf5c4,
+							"u13.bin", 0xf5890443)
+BY6803_ROMEND
+CORE_GAMEDEFNV(black100,"Blackwater 100",1988,"Bally",by_mBY6803S3,0)
+
+//Games below use 6803 MPU & Williams System 11C Sound Hardware
+
+/*-------------------------------------------------------------
+/ Truck Stop (6803-2001: 12/88) - These are ProtoType ROMS?
+/-------------------------------------------------------------*/
+//CPU & Sound Works?
+INITGAME(truckstp,0,dispBy7,FLIP_SW(FLIP_L),0)
+BY6803_ROMSTART44(truckstp,	"u2_p2.128", 0x3c397dec,
+							"u3_p2.128", 0xd7ac519a)
+BY6803_SOUND_S4_888(		"u4sndp1.256",0x120a386f,
+							"u19sndp1.256",0x5cd43dda,
+							"u20sndp1.256",0x93ac5c33)
+BY6803_ROMEND
+CORE_GAMEDEFNV(truckstp,"Truck Stop",1988,"Bally",by_mBY6803S4,0)
+
+/*-----------------------------------------------------------
+/ Atlantis (6803-2006: 03/89)
+/-----------------------------------------------------------*/
+//CPU (No lights) & Sound Works?
+//Does NOT appear to be switch problem, but not sure what it is!
 INITGAME(atlantis,0,dispBy7,FLIP_SW(FLIP_L),0)
-BY6803_ROMSTART(atlantis,	"cpu_u2.128", 0xb98491e1,
-							"cpu_u3.128", 0x8ea2b4db)
+BY6803_ROMSTART44(atlantis,	"u26_cpu.rom", 0xb98491e1,
+							"u27_cpu.rom", 0x8ea2b4db)
+BY6803_SOUND_S4_888(		"u4_snd.rom",0x6a48b588,
+							"u19_snd.rom",0x1387467c,
+							"u20_snd.rom",0xd5a6a773)
 BY6803_ROMEND
-CORE_GAMEDEFNV(atlantis,"Atlantis",1989,"Bally",by_mBY6803,GAME_NOT_WORKING)
-
+CORE_GAMEDEFNV(atlantis,"Atlantis",1989,"Bally",by_mBY6803S4,GAME_NOT_WORKING)
 
 /****************************************************/
-/* STERN MPU-100 (almost identical to Bally MPU-17) */
+/* STERN MPU-100 (almost identicawl to Bally MPU-17) */
 /****************************************************/
 
 /*--------------------------------
