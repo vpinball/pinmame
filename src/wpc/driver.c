@@ -480,6 +480,7 @@ DRIVERNV(magic)         //MPU-100: 08/79 Magic
 DRIVERNV(princess)      //MPU-100: 08/79 Cosmic Princess
 // MPU-200 - Sound Board: SB-300
 DRIVERNV(meteor)        //MPU-200: 09/79 Meteor
+DRIVERNV(meteorb)       //MPU-200: 09/79 Meteor (7-Digit Bootleg)
 DRIVERNV(galaxy)        //MPU-200: 01/80 Galaxy
 DRIVERNV(ali)           //MPU-200: 03/80 Ali
 DRIVERNV(biggame)       //MPU-200: 03/80 Big Game
