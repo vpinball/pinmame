@@ -34,7 +34,7 @@ INITGAME(brvteam, inderDisp6, 1, 0,0,0,0,0)
 INDER_ROMSTART(brvteam,	"brv-tea.m0", CRC(1fa72160) SHA1(0fa779ce2604599adff1e124d0b161b69094a614),
 						"brv-tea.m1", CRC(4f02ca47) SHA1(68ec7d48c335a1ddd808feaeccac04a4f63d1a33))
 INDER_ROMEND
-CORE_GAMEDEFNV(brvteam,"Brave Team",1985,"Inder (Spain)",gl_mINDER0,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(brvteam,"Brave Team",1985,"Inder (Spain)",gl_mINDER0,0)
 
 /*-------------------------------------------------------------------
 / Canasta '86' (1986)
@@ -46,7 +46,7 @@ INDER_ROMEND
 CORE_GAMEDEFNV(canasta,"Canasta '86'",1986,"Inder (Spain)",gl_mINDER1,0)
 
 /*-------------------------------------------------------------------
-/ Pinball Clown (1988)
+/ Clown (1988)
 /-------------------------------------------------------------------*/
 INITGAME(pinclown, inderDisp7, 1, 0,0,0,0,0)
 INDER_ROMSTART1(pinclown,"clown_a.bin", CRC(b7c3f9ab) SHA1(89ede10d9e108089da501b28f53cd7849f791a00))
@@ -56,4 +56,4 @@ INDER_SNDROM4(			"clown_b.bin", CRC(acb16108) SHA1(b9003bac44b8bac406950ffb6696e
 						"clown_e.bin", CRC(98263526) SHA1(509764e65847637824ba93f7e6ce926501c431ce),
 						"clown_f.bin", CRC(5f01b531) SHA1(116b1670ef4d5c054bb09dc55aa7d5d3ca047079))
 INDER_ROMEND
-CORE_GAMEDEFNV(pinclown,"Pinball Clown",1988,"Inder (Spain)",gl_mINDERS,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(pinclown,"Clown (Inder)",1988,"Inder (Spain)",gl_mINDERS,GAME_IMPERFECT_SOUND)

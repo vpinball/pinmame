@@ -17,7 +17,8 @@
 		IO:      DMA for earlier games,
 		         PIAs for later ones.
 		DISPLAY: 6-digit or 7-digit 7-segment panels with direct segment access
-		SOUND:	 AY8910 @ 2 MHz for earlier games,
+		SOUND:	 TI76489 @ 2 MHz for Brave Team
+				 AY8910 @ 2 MHz for Canasta86,
 		         MSM5205 @ 384 kHz on Z80 CPU for later games.
  ************************************************************************************************/
 
@@ -122,8 +123,17 @@ static WRITE_HANDLER(sol_w) {
   locals.solenoids |= data;
 }
 
+/*-------------------------------------------------------
+/ Brave Team: Using a TI76489 chip, equivalent to 76496.
+/--------------------------------------------------------*/
+struct SN76496interface INDER_ti76489Int = {
+	1,	/* total number of chips in the machine */
+	{ 2000000 },	/* base clock 2 MHz (or 4 MHz?) */
+	{ 75 }	/* volume */
+};
+
 /*--------------------------------------------------
-/ Sound section. Just a 8910 onboard, no extra ROMs.
+/ Canasta 86: Using a AY8910 chip, no extra ROMs.
 /---------------------------------------------------*/
 struct AY8910interface INDER_ay8910Int = {
 	1,			/* 1 chip */
@@ -256,7 +266,6 @@ static MEMORY_READ_START(INDER_readmem)
   {0x4400,0x44ff, INDER_CMOS_r},
   {0x4800,0x4802, dip_r},
   {0x4805,0x4809, sw_r},
-  {0x4b01,0x4b01, ay8910_0_r },
   {0x6000,0x6003, ppi8255_0_r},
   {0x6400,0x6403, ppi8255_1_r},
   {0x6800,0x6803, ppi8255_2_r},
@@ -264,15 +273,11 @@ static MEMORY_READ_START(INDER_readmem)
 MEMORY_END
 
 static MEMORY_WRITE_START(INDER_writemem)
-  {0x2000,0x20ff, disp_w},
   {0x4000,0x43ff, MWA_RAM},
   {0x4400,0x44ff, INDER_CMOS_w, &INDER_CMOS},
-//{0x4800,0x4805, ?}, // unknown stuff here
   {0x4806,0x480a, sw_w},
   {0x4900,0x4900, sol_w},
   {0x4901,0x4907, lamp_w},
-  {0x4b00,0x4b00, ay8910_0_ctrl_w },
-  {0x4b02,0x4b02, ay8910_0_data_w },
   {0x6000,0x6003, ppi8255_0_w},
   {0x6400,0x6403, ppi8255_1_w},
   {0x6800,0x6803, ppi8255_2_w},
@@ -282,7 +287,16 @@ static MEMORY_WRITE_START(INDER_writemem)
 //{0x6ce0,0x6ce0, ?},
 MEMORY_END
 
-static MEMORY_WRITE_START(INDER_writemem_old)
+static MEMORY_READ_START(INDER1_readmem)
+  {0x0000,0x1fff, MRA_ROM},
+  {0x4000,0x43ff, MRA_RAM},
+  {0x4400,0x44ff, INDER_CMOS_r},
+  {0x4800,0x4802, dip_r},
+  {0x4805,0x4809, sw_r},
+  {0x4b01,0x4b01, ay8910_0_r },
+MEMORY_END
+
+static MEMORY_WRITE_START(INDER1_writemem)
   {0x2000,0x20ff, disp_w},
   {0x4000,0x43ff, MWA_RAM},
   {0x4400,0x44ff, INDER_CMOS_w, &INDER_CMOS},
@@ -290,7 +304,31 @@ static MEMORY_WRITE_START(INDER_writemem_old)
   {0x4806,0x480a, sw_w},
   {0x4900,0x4900, sol_w},
   {0x4901,0x4907, lamp_w},
-  {0x4b00,0x4b00, ay8910_0_common_w },
+  {0x4b00,0x4b00, ay8910_0_ctrl_w },
+  {0x4b02,0x4b02, ay8910_0_data_w },
+MEMORY_END
+
+static WRITE_HANDLER(sound_old_w) {
+  SN76496_0_w(0, core_revbyte(data));
+}
+
+static MEMORY_READ_START(INDER0_readmem)
+  {0x0000,0x1fff, MRA_ROM},
+  {0x4000,0x43ff, MRA_RAM},
+  {0x4400,0x44ff, INDER_CMOS_r},
+  {0x4800,0x4802, dip_r},
+  {0x4805,0x4809, sw_r},
+MEMORY_END
+
+static MEMORY_WRITE_START(INDER0_writemem)
+  {0x2000,0x20ff, disp_w},
+  {0x4000,0x43ff, MWA_RAM},
+  {0x4400,0x44ff, INDER_CMOS_w, &INDER_CMOS},
+//{0x4800,0x4805, ?}, // unknown stuff here
+  {0x4806,0x480a, sw_w},
+  {0x4900,0x4900, sol_w},
+  {0x4901,0x4907, lamp_w},
+  {0x4b00,0x4b00, sound_old_w},
 MEMORY_END
 
 static MACHINE_INIT(INDER) {
@@ -312,14 +350,16 @@ MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(INDER1)
   MDRV_IMPORT_FROM(INDER)
+  MDRV_CPU_MODIFY("mcpu")
+  MDRV_CPU_MEMORY(INDER1_readmem, INDER1_writemem)
   MDRV_SOUND_ADD(AY8910, INDER_ay8910Int)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(INDER0)
   MDRV_IMPORT_FROM(INDER)
   MDRV_CPU_MODIFY("mcpu")
-  MDRV_CPU_MEMORY(INDER_readmem, INDER_writemem_old)
-  MDRV_SOUND_ADD(AY8910, INDER_ay8910Int)
+  MDRV_CPU_MEMORY(INDER0_readmem, INDER0_writemem)
+  MDRV_SOUND_ADD(SN76496, INDER_ti76489Int)
 MACHINE_DRIVER_END
 
 
