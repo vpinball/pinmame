@@ -106,6 +106,7 @@
 #define GTS3_MEMREG_CPU		REGION_CPU1
 #define GTS3_MEMREG_DCPU1	REGION_CPU2
 #define GTS3_MEMREG_SCPU1	REGION_CPU3
+#define GTS3_MEMREG_SCPU2	REGION_CPU4
 #define GTS3_MEMREG_SROM1	REGION_SOUND1
 
 
@@ -135,9 +136,13 @@
 /*-- These are only here so the game structure can be in the game file --*/
 extern struct MachineDriver machine_driver_GTS3_1;
 extern struct MachineDriver machine_driver_GTS3_2;
+extern struct MachineDriver machine_driver_GTS3_2S;
+
+extern void UpdateSoundLEDS(int num,int data);
 
 #define mGTS3         GTS3_1
 #define mGTS3DMD      GTS3_2
+#define mGTS3DMDS     GTS3_2S
 
 #endif /* INC_GTS3 */
 

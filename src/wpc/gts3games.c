@@ -1,6 +1,7 @@
 #include "driver.h"
 #include "sim.h"
 #include "GTS3.h"
+#include "gts3sound.h"
 
 /* ROM STATUS
 N = No Lead, L = Have a Lead on Rom
@@ -198,8 +199,12 @@ CORE_GAMEDEFNV(smbmush,"Super Mario Brothers Mushroom World",1992,"Gottlieb",mGT
 INITGAME2(cueball, DMD, FLIP8182, 3/*?*/)
 GTS3ROMSTART(cueball,	"gprom.bin",0x3437fdd8)
 GTS3_DMD256_ROMSTART(	"dsprom.bin",0x3cc7f470)
+GTS3SOUND32256(			"yrom1.bin",0xc22f5cc5,
+						"drom1.bin",0x9fd04109,
+						"arom1.bin",0x476bb11c,
+						"arom2.bin",0x23708ad9)
 GTS3_ROMEND
-CORE_GAMEDEFNV(cueball,"Cue Ball Wizard",1992,"Gottlieb",mGTS3DMD, GAME_NO_SOUND)
+CORE_GAMEDEFNV(cueball,"Cue Ball Wizard",1992,"Gottlieb",mGTS3DMDS, 0)
 
 /************************************************/
 /* ALL GAMES BELOW HAD IMPROVED DIAGNOSTIC TEST */
