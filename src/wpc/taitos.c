@@ -43,7 +43,7 @@ MEMORY_READ_START(taitos_readmem)
   { 0x0080, 0x03ff, MRA_NOP },
   { 0x0400, 0x0403, pia_r(SP_PIA0) },
   { 0x0800, 0x1fff, MRA_ROM }, // 0x800 - 0xfff for sureshot
-  { 0x3000, 0x3fff, MRA_ROM }, // for sharkt
+  { 0x2000, 0x3fff, MRA_ROM }, // for sharkt & lunelle
   { 0xf800, 0xffff, MRA_ROM }, // reset vector
 MEMORY_END
 
