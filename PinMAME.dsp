@@ -3567,6 +3567,10 @@ SOURCE=src\wpc\byvidpin.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\Capcom.c
+# End Source File
+# Begin Source File
+
 SOURCE=src\wpc\core.c
 
 !IF  "$(CFG)" == "PinMAME - Win32 Release"

@@ -32,6 +32,7 @@ DRVLIBS += $(PINOBJ)/se.o
 DRVLIBS += $(PINOBJ)/gts80.o $(PINOBJ)/gts80s.o
 DRVLIBS += $(PINOBJ)/by35.o $(PINOBJ)/by35snd.o
 DRVLIBS += $(PINOBJ)/by6803.o
+DRVLIBS += $(PINOBJ)/capcom.o
 DRVLIBS += $(PINOBJ)/hnk.o $(PINOBJ)/hnks.o
 #DRVLIBS += $(PINOBJ)/zac.o
 #DRVLIBS += $(PINOBJ)/gp.o
@@ -120,6 +121,7 @@ CPUS += Z80@
 CPUS += M6502@
 CPUS += M65C02@
 CPUS += M68000@
+CPUS += M68306@
 CPUS += S2650@
 CPUS += 8080@
 

@@ -630,5 +630,6 @@ DRIVER(tfdmd,l3)        //WPC:              Test fixture DMD
 DRIVER(tfs,12)          //WPC-648:          Test fixture Security
 DRIVER(tfa,13)          //WPC:              Test fixture Alphanumeric
 DRIVER(tf95,12)         //WPC-648:          Test fixture WPC95
+DRIVERNV(pinmagic)
 #endif /* DRIVER_RECURSIVE */
 
