@@ -55,6 +55,8 @@ private:
 	DWORD m_dwChecksum;
 	DWORD m_dwExpChecksum;
 	DWORD m_dwRegionFlags;
+
+	DWORD GetChecksumFromHash(char* szHash);
 };
 
 #endif // CONTROLLERROM_H
