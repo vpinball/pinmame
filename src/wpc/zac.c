@@ -14,7 +14,6 @@
 #include "zacsnd.h"
 
 #define ZAC_VBLANKFREQ    60 /* VBLANK frequency */
-#define ZAC_OLDIRQFREQ   130 /* IRQ frequency (guessed) */
 
 static WRITE_HANDLER(ZAC_soundCmd) { }
 static void ZAC_soundInit(void) {
@@ -108,6 +107,14 @@ static NVRAM_HANDLER(ZAC2) {
 
 //Generate the IRQ
 static INTERRUPT_GEN(ZAC_irq) {
+/*
+	static char s[3] = { ' ', ' ', ' ' };
+	static int delay = 148;
+	static int count = 0;
+	if (keyboard_pressed_memory(KEYCODE_Z)) { delay--; sprintf(s, "%3d", delay); core_textOut(s, 3, 25, 5, 5); }
+	if (keyboard_pressed_memory(KEYCODE_X)) { delay++; sprintf(s, "%3d", delay); core_textOut(s, 3, 25, 5, 5); }
+	if (count > delay) { cpu_set_irq_line(ZAC_CPUNO, 0, PULSE_LINE); count = 0; } else count++;
+*/
 //	logerror("%x: IRQ\n",activecpu_get_previouspc());
 	cpu_set_irq_line(ZAC_CPUNO, 0, PULSE_LINE);
 }
@@ -501,7 +508,7 @@ MACHINE_DRIVER_START(ZAC)
   MDRV_CPU_MEMORY(ZAC_readmem, ZAC_writemem)
   MDRV_CPU_PORTS(ZAC_readport, ZAC_writeport)
   MDRV_CPU_VBLANK_INT(ZAC_vblank_old, 1)
-  MDRV_CPU_PERIODIC_INT(ZAC_irq, ZAC_OLDIRQFREQ)
+  MDRV_CPU_PERIODIC_INT(ZAC_irq, 169) /* (guessed) */
   MDRV_NVRAM_HANDLER(ZAC1)
   MDRV_DIPS(4)
   MDRV_SWITCH_UPDATE(ZAC1)
@@ -544,7 +551,7 @@ MACHINE_DRIVER_START(ZAC2)
   MDRV_CPU_MEMORY(ZAC_readmem2, ZAC_writemem2)
   MDRV_CPU_PORTS(ZAC_readport, ZAC_writeport)
   MDRV_CPU_VBLANK_INT(ZAC_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(ZAC_irq, 431)
+  MDRV_CPU_PERIODIC_INT(ZAC_irq, 431) /* (guessed) */
   MDRV_NVRAM_HANDLER(ZAC2)
   MDRV_DIPS(4)
   MDRV_SWITCH_UPDATE(ZAC2)
