@@ -1,6 +1,53 @@
 #ifndef INC_BYVP
 #define INC_BYVP
 
+/* DIP SWITCH SETTINGS: 
+
+ 05 04 03 02 01 (Right Side Coin Chute)		Credits Per Coin
+ 13 12 11 10 09 (Left Side Coin Chute)
+ --------------
+  0 0 0 0 0  1/1 Coin
+  ....
+  1 1 1 1 1  2/5 Coins
+
+  01 - 05 (See Coin Settings Above)
+  06 = Memory for Center Arrow (ON = YES, OFF = NO)
+  07 = Show Fruit @ Start of Game (ON = YES, OFF = NO)
+  08 = Side Tunnels Open @ Start of Game (ON = YES, OFF = NO)
+  09 - 13 (See Coin Settings Above)
+  14 = Outhole Ball Adjustmeng:
+       (ON = After 3 Ball ejects and no score, ball still in play!)
+	   (OFF = After 3 Ball ejects and no score, maze will lite)
+
+  15 = Energizer Stays On From Pac To Pac (ON = YES, OFF = NO)
+  16 = Operate Pinball w/o Video Portion (for troubleshooting)
+  17 = ??
+  18 = ??
+  19 = ??
+  20 = ??
+  21 = ??
+  23 22 Special Given When Completing X # of mazes
+  -----
+   x  0 Complete 3 Mazes for a Special
+   0  1 Complete 4 Mazes for a Special
+   1  1 Complete 5 Mazes for a Special
+
+  24 = Playfield Drain Keeps Center Arrows
+  25 = ??
+  26 = ??
+  27 = Display # of Credits
+  28 = ??
+  29 = ??
+  30 = Free Play? (ON = YES, OFF = NO)
+
+  32 31	# of Pacman (Lives) per game
+  -----
+  0   0  3
+  0   1  5
+  1   0  4
+  1   1  2
+*/
+
 #include "core.h"
 #include "wpcsam.h"
 #include "sim.h"
@@ -9,22 +56,26 @@
 #define BYVP_LAMPSMOOTH      4 /* Smooth the lamps over this number of VBLANKS */
 #define BYVP_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKS */
 
-/*-- Common Inports for BY35 Games --*/
+/*-- Common Inports for BY_VP Games --*/
 #define BYVP_COMPORTS \
   PORT_START /* 0 */ \
-    /* Switch Column 1 (Switches #3 & #6)*/ \
-    COREPORT_BITDEF(  0x0001, IPT_START2,        KEYCODE_2)  \
-    COREPORT_BITDEF(  0x0008, IPT_START1,        KEYCODE_1)  \
-    /* Switch Column 2 (Switches #2,#3,#7,#8)*/ \
-    COREPORT_BITDEF(  0x0010, IPT_COIN1,          IP_KEY_DEFAULT) \
-    COREPORT_BITDEF(  0x0020, IPT_COIN2,          IP_KEY_DEFAULT) \
-	COREPORT_BIT(     0x0200, "Ball Tilt",        KEYCODE_DEL)  \
-    COREPORT_BIT(     0x0400, "Slam Tilt",        KEYCODE_HOME)  \
     /* These are put in switch column 0 */ \
-    COREPORT_BIT(     0x0800, "Self Test",        KEYCODE_7) \
-    COREPORT_BIT(     0x1000, "CPU Diagnostic",   KEYCODE_9) \
-    COREPORT_BIT(     0x2000, "Sound Diagnostic", KEYCODE_0) \
-    COREPORT_BIT(     0x4000, "Video Diagnostic", KEYCODE_8) \
+    COREPORT_BIT(     0x0001, "Self Test",        KEYCODE_7) \
+    COREPORT_BIT(     0x0002, "CPU Diagnostic",   KEYCODE_9) \
+    COREPORT_BIT(     0x0004, "Sound Diagnostic", KEYCODE_0) \
+    COREPORT_BIT(     0x0008, "Video Diagnostic", KEYCODE_8) \
+	COREPORT_BIT(	  0x0010, "Joystick Right",	  KEYCODE_RIGHT) \
+    COREPORT_BIT(	  0x0020, "Joystick Left",	  KEYCODE_LEFT) \
+	COREPORT_BIT(	  0x0040, "Joystick Down",	  KEYCODE_DOWN) \
+	COREPORT_BIT(	  0x0080, "Joystick Up",	  KEYCODE_UP) \
+    /* Switch Column 1 (Switches #3 & #6)*/ \
+    COREPORT_BITDEF(  0x0100, IPT_START2,        KEYCODE_2)  \
+    COREPORT_BITDEF(  0x0200, IPT_START1,        KEYCODE_1)  \
+    /* Switch Column 2 (Switches #1,#2,#7,#8)*/ \
+    COREPORT_BITDEF(  0x0400, IPT_COIN1,          IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(  0x0800, IPT_COIN2,          IP_KEY_DEFAULT) \
+	COREPORT_BIT(     0x1000, "Ball Tilt",        KEYCODE_DEL)  \
+    COREPORT_BIT(     0x2000, "Slam Tilt",        KEYCODE_HOME)  \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
       COREPORT_DIPSET(0x0000, "0" ) \
@@ -44,10 +95,10 @@
     COREPORT_DIPNAME( 0x0020, 0x0000, "S6") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0020, "1" ) \
-    COREPORT_DIPNAME( 0x0040, 0x0000, "S7") \
+    COREPORT_DIPNAME( 0x0040, 0x0040, "S7") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0040, "1" ) \
-    COREPORT_DIPNAME( 0x0080, 0x0000, "S8") \
+    COREPORT_DIPNAME( 0x0080, 0x0080, "S8") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0080, "1" ) \
     COREPORT_DIPNAME( 0x0100, 0x0000, "S9") \
@@ -105,7 +156,7 @@
     COREPORT_DIPNAME( 0x0200, 0x0000, "S26") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0200, "1" ) \
-    COREPORT_DIPNAME( 0x0400, 0x0000, "S27") \
+    COREPORT_DIPNAME( 0x0400, 0x0400, "S27") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0400, "1" ) \
     COREPORT_DIPNAME( 0x0800, 0x0000, "S28") \
@@ -139,11 +190,11 @@
 /*-- BYVP switches are numbered from 1-64 (not column,row as WPC) --*/
 #define BYVP_SWNO(x) (x)
 
-/*-- By35 switch numbers --*/
-#define BYVP_SWSELFTEST   -7
-#define BYVP_SWCPUDIAG    -6
-#define BYVP_SWSOUNDDIAG  -5
-#define BYVP_SWVIDEODIAG  -4
+/*-- BYVP switch numbers --*/
+#define BYVP_SWSELFTEST   -7	//SW Col 0 - Switch #1
+#define BYVP_SWCPUDIAG    -6	//SW Col 0 - Switch #2
+#define BYVP_SWSOUNDDIAG  -5	//SW Col 0 - Switch #3
+#define BYVP_SWVIDEODIAG  -4	//SW Col 0 - Switch #4
 
 /*-------------------------
 / Machine driver constants
