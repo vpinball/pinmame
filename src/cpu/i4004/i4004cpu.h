@@ -10,18 +10,11 @@
  *
  *******************************************************/
 
-#define XF              0x08
-#define VF              0x04
-#define NF              0x02
-#define CF              0x01
-
 #define M_IN													\
-	I.XX.d=ARG();												\
-	I.AF.b.h=cpu_readport16(I.XX.d);
+	I.accu = cpu_readport16(I.ramaddr.d & 0xff);
 
-#define M_OUT													\
-	I.XX.d=ARG();												\
-	cpu_writeport16(I.XX.d,I.AF.b.h)
+#define M_OUT(no)												\
+	cpu_writeport16((I.ramaddr.d & 0xff) | (no * 0x100), I.accu);
 
 #define M_JMP(romno, cc) {										\
 	i4004_ICount -= 8;											\
