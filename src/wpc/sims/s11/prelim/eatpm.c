@@ -235,7 +235,7 @@ static core_tLCDLayout dispeatpm[] = { \
 
 static core_tGameData eatpmGameData = {
   GEN_S11B, dispeatpm,
-  { FLIP_SWNO(swLFlip,swRFlip),0,0,0,0,S11_LOWALPHA|S11_DISPINV,S11_MUXSW2},
+  { FLIP_SWNO(swLFlip,swRFlip),0,0,0,0,S11_LOWALPHA|S11_DISPINV|S11_ONELINE,S11_MUXSW2},
   &eatpmSimData, {{0}}, {12}
 };
 
