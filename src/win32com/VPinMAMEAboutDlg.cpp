@@ -127,7 +127,11 @@ private:
 			/*Create new brush of color of the background for later use*/
 			hLinkBrush = (HBRUSH) GetStockObject(HOLLOW_BRUSH);
 			//Set Cursor for Static Email Link to our Hyperlink Cursor
-			SetClassLong(GetDlgItem(IDC_HOMEPAGELINK),GCL_HCURSOR, (long)LoadCursor(NULL, IDC_HAND));
+			// in PlatformSDK\Include\WinUser.h there is a define IDC_HAND,
+			// so the mouse cursor will turn to a pointing finger over the link.
+			// However this won't compile on certain OS's, but MAKEINTRESOURCE(32649)
+			// seems to work fine, so we just use this one instead...
+			SetClassLong(GetDlgItem(IDC_HOMEPAGELINK),GCL_HCURSOR, (long)LoadCursor(NULL, MAKEINTRESOURCE(32649)));
 		}
 		//MUST RETURN 1
 		return 1;
