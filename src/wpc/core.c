@@ -385,8 +385,9 @@ void core_updateSw(int flipEn) {
         if (chgSol & 0x01) {
           /*-- solenoid has changed state --*/
           OnSolenoid(ii, allSol & 0x01);
-          /*-- log solenoid number on the display --*/
-          if (!pmoptions.dmd_only && (allSol & 0x01)) {
+          /*-- log solenoid number on the display (except flippers) --*/
+          if ((!pmoptions.dmd_only && (allSol & 0x01)) &&
+              ((ii < CORE_FIRSTLFLIPSOL) || (ii >= CORE_FIRSTSIMSOL))) {
             locals.solLog[locals.solLogCount] = ii;
 	    core_textOutf(Machine->visible_area.max_x - 12*8,0,BLACK,"%2d %2d %2d %2d",
               locals.solLog[(locals.solLogCount+1) & 3],
@@ -456,7 +457,7 @@ void core_textOut(char *buf, int length, int x, int y, int color) {
 /*-----------------------------------
 / Write formatted text on the screen
 /------------------------------------*/
-void CLIB_DECL core_textOutf(int x, int y, int color, char *text, ...) {
+void CLIB_DECL core_textOutf(int x, int y, int color, const char *text, ...) {
   va_list arg;
   if (y < locals.maxSimRows) {
     char buf[100];
