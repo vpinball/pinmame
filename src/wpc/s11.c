@@ -12,6 +12,8 @@
 #include "dedmd.h"
 #include "s11.h"
 
+#define FIXMUX  // DataEast Playboy 35th fix
+
 // TODO:
 // DE display layouts
 #define S11_PIA0 0
@@ -52,7 +54,7 @@ const struct core_dispLayout s11_dispS11b2[] = {
 };
 
 /*----------------
-/  Local varibles
+/  Local variables
 /-----------------*/
 static struct {
   int    vblankCount;
@@ -67,6 +69,10 @@ static struct {
   int    sndCmd;	/* external sound board cmd */
   int    piaIrq;
   int	 deGame;	/*Flag to see if it's a Data East game running*/
+#ifdef FIXMUX
+  UINT8  solBits1,solBits2;
+  UINT8  solBits2prv;
+#endif
 } locals;
 
 static void s11_irqline(int state) {
@@ -117,6 +123,9 @@ static INTERRUPT_GEN(s11_vblank) {
         locals.solenoids |= CORE_SOLBIT(CORE_FIRSTSSSOL+ii);
     }
   }
+#ifdef FIXMUX
+// mux translation moved
+#else
   if ((core_gameData->sxx.muxSol) &&
       (locals.solenoids & CORE_SOLBIT(core_gameData->sxx.muxSol))) {
     if (core_gameData->hw.gameSpecific1 & S11_RKMUX)
@@ -126,6 +135,7 @@ static INTERRUPT_GEN(s11_vblank) {
     else
       locals.solenoids = (locals.solenoids & 0x00ffff00) | (locals.solenoids<<24);
   }
+#endif
   locals.solsmooth[locals.vblankCount % S11_SOLSMOOTH] = locals.solenoids;
 #if S11_SOLSMOOTH != 2
 #  error "Need to update smooth formula"
@@ -262,6 +272,51 @@ static void setSSSol(int data, int solNo) {
     coreGlobals.pulsedSolState &= ~bit;
 }
 
+#ifdef FIXMUX
+
+static void updsol(void) {
+  /* set new solenoids, preserve SSSol */
+  coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x00ff0000)
+                             | (locals.solBits2 << 8)
+                             | (locals.solBits1     );
+
+  /* if game has a MUX and it's active... */
+  if ((core_gameData->sxx.muxSol) &&
+      (coreGlobals.pulsedSolState & CORE_SOLBIT(core_gameData->sxx.muxSol))) {
+    if (core_gameData->hw.gameSpecific1 & S11_RKMUX) /* special case WMS Road Kings */
+      coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x00ff8fef)      |
+                                  ((coreGlobals.pulsedSolState & 0x00000010)<<20) |
+                                  ((coreGlobals.pulsedSolState & 0x00007000)<<13);
+    else
+      coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x00ffff00) |
+                                   (coreGlobals.pulsedSolState << 24);
+  }
+
+  locals.solenoids |= coreGlobals.pulsedSolState;
+}
+
+static WRITE_HANDLER(pia0b_w) {
+  // DataEast Playboy35th needs the MUX delayed my one IRQ:
+  if (core_gameData->hw.gameSpecific1 & S11_MUXDELAY) {
+    // new solbits are stored, previous solbits are processed
+    UINT8 h            = locals.solBits2prv;
+    locals.solBits2prv = data;
+    data               = h;
+  }
+  if (data != locals.solBits2) {
+    locals.solBits2 = data;
+    updsol();
+  }
+}
+
+static WRITE_HANDLER(latch2200) {
+  if (data != locals.solBits1) {
+    locals.solBits1 = data;
+    updsol();
+  }
+}
+
+#else
 static WRITE_HANDLER(pia0b_w) {
   coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffff00ff) | (data<<8);
   locals.solenoids |= (data<<8);
@@ -270,6 +325,8 @@ static WRITE_HANDLER(latch2200) {
   coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffffff00) | data;
   locals.solenoids |= data;
 }
+#endif
+
 static WRITE_HANDLER(pia0cb2_w) { locals.ssEn = !data;}
 
 static WRITE_HANDLER(pia1ca2_w) { setSSSol(data, 0); }
