@@ -771,7 +771,7 @@ MEMORY_END
 struct DACinterface GTS80BS_dacInt =
 {
   2,			/*2 Chips - but it seems we only access 1?*/
- {25,25}		/* Volume */
+ {100,100}		/* Volume */
 };
 
 struct AY8910interface GTS80BS_ay8910Int = {
