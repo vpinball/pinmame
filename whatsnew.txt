@@ -1,8 +1,7 @@
 What's new:
 
-Version 1.31? (October 31, 2003)
---------------------------------
-
+Version 1.30 (October 1, 2003)
+------------------------------
 This release is probably one of the most significant releases we've ever had!
 With newly added fully working support for Alvin G & Co. and playable Capcom emulation 
 we finally have support for all the "well known" manufacturers. Most of the remaining
@@ -23,8 +22,9 @@ The switch to the MAME 74 core has created a number of new bugs which we did not
 time to correct before the release. We apologize for the inconvenience and will try to
 correct them as quickly as possible. If you find any we're unaware of, please let us know
 immediately.
-
-
+One we're very well aware of - and it's bothering us like hell - is all of the Gottlieb
+System80A games - Devil's Dare to Ice Fever - are NOT working! All regular System80 games
+from Spiderman to Eclipse work, however, and it's exactly the same CPU board!? :(
 
 Bugs Fixed
 ----------
@@ -40,10 +40,24 @@ Bugs Fixed
   (This was probably one of the longest/oldest bugs ever, as it's been there since day 1 of the original wpcmame emulator)
   [Steve Ellenoff]
 
+- Adjusted Taito sound speed
+  [Tom Haukap]
+
+- Corrected Taito speech support (still sounds not like a Votrax SC01 though)
+- Sound support for some older Zaccaria and GamePlan games (added SN76477)
+- Switch debuffering bug fixed on old Zaccaria games
+- Dip switch settings are stored in VPM on old Atari games now
+  [Gerrit Volkenborn]
+
+Bugs Introduced
+---------------
+- Gottlieb System80A games are not working. We have to figure out why!
+  This is one serious issue, and we try to get if fixed as quick as can be.
+  [Update to the MAME .74 core]
 
 New Features
 ------------
-- Moved to MAME 74 core
+- Moved to MAME .74 core
   [All]
 
 - Reworked sound commander internally. No visible change
@@ -54,12 +68,18 @@ New Features
 - Alvin G. and Co. emulation including full Sound and DMD support
   (Big thanks to Joep for the manual and help in checking on his real machine)
 - Intel 8051 CPU Core emulation (required for Alvin G DMD)
-  (Thanks to Gerrit for helping with those damn SUBB flags)
 - Added Rollover mode in Sound Commander
-- Working and playable Capcom emulation (no sound yet), but current hacks need to be removed when U16 is better understood
+- Working and playable Capcom emulation (no sound yet),
+  but current hacks need to be removed when U16 is better understood
+- Added sound for Technoplay Scramble
+  (Thanks to Douglas Cope for help)
+- Added SP0250 support for Technoplay and GTS80B1 sound boards
   [Steve Ellenoff]
 
 - Added VPM Lamp handling for Alvin G Games
+- Added GTS3 extra LED display panels support
+- Added TMS7000 emulation from MESS for Technoplay sound board
+  (Thanks to Tim Lindler for his emulator)
   [Gerrit Volkenborn]
 
 - Added proper Pistol Poker Lamp handling
@@ -67,8 +87,11 @@ New Features
   [Gerrit Volkenborn]
   [Steve Ellenoff]
 
+- Enabled AY-8910 sound on the Toito piggy pack sound board
+  [Tom Haukap]
 
-Version 1.21 (March 31, 2002)
+
+Version 1.21 (March 31, 2003)
 -----------------------------
 Happy late 2nd birthday greetings to PinMAME!
 Yes, 2 years and 2 days ago, PinMAME was officially released for the first time.
@@ -207,7 +230,7 @@ New Features
 -Commas work on Bally 6803 alphanumeric games
 -Old Stern games have their nvram files initialized properly now
 -Added Intel 4004 and Rockwell PPS-4 CPU cores to the code
--Added support for "Flicker" prototype by Dave Nutting Associates (Septemper 1974!)
+-Added support for "Flicker" prototype by Dave Nutting Associates (September 1974!)
 -Added Midway's "Rotation VIII"
  [Gerrit Volkenborn]
 

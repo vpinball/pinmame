@@ -1,7 +1,7 @@
 **************************************************************************************
 				    Visual PinMAME
-				     Version 1.21
-				   (March 31, 2002)
+				     Version 1.30
+				   (October 1, 2003)
 				http://www.pinmame.com
 **************************************************************************************
 
@@ -73,3 +73,4 @@ Steve Ellenoff     (sellenoff@hotmail.com)
 Tom Haukap         (Tom.Haukap@t-online.de)
 Martin Adrian      (wpcmame@hotmail.com)
 Gerrit Volkenborn  (gaston@yomail.de)
+Brian Smith        (destruk@vpforums.com)

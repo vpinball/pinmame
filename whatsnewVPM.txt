@@ -1,9 +1,9 @@
 What's new in Visual PinMAME:
 -----------------------------
 
-Version 1.21 (xxxxx xx, 2003)
+Version 1.30 (October 1, 2003)
 -----------------------------
-- Fixed the bug in the VPM-Setup-Program that the "Test" feature crashes under w9x
+- Fixed the bug in the VPM-Setup-Program where the "Test" feature crashed under w9x
 
 Version 1.21 (March 31, 2003)
 -------------------------------------
