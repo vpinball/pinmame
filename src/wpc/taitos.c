@@ -118,7 +118,7 @@ static void taitos_init(struct sndbrdData *brdData)
 struct DACinterface TAITO_dacInt =
 {
   1,			/* 1 Chip */
-  {50}		    /* Volume */
+  {25}		    /* Volume */
 };
 
 struct VOTRAXSC01interface TAITO_votrax_sc01_interface = {
