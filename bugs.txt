@@ -30,30 +30,28 @@ Bugs in Pinmame that we are aware of:
 
 #10) System 7 games using a speech board do not work properly.
 
-#11) Data East 128x16 DMD support is not 100% accurate.
- 
-#12) Data East/Sega/Stern 128x32 DMD support is not 100% accurate.
+#11) Data East/Sega/Stern 128x32 DMD support is not 100% accurate.
 
-#13) Data East/Sega 192x64 DMD support is not 100% accurate
+#12) Data East/Sega 192x64 DMD support is not 100% accurate
 
-#14) Certain System 11 games seem to have highly customized displays, and are not emulated properly.
+#13) Certain System 11 games seem to have highly customized displays, and are not emulated properly.
 
-#15) Following DCS Games have sound issues:
+#14) Following DCS Games have sound issues:
      a) Indy 500 - Sound dies on ball 2
      b) STTNG - sound stops for extra ball.
      c) The Shadow - Sound stops on every ball except the first until a trigger is hit.
      d) Judge Dredd - Sound volume varies between different balls.
 
-#16) Bally-35 games using sound board 51 do have sound problems.
+#15) Bally-35 games using sound board 51 do have sound problems.
 
-#17) DCS playback appears to be warped on Windows XP.
+#16) DCS playback appears to be warped on Windows XP.
 
-#18) Volume issues with BSMT games; most of them are too low.
+#17) Volume issues with BSMT games; most of them are too low.
 
-#19) DMD issues with Gottlieb System 3 games.
+#18) DMD issues with Gottlieb System 3 games.
 
-#20) Numerous issues with Gottlieb System 3 AlphaNumeric games.
+#19) Numerous issues with Gottlieb System 3 AlphaNumeric games.
 
-#21) Some Gottlieb games do have sound problems.
+#20) Some Gottlieb games do have sound problems.
 
-#22) Multiprocessor support does not work well/if at all.
+#21) Multiprocessor support does not work well/if at all.

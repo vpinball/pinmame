@@ -1,20 +1,55 @@
 What's new:
 -----------
 
-Version 1.xx (Month x, 2002)
+Version 1.12 (March 29, 2002)
 ----------------------------
-- Gottlieb System 80: Sound (not speech!) for Sound-only and Sound & Speech board is now working fine
-- Gottlieb System 80: Added support for sound only PiggyPack board ("El Dorado City of Gold" isn't working,
-  probably due to a bad sound ROM)
-  (thanks goes to Peter Hall for providing very helpfully infos on these sound board)
-- Gottlieb System 80: Added dips for the sound & speech board (33-40) and the sound-board (41-42)
-- Hankin: Switch numbering now reflect the naming used in the manual
-- Hankin: Added sound support (Orbit 1 and FJ Holden are working only particially)
-- Hanking: Fixed display issues
-  [Tom Haukap]
+Happy Birthday to PinMAME! It's hard to believe it's been 1 year since our initial release.
+So much has been added in that time, it's really amazing to see how far we've come.
+We look forward to another year even better than this one! We'd like to thank everyone for
+their continued support and enthusiasm! It's great to see so many pinball fans come together and push to keep our hobby from dying.
 
-- Gottlieb System 80: Added preliminary speech support, it is understandable, but not quite good
-  [Gerrit Volkenborn, Tom Haukap]
+Bugs Fixed
+----------
+-Hankin: Switch numbering now reflect the naming used in the manual
+-Hanking: Fixed display issues
+ [Tom Haukap]
+
+-Rewrote Data East 128x16 DMD Emulation. (Now much more accurate than previous version)
+-Corrected early Stern MPU-100 CPU timing
+ [Martin Adrian]
+
+-Corrected Bally MPU-17/35 CPU timing. (Squalk N Talk games now greatly improved)
+ [Martin Adrian]
+ [Steve Ellenoff]
+
+
+New Features
+------------
+-Granny & The Gators Working Emulation (Including Sound - Still some graphical glitches)
+ [Steve Ellenoff]
+
+-Hankin: Full working Sound Support (Orbit 1 and FJ Holden only particially working)
+-Gottlieb System 80: Sound (not speech!) for Sound-only games now fully working
+-Gottlieb System 80: Sound & Speech board is now working 
+-Gottlieb System 80: Added support for sound only PiggyBack board 
+ (Thanks goes to Peter Hall for providing very helpfully info on these sound boards)
+-Gottlieb System 80: Added dips for the sound & speech board (33-40) & sound-board (41-42)
+ [Tom Haukap]
+
+-Working Atari Emulation (Including Sound - may not be perfect yet) 
+ (Generation #1 not working yet)
+ [Gerrit Volkenborn]
+ [Steve Ellenoff]
+
+-Gottlieb System 80: Added preliminary speech support
+ (it is understandable, but still needs some work)
+ [Gerrit Volkenborn]
+ [Tom Haukap]
+
+-Combined Williams System 9&11 drivers with Data East for cleaner code/easier maintenance
+-Combined Data East sound hardware drivers for cleaner code/easier maintenance
+ [Martin Adrian]
+ [Steve Ellenoff]
 
 
 Version 1.11 (February 3, 2002)

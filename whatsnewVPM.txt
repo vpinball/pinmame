@@ -1,7 +1,7 @@
 What's new in Visual PinMAME:
 -----------------------------
 
-Version 1.12 (Month x, 2002)
+Version 1.12 (March 29, 2002)
 ----------------------------
 - Added IObjectSafety interface (VPinMAME now states that it's "safe for scripting")
 
