@@ -310,7 +310,7 @@ STDMETHODIMP CRoms::get__NewEnum(IUnknown** ppunkEnum)
 	return S_FALSE;
 }
 
-STDMETHODIMP CRoms::get_Available(BOOL *pVal)
+STDMETHODIMP CRoms::get_Available(VARIANT_BOOL *pVal)
 {
 	if ( !m_gamedrv )
 		return S_FALSE;
@@ -371,7 +371,7 @@ STDMETHODIMP CRoms::get_StateDescription(BSTR *pVal)
 	return S_OK;
 }
 
-STDMETHODIMP CRoms::Audit(BOOL fStrict)
+STDMETHODIMP CRoms::Audit(VARIANT_BOOL fStrict)
 {
 	int i = 0;
 	while ( i<m_lRoms )

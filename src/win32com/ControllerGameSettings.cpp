@@ -58,44 +58,56 @@ private:
 
 		pGameSettings->get_Value(CComBSTR("cheat"), &vValue);
 		CheckDlgButton(IDC_USECHEAT, (vValue.boolVal==VARIANT_TRUE)?BST_CHECKED:BST_UNCHECKED);
+		VariantClear(&vValue);
 
 		pGameSettings->get_Value(CComBSTR("sound"), &vValue);
 		CheckDlgButton(IDC_USESOUND, (vValue.boolVal==VARIANT_TRUE)?BST_CHECKED:BST_UNCHECKED);
+		VariantClear(&vValue);
 
 		pGameSettings->get_Value(CComBSTR("samples"), &vValue);
 		CheckDlgButton(IDC_USESAMPLES, (vValue.boolVal==VARIANT_TRUE)?BST_CHECKED:BST_UNCHECKED);
+		VariantClear(&vValue);
 
 		pGameSettings->get_Value(CComBSTR("dmd_compact"), &vValue);
 		CheckDlgButton(IDC_COMPACTSIZE, (vValue.boolVal==VARIANT_TRUE)?BST_CHECKED:BST_UNCHECKED);
+		VariantClear(&vValue);
 
 		pGameSettings->get_Value(CComBSTR("dmd_doublesize"), &vValue);
 		CheckDlgButton(IDC_DOUBLESIZE, (vValue.boolVal==VARIANT_TRUE)?BST_CHECKED:BST_UNCHECKED);
+		VariantClear(&vValue);
 		
 		pGameSettings->get_Value(CComBSTR("dmd_antialias"), &vValue);
 		SetDlgItemInt(IDC_ANTIALIAS, vValue.lVal, FALSE);
+		VariantClear(&vValue);
 
 		pGameSettings->get_Value(CComBSTR("samplerate"), &vValue);
 		SetDlgItemInt(IDC_SAMPLERATE, vValue.lVal, FALSE);
+		VariantClear(&vValue);
 
 		pGameSettings->get_Value(CComBSTR("dmd_red"), &vValue);
 		SetDlgItemInt(IDC_DMDRED, vValue.lVal, FALSE);
+		VariantClear(&vValue);
 
 		pGameSettings->get_Value(CComBSTR("dmd_green"), &vValue);
 		SetDlgItemInt(IDC_DMDGREEN, vValue.lVal, FALSE);
+		VariantClear(&vValue);
 		
 		pGameSettings->get_Value(CComBSTR("dmd_blue"), &vValue);
 		SetDlgItemInt(IDC_DMDBLUE, vValue.lVal, FALSE);
+		VariantClear(&vValue);
 
 		pGameSettings->get_Value(CComBSTR("dmd_perc66"), &vValue);
 		SetDlgItemInt(IDC_DMDPERC66, vValue.lVal, FALSE);
+		VariantClear(&vValue);
 
 		pGameSettings->get_Value(CComBSTR("dmd_perc33"), &vValue);
 		SetDlgItemInt(IDC_DMDPERC33, vValue.lVal ,FALSE);
+		VariantClear(&vValue);
 		
 		pGameSettings->get_Value(CComBSTR("dmd_perc0"), &vValue);
 		SetDlgItemInt(IDC_DMDPERC0, vValue.lVal, FALSE);
-
 		VariantClear(&vValue);
+
 		pGameSettings->Release();
 	}
 
@@ -426,10 +438,10 @@ STDMETHODIMP CGameSettings::Clear()
 {
 	BOOL fGameWasNeverStarted = GameWasNeverStarted(m_szROM);
 
-	RegDeleteKey(HKEY_CURRENT_USER, m_szRegKey);
+	DeleteGameSettings(m_szROM);
 
 	if ( !fGameWasNeverStarted )
-		SetGameWasStarted(m_szRegKey);
+		SetGameWasStarted(m_szROM);
 
 	return S_OK;
 }
@@ -439,7 +451,7 @@ STDMETHODIMP CGameSettings::get_Value(BSTR sName, VARIANT *pVal)
 	char szName[4096];
 	WideCharToMultiByte(CP_ACP, 0, sName, -1, szName, sizeof szName, NULL, NULL);
 
-	return GetGameSetting(m_szROM, szName, pVal)?S_OK:S_FALSE;
+	return GetSetting(m_szROM, szName, pVal)?S_OK:S_FALSE;
 }
 
 STDMETHODIMP CGameSettings::put_Value(BSTR sName, VARIANT newVal)
@@ -447,7 +459,7 @@ STDMETHODIMP CGameSettings::put_Value(BSTR sName, VARIANT newVal)
 	char szName[4096];
 	WideCharToMultiByte(CP_ACP, 0, sName, -1, szName, sizeof szName, NULL, NULL);
 
-	HRESULT hr = PutGameSetting(m_szROM, szName, newVal)?S_OK:S_FALSE;
+	HRESULT hr = PutSetting(m_szROM, szName, newVal);
 	if ( SUCCEEDED(hr) ) {
 		if ( IsEmulationRunning() && SettingAffectsRunningGame(szName) ) {
 			VariantChangeType(&newVal, &newVal, 0, VT_BSTR);

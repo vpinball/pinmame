@@ -41,14 +41,14 @@ END_COM_MAP()
 
 // IGame
 public:
-	STDMETHOD(get_IsSupported)(/* [out, retval]*/ BOOL *pVal);
+	STDMETHOD(get_IsSupported)(/* [out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(get_Manufacturer)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(get_Year)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(get_Description)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(get_CloneOf)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(get_Roms)(/*[out, retval]*/ IRoms* *pVal);
-	STDMETHOD(ShowInfoDlg)(/*[in,defaultvalue(0)]*/ int nShowOptions, /*[in,defaultvalue(0)]*/ long hParentWnd, /*[out, retval]*/ BOOL *pVal);
+	STDMETHOD(ShowInfoDlg)(/*[in,defaultvalue(0)]*/ int nShowOptions, /*[in,defaultvalue(0)]*/ long hParentWnd, /*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(get_Settings)(/*[out, retval]*/ IGameSettings * *pVal);
 
 	HRESULT Init(const struct GameDriver *gamedrv);
