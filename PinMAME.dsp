@@ -3735,6 +3735,10 @@ SOURCE=.\src\wpc\atarisnd.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\bingo.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\bowlgames.c
 # End Source File
 # Begin Source File
@@ -4689,6 +4693,10 @@ SOURCE=.\src\wpc\zac.h
 # Begin Source File
 
 SOURCE=.\src\wpc\zacgames.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\zacproto.c
 # End Source File
 # Begin Source File
 
