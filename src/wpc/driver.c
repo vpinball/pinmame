@@ -584,7 +584,9 @@ DRIVER(frpwr,l2)        //S6-497:   02/80 W Firepower
 DRIVER(blkou,l1)        //S6-495:   06/80 W Blackout
 DRIVER(scrpn,l1)        //S6-494:   07/80 W Scorpion
 DRIVER(algar,l1)        //S6-499:   09/80 W Algar
-DRIVER(alpok,l2)        //S6-501:   10/80 W Alien Poker
+DRIVER(alpok,l2)        //S6-501:   10/80 W Alien Poker L-2
+DRIVER(alpok,l6)        //S6-501:   10/80 W Alien Poker L-6
+DRIVER(alpok,f6)        //S6-501:   10/80 W Alien Poker L-6, French speech
 DRIVER(bk,l4)           //S7-500:   11/80 W Black Knight
 DRIVER(jngld,l2)        //S7-503:   02/81 W Jungle Lord
 DRIVER(pharo,l2)        //S7-504:   05/81 W Pharoah
