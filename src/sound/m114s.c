@@ -363,7 +363,7 @@ int M114S_sh_start(const struct MachineSound *msound)
 
 		/* initialize the regions */
 		m114schip[i].region_base = (INT8 *)memory_region(intf->region[i]);
-		m114schip[i].intf = intf;
+		m114schip[i].intf = (struct M114Sinterface *)intf;
 
 		/* init the channels */
 		init_all_channels(&m114schip[i]);
