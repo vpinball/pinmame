@@ -37,6 +37,7 @@
 #define HAS_M65C02   1
 #define HAS_M68000   1
 #define HAS_S2650    1
+#define HAS_8080	 1
 
 // Sound
 #define HAS_DAC        1
