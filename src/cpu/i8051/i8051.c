@@ -50,12 +50,13 @@
  *        August 27,2003: Currently support for only 8031/8051/8751 chips (ie 128 RAM)
  *		  October 14,2003: Added initial support for the 8752 (ie 256 RAM)
  *		  October 22,2003: Full support for the 8752 (ie 256 RAM)
+ *        July 28,2004: Fixed MOVX command and added External Ram Paging Support
  *				
  *		  Todo: Full Timer support (all modes)
  *
- *		  Not Implemented: RAM paging using hardware configured addressing...
- *                         the "MOVX a,@R0/R1" and "MOVX @R0/R1,a" commands can use any of the other ports
- *						   to output a page offset into ram, but it is totally based on the hardware setup.
+ *		  NOW Implemented: RAM paging using hardware configured addressing...
+ *        (July 28,2004)   the "MOVX a,@R0/R1" and "MOVX @R0/R1,a" commands can use any of the other ports
+ *						   to output a page offset into external ram, but it is totally based on the hardware setup.
  *
  *		  Timing needs to be implemented via MAME timers perhaps?
  *
@@ -89,6 +90,7 @@ INLINE void serial_transmit(UINT8 data);
 static READ_HANDLER(internal_ram_read);
 static WRITE_HANDLER(internal_ram_write);
 static READ_HANDLER(internal_ram_iread);
+static READ32_HANDLER(external_ram_iaddr);
 static WRITE_HANDLER(internal_ram_iwrite);
 static READ_HANDLER(sfr_read);
 static WRITE_HANDLER(sfr_write);
@@ -167,6 +169,9 @@ typedef struct {
 	READ_HANDLER((*iram_iread));
 	WRITE_HANDLER((*iram_iwrite));
 
+	//External Ram Address Callback for generating the hardware specific access to external ram
+	READ32_HANDLER((*eram_iaddr_callback));
+
 }	I8051;
 
 int i8051_icount;
@@ -189,9 +194,10 @@ static UINT8 i8051_win_layout[] = {
 	 0,23,80, 1,	/* command line window (bottom rows) */
 };
 
-//Hold callback function so it can be set by caller (before the cpu reset)
+//Hold callback functions so they can be set by caller (before the cpu reset)
 static void (*hold_serial_tx_callback)(int data);
 static int (*hold_serial_rx_callback)(void);
+static READ32_HANDLER((*hold_eram_iaddr_callback));
 
 /*Short cuts*/
 
@@ -215,8 +221,9 @@ static int (*hold_serial_rx_callback)(void);
  addresses, w/o any contention. 
  As far as the 8051 program code which is executing knows data memory still lives
  in the 0-FFFF range.*/
-#define DATAMEM_R(a)	(UINT8)cpu_readmem20(a | 0x10000)
-#define DATAMEM_W(a,v)	cpu_writemem20(a | 0x10000,v)
+#define DATAMEM_R(a)	(UINT8)cpu_readmem20(a+0x10000)
+#define DATAMEM_W(a,v)	cpu_writemem20(a+0x10000,v)
+
 /***************************************************************
  * Read/Write a byte from/to the Internal RAM
  ***************************************************************/
@@ -227,6 +234,10 @@ static int (*hold_serial_rx_callback)(void);
  ***************************************************************/
 #define IRAM_IR(a)		internal_ram_iread(a)
 #define IRAM_IW(a,v)	internal_ram_iwrite(a,v)
+/***************************************************************
+ * Form an Address to Read/Write to External RAM indirectly (called from indirect addressing)
+ ***************************************************************/
+#define ERAM_ADDR(a,m)	external_ram_iaddr(a,m)
 /***************************************************************
  * Read/Write a byte from/to the SFR Registers
  ***************************************************************/
@@ -539,6 +550,10 @@ void i8051_reset(void *param)
 	hold_serial_tx_callback = NULL;
 	i8051.serial_rx_callback = hold_serial_rx_callback;
 	hold_serial_rx_callback = NULL;
+
+	//Setup External ram callback handlers
+	i8051.eram_iaddr_callback = hold_eram_iaddr_callback;
+	hold_eram_iaddr_callback = NULL;
 
 	//Clear Ram (w/0xff)
 	memset(&i8051.IntRam,0xff,sizeof(i8051.IntRam));
@@ -1375,7 +1390,7 @@ void i8051_set_irq_line(int irqline, int state)
 			if (state != CLEAR_LINE) {
 				//Is the enable flag for this interrupt set?
 				if(GET_EX0) {
-					//Need cleared->active line transition? (Logical 1-0 Pulse on the line) - CLEAR->ASSERT Transition since INT1 active lo!
+					//Need cleared->active line transition? (Logical 1-0 Pulse on the line) - CLEAR->ASSERT Transition since INT0 active lo!
 					if(GET_IT0){
 						if(i8051.last_int0 == CLEAR_LINE)
 							SET_IE0(1);
@@ -1571,6 +1586,13 @@ void i8051_set_serial_rx_callback(int (*callback)(void))
 	//Hold in static variable since this function can get called before reset has run, which wipes i8051 memory clean
 	hold_serial_rx_callback = callback;
 }
+
+void i8051_set_eram_iaddr_callback(READ32_HANDLER((*callback)))
+{
+	//Hold in static variable since this function can get called before reset has run, which wipes i8051 memory clean
+	hold_eram_iaddr_callback = callback;
+}
+
 
 void i8051_state_save(void *file)
 {
@@ -1831,6 +1853,21 @@ static READ_HANDLER(internal_ram_iread)
 static WRITE_HANDLER(internal_ram_iwrite)
 {
 	i8051.iram_iwrite(offset,data);
+}
+
+/*Generate an external ram address for read/writing using indirect addressing mode */
+/*The lowest 8 bits of the address are passed in (from the R0/R1 register), however
+  the hardware can be configured to set the rest of the address lines to any available output port pins, which
+  means the only way we can implement this is to allow the driver to setup a callback to generate the 
+  address as defined by the specific hardware setup. We'll assume the address won't be bigger than 32 bits
+*/
+static READ32_HANDLER(external_ram_iaddr)
+{
+	if(i8051.eram_iaddr_callback)
+		return i8051.eram_iaddr_callback(offset,mem_mask);
+	else
+		LOG(("i8051 #%d: external ram address requested (8 bit offset=%02x), but no callback available! at PC:%04x\n", cpu_getactivecpu(), offset, PC));
+	return offset;
 }
 
 /*Push the current PC to the stack*/
@@ -2246,6 +2283,10 @@ void i8752_reset (void *param)
 	hold_serial_tx_callback = NULL;
 	i8051.serial_rx_callback = hold_serial_rx_callback;
 	hold_serial_rx_callback = NULL;
+
+	//Setup External ram callback handlers
+	i8051.eram_iaddr_callback = hold_eram_iaddr_callback;
+	hold_eram_iaddr_callback = NULL;
 
 	//Clear Ram (w/0xff)
 	memset(&i8051.IntRam,0xff,sizeof(i8051.IntRam));

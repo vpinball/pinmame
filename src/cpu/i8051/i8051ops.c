@@ -510,7 +510,7 @@ INLINE void mov_mem_mem(void)
 	UINT8 src,dst;
 	src = ROP_ARG(PC++);					//Grab source data address
 	dst = ROP_ARG(PC++);					//Grab destination data address
-	IRAM_W(dst,IRAM_R(src));				//Read source address contents and store to destinatin address
+	IRAM_W(dst,IRAM_R(src));				//Read source address contents and store to destination address
 }
 
 //MOV @R0/@R1, #data						/* 1: 0111 011i */
@@ -614,29 +614,38 @@ INLINE void movc_a_iadptr(void)
 }
 
 //MOVX A,@DPTR								/* 1: 1110 0000 */
+//(Move External Ram 16 bit address to A)
 INLINE void movx_a_idptr(void)
 {
-	UINT8 byte = DATAMEM_R(R_DPTR);			//Grab 1 byte from External DATA memory pointed to by dptr
+//	UINT8 byte = DATAMEM_R(R_DPTR);			//Grab 1 byte from External DATA memory pointed to by dptr
+	UINT32 addr = ERAM_ADDR(R_DPTR,0xFFFF);
+	UINT8 byte = DATAMEM_R(addr);			//Grab 1 byte from External DATA memory pointed to by dptr
 	SFR_W(ACC,byte);						//Store to ACC
 }
 
 //MOVX A, @R0/@R1							/* 1: 1110 001i */
+//(Move External Ram 8 bit address to A)
 INLINE void movx_a_ir(int r)
 {
-	UINT8 byte = DATAMEM_R(IRAM_IR(R_R(r)));//Grab 1 byte from External DATA memory pointed to by R0 or R1
+	UINT32 addr = ERAM_ADDR(R_R(r),0xFF);	//Grab address by reading location pointed to by R0 or R1
+	UINT8 byte = DATAMEM_R(addr);			//Grab 1 byte from External DATA memory pointed to by address
 	SFR_W(ACC,byte);						//Store to ACC
 }
 
 //MOVX @DPTR,A								/* 1: 1111 0000 */
+//(Move A to External Ram 16 bit address)
 INLINE void movx_idptr_a(void)
 {
-	DATAMEM_W(R_DPTR, R_ACC);				//Store ACC to External DATA memory address pointed to by DPTR
+//	DATAMEM_W(R_DPTR, R_ACC);				//Store ACC to External DATA memory address pointed to by DPTR
+	UINT32 addr = ERAM_ADDR(R_DPTR,0xFFFF);
+	DATAMEM_W(addr, R_ACC);				//Store ACC to External DATA memory address pointed to by DPTR
 }
 
 //MOVX @R0/@R1,A							/* 1: 1111 001i */
+//(Move A to External Ram 8 bit address)
 INLINE void movx_ir_a(int r)
 {
-	UINT8 addr = IRAM_IR(R_R(r));			//Grab address by reading location pointed to by R0 or R1
+	UINT32 addr = ERAM_ADDR(R_R(r),0xFF);   //Grab address by reading location pointed to by R0 or R1
 	DATAMEM_W(addr, R_ACC);					//Store ACC to External DATA memory address
 }
 
