@@ -154,6 +154,9 @@ void sndbrd_sync_w(WRITE_HANDLER((*handler)),int offset, int data) {
   SNDBRDINTF(dedmd16)
   SNDBRDINTF(dedmd32)
   SNDBRDINTF(dedmd64)
+  SNDBRDINTF(gts80s)
+  SNDBRDINTF(gts80ss)
+  SNDBRDINTF(gts80b)
 #endif /* SNDBRD_RECURSIVE */
 
 
