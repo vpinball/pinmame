@@ -26,7 +26,7 @@
 
 static int playCmd(int length, int *cmd);
 static int checkName(const char *buf, const char *name);
-static void readCmds(char *head);
+static void readCmds(const char *head);
 static void clrCmds(void);
 
 static struct cmds {
@@ -54,7 +54,7 @@ static void wave_handle(void);
 /*---------------------------------*/
 /*-- init manual sound commands  --*/
 /*---------------------------------*/
-void snd_cmd_init(mem_write_handler soundCmd, char *head) {
+void snd_cmd_init(mem_write_handler soundCmd, const char *head) {
   int ii;
   memset(&locals, 0, sizeof(locals));
   locals.currCmd = &cmds;
@@ -110,8 +110,13 @@ int manual_sound_commands(struct mame_bitmap *bitmap) {
     fillbitmap(bitmap,Machine->uifont->colortable[0],NULL);
     /* start/stop all non-sound CPU(s) */
     for (ii = 0; ii < MAX_CPU; ii++)
+#if MAMEVER >= 6300
+      if ((Machine->drv->cpu[ii].cpu_type) &&
+          (Machine->drv->cpu[ii].cpu_flags == 0))
+#else
       if ((Machine->drv->cpu[ii].cpu_type & ~CPU_FLAGS_MASK) &&
           (Machine->drv->cpu[ii].cpu_type & CPU_AUDIO_CPU) == 0)
+#endif
         cpu_set_halt_line(ii, locals.soundMode);
   }
 
@@ -192,13 +197,13 @@ static int checkName(const char *buf, const char *name) {
   return TRUE;
 }
 
-static void readCmds(char *head) {
-  void *f = osd_fopen(NULL, "sounds.dat", OSD_FILETYPE_HIGHSCORE_DB, 0);
+static void readCmds(const char *head) {
+  mame_file *f = mame_fopen(NULL, "sounds.dat", FILETYPE_HIGHSCORE_DB, 0);
   int getData = FALSE;
 
   if (f) {
     char buffer[MAX_LINE_LENGTH];
-    while (osd_fgets(buffer, MAX_LINE_LENGTH, f)) {
+    while (mame_fgets(buffer, MAX_LINE_LENGTH, f)) {
       /* logerror("line=%s",buffer); */
       if (buffer[0] == ':') {
         if (getData) {
@@ -263,7 +268,7 @@ found:      ;
                     !(Machine->gamedrv->clone_of->flags & NOT_A_DRIVER) &&
                     checkName(buffer, Machine->gamedrv->clone_of->name)));
     } /* while */
-    osd_fclose(f);
+    mame_fclose(f);
   } /* if */
 }
 
@@ -338,10 +343,10 @@ static void wave_handle(void) {
     /* avoid overwriting existing files */
     /* first of all try with "gamename.wav" */
     sprintf(name,"%.8s", Machine->gamedrv->name);
-    if (osd_faccess(name,OSD_FILETYPE_WAVEFILE)) {
+    if (mame_faccess(name,FILETYPE_WAVE)) {
       do { /* otherwise use "nameNNNN.wav" */
         sprintf(name,"%.4s%04d",Machine->gamedrv->name,++wavelocals.nextWaveFileNo);
-      } while (osd_faccess(name, OSD_FILETYPE_WAVEFILE));
+      } while (mame_faccess(name, FILETYPE_WAVE));
     }
     wavelocals.recording = wave_open(name);
   }
@@ -360,7 +365,7 @@ static int wave_open(char *filename) {
   UINT16 temp16;
   UINT32 temp32;
 
-  wavelocals.file = osd_fopen(Machine->gamedrv->name, filename, OSD_FILETYPE_WAVEFILE, 1);
+  wavelocals.file = mame_fopen(Machine->gamedrv->name, filename, FILETYPE_WAVE, 1);
 
   if (!wavelocals.file) return -1;
   /* write the core header for a WAVE file */
@@ -423,7 +428,7 @@ static void wave_close(void) {
 /* called from mixer.c */
 void pm_wave_record(INT16 *buffer, int samples) {
   if (wavelocals.recording == 1) {
-    int written = osd_fwrite_lsbfirst(wavelocals.file, buffer, samples * 2 * CHANNELCOUNT);
+    int written = mame_fwrite_lsbfirst(wavelocals.file, buffer, samples * 2 * CHANNELCOUNT);
     wavelocals.offs += written;
     if (written < samples * 2) {
       wave_close(); wavelocals.recording = -1;

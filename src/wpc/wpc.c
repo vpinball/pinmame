@@ -94,7 +94,7 @@ static struct {
 } dmdlocals;
 
 /*-- pointers --*/
-static void *wpc_printfile = NULL;
+static mame_file *wpc_printfile = NULL;
 
 /*---------------------------
 /  Memory map for CPU board
@@ -499,10 +499,10 @@ WRITE_HANDLER(wpc_w) {
           char filename[13];
 
           sprintf(filename,"%s.prt", Machine->gamedrv->name);
-          wpc_printfile = osd_fopen(Machine->gamedrv->name,filename,OSD_FILETYPE_MEMCARD,1);
+          wpc_printfile = mame_fopen(Machine->gamedrv->name,filename,FILETYPE_PRINTER,1);
           if (wpc_printfile == NULL) break;
         }
-        osd_fwrite(wpc_printfile, &wpc_data[WPC_PRINTDATA], 1);
+        mame_fwrite(wpc_printfile, &wpc_data[WPC_PRINTDATA], 1);
       }
       break;
     default:
@@ -639,7 +639,7 @@ static MACHINE_INIT(wpc) {
 static MACHINE_STOP(wpc) {
   sndbrd_0_exit();
   if (wpc_printfile)
-    { osd_fclose(wpc_printfile); wpc_printfile = NULL; }
+    { mame_fclose(wpc_printfile); wpc_printfile = NULL; }
 }
 
 /*-----------------------------------------------
