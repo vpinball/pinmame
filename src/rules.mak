@@ -1605,3 +1605,12 @@ SOUNDOBJS += $(OBJ)/sound/sp0250.o
 else
 SOUNDDEFS += -DHAS_SP0250=0
 endif
+
+SOUND=$(strip $(findstring TMS320AV120@,$(SOUNDS)))
+ifneq ($(SOUND),)
+SOUNDDEFS += -DHAS_TMS320AV120=1
+SOUNDOBJS += $(OBJ)/sound/tms320av120.o
+else
+SOUNDDEFS += -DHAS_TMS320AV120=0
+endif
+
