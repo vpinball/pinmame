@@ -565,7 +565,7 @@ static sim_tSimData pzSimData = {
 static core_tGameData pzGameData = {
   GEN_WPCFLIPTRON, wpc_dispDMD,
   {
-    FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L),
+    FLIP_SWNO(12,11) | FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L),
     0,0,0,0,0,0,0,
     NULL, pz_handleMech, pz_getMech, pz_drawMech,
     &pz_lampPos, pz_samsolmap
