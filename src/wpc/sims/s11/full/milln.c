@@ -90,61 +90,61 @@ S11_INPUT_PORTS_END
 /*-------------------
 / Switch definitions
 /--------------------*/
-#define swTilt		S11_SWNO( 1)
-#define swStart		S11_SWNO( 3)
-#define swSlamTilt	S11_SWNO( 7)
-#define swPFTilt	S11_SWNO( 9)
-#define swLiteCashHeld	S11_SWNO(10)
-#define swLeftOutlane	S11_SWNO(11)
-#define swRightOutlane	S11_SWNO(12)
-#define swLeftInlane	S11_SWNO(15)
-#define swRightInlane	S11_SWNO(16)
-#define swBank		S11_SWNO(17)
-#define swbAnk		S11_SWNO(18)
-#define swbaNk		S11_SWNO(19)
-#define swbanK		S11_SWNO(20)
-#define swSilverGold	S11_SWNO(22)
-#define swShooter	S11_SWNO(24)
-#define swMoney		S11_SWNO(25)
-#define swmOney		S11_SWNO(26)
-#define swmoNey  	S11_SWNO(27)
-#define swmonEy		S11_SWNO(28)
-#define swmoneY  	S11_SWNO(29)
-#define swTopMultTgt	S11_SWNO(30)
-#define swLeftEject	S11_SWNO(31)
-#define swRightEject	S11_SWNO(32)
-#define swRTrough	S11_SWNO(33)
-#define swLTrough	S11_SWNO(34)
-#define swCKickBig2B	S11_SWNO(35)
-#define swOuthole	S11_SWNO(36)
-#define swLLaneChange	S11_SWNO(37)
-#define swRLaneChange	S11_SWNO(38)
-#define swTopDrop	S11_SWNO(39)
-#define swBotDrop	S11_SWNO(40)
-#define swRollUnder	S11_SWNO(41)
-#define swTopKickbig	S11_SWNO(42)
-#define swCKickbig	S11_SWNO(43)
-#define swEnterCKickbig S11_SWNO(44)
-#define sw40K		S11_SWNO(45)
-#define swLeftMB	S11_SWNO(46)
-#define swLeftEB	S11_SWNO(47)
-#define sw50K		S11_SWNO(48)
-#define swRightLock	S11_SWNO(49)
-#define swLeftJet	S11_SWNO(50)
-#define swRightJet	S11_SWNO(51)
-#define swBottomJet	S11_SWNO(52)
-#define sw100K		S11_SWNO(53)
-#define swTSpecial	S11_SWNO(54)
-#define sw10K		S11_SWNO(55)
-#define swRightMB	S11_SWNO(56)
-#define swLeftSling	S11_SWNO(57)
-#define swRightSling	S11_SWNO(58)
-#define sw10Points	S11_SWNO(59)
-#define swRKickbig	S11_SWNO(60)
-#define swRightEB	S11_SWNO(61)
-#define sw20K		S11_SWNO(62)
-#define sw30K		S11_SWNO(63)
-#define swBSpecial	S11_SWNO(64)
+#define swTilt		 1
+#define swStart		 3
+#define swSlamTilt	 7
+#define swPFTilt	 9
+#define swLiteCashHeld	10
+#define swLeftOutlane	11
+#define swRightOutlane	12
+#define swLeftInlane	15
+#define swRightInlane	16
+#define swBank		17
+#define swbAnk		18
+#define swbaNk		19
+#define swbanK		20
+#define swSilverGold	22
+#define swShooter	24
+#define swMoney		25
+#define swmOney		26
+#define swmoNey  	27
+#define swmonEy		28
+#define swmoneY  	29
+#define swTopMultTgt	30
+#define swLeftEject	31
+#define swRightEject	32
+#define swRTrough	33
+#define swLTrough	34
+#define swCKickBig2B	35
+#define swOuthole	36
+#define swLLaneChange	37
+#define swRLaneChange	38
+#define swTopDrop	39
+#define swBotDrop	40
+#define swRollUnder	41
+#define swTopKickbig	42
+#define swCKickbig	43
+#define swEnterCKickbig 44
+#define sw40K		45
+#define swLeftMB	46
+#define swLeftEB	47
+#define sw50K		48
+#define swRightLock	49
+#define swLeftJet	50
+#define swRightJet	51
+#define swBottomJet	52
+#define sw100K		53
+#define swTSpecial	54
+#define sw10K		55
+#define swRightMB	56
+#define swLeftSling	57
+#define swRightSling	58
+#define sw10Points	59
+#define swRKickbig	60
+#define swRightEB	61
+#define sw20K		62
+#define sw30K		63
+#define swBSpecial	64
 
 /*---------------------
 / Solenoid definitions
@@ -407,7 +407,7 @@ static core_tGameData millnGameData = {
   GEN_S11A, s11_dispS11,
   {
     FLIP_SWNO(swLLaneChange,swRLaneChange),
-    0,0,0,
+    0,0,0,0,0,0,0,
     NULL, milln_handleMech, NULL, milln_drawMech,
     NULL, milln_samsolmap
   },

@@ -353,7 +353,7 @@ static core_tGameData hurrGameData = {
   GEN_WPCFLIPTRON, NULL,
   {
     FLIP_SWNO(12,11),
-    0,0,0,
+    0,0,0,0,0,0,0,
     NULL, hurr_handleMech, NULL, NULL,
     &hurr_lampPos, hurr_samsolmap
   },

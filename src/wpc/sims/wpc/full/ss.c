@@ -401,7 +401,7 @@ static core_tGameData ssGameData = {
   GEN_WPC95, NULL,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
-    0,0,0,
+    0,0,0,0,0,0,0,
     NULL, ss_handleMech, NULL, ss_drawMech,
     NULL, NULL
   },

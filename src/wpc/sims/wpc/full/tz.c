@@ -466,7 +466,7 @@ static core_tGameData tzGameData = {
   GEN_WPCFLIPTRON, NULL,/* generation */
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_U),
-    1,0,9, // 1 switch column, 9 solenoids
+    1,0,9,0,0,0,0, // 1 switch column, 9 solenoids
     tz_getSol, tz_handleMech, tz_getMech, tz_drawMech,
     &tz_lampPos, NULL
   },

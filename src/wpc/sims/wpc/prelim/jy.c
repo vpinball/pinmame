@@ -275,10 +275,7 @@ static sim_tSimData jySimData = {
 static core_tGameData jyGameData = {
   GEN_WPC95, NULL,
   {
-    FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
-    0,0,0,
-    NULL, NULL, NULL, NULL,
-    NULL, NULL
+    FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L)
   },
   &jySimData,
   {

@@ -554,7 +554,7 @@ static core_tGameData t2GameData = {
   GEN_WPCDMD, NULL,
   {
     FLIP_SWNO(12,11),
-    0,0,0,
+    0,0,0,0,0,0,0,
     NULL, t2_handleMech, t2_getMech, t2_drawMech,
     &t2_lampPos, t2_SamSolMap
   },

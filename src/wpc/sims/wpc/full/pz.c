@@ -559,7 +559,7 @@ static core_tGameData pzGameData = {
   GEN_WPCFLIPTRON, NULL,
   {
     FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L),
-    0,0,0,
+    0,0,0,0,0,0,0,
     NULL, pz_handleMech, pz_getMech, pz_drawMech,
     &pz_lampPos, pz_samsolmap
   },

@@ -289,9 +289,7 @@ static core_tGameData scGameData = {
   GEN_WPC95, NULL,
   {
     FLIP_SW(FLIP_L | FLIP_UR) | FLIP_SOL(FLIP_L | FLIP_UR),
-    0,6,0,
-    NULL, NULL, NULL, NULL,
-    NULL, NULL
+    0,6,0
   },
   &scSimData,
   {

@@ -333,7 +333,7 @@ static core_tGameData tmfntGameData = {
   GEN_S7, s7_dispS7,
   {
     0,
-    0,0,0,
+    0,0,0,0,0,0,0,
     NULL, NULL, NULL, tmfnt_drawMech,
     NULL, NULL
   },

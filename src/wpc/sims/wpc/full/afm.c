@@ -365,7 +365,7 @@ static core_tGameData afmGameData = {
   GEN_WPC95, NULL,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
-    0,0,3,
+    0,0,3,0,0,0,0,
     afm_getSol, afm_handleMech, afm_getMech, afm_drawMech,
     NULL, NULL
   },

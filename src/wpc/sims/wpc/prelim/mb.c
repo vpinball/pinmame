@@ -299,7 +299,7 @@ static core_tGameData mbGameData = {
   GEN_WPC95, NULL,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
-    0,0,0,
+    0,0,0,0,0,0,0,
     NULL, mb_handleMech, mb_getMech, mb_drawMech,
     NULL, NULL
   },

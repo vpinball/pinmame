@@ -331,7 +331,7 @@ static core_tGameData dwGameData = {
   GEN_WPCFLIPTRON, NULL,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_UL),
-    0,0,0,
+    0,0,0,0,0,0,0,
     NULL, dw_handleMech, NULL, NULL,
     NULL, NULL
   },

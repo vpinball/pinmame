@@ -624,7 +624,7 @@ static core_tGameData ijGameData = {
   GEN_WPCDCS, NULL,
   {
     FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L),
-    1,0,1,
+    1,0,1,0,0,0,0,
     ij_getSol, ij_handleMech, ij_getMech, ij_drawMech,
     &ij_lampPos, ij_SamSolMap
   },

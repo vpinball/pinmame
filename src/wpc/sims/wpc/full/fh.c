@@ -656,7 +656,7 @@ static core_tGameData fhGameData = {
   GEN_WPCALPHA_2, wpc_dispAlpha, /* generation */
   {
     FLIP_SWNO(12,11), 	/* Which switches are the flippers */
-    0,0,0,
+    0,0,0,0,0,0,0,
     NULL, fh_handleMech, NULL, fh_drawMech,
     &fh_lampPos, fh_samsolmap
   },

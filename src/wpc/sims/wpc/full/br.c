@@ -442,7 +442,7 @@ static core_tGameData brGameData = {
   GEN_WPCFLIPTRON, NULL,
   {
     FLIP_SW(FLIP_L | FLIP_UR) | FLIP_SOL(FLIP_L | FLIP_UR),
-    0,0,0,
+    0,0,0,0,0,0,0,
     NULL, br_handleMech, br_getMech, br_drawMech,
     NULL, br_samsolmap
   },

@@ -477,7 +477,7 @@ static core_tGameData ftGameData = {
   GEN_WPCFLIPTRON, NULL, /* generation */
   {
     FLIP_SW(FLIP_L | FLIP_UR) | FLIP_SOL(FLIP_L | FLIP_UR),	/* Which switches are the flippers */
-    0,0,3,
+    0,0,3,0,0,0,0,
     ft_getSol, ft_handleMech, ft_getMech, ft_drawMech,
     NULL, NULL
   },

@@ -303,7 +303,7 @@ static core_tGameData i500GameData = {
   GEN_WPCSECURITY, NULL,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_UR),
-    0,0,0,
+    0,0,0,0,0,0,0,
     NULL, i500_handleMech, i500_getMech, i500_drawMech,
     NULL, NULL
   },

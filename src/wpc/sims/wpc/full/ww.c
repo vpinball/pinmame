@@ -430,7 +430,7 @@ static core_tGameData wwGameData = {
   GEN_WPCFLIPTRON, NULL,
   {
     FLIP_SW(FLIP_L | FLIP_UR) | FLIP_SOL(FLIP_L | FLIP_UR),
-    0,0,0,
+    0,0,0,0,0,0,0,
     NULL, ww_handleMech, ww_getMech, ww_drawMech,
     NULL, ww_samsolmap
   },

@@ -508,7 +508,7 @@ static core_tGameData dracGameData = {
   GEN_WPCFLIPTRON, NULL,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
-    0,0,0,
+    0,0,0,0,0,0,0,
     NULL, drac_handleMech, NULL, drac_drawMech,
     &drac_lampPos, drac_samsolmap
   },

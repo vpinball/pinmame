@@ -603,7 +603,7 @@ static core_tGameData sttngGameData = {
   GEN_WPCDCS, NULL,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_UR),
-    1,0,6,
+    1,0,6,0,0,0,0,
     sttng_getSol, sttng_handleMech, sttng_getMech, sttng_drawMech,
     &sttng_lampPos, sttng_SamSolMap
   },

@@ -306,7 +306,7 @@ static core_tGameData cvGameData = {
   GEN_WPC95, NULL,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
-    0,0,2,
+    0,0,2,0,0,0,0,
     cv_getSol, cv_handleMech, cv_getMech, cv_drawMech,
     NULL, NULL
   },

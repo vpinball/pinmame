@@ -290,10 +290,7 @@ static sim_tSimData dmSimData = {
 static core_tGameData dmGameData = {
   GEN_WPCDCS, NULL,
   {
-    FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_UL),
-    0,0,0,
-    NULL, NULL, NULL, NULL,
-    NULL, NULL
+    FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_UL)
   },
   &dmSimData,
   {
