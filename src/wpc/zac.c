@@ -15,6 +15,9 @@
 #include "wmssnd.h"
 
 #define ZAC_VBLANKFREQ    60 /* VBLANK frequency */
+#define ZAC_LAMPSMOOTH     2
+#define ZAC_SOLSMOOTH      2
+#define ZAC_DISPLAYSMOOTH  2
 
 static WRITE_HANDLER(ZAC_soundCmd) { }
 static void ZAC_soundInit(void) {
@@ -29,8 +32,10 @@ static void ZAC_soundExit(void) {
 
 static struct {
   int swCol;
+  int vblankCount;
   core_tSeg segments;
   UINT32 solenoids;
+  UINT32 solsmooth[ZAC_SOLSMOOTH];
   UINT16 sols2;
   int actsnd;
   int actspk;
@@ -45,9 +50,26 @@ static INTERRUPT_GEN(ZAC_vblank_old) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
-  memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
-  memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
-  coreGlobals.solenoids = locals.solenoids;
+  locals.vblankCount ++;
+
+  // lamps
+  if ((locals.vblankCount % ZAC_LAMPSMOOTH) == 0) {
+    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+  }
+
+  // solenoids
+  locals.solsmooth[locals.vblankCount % ZAC_SOLSMOOTH] = locals.solenoids;
+#if ZAC_SOLSMOOTH != 2
+#  error "Need to update smooth formula"
+#endif
+  coreGlobals.solenoids = locals.solsmooth[0] | locals.solsmooth[1];
+  locals.solenoids = coreGlobals.pulsedSolState;
+
+  // display
+  if ((locals.vblankCount % ZAC_DISPLAYSMOOTH) == 0) {
+    memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
+  }
+
   core_updateSw(!core_getSol(26));
 }
 
@@ -55,10 +77,27 @@ static INTERRUPT_GEN(ZAC_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
-  memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
-  memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
+  locals.vblankCount ++;
+
+  // lamps
+  if ((locals.vblankCount % ZAC_LAMPSMOOTH) == 0) {
+    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+  }
+
+  // solenoids
+  locals.solsmooth[locals.vblankCount % ZAC_SOLSMOOTH] = locals.solenoids;
+#if ZAC_SOLSMOOTH != 2
+#  error "Need to update smooth formula"
+#endif
+  coreGlobals.solenoids = locals.solsmooth[0] | locals.solsmooth[1];
+  locals.solenoids = coreGlobals.pulsedSolState;
   coreGlobals.solenoids2 = locals.sols2;
-  coreGlobals.solenoids = locals.solenoids;
+
+  // display
+  if ((locals.vblankCount % ZAC_DISPLAYSMOOTH) == 0) {
+    memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
+  }
+
   core_updateSw(coreGlobals.lampMatrix[2] & 0x08);
 }
 
@@ -194,7 +233,7 @@ static MACHINE_INIT(ZAC2A) {
 
 static MACHINE_STOP(ZAC) {
   if (locals.printfile) {
-    osd_fclose(locals.printfile);
+    mame_fclose(locals.printfile);
     locals.printfile = NULL;
   }
 
@@ -204,9 +243,19 @@ static MACHINE_STOP(ZAC) {
 /*   CTRL PORT : READ = D0-D7 = Switch Returns 0-7 */
 static READ_HANDLER(ctrl_port_r)
 {
-	//logerror("%x: Ctrl Port Read\n",activecpu_get_previouspc());
-//	logerror("%x: Switch Returns Read: Col = %x\n",activecpu_get_previouspc(),locals.swCol);
-	return core_getSwCol(locals.swCol);
+  if (locals.gen == 1)
+  {
+    switch(locals.swCol)
+    {
+      case 0x80: return ~core_getDip(2);                // 8 dip switches B
+      case 0x40: return ~core_getDip(1);                // 8 dip switches A
+      default  : return ~core_getSwCol(locals.swCol);   // switch columns 1-6
+    }
+  }
+  else
+  {
+    return ~coreGlobals.swMatrix[locals.swCol+1];
+  }
 }
 
 /*   DATA PORT : READ = D0-D3 = Dip Switch Read D0-D3 & Program Switch 1 on D3
@@ -251,35 +300,23 @@ static READ_HANDLER(sense_port_r)
 */
 static WRITE_HANDLER(ctrl_port_w)
 {
-	//logerror("%x: Ctrl Port Write=%x\n",activecpu_get_previouspc(),data);
-	//logerror("%x: Switch Strobe & LED Write=%x\n",activecpu_get_previouspc(),data);
-	locals.refresh = (data>>3)&1;
-	coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 0x06) | ((data>>5) & 1);
-	locals.swCol = data & 0x07;
-#if 0
-	int tmp;
-	locals.swCol = 0;
-	//3-8 Demultiplexed
-	for(tmp = 0; tmp < 3; tmp++) {
-		if((data>>tmp)&1) {
-			locals.swCol |= 1<<tmp;
-		}
-	}
-	locals.swCol+=1;
-#endif
-	if(activecpu_get_previouspc() > 0x14a) {
-		//logerror("%x: Sound Ctrl Write=%x\n",activecpu_get_previouspc(),data);
-		//sndbrd_0_ctrl_w(ZACSND_CPUA, data);
-	}
-//	logerror("strobe data = %x, swcol = %x\n",data&0x07,locals.swCol);
-//	logerror("refresh=%x\n",locals.refresh);
+  if (locals.gen == 1)
+  {
+    locals.swCol = ~data & 0xff;
+  }
+  else
+  {
+    locals.refresh = (data>>3)&1;
+    coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 0x06) | ((data>>5) & 1);
+    locals.swCol = data & 0x07;
+  }
 }
 
 /*   DATA PORT : WRITE = Sound Data 0-7 */
 static WRITE_HANDLER(data_port_w)
 {
   sndbrd_0_data_w(ZACSND_CPUA, data);
-  logerror("%x: Sound Data Write=%x\n",activecpu_get_previouspc(),data);
+  //logerror("%x: Sound Data Write=%x\n",activecpu_get_previouspc(),data);
 }
 
 /*   SENSE PORT: WRITE = Write Serial Output (hooked to printer) */
@@ -310,27 +347,6 @@ static WRITE_HANDLER(sense_port_w)
 }
 
 static READ_HANDLER(ram_r) {
-	int off;
-	static int key[64];
-	if (offset == 0x05a6) // locks up some games if 0
-		ram[offset] = 0xff;
-	else {
-		off = (locals.gen < 3) ? 0x508 : 0x51c;
-		if (offset > off && offset < off + 0x41) {
-			off = offset - off - 1;
-			if (coreGlobals.swMatrix[off/8+1] & (1 << off%8))
-				key[off]++;
-			else
-				key[off] = 0;
-			if (!key[off]) ram[offset] = 0;
-			else if (key[off] == 1) {
-				if (!ram[offset]) ram[offset] = 0x01;
-			} else if (key[off] == 2) {
-				ram[offset] |= 0x02;
-			}
-		}
-	}
-//	else logerror("ram_r: offset = %4x\n", offset);
 	return ram[offset];
 }
 
@@ -339,9 +355,12 @@ static WRITE_HANDLER(ram_w) {
 	if (offset > 0x43f && offset < 0x460) {
 		UINT32 sol = 1 << (offset - 0x440);
 		if (data)
+		{
 			locals.solenoids |= sol;
+			coreGlobals.pulsedSolState |= sol;
+		}
 		else
-			locals.solenoids &= ~sol;
+			coreGlobals.pulsedSolState &= ~sol;
 	} else if (offset > 0x45f && offset < 0x470) {
 		UINT16 sol2 = 1 << (offset - 0x460);
 		if (data)
@@ -376,9 +395,12 @@ static WRITE_HANDLER(ram1_w) {
 		offset -= 0x40;
 		sol = 1 << offset;
 		if (data)
+		{
 			locals.solenoids |= sol;
+			coreGlobals.pulsedSolState |= sol;
+		}
 		else
-			locals.solenoids &= ~sol;
+			coreGlobals.pulsedSolState &= ~sol;
 		if (core_gameData->hw.soundBoard == SNDBRD_ZAC1311 && offset > 19 && offset < 24)
 			discrete_sound_w(1 << (offset-20), data);
 	} else if (offset > 0x7f && offset < 0xc0) {
@@ -391,17 +413,7 @@ static WRITE_HANDLER(ram1_w) {
 }
 
 static READ_HANDLER(ram1_r) {
-	static UINT8 g1keys[6];
-	UINT8 value = 0;
-	if (offset > 0x2d && offset < 0x34) {
-		value = coreGlobals.swMatrix[offset - 0x2d];
-		ram1[offset] = ram1[offset + 6] = value;
-	} else if (offset > 0x33 && offset < 0x3a) {
-		value = g1keys[offset - 0x34];
-		g1keys[offset - 0x34] = ram1[offset];
-	} else
-		value = ram1[offset];
-	return value;
+  return ram1[offset];
 }
 
 WRITE_HANDLER(UpdateZACSoundLED)
@@ -530,12 +542,12 @@ PORT_END
 MACHINE_DRIVER_START(ZAC)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(ZAC1,NULL,ZAC)
-  MDRV_CPU_ADD_TAG("mcpu", S2650, 6000000/4)
+  MDRV_CPU_ADD_TAG("mcpu", S2650, 6000000/8)
   MDRV_CPU_MEMORY(ZAC_readmem, ZAC_writemem)
   MDRV_CPU_PORTS(ZAC_readport, ZAC_writeport)
   MDRV_CPU_VBLANK_INT(ZAC_vblank_old, 1)
   MDRV_NVRAM_HANDLER(ZAC1)
-  MDRV_DIPS(4)
+  MDRV_DIPS(4+2*8)
   MDRV_SWITCH_UPDATE(ZAC1)
   MDRV_DIAGNOSTIC_LEDH(2)
   MDRV_SWITCH_CONV(ZAC_sw2m,ZAC_m2sw)
@@ -577,7 +589,7 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(ZAC2)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(ZAC2,NULL,ZAC)
-  MDRV_CPU_ADD_TAG("mcpu", S2650, 6000000/4)
+  MDRV_CPU_ADD_TAG("mcpu", S2650, 6000000/8)
   MDRV_CPU_MEMORY(ZAC_readmem2, ZAC_writemem2)
   MDRV_CPU_PORTS(ZAC_readport, ZAC_writeport)
   MDRV_CPU_VBLANK_INT(ZAC_vblank, 1)
