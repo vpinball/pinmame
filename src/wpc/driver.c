@@ -332,7 +332,7 @@ DRIVERNV(robowars)      //S80b-714: 04/88 Robo-War
 DRIVERNV(badgirls)      //S80b-717: 11/88 Bad Girls
 DRIVERNV(excalibr)      //S80b-715: 11/88 Excalibur
 DRIVERNV(bighouse)      //S80b-713: 04/89 Big House
-                        //S80b-718: 04/89 Hot Shots
+DRIVERNV(hotshots)      //S80b-718: 04/89 Hot Shots
 DRIVERNV(bonebstr)      //S80b-719: 08/89 Bone Busters Inc
 
 //System 3 Alphanumeric
