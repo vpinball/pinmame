@@ -1825,4 +1825,1102 @@ frpwr_l2:
 :1c1f:Lock 
 :1d1f:Power Target 
 :1e1f:Tilt
+#
+#
+lotr:
+:fc01:"One dwarf ring"
+:fc02:"Two dwarf rings"
+:fc03:"Three dwarf rings"
+:fc04:"Four dwarf rings"
+:fc05:"Five dwarf rings"
+:fc06:"Six dwarf rings"
+:fc07:"Seven dwarf rings"
+:fc08:"You've gathered the seven"
+:fc09:"Win the War"
+:fc0b:"Open the chest"
+:fc0c:"Now that one there"
+:fc0e:"You've got them on the run"
+:fc0f:"Kill the witch king"
+:fc10:"Kill that flying monster"
+:fc11:"Find your shield lad"
+:fc12:"Stick em behind the knee laddie"
+:fc13:"Right under his crown"
+:fc14:"Rest In Peace"
+:fc15:"Stunning"
+:fc16:"Look out"
+:fc17:"Orcs"
+:fc18:"Misty mountain maggots"
+:fc19:"Kill the orcs"
+:fc1e:Make way across the ramp
+:fc1f:Something that ugly should not live
+:fc20:That Way
+:fc23:"mind those ladders"
+:fc24:The wall is breached
+:fc25:They're through the wall
+:fc26:The Siege riders
+:fc27:Throw down those ladders
+:fc2e:Almost There
+:fc31:keep your wits about ya
+:fc32:keep it up laddie
+:fc34:Jackpot
+:fc35:double jackpot
+:fc36:triple jackpot
+:fc37:4X Jackpot
+:fc38:5X Jackpot
+:fc39:6X Jackpot
+:fc3a:7X Jackpot
+:fc3b:8X Jackpot
+:fc3c:9X Jackpot
+:fc3d:10X Jackpot
+:fc3e:Jackpot
+:fc3f:Super Jackpot
+:fc41:Path of the dead
+:fc42:the dead are coming
+:fc44:get hold of yourself
+:fc45:100 more
+:fc46:250 more
+:fc47:500 more
+:fc48:Now that's an army
+:fc49:minus tirith is under attack
+:fc4a:They captured the first level
+:fc4b:They captured the second level
+:fc4c:They captured the third level
+:fc4d:They captured the fourth level
+:fc4e:They captured the fifth level
+:fc4f:They captured the sixth level
+:fc50:They captured the seventh level
+:fc51:The King has returned
+:fc52:Jackpot 1
+:fc53:Jackpot 2
+:fc54:Jackpot 3
+:fc55:Jackpot 4
+:fc56:Jackpot 5
+:fc57:Jackpot 6
+:fc58:Jackpot 7
+:fc59:Double Jackpot 1
+:fc5a:Double Jackpot 2
+:fc5b:Double Jackpot 3
+:fc5c:Double Jackpot 4
+:fc5d:Double Jackpot 5
+:fc5e:Double Jackpot 6
+:fc5f:Double Jackpot 7
+:fc60:Triple Jackpot 1
+:fc61:Triple Jackpot 2
+:fc62:Triple Jackpot 3
+:fc63:Triple Jackpot 4
+:fc64:Triple Jackpot 5
+:fc65:Triple Jackpot 6
+:fc66:Triple Jackpot 7
+:fc67:Big Points
+:fc68:5 Million
+:fc69:Super Ring Frenzy
+:fc6a:Extra Ball
+:fc6b:Your prize is doubled
+:fc6c:We have a wizard
+:fc6e:Special
+:fc6f:Replay
+:fc70:Ticket
+:fc71:Free Game
+:fc72:Don't move a muscle
+:fc73:Steady Mate
+:fc74:Very Dangerous such behavior
+:fc76:Never trust anyone over four feet
+:fc77:Ten
+:fc78:Nine
+:fc79:Eight
+:fc7a:Seven
+:fc7b:Six
+:fc7c:Five
+:fc7d:Four
+:fc7e:Three
+:fc7f:Two
+:fc80:One
+:fc81:Time's a Wasting
+:fc82:Quickly
+:fc84:Hurry
+:fc85:thunk sound
+:fc86:Quick
+:fc87:That's the Spirit
+:fc8b:You've Got It
+:fc8c:You're Almost There
+:fc8d:You're Doing Great
+:fc90:Shreek/Howl
+:fc91:low shreek/howl
+:fc92:low shreek/howl 2
+:fc93:lower shreek/howl
+:fc94:lower shreek/howl 2
+:fc95:lower shreek/howl 3
+:fc96:thwak
+:fc97:thwak
+:fc98:thwak
+:fc99:We Must join with him Gandalf
+:fc9a:When did Saruman the wise abandon reason for madness?
+:fc9b:But you have elected the way of pain
+:fca0:Spell effect sound
+:fca1:elvish chant
+:fca2:elvish scream effect
+:fca3:thunk
+:fca4:whoosh
+:fca5:shreek
+:fca6:shreek
+:fca7:shreek
+:fca8:Whoosh short
+:fca9:air short
+:fcaa:air short
+:fcab:air short
+:fcac:thunk thunk
+:fcad:thunk
+:fcae:thunk
+:fcb0:waa waa
+:fcb1:waaa
+:fcb2:waaa
+:fcb3:waaaaaaaaaa
+:fcb4:growl
+:fcb5:growl
+:fcb6:hit shreek
+:fcb7:hit shreek
+:fcb8:hit shreek
+:fcb9:growl
+:fcba:growl
+:fcbb:growl
+:fcbc:loud growl
+:fcbd:loud growl
+:fcbe:loud growl
+:fcc0:water drip
+:fcc1:two drips
+:fcc2:drip
+:fcc3:sword
+:fcc4:sword
+:fcc5:sword
+:fcc6:sword twice
+:fcc7:sword
+:fcc8:sword twice
+:fcc9:low sword
+:fcca:two low swords
+:fccb:low sword
+:fccc:sword +echo
+:fccd:sword +echo
+:fcce:sword low
+:fcd0:scream
+:fcd1:scream
+:fcd2:scream
+:fcd3:scream
+:fcd4:scream
+:fcd5:scream
+:fcd6:flap flap (wings)
+:fcd7:Flap (wings)
+:fcd8:Flap(wings)
+:fcd9:Flap(wings)
+:fcda:flap flap flap
+:fcdb:flap flap
+:fcdc:flap air
+:fcdd:flap
+:fcde:air
+:fce0:One Elf Ring
+:fce1:Two Elf Rings
+:fce2:Three Elf Rings
+:fce3:One Ring of Men
+:fce4:Two Rings of Men
+:fce5:Three Rings of Men
+:fce6:Four Rings of Men
+:fce7:Five Rings of Men
+:fce8:Six Rings of Men
+:fce9:Seven Rings of Men
+:fcea:Eight Rings of Men
+:fceb:Nine Rings of Men
+:fcec:100 more
+:fced:250 more
+:fcee:500 more
+:fcef:ching
+:fcf0:ching
+:fcf1:clang
+:fcf2:clang
+:fd02:main theme
+:fd03:slow mellow song
+:fd04:end of ball countdown
+:fd05:end of end of ball bonus
+:fd06:long tune repeat
+:fd07:horns rising pitch tune
+:fd08:horns part 2
+:fd09:march battle type
+:fd0a:march to battle type 2
+:fd0b:march battle type 2 part 2
+:fd0c:sad slow song
+:fd0d:sad slow song 2
+:fd0e:sad slow song 3
+:fd0f:evil 1
+:fd11:good 1
+:fd12:good 2
+:fd13:battle march 2
+:fd14:battle march 2 part 2
+:fd15:battle march 2 part 3 speedy
+:fd16:piano scale
+:fd17:strings scale+drums
+:fd18:good speed song
+:fd19:victory music
+:fd1a:victory music 2
+:fd1b:ogre creation tune
+:fd1c:ogre creation tune part 2
+:fd1d:ingame rougher battle/sad
+:fd20:inbattle music
+:fd21:inbattle music 2
+:fd22:guitar slow happy music
+:fd23:slow sad music
+:fd24:metal march
+:fd25:march battle anticipation
+:fd26:hobbit happiness
+:fd27:orc battle music 1
+:fd28:"When you look into the mirror"
+:fd29:completion
+:fd2c:explosions/rising battle music
+:fd2d:explosion/dings
+:fd2e:explosion/rising scale arrow?
+:fd2f:sand
+:fd30:"FIREWORK SOUND"
+:fd31:repetitive ding
+:fd32:inlane repetitive
+:fd33:grunt
+:fd34:chime
+:fd35:rising scale
+:fd36:thump/complete
+:fd37:boom
+:fd38:downscale
+:fd39:rising scale
+:fd3a:bing
+:fd3b:crumble
+:fd3c:chime hit
+:fd3d:repetitive scale up
+:fd3e:arrow thunk
+:fd40:rising air
+:fd41:victory sound 2
+:fd42:rising drip
+:fd43:rising victory
+:fd44:rising victory thunk
+:fd45:rising horns victory
+:fd46:rising air 2
+:fd47:end
+:fd48:bubbly complete
+:fd49:thunder
+:fd4a:thunder
+:fd4b:thunder
+:fd4c:thunder
+:fd4d:thunder
+:fd4e:thunder
+:fd4f:"I suppose you think that was terribly clever"
+:fd50:thunder
+:fd51:thuder
+:fd52:thunder
+:fd53:leaf
+:fd54:leaf
+:fd55:two leaf
+:fd56:leaf
+:fd57:leaf
+:fd58:leaf
+:fd59:leaf
+:fd5a:leaf
+:fd5b:leaf
+:fd5c:two leaf
+:fd5d:leaf
+:fd5e:leaf
+:fd5f:hammer/anvil orc sound
+:fd60:leaf
+:fd61:two leaf
+:fd62:leaf
+:fd63:two leaf
+:fd64:leaf
+:fd65:leaf
+:fd66:two anvil sounds
+:fd67:click/anvil sound
+:fd68:anvil
+:fd69:clean anvil
+:fd6a:anvil/echo
+:fd6b:single anvil
+:fd6c:single anvil
+:fd6d:single anvil
+:fd6e:single anvil
+:fd6f:"run frodo!!!"
+:fd70:anvil
+:fd71:anvil
+:fd72:anvil
+:fd73:two anvils
+:fd74:anvil
+:fd75:anvil
+:fd76:anvil special?
+:fd77:two anvils
+:fd78:two anvils
+:fd79:door slam
+:fd7a:door slam
+:fd7b:door slam echo
+:fd7c:two door slams
+:fd7d:door slam echo 2
+:fd7e:door slam
+:fd80:bang
+:fd81:bang
+:fd82:bang echo
+:fd83:bang distorted end
+:fd84:bang
+:fd85:bang
+:fd86:bang
+:fd87:bang
+:fd88:bang
+:fd89:bang
+:fd8a:bang echo
+:fd8b:bang
+:fd8c:bang bang twang
+:fd8d:bang twang
+:fd8e:bang bang twang
+:fd8f:chimes/bells scale down
+:fd90:bang
+:fd91:bang bang
+:fd92:bang bang
+:fd93:bang bang
+:fd94:bang
+:fd95:bang
+:fd96:bang bang
+:fd97:bang
+:fd98:bang echo
+:fd99:bang bang
+:fd9a:bang
+:fd9b:bang
+:fd9c:bang
+:fd9d:bang
+:fd9e:bang bang
+:fd9f:bang
+:fda0:loud bang
+:fda1:thunk
+:fda2:thunk
+:fda3:thunk
+:fda4:thunk echo
+:fda5:bang
+:fda6:thunk echo
+:fda7:thunk
+:fda8:thunk
+:fda9:river air
+:fdaa:river air rising
+:fdab:river air rising echo
+:fdac:river air rising low
+:fdad:river air rising short
+:fdae:river air rising short echo
+:fdaf:river air rising scream
+:fdb0:air swoop
+:fdb1:boom boom
+:fdb2:boom reverb
+:fdb3:boom thunder
+:fdb4:rising air scream
+:fdb5:bing
+:fdb6:rolling bing
+:fdb9:rolling complete
+:fdba:rolling complete higher
+:fdbb:tune shriek
+:fdbc:tune aaah
+:fdbd:thunk complete shriek
+:fdbe:tune
+:fdbf:scream tune
+:fdc0:test tune
+:fdc1:rising
+:fdc2:chimes
+:fdc3:arrow thunk
+:fdc4:arrow shriek
+:fdc5:chime/bell
+:fdc6:different bell
+:fdc7:low bell
+:fdc8:three bells
+:fdc9:five anvils
+:fdca:whoosh whoosh thunk
+:fdcb:victory up
+:fdcc:victory middle
+:fdcd:victory start
+:fdce:victory again
+:fdcf:water
+:fdd0:scream bing thunk
+:fdd1:done victory arrow
+:fdd2:victory continued
+:fdd3:oooh/howl/thunk arrow
+:fdd4:aagh swish
+:fdd5:Star Trek beeps
+:fdd6:"I was delayed"
+:fdd7:scream chime
+:fdd8:drums finale
+:fdd9:whish/swish
+:fdda:machinegun bang
+:fddb:machinegun bang 2
+:fddc:whoosh reverb air
+:fddd:whoosh
+:fdde:whoosh
+:fddf:explosion/horn
+:fde0:fast tune up
+:fde1:fast end tune
+:fde2:fast end tune
+:fde3:fast end tune shriek
+:fde4:fast end tune breaking glass extended
+:fde5:shriek explosion
+:fde6:groan
+:fde7:groan shriek
+:fde8:thunks repetitive
+:fde9:horns tune/explosion
+:fdea:boom "run you fools!"
+:fdeb:low scream
+:fdec:chime
+:fded:fast tune
+:fdee:fast tune
+:fdef:slower completion tune held 2-parts
+:fdf0:whoosh
+:fdf1:"YOU SHALL NOT PASS"
+:fdf2:bang
+:fdf3:clang
+:fdf4:ping
+:fdf5:lower ping
+:fdf6:I suppose you think that was terribly clever
+:fdf8:soft ping
+:fdf9:ping ping
+:fdfa:credit sound
+:fdfb:low drum
+:fe30: =They are the Nazgul
+:fe31: =He needs elvish medicine AAAh!
+:fe32: =ride hard
+:fe33: =you have my sword
+:fe35: =I do not :fear them
+:fe36: =if you want him come and claim him
+:fe37: =welcome
+:fe38:this is indeed, gondor is done
+:fe39:this is no mine it's a tomb
+:fe3a:they have a cave troll
+:fe3d:the ring must be destroyed
+:fe3e:a gift from the elves
+:fe3f:you shall be the :fellowship of the ring
+:fe40:get off the road quick
+:fe42:I will take the ring to mordor
+:fe43:I suppose you think clever
+:fe44:I will help you bear this burden
+:fe45:to the bridge of castledoon
+:fe46:a balroq
+:fe47:a demon of the ancient world
+:fe48:this falls beyond any of you
+:fe49:run
+:fe4a:over the bridge
+:fe4c:go back to the shadow
+:fe4d:you shall not pass
+:fe4e:fly you fools
+:fe4f:at first light on the fifth day look to east
+:fe50:you have my axe
+:fe51:a game of special magnificence
+:fe53:gollum
+:fe54:must have my precious
+:fe55:they stole it from us
+:fe56:sneaky little hobbits
+:fe57:you don't have any friends
+:fe58:nobody likes you
+:fe59:you're a liar
+:fe5a:?
+:fe5b:murderer
+:fe5c:where would you be without me
+:fe5d:we survived because of me
+:fe5e:aaaah?
+:fe5f:tricksy
+:fe60:master betrayed us
+:fe61:do you see little hobbitses
+:fe62:my precious
+:fe63:by order of the king
+:fe64:I'm not sure
+:fe65:you have my bow
+:fe66:orcs
+:fe67:what is it?
+:fe68:a scout
+:fe6a:that rider was looking for something or someone
+:fe6b:we're coming too
+:fe6e:you need people of intelligence
+:fe70:ooooh/horn
+:fe71:there is no li:fein the void
+:fe72:build me an army worthy of mordor
+:fe73:A new power is rising
+:fe74:to war
+:fe75:frodo
+:fe76:what are you doing the wraiths are still out there
+:fe77:mr frodo's not going anywhere without me
+:fe78:so it begins
+:fe79:smeagol
+:fe7a:always hopes
+:fe7b:master is afraid
+:fe7c:I'm not listening
+:fe7d:go away
+:fe7e:I hate you
+:fe7f:master looks after us now
+:fe80:we don't need you
+:fe81:leave now and never come back
+:fe82:smeagol's free
+:fe83:I see you
+:fe84:you cannot hide
+:fe85:I want every man and strong lad to be ready for battle by nightfall
+:fe86:As You Wish
+:fe87:show him
+:fe88:you should know better
+:fe89:there is no --
+:fe8a:go to war
+:fe8b:a fine hit
+:fe8c:release the river
+:fe8d:what do you see?
+:fe8e:frodo scream
+:fe8f:shire
+:fe90:baggins
+:fe91:give up the halfling she elf
+:fe92:everybody's invited
+:fe93:welcome to the shire
+:fe94:we will journey through moria
+:fe95:orcs!
+:fe96:look out
+:fe9a:hurry
+:fe9b:quick!
+:fe9c:run!
+:fe9d:again!
+:fe9e:breathing
+:fe9f:destroy the ring
+:feA0:gollum has the ring
+:fea1:aaah
+:fea2:ugh
+:fea3:aah
+:fea4:uuugh
+:fea5:aaaaah
+:fea6:widdhuh
+:fea7:aaaaaaah
+:fea8:help me
+:fea9:hit the held ball
+:feaa:shoot the center ring
+:feac:the ring is mine
+:fead:we make for brie
+:feae:we make for wethertop
+:feaf:we make for rivendale
+:feb0:unleash the river
+:feb1:help
+:feb4:hurry
+:feb6:the fire
+:feb7:use my sword
+:feb8:be at peace
+:feb9:on to valinor
+:feba:you have done very well
+:febb:you gathered all the rings of power
+:febc:you gathered the nine
+:febd:you've gathered the three
+:febe:beware of gollums two sides
+:febf:don't trust gollum
+:fec1:good smeagol double points
+:fec2:the fall of the witch king
+:fec3:the flight of the four
+:fec4:look!
+:fec5:the march of the ents
+:fec6:shelob's tunnel
+:fec7:the treeson of saurumon
+:fec8:the warg riders
+:fec9:double points
+:feca:ring frenzy
+:fecb:five million
+:fecc:get the extra ball
+:fecf:ring multiball
+:fed1:special is lit
+:fed3:you're doing great
+:fed4:beautiful shot
+:fed5:breathtaking
+:fed6:good shot
+:fed8:great shot
+:fed9:magnificent
+:feda:priceless
+:fedb:spectacular
+:fedc:very skillful
+:fedd:well done
+:fede:confound it
+:fee0:great effort
+:fee1:just missed
+:fee2:oh so close
+:fee4:shall we try that again?
+:fee5:easy
+:fee6:eazie
+:fee7:why'd you do that
+:fee8:ten
+:fee9:nine
+:feea:eight
+:feeb:seven
+:feec:six
+:feed:five
+:feee:four
+:feef:three
+:fef0:two
+:fef1:one
+:fef2:shoot the center loop
+:fef3:shoot the left orbit
+:fef4:shoot the left ramp
+:fef5:shoot the left tower
+:fef6:shoot the right orbit
+:fef7:shoot the right ramp
+:fef8:shoot the right tower
+:fef9:shoot the balroq
+:fefa:shoot the ring
+#
+#
+ripleys:
+:fc01:Two more to go
+:fc02:Just one more
+:fc03:You can do it
+:fc04:Almost There
+:fc05:Another letter in my name, how nice
+:fc06:Strange things in Africa
+:fc07:An idle threat
+:fc09:Nice job
+:fc0a:Way to go
+:fc0b:Do it again
+:fc0c:Faster
+:fc0d:Time's running out
+:fc0f:The strange, the bizarre, the unusual
+:fc10:Try a ramp shot
+:fc11:Collecting an idol would be good now
+:fc12:Good show old man
+:fc13:Nice shot
+:fc14:Three more idols
+:fc15:Excellent
+:fc16:Let me tell you about the one that got away
+:fc17:A rollerskating penguin, how amazing
+:fc18:How does he do that?
+:fc19:That penguin can skate
+:fc1a:Firewalkers, very dangerous
+:fc1b:He looks like he's done this before
+:fc1c:The ancient secret of firewalking
+:fc1d:Boomerangs, an incredible weapon
+:fc1e:How did you invent such a thing?
+:fc1f:Weird gravestones, my favorite
+:fc20:Old graveyards, bizarre
+:fc21:Out of the dark forest
+:fc22:What could be lying?
+:fc23:Strange exciting creatures
+:fc24:Something that's never been seen before
+:fc25:Shrunken heads, I love collecting these
+:fc26:There's a story behind every one
+:fc27:Guard your collection closely
+:fc28:Get three in a row
+:fc29:Amazing things can happen
+:fc2a:Unlimited millions at your disposal
+:fc2b:A fast way to add jewels to my collection
+:fc2c:Super Jackpot is lit
+:fc2d:Get the jackpot
+:fc2e:Get the Super Jackpot
+:fc2f:That's super
+:fc30:Break the magic code
+:fc31:Very Valuable
+:fc32:Hard to collect but worth it
+:fc33:I'd travel the world to find one of those
+:fc34:Player 1
+:fc35:Player 2
+:fc36:Player 3
+:fc37:Player 4
+:fc38:Is up
+:fc39:I don't believe it
+:fc3a:Let's explore the ancient temple
+:fc3b:Valuable artifacts inside
+:fc3c:Many things worth collecting
+:fc3d:Another jewel for my collection
+:fc3e:What bizarre thing will we find next?
+:fc3f:So close to a big find
+:fc40:I don't believe my eyes
+:fc41:An eighth continent
+:fc42:I've searched all my life
+:fc43:What will we find here?
+:fc44:Incredibly valuable things
+:fc45:You did it
+:fc46:Shoot again
+:fc80:WHOA
+:fc81:OH
+:fc82:Ouch Mon
+:fc83:Yowza
+:fc84:Ouch
+:fc85:Oh No
+:fc86:Yikes
+:fc87:Oooh
+:fc88:Big Points
+:fc89:Shoot the idol
+:fc8a:A little something to help you along
+:fc8b:Collecting idols is very dangerous
+:fc8c:That idol is noisy
+:fc8d:Crush that idol
+:fc8e:Serve you right
+:fc8f:Another idol bites the dust
+:fc90:Very good mon
+:fc91:Nice job mon
+:fc92:Too cold for me mon
+:fc93:Oh that's got to hurt
+:fc94:A little too slippery for me
+:fc95:That's gonna leave a mark
+:fc96:Don't try to sail home mon
+:fc97:Or maybe only once, heh heh
+:fc98:Very dangerous
+:fc99:Hot foot mon
+:fc9a:I bet that hurts
+:fc9b:And I don't even have feet
+:fc9c:Careful
+:fc9d:Look out
+:fc9e:Watch your head
+:fc9f:Right back at ya
+:fcA0:Duck
+:fcA1:Should've listened to me
+:fcA2:I'm scared
+:fcA3:Centuries of comedy
+:fcA4:I can dig it
+:fcA5:You're freakin' me out
+:fcA6:Rock on hairy guy
+:fcA7:Whoa....heavy
+:fcA8:He has more hair than me
+:fcA9:Don't growl at me you big ape
+:fcAa:You think it's easy bein' a shrunken head?
+:fcAb:Sure, pick on the little guy
+:fcAc:OUCH!
+:fcAd:Nooooo!
+:fcAe:Oooo
+:fcAf:Eeeee
+:fcB0:OH!
+:fcB1:Aaah
+:fcB2:Ah!
+:fcB3:Ooh...
+:fcB4:Ohg!
+:fcB5:Can we pick on the idol instead?
+:fcB6:Let's go whack that Big Foot guy.
+:fcB7:Just hangin' around mon
+:fcB8:Penguin Jackpot is lit!
+:fcB9:Gimme an 'R'
+:fcBa:Gimme an 'I'
+:fcBb:Gimme a 'P'
+:fcBc:Give me an 'O'
+:fcBd:Give me an 'F'
+:fcBe:Give me another 'F'
+:fcBf:What that spell?
+:fcC0:That thing is amazing!
+:fcC1:I feel like a million
+:fcC2:Looks like a bad slot machine
+:fcC3:Now we're moving
+:fcC4:Keep going mon
+:fcC5:WIN
+:fcC6:wooooo
+:fcC7:Oh I'm lovin' that
+:fcC8:Double your fun
+:fcC9:Points everywhere
+:fcCa:This party don't last long mon
+:fcCb:Whoah...we jammin now
+:fcCc:Shoot the left ramp
+:fcCd:Shoot the right ramp
+:fcCe:Don't forget the penguin
+:fcCf:You woke up the idol
+:fcD0:You can never have too many points
+:fcD1:Extra Ball is still lit mon
+:fcD2:One more to go
+:fcD3:Hurry up
+:fcD4:Almost there
+:fcD5:Oh yeah
+:fcD6:Oh yes
+:fcD7:oooh
+:fcD8:ohhh
+:fcD9:Big bonus man
+:fcDa:Congratulations man
+:fcDb:That was awesome
+:fcDc:Ten
+:fcDd:Nine
+:fcDe:Eight
+:fcDf:Seven
+:fcE0:Six
+:fcE1:Five
+:fcE2:Four
+:fcE3:Three
+:fcE4:Two
+:fcE5:One
+:fcE6:I'm getting dizzy
+:fcE7:Easy there
+:fcE8:The turbo gate is open man
+:fcE9:Beat that ball upside the head with a dead fish man
+:fd02:Victory Theme
+:fd03:Theme 2
+:fd04:Crazy Theme
+:fd05:Bingle song
+:fd06: (A)=Part 1 Intro repeat tune
+:fd06: (B)=Part 2 repetitive tune
+:fd07:Completion
+:fd08:Ripley's Main Theme
+:fd09: (A)=Ripley's continued theme Part 1
+:fd09: (B)=Ripley's continued theme part 2
+:fd0a:Bongos
+:fd0b: (A)=Intro to song
+:fd0b: (B)=Repeat for song
+:fd0c:Scary Tune
+:fd0d:Scary Tune 2
+:fd0e:Miami vice type theme
+:fd0f:Horns theme
+:fd10:hi hat
+:fd11:Big Band theme
+:fd12:Arabian Theme
+:fd14:Swing Theme
+:fd15:Drunk Band Jam
+:fd16:Happy Tune
+:fd17:Piano Tune
+:fd18:New Age Theme
+:fd1a:Phantom distorted song
+:fd1b:Bonus Countdown
+:fd1c:Bonus Countdown end
+:fd1d:Bonus multiplier?
+:fd20:Swing tune 2
+:fd21:Finish music
+:fd3e:Thunder
+:fd40:gunshot
+:fd41:flyby
+:fd42:flyby 2
+:fd43:door close
+:fd44:door close 2
+:fd45:door close 3
+:fd46:sonic ping
+:fd47:high sonic ping
+:fd48:rising chimes
+:fd49:air
+:fd4a:slam
+:fd4b:slam 2
+:fd4c:rolling thunder
+:fd4d:thunder 2
+:fd4e:string scale up
+:fd4f:string scale down
+:fd50:arrow
+:fd51:completion
+:fd52:inlane
+:fd53:drums
+:fd54:Upward swish
+:fd55:Two upward swishes
+:fd56:Three upward swishes
+:fd57:ping
+:fd58:downward swish
+:fd59:completion
+:fd5a:completion
+:fd5b:completion
+:fd5d:Pop
+:fd5e:Pop 2
+:fd5f:Pop 3
+:fd60:Pop 4
+:fd61:Pop 5
+:fd62:Pop 6
+:fd63:Morse code
+:fd64:Biplane
+:fd65:Completion
+:fd66:End
+:fd67:Completion end
+:fd68:Good complete
+:fd69:Good complete 2
+:fd6a:rising strings
+:fd6b:thunder 3
+:fd6c:thunder 4
+:fd6d:death
+:fd6e:completion
+:fd70:laser
+:fd71:laser 2
+:fd72:anticipation
+:fd73:explosion/buzz
+:fd74:completion
+:fd75:slot machine
+:fd76:slot handle
+:fd77:click
+:fd78:click 2
+:fd7b:thunder
+:fd7c:thunder 2
+:fd7d:thunder 3
+:fd87:slow laser
+:fd88:laser
+:fd89:laser
+:fd8a:laser
+:fd8c:laser completion
+:fd8e:Extra Ball
+:fd8f:completion
+:fd90:shot laser
+:fd91:laser
+:fd92:completion
+:fd93:laser
+:fd94:Super Jackpot
+:fd96:rising
+:fd97:rising
+:fd98:rising
+:fd99:leaves
+:fd9b:drum hihat
+:fd9c:completion
+:fd9d:laser hihat
+:fd9e:drums oooh
+:fd9f:laser screams
+:fdA1:Intro scale
+:fdA2:scale
+:fdA3:whoosh
+:fdA4:down scale
+:fdA5:rising scale
+:fdA8:horns
+:fdA9:slow rising scale
+:fdB0:Bark 1
+:fdB1:Bark 2
+:fdB2:Bark 3
+:fdB3:Bark 4
+:fdB4:Bark 5
+:fdB5:Bark 6
+:fdB6:Bark 7
+:fdB7:Bark 8
+:fdB8:Bark 9
+:fdB9:Bark 10
+:fdBa:Bark 11
+:fdBb:Bark 12
+:fdF6:Speaker test tone
+:fdF7:diagnostic select
+:fdF8:diagnostic move
+:fdF9:Diagnostic Exit
+:fdFa:Diagnostic Enter Menu
+:fdFb:Drum
+:fe30:Yawn
+:fe31:Yawn 2
+:fe32:Yawn 3
+:fe33:It's not plugged in yet mon
+:fe34:The head knows
+:fe35:Not much I guess
+:fe36:Quite a bit eh?
+:fe37:A whole lot, ho ho ho
+:fe38:That's so weird mon
+:fe39:Who would have thought that
+:fe3a:That makes me feel big again
+:fe3b:Big foot mon
+:fe3c:Lock is lit mon
+:fe3d:Now ya done it
+:fe3e:Just don't mess with the idol
+:fe3f:Oh boy
+:fe40:Carefully Carefully
+:fe41:Oh no
+:fe42:Watch out
+:fe43:ooh
+:fe44:noooo
+:fe45:Oh
+:fe46:OOOooh
+:fe47:Oooh
+:fe48:Ooooh
+:fe49:Oh
+:fe4a:Oh
+:fe4b:Oh
+:fe4c:Jackpot
+:fe4d:Jackpot
+:fe4e:Super Jackpot
+:fe4f:Double points ha ha ha
+:fe50:One Million
+:fe51:Two Million
+:fe52:Three Million
+:fe53:Four Million
+:fe54:Five Million
+:fe55:Get the extra ball
+:fe56:Special is lit
+:fe57:Ripoff
+:fe58:Extra Ball
+:fe59:Special
+:fe5a:Replay
+:fe5b:Tickets
+:fe5c:Ha ha ha
+:fe5d:Ho
+:fe5e:Heh
+:fe5f:Ho ho ho ho ho
+:fe60:Time for a road trip mon (Ripley voice)
+:fe61:Time to rock
+:fe62:Super Jackpot is lit
+:fe63:So Close
+:fe64:Let's go
+:fe65:Hit me to party
+:fe66:Don't hold back
+:fe67:The natives are restless
+:fe70:Ah
+:fe71:Ah
+:fe72:Ah
+:fe73:Ah
+:fe74:Ah
+:fe75:Ah
+:fe76:Who (owl)
+:fe77:Ah
+:fe78:Scream
+:fe79:Scream
+:fe7a:Short scream
+:fe7b:Scream
+:fe7c:Whoa
+:fe7d:Ah
+:fe7e:Ah
+:fe7f:Whaaa
+:fe80:Roar
+:fe81:Roar
+:fe82:Roar
+:fe83:Roar
+:fe84:Roar
+:fe85:Roar
+:fe86:Roar
+:fe87:Roar
+:fe88:Roar
+:fe89:Roar
+:fe8a:Roar
+:fe90:Duck
+:fe91:Duck
+:fe92:Duck
+:fe93:Duck
+:fe94:Duck
+:fe95:Duck
+:feA0:?
+:feA1:?
+:feA2:?
+:feA3:?
+:feA4:?
+:feA5:?
+:feA6:?
+:feA7:Ow!
+:feA8:Ow!
+:feA9:Ow
+:feAa:?
+:feAb:?
+:feAc:ooh ooh ooh ooh ooh ooh
+:feB0:rolling hubcap
+:feB1:Woof
+:feB2:Woof
+:feB3:Woof Woof
+:feB4:Woof Woof
+:feB5:Woof Woof Woof
+:feB6:Woof Woof
+:feB7:HOWL
+:feB8:Woof Woof
+:feB9:Woof
+:feBa:Woof
+:feBc:Ripoff
+:feBd:Gulp
+:feBe:Gulp
+:feBf:?
+:feC0:Amazing
+:feC1:Welcome to Ripley's Odditorium
+:feC2:Prepare to be amazed
+:feC3:Come one, come all
+:feC4:We have room for one more
+:feC5:Welcome sir, welcome madam
+:feC6:Skate with the penguin at your own risk, in the Ripley Zone
+:feC7:Ball one locked
+:feC8:Ball two locked
+:feC9:Extra Ball is lit
+:feCa:Ripoff
+:feCb:It's time to visit Africa
+:feCc:It's time to visit Antarctica
+:feCd:It's time to visit Asia
+:feCe:It's time to visit Australia
+:feCf:It's time to visit Europe
+:feD0:It's time to visit North America
+:feD1:It's time to visit South America
+:feD2:That's once
+:feD3:That's twice
+:feD4:Careful
+:feD5:Very Dangerous
+:feD6:Welcome back
+:feD8:Believe it or Not
+:feD9:Multiball is lit
+:feDa:No matter where you go, there you are
+:feE0:?
+:feE1:?
+:feE2:?
+:feE3:?
+:feE4:?
+:feE5:?
+:feE6:?
+:feE7:Ow!
+:feE8:Ow!
+:feE9:Ow
+:feEa:?
+:feEb:?
+:feEc:ooh ooh ooh ooh ooh ooh
+
 
