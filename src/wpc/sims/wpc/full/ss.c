@@ -43,6 +43,7 @@
 /-------------------*/
 static int  ss_handleBallState(sim_tBallStatus *ball, int *inports);
 static void ss_handleMech(int mech);
+static int  ss_getMech(int mechNo);
 static void ss_drawMech(BMTYPE **line);
 static void ss_drawStatic(BMTYPE **line);
 static int ss_getMech(int mechNo);
@@ -404,7 +405,7 @@ static core_tGameData ssGameData = {
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
     0,0,0,0,0,0,0,
-    NULL, ss_handleMech, NULL, ss_drawMech,
+    NULL, ss_handleMech, ss_getMech, ss_drawMech,
     NULL, NULL
   },
   &ssSimData,
@@ -418,8 +419,8 @@ static core_tGameData ssGameData = {
 };
 
 static mech_tInitData ss_wheelMech = {
-  39,40, MECH_LINEAR|MECH_CIRCLE|MECH_TWOSTEPSOL|MECH_FAST, 384, 384,
-  {{swWheelIndex, 24, 383}}
+  39,40, MECH_LINEAR|MECH_CIRCLE|MECH_TWOSTEPSOL|MECH_FAST, 200, 200,
+  {{swWheelIndex, 25, 199}}
 };
 /*---------------
 /  Game handling
@@ -429,26 +430,25 @@ static void init_ss(void) {
   mech_add(0,&ss_wheelMech);
 }
 
-
 static void ss_handleMech(int mech) {
 //  if (mech & 0x01) mech_update(0);
 }
 static int ss_getMech(int mechNo) {
-  return mech_getPos(0);
+  return mech_getPos(mechNo);
 }
 static const char *spiderWheelText[] =
-  {"Top Eyeball    ", "Right Skull    ", "Jackpot        ", "Double Trouble ",
-   "Right Eyeball  ", "Beat The Crate ", "Coffin Lock    ", "Right T. Power ",
-   "Monster's Lab  ", "Left T. Power  ", "Boogie Man     ", "Crate Multiball",
-   "Left Eyeball   ", "Leaper Mania   ", "Bony Beast     ", "Left Skull     "};
+  {"Collect Deadhead  ", "Jackpot Is Lit    ", "Double Trouble    ", "Collect Eyeball   ",
+   "Beat The Crate    ", "Coffin Multiball  ", "Telepathetic Power", "Laboratory        ",
+   "Telepathetic Power", "Boogie Man Boogie ", "Crate Multiball   ", "Collect Eyeball   ",
+   "Leaper Mania      ", "Beast Hurry Up    ", "Collect Deadhead  ", "Collect Eyeball   "};
 /*--------------------
   Drawing information
   --------------------*/
 static void ss_drawMech(BMTYPE **line) {
-        core_textOutf(30,10,BLACK,"Wheel Pos   : %3d",  mech_getPos(0));
+        core_textOutf(30,10,BLACK,"Wheel Pos   : %3d",  ss_getMech(0));
         core_textOutf(30,20,BLACK,"Coffin Door : %-6s", core_getSol(sCoffinDoor)?"Open":"Closed");
         core_textOutf(30,30,BLACK,"Loop Gate   : %-6s", core_getSol(sLoopGate) ? "Open":"Closed");
         core_textOutf(30,40,BLACK,"Coin Door   : %-6s", core_getSw(swCoinDoor) ? "Closed":"Open");
-        core_textOutf(30,50,BLACK,"Spider Wheel: %s",   spiderWheelText[mech_getPos(0)/24]);
+        core_textOutf(30,50,BLACK,"Spider Wheel: %s",   spiderWheelText[(mech_getPos(0)+6)*2/25]);
 }
 
