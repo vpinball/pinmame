@@ -4,10 +4,6 @@
 #include "wpcsam.h"
 #include "gen.h"
 
-/* 240201 Corrected solenoid handling once again */
-/* 090501 Added CORE_GAMEDEFNV for games without version number */
-/* 080801 Moved generations to gen.h (SJE) */
-
 /*-- some convenience macros --*/
 #ifndef FALSE
   #define FALSE (0)
@@ -182,16 +178,18 @@
 #define CORE_SEG87F   6 // 7  segments, forced comma every three
 #define CORE_SEG7S    7 // 7  segements, small
 #define CORE_DMD      8 // DMD Display
-#define CORE_VIDEO	255 // Video Display for Video/Pin Combinations
+#define CORE_VIDEO    9 // VIDEO displ
 
 #define CORE_SEGHIBIT 0x10
+#define CORE_SEGREV   0x20
+#define CORE_SEGMASK  0x0f
 #define CORE_SEG8H    (CORE_SEG8  | CORE_SEGHIBIT)
 #define CORE_SEG7H    (CORE_SEG7  | CORE_SEGHIBIT)
 #define CORE_SEG87H   (CORE_SEG87 | CORE_SEGHIBIT)
 #define CORE_SEG87FH  (CORE_SEG87F| CORE_SEGHIBIT)
 #define CORE_SEG7SH   (CORE_SEG7S | CORE_SEGHIBIT)
 
-#define CORE_DUMMYZERO(x) ((x)*32)
+#define CORE_DUMMYZERO(x) ((x)*0x40)
 
 #define DMD_MAXX 192
 #define DMD_MAXY 64
@@ -208,7 +206,7 @@ typedef struct {
 } core_tLCDLayout, *core_ptLCDLayout;
 
 typedef UINT8 tDMDDot[DMD_MAXY+2][DMD_MAXX+2];
-void dmd_draw(struct mame_bitmap *bitmap, tDMDDot dotCol, core_ptLCDLayout layout);
+void dmd_draw(struct mame_bitmap *bitmap, tDMDDot dotCol, const core_tLCDLayout *layout);
 /* Generic display handler. requires LCD layout in GameData structure */
 extern void gen_refresh(struct mame_bitmap *bitmap, int fullRefresh);
 
@@ -395,7 +393,7 @@ extern unsigned char core_palette[(DMD_COLORS+(LAMP_COLORS*2)+7)][3];
 /*-- fills in one of these in the game_init function --*/
 typedef struct {
   UINT64  gen;                /* Hardware Generation */
-  core_ptLCDLayout lcdLayout; /* LCD display layout */
+  const core_tLCDLayout *lcdLayout; /* LCD display layout */
   struct {
     UINT32  flippers;      /* flippers installed (see defines below) */
     int     swCol, lampCol, custSol; /* Custom switch columns, lamp columns and solenoids */
@@ -407,7 +405,7 @@ typedef struct {
     core_tLampDisplay *lampData;      /* lamp layout */
     wpc_tSamSolMap   *solsammap;      /* solenoids samples */
   } hw;
-  void *simData;
+  const void *simData;
   struct { /* WPC specific stuff */
     char serialNo[21];  /* Securty chip serial number */
     UINT8 invSw[CORE_MAXSWCOL]; /* inverted switches (e.g. optos) */
@@ -420,7 +418,7 @@ typedef struct {
   } sxx;
   /* simulator data */
 } core_tGameData;
-extern core_tGameData *core_gameData;
+extern const core_tGameData *core_gameData;
 
 /*-- each core must fill in one of these --*/
 typedef struct {
@@ -483,7 +481,7 @@ INLINE UINT8 core_revnyb(UINT8 x) { return core_swapNyb[x]; }
 extern int core_getDip(int dipBank);
 
 /*-- startup/shutdown --*/
-int core_init(core_tData *cd);
+int core_init(const core_tData *cd);
 void core_exit(void);
 
 #endif /* INC_CORE */
