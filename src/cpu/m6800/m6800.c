@@ -1050,9 +1050,9 @@ const char *m6800_info(void *context, int regnum)
 
 	/* Layout of the debugger windows x,y,w,h */
 	static UINT8 m6800_win_layout[] = {
-		27, 0,53, 4,	/* register window (top rows) */
+		27, 0,53, 2,	/* register window (top rows) */
 		 0, 0,26,22,	/* disassembler window (left colums) */
-		27, 5,53, 8,	/* memory #1 window (right, upper middle) */
+		27, 3,53,10,	/* memory #1 window (right, upper middle) */
 		27,14,53, 8,	/* memory #2 window (right, lower middle) */
 		 0,23,80, 1,	/* command line window (bottom rows) */
 	};
@@ -1140,9 +1140,9 @@ const char *m6801_info(void *context, int regnum)
 
 	/* Layout of the debugger windows x,y,w,h */
 	static UINT8 m6801_win_layout[] = {
-		27, 0,53, 4,	/* register window (top rows) */
+		27, 0,53, 2,	/* register window (top rows) */
 		 0, 0,26,22,	/* disassembler window (left colums) */
-		27, 5,53, 8,	/* memory #1 window (right, upper middle) */
+		27, 3,53,10,	/* memory #1 window (right, upper middle) */
 		27,14,53, 8,	/* memory #2 window (right, lower middle) */
 		 0,23,80, 1,	/* command line window (bottom rows) */
 	};
@@ -1197,9 +1197,9 @@ const char *m6802_info(void *context, int regnum)
 
 	/* Layout of the debugger windows x,y,w,h */
 	static UINT8 m6802_win_layout[] = {
-		27, 0,53, 4,	/* register window (top rows) */
+		27, 0,53, 2,	/* register window (top rows) */
 		 0, 0,26,22,	/* disassembler window (left colums) */
-		27, 5,53, 8,	/* memory #1 window (right, upper middle) */
+		27, 3,53,10,	/* memory #1 window (right, upper middle) */
 		27,14,53, 8,	/* memory #2 window (right, lower middle) */
 		 0,23,80, 1,	/* command line window (bottom rows) */
 	};
@@ -1552,9 +1552,9 @@ const char *m6803_info(void *context, int regnum)
 
 	/* Layout of the debugger windows x,y,w,h */
 	static UINT8 m6803_win_layout[] = {
-		27, 0,53, 4,	/* register window (top rows) */
+		27, 0,53, 2,	/* register window (top rows) */
 		 0, 0,26,22,	/* disassembler window (left colums) */
-		27, 5,53, 8,	/* memory #1 window (right, upper middle) */
+		27, 3,53,10,	/* memory #1 window (right, upper middle) */
 		27,14,53, 8,	/* memory #2 window (right, lower middle) */
 		 0,23,80, 1,	/* command line window (bottom rows) */
 	};
@@ -1609,9 +1609,9 @@ const char *m6808_info(void *context, int regnum)
 
 	/* Layout of the debugger windows x,y,w,h */
 	static UINT8 m6808_win_layout[] = {
-		27, 0,53, 4,	/* register window (top rows) */
+		27, 0,53, 2,	/* register window (top rows) */
 		 0, 0,26,22,	/* disassembler window (left colums) */
-		27, 5,53, 8,	/* memory #1 window (right, upper middle) */
+		27, 3,53,10,	/* memory #1 window (right, upper middle) */
 		27,14,53, 8,	/* memory #2 window (right, lower middle) */
 		 0,23,80, 1,	/* command line window (bottom rows) */
 	};
@@ -1959,9 +1959,9 @@ const char *hd63701_info(void *context, int regnum)
 
 	/* Layout of the debugger windows x,y,w,h */
 	static UINT8 hd63701_win_layout[] = {
-		27, 0,53, 4,	/* register window (top rows) */
+		27, 0,53, 2,	/* register window (top rows) */
 		 0, 0,26,22,	/* disassembler window (left colums) */
-		27, 5,53, 8,	/* memory #1 window (right, upper middle) */
+		27, 3,53,10,	/* memory #1 window (right, upper middle) */
 		27,14,53, 8,	/* memory #2 window (right, lower middle) */
 		 0,23,80, 1,	/* command line window (bottom rows) */
 	};
@@ -2332,9 +2332,9 @@ const char *nsc8105_info(void *context, int regnum)
 
 	/* Layout of the debugger windows x,y,w,h */
 	static UINT8 nsc8105_win_layout[] = {
-		27, 0,53, 4,	/* register window (top rows) */
+		27, 0,53, 2,	/* register window (top rows) */
 		 0, 0,26,22,	/* disassembler window (left colums) */
-		27, 5,53, 8,	/* memory #1 window (right, upper middle) */
+		27, 3,53,10,	/* memory #1 window (right, upper middle) */
 		27,14,53, 8,	/* memory #2 window (right, lower middle) */
 		 0,23,80, 1,	/* command line window (bottom rows) */
 	};
