@@ -4,7 +4,7 @@
 #include "zacsnd.h"
 #include "sndbrd.h"
 
-//Display: 5 X 6 Segment, 2 X 2 Segment, 7 Digit Displays without commas
+//Display: 5 X 6 Digit, 2 X 2 Digit, 7 Segment Displays without commas
 static core_tLCDLayout dispZAC1[] = {
   {0, 0,42,6,CORE_SEG7}, {0,16,34,6,CORE_SEG7},
   {2, 0,26,6,CORE_SEG7}, {2,16,18,6,CORE_SEG7},
@@ -12,14 +12,14 @@ static core_tLCDLayout dispZAC1[] = {
   {0}
 };
 
-//Display: 5 X 7 Segment, 7 Digit Displays with 2 commas
+//Display: 5 X 7 Digit, 7 Segment Displays with 2 commas
 static core_tLCDLayout dispZAC2[] = {
   {0, 0,33,7,CORE_SEG87F}, {0,16,25,7,CORE_SEG87F},
   {2, 0,17,7,CORE_SEG87F}, {2,16, 9,7,CORE_SEG87F},
   {5, 0, 1,7,CORE_SEG87F}, {0}
 };
 
-//Display: 5 X 8 Segment, 7 Digit Displays with 2 commas
+//Display: 5 X 8 Digit, 7 Segment Displays with 2 commas
 static core_tLCDLayout dispZAC3[] = {
   {0, 0,32,8,CORE_SEG87F}, {0,18,24,8,CORE_SEG87F},
   {2, 0,16,8,CORE_SEG87F}, {2,18, 8,8,CORE_SEG87F},
@@ -53,14 +53,14 @@ ZAC_INPUT_PORTS_START(name, 1) ZAC_INPUT_PORTS_END
 /*--------------------------------
 / Winter Sports (01/78)
 /-------------------------------*/
-INITGAME1(wsports,0,dispZAC1,0)
+INITGAME1(wsports,0,dispZAC1,SNDBRD_ZAC1311)
 ZAC_ROMSTART44444(wsports,	"ws1.bin",0x58feb058,
 							"ws2.bin",0xece702cb,
 							"ws3.bin",0xff7f6824,
 							"ws4.bin",0x74460cf2,
 							"ws5.bin",0x5ef51ced)
 ZAC_ROMEND
-CORE_GAMEDEFNV(wsports,"Winter Sports",1978,"Zaccaria",mZAC0,SOUNDFLAG)
+CORE_GAMEDEFNV(wsports,"Winter Sports",1978,"Zaccaria",mZAC1311,SOUNDFLAG)
 
 //07/78 House of Diamonds
 //09/78 Strike
@@ -70,52 +70,52 @@ CORE_GAMEDEFNV(wsports,"Winter Sports",1978,"Zaccaria",mZAC0,SOUNDFLAG)
 / Future World (10/78)
 /-------------------------------*/
 // Game ROMs #2 and #3 have to be swapped!
-INITGAME1(futurwld,0,dispZAC1,0)
+INITGAME1(futurwld,0,dispZAC1,SNDBRD_ZAC1311)
 ZAC_ROMSTART44444(futurwld,	"futwld_1.lgc",0xd83b8793,
 							"futwld_3.lgc",0xbdcb7e1d,
 							"futwld_2.lgc",0x48e3d293,
 							"futwld_4.lgc",0xb1de2120,
 							"futwld_5.lgc",0x6b7965f2)
 ZAC_ROMEND
-CORE_GAMEDEFNV(futurwld,"Future World",1978,"Zaccaria",mZAC0,SOUNDFLAG)
+CORE_GAMEDEFNV(futurwld,"Future World",1978,"Zaccaria",mZAC1311,SOUNDFLAG)
 
 /*--------------------------------
 / Shooting the Rapids (04/79)
 /-------------------------------*/
-INITGAME1(strapids,0,dispZAC1,0)
+INITGAME1(strapids,0,dispZAC1,SNDBRD_ZAC1125)
 ZAC_ROMSTART44444(strapids,	"rapids_1.lgc",0x2a30cef3,
 							"rapids_2.lgc",0x04adaa14,
 							"rapids_3.lgc",0x397992fb,
 							"rapids_4.lgc",0x3319fa21,
 							"rapids_5.lgc",0x0dd67110)
 ZAC_ROMEND
-CORE_GAMEDEFNV(strapids,"Shooting the Rapids",1979,"Zaccaria",mZAC0,SOUNDFLAG)
+CORE_GAMEDEFNV(strapids,"Shooting the Rapids",1979,"Zaccaria",mZAC1125,SOUNDFLAG)
 
 /*--------------------------------
 / Hot Wheels (09/79)
 /-------------------------------*/
-INITGAME1(hotwheel,0,dispZAC1,0)
+INITGAME1(hotwheel,0,dispZAC1,SNDBRD_ZAC1125)
 ZAC_ROMSTART84444(hotwheel,	"zac_boot.lgc",0x62a3da59,
 							"htwhls_2.lgc",0x7ff870ae,
 							"htwhls_3.lgc",0x7c1fba91,
 							"htwhls_4.lgc",0x974804ba,
 							"htwhls_5.lgc",0xe28f3c60)
 ZAC_ROMEND
-CORE_GAMEDEFNV(hotwheel,"Hot Wheels",1979,"Zaccaria",mZAC0,SOUNDFLAG)
+CORE_GAMEDEFNV(hotwheel,"Hot Wheels",1979,"Zaccaria",mZAC1125,SOUNDFLAG)
 
 //09/79 Space City
 
 /*--------------------------------
 / Fire Mountain (01/80)
 /-------------------------------*/
-INITGAME1(firemntn,0,dispZAC1,0)
+INITGAME1(firemntn,0,dispZAC1,SNDBRD_ZAC1125)
 ZAC_ROMSTART84444(firemntn,	"zac_boot.lgc",0x62a3da59,
 							"firemt_2.lgc",0xd146253f,
 							"firemt_3.lgc",0xd9faae07,
 							"firemt_4.lgc",0xb5cac3da,
 							"firemt_5.lgc",0x13f11d84)
 ZAC_ROMEND
-CORE_GAMEDEFNV(firemntn,"Fire Mountain",1980,"Zaccaria",mZAC0,SOUNDFLAG)
+CORE_GAMEDEFNV(firemntn,"Fire Mountain",1980,"Zaccaria",mZAC1125,SOUNDFLAG)
 
 /*--------------------------------
 / Star God (05/80)
@@ -129,7 +129,7 @@ ZAC_ROMSTART84444(stargod,	"zac_boot.lgc",0x62a3da59,
 							"stargod5.lgc",0x03cd4e24)
 ZAC_SOUNDROM_0(				"stargod.snd", 0x5079e493)
 ZAC_ROMEND
-CORE_GAMEDEFNV(stargod,"Star God",1980,"Zaccaria",mZAC0s,GAME_NOT_WORKING|SOUNDFLAG)
+CORE_GAMEDEFNV(stargod,"Star God",1980,"Zaccaria",mZAC1346,GAME_NOT_WORKING|SOUNDFLAG)
 
 /*--------------------------------
 / Space Shuttle (09/80)
@@ -142,7 +142,7 @@ ZAC_ROMSTART84444(sshtlzac,	"zac_boot.lgc",0x62a3da59,
 							"spcshtl5.lgc",0xd1dabd9b)
 ZAC_SOUNDROM_0(				"spcshtl.snd", 0x9a61781c)
 ZAC_ROMEND
-CORE_GAMEDEFNV(sshtlzac,"Space Shuttle (Zaccaria)",1980,"Zaccaria",mZAC0s,SOUNDFLAG)
+CORE_GAMEDEFNV(sshtlzac,"Space Shuttle (Zaccaria)",1980,"Zaccaria",mZAC1346,SOUNDFLAG)
 
 /*--------------------------------
 / Earth, Wind & Fire (04/81)
@@ -156,7 +156,7 @@ ZAC_ROMSTART84444(ewf,	"zac_boot.lgc",0x62a3da59,
 						"ewf_5.lgc",   0x686c4a4b)
 ZAC_SOUNDROM_0(			"stargod.snd", 0x5079e493)
 ZAC_ROMEND
-CORE_GAMEDEFNV(ewf,"Earth, Wind & Fire",1981,"Zaccaria",mZAC0s,GAME_NOT_WORKING|SOUNDFLAG)
+CORE_GAMEDEFNV(ewf,"Earth, Wind & Fire",1981,"Zaccaria",mZAC1346,GAME_NOT_WORKING|SOUNDFLAG)
 
 /*--------------------------------
 / Locomotion (09/81)
@@ -192,10 +192,11 @@ INITGAME(socrking,1,dispZAC3,SNDBRD_ZAC1370)
 ZAC_ROMSTART000(socrking,	"soccer.ic1",0x3fbd7c32,
 							"soccer.ic2",0x0cc0df1f,
 							"soccer.ic3",0x5da6ea20)
-ZAC_SOUNDROM_cefg1(			"sound1.c",  0x00000000,
-							"sound2.e",  0x00000000,
-							"sound3.f",  0x00000000,
-							"sound4.g",  0x00000000)
+ZAC_SOUNDROM_cefgh(			"sound1.c",  0xca1765bb,
+							"sound2.e",  0x4e60f05f,
+							"sound3.f",  0xc393305a,
+							"sound4.g",  0xebf990f8,
+							"sound5.h",  0x1f047bd7)
 ZAC_ROMEND
 CORE_GAMEDEFNV(socrking,"Soccer King",1982,"Zaccaria",mZAC2A,GAME_NOT_WORKING|SOUNDFLAG)
 

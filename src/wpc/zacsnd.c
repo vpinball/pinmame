@@ -2,12 +2,102 @@
 #include "machine/6821pia.h"
 #include "cpu/m6800/m6800.h"
 #include "cpu/i8085/i8085.h"
+#include "sound/discrete.h"
+#include "sound/sn76477.h"
 #include "core.h"
 #include "sndbrd.h"
 #include "zacsnd.h"
 
 extern void UpdateZACSoundLED(int data);
 extern void UpdateZACSoundACT(int data);
+
+/*----------------------------------------
+/ Zaccaria Sound-On-Board 1311
+/ 4 simple tone generators, solenoid-controlled
+/-----------------------------------------*/
+DISCRETE_SOUND_START(zac1311_discInt)
+	DISCRETE_INPUT(NODE_01,1,0x000f,0)									// Input handlers, mostly for enable
+	DISCRETE_INPUT(NODE_02,2,0x000f,0)
+	DISCRETE_INPUT(NODE_04,4,0x000f,0)
+	DISCRETE_INPUT(NODE_08,8,0x000f,0)
+
+	DISCRETE_SINEWAVE(NODE_10,NODE_01,349,(((1.0/8.0)*32768.0)),0)		// F note amplitude 1/8 * 32768
+	DISCRETE_SINEWAVE(NODE_20,NODE_02,440,(((1.0/8.0)*32768.0)),0)		// A note amplitude 1/8 * 32768
+	DISCRETE_SINEWAVE(NODE_30,NODE_04,523,(((1.0/8.0)*32768.0)),0)		// C' note amplitude 1/8 * 32768
+	DISCRETE_SINEWAVE(NODE_40,NODE_08,698,(((1.0/8.0)*32768.0)),0)		// F' note amplitude 1/8 * 32768
+
+	DISCRETE_ADDER4(NODE_50,1,NODE_10,NODE_20,NODE_30,NODE_40)			// Mix all four sound sources
+
+	DISCRETE_OUTPUT(NODE_50)											// Take the output from the mixer
+DISCRETE_SOUND_END
+
+MACHINE_DRIVER_START(zac1311)
+  MDRV_SOUND_ADD(DISCRETE, zac1311_discInt)
+MACHINE_DRIVER_END
+
+/*----------------------------------------
+/ Zaccaria Sound Board 1125
+/ SN76477 sound chip, no CPU
+/-----------------------------------------*/
+static void zac1125_init(struct sndbrdData *brdData);
+static WRITE_HANDLER(zac1125_data_w);
+static WRITE_HANDLER(zac1125_ctrl_w);
+static int zac1125_sh_start(const struct MachineSound *msound);
+static void zac1125_sh_stop(void);
+
+const struct SN76477interface zac1125_sn76477Int = { 1,	{ 25 }, /* mixing level */
+/*                         pin description		 */
+	{ RES_K(47)  },		/*	4  noise_res		 */
+	{ RES_K(220) },		/*	5  filter_res		 */
+	{ CAP_N(2.2) },		/*	6  filter_cap		 */
+	{ RES_M(1.5) },		/*	7  decay_res		 */
+	{ CAP_U(2.2) },		/*	8  attack_decay_cap  */
+	{ RES_K(4.7) },		/* 10  attack_res		 */
+	{ RES_K(47)  },		/* 11  amplitude_res	 */
+	{ RES_K(320) },		/* 12  feedback_res 	 */
+	{ 0	/* ??? */},		/* 16  vco_voltage		 */
+	{ CAP_U(0.33)},		/* 17  vco_cap			 */
+	{ RES_K(100) },		/* 18  vco_res			 */
+	{ 5.0		 },		/* 19  pitch_voltage	 */
+	{ RES_M(1)   },		/* 20  slf_res			 */
+	{ CAP_U(2.2) },		/* 21  slf_cap			 */
+	{ CAP_U(2.2) },		/* 23  oneshot_cap		 */
+	{ RES_M(1.5) }		/* 24  oneshot_res		 */
+};
+
+/*-------------------
+/ exported interface
+/--------------------*/
+const struct sndbrdIntf zac1125Intf = {
+  zac1125_init, NULL, NULL, zac1125_data_w, NULL, zac1125_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+};
+static struct CustomSound_interface zac1125_custInt = {zac1125_sh_start, zac1125_sh_stop};
+
+MACHINE_DRIVER_START(zac1125)
+//  MDRV_SOUND_ADD(SN76477, zac1125_sn76477Int)
+  MDRV_SOUND_ADD(CUSTOM, zac1125_custInt)
+MACHINE_DRIVER_END
+
+static WRITE_HANDLER(zac1125_data_w) {
+  logerror("data=%2x\n", data);
+//  SN76477_sh_update();
+}
+
+static WRITE_HANDLER(zac1125_ctrl_w) {
+  logerror("ctrl=%2x\n", data);
+}
+
+static void zac1125_init(struct sndbrdData *brdData) {
+}
+
+static int zac1125_sh_start(const struct MachineSound *msound) {
+//  SN76477_sh_start(msound);
+  return 0;
+}
+
+static void zac1125_sh_stop(void) {
+//  SN76477_sh_stop();
+}
 
 /*----------------------------------------
 / Zaccaria Sound Board 1346

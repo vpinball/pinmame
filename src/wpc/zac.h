@@ -94,7 +94,7 @@
 
 /*-- Main CPU regions and ROM --*/
 
-/* 5 X 2716 ROMS */
+/* 4 X 2716 ROMS */
 #define ZAC_ROMSTART8888(name,n1,chk1,n2,chk2,n3,chk3,n4,chk4) \
   ROM_START(name) \
     NORMALREGION(0x8000, ZAC_MEMREG_CPU) \
@@ -241,7 +241,9 @@ setup mirrors
 
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(ZAC0);
-extern MACHINE_DRIVER_EXTERN(ZAC0S);
+extern MACHINE_DRIVER_EXTERN(ZAC1311);
+extern MACHINE_DRIVER_EXTERN(ZAC1125);
+extern MACHINE_DRIVER_EXTERN(ZAC1346);
 extern MACHINE_DRIVER_EXTERN(ZAC1);
 extern MACHINE_DRIVER_EXTERN(ZAC2);
 extern MACHINE_DRIVER_EXTERN(ZAC2X);
@@ -253,7 +255,9 @@ extern MACHINE_DRIVER_EXTERN(ZAC2E);
 extern MACHINE_DRIVER_EXTERN(ZAC2F);
 
 #define mZAC0     ZAC0
-#define mZAC0s    ZAC0S
+#define mZAC1311  ZAC1311
+#define mZAC1125  ZAC1125
+#define mZAC1346  ZAC1346
 #define mZAC1     ZAC1
 #define mZAC2     ZAC2
 #define mZAC2X    ZAC2X

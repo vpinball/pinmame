@@ -1711,6 +1711,14 @@ SOURCE=.\src\sound\dac.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\sound\discrete.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\discrete.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\sound\fm.c
 # End Source File
 # Begin Source File
@@ -1748,6 +1756,14 @@ SOURCE=.\src\sound\samples.c
 # Begin Source File
 
 SOURCE=.\src\sound\samples.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\sn76477.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\sn76477.h
 # End Source File
 # Begin Source File
 

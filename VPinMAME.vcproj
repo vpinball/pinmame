@@ -1506,6 +1506,12 @@ echo regsvr32 exec. time &gt; &quot;$(IntDir)\regsvr32.trg&quot;
 						RelativePath=".\src\sound\dac.h">
 					</File>
 					<File
+						RelativePath=".\src\sound\discrete.c">
+					</File>
+					<File
+						RelativePath=".\src\sound\discrete.h">
+					</File>
+					<File
 						RelativePath=".\src\sound\fm.c">
 					</File>
 					<File
@@ -1534,6 +1540,12 @@ echo regsvr32 exec. time &gt; &quot;$(IntDir)\regsvr32.trg&quot;
 					</File>
 					<File
 						RelativePath=".\src\sound\samples.h">
+					</File>
+					<File
+						RelativePath=".\src\sound\sn76477.c">
+					</File>
+					<File
+						RelativePath=".\src\sound\sn76477.h">
 					</File>
 					<File
 						RelativePath=".\src\sound\streams.c">

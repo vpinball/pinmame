@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include "driver.h"
 #include "cpu/s2650/s2650.h"
+#include "sound/discrete.h"
 #include "core.h"
 #include "sndbrd.h"
 #include "zac.h"
@@ -115,12 +116,6 @@ static int irq_callback_old(int int_level) {
 	return 0x18;
 }
 
-//Generate the IRQ
-static INTERRUPT_GEN(ZAC_irq) {
-//	logerror("%x: IRQ\n",activecpu_get_previouspc());
-	cpu_set_irq_line(ZAC_CPUNO, 0, PULSE_LINE);
-}
-
 /*-----------------------------------------------
 / Load/Save static ram
 /-------------------------------------------------*/
@@ -132,6 +127,12 @@ static NVRAM_HANDLER(ZAC1) {
 static UINT8 *ram;
 static NVRAM_HANDLER(ZAC2) {
     core_nvram(file, read_or_write, ram, 0x800, 0x00);
+}
+
+//Generate the IRQ
+static INTERRUPT_GEN(ZAC_irq) {
+//	logerror("%x: IRQ\n",activecpu_get_previouspc());
+	cpu_set_irq_line(ZAC_CPUNO, 0, PULSE_LINE);
 }
 
 static MACHINE_INIT(ZAC1) {
@@ -342,19 +343,25 @@ static WRITE_HANDLER(ram_w) {
 			coreGlobals.tmpLampMatrix[offset/8] &= ~(1 << (offset%8));
 	} else if (offset > 0x4bf && offset < 0x4e8)
 		locals.segments[0x4e7 - offset].w = core_bcd2seg7[data & 0x0f];
-	else if (offset < 0x500) logerror("ram_w: offset = %4x, data = %02x\n", offset, data);
+//	else if (offset < 0x500) logerror("ram_w: offset = %4x, data = %02x\n", offset, data);
 }
 
 static WRITE_HANDLER(ram1_w) {
 	ram1[offset] = data;
+
 	if (offset < 0x2e)
 		locals.segments[0x2f - offset].w = core_bcd2seg7[data & 0x0f];
 	else if (offset > 0x3f && offset < 0x60) {
-		UINT32 sol = 1 << (offset - 0x40);
-		if (data)
-			locals.solenoids |= sol;
-		else
-			locals.solenoids &= ~sol;
+		offset -= 0x40;
+		if (core_gameData->hw.soundBoard == SNDBRD_ZAC1311 && offset > 19 && offset < 25)
+			discrete_sound_w(1 << (offset-20), data);
+		else {
+			UINT32 sol = 1 << offset;
+			if (data)
+				locals.solenoids |= sol;
+			else
+				locals.solenoids &= ~sol;
+		}
 	} else if (offset > 0x7f && offset < 0xc0) {
 		offset -= 0x80;
 		if (data & 0x01)
@@ -515,19 +522,29 @@ MACHINE_DRIVER_START(ZAC)
   MDRV_SOUND_CMDHEADING("ZAC")
 MACHINE_DRIVER_END
 
-MACHINE_DRIVER_START(ZAC1)
-  MDRV_IMPORT_FROM(ZAC)
-  MDRV_IMPORT_FROM(zac1346)
-MACHINE_DRIVER_END
-
 MACHINE_DRIVER_START(ZAC0)
   MDRV_IMPORT_FROM(ZAC)
   MDRV_CPU_MODIFY("mcpu")
   MDRV_CPU_MEMORY(ZAC_readmem0, ZAC_writemem0)
 MACHINE_DRIVER_END
 
-MACHINE_DRIVER_START(ZAC0S)
+MACHINE_DRIVER_START(ZAC1311)
   MDRV_IMPORT_FROM(ZAC0)
+  MDRV_IMPORT_FROM(zac1311)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(ZAC1125)
+  MDRV_IMPORT_FROM(ZAC0)
+  MDRV_IMPORT_FROM(zac1125)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(ZAC1346)
+  MDRV_IMPORT_FROM(ZAC0)
+  MDRV_IMPORT_FROM(zac1346)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(ZAC1)
+  MDRV_IMPORT_FROM(ZAC)
   MDRV_IMPORT_FROM(zac1346)
 MACHINE_DRIVER_END
 

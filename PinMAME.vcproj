@@ -681,6 +681,12 @@
 						RelativePath=".\src\sound\dac.h">
 					</File>
 					<File
+						RelativePath=".\src\sound\discrete.c">
+					</File>
+					<File
+						RelativePath=".\src\sound\discrete.h">
+					</File>
+					<File
 						RelativePath=".\src\sound\fm.c">
 					</File>
 					<File
@@ -709,6 +715,12 @@
 					</File>
 					<File
 						RelativePath=".\src\sound\samples.h">
+					</File>
+					<File
+						RelativePath=".\src\sound\sn76477.c">
+					</File>
+					<File
+						RelativePath=".\src\sound\sn76477.h">
 					</File>
 					<File
 						RelativePath=".\src\sound\streams.c">
