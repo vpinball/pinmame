@@ -146,6 +146,10 @@ void DeleteListContent(HWND hWnd)
 	SendMessage(hGamesList, LB_RESETCONTENT, 0, 0);
 }
 
+/***********************************************************/
+/* Pulls all Machine Names and populates to Control Passed */
+/* uses the .Machines safearray                            */
+/***********************************************************/
 BOOL PopulateListV1_10andLower(HWND hWnd, IController *pController)
 {
 	HWND hGamesList = GetDlgItem(hWnd, IDC_GAMESLIST);
@@ -194,6 +198,10 @@ BOOL PopulateListV1_10andLower(HWND hWnd, IController *pController)
 	return TRUE;
 }
 
+/***********************************************************/
+/* Pulls all Machine Names and populates to Control Passed */
+/* uses .Games collection                                  */
+/***********************************************************/
 BOOL PopulateListGreaterV1_10(HWND hWnd, IController *pController)
 {
 	const int sTabStops[] = {190, 230};
@@ -208,17 +216,21 @@ BOOL PopulateListGreaterV1_10(HWND hWnd, IController *pController)
 	if ( FAILED(hr) ) /* upps, fallback to the old style */
 		PopulateListV1_10andLower(hWnd, pController);
 
+	/* now we need a pointer to an enumeration object */
 	IUnknown *pUnk;
-	IEnumGames* pEnumGames;
 	hr = pGames->get__NewEnum((IUnknown**) &pUnk);
 	if ( FAILED(hr) ) { /* upps, fallback to the old style */
 		pGames->Release();
 		PopulateListV1_10andLower(hWnd, pController);
 	}
 	
+	/* we got an IUnknow interface, but we need IEnumGames */
+	IEnumGames* pEnumGames;
 	hr = pUnk->QueryInterface(__uuidof(IEnumGames), (void**) &pEnumGames);
+	/* we don't need this interface anymore, we now have pEnumGames */
 	pUnk->Release();
 
+	/* in case we can't get the IEnumGame interface for some reason */
 	if ( FAILED(hr) ) { /* upps, fallback to the old style */
 		pGames->Release();
 		PopulateListV1_10andLower(hWnd, pController);
@@ -229,8 +241,15 @@ BOOL PopulateListGreaterV1_10(HWND hWnd, IController *pController)
 	
 	IGame* pGame = NULL;
 
+	/* enumerate to all the games, uFetched will be 0 if the end is reached */
+	/* I will increase the number of fetches game in a while, don't have the time now */
 	while ( SUCCEEDED(pEnumGames->Next(1, &vGame, &uFetched)) && uFetched ) {
+		/* same as the IEnumInterface, we will get a interface to IDisptach */
+		/* not to IGame, don't wan't to use IDispatch */
 		hr = vGame.pdispVal->QueryInterface(__uuidof(IGame), (void**) &pGame);
+
+		/* as soon as we have the IGame interface we don't the this one anymore */
+		/* btw: VariantClear(&vGame) will do the same */
 		vGame.pdispVal->Release();
 
 		if ( FAILED(hr) )
@@ -242,15 +261,20 @@ BOOL PopulateListGreaterV1_10(HWND hWnd, IController *pController)
 		PGAMEINFO pGameInfo = new GAMEINFO;
 		pGameInfo->fROMAvailable = false;
 
+		/* get a pointer to the IRoms interface */
 		IRoms* pRoms;
 		if ( SUCCEEDED(pGame->get_Roms(&pRoms)) ) {
 			long fAvailable = -1;
 
+			/* check if the rom set is available */
 			hr = pRoms->get_Available(&fAvailable);
 			pGameInfo->fROMAvailable = (fAvailable==VARIANT_TRUE);
+
+			/* done */
 			pRoms->Release();
 		}
 
+		/* fetch the infos we need */
 		pGame->get_Description(&sHelp);
 		WideCharToMultiByte(CP_ACP, 0, (LPOLESTR) sHelp, -1, pGameInfo->szGameDescription, sizeof pGameInfo->szGameDescription, NULL, NULL);
 		lstrcpy(szListEntry, pGameInfo->szGameDescription);
@@ -260,15 +284,19 @@ BOOL PopulateListGreaterV1_10(HWND hWnd, IController *pController)
 		WideCharToMultiByte(CP_ACP, 0, (LPOLESTR) sHelp, -1, pGameInfo->szGameName, sizeof pGameInfo->szGameName, NULL, NULL);
 		lstrcat(szListEntry, pGameInfo->szGameName);
 
+		/* done */
 		pGame->Release();
 
 		if ( pGameInfo->fROMAvailable )
 			lstrcat(szListEntry, "\tX");
 
+		/* put it to the list */
 		int nIndex = SendMessage(hGamesList, LB_ADDSTRING, 0, (LPARAM) szListEntry);
 		SendMessage(hGamesList, LB_SETITEMDATA, nIndex, (WPARAM) pGameInfo);
 	}
 
+	/* don't forget this */
+	pEnumGames->Release();
 	pGames->Release();
 
 	return TRUE;
