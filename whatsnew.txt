@@ -15,6 +15,9 @@ Bugs Fixed
 - Corrected Pistol Poker Lamp handling
   [Gerrit Volkenborn]
   [Steve Ellenoff]
+
+- Corrected reversed comma and period in WPC Alphanumeric games
+  [Steve Ellenoff]
   
 
 New Features
