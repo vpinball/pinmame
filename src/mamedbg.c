@@ -1177,45 +1177,35 @@ const char *set_ea_info( int what, unsigned value, int size, int access )
 		switch( size )
 		{
 		case EA_INT8:
-			width = 2;
-			result &= 0xff;
-			if( result & 0x80 )
-			{
-				sign = "-";
-				result = (unsigned)-result;
-			}
-			break;
-		case EA_INT16:
-			width = 4;
-			result &= 0xffff;
-			if( result & 0x8000 )
-			{
-				sign = "-";
-				result = (unsigned)-result;
-			}
-			break;
-		case EA_INT32:
-			width = 8;
-			if( result & 0x80000000 )
-			{
-				sign = "-";
-				result = (unsigned)-result;
-			}
-			break;
 		case EA_UINT8:
 			width = 2;
-			result &= 0xff;
 			break;
+		case EA_INT16:
 		case EA_UINT16:
 			width = 4;
-			result &= 0xffff;
 			break;
+		case EA_INT32:
 		case EA_UINT32:
 			width = 8;
 			break;
 		default:
 			return "set_ea_info: invalid <size>!";
 		}
+		switch( size )
+		{
+		case EA_INT8:
+		case EA_INT16:
+		case EA_INT32:
+			if( result & (1 << ((width * 4) - 1)) )
+			{
+				sign = "-";
+				result = (unsigned)-result;
+			}
+			break;
+		}
+
+		if (width < 8)
+			result &= (1 << (width * 4)) - 1;
 		break;
 
 	case EA_ZPG_RD:
@@ -2520,13 +2510,11 @@ static void dump_regs( void )
 			}
 		}
 	}
+	/* show the scanline position, if appropriate */
 	if (dbg_show_scanline)
 	{
 		win_printf( win, "Scanline: %d Horz: %d\n", cpu_getscanline(), cpu_gethorzbeampos());
-//Need room to show registers
-#ifdef PINMAME
-		if(y<1) y = 1;
-#endif
+		y++;
 	}
 
 	regs->top = y;
@@ -2954,11 +2942,7 @@ static void edit_regs( void )
 		regs->base = pedit[ regs->idx ].y - win_get_h( win ) + regs->top + 1;
 		dump_regs();
 	}
-#ifdef PINMAME	//Correct annoying scanline behavior
 	win_set_curpos( win, pedit[regs->idx].x + pedit[regs->idx].n + regs->nibble, pedit[regs->idx].y - regs->base + regs->top);
-#else
-	win_set_curpos( win, pedit[regs->idx].x + pedit[regs->idx].n + regs->nibble, pedit[regs->idx].y - regs->base + regs->top + (dbg_show_scanline ? 1 : 0));
-#endif
 	set_screen_curpos( win_get_cx_abs(win), win_get_cy_abs(win) );
 
 	i = readkey();

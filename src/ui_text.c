@@ -138,6 +138,7 @@ const char * default_text[] =
 	"Mount",
 	"Unmount",
 	"[empty slot]",
+	"Configuration",
 	"Quit Fileselector",
 	"File Specification",	/* IMPORTANT: be careful to ensure that the following */
 	"Cartridge",		/* device list matches the order found in device.h    */

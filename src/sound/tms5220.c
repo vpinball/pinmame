@@ -119,6 +119,11 @@ static int schedule_dummy_read;			/* set after each load address, so that next r
 static UINT8 data_register;				/* data register, used by read command */
 static int RDB_flag;					/* whether we should read data register or status register */
 
+/* flag for tms0285 emulation */
+/* The tms0285 is an early variant of the tms5220 used in the ti-99/4(a)
+computer.  The exact relationship of this chip with tms5200 & tms5220 is
+unknown, but it seems to use slightly different tables for LPC parameters. */
+static tms5220_variant variant;
 
 /**********************************************************************************************
 
@@ -210,6 +215,18 @@ void tms5220_set_load_address(void (*func)(int))
 void tms5220_set_read_and_branch(void (*func)(void))
 {
 	read_and_branch_callback = func;
+}
+
+
+/**********************************************************************************************
+
+     tms5220_set_variant -- sets the tms5220 core to emulate its buggy forerunner, the tms0285
+
+***********************************************************************************************/
+
+void tms5220_set_variant(tms5220_variant new_variant)
+{
+	variant = new_variant;
 }
 
 
@@ -321,7 +338,7 @@ int tms5220_cycles_to_ready(void)
 	{
 		int val;
 
-		answer = 200-sample_count;
+		answer = 200-sample_count+1;
 
 		/* total number of bits available in current byte is (8 - fifo_bits_taken) */
 		/* if more than 4 are available, we need to check the energy */
@@ -847,7 +864,10 @@ static int parse_frame(int the_first_frame)
         new_k[0] = k1table[extract_bits(5)];
         new_k[1] = k2table[extract_bits(5)];
         new_k[2] = k3table[extract_bits(4)];
-        new_k[3] = k4table[extract_bits(4)];
+		if (variant == variant_tms0285)
+			new_k[3] = k3table[extract_bits(4)];	/* ??? */
+		else
+			new_k[3] = k4table[extract_bits(4)];
 
         if (DEBUG_5220) logerror("  (29-bit energy=%d pitch=%d rep=%d 4K frame)\n", new_energy, new_pitch, rep_flag);
         goto done;
@@ -860,10 +880,14 @@ static int parse_frame(int the_first_frame)
     if (bits < 0)
         goto ranout;
 	}
+
     new_k[0] = k1table[extract_bits(5)];
     new_k[1] = k2table[extract_bits(5)];
     new_k[2] = k3table[extract_bits(4)];
-    new_k[3] = k4table[extract_bits(4)];
+	if (variant == variant_tms0285)
+		new_k[3] = k3table[extract_bits(4)];	/* ??? */
+	else
+		new_k[3] = k4table[extract_bits(4)];
     new_k[4] = k5table[extract_bits(4)];
     new_k[5] = k6table[extract_bits(4)];
     new_k[6] = k7table[extract_bits(4)];

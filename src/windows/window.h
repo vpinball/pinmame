@@ -11,6 +11,18 @@
 
 
 //============================================================
+//	PARAMETERS
+//============================================================
+
+#ifndef MESS
+#define HAS_WINDOW_MENU			FALSE
+#else
+#define HAS_WINDOW_MENU			TRUE
+#endif
+
+
+
+//============================================================
 //	TYPE DEFINITIONS
 //============================================================
 
@@ -135,6 +147,10 @@ void win_compute_multipliers(const RECT *rect, int *xmult, int *ymult);
 
 void win_set_debugger_focus(int focus);
 
+#if HAS_WINDOW_MENU
+int win_create_menu(HMENU *menus);
+#endif
+
 
 
 //============================================================
@@ -193,5 +209,22 @@ INLINE UINT8 win_blue32(UINT32 color)
 {
 	return color >> win_color32_bdst_shift;
 }
+
+
+
+//============================================================
+//	win_has_menu
+//============================================================
+
+INLINE BOOL win_has_menu(void)
+{
+#if HAS_WINDOW_MENU
+	return GetMenu(win_video_window) ? TRUE : FALSE;
+#else
+	return FALSE;
+#endif
+}
+
+
 
 #endif

@@ -1524,12 +1524,16 @@ static void showcharset(struct mame_bitmap *bitmap)
 
 
 
-static int setdipswitches(struct mame_bitmap *bitmap,int selected)
+static int switchmenu(struct mame_bitmap *bitmap, int selected, UINT32 switch_name, UINT32 switch_setting)
 {
 	const char *menu_item[128];
 	const char *menu_subitem[128];
 	struct InputPort *entry[128];
+#ifdef PINMAME
 	char flag[60];
+#else
+	char flag[40];
+#endif //PINMAME
 	int i,sel;
 	struct InputPort *in;
 	int total;
@@ -1544,7 +1548,7 @@ static int setdipswitches(struct mame_bitmap *bitmap,int selected)
 	total = 0;
 	while (in->type != IPT_END)
 	{
-		if ((in->type & ~IPF_MASK) == IPT_DIPSWITCH_NAME && input_port_name(in) != 0 &&
+		if ((in->type & ~IPF_MASK) == switch_name && input_port_name(in) != 0 &&
 				(in->type & IPF_UNUSED) == 0 &&
 				!(!options.cheat && (in->type & IPF_CHEAT)))
 		{
@@ -1570,11 +1574,11 @@ static int setdipswitches(struct mame_bitmap *bitmap,int selected)
 		if (i < total - 1)
 		{
 			in = entry[i] + 1;
-			while ((in->type & ~IPF_MASK) == IPT_DIPSWITCH_SETTING &&
+			while ((in->type & ~IPF_MASK) == switch_setting &&
 					in->default_value != entry[i]->default_value)
 				in++;
 
-			if ((in->type & ~IPF_MASK) != IPT_DIPSWITCH_SETTING)
+			if ((in->type & ~IPF_MASK) != switch_setting)
 				menu_subitem[i] = ui_getstring (UI_INVALID);
 			else menu_subitem[i] = input_port_name(in);
 		}
@@ -1585,16 +1589,16 @@ static int setdipswitches(struct mame_bitmap *bitmap,int selected)
 	if (sel < total - 1)
 	{
 		in = entry[sel] + 1;
-		while ((in->type & ~IPF_MASK) == IPT_DIPSWITCH_SETTING &&
+		while ((in->type & ~IPF_MASK) == switch_setting &&
 				in->default_value != entry[sel]->default_value)
 			in++;
 
-		if ((in->type & ~IPF_MASK) != IPT_DIPSWITCH_SETTING)
+		if ((in->type & ~IPF_MASK) != switch_setting)
 			/* invalid setting: revert to a valid one */
 			arrowize |= 1;
 		else
 		{
-			if (((in-1)->type & ~IPF_MASK) == IPT_DIPSWITCH_SETTING &&
+			if (((in-1)->type & ~IPF_MASK) == switch_setting &&
 					!(!options.cheat && ((in-1)->type & IPF_CHEAT)))
 				arrowize |= 1;
 		}
@@ -1602,16 +1606,16 @@ static int setdipswitches(struct mame_bitmap *bitmap,int selected)
 	if (sel < total - 1)
 	{
 		in = entry[sel] + 1;
-		while ((in->type & ~IPF_MASK) == IPT_DIPSWITCH_SETTING &&
+		while ((in->type & ~IPF_MASK) == switch_setting &&
 				in->default_value != entry[sel]->default_value)
 			in++;
 
-		if ((in->type & ~IPF_MASK) != IPT_DIPSWITCH_SETTING)
+		if ((in->type & ~IPF_MASK) != switch_setting)
 			/* invalid setting: revert to a valid one */
 			arrowize |= 2;
 		else
 		{
-			if (((in+1)->type & ~IPF_MASK) == IPT_DIPSWITCH_SETTING &&
+			if (((in+1)->type & ~IPF_MASK) == switch_setting &&
 					!(!options.cheat && ((in+1)->type & IPF_CHEAT)))
 				arrowize |= 2;
 		}
@@ -1630,16 +1634,16 @@ static int setdipswitches(struct mame_bitmap *bitmap,int selected)
 		if (sel < total - 1)
 		{
 			in = entry[sel] + 1;
-			while ((in->type & ~IPF_MASK) == IPT_DIPSWITCH_SETTING &&
+			while ((in->type & ~IPF_MASK) == switch_setting &&
 					in->default_value != entry[sel]->default_value)
 				in++;
 
-			if ((in->type & ~IPF_MASK) != IPT_DIPSWITCH_SETTING)
+			if ((in->type & ~IPF_MASK) != switch_setting)
 				/* invalid setting: revert to a valid one */
 				entry[sel]->default_value = (entry[sel]+1)->default_value & entry[sel]->mask;
 			else
 			{
-				if (((in+1)->type & ~IPF_MASK) == IPT_DIPSWITCH_SETTING &&
+				if (((in+1)->type & ~IPF_MASK) == switch_setting &&
 						!(!options.cheat && ((in+1)->type & IPF_CHEAT)))
 					entry[sel]->default_value = (in+1)->default_value & entry[sel]->mask;
 			}
@@ -1654,16 +1658,16 @@ static int setdipswitches(struct mame_bitmap *bitmap,int selected)
 		if (sel < total - 1)
 		{
 			in = entry[sel] + 1;
-			while ((in->type & ~IPF_MASK) == IPT_DIPSWITCH_SETTING &&
+			while ((in->type & ~IPF_MASK) == switch_setting &&
 					in->default_value != entry[sel]->default_value)
 				in++;
 
-			if ((in->type & ~IPF_MASK) != IPT_DIPSWITCH_SETTING)
+			if ((in->type & ~IPF_MASK) != switch_setting)
 				/* invalid setting: revert to a valid one */
 				entry[sel]->default_value = (entry[sel]+1)->default_value & entry[sel]->mask;
 			else
 			{
-				if (((in-1)->type & ~IPF_MASK) == IPT_DIPSWITCH_SETTING &&
+				if (((in-1)->type & ~IPF_MASK) == switch_setting &&
 						!(!options.cheat && ((in-1)->type & IPF_CHEAT)))
 					entry[sel]->default_value = (in-1)->default_value & entry[sel]->mask;
 			}
@@ -1692,19 +1696,26 @@ static int setdipswitches(struct mame_bitmap *bitmap,int selected)
 	return sel + 1;
 }
 
+static int setdipswitches(struct mame_bitmap *bitmap, int selected)
+{
+	return switchmenu(bitmap, selected, IPT_DIPSWITCH_NAME, IPT_DIPSWITCH_SETTING);
+}
+
+
+
 /* This flag is used for record OR sequence of key/joy */
 /* when is !=0 the first sequence is record, otherwise the first free */
 /* it's used byt setdefkeysettings, setdefjoysettings, setkeysettings, setjoysettings */
 static int record_first_insert = 1;
 
-static char menu_subitem_buffer[400][96];
+static char menu_subitem_buffer[500][96];
 
 static int setdefcodesettings(struct mame_bitmap *bitmap,int selected)
 {
-	const char *menu_item[400];
-	const char *menu_subitem[400];
-	struct ipd *entry[400];
-	char flag[400];
+	const char *menu_item[500];
+	const char *menu_subitem[500];
+	struct ipd *entry[500];
+	char flag[500];
 	int i,sel;
 	struct ipd *in;
 	int total;
@@ -1830,10 +1841,10 @@ static int setdefcodesettings(struct mame_bitmap *bitmap,int selected)
 
 static int setcodesettings(struct mame_bitmap *bitmap,int selected)
 {
-	const char *menu_item[400];
-	const char *menu_subitem[400];
-	struct InputPort *entry[400];
-	char flag[400];
+	const char *menu_item[500];
+	const char *menu_subitem[500];
+	struct InputPort *entry[500];
+	char flag[500];
 	int i,sel;
 	struct InputPort *in;
 	int total;
@@ -3088,7 +3099,27 @@ static void setup_menu_init(void)
 
 	menu_item[menu_total] = ui_getstring (UI_inputgeneral); menu_action[menu_total++] = UI_DEFCODE;
 	menu_item[menu_total] = ui_getstring (UI_inputspecific); menu_action[menu_total++] = UI_CODE;
+	/* Determine if there are any dip switches */
+	{
+		struct InputPort *in;
+		int num;
+
+		in = Machine->input_ports;
+
+		num = 0;
+		while (in->type != IPT_END)
+		{
+			if ((in->type & ~IPF_MASK) == IPT_DIPSWITCH_NAME && input_port_name(in) != 0 &&
+					(in->type & IPF_UNUSED) == 0 &&	!(!options.cheat && (in->type & IPF_CHEAT)))
+				num++;
+			in++;
+		}
+
+		if (num != 0)
+		{
 	menu_item[menu_total] = ui_getstring (UI_dipswitches); menu_action[menu_total++] = UI_SWITCH;
+		}
+	}
 
 #ifdef XMAME
 	{

@@ -1067,6 +1067,16 @@ else
 CPUDEFS += -DHAS_SPC700=0
 endif
 
+CPU=$(strip $(findstring E132XS@,$(CPUS)))
+ifneq ($(CPU),)
+OBJDIRS += $(OBJ)/cpu/e132xs
+CPUDEFS += -DHAS_E132XS=1
+CPUOBJS += $(OBJ)/cpu/e132xs/e132xs.o
+DBGOBJS += $(OBJ)/cpu/e132xs/32xsdasm.o
+$(OBJ)/cpu/e132xs/e132xs.o: e132xs.c e132xs.h
+else
+CPUDEFS += -DHAS_E132XS=0
+endif
 
 SOUND=$(strip $(findstring CUSTOM@,$(SOUNDS)))
 ifneq ($(SOUND),)

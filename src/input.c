@@ -560,6 +560,29 @@ void seq_set_3(InputSeq* a, InputCode code1, InputCode code2, InputCode code3)
 		(*a)[j] = CODE_NONE;
 }
 
+void seq_set_4(InputSeq* a, InputCode code1, InputCode code2, InputCode code3, InputCode code4)
+{
+	int j;
+	(*a)[0] = code1;
+	(*a)[1] = code2;
+	(*a)[2] = code3;
+	(*a)[3] = code4;
+	for(j=4;j<SEQ_MAX;++j)
+		(*a)[j] = CODE_NONE;
+}
+
+void seq_set_5(InputSeq* a, InputCode code1, InputCode code2, InputCode code3, InputCode code4, InputCode code5)
+{
+	int j;
+	(*a)[0] = code1;
+	(*a)[1] = code2;
+	(*a)[2] = code3;
+	(*a)[3] = code4;
+	(*a)[4] = code5;
+	for(j=5;j<SEQ_MAX;++j)
+		(*a)[j] = CODE_NONE;
+}
+
 void seq_copy(InputSeq* a, InputSeq* b)
 {
 	int j;

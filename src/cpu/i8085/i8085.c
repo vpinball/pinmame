@@ -59,6 +59,25 @@
  * - modified interrupt handler to properly process 8085-specific IRQ's
  * - corrected interrupt masking, RIM and SIM behaviors according to Intel's documentation
  *
+ * 20-07-2002 Krzysztof Strzecha
+ *
+ * - SBB r instructions should affect parity flag.
+ *   Fixed only for non x86 asm version (#define i8080_EXACT 1).
+ *   There are probably more opcodes which should affect this flag, but don't.
+ * - JPO nnnn and JPE nnnn opcodes in disassembler were misplaced. Fixed.
+ * - Undocumented i8080 opcodes added:
+ *   08h, 10h, 18h, 20h, 28h, 30h, 38h  -  NOP
+ *   0CBh                               -  JMP
+ *   0D9h                               -  RET
+ *   0DDh, 0EDh, 0FDh                   -  CALL
+ *   Thanks for the info go to Anton V. Ignatichev.
+ *
+ * 08-12-2002 Krzysztof Strzecha
+ *
+ * - ADC r instructions should affect parity flag.
+ *   Fixed only for non x86 asm version (#define i8080_EXACT 1).
+ *   There are probably more opcodes which should affect this flag, but don't.
+ * 
  *****************************************************************************/
 
 /*int survival_prot = 0; */
@@ -143,7 +162,10 @@ static UINT16 ARG16(void)
 	return w;
 }
 
-#define RM(a) cpu_readmem16(a)
+static UINT8 RM(UINT32 a)
+{
+	return cpu_readmem16(a);
+}
 
 static void WM(UINT32 a, UINT8 v)
 {
@@ -193,8 +215,7 @@ INLINE void execute_one(int opcode)
 				i8085_ICount -= 10;		/* DSUB */
 				M_DSUB();
 			} else {
-				i8085_ICount -= 4;
-				illegal(); 				/* ???? */
+				i8085_ICount -= 4;		/* NOP undocumented */
 			}
 			break;
 		case 0x09: i8085_ICount -= 10;	/* DAD	B */
@@ -226,8 +247,7 @@ INLINE void execute_one(int opcode)
 				I.AF.b.l = (I.AF.b.l & ~CF) | (I.HL.b.l & CF);
 				I.HL.w.l = (I.HL.w.l >> 1);
 			} else {
-				i8085_ICount -= 8;		/* ????  */
-				illegal();
+				i8085_ICount -= 4;		/* NOP undocumented */
 			}
 			break;
 		case 0x11: i8085_ICount -= 10;	/* LXI	D,nnnn */
@@ -261,8 +281,7 @@ INLINE void execute_one(int opcode)
 				if (0 != (((I.DE.w.l >> 15) ^ I.AF.b.l) & CF))
 					I.AF.b.l |= VF;
 			} else {
-				i8085_ICount -= 7;		/* ????? */
-				illegal();
+				i8085_ICount -= 4;		/* NOP undocumented */
 			}
 			break;
 		case 0x19: i8085_ICount -= 10;	/* DAD	D */
@@ -295,7 +314,7 @@ INLINE void execute_one(int opcode)
 				I.AF.b.h |= RIM_IEN; RIM_IEN = 0; //AT: read and clear IEN status latch
 /*				survival_prot ^= 0x01; */
 			} else {
-				i8085_ICount -= 7;		/* ???	*/
+				i8085_ICount -= 4;		/* NOP undocumented */
 			}
 			break;
 		case 0x21: i8085_ICount -= 10;	/* LXI	H,nnnn */
@@ -334,8 +353,7 @@ INLINE void execute_one(int opcode)
 				I.XX.d = ARG();
 				I.DE.d = (I.HL.d + I.XX.d) & 0xffff;
 			} else {
-				i8085_ICount -= 7;		/* ???? */
-				illegal();
+				i8085_ICount -= 4;		/* NOP undocumented */
 			}
 			break;
 		case 0x29: i8085_ICount -= 10;	/* DAD	H */
@@ -380,7 +398,7 @@ INLINE void execute_one(int opcode)
 //ZT
 				if (I.AF.b.h & 0x80) I.IM |= IM_SOD;
 			} else {
-				i8085_ICount -= 4;		/* ???	*/
+				i8085_ICount -= 4;		/* NOP undocumented */
 			}
 			break;
 		case 0x31: i8085_ICount -= 10;	/* LXI SP,nnnn */
@@ -418,8 +436,7 @@ INLINE void execute_one(int opcode)
 				I.XX.d = ARG();
 				I.DE.d = (I.SP.d + I.XX.d) & 0xffff;
 			} else {
-				i8085_ICount -= 7;		/* ???? */
-				illegal();
+				i8085_ICount -= 4;		/* NOP undocumented */
 			}
 			break;
 		case 0x39: i8085_ICount -= 10;	/* DAD SP */
@@ -893,8 +910,8 @@ INLINE void execute_one(int opcode)
 					i8085_ICount -= 6;	/* RST  V */
 				}
 			} else {
-				i8085_ICount -= 4;		/* ???? */
-				illegal();
+				i8085_ICount -= 7;	/* JMP	nnnn undocumented*/
+				M_JMP(1);
 			}
 			break;
 		case 0xcc: i8085_ICount -= 11;	/* CZ	nnnn */
@@ -948,8 +965,8 @@ INLINE void execute_one(int opcode)
 				I.XX.w.l++;
 				WM(I.XX.d, I.HL.b.h);
 			} else {
-				i8085_ICount -= 4;		/* ???? */
-				illegal();
+				i8085_ICount -= 4;	/* RET undocumented */
+				M_RET(1);
 			}
 			break;
 		case 0xda: i8085_ICount -= 7;	/* JC	nnnn */
@@ -966,8 +983,8 @@ INLINE void execute_one(int opcode)
 				i8085_ICount -= 7;		/* JNX  nnnn */
 				M_JMP( !(I.AF.b.l & XF) );
 			} else {
-				i8085_ICount -= 4;		/* ???? */
-				illegal();
+				i8085_ICount -= 11;	/* CALL nnnn undocumented */
+				M_CALL(1);
 			}
 			break;
 		case 0xde: i8085_ICount -= 7;	/* SBI	nn */
@@ -984,7 +1001,7 @@ INLINE void execute_one(int opcode)
 		case 0xe1: i8085_ICount -= 10;	/* POP	H */
 			M_POP(HL);
 			break;
-		case 0xe2: i8085_ICount -= 7;	/* JPE	nnnn */
+		case 0xe2: i8085_ICount -= 7;	/* JPO	nnnn */
 			M_JMP( !(I.AF.b.l & VF) );
 			break;
 		case 0xe3: i8085_ICount -= 18;	/* XTHL */
@@ -1013,7 +1030,7 @@ INLINE void execute_one(int opcode)
 			I.PC.d = I.HL.w.l;
 			change_pc16(I.PC.d);
 			break;
-		case 0xea: i8085_ICount -= 7;	/* JPO	nnnn */
+		case 0xea: i8085_ICount -= 7;	/* JPE	nnnn */
 			M_JMP( I.AF.b.l & VF );
 			break;
 		case 0xeb: i8085_ICount -= 4;	/* XCHG */
@@ -1032,10 +1049,9 @@ INLINE void execute_one(int opcode)
 				I.XX.w.l++;
 				I.HL.b.h = RM(I.XX.d);
 			} else {
-				i8085_ICount -= 4;		/* ???? */
-				illegal();
+				i8085_ICount -= 11;	/* CALL nnnn undocumented */
+				M_CALL(1);
 			}
-			illegal();
 			break;
 		case 0xee: i8085_ICount -= 7;	/* XRI	nn */
 			I.XX.b.l = ARG();
@@ -1138,8 +1154,8 @@ INLINE void execute_one(int opcode)
 				i8085_ICount -= 7;		/* JX   nnnn */
 				M_JMP( I.AF.b.l & XF );
 			} else {
-				i8085_ICount -= 4;		/* ???? */
-				illegal();
+				i8085_ICount -= 11;	/* CALL nnnn undocumented */
+				M_CALL(1);
 			}
 			break;
 		case 0xfe: i8085_ICount -= 7;	/* CPI	nn */
@@ -1639,7 +1655,7 @@ const char *i8085_info(void *context, int regnum)
 				r->AF.b.l & 0x02 ? 'N':'.',
 				r->AF.b.l & 0x01 ? 'C':'.');
 			break;
-		case CPU_INFO_NAME: return "I8085A";
+		case CPU_INFO_NAME: return "8085A";
 		case CPU_INFO_FAMILY: return "Intel 8080";
 		case CPU_INFO_VERSION: return "1.1";
 		case CPU_INFO_FILE: return __FILE__;
@@ -1735,7 +1751,7 @@ const char *i8080_info(void *context, int regnum)
 {
 	switch( regnum )
 	{
-		case CPU_INFO_NAME: return "I8080";
+		case CPU_INFO_NAME: return "8080";
 		case CPU_INFO_VERSION: return "1.2";
 		case CPU_INFO_REG_LAYOUT: return (const char *)i8080_reg_layout;
 		case CPU_INFO_WIN_LAYOUT: return (const char *)i8080_win_layout;

@@ -316,6 +316,9 @@ enum
 #if (HAS_SPC700)
 	CPU_SPC700,
 #endif
+#if (HAS_E132XS)
+	CPU_E132XS,
+#endif
 
 #ifdef MESS
 #if (HAS_APEXC)

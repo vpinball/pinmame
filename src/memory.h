@@ -34,6 +34,43 @@ extern "C" {
 
 
 
+/*
+ * Use __builtin_expect on GNU C 3.0 and above
+ */
+#ifdef __GNUC__
+#if (__GNUC__ < 3)
+#define UNEXPECTED(exp)	(exp)
+#else
+#define UNEXPECTED(exp)	 __builtin_expect((exp), 0)
+#endif
+#else
+#define UNEXPECTED(exp)	(exp)
+#endif
+
+
+
+/***************************************************************************
+
+	Parameters
+
+***************************************************************************/
+
+#ifdef MAME_DEBUG
+#define CPUREADOP_SAFETY_NONE		0
+#define CPUREADOP_SAFETY_PARTIAL	0
+#define CPUREADOP_SAFETY_FULL		1
+#elif defined(MESS)
+#define CPUREADOP_SAFETY_NONE		0
+#define CPUREADOP_SAFETY_PARTIAL	1
+#define CPUREADOP_SAFETY_FULL		0
+#else
+#define CPUREADOP_SAFETY_NONE		1
+#define CPUREADOP_SAFETY_PARTIAL	0
+#define CPUREADOP_SAFETY_FULL		0
+#endif
+
+
+	
 /***************************************************************************
 
 	Basic type definitions
@@ -820,6 +857,8 @@ void		install_port_write32_handler(int cpunum, offs_t start, offs_t end, port_wr
 extern UINT8 			opcode_entry;		/* current entry for opcode fetching */
 extern UINT8 *			OP_ROM;				/* opcode ROM base */
 extern UINT8 *			OP_RAM;				/* opcode RAM base */
+extern offs_t			OP_MEM_MIN;			/* opcode memory minimum */
+extern offs_t			OP_MEM_MAX;			/* opcode memory maximum */
 extern UINT8 *			cpu_bankbase[];		/* array of bank bases */
 extern UINT8 *			readmem_lookup;		/* pointer to the readmem lookup table */
 extern offs_t			mem_amask;			/* memory address mask */
@@ -848,15 +887,41 @@ extern struct ExtMemory	ext_memory[];		/* externally-allocated memory */
 #define ACCESSING_LSB32				((mem_mask & 0x000000ff) == 0)
 #define ACCESSING_MSB32				((mem_mask & 0xff000000) == 0)
 
-/* ----- opcode reading ----- */
-#define cpu_readop(A)				(OP_ROM[(A) & mem_amask])
-#define cpu_readop16(A)				(*(data16_t *)&OP_ROM[(A) & mem_amask])
-#define cpu_readop32(A)				(*(data32_t *)&OP_ROM[(A) & mem_amask])
+/* ----- opcode range safety checks ----- */
+#if CPUREADOP_SAFETY_NONE
+#define address_is_unsafe(A)		(0)
+#elif CPUREADOP_SAFETY_PARTIAL
+#define address_is_unsafe(A)		(UNEXPECTED((A) > OP_MEM_MAX))
+#elif CPUREADOP_SAFETY_FULL
+#define address_is_unsafe(A)		((UNEXPECTED((A) < OP_MEM_MIN) || UNEXPECTED((A) > OP_MEM_MAX)))
+#else
+#error Must set either CPUREADOP_SAFETY_NONE, CPUREADOP_SAFETY_PARTIAL or CPUREADOP_SAFETY_FULL
+#endif
 
-/* ----- opcode argument reading ----- */
-#define cpu_readop_arg(A)			(OP_RAM[(A) & mem_amask])
-#define cpu_readop_arg16(A)			(*(data16_t *)&OP_RAM[(A) & mem_amask])
-#define cpu_readop_arg32(A)			(*(data32_t *)&OP_RAM[(A) & mem_amask])
+/* ----- safe opcode and opcode argument reading ----- */
+data8_t		cpu_readop_safe(offs_t offset);
+data16_t	cpu_readop16_safe(offs_t offset);
+data32_t	cpu_readop32_safe(offs_t offset);
+data8_t		cpu_readop_arg_safe(offs_t offset);
+data16_t	cpu_readop_arg16_safe(offs_t offset);
+data32_t	cpu_readop_arg32_safe(offs_t offset);
+
+/* ----- unsafe opcode and opcode argument reading ----- */
+#define cpu_readop_unsafe(A)		(OP_ROM[(A) & mem_amask])
+#define cpu_readop16_unsafe(A)		(*(data16_t *)&OP_ROM[(A) & mem_amask])
+#define cpu_readop32_unsafe(A)		(*(data32_t *)&OP_ROM[(A) & mem_amask])
+#define cpu_readop_arg_unsafe(A)	(OP_RAM[(A) & mem_amask])
+#define cpu_readop_arg16_unsafe(A)	(*(data16_t *)&OP_RAM[(A) & mem_amask])
+#define cpu_readop_arg32_unsafe(A)	(*(data32_t *)&OP_RAM[(A) & mem_amask])
+
+/* ----- opcode and opcode argument reading ----- */
+void activecpu_set_op_base(unsigned val);
+INLINE data8_t  cpu_readop(offs_t A)		{ if (address_is_unsafe(A)) { activecpu_set_op_base(A); } return cpu_readop_unsafe(A); }
+INLINE data16_t cpu_readop16(offs_t A)		{ if (address_is_unsafe(A)) { activecpu_set_op_base(A); } return cpu_readop16_unsafe(A); }
+INLINE data32_t cpu_readop32(offs_t A)		{ if (address_is_unsafe(A)) { activecpu_set_op_base(A); } return cpu_readop32_unsafe(A); }
+INLINE data8_t  cpu_readop_arg(offs_t A)	{ if (address_is_unsafe(A)) { activecpu_set_op_base(A); } return cpu_readop_arg_unsafe(A); }
+INLINE data16_t cpu_readop_arg16(offs_t A)	{ if (address_is_unsafe(A)) { activecpu_set_op_base(A); } return cpu_readop_arg16_unsafe(A); }
+INLINE data32_t cpu_readop_arg32(offs_t A)	{ if (address_is_unsafe(A)) { activecpu_set_op_base(A); } return cpu_readop_arg32_unsafe(A); }
 
 /* ----- bank switching for CPU cores ----- */
 #define change_pc_generic(pc,abits,minbits,setop)										\

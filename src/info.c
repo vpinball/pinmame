@@ -238,6 +238,18 @@ static void print_game_input(int OUTPUT_XML, FILE* out, const struct GameDriver*
 				case IPF_PLAYER4:
 					if (nplayer<4) nplayer = 4;
 					break;
+				case IPF_PLAYER5:
+					if (nplayer<5) nplayer = 5;
+					break;
+				case IPF_PLAYER6:
+					if (nplayer<6) nplayer = 6;
+					break;
+				case IPF_PLAYER7:
+					if (nplayer<7) nplayer = 7;
+					break;
+				case IPF_PLAYER8:
+					if (nplayer<8) nplayer = 8;
+					break;
 			}
 			switch (input->type & ~IPF_MASK)
 			{
@@ -326,6 +338,18 @@ static void print_game_input(int OUTPUT_XML, FILE* out, const struct GameDriver*
 					break;
 				case IPT_COIN4:
 					if (ncoin < 4) ncoin = 4;
+					break;
+				case IPT_COIN5:
+					if (ncoin < 5) ncoin = 5;
+					break;
+				case IPT_COIN6:
+					if (ncoin < 6) ncoin = 6;
+					break;
+				case IPT_COIN7:
+					if (ncoin < 7) ncoin = 7;
+					break;
+				case IPT_COIN8:
+					if (ncoin < 8) ncoin = 8;
 					break;
 				case IPT_SERVICE :
 					service = "yes";
@@ -813,6 +837,37 @@ static void print_game_driver(int OUTPUT_XML, FILE* out, const struct GameDriver
 	fprintf(out, SELECT(L2E L1N, "/>\n"));
 }
 
+#ifdef MESS
+static void print_game_device(int OUTPUT_XML, FILE* out, const struct GameDriver* game)
+{
+	const struct IODevice* dev = device_first(game);
+
+	while (dev) {
+		fprintf(out, SELECT(L1P "device" L2B, "\t\t<device"));
+		fprintf(out, SELECT(L2P "name ", " name=\""));
+		print_statement_string(OUTPUT_XML, out, device_typename(dev->type));
+		fprintf(out, "%s", SELECT(L2N, "\""));
+		fprintf(out, "%s", SELECT("", ">\n"));
+
+		if (dev->file_extensions) {
+			const char* ext = dev->file_extensions;
+			while (*ext) {
+				fprintf(out, SELECT(L2P "ext ", "\t\t\t<extension"));
+				fprintf(out, "%s", SELECT("", " name=\""));
+				print_free_string(OUTPUT_XML, out, ext);
+				fprintf(out, "%s", SELECT(L2N, "\""));
+				fprintf(out, "%s", SELECT("", "/>\n"));
+				ext += strlen(ext) + 1;
+			}
+		}
+
+		fprintf(out, SELECT(L2E L1N, "\t\t</device>\n"));
+
+		dev = device_next(game, dev);
+	}
+}
+#endif
+
 /* Print the MAME info record for a game */
 static void print_game_info(int OUTPUT_XML, FILE* out, const struct GameDriver* game)
 {
@@ -860,6 +915,9 @@ static void print_game_info(int OUTPUT_XML, FILE* out, const struct GameDriver* 
 	print_game_input(OUTPUT_XML, out, game);
 	print_game_switch(OUTPUT_XML, out, game);
 	print_game_driver(OUTPUT_XML, out, game);
+#ifdef MESS
+	print_game_device(OUTPUT_XML, out, game);
+#endif
 
 	fprintf(out, SELECT(L1E, "\t</" XML_TOP ">\n"));
 }
@@ -945,7 +1003,11 @@ void print_mame_xml(FILE* out, const struct GameDriver* games[])
 		"<?xml version=\"1.0\"?>\n"
 		"<!DOCTYPE " XML_ROOT " [\n"
 		"<!ELEMENT " XML_ROOT " (" XML_TOP "+)>\n"
+#ifdef MESS
+		"\t<!ELEMENT " XML_TOP " (description, year?, manufacturer, history?, biosset*, rom*, disk*, sample*, chip*, video?, sound?, input?, dipswitch*, driver?, device*)>\n"
+#else
 		"\t<!ELEMENT " XML_TOP " (description, year?, manufacturer, history?, biosset*, rom*, disk*, sample*, chip*, video?, sound?, input?, dipswitch*, driver?)>\n"
+#endif
 		"\t\t<!ATTLIST " XML_TOP " name CDATA #REQUIRED>\n"
 		"\t\t<!ATTLIST " XML_TOP " runnable (yes|no) \"yes\">\n"
 		"\t\t<!ATTLIST " XML_TOP " cloneof CDATA #IMPLIED>\n"
@@ -1012,6 +1074,12 @@ void print_mame_xml(FILE* out, const struct GameDriver* games[])
 		"\t\t\t<!ATTLIST driver color (good|imperfect|preliminary) #REQUIRED>\n"
 		"\t\t\t<!ATTLIST driver sound (good|imperfect|preliminary) #REQUIRED>\n"
 		"\t\t\t<!ATTLIST driver palettesize CDATA #REQUIRED>\n"
+#ifdef MESS
+		"\t\t<!ELEMENT device (extension*)>\n"
+		"\t\t\t<!ATTLIST device name CDATA #REQUIRED>\n"
+		"\t\t\t<!ELEMENT extension EMPTY>\n"
+		"\t\t\t\t<!ATTLIST extension name CDATA #REQUIRED>\n"
+#endif
 		"]>\n\n"
 		"<" XML_ROOT ">\n"
 	);

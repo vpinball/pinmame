@@ -167,6 +167,7 @@ void palette_set_shadow_mode(int mode);
 void palette_set_shadow_factor32(double factor);
 void palette_set_highlight_factor32(double factor);
 void palette_set_shadow_dRGB32(int mode, int dr, int dg, int db, int noclip);
+void palette_set_highlight_method(int method); //0=default, 1=multiplication with flooding, 2=addition
 
 void palette_set_global_gamma(double _gamma);
 double palette_get_global_gamma(void);

@@ -538,6 +538,7 @@ static BOOL CALLBACK enum_joystick_callback(LPCDIDEVICEINSTANCE instance, LPVOID
 {
 	DIPROPDWORD value;
 	HRESULT result = DI_OK;
+	DWORD flags;
 
 	// if we're not out of mice, log this one
 	if (joystick_count >= MAX_JOYSTICKS)
@@ -575,8 +576,13 @@ static BOOL CALLBACK enum_joystick_callback(LPCDIDEVICEINSTANCE instance, LPVOID
 		goto cant_set_format;
 
 	// set the cooperative level
+#if HAS_WINDOW_MENU
+	flags = DISCL_BACKGROUND | DISCL_EXCLUSIVE;
+#else
+	flags = DISCL_FOREGROUND | DISCL_EXCLUSIVE;
+#endif
 	result = IDirectInputDevice_SetCooperativeLevel(joystick_device[joystick_count], win_video_window,
-					DISCL_FOREGROUND | DISCL_EXCLUSIVE);
+					flags);
 	if (result != DI_OK)
 		goto cant_set_coop_level;
 
@@ -732,7 +738,7 @@ void win_pause_input(int paused)
 			IDirectInputDevice_Acquire(keyboard_device[i]);
 
 		// acquire all our mice if active
-		if (mouse_active)
+		if (mouse_active && !win_has_menu())
 			for (i = 0; i < mouse_count && (use_mouse||use_lightgun); i++)
 				IDirectInputDevice_Acquire(mouse_device[i]);
 	}
@@ -831,7 +837,7 @@ void win_poll_input(void)
 	}
 
 	// poll all our mice if active
-	if (mouse_active)
+	if (mouse_active && !win_has_menu())
 		for (i = 0; i < mouse_count && (use_mouse||use_lightgun); i++)
 		{
 			// first poll the device
@@ -859,7 +865,7 @@ void win_poll_input(void)
 
 int win_is_mouse_captured(void)
 {
-	return (!input_paused && mouse_active && mouse_count > 0 && use_mouse);
+	return (!input_paused && mouse_active && mouse_count > 0 && use_mouse && !win_has_menu());
 }
 
 
@@ -1352,7 +1358,7 @@ void osd_analogjoy_read(int player, int analog_axis[], InputCode analogjoy_input
 	int i;
 
 	// if the mouse isn't yet active, make it so
-	if (!mouse_active && use_mouse)
+	if (!mouse_active && use_mouse && !win_has_menu())
 	{
 		mouse_active = 1;
 		win_pause_input(0);
@@ -1406,7 +1412,7 @@ void osd_lightgun_read(int player,int *deltax,int *deltay)
 	POINT point;
 
 	// if the mouse isn't yet active, make it so
-	if (!mouse_active && (use_mouse||use_lightgun))
+	if (!mouse_active && (use_mouse||use_lightgun) && !win_has_menu())
 	{
 		mouse_active = 1;
 		win_pause_input(0);
@@ -1450,7 +1456,7 @@ void osd_lightgun_read(int player,int *deltax,int *deltay)
 void osd_trak_read(int player, int *deltax, int *deltay)
 {
 	// if the mouse isn't yet active, make it so
-	if (!mouse_active && use_mouse)
+	if (!mouse_active && use_mouse && !win_has_menu())
 	{
 		mouse_active = 1;
 		win_pause_input(0);
