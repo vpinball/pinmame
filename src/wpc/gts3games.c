@@ -7,7 +7,6 @@
 /* ROM STATUS
 N = No Lead, L = Have a Lead on Rom
 -----------------------------------------------
-(N)Lights, Camera, Action 1989 (Sound roms only)
 (N)Bell Ringer 1990
 (N)Nudge It 1990
 (N)Hoops 1991
@@ -82,12 +81,14 @@ CORE_GAMEDEFNV(ccruise,"Caribbean Cruise",1989,"International Concepts",mGTS3S,G
 /*-------------------------------------------------------------------
 / Lights, Camera, Action (#720)
 /-------------------------------------------------------------------*/
-INITGAME(lca, ALPHA, FLIP_SW(FLIP_L), 3 /*?*/, SNDBRD_NONE, 4)
-GTS3ROMSTART32(lca,	"gprom.bin",0x937a8426)
+INITGAME(lca, ALPHA, FLIP_SW(FLIP_L), 3 /*?*/, SNDBRD_GTS3, 4)
+GTS3ROMSTART32(lca,	"gprom.bin",0x52957d70)
+GTS3SOUND3232(		"yrom1.bin",0x20919ebb,
+					"drom1.bin",0xa258d72d)
 GTS3_ROMEND
-CORE_GAMEDEFNV(lca,"Lights, Camera, Action",1989,"Gottlieb",mGTS3,GAME_NO_SOUND)
+CORE_GAMEDEFNV(lca,"Lights, Camera, Action",1989,"Gottlieb",mGTS3S,GAME_IMPERFECT_SOUND)
 //62c0beda Rev 1?
-//52957d70 Rev 3?
+//937a8426 Rev 2?
 
 /*-------------------------------------------------------------------
 / Bell Ringer
