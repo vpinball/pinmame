@@ -1,8 +1,12 @@
 What's new in Visual PinMAME:
 -----------------------------
 
+Version 1.13 (April 14, 2002)
+-----------------------------
+- Nothing, the interface works fine
+
 Version 1.12 (March 29, 2002)
-----------------------------
+-----------------------------
 - Updated Visual PinMAME to 1.12 release of PinMAME Source Code.
 - Added IObjectSafety interface (VPinMAME now states that it's "safe for scripting")
 - Added a class to created customizable dialogs from the script

@@ -1,8 +1,25 @@
 What's new:
------------
+
+Version 1.12.1 (April 14, 2002)
+-------------------------------
+
+Bugs Fixed
+----------
+-GTS80: Fixed sound bugs for "BlackHole" and "Pink Panther"
+ [Tom Haukap]
+
+New Features
+------------
+-Votrax SC-01 integrated to the MAME core
+ [Tom Haukap]
+
+-GTS80: Memory mapping and layout should now be 100%
+ [Tom Haukap]
+ [Martin Adrian]
+
 
 Version 1.12 (March 29, 2002)
-----------------------------
+-----------------------------
 Happy Birthday to PinMAME! It's hard to believe it's been 1 year since our initial release.
 So much has been added in that time, it's really amazing to see how far we've come.
 We look forward to another year even better than this one! We'd like to thank everyone for
