@@ -3,7 +3,7 @@
 	VPinMAME - Visual Pinball Multiple Arcade Machine Emulator
 
 	This file is based on the code of Michael Soderstrom and Chris Kirmse
-    
+
     This file is part of MAME32, and may only be used, modified and
     distributed under the terms of the MAME license, in "readme.txt".
     By continuing to use, modify or distribute this file you indicate
@@ -56,7 +56,7 @@ static void     DirectSound_update_audio(void);
     External variables
  ***************************************************************************/
 
-struct OSDSound DirectSound = 
+struct OSDSound DirectSound =
 {
     { DirectSound_init },                     /* init                    */
     { DirectSound_exit },                     /* exit                    */
@@ -106,7 +106,7 @@ static UINT32 samples_this_frame;
 static int attenuation = 0;
 
 /***************************************************************************
-    External OSD functions  
+    External OSD functions
  ***************************************************************************/
 
 typedef HRESULT (WINAPI *dsc_proc)(GUID FAR *lpGUID,LPDIRECTSOUND FAR *lplpDS,
@@ -168,7 +168,7 @@ static void DirectSound_exit(void)
 static int DirectSound_start_audio_stream(int stereo)
 {
     HRESULT hr;
-    
+
     DSBUFFERDESC dsbd;
     LPDIRECTSOUNDBUFFER primary_buffer;
     WAVEFORMATEX wfx;
@@ -202,7 +202,7 @@ static int DirectSound_start_audio_stream(int stereo)
         ErrorMsg("Unable to create primary sound buffer: %s",DirectXDecodeError(hr));
         return 1;
     }
-    
+
     memset(&wfx,0,sizeof(wfx));
     wfx.wFormatTag = WAVE_FORMAT_PCM;
     wfx.nChannels = (stereo != 0) ? 2 : 1;
@@ -211,7 +211,7 @@ static int DirectSound_start_audio_stream(int stereo)
     wfx.nBlockAlign = wfx.wBitsPerSample / 8 * wfx.nChannels;
     wfx.nAvgBytesPerSec = wfx.nSamplesPerSec * wfx.nBlockAlign;
     hr = IDirectSoundBuffer_SetFormat(primary_buffer,&wfx);
-    
+
     if (FAILED(hr))
     {
         ErrorMsg("Unable to set format of primary sound buffer: %s",DirectXDecodeError(hr));
@@ -229,22 +229,22 @@ static int DirectSound_start_audio_stream(int stereo)
     wfx.nChannels = stereo_factor;
 
     dsb = NULL;
-       
+
     memset(&dsbd,0,sizeof(dsbd));
     dsbd.dwSize = sizeof(dsbd);
     dsbd.dwFlags = DSBCAPS_GETCURRENTPOSITION2   // Always a good idea
        | DSBCAPS_CTRLPAN
        | DSBCAPS_CTRLVOLUME
        | DSBCAPS_GLOBALFOCUS;        // Allows background playing
-    
-       
+
+
     buffer_length = Machine->sample_rate*sizeof(INT16)*stereo_factor*BUFFER_SIZE_MILLIS/1000;
     // sound pukes if it's not aligned to 16 byte length
     buffer_length = (buffer_length + 15) & ~15;
 
     dsbd.dwBufferBytes = buffer_length;
-    dsbd.lpwfxFormat = &wfx; 
-       
+    dsbd.lpwfxFormat = &wfx;
+
     hr = IDirectSound_CreateSoundBuffer(ds,&dsbd,&dsb,NULL);
     if (FAILED(hr))
     {
@@ -263,7 +263,7 @@ static int DirectSound_start_audio_stream(int stereo)
     {
         memset(area1,0,len_area1);
         memset(area2,0,len_area2);
-       
+
         hr = IDirectSoundBuffer_Unlock(dsb,area1,len_area1,area2,len_area2);
         if (FAILED(hr))
             ErrorMsg("Unable to unlock secondary sound buffer: %s",DirectXDecodeError(hr));
@@ -311,7 +311,7 @@ static void DirectSound_set_mastervolume(int volume)
     if (attenuation != -1 && dsb != NULL)
     {
         HRESULT hr;
-       
+
         hr = IDirectSoundBuffer_SetVolume(dsb,100*attenuation);
         if (FAILED(hr))
             ErrorMsg("Unable to set volume %s",DirectXDecodeError(hr));
@@ -335,7 +335,7 @@ static void DirectSound_sound_enable(int enable)
         if (dsb != NULL)
         {
             HRESULT hr;
-       
+
             hr = IDirectSoundBuffer_SetVolume(dsb, DSBVOLUME_MIN);
             if (FAILED(hr))
                 ErrorMsg("Unable to set volume %s", DirectXDecodeError(hr));
@@ -354,7 +354,7 @@ static void DirectSound_update_audio(void)
         return;
 
 	profiler_mark(PROFILER_MIXER);
-    
+
     next_voice_pos = voice_pos + stream_cache_len*sizeof(INT16)*stereo_factor;
     if (next_voice_pos >= buffer_length)
         next_voice_pos -= buffer_length;
@@ -367,7 +367,7 @@ static void DirectSound_update_audio(void)
         profiler_mark(PROFILER_IDLE);
         for (;;)
         {
-          
+
             IDirectSoundBuffer_GetCurrentPosition(dsb,&curpos,&writepos);
             if (voice_pos < next_voice_pos)
             {
@@ -387,7 +387,7 @@ static void DirectSound_update_audio(void)
 			int margin = voice_pos - writepos;
 			if ( ((voice_pos < next_voice_pos) && (writepos > next_voice_pos))) margin += buffer_length;
 			if (!((voice_pos < next_voice_pos) || (writepos > next_voice_pos))) margin -= buffer_length;
-			if ((margin < buffer_length/10) && (margin < lastmargin) && (sampleadd < 32)) sampleadd += 1;
+			if ((margin < buffer_length/10) && (margin < lastmargin)/* && (sampleadd < 32)*/) sampleadd += 1;
 			else if (sampleadd > 0) sampleadd -= 1;
 			samples_left_over = sampleadd;
 			lastmargin = margin;
@@ -408,7 +408,7 @@ static void DirectSound_update_audio(void)
     {
         memcpy(area1, stream_cache_data, len_area1);
         memcpy(area2, ((byte *)stream_cache_data) + len_area1, len_area2);
-       
+
         hr = IDirectSoundBuffer_Unlock(dsb,area1,len_area1,area2,len_area2);
         if (FAILED(hr))
             ErrorMsg("Unable to unlock secondary sound buffer: %s",DirectXDecodeError(hr));
