@@ -39,9 +39,9 @@ MACHINE_DRIVER_END
 / Space Shuttle (S9) 12/84
 /--------------------*/
 static core_tLCDLayout dispSshtl[] = { \
-  { 0, 0,21,7, CORE_SEG87F},
-  { 2, 0,29,7, CORE_SEG87F},
-  { 4, 0, 1,7, CORE_SEG87F}, { 4,26, 9,7,CORE_SEG87F},
+  { 0, 0,21,7, CORE_SEG87},
+  { 2, 0,29,7, CORE_SEG87},
+  { 4, 0, 1,7, CORE_SEG87}, { 4,26, 9,7,CORE_SEG87},
   { 5,16, 0,1, CORE_SEG7},  { 5,18, 8,1,CORE_SEG7},
   { 5,21,20,1, CORE_SEG7},  { 5,23,28,1,CORE_SEG7},{0}
 };
