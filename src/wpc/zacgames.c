@@ -91,7 +91,18 @@ ZAC_ROMSTART44444(strapids,	"rapids_1.lgc",0x2a30cef3,
 ZAC_ROMEND
 CORE_GAMEDEFNV(strapids,"Shooting the Rapids",1979,"Zaccaria",mZAC0,SOUNDFLAG)
 
-//09/79 Hot Wheels
+/*--------------------------------
+/ Hot Wheels (09/79)
+/-------------------------------*/
+INITGAME1(hotwheel,0,dispZAC1,0)
+ZAC_ROMSTART84444(hotwheel,	"zac_boot.lgc",0x62a3da59,
+							"htwhls_2.lgc",0x7ff870ae,
+							"htwhls_3.lgc",0x7c1fba91,
+							"htwhls_4.lgc",0x974804ba,
+							"htwhls_5.lgc",0xe28f3c60)
+ZAC_ROMEND
+CORE_GAMEDEFNV(hotwheel,"Hot Wheels",1979,"Zaccaria",mZAC0,SOUNDFLAG)
+
 //09/79 Space City
 
 /*--------------------------------
@@ -172,7 +183,7 @@ ZAC_SOUNDROM_cefg0(			"pbc_1c.snd",  0x6e2defe5,
 							"pbc_1f.snd",  0xf3f4b950,
 							"pbc_1g.snd",  0x44adae13)
 ZAC_ROMEND
-CORE_CLONEDEFNV(pinchp82,pinchamp,"Pinball Champ '82",1982,"Zaccaria",mZAC2B,SOUNDFLAG)
+CORE_CLONEDEFNV(pinchp82,pinchamp,"Pinball Champ '82 (german speech)",1982,"Zaccaria",mZAC2B,SOUNDFLAG)
 
 /*--------------------------------
 / Soccer King (09/82)
@@ -214,7 +225,6 @@ ZAC_SOUNDROM_de1g(			"sound1.d",    0xefc1d724,
 ZAC_ROMEND
 CORE_GAMEDEFNV(tmachzac,"Time Machine (Zaccaria)",1983,"Zaccaria",mZAC2C,GAME_NOT_WORKING|SOUNDFLAG)
 
-
 /*--------------------------------
 / Farfalla (09/83)
 /-------------------------------*/
@@ -236,11 +246,17 @@ ZAC_ROMSTART1820(dvlrider,	"cpu.ic1",0x5874ab12,
 ZAC_SOUNDROM_de2g(		"gb01snd1.1d",0x5d48462c,
 						"gb01snd2.1e",0x1127be59,
 						"gb01snd3.1g",0x1ae91ae8)
-// ZAC_SOUNDROM_de2g(	"g_snd_1.bin",0x77d042dc, // german speech
-//						"g_snd_2.bin",0x31e35fd4,
-//						"g_snd_3.bin",0x2e64a401)
 ZAC_ROMEND
 CORE_GAMEDEFNV(dvlrider,"Devil Riders",1984,"Zaccaria",mZAC2X,SOUNDFLAG)
+
+INITGAME(dvlrideg,1,dispZAC2,SNDBRD_ZAC13136)
+ZAC_ROMSTART1820(dvlrideg,	"cpu.ic1",0x5874ab12,
+							"cpu.ic2",0x09829446)
+ZAC_SOUNDROM_de2g(	"g_snd_1.bin",0x77d042dc,
+					"g_snd_2.bin",0x31e35fd4,
+					"g_snd_3.bin",0x2e64a401)
+ZAC_ROMEND
+CORE_CLONEDEFNV(dvlrideg,dvlrider,"Devil Riders (german speech)",1984,"Zaccaria",mZAC2X,SOUNDFLAG)
 
 /*--------------------------------
 / Magic Castle (09/84)
@@ -251,11 +267,17 @@ ZAC_ROMSTART020(mcastle,	"cpu.ic1",0x50dd8209,
 ZAC_SOUNDROM_de2g(		"gb01snd1.1d",0xcd6a4a07,
 						"gb01snd2.1e",0xd289952d,
 						"gb01snd3.1g",0x8b4342eb)
-// ZAC_SOUNDROM_de2g(	"magic1d.snd",0x1f1a1140, // german speech
-//						"magic1e.snd",0xa8787011,
-//						"magic1g.snd",0x313fb216)
 ZAC_ROMEND
-CORE_GAMEDEFNV(mcastle,"Magic Castle",1984,"Zaccaria",mZAC2,SOUNDFLAG)
+CORE_GAMEDEFNV(mcastle,"Magic Castle",1984,"Zaccaria",mZAC2X,SOUNDFLAG)
+
+INITGAME(mcastleg,1,dispZAC3,SNDBRD_ZAC13136)
+ZAC_ROMSTART020(mcastleg,	"cpu.ic1",0x50dd8209,
+							"cpu.ic2",0x11372bec)
+ZAC_SOUNDROM_de2g(	"magic1d.snd",0x1f1a1140,
+					"magic1e.snd",0xa8787011,
+					"magic1g.snd",0x313fb216)
+ZAC_ROMEND
+CORE_CLONEDEFNV(mcastleg,mcastle,"Magic Castle (german speech)",1984,"Zaccaria",mZAC2X,SOUNDFLAG)
 
 /*--------------------------------
 / Robot (01/85)
@@ -279,7 +301,7 @@ ZAC_ROMSTART020(clown,	"clown_1.lgc",0x16f09833,
 ZAC_SOUNDROM_e2f2(		"clown_e.snd",0x04a34cc1,
 						"clown_f.snd",0xe35a4f72)
 ZAC_ROMEND
-CORE_GAMEDEFNV(clown,"Clown",1985,"Zaccaria",mZAC2,SOUNDFLAG)
+CORE_GAMEDEFNV(clown,"Clown",1985,"Zaccaria",mZAC2X,SOUNDFLAG)
 
 /*--------------------------------
 / Pool Champion (12/85)
@@ -290,7 +312,7 @@ ZAC_ROMSTART020(poolcham,	"poolcham.ic1",0xfca2a2b2,
 ZAC_SOUNDROM_f(				"poolcham.1f", 0xefe33926)
 // ZAC_SOUNDROM_f(			"sound1.f",    0xb4b4e31e) // different language?
 ZAC_ROMEND
-CORE_GAMEDEFNV(poolcham,"Pool Champion",1985,"Zaccaria",mZAC2F,SOUNDFLAG)
+CORE_GAMEDEFNV(poolcham,"Pool Champion",1985,"Zaccaria",mZAC2D,SOUNDFLAG)
 
 /*--------------------------------
 / Black Belt (03/86)
@@ -301,7 +323,7 @@ ZAC_ROMSTART1820(bbeltzac,	"bbz-1.fil",0x2e7e1575,
 ZAC_SOUNDROM_e2f4(			"bbz-e.snd",0x1fe045d2,
 							"bbz-f.snd",0x9f58f369)
 ZAC_ROMEND
-CORE_GAMEDEFNV(bbeltzac,"Black Belt (Zaccaria)",1986,"Zaccaria",mZAC2F,SOUNDFLAG)
+CORE_GAMEDEFNV(bbeltzac,"Black Belt (Zaccaria)",1986,"Zaccaria",mZAC2D,SOUNDFLAG)
 
 /*--------------------------------
 / Mexico '86 (07/86)
@@ -326,9 +348,7 @@ ZAC_SOUNDROM_456(			"zan_ic4.128",0xf34a2aaa,
 							"zan_ic5.128",0xbf61aab0,
 							"zan_ic6.128",0x13a5b8d4)
 ZAC_ROMEND
-CORE_GAMEDEFNV(zankor,"Zankor",1986,"Zaccaria",mZAC2FX,SOUNDFLAG)
-
-//??/86 Mystic Star (conversion kit with different hardware)
+CORE_GAMEDEFNV(zankor,"Zankor",1986,"Zaccaria",mZAC2F,SOUNDFLAG)
 
 /*--------------------------------
 / Spooky (04/87)

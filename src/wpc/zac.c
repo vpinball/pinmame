@@ -7,7 +7,6 @@
 #include <stdlib.h>
 #include "driver.h"
 #include "cpu/s2650/s2650.h"
-#include "machine/6821pia.h"
 #include "core.h"
 #include "sndbrd.h"
 #include "zac.h"
@@ -16,9 +15,10 @@
 #define ZAC_VBLANKFREQ    60 /* VBLANK frequency */
 #define ZAC_OLDIRQFREQ   130 /* IRQ frequencies (guessed) */
 #define ZAC_IRQFREQ     1466
-#define ZAC_IRQFREQ_A   1833
+#define ZAC_IRQFREQ_A   2666
 #define ZAC_IRQFREQ_B   1933
 #define ZAC_IRQFREQ_C   1866
+#define ZAC_IRQFREQ_D   2166
 #define ZAC_IRQFREQ_F   2066
 
 static WRITE_HANDLER(ZAC_soundCmd) { }
@@ -81,7 +81,6 @@ static INTERRUPT_GEN(ZAC_vblank) {
 
 static SWITCH_UPDATE(ZAC1) {
   if (inports) {
-    sndbrd_0_diag(core_getSw(-1));
     coreGlobals.swMatrix[0] = (inports[ZAC_COMINPORT] & 0x1000) >> 5;
     coreGlobals.swMatrix[1] = inports[ZAC_COMINPORT] & 0xff;
     coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0x7f) | ((inports[ZAC_COMINPORT] & 0xefff) >> 8);
@@ -91,6 +90,9 @@ static SWITCH_UPDATE(ZAC1) {
 static SWITCH_UPDATE(ZAC2) {
   if (inports) {
     sndbrd_0_diag(core_getSw(-1));
+    if (core_gameData->hw.soundBoard == SNDBRD_ZAC13136) {
+      sndbrd_1_diag(core_getSw(-1));
+    }
     coreGlobals.swMatrix[0] = (inports[ZAC_COMINPORT] & 0x1000) >> 5;
     coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0x80) | (inports[ZAC_COMINPORT] & 0xff);
     coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0x79) | ((inports[ZAC_COMINPORT] & 0xefff) >> 8);
@@ -373,6 +375,18 @@ static READ_HANDLER(ram1_r) {
 	return ram1[offset];
 }
 
+void UpdateZACSoundLED(int data)
+{
+	locals.diagnosticSLed = data;
+}
+
+void UpdateZACSoundACT(int data)
+{
+  locals.actspk = data & 0x01;
+  locals.actsnd = (data>>1) & 0x01;
+ // logerror("sound act = %x\n",data);
+}
+
 /*-----------------------------------
 /  Memory map for CPU board
 /------------------------------------*/
@@ -540,12 +554,6 @@ MACHINE_DRIVER_START(ZAC2)
   MDRV_IMPORT_FROM(zac1370)
 MACHINE_DRIVER_END
 
-//Sound board 13136
-MACHINE_DRIVER_START(ZAC2X)
-  MDRV_IMPORT_FROM(ZAC2NS)
-  MDRV_IMPORT_FROM(zac13136)
-MACHINE_DRIVER_END
-
 MACHINE_DRIVER_START(ZAC2A)
   MDRV_IMPORT_FROM(ZAC2)
   MDRV_CORE_INIT_RESET_STOP(ZAC2A,NULL,ZAC)
@@ -554,9 +562,16 @@ MACHINE_DRIVER_START(ZAC2A)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(ZAC2B)
-  MDRV_IMPORT_FROM(ZAC2A)
+  MDRV_IMPORT_FROM(ZAC2)
+  MDRV_CORE_INIT_RESET_STOP(ZAC2A,NULL,ZAC)
   MDRV_CPU_MODIFY("mcpu")
   MDRV_CPU_PERIODIC_INT(ZAC_irq, ZAC_IRQFREQ_B)
+MACHINE_DRIVER_END
+
+//Sound board 13136
+MACHINE_DRIVER_START(ZAC2X)
+  MDRV_IMPORT_FROM(ZAC2NS)
+  MDRV_IMPORT_FROM(zac13136)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(ZAC2C)
@@ -566,26 +581,14 @@ MACHINE_DRIVER_START(ZAC2C)
   MDRV_CPU_PERIODIC_INT(ZAC_irq, ZAC_IRQFREQ_C)
 MACHINE_DRIVER_END
 
-MACHINE_DRIVER_START(ZAC2F)
-  MDRV_IMPORT_FROM(ZAC2C)
+MACHINE_DRIVER_START(ZAC2D)
+  MDRV_IMPORT_FROM(ZAC2X)
   MDRV_CPU_MODIFY("mcpu")
-  MDRV_CPU_PERIODIC_INT(ZAC_irq, ZAC_IRQFREQ_F)
+  MDRV_CPU_PERIODIC_INT(ZAC_irq, ZAC_IRQFREQ_D)
 MACHINE_DRIVER_END
 
-MACHINE_DRIVER_START(ZAC2FX)
+MACHINE_DRIVER_START(ZAC2F)
   MDRV_IMPORT_FROM(ZAC2X)
   MDRV_CPU_MODIFY("mcpu")
   MDRV_CPU_PERIODIC_INT(ZAC_irq, ZAC_IRQFREQ_F)
 MACHINE_DRIVER_END
-
-void UpdateZACSoundLED(int data)
-{
-	locals.diagnosticSLed = data;
-}
-
-void UpdateZACSoundACT(int data)
-{
-  locals.actspk = data & 0x01;
-  locals.actsnd = (data>>1) & 0x01;
- // logerror("sound act = %x\n",data);
-}

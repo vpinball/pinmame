@@ -198,8 +198,8 @@ static WRITE_HANDLER(sns_ctrl_w) {
 
 static READ_HANDLER(sns_8910a_r) { return ~snslocals.lastcmd; }
 
-static WRITE_HANDLER(sns_pia0ca2_w) { 
-	//sndbrd_ctrl_cb(snslocals.brdData.boardNo,data); 
+static WRITE_HANDLER(sns_pia0ca2_w) {
+	//sndbrd_ctrl_cb(snslocals.brdData.boardNo,data);
 	UpdateZACSoundLED(data);
 } // diag led
 
@@ -240,6 +240,7 @@ static struct AY8910interface  zac_ay8910Int = {2, 3580000/4, {25, 25}, {sns_891
 static MEMORY_READ_START(zac_readmem)
   { 0x0000, 0x007f, MRA_RAM },
   { 0x0080, 0x0083, pia_r(SNS_PIA0) },
+  { 0x0084, 0x0087, pia_r(ZAC_PIA0) },
   { 0x0090, 0x0093, pia_r(SNS_PIA1) },
   { 0x1800, 0x1800, sns_data_r },
   { 0x8000, 0xffff, MRA_ROM },
@@ -248,6 +249,7 @@ MEMORY_END
 static MEMORY_WRITE_START(zac_writemem)
   { 0x0000, 0x007f, MWA_RAM },
   { 0x0080, 0x0083, pia_w(SNS_PIA0) },
+  { 0x0084, 0x0087, pia_w(ZAC_PIA0) },
   { 0x0090, 0x0093, pia_w(SNS_PIA1) },
   { 0x1000, 0x1000, DAC_1_data_w },
   { 0x8000, 0xffff, MWA_ROM },
@@ -284,9 +286,9 @@ static const struct pia6821_interface zac_pia[] = {{
 
 static void zac_init(struct sndbrdData *brdData) {
   locals.brdData = *brdData;
-  //pia_config(ZAC_PIA0, PIA_STANDARD_ORDERING, &zac_pia[0]);
   pia_config(SNS_PIA0, PIA_STANDARD_ORDERING, &sns_pia[0]);
   pia_config(SNS_PIA1, PIA_STANDARD_ORDERING, &sns_pia[1]);
+  pia_config(ZAC_PIA0, PIA_STANDARD_ORDERING, &zac_pia[0]);
 }
 
 static void zac_diag(int button) {
