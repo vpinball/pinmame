@@ -12,19 +12,17 @@
 /*-- Common Inports for HNK Games --*/
 #define HNK_COMPORTS \
   PORT_START /* 0 */ \
-    /* Switch Column 1 (Switches #6 & #7) */ \
-    COREPORT_BITDEF(  0x0001, IPT_START1,         IP_KEY_DEFAULT)  \
-    COREPORT_BIT(     0x0002, "Ball Tilt",        KEYCODE_2)  \
-    /* Switch Column 2 (Switches #9 - #16) */ \
-	/* For Stern MPU-200 (Switches #1-3, and #8) */ \
-    COREPORT_BITDEF(  0x0004, IPT_COIN1,          IP_KEY_DEFAULT) \
-    COREPORT_BITDEF(  0x0008, IPT_COIN2,          IP_KEY_DEFAULT) \
-    COREPORT_BITDEF(  0x0010, IPT_COIN3,          KEYCODE_3) \
-    COREPORT_BIT(     0x0200, "Slam Tilt",        KEYCODE_HOME)  \
+    /* Switch Column 1 (Switches #2 & #3) */ \
+    COREPORT_BIT(     0x0001, "Ball Tilt",        KEYCODE_INSERT)  \
+    COREPORT_BITDEF(  0x0002, IPT_START1,         IP_KEY_DEFAULT)  \
+    /* Switch Column 2 (Switches #9 - #10) */ \
+    COREPORT_BIT(     0x0004, "Slam Tilt",        KEYCODE_HOME)  \
+    COREPORT_BITDEF(  0x0008, IPT_COIN1,          IP_KEY_DEFAULT)  \
+    COREPORT_BITTOG(  0x0010, "Outhole",          KEYCODE_7)  \
     /* These are put in switch column 0 */ \
-    COREPORT_BIT(     0x0400, "Self Test",        KEYCODE_7) \
-    COREPORT_BIT(     0x0800, "CPU Diagnostic",   KEYCODE_9) \
-    COREPORT_BIT(     0x1000, "Sound Diagnostic", KEYCODE_0) \
+    COREPORT_BIT(     0x0020, "Self Test",        KEYCODE_8) \
+    COREPORT_BIT(     0x0040, "CPU Diagnostic",   KEYCODE_9) \
+    COREPORT_BIT(     0x0080, "Sound Diagnostic", KEYCODE_0) \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
       COREPORT_DIPSET(0x0000, "0" ) \
