@@ -174,39 +174,37 @@ static WRITE_HANDLER(dma_commands)
 		TAITOlocals.solenoids = (TAITOlocals.solenoids & 0xfffcffff) | ((data&0xc0)<<10);
 		if ( TAITOlocals.solenoids&0x10000 )
 			// 11-12
-			TAITOlocals.solenoids = (TAITOlocals.solenoids & 0xffff33ff) | ((data&0x30)<<6);
+			TAITOlocals.solenoids = (TAITOlocals.solenoids & 0xfffff3ff) | ((data&0x30)<<6);
 		else
 			// 5-6
-			TAITOlocals.solenoids = (TAITOlocals.solenoids & 0xffff3fcf) | (data&0x30);
+			TAITOlocals.solenoids = (TAITOlocals.solenoids & 0xffffffcf) | (data&0x30);
 		break;
 
 	case 1:
 		// upper nibble: solenoids 1-4 or 7-10 depending on mux relay
 		if ( TAITOlocals.solenoids&0x10000 )
 			// 7-10
-			TAITOlocals.solenoids = (TAITOlocals.solenoids & 0xffff3c3f) | ((data&0xf0)<<2);
+			TAITOlocals.solenoids = (TAITOlocals.solenoids & 0xfffffc3f) | ((data&0xf0)<<2);
 		else
 			// 1-4
-			TAITOlocals.solenoids = (TAITOlocals.solenoids & 0xffff3ff0) | ((data&0xf0)>>4);
+			TAITOlocals.solenoids = (TAITOlocals.solenoids & 0xfffffff0) | ((data&0xf0)>>4);
 		break;
 
-	// upper nibbles of offset 2-3: sound commands
 	case 2:
-		// upper nibble: sound command 1-4
-		TAITOlocals.sndCmd = (TAITOlocals.sndCmd & 0xf0) | ((data&0xf0)>>4);
+		// upper nibble: sound command bits 1-4, sound enable
+		TAITOlocals.sndCmd = (TAITOlocals.sndCmd & 0xf0) | (((data&0xf0)>>4) & ~core_getDip(1));
+		if ( TAITOlocals.oldsndCmd!=TAITOlocals.sndCmd ) {
+			TAITOlocals.oldsndCmd = TAITOlocals.sndCmd;
+			taito_sndCmd_w(0, TAITOlocals.sndCmd);
+		}
 		break;
 
 	case 3:
-		// upper nibble: sound command 5-8
-		TAITOlocals.sndCmd = (TAITOlocals.sndCmd & 0x0f) | (data&0xf0);
+		// upper nibble: sound command bits 5-8, solenoids 13-14
+		TAITOlocals.sndCmd = (TAITOlocals.sndCmd & 0x0f) | ((data&0xf0) & ~core_getDip(1));
+		TAITOlocals.solenoids = (TAITOlocals.solenoids & 0xffffcfff) | ((data & 0xc0) << 6);
 		break;
 
-	}
-
-	if ( TAITOlocals.oldsndCmd!=TAITOlocals.sndCmd ) {
-		TAITOlocals.oldsndCmd = TAITOlocals.sndCmd;
-
-		taito_sndCmd_w(0, TAITOlocals.sndCmd);
 	}
 
 	// lower nibbles: lamps, offset 0-f

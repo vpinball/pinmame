@@ -16,11 +16,11 @@
 / - sintevox with a daugher board installed
 /
 / cpu: 6802
-/
-/ 0x0000 - 0x0000: PIA
+/ 0x0000 - 0x007F: RAM
+/ 0x0400 - 0x0403: PIA
 / 0x1000 - 0x17FF: ROM 2
 / 0x1800 - 0x1fff: ROM 1
-/
+/ (some games like Shark or Sure Shot differ)
 / sintevox:
 / SC-01 connected to output of PIA Port B
 /
@@ -42,8 +42,9 @@ MEMORY_READ_START(taitos_readmem)
   { 0x0000, 0x007f, MRA_RAM },
   { 0x0080, 0x03ff, MRA_NOP },
   { 0x0400, 0x0403, pia_r(SP_PIA0) },
-  { 0x0404, 0x07ff, MRA_NOP },
-  { 0x0800, 0xffff, MRA_ROM },
+  { 0x0800, 0x1fff, MRA_ROM }, // 0x800 - 0xfff for sureshot
+  { 0x3000, 0x3fff, MRA_ROM }, // for sharkt
+  { 0xf800, 0xffff, MRA_ROM }, // reset vector
 MEMORY_END
 
 MEMORY_WRITE_START(taitos_writemem)
@@ -94,7 +95,7 @@ static void votrax_busy(int state)
 }
 
 static const struct pia6821_interface sp_pia = {
-  /*i: A/B,CA/B1,CA/B2 */ 0, 0, 0, 0, 0, 0,
+  /*i: A/B,CA/B1,CA/B2 */ 0, 0, PIA_UNUSED_VAL(0), PIA_UNUSED_VAL(0), 0, 0,
   /*o: A/B,CA/B2       */ pia0a_w, pia0b_w, pia0ca2_w, pia0cb2_w,
   /*irq: A/B           */ taitos_nmi, taitos_irq
 };
@@ -102,7 +103,7 @@ static const struct pia6821_interface sp_pia = {
 /* sound input */
 static WRITE_HANDLER(taitos_data_w)
 {
-//	logerror("taitos_data_w: %i\n", data);
+	logerror("taitos_data_w: %02x\n", data);
 	pia_set_input_b(SP_PIA0, data^0xff);
 	pia_set_input_cb1(SP_PIA0, data?0x01:0x00);
 }
@@ -136,7 +137,7 @@ const struct sndbrdIntf taitoIntf = {
 };
 
 MACHINE_DRIVER_START(taitos_sintetizador)
-  MDRV_CPU_ADD_TAG("scpu", M6802, 650000) // 0.65 MHz ??? */
+  MDRV_CPU_ADD_TAG("scpu", M6802, 600000) // 0.6 MHz ??? */
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(taitos_readmem, taitos_writemem)
   MDRV_INTERLEAVE(50)
@@ -182,25 +183,25 @@ static WRITE_HANDLER(ay8910_1_data_port)
 
 static WRITE_HANDLER(unknown2000)
 {
-	// logerror("unknown2000: %0x\n", data);
+	logerror("unknown2000 write:%02x\n", data);
 }
 
 static READ_HANDLER(unknown1007)
 {
-	// logerror("unknown1007 read\n");
-	return 0; // AY8910Read(0); ???
+	logerror("unknown1007 read\n");
+	return AY8910Read(0);
 }
 
 static READ_HANDLER(unknown100d)
 {
-	// logerror("unknown100d read\n");
-	return 0; // AY8910Read(1); ???
+	logerror("unknown100d read\n");
+	return AY8910Read(1);
 }
 
 struct AY8910interface TAITO_ay8910Int = {
 	2,			/* 2 chips */
 	2000000,	/* 2 MHz */
-	{ 50, 50 }, /* Volume */
+	{ 30, 30 }, /* Volume */
 	{ 0 },
 	{ 0 },
 	{ 0 },
@@ -211,10 +212,14 @@ MEMORY_READ_START(taitospp_readmem)
   { 0x0000, 0x007f, MRA_RAM },
   { 0x0080, 0x03ff, MRA_NOP },
   { 0x0400, 0x0403, pia_r(SP_PIA0) },
-  { 0x0404, 0x0fff, MRA_NOP },
+  { 0x0404, 0x1006, MRA_NOP },
   { 0x1007, 0x1007, unknown1007 },
+  { 0x1008, 0x100a, MRA_NOP },
   { 0x100d, 0x100d, unknown100d },
-  { 0x2000, 0x7fff, MRA_ROM },
+  { 0x100e, 0x1fff, MRA_NOP },
+  { 0x2000, 0x3fff, MRA_ROM },
+  { 0x4000, 0x4fff, MRA_NOP },
+  { 0x5000, 0x7fff, MRA_ROM },
   { 0xf000, 0xffff, MRA_ROM }, /* reset vector */
 MEMORY_END
 
@@ -231,7 +236,7 @@ MEMORY_WRITE_START(taitospp_writemem)
 MEMORY_END
 
 MACHINE_DRIVER_START(taitos_sintetizadorpp)
-  MDRV_CPU_ADD_TAG("scpu", M6802, 650000) // 0.65 MHz ??? */
+  MDRV_CPU_ADD_TAG("scpu", M6802, 600000) // 0.6 MHz ??? */
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(taitospp_readmem, taitospp_writemem)
   MDRV_INTERLEAVE(50)

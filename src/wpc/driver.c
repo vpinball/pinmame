@@ -559,7 +559,6 @@ DRIVERNV(lotr_it)       //Whitestar: 11/03 Lord Of The Rings (Italy)
 // ---------------
 // TAITO GAMES
 // ---------------
-                        //??/?? Criterium 77
                         //??/?? Apache!
                         //??/?? Football
                         //??/79 Hot Ball (B Eight Ball, 01/77)
@@ -568,8 +567,6 @@ DRIVERNV(lotr_it)       //Whitestar: 11/03 Lord Of The Rings (Italy)
 DRIVERNV(obaoba  )      //??/80 Oba Oba (B Playboy, 10/77)
 DRIVERNV(obaoba1 )      //??/80 Oba Oba alternate set
 DRIVERNV(drakor  )      //??/80 Drakor (W Gorgar, 11/79)
-                        //??/?? Roman Victory
-                        //??/?? Space Patrol
 DRIVERNV(meteort )      //??/80 Meteor (S Meteor, 09/79)
 DRIVERNV(fireact )      //??/81 Fire Action (W Firepower, 02/80)
 DRIVERNV(cavnegro)      //??/81 Cavaleiro Negro (W Black Knight, 11/80)
@@ -597,6 +594,7 @@ DRIVERNV(voleybal)      //??/?? Voley Ball
                         //??/82 Gork
                         //??/8? Ogar
 DRIVERNV(mrblack )		//??/84 Mr. Black (W Defender, 12/82)
+DRIVERNV(mrblack1)		//??/84 Mr. Black alternate set
 DRIVERNV(fireactd)      //??/8? Fire Action De Luxe (W Firepower II, 08/83)
 DRIVERNV(sshuttle)      //??/85 Space Shuttle (W Space Shuttle, 12/84)
 DRIVERNV(sshuttl1)      //??/85 Space Shuttle alternate set
