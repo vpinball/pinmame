@@ -35,7 +35,9 @@ ACK to ACK and STROBE to STROBE.
 #include "driver.h"
 #include "votrax.h"
 #include "windows.h"
+#ifdef REAL_DEVICE
 #include "dlportio.h"
+#endif
 #include "math.h"
 
 static struct {
@@ -112,7 +114,7 @@ static const int PhonemeLengths[65] =
 // int sample_rate[4] = {22050, 22550, 23050, 23550};
 int sample_rate[4] = {22050, 22050, 22050, 22050};
 
-_inline int time_to_samples(int ms)
+INLINE int time_to_samples(int ms)
 {
 	return sample_rate[votraxsc01_locals.actIntonation]*ms/1000;
 }
@@ -240,7 +242,7 @@ void PrepareVoiceData(int nextPhoneme, int nextIntonation)
 			case PT_FS:
 				iFadeOutPos = 0;
 				iFadeOutSamples = PhonemeData[votraxsc01_locals.actPhoneme].iLength[votraxsc01_locals.actIntonation] - PhonemeData[votraxsc01_locals.actPhoneme].iSecondStart;
-				votraxsc01_locals.pActPos = PhonemeData[votraxsc01_locals.actPhoneme].lpStart + PhonemeData[votraxsc01_locals.actPhoneme].iSecondStart;
+				votraxsc01_locals.pActPos = PhonemeData[votraxsc01_locals.actPhoneme].lpStart[votraxsc01_locals.actIntonation] + PhonemeData[votraxsc01_locals.actPhoneme].iSecondStart;
 				votraxsc01_locals.iRemainingSamples = iFadeOutSamples;
 				doMix = 1;
 
