@@ -1,10 +1,61 @@
+/************************************************************************************************
+  Capcom
+  -----------------
+  by Martin Adrian, Steve Ellenoff, Gerrit Volkenborn (05/07/2002 - 09/24/2003)
+
+  Hardware from 1995-1996
+
+  CPU BOARD:
+	CPU: 68306 @ 16.67 Mhz
+	I/O: 68306 has 2 8-bit ports and a dual uart
+	DMD: Custom programmed U16 chip handles DMD Control Data and some timing 
+	Size: 128x32 (all games except Flipper Football - 256x64!)
+
+  SOUND BOARD:
+	CPU: 87c52 @ 12 Mhz
+	I/O: 87c52 has a uart
+	SND: 2 x TMS320AV120 MPG DECODER
+
+  Capcom Standard Pins:
+  Lamp Matrix     = 2 x (8x8 Matrixs) = 128 Lamps - NOTE: No GI - every single lamp is cpu controlled
+  Switch Matrix   = 64 Switches on switch board + 16 Cabinet Switches
+  Solenoids	= 32 Solenoids/Flashers
+  Sound: 3 Channel Mono Audio
+
+  Capcom "Classic" Pins: (Breakshot)
+  Lamp Matrix     = 1 x (8x8 Matrixs) = 64 Lamps - 64 GI Lamps (not directly cpu controlled?)
+  Switch Matrix   = 1 x (8x7 Matrix)  = 56 Switches + 16 Cabinet Switches
+  Solenoids	= 24 Solenoids/Flashers
+  Sound: 1 Channel Mono Audio
+
+  Milestones:
+  09/19-09/21/03 - U16 Test successfully bypassed, dmd and lamps working quite well
+  09/21-09/24/03 - DMD working 100% incuding 256x64 size, switches, solenoids working on most games except kp, and ff
+
+  Hacks & Issues that need to be looked into:
+  #1) U16 Needs to be better understood and emulated
+  #2) Once U16 better understood, remove hacks that bypass U16 startup check
+  #3) IRQ4 appears to do nothing, this seems odd
+  #4) Lamps and Solenoids don't work in Flipper Football and Kingpin
+  #5) Driver Board Detection needs to be implemented (Causes Improper Driver Error Msg on Startup)
+  #6) For some reason Zero Cross Circuit is not being detected (Causes Missing Zero X Msg on Startup)
+  #7) Power Line Detection needs to be implemented (Causes Bad Signals Error Msg on Startup)
+  #8) Lamps seem to flash too quickly, but only some, and only sometimes.
+  #9) Sound communication occurs via the 68306 UARTS (currently not really emulated in the 68306 core)
+  #10) Handle opto switches internally? Is this needed?
+  #11) Handle EOS switches internally? Is this needed?
+  #12) More complete M68306 emulation (although it's fairly good already)
+  #13) Figure out how Port A is getting data written in the top 8 bits
+  #14) Why are the port handlers 16 bit handlers? (Martin?)
+
+**************************************************************************************/
 #include <stdarg.h>
 #include "driver.h"
 #include "cpu/m68000/m68000.h"
 #include "core.h"
 
 #define CC_VBLANKFREQ    60 /* VBLANK frequency */
-#define CC_ZCFREQ        60 /* Zero cross frequency */
+#define CC_ZCFREQ        60 /* Zero cross frequency?? */
 
 #define CC_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
 #define CC_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
@@ -20,12 +71,14 @@ static struct {
   int zero_cross;
   int blanking;
   int lampb_only;
+  int swCol;
   UINT8 lastb;
 } locals;
 
 static UINT32 fixaddr = 0;
 
 static NVRAM_HANDLER(cc);
+static void U16_Tests_Hack(void);
 
 static INTERRUPT_GEN(cc_vblank) {
   /*-------------------------------
@@ -81,6 +134,12 @@ static void cc_u16irq4(int data) {
 /***************/
 /* PORT A READ */
 /***************/
+//PA0-2 - N/A?
+//PA3   - (output only)
+//PA4   - LINE_5 (As in +5V line)
+//PA5   - LINE_V (As in CPU generated reference line?)
+//PA6   - (output only)
+//PA7   - (output only)
 static READ16_HANDLER(cc_porta_r) { 
 	DBGLOG(("Port A read\n")); 
 	return 0; 
@@ -88,6 +147,14 @@ static READ16_HANDLER(cc_porta_r) {
 /***************/
 /* PORT B READ */
 /***************/
+//PB0 OR IACK2 - (Output Only)
+//PB1 OR IACK3 - PULSE (To J2) - Might be an output
+//PB2 OR IACK5 - SW3 (Why??) - Need to confirm this is an input
+//PB3 OR IACK6 - SW4 (Why??) - Need to confirm this is an input
+//PB4 OR IRQ2  - ZERO CROSS IRQ
+//PB5 OR IRQ3  - NOT USED?
+//PB6 OR IRQ5  - SW6 (Why??) - Need to confirm this is an input
+//PB7 OR IRQ6  - NOT USED?
 static READ16_HANDLER(cc_portb_r) { 
 	int data = 0;
 	data |= locals.zero_cross<<4;
@@ -112,6 +179,14 @@ static WRITE16_HANDLER(cc_porta_w) {
 /****************/
 /* PORT B WRITE */
 /****************/
+//PB0 OR IACK2 - ZERO CROSS ACK (Clears IRQ2?)
+//PB1 OR IACK3 - PULSE (To J2) - Need to confirm this is an output
+//PB2 OR IACK5 - SW3 (Why??) - Need to confirm this is an input
+//PB3 OR IACK6 - SW4 (Why??) - Need to confirm this is an input
+//PB4 OR IRQ2  - (Input Only)
+//PB5 OR IRQ3  - NOT USED?
+//PB6 OR IRQ5  - SW6 (Why??) - Need to confirm this is an input
+//PB7 OR IRQ6  - NOT USED?
 static WRITE16_HANDLER(cc_portb_w) {
   locals.lastb = data;
   DBGLOG(("Port B write %04x\n",data));
@@ -136,12 +211,16 @@ static READ16_HANDLER(u16_r) {
 
   offset &= 0x203;
   //DBGLOG(("U16r [%03x] (%04x)\n",offset,mem_mask));
+
   switch (offset) {
     case 0x000: case 0x001: 
 		return locals.u16a[offset];	
+
+	//Should probably never occur?
 	case 0x002: case 0x003:
 		DBGLOG(("reading U16-%x\n",offset));
 		return locals.u16a[offset];
+
     case 0x200: case 0x201: case 0x202: case 0x203:
       return locals.u16b[offset&3];
   }
@@ -155,8 +234,10 @@ static WRITE16_HANDLER(u16_w) {
   offset &= 0x203;
    // DBGLOG(("U16w [%03x]=%04x (%04x)\n",offset,data,mem_mask));
 
+  //DMD Visible Block offset
   if (offset==2)
 	locals.visible_page = (locals.visible_page & 0x0f) | (data << 4);
+  //DMD Visible Page offset
   if (offset==3)
 	locals.visible_page = (locals.visible_page & 0xf0) | (data >> 12);
 
@@ -172,43 +253,43 @@ static WRITE16_HANDLER(u16_w) {
 /* I/O READ  */
 /*************/
 static READ16_HANDLER(io_r) {
-  UINT16 data = 0;
+  static UINT16 data = 0;
+  static int swcol = 0;
 
   switch (offset) {
-    //Lamp A Matrix Row Status?
+    //Lamp A & B Matrix Row Status? Used to determine non-functioning bulbs?
 	case 0x00000c:
-		if(locals.blanking)
-			data = 0;
-		else
-			data = 0xffff;
-		break;
-	//Lamp B Matrix Row Status?
 	case 0x00000d:
-		if(locals.blanking)
-			data = 0;
-		else
-			data = 0xffff;
+		data = (!locals.blanking) * 0xffff;
 		break;
 	//Playfield Switches
     case 0x200008:
-      data = coreGlobals.swMatrix[5] << 8 | coreGlobals.swMatrix[1];
-      break;
-	//Playfield Switches
     case 0x200009:
-      data = coreGlobals.swMatrix[6] << 8 | coreGlobals.swMatrix[2];
-      break;
-    //Playfield Switches
     case 0x20000a:
-      data = coreGlobals.swMatrix[7] << 8 | coreGlobals.swMatrix[3];
-      break;
-    //Playfield Switches
     case 0x20000b:
-      data = coreGlobals.swMatrix[8] << 8 | coreGlobals.swMatrix[4];
-      break;
-    //Cabinet/Coin Door Switches
+		swcol = offset-0x200007;
+		data = coreGlobals.swMatrix[swcol+4] << 8 | coreGlobals.swMatrix[swcol];
+		break;
+    //Cabinet/Coin Door Switches OR (ALL SWITCH READS FOR GAMES USING ONLY LAMP B MATRIX)
     case 0x400000:
-      data = coreGlobals.swMatrix[0] << 8 | coreGlobals.swMatrix[9];
-	  break;
+		if(locals.lampb_only) {
+			//Cabinet/Coin Door Switches are read as the lower byte on all switch reads
+			data = coreGlobals.swMatrix[9];
+			switch(locals.swCol) {
+				case 0x80:	data |= coreGlobals.swMatrix[1]<<8; break;
+				case 0x40:	data |= coreGlobals.swMatrix[2]<<8; break;
+				case 0x20:	data |= coreGlobals.swMatrix[3]<<8; break;
+				case 0x10:	data |= coreGlobals.swMatrix[4]<<8; break;
+				case 0x08:	data |= coreGlobals.swMatrix[5]<<8; break;
+				case 0x04:	data |= coreGlobals.swMatrix[6]<<8; break;
+				case 0x02:	data |= coreGlobals.swMatrix[7]<<8; break;
+				case 0x01:	data |= coreGlobals.swMatrix[8]<<8; break;
+			}
+		}
+		else
+			data = coreGlobals.swMatrix[0] << 8 | coreGlobals.swMatrix[9];
+		break;
+
 	default:
 		DBGLOG(("io_r: [%08x] (%04x)\n",offset,mem_mask));
   }
@@ -220,7 +301,6 @@ static READ16_HANDLER(io_r) {
 /*************/
 static WRITE16_HANDLER(io_w) {
   UINT16 soldata;
-
   //DBGLOG(("io_w: [%08x] (%04x) = %x\n",offset,mem_mask,data));
 
   switch (offset) {
@@ -228,18 +308,22 @@ static WRITE16_HANDLER(io_w) {
     case 0x00000008:
 		locals.blanking = (data & 0x0c)?1:0;
         break;
-	//Lamp A Matrix
+	//Lamp A Matrix OR Switch Strobe Column (Games with only Lamp B Matrix)
     case 0x0000000c:
-      if (!locals.blanking) {
-        if (data & 0x0100) coreGlobals.tmpLampMatrix[0] = (~data & 0xff);
-        if (data & 0x0200) coreGlobals.tmpLampMatrix[1] = (~data & 0xff);
-        if (data & 0x0400) coreGlobals.tmpLampMatrix[2] = (~data & 0xff);
-        if (data & 0x0800) coreGlobals.tmpLampMatrix[3] = (~data & 0xff);
-        if (data & 0x1000) coreGlobals.tmpLampMatrix[4] = (~data & 0xff);
-        if (data & 0x2000) coreGlobals.tmpLampMatrix[5] = (~data & 0xff);
-        if (data & 0x4000) coreGlobals.tmpLampMatrix[6] = (~data & 0xff);
-        if (data & 0x8000) coreGlobals.tmpLampMatrix[7] = (~data & 0xff);
-      }
+	  if (locals.lampb_only)
+		  locals.swCol = data;
+	  else {
+		if (!locals.blanking) {
+			if (data & 0x0100) coreGlobals.tmpLampMatrix[0] = (~data & 0xff);
+			if (data & 0x0200) coreGlobals.tmpLampMatrix[1] = (~data & 0xff);
+			if (data & 0x0400) coreGlobals.tmpLampMatrix[2] = (~data & 0xff);
+			if (data & 0x0800) coreGlobals.tmpLampMatrix[3] = (~data & 0xff);
+			if (data & 0x1000) coreGlobals.tmpLampMatrix[4] = (~data & 0xff);
+			if (data & 0x2000) coreGlobals.tmpLampMatrix[5] = (~data & 0xff);
+			if (data & 0x4000) coreGlobals.tmpLampMatrix[6] = (~data & 0xff);
+			if (data & 0x8000) coreGlobals.tmpLampMatrix[7] = (~data & 0xff);
+		}
+	  }
       break;
     //Lamp B Matrix (for games that only have lamp b, shift to lower half of our lamp matrix for easier numbering)
     case 0x0000000d:
@@ -284,11 +368,15 @@ static MACHINE_INIT(cc) {
   memset(&locals, 0, sizeof(locals));
   locals.u16a[0] = 0x00bc;
   locals.vblankCount = 1;
+  //Not sure where Martin got the timing for irq1.
   timer_pulse(TIME_IN_CYCLES(2811,0),0,cc_u16irq1);
-  //IRQ4 doesn't seem to do anything?!!
+  //IRQ4 doesn't seem to do anything?!! Also, no idea of the frequency
   timer_pulse(TIME_IN_HZ(400),0,cc_u16irq4);
+  //Force U16 Tests on startup to succeed
+  U16_Tests_Hack();
+}
 
-  //Force U16 Check to succeed
+void U16_Tests_Hack(void){
 	switch(core_gameData->gen){
 		case 0:
 			break;
@@ -322,6 +410,7 @@ static MACHINE_INIT(cc) {
 		default:
 			break;
   }
+  //changes a BNE to a BEQ to bypass one of the U16 tests that doesn't seem to pass
   *((UINT16 *)(memory_region(REGION_CPU1) + fixaddr)) = 0x6700;
 }
 
