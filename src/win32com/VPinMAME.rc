@@ -73,8 +73,8 @@ IDR_WSHDLG              REGISTRY                "WSHDlg.rgs"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,50,0,0
- PRODUCTVERSION 1,50,0,0
+ FILEVERSION 1,51,0,0
+ PRODUCTVERSION 1,51,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "FileDescription", "COM class for PinMAME"
-            VALUE "FileVersion", "1, 50, 0, 0"
+            VALUE "FileVersion", "1, 51, 0, 0"
             VALUE "InternalName", "VPinMAME"
-            VALUE "LegalCopyright", "© 2000-2004 by S. Ellenoff, T. Haukap, M. Adrian, G. Volkenborn, and B. Smith"
+            VALUE "LegalCopyright", "© 2000-2004 by S. Ellenoff, T. Haukap, M. Adrian, G. Volkenborn, B. Smith, O. Kaegi, and T. Behrens"
             VALUE "OriginalFilename", "VPinMAME.DLL"
             VALUE "ProductName", "Visual PinMAME"
-            VALUE "ProductVersion", "1.50"
+            VALUE "ProductVersion", "1.51"
         END
     END
     BLOCK "VarFileInfo"
@@ -174,35 +174,35 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "About Visual PinMAME..."
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,200,167,50,14
+    DEFPUSHBUTTON   "OK",IDOK,204,167,50,14
     CONTROL         100,IDC_STATIC,"Static",SS_BITMAP,7,7,133,123
-    CTEXT           "Visual PinMAME\n",IDC_STATIC,150,6,160,8
+    CTEXT           "Visual PinMAME\n",IDC_STATIC,148,6,160,8
     CTEXT           "Version %s",IDC_VERSION,150,16,160,8
-    CTEXT           "Based on MAME and PinMAME",IDC_STATIC,148,89,160,8
-    CTEXT           "Portions taken from MAME32 and MAMEW",IDC_STATIC,148,97,
-                    160,8
+    CTEXT           "Based on MAME and PinMAME",IDC_STATIC,148,94,160,8
+    CTEXT           "Portions taken from MAME32 and MAMEW",IDC_STATIC,148,
+                    103,160,8
     CTEXT           "Visual PinMAME written by",IDC_STATIC,150,42,160,8
     CTEXT           "Copyright © 1997-2004 by the authors of MAME, MAME32, MAMEW and PinMAME",
-                    IDC_STATIC,148,111,160,16
+                    IDC_STATIC,148,116,160,16
     CTEXT           "Visual PinMAME is a COM class, designed to use the functionality of PinMAME in scripting languages.",
                     IDC_STATIC,7,135,134,24
     CTEXT           "Copyright © 2001-2004 by the authors.",IDC_STATIC,150,
-                    73,160,8
+                    78,160,8
     CTEXT           "Thanks goes to all people involved producing MAME, MAME32, MAMEW and PinMAME for their GREAT work!!!",
-                    IDC_STATIC,150,137,160,24
+                    IDC_STATIC,149,139,160,24
     CTEXT           "Build Date %s",IDC_BUILDDATE,150,27,160,8
     CONTROL         "",IDC_STATIC,"Static",SS_GRAYRECT | SS_SUNKEN,148,38,
                     162,1
-    CONTROL         "",IDC_STATIC,"Static",SS_GRAYRECT | SS_SUNKEN,148,86,
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYRECT | SS_SUNKEN,148,90,
                     162,1
-    CONTROL         "",IDC_STATIC,"Static",SS_GRAYRECT | SS_SUNKEN,148,130,
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYRECT | SS_SUNKEN,148,136,
                     162,1
     CONTROL         "For the latest info:",IDC_STATIC,"Static",
                     SS_LEFTNOWORDWRAP,8,168,55,9
     CONTROL         "http://www.pinmame.com",IDC_HOMEPAGELINK,"Static",
                     SS_LEFTNOWORDWRAP | SS_NOTIFY,68,168,83,9
-    CTEXT           "Steve Ellenoff, Tom Haukap, Martin Adrian,\nGerrit Volkenborn and Brian Smith",
-                    IDC_STATIC,150,51,160,15
+    CTEXT           "Steve Ellenoff, Tom Haukap, Martin Adrian, Gerrit Volkenborn, Brian Smith, Oliver Kägi, and Thomas Behrens",
+                    IDC_STATIC,152,51,154,24
 END
 
 IDD_DISCLAIMERDLG DIALOG DISCARDABLE  0, 0, 218, 158
