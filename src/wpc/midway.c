@@ -109,8 +109,12 @@ static SWITCH_UPDATE(MIDWAY) {
 
 static SWITCH_UPDATE(MIDWAYP) {
 	if (inports) {
-		coreGlobals.swMatrix[0] = inports[MIDWAY_COMINPORT] & 0xff;
-		i4004_set_TEST(coreGlobals.swMatrix[0] & 0x08);
+		coreGlobals.swMatrix[0] = inports[MIDWAY_COMINPORT] & 0x40;
+		if (coreGlobals.swMatrix[0] & 0x40)
+			i4004_set_TEST(1);
+		/* test line has to be held longer than a few milliseconds */
+		else if (locals.vblankCount % 5 == 0)
+			i4004_set_TEST(0);
 	}
 }
 
@@ -172,7 +176,8 @@ static WRITE_HANDLER(strobe_w) {
 		}
 		locals.lampMatrix[data] = locals.tmpLampData;
 		locals.tmpSwCol = data + 1;
-	}
+	} else
+		locals.tmpSwCol = 8;
 }
 
 /* port read / write for Rotation VIII */
@@ -284,6 +289,14 @@ static MACHINE_INIT(MIDWAY) {
   memset(&locals, 0, sizeof locals);
 }
 
+static MACHINE_RESET(MIDWAYP) {
+  UINT8* ram = memory_region(MIDWAY_CPU);
+  /* clear RAM area */
+  memset(ram+0x1000, 0x00, 0x100);
+  memset(ram+0x2000, 0x00, 0x100);
+  i4004_set_TEST(1);
+}
+
 static MACHINE_STOP(MIDWAY) {
 }
 
@@ -307,7 +320,7 @@ MACHINE_DRIVER_START(MIDWAYProto)
   MDRV_CPU_MEMORY(MIDWAYP_readmem, MIDWAYP_writemem)
   MDRV_CPU_PORTS(midway_readport2,midway_writeport2)
   MDRV_CPU_VBLANK_INT(MIDWAYP_vblank, 1)
-  MDRV_CORE_INIT_RESET_STOP(MIDWAY,NULL,MIDWAY)
+  MDRV_CORE_INIT_RESET_STOP(MIDWAY,MIDWAYP,MIDWAY)
   MDRV_DIPS(0) // no dips!
   MDRV_SWITCH_UPDATE(MIDWAYP)
 //  MDRV_DIAGNOSTIC_LEDH(4)
