@@ -302,10 +302,6 @@ struct Samplesinterface fff_samples_interface =
 	"TSI S14001A"
 };
 
-
-
-static const int st300_mixing_levels = 30;
-
 struct sndbrdst300 snddatst300;
 
 static struct {
@@ -486,60 +482,47 @@ static void st300_pulse (int param) {
  
 }
 
-
-static int st300_sh_start(const struct MachineSound *msound)  {
+static void st300_start_common(void) {
   int i;
-  int s;
+  int s = 0;
 	
-  s= 0;
   memset(&st300loc, 0, sizeof(st300loc)); 
-  st300loc.speechsam = 0; // no samples for speech
   for (i = 0;i < 9;i++) {
-  	snddatst300.ax[i] = 0;
-  	snddatst300.axb[i] = 0;  	
-  	snddatst300.c0 = 0;
-        }
+    snddatst300.ax[i] = 0;
+    snddatst300.axb[i] = 0;  	
+    snddatst300.c0 = 0;
+  }
   for (i = 0;i < 32000;i++) {
-   	s =  (s ? 0 : 1);
-  	if (s) {
-  		sineWaveext[i] = rand() ;
-  	} else {sineWaveext[i] = 0-rand() ;}
-  	} 
-  st300loc.channel = mixer_allocate_channels(3,&st300_mixing_levels) ;
+    s =  (s ? 0 : 1);
+    if (s) {
+      sineWaveext[i] = rand();
+    } else
+      sineWaveext[i] = 0-rand();
+  }
+  int mixing_levels[3] = {30,30,30};
+  st300loc.channel = mixer_allocate_channels(3, mixing_levels);
+  mixer_set_name  (st300loc.channel, "MC6840 #0");
   mixer_set_volume(st300loc.channel,0);	   // the sound from timer pulse q2
+  mixer_set_name  (st300loc.channel+1, "MC6840 #1");
   mixer_set_volume(st300loc.channel+1,70*ST300_VOL);  // the sound from timer pulse q1
+  mixer_set_name  (st300loc.channel+2, "MC6840 #2");
   mixer_set_volume(st300loc.channel+2,0);  // external timer pulse (after 4536)
   timer_pulse(TIME_IN_HZ(ST300_INTCLOCK),0x02,st300_pulse); // start internal clock
+}
+
+static int st300_sh_start(const struct MachineSound *msound)  {
+  if (!st300loc.channel) st300_start_common();
+  st300loc.speechsam = 0; // no samples for speech
   return 0;
 }
+
 static void checksam (int param) {
   if (sample_playing(6) == 0) snddatst300.sampleisplaying = 0;
 }
 
-
 static int st300sam_sh_start(const struct MachineSound *msound)  {
-  int i;
-  int s;
-  s= 0;
-  memset(&st300loc, 0, sizeof(st300loc)); 
+  if (!&st300loc.channel) st300_start_common();
   st300loc.speechsam = 1; // samples for speech used
-
-  for (i = 0;i < 9;i++) {
-  	snddatst300.ax[i] = 0;
-  	snddatst300.axb[i] = 0;  	
-  	snddatst300.c0 = 0;
-        }
-  for (i = 0;i < 32000;i++) {
-   	s =  (s ? 0 : 1);
-  	if (s) {
-  		sineWaveext[i] = rand() ;
-  	} else {sineWaveext[i] = 0-rand() ;}
-  	} 
-  st300loc.channel = mixer_allocate_channels(3,&st300_mixing_levels) ;
-  mixer_set_volume(st300loc.channel,0);	   // the sound from timer pulse q2
-  mixer_set_volume(st300loc.channel+1,70*ST300_VOL);  // the sound from timer pulse q1
-  mixer_set_volume(st300loc.channel+2,0);  // external timer pulse (after 4536)
-  timer_pulse(TIME_IN_HZ(ST300_INTCLOCK),0x02,st300_pulse); // start internal clock
   timer_pulse(TIME_IN_SEC(0.1),0,checksam); // check if sample is finished
   return 0;
 }
