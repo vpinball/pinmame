@@ -226,7 +226,7 @@ static INTERRUPT_GEN(by35_vblank) {
     coreGlobals.diagnosticLed = locals.diagnosticLed;
     locals.diagnosticLed = 0;
   }
-  core_updateSw(core_getSol(19));
+  core_updateSw(core_getSol(core_gameData->gen & GEN_BYPROTO ? 18 : 19));
 }
 
 static SWITCH_UPDATE(by35) {
