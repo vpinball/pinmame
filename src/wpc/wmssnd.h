@@ -253,6 +253,11 @@ extern MACHINE_DRIVER_EXTERN(wmssnd_dcs2);
    DCS_STDREG(0x100000) \
    DCS_ROMLOADm(0x000000,n2,chk2)
 
+#define DCS_SOUNDROM2m(n2,chk2,n3,chk3) \
+   DCS_STDREG(0x200000) \
+   DCS_ROMLOADm(0x000000,n2,chk2) \
+   DCS_ROMLOADm(0x100000,n3,chk3)
+
 #define DCS_SOUNDROM3m(n2,chk2,n3,chk3,n4,chk4) \
    DCS_STDREG(0x300000) \
    DCS_ROMLOADm(0x000000,n2,chk2) \

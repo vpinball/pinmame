@@ -75,9 +75,12 @@ static core_tGameData tttGameData = {
 };
 INITGAME(ttt)
 
-WPC_ROMSTART(ttt,10,"tikt1_0.rom",0x80000,0xbf1d0382) WPC_ROMEND
+WPC_ROMSTART(ttt,10,"tikt1_0.rom",0x80000,0xbf1d0382)
+DCS_SOUNDROM2m("ttt_s2.rom",0xfaae93eb,
+               "ttt_s3.rom",0x371ba9b3)
+WPC_ROMEND
 #define input_ports_ttt input_ports_wpc
-CORE_GAMEDEF(ttt,10,"Ticket Tac Toe (1.0)",1996,"Williams",wpc_m95,GAME_NO_SOUND)
+CORE_GAMEDEF(ttt,10,"Ticket Tac Toe (1.0)",1996,"Williams",wpc_m95S,0)
 
 /*-----------------------------
 / League Champ (Shuffle Alley)
