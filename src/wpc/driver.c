@@ -810,7 +810,8 @@ DRIVER(t2,l6)           //WPC-513:  10/91 W Terminator 2: Judgement Day (L-6)
 DRIVER(t2,l8)           //WPC-513:  12/91 W Terminator 2: Judgement Day (L-8)
 DRIVER(t2,p2f)                            // Profanity Speech version
 DRIVER(hurr,l2)         //WPC-512:  08/91 W Hurricane
-DRIVER(pz,f4)           //WPC:      08/91 B Party Zone
+DRIVER(pz,f4)           //WPC:      08/91 B Party Zone (F-4)
+DRIVER(pz,l1)           //WPC:      08/91 B Party Zone (L-1)
 DRIVER(gi,l4)           //WPC-203:  07/91 B Gilligan's Island (L-4)
 DRIVER(gi,l6)           //WPC-203:  08/91 B Gilligan's Island (L-6)
 DRIVER(gi,l9)           //WPC-203:  12/92 B Gilligan's Island (L-9)
@@ -905,8 +906,13 @@ DRIVER(totan,14)        //WPC-547:  05/96 W Tales of the Arabian Nights
 DRIVER(ss,15)           //WPC-548:  09/96 B Scared Stiff
 DRIVER(jy,12)           //WPC-552:  12/96 W Junk Yard (1.2)
 DRIVER(jy,11)           //WPC-552:  12/96 W Junk Yard (1.1)
-DRIVER(nbaf,31)         //WPC-553:  03/97 B NBA Fastbreak
-DRIVER(nbaf,31a)
+DRIVER(nbaf,31)         //WPC-553:  03/97 B NBA Fastbreak (3.1)
+DRIVER(nbaf,11)         //WPC-553:  03/97 B NBA Fastbreak (1.1)
+DRIVER(nbaf,115)        //WPC-553:  03/97 B NBA Fastbreak (1.15)
+DRIVER(nbaf,21)         //WPC-553:  03/97 B NBA Fastbreak (2.1)
+DRIVER(nbaf,22)         //WPC-553:  03/97 B NBA Fastbreak (2.2)
+DRIVER(nbaf,23)         //WPC-553:  03/97 B NBA Fastbreak (2.3)
+DRIVER(nbaf,31a)        //WPC-553:  03/97 B NBA Fastbreak (3.1a)
 DRIVER(mm,10)           //WPC-559:  06/97 W Medieval Madness (1.00)
 DRIVER(mm,050)          //WPC-559:  06/97 W Medieval Madness (0.50)
 DRIVER(mm,109)                            // Home version
