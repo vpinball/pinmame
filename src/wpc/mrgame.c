@@ -23,32 +23,45 @@
   Interrupt: Some funky timing thing..
   I/O: 8255
 
+  Sound Board:
+  CPU: 2 x Z80
+  Clock: 4 Mhz
+  Interrupt: IRQ via a timer, NMI via the 7th bit of the sound command
+  Audio: 3 X DAC (1 used to drive volume), 1 X TMS 5220 Speech Chip, 1 X M114S Digital Wave Table Synth Chip
+
   Issues/Todo:
   #1) Used a hack to ensure all video commands are read by the video cpu - not sure if the "underlying" 
       cause is still making other things wrong!
   #2) Timing of animations might be too slow..
-  #3) Sound not done yet
+  #3) M114S Sound chip not emulated (so no music)
   #4) Mr. Game Logo not correct color in Motor Show ( Bad Color Prom Read? )
 ************************************************************************************************/
 #include "driver.h"
 #include "cpu/m68000/m68000.h"
 #include "cpu/z80/z80.h"
 #include "machine/8255ppi.h"
+#include "sound/5220intf.h"
 #include "vidhrdw/generic.h"
 #include "core.h"
 #include "sim.h"
+#include "sndbrd.h"
+#include "mrgame.h"
 
 //use this to comment out video and sound cpu for quicker debugging of main cpu
 //#define TEST_MAIN_CPU
 //#define TEST_MOTORSHOW
-#define NOSOUND
+//#define NOSOUND
 
-#define MRGAME_DISPLAYSMOOTH 2
-#define MRGAME_SOLSMOOTH 4
 #define MRGAME_CPUFREQ 6000000
 
-//Jumper on board shows 200Hz hard wired ( should double check it's actually 200Hz and not a divide by 200)
-#define MRGAME_IRQ_FREQ TIME_IN_HZ(200)
+//not sure where these are defined, but those are the correct values
+#define Z80_IRQ 0
+#define Z80_NMI 127
+
+//Jumper on board shows 200Hz hard wired - 6Mhz clock feeds 74393 as / 16 -> 4040 to Q11 as / 2048 = ~183Hz
+#define MRGAME_IRQ_FREQ TIME_IN_HZ((6000000/16)/2048)
+//Jumper on sound board shows 60Hz hard wired - 4Mhz clock feeds 74393 as /16 -> 4040 to Q12 as / 4096 = ~61Hz
+#define MRGAME_SIRQ_FREQ TIME_IN_HZ((4000000/16)/4096)
 
 //Video Commands buffering
 #define MRGAME_VID_MAX_BUF 40
@@ -70,6 +83,8 @@ static WRITE_HANDLER(i8255_porta_w);
 static WRITE_HANDLER(i8255_portb_w);
 static WRITE_HANDLER(i8255_portc_w);
 static WRITE_HANDLER(vid_registers_w);
+static WRITE16_HANDLER(sound_w);
+static WRITE_HANDLER(mrgame_sndcmd);
 
 static struct {
   int vblankCount;
@@ -90,6 +105,8 @@ static struct {
   int vid_a11;
   int vid_a12;
   int vid_a13;
+  int sndstb;
+  int sndcmd;
 } locals;
 
 static data8_t *mrgame_videoram;
@@ -111,24 +128,36 @@ static ppi8255_interface ppi8255_intf =
 	{i8255_portc_w},	/* Port C write */
 };
 
-#if 0
-/* MSM6585 ADPCM CHIP INTERFACE */
-static struct MSM5205interface SPINB_msm6585Int = {
-	2,										//# of chips
-	640000,									//640Khz Clock Frequency
-	{SPINB_S1_msmIrq, SPINB_S2_msmIrq},		//VCLK Int. Callback
-	{MSM5205_S48_4B, MSM5205_S48_4B},		//Sample Mode
-	{100,75}								//Volume
+/*----------------
+/ Sound interface
+/-----------------*/
+struct DACinterface mrgame_dacInt =
+{
+  2,									/*2 Chips - Even though there's 3, only 2 used for actual output */
+ { MIXER(50,MIXER_PAN_LEFT), MIXER(50,MIXER_PAN_RIGHT) }		/* Volume */
 };
-/* Sound board */
-const struct sndbrdIntf spinbIntf = {
-   "SPINB", NULL, NULL, NULL, spinb_sndCmd_w, NULL, NULL, NULL, NULL, SNDBRD_NODATASYNC
-};
-#endif
+struct TMS5220interface mrgame_tms5220Int = { 640000, 100, 0 };
 
+/* Sound board */
+const struct sndbrdIntf mrgameIntf = {
+   "MRGAME", NULL, NULL, NULL, mrgame_sndcmd, NULL, NULL, NULL, NULL, SNDBRD_NODATASYNC
+};
 
 //Generate a level 1 IRQ - IP0,IP1,IP2 = 0
 static void mrgame_irq(int data) { cpu_set_irq_line(0, MC68000_IRQ_1, PULSE_LINE); }
+
+//Generate an IRQ on the sound chip's z80
+static void snd_irq(int data) { 
+	cpu_set_irq_line(2,Z80_IRQ,PULSE_LINE);
+    cpu_set_irq_line(3,Z80_IRQ,PULSE_LINE);
+}
+
+//Generate an NMI on the sound chip's z80
+static void snd_nmi(int state) {
+	cpu_set_irq_line(2,Z80_NMI,PULSE_LINE);
+    cpu_set_irq_line(3,Z80_NMI,PULSE_LINE);
+}
+
 
 static INTERRUPT_GEN(vblank) {
 
@@ -168,14 +197,23 @@ static SWITCH_UPDATE(mrgame) {
 static MACHINE_INIT(mrgame) {
   memset(&locals, 0, sizeof(locals));
 
+  locals.sndstb = 1;
+  locals.acksnd = 1;
+  locals.ackspk = 1;
+
   /* init PPI */
   ppi8255_init(&ppi8255_intf);
 
   //setup IRQ timer for Main CPU
   timer_pulse(MRGAME_IRQ_FREQ,0,mrgame_irq);
 
+  //setup IRQ timer for Sound CPUS
+  timer_pulse(MRGAME_SIRQ_FREQ,0,snd_irq);
+
   //pull video registers out of ram space
   install_mem_write_handler(1,0x6800, 0x68ff, vid_registers_w);
+
+  sndbrd_0_init(core_gameData->hw.soundBoard,   2, memory_region(MRGAME_MEMREG_SND1),NULL,NULL);
 }
 
 
@@ -186,7 +224,7 @@ static READ16_HANDLER(col_r) {
 }
 
 /*
-Return Dip Switches & Sound Ack (Inverted)
+Return Dip Switches (Inverted) & Sound Ack
 Bits 0-3 Dips (Inverted)
 Bits 4   Ack Sound
 Bits 5   Ack Spk
@@ -197,6 +235,7 @@ static READ16_HANDLER(rsw_ack_r) {
 	data |= (locals.acksnd << 4);
 	data |= (locals.ackspk << 5);
 	data |= (coreGlobals.swMatrix[9] << 6);
+	//printf("%08x: rsw_ack_r = %04x\n",activecpu_get_pc(),data); 
 	return data;
 }
 /*Solenoids*/
@@ -230,8 +269,26 @@ static WRITE_HANDLER(solenoid_w)
 	}
 }
 
+//Sound Commander Write
+static WRITE_HANDLER(mrgame_sndcmd)
+{
+	//Simulate the 3 commands the real cpu would generate by toggling the 7th Bit
+	sound_w(0,data|0x80,0xff);
+	sound_w(0,data,0xff);
+	sound_w(0,data|0x80,0xff);
+}
+
+//Bit 7 of the data triggers NMI of the sound cpus
 static WRITE16_HANDLER(sound_w) { 
 	//LOG(("%08x: sound_w = %04x\n",activecpu_get_pc(),data)); 
+	//printf("Sound Command = %02x\n",data);
+	locals.sndcmd = data & 0xff;
+
+	//Main CPU sends 3 commands, Bit 7 set->cleared->set
+	//We'll trigger the NMI on the cleared->set transition
+	if(!locals.sndstb && GET_BIT7)
+		snd_nmi(0);
+	locals.sndstb = GET_BIT7;
 }
 
 #ifdef TEST_MOTORSHOW
@@ -418,15 +475,86 @@ static WRITE_HANDLER(vid_registers_w) {
 	LOG(("vid_register[%02x]_w=%x\n",offset,data)); 
 }
 
+/* Sound CPU 1 Ports
+   Port 0 (W) - CSD/A1 -> DAC driving an OP AMP to control Volume
+   Port 1 (R) - CSINS1 -> Read Main CPU Command
+   Port 2 (W) - CSAKL1 -> Set Status line back to Main CPU - Data on D0
+   Port 3 (W) - CSSGS  -> Data to M114S Chip - STB on D6
+*/
 static READ_HANDLER(soundg1_1_port_r) {
-	return 0;
+	int data = 0;
+	if(offset == 1) {
+		data = locals.sndcmd;		//Data is inverted
+		//printf("SOUND CPU #1 - Reading data: %02x\n",data);
+	}
+	else
+		LOG(("Unhandled port read on Sound CPU #1 - Port %02x\n",offset));
+	return data;
 }
 static WRITE_HANDLER(soundg1_1_port_w) {
+	switch(offset)
+	{
+		case 0:
+			mixer_set_volume(0,data);
+			mixer_set_volume(1,data);
+			mixer_set_volume(2,data);
+			break;
+		case 2:
+			locals.ackspk = GET_BIT0;
+			break;
+		case 3:
+			break;
+		default:
+			LOG(("Unhandled port write on Sound CPU #1 - Port %02x - Data %02x\n",offset,data));
+	}
+#if 0
+	if(offset != 3)
+		printf("S1: port [%02x] write = %02x \n",offset,data);
+#endif
 }
+
+/* Sound CPU 2 Ports
+   Port 0 (W)  - CSD/A2   -> DAC #2
+   Port 1 (R)  - CSINS2   -> Read Main CPU Command
+   Port 2 (W)  - CSAKL2   -> Set Status line back to Main CPU - Data on D0
+   Port 3 (RW) - CSSPEECH -> TMS5220
+   Port 4 (W)  - CSD/A3   -> DAC #3
+*/
 static READ_HANDLER(soundg1_2_port_r) {
-	return 0;
+	int data = 0;
+	switch(offset)
+	{
+		case 1:
+			data = locals.sndcmd;
+			//printf("SOUND CPU #2 - Reading data: %02x\n",data);
+			break;
+		case 3:
+			data = tms5220_status_r(0);
+			break;
+		default:
+			LOG(("Unhandled port read on Sound CPU #2 - Port %02x\n",offset));
+	}
+	return data;
 }
+
 static WRITE_HANDLER(soundg1_2_port_w) {
+	switch(offset)
+	{
+		case 0:
+			DAC_data_w(0,data);
+			break;
+		case 2:
+			locals.acksnd = GET_BIT0;
+			break;
+		case 3:
+			tms5220_data_w(0,data);
+			break;
+		case 4:
+			DAC_data_w(1,data);
+			break;
+		default:
+			LOG(("Unhandled port write on Sound CPU #2 - Port %02x - Data %02x\n",offset,data));
+	}
 }
 
 static struct mame_bitmap *tmpbitmap2;
@@ -465,12 +593,14 @@ PINMAME_VIDEO_UPDATE(mrgame_update) {
 #ifdef MAME_DEBUG
 
 if(1 || !debugger_focus) {
-  if(keyboard_pressed_memory_repeat(KEYCODE_Z,2))
+if(keyboard_pressed_memory_repeat(KEYCODE_Z,25)) {
 #ifdef TEST_MOTORSHOW
 	  fake_w(0,0);
 #else
 	charoff = 0;
+	locals.acksnd = !locals.acksnd;
 #endif
+}
   if(keyboard_pressed_memory_repeat(KEYCODE_X,2))
 	  //charoff-=0x100;
   if(keyboard_pressed_memory_repeat(KEYCODE_C,2))
@@ -593,13 +723,13 @@ MEMORY_END
 /**********************************/
 static MEMORY_READ_START(soundg1_1_readmem)
   { 0x0000, 0x7fff, MRA_ROM },
-  { 0x8000, 0xfaff, MRA_ROM },
-  { 0xfb00, 0xffff, MRA_RAM },
+  { 0x8000, 0xfbff, MRA_ROM },
+  { 0xfc00, 0xffff, MRA_RAM },
 MEMORY_END
 static MEMORY_WRITE_START(soundg1_1_writemem)
   { 0x0000, 0x7fff, MWA_ROM },
-  { 0x8000, 0xfaff, MWA_ROM },
-  { 0xfb00, 0xffff, MWA_RAM },
+  { 0x8000, 0xfbff, MWA_ROM },
+  { 0xfc00, 0xffff, MWA_RAM },
 MEMORY_END
 static PORT_READ_START(soundg1_1_readport)
   { 0x00, 0xff, soundg1_1_port_r },
@@ -612,13 +742,13 @@ MEMORY_END
 /**********************************/
 static MEMORY_READ_START(soundg1_2_readmem)
   { 0x0000, 0x7fff, MRA_ROM },
-  { 0x8000, 0xfaff, MRA_ROM },
-  { 0xfb00, 0xffff, MRA_RAM },
+  { 0x8000, 0xfbff, MRA_ROM },
+  { 0xfc00, 0xffff, MRA_RAM },
 MEMORY_END
 static MEMORY_WRITE_START(soundg1_2_writemem)
   { 0x0000, 0x7fff, MWA_ROM },
-  { 0x8000, 0xfaff, MWA_ROM },
-  { 0xfb00, 0xffff, MWA_RAM },
+  { 0x8000, 0xfbff, MWA_ROM },
+  { 0xfc00, 0xffff, MWA_RAM },
 MEMORY_END
 static PORT_READ_START(soundg1_2_readport)
   { 0x00, 0xff, soundg1_2_port_r },
@@ -767,6 +897,9 @@ MACHINE_DRIVER_START(mrgame_snd1)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(soundg1_2_readmem, soundg1_2_writemem)
   MDRV_CPU_PORTS(soundg1_2_readport, soundg1_2_writeport)
+  MDRV_SOUND_ADD(DAC, mrgame_dacInt)
+  MDRV_SOUND_ADD(TMS5220, mrgame_tms5220Int)
+  MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
 MACHINE_DRIVER_END
 
 /* Gen 1 - Vid & Sound */
