@@ -9,6 +9,9 @@
 #include "machine/6821pia.h"
 #include "sndbrd.h"
 
+#define ALVGS_SNDCPU_FREQ  2000000						//Schem shows an 8Mhz clock, but often we need to divide by 4 to make it work in MAME.
+#define ALVGS_SNDFIRQ_FREQ (ALVGS_SNDCPU_FREQ / 4096)	//Mystery Castle manual shows Jumper J103 set - which divides E signal from 6809 by 4096.
+
 /*Declarations*/
 extern WRITE_HANDLER(alvg_sndCmd_w);
 static void alvgs_init(struct sndbrdData *brdData);
@@ -88,10 +91,10 @@ static MEMORY_WRITE_START(alvgs_writemem)
 MEMORY_END
 
 MACHINE_DRIVER_START(alvgs)
-  MDRV_CPU_ADD(M6809, 1000000)
+  MDRV_CPU_ADD(M6809, ALVGS_SNDCPU_FREQ)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(alvgs_readmem, alvgs_writemem)
-  MDRV_CPU_PERIODIC_INT(alvgs_firq, 1000000/2048) /*Not sure what the freq is.. based on a jumper setting */
+  MDRV_CPU_PERIODIC_INT(alvgs_firq, ALVGS_SNDFIRQ_FREQ)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD_TAG("bsmt", BSMT2000, alvgs_bsmt2000Int)
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
