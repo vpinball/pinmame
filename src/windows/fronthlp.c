@@ -36,7 +36,7 @@ enum { LIST_SHORT = 1, LIST_INFO, LIST_FULL, LIST_SAMDIR, LIST_ROMS, LIST_SAMPLE
 #define KNOWN_SOME  3
 
 static int list = 0;
-static int listclones = 1;	
+static int listclones = 1;
 static int verify = 0;
 static int ident = 0;
 static int help = 0;
@@ -476,15 +476,15 @@ int frontend_help (char *gamename)
 	/* HACK: some options REQUIRE gamename field to work: default to "*" */
 	if (!gamename || (strlen(gamename) == 0))
 		gamename = all_games;
-	
+
 	/* sort the list if requested */
 	if (sortby)
 	{
 		int count = 0;
-		
+
 		/* first count the drivers */
 		while (drivers[count]) count++;
-		
+
 		/* qsort as appropriate */
 		if (sortby == 1)
 			qsort(drivers, count, sizeof(drivers[0]), compare_names);
@@ -750,7 +750,11 @@ int frontend_help (char *gamename)
 			break;
 
 		case LIST_GAMELIST: /* GAMELIST.TXT */
+#ifdef PINMAME
+			printf("This is the complete list of games supported by PinMAME %s.\n",build_version);
+#else
 			printf("This is the complete list of games supported by MAME %s.\n",build_version);
+#endif
 			if (!listclones)
 				printf("Variants of the same game are not included, you can use the -listclones command\n"
 					"to get a list of the alternate versions of a given game.\n");
