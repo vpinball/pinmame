@@ -2032,14 +2032,6 @@ SOURCE=.\src\memory.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\network.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\network.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\osdepend.h
 # End Source File
 # Begin Source File
@@ -2145,14 +2137,6 @@ SOURCE=.\src\window.c
 # Begin Source File
 
 SOURCE=.\src\window.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\x86drc.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\x86drc.h
 # End Source File
 # End Group
 # Begin Group "Windows"
