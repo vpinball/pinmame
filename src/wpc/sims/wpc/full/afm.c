@@ -390,18 +390,19 @@ static core_tGameData afmGameData = {
 };
 
 static WRITE_HANDLER(parallel_0_out) {
-  static int lastValue = 0;
   coreGlobals.lampMatrix[8] = coreGlobals.tmpLampMatrix[8] = data;
-  HC4094_data_w (1, lastValue);
-  lastValue = data >> 7;
 }
 static WRITE_HANDLER(parallel_1_out) {
   coreGlobals.lampMatrix[9] = coreGlobals.tmpLampMatrix[9] = data;
 }
+static WRITE_HANDLER(qspin_0_out) {
+  HC4094_data_w(1, data);
+}
 
 static HC4094interface hc4094afm = {
   2, // 2 chips
-  { parallel_0_out, parallel_1_out }
+  { parallel_0_out, parallel_1_out },
+  { qspin_0_out }
 };
 
 static WRITE_HANDLER(afm_wpc_w) {
