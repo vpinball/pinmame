@@ -3,6 +3,8 @@
 
 #include "osd_cpu.h"
 
+#define INVERT_DATA 0
+
 enum {
 	PPS4_PC=1, PPS4_SA, PPS4_SB, PPS4_AB, PPS4_BX,
 	PPS4_A, PPS4_C, PPS4_X, PPS4_F1, PPS4_F2, PPS4_SK
