@@ -242,16 +242,16 @@ static sim_tInportData nbaf_inportData[] = {
   core_textOutf(30,160,BLACK,"");
   }
 
+#define NBAF_SOUND \
+DCS_SOUNDROM5xm("fb-s2.1_0",CRC(32f42a82) SHA1(387636c8e9f8525e7442ccdced735392db113044), \
+                "fb-s3.1_0",CRC(033aa54a) SHA1(9221f3013f204a9a857aced5d774c606a7e48648), \
+                "fb-s4.1_0",CRC(6965a7c5) SHA1(7e72bbd3bad9accc8da1754c57c24ebdf13e57b9), \
+                "fb-s5.1_0",CRC(db50b79a) SHA1(9753d599cd822b55ed64bcf64955f625dc51997d), \
+                "fb-s6.1_0",CRC(f1633371) SHA1(a707748d3298ffb6d10d8308f4dae7982b540fa0))
+
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(nbaf,31a,"fb_g11.3_1",0x80000,CRC(acd84ec2) SHA1(bd641b26e7a577be9f8705b21de4a694400945ce))
-DCS_SOUNDROM5xm("fb-s2.1_0",CRC(32f42a82) SHA1(387636c8e9f8525e7442ccdced735392db113044),
-                "fb-s3.1_0",CRC(033aa54a) SHA1(9221f3013f204a9a857aced5d774c606a7e48648),
-                "fb-s4.1_0",CRC(6965a7c5) SHA1(7e72bbd3bad9accc8da1754c57c24ebdf13e57b9),
-                "fb-s5.1_0",CRC(db50b79a) SHA1(9753d599cd822b55ed64bcf64955f625dc51997d),
-                "fb-s6.1_0",CRC(f1633371) SHA1(a707748d3298ffb6d10d8308f4dae7982b540fa0))
-WPC_ROMEND
 WPC_ROMSTART(nbaf,31,"fb_g11.3_1",0x80000,CRC(acd84ec2) SHA1(bd641b26e7a577be9f8705b21de4a694400945ce))
 DCS_SOUNDROM5m("fb-s2.3_0",CRC(4594abd3) SHA1(d14654f0c2d29c28cae604e2dbcc9adf361b28a9),
                "fb-s3.1_0",CRC(033aa54a) SHA1(9221f3013f204a9a857aced5d774c606a7e48648),
@@ -259,42 +259,21 @@ DCS_SOUNDROM5m("fb-s2.3_0",CRC(4594abd3) SHA1(d14654f0c2d29c28cae604e2dbcc9adf36
                "fb-s5.1_0",CRC(db50b79a) SHA1(9753d599cd822b55ed64bcf64955f625dc51997d),
                "fb-s6.1_0",CRC(f1633371) SHA1(a707748d3298ffb6d10d8308f4dae7982b540fa0))
 WPC_ROMEND
+WPC_ROMSTART(nbaf,31a,"fb_g11.3_1",0x80000,CRC(acd84ec2) SHA1(bd641b26e7a577be9f8705b21de4a694400945ce)) NBAF_SOUND WPC_ROMEND
 
-WPC_ROMSTART(nbaf,11,"g11-11.rom",0x80000,CRC(debfb64a) SHA1(7f50246f5fde1e7fc295be6b6bbd455e244e4c99))
-DCS_SOUNDROM5xm("fb-s2.1_0",CRC(32f42a82) SHA1(387636c8e9f8525e7442ccdced735392db113044),
-                "fb-s3.1_0",CRC(033aa54a) SHA1(9221f3013f204a9a857aced5d774c606a7e48648),
-                "fb-s4.1_0",CRC(6965a7c5) SHA1(7e72bbd3bad9accc8da1754c57c24ebdf13e57b9),
-                "fb-s5.1_0",CRC(db50b79a) SHA1(9753d599cd822b55ed64bcf64955f625dc51997d),
-                "fb-s6.1_0",CRC(f1633371) SHA1(a707748d3298ffb6d10d8308f4dae7982b540fa0))
+WPC_ROMSTART(nbaf,11,"g11-11.rom",0x80000,CRC(debfb64a) SHA1(7f50246f5fde1e7fc295be6b6bbd455e244e4c99)) NBAF_SOUND WPC_ROMEND
+WPC_ROMSTART(nbaf,11a,"g11-11.rom",0x80000,CRC(debfb64a) SHA1(7f50246f5fde1e7fc295be6b6bbd455e244e4c99))
+DCS_SOUNDROM5m("fb-s2.2_0",CRC(f950f481) SHA1(8d7c54c5f27a85889179ee690512fa69b1357bb6),
+               "fb-s3.1_0",CRC(033aa54a) SHA1(9221f3013f204a9a857aced5d774c606a7e48648),
+               "fb-s4.1_0",CRC(6965a7c5) SHA1(7e72bbd3bad9accc8da1754c57c24ebdf13e57b9),
+               "fb-s5.1_0",CRC(db50b79a) SHA1(9753d599cd822b55ed64bcf64955f625dc51997d),
+               "fb-s6.1_0",CRC(f1633371) SHA1(a707748d3298ffb6d10d8308f4dae7982b540fa0))
 WPC_ROMEND
-WPC_ROMSTART(nbaf,115,"g11-115",0x80000,CRC(c0ed9848) SHA1(196d13cf93fe61db36d3bd936549210875a88948))
-DCS_SOUNDROM5xm("fb-s2.1_0",CRC(32f42a82) SHA1(387636c8e9f8525e7442ccdced735392db113044),
-                "fb-s3.1_0",CRC(033aa54a) SHA1(9221f3013f204a9a857aced5d774c606a7e48648),
-                "fb-s4.1_0",CRC(6965a7c5) SHA1(7e72bbd3bad9accc8da1754c57c24ebdf13e57b9),
-                "fb-s5.1_0",CRC(db50b79a) SHA1(9753d599cd822b55ed64bcf64955f625dc51997d),
-                "fb-s6.1_0",CRC(f1633371) SHA1(a707748d3298ffb6d10d8308f4dae7982b540fa0))
-WPC_ROMEND
-WPC_ROMSTART(nbaf,21,"g11-21.rom",0x80000,CRC(598d33d0) SHA1(98c2bfcca573a6e790a4d3ba306953ff0fb3b042))
-DCS_SOUNDROM5xm("fb-s2.1_0",CRC(32f42a82) SHA1(387636c8e9f8525e7442ccdced735392db113044),
-                "fb-s3.1_0",CRC(033aa54a) SHA1(9221f3013f204a9a857aced5d774c606a7e48648),
-                "fb-s4.1_0",CRC(6965a7c5) SHA1(7e72bbd3bad9accc8da1754c57c24ebdf13e57b9),
-                "fb-s5.1_0",CRC(db50b79a) SHA1(9753d599cd822b55ed64bcf64955f625dc51997d),
-                "fb-s6.1_0",CRC(f1633371) SHA1(a707748d3298ffb6d10d8308f4dae7982b540fa0))
-WPC_ROMEND
-WPC_ROMSTART(nbaf,22,"g11-22.rom",0x80000,CRC(2e7a9685) SHA1(2af250a947089469c942cf2c570063bdebd4abe4))
-DCS_SOUNDROM5xm("fb-s2.1_0",CRC(32f42a82) SHA1(387636c8e9f8525e7442ccdced735392db113044),
-                "fb-s3.1_0",CRC(033aa54a) SHA1(9221f3013f204a9a857aced5d774c606a7e48648),
-                "fb-s4.1_0",CRC(6965a7c5) SHA1(7e72bbd3bad9accc8da1754c57c24ebdf13e57b9),
-                "fb-s5.1_0",CRC(db50b79a) SHA1(9753d599cd822b55ed64bcf64955f625dc51997d),
-                "fb-s6.1_0",CRC(f1633371) SHA1(a707748d3298ffb6d10d8308f4dae7982b540fa0))
-WPC_ROMEND
-WPC_ROMSTART(nbaf,23,"g11-23.rom",0x80000,CRC(a6ceb6de) SHA1(055387ee7da57e1a8fbce803a0dd9e67d6dbb1bd))
-DCS_SOUNDROM5xm("fb-s2.1_0",CRC(32f42a82) SHA1(387636c8e9f8525e7442ccdced735392db113044),
-                "fb-s3.1_0",CRC(033aa54a) SHA1(9221f3013f204a9a857aced5d774c606a7e48648),
-                "fb-s4.1_0",CRC(6965a7c5) SHA1(7e72bbd3bad9accc8da1754c57c24ebdf13e57b9),
-                "fb-s5.1_0",CRC(db50b79a) SHA1(9753d599cd822b55ed64bcf64955f625dc51997d),
-                "fb-s6.1_0",CRC(f1633371) SHA1(a707748d3298ffb6d10d8308f4dae7982b540fa0))
-WPC_ROMEND
+WPC_ROMSTART(nbaf,115,"g11-115",0x80000,CRC(c0ed9848) SHA1(196d13cf93fe61db36d3bd936549210875a88948)) NBAF_SOUND WPC_ROMEND
+
+WPC_ROMSTART(nbaf,21,"g11-21.rom",0x80000,CRC(598d33d0) SHA1(98c2bfcca573a6e790a4d3ba306953ff0fb3b042)) NBAF_SOUND WPC_ROMEND
+WPC_ROMSTART(nbaf,22,"g11-22.rom",0x80000,CRC(2e7a9685) SHA1(2af250a947089469c942cf2c570063bdebd4abe4)) NBAF_SOUND WPC_ROMEND
+WPC_ROMSTART(nbaf,23,"g11-23.rom",0x80000,CRC(a6ceb6de) SHA1(055387ee7da57e1a8fbce803a0dd9e67d6dbb1bd)) NBAF_SOUND WPC_ROMEND
 
 /*--------------
 /  Game drivers
@@ -302,6 +281,7 @@ WPC_ROMEND
 CORE_GAMEDEF(nbaf,31,"NBA Fastbreak (3.1 - S3.0)",1997,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(nbaf,31a,31,"NBA Fastbreak (3.1 - S1.0)",1997,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(nbaf,11,31,"NBA Fastbreak (1.1)",1997,"Bally",wpc_m95S,0)
+CORE_CLONEDEF(nbaf,11a,31,"NBA Fastbreak (1.1 - S2.0)",1997,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(nbaf,115,31,"NBA Fastbreak (1.15)",1997,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(nbaf,21,31,"NBA Fastbreak (2.1)",1997,"Bally",wpc_m95S,0)
 CORE_CLONEDEF(nbaf,22,31,"NBA Fastbreak (2.2)",1997,"Bally",wpc_m95S,0)
