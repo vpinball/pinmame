@@ -2,7 +2,7 @@
 #include "sim.h"
 #include "sndbrd.h"
 #include "by35snd.h"
-#include "s11csoun.h"
+#include "wmssnd.h"
 #include "byvidpin.h"
 #include "by6803.h"
 #include "by35.h"

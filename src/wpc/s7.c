@@ -3,7 +3,7 @@
 #include "machine/6821pia.h"
 #include "core.h"
 #include "sndbrd.h"
-#include "s67s.h"
+#include "wmssnd.h"
 #include "s7.h"
 
 #define S7_VBLANKFREQ    60 /* VBLANK frequency */

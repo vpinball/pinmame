@@ -49,7 +49,7 @@
 #include "driver.h"
 #include "wpc.h"
 #include "sim.h"
-#include "dcs.h"
+#include "wmssnd.h"
 
 
 static void init_jd(void);

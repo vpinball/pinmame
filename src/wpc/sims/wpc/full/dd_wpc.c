@@ -39,7 +39,7 @@ ASDFGH  Reflex Targets
 #include "wpc.h"
 #include "sim.h"
 #include "wpcsam.h"
-#include "s11csoun.h"
+#include "wmssnd.h"
 
 /*------------------
 /  Local functions

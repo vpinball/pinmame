@@ -39,7 +39,7 @@ ASDFGH  Reflex Targets
 #include "core.h"
 #include "s11.h"
 #include "sim.h"
-#include "s11csoun.h"
+#include "wmssnd.h"
 
 /*------------------
 /  Local functions

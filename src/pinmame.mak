@@ -23,14 +23,11 @@ DRVLIBS += $(OBJ)/vidhrdw/tms9928a.o
 #
 # Core drivers
 #
-DRVLIBS += $(PINOBJ)/s11.o $(PINOBJ)/s11csoun.o
-DRVLIBS += $(PINOBJ)/wpc.o $(PINOBJ)/wpcsound.o $(PINOBJ)/dcs.o
-DRVLIBS += $(PINOBJ)/s7.o
-DRVLIBS += $(PINOBJ)/s6.o $(PINOBJ)/s67s.o
-DRVLIBS += $(PINOBJ)/s4.o
+DRVLIBS += $(PINOBJ)/s4.o $(PINOBJ)/s6.o $(PINOBJ)/s7.o $(PINOBJ)/s11.o
+DRVLIBS += $(PINOBJ)/wpc.o $(PINOBJ)/wmssnd.o
 DRVLIBS += $(PINOBJ)/dedmd.o $(PINOBJ)/desound.o
 DRVLIBS += $(PINOBJ)/gts3.o $(PINOBJ)/gts3dmd.o $(PINOBJ)/gts3sound.o
-DRVLIBS += $(PINOBJ)/se.o $(PINOBJ)/sesound.o
+DRVLIBS += $(PINOBJ)/se.o
 DRVLIBS += $(PINOBJ)/gts80.o $(PINOBJ)/gts80s.o
 DRVLIBS += $(PINOBJ)/by35.o $(PINOBJ)/by35snd.o $(PINOBJ)/byvidpin.o
 DRVLIBS += $(PINOBJ)/by6803.o

@@ -1,7 +1,7 @@
 #include "driver.h"
 #include "core.h"
 #include "sim.h"
-#include "s67s.h"
+#include "wmssnd.h"
 #include "s7.h"
 
 const core_tLCDLayout s7_dispS7[] = {

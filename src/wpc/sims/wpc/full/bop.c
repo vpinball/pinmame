@@ -50,7 +50,7 @@
 #include "driver.h"
 #include "wpc.h"
 #include "sim.h"
-#include "wpcsound.h"
+#include "wmssnd.h"
 #include "wpcsam.h"
 
 /*------------------

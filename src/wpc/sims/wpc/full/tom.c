@@ -38,7 +38,7 @@
 #include "driver.h"
 #include "wpc.h"
 #include "sim.h"
-#include "dcs.h"
+#include "wmssnd.h"
 
 #define TOM_TRUNKTICKS		2    /* turn 2 degrees per simulator tick */
 #define TOM_SWCLOSEDDEGREE	20   /* degrees during a trunk switch should be closed */

@@ -1,6 +1,6 @@
 #include "driver.h"
 #include "sim.h"
-#include "s67s.h"
+#include "wmssnd.h"
 #include "s6.h"
 #include "s4.h"			//*System 3 Is Nearly Identical to 4, so we share functions*/
 

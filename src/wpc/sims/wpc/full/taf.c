@@ -1,7 +1,7 @@
 #include "driver.h"
 #include "wpc.h"
 #include "sim.h"
-#include "wpcsound.h"
+#include "wmssnd.h"
 
 /* 061200 Fixed loop timings so Stars can be awarded (ML)*/
 /* 051200 Added Custom Lamp Matrix (SJE)		*/

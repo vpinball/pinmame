@@ -3,7 +3,7 @@
 #include "machine/6821pia.h"
 #include "core.h"
 #include "sndbrd.h"
-#include "s67s.h"
+#include "wmssnd.h"
 #include "s6.h"
 
 #define S6_PIA0 0

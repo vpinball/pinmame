@@ -1,7 +1,7 @@
 #include "driver.h"
 #include "wpc.h"
 #include "sim.h"
-#include "wpcsound.h"
+#include "wmssnd.h"
 
 
 /* 12-05-2000: Modified custom playfield lamp layout to accomodate new structure.

@@ -38,7 +38,7 @@
 #include "driver.h"
 #include "wpc.h"
 #include "sim.h"
-#include "dcs.h"
+#include "wmssnd.h"
 
 /*------------------
 /  Local functions
