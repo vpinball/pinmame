@@ -28,11 +28,12 @@ Bugs in Pinmame that we are aware of:
 
 #10) Extremely poor performance on multiprocessor systems.
 
-#11) Gottlieb SYstem 3 percussive sounds might still have some timing issues
+#11) Gottlieb System 3 percussive sounds might still have some timing issues
 
 #12) Sound gets cut off in Alvin G games sometimes, and some weird notes in World Tour occasionally
 
-#13) Switches don't work in Capcom Breakshot
+#13) Non-working lamps & solenoids in Capcom Flipper Football and Kingpin
 
-#14) Graphics issues, missing lamps & Solenoids in Capcom Flipper Football and Kingpin
+#14) All Gottlieb System80a games are not working correctly right now. We're on it!!!
 
+#15) No sound on some Hankin games.
