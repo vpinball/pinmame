@@ -200,7 +200,7 @@ static WRITE_HANDLER(giaux_w) {
     if (data & ~selocals.lastgiaux & 0x80) { /* clock in data to minidmd */
       selocals.minidata[selocals.miniidx] = selocals.auxdata & 0x7f;
       selocals.miniidx = (selocals.miniidx + 1) % 4;
-      if ((selocals.auxdata & 0x80) == 0) { /* enabled column? */
+      if (!(selocals.auxdata & 0x80)) { /* enabled column? */
         int tmp = selocals.minidata[selocals.miniidx] & 0x1f;
         if (tmp) {
           int col = 1;
@@ -265,6 +265,67 @@ PINMAME_VIDEO_UPDATE(seminidmd1_update) {
     bits = 0;
     for (jj = 0; jj < 7; jj++)
       bits = (bits<<2) | dotCol[jj+1][ii];
+    *seg++ = bits;
+  }
+  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+  return 0;
+}
+// MINI DMD Type 1 (Ripley's) (3 x 5x7)
+PINMAME_VIDEO_UPDATE(seminidmd1a_update) {
+  tDMDDot dotCol;
+  int ii,kk,bits;
+  UINT16 *seg = &coreGlobals.drawSeg[0];
+
+  for (ii = 0, bits = 0x40; ii < 7; ii++, bits >>= 1) {
+    UINT8 *line = &dotCol[ii+1][0];
+    for (kk = 0; kk < 5; kk++)
+      *line++ = ((selocals.minidmd[0][2][kk] & bits) + (selocals.minidmd[1][2][kk] & bits) +
+                 (selocals.minidmd[2][2][kk] & bits))/bits;
+  }
+  for (ii = 0; ii < 5; ii++) {
+    bits = 0;
+    for (kk = 0; kk < 7; kk++)
+      bits = (bits<<2) | dotCol[kk+1][ii];
+    *seg++ = bits;
+  }
+  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+  return 0;
+}
+PINMAME_VIDEO_UPDATE(seminidmd1b_update) {
+  tDMDDot dotCol;
+  int ii,kk,bits;
+  UINT16 *seg = &coreGlobals.drawSeg[5];
+
+  for (ii = 0, bits = 0x40; ii < 7; ii++, bits >>= 1) {
+    UINT8 *line = &dotCol[ii+1][0];
+    for (kk = 0; kk < 5; kk++)
+      *line++ = ((selocals.minidmd[0][1][kk] & bits) + (selocals.minidmd[1][1][kk] & bits) +
+                 (selocals.minidmd[2][1][kk] & bits))/bits;
+  }
+  for (ii = 0; ii < 5; ii++) {
+    bits = 0;
+    for (kk = 0; kk < 7; kk++)
+      bits = (bits<<2) | dotCol[kk+1][ii];
+    *seg++ = bits;
+  }
+  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+  return 0;
+}
+PINMAME_VIDEO_UPDATE(seminidmd1c_update) {
+  tDMDDot dotCol;
+  int ii,kk,bits;
+  UINT16 *seg = &coreGlobals.drawSeg[10];
+
+  for (ii = 0, bits = 0x40; ii < 7; ii++, bits >>= 1) {
+    UINT8 *line = &dotCol[ii+1][0];
+    for (kk = 0; kk < 5; kk++)
+      *line++ = ((selocals.minidmd[0][0][kk] & bits) + (selocals.minidmd[1][0][kk] & bits) +
+                 (selocals.minidmd[2][0][kk] & bits))/bits;
+  }
+  for (ii = 0; ii < 5; ii++) {
+    bits = 0;
+    for (kk = 0; kk < 7; kk++)
+      bits = (bits<<2) | dotCol[kk+1][ii];
     *seg++ = bits;
   }
   video_update_core_dmd(bitmap, cliprect, dotCol, layout);
