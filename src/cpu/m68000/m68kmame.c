@@ -1249,7 +1249,7 @@ unsigned m68020_dasm(char *buffer, unsigned pc)
 /****************************************************************************
  * 68306 section
  ****************************************************************************/
-//NOTE: FOR SPEED REASONS FOR CAPCOM EMULTION - WE DO NOT PROCESS CS/DRAM SIGNALS 
+//NOTE: FOR SPEED REASONS FOR CAPCOM EMULTION - WE DO NOT PROCESS CS/DRAM SIGNALS
 // - INSTEAD WE HARDCODE THE MEMORY MAPPINGS IN THE DRIVER (SJE -11/14/03)
 
 //Disable the 68306 Receiver/Transmitter functions for testing individual sections
@@ -1273,7 +1273,7 @@ unsigned m68020_dasm(char *buffer, unsigned pc)
 #ifdef DEBUGGING
 #define PRINTF(x) printf x
 #else
-#define PRINTF(x) 
+#define PRINTF(x)
 #endif
 
 // Could not find any other way to get the interrupts to work than inlcuding this
@@ -1289,7 +1289,6 @@ enum {
 
 static void m68306_intreg_w(offs_t address, data16_t data, int word);
 static data16_t m68306_intreg_r(offs_t address, int word);
-static offs_t m68306_cs(offs_t address, int write);
 static void m68306irq(int irqline, int state);
 static UINT16 m68306intreg[0x20];
 static UINT16 m68306holdirq; // HOLD_LINE handling
@@ -1351,7 +1350,7 @@ static struct {
 } m68306_duart;
 
 //temporary hacks to get direct access to capcoms.c funcs
-extern void set_cts_line_to_8752(int data);		
+extern void set_cts_line_to_8752(int data);
 extern int get_rts_line_from_8752(void);
 extern void send_data_to_8752(int data);
 
@@ -1362,15 +1361,15 @@ extern void send_data_to_8752(int data);
 
 //WRITE 8BIT
 static void m68306_write8(offs_t address, data8_t data) {
-  if (address >= 0xfffff000) 
-		m68306_intreg_w(address, data, 0); 
+  if (address >= 0xfffff000)
+		m68306_intreg_w(address, data, 0);
   else
 		cpu_writemem32bew(address,data);
 }
 //WRITE 16BIT
 static void m68306_write16(offs_t address, data16_t data) {
 	if (address >= 0xfffff000)
-		m68306_intreg_w(address, data, 1); 
+		m68306_intreg_w(address, data, 1);
 	else
 		cpu_writemem32bew_word(address,data);
 }
@@ -1382,20 +1381,20 @@ static void m68306_write32(offs_t address, data32_t data) {
 	}
 	else {
 		cpu_writemem32bew_word(address, data >> 16);
-		cpu_writemem32bew_word(address + 2, data);  
+		cpu_writemem32bew_word(address + 2, data);
 	}
 }
 //READ 8BIT
 static data8_t m68306_read8(offs_t address) {
 	if (address >= 0xfffff000)
-		return (data8_t)m68306_intreg_r(address, 0); 
+		return (data8_t)m68306_intreg_r(address, 0);
 	else
 		return cpu_readmem32bew(address);
 }
 //READ 16BIT
 static data16_t m68306_read16(offs_t address) {
 	if (address >= 0xfffff000)
-		return m68306_intreg_r(address, 1); 
+		return m68306_intreg_r(address, 1);
 	else
 		return cpu_readmem32bew_word(address);
 }
@@ -1408,7 +1407,7 @@ static data32_t m68306_read32(offs_t address) {
 	}
 	else {
 		result = cpu_readmem32bew_word(address)<<16;
-		return result | cpu_readmem32bew_word(address + 2);  
+		return result | cpu_readmem32bew_word(address + 2);
 	}
 }
 //-------------------------------------------------------------------
@@ -1563,7 +1562,7 @@ static data16_t m68306_duart_reg_r(offs_t address, int word) {
 }
 
 //--------------------------------
-//  DUART Internal register write 
+//  DUART Internal register write
 //--------------------------------
 //NOTE: These are really UINT8 values, not UINT16, ie, they are addressable as bytes only, not words!
 static void m68306_duart_reg_w(offs_t address, data16_t data, int word) {
@@ -1585,7 +1584,7 @@ static void m68306_duart_reg_w(offs_t address, data16_t data, int word) {
 		case 0xf7e3:
 			LOG(("%8x:CLOCK SELECT (DUCSRA) Write = %x\n",activecpu_get_pc(),data));
 			m68306duartreg[dirDUCSRA] = data;
-			return;	
+			return;
 
 		//F7E5 - COMMAND REGISTER A (DUCRA)
 		case 0xf7e5:
@@ -1605,19 +1604,19 @@ static void m68306_duart_reg_w(offs_t address, data16_t data, int word) {
 			else
 				LOG(("%8x: TC DISABLED! - TRANSMIT BUFFER A(DUTBA) Write = %x\n",activecpu_get_pc(),data));
 #endif
-			return;	
+			return;
 
 		//F7E9 - AUX CONTROL REGISTER(DUACR)
 		case 0xf7e9:
 			LOG(("%8x:AUX CONTROL REGISTER(DUACR) Write = %x\n",activecpu_get_pc(),data));
 			m68306duartreg[dirDUACR] = data;
-			return;	
+			return;
 
 		//F7EB - INTERRUPT MASK (DUIMR)
 		case 0xf7eb:
 			LOG(("%8x:INTERRUPT MASK (DUIMR) Write = %x\n",activecpu_get_pc(),data));
 			m68306_duart_set_duimr(data);
-			return;	
+			return;
 
 		//F7ED - COUNTER/TIMER MSB
 		case 0xf7ed:
@@ -1768,7 +1767,7 @@ static void m68306_load_transmitter(int which, int data)
 	m68306_duart.channel[which].tx_hold_reg = data;
 	//Clear txEMP,txRDY bits (bits 3 & 2) in DUSR
 	m68306_duart_set_dusr(which,m68306duartreg[dirDUSRA+(which*0x10)] & (~0x0c));
-	//Try & Send Data 
+	//Try & Send Data
 	m68306_duart.channel[which].tx_new_data = 1;
 	m68306_tx_send_byte(which);
 #endif
@@ -1820,7 +1819,7 @@ static void duart_start_timer(void)
 	double clock_src;
 	double preload;
 
-	//Reset Timer 
+	//Reset Timer
 	timer_enable(m68306_duart.timer, 0);
 
 	//For now, support only external clock src (but really we should check the clock source bits in auxillary register
@@ -1830,7 +1829,7 @@ static void duart_start_timer(void)
 	if(!preload) return;
 	//Restart the timer (period is clock source * (2 * preload value)
 	time = clock_src * 2 * preload;
-	timer_adjust(m68306_duart.timer, time, 0, 0); 
+	timer_adjust(m68306_duart.timer, time, 0, 0);
 }
 
 //Duart Timer Callback
@@ -1854,9 +1853,9 @@ static void m68306_duart_check_int()
 	if(m68306duartreg[dirDUISR] & m68306duartreg[dirDUIMR]) {
 		//Check for a Timer Interrupt.. (bit 3 in status)
 		if(m68306duartreg[dirDUISR] & 0x08) {
-			
+
 			/*--Timer can either trigger /TIRQ, or regular serial /IRQ depending on MASK & IENT flags--*/
-			
+
 			//Timer generates an IRQ?
 			int irq = (m68306duartreg[dirDUIMR] & 0x08) >> 3;
 			//Timer generates an TIRQ?
@@ -2191,7 +2190,7 @@ static data16_t m68306_intreg_r(offs_t address, int word) {
         logerror("buserror_r\n");
         break;
       case irSYSTEM: /* system */
-        data = m68306intreg[irSYSTEM]; 
+        data = m68306intreg[irSYSTEM];
 		m68306intreg[irSYSTEM] &= 0x7fff; // clear BTERR bit
         break;
     } /* switch */
@@ -2265,23 +2264,23 @@ static void m68306irq(int irqline, int state) {
   // If port B4-B7 are input  set_irq_line works
   // if port B4-B7 are output writing to port works
   // ignore this for now.
-  if(m68306_duart_int) { 
+  if(m68306_duart_int) {
 	  //Timer IRQ can be disabled by bit 15 of ICR
 	  if(m68306_duart_int==1 && !(m68306intreg[irICR] & 0x8000))
 		  irqline = 0;
 	  else {
 	  //There doesn't seem to be a way to disable the DUART interrupt (oddly)
 	  //however we need to adjust it to make it work with Martin's logic here..
-	  irqline = (m68306intreg[irISR]& 0x7f00)>>7;	
+	  irqline = (m68306intreg[irISR]& 0x7f00)>>7;
 	  }
   }
   else
 	irqline = (m68306intreg[irISR] & m68306intreg[irICR] & 0x7f00)>>7;
   //don't waste time if no irq..
   if(irqline) {
-	while (irqline >>= 1) 
+	while (irqline >>= 1)
 		CPU_INT_LEVEL += 1;
-	CPU_INT_LEVEL <<= 8; 
+	CPU_INT_LEVEL <<= 8;
 	m68ki_check_interrupts();
   }
 }
