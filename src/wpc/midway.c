@@ -90,6 +90,13 @@ static SWITCH_UPDATE(MIDWAY) {
 	}
 }
 
+static SWITCH_UPDATE(MIDWAYP) {
+	if (inports) {
+		coreGlobals.swMatrix[0] = inports[MIDWAY_COMINPORT] & 0xff;
+		i4004_set_TEST(coreGlobals.swMatrix[0] & 0x08);
+	}
+}
+
 static int MIDWAY_sw2m(int no) {
 	return no + 8;
 }
@@ -197,19 +204,21 @@ MEMORY_END
 
 static MEMORY_READ_START(MIDWAYP_readmem)
 {0x0000,0x03ff,	MRA_ROM},	/* ROM */
-{0x0400,0x07ff, MRA_RAM},   /* RAM */
+{0x1000,0x10ff, MRA_RAM},   /* RAM */
+{0x2000,0x20ff, MRA_RAM},   /* RAM */
+{0x3000,0x30ff, MRA_RAM},   /* RAM */
+{0x5000,0x50ff, MRA_RAM},   /* RAM */
 MEMORY_END
 
 static MEMORY_WRITE_START(MIDWAYP_writemem)
 {0x0000,0x03ff,	MWA_ROM},	/* ROM */
-{0x0400,0x07ff, MWA_RAM},   /* RAM */
+{0x1000,0x10ff, MWA_RAM},   /* RAM */
+{0x2000,0x20ff, MWA_RAM},   /* RAM */
+{0x3000,0x30ff, MWA_RAM},   /* RAM */
+{0x5000,0x50ff, MWA_RAM},   /* RAM */
 MEMORY_END
 
 static MACHINE_INIT(MIDWAY) {
-  memset(&locals, 0, sizeof locals);
-}
-
-static MACHINE_INIT(MIDWAYProto) {
   memset(&locals, 0, sizeof locals);
 }
 
@@ -235,8 +244,9 @@ MACHINE_DRIVER_START(MIDWAYProto)
   MDRV_CPU_ADD_TAG("mcpu", 4004, 750000)
   MDRV_CPU_MEMORY(MIDWAYP_readmem, MIDWAYP_writemem)
   MDRV_CPU_VBLANK_INT(MIDWAY_vblank, 1)
-  MDRV_CORE_INIT_RESET_STOP(MIDWAYProto,NULL,MIDWAY)
+  MDRV_CORE_INIT_RESET_STOP(MIDWAY,NULL,MIDWAY)
   MDRV_DIPS(0) // no dips!
+  MDRV_SWITCH_UPDATE(MIDWAYP)
 //  MDRV_DIAGNOSTIC_LEDH(4)
 MACHINE_DRIVER_END
 
