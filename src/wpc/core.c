@@ -5,7 +5,7 @@
 /***********************************************/
 #include <stdarg.h>
 #include "driver.h"
-#include "cpu/m6809/m6809.h"
+//#include "cpu/m6809/m6809.h"
 #include "sim.h"
 #include "snd_cmd.h"
 #include "mech.h"
@@ -19,7 +19,7 @@ void OnSolenoid(int nSolenoid, int IsActive) {}
 void OnStateChange(int nChange) {}
 UINT64 vp_getSolMask64(void) { return -1; }
 void vp_updateMech(void) {};
-int vp_getDip(int bank) return 0;
+int vp_getDip(int bank) { return 0; }
 #endif
 
 #ifdef VPINMAME
@@ -48,7 +48,7 @@ core_tGlobals     coreGlobals;
 core_tData        coreData;
 core_tGlobals_dmd coreGlobals_dmd;
 core_tGameData   *core_gameData = NULL;  /* data about the running game */
-int core_bcd2seg[16] = {
+const int core_bcd2seg[16] = {
 /* 0    1    2    3    4    5    6    7    8    9  */
   0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f
 #ifdef MAME_DEBUG
@@ -57,7 +57,7 @@ int core_bcd2seg[16] = {
 #endif /* MAME_DEBUG */
 };
 /* makes it easier to swap bits */
-                         // 0  1  2  3  4  5  6  7  8  9 10,11,12,13,14,15
+                              // 0  1  2  3  4  5  6  7  8  9 10,11,12,13,14,15
 const UINT8 core_swapNyb[16] = { 0, 8, 4,12, 2,10, 6,14, 1, 9, 5,13, 3,11, 7,15};
 
 typedef UINT32 tSegRow[17];
@@ -419,12 +419,15 @@ void drawStatus(struct mame_bitmap *bitmap, int fullRefresh) {
   BMTYPE **lines = (BMTYPE **)bitmap->line;
   int firstRow = locals.firstSimRow;
   int ii, jj, bits;
+  BMTYPE dotColor[2];
+
 
   /*-- anything to do ? --*/
   if ((coreGlobals_dmd.dmdOnly) ||
       (coreGlobals.soundEn && (!manual_sound_commands(bitmap, &fullRefresh))))
     return;
 
+  dotColor[0] = CORE_COLOR(DMD_DOTOFF); dotColor[1] = CORE_COLOR(DMD_DOTON);
   /*-----------------
   /  Draw the lamps
   /------------------*/
@@ -466,9 +469,8 @@ void drawStatus(struct mame_bitmap *bitmap, int fullRefresh) {
       bits = coreGlobals.lampMatrix[ii];
 
       for (jj = 0; jj < 8; jj++) {
-        line[0][ii*2] = CORE_COLOR((bits & 0x01) ? DMD_DOTON : DMD_DOTOFF);
-        line += 2;
-        bits >>= 1;
+        line[0][ii*2] = dotColor[bits & 0x01];
+        line += 2; bits >>= 1;
       }
     }
     osd_mark_dirty(0,firstRow,16,firstRow+ii*2);
@@ -483,9 +485,8 @@ void drawStatus(struct mame_bitmap *bitmap, int fullRefresh) {
     bits = coreGlobals.swMatrix[ii];
 
     for (jj = 0; jj < 8; jj++) {
-      line[0][ii*2] = CORE_COLOR((bits & 0x01) ? DMD_DOTON : DMD_DOTOFF);
-      line += 2;
-      bits >>= 1;
+      line[0][ii*2] = dotColor[bits & 0x01];
+      line += 2; bits >>= 1;
     }
   }
   osd_mark_dirty(0,firstRow,16,firstRow+ii*2);
@@ -499,7 +500,7 @@ void drawStatus(struct mame_bitmap *bitmap, int fullRefresh) {
     BMTYPE **line = &lines[firstRow];
     UINT64 allSol = core_getAllSol();
     for (ii = 0; ii < CORE_FIRSTCUSTSOL+core_gameData->hw.custSol; ii++) {
-      line[(ii/8)*2][(ii%8)*2] = CORE_COLOR((allSol & 0x01) ? DMD_DOTON : DMD_DOTOFF);
+      line[(ii/8)*2][(ii%8)*2] = dotColor[allSol & 0x01];
       allSol >>= 1;
     }
     osd_mark_dirty(0, firstRow, 16,
@@ -520,14 +521,13 @@ void drawStatus(struct mame_bitmap *bitmap, int fullRefresh) {
       // Draw LEDS Vertically
       if (coreData.diagLEDs & DIAGLED_VERTICAL) {
         for (ii = 0; ii < (coreData.diagLEDs & ~DIAGLED_VERTICAL); ii++) {
-	  line[0][5] = CORE_COLOR((bits & 0x01) ? DMD_DOTON : DMD_DOTOFF);
-	  line += 2;
-	  bits >>= 1;
+	  line[0][5] = dotColor[bits & 0x01];
+	  line += 2; bits >>= 1;
 	}
       }
       else { // Draw LEDS Horizontally
 	for (ii = 0; ii < coreData.diagLEDs; ii++) {
-	  line[0][5+ii*2] = CORE_COLOR((bits & 0x01) ? DMD_DOTON : DMD_DOTOFF);
+	  line[0][5+ii*2] = dotColor[bits & 0x01];
 	  bits >>= 1;
 	}
       }
@@ -538,7 +538,7 @@ void drawStatus(struct mame_bitmap *bitmap, int fullRefresh) {
   firstRow += 25;
   if (core_gameData->gen & GEN_ALLWPC) {
     for (ii = 0; ii < CORE_MAXGI; ii++)
-      lines[firstRow][ii*2] = CORE_COLOR(coreGlobals.gi[ii] ? DMD_DOTON : DMD_DOTOFF);
+      lines[firstRow][ii*2] = dotColor[coreGlobals.gi[ii]>0];
     osd_mark_dirty(0, firstRow, 2*CORE_MAXGI+1, firstRow+2);
   }
   if (coreGlobals.simAvail) sim_draw(fullRefresh, locals.firstSimRow);
@@ -637,7 +637,7 @@ static tSegRow segSize3[2][20] = {{ /* alphanumeric display characters */
 /*  xxx  x */{0x05410000,0x00000000,0x00000000,0x00000000,0x05400000,0x00000000,0x00000000,0x00000000,0x00010000},
 /*      x  */{0x00040000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00040000}
 }};
-tSegData segData[2][8] = {{
+static tSegData segData[2][8] = {{
   {20,15,&segSize1[0][0]}, /* SEG16 */
   {20,15,&segSize1[1][0]}, /* SEG10 (using SEG8 for now) */
   {20,15,&segSize1[1][0]}, /* SEG8 */
@@ -665,7 +665,6 @@ void core_setLamp(UINT8 *lampMatrix, int col, int row) {
     lampMatrix += 1;
   }
 }
-
 
 /*-- "normal" switch/lamp numbering (1-64) --*/
 int core_swSeq2m(int no) { return no+7; }
