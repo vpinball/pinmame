@@ -135,7 +135,8 @@ static void mech_update(int mechNo) {
     md->anglePos = anglePos;
     md->pos = currPos * md->steps / md->length / MECH_STEP;
     /*-- update switches --*/
-    if ((md->type & MECH_LENGTHSW) == 0) currPos = md->pos;
+    currPos = (md->type & MECH_LENGTHSW) ? currPos / MECH_STEP : md->pos;
+
     for (ii = 0; md->swPos[ii].swNo > 0; ii++)
       core_setSw(md->swPos[ii].swNo, FALSE);
     for (ii = 0; md->swPos[ii].swNo > 0; ii++) {
