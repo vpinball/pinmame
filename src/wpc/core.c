@@ -72,7 +72,7 @@ const int core_bcd2seg9[16] = {
 const UINT8 core_swapNyb[16] = { 0, 8, 4,12, 2,10, 6,14, 1, 9, 5,13, 3,11, 7,15};
 /* Palette */
 
-static const unsigned char core_palette[(DMD_COLORS+(LAMP_COLORS*2)+7)][3] = {
+static const unsigned char core_palette[COL_COUNT][3] = {
 {/*  0 */ 0x00,0x00,0x00}, /* Background */
 /* -- DMD DOT COLORS-- */
 {/*  1 */ 0x30,0x00,0x00}, /* "Black" Dot - DMD Background */
@@ -127,41 +127,53 @@ static PALETTE_INIT(core) {
   memcpy(tmpPalette, core_palette, sizeof(core_palette));
 
   /*-- Autogenerate DMD Color Shades--*/
-  tmpPalette[DMD_DOTOFF][0] = rStart * perc0 / 100;
-  tmpPalette[DMD_DOTOFF][1] = gStart * perc0 / 100;
-  tmpPalette[DMD_DOTOFF][2] = bStart * perc0 / 100;
-  tmpPalette[DMD_DOT33][0]  = rStart * perc33 / 100;
-  tmpPalette[DMD_DOT33][1]  = gStart * perc33 / 100;
-  tmpPalette[DMD_DOT33][2]  = bStart * perc33 / 100;
-  tmpPalette[DMD_DOT66][0]  = rStart * perc66 / 100;
-  tmpPalette[DMD_DOT66][1]  = gStart * perc66 / 100;
-  tmpPalette[DMD_DOT66][2]  = bStart * perc66 / 100;
-  tmpPalette[DMD_DOTON][0]  = rStart;
-  tmpPalette[DMD_DOTON][1]  = gStart;
-  tmpPalette[DMD_DOTON][2]  = bStart;
+  tmpPalette[COL_DMDOFF][0]   = rStart * perc0 / 100;
+  tmpPalette[COL_DMDOFF][1]   = gStart * perc0 / 100;
+  tmpPalette[COL_DMDOFF][2]   = bStart * perc0 / 100;
+  tmpPalette[COL_DMD33][0]    = rStart * perc33 / 100;
+  tmpPalette[COL_DMD33][1]    = gStart * perc33 / 100;
+  tmpPalette[COL_DMD33][2]    = bStart * perc33 / 100;
+  tmpPalette[COL_DMD66][0]    = rStart * perc66 / 100;
+  tmpPalette[COL_DMD66][1]    = gStart * perc66 / 100;
+  tmpPalette[COL_DMD66][2]    = bStart * perc66 / 100;
+  tmpPalette[COL_DMDON][0]    = rStart;
+  tmpPalette[COL_DMDON][1]    = gStart;
+  tmpPalette[COL_DMDON][2]    = bStart;
+  /*-- segment display antialias colors --*/
+  tmpPalette[COL_SEGAAON1][0] = rStart * 70 / 100;
+  tmpPalette[COL_SEGAAON1][1] = gStart * 70 / 100;
+  tmpPalette[COL_SEGAAON1][2] = bStart * 70 / 100;
+  tmpPalette[COL_SEGAAON2][0] = rStart * 30 / 100;
+  tmpPalette[COL_SEGAAON2][1] = gStart * 30 / 100;
+  tmpPalette[COL_SEGAAON2][2] = bStart * 30 / 100;
+  rStart = tmpPalette[COL_DMDOFF][0];
+  gStart = tmpPalette[COL_DMDOFF][1];
+  bStart = tmpPalette[COL_DMDOFF][2];
+  tmpPalette[COL_SEGAAOFF1][0] = rStart * 70 / 100;
+  tmpPalette[COL_SEGAAOFF1][1] = gStart * 70 / 100;
+  tmpPalette[COL_SEGAAOFF1][2] = bStart * 70 / 100;
+  tmpPalette[COL_SEGAAOFF2][0] = rStart * 30 / 100;
+  tmpPalette[COL_SEGAAOFF2][1] = gStart * 30 / 100;
+  tmpPalette[COL_SEGAAOFF2][2] = bStart * 30 / 100;
 
   /*-- Autogenerate Dark Playfield Lamp Colors --*/
-  for (ii = 0; ii < LAMP_COLORS; ii++) {
-    /* Reduce by 75% */
-    tmpPalette[DMD_COLORS+LAMP_COLORS+ii][0] = (tmpPalette[DMD_COLORS+ii][0] * 25) / 100;
-    tmpPalette[DMD_COLORS+LAMP_COLORS+ii][1] = (tmpPalette[DMD_COLORS+ii][1] * 25) / 100;
-    tmpPalette[DMD_COLORS+LAMP_COLORS+ii][2] = (tmpPalette[DMD_COLORS+ii][2] * 25) / 100;
+  for (ii = 0; ii < COL_LAMPCOUNT; ii++) { /* Reduce by 75% */
+    tmpPalette[COL_LAMP+COL_LAMPCOUNT+ii][0] = (tmpPalette[COL_LAMP+ii][0] * 25) / 100;
+    tmpPalette[COL_LAMP+COL_LAMPCOUNT+ii][1] = (tmpPalette[COL_LAMP+ii][1] * 25) / 100;
+    tmpPalette[COL_LAMP+COL_LAMPCOUNT+ii][2] = (tmpPalette[COL_LAMP+ii][2] * 25) / 100;
   }
 
   { /*-- Autogenerate antialias colours --*/
     int rStep, gStep, bStep;
 
-    rStart = tmpPalette[DMD_DOTOFF][0];
-    gStart = tmpPalette[DMD_DOTOFF][1];
-    bStart = tmpPalette[DMD_DOTOFF][2];
-    rStep = (tmpPalette[DMD_DOTON][0] * pmoptions.dmd_antialias / 100 - rStart) / 6;
-    gStep = (tmpPalette[DMD_DOTON][1] * pmoptions.dmd_antialias / 100 - gStart) / 6;
-    bStep = (tmpPalette[DMD_DOTON][2] * pmoptions.dmd_antialias / 100 - bStart) / 6;
+    rStep = (tmpPalette[COL_DMDON][0] * pmoptions.dmd_antialias / 100 - rStart) / 6;
+    gStep = (tmpPalette[COL_DMDON][1] * pmoptions.dmd_antialias / 100 - gStart) / 6;
+    bStep = (tmpPalette[COL_DMDON][2] * pmoptions.dmd_antialias / 100 - bStart) / 6;
 
-    for (ii = START_ANTIALIAS+1; ii < (START_ANTIALIAS+1)+6; ii++) {
-      tmpPalette[ii][0] = rStart;
-      tmpPalette[ii][1] = gStart;
-      tmpPalette[ii][2] = bStart;
+    for (ii = 1; ii < COL_DMDAACOUNT; ii++) { // first is black
+      tmpPalette[COL_DMDAA+ii][0] = rStart;
+      tmpPalette[COL_DMDAA+ii][1] = gStart;
+      tmpPalette[COL_DMDAA+ii][2] = bStart;
       rStart += rStep; gStart += gStep; bStart += bStep;
     }
   }
@@ -177,8 +189,8 @@ static PALETTE_INIT(core) {
 /    Generic DMD display handler
 /------------------------------------*/
 void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *cliprect, tDMDDot dotCol, const struct core_dispLayout *layout) {
-  UINT32 *dmdColor = &CORE_COLOR(DMD_DOTOFF);
-  UINT32 *aaColor  = &CORE_COLOR(START_ANTIALIAS);
+  UINT32 *dmdColor = &CORE_COLOR(COL_DMDOFF);
+  UINT32 *aaColor  = &CORE_COLOR(COL_DMDAA);
   BMTYPE **lines = ((BMTYPE **)bitmap->line) + (layout->top*locals.displaySize);
   int ii, jj;
 
@@ -208,11 +220,14 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   osd_mark_dirty(layout->left*locals.displaySize,layout->top*locals.displaySize,
                  (layout->left+layout->length)*locals.displaySize,(layout->top+layout->start)*locals.displaySize);
 }
-
+#ifdef VPINMAME
+#  define inRect(r,l,t,w,h) FALSE
+#else /* VPINMAME */
 INLINE int inRect(const struct rectangle *r, int left, int top, int width, int height) {
   return (r->max_x >= left) && (r->max_y >= top) &&
          (r->min_x <= left + width) && (r->min_y <= top + height);
 }
+#endif /* VPINMAME */
 
 /*-----------------------------------
 /  Generic segement display handler
@@ -472,7 +487,7 @@ static VIDEO_UPDATE(core_status) {
       (coreGlobals.soundEn && (!manual_sound_commands(bitmap))))
     return;
 
-  dotColor[0] = CORE_COLOR(DMD_DOTOFF); dotColor[1] = CORE_COLOR(DMD_DOTON);
+  dotColor[0] = CORE_COLOR(COL_DMDOFF); dotColor[1] = CORE_COLOR(COL_DMDON);
   /*--  Draw lamps --*/
   if ((core_gameData->hw.lampData) &&
       (startRow + core_gameData->hw.lampData->startpos.x + core_gameData->hw.lampData->size.x < locals.maxSimRows)) {
@@ -491,7 +506,7 @@ static VIDEO_UPDATE(core_status) {
 	  int color = drawData->lamps[num].lamppos[qq].color;
 	  int lampx = drawData->lamps[num].lamppos[qq].x;
 	  int lampy = drawData->lamps[num].lamppos[qq].y;
-	  line[lampx][starty + lampy] = CORE_COLOR((bits & 0x01) ? color : SHADE(color));
+	  line[lampx][starty + lampy] = CORE_COLOR((bits & 0x01) ? color : COL_SHADE(color));
 	}
         bits >>= 1;
         num++;
@@ -768,47 +783,28 @@ int core_getDip(int dipBank) {
 /*--------------------
 /   Draw a LED digit
 /---------------------*/
-static UINT32 pen[7];
 static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, int type) {
-  static UINT32 pixel[20];
-  BMTYPE* line;
-  UINT32 p,np;
-  int kk,ll,c;
-  tSegData *s = &locals.segData[type];
+  const tSegData *s = &locals.segData[type];
+  UINT32 pixel[21];
+  int kk,ll;
 
-  if (!pen[4]) { // setting up segment colors
-    UINT8 r,g,b;
-	palette_get_color(4, &r, &g, &b);
-    palette_set_color(3, r*7/10, g*7/10, b*7/10);
-    palette_set_color(2, r*3/10, g*3/10, b*3/10);
-    pen[4] = CORE_COLOR(4); // dot on
-    pen[5] = CORE_COLOR(3); // 70% intensity
-    pen[6] = CORE_COLOR(2); // 30% intensity
-	palette_get_color(1, &r, &g, &b);
-    palette_set_color(16, r*7/10, g*7/10, b*7/10);
-    palette_set_color(17, r*3/10, g*3/10, b*3/10);
-    pen[0] = CORE_COLOR(0); // background
-    pen[1] = CORE_COLOR(1); // dot off
-    pen[2] = CORE_COLOR(16); // 70% off intensity
-    pen[3] = CORE_COLOR(17); // 30% off intensity
-  }
-
+  memset(pixel,0,sizeof(pixel));
   for (kk = 1; bits; kk++, bits >>= 1) {
     if (bits & 0x01)
       for (ll = 0; ll < s->rows; ll++)
         pixel[ll] |= s->segs[ll][kk];
   }
   for (kk = 0; kk < s->rows; kk++) {
-    line = &((BMTYPE **)(bitmap->line))[row+kk][col];
-    p = pixel[kk];
-    np = s->segs[kk][0];
+    static const int pens[4][4] = {{         0,    COL_DMDON, COL_SEGAAON1, COL_SEGAAON2},
+                                   {COL_DMDOFF,    COL_DMDON, COL_SEGAAON1, COL_SEGAAON2},
+                                   {COL_SEGAAOFF1, COL_DMDON, COL_SEGAAON1, COL_SEGAAON2},
+                                   {COL_SEGAAOFF2, COL_DMDON, COL_SEGAAON1, COL_SEGAAON2}};
+    BMTYPE *line = &((BMTYPE **)(bitmap->line))[row+kk][col + s->cols];
+    // why don't the bitmap use the leftmost bits. i.e. size is limited to 15
+    UINT32 p = pixel[kk]>>(30-2*s->cols), np = s->segs[kk][0]>>(30-2*s->cols);
 
-    for (ll = 0; ll < s->cols; ll++) {
-	  c = (p >> 28) & 0x03;
-	  *line++ = c ? pen[3 + c] : pen[(np >> 28) & 0x03];
-      p <<= 2; np <<= 2;
-    }
-    pixel[kk] = 0;
+    for (ll = 0; ll < s->cols; ll++, p >>= 2, np >>= 2)
+      *(--line) = CORE_COLOR(pens[np & 0x03][p & 0x03]);
   }
   osd_mark_dirty(col,row,col+s->cols,row+s->rows);
 }
@@ -899,7 +895,6 @@ static MACHINE_STOP(core) {
       timer_remove(locals.timers[ii]);
   }
   memset(locals.timers, 0, sizeof(locals.timers));
-  pen[4] = 0;
   coreData = NULL;
 }
 
