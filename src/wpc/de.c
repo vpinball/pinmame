@@ -26,6 +26,20 @@
 		c) -03 generation, used 27010 voice eproms (Simpsons - Checkpoint)
 *************************************************************************************************/
 
+/* Coin Door Buttons Operation
+   ---------------------------
+   Buttons are: Green(Up/Down) & Black(Momentary Switch)
+   
+   a) If Green = Up and Black is pressed, enter Audits Menu.
+		1) If Green = Up and Black is pressed, Cycle to Next Audit Function
+		2) If Green = Down and Black is pressed, Cycle to Previous Audit Function
+
+   b) If Green = Down and Black is pressed, enter Diagnostics.
+		1) Start button to start a test
+		2) Black Button to cycle tests
+		3) Flippers can operate settings within a test (such as the Speaker/Sound Test)
+*/
+
 #include <stdarg.h>
 #include "driver.h"
 #include "cpu/m6800/m6800.h"
@@ -68,15 +82,12 @@ struct {
 static void de_piaMainIrq(int state) {
   delocals.mainIrq = state;
   cpu_set_irq_line(DE_CPUNO, M6808_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
-  /*What is there here for, TOM?*/
-  pia_set_input_ca1(2, state?0:!core_getSwSeq(DE_SWADVANCE));
-  pia_set_input_cb1(2, state?0:!core_getSwSeq(DE_SWUPDN));
 }
 
 static int de_irq(void) {
-  /*What is there here for, TOM?*/
+  //Reset the input latch for the Advance button.. 
+  //(This greatly increases the responsiveness of the button for some reason!)
   pia_set_input_ca1(2, 1);
-  pia_set_input_cb1(2, 1);
 
   if (delocals.mainIrq == 0) /* Don't send IRQ if already active */
     cpu_set_irq_line(DE_CPUNO, M6808_IRQ_LINE, PULSE_LINE);
@@ -181,6 +192,7 @@ static WRITE_HANDLER(latch2200) {
   delocals.solenoids |= data;
 }
 
+/*Solenoids 19-22*/
 static WRITE_HANDLER(pia0cb2_w) { delocals.ssEn = !data;}
 static WRITE_HANDLER(pia1ca2_w) { setSSSol(data, 3); }		// Solenoid #20
 static WRITE_HANDLER(pia1cb2_w) { setSSSol(data, 4); }		// Solenoid #21
@@ -223,8 +235,15 @@ static WRITE_HANDLER(pia2cb2_w) {}
 static WRITE_HANDLER(pia5ca2_w) {}
 static READ_HANDLER (pia5a_r)  {return 0x00;}
 
-static READ_HANDLER (pia2ca1_r) { return cpu_get_reg(M6808_IRQ_STATE) ? 0:!core_getSwSeq(DE_SWADVANCE) ; }
-static READ_HANDLER (pia2cb1_r) { return cpu_get_reg(M6808_IRQ_STATE) ? 0:!core_getSwSeq(DE_SWUPDN)    ; }
+//Set state of up/down switch(inverted), and return state of advance switch(inverted)
+static READ_HANDLER (pia2ca1_r) { 
+	pia_set_input_cb1(2, !core_getSwSeq(DE_SWUPDN)); 
+	return !core_getSwSeq(DE_SWADVANCE);
+}
+//Not sure why this must always return 0, but otherwise, coin doors act very strange!
+static READ_HANDLER (pia2cb1_r) {return 0;}
+
+
 
 struct pia6821_interface de_pia_intf[] = {
 {/* PIA 0 (2100) Chip 5F*/
@@ -302,25 +321,17 @@ static void de_updSw(int *inports) {
     coreGlobals.swMatrix[0] = (inports[DE_COMINPORT] & 0x7f00)>>8;
     coreGlobals.swMatrix[1] = inports[DE_COMINPORT];
   }
-  /*-- Diagnostic buttons on CPU board --*/
-  if (core_getSwSeq(DE_SWCPUDIAG))   cpu_set_nmi_line(DE_CPUNO, PULSE_LINE);
-  if(UsingSound)
-	  if (core_getSwSeq(DE_SWSOUNDDIAG)) cpu_set_nmi_line(DE_SCPU1, PULSE_LINE);
-
-  /*-- coin door switches --*/
-  pia_set_input_ca1(2, !core_getSwSeq(DE_SWADVANCE));
-  pia_set_input_cb1(2, !core_getSwSeq(DE_SWUPDN));
-
+  /* Show Status of Black Advance Switch */
   if(core_getSwSeq(DE_SWADVANCE))
-          core_textOutf(40, 20, BLACK, "%-7s","A-Up");
+          core_textOutf(40, 20, BLACK, "%-7s","B-Down");
   else
-          core_textOutf(40, 20, BLACK, "%-7s","A-Down");
+          core_textOutf(40, 20, BLACK, "%-7s","B-Up");
 
-  /* Show Status of Auto/Manual Switch */
+  /* Show Status of Green Up/Down Switch */
   if(core_getSwSeq(DE_SWUPDN))
-          core_textOutf(40, 30, BLACK, "%-7s","Up");
+          core_textOutf(40, 30, BLACK, "%-7s","G-Down");
   else
-          core_textOutf(40, 30, BLACK, "%-7s","Down");
+          core_textOutf(40, 30, BLACK, "%-7s","G-Up");
 }
 
 
