@@ -133,7 +133,8 @@
 #define HNK_ROMEND ROM_END
 
 /*-- These are only here so the game structure can be in the game file --*/
-extern struct MachineDriver machine_driver_HNK;
-#define mHNK     HNK
+extern MACHINE_DRIVER_EXTERN(hnk);
+#define mHNK     hnk
+
 #endif /* INC_HNK */
 

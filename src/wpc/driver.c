@@ -105,6 +105,8 @@ DRIVERNV(bbeltzac)      //??/86 Blackbelt
                                         //??/87 Star's Phoenix
                                         //??/86 New Star's Phoenix
 
+#endif
+
 
 // ---------------------
 // HANKIN GAMES BELOW
@@ -114,7 +116,7 @@ DRIVERNV(orbit1)      //Orbit 1
 DRIVERNV(howzat)      //Howzat
 DRIVERNV(shark)       //Shark
 DRIVERNV(empsback)    //Star Wars - The Empire Strike Back
-#endif
+
 // ---------------------
 // TAITO GAMES BELOW
 // ---------------------
@@ -216,7 +218,7 @@ DRIVERNV(black100)    //6803-0H07: 03/88 Blackwater 100
 //Williams Merger begins here..
 DRIVERNV(truckstp)    //6803-2001: 12/88 Truck Stop
 DRIVERNV(atlantis)    //6803-2006: 03/89 Atlantis
-                                                //??         05/89 Ice Castle
+#endif                                                //??         05/89 Ice Castle
 
 // ---------------------
 // GOTTLIEB GAMES BELOW
@@ -293,6 +295,8 @@ DRIVERNV(excalibr)    //S80b-715: 11/88 Excalibur
 DRIVERNV(bighouse)    //S80b-713: 04/89 Big House
                       //S80b-718: 04/89 Hot Shots
 DRIVERNV(bonebstr)    //S80b-719: 08/89 Bone Busters Inc
+
+#if 0
 //System 3 Alphanumeric
 DRIVERNV(lca)         //S3-720:   11/89 Lights, Camera, Action 1989
 DRIVERNV(silvslug)    //S3-722:   02/90 Silver Slugger 1990
@@ -330,6 +334,7 @@ DRIVERNV(andretti)    //S3-747:   12/95 Mario Andretti
 DRIVERNV(barbwire)    //S3-748:   04/96 Barb Wire
 //Never produced      //S3-???:         Brooks & Dunn
 #endif
+
 // ---------------------
 // STERN GAMES BELOW
 // ---------------------

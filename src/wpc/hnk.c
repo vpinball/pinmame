@@ -266,9 +266,8 @@ static void hnk_zeroCross(int data) {
   /*- toggle zero/detection circuit-*/
   pia_set_input_cb1(0, 0); pia_set_input_cb1(0, 1);
 }
-static void hnk_init(void) {
-  if (locals.initDone) CORE_DOEXIT(hnk_exit);
 
+static MACHINE_INIT(hnk) {
   if (core_init(&hnkData)) return;
   memset(&locals, 0, sizeof(locals));
 
@@ -280,28 +279,32 @@ static void hnk_init(void) {
 
   pia_reset();
   locals.vblankCount = 1;
-  locals.zctimer = timer_pulse(TIME_IN_HZ(HNK_ZCFREQ),0,hnk_zeroCross);
+  timer_pulse(TIME_IN_HZ(HNK_ZCFREQ),0,hnk_zeroCross);
 
   locals.initDone = TRUE;
 }
 
-static void hnk_exit(void) {
-#ifdef PINMAME_EXIT
-  if (locals.zctimer) { 
-	  timer_remove(locals.zctimer); 
-	  locals.zctimer = NULL; 
-  }
-#endif
+static MACHINE_STOP(hnk) {
   sndbrd_0_exit();
 
   core_exit();
 }
+
+/*-----------------------------------------------
+/ Load/Save static ram
+/-------------------------------------------------*/
+
 static UINT8 *hnk_CMOS;
 //4 top bits
 static WRITE_HANDLER(hnk_CMOS_w) {
   data |= 0x0f;
   hnk_CMOS[offset] = data;
 }
+
+static NVRAM_HANDLER(hnk) {
+  core_nvram(file, read_or_write, hnk_CMOS, 0x100,0xff);
+}
+
 /*-----------------------------------
 /  Memory map for CPU board
 /------------------------------------*/
@@ -322,6 +325,20 @@ static MEMORY_WRITE_START(hnk_writemem)
 { 0x1000, 0x1fff, MWA_ROM },
 MEMORY_END
 
+MACHINE_DRIVER_START(hnk)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CPU_ADD(M6800, 3580000/4)
+  MDRV_CPU_MEMORY(hnk_readmem, hnk_writemem)
+  MDRV_CPU_VBLANK_INT(hnk_vblank, 1)
+  MDRV_CPU_PERIODIC_INT(hnk_irq, HNK_IRQFREQ)
+  MDRV_MACHINE_INIT(hnk) MDRV_MACHINE_STOP(hnk)
+  MDRV_NVRAM_HANDLER(hnk)
+  MDRV_VIDEO_UPDATE(core_led)
+  MDRV_IMPORT_FROM(hnks)
+MACHINE_DRIVER_END
+
+
+#if 0
 struct MachineDriver machine_driver_HNK = {
   {
     {
@@ -340,10 +357,5 @@ struct MachineDriver machine_driver_HNK = {
   0,0,0,0, {HNK_SOUND},
   hnk_nvram
 };
+#endif
 
-/*-----------------------------------------------
-/ Load/Save static ram
-/-------------------------------------------------*/
-static void hnk_nvram(void *file, int write) {
-  core_nvram(file, write, hnk_CMOS, 0x100,0xff);
-}

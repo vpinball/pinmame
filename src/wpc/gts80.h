@@ -227,18 +227,18 @@
        ROM_LOAD(n2, 0x2000, 0x2000, chk2)
 
 /*-- TheGTS80 are only here so the game structure can be in the game file --*/
-extern struct MachineDriver machine_driver_GTS80S;
-extern struct MachineDriver machine_driver_GTS80SS;
-extern struct MachineDriver machine_driver_GTS80B;
-extern struct MachineDriver machine_driver_GTS80BS1;
-extern struct MachineDriver machine_driver_GTS80BS2;
-extern struct MachineDriver machine_driver_GTS80BS3;
+extern MACHINE_DRIVER_EXTERN(gts80s);
+extern MACHINE_DRIVER_EXTERN(gts80ss);
+extern MACHINE_DRIVER_EXTERN(gts80b);
+extern MACHINE_DRIVER_EXTERN(gts80bs1);
+extern MACHINE_DRIVER_EXTERN(gts80bs2);
+extern MACHINE_DRIVER_EXTERN(gts80bs3);
 
-#define gl_mGTS80S		GTS80S
-#define gl_mGTS80SS		GTS80SS
-#define gl_mGTS80B		GTS80B
-#define gl_mGTS80BS1	GTS80BS1
-#define gl_mGTS80BS2	GTS80BS2
-#define gl_mGTS80BS3	GTS80BS3
+#define gl_mGTS80S		gts80s
+#define gl_mGTS80SS		gts80ss
+#define gl_mGTS80B		gts80b
+#define gl_mGTS80BS1	gts80bs1
+#define gl_mGTS80BS2	gts80bs2
+#define gl_mGTS80BS3	gts80bs3
 
 #endif /* INC_GTS80 */

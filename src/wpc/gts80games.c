@@ -678,17 +678,6 @@ GTS80_ROMEND
 CORE_GAMEDEFNV(bountyh, "Bounty Hunter",1985,"Gottlieb",gl_mGTS80B,0)
 
 /*-------------------------------------------------------------------
-/ Tag-Team Wrestling (#698)
-/-------------------------------------------------------------------*/
-INITGAME(tagteam, GEN_GTS80B2K, gottlieb_dispAlpha, 1, SNDBRD_GTS80SP)
-GTS80B_2K_ROMSTART(tagteam, "prom2.cpu", 0xfd1615ce,
-                            "prom1.cpu", 0x65931038)
-GTS80S2K_ROMSTART("698-s.snd", 0x9c8191b7)
-GTS80_ROMEND
-#define input_ports_tagteam input_ports_gts80
-CORE_GAMEDEFNV(tagteam, "Tag-Team Wrestling",1985,"Gottlieb",gl_mGTS80B,0)
-
-/*-------------------------------------------------------------------
 / Rock (#697)
 /-------------------------------------------------------------------*/
 //(I assume these are using Gen.1 hardware, but there's 1 less rom, so who knows)
@@ -876,7 +865,7 @@ CORE_GAMEDEFNV(excalibr, "Excalibur",1988,"Gottlieb",gl_mGTS80BS3,0)
 INITGAME(badgirls, GEN_GTS80B4K, gottlieb_dispAlpha, 1, SNDBRD_GTS80B)
 GTS80B_4K_ROMSTART(badgirls, "prom2.cpu", 0x583933ec,
                              "prom1.cpu", 0x956aeae0)
-GTS80BSSOUND3232("yrom2.snd", 0x452dec20, //Should be labeled DROM!
+GTS80BSSOUND3232("drom1.snd", 0x452dec20, //Should be labeled DROM!
 				 "yrom1.snd", 0xab3b8e2d)
 GTS80_ROMEND
 #define input_ports_badgirls input_ports_gts80
