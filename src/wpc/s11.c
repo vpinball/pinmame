@@ -12,8 +12,6 @@
 #include "s11.h"
 
 // TODO:
-// nvram save for DE games
-// de buttons
 // DE display layouts
 #define S11_PIA0 0
 #define S11_PIA1 1
@@ -28,6 +26,7 @@
 
 static void s11_exit(void);
 static void s11_nvram(void *file, int write);
+static void de_nvram(void *file, int write);
 
 const core_tLCDLayout s11_dispS9[] = {
   DISP_SEG_7(0,0,CORE_SEG87),DISP_SEG_7(0,1,CORE_SEG87),
@@ -528,7 +527,7 @@ const struct MachineDriver machine_driver_deas1_s = {
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
   NULL, NULL, gen_refresh,
   0,0,0,0, { DE1S_SOUND },
-  s11_nvram
+  de_nvram
 };
 const struct MachineDriver machine_driver_dedmd16s1_s = {
   {{  CPU_M6808, 1000000, /* 1 Mhz */
@@ -542,7 +541,7 @@ const struct MachineDriver machine_driver_dedmd16s1_s = {
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
   DE_DMD16VIDEO,
   0,0,0,0, { DE1S_SOUND },
-  s11_nvram
+  de_nvram
 };
 const struct MachineDriver machine_driver_dedmd16s2a_s = {
   {{  CPU_M6808, 1000000, /* 1 Mhz */
@@ -556,7 +555,7 @@ const struct MachineDriver machine_driver_dedmd16s2a_s = {
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
   DE_DMD16VIDEO,
   0,0,0,0, { DE2S_SOUNDA },
-  s11_nvram
+  de_nvram
 };
 const struct MachineDriver machine_driver_dedmd32s2a_s = {
   {{  CPU_M6808, 1000000, /* 1 Mhz */
@@ -570,7 +569,7 @@ const struct MachineDriver machine_driver_dedmd32s2a_s = {
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
   DE_DMD32VIDEO,
   0,0,0,0, { DE2S_SOUNDA },
-  s11_nvram
+  de_nvram
 };
 const struct MachineDriver machine_driver_dedmd64s2a_s = {
   {{  CPU_M6808, 1000000, /* 1 Mhz */
@@ -584,7 +583,7 @@ const struct MachineDriver machine_driver_dedmd64s2a_s = {
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
   DE_DMD64VIDEO,
   0,0,0,0, { DE2S_SOUNDA },
-  s11_nvram
+  de_nvram
 };
 /* No Sound machine */
 const struct MachineDriver machine_driver_s11 = {
@@ -599,7 +598,7 @@ const struct MachineDriver machine_driver_s11 = {
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
   NULL, NULL, gen_refresh,
   0,0,0,0, {{0}},
-  s11_nvram
+  de_nvram
 };
 
 /*-----------------------------------------------
@@ -607,4 +606,7 @@ const struct MachineDriver machine_driver_s11 = {
 /-------------------------------------------------*/
 static void s11_nvram(void *file, int write) {
   core_nvram(file, write, memory_region(S11_CPUREGION), 0x0800, 0xff);
+}
+static void de_nvram(void *file, int write) {
+  core_nvram(file, write, memory_region(S11_CPUREGION), 0x2000, 0xff);
 }
