@@ -148,7 +148,7 @@ private:
 			GetControlValues();
 
 			// save them
-			Save_fileio_opts();
+			SaveGlobalSettings();
 
 			// emulation is running?
 			if ( IsEmulationRunning() )
@@ -169,9 +169,9 @@ private:
 	}
 
 	LRESULT OnResetToDefault(WORD, UINT, HWND, BOOL&) {
-		/* Delete Paths settings for the registry and reload them */
-		Delete_fileio_opts();
-		Load_fileio_opts();
+		/* Delete controller (global) settings for the registry and reload them */
+		DeleteGlobalSettings();
+		LoadGlobalSettings();
 
 		SetControlValues();
 		SetChanged(false);
@@ -246,7 +246,7 @@ STDMETHODIMP CControllerSettings::put_RomPath(BSTR newVal)
 	set_option("rompath", pszNewVal, 0);
 	
 	delete pszNewVal;
-	Save_fileio_opts();
+	SaveGlobalSettings();
 
 	return S_OK;
 }
@@ -267,7 +267,7 @@ STDMETHODIMP CControllerSettings::put_NVRamPath(BSTR newVal)
 	WideCharToMultiByte(CP_ACP, 0, newVal, -1, pszNewVal, lstrlenW(newVal)+1, NULL, NULL);
 
 	set_option("nvram_directory", pszNewVal, 0);
-	Save_fileio_opts();
+	SaveGlobalSettings();
 
 	return S_OK;
 }
@@ -288,7 +288,7 @@ STDMETHODIMP CControllerSettings::put_SamplesPath(BSTR newVal)
 	WideCharToMultiByte(CP_ACP, 0, newVal, -1, pszNewVal, lstrlenW(newVal)+1, NULL, NULL);
 
 	set_option("samplepath", pszNewVal, 0);
-	Save_fileio_opts();
+	SaveGlobalSettings();
 
 	return S_OK;
 }
@@ -309,7 +309,7 @@ STDMETHODIMP CControllerSettings::put_CfgPath(BSTR newVal)
 	WideCharToMultiByte(CP_ACP, 0, newVal, -1, pszNewVal, lstrlenW(newVal)+1, NULL, NULL);
 
 	set_option("cfg_directory", pszNewVal, 0);
-	Save_fileio_opts();
+	SaveGlobalSettings();
 
 	return S_OK;
 }
@@ -331,7 +331,7 @@ STDMETHODIMP CControllerSettings::put_SnapshotPath(BSTR newVal)
 	WideCharToMultiByte(CP_ACP, 0, newVal, -1, pszNewVal, lstrlenW(newVal)+1, NULL, NULL);
 
 	set_option("snapshot_directory", pszNewVal, 0);
-	Save_fileio_opts();
+	SaveGlobalSettings();
 
 	return S_OK;
 }

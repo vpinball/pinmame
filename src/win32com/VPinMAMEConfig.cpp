@@ -199,13 +199,6 @@ static struct rc_option opts[] = {
 	{ "record", "rec", rc_string, &recordname, NULL, 0, 0, NULL, "record an input file" },
 	{ "log", NULL, rc_bool, &errorlog, "0", 0, 0, init_errorlog, "generate error.log" },
 
-	/* config options */
-	{ "Configuration options", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },
-	{ "createconfig", "cc", rc_set_int, &createconfig, NULL, 1, 0, NULL, "create the default configuration file" },
-	{ "showconfig",	"sc", rc_set_int, &showconfig, NULL, 1, 0, NULL, "display running parameters in rc style" },
-	{ "showusage", "su", rc_set_int, &showusage, NULL, 1, 0, NULL, "show this help" },
-	{ "readconfig",	"rc", rc_bool, &readconfig, "1", 0, 0, NULL, "enable/disable loading of configfiles" },
-	{ "verbose", "v", rc_bool, &verbose, "0", 0, 0, NULL, "display additional diagnostic information" },
 	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
 };
 
@@ -288,18 +281,59 @@ int set_option(const char *name, const char *arg, int priority)
 
 void *get_option(const char *name)
 {
-	void *Value = *(char**) rc_get_option(rc, name)->dest;
+	return *(char**) rc_get_option(rc, name)->dest;
 
-	return Value;
+//	return Value;
 }
 
-void Load_fileio_opts()
+bool RegLoadOpts(HKEY hKey, rc_option *pOpt, char* szDefault)
 {
-	BOOL fNew = FALSE;
+	bool fNew = false;
+
+	DWORD dwType;
+	DWORD dwSize;
+	char szHelp[4096];
+
+	switch ( pOpt->type ) {
+	case rc_string:
+		dwType = REG_SZ;
+		dwSize = sizeof szHelp;
+		if ( !hKey || (RegQueryValueEx(hKey, pOpt->name, 0, &dwType, (LPBYTE) &szHelp, &dwSize)!=ERROR_SUCCESS) ) {
+			if ( szDefault )
+				lstrcpy(szHelp, szDefault);
+			else
+				lstrcpy(szHelp, pOpt->deflt);
+
+			fNew = true;
+		}
+		break;
+	}
+
+	rc_set_option(rc, pOpt->name, szHelp, 0);
+	return fNew;
+}
+
+bool regSaveOpts(HKEY hKey, rc_option *pOpt)
+{
+	bool fFailed = true;
+	char *szHelp;
+
+	switch ( pOpt->type ) {
+	case rc_string:
+		szHelp = *(char**) opts->dest;
+		fFailed = (RegSetValueEx(hKey, pOpt->name, 0, REG_SZ, (LPBYTE) szHelp, lstrlen(szHelp)+1)!=ERROR_SUCCESS);
+		break;
+	}
+
+	return fFailed;
+}
+
+void LoadGlobalSettings()
+{
+	bool fNew = false;
 
 	rc_option *opts = fileio_opts;
 
-	// initialize all
 	char szInstallDir[MAX_PATH];
 	GetInstallDir(szInstallDir, sizeof szInstallDir);
 	lstrcat(szInstallDir, "\\");
@@ -313,20 +347,12 @@ void Load_fileio_opts()
 	if ( RegOpenKeyEx(HKEY_CURRENT_USER, szKey, 0, KEY_QUERY_VALUE, &hKey)!=ERROR_SUCCESS )
 		hKey = 0;
 
-	char szPath[4096];
-	DWORD dwType;
-	DWORD dwSize;
+	char szDefault[4096];
 	while ( opts->name ) {
 		if ( opts->type==rc_string ) {
-			dwType = REG_SZ;
- 			dwSize = sizeof szPath; 
-
-			if ( !hKey || (RegQueryValueEx(hKey, opts->name, 0, &dwType, (LPBYTE) &szPath, &dwSize)!=ERROR_SUCCESS) ) {
-				lstrcpy(szPath, szInstallDir);
-				lstrcat(szPath, opts->deflt);
-				fNew = TRUE;
-			}
-			rc_set_option(rc, opts->name, szPath, 0);
+			lstrcpy(szDefault, szInstallDir);
+			lstrcat(szDefault, opts->deflt);
+			fNew |= RegLoadOpts(hKey, opts, szDefault);
 		}
 		opts++;
 	}
@@ -335,10 +361,10 @@ void Load_fileio_opts()
 		RegCloseKey(hKey);
 
 	if ( fNew )
-		Save_fileio_opts();
+		SaveGlobalSettings();
 }
 
-void Save_fileio_opts()
+void SaveGlobalSettings()
 {
 	char szKey[MAX_PATH];
 	lstrcpy(szKey, REG_BASEKEY);
@@ -352,16 +378,15 @@ void Save_fileio_opts()
 
 	rc_option *opts = fileio_opts;
 	while ( opts->name ) {
-		if ( opts->type==rc_string ) {
-			char *szPath = *(char**) opts->dest;
-			RegSetValueEx(hKey, opts->name, 0, REG_SZ, (LPBYTE) szPath, lstrlen(szPath)+1);
-		}
+		if ( opts->type==rc_string )
+			regSaveOpts(hKey, opts);
 		opts++;
 	}
+
 	RegCloseKey(hKey);
 }
 
-void Delete_fileio_opts()
+void DeleteGlobalSettings()
 {
 	char szKey[MAX_PATH];
 	lstrcpy(szKey, REG_BASEKEY);
@@ -374,7 +399,6 @@ void Delete_fileio_opts()
 
 	RegCloseKey(hKey);
 }
-
 
 /* Registry function */
 
