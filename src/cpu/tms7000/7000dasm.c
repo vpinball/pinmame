@@ -397,32 +397,32 @@ unsigned Dasm7000 (char *buffer, unsigned pc)
 						break;
 					case UI8:
 						a = (UINT8)cpu_readop( pc++ );
-						buffer += sprintf (buffer, "%s%02x", of[j].opstr[k], (unsigned int)a);
+						buffer += sprintf(buffer, of[j].opstr[k], (unsigned int)a);
 						size += 1;
 						break;
 					case I8:
 						b = (INT8)cpu_readop( pc++ );
-						buffer += sprintf (buffer, "%s%02x", of[j].opstr[k], (INT8)b);
+						buffer += sprintf (buffer, of[j].opstr[k], (INT8)b);
 						size += 1;
 						break;
 					case UI16:
 						c = (UINT16)cpu_readop(pc++);
 						c <<= 8;
 						c += cpu_readop(pc++);
-						buffer += sprintf (buffer, "%s%02x", of[j].opstr[k], (unsigned int)c);
+						buffer += sprintf (buffer, of[j].opstr[k], (unsigned int)c);
 						size += 2;
 						break;
 					case I16:
 						d = (INT16)cpu_readop(pc++);
 						d <<= 8;
 						d += cpu_readop(pc++);
-						buffer += sprintf (buffer, "%s%02x", of[j].opstr[k], (signed int)d);
+						buffer += sprintf (buffer, of[j].opstr[k], (signed int)d);
 						size += 2;
 						break;
 					case PCREL:
 						b = (INT8)cpu_readop( pc++ );
 						sym1 = set_ea_info(EA_DST, pc, b, EA_REL_PC);
-						buffer += sprintf (buffer, "%s%s", of[j].opstr[k], sym1);
+						buffer += sprintf (buffer, of[j].opstr[k], sym1);
 						size += 1;
 						break;
 					case PCABS:
@@ -430,7 +430,7 @@ unsigned Dasm7000 (char *buffer, unsigned pc)
 						c <<= 8;
 						c += cpu_readop(pc++);
 						sym1 = set_ea_info(EA_DST, c, EA_UINT16, EA_ABS_PC);
-						buffer += sprintf (buffer, "%s%s", of[j].opstr[k], sym1);
+						buffer += sprintf (buffer, of[j].opstr[k], sym1);
 						size += 2;
 						break;
 					case TRAP:
