@@ -630,6 +630,22 @@ DRIVER(tfdmd,l3)        //WPC:              Test fixture DMD
 DRIVER(tfs,12)          //WPC-648:          Test fixture Security
 DRIVER(tfa,13)          //WPC:              Test fixture Alphanumeric
 DRIVER(tf95,12)         //WPC-648:          Test fixture WPC95
-DRIVERNV(pinmagic)
-#endif /* DRIVER_RECURSIVE */
 
+// ------------------
+// CAPCOM GAMES BELOW
+// ------------------
+DRIVERNV(ghv101)        // ??/95    Goofy Hoops (Romstar license)
+
+DRIVERNV(pmv112)        // 10/95    Pinball Magic
+DRIVERNV(pmv112r)       // 10/95    Pinball Magic (Redemption)
+DRIVERNV(abv106)        // 03/96    Airborne
+DRIVERNV(abv106r)       // 03/96    Airborne (Redemption)
+DRIVERNV(bsv100r)       // 05/96    Breakshot (Redemption, 1.0)
+DRIVERNV(bsv102r)       // 05/96    Breakshot (Redemption, 1.2)
+DRIVERNV(bsv103)        // 05/96    Breakshot (1.3)
+DRIVERNV(bsb105)        // 05/96    Breakshot (Beta, 1.5)
+DRIVERNV(ffv104)        // 10/96    Flipper Football
+DRIVERNV(bbb109)        // 11/96    Big Bang Bar (Beta, 1.9)
+DRIVERNV(kpv106)        // 12/96    Kingpin
+
+#endif /* DRIVER_RECURSIVE */
