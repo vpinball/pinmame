@@ -54,8 +54,10 @@ static int showusage;
 static int readconfig;
 static int createconfig;
 extern int verbose;
-
-static struct rc_struct *rc;
+#ifndef VPINMAME // VPM need to access the options
+static
+#endif /* VPINMAME */
+struct rc_struct *rc;
 
 /* fix me - need to have the core call osd_set_gamma with this value */
 /* instead of relying on the name of an osd variable */
@@ -149,6 +151,23 @@ static int init_errorlog(struct rc_option *option, const char *arg, int priority
 
 
 /* struct definitions */
+#ifdef PINMAME
+struct rc_option core_opts[];
+struct rc_option pinmame_opts[] = {
+	/* PinMAME options */
+	{ "PinMAME options", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },
+	{ "dmd_red",    NULL, rc_int, &pmoptions.dmd_red,   "225", 0, 255, NULL, "DMD color: Red" },
+	{ "dmd_green",  NULL, rc_int, &pmoptions.dmd_green, "224", 0, 255, NULL, "DMD color: Green" },
+	{ "dmd_blue",   NULL, rc_int, &pmoptions.dmd_blue,   "32", 0, 255, NULL, "DMD color: Blue" },
+	{ "dmd_perc0",	NULL, rc_int, &pmoptions.dmd_perc0,  "20", 0, 100, NULL, "DMD off intensity [%]" },
+	{ "dmd_perc33",	NULL, rc_int, &pmoptions.dmd_perc33,  "33", 0, 100, NULL, "DMD low intensity [%]" },
+	{ "dmd_perc66", NULL, rc_int, &pmoptions.dmd_perc66,  "67", 0, 100, NULL, "DMD medium intensity [%]" },
+	{ "dmd_only",	NULL, rc_bool,&pmoptions.dmd_only,    "0",  0, 0,   NULL, "Show only DMD" },
+	{ "dmd_compact",NULL, rc_bool,&pmoptions.dmd_compact, "0",  0, 0,   NULL, "Show comact display" },
+	{ "dmd_antialias", NULL, rc_int, &pmoptions.dmd_antialias,  "50", 0, 100, NULL, "DMD antialias intensity [%]" },
+	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
+};
+#endif /* PINMAME */
 static struct rc_option opts[] = {
 	/* name, shortname, type, dest, deflt, min, max, func, help */
 	{ NULL, NULL, rc_link, frontend_opts, NULL, 0, 0, NULL, NULL },
@@ -156,6 +175,13 @@ static struct rc_option opts[] = {
 	{ NULL, NULL, rc_link, video_opts, NULL, 0,	0, NULL, NULL },
 	{ NULL, NULL, rc_link, sound_opts, NULL, 0,	0, NULL, NULL },
 	{ NULL, NULL, rc_link, input_opts, NULL, 0,	0, NULL, NULL },
+#ifdef PINMAME
+	{ NULL, NULL, rc_link, pinmame_opts, NULL, 0,	0, NULL, NULL },
+	{ NULL, NULL, rc_link, core_opts, NULL, 0,	0, NULL, NULL },
+	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
+};
+struct rc_option core_opts[] = {
+#endif /* PINMAME */
 
 	/* options supported by the mame core */
 	/* video */
@@ -170,19 +196,6 @@ static struct rc_option opts[] = {
 	/* make it options.gamma_correction? */
 	{ "gamma", NULL, rc_float, &gamma_correct , "1.0", 0.5, 2.0, NULL, "gamma correction"},
 
-#ifdef PINMAME_EXT
-	/* PinMAME options */
-	{ "PinMAME options", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },
-	{ "dmd_red",    NULL, rc_int, &pmoptions.dmd_red,   "225", 0, 255, NULL, "DMD color: Red" },
-	{ "dmd_green",  NULL, rc_int, &pmoptions.dmd_green, "224", 0, 255, NULL, "DMD color: Green" },
-	{ "dmd_blue",   NULL, rc_int, &pmoptions.dmd_blue,   "32", 0, 255, NULL, "DMD color: Blue" },
-	{ "dmd_perc0",	NULL, rc_int, &pmoptions.dmd_perc0,  "20", 0, 100, NULL, "DMD off intensity [%]" },
-	{ "dmd_perc33",	NULL, rc_int, &pmoptions.dmd_perc33,  "33", 0, 100, NULL, "DMD low intensity [%]" },
-	{ "dmd_perc66", NULL, rc_int, &pmoptions.dmd_perc66,  "67", 0, 100, NULL, "DMD medium intensity [%]" },
-	{ "dmd_only",	NULL, rc_bool,&pmoptions.dmd_only,    "0",  0, 0,   NULL, "Show only DMD" },
-	{ "dmd_compact",NULL, rc_bool,&pmoptions.dmd_compact, "0",  0, 0,   NULL, "Show comact display" },
-	{ "dmd_antialias", NULL, rc_int, &pmoptions.dmd_antialias,  "50", 0, 100, NULL, "DMD antialias intensity [%]" },
-#endif /* PINMAME_EXT */
 	/* vector */
 	{ "Mame CORE vector game options", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },
 	{ "antialias", "aa", rc_bool, &options.antialias, "1", 0, 0, NULL, "draw antialiased vectors" },
@@ -636,7 +649,9 @@ static int config_handle_arg(char *arg)
 /*
  * logerror
  */
-
+#ifdef VPINMAME // VPM defines its own log function
+FILE *config_get_logfile(void) { return errorlog ? logfile : NULL; }
+#else
 void CLIB_DECL logerror(const char *text,...)
 {
 	va_list arg;
@@ -647,5 +662,5 @@ void CLIB_DECL logerror(const char *text,...)
 		vfprintf(logfile, text, arg);
 	va_end(arg);
 }
-
+#endif /* VPINMAME */
 

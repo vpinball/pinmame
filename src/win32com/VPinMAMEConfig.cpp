@@ -6,31 +6,26 @@
 #include "VPinMAMEConfig.h"
 #include "ControllerRegKeys.h"
 
-extern "C" {
-#include "driver.h"
-#include "rc.h"
-#include "misc.h"
-
 #ifdef _MSC_VER
-#define strcasecmp stricmp
+  #define strcasecmp stricmp
 #endif
 
-extern struct rc_option fileio_opts[];
-extern struct rc_option input_opts[];
-extern struct rc_option sound_opts[];
-extern struct rc_option video_opts[];
+extern "C" {
+  #include "driver.h"
+  #include "rc.h"
+  #include "misc.h"
 
-int verbose	= 0;
-
-/* fix me - need to have the core call osd_set_gamma with this value */
-/* instead of relying on the name of an osd variable */
-extern float gamma_correct;
-
-/* fix me - need to have the core call osd_set_mastervolume with this value */
-/* instead of relying on the name of an osd variable */
-extern int attenuation;
-
-char *rompath_extra;
+  extern struct rc_option fileio_opts[];
+  extern struct rc_option input_opts[];
+  extern struct rc_option sound_opts[];
+  extern struct rc_option video_opts[];
+  extern struct rc_option pinmame_opts[];
+  extern struct rc_option core_opts[];
+  extern struct rc_struct *rc;
+  extern FILE *config_get_logfile(void); 
+  // Global options
+  int verbose	= 0;
+  char *rompath_extra;
 }
 
 int fAllowWriteAccess = 1;
@@ -45,140 +40,10 @@ int dmd_height = 0;
 
 int threadpriority = 1;
 
-static int config_handle_arg(char *arg);
-
 static FILE *logfile;
-static int errorlog;
-static int errorlogfile;
-static int showconfig;
-static int showusage;
-static int readconfig;
-static int createconfig;
 
-static struct rc_struct *rc;
-
-static char *debugres;
-static char *playbackname;
-static char *recordname;
-static char *gamename;
-
-static float f_beam;
-static float f_flicker;
-
-static int video_set_beam(struct rc_option *option, const char *arg, int priority)
-{
-	options.beam = (int)(f_beam * 0x00010000);
-	if (options.beam < 0x00010000)
-		options.beam = 0x00010000;
-	if (options.beam > 0x00100000)
-		options.beam = 0x00100000;
-	option->priority = priority;
-	return 0;
-}
-
-static int video_set_flicker(struct rc_option *option, const char *arg, int priority)
-{
-	options.vector_flicker = (int)(f_flicker * 2.55);
-	if (options.vector_flicker < 0)
-		options.vector_flicker = 0;
-	if (options.vector_flicker > 255)
-		options.vector_flicker = 255;
-	option->priority = priority;
-	return 0;
-}
-
-static int video_set_debugres(struct rc_option *option, const char *arg, int priority)
-{
-	if (!strcmp(arg, "auto"))
-	{
-		options.debug_width = options.debug_height = 0;
-	}
-	else if(sscanf(arg, "%dx%d", &options.debug_width, &options.debug_height) != 2)
-	{
-		options.debug_width = options.debug_height = 0;
-		fprintf(stderr, "error: invalid value for debugres: %s\n", arg);
-		return -1;
-	}
-	option->priority = priority;
-	return 0;
-}
-
-static int video_verify_bpp(struct rc_option *option, const char *arg, int priority)
-{
-	if ((options.color_depth != 0) &&
-		(options.color_depth != 8) &&
-		(options.color_depth != 15) &&
-		(options.color_depth != 16) &&
-		(options.color_depth != 32))
-	{
-		options.color_depth = 0;
-		fprintf(stderr, "error: invalid value for bpp: %s\n", arg);
-		return -1;
-	}
-	option->priority = priority;
-	return 0;
-}
-
-static int init_errorlog(struct rc_option *option, const char *arg, int priority)
-{
-	/* provide errorlog from here on */
-
-	if ( errorlog && errorlogfile )
-	{
-		if ( !logfile ) {
-			logfile = fopen("error.log","wa");
-			if (!logfile)
-				perror("unable to open log file\n");
-		}
-	}
-	else {
-		if ( logfile ) {
-			fclose(logfile);
-			logfile = 0;
-		}
-	}
-
-	option->priority = priority;
-	return 0;
-}
-
-static int enable_sound = 1;
-static int sound_enable_sound(struct rc_option *option, const char *arg, int priority)
-{
-	if ( !enable_sound )
-		options.samplerate = 0;
-
-	return 0;
-}
-
-static struct rc_option core_opts[] = {
-	// options supported by the mame core 
-	// video 
-	{ "Mame CORE video options", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },
-	{ "bpp", NULL, rc_int, &options.color_depth, "0",	0, 0, video_verify_bpp, "specify the colordepth the core should render in bits per pixel (bpp), one of: auto(0), 8, 16, 32" },
-	{ "norotate", NULL, rc_bool , &options.norotate, "0", 0, 0, NULL, "do not apply rotation" },
-	{ "ror", NULL, rc_bool, &options.ror, "0", 0, 0, NULL, "rotate screen clockwise" },
-	{ "rol", NULL, rc_bool, &options.rol, "0", 0, 0, NULL, "rotate screen anti-clockwise" },
-	{ "flipx", NULL, rc_bool, &options.flipx, "0", 0, 0, NULL, "flip screen upside-down" },
-	{ "flipy", NULL, rc_bool, &options.flipy, "0", 0, 0, NULL, "flip screen left-right" },
-	{ "debug_resolution", "dr", rc_string, &debugres, "640x480x16", 0, 0, video_set_debugres, "set resolution for debugger window" },
-	// make it options.gamma_correction? 
-	{ "gamma", NULL, rc_float, &gamma_correct , "1.0", 0.5, 2.0, NULL, "gamma correction"},
-	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
-};
-
-static struct rc_option pinmame_opts[] = {
-	// PinMAME options 
-	{ "PinMAME options", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },
-	{ "dmd_red",    NULL, rc_int, &pmoptions.dmd_red,   "225", 0, 255, NULL, "DMD color: Red" },
-	{ "dmd_green",  NULL, rc_int, &pmoptions.dmd_green, "224", 0, 255, NULL, "DMD color: Green" },
-	{ "dmd_blue",   NULL, rc_int, &pmoptions.dmd_blue,   "32", 0, 255, NULL, "DMD color: Blue" },
-	{ "dmd_perc0",	NULL, rc_int, &pmoptions.dmd_perc0,  "20", 0, 100, NULL, "DMD off intensity [%]" },
-	{ "dmd_perc33",	NULL, rc_int, &pmoptions.dmd_perc33,  "33", 0, 100, NULL, "DMD low intensity [%]" },
-	{ "dmd_perc66", NULL, rc_int, &pmoptions.dmd_perc66,  "67", 0, 100, NULL, "DMD medium intensity [%]" },
-	{ "dmd_only",	NULL, rc_bool,&pmoptions.dmd_only,    "0",  0, 0,   NULL, "Show only DMD" },
-	{ "dmd_compact",NULL, rc_bool,&pmoptions.dmd_compact, "0",  0, 0,   NULL, "Show comact display" },
-	{ "dmd_antialias", NULL, rc_int, &pmoptions.dmd_antialias,  "50", 0, 100, NULL, "DMD antialias intensity [%]" },
+static struct rc_option vpinmame_opts[] = {
+	// VPinMAME options 
 	{ "dmd_border", NULL, rc_bool, &dmd_border, "1", 0, 0, NULL, "DMD display border" },
 	{ "dmd_title",  NULL, rc_bool, &dmd_title,  "1", 0, 0, NULL, "DMD display title" },
 	{ "dmd_pos_x",  NULL, rc_int,  &dmd_pos_x,  "0", 0, 10000, NULL, "DMD display position x" },
@@ -186,43 +51,6 @@ static struct rc_option pinmame_opts[] = {
 	{ "dmd_width",  NULL, rc_int,  &dmd_width,  "0", 0, 10000, NULL, "DMD display width" },
 	{ "dmd_height", NULL, rc_int,  &dmd_height, "0", 0, 10000, NULL, "DMD display height" },
 	{ "dmd_doublesize",  NULL, rc_bool,  &dmd_doublesize,  "0", 0, 0, NULL, "DMD display doublesize" },
-	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
-};
-
-static struct rc_option vector_opts[] = {
-	{ "Mame CORE vector game options", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },
-	{ "antialias", "aa", rc_bool, &options.antialias, "1", 0, 0, NULL, "draw antialiased vectors" },
-	{ "translucency", "tl", rc_bool, &options.translucency, "1", 0, 0, NULL, "draw translucent vectors" },
-	{ "beam", NULL, rc_float, &f_beam, "1.0", 1.0, 16.0, video_set_beam, "set beam width in vector games" },
-	{ "flicker", NULL, rc_float, &f_flicker, "0.0", 0.0, 100.0, video_set_flicker, "set flickering in vector games" },
-	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
-};
-
-static struct rc_option sound_opts[] = {
-	{ "Mame CORE sound options", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },
-	{ "samplerate", "sr", rc_int, &options.samplerate, "44100", 5000, 50000, NULL, "set samplerate" },
-	{ "samples", NULL, rc_bool, &options.use_samples, "1", 0, 0, NULL, "use samples" },
-	{ "resamplefilter", NULL, rc_bool, &options.use_filter, "1", 0, 0, NULL, "resample if samplerate does not match" },
-	{ "sound", NULL, rc_bool, &enable_sound, "1", 0, 0, sound_enable_sound, "enable/disable sound and sound CPUs" },
-	{ "volume", "vol", rc_int, &attenuation, "0", -32, 0, NULL, "volume (range [-32,0])" },
-	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
-};
-
-static struct rc_option misc_opts[] = {
-	// misc 
-	{ "Mame CORE misc options", NULL, rc_seperator, NULL, NULL, 0, 0, NULL, NULL },
-	{ "artwork", "art", rc_bool, &options.use_artwork, "1", 0, 0, NULL, "use additional game artwork" },
-	{ "cheat", "c", rc_bool, &options.cheat, "0", 0, 0, NULL, "enable/disable cheat subsystem" },
-	{ "debug", "d", rc_bool, &options.mame_debug, "0", 0, 0, NULL, "enable/disable debugger (only if available)" },
-	{ "playback", "pb", rc_string, &playbackname, NULL, 0, 0, NULL, "playback an input file" },
-	{ "record", "rec", rc_string, &recordname, NULL, 0, 0, NULL, "record an input file" },
-#ifdef DEBUG
-	{ "log", NULL, rc_bool, &errorlog, "1", 0, 0, init_errorlog, "turn on error loging to console or file" },
-#else
-	{ "log", NULL, rc_bool, &errorlog, "0", 0, 0, init_errorlog, "turn on error loging to console or file" },
-#endif
-	{ "errorlogfile", NULL, rc_bool, &errorlogfile, "1", 0, 0, init_errorlog, "generate error.log" },
-	{ "threadpriority", NULL, rc_int, &threadpriority, "1", 0, 3, init_errorlog, "sets the thread priority for the worker thread" },
 	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
 };
 
@@ -236,10 +64,7 @@ static struct rc_option opts[] = {
 
 	{ NULL, NULL, rc_link, core_opts, NULL, 0,	0, NULL, NULL },
 	{ NULL, NULL, rc_link, pinmame_opts, NULL, 0,	0, NULL, NULL },
-	{ NULL, NULL, rc_link, vector_opts, NULL, 0,	0, NULL, NULL },
-	{ NULL, NULL, rc_link, sound_opts, NULL, 0,	0, NULL, NULL },
-	{ NULL, NULL, rc_link, misc_opts, NULL, 0,	0, NULL, NULL },
-
+	{ NULL, NULL, rc_link, vpinmame_opts, NULL, 0,	0, NULL, NULL },
 	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
 };
 
@@ -301,6 +126,7 @@ static char* IgnoredSettings[] = {
 	"maximize",
 	"throttle",
 	"sleep",
+        "debug","log",
 	NULL
 };
 
@@ -317,74 +143,51 @@ static char* RunningGameSettings[] = {
 	NULL
 };
 
-void cli_frontend_init()
-{
-	/* clear all core options */
-	memset(&options,0,sizeof(options));
-
-	/* directly define these */
-	options.use_emulated_ym3812 = 1;
-
-	/* create the rc object */
-	if (!(rc = rc_create()))
-	{
-		fprintf (stderr, "error on rc creation\n");
-		exit(1);
-	}
-
-	if (rc_register(rc, opts))
-	{
-		fprintf (stderr, "error on registering opts\n");
-		exit(1);
-	}
-
-	/* need a decent default for debug width/height */
-	if (options.debug_width == 0)
-		options.debug_width = 640;
-	if (options.debug_height == 0)
-		options.debug_height = 480;
-
-	options.gui_host = 1;
-
-	logfile = 0;
+void vpm_frontend_init(void) {
+  /* clear all core options */
+  memset(&options,0,sizeof(options));
+#if MAMEVER < 6100
+  /* directly define these */
+  options.use_emulated_ym3812 = 1;
+#endif /* MAMEVER */
+  /* create the rc object */
+  if (!(rc = rc_create()))
+    { fprintf (stderr, "error on rc creation\n"); exit(1); }
+  if (rc_register(rc, opts))
+    { fprintf (stderr, "error on registering opts\n"); exit(1); }
+  /* need a decent default for debug width/height */
+  if (options.debug_width == 0)  options.debug_width = 640;
+  if (options.debug_height == 0) options.debug_height = 480;
+  options.debug_depth = 8; // Debugger only works with 8 bits?
+  options.gui_host = 1;
+#ifdef MAME_DEBUG
+  options.mame_debug = 1;
+#endif /* MAME_DEBUG */
+#ifdef DEBUG
+  set_option("log","1",0);
+#endif /* DEBUG */
+  logfile = config_get_logfile();
 }
 
-void cli_frontend_exit(void)
-{
-	/* close open files */
-
-	if (options.playback) osd_fclose(options.playback);
-	options.playback = NULL;
-
-	if (options.record)   osd_fclose(options.record);
-	options.record = NULL;
-
-	if (options.language_file) osd_fclose(options.language_file);
-	options.language_file = NULL;
-
-	if ( logfile ) fclose(logfile);
-	logfile = 0;
+void vpm_frontend_exit(void) {
+  /* close open files */
+  if (options.language_file) /* this seems to never be opened in Win32 version */
+    { osd_fclose(options.language_file); options.language_file = NULL; }
+  if (logfile)
+    { fclose(logfile); logfile = NULL; }
 }
 
-
-/*
- * logerror
- */
-
-void CLIB_DECL logerror(const char *text,...)
-{
-	va_list arg;
-
-	/* standard vfprintf stuff here */
-	va_start(arg, text);
-	if ( errorlog ) {
-        char szBuffer[512];
-        _vsnprintf(szBuffer, sizeof(szBuffer) / sizeof(szBuffer[0]), text, arg);
-        OutputDebugString(szBuffer);
-		if ( logfile )
-			fprintf(logfile, szBuffer);
-	}
-	va_end(arg);
+void CLIB_DECL logerror(const char *text,...) {
+  va_list arg;
+  /* standard vfprintf stuff here */
+  va_start(arg, text);
+  if (logfile) {
+    char szBuffer[512];
+    _vsnprintf(szBuffer, sizeof(szBuffer) / sizeof(szBuffer[0]), text, arg);
+    OutputDebugString(szBuffer);
+    fprintf(logfile, szBuffer);
+  }
+  va_end(arg);
 }
 
 int set_option(const char *name, const char *arg, int priority)

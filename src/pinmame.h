@@ -10,6 +10,9 @@
 #define TINY_COMPILE
 #define NEOFREE
 
+#if MAMEVER >= 6100
+#define osd_mark_dirty(a,b,c,d)
+#endif /* MAMEVER */
 #if MAMEVER > 3716
 #define BMTYPE UINT16
 #define M65C02_INT_IRQ M65C02_IRQ_LINE
