@@ -116,6 +116,10 @@ static int my_YM2151_sh_start(const struct MachineSound *msound,int mode)
 #endif
 #if (HAS_YM2151_ALT)
 	case CHIP_YM2151_ALT:	/* Jarek's */
+
+		if (options.use_filter)
+			rate = intf->baseclock/64;
+
 		/* stream system initialize */
 		for (i = 0;i < intf->num;i++)
 		{
@@ -131,7 +135,8 @@ static int my_YM2151_sh_start(const struct MachineSound *msound,int mode)
 			stream[i] = stream_init_multi(YM2151_NUMBUF,
 				name,vol,rate,i,YM2151UpdateOne);
 		}
-		if (YM2151Init(intf->num,intf->baseclock,Machine->sample_rate) == 0)
+
+		if (YM2151Init(intf->num,intf->baseclock,rate) == 0)
 		{
 			for (i = 0; i < intf->num; i++)
 			{
