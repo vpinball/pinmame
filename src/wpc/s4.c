@@ -288,7 +288,13 @@ static SWITCH_UPDATE(s4) {
     coreGlobals.swMatrix[0] = (inports[S4_COMINPORT] & 0xff00)>>8;
   }
   /*-- Diagnostic buttons on CPU board --*/
-  cpu_set_nmi_line(0, core_getSw(S4_SWCPUDIAG) ? ASSERT_LINE : CLEAR_LINE);
+  if (core_getSw(S4_SWCPUDIAG)) {
+    cpu_set_nmi_line(0, ASSERT_LINE);
+    memset(&s4locals.pseg,0,sizeof(s4locals.pseg));
+  }
+  else
+    cpu_set_nmi_line(0, CLEAR_LINE);
+
   sndbrd_0_diag(core_getSw(S4_SWSOUNDDIAG));
 
   /* Show Status of Auto/Manual Switch */
