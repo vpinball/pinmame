@@ -15,21 +15,21 @@ static const core_tLCDLayout dispBy6[] = {
 #define dispBy7 dispBy6
 #else /* DISPLAYALL */
 static const core_tLCDLayout dispBy6[] = {
-  {0, 0, 2,6,CORE_SEG87}, {0,14,10,6,CORE_SEG87},
-  {2, 0,18,6,CORE_SEG87}, {2,14,26,6,CORE_SEG87},
-  {4, 2,35,2,CORE_SEG87}, {4, 8,38,2,CORE_SEG87},{0}
+  {0, 0, 2,6,CORE_SEG7}, {0,14,10,6,CORE_SEG7},
+  {2, 0,18,6,CORE_SEG7}, {2,14,26,6,CORE_SEG7},
+  {4, 2,35,2,CORE_SEG7}, {4, 8,38,2,CORE_SEG7},{0}
 };
 static const core_tLCDLayout dispBy7[] = {
-  {0, 0, 1,7,CORE_SEG87}, {0,16, 9,7,CORE_SEG87},
-  {2, 0,17,7,CORE_SEG87}, {2,16,25,7,CORE_SEG87},
+  {0, 0, 1,7,CORE_SEG87F}, {0,16, 9,7,CORE_SEG87F},
+  {2, 0,17,7,CORE_SEG87F}, {2,16,25,7,CORE_SEG87F},
   {4, 4,35,2,CORE_SEG87}, {4,10,38,2,CORE_SEG87},{0}
 };
 
 /* 4 x 7 digit 7 Segment Display (6 Scoring Digits, & 1 Comma Digit)
    AND 1 x 6 digit 7 Segment for Ball & Credit (But appears as 2 x 2 digit*/
 static const core_tLCDLayout dispBy7C[] = {
-  {0, 0, 1,7,CORE_SEG87}, {0,16, 9,7,CORE_SEG87},
-  {2, 0,17,7,CORE_SEG87}, {2,16,25,7,CORE_SEG87},
+  {0, 0, 1,7,CORE_SEG87F}, {0,16, 9,7,CORE_SEG87F},
+  {2, 0,17,7,CORE_SEG87F}, {2,16,25,7,CORE_SEG87F},
   {4, 4,35,2,CORE_SEG87}, {4,10,38,2,CORE_SEG87},{0}
 };
 
@@ -50,6 +50,17 @@ static void init_##name(void) { core_gameData = &name##GameData; }
 /* -------------------------------------------------------------*/
 /* All games below use CHIMES for sound - ie, no sound hardware */
 /* -------------------------------------------------------------*/
+
+/*--------------------------------
+/ Black Sheep Squadron (Astro game)
+/-------------------------------*/
+INITGAME(blkshpsq,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),0,0,0)
+ASTRO_ROMSTART44(blkshpsq,"blkshpsq.u2",0x39c478d3,
+                          "blkshpsq.u6",0x4b721953)
+BY17_ROMEND
+#define input_ports_blkshpsq input_ports_by35
+CORE_GAMEDEFNV(blkshpsq,"Black Sheep Squadron",1979,"Astro",astro_mBY17,GAME_USES_CHIMES)
+
 /*--------------------------------
 / Freedom
 /-------------------------------*/
@@ -142,10 +153,10 @@ CORE_GAMEDEFNV(lostwrld,"Lost World",1978,"Bally",by35_mBY35_32S,0)
 / 6million$man
 /-------------------------------*/
 static core_tLCDLayout smmanDisp[] = {
-  {0, 0, 2,6,CORE_SEG87}, {0,14,10,6,CORE_SEG87},
-  {2, 0,18,6,CORE_SEG87}, {2,14,26,6,CORE_SEG87},
-  {4, 0,50,6,CORE_SEG87}, {4,14,42,6,CORE_SEG87},
-  {6, 2,35,2,CORE_SEG87}, {6, 8,38,2,CORE_SEG87}, {0}
+  {0, 0, 2,6,CORE_SEG7}, {0,14,10,6,CORE_SEG7},
+  {2, 0,18,6,CORE_SEG7}, {2,14,26,6,CORE_SEG7},
+  {4, 0,50,6,CORE_SEG7}, {4,14,42,6,CORE_SEG7},
+  {6, 2,35,2,CORE_SEG7}, {6, 8,38,2,CORE_SEG7}, {0}
 };
 INITGAME(smman,GEN_BY35,smmanDisp,FLIP_SW(FLIP_L),0,SNDBRD_BY32,0x81)
 BY35_ROMSTART888(smman,"742-20_1.716",0x33e55a75,
@@ -475,8 +486,8 @@ CORE_GAMEDEFNV(fathom  ,"Fathom",1981,"Bally",by35_mBY35_61BS,0)
 / Medusa
 /-------------------------------*/
 static core_tLCDLayout medusaDisp[] = {
-  {0, 0, 1,7,CORE_SEG87}, {0,16, 9,7,CORE_SEG87},
-  {2, 0,17,7,CORE_SEG87}, {2,16,25,7,CORE_SEG87},
+  {0, 0, 1,7,CORE_SEG87F}, {0,16, 9,7,CORE_SEG87F},
+  {2, 0,17,7,CORE_SEG87F}, {2,16,25,7,CORE_SEG87F},
   {4, 4,35,2,CORE_SEG87}, {4,10,38,2,CORE_SEG87},
   {4,16,42,2,CORE_SEG87}, {4,21,44,2,CORE_SEG87}, {4,26,46,2,CORE_SEG87}, {0}
 };
@@ -517,8 +528,8 @@ CORE_GAMEDEFNV(elektra,"Elektra",1981,"Bally",by35_mBY35_61S,0)
 / Vector
 /-------------------------------*/
 static core_tLCDLayout vectorDisp[] = {
-  {0, 0, 1,7,CORE_SEG87}, {0,16, 9,7,CORE_SEG87},
-  {2, 0,17,7,CORE_SEG87}, {2,16,25,7,CORE_SEG87},
+  {0, 0, 1,7,CORE_SEG87F}, {0,16, 9,7,CORE_SEG87F},
+  {2, 0,17,7,CORE_SEG87F}, {2,16,25,7,CORE_SEG87F},
   {4, 4,35,2,CORE_SEG87}, {4,10,38,2,CORE_SEG87},
   {4,17,42,3,CORE_SEG87}, {4,24,45,3,CORE_SEG87}, {0}
 };
@@ -580,9 +591,9 @@ CORE_CLONEDEFNV(speakes4,speakesy,"Speakeasy 4 Player",1982,"Bally",by35_mBY35_5
 / Rapid Fire
 /-------------------------------*/
 static core_tLCDLayout dispRapid[] = {
-  {0, 0, 1,7,CORE_SEG87}, {0,16, 9,7,CORE_SEG87},
+  {0, 0, 1,7,CORE_SEG87F}, {0,16, 9,7,CORE_SEG87F},
   {2, 4,33,2,CORE_SEG87}, {2,10,36,2,CORE_SEG87},
-  {2,16,41,7,CORE_SEG87}, {0}
+  {2,16,41,7,CORE_SEG87F}, {0}
 };
 INITGAME(rapidfir,GEN_BY35,dispRapid,FLIP_SW(FLIP_L),8,SNDBRD_BY61B,0)
 BY35_ROMSTARTx00(rapidfir,"869-04_2.732",0x26fdf048,
@@ -596,8 +607,8 @@ CORE_GAMEDEFNV(rapidfir,"Rapid Fire",1982,"Bally",by35_mBY35_61BS,0)
 / Mr. and Mrs. Pacman (BY35-872: 05/82)
 /--------------------------------------*/
 static core_tLCDLayout m_mpacDisp[] = {
-  {0, 0, 1,7,CORE_SEG87}, {0,16, 9,7,CORE_SEG87},
-  {2, 0,17,7,CORE_SEG87}, {2,16,25,7,CORE_SEG87},
+  {0, 0, 1,7,CORE_SEG87F}, {0,16, 9,7,CORE_SEG87F},
+  {2, 0,17,7,CORE_SEG87F}, {2,16,25,7,CORE_SEG87F},
   {4, 4,35,2,CORE_SEG87}, {4,10,38,2,CORE_SEG87},
   {4,16,42,2,CORE_SEG87}, {4,21,44,2,CORE_SEG87}, {4,26,46,2,CORE_SEG87}, {0}
 };

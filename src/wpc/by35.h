@@ -140,6 +140,14 @@
 #define BY35_CPUREGION	REGION_CPU1
 
 /*-- Main CPU regions and ROM --*/
+#define ASTRO_ROMSTART44(name,n1,chk1,n2,chk2) \
+  ROM_START(name) \
+    NORMALREGION(0x10000, BY35_CPUREGION) \
+      ROM_LOAD( n1, 0x1400, 0x0400, chk1) \
+        ROM_RELOAD( 0x1c00, 0x0400) \
+      ROM_LOAD( n2, 0x1000, 0x0400, chk2) \
+        ROM_RELOAD( 0x1800, 0x0400)
+
 #define BY17_ROMSTART228(name,n1,chk1,n2,chk2,n3,chk3) \
   ROM_START(name) \
     NORMALREGION(0x10000, BY35_CPUREGION) \
@@ -207,7 +215,9 @@ extern MACHINE_DRIVER_EXTERN(by35_56S);
 extern MACHINE_DRIVER_EXTERN(by35_61S);
 extern MACHINE_DRIVER_EXTERN(by35_45S);
 extern MACHINE_DRIVER_EXTERN(st200);
+extern MACHINE_DRIVER_EXTERN(astro);
 
+#define astro_mBY17     astro
 #define by35_mBY17      by35
 #define by35_mBY35_32   by35
 #define by35_mBY35_50   by35
