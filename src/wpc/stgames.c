@@ -202,6 +202,7 @@ ST200_ROMSTART8888(meteorb,"cpu_u1.716",CRC(e0fd8452) SHA1(a13215378a678e26a5657
 BY35_ROMEND
 #define input_ports_meteorb input_ports_st
 CORE_CLONEDEFNV(meteorb,meteor,"Meteor (7-digit bootleg)",2003,"Stern / Oliver",by35_mST200,0)
+
 /*--------------------------------
 / Galaxy
 /-------------------------------*/
@@ -297,7 +298,7 @@ ST200_ROMSTART8888(flight2k,"cpu_u1.716",CRC(df9efed9) SHA1(47727664e745e77ca1c2
 VSU100_SOUNDROM_U9(         "snd_u9.716",CRC(d816573c) SHA1(75134a017c34abbb149159ca001d35464a3f5128))
 BY35_ROMEND
 #define input_ports_flight2k input_ports_st
-CORE_GAMEDEFNV(flight2k,"Flight 2000",1979,"Stern",by35_mST200f2k,0)
+CORE_GAMEDEFNV(flight2k,"Flight 2000",1980,"Stern",by35_mST200f2k,0)
 
 /*--------------------------------
 / Nine Ball
@@ -366,7 +367,7 @@ ST200_ROMSTART8888(catacomb,"cpu_u1.716",CRC(d445dd40) SHA1(9ff5896977d7e2a0cf78
                             "cpu_u5.716",CRC(d717a545) SHA1(a183f3b1f766c3a82ae52defc38d84328fb7b31a),
                             "cpu_u2.716",CRC(bc504409) SHA1(cd3e948d34a8db71fc841261e683988c9df31ef8),
                             "cpu_u6.716",CRC(da61b5a2) SHA1(ec4a914cd57b37921578699bc427f12a3670c7eb))
-VSU100_SOUNDROM_U9U10(      "snd_u9.716",NO_DUMP,
+VSU100_SOUNDROM_U9U10(      "snd_u9.716",CRC(a13cb591) SHA1(b64a2dc3429803095dc05cdd1718db2404b13eb8),
                            "snd_u10.716",CRC(2b31f8be) SHA1(05b394bd8b6c04e34fe2bab19cbd0f06d9e4b90d))
 BY35_ROMEND
 #define input_ports_catacomb input_ports_st
