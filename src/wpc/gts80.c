@@ -420,7 +420,7 @@ static WRITE_HANDLER(riot6532_2b_w) {
 	GTS80locals.swColOp = (data>>4)&0x03;
 }
 
-struct riot6532_interface GTS80_riot6532_intf[] = {
+static struct riot6532_interface GTS80_riot6532_intf[] = {
 {/* 6532RIOT 0 (0x200) Chip U4 (SWITCH MATRIX)*/
  /* PA0 - PA7 Switch Return  (ROW) */
  /* PB0 - PB7 Switch Strobes (COL) */
@@ -455,41 +455,27 @@ struct riot6532_interface GTS80_riot6532_intf[] = {
  /* irq :      */ GTS80_irq
 }};
 
-static UINT8 RAM_256[0x100];
-static READ_HANDLER(ram_256r) {
-	return RAM_256[offset%0x100];
-}
 
 static WRITE_HANDLER(ram_256w) {
-	RAM_256[offset%0x100] = (data&0x0f);
-}
-
-static UINT8 RIOT6532_0_RAM[0x80];
-static UINT8 RIOT6532_1_RAM[0x80];
-static UINT8 RIOT6532_2_RAM[0x80];
-
-static READ_HANDLER(riot6532_0_ram_r) {
-	return RIOT6532_0_RAM[offset%0x80];
+	UINT8 *pMem = memory_region(GTS80_MEMREG_CPU) + (offset%0x100);
+	pMem[0x1800] = pMem[0x1900] = pMem[0x1a00] = pMem[0x1b00] = \
+	pMem[0x1c00] = pMem[0x1d00] = pMem[0x1e00] = pMem[0x1f00] = \
+		data;
 }
 
 static WRITE_HANDLER(riot6532_0_ram_w) {
-	RIOT6532_0_RAM[offset%0x80] = data;
-}
-
-static READ_HANDLER(riot6532_1_ram_r) {
-	return RIOT6532_1_RAM[offset%0x80];
+	UINT8 *pMem = memory_region(GTS80_MEMREG_CPU) + (offset%0x80);
+	pMem[0x0000] = pMem[0x4000] = pMem[0x8000] = pMem[0xc000] = data;
 }
 
 static WRITE_HANDLER(riot6532_1_ram_w) {
-	RIOT6532_1_RAM[offset%0x80] = data;
-}
-
-static READ_HANDLER(riot6532_2_ram_r) {
-	return RIOT6532_2_RAM[offset%0x80];
+	UINT8 *pMem = memory_region(GTS80_MEMREG_CPU) + (offset%0x80);
+	pMem[0x0080] = pMem[0x4080] = pMem[0x8080] = pMem[0xc080] = data;
 }
 
 static WRITE_HANDLER(riot6532_2_ram_w) {
-	RIOT6532_2_RAM[offset%0x80] = data;
+	UINT8 *pMem = memory_region(GTS80_MEMREG_CPU) + (offset%0x80);
+	pMem[0x0100] = pMem[0x4100] = pMem[0x8100] = pMem[0xc100] = data;
 }
 
 
@@ -497,48 +483,48 @@ static WRITE_HANDLER(riot6532_2_ram_w) {
 /  Memory map for main CPU
 /----------------------------*/
 static MEMORY_READ_START(GTS80_readmem)
-{0x0000,0x007f,	riot6532_0_ram_r},	/*U4 - 6532 RAM*/
-{0x0080,0x00ff,	riot6532_1_ram_r},	/*U5 - 6532 RAM*/
-{0x0100,0x017f,	riot6532_2_ram_r},	/*U6 - 6532 RAM*/
+{0x0000,0x007f,	MRA_RAM},		/*U4 - 6532 RAM*/
+{0x0080,0x00ff,	MRA_RAM},		/*U5 - 6532 RAM*/
+{0x0100,0x017f,	MRA_RAM},		/*U6 - 6532 RAM*/
 {0x0200,0x027f, riot6532_0_r},	/*U4 - I/O*/
 {0x0280,0x02ff, riot6532_1_r},	/*U5 - I/O*/
 {0x0300,0x037f, riot6532_2_r},	/*U6 - I/O*/
 {0x1000,0x17ff, MRA_ROM},		/*Game Prom(s)*/
-{0x1800,0x1fff, ram_256r},		
+{0x1800,0x1fff, MRA_RAM},		/*RAM - 8x the same 256 Bytes*/
 {0x2000,0x2fff, MRA_ROM},		/*U2 ROM*/
 {0x3000,0x3fff, MRA_ROM},		/*U3 ROM*/
 
 /* A14 & A15 aren't used) */
-{0x4000,0x407f,	riot6532_0_ram_r},	/*U4 - 6532 RAM*/
-{0x4080,0x40ff,	riot6532_1_ram_r},	/*U5 - 6532 RAM*/
-{0x4100,0x417f,	riot6532_2_ram_r},	/*U6 - 6532 RAM*/
+{0x4000,0x407f,	MRA_RAM},		/*U4 - 6532 RAM*/
+{0x4080,0x40ff,	MRA_RAM},		/*U5 - 6532 RAM*/
+{0x4100,0x417f,	MRA_RAM},		/*U6 - 6532 RAM*/
 {0x4200,0x427f, riot6532_0_r},	/*U4 - I/O*/
 {0x4280,0x42ff, riot6532_1_r},	/*U5 - I/O*/
 {0x4300,0x437f, riot6532_2_r},	/*U6 - I/O*/
 {0x5000,0x57ff, MRA_ROM},		/*Game Prom(s)*/
-{0x5800,0x5fff, ram_256r},		
+{0x5800,0x5fff, MRA_RAM},		/*RAM - 8x the same 256 Bytes*/
 {0x6000,0x6fff, MRA_ROM},		/*U2 ROM*/
 {0x7000,0x7fff, MRA_ROM},		/*U3 ROM*/
 
-{0x8000,0x807f,	riot6532_0_ram_r},	/*U4 - 6532 RAM*/
-{0x8080,0x80ff,	riot6532_1_ram_r},	/*U5 - 6532 RAM*/
-{0x8100,0x817f,	riot6532_2_ram_r},	/*U6 - 6532 RAM*/
+{0x8000,0x807f,	MRA_RAM},		/*U4 - 6532 RAM*/
+{0x8080,0x80ff,	MRA_RAM},		/*U5 - 6532 RAM*/
+{0x8100,0x817f,	MRA_RAM},		/*U6 - 6532 RAM*/
 {0x8200,0x827f, riot6532_0_r},	/*U4 - I/O*/
 {0x8280,0x82ff, riot6532_1_r},	/*U5 - I/O*/
 {0x8300,0x837f, riot6532_2_r},	/*U6 - I/O*/
 {0x9000,0x97ff, MRA_ROM},		/*Game Prom(s)*/
-{0x9800,0x9fff, ram_256r},		
+{0x9800,0x9fff, MRA_RAM},		/*RAM - 8x the same 256 Bytes*/
 {0xa000,0xafff, MRA_ROM},		/*U2 ROM*/
 {0xb000,0xbfff, MRA_ROM},		/*U3 ROM*/
 
-{0xc000,0xc07f,	riot6532_0_ram_r},	/*U4 - 6532 RAM*/
-{0xc080,0xc0ff,	riot6532_1_ram_r},	/*U5 - 6532 RAM*/
-{0xc100,0xc17f,	riot6532_2_ram_r},	/*U6 - 6532 RAM*/
+{0xc000,0xc07f,	MRA_RAM},		/*U4 - 6532 RAM*/
+{0xc080,0xc0ff,	MRA_RAM},		/*U5 - 6532 RAM*/
+{0xc100,0xc17f,	MRA_RAM},		/*U6 - 6532 RAM*/
 {0xc200,0xc27f, riot6532_0_r},	/*U4 - I/O*/
 {0xc280,0xc2ff, riot6532_1_r},	/*U5 - I/O*/
 {0xc300,0xc37f, riot6532_2_r},	/*U6 - I/O*/
 {0xd000,0xd7ff, MRA_ROM},		/*Game Prom(s)*/
-{0xd800,0xdfff, ram_256r},		
+{0xd800,0xdfff, MRA_RAM},		/*RAM - 8x the same 256 Bytes*/
 {0xe000,0xefff, MRA_ROM},		/*U2 ROM*/
 {0xf000,0xffff, MRA_ROM},		/*U3 ROM*/
 MEMORY_END
@@ -547,47 +533,47 @@ static MEMORY_WRITE_START(GTS80_writemem)
 {0x0000,0x007f,	riot6532_0_ram_w},	/*U4 - 6532 RAM*/
 {0x0080,0x00ff,	riot6532_1_ram_w},	/*U5 - 6532 RAM*/
 {0x0100,0x017f,	riot6532_2_ram_w},	/*U6 - 6532 RAM*/
-{0x0200,0x027f, riot6532_0_w},	/*U4 - I/O*/
-{0x0280,0x02ff, riot6532_1_w},	/*U5 - I/O*/
-{0x0300,0x037f, riot6532_2_w},	/*U6 - I/O*/
-{0x1000,0x17ff, MWA_ROM},		/*Game Prom(s)*/
-{0x1800,0x1fff, ram_256w},		/*RAM - 4x the same 256 Bytes*/
-{0x2000,0x2fff, MWA_ROM},		/*U2 ROM*/
-{0x3000,0x3fff, MWA_ROM},		/*U3 ROM*/
+{0x0200,0x027f, riot6532_0_w},		/*U4 - I/O*/
+{0x0280,0x02ff, riot6532_1_w},		/*U5 - I/O*/
+{0x0300,0x037f, riot6532_2_w},		/*U6 - I/O*/
+{0x1000,0x17ff, MWA_ROM},			/*Game Prom(s)*/
+{0x1800,0x1fff, ram_256w},			/*RAM - 8x the same 256 Bytes*/
+{0x2000,0x2fff, MWA_ROM},			/*U2 ROM*/
+{0x3000,0x3fff, MWA_ROM},			/*U3 ROM*/
 
 /* A14 & A15 aren't used) */
 {0x4000,0x407f,	riot6532_0_ram_w},	/*U4 - 6532 RAM*/
 {0x4080,0x40ff,	riot6532_1_ram_w},	/*U5 - 6532 RAM*/
 {0x4100,0x417f,	riot6532_2_ram_w},	/*U6 - 6532 RAM*/
-{0x4200,0x427f, riot6532_0_w},	/*U4 - I/O*/
-{0x4280,0x42ff, riot6532_1_w},	/*U5 - I/O*/
-{0x4300,0x437f, riot6532_2_w},	/*U6 - I/O*/
-{0x5000,0x57ff, MWA_ROM},		/*Game Prom(s)*/
-{0x5800,0x5fff, ram_256w},		/*RAM - 4x the same 256 Bytes*/
-{0x6000,0x6fff, MWA_ROM},		/*U2 ROM*/
-{0x7000,0x7fff, MWA_ROM},		/*U3 ROM*/
+{0x4200,0x427f, riot6532_0_w},		/*U4 - I/O*/
+{0x4280,0x42ff, riot6532_1_w},		/*U5 - I/O*/
+{0x4300,0x437f, riot6532_2_w},		/*U6 - I/O*/
+{0x5000,0x57ff, MWA_ROM},			/*Game Prom(s)*/
+{0x5800,0x5fff, ram_256w},			/*RAM - 8x the same 256 Bytes*/
+{0x6000,0x6fff, MWA_ROM},			/*U2 ROM*/
+{0x7000,0x7fff, MWA_ROM},			/*U3 ROM*/
 
 {0x8000,0x807f,	riot6532_0_ram_w},	/*U4 - 6532 RAM*/
 {0x8080,0x80ff,	riot6532_1_ram_w},	/*U5 - 6532 RAM*/
 {0x8100,0x817f,	riot6532_2_ram_w},	/*U6 - 6532 RAM*/
-{0x8200,0x827f, riot6532_0_w},	/*U4 - I/O*/
-{0x8280,0x82ff, riot6532_1_w},	/*U5 - I/O*/
-{0x8300,0x837f, riot6532_2_w},	/*U6 - I/O*/
-{0x9000,0x97ff, MWA_ROM},		/*Game Prom(s)*/
-{0x9800,0x9fff, ram_256w},		/*RAM - 4x the same 256 Bytes*/
-{0xa000,0xafff, MWA_ROM},		/*U2 ROM*/
-{0xb000,0xbfff, MWA_ROM},		/*U3 ROM*/
+{0x8200,0x827f, riot6532_0_w},		/*U4 - I/O*/
+{0x8280,0x82ff, riot6532_1_w},		/*U5 - I/O*/
+{0x8300,0x837f, riot6532_2_w},		/*U6 - I/O*/
+{0x9000,0x97ff, MWA_ROM},			/*Game Prom(s)*/
+{0x9800,0x9fff, ram_256w},			/*RAM - 8x the same 256 Bytes*/
+{0xa000,0xafff, MWA_ROM},			/*U2 ROM*/
+{0xb000,0xbfff, MWA_ROM},			/*U3 ROM*/
 
 {0xc000,0xc07f,	riot6532_0_ram_w},	/*U4 - 6532 RAM*/
 {0xc080,0xc0ff,	riot6532_1_ram_w},	/*U5 - 6532 RAM*/
 {0xc100,0xc17f,	riot6532_2_ram_w},	/*U6 - 6532 RAM*/
-{0xc200,0xc27f, riot6532_0_w},	/*U4 - I/O*/
-{0xc280,0xc2ff, riot6532_1_w},	/*U5 - I/O*/
-{0xc300,0xc37f, riot6532_2_w},	/*U6 - I/O*/
-{0xd000,0xd7ff, MWA_ROM},		/*Game Prom(s)*/
-{0xd800,0xdfff, ram_256w},		/*RAM - 4x the same 256 Bytes*/
-{0xe000,0xefff, MWA_ROM},		/*U2 ROM*/
-{0xf000,0xffff, MWA_ROM},		/*U3 ROM*/
+{0xc200,0xc27f, riot6532_0_w},		/*U4 - I/O*/
+{0xc280,0xc2ff, riot6532_1_w},		/*U5 - I/O*/
+{0xc300,0xc37f, riot6532_2_w},		/*U6 - I/O*/
+{0xd000,0xd7ff, MWA_ROM},			/*Game Prom(s)*/
+{0xd800,0xdfff, ram_256w},			/*RAM - 8x the same 256 Bytes*/
+{0xe000,0xefff, MWA_ROM},			/*U2 ROM*/
+{0xf000,0xffff, MWA_ROM},			/*U3 ROM*/
 MEMORY_END
 
 struct MachineDriver machine_driver_GTS80S = {
@@ -745,11 +731,6 @@ static void GTS80_init(void) {
 	}
   }
 
-  /* init RAM */
-  memset(RIOT6532_0_RAM, 0x00, sizeof RIOT6532_0_RAM);
-  memset(RIOT6532_1_RAM, 0x00, sizeof RIOT6532_1_RAM);
-  memset(RIOT6532_2_RAM, 0x00, sizeof RIOT6532_2_RAM);
-
   /* init RIOTS */
   for (ii = 0; ii < sizeof(GTS80_riot6532_intf)/sizeof(GTS80_riot6532_intf[0]); ii++)
     riot6532_config(ii, &GTS80_riot6532_intf[ii]);
@@ -777,5 +758,9 @@ static void GTS80_exit(void) {
 / Save RAM & CMOS Information
 /-------------------------------------------------*/
 void GTS80_nvram(void *file, int write) {
-	core_nvram(file, write, RAM_256, sizeof RAM_256, 0x00);
+	int i;
+	core_nvram(file, write, memory_region(GTS80_MEMREG_CPU)+0x1800, 0x100, 0x00);
+	if (!write)
+		for(i=1;i<8;i++)
+			memcpy(memory_region(GTS80_MEMREG_CPU)+0x1800+(i*0x100), memory_region(GTS80_MEMREG_CPU)+0x1800, 0x100);
 }

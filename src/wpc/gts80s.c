@@ -37,7 +37,7 @@
 
 #define GTS80S_BUFFER_SIZE 8192
 
-struct {
+static struct {
 	struct sndbrdData boardData;
 
 	int   stream;
@@ -47,35 +47,11 @@ struct {
 
 	int   dips;
 	int	IRQEnabled;
-
-	UINT8 riot6530_0a_value;
 } GTS80S_locals;
 
-WRITE_HANDLER(gts80s_data_w)
-{
-//	logerror("sound latch: 0x%02x\n", data);
-	data &= 0x0f;
-	riot6530_set_input_b(0, GTS80S_locals.dips | 0x20 | data);
-
-	/* the PiggyPack board is really firing an interrupt; sound board layout
-	   for theses game is different, because the IRQ line is connected */
-	if ( (GTS80S_locals.boardData.subType==1) && data && GTS80S_locals.IRQEnabled )
-		cpu_set_irq_line(GTS80S_locals.boardData.cpuNo, M6502_INT_IRQ, PULSE_LINE);
-}
-
-UINT8 temp;
-
-/* configured as output, shouldn't be read at all */
-READ_HANDLER(riot6530_0a_r)  {
-//	logerror("riot6530_0a_r\n");
-	return GTS80S_locals.riot6530_0a_value;
-}
-
 /* digital sound data output */
-WRITE_HANDLER(riot6530_0a_w) {
+static WRITE_HANDLER(gts80s_riot6530_0a_w) {
 //	logerror("riot6530_0a_w: 0x%02x\n", data);
-	GTS80S_locals.riot6530_0a_value = data;
-
 	if ( GTS80S_locals.buf_pos>=GTS80S_BUFFER_SIZE )
 		return;
 
@@ -83,58 +59,48 @@ WRITE_HANDLER(riot6530_0a_w) {
 	GTS80S_locals.buffer[GTS80S_locals.buf_pos++] = ((data<<7)-0x4000)*2;
 }
 
-WRITE_HANDLER(riot6530_0b_w) { 
+static WRITE_HANDLER(gts80s_riot6530_0b_w) { 
 //	logerror("riot6530_0b_w: 0x%02x\n", data);
 	/* reset the interupt on the PiggyPack board */
 	if ( GTS80S_locals.boardData.subType==1 )
 		GTS80S_locals.IRQEnabled = data&0x40;
 }
 
-struct riot6530_interface GTS80S_riot6530_intf = {
+static struct riot6530_interface GTS80S_riot6530_intf = {
  /* 6530RIOT 0 (0x200) Chip U2 */
  /* PA0 - PA7 Digital sound data */
  /* PB0 - PB7 Sound latch & Dip-Switches */
- /* in  : A/B, */ riot6530_0a_r, NULL,
- /* out : A/B, */ riot6530_0a_w, riot6530_0b_w,
+ /* in  : A/B, */ NULL, NULL,
+ /* out : A/B, */ gts80s_riot6530_0a_w, gts80s_riot6530_0b_w,
  /* irq :      */ NULL
 };
+
+static WRITE_HANDLER(gts80s_riot6530_0_ram_w)
+{
+	UINT8 *pMem = memory_region(GTS80S_locals.boardData.cpuNo)+(offset%0x40);
+
+	pMem[0x0000] = pMem[0x0040] = pMem[0x0080] = pMem[0x00c0] = \
+	pMem[0x0100] = pMem[0x0140] = pMem[0x0180] = pMem[0x01c0] = \
+	pMem[0x1000] = pMem[0x1040] = pMem[0x1080] = pMem[0x10c0] = \
+	data;
+}
 
 /*--------------
 /  Memory map
 /---------------*/
 MEMORY_READ_START(GTS80S_readmem)
-{ 0x0000, 0x003f, MRA_BANK1}, // 64 Byte RIOT Memory
-{ 0x0040, 0x007f, MRA_BANK2}, // 64 Byte RIOT memory, repeated, base will be set in the init function
-{ 0x0080, 0x00bf, MRA_BANK3}, // 64 Byte RIOT memory, repeated, base will be set in the init function
-{ 0x00c0, 0x00ff, MRA_BANK4}, // 64 Byte RIOT memory, repeated, base will be set in the init function
-{ 0x0000, 0x013f, MRA_BANK5}, // 64 Byte RIOT memory, repeated, base will be set in the init function
-{ 0x0040, 0x017f, MRA_BANK6}, // 64 Byte RIOT memory, repeated, base will be set in the init function
-{ 0x0080, 0x01bf, MRA_BANK7}, // 64 Byte RIOT memory, repeated, base will be set in the init function
-{ 0x00c0, 0x01ff, MRA_BANK8}, // 64 Byte RIOT memory, repeated, base will be set in the init function
+{ 0x0000, 0x01ff, MRA_RAM},
 { 0x0200, 0x03ff, riot6530_0_r},
 { 0x0400, 0x0fff, MRA_ROM},
-{ 0x1000, 0x103f, MRA_BANK9},  // 64 Byte RIOT Memory, repeated, base will be set in the init function
-{ 0x1040, 0x107f, MRA_BANK10}, // 64 Byte RIOT memory, repeated, base will be set in the init function
-{ 0x1080, 0x10bf, MRA_BANK11}, // 64 Byte RIOT memory, repeated, base will be set in the init function
-{ 0x10c0, 0x10ff, MRA_BANK12}, // 64 Byte RIOT memory, repeated, base will be set in the init function
+{ 0x1000, 0x10ff, MRA_RAM},  
 { 0xf800, 0xffff, MRA_ROM},
 MEMORY_END
 
 MEMORY_WRITE_START(GTS80S_writemem)
-{ 0x0000, 0x003f, MWA_BANK1}, // 64 Byte RIOT Memory
-{ 0x0040, 0x007f, MWA_BANK2}, // 64 Byte RIOT memory, repeated, base will be set in the init function
-{ 0x0080, 0x00bf, MWA_BANK3}, // 64 Byte RIOT memory, repeated, base will be set in the init function
-{ 0x00c0, 0x00ff, MWA_BANK4}, // 64 Byte RIOT memory, repeated, base will be set in the init function
-{ 0x0000, 0x013f, MWA_BANK5}, // 64 Byte RIOT memory, repeated, base will be set in the init function
-{ 0x0040, 0x017f, MWA_BANK6}, // 64 Byte RIOT memory, repeated, base will be set in the init function
-{ 0x0080, 0x01bf, MWA_BANK7}, // 64 Byte RIOT memory, repeated, base will be set in the init function
-{ 0x00c0, 0x01ff, MWA_BANK8}, // 64 Byte RIOT memory, repeated, base will be set in the init function
+{ 0x0000, 0x01ff, gts80s_riot6530_0_ram_w},
 { 0x0200, 0x03ff, riot6530_0_w},
 { 0x0400, 0x0fff, MWA_ROM},
-{ 0x1000, 0x103f, MWA_BANK9},  // 64 Byte RIOT Memory, repeated, base will be set in the init function
-{ 0x1040, 0x107f, MWA_BANK10}, // 64 Byte RIOT memory, repeated, base will be set in the init function
-{ 0x1080, 0x10bf, MWA_BANK11}, // 64 Byte RIOT memory, repeated, base will be set in the init function
-{ 0x10c0, 0x10ff, MWA_BANK12}, // 64 Byte RIOT memory, repeated, base will be set in the init function
+{ 0x1000, 0x10ff, gts80s_riot6530_0_ram_w},
 { 0xf800, 0xffff, MWA_ROM},
 MEMORY_END
 
@@ -192,7 +158,10 @@ void gts80s_init(struct sndbrdData *brdData) {
 		pMem = memory_region(GTS80S_locals.boardData.cpuNo)+0x0400;
 		for(i=0x0400; i<0x0bff; i++)
 			*pMem++ = (*pMem&0x0f);
+
+		memcpy(memory_region(GTS80S_locals.boardData.cpuNo)+0x1000, memory_region(GTS80S_locals.boardData.cpuNo)+0x0700, 0x100);
 	}
+
 
 	/* 
 		Init RAM, i.e. set base of all bank to the base of bank 1, 
@@ -212,9 +181,29 @@ void gts80s_init(struct sndbrdData *brdData) {
 	set_RC_filter(GTS80S_locals.stream, 270000, 15000, 0, 33000);
 }
 
+/*--------------
+/  exit
+/---------------*/
+
 void gts80s_exit(int boardNo)
 {
 	riot6530_unconfig();
+}
+
+/*--------------
+/  sound cmd
+/---------------*/
+
+static WRITE_HANDLER(gts80s_data_w)
+{
+//	logerror("sound latch: 0x%02x\n", data);
+	data &= 0x0f;
+	riot6530_set_input_b(0, GTS80S_locals.dips | 0x20 | data);
+
+	/* the PiggyPack board is really firing an interrupt; sound board layout
+	   for theses game is different, because the IRQ line is connected */
+	if ( (GTS80S_locals.boardData.subType==1) && data && GTS80S_locals.IRQEnabled )
+		cpu_set_irq_line(GTS80S_locals.boardData.cpuNo, M6502_INT_IRQ, PULSE_LINE);
 }
 
 /* only in at the moment for the pinmame startup information */
@@ -233,7 +222,7 @@ const struct sndbrdIntf gts80sIntf = {
 
 #define GTS80SS_BUFFER_SIZE 4096
 
-struct {
+static struct {
 	struct sndbrdData boardData;
 
 	int dips;
@@ -246,30 +235,30 @@ struct {
 	void *timer;
 } GTS80SS_locals;
 
-void GTS80SS_irq(int state) {
+static void GTS80SS_irq(int state) {
 //	logerror("IRQ: %i\n",state);
 	cpu_set_irq_line(GTS80SS_locals.boardData.cpuNo, M6502_INT_IRQ, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
-void GTS80SS_nmi(int state)
+static void GTS80SS_nmi(int state)
 {
 	// logerror("NMI: %i\n",state);
 	if ( !state )
 		cpu_set_irq_line(GTS80SS_locals.boardData.cpuNo, M6502_INT_NMI, PULSE_LINE);
 }
 
-WRITE_HANDLER(riot3a_w) { logerror("riot3a_w: 0x%02x\n", data);}
+static WRITE_HANDLER(GTS80SS_riot3a_w) { logerror("riot3a_w: 0x%02x\n", data);}
 
 /* Switch settings, test switch and NMI */
-READ_HANDLER(riot3b_r)  {
+READ_HANDLER(GTS80SS_riot3b_r)  {
 	// 0x40: test switch SW1
 	return (votraxsc01_status_r(0)?0x80:0x00) | 0x40 | (GTS80SS_locals.dips^0x3f);
 }
 
-WRITE_HANDLER(riot3b_w) { logerror("riot3b_w: 0x%02x\n", data);}
+static WRITE_HANDLER(GTS80SS_riot3b_w) { logerror("riot3b_w: 0x%02x\n", data);}
 
 /* D/A converters */
-WRITE_HANDLER(da1_latch_w) {
+static WRITE_HANDLER(GTS80SS_da1_latch_w) {
 //	logerror("da1_w: 0x%02x\n", data);
 
 	if ( GTS80SS_locals.buf_pos>=GTS80SS_BUFFER_SIZE )
@@ -279,90 +268,81 @@ WRITE_HANDLER(da1_latch_w) {
 	GTS80SS_locals.buffer[GTS80SS_locals.buf_pos++] = ((data<<7)-0x4000)*2;
 }
 
-WRITE_HANDLER(da2_latch_w) {
+static WRITE_HANDLER(GTS80SS_da2_latch_w) {
 //	logerror("da2_w: 0x%02x\n", data); 
 }
 
 /* expansion board */
-READ_HANDLER(ext_board_1_r) {
+static READ_HANDLER(GTS80SS_ext_board_1_r) {
 	logerror("ext_board_1_r\n"); 
 	return 0xff;
 }
 
-WRITE_HANDLER(ext_board_1_w) {
+static WRITE_HANDLER(GTS80SS_ext_board_1_w) {
 	logerror("ext_board_1_w: 0x%02x\n", data);
 }
 
-
-READ_HANDLER(ext_board_2_r) {
+static READ_HANDLER(GTS80SS_ext_board_2_r) {
 	logerror("ext_board_2_r\n"); 
 	return 0xff;
 }
 
-WRITE_HANDLER(ext_board_2_w) {
+static WRITE_HANDLER(GTS80SS_ext_board_2_w) {
 	logerror("ext_board_2_w: 0x%02x\n", data);
 }
 
-
-READ_HANDLER(ext_board_3_r) {
+static READ_HANDLER(GTS80SS_ext_board_3_r) {
 	logerror("ext_board_3_r\n"); 
 	return 0xff;
 }
 
-WRITE_HANDLER(ext_board_3_w) {
+static WRITE_HANDLER(GTS80SS_ext_board_3_w) {
 	logerror("ext_board_3_w: 0x%02x\n", data);
 }
 
 /* voice synt latch */
-WRITE_HANDLER(vs_latch_w) {
+static WRITE_HANDLER(GTS80SS_vs_latch_w) {
 	votraxsc01_w(0, data^0xff);
 }
 
-struct riot6532_interface GTS80SS_riot6532_intf = {
+static struct riot6532_interface GTS80SS_riot6532_intf = {
  /* 6532RIOT 3: Sound/Speech board Chip U15 */
- /* in  : A/B, */ NULL, riot3b_r,
- /* out : A/B, */ riot3a_w, riot3b_w,
+ /* in  : A/B, */ NULL, GTS80SS_riot3b_r,
+ /* out : A/B, */ GTS80SS_riot3a_w, GTS80SS_riot3b_w,
  /* irq :      */ GTS80SS_irq
 };
+
+static WRITE_HANDLER(GTS80SS_riot6532_3_ram_w)
+{
+	UINT8 *pMem = memory_region(GTS80SS_locals.boardData.cpuNo)+(offset%0x80);
+
+	pMem[0x0000] = pMem[0x0080] = pMem[0x0100] = pMem[0x0180] = data;
+}
 
 /*--------------
 /  Memory map
 /---------------*/
 MEMORY_READ_START(GTS80SS_readmem)
-{ 0x0000, 0x007f, MRA_BANK1}, // 128 Byte RIOT memory
-{ 0x0080, 0x00ff, MRA_BANK2}, // 128 Byte RIOT memory, repeated, base will be set in the init function
-{ 0x0100, 0x017f, MRA_BANK3}, // 128 Byte RIOT memory, repeated, base will be set in the init function
-{ 0x0180, 0x01ff, MRA_BANK4}, // 128 Byte RIOT memory, repeated, base will be set in the init function
+{ 0x0000, 0x01ff, MRA_RAM}, 
 { 0x0200, 0x027f, riot6532_3_r},
-{ 0x4000, 0x4fff, ext_board_1_r},
-{ 0x5000, 0x5fff, ext_board_2_r},
-{ 0x6000, 0x6fff, ext_board_3_r},
+{ 0x4000, 0x4fff, GTS80SS_ext_board_1_r},
+{ 0x5000, 0x5fff, GTS80SS_ext_board_2_r},
+{ 0x6000, 0x6fff, GTS80SS_ext_board_3_r},
 { 0x7000, 0x7fff, MRA_ROM},
 { 0x8000, 0xffff, MRA_ROM},
 MEMORY_END
 
 MEMORY_WRITE_START(GTS80SS_writemem)
-{ 0x0000, 0x007f, MWA_BANK1}, // 128 Byte RIOT memory
-{ 0x0080, 0x00ff, MWA_BANK2}, // 128 Byte RIOT memory, repeated, base will be set in the init function
-{ 0x0100, 0x017f, MWA_BANK3}, // 128 Byte RIOT memory, repeated, base will be set in the init function
-{ 0x0180, 0x01ff, MWA_BANK4}, // 128 Byte RIOT memory, repeated, base will be set in the init function
+{ 0x0000, 0x01ff, GTS80SS_riot6532_3_ram_w}, 
 { 0x0200, 0x027f, riot6532_3_w},
-{ 0x1000, 0x1fff, da1_latch_w},
-{ 0x2000, 0x2fff, vs_latch_w},
-{ 0x3000, 0x3fff, da2_latch_w},
-{ 0x4000, 0x4fff, ext_board_1_w},
-{ 0x5000, 0x5fff, ext_board_2_w},
-{ 0x6000, 0x6fff, ext_board_3_w},
+{ 0x1000, 0x1fff, GTS80SS_da1_latch_w},
+{ 0x2000, 0x2fff, GTS80SS_vs_latch_w},
+{ 0x3000, 0x3fff, GTS80SS_da2_latch_w},
+{ 0x4000, 0x4fff, GTS80SS_ext_board_1_w},
+{ 0x5000, 0x5fff, GTS80SS_ext_board_2_w},
+{ 0x6000, 0x6fff, GTS80SS_ext_board_3_w},
 { 0x7000, 0xffff, MWA_NOP}, // the soundboard does fake writes to the ROM area (used for a delay function)
 MEMORY_END
-
-WRITE_HANDLER(gts80ss_data_w)
-{
-	data = (data&0x3f);
-
-//	logerror("sound_latch: 0x%02x\n", data);
-	riot6532_set_input_a(3, (data&0x0f?0x80:0x00) | 0x40 | data);
-}
 
 static void GTS80_ss_Update(int num, INT16 *buffer, int length)
 {
@@ -392,6 +372,10 @@ static void GTS80_ss_Update(int num, INT16 *buffer, int length)
 	GTS80SS_locals.buffer[0] = GTS80SS_locals.buffer[GTS80SS_locals.buf_pos-1];
 	GTS80SS_locals.buf_pos = 1;
 }
+
+/*--------------
+/  init
+/---------------*/
 
 void gts80ss_init(struct sndbrdData *brdData) {
 	int i;
@@ -441,12 +425,28 @@ void gts80ss_init(struct sndbrdData *brdData) {
 */
 }
 
+/*--------------
+/  exit
+/---------------*/
+
 void gts80ss_exit(int boardNo)
 {
 	if ( GTS80SS_locals.timer ) {
 		timer_remove(GTS80SS_locals.timer);
 		GTS80SS_locals.timer = 0;
 	}
+}
+
+/*--------------
+/  sound cmd
+/---------------*/
+
+WRITE_HANDLER(gts80ss_data_w)
+{
+	data = (data&0x3f);
+
+//	logerror("sound_latch: 0x%02x\n", data);
+	riot6532_set_input_a(3, (data&0x0f?0x80:0x00) | 0x40 | data);
 }
 
 /* only in at the moment for the pinmame startup information */
@@ -472,7 +472,7 @@ const struct sndbrdIntf gts80ssIntf = {
 /*----------------
 /  Local varibles
 /-----------------*/
-struct {
+static struct {
   int    ay_latch;			// Data Latch to AY-8913 chips
   int    ym2151_port;		// Bit determines if Registor or Data is written to YM2151
   int    nmi_rate;			// Programmable NMI rate
