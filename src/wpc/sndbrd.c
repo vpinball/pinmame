@@ -12,7 +12,7 @@
 #  include "sndbrd.c"
    NULL};
 
-static struct {
+static struct intfData {
   const struct sndbrdIntf *brdIntf;
   WRITE_HANDLER((*data_cb));
   WRITE_HANDLER((*ctrl_cb));
@@ -21,16 +21,17 @@ static struct {
 
 void sndbrd_init(int brdNo, int brdType, int cpuNo, UINT8 *romRegion,
                  WRITE_HANDLER((*data_cb)),WRITE_HANDLER((*ctrl_cb))) {
-  if (coreGlobals.soundEn) {
-    struct sndbrdData brdData;
-    brdData.boardNo = brdNo; brdData.subType = brdType & 0xff;
-    brdData.cpuNo   = cpuNo; brdData.romRegion = romRegion;
-    intf[brdNo].brdIntf = allsndboards[brdType>>8];
-    intf[brdNo].type    = brdType;
-    intf[brdNo].data_cb = data_cb;
-    intf[brdNo].ctrl_cb = ctrl_cb;
-    if (intf[brdNo].brdIntf->init) intf[brdNo].brdIntf->init(&brdData);
-  }
+  const struct sndbrdIntf *b = allsndboards[brdType>>8];
+  struct intfData *i = &intf[brdNo];
+  struct sndbrdData brdData;
+  brdData.boardNo = brdNo; brdData.subType = brdType & 0xff;
+  brdData.cpuNo   = cpuNo; brdData.romRegion = romRegion;
+  i->brdIntf = b;
+  i->type    = brdType;
+  i->data_cb = data_cb;
+  i->ctrl_cb = ctrl_cb;
+  if (b && (coreGlobals.soundEn || b->flags & SNDBRD_NOTSOUND) && b->init)
+    b->init(&brdData);
 }
 
 void sndbrd_exit(int board) {
