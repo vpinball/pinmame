@@ -53,6 +53,9 @@
 #define GEN_WS_2        U64(0x10000000000) /* Whitestar with extra DMD */
 #define GEN_GTS3        U64(0x20000000000)
 
+#define GEN_ZAC1        U64(0x40000000000)
+#define GEN_ZAC2        U64(0x80000000000)
+
 #define GEN_ALLWPC      U64(0x000000000ff)
 #define GEN_ALLS11      U64(0x0008000ff00)
 #define GEN_ALLBY35     U64(0x00047e00000)
