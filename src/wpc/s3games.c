@@ -15,24 +15,24 @@ static void init_##name(void) { \
 S3_INPUT_PORTS_START(name, balls) S3_INPUT_PORTS_END
 
 /*----------------------------
-/ Hot Tip - Sys.3 (Game #477) - No Sound board? (Uses Chimes according to Gerrit)
+/ Hot Tip - Sys.3 (Game #477) - No Sound board
 /----------------------------*/
 INITGAME(httip,0/*?*/)
 S6_ROMSTART(httip,l1,"gamerom.716", 0xb1d4fd9b,
 					 "white1.716", 0x9bbbf14f,
 					 "white2.716", 0x4d4010dd)
 S6_ROMEND
-CORE_GAMEDEF(httip,l1,"Hot Tip (L-1)",1977,"Williams",s3_mS3C,GAME_NO_SOUND)
+CORE_GAMEDEF(httip,l1,"Hot Tip (L-1)",1977,"Williams",s3_mS3C,GAME_USES_CHIMES)
 
 /*---------------------------------
-/ Lucky Seven - Sys.3 (Game #480) - No Sound board? (Uses Chimes according to Gerrit)
+/ Lucky Seven - Sys.3 (Game #480) - No Sound board
 /---------------------------------*/
 INITGAME(lucky,0/*?*/)
 S6_ROMSTART(lucky,l1,"gamerom.716", 0x7cfbd4c7,
 					 "white1.716", 0x9bbbf14f,
 					 "white2.716", 0x4d4010dd)
 S6_ROMEND
-CORE_GAMEDEF(lucky,l1,"Lucky Seven (L-1)",1977,"Williams",s3_mS3C,GAME_NO_SOUND)
+CORE_GAMEDEF(lucky,l1,"Lucky Seven (L-1)",1977,"Williams",s3_mS3C,GAME_USES_CHIMES)
 
 /*-------------------------------------
 / World Cup Soccer - Sys.3 (Game #481)
