@@ -200,20 +200,29 @@ static WRITE_HANDLER( xvia_0_b_w ) { GTS3locals.U4_PB_W(offset,data); }
 
 static WRITE_HANDLER(alpha_u4_pb_w) {
 	static int ledOK = 0;
+	static int col = 0;
+
 	int lampBits = data & 0x0f;
 	int dispBits = data & 0xf0;
+
 	//logerror("lampcolumn=%4x STRB=%d LCLR=%d\n",GTS3locals.lampColumn,data&LSTRB,data&LCLR);
 	core_setLamp(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
-	if (lampBits == 0x07)
+
+	if (lampBits == 0x07 && GTS3locals.u4pb == (0x05 | dispBits)) {
 		GTS3locals.lampColumn = 1;
-	else if (lampBits == 0x06 && (GTS3locals.u4pb & 0x0f) == 0x04)
+		col = 0;
+		coreGlobals.tmpLampMatrix[0] = 0;
+	} else if (lampBits == 0x06 && GTS3locals.u4pb == (0x04 | dispBits)) {
 		GTS3locals.lampColumn = ((GTS3locals.lampColumn << 1) & 0x0fff);
+		col++;
+		if (col < 12) coreGlobals.tmpLampMatrix[col] = 0;
+	}
 
 	if (GTS3locals.u4pb == data && ledOK && lampBits != 0x06) {
 		ledOK = 0;
 		coreGlobals.tmpLampMatrix[12] = data;
 	}
-	if (lampBits == 0x06 && (GTS3locals.u4pb & 0x0f) == 0x02) ledOK = 1;
+	if (lampBits == 0x06 && GTS3locals.u4pb == (0x02 | dispBits)) ledOK = 1;
 
 	if (dispBits == 0xe0) { GTS3locals.acol = 0; }
 	else if (dispBits == 0xc0) { GTS3locals.acol++; }
@@ -231,20 +240,26 @@ static WRITE_HANDLER(alpha_u4_pb_w) {
 static WRITE_HANDLER(dmd_u4_pb_w) {
 	static int ledOK = 0;
 	static int bitSet = 0;
+	static int col = 0;
+
 	int lampBits = data & 0x0f;
 	core_setLamp(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
 	if (data & ~GTS3locals.u4pb & LSTRB) { // Positive edge
-		if ((data & LCLR) && (data & LDATA))
+		if ((data & LCLR) && (data & LDATA)) {
 			GTS3locals.lampColumn = 1;
-		else
+			col = 0;
+		} else {
 			GTS3locals.lampColumn = ((GTS3locals.lampColumn << 1) & 0x0fff);
+			col++;
+		}
+		if (col < 12) coreGlobals.tmpLampMatrix[col] = 0;
 	}
 
 	if (GTS3locals.u4pb == data && ledOK && lampBits != 0x06) {
 		ledOK = 0;
 		coreGlobals.tmpLampMatrix[12] = data;
 	}
-	if (lampBits == 0x06 && (GTS3locals.u4pb & 0x0f) == 0x02) ledOK = 1;
+	if (lampBits == 0x06 && GTS3locals.u4pb == (0x02 | (data & 0xf0))) ledOK = 1;
 
 	if (data & DSTRB) {
 		bitSet++;
@@ -254,7 +269,6 @@ static WRITE_HANDLER(dmd_u4_pb_w) {
 		bitSet = 0;
 
 	GTS3_dmdlocals.dstrb = (data & DSTRB) != 0;
-
 	GTS3locals.u4pb = data;
 }
 
@@ -443,9 +457,8 @@ static INTERRUPT_GEN(GTS3_vblank) {
   GTS3locals.VBLANK_PROC();
 
   /*-- lamps --*/
-  memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   if ((GTS3locals.vblankCount % GTS3_LAMPSMOOTH) == 0) {
-	memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
+	memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   }
   /*-- solenoids --*/
   coreGlobals.solenoids = GTS3locals.solenoids;
