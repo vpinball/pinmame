@@ -7,6 +7,7 @@ Bugs Fixed
 - Implemented memory protection in wpc games.
 - Fixed rom write problems in wms soundboards.
 - Fixed bug with System 7 games (e.g. Black Knight sound now works)
+- Fixed bug in .Solenoid() with solenoid 33-36 on wpc games.
   [Martin Adrian]
 
 - Adjusted default volume levels for pre-DCS games to match my own machines levels (ex: drums were way too soft before)
@@ -14,11 +15,11 @@ Bugs Fixed
 - Fixed (with an ugly hack) WPC Pre-DCS games that have pitch too low when music not playing
   (This was probably one of the longest/oldest bugs ever, as it's been there since day 1 of the original wpcmame emulator)
   [Steve Ellenoff]
-  
+
 
 New Features
 ------------
-- Moved to MAME 73 core
+- Moved to MAME 74 core
   [All]
 
 - Reworked sound commander internally. No visible change
