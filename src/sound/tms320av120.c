@@ -618,7 +618,7 @@ int TMS320AV120_sh_start(const struct MachineSound *msound)
 
 void TMS320AV120_sh_stop(void)
 {
-  int i;
+  int i,vi;
 
   //Close logging file
   #if LOG_DATA_IN	
@@ -629,11 +629,11 @@ void TMS320AV120_sh_stop(void)
   for (i = 0; i < intf->num; i++)
   {
 	/*-- Delete Synth windows data --*/
-	for(i=0;i<16;i++)
+	for(vi=0;vi<16;vi++)
 	{
-		if(tms320av120[i]._V[i]) {
-			free(tms320av120[i]._V[i]);
-			tms320av120[i]._V[i] = NULL;
+		if(tms320av120[i]._V[vi]) {
+			free(tms320av120[i]._V[vi]);
+			tms320av120[i]._V[vi] = NULL;
 		}
 	}
   }
