@@ -586,8 +586,15 @@ S11CS_SOUNDROM000(      "bugs_u4.l2",  CRC(04bc9aa5) SHA1(c3da2dc3e26b88a0ebc6f8
                         "bugs_u20.l1", CRC(5df734ef) SHA1(c8d153444dd6171c3ebddc8100ab06fde3373cc6))
 S11_ROMEND
 #define input_ports_bbnny input_ports_s11
-
 CORE_GAMEDEF(bbnny, l2, "Bugs Bunny Birthday Ball (L-2)", 1990, "Bally", s11c_one,0)
+
+S11_ROMSTART48(bbnny,lu,"bugs_u26.l2", CRC(b4358920) SHA1(ce56eadf26ee74a3a7b185893dceb09dc4929fa8),
+                        "u27-lu2.rom", CRC(aaa2c82d) SHA1(b279c87cb2ac90a818eeb1afa6115b8cdab1b0df))
+S11CS_SOUNDROM000(      "bugs_u4.l2",  CRC(04bc9aa5) SHA1(c3da2dc3e26b88a0ebc6f87e61fc71bec45330c3),
+                        "bugs_u19.l1", CRC(a2084702) SHA1(ffd749387e7b52bad1e98c6a8939fb87bc67524c),
+                        "bugs_u20.l1", CRC(5df734ef) SHA1(c8d153444dd6171c3ebddc8100ab06fde3373cc6))
+S11_ROMEND
+CORE_CLONEDEF(bbnny,lu,l2,"Bugs Bunny Birthday Ball (LU-2) European", 1990, "Bally", s11c_one,0)
 
 /*--------------------
 / Dr. Dude - moved to own simulator
