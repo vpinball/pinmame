@@ -168,7 +168,11 @@ CORE_GAMEDEFNV(forceii,"Force II",1981,"Gottlieb",gl_mGTS80S,0)
 /*-------------------------------------------------------------------
 / Pink Panther
 /-------------------------------------------------------------------*/
-INITGAME(pnkpnthr,GEN_GTS80,0,dispNumeric1, SNDBRD_GTS80S,0,0)
+static core_tLCDLayout dispPinkPanther[] = {
+  DISP_SEG_IMPORT(dispNumeric1),
+  {6, 8,50,2,CORE_SEG9}, {6,16,54,2,CORE_SEG9}, {0}
+};
+INITGAME(pnkpnthr,GEN_GTS80,0,dispPinkPanther, SNDBRD_GTS80S,0,0)
 GTS80_1_ROMSTART(pnkpnthr, "664-1.cpu",    CRC(a0d3e69a),
                            "u2_80.bin",    CRC(4f0bc7b1),
                            "u3_80.bin",    CRC(1e69f9d0))
