@@ -202,7 +202,7 @@ const struct sndbrdIntf zac13136Intf = {
 const struct sndbrdIntf zac11178Intf = {
   "ZAC11178", sns_init, NULL, sns_diag, NULL, sns_data_w, NULL, sns_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
-static struct TMS5220interface sns_tms5220Int = { 640000, 50, sns_5220Irq };
+static struct TMS5220interface sns_tms5220Int = { 640000, 100, sns_5220Irq };
 static struct DACinterface     sns_dacInt = { 1, { 20 }};
 static struct AY8910interface  sns_ay8910Int = { 1, 3580000/4, {25}, {sns_8910a_r}};
 static struct AY8910interface  sns2_ay8910Int = { 2, 3580000/4, {25, 25}, {sns_8910a_r, sns2_8910a_r}};
@@ -358,7 +358,7 @@ static WRITE_HANDLER(sns_pia1b_w) {
     tms5220_data_w(0, snslocals.pia1a);
     pia_set_input_ca2(SNS_PIA1, 1); pia_set_input_ca2(SNS_PIA1, 0);
   }
-  else if (snslocals.pia1b & ~data & 0x01) { // read
+  else /* if (snslocals.pia1b & ~data & 0x01) */ { // read
     pia_set_input_a(SNS_PIA1, tms5220_status_r(0));
     pia_set_input_ca2(SNS_PIA1, 1); pia_set_input_ca2(SNS_PIA1, 0);
   }
@@ -418,8 +418,8 @@ static void sns_irqb(int state) {
 
 static void sns_5220Irq(int state) { pia_set_input_cb1(SNS_PIA1, !state); }
 
-/* TECHNOPLAY sound board - 
-   
+/* TECHNOPLAY sound board -
+
    Pretty much stole the Gottlieb System 80b Generation 1 sound board, plus..
    added a TMS7000 and an extra DAC for additional sounds */
 
@@ -435,7 +435,7 @@ static struct {
   int    snd_data;			// Command from cpu
   UINT8  dac_volume;
   UINT8  dac_data;
-  UINT8  speechboard_drq;	
+  UINT8  speechboard_drq;
   UINT8  sp0250_latch;
 } techno_locals;
 
@@ -578,7 +578,7 @@ void tsns_exit(int boardNo)
 
 static WRITE_HANDLER(tsns_data_w) {
   data ^= 0xff;	/*Data is inverted from main cpu*/
-  
+
   //Bit 7 is the strobe - so commands are sent 2x, once with strobe set, then again, with it cleared..
   //Doesn't seem to matter much if we put this in or leave it out..
   //if(data & 0x80)
