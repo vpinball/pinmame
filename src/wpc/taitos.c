@@ -167,42 +167,49 @@ MACHINE_DRIVER_END
 
 // piggy pack board
 
-static WRITE_HANDLER(ay0_0)
+static WRITE_HANDLER(ay8910_0_ctrl_port)
 {
+	// logerror("ay8910_0_ctrl_port: %0x\n", data);
+	// ctrl port
+	AY8910Write(0,0,data);
 }
 
-static WRITE_HANDLER(ay0_1)
+static WRITE_HANDLER(ay8910_0_data_port)
 {
+	// logerror("ay8910_0_data_port: %0x\n", data);
+	// data port
+	AY8910Write(0,1,data);
 }
 
-static WRITE_HANDLER(ay0_2)
+static WRITE_HANDLER(ay8910_1_ctrl_port)
 {
+	// logerror("ay8910_1_ctrl_port: %0x\n", data);
+	// ctrl port
+	AY8910Write(1,0,data);
 }
 
-static WRITE_HANDLER(ay1_0)
+static WRITE_HANDLER(ay8910_1_data_port)
 {
-}
-
-static WRITE_HANDLER(ay1_1)
-{
-}
-
-static WRITE_HANDLER(ay1_2)
-{
+	// logerror("ay8910_1_data_port: %0x\n", data);
+	// data port
+	AY8910Write(1,1,data);
 }
 
 static WRITE_HANDLER(unknown2000)
 {
+	// logerror("unknown2000: %0x\n", data);
 }
 
 static READ_HANDLER(unknown1007)
 {
-	return 0;
+	// logerror("unknown1007 read\n");
+	return 0; // AY8910Read(0); ???
 }
 
 static READ_HANDLER(unknown100d)
 {
-	return 0;
+	// logerror("unknown100d read\n");
+	return 0; // AY8910Read(1); ???
 }
 
 struct AY8910interface TAITO_ay8910Int = {
@@ -227,12 +234,12 @@ MEMORY_END
 MEMORY_WRITE_START(taitospp_writemem)
   { 0x0000, 0x007f, MWA_RAM },
   { 0x0400, 0x0403, pia_w(SP_PIA0) },
-  { 0x1000, 0x1000, ay0_0 },
-  { 0x1003, 0x1003, ay0_1 },
-  { 0x100a, 0x100a, ay0_2 },
-  { 0x100b, 0x100b, ay1_0 },
-  { 0x100c, 0x100c, ay1_1 },
-  { 0x100e, 0x100e, ay1_2 },
+  { 0x1000, 0x1000, ay8910_0_ctrl_port },
+  { 0x1003, 0x1003, ay8910_0_ctrl_port },
+  { 0x100a, 0x100a, ay8910_0_data_port },
+  { 0x100b, 0x100b, ay8910_0_data_port },
+  { 0x100c, 0x100c, ay8910_1_ctrl_port },
+  { 0x100e, 0x100e, ay8910_1_data_port },
   { 0x2000, 0x2000, unknown2000 },
   { 0x5000, 0x7fff, MWA_ROM },
   { 0xf000, 0xffff, MWA_ROM }, /* reset vector */
