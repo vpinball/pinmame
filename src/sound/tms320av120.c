@@ -63,8 +63,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define VERBOSE
 
 #ifdef VERBOSE
-//#define LOG(x)	logerror x
-#define LOG(x)	printf x
+#define LOG(x)	logerror x
+//#define LOG(x)	printf x
 #else
 #define LOG(x)
 #endif
