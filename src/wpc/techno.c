@@ -50,21 +50,6 @@ static struct {
   int LampCol;
 } locals;
 
-//Convert Bit Column Data to corresponding #, ie, if Bit 3=1, return 3 - Zero Based (Bit1=1 returns 0)
-//Probably should be moved to core.c since it could be used in many drivers.
-static int BitColToNum(int tmp)
-{
-	int i, data;
-	i = data = 0;
-	while(tmp)
-	{
-		if(tmp&1) data+=i;
-		tmp = tmp>>1;
-		i++;
-	}
-	return data;
-}
-
 /* Each time an IRQ is fired, the Vector # is incremented (since the IRQ generation is via a 4040 timer)
  
    Bit 7, 3 are always 1, and 5, 6 are always 0!
@@ -147,7 +132,7 @@ READ16_HANDLER(rtrg_r) {
 }
 
 //Lamp Rows (actually columns) 1-8
-WRITE16_HANDLER(lamp1_w) { locals.LampCol = BitColToNum(data >> 8); }
+WRITE16_HANDLER(lamp1_w) { locals.LampCol = core_BitColToNum(data >> 8); }
 //Lamp Cols (actually rows) 1-8
 WRITE16_HANDLER(lamp2_w) { 	coreGlobals.tmpLampMatrix[locals.LampCol] = data>>8; }
 
