@@ -32,14 +32,6 @@
     SIM_PORTS(balls) \
     GTS3_COMPORTS
 
-/* Flag 0x2000 marks games with combined flipper / diag up/down buttons */
-#define GTS3_INPUT_PORTS_45_START(name,balls) \
-  INPUT_PORTS_START(name) \
-    CORE_PORTS \
-    SIM_PORTS(balls) \
-    GTS3_COMPORTS \
-    PORT_BITX(0x2000,IP_ACTIVE_LOW,IPT_UNUSED,"",0,IP_JOY_NONE)
-
 #define GTS3_INPUT_PORTS_END INPUT_PORTS_END
 
 #define GTS31_COMPORTS \
