@@ -118,26 +118,6 @@ static INTERRUPT_GEN(GTS80_vblank) {
   core_updateSw(active);
 }
 
-static SWITCH_UPDATE(GTS80) {
-	if (inports) {
-		coreGlobals.swMatrix[0] = ((inports[GTS80_COMINPORT] & 0xff00)>>8);
-        coreGlobals.swMatrix[8] = (coreGlobals.swMatrix[8]&0xc0) | (inports[GTS80_COMINPORT] & 0x003f);
-	}
-
-  /*-- slam tilt --*/
-	riot6532_set_input_a(1, (core_gameData->gen&GEN_GTS80B4K) ? (core_getSw(GTS80_SWSLAMTILT)?0x80:0x00) : (core_getSw(GTS80_SWSLAMTILT)?0x00:0x80));
-	/* i86 NMI line triggers Slam on the video board */
-    if (GTS80locals.hasVideo && core_getSw(GTS80_SWSLAMTILT)) cpu_set_irq_line(GTS80_VIDCPU, IRQ_LINE_NMI, PULSE_LINE);
-}
-
-static WRITE_HANDLER(GTS80_sndCmd_w) {
-	// logerror("sound cmd: 0x%02x\n", data);
-	if ( Machine->gamedrv->flags & GAME_NO_SOUND )
-		return;
-
-	sndbrd_0_data_w(0, data|((GTS80locals.lampMatrix[1]&0x02)?0x10:0x00));
-}
-
 /* GTS80 switch numbering, row and column is swapped */
 static int GTS80_sw2m(int no) {
 	if ( no>=96 )
@@ -157,6 +137,45 @@ static int GTS80_m2sw(int col, int row) {
 static int GTS80_lamp2m(int no) { return no+8; }
 static int GTS80_m2lamp(int col, int row) { return (col-1)*8+row; }
 
+static SWITCH_UPDATE(GTS80) {
+	if (inports) {
+		coreGlobals.swMatrix[0] = ((inports[GTS80_COMINPORT] & 0xff00)>>8);
+		coreGlobals.swMatrix[8] = (coreGlobals.swMatrix[8]&0xc0) | (inports[GTS80_COMINPORT] & 0x003f);
+	}
+
+  /*-- slam tilt --*/
+	riot6532_set_input_a(1, (core_gameData->gen&GEN_GTS80B4K) ? (core_getSw(GTS80_SWSLAMTILT)?0x80:0x00) : (core_getSw(GTS80_SWSLAMTILT)?0x00:0x80));
+}
+
+static SWITCH_UPDATE(GTS80VID) {
+	int i;
+	for (i=1; i < 8; i++) {
+		coreGlobals.swMatrix[i] = (coreGlobals.swMatrix[i] & 0xfc) | (core_getSw(GTS80_m2sw(i, 0)) > 0) | (core_getSw(GTS80_m2sw(i, 1)) > 0) << 1;
+	}
+	if (!(GTS80locals.vblankCount % 5)) {
+		for (i=1; i < 8; i++) {
+			core_setSw(GTS80_m2sw(i, 0), 0);
+			core_setSw(GTS80_m2sw(i, 1), 0);
+		}
+	}
+	if (inports) {
+		coreGlobals.swMatrix[0] = ((inports[GTS80_COMINPORT] & 0xff00)>>8);
+		coreGlobals.swMatrix[8] = (coreGlobals.swMatrix[8]&0xc0) | (inports[GTS80_COMINPORT] & 0x003f);
+	}
+
+  /*-- slam tilt --*/
+	riot6532_set_input_a(1, (core_gameData->gen&GEN_GTS80B4K) ? (core_getSw(GTS80_SWSLAMTILT)?0x80:0x00) : (core_getSw(GTS80_SWSLAMTILT)?0x00:0x80));
+	/* i86 NMI line triggers Slam on the video board */
+    if (core_getSw(GTS80_SWSLAMTILT)) cpu_set_irq_line(GTS80_VIDCPU, IRQ_LINE_NMI, PULSE_LINE);
+}
+
+static WRITE_HANDLER(GTS80_sndCmd_w) {
+	// logerror("sound cmd: 0x%02x\n", data);
+	if ( Machine->gamedrv->flags & GAME_NO_SOUND )
+		return;
+
+	sndbrd_0_data_w(0, data|((GTS80locals.lampMatrix[1]&0x02)?0x10:0x00));
+}
 
 static int GTS80_getSwRow(int row) {
 	int value = 0;
@@ -684,7 +703,7 @@ MACHINE_DRIVER_END
 	0x0008 -> #0x02 (fixed to NMI according to i86.h)
 	0x0080 -> #0x20
 	0x0084 -> #0x21
-	0x009c -> #0x27
+	0x009c -> #0x27 (same address as 0x21)
 
 	I picked 0x20, because this way, the language selection
 	as described below works. No idea what the other IRQs
@@ -702,7 +721,7 @@ MACHINE_DRIVER_END
 	A - 0x01 - reset game screen
 	B - 0x02 - place Caveman on left hand side
 	C - 0x03 - place Caveman on right hand side
-	D - 0x04 - ??? (maybe set player number)
+	D - 0x04 - convert a Tyrannosaurus into a Pterodactyl
 	F - 0x06 - show extra ball spot
 	G - 0x07 - tilt
 	H - 0x08 - exit to demo mode
@@ -717,18 +736,25 @@ MACHINE_DRIVER_END
 	(Didn't find the setting for french text yet)
 */
 
+static int callback = 0x20;
+
 static void video_irq(int irqline)
 {
+  if (irqline) {
+    callback = 0x21;
+    GTS80locals.video_data = coreGlobals.swMatrix[0] >> 4;
+  } else
+    callback = 0x20;
   logerror("command to video board = %02X\n", GTS80locals.video_data);
-  cpu_set_irq_line(GTS80_VIDCPU, irqline, ASSERT_LINE);
+  cpu_set_irq_line(GTS80_VIDCPU, 0, ASSERT_LINE);
 }
 
 /* The right i86 IRQ vector is determined by the return value of irq_callback(0)???
    Why's that??? Sounds funny to me... but what the heck. */
 static int irq_callback(int irqline)
 {
-  cpu_set_irq_line(GTS80_VIDCPU, irqline, CLEAR_LINE);
-  return 0x20;
+  cpu_set_irq_line(GTS80_VIDCPU, 0, CLEAR_LINE);
+  return callback;
 }
 
 static int maxy = -1;
@@ -759,70 +785,6 @@ static MACHINE_INIT(gts80vid) {
 
 }
 
-/* this palette is a FAKE! I don't know where the original colors
-   come from yet, so I tried to make it look as nice as I could */
-static unsigned char gts80vid_palette[16*3] =
-{
-	0, 0, 0,
-	32, 32, 16,    //17, 17, 17,
-	64, 64, 32,    //34, 34, 34,
-	110, 110, 150, //51, 51, 51,
-	128, 136, 64,  //68, 68, 68,
-	160, 168, 80,  //85, 85, 85,
-	192, 200, 96,  //102, 102, 102,
-	224, 232, 112, //119, 119, 119,
-	31, 143, 16,   //136, 136, 136,
-	63, 159, 48,   //153, 153, 153,
-	75, 175, 80,   //170, 170, 170,
-	127, 191, 112, //187, 187, 187,
-	195, 195, 195, //204, 204, 204
-	64, 32, 32,    //221, 221, 221,
-	64, 48, 32,    //238, 238, 238
-	255, 255, 255  //255, 255, 255
-};
-
-/* initialize the palette. The way it's done here
-   allows for both configurable segment colors
-   as well as for the original game colors. */
-static void palette_init_gts80vid (unsigned char *palette,
-	unsigned short *colortable,const unsigned char *color_prom) {
-  int rStart = 0xff;
-  int gStart = 0xe0;
-  int bStart = 0x20;
-  int perc66 = 67;
-  int perc33 = 33;
-  int perc0  = 20;
-  int ii;
-
-#ifdef PINMAME_EXT
-  if ((pmoptions.dmd_red > 0) || (pmoptions.dmd_green > 0) || (pmoptions.dmd_blue > 0)) {
-    rStart = pmoptions.dmd_red;
-    gStart = pmoptions.dmd_green;
-    bStart = pmoptions.dmd_blue;
-  }
-  if ((pmoptions.dmd_perc0 > 0) || (pmoptions.dmd_perc33 > 0) || (pmoptions.dmd_perc66 > 0)) {
-    perc66 = pmoptions.dmd_perc66;
-    perc33 = pmoptions.dmd_perc33;
-    perc0  = pmoptions.dmd_perc0;
-  }
-#endif /* PINMAME_EXT */
-
-  palette[DMD_DOTOFF*3+0] = rStart * perc0 / 100;
-  palette[DMD_DOTOFF*3+1] = gStart * perc0 / 100;
-  palette[DMD_DOTOFF*3+2] = bStart * perc0 / 100;
-  palette[DMD_DOT33*3+0]  = rStart * perc33 / 100;
-  palette[DMD_DOT33*3+1]  = gStart * perc33 / 100;
-  palette[DMD_DOT33*3+2]  = bStart * perc33 / 100;
-  palette[DMD_DOT66*3+0]  = rStart * perc66 / 100;
-  palette[DMD_DOT66*3+1]  = gStart * perc66 / 100;
-  palette[DMD_DOT66*3+2]  = bStart * perc66 / 100;
-  palette[DMD_DOTON*3+0]  = rStart;
-  palette[DMD_DOTON*3+1]  = gStart;
-  palette[DMD_DOTON*3+2]  = bStart;
-
-  memcpy (palette + 15, &gts80vid_palette, sizeof(gts80vid_palette));
-}
-
 static VIDEO_START(gts80vid)
 {
 	if ((tmpbitmap = auto_bitmap_alloc(Machine->drv->screen_width,Machine->drv->screen_height)) == 0)
@@ -836,18 +798,18 @@ static VIDEO_STOP(gts80vid)
 
 static UINT8 *vram;
 
-/* The game resolution is actually just 128 * 256 pixels.
-   But we strech it right here and now to 256 * 256. */
 static WRITE_HANDLER(vram_w) {
 	int y = offset / 64;
 	int x = offset % 64;
-	int hi = 5 + (data >> 4);
-	int lo = 5 + (data & 0x0f);
+	int p1 = 5 + (data >> 6);
+	int p2 = 5 + ((data >> 4) & 0x03);
+	int p3 = 5 + ((data >> 2) & 0x03);
+	int p4 = 5 + (data & 0x03);
 
-	plot_pixel(tmpbitmap, x*4,   maxy+y, hi);
-	plot_pixel(tmpbitmap, x*4+1, maxy+y, hi);
-	plot_pixel(tmpbitmap, x*4+2, maxy+y, lo);
-	plot_pixel(tmpbitmap, x*4+3, maxy+y, lo);
+	plot_pixel(tmpbitmap, x*4,   maxy+y, p1);
+	plot_pixel(tmpbitmap, x*4+1, maxy+y, p2);
+	plot_pixel(tmpbitmap, x*4+2, maxy+y, p3);
+	plot_pixel(tmpbitmap, x*4+3, maxy+y, p4);
 	vram[offset] = data;
 }
 
@@ -862,8 +824,8 @@ extern VIDEO_UPDATE(core_gen);
 /* clipping area if dmd_only is on */
 const struct rectangle clip1 = { 0, 255, 70, 309 };
 
-/* clipping area if dmd_only is off */
-const struct rectangle clip2 = { 0, 255, 140, 379 };
+/* clipping area if dmd_only is off - shows the garbled screen bottom too */
+const struct rectangle clip2 = { 0, 255, 140, 395 };
 
 static VIDEO_UPDATE(gts80vid)
 {
@@ -872,69 +834,109 @@ static VIDEO_UPDATE(gts80vid)
 
 	if (maxy < 0) {
 		maxy = Machine->visible_area.max_y;
-		if (maxy < 140)
+		if (maxy < 140) {
 			maxy = 70;
-		else
+			set_visible_area(0, 255, 0, 309);
+		} else {
 		    maxy = 140;
-		set_visible_area(0, 255, 0, maxy + 239);
+			set_visible_area(0, 255, 0, 395);
+		}
 	}
 
 	copybitmap(bitmap,tmpbitmap,0,0,0,0,(maxy < 100 ? &clip1 : &clip2),TRANSPARENCY_NONE,0);
 }
 
+/* we'll need a screenshot from the actual game to set the palette right! */
+static int rgb[16*3] = {
+	0, 0, 0,
+	127, 255, 127,
+	255, 127, 127,
+	255, 255, 127,
+	127, 127, 255,
+	127, 255, 255,
+	255, 127, 255,
+	255, 255, 255,
+	0, 0, 0,
+	0, 255, 0,
+	255, 0, 0,
+	255, 255, 0,
+	0, 0, 255,
+	0, 255, 255,
+	255, 0, 255,
+	255, 255, 255
+};
+
 static int read1x = 0;
 
+/* port 0xx = Interrupt Controller */
 static WRITE_HANDLER(port00xw) {
-	logerror("write port 0%02x = %02x\n", offset, data);
+	logerror("IRQ Controller write %x = %02x\n", offset/2, data);
 }
+static READ_HANDLER(port002r) {
+	logerror("IRQ Controller read\n");
+	return 0x00;
+}
+/* port 1xx = CRTC HD46505 */
 static WRITE_HANDLER(port10xw) {
 	if (offset == 0 && data == 0x10)
 		read1x = 0;
 	if (offset == 0 && data == 0x11)
 		read1x = 1;
-	logerror("write port  1%02x = %02x\n", offset, data);
+	logerror("HD46505 write %x = %02x\n", offset/2, data);
 }
 static READ_HANDLER(port102r) {
-	logerror("read  port  102\n", offset);
+	logerror("HD46505 read\n");
 	return 0x00;
 }
+/* output to game switches, row 0 */
 static WRITE_HANDLER(port200w) {
-	logerror("write port   200 = %02x\n", offset, data);
+	int i;
+	if (data)
+		for (i=1; i < 8; i++) {
+			core_setSw(GTS80_m2sw(i, 0), data & 1);
+			data >>= 1;
+		}
 }
 static READ_HANDLER(port200r) {
 /* no idea what it is for, but its high nibble
    has got to be all 1 after IRQ 0x20 is called,
    or else the video code enters an endless loop. */
-	logerror("read  port   200\n", offset);
+	logerror("read  port 200\n");
 	return 0xf0;
 }
+/* output to game switches, row 1 */
 static WRITE_HANDLER(port300w) {
-	logerror("write port    300 = %02x\n", offset, data);
+	int i;
+	if (data)
+		for (i=1; i < 8; i++) {
+			core_setSw(GTS80_m2sw(i, 1), data & 1);
+			data >>= 1;
+		}
 }
 /* read game state and no. of active player */
 static READ_HANDLER(port300r) {
-	logerror("read  port    300\n", offset);
 	return GTS80locals.video_data;
 }
-/* diag switch for video board*/
+/* joystick inports */
 static READ_HANDLER(port400r) {
-//	logerror("read  port     4%02x\n", offset);
-	return (coreGlobals.swMatrix[0] & 0x02) ? 0x0f : 0x00;
+	return coreGlobals.swMatrix[0] >> 4;
 }
+/* set up game colors. 4 colors at a time only, out of 16 possible! */
 static WRITE_HANDLER(port50xw) {
-	logerror("write port      5%02x = %02x\n", offset, data);
+	palette_set_color(5+offset/2, rgb[data*3], rgb[data*3+1], rgb[data*3+2]);
 }
 
 static READ_HANDLER(in_1cb_r) {
 	logerror("read Caveman input 1CB\n");
-	return coreGlobals.swMatrix[0] >> 4;
+	return 0;
 }
 static READ_HANDLER(in_1e4_r) {
 	logerror("read Caveman input 1E4\n");
-	return coreGlobals.swMatrix[0] >> 4;
+	return 0;
 }
 
 PORT_READ_START(video_readport)
+	{ 0x002, 0x002, port002r },
 	{ 0x102, 0x102, port102r },
 	{ 0x200, 0x200, port200r },
 	{ 0x300, 0x300, port300r },
@@ -971,12 +973,11 @@ MACHINE_DRIVER_START(gts80vid)
   MDRV_CPU_MEMORY(video_readmem, video_writemem)
   MDRV_CPU_PORTS(video_readport, video_writeport)
   MDRV_CORE_INIT_RESET_STOP(gts80vid,NULL,gts80)
+  MDRV_SWITCH_UPDATE(GTS80VID)
   /* video hardware */
   MDRV_SCREEN_SIZE(640, 400)
-  MDRV_VISIBLE_AREA(0, 639, 0, 399)
+  MDRV_VISIBLE_AREA(0, 255, 0, 399)
   MDRV_GFXDECODE(0)
-  MDRV_PALETTE_LENGTH(21) // 16 game colors + 5 segment colors
-  MDRV_PALETTE_INIT(gts80vid)
   MDRV_VIDEO_ATTRIBUTES(VIDEO_TYPE_RASTER | VIDEO_MODIFIES_PALETTE)
   MDRV_VIDEO_START(gts80vid)
   MDRV_VIDEO_STOP(gts80vid)
