@@ -66,6 +66,7 @@ IDB_SPLASH4             BITMAP                  "Res\\VPinMAMESplash4.bmp"
 IDR_CONTROLLER          REGISTRY                "Controller.rgs"
 IDR_WSHDLG              REGISTRY                "WSHDlg.rgs"
 
+#ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
@@ -102,6 +103,8 @@ BEGIN
         VALUE "Translation", 0x409, 1200
     END
 END
+
+#endif    // !_MAC
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -202,22 +205,21 @@ BEGIN
                     IDC_STATIC,150,51,160,15
 END
 
-IDD_DISCLAIMERDLG DIALOG  0, 0, 213, 111
-STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | WS_POPUP | WS_CAPTION |
-    WS_SYSMENU
+IDD_DISCLAIMERDLG DIALOG DISCARDABLE  0, 0, 218, 158
+STYLE DS_MODALFRAME | DS_SETFOREGROUND | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Please answer and press OK..."
 FONT 8, "MS Sans Serif"
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,78,90,50,14,WS_GROUP
-    CONTROL         "Yes, I am",IDC_YESIAM,"Button",BS_AUTORADIOBUTTON |
-                    WS_GROUP | WS_TABSTOP,46,73,45,10
+    DEFPUSHBUTTON   "OK",IDOK,83,137,50,14,WS_GROUP
+    CONTROL         "Yes, I am",IDC_YESIAM,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP | WS_TABSTOP,55,114,45,10
     CONTROL         "No, I am not",IDC_NOIAMNOT,"Button",BS_AUTORADIOBUTTON,
-                    101,73,55,10
-    CTEXT           "Usage of emulators in conjuction with ROM images you are not legally entitled to own is forbidden by copyright law.",
-                    IDC_STATIC,7,7,199,16
-    CTEXT           "Game Description here",IDC_DISGAMESPEC,7,44,199,8
-    CTEXT           "ARE YOU LEGALLY ENTITLED TO PLAY",IDC_STATIC,7,32,199,8
-    CTEXT           "ON THIS EMULATOR?",IDC_STATIC,7,56,199,8
+                    110,114,55,10
+    CTEXT           "Usage of emulators in conjuction with ROM images you are not legally entitled to own is forbidden by copyright law.\n\n\nNOTICE: Visual PinMAME is FREEWARE!\nIt is ILLEGAL to charge money for this program.",
+                    IDC_STATIC,6,8,205,49
+    CTEXT           "Game Description here",IDC_DISGAMESPEC,7,83,204,8
+    CTEXT           "ARE YOU LEGALLY ENTITLED TO PLAY",IDC_STATIC,7,72,204,8
+    CTEXT           "ON THIS EMULATOR?",IDC_STATIC,7,96,204,8
 END
 
 IDD_GAMEINFODLG DIALOG  0, 0, 393, 245
@@ -306,9 +308,9 @@ BEGIN
     IDD_DISCLAIMERDLG, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 206
+        RIGHTMARGIN, 211
         TOPMARGIN, 7
-        BOTTOMMARGIN, 104
+        BOTTOMMARGIN, 151
     END
 
     IDD_GAMEINFODLG, DIALOG
