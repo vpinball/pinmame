@@ -191,7 +191,7 @@ BY35_ROMEND
 #define input_ports_meteor input_ports_st
 CORE_GAMEDEFNV(meteor,"Meteor",1979,"Stern",by35_mST200,GAME_NO_SOUND)
 /*--------------------------------
-/ Meteor (7-digit bootleg)
+/ Meteor (7-digit conversion)
 /-------------------------------*/
 INITGAME(meteorb,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
 ST200_ROMSTART8888(meteorb,"cpu_u1.716",CRC(e0fd8452) SHA1(a13215378a678e26a565742d81fdadd2e161ba7a),
@@ -200,7 +200,7 @@ ST200_ROMSTART8888(meteorb,"cpu_u1.716",CRC(e0fd8452) SHA1(a13215378a678e26a5657
                           "cpu_u6b.716",CRC(10cb5d60) SHA1(1d3da195fbe06b49d08e4ce2ebc5d9d811126aa6))
 BY35_ROMEND
 #define input_ports_meteorb input_ports_st
-CORE_CLONEDEFNV(meteorb,meteor,"Meteor (7-digit bootleg)",2003,"Stern / Oliver",by35_mST200,GAME_NO_SOUND)
+CORE_CLONEDEFNV(meteorb,meteor,"Meteor (7-digit conversion)",2003,"Stern / Oliver",by35_mST200,GAME_NO_SOUND)
 /*--------------------------------
 / Galaxy
 /-------------------------------*/

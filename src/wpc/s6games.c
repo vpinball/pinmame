@@ -89,7 +89,7 @@ S6_ROMEND
 #define input_ports_frpwr_l2 input_ports_s6
 CORE_GAMEDEFNV(frpwr_l2,"Firepower (L-2)",1980,"Williams",s6_mS6S,0)
 /*-------------------------------
-/ Firepower - Sys.6 7-Digit Bootleg
+/ Firepower - Sys.6 7-Digit conversion
 /------------------------------*/
 static const struct core_dispLayout fp_7digit_disp[] = {
   // Player 1            Player 2
@@ -109,7 +109,7 @@ S67S_SPEECHROMS000x(     "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c3319
                          "v_ic6.532",   CRC(e56f7aa2) SHA1(cb922c3f4d91285dda4ccae880c2d798a82fd51b))
 S6_ROMEND
 #define input_ports_frpwr_b6 input_ports_frpwr_l2
-CORE_CLONEDEFNV(frpwr_b6,frpwr_l2,"Firepower (Sys.6 7-digit bootleg)",2003,"Williams / Oliver",s6_mS6S,0)
+CORE_CLONEDEFNV(frpwr_b6,frpwr_l2,"Firepower (Sys.6 7-digit conversion)",2003,"Williams / Oliver",s6_mS6S,0)
 
 /* Following games used a 7 segment display */
 
@@ -120,7 +120,7 @@ INITGAMEFULL(algar,s6_7digit_disp,0,50,47,48,49,10,38,36)
 S6_ROMSTART(algar,l1, "gamerom.716", CRC(6711da23) SHA1(80a46f5a2630977bc1c6e17466e8865083eb9a18),
                       "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
                       "green2.716",  CRC(1c978a4a) SHA1(1959184764643d58f1740c54bb74c2aad7d667d2))
-S67S_SOUNDROMS8(      "sound.716",   CRC(67ea12e7) SHA1(f81e97183442736d5766a7e5e074bc6539e8ced0))
+S67S_SOUNDROMS8(      "sound4.716",  CRC(67ea12e7) SHA1(f81e97183442736d5766a7e5e074bc6539e8ced0))
 S6_ROMEND
 #define input_ports_algar input_ports_s6
 CORE_GAMEDEF(algar,l1,"Algar (L-1)",1980,"Williams",s6_mS6S,0)
@@ -132,7 +132,7 @@ INITGAMEFULL(alpok,s6_7digit_disp,0,43,35,37,36,38,0,13)
 S6_ROMSTART(alpok,l6, "gamerom6.716",CRC(20538a4a) SHA1(6cdd6b7ded76b3cbd954d371e126e1bbd95a6219),
                       "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
                       "green2.716",  CRC(1c978a4a) SHA1(1959184764643d58f1740c54bb74c2aad7d667d2))
-S67S_SOUNDROMS8(      "sound2.716",  CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
+S67S_SOUNDROMS8(      "sound3.716",  CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
 S67S_SPEECHROMS000x(  "v_ic7.532" ,  CRC(a66c7ca6) SHA1(6e90081f853fcf66bfeac0a8ee1c762b3760b90b),
                       "v_ic5.532" ,  CRC(f16a237a) SHA1(a904138fad5cbc19946bcf0de824e27537dcd621),
                       "v_ic6.532" ,  CRC(15a3cc85) SHA1(86002ac78189415ae912e8bc23c92b3b67610d87))
@@ -143,7 +143,7 @@ CORE_GAMEDEF(alpok,l6,"Alien Poker (L-6)",1980,"Williams",s6_mS6S,0)
 S6_ROMSTART(alpok,l2, "gamerom.716", CRC(79c07603) SHA1(526a45b139394e475fc052636e98d880a8908168),
                       "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
                       "green2.716",  CRC(1c978a4a) SHA1(1959184764643d58f1740c54bb74c2aad7d667d2))
-S67S_SOUNDROMS8(      "sound2.716",  CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
+S67S_SOUNDROMS8(      "sound3.716",  CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
 S67S_SPEECHROMS000x(  "v_ic7.532" ,  CRC(a66c7ca6) SHA1(6e90081f853fcf66bfeac0a8ee1c762b3760b90b),
                       "v_ic5.532" ,  CRC(f16a237a) SHA1(a904138fad5cbc19946bcf0de824e27537dcd621),
                       "v_ic6.532" ,  CRC(15a3cc85) SHA1(86002ac78189415ae912e8bc23c92b3b67610d87))
@@ -153,10 +153,20 @@ CORE_CLONEDEF(alpok,l2,l6,"Alien Poker (L-2)",1980,"Williams",s6_mS6S,0)
 S6_ROMSTART(alpok,f6, "gamerom6.716",CRC(20538a4a) SHA1(6cdd6b7ded76b3cbd954d371e126e1bbd95a6219),
                       "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
                       "green2.716",  CRC(1c978a4a) SHA1(1959184764643d58f1740c54bb74c2aad7d667d2))
-S67S_SOUNDROMS8(      "sound2.716",  CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
+S67S_SOUNDROMS8(      "sound3.716",  CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
 S67S_SPEECHROMS0000(  "5t5014fr.dat",CRC(1d961517) SHA1(c71ee324becfc8cdbecabd1e64b11b5a39ff2483),
                       "5t5015fr.dat",CRC(8d065f80) SHA1(0ab22c9b20ab6fe41abab620435ad03652db7a8e),
                       "5t5016fr.dat",CRC(0ddf91e9) SHA1(48f5fdfc0c5a66dd318fecb7c90e5f5a684a3876),
                       "5t5017fr.dat",CRC(7e546dc1) SHA1(58f8286403978b0d929987189089881d754a9a83))
 S6_ROMEND
 CORE_CLONEDEF(alpok,f6,l6,"Alien Poker (L-6, French speech)",1980,"Williams",s6_mS6S,0)
+
+S6_ROMSTARTMOD(alpok_b6,"almbic14.732",CRC(e9026207) SHA1(5c8f7d4a34af38abfff2fc11ca1ef92174042341),
+                        "almbic20.716",CRC(81d3be59) SHA1(c14f1ca24fe060a5791531d06b87e72f8c267a07),
+                        "almbic17.716",CRC(24f1a617) SHA1(c58d75657e4b5c5a5de1957d580c43afc556437d))
+S67S_SOUNDROMS8(        "sound3.716",  CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
+S67S_SPEECHROMS000x(    "v_ic7.532" ,  CRC(a66c7ca6) SHA1(6e90081f853fcf66bfeac0a8ee1c762b3760b90b),
+                        "v_ic5.532" ,  CRC(f16a237a) SHA1(a904138fad5cbc19946bcf0de824e27537dcd621),
+                        "v_ic6.532" ,  CRC(15a3cc85) SHA1(86002ac78189415ae912e8bc23c92b3b67610d87))
+S6_ROMEND
+CORE_CLONEDEF(alpok,b6,l6,"Alien Poker (L-6, Multiball conversion)",2004,"Williams / Oliver",s6_mS6S,0)
