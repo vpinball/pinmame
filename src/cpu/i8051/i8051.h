@@ -41,10 +41,10 @@ enum {
 	I8051_R0, I8051_R1, I8051_R2, I8051_R3, I8051_R4, I8051_R5, I8051_R6, I8051_R7, I8051_RB
 };
 
-#define I8051_INT0		0   /* External Interrupt 0 */
-#define I8051_INT1		1   /* External Interrupt 1 */
-#define I8051_T0		2   /* Timer 0 External Input */
-#define I8051_T1		3   /* Timer 1 External Input */
+#define I8051_INT0_LINE		0   /* External Interrupt 0 */
+#define I8051_INT1_LINE		1   /* External Interrupt 1 */
+#define I8051_T0_LINE		2   /* Timer 0 External Input */
+#define I8051_T1_LINE		3   /* Timer 1 External Input */
 
 /* definition of the special function registers. Note that the values are */
 /* the same as the internal memory address in the 8051 */
@@ -121,6 +121,8 @@ static READ_HANDLER(internal_ram_read);
 static WRITE_HANDLER(internal_ram_write);
 static READ_HANDLER(sfr_read);
 static WRITE_HANDLER(sfr_write);
+static WRITE_HANDLER( bit_address_w );
+static READ_HANDLER( bit_address_r );
 
 #endif /* _I8051_H */
 

@@ -6,7 +6,12 @@
 
 //Todo: Don't forget to ensure that all operations done on a port address read the data latch, not the 
 //      input pins (and clarify what that means, ie, we don't issue a port_read/port_write?)
-
+//
+//		Implement Bit addressing
+//
+//		Decide how to deal with the MOVC commands vs. MOVX commands.. Both read from external memory
+//		but there needs to be a distinction since they can both access the same address, but access
+//		different chips depending on how it's wired... MOVX uses the RD/WR lines, MOVC uses PSEN
 
 //ACALL code addr							/* 1: aaa1 0001 */
 INLINE void acall(void)
@@ -150,20 +155,21 @@ INLINE void anl_a_r(int r)
 INLINE void anl_c_bitaddr(void)
 {
 	UINT8 addr = ROP_ARG(PC++);		//Grab bit address
-	//Todo: Implement bit addressing
+	UINT8 bit = BIT_R(addr);		//Grab bit data from bit address
+	SET_CY(GET_CY & bit);			//Set Carry flag to Carry Flag Value Logical AND with Bit
 }
 
 //ANL C,/bit addr							/* 1: 1011 0000 */
 INLINE void anl_c_nbitaddr(void)
 {
 	UINT8 addr = ROP_ARG(PC++);		//Grab bit address
-	//Todo: Implement bit addressing
+	UINT8 bit = BIT_R(addr);		//Grab bit data from bit address
+	SET_CY(GET_CY & (~(bit&1)));	//Set Carry flag to Carry Flag Value Logical AND with Complemented Bit
 }
 
 //CJNE A, #data, code addr					/* 1: 1011 0100 */
 INLINE void cjne_a_byte(void)
 {
-	//Todo: Find out if carry flag is set even if compare is =
 	UINT8 data = ROP_ARG(PC++);		//Grab data
 	INT8 rel_addr = ROP_ARG(PC++);	//Grab relative code address
 
@@ -220,7 +226,7 @@ INLINE void cjne_r_byte(int r)
 INLINE void clr_bitaddr(void)
 {
 	UINT8 addr = ROP_ARG(PC++);		//Grab bit address
-	//Todo: Implement bit addressing
+	BIT_W(addr,0);					//Clear bit at specified bit address
 }
 
 //CLR C										/* 1: 1100 0011 */
@@ -238,14 +244,14 @@ INLINE void clr_a(void)
 //CPL bit addr								/* 1: 1011 0010 */
 INLINE void cpl_bitaddr(void)
 {
-	UINT8 addr = ROP_ARG(PC++);		//Grab bit address
-	//Todo: Implement bit addressing
+	UINT8 addr = ROP_ARG(PC++);			//Grab bit address
+	BIT_W(addr,((~BIT_R(addr))&1));		//Complement bit at specified bit address
 }
 
 //CPL C										/* 1: 1011 0011 */
 INLINE void cpl_c(void)
 {
-	int bit = (~GET_CY)&1;			//Complement Carry Flag
+	UINT8 bit = (~GET_CY)&1;			//Complement Carry Flag
 	SET_CY(bit);					
 }
 
@@ -375,7 +381,8 @@ INLINE void jb(void)
 {
 	UINT8 addr = ROP_ARG(PC++);		//Grab bit address
 	INT8 rel_addr = ROP_ARG(PC++);	//Grab relative code address
-	//Todo: Implement bit addressing
+	if(BIT_R(addr))					//If bit set at specified bit address, jump
+		PC = PC + rel_addr;
 }
 
 //JBC bit addr, code addr					/* 1: 0001 0000 */
@@ -383,7 +390,10 @@ INLINE void jbc(void)
 {
 	UINT8 addr = ROP_ARG(PC++);		//Grab bit address
 	INT8 rel_addr = ROP_ARG(PC++);	//Grab relative code address
-	//Todo: Implement bit addressing
+	if(BIT_R(addr))	{				//If bit set at specified bit address, jump
+		PC = PC + rel_addr;
+		BIT_W(addr,0);				//Clear Bit also
+	}
 }
 
 //JC code addr								/* 1: 0100 0000 */
@@ -405,7 +415,8 @@ INLINE void jnb(void)
 {
 	UINT8 addr = ROP_ARG(PC++);		//Grab bit address
 	INT8 rel_addr = ROP_ARG(PC++);	//Grab relative code address
-	//Todo: Implement bit addressing
+	if(!BIT_R(addr))				//If bit NOT set at specified bit address, jump
+		PC = PC + rel_addr;
 }
 
 //JNC code addr								/* 1: 0101 0000 */
@@ -439,7 +450,7 @@ INLINE void lcall(void)
 	addr_hi = ROP_ARG(PC++);
 	addr_lo = ROP_ARG(PC++);
 	push_pc();
-	PC = (addr_hi<<8) | addr_lo;
+	PC = (UINT16)((addr_hi<<8) | addr_lo);
 }
 
 //LJMP code addr							/* 1: 0000 0010 */
@@ -448,7 +459,7 @@ INLINE void ljmp(void)
 	UINT8 addr_hi, addr_lo;
 	addr_hi = ROP_ARG(PC++);
 	addr_lo = ROP_ARG(PC++);
-	PC = (addr_hi<<8) | addr_lo;
+	PC = (UINT16)((addr_hi<<8) | addr_lo);
 }
 
 //MOV A, #data								/* 1: 0111 0100 */
@@ -536,14 +547,14 @@ INLINE void mov_dptr_byte(void)
 INLINE void mov_bitaddr_c(void)
 {
 	UINT8 addr = ROP_ARG(PC++);		//Grab bit address
-	//Todo: Implement bit addressing
+	BIT_W(addr,GET_CY);				//Store Carry Flag to Bit Address
 }
 
 //MOV @R0/@R1, data addr					/* 1: 1010 011i */
 INLINE void mov_ir_mem(int r)
 {
 	UINT8 addr = ROP_ARG(PC++);				//Grab data address
-	IRAM_W(IRAM_R(R_R(r)),IRAM_R(addr));	//Store data from data address to address pointed to by R0 or R1
+	IRAM_W(R_R(r),IRAM_R(addr));			//Store data from data address to address pointed to by R0 or R1
 }
 
 //MOV R0 to R7, data addr					/* 1: 1010 1rrr */
@@ -575,18 +586,27 @@ INLINE void mov_r_a(int r)
 //MOVC A, @A + PC							/* 1: 1000 0011 */
 INLINE void movc_a_iapc(void)
 {
+	//Move a byte from Code(Program) Memory and store to ACC
+	UINT8 data;
+	PC = PC + 1;
+	data = RM(R_ACC+PC);
+	SFR_W(ACC,data);
 }
 
 //MOV C, bit addr							/* 1: 1010 0010 */
 INLINE void mov_c_bitaddr(void)
 {
 	UINT8 addr = ROP_ARG(PC++);		//Grab bit address
-	//Todo: Implement bit addressing
+	SET_CY(BIT_R(addr));			//Store Bit from Bit Address to Carry Flag
 }
 
 //MOVC A, @A + DPTR							/* 1: 1001 0011 */
 INLINE void movc_a_iadptr(void)
 {
+	//Move a byte from Code(Program) Memory and store to ACC
+	UINT8 data;
+	data = RM(R_ACC+R_DPTR);
+	SFR_W(ACC,data);
 }
 
 //MOVX A,@DPTR								/* 1: 1110 0000 */
@@ -622,7 +642,7 @@ INLINE void mul_ab(void)
 	UINT16 result = R_ACC * R_B;
 	//A gets hi bits, B gets lo bits of result
 	SFR_W(ACC,(UINT8)((result & 0xFF00) >> 8));
-	SFR_W(B,(UINT8)(result & 0xFF));
+	SFR_W(B,(UINT8)(result & 0x00FF));
 	//Set flags
 	SET_OV( ((result & 0x100) >> 8) );		//Set/Clear Overflow Flag if result > 256
 	SET_CY(0);								//Carry Flag always cleared
@@ -683,14 +703,16 @@ INLINE void orl_a_r(int r)
 INLINE void orl_c_bitaddr(void)
 {
 	UINT8 addr = ROP_ARG(PC++);		//Grab bit address
-	//Todo: Implement bit addressing
+	UINT8 bit = BIT_R(addr);		//Grab bit data from bit address
+	SET_CY(GET_CY | bit);			//Set Carry flag to Carry Flag Value Logical OR with Bit
 }
 
 //ORL C, /bit addr							/* 1: 1010 0000 */
 INLINE void orl_c_nbitaddr(void)
 {
 	UINT8 addr = ROP_ARG(PC++);		//Grab bit address
-	//Todo: Implement bit addressing
+	UINT8 bit = BIT_R(addr);		//Grab bit data from bit address
+	SET_CY(GET_CY | (~(bit&1)));	//Set Carry flag to Carry Flag Value Logical OR with Complemented Bit
 }
 
 //POP data addr								/* 1: 1101 0000 */
@@ -773,7 +795,7 @@ INLINE void setb_c(void)
 INLINE void setb_bitaddr(void)
 {
 	UINT8 addr = ROP_ARG(PC++);		//Grab bit address
-	//Todo: Implement bit addressing
+	BIT_W(addr,1);					//Set Bit at Bit Address
 }
 
 //SJMP code addr							/* 1: 1000 0000 */
