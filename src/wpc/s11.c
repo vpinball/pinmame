@@ -8,6 +8,7 @@
 #include "snd_cmd.h"
 #include "s11csoun.h"
 #include "desound.h"
+#include "dedmd.h"
 #include "s11.h"
 
 // TODO:
@@ -136,7 +137,7 @@ static WRITE_HANDLER(pia2a_w) {
     s11locals.diagnosticLed |= (data & 0x10)>>4;
 }
 
-static WRITE_HANDLER(pia2b_w) {
+static WRITE_HANDLER(pia2b_w) { // Not used for DMD
   if (core_gameData->hw.display & S11_DISPINV) data = ~data;
   if (core_gameData->hw.display & S11_BCDDISP) {
     s11locals.segments[0][s11locals.digSel].lo |=
@@ -151,21 +152,29 @@ static WRITE_HANDLER(pia2b_w) {
     s11locals.segments[1][s11locals.digSel].lo |=
          s11locals.pseg[1][s11locals.digSel].lo = data;
 }
-static WRITE_HANDLER(pia5a_w) {
+static WRITE_HANDLER(pia5a_w) { // Not used for DMD
   if (core_gameData->hw.display & S11_DISPINV) data = ~data;
   if (core_gameData->hw.display & S11_LOWALPHA)
     s11locals.segments[1][s11locals.digSel].lo |=
          s11locals.pseg[1][s11locals.digSel].lo = data;
 }
 static WRITE_HANDLER(pia3a_w) {
-  if (core_gameData->hw.display & S11_DISPINV) data = ~data;
-  s11locals.segments[0][s11locals.digSel].lo |=
-       s11locals.pseg[0][s11locals.digSel].lo = data;
+  if (core_gameData->gen & (GEN_DEDMD16|GEN_DEDMD32|GEN_DEDMD64))
+    sndbrd_0_data_w(0, data);
+  else {
+    if (core_gameData->hw.display & S11_DISPINV) data = ~data;
+    s11locals.segments[0][s11locals.digSel].lo |=
+        s11locals.pseg[0][s11locals.digSel].lo = data;
+  }
 }
 static WRITE_HANDLER(pia3b_w) {
-  if (core_gameData->hw.display & S11_DISPINV) data = ~data;
-  s11locals.segments[0][s11locals.digSel].hi |=
-       s11locals.pseg[0][s11locals.digSel].hi = data;
+  if (core_gameData->gen & (GEN_DEDMD16|GEN_DEDMD32|GEN_DEDMD64))
+    sndbrd_0_ctrl_w(0, data);
+  else {
+    if (core_gameData->hw.display & S11_DISPINV) data = ~data;
+    s11locals.segments[0][s11locals.digSel].hi |=
+        s11locals.pseg[0][s11locals.digSel].hi = data;
+  }
 }
 static WRITE_HANDLER(pia2ca2_w) {
   data = data ? 0x80 : 0x00;
@@ -177,6 +186,15 @@ static WRITE_HANDLER(pia2cb2_w) {
   s11locals.segments[0][s11locals.digSel].lo |= data;
   s11locals.pseg[0][s11locals.digSel].lo = (s11locals.pseg[0][s11locals.digSel].lo & 0x7f) | data;
 }
+
+static READ_HANDLER(pia5a_r) {
+  if (core_gameData->gen & GEN_DEDMD64)
+    return sndbrd_0_ctrl_r(0)<<3;
+  else if (core_gameData->gen & GEN_DEDMD16)
+    return sndbrd_0_data_r(0) | (sndbrd_0_ctrl_r(0)<<1);
+  return 0;
+}
+
 
 /*--------------------
 /  Diagnostic buttons
@@ -307,13 +325,13 @@ static struct pia6821_interface s11_pia[] = {
  /* out : A/B,CA/B2       */ 0, pia4b_w, pia4ca2_w, pia4cb2_w,
  /* irq : A/B             */ s11_piaMainIrq, s11_piaMainIrq
 },{ /* PIA 5 (3400) */
- /* PA0 - PA7 Display Data' (h,j,k ,m,n,p,r,dot) */
+ /* PA0 - PA7 Display Data' (h,j,k ,m,n,p,r,dot), DMD status */
  /* PB0 - PB7 Widget I/O MD0-MD7 */
  /* CA1       Widget I/O MCA1 */
  /* CB1       Widget I/O MCB1 */
  /* CA2       Widget I/O MCA2 */
  /* CB2       Widget I/O MCB2 */
- /* in  : A/B,CA/B1,CA/B2 */ 0, soundlatch3_r, 0, 0, 0, 0,
+ /* in  : A/B,CA/B1,CA/B2 */ pia5a_r, soundlatch3_r, 0, 0, 0, 0,
  /* out : A/B,CA/B2       */ pia5a_w, pia5b_w, pia5ca2_w, pia5cb2_w,
  /* irq : A/B             */ s11_piaMainIrq, s11_piaMainIrq
 }};
@@ -375,6 +393,12 @@ static void s11_init(void) {
       break;
     case GEN_DE:
       sndbrd_1_init(SNDBRD_DE1S,  1, memory_region(DE1S_ROMREGION), pia_5_cb1_w, NULL);
+      break;
+    case GEN_DEDMD16:
+    case GEN_DEDMD32:
+    case GEN_DEDMD64:
+      sndbrd_0_init(core_gameData->hw.display,    2, memory_region(DE_DMD16ROMREGION),NULL,NULL);
+      sndbrd_1_init(core_gameData->hw.soundBoard, 1, memory_region(DE1S_ROMREGION), pia_5_cb1_w, NULL);
       break;
   }
   pia_reset();
@@ -473,7 +497,7 @@ const struct MachineDriver machine_driver_s11c_s = {
   s11_nvram
 };
 
-const struct MachineDriver machine_driver_des11_s = {
+const struct MachineDriver machine_driver_deas1_s = {
   {{  CPU_M6808, 1000000, /* 1 Mhz */
       s11_readmem, s11_writemem, NULL, NULL,
       s11_vblank, 1, s11_irq, S11_IRQFREQ
@@ -485,6 +509,62 @@ const struct MachineDriver machine_driver_des11_s = {
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
   NULL, NULL, gen_refresh,
   0,0,0,0, { DE1S_SOUND },
+  s11_nvram
+};
+const struct MachineDriver machine_driver_dedmd16s1_s = {
+  {{  CPU_M6808, 1000000, /* 1 Mhz */
+      s11_readmem, s11_writemem, NULL, NULL,
+      s11_vblank, 1, s11_irq, S11_IRQFREQ
+  }, DE1S_SOUNDCPU, DE_DMD16CPU },
+  S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  50, s11_init, s11_exit,
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
+  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
+  DE_DMD16VIDEO,
+  0,0,0,0, { DE1S_SOUND },
+  s11_nvram
+};
+const struct MachineDriver machine_driver_dedmd16s2a_s = {
+  {{  CPU_M6808, 1000000, /* 1 Mhz */
+      s11_readmem, s11_writemem, NULL, NULL,
+      s11_vblank, 1, s11_irq, S11_IRQFREQ
+  }, DE2S_SOUNDCPU, DE_DMD16CPU },
+  S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  50, s11_init, s11_exit,
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
+  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
+  DE_DMD16VIDEO,
+  0,0,0,0, { DE2S_SOUNDA },
+  s11_nvram
+};
+const struct MachineDriver machine_driver_dedmd32s2a_s = {
+  {{  CPU_M6808, 1000000, /* 1 Mhz */
+      s11_readmem, s11_writemem, NULL, NULL,
+      s11_vblank, 1, s11_irq, S11_IRQFREQ
+  }, DE2S_SOUNDCPU, DE_DMD32CPU },
+  S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  50, s11_init, s11_exit,
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
+  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
+  DE_DMD32VIDEO,
+  0,0,0,0, { DE2S_SOUNDA },
+  s11_nvram
+};
+const struct MachineDriver machine_driver_dedmd64s2a_s = {
+  {{  CPU_M6808, 1000000, /* 1 Mhz */
+      s11_readmem, s11_writemem, NULL, NULL,
+      s11_vblank, 1, s11_irq, S11_IRQFREQ
+  }, DE2S_SOUNDCPU, DE_DMD64CPU },
+  S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  50, s11_init, s11_exit,
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
+  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
+  DE_DMD64VIDEO,
+  0,0,0,0, { DE2S_SOUNDA },
   s11_nvram
 };
 /* No Sound machine */

@@ -170,15 +170,15 @@ const struct sndbrdIntf de2sIntf = {
 };
 
 //Older 11 Voice Style BSMT Chip
-struct BSMT2000interface de2s_bsmt2000Int1 = {
+struct BSMT2000interface de2s_bsmt2000aInt = {
   1, {24000000}, {11}, {DE2S_ROMREGION}, {100}, {2000}
 };
 //Newer 12 Voice Style BSMT Chip
-struct BSMT2000interface de2s_bsmt2000Int2 = {
+struct BSMT2000interface de2s_bsmt2000bInt = {
   1, {24000000}, {12}, {DE2S_ROMREGION}, {100}, {2000}
 };
 //Older 11 Voice Style BSMT Chip but needs large volume adjustment
-struct BSMT2000interface de2s_bsmt2000Int3 = {
+struct BSMT2000interface de2s_bsmt2000cInt = {
   1, {24000000}, {11}, {DE2S_ROMREGION}, {100}, {4000}
 };
 
