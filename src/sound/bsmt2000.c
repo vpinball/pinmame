@@ -360,7 +360,7 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
 
 ***********************************************************************************************/
 
- INLINE void init_voice(struct BSMT2000Voice *voice)
+INLINE void init_voice(struct BSMT2000Voice *voice)
  {
  	memset(&voice->reg, 0, sizeof(voice->reg));
  	voice->position = 0;
@@ -374,17 +374,17 @@ static void bsmt2000_update(int num, INT16 **buffer, int length)
  }
  
  
- INLINE void init_all_voices(struct BSMT2000Chip *chip)
+INLINE void init_all_voices(struct BSMT2000Chip *chip)
  {
  	int i;
  
  	/* init the voices */
- 	for (i = 0; i < bsmt2000[i].voices; i++)
- 		init_voice(&bsmt2000[i].voice[i]);
+ 	for (i = 0; i < chip->voices; i++)
+ 		init_voice(&chip->voice[i]);
  
  	/* init the compressed voice (runs at a fixed rate of ~8kHz?) */
- 	init_voice(&bsmt2000[i].compressed);
- 	bsmt2000[i].compressed.adjusted_rate = 0x02aa << 4;
+ 	init_voice(&chip->compressed);
+ 	chip->compressed.adjusted_rate = 0x02aa << 4;
  }
  
 int BSMT2000_sh_start(const struct MachineSound *msound)
