@@ -388,8 +388,7 @@ int osd_net_game_exit(void);
 /* this is here to follow the current mame file hierarchy style */
 #include "osd_mess.h"
 #endif
-
-#if (!defined(PINMAME) || defined(MAME_DEBUG)) // In PinMAME, log only in debug mode.
+#if (!defined(PINMAME) || defined(MAME_DEBUG) || defined(_DEBUG)) // In PinMAME, log only in debug mode.
 #ifdef __GNUC__
 void CLIB_DECL logerror(const char *text,...)
       __attribute__ ((format (printf, 1, 2)));
