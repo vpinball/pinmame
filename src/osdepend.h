@@ -335,6 +335,9 @@ enum
 	OSD_FILETYPE_IMAGE_R,
 	OSD_FILETYPE_IMAGE_RW,
 #endif
+#ifdef PINMAME_EXT
+	OSD_FILETYPE_WAVEFILE,
+#endif /* PINMAME_EXT */
 	OSD_FILETYPE_end /* dummy last entry */
 };
 
