@@ -9,7 +9,7 @@
 /* 10' Color Video Monitor */
 #if 1
 core_tLCDLayout mrgame_disp[] = {
-  {0,0,256,256,CORE_VIDEO,(void *)mrgame_update},{0}
+  {0,0,248,256,CORE_VIDEO,(void *)mrgame_update},{0}
 };
 #else
 core_tLCDLayout mrgame_disp[] = {
@@ -19,7 +19,7 @@ core_tLCDLayout mrgame_disp[] = {
 
 #define INITGAME(name, disptype, flippers, balls, sb, db) \
 	MRGAME_INPUT_PORTS_START(name, balls) MRGAME_INPUT_PORTS_END \
-	static core_tGameData name##GameData = {GEN_MRGAME,disptype,{flippers,0,3,0,sb,db}}; \
+	static core_tGameData name##GameData = {GEN_MRGAME,disptype,{flippers,0,2,0,sb,db}}; \
 	static void init_##name(void) { \
 		core_gameData = &name##GameData; \
 	}
@@ -29,7 +29,7 @@ core_tLCDLayout mrgame_disp[] = {
 /*-------------------------------------------------------------------
 / Dakar (1988?)
 /-------------------------------------------------------------------*/
-INITGAME(dakar, mrgame_disp, 0, 4/*?*/, 0, 0)
+INITGAME(dakar, mrgame_disp, FLIP_SWNO(65,64), 4/*?*/, 0, 0)
 MRGAME_ROMSTART(dakar,	"cpu_ic13.rom", CRC(83183929) SHA1(977ac10a1e78c759eb0550794f2639fe0e2d1507),
 						"cpu_ic14.rom", CRC(2010d28d) SHA1(d262dabd9298566df43df298cf71c974bee1434a))
 MRGAME_VIDEOROM1(		"vid_ic14.rom", CRC(88a9ca81) SHA1(9660d416b2b8f1937cda7bca51bd287641c7730c),
@@ -47,7 +47,7 @@ CORE_GAMEDEFNV(dakar,"Dakar",1988,"Mr. Game (Italy)",mMRGAME1,0)
 /*-------------------------------------------------------------------
 / Motor Show (1988?)
 /-------------------------------------------------------------------*/
-INITGAME(motrshow, mrgame_disp, 0, 4/*?*/, 0, 0)
+INITGAME(motrshow, mrgame_disp, FLIP_SWNO(65,64), 4/*?*/, 0, 0)
 MRGAME_ROMSTART(motrshow,	"cpu_ic13.rom", CRC(e862ca71) SHA1(b02e5f39f9427d58b70b7999a5ff6075beff05ae),
 							"cpu_ic14.rom", CRC(c898ae25) SHA1(f0e1369284a1e0f394f1d40281fd46252016602e))
 MRGAME_VIDEOROM1(		"vid_ic14.rom", CRC(1d4568e2) SHA1(bfc2bb59708ce3a09f9a1b3460ed8d5269840c97),
@@ -65,7 +65,7 @@ CORE_GAMEDEFNV(motrshow,"Motor Show",1988,"Mr. Game (Italy)",mMRGAME1,0)
 /*-------------------------------------------------------------------
 / Mac Attack (1989?)
 /-------------------------------------------------------------------*/
-INITGAME(macattck, mrgame_disp, 0, 4/*?*/, 0, 0)
+INITGAME(macattck, mrgame_disp, FLIP_SWNO(65,64), 4/*?*/, 0, 0)
 MRGAME_ROMSTART(macattck,	"cpu_ic13.rom", NO_DUMP,
 							"cpu_ic14.rom", NO_DUMP)
 MRGAME_VIDEOROM2(		"vid_ic14.rom", NO_DUMP,
@@ -87,7 +87,7 @@ CORE_GAMEDEFNV(macattck,"Mac Attack",1989,"Mr. Game (Italy)",mMRGAME1,0)
 /*-------------------------------------------------------------------
 / World Cup 90 (1988?)
 /-------------------------------------------------------------------*/
-INITGAME(wcup90, mrgame_disp, 0, 4/*?*/, 0, 0)
+INITGAME(wcup90, mrgame_disp, FLIP_SWNO(65,64), 4/*?*/, 0, 0)
 #if 0
 MRGAME_ROMSTART(wcup90,		"cpu_ic13.rom", NO_DUMP,
 							"cpu_ic14.rom", NO_DUMP)

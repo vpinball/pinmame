@@ -69,7 +69,7 @@ static struct {
   int diagnosticLED;
   int acksnd;
   int ackspk;
-  int row_pin5;
+  int flipRead;
   int a0a2;
   int d0d1;
   int vid_data;
@@ -180,13 +180,14 @@ Return Dip Switches & Sound Ack (Inverted)
 Bits 0-3 Dips (Inverted)
 Bits 4   Ack Sound
 Bits 5   Ack Spk
-Bits 6-7 (Always 0?)
+Bits 6-7 Opto flipper switches
 */
-static READ16_HANDLER(rsw_ack_r) { 
-    int data = core_getDip(0) & 0x0f;
+static READ16_HANDLER(rsw_ack_r) {
+    int data = core_getDip(0) ^ 0x0f;
 	data |= (locals.acksnd << 4);
 	data |= (locals.ackspk << 5);
-	return data^0x3f;	//Bit 6&7 always 0!
+	data |= (coreGlobals.swMatrix[9] << 6);
+	return data;
 }
 
 /*Solenoids - Need to verify correct solenoid # here!*/
@@ -210,10 +211,6 @@ static WRITE_HANDLER(solenoid_w)
 			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFF00FFFF) | (data<<16);
 			locals.solenoids |= data << 16;
             break;
-		case 3:
-			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x00FFFFFF) | (data<<24);
-			locals.solenoids |= data << 24;
-			break;
 		default:
 			LOG(("Solenoid_W Logic Error\n"));
 	}
@@ -306,15 +303,15 @@ static WRITE16_HANDLER(extadd_w) { locals.a0a2 = data & 0x07; }
 Bit 0 - Bit 2 => Rows 0->7
 Bit 3 = RFSH Line
 Bit 4 = LED
-Bit 5 = Pin 5 - CN10 & Pin 18 - CN11 (??)
-Bit 6 = NA
+Bit 5 = CN10-5 = enable flipper buttons readout? but is always 0
+Bit 6 = N/A
 Bit 7 = /RUNEN Line
 */
-static WRITE16_HANDLER(row_w) { 
-	locals.SwCol = core_BitColToNum(data & 0x7);
+static WRITE16_HANDLER(row_w) {
+	locals.SwCol = data & 7;
 	locals.diagnosticLED = GET_BIT4;
-	locals.row_pin5 = GET_BIT5;
-//	LOG(("%08x: row_w = %04x\n",activecpu_get_pc(),data)); 
+	locals.flipRead = GET_BIT5;
+//	LOG(("%08x: row_w = %04x\n",activecpu_get_pc(),data));
 }
 
 //NVRAM
@@ -392,7 +389,7 @@ static WRITE_HANDLER(soundg1_2_port_w) {
 }
 
 static VIDEO_START(mrgame) {
-  tmpbitmap = auto_bitmap_alloc(Machine->drv->screen_width,Machine->drv->screen_height);
+  tmpbitmap = auto_bitmap_alloc(Machine->drv->screen_width, 248);
   return (tmpbitmap == 0);
 }
 
@@ -419,7 +416,7 @@ if(!debugger_focus) {
 
 	/* for every character in the Video RAM, check if it has been modified */
 	/* since last time and update it accordingly. */
-	for (offs = 0; offs < videoram_size - 1; offs++)
+	for (offs = 0; offs < videoram_size-32; offs++) // the last character row contains garbage
 	{
 		if (1) //dirtybuffer[offs])
 		{
@@ -439,7 +436,7 @@ if(!debugger_focus) {
 
 			drawgfx(tmpbitmap,Machine->gfx[0],
 					tile,
-					color,
+					color+2,
 					0,0,
 					8*sx,8*sy,
 					0,TRANSPARENCY_NONE,0);
@@ -551,10 +548,16 @@ static int mrgame_m2sw(int col, int row) { return col*8+row-7-1; }
 
 PALETTE_INIT( mrgame )
 {
-	int i;
-	for (i = 0;i < Machine->drv->total_colors;i++)
+	int bit0,bit1,bit2,i,r,g,b;
+
+	palette_set_color(0,0,0,0);
+	palette_set_color(1,85,85,85);
+	palette_set_color(2,170,170,170);
+	for (i=3; i < 8; i++)
+		palette_set_color(i,255,255,255);
+
+	for (; i < Machine->drv->total_colors; i++)
 	{
-		int bit0,bit1,bit2,r,g,b;
 		/* red component */
 		bit0 = (*color_prom >> 0) & 0x01;
 		bit1 = (*color_prom >> 1) & 0x01;
@@ -693,7 +696,7 @@ MACHINE_DRIVER_START(mrgame_video_common)
   MDRV_SCREEN_SIZE(640, 400)
   MDRV_VISIBLE_AREA(0, 255, 0, 399)
   MDRV_VIDEO_ATTRIBUTES(VIDEO_TYPE_RASTER)
-  MDRV_PALETTE_LENGTH(32)
+  MDRV_PALETTE_LENGTH(40)
   MDRV_PALETTE_INIT(mrgame)
   MDRV_VIDEO_START(mrgame)
 MACHINE_DRIVER_END
