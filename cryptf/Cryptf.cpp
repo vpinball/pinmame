@@ -172,7 +172,7 @@ UINT ProcessFile(LPCSTR szSource, LPCSTR szDestination, LPCSTR szKey, char cType
 			UINT nLen = Len(szSource) - nPos;
 			if(nPos <= 0) {
 				Display("Source file must include Path!","ERROR","Application - Serious Error");
-				return 0;
+				return FALSE;
 			}
 			Right(szFileName1,szSource,nLen);
 		}
@@ -181,7 +181,7 @@ UINT ProcessFile(LPCSTR szSource, LPCSTR szDestination, LPCSTR szKey, char cType
 			UINT nLen = Len(szDestination) - nPos;
 			if(nPos <= 0) {
 				Display("Destination file must include Path!","ERROR","Application - Serious Error");
-				return 0;
+				return FALSE;
 			}
 			Right(szFileName1,szDestination,nLen);
 		}
@@ -194,7 +194,7 @@ UINT ProcessFile(LPCSTR szSource, LPCSTR szDestination, LPCSTR szKey, char cType
 		UINT nPos = Rat("\\",szDestination,1);
 		if(nPos <= 0) {
 			Display("Destination file must include Path!","ERROR","Application - Serious Error");
-			return 0;
+			return FALSE;
 		}
 		Left(szTempFile1,szDestination,nPos);
 		strcat(szTempFile1,"update.tmp");
@@ -206,7 +206,7 @@ UINT ProcessFile(LPCSTR szSource, LPCSTR szDestination, LPCSTR szKey, char cType
 	if(!File(szSource)) {
 		wsprintf(szMessage,"Cannot find file: %s!",szSource);
 		Display(szMessage,"ERROR","Warning!");
-		return 0;
+		return FALSE;
 	}
 
 	//ENCRYPTION:
@@ -353,7 +353,7 @@ BOOL CopyAFile (LPCSTR szSource, LPCSTR szDestination)
 //(Ini File Name)
 //
 //NOTE: Source & Destination CAN include full path, but if they don't. Path is determined from ini
-//      If no path is included for INI file, it assumes applications current directory
+//      If no path is included for INI file, it assumes application's current directory
 //ex:
 //cryptf -D Controller.cpp.crypt Controller.cpp cryptf.ini
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -373,13 +373,13 @@ BOOL RunFromCommandLine(LPCSTR szCmdLine)
 	if(strcmp(szTemp,"/?")==0) {
 		GetHelpMsg(szMessage);
 		Display(szMessage,"NOTICE","Help with File Crypter!");
-		return TRUE;
+		return SUCCESS;
 	}
 
 	//Make sure user passed all 4 arguments!
 	if(__argc < 5) {
 		Display("Please specify all 4 parameters to cryptf.exe!","ERROR","Application - Serious Error!");
-		return FALSE;
+		return FAILURE;
 	}
 
 	strcpy(szType,__argv[1]);
@@ -395,7 +395,7 @@ BOOL RunFromCommandLine(LPCSTR szCmdLine)
 	if(!File(szIniFile)) {
 		wsprintf(szMessage,"The specified INI File: %s does not exist!",szIniFile);
 		Display(szMessage,"ERROR","Application - Serious Error!");
-		return FALSE;
+		return FAILURE;
 	}
 	//Check for valid Type!
 	if(strcmp("-D",szType)==0 || strcmp("-d",szType)==0)
@@ -405,14 +405,14 @@ BOOL RunFromCommandLine(LPCSTR szCmdLine)
 	else {
 		wsprintf(szMessage,"The specified action: %s is not valid!",szType);
 		Display(szMessage,"ERROR","Application - Serious Error!");
-		return FALSE; 
+		return FAILURE; 
 	}
 	//Read Key from INI file!
 	ReadINI(szKey,"Defaults","CryptKey",szIniFile);
 	if(Empty(szKey)) {
 		wsprintf(szMessage,"The specified INI File: %s does not contain a valid Key!",szIniFile);
 		Display(szMessage,"ERROR","Application - Serious Error!");
-		return FALSE;
+		return FAILURE;
 	}
 	//If Directories are not specified, grab it from the INI file and verify it!!
 	if(!HasPath(szSource)) {
@@ -428,7 +428,7 @@ BOOL RunFromCommandLine(LPCSTR szCmdLine)
 		if(Empty(szTemp) || !IsDir(szTemp)) {
 			wsprintf(szMessage,"The specified INI File: %s does not contain a valid entry for: %s!",szIniFile, szWhich);
 			Display(szMessage,"ERROR","Application - Serious Error!");
-			return FALSE;
+			return FAILURE;
 		}
 		//Add Directory to the filename!
 		AddBs(szTemp);
@@ -448,7 +448,7 @@ BOOL RunFromCommandLine(LPCSTR szCmdLine)
 		if(Empty(szTemp) || !IsDir(szTemp)) {
 			wsprintf(szMessage,"The specified INI File: %s does not contain a valid entry for: %s!",szIniFile, szWhich);
 			Display(szMessage,"ERROR","Application - Serious Error!");
-			return FALSE;
+			return FAILURE;
 		}
 		//Add Directory to the filename!
 		AddBs(szTemp);
@@ -456,7 +456,7 @@ BOOL RunFromCommandLine(LPCSTR szCmdLine)
 	}
 	
 	//Ok we're ready to do it!
-	return ProcessFile(szSource,szDestination,szKey,cType,"","");
+	return (ProcessFile(szSource,szDestination,szKey,cType,"","")>0)?SUCCESS:FAILURE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -538,13 +538,13 @@ BOOL RunFromCommandLine(LPCSTR szCmdLine)
 	if(strcmp(szTemp,"/?")==0) {
 		GetHelpMsg(szMessage);
 		Display(szMessage,"NOTICE","Help with File Crypter!");
-		return TRUE;
+		return SUCCESS;
 	}
 
 	//Make sure user passed all 4 arguments!
 	if(Occurs(" ?",szCmdLine) < 3 || Occurs("?",szCmdLine) < 4) {
 		Display("Please specify all 4 parameters to cryptf.exe!","ERROR","Application - Serious Error!");
-		return FALSE;
+		return FAILURE;
 	}
 
 	nHoldPos = 1;
@@ -571,7 +571,7 @@ BOOL RunFromCommandLine(LPCSTR szCmdLine)
 	if(!File(szIniFile)) {
 		wsprintf(szMessage,"The specified INI File: %s does not exist!",szIniFile);
 		Display(szMessage,"ERROR","Application - Serious Error!");
-		return FALSE;
+		return FAILURE;
 	}
 	//Check for valid Type!
 	if(strcmp("?D",szType)==0)
@@ -581,14 +581,14 @@ BOOL RunFromCommandLine(LPCSTR szCmdLine)
 	else {
 		wsprintf(szMessage,"The specified action: %s is not valid!",szType);
 		Display(szMessage,"ERROR","Application - Serious Error!");
-		return FALSE; 
+		return FAILURE; 
 	}
 	//Read Key from INI file!
 	ReadINI(szKey,"Defaults","CryptKey",szIniFile);
 	if(Empty(szKey)) {
 		wsprintf(szMessage,"The specified INI File: %s does not contain a valid Key!",szIniFile);
 		Display(szMessage,"ERROR","Application - Serious Error!");
-		return FALSE;
+		return FAILURE;
 	}
 	//If Directories are not specified, grab it from the INI file and verify it!!
 	if(!HasPath(szSource)) {
@@ -604,7 +604,7 @@ BOOL RunFromCommandLine(LPCSTR szCmdLine)
 		if(Empty(szTemp) || !IsDir(szTemp)) {
 			wsprintf(szMessage,"The specified INI File: %s does not contain a valid entry for: %s!",szIniFile, szWhich);
 			Display(szMessage,"ERROR","Application - Serious Error!");
-			return FALSE;
+			return FAILURE;
 		}
 		//Add Directory to the filename!
 		AddBs(szTemp);
@@ -624,7 +624,7 @@ BOOL RunFromCommandLine(LPCSTR szCmdLine)
 		if(Empty(szTemp) || !IsDir(szTemp)) {
 			wsprintf(szMessage,"The specified INI File: %s does not contain a valid entry for: %s!",szIniFile, szWhich);
 			Display(szMessage,"ERROR","Application - Serious Error!");
-			return FALSE;
+			return FAILURE;
 		}
 		//Add Directory to the filename!
 		AddBs(szTemp);

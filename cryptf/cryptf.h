@@ -13,6 +13,9 @@
 #include "utils.h"
 #include "crypto.h"
 
+//Return codes for command line functionality
+#define FAILURE		1
+#define SUCCESS		0
 
 //Prototypes
 BOOL GetFiles(HWND hWnd);
