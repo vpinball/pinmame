@@ -58,7 +58,7 @@ core_tLCDLayout gottlieb_dispAlpha[] = {
 /*-------------------------------------------------------------------
 / Spiderman
 /-------------------------------------------------------------------*/
-INITGAME(spidermn,GEN_GTS80S,gottlieb_dispNumeric1, 1, SNDBRD_GTS80S)
+INITGAME(spidermn,GEN_GTS80,gottlieb_dispNumeric1, 1, SNDBRD_GTS80S)
 GTS80_2_ROMSTART(spidermn,	"653-1.cpu",    0x674ddc58,
 							"653-2.cpu",    0xff1ddfd7,
 							"u2_80.bin",    0x4f0bc7b1,
@@ -71,7 +71,7 @@ CORE_GAMEDEFNV(spidermn,"Spiderman",1980,"Gottlieb",gl_mGTS80S,0)
 /*-------------------------------------------------------------------
 / Panthera
 /-------------------------------------------------------------------*/
-INITGAME(panthera,GEN_GTS80S,gottlieb_dispNumeric1, 1, SNDBRD_GTS80S)
+INITGAME(panthera,GEN_GTS80,gottlieb_dispNumeric1, 1, SNDBRD_GTS80S)
 GTS80_1_ROMSTART(panthera,	"652.cpu",      0x5386e5fb,
 							"u2_80.bin",    0x4f0bc7b1,
 							"u3_80.bin",    0x1e69f9d0)
@@ -83,7 +83,7 @@ CORE_GAMEDEFNV(panthera,"Panthera",1980,"Gottlieb",gl_mGTS80S,0)
 /*-------------------------------------------------------------------
 / Circus
 /-------------------------------------------------------------------*/
-INITGAME(circus,GEN_GTS80S,gottlieb_dispNumeric1, 1, SNDBRD_GTS80S)
+INITGAME(circus,GEN_GTS80,gottlieb_dispNumeric1, 1, SNDBRD_GTS80S)
 GTS80_2_ROMSTART(circus,	"654-1.cpu",    0x0eeb2731,
 							"654-2.cpu",    0x01e23569,
 							"u2_80.bin",    0x4f0bc7b1,
@@ -96,7 +96,7 @@ CORE_GAMEDEFNV(circus,"Circus",1980,"Gottlieb",gl_mGTS80S,0)
 /*-------------------------------------------------------------------
 / Counterforce
 /-------------------------------------------------------------------*/
-INITGAME(cntforce,GEN_GTS80S,gottlieb_dispNumeric1, 1, SNDBRD_GTS80S)
+INITGAME(cntforce,GEN_GTS80,gottlieb_dispNumeric1, 1, SNDBRD_GTS80S)
 GTS80_2_ROMSTART(cntforce,	"656-1.cpu",    0x42baf51d,
 							"656-2.cpu",    0x0e185c30,
 							"u2_80.bin",    0x4f0bc7b1,
@@ -109,7 +109,7 @@ CORE_GAMEDEFNV(cntforce,"Counterforce",1980,"Gottlieb",gl_mGTS80S,0)
 /*-------------------------------------------------------------------
 / Star Race
 /-------------------------------------------------------------------*/
-INITGAME(starrace,GEN_GTS80S,gottlieb_dispNumeric1, 1, SNDBRD_GTS80S)
+INITGAME(starrace,GEN_GTS80,gottlieb_dispNumeric1, 1, SNDBRD_GTS80S)
 GTS80_2_ROMSTART(starrace,	"657-1.cpu",    0x27081372,
 							"657-2.cpu",    0xc56e31c8,
 							"u2_80.bin",    0x4f0bc7b1,
@@ -122,7 +122,7 @@ CORE_GAMEDEFNV(starrace,"Star Race",1980,"Gottlieb",gl_mGTS80S,0)
 /*-------------------------------------------------------------------
 / James Bond (Timed Play)
 /-------------------------------------------------------------------*/
-INITGAME(jamesb,GEN_GTS80S,gottlieb_dispNumeric2, 1, SNDBRD_GTS80S)
+INITGAME(jamesb,GEN_GTS80,gottlieb_dispNumeric2, 1, SNDBRD_GTS80S)
 GTS80_1_ROMSTART(jamesb,	"658-1.cpu",    0xb841ad7a,
 							"u2_80.bin",    0x4f0bc7b1,
 							"u3_80.bin",    0x1e69f9d0)
@@ -134,7 +134,7 @@ CORE_GAMEDEFNV(jamesb,"James Bond (Timed Play)",1980,"Gottlieb",gl_mGTS80S,0)
 /*-------------------------------------------------------------------
 / James Bond (3/5 Ball Play)
 /-------------------------------------------------------------------*/
-INITGAME(jamesb2,GEN_GTS80S,gottlieb_dispNumeric2, 1, SNDBRD_GTS80S)
+INITGAME(jamesb2,GEN_GTS80,gottlieb_dispNumeric2, 1, SNDBRD_GTS80S)
 GTS80_1_ROMSTART(jamesb2, "658-x.cpu",    0xe7e0febf,
                           "u2_80.bin",    0x4f0bc7b1,
                           "u3_80.bin",    0x1e69f9d0)
@@ -146,7 +146,7 @@ CORE_CLONEDEFNV(jamesb2,jamesb,"James Bond (3/5-Ball)",1980,"Gottlieb",gl_mGTS80
 /*-------------------------------------------------------------------
 / Time Line
 /-------------------------------------------------------------------*/
-INITGAME(timeline,GEN_GTS80S,gottlieb_dispNumeric1, 1, SNDBRD_GTS80S)
+INITGAME(timeline,GEN_GTS80,gottlieb_dispNumeric1, 1, SNDBRD_GTS80S)
 GTS80_1_ROMSTART(timeline, "659.cpu",      0x0d6950e3b,
                          "u2_80.bin",    0x4f0bc7b1,
                          "u3_80.bin",    0x1e69f9d0)
@@ -158,7 +158,7 @@ CORE_GAMEDEFNV(timeline,"Time Line",1980,"Gottlieb",gl_mGTS80S,0)
 /*-------------------------------------------------------------------
 / Force II
 /-------------------------------------------------------------------*/
-INITGAME(forceii,GEN_GTS80S,gottlieb_dispNumeric1, 1, SNDBRD_GTS80S)
+INITGAME(forceii,GEN_GTS80,gottlieb_dispNumeric1, 1, SNDBRD_GTS80S)
 GTS80_1_ROMSTART(forceii, "661-2.cpu",    0xa4fa42a4,
                         "u2_80.bin",    0x4f0bc7b1,
                         "u3_80.bin",    0x1e69f9d0)
@@ -170,7 +170,7 @@ CORE_GAMEDEFNV(forceii,"Force II",1981,"Gottlieb",gl_mGTS80S,0)
 /*-------------------------------------------------------------------
 / Pink Panther
 /-------------------------------------------------------------------*/
-INITGAME(pnkpnthr,GEN_GTS80S,gottlieb_dispNumeric1, 3, SNDBRD_GTS80S)
+INITGAME(pnkpnthr,GEN_GTS80,gottlieb_dispNumeric1, 3, SNDBRD_GTS80S)
 GTS80_1_ROMSTART(pnkpnthr, "664-1.cpu",    0xa0d3e69a,
                          "u2_80.bin",    0x4f0bc7b1,
                          "u3_80.bin",    0x1e69f9d0)
@@ -182,7 +182,7 @@ CORE_GAMEDEFNV(pnkpnthr,"Pink Panther",1981,"Gottlieb",gl_mGTS80S,0)
 /*-------------------------------------------------------------------
 / Mars - God of War
 /-------------------------------------------------------------------*/
-INITGAME(mars,GEN_GTS80SS,gottlieb_dispNumeric1, 3, SNDBRD_GTS80SS)
+INITGAME(mars,GEN_GTS80,gottlieb_dispNumeric1, 3, SNDBRD_GTS80SS)
 GTS80_1_ROMSTART(mars, "666-1.cpu",  0xbb7d476a,
                        "u2_80.bin",  0x4f0bc7b1,
                        "u3_80.bin",  0x1e69f9d0)
@@ -194,7 +194,7 @@ CORE_GAMEDEFNV(mars,"Mars - God of War",1981,"Gottlieb",gl_mGTS80SS,0)
 /*-------------------------------------------------------------------
 / Volcano (Sound and Speech)
 /-------------------------------------------------------------------*/
-INITGAME(vlcno_ax,GEN_GTS80SS,gottlieb_dispNumeric1, 1, SNDBRD_GTS80SS)
+INITGAME(vlcno_ax,GEN_GTS80,gottlieb_dispNumeric1, 1, SNDBRD_GTS80SS)
 GTS80_1_ROMSTART(vlcno_ax, "667-a-x.cpu", 0x1f51c351,
                          "u2_80.bin",   0x4f0bc7b1,
                          "u3_80.bin",   0x1e69f9d0)
@@ -206,7 +206,7 @@ CORE_GAMEDEFNV(vlcno_ax,"Volcano",1981,"Gottlieb",gl_mGTS80SS,0)
 /*-------------------------------------------------------------------
 / Volcano (Sound Only)
 /-------------------------------------------------------------------*/
-INITGAME(vlcno_1b,GEN_GTS80S,gottlieb_dispNumeric1, 1, SNDBRD_GTS80S)
+INITGAME(vlcno_1b,GEN_GTS80,gottlieb_dispNumeric1, 1, SNDBRD_GTS80S)
 GTS80_1_ROMSTART(vlcno_1b,"667-1b.cpu" ,  0xa422d862,
                         "u2_80.bin",    0x4f0bc7b1,
                         "u3_80.bin",    0x1e69f9d0)
@@ -218,7 +218,7 @@ CORE_CLONEDEFNV(vlcno_1b,vlcno_ax,"Volcano (Sound Only)",1981,"Gottlieb",gl_mGTS
 /*-------------------------------------------------------------------
 / Black Hole (Rev. 4)
 /-------------------------------------------------------------------*/
-INITGAME(blckhole,GEN_GTS80SS,gottlieb_dispNumeric2, 1, SNDBRD_GTS80SS)
+INITGAME(blckhole,GEN_GTS80,gottlieb_dispNumeric2, 1, SNDBRD_GTS80SS)
 GTS80_1_ROMSTART(blckhole, "668-4.cpu",  0x01b53045,
                          "u2_80.bin",  0x4f0bc7b1,
                          "u3_80.bin",  0x1e69f9d0)
@@ -230,7 +230,7 @@ CORE_GAMEDEFNV(blckhole,"Black Hole",1981,"Gottlieb",gl_mGTS80SS,0)
 /*-------------------------------------------------------------------
 / Black Hole (Rev. 2)
 /-------------------------------------------------------------------*/
-INITGAME(blkhole2,GEN_GTS80SS,gottlieb_dispNumeric2, 1, SNDBRD_GTS80SS)
+INITGAME(blkhole2,GEN_GTS80,gottlieb_dispNumeric2, 1, SNDBRD_GTS80SS)
 GTS80_1_ROMSTART(blkhole2, "668-2.cpu",  0xdf03ffea,
                          "u2_80.bin",  0x4f0bc7b1,
                          "u3_80.bin",  0x1e69f9d0)
@@ -242,7 +242,7 @@ CORE_CLONEDEFNV(blkhole2,blckhole,"Black Hole (Rev. 2)",1981,"Gottlieb",gl_mGTS8
 /*-------------------------------------------------------------------
 / Black Hole (Sound Only)
 /-------------------------------------------------------------------*/
-INITGAME(blkholea,GEN_GTS80S,gottlieb_dispNumeric2, 1, SNDBRD_GTS80S)
+INITGAME(blkholea,GEN_GTS80,gottlieb_dispNumeric2, 1, SNDBRD_GTS80S)
 GTS80_1_ROMSTART(blkholea, "668-a2.cpu" ,  0xdf56f896,
                          "u2_80.bin",    0x4f0bc7b1,
                          "u3_80.bin",    0x1e69f9d0)
@@ -254,7 +254,7 @@ CORE_CLONEDEFNV(blkholea,blckhole,"Black Hole (Sound Only)",1981,"Gottlieb",gl_m
 /*-------------------------------------------------------------------
 / Haunted House, since serial no. 5000
 /-------------------------------------------------------------------*/
-INITGAME(hh,GEN_GTS80SS,gottlieb_dispNumeric2, 1, SNDBRD_GTS80SS)
+INITGAME(hh,GEN_GTS80,gottlieb_dispNumeric2, 1, SNDBRD_GTS80SS)
 GTS80_1_ROMSTART(hh,  "669-2.cpu",  0xf3085f77,
                     "u2_80.bin",  0x4f0bc7b1,
                     "u3_80.bin",  0x1e69f9d0)
@@ -266,7 +266,7 @@ CORE_GAMEDEFNV(hh,"Haunted House (Rev 2)",1982,"Gottlieb",gl_mGTS80SS,0)
 /*-------------------------------------------------------------------
 / Haunted House up to serial no. 4999
 /-------------------------------------------------------------------*/
-INITGAME(hh_1,GEN_GTS80SS,gottlieb_dispNumeric2, 1, SNDBRD_GTS80SS)
+INITGAME(hh_1,GEN_GTS80,gottlieb_dispNumeric2, 1, SNDBRD_GTS80SS)
 GTS80_1_ROMSTART(hh_1, "669-1.cpu",  0x96e72b93,
                      "u2_80.bin",  0x4f0bc7b1,
                      "u3_80.bin",  0x1e69f9d0)
@@ -278,7 +278,7 @@ CORE_CLONEDEFNV(hh_1,hh,"Haunted House (Rev 1)",1982,"Gottlieb",gl_mGTS80SS,0)
 /*-------------------------------------------------------------------
 / Eclipse
 /-------------------------------------------------------------------*/
-INITGAME(eclipse,GEN_GTS80S,gottlieb_dispNumeric2, 1, SNDBRD_GTS80S)
+INITGAME(eclipse,GEN_GTS80,gottlieb_dispNumeric2, 1, SNDBRD_GTS80S)
 GTS80_1_ROMSTART(eclipse, "671-a.cpu",    0xefad7312,
                         "u2_80.bin",    0x4f0bc7b1,
                         "u3_80.bin",    0x1e69f9d0)
@@ -290,7 +290,7 @@ CORE_GAMEDEFNV(eclipse,"Eclipse",1981,"Gottlieb",gl_mGTS80S,0)
 /*-------------------------------------------------------------------
 / System 80 Test Fixture
 /-------------------------------------------------------------------*/
-INITGAME(s80tst,GEN_GTS80SS,gottlieb_dispNumeric1, 3, SNDBRD_GTS80SS)
+INITGAME(s80tst,GEN_GTS80,gottlieb_dispNumeric1, 3, SNDBRD_GTS80SS)
 GTS80_1_ROMSTART(s80tst, "80tst.cpu",    0xa0f9e56b,
                        "u2_80.bin",    0x4f0bc7b1,
                        "u3_80.bin",    0x1e69f9d0)
@@ -315,7 +315,7 @@ core_tLCDLayout dispDevilsdare[] = {
   {6, 9,42,6,CORE_SEG9}, {0}
 };
 
-INITGAME(dvlsdre,GEN_GTS80SS,dispDevilsdare, 1, SNDBRD_GTS80SS)
+INITGAME(dvlsdre,GEN_GTS80,dispDevilsdare, 1, SNDBRD_GTS80SS)
 GTS80_1_ROMSTART(dvlsdre, "670-1.cpu",  0x6318bce2,
                         "u2_80a.bin", 0x241de1d4,
                         "u3_80a.bin", 0x2d77ccdc)
@@ -327,7 +327,7 @@ CORE_GAMEDEFNV(dvlsdre,"Devil's Dare",1981,"Gottlieb",gl_mGTS80SS,0)
 /*-------------------------------------------------------------------
 / Devil's Dare (Sound Only) (#670)
 /-------------------------------------------------------------------*/
-INITGAME(dvlsdre2,GEN_GTS80S,dispDevilsdare, 1, SNDBRD_GTS80S)
+INITGAME(dvlsdre2,GEN_GTS80,dispDevilsdare, 1, SNDBRD_GTS80S)
 GTS80_1_ROMSTART(dvlsdre2, "670-a.cpu",    0x353b2e18,
                          "u2_80a.bin",   0x241de1d4,
                          "u3_80a.bin",   0x2d77ccdc)
@@ -349,7 +349,7 @@ core_tLCDLayout dispRocky[] = {
 
   {6, 10,46,2,CORE_SEG9}, {6,16,42,2,CORE_SEG9}, {0}
 };
-INITGAME(rocky, GEN_GTS80SS, dispRocky, 1, SNDBRD_GTS80SS)
+INITGAME(rocky, GEN_GTS80, dispRocky, 1, SNDBRD_GTS80SS)
 GTS80_1_ROMSTART(rocky, "672-2x.cpu", 0x8e2f0d39,
                       "u2_80a.bin", 0x241de1d4,
                       "u3_80a.bin", 0x2d77ccdc)
@@ -361,7 +361,7 @@ CORE_GAMEDEFNV(rocky,"Rocky",1982,"Gottlieb",gl_mGTS80SS,0)
 /*-------------------------------------------------------------------
 / Caveman (#810?)
 /-------------------------------------------------------------------*/
-INITGAME(caveman, GEN_GTS80SS, gottlieb_dispNumeric3, 1, SNDBRD_GTS80SS)
+INITGAME(caveman, GEN_GTS80, gottlieb_dispNumeric3, 1, SNDBRD_GTS80SS)
 GTS80_1_ROMSTART(caveman, "pv810-1.cpu",  0xdd8d516c,
                         "u2_80a.bin",   0x241de1d4,
                         "u3_80a.bin",   0x2d77ccdc)
@@ -383,7 +383,7 @@ core_tLCDLayout dispSpirit[] = {
 
   {6, 9,42,6,CORE_SEG9}, {0}
 };
-INITGAME(spirit, GEN_GTS80SS, dispSpirit, 1, SNDBRD_GTS80SS)
+INITGAME(spirit, GEN_GTS80, dispSpirit, 1, SNDBRD_GTS80SS)
 GTS80_1_ROMSTART(spirit, "673-2.cpu",  0xa7dc2207,
                        "u2_80a.bin", 0x241de1d4,
                        "u3_80a.bin", 0x2d77ccdc)
@@ -406,7 +406,7 @@ core_tLCDLayout dispStriker[] = {
   {0,15,44,2,CORE_SEG9}, {0,36,54,2,CORE_SEG9},
   {4,15,42,2,CORE_SEG9}, {4,36,52,2,CORE_SEG9}, {0}
 };
-INITGAME(striker, GEN_GTS80SS, dispStriker, 1, SNDBRD_GTS80SS)
+INITGAME(striker, GEN_GTS80, dispStriker, 1, SNDBRD_GTS80SS)
 GTS80_1_ROMSTART(striker, "675.cpu",    0x06b66ce8,
                         "u2_80a.bin", 0x241de1d4,
                         "u3_80a.bin", 0x2d77ccdc)
@@ -418,7 +418,7 @@ CORE_GAMEDEFNV(striker,"Striker",1982,"Gottlieb",gl_mGTS80SS,0)
 /*-------------------------------------------------------------------
 / Punk! (#674)
 /-------------------------------------------------------------------*/
-INITGAME(punk, GEN_GTS80SS, gottlieb_dispNumeric3, 1, SNDBRD_GTS80SS)
+INITGAME(punk, GEN_GTS80, gottlieb_dispNumeric3, 1, SNDBRD_GTS80SS)
 GTS80_1_ROMSTART(punk, "674.cpu",    0x70cccc57,
                      "u2_80a.bin", 0x241de1d4,
                      "u3_80a.bin", 0x2d77ccdc)
@@ -440,7 +440,7 @@ core_tLCDLayout dispGoinNuts[] = {
 
   {6,12,45,3,CORE_SEG9}, {0}
 };
-INITGAME(goinnuts, GEN_GTS80SS, dispGoinNuts, 1, SNDBRD_GTS80SS)
+INITGAME(goinnuts, GEN_GTS80, dispGoinNuts, 1, SNDBRD_GTS80SS)
 GTS80_1_ROMSTART(goinnuts, "682.cpu",    0x51c7c6de,
                          "u2_80a.bin", 0x241de1d4,
                          "u3_80a.bin", 0x2d77ccdc)
@@ -462,7 +462,7 @@ core_tLCDLayout dispKrull[] = {
 
   {6, 8,42,3,CORE_SEG9}, {6,16,45,3,CORE_SEG9}, {0}
 };
-INITGAME(krull, GEN_GTS80SS, dispKrull, 1, SNDBRD_GTS80SS)
+INITGAME(krull, GEN_GTS80, dispKrull, 1, SNDBRD_GTS80SS)
 GTS80_1_ROMSTART(krull, "676-3.cpu",  0x71507430,
                       "u2_80a.bin", 0x241de1d4,
                       "u3_80a.bin", 0x2d77ccdc)
@@ -474,7 +474,7 @@ CORE_GAMEDEFNV(krull,"Krull",1983,"Gottlieb",gl_mGTS80SS,0)
 /*-------------------------------------------------------------------
 / Q*Bert's Quest (#677)
 /-------------------------------------------------------------------*/
-INITGAME(qbquest, GEN_GTS80SS, gottlieb_dispNumeric3, 1, SNDBRD_GTS80SS)
+INITGAME(qbquest, GEN_GTS80, gottlieb_dispNumeric3, 1, SNDBRD_GTS80SS)
 GTS80_1_ROMSTART(qbquest, "677.cpu",    0xfd885874,
                         "u2_80a.bin", 0x241de1d4,
                         "u3_80a.bin", 0x2d77ccdc)
@@ -486,7 +486,7 @@ CORE_GAMEDEFNV(qbquest,"Q*Bert's Quest",1983,"Gottlieb",gl_mGTS80SS,0)
 /*-------------------------------------------------------------------
 / Super Orbit (#680)
 /-------------------------------------------------------------------*/
-INITGAME(sorbit, GEN_GTS80SS, gottlieb_dispNumeric3, 1, SNDBRD_GTS80SS)
+INITGAME(sorbit, GEN_GTS80, gottlieb_dispNumeric3, 1, SNDBRD_GTS80SS)
 GTS80_1_ROMSTART(sorbit, "680.cpu",    0xdecf84e6,
                        "u2_80a.bin", 0x241de1d4,
                        "u3_80a.bin", 0x2d77ccdc)
@@ -498,7 +498,7 @@ CORE_GAMEDEFNV(sorbit,"Super Orbit",1983,"Gottlieb",gl_mGTS80SS,0)
 /*-------------------------------------------------------------------
 / Royal Flush Deluxe (#681)
 /-------------------------------------------------------------------*/
-INITGAME(rflshdlx, GEN_GTS80SS, gottlieb_dispNumeric3, 1, SNDBRD_GTS80SS)
+INITGAME(rflshdlx, GEN_GTS80, gottlieb_dispNumeric3, 1, SNDBRD_GTS80SS)
 GTS80_1_ROMSTART(rflshdlx, "681-2.cpu",  0x0b048658,
                          "u2_80a.bin", 0x241de1d4,
                          "u3_80a.bin", 0x2d77ccdc)
@@ -510,7 +510,7 @@ CORE_GAMEDEFNV(rflshdlx,"Royal Flush Deluxe",1983,"Gottlieb",gl_mGTS80SS,0)
 /*-------------------------------------------------------------------
 / Amazon Hunt (#684)
 /-------------------------------------------------------------------*/
-INITGAME(amazonh, GEN_GTS80SS, gottlieb_dispNumeric3, 1, SNDBRD_GTS80SS)
+INITGAME(amazonh, GEN_GTS80, gottlieb_dispNumeric3, 1, SNDBRD_GTS80SS)
 GTS80_1_ROMSTART(amazonh, "684-2.cpu",  0xb0d0c4af,
                         "u2_80a.bin", 0x241de1d4,
                         "u3_80a.bin", 0x2d77ccdc)
@@ -525,7 +525,7 @@ CORE_GAMEDEFNV(amazonh,"Amazon Hunt",1983,"Gottlieb",gl_mGTS80SS,0)
 /*-------------------------------------------------------------------
 / Rack 'Em Up
 /-------------------------------------------------------------------*/
-INITGAME(rackemup, GEN_GTS80S,gottlieb_dispNumeric3, 1, SNDBRD_GTS80S)
+INITGAME(rackemup, GEN_GTS80,gottlieb_dispNumeric3, 1, SNDBRD_GTS80S)
 GTS80_1_ROMSTART(rackemup, "685.cpu",    0x4754d68d,
                          "u2_80a.bin", 0x241de1d4,
                          "u3_80a.bin", 0x2d77ccdc)
@@ -537,7 +537,7 @@ CORE_GAMEDEFNV(rackemup,"Rack 'Em Up",1983,"Gottlieb",gl_mGTS80S,GAME_IMPERFECT_
 /*-------------------------------------------------------------------
 / Ready...Aim...Fire!
 /-------------------------------------------------------------------*/
-INITGAME(raimfire, GEN_GTS80S,gottlieb_dispNumeric3, 1, SNDBRD_GTS80S)
+INITGAME(raimfire, GEN_GTS80,gottlieb_dispNumeric3, 1, SNDBRD_GTS80S)
 GTS80_1_ROMSTART(raimfire, "686.cpu",    0xd1e7a0de,
                          "u2_80a.bin", 0x241de1d4,
                          "u3_80a.bin", 0x2d77ccdc)
@@ -549,7 +549,7 @@ CORE_GAMEDEFNV(raimfire,"Ready...Aim...Fire!",1983,"Gottlieb",gl_mGTS80S,GAME_IM
 /*-------------------------------------------------------------------
 / Jacks To Open
 /-------------------------------------------------------------------*/
-INITGAME(jack2opn,GEN_GTS80S, gottlieb_dispNumeric3, 1, SNDBRD_GTS80S)
+INITGAME(jack2opn,GEN_GTS80, gottlieb_dispNumeric3, 1, SNDBRD_GTS80S)
 GTS80_1_ROMSTART(jack2opn, "687.cpu",    0x0080565e,
                          "u2_80a.bin", 0x241de1d4,
                          "u3_80a.bin", 0x2d77ccdc)
@@ -561,7 +561,7 @@ CORE_GAMEDEFNV(jack2opn,"Jacks to Open",1984,"Gottlieb",gl_mGTS80S,GAME_IMPERFEC
 /*-------------------------------------------------------------------
 / Alien Star
 /-------------------------------------------------------------------*/
-INITGAME(alienstr, GEN_GTS80S, gottlieb_dispNumeric3, 1, SNDBRD_GTS80S)
+INITGAME(alienstr, GEN_GTS80, gottlieb_dispNumeric3, 1, SNDBRD_GTS80S)
 GTS80_1_ROMSTART(alienstr, "689.cpu",    0x4262006b,
                          "u2_80a.bin", 0x241de1d4,
                          "u3_80a.bin", 0x2d77ccdc)
@@ -573,7 +573,7 @@ CORE_GAMEDEFNV(alienstr,"Alien Star",1984,"Gottlieb",gl_mGTS80S,GAME_IMPERFECT_S
 /*-------------------------------------------------------------------
 / The Games
 /-------------------------------------------------------------------*/
-INITGAME(thegames, GEN_GTS80S, gottlieb_dispNumeric3, 1, SNDBRD_GTS80S)
+INITGAME(thegames, GEN_GTS80, gottlieb_dispNumeric3, 1, SNDBRD_GTS80S)
 GTS80_1_ROMSTART(thegames, "691.cpu",    0x50f620ea,
                          "u2_80a.bin", 0x241de1d4,
                          "u3_80a.bin", 0x2d77ccdc)
@@ -585,7 +585,7 @@ CORE_GAMEDEFNV(thegames,"The Games",1984,"Gottlieb",gl_mGTS80S,GAME_IMPERFECT_SO
 /*-------------------------------------------------------------------
 / Touchdown
 /-------------------------------------------------------------------*/
-INITGAME(touchdn, GEN_GTS80S, gottlieb_dispNumeric3, 1, SNDBRD_GTS80S)
+INITGAME(touchdn, GEN_GTS80, gottlieb_dispNumeric3, 1, SNDBRD_GTS80S)
 GTS80_1_ROMSTART(touchdn, "688.cpu",    0xe531ab3f,
                         "u2_80a.bin", 0x241de1d4,
                         "u3_80a.bin", 0x2d77ccdc)
@@ -597,7 +597,7 @@ CORE_GAMEDEFNV(touchdn,"Touchdown",1984,"Gottlieb",gl_mGTS80S,GAME_IMPERFECT_SOU
 /*-------------------------------------------------------------------
 / El Dorado City of Gold
 /-------------------------------------------------------------------*/
-INITGAME(eldorado, GEN_GTS80S, gottlieb_dispNumeric3, 1, SNDBRD_GTS80S)
+INITGAME(eldorado, GEN_GTS80, gottlieb_dispNumeric3, 1, SNDBRD_GTS80S)
 GTS80_1_ROMSTART(eldorado, "692-2.cpu",  0x4ee6d09b,
                          "u2_80a.bin", 0x241de1d4,
                          "u3_80a.bin", 0x2d77ccdc)
@@ -609,7 +609,7 @@ CORE_GAMEDEFNV(eldorado,"El Dorado City of Gold",1984,"Gottlieb",gl_mGTS80S,GAME
 /*-------------------------------------------------------------------
 / Ice Fever
 /-------------------------------------------------------------------*/
-INITGAME(icefever, GEN_GTS80S, gottlieb_dispNumeric3, 1, SNDBRD_GTS80S)
+INITGAME(icefever, GEN_GTS80, gottlieb_dispNumeric3, 1, SNDBRD_GTS80S)
 GTS80_1_ROMSTART(icefever, "695.cpu",    0x2f6e9caf,
                          "u2_80a.bin", 0x241de1d4,
                          "u3_80a.bin", 0x2d77ccdc)
@@ -624,7 +624,7 @@ CORE_GAMEDEFNV(icefever,"Ice Fever",1985,"Gottlieb",gl_mGTS80S,GAME_IMPERFECT_SO
 / Chicago Cubs' Triple Play (#696)
 /-------------------------------------------------------------------*/
 // using System80 sound only board
-INITGAME(triplay, GEN_GTS80B, gottlieb_dispAlpha, 1, SNDBRD_GTS80S)
+INITGAME(triplay, GEN_GTS80B8K, gottlieb_dispAlpha, 1, SNDBRD_GTS80S)
 GTS80B_8K_ROMSTART(triplay,	"prom1.cpu", 0x42b29b01)
 GTS80S2K_ROMSTART(		"696-s.snd", 0xdeedea61,
 							"6530sy80.bin", 0xc8ba951d)
@@ -635,7 +635,7 @@ CORE_GAMEDEFNV(triplay, "Triple Play",1985,"Gottlieb",gl_mGTS80B,GAME_IMPERFECT_
 / Bounty Hunter (#694)
 /-------------------------------------------------------------------*/
 // using System80 sound only board
-INITGAME(bountyh, GEN_GTS80B, gottlieb_dispAlpha, 1, SNDBRD_GTS80S)
+INITGAME(bountyh, GEN_GTS80B8K, gottlieb_dispAlpha, 1, SNDBRD_GTS80S)
 GTS80B_8K_ROMSTART(bountyh,	"prom1.cpu", 0xe8190df7)
 GTS80S2K_ROMSTART(		"694-s.snd", 0xa0383e41,
 							"6530sy80.bin", 0xc8ba951d)
@@ -646,7 +646,7 @@ CORE_GAMEDEFNV(bountyh, "Bounty Hunter",1985,"Gottlieb",gl_mGTS80B,GAME_IMPERFEC
 / Rock (#697)
 /-------------------------------------------------------------------*/
 //(I assume these are using Gen.1 hardware, but there's 1 less rom, so who knows)
-INITGAME(rock, GEN_GTS80B2K, gottlieb_dispAlpha, 1, SNDBRD_GTS80B)
+INITGAME(rock, GEN_GTS80B8K, gottlieb_dispAlpha, 1, SNDBRD_GTS80B)
 GTS80B_8K_ROMSTART(rock,	"prom1.cpu", 0x1146c1d3)
 GTS80BSSOUND88("drom1.snd", 0x03830e81,
 			   "yrom1.snd", 0xeffba2ad)
