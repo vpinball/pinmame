@@ -18,8 +18,8 @@ ZAC_INPUT_PORTS_START(name, 1) ZAC_INPUT_PORTS_END
 
 //Games in rough production order
 
-#define TEST 0
-//#define TEST GAME_NOT_WORKING
+//#define TEST 0
+#define TEST GAME_NOT_WORKING
 
 //10/77 Combat
 //01/78 Winter Sports
