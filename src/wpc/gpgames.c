@@ -10,7 +10,7 @@
 //Use for testing segments only
 static core_tLCDLayout dispGP_TEST[] = {
  {0, 0, 00,16,CORE_SEG87},
- {2, 0, 16,16,CORE_SEG87}, 
+ {2, 0, 16,16,CORE_SEG87},
  {4, 0, 32,16,CORE_SEG87}, {0}
 };
 #endif
@@ -259,23 +259,21 @@ CORE_GAMEDEFNV(ladyshot,"Lady Sharpshooter",1985,"Game Plan",mGP2,GAME_NO_SOUND)
 /*-------------------------------------------------------------------
 / Andromeda (September 1985) - Model #850
 /-------------------------------------------------------------------*/
-/*Something is wrong with the rom loading here.. but not sure how to fix it!
- * - The Interrupt Vector address is at 0x1ff0, which is not a valid address here*/
 INITGAME(andromed, 0,dispGP_BDU2,FLIP_SW(FLIP_L),0)
-GP_ROMSTART888(andromed,"850.a",0xa811f936,
-						"850.b",0x75ec7247,
-						"850.c",0x75dc73c4)
-//GP_SOUNDROM8("850.snd",0x18e084a6)
+GP_ROMSTART000(andromed,"850.a",0x3e9628e5,
+						"850.b",0x3f945c46,
+						"850.c",0x7ea18e65)
+//GP_SOUNDROM8("850.snd",0x290db3d2)
 GP_ROMEND
-CORE_GAMEDEFNV(andromed,"Andromeda",1985,"Game Plan",mGP2,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(andromed,"Andromeda",1985,"Game Plan",mGP2,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
 / Cyclopes (November 1985) - Model #800
 /-------------------------------------------------------------------*/
 INITGAME(cyclopes, 0,dispGP_BDU2,FLIP_SW(FLIP_L),0)
-GP_ROMSTART00(cyclopes,	"850a",0x67ed03ee,
-						"850b",0x37c244e8)
-//GP_SOUNDROM8("850snd",0x18e084a6)
+GP_ROMSTART00(cyclopes,	"800.a",0x67ed03ee,
+						"800.b",0x37c244e8)
+//GP_SOUNDROM8("800.snd",0x18e084a6)
 GP_ROMEND
 CORE_GAMEDEFNV(cyclopes,"Cyclopes",1985,"Game Plan",mGP2,GAME_NO_SOUND)
 
