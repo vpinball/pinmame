@@ -4,6 +4,9 @@ What's new in Visual PinMAME:
 Version 1.1x (xxx)
 ------------------
 - Removed the need for the zlib.dll
+- Added Controller.Games property which enables you to get much more information about the supported games
+  and also enables you to make a more detailed rom check
+- Updated Installer program to use the new .games property to display enhanced game informations
 
 Version 1.10 (December 23, 2001)
 ---------------------------------------
