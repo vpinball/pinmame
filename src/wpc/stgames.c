@@ -25,7 +25,7 @@ static void init_##name(void) { core_gameData = &name##GameData; }
 /---------------------------------*/
 INITGAME(blkshpsq,GEN_STMPU100,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST100,0)
 BY17_ROMSTARTx88(blkshpsq,"cpu_u2.716",CRC(272ad984) SHA1(3a6574762bd1db0a64da1de3bc875f3a3f1dfff6),
-                          "cpu_u6.716",CRC(432e9b9e) SHA1(292e509f50bc841f6e469c198fc82c2a9095f008))
+                          "cpu_u6.716",NO_DUMP)
 BY35_ROMEND
 #define input_ports_blkshpsq input_ports_st
 CORE_GAMEDEFNV(blkshpsq,"Black Sheep Squadron",1979,"Astro",by35_mST100,GAME_NO_SOUND)
