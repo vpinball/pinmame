@@ -1,3 +1,46 @@
+Version 1.32 (May 1, 2004) - "MayDay Edition"
+-------------------------------------------------------------
+Not a lot of new stuff in here, but this release is needed to ensure people can enjoy
+PinMAME for a while without any new glitches that we might introduce by switching
+over to the new MAME core architecture started with MAME version 0.79;
+We have already ported all the drivers and self-made CPU cores, and we ran into some
+serious problems, so this might take a while...
+
+Apart from that, some improvements were made to the existing code, especially for
+the GTS80A games. Tom succeeded in emulating the Votrax chip closer to the real thing
+than we might ever get, so you will now listen to the original phonemes the chip
+produces in all their four possible intonations (try the attract mode of "Cavaleiro
+Negro" and wait for him to sing to you...)! :)
+Also, the timer bug with the 6532 RRIOT chip was corrected, so we could re-install
+the unhacked version of timer.c again. Any slowdown problems on Gottlieb games
+should be a thing of the past now, and the slam tilt is working again too.
+Tom brought back the long-lost Hankin sound emulation, too. Thanks a lot!
+
+Furthermore, there was a new CPU included that's used on the early Zaccaria
+single-player games, like Strike, or Ski Jump: The National Semiconductor SC/MP,
+or "Scamp", as it's commonly called... a most peculiar piece of Processor history.
+
+Not much more, I'm afraid. We are all pretty busy lately, and we're missing Steve's
+work a lot! Still, have fun playing around with this latest release. :)
+
+Bugs Fixed
+----------
+- Major improvement to the Votrax SC01 emulation (speech synthesis based
+  on samples from the original chip from now on!)
+- Gottlieb System 80A games working as supposed, including Slam tilt,
+  and without the need for any hacks in the timer section.
+- Fixed Hankin sound back to where it was before it was broken.
+  [Tom Haukap]
+
+- adjusted the "6" and "9" numbers in Atari & Gottlieb games to look correct
+  [Gerrit Volkenborn]
+  
+New Features
+------------
+- new CPU: National Semiconductor SC/MP, needed for early Zaccaria games
+  [Gerrit Volkenborn]
+
+
 Version 1.31 (December 23, 2003) - Happy 32nd Birthday Steve
 -------------------------------------------------------------
 They say that history repeats itself, and we would have to agree! 

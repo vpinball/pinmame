@@ -36,12 +36,8 @@ Bugs in Pinmame that we are aware of:
 
 #13) Some Bally games using the 6803 processor don't work correctly.
 
-#14) No sound on some Hankin games.
+#14) Switch problems with Dataeast Playboy and the Grotto/VUK
 
-#15) Switch problems with Dataeast Playboy and the Grotto/VUK
+#15) Occasional pops/clicks on Capcom sound
 
-#16) Occasional pops/clicks on Capcom sound
-
-#17) Some games have no sound emulated, but the core prevents us from using the GAME_NO_SOUND flag.
-
-#18) Gottlieb System80A games hang after performing a slam tilt
+#16) Some games have no sound emulated, but the core prevents us from using the GAME_NO_SOUND flag.

@@ -1,8 +1,8 @@
 **************************************************************************************
 		                       PinMAME
 		      (Pinball Multiple Arcade Machine Emulator)
-		                     Version 1.31
-		                  (December 23, 2003)
+		                     Version 1.32
+		                    (May 1, 2004)
 		                http://www.pinmame.com
 **************************************************************************************
 
@@ -58,7 +58,7 @@ Games supported
   Data East 128x16 DMD: All games from Checkpoint (1991) to Hook (1992)
   Data East 128x32 DMD: All games from Lethal Weapon 3 (1992) to Guns 'n Roses (1994)
   Sega 192x64 DMD: All games from Maverick (1994) to Batman Forever(1995)
-  Sega/Stern Whitestar: All games from Apollo 13 (1995) to Lord Of The Rings (2003)
+  Sega/Stern Whitestar: All games from Apollo 13 (1995) to Ripley's (2004)
   Stern MPU-100: All games from Stingray (1977) to Magic (1979)
   Stern MPU-200: All games from Meteor (1979) to Lazer Lord (1984)
   Bally MPU-17: All games from Freedom (1977) to Black Jack (1978)
