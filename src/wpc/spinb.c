@@ -764,8 +764,7 @@ static WRITE_HANDLER(dmdbd_w)
 }
 
 static INTERRUPT_GEN(spinb_vblank) {
-
-  spinb_z80int(0);
+//  spinb_z80int(0);
 
   /*-------------------------------
   /  copy local data to interface
@@ -836,9 +835,9 @@ static void spinb_z80nmi(int data) {  cpu_set_irq_line(0, 127, PULSE_LINE); }
 static MACHINE_INIT(spinb) {
   memset(&SPINBlocals, 0, sizeof(SPINBlocals));
 
-//  SPINBlocals.irqtimer = timer_alloc(spinb_z80int);
-//  SPINBlocals.irqfreq = SPINB_INTFREQ;
-//  timer_adjust(SPINBlocals.irqtimer, 1.0/(double)SPINBlocals.irqfreq, 0, 1.0/(double)SPINBlocals.irqfreq);
+  SPINBlocals.irqtimer = timer_alloc(spinb_z80int);
+  SPINBlocals.irqfreq = SPINB_INTFREQ;
+  timer_adjust(SPINBlocals.irqtimer, 1.0/(double)SPINBlocals.irqfreq, 0, 1.0/(double)SPINBlocals.irqfreq);
   SPINBlocals.nmitimer = timer_alloc(spinb_z80nmi);
   SPINBlocals.nmifreq = SPINB_NMIFREQ;
   timer_adjust(SPINBlocals.nmitimer, 1.0/(double)SPINBlocals.nmifreq, 0, 1.0/(double)SPINBlocals.nmifreq);
