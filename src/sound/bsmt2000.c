@@ -393,8 +393,16 @@ int BSMT2000_sh_start(const struct MachineSound *msound)
 		stream_name_ptrs[1] = stream_name[1];
 
 		/* set the volumes */
+#ifdef PINMAME
+		vol[intf->reverse_stereo] = MIXER(intf->mixing_level[i], MIXER_PAN_LEFT);
+		vol[1 - intf->reverse_stereo] = MIXER(intf->mixing_level[i], MIXER_PAN_RIGHT);
+		bsmt2000[i].voladj = (UINT16)intf->voladj[i];
+		bsmt2000[i].use_de_rom_banking = intf->use_de_rom_banking;
+		bsmt2000[i].shift_data = intf->shift_data;
+#else
 		vol[0] = MIXER(intf->mixing_level[i], MIXER_PAN_LEFT);
 		vol[1] = MIXER(intf->mixing_level[i], MIXER_PAN_RIGHT);
+#endif /* PINMAME */
 
 		/* create the stream */
 		bsmt2000[i].stream = stream_init_multi(2, stream_name_ptrs, vol, Machine->sample_rate, i, bsmt2000_update);
@@ -408,12 +416,6 @@ int BSMT2000_sh_start(const struct MachineSound *msound)
 		/* initialize the rest of the structure */
 		bsmt2000[i].master_clock = (double)intf->baseclock[i];
 		bsmt2000[i].output_step = (int)((double)intf->baseclock[i] / 1024.0 * (double)(1 << FRAC_BITS) / (double)Machine->sample_rate);
-#ifdef PINMAME
-        bsmt2000[i].voladj = (UINT16)intf->voladj[i];
-		bsmt2000[i].use_de_rom_banking = intf->use_de_rom_banking;
-		bsmt2000[i].shift_data = intf->shift_data;
-#endif
-
 
 		/* init the voices */
 		init_all_voices(&bsmt2000[i]);

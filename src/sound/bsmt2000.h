@@ -20,9 +20,10 @@ struct BSMT2000interface
         int mixing_level[MAX_BSMT2000];         /* master volume */
 #ifdef PINMAME
         int voladj[MAX_BSMT2000];               /* Adjust Volume Commands to create louder output */
-		int use_de_rom_banking;					/* Special flag to use Data East rom bank handling */
-		int shift_data;							/* Special flag to determine if ROM data should be shifted for better quality */
-#endif 
+        int use_de_rom_banking;                 /* Special flag to use Data East rom bank handling */
+        int shift_data;                         /* Special flag to determine if ROM data should be shifted for better quality */
+        int reverse_stereo;                     /* Special flag to determine if left and right channels should be reversed */
+#endif
 };
 
 int BSMT2000_sh_start(const struct MachineSound *msound);
