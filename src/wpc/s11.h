@@ -189,6 +189,7 @@ extern MACHINE_DRIVER_EXTERN(s11_s11b2S);
 extern MACHINE_DRIVER_EXTERN(s11_s11cS);
 extern MACHINE_DRIVER_EXTERN(de_a);
 extern MACHINE_DRIVER_EXTERN(de_a1S);
+extern MACHINE_DRIVER_EXTERN(de_a1SH);		//IRQ Hack for Robocop
 extern MACHINE_DRIVER_EXTERN(de_dmd161S);
 extern MACHINE_DRIVER_EXTERN(de_dmd162aS);
 extern MACHINE_DRIVER_EXTERN(de_dmd322aS);
@@ -202,6 +203,7 @@ extern MACHINE_DRIVER_EXTERN(de_dmd642aS);
 #define s11_mS11CS       s11_s11cS
 #define de_mDEA          de_a
 #define de_mDEAS1        de_a1S
+#define de_mDEAS1H       de_a1SH		//IRQ Hack for Robocop
 #define de_mDEDMD16S1    de_dmd161S
 #define de_mDEDMD16S2A   de_dmd162aS
 #define de_mDEDMD32S2A   de_dmd322aS
