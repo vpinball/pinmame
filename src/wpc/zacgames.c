@@ -54,26 +54,26 @@ ZAC_INPUT_PORTS_START(name, 1) ZAC_INPUT_PORTS_END
 /*--------------------------------
 / Winter Sports (01/78)
 /-------------------------------*/
-INITGAME1(wsports,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1311,100)
+INITGAME1(wsports,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1311,125)
 ZAC_ROMSTART44444(wsports,	"ws1.bin",CRC(58feb058) SHA1(50216bba5be28284e63d826543297d1b6b609325),
 							"ws2.bin",CRC(ece702cb) SHA1(84cf0976b33bd7cf25976de9c66cc85808f1cd50),
 							"ws3.bin",CRC(ff7f6824) SHA1(0eef4aca51c0e823f7634d7fc22c96c590239269),
 							"ws4.bin",CRC(74460cf2) SHA1(4afa612af1eff8eae686ceba7c117bc7962272c7),
 							"ws5.bin",CRC(5ef51ced) SHA1(390579d0482ceabf87924f7718ef33e336726d92))
 ZAC_ROMEND
-CORE_GAMEDEFNV(wsports,"Winter Sports",1978,"Zaccaria",mZAC1311,SOUNDFLAG)
+CORE_GAMEDEFNV(wsports,"Winter Sports",1978,"Zaccaria",mZAC1311,0)
 
 /*--------------------------------
 // House of Diamonds (07/78)
 /-------------------------------*/
-INITGAME1(hod,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1311,100)
+INITGAME1(hod,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1311,125)
 ZAC_ROMSTART44444(hod,		"hod_1.bin",CRC(b666af0e) SHA1(e6a96ed30733e7b011ba35d1a628cefd073f29a1),
 							"hod_4.bin",CRC(25b6be1f) SHA1(351138404865d69ccb3ad450deda0776e987fdd2),
 							"hod_3.bin",CRC(88b05360) SHA1(44992a01eaa8f58296d6fb003da8dad528f2b937),
 							"hod_2.bin",NO_DUMP,
 							"hod_5.bin",CRC(7adff5a2) SHA1(63359e564b05720c55905be0a1045fcf41850f53))
 ZAC_ROMEND
-CORE_GAMEDEFNV(hod,"House of Diamonds",1978,"Zaccaria",mZAC1311,SOUNDFLAG)
+CORE_GAMEDEFNV(hod,"House of Diamonds",1978,"Zaccaria",mZAC1311,0)
 
 //10/78 Ski Jump
 
@@ -81,19 +81,19 @@ CORE_GAMEDEFNV(hod,"House of Diamonds",1978,"Zaccaria",mZAC1311,SOUNDFLAG)
 / Future World (10/78)
 /-------------------------------*/
 // Game ROMs #2 and #3 have to be swapped!
-INITGAME1(futurwld,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1311,100)
+INITGAME1(futurwld,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1311,125)
 ZAC_ROMSTART44444(futurwld,	"futwld_1.lgc",CRC(d83b8793) SHA1(3bb04d8395191ecf324b6da0bcddcf7bd8d41867),
 							"futwld_3.lgc",CRC(bdcb7e1d) SHA1(e6c0c7e8188df87937f0b22dbb0639872e03e948),
 							"futwld_2.lgc",CRC(48e3d293) SHA1(0029f30c4a94067e7782e22499b11db86f051934),
 							"futwld_4.lgc",CRC(b1de2120) SHA1(970e1c4eadb7ace1398684accac289a434d13d84),
 							"futwld_5.lgc",CRC(6b7965f2) SHA1(31314bc63f01717004c5c2448b5db7d292145b60))
 ZAC_ROMEND
-CORE_GAMEDEFNV(futurwld,"Future World",1978,"Zaccaria",mZAC1311,SOUNDFLAG)
+CORE_GAMEDEFNV(futurwld,"Future World",1978,"Zaccaria",mZAC1311,0)
 
 /*--------------------------------
 / Shooting the Rapids (04/79)
 /-------------------------------*/
-INITGAME1(strapids,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1125,100)
+INITGAME1(strapids,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1125,125)
 ZAC_ROMSTART44444(strapids,	"rapids_1.lgc",CRC(2a30cef3) SHA1(1af0ad08316fca565a6de1d308ed0495907656e7),
 							"rapids_2.lgc",CRC(04adaa14) SHA1(7819de53cee669b7e42624cd577ed1e3b771d2a9),
 							"rapids_3.lgc",CRC(397992fb) SHA1(46e4f293fc8d8094eb16030261342504694fbf8f),
@@ -105,7 +105,7 @@ CORE_GAMEDEFNV(strapids,"Shooting the Rapids",1979,"Zaccaria",mZAC1125,SOUNDFLAG
 /*--------------------------------
 / Hot Wheels (09/79)
 /-------------------------------*/
-INITGAME1(hotwheel,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1125,100)
+INITGAME1(hotwheel,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1125,125)
 ZAC_ROMSTART84444(hotwheel,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6c0fda6fa0d1fea8257cb15),
 							"htwhls_2.lgc",CRC(7ff870ae) SHA1(274ee7c2cb92b6710c546058e7277f06720b5e37),
 							"htwhls_3.lgc",CRC(7c1fba91) SHA1(d514e9b3128dfe7999e414fd9044dc20c0d76c66),
@@ -119,7 +119,7 @@ CORE_GAMEDEFNV(hotwheel,"Hot Wheels",1979,"Zaccaria",mZAC1125,SOUNDFLAG)
 /*--------------------------------
 / Fire Mountain (01/80)
 /-------------------------------*/
-INITGAME1(firemntn,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1125,100)
+INITGAME1(firemntn,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1125,125)
 ZAC_ROMSTART84444(firemntn,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6c0fda6fa0d1fea8257cb15),
 							"firemt_2.lgc",CRC(d146253f) SHA1(69910ddd1b7f1a0a0db689e750a0288d10e92951),
 							"firemt_3.lgc",CRC(d9faae07) SHA1(9883be01e2d359a111528029407141c9792c3583),
@@ -132,7 +132,7 @@ CORE_GAMEDEFNV(firemntn,"Fire Mountain",1980,"Zaccaria",mZAC1125,SOUNDFLAG)
 / Star God (05/80)
 /-------------------------------*/
 // This game needs ROM #4 duplicated in slot #5?
-INITGAME1(stargod,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1346,75)
+INITGAME1(stargod,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1346,125)
 ZAC_ROMSTART84444(stargod,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6c0fda6fa0d1fea8257cb15),
 							"stargod2.lgc",CRC(7a784b03) SHA1(bc3490b69913f52e3e9db5c3de5617ab89efe073),
 							"stargod3.lgc",CRC(95492ac0) SHA1(992ad53efc5b53020e3939dfca5431fd50b6571c),
@@ -146,7 +146,7 @@ CORE_GAMEDEFNV(stargod,"Star God",1980,"Zaccaria",mZAC1346,SOUNDFLAG)
 /*--------------------------------
 / Space Shuttle (09/80)
 /-------------------------------*/
-INITGAME1(sshtlzac,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1346,75)
+INITGAME1(sshtlzac,GEN_ZAC1,dispZAC1,SNDBRD_ZAC1346,125)
 ZAC_ROMSTART84444(sshtlzac,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6c0fda6fa0d1fea8257cb15),
 							"spcshtl2.lgc",CRC(0e06771b) SHA1(f30f3727f24219e5047c871fe81c2e172a17cd38),
 							"spcshtl3.lgc",CRC(a302e5a9) SHA1(1585f4000d105a7a2be5638ade9ab8668e6c8a5e),
@@ -390,7 +390,19 @@ ZAC_SOUNDROM_46(			"spook_4.snd",CRC(3ab517a4) SHA1(4a9dd9d571f958c270b437a1665e
 ZAC_ROMEND
 CORE_GAMEDEFNV(spooky,"Spooky",1987,"Zaccaria",ZAC2XS,SOUNDFLAG)
 
-//??/87 Star's Phoenix
+/*--------------------------------
+/ Star's Phoenix (??/87)
+/-------------------------------*/
+INITGAME(strsphnx,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178,470)
+ZAC_ROMSTART1820(strsphnx,	"strphnx1.cpu",CRC(2a31b7da) SHA1(05f2173783e686cc8774bed6eb59b41f7af88d11),
+							"strphnx2.cpu",CRC(db830505) SHA1(55d6d6e12e2861fec81b46fb90c29aad5ad922aa))
+ZAC_SOUNDROM_e2f4(			"strphnxe.snd",NO_DUMP,
+							"strphnxf.snd",NO_DUMP)
+ZAC_SOUNDROM_46(			"strphnx4.snd",NO_DUMP,
+							"strphnx6.snd",NO_DUMP)
+ZAC_ROMEND
+CORE_GAMEDEFNV(strsphnx,"Star's Phoenix",1987,"Zaccaria",ZAC2XS,SOUNDFLAG)
+
 //??/86 New Star's Phoenix
 
 /*--------------------------------

@@ -127,7 +127,7 @@ CORE_CLONEDEFNV(cavnegr1,cavnegro,"Cavaleiro Negro (alternate set 1)",1981,"Tait
 
 TAITO_ROMSTART2222(cavnegr2,"cn1.bin", CRC(6b414089) SHA1(5f6042cc85a9319b3e34bdf39fd1f7feb5db0ec2),
                             "cn2.bin", CRC(9641f2e5) SHA1(4d7e522bd1d691901868abd191010b62a9032fda),
-                            "cn3b.bin",CRC(e1c5afd8) SHA1(88c806f013cc31443c842fb7925f97b0ed1bbdc9),
+                            "cn3b.bin",CRC(e1c5afd8) SHA1(0995325444ada4aa5cd19a90230bcad58c6cd072),
                             "cn4b.bin",CRC(b5130b00) SHA1(79efae0e8041dc152b68b304c632c9de857ad620))
 TAITO_SOUNDROMS22("cn_s1.bin", CRC(aec5069a) SHA1(4ec1f1f054e010caf9ffdda60071f96ba772c01a),
                   "cn_s2.bin", CRC(a0508863) SHA1(b4f343ed48960048c6b2b36c5ce0bad0fdb7ac62))
