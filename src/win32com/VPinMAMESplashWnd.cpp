@@ -21,11 +21,13 @@ public:
 	END_MSG_MAP()
 
 private:
-	char*	m_pszCredits;		// use defined credit text, displayed at the bottom of the picture
-	UINT	m_uClosedTimer;		// if this timer runs out, the window will be closed
-	HBITMAP	m_hBitmap;			// the bitmap we are displaying
-	BITMAP	m_Bitmap;			// bitmap info to hBitmap
-	HFONT	m_hFont;			// font for the credit line
+	char*		m_pszCredits;		// use defined credit text, displayed at the bottom of the picture
+	UINT		m_uClosedTimer;		// if this timer runs out, the window will be closed
+	HBITMAP		m_hBitmap;			// the bitmap we are displaying
+	BITMAP		m_Bitmap;			// bitmap info to hBitmap
+	HFONT		m_hFont;			// font for the credit line
+	COLORREF	m_Color;			// color for the credit line
+	int			m_iCreditStartY;	// start of the credit box (Y direction)
 
 	void DoPaint(HDC hPaintDC=0) {
 		HDC hDC = hPaintDC;
@@ -41,14 +43,15 @@ private:
 		}
 
 		if ( m_pszCredits && *m_pszCredits ) {
-			int OldTextColor = SetTextColor(hDC, RGB(255,255,255));
+			int OldTextColor = SetTextColor(hDC, m_Color);
 			int OldBkMode    = SetBkMode(hDC, TRANSPARENT);
 			HFONT hOldFont   = (HFONT) SelectObject(hDC, m_hFont);
 
 			RECT Rect;
 			GetClientRect(&Rect);
-			if ( Rect.bottom > 45 )
-				Rect.top = Rect.bottom - 45;
+			if ( Rect.bottom > m_iCreditStartY )
+				Rect.top = Rect.bottom - m_iCreditStartY;
+			Rect.bottom = Rect.top + 45;
 			Rect.left  += 5;
 			Rect.right -= 5;
 
@@ -66,7 +69,27 @@ private:
 		m_pszCredits = (char*) ((LPCREATESTRUCT) lParam)->lpCreateParams;
 
 		srand( (unsigned)time(NULL));
-		m_hBitmap = LoadBitmap(_Module.m_hInst, MAKEINTRESOURCE(IDB_SPLASH)+int(rand()%3));
+		int iSplashScreenNo = int(rand()%4);
+
+		// choose the right color and font style for the user setable text
+		int iWeight = FW_NORMAL;
+		m_iCreditStartY = 45;
+
+		switch ( iSplashScreenNo ) {
+			case 1: // Stein's image
+				m_Color = RGB(0,255,0);
+				iWeight = FW_BOLD;
+				m_iCreditStartY = 48;
+				break;
+			case 2: // Forchia's image
+				m_Color = RGB(0,0,0);
+				iWeight = FW_BOLD;
+				break;
+			default: // The original one (0) and Steve's new one (3)
+				m_Color = RGB(255,255,255);
+				break;
+		}
+		m_hBitmap = LoadBitmap(_Module.m_hInst, MAKEINTRESOURCE(IDB_SPLASH)+iSplashScreenNo);
 		if ( m_hBitmap ) {
 			GetObject(m_hBitmap, sizeof m_Bitmap, &m_Bitmap);
 
@@ -78,7 +101,7 @@ private:
 		HDC hDC = GetDC();
 		m_hFont = CreateFont(
 			-MulDiv(8, GetDeviceCaps(hDC, LOGPIXELSY), 72),
-			0, 0, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET, 0, 0, 0, 
+			0, 0, 0, iWeight, 0, 0, 0, ANSI_CHARSET, 0, 0, 0, 
 			FF_DONTCARE, "Microsoft Sans Serife"
 		);
 		ReleaseDC(hDC);
