@@ -3,13 +3,18 @@
 ** File: fmopl.c - software implementation of FM sound generator
 **                                            types OPL and OPL2
 **
+** Copyright (C) 2002,2003 Jarek Burczynski (bujar at mame dot net)
 ** Copyright (C) 1999,2000 Tatsuyuki Satoh , MultiArcadeMachineEmulator development
-** Copyright (C) 2002 Jarek Burczynski
 **
-** Version 0.66
+** Version 0.70
 **
 
 Revision History:
+
+14-06-2003 Jarek Burczynski:
+ - implemented all of the status register flags in Y8950 emulation
+ - renamed Y8950SetDeltaTMemory() parameters from _rom_ to _mem_ since
+   they can be either RAM or ROM
 
 08-10-2002 Jarek Burczynski (thanks to Dox for the YM3526 chip)
  - corrected YM3526Read() to always set bit 2 and bit 1
@@ -193,8 +198,6 @@ static FILE *sample[1];
 
 
 
-/* Saving is necessary for member of the 'R' mark for suspend/resume */
-
 typedef struct{
 	UINT32	ar;			/* attack rate: AR<<2			*/
 	UINT32	dr;			/* decay rate:  DR<<2			*/
@@ -219,14 +222,12 @@ typedef struct{
 	INT32	TLL;		/* adjusted now TL				*/
 	INT32	volume;		/* envelope counter				*/
 	UINT32	sl;			/* sustain level: sl_tab[SL]	*/
-
 	UINT8	eg_sh_ar;	/* (attack state)				*/
 	UINT8	eg_sel_ar;	/* (attack state)				*/
 	UINT8	eg_sh_dr;	/* (decay state)				*/
 	UINT8	eg_sel_dr;	/* (decay state)				*/
 	UINT8	eg_sh_rr;	/* (release state)				*/
 	UINT8	eg_sel_rr;	/* (release state)				*/
-
 	UINT32	key;		/* 0 = KEY OFF, >0 = KEY ON		*/
 
 	/* LFO */
@@ -282,7 +283,7 @@ typedef struct fm_opl_f {
 
 	YM_DELTAT *deltat;
 
-	/* Keyboard / I/O interface unit*/
+	/* Keyboard and I/O ports interface */
 	UINT8	portDirection;
 	UINT8	portLatch;
 	OPL_PORTHANDLER_R porthandler_r;
@@ -624,15 +625,15 @@ static const INT8 lfo_pm_table[8*8*2] = {
 /* lock level of common table */
 static int num_lock = 0;
 
-/* work table */
-static void *cur_chip = NULL;	/* current chip point */
-OPL_SLOT *SLOT7_1,*SLOT7_2,*SLOT8_1,*SLOT8_2;
 
-static signed int phase_modulation;		/* phase modulation input (SLOT 2) */
+static void *cur_chip = NULL;	/* current chip pointer */
+static OPL_SLOT *SLOT7_1, *SLOT7_2, *SLOT8_1, *SLOT8_2;
+
+static signed int phase_modulation;	/* phase modulation input (SLOT 2) */
 static signed int output[1];
 
 #if BUILD_Y8950
-static INT32 output_deltat[4];		/* for Y8950 DELTA-T */
+static INT32 output_deltat[4];		/* for Y8950 DELTA-T, chip is mono, that 4 here is just for safety */
 #endif
 
 static UINT32	LFO_AM;
@@ -826,7 +827,7 @@ INLINE void advance(FM_OPL *OPL)
 			{
 				block_fnum += lfo_fn_table_index_offset;
 				block = (block_fnum&0x1c00) >> 10;
-				op->Cnt += (OPL->fn_tab[block_fnum&0x03ff] >> (7-block)) * op->mul;//ok
+				op->Cnt += (OPL->fn_tab[block_fnum&0x03ff] >> (7-block)) * op->mul;
 			}
 			else	/* LFO phase modulation  = zero */
 			{
@@ -891,15 +892,8 @@ INLINE signed int op_calc(UINT32 phase, unsigned int env, signed int pm, unsigne
 INLINE signed int op_calc1(UINT32 phase, unsigned int env, signed int pm, unsigned int wave_tab)
 {
 	UINT32 p;
-	INT32  i;
 
-	i = (phase & ~FREQ_MASK) + pm;
-
-/*logerror("i=%08x (i>>16)&511=%8i phase=%i [pm=%08x] ",i, (i>>16)&511, phase>>FREQ_SH, pm);*/
-
-	p = (env<<4) + sin_tab[ wave_tab + ((i>>FREQ_SH) & SIN_MASK)];
-
-/*logerror("(p&255=%i p>>8=%i) out= %i\n", p&255,p>>8, tl_tab[p&255]>>(p>>8) );*/
+	p = (env<<4) + sin_tab[wave_tab + ((((signed int)((phase & ~FREQ_MASK) + pm      )) >> FREQ_SH ) & SIN_MASK) ];
 
 	if (p >= TL_TAB_LEN)
 		return 0;
@@ -1000,7 +994,7 @@ INLINE void OPL_CALC_RH( OPL_CH *CH, unsigned int noise )
 
 	if (!SLOT->CON)
 		phase_modulation = SLOT->op1_out[0];
-	//else ignore output of operator 1
+	/* else ignore output of operator 1 */
 
 	SLOT->op1_out[1] = 0;
 	if( env < ENV_QUIET )
@@ -1018,16 +1012,16 @@ INLINE void OPL_CALC_RH( OPL_CH *CH, unsigned int noise )
 
 
 	/* Phase generation is based on: */
-	// HH  (13) channel 7->slot 1 combined with channel 8->slot 2 (same combination as TOP CYMBAL but different output phases)
-	// SD  (16) channel 7->slot 1
-	// TOM (14) channel 8->slot 1
-	// TOP (17) channel 7->slot 1 combined with channel 8->slot 2 (same combination as HIGH HAT but different output phases)
+	/* HH  (13) channel 7->slot 1 combined with channel 8->slot 2 (same combination as TOP CYMBAL but different output phases) */
+	/* SD  (16) channel 7->slot 1 */
+	/* TOM (14) channel 8->slot 1 */
+	/* TOP (17) channel 7->slot 1 combined with channel 8->slot 2 (same combination as HIGH HAT but different output phases) */
 
 	/* Envelope generation based on: */
-	// HH  channel 7->slot1
-	// SD  channel 7->slot2
-	// TOM channel 8->slot1
-	// TOP channel 8->slot2
+	/* HH  channel 7->slot1 */
+	/* SD  channel 7->slot2 */
+	/* TOM channel 8->slot1 */
+	/* TOP channel 8->slot2 */
 
 
 	/* The following formulas can be well optimized.
@@ -1493,9 +1487,11 @@ static void OPLWriteReg(FM_OPL *OPL, int r, int v)
 			{	/* set IRQ mask ,timer enable*/
 				UINT8 st1 = v&1;
 				UINT8 st2 = (v>>1)&1;
+
 				/* IRQRST,T1MSK,t2MSK,EOSMSK,BRMSK,x,ST2,ST1 */
-				OPL_STATUS_RESET(OPL,v&0x78);
-				OPL_STATUSMASK_SET(OPL,((~v)&0x78)|0x01);
+				OPL_STATUS_RESET(OPL, v & 0x78 );
+				OPL_STATUSMASK_SET(OPL, (~v) & 0x78 );
+
 				/* timer 2 */
 				if(OPL->st[1] != st2)
 				{
@@ -1522,12 +1518,12 @@ static void OPLWriteReg(FM_OPL *OPL, int r, int v)
 					logerror("Y8950: write unmapped KEYBOARD port\n");
 			}
 			break;
-		case 0x07:	/* DELTA-T controll : START,REC,MEMDATA,REPT,SPOFF,x,x,RST */
+		case 0x07:	/* DELTA-T control 1 : START,REC,MEMDATA,REPT,SPOFF,x,x,RST */
 			if(OPL->type&OPL_TYPE_ADPCM)
 				YM_DELTAT_ADPCM_Write(OPL->deltat,r-0x07,v);
 			break;
 #endif
-		case 0x08:	/* MODE,DELTA-T : CSM,NOTESEL,x,x,smpl,da/ad,64k,rom */
+		case 0x08:	/* MODE,DELTA-T control 2 : CSM,NOTESEL,x,x,smpl,da/ad,64k,rom */
 			OPL->mode = v;
 #if BUILD_Y8950
 			if(OPL->type&OPL_TYPE_ADPCM)
@@ -1542,18 +1538,20 @@ static void OPLWriteReg(FM_OPL *OPL, int r, int v)
 		case 0x0c:
 		case 0x0d:		/* PRESCALE   */
 		case 0x0e:
-		case 0x0f:		/* ADPCM data */
+		case 0x0f:		/* ADPCM data write */
 		case 0x10: 		/* DELTA-N    */
 		case 0x11: 		/* DELTA-N    */
-		case 0x12: 		/* EG-CTRL    */
+		case 0x12: 		/* ADPCM volume */
 			if(OPL->type&OPL_TYPE_ADPCM)
 				YM_DELTAT_ADPCM_Write(OPL->deltat,r-0x07,v);
 			break;
-#if 0
-		case 0x15:		/* DAC data    */
-		case 0x16:
-		case 0x17:		/* SHIFT    */
+
+		case 0x15:		/* DAC data high 8 bits (F7,F6...F2) */
+		case 0x16:		/* DAC data low 2 bits (F1, F0 in bits 7,6) */
+		case 0x17:		/* DAC data shift (S2,S1,S0 in bits 2,1,0) */
+			logerror("FMOPL.C: DAC data register written, but not implemented reg=%02x val=%02x\n",r,v);
 			break;
+
 		case 0x18:		/* I/O CTRL (Direction) */
 			if(OPL->type&OPL_TYPE_IO)
 				OPL->portDirection = v&0x0f;
@@ -1566,10 +1564,10 @@ static void OPLWriteReg(FM_OPL *OPL, int r, int v)
 					OPL->porthandler_w(OPL->port_param,v&OPL->portDirection);
 			}
 			break;
-		case 0x1a:		/* PCM data */
+#endif
+		default:
+			logerror("FMOPL.C: write to unknown register: %02x\n",r);
 			break;
-#endif
-#endif
 		}
 		break;
 	case 0x20:	/* am ON, vib ON, ksr, eg_type, mul */
@@ -1815,7 +1813,7 @@ static void OPLResetChip(FM_OPL *OPL)
 #endif
 }
 
-/* Create one of virtual YM3812 */
+/* Create one of virtual YM3812/YM3526/Y8950 */
 /* 'clock' is chip clock in Hz  */
 /* 'rate'  is sampling rate  */
 static FM_OPL *OPLCreate(int type, int clock, int rate)
@@ -1848,7 +1846,9 @@ static FM_OPL *OPLCreate(int type, int clock, int rate)
 
 #if BUILD_Y8950
 	if (type&OPL_TYPE_ADPCM)
+	{
 		OPL->deltat = (YM_DELTAT *)ptr;
+	}
 	ptr += sizeof(YM_DELTAT);
 #endif
 
@@ -1859,8 +1859,6 @@ static FM_OPL *OPLCreate(int type, int clock, int rate)
 	/* init global tables */
 	OPL_initalize(OPL);
 
-	/* reset chip */
-	OPLResetChip(OPL);
 	return OPL;
 }
 
@@ -1871,7 +1869,7 @@ static void OPLDestroy(FM_OPL *OPL)
 	free(OPL);
 }
 
-/* Option handlers */
+/* Optional handlers */
 
 static void OPLSetTimerHandler(FM_OPL *OPL,OPL_TIMERHANDLER TimerHandler,int channelOffset)
 {
@@ -1889,7 +1887,6 @@ static void OPLSetUpdateHandler(FM_OPL *OPL,OPL_UPDATEHANDLER UpdateHandler,int 
 	OPL->UpdateParam = param;
 }
 
-/* YM3812 I/O interface */
 static int OPLWrite(FM_OPL *OPL,int a,int v)
 {
 	if( !(a&1) )
@@ -1909,6 +1906,17 @@ static unsigned char OPLRead(FM_OPL *OPL,int a)
 	if( !(a&1) )
 	{
 		/* status port */
+
+		#if BUILD_Y8950
+
+		if(OPL->type&OPL_TYPE_ADPCM)	/* Y8950 */
+		{
+			return (OPL->status & (OPL->statusmask|0x80)) | (OPL->deltat->PCM_BSY&1);
+		}
+
+		#endif
+
+		/* OPL and OPL2 */
 		return OPL->status & (OPL->statusmask|0x80);
 	}
 
@@ -1922,13 +1930,21 @@ static unsigned char OPLRead(FM_OPL *OPL,int a)
 			if(OPL->keyboardhandler_r)
 				return OPL->keyboardhandler_r(OPL->keyboard_param);
 			else
-				logerror("Y8950:read unmapped KEYBOARD port\n");
+				logerror("Y8950: read unmapped KEYBOARD port\n");
 		}
 		return 0;
-#if 0
+
 	case 0x0f: /* ADPCM-DATA  */
+		if(OPL->type&OPL_TYPE_ADPCM)
+		{
+			UINT8 val;
+
+            val = YM_DELTAT_ADPCM_Read(OPL->deltat);
+			/*logerror("Y8950: read ADPCM value read=%02x\n",val);*/
+			return val;
+		}
 		return 0;
-#endif
+
 	case 0x19: /* I/O DATA    */
 		if(OPL->type&OPL_TYPE_IO)
 		{
@@ -1939,6 +1955,11 @@ static unsigned char OPLRead(FM_OPL *OPL,int a)
 		}
 		return 0;
 	case 0x1a: /* PCM-DATA    */
+		if(OPL->type&OPL_TYPE_ADPCM)
+		{
+			logerror("Y8950 A/D convertion is accessed but not implemented !\n");
+			return 0x80; /* 2's complement PCM data - result from A/D convertion */
+		}
 		return 0;
 	}
 #endif
@@ -2010,6 +2031,8 @@ int YM3812Init(int num, int clock, int rate)
 			YM3812NumChips = 0;
 			return -1;
 		}
+		/* reset */
+		YM3812ResetChip(i);
 	}
 
 	return 0;
@@ -2159,6 +2182,8 @@ int YM3526Init(int num, int clock, int rate)
 			YM3526NumChips = 0;
 			return -1;
 		}
+		/* reset */
+		YM3526ResetChip(i);
 	}
 
 	return 0;
@@ -2290,6 +2315,15 @@ void YM3526UpdateOne(int which, INT16 *buffer, int length)
 static FM_OPL *OPL_Y8950[MAX_OPL_CHIPS];	/* array of pointers to the Y8950's */
 static int Y8950NumChips = 0;				/* number of chips */
 
+static void Y8950_deltat_status_set(UINT8 which, UINT8 changebits)
+{
+	OPL_STATUS_SET(OPL_Y8950[which], changebits);
+}
+static void Y8950_deltat_status_reset(UINT8 which, UINT8 changebits)
+{
+	OPL_STATUS_RESET(OPL_Y8950[which], changebits);
+}
+
 int Y8950Init(int num, int clock, int rate)
 {
 	int i;
@@ -2309,6 +2343,13 @@ int Y8950Init(int num, int clock, int rate)
 			Y8950NumChips = 0;
 			return -1;
 		}
+		OPL_Y8950[i]->deltat->status_set_handler = Y8950_deltat_status_set;
+		OPL_Y8950[i]->deltat->status_reset_handler = Y8950_deltat_status_reset;
+		OPL_Y8950[i]->deltat->status_change_which_chip = i;
+		OPL_Y8950[i]->deltat->status_change_EOS_bit = 0x10;		/* status flag: set bit4 on End Of Sample */
+		OPL_Y8950[i]->deltat->status_change_BRDY_bit = 0x08;	/* status flag: set bit3 on BRDY (End Of: ADPCM analysis/synthesis, memory reading/writing) */
+		/* reset */
+		Y8950ResetChip(i);
 	}
 
 	return 0;
@@ -2358,11 +2399,11 @@ void Y8950SetUpdateHandler(int which,OPL_UPDATEHANDLER UpdateHandler,int param)
 	OPLSetUpdateHandler(OPL_Y8950[which], UpdateHandler, param);
 }
 
-void Y8950SetDeltaTMemory(int which, void * deltat_rom, int deltat_rom_size )
+void Y8950SetDeltaTMemory(int which, void * deltat_mem_ptr, int deltat_mem_size )
 {
 	FM_OPL		*OPL = OPL_Y8950[which];
-	OPL->deltat->memory = (UINT8 *)(deltat_rom);
-	OPL->deltat->memory_size = deltat_rom_size;
+	OPL->deltat->memory = (UINT8 *)(deltat_mem_ptr);
+	OPL->deltat->memory_size = deltat_mem_size;
 }
 
 /*
@@ -2379,9 +2420,6 @@ void Y8950UpdateOne(int which, INT16 *buffer, int length)
 	UINT8		rhythm  = OPL->rhythm&0x20;
 	YM_DELTAT	*DELTAT = OPL->deltat;
 	OPLSAMPLE	*buf    = buffer;
-
-	/* setup DELTA-T unit */
-	YM_DELTAT_DECODE_PRESET(DELTAT);
 
 	if( (void *)OPL != cur_chip ){
 		cur_chip = (void *)OPL;
@@ -2402,7 +2440,7 @@ void Y8950UpdateOne(int which, INT16 *buffer, int length)
 		advance_lfo(OPL);
 
 		/* deltaT ADPCM */
-		if( DELTAT->portstate )
+		if( DELTAT->portstate&0x80 )
 			YM_DELTAT_ADPCM_CALC(DELTAT);
 
 		/* FM part */
@@ -2444,15 +2482,6 @@ void Y8950UpdateOne(int which, INT16 *buffer, int length)
 		advance(OPL);
 	}
 
-	/* deltaT START flag */
-	if( !DELTAT->portstate )
-		OPL->status &= 0xfe;
-
-	if( DELTAT->eos ) //AT: set bit 4 of OPL status register on EOS
-	{
-		DELTAT->eos = 0;
-		OPL->status |= 0x10;
-	}
 }
 
 void Y8950SetPortHandler(int which,OPL_PORTHANDLER_W PortHandler_w,OPL_PORTHANDLER_R PortHandler_r,int param)

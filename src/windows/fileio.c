@@ -19,6 +19,14 @@
 #include "image.h"
 #endif
 
+/* Older versions of Platform SDK don't define these */
+#ifndef INVALID_FILE_ATTRIBUTES
+#define INVALID_FILE_ATTRIBUTES 0xffffffff
+#endif
+
+#ifndef INVALID_SET_FILE_POINTER
+#define INVALID_SET_FILE_POINTER 0xffffffff
+#endif
 
 #define VERBOSE				0
 
@@ -443,7 +451,7 @@ int osd_get_path_info(int pathtype, int pathindex, const char *filename)
 
 osd_file *osd_fopen(int pathtype, int pathindex, const char *filename, const char *mode)
 {
-	DWORD disposition = 0, access = 0;
+	DWORD disposition = 0, access = 0, sharemode = 0;
 	TCHAR fullpath[1024];
 	LONG upperPos = 0;
 	osd_file *file;
@@ -462,9 +470,9 @@ osd_file *osd_fopen(int pathtype, int pathindex, const char *filename, const cha
 
 	/* convert the mode into disposition and access */
 	if (strchr(mode, 'r'))
-		disposition = OPEN_EXISTING, access = GENERIC_READ;
+		disposition = OPEN_EXISTING, access = GENERIC_READ, sharemode = FILE_SHARE_READ;
 	if (strchr(mode, 'w'))
-		disposition = CREATE_ALWAYS, access = GENERIC_WRITE;
+		disposition = CREATE_ALWAYS, access = GENERIC_WRITE, sharemode = 0;
 	if (strchr(mode, '+'))
 		access = GENERIC_READ | GENERIC_WRITE;
 
@@ -472,7 +480,7 @@ osd_file *osd_fopen(int pathtype, int pathindex, const char *filename, const cha
 	compose_path(fullpath, pathtype, pathindex, filename);
 
 	/* attempt to open the file */
-	file->handle = CreateFile(fullpath, access, 0, NULL, disposition, 0, NULL);
+	file->handle = CreateFile(fullpath, access, sharemode, NULL, disposition, 0, NULL);
 	if (file->handle == INVALID_HANDLE_VALUE)
 	{
 		DWORD error = GetLastError();
@@ -483,7 +491,7 @@ osd_file *osd_fopen(int pathtype, int pathindex, const char *filename, const cha
 
 		/* create the path and try again */
 		create_path(fullpath, 1);
-		file->handle = CreateFile(fullpath, access, 0, NULL, disposition, 0, NULL);
+		file->handle = CreateFile(fullpath, access, sharemode, NULL, disposition, 0, NULL);
 
 		/* if that doesn't work, we give up */
 		if (file->handle == INVALID_HANDLE_VALUE)

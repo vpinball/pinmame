@@ -936,28 +936,25 @@ void osd_update_video_and_audio(struct mame_display *display)
 
 
 //============================================================
-//	osd_save_snapshot
+//	osd_override_snapshot
 //============================================================
 
-void osd_save_snapshot(struct mame_bitmap *bitmap, const struct rectangle *bounds)
+struct mame_bitmap *osd_override_snapshot(struct mame_bitmap *bitmap, struct rectangle *bounds)
 {
 	struct rectangle newbounds;
 	struct mame_bitmap *copy;
 	int x, y, w, h, t;
 
-	// if we can send it in raw, do it
+	// if we can send it in raw, no need to override anything
 	if (!blit_swapxy && !blit_flipx && !blit_flipy)
-	{
-		save_screen_snapshot(bitmap, bounds);
-		return;
-	}
+		return NULL;
 
 	// allocate a copy
 	w = blit_swapxy ? bitmap->height : bitmap->width;
 	h = blit_swapxy ? bitmap->width : bitmap->height;
 	copy = bitmap_alloc_depth(w, h, bitmap->depth);
 	if (!copy)
-		return;
+		return NULL;
 
 	// populate the copy
 	for (y = bounds->min_y; y <= bounds->max_y; y++)
@@ -1017,9 +1014,8 @@ void osd_save_snapshot(struct mame_bitmap *bitmap, const struct rectangle *bound
 		newbounds.max_y = t;
 	}
 
-	// now save the copy and nuke it when done
-	save_screen_snapshot(copy, &newbounds);
-	bitmap_free(copy);
+	*bounds = newbounds;
+	return copy;
 }
 
 

@@ -237,10 +237,41 @@ UINT32 tilemap_scan_rows( UINT32 col, UINT32 row, UINT32 num_cols, UINT32 num_ro
 	/* logical (col,row) -> memory offset */
 	return row*num_cols + col;
 }
+UINT32 tilemap_scan_rows_flip_x( UINT32 col, UINT32 row, UINT32 num_cols, UINT32 num_rows )
+{
+	/* logical (col,row) -> memory offset */
+	return row*num_cols + (num_cols-col-1);
+}
+UINT32 tilemap_scan_rows_flip_y( UINT32 col, UINT32 row, UINT32 num_cols, UINT32 num_rows )
+{
+	/* logical (col,row) -> memory offset */
+	return (num_rows-row-1)*num_cols + col;
+}
+UINT32 tilemap_scan_rows_flip_xy( UINT32 col, UINT32 row, UINT32 num_cols, UINT32 num_rows )
+{
+	/* logical (col,row) -> memory offset */
+	return (num_rows-row-1)*num_cols + (num_cols-col-1);
+}
+
 UINT32 tilemap_scan_cols( UINT32 col, UINT32 row, UINT32 num_cols, UINT32 num_rows )
 {
 	/* logical (col,row) -> memory offset */
 	return col*num_rows + row;
+}
+UINT32 tilemap_scan_cols_flip_x( UINT32 col, UINT32 row, UINT32 num_cols, UINT32 num_rows )
+{
+	/* logical (col,row) -> memory offset */
+	return (num_cols-col-1)*num_rows + row;
+}
+UINT32 tilemap_scan_cols_flip_y( UINT32 col, UINT32 row, UINT32 num_cols, UINT32 num_rows )
+{
+	/* logical (col,row) -> memory offset */
+	return col*num_rows + (num_rows-row-1);
+}
+UINT32 tilemap_scan_cols_flip_xy( UINT32 col, UINT32 row, UINT32 num_cols, UINT32 num_rows )
+{
+	/* logical (col,row) -> memory offset */
+	return (num_cols-col-1)*num_rows + (num_rows-row-1);
 }
 
 /***********************************************************************************/
@@ -1050,6 +1081,11 @@ struct mame_bitmap *tilemap_get_transparency_bitmap( struct tilemap * tilemap )
 	return tilemap->transparency_bitmap;
 }
 
+UINT8 *tilemap_get_transparency_data( struct tilemap * tilemap ) //*
+{
+	return tilemap->transparency_data;
+}
+
 /***********************************************************************************/
 
 static void
@@ -1549,14 +1585,14 @@ profiler_mark(PROFILER_TILEMAP_DRAW_ROZ);
 			{
 
 			case 32:
-				copyrozbitmap_core32BPP(dest,tilemap,startx,starty,incxx,incxy,incyx,incyy,
-					wraparound,cliprect,mask,value,priority);
+				copyroz_core32BPP(dest,tilemap,startx,starty,incxx,incxy,incyx,incyy,
+					wraparound,cliprect,mask,value,priority,tilemap->palette_offset);
 				break;
 
 			case 15:
 			case 16:
-				copyrozbitmap_core16BPP(dest,tilemap,startx,starty,incxx,incxy,incyx,incyy,
-					wraparound,cliprect,mask,value,priority);
+				copyroz_core16BPP(dest,tilemap,startx,starty,incxx,incxy,incyx,incyy,
+					wraparound,cliprect,mask,value,priority,tilemap->palette_offset);
 				break;
 
 			default:
@@ -1581,9 +1617,23 @@ UINT32 tilemap_count( void )
 
 static struct tilemap *tilemap_nb_find( int number )
 {
-	struct tilemap *tilemap = first_tilemap;
-	while( number-- )
+	int count = 0;
+	struct tilemap *tilemap;
+
+	tilemap = first_tilemap;
+	while( tilemap )
+	{
+		count++;
 		tilemap = tilemap->next;
+	}
+
+	number = (count-1)-number;
+
+	tilemap = first_tilemap;
+	while( number-- )
+	{
+		tilemap = tilemap->next;
+	}
 	return tilemap;
 }
 
@@ -1605,20 +1655,17 @@ void tilemap_nb_draw( struct mame_bitmap *dest, UINT32 number, UINT32 scrollx, U
 	switch( dest->depth )
 	{
 	case 32:
-		blit.draw_masked = (blitmask_t)pdt32;
 		blit.draw_opaque = (blitopaque_t)pdo32;
 		blit.screen_bitmap_pitch_line /= 4;
 		break;
 
 	case 15:
-		blit.draw_masked = (blitmask_t)pdt15;
 		blit.draw_opaque = (blitopaque_t)pdo15;
 		blit.screen_bitmap_pitch_line /= 2;
 		break;
 
 	case 16:
-		blit.draw_masked = (blitmask_t)pdt16;
-		blit.draw_opaque = (blitopaque_t)pdo16;
+		blit.draw_opaque = (blitopaque_t)pdo16pal;
 		blit.screen_bitmap_pitch_line /= 2;
 		break;
 
@@ -1628,7 +1675,7 @@ void tilemap_nb_draw( struct mame_bitmap *dest, UINT32 number, UINT32 scrollx, U
 	}
 	priority_bitmap_pitch_row = priority_bitmap_pitch_line*tilemap->cached_tile_height;
 	blit.screen_bitmap_pitch_row = blit.screen_bitmap_pitch_line*tilemap->cached_tile_height;
-	blit.tilemap_priority_code = 0;
+	blit.tilemap_priority_code = (tilemap->palette_offset << 16);
 	scrollx = tilemap->cached_width  - scrollx % tilemap->cached_width;
 	scrolly = tilemap->cached_height - scrolly % tilemap->cached_height;
 
@@ -1659,11 +1706,11 @@ void tilemap_nb_draw( struct mame_bitmap *dest, UINT32 number, UINT32 scrollx, U
 
 #ifdef DECLARE
 
-DECLARE(copyrozbitmap_core,(struct mame_bitmap *bitmap,struct tilemap *tilemap,
+DECLARE(copyroz_core,(struct mame_bitmap *bitmap,struct tilemap *tilemap,
 		UINT32 startx,UINT32 starty,int incxx,int incxy,int incyx,int incyy,int wraparound,
 		const struct rectangle *clip,
 		int mask,int value,
-		UINT32 priority),
+		UINT32 priority,UINT32 palette_offset),
 {
 	UINT32 cx;
 	UINT32 cy;
@@ -1779,7 +1826,7 @@ DECLARE(copyrozbitmap_core,(struct mame_bitmap *bitmap,struct tilemap *tilemap,
 						{
 							if ( (pMask[cx]&mask) == value )
 							{
-								*dest = src[cx];
+								*dest = src[cx]+palette_offset;
 								*pri |= priority;
 							}
 							cx++;
@@ -1819,7 +1866,7 @@ DECLARE(copyrozbitmap_core,(struct mame_bitmap *bitmap,struct tilemap *tilemap,
 						{
 							if ( (pMask[cx>>16]&mask) == value )
 							{
-								*dest = src[cx >> 16];
+								*dest = src[cx >> 16]+palette_offset;
 								*pri |= priority;
 							}
 							cx += incxx;
@@ -1850,7 +1897,7 @@ DECLARE(copyrozbitmap_core,(struct mame_bitmap *bitmap,struct tilemap *tilemap,
 				{
 					if( (((UINT8 *)transparency_bitmap->line[(cy>>16)&ymask])[(cx>>16)&xmask]&mask) == value )
 					{
-						*dest = ((UINT16 *)srcbitmap->line[(cy >> 16) & ymask])[(cx >> 16) & xmask];
+						*dest = ((UINT16 *)srcbitmap->line[(cy >> 16) & ymask])[(cx >> 16) & xmask]+palette_offset;
 						*pri |= priority;
 					}
 					cx += incxx;
@@ -1879,7 +1926,7 @@ DECLARE(copyrozbitmap_core,(struct mame_bitmap *bitmap,struct tilemap *tilemap,
 					{
 						if( (((UINT8 *)transparency_bitmap->line[cy>>16])[cx>>16]&mask)==value )
 						{
-							*dest = ((UINT16 *)srcbitmap->line[cy >> 16])[cx >> 16];
+							*dest = ((UINT16 *)srcbitmap->line[cy >> 16])[cx >> 16]+palette_offset;
 							*pri |= priority;
 						}
 					}

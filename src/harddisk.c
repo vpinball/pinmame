@@ -33,6 +33,8 @@
 
 #define END_OF_LIST_COOKIE	"EndOfListCookie"
 
+#define HARD_DISK_V1_SECTOR_SIZE	512
+
 
 
 /*************************************
@@ -118,20 +120,36 @@ static void free_codec(struct hard_disk_info *info);
  *
  *************************************/
 
+#if defined(__MWERKS__) && defined(__POWERPC__)
+/* workaround for some bug in codewarrior pro 6.3 compiler */
+INLINE UINT64 offset_from_mapentry(mapentry_t *entry)
+{
+	return (*entry) & 0x00000fffffffffffULL;
+}
+#else
 INLINE UINT64 offset_from_mapentry(mapentry_t *entry)
 {
 	return (*entry << 20) >> 20;
 }
+#endif
 
 INLINE UINT32 length_from_mapentry(mapentry_t *entry)
 {
 	return *entry >> 44;
 }
 
+#if defined(__MWERKS__) && defined(__POWERPC__)
+/* workaround for some bug in codewarrior pro 6.3 compiler */
+INLINE void encode_mapentry(mapentry_t *entry, UINT64 offset, UINT32 length)
+{
+	*entry = ((UINT64)length << 44) | (offset & 0x00000fffffffffffULL);
+}
+#else
 INLINE void encode_mapentry(mapentry_t *entry, UINT64 offset, UINT32 length)
 {
 	*entry = ((UINT64)length << 44) | ((offset << 20) >> 20);
 }
+#endif
 
 INLINE void byteswap_mapentry(mapentry_t *entry)
 {
@@ -167,10 +185,10 @@ INLINE void put_bigendian_uint32(UINT8 *base, UINT32 value)
  *
  *************************************/
 
-void hard_disk_set_interface(struct hard_disk_interface *_interface)
+void hard_disk_set_interface(struct hard_disk_interface *new_interface)
 {
-	if (_interface)
-		interface = *_interface;
+	if (new_interface)
+		interface = *new_interface;
 	else
 		memset(&interface, 0, sizeof(interface));
 }
@@ -205,8 +223,21 @@ int hard_disk_create(const char *filename, const struct hard_disk_header *_heade
 
 	/* sanity check the header, filling in missing info */
  	header = *_header;
- 	header.length = HARD_DISK_HEADER_SIZE;
-	header.version = HARD_DISK_HEADER_VERSION;
+	switch (header.version)
+	{
+	case 1:
+		header.length = HARD_DISK_V1_HEADER_SIZE;
+		header.seclen = HARD_DISK_V1_SECTOR_SIZE;
+		break;
+
+	case 2:
+		header.length = HARD_DISK_V2_HEADER_SIZE;
+		break;
+
+	default:
+		SET_ERROR_AND_CLEANUP(HDERR_INVALID_PARAMETER);
+		break;
+	}
 
 	/* require a valid MD5 if we're using a parent */
 	if ((header.flags & HDFLAGS_HAS_PARENT) && !memcmp(header.parentmd5, nullmd5, sizeof(nullmd5)))
@@ -330,13 +361,13 @@ void *hard_disk_open(const char *filename, int writeable, void *parent)
 		SET_ERROR_AND_CLEANUP(err);
 
 	/* allocate and init the block cache */
-	info.cache = malloc(info.header.blocksize * HARD_DISK_SECTOR_SIZE);
+	info.cache = malloc(info.header.blocksize * info.header.seclen);
 	if (!info.cache)
 		SET_ERROR_AND_CLEANUP(HDERR_OUT_OF_MEMORY);
 	info.cacheblock = -1;
 
 	/* allocate the temporary compressed buffer */
-	info.compressed = malloc(info.header.blocksize * HARD_DISK_SECTOR_SIZE);
+	info.compressed = malloc(info.header.blocksize * info.header.seclen);
 	if (!info.compressed)
 		SET_ERROR_AND_CLEANUP(HDERR_OUT_OF_MEMORY);
 
@@ -460,7 +491,7 @@ UINT32 hard_disk_read(void *disk, UINT32 lbasector, UINT32 numsectors, void *buf
 	{
 		UINT32 total = 0;
 		while (numsectors-- && last_error == HDERR_NONE)
-			total += hard_disk_read(disk, lbasector++, 1, (UINT8 *)buffer + total * HARD_DISK_SECTOR_SIZE);
+			total += hard_disk_read(disk, lbasector++, 1, (UINT8 *)buffer + total * info->header.seclen);
 		return total;
 	}
 
@@ -489,7 +520,7 @@ UINT32 hard_disk_read(void *disk, UINT32 lbasector, UINT32 numsectors, void *buf
 	}
 
 	/* now copy the data */
-	memcpy(buffer, &info->cache[offset * HARD_DISK_SECTOR_SIZE], HARD_DISK_SECTOR_SIZE);
+	memcpy(buffer, &info->cache[offset * info->header.seclen], info->header.seclen);
 	return 1;
 
 cleanup:
@@ -518,7 +549,7 @@ UINT32 hard_disk_write(void *disk, UINT32 lbasector, UINT32 numsectors, const vo
 	{
 		UINT32 total = 0;
 		while (numsectors-- && last_error == HDERR_NONE)
-			total += hard_disk_write(disk, lbasector++, 1, (const UINT8 *)buffer + total * HARD_DISK_SECTOR_SIZE);
+			total += hard_disk_write(disk, lbasector++, 1, (const UINT8 *)buffer + total * info->header.seclen);
 		return total;
 	}
 
@@ -541,13 +572,13 @@ UINT32 hard_disk_write(void *disk, UINT32 lbasector, UINT32 numsectors, const vo
 	if (fileoffset != 0 && info->header.compression == HDCOMPRESSION_NONE)
 	{
 		/* do the write */
-		count = (*interface.write)(info->file, fileoffset + offset * HARD_DISK_SECTOR_SIZE, HARD_DISK_SECTOR_SIZE, buffer);
-		if (count != HARD_DISK_SECTOR_SIZE)
+		count = (*interface.write)(info->file, fileoffset + offset * info->header.seclen, info->header.seclen, buffer);
+		if (count != info->header.seclen)
 			SET_ERROR_AND_CLEANUP(HDERR_WRITE_ERROR);
 
 		/* if this is going to the currently cached block, update the cache as well */
 		if (info->cacheblock == block)
-			memcpy(&info->cache[offset * HARD_DISK_SECTOR_SIZE], buffer, HARD_DISK_SECTOR_SIZE);
+			memcpy(&info->cache[offset * info->header.seclen], buffer, info->header.seclen);
 		return 1;
 	}
 
@@ -561,7 +592,7 @@ UINT32 hard_disk_write(void *disk, UINT32 lbasector, UINT32 numsectors, const vo
 	info->cacheblock = block;
 
 	/* now copy in the modified data */
-	memcpy(&info->cache[offset * HARD_DISK_SECTOR_SIZE], buffer, HARD_DISK_SECTOR_SIZE);
+	memcpy(&info->cache[offset * info->header.seclen], buffer, info->header.seclen);
 
 	/* then write out the block */
 	err = write_block_from_cache(info, block);
@@ -711,7 +742,7 @@ int hard_disk_compress(const char *rawfile, UINT32 offset, const char *newfile, 
 
 	/* loop over source blocks until we run out */
 	totalsectors = destfile->header.cylinders * destfile->header.heads * destfile->header.sectors;
-	blocksizebytes = destfile->header.blocksize * HARD_DISK_SECTOR_SIZE;
+	blocksizebytes = destfile->header.blocksize * destfile->header.seclen;
 	memset(destfile->cache, 0, blocksizebytes);
 	lastupdate = 0;
 	while (block < readbackheader->totalblocks)
@@ -736,7 +767,7 @@ int hard_disk_compress(const char *rawfile, UINT32 offset, const char *newfile, 
 		bytestomd5 = blocksizebytes;
 		if ((block + 1) * destfile->header.blocksize > totalsectors)
 		{
-			bytestomd5 = (totalsectors - block * destfile->header.blocksize) * HARD_DISK_SECTOR_SIZE;
+			bytestomd5 = (totalsectors - block * destfile->header.blocksize) * destfile->header.seclen;
 			if (bytestomd5 < 0)
 				bytestomd5 = 0;
 		}
@@ -842,7 +873,7 @@ int hard_disk_verify(const char *hdfile, void (*progress)(const char *, ...), UI
 
 	/* loop over source blocks until we run out */
 	totalsectors = sourcefile->header.cylinders * sourcefile->header.heads * sourcefile->header.sectors;
-	blocksizebytes = sourcefile->header.blocksize * HARD_DISK_SECTOR_SIZE;
+	blocksizebytes = sourcefile->header.blocksize * sourcefile->header.seclen;
 	lastupdate = 0;
 	while (block < sourcefile->header.totalblocks)
 	{
@@ -866,7 +897,7 @@ int hard_disk_verify(const char *hdfile, void (*progress)(const char *, ...), UI
 		bytestomd5 = blocksizebytes;
 		if ((block + 1) * sourcefile->header.blocksize > totalsectors)
 		{
-			bytestomd5 = (totalsectors - block * sourcefile->header.blocksize) * HARD_DISK_SECTOR_SIZE;
+			bytestomd5 = (totalsectors - block * sourcefile->header.blocksize) * sourcefile->header.seclen;
 			if (bytestomd5 < 0)
 				bytestomd5 = 0;
 		}
@@ -910,7 +941,7 @@ static int read_block_into_cache(struct hard_disk_info *info, UINT32 block)
 	UINT32 bytes;
 
 	/* if the data is uncompressed, just read it directly into the cache */
-	if (length == info->header.blocksize * HARD_DISK_SECTOR_SIZE)
+	if (length == info->header.blocksize * info->header.seclen)
 	{
 		bytes = (*interface.read)(info->file, fileoffset, length, info->cache);
 		if (bytes != length)
@@ -937,7 +968,7 @@ static int read_block_into_cache(struct hard_disk_info *info, UINT32 block)
 			codec->inflater.avail_in = length;
 			codec->inflater.total_in = 0;
 			codec->inflater.next_out = info->cache;
-			codec->inflater.avail_out = info->header.blocksize * HARD_DISK_SECTOR_SIZE;
+			codec->inflater.avail_out = info->header.blocksize * info->header.seclen;
 			codec->inflater.total_out = 0;
 			err = inflateReset(&codec->inflater);
 			if (err != Z_OK)
@@ -945,7 +976,7 @@ static int read_block_into_cache(struct hard_disk_info *info, UINT32 block)
 
 			/* do it */
 			err = inflate(&codec->inflater, Z_FINISH);
-			if (codec->inflater.total_out != info->header.blocksize * HARD_DISK_SECTOR_SIZE)
+			if (codec->inflater.total_out != info->header.blocksize * info->header.seclen)
 				return HDERR_DECOMPRESSION_ERROR;
 
 			/* mark the block successfully cached in */
@@ -968,7 +999,7 @@ static int write_block_from_cache(struct hard_disk_info *info, UINT32 block)
 {
 	UINT64 fileoffset = offset_from_mapentry(&info->map[block]);
 	UINT32 length = length_from_mapentry(&info->map[block]);
-	UINT32 datalength = info->header.blocksize * HARD_DISK_SECTOR_SIZE;
+	UINT32 datalength = info->header.blocksize * info->header.seclen;
 	void *data = info->cache;
 	mapentry_t entry;
 	UINT32 bytes;
@@ -983,10 +1014,10 @@ static int write_block_from_cache(struct hard_disk_info *info, UINT32 block)
 
 			/* reset the decompressor */
 			codec->deflater.next_in = info->cache;
-			codec->deflater.avail_in = info->header.blocksize * HARD_DISK_SECTOR_SIZE;
+			codec->deflater.avail_in = info->header.blocksize * info->header.seclen;
 			codec->deflater.total_in = 0;
 			codec->deflater.next_out = info->compressed;
-			codec->deflater.avail_out = info->header.blocksize * HARD_DISK_SECTOR_SIZE;
+			codec->deflater.avail_out = info->header.blocksize * info->header.seclen;
 			codec->deflater.total_out = 0;
 			err = deflateReset(&codec->deflater);
 			if (err != Z_OK)
@@ -1040,7 +1071,7 @@ static int write_block_from_cache(struct hard_disk_info *info, UINT32 block)
 
 static int read_header(void *file, struct hard_disk_header *header)
 {
-	UINT8 rawheader[HARD_DISK_HEADER_SIZE];
+	UINT8 rawheader[HARD_DISK_MAX_HEADER_SIZE];
 	UINT32 count;
 
 	/* punt if NULL */
@@ -1068,6 +1099,13 @@ static int read_header(void *file, struct hard_disk_header *header)
 	memset(header, 0, sizeof(*header));
 	header->length        = get_bigendian_uint32(&rawheader[8]);
 	header->version       = get_bigendian_uint32(&rawheader[12]);
+
+	if ((header->version != 1) && (header->version != 2))
+		return HDERR_INVALID_DATA;
+
+	if (header->length < ((header->version == 1) ? HARD_DISK_V1_HEADER_SIZE : HARD_DISK_V2_HEADER_SIZE))
+		return HDERR_INVALID_DATA;
+
 	header->flags         = get_bigendian_uint32(&rawheader[16]);
 	header->compression   = get_bigendian_uint32(&rawheader[20]);
 	header->blocksize     = get_bigendian_uint32(&rawheader[24]);
@@ -1077,6 +1115,7 @@ static int read_header(void *file, struct hard_disk_header *header)
 	header->sectors       = get_bigendian_uint32(&rawheader[40]);
 	memcpy(header->md5, &rawheader[44], 16);
 	memcpy(header->parentmd5, &rawheader[60], 16);
+	header->seclen        = (header->version == 1) ? HARD_DISK_V1_SECTOR_SIZE : get_bigendian_uint32(&rawheader[76]);
 	return HDERR_NONE;
 }
 
@@ -1090,7 +1129,8 @@ static int read_header(void *file, struct hard_disk_header *header)
 
 static int write_header(void *file, const struct hard_disk_header *header)
 {
-	UINT8 rawheader[HARD_DISK_HEADER_SIZE];
+	UINT8 rawheader[HARD_DISK_MAX_HEADER_SIZE];
+	UINT32 length;
 	UINT32 count;
 
 	/* punt if NULL */
@@ -1108,7 +1148,13 @@ static int write_header(void *file, const struct hard_disk_header *header)
 	/* assemble the data */
 	memset(rawheader, 0, sizeof(rawheader));
 	memcpy(rawheader, "MComprHD", 8);
-	put_bigendian_uint32(&rawheader[8],  HARD_DISK_HEADER_SIZE);
+
+	if ((header->version != 1) && (header->version != 2))
+		return HDERR_INVALID_DATA;
+
+	length = (header->version == 1) ? HARD_DISK_V1_HEADER_SIZE : HARD_DISK_V2_HEADER_SIZE;
+
+	put_bigendian_uint32(&rawheader[8],  length);
 	put_bigendian_uint32(&rawheader[12], header->version);
 	put_bigendian_uint32(&rawheader[16], header->flags);
 	put_bigendian_uint32(&rawheader[20], header->compression);
@@ -1119,10 +1165,12 @@ static int write_header(void *file, const struct hard_disk_header *header)
 	put_bigendian_uint32(&rawheader[40], header->sectors);
 	memcpy(&rawheader[44], header->md5, 16);
 	memcpy(&rawheader[60], header->parentmd5, 16);
+	if (header->version == 2)
+		put_bigendian_uint32(&rawheader[76], header->seclen);
 
 	/* seek and write */
-	count = (*interface.write)(file, 0, sizeof(rawheader), rawheader);
-	if (count != sizeof(rawheader))
+	count = (*interface.write)(file, 0, length, rawheader);
+	if (count != length)
 		return HDERR_WRITE_ERROR;
 
 	return HDERR_NONE;

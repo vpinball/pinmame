@@ -927,6 +927,13 @@ static void print_mame_data(int OUTPUT_XML, FILE* out, const struct GameDriver* 
 	PRINT_RESOURCE(OUTPUT_XML, skns);
 	PRINT_RESOURCE(OUTPUT_XML, stvbios);
 	PRINT_RESOURCE(OUTPUT_XML, konamigx);
+	PRINT_RESOURCE(OUTPUT_XML, nss);
+	PRINT_RESOURCE(OUTPUT_XML, megatech);
+	PRINT_RESOURCE(OUTPUT_XML, megaplay);
+	PRINT_RESOURCE(OUTPUT_XML, cpzn1);
+	PRINT_RESOURCE(OUTPUT_XML, cpzn2);
+	PRINT_RESOURCE(OUTPUT_XML, tps);
+	PRINT_RESOURCE(OUTPUT_XML, taitofx1);
 #endif
 #endif
 }
@@ -938,7 +945,7 @@ void print_mame_xml(FILE* out, const struct GameDriver* games[])
 		"<?xml version=\"1.0\"?>\n"
 		"<!DOCTYPE " XML_ROOT " [\n"
 		"<!ELEMENT " XML_ROOT " (" XML_TOP "+)>\n"
-		"\t<!ELEMENT " XML_TOP " (description, year?, manufacturer, history?, rom*, disk*, sample*, chip*, video?, sound?, input?, dipswitch*, driver?)>\n"
+		"\t<!ELEMENT " XML_TOP " (description, year?, manufacturer, history?, biosset*, rom*, disk*, sample*, chip*, video?, sound?, input?, dipswitch*, driver?)>\n"
 		"\t\t<!ATTLIST " XML_TOP " name CDATA #REQUIRED>\n"
 		"\t\t<!ATTLIST " XML_TOP " runnable (yes|no) \"yes\">\n"
 		"\t\t<!ATTLIST " XML_TOP " cloneof CDATA #IMPLIED>\n"

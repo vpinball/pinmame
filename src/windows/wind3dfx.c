@@ -105,16 +105,16 @@ struct d3d_preset_info {
 // built-in presets
 static struct d3d_preset_info effects_preset[] =
 {
-	{ "",				0, 0, 0,	  0,	0,	  0,	0,	  -1,	-1,			"none" },						//  0
+	{ "",				0, 0, 0,	  0,	0,	  0,	0,	  -2,	-1,			"none" },						//  0
 
 	// auto presets (all of these must enable the same effects)
-	{ "",				2, 0, 0,	  0,	0,	  0,	0,	  0x24,	0x00000000,	"none" },						//  1 (1 x zoom)
-	{ "",				2, 0, 0x0080, 0x20, 0x00, 0x00, 0,	  -1,	0x008F8F8F, "4x4_rgb_pattern.i.rgb" },		//  2 (2 x zoom)
-	{ "",				2, 0, 0x00A0, 0x30, 0x00, 0x00, 0,	  -1,	0x005F5F5F, "4x6_rgb_pattern.i.rgb" },		//  3 (3 x zoom)
-	{ "",				2, 1, 0x0080, 0x20, 0x00, 0x20, 0,	  -1,	0x004F4F4F, "6x8_rgb_pattern.i.rgb" },		//  4 (4 x zoom)
-	{ "",				2, 1, 0x0060, 0x10, 0x48, 0x20, 0,	  -1,	0x005F5F5F, "9x10_ellipsoid.i.rgb" },		//  5 (5 x zoom)
-	{ "",				2, 0, 0,	  0,	0,	  0,	0,	  0x11,	0x00000000,	"none" },						//  6
-	{ "",				2, 0, 0,	  0,	0,	  0,	0,	  0x11,	0x00000000,	"none" },						//  7
+	{ "",				2, 0, 0,	  0,	0,	  0,	0,	  -2,	0x00000000,	"none" },						//  1 (1 x zoom)
+	{ "",				2, 0, 0x0080, 0x20, 0x00, 0x00, 0,	  -2,	0x008F8F8F, "4x4_rgb_pattern.i.rgb" },		//  2 (2 x zoom)
+	{ "",				2, 0, 0x00A0, 0x30, 0x00, 0x00, 0,	  -2,	0x005F5F5F, "4x6_rgb_pattern.i.rgb" },		//  3 (3 x zoom)
+	{ "",				2, 1, 0x0080, 0x20, 0x00, 0x20, 0,	  -2,	0x004F4F4F, "6x8_rgb_pattern.i.rgb" },		//  4 (4 x zoom)
+	{ "",				2, 1, 0x0060, 0x10, 0x48, 0x20, 0,	  -2,	0x005F5F5F, "9x10_ellipsoid.i.rgb" },		//  5 (5 x zoom)
+	{ "",				2, 0, 0,	  0,	0,	  0,	0,	  -2,	0x00000000,	"none" },						//  6
+	{ "",				2, 0, 0,	  0,	0,	  0,	0,	  -2,	0x00000000,	"none" },						//  7
 
 	// normal presets
 	{ "rgbminmask",		1, 0, 0x0100, 0x80, 0x40, 0x00, 0,	  0,	-1,			"4x6_rgb_pattern.i.rgb" },		//  8
@@ -122,15 +122,15 @@ static struct d3d_preset_info effects_preset[] =
 	{ "rgbmedmask",		1, 0, 0x0100, 0x90, 0x80, 0x00, 0,	  0x11,	-1,			"12x10_large_ellipsoid.i.rgb" },// 10
 	{ "rgbmicro",		1, 0, 0x0100, 0xC0, 0x00, 0x00, 0,	  0x22,	-1,			"4x4_mame_rgbtiny.i.rgb" },		// 11
 	{ "rgbtiny",		1, 0, 0x0100, 0xC0, 0x00, 0x00, 0,	  0x22,	-1,			"8x8_mame_rgbtiny.i.rgb" },		// 12
-	{ "aperturegrille",	2, 0, 0x0030, 0x00, 0x00, 0x20, 0,	  -1,	0x00BFBFBF,	"3x1_aperture_grille.i.rgb" },	// 13
+	{ "aperturegrille",	2, 0, 0x0030, 0x00, 0x00, 0x20, 0,	  -2,	0x00BFBFBF,	"3x1_aperture_grille.i.rgb" },	// 13
 	{ "dotmedbright",	2, 0, 0x0040, 0x00, 0x00, 0x08, 0,	  0x11,	-1,			"10x6_large_dot.i.rgb" },		// 14
 	{ "rgbmaxbright",	2, 1, 0x00E0, 0x00, 0x40, 0x10, 0,	  0x11,	-1,			"18x10_large_round.i.rgb" },	// 15
 
 	// presets from blit.c
-	{ "scan25", 		0, 0, 0x0100, 0,	0,	  0,	0,	  -1,	0x003F3F3F,	"none" },						// 16
-	{ "scan50", 		0, 0, 0x0100, 0,	0,	  0,	0,	  -1,	0x007F7F7F,	"none" },						// 17
-	{ "scan75", 		0, 0, 0x0100, 0,	0,	  0,	0,	  -1,	0x00BFBFBF,	"none" },						// 18
-	{ "scan75v", 		0, 0, 0x0100, 0,	0,	  0,	0,	  -1,	0x00BFBFBF,	"none" },						// 19
+	{ "scan25", 		0, 0, 0x0100, 0,	0,	  0,	0,	  -2,	0x003F3F3F,	"none" },						// 16
+	{ "scan50", 		0, 0, 0x0100, 0,	0,	  0,	0,	  -2,	0x007F7F7F,	"none" },						// 17
+	{ "scan75", 		0, 0, 0x0100, 0,	0,	  0,	0,	  -2,	0x00BFBFBF,	"none" },						// 18
+	{ "scan75v", 		0, 0, 0x0100, 0,	0,	  0,	0,	  -2,	0x00BFBFBF,	"none" },						// 19
 	{ "rgb16",			1, 0, 0x0100, 0xC0, 0x00, 0x00, 0,	  0x22,	-1,			"16x8_rgb_pattern.i.rgb" },		// 20
 	{ "rgb6",			1, 0, 0x0100, 0xC0, 0x00, 0x00, 0,	  0x22,	-1,			"16x6_rgb_pattern.i.rgb" },		// 21
 	{ "rgb4",			1, 0, 0x0100, 0xC0, 0x00, 0x00, 0,	  0x22,	-1,			"16x4_rgb_pattern.i.rgb" },		// 22
@@ -255,25 +255,25 @@ static int win_d3d_decode_prescale(struct rc_option *option, const char *arg, in
 		// none: don't use prescale effect
 		if (!strcmp(arg, "none"))
 		{
-			use_prescale = 0x11;
+			use_prescale = 0;
 		}
 		// auto: let blitter decide
 		else if (!strcmp(arg, "auto"))
 		{
-			use_prescale = -1;
+			use_prescale = -2;
 		}
 		// full: use a strong effect
 		else if (!strcmp(arg, "full"))
 		{
-			use_prescale = 0x00;
+			use_prescale = -3;
 		}
 		// force a specific value
 		else if ((prescale = strtol(arg, NULL, 0)) != 0)
 		{
 			if (prescale < 2)
 				prescale = 2;
-			if (prescale > 8)
-				prescale = 8;
+			if (prescale > MAX_PRESCALE)
+				prescale = MAX_PRESCALE;
 
 			use_prescale = (prescale << 4) | prescale;
 		}
@@ -517,7 +517,7 @@ int win_d3d_effects_in_use(void)
 		use_effect_preset ||
 		use_scanlines != -1 ||
 		use_feedback ||
-		use_prescale > 0x11)
+		(use_prescale < -1 && use_prescale > 0x11))
 	{
 		return 1;
 	}
@@ -536,9 +536,14 @@ int win_d3d_effects_init(int attributes)
 	int scanline_intensity;
 
 	if (win_d3d_use_auto_effect)
-		active_preset = effects_preset[win_d3d_current_zoom > 1 ? win_d3d_current_zoom : 1];
+	{
+		int zoom = (win_d3d_current_zoom > MAX_AUTOEFFECT_ZOOM) ? MAX_AUTOEFFECT_ZOOM : win_d3d_current_zoom;
+		active_preset = effects_preset[zoom > 1 ? zoom : 1];
+	}
 	else
+	{
 		active_preset = use_effect_preset == -1 ? custom_preset : effects_preset[use_effect_preset];
+	}
 
 	win_d3d_use_rgbeffect = active_preset.use_rgbeffect;
 
@@ -619,20 +624,20 @@ int win_d3d_effects_init(int attributes)
 
 	if (win_d3d_use_filter)
 	{
-		int prescale = (use_prescale == -1) ? active_preset.use_prescale : use_prescale;
+		int prescale = (use_prescale == -2) ? active_preset.use_prescale : use_prescale;
 
 		// auto
-		if (prescale < 0)
+		if (prescale == -2)
 		{
 			win_d3d_use_prescale = 2;
 		}
 		// full
-		else if (prescale == 0)
+		else if (prescale == -3)
 		{
 			win_d3d_use_prescale = 3;
 		}
 		// force a specific size
-		else
+		else if (prescale > 0x11)
 		{
 			win_d3d_use_prescale = 1;
 

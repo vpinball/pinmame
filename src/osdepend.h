@@ -111,14 +111,11 @@ void osd_update_video_and_audio(struct mame_display *display);
 
 
 /*
-  Save a screen shot of the game display. It is suggested to use the core
-  function save_screen_snapshot() or save_screen_snapshot_as(), so the format
-  of the screen shots will be consistent across ports. This hook is provided
-  only to allow the display of a file requester to let the user choose the
-  file name. This isn't scrictly necessary, so you can just call
-  save_screen_snapshot() to let the core automatically pick a default name.
+  Provides a hook to allow the OSD system to override processing of a
+  snapshot.  This function will either return a new bitmap, for which the
+  caller is responsible for freeing.
 */
-void osd_save_snapshot(struct mame_bitmap *bitmap, const struct rectangle *bounds);
+struct mame_bitmap *osd_override_snapshot(struct mame_bitmap *bitmap, struct rectangle *bounds);
 
 /*
   Returns a pointer to the text to display when the FPS display is toggled.

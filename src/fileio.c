@@ -6,6 +6,7 @@
 
 #include <zlib.h>
 
+#include <assert.h>
 #include "driver.h"
 #include "unzip.h"
 
@@ -47,6 +48,9 @@
 #define FILEFLAG_NOZIP			0x20
 
 
+#ifdef MAME_DEBUG
+#define DEBUG_COOKIE			0xbaadf00d
+#endif
 
 /***************************************************************************
 	TYPE DEFINITIONS
@@ -54,6 +58,9 @@
 
 struct _mame_file
 {
+#ifdef DEBUG_COOKIE
+	UINT32 debug_cookie;
+#endif
 	osd_file *file;
 	UINT8 *data;
 	UINT64 offset;
@@ -224,6 +231,11 @@ mame_file *mame_fopen_rom(const char *gamename, const char *filename, const char
 
 void mame_fclose(mame_file *file)
 {
+#ifdef DEBUG_COOKIE
+	assert(file->debug_cookie == DEBUG_COOKIE);
+	file->debug_cookie = 0;
+#endif
+
 	/* switch off the file type */
 	switch (file->type)
 	{
@@ -971,7 +983,12 @@ static mame_file *generic_fopen(int pathtype, const char *gamename, const char *
 	/* otherwise, duplicate the file */
 	newfile = malloc(sizeof(file));
 	if (newfile)
+	{
 		*newfile = file;
+#ifdef DEBUG_COOKIE
+		newfile->debug_cookie = DEBUG_COOKIE;
+#endif
+	}
 
 	return newfile;
 }

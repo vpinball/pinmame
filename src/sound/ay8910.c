@@ -568,15 +568,15 @@ static void AY8910Update(int chip,INT16 **buffer,int length)
 				}
 
 				/* The Random Number Generator of the 8910 is a 17-bit shift */
-				/* register. The input to the shift register is bit0 XOR bit2 */
-				/* (bit0 is the output). */
+				/* register. The input to the shift register is bit0 XOR bit3 */
+				/* (bit0 is the output). This was verified on AY-3-8910 and YM2149 chips. */
 
-				/* The following is a fast way to compute bit17 = bit0^bit2. */
+				/* The following is a fast way to compute bit17 = bit0^bit3. */
 				/* Instead of doing all the logic operations, we only check */
-				/* bit0, relying on the fact that after two shifts of the */
-				/* register, what now is bit2 will become bit0, and will */
-				/* invert, if necessary, bit15, which previously was bit17. */
-				if (PSG->RNG & 1) PSG->RNG ^= 0x28000;
+				/* bit0, relying on the fact that after three shifts of the */
+				/* register, what now is bit3 will become bit0, and will */
+				/* invert, if necessary, bit14, which previously was bit17. */
+				if (PSG->RNG & 1) PSG->RNG ^= 0x24000; /* This version is called the "Galois configuration". */
 				PSG->RNG >>= 1;
 				PSG->CountN += PSG->PeriodN;
 			}

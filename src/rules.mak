@@ -1000,6 +1000,39 @@ else
 CPUDEFS += -DHAS_PIC16C58=0
 endif
 
+CPU=$(strip $(findstring G65816@,$(CPUS)))
+ifneq ($(CPU),)
+G6D = cpu/g65816
+OBJDIRS += $(OBJ)/$(G6D)
+CPUDEFS += -DHAS_G65816=1
+CPUOBJS += $(OBJ)/$(G6D)/g65816.o
+CPUOBJS += $(OBJ)/$(G6D)/g65816o0.o
+CPUOBJS += $(OBJ)/$(G6D)/g65816o1.o
+CPUOBJS += $(OBJ)/$(G6D)/g65816o2.o
+CPUOBJS += $(OBJ)/$(G6D)/g65816o3.o
+CPUOBJS += $(OBJ)/$(G6D)/g65816o4.o
+DBGOBJS += $(OBJ)/$(G6D)/g65816ds.o
+$(OBJ)/$(G6D)/g65816.o: $(G6D)/g65816.c $(G6D)/g65816.h $(G6D)/g65816cm.h $(G6D)/g65816op.h
+$(OBJ)/$(G6D)/g65816o0.o: $(G6D)/g65816o0.c $(G6D)/g65816.h $(G6D)/g65816cm.h $(G6D)/g65816op.h
+$(OBJ)/$(G6D)/g65816o1.o: $(G6D)/g65816o0.c $(G6D)/g65816.h $(G6D)/g65816cm.h $(G6D)/g65816op.h
+$(OBJ)/$(G6D)/g65816o2.o: $(G6D)/g65816o0.c $(G6D)/g65816.h $(G6D)/g65816cm.h $(G6D)/g65816op.h
+$(OBJ)/$(G6D)/g65816o3.o: $(G6D)/g65816o0.c $(G6D)/g65816.h $(G6D)/g65816cm.h $(G6D)/g65816op.h
+$(OBJ)/$(G6D)/g65816o4.o: $(G6D)/g65816o0.c $(G6D)/g65816.h $(G6D)/g65816cm.h $(G6D)/g65816op.h
+else
+CPUDEFS += -DHAS_G65816=0
+endif
+
+CPU=$(strip $(findstring SPC700@,$(CPUS)))
+ifneq ($(CPU),)
+SPCD = cpu/spc700
+OBJDIRS += $(OBJ)/$(SPCD)
+CPUDEFS += -DHAS_SPC700=1
+CPUOBJS += $(OBJ)/$(SPCD)/spc700.o
+DBGOBJS += $(OBJ)/$(SPCD)/spc700ds.o
+$(OBJ)/$(SPCD)/spc700/spc700.o: $(SPCD)/spc700.c $(SPCD)/spc700.h
+else
+CPUDEFS += -DHAS_SPC700=0
+endif
 
 
 SOUND=$(strip $(findstring CUSTOM@,$(SOUNDS)))

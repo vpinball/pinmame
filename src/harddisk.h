@@ -10,7 +10,8 @@
 /***************************************************************************
 
 	MAME compressed hard disk header format. All numbers are stored in
-	Motorola (big-endian) byte ordering. The header is 76 bytes long.
+	Motorola (big-endian) byte ordering. The header is 76 (V1) or 80 (V2) bytes
+	long.
 
 	[  0] char   tag[8];		// 'MComprHD'
 	[  8] UINT32 length;		// length of header (including tag and length fields)
@@ -24,7 +25,9 @@
 	[ 40] UINT32 sectors;		// number of sectors on hard disk
 	[ 44] UINT8  md5[16];		// MD5 checksum for this drive
 	[ 60] UINT8  parentmd5[16];	// MD5 checksum for parent drive
-	[ 76] (header length)
+	[ 76] (V1 header length)
+	[ 76] UINT32 seclen;		// number of bytes per sector (version 2)
+	[ 80] (V2 header length)
 
 	Flags:
 		0x00000001 - set if this drive has a parent
@@ -38,10 +41,10 @@
  *
  *************************************/
 
-#define HARD_DISK_HEADER_SIZE		76
 #define HARD_DISK_HEADER_VERSION	1
-
-#define HARD_DISK_SECTOR_SIZE		512
+#define HARD_DISK_V1_HEADER_SIZE	76
+#define HARD_DISK_V2_HEADER_SIZE	80
+#define HARD_DISK_MAX_HEADER_SIZE	80
 
 #define HDFLAGS_HAS_PARENT			0x00000001
 #define HDFLAGS_IS_WRITEABLE		0x00000002
@@ -90,7 +93,8 @@ struct hard_disk_header
 	UINT32	totalblocks;		/* total # of blocks represented */
 	UINT32	cylinders;			/* number of cylinders on hard disk */
 	UINT32	heads;				/* number of heads on hard disk */
-	UINT32	sectors;			/* number of sectors on hard disk */
+	UINT32	sectors;			/* number of sectors per track on hard disk */
+	UINT32	seclen;				/* sector lenght in bytes on hard disk */
 	UINT8	md5[16];			/* MD5 checksum for this drive */
 	UINT8	parentmd5[16];		/* MD5 checksum for parent drive */
 };
