@@ -25,7 +25,7 @@ core_tLCDLayout flicker_disp[] = {
   {3,18,13,1,CORE_SEG7}, {3,20,16,1,CORE_SEG7}, {0}
 };
 INITGAMEP(flicker, flicker_disp, 1)
-MIDWAY_1_ROMSTART(flicker,"flicker.rom", 0xe3445e7c)
+MIDWAY_1_ROMSTART(flicker,"flicker.rom", 0xc692e586)
 MIDWAY_ROMEND
 CORE_GAMEDEFNV(flicker,"Flicker (Prototype)",1974,"Nutting Associates",gl_mMIDWAYP,GAME_USES_CHIMES)
 

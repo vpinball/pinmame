@@ -218,8 +218,6 @@ MACHINE_DRIVER_END
 /  copy local data to interface
 /--------------------------------*/
 static INTERRUPT_GEN(MIDWAYP_vblank) {
-  // reset test line with every VBLANK, as it's used for polling switches!
-  i4004_set_TEST(0);
   locals.vblankCount++;
 
   /*-- lamps --*/
@@ -242,17 +240,14 @@ static INTERRUPT_GEN(MIDWAYP_vblank) {
 
 static SWITCH_UPDATE(MIDWAYP) {
   if (inports) {
-    coreGlobals.swMatrix[5] = inports[MIDWAY_COMINPORT] & 0xff;
-    coreGlobals.swMatrix[6] = inports[MIDWAY_COMINPORT] >> 8;
+    coreGlobals.swMatrix[5] = (coreGlobals.swMatrix[5] & ~0xe2) | (inports[MIDWAY_COMINPORT] & 0xff);
+    coreGlobals.swMatrix[6] = (coreGlobals.swMatrix[6] & ~0x1f) | (inports[MIDWAY_COMINPORT] >> 8);
   }
 }
 
-/* "dips" (just connectable wires IRL) & switches */
+/* "dips" (just connectable wires IRL) & normal switches */
 static READ_HANDLER(rom2_r) {
   UINT8 sw;
-  UINT16 specialSw = (coreGlobals.swMatrix[6] << 8) | coreGlobals.swMatrix[5];
-  // The 4004's Test line is used to gain an extra switch row.
-  i4004_set_TEST((specialSw >> offset) & 1);
   if (offset > 7)
     sw = core_getDip(offset/2 - 4);
   else
@@ -268,12 +263,12 @@ static WRITE_HANDLER(rom1_w) {
   // so they must have come up with something like this too.
   if (locals.segments[13].w)
     locals.segments[16].w = core_bcd2seg[0];
-  // These next lines make up for a fault in the rom code:
+  // These next lines make up for a flaw in the rom code:
   // when you first make a 10 pt target in the game, and a
   // 1000 pt target thereafter, the 100s digit in between
   // will remain off! I'm sure Dave & Jeff did it similarily
   // on the prototype by wiring the segments accordingly;
-  // or maybe they even rewrote the code to fix it! :)
+  // maybe they also rewrote some of the code to fix it later on?
   if (locals.segments[2].w && !locals.segments[3].w)
     locals.segments[3].w = core_bcd2seg[0];
   if (locals.segments[9].w && !locals.segments[10].w)
@@ -288,10 +283,15 @@ static WRITE_HANDLER(rom2_w) {
   locals.solenoids = (locals.solenoids & 0x7fff) | (((locals.lampMatrix[0] & 0x05) == 0x05) << 15);
 }
 
-/* solenoids 1-15 */
+/* solenoids 1-15 & test switch reading */
 static WRITE_HANDLER(ram_w) {
   if (data && data != offset)
     locals.solenoids |= (1 << (data-1));
+  else {
+	UINT16 specialSw = (coreGlobals.swMatrix[6] << 8) | coreGlobals.swMatrix[5];
+    // The 4004's test line is used to gain an extra switch row.
+    i4004_set_TEST((specialSw >> offset) & 1);
+  }
 }
 
 /* port read / write for Flicker */
@@ -309,7 +309,7 @@ PORT_END
 /  Memory map for Flicker CPU board
 /------------------------------------------
 0000-03ff  1K ROM
-1000-10ff  NVRAM (planned???)
+1000-10ff  NVRAM (planned)
 2000-20ff  RAM
 */
 static MEMORY_READ_START(MIDWAYP_readmem)
@@ -331,7 +331,7 @@ MACHINE_DRIVER_START(MIDWAYProto)
   MDRV_CPU_PORTS(midway_readport2,midway_writeport2)
   MDRV_CPU_VBLANK_INT(MIDWAYP_vblank, 1)
   MDRV_CORE_INIT_RESET_STOP(MIDWAY,NULL,MIDWAY)
-  MDRV_NVRAM_HANDLER(MIDWAY) // credit 1s can be saved!!!
+  MDRV_NVRAM_HANDLER(MIDWAY) // not used so far, but there'll be a bootleg that does!
   MDRV_DIPS(32) // 32 dips
   MDRV_SWITCH_UPDATE(MIDWAYP)
 MACHINE_DRIVER_END
