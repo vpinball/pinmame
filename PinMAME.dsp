@@ -806,6 +806,38 @@ SOURCE=.\src\cpu\pps4\pps4cpu.h
 SOURCE=.\src\cpu\pps4\pps4dasm.c
 # End Source File
 # End Group
+# Begin Group "I8051"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\cpu\i8051\8051dasm.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i8051\i8051.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i8051\i8051.h
+# End Source File
+# End Group
+# Begin Group "TMS7000"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\cpu\tms7000\7000dasm.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\tms7000\tms7000.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\tms7000\tms7000.h
+# End Source File
+# End Group
 # End Group
 # Begin Group "Machine"
 
@@ -3597,6 +3629,34 @@ SOURCE=src\wpc\sims\s7\full\tmfnt.c
 # End Group
 # End Group
 # End Group
+# Begin Source File
+
+SOURCE=.\src\wpc\alvg.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\alvg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\alvgdmd.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\alvgdmd.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\alvggames.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\alvgs.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\alvgs.h
+# End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\atari.c
