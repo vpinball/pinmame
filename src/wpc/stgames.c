@@ -43,7 +43,7 @@ ASTRO_ROMSTART88(st_game, "cpu_u2.716",CRC(b9ac5204) SHA1(1ac4e336eb62c091e61e9b
                           "cpu_u6.716",CRC(e16fbde1) SHA1(f7fe2f2ef9251792af1227f82dcc95239dd8baa1))
 BY35_ROMEND
 #define input_ports_st_game input_ports_st
-CORE_GAMEDEFNV(st_game,"Unknown Game",198?,"Unknown Manufacturer",by35_mAstro,GAME_NOT_WORKING|GAME_NO_SOUND)
+CORE_GAMEDEFNV(st_game,"Unknown Game",198?,"Unknown Manufacturer",by35_mAstro,GAME_NOT_WORKING)
 
 /****************************************************/
 /* STERN MPU-100 (almost identical to Bally MPU-17) */

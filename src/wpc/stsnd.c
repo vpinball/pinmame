@@ -419,7 +419,7 @@ const struct sndbrdIntf st300Intf = {
 };
 
 const struct sndbrdIntf astroIntf = {
-  "ASTRO", sts_init, NULL, NULL, sts_data_w, sts_data_w, NULL, sts_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "ASTRO", sts_init, NULL, NULL, st300_data_w, st300_data_w,NULL, st300_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
 MACHINE_DRIVER_START(st300)
