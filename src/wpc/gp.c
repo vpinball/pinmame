@@ -26,6 +26,7 @@ static struct {
   int vblankCount;
   int initDone;
   void *zctimer;
+  int swCol;
 } locals;
 
 static void GP_exit(void);
@@ -46,10 +47,12 @@ static void GP_dispStrobe(int mask) {
 }
 
 static void GP_lampStrobe(int lampadr, int lampdata) {
+  UINT8 *matrix;
+  int bit;
   if (lampadr != 0x0f) {
     lampdata ^= 0x0f;
-    UINT8 *matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)];
-    int bit = 1<<(lampadr & 0x07);
+    matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)];
+    bit = 1<<(lampadr & 0x07);
     //DBGLOG(("adr=%x data=%x\n",lampadr,lampdata));
     while (lampdata) {
       if (lampdata & 0x01) *matrix |= bit;
@@ -113,8 +116,10 @@ static void GP_updSw(int *inports) {
   //pia_set_input_ca1(0, !core_getSw(GP_SWSELFTEST));
 }
 
-/*PORT B READ
-(in) P0-P7: Switch & Dip Returns*/
+/*
+PORT B READ
+(in) P0-P7: Switch & Dip Returns
+*/
 static READ_HANDLER(ppi0_pb_r) {
 	logerror("PB_R: \n");
 	if (locals.p0_a == 0x0c) return core_getDip(0); // DIP#1 1-8
@@ -125,7 +130,8 @@ static READ_HANDLER(ppi0_pb_r) {
 	return core_getSwCol(locals.swCol);
 }
 
-/*PORT A WRITE
+/*
+PORT A WRITE
 (out) P0-P3: 
 	  (4-16 Demultiplexed - Output are all active low)
 	0) = NA?
@@ -142,7 +148,8 @@ static READ_HANDLER(ppi0_pb_r) {
 	a) Lamp Address 1-4
 	b) Display BCD Data? (Shared with Lamp Address 1-4)
 	c) Solenoid Address 1-4 (must be enabled from above)
-	d) Solenoid Address 5-8 (must be enabled from above)*/
+	d) Solenoid Address 5-8 (must be enabled from above)
+*/
 static WRITE_HANDLER(ppi0_pa_w) {
 	int tmpdata = data & 0x0f;	//Take P0-P3
 	int addrdata = data & 0xf0; //Take P4-P7
@@ -174,22 +181,25 @@ static WRITE_HANDLER(ppi0_pa_w) {
 	logerror("PA_W: %x\n",data);
 }
 
-/*PORT C WRITE
+/*
+PORT C WRITE
 (out) P0-P2 : 3-8 Demultiplexed Digit Selects (1-7)
 (out) P3 : LED
 (out) P4 : Enable (J3-22)?
 (out) P5 : NA (J7-7)
 (out) P6 : Chuck-a-luck? (J7-9)
-(out) P7 : Flipper? (J7-8)*/
+(out) P7 : Flipper? (J7-8)
+*/
 static WRITE_HANDLER(ppi0_pc_w) {
 	locals.p0_c = data;
 	logerror("PC_W: %x\n",data);
 	locals.diagnosticLed = (data>>3)&1;
 }
 
-/*8255 PPI*/
-/*U17
-  ---
+/*
+8255 PPI
+U17
+---
 Port A:
 -------
 (out) P0-P3: 
@@ -222,10 +232,10 @@ Port C:
 (out) P5 : NA (J7-7)
 (out) P6 : Chuck-a-luck? (J7-9)
 (out) P7 : Flipper? (J7-8)
-
+*/
 static ppi8255_interface ppi8255_intf =
 {
-	1, 				/* 1 chip */
+	1, 			/* 1 chip */
 	{0},			/* Port A read */
 	{ppi0_pb_r},	/* Port B read */
 	{0},			/* Port C read */
