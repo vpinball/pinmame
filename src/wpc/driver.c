@@ -452,6 +452,13 @@ DRIVERNV(canasta )      //Canasta '86' (1986)
 DRIVERNV(pinclown)      //Pinball Clown (1988)
 
 // ----------------
+// JUEGOS POPULARES
+// ----------------
+DRIVERNV(america )      //America 1492
+DRIVERNV(lortium )      //Lortium
+DRIVERNV(petaco2 )      //Petaco 2
+
+// ----------------
 // MIDWAY GAMES
 // ----------------
 DRIVERNV(flicker )      //Flicker (Prototype, September 1974)

@@ -18,7 +18,7 @@
 		         PIAs for later ones.
 		DISPLAY: 6-digit or 7-digit 7-segment panels with direct segment access
 		SOUND:	 AY8910 @ 2 MHz for earlier games,
-		         MSM6585 @ 384 kHz on Z80 CPU for later games.
+		         MSM5205 @ 384 kHz on Z80 CPU for later games.
  ************************************************************************************************/
 
 #include "driver.h"
@@ -47,7 +47,7 @@ static WRITE_HANDLER(snd_portc_w);
 static struct {
   int    vblankCount;
   UINT32 solenoids;
-  UINT8  dispSeg[5];
+  UINT8  dispSeg[7];
   UINT8  swCol[5];
   core_tSeg segments;
   UINT8  sndCmd;
@@ -226,7 +226,7 @@ static WRITE_HANDLER(ci23_portb_w) {
 static WRITE_HANDLER(ci23_portc_w) {
   int i;
   if ((data & 0x0f) < 8)
-    for (i=0; i < 5; i++)
+    for (i=0; i < 7; i++)
       locals.segments[8*i + (data & 0x07)].w = locals.dispSeg[i];
 }
 
@@ -297,16 +297,13 @@ static MACHINE_INIT(INDER) {
   memset(&locals, 0, sizeof locals);
 }
 
-static MACHINE_STOP(INDER) {
-}
-
 MACHINE_DRIVER_START(INDER)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CPU_ADD_TAG("mcpu", Z80, INDER_CPUFREQ)
   MDRV_CPU_MEMORY(INDER_readmem, INDER_writemem)
   MDRV_CPU_VBLANK_INT(INDER_vblank, 1)
   MDRV_CPU_PERIODIC_INT(INDER_irq, INDER_IRQFREQ)
-  MDRV_CORE_INIT_RESET_STOP(INDER,NULL,INDER)
+  MDRV_CORE_INIT_RESET_STOP(INDER,NULL,NULL)
   MDRV_NVRAM_HANDLER(INDER)
   MDRV_DIPS(24)
   MDRV_SWITCH_CONV(INDER_sw2m,INDER_m2sw)
@@ -335,10 +332,9 @@ static struct {
 	int PC0;
 	int MSMDATA;
 	int Reset;
-	int SoundReady;
 } sndlocals;
 
-/* MSM6585 interrupt callback */
+/* MSM5205 interrupt callback */
 static void INDER_msmIrq(int data) {
 	//Write data
 	if(!sndlocals.Reset) {
@@ -349,26 +345,14 @@ static void INDER_msmIrq(int data) {
 	sndlocals.PC0 = !sndlocals.PC0;
 }
 
-/* MSM6585 ADPCM CHIP INTERFACE */
-static struct MSM5205interface INDER_msm6585Int = {
+/* MSM5205 ADPCM CHIP INTERFACE */
+static struct MSM5205interface INDER_msm5205Int = {
 	1,					//# of chips
 	384000,				//384Khz Clock Frequency?
 	{INDER_msmIrq},		//VCLK Int. Callback
 	{MSM5205_S48_4B},	//Sample Mode
 	{75}				//Volume
 };
-
-static READ_HANDLER(INDER_MSM6585_READROM) {
-	int addr, data;
-	addr = (sndlocals.CS<<16) | (sndlocals.AHI<<8) | (sndlocals.ALO);
-	logerror("snd data=%05x\n", addr);
-	data = (UINT8)*(memory_region(REGION_USER1) + addr);
-	return data;
-}
-
-static WRITE_HANDLER(INDER_MSM6585_w) {
-	sndlocals.MSMDATA = data;
-}
 
 static READ_HANDLER(snd_porta_r) { logerror(("SND1_PORTA_R\n")); return 0; }
 static READ_HANDLER(snd_portb_r) { logerror(("SND1_PORTB_R\n")); return 0; }
@@ -380,14 +364,10 @@ static READ_HANDLER(snd_portc_r) {
 static WRITE_HANDLER(snd_porta_w) {
 	sndlocals.ALO = data;
 }
-
 static WRITE_HANDLER(snd_portb_w) {
 	sndlocals.AHI = data;
 }
-
 static WRITE_HANDLER(snd_portc_w) {
-	sndlocals.SoundReady = GET_BIT4;
-
 	//Set Reset Line on the chip
 	MSM5205_reset_w(0, GET_BIT6);
 
@@ -396,8 +376,8 @@ static WRITE_HANDLER(snd_portc_w) {
 		sndlocals.PC0 = 1;
 	else {
 	//Read Data from ROM & Write Data To MSM Chip
-		int msmdata = INDER_MSM6585_READROM(0);
-		INDER_MSM6585_w(0,msmdata);
+		sndlocals.MSMDATA = (UINT8)*(memory_region(REGION_USER1) +
+			((sndlocals.CS<<16) | (sndlocals.AHI<<8) | sndlocals.ALO));
 	}
 	//Store reset value
 	sndlocals.Reset = GET_BIT6;
@@ -453,5 +433,5 @@ MACHINE_DRIVER_START(INDERS)
   MDRV_CORE_INIT_RESET_STOP(INDERS,NULL,INDERS)
   MDRV_CPU_MEMORY(indersnd_readmem, indersnd_writemem)
   MDRV_INTERLEAVE(50)
-  MDRV_SOUND_ADD(MSM5205, INDER_msm6585Int)
+  MDRV_SOUND_ADD(MSM5205, INDER_msm5205Int)
 MACHINE_DRIVER_END
