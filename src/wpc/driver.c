@@ -291,6 +291,7 @@ DRIVERNV(s80tst)        //S80: Text Fixture
 DRIVERNV(dvlsdre)       //S80a-670: 08/82 Devils Dare (Sound & Speech)
 DRIVERNV(dvlsdre2)      //                Devils Dare (Sound Only)
 DRIVERNV(caveman)       //S80a-PV810:09/82 Caveman
+DRIVERNV(cavemana)      //S80a-PV810:09/82 Caveman (set 2)
 DRIVERNV(rocky)         //S80a-672: 09/82 Rocky
 DRIVERNV(spirit)        //S80a-673: 11/82 Spirit
 DRIVERNV(striker)       //S80a-675: 11/82 Striker
