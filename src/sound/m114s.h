@@ -17,7 +17,7 @@
 
 //If set to 1, we mix down the 16 channels into the 4 appropriate output channels
 //If set to 0, we simply output each 16 channel independantly (which is not how the real chip works)
-#define USE_REAL_OUTPUTS 0
+#define USE_REAL_OUTPUTS 1
 //Test the volume envelope
 #define USE_VOL_ENVELOPE 1
 
