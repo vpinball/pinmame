@@ -51,8 +51,8 @@
 #include "capcoms.h"
 #include "sndbrd.h"
 
-//Comment out to remove U16 Test bypass..
-#define USE_U16_TEST_BYPASS
+//Comment out to show all error messages at startup
+#define SKIP_ERROR_MSG
 //Comment out when not testing mpg audio
 //#define TEST_MPGAUDIO
 
@@ -91,10 +91,8 @@ static struct {
   int pulse;
 } locals;
 
-static UINT32 fixaddr = 0;
-
 static NVRAM_HANDLER(cc);
-static void U16_Tests_ByPass(void);
+static void Skip_Error_Msg(void);
 
 static INTERRUPT_GEN(cc_vblank) {
   /*-------------------------------
@@ -437,79 +435,58 @@ static MACHINE_INIT(cc) {
   timer_pulse(TIME_IN_HZ(60),0,cc_u16irq4);
 #endif
 
-  //Force U16 Tests on startup to succeed
-  #ifdef USE_U16_TEST_BYPASS
-	U16_Tests_ByPass();
-  #endif
+  //Skip showing error messages?
+#ifdef SKIP_ERROR_MSG
+	Skip_Error_Msg();
+#endif
 }
 
-static void U16_Tests_ByPass(void){
-	UINT16 jmp1 = 0;
-	UINT16 jmp2 = 0;
+//NOTE: Due to our memory remapping, the fixaddress values must remove the top 8th bit, ie, 0x10092192 becomes 0x00092192
+static void Skip_Error_Msg(void){
+	UINT32 fixaddr = 0;
 	switch (core_gameData->hw.gameSpecific1) {
 		case 0:
 			break;
 		case 1:
 		case 2:
-			fixaddr = 0x00092192; //PM
-			jmp1 = 0x1009;
-			jmp2 = 0x5738;
+			fixaddr = 0x0009593c;	//PM
 			break;
 		case 3:
-			fixaddr = 0x00089486; //AB
-			jmp1 = 0x1008;
-			jmp2 = 0x984c;
+			fixaddr = 0x0008ce04;	//AB
 			break;
 		case 4:
-			fixaddr = 0x00084a12; //ABR
-			jmp1 = 0x1008;
-			jmp2 = 0x8000;
+			fixaddr = 0x00088204;	//ABR
 			break;
 		case 5:
 		case 6:
-			fixaddr = 0x0008b324; //BS
-			jmp1 = 0x1008;
-			jmp2 = 0xe95c;
+			fixaddr = 0x0008eb60;	//BS
 			break;
 		case 7:
-			fixaddr = 0x00086ce2; //BS102R
-			jmp1 = 0x1008;
-			jmp2 = 0x6f1c;
+			fixaddr = 0x0008a520;	//BS102R
 			break;
 		case 8:
-			fixaddr = 0x0007cda8; //BSB
-			jmp1 = 0x1008;
-			jmp2 = 0x03e0;
+			fixaddr = 0x000805e4;	//BSB
 			break;
 		case 9:
-			fixaddr = 0x0000048e; //FF
-			jmp1 = 0x1000;
-			jmp2 = 0x064e;
+			fixaddr = 0x00000880;	//FF
 			break;
 		case 10:
-			fixaddr = 0x0004dea8; //BBB
-			jmp1 = 0x1005;
-			jmp2 = 0x1500;
+			fixaddr = 0x00051704;	//BBB
 			break;
 		case 11:
-			fixaddr = 0x000004a2; //KP
-			jmp1 = 0x1000;
-			jmp2 = 0x0662;
+			fixaddr = 0x00000894;	//KP
 			break;
 		default:
 			break;
   }
-  //Implements a JMP to address at the 1st point of U16-IRQ4 failure.. The JMP Address goes to the beginning of Driver Board Test (ie, we skip the entire ROM checks)
-  *((UINT16 *)(memory_region(REGION_CPU1) + fixaddr))   = 0x4ef9;
-  *((UINT16 *)(memory_region(REGION_CPU1) + fixaddr+2)) = jmp1;
-  *((UINT16 *)(memory_region(REGION_CPU1) + fixaddr+4)) = jmp2;
+  //Skip Error Message Routine
+  *((UINT16 *)(memory_region(REGION_CPU1) + fixaddr))   = 0x4e75;	//RTS
 }
 
 //Show Sound & DMD Diagnostic LEDS
 void cap_UpdateSoundLEDS(int data)
 {
 	locals.diagnosticLedS = data;
-//	printf("setting led to %x\n",data);
 }
 
 /*-----------------------------------
