@@ -645,10 +645,13 @@ DRIVER(cycln,l5)        //S11-564:  02/88 W Cyclone
 DRIVER(bnzai,l3)        //S11-566:  05/88 W Banzai Run
 DRIVER(swrds,l2)        //S11-559:  06/88 W Swords of Fury
 DRIVER(taxi,l4)         //S11-553:  08/88 W Taxi (Lola)
-DRIVER(taxi,l3)							  // Marylin
+DRIVER(taxi,l3)                           // Marylin
 DRIVER(jokrz,l6)        //S11-567:  12/88 W Jokerz!
-DRIVER(eshak,l3)        //S11-568:  02/89 W Earthshaker
-DRIVER(eshak,f1)						  // Family version
+DRIVER(esha,la3)        //S11-568:  02/89 W Earthshaker
+DRIVER(esha,pr4)                          // Family version
+DRIVER(esha,lg1)                          // LG-1 version (German)
+DRIVER(esha,la1)                          // LA-1 version
+DRIVER(esha,pa1)                          // Prototype version
 DRIVER(bk2k,l4)         //S11-563:  04/89 W Black Knight 2000
 //First Game produced entirely by Williams after Merger to use Bally Name
 DRIVER(tsptr,l3)        //S11-2630: 04/89 B Transporter the Rescue
