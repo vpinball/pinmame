@@ -53,9 +53,9 @@
 #include "wpcsam.h"
 #include "sim.h"
 
-#define GP_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
-#define GP_LAMPSMOOTH      4 /* Smooth the lamps over this number of VBLANKS */
-#define GP_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKS */
+#define GP_SOLSMOOTH       3 /* Smooth the Solenoids over this numer of VBLANKS */
+#define GP_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
+#define GP_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
 
 /*-- Common Inports for GP Games --*/
 #define GP_COMPORTS \
