@@ -93,13 +93,10 @@ static WRITE_HANDLER(pia1a_w) {
 
 /* PIA0:B-R  Get Data depending on PIA0:A */
 static READ_HANDLER(pia0b_r) {
-  if (locals.a0 & 0x20) return core_getDip(0); // DIP#1-8
-  if (locals.a0 & 0x40) return core_getDip(1); // DIP#2-16
-  // If Stern game, we need to set at least 1 dip to ON to prevent game booting to diagnostic!
-  // So we choose Dip #20 - Show Credit
-  if (locals.a0 & 0x80) // DIP#17-24
-    return core_getDip(2) ^ ((core_gameData->gen & (GEN_STMPU100|GEN_STMPU200)) ? 0x8 : 0x0);
-  if (locals.cb20)      return core_getDip(3);	// DIP#25-32
+  if (locals.a0 & 0x20) return core_getDip(0); // DIP#1 1-8
+  if (locals.a0 & 0x40) return core_getDip(1); // DIP#2 9-16
+  if (locals.a0 & 0x80) return core_getDip(2); // DIP#3 17-24
+  if (locals.cb20)      return core_getDip(3); // DIP#4 25-32
   return core_getSwCol((locals.a0 & 0x1f) | ((locals.b1 & 0x80)>>2));
 }
 

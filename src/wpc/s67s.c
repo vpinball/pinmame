@@ -19,7 +19,7 @@ static void s67s_cmd_sync(int data) {
 WRITE_HANDLER(s67s_cmd) {
   data &= 0x1f;
   if (coreGlobals.soundEn && (data != s67slocals.lastCmd)) {
-	snd_cmd_log(data); data |= (core_getDip(0) ^ 0x02)<<5;
+	snd_cmd_log(data); data |= core_getDip(0)<<5;
     timer_set(TIME_NOW, data, s67s_cmd_sync);
   }
 }

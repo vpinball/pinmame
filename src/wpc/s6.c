@@ -273,7 +273,7 @@ static void s6_updSw(int *inports) {
 }
 
 static core_tData s6Data = {
-  16, /* 16 DIPs */
+  8+16, /* 16 DIPs */
   s6_updSw,
   2 | DIAGLED_VERTICAL,
   s67s_cmd, "s6",

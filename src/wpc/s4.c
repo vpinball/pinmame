@@ -312,7 +312,7 @@ static void s4_updSw(int *inports) {
 }
 
 static core_tData s4Data = {
-  16, /* 16 Dips */
+  8+16, /* 16 Dips */
   s4_updSw,
   2 | DIAGLED_VERTICAL,
   s67s_cmd, "s4",
