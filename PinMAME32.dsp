@@ -79,7 +79,7 @@ LINK32=link.exe
 # ADD LINK32 htmlhelp.lib kernel32.lib user32.lib gdi32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib advapi32.lib comdlg32.lib comctl32.lib shell32.lib zlibstatmtd.lib /nologo /subsystem:windows /debug /machine:I386 /out:"PinMAME32d.exe" /pdbtype:sept /libpath:"src/htmlhelp/lib" /libpath:"zlib"
 # SUBTRACT LINK32 /pdb:none
 # Begin Custom Build - Generating gamelist.txt
-TargetDir=\Martin\mame\CVSPinMAME\pinmame
+TargetDir=\Project\pinmame
 TargetPath=.\PinMAME32d.exe
 InputPath=.\PinMAME32d.exe
 SOURCE="$(InputPath)"
@@ -4008,6 +4008,14 @@ SOURCE=.\src\wpc\gpgames.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\gpsnd.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\gpsnd.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\gts1.c
 # End Source File
 # Begin Source File
@@ -4537,6 +4545,14 @@ SOURCE=.\src\wpc\sndbrd.h
 # Begin Source File
 
 SOURCE=.\src\wpc\stgames.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\stsnd.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\stsnd.h
 # End Source File
 # Begin Source File
 
