@@ -214,7 +214,7 @@ CLAGS += $(ARCH) \
 
 RCDEFS = $(MAME_NET) $(MAME_MMX) -DNDEBUG $(MAME_VERSION) -D_WIN32_IE=0x0400
 
-RCFLAGS = -O coff --include-dir src/Win32 --include-dir $(INCLUDE)
+RCFLAGS = -O coff --include-dir src/Win32 --include-dir
 
 ifeq "$(TARGET)" "mess"
 RCFLAGS += -DMESS --include-dir mess/Win32
