@@ -27,8 +27,7 @@ DRIVERNV(nightrdr)      //BY17-721: 01/76 Night Rider (EM release date)
 DRIVERNV(blackjck)      //BY17-728: 05/76 Black Jack  (EM release date)
 DRIVERNV(evelknie)      //BY17-722: 09/76 Evel Knievel
 DRIVERNV(matahari)      //BY17-725: 09/77 Mata Hari
-                        //??        10/76 Fireball
-                        //??        10/76 Star Ship
+						//??        10/76 Star Ship
 DRIVERNV(sst     )      //BY35-741: 10/76 Supersonic
 DRIVERNV(eightbll)      //BY17-723: 01/77 Eight Ball
 DRIVERNV(pwerplay)      //BY17-724: 02/77 Power Play
@@ -36,11 +35,11 @@ DRIVERNV(stk_sprs)      //BY17-740: 08/77 Strikes and Spares
 DRIVERNV(lostwrld)      //BY35-729: 02/77 Lost World
 DRIVERNV(smman   )      //BY35-742: 08/77 The Six Million Dollar Man
 DRIVERNV(playboy )      //BY35-743: 09/76 Playboy
-                        //??          /78 Big Foot
-                        //??          /78 Galaxy
+						//??          /78 Big Foot
+						//??          /78 Galaxy
 DRIVERNV(startrek)      //BY35-745: 01/78 Star Trek
 DRIVERNV(voltan  )      //BY35-744: 01/78 Voltan Escapes Cosmic Doom
-                        //??        02/78 Skateball
+						//??        02/78 Skateball
 DRIVERNV(paragon )      //BY35-748: 12/78 Paragon
 DRIVERNV(hglbtrtr)      //BY35-750: 08/78 Harlem Globetrotters On Tour
 DRIVERNV(dollyptn)      //BY35-777: 10/78 Dolly Parton
@@ -74,25 +73,39 @@ DRIVERNV(speakes4)      //BY35-877: 08/82 Speakeasy 4 (4 player)
 DRIVERNV(rapidfir)      //BY35-869: 06/81 Rapid Fire
 DRIVERNV(m_mpac  )      //BY35-872: 05/82 Mr. & Mrs. Pac-Man
 DRIVERNV(babypac )      //??        10/82 Baby Pac-Man
-/*same as eballdlx*/    //BY35      10/82 Eight Ball Deluxe Limited Edition
-DRIVERNV(bmx     )      //BY35-888: 11/82 BMX
-DRIVERNV(granslam)      //BY35-     01/83 Grand Slam
-/*same as cenatur*/     //BY35      06/83 Centaur II
-DRIVERNV(goldball)      //BY35-     10/83 Gold Ball
-DRIVERNV(xsandos )      //BY35-     12/83 X's & O's
-                        //??        ??/84 Mysterian
-DRIVERNV(granny )       //BY35-     01/84 Granny and the Gators
-DRIVERNV(kosteel )      //BY35-     05/84 Kings of Steel
-DRIVERNV(spyhuntr)      //BY35-     10/84 Spy Hunter
-DRIVERNV(blakpyra)      //BY35-     07/84 Black Pyramid
-                        //??        ??/85 Hot Shotz
-DRIVERNV(fbclass )      //BY35-     02/85 Fireball Classic
-DRIVERNV(cybrnaut)      //BY35-     05/85 Cybernaut
-                        //BY??      09/85 Eight Ball Champ
-DRIVERNV(atlantis)		//6803-2006: 03/89 Atlantis
-DRIVERNV(prtyanim)		//6803-????: ??/?? Party Animal
-DRIVERNV(hvymetal)		//6803-????: ??/?? Heavy Metal Meltdown
-DRIVERNV(motrdome)		//6803-????: ??/?? MotorDome
+/*same as eballdlx*/	//BY35      10/82 Eight Ball Deluxe Limited Edition
+DRIVERNV(bmx     )		//BY35-888: 11/82 BMX
+DRIVERNV(granslam)		//BY35-     01/83 Grand Slam
+/*same as cenatur*/		//BY35      06/83 Centaur II
+DRIVERNV(goldball)		//BY35-     10/83 Gold Ball
+DRIVERNV(xsandos )		//BY35-     12/83 X's & O's
+						//??        ??/84 Mysterian
+DRIVERNV(granny  )		//BY35-     01/84 Granny and the Gators
+DRIVERNV(kosteel )		//BY35-     05/84 Kings of Steel
+DRIVERNV(spyhuntr)		//BY35-     10/84 Spy Hunter
+DRIVERNV(blakpyra)		//BY35-     07/84 Black Pyramid
+						//??        ??/85 Hot Shotz
+DRIVERNV(fbclass )		//BY35-     02/85 Fireball Classic
+DRIVERNV(cybrnaut)		//BY35-     05/85 Cybernaut
+						//6803-     09/85 Eight Ball Champ
+						//6803-     11/85 Beat The Clock
+						//6803-     02/86 Lady Luck
+DRIVERNV(motrdome)		//6803-     05/86 MotorDome
+						//6803-     06/86 Karate Fight
+						//6803-     07/86 Black Belt
+						//6803-     08/86 Special Force
+						//6803-     10/86 Strange Science
+						//6803-     03/87 City Slicker
+						//6803-     03/87 Hardbody
+DRIVERNV(prtyanim)		//6803-     05/87 Party Animal
+DRIVERNV(hvymetal)		//6803-     08/87 Heavy Metal Meltdown
+						//6803-     10/87 Dungeons & Dragons
+						//6803-     01/88 Escape from the Lost World
+DRIVERNV(bw100   )		//6803-     03/88 Blackwater 100
+						//??        06/88 Ramp Warrior
+						//??        12/88 Truck Stop
+DRIVERNV(atlantis)		//6803-     03/89 Atlantis
+						//??        05/89 Ice Castle
 
 // ---------------------
 // GOTTLIEB GAMES BELOW
