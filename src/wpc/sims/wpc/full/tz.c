@@ -442,11 +442,25 @@ WPCS_SOUNDROM882("tzu18_l2.rom",CRC(66575ec2) SHA1(deceb56324ee9785946f5771f8cfb
                  "tzu14_l2.rom",CRC(5a67bd56) SHA1(98669fbfdc5793bcf09fe72c231e2b4fa2524cc5))
 WPC_ROMEND
 
+WPC_ROMSTART(tz,l2,"tz_l2.u6",0x80000,CRC(1f0f5611) SHA1(e8860b1c288039682e56bbf8dd0c263b2632c4b7))
+WPCS_SOUNDROM882("tzu18_l2.rom",CRC(66575ec2) SHA1(deceb56324ee9785946f5771f8cfbaf1b1d2c8bc),
+                 "tzu15_l2.rom",CRC(389d2442) SHA1(58a4bc7cc7a28b47c75d5c9bbf14abf34bd7a9e3),
+                 "tzu14_l2.rom",CRC(5a67bd56) SHA1(98669fbfdc5793bcf09fe72c231e2b4fa2524cc5))
+WPC_ROMEND
+
+WPC_ROMSTART(tz,l4,"tz_l4.u6",0x80000,CRC(4baf5acd) SHA1(1edef7de6c3d24ef61e59b688d7b6871d88fd3b5))
+WPCS_SOUNDROM882("tzu18_l2.rom",CRC(66575ec2) SHA1(deceb56324ee9785946f5771f8cfbaf1b1d2c8bc),
+                 "tzu15_l2.rom",CRC(389d2442) SHA1(58a4bc7cc7a28b47c75d5c9bbf14abf34bd7a9e3),
+                 "tzu14_l2.rom",CRC(5a67bd56) SHA1(98669fbfdc5793bcf09fe72c231e2b4fa2524cc5))
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF (tz,92,     "Twilight Zone (9.2)",1993,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tz,94h, 92, "Twilight Zone (9.4H)", 1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,94h,92, "Twilight Zone (9.4H)", 1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,l2, 92, "Twilight Zone (L-2)", 1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,l4, 92, "Twilight Zone (L-4)", 1993,"Bally",wpc_mFliptronS,0)
 
 /*----------
 / Game Data

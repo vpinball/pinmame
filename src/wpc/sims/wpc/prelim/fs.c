@@ -256,10 +256,34 @@ DCS_SOUNDROM8x("fs_u2_s.l1",CRC(aa3da768) SHA1(b9ab9d716f03c3fa4dc7352993477c021
                "fs_u9_s.l1",CRC(0a6664fb) SHA1(751a726e3ea6a808bb137f3563d54acd1580836d))
 WPC_ROMEND
 
+WPC_ROMSTART(fs,lx2,"flin_lx2.rom",0x80000,CRC(cbab53cd) SHA1(e58ac50326f7acae4d732c2db92e86dd8162e760))
+DCS_SOUNDROM8x("fs_u2_s.l1",CRC(aa3da768) SHA1(b9ab9d716f03c3fa4dc7352993477c021a07138a),
+               "fs_u3_s.l1",CRC(e8a0b2d1) SHA1(5fd7ff4a194f845db53573a1a44efbfffed292f9),
+               "fs_u4_s.l1",CRC(a5de69f4) SHA1(a7e7f35964ec8b40a971920c2c6cf2ecb730bc60),
+               "fs_u5_s.l1",CRC(74b4d495) SHA1(98a145c07694db7b56f5c6ba84bc631fb5c18bae),
+               "fs_u6_s.l1",CRC(3c7f7a04) SHA1(45e017dc36922ad2ff420724f912e109a75a15a3),
+               "fs_u7_s.l1",CRC(f32b9271) SHA1(19308cb54ae6fc6343ab7411546b251ba66b0905),
+               "fs_u8_s.l1",CRC(a7aafa3e) SHA1(54dca32dc2bec5432cd3664bb5aa45d367560b96),
+               "fs_u9_s.l1",CRC(0a6664fb) SHA1(751a726e3ea6a808bb137f3563d54acd1580836d))
+WPC_ROMEND
+
+WPC_ROMSTART(fs,lx4,"flin_lx4.rom",0x80000,CRC(fca5634c) SHA1(8d713c0ba94cfc446fef823d45e268bccb5c6fcc))
+DCS_SOUNDROM8x("fs_u2_s.l1",CRC(aa3da768) SHA1(b9ab9d716f03c3fa4dc7352993477c021a07138a),
+               "fs_u3_s.l1",CRC(e8a0b2d1) SHA1(5fd7ff4a194f845db53573a1a44efbfffed292f9),
+               "fs_u4_s.l1",CRC(a5de69f4) SHA1(a7e7f35964ec8b40a971920c2c6cf2ecb730bc60),
+               "fs_u5_s.l1",CRC(74b4d495) SHA1(98a145c07694db7b56f5c6ba84bc631fb5c18bae),
+               "fs_u6_s.l1",CRC(3c7f7a04) SHA1(45e017dc36922ad2ff420724f912e109a75a15a3),
+               "fs_u7_s.l1",CRC(f32b9271) SHA1(19308cb54ae6fc6343ab7411546b251ba66b0905),
+               "fs_u8_s.l1",CRC(a7aafa3e) SHA1(54dca32dc2bec5432cd3664bb5aa45d367560b96),
+               "fs_u9_s.l1",CRC(0a6664fb) SHA1(751a726e3ea6a808bb137f3563d54acd1580836d))
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(fs,lx5,"The Flintstones (LX-5)",1994,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(fs,lx2,lx5,"The Flintstones (LX-2)",1994,"Williams",wpc_mSecurityS,0)
+CORE_CLONEDEF(fs,lx4,lx5,"The Flintstones (LX-4)",1994,"Williams",wpc_mSecurityS,0)
 
 /*-----------------------
 / Simulation Definitions
