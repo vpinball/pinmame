@@ -1350,6 +1350,14 @@ SOURCE=src\sound\hc55516.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\sound\m114s.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\m114s.h
+# End Source File
+# Begin Source File
+
 SOURCE=src\sound\mixer.c
 
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
