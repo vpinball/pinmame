@@ -23,10 +23,6 @@ Bugs Fixed
   Also flipper keys can now be used to navigate the service menue on Blackwater
   and Truckstop.
   [Gerrit Volkenborn, Thomas Behrens]
-- WMS System 11 and Data East: Fixed code to remove erraneous solenoid "spikes".
-  While this primarily fixes DE Playboy 35th Anniversary, all Sys11/DE games
-  will show more precise solenoid operation now.
-  [Martin Adrian, Thomas Behrens]
 - Stern Colden Cue and Sharkey's Shootout: These games are now working. Emulation
   support for the upper left flipper is still missing.
   [Thomas Behrens]
