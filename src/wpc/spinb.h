@@ -35,7 +35,7 @@
     COREPORT_DIPNAME( 0x0004, 0x0000, "S1-3") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0004, "1" ) \
-    COREPORT_DIPNAME( 0x0008, 0x0000, "S1-4") \
+    COREPORT_DIPNAME( 0x0008, 0x0008, "S1-4") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0008, "1" ) \
     COREPORT_DIPNAME( 0x0010, 0x0000, "S1-5") \
@@ -144,7 +144,7 @@
 #define SPINB_DMDROM(n1, chk1, n2, chk2) \
   NORMALREGION(0x32001, SPINB_MEMREG_DMD) \
    ROM_LOAD(n1, 0x00000, 0x10000, chk1) \
-   ROM_LOAD(n2, 0x12000, 0x20000, chk2)
+   ROM_LOAD(n2, 0x12000, 0x20000, chk2) 
 
 /*-- SOUND ROMS --*/
 #define SPINB_SNDROM(n1, chk1, n2, chk2, n3, chk3, n4, chk4, n5, chk5, n6, chk6, n7, chk7) \
