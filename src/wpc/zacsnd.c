@@ -105,7 +105,7 @@ static WRITE_HANDLER(zac1125_data_w) {
   static int mix[8] = { 0, 0, 0, 0, 0, 0, 2, 0 };
 
   int ctrl = data >> 4;
-  int state = ctrl & 0x07; // need to find out how this is calculated...
+  int state = 7 - (ctrl & 0x07);
   data = data & 0x0f;
   logerror("Sound #%x plays %x\n", ctrl, data);
 
