@@ -693,7 +693,7 @@ static tSegRow segSize3[3][10] = {{ /* alphanumeric display characters */
 /*  xxx  x */{0x05410000,0x00000000,0x00000000,0x00000000,0x05400000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00010000},
 /*      x  */{0x00040000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x00040000}
 }};
-static tSegData segData[2][9] = {{
+static tSegData segData[2][11] = {{
   {20,15,&segSize1[0][0]}, /* SEG16 */
   {20,13,&segSize1[2][0]}, /* SEG10 */
   {20,15,&segSize1[2][0]}, /* SEG9 */
@@ -702,7 +702,8 @@ static tSegData segData[2][9] = {{
   {20,15,&segSize1[1][0]}, /* SEG87 */
   {20,15,&segSize1[1][0]}, /* SEG87F */
   {12, 9,&segSize2[1][0]}, /* SEG7S */
-  { 2, 2,NULL}             /* DMD */
+  { 2, 2,NULL},{2,2,NULL}, /* DMD */
+  { 1, 1,NULL}             /* VIDEO */
 },{
   {12,11,&segSize2[0][0]}, /* SEG16 */
   {12, 9,&segSize2[2][0]}, /* SEG10 */
@@ -712,7 +713,8 @@ static tSegData segData[2][9] = {{
   {12,11,&segSize2[1][0]}, /* SEG87 */
   {12,11,&segSize2[1][0]}, /* SEG87F */
   { 8, 5,&segSize3[1][0]}, /* SEG7S */
-  { 1, 1,NULL}             /* DMD */
+  { 1, 1,NULL},{1,1,NULL}, /* DMD */
+  { 1, 1,NULL}             /* VIDEO */
 }};
 
 /*-- lamp handling --*/
@@ -1007,10 +1009,10 @@ static UINT32 core_initDisplaySize(const struct core_dispLayout *layout) {
   if (layout) {
     while (layout->length) {
       int tmp;
-      if (layout->type >= CORE_DMD) tmp = (layout->left + layout->length) * locals.segData[CORE_DMD].cols + 1;
+      if (layout->type >= CORE_DMD) tmp = (layout->left + layout->length) * locals.segData[layout->type & 0x07].cols + 1;
       else tmp = (layout->left + 2*layout->length) * (locals.segData[layout->type & 0x07].cols + 1) / 2;
       if (tmp > maxX) maxX = tmp;
-      if (layout->type >= CORE_DMD) tmp = (layout->top  + layout->start)  * locals.segData[CORE_DMD].rows + 1;
+      if (layout->type >= CORE_DMD) tmp = (layout->top  + layout->start)  * locals.segData[layout->type & 0x07].rows + 1;
       else tmp = (layout->top + 2) * (locals.segData[0].rows + 1) / 2;
       if (tmp > maxY) maxY = tmp;
       layout += 1;
