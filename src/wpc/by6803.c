@@ -109,7 +109,7 @@ static struct {
   int lampadr1, lampadr2;
   UINT32 solenoids;
   core_tSeg segments,pseg;
-  int dispcol, disprow;
+  int dispcol, disprow, commacol;
   int diagnosticLed;
   int sounddiagnosticLed;
   int vblankCount;
@@ -212,18 +212,30 @@ static WRITE_HANDLER(by6803_dispdata2) {
 			locals.disprow = 1;
 		} else if (row == 1) {		//0001 ~= 1110
 			locals.dispcol = col;
-		} else locals.disprow = 2;
-		locals.DISPSTROBE(0);
+		} else if (row == 15) {
+			locals.disprow = 2;
+			locals.commacol = col-1;
+		}
+		if (row != 12) locals.DISPSTROBE(0);
 	}
 }
 
 static void by6803_dispStrobe2(int mask) {
 	//Segments H&J is inverted bit 0 (but it's bit 8 in core.c) - Not sure why it's inverted, this is not shown on the schematic
 	int data = (locals.p1_a >> 1) | (((locals.p1_a & 1)<<7)^0x80);
-	if(locals.disprow < 2)
+	if (locals.disprow > 1) {
+/* There is some blanking going on that corrupts the commas. Needs more work!
+		if (locals.commacol > 7) {
+			locals.segments[0][locals.commacol].hi = (data & 0x40) >> 5;
+			locals.segments[1][locals.commacol].hi = (data & 0x10) >> 3;
+		} else {
+			locals.segments[0][locals.commacol].hi = (data & 0x20) >> 4;
+			locals.segments[1][locals.commacol].hi = (data & 0x08) >> 2;
+		}
+*/
+	} else
 		locals.segments[locals.disprow][locals.dispcol].lo |= locals.pseg[locals.disprow][locals.dispcol].lo = data;
 }
-
 
 static void by6803_lampStrobe(int board, int lampadr) {
   if (lampadr != 0x0f) {
