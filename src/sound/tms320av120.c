@@ -645,8 +645,10 @@ void TMS320AV120_sh_stop(void)
 void TMS320AV120_sh_reset(void)
 {
 	int i;
-	//Reset all chips and force a transition from reset to active
+	//Reset all chips - force a transition from active to reset, then reset to active
 	for (i = 0; i < intf->num; i++) {
+		tms320av120[i].reset = 0;
+		TMS320AV120_set_reset(i,1);
 		tms320av120[i].reset = 1;
 		TMS320AV120_set_reset(i,0);
 	}

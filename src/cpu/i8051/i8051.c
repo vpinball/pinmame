@@ -117,6 +117,10 @@ typedef struct {
 	UINT16	subtype;		//specific version of the cpu, ie 8031, or 8051 for example
 	UINT8	cur_irq;		//Holds value of any current IRQ being serviced
 	UINT8	rwm;			//Signals that the current instruction is a read/write/modify instruction
+	int prev_used_cycles;	//Track previous # of used cycles
+	int last_int0;			//Store state of int0
+	int last_int1;			//Store state of int1
+	UINT8 int_vec;			//Pending Interrupt Vector
 	//SFR Registers			(Note: Appear in order as they do in memory)
 	UINT8	po;				//Port 0
 	UINT8	sp;				//Stack Pointer
@@ -514,6 +518,7 @@ void i8051_init(void)
 void i8051_reset(void *param)
 {
 	memset(&i8051, 0, sizeof(I8051));
+	memset(&uart, 0, sizeof(I8051_UART));
 	i8051.subtype = 8051;
 
 	//Set up 8051 specific internal read/write (indirect) handlers..
@@ -564,7 +569,6 @@ void i8051_exit(void)
 /* Execute cycles - returns number of cycles actually run */
 int i8051_execute(int cycles)
 {
-	static int prev_used_cycles = 0;
 	i8051_icount = cycles;
 
 	do
@@ -583,11 +587,11 @@ int i8051_execute(int cycles)
 
 		//Update Timer (if any timers are running)
 		if(R_TCON & 0x50)
-			update_timer(prev_used_cycles);
+			update_timer(i8051.prev_used_cycles);
 
 		//Update Serial (if serial port sending data)
 		if(uart.sending)
-			update_serial(prev_used_cycles);
+			update_serial(i8051.prev_used_cycles);
 
 		//Update PC
 		PC += 1;
@@ -1263,7 +1267,7 @@ int i8051_execute(int cycles)
 		}
 
 		//Store # of used cycles for this opcode (for timer & serial check at top of code)
-		prev_used_cycles = i8051_cycles[op];
+		i8051.prev_used_cycles = i8051_cycles[op];
 
 		//Check for pending interrupts & handle - remove cycles used
 		i8051_icount-=check_interrupts();
@@ -1353,9 +1357,6 @@ void i8051_set_reg (int regnum, unsigned val)
 
 void i8051_set_irq_line(int irqline, int state)
 {
-	static int last_int0 = 0;
-	static int last_int1 = 0;
-
 	switch( irqline )
 	{
 		//External Interrupt 0
@@ -1366,7 +1367,7 @@ void i8051_set_irq_line(int irqline, int state)
 				if(GET_EX0) {
 					//Need cleared->active line transition? (Logical 1-0 Pulse on the line)
 					if(GET_IT0){
-						if(last_int0 == CLEAR_LINE)
+						if(i8051.last_int0 == CLEAR_LINE)
 							SET_IE0(1);
 					}
 					else
@@ -1375,7 +1376,7 @@ void i8051_set_irq_line(int irqline, int state)
 			}
 			else
 				SET_IE0(0);		//Clear Int occurred flag
-			last_int0 = state;
+			i8051.last_int0 = state;
 			
 			//Do the interrupt & handle - remove machine cycles used
 			if(GET_IE0)
@@ -1390,7 +1391,7 @@ void i8051_set_irq_line(int irqline, int state)
 				if(GET_EX1) {
 					//Need cleared->active line transition? (Logical 1-0 Pulse on the line)
 					if(GET_IT1){
-						if(last_int1 == CLEAR_LINE)
+						if(i8051.last_int1 == CLEAR_LINE)
 							SET_IE1(1);
 					}
 				else
@@ -1399,7 +1400,7 @@ void i8051_set_irq_line(int irqline, int state)
 			}
 			else
 				SET_IE1(0);		//Clear Int occurred flag
-			last_int1 = state;
+			i8051.last_int1 = state;
 
 			//Do the interrupt & handle - remove machine cycles used
 			if(GET_IE1)
@@ -1427,8 +1428,6 @@ void i8051_set_irq_line(int irqline, int state)
 //Check for pending Interrupts and process - returns # of cycles used for the int
 INLINE UINT8 check_interrupts(void)
 {
-	static UINT8 int_vec = 0;		//static should help execution time
-
 	//If All Inerrupts Disabled or no pending abort..
 	if(!GET_EA)	return 0;
 
@@ -1439,47 +1438,47 @@ INLINE UINT8 check_interrupts(void)
 	//NOTE: The order of checking is based on the internal/default priority levels
 
 	//External Int 0
-	if(!int_vec && GET_IE0) {
+	if(!i8051.int_vec && GET_IE0) {
 		
 		//Skip Only if servicing this same irq
 		if(i8051.cur_irq == V_IE0)	{ LOG(("skipping ie0\n")); return 0; }
 
 		//Set vector and clear pending flag
-		int_vec = V_IE0;
+		i8051.int_vec = V_IE0;
 		SET_IE0(0);
 	}
 	//Timer 0 overflow 
-	if(!int_vec && GET_TF0) {
+	if(!i8051.int_vec && GET_TF0) {
 
 		//Skip if servicing higher priority irq
 		if(i8051.cur_irq < V_TF0)	{ LOG(("skipping tf0\n")); return 0; }
 
 		//Set vector and clear pending flag
-		int_vec = V_TF0;
+		i8051.int_vec = V_TF0;
 		SET_TF0(0);
 	}
 	//External Int 1
-	if(!int_vec && GET_IE1) {
+	if(!i8051.int_vec && GET_IE1) {
 		
 		//Skip if servicing higher priority irq
 		if(i8051.cur_irq < V_IE1)	{ LOG(("skipping ie1\n")); return 0; }
 
 		//Set vector and clear pending flag
-		int_vec = V_IE1;
+		i8051.int_vec = V_IE1;
 		SET_IE1(0);
 	}
 	//Timer 1 overflow
-	if(!int_vec && GET_TF1) {
+	if(!i8051.int_vec && GET_TF1) {
 
 		//Skip if servicing higher priority irq
 		if(i8051.cur_irq < V_TF1)	{ LOG(("skipping tf1\n")); return 0; }
 
 		//Set vector and clear pending flag
-		int_vec = V_TF1;
+		i8051.int_vec = V_TF1;
 		SET_TF1(0);
 	}
 	//Serial Interrupt Transmit/Receive Interrupts
-	if(!int_vec && (GET_TI || GET_RI)) {
+	if(!i8051.int_vec && (GET_TI || GET_RI)) {
 
 		//Since interrupt flags are not cleared, we need way to avoid always calling this routine over and over
 		int skip_int = 0;
@@ -1509,19 +1508,19 @@ INLINE UINT8 check_interrupts(void)
 		if(skip_int)	return 0;
 
 		//Set vector
-		int_vec = V_RITI;
+		i8051.int_vec = V_RITI;
 
 		// no flags are cleared, TI and RI remain set until reset by software
 	}
 #if (HAS_I8052 || HAS_I8752)
 	//Timer 2 overflow
-	if(!int_vec && GET_TF2) {
+	if(!i8051.int_vec && GET_TF2) {
 
 		//Skip if servicing higher priority irq
 		if(i8051.cur_irq < V_TF2)	{ LOG(("skipping tf2\n")); return 0; }
 
 		//Set vector
-		int_vec = V_TF2;
+		i8051.int_vec = V_TF2;
 		//DO NOT CLEAR THE INTERRUPT FLAG (According to the manual)
 		//SET_TF2(0);
 		//HOWEVER - This causes a problem, because pc will be stuck jumping to vector until these flags cleared!
@@ -1531,9 +1530,9 @@ INLINE UINT8 check_interrupts(void)
 
     //Perform the interrupt
 	push_pc();
-	PC = int_vec;
-	i8051.cur_irq = int_vec;
-	int_vec = 0;
+	PC = i8051.int_vec;
+	i8051.cur_irq = i8051.int_vec;
+	i8051.int_vec = 0;
 	return 24;		//All interrupts use 2 machine cycles
 }
 
@@ -2228,6 +2227,7 @@ void i8752_init (void)										{ i8051_init(); }
 void i8752_reset (void *param)
 { 
 	memset(&i8051, 0, sizeof(I8051));
+	memset(&uart, 0, sizeof(I8051_UART));
 	i8051.subtype = 8752;
 
 	//Set up 8052 specific internal read/write (indirect) handlers..
