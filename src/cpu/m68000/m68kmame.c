@@ -1575,5 +1575,83 @@ void m68306_set_reg(int regnum, unsigned val) {
   if ((short)regnum == (short)REG_PC) m68k_set_reg(M68K_REG_PC, val);
   else m68000_set_reg(regnum, val);
 }
+
+const char *m68306_info(void *context, int regnum)
+{
+	static char buffer[32][47+1];
+	static int which = 0;
+	int sr;
+
+	which = (which+1) % 32;
+	buffer[which][0] = '\0';
+
+	switch( regnum )
+	{
+		case CPU_INFO_REG+M68K_PC:	sprintf(buffer[which], "PC :%08X", m68k_get_reg(context, M68K_REG_PC)); break;
+		case CPU_INFO_REG+M68K_SR:  sprintf(buffer[which], "SR :%04X", m68k_get_reg(context, M68K_REG_SR)); break;
+		case CPU_INFO_REG+M68K_SP:  sprintf(buffer[which], "SP :%08X", m68k_get_reg(context, M68K_REG_SP)); break;
+		case CPU_INFO_REG+M68K_ISP: sprintf(buffer[which], "ISP:%08X", m68k_get_reg(context, M68K_REG_ISP)); break;
+		case CPU_INFO_REG+M68K_USP: sprintf(buffer[which], "USP:%08X", m68k_get_reg(context, M68K_REG_USP)); break;
+		case CPU_INFO_REG+M68K_D0:	sprintf(buffer[which], "D0 :%08X", m68k_get_reg(context, M68K_REG_D0)); break;
+		case CPU_INFO_REG+M68K_D1:	sprintf(buffer[which], "D1 :%08X", m68k_get_reg(context, M68K_REG_D1)); break;
+		case CPU_INFO_REG+M68K_D2:	sprintf(buffer[which], "D2 :%08X", m68k_get_reg(context, M68K_REG_D2)); break;
+		case CPU_INFO_REG+M68K_D3:	sprintf(buffer[which], "D3 :%08X", m68k_get_reg(context, M68K_REG_D3)); break;
+		case CPU_INFO_REG+M68K_D4:	sprintf(buffer[which], "D4 :%08X", m68k_get_reg(context, M68K_REG_D4)); break;
+		case CPU_INFO_REG+M68K_D5:	sprintf(buffer[which], "D5 :%08X", m68k_get_reg(context, M68K_REG_D5)); break;
+		case CPU_INFO_REG+M68K_D6:	sprintf(buffer[which], "D6 :%08X", m68k_get_reg(context, M68K_REG_D6)); break;
+		case CPU_INFO_REG+M68K_D7:	sprintf(buffer[which], "D7 :%08X", m68k_get_reg(context, M68K_REG_D7)); break;
+		case CPU_INFO_REG+M68K_A0:	sprintf(buffer[which], "A0 :%08X", m68k_get_reg(context, M68K_REG_A0)); break;
+		case CPU_INFO_REG+M68K_A1:	sprintf(buffer[which], "A1 :%08X", m68k_get_reg(context, M68K_REG_A1)); break;
+		case CPU_INFO_REG+M68K_A2:	sprintf(buffer[which], "A2 :%08X", m68k_get_reg(context, M68K_REG_A2)); break;
+		case CPU_INFO_REG+M68K_A3:	sprintf(buffer[which], "A3 :%08X", m68k_get_reg(context, M68K_REG_A3)); break;
+		case CPU_INFO_REG+M68K_A4:	sprintf(buffer[which], "A4 :%08X", m68k_get_reg(context, M68K_REG_A4)); break;
+		case CPU_INFO_REG+M68K_A5:	sprintf(buffer[which], "A5 :%08X", m68k_get_reg(context, M68K_REG_A5)); break;
+		case CPU_INFO_REG+M68K_A6:	sprintf(buffer[which], "A6 :%08X", m68k_get_reg(context, M68K_REG_A6)); break;
+		case CPU_INFO_REG+M68K_A7:	sprintf(buffer[which], "A7 :%08X", m68k_get_reg(context, M68K_REG_A7)); break;
+		case CPU_INFO_REG+M68K_PREF_ADDR:	sprintf(buffer[which], "PAR:%08X", m68k_get_reg(context, M68K_REG_PREF_ADDR)); break;
+		case CPU_INFO_REG+M68K_PREF_DATA:	sprintf(buffer[which], "PDA:%08X", m68k_get_reg(context, M68K_REG_PREF_DATA)); break;
+		case CPU_INFO_FLAGS:
+			sr = m68k_get_reg(context, M68K_REG_SR);
+			sprintf(buffer[which], "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c",
+				sr & 0x8000 ? 'T':'.',
+				sr & 0x4000 ? '?':'.',
+				sr & 0x2000 ? 'S':'.',
+				sr & 0x1000 ? '?':'.',
+				sr & 0x0800 ? '?':'.',
+				sr & 0x0400 ? 'I':'.',
+				sr & 0x0200 ? 'I':'.',
+				sr & 0x0100 ? 'I':'.',
+				sr & 0x0080 ? '?':'.',
+				sr & 0x0040 ? '?':'.',
+				sr & 0x0020 ? '?':'.',
+				sr & 0x0010 ? 'X':'.',
+				sr & 0x0008 ? 'N':'.',
+				sr & 0x0004 ? 'Z':'.',
+				sr & 0x0002 ? 'V':'.',
+				sr & 0x0001 ? 'C':'.');
+			break;
+		case CPU_INFO_NAME: return "68306";
+		case CPU_INFO_FAMILY: return "Motorola 68K";
+		case CPU_INFO_VERSION: return "3.2";
+		case CPU_INFO_FILE: return __FILE__;
+		case CPU_INFO_CREDITS: return "Copyright 2002 Martin Adrian and PinMAME team";
+		case CPU_INFO_REG_LAYOUT: return (const char*)m68000_reg_layout;
+		case CPU_INFO_WIN_LAYOUT: return (const char*)m68000_win_layout;
+	}
+	return buffer[which];
+}
+
+unsigned m68306_dasm(char *buffer, unsigned pc)
+{
+	M68K_SET_PC_CALLBACK(pc);
+#ifdef MAME_DEBUG
+	return m68k_disassemble( buffer, pc, M68K_CPU_TYPE_68306 );
+#else
+	sprintf( buffer, "$%04X", m68k_read_immediate_16(pc) );
+	return 2;
+#endif
+}
+
+
 #endif // HAS_M68306
 #endif // A68K2

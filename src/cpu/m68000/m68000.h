@@ -189,8 +189,14 @@ extern void m68306_set_irq_line(int irqline, int state);
 extern void m68306_set_irq_callback(int (*callback)(int irqline));
 #define m68306_execute          m68000_execute
 #define m68306_get_context      m68000_get_context
-#define m68306_info             m68000_info
-#define m68306_dasm             m68000_dasm
+
+const char *m68306_info(void *context, int regnum);
+extern unsigned m68306_dasm(char *buffer, unsigned pc);
+
+
+//#define m68306_info             m68000_info
+//#define m68306_dasm             m68000_dasm
+
 #endif /* PINMAME & HAS_M68306 */
 
 // C Core header

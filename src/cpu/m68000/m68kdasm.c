@@ -82,6 +82,9 @@
 #define TYPE_68020 4
 #define TYPE_68030 8
 #define TYPE_68040 16
+#ifdef PINMAME
+#define TYPE_68306 32
+#endif
 
 #define M68000_ONLY		TYPE_68000
 
@@ -3263,6 +3266,10 @@ unsigned int m68k_disassemble(char* str_buff, unsigned int pc, unsigned int cpu_
 			break;
 		case M68K_CPU_TYPE_68040:
 			g_cpu_type = TYPE_68040;
+			g_address_mask = 0xffffffff;
+			break;
+		case M68K_CPU_TYPE_68306:
+			g_cpu_type = TYPE_68306;
 			g_address_mask = 0xffffffff;
 			break;
 		default:

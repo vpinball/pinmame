@@ -98,9 +98,17 @@
 #if (HAS_KONAMI)
 #include "cpu/konami/konami.h"
 #endif
-#if (HAS_M68000 || HAS_M68010 || HAS_M68020 || HAS_M68EC020)
-#include "cpu/m68000/m68000.h"
+
+#if defined(PINMAME)
+	#if (HAS_M68000 || HAS_M68010 || HAS_M68020 || HAS_M68EC020 || HAS_M68306)
+		#include "cpu/m68000/m68000.h"
+	#endif
+#else
+	#if (HAS_M68000 || HAS_M68010 || HAS_M68020 || HAS_M68EC020)
+		#include "cpu/m68000/m68000.h"
+	#endif
 #endif
+
 #if (HAS_T11)
 #include "cpu/t11/t11.h"
 #endif
@@ -1516,8 +1524,8 @@ static unsigned dummy_dasm(char *buffer, unsigned pc)
  *	68000 reset kludge
  *
  *************************************/
-
-#if (HAS_M68000 || HAS_M68010 || HAS_M68020 || HAS_M68EC020)
+//Note: changed for pinmame, no easy way to ifdef it..
+#if (HAS_M68000 || HAS_M68010 || HAS_M68020 || HAS_M68EC020 || HAS_M68306)
 void cpu_set_m68k_reset(int cpunum, void (*resetfn)(void))
 {
 	void m68k_set_reset_instr_callback(void (*callback)(void));
