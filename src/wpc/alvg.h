@@ -28,7 +28,8 @@
 	COREPORT_BIT(     0x1000, "Volume -",         KEYCODE_0) \
     /* These are put in switch column 0 since they are not read in the regular switch matrix */ \
     COREPORT_BIT(     0x0100, "Test",			  KEYCODE_7) \
-    COREPORT_BIT(     0x0200, "Enter",			  KEYCODE_8)
+    COREPORT_BIT(     0x0200, "Enter",			  KEYCODE_8) \
+    COREPORT_BIT(     0x0400, "Ticket",			  KEYCODE_END)
 
 /*-- Standard input ports --*/
 #define ALVG_INPUT_PORTS_START(name,balls) \
@@ -51,6 +52,7 @@
 /*-- switch numbers --*/
 #define ALVG_SWTEST     -7
 #define ALVG_SWENTER    -6
+#define ALVG_SWTICKET   -5
 
 /*-- Memory regions --*/
 #define ALVG_MEMREG_CPU		REGION_CPU1
