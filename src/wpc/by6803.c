@@ -56,7 +56,7 @@
 
 #define BY6803_VBLANKFREQ    60 /* VBLANK frequency */
 #define BY6803_IRQFREQ      150 /* IRQ (via PIA) frequency*/
-#define BY6803_ZCFREQ       120 /* Zero cross frequency (PHASE A = 1/2 of this)*/
+#define BY6803_ZCFREQ        60 /* Zero cross frequency (PHASE A = this value)*/
 
 //#define mlogerror printf
 #define mlogerror logerror
@@ -160,14 +160,9 @@ static WRITE_HANDLER(by6803_segwrite2) {
   }
 */
   /*Save segment for later*/
-  locals.p1_a = data;
-
-  // If display blanking low... what happens then?
-/*
-  if (!locals.p0_ca2) {
-	locals.DISPSTROBE(0);
-  }
-*/
+  /*Output is not changed, when PA0 is high*/
+  if(locals.p0_a&1)
+	locals.p1_a = data;
 }
 
 static WRITE_HANDLER(by6803_dispdata2) {
@@ -177,37 +172,30 @@ static WRITE_HANDLER(by6803_dispdata2) {
 	logerror("pia0a_w: Module 0-3 [%x][%x][%x][%x] = %x\n",
 		(data & 0x0f & 1)?1:0, (data & 0x0f & 2)?1:0,(data & 0x0f & 4)?1:0, (data & 0x0f & 8)?1:0, data & 0x0f);
 	logerror("pia0a_w: Digit  4-7 = %x\n",data>>4);
-*/
-	//Store Row for later
-	int row = data & 0x0f;
+	*/	
 
-	//Digit Column/Select is 1-16 Demultiplexed!
-	int col = 16 - (data >> 4);
-	// very odd row / column assignment, but it works!
-	if (row == 14) {
-		locals.disprow = 0;
-		locals.dispcol = col-1;
-	} else if (row == 13) {
-		locals.disprow = 1;
-	} else if (row == 1) {
-		locals.disprow = 1;
-		locals.dispcol = col;
-	} else locals.disprow = 2;
-/*
-	Digit Select Ordering:
-	Player 1/3            Player 2/4
-	------------------------------------------
-	0  0  0  0  0  0  0 x 0  0  0  0  0  0  0
-	------------------------------------------
-	01 02 03 04 05 06 07  08 09 10 11 12 13 14 (OUR ORDERING)
-	------------------------------------------
-	07 06 05 04 03 02 01  14 13 12 11 10 09 08 (6803 ORDERING)
-*/
+	/*Row/Column Data can only change if blanking is lo..*/
+	if(!locals.p0_ca2) {
+		//Store Row for later
+		int row = data & 0x0f;
+		//Digit Column/Select is 1-16 Demultiplexed!
+		int col = 16 - (data >> 4);
+		// very odd row / column assignment, but it works!
+		if (row == 14) {			//1110 ~= 0001
+			locals.disprow = 0;
+			locals.dispcol = col-1;
+		} else if (row == 13) {		//1101 ~= 0010 
+			locals.disprow = 1;
+		} else if (row == 1) {
+			locals.disprow = 1;		//0001 ~= 1110
+			locals.dispcol = col;
+		} else locals.disprow = 2;
 	locals.DISPSTROBE(0);
+	}
 }
 
 static void by6803_dispStrobe2(int mask) {
-	//Segments H&J is inverted bit 0 (but it's bit 8 in core.c)
+	//Segments H&J is inverted bit 0 (but it's bit 8 in core.c) - Not sure why it's inverted, this is not shown on the schematic
 	int data = (locals.p1_a >> 1) | (((locals.p1_a & 1)<<7)^0x80);
 	if(locals.disprow < 2)
 		locals.segments[locals.disprow][locals.dispcol].lo |= locals.pseg[locals.disprow][locals.dispcol].lo = data;
@@ -234,8 +222,8 @@ static void by6803_lampStrobe(int board, int lampadr) {
 (out) PA4-7: BCD Display Data (Digit Select 1-16 for 1 disp module)			(SAME AS BALLY MPU35)
 */
 static WRITE_HANDLER(pia0a_w) {
-  locals.DISPDATA(offset,data);
   locals.p0_a = data;
+  locals.DISPDATA(offset,data);
   by6803_lampStrobe(!locals.phase_a,locals.lampadr1);
 }
 
@@ -416,6 +404,11 @@ static void by6803_zeroCross(int data) {
 
   /*toggle phase_a*/
   locals.phase_a = !locals.phase_a;
+
+  /*Make sure to update the lamps - doesn't seem to help*/
+  by6803_lampStrobe(!locals.phase_a,locals.lampadr1);
+
+  //printf("setting phase a to %x, lampadr1=%x\n",locals.phase_a,locals.lampadr1);
 
   /*set phase b - opposite of phase a*/
   pia_set_input_cb1(0,!locals.phase_a);
