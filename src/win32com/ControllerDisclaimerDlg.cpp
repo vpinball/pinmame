@@ -1,7 +1,6 @@
 #include "StdAfx.h"
 #include "VPinMAME.h"
 
-#include "Controller.h"
 #include "ControllerDisclaimerDlg.h"
 
 #include "resource.h"
