@@ -139,7 +139,6 @@ DRIVERNV(empsback)      //Star Wars - The Empire Strike Back
 // TAITO GAMES BELOW
 // ---------------------
                         //??/?? Criterium 77
-                        //??/?? Voley Ball
                         //??/?? Apache!
                         //??/?? Football
                         //??/79 Hot Ball (B Eight Ball, 01/77)
@@ -165,12 +164,14 @@ DRIVERNV(stest   )      //??/82 Speed Test
                         //??/82 Lunelle (W Alien Poker, 10/80)
 DRIVERNV(rally   )      //??/82 Rally (B Skateball, 04/80)
 DRIVERNV(snake   )      //??/82 Snake Machine
+DRIVERNV(voleybal)      //??/?? Voley Ball
                         //??/82 Gork
                         //??/8? Ogar
 DRIVERNV(mrblack )		//??/84 Mr. Black (W Defender, 12/82)
 DRIVERNV(fireactd)      //??/8? Fire Action De Luxe (W Firepower II, 08/83)
 DRIVERNV(sshuttle)      //??/85 Space Shuttle (W Space Shuttle, 12/84)
 DRIVERNV(polar   )      //??/8? Polar Explorer
+DRIVERNV(taitest )      //??/8? Test Fixture
 
 // ---------------------
 // BALLY GAMES BELOW
