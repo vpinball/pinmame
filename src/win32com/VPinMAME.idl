@@ -200,8 +200,8 @@ import "ocidl.idl";
 	{
 		[id(1), helpstring("method Run")] HRESULT Run([in,defaultvalue(0)] long hParentWnd, [in,defaultvalue(99)] int nMinVersion);
 		[id(2), helpstring("method Stop")] HRESULT Stop();
-		[id(3), helpstring("method ShowOptsDialog")] HRESULT ShowOptsDialog([in,defaultvalue(0)] long hParentWnd);
-		[id(4), helpstring("method ShowAboutDialog")] HRESULT ShowAboutDialog([in,defaultvalue(0)] long hParentWnd);
+/* ! */	[id(3), helpstring("method ShowOptsDialog")] HRESULT ShowOptsDialog([in,defaultvalue(0)] long hParentWnd);
+/* ! */	[id(4), helpstring("method ShowAboutDialog")] HRESULT ShowAboutDialog([in,defaultvalue(0)] long hParentWnd);
 		[propget, id(5), helpstring("property Lamp")] HRESULT Lamp([in] int nLamp, [out, retval] BOOL *pVal);
 		[propget, id(6), helpstring("property Solenoid")] HRESULT Solenoid([in] int nSolenoid, [out, retval] BOOL *pVal);
 		[propget, id(7), helpstring("property Switch")] HRESULT Switch([in] int nSwitchNo, [out, retval] BOOL *pVal);
