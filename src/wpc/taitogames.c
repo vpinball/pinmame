@@ -69,9 +69,7 @@ INITGAME(drakor,SNDBRD_TAITO_SINTETIZADOR)
 TAITO_ROMSTART22_2(drakor,"drakor1.bin",CRC(7ecf377b) SHA1(b55b0ae3b591768621553a2b0afd1a795b4d592b),
                           "drakor2.bin",CRC(91dbb199) SHA1(fa351462c5616f591b7705259dfe96e97eda5548),
                           "drakor3.bin",CRC(b0ba866e) SHA1(dfea60523578b8def310922d17f442a8a031bba1))
-// NOT AVAILABLE
-TAITO_SOUNDROMS22("drakors1.bin", NO_DUMP,
-                  "drakors2.bin", NO_DUMP)
+TAITO_SOUNDROMS2("drako_s1.bin", CRC(5cd9452e) SHA1(fdef06f823204174a144bc36e94a977386121f64))
 TAITO_ROMEND
 #define input_ports_drakor input_ports_taito
 CORE_GAMEDEFNV(drakor,"Drakor",1980,"Taito",taito_sintetizador,0)
@@ -344,8 +342,8 @@ TAITO_ROMSTART2222(lunelle,"lunelle1.bin",CRC(d471349a) SHA1(fb43daa94035dc3abe0
                            "lunelle2.bin",CRC(83b132a3) SHA1(ab52f7ae20a823a9bc2986a32ef4e32a3ec2acd4),
                            "lunelle3.bin",CRC(69ec6079) SHA1(df36daa221d27f97f69231c19cbbb80347f51dd3),
                            "lunelle4.bin",CRC(492f5de7) SHA1(5bfa0a7b1e3612baebc4c598b43121e7846ae0ff))
-TAITO_SOUNDROMS22("lunel_s1.bin", NO_DUMP,
-                  "lunel_s2.bin", NO_DUMP)
+TAITO_SOUNDROMS44("lunel_s1.bin", CRC(910dfa3a) SHA1(a0694c90b4de7a02f9032c7b07d09194739640e7),
+                  "lunel_s2.bin", CRC(3c57b605) SHA1(b119cb5c93c035c8ffd68071d4e9f92a45a18f7f))
 TAITO_ROMEND
 #define input_ports_lunelle input_ports_taito
 CORE_GAMEDEFNV(lunelle,"Lunelle",1982,"Taito",taito_sintetizador,0)
