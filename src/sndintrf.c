@@ -1016,20 +1016,6 @@ struct snd_interface sndintf[] =
 		0
 	},
 #endif
-#ifdef PINMAME
-#if (HAS_VOTRAXSC01)
-	{
-		SOUND_VOTRAXSC01,
-		"Votrax SC-01",
-		VOTRAXSC01_num,
-		0,
-		VOTRAXSC01_sh_start,
-		VOTRAXSC01_sh_stop,
-		0,
-		0
-	}
-#endif
-#endif /* PINMAME */
 #if (HAS_YMF262)
 	{
 		 SOUND_YMF262,
@@ -1138,7 +1124,20 @@ struct snd_interface sndintf[] =
 		0
 	},
 #endif
-
+#ifdef PINMAME
+#if (HAS_VOTRAXSC01)
+	{
+		SOUND_VOTRAXSC01,
+		"Votrax SC-01",
+		VOTRAXSC01_num,
+		0,
+		VOTRAXSC01_sh_start,
+		VOTRAXSC01_sh_stop,
+		0,
+		0
+	},
+#endif
+#endif /* PINMAME */
 
 #ifdef MESS
 #if (HAS_BEEP)
