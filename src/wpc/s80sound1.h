@@ -21,6 +21,7 @@ extern const struct Memory_WriteAddress S80SS_swritemem[];
 }
 
 void S80SS_sinit(int num);
+void S80SS_sexit();
 void sys80_sound_latch_ss(int data);
 
 #endif /* S80SOUND1_H */

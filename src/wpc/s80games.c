@@ -190,7 +190,7 @@ S80_1_ROMSTART(mars, "666-1.cpu",  0xbb7d476a,
 S80SOUND22_ROMSTART( "666-s1.snd", 0xd33dc8a5,
                      "666-s2.snd", 0xe5616f3e)
 S80_ROMEND
-CORE_GAMEDEFNV(mars,"Mars - God of War",1981,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(mars,"Mars - God of War",1981,"Gottlieb",gl_mS80SS,0)
 
 /*-------------------------------------------------------------------
 / Volcano (Sound and Speech)
@@ -202,7 +202,7 @@ S80_1_ROMSTART(vlcno_ax, "667-a-x.cpu", 0x1f51c351,
 S80SOUND22_ROMSTART(     "667-s1.snd",  0xba9d40b7,
                          "667-s2.snd",  0xb54bd123)
 S80_ROMEND
-CORE_GAMEDEFNV(vlcno_ax,"Volcano",1981,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(vlcno_ax,"Volcano",1981,"Gottlieb",gl_mS80SS,0)
 
 /*-------------------------------------------------------------------
 / Volcano (Sound Only)
@@ -226,7 +226,7 @@ S80_1_ROMSTART(blckhole, "668-4.cpu",  0x01b53045,
 S80SOUND22_ROMSTART(     "668-s1.snd", 0x23d5045d,
                          "668-s2.snd", 0xd63da498)
 S80_ROMEND
-CORE_GAMEDEFNV(blckhole,"Black Hole",1981,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(blckhole,"Black Hole",1981,"Gottlieb",gl_mS80SS,0)
 
 /*-------------------------------------------------------------------
 / Black Hole (Rev. 2)
@@ -238,7 +238,7 @@ S80_1_ROMSTART(blkhole2, "668-2.cpu",  0xdf03ffea,
 S80SOUND22_ROMSTART(     "668-s1.snd", 0x23d5045d,
                          "668-s2.snd", 0xd63da498)
 S80_ROMEND
-CORE_CLONEDEFNV(blkhole2,blckhole,"Black Hole (Rev. 2)",1981,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
+CORE_CLONEDEFNV(blkhole2,blckhole,"Black Hole (Rev. 2)",1981,"Gottlieb",gl_mS80SS,0)
 
 /*-------------------------------------------------------------------
 / Black Hole (Sound Only)
@@ -298,7 +298,7 @@ S80_1_ROMSTART(s80tst, "80tst.cpu",    0xa0f9e56b,
 S80SOUND22_ROMSTART(   "80tst-s1.snd", 0xb9dbdd21,
                        "80tst-s2.snd", 0x1a4b1e9d)
 S80_ROMEND
-CORE_GAMEDEFNV(s80tst,"System 80 Test",1981,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(s80tst,"System 80 Test",1981,"Gottlieb",gl_mS80SS,0)
 
 // System 80a
 
@@ -322,7 +322,7 @@ S80_1_ROMSTART(dvlsdre, "670-1.cpu",  0x6318bce2,
 S80SOUND22_ROMSTART(    "670-s1.snd", 0x506bc22a,
                         "670-s2.snd", 0xf662ee4b)
 S80_ROMEND
-CORE_GAMEDEFNV(dvlsdre,"Devil's Dare",1981,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(dvlsdre,"Devil's Dare",1981,"Gottlieb",gl_mS80SS,0)
 
 /*-------------------------------------------------------------------
 / Devil's Dare (Sound Only) (#670)
@@ -356,7 +356,7 @@ S80_1_ROMSTART(rocky, "672-2x.cpu", 0x8e2f0d39,
 S80SOUND22_ROMSTART(  "672-s1.snd", 0x10ba523c,
                       "672-s2.snd", 0x5e77117a)
 S80_ROMEND
-CORE_GAMEDEFNV(rocky,"Rocky",1982,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(rocky,"Rocky",1982,"Gottlieb",gl_mS80SS,0)
 
 /*-------------------------------------------------------------------
 / Caveman (#810?)
@@ -368,7 +368,7 @@ S80_1_ROMSTART(caveman, "pv810-1.cpu",  0xdd8d516c,
 S80SOUND22_ROMSTART(    "pv810-s1.snd", 0xa491664d,
                         "pv810-s2.snd", 0xd8654e6e)
 S80_ROMEND
-CORE_GAMEDEFNV(caveman,"Caveman",1982,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(caveman,"Caveman",1982,"Gottlieb",gl_mS80SS,0)
 
 /*-------------------------------------------------------------------
 / Spirit (#673)
@@ -390,7 +390,7 @@ S80_1_ROMSTART(spirit, "673-2.cpu",  0xa7dc2207,
 S80SOUND22_ROMSTART(   "673-s1.snd", 0xfd3062ae,
                        "673-s2.snd", 0x7cf923f1)
 S80_ROMEND
-CORE_GAMEDEFNV(spirit,"Spirit",1982,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(spirit,"Spirit",1982,"Gottlieb",gl_mS80SS,0)
 
 /*-------------------------------------------------------------------
 / Striker (#675)
@@ -413,7 +413,7 @@ S80_1_ROMSTART(striker, "675.cpu",    0x06b66ce8,
 S80SOUND22_ROMSTART(    "675-s1.snd", 0xcc11c487,
                         "675-s2.snd", 0xec30a3d9)
 S80_ROMEND
-CORE_GAMEDEFNV(striker,"Striker",1982,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(striker,"Striker",1982,"Gottlieb",gl_mS80SS,0)
 
 /*-------------------------------------------------------------------
 / Punk! (#674)
@@ -425,7 +425,7 @@ S80_1_ROMSTART(punk, "674.cpu",    0x70cccc57,
 S80SOUND22_ROMSTART( "674-s1.snd", 0xb75f79d5,
                      "674-s2.snd", 0x005d123a)
 S80_ROMEND
-CORE_GAMEDEFNV(punk,"Punk!",1982,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(punk,"Punk!",1982,"Gottlieb",gl_mS80SS,0)
 
 /*-------------------------------------------------------------------
 / Goin' Nuts
@@ -447,7 +447,7 @@ S80_1_ROMSTART(goinnuts, "682.cpu",    0x51c7c6de,
 S80SOUND22_ROMSTART(     "682-s1.snd", 0xf00dabf3,
                          "682-s2.snd", 0x3be8ac5f)
 S80_ROMEND
-CORE_GAMEDEFNV(goinnuts,"Goin' Nuts",1983,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(goinnuts,"Goin' Nuts",1983,"Gottlieb",gl_mS80SS,0)
 
 /*-------------------------------------------------------------------
 / Krull
@@ -469,7 +469,7 @@ S80_1_ROMSTART(krull, "676-3.cpu",  0x71507430,
 S80SOUND22_ROMSTART(  "676-s1.snd", 0xb1989d8f,
                       "676-s2.snd", 0x05fade11)
 S80_ROMEND
-CORE_GAMEDEFNV(krull,"Krull",1983,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(krull,"Krull",1983,"Gottlieb",gl_mS80SS,0)
 
 /*-------------------------------------------------------------------
 / Q*Bert's Quest (#677)
@@ -481,7 +481,7 @@ S80_1_ROMSTART(qbquest, "677.cpu",    0xfd885874,
 S80SOUND22_ROMSTART(    "677-s1.snd", 0xaf7bc8b7,
                         "677-s2.snd", 0x820aa26f)
 S80_ROMEND
-CORE_GAMEDEFNV(qbquest,"Q*Bert's Quest",1983,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(qbquest,"Q*Bert's Quest",1983,"Gottlieb",gl_mS80SS,0)
 
 /*-------------------------------------------------------------------
 / Super Orbit (#680)
@@ -493,7 +493,7 @@ S80_1_ROMSTART(sorbit, "680.cpu",    0xdecf84e6,
 S80SOUND22_ROMSTART(   "680-s1.snd", 0xfccbbbdd,
                        "680-s2.snd", 0xd883d63d)
 S80_ROMEND
-CORE_GAMEDEFNV(sorbit,"Super Orbit",1983,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(sorbit,"Super Orbit",1983,"Gottlieb",gl_mS80SS,0)
 
 /*-------------------------------------------------------------------
 / Royal Flush Deluxe (#681)
@@ -505,7 +505,7 @@ S80_1_ROMSTART(rflshdlx, "681-2.cpu",  0x0b048658,
 S80SOUND22_ROMSTART(     "681-s1.snd", 0x33455bbd,
                          "681-s2.snd", 0x639c93f9)
 S80_ROMEND
-CORE_GAMEDEFNV(rflshdlx,"Royal Flush Deluxe",1983,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(rflshdlx,"Royal Flush Deluxe",1983,"Gottlieb",gl_mS80SS,0)
 
 /*-------------------------------------------------------------------
 / Amazon Hunt (#684)
@@ -517,7 +517,7 @@ S80_1_ROMSTART(amazonh, "684-2.cpu",  0xb0d0c4af,
 S80SOUND22_ROMSTART(    "684-s1.snd", 0x86d239df,
                         "684-s2.snd", 0x4d8ea26c)
 S80_ROMEND
-CORE_GAMEDEFNV(amazonh,"Amazon Hunt",1983,"Gottlieb",gl_mS80SS,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(amazonh,"Amazon Hunt",1983,"Gottlieb",gl_mS80SS,0)
 
 //Amazon II  (No Roms)
 //Amazon III (No Roms)
@@ -532,7 +532,7 @@ S80_1_ROMSTART(rackemup, "685.cpu",    0x4754d68d,
 S80SOUND2K_ROMSTART(     "685-s.snd",  0xd4219987,
                        "6530sy80.bin", 0xc8ba951d)
 S80_ROMEND
-CORE_GAMEDEFNV(rackemup,"Rack 'Em Up",1983,"Gottlieb",gl_mS80,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(rackemup,"Rack 'Em Up",1983,"Gottlieb",gl_mS80,0)
 
 /*-------------------------------------------------------------------
 / Ready...Aim...Fire!
@@ -556,7 +556,7 @@ S80_1_ROMSTART(jack2opn, "687.cpu",    0x0080565e,
 S80SOUND2K_ROMSTART(     "687-s.snd",  0xf9d10b7a,
                        "6530sy80.bin", 0xc8ba951d)
 S80_ROMEND
-CORE_GAMEDEFNV(jack2opn,"Jacks to Open",1984,"Gottlieb",gl_mS80,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(jack2opn,"Jacks to Open",1984,"Gottlieb",gl_mS80,0)
 
 /*-------------------------------------------------------------------
 / Alien Star
@@ -580,7 +580,7 @@ S80_1_ROMSTART(thegames, "691.cpu",    0x50f620ea,
 S80SOUND2K_ROMSTART(     "691-s.snd",  0xd7011a31,
                        "6530sy80.bin", 0xc8ba951d)
 S80_ROMEND
-CORE_GAMEDEFNV(thegames,"The Games",1984,"Gottlieb",gl_mS80,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(thegames,"The Games",1984,"Gottlieb",gl_mS80,0)
 
 /*-------------------------------------------------------------------
 / Touchdown
@@ -592,7 +592,7 @@ S80_1_ROMSTART(touchdn, "688.cpu",    0xe531ab3f,
 S80SOUND2K_ROMSTART(    "688-s.snd",  0x5e9988a6,
                        "6530sy80.bin", 0xc8ba951d)
 S80_ROMEND
-CORE_GAMEDEFNV(touchdn,"Touchdown",1984,"Gottlieb",gl_mS80,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(touchdn,"Touchdown",1984,"Gottlieb",gl_mS80,0)
 
 /*-------------------------------------------------------------------
 / El Dorado City of Gold
@@ -604,7 +604,7 @@ S80_1_ROMSTART(eldorado, "692-2.cpu",  0x4ee6d09b,
 S80SOUND2K_ROMSTART(     "692-s.snd",  0xd5a10e53,
                        "6530sy80.bin", 0xc8ba951d)
 S80_ROMEND
-CORE_GAMEDEFNV(eldorado,"El Dorado City of Gold",1984,"Gottlieb",gl_mS80,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(eldorado,"El Dorado City of Gold",1984,"Gottlieb",gl_mS80,0)
 
 /*-------------------------------------------------------------------
 / Ice Fever
@@ -616,7 +616,7 @@ S80_1_ROMSTART(icefever, "695.cpu",    0x2f6e9caf,
 S80SOUND2K_ROMSTART(     "695-s.snd",  0xdaededc2,
                        "6530sy80.bin", 0xc8ba951d)
 S80_ROMEND
-CORE_GAMEDEFNV(icefever,"Ice Fever",1985,"Gottlieb",gl_mS80,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(icefever,"Ice Fever",1985,"Gottlieb",gl_mS80,0)
 
 // System 80b
 
@@ -629,7 +629,7 @@ S80B_8K_ROMSTART(triplay,	"prom1.cpu", 0x42b29b01)
 S80SOUND2K_ROMSTART(		"696-s.snd", 0xdeedea61,
 							"6530sy80.bin", 0xc8ba951d)
 S80_ROMEND
-CORE_GAMEDEFNV(triplay, "Triple Play",1985,"Gottlieb",gl_mS80B,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(triplay, "Triple Play",1985,"Gottlieb",gl_mS80B,0)
 
 /*-------------------------------------------------------------------
 / Bounty Hunter (#694)
@@ -640,7 +640,7 @@ S80B_8K_ROMSTART(bountyh,	"prom1.cpu", 0xe8190df7)
 S80SOUND2K_ROMSTART(		"694-s.snd", 0xa0383e41,
 							"6530sy80.bin", 0xc8ba951d)
 S80_ROMEND
-CORE_GAMEDEFNV(bountyh, "Bounty Hunter",1985,"Gottlieb",gl_mS80B,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(bountyh, "Bounty Hunter",1985,"Gottlieb",gl_mS80B,0)
 
 /*-------------------------------------------------------------------
 / Rock (#697)
@@ -651,7 +651,7 @@ S80B_8K_ROMSTART(rock,	"prom1.cpu", 0x1146c1d3)
 S80BSSOUND88(			"drom1.snd", 0x03830e81,
 						"yrom1.snd", 0xeffba2ad)
 S80_ROMEND
-CORE_GAMEDEFNV(rock, "Rock",1986,"Gottlieb",gl_mS80BS1,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(rock, "Rock",1986,"Gottlieb",gl_mS80BS1,0)
 
 /*-------------------------------------------------------------------
 / Raven
@@ -663,7 +663,7 @@ S80B_2K_ROMSTART(raven, "prom2.cpu", 0x481f3fb8,
 S80BSSOUND88(           "drom1.snd", 0xa04bf7d0,
 						"yrom1.snd", 0xee5f868b)
 S80_ROMEND
-CORE_GAMEDEFNV(raven, "Raven",1986,"Gottlieb",gl_mS80BS1,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(raven, "Raven",1986,"Gottlieb",gl_mS80BS1,0)
 
 /*-------------------------------------------------------------------
 / Hollywood Heat
@@ -675,7 +675,7 @@ S80BSSOUND888(             "drom1.snd", 0xa698ec33,
 						   "yrom1.snd", 0x9232591e,
 						   "yrom2.snd", 0x51709c2f)
 S80_ROMEND
-CORE_GAMEDEFNV(hlywoodh, "Hollywood Heat",1986,"Gottlieb",gl_mS80BS1,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(hlywoodh, "Hollywood Heat",1986,"Gottlieb",gl_mS80BS1,0)
 
 /*-------------------------------------------------------------------
 / Genesis (#705)
@@ -687,7 +687,7 @@ S80BSSOUND888(            "drom1.snd", 0x758e1743,
 						  "yrom1.snd", 0x4869b0ec,
 						  "yrom2.snd", 0x0528c024)
 S80_ROMEND
-CORE_GAMEDEFNV(genesis, "Genesis",1986,"Gottlieb",gl_mS80BS1,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(genesis, "Genesis",1986,"Gottlieb",gl_mS80BS1,0)
 
 /*-------------------------------------------------------------------
 / Gold Wings (#707)
@@ -699,7 +699,7 @@ S80BSSOUND888(             "drom1.snd", 0x892dbb21,
 						   "yrom1.snd", 0xe17e9b1f,
 						   "yrom2.snd", 0x4e482023)
 S80_ROMEND
-CORE_GAMEDEFNV(goldwing, "Gold Wings",1986,"Gottlieb",gl_mS80BS1,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(goldwing, "Gold Wings",1986,"Gottlieb",gl_mS80BS1,0)
 
 /*-------------------------------------------------------------------
 / Monte Carlo
@@ -711,7 +711,7 @@ S80BSSOUND888(             "drom1.snd", 0x1a53ac15,
 						   "yrom1.snd", 0x6e234c49,
 						   "yrom2.snd", 0xa95d1a6b)
 S80_ROMEND
-CORE_GAMEDEFNV(mntecrlo, "Monte Carlo",1987,"Gottlieb",gl_mS80BS1,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(mntecrlo, "Monte Carlo",1987,"Gottlieb",gl_mS80BS1,0)
 
 /*-------------------------------------------------------------------
 / Spring Break
@@ -723,7 +723,7 @@ S80BSSOUND888(             "drom1.snd", 0x0,
 						   "yrom1.snd", 0x0,
 						   "yrom2.snd", 0x0)
 S80_ROMEND
-CORE_GAMEDEFNV(sprbreak, "Spring Break",1987,"Gottlieb",gl_mS80BS1,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(sprbreak, "Spring Break",1987,"Gottlieb",gl_mS80BS1,0)
 
 /*-------------------------------------------------------------------
 / Arena
@@ -735,7 +735,7 @@ S80BSSOUND888(             "drom1.snd", 0x78e6cbf1,
 						   "yrom1.snd", 0xf7a951c2,
 						   "yrom2.snd", 0xcc2aef4e)
 S80_ROMEND
-CORE_GAMEDEFNV(arena, "Arena",1987,"Gottlieb",gl_mS80BS1,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(arena, "Arena",1987,"Gottlieb",gl_mS80BS1,0)
 
 /****************************************/
 /* Start of Generation 2 Sound Hardware */

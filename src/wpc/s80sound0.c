@@ -133,7 +133,7 @@ static READ_HANDLER(riot6530_r) {
 			else {
 				val = p->timer_start - V_TIME_TO_CYCLES(timer_get_time() - p->time) / p->timer_divider;
 				if ( val<0 )
-					val = 0;
+					val = 0x01;
 			}
 
 			p->irq_state &= ~RIOT_TIMERIRQ;
@@ -204,7 +204,8 @@ static WRITE_HANDLER(riot6530_w) {
 		p->irq_state &= ~RIOT_TIMERIRQ;
 		update_6530_interrupts();
 
-		if ( p->timer_irq_enabled ) {
+//		if ( p->timer_irq_enabled )
+		{
 			if ( p->t )
 				timer_reset(p->t, V_CYCLES_TO_TIME(p->timer_divider * p->timer_start + IFR_DELAY));
 			else
