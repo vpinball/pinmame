@@ -168,6 +168,7 @@ void vp_setMechData(int para, int data) {
   else if (para % 10 == 0) locals.md.sw[para/10-1].swNo     = data;
   else if (para % 10 == 1) locals.md.sw[para/10-1].startPos = data;
   else if (para % 10 == 2) locals.md.sw[para/10-1].endPos   = data;
+  else if (para % 10 == 3) locals.md.sw[para/10-1].pulse    = data;
 }
 
 /*-------------------------------------------------
@@ -185,30 +186,31 @@ int vp_getNewSoundCommands(vp_tChgSound chgSound) {
 }
 
 static int vp_getAllLED(UINT16 *ledArray) {
-  const core_tLCDLayout *layout = core_gameData->lcdLayout;
+  const struct core_dispLayout *layout = core_gameData->lcdLayout;
   int idx = 0;
   if (layout == NULL) return 0;
+  for (; layout->length; layout += 1) {
+    if (layout->type >= CORE_DMD) continue;
+    {
+      int zeros = layout->type/32; // dummy zeros
+      int ii    = layout->length + zeros;
+      int *seg     = ((int *)coreGlobals.segments) + layout->start;
+      int step  = (layout->type & CORE_SEGREV) ? -1 : 1;
 
-  while (layout->length) {
-    int zeros = layout->type/32; // dummy zeros
-    int ii    = layout->length + zeros;
-    int *seg     = ((int *)coreGlobals.segments) + layout->start;
-    int step  = (layout->type & CORE_SEGREV) ? -1 : 1;
+      if (step < 0) seg += ii-1;
+      while (ii--) {
+        int tmpSeg = (ii < zeros) ? ((core_bcd2seg7[0]<<8) | (core_bcd2seg7[0])) : *seg;
+        int tmpType = layout->type & CORE_SEGMASK;
 
-    if (step < 0) seg += ii-1;
-    while (ii--) {
-      int tmpSeg = (ii < zeros) ? ((core_bcd2seg7[0]<<8) | (core_bcd2seg7[0])) : *seg;
-      int tmpType = layout->type & CORE_SEGMASK;
-
-      tmpSeg >>= (layout->type & CORE_SEGHIBIT) ? 8 : 0;
-      if ((tmpType == CORE_SEG87F) && (ii > 0) && (ii % 3 == 0) && tmpSeg)
-        tmpSeg |= 0x80; // add comma
-      else if (tmpType == CORE_SEG9)
-        tmpSeg |= (tmpSeg & 0x80)<<1; // duplicate 9th segment
-      ledArray[idx++] = tmpSeg;
-      seg += step;
+        tmpSeg >>= (layout->type & CORE_SEGHIBIT) ? 8 : 0;
+        if ((tmpType == CORE_SEG87F) && (ii > 0) && (ii % 3 == 0) && tmpSeg)
+          tmpSeg |= 0x80; // add comma
+        else if (tmpType == CORE_SEG9)
+          tmpSeg |= (tmpSeg & 0x80)<<1; // duplicate 9th segment
+        ledArray[idx++] = tmpSeg;
+        seg += step;
+      }
     }
-    layout += 1;
   }
   return idx;
 }
