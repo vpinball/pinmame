@@ -20,7 +20,7 @@
     COREPORT_BIT(     0x0800, "Sound Diagnostic", KEYCODE_0) \
     COREPORT_BIT(     0x1000, "Master Command Enter", KEYCODE_PGUP) \
   PORT_START /* 1 */ \
-    COREPORT_DIPNAME( 0x0001, 0x0000, "Sound Dip 1") \
+    COREPORT_DIPNAME( 0x0001, 0x0000, "Sound  Dip 1") \
       COREPORT_DIPSET(0x0001, "1" ) \
       COREPORT_DIPSET(0x0000, "0" ) \
     COREPORT_DIPNAME( 0x0002, 0x0002, "Sound Dip 2") \

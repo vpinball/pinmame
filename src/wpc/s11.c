@@ -25,6 +25,10 @@
 
 #define S11_IRQFREQ     1000
 
+#define S11_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
+#define S11_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
+#define S11_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
+
 static MACHINE_STOP(s11);
 static NVRAM_HANDLER(s11);
 static NVRAM_HANDLER(de);
@@ -52,14 +56,15 @@ const struct core_dispLayout s11_dispS11b2[] = {
 /-----------------*/
 static struct {
   int    vblankCount;
-  UINT32 solenoids;
+  UINT32 solenoids, solsmooth[S11_SOLSMOOTH];
+  UINT32 extSol, extSolPulse;
   core_tSeg segments, pseg;
   int    lampRow, lampColumn;
   int    digSel;
   int    diagnosticLed;
   int    swCol;
   int    ssEn;				/* Special solenoids and flippers enabled ? */
-  int    sndCmd, extSol;	/* external sound board cmd */
+  int    sndCmd;	/* external sound board cmd */
   int    piaIrq;
   int	 deGame;	/*Flag to see if it's a Data East game running*/
 } locals;
@@ -103,28 +108,32 @@ static INTERRUPT_GEN(s11_vblank) {
     memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
   /*-- solenoids --*/
-  if ((locals.vblankCount % S11_SOLSMOOTH) == 0) {
-    coreGlobals.solenoids = locals.solenoids;
-    coreGlobals.solenoids2 = (locals.extSol<<8);
-    if ((core_gameData->sxx.muxSol) &&
-        (locals.solenoids & CORE_SOLBIT(core_gameData->sxx.muxSol))) {
-      if (core_gameData->hw.gameSpecific1 & S11_RKMUX)
-        coreGlobals.solenoids = (locals.solenoids & 0x00ff8fef) |
-                               ((locals.solenoids & 0x00000010)<<20) |
-                               ((locals.solenoids & 0x00007000)<<13);
-      else
-        coreGlobals.solenoids = (locals.solenoids & 0x00ffff00) | (locals.solenoids<<24);
+  if (locals.ssEn) { // set gameon and special solenoids
+    int ii;
+    locals.solenoids |= CORE_SOLBIT(S11_GAMEONSOL);
+    /*-- special solenoids updated based on switches --*/
+    for (ii = 0; ii < 6; ii++) {
+      if (core_gameData->sxx.ssSw[ii] && core_getSw(core_gameData->sxx.ssSw[ii]))
+        locals.solenoids |= CORE_SOLBIT(CORE_FIRSTSSSOL+ii);
     }
-    if (locals.ssEn) {
-      int ii;
-      coreGlobals.solenoids |= CORE_SOLBIT(S11_GAMEONSOL);
-      /*-- special solenoids updated based on switches --*/
-      for (ii = 0; ii < 6; ii++)
-        if (core_gameData->sxx.ssSw[ii] && core_getSw(core_gameData->sxx.ssSw[ii]))
-          coreGlobals.solenoids |= CORE_SOLBIT(CORE_FIRSTSSSOL+ii);
-    }
-    locals.solenoids = coreGlobals.pulsedSolState;
   }
+  if ((core_gameData->sxx.muxSol) &&
+      (locals.solenoids & CORE_SOLBIT(core_gameData->sxx.muxSol))) {
+    if (core_gameData->hw.gameSpecific1 & S11_RKMUX)
+      locals.solenoids = (locals.solenoids & 0x00ff8fef) |
+                         ((locals.solenoids & 0x00000010)<<20) |
+                         ((locals.solenoids & 0x00007000)<<13);
+    else
+      locals.solenoids = (locals.solenoids & 0x00ffff00) | (locals.solenoids<<24);
+  }
+  locals.solsmooth[locals.vblankCount % S11_SOLSMOOTH] = locals.solenoids;
+#if S11_SOLSMOOTH != 2
+#  error "Need to update smooth formula"
+#endif
+  coreGlobals.solenoids  = locals.solsmooth[0] | locals.solsmooth[1];
+  coreGlobals.solenoids2 = locals.extSol << 8;
+  locals.solenoids = coreGlobals.pulsedSolState;
+  locals.extSol = locals.extSolPulse;
   /*-- display --*/
   if ((locals.vblankCount % S11_DISPLAYSMOOTH) == 0) {
     memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
@@ -171,7 +180,7 @@ static WRITE_HANDLER(pia2b_w) {
        ....
        data = 0x80, CN3-Pin 1 (Blinder on Tommy)*/
   if (core_gameData->gen & (GEN_DEDMD16|GEN_DEDMD32|GEN_DEDMD64)) {
-    if (core_gameData->hw.gameSpecific1 & S11_PRINTERLINE) locals.extSol = data;
+    if (core_gameData->hw.gameSpecific1 & S11_PRINTERLINE) locals.extSol |= locals.extSolPulse = data;
   }
   else {
     if (core_gameData->hw.display & S11_DISPINV) data = ~data;
@@ -291,7 +300,7 @@ static WRITE_HANDLER(pia5cb2_w) {
   /* don't pass to sound board if a sound overlay board is available */
   if ((core_gameData->hw.gameSpecific1 & S11_SNDOVERLAY) &&
       ((locals.sndCmd & 0xe0) == 0)) {
-    if (!data) locals.extSol = (~locals.sndCmd) & 0x1f;
+    if (!data) locals.extSol |= locals.extSolPulse = (~locals.sndCmd) & 0x1f;
   }
   else sndbrd_1_ctrl_w(0,data);
 }
