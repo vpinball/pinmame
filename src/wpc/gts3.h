@@ -111,6 +111,14 @@
 
 
 /*-- Main CPU regions and ROM --*/
+
+/*-- 32K CPU ROM --*/
+#define GTS3ROMSTART32(name, n1, chk1) \
+   ROM_START(name) \
+     NORMALREGION(0x10000, GTS3_MEMREG_CPU) \
+       ROM_LOAD(n1, 0x8000, 0x8000, chk1)
+
+/*-- 64K CPU ROM --*/
 #define GTS3ROMSTART(name, n1, chk1) \
    ROM_START(name) \
      NORMALREGION(0x10000, GTS3_MEMREG_CPU) \
