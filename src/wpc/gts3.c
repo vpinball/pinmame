@@ -685,13 +685,23 @@ static WRITE_HANDLER(display_control) { GTS3locals.DISPLAY_CONTROL(offset,data);
 */
 static WRITE_HANDLER(alpha_display){
 	if ((GTS3locals.u4pb & ~DBLNK) && (GTS3locals.acol < 20)) {
-		if(offset == 0) GTS3locals.segments[1][GTS3locals.acol].hi |= GTS3locals.pseg[1][GTS3locals.acol].hi = data;
-		else
-		if(offset == 1) GTS3locals.segments[1][GTS3locals.acol].lo |= GTS3locals.pseg[1][GTS3locals.acol].lo = data;
-		else
-		if(offset == 2) GTS3locals.segments[0][GTS3locals.acol].hi |= GTS3locals.pseg[0][GTS3locals.acol].hi = data;
-		else
-		if(offset == 3) GTS3locals.segments[0][GTS3locals.acol].lo |= GTS3locals.pseg[0][GTS3locals.acol].lo = data;
+		switch ( offset ) {
+		case 0:
+			GTS3locals.segments[20+GTS3locals.acol].b.lo |= GTS3locals.pseg[20+GTS3locals.acol].b.lo = data;
+			break;
+
+		case 1:
+			GTS3locals.segments[20+GTS3locals.acol].b.hi |= GTS3locals.pseg[20+GTS3locals.acol].b.hi = data;
+			break;
+
+		case 2:
+			GTS3locals.segments[GTS3locals.acol].b.lo |= GTS3locals.pseg[GTS3locals.acol].b.lo = data;
+			break;
+
+		case 3:
+			GTS3locals.segments[GTS3locals.acol].b.hi |= GTS3locals.pseg[GTS3locals.acol].b.hi = data;
+			break;
+		}
 	}
 }
 
@@ -785,21 +795,18 @@ static void alpha_update(){
     /* FORCE The 16 Segment Layout to match the output order expected by core.c */
 	// There's got to be a better way than this junky code!
 	UINT16 segbits, tempbits;
-	int i,j,k, pos;
-	for(i=0;i<2;i++) {
-		for(j=0;j<20;j++){
-			segbits = ((GTS3locals.segments[i][j].lo<<8) | GTS3locals.segments[i][j].hi);
+	int i,j,k;
+	for (i=0; i<2; i++) {
+		for (j=0; j<20; j++){
+			segbits = GTS3locals.segments[20*i+j].w;
 			tempbits = 0;
-			if(segbits > 0) {
-				for(k=0;k<16;k++){
-					if((segbits>>k)&1){
-						pos = alpha_adjust[k];
-						tempbits |= (1<<pos);
-					}
+			if (segbits > 0) {
+				for (k=0; k<16; k++) {
+					if ( (segbits>>k)&1 ) 
+						tempbits |= (1<<alpha_adjust[k]);
 				}
 			}
-			GTS3locals.segments[i][j].lo=(tempbits&0xff00)>>8;
-			GTS3locals.segments[i][j].hi=tempbits&0x00ff;
+			GTS3locals.segments[20*i+j].w = tempbits;
 		}
 	}
 	memcpy(coreGlobals.segments, GTS3locals.segments, sizeof(coreGlobals.segments));
