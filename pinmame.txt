@@ -1,8 +1,8 @@
 **************************************************************************************
-		                      PinMAME
+		                       PinMAME
 		      (Pinball Multiple Arcade Machine Emulator)
-				   Version 1.12.1
-			          (April 14, 2002)
+				  Version 1.20 Beta
+			         (September 29, 2002)
                                 http://www.pinmame.com
 **************************************************************************************
 
@@ -13,25 +13,25 @@ Latest Info
 What is it?
 -----------
   PinMAME emulates the hardware found in many solid state pinball machines created from 
-  the late 1970's through 2001. Currently, the following pinball hardware is emulated:
+  the mid 1970's through 2002. Currently, the following pinball hardware is emulated:
 
   Williams/Bally WPC, Williams/Bally System 11, Williams System 9, Williams System 7,
   Williams System 6, Williams System 4, Williams System 3, 
   Data East AlphaNumeric System, Data East 128x16 DMD, Data East 128x32 DMD, 
   Data East/Sega 192x64 DMD, Sega/Stern Whitestar System, Stern MPU-100, Stern MPU-200,
-  Bally MPU-17 & MPU-35, Bally Video/Pinball(preliminary), Bally 6803,
-  Gottlieb System 80, 80a, 80b, System 3, Hankin, Gameplan MPU-1 & MPU-2, Zaccaria(not working)
+  Bally MPU-17 & MPU-35, Bally Video/Pinball, Bally 6803,
+  Gottlieb System 80, 80a, 80b, System 3, Hankin, Gameplan MPU-1 & MPU-2, Atari,
+  Zaccaria, Taito of Brazil, Midway, Capcom (not working).
 
   *Note: Emulation is not 100% working on all hardware.
 
-  PinMAME is built as an add-on to the MAME 0.37 Beta 16 Source Code.
+  PinMAME is built as an add-on to the MAME 0.59 Source Code.
 
   All the MAME readme file with all disclaimers, credits and instructions are included for
-  info on using mame related functions.
+  info on using MAME related functions.
 
   All standard MAME "functions" work in PinMAME (profiler, debugger, cheats,
-  record/playback, command line switches etc), but remember that it is
-  based on a mame beta release.
+  record/playback, command line switches etc.)
 
 What does it do?
 ----------------
@@ -59,7 +59,7 @@ Games supported
   Data East 128x32 DMD: All games from Lethal Weapon 3(1992) to Guns N Roses(1994)
   Data East 192x64 DMD: All games from Maverick(1994)
   Sega 192x64 DMD: All games from Frankenstein(1994) to Batman Forever(1995)
-  Sega/Stern Whitestar: All games from Apollo13(1995) to High Roller Casino(2001)
+  Sega/Stern Whitestar: All games from Apollo13(1995) to Rollercoaster Tycoon(2002)
   Stern MPU-100: All games from Stingray(1977) to Magic(1979)
   Stern MPU-200: All games from Meteor(1979) to Lazer Lord(1984)
   Bally MPU-17: All games from Freedom(1977) to Black Jack(1978)
@@ -69,8 +69,13 @@ Games supported
   Gottlieb System 80a: All games from Devil's Dare(1982) to Ice Fever(1985)
   Gottlieb System 80b: All games from Triple Play(1985) to BoneBusters(1989)
   Gottlieb System 3: All games from Lights,Camera,Action(1989) to Barb Wire(1996)
-  Hankin Pinball: All games are supported
-  Gameplan Pinball: All games are supported
+  Hankin Pinball: All games from FJ Holden(1978) to Orbit 1(1981)
+  Game Plan Pinball: All games from Rio(1978) to Cyclopes(1985)
+  Atari Pinball: All games from Atarians(1976) to Hercules(1979)
+  Zaccaria Pinball: All games from Combat(1978) to Spooky(1987)
+  Taito Pinball: All that's available... which is about a third of all games made.
+  Midway Pinball: Dave Nutting's 1974 "Flicker" prototype, and also Rotation VIII.
+  Capcom Pinball: All games from Goofy Hoops(1995) to Kingpin(1996), none working.
 
   Supported means that the game loads and the display starts up with lamps etc. All games
   enter attract mode and you can use the Coin Door switches to enter the menus.
@@ -118,16 +123,13 @@ Instructions
 
 Command line switches
 ---------------------
-  In an effort to minimize changing the original MAME source code, PinMAME uses some
-  existing mame command line swicthes in ways different than mame used them!
+  These options can be set on the command line or in mame.cfg:
 
-  These can be set on the command line or in mame.cfg
+  -[no]dmd_compact   off = Display a more DMD like display (space between dots)
+		     on  = Display a compact DMD display
 
-  -[no]antialias     on  = Display a more DMD like display (space between dots)
-		     off = Display a compact DMD display
-
-  -[no]translucency  on  = Display lamps, swithes and simulator
-                     off = Don't display lamps, switches and simulator
+  -[no]dmd_only      off = Display lamps, swithes and simulator
+                     on  = Don't display lamps, switches and simulator
                            (they still work). Good when creating animations
                            or screen shots!
 
@@ -139,7 +141,7 @@ Command line switches
                            Also enables MAME cheats (e.g overclocking)
                      off = Normal startup
 
-  -flicker n         Antialias the DMD display with intensity 0-100%.
+  -dmd_antialias n   Antialias the DMD display with intensity 0-100%.
 
 Other MAME settings (modified to work with PinMAME)
 ---------------------------------------------------
@@ -359,7 +361,7 @@ The PinMAME Development Team
 Steve Ellenoff     (sellenoff@hotmail.com)
 Tom Haukap         (Tom.Haukap@t-online.de)
 Martin Adrian      (wpcmame@hotmail.com)
-Gerrit Volkenborn  (volkenborn@yahoo.com)
+Gerrit Volkenborn  (gaston@yomail.de)
 
 PinMAME Contributors
 --------------------
@@ -380,5 +382,3 @@ Note from the PinMAME Dev. team
 We're working hard to improve this great emulator, and welcome your feedback!!
 Please do not hesitate to contact us with questions, bug reports, suggestions,
 whatever!
-
-
