@@ -179,16 +179,14 @@ DRIVERNV(speakes4)      //BY35-877: 08/82 Speakeasy 4 (4 player)
 DRIVERNV(rapidfir)      //BY35-869: 06/81 Rapid Fire
 DRIVERNV(m_mpac  )      //BY35-872: 05/82 Mr. & Mrs. Pac-Man
 /*same as eballdlx*/    //BY35      10/82 Eight Ball Deluxe Limited Edition
+DRIVERNV(babypac )      //??        10/82 Baby Pac-Man
 DRIVERNV(bmx     )      //BY35-888: 11/82 BMX
 DRIVERNV(granslam)      //BY35-     01/83 Grand Slam
 /*same as cenatur*/     //BY35      06/83 Centaur II
 DRIVERNV(goldball)      //BY35-     10/83 Gold Ball
 DRIVERNV(xsandos )      //BY35-     12/83 X's & O's
                         //??        ??/84 Mysterian
-#if 0
-DRIVERNV(babypac )      //??        10/82 Baby Pac-Man
 DRIVERNV(granny )       //BY35-     01/84 Granny and the Gators
-#endif
 DRIVERNV(kosteel )      //BY35-     05/84 Kings of Steel
 DRIVERNV(blakpyra)      //BY35-     07/84 Black Pyramid
 DRIVERNV(spyhuntr)      //BY35-     10/84 Spy Hunter
