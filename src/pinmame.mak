@@ -40,7 +40,7 @@ DRVLIBS += $(PINOBJ)/hnk.o $(PINOBJ)/hnks.o
 DRVLIBS += $(PINOBJ)/zac.o
 DRVLIBS += $(PINOBJ)/gp.o
 DRVLIBS += $(PINOBJ)/atari.o $(PINOBJ)/atarisnd.o
-DRVLIBS += $(PINOBJ)/taito.o
+DRVLIBS += $(PINOBJ)/taito.o $(PINOBJ)/taitos.o
 DRVLIBS += $(PINOBJ)/midway.o
 DRVLIBS += $(PINOBJ)/gts1.o
 #

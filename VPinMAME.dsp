@@ -1220,6 +1220,14 @@ SOURCE=.\src\wpc\taitogames.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\taitos.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\taitos.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\vpintf.c
 # End Source File
 # Begin Source File

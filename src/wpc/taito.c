@@ -5,6 +5,7 @@
 #include "core.h"
 #include "sndbrd.h"
 #include "taito.h"
+#include "taitos.h"
 
 #define TAITO_VBLANKFREQ     60  // VBLANK frequency
 #define TAITO_IRQFREQ        0.2
@@ -81,6 +82,8 @@ static MACHINE_INIT(taito) {
   locals.timer_irq = timer_alloc(timer_irq);
   timer_adjust(locals.timer_irq, TIME_IN_HZ(TAITO_IRQFREQ), 0, TIME_IN_HZ(TAITO_IRQFREQ));
 
+  sndbrd_0_init(core_gameData->hw.soundBoard, TAITO_SCPU, memory_region(TAITO_MEMREG_SCPU), NULL, NULL);
+
   locals.vblankCount = 1;
 }
 
@@ -89,6 +92,15 @@ static MACHINE_STOP(taito) {
 	  timer_remove(locals.timer_irq);
 	  locals.timer_irq = NULL;
   }
+  sndbrd_0_exit();
+}
+
+static WRITE_HANDLER(taito_sndCmd_w) {
+	// logerror("sound cmd: 0x%02x\n", data);
+	if ( Machine->gamedrv->flags & GAME_NO_SOUND )
+		return;
+
+    sndbrd_0_data_w(0, data);
 }
 
 static READ_HANDLER(switches_r) {
@@ -159,8 +171,9 @@ static WRITE_HANDLER(dma_commands)
 	}
 
 	if ( locals.oldsndCmd!=locals.sndCmd ) {
-		logerror("new sound command: %i\n", locals.sndCmd);
 		locals.oldsndCmd = locals.sndCmd;
+
+		taito_sndCmd_w(0, locals.sndCmd);
 	}
 }
 
@@ -191,6 +204,10 @@ MACHINE_DRIVER_START(taito)
   MDRV_NVRAM_HANDLER(taito)
   MDRV_DIPS(8)
   MDRV_SWITCH_UPDATE(taito)
+
+  MDRV_IMPORT_FROM(taitos)
+  MDRV_SOUND_CMD(taito_sndCmd_w)
+  MDRV_SOUND_CMDHEADING("taito")
 MACHINE_DRIVER_END
 
 /*-----------------------------------------------
