@@ -660,7 +660,7 @@ static	int 	S2650_relative[0x100] =
 {																\
 	UINT8 cpsu = ARG() & ~PSU34; 								\
 	S.psu = S.psu & ~cpsu;										\
-	cpu_writeport16(S2650_SENSE_PORT, 0);						\
+	cpu_writeport16(S2650_SENSE_PORT, (S.psu & FO)?1:0);		\
 	CHECK_IRQ_LINE; 											\
 }
 
@@ -685,9 +685,9 @@ static	int 	S2650_relative[0x100] =
  ***************************************************************/
 #define M_PPSU()												\
 {																\
-	UINT8 ppsu = ARG() & ~PSU34/* & ~SI*/;						\
+	UINT8 ppsu = ARG() & ~PSU34;								\
 	S.psu = S.psu | ppsu;										\
-	cpu_writeport16(S2650_SENSE_PORT, 1);						\
+	cpu_writeport16(S2650_SENSE_PORT, (S.psu & FO)?1:0);		\
 }
 
 /***************************************************************
@@ -1220,6 +1220,7 @@ int s2650_execute(int cycles)
 
 			case 0x92:		/* LPSU */
 				S.psu = R0 & ~PSU34;
+				cpu_writeport16(S2650_SENSE_PORT, (S.psu & FO)?1:0);
 				break;
 			case 0x93:		/* LPSL */
 				/* change register set ? */
