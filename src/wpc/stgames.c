@@ -189,9 +189,9 @@ ST200_ROMSTART8888(meteor,"cpu_u1.716",CRC(e0fd8452) SHA1(a13215378a678e26a56574
                           "cpu_u6.716",CRC(03fa346c) SHA1(51c04123cb433e90920c241e2d1f89db4643427b))
 BY35_ROMEND
 #define input_ports_meteor input_ports_st
-CORE_GAMEDEFNV(meteor,"Meteor",1979,"Stern",by35_mST200,GAME_NO_SOUND)
+CORE_GAMEDEFNV(meteor,"Meteor",1979,"Stern",by35_mST200,0)
 /*--------------------------------
-/ Meteor (7-digit conversion)
+/ Meteor (7-digit bootleg)
 /-------------------------------*/
 INITGAME(meteorb,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
 ST200_ROMSTART8888(meteorb,"cpu_u1.716",CRC(e0fd8452) SHA1(a13215378a678e26a565742d81fdadd2e161ba7a),
@@ -200,7 +200,7 @@ ST200_ROMSTART8888(meteorb,"cpu_u1.716",CRC(e0fd8452) SHA1(a13215378a678e26a5657
                           "cpu_u6b.716",CRC(10cb5d60) SHA1(1d3da195fbe06b49d08e4ce2ebc5d9d811126aa6))
 BY35_ROMEND
 #define input_ports_meteorb input_ports_st
-CORE_CLONEDEFNV(meteorb,meteor,"Meteor (7-digit conversion)",2003,"Stern / Oliver",by35_mST200,GAME_NO_SOUND)
+CORE_CLONEDEFNV(meteorb,meteor,"Meteor (7-digit bootleg)",2003,"Stern / Oliver",by35_mST200,0)
 /*--------------------------------
 / Galaxy
 /-------------------------------*/
@@ -211,7 +211,7 @@ ST200_ROMSTART8888(galaxy,"cpu_u1.716",CRC(35656b67) SHA1(e1ad9456c561d19220f860
                           "cpu_u6.716",CRC(ad846a42) SHA1(303c9cb933ca60d35e12793a4ac0cf7ef11bc92e))
 BY35_ROMEND
 #define input_ports_galaxy input_ports_st
-CORE_GAMEDEFNV(galaxy,"Galaxy",1980,"Stern",by35_mST200,GAME_NO_SOUND)
+CORE_GAMEDEFNV(galaxy,"Galaxy",1980,"Stern",by35_mST200,0)
 
 /*--------------------------------
 / Ali
@@ -223,7 +223,7 @@ ST200_ROMSTART8888(ali,"cpu_u1.716",CRC(92e75b40) SHA1(bace68db0ea12d50a546157d1
                        "cpu_u6.716",CRC(7629db56) SHA1(f922d31ec4dd1755da0a24bec4e3fa3a7a9b22fc))
 BY35_ROMEND
 #define input_ports_ali input_ports_st
-CORE_GAMEDEFNV(ali,"Ali",1980,"Stern",by35_mST200,GAME_NO_SOUND)
+CORE_GAMEDEFNV(ali,"Ali",1980,"Stern",by35_mST200,0)
 
 /*--------------------------------
 / Big Game
@@ -235,7 +235,7 @@ ST200_ROMSTART8888(biggame,"cpu_u1.716",CRC(f59c7514) SHA1(49ab034a21e70956f6332
                            "cpu_u6.716",CRC(801e9a66) SHA1(8634d6bd4af3e5ec3b736679393462961b76ede1))
 BY35_ROMEND
 #define input_ports_biggame input_ports_st
-CORE_GAMEDEFNV(biggame,"Big Game",1980,"Stern",by35_mST200,GAME_NO_SOUND)
+CORE_GAMEDEFNV(biggame,"Big Game",1980,"Stern",by35_mST200,0)
 
 /*--------------------------------
 / Seawitch
@@ -247,7 +247,7 @@ ST200_ROMSTART8888(seawitch,"cpu_u1.716",CRC(c214140b) SHA1(4d68ddd3b0f051c5f601
                             "cpu_u6.716",CRC(6c296d8f) SHA1(8cdb77f382ef1214ef45579213cf8f19141366ad))
 BY35_ROMEND
 #define input_ports_seawitch input_ports_st
-CORE_GAMEDEFNV(seawitch,"Seawitch",1980,"Stern",by35_mST200,GAME_NO_SOUND)
+CORE_GAMEDEFNV(seawitch,"Seawitch",1980,"Stern",by35_mST200,0)
 
 /*--------------------------------
 / Cheetah
@@ -259,7 +259,7 @@ ST200_ROMSTART8888(cheetah,"cpu_u1.716",CRC(6a845d94) SHA1(c272d5895edf2270f5f06
                            "cpu_u6.716",CRC(ed33c227) SHA1(a96ba2814cef7663728bb5fdea2dc6ecfa219038))
 BY35_ROMEND
 #define input_ports_cheetah input_ports_st
-CORE_GAMEDEFNV(cheetah,"Cheetah",1980,"Stern",by35_mST200,GAME_NO_SOUND)
+CORE_GAMEDEFNV(cheetah,"Cheetah",1980,"Stern",by35_mST200,0)
 
 /*--------------------------------
 / Quicksilver
@@ -271,7 +271,7 @@ ST200_ROMSTART8888(quicksil,"cpu_u1.716",CRC(fc1bd20a) SHA1(e3c547f996dfc5d15672
                             "cpu_u6.716",CRC(8c0e336a) SHA1(8d3a5b7c07d03c7e2945ea60c72f9181d3ee2a14))
 BY35_ROMEND
 #define input_ports_quicksil input_ports_st
-CORE_GAMEDEFNV(quicksil,"Quicksilver",1980,"Stern",by35_mST200,GAME_NO_SOUND)
+CORE_GAMEDEFNV(quicksil,"Quicksilver",1980,"Stern",by35_mST200,0)
 
 /*--------------------------------
 / Nine Ball
@@ -283,7 +283,7 @@ ST200_ROMSTART8888(nineball,"cpu_u1.716",CRC(fcb58f97) SHA1(6510a6d0b466bd27ade5
                             "cpu_u6.716",CRC(7e831499) SHA1(8d3c148b91c21938b1b5fca85ecd8f6d7f1e76b0))
 BY35_ROMEND
 #define input_ports_nineball input_ports_st
-CORE_GAMEDEFNV(nineball,"Nine Ball",1980,"Stern",by35_mST200,GAME_NO_SOUND)
+CORE_GAMEDEFNV(nineball,"Nine Ball",1980,"Stern",by35_mST200,0)
 
 /*--------------------------------
 / Free Fall
@@ -295,7 +295,7 @@ ST200_ROMSTART8888(freefall,"cpu_u1.716",CRC(d13891ad) SHA1(afb40c51f2d5695c74ce
                             "cpu_u6.716",CRC(68168b97) SHA1(defa4bba465182db22debddb4070c40c048c95e2))
 BY35_ROMEND
 #define input_ports_freefall input_ports_st
-CORE_GAMEDEFNV(freefall,"Free Fall",1981,"Stern",by35_mST200,GAME_NO_SOUND)
+CORE_GAMEDEFNV(freefall,"Free Fall",1981,"Stern",by35_mST200,0)
 
 /*--------------------------------
 / Split Second
@@ -307,7 +307,7 @@ ST200_ROMSTART8888(splitsec,"cpu_u1.716",CRC(c6ff9aa9) SHA1(39f80faca16c869ac14d
                             "cpu_u6.716",CRC(ecbedb0a) SHA1(8cc7281dd2bd300ab95a08761c12733d98599ebd))
 BY35_ROMEND
 #define input_ports_splitsec input_ports_st
-CORE_GAMEDEFNV(splitsec,"Split Second",1981,"Stern",by35_mST200,GAME_NO_SOUND)
+CORE_GAMEDEFNV(splitsec,"Split Second",1981,"Stern",by35_mST200,0)
 
 /*--------------------------------
 / Catacomb
@@ -319,7 +319,7 @@ ST200_ROMSTART8888(catacomb,"cpu_u1.716",CRC(d445dd40) SHA1(9ff5896977d7e2a0cf78
                             "cpu_u6.716",CRC(da61b5a2) SHA1(ec4a914cd57b37921578699bc427f12a3670c7eb))
 BY35_ROMEND
 #define input_ports_catacomb input_ports_st
-CORE_GAMEDEFNV(catacomb,"Catacomb",1981,"Stern",by35_mST200,GAME_NO_SOUND)
+CORE_GAMEDEFNV(catacomb,"Catacomb",1981,"Stern",by35_mST200,0)
 
 /*--------------------------------
 / Iron Maiden
@@ -331,7 +331,7 @@ ST200_ROMSTART8888(ironmaid,"cpu_u1.716",CRC(e15371a4) SHA1(fe441ed8abd325190d8e
                             "cpu_u6.716",CRC(4e6f9c25) SHA1(9053e1d335a29f7acade7752adffe69f42032959))
 BY35_ROMEND
 #define input_ports_ironmaid input_ports_st
-CORE_GAMEDEFNV(ironmaid,"Iron Maiden",1981,"Stern",by35_mST200,GAME_NO_SOUND)
+CORE_GAMEDEFNV(ironmaid,"Iron Maiden",1981,"Stern",by35_mST200,0)
 
 /*--------------------------------
 / Viper
@@ -343,7 +343,7 @@ ST200_ROMSTART8888(viper, "cpu_u1.716",CRC(d0ea0aeb) SHA1(28f4df9f45807abd1528aa
                           "cpu_u6.716",CRC(96ff5f60) SHA1(a9df887ca338db208a684540f6c9fc07722c3aa5))
 BY35_ROMEND
 #define input_ports_viper input_ports_st
-CORE_GAMEDEFNV(viper,"Viper",1981,"Stern",by35_mST200,GAME_NO_SOUND)
+CORE_GAMEDEFNV(viper,"Viper",1981,"Stern",by35_mST200,0)
 
 /*--------------------------------
 / Dragonfist
@@ -360,7 +360,7 @@ ST200_ROMSTART8888(dragfist,"cpu_u1.716",CRC(4cbd1a38) SHA1(73b7291f38cd0a330010
                             "cpu_u6.716",CRC(a374c8f9) SHA1(481116025a52353f298f3d93dfe33b3ad9f86d18))
 BY35_ROMEND
 #define input_ports_dragfist input_ports_st
-CORE_GAMEDEFNV(dragfist,"Dragonfist",1982,"Stern",by35_mST200,GAME_NO_SOUND)
+CORE_GAMEDEFNV(dragfist,"Dragonfist",1982,"Stern",by35_mST200,0)
 
 /* -----------------------------------------------------------*/
 /* All games below used MPU-200 - Sound Board: SB-300, VS-100 */
@@ -376,7 +376,7 @@ ST200_ROMSTART8888(flight2k,"cpu_u1.716",CRC(df9efed9) SHA1(47727664e745e77ca1c2
                             "cpu_u6.716",CRC(dc243186) SHA1(046ce51b8a8218214088c4264548c753bd880e19))
 BY35_ROMEND
 #define input_ports_flight2k input_ports_st
-CORE_GAMEDEFNV(flight2k,"Flight 2000",1979,"Stern",by35_mST200,GAME_NO_SOUND)
+CORE_GAMEDEFNV(flight2k,"Flight 2000",1979,"Stern",by35_mST200,0)
 
 /*--------------------------------
 / Stargazer
@@ -388,7 +388,7 @@ ST200_ROMSTART8888(stargzr,"cpu_u1.716",CRC(83606fd4) SHA1(7f6448bc0dabe50de40fd
                            "cpu_u6.716",CRC(4e1f4dc6) SHA1(1f63a0b71af84fb6e1168ff77cbcbabcaa1323f3))
 BY35_ROMEND
 #define input_ports_stargzr input_ports_st
-CORE_GAMEDEFNV(stargzr,"Stargazer",1980,"Stern",by35_mST200,GAME_NO_SOUND)
+CORE_GAMEDEFNV(stargzr,"Stargazer",1980,"Stern",by35_mST200,0)
 
 /*--------------------------------
 / Lightning
@@ -405,7 +405,7 @@ ST200_ROMSTART8888(lightnin,"cpu_u1.716",CRC(d3469d0a) SHA1(18565f5c85694da8eaf8
                             "cpu_u6.716",CRC(df221c6b) SHA1(5935020d3a24d829fbeaa8cf764daff48a151a81))
 BY35_ROMEND
 #define input_ports_lightnin input_ports_st
-CORE_GAMEDEFNV(lightnin,"Lightning",1981,"Stern",by35_mST200,GAME_NO_SOUND)
+CORE_GAMEDEFNV(lightnin,"Lightning",1981,"Stern",by35_mST200,0)
 
 /*--------------------------------
 / Orbitor 1
@@ -422,7 +422,7 @@ ST200_ROMSTART8888(orbitor1, "cpu_u1.716",CRC(575520e3) SHA1(9d52b065a14d4f95ceb
                              "cpu_u6.716",CRC(8861155a) SHA1(81a1b3434d4f80dee5704454f8359200faea173d))
 BY35_ROMEND
 #define input_ports_orbitor1 input_ports_st
-CORE_GAMEDEFNV(orbitor1,"Orbitor 1",1982,"Stern",by35_mST200,GAME_NO_SOUND)
+CORE_GAMEDEFNV(orbitor1,"Orbitor 1",1982,"Stern",by35_mST200,0)
 
 /*--------------------------------
 / Cue (Proto - Never released)
@@ -434,7 +434,7 @@ ST200_ROMSTART8888(cue,"cpu_u1.716",NO_DUMP,
                        "cpu_u6.716",NO_DUMP)
 BY35_ROMEND
 #define input_ports_cue input_ports_st
-CORE_GAMEDEFNV(cue,"Cue",1982,"Stern",by35_mST200,GAME_NO_SOUND)
+CORE_GAMEDEFNV(cue,"Cue",1982,"Stern",by35_mST200,0)
 
 /*----------------------------------------
 / Lazer Lord (Proto - Never released)
@@ -446,4 +446,4 @@ ST200_ROMSTART8888(lazrlord,"cpu_u1.716",CRC(32a6f341) SHA1(75922c6831463d240fe0
                             "cpu_u6.716",CRC(395327a3) SHA1(e2a3a8ea696bcc4b5e11b08b6c7a6d9a991aa4af))
 BY35_ROMEND
 #define input_ports_lazrlord input_ports_st
-CORE_GAMEDEFNV(lazrlord,"Lazer Lord",1984,"Stern",by35_mST200,GAME_NO_SOUND)
+CORE_GAMEDEFNV(lazrlord,"Lazer Lord",1984,"Stern",by35_mST200,0)
