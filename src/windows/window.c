@@ -1745,7 +1745,11 @@ static HRESULT WINAPI ddraw_enum_callback(LPDDSURFACEDESC desc, LPVOID context)
 static HRESULT WINAPI ddraw_enum2_callback(LPDDSURFACEDESC2 desc, LPVOID context)
 {
 	int refresh = (matchrefresh || gfx_refresh) ? desc->DUMMYUNIONNAMEN(2).dwRefreshRate : 0;
+#ifdef _MSC_VER
+	int depth = desc->DUMMYUNIONNAMEN(4).ddpfPixelFormat.DUMMYUNIONNAMEN(1).dwRGBBitCount;
+#else
 	int depth = desc->ddpfPixelFormat.DUMMYUNIONNAMEN(1).dwRGBBitCount;
+#endif
 	double score;
 
 	// make sure we have color masks

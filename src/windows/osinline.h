@@ -22,6 +22,26 @@
 //============================================================
 
 #define vec_mult _vec_mult
+
+#ifdef _MSC_VER
+
+INLINE int _vec_mult(int x, int y)
+{
+	__asm	mov		eax, x
+	__asm	imul	y					// do the multiply
+	__asm	mov		eax, edx			// the result has to go in eax (???)
+
+	// Note : I assume that MAME just wants the upper 32 bits, as per the 
+	// original _vec_mult() implementation below
+}
+
+INLINE unsigned int osd_cycles(void)
+{
+	__asm rdtsc							// tsc = edx:eax
+}
+
+#else // original MAME implementations
+
 INLINE int _vec_mult(int x, int y)
 {
 	int result;
@@ -50,5 +70,7 @@ INLINE unsigned int osd_cycles(void)
 
 	return result;
 }
+
+#endif	// __MSC_VER
 
 #endif /* __OSINLINE__ */

@@ -39,6 +39,24 @@ TICKER			ticks_per_sec;
 //	init_ticker
 //============================================================
 
+#ifdef _MSC_VER
+
+static int has_rdtsc(void)
+{
+	int nFeatures;
+
+	__asm {
+
+		mov eax, 1
+		cpuid						
+		mov nFeatures, edx
+	}
+
+	return ((nFeatures & 0x10) == 0x10) ? TRUE : FALSE;
+}
+
+#else
+
 static int has_rdtsc(void)
 {
 	int result;
@@ -59,7 +77,7 @@ static int has_rdtsc(void)
 	return result;
 }
 
-
+#endif // _MSC_VER
 
 //============================================================
 //	init_ticker
@@ -126,6 +144,15 @@ static TICKER init_ticker(void)
 //	rdtsc_ticker
 //============================================================
 
+#ifdef _MSC_VER
+
+static TICKER rdtsc_ticker(void)
+{
+	__asm rdtsc
+}
+
+#else
+
 static TICKER rdtsc_ticker(void)
 {
 	INT64 result;
@@ -139,7 +166,7 @@ static TICKER rdtsc_ticker(void)
 	return result;
 }
 
-
+#endif // _MSC_VER
 
 //============================================================
 //	time_ticker

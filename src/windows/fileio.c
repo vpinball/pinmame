@@ -5,6 +5,7 @@
 #include "driver.h"
 #include "unzip.h"
 #include "rc.h"
+#include "zlib.h"
 
 #ifdef MESS
 #include "mess/msdos.h"
@@ -90,7 +91,7 @@ typedef struct
 }	FakeFileHandle;
 
 
-extern unsigned int crc32 (unsigned int crc, const unsigned char *buf, unsigned int len);
+//extern unsigned int crc32 (unsigned int crc, const unsigned char *buf, unsigned int len);
 static int checksum_file (const char *file, unsigned char **p, unsigned int *size, unsigned int *crc);
 
 /*

@@ -14,8 +14,8 @@ extern _asmblit_dstpitch
 
 extern _asmblit_dirtydata
 
-extern _asmblit_mmxmask1;
-extern _asmblit_mmxmask2;
+;//extern _asmblit_mmxmask1;
+;//extern _asmblit_mmxmask2;
 
 extern _asmblit_rgbmask;
 
