@@ -4,6 +4,7 @@
 #include "core.h"
 #include "wpcsam.h"
 #include "sim.h"
+#include "sndbrd.h"
 
 /*-------------------------
 / Machine driver constants
@@ -11,7 +12,67 @@
 #define ATARI_ROMEND	ROM_END
 
 /*-- Common Inports for ATARIGames --*/
-#define ATARI_COMPORTS \
+#define ATARI1_COMPORTS \
+  PORT_START /* 0 */ \
+    /* switch column 1 */ \
+    COREPORT_BIT(     0x0001, "Left Coin", KEYCODE_3)  \
+    COREPORT_BIT(     0x0002, "Right Coin", KEYCODE_5)  \
+    COREPORT_BIT(     0x0004, "Game", KEYCODE_1)  \
+    COREPORT_BIT(     0x0008, "Slam Tilt", KEYCODE_HOME)  \
+    /* switch column 3 */ \
+    COREPORT_BIT(     0x0100, "Cabinet Tilt", KEYCODE_DEL)  \
+    COREPORT_BIT(     0x0200, "Pendulum Tilt", KEYCODE_INSERT)  \
+  PORT_START /* 1 */ \
+    COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0001, "1" ) \
+    COREPORT_DIPNAME( 0x0002, 0x0000, "S2") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0002, "1" ) \
+    COREPORT_DIPNAME( 0x0004, 0x0000, "S3") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0004, "1" ) \
+    COREPORT_DIPNAME( 0x0008, 0x0000, "S4") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0008, "1" ) \
+    COREPORT_DIPNAME( 0x0010, 0x0000, "S5") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0010, "1" ) \
+    COREPORT_DIPNAME( 0x0020, 0x0000, "S6") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0020, "1" ) \
+    COREPORT_DIPNAME( 0x0040, 0x0000, "S7") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0040, "1" ) \
+    COREPORT_DIPNAME( 0x0080, 0x0000, "S8") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0080, "1" ) \
+    COREPORT_DIPNAME( 0x0100, 0x0000, "S9") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0100, "1" ) \
+    COREPORT_DIPNAME( 0x0200, 0x0000, "S10") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0200, "1" ) \
+    COREPORT_DIPNAME( 0x0400, 0x0000, "S11") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0400, "1" ) \
+    COREPORT_DIPNAME( 0x0800, 0x0000, "S12") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0800, "1" ) \
+    COREPORT_DIPNAME( 0x1000, 0x0000, "S13") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x1000, "1" ) \
+    COREPORT_DIPNAME( 0x2000, 0x0000, "S14") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x2000, "1" ) \
+    COREPORT_DIPNAME( 0x4000, 0x0000, "S15") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x4000, "1" ) \
+    COREPORT_DIPNAME( 0x8000, 0x0000, "S16") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x8000, "1" )
+
+#define ATARI2_COMPORTS \
   PORT_START /* 0 */ \
     /* switch column 1 */ \
     COREPORT_BIT(     0x0004, "Game", KEYCODE_1)  \
@@ -118,11 +179,17 @@
       COREPORT_DIPSET(0x8000, "1" )
 
 /*-- Standard input ports --*/
-#define ATARI_INPUT_PORTS_START(name,balls) \
+#define ATARI1_INPUT_PORTS_START(name,balls) \
   INPUT_PORTS_START(name) \
     CORE_PORTS \
     SIM_PORTS(balls) \
-    ATARI_COMPORTS
+    ATARI1_COMPORTS
+
+#define ATARI2_INPUT_PORTS_START(name,balls) \
+  INPUT_PORTS_START(name) \
+    CORE_PORTS \
+    SIM_PORTS(balls) \
+    ATARI2_COMPORTS
 
 #define ATARI_INPUT_PORTS_END INPUT_PORTS_END
 
@@ -143,6 +210,11 @@
 /* CPUs */
 #define ATARI_CPU	0
 
+/* sound */
+extern struct CustomSound_interface atari_custInt;
+
+#define ATARI_SOUND {SOUND_CUSTOM, &atari_custInt}, SAMPLESINTERFACE
+
 /*-- ATARI CPU regions and ROM, 3 game PROM version --*/
 #define ATARI_3_ROMSTART(name, n1, chk1, n2, chk2, n3, chk3) \
    ROM_START(name) \
@@ -157,7 +229,7 @@
 
 /*-- ATARI CPU regions and ROM, 2 game PROM version --*/
 
-/*NOTE: E00 should be loaded lower in memory, 
+/*NOTE: E00 should be loaded lower in memory,
 	   so we load it first - easier than changing each entry in atarigames.c*/
 #define ATARI_2_ROMSTART(name, n1, chk1, n2, chk2) \
    ROM_START(name) \
