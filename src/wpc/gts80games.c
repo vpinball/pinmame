@@ -532,7 +532,7 @@ GTS80_1_ROMSTART(rackemup, "685.cpu",    0x4754d68d,
 GTS80S2K_ROMSTART(     "685-s.snd",  0xd4219987,
                        "6530sy80.bin", 0xc8ba951d)
 GTS80_ROMEND
-CORE_GAMEDEFNV(rackemup,"Rack 'Em Up",1983,"Gottlieb",gl_mGTS80S,0)
+CORE_GAMEDEFNV(rackemup,"Rack 'Em Up",1983,"Gottlieb",gl_mGTS80S,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
 / Ready...Aim...Fire!
@@ -544,7 +544,7 @@ GTS80_1_ROMSTART(raimfire, "686.cpu",    0xd1e7a0de,
 GTS80S2K_ROMSTART(     "686-s.snd",  0x09740682,
                        "6530sy80.bin", 0xc8ba951d)
 GTS80_ROMEND
-CORE_GAMEDEFNV(raimfire,"Ready...Aim...Fire!",1983,"Gottlieb",gl_mGTS80S,0)
+CORE_GAMEDEFNV(raimfire,"Ready...Aim...Fire!",1983,"Gottlieb",gl_mGTS80S,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
 / Jacks To Open
@@ -556,7 +556,7 @@ GTS80_1_ROMSTART(jack2opn, "687.cpu",    0x0080565e,
 GTS80S2K_ROMSTART(     "687-s.snd",  0xf9d10b7a,
                        "6530sy80.bin", 0xc8ba951d)
 GTS80_ROMEND
-CORE_GAMEDEFNV(jack2opn,"Jacks to Open",1984,"Gottlieb",gl_mGTS80S,0)
+CORE_GAMEDEFNV(jack2opn,"Jacks to Open",1984,"Gottlieb",gl_mGTS80S,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
 / Alien Star
@@ -568,7 +568,7 @@ GTS80_1_ROMSTART(alienstr, "689.cpu",    0x4262006b,
 GTS80S2K_ROMSTART(     "689-s.snd",  0xe1e7a610,
                        "6530sy80.bin", 0xc8ba951d)
 GTS80_ROMEND
-CORE_GAMEDEFNV(alienstr,"Alien Star",1984,"Gottlieb",gl_mGTS80S,0)
+CORE_GAMEDEFNV(alienstr,"Alien Star",1984,"Gottlieb",gl_mGTS80S,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
 / The Games
@@ -580,7 +580,7 @@ GTS80_1_ROMSTART(thegames, "691.cpu",    0x50f620ea,
 GTS80S2K_ROMSTART(     "691-s.snd",  0xd7011a31,
                        "6530sy80.bin", 0xc8ba951d)
 GTS80_ROMEND
-CORE_GAMEDEFNV(thegames,"The Games",1984,"Gottlieb",gl_mGTS80S,0)
+CORE_GAMEDEFNV(thegames,"The Games",1984,"Gottlieb",gl_mGTS80S,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
 / Touchdown
@@ -592,7 +592,7 @@ GTS80_1_ROMSTART(touchdn, "688.cpu",    0xe531ab3f,
 GTS80S2K_ROMSTART(    "688-s.snd",  0x5e9988a6,
                        "6530sy80.bin", 0xc8ba951d)
 GTS80_ROMEND
-CORE_GAMEDEFNV(touchdn,"Touchdown",1984,"Gottlieb",gl_mGTS80S,0)
+CORE_GAMEDEFNV(touchdn,"Touchdown",1984,"Gottlieb",gl_mGTS80S,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
 / El Dorado City of Gold
@@ -604,7 +604,7 @@ GTS80_1_ROMSTART(eldorado, "692-2.cpu",  0x4ee6d09b,
 GTS80S2K_ROMSTART(     "692-s.snd",  0xd5a10e53,
                        "6530sy80.bin", 0xc8ba951d)
 GTS80_ROMEND
-CORE_GAMEDEFNV(eldorado,"El Dorado City of Gold",1984,"Gottlieb",gl_mGTS80S,0)
+CORE_GAMEDEFNV(eldorado,"El Dorado City of Gold",1984,"Gottlieb",gl_mGTS80S,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
 / Ice Fever
@@ -616,7 +616,7 @@ GTS80_1_ROMSTART(icefever, "695.cpu",    0x2f6e9caf,
 GTS80S2K_ROMSTART(     "695-s.snd",  0xdaededc2,
                        "6530sy80.bin", 0xc8ba951d)
 GTS80_ROMEND
-CORE_GAMEDEFNV(icefever,"Ice Fever",1985,"Gottlieb",gl_mGTS80S,0)
+CORE_GAMEDEFNV(icefever,"Ice Fever",1985,"Gottlieb",gl_mGTS80S,GAME_IMPERFECT_SOUND)
 
 // System 80b
 
@@ -629,7 +629,7 @@ GTS80B_8K_ROMSTART(triplay,	"prom1.cpu", 0x42b29b01)
 GTS80S2K_ROMSTART(		"696-s.snd", 0xdeedea61,
 							"6530sy80.bin", 0xc8ba951d)
 GTS80_ROMEND
-CORE_GAMEDEFNV(triplay, "Triple Play",1985,"Gottlieb",gl_mGTS80B,0)
+CORE_GAMEDEFNV(triplay, "Triple Play",1985,"Gottlieb",gl_mGTS80B,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
 / Bounty Hunter (#694)
@@ -640,7 +640,7 @@ GTS80B_8K_ROMSTART(bountyh,	"prom1.cpu", 0xe8190df7)
 GTS80S2K_ROMSTART(		"694-s.snd", 0xa0383e41,
 							"6530sy80.bin", 0xc8ba951d)
 GTS80_ROMEND
-CORE_GAMEDEFNV(bountyh, "Bounty Hunter",1985,"Gottlieb",gl_mGTS80B,0)
+CORE_GAMEDEFNV(bountyh, "Bounty Hunter",1985,"Gottlieb",gl_mGTS80B,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
 / Rock (#697)
