@@ -341,5 +341,5 @@ struct MachineDriver machine_driver_SE_3S = {
 / Save RAM & CMOS Information
 /-------------------------------------------------*/
 static void SE_nvram(void *file, int write) {
-  core_nvram(file, write, memory_region(SE_MEMREG_CPU), 0x2000);
+  core_nvram(file, write, memory_region(SE_MEMREG_CPU), 0x2000, 0xff);
 }

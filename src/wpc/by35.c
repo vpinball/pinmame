@@ -396,5 +396,5 @@ struct MachineDriver machine_driver_by35_61s = {
 / Load/Save static ram
 /-------------------------------------------------*/
 static void by35_nvram(void *file, int write) {
-  core_nvram(file, write, by35_CMOS, 0x100);
+  core_nvram(file, write, by35_CMOS, 0x100,0xff);
 }
