@@ -109,7 +109,7 @@ CC_ROMSTART_8(ffv104,  "u1l_v104.bin",CRC(375f4dd3),
                        "u3l_v104.bin",CRC(aed63bd0),
                        "u3h_v104.bin",CRC(9376881e))
 CC_ROMEND
-CORE_GAMEDEFNV(ffv104,"Flipper Football",1996,"Capcom",cc,GAME_IMPERFECT_GRAPHICS|GAME_NO_SOUND)
+CORE_GAMEDEFNV(ffv104,"Flipper Football",1996,"Capcom",cc,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
 / Big Bang Bar - Beta (11/96)
@@ -130,4 +130,4 @@ INITGAME(kpv106, 11, cc_dispDMD128x32, 3)
 CC_ROMSTART_2X(kpv106, "u1hu1l.bin",  CRC(d2d42121),
                        "u2hu2l.bin",  CRC(9cd91371))
 CC_ROMEND
-CORE_GAMEDEFNV(kpv106,"Kingpin",1996,"Capcom",cc,GAME_IMPERFECT_GRAPHICS|GAME_NO_SOUND)
+CORE_GAMEDEFNV(kpv106,"Kingpin",1996,"Capcom",cc,GAME_NO_SOUND)
