@@ -17,6 +17,8 @@
 /          but only discrete circuits used!
 /-----------------------------------------*/
 
+// SSU-1
+
 static struct SN76477interface  gpSS1_sn76477Int = { 1, { 50 }, /* mixing level */
 /*						   pin description		 */
 	{	0 /* N/C */	},	/*	4  noise_res		 */
@@ -38,9 +40,8 @@ static struct SN76477interface  gpSS1_sn76477Int = { 1, { 50 }, /* mixing level 
 };
 
 static WRITE_HANDLER(gpss1_data_w)
-{
-  static double voltage[] = {2.8, 3.3, 0, 0, 0, 4.5, 2.2};
-  logerror("snd_data_w: %i\n", data);
+{ // tone frequencies       C    E             A    A low
+ static double voltage[] = {2.8, 3.3, 0, 0, 0, 4.5, 2.2};
   if (data != 0x0f) {
     SN76477_set_vco_voltage(0, voltage[data]);
     SN76477_enable_w(0, 0);
@@ -58,7 +59,7 @@ static void gpss1_init(struct sndbrdData *brdData)
   SN76477_envelope_w(0, 2);
 }
 
-
+// SSU-2/3
 
 static struct SN76477interface  gpSS2_sn76477Int = { 3, { 50, 50, 50 }, /* mixing levels */
 /*			#0			#1			#2			   pin description		*/
@@ -81,16 +82,15 @@ static struct SN76477interface  gpSS2_sn76477Int = { 3, { 50, 50, 50 }, /* mixin
 };
 
 static WRITE_HANDLER(gpss2_data_w)
-{
-  static double voltage[] = {4.5, 4.2, 3.9, 3.6, 3.3, 3.0, 2.7, 2.4, 2.1, 1.8, 1.5, 1.2, 0.9, 0.6, 0.3};
-  static double vco_timer;
+{ // tone frequencies        D'   C'   B    A    H    G    F          E    D
+  static double voltage[] = {5.7, 5.4, 4.8, 4.5, 5.1, 4.0, 3.6, 0, 0, 3.3, 3.0};
+  static int howl_or_whoop = 0;
   int sb = core_gameData->hw.soundBoard & 0x01; // 1 if SSU3
-  logerror("snd_data_w: %i\n", data);
   switch (data) {
     case 0x07: // gunshot
-      vco_timer = 0.2;
+      SN76477_enable_w(1, 1);
       SN76477_mixer_w(1, 2);
-      SN76477_envelope_w(1, 0);
+      SN76477_envelope_w(1, 1);
       SN76477_vco_w(1, 1);
       SN76477_set_noise_res(1, RES_K(50)); /* 4 */
       SN76477_set_filter_res(1, RES_K(120)); /* 5 */
@@ -99,14 +99,15 @@ static WRITE_HANDLER(gpss2_data_w)
       SN76477_set_vco_cap(1, CAP_U(0.1)); /* 17 */
       SN76477_set_vco_res(1, RES_K(56)); /* 18 */
       SN76477_set_slf_res(1, RES_M(2.2)); /* 20 */
+      SN76477_set_slf_cap(1, CAP_U(1)); /* 21 */
       SN76477_set_oneshot_cap(1, CAP_U(1)); /* 23 */
       SN76477_set_oneshot_res(1, RES_K(110)); /* 24 */
       SN76477_enable_w(1, 0);
       break;
     case 0x08: // rattlesnake / warble
-      vco_timer = 2.0;
+      SN76477_enable_w(1, 1);
       SN76477_mixer_w(1, sb ? 0 : 4);
-      SN76477_envelope_w(1, sb ? 1 : 2);
+      SN76477_envelope_w(1, sb ? 0 : 1);
       SN76477_vco_w(1, 1);
       SN76477_set_noise_res(1, RES_K(100)); /* 4 */
       SN76477_set_filter_res(1, RES_K(120)); /* 5 */
@@ -115,14 +116,15 @@ static WRITE_HANDLER(gpss2_data_w)
       SN76477_set_vco_cap(1, CAP_U(0.1)); /* 17 */
       SN76477_set_vco_res(1, RES_K(56)); /* 18 */
       SN76477_set_slf_res(1, sb ? RES_K(221) : RES_K(47)); /* 20 */
+      SN76477_set_slf_cap(1, CAP_U(1)); /* 21 */
       SN76477_set_oneshot_cap(1, CAP_U(1)); /* 23 */
       SN76477_set_oneshot_res(1, RES_K(330)); /* 24 */
       SN76477_enable_w(1, 0);
       break;
     case 0x0b: // horse / pony
-      vco_timer = 5.2;
+      SN76477_enable_w(1, 1);
       SN76477_mixer_w(1, 3);
-      SN76477_envelope_w(1, 0);
+      SN76477_envelope_w(1, 1);
       SN76477_vco_w(1, 0);
       SN76477_set_noise_res(1, RES_K(100)); /* 4 */
       SN76477_set_filter_res(1, RES_K(470)); /* 5 */
@@ -131,14 +133,15 @@ static WRITE_HANDLER(gpss2_data_w)
       SN76477_set_vco_cap(1, CAP_U(1.1)); /* 17 */
       SN76477_set_vco_res(1, RES_K(56)); /* 18 */
       SN76477_set_slf_res(1, RES_M(2.2)); /* 20 */
+      SN76477_set_slf_cap(1, CAP_U(1)); /* 21 */
       SN76477_set_oneshot_cap(1, CAP_U(1)); /* 23 */
       SN76477_set_oneshot_res(1, RES_K(330)); /* 24 */
       SN76477_enable_w(1, 0);
       break;
-    case 0x0c: // howl
-      vco_timer = 10.0;
+    case 0x0c: // howl or whoop
+      SN76477_enable_w(1, 1);
       SN76477_mixer_w(1, 0);
-      SN76477_envelope_w(1, 0);
+      SN76477_envelope_w(1, 1);
       SN76477_vco_w(1, 1);
       SN76477_set_noise_res(1, RES_K(100)); /* 4 */
       SN76477_set_filter_res(1, RES_K(470)); /* 5 */
@@ -147,14 +150,16 @@ static WRITE_HANDLER(gpss2_data_w)
       SN76477_set_vco_cap(1, CAP_U(0.1)); /* 17 */
       SN76477_set_vco_res(1, RES_K(40)); /* 18 */
       SN76477_set_slf_res(1, RES_M(2.2)); /* 20 */
-      SN76477_set_oneshot_cap(1, CAP_U(23)); /* 23 */
+      SN76477_set_slf_cap(1, howl_or_whoop ? CAP_U(1.1) : CAP_U(23)); /* 21 */
+      SN76477_set_oneshot_cap(1, howl_or_whoop ? CAP_U(11) : CAP_U(23)); /* 23 */
       SN76477_set_oneshot_res(1, RES_K(330)); /* 24 */
       SN76477_enable_w(1, 0);
+      if (sb) howl_or_whoop = !howl_or_whoop; // alternate sound on SSU-3
       break;
     case 0x0d: // ricochet
-      vco_timer = 1.0;
+      SN76477_enable_w(1, 1);
       SN76477_mixer_w(1, 0);
-      SN76477_envelope_w(1, 0);
+      SN76477_envelope_w(1, 1);
       SN76477_vco_w(1, 1);
       SN76477_set_noise_res(1, RES_K(100)); /* 4 */
       SN76477_set_filter_res(1, RES_K(470)); /* 5 */
@@ -163,22 +168,16 @@ static WRITE_HANDLER(gpss2_data_w)
       SN76477_set_vco_cap(1, CAP_U(0.1)); /* 17 */
       SN76477_set_vco_res(1, RES_K(28)); /* 18 */
       SN76477_set_slf_res(1, RES_M(1.1)); /* 20 */
+      SN76477_set_slf_cap(1, CAP_U(1)); /* 21 */
       SN76477_set_oneshot_cap(1, CAP_U(2)); /* 23 */
       SN76477_set_oneshot_res(1, RES_K(110)); /* 24 */
       SN76477_enable_w(1, 0);
       break;
     case 0x0e: // explosion
-      vco_timer = 10.0;
+      SN76477_enable_w(0, 1);
       SN76477_enable_w(0, 0);
       break;
-    case 0x0a:
     case 0x0f: // sounds off
-      if (vco_timer >= 0) {
-        vco_timer -= 0.05;
-      } else {
-        SN76477_enable_w(0, 1);
-        SN76477_enable_w(1, 1);
-      }
       SN76477_enable_w(2, 1);
       break;
     default:   // chime sounds
@@ -200,7 +199,7 @@ static void gpss2_init(struct sndbrdData *brdData)
   SN76477_envelope_w(2, 0);
 }
 
-
+// MSU-1
 
 static struct {
   struct sndbrdData brdData;
