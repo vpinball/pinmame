@@ -71,7 +71,7 @@ WRITE_HANDLER(riot6530_0a_w) {
 		return;
 
 	GTS80S_locals.clock[GTS80S_locals.buf_pos] = timer_get_time();
-	GTS80S_locals.buffer[GTS80S_locals.buf_pos++] = (0x80-data)<<8;
+	GTS80S_locals.buffer[GTS80S_locals.buf_pos++] = ((data<<7)-0x4000)*2;
 }
 
 WRITE_HANDLER(riot6530_0b_w) { 
@@ -257,11 +257,11 @@ WRITE_HANDLER(da1_latch_w) {
 		return;
 
 	GTS80SS_locals.clock[GTS80SS_locals.buf_pos] = timer_get_time();
-	GTS80SS_locals.buffer[GTS80SS_locals.buf_pos++] = (0x80-data)*0xf0;
+	GTS80SS_locals.buffer[GTS80SS_locals.buf_pos++] = ((data<<7)-0x4000)*2;
 }
 
 WRITE_HANDLER(da2_latch_w) {
-	logerror("da2_w: 0x%02x\n", data); 
+//	logerror("da2_w: 0x%02x\n", data); 
 }
 
 /* expansion board */
