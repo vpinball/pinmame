@@ -203,7 +203,7 @@ static struct pia6821_interface s7_pia[] = {
     CA2   SS8
     CB2   SS7
     CA1,CB1 NC */
- /* in  : A/B,CA/B1,CA/B2 */ 0, 0, 0, 0, 0, 0,
+ /* in  : A/B,CA/B1,CA/B2 */ 0, PIA_UNUSED_VAL(0x3f), PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(0), 0, 0,
  /* out : A/B,CA/B2       */ sndbrd_0_data_w, pia0b_w, pia0ca2_w, pia0cb2_w,
  /* irq : A/B             */ s7_piaIrq, s7_piaIrq
 },{/* PIA 1 (2200)
@@ -212,7 +212,7 @@ static struct pia6821_interface s7_pia[] = {
     CA2   SS5
     CB2   GameOn (0)
     CA1,CB1 NC */
- /* in  : A/B,CA/B1,CA/B2 */ 0, 0, 0, 0, 0, 0,
+ /* in  : A/B,CA/B1,CA/B2 */ 0, 0, 0, PIA_UNUSED_VAL(0), 0, 0,
  /* out : A/B,CA/B2       */ pia1a_w, pia1b_w, pia1ca2_w, pia1cb2_w,
  /* irq : A/B             */ s7_piaIrq, s7_piaIrq
 },{/* PIA 2 (2400)
@@ -221,7 +221,7 @@ static struct pia6821_interface s7_pia[] = {
     CA2    SS2
     CB2    SS1
     CA1,CB1 NC */
- /* in  : A/B,CA/B1,CA/B2 */ 0, 0, 0, 0, 0, 0,
+ /* in  : A/B,CA/B1,CA/B2 */ 0, 0, 0, PIA_UNUSED_VAL(0), 0, 0,
  /* out : A/B,CA/B2       */ pia2a_w, pia2b_w, pia2ca2_w, pia2cb2_w,
  /* irq : A/B             */ s7_piaIrq, s7_piaIrq
 },{/* PIA 3 (2800)
