@@ -36,6 +36,7 @@ static struct {
   int    swCol;
   int    ssEn; /* Special solenoids and flippers enabled ? */
   int    piaIrq;
+  int    s6sound;
 } s7locals;
 static data8_t *s7_rambankptr, *s7_CMOS;
 
@@ -171,6 +172,8 @@ static void setSSSol(int data, int solNo) {
 }
 
 static WRITE_HANDLER(pia1b_w) {
+  if (s7locals.s6sound)
+    sndbrd_0_data_w(0, ~data); data &= 0xe0; /* mask of sound command bits */
   coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffff00ff) | (((UINT16)data)<<8);
   s7locals.solenoids |= (((UINT16)data)<<8);
 }
@@ -282,6 +285,11 @@ static MACHINE_INIT(s7) {
   cpu_setbank(S7_BANK0, s7_rambankptr);
 }
 
+static MACHINE_INIT(s7S6) {
+  machine_init_s7();
+  s7locals.s6sound = 1;
+}
+
 static MACHINE_RESET(s7) {
   pia_reset();
 }
@@ -355,49 +363,17 @@ MACHINE_DRIVER_START(s7S)
   MDRV_SOUND_CMDHEADING("s7")
 MACHINE_DRIVER_END
 
+MACHINE_DRIVER_START(s7S6)
+  MDRV_IMPORT_FROM(s7)
+  MDRV_CORE_INIT_RESET_STOP(s7S6,s7,s7)
+  MDRV_IMPORT_FROM(wmssnd_s67s)
+  MDRV_SOUND_CMD(sndbrd_0_data_w)
+  MDRV_SOUND_CMDHEADING("s7")
+MACHINE_DRIVER_END
+
 /*-----------------------------------------------
 / Load/Save static ram
 /-------------------------------------------------*/
 static NVRAM_HANDLER(s7) {
   core_nvram(file, read_or_write, s7_CMOS, 0x0100, 0xff);
 }
-#if 0
-const struct MachineDriver machine_driver_s7_s = {
-  {{  CPU_M6808, 3.58e6/4,
-      s7_readmem, s7_writemem, NULL, NULL,
-      s7_vblank, 1, s7_irq, S7_IRQFREQ
-  }, S67S_SOUNDCPU
-  },
-  S7_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, s7_init, s7_exit,
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  NULL, NULL, gen_refresh,
-  0,0,0,0, { S67S_SOUND },
-  s7_nvram
-};
-
-const struct MachineDriver machine_driver_s7 = {
-  {{  CPU_M6808, 3.58e6/4,
-      s7_readmem, s7_writemem, NULL, NULL,
-      s7_vblank, 1, s7_irq, S7_IRQFREQ
-  }},
-  S7_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, s7_init, s7_exit,
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  NULL, NULL, gen_refresh,
-  0,0,0,0, {{ 0 }},
-  s7_nvram
-};
-const static core_tData s7Data = {
-  2,
-  s7_updSw, CORE_DIAG7SEG, sndbrd_0_data_w, "s7",
-  core_swSeq2m, core_swSeq2m,core_m2swSeq,core_m2swSeq
-};
-
-
-#endif
-
