@@ -1,6 +1,6 @@
 Type=Exe
 Reference=*\G{00020430-0000-0000-C000-000000000046}#2.0#0#C:\WINNT\System32\stdole2.tlb#OLE Automation
-Reference=*\G{57270B76-C846-4B1E-88D4-53C8337A0623}#1.0#0#..\pinmame.1.12.1\vpinmame.dll#Visual PinMame 1.0 Type Library
+Reference=*\G{57270B76-C846-4B1E-88D4-53C8337A0623}#1.0#0#..\pinmame\VPinMAME.dll#Visual PinMame 1.0 Type Library
 Form=VPinMAMETest.frm
 Reference=*\G{6B263850-900B-11D0-9484-00A0C91110ED}#1.0#0#C:\WINNT\System32\msstdfmt.dll#Microsoft Data Formatting Object Library 6.0 (SP4)
 IconForm="VPinMAMETest"
