@@ -3778,6 +3778,18 @@ SOURCE=.\src\wpc\sims\s7\full\tmfnt.c
 # PROP Default_Filter ""
 # End Group
 # End Group
+# Begin Group "se"
+
+# PROP Default_Filter ""
+# Begin Group "prelim_se"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\wpc\sims\se\prelim\monopoly.c
+# End Source File
+# End Group
+# End Group
 # End Group
 # Begin Source File
 
