@@ -6,6 +6,11 @@
 
 // standard windows headers
 #define WIN32_LEAN_AND_MEAN
+
+#ifdef VPINMAME
+#define NONAMELESSUNION
+#endif
+
 #include <windows.h>
 
 // undef WINNT for ddraw.h to prevent duplicate definition
