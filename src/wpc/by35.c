@@ -23,7 +23,7 @@ static READ_HANDLER(snd300_r) {
 
   return snddatst300.axb[offset];
 }
-
+ 
 static WRITE_HANDLER(snd300_w) {
   snddatst300.ax[offset]=data;
   sndbrd_0_data_w(0,offset);
@@ -40,7 +40,9 @@ static WRITE_HANDLER(snd300_wex) {
 #define BY35_VBLANKFREQ    60 /* VBLANK frequency */
 
 #define BY35_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
+
 #define BY35_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
+
 #define BY35_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKS */
 /*--------------------------------------------------
 / There are a few variants on the BY35 hardware
@@ -559,11 +561,11 @@ static MEMORY_WRITE_START(by35_writemem)
   { 0x5000, 0x5fff, MWA_ROM },
   { 0xf000, 0xffff, MWA_ROM },
 MEMORY_END
-
+ 
 MACHINE_DRIVER_START(by35)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(by35,by35,by35)
-  MDRV_CPU_ADD_TAG("mcpu", M6800, 500000)
+  MDRV_CPU_ADD_TAG("mcpu", M6800, 450000)
   MDRV_CPU_MEMORY(by35_readmem, by35_writemem)
   MDRV_CPU_VBLANK_INT(by35_vblank, 1)
   MDRV_CPU_PERIODIC_INT(by35_irq, BY35_IRQFREQ)
@@ -573,7 +575,7 @@ MACHINE_DRIVER_START(by35)
   MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_TIMER_ADD(by35_zeroCross,BY35_ZCFREQ*2)
 MACHINE_DRIVER_END
-
+  
 MACHINE_DRIVER_START(byProto)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(by35Proto,by35,NULL)
