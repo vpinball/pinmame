@@ -318,7 +318,7 @@ static void snt_irq(int state);
 
 static struct {
   struct sndbrdData brdData;
-  int pia0a, pia0b, pia1a, pia1b;
+  int pia0a, pia0b, pia1a_r, pia1a_w, pia1b;
   int cmd[2], lastcmd, cmdin, cmdout, lastctrl;
 } sntlocals;
 static const struct pia6821_interface snt_pia[] = {{
@@ -352,11 +352,12 @@ static WRITE_HANDLER(snt_pia0b_w) {
   sntlocals.pia0b = data;
   if (sntlocals.pia0b & 0x02) AY8910Write(0, sntlocals.pia0b ^ 0x01, sntlocals.pia0a);
 }
-static READ_HANDLER(snt_pia1a_r) { return tms5220_status_r(0); }
-static WRITE_HANDLER(snt_pia1a_w) { sntlocals.pia1a = data; }
+static READ_HANDLER(snt_pia1a_r) { return sntlocals.pia1a_r; }
+static WRITE_HANDLER(snt_pia1a_w) { sntlocals.pia1a_w = data; }
 static WRITE_HANDLER(snt_pia1b_w) {
   if (~data & 0x02) // write out data to speech chip
-    tms5220_data_w(0, sntlocals.pia1a);
+    tms5220_data_w(0, sntlocals.pia1a_w);
+  sntlocals.pia1a_r = tms5220_status_r(0);
   pia_set_input_ca2(SNT_PIA1, 1); // enable
   sntlocals.pia1b = data;
 }
@@ -382,7 +383,7 @@ static READ_HANDLER(snt_8910a_r) { return ~sntlocals.lastcmd; }
 static WRITE_HANDLER(snt_pia0ca2_w) { sndbrd_ctrl_cb(sntlocals.brdData.boardNo,data); } // diag led
 
 static void snt_irq(int state) {
-  if (!state) tms5220_reset(); // if this is not performed, some speech will get scrambled!
+  if (core_gameData->gen & GEN_ALLBY35) tms5220_reset();
   cpu_set_irq_line(sntlocals.brdData.cpuNo, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
 static void snt_5220Irq(int state) { pia_set_input_cb1(SNT_PIA1, !state); }
