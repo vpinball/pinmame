@@ -174,17 +174,17 @@ private:
 				fROMSetOK = true;
 			}
 			else if ( fMaybeOK )
-				strcpy(szLine, "There are CRC and/or length errors! VPinMAME may or may not successfully be able to use the ROM set.");
+				strcpy(szLine, "There are CRC and/or length errors! VPinMAME may or may not successfully be able to use the ROM set.\r\nIf sound roms are missing, sound will be disabled.");
 			else
-				strcpy(szLine, "ROM set is bad: VPinMAME can't use it (if sound roms are missing disable the sound)");
+				strcpy(szLine, "ROM set is bad: VPinMAME can't use it.");
 			break;
 
 		case 1:
-			strcpy(szLine, "No ROMs defined for this game: VPinMAME can't run this game");
+			strcpy(szLine, "No ROMs defined for this game: VPinMAME can't run this game.");
 			break;
 
 		case 2:
-			strcpy(szLine, "ROM set is missing: VPinMAME can't run the game");
+			strcpy(szLine, "ROM set is missing: VPinMAME can't run the game.");
 			break;
 
 		case 3:
@@ -224,6 +224,8 @@ private:
 		EndDialog(IDIGNORE);
 		return 0;
 	}
+public:
+	LRESULT OnStnClickedState(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 };
 
 /////////////////////////////////////////////////////////////////////////////
