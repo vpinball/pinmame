@@ -35,21 +35,6 @@ BY35_ROMEND
 #define input_ports_blkshpsq input_ports_st
 CORE_GAMEDEFNV(blkshpsq,"Black Sheep Squadron",1979,"Astro",by35_mAstro,GAME_NOT_WORKING|GAME_NO_SOUND)
 
-/*--------------------------------
-/ Big Ball Bowling (United game?)
-/-------------------------------*/
-static const core_tLCDLayout dispBowl[] = {
-  {0, 0, 4,4,CORE_SEG7}, {0,10,12,4,CORE_SEG7}, {0,20,20,4,CORE_SEG7},
-  {2, 0,28,4,CORE_SEG7}, {2,10,36,4,CORE_SEG7}, {2,20,44,4,CORE_SEG7},
-  {4, 7,54,2,CORE_SEG7}, {4,17,52,2,CORE_SEG7}, {0}
-};
-INITGAME(bbbowlin,GEN_BOWLING,dispBowl,FLIP_SW(FLIP_L),0,SNDBRD_ST100B,0)
-BY17_ROMSTARTx88(bbbowlin,"cpu_u2.716",0x179e0c69,
-                          "cpu_u6.716",0x7b48e45b)
-BY35_ROMEND
-#define input_ports_bbbowlin input_ports_st
-CORE_GAMEDEFNV(bbbowlin,"Big Ball Bowling",19??,"United(?)",by35_mBowling,GAME_NO_SOUND)
-
 /****************************************************/
 /* STERN MPU-100 (almost identical to Bally MPU-17) */
 /****************************************************/
