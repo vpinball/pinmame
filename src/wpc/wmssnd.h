@@ -39,7 +39,7 @@ extern MACHINE_DRIVER_EXTERN(wmssnd_s67s);
     ROM_RELOAD(   0xd000, 0x1000)
 
 /*-------------------------
-/  S11 sound board
+/  S11C sound board
 /--------------------------*/
 #define S11CS_CPUNO     1
 #define S11CS_CPUREGION (REGION_CPU1+S11CS_CPUNO)
@@ -90,7 +90,8 @@ extern MACHINE_DRIVER_EXTERN(wmssnd_s11cs);
 #define S11S_CPUNO 2
 #define S11S_CPUREGION (REGION_CPU1+S11S_CPUNO)
 #define S11S_ROMREGION (REGION_SOUND2)
-extern MACHINE_DRIVER_EXTERN(wmssnd_s11s); /* with s11 sound board */
+extern MACHINE_DRIVER_EXTERN(wmssnd_s11s);   /* without extra sound board */
+extern MACHINE_DRIVER_EXTERN(wmssnd_s11xs);  /* with s11c sound board */
 extern MACHINE_DRIVER_EXTERN(wmssnd_s11b2s); /* with jokerz sound board */
 
 #define S11S_STDREG \
