@@ -3,7 +3,7 @@
 #include "wpc.h"
 #include "sim.h"
 #include "wmssnd.h"
-
+#include "mech.h"
 
 /* 12-05-2000: Modified custom playfield lamp layout to accomodate new structure.
                Added support for shared bulbs where necessary (SJE)
@@ -14,7 +14,6 @@
                 changed the definition of sClockFwd, sClockRev and sGumRel for the new situation */
 #define TZ_GUMTIME      120 /* Time for Gumball machine to dispense a ball */
 #define TZ_GUMRELTIME     3 /* Timer for gumball exit */
-#define TZ_CLOCKTICKS    17 /* Time for clock to move 15 minutes */
 #define TZ_POWERBALL   0x01
 
 /*------------------
@@ -404,8 +403,9 @@ static core_tLampDisplay tz_lampPos = {
 };
 
 static void tz_drawMech(BMTYPE **line) {
-  core_textOutf(50, 0,BLACK,"%2d:%02d",locals.clockTick/(4*TZ_CLOCKTICKS),
-                          (locals.clockTick*15/TZ_CLOCKTICKS) % 60);
+//  core_textOutf(50, 0,BLACK,"%2d:%02d",locals.clockTick/(4*),
+//                          (locals.clockTick*15/TZ_CLOCKTICKS) % 60);
+  core_textOutf(50,0,BLACK,"%2d:%2d",(mech_getPos(0)+4)/2%12,mech_getPos(1));
   core_textOutf(50,10,BLACK,"Gum:%3d",locals.gumPos);
 }
   /* Help */
@@ -464,7 +464,7 @@ static sim_tSimData tzSimData = {
 };
 
 static core_tGameData tzGameData = {
-  GEN_WPCFLIPTRON, NULL,/* generation */
+  GEN_WPCFLIPTRON, wpc_dispDMD,/* generation */
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_U),
     1,0,9,0,0,0,0, // 1 switch column, 9 solenoids
@@ -490,11 +490,31 @@ READ_HANDLER(tz_swRowRead) {
     return coreGlobals.swMatrix[CORE_CUSTSWCOL];
   return wpc_r(WPC_SWROWREAD);
 }
+/*
+   2 3 4 5 6 7 8 9 a b c 1
+   c 1 2 3 4 5 6 7 8 9 a b
+   012345678901234567890123
+      xxxx          xxxx
+    xxxxxxxxxxxx
+            xxxxxxxxxx
+        xxxxxx    xxxxxxxx
+*/
+#define TZ_CLOCKTICKS    13 /* Time for clock to move 15 minutes */
+static mech_tInitData mechClockH = {
+  sClockRev, sClockFwd, MECH_TWODIRSOL|MECH_FAST,TZ_CLOCKTICKS*48*8,24,
+  {{swClockH4,3,6},{swClockH4,17,20},{swClockH3,1,12},{swClockH2,9,18},
+   {swClockH1,5,10},{swClockH1,15,22}}
+};
+static mech_tInitData mechClockM = {
+  sClockRev, sClockFwd, MECH_TWODIRSOL|MECH_FAST,TZ_CLOCKTICKS*4*8,60,
+  {{swClockM0, 0, 1},{swClockM15,15,16},{swClockM30,30,31},{swClockM45,45,46}}
+};
 
 static void init_tz(void) {
   core_gameData = &tzGameData;
   install_mem_read_handler(WPC_CPUNO, WPC_SWROWREAD+WPC_BASE, WPC_SWROWREAD+WPC_BASE,
                            tz_swRowRead);
+  mech_add(0,&mechClockH); mech_add(1,&mechClockM);
 }
 
 static int tz_getSol(int solNo) {
@@ -504,11 +524,11 @@ static int tz_getSol(int solNo) {
     return ((wpc_data[WPC_EXTBOARD1]>>(solNo-CORE_CUSTSOLNO(1)))&0x01);
   return 0;
 }
-
 static void tz_handleMech(int mech) {
   /*---------------
   /  handle clock
   /----------------*/
+#if 0
   if (mech & 0x01) {
     switch (2*(core_getSol(sClockFwd)>0)+(core_getSol(sClockRev)>0)) {
       case 0:
@@ -531,6 +551,7 @@ static void tz_handleMech(int mech) {
       core_setSw(swClockH1, hour & 0x01);
     }
   }
+#endif
   /*-------------------------
   /  handle gumball machine
   /--------------------------*/
@@ -551,5 +572,5 @@ static void tz_handleMech(int mech) {
 /* 0 = time min after 12:00 */
 /* 1 = Gumball motor position (0-119) */
 static int tz_getMech(int mechNo) {
-  return mechNo ? locals.gumPos : (locals.clockTick * 15) / TZ_CLOCKTICKS;
+  return mechNo ? locals.gumPos : (((mech_getPos(0)+4)/2%12)*60+mech_getPos(1));
 }
