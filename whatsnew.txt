@@ -3,21 +3,27 @@ What's new:
 
 Version 1.10 (December 13, 2001)
 -----------------------------------------
-This may very well be the most anticipated release of PinMAME to date. 4 Letters, BSMT.
+This may very well be the most anticipated release of PinMAME to date: 4 Letters - BSMT.
+
 What was once thought nearly impossible has become a reality for PinMAME,
 thanks in large part to emulation wizard Aaron Giles(of MAME fame).
 35 New Games now have fully working sound!
 Thank you to the following for their help and support in trying to emulate the BSMT:
 Destruk, Worf, DesAngel, RevenantUK, Guru
-Another nice surprise was finally solving the many issues with getting Gottlieb System 3
-games to work. While there's still a large # of issues remaining, it's at least working now.
+
+Gottlieb games also received a huge update: Finally solved the many issues with getting Gottlieb System 3
+games to work. In addition, sound support was added for all System 80b games as well as the newer System 3 games.
+
 As you can also see, we've realized, much like the MAME team, that using Beta naming is
 rather tedious and annoying, so we've dropped it. 
+
+We know you'll enjoy this latest version of PinMAME as much as we do!!
 
 Bugs Fixed
 ----------
 -Fixed Terminator 2 Knocker Sound Always Playing
 -Fixed Coin Door buttons for games using Pre-Whitestar System Portals Menu
+-Fixed Chime support for System 3 Games, Hot Tip & Lucky Seven
  [Steve Ellenoff]
 
 -Corrected some s11 custom display layouts.
@@ -49,12 +55,13 @@ New Features
  [Steve Ellenoff]
  [Martin Adrian]
 
--Gottlieb/Premiere System 3 Emulation working!!!! (no sound support yet)
- (Still a bunch of issues to work out, especially DMD related).
--Added Stereo Sound support for pre-BSMT Data East games .
- (still not fully emulated, but better than previous mono output).
+-Gottlieb/Premier System 3 Emulation working!!!! (Still a bunch of issues to work out, especially DMD related).
+-Gottlieb/Premier System 3 Partial Sound Support (Speech not working)
+-Gottlieb System 80b Sound Support (earlier games using speech not working).
+-Added Stereo Sound support for pre-BSMT Data East games. (still not fully emulated, but better than previous mono output).
 -Added support for Sound Roms for remaining Data East/Sega/Stern(Post 1998) Games.
 -Added support for Gottlieb System 3 games.
+-Added sound support for Gottlieb System 80b games.
  [Steve Ellenoff]
 
 -New option to set the intensity of segments when they are off.
