@@ -33,18 +33,20 @@
   09/21-09/24/03 - DMD working 100% incuding 256x64 size, switches, solenoids working on most games except kp, and ff
 
   Hacks & Issues that need to be looked into:
-  - U16 Needs to be better understood and emulated
-  - Once U16 better understood, remove hacks that bypass U16 startup check
-  - IRQ4 appears to do nothing, this seems odd
-  - Lamps and Solenoids don't work in Flipper Football and Kingpin
-  - For some reason Zero Cross Circuit is not being detected (Causes Missing Zero X Msg on Startup)
-  - Power Line Detection needs to be implemented (Causes Bad Signals Error Msg on Startup)
-  - Sound communication occurs via the 68306 UARTS (currently not really emulated in the 68306 core)
-  - Handle opto switches internally? Is this needed?
-  - Handle EOS switches internally? Is this needed?
-  - More complete M68306 emulation (although it's fairly good already)
-  - Figure out how Port A is getting data written in the top 8 bits
-  - Why are the port handlers 16 bit handlers? (Martin?)
+  #1) U16 Needs to be better understood and emulated
+  #2) Once U16 better understood, remove hacks that bypass U16 startup check
+  #3) IRQ4 appears to do nothing, this seems odd
+  #4) Lamps and Solenoids don't work in Flipper Football and Kingpin
+  #5) Driver Board Detection needs to be implemented (Causes Improper Driver Error Msg on Startup)
+  #6) For some reason Zero Cross Circuit is not being detected (Causes Missing Zero X Msg on Startup)
+  #7) Power Line Detection needs to be implemented (Causes Bad Signals Error Msg on Startup)
+  #8) Lamps seem to flash too quickly, but only some, and only sometimes.
+  #9) Sound communication occurs via the 68306 UARTS (currently not really emulated in the 68306 core)
+  #10) Handle opto switches internally? Is this needed?
+  #11) Handle EOS switches internally? Is this needed?
+  #12) More complete M68306 emulation (although it's fairly good already)
+  #13) Figure out how Port A is getting data written in the top 8 bits
+  #14) Why are the port handlers 16 bit handlers? (Martin?)
 
 **************************************************************************************/
 #include <stdarg.h>
@@ -135,12 +137,14 @@ static void cc_u16irq4(int data) {
 /***************/
 /* PORT A READ */
 /***************/
-//PA0-2 - N/A?
-//PA3   - (output only)
+//PA0   - J3 - Pin 7 (Unknown purpose)
+//PA1   - J3 - Pin 8 (Unknown purpose) 
+//PA2   - J3 - Pin 9 (Unknown purpose)
+//PA3   - LED(output only)
 //PA4   - LINE_5 (As in +5V line)
 //PA5   - LINE_V (As in CPU generated reference line?)
-//PA6   - (output only)
-//PA7   - (output only)
+//PA6   - VSET(output only)
+//PA7   - GRESET(output only)
 static READ16_HANDLER(cc_porta_r) { 
 	DBGLOG(("Port A read\n")); 
 	return 0; 
@@ -148,13 +152,13 @@ static READ16_HANDLER(cc_porta_r) {
 /***************/
 /* PORT B READ */
 /***************/
-//PB0 OR IACK2 - (Output Only)
-//PB1 OR IACK3 - PULSE (To J2) - Might be an output
-//PB2 OR IACK5 - SW3 (Why??) - Need to confirm this is an input
-//PB3 OR IACK6 - SW4 (Why??) - Need to confirm this is an input
+//PB0 OR IACK2 - ZERO X ACK(Output Only)
+//PB1 OR IACK3 - PULSE (To J2) (Output Only)
+//PB2 OR IACK5 - J3 - Pin 13 - SW3(Unknown Purpose)(Output Only)
+//PB3 OR IACK6 - J3 - Pin 12 - SW4(Unknown Purpose)(Output Only)
 //PB4 OR IRQ2  - ZERO CROSS IRQ
 //PB5 OR IRQ3  - NOT USED?
-//PB6 OR IRQ5  - SW6 (Why??) - Need to confirm this is an input
+//PB6 OR IRQ5  - J3 - Pin 11 - SW6(Unknown Purpose)(Output Only)
 //PB7 OR IRQ6  - NOT USED?
 static READ16_HANDLER(cc_portb_r) { 
 	int data = 0;
@@ -166,12 +170,14 @@ static READ16_HANDLER(cc_portb_r) {
 /****************/
 /* PORT A WRITE */
 /****************/
-//PA0-2 - N/A?
+//PA0   - J3 - Pin 7 (Unknown purpose)(Input Only)
+//PA1   - J3 - Pin 8 (Unknown purpose)(Input Only)
+//PA2   - J3 - Pin 9 (Unknown purpose)(Input Only)
 //PA3   - LED
-//PA4   - LINE_5 (Input only?)
-//PA5   - LINE_V (Input only?)
+//PA4   - LINE_5 (Input only)
+//PA5   - LINE_V (Input only)
 //PA6   - VSET   
-//PA7   - GRESET (to soundboard? inverted)
+//PA7   - GRESET (to soundboard - Inverted?)
 static WRITE16_HANDLER(cc_porta_w) {
   if(data !=0x0048 && data !=0x0040 && data !=0x0008)
 	DBGLOG(("Port A write %04x\n",data));
@@ -181,13 +187,13 @@ static WRITE16_HANDLER(cc_porta_w) {
 /****************/
 /* PORT B WRITE */
 /****************/
-//PB0 OR IACK2 - ZERO CROSS ACK (Clears IRQ2?)
-//PB1 OR IACK3 - PULSE (To J2) - Need to confirm this is an output
-//PB2 OR IACK5 - SW3 (Why??) - Need to confirm this is an input
-//PB3 OR IACK6 - SW4 (Why??) - Need to confirm this is an input
-//PB4 OR IRQ2  - (Input Only)
+//PB0 OR IACK2 - ZERO CROSS ACK (Clears IRQ2)
+//PB1 OR IACK3 - PULSE (To J2)
+//PB2 OR IACK5 - J3 - Pin 13 - SW3(Unknown Purpose)(Output Only)
+//PB3 OR IACK6 - J3 - Pin 12 - SW4(Unknown Purpose)(Output Only)
+//PB4 OR IRQ2  - ZERO CROSS IRQ (Input Only)
 //PB5 OR IRQ3  - NOT USED?
-//PB6 OR IRQ5  - SW6 (Why??) - Need to confirm this is an input
+//PB6 OR IRQ5  - J3 - Pin 11 - SW6(Unknown Purpose)
 //PB7 OR IRQ6  - NOT USED?
 static WRITE16_HANDLER(cc_portb_w) {
   locals.lastb = data;
@@ -384,7 +390,7 @@ static MACHINE_INIT(cc) {
   locals.u16a[0] = 0x00bc;
   locals.vblankCount = 1;
   //Not sure where Martin got the timing for irq1.
-  timer_pulse(TIME_IN_CYCLES(2811,0),0,cc_u16irq1);
+  timer_pulse(TIME_IN_CYCLES(2211,0),0,cc_u16irq1);
   //IRQ4 doesn't seem to do anything?!! Also, no idea of the frequency
   timer_pulse(TIME_IN_HZ(400),0,cc_u16irq4);
   //Force U16 Tests on startup to succeed
@@ -566,12 +572,12 @@ static MEMORY_WRITE16_START(cc_writemem)
 MEMORY_END
 
 static PORT_READ16_START(cc_readport)
-  { M68306_PORTA, M68306_PORTA+1, cc_porta_r },
-  { M68306_PORTB+1, M68306_PORTB+2, cc_portb_r },
+  { M68306_PORTA_START, M68306_PORTA_END, cc_porta_r },
+  { M68306_PORTB_START, M68306_PORTB_END, cc_portb_r },
 PORT_END
 static PORT_WRITE16_START(cc_writeport)
-  { M68306_PORTA, M68306_PORTA+1, cc_porta_w },
-  { M68306_PORTB+1, M68306_PORTB+2, cc_portb_w },
+  { M68306_PORTA_START, M68306_PORTA_END, cc_porta_w },
+  { M68306_PORTB_START, M68306_PORTB_END, cc_portb_w },
 PORT_END
 
 MACHINE_DRIVER_START(cc)
