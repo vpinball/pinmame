@@ -59,6 +59,16 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "driver.h"
 #include "tms320av120.h"
 
+
+#define VERBOSE
+
+#ifdef VERBOSE
+//#define LOG(x)	logerror x
+#define LOG(x)	printf x
+#else
+#define LOG(x)
+#endif
+
 /**********************************************************************************************
      CONSTANTS
 ***********************************************************************************************/
@@ -68,6 +78,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CAP_BUFFER_MASK				(CAP_OUTBUFFER_SIZE - 1)	//Output buffer mask
 #define MPG_FRAMESIZE				140							//Mpeg1 - Layer 2 Framesize @ 32KHz/32kbps
 #define LOOP_MPG_SAMPLE				0
+
+#define	LOG_DATA_IN					0							//Set to 1 to log data input to an mp3 file
 
 /**********************************************************************************************
      INTERNAL DATA STRUCTURES
@@ -85,9 +97,10 @@ struct TMS320AV120Chip
  UINT8  framebuff[MPG_FRAMESIZE];	//Holds raw mpg data for 1 frame
  UINT8	fb_pos;						//Current frame buffer position
  UINT16 pcm_pos;					//Position of PCM buffer
- int    mute;						//Mute status (0 = off, 1 = Mute )
- int    bitsRemaining;				// Keep track of # of bits we've read from frame buffer
- long *_V[16];						// Synthesis window for single channel
+ int    mute;						//Mute status ( 0 = off, 1 = Mute )
+ int	reset;						//Reset status( 0 = off, 1 = Reset)
+ int    bitsRemaining;				//Keep track of # of bits we've read from frame buffer
+ long *_V[16];						//Synthesis window for single channel
 };
 
 //Layer 2 Quantization
@@ -225,6 +238,10 @@ static const char order[] = {0,16,8,24,4,20,12,28,2,18,10,26,6,22,14,30,
 static long phaseShiftsR[32], phaseShiftsI[32]; // 1.14
 static long vShiftR[64], vShiftI[64]; // 1.13
 static long D[512];
+
+#if LOG_DATA_IN	
+static FILE *fp;	//For logging
+#endif
 
 /**********************************************************************************************
      MPEG DATA HANDLING
@@ -614,14 +631,14 @@ void tms_FillBuff(int num) {
 ***********************************************************************************************/
 static void set_bof_line(int chipnum, int state)
 {
-	if(intf->bof_line[chipnum]) intf->bof_line[chipnum](state);
+	if(intf->bof_line) intf->bof_line(chipnum,state);
 }
 /**********************************************************************************************
      set_sreq_line -- set's the state of the /SREQ line
 ***********************************************************************************************/
 static void set_sreq_line(int chipnum, int state)
 {
-	if(intf->sreq_line[chipnum]) intf->sreq_line[chipnum](state);
+	if(intf->sreq_line) intf->sreq_line(chipnum,state);
 }
 
 /**********************************************************************************************
@@ -690,6 +707,11 @@ int TMS320AV120_sh_start(const struct MachineSound *msound)
 
 		//Must initialize these..
 		tms320av120[i].pcm_pos = CAP_PCMBUFFER_SIZE+1;	//Cause PCM buffer to read 1st time
+
+		//Open for logging data
+		#if LOG_DATA_IN	
+		fp = fopen("c:\\tms320av120.mp3","wb");
+		#endif
 	}
 
 	if(!failed) {
@@ -723,6 +745,11 @@ void TMS320AV120_sh_stop(void)
 {
   int i;
 
+  //Close logging file
+  #if LOG_DATA_IN	
+  if(fp)	fclose(fp);
+  #endif
+
   /*-- Delete our buffer --*/
   for (i = 0; i < intf->num; i++)
   {
@@ -748,6 +775,12 @@ void TMS320AV120_sh_stop(void)
 
 void TMS320AV120_sh_reset(void)
 {
+	int i;
+	//Reset all chips and force a transition from reset to active
+	for (i = 0; i < intf->num; i++) {
+		tms320av120[i].reset = 1;
+		TMS320AV120_set_reset(i,0);
+	}
 }
 
 /**********************************************************************************************
@@ -769,29 +802,59 @@ static void tms320av120_data_write(struct TMS320AV120Chip *chip, data8_t data)
 ***********************************************************************************************/
 void TMS320AV120_set_mute(int chipnum, int state)
 {
+	//Act only on change of state
+	if(state == tms320av120[chipnum].mute) return;
+
+	LOG(("TMS320AV120 #%d mute line set to %d!\n",chipnum,state));
+
+	//Update state
 	tms320av120[chipnum].mute = state;
-	//printf("TMS320AV120 #%d mute line set to %d!\n",chipnum,state);
 }
 
 /**********************************************************************************************
-     //TMS320AV120_reset -- Resets the chip
 	TMS320AV120_set_reset -- set/clear reset pin
 ***********************************************************************************************/
-//void TMS320AV120_reset(int chipnum)
 void TMS320AV120_set_reset(int chipnum, int state)
 {
-	//printf("TMS320AV120 #%d reset line set to %d!\n",chipnum,state);
-	//Todo: put reset code here..
+	//Act only on change of state
+	if(state == tms320av120[chipnum].reset) return;
+
+	LOG(("TMS320AV120 #%d reset line set to %d!\n",chipnum,state));
+
+	//Transition from active to reset?
+	if(!tms320av120[chipnum].reset && state)
+	{
+		//BOF & SREQ Line set to 1
+		set_bof_line(chipnum,1);
+		set_sreq_line(chipnum,1);
+		//Clear buffers
+		//Mute is set
+		tms320av120[chipnum].mute = 1;
+	}
+
+	//Transition from reset to active?
+	if(tms320av120[chipnum].reset && !state)
+	{
+		//SREQ Line set to 0
+		set_sreq_line(chipnum,0);
+		//Mute turned off
+		tms320av120[chipnum].mute = 0;
+	}
+
+	//Update state
+	tms320av120[chipnum].reset = state;
 }
 
 /**********************************************************************************************
-     TMS320AV120_data_0_w -- send data to the chip
+     TMS320AV120_data_w -- send data to the chip
 ***********************************************************************************************/
-WRITE_HANDLER( TMS320AV120_data_0_w )
+WRITE_HANDLER( TMS320AV120_data_w )
 {
-	tms320av120_data_write(&tms320av120[0], data);
-}
-WRITE_HANDLER( TMS320AV120_data_1_w )
-{
-	tms320av120_data_write(&tms320av120[1], data);
+	tms320av120_data_write(&tms320av120[offset], data);
+
+	#if LOG_DATA_IN	
+	//Log it for channel 0
+	if(offset==0)
+		if(fp) fputc(data,fp);
+	#endif
 }
