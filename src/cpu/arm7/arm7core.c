@@ -1,4 +1,3 @@
-
 /*****************************************************************************
  *
  *	 arm7core.c
@@ -35,6 +34,7 @@
 
 	  Therefore, to use the core, you simpy include this file along with the .h file into your own cpu specific
 	  implementation, and therefore, this file shouldn't be compiled as part of your project directly.
+	  Additionally, you will need to include arm7exec.c in your cpu's execute routine.
 
 	  For better or for worse, the code itself is very much intact from it's arm 2/3/6 origins from 
 	  Bryan & Phil's work. I contemplated merging it in, but thought the fact that the CPSR is
@@ -48,7 +48,7 @@
 	Todo:
 	Thumb mode support not yet implemented. 26 bit compatibility mode not implemented.
 	Data Processing opcodes need cycle count adjustments (see page 194 of ARM7TDMI manual for instruction timing summary)
-	Multi-cpu support untested, but probably will not work too well.
+	Multi-emulated cpu support untested, but probably will not work too well, as no effort was made to code for more than 1.
 	Could not find info on what the TEQP opcode is from page 44..
 	I have no idea if user bank switching is right, as I don't fully understand it's use.
 	Search for Todo: tags for remaining items not done.
@@ -62,7 +62,7 @@
 	-User Bank Mode transfer using certain flags which were previously unallowed (LDM/STM with S Bit & R15)
 	-New operation modes? (unconfirmed)
 
-	Based heavily on arm7 core from MAME 0.76:
+	Based heavily on arm core from MAME 0.76:
     *****************************************
 	ARM 2/3/6 Emulation
 
@@ -235,16 +235,10 @@ static const char* GetModeText( int cpsr )
 	return modetext[cpsr & MODE_FLAG];
 }
 
-INLINE data32_t GetRegister( int rIndex )
-{
-	return ARMREG(sRegisterTable[GET_MODE][rIndex]);
-}
+#define GetRegister(rIndex) ARMREG(sRegisterTable[GET_MODE][rIndex])
+#define SetRegister(rIndex,value) ARMREG(sRegisterTable[GET_MODE][rIndex]) = value
 
-INLINE void SetRegister( int rIndex, data32_t value )
-{
-	ARMREG(sRegisterTable[GET_MODE][rIndex]) = value;
-}
-
+//I could prob. convert to macro, but Switchmode shouldn't occur that often in emulated code..
 INLINE void SwitchMode (int cpsr_mode_val)
 {
 	data32_t cspr = GET_CPSR & ~MODE_FLAG;
@@ -497,210 +491,10 @@ static void arm7_core_reset(void *param)
 	SwitchMode(eARM7_MODE_SVC);
 	SET_CPSR(GET_CPSR | I_MASK | F_MASK);
 	R15 = 0;
+//change_pc32lew(R15);
 }
 
-//CPU EXECUTE
-INLINE int arm7_core_execute( int cycles )
-{
-	data32_t pc;
-	data32_t insn;
-
-	ARM7_ICOUNT = cycles;
-	do
-	{
-
-#ifdef MAME_DEBUG
-		if (mame_debug)
-			MAME_Debug();
-#endif
-
-		/* load 32 bit instruction */
-		pc = R15;
-		insn = READ32( pc );
-
-		/* process condition codes for this instruction */
-		switch (insn >> INSN_COND_SHIFT)
-		{
-		case COND_EQ:
-			if (Z_IS_CLEAR(GET_CPSR)) goto L_Next;
-			break;
-		case COND_NE:
-			if (Z_IS_SET(GET_CPSR)) goto L_Next;
-			break;
-		case COND_CS:
-			if (C_IS_CLEAR(GET_CPSR)) goto L_Next;
-			break;
-		case COND_CC:
-			if (C_IS_SET(GET_CPSR)) goto L_Next;
-			break;
-		case COND_MI:
-			if (N_IS_CLEAR(GET_CPSR)) goto L_Next;
-			break;
-		case COND_PL:
-			if (N_IS_SET(GET_CPSR)) goto L_Next;
-			break;
-		case COND_VS:
-			if (V_IS_CLEAR(GET_CPSR)) goto L_Next;
-			break;
-		case COND_VC:
-			if (V_IS_SET(GET_CPSR)) goto L_Next;
-			break;
-		case COND_HI:
-			if (C_IS_CLEAR(GET_CPSR) || Z_IS_SET(GET_CPSR)) goto L_Next;
-			break;
-		case COND_LS:
-			if (C_IS_SET(GET_CPSR) && Z_IS_CLEAR(GET_CPSR)) goto L_Next;
-			break;
-		case COND_GE:
-			if (!(GET_CPSR & N_MASK) != !(GET_CPSR & V_MASK)) goto L_Next; /* Use x ^ (x >> ...) method */
-			break;
-		case COND_LT:
-			if (!(GET_CPSR & N_MASK) == !(GET_CPSR & V_MASK)) goto L_Next;
-			break;
-		case COND_GT:
-			if (Z_IS_SET(GET_CPSR) || (!(GET_CPSR & N_MASK) != !(GET_CPSR & V_MASK))) goto L_Next;
-			break;
-		case COND_LE:
-			if (Z_IS_CLEAR(GET_CPSR) && (!(GET_CPSR & N_MASK) == !(GET_CPSR & V_MASK))) goto L_Next;
-			break;
-		case COND_NV:
-			goto L_Next;
-		}
-		
-		/*******************************************************************/
-		/* If we got here - condition satisfied, so decode the instruction */
-		/*******************************************************************/
-
-		/* Branch and Exchange (BX) */
-		if( (insn&0x0ffffff0)==0x012fff10 )		//bits 27-4 == 000100101111111111110001
-		{ 
-			R15 = GET_REGISTER(insn & 0x0f);
-			//If new PC address has A0 set, switch to Thumb mode
-			if(R15 & 1) {
-				SET_CPSR(GET_CPSR|T_BIT);
-				LOG(("%08x: Setting Thumb Mode due to R15 change to %08x - but not supported\n",pc,R15));
-			}
-		}
-		else
-		/* Multiply OR Swap OR Half Word Data Transfer */
-		if( (insn & 0x0e000000)==0 && (insn & 0x80) && (insn & 0x10) )	//bits 27-25 == 000, bit 7=1, bit 4=1
-		{
-			/* Half Word Data Transfer */
-			if(insn & 0x60)			//bits = 6-5 != 00
-			{
-				HandleHalfWordDT(insn);
-			}
-			else 
-			/* Swap */
-			if(insn & 0x01000000)	//bit 24 = 1
-			{
-				HandleSwap(insn);
-			}
-			/* Multiply Or Multiply Long */
-			else
-			{
-				/* multiply long */
-				if( insn&0x800000 )	//Bit 23 = 1 for Multiply Long
-				{
-					/* Signed? */
-					if( insn&0x00400000 )
-						HandleSMulLong(insn);
-					else
-						HandleUMulLong(insn);
-				}
-				/* multiply */
-				else
-				{
-					HandleMul(insn);
-				}
-				R15 += 4;
-			}
-		}
-		else
-		/* Data Processing OR PSR Transfer */
-		if( (insn & 0x0c000000) ==0 )	//bits 27-26 == 00 - This check can only exist properly after Multiplication check above
-		{
-			/* PSR Transfer (MRS & MSR) */
-			if( ((insn&0x0100000)==0) && ((insn&0x01800000)==0x01000000) ) //( S bit must be clear, and bit 24,23 = 10 )
-			{
-				HandlePSRTransfer(insn);
-				ARM7_ICOUNT += 2;		//PSR only takes 1 - S Cycle, so we add + 2, since at end, we -3..
-				R15 += 4;
-			}
-			/* Data Processing */
-			else
-			{
-				HandleALU(insn);
-			}
-		}
-		else
-		/* Data Transfer - Single Data Access */
-		if( (insn & 0x0c000000) == 0x04000000 )		//bits 27-26 == 01
-		{
-			HandleMemSingle(insn);
-			R15 += 4;
-		}
-		else
-		/* Block Data Transfer/Access */
-		if( (insn & 0x0e000000) == 0x08000000 )		//bits 27-25 == 100
-		{
-			HandleMemBlock(insn);
-			R15 += 4;
-		}
-		else
-		/* Branch */
-		if ((insn & 0x0e000000) == 0x0a000000)		//bits 27-25 == 101
-		{
-			HandleBranch(insn);
-		}
-		else
-		/* Co-Processor Data Transfer */
-		if( (insn & 0x0e000000) == 0x0c000000 )		//bits 27-25 == 110
-		{
-			HandleCoProcDT(insn);
-			R15 += 4;
-		}
-		else
-		/* Co-Processor Data Operation or Register Transfer */
-		if( (insn & 0x0f000000) == 0x0e000000 )		//bits 27-24 == 1110
-		{
-			if(insn & 0x10)
-				HandleCoProcRT(insn);
-			else
-				HandleCoProcDO(insn);
-			R15 += 4;
-		}
-		else
-		/* Software Interrupt */
-		if( (insn & 0x0f000000) == 0x0f000000 )	//bits 27-24 == 1111
-		{
-			ARM7.pendingSwi = 1;
-			ARM7_CHECKIRQ;
-			//couldn't find any cycle counts for SWI
-		}
-		else
-		if(1)
-		/* Undefined */
-		{
-			ARM7.pendingSwi = 1;
-			ARM7_CHECKIRQ;
-			ARM7_ICOUNT -= 1;				//undefined takes 4 cycles (page 77)
-			LOG(("%08x:  Undefined instruction\n",pc-4));
-		}
-		else
-		{
-			L_Next:
-				R15 += 4;
-				ARM7_ICOUNT +=2;	//Any unexecuted instruction only takes 1 cycle (page 193)
-		}
-
-		ARM7_ICOUNT -= 3;
-
-	} while( ARM7_ICOUNT > 0 );
-
-	return cycles - ARM7_ICOUNT;
-} /* arm7_execute */
-
+//Execute used to be here.. moved to separate file (arm7exec.c) to be included by cpu cores separately
 
 //CPU CHECK IRQ STATE
 //Note: couldn't find any exact cycle counts for most of these exceptions
