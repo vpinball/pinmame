@@ -1,6 +1,6 @@
 #include "driver.h"
 #include "sim.h"
-#include "GTS3.h"
+#include "gts3.h"
 #include "gts80s.h"
 #include "sndbrd.h"
 
@@ -19,7 +19,6 @@ N = No Lead, L = Have a Lead on Rom
 #define DMD       GTS3_dispDMD
 
 #define FLIP67   FLIP_SWNO(6,7)
-#define FLIP2122 FLIP_SWNO(21,22)
 #define FLIP4142 FLIP_SWNO(41,42)
 #define FLIP4243 FLIP_SWNO(42,43)
 #define FLIP4547 FLIP_SWNO(45,47)
@@ -181,7 +180,7 @@ GTS3SOUND32128(			"yrom1.bin",CRC(4554ed0d) SHA1(df0a9225f961e0ee876c3e63ad54c6e
 						"drom1.bin",CRC(78c099e1) SHA1(953111237fdc3e20562d823eb2b6430e5a4afe4d),
 						"arom1.bin",CRC(c890475f) SHA1(1cf6ed0dbd003a76a5cf889f62b489c0a62e9d25),
 						"arom2.bin",CRC(aba8fd98) SHA1(81b8af4d2d8e40b5b44f114c095371afe5539549))
-						
+
 GTS3_ROMEND
 CORE_GAMEDEFNV(cactjack,"Cactus Jack",1991,"Gottlieb",mGTS3S,0)
 
@@ -427,18 +426,6 @@ GTS3SOUND32512256(		"yrom1.bin",CRC(c58941ed) SHA1(3b3545b1e8986b06238576a0cef69
 						"arom2.bin",CRC(59789e66) SHA1(08b7f82f83c53f15cafefb009ab9833457c088cc))
 GTS3_ROMEND
 CORE_GAMEDEFNV(bighurt,"Big Hurt",1995,"Gottlieb",mGTS3DMDS, 0)
-
-/*-------------------------------------------------------------------
-/ Strikes n' Spares (#N111)
-/-------------------------------------------------------------------*/
-INITGAME2(snspares, DMD, FLIP2122, 4, SNDBRD_GTS3, 4)
-GTS3ROMSTART(snspares,	"gprom.bin", CRC(9e018496) SHA1(a4995f153ba2179198cfc56b7011707328e4ec89))
-GTS3_DMD256_ROMSTART(	"dsprom.bin",CRC(5c901899) SHA1(d106561b2e382afdb16e938072c9c8f1d1ccdae6))
-GTS3SOUND32512A(		"yrom1.bin",NO_DUMP,
-						"drom1.bin",NO_DUMP,
-						"arom1.bin",CRC(e248574a) SHA1(d2bdc2b9a330bb81556d25d464f617e0934995eb))
-GTS3_ROMEND
-CORE_GAMEDEFNV(snspares,"Strikes n' Spares",1995,"Gottlieb",mGTS3DMDSA, 0)
 
 /*-------------------------------------------------------------------
 / Waterworld
