@@ -219,13 +219,13 @@ CORE_GAMEDEFNV(cheetah,"Cheetah",1980,"Stern",by35_mST200,GAME_NO_SOUND)
 / Quicksilver
 /-------------------------------*/
 INITGAME(quicksil,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,0,0)
-ST200_ROMSTART8888(quicksil,"cpu_u1.716",0x0,
-                            "cpu_u5.716",0xe2634491,
+ST200_ROMSTART8888(quicksil,"cpu_u1.716",0xfc1bd20a,
+                            "cpu_u5.716",0x0bcaceb4,
                             "cpu_u2.716",0x8cb01165,
                             "cpu_u6.716",0x8c0e336a)
 BY35_ROMEND
 #define input_ports_quicksil input_ports_st
-CORE_GAMEDEFNV(quicksil,"Quicksilver",1980,"Stern",by35_mST200,0)
+CORE_GAMEDEFNV(quicksil,"Quicksilver",1980,"Stern",by35_mST200,GAME_NO_SOUND)
 
 /*--------------------------------
 / Nine Ball
