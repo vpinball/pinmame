@@ -15,24 +15,6 @@
 static const char *u318_sample_names[] =
 {
 	"*s3250u3",
-  "knocker.wav",
-  "lsling.wav",
-  "rsling.wav",
-  "solenoid.wav",
-  "popper.wav",
-  "ballrel.wav",
-  "diverter.wav",
-  "flapopen.wav",
-  "flapclos.wav",
-  "lflipper.wav",
-  "rflipper.wav",
-  "jet1.wav",
-  "jet2.wav",
-  "jet3.wav",
-  "motor1.wav",
-  "motor2.wav",
-  "solon.wav",
-  "soloff.wav",
 	"w1801.wav",
 	"w1802.wav",
 	"w1803.wav",
@@ -102,9 +84,10 @@ static const char *u318_sample_names[] =
 
 struct Samplesinterface u318_samples_interface =
 {
-	9,	/* 6 internal for wpcsam, 3 progam  */
+	3,
 	50,	/* volume */
-	u318_sample_names
+	u318_sample_names,
+	"Bally sounds"
 };
 
 
@@ -128,6 +111,7 @@ static struct CustomSound_interface by32_custInt = {by32_sh_start, by32_sh_stop}
 
 MACHINE_DRIVER_START(by32)
   MDRV_SOUND_ADD(CUSTOM, by32_custInt)
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
   MDRV_SOUND_ADD_TAG("BY_32_50", SAMPLES, u318_samples_interface)
 MACHINE_DRIVER_END
 
@@ -139,17 +123,13 @@ static struct {
 
 
 static int by32_sh_start(const struct MachineSound *msound)  {
-
-
+  int mixing_levels[1] = {0};
+  mixer_allocate_channels(1, mixing_levels);
   return 0;
 }
 
 
 static void by32_sh_stop(void) {
-	   sample_stop(6);
-	   sample_stop(7);
-	   sample_stop(8);
- //	sample_stop(1);
 }
 
 
@@ -165,7 +145,7 @@ static void by32_sh_stop(void) {
 // e) 1   x                             1                               ignore
 // X -> dont care
 
-static int lastchan = 6;
+static int lastchan = 0;
 static void playsam(int cmd) {
    int i;
   if ((cmd != by32locals.lastCmd) && ((cmd & 0x0f) != 0x0f)) {
@@ -181,17 +161,17 @@ static void playsam(int cmd) {
 // 	}
 // 	else
 // 	{
+  		sample_start(6+lastchan,samplex,0);
 		lastchan++;
-		if (lastchan > 8) lastchan = 6;
-  		sample_start(lastchan,samplex,0);
+		if (lastchan > 2) lastchan = 0;
 //  		by32locals.startit = 0;
 //	}
 //       sample_start(0,samplex,0);
   } else   if ((cmd & 0x0f) == 0x0f)     {
-	   for (i = 6;i < 9;i++) {
-           if (i != lastchan) sample_stop(i);
-        }	
-         }  
+	   for (i = 0;i < 3;i++) {
+           if (i != lastchan) sample_stop(6+i);
+        }
+         }
   by32locals.lastCmd = cmd;
 }
 
@@ -219,9 +199,9 @@ int i;
            {
 //	   by32locals.lastCmd = (by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00); // case a
  	   by32locals.lastCmd = (by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x00 : 0x10); // case a
-	   for (i = 6;i < 9;i++) {
-           if (i != lastchan) sample_stop(i);
-        }	
+	   for (i = 0;i < 3;i++) {
+           if (i != lastchan) sample_stop(6+i);
+        }
 
            }
 
