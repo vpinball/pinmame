@@ -26,6 +26,8 @@
 #define GENWPC_HASFLIPTRON (GEN_ALLWPC & ~(GEN_WPCALPHA_1|GEN_WPCALPHA_2|GEN_WPCDMD))
 #define GENWPC_HASWPC95    (GEN_WPC95 | GEN_WPC95DCS)
 #define GENWPC_HASPIC      (GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS)
+/*-- protected memory unlock value --*/
+#define WPC_PROTMEMCODE 0xb4
 /*---------------------
 /  local WPC functions
 /----------------------*/
@@ -40,6 +42,8 @@ static void wpc_serialCnv(const char no[21], UINT8 schip[16], UINT8 code[3]);
 /*-- DMD --*/
 static VIDEO_START(wpc_dmd);
 PINMAME_VIDEO_UPDATE(wpcdmd_update);
+/*-- protected memory --*/
+static WRITE_HANDLER(wpc_ram_w);
 
 /*-- misc. --*/
 static MACHINE_INIT(wpc);
@@ -70,6 +74,7 @@ const struct core_dispLayout wpc_dispDMD[] = {
 /  Local variables
 /------------------*/
 static struct {
+  UINT16  memProtMask;
   UINT32  solData;        /* current value of solenoids 1-28 */
   UINT8   solFlip, solFlipPulse;  /* current value of flipper solenoids */
   UINT8   nonFlipBits;    /* flipper solenoids not used for flipper (smoothed) */
@@ -81,7 +86,7 @@ static struct {
     UINT8 lastW;             /* last written command */
     UINT8 sNoS;              /* serial number scrambler */
     UINT8 count;
-    int           codeW;
+    int   codeW;
   } pic;
   int pageMask;            /* page handling */
   int firqSrc;             /* source of last firq */
@@ -95,7 +100,7 @@ static struct {
 
 /*-- pointers --*/
 static mame_file *wpc_printfile = NULL;
-
+static UINT8 *wpc_ram = NULL;
 /*---------------------------
 /  Memory map for CPU board
 /----------------------------*/
@@ -110,7 +115,7 @@ static MEMORY_READ_START(wpc_readmem)
 MEMORY_END
 
 static MEMORY_WRITE_START(wpc_writemem)
-  { 0x0000, 0x37ff, MWA_RAM },
+  { 0x0000, 0x37ff, wpc_ram_w, &wpc_ram },
   { 0x3800, 0x39ff, MWA_BANK2 },
   { 0x3A00, 0x3bff, MWA_BANK3 },
   { 0x3c00, 0x3faf, MWA_RAM },
@@ -245,8 +250,8 @@ static INTERRUPT_GEN(wpc_vblank) {
   / vblank we get a steady light.
   /
   / Williams changed the software for the lamphandling at some stage
-  / earlier code (TZ 9.2)	newer code (TZ 9.4)
-  / ------------		            -----------
+  / earlier code (TZ 9.2)   newer code (TZ 9.4)
+  / ------------                    -----------
   / Activate Column             Activate rows
   / Activate rows               Activate column
   / wait                        wait
@@ -273,7 +278,7 @@ static INTERRUPT_GEN(wpc_vblank) {
   /  Update switches every vblank
   /-------------------------------*/
   if ((wpclocals.vblankCount % WPC_VBLANKDIV) == 0) /*-- update switches --*/
-	core_updateSw((core_gameData->gen & GENWPC_HASFLIPTRON) ? TRUE : (wpc_data[WPC_GILAMPS] & 0x80));
+    core_updateSw((core_gameData->gen & GENWPC_HASFLIPTRON) ? TRUE : (wpc_data[WPC_GILAMPS] & 0x80));
 }
 
 /* The FIRQ line is wired between the WPC chip and all external I/Os (sound) */
@@ -322,7 +327,7 @@ READ_HANDLER(wpc_r) {
     case WPC_RTCHOUR: {
       // Don't know how the clock works.
       // This hack by JD puts right values into the memory locations
-      UINT8 *timeMem = memory_region(WPC_CPUREGION) + 0x1800;
+      UINT8 *timeMem = wpc_ram + 0x1800;
       UINT16 checksum = 0;
       time_t now;
       struct tm *systime;
@@ -453,7 +458,7 @@ WRITE_HANDLER(wpc_w) {
       //DBGLOG(("sdataX:%2x\n",data));
       if (core_gameData->gen & GEN_WPCALPHA_1) {
         sndbrd_0_data_w(0,data); sndbrd_0_ctrl_w(0,0); sndbrd_0_ctrl_w(0,1);
-	snd_cmd_log(data);
+    snd_cmd_log(data);
       }
       break;
     case WPC_SOUNDIF:
@@ -486,8 +491,14 @@ WRITE_HANDLER(wpc_w) {
       break;
     case WPC_RTCHOUR:
     case WPC_RTCMIN:
-    case WPC_RTCLOAD:
       break;
+    case WPC_PROTMEMCTRL:
+      if (wpc_data[WPC_PROTMEM] == WPC_PROTMEMCODE)
+        // not sure if this formula is correct
+        wpclocals.memProtMask = ((UINT16)(core_revnyb(data & 0xf) + (data & 0xf0) + 0x10))<<8;
+      break;
+    case WPC_PROTMEM:
+      break; // just save value
     case WPC_LED:
       wpclocals.diagnostic |= (data>>7);
       break;
@@ -510,6 +521,15 @@ WRITE_HANDLER(wpc_w) {
       break;
   }
   wpc_data[offset] = data;
+}
+/*--------------------------
+/ Protected memory
+/---------------------------*/
+static WRITE_HANDLER(wpc_ram_w) {
+  if ((wpc_data[WPC_PROTMEM] == WPC_PROTMEMCODE) || 
+      ((offset & wpclocals.memProtMask) != wpclocals.memProtMask))
+    wpc_ram[offset] = data;
+  else DBGLOG(("mem prot violation. PC=%04x a=%04x d=%02x\n",activecpu_get_pc(), offset, data));
 }
 
 /*--------------------------
@@ -608,7 +628,7 @@ static MACHINE_INIT(wpc) {
   }
 
   wpclocals.pageMask = romLengthMask[((romLength>>17)-1)&0x07];
-
+  wpclocals.memProtMask = 0x1000;
   /* the non-paged ROM is at the end of the image. move it into the CPU region */
   memcpy(memory_region(WPC_CPUREGION) + 0x8000,
          memory_region(WPC_ROMREGION) + romLength - 0x8000, 0x8000);
@@ -651,8 +671,8 @@ static MACHINE_STOP(wpc) {
 / DCS generation
 /-------------------------------------------------*/
 static NVRAM_HANDLER(wpc) {
-  core_nvram(file, read_or_write, memory_region(WPC_CPUREGION),
-	         (core_gameData->gen & (GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS)) ? 0x3800 : 0x2000,0xff);
+  core_nvram(file, read_or_write, wpc_ram,
+             (core_gameData->gen & (GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS)) ? 0x3800 : 0x2000,0xff);
 }
 
 static void wpc_serialCnv(const char no[21], UINT8 pic[16], UINT8 code[3]) {

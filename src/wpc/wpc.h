@@ -1,3 +1,4 @@
+
 #ifndef INC_WPC
 #define INC_WPC
 
@@ -79,9 +80,9 @@
 #define WPC_CPUNO   0
 
 /*-- Memory regions --*/
-#define WPC_CPUREGION		REGION_CPU1
-#define	WPC_DMDREGION		REGION_USER1
-#define WPC_ROMREGION		REGION_USER2
+#define WPC_CPUREGION       REGION_CPU1
+#define WPC_DMDREGION       REGION_USER1
+#define WPC_ROMREGION       REGION_USER2
 
 /*-- standard display layout --*/
 extern const core_tLCDLayout wpc_dispAlpha[];
@@ -141,7 +142,7 @@ extern const core_tLCDLayout wpc_dispDMD[];
 #define WPC_FLIPPERS      (0x3fd4 - WPC_BASE) /*   xxx  R: switches W: Solenoids */
 /* Sound board */
 #define WPC_SOUNDIF       (0x3fdc - WPC_BASE) /* xxx    RW: Sound board interface */
-#define WPC_SOUNDBACK	  (0x3fdd - WPC_BASE) /* xxx    RW: R: Sound data availble, W: Reset soundboard ? */
+#define WPC_SOUNDBACK     (0x3fdd - WPC_BASE) /* xxx    RW: R: Sound data availble, W: Reset soundboard ? */
 
 #define WPC_SOLENOID1     (0x3fe0 - WPC_BASE) /* xxxxxx W: Solenoid 25-28 */
 #define WPC_SOLENOID2     (0x3fe1 - WPC_BASE) /* xxxxxx W: Solenoid  1- 8 */
@@ -152,33 +153,34 @@ extern const core_tLCDLayout wpc_dispDMD[];
 #define WPC_GILAMPS       (0x3fe6 - WPC_BASE) /*        W: GI lights ?? */
 #define WPC_DIPSWITCH     (0x3fe7 - WPC_BASE) /* xxxxxx R: CPU board dip-switches */
 #define WPC_SWCOINDOOR    (0x3fe8 - WPC_BASE) /* xxxxxx W: Coin door switches */
-#define	WPC_SWROWREAD	  (0x3fe9 - WPC_BASE) /* xxxx   R: Switch row read */
-#define WPC_PICREAD	  (0x3fe9 - WPC_BASE) /*     xx R: PIC data */
-#define	WPC_SWCOLSELECT	  (0x3fea - WPC_BASE) /* xxxx   W: Switch column enable */
-#define WPC_PICWRITE	  (0x3fea - WPC_BASE) /*     xx R: PIC data */
+#define WPC_SWROWREAD     (0x3fe9 - WPC_BASE) /* xxxx   R: Switch row read */
+#define WPC_PICREAD       (0x3fe9 - WPC_BASE) /*     xx R: PIC data */
+#define WPC_SWCOLSELECT   (0x3fea - WPC_BASE) /* xxxx   W: Switch column enable */
+#define WPC_PICWRITE      (0x3fea - WPC_BASE) /*     xx R: PIC data */
 #define WPC_EXTBOARD1     (0x3feb - WPC_BASE) /*   x    W: Extension Driver Board 1 */
 #define WPC_ALPHAPOS      (0x3feb - WPC_BASE) /* x      W: Select alphanumeric position */
-#define WPC_EXTBOARD2	  (0x3fec - WPC_BASE) /*   x    W: Extension Driver Board 2 */
+#define WPC_EXTBOARD2     (0x3fec - WPC_BASE) /*   x    W: Extension Driver Board 2 */
 #define WPC_ALPHA1HI      (0x3fec - WPC_BASE) /* x      W: Display 1st row hi bits */
 #define WPC_EXTBOARD3     (0x3fed - WPC_BASE) /*   x    W: Extension Driver Board 3 */
 #define WPC_ALPHA1LO      (0x3fed - WPC_BASE) /* x      W: Display 1st row lo bits */
 #define WPC_EXTBOARD4     (0x3fee - WPC_BASE) /*   x    W: Extension Driver Board 4 */
 #define WPC_FLIPPERCOIL95 (0x3fee - WPC_BASE) /*      x W: Flipper Solenoids */
 #define WPC_ALPHA2HI      (0x3fee - WPC_BASE) /* x      W: Display 2nd row hi bits */
-#define WPC_EXTBOARD5	  (0x3fef - WPC_BASE) /*   x    W: Extension Driver Board 5 */
+#define WPC_EXTBOARD5     (0x3fef - WPC_BASE) /*   x    W: Extension Driver Board 5 */
 #define WPC_FLIPPERSW95   (0x3fef - WPC_BASE) /*      x R: Flipper switches */
 #define WPC_ALPHA2LO      (0x3fee - WPC_BASE) /* x      W: Display 2nd row lo bits */
-#define WPC_LED		  (0x3ff2 - WPC_BASE) /* xxxxxx W: CPU LED (bit 7) */
+#define WPC_LED           (0x3ff2 - WPC_BASE) /* xxxxxx W: CPU LED (bit 7) */
 #define WPC_IRQACK        (0x3ff3 - WPC_BASE) /*        W: IRQ Ack ??? */
 #define WPC_SHIFTADRH     (0x3ff4 - WPC_BASE) /* xxxxxx RW: See above */
-#define WPC_SHIFTADRL	  (0x3ff5 - WPC_BASE) /* xxxxxx RW: See above */
-#define WPC_SHIFTBIT	  (0x3ff6 - WPC_BASE) /* xxxxxx RW: See above */
+#define WPC_SHIFTADRL     (0x3ff5 - WPC_BASE) /* xxxxxx RW: See above */
+#define WPC_SHIFTBIT      (0x3ff6 - WPC_BASE) /* xxxxxx RW: See above */
 #define WPC_SHIFTBIT2     (0x3ff7 - WPC_BASE) /* xxxxxx RW: See above */
 #define WPC_FIRQSRC       (0x3ff8 - WPC_BASE) /*   xxxx R: bit 7 0=DMD, 1=SOUND? W: Clear FIRQ line */
-#define WPC_RTCHOUR	  (0x3ffa - WPC_BASE) /* xxxxxx RW: Real time clock: hour */
-#define WPC_RTCMIN	  (0x3ffb - WPC_BASE) /* xxxxxx RW: Real time clock: minute */
-#define WPC_RTCLOAD	  (0x3ffe - WPC_BASE) /* xxxxxx W: Load new values to RTC */
-#define WPC_ROMBANK	  (0x3ffc - WPC_BASE) /* xxxxxx W: Rombank switch */
+#define WPC_RTCHOUR       (0x3ffa - WPC_BASE) /* xxxxxx RW: Real time clock: hour */
+#define WPC_RTCMIN        (0x3ffb - WPC_BASE) /* xxxxxx RW: Real time clock: minute */
+#define WPC_PROTMEM       (0x3ffd - WPC_BASE) /* xxxxxx W: enabled/disable protected memory */
+#define WPC_PROTMEMCTRL   (0x3ffe - WPC_BASE) /* xxxxxx W: Set protected memory area */
+#define WPC_ROMBANK       (0x3ffc - WPC_BASE) /* xxxxxx W: Rombank switch */
 #define WPC_WATCHDOG      (0x3fff - WPC_BASE) /* xxxxxx W: Watchdog */
 
 #define WPC_VBLANKFREQ    60 /* VBLANK frequency */
