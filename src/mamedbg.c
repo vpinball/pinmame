@@ -889,9 +889,10 @@ static s_command commands[] = {
 	"Enables Sound when debugger window is active",
 	cmd_sound_enable },
 {	(1<<EDIT_CMDS),
-	"SHIFT+ENTER",     0,          CODE_NONE,
+	0,     0,          KEYCODE_ENTER,
 	"",
-	"Skip/Jump to next line (similar to F10 but also skips loops, function calls, etc..)",
+	"\nRegular:\n  Execute current instruction.\n" \
+	"With SHIFT pressed:\n  Similar to F10, but also skips loops, function calls, etc.",
 	cmd_jumpover },
 #endif
 {	(1<<EDIT_CMDS),
@@ -3541,7 +3542,7 @@ static void cmd_help( void )
 {
 	UINT32 win = WIN_HELP;
 	const char *title = "";
-	char *help = malloc(4096+1), *dst;
+	char *help = malloc(8192), *dst;
 	const char *src;
 	unsigned w, h;
 	int cmd = INVALID;
