@@ -901,8 +901,8 @@ CORE_GAMEDEFNV(bonebstr, "Bone Busters",1989,"Gottlieb",gl_mGTS80BS3,0)
 INITGAME(nmoves, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
 GTS80B_4K_ROMSTART(nmoves, "nmovsp2.732", CRC(a2bc00e4) SHA1(5c3e9033f5c72b87058b2f70a0ff0811cc6770fa),
                              "nmovsp1.764", CRC(36837146) SHA1(88312ae1d1fe76defc4aa2d0a0570c5bb56253e9))
-//GTS80BSSOUND3232(            "drom1.snd", NO_DUMP),
-//                             "yrom1.snd", NO_DUMP))
+GTS80BSSOUND3232(            "nmovdrom.256", CRC(90929841) SHA1(e203ccd3552c9843c91fc49a437f60ae2dd49142),
+                             "nmovyrom.356", CRC(cb74a687) SHA1(af8275807491eb35643cdeb6c898025fde47ceac))
 GTS80_ROMEND
 #define input_ports_nmoves input_ports_gts80
 CORE_GAMEDEFNV(nmoves, "Night Moves",1989,"International Concepts",gl_mGTS80BS3,GAME_NO_SOUND)
