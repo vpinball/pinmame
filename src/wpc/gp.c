@@ -36,13 +36,7 @@
 #define GP_IRQFREQ      150 /* IRQ (via PIA) frequency*/
 #define GP_ZCFREQ       120 /* Zero cross frequency (guessed) */
 
-/* Adjustment Table for Strange Solenoid Ordering used 
-   --Sols 16,17,18 are not working yet - so order here is wrong */
-static const int sol_adjust1[] = 
-//00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17
-{  3, 4, 1, 8,12, 5, 2, 0,14,13, 6,11, 7,10, 9,20,20,20};
-
-static WRITE_HANDLER(GP_soundCmd)  { };
+static WRITE_HANDLER(GP_soundCmd)  { }
 
 static struct {
   int p0_a;
@@ -104,11 +98,9 @@ static void GP_lampStrobe2(int lampadr, int lampdata) {
 
 
 static void GP_UpdateSolenoids (int bank, int soldata) {
-  UINT16 mask = ~(0xffff);
+  UINT16 mask = 0x0000;
   UINT16 sols = 0;
   logerror("soldata = %x\n",soldata);
-  soldata = sol_adjust1[soldata];
-  logerror("soldata2 = %x\n",soldata);
   //Solenoids 1-16
   sols = (1<<(soldata & 0xffff)) & 0xffff;
   coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & mask) | sols;
