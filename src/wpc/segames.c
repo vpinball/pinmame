@@ -61,9 +61,9 @@ CORE_GAMEDEFNV(gldneye,"Goldeneye",1994,"Sega",de_mSES3,GAME_NOCRC)
 INITGAME(twister,GEN_WS,3/*?*/)
 SE128_ROMSTART(twister,	"twstcpu.405",0x8c3ea1a8)
 SE_DMD524_ROMSTART(     "twstdspa.400",0xa6a3d41d)
-SES_SOUNDROM088 ( "twst0430.u7" ,0x5ccf0798,
-                  "twst0429.u17",0x0e35d640,
-                  "twst0429.u21",0xc3eae590)
+SES_SOUNDROM088 ( "twstsnd.u7" ,0x5ccf0798,
+                  "twstsnd.u17",0x0e35d640,
+                  "twstsnd.u21",0xc3eae590)
 SE_ROMEND
 CORE_GAMEDEFNV(twister,"Twister",1994,"Sega",de_mSES1,GAME_NOCRC)
 
@@ -155,7 +155,6 @@ SES_SOUNDROM08888("vpru7.dat" ,0xf21617d7,
 SE_ROMEND
 CORE_GAMEDEFNV(viprsega,"Viper Night Drivin'",1994,"Sega",de_mSES1,GAME_NOCRC)
 
-//Length Problems on U17,U21,U36,U37 but sounds ok.
 /*-------------------------------------------------------------------
 / Lost in Space
 /-------------------------------------------------------------------*/
@@ -163,14 +162,13 @@ INITGAME(lostspc,GEN_WS, 3/*?*/)
 SE128_ROMSTART(lostspc,	"liscpu.101",0x81b2ced8)
 SE_DMD524_ROMSTART(	"lisdspa.102",0xe8bf4a58)
 SES_SOUNDROM08888("lisu7.100" ,0x96e6b3c4,
-                  "lisu17.100",0x4f819b0b,
-                  "lisu21.100",0xeef0b9fa,
-                  "lisu36.100",0xca115f5c,
-                  "lisu37.100",0xb8807887)
+                  "lisu17.100",0x69076939,
+                  "lisu21.100",0x56eede09,
+                  "lisu36.100",0x56f2c53b,
+                  "lisu37.100",0xf9430c59)
 SE_ROMEND
 CORE_GAMEDEFNV(lostspc,"Lost in Space",1994,"Sega",de_mSES1,GAME_NOCRC)
 
-//Length Problems on U17,U21,U36,U37 but sounds ok.
 /*-------------------------------------------------------------------
 / Godzilla
 /-------------------------------------------------------------------*/
@@ -178,10 +176,10 @@ INITGAME(godzilla,GEN_WS,3/*?*/)
 SE128_ROMSTART(godzilla,"gdzcpu.205",0x0156c21c)
 SE_DMD524_ROMSTART(	"gzdspa.200",0xa254a01d)
 SES_SOUNDROM08888("gdzu7.100" ,0xa0afe8b7,
-                  "gdzu17.100",0x67fde624,
-                  "gdzu21.100",0x11cf2c4c,
-                  "gdzu36.100",0x8db2503a,
-                  "gdzu37.100",0x79c2136a)
+                  "gdzu17.100",0x6bba69c8,
+                  "gdzu21.100",0xdb738958,
+                  "gdzu36.100",0xe3f24234,
+                  "gdzu37.100",0x2c1acb14)
 SE_ROMEND
 CORE_GAMEDEFNV(godzilla,"Godzilla",1994,"Sega",de_mSES1,GAME_NOCRC)
 
