@@ -137,12 +137,12 @@
 #define BY35_COMINPORT       CORE_COREINPORT
 
 /*-- BY35 switches are numbered from 1-64 (not column,row as WPC) --*/
-#define BY35_SWNO(x) ((((x)+7)/8)*10+(((x)-1)%8)+1)
+#define BY35_SWNO(x) (x)
 
 /*-- By35 switch numbers --*/
-#define BY35_SWSELFTEST    1
-#define BY35_SWCPUDIAG     2
-#define BY35_SWSOUNDDIAG   3
+#define BY35_SWSELFTEST   -7
+#define BY35_SWCPUDIAG    -6
+#define BY35_SWSOUNDDIAG  -5
 
 /*-------------------------
 / Machine driver constants

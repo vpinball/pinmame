@@ -11,7 +11,7 @@
 	4) 520-5042-00: 128X16 DMD - z80 CPU + integrated controller.
 	   (Checkpoint to Hook)
 
-   Sound Board Revisions: 
+   Sound Board Revisions:
 	2) 520-5050-01 Series:	M6809 cpu, BSMT2000 16 bit stereo synth+dac, 2 custom PALS
 		a) -01 generation,	used 27020 voice eproms (Batman - Lethal Weapon 3)
 
@@ -20,7 +20,7 @@
 /* Coin Door Buttons Operation
    ---------------------------
    Buttons are: Green(Up/Down) & Black(Momentary Switch)
-   
+
    a) If Green = Up and Black is pressed, enter Audits Menu.
 		1) If Green = Up and Black is pressed, Cycle to Next Audit Function
 		2) If Green = Down and Black is pressed, Cycle to Previous Audit Function
@@ -129,7 +129,7 @@ static void de_piaMainIrq(int state) {
 }
 
 static int de_irq(void) {
-  //Reset the input latch for the Advance button.. 
+  //Reset the input latch for the Advance button..
   //(This greatly increases the responsiveness of the button for some reason!)
   pia_set_input_ca1(2, 1);
 
@@ -156,7 +156,7 @@ static int de_vblank(void) {
 	/*If Mux. Solenoid 10 is firing, adjust solenoid # to 24!*/
     if((delocals.solenoids & CORE_SOLBIT(10)))
       coreGlobals.solenoids = (delocals.solenoids & 0x00ffff00) | (delocals.solenoids<<24);
-   
+
 	if (delocals.ssEn) {
       int ii;
       coreGlobals.solenoids |= CORE_SOLBIT(CORE_SSFLIPENSOL);
@@ -271,9 +271,9 @@ static WRITE_HANDLER(pia2cb2_w) { /*logerror("Comma 1+2 %d\n",data); */}
 static WRITE_HANDLER(pia5ca2_w) { /*logerror("pia5ca2_w %x\n",data); */}
 
 //Set state of up/down switch(inverted), and return state of advance switch(inverted)
-static READ_HANDLER (pia2ca1_r) { 
-	pia_set_input_cb1(2, !core_getSwSeq(DE_SWUPDN)); 
-	return !core_getSwSeq(DE_SWADVANCE);
+static READ_HANDLER (pia2ca1_r) {
+	pia_set_input_cb1(2, !core_getSw(DE_SWUPDN));
+	return !core_getSw(DE_SWADVANCE);
 }
 //Not sure why this must always return 0, but otherwise, coin doors act very strange!
 static READ_HANDLER (pia2cb1_r) {return 0;}
@@ -321,11 +321,11 @@ static void HC7474Logic(int clock, int clear, int preset)
 	}
 	if ( nTemp!=de_dmdlocals.hc74_nq ) {
 		if ( !de_dmdlocals.hc74_nq ) {
-			cpu_set_irq_line(DE_DCPU1, Z80_INT_REQ, ASSERT_LINE); 
+			cpu_set_irq_line(DE_DCPU1, Z80_INT_REQ, ASSERT_LINE);
 			//logerror("z80 int\n");
 		}
 		else {
-			cpu_set_irq_line(DE_DCPU1, Z80_INT_REQ, CLEAR_LINE); 
+			cpu_set_irq_line(DE_DCPU1, Z80_INT_REQ, CLEAR_LINE);
 		}
 	}
 	de_dmdlocals.busy = de_dmdlocals.hc74_q;
@@ -333,7 +333,7 @@ static void HC7474Logic(int clock, int clear, int preset)
 
 static void switchbank(void)
 {
-	int addr =   (de_dmdlocals.bs0 *0x04000) 
+	int addr =   (de_dmdlocals.bs0 *0x04000)
 			   + (de_dmdlocals.bs1 *0x08000)
  			   + (de_dmdlocals.bs2 *0x10000);
 
@@ -455,13 +455,13 @@ static void de_updSw(int *inports) {
     coreGlobals.swMatrix[1] = inports[DE_COMINPORT];
   }
   /* Show Status of Black Advance Switch */
-  if(core_getSwSeq(DE_SWADVANCE))
+  if(core_getSw(DE_SWADVANCE))
           core_textOutf(40, 20, BLACK, "%-7s","B-Down");
   else
           core_textOutf(40, 20, BLACK, "%-7s","B-Up");
 
   /* Show Status of Green Up/Down Switch */
-  if(core_getSwSeq(DE_SWUPDN))
+  if(core_getSw(DE_SWUPDN))
           core_textOutf(40, 30, BLACK, "%-7s","G-Down");
   else
           core_textOutf(40, 30, BLACK, "%-7s","G-Up");
@@ -477,8 +477,8 @@ static core_tData deData = {
   0, /* No DIPs */
   de_updSw,
   1,
-  de_sndCmd_w,
-  "de"
+  de_sndCmd_w, "de",
+  core_swSeq2m, core_swSeq2m,core_m2swSeq,core_m2swSeq
 };
 
 //Common Init between both Generations
@@ -517,7 +517,7 @@ static void init_common(void)
   if(memory_region(DE_MEMREG_DCPU1))
   {
   memcpy(memory_region(DE_MEMREG_DCPU1),
-         memory_region(DE_MEMREG_DROM1) + 
+         memory_region(DE_MEMREG_DROM1) +
 	     (memory_region_length(DE_MEMREG_DROM1) - 0x4000), 0x4000);
   }
   //Init the PIA
@@ -854,19 +854,19 @@ static int dmd_portlogic(offs_t offset,data8_t data)
 		if (!a6) {		
 			if(!a4 & !a3){		//000		//SET BANK SWITCH BIT 0 (0x84)
 				de_dmdlocals.bs0 = !d0;
-				//logerror("*bs0=%x : bs1=%x: bs2=%x, data=%x, d0=%x\n", 
+				//logerror("*bs0=%x : bs1=%x: bs2=%x, data=%x, d0=%x\n",
 				//		  de_dmdlocals.bs0,de_dmdlocals.bs1,de_dmdlocals.bs2,data,d0);
 				switchbank();
 			}
 			if(!a4 & a3){		//001		//SET BANK SWITCH BIT 1	(0x8c)
 				de_dmdlocals.bs1 = !d0;
-				//logerror("bs0=%x : *bs1=%x: bs2=%x, data=%x, d0=%x\n", 
+				//logerror("bs0=%x : *bs1=%x: bs2=%x, data=%x, d0=%x\n",
 				//		  de_dmdlocals.bs0,de_dmdlocals.bs1,de_dmdlocals.bs2,data,d0);
 				switchbank();
 			}
 			if(a4 & !a3){		//010		//SET BANK SWITCH BIT 2	(0x94)
 				de_dmdlocals.bs2 = !d0;
-				//logerror("bs0=%x : bs1=%x: *bs2=%x, data=%x, d0=%x\n", 
+				//logerror("bs0=%x : bs1=%x: *bs2=%x, data=%x, d0=%x\n",
 				//		  de_dmdlocals.bs0,de_dmdlocals.bs1,de_dmdlocals.bs2,data,d0);
 				switchbank();
 			}
@@ -947,13 +947,13 @@ static MEMORY_WRITE_START(de_writemem)
   { 0x2400, 0x2403, pia_1_w},
   { 0x2800, 0x2803, pia_2_w},
   { 0x2c00, 0x2c03, pia_3_w},
-  { 0x3000, 0x3003, pia_4_w}, 
+  { 0x3000, 0x3003, pia_4_w},
   { 0x3400, 0x3403, pia_5_w},
 MEMORY_END
 
 /*We'll handle RAM ourselves*/
 static READ_HANDLER(de_dmdmemread) {
-	return dmdRAM[offset]; 
+	return dmdRAM[offset];
 }
 static WRITE_HANDLER(de_dmdmemwrite) {
 	if ( offset<0x2000 )

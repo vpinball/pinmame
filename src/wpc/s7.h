@@ -42,7 +42,7 @@
 #define S7_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
 
 /*-- S7 switches are numbered from 1-64 (not column,row as WPC) --*/
-#define S7_SWNO(x) ((((x)+7)/8)*10+(((x)-1)%8)+1)
+#define S7_SWNO(x) (x)
 
 /*-- S7 switch numbers --*/
 #define S7_SWADVANCE     -7

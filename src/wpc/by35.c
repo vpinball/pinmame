@@ -148,7 +148,6 @@ static WRITE_HANDLER(pia1cb2_w) {
   by35_soundCmd(0, (locals.cb21<<5) | ((locals.a1 & 0x02)<<3) | (locals.b1 & 0x0f));
 }
 
-
 static int by35_vblank(void) {
   /*-------------------------------
   /  copy local data to interface
@@ -253,7 +252,8 @@ static int by35_irq(void) {
 
 static core_tData by35Data = {
   32, /* 32 Dips */
-  by35_updSw, 1, by35_soundCmd, "by35"
+  by35_updSw, 1, by35_soundCmd, "by35",
+  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
 };
 
 static void by35_zeroCross(int data) {

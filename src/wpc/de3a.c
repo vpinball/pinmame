@@ -109,7 +109,7 @@ static int de_vblank(void) {
 	/*If Mux. Solenoid 10 is firing, adjust solenoid # to 24!*/
     if((delocals.solenoids & CORE_SOLBIT(10)))
       coreGlobals.solenoids = (delocals.solenoids & 0x00ffff00) | (delocals.solenoids<<24);
-   
+
 	if (delocals.ssEn) {
       int ii;
       coreGlobals.solenoids |= CORE_SOLBIT(CORE_SSFLIPENSOL);
@@ -176,7 +176,7 @@ static READ_HANDLER (pia2a_r)   { logerror("pia2a_r\n"); return 1; }
 
 /* - Feeds Chip 4H - 74154 1-16 Active Low output multiplexer
      (Also, PA-4 feeds PIA LED - it's inverted)
-     data = 0x01, CN1-Pin 7 (Magnets) goes low 
+     data = 0x01, CN1-Pin 7 (Magnets) goes low
      data = 0x04, CN2-Pin 1 (Enable) goes low    */
 static WRITE_HANDLER(pia2a_w) {
 	delocals.diagnosticLed = ~(data>>4);	/*LED = PA_4*/
@@ -185,8 +185,8 @@ static WRITE_HANDLER(pia2a_w) {
 static READ_HANDLER(pia2b_r) { logerror("pia2b_r\n"); return 0; }
 
 /* - CN3 Printer Data Lines (& Magnets on GNR)
-	 data = 0x01, CN3-Pin 9 (Magnet 3?)       
-	 data = 0x02, CN3-Pin 8 (Magnet 2?)       
+	 data = 0x01, CN3-Pin 9 (Magnet 3?)
+	 data = 0x02, CN3-Pin 8 (Magnet 2?)
 	 data = 0x04, CN3-Pin 7 (Magnet 1?)       */
 static WRITE_HANDLER(pia2b_w) { logerror("pia2b_w: %x\n",data); }
 static WRITE_HANDLER(pia5a_w) { logerror("pia5a_w\n"); }
@@ -219,8 +219,8 @@ static WRITE_HANDLER(pia2ca2_w) { logerror("Comma 3+4 %d\n",data); }
 static WRITE_HANDLER(pia2cb2_w) { logerror("Comma 1+2 %d\n",data); }
 static WRITE_HANDLER(pia5ca2_w) { logerror("pia5ca2_w %x\n",data); }
 
-static READ_HANDLER (pia2ca1_r) { return cpu_get_reg(M6808_IRQ_STATE) ? core_getSwSeq(DE_SWADVANCE) : 0; }
-static READ_HANDLER (pia2cb1_r) { return cpu_get_reg(M6808_IRQ_STATE) ? core_getSwSeq(DE_SWUPDN)    : 0; }
+static READ_HANDLER (pia2ca1_r) { return cpu_get_reg(M6808_IRQ_STATE) ? core_getSw(DE_SWADVANCE) : 0; }
+static READ_HANDLER (pia2cb1_r) { return cpu_get_reg(M6808_IRQ_STATE) ? core_getSw(DE_SWUPDN)    : 0; }
 
 /************************************************/
 /*********** DMD HANDLING BELOW *****************/
@@ -236,7 +236,7 @@ static READ_HANDLER(pia5a_r)
 static void switchbank(void)
 {
 	int	addr =	(de_dmdlocals.za0 *0x04000)+
-				(de_dmdlocals.xa1 *0x08000)+ 
+				(de_dmdlocals.xa1 *0x08000)+
 				(de_dmdlocals.xa2 *0x10000)+
  				(de_dmdlocals.xa3 *0x20000)+
 				(de_dmdlocals.xa4 *0x40000);
@@ -376,21 +376,21 @@ static void de_updSw(int *inports) {
     coreGlobals.swMatrix[1] = inports[DE_COMINPORT];
   }
   /*-- Diagnostic buttons on CPU board --*/
-  if (core_getSwSeq(DE_SWCPUDIAG))   cpu_set_nmi_line(DE_CPUNO, PULSE_LINE);
+  if (core_getSw(DE_SWCPUDIAG))   cpu_set_nmi_line(DE_CPUNO, PULSE_LINE);
   if(UsingSound)
-	if (core_getSwSeq(DE_SWSOUNDDIAG)) cpu_set_nmi_line(DE_SDCPU1, PULSE_LINE);
+	if (core_getSw(DE_SWSOUNDDIAG)) cpu_set_nmi_line(DE_SDCPU1, PULSE_LINE);
 
   /*-- coin door switches --*/
-  pia_set_input_ca1(2, core_getSwSeq(DE_SWADVANCE));
-  pia_set_input_cb1(2, core_getSwSeq(DE_SWUPDN));
+  pia_set_input_ca1(2, core_getSw(DE_SWADVANCE));
+  pia_set_input_cb1(2, core_getSw(DE_SWUPDN));
 
-  if(core_getSwSeq(DE_SWADVANCE))
+  if(core_getSw(DE_SWADVANCE))
           core_textOutf(40, 20, BLACK, "%-7s","A-Up");
   else
           core_textOutf(40, 20, BLACK, "%-7s","A-Down");
 
   /* Show Status of Auto/Manual Switch */
-  if(core_getSwSeq(DE_SWUPDN))
+  if(core_getSw(DE_SWUPDN))
           core_textOutf(40, 30, BLACK, "%-7s","Up");
   else
           core_textOutf(40, 30, BLACK, "%-7s","Down");
@@ -406,8 +406,8 @@ static core_tData deData = {
   0, /* No DIPs */
   de_updSw,
   1,
-  de_sndCmd_w,
-  "de"
+  de_sndCmd_w, "de",
+  core_swSeq2m, core_swSeq2m,core_m2swSeq,core_m2swSeq
 };
 
 static void de_init(void) {
@@ -434,7 +434,7 @@ static void de_init(void) {
   if(memory_region(DE_MEMREG_DCPU1))
   {
   memcpy(memory_region(DE_MEMREG_DCPU1)+0x8000,
-         memory_region(DE_MEMREG_DROM1) + 
+         memory_region(DE_MEMREG_DROM1) +
 	     (memory_region_length(DE_MEMREG_DROM1) - 0x8000), 0x8000);
   }
 
@@ -558,7 +558,7 @@ static MEMORY_WRITE_START(de_writemem)
   { 0x2400, 0x2403, pia_1_w},
   { 0x2800, 0x2803, pia_2_w},
   { 0x2c00, 0x2c03, pia_3_w},
-  { 0x3000, 0x3003, pia_4_w}, 
+  { 0x3000, 0x3003, pia_4_w},
   { 0x3400, 0x3403, pia_5_w},
 MEMORY_END
 

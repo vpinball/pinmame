@@ -41,16 +41,16 @@
 #define S9_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKS */
 
 /*-- S9 switches are numbered from 1-64 (not column,row as WPC) --*/
-#define S9_SWNO(x) ((((x)+7)/8)*10+(((x)-1)%8)+1)
+#define S9_SWNO(x) (x)
 
 /*-- To access C-side multiplexed solenoid/flasher --*/
 #define S9_CSOL(x) ((x)+24)
 
 /*-- S9 switch numbers --*/
-#define S9_SWADVANCE     1
-#define S9_SWUPDN        2
-#define S9_SWCPUDIAG     3
-#define S9_SWSOUNDDIAG   4
+#define S9_SWADVANCE    -7
+#define S9_SWUPDN       -6
+#define S9_SWCPUDIAG    -5
+#define S9_SWSOUNDDIAG  -4
 
 /*-------------------------
 / Machine driver constants

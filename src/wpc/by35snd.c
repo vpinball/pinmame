@@ -105,8 +105,7 @@ static void s32_cmd(int data) {
     if ((data & 0x0f) != 0x0f) {
       UINT8 sData; int f;
       sData = *((UINT8 *)(memory_region(BY35_MEMREG_SROM) + (data & 0x1f)));
-      sData = ((sData & 0x01)<<7) | ((sData & 0x02)<<5) | ((sData & 0x04)<<3) | ((sData & 0x08)<<1) |
-              ((sData & 0x10)>>1) | ((sData & 0x20)>>3) | ((sData & 0x40)>>5) | ((sData & 0x80)>>7);
+      sData = CORE_SWAPBYTE(sData);
       f= sizeof(sineWave)/((1.1E-6+S32_PITCH*1E-8)*sData)/8;
 
       mixer_set_sample_frequency(s32locals.channel, f);

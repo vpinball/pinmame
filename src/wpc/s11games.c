@@ -450,7 +450,7 @@ static void bcats_handleMech(int mech) {
     case 3: wheelPos += 1; if (wheelPos >= BCATS_WHEEL) wheelPos = 0; break;
     case 4: wheelPos -= 1; if (wheelPos <= 0) wheelPos = BCATS_WHEEL; break;
   }
-  core_setSwSeq(44,wheelPos < 3);
+  core_setSw(44,wheelPos < 3);
 }
 static void bcats_drawMech(BMTYPE **line) {
   core_textOutf(50, 0,BLACK,"wheel:%3d", wheelPos);

@@ -144,8 +144,12 @@ static int S80_vblank(void) {
 
 static void S80_updSw(int *inports) {
 	if (inports) {
-		coreGlobals.swMatrix[0] = ((inports[S80_COMINPORT] & 0xff00)>>8);
-        coreGlobals.swMatrix[8] = (coreGlobals.swMatrix[8]&0xc0) | (inports[S80_COMINPORT] & 0x003f);
+//		if ( core_gameData->gen & GEN_S80B4K )
+			coreGlobals.swMatrix[0] = ((inports[S80_COMINPORT] & 0xff00)>>8);
+//		else
+//			coreGlobals.swMatrix[0] = ((inports[S80_COMINPORT] & 0xff00)>>8)^0x01;
+
+                coreGlobals.swMatrix[8] = (coreGlobals.swMatrix[8]&0xc0) | (inports[S80_COMINPORT] & 0x003f);
 	}
 
   /*-- slam tilt --*/
@@ -171,12 +175,17 @@ static WRITE_HANDLER(S80_sndCmd_w) {
 	// logerror("sound cmd: 0x%02x\n", data);
 }
 
+/* S80 switch numbering, row and column is swapped */
+static int S80_m2sw(int no) { no += 1; return (no%10)*8 + no/10; }
+static int S80_sw2m(int col, int row) { return row*10+col-1; }
+static int S80_m2lamp(int no) { return no+8; }
+static int S80_lamp2m(int col, int row) { return col*8+row; }
 static core_tData S80Data = {
   4, /* 4 DIPs */
   S80_updSw,
   1,
-  S80_sndCmd_w,
-  "S80"
+  S80_sndCmd_w, "S80",
+  S80_m2sw, S80_m2lamp, S80_sw2m, S80_lamp2m
 };
 
 static int S80_getSwRow(int row) {
@@ -204,6 +213,7 @@ static int revertByte(int value) {
 /*---------------
 / Switch reading
 /----------------*/
+// static READ_HANDLER(riot0a_r)  { return S80locals.OpSwitchEnable?opSwitches[S80locals.swColOp]:(S80_getSwRow(S80locals.swRow)&0xff);}
 static READ_HANDLER(riot0a_r)  { return S80locals.OpSwitchEnable?revertByte(core_getDip(S80locals.swColOp)):(S80_getSwRow(S80locals.swRow)&0xff);}
 static WRITE_HANDLER(riot0a_w) { logerror("riot0a_w: 0x%02x\n", data); }
 
@@ -778,7 +788,7 @@ static void S80_init(void) {
 	  else if ( core_gameData->gen & GEN_S80SS )
 		S80SS_sinit(S80SS_SCPU);
 	  else if ( core_gameData->gen & GEN_S80B2K || core_gameData->gen & GEN_S80B4K )
-	    S80Bs_sound_init(); 
+	    S80Bs_sound_init();
   }
 
   riot_reset();

@@ -58,6 +58,24 @@
 
 #define WPC_INPUT_PORTS_END INPUT_PORTS_END
 
+#define WPC_swF1   (CORE_FLIPPERSWCOL*10+1)
+#define WPC_swF2   (CORE_FLIPPERSWCOL*10+2)
+#define WPC_swF3   (CORE_FLIPPERSWCOL*10+3)
+#define WPC_swF4   (CORE_FLIPPERSWCOL*10+4)
+#define WPC_swF5   (CORE_FLIPPERSWCOL*10+5)
+#define WPC_swF6   (CORE_FLIPPERSWCOL*10+6)
+#define WPC_swF7   (CORE_FLIPPERSWCOL*10+7)
+#define WPC_swF8   (CORE_FLIPPERSWCOL*10+8)
+
+#define WPC_swLRFlipEOS swF1
+#define WPC_swLRFlip    swF2
+#define WPC_swLLFlipEOS swF3
+#define WPC_swLLFlip    swF4
+#define WPC_swURFlipEOS swF5
+#define WPC_swURFlip    swF6
+#define WPC_swULFlipEOS swF7
+#define WPC_swULFlip    swF8
+
 /*-- Smoothing values --*/
 #define WPC_SOLSMOOTH      4 /* Smooth the Solenoids over this numer of VBLANKS */
 #define WPC_LAMPSMOOTH     2 /* Smooth the lamps over this number of VBLANKS */

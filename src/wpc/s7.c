@@ -118,8 +118,8 @@ static WRITE_HANDLER(pia0b_w) {
 /*--------------------
 /  Diagnostic buttons
 /---------------------*/
-static READ_HANDLER (pia3ca1_r) { return cpu_get_reg(M6808_IRQ_STATE) ? core_getSwSeq(S7_SWADVANCE) : 0; }
-static READ_HANDLER (pia3cb1_r) { return cpu_get_reg(M6808_IRQ_STATE) ? core_getSwSeq(S7_SWUPDN)    : 0; }
+static READ_HANDLER (pia3ca1_r) { return cpu_get_reg(M6808_IRQ_STATE) ? core_getSw(S7_SWADVANCE) : 0; }
+static READ_HANDLER (pia3cb1_r) { return cpu_get_reg(M6808_IRQ_STATE) ? core_getSw(S7_SWUPDN)    : 0; }
 
 /*------------
 /  Solenoids
@@ -218,15 +218,16 @@ static void s7_updSw(int *inports) {
     coreGlobals.swMatrix[1] = inports[S7_COMINPORT];
   }
   /*-- Generate interupts for diganostic keys --*/
-  if (core_getSwSeq(S7_SWCPUDIAG))   cpu_set_nmi_line(S7_CPUNO, PULSE_LINE);
-  if (coreGlobals.soundEn && core_getSwSeq(S7_SWSOUNDDIAG)) cpu_set_nmi_line(S67S_CPUNO, PULSE_LINE);
-  pia_set_input_ca1(3, core_getSwSeq(S7_SWADVANCE));
-  pia_set_input_cb1(3, core_getSwSeq(S7_SWUPDN));
+  if (core_getSw(S7_SWCPUDIAG))   cpu_set_nmi_line(S7_CPUNO, PULSE_LINE);
+  if (coreGlobals.soundEn && core_getSw(S7_SWSOUNDDIAG)) cpu_set_nmi_line(S67S_CPUNO, PULSE_LINE);
+  pia_set_input_ca1(3, core_getSw(S7_SWADVANCE));
+  pia_set_input_cb1(3, core_getSw(S7_SWUPDN));
 }
 
 static core_tData s7Data = {
   2, /* On sound board */
-  s7_updSw, CORE_DIAG7SEG, s67s_cmd, "s7"
+  s7_updSw, CORE_DIAG7SEG, s67s_cmd, "s7",
+  core_swSeq2m, core_swSeq2m,core_m2swSeq,core_m2swSeq
 };
 
 static void s7_init(void) {

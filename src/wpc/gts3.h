@@ -88,15 +88,15 @@
 #define GTS3_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
 
 /*-- S80 switches are numbered from 1-64 (not column,row as WPC) --*/
-#define GTS3_SWNO(x) (x+11)
+#define GTS3_SWNO(x) (x)
 
 /*-- To access C-side multiplexed solenoid/flasher --*/
 #define GTS3_CSOL(x) ((x)+24)
 
 /*-- S80 switch numbers --*/
-#define GTS3_SWDIAG     -7
-#define GTS3_SWTILT     -6
-#define GTS3_SWSLAM     -5
+#define GTS3_SWDIAG     -10
+#define GTS3_SWTILT     -9
+#define GTS3_SWSLAM     -8
 
 
 

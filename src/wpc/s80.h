@@ -43,7 +43,7 @@
 #define S80_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
 
 /*-- S80 switches are numbers 0-7/0-7 but row and column reversed--*/
-#define S80_SWNO(x) (x/10+1)+(x%10+1)*10
+#define S80_SWNO(x) (x)
 
 /*-- To access C-side multiplexed solenoid/flasher --*/
 #define S80_CSOL(x) ((x)+24)

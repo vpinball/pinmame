@@ -39,20 +39,12 @@ int vp_getLamp(int lampNo);
 /*------------------------------------
 /  set status of a switch (0=off, !0=on)
 /-------------------------------------*/
-INLINE void vp_putSwitch(int swNo, int newStat) {
-  if (WPCNUMBERING)	     core_setSw(swNo, newStat);
-  else if (S80NUMBERING) (swNo>77) ? core_setSw(swNo, newStat) : core_setSw((swNo/10+1)+(swNo%10+1)*10, newStat);
-  else                   core_setSwSeq(swNo, newStat);
-}
+INLINE void vp_putSwitch(int swNo, int newStat) { core_setSw(swNo, newStat); }
 
 /*------------------------------------
 /  get status of a switch (0=off, !0=on)
 /-------------------------------------*/
-INLINE int vp_getSwitch(int swNo) {
-  if (WPCNUMBERING)      return core_getSw(swNo);
-  else if (S80NUMBERING) return (swNo>77) ? core_getSw(swNo) : core_getSw((swNo/10+1)+(swNo%10+1)*10);
-  else                   return core_getSwSeq(swNo);
-}
+INLINE int vp_getSwitch(int swNo) { return core_getSw(swNo); }
 
 /*------------------------------------
 /  get status of a solenoid (0=off, !0=on)
