@@ -139,7 +139,7 @@ TAITO_SOUNDROMS22("vegas_s1.bin", CRC(740bdd3e),
                   "vegas_s2.bin", CRC(4250e02e))
 TAITO_ROMEND
 #define input_ports_vegast input_ports_taito
-CORE_GAMEDEFNV(vegast,"Vegas",1981,"Taito",taito_sintetizador,0)
+CORE_GAMEDEFNV(vegast,"Vegas (Taito)",1981,"Taito",taito_sintetizador,0)
 
 /*--------------------------------
 / Cosmic
@@ -324,11 +324,11 @@ CORE_GAMEDEFNV(fireactd,"Fire Action Deluxe",198?,"Taito",taito_sintevoxpp,GAME_
 / Space Shuttle
 /-------------------------------*/
 INITGAME(sshuttle,SNDBRD_TAITO_SINTETIZADORPP)
-TAITO_ROMSTART22222(sshuttle,"sshutle1.bin",CRC(ab67ed50),
-                             "sshutle2.bin",CRC(ed5130a4),
-                             "sshutle3.bin",CRC(b1ddb78b),
-                             "sshutle4.bin",CRC(a409d9d1),
-                             "sshutle5.bin",CRC(0c7ca1bc))
+TAITO_ROMSTART22222(sshuttle,"sshtl1.bin",CRC(ab67ed50),
+                             "sshtl2.bin",CRC(ed5130a4),
+                             "sshtl3.bin",CRC(b1ddb78b),
+                             "sshtl4.bin",NO_DUMP,
+                             "sshtl5.bin",NO_DUMP)
 TAITO_SOUNDROMS444("sshtl_s1.bin", NO_DUMP,
                    "sshtl_s2.bin", NO_DUMP,
                    "sshtl_s3.bin", NO_DUMP)
