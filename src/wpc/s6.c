@@ -109,13 +109,23 @@ static INTERRUPT_GEN(s6_irq) {
   timer_set(TIME_IN_CYCLES(32,0),0,s6_irqline);
 }
 
-/*-- Dips: alphapos selects one 4 bank --*/
+/*********************/
+/*DIPS SWITCHES      */
+/*********************/
+/*Dips are returned to a4-7 and are read by pulsing of a0-3 (same as alpapos).
+  Dips are matrixed.. Column 0 = Function Switches 1-4, Column 1 = Function Switches 5-8..
+  		      Column 2 = Data Switches 1-4, Column 3 = Data Switches 5-8
+  Game expects on=0, off=1 from dip switches.
+  Game expects 0xFF for function dips when ENTER-key is not pressed.
+*/
 static READ_HANDLER(s6_dips_r) {
-  if ((s6locals.ca20) && (s6locals.alphapos < 0x04)) { /* 0x01=0, 0x02=1, 0x04=2, 0x08=3 */
-    return (core_getDip(s6locals.alphapos/2+1)<<(4*(1-(s6locals.alphapos&0x01)))) & 0xf0;
-  }
-  return 0xff;
+  int val=0;
+  int dipcol = (s6locals.alphapos & 0x03); /* s6 games only want dipcol 2 */
+  if (core_getSw(S6_ENTER))  /* only while enter is pressed */
+    val = (core_getDip(dipcol/2+1) << (4*(1-(dipcol&0x01)))) & 0xf0;
+  return ~val; /* game wants bits inverted */
 }
+
 /********************/
 /*SWITCH MATRIX     */
 /********************/
