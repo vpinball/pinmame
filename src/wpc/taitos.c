@@ -150,7 +150,7 @@ const struct sndbrdIntf taitoIntf = {
 };
 
 MACHINE_DRIVER_START(taitos_sintetizador)
-  MDRV_CPU_ADD_TAG("scpu", M6802, 400000) // 0.4 MHz ??? */
+  MDRV_CPU_ADD_TAG("scpu", M6802, 650000) // 0.65 MHz ??? */
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(taitos_readmem, taitos_writemem)
   MDRV_INTERLEAVE(50)
@@ -245,7 +245,7 @@ MEMORY_WRITE_START(taitospp_writemem)
 MEMORY_END
 
 MACHINE_DRIVER_START(taitos_sintetizadorpp)
-  MDRV_CPU_ADD_TAG("scpu", M6802, 400000) // 0.4 MHz ??? */
+  MDRV_CPU_ADD_TAG("scpu", M6802, 650000) // 0.65 MHz ??? */
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(taitospp_readmem, taitospp_writemem)
   MDRV_INTERLEAVE(50)
