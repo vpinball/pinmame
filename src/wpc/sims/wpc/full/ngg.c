@@ -4,9 +4,7 @@
  by Dave Roberts (daverob@cwcom.net)
  Feb. 16, 2001
 
- Known Issues : - Wheel position is not detected correctly by the emulated SW
-                  So should be disabled with adjustment A2 09
-                - It is possible for a weak loop shot to fall into the Putt
+ Known Issues : - It is possible for a weak loop shot to fall into the Putt
                   Out hole, but we are not going to simulate these cases
                 - Some functions have more comment than code, but I wrote the
                   comments first and couldn't bring myself to remove them ;-)
@@ -46,6 +44,7 @@
 /-------------------*/
 static int  ngg_handleBallState(sim_tBallStatus *ball, int *inports);
 static void ngg_handleMech(int mech);
+static int  ngg_getMech(int mechNo);
 static void ngg_drawMech(BMTYPE **line);
 static void ngg_drawStatic(BMTYPE **line);
 static int ngg_getSol(int solNo);
@@ -202,20 +201,6 @@ WPC_INPUT_PORTS_END
 #define sLRampDown      27
 #define sRRampDown      28
 #define sSlamRamp       35 // Upper Left flipper power solenoid.
-
-// We need custom solenoids, since regular ones end at #36
-// These are the aux outputs on the WPC-95 driver board
-#define sWheelCL        CORE_CUSTSOLNO(0) //37
-#define sWheelCCL       CORE_CUSTSOLNO(1) //38
-
-#define sRight1  	CORE_CUSTSOLNO(5)	//42
-#define sRight2  	CORE_CUSTSOLNO(6)	//43
-#define sRight3  	CORE_CUSTSOLNO(7)	//44
-#define sPFRight 	CORE_CUSTSOLNO(8)	//45
-#define sPFLeft    	CORE_CUSTSOLNO(9)	//46
-#define sLeft3   	CORE_CUSTSOLNO(10)	//47
-#define sLeft2		CORE_CUSTSOLNO(11)	//48
-#define sLeft1		CORE_CUSTSOLNO(12)	//49
 
 /*---------------------
 /  Ball state handling
@@ -534,10 +519,14 @@ static core_tLampDisplay ngg_lampPos = {
  Wheel Position
  *********************************/
 static const char* WheelText[] =
-{"Lite Extra    ", "Cart Attack   ", "Attack        ", "Q Jackpot     ",
- "Warp          ", "Pop-A-Gofer   ", "Outlanes      ", "Players Choice",
- "Free Lock     ", "Speed Golf    ", "Ripoff        ", "Bad Shot      ",
- "Hole In One   ", "Kickback      ", "Big Spinners  ", "Gofers Choice "};
+{" 0 Lite Xtra Ball", " 1 Cart Attack   ", " 2 Gofer Attack! ", " 3 Lite Q Jackpot",
+ " 4 Warp          ", " 5 Pop-A-Gofer   ", " 6 Lite Outlanes ", " 7 Players Choice",
+ " 8 Free Lock     ", " 9 Speed Golf    ", "10 Lite Ripoff   ", "11 Bad Shot      ",
+ "12 Hole In One   ", "13 Lite Kickback ", "14 Big Spinners  ", "15 Gofer's Choice"};
+
+static const int realPos[] =
+{ 7, 7, 8, 8, 8, 8, 9, 9, 9, 9,10,10,10,10,11,11,11,11,12,12,12,12,13,13,13,13,14,14,14,14,15,15,
+ 15,15, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8 };
 
 static const char* SlamText[] = {"Down","Up"};
 
@@ -547,7 +536,7 @@ static const char* SlamText[] = {"Down","Up"};
 
   core_textOutf(30, 30,BLACK,"Centre Ramp: %-10s", showramp(0));
   core_textOutf(30, 40,BLACK,"Right Ramp: %-10s", showramp(1));
-  core_textOutf(30, 50,BLACK,"Wheel: %s", WheelText[locals.wheelpos/4]);
+  core_textOutf(30, 50,BLACK,"Wheel:%s", WheelText[realPos[locals.wheelpos]]);
   core_textOutf(30, 60,BLACK,"Slam Ramp: %s  ", SlamText[locals.slampos]);
 }
   static void ngg_drawStatic(BMTYPE **line) {
@@ -615,7 +604,7 @@ static core_tGameData nggGameData = {
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_UR),
     0,0,8,0,0,0,0,
-    ngg_getSol, ngg_handleMech, NULL, ngg_drawMech,
+    ngg_getSol, ngg_handleMech, ngg_getMech, ngg_drawMech,
     &ngg_lampPos, NULL
   },
   &nggSimData,
@@ -628,17 +617,13 @@ static core_tGameData nggGameData = {
   }
 };
 
-/*---------------
-/  Game handling
-/----------------*/
-static void init_ngg(void) {
-  core_gameData = &nggGameData;
-  locals.wheelpos = 0;
-  locals.slampos = 0;
-  locals.slamdelay = 0;
-}
-
-static void ngg_handleMech(int mech) {
+static WRITE_HANDLER(ngg_wpc_w) {
+  static int coilsCalled = 0;
+  if (offset == WPC_FLIPPERCOIL95) { // this has to be delayed 1 cycle to not interfere with the flashers!
+    if (coilsCalled > 1) wpc_w(WPC_FLIPPERCOIL95, data);
+    if (data) coilsCalled++; else coilsCalled = 0;
+  } else
+    wpc_w(offset, data);
 
 // Wheel state handling
 //
@@ -646,8 +631,8 @@ static void ngg_handleMech(int mech) {
 // The solenoid drivers are fed to the input of a motor driver chip with
 // active low inputs. So the inputs are active when the solenoid outputs
 // are _not_ energised.
-// sWheelCL drives wheel clockwise (state decreases by one)
-// sWheelCCL drives wheel counter clockwise (state increases by one)
+// solenoid 38 drives wheel clockwise (state decreases by one)
+// solenoid 37 drives wheel counter clockwise (state increases by one)
 //
 // there are 64 states and 16 positions on the wheel
 // Wheel position sensing is provided by two optos as shown in table
@@ -657,38 +642,35 @@ static void ngg_handleMech(int mech) {
 //
 // Inner 0111 1111 1111 1111 1111 1111 1111 1111 1110 0000 0000 0000 0000 0000 0000 0000
 // Outer 0011 0011 0011 0011 0011 0011 0011 0011 0011 0011 0011 0011 0011 0011 0011 0011
-// Posn    0    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15
 //
-// Despite this emulation appearing to be an exact match for the mechanism
-// in the pinball machine, the pinball software does not seem to be able to
-// keep track of the position of the wheel, and usually ends up reading the
-// wheel position as either Free Lock or Gofers Choice.
-// For a more balanced game use adjustment A2 09 Disable Motor
-  if (mech & 0x01) {
-#ifndef CAN_READ_PULSED_SOLS
-// this method does not work, as the solenoid outputs are normally
-// activated and then quickly pulsed low and the pulses get lost
-// in the solenoid smoothing.
-    int wheelstate = core_getSol(sWheelCCL)+2*core_getPulsedSol(sWheelCL);
-#endif
-#ifdef CAN_READ_PULSED_SOLS
-// pulsed solenoids give a more accurate wheel simulation
-    int wheelstate = core_getPulsedSol(29)+2*core_getPulsedSol(30);
-#endif
-    if (wheelstate == 1)
-      locals.wheelpos--;
-    if (wheelstate == 2)
+// Pos.    0    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15
+  if (offset == WPC_SOLENOID1) {
+    if (~data & 0x20) {
       locals.wheelpos++;
-    if (locals.wheelpos == 64)
-      locals.wheelpos = 0;
-    if (locals.wheelpos == -1)
-      locals.wheelpos = 63;
-    if (locals.wheelpos > 0 && locals.wheelpos < 35)
-      core_setSw(swOuterWheel,1);
-    else
-      core_setSw(swOuterWheel,0);
-    core_setSw(swInnerWheel,(locals.wheelpos/2) & 0x01);
+      if (locals.wheelpos > 63)
+        locals.wheelpos = 0;
+    }
+    if (~data & 0x10) {
+      locals.wheelpos--;
+      if (locals.wheelpos < 0)
+        locals.wheelpos = 63;
+    }
+    core_setSw(swInnerWheel, locals.wheelpos > 0 && locals.wheelpos < 35);
+    core_setSw(swOuterWheel, locals.wheelpos % 4 > 1);
   }
+}
+
+/*---------------
+/  Game handling
+/----------------*/
+static void init_ngg(void) {
+  core_gameData = &nggGameData;
+  install_mem_write_handler(0, 0x3fb0, 0x3fff, ngg_wpc_w);
+  locals.slampos = 0;
+  locals.slamdelay = 0;
+}
+
+static void ngg_handleMech(int mech) {
 // NGG Gofers and ramps are controlled by three solenoids
 // GoferUp raises the ramp and the Gofer
 // when GoferDown solenoid is energised gofer drops
@@ -746,17 +728,18 @@ static void ngg_handleMech(int mech) {
 
 
 static int ngg_getSol(int solNo) {
- return wpc_data[WPC_EXTBOARD2] & (1<<(solNo - CORE_CUSTSOLNO(1)));
+  return wpc_data[WPC_EXTBOARD2] & (1<<(solNo - CORE_CUSTSOLNO(1)));
 }
 
-//static int ngg_getSol(int solNo) {
-// static int bits[8] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
-
-// if ( (solNo<37) || (solNo>38) )
-//   return 0;
-
-// return (wpc_data[WPC_SOLENOID1]& bits[solNo-37]) > 0;
-//}
+static int ngg_getMech (int mechNo) {
+  switch (mechNo) {
+    case 0: return locals.wheelpos;
+    case 1: return locals.goferpos[0] | (locals.goferpos[1] << 1);
+    case 2: return locals.ramppos[0] | (locals.ramppos[1] << 1);
+    case 3: return locals.slampos;
+  }
+  return 0;
+}
 
 /**********************************
  Display Status of Ramp Entries
