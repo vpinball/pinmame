@@ -1060,6 +1060,30 @@ SOURCE=.\src\win32com\VPinMAMESplashWnd.cpp
 
 SOURCE=.\src\win32com\VPinMAMESplashWnd.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\WSHDlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\WSHDlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\WSHDlgCtrl.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\WSHDlgCtrl.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\WSHDlgCtrls.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\WSHDlgCtrls.h
+# End Source File
 # End Group
 # Begin Group "VC"
 

@@ -61,6 +61,7 @@ IDB_SPLASH              BITMAP  MOVEABLE PURE   "Res\\VPinMAMESplash.bmp"
 //
 
 IDR_CONTROLLER          REGISTRY MOVEABLE PURE  "Controller.rgs"
+IDR_WSHDLG		REGISTRY MOVEABLE PURE  "WSHDlg.rgs"
 
 #ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
