@@ -22,6 +22,7 @@ void vp_setDIP(int bank, int value) { }
 
 #ifdef VPINMAME
   #include "vpintf.h"
+  extern int g_fPause;
   extern int g_fHandleKeyboard, g_fHandleMechanics;
   extern void OnSolenoid(int nSolenoid, int IsActive);
   extern void OnStateChange(int nChange);
@@ -279,8 +280,13 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
         UINT16 tmpSeg = (ii < zeros) ? ((core_bcd2seg7[0]<<8) | (core_bcd2seg7[0])) : *seg;
         int tmpType = layout->type & CORE_SEGMASK;
 
+#ifdef VPINMAME
+		//SJE: Force an update of the segments ALWAYS in VPM - corrects Pause Display Bugs
+		if(1) {
+#else
         if ((tmpSeg != *lastSeg) ||
             inRect(cliprect,left,top,locals.segData[layout->type & 0x0f].cols,locals.segData[layout->type & 0x0f].rows)) {
+#endif
           tmpSeg >>= (layout->type & CORE_SEGHIBIT) ? 8 : 0;
 
           switch (tmpType) {
