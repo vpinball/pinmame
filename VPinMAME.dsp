@@ -1774,6 +1774,14 @@ SOURCE=.\src\cpu\tms7000\tms7000.h
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\src\machine\4094.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\machine\4094.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\machine\6522via.c
 # End Source File
 # Begin Source File
