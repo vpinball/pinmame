@@ -854,6 +854,7 @@ DRIVER(wcs,l2)          //WPC-531:  02/94 B World Cup Soccer (Lx-2)
 DRIVER(wcs,p3)                            // (Px-3)
                         //WPC-620:  06/94 W Pinball Circus
 DRIVER(fs,lx2)          //WPC-529:  07/94 W The Flintstones (LX-2)
+DRIVER(fs,sp2)          //WPC-529:  07/94 W The Flintstones (SP-2)
 DRIVER(fs,lx4)          //WPC-529:  09/94 W The Flintstones (LX-4)
 DRIVER(fs,lx5)          //WPC-529:  11/94 W The Flintstones (LX-5)
 DRIVER(corv,21)         //WPC-536:  08/94 B Corvette (2.1)
