@@ -44,6 +44,7 @@
 #define GEN_WS          U64(0x04000000000) /* Whitestar */
 #define GEN_WS_1        U64(0x08000000000) /* Whitestar with extra RAM */
 #define GEN_WS_2        U64(0x10000000000) /* Whitestar with extra DMD */
+#define GEN_GTS3        U64(0x20000000000)
 
 #define GEN_ALLWPC      U64(0x000000000ff)
 #define GEN_ALLS11      U64(0x0000000ff00)
