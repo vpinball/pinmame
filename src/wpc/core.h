@@ -332,7 +332,7 @@ typedef struct {
 typedef struct {
   core_tDrawData startpos;	/*Starting Coordinates to draw matrix*/
   core_tDrawData size;		/*Size of lamp matrix*/
-  core_tLampData lamps[88];      /*Can support up to 88 lamps!*/
+  core_tLampData lamps[CORE_MAXLAMPCOL*8];      /*Can support up to 160 lamps!*/
 } core_tLampDisplay;
 
 #ifdef LSB_FIRST

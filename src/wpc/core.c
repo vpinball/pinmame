@@ -482,7 +482,7 @@ static VIDEO_UPDATE(core_status) {
         line += 2; bits >>= 1;
       }
     }
-    osd_mark_dirty(0,firstRow,16,firstRow+ii*2);
+    osd_mark_dirty(0,firstRow,ii*2,firstRow+16);
   } /* else */
 
   firstRow += 20;
