@@ -54,6 +54,7 @@ static const UINT16 core_ascii2seg[] = {
 /-----------------*/
 static struct {
   int    riot0b, riot1a, riot1b, riot2b;
+  UINT8  slamSw;
   int    alphaData;
   int    vblankCount;
   UINT32 solenoids;
@@ -126,7 +127,8 @@ static SWITCH_UPDATE(GTS80) {
   }
   /*-- slam tilt --*/
   isSlammed = core_getSw(GTS80_SWSLAMTILT);
-  riot6532_set_input_a(1, isSlammed ? invPattern : invPattern ^ 0xff);
+  GTS80locals.slamSw = isSlammed ? invPattern : (invPattern ^ 0xff);
+  riot6532_set_input_a(1, GTS80locals.slamSw);
   if (core_gameData->hw.display & GTS80_DISPVIDEO) { // Also triggers NMI on video CPU
     cpu_set_irq_line(GTS80_VIDCPU, IRQ_LINE_NMI, isSlammed ? ASSERT_LINE : CLEAR_LINE);
   }
@@ -162,6 +164,11 @@ static WRITE_HANDLER(riot6532_0b_w) {
 /*---------------------------
 /  Riot1 Display
 /----------------------------*/
+/* Slam Tilt Switch Input */
+static READ_HANDLER(slam_sw_r) {
+  return GTS80locals.slamSw;
+}
+
 /* BCD version */
 static WRITE_HANDLER(riot6532_1aBCD_w) {
   static int reorder[] = { 8, 0, 1, 15, 9, 10, 11, 12, 13, 14, 2, 3, 4, 5, 6, 7 };
@@ -273,12 +280,12 @@ static struct riot6532_interface GTS80_riot6532_intf[] = {
  /* PB5:    H LINE (3&4) */
  /* PB6:    H LINE (5&6) */
  /* PB7:    SWITCH ENABLE */
- /* in  : A/B, */ 0, 0,
+ /* in  : A/B, */ slam_sw_r, 0,
  /* out : A/B, */ riot6532_1aBCD_w, riot6532_1bBCD_w,
  /* irq :      */ GTS80_irq
 }, {
  /* 6532RIOT 1B (ALPHA) (0x280) Chip U5 (DISPLAY & SWITCH ENABLE) */
- /* in  : A/B, */ 0, 0,
+ /* in  : A/B, */ slam_sw_r, 0,
  /* out : A/B, */ riot6532_1a_w, riot6532_1b_w,
  /* irq :      */ GTS80_irq
 }, {
@@ -419,6 +426,8 @@ static MACHINE_INIT(gts80) {
   else
     riot6532_config(1, &GTS80_riot6532_intf[1]); // BCD Seg
   riot6532_config(2, &GTS80_riot6532_intf[3]); // Lamp + Sol
+
+  GTS80locals.slamSw = 0x80;
 
   // Interrupt controller
   if (core_gameData->hw.display & GTS80_DISPVIDEO) pic8259_0_config(GTS80_VIDCPU,0);
