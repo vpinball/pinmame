@@ -48,10 +48,10 @@ static void playSound(void) {
 	}
 
 	if (mixer_is_sample_playing(atarilocals.channel)) mixer_stop_sample(atarilocals.channel);
-	mixer_set_volume(atarilocals.channel, atarilocals.volume * 12);
+	mixer_set_volume(atarilocals.channel, atarilocals.volume * 15);
     mixer_play_sample(atarilocals.channel, (signed char *)sineWave, sizeof(sineWave), 1000, 1);
     mixer_set_sample_frequency(atarilocals.channel,
-	  (ATARI_SNDFREQ / (16-((~atarilocals.frequency) & 0x0f)))*(atarilocals.octave+1));
+	  ATARI_SNDFREQ / (16-atarilocals.frequency) * (atarilocals.octave+1));
     atarilocals.vtimer = timer_set(TIME_IN_MSEC(ATARI_DECAYTIME),0,atari_decay);
 }
 
