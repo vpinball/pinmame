@@ -12,6 +12,11 @@ static core_tGameData name##GameData = { \
   gen, disp, {flip,0,0,0,0,db,gs1}, NULL, {{0}}, {mux} }; \
 static void init_##name(void) { core_gameData = &name##GameData; }
 
+#define INITGAMEFULL(name, gen, disp, mux, flip, db, gs1,ss17,ss18,ss19,ss20,ss21,ss22) \
+static core_tGameData name##GameData = { \
+  gen, disp, {flip,0,0,0,0,db,gs1}, NULL, {{0}}, {mux,{ss17,ss18,ss19,ss20,ss21,ss22}}}; \
+static void init_##name(void) { core_gameData = &name##GameData; }
+
 S11_INPUT_PORTS_START(s11, 1) S11_INPUT_PORTS_END
 
 /*--------------------
@@ -24,11 +29,15 @@ static core_tLCDLayout dispSshtl[] = { \
   { 5,18, 0,1, CORE_SEG7},  { 5,20, 8,1,CORE_SEG7},
   { 5,23,20,1, CORE_SEG7},  { 5,25,28,1,CORE_SEG7},{0}
 };
+INITGAMEFULL(sshtl, GEN_S9, dispSshtl, 0, FLIP_SWNO(0,41),
+             S11_BCDDIAG|S11_BCDDISP,0,39, 40, 27, 26, 25, 0)
+#if 0
 static core_tGameData sshtlGameData = {
   GEN_S9, dispSshtl, {FLIP_SWNO(0,41),0,0,0,0,S11_BCDDIAG|S11_BCDDISP,0},
   NULL,{{0}},{0, {39,40, 27, 26, 25, 0}}
 };
 static void init_sshtl(void) { core_gameData = &sshtlGameData; }
+#endif
 S9_ROMSTARTx4(sshtl,l7,"cpu_u20.128", 0x848ad54c)
 S9S_SOUNDROM4111(      "cpu_u49.128", 0x20e77990,
                        "spch_u4.732", 0xb0d03c5e,
@@ -41,7 +50,8 @@ CORE_GAMEDEF(sshtl, l7, "Space Shuttle (L-7)", 1984, "Williams", s9_mS9S,0)
 /*--------------------
 / Sorcerer (S9) 03/85
 /--------------------*/
-INITGAME(sorcr, GEN_S9, s11_dispS9, 0, FLIP_SWNO(0,44),S11_BCDDIAG|S11_BCDDISP,0)
+INITGAMEFULL(sorcr, GEN_S9, s11_dispS9, 0, FLIP_SWNO(0,44),
+             S11_BCDDIAG|S11_BCDDISP,0,32,33,21,22,23,0)
 S9_ROMSTART12(sorcr,l1,"cpu_u19.732", 0x88b6837d,
                        "cpu_u20.764", 0xc235b692)
 S9S_SOUNDROM41111(     "cpu_u49.128", 0xa0bae1e4,
@@ -79,12 +89,16 @@ static core_tLCDLayout dispComet[] = { \
   {  6, 3,20, 1, CORE_SEG7 }, {6, 5,28,1,CORE_SEG7},
   {  6, 8, 0, 1, CORE_SEG7 }, {6,10, 8,1,CORE_SEG7}, {0}
 };
+INITGAMEFULL(comet, GEN_S9, dispComet, 0, FLIP_SWNO(0,30),
+             S11_BCDDIAG|S11_BCDDISP,0,47,48,40,41,42,0)
+#if 0
 static core_tGameData cometGameData = {
   GEN_S9, dispComet,
   {FLIP_SWNO(0,30),0,0,0,0,S11_BCDDIAG|S11_BCDDISP,0},
   NULL, {{0}}, {0, {47,48, 40, 41, 42, 0}}
 };
 static void init_comet(void) { core_gameData = &cometGameData; }
+#endif
 S9_ROMSTARTx4(comet,l4,"cpu_u20.128", 0x36193600)
 S9S_SOUNDROM41111(     "cpu_u49.128", 0xf1db0cbe,
                        "spch_u4.732", 0xd0215c49,
@@ -98,12 +112,16 @@ CORE_GAMEDEF(comet, l4, "Comet (L-4)", 1985, "Williams", s9_mS9S,0)
 /*--------------------
 / High Speed 01/86
 /--------------------*/
+INITGAMEFULL(hs, GEN_S11, s11_dispS11, 0, FLIP_SWNO(37,38),
+             S11_BCDDIAG,0,49,50,35,34,33,0)
+#if 0
 static core_tGameData hsGameData = {
   GEN_S11, s11_dispS11,
   {FLIP_SWNO(37,38),0,0,0,0,S11_BCDDIAG},
   NULL, {{0}}, {0, {49, 50, 35, 34, 33}}
 };
 static void init_hs(void) { core_gameData = &hsGameData; }
+#endif
 S11_ROMSTART28(hs,l4,"hs_u26.l4", 0x38b73830,
                      "hs_u27.l4", 0x24c6f7f0)
 S11S_SOUNDROM88(     "hs_u21.l2", 0xc0580037,
@@ -116,7 +134,8 @@ CORE_GAMEDEF(hs, l4, "High Speed (L-4)", 1986, "Williams", s11_mS11S,0)
 /*--------------------
 / Grand Lizard 04/86
 /--------------------*/
-INITGAME(grand, GEN_S11, s11_dispS11, 0, FLIP_SW(FLIP_L),S11_BCDDIAG,0)
+INITGAMEFULL(grand, GEN_S11, s11_dispS11, 0, FLIP_SWNO(0,48),
+             S11_BCDDIAG,0,43,44,0,0,0,0)
 S11_ROMSTART28(grand,l4,"lzrd_u26.l4", 0x5fe50db6,
                         "lzrd_u27.l4", 0x6462ca55)
 S11S_SOUNDROM44(        "lzrd_u21.l1", 0x98859d37,
@@ -129,7 +148,8 @@ CORE_GAMEDEF(grand, l4, "Grand Lizard (L-4)", 1986, "Williams", s11_mS11S,0)
 /*--------------------
 / Road Kings 07/86
 /--------------------*/
-INITGAME(rdkng, GEN_S11, s11_dispS11, 0, FLIP_SWNO(47,48),S11_BCDDIAG,0)
+INITGAMEFULL(rdkng, GEN_S11, s11_dispS11,12, FLIP_SWNO(47,48),
+             S11_BCDDIAG,S11_RKMUX,43,44,24,25,26,27)
 S11_ROMSTART48(rdkng,l4,"road_u26.l4", 0x4ea27d67,
                         "road_u27.l4", 0x5b88e755)
 S11S_SOUNDROM88(        "road_u21.l1", 0xf34efbf4,
@@ -142,12 +162,16 @@ CORE_GAMEDEF(rdkng, l4, "Road Kings (L-4)", 1986, "Williams", s11_mS11S,0)
 /*--------------------
 / Pinbot 10/86
 /--------------------*/
+INITGAMEFULL(pb, GEN_S11, s11_dispS11, 14, FLIP_SWNO(10,11),
+             0,0, 53, 0, 48, 54, 55,52)
+#if 0
 static core_tGameData pbGameData = {
   GEN_S11, s11_dispS11,
   {FLIP_SWNO(10,11),0,0,0,0,0,0},
   NULL, {{0}}, {14, {53, 0, 48, 54, 55,52}}
 };
 static void init_pb(void) { core_gameData = &pbGameData; }
+#endif
 S11_ROMSTART48(pb,l5,"pbot_u26.l5", 0xdaa0c8e4,
                      "pbot_u27.l5", 0xe625d6ce)
 S11S_SOUNDROM88(     "pbot_u21.l1", 0x3eab88d9,
@@ -161,12 +185,16 @@ CORE_GAMEDEF(pb, l5, "Pinbot (L-5)", 1987, "Williams", s11_mS11S,0)
 /*--------------------
 / F14 Tomcat 3/87
 /--------------------*/
+INITGAMEFULL(f14, GEN_S11A, s11_dispS11a, 0, FLIP_SWNO(15,63),
+             0,0, 57, 58, 0, 28, 0, 0)
+#if 0
 static core_tGameData f14GameData = {
   GEN_S11A, s11_dispS11a,
   {FLIP_SWNO(15,63),0,0,0,0,0,0},
   NULL, {{0}}, {14, {57, 58, 0, 28}}
 };
 static void init_f14(void) { core_gameData = &f14GameData; }
+#endif
 S11_ROMSTART48(f14,l1,"f14_u26.l1", 0x62c2e615,
                       "f14_u27.l1", 0xda1740f7)
 S11S_SOUNDROM88(      "f14_u21.l1", 0xe412300c,
@@ -180,12 +208,16 @@ CORE_GAMEDEF(f14, l1, "F14 Tomcat (L-1)", 1987, "Williams", s11_mS11AS,0)
 /*--------------------
 / Fire! 8/87
 /--------------------*/
+INITGAMEFULL(fire, GEN_S11A, s11_dispS11a, 12, FLIP_SWNO(23,24),
+             0,0, 0,0, 61, 62, 57, 58)
+#if 0
 static core_tGameData fireGameData = {
   GEN_S11A, s11_dispS11a,
   {FLIP_SWNO(23,24),0,0,0,0,0,0},
   NULL, {{0}}, {12, {0,0, 61, 62, 57, 58}}
 };
 static void init_fire(void) { core_gameData = &fireGameData; }
+#endif
 S11_ROMSTART48(fire,l3,"fire_u26.l3", 0x48abae33,
                        "fire_u27.l3", 0x4ebf4888)
 S11S_SOUNDROM88(       "fire_u21.l2", 0x2edde0a4,
@@ -213,7 +245,8 @@ CORE_GAMEDEF(bguns, l8, "Big Guns (L-8)", 1987, "Williams", s11_mS11AS,0)
 /*--------------------
 / Space Station 1/88
 /--------------------*/
-INITGAME(spstn, GEN_S11B,s11_dispS11b1,12, FLIP_SW(FLIP_L),0,0)
+INITGAMEFULL(spstn, GEN_S11B,s11_dispS11b1,12, FLIP_SWNO(55,56),
+             0,0,0,63,61,64,60,62)
 S11_ROMSTART48(spstn,l5,"sstn_u26.l5", 0x614c8528,
                         "sstn_u27.l5", 0x4558d963)
 S11S_SOUNDROM88(        "sstn_u21.l1", 0xa2ceccaa,
@@ -369,7 +402,7 @@ CORE_GAMEDEF(polic,l4, "Police Force (L-4)", 1989, "Williams", s11_mS11BS,0)
 static core_tLCDLayout disptsptr[] = { \
   {0,0,0,16,CORE_SEG16},{0,33,20,16,CORE_SEG16}, {0}
 };
-INITGAME(tsptr,GEN_S11B,disptsptr,12, FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV|S11_ONELINE,S11_MUXSW2)
+INITGAME(tsptr,GEN_S11B,disptsptr,12, FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
 S11_ROMSTART48(tsptr,l3,"tran_u26.l3", 0x2d48a108,
                         "tran_u27.l3", 0x50efb01c)
 S11S_SOUNDROM88(        "tran_u21.l2", 0xb10120ee,
@@ -403,7 +436,7 @@ CORE_GAMEDEF(bcats,l5, "Bad Cats (L-5)", 1989, "Williams", s11_mS11BS,0)
 static core_tLCDLayout dispmousn[] = { \
   {0,0,0,16,CORE_SEG16},{0,33,20,16,CORE_SEG16}, {0}
 };
-INITGAME(mousn,GEN_S11B,dispmousn,12, FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV|S11_ONELINE,S11_MUXSW2)
+INITGAME(mousn,GEN_S11B,dispmousn,12, FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
 S11_ROMSTART48(mousn,l4,"mous_u26.l4", 0xa540edc1,
                         "mous_u27.l4", 0xff108148)
 S11S_SOUNDROM88(        "mous_u21.bin",0x59b1b0c5,
@@ -436,7 +469,7 @@ CORE_GAMEDEF(whirl,l3, "Whirlwind (L-3)", 1990, "Williams", s11_mS11BS,0)
 static core_tLCDLayout dispgs[] = { \
   {0,0,0,16,CORE_SEG16},{0,33,20,16,CORE_SEG16}, {0}
 };
-INITGAME(gs   ,GEN_S11C,dispgs,12,FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV|S11_ONELINE,S11_MUXSW2)
+INITGAME(gs   ,GEN_S11C,dispgs,12,FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
 S11_ROMSTART48(gs   ,l3,"gshw_u26.l3", 0x3419bfb2,
                         "gshw_u27.l3", 0x4f3babb6)
 S11CS_SOUNDROM000(      "gshw_u4.l2",  0xe89e0116,
@@ -491,7 +524,7 @@ CORE_GAMEDEF(diner, l4, "Diner (L-4)", 1990, "Williams", s11_mS11CS,0)
 static core_tLCDLayout dispradcl[] = { \
   {0,0,0,16,CORE_SEG16},{0,33,20,16,CORE_SEG16}, {0}
 };
-INITGAME(radcl,GEN_S11C,dispradcl,12,FLIP_SW(FLIP_L),S11_LOWALPHA|S11_DISPINV|S11_ONELINE,S11_MUXSW2)
+INITGAME(radcl,GEN_S11C,dispradcl,12,FLIP_SW(FLIP_L),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
 S11_ROMSTART48(radcl,l1,"rad_u26.l1", 0x84b1a125,
                         "rad_u27.l1", 0x6f6ca382)
 S11CS_SOUNDROM008(      "rad_u4.l1",  0x5aafc09c,
@@ -527,7 +560,7 @@ static core_tLCDLayout dispbbb[] = { \
   {0,0,0,16,CORE_SEG16},{0,33,20,16,CORE_SEG16}, {0}
 };
 
-INITGAME(bbnny,GEN_S11C,dispbbb,12,FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV|S11_ONELINE,S11_MUXSW2)
+INITGAME(bbnny,GEN_S11C,dispbbb,12,FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
 S11_ROMSTART48(bbnny,l2,"bugs_u26.l2", 0xb4358920,
                         "bugs_u27.l2", 0x8ff29439)
 S11CS_SOUNDROM000(      "bugs_u4.l2",  0x04bc9aa5,
