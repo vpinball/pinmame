@@ -224,12 +224,12 @@ int riot_read(int which, int offset)
 			/* combine input and output values */
 			val = (p->out_a & p->ddr_a) + (p->in_a & ~p->ddr_a);
 
-//			LOG(("RIOT%d read port A = %02X\n", which, val));
+			LOG(("RIOT%d read port A = %02X\n", which, val));
 			break;
 
 		case RIOT_DDRA:
 			val = p->ddr_a;
-//			LOG(("RIOT%d read DDR A = %02X\n", which, val));
+			LOG(("RIOT%d read DDR A = %02X\n", which, val));
 			break;
 		
 		case RIOT_PORTB:
@@ -239,12 +239,12 @@ int riot_read(int which, int offset)
 			/* combine input and output values */
 			val = (p->out_b & p->ddr_b) + (p->in_b & ~p->ddr_b);
 
-//			LOG(("RIOT%d read port B = %02X\n", which, val));
+			LOG(("RIOT%d read port B = %02X\n", which, val));
 			break;
 
 		case RIOT_DDRB:
 			val = p->ddr_b;
-//			LOG(("RIOT%d read DDR B = %02X\n", which, val));
+			LOG(("RIOT%d read DDR B = %02X\n", which, val));
 			break;
 		}
 	}
@@ -260,8 +260,11 @@ int riot_read(int which, int offset)
 				else
 					val = p->timer_start - V_TIME_TO_CYCLES(timer_get_time() - p->time) / p->timer_divider;
 			}
-			else
-				val = 0;
+			else {
+				val = p->timer_start - V_TIME_TO_CYCLES(timer_get_time() - p->time) / p->timer_divider;
+				if ( val<0 )
+					val = 0;
+			}
 
 			p->irq_state &= ~RIOT_TIMERIRQ;
 			p->timer_irq_enabled = offset&0x08;
@@ -297,7 +300,7 @@ void riot_write(int which, int offset, int data)
 	if ( !(offset & 0x04) ) {
 		switch ( offset & 0x03 ) {
 		case RIOT_PORTA:
-//			LOG(("RIOT%d port A write = %02X\n", which, data));
+			LOG(("RIOT%d port A write = %02X\n", which, data));
 
 			/* update the output value */
 			p->out_a = data;
@@ -311,7 +314,7 @@ void riot_write(int which, int offset, int data)
 			break;
 
 		case RIOT_DDRA:
-//			LOG(("RIOT%d DDR A write = %02X\n", which, data));
+			LOG(("RIOT%d DDR A write = %02X\n", which, data));
 
 			if (p->ddr_a != data)
 			{
@@ -324,7 +327,7 @@ void riot_write(int which, int offset, int data)
 			break;
 		
 		case RIOT_PORTB:
-//			LOG(("RIOT%d port B write = %02X\n", which, data));
+			LOG(("RIOT%d port B write = %02X\n", which, data));
 
 			/* update the output value */
 			p->out_b = data;
@@ -334,7 +337,7 @@ void riot_write(int which, int offset, int data)
 			break;
 
 		case RIOT_DDRB:
-//			LOG(("RIOT%d DDR B write = %02X\n", which, data));
+			LOG(("RIOT%d DDR B write = %02X\n", which, data));
 
 			if (p->ddr_b != data)
 			{
@@ -381,9 +384,8 @@ void riot_write(int which, int offset, int data)
 					timer_reset(p->t, V_CYCLES_TO_TIME(p->timer_divider * p->timer_start + IFR_DELAY));
 				else
 					p->t = timer_set(V_CYCLES_TO_TIME(p->timer_divider * p->timer_start + IFR_DELAY), which, riot_timeout);
-				
-				p->time = timer_get_time();
 			}
+			p->time = timer_get_time();
 		}
 		else {
 			// edge control (PA7) stuff */
