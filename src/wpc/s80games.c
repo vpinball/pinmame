@@ -623,33 +623,33 @@ CORE_GAMEDEFNV(icefever,"Ice Fever",1985,"Gottlieb",gl_mS80,GAME_IMPERFECT_SOUND
 /*-------------------------------------------------------------------
 / Chicago Cubs' Triple Play (#696)
 /-------------------------------------------------------------------*/
-//(No info on what sound hardware they use, presume Gen 1)
-//Update - Has 1x2k rom. Assumed to use s80a sound board. Need to update s80.c for this
-INITGAME(triplay,GEN_S80B2K,gottlieb_dispAlpha, 1)
-S80B_2K_ROMSTART(triplay, "prom2.cpu", 0xdeedea61,
-                          "prom1.cpu", 0x42b29b01)
+// using System80 sound only board
+INITGAME(triplay,GEN_S80B,gottlieb_dispAlpha, 1)
+S80B_8K_ROMSTART(triplay,	"prom1.cpu", 0x42b29b01)
+S80SOUND2K_ROMSTART(		"696-s.snd", 0xdeedea61,
+							"6530sy80.bin", 0xc8ba951d)
 S80_ROMEND
-CORE_GAMEDEFNV(triplay, "Triple Play",1985,"Gottlieb",gl_mS80B,GAME_NO_SOUND)
+CORE_GAMEDEFNV(triplay, "Triple Play",1985,"Gottlieb",gl_mS80B,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
 / Bounty Hunter (#694)
 /-------------------------------------------------------------------*/
-//(No info on what sound hardware they use, presume Gen 1)
-//Update - Has 1x2k rom. Assumed to use s80a sound board. Need to update s80.c for this
-INITGAME(bountyh,GEN_S80B2K,gottlieb_dispAlpha, 1)
-S80B_2K_ROMSTART(bountyh, "prom2.cpu", 0xa0383e41,
-                          "prom1.cpu", 0xe8190df7)
+// using System80 sound only board
+INITGAME(bountyh,GEN_S80B,gottlieb_dispAlpha, 1)
+S80B_8K_ROMSTART(bountyh,	"prom1.cpu", 0xe8190df7)
+S80SOUND2K_ROMSTART(		"694-s.snd", 0xa0383e41,
+							"6530sy80.bin", 0xc8ba951d)
 S80_ROMEND
-CORE_GAMEDEFNV(bountyh, "Bounty Hunter",1985,"Gottlieb",gl_mS80B,GAME_NO_SOUND)
+CORE_GAMEDEFNV(bountyh, "Bounty Hunter",1985,"Gottlieb",gl_mS80B,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
 / Rock (#697)
 /-------------------------------------------------------------------*/
 //(I assume these are using Gen.1 hardware, but there's 1 less rom, so who knows)
 INITGAME(rock,GEN_S80B2K,gottlieb_dispAlpha, 1)
-S80B_8K_ROMSTART(rock, "prom1.cpu", 0x1146c1d3)
-S80BSSOUND88(          "drom1.snd", 0x03830e81,
-					   "yrom1.snd", 0xeffba2ad)
+S80B_8K_ROMSTART(rock,	"prom1.cpu", 0x1146c1d3)
+S80BSSOUND88(			"drom1.snd", 0x03830e81,
+						"yrom1.snd", 0xeffba2ad)
 S80_ROMEND
 CORE_GAMEDEFNV(rock, "Rock",1986,"Gottlieb",gl_mS80BS1,GAME_IMPERFECT_SOUND)
 
