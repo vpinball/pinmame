@@ -10,7 +10,6 @@ Issues:
 Road Kings: Main CPU
 Jokerz: No soundboard
 Pool: Sound loops on startup
-Police: Display mess (don't know how it should look)
 */
 #define INITGAME(name, gen, disp, mux, flip, db, gs1) \
 static core_tGameData name##GameData = { \
@@ -142,7 +141,7 @@ S11S_SOUNDROM88(        "road_u21.l1", 0xf34efbf4,
 S11CS_SOUNDROM8(        "road_u4.l1",  0x4395b48f)
 S11_ROMEND
 #define input_ports_rdkng input_ports_s11
-CORE_GAMEDEF(rdkng, l5, "Road Kings (L-5)", 1986, "Williams", s11_mS11S,0)
+CORE_GAMEDEF(rdkng, l5, "Road Kings (L-5)", 1986, "Williams", s11_mS11S,GAME_NOT_WORKING)
 
 /*--------------------
 / Pinbot 10/86
@@ -520,7 +519,7 @@ static core_tLCDLayout dispbbb[] = { \
   {0,0,0,16,CORE_SEG16},{0,33,20,16,CORE_SEG16}, {0}
 };
 
-INITGAME(bbnny,GEN_S11C,dispbbb,12,FLIP_SW(FLIP_L),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
+INITGAME(bbnny,GEN_S11C,dispbbb,12,FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
 S11_ROMSTART48(bbnny,l2,"bugs_u26.l2", 0xb4358920,
                         "bugs_u27.l2", 0x8ff29439)
 S11CS_SOUNDROM000(      "bugs_u4.l2",  0x04bc9aa5,
