@@ -419,6 +419,9 @@ static MACHINE_INIT(cc) {
   memset(&locals, 0, sizeof(locals));
   locals.u16a[0] = 0x00bc;
   locals.vblankCount = 1;
+
+  //Init soundboard
+  sndbrd_0_init(core_gameData->hw.soundBoard, CAPCOMS_CPUNO, memory_region(CAPCOMS_ROMREGION),NULL,NULL);
   
 #ifdef TEST_MPGAUDIO
   //Freeze cpu so it won't slow down the emulation

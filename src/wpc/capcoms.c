@@ -9,6 +9,7 @@
 #include "sndbrd.h"
 
 /*Declarations*/
+static void capcoms_init(struct sndbrdData *brdData);
 
 /*Interfaces*/
 static struct TMS320AV120interface capcoms_TMS320AV120Int1 = {
@@ -20,12 +21,11 @@ static struct TMS320AV120interface capcoms_TMS320AV120Int2 = {
   {50,50}	//Volume levels
 };
 
-#if 0
 /* Sound board */
-const struct sndbrdIntf alvgsIntf = {
-   "BSMT", alvgs_init, NULL, NULL, alvg_sndCmd_w, alvgs_data_w, NULL, alvgs_ctrl_w, alvgs_ctrl_r, SNDBRD_NODATASYNC
+const struct sndbrdIntf capcomsIntf = {
+	"TMS320AV120", capcoms_init, NULL, NULL, NULL, NULL, NULL, NULL, NULL, SNDBRD_NODATASYNC
+   //"TMS320AV120", capcoms_init, NULL, NULL, alvg_sndCmd_w, alvgs_data_w, NULL, alvgs_ctrl_w, alvgs_ctrl_r, SNDBRD_NODATASYNC
 };
-#endif
 
 /*-- local data --*/
 static struct {
