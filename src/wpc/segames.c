@@ -224,8 +224,8 @@ CORE_GAMEDEFNV(harley,"Harley Davidson",1998,"Sega",de_mSES1,GAME_NOCRC)
 / Striker Extreme (USA)
 /-------------------------------------------------------------------*/
 INITGAME(strikext,GEN_WS,3/*?*/)
-SE128_ROMSTART(strikext,"sxcpue.102",0x5e5f0fb8)
-SE_DMD524_ROMSTART(		"sxdispa.103",0xe4cf849f)
+SE128_ROMSTART(strikext,"sxcpua.102", 0x5e5f0fb8)
+SE_DMD524_ROMSTART(     "sxdispa.103",0xe4cf849f)
 SES_SOUNDROM00000("sxsounda.u7" ,0xe7e1a0cb,
                   "sxvoicea.u17",0xaeeed88f,
                   "sxvoicea.u21",0x62c9bfe3,
@@ -241,10 +241,10 @@ INITGAME(strxt_uk,GEN_WS,3/*?*/)
 SE128_ROMSTART(strxt_uk,"sxcpue.101", 0xeac29785)
 SE_DMD524_ROMSTART(     "sxdispa.101",0x1d2cb240)
 SES_SOUNDROM00000("sxsounda.u7" ,0xe7e1a0cb,
-                  "sxvoicea.u17",0xaeeed88f,
-                  "sxvoicea.u21",0x62c9bfe3,
-                  "sxvoicea.u36",0xa0bc0edb,
-                  "sxvoicea.u37",0x4c08c33c)
+                  "soceng.u17",0x779d8a98,
+                  "soceng.u21",0x47b4838c,
+                  "soceng.u36",0xab65d6f0,
+                  "soceng.u37",0xd73254f1)
 SE_ROMEND
 CORE_CLONEDEFNV(strxt_uk,strikext,"Striker Extreme (UK)",1999,"Stern",de_mSES2,GAME_NOCRC)
 
@@ -254,11 +254,11 @@ CORE_CLONEDEFNV(strxt_uk,strikext,"Striker Extreme (UK)",1999,"Stern",de_mSES2,G
 INITGAME(strxt_gr,GEN_WS,3/*?*/)
 SE128_ROMSTART(strxt_gr,"sxcpug.102", 0x2686743b)
 SE_DMD524_ROMSTART(     "sxdispg.103",0xeb656489)
-SES_SOUNDROM00000("sxsounda.u7" ,0xe7e1a0cb,
-                  "sxvoicea.u17",0xaeeed88f,
-                  "sxvoicea.u21",0x62c9bfe3,
-                  "sxvoicea.u36",0xa0bc0edb,
-                  "sxvoicea.u37",0x4c08c33c)
+SES_SOUNDROM00000("sxsoundg.u7" ,0xb38ec07d,
+                  "sxvoiceg.u17",0x19ecf6ca,
+                  "sxvoiceg.u21",0xee410b1e,
+                  "sxvoiceg.u36",0xf0e126c2,
+                  "sxvoiceg.u37",0x82260f4b)
 SE_ROMEND
 CORE_CLONEDEFNV(strxt_gr,strikext,"Striker Extreme (Germany)",1999,"Stern",de_mSES2,GAME_NOCRC)
 
@@ -268,11 +268,11 @@ CORE_CLONEDEFNV(strxt_gr,strikext,"Striker Extreme (Germany)",1999,"Stern",de_mS
 INITGAME(strxt_fr,GEN_WS,3/*?*/)
 SE128_ROMSTART(strxt_fr,"sxcpuf.102", 0x2804bc9f)
 SE_DMD524_ROMSTART(     "sxdispf.103",0x4b4b5c19)
-SES_SOUNDROM00000("sxsounda.u7" ,0xe7e1a0cb,
-                  "sxvoicea.u17",0xaeeed88f,
-                  "sxvoicea.u21",0x62c9bfe3,
-                  "sxvoicea.u36",0xa0bc0edb,
-                  "sxvoicea.u37",0x4c08c33c)
+SES_SOUNDROM00000("soc.u7" ,0xa03131cf,
+                  "soc.u17",0xe7ee91cb,
+                  "soc.u21",0x88cbf553,
+                  "soc.u36",0x35474ad5,
+                  "soc.u37",0x0e53f2a0)
 SE_ROMEND
 CORE_CLONEDEFNV(strxt_fr,strikext,"Striker Extreme (France)",1999,"Stern",de_mSES2,GAME_NOCRC)
 
@@ -282,11 +282,11 @@ CORE_CLONEDEFNV(strxt_fr,strikext,"Striker Extreme (France)",1999,"Stern",de_mSE
 INITGAME(strxt_it,GEN_WS,3/*?*/)
 SE128_ROMSTART(strxt_it,"sxcpui.102", 0xf955d0ef)
 SE_DMD524_ROMSTART(     "sxdispi.103",0x40be3fe2)
-SES_SOUNDROM00000("sxsounda.u7" ,0xe7e1a0cb,
-                  "sxvoicea.u17",0xaeeed88f,
-                  "sxvoicea.u21",0x62c9bfe3,
-                  "sxvoicea.u36",0xa0bc0edb,
-                  "sxvoicea.u37",0x4c08c33c)
+SES_SOUNDROM00000("s00.u7" ,0x80625d23,
+                  "s00.u17",0xd0b21193,
+                  "s00.u21",0x5ab3f8f4,
+                  "s00.u36",0x4ee21ade,
+                  "s00.u37",0x4427e364)
 SE_ROMEND
 CORE_CLONEDEFNV(strxt_it,strikext,"Striker Extreme (Italy)",1999,"Stern",de_mSES2,GAME_NOCRC)
 
@@ -296,11 +296,11 @@ CORE_CLONEDEFNV(strxt_it,strikext,"Striker Extreme (Italy)",1999,"Stern",de_mSES
 INITGAME(strxt_sp,GEN_WS,3/*?*/)
 SE128_ROMSTART(strxt_sp,"sxcpul.102", 0x6b1e417f)
 SE_DMD524_ROMSTART(     "sxdispl.103",0x3efd4a18)
-SES_SOUNDROM00000("sxsounda.u7" ,0xe7e1a0cb,
-                  "sxvoicea.u17",0xaeeed88f,
-                  "sxvoicea.u21",0x62c9bfe3,
-                  "sxvoicea.u36",0xa0bc0edb,
-                  "sxvoicea.u37",0x4c08c33c)
+SES_SOUNDROM00000("soc.u7" ,0xa03131cf,
+                  "soc.u17",0xe7ee91cb,
+                  "soc.u21",0x88cbf553,
+                  "soc.u36",0x35474ad5,
+                  "soc.u37",0x0e53f2a0)
 SE_ROMEND
 CORE_CLONEDEFNV(strxt_sp,strikext,"Striker Extreme (Spain)",1999,"Stern",de_mSES2,GAME_NOCRC)
 
@@ -363,8 +363,8 @@ CORE_GAMEDEFNV(austin,"Austin Powers (3.0)",2001,"Stern",de_mSES2,GAME_NOCRC)
 / Austin Powers (2.0)
 /-------------------------------------------------------------------*/
 INITGAME(austin2,GEN_WS,3/*?*/)
-SE128_ROMSTART(austin2,"apcpu.210",0xa4ddcdca)
-SE_DMD524_ROMSTART(  "apdisp-a.200",0xf3ca7fca)
+SE128_ROMSTART(austin2,"apcpu.201",   0xa4ddcdca)
+SE_DMD524_ROMSTART(    "apdisp-a.200",0xf3ca7fca)
 SES_SOUNDROM00000("apsndu7.100" ,0xd0e79d59,
                   "apsndu17.100",0xc1e33fee,
                   "apsndu21.100",0x07c3e077,
@@ -373,14 +373,13 @@ SES_SOUNDROM00000("apsndu7.100" ,0xd0e79d59,
 SE_ROMEND
 CORE_CLONEDEFNV(austin2,austin,"Austin Powers (2.0)",2001,"Stern",de_mSES2,GAME_NOCRC)
 
-
 //Strange that they went back to the 11 voice model here!
 /*-------------------------------------------------------------------
-/ Monopoly
+/ Monopoly 2.33
 /-------------------------------------------------------------------*/
 INITGAME(monopoly,GEN_WS,3/*?*/)
 SE128_ROMSTART(monopoly,"moncpu.233",0xf20a5ca6)
-SE_DMD524_ROMSTART(  "mondsp-a.206",0x6df6e158)
+SE_DMD524_ROMSTART(     "mondsp-a.206",0x6df6e158)
 SES_SOUNDROM0000( "mnsndu7.100" ,0x400442e7,
                   "mnsndu17.100",0xf9bc55e8,
                   "mnsndu21.100",0xe0727e1f,
