@@ -4,6 +4,7 @@
 #include "machine/6530riot.h"
 #include "core.h"
 
+#include "gts80.h"
 #include "gts80s.h"
 
 static int GTS80S_CPUNo;
@@ -16,7 +17,7 @@ static int GTS80S_CPUNo;
 #define SOUND_ENABLED	1
 
 
-#define BUFFER_SIZE 4096
+#define BUFFER_SIZE 8192
 
 typedef struct tagGTS80SL {
   int   stream;
@@ -107,9 +108,6 @@ static void GTS80S_Update(int num, INT16 *buffer, int length)
 	dActClock = timer_get_time();
 	dInterval = (dActClock-GTS80S_locals.clock[0]) / length;
 
-	if ( GTS80S_locals.buf_pos>1 )
-		GTS80S_locals.buf_pos = GTS80S_locals.buf_pos;
-
 	i = 0;
 	GTS80S_locals.clock[GTS80S_locals.buf_pos] = 9e99;
 	while ( length ) {
@@ -130,12 +128,26 @@ static void GTS80S_Update(int num, INT16 *buffer, int length)
 /  init
 /---------------*/
 void GTS80S_init(int num) {
+	int i = 0;
+	UINT8 *pMem;
+
 	GTS80S_CPUNo = num;
 
 	memset(&GTS80S_locals, 0x00, sizeof GTS80S_locals);
 
+	GTS80S_locals.clock[0]  = 0;
+	GTS80S_locals.buffer[0] = 0x8000;
+	GTS80S_locals.buf_pos   = 1;
+
 	/* init RAM */
 	memset(RIOT6532_RAM, 0x00, sizeof RIOT6532_RAM);
+
+	pMem = memory_region(GTS80_MEMREG_SCPU1)+0x0400;
+	for(i=0x0400; i<0x0bff; i++) {
+		*pMem = (*pMem&0x0f);
+		pMem++;
+		i++;
+	}
 
 	/* init the RIOT */
     riot6530_config(0, &GTS80S_riot6530_intf);
@@ -143,6 +155,7 @@ void GTS80S_init(int num) {
 	riot6530_reset();
 
 	GTS80S_locals.stream = stream_init("SND DAC", 100, 11025, 0, GTS80S_Update);
+	set_RC_filter(GTS80S_locals.stream, 270000, 15000, 0, 33000);
 }
 
 void GTS80S_exit() {
