@@ -49,7 +49,7 @@
 #define DE_DCPU1            1   /*DMD CPU IS #1*/
 #define DE_SDCPU1			2   /*DMD SOUND GEN 1 CPU IS #2*/
 
-#define DE_VBLANKFREQ      50   /* VBLANK frequency */
+#define DE_VBLANKFREQ      60   /* VBLANK frequency */
 #define DE_IRQFREQ       1075   /* IRQ Frequency (Measured on real game)*/
 //#define DE_DMDIRQFREQ	 7810*4 /* NMI occurs at 7810 kHz (4Mhz/512) */
 #define DE_DMDIRQFREQ	 2000   /* As measured on my Hook */
