@@ -2,7 +2,7 @@
    -----------------
    by Steve Ellenoff (01/22/2002)
 
-   Hardware: 
+   Hardware:
 
    CPU: Z80 & Z80CTC (Controls Interrupt Generation & Zero Cross Detection)
    I/O: 8255
@@ -34,7 +34,7 @@
 
 #define GP_VBLANKFREQ    60 /* VBLANK frequency */
 #define GP_IRQFREQ      150 /* IRQ (via PIA) frequency*/
-#define GP_ZCFREQ       120 /* Zero cross frequency (guessed) */
+#define GP_ZCFREQ        90 /* Zero cross frequency (guessed; but anything above 90 will cause strange effects) */
 
 static WRITE_HANDLER(GP_soundCmd)  { }
 
@@ -69,42 +69,48 @@ static void GP_dispStrobe(int mask) {
 }
 
 static void GP_lampStrobe1(int lampadr, int lampdata) {
-  UINT8 *matrix;
-  int bit;
-  if (lampadr != 0x0f) {
-    lampdata ^= 0x07;	//3 Enable Lines
-    matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)];
-    bit = 1<<(lampadr & 0x07);
-    while (lampdata) {
-      if (lampdata & 0x01) *matrix |= bit;
-      lampdata >>= 1; matrix += 2;
-    }
+  UINT8 *matrix1, *matrix2;
+  int bit, select;
+  lampdata &= 0x07;	//3 Enable Lines
+  select = lampdata>>1;
+  matrix1 = &coreGlobals.tmpLampMatrix[select];
+  matrix2 = &coreGlobals.tmpLampMatrix[select+1];
+  bit = 1<<lampadr;
+  while (lampdata) {
+    if (lampdata & 0x01) { *matrix1 |= bit; *matrix2 |= (bit>>8); }
+    lampdata >>= 1; matrix1++; matrix2++;
   }
 }
 
 static void GP_lampStrobe2(int lampadr, int lampdata) {
-  UINT8 *matrix;
-  int bit;
-  if (lampadr != 0x0f) {
-    lampdata ^= 0x0f;		//4 Enable Lines
-    matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)];
-    bit = 1<<(lampadr & 0x07);
-    while (lampdata) {
-      if (lampdata & 0x01) *matrix |= bit;
-      lampdata >>= 1; matrix += 2;
-    }
+  UINT8 *matrix1, *matrix2;
+  int bit, select;
+  lampdata &= 0x0f;	//4 Enable Lines
+  select = lampdata>>1;
+  if (select > 3) select = 3;
+  matrix1 = &coreGlobals.tmpLampMatrix[select];
+  matrix2 = &coreGlobals.tmpLampMatrix[select+1];
+  bit = 1<<lampadr;
+  while (lampdata) {
+    if (lampdata & 0x01) { *matrix1 |= bit; *matrix2 |= (bit>>8); }
+    lampdata >>= 1; matrix1++; matrix2++;
   }
 }
 
-
 static void GP_UpdateSolenoids (int bank, int soldata) {
-  UINT16 mask = 0x0000;
-  UINT16 sols = 0;
+  UINT64 mask = 0xffffffff << 31;
+  UINT32 sols = 0;
   logerror("soldata = %x\n",soldata);
   //Solenoids 1-16
-  sols = (1<<(soldata & 0xffff)) & 0xffff;
-  coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & mask) | sols;
-  locals.solenoids |= sols;
+  soldata &= 0x0f;
+  if (soldata != 0x0f) {
+	sols = (1<<(soldata + (bank*16)));
+    coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & mask) | sols;
+    locals.solenoids |= sols;
+  } else { // until we find another way to turn the solenoids back off...
+    coreGlobals.pulsedSolState &= mask;
+    locals.solenoids &= mask;
+  }
 }
 
 static int GP_vblank(void) {
@@ -169,13 +175,13 @@ static WRITE_HANDLER(ppi0_pa_w) {
 
 /************************  MPU-1 GENERATION ********************************
 PORT A WRITE
-(out) P0-P3: 
+(out) P0-P3:
 	a) Lamp Address 1-4
 	b) Display BCD Data? (Shared with Lamp Address 1-4)
 	c) Solenoid Address 1-4 (must be enabled from above)
 	d) Solenoid Address 5-8 (must be enabled from above)??? Not sure
 
-(out) P4-P7P: Address Data 
+(out) P4-P7P: Address Data
   (1-16 Demultiplexed - Output are all active low)
 	0) = NA
 	1) = Solenoid Address 1-4 Enable
@@ -207,11 +213,9 @@ static WRITE_HANDLER(mpu1_pa_w) {
 
 	/*Enabling Solenoids? (Address Line 1,2)*/
 	if(tmpdata>0 && tmpdata<3) {
-		//No solenoid is wired for 15
-		if(addrdata !=0xf) {
-			logerror("%x: sol en: %x addr %x \n",cpu_getpreviouspc(),tmpdata-1,addrdata);
-			GP_UpdateSolenoids(tmpdata-1,addrdata);
-		}
+		//No solenoid is wired for 15, so we use it for releasing the sols.
+		logerror("%x: sol en: %x addr %x \n",cpu_getpreviouspc(),tmpdata-1,addrdata);
+		GP_UpdateSolenoids(tmpdata-1,addrdata);
 	}
 
 	/*Updating Lamps? (Address Line 3-5)*/
@@ -240,13 +244,13 @@ static WRITE_HANDLER(mpu1_pa_w) {
 
 /************************  MPU-2 GENERATION ********************************
 PORT A WRITE
-(out) P0-P3: 
+(out) P0-P3:
 	a) Lamp Address 1-4
 	b) Display BCD Data? (Shared with Lamp Address 1-4)
 	c) Solenoid Address 1-4 (must be enabled from above)
 	d) Solenoid Address 5-8 (must be enabled from above)??? Not sure
 
-(out) P4-P7P: Address Data 
+(out) P4-P7P: Address Data
   (1-16 Demultiplexed - Output are all active low)
 	0) = NA
 	1) = Solenoid Address 1-4 Enable
@@ -277,11 +281,9 @@ static WRITE_HANDLER(mpu2_pa_w) {
 
 	/*Enabling Solenoids? (Address Line 1,2)*/
 	if(tmpdata>0 && tmpdata<3) {
-		//No solenoid is wired for 15
-		if(addrdata !=0xf) {
-			logerror("%x: sol en: %x addr %x \n",cpu_getpreviouspc(),tmpdata-1,addrdata);
-			GP_UpdateSolenoids(tmpdata-1,addrdata);
-		}
+		//No solenoid is wired for 15, so we use it for releasing the sols.
+		logerror("%x: sol en: %x addr %x \n",cpu_getpreviouspc(),tmpdata-1,addrdata);
+		GP_UpdateSolenoids(tmpdata-1,addrdata);
 	}
 
 	/*Updating Lamps? (Address Line 3-6)*/
@@ -337,14 +339,14 @@ U17
 ---
 Port A:
 -------
-(out) P0-P3: 
+(out) P0-P3:
 	a) Lamp Address 1-4
 	b) Display BCD Data? (Shared with Lamp Address 1-4)
 	c) Solenoid Address 1-4 (must be enabled from above)
 	d) Solenoid Address 5-8 (must be enabled from above)
 
 ***  MPU-1 GENERATION ***
-(out) P4-P7P: Address Data 
+(out) P4-P7P: Address Data
 	  (1-16 Demultiplexed - Output are all active low)
 	0) = NA
 	1) = Solenoid Address 1-4 Enable
@@ -361,7 +363,7 @@ Port A:
 ***  MPU-2 GENERATION***
 Differences Summary: Extra Lamp & Switch Strobe, and 5 Strobes for BDU
 Differences Details:
-(out) P4-P7P: Address Data 
+(out) P4-P7P: Address Data
 	  (1-16 Demultiplexed - Output are all active low)
 	3-6) = Lamp Data 1-4
 	7) = Swicht Strobe 0 AND BDU - Clock 1
