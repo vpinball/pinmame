@@ -15,8 +15,8 @@ static const core_tLCDLayout dispBy7C[] = {
 
 /* 4 x 7 digit 9 Segment Display */
 static const core_tLCDLayout dispBy104[] = {
-  {0, 0, 9, 7,CORE_SEG10}, {0,16, 2, 7,CORE_SEG10},
-  {0,32,28, 7,CORE_SEG10}, {0,48,35, 1,CORE_SEG10}, {0,50,22, 6,CORE_SEG10}, {0}
+  {0, 0, 9,7,CORE_SEG98}, {0,16, 2,7,CORE_SEG98},
+  {0,32,28,7,CORE_SEG98}, {0,48,35,1,CORE_SEG10}, {0,50,22,6,CORE_SEG98}, {0}
 };
 BY6803_INPUT_PORTS_START(by6803, 1)   BY6803_INPUT_PORTS_END
 BY6803A_INPUT_PORTS_START(by6803a, 1) BY6803_INPUT_PORTS_END
