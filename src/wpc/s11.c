@@ -434,7 +434,10 @@ static MACHINE_INIT(s11) {
       sndbrd_0_init(SNDBRD_S9S, 1, NULL, NULL, NULL);
       break;
     case GEN_S11:
-      sndbrd_0_init(SNDBRD_S11S,  2, memory_region(S11S_ROMREGION), NULL, NULL);
+      sndbrd_0_init(SNDBRD_S11S,  1, memory_region(S11S_ROMREGION), NULL, NULL);
+      break;
+    case GEN_S11X:
+      sndbrd_0_init(SNDBRD_S11XS, 2, memory_region(S11S_ROMREGION), NULL, NULL);
       sndbrd_1_init(SNDBRD_S11CS, 1, memory_region(S11CS_ROMREGION), pia_5_cb1_w, NULL);
       break;
     case GEN_S11B2:
@@ -515,7 +518,7 @@ MACHINE_DRIVER_START(s11_s9S)
   MDRV_SOUND_CMDHEADING("s11")
 MACHINE_DRIVER_END
 
-/* System 11 */
+/* System 11 without external sound board*/
 MACHINE_DRIVER_START(s11_s11S)
   MDRV_IMPORT_FROM(s11)
   MDRV_IMPORT_FROM(wmssnd_s11s)
@@ -525,7 +528,17 @@ MACHINE_DRIVER_START(s11_s11S)
   MDRV_SOUND_CMDHEADING("s11")
 MACHINE_DRIVER_END
 
-/* System 11a */
+/* System 11 with S11C sound board*/
+MACHINE_DRIVER_START(s11_s11XS)
+  MDRV_IMPORT_FROM(s11)
+  MDRV_IMPORT_FROM(wmssnd_s11xs)
+  MDRV_NVRAM_HANDLER(s11)
+  MDRV_DIAGNOSTIC_LED7
+  MDRV_SOUND_CMD(s11_sndCmd_w)
+  MDRV_SOUND_CMDHEADING("s11")
+MACHINE_DRIVER_END
+
+/* System 11a with S11C sound board */
 MACHINE_DRIVER_START(s11_s11aS)
   MDRV_IMPORT_FROM(s11)
   MDRV_IMPORT_FROM(wmssnd_s11s)
@@ -535,7 +548,7 @@ MACHINE_DRIVER_START(s11_s11aS)
   MDRV_SOUND_CMDHEADING("s11")
 MACHINE_DRIVER_END
 
-/* System 11B Jokerz! */
+/* System 11B with Jokerz! sound board*/
 MACHINE_DRIVER_START(s11_s11b2S)
   MDRV_IMPORT_FROM(s11)
   MDRV_IMPORT_FROM(wmssnd_s11b2s)

@@ -80,7 +80,7 @@ CORE_GAMEDEF(comet, l4, "Comet (L-4)", 1985, "Williams", s9_mS9S,0)
 /*--------------------
 / High Speed 01/86
 /--------------------*/
-INITGAMEFULL(hs, GEN_S11, s11_dispS11, 0, FLIP_SWNO(37,38),
+INITGAMEFULL(hs, GEN_S11X, s11_dispS11, 0, FLIP_SWNO(37,38),
              S11_BCDDIAG,0,49,50,35,34,33,0)
 S11_ROMSTART28(hs,l4,"hs_u26.l4", 0x38b73830,
                      "hs_u27.l4", 0x24c6f7f0)
@@ -89,12 +89,12 @@ S11S_SOUNDROM88(     "hs_u21.l2", 0xc0580037,
 S11CS_SOUNDROM8(     "hs_u4.l1",  0x0f96e094)
 S11_ROMEND
 #define input_ports_hs input_ports_s11
-CORE_GAMEDEF(hs, l4, "High Speed (L-4)", 1986, "Williams", s11_mS11S,0)
+CORE_GAMEDEF(hs, l4, "High Speed (L-4)", 1986, "Williams", s11_mS11XS,0)
 
 /*--------------------
 / Grand Lizard 04/86
 /--------------------*/
-INITGAMEFULL(grand, GEN_S11, s11_dispS11, 0, FLIP_SWNO(0,48),
+INITGAMEFULL(grand, GEN_S11X, s11_dispS11, 0, FLIP_SWNO(0,48),
              S11_BCDDIAG,0,43,44,0,0,0,0)
 S11_ROMSTART28(grand,l4,"lzrd_u26.l4", 0x5fe50db6,
                         "lzrd_u27.l4", 0x6462ca55)
@@ -103,12 +103,12 @@ S11S_SOUNDROM44(        "lzrd_u21.l1", 0x98859d37,
 S11CS_SOUNDROM8(        "lzrd_u4.l1",  0x4baafc11)
 S11_ROMEND
 #define input_ports_grand input_ports_s11
-CORE_GAMEDEF(grand, l4, "Grand Lizard (L-4)", 1986, "Williams", s11_mS11S,0)
+CORE_GAMEDEF(grand, l4, "Grand Lizard (L-4)", 1986, "Williams", s11_mS11XS,0)
 
 /*--------------------
 / Road Kings 07/86
 /--------------------*/
-INITGAMEFULL(rdkng, GEN_S11, s11_dispS11,12, FLIP_SWNO(47,48),
+INITGAMEFULL(rdkng, GEN_S11X, s11_dispS11,12, FLIP_SWNO(47,48),
              S11_BCDDIAG,S11_RKMUX,43,44,24,25,26,27)
 S11_ROMSTART48(rdkng,l4,"road_u26.l4", 0x4ea27d67,
                         "road_u27.l4", 0x5b88e755)
@@ -117,12 +117,12 @@ S11S_SOUNDROM88(        "road_u21.l1", 0xf34efbf4,
 S11CS_SOUNDROM8(        "road_u4.l1",  0x4395b48f)
 S11_ROMEND
 #define input_ports_rdkng input_ports_s11
-CORE_GAMEDEF(rdkng, l4, "Road Kings (L-4)", 1986, "Williams", s11_mS11S,0)
+CORE_GAMEDEF(rdkng, l4, "Road Kings (L-4)", 1986, "Williams", s11_mS11XS,0)
 
 /*--------------------
 / Pinbot 10/86
 /--------------------*/
-INITGAMEFULL(pb, GEN_S11, s11_dispS11, 14, FLIP_SWNO(10,11),
+INITGAMEFULL(pb, GEN_S11X, s11_dispS11, 14, FLIP_SWNO(10,11),
              0,0, 53, 0, 48, 54, 55,52)
 S11_ROMSTART48(pb,l5,"pbot_u26.l5", 0xdaa0c8e4,
                      "pbot_u27.l5", 0xe625d6ce)
@@ -132,7 +132,7 @@ S11CS_SOUNDROM88(    "pbot_u4.l1",  0xde5926bd,
                      "pbot_u19.l1", 0x40eb4e9f)
 S11_ROMEND
 #define input_ports_pb input_ports_s11
-CORE_GAMEDEF(pb, l5, "Pinbot (L-5)", 1987, "Williams", s11_mS11S,0)
+CORE_GAMEDEF(pb, l5, "Pinbot (L-5)", 1987, "Williams", s11_mS11XS,0)
 
 /*--------------------
 / F14 Tomcat 3/87

@@ -143,8 +143,8 @@ static MEMORY_WRITE_START(s11s_writemem)
 MEMORY_END
 
 static void s11cs_ym2151IRQ(int state);
-static struct DACinterface      s11s_dacInt2     = { 2, { 50,50 }};
-static struct hc55516_interface s11s_hc55516Int2 = { 2, { 80,80 }};
+static struct DACinterface      s11xs_dacInt2     = { 2, { 50,50 }};
+static struct hc55516_interface s11xs_hc55516Int2 = { 2, { 80,80 }};
 static struct YM2151interface   s11cs_ym2151Int  = {
   1, 3579545, /* Hz */
   { YM3012_VOL(10,MIXER_PAN_CENTER,30,MIXER_PAN_CENTER) },
@@ -152,13 +152,22 @@ static struct YM2151interface   s11cs_ym2151Int  = {
 };
 
 MACHINE_DRIVER_START(wmssnd_s11s)
+  MDRV_CPU_ADD(M6808, 1000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(s11s_readmem, s11s_writemem)
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD(DAC,    s9s_dacInt)
+  MDRV_SOUND_ADD(HC55516,s9s_hc55516Int)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(wmssnd_s11xs)
   MDRV_IMPORT_FROM(wmssnd_s11cs)
   MDRV_CPU_ADD(M6808, 1000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(s11s_readmem, s11s_writemem)
   MDRV_INTERLEAVE(50)
-  MDRV_SOUND_REPLACE("dac",  DAC,    s11s_dacInt2)
-  MDRV_SOUND_REPLACE("cvsd", HC55516,s11s_hc55516Int2)
+  MDRV_SOUND_REPLACE("dac",  DAC,    s11xs_dacInt2)
+  MDRV_SOUND_REPLACE("cvsd", HC55516,s11xs_hc55516Int2)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(wmssnd_s11b2s)
@@ -167,8 +176,8 @@ MACHINE_DRIVER_START(wmssnd_s11b2s)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(s11s_readmem, s11s_writemem)
   MDRV_INTERLEAVE(50)
-  MDRV_SOUND_REPLACE("dac",  DAC,    s11s_dacInt2)
-  MDRV_SOUND_ADD(            HC55516,s11s_hc55516Int2)
+  MDRV_SOUND_REPLACE("dac",  DAC,    s11xs_dacInt2)
+  MDRV_SOUND_ADD(            HC55516,s11xs_hc55516Int2)
 MACHINE_DRIVER_END
 
 static void s11s_piaIrq(int state);
@@ -199,7 +208,7 @@ static struct {
 
 static void s11s_init(struct sndbrdData *brdData) {
   s11slocals.brdData = *brdData;
-  pia_config(S11S_PIA0, PIA_STANDARD_ORDERING, &s11s_pia[s11slocals.brdData.subType]);
+  pia_config(S11S_PIA0, PIA_STANDARD_ORDERING, &s11s_pia[s11slocals.brdData.subType & 3]);
   if (s11slocals.brdData.subType) {
     cpu_setbank(S11S_BANK0, s11slocals.brdData.romRegion+0xc000);
     cpu_setbank(S11S_BANK1, s11slocals.brdData.romRegion+0x4000);
