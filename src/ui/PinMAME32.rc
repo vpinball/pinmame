@@ -235,8 +235,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,50,0,0
- PRODUCTVERSION 1,50,0,0
+ FILEVERSION 1,51,0,0
+ PRODUCTVERSION 1,51,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -255,12 +255,12 @@ BEGIN
             VALUE "Comments", "Based on MAME32 by Christopher Kirmse and Michael Soderstrom"
             VALUE "CompanyName", "PinMAME Team"
             VALUE "FileDescription", "Multiple Pinball Machine Emulator for Win32"
-            VALUE "FileVersion", "1, 50, 0, 0"
+            VALUE "FileVersion", "1, 51, 0, 0"
             VALUE "InternalName", "PinMAME32"
             VALUE "LegalCopyright", "Copyright 2001-2004 by the PinMAME team"
             VALUE "OriginalFilename", "PinMAME32.exe"
             VALUE "ProductName", "PinMAME32"
-            VALUE "ProductVersion", "1.50"
+            VALUE "ProductVersion", "1.51"
         END
     END
     BLOCK "VarFileInfo"
@@ -340,7 +340,7 @@ FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "Go to Microsoft's DirectX Web Page",IDB_WEB_PAGE,48,52,
                     140,14
-    EDITTEXT        IDC_DIRECTX_HELP,7,0,222,48,ES_MULTILINE |
+    EDITTEXT        IDC_DIRECTX_HELP,7,0,222,48,ES_MULTILINE | 
                     ES_AUTOHSCROLL | ES_READONLY
 END
 
@@ -381,12 +381,12 @@ CAPTION "Directories"
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "Show directories for:",IDC_STATIC,7,7,157,8
-    COMBOBOX        IDC_DIR_COMBO,7,19,157,79,CBS_DROPDOWNLIST | CBS_SORT |
+    COMBOBOX        IDC_DIR_COMBO,7,19,157,79,CBS_DROPDOWNLIST | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
     LTEXT           "Directories:",IDC_STATIC,7,37,157,8
-    CONTROL         "List1",IDC_DIR_LIST,"SysListView32",LVS_REPORT |
-                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_EDITLABELS |
-                    LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | WS_BORDER |
+    CONTROL         "List1",IDC_DIR_LIST,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_EDITLABELS | 
+                    LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | WS_BORDER | 
                     WS_TABSTOP,7,50,157,48
     DEFPUSHBUTTON   "OK",IDOK,174,7,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,174,24,50,14
@@ -402,14 +402,14 @@ FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "Available fields:",IDC_STATIC,7,7,80,12
     CONTROL         "List1",IDC_LISTAVAILABLECOLUMNS,"SysListView32",
-                    LVS_LIST | LVS_SINGLESEL | LVS_NOCOLUMNHEADER |
+                    LVS_LIST | LVS_SINGLESEL | LVS_NOCOLUMNHEADER | 
                     LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,7,19,90,106
     PUSHBUTTON      "Add ->",IDC_BUTTONADD,105,19,44,14,WS_DISABLED
     PUSHBUTTON      "<- Remove",IDC_BUTTONREMOVE,105,37,44,14,WS_DISABLED
     LTEXT           "Show these fields in this order:",IDC_STATIC,156,7,96,
                     12
-    CONTROL         "List1",IDC_LISTSHOWCOLUMNS,"SysListView32",LVS_LIST |
-                    LVS_SINGLESEL | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER |
+    CONTROL         "List1",IDC_LISTSHOWCOLUMNS,"SysListView32",LVS_LIST | 
+                    LVS_SINGLESEL | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | 
                     WS_BORDER | WS_TABSTOP,156,19,90,106
     PUSHBUTTON      "Move Up",IDC_BUTTONMOVEUP,157,129,44,14,WS_DISABLED
     PUSHBUTTON      "Move Down",IDC_BUTTONMOVEDOWN,203,129,44,14,WS_DISABLED
@@ -463,8 +463,8 @@ BEGIN
     LTEXT           "Sample check:",IDC_STATIC,19,58,50,8
     LTEXT           "Checking...",IDC_PROP_SAMPLES,74,58,139,8
     GROUPBOX        "Details",IDC_STATIC,12,77,196,121
-    EDITTEXT        IDC_AUDIT_DETAILS_PROP,20,89,180,102,ES_MULTILINE |
-                    ES_AUTOVSCROLL | ES_READONLY | WS_VSCROLL | WS_HSCROLL |
+    EDITTEXT        IDC_AUDIT_DETAILS_PROP,20,89,180,102,ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_READONLY | WS_VSCROLL | WS_HSCROLL | 
                     NOT WS_TABSTOP
 END
 
@@ -477,47 +477,47 @@ BEGIN
     LTEXT           "Title\nDirectory\nExtra",IDC_PROP_TITLE,52,9,161,25,
                     SS_NOPREFIX
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,20,38,178,1
-    CONTROL         "Run in a window",IDC_WINDOWED,"Button",BS_AUTOCHECKBOX |
+    CONTROL         "Run in a window",IDC_WINDOWED,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,15,45,69,9,0,HIDC_WINDOWED
     CONTROL         "Start out maximized",IDC_MAXIMIZE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,15,55,74,9,0,HIDC_MAXIMIZE
     CONTROL         "Enforce aspect ratio",IDC_KEEPASPECT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,15,65,77,9,0,
                     HIDC_KEEPASPECT
-    CONTROL         "Throttle",IDC_THROTTLE,"Button",BS_AUTOCHECKBOX |
+    CONTROL         "Throttle",IDC_THROTTLE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,15,75,39,9,0,HIDC_THROTTLE
-    CONTROL         "Slider1",IDC_ZOOM,"msctls_trackbar32",TBS_BOTH |
+    CONTROL         "Slider1",IDC_ZOOM,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,120,111,65,10,0,HIDC_ZOOM
     LTEXT           "2",IDC_ZOOMDIST,190,111,8,8
     GROUPBOX        "Rotation",IDC_STATIC,5,125,105,55
-    COMBOBOX        IDC_ROTATE,15,135,83,72,CBS_DROPDOWNLIST | WS_VSCROLL |
+    COMBOBOX        IDC_ROTATE,15,135,83,72,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP,0,HIDC_ROTATE
     CONTROL         "Flip screen upside-down",IDC_FLIPY,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,15,150,90,10,0,HIDC_FLIPY
     CONTROL         "Flip screen left-right",IDC_FLIPX,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,15,165,81,10,0,HIDC_FLIPX
     GROUPBOX        "Effects",IDC_STATIC,115,44,95,46
-    CONTROL         "Use scanlines",IDC_SCANLINES,"Button",BS_AUTOCHECKBOX |
+    CONTROL         "Use scanlines",IDC_SCANLINES,"Button",BS_AUTOCHECKBOX | 
                     WS_GROUP | WS_TABSTOP,123,56,77,9,0,HIDC_SCANLINES
-    COMBOBOX        IDC_EFFECT,123,69,83,85,CBS_DROPDOWNLIST | WS_VSCROLL |
+    COMBOBOX        IDC_EFFECT,123,69,83,85,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP,0,HIDC_EFFECT
-    CONTROL         "GammaSlider",IDC_GAMMA,"msctls_trackbar32",TBS_BOTH |
+    CONTROL         "GammaSlider",IDC_GAMMA,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,120,130,65,10,0,HIDC_GAMMA
-    LTEXT           "2.00",IDC_GAMMADISP,190,130,15,10,SS_CENTERIMAGE | NOT
+    LTEXT           "2.00",IDC_GAMMADISP,190,130,15,10,SS_CENTERIMAGE | NOT 
                     WS_GROUP
     CONTROL         "GammaSlider",IDC_BRIGHTCORRECT,"msctls_trackbar32",
                     TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,120,151,65,10,0,
                     HIDC_BRIGHTCORRECT
     LTEXT           "1.00",IDC_BRIGHTCORRECTDISP,190,151,15,10,
                     SS_CENTERIMAGE | NOT WS_GROUP
-    CONTROL         "Slider1",IDC_PAUSEBRIGHT,"msctls_trackbar32",TBS_BOTH |
+    CONTROL         "Slider1",IDC_PAUSEBRIGHT,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,120,170,65,10,0,
                     HIDC_PAUSEBRIGHT
     LTEXT           "0.65",IDC_PAUSEBRIGHTDISP,190,170,15,8
     PUSHBUTTON      "Reset",IDC_PROP_RESET,7,184,97,14,0,0,0x809a0447
     PUSHBUTTON      "Restore Default Settings",IDC_USE_DEFAULT,114,184,99,14,
                     0,0,0x809a0401
-    COMBOBOX        IDC_CLEAN_STRETCH,15,105,95,90,CBS_DROPDOWNLIST |
+    COMBOBOX        IDC_CLEAN_STRETCH,15,105,95,90,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP,0,HIDC_CLEAN_STRETCH
     LTEXT           "Pause Brightness",IDC_STATIC,115,160,56,8
     LTEXT           "Brightness Correction",IDC_STATIC,115,140,68,8
@@ -536,7 +536,7 @@ BEGIN
                     SS_NOPREFIX
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,20,38,178,1
     GROUPBOX        "",IDC_STATIC,5,45,210,130
-    CONTROL         "Use Direct3D",IDC_D3D,"Button",BS_AUTOCHECKBOX |
+    CONTROL         "Use Direct3D",IDC_D3D,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,10,45,59,10,0,HIDC_D3D
     CONTROL         "Texture Management",IDC_D3D_TEXTURE_MANAGEMENT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,15,60,83,10,0,
@@ -545,26 +545,26 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,15,75,61,10,0,
                     HIDC_D3D_ROTATE_EFFECTS
     LTEXT           "Filter",IDC_STATIC,100,60,18,10,SS_CENTERIMAGE
-    COMBOBOX        IDC_D3D_FILTER,130,60,80,95,CBS_DROPDOWNLIST |
+    COMBOBOX        IDC_D3D_FILTER,130,60,80,95,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP,0,HIDC_D3D_FILTER
     LTEXT           "Effect",IDC_STATIC,100,80,22,10,SS_CENTERIMAGE
-    COMBOBOX        IDC_D3D_EFFECT,130,80,80,90,CBS_DROPDOWNLIST |
+    COMBOBOX        IDC_D3D_EFFECT,130,80,80,90,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP,0,HIDC_D3D_EFFECT
     LTEXT           "Prescale",IDC_STATIC,100,100,28,10,SS_CENTERIMAGE
-    COMBOBOX        IDC_D3D_PRESCALE,130,100,80,70,CBS_DROPDOWNLIST |
+    COMBOBOX        IDC_D3D_PRESCALE,130,100,80,70,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP,0,HIDC_D3D_PRESCALE
     GROUPBOX        "Effect Overrides",IDC_STATIC,75,130,135,40
     CONTROL         "Scanlines",IDC_D3D_SCANLINES_ENABLE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,80,140,45,10,0,
                     HIDC_D3D_SCANLINES_ENABLE
-    CONTROL         "Slider1",IDC_D3D_SCANLINES,"msctls_trackbar32",TBS_BOTH |
+    CONTROL         "Slider1",IDC_D3D_SCANLINES,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,125,140,60,10,0,
                     HIDC_D3D_SCANLINES
     LTEXT           "100",IDC_D3D_SCANLINES_DISP,190,140,15,8
     CONTROL         "Feedback",IDC_D3D_FEEDBACK_ENABLE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,80,155,45,10,0,
                     HIDC_D3D_FEEDBACK_ENABLE
-    CONTROL         "Slider3",IDC_D3D_FEEDBACK,"msctls_trackbar32",TBS_BOTH |
+    CONTROL         "Slider3",IDC_D3D_FEEDBACK,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,125,155,60,10,0,
                     HIDC_D3D_FEEDBACK
     LTEXT           "100",IDC_D3D_FEEDBACK_DISP,190,155,15,8
@@ -585,24 +585,24 @@ BEGIN
     CONTROL         "Enable sound and sound CPUs",IDC_USE_SOUND,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,40,50,115,10,0,
                     HIDC_USE_SOUND
-    CONTROL         "Use samples",IDC_SAMPLES,"Button",BS_AUTOCHECKBOX |
+    CONTROL         "Use samples",IDC_SAMPLES,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,50,64,55,10,0,HIDC_SAMPLES
     CONTROL         "Resample if sample rate does not match",IDC_USE_FILTER,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,50,78,140,10,0,
                     HIDC_USE_FILTER
     LTEXT           "Sample rate:",IDC_RATETEXT,50,94,40,8,NOT WS_GROUP
-    COMBOBOX        IDC_SAMPLERATE,94,92,59,60,CBS_DROPDOWNLIST |
+    COMBOBOX        IDC_SAMPLERATE,94,92,59,60,CBS_DROPDOWNLIST | 
                     CBS_UPPERCASE | WS_VSCROLL | WS_TABSTOP,0,
                     HIDC_SAMPLERATE
     GROUPBOX        "Volume attenuation",IDC_VOLUMETEXT,40,110,130,25
-    CONTROL         "Slider1",IDC_VOLUME,"msctls_trackbar32",TBS_BOTH |
+    CONTROL         "Slider1",IDC_VOLUME,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,45,120,98,11,0,HIDC_VOLUME
     CTEXT           "0dB",IDC_VOLUMEDISP,140,120,25,10,SS_CENTERIMAGE
     PUSHBUTTON      "Reset",IDC_PROP_RESET,7,184,97,14,0,0,0x809b0447
     PUSHBUTTON      "Restore Default Settings",IDC_USE_DEFAULT,114,184,99,14,
                     0,0,0x809b0401
     LTEXT           "Audio latency",IDC_AUDIO_LATENCY_TEXT,45,140,44,8
-    CONTROL         "Slider1",IDC_AUDIO_LATENCY,"msctls_trackbar32",TBS_BOTH |
+    CONTROL         "Slider1",IDC_AUDIO_LATENCY,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,50,150,95,10,0,
                     HIDC_AUDIO_LATENCY
     LTEXT           "1/5",IDC_AUDIO_LATENCY_DISP,150,150,15,8
@@ -618,7 +618,7 @@ BEGIN
                     SS_NOPREFIX
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,20,38,178,1
     GROUPBOX        "",IDC_STATIC,7,42,206,73
-    CONTROL         "Use DirectDraw",IDC_DDRAW,"Button",BS_AUTOCHECKBOX |
+    CONTROL         "Use DirectDraw",IDC_DDRAW,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,11,42,68,9,0,HIDC_DDRAW
     CONTROL         "Triple buffering",IDC_TRIPLE_BUFFER,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,16,53,93,9,0,
@@ -642,29 +642,29 @@ BEGIN
                     HIDC_SWITCHBPP
     LTEXT           "Full screen brightness:",IDC_BRIGHTNESSTEXT,115,78,96,9,
                     NOT WS_GROUP
-    CONTROL         "Slider1",IDC_BRIGHTNESS,"msctls_trackbar32",TBS_BOTH |
+    CONTROL         "Slider1",IDC_BRIGHTNESS,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,115,88,73,10,0,HIDC_BRIGHTNESS
     LTEXT           "2.00",IDC_BRIGHTNESSDISP,191,87,15,8,NOT WS_GROUP
     LTEXT           "Aspect ratio:",IDC_ASPECTRATIOTEXT,115,101,40,9
-    EDITTEXT        IDC_ASPECTRATION,162,99,15,12,ES_RIGHT | ES_AUTOHSCROLL |
+    EDITTEXT        IDC_ASPECTRATION,162,99,15,12,ES_RIGHT | ES_AUTOHSCROLL | 
                     ES_NUMBER,0,HIDC_ASPECTRATION
     LTEXT           ":",IDC_STATIC,180,100,6,9,NOT WS_GROUP
-    EDITTEXT        IDC_ASPECTRATIOD,186,99,15,12,ES_RIGHT | ES_AUTOHSCROLL |
+    EDITTEXT        IDC_ASPECTRATIOD,186,99,15,12,ES_RIGHT | ES_AUTOHSCROLL | 
                     ES_NUMBER,0,HIDC_ASPECTRATIOD
     GROUPBOX        "Resolution",IDC_STATIC,7,117,100,62,WS_GROUP
     LTEXT           "Size:",IDC_STATIC,11,131,28,8,NOT WS_GROUP
-    COMBOBOX        IDC_SIZES,41,128,59,72,CBS_DROPDOWNLIST | WS_VSCROLL |
+    COMBOBOX        IDC_SIZES,41,128,59,72,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP,0,HIDC_SIZES
     LTEXT           "Depth:",IDC_RESDEPTHTEXT,11,147,28,8,NOT WS_GROUP
-    COMBOBOX        IDC_RESDEPTH,41,145,59,63,CBS_DROPDOWNLIST | WS_VSCROLL |
+    COMBOBOX        IDC_RESDEPTH,41,145,59,63,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP,0,HIDC_RESDEPTH
     LTEXT           "Refresh:",IDC_REFRESHTEXT,11,165,28,8,NOT WS_GROUP
-    COMBOBOX        IDC_REFRESH,41,162,59,76,CBS_DROPDOWNLIST | WS_VSCROLL |
+    COMBOBOX        IDC_REFRESH,41,162,59,76,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP,0,HIDC_REFRESH
     GROUPBOX        "Frame skipping",IDC_STATIC,113,117,100,62
-    CONTROL         "Automatic",IDC_AUTOFRAMESKIP,"Button",BS_AUTOCHECKBOX |
+    CONTROL         "Automatic",IDC_AUTOFRAMESKIP,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,119,130,77,9,0,HIDC_AUTOFRAMESKIP
-    COMBOBOX        IDC_FRAMESKIP,119,146,90,88,CBS_DROPDOWNLIST |
+    COMBOBOX        IDC_FRAMESKIP,119,146,90,88,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP,0,HIDC_FRAMESKIP
     PUSHBUTTON      "Reset",IDC_PROP_RESET,7,184,97,14,0,0,HIDC_PROP_RESET
     PUSHBUTTON      "Restore Default Settings",IDC_USE_DEFAULT,114,184,99,14,
@@ -684,7 +684,7 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,50,46,120,10,0,
                     HIDC_JOYSTICK
     GROUPBOX        "Analog joystick deadzone",IDC_A2DTEXT,50,63,120,33
-    CONTROL         "IntensitySlider",IDC_A2D,"msctls_trackbar32",TBS_BOTH |
+    CONTROL         "IntensitySlider",IDC_A2D,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,60,74,100,11,0,HIDC_A2D
     CTEXT           "0.3",IDC_A2DDISP,100,84,19,9,NOT WS_GROUP
     CONTROL         "Enable mouse input",IDC_USE_MOUSE,"Button",
@@ -697,7 +697,7 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,49,132,121,10,0,
                     HIDC_STEADYKEY
     GROUPBOX        "Default input layout",IDC_STATIC,50,150,120,32
-    COMBOBOX        IDC_DEFAULT_INPUT,72,161,78,55,CBS_DROPDOWNLIST |
+    COMBOBOX        IDC_DEFAULT_INPUT,72,161,78,55,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP,0,HIDC_DEFAULT_INPUT
     PUSHBUTTON      "Reset",IDC_PROP_RESET,7,184,97,14,0,0,0x809d0447
     PUSHBUTTON      "Restore Default Settings",IDC_USE_DEFAULT,114,184,99,14,
@@ -716,23 +716,23 @@ BEGIN
     GROUPBOX        "",IDC_STATIC,7,43,206,30
     CONTROL         "Use additional game artwork",IDC_ARTWORK,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,14,43,105,10,0,HIDC_ARTWORK
-    CONTROL         "Backdrops",IDC_BACKDROPS,"Button",BS_AUTOCHECKBOX |
+    CONTROL         "Backdrops",IDC_BACKDROPS,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,25,56,60,10,0,HIDC_BACKDROPS
-    CONTROL         "Bezels",IDC_BEZELS,"Button",BS_AUTOCHECKBOX |
+    CONTROL         "Bezels",IDC_BEZELS,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,89,56,51,10,0,HIDC_BEZELS
-    CONTROL         "Overlays",IDC_OVERLAYS,"Button",BS_AUTOCHECKBOX |
+    CONTROL         "Overlays",IDC_OVERLAYS,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,146,56,58,10,0,HIDC_OVERLAYS
     LTEXT           "Artwork",IDC_STATIC,10,75,25,8
-    COMBOBOX        IDC_ARTRES,15,85,59,60,CBS_DROPDOWNLIST | WS_VSCROLL |
+    COMBOBOX        IDC_ARTRES,15,85,59,60,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP,0,HIDC_ARTRES
-    CONTROL         "Crop artwork",IDC_ARTWORK_CROP,"Button",BS_AUTOCHECKBOX |
+    CONTROL         "Crop artwork",IDC_ARTWORK_CROP,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,15,100,55,10,0,HIDC_ARTWORK_CROP
     LTEXT           "BIOS",IDC_STATIC,105,75,18,8
-    COMBOBOX        IDC_BIOS,110,85,100,90,CBS_DROPDOWNLIST | WS_VSCROLL |
+    COMBOBOX        IDC_BIOS,110,85,100,90,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP,0,HIDC_BIOS
     CONTROL         "Use keyboard LEDs as game indicators",IDC_LEDS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,15,125,140,10,0,HIDC_LEDS
-    CONTROL         "Enable game cheats",IDC_CHEAT,"Button",BS_AUTOCHECKBOX |
+    CONTROL         "Enable game cheats",IDC_CHEAT,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,15,135,80,10,0,HIDC_CHEAT
     CONTROL         "Use less CPU time when possible",IDC_SLEEP,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,15,145,120,10,0,HIDC_SLEEP
@@ -763,11 +763,11 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,50,62,114,8,0,
                     HIDC_TRANSLUCENCY
     LTEXT           "Beam width:",IDC_BEAMTEXT,50,76,114,8
-    CONTROL         "BeamSlider",IDC_BEAM,"msctls_trackbar32",TBS_BOTH |
+    CONTROL         "BeamSlider",IDC_BEAM,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,50,89,89,11,0,HIDC_BEAM
     LTEXT           "16.00",IDC_BEAMDISP,141,89,29,9
     LTEXT           "Flicker:",IDC_FLICKERTEXT,50,103,114,8
-    CONTROL         "FlickerSlider",IDC_FLICKER,"msctls_trackbar32",TBS_BOTH |
+    CONTROL         "FlickerSlider",IDC_FLICKER,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,50,116,89,11,0,HIDC_FLICKER
     LTEXT           "100.00",IDC_FLICKERDISP,142,116,29,9,NOT WS_GROUP
     LTEXT           "Intensity:",IDC_INTENSITYTEXT,50,130,114,8
@@ -812,14 +812,14 @@ BEGIN
                     TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,88,114,69,11
     LTEXT           "100%",IDC_DMD_PERC66_DISP,163,116,29,9,NOT WS_GROUP
     LTEXT           "Red",IDC_DMD_RED_TEXT,15,132,58,8
-    CONTROL         "BeamSlider",IDC_DMD_RED,"msctls_trackbar32",TBS_BOTH |
+    CONTROL         "BeamSlider",IDC_DMD_RED,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,88,130,69,11
     LTEXT           "100%",IDC_DMD_RED_DISP,163,131,29,9
     LTEXT           "Green",IDC_DMD_GREEN_TEXT,15,148,58,8
     LTEXT           "Blue",IDC_DMD_BLUE_TEXT,15,164,58,8
-    CONTROL         "BeamSlider",IDC_DMD_GREEN,"msctls_trackbar32",TBS_BOTH |
+    CONTROL         "BeamSlider",IDC_DMD_GREEN,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,88,146,69,11
-    CONTROL         "BeamSlider",IDC_DMD_BLUE,"msctls_trackbar32",TBS_BOTH |
+    CONTROL         "BeamSlider",IDC_DMD_BLUE,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,88,162,69,11
     LTEXT           "100%",IDC_DMD_GREEN_DISP,163,147,29,9
     LTEXT           "100%",IDC_DMD_BLUE_DISP,163,163,29,9
@@ -834,12 +834,12 @@ CLASS "MainClass"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_DIVIDER,"Static",SS_ETCHEDHORZ,0,5,304,1
-    CONTROL         "Tree1",IDC_TREE,"SysTreeView32",TVS_HASBUTTONS |
-                    TVS_HASLINES | TVS_LINESATROOT | TVS_EDITLABELS |
-                    TVS_SHOWSELALWAYS | TVS_FULLROWSELECT | WS_BORDER |
+    CONTROL         "Tree1",IDC_TREE,"SysTreeView32",TVS_HASBUTTONS | 
+                    TVS_HASLINES | TVS_LINESATROOT | TVS_EDITLABELS | 
+                    TVS_SHOWSELALWAYS | TVS_FULLROWSELECT | WS_BORDER | 
                     WS_TABSTOP,5,28,48,172
-    CONTROL         "List1",IDC_LIST,"SysListView32",LVS_REPORT |
-                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_AUTOARRANGE |
+    CONTROL         "List1",IDC_LIST,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_AUTOARRANGE | 
                     LVS_OWNERDRAWFIXED | WS_BORDER | WS_TABSTOP,65,28,42,172
     GROUPBOX        "",IDC_SPLITTER,55,28,8,172,BS_NOTIFY | NOT WS_VISIBLE
     GROUPBOX        "",IDC_SPLITTER2,109,28,8,172,BS_NOTIFY | NOT WS_VISIBLE
@@ -848,7 +848,7 @@ BEGIN
     CONTROL         "",IDC_SSTAB,"SysTabControl32",TCS_HOTTRACK,121,0,181,18
     CONTROL         "",IDC_SSPICTURE,"Static",SS_BITMAP | NOT WS_VISIBLE,141,
                     18,141,127
-    EDITTEXT        IDC_HISTORY,129,150,167,49,ES_MULTILINE | ES_READONLY |
+    EDITTEXT        IDC_HISTORY,129,150,167,49,ES_MULTILINE | ES_READONLY | 
                     NOT WS_BORDER | WS_VSCROLL | NOT WS_TABSTOP,0,
                     HIDC_HISTORY
 END
@@ -866,7 +866,7 @@ BEGIN
     CONTROL         "&Vector Graphics",IDC_FILTER_VECTOR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,23,49,76,10,0,
                     HIDC_FILTER_VECTOR
-    CONTROL         "C&lones",IDC_FILTER_CLONES,"Button",BS_AUTOCHECKBOX |
+    CONTROL         "C&lones",IDC_FILTER_CLONES,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,23,63,76,10,0,HIDC_FILTER_CLONES
     CONTROL         "Non-Wor&king",IDC_FILTER_NONWORKING,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,23,77,76,10,0,
@@ -880,7 +880,7 @@ BEGIN
     CONTROL         "Ori&ginals",IDC_FILTER_ORIGINALS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,107,63,78,10,0,
                     HIDC_FILTER_ORIGINALS
-    CONTROL         "&Working",IDC_FILTER_WORKING,"Button",BS_AUTOCHECKBOX |
+    CONTROL         "&Working",IDC_FILTER_WORKING,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,107,77,78,10,0,HIDC_FILTER_WORKING
     GROUPBOX        "&Description filter",IDC_STATIC,13,123,179,33
     EDITTEXT        IDC_FILTER_EDIT,23,136,159,12,ES_AUTOHSCROLL,0,
@@ -924,9 +924,9 @@ BEGIN
     CONTROL         "Progress1",IDC_LOAD_PROGRESS,"msctls_progress32",
                     WS_BORDER | 0x1,8,4,252,12
     CTEXT           "",IDC_LOAD_ROMNAME,7,20,253,9,NOT WS_GROUP
-    EDITTEXT        IDC_LOAD_STATUS,10,35,250,115,ES_MULTILINE | ES_READONLY |
+    EDITTEXT        IDC_LOAD_STATUS,10,35,250,115,ES_MULTILINE | ES_READONLY | 
                     WS_VSCROLL
-    CTEXT           "",IDC_ERROR_TEXT,10,155,250,13,SS_NOPREFIX |
+    CTEXT           "",IDC_ERROR_TEXT,10,155,250,13,SS_NOPREFIX | 
                     SS_CENTERIMAGE
     PUSHBUTTON      "&OK",IDOK,85,175,50,14,WS_DISABLED
     PUSHBUTTON      "&Cancel",IDCANCEL,145,175,50,14
@@ -975,7 +975,7 @@ BEGIN
     DEFPUSHBUTTON   "&OK",IDOK,45,201,50,14
     PUSHBUTTON      "&Cancel",IDCANCEL,101,201,50,14
     CONTROL         "S&tretch screenshot larger than natural size",
-                    IDC_STRETCH_SCREENSHOT_LARGER,"Button",BS_AUTOCHECKBOX |
+                    IDC_STRETCH_SCREENSHOT_LARGER,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,15,115,148,10,0,
                     HIDC_STRETCH_SCREENSHOT_LARGER
 END
@@ -1003,12 +1003,12 @@ CAPTION "Add Game To Custom Folder"
 FONT 8, "MS Sans Serif"
 BEGIN
     CONTROL         "CustomTree",IDC_CUSTOM_TREE,"SysTreeView32",
-                    TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT |
-                    TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS |
+                    TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | 
+                    TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | 
                     TVS_FULLROWSELECT | WS_BORDER | WS_TABSTOP,5,20,175,90
     DEFPUSHBUTTON   "OK",IDOK,35,115,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,95,115,50,14
-    LTEXT           "",IDC_CUSTOMFILE_GAME,5,5,175,8,SS_NOPREFIX |
+    LTEXT           "",IDC_CUSTOMFILE_GAME,5,5,175,8,SS_NOPREFIX | 
                     SS_CENTERIMAGE
 END
 
