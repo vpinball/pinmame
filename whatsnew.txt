@@ -17,8 +17,17 @@ Version 1.20
  [Tom Haukap]
 
 - Added support for Taito games
- (Thanks goes to Alexandre Souza and Newton Pessoa for providing very helpfully info on these sound machines)
-[Tom Haukap, Gerrit Volkenborn]
+ (Thanks goes to Alexandre Souza and Newton Pessoa for providing very helpful info (sound) on these machines)
+ [Tom Haukap, Gerrit Volkenborn]
+
+- Added support for early Atari games (Atarians to Space Riders)
+  (Atarians isn't working first time due to a strange bug. The roms can be patched to work...)
+- Added Gottlieb Caveman Video Emulation.
+- Added Intel 4004 and Rockwell PPS-4 CPU cores to the code.
+- Added support for "Flicker" prototype by Dave Nutting Associates (Septemper 1974!)
+- Added Midway's Rotation VIII (working AFAICS, but where's the game start button?)
+- Added Astro's Black Sheep Squadron (not working yet)
+ [Gerrit Volkenborn]
 
 
 Version 1.12.1 (April 14, 2002)
