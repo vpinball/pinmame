@@ -62,6 +62,7 @@ static struct {
   int    segPos1, segPos2;
   int    vidCmd;
   struct rectangle vidClip;
+  int    buf8212int;
 } GTS80locals;
 /*----------
 / Pointers
@@ -123,11 +124,6 @@ static SWITCH_UPDATE(GTS80) {
   riot6532_set_input_a(1, (coreGlobals.swMatrix[0] & 0x80) ^ 0x80);
   if (core_gameData->hw.display & GTS80_DISPVIDEO) { // Also triggers NMI on video CPU
     cpu_set_irq_line(GTS80_VIDCPU, IRQ_LINE_NMI, (coreGlobals.swMatrix[0] & 0x80) ? ASSERT_LINE : CLEAR_LINE);
-    // Reset game switches activated by video part
-    if (!(GTS80locals.vblankCount % 5)) {
-      int ii;
-      for(ii = 1; ii < 8; ii++) coreGlobals.swMatrix[ii] &= 0xfc;
-    }
   }
 }
 
@@ -153,7 +149,10 @@ static READ_HANDLER(riot6532_0a_r) {
     return bits;
   }
 }
-static WRITE_HANDLER(riot6532_0b_w) { GTS80locals.riot0b = data; }
+static WRITE_HANDLER(riot6532_0b_w) {
+  GTS80locals.riot0b = data;
+  GTS80locals.buf8212int |= (data & 0x03); // for caveman only
+}
 
 /*---------------------------
 /  Riot1 Display
@@ -582,29 +581,33 @@ static READ_HANDLER(port002r)  { return pic8259_0_r(offset>>1); }
 static WRITE_HANDLER(port10xw) { DBGLOG(("HD46505 w %x = %02x\n", offset/2, data)); }
 static READ_HANDLER(port102r)  { DBGLOG(("HD46505 read\n")); return 0; }
 
-/* output to game switches, row 0 */
-static WRITE_HANDLER(port200w) {
+// port200 & port300 is connected to an 8212 chip
+// The 8212 is buffer but it can generate an interrupt when read.
+// In caveman it set up so that the interrupt pin is connected to D6 & D7 on port 200.
+// Port 200 is connected to switch strobe 0 and D7
+// Port 300 is connected to switch strobe 1 and D6
+// Accessing the port clears the interrupt
+// buf8212int contains port200 status in D0 and port300 status in D1
+// (was easier to handle that way)
+
+static void GTS80_vidStatus(int strobe, int data) {
   int ii;
-  if (data)
-    for (ii = 1; ii < 8; ii++, data >>= 1)
-      coreGlobals.swMatrix[ii] = (coreGlobals.swMatrix[ii] & 0xfe) | (data & 0x01);
-}
-/* output to game switches, row 1 */
-static WRITE_HANDLER(port300w) {
-  int ii;
-  if (data) {
-    data <<= 1;
-    for (ii = 1; ii < 8; ii++, data >>= 1)
-      coreGlobals.swMatrix[ii] = (coreGlobals.swMatrix[ii] & 0xfd) | (data & 0x02);
-  }
+  data <<= (strobe-1);
+  for (ii = 1; ii < 8; ii++, data >>= 1)
+    coreGlobals.swMatrix[ii] = (coreGlobals.swMatrix[ii] & ~strobe) | (data & strobe);
+  GTS80locals.buf8212int &= strobe; // clear interrupt pin
 }
 
-/* no idea what it is for, but its high nibble
-   has got to be all 1 after IRQ 0x20 is called,
-   or else the video code enters an endless loop. */
+/* output to game switches, row 0 */
+static WRITE_HANDLER(port200w) { GTS80_vidStatus(1,data); }
+/* output to game switches, row 1 */
+static WRITE_HANDLER(port300w) { GTS80_vidStatus(2,data); }
+// Check if the main CPU has read the data in the 8212s
 static READ_HANDLER(port200r) {
-   logerror("read  port 200\n");
-   return 0xf0;
+  const int stat = ((GTS80locals.buf8212int & 0x01)<<7) |
+                   ((GTS80locals.buf8212int & 0x02)<<5);
+  GTS80locals.buf8212int &= 0x01; // reading clears int pin
+  return stat;
 }
 
 /* joystick inports */
