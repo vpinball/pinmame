@@ -6,6 +6,13 @@
 	SND: 2 x TMS320AV120 MPG DECODER ( Only 1 on Breakshot )
 	VOL: x9241 Digital Volume Pot
 
+  Hacks & Issues that need to be looked into:
+  #1) /BOF line timing not properly emulated (fails start up test)
+  #2) 9241 Digital volume pot not emulated (fails start up test)
+  #3) Currently rom is hacked to bypass error messages for the above failed tests..
+  #4) Sound board often get's overloaded and resets or just drops out/misses sound commands
+  #5) Only KP game fails to report a proper sound board reset (others do, but if you watch received commands, not all commands are always sent)
+  #6) Sometimes received data doesn't always get sent (see sound reset of KP for good example)
   ------------------------------------
 */
 #include "driver.h"
@@ -16,12 +23,19 @@
 #include "sndbrd.h"
 
 #define VERBOSE
+//#define DEBUGGING
 
 #ifdef VERBOSE
 #define LOG(x)	logerror x
 //#define LOG(x)	printf x
 #else
 #define LOG(x)
+#endif
+
+#ifdef DEBUGGING
+#define PRINTF(x) printf x
+#else
+#define PRINTF(x) 
 #endif
 
 //Remove this flag to test the real game sending data (otherwise, we simply feed data from the roms till we hit the end)
@@ -33,6 +47,7 @@
 /*Declarations*/
 WRITE_HANDLER(capcoms_sndCmd_w);
 static void capcoms_init(struct sndbrdData *brdData);
+static void capcoms_reset(void);
 static void cap_bof(int chipnum,int state);
 static void cap_sreq(int chipnum,int state);
 #ifdef TEST_FROM_ROM
@@ -59,10 +74,13 @@ const struct sndbrdIntf capcomsIntf = {
    //"TMS320AV120", capcoms_init, NULL, NULL, alvg_sndCmd_w, alvgs_data_w, NULL, alvgs_ctrl_w, alvgs_ctrl_r, SNDBRD_NODATASYNC
 };
 
-/*-- local data --*/
+/*-- local data (cannot be reset) --*/
 static struct {
   struct sndbrdData brdData;
-  void *buffTimer;
+} locals_cap;
+
+/* -- local data (to be reset -- */
+static struct {
   UINT8 ram[0x8000];	//External 32K Ram
   int rombase_offset;	//Offset into current rom
   int rombase;			//Points to current rom
@@ -70,9 +88,11 @@ static struct {
   int sreq_line[2];		//Track status of sreq line for each tms chip
   int cbof_line[2];		//Clear BOF Line (8752 controlled)
   int cts;				//Clear to send (If 1, cpu will not send data)
+  int rts;				//Request to send (If 1, sender will not send data)
   UINT8 from_8752;		//Data from the 8752
   UINT8 to_8752;		//Data to the 8752
 #ifdef TEST_FROM_ROM
+  void *buffTimer;
   int curr[2];			//Current position we've read from the rom
 #endif
 } locals;
@@ -94,14 +114,21 @@ static struct {
 void set_cts_line_to_8752(int data)
 {
 	locals.cts = data;
-	printf("setting cts = %x\n",data);
+	//PRINTF(("setting cts = %x\n",data));
+}
+
+int get_rts_line_from_8752(void)
+{
+	return locals.rts;
 }
 
 void send_data_to_8752(int data)
 {
 	locals.to_8752 = data;
+	PRINTF(("Data TO 8752 Write = %x\n",data));
+
 	//Force the RX Line Callback
-	cpu_set_irq_line(locals.brdData.cpuNo, I8051_RX_LINE, ASSERT_LINE);
+	cpu_set_irq_line(locals_cap.brdData.cpuNo, I8051_RX_LINE, ASSERT_LINE);
 }
 
 extern void send_data_to_68306(int data);
@@ -117,6 +144,7 @@ void data_from_8752(int data)
 int data_to_8752(void)
 {
 	int data = locals.to_8752;
+	PRINTF(("reading 8752 data %x\n",data));
 	return data;
 }
 
@@ -138,11 +166,11 @@ void cap_bof(int chipnum,int state)
 		return;
 	}
 	if(chipnum)
-		cpu_set_irq_line(locals.brdData.cpuNo, I8051_INT1_LINE, state?CLEAR_LINE:ASSERT_LINE);
+		cpu_set_irq_line(locals_cap.brdData.cpuNo, I8051_INT1_LINE, state?CLEAR_LINE:ASSERT_LINE);
 	else
-		cpu_set_irq_line(locals.brdData.cpuNo, I8051_INT0_LINE, state?CLEAR_LINE:ASSERT_LINE);
+		cpu_set_irq_line(locals_cap.brdData.cpuNo, I8051_INT0_LINE, state?CLEAR_LINE:ASSERT_LINE);
 	LOG(("MPG#%d: BOF Set to %d\n",chipnum,state));
-	//printf("MPG#%d: BOF Set to %d\n",chipnum,state);
+	//PRINTF(("MPG#%d: BOF Set to %d\n",chipnum,state));
 }
 
 //Track state of SREQ
@@ -150,7 +178,7 @@ void cap_sreq(int chipnum,int state)
 {
 	locals.sreq_line[chipnum]=state;
 	LOG(("MPG#%d: SREQ Set to %d\n",chipnum,state));
-//	printf("MPG#%d: SREQ Set to %d\n",chipnum,state);
+//	PRINTF(("MPG#%d: SREQ Set to %d\n",chipnum,state));
 }
 
 
@@ -250,8 +278,8 @@ static READ_HANDLER(port_r)
 		/*PORT 1:
 			P1.0    (O) = LED
 			P1.1    (X) = NC
-			P1.2    (I) = /CTS = CLEAR TO SEND   - From Main CPU(Active low)
-			P1.3    (O) = /RTS = REQEUST TO SEND - To Main CPU(Active low)
+			P1.2    (I) = /CTS = CLEAR TO SEND   (Will NOT send data if line = 1)
+			P1.3    (O) = /RTS = REQEUST TO SEND (If receiving too much data, set's line = 1)
 			P1.4    (I) = SCL = U10 - Pin 14 - EPOT CLOCK			(Not a mistake, port used for both I/O)
 			P1.5    (I) = SDA = U10 - Pin  9 - EPOT SERIAL DATA		(Not a mistake, port used for both I/O)
 			P1.6    (O) = /CBOF1 = CLEAR BOF1 IRQ
@@ -293,8 +321,8 @@ static WRITE_HANDLER(port_w)
 		/*PORT 1:
 			P1.0    (O) = LED
 			P1.1    (X) = NC
-			P1.2    (I) = /CTS = CLEAR TO SEND   - From Main CPU(Active low)
-			P1.3    (I) = /RTS = REQEUST TO SEND - From Main CPU(Active low)
+			P1.2    (I) = /CTS = CLEAR TO SEND   (Will NOT send data if line = 1)
+			P1.3    (O) = /RTS = REQEUST TO SEND (If receiving too much data, set's line = 1)
 			P1.4    (O) = SCL = U10 - Pin 14 - EPOT CLOCK
 			P1.5    (O) = SDA = U10 - Pin  9 - EPOT SERIAL DATA
 			P1.6    (O) = /CBOF1 = CLEAR BOF1 IRQ
@@ -305,6 +333,13 @@ static WRITE_HANDLER(port_w)
 
 			//Update x9241 data lines (SCL & SDA)
 			data_to_x9241((data&0x10)>>4,(data&0x20)>>5);
+
+			//Set RTS Line
+			locals.rts = (data & 0x08)>>3;
+#if 0
+			if(locals.rts)
+				PRINTF(("rts = %x\n",locals.rts));
+#endif
 
 			//CBOF1 & CBOF2 (If cpu writes a 0 here, we set BOF HI, but if we write a 1, BOF line is unchanged!)
 			if((data&0x40)==0)	cap_bof(0,1);
@@ -511,6 +546,7 @@ MACHINE_DRIVER_START(capcoms)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(capcoms_readmem, capcoms_writemem)
   MDRV_CPU_PORTS(capcoms_readport, capcoms_writeport)
+  //MDRV_INTERLEAVE(1500)
   MDRV_INTERLEAVE(50)
 MACHINE_DRIVER_END
 
@@ -526,9 +562,18 @@ MACHINE_DRIVER_START(capcom2s)
   MDRV_SOUND_ADD_TAG("tms320av120", TMS320AV120, capcoms_TMS320AV120Int2)
 MACHINE_DRIVER_END
 
-static void capcoms_init(struct sndbrdData *brdData) {
+//Manual reset of cpu, triggered from external source
+void capcoms_manual_reset()
+{
+  capcoms_reset();
+  TMS320AV120_sh_reset();
+  cpu_set_reset_line(locals_cap.brdData.cpuNo, PULSE_LINE);
+}
+
+//Initialize anything that should be cleared when cpu is reset
+static void capcoms_reset()
+{
   memset(&locals, 0, sizeof(locals));
-  locals.brdData = *brdData;
   memset(&x9241, 0, sizeof(x9241));
 
   //Setup 8752 serial line call backs
@@ -561,6 +606,14 @@ static void capcoms_init(struct sndbrdData *brdData) {
   /*-- start the timer --*/
   timer_adjust(locals.buffTimer, 0, 0, TIME_IN_HZ(30));		// Send 30 Frames per second ( 32Khz sample rate ~ 27.8 Frames per second)
 #endif
+}
+
+//Initialize anything that cannot be reset here..
+static void capcoms_init(struct sndbrdData *brdData) {
+  memset(&locals_cap, 0, sizeof(locals_cap));
+  locals_cap.brdData = *brdData;
+  //call reset routine for clearing all data related to a reset
+  capcoms_reset();
 }
 
 WRITE_HANDLER(capcoms_sndCmd_w)
