@@ -2,12 +2,8 @@
 #include "core.h"
 #include "byvidpin.h"
 
-static const core_tLCDLayout VIDEO[] = {
-        {0,0,0,0,CORE_VIDEO}, {0}
-};
-
-#define INITGAMEVP(name, gen, disp, flip, lamps) \
-static core_tGameData name##GameData = {gen,disp,{flip,0,lamps}}; \
+#define INITGAMEVP(name, disp, flip, dualTMS) \
+static core_tGameData name##GameData = {0,disp,{flip,0,0,0,0,dualTMS}}; \
 static void init_##name(void) { \
   core_gameData = &name##GameData; \
 } \
@@ -16,7 +12,7 @@ BYVP_INPUT_PORTS_START(name, 1) BYVP_INPUT_PORTS_END
 /*-----------------------------------------------------
 / Baby Pacman (Video/Pinball Combo) (BY133-???:  10/82)
 /-----------------------------------------------------*/
-INITGAMEVP(babypac,0,VIDEO,FLIP_SWNO(0,1),0)
+INITGAMEVP(babypac,byVP_dispBabyPac,FLIP_SWNO(0,1),0)
 BYVP_ROMSTARTx00(babypac, "891-u2.732", 0x7f7242d1,
                           "891-u6.732", 0x6136d636,
                           "891-u9.764", 0x7fa570f3,
@@ -30,7 +26,7 @@ CORE_GAMEDEFNVR90(babypac,"Baby Pacman (Video/Pinball Combo)",1982,"Bally",byVP_
 /*-----------------------------------------------------------------
 / Granny and the Gators (Video/Pinball Combo) - (BY35-???: 01/84)
 /----------------------------------------------------------------*/
-INITGAMEVP(granny,0,VIDEO,FLIP_SW(FLIP_L),0)
+INITGAMEVP(granny,byVP_dispGranny,FLIP_SW(FLIP_L),1)
 BYVP_ROMSTART100(granny,"cpu_u2.532",0xd45bb956,
                         "cpu_u6.532",0x306aa673,
                         "vid_u4.764",0x3a3d4c6b,
