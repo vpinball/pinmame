@@ -16,6 +16,8 @@ New Features
 -Bally 6803 Emulation (not fully working yet)
 -Bally 6803 Turbo Cheap Squalk, Sounds Deluxe, System 11C Sound Support (preliminary & not fully working yet)
 -Bally Cheap & Squeak Sound Emulation (preliminary & not fully working yet)
+-Preliminary Zaccaria Emulation [not working]
+-Preliminary Game Plan Emulation [not working]
 -Support for games using Bally Cheap & Squalk sound
 -Support for all Bally 6803 Games
 -Support for Granny & the Gators (not working)
@@ -29,6 +31,12 @@ New Features
  Users should set this value to whichever sounds better for their computer setup
  [Martin Adrian]
  [Steve Ellenoff]
+
+-Support for 9 & 10 Segments displays
+ [Martin Adrian]
+
+-Updated Gottlieb games to use 9 segments displays
+ [Tom Haukup]
 
 
 Version 1.10 (December 23, 2001) - Happy 30th Birthday Steve
