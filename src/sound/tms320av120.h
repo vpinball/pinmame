@@ -28,5 +28,5 @@ void TMS320AV120_sh_update(void);
 WRITE_HANDLER( TMS320AV120_data_0_w );
 WRITE_HANDLER( TMS320AV120_data_1_w );
 void TMS320AV120_set_mute(int chipnum, int state);
-
+void TMS320AV120_reset(int chipnum);
 #endif
