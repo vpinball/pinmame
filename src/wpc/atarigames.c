@@ -8,7 +8,7 @@
 
 #define INITGAME1(name, disptype, flippers, balls) \
 	ATARI1_INPUT_PORTS_START(name, balls) ATARI_INPUT_PORTS_END \
-	static core_tGameData name##GameData = {0,disptype,{flippers,0,1,0,SNDBRD_ATARI1,0}}; \
+	static core_tGameData name##GameData = {0,disptype,{flippers,0,9,0,SNDBRD_ATARI1,0}}; \
 	static void init_##name(void) { \
 		core_gameData = &name##GameData; \
 	}
@@ -20,15 +20,17 @@
 		core_gameData = &name##GameData; \
 	}
 
-#define DISP_SEG_6(row,col,type) {4*row,16*col,row*20+col*8+2,6,type}
-#define DISP_SEG_6A(row,col,type) {4*row,16*col,row*16+col*8+2,6,type}
-
 /* 4 X 6 Segments, 2 X 2 Segments */
 core_tLCDLayout atari_disp1[] = {
-  DISP_SEG_6A(0,0,CORE_SEG7), DISP_SEG_6A(0,1,CORE_SEG7),
-  DISP_SEG_6A(1,0,CORE_SEG7), DISP_SEG_6A(1,1,CORE_SEG7),
-  DISP_SEG_CREDIT(34,35,CORE_SEG7), DISP_SEG_BALLS(32,33,CORE_SEG7), {0}
+  { 0, 0, 2, 3, CORE_SEG87 }, { 0, 6, 5, 3, CORE_SEG87 },
+  { 3, 0,10, 3, CORE_SEG87 }, { 3, 6,13, 3, CORE_SEG87 },
+  { 6, 0,18, 3, CORE_SEG87 }, { 6, 6,21, 3, CORE_SEG87 },
+  { 9, 0,26, 3, CORE_SEG87 }, { 9, 6,29, 3, CORE_SEG87 },
+  { 9,16,32, 2, CORE_SEG87 }, { 9,22,34, 2, CORE_SEG87 },
+  {0}
 };
+
+#define DISP_SEG_6(row,col,type) {4*row,16*col,row*20+col*8+2,6,type}
 
 core_tLCDLayout atari_disp2[] = {
   DISP_SEG_6(0,0,CORE_SEG7), DISP_SEG_6(0,1,CORE_SEG7),
