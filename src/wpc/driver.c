@@ -122,6 +122,9 @@ DRIVERNV(embryonb)      //BY35:     10/02 Embryon (7-digit conversion)
 DRIVERNV(fathom  )      //BY35-842: 12/80 Fathom
 DRIVERNV(fathomb )      //BY35-842: 08/04 Fathom (modified rules)
 DRIVERNV(medusa  )      //BY35-845: 02/81 Medusa
+#ifdef MAME_DEBUG
+DRIVERNV(medusaf )      //BY35-845: 02/81 Medusa (6802 board)
+#endif
 DRIVERNV(centaur )      //BY35-848: 02/81 Centaur
 DRIVERNV(elektra )      //BY35-857: 03/81 Elektra
 DRIVERNV(vector  )      //BY35-858: 03/81 Vector
