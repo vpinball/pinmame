@@ -412,12 +412,19 @@ int win_init_window(void)
 			if (!RegisterClass(&wc))
 				return 1;
 		}
+		#ifdef VPINMAME
+		classes_created = 1;
+		#endif
 	}
 
 	// make the window title
 	// make the window title
 #ifdef PINMAME
+#ifdef VPINMAME
+	sprintf(title, "%s [%s]", Machine->gamedrv->description, Machine->gamedrv->name);
+#else
 	sprintf(title, "PINMAME: %s [%s]", Machine->gamedrv->description, Machine->gamedrv->name);
+#endif
 #else /* PINMAME */
 #ifndef MESS
 	sprintf(title, "MAME: %s [%s]", Machine->gamedrv->description, Machine->gamedrv->name);
