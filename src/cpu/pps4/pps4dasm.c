@@ -1,12 +1,25 @@
 #include <stdio.h>
 #include "osd_cpu.h"
 #include "memory.h"
+#include "pps4.h"
 
-//#define OP(A)   cpu_readop(A)
-#define OP(A)   ((~cpu_readop(A)) & 0xff)
+static UINT8 OP(unsigned pc)
+{
+#if INVERT_DATA
+	return (~cpu_readop(pc)) & 0xff;
+#else
+	return cpu_readop(pc);
+#endif
+}
 
-//#define ARG(A)  cpu_readop_arg(A)
-#define ARG(A)  ((~cpu_readop_arg(A)) & 0xff)
+static UINT8 ARG(unsigned pc)
+{
+#if INVERT_DATA
+	return (~cpu_readop_arg(pc)) & 0xff;
+#else
+	return cpu_readop_arg(pc);
+#endif
+}
 
 unsigned DasmPPS4(char *buff, unsigned pc)
 {
@@ -66,11 +79,11 @@ unsigned DasmPPS4(char *buff, unsigned pc)
 
 		case 0x40: case 0x41: case 0x42: case 0x43: case 0x44: case 0x45: case 0x46: case 0x47:
 		case 0x48: case 0x49: case 0x4a: case 0x4b: case 0x4c: case 0x4d: case 0x4e: case 0x4f:
-			sprintf (buff,"skbi  #$%x", (op & 0x0f)); break;
+			sprintf (buff,"skbi  #$%x", op & 0x0f); break;
 
 		case 0x50: case 0x51: case 0x52: case 0x53: case 0x54: case 0x55: case 0x56: case 0x57:
 		case 0x58: case 0x59: case 0x5a: case 0x5b: case 0x5c: case 0x5d: case 0x5e: case 0x5f:
-			sprintf (buff,"tl    $%X%02X", (op & 0x0f), ARG(++pc)); break;
+			sprintf (buff,"tl    $%X%02X", op & 0x0f, ARG(++pc)); break;
 
 		case 0x60: case 0x61: case 0x62: case 0x63: case 0x64: case 0x66: case 0x67:
 		case 0x68: case 0x69: case 0x6a: case 0x6b: case 0x6c: case 0x6d: case 0x6e:

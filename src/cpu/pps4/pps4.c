@@ -64,14 +64,20 @@ static int words[] = {
 
 static UINT8 ROP(void)
 {
-//	return cpu_readop(I.PC.w.l++);
+#if INVERT_DATA
 	return (~cpu_readop(I.PC.w.l++)) & 0xff;
+#else
+	return cpu_readop(I.PC.w.l++);
+#endif
 }
 
 static UINT8 ARG(void)
 {
-//	return cpu_readop_arg(I.PC.w.l++);
+#if INVERT_DATA
 	return (~cpu_readop_arg(I.PC.w.l++)) & 0xff;
+#else
+	return cpu_readop_arg(I.PC.w.l++);
+#endif
 }
 
 static UINT8 RM(UINT32 a)
@@ -318,7 +324,7 @@ INLINE void execute_one(int opcode)
 		/* ADI */
 		case 0x60: case 0x61: case 0x62: case 0x63: case 0x64: case 0x66: case 0x67:
 		case 0x68: case 0x69: case 0x6a: case 0x6b: case 0x6c: case 0x6d: case 0x6e:
-			I.accu += ((~opcode) & 0x0f);
+			I.accu += (~opcode) & 0x0f;
 			I.skip = I.carry = I.accu >> 4;
 			I.accu &= 0x0f;
 			break;
@@ -335,7 +341,7 @@ INLINE void execute_one(int opcode)
 		case 0x70: case 0x71: case 0x72: case 0x73: case 0x74: case 0x75: case 0x76: case 0x77:
 		case 0x78: case 0x79: case 0x7a: case 0x7b: case 0x7c: case 0x7d: case 0x7e: case 0x7f:
 			if (!wasLDI) {
-				I.accu = ((~opcode) & 0x0f);
+				I.accu = (~opcode) & 0x0f;
 			}
 			wasLDI = 2;
 			break;
