@@ -21,7 +21,7 @@ static READ_HANDLER(alvgs_ctrl_r);
 
 /* Newer 12 Voice Style BSMT Chip */
 static struct BSMT2000interface alvgs_bsmt2000Int = {
-  1, {24000000}, {12}, {ALVGS_ROMREGION}, {100}, {0000}
+  1, {24000000}, {12}, {ALVGS_ROMREGION}, {100}, {0000}, 0, 1
 };
 /* Sound board */
 const struct sndbrdIntf alvgsIntf = {
