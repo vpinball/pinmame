@@ -277,10 +277,20 @@ DCS_SOUNDROM6x(	"su2",CRC(d2f9ab24) SHA1(ac96fdce6545d1017fa3ed7567061ae2e065375
 		"su7",CRC(94eea5a4) SHA1(afb00e799dbc01c67ed2c4aa399e8a7365ca3dd3))
 WPC_ROMEND
 
+WPC_ROMSTART(i500,11b,"U6-Belgium.110",0x80000,CRC(76a5de55) SHA1(858d9817b534fed470919fa5957709dd1e4216d8))
+DCS_SOUNDROM6x(	"su2",CRC(d2f9ab24) SHA1(ac96fdce6545d1017fa3ed7567061ae2e0653750),
+		"su3",CRC(067f4df6) SHA1(0adc116bfebefb17f27718bdd2401c336b07078f),
+		"su4",CRC(229b96c2) SHA1(77eda81fd011fc818c3fde5e1094cfb3f12372c6),
+		"su5",CRC(f0c006a5) SHA1(ead07bb131bd581c41ab0833f6269de7e574017c),
+		"su6",CRC(a2b60d31) SHA1(0e0ddb310ec78e0963794994edd0c6bbc4863f4f),
+		"su7",CRC(94eea5a4) SHA1(afb00e799dbc01c67ed2c4aa399e8a7365ca3dd3))
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(i500,11r,"Indianapolis 500 (1.1R)",1995,"Bally",wpc_mSecurityS,0)
+CORE_CLONEDEF(i500,11b,11r,"Indianapolis 500 (1.1 Belgium)",1995,"Bally",wpc_mSecurityS,0)
 
 /*-----------------------
 / Simulation Definitions
