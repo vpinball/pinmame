@@ -81,16 +81,6 @@ WRITE_HANDLER(riot6530_0b_w) {
 		GTS80S_locals.IRQEnabled = data&0x40;
 }
 
-static UINT8 RIOT6532_RAM[0x0200]; 
-
-static READ_HANDLER(riot6530_0_ram_r) {
-	return RIOT6532_RAM[offset];
-}
-
-static WRITE_HANDLER(riot6530_0_ram_w) {
-	RIOT6532_RAM[offset] = data;
-}
-
 struct riot6530_interface GTS80S_riot6530_intf = {
  /* 6530RIOT 0 (0x200) Chip U2 */
  /* PA0 - PA7 Digital sound data */
@@ -122,7 +112,7 @@ static void GTS80S_Update(int num, INT16 *buffer, int length)
 {
 	double dActClock, dInterval, dCurrentClock;
 	int i;
-		
+
 	dCurrentClock = GTS80S_locals.clock[0];
 
 	dActClock = timer_get_time();
@@ -165,9 +155,6 @@ void gts80s_init(struct sndbrdData *brdData) {
 	GTS80S_locals.clock[0]  = 0;
 	GTS80S_locals.buffer[0] = 0;
 	GTS80S_locals.buf_pos   = 1;
-
-	/* init RAM */
-	memset(RIOT6532_RAM, 0x00, sizeof RIOT6532_RAM);
 
 	if ( GTS80S_locals.boardData.subType==0 ) {
 		/* clear the upper 4 bits, some ROM images aren't 0 */ 
@@ -245,7 +232,7 @@ WRITE_HANDLER(riot3a_w) { logerror("riot3a_w: 0x%02x\n", data);}
 /* Switch settings, test switch and NMI */
 READ_HANDLER(riot3b_r)  {
 	// 0x40: test switch SW1
-	return (votrax_status_r()?0x80:0x00) | 0x40 | (GTS80SS_locals.dips^0x3f);
+	return (votrax_status_r()?0x80:0x80) | 0x40 | (GTS80SS_locals.dips^0x3f);
 }
 
 WRITE_HANDLER(riot3b_w) { logerror("riot3b_w: 0x%02x\n", data);}
@@ -366,8 +353,7 @@ MEMORY_WRITE_START(GTS80SS_writemem)
 { 0x5000, 0x5fff, ext_board_2_w},
 { 0x6000, 0x6fff, ext_board_3_w},
 { 0x7000, 0x7fff, MWA_ROM},
-{ 0x8000, 0xfdff, MWA_ROM},
-{ 0xff00, 0xffff, MWA_RAM},
+{ 0x8000, 0xffff, MWA_ROM},
 MEMORY_END
 
 WRITE_HANDLER(gts80ss_data_w)
