@@ -14,16 +14,16 @@
 #include "gts80s.h"
 #include "gts3.h"
 
-/* 
+/*
     Gottlieb System 80 Sound Boards
-   
-    - System 80/80A Sound Board 
+
+    - System 80/80A Sound Board
 
     - System 80/80A Sound & Speech Board
 
     - System 80A Sound Board with a PiggyPack installed
 	  (thanks goes to Peter Hall for providing some very usefull information)
-   
+
     - System 80B Sound Board (3 generations)
 
 	- System 3 sound boards
@@ -60,7 +60,7 @@ static WRITE_HANDLER(gts80s_riot6530_0a_w) {
 	GTS80S_locals.buffer[GTS80S_locals.buf_pos++] = ((data<<7)-0x4000)*2;
 }
 
-static WRITE_HANDLER(gts80s_riot6530_0b_w) { 
+static WRITE_HANDLER(gts80s_riot6530_0b_w) {
 //	logerror("riot6530_0b_w: 0x%02x\n", data);
 	/* reset the interupt on the PiggyPack board */
 	if ( GTS80S_locals.boardData.subType==1 )
@@ -93,7 +93,7 @@ MEMORY_READ_START(GTS80S_readmem)
 { 0x0000, 0x01ff, MRA_RAM},
 { 0x0200, 0x03ff, riot6530_0_r},
 { 0x0400, 0x0fff, MRA_ROM},
-{ 0x1000, 0x10ff, MRA_RAM},  
+{ 0x1000, 0x10ff, MRA_RAM},
 { 0xf800, 0xffff, MRA_ROM},
 MEMORY_END
 
@@ -109,7 +109,7 @@ static void GTS80S_Update(int num, INT16 *buffer, int length)
 {
 	double dActClock, dInterval, dCurrentClock;
 	int i;
-		
+
 	dCurrentClock = GTS80S_locals.clock[0];
 
 	dActClock = timer_get_time();
@@ -155,7 +155,7 @@ void gts80s_init(struct sndbrdData *brdData) {
 	GTS80S_locals.buf_pos   = 1;
 
 	if ( GTS80S_locals.boardData.subType==0 ) {
-		/* clear the upper 4 bits, some ROM images aren't 0 */ 
+		/* clear the upper 4 bits, some ROM images aren't 0 */
 		/* the 6530 RIOT ROM is not used by the boards which have a PiggyPack installed */
 		pMem = memory_region(GTS80S_locals.boardData.cpuNo)+0x0400;
 		for(i=0x0400; i<0x0bff; i++)
@@ -165,9 +165,9 @@ void gts80s_init(struct sndbrdData *brdData) {
 	}
 
 
-	/* 
-		Init RAM, i.e. set base of all bank to the base of bank 1, 
-		the memory repeats ever 64 bytes; haven't found another way to 
+	/*
+		Init RAM, i.e. set base of all bank to the base of bank 1,
+		the memory repeats ever 64 bytes; haven't found another way to
 		tell the MAME core this situation; the problem is that the cpu *will*
 		execute code in this area, so a usually read/writer handler fails
 	*/
@@ -281,12 +281,12 @@ static WRITE_HANDLER(GTS80SS_da1_latch_w) {
 }
 
 static WRITE_HANDLER(GTS80SS_da2_latch_w) {
-//	logerror("da2_w: 0x%02x\n", data); 
+//	logerror("da2_w: 0x%02x\n", data);
 }
 
 /* expansion board */
 static READ_HANDLER(GTS80SS_ext_board_1_r) {
-	logerror("ext_board_1_r\n"); 
+	logerror("ext_board_1_r\n");
 	return 0xff;
 }
 
@@ -295,7 +295,7 @@ static WRITE_HANDLER(GTS80SS_ext_board_1_w) {
 }
 
 static READ_HANDLER(GTS80SS_ext_board_2_r) {
-	logerror("ext_board_2_r\n"); 
+	logerror("ext_board_2_r\n");
 	return 0xff;
 }
 
@@ -304,7 +304,7 @@ static WRITE_HANDLER(GTS80SS_ext_board_2_w) {
 }
 
 static READ_HANDLER(GTS80SS_ext_board_3_r) {
-	logerror("ext_board_3_r\n"); 
+	logerror("ext_board_3_r\n");
 	return 0xff;
 }
 
@@ -335,7 +335,7 @@ static WRITE_HANDLER(GTS80SS_riot6532_3_ram_w)
 /  Memory map
 /---------------*/
 MEMORY_READ_START(GTS80SS_readmem)
-{ 0x0000, 0x01ff, MRA_RAM}, 
+{ 0x0000, 0x01ff, MRA_RAM},
 { 0x0200, 0x027f, riot6532_3_r},
 { 0x4000, 0x4fff, GTS80SS_ext_board_1_r},
 { 0x5000, 0x5fff, GTS80SS_ext_board_2_r},
@@ -345,7 +345,7 @@ MEMORY_READ_START(GTS80SS_readmem)
 MEMORY_END
 
 MEMORY_WRITE_START(GTS80SS_writemem)
-{ 0x0000, 0x01ff, GTS80SS_riot6532_3_ram_w}, 
+{ 0x0000, 0x01ff, GTS80SS_riot6532_3_ram_w},
 { 0x0200, 0x027f, riot6532_3_w},
 { 0x1000, 0x1fff, GTS80SS_da1_latch_w},
 { 0x2000, 0x2fff, GTS80SS_vs_latch_w},
@@ -360,7 +360,7 @@ static void GTS80_ss_Update(int num, INT16 *buffer, int length)
 {
 	double dActClock, dInterval, dCurrentClock;
 	int i;
-		
+
 	dCurrentClock = GTS80SS_locals.clock[0];
 
 	dActClock = timer_get_time();
@@ -409,9 +409,9 @@ void gts80ss_init(struct sndbrdData *brdData) {
 /*		| ((core_getDip(4)&0x80) ? 0x08:0x00)    S8: not used (goes to the expansion board, pin J1-I7)*/
     ;
 
-	/* 
-		Init RAM, i.e. set base of all banks to the base of bank 1, 
-		the memory repeats ever 128 bytes; haven't found another way to 
+	/*
+		Init RAM, i.e. set base of all banks to the base of bank 1,
+		the memory repeats ever 128 bytes; haven't found another way to
 		tell the MAME core this situation; the problem is that the cpu *may*
 		execute code in this area, so a usually read/writer handler fails
 	*/
@@ -429,7 +429,7 @@ void gts80ss_init(struct sndbrdData *brdData) {
 	for(i = 0; i<8; i++)
 		memcpy(memory_region(GTS80SS_locals.boardData.cpuNo)+0x8000+0x1000*i, memory_region(GTS80SS_locals.boardData.cpuNo)+0x7000, 0x1000);
 
-	GTS80SS_locals.stream = stream_init("SND DAC", 100, 11025, 0, GTS80_ss_Update); 
+	GTS80SS_locals.stream = stream_init("SND DAC", 100, 11025, 0, GTS80_ss_Update);
 	set_RC_filter(GTS80SS_locals.stream, 270000, 15000, 0, 10000);
 }
 
@@ -462,7 +462,7 @@ struct CustomSound_interface GTS80SS_customsoundinterface = {
 	NULL, NULL, NULL
 };
 
-struct VOTRAXSC01interface GTS80SS_votrax_sc01_interface = {															
+struct VOTRAXSC01interface GTS80SS_votrax_sc01_interface = {
 	1,						/* 1 chip */
 	{ 100 },				/* master volume */
 	{ 7000 },				/* dynamically changing this is currently not supported */
@@ -514,7 +514,7 @@ WRITE_HANDLER(s80bs_ay8910_latch_w)
 //Setup NMI timer and triggering code: Timed NMI occurs for the Y-CPU. Y-CPU triggers D-CPU NMI
 void nmi_generate(int param)
 {
-	cpu_set_nmi_line(1, PULSE_LINE);
+	cpu_set_nmi_line(cpu_gettotalcpu()-2, PULSE_LINE);
 }
 
 static void nmi_callback(int param)
@@ -534,8 +534,8 @@ WRITE_HANDLER(s80bs_cause_dac_nmi_w)
 
 READ_HANDLER(s80bs_cause_dac_nmi_r)
 {
-	s80bs_cause_dac_nmi_w(offset, 0); 
-	return 0; 
+	s80bs_cause_dac_nmi_w(offset, 0);
+	return 0;
 }
 
 //Latch a command into the Sound Latch and generate the IRQ interrupts
@@ -545,8 +545,11 @@ WRITE_HANDLER(s80bs_sh_w)
 	if ((data&0x0f) != 0xf) /* interrupt trigered by four low bits (not all 1's) */
 	{
 		soundlatch_w(offset,data);
-		cpu_set_irq_line(cpu_gettotalcpu()-1, 0, PULSE_LINE);
-		cpu_set_irq_line(cpu_gettotalcpu()-2, 0, PULSE_LINE);
+		cpu_set_irq_line(cpu_gettotalcpu()-1, 0, HOLD_LINE);
+		cpu_set_irq_line(cpu_gettotalcpu()-2, 0, HOLD_LINE);
+	} else {
+		cpu_set_irq_line(cpu_gettotalcpu()-1, 0, CLEAR_LINE);
+		cpu_set_irq_line(cpu_gettotalcpu()-2, 0, CLEAR_LINE);
 	}
 }
 
@@ -766,7 +769,7 @@ MEMORY_END
 / Sound interface
 /-----------------*/
 struct DACinterface GTS80BS_dacInt =
-{ 
+{
   2,			/*2 Chips - but it seems we only access 1?*/
  {25,25}		/* Volume */
 };
@@ -796,7 +799,7 @@ struct YM2151interface GTS80BS_ym2151Int =
    Hardware is almost the same as Generation 3 System 80b boards, except for the OKI chip.
 
    CPU: 2x(6502): DAC: 2x(AD7528): DSP: 1x(YM2151): OTHER: OKI6295 (Speech)
-*/   
+*/
 
 /*--------------
 /  Memory map
@@ -811,7 +814,7 @@ struct YM2151interface GTS80BS_ym2151Int =
   1    0 = (0x6800) = Y1 = A4-LS74 - Clear IRQ & Enable Latch
   0    1 = (0x7000) = Y2 = CPU #2 - Trigger NMI
   1    1 = (0x7800) = Y3 = S4-13 = Latch Data to 6295
-  
+
   T4 - F138
   A13 A14 A15
   -----------
@@ -829,7 +832,7 @@ struct YM2151interface GTS80BS_ym2151Int =
   0    0 = (<0x4000) = Y0 = RAM Enable
   1    0 = (0x4000) = Y1 = A4-LS74 - Clear IRQ & Enable Latch
   0    1 = (0x8000) = Y2 = Enable DAC (E2 - AD7528)
-  
+
 */
 
 // Send data to 6295, but only if Chip Selected and Write Enabled!
@@ -916,13 +919,13 @@ static WRITE_HANDLER(sound_control_w)
 /*********/
 /* Y-CPU */
 /*********/
-MEMORY_READ_START(GTS3_sreadmem)
+MEMORY_READ_START(GTS3_yreadmem)
 { 0x0000, 0x07ff, MRA_RAM },
 { 0x6800, 0x6800, soundlatch_r},
 { 0x7000, 0x7000, s80bs_cause_dac_nmi_r},
 { 0x8000, 0xffff, MRA_ROM },
 MEMORY_END
-MEMORY_WRITE_START(GTS3_swritemem)
+MEMORY_WRITE_START(GTS3_ywritemem)
 { 0x0000, 0x07ff, MWA_RAM },
 { 0x4000, 0x4000, s80bs_ym2151_w },
 { 0x6000, 0x6000, s80bs_nmi_rate_w},
@@ -932,27 +935,27 @@ MEMORY_END
 /*********/
 /* D-CPU */
 /*********/
-MEMORY_READ_START(GTS3_sreadmem2)
+MEMORY_READ_START(GTS3_dreadmem)
 { 0x0000, 0x07ff, MRA_RAM },
 { 0x4000, 0x4000, soundlatch_r},
 { 0x8000, 0xffff, MRA_ROM },
 MEMORY_END
-MEMORY_WRITE_START(GTS3_swritemem2)
+MEMORY_WRITE_START(GTS3_dwritemem)
 { 0x0000, 0x07ff, MWA_RAM },
 { 0x8000, 0x8000, s80bs_dac_vol_w },
 { 0x8001, 0x8001, s80bs_dac_data_w},
 MEMORY_END
 
-struct OKIM6295interface GTS3_okim6295_interface = {															
+struct OKIM6295interface GTS3_okim6295_interface = {
 	1,						/* 1 chip */
 	{ 8000 },				/* 8000Hz frequency */
 	{ GTS3_MEMREG_SROM1 },	/* memory region */
 	{ 100 }
 };
 
-// Init 
+// Init
 void gts80b_init(struct sndbrdData *brdData) {
-	GTS80BS_locals.nmi_timer = NULL; 
+	GTS80BS_locals.nmi_timer = NULL;
 	memset(&GTS80BS_locals, 0, sizeof(GTS80BS_locals));
 }
 
@@ -1019,13 +1022,13 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(gts80s_s3)
   MDRV_CPU_ADD_TAG("d-cpu", M65C02, 2000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
-  MDRV_CPU_MEMORY(GTS3_sreadmem2, GTS3_swritemem2)
+  MDRV_CPU_MEMORY(GTS3_dreadmem, GTS3_dwritemem)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(DAC, GTS80BS_dacInt)
 
   MDRV_CPU_ADD_TAG("y-cpu", M65C02, 2000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
-  MDRV_CPU_MEMORY(GTS3_sreadmem, GTS3_swritemem)
+  MDRV_CPU_MEMORY(GTS3_yreadmem, GTS3_ywritemem)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(YM2151,  GTS80BS_ym2151Int)
   MDRV_SOUND_ADD(OKIM6295,GTS3_okim6295_interface)

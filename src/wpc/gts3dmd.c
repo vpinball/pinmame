@@ -38,10 +38,10 @@ PINMAME_VIDEO_UPDATE(gts3_dmd128x32) {
   for (ii = 1; ii <= 32; ii++)               // 32 lines
     for (jj = 0; jj < 128; jj++) {          // 128 pixels/line
       UINT8 data = dotCol[ii][jj];
-      if (data >= GTS3DMD_FRAMES)        data = 3; // 100%
-      else if (data >= GTS3DMD_FRAMES/3) data = 2; // 33% and more
-      else if (data > 0)                 data = 1; // anything at all?
-      else                               data = 0; // nothing.
+      if (data >= 43)      data = 3; // 100% intensity
+      else if (data >= 15) data = 2; // 66% intensity
+      else if (data > 0)   data = 1; // 33% intensity
+      else                 data = 0; // nothing.
       dotCol[ii][jj] = data;
   }
 
