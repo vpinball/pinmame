@@ -316,7 +316,7 @@ static WRITE_HANDLER(GTS80SS_ext_board_3_w) {
 
 /* voice synt latch */
 static WRITE_HANDLER(GTS80SS_vs_latch_w) {
-	votraxsc01_w(0, data^0xff);
+	votraxsc01_w(0, data^0x3f);
 }
 
 static struct riot6532_interface GTS80SS_riot6532_intf = {
