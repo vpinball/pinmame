@@ -42,9 +42,9 @@ static struct {
 static WRITE_HANDLER(des_bsmt0_w) { locals.bsmtData = data; }
 static WRITE_HANDLER(des_bsmt1_w) {
 	 int reg = offset^ 0xff;
-	 BSMT2000_data_0_w(reg, ((locals.bsmtData<<8)|data), 0);
      logerror("BSMT write to %02X (V%X R%X) = %02X%02X\n",
 				reg, reg % 11, reg / 11, locals.bsmtData, data);
+	 BSMT2000_data_0_w(reg, ((locals.bsmtData<<8)|data), 0);
   
    // BSMT is ready directly
   cpu_set_irq_line(DE_SCPUNO, M6809_IRQ_LINE, HOLD_LINE);
