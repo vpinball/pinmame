@@ -82,11 +82,11 @@ DRIVERNV(wsports)       //01/78 Winter Sports
                         //07/78 House of Diamonds
                         //09/78 Strike
                         //10/78 Ski Jump
-                        //10/78 Future World
-                        //04/79 Shooting the Rapids
+DRIVERNV(futurwld)      //10/78 Future World
+DRIVERNV(strapids)      //04/79 Shooting the Rapids
                         //09/79 Hot Wheels
                         //09/79 Space City
-                        //01/80 Fire Mountain
+DRIVERNV(firemntn)      //01/80 Fire Mountain
 DRIVERNV(stargod)       //05/80 Star God
 DRIVERNV(sshtlzac)      //09/80 Space Shuttle
 DRIVERNV(ewf)           //04/81 Earth, Wind & Fire
@@ -416,14 +416,14 @@ DRIVERNV(strxt_fr)      //Whitestar: 03/00 Striker Extreme (France)
 DRIVERNV(strxt_it)      //Whitestar: 03/00 Striker Extreme (Italy)
 DRIVERNV(strxt_sp)      //Whitestar: 03/00 Striker Extreme (Spain)
 DRIVERNV(shrkysht)      //Whitestar: 09/00 Sharkey's Shootout (2.11)
-
-#ifndef VPINMAME
 DRIVERNV(hirolcas)      //Whitestar: 01/01 High Roller Casino
 DRIVERNV(hirol_gr)      //Whitestar: 01/01 High Roller Casino (Germany)
-DRIVERNV(austin)        //Whitestar: 05/01 Austin Powers (3.0)
+
+#ifndef VPINMAME
+DRIVERNV(austin)        //Whitestar: 05/01 Austin Powers (3.01)
 DRIVERNV(austin2)       //Whitestar: 05/01 Austin Powers (2.0)
 DRIVERNV(monopoly)      //Whitestar: 09/01 Monopoly (3.01)
-DRIVERNV(playboys)      //Whitestar: 02/02 Playboy (3.02)
+DRIVERNV(playboys)      //Whitestar: 02/02 Playboy (3.03)
 DRIVERNV(playboyd)      //Whitestar: 02/02 Playboy (German display)
 DRIVERNV(playboye)      //Whitestar: 02/02 Playboy (Spanish display)
 DRIVERNV(playboyf)      //Whitestar: 02/02 Playboy (French display)
