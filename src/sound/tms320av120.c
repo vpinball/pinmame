@@ -12,11 +12,10 @@
  *         Not configurable to anything else, for speed purposes at this time!
  *
  *   TODO:
- *		   1) Implement multichip support
- *         2) Redo buffers
- *         3) Implement /BOF and /SREQ callbacks
- *         4) Implement data handlers
- *         5) Remove current hack to feed data to the chip for playback
+ *         1) Redo buffers
+ *         2) Implement /BOF and /SREQ callbacks
+ *         3) Implement data handlers
+ *         4) Remove current hack to feed data to the chip for playback
  **********************************************************************************************/
 
 
@@ -63,11 +62,11 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**********************************************************************************************
      CONSTANTS
 ***********************************************************************************************/
+#define TMS320AV120_BUFFER			512							//Chip has a 512 byte internal buffer
 #define CAP_PCMBUFFER_SIZE			1152						//Hold 1 decoded frame
 #define CAP_OUTBUFFER_SIZE			4096						//Output buffer
 #define CAP_BUFFER_MASK				(CAP_OUTBUFFER_SIZE - 1)	//Output buffer mask
 #define MPG_FRAMESIZE				140							//Mpeg1 - Layer 2 Framesize @ 32KHz/32kbps
-#define CAP_MAXCHANNELS				1							//Support only 1 mpg streaming channel right now
 #define LOOP_MPG_SAMPLE				0
 
 /**********************************************************************************************
@@ -75,6 +74,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************************************/
 struct TMS320AV120Chip
 {
+ UINT8  inputbuff[TMS320AV120_BUFFER];	//Holds raw mpg data (including header)
  INT16  pcmbuffer[CAP_PCMBUFFER_SIZE];
  INT16  *buffer;					//Output Buffer
  UINT32 sIn;						//Position of next sample to load into buffer
@@ -84,13 +84,11 @@ struct TMS320AV120Chip
  int    stream;						//Holds stream channel assignment
  UINT8  framebuff[MPG_FRAMESIZE];	//Holds raw mpg data for 1 frame
  UINT8	fb_pos;						//Current frame buffer position
- int    channels;					//# of mpg channels
  UINT16 pcm_pos;					//Position of PCM buffer
+ int    mute;						//Mute status (0 = off, 1 = Mute )
+ int    bitsRemaining;				// Keep track of # of bits we've read from frame buffer
+ long *_V[16];						// Synthesis window for single channel
 };
-
-static struct {
-	void   *buffTimer;
-} cap_locals;
 
 //Layer 2 Quantization
 typedef struct {
@@ -216,11 +214,14 @@ static long SynthesisWindowCoefficients[] = // 2.16 fixed-point values
      GLOBALS
 ***********************************************************************************************/
 
-static struct TMS320AV120Chip tms320av120[MAX_TMS320AV120];
-static long layer1ScaleFactors[64];		// MPG Layer 1 Scale Factors
-static long *_V[2][16];					// Synthesis window for left/right channel
-static int  _bitsRemaining = 0;			// Keep track of # of bits we've read from frame buffer
-static int bitmasks[] = {0,1,3,7,0xF,0x1F,0x3F,0x7F,0xFF};
+static struct TMS320AV120Chip tms320av120[MAX_TMS320AV120];		// Each Chip
+static const struct TMS320AV120interface *intf;					// Pointer to the interface
+static long layer1ScaleFactors[64];								// MPG Layer 1 Scale Factors
+static int bitmasks[] = {0,1,3,7,0xF,0x1F,0x3F,0x7F,0xFF};		// Bit reading masks
+//Matrix stuff
+static const double MYPI=3.14159265358979323846;
+static const char order[] = {0,16,8,24,4,20,12,28,2,18,10,26,6,22,14,30,
+                             1,17,9,25,5,21,13,29,3,19,11,27,7,23,15,31};
 
 /**********************************************************************************************
      MPEG DATA HANDLING
@@ -233,9 +234,6 @@ INLINE long Layer2Requant(long sample, long levels, int scaleIndex) {
 
 // subbandSamples input are 2.16
 static void Matrix(long *V, long *subbandSamples, int numSamples) {
-   static const double MYPI=3.14159265358979323846;
-   static const char order[] = {0,16,8,24,4,20,12,28,2,18,10,26,6,22,14,30,
-                                1,17,9,25,5,21,13,29,3,19,11,27,7,23,15,31};
    int i,n,size,fftStep;
    long *workR=V; // Re-use V as work storage
    long workI[64]; // Imaginary part
@@ -339,11 +337,14 @@ static void Matrix(long *V, long *subbandSamples, int numSamples) {
       for(n=1;n<16;n++) V[48+n] = V[48-n];
    }
 }
+
 //Convert Layer 1 or Layer 2 subband samples into pcm samples and put into pcm buffer
-void Layer12Synthesis(  long *V[16],
+void Layer12Synthesis(  int num,
+					    long *V[16],
                         long *subbandSamples,
-                        int numSubbandSamples,
-                        INT16 *pcmSamples) {
+						int numSubbandSamples)
+{
+   INT16 *pcmSamples = &(tms320av120[num].pcmbuffer[tms320av120[num].pcm_pos]);
    int i,j;
    long *t = V[15];
    static long D[512];
@@ -384,44 +385,44 @@ void Layer12Synthesis(  long *V[16],
 }
 
 //Return bits from the frame buffer
-static long GetBits(int numBits) {
+static long GetBits(int num, int numBits) {
    long result;
-   if(_bitsRemaining == 0) { // If no bits in this byte get from next byte in frame buffer!
-      tms320av120[0].fb_pos++;				 // ...
+   if(tms320av120[num].bitsRemaining == 0) { // If no bits in this byte get from next byte in frame buffer!
+      tms320av120[num].fb_pos++;				 // ...
 	  //Make sure we're not out of data!
-	  if(tms320av120[0].fb_pos > MPG_FRAMESIZE) {
-		  printf("END OF FRAME BUFFER DATA IN GETBITS!\n");
+	  if(tms320av120[num].fb_pos > MPG_FRAMESIZE) {
+		  logerror("END OF FRAME BUFFER DATA IN GETBITS!\n");
 		  return 0;
 	  }
-      _bitsRemaining = 8;
+      tms320av120[num].bitsRemaining = 8;
    }
-   if(_bitsRemaining >= numBits) { // Can I fill it from this byte?
-      _bitsRemaining -= numBits;
-      return (tms320av120[0].framebuff[tms320av120[0].fb_pos]>>_bitsRemaining) & bitmasks[numBits];
+   if(tms320av120[num].bitsRemaining >= numBits) { // Can I fill it from this byte?
+      tms320av120[num].bitsRemaining -= numBits;
+      return (tms320av120[num].framebuff[tms320av120[num].fb_pos]>>tms320av120[num].bitsRemaining) & bitmasks[numBits];
    }
    // Use up rest of this byte, then recurse to get more bits
-   result = (tms320av120[0].framebuff[tms320av120[0].fb_pos] & bitmasks[_bitsRemaining]) << (numBits - _bitsRemaining);
-   numBits -= _bitsRemaining; // I don't need as many bits now
-   _bitsRemaining = 8;  // Move to next bit
-   tms320av120[0].fb_pos++;
-   return result | GetBits(numBits);
+   result = (tms320av120[num].framebuff[tms320av120[num].fb_pos] & bitmasks[tms320av120[num].bitsRemaining]) << (numBits - tms320av120[num].bitsRemaining);
+   numBits -= tms320av120[num].bitsRemaining; // I don't need as many bits now
+   tms320av120[num].bitsRemaining = 8;  // Move to next bit
+   tms320av120[num].fb_pos++;
+   return result | GetBits(num,numBits);
 }
 
 //Decode an MPEG1 - Layer 2 Frame
-void DecodeLayer2()
+void DecodeLayer2(int num)
 {
-int allocation[2][32];				// One set of allocation data for each channel and subband
-int scaleFactorSelection[2][32];	// One set of scale factor selectors for each channel and subband
-long sbSamples[3][2][32];			// Three sets/groups of subband samples for each of the 32 Subbands
-int scaleFactor[3][2][32];			// Scale factors for each of the 3 groups of 32 Subbands
-int sblimit=0;						// One past highest subband with non-empty allocation
-int sb, ch, sf, gp;
-int scale_factor = 0;				//Current scale factor index
-long levels = 0;					//Quantization level
+int allocation[32];				// One set of allocation data for each subband
+int scaleFactorSelection[32];	// One set of scale factor selectors for each subband
+long sbSamples[3][32];			// Three sets/groups of subband samples for each of the 32 Subbands
+int scaleFactor[3][32];			// Scale factors for each of the 3 groups of 32 Subbands
+int sblimit=0;					// One past highest subband with non-empty allocation
+int sb, sf, gp;
+int scale_factor = 0;			//Current scale factor index
+long levels = 0;				//Quantization level
 Layer2BitAllocationTableEntry *allocationMap;
 
 //Reset bits flag
-_bitsRemaining = 8;
+tms320av120[num].bitsRemaining = 8;
    
 // Select which allocation map to use
 allocationMap = Layer2AllocationB2d;
@@ -429,135 +430,125 @@ allocationMap = Layer2AllocationB2d;
 // Retrieve allocation for each of the 32 Subbands
 for(sb=0;sb<32;sb++) {
    if(allocationMap[sb]._numberBits) {
-        allocation[0][sb] = GetBits(allocationMap[sb]._numberBits);
-        if(allocation[0][sb] && (sb >= sblimit))
+        allocation[sb] = GetBits(num,allocationMap[sb]._numberBits);
+        if(allocation[sb] && (sb >= sblimit))
            sblimit=sb+1;
    } else
-        allocation[0][sb] = 0;
-   allocation[1][sb] = allocation[0][sb];
+        allocation[sb] = 0;
 }
 
-{  // Retrieve scale factor selection information for each of the 32 subbands (skip non-used subbands)
+// Retrieve scale factor selection information for each of the 32 subbands (skip non-used subbands)
 for(sb=0; sb<sblimit; sb++)
-	for(ch=0; ch<tms320av120[0].channels; ch++)
-		if(allocation[ch][sb] != 0)
-			scaleFactorSelection[ch][sb] = GetBits(2);
-}
+	if(allocation[sb] != 0)
+		scaleFactorSelection[sb] = GetBits(num,2);
 
-{  // Read scale factors, using scaleFactorSelection to determine which scale factors apply to more than one group
-   for(sb=0; sb<sblimit; sb++)
-      for(ch=0; ch<tms320av120[0].channels; ch++)
-         if(allocation[ch][sb] != 0) {
-            switch(scaleFactorSelection[ch][sb]) {
-            case 0: // Three scale factors
-               scaleFactor[0][ch][sb] = GetBits(6);
-               scaleFactor[1][ch][sb] = GetBits(6);
-               scaleFactor[2][ch][sb] = GetBits(6);
-               break;
-            case 1: // One for first two-thirds, one for last third
-               scaleFactor[0][ch][sb] = GetBits(6);
-               scaleFactor[1][ch][sb] = scaleFactor[0][ch][sb];
-               scaleFactor[2][ch][sb] = GetBits(6);
-               break;
-            case 2: // One for all three
-               scaleFactor[0][ch][sb] = GetBits(6);
-               scaleFactor[1][ch][sb] = scaleFactor[0][ch][sb];
-               scaleFactor[2][ch][sb] = scaleFactor[0][ch][sb];
-               break;
-            case 3: // One for first third, one for last two-thirds
-               scaleFactor[0][ch][sb] = GetBits(6);
-               scaleFactor[1][ch][sb] = GetBits(6);
-               scaleFactor[2][ch][sb] = scaleFactor[1][ch][sb];
-               break;
-            }
-         }
-}   
+// Read scale factors, using scaleFactorSelection to determine which scale factors apply to more than one group
+for(sb=0; sb<sblimit; sb++)
+{
+    if(allocation[sb] != 0) {
+       switch(scaleFactorSelection[sb]) {
+       case 0: // Three scale factors
+            scaleFactor[0][sb] = GetBits(num,6);
+            scaleFactor[1][sb] = GetBits(num,6);
+            scaleFactor[2][sb] = GetBits(num,6);
+            break;
+       case 1: // One for first two-thirds, one for last third
+            scaleFactor[0][sb] = GetBits(num,6);
+            scaleFactor[1][sb] = scaleFactor[0][sb];
+            scaleFactor[2][sb] = GetBits(num,6);
+            break;
+       case 2: // One for all three
+            scaleFactor[0][sb] = GetBits(num,6);
+            scaleFactor[1][sb] = scaleFactor[0][sb];
+            scaleFactor[2][sb] = scaleFactor[0][sb];
+            break;
+       case 3: // One for first third, one for last two-thirds
+            scaleFactor[0][sb] = GetBits(num,6);
+            scaleFactor[1][sb] = GetBits(num,6);
+            scaleFactor[2][sb] = scaleFactor[1][sb];
+            break;
+	   }
+	}
+}
+   
 for(sf=0;sf<3;sf++) { // Diff't scale factors for each 1/3
 	for(gp=0;gp<4;gp++) { // 4 groups of samples in each 1/3
          
 		for(sb=0;sb<sblimit;sb++) { // Read 3 sets of 32 subband samples (skip non-used subbands)
-			for(ch=0;ch<tms320av120[0].channels;ch++) {
-				Layer2QuantClass *quantClass = allocationMap[sb]._quantClasses ? allocationMap[sb]._quantClasses[ allocation[ch][sb] ] : 0 ;
-				if(!allocation[ch][sb]) { // No bits, store zero for each set
-			        sbSamples[0][ch][sb] = 0;
-					sbSamples[1][ch][sb] = 0;
-					sbSamples[2][ch][sb] = 0;
-				} 
-				else {
-					scale_factor = scaleFactor[sf][ch][sb];	//Grab current scale factor for sf group, channel, and subband
-					levels = quantClass->_levels;
-					if (quantClass->_grouping) { // Grouped samples
-						long s = GetBits(quantClass->_bits); // Get group
-						// Separate out by computing successive remainders
-						sbSamples[0][ch][sb] = Layer2Requant(s % levels,levels,scale_factor);
-						s /= levels;
-						sbSamples[1][ch][sb] = Layer2Requant(s % levels,levels,scale_factor);
-						s /= levels;
-						sbSamples[2][ch][sb] = Layer2Requant(s % levels,levels,scale_factor);
-					}
-					else { // Ungrouped samples
-						int width = quantClass->_bits;
-						long s = GetBits(width); // Get 1st sample
-						sbSamples[0][ch][sb] = Layer2Requant(s,levels,scale_factor);
-						s = GetBits(width); // Get 2nd sample
-						sbSamples[1][ch][sb] = Layer2Requant(s,levels,scale_factor);
-						s = GetBits(width); // Get 3rd sample
-						sbSamples[2][ch][sb] = Layer2Requant(s,levels,scale_factor);
-					}
+			Layer2QuantClass *quantClass = allocationMap[sb]._quantClasses ? allocationMap[sb]._quantClasses[ allocation[sb] ] : 0 ;
+			if(!allocation[sb]) { // No bits, store zero for each set
+			    sbSamples[0][sb] = 0;
+				sbSamples[1][sb] = 0;
+				sbSamples[2][sb] = 0;
+			}
+			else {
+				scale_factor = scaleFactor[sf][sb];	//Grab current scale factor for sf group and subband
+				levels = quantClass->_levels;
+				if (quantClass->_grouping) { // Grouped samples
+					long s = GetBits(num,quantClass->_bits); // Get group
+					// Separate out by computing successive remainders
+					sbSamples[0][sb] = Layer2Requant(s % levels,levels,scale_factor);
+					s /= levels;
+					sbSamples[1][sb] = Layer2Requant(s % levels,levels,scale_factor);
+					s /= levels;
+					sbSamples[2][sb] = Layer2Requant(s % levels,levels,scale_factor);
+				}
+				else { // Ungrouped samples
+					int width = quantClass->_bits;
+					long s = GetBits(num,width); // Get 1st sample
+					sbSamples[0][sb] = Layer2Requant(s,levels,scale_factor);
+					s = GetBits(num,width); // Get 2nd sample
+					sbSamples[1][sb] = Layer2Requant(s,levels,scale_factor);
+					s = GetBits(num,width); // Get 3rd sample
+					sbSamples[2][sb] = Layer2Requant(s,levels,scale_factor);
 				}
 			}
 		}
-
 		// Now, feed three sets of subband samples into synthesis engine
-		for(ch=0;ch < tms320av120[0].channels;ch++) {
-			INT16 *pcm;
-			pcm = &tms320av120[0].pcmbuffer[tms320av120[0].pcm_pos];
-			Layer12Synthesis(_V[ch],sbSamples[0][ch],sblimit,pcm);
-			tms320av120[0].pcm_pos += 32;
-			pcm = &tms320av120[0].pcmbuffer[tms320av120[0].pcm_pos];
-			Layer12Synthesis(_V[ch],sbSamples[1][ch],sblimit,pcm);
-			tms320av120[0].pcm_pos += 32;
-			pcm = &tms320av120[0].pcmbuffer[tms320av120[0].pcm_pos];
-			Layer12Synthesis(_V[ch],sbSamples[2][ch],sblimit,pcm);
-			tms320av120[0].pcm_pos += 32;
-		}
+		Layer12Synthesis(num,tms320av120[num]._V,sbSamples[0],sblimit);
+		tms320av120[num].pcm_pos += 32;
+		Layer12Synthesis(num,tms320av120[num]._V,sbSamples[1],sblimit);
+		tms320av120[num].pcm_pos += 32;
+		Layer12Synthesis(num,tms320av120[num]._V,sbSamples[2],sblimit);
+		tms320av120[num].pcm_pos += 32;
 	}	//# of groups
 }		//# of scale factors
 }
 
+
 //Get One Byte - Reads a single byte from the rom stream, returns 0 if unable to read the byte
-static int get_one_byte(UINT8* byte, UINT32 pos)
+static int get_one_byte(int num, UINT8* byte, UINT32 pos)
 {
 	//If reached end of memory region, abort
 	if(pos>0x300000) return 0;
-	*byte = (UINT8)tms320av120[0].start_region[pos];
+	*byte = (UINT8)tms320av120[num].start_region[pos];
 	return 1;
 }
 
 //Read current frame data into our frame buffer (assumes rom positioned at start of frame) - return 0 if unable to read entire frame
-static int Read_Frame()
+static int Read_Frame(int num)
 {	
 	UINT8 onebyte;
 	int quit = 0;
 	int i;
 
 	//clear current frame buffer
-	memset(tms320av120[0].framebuff,0,sizeof(tms320av120[0].framebuff));
+	memset(tms320av120[num].framebuff,0,sizeof(tms320av120[num].framebuff));
 
 	//Fill entire frame buffer if we can
 	for(i=0; i<MPG_FRAMESIZE; i++) {
-		if(!get_one_byte(&onebyte,tms320av120[0].curr)) 
+		if(!get_one_byte(num,&onebyte,tms320av120[num].curr)) 
 			return 0;
-		tms320av120[0].framebuff[i] = onebyte;
-		tms320av120[0].curr++;
+		tms320av120[num].framebuff[i] = onebyte;
+		tms320av120[num].curr++;
 	}
 	//Reset position
-	tms320av120[0].fb_pos = 0;
+	tms320av120[num].fb_pos = 0;
 	return 1;
 }
 
 //Find next MPG Header in rom stream, return 0 if not found - current position will be at start of frame if found
-static int Find_MPG_Header()
+static int Find_MPG_Header(int num)
 {	
 	UINT8 onebyte;
 	int quit = 0;
@@ -565,21 +556,21 @@ static int Find_MPG_Header()
 		//Find start of possible syncword (begins with 0xff)
 		do {
 			//Grab 1 byte
-			if(!get_one_byte(&onebyte,tms320av120[0].curr)) 
+			if(!get_one_byte(num,&onebyte,tms320av120[num].curr)) 
 				quit=1;
 			else
-				tms320av120[0].curr++;
+				tms320av120[num].curr++;
 		}while(onebyte!=0xff && !quit);
 
 		//Found 0xff?
 		if(onebyte==0xff) {
 			//Next byte must be 0xfd (note: already positioned on it from above while() code)
-			if(get_one_byte(&onebyte,tms320av120[0].curr) && onebyte==0xfd) {
+			if(get_one_byte(num, &onebyte,tms320av120[num].curr) && onebyte==0xfd) {
 				//Next byte must be 0x18 or 0x19
-				if(get_one_byte(&onebyte,tms320av120[0].curr+1) && (onebyte==0x18 || onebyte==0x19)) {
+				if(get_one_byte(num,&onebyte,tms320av120[num].curr+1) && (onebyte==0x18 || onebyte==0x19)) {
 					//Next byte must be 0xc0
-					if(get_one_byte(&onebyte,tms320av120[0].curr+2) && onebyte==0xc0) {
-						tms320av120[0].curr+=3;
+					if(get_one_byte(num,&onebyte,tms320av120[num].curr+2) && onebyte==0xc0) {
+						tms320av120[num].curr+=3;
 						return 1;
 					}
 				}
@@ -590,82 +581,97 @@ static int Find_MPG_Header()
 }
 
 //Return Next Decoded Word (16 Bit Signed Data) from ROM Stream
-static INT16 cap_GetNextWord()
+static INT16 cap_GetNextWord(int num)
 {
 #if LOOP_MPG_SAMPLE
    //If reached end of memory region, start again
-   if (tms320av120[0].curr>0x300000)
-	   tms320av120[0].curr=0;
+   if (tms320av120[num].curr>0x300000)
+	   tms320av120[num].curr=0;
 #else
    //If reached end of memory region, we're done..
-   if (tms320av120[0].curr>0x300000)
+   if (tms320av120[num].curr>0x300000)
 	   return 0;
 #endif
 
    //Do we need more data to be decoded?
-   if (tms320av120[0].pcm_pos+1 > CAP_PCMBUFFER_SIZE) {
+   if (tms320av120[num].pcm_pos+1 > CAP_PCMBUFFER_SIZE) {
 
 		//Find Next Valid Header - Abort if not found
-		if(!Find_MPG_Header())
+		if(!Find_MPG_Header(num))
 				return 0;
 		//Read Frame Data
-		if(!Read_Frame())
+		if(!Read_Frame(num))
 			return 0;
 
 		//Reset position for writing the pcm data
-		tms320av120[0].pcm_pos = 0;
+		tms320av120[num].pcm_pos = 0;
 
 		//Decode the frame
-		DecodeLayer2();
+		DecodeLayer2(num);
 
 		//Reset position for reading the pcm data
-		tms320av120[0].pcm_pos = 0;
+		tms320av120[num].pcm_pos = 0;
    }
 
    //Return the next word from pcm buffer
-   return (INT16)tms320av120[0].pcmbuffer[tms320av120[0].pcm_pos++];
+   return (INT16)tms320av120[num].pcmbuffer[tms320av120[num].pcm_pos++];
 }
 
 //Fill our pcm buffer with decoded data until buffer is full or until we catch up to last sample output from buffer
-static void cap_FillBuff(int dummy) {
+void tms_FillBuff(int num) {
   int length = CAP_OUTBUFFER_SIZE-10;
   int ii;
   INT16 word;
   UINT32 tmpN;
 
+  //Safety check
+  if(num > intf->num - 1) return;
+
   /* fill in with bytes until we hit the end or run out */
   for (ii = 0; ii < length; ii++) {
 
-    tmpN = (tms320av120[0].sIn + 1) & CAP_BUFFER_MASK;
+    tmpN = (tms320av120[num].sIn + 1) & CAP_BUFFER_MASK;
 
     //Abort if we're about to pass output samples..
-	if (tmpN == tms320av120[0].sOut) break;
+	if (tmpN == tms320av120[num].sOut) break;
 
 	//Grab next word from decoded pcm stream
-	word = cap_GetNextWord();
+	word = cap_GetNextWord(num);
  
 	//Update our buffer
-    tms320av120[0].buffer[tms320av120[0].sIn] = word;
+    tms320av120[num].buffer[tms320av120[num].sIn] = word;
 
 	//Increment next sample in position
-	tms320av120[0].sIn = (tms320av120[0].sIn + 1) & CAP_BUFFER_MASK;
+	tms320av120[num].sIn = (tms320av120[num].sIn + 1) & CAP_BUFFER_MASK;
   }
 }
 
 /**********************************************************************************************
-
-     tms320av120_update -- output samples to the stream buffer
-
+     set_bof_line -- set's the state of the /BOF line
 ***********************************************************************************************/
+static void set_bof_line(int chipnum, int state)
+{
+	if(intf->bof_line[chipnum]) intf->bof_line[chipnum](state);
+}
+/**********************************************************************************************
+     set_sreq_line -- set's the state of the /SREQ line
+***********************************************************************************************/
+static void set_sreq_line(int chipnum, int state)
+{
+	if(intf->sreq_line[chipnum]) intf->sreq_line[chipnum](state);
+}
 
+/**********************************************************************************************
+     tms320av120_update -- output samples to the stream buffer
+***********************************************************************************************/
 static void tms320av120_update(int num, INT16 *buffer, int length)
 {
  int ii;
  /* fill in with samples until we hit the end or run out */
  for (ii = 0; ii < length; ii++) {
-	if (tms320av120[0].sOut == tms320av120[0].sIn)	break;				//No more data in buffer, so abort
-    buffer[ii] = tms320av120[0].buffer[tms320av120[0].sOut];
-    tms320av120[0].sOut = (tms320av120[0].sOut + 1) & CAP_BUFFER_MASK;	//Increment current samples out position
+	if (tms320av120[num].sOut == tms320av120[num].sIn)	break;				//No more data in buffer, so abort
+    buffer[ii] = tms320av120[num].buffer[tms320av120[num].sOut] * (!tms320av120[num].mute);
+    tms320av120[num].sOut = (tms320av120[num].sOut + 1) & CAP_BUFFER_MASK;	//Increment current samples out position
     }
  /* fill the rest with the silence */
  for ( ; ii < length; ii++)
@@ -674,109 +680,92 @@ static void tms320av120_update(int num, INT16 *buffer, int length)
 
 
 /**********************************************************************************************
-
      TMS320AV120_sh_start -- start emulation of the TMS320AV120
-
 ***********************************************************************************************/
 int TMS320AV120_sh_start(const struct MachineSound *msound)
 {
-	const struct TMS320AV120interface *intf = msound->sound_interface;
-	int i, j, ch, failed=0;
-	char stream_name[MAX_TMS320AV120][40];
+	int i, j, vi, failed=0;
+	char stream_name[40];
+
+	//Get reference to the interface
+	intf = msound->sound_interface;
 
 	/* initialize the chips */
 	memset(&tms320av120, 0, sizeof(tms320av120));
-	//for (i = 0; i < intf->num; i++)
-	//{
-		/* create the stream */
-		//bsmt2000[i].stream = stream_init_multi(2, stream_name_ptrs, vol, Machine->sample_rate, i, bsmt2000_update);
-		//if (bsmt2000[i].stream == -1)
-		//	return 1;
-	//}
-	memset(&cap_locals,0,sizeof(cap_locals));
+	for (i = 0; i < intf->num; i++)
+	{
+		/*-- allocate a DAC stream at 32KHz --*/
+		sprintf(stream_name, "%s #%d", sound_name(msound), i);
+		tms320av120[i].stream = stream_init(stream_name, intf->mixing_level[i], 32000, i, tms320av120_update);
 
-	/*-- allocate a DAC stream at 32KHz --*/
-	sprintf(stream_name[0], "TMS320AV120 #%d",0); 
-	tms320av120[0].stream = stream_init(stream_name[0], 100, 32000, 0, tms320av120_update);
+		/*-- allocate memory for our buffer --*/
+		tms320av120[i].buffer = malloc(CAP_OUTBUFFER_SIZE * sizeof(INT16));
 
-	/*-- allocate memory for our buffer --*/
-	tms320av120[0].buffer = malloc(CAP_OUTBUFFER_SIZE * sizeof(INT16));
+		//Fail if stream or buffer not created
+		failed = (tms320av120[i].stream < 0 || (tms320av120[i].buffer==0));
 
-	//Create Scale Factor values
-	for(i=0;i<63;i++) {
-		layer1ScaleFactors[i] = (long)(32767.0 * pow(2.0, 1.0 - i/3.0));
-	}
+		if(failed) break;
 
-	//Create Synthesis Window vars
-	for(ch=0;ch<2;ch++) {
-		for(i=0;i<16;i++) {
-		  //For each channel, and each of the 16 values, we point to 64 PCM Samples (data type: long)
-		  _V[ch][i] = (long*)malloc(64*sizeof(long));
+		//Create Synthesis Window vars
+		for(vi=0;vi<16;vi++) {
+		  //For each of the 16 values, we point to 64 PCM Samples (data type: long)
+		  tms320av120[i]._V[vi] = (long*)malloc(64*sizeof(long));
 		  //Ensure it was created..
-		  if(!_V[ch][i]) {
-			  failed = 1;
-			  break;
+		  if(!tms320av120[i]._V[vi]) {
+			failed = 1;
+			break;
 		  }
-		 //Initialize to 0
-		 for(j=0;j<64;j++)
-			_V[ch][i][j] = 0;
+		  //Initialize to 0
+		  for(j=0;j<64;j++)
+			tms320av120[i]._V[vi][j] = 0;
 		}
-	}
 
-	//Fail if stream or buffer not created
-	failed = (tms320av120[0].stream < 0 || (tms320av120[0].buffer==0));
-
-	if(!failed) {
 		//point to beg of rom data
-		tms320av120[0].start_region = (INT8*)memory_region(REGION_SOUND1);
-		tms320av120[0].curr  = 0;
-
-		/* stupid timer/machine init handling in MAME */
-		if (cap_locals.buffTimer) timer_remove(cap_locals.buffTimer);
-
-		/*-- Create timer to fill our buffer --*/
-		cap_locals.buffTimer = timer_alloc(cap_FillBuff);
-
-		/*-- start the timer --*/
-		timer_adjust(cap_locals.buffTimer, 0, 0, TIME_IN_HZ(10));		//Frequency is somewhat arbitrary but must be fast enough to work
+		tms320av120[i].start_region = (INT8*)memory_region(REGION_SOUND1);
+		tms320av120[i].curr  = 0;
 
 		//Must initialize these..
-		tms320av120[0].pcm_pos = CAP_PCMBUFFER_SIZE+1;	//Cause PCM buffer to read 1st time
-		tms320av120[0].channels = 1;
+		tms320av120[i].pcm_pos = CAP_PCMBUFFER_SIZE+1;	//Cause PCM buffer to read 1st time
+	}
+
+	if(!failed) {
+		//Create Scale Factor values
+		for(i=0;i<63;i++)
+			layer1ScaleFactors[i] = (long)(32767.0 * pow(2.0, 1.0 - i/3.0));
 	}
 	return failed;
 }
 
 
 /**********************************************************************************************
-
      TMS320AV120_sh_stop -- stop emulation of the TMS320AV120
-
 ***********************************************************************************************/
 
 void TMS320AV120_sh_stop(void)
 {
-  int ch, i;
+  int i;
 
   /*-- Delete our buffer --*/
-  if (tms320av120[0].buffer) { 
-		free(tms320av120[0].buffer);
-		tms320av120[0].buffer = NULL; 
-  }
-
-  /*-- Delete Synth windows data --*/
-  for(ch=0;ch<2;ch++)
+  for (i = 0; i < intf->num; i++)
+  {
+	if (tms320av120[i].buffer) { 
+		free(tms320av120[i].buffer);
+		tms320av120[i].buffer = NULL; 
+	}
+	
+	/*-- Delete Synth windows data --*/
 	for(i=0;i<16;i++)
-		if(_V[ch][i]) {
-			free(_V[ch][i]);
-			_V[ch][i] = NULL;
+	{
+		if(tms320av120[i]._V[i]) {
+			free(tms320av120[i]._V[i]);
+			tms320av120[i]._V[i] = NULL;
 		}
+	}
+  }
 }
 
 /**********************************************************************************************
-
      TMS320AV120_sh_reset -- reset emulation of the TMS320AV120
-
 ***********************************************************************************************/
 
 void TMS320AV120_sh_reset(void)
@@ -787,31 +776,30 @@ void TMS320AV120_sh_reset(void)
 }
 
 /**********************************************************************************************
-
      TMS320AV120_sh_update -- called after every video frame
-
 ***********************************************************************************************/
-
 void TMS320AV120_sh_update(void)
 {
 }
 
 /**********************************************************************************************
-
      tms320av120_data_write -- send data to the chip
-
 ***********************************************************************************************/
-
 static void tms320av120_data_write(struct TMS320AV120Chip *chip, data8_t data)
 {
 }
 
 /**********************************************************************************************
-
-     TMS320AV120_data_0_w -- send data to the chip
-
+     TMS320AV120_set_mute -- set/clear mute pin
 ***********************************************************************************************/
+void TMS320AV120_set_mute(int chipnum, int state)
+{
+	tms320av120[chipnum].mute = state;
+}
 
+/**********************************************************************************************
+     TMS320AV120_data_0_w -- send data to the chip
+***********************************************************************************************/
 WRITE_HANDLER( TMS320AV120_data_0_w )
 {
 	tms320av120_data_write(&tms320av120[0], data);
@@ -820,4 +808,3 @@ WRITE_HANDLER( TMS320AV120_data_1_w )
 {
 	tms320av120_data_write(&tms320av120[1], data);
 }
-

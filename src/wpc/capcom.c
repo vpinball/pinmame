@@ -49,6 +49,7 @@
 #include "cpu/m68000/m68000.h"
 #include "core.h"
 #include "capcoms.h"
+#include "sndbrd.h"
 
 //Comment out to remove U16 Test bypass..
 #define USE_U16_TEST_BYPASS
