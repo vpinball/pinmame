@@ -51,20 +51,20 @@
 
 
 //Prototypes
-static void push_pc(void);
-static void pop_pc(void);
-static void set_parity(void);
+INLINE void push_pc(void);
+INLINE void pop_pc(void);
+INLINE void set_parity(void);
+INLINE void do_add_flags(UINT8 a, UINT8 data, UINT8 c);
+INLINE void do_sub_flags(UINT8 a, UINT8 data, UINT8 c);
+INLINE UINT8 check_interrupts(void);
+INLINE void update_timer(int cyc);
+INLINE void	update_serial(int cyc);
 static READ_HANDLER(internal_ram_read);
 static WRITE_HANDLER(internal_ram_write);
 static READ_HANDLER(sfr_read);
 static WRITE_HANDLER(sfr_write);
 static WRITE_HANDLER( bit_address_w );
 static READ_HANDLER( bit_address_r );
-static void do_add_flags(UINT8 a, UINT8 data, UINT8 c);
-static void do_sub_flags(UINT8 a, UINT8 data, UINT8 c);
-static UINT8 check_interrupts(void);
-static void update_timer(int cyc);
-static void	update_serial(int cyc);
 //
 
 typedef struct {
@@ -1320,7 +1320,7 @@ void i8051_set_irq_line(int irqline, int state)
 }
 
 //Check for pending Interrupts and process - returns # of cycles used for the int
-static UINT8 check_interrupts(void)
+INLINE UINT8 check_interrupts(void)
 {
 	static UINT8 int_vec = 0;		//static should help execution time
 
@@ -1770,7 +1770,7 @@ WRITE_HANDLER(i8051_internal_w)
 		IRAM_W(offset,data);
 }
 
-static void do_add_flags(UINT8 a, UINT8 data, UINT8 c)
+INLINE void do_add_flags(UINT8 a, UINT8 data, UINT8 c)
 {
 	UINT16 result = a+data+c;
 	INT16 result1 = (INT8)a+(INT8)data+c;
@@ -1790,7 +1790,7 @@ static void do_add_flags(UINT8 a, UINT8 data, UINT8 c)
 #endif
 }
 
-static void do_sub_flags(UINT8 a, UINT8 data, UINT8 c)
+INLINE void do_sub_flags(UINT8 a, UINT8 data, UINT8 c)
 {
 	INT16 result1 = (INT8)a-(INT8)(data-c);
 	int cy, ac, ov;
@@ -1808,7 +1808,7 @@ static void do_sub_flags(UINT8 a, UINT8 data, UINT8 c)
 #endif
 }
 
-static void update_timer(int cyc)
+INLINE void update_timer(int cyc)
 {
 	//Todo: Add checks for Timer2
 	//Todo: Probably better to store the current mode of the timer on a write, so we don't waste time reading it.
@@ -1843,6 +1843,9 @@ static void update_timer(int cyc)
 	if(GET_TR1) {
 	}
 }
-static void update_serial(int cyc)
+INLINE void update_serial(int cyc)
 {
 }
+
+
+
