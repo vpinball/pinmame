@@ -558,8 +558,10 @@ DRIVERNV(detest)        //Data East MPU: ??/?? DE Test Chip
 // -------------------------------------
 // WILLIAMS & WILLIAMS/BALLY GAMES BELOW
 // -------------------------------------
+DRIVER(topaz,l1)        //???       Topaz (Shuffle)
+DRIVER(taurs,l1)        //???       Taurus (Shuffle)
+DRIVER(bstrk,l1)        //???       Big Strike (Bowler)
 DRIVER(tstrk,l1)        //???       Triple Strike (Bowler)
-DRIVER(taurs,l1)        //???       Taurus (Shuffle Bowler)
 
                         //??-466:   06/76 W Aztec
                         //??-470:   10/77 W Wild Card
@@ -604,6 +606,7 @@ DRIVER(pfevr,p3)        //S9-526:   05/84 W Pennant Fever (pitch & bat)
 DRIVER(strlt,l1)        //S7-530:   06/84 W Star Light
                         //S?-538:   10/84 W Gridiron
 DRIVER(sshtl,l7)        //S9-535:   12/84 W Space Shuttle
+DRIVER(szone,l5)        //S9-916:   ??/8? W Strike Zone (Shuffle)
 DRIVER(sorcr,l1)        //S9-532:   03/85 W Sorcerer
 DRIVER(comet,l4)        //S9-540:   06/85 W Comet
 DRIVER(hs,l4)           //S11-541:  01/86 W High Speed
@@ -617,6 +620,8 @@ DRIVER(f14,l1)          //S11-554:  03/87 W F-14 Tomcat
 DRIVER(fire,l3)         //S11-556:  08/87 W Fire!
 DRIVER(bguns,l8)        //S11-557:  10/87 W Big Guns
 DRIVER(spstn,l5)        //S11-552:  12/87 W Space Station
+DRIVER(gmine,l2)        //S11-920:  ??/88 W Gold Mine (Bowler)
+DRIVER(tdawg,l1)        //S11-921:  ??/88 W Top Dawg (Bowler)
 DRIVER(cycln,l5)        //S11-564:  02/88 W Cyclone
 DRIVER(bnzai,l3)        //S11-566:  05/88 W Banzai Run
 DRIVER(swrds,l2)        //S11-559:  06/88 W Swords of Fury
