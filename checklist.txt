@@ -5,13 +5,20 @@ Important steps to take before a release:
 - remove the entire obj folder preferrably. Only this way you may ensure nothing was forgotten!
 - remove the DEBUG define in the makefile!
 - execute "make" to build pinmamew.
+- Make sure to regenerate gamelist and include it ( I believe it's regenerated automatically on a build) 
 - execute "make -f pinmame32.mak" to build pinmame32.
 - edit "src/version.c" for the correct version number
 - edit "src/win32com/VPinMAME.cpp" for the desired release date
 - edit "src/win32com/VPinMAME.rc" for the correct version number and build (MinDependency)
 - build VPinMAME.DLL
-- edit "src/instvpm/InstallVPinMAME.rc" for the correct version number and build (Release)
-- build InstallVPinMAME.exe
+- MAKE SURE STERN GAMES CANNOT WORK, and that TEST_STERN_GAMES FLAG, NO_TIME_LIMIT are not defined!
+- Make sure all default folders are included in the VPM zip
+  (these are: artwork, cfg, hi, inp, memcard, nvram, roms, samples, snap, sta, wavefile)
+- Make sure MAME license is in all released zips
+- *********************************************
+- (Only necessary if the installer has changed)
+   - edit "src/instvpm/InstallVPinMAME.rc" for the correct version number and build (Release)
+   - build InstallVPinMAME.exe
 
 If anything of the above fails, forget about a release and correct the errors first!
 If it worked out ok, however, do a release!
