@@ -406,8 +406,6 @@ static INTERRUPT_GEN(alvg_vblank) {
 }
 
 static SWITCH_UPDATE(alvg) {
-	static int sndcmd=0;
-
 //  via_irq(1);
   if (inports) {
     coreGlobals.swMatrix[0] = (inports[ALVG_COMINPORT] & 0x0f00)>>8;									//Column 0 Switches
