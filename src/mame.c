@@ -1190,8 +1190,9 @@ int run_machine(void)
 					/* save input ports settings */
 					save_input_port_settings();
 				}
-
+#ifndef VPINMAME
 userquit:
+#endif
 				/* the following MUST be done after hiscore_save() otherwise */
 				/* some 68000 games will not work */
 				sound_stop();
