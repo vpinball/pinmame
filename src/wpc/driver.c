@@ -30,7 +30,6 @@ const struct GameDriver *test_drivers[] = { 0 };
 	#define INCLUDE_NEW_STERN 1
 #endif
 
-DRIVERNV(st_game)       //Unknown game running on old Stern hardware
 
 // --------------------
 // ALVIN G. AND CO.
@@ -866,6 +865,8 @@ DRIVERNV(mexico)        //??/86 Mexico '86
 DRIVERNV(zankor)        //??/86 Zankor
 DRIVERNV(spooky)        //??/87 Spooky
                         //??/87 Star's Phoenix
-                        //??/86 New Star's Phoenix
+						//??/86 New Star's Phoenix
+
+DRIVERNV(st_game)       //Unknown game running on old Stern hardware
 
 #endif /* DRIVER_RECURSIVE */
