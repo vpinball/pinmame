@@ -13,6 +13,7 @@ rather tedious and annoying, so we've dropped it.
 Bugs Fixed
 ----------
 -Fixed Terminator 2 Knocker Sound Always Playing
+-Fixed Coin Door buttons for games using Pre-Whitestar System Portals Menu
  [Steve Ellenoff]
 
 -Limited the number of extra samples that can be generated per frame. 
