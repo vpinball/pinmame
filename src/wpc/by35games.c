@@ -13,15 +13,15 @@ static const core_tLCDLayout dispBy6[] = {
 };
 #define dispBy7 dispBy6
 #else /* DISPLAYALL */
-static const core_tLCDLayout dispBy6[] = {
+static core_tLCDLayout dispBy6[] = {
   {0, 0, 2,6,CORE_SEG7}, {0,14,10,6,CORE_SEG7},
   {2, 0,18,6,CORE_SEG7}, {2,14,26,6,CORE_SEG7},
   {4, 2,35,2,CORE_SEG7}, {4, 8,38,2,CORE_SEG7},{0}
 };
-static const core_tLCDLayout dispBy7[] = {
+static core_tLCDLayout dispBy7[] = {
   {0, 0, 1,7,CORE_SEG87F}, {0,16, 9,7,CORE_SEG87F},
   {2, 0,17,7,CORE_SEG87F}, {2,16,25,7,CORE_SEG87F},
-  {4, 4,35,2,CORE_SEG87}, {4,10,38,2,CORE_SEG87},{0}
+  {4, 4,35,2,CORE_SEG7}, {4,10,38,2,CORE_SEG7},{0}
 };
 #endif /* DISPLAYALL */
 
@@ -596,10 +596,8 @@ CORE_GAMEDEFNV(fathom  ,"Fathom",1981,"Bally",by35_mBY35_61BS,0)
 / Medusa
 /-------------------------------*/
 static core_tLCDLayout medusaDisp[] = {
-  {0, 0, 1,7,CORE_SEG87F}, {0,16, 9,7,CORE_SEG87F},
-  {2, 0,17,7,CORE_SEG87F}, {2,16,25,7,CORE_SEG87F},
-  {4, 4,35,2,CORE_SEG87}, {4,10,38,2,CORE_SEG87},
-  {4,16,42,2,CORE_SEG87}, {4,21,44,2,CORE_SEG87}, {4,26,46,2,CORE_SEG87}, {0}
+  DISP_SEG_IMPORT(dispBy7),
+  {4,16,42,2,CORE_SEG7}, {4,21,44,2,CORE_SEG7}, {4,26,46,2,CORE_SEG7}, {0}
 };
 INITGAME2(medusa  ,GEN_BY35,medusaDisp,FLIP_SW(FLIP_L),8,SNDBRD_BY61B,0x10)
 BY35_ROMSTARTx00(medusa,"845-16_2.732",CRC(b0fbd1ac),
@@ -626,10 +624,8 @@ CORE_GAMEDEFNV(centaur,"Centaur",1981,"Bally",by35_mBY35_61BS,0)
 / Elektra
 /-------------------------------*/
 static core_tLCDLayout elektraDisp[] = {
-  {0, 0, 1,7,CORE_SEG87F}, {0,16, 9,7,CORE_SEG87F},
-  {2, 0,17,7,CORE_SEG87F}, {2,16,25,7,CORE_SEG87F},
-  {4, 4,35,2,CORE_SEG87}, {4,10,38,2,CORE_SEG87},
-  {4,21,44,2,CORE_SEG87}, {0}
+  DISP_SEG_IMPORT(dispBy7),
+  {4,21,44,2,CORE_SEG7}, {0}
 };
 INITGAME2(elektra ,GEN_BY35,elektraDisp,FLIP_SW(FLIP_L),8,SNDBRD_BY61,0x80)
 BY35_ROMSTARTx00(elektra,"857-04_2.732",CRC(d2476720),
@@ -644,10 +640,8 @@ CORE_GAMEDEFNV(elektra,"Elektra",1981,"Bally",by35_mBY35_61S,0)
 / Vector
 /-------------------------------*/
 static core_tLCDLayout vectorDisp[] = {
-  {0, 0, 1,7,CORE_SEG87F}, {0,16, 9,7,CORE_SEG87F},
-  {2, 0,17,7,CORE_SEG87F}, {2,16,25,7,CORE_SEG87F},
-  {4, 4,35,2,CORE_SEG87}, {4,10,38,2,CORE_SEG87},
-  {4,17,42,3,CORE_SEG87}, {4,24,45,3,CORE_SEG87}, {0}
+  DISP_SEG_IMPORT(dispBy7),
+  {4,17,42,3,CORE_SEG7}, {4,24,45,3,CORE_SEG7}, {0}
 };
 INITGAME2(vector  ,GEN_BY35,vectorDisp,FLIP_SW(FLIP_L),8,SNDBRD_BY61,0x80)
 BY35_ROMSTARTx00(vector,"858-11_2.732",CRC(323e286b),
@@ -708,7 +702,7 @@ CORE_CLONEDEFNV(speakes4,speakesy,"Speakeasy 4 Player",1982,"Bally",by35_mBY35_5
 /-------------------------------*/
 static core_tLCDLayout dispRapid[] = {
   {0, 0, 1,7,CORE_SEG87F}, {0,16, 9,7,CORE_SEG87F},
-  {2, 4,33,2,CORE_SEG87}, {2,10,36,2,CORE_SEG87},
+  {2, 4,33,2,CORE_SEG7},   {2,10,36,2,CORE_SEG7},
   {2,16,41,7,CORE_SEG87F}, {0}
 };
 INITGAME2(rapidfir,GEN_BY35,dispRapid,FLIP_SW(FLIP_L),8,SNDBRD_BY61B,0)
@@ -723,10 +717,8 @@ CORE_GAMEDEFNV(rapidfir,"Rapid Fire",1982,"Bally",by35_mBY35_61BS,0)
 / Mr. and Mrs. Pacman (BY35-872: 05/82)
 /--------------------------------------*/
 static core_tLCDLayout m_mpacDisp[] = {
-  {0, 0, 1,7,CORE_SEG87F}, {0,16, 9,7,CORE_SEG87F},
-  {2, 0,17,7,CORE_SEG87F}, {2,16,25,7,CORE_SEG87F},
-  {4, 4,35,2,CORE_SEG87}, {4,10,38,2,CORE_SEG87},
-  {4,16,42,2,CORE_SEG87}, {4,21,44,2,CORE_SEG87}, {4,26,46,2,CORE_SEG87}, {0}
+  DISP_SEG_IMPORT(dispBy7),
+  {4,16,42,2,CORE_SEG7}, {4,21,44,2,CORE_SEG7}, {4,26,46,2,CORE_SEG7}, {0}
 };
 INITGAME2(m_mpac,GEN_BY35,m_mpacDisp,FLIP_SWNO(33,37),8,SNDBRD_BY61,0x80)
 BY35_ROMSTARTx00(m_mpac,"872-04_2.732",CRC(5e542882),
@@ -751,7 +743,11 @@ CORE_GAMEDEFNV(bmx,"BMX",1983,"Bally",by35_mBY35_51S,0)
 /*-----------------------------------------------------------
 / Grand Slam (BY35-???: 01/83) - Uses AS2888-51 Sound Board
 /-----------------------------------------------------------*/
-INITGAME2(granslam ,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
+static core_tLCDLayout granslamDisp[] = {
+  DISP_SEG_IMPORT(dispBy6),
+  {4,14,42,2,CORE_SEG7}, {4,19,44,2,CORE_SEG7}, {4,24,46,2,CORE_SEG7}, {0}
+};
+INITGAME2(granslam ,GEN_BY35,granslamDisp,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0x80)
 BY35_ROMSTARTx00(granslam, "grndslam.u2",CRC(66aea9dc),
                            "grndslam.u6",CRC(9e6ccea1))
 BY51_SOUNDROM0(            "grndslam.u4",CRC(ac34bc38))
