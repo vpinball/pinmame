@@ -33,7 +33,7 @@ static const char *u318_sample_names[] =
   "motor2.wav",
   "solon.wav",
   "soloff.wav",
-	"w1801.wav",    
+	"w1801.wav",
 	"w1802.wav",
 	"w1803.wav",
 	"w1804.wav",
@@ -48,8 +48,8 @@ static const char *u318_sample_names[] =
 	"w1813.wav",
 	"w1814.wav",
 	"w1815.wav",
-	"w1815.wav",	
-	"w1817.wav",   
+	"w1815.wav",
+	"w1817.wav",
 	"w1818.wav",
 	"w1819.wav",
 	"w1820.wav",
@@ -63,9 +63,9 @@ static const char *u318_sample_names[] =
 	"w1828.wav",
 	"w1829.wav",
 	"w1830.wav",
-	"w1831.wav",	
-	"w1831.wav",	
-	"w5101.wav",    
+	"w1831.wav",
+	"w1831.wav",
+	"w5101.wav",
 	"w5102.wav",
 	"w5103.wav",
 	"w5104.wav",
@@ -80,8 +80,8 @@ static const char *u318_sample_names[] =
 	"w5113.wav",
 	"w5114.wav",
 	"w5115.wav",
-	"w5115.wav",	
-	"w5117.wav",   
+	"w5115.wav",
+	"w5117.wav",
 	"w5118.wav",
 	"w5119.wav",
 	"w5120.wav",
@@ -95,15 +95,15 @@ static const char *u318_sample_names[] =
 	"w5128.wav",
 	"w5129.wav",
 	"w5130.wav",
-	"w5131.wav",	
-	"w5131.wav",	
+	"w5131.wav",
+	"w5131.wav",
 	0   /* end of array */
 };
 
 struct Samplesinterface u318_samples_interface =
 {
-	7,	/* 6 internal for wpcsam, 1 progamm  */
-	100,	/* volume */
+	9,	/* 6 internal for wpcsam, 3 progam  */
+	50,	/* volume */
 	u318_sample_names
 };
 
@@ -146,8 +146,10 @@ static int by32_sh_start(const struct MachineSound *msound)  {
 
 
 static void by32_sh_stop(void) {
-	sample_stop(0);
-//	sample_stop(1);
+	   sample_stop(6);
+	   sample_stop(7);
+	   sample_stop(8);
+ //	sample_stop(1);
 }
 
 
@@ -163,25 +165,33 @@ static void by32_sh_stop(void) {
 // e) 1   x                             1                               ignore
 // X -> dont care
 
+static int lastchan = 6;
 static void playsam(int cmd) {
+   int i;
   if ((cmd != by32locals.lastCmd) && ((cmd & 0x0f) != 0x0f)) {
 
        int samplex;
         samplex = by32locals.sampleoff + (cmd & 0x1f);
 //  logerror("%04x: samplestart cmd %02x alstcmd %02x %d \n", activecpu_get_previouspc(), cmd,by32locals.lastCmd,samplex);
- 	
-// 	if (by32locals.startit == 0) 
+
+// 	if (by32locals.startit == 0)
 // 	{
 // 		sample_start(0,samplex,0);
 // 		by32locals.startit = 1;
 // 	}
 // 	else
 // 	{
-  		sample_start(6,samplex,0);
+		lastchan++;
+		if (lastchan > 8) lastchan = 6;
+  		sample_start(lastchan,samplex,0);
 //  		by32locals.startit = 0;
 //	}
 //       sample_start(0,samplex,0);
-  }
+  } else   if ((cmd & 0x0f) == 0x0f)     {
+	   for (i = 6;i < 9;i++) {
+           if (i != lastchan) sample_stop(i);
+        }	
+         }  
   by32locals.lastCmd = cmd;
 }
 
@@ -197,21 +207,24 @@ static WRITE_HANDLER(by32_data_w) {
        	}
 }
 static WRITE_HANDLER(by32_ctrl_w) {
-  if (~by32locals.strobe & 0x01) 	
+int i;
+  if (~by32locals.strobe & 0x01)
 	{
 //        playsam((by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00)); // case b
 // sound e bit is swaped !!!!
           playsam((by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x00 : 0x10)); // case b
 	}
-  else 
+  else
     	if (~data & 0x01)
            {
 //	   by32locals.lastCmd = (by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00); // case a
  	   by32locals.lastCmd = (by32locals.lastCmd & 0x0f) | ((data & 0x02) ? 0x00 : 0x10); // case a
+	   for (i = 6;i < 9;i++) {
+           if (i != lastchan) sample_stop(i);
+        }	
 
-	   sample_stop(6);
            }
-            
+
 //  logerror("%04x: by_ctrl32_w data %02x startit %d\n", activecpu_get_previouspc(), data,by32locals.startit);
   by32locals.strobe = data;	// case e
 }
@@ -228,7 +241,7 @@ static void by32_init(struct sndbrdData *brdData) {
     {
     	by32locals.sampleoff	= 1 + 18;		// 751-18 game rom detected (star trek,playboy...)
     }
-    else 
+    else
     {
     	by32locals.sampleoff	= 33 + 18;		// 751-51 game rom detected (harlem, dolly...)
     }
