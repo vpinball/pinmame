@@ -456,6 +456,7 @@ extern MACHINE_DRIVER_EXTERN(by35_56S);
 extern MACHINE_DRIVER_EXTERN(by35_61S);
 extern MACHINE_DRIVER_EXTERN(by35_45S);
 extern MACHINE_DRIVER_EXTERN(by6802_45S);
+extern MACHINE_DRIVER_EXTERN(st100s);
 extern MACHINE_DRIVER_EXTERN(st200);
 extern MACHINE_DRIVER_EXTERN(st200f2k);
 extern MACHINE_DRIVER_EXTERN(st200fal);
@@ -481,6 +482,7 @@ extern MACHINE_DRIVER_EXTERN(hnk);
 #define by35_mAstro     st200
 #define by35_mHNK       hnk
 #define by35_mST100     by35
+#define by35_mST100s    st100s
 #define by35_mST200     st200
 #define by35_mST200f2k	st200f2k
 #define by35_mST200fal	st200fal

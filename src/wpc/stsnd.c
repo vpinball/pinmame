@@ -9,15 +9,176 @@
 / Stern Sound System
 / 3 different boards:
 /
-/ ST-100:  discrete
+/ ST-100:  discrete (seems that sw 23 must be on ....)
 / ST-300:  discrete, (+ VS-1000 speech)
 / ASTRO:   discrete, can switch between SB-100 and SB-300
 /-----------------------------------------*/
+// support added soundboard st-100 by Oliver Kaegi (12/12/2004)
 // support added soundboard st-300 by Oliver Kaegi (14/09/2004)
 // support added for vs-100 speech by Oliver Kaegi (10/10/2004)
-// speech roms for freefall missing
-// not sure if catacombs roms are correct...
-// interface definition for soundboard st-300
+
+static  INT16  s100Waveb1[] = {
+32736, 26136, 19008, 12144, 7392,3960, 2376, 264,
+-32736, -26136, -19008, -12144, -7392,-3960, -2376, -264
+}; // 
+//   0x7FFF, 0x6000, 0x5000, 0x4000, 0x3000, 0x2000,  0x1000, 0x0000 
+//  -0x7FFF,-0x6000,-0x5000,-0x4000,-0x3000,-0x2000, -0x1000,-0x0000
+
+//   0x7FFF, 0x4500, 0x4000, 0x3000, 0x2000, 0x1500,  0x1000, 0x0500 
+//  -0x7FFF,-0x4500,-0x4000,-0x3000,-0x2000,-0x1500, -0x1000,-0x0500
+
+ static  INT16  s100Waveb5[] = {
+0, -16000, -18000, -17800, -17400, -17000 , -16800, -16400, -16000, -15800, -15400, -15000,
+-14800, -14400, -14000, -13800, -13400, -13000, -7000, 8000, 15000, 18000, 20000, 20000, 
+20000, 19000, 19000, 18000, 17000, 16000, 15000, 14500
+// 0, -16000, -18000, -16000, -16000, -16000, -16000, -14000, -15000, -15000, 
+ //-14000, -14000, -13000, -14000, -12000, -12000, -11000, -14000, -7000, 8000, 
+// 15000, 18000 ,20000 ,20000, 20000 ,19000 ,19000 ,18000 , 19000, 16000 , 16000, 16000
+};
+
+
+static INT16 freqarb5[] = {
+500,400,300,200,200,300,9999
+};
+
+static  INT16  s100Waveb6[] = {
+// 0x7FFF,-0x7FFF,0x7FFF,-0x7FFF,0x7FFF,-0x7FFF,0x7FFF,-0x7FFF,0x7FFF,-0x7FFF,0x7FFF,-0x7FFF,0x7FFF,-0x7FFF,0x7FFF,-0x7FFF
+0x7FFF,-0x7FFF,0x7FFF,-0x7FFF,0x7FFF,-0x7FFF,0x7FFF,-0x7FFF
+};
+
+static INT16 freqarb6[] = {
+// 170,150,130,110,90,70,
+// 50,30,10,1,1,1,9999,
+// 120,120,120,120,120,120,
+// 100,100,100,100,100,100,
+  340,320,300,280,260,240,220,200,180,160,140,120,100,80,60,40,30,20,
+9999
+};
+	
+
+static struct {
+  int    channel;
+  int    freqb5; 	
+  int    freqb6; 	  
+} st100loc;
+
+// 3 lm324 square wave circuits 
+
+#define ST100_FREQ1   70 // 70  //  
+#define ST100_FREQ2   60 // 140  //  
+#define ST100_FREQ3   120 //  210  //  3 khz
+#define ST100_FREQ4   35  // (half freq 1)
+
+
+static void changefr (int param) {
+// emulationg the 556
+  if (freqarb5 [st100loc.freqb5] < 9999)  {
+	st100loc.freqb5++;
+    	logerror("setfreq5 %i\n", freqarb5 [st100loc.freqb5] );
+	}
+  if (freqarb5 [st100loc.freqb5] < 9999)  {
+	mixer_set_sample_frequency(st100loc.channel+4,freqarb5 [st100loc.freqb5] * sizeof(s100Waveb5)); 
+	}
+// emulationg the two lm324 
+  if (freqarb6 [st100loc.freqb6] < 9999)  {
+	st100loc.freqb6++;
+    	logerror("setfreq6 %i\n", freqarb6 [st100loc.freqb6] );
+	}
+  if (freqarb6 [st100loc.freqb6] < 9999)  {
+	mixer_set_sample_frequency(st100loc.channel+5,freqarb6 [st100loc.freqb6] * sizeof(s100Waveb6)); 
+	} else {
+     	logerror("stopsample 6 \n");
+   	mixer_set_volume(st100loc.channel+5,0);	   // bit 5
+  }
+
+}
+
+
+static int st100_sh_start(const struct MachineSound *msound)  {
+  int mixing_levels[6] = {15,15,15,15,15,15};
+  memset(&st100loc, 0, sizeof(st100loc));
+  st100loc.channel = mixer_allocate_channels(6, mixing_levels);
+  mixer_set_volume(st100loc.channel,0);	   // bit 1
+  mixer_set_volume(st100loc.channel+1,0);  // bit 2
+  mixer_set_volume(st100loc.channel+2,0);  // bit 3
+  mixer_set_volume(st100loc.channel+3,0);  // bit 4
+  mixer_set_volume(st100loc.channel+4,0);  // bit 5
+  mixer_set_volume(st100loc.channel+5,0);  // bit 6
+  mixer_play_sample_16(st100loc.channel,s100Waveb1, sizeof(s100Waveb1), ST100_FREQ1*sizeof(s100Waveb1), 1);
+  mixer_play_sample_16(st100loc.channel+1,s100Waveb1, sizeof(s100Waveb1), ST100_FREQ2*sizeof(s100Waveb1), 1);
+  mixer_play_sample_16(st100loc.channel+2,s100Waveb1, sizeof(s100Waveb1), ST100_FREQ3*sizeof(s100Waveb1), 1);
+  mixer_play_sample_16(st100loc.channel+3,s100Waveb1, sizeof(s100Waveb1), ST100_FREQ4*sizeof(s100Waveb1), 1);
+  st100loc.freqb5 = 0;
+  mixer_play_sample_16(st100loc.channel+4,s100Waveb5, sizeof(s100Waveb5), (freqarb5[st100loc.freqb5])*sizeof(s100Waveb5), 1);
+  st100loc.freqb6 = 0;
+  mixer_play_sample_16(st100loc.channel+5,s100Waveb6, sizeof(s100Waveb6), (freqarb6[st100loc.freqb6])*sizeof(s100Waveb6), 1);    
+  timer_pulse(TIME_IN_SEC(0.02),0,changefr); 
+  return 0;
+}
+
+
+
+
+static void st100_sh_stop(void) {
+	mixer_stop_sample(st100loc.channel);
+	mixer_stop_sample(st100loc.channel+1);
+	mixer_stop_sample(st100loc.channel+2);
+	mixer_stop_sample(st100loc.channel+3);
+	mixer_stop_sample(st100loc.channel+4);
+	mixer_stop_sample(st100loc.channel+5);				
+}
+
+static WRITE_HANDLER(sts_data_w)
+{
+    if (data & 0x01) {
+      	mixer_set_volume(st100loc.channel,100);	   // bit 1
+    	logerror("playsample 1 %i\n", data);
+	} else {
+      	mixer_set_volume(st100loc.channel,0);	   // bit 1		
+     }
+    if (data & 0x02) {
+      	mixer_set_volume(st100loc.channel+1,100);	   // bit 2
+    	logerror("playsample 2 %i\n", data);
+	} else {
+      	mixer_set_volume(st100loc.channel+1,0);	   // bit 2	
+     }
+    if (data & 0x04) {
+      	mixer_set_volume(st100loc.channel+2,100);	   // bit 3
+    	logerror("playsample 3 %i\n", data);
+	} else {
+      	mixer_set_volume(st100loc.channel+2,0);	   // bit 3	
+     }
+    if (data & 0x08) {
+      	mixer_set_volume(st100loc.channel+3,100);	   // bit 4
+    	logerror("playsample 4 %i\n", data);
+	} else {
+      	mixer_set_volume(st100loc.channel+3,0);	   // bit 4	
+     }
+    if (data & 0x10) {
+     st100loc.freqb5 = 0;
+       mixer_set_sample_frequency(st100loc.channel+4,freqarb5 [st100loc.freqb5] * sizeof(s100Waveb5)); 
+      	mixer_set_volume(st100loc.channel+4,100);	   // bit 4
+    	logerror("playsample 5 %i\n", data);
+	} else {
+    	logerror("stopsample 5 %i\n", data);
+      	mixer_set_volume(st100loc.channel+4,0);	   // bit 4	
+     }
+    if (data & 0x20) {
+     st100loc.freqb6 = 0;
+       mixer_set_sample_frequency(st100loc.channel+5,freqarb6 [st100loc.freqb6] * sizeof(s100Waveb6)); 
+      	mixer_set_volume(st100loc.channel+5,100);	   // bit 5
+    	logerror("playsample 6 %i\n", data);
+	} else {
+//    	logerror("stopsample 6 %i\n", data);
+//     	mixer_set_volume(st100loc.channel+5,0);	   // bit 5
+     }
+    logerror("snd_data_w: %i\n", data);
+	
+
+}
+
+
+
 #define ST300_INTCLOCK    1000000  // clock speed in hz of mpu ST-200 board ! -> 0.000'001 sec
 
 #define ST300_VOL 1 // volume for channels
@@ -571,9 +732,12 @@ static void st300_sh_stop(void) {
   samples_sh_stop();
 }
 
+
+
+
 static struct CustomSound_interface st300_custInt = {st300_sh_start, st300_sh_stop};
 static struct CustomSound_interface st300sam_custInt = {st300sam_sh_start, st300_sh_stop};
-
+static struct CustomSound_interface st100_custInt = {st100_sh_start, st100_sh_stop};
 
 static struct {
   struct sndbrdData brdData;
@@ -769,10 +933,6 @@ static WRITE_HANDLER(sts_ctrl_w)
 	logerror("snd_ctrl_w: %i\n", data);
 }
 
-static WRITE_HANDLER(sts_data_w)
-{
-    logerror("snd_data_w: %i\n", data);
-}
 
 static void sts_init(struct sndbrdData *brdData)
 {
@@ -795,6 +955,10 @@ const struct sndbrdIntf astroIntf = {
   "ASTRO", sts_init, NULL, NULL, st300_data_w, st300_data_w,NULL, st300_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
+MACHINE_DRIVER_START(st100)
+  MDRV_SOUND_ADD(CUSTOM, st100_custInt)
+MACHINE_DRIVER_END
+ 
 MACHINE_DRIVER_START(st300)
   MDRV_SOUND_ADD(CUSTOM, st300_custInt)
 MACHINE_DRIVER_END

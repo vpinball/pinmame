@@ -9,7 +9,7 @@ struct sndbrdst300 {
   int sampleisplaying;	
   UINT16 timer1,timer2,timer3;
 };
-
+extern MACHINE_DRIVER_EXTERN(st100);
 extern MACHINE_DRIVER_EXTERN(st300);
 extern MACHINE_DRIVER_EXTERN(st300f2k);
 extern MACHINE_DRIVER_EXTERN(st300fal);
