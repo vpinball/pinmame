@@ -2015,6 +2015,15 @@ INLINE void ldd_ix( void )
 	SET_NZ16(D);
 }
 
+/* $ec ADCX immediate -****    NSC8105 only.  Flags are a guess - copied from addb_im() */
+INLINE void adcx_im( void )
+{
+	UINT16 t,r;
+	IMMBYTE(t); r = X+t+(CC&0x01);
+	CLR_HNZVC; SET_FLAGS8(X,t,r); SET_H(X,t,r);
+	X = r;
+}
+
 /* $ed STD indexed -**0- */
 INLINE void std_ix( void )
 {
