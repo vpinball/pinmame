@@ -1879,7 +1879,7 @@ static void duart_command_register_w(int which, int data)
 				break;
 			//*Not used*
 			default:
-				LOG(("- INVALID TRANSMITTER COMMAND = %x\n",activecpu_get_pc(),cmd));
+				LOG(("- INVALID TRANSMITTER COMMAND = %x\n",cmd));
 		}
 	}
 
@@ -1903,7 +1903,7 @@ static void duart_command_register_w(int which, int data)
 				break;
 			//*Not used*
 			default:
-				LOG(("- INVALID RECEIVER COMMAND = %x\n",activecpu_get_pc(),cmd));
+				LOG(("- INVALID RECEIVER COMMAND = %x\n",cmd));
 		}
 	}
 }
