@@ -25,6 +25,7 @@
 #include "wpc.h"
 #include "sim.h"
 #include "wmssnd.h"
+#include "machine/4094.h"
 
 /*------------------
 /  Local functions
@@ -264,13 +265,45 @@ static sim_tSimData cpSimData = {
   NULL  				/* Custom key conditions? */
 };
 
+/*
+J2 - connected to the serial driver board
+
+Pin 1 - CLK    - Sol 37
+Pin 2 - DB     - Sol 40  (Strobe J5 1-24 Leds)
+Pin 3 - DA     - Sol 39  (Strobe J4 1-24 Leds)
+Pin 4 - Enable - Sol 38
+Pin 5 - Key
+Pin 6 - Gnd
+Pin 7 - 12V
+*/
+static int cp_getSol(int solNo) {
+  UINT8 data = wpc_data[WPC_SOLENOID1]; // get the unsmoothed value
+  HC4094_data_w (0, GET_BIT6);
+  HC4094_data_w (1, GET_BIT7);
+  HC4094_clock_w(0, GET_BIT4);
+  HC4094_clock_w(1, GET_BIT4);
+  HC4094_clock_w(2, GET_BIT4);
+  HC4094_clock_w(3, GET_BIT4);
+  HC4094_strobe_w(0, GET_BIT5);
+  HC4094_strobe_w(1, GET_BIT5);
+  HC4094_strobe_w(2, GET_BIT5);
+  HC4094_strobe_w(3, GET_BIT5);
+  HC4094_oe_w(0, 1);
+  HC4094_oe_w(1, 1);
+  HC4094_oe_w(2, 1);
+  HC4094_oe_w(3, 1);
+  return 0;
+}
+
 /*----------------------
 / Game Data Information
 /----------------------*/
 static core_tGameData cpGameData = {
   GEN_WPC95, wpc_dispDMD,
   {
-    FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L)
+    FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
+    0,4,1,0,0,0,0, // 4 extra lamp columns & solenoid callback for the LEDs
+    cp_getSol
   },
   &cpSimData,
   {
@@ -282,10 +315,36 @@ static core_tGameData cpGameData = {
   }
 };
 
+static WRITE_HANDLER(parallel_0_out) {
+  coreGlobals.lampMatrix[10] = data;
+}
+static WRITE_HANDLER(parallel_1_out) {
+  coreGlobals.lampMatrix[8] = data;
+}
+static WRITE_HANDLER(parallel_2_out) {
+  coreGlobals.lampMatrix[11] = data;
+}
+static WRITE_HANDLER(parallel_3_out) {
+  coreGlobals.lampMatrix[9] = data;
+}
+static WRITE_HANDLER(qspin_0_out) {
+  HC4094_data_w(2, data);
+}
+static WRITE_HANDLER(qspin_1_out) {
+  HC4094_data_w(3, data);
+}
+
+static HC4094interface hc4094cp = {
+  4, // 4 chips
+  { parallel_0_out, parallel_1_out, parallel_2_out, parallel_3_out },
+  { qspin_0_out, qspin_1_out }
+};
+
 /*---------------
 /  Game handling
 /----------------*/
 static void init_cp(void) {
   core_gameData = &cpGameData;
+  HC4094_init(&hc4094cp);
 }
 
