@@ -38,6 +38,7 @@ static struct {
   int    ssEn; /* Special solenoids and flippers enabled ? */
   int    piaIrq;
   int    s6sound;
+  int    rr; /* Tweaks for Rat Race */
 } s7locals;
 static data8_t *s7_rambankptr, *s7_CMOS;
 
@@ -168,6 +169,13 @@ static WRITE_HANDLER(pia5cb2_w) {
 /-------------*/
 static void setSSSol(int data, int solNo) {
   int bit = CORE_SOLBIT(CORE_FIRSTSSSOL + solNo);
+  if (s7locals.rr) { // Rat Race doesn't use the ssEn output, and has the special solenoids non-inverted?
+    if (data)
+      { coreGlobals.pulsedSolState |= bit;  s7locals.solenoids |= bit; }
+    else
+      coreGlobals.pulsedSolState &= ~bit;
+    return;
+  }
   if (s7locals.ssEn & (~data & 1))
     { coreGlobals.pulsedSolState |= bit;  s7locals.solenoids |= bit; }
   else
@@ -182,6 +190,11 @@ static WRITE_HANDLER(pia1b_w) {
   s7locals.solenoids |= (((UINT16)data)<<8);
 }
 static WRITE_HANDLER(pia1a_w) {
+  if (s7locals.rr) { // Rat Race stores the solenoid bits elsewhere, only where?
+    coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffffff00) | (1 << s7locals.digSel); /* wrong! */
+    s7locals.solenoids |= (1 << s7locals.digSel); /* wrong! */
+    return;
+  }
   coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffffff00) | data;
   s7locals.solenoids |= data;
   // the following lines draw the extra lamp columns on Hyperball!
@@ -194,7 +207,7 @@ static WRITE_HANDLER(pia1a_w) {
   if (s7locals.lampColumn & 0x40) core_setLamp(coreGlobals.tmpLampMatrix, 0x800, ~data & 0x0f);
   if (s7locals.lampColumn & 0x80) core_setLamp(coreGlobals.tmpLampMatrix, 0x800, ~data << 4);
 }
-static WRITE_HANDLER(pia1cb2_w) { s7locals.ssEn = data;}
+static WRITE_HANDLER(pia1cb2_w) { s7locals.ssEn = data; }
 static WRITE_HANDLER(pia0ca2_w) { setSSSol(data, 7); }
 static WRITE_HANDLER(pia0cb2_w) { setSSSol(data, 6); }
 static WRITE_HANDLER(pia1ca2_w) { setSSSol(data, 4); }
@@ -227,6 +240,15 @@ static READ_HANDLER(s7_dips_r) {
 static WRITE_HANDLER(pia4b_w) { s7locals.swCol = data; }
 static READ_HANDLER(pia4a_r)  { return core_getSwCol(s7locals.swCol); }
 
+/*---------------
+/  Sound command
+/----------------*/
+static WRITE_HANDLER(pia0a_w) {
+  if (s7locals.rr) // Rat Race needs the leading sound command (0xff) byte filled in
+    sndbrd_0_data_w(0, 0xff);
+  sndbrd_0_data_w(0, data);
+}
+
 static struct pia6821_interface s7_pia[] = {
 {  /* PIA 0 (2100)
     PA0-4 Sound
@@ -237,7 +259,7 @@ static struct pia6821_interface s7_pia[] = {
     CB2   SS7
     CA1,CB1 NC */
  /* in  : A/B,CA/B1,CA/B2 */ 0, PIA_UNUSED_VAL(0x3f), PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(0), 0, 0,
- /* out : A/B,CA/B2       */ sndbrd_0_data_w, pia0b_w, pia0ca2_w, pia0cb2_w,
+ /* out : A/B,CA/B2       */ pia0a_w, pia0b_w, pia0ca2_w, pia0cb2_w,
  /* irq : A/B             */ s7_piaIrq, s7_piaIrq
 },{/* PIA 1 (2200)
     PA0-7 Sol 1-8 (Extra lamp strobe on Hyperball)
@@ -398,6 +420,9 @@ MACHINE_DRIVER_START(s7S6)
   MDRV_SOUND_CMDHEADING("s7")
 MACHINE_DRIVER_END
 
+/*----------------------
+/  Changes for Rat Race
+/-----------------------*/
 static MEMORY_READ_START(rr_readmem)
   { 0x0000, 0x07ff, MRA_RAM},
   { 0x2100, 0x2103, pia_r(S7_PIA0)},
@@ -405,26 +430,36 @@ static MEMORY_READ_START(rr_readmem)
   { 0x2400, 0x2403, pia_r(S7_PIA2)},
   { 0x2800, 0x2803, pia_r(S7_PIA3)},
   { 0x3000, 0x3003, pia_r(S7_PIA4)},
-  { 0x4000, 0x4003, pia_r(S7_PIA5)},
   { 0x5000, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(rr_writemem)
   { 0x0000, 0x07ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
-  { 0x0fff, 0x0fff, MWA_RAM, &s7_rambankptr }, /* unused on this game */
   { 0x2100, 0x2103, pia_w(S7_PIA0)},
   { 0x2200, 0x2203, pia_w(S7_PIA1)},
   { 0x2400, 0x2403, pia_w(S7_PIA2)},
   { 0x2800, 0x2803, pia_w(S7_PIA3)},
   { 0x3000, 0x3003, pia_w(S7_PIA4)},
-  { 0x4000, 0x4003, pia_w(S7_PIA5)},
   { 0x5000, 0xffff, MWA_ROM },
 MEMORY_END
+
+static MACHINE_INIT(rr) {
+  if (core_gameData == NULL) return;
+  pia_config(S7_PIA0, PIA_STANDARD_ORDERING, &s7_pia[0]);
+  pia_config(S7_PIA1, PIA_STANDARD_ORDERING, &s7_pia[1]);
+  pia_config(S7_PIA2, PIA_STANDARD_ORDERING, &s7_pia[2]);
+  pia_config(S7_PIA3, PIA_STANDARD_ORDERING, &s7_pia[3]);
+  pia_config(S7_PIA4, PIA_STANDARD_ORDERING, &s7_pia[4]);
+  sndbrd_0_init(SNDBRD_S67S, 1, NULL, NULL, NULL);
+  s7locals.ssEn= 1;
+  s7locals.rr = 1;
+}
 
 MACHINE_DRIVER_START(s7RR)
   MDRV_IMPORT_FROM(s7S)
   MDRV_CPU_MODIFY("mcpu")
   MDRV_CPU_MEMORY(rr_readmem, rr_writemem)
+  MDRV_CORE_INIT_RESET_STOP(rr,s7,s7)
   MDRV_NVRAM_HANDLER(generic_1fill)
 MACHINE_DRIVER_END
 
