@@ -117,7 +117,7 @@
 #include "cpu/z8000/z8000.h"
 #endif
 #if defined(PINMAME) && (HAS_TMS7000)
-//#include "cpu/tms7000/tms7000.h"
+#include "cpu/tms7000/tms7000.h"
 #endif
 #if (HAS_TMS32010)
 #include "cpu/tms32010/tms32010.h"
@@ -499,7 +499,7 @@ const struct cpu_interface cpuintrf[] =
 //	CPU4(I8051,    i8051,	 4,  0,1.00, 8, 16,	  0,16,LE,1, 3	),
 	//To accomodate external rom & ram, we use 1 extra address line and map the ram above the rom
 	//but MAME doesn't have 17 bit address handlers, so we use 20
-	CPU4(I8051,    i8051,	 4,  0,1.00, 8, 20,	  0,20,LE,1, 3	),	
+	CPU4(I8051,    i8051,	 4,  0,1.00, 8, 20,	  0,20,LE,1, 3	),
 #endif
 #if (HAS_M6800)
 	CPU0(M6800,    m6800,	 1,  0,1.00, 8, 16,	  0,16,BE,1, 4	),
@@ -598,7 +598,7 @@ const struct cpu_interface cpuintrf[] =
 	CPU0(Z8000,    z8000,	 2,  0,1.00,16,16bew,  0,16,BE,2, 6	),
 #endif
 #if defined(PINMAME) && (HAS_TMS7000)
-//	CPU0(TMS7000,tms7000,  1,  0,1.00,16,16bew, 0,16,BE,2, 6 ),
+	CPU0(TMS7000,  tms7000,	 3,  0,1.00,8 ,16lew,  0,16,LE,1, 3	),
 #endif
 #if (HAS_TMS32010)
 	CPU3(TMS32010,tms32010,  1,  0,1.00,16,16bew, -1,16,BE,2, 4 ),
