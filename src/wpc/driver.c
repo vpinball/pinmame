@@ -595,12 +595,6 @@ DRIVERNV(term3g)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (G
 DRIVERNV(term3l)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (Spain)
 DRIVERNV(term3f)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (France)
 DRIVERNV(term3i)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (Italy)
-
-// New CPU/Sound Board with ARM7 CPU + Xilinx FPGA controlling sound
-
-#ifdef MAME_DEBUG
-DRIVERNV(lotrsnd)		//Test ARM7 cpu/sound
-#endif
 DRIVERNV(lotr)          //Whitestar: 11/03 Lord Of The Rings
 DRIVERNV(lotr_gr)       //Whitestar: 11/03 Lord Of The Rings (Germany)
 DRIVERNV(lotr_sp)       //Whitestar: 11/03 Lord Of The Rings (Spain)
