@@ -26,20 +26,19 @@
     (the waveform is build by a comparator chip and I'm not sure how it really 
 	works)
   - base frequency for the counter is set to 16000 Hz, not sure if this is ok
-  - not sure abozt the cpu clock speed, set it to 2x of the XTAL value
 */
 
 static struct {
   struct sndbrdData brdData;
   int sndCmd;
 
-  int   counterEnabled;
-  int   counterSpeed;
-  int   counterReset;
-  int   actSamples;
-  int   volume;
+  int     counterEnabled;
+  int     counterSpeed;
+  int     counterReset;
+  int     actSamples;
+  double  volume;
+
   int   channel;
-  INT8  wavetable[16][32];
 } hnks_locals;
 
 #define SP_PIA0  2
@@ -62,14 +61,25 @@ static void hnks_irq(int state) {
   cpu_set_irq_line(hnks_locals.brdData.cpuNo, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
-void start_samples(void) {
-  mixer_play_sample(
-	hnks_locals.channel, 
-	(INT8 *) &hnks_locals.wavetable[hnks_locals.actSamples], 
-	(hnks_locals.counterEnabled && !hnks_locals.counterReset)?sizeof hnks_locals.wavetable[hnks_locals.actSamples]:1, 
-	(BASE_FREQUENCY/(hnks_locals.counterSpeed+1)), 
-	1
-  );
+static INT8 samples[2][32];
+static int iBuffer = 0;
+
+void start_samples(void)
+{
+	int i;
+	unsigned char* adr = memory_region(HNK_MEMREG_SCPU) + 0xf000 + (hnks_locals.actSamples*0x20);
+
+	iBuffer = 1-iBuffer;
+	for (i=0; i<32; i++)
+		samples[iBuffer][i] = (((*adr++)<<4)-0x80) * hnks_locals.volume; 
+
+	mixer_play_sample(
+		hnks_locals.channel, 
+		samples[iBuffer], 
+		(hnks_locals.counterEnabled && !hnks_locals.counterReset)?32:1, 
+		(BASE_FREQUENCY/(hnks_locals.counterSpeed+1)), 
+		1
+	);
 }
 
 /*
@@ -88,18 +98,17 @@ static WRITE_HANDLER(pia0a_w)
 static WRITE_HANDLER(pia0b_w)
 {
   hnks_locals.counterSpeed = data&0x0f;
-  hnks_locals.volume = (data&0xf0)>>4;
+  hnks_locals.volume = ((data&0xf0)>>4) / 15.0;
   
   // logerror("counter speed : %02x\n", hnks_locals.counterSpeed);
   // logerror("volume: %02x\n", hnks_locals.volume);
-
-  mixer_set_volume(hnks_locals.channel, (data&0xf0));
+  start_samples();
 }
 
 /* enables the counter to the wave table */
 static WRITE_HANDLER(pia0ca2_w)
 {
-  logerror("pia0ca2_w: %02x\n", data);
+  // logerror("pia0ca2_w: %02x\n", data);
   hnks_locals.counterEnabled = data;
   start_samples();
 }
@@ -108,7 +117,7 @@ static WRITE_HANDLER(pia0ca2_w)
 / (counter will stay zero as long as this signal is high) */
 static WRITE_HANDLER(pia0cb2_w)
 {
-  logerror("pia0cb2_w: %02x\n", data);
+  // logerror("pia0cb2_w: %02x\n", data);
   hnks_locals.counterReset = data;
   start_samples();
 }
@@ -116,9 +125,9 @@ static WRITE_HANDLER(pia0cb2_w)
 /*
   CA1     : input: sound strobe
   PA0-PA3 : input: sound command
-  PA4-PA7 : output: select waveform (0-15, upper bits of wave from ROM)
-  CA2     : output: start/enabled timer ???
-  PB0-PB3 : output: timer startup value ???
+  PA4-PA7 : output: select waveform (0-15, upper adress bits of wave ROM)
+  CA2     : output: timer reset/enable
+  PB0-PB3 : output: timer divider value
   PB4-PB7 : output: set volume level
 */
 
@@ -142,23 +151,15 @@ static WRITE_HANDLER(hnks_ctrl_w)
 
 static void hnks_init(struct sndbrdData *brdData)
 {
-  int i,j;
   memset(&hnks_locals, 0x00, sizeof(hnks_locals));
   hnks_locals.brdData = *brdData;
-
-  /* load the "wave table" (from the ROM, it's mapped to 0xf000-0xf1ff */
-  for (i=0; i<=0x0f; i++) {
-	  unsigned char* adr = memory_region(HNK_MEMREG_SCPU) + 0xf000 + (i*0x20);
-	  for(j=0; j<32; j++)
-		hnks_locals.wavetable[i][j] = ((*adr++)<<4)-0x80;
-  }
 
   pia_config(SP_PIA0, PIA_STANDARD_ORDERING, &sp_pia);
 }
 
 static int hnks_sh_start(const struct MachineSound *msound) {
   hnks_locals.channel = mixer_allocate_channel(15);
-  mixer_set_volume(hnks_locals.channel,0x00);
+  mixer_set_volume(hnks_locals.channel,0xff);
   return 0;
 }
 
