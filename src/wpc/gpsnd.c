@@ -107,7 +107,7 @@ static WRITE_HANDLER(gpss2_data_w)
     case 0x08: // rattlesnake / warble
       SN76477_enable_w(1, 1);
       SN76477_mixer_w(1, sb ? 0 : 4);
-      SN76477_envelope_w(1, sb ? 0 : 1);
+      SN76477_envelope_w(1, sb ? 1/*0*/: 1); // schematics suggest 0 for SSU-3, which won't work!
       SN76477_vco_w(1, 1);
       SN76477_set_noise_res(1, RES_K(100)); /* 4 */
       SN76477_set_filter_res(1, RES_K(120)); /* 5 */

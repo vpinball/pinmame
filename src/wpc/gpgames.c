@@ -165,7 +165,7 @@ CORE_GAMEDEFNV(vegasgp,"Vegas (Game Plan)",1979,"Game Plan",mGP2S1,0)
 /*-------------------------------------------------------------------
 / Coney Island! (December 1979) - Model #180
 /-------------------------------------------------------------------*/
-INITGAME(coneyis, 0,dispGP_BDU1,FLIP_SW(FLIP_L),SNDBRD_GPSSU2,0)
+INITGAME(coneyis, 0,dispGP_BDU1,FLIP_SW(FLIP_L),SNDBRD_GPSSU3,0)
 GP_ROMSTART888(coneyis,	"130a.716",CRC(dc402b37) SHA1(90c46391a1e5f000f3b235d580463bf96b45bd3e),
 						"130b.716",CRC(19a86f5e) SHA1(bc4a87314fc9c4e74e492c3f6e44d5d6cae72939),
 						"130c.716",CRC(b956f67b) SHA1(ff64383d7f59e9bbec588553e35a21fb94c7203b))
