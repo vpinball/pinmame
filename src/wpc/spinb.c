@@ -182,11 +182,8 @@ SND CPU #2 8255 PPI
 #define SPINB_Z80CPU_FREQ   2500000
 #define SPINB_8051CPU_FREQ 16000000
 
-//IRQ 500, NMI = 1500 wasn't bad, but still can't find the right timing
-
 #define SPINB_VBLANKFREQ      60 /* VBLANK frequency*/
-#define SPINB_INTFREQ        200 /* Z80 Interrupt frequency*/
-#define SPINB_NMIFREQ       2300 /* Z80 NMI frequency (shouldn't be used according to schematics!?) */
+#define SPINB_INTFREQ        250 /* Z80 Interrupt frequency*/
 
 #define MATRIX_STROBE 0
 #define DIPCOL_STROBE 1
@@ -236,7 +233,6 @@ static READ_HANDLER(SPINB_S2_MSM5025_READROM);
 static WRITE_HANDLER(SPINB_S1_MSM5025_w);
 static WRITE_HANDLER(SPINB_S2_MSM5025_w);
 static void spinb_z80int(int data);
-static void spinb_z80nmi(int data);
 
 #if DMD_FROM_RAM
 	static UINT8  *dmd32RAM;
@@ -297,9 +293,7 @@ struct {
   int    LastStrobeType;
   UINT8  volume;
   mame_timer *irqtimer;
-  mame_timer *nmitimer;
   int irqfreq;
-  int nmifreq;
 } SPINBlocals;
 
 /* -------------------*/
@@ -330,23 +324,15 @@ const struct sndbrdIntf spinbIntf = {
    "SPINB", NULL, NULL, NULL, spinb_sndCmd_w, NULL, NULL, NULL, NULL, SNDBRD_NODATASYNC
 };
 
-/* -- Manual IRQ & NMI Timing Adjustments for debugging -- */
+/* -- Manual IRQ Timing Adjustments for debugging -- */
 #ifdef MAME_DEBUG
-static void adjust_timer(int which, int offset) {
+static void adjust_timer(int offset) {
   static char s[8];
-  if (which) { // 0 = NMI, others = IRQ
-    SPINBlocals.irqfreq += offset;
-    if (SPINBlocals.irqfreq < 1) SPINBlocals.irqfreq = 1;
-    sprintf(s, "IRQ:%4d", SPINBlocals.irqfreq);
-    core_textOut(s, 8, 40, 0, 5);
-    timer_adjust(SPINBlocals.irqtimer, 1.0/(double)SPINBlocals.irqfreq, 0, 1.0/(double)SPINBlocals.irqfreq);
-  } else {
-    SPINBlocals.nmifreq += offset;
-    if (SPINBlocals.nmifreq < 1) SPINBlocals.nmifreq = 1;
-    sprintf(s, "NMI:%4d", SPINBlocals.nmifreq);
-    core_textOut(s, 8, 40, 10, 5);
-    timer_adjust(SPINBlocals.nmitimer, 1.0/(double)SPINBlocals.nmifreq, 0, 1.0/(double)SPINBlocals.nmifreq);
-  }
+  SPINBlocals.irqfreq += offset;
+  if (SPINBlocals.irqfreq < 1) SPINBlocals.irqfreq = 1;
+  sprintf(s, "IRQ:%4d", SPINBlocals.irqfreq);
+  core_textOut(s, 8, 40, 0, 5);
+  timer_adjust(SPINBlocals.irqtimer, 1.0/(double)SPINBlocals.irqfreq, 0, 1.0/(double)SPINBlocals.irqfreq);
 }
 #endif /* MAME_DEBUG */
 
@@ -768,17 +754,15 @@ static INTERRUPT_GEN(spinb_vblank) {
 
 static SWITCH_UPDATE(spinb) {
 #ifdef MAME_DEBUG
-  int which = 0;
   if(!debugger_focus) {
-    if (keyboard_pressed(KEYCODE_SPACE)) which = 1; // toggle NMI/IRQ
     if      (keyboard_pressed_memory_repeat(KEYCODE_O, 60))
-      adjust_timer(which, -10);
+      adjust_timer(-10);
     else if (keyboard_pressed_memory_repeat(KEYCODE_L, 60))
-      adjust_timer(which, -1);
+      adjust_timer(-1);
     else if (keyboard_pressed_memory_repeat(KEYCODE_COLON, 60))
-      adjust_timer(which, 1);
+      adjust_timer(1);
     else if (keyboard_pressed_memory_repeat(KEYCODE_P, 60))
-      adjust_timer(which, 10);
+      adjust_timer(10);
   }
 #endif /* MAME_DEBUG */
   if (inports) {
@@ -808,8 +792,6 @@ static int spinb_m2sw(int col, int row) {
 
 static void spinb_z80int(int data) {  cpu_set_irq_line(0, 0, PULSE_LINE); }
 
-static void spinb_z80nmi(int data) {  cpu_set_irq_line(0, 127, PULSE_LINE); }
-
 /*Machine Init*/
 static MACHINE_INIT(spinb) {
   memset(&SPINBlocals, 0, sizeof(SPINBlocals));
@@ -817,9 +799,6 @@ static MACHINE_INIT(spinb) {
   SPINBlocals.irqtimer = timer_alloc(spinb_z80int);
   SPINBlocals.irqfreq = SPINB_INTFREQ;
   timer_adjust(SPINBlocals.irqtimer, 1.0/(double)SPINBlocals.irqfreq, 0, 1.0/(double)SPINBlocals.irqfreq);
-  SPINBlocals.nmitimer = timer_alloc(spinb_z80nmi);
-  SPINBlocals.nmifreq = SPINB_NMIFREQ;
-  timer_adjust(SPINBlocals.nmitimer, 1.0/(double)SPINBlocals.nmifreq, 0, 1.0/(double)SPINBlocals.nmifreq);
 
   /* init PPI */
   ppi8255_init(&ppi8255_intf);

@@ -153,7 +153,7 @@
    ROM_LOAD(n2, 0x12000, 0x20000, chk2) 
 
 /*-- SOUND ROMS --*/
-#define SPINB_SNDROM(n1, chk1, n2, chk2, n3, chk3, n4, chk4, n5, chk5, n6, chk6, n7, chk7) \
+#define SPINB_SNDROM23(n1, chk1, n2, chk2, n3, chk3, n4, chk4, n5, chk5, n6, chk6, n7, chk7) \
   NORMALREGION(0x10000, SPINB_MEMREG_SND1) \
    ROM_LOAD(n1, 0x00000, 0x2000, chk1) \
 NORMALREGION(0x180000, REGION_USER1) \
@@ -166,6 +166,18 @@ NORMALREGION(0x10000, SPINB_MEMREG_SND2) \
    ROM_LOAD(n6, 0x80000, 0x80000, chk6) \
    ROM_LOAD(n7, 0x100000, 0x80000, chk7)
 
+/*-- SOUND ROMS --*/
+#define SPINB_SNDROM22(n1, chk1, n2, chk2, n3, chk3, n4, chk4, n5, chk5, n6, chk6) \
+  NORMALREGION(0x10000, SPINB_MEMREG_SND1) \
+   ROM_LOAD(n1, 0x00000, 0x2000, chk1) \
+NORMALREGION(0x180000, REGION_USER1) \
+   ROM_LOAD(n2, 0x0000, 0x80000, chk2) \
+   ROM_LOAD(n3, 0x80000, 0x80000, chk3) \
+NORMALREGION(0x10000, SPINB_MEMREG_SND2) \
+   ROM_LOAD(n4, 0x00000, 0x2000, chk4) \
+  NORMALREGION(0x180000, REGION_USER2) \
+   ROM_LOAD(n5, 0x0000, 0x80000, chk5) \
+   ROM_LOAD(n6, 0x80000, 0x80000, chk6)
 
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(spinb);
