@@ -12,16 +12,24 @@
 #include "driver.h"
 #include "6532riot.h"
 
-#define VERBOSE 1
+#define VERBOSE 0
 
 #if VERBOSE
-#define LOG(x)	if (which==3) logerror x
+#define LOG(x) logerror x
 #else
 #define LOG(x)
 #endif
 
 
 /******************* internal RIOT data structure *******************/
+
+#define RIOT6532_PORTA	0x00
+#define RIOT6532_DDRA	0x01
+#define RIOT6532_PORTB	0x02
+#define RIOT6532_DDRB	0x03
+
+#define RIOT6532_TIMER	0x00
+#define RIOT6532_IRF	0x01
 
 struct riot6532
 {
@@ -83,17 +91,17 @@ struct riot6532
 
 /******************* static variables *******************/
 
-static struct riot6532 riot[MAX_RIOT];
+static struct riot6532 riot[MAX_RIOT_6532];
 
 /******************* un-configuration *******************/
 
 static void riot_timeout(int which);
 
-void riot_unconfig(void)
+void riot6532_unconfig(void)
 {
 	int i;
 
-	for (i = 0; i < MAX_RIOT; i++)
+	for (i = 0; i < MAX_RIOT_6532; i++)
 	{
 		if ( riot[i].t ) {
 			timer_remove(riot[i].t);
@@ -107,33 +115,33 @@ void riot_unconfig(void)
 
 /******************* configuration *******************/
 
-void riot_set_clock(int which, int clock)
+void riot6532_set_clock(int which, int clock)
 {
 	riot[which].sec_to_cycles = clock;
 	riot[which].cycles_to_sec = 1.0 / riot[which].sec_to_cycles;
 }
 
-void riot_config(int which, const struct riot6532_interface *intf)
+void riot6532_config(int which, const struct riot6532_interface *intf)
 {
-	if (which >= MAX_RIOT) return;
+	if (which >= MAX_RIOT_6532) return;
 	riot[which].intf = intf;
 	riot[which].t = NULL;
 
 	riot[which].time = timer_get_time();
 
 	/* Default clock is from CPU1 */
-	riot_set_clock(which, Machine->drv->cpu[0].cpu_clock);
+	riot6532_set_clock(which, Machine->drv->cpu[0].cpu_clock);
 }
 
 
 /******************* reset *******************/
 
-void riot_reset(void)
+void riot6532_reset(void)
 {
 	int i;
 
 	/* zap each structure, preserving the interface and swizzle */
-	for (i = 0; i < MAX_RIOT; i++)
+	for (i = 0; i < MAX_RIOT_6532; i++)
 	{
 		riot[i].timer_divider = 1;
 		riot[i].timer_start   = 0x00;
@@ -152,7 +160,7 @@ static void update_shared_irq_handler(void (*irq_func)(int state))
 	int i;
 
 	/* search all RIOTs for this same IRQ function */
-	for (i = 0; i < MAX_RIOT; i++)
+	for (i = 0; i < MAX_RIOT_6532; i++)
 		if (riot[i].intf)
 		{
 			if (riot[i].intf->irq_func == irq_func && riot[i].irq)
@@ -221,7 +229,7 @@ static void riot_timeout(int which)
 
 /******************* CPU interface for RIOT read *******************/
 
-int riot_read(int which, int offset)
+int riot6532_read(int which, int offset)
 {
 	struct riot6532 *p = riot + which;
 	int val = 0;
@@ -231,7 +239,7 @@ int riot_read(int which, int offset)
 
 	if ( !(offset & 0x04) ) {
 		switch( offset & 0x03 ) {
-		case RIOT_PORTA:
+		case RIOT6532_PORTA:
 			/* update the input */
 			if (p->intf->in_a_func) p->in_a = p->intf->in_a_func(0);
 
@@ -241,12 +249,12 @@ int riot_read(int which, int offset)
 			// LOG(("RIOT%d read port A = %02X\n", which, val));
 			break;
 
-		case RIOT_DDRA:
+		case RIOT6532_DDRA:
 			val = p->ddr_a;
 			// LOG(("RIOT%d read DDR A = %02X\n", which, val));
 			break;
 		
-		case RIOT_PORTB:
+		case RIOT6532_PORTB:
 			/* update the input */
 			if (p->intf->in_b_func) p->in_b = p->intf->in_b_func(0);
 
@@ -256,7 +264,7 @@ int riot_read(int which, int offset)
 			// LOG(("RIOT%d read port B = %02X\n", which, val));
 			break;
 
-		case RIOT_DDRB:
+		case RIOT6532_DDRB:
 			val = p->ddr_b;
 			//  LOG(("RIOT%d read DDR B = %02X\n", which, val));
 			break;
@@ -264,7 +272,7 @@ int riot_read(int which, int offset)
 	}
 	else {
 		switch ( offset & 0x01 ) {
-		case RIOT_TIMER:
+		case RIOT6532_TIMER:
 			if ( p->t ) {
 				if ( p->irq_state & RIOT_TIMERIRQ ) {
 					val = 255 - V_TIME_TO_CYCLES(timer_get_time() - p->time);
@@ -275,7 +283,7 @@ int riot_read(int which, int offset)
 					val = p->timer_start - V_TIME_TO_CYCLES(timer_get_time() - p->time) / p->timer_divider;
 			}
 			else
-				val = 0xff;
+				val = 0x00;
 
 			p->irq_state &= ~RIOT_TIMERIRQ;
 			p->timer_irq_enabled = offset&0x08;
@@ -284,9 +292,9 @@ int riot_read(int which, int offset)
 			LOG(("RIOT%d read timer = %02X %02X\n", which, val, offset&0x08));
 			break;
 
-		case RIOT_IRF:
+		case RIOT6532_IRF:
 			val = p->irq_state;
-			p->irq_state =0; //&= ~RIOT_PA7IRQ;
+			p->irq_state &= ~RIOT_PA7IRQ;
 			update_6532_interrupts(p);
 
 			LOG(("RIOT%d read interrupt flags = %02X\n", which, val));
@@ -300,7 +308,7 @@ int riot_read(int which, int offset)
 
 /******************* CPU interface for RIOT write *******************/
 
-void riot_write(int which, int offset, int data)
+void riot6532_write(int which, int offset, int data)
 {
 	struct riot6532 *p = riot + which;
 	int old_port_a = p->in_a;
@@ -310,7 +318,7 @@ void riot_write(int which, int offset, int data)
 
 	if ( !(offset & 0x04) ) {
 		switch ( offset & 0x03 ) {
-		case RIOT_PORTA:
+		case RIOT6532_PORTA:
 			LOG(("RIOT%d port A write = %02X\n", which, data));
 
 			/* update the output value */
@@ -324,7 +332,7 @@ void riot_write(int which, int offset, int data)
 			if (p->intf->out_a_func && p->ddr_a) p->intf->out_a_func(0, p->out_a & p->ddr_a);
 			break;
 
-		case RIOT_DDRA:
+		case RIOT6532_DDRA:
 			LOG(("RIOT%d DDR A write = %02X\n", which, data));
 
 			if (p->ddr_a != data)
@@ -337,7 +345,7 @@ void riot_write(int which, int offset, int data)
 			}
 			break;
 		
-		case RIOT_PORTB:
+		case RIOT6532_PORTB:
 			LOG(("RIOT%d port B write = %02X\n", which, data));
 
 			/* update the output value */
@@ -347,7 +355,7 @@ void riot_write(int which, int offset, int data)
 			if (p->intf->out_b_func && p->ddr_b) p->intf->out_b_func(0, p->out_b & p->ddr_b);
 			break;
 
-		case RIOT_DDRB:
+		case RIOT6532_DDRB:
 			LOG(("RIOT%d DDR B write = %02X\n", which, data));
 
 			if (p->ddr_b != data)
@@ -411,7 +419,7 @@ void riot_write(int which, int offset, int data)
 
 /******************* interface setting RIOT port A input *******************/
 
-void riot_set_input_a(int which, int data)
+void riot6532_set_input_a(int which, int data)
 {
 	struct riot6532 *p = riot + which;
 	int old_port_a = p->in_a;
@@ -425,7 +433,7 @@ void riot_set_input_a(int which, int data)
 
 /******************* interface setting RIOT port B input *******************/
 
-void riot_set_input_b(int which, int data)
+void riot6532_set_input_b(int which, int data)
 {
 	struct riot6532 *p = riot + which;
 
@@ -435,98 +443,98 @@ void riot_set_input_b(int which, int data)
 
 /******************* Standard 8-bit CPU interfaces, D0-D7 *******************/
 
-READ_HANDLER( riot_0_r ) { return riot_read(0, offset); }
-READ_HANDLER( riot_1_r ) { return riot_read(1, offset); }
-READ_HANDLER( riot_2_r ) { return riot_read(2, offset); }
-READ_HANDLER( riot_3_r ) { return riot_read(3, offset); }
-READ_HANDLER( riot_4_r ) { return riot_read(4, offset); }
-READ_HANDLER( riot_5_r ) { return riot_read(5, offset); }
-READ_HANDLER( riot_6_r ) { return riot_read(6, offset); }
-READ_HANDLER( riot_7_r ) { return riot_read(7, offset); }
+READ_HANDLER( riot6532_0_r ) { return riot6532_read(0, offset); }
+READ_HANDLER( riot6532_1_r ) { return riot6532_read(1, offset); }
+READ_HANDLER( riot6532_2_r ) { return riot6532_read(2, offset); }
+READ_HANDLER( riot6532_3_r ) { return riot6532_read(3, offset); }
+READ_HANDLER( riot6532_4_r ) { return riot6532_read(4, offset); }
+READ_HANDLER( riot6532_5_r ) { return riot6532_read(5, offset); }
+READ_HANDLER( riot6532_6_r ) { return riot6532_read(6, offset); }
+READ_HANDLER( riot6532_7_r ) { return riot6532_read(7, offset); }
 
-WRITE_HANDLER( riot_0_w ) { riot_write(0, offset, data); }
-WRITE_HANDLER( riot_1_w ) { riot_write(1, offset, data); }
-WRITE_HANDLER( riot_2_w ) { riot_write(2, offset, data); }
-WRITE_HANDLER( riot_3_w ) { riot_write(3, offset, data); }
-WRITE_HANDLER( riot_4_w ) { riot_write(4, offset, data); }
-WRITE_HANDLER( riot_5_w ) { riot_write(5, offset, data); }
-WRITE_HANDLER( riot_6_w ) { riot_write(6, offset, data); }
-WRITE_HANDLER( riot_7_w ) { riot_write(7, offset, data); }
+WRITE_HANDLER( riot6532_0_w ) { riot6532_write(0, offset, data); }
+WRITE_HANDLER( riot6532_1_w ) { riot6532_write(1, offset, data); }
+WRITE_HANDLER( riot6532_2_w ) { riot6532_write(2, offset, data); }
+WRITE_HANDLER( riot6532_3_w ) { riot6532_write(3, offset, data); }
+WRITE_HANDLER( riot6532_4_w ) { riot6532_write(4, offset, data); }
+WRITE_HANDLER( riot6532_5_w ) { riot6532_write(5, offset, data); }
+WRITE_HANDLER( riot6532_6_w ) { riot6532_write(6, offset, data); }
+WRITE_HANDLER( riot6532_7_w ) { riot6532_write(7, offset, data); }
 
 /******************* Standard 16-bit CPU interfaces, D0-D7 *******************/
 
-READ16_HANDLER( riot_0_lsb_r ) { return riot_read(0, offset); }
-READ16_HANDLER( riot_1_lsb_r ) { return riot_read(1, offset); }
-READ16_HANDLER( riot_2_lsb_r ) { return riot_read(2, offset); }
-READ16_HANDLER( riot_3_lsb_r ) { return riot_read(3, offset); }
-READ16_HANDLER( riot_4_lsb_r ) { return riot_read(4, offset); }
-READ16_HANDLER( riot_5_lsb_r ) { return riot_read(5, offset); }
-READ16_HANDLER( riot_6_lsb_r ) { return riot_read(6, offset); }
-READ16_HANDLER( riot_7_lsb_r ) { return riot_read(7, offset); }
+READ16_HANDLER( riot6532_0_lsb_r ) { return riot6532_read(0, offset); }
+READ16_HANDLER( riot6532_1_lsb_r ) { return riot6532_read(1, offset); }
+READ16_HANDLER( riot6532_2_lsb_r ) { return riot6532_read(2, offset); }
+READ16_HANDLER( riot6532_3_lsb_r ) { return riot6532_read(3, offset); }
+READ16_HANDLER( riot6532_4_lsb_r ) { return riot6532_read(4, offset); }
+READ16_HANDLER( riot6532_5_lsb_r ) { return riot6532_read(5, offset); }
+READ16_HANDLER( riot6532_6_lsb_r ) { return riot6532_read(6, offset); }
+READ16_HANDLER( riot6532_7_lsb_r ) { return riot6532_read(7, offset); }
 
-WRITE16_HANDLER( riot_0_lsb_w ) { if (ACCESSING_LSB) riot_write(0, offset, data & 0xff); }
-WRITE16_HANDLER( riot_1_lsb_w ) { if (ACCESSING_LSB) riot_write(1, offset, data & 0xff); }
-WRITE16_HANDLER( riot_2_lsb_w ) { if (ACCESSING_LSB) riot_write(2, offset, data & 0xff); }
-WRITE16_HANDLER( riot_3_lsb_w ) { if (ACCESSING_LSB) riot_write(3, offset, data & 0xff); }
-WRITE16_HANDLER( riot_4_lsb_w ) { if (ACCESSING_LSB) riot_write(4, offset, data & 0xff); }
-WRITE16_HANDLER( riot_5_lsb_w ) { if (ACCESSING_LSB) riot_write(5, offset, data & 0xff); }
-WRITE16_HANDLER( riot_6_lsb_w ) { if (ACCESSING_LSB) riot_write(6, offset, data & 0xff); }
-WRITE16_HANDLER( riot_7_lsb_w ) { if (ACCESSING_LSB) riot_write(7, offset, data & 0xff); }
+WRITE16_HANDLER( riot6532_0_lsb_w ) { if (ACCESSING_LSB) riot6532_write(0, offset, data & 0xff); }
+WRITE16_HANDLER( riot6532_1_lsb_w ) { if (ACCESSING_LSB) riot6532_write(1, offset, data & 0xff); }
+WRITE16_HANDLER( riot6532_2_lsb_w ) { if (ACCESSING_LSB) riot6532_write(2, offset, data & 0xff); }
+WRITE16_HANDLER( riot6532_3_lsb_w ) { if (ACCESSING_LSB) riot6532_write(3, offset, data & 0xff); }
+WRITE16_HANDLER( riot6532_4_lsb_w ) { if (ACCESSING_LSB) riot6532_write(4, offset, data & 0xff); }
+WRITE16_HANDLER( riot6532_5_lsb_w ) { if (ACCESSING_LSB) riot6532_write(5, offset, data & 0xff); }
+WRITE16_HANDLER( riot6532_6_lsb_w ) { if (ACCESSING_LSB) riot6532_write(6, offset, data & 0xff); }
+WRITE16_HANDLER( riot6532_7_lsb_w ) { if (ACCESSING_LSB) riot6532_write(7, offset, data & 0xff); }
 
 /******************* Standard 16-bit CPU interfaces, D8-D15 *******************/
 
-READ16_HANDLER( riot_0_msb_r ) { return riot_read(0, offset) << 8; }
-READ16_HANDLER( riot_1_msb_r ) { return riot_read(1, offset) << 8; }
-READ16_HANDLER( riot_2_msb_r ) { return riot_read(2, offset) << 8; }
-READ16_HANDLER( riot_3_msb_r ) { return riot_read(3, offset) << 8; }
-READ16_HANDLER( riot_4_msb_r ) { return riot_read(4, offset) << 8; }
-READ16_HANDLER( riot_5_msb_r ) { return riot_read(5, offset) << 8; }
-READ16_HANDLER( riot_6_msb_r ) { return riot_read(6, offset) << 8; }
-READ16_HANDLER( riot_7_msb_r ) { return riot_read(7, offset) << 8; }
+READ16_HANDLER( riot6532_0_msb_r ) { return riot6532_read(0, offset) << 8; }
+READ16_HANDLER( riot6532_1_msb_r ) { return riot6532_read(1, offset) << 8; }
+READ16_HANDLER( riot6532_2_msb_r ) { return riot6532_read(2, offset) << 8; }
+READ16_HANDLER( riot6532_3_msb_r ) { return riot6532_read(3, offset) << 8; }
+READ16_HANDLER( riot6532_4_msb_r ) { return riot6532_read(4, offset) << 8; }
+READ16_HANDLER( riot6532_5_msb_r ) { return riot6532_read(5, offset) << 8; }
+READ16_HANDLER( riot6532_6_msb_r ) { return riot6532_read(6, offset) << 8; }
+READ16_HANDLER( riot6532_7_msb_r ) { return riot6532_read(7, offset) << 8; }
 
-WRITE16_HANDLER( riot_0_msb_w ) { if (ACCESSING_MSB) riot_write(0, offset, data >> 8); }
-WRITE16_HANDLER( riot_1_msb_w ) { if (ACCESSING_MSB) riot_write(1, offset, data >> 8); }
-WRITE16_HANDLER( riot_2_msb_w ) { if (ACCESSING_MSB) riot_write(2, offset, data >> 8); }
-WRITE16_HANDLER( riot_3_msb_w ) { if (ACCESSING_MSB) riot_write(3, offset, data >> 8); }
-WRITE16_HANDLER( riot_4_msb_w ) { if (ACCESSING_MSB) riot_write(4, offset, data >> 8); }
-WRITE16_HANDLER( riot_5_msb_w ) { if (ACCESSING_MSB) riot_write(5, offset, data >> 8); }
-WRITE16_HANDLER( riot_6_msb_w ) { if (ACCESSING_MSB) riot_write(6, offset, data >> 8); }
-WRITE16_HANDLER( riot_7_msb_w ) { if (ACCESSING_MSB) riot_write(7, offset, data >> 8); }
+WRITE16_HANDLER( riot6532_0_msb_w ) { if (ACCESSING_MSB) riot6532_write(0, offset, data >> 8); }
+WRITE16_HANDLER( riot6532_1_msb_w ) { if (ACCESSING_MSB) riot6532_write(1, offset, data >> 8); }
+WRITE16_HANDLER( riot6532_2_msb_w ) { if (ACCESSING_MSB) riot6532_write(2, offset, data >> 8); }
+WRITE16_HANDLER( riot6532_3_msb_w ) { if (ACCESSING_MSB) riot6532_write(3, offset, data >> 8); }
+WRITE16_HANDLER( riot6532_4_msb_w ) { if (ACCESSING_MSB) riot6532_write(4, offset, data >> 8); }
+WRITE16_HANDLER( riot6532_5_msb_w ) { if (ACCESSING_MSB) riot6532_write(5, offset, data >> 8); }
+WRITE16_HANDLER( riot6532_6_msb_w ) { if (ACCESSING_MSB) riot6532_write(6, offset, data >> 8); }
+WRITE16_HANDLER( riot6532_7_msb_w ) { if (ACCESSING_MSB) riot6532_write(7, offset, data >> 8); }
 
 /******************* 8-bit A/B port interfaces *******************/
 
-WRITE_HANDLER( riot_0_porta_w ) { riot_set_input_a(0, data); }
-WRITE_HANDLER( riot_1_porta_w ) { riot_set_input_a(1, data); }
-WRITE_HANDLER( riot_2_porta_w ) { riot_set_input_a(2, data); }
-WRITE_HANDLER( riot_3_porta_w ) { riot_set_input_a(3, data); }
-WRITE_HANDLER( riot_4_porta_w ) { riot_set_input_a(4, data); }
-WRITE_HANDLER( riot_5_porta_w ) { riot_set_input_a(5, data); }
-WRITE_HANDLER( riot_6_porta_w ) { riot_set_input_a(6, data); }
-WRITE_HANDLER( riot_7_porta_w ) { riot_set_input_a(7, data); }
+WRITE_HANDLER( riot6532_0_porta_w ) { riot6532_set_input_a(0, data); }
+WRITE_HANDLER( riot6532_1_porta_w ) { riot6532_set_input_a(1, data); }
+WRITE_HANDLER( riot6532_2_porta_w ) { riot6532_set_input_a(2, data); }
+WRITE_HANDLER( riot6532_3_porta_w ) { riot6532_set_input_a(3, data); }
+WRITE_HANDLER( riot6532_4_porta_w ) { riot6532_set_input_a(4, data); }
+WRITE_HANDLER( riot6532_5_porta_w ) { riot6532_set_input_a(5, data); }
+WRITE_HANDLER( riot6532_6_porta_w ) { riot6532_set_input_a(6, data); }
+WRITE_HANDLER( riot6532_7_porta_w ) { riot6532_set_input_a(7, data); }
 
-WRITE_HANDLER( riot_0_portb_w ) { riot_set_input_b(0, data); }
-WRITE_HANDLER( riot_1_portb_w ) { riot_set_input_b(1, data); }
-WRITE_HANDLER( riot_2_portb_w ) { riot_set_input_b(2, data); }
-WRITE_HANDLER( riot_3_portb_w ) { riot_set_input_b(3, data); }
-WRITE_HANDLER( riot_4_portb_w ) { riot_set_input_b(4, data); }
-WRITE_HANDLER( riot_5_portb_w ) { riot_set_input_b(5, data); }
-WRITE_HANDLER( riot_6_portb_w ) { riot_set_input_b(6, data); }
-WRITE_HANDLER( riot_7_portb_w ) { riot_set_input_b(7, data); }
+WRITE_HANDLER( riot6532_0_portb_w ) { riot6532_set_input_b(0, data); }
+WRITE_HANDLER( riot6532_1_portb_w ) { riot6532_set_input_b(1, data); }
+WRITE_HANDLER( riot6532_2_portb_w ) { riot6532_set_input_b(2, data); }
+WRITE_HANDLER( riot6532_3_portb_w ) { riot6532_set_input_b(3, data); }
+WRITE_HANDLER( riot6532_4_portb_w ) { riot6532_set_input_b(4, data); }
+WRITE_HANDLER( riot6532_5_portb_w ) { riot6532_set_input_b(5, data); }
+WRITE_HANDLER( riot6532_6_portb_w ) { riot6532_set_input_b(6, data); }
+WRITE_HANDLER( riot6532_7_portb_w ) { riot6532_set_input_b(7, data); }
 
-READ_HANDLER( riot_0_porta_r ) { return riot[0].in_a; }
-READ_HANDLER( riot_1_porta_r ) { return riot[1].in_a; }
-READ_HANDLER( riot_2_porta_r ) { return riot[2].in_a; }
-READ_HANDLER( riot_3_porta_r ) { return riot[3].in_a; }
-READ_HANDLER( riot_4_porta_r ) { return riot[4].in_a; }
-READ_HANDLER( riot_5_porta_r ) { return riot[5].in_a; }
-READ_HANDLER( riot_6_porta_r ) { return riot[6].in_a; }
-READ_HANDLER( riot_7_porta_r ) { return riot[7].in_a; }
+READ_HANDLER( riot6532_0_porta_r ) { return riot[0].in_a; }
+READ_HANDLER( riot6532_1_porta_r ) { return riot[1].in_a; }
+READ_HANDLER( riot6532_2_porta_r ) { return riot[2].in_a; }
+READ_HANDLER( riot6532_3_porta_r ) { return riot[3].in_a; }
+READ_HANDLER( riot6532_4_porta_r ) { return riot[4].in_a; }
+READ_HANDLER( riot6532_5_porta_r ) { return riot[5].in_a; }
+READ_HANDLER( riot6532_6_porta_r ) { return riot[6].in_a; }
+READ_HANDLER( riot6532_7_porta_r ) { return riot[7].in_a; }
 
-READ_HANDLER( riot_0_portb_r ) { return riot[0].in_b; }
-READ_HANDLER( riot_1_portb_r ) { return riot[1].in_b; }
-READ_HANDLER( riot_2_portb_r ) { return riot[2].in_b; }
-READ_HANDLER( riot_3_portb_r ) { return riot[3].in_b; }
-READ_HANDLER( riot_4_portb_r ) { return riot[4].in_b; }
-READ_HANDLER( riot_5_portb_r ) { return riot[5].in_b; }
-READ_HANDLER( riot_6_portb_r ) { return riot[6].in_b; }
-READ_HANDLER( riot_7_portb_r ) { return riot[7].in_b; }
+READ_HANDLER( riot6532_0_portb_r ) { return riot[0].in_b; }
+READ_HANDLER( riot6532_1_portb_r ) { return riot[1].in_b; }
+READ_HANDLER( riot6532_2_portb_r ) { return riot[2].in_b; }
+READ_HANDLER( riot6532_3_portb_r ) { return riot[3].in_b; }
+READ_HANDLER( riot6532_4_portb_r ) { return riot[4].in_b; }
+READ_HANDLER( riot6532_5_portb_r ) { return riot[5].in_b; }
+READ_HANDLER( riot6532_6_portb_r ) { return riot[6].in_b; }
+READ_HANDLER( riot6532_7_portb_r ) { return riot[7].in_b; }
