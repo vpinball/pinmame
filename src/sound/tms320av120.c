@@ -12,10 +12,7 @@
  *         Not configurable to anything else, for speed purposes and coding simplicity at this time!
  *
  *   TODO:
- *         1) Redo buffers
- *         2) Implement /BOF and /SREQ callbacks
- *         3) Implement data handlers
- *         4) Remove current hack to feed data to the chip for playback
+ *		   1) Not sure where to set BOF line properly
  **********************************************************************************************/
 
 
@@ -70,14 +67,29 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 /**********************************************************************************************
+     DECLARATIONS
+***********************************************************************************************/
+//MPG Stuff
+INLINE long Layer2Requant(long sample, long levels, int scaleIndex);
+static void Matrix(long *V, long *subbandSamples, int numSamples);
+static void Layer12Synthesis(  int num, long *V[16], long *subbandSamples,	int numSubbandSamples);
+static long GetBits(int num, int numBits);
+static void DecodeLayer2(int num);
+
+//TMS320AV120 Stuff
+static void tms320av120_update(int num, INT16 *buffer, int length);
+static void set_bof_line(int chipnum, int state);
+static void set_sreq_line(int chipnum, int state);
+static int valid_header(int chipnum);
+
+/**********************************************************************************************
      CONSTANTS
 ***********************************************************************************************/
-#define TMS320AV120_BUFFER			512							//Chip has a 512 byte internal buffer
-#define CAP_PCMBUFFER_SIZE			1152						//Hold 1 decoded frame
-#define CAP_OUTBUFFER_SIZE			4096						//Output buffer
-#define CAP_BUFFER_MASK				(CAP_OUTBUFFER_SIZE - 1)	//Output buffer mask
-#define MPG_FRAMESIZE				140							//Mpeg1 - Layer 2 Framesize @ 32KHz/32kbps
-#define LOOP_MPG_SAMPLE				0
+#define MPG_HEADERSIZE				4							//Mpeg1 - Layer 2 Header Size
+#define MPG_FRAMESIZE				140							//Mpeg1 - Layer 2 Framesize @ 32KHz/32kbps (excluding header)
+
+#define CAP_PCMBUFFER_SIZE			1152*10						//# of Samples to hold (1 Frame = 1152 Samples)
+#define CAP_PREBUFFER_SIZE			1152*2						//# of decoded samples needed before we begin to output pcm
 
 #define	LOG_DATA_IN					0							//Set to 1 to log data input to an mp3 file
 
@@ -86,21 +98,20 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************************************/
 struct TMS320AV120Chip
 {
- UINT8  inputbuff[TMS320AV120_BUFFER];	//Holds raw mpg data (including header)
- INT16  pcmbuffer[CAP_PCMBUFFER_SIZE];
- INT16  *buffer;					//Output Buffer
- UINT32 sIn;						//Position of next sample to load into buffer
- UINT32 sOut;						//Position of next sample to read out of the buffer
- INT8	*start_region;				//Points to start of rom region
- UINT32 curr;						//Current position in memory region
- int    stream;						//Holds stream channel assignment
- UINT8  framebuff[MPG_FRAMESIZE];	//Holds raw mpg data for 1 frame
- UINT8	fb_pos;						//Current frame buffer position
- UINT16 pcm_pos;					//Position of PCM buffer
- int    mute;						//Mute status ( 0 = off, 1 = Mute )
- int	reset;						//Reset status( 0 = off, 1 = Reset)
- int    bitsRemaining;				//Keep track of # of bits we've read from frame buffer
- long *_V[16];						//Synthesis window for single channel
+ UINT8  framebuff[MPG_FRAMESIZE];		//Holds raw mpg data for 1 frame (also used as header input buffer)
+ UINT8	fb_pos;							//Current frame buffer position
+ INT16  pcmbuffer[CAP_PCMBUFFER_SIZE];	//Decoded PCM data buffer
+ UINT16 pcm_pos;						//Position of next data to be input into the pcm buffer
+ UINT16 sOut;							//Position of next sample to read out of the pcm buffer
+ int    stream;							//Holds stream channel assignment
+ int    bitsRemaining;					//Keep track of # of bits we've read from frame buffer
+ long *_V[16];							//Synthesis window for single channel
+ int    mute;							//Mute status ( 0 = off, 1 = Mute )
+ int	reset;							//Reset status( 0 = off, 1 = Reset)
+ int	bof_line;						//BOF Line status
+ int	sreq_line;						//SREQ Line status
+ int	found_header;					//Did we find a valid header yet?
+ int	prebuff_full;					//If 1, prebuffer full so ok to output pcm
 };
 
 //Layer 2 Quantization
@@ -336,7 +347,7 @@ static void Matrix(long *V, long *subbandSamples, int numSamples) {
 }
 
 //Convert Layer 1 or Layer 2 subband samples into pcm samples and put into pcm buffer
-void Layer12Synthesis(  int num,
+static void Layer12Synthesis(  int num,
 					    long *V[16],
                         long *subbandSamples,
 						int numSubbandSamples)
@@ -372,7 +383,7 @@ static long GetBits(int num, int numBits) {
       tms320av120[num].fb_pos++;				 // ...
 	  //Make sure we're not out of data!
 	  if(tms320av120[num].fb_pos > MPG_FRAMESIZE) {
-		  logerror("END OF FRAME BUFFER DATA IN GETBITS!\n");
+		  LOG(("END OF FRAME BUFFER DATA IN GETBITS!\n"));
 		  return 0;
 	  }
       tms320av120[num].bitsRemaining = 8;
@@ -390,7 +401,7 @@ static long GetBits(int num, int numBits) {
 }
 
 //Decode an MPEG1 - Layer 2 Frame
-void DecodeLayer2(int num)
+static void DecodeLayer2(int num)
 {
 int allocation[32];				// One set of allocation data for each subband
 int scaleFactorSelection[32];	// One set of scale factor selectors for each subband
@@ -497,37 +508,39 @@ for(sf=0;sf<3;sf++) { // Diff't scale factors for each 1/3
 }
 
 /**********************************************************************************************
-     set_bof_line -- set's the state of the /BOF line
-***********************************************************************************************/
-static void set_bof_line(int chipnum, int state)
-{
-	if(intf->bof_line) intf->bof_line(chipnum,state);
-}
-/**********************************************************************************************
-     set_sreq_line -- set's the state of the /SREQ line
-***********************************************************************************************/
-static void set_sreq_line(int chipnum, int state)
-{
-	if(intf->sreq_line) intf->sreq_line(chipnum,state);
-}
-
-/**********************************************************************************************
      tms320av120_update -- output samples to the stream buffer
 ***********************************************************************************************/
 static void tms320av120_update(int num, INT16 *buffer, int length)
 {
- int ii;
- /* fill in with samples until we hit the end or run out */
- for (ii = 0; ii < length; ii++) {
-	if (tms320av120[num].sOut == tms320av120[num].sIn)	break;				//No more data in buffer, so abort
-    buffer[ii] = tms320av120[num].buffer[tms320av120[num].sOut] * (!tms320av120[num].mute);
-    tms320av120[num].sOut = (tms320av120[num].sOut + 1) & CAP_BUFFER_MASK;	//Increment current samples out position
-    }
+ int ii=0;
+
+ //Pre-buffer must be full to process pcm data
+ if(tms320av120[num].prebuff_full)	
+ {
+	/* fill in with samples until we hit the end or run out */
+	for (ii = 0; ii < length; ii++) {
+		//Ready to receive more data?
+		if (tms320av120[num].sreq_line && tms320av120[num].sOut + CAP_PREBUFFER_SIZE*2 > CAP_PCMBUFFER_SIZE) {
+			//Flag SREQ LO to request more data to come in!
+			set_sreq_line(num,0);
+		}
+		//No more data ready for output, so abort
+		if (tms320av120[num].sOut == tms320av120[num].pcm_pos){
+			LOG(("TMS320AV120 #%d: No more pcm samples ready for output, so skipping\n",num));
+			break;
+		}
+		//Send next pcm sample to output buffer (mute if it is set)
+		buffer[ii] = tms320av120[num].pcmbuffer[tms320av120[num].sOut++] * (!tms320av120[num].mute);
+		//Loop to beginning if we reach end of pcm buffer
+		if( tms320av120[num].sOut == CAP_PCMBUFFER_SIZE)	
+			tms320av120[num].sOut = 0;
+		}
+ }
+
  /* fill the rest with the silence */
  for ( ; ii < length; ii++)
 	buffer[ii] = 0;
 }
-
 
 /**********************************************************************************************
      TMS320AV120_sh_start -- start emulation of the TMS320AV120
@@ -549,11 +562,8 @@ int TMS320AV120_sh_start(const struct MachineSound *msound)
 		sprintf(stream_name, "%s #%d", sound_name(msound), i);
 		tms320av120[i].stream = stream_init(stream_name, intf->mixing_level[i], 32000, i, tms320av120_update);
 
-		/*-- allocate memory for our buffer --*/
-		tms320av120[i].buffer = malloc(CAP_OUTBUFFER_SIZE * sizeof(INT16));
-
-		//Fail if stream or buffer not created
-		failed = (tms320av120[i].stream < 0 || (tms320av120[i].buffer==0));
+		//Fail if stream not created
+		failed = (tms320av120[i].stream < 0);
 
 		if(failed) break;
 
@@ -570,13 +580,6 @@ int TMS320AV120_sh_start(const struct MachineSound *msound)
 		  for(j=0;j<64;j++)
 			tms320av120[i]._V[vi][j] = 0;
 		}
-
-		//point to beg of rom data
-		tms320av120[i].start_region = (INT8*)memory_region(REGION_SOUND1);
-		tms320av120[i].curr  = 0;
-
-		//Must initialize these..
-		tms320av120[i].pcm_pos = CAP_PCMBUFFER_SIZE+1;	//Cause PCM buffer to read 1st time
 
 		//Open for logging data
 		#if LOG_DATA_IN	
@@ -620,14 +623,9 @@ void TMS320AV120_sh_stop(void)
   if(fp)	fclose(fp);
   #endif
 
-  /*-- Delete our buffer --*/
+  /*-- Delete memory we allocated dynamically --*/
   for (i = 0; i < intf->num; i++)
   {
-	if (tms320av120[i].buffer) { 
-		free(tms320av120[i].buffer);
-		tms320av120[i].buffer = NULL; 
-	}
-	
 	/*-- Delete Synth windows data --*/
 	for(i=0;i<16;i++)
 	{
@@ -661,10 +659,24 @@ void TMS320AV120_sh_update(void)
 }
 
 /**********************************************************************************************
-     tms320av120_data_write -- send data to the chip
+     set_bof_line -- set's the state of the /BOF line
 ***********************************************************************************************/
-static void tms320av120_data_write(struct TMS320AV120Chip *chip, data8_t data)
+static void set_bof_line(int chipnum, int state)
 {
+	//Keep track of what we set..
+	tms320av120[chipnum].bof_line = state;
+	//Call our callback if there is one
+	if(intf->bof_line) intf->bof_line(chipnum,state);
+}
+/**********************************************************************************************
+     set_sreq_line -- set's the state of the /SREQ line
+***********************************************************************************************/
+static void set_sreq_line(int chipnum, int state)
+{
+	//Keep track of what we set..
+	tms320av120[chipnum].sreq_line = state;
+	//Call our callback if there is one
+	if(intf->sreq_line) intf->sreq_line(chipnum,state);
 }
 
 /**********************************************************************************************
@@ -674,11 +686,9 @@ void TMS320AV120_set_mute(int chipnum, int state)
 {
 	//Act only on change of state
 	if(state == tms320av120[chipnum].mute) return;
-
-	LOG(("TMS320AV120 #%d mute line set to %d!\n",chipnum,state));
-
 	//Update state
 	tms320av120[chipnum].mute = state;
+	LOG(("TMS320AV120 #%d mute line set to %d!\n",chipnum,state));
 }
 
 /**********************************************************************************************
@@ -697,9 +707,14 @@ void TMS320AV120_set_reset(int chipnum, int state)
 		//BOF & SREQ Line set to 1
 		set_bof_line(chipnum,1);
 		set_sreq_line(chipnum,1);
-		//Clear buffers
 		//Mute is set
 		tms320av120[chipnum].mute = 1;
+		//Clear buffers
+		tms320av120[chipnum].found_header = 0;
+		tms320av120[chipnum].fb_pos = 0;
+		tms320av120[chipnum].pcm_pos = 0;
+		tms320av120[chipnum].prebuff_full = 0;
+		tms320av120[chipnum].sOut = 0;
 	}
 
 	//Transition from reset to active?
@@ -716,149 +731,91 @@ void TMS320AV120_set_reset(int chipnum, int state)
 }
 
 /**********************************************************************************************
-     TMS320AV120_data_w -- send data to the chip
+     valid header? -- 4 bytes need to be: ff,fd,18 (or 19), c0
+	 //NOTE: These are hardcoded to our specific sampling rate/bit rate, and other factors
+***********************************************************************************************/
+static int valid_header(int chipnum)
+{
+	if(tms320av120[chipnum].framebuff[tms320av120[chipnum].fb_pos-4] == 0xff)
+		if(tms320av120[chipnum].framebuff[tms320av120[chipnum].fb_pos-3] == 0xfd)
+			if(tms320av120[chipnum].framebuff[tms320av120[chipnum].fb_pos-2] == 0x18 ||
+			   tms320av120[chipnum].framebuff[tms320av120[chipnum].fb_pos-2] == 0x19)
+					if(tms320av120[chipnum].framebuff[tms320av120[chipnum].fb_pos-1] == 0xc0)
+						return 1;
+	return 0;
+}
+
+/**********************************************************************************************
+     TMS320AV120_data_w -- writes data to the chip and processes data
 ***********************************************************************************************/
 WRITE_HANDLER( TMS320AV120_data_w )
 {
-	tms320av120_data_write(&tms320av120[offset], data);
+	int chipnum = offset;
+
+	//Safety check
+	if( (intf->num-1) < offset) {
+		//LOG(("TMS320AV120_DATA_W: Error trying to send data to undefined chip #%d\n",offset));
+		return;
+	}
 
 	#if LOG_DATA_IN	
 	//Log it for channel 0
 	if(offset==0)
 		if(fp) fputc(data,fp);
 	#endif
-}
 
-
-
-
-
-
-//Get One Byte - Reads a single byte from the rom stream, returns 0 if unable to read the byte
-static int get_one_byte(int num, UINT8* byte, UINT32 pos)
-{
-	//If reached end of memory region, abort
-	if(pos>0x300000) return 0;
-	*byte = (UINT8)tms320av120[num].start_region[pos];
-	return 1;
-}
-
-//Read current frame data into our frame buffer (assumes rom positioned at start of frame) - return 0 if unable to read entire frame
-static int Read_Frame(int num)
-{	
-	UINT8 onebyte;
-	int i;
-
-	//clear current frame buffer
-	memset(tms320av120[num].framebuff,0,sizeof(tms320av120[num].framebuff));
-
-	//Fill entire frame buffer if we can
-	for(i=0; i<MPG_FRAMESIZE; i++) {
-		if(!get_one_byte(num,&onebyte,tms320av120[num].curr)) 
-			return 0;
-		tms320av120[num].framebuff[i] = onebyte;
-		tms320av120[num].curr++;
+	//ABORT IF SREQ HIGH!
+	if(tms320av120[chipnum].sreq_line)	
+	{
+		LOG(("TMS320AV120 #d: SREQ HI - Data Ignored!\n",chipnum));
+		return;
 	}
-	//Reset position
-	tms320av120[num].fb_pos = 0;
-	return 1;
-}
 
-//Find next MPG Header in rom stream, return 0 if not found - current position will be at start of frame if found
-static int Find_MPG_Header(int num)
-{	
-	UINT8 onebyte;
-	int quit = 0;
-	while(!quit) {
-		//Find start of possible syncword (begins with 0xff)
-		do {
-			//Grab 1 byte
-			if(!get_one_byte(num,&onebyte,tms320av120[num].curr)) 
-				quit=1;
-			else
-				tms320av120[num].curr++;
-		}while(onebyte!=0xff && !quit);
+	//Write to input buffer
+	tms320av120[chipnum].framebuff[tms320av120[chipnum].fb_pos++] = data;
+	
+	//If we don't have a header start looking once we have read enough bytes for one
+	if(!tms320av120[chipnum].found_header && tms320av120[chipnum].fb_pos > MPG_HEADERSIZE-1)
+	{
+		//Reset BOF line
+		set_bof_line(chipnum,1);
+		tms320av120[chipnum].found_header = valid_header(chipnum);
+		tms320av120[chipnum].fb_pos=0;	//Overwrite the header since we don't need it
+	}
 
-		//Found 0xff?
-		if(onebyte==0xff) {
-			//Next byte must be 0xfd (note: already positioned on it from above while() code)
-			if(get_one_byte(num, &onebyte,tms320av120[num].curr) && onebyte==0xfd) {
-				//Next byte must be 0x18 or 0x19
-				if(get_one_byte(num,&onebyte,tms320av120[num].curr+1) && (onebyte==0x18 || onebyte==0x19)) {
-					//Next byte must be 0xc0
-					if(get_one_byte(num,&onebyte,tms320av120[num].curr+2) && onebyte==0xc0) {
-						tms320av120[num].curr+=3;
-						return 1;
-					}
-				}
-			}
+	//Once we have a valid header, see if we've got an entire frame
+	if(tms320av120[chipnum].found_header && (tms320av120[chipnum].fb_pos == MPG_FRAMESIZE))
+	{
+		/*-- WE HAVE 1 FRAME --*/
+
+		//Reset Frame Buffer position for reading
+		tms320av120[chipnum].fb_pos = 0;
+
+		//Handle PCM overflow? (Leave room for this frame)
+		if( (tms320av120[chipnum].pcm_pos+1152) == CAP_PCMBUFFER_SIZE) {
+			//Flag SREQ HI to stop data coming in!
+			set_sreq_line(chipnum,1);
 		}
+
+		//Decode the frame (generates 1152 pcm samples)
+		DecodeLayer2(chipnum);
+
+		//Do we now have enough pre-buffer to begin?
+		if(tms320av120[chipnum].pcm_pos == CAP_PREBUFFER_SIZE)
+			tms320av120[chipnum].prebuff_full = 1;
+
+		//Start over for next round if we're at the end of the buffer now!
+		if(tms320av120[chipnum].pcm_pos == CAP_PCMBUFFER_SIZE)
+			tms320av120[chipnum].pcm_pos=0;
+
+		//Reset flag to search for next header
+		tms320av120[chipnum].found_header = 0;
+
+		//Reset frame buffer for next header
+		tms320av120[chipnum].fb_pos = 0;
+
+		//Set BOF Line low
+		set_bof_line(chipnum,0);
 	}
-	return 0;
 }
 
-//Return Next Decoded Word (16 Bit Signed Data) from ROM Stream
-static INT16 cap_GetNextWord(int num)
-{
-#if LOOP_MPG_SAMPLE
-   //If reached end of memory region, start again
-   if (tms320av120[num].curr>0x300000)
-	   tms320av120[num].curr=0;
-#else
-   //If reached end of memory region, we're done..
-   if (tms320av120[num].curr>0x300000)
-	   return 0;
-#endif
-
-   //Do we need more data to be decoded?
-   if (tms320av120[num].pcm_pos+1 > CAP_PCMBUFFER_SIZE) {
-
-		//Find Next Valid Header - Abort if not found
-		if(!Find_MPG_Header(num))
-				return 0;
-		//Read Frame Data
-		if(!Read_Frame(num))
-			return 0;
-
-		//Reset position for writing the pcm data
-		tms320av120[num].pcm_pos = 0;
-
-		//Decode the frame
-		DecodeLayer2(num);
-
-		//Reset position for reading the pcm data
-		tms320av120[num].pcm_pos = 0;
-   }
-
-   //Return the next word from pcm buffer
-   return (INT16)tms320av120[num].pcmbuffer[tms320av120[num].pcm_pos++];
-}
-
-//Fill our pcm buffer with decoded data until buffer is full or until we catch up to last sample output from buffer
-void tms_FillBuff(int num) {
-  int length = CAP_OUTBUFFER_SIZE-10;
-  int ii;
-  INT16 word;
-  UINT32 tmpN;
-
-  //Safety check
-  if(num > intf->num - 1) return;
-
-  /* fill in with bytes until we hit the end or run out */
-  for (ii = 0; ii < length; ii++) {
-
-    tmpN = (tms320av120[num].sIn + 1) & CAP_BUFFER_MASK;
-
-    //Abort if we're about to pass output samples..
-	if (tmpN == tms320av120[num].sOut) break;
-
-	//Grab next word from decoded pcm stream
-	word = cap_GetNextWord(num);
- 
-	//Update our buffer
-    tms320av120[num].buffer[tms320av120[num].sIn] = word;
-
-	//Increment next sample in position
-	tms320av120[num].sIn = (tms320av120[num].sIn + 1) & CAP_BUFFER_MASK;
-  }
-}
