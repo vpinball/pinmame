@@ -594,8 +594,9 @@ CORE_GAMEDEFNV(bmx,"BMX",1983,"Bally",by35_mBY35_51S,0)
 INITGAME(granslam ,GEN_BY35_51,dispBy7,FLIP_SW(FLIP_L),0)
 BY35_ROMSTARTx00(granslam,	"grndslam.u2", 0x66aea9dc,
 							"grndslam.u6", 0x9e6ccea1)
+BY35_SOUND51ROM0(			"grndslam.u4", 0x5692c679)
 BY35_ROMEND
-CORE_GAMEDEFNV(granslam,"Grand Slam",1983,"Bally",by35_mBY35_51,GAME_NO_SOUND)
+CORE_GAMEDEFNV(granslam,"Grand Slam",1983,"Bally",by35_mBY35_51S,0)
 
 /*same as cenatur*/     //BY35      06/83 Centaur II
 
@@ -609,9 +610,9 @@ BY35_SOUND51ROM0(			"gb_u4.532",0x2dcb0315)
 BY35_ROMEND
 CORE_GAMEDEFNV(goldball,"Gold Ball",1983,"Bally",by35_mBY35_51S,GAME_NOT_WORKING)
 
-/*********************************************************************************/
-/******* Games Below use Cheap Squeak Sound Board (Except Granny & Gators) *******/
-/*********************************************************************************/
+/********************************************************/
+/******* Games Below use Cheap Squeak Sound Board *******/
+/********************************************************/
 
 /*--------------------------------
 / X's & O's (BY35-???: 12/83)
@@ -619,8 +620,9 @@ CORE_GAMEDEFNV(goldball,"Gold Ball",1983,"Bally",by35_mBY35_51S,GAME_NOT_WORKING
 INITGAME(xsandos ,GEN_BY35_45,dispBy7,FLIP_SW(FLIP_L),0)
 BY35_ROMSTARTx00(xsandos ,	"x&os2732.u2", 0x068dfe5a,
 							"720-5332.u6", 0xc2e92f80)
+BY35_SOUND45ROMx2(			"720_u3.snd",0x5d8e2adb)
 BY35_ROMEND
-CORE_GAMEDEFNV(xsandos ,"X's & O's",1983,"Bally",by35_mBY35_51,GAME_NO_SOUND)
+CORE_GAMEDEFNV(xsandos ,"X's & O's",1983,"Bally",by35_mBY35_45S,GAME_IMPERFECT_SOUND)
 
 //??        ??/84 Mysterian
 
@@ -647,8 +649,10 @@ CORE_GAMEDEFNV(granny,"Granny and the Gators (Video/Pinball Combo)",1984,"Bally"
 INITGAME(kosteel ,GEN_BY35_45,dispBy7,FLIP_SW(FLIP_L),0)
 BY35_ROMSTARTx00(kosteel ,	"kngs2732.u2", 0xf876d8f2,
 							"720-5332.u6", 0xc2e92f80)
+BY35_SOUND45ROM11(			"kngsu3.snd",0x11b02dca,
+							"kngsu4.snd",0xf3e4d2f6)
 BY35_ROMEND
-CORE_GAMEDEFNV(kosteel ,"Kings of Steel",1984,"Bally",by35_mBY35_51,GAME_NO_SOUND)
+CORE_GAMEDEFNV(kosteel ,"Kings of Steel",1984,"Bally",by35_mBY35_45S,GAME_IMPERFECT_SOUND)
 
 /*--------------------------------
 / Black Pyramid (BY35-???: 07/84)
@@ -656,7 +660,7 @@ CORE_GAMEDEFNV(kosteel ,"Kings of Steel",1984,"Bally",by35_mBY35_51,GAME_NO_SOUN
 INITGAME(blakpyra,GEN_BY35_45,dispBy7,FLIP_SW(FLIP_L),0)
 BY35_ROMSTARTx00(blakpyra,	"blkp2732.u2", 0x600535b0,
 							"720-5332.u6", 0xc2e92f80)
-BY35_SOUND45ROM00(			"bp_u3.532",0xa5005067,
+BY35_SOUND45ROM11(			"bp_u3.532",0xa5005067,
 							"bp_u4.532",0x57978b4a)
 BY35_ROMEND
 CORE_GAMEDEFNV(blakpyra,"Black Pyramid",1984,"Bally",by35_mBY35_45S,GAME_IMPERFECT_SOUND)
@@ -667,7 +671,7 @@ CORE_GAMEDEFNV(blakpyra,"Black Pyramid",1984,"Bally",by35_mBY35_45S,GAME_IMPERFE
 INITGAME(spyhuntr,GEN_BY35_45,dispBy7,FLIP_SW(FLIP_L),0)
 BY35_ROMSTARTx00(spyhuntr,	"spy-2732.u2", 0x9e930f2d,
 							"720-5332.u6", 0xc2e92f80)
-BY35_SOUND45ROM00(			"spy_u3.532",0x95ffc1b8,
+BY35_SOUND45ROM11(			"spy_u3.532",0x95ffc1b8,
 							"spy_u4.532",0xa43887d0)
 BY35_ROMEND
 CORE_GAMEDEFNV(spyhuntr,"Spy Hunter",1984,"Bally",by35_mBY35_45S,GAME_IMPERFECT_SOUND)
@@ -680,10 +684,10 @@ CORE_GAMEDEFNV(spyhuntr,"Spy Hunter",1984,"Bally",by35_mBY35_45S,GAME_IMPERFECT_
 INITGAME(fbclass ,GEN_BY35_45,dispBy7,FLIP_SW(FLIP_L),0)
 BY35_ROMSTARTx00(fbclass ,	"fb-class.u2", 0x32faac6c,
 							"720-5332.u6", 0xc2e92f80)
-BY35_SOUND45ROM00(			"fbc_u3.532",0x0,
-							"fbc_u4.532",0x0)
+BY35_SOUND45ROM11(			"fbcu3.snd",0x1ad71775,
+							"fbcu4.snd",0x697ab16f)
 BY35_ROMEND
-CORE_GAMEDEFNV(fbclass ,"Fireball Classic",1985,"Bally",by35_mBY35_51,GAME_NO_SOUND)
+CORE_GAMEDEFNV(fbclass ,"Fireball Classic",1985,"Bally",by35_mBY35_45S,GAME_IMPERFECT_SOUND)
 
 /*--------------------------------
 / Cybernaut (BY35-???: 05/85)
@@ -691,10 +695,9 @@ CORE_GAMEDEFNV(fbclass ,"Fireball Classic",1985,"Bally",by35_mBY35_51,GAME_NO_SO
 INITGAME(cybrnaut,GEN_BY35_45,dispBy7,FLIP_SW(FLIP_L),0)
 BY35_ROMSTARTx00(cybrnaut,	"cybe2732.u2", 0x0610b0e0,
 							"720-5332.u6", 0xc2e92f80)
-BY35_SOUND45ROM00(			"cyb_u3.532",0x0,
-							"cyb_u4.532",0x0)
+BY35_SOUND45ROMx2(			"cybu3.snd",0xa3c1f6e7)
 BY35_ROMEND
-CORE_GAMEDEFNV(cybrnaut,"Cybernaut",1985,"Bally",by35_mBY35_51,GAME_NO_SOUND)
+CORE_GAMEDEFNV(cybrnaut,"Cybernaut",1985,"Bally",by35_mBY35_45S,GAME_IMPERFECT_SOUND)
 
 /****************************************************/
 /* BALLY MPU-6803*/
@@ -733,7 +736,7 @@ CORE_GAMEDEFNV(beatclck,"Beat the Clock",1985,"Bally",by_mBY6803S1,0)
 //CPU Works
 INITGAME6803(ladyluck,0,dispBy7,FLIP_SW(FLIP_L),0)
 BY6803_ROMSTARTx4(ladyluck,	"u3.cpu", 0x129f41f5)
-BY35_SOUND45ROM00(			"u3_snd.532", 0x1bdd6e2b,
+BY35_SOUND45ROM11(			"u3_snd.532", 0x1bdd6e2b,
 							"u4_snd.532", 0xe9ef01e6)
 BY6803_ROMEND
 CORE_GAMEDEFNV(ladyluck,"Lady Luck",1986,"Bally",by_mBY6803S1,GAME_NO_SOUND)
