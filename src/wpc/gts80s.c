@@ -22,6 +22,8 @@
     - System 80/80A Sound Board
 
     - System 80/80A Sound & Speech Board
+		- subtype 0: without SC-01 (Votrax) chip installed
+		- subtype 1: SC-01 (Votrax) chip installed
 
     - System 80A Sound Board with a PiggyPack installed
 	  (thanks goes to Peter Hall for providing some very usefull information)
@@ -200,7 +202,7 @@ void gts80s_exit(int boardNo)
 
 static WRITE_HANDLER(gts80s_data_w)
 {
-//	logerror("sound latch: 0x%02x\n", data);
+	// logerror("sound latch: 0x%02x\n", data);
 	data &= 0x0f;
 	riot6530_set_input_b(0, GTS80S_locals.dips | 0x20 | data);
 
@@ -250,12 +252,16 @@ static struct {
 } GTS80SS_locals;
 
 static void GTS80SS_irq(int state) {
-//	logerror("IRQ: %i\n",state);
+	// logerror("IRQ: %i\n",state);
 	cpu_set_irq_line(GTS80SS_locals.boardData.cpuNo, 0, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
 static void GTS80SS_nmi(int state)
 {
+	// the Votrax chip is connected to the NMI line, simply return if no Votrax is installed (subtype=0)
+	if ( GTS80SS_locals.boardData.subType==0 )
+		return;
+
 	// logerror("NMI: %i\n",state);
 	if ( !state )
 		cpu_set_nmi_line(GTS80SS_locals.boardData.cpuNo, PULSE_LINE);
@@ -266,7 +272,10 @@ static WRITE_HANDLER(GTS80SS_riot3a_w) { logerror("riot3a_w: 0x%02x\n", data);}
 /* Switch settings, test switch and NMI */
 READ_HANDLER(GTS80SS_riot3b_r)  {
 	// 0x40: test switch SW1
-	return (votraxsc01_status_r(0)?0x80:0x00) | 0x40 | (GTS80SS_locals.dips^0x3f);
+	if ( GTS80SS_locals.boardData.subType==0 )
+		return 0x40 | (GTS80SS_locals.dips^0x3f);
+	else
+		return (votraxsc01_status_r(0)?0x80:0x00) | 0x40 | (GTS80SS_locals.dips^0x3f);
 }
 
 static WRITE_HANDLER(GTS80SS_riot3b_w) { logerror("riot3b_w: 0x%02x\n", data);}
@@ -316,7 +325,8 @@ static WRITE_HANDLER(GTS80SS_ext_board_3_w) {
 
 /* voice synt latch */
 static WRITE_HANDLER(GTS80SS_vs_latch_w) {
-	votraxsc01_w(0, data^0x3f);
+	if ( GTS80SS_locals.boardData.subType==1 )
+		votraxsc01_w(0, data^0x3f);
 }
 
 static struct riot6532_interface GTS80SS_riot6532_intf = {
@@ -455,7 +465,7 @@ WRITE_HANDLER(gts80ss_data_w)
 {
 	data = (data&0x3f);
 
-//	logerror("sound_latch: 0x%02x\n", data);
+	// logerror("sound_latch: 0x%02x\n", data);
 	riot6532_set_input_a(3, (data&0x0f?0x80:0x00) | 0x40 | data);
 }
 

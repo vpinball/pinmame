@@ -34,6 +34,7 @@
 struct riot6532
 {
 	const struct riot6532_interface *intf;
+	UINT8 inUse;
 
 	UINT8 in_a;
 	UINT8 out_a;
@@ -124,10 +125,15 @@ void riot6532_set_clock(int which, int clock)
 void riot6532_config(int which, const struct riot6532_interface *intf)
 {
 	if (which >= MAX_RIOT_6532) return;
+
+	memset(&riot[which], 0x00, sizeof riot[which]);
+	riot[which].inUse = 0x01;
+
 	riot[which].intf = intf;
 	riot[which].t = NULL;
 
 	riot[which].time = timer_get_time();
+	// riot[which].edge_detect_ctrl = 0x00;
 
 	/* Default clock is from CPU1 */
 	riot6532_set_clock(which, Machine->drv->cpu[0].cpu_clock);
@@ -148,8 +154,11 @@ void riot6532_reset(void)
 		riot[i].timer_irq_enabled = 0;
 
 		riot[i].time = timer_get_time();
-		riot[i].t = timer_alloc(riot_timeout);
-		timer_adjust(riot[i].t,IFR_DELAY*riot[i].cycles_to_sec, i, 0);
+
+		if ( riot[i].inUse ) {
+			riot[i].t = timer_alloc(riot_timeout);
+			timer_adjust(riot[i].t,IFR_DELAY*riot[i].cycles_to_sec, i, 0);
+		}
 	}
 }
 
@@ -219,7 +228,7 @@ static void riot_timeout(int which)
 		timer_enable(p->t,0);
 	}
 	else {
-		LOG(("RIOT%d: Timer IRQ.\n", which));
+		LOG(("RIOT%d: Timer IRQ reached.\n", which));
 		timer_reset(p->t, V_CYCLES_TO_TIME(255));
 		p->time = timer_get_time();
 
@@ -400,10 +409,7 @@ void riot6532_write(int which, int offset, int data)
 			p->irq_state &= ~RIOT_TIMERIRQ;
 			update_6532_interrupts(p);
 
-//			if ( p->timer_irq_enabled )
-			{
-				timer_reset(p->t, V_CYCLES_TO_TIME(p->timer_divider * p->timer_start + IFR_DELAY));
-			}
+			timer_reset(p->t, V_CYCLES_TO_TIME(p->timer_divider * p->timer_start + IFR_DELAY));
 			p->time = timer_get_time();
 
 			LOG(("RIOT%d write timer = %02X * %04X, %04X\n", which, data, p->timer_divider, offset&0x08));
@@ -427,8 +433,6 @@ void riot6532_set_input_a(int which, int data)
 
 	p->in_a = data;
 
-	if ( data & 0x80 )
-		data = data;
 	check_pa7_interrupt(p, old_port_a, data);
 }
 
