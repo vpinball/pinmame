@@ -575,16 +575,13 @@ static WRITE_HANDLER(sound_port2_w) {
 
 static void by_vdp_interrupt (int state)
 {
-	static int last_state = 0;
-
 	//logerror("vdp_int: state = %x\n",state);
 
     /* only if it goes up */
-	if (state && !last_state) {
-		//logerror("VDP Caused Vidiot CPU IRQ\n");
-		cpu_set_irq_line(BYVP_VCPUNO, M6809_IRQ_LINE, PULSE_LINE);
-	}
-	last_state = state;
+	if (state)
+	 	cpu_set_irq_line(BYVP_VCPUNO, M6809_IRQ_LINE, ASSERT_LINE);
+	else
+	 	cpu_set_irq_line(BYVP_VCPUNO, M6809_IRQ_LINE, CLEAR_LINE);
 }
 
 //Video CPU Vertical Blank
@@ -592,7 +589,6 @@ static INTERRUPT_GEN(byVP_vvblank) {
     TMS9928A_interrupt(0);
 	//The IRQ must be triggered constantly for the video cpu to read/write to the latch
 	//I'm not sure why doing it the way it was coded from MESS does not work.
-//	return M6809_INT_IRQ;
 }
 
 static INTERRUPT_GEN(byVP1_vvblank) {
@@ -600,7 +596,6 @@ static INTERRUPT_GEN(byVP1_vvblank) {
 	TMS9928A_interrupt(1);
 	//The IRQ must be triggered constantly for the video cpu to read/write to the latch
 	//I'm not sure why doing it the way it was coded from MESS does not work.
-//	return M6809_INT_IRQ;
 }
 
 static READ_HANDLER(vdp0_r) {
