@@ -8,7 +8,8 @@ Version 1.12 (March 29, 2002)
 - Added a class to created customizable dialogs from the script
 - The Splash dialog will now cycle through 4 different images. A big "thank you" to:
     Steve Ellenoff (who else?), Stein (winner of the contest), and Forchia (Tomaso Forchiassin)
-    for the images    
+    for the images
+- The vpinmame.dll is now compiled using the MS C++ compiler v13.0 (VS.NET)
 
 Version 1.11 (February 3, 2002)
 -------------------------------
