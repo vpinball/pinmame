@@ -24,12 +24,13 @@
 #include "gts3sound.h"
 
 UINT8 DMDFrames[GTS3DMD_FRAMES][0x200];
-#define GTS3_VBLANKDIV	   6 /* Break VBLANK into pieces*/
+#define GTS3_VBLANKDIV	      6 /* Break VBLANK into pieces*/
 
 #define GTS3_VBLANKFREQ      60 /* VBLANK frequency*/
-#define GTS3_IRQFREQ        976 /* IRQ Frequency (Guessed)*/
+#define GTS3_IRQFREQ        975 /* IRQ Frequency (Guessed)*/
 #define GTS3_DMDNMIFREQ     175 /* DMD NMI Frequency (Guessed)*/
 #define GTS3_ALPHANMIFREQ   175 /* Alpha NMI Frequency (Guessed)*/
+#define GTS3_TRIGIRQ	   1875 /* HACK To Keep the IRQ Firing */
 
 #define GTS3_CPUNO	0
 #define GTS3_DCPUNO 1
@@ -81,6 +82,7 @@ static void dmd_update(void);
 /  Local varibles
 /-----------------*/
 struct {
+  int    alphagen;
   core_tSeg segments, pseg;
   int    vblankCount;
   int    initDone;
@@ -94,6 +96,7 @@ struct {
   int    mainIrq;
   int	 swDiag;
   int    swTilt;
+  int    swSlam;
   int    acol;
   int    u4pb;
   WRITE_HANDLER((*U4_PB_W));
@@ -122,6 +125,15 @@ struct {
   UINT8  dmd_visible_addr;
 } GTS3_dmdlocals;
 
+
+/*Hack to keep IRQ going*/
+static void via_irq(int state);
+static void trigirq(int data) { 
+	static int lastirq=0;
+	lastirq = !lastirq;
+	//via_irq(lastirq);
+}
+
 /* U4 */
 
 //PA0-7 Switch Rows/Returns (Switches are inverted)
@@ -133,14 +145,18 @@ static READ_HANDLER( xvia_0_b_r ) { return GTS3locals.U4_PB_R(offset); }
 /* ALPHA GENERATION
    ----------------
    PB0-2: Output only
-   PB3:  Test Switch
+   PB3:  Slam Switch (NOTE: Test Switch on later Generations!)
    PB4:  Tilt Switch
    PB5-7: Output only
 */
 static READ_HANDLER(alpha_u4_pb_r)
 {
 	int data = 0;
-	data |= (GTS3locals.swDiag << 3);	//Diag Switch (NOT INVERTED!)
+	//Gen 1 checks Slam switch here
+	if(GTS3locals.alphagen==1)
+		data |= (GTS3locals.swSlam <<3);	//Slam Switch (NOT INVERTED!) 
+	else
+		data |= (GTS3locals.swDiag << 3);	//Diag Switch (NOT INVERTED!)
 	data |= (GTS3locals.swTilt << 4);   //Tilt Switch (NOT INVERTED!)
 	return data;
 }
@@ -163,14 +179,6 @@ static READ_HANDLER(dmd_u4_pb_r)
 	data |= (GTS3_dmdlocals.dstrb << 6);
 	data |= (GTS3_dmdlocals.status2 << 7);
 	return data;
-}
-
-
-//CA1:  Slam Switch
-static READ_HANDLER( xvia_0_ca1_r )
-{
-	logerror1("READ: SLAM: via_0_ca1_r\n");
-	return core_getSw(GTS3_SWSLAM) != 0;
 }
 
 //CA2:  To A1P6-12 & A1P7-6 Auxiliary (INPUT???)
@@ -215,7 +223,7 @@ static WRITE_HANDLER( xvia_0_b_w ) { GTS3locals.U4_PB_W(offset,data); }
 #define DBLNK 0x80
 
 static WRITE_HANDLER(alpha_u4_pb_w) {
-	logerror("lampcolumn=%4x STRB=%d LCLR=%d\n",GTS3locals.lampColumn,data&LSTRB,data&LCLR);
+	//logerror("lampcolumn=%4x STRB=%d LCLR=%d\n",GTS3locals.lampColumn,data&LSTRB,data&LCLR);
 //	if (GTS3locals.u4pb & LCLR)  GTS3locals.lampColumn = 0; // Negative edge
 	if (data & ~GTS3locals.u4pb & LSTRB) { // Positive edge
 		GTS3locals.lampColumn = ((GTS3locals.lampColumn<<1) | (data & LDATA)) & 0x0fff;
@@ -254,7 +262,7 @@ static WRITE_HANDLER( xvia_0_ca2_w )
 //CB2:  NMI to Main CPU
 static WRITE_HANDLER( xvia_0_cb2_w )
 {
-	logerror1("NMI: via_0_cb2_w: %x\n",data);
+	//logerror1("NMI: via_0_cb2_w: %x\n",data);
 	cpu_cause_interrupt(0,M65C02_INT_NMI);
 }
 
@@ -363,27 +371,38 @@ static WRITE_HANDLER(alpha_u5_cb2_w){ logerror1("WRITE:via_1_cb2_w: %x\n",data);
 static WRITE_HANDLER(dmd_u5_cb2_w) { logerror1("WRITE:via_1_cb2_w: %x\n",data); }
 
 //IRQ:  IRQ to Main CPU
-static void via_irq(int state) { cpu_set_irq_line(0, M6502_INT_IRQ, PULSE_LINE); }
+static void via_irq(int state) { 
+	logerror("IN VIA_IRQ - STATE = %x\n",state);
+#if 0
+	if(state)
+		printf("IRQ = 1\n");
+	else
+		printf("IRQ = 0\n");
+#endif
+	cpu_set_irq_line(0, M6502_INT_IRQ, PULSE_LINE); 
+	//cpu_set_irq_line(0, M6502_INT_IRQ, state?ASSERT_LINE:CLEAR_LINE); 
+}
 
 /*
 
-DMD Generation Listed Below
+DMD Generation Listed Below (for different hardware see code)
 
 U4:
 ---
 (I)PA0-7 Switch Rows/Returns
-(0)PB0:  Lamp Data    (LDATA)
-(0)PB1:  Lamp Strobe  (LSTRB)
-(0)PB2:  Lamp Clear   (LCLR)
 (I)PB3:  Test Switch
 (I)PB4:  Tilt Switch
 (I)PB5-  A1P3-3 - Display Controller - Status1
 (I)PB6-  A1P3-1 - Display Controller - Not used
-(O)PB6-  Display Strobe (DSTRB)
 (I)PB7-  A1P3-2 - Display Controller - Status2
 (I)CA1: Slam Switch
-(O)CA2: To A1P6-12 & A1P7-6 Auxiliary
 (I)CB1: N/A
+(O)PB0:  Lamp Data    (LDATA)
+(O)PB1:  Lamp Strobe  (LSTRB)
+(O)PB2:  Lamp Clear   (LCLR)
+(O)PB6:  Display Strobe (DSTRB)
+(O)PB7:  Display Blanking (DBLNK) - Alpha Generation Only!
+(O)CA2: To A1P6-12 & A1P7-6 Auxiliary
 (O)CB2: NMI to Main CPU
 IRQ:  IRQ to Main CPU
 
@@ -400,7 +419,7 @@ IRQ:  IRQ to Main CPU
 static struct via6522_interface via_0_interface =
 {
 	/*inputs : A/B         */ xvia_0_a_r, xvia_0_b_r,
-	/*inputs : CA1/B1,CA2/B2 */ xvia_0_ca1_r, xvia_0_cb1_r, xvia_0_ca2_r, xvia_0_cb2_r,
+	/*inputs : CA1/B1,CA2/B2 */ 0, xvia_0_cb1_r, xvia_0_ca2_r, xvia_0_cb2_r,
 	/*outputs: A/B,CA2/B2   */ xvia_0_a_w, xvia_0_b_w, xvia_0_ca2_w, xvia_0_cb2_w,
 	/*irq                  */ via_irq
 };
@@ -466,8 +485,15 @@ static int GTS3_vblank(void) {
 }
 
 static void GTS3_updSw(int *inports) {
-  //HACK to make the IRQ work. Must be a bug in the VIA code, since this shouldn't be necessary!
-  via_irq(1);
+via_irq(1);
+#if 0
+	//HACK to make the IRQ work. Must be a bug in the VIA code, since this shouldn't be necessary!
+	static int last=0;
+	if(keyboard_pressed_memory_repeat(KEYCODE_A,2)) {
+		via_irq(last);
+		last = !last;
+	}
+#endif
 
   if (inports) {
     coreGlobals.swMatrix[0] = (inports[GTS3_COMINPORT] & 0x7f00)>>8;
@@ -475,6 +501,14 @@ static void GTS3_updSw(int *inports) {
   }
   GTS3locals.swDiag = (core_getSw(GTS3_SWDIAG)>0?1:0);
   GTS3locals.swTilt = (core_getSw(GTS3_SWTILT)>0?1:0);
+  GTS3locals.swSlam = (core_getSw(GTS3_SWSLAM)>0?1:0);
+
+  //Force CA1 to read our input!
+  /*Alpha Gen 1 returns TEST Switch here - ALL others Slam Switch*/
+  if(GTS3locals.alphagen==1)
+	via_set_input_ca1(0,GTS3locals.swDiag);
+  else
+	via_set_input_ca1(0,GTS3locals.swSlam);
 }
 
 static WRITE_HANDLER(GTS3_sndCmd_w) { GTS3_SoundCommand(data^0xff); }
@@ -499,7 +533,8 @@ static core_tData GTS3Data = {
   gts3_sw2m, gts3_sw2m, gts3_m2sw, gts3_m2sw
 };
 
-static void GTS3_init(void) {
+/*Alpha Numeric First Generation Init*/
+static void GTS3_alpha_common_init(void) {
   if (GTS3locals.initDone)
     GTS3_exit();
   GTS3locals.initDone = TRUE;
@@ -524,6 +559,10 @@ static void GTS3_init(void) {
   //Manually call the CPU NMI at the specified rate
   timer_pulse(TIME_IN_HZ(GTS3_ALPHANMIFREQ), 0, alphanmi);
 
+  //Manually call the CPU IRQ at the specified rate
+  timer_pulse(TIME_IN_HZ(GTS3_TRIGIRQ), 0, trigirq);
+
+
   /*Init Sound if Sound Enabled?*/
   if (((Machine->gamedrv->flags & GAME_NO_SOUND) == 0) && Machine->sample_rate)
   {
@@ -538,6 +577,20 @@ static void GTS3_init(void) {
 	  return;
 }
 
+/*Alpha Numeric First Generation Init*/
+static void GTS3_init(void) {
+	GTS3_alpha_common_init();
+	GTS3locals.alphagen = 1;
+}
+
+
+/*Alpha Numeric Second Generation Init*/
+static void GTS3b_init(void) {
+	GTS3_alpha_common_init();
+	GTS3locals.alphagen = 2;
+}
+
+/*DMD Generation Init*/
 static void GTS3_init2(void) {
   if (GTS3locals.initDone)
     GTS3_exit();
@@ -573,8 +626,11 @@ static void GTS3_init2(void) {
   GTS3locals.AUX_W = dmd_aux;
   GTS3locals.VBLANK_PROC = dmd_vblank;
 
-  //Manually call the DMD NMI at the specified rate
-//  timer_pulse(TIME_IN_HZ(GTS3_DMDNMIFREQ), 0, dmdnmi);
+  //Manually call the DMD NMI at the specified rate  (Although the code simply returns rti in most cases, we should call the nmi anyway, incase a game uses it)
+  //timer_pulse(TIME_IN_HZ(GTS3_DMDNMIFREQ), 0, dmdnmi);
+
+  //Manually call the CPU IRQ at the specified rate
+  timer_pulse(TIME_IN_HZ(GTS3_TRIGIRQ), 0, trigirq);
 
   /*Init Sound if Sound Enabled?*/
   if (((Machine->gamedrv->flags & GAME_NO_SOUND) == 0) && Machine->sample_rate)
@@ -645,7 +701,7 @@ static WRITE_HANDLER(display_control) { GTS3locals.DISPLAY_CONTROL(offset,data);
 		DS3 = enable i,j,k,l,m,n,dot,comma of Top Segment
 */
 static WRITE_HANDLER(alpha_display){
-	if ((GTS3locals.u4pb & DBLNK) && (GTS3locals.acol < 20)) {
+	if ((GTS3locals.u4pb & ~DBLNK) && (GTS3locals.acol < 20)) {
 		if(offset == 0) GTS3locals.segments[1][GTS3locals.acol].hi |= GTS3locals.pseg[1][GTS3locals.acol].hi = data;
 		else
 		if(offset == 1) GTS3locals.segments[1][GTS3locals.acol].lo |= GTS3locals.pseg[1][GTS3locals.acol].lo = data;
@@ -829,7 +885,9 @@ static MEMORY_WRITE_START(GTS3_dmdwritemem)
 {0x8000,0xffff, MWA_ROM},
 MEMORY_END
 
-struct MachineDriver machine_driver_GTS3_1 = {
+
+/* First Generation Alpha Numeric Games */
+struct MachineDriver machine_driver_GTS3_1A = {
   {
     {
       CPU_M65C02, 2000000, /* 2 Mhz */
@@ -850,7 +908,30 @@ struct MachineDriver machine_driver_GTS3_1 = {
   GTS3_nvram
 };
 
-struct MachineDriver machine_driver_GTS3_1S = {
+/* Second Generation Alpha Numeric Games */
+struct MachineDriver machine_driver_GTS3_1B = {
+  {
+    {
+      CPU_M65C02, 2000000, /* 2 Mhz */
+      GTS3_readmem, GTS3_writemem, NULL, NULL,
+      GTS3_vblank, GTS3_VBLANKDIV,
+      GTS3_irq, GTS3_IRQFREQ
+    }
+  },
+  GTS3_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  50,
+  GTS3b_init,CORE_EXITFUNC(GTS3_exit)
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
+  VIDEO_TYPE_RASTER,
+  0,
+  NULL, NULL, gen_refresh,
+  0,0,0,0,{{ 0 }},
+  GTS3_nvram
+};
+
+/* First Generation Alpha Numeric Games WITH SOUND */
+struct MachineDriver machine_driver_GTS3_1AS = {
   {
     {
       CPU_M65C02, 2000000, /* 2 Mhz */
@@ -872,6 +953,30 @@ struct MachineDriver machine_driver_GTS3_1S = {
   GTS3_nvram
 };
 
+/* Second Generation Alpha Numeric Games WITH SOUND */
+struct MachineDriver machine_driver_GTS3_1BS = {
+  {
+    {
+      CPU_M65C02, 2000000, /* 2 Mhz */
+      GTS3_readmem, GTS3_writemem, NULL, NULL,
+      GTS3_vblank, GTS3_VBLANKDIV,
+      GTS3_irq, GTS3_IRQFREQ
+    }
+	GTS3_SOUNDCPU2
+    GTS3_SOUNDCPU1},
+  GTS3_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  50,
+  GTS3b_init,CORE_EXITFUNC(GTS3_exit)
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
+  VIDEO_TYPE_RASTER,
+  0,
+  NULL, NULL, gen_refresh,
+  0,0,0,0,{GTS3_SOUND},
+  GTS3_nvram
+};
+
+/* DMD Generation Games */
 struct MachineDriver machine_driver_GTS3_2 = {
   {
     {
@@ -898,6 +1003,7 @@ struct MachineDriver machine_driver_GTS3_2 = {
   GTS3_nvram
 };
 
+/* DMD Generation Games WITH SOUND */
 struct MachineDriver machine_driver_GTS3_2S = {
   {
     {

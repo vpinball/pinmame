@@ -20,6 +20,7 @@ N = No Lead, L = Have a Lead on Rom
 #define FLIP4142 FLIP_SWNO(GTS3_SWNO(41),GTS3_SWNO(42))
 #define FLIP4243 FLIP_SWNO(GTS3_SWNO(42),GTS3_SWNO(43))
 #define FLIP4547 FLIP_SWNO(GTS3_SWNO(45),GTS3_SWNO(47))
+#define FLIP5051 FLIP_SWNO(GTS3_SWNO(50),GTS3_SWNO(51))
 #define FLIP8182 FLIP_SWNO(GTS3_SWNO(81),GTS3_SWNO(82))
 #define FLIP8283 FLIP_SWNO(GTS3_SWNO(82),GTS3_SWNO(83))
 #define GDISP_SEG_20(row,type)    {2*row, 0, 20*row, 20, type}
@@ -59,12 +60,12 @@ GTS33_INPUT_PORTS_START(name, balls) GTS3_INPUT_PORTS_END
 /* GAMES APPEAR IN PRODUCTION ORDER (MORE OR LESS) */
 
 /*-------------------------------------------------------------------
-/ Lights, Camera, Action (#720)
+/ Lights, Camera, Action (#720) (Unable to verify Flipper Switches)
 /-------------------------------------------------------------------*/
 INITGAME(lca, ALPHA, FLIP67, 3/*?*/)
 GTS3ROMSTART32(lca,	"gprom.bin",0x937a8426)
 GTS3_ROMEND
-CORE_GAMEDEFNV(lca,"Lights, Camera, Action",1989,"Gottlieb",mGTS3,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(lca,"Lights, Camera, Action",1989,"Gottlieb",mGTS3,GAME_NO_SOUND)
 //62c0beda Rev 1?
 //52957d70 Rev 3?
 /*-------------------------------------------------------------------
@@ -84,9 +85,9 @@ GTS3SOUND3232(			"yrom1.bin",0x20bc9797,
 GTS3_ROMEND
 CORE_GAMEDEFNV(silvslug,"Silver Slugger",1990,"Gottlieb",mGTS3S,GAME_NOT_WORKING)
 /*-------------------------------------------------------------------
-/ Vegas (#723)
+/ Vegas (#723) (Switches are OFF by 1 column - weird, ie SW[1]=SW[2])
 /-------------------------------------------------------------------*/
-INITGAME(vegas, ALPHA, FLIP67, 3/*?*/)
+INITGAME(vegas, ALPHA, FLIP5051, 3/*?*/)
 GTS3ROMSTART(vegas,	"gprom.bin",0x48189981)
 GTS3SOUND3232(		"yrom1.bin",0xaf1095f1,
 					"drom1.bin",0x46eb5755)
@@ -110,13 +111,18 @@ GTS3SOUND3232(			"yrom1.bin",0x8591d421,
 						"drom1.bin",0x9514739f)
 GTS3_ROMEND
 CORE_GAMEDEFNV(tfight,"Title Fight",1990,"Gottlieb",mGTS3S,GAME_NOT_WORKING)
+
+
+//ALL GAMES LISTED ABOVE HERE - FLIPPER SWITCHES NOT CORRECT OR CONFIRMED!
+//ALL GAMES LISTED BELOW HERE - FLIPPER SWITCHES ARE CONFIRMED CORRECT!!!! (Except where roms are missing)
+
 /*-------------------------------------------------------------------
 / Nudge It
 /-------------------------------------------------------------------*/
 INITGAME(nudgeit, ALPHA, FLIP67, 3/*?*/)
 GTS3ROMSTART(nudgeit,	"gprom.bin",0x0)
 GTS3_ROMEND
-CORE_GAMEDEFNV(nudgeit,"Nudge It",1990,"Gottlieb",mGTS3,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(nudgeit,"Nudge It",1990,"Gottlieb",mGTS3,GAME_NO_SOUND)
 /*-------------------------------------------------------------------
 / Car Hop (#725)
 /-------------------------------------------------------------------*/
@@ -125,14 +131,14 @@ GTS3ROMSTART(carhop,	"gprom.bin",0x164b2c9c)
 GTS3SOUND3232(			"yrom1.bin",0x831ee812,
 						"drom1.bin",0x9dec74e7)
 GTS3_ROMEND
-CORE_GAMEDEFNV(carhop,"Car Hop",1991,"Gottlieb",mGTS3S,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(carhop,"Car Hop",1991,"Gottlieb",mGTS3S,0)
 /*-------------------------------------------------------------------
 / Hoops
 /-------------------------------------------------------------------*/
 INITGAME(hoops, ALPHA, FLIP67, 3/*?*/)
 GTS3ROMSTART(hoops,	"gprom.bin",0x0)
 GTS3_ROMEND
-CORE_GAMEDEFNV(hoops,"Hoops",1991,"Gottlieb",mGTS3,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(hoops,"Hoops",1991,"Gottlieb",mGTS3,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
 / Cactus Jack (#729)
@@ -144,7 +150,7 @@ GTS3SOUND32128(			"yrom1.bin",0x4554ed0d,
 						"arom1.bin",0xc890475f,
 						"arom2.bin",0xaba8fd98)
 GTS3_ROMEND
-CORE_GAMEDEFNV(cactjack,"Cactus Jack",1991,"Gottlieb",mGTS3S,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(cactjack,"Cactus Jack",1991,"Gottlieb",mGTS3S,0)
 
 /*-------------------------------------------------------------------
 / Class of 1812 (#730)
@@ -156,10 +162,11 @@ GTS3SOUND32128(			"yrom1.bin",0x4ecf6ecb,
  						"arom1.bin",0x357b0069,
 						"arom2.bin",0x5be02ff7)
 GTS3_ROMEND
-CORE_GAMEDEFNV(clas1812,"Class of 1812",1991,"Gottlieb",mGTS3S,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(clas1812,"Class of 1812",1991,"Gottlieb",mGTS3S,0)
 
-//ALL GAMES LISTED ABOVE HERE - FLIPPER SWITCHES NOT CORRECT OR CONFIRMED!
-//ALL GAMES LISTED BELOW HERE - FLIPPER SWITCHES ARE CONFIRMED CORRECT!!!!
+/************************************************/
+/*Start of 2nd generation Alpha Numeric Hardware*/
+/************************************************/
 
 /*-------------------------------------------------------------------
 / Surf'n Safari (#731)
@@ -171,7 +178,7 @@ GTS3SOUND32256A(		"yrom1.bin",0xa0480418,
 						"arom1.bin",0x38b569b2,
 						"arom2.bin",0x224c2021)
 GTS3_ROMEND
-CORE_GAMEDEFNV(surfnsaf,"Surf'n Safari",1991,"Gottlieb",mGTS3S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(surfnsaf,"Surf'n Safari",1991,"Gottlieb",mGTS3BS,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
 / Operation Thunder (#732)
@@ -183,7 +190,7 @@ GTS3SOUND32256A(		"yrom1.bin",0x169816d1,
 						"arom1.bin",0x0fbb130a,
 						"arom2.bin",0x0f7632b3)
 GTS3_ROMEND
-CORE_GAMEDEFNV(opthund,"Operation Thunder",1992,"Gottlieb",mGTS3S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(opthund,"Operation Thunder",1992,"Gottlieb",mGTS3BS,GAME_IMPERFECT_SOUND)
 
 /*************************
  ***Start of DMD 128x32***
