@@ -131,7 +131,7 @@ static int ATARI_m2sw(int col, int row) {
 }
 
 static core_tData ATARI1Data = {
-  32, /* 32 dip switches */
+  16, /* 16 dip switches */
   ATARI1_updSw,
   4, /* 4 diagnostic LEDs */
   ATARI_sndCmd_w, "ATARI1",
@@ -152,7 +152,11 @@ static READ_HANDLER(readCRC) {
 
 /* Switch reading */
 static READ_HANDLER(swg1_r) {
-	return (coreGlobals.swMatrix[1+(offset/8)] & (1 << (offset % 8)))?0xff:0;
+	return (coreGlobals.swMatrix[1+(offset/8)] & (1 << (offset % 8)))?0:0xff;
+}
+
+static READ_HANDLER(dipg1_r) {
+	return (core_getDip(offset/8) & (1 << (offset % 8)))?0:0xff;
 }
 
 static WRITE_HANDLER(swg1_w) {
@@ -294,7 +298,8 @@ static MEMORY_READ_START(ATARI1_readmem)
 {0x0000,0x01ff,	nvram1_r},	/* NVRAM */
 {0x1000,0x10ff,	MRA_RAM},	/* RAM */
 {0x1800,0x18ff,	MRA_RAM},	/* RAM */
-{0x2000,0x204f,	swg1_r},	/* inputs */
+{0x2000,0x200f,	dipg1_r},	/* dips */
+{0x2010,0x204f,	swg1_r},	/* inputs */
 {0x7000,0x7fff,	MRA_ROM},	/* ROM */
 {0xf800,0xffff,	MRA_ROM},	/* reset vector */
 MEMORY_END
