@@ -272,6 +272,7 @@ PINMAME_VIDEO_UPDATE(alvgdmd_update) {
   core_textOutf(50,20,1,"offset=%08x", offset);
   memset(&dotCol,0,sizeof(dotCol));
 
+  if(!debugger_focus) {
   if(keyboard_pressed_memory_repeat(KEYCODE_Z,2))
 	  offset+=0x0001;
   if(keyboard_pressed_memory_repeat(KEYCODE_X,2))
@@ -290,7 +291,7 @@ PINMAME_VIDEO_UPDATE(alvgdmd_update) {
 	  dmd32_data_w(0,offset);
 	  dmd32_ctrl_w(0,0);
   }
-
+  }
   RAM += offset;
   RAM2 += offset;
 #endif
