@@ -1559,6 +1559,14 @@ SOURCE=src\wpc\hnkgames.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\hnks.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\hnks.h
+# End Source File
+# Begin Source File
+
 SOURCE=src\wpc\mech.c
 # End Source File
 # Begin Source File
