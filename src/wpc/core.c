@@ -11,7 +11,7 @@
 /* stuff to test VPINMAME */
 #if 0
 #define VPINMAME
-int g_fHandleKeyboard = 1, g_fHandleMechanics = 1;
+int g_fHandleKeyboard = 1, g_fHandleMechanics = 1, g_fMechSamples = 1;
 void OnSolenoid(int nSolenoid, int IsActive) {}
 void OnStateChange(int nChange) {}
 UINT64 vp_getSolMask64(void) { return -1; }
