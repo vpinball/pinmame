@@ -687,6 +687,9 @@ DRIVERNV(elvisl)        //Whitestar: 10/04 Elvis (Spain)
 DRIVERNV(elvisf)        //Whitestar: 10/04 Elvis (France)
 DRIVERNV(elvisi)        //Whitestar: 10/04 Elvis (Italy)
 #endif /* INCLUDE_NEW_STERN */
+#ifdef MAME_DEBUG
+DRIVERNV(sopranos)      //Whitestar: ??/05 The Sopranos
+#endif
 
 // ---------------
 // TAITO GAMES
@@ -1027,7 +1030,7 @@ DRIVER(jb,10r)          //WPC-551:  10/95 W Jack*Bot
 DRIVER(jb,10b)                            // Belgium/Canada
 DRIVER(congo,21)        //WPC-550:  11/95 W Congo (2.1)
 DRIVER(congo,20)        //WPC-550:  11/95 W Congo (2.0)
-DRIVER(afm,10)         //WPC-541:  12/95 B Attack from Mars (1.0)
+DRIVER(afm,10)          //WPC-541:  12/95 B Attack from Mars (1.0)
 DRIVER(afm,11)          //WPC-541:  12/95 B Attack from Mars
 DRIVER(afm,113)							  // Home version
 DRIVER(lc,11)           //WPC:      ??/96 B League Champ (Shuffle Alley)
@@ -1046,13 +1049,14 @@ DRIVER(ss,14)           //WPC-548:  09/96 B Scared Stiff (1.4)
 DRIVER(ss,12)           //WPC-548:  09/96 B Scared Stiff (1.2)
 DRIVER(jy,12)           //WPC-552:  12/96 W Junk Yard (1.2)
 DRIVER(jy,11)           //WPC-552:  12/96 W Junk Yard (1.1)
-DRIVER(nbaf,31)         //WPC-553:  03/97 B NBA Fastbreak (3.1)
 DRIVER(nbaf,11)         //WPC-553:  03/97 B NBA Fastbreak (1.1)
-DRIVER(nbaf,115)        //WPC-553:  03/97 B NBA Fastbreak (1.15)
-DRIVER(nbaf,21)         //WPC-553:  03/97 B NBA Fastbreak (2.1)
-DRIVER(nbaf,22)         //WPC-553:  03/97 B NBA Fastbreak (2.2)
-DRIVER(nbaf,23)         //WPC-553:  03/97 B NBA Fastbreak (2.3)
-DRIVER(nbaf,31a)        //WPC-553:  03/97 B NBA Fastbreak (3.1a)
+DRIVER(nbaf,11a)        //WPC-553:  03/97 B NBA Fastbreak (1.1 - S2.0)
+DRIVER(nbaf,115)        //WPC-553:  05/97 B NBA Fastbreak (1.15)
+DRIVER(nbaf,21)         //WPC-553:  05/97 B NBA Fastbreak (2.1)
+DRIVER(nbaf,22)         //WPC-553:  05/97 B NBA Fastbreak (2.2)
+DRIVER(nbaf,23)         //WPC-553:  06/97 B NBA Fastbreak (2.3)
+DRIVER(nbaf,31)         //WPC-553:  09/97 B NBA Fastbreak (3.1)
+DRIVER(nbaf,31a)        //WPC-553:  09/97 B NBA Fastbreak (3.1a)
 DRIVER(mm,05)           //WPC-559:  06/97 W Medieval Madness (0.5)
 DRIVER(mm,10)           //WPC-559:  07/97 W Medieval Madness (1.0)
 DRIVER(mm,109)          //WPC-559:  06/99 W Medieval Madness (1.09, Home version)
