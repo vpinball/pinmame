@@ -181,9 +181,9 @@ INLINE data8_t arm7_cpu_read8( offs_t addr )
 	return cpu_readmem32ledw(addr);
 }
 
-/***************/
-/* helper funcs *
-/***************/
+/***************
+ * helper funcs
+ ***************/
 
 /* Set NZCV flags for ADDS / SUBS */
 #define HandleALUAddFlags(rd, rn, op2) \
@@ -467,9 +467,9 @@ static int storeDec( data32_t pat, data32_t rbv)
 	return result;
 } /* storeDec */
 
-/***************************************************************************/
-/*                            Main CPU Funcs
-/***************************************************************************/
+/***************************************************************************
+ *                            Main CPU Funcs
+ ***************************************************************************/
 
 //CPU INIT
 static void arm7_core_init(const char *cpuname)
@@ -809,9 +809,9 @@ static void arm7_core_set_irq_line(int irqline, int state)
 	ARM7_CHECKIRQ;
 }
 
-/***************************************************************************/
-/*                            OPCODE HANDLING
-/***************************************************************************/
+/***************************************************************************
+ *                            OPCODE HANDLING
+ ***************************************************************************/
 
 // Co-Processor Data Operation
 static void HandleCoProcDO(data32_t insn)

@@ -341,7 +341,7 @@ INLINE void at91_cpu_write32( int addr, data32_t data )
 	cpu_writemem32ledw_dword(addr,data);
 
 	/* Unaligned writes are treated as normal writes */
-	#if AT91_DEBUG_CORE
+	#ifdef AT91_DEBUG_CORE
 		if(addr&3)
 			LOG(("%08x: Unaligned write %08x\n",R15,addr));
 	#endif
@@ -405,7 +405,7 @@ INLINE data32_t at91_cpu_read32( int addr )
 
 	/* Unaligned reads rotate the word, they never combine words */
 	if (addr&3) {
-		#if AT91_DEBUG_CORE
+		#ifdef AT91_DEBUG_CORE
 			if(addr&1)
 				LOG(("%08x: Unaligned byte read %08x\n",R15,addr));
 		#endif
