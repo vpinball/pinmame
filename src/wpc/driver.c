@@ -202,7 +202,8 @@ DRIVER(simp,a27)        //Data East MPU: 09/90 The Simpsons
 DRIVER(ckpt,a17)        //Data East MPU: 02/91 Checkpoint
 DRIVER(tmnt,104)        //Data East MPU: 05/91 Teenage Mutant Ninja Turtles
 //BSMT2000 Sound chip
-DRIVER(btmn,101)        //Data East MPU: 07/91 Batman
+DRIVER(btmn,101)        //Data East MPU: 07/91 Batman (1.01)
+DRIVER(btmn,103)        //Data East MPU: ??/91 Batman (1.03)
 DRIVER(trek,201)        //Data East MPU: 10/91 Star Trek 25th Anniversary
 DRIVER(hook,408)        //Data East MPU: 01/92 Hook
 //DMD 128 x 32
@@ -688,15 +689,15 @@ DRIVER(gi,l9)           //WPC:      11/91 B Gilligan's Island
 DRIVER(strik,l4)        //WPC:      05/92 W Strike Master
 DRIVER(gw,l5)           //WPC-504:  02/92 W The Getaway: High Speed II (L-5)
 DRIVER(gw,l2)           //WPC-504:  02/92 W The Getaway: High Speed II (L-2)
-DRIVER(taf,l5)          //WPC:      03/92 B The Addams Family (L-5)
-DRIVER(taf,p2)                            // (P-2)
-DRIVER(taf,l1)                            // (L-1)
-DRIVER(taf,l2)                            // (L-2)
-DRIVER(taf,l3)                            // (L-3)
-DRIVER(taf,l4)                            // (L-4)
-DRIVER(taf,l7)                            // (L-7) (Prototype L-5)
-DRIVER(taf,l6)                            // (L-6)
-DRIVER(taf,h4)                            // (H-4)
+DRIVER(taf,p2)          //WPC:      01/92 B The Addams Family (P-2)
+DRIVER(taf,l1)          //WPC:      01/92 B The Addams Family (L-1)
+DRIVER(taf,l2)          //WPC:      03/92 B The Addams Family (L-2)
+DRIVER(taf,l3)          //WPC:      05/92 B The Addams Family (L-3)
+DRIVER(taf,l4)          //WPC:      05/92 B The Addams Family (L-4)
+DRIVER(taf,l7)          //WPC:      10/92 B The Addams Family (L-7) (Prototype L-5)
+DRIVER(taf,l5)          //WPC:      12/92 B The Addams Family (L-5)
+DRIVER(taf,l6)          //WPC:      03/93 B The Addams Family (L-6)
+DRIVER(taf,h4)          //WPC:      05/94 B The Addams Family (H-5)
 DRIVER(br,l4)           //WPC:      07/92 B Black Rose
 DRIVER(dw,l2)           //WPC:      09/92 B Doctor Who
 DRIVER(ft,l5)           //WPC-505:  10/92 W Fish Tales
@@ -705,7 +706,10 @@ DRIVER(ww,l5)           //WPC-518:  01/93 W White Water
 DRIVER(drac,l1)         //WPC-501:  04/93 W Bram Stoker's Dracula
 DRIVER(tz,92)           //WPC:      04/93 B Twilight Zone
 DRIVER(tz,94h)							  // Home version
-DRIVER(ij,l7)           //WPC-517:  08/93 W Indiana Jones
+DRIVER(ij,l3)           //WPC-517:  07/93 W Indiana Jones (L-3)
+DRIVER(ij,l5)           //WPC-517:  09/93 W Indiana Jones (L-5)
+DRIVER(ij,l6)           //WPC-517:  10/93 W Indiana Jones (L-6)
+DRIVER(ij,l7)           //WPC-517:  11/93 W Indiana Jones (L-7)
 DRIVER(jd,l7)           //WPC:      09/93 B Judge Dredd
 DRIVER(sttng,l7)        //WPC-523:  11/93 W Star Trek: The Next Generation
 DRIVER(dm,lx4)          //WPC-528:  02/94 W Demolition Man
