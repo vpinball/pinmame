@@ -27,7 +27,7 @@ CORE_GAMEDEFNVR90(babypac,"Baby Pacman (Video/Pinball Combo)",1982,"Bally",byVP_
 /*-----------------------------------------------------------------
 / Granny and the Gators (Video/Pinball Combo) - (BY35-???: 01/84)
 /----------------------------------------------------------------*/
-INITGAMEVP(granny,byVP_dispGranny,FLIP_SW(FLIP_L),SNDBRD_BY45,1)
+INITGAMEVP(granny,byVP_dispGranny,FLIP_SW(FLIP_L),SNDBRD_BY45BP,1)
 BYVP_ROMSTART100(granny,"cpu_u2.532",0xd45bb956,
                         "cpu_u6.532",0x306aa673,
                         "vid_u4.764",0x3a3d4c6b,
