@@ -267,7 +267,7 @@ DE2S_SOUNDROM18888("sxsounda.u7" ,CRC(e7e1a0cb) SHA1(be8b3e4d4232519db8344ae9e75
                   "sxvoicea.u37",CRC(4c08c33c) SHA1(36bfad0c59fd228db76a6ff36698edd929c11336))
 SE_ROMEND
 #define input_ports_strikext input_ports_se
-CORE_GAMEDEFNV(strikext,"Striker Extreme",1999,"Stern",de_mSES2,GAME_NOCRC)
+CORE_GAMEDEFNV(strikext,"Striker Xtreme",1999,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Striker Extreme (UK)
@@ -282,7 +282,7 @@ DE2S_SOUNDROM18888("sxsounda.u7" ,CRC(e7e1a0cb) SHA1(be8b3e4d4232519db8344ae9e75
 SE_ROMEND
 #define input_ports_strxt_uk input_ports_se
 #define init_strxt_uk init_strikext
-CORE_CLONEDEFNV(strxt_uk,strikext,"Striker Extreme (UK)",1999,"Stern",de_mSES2,GAME_NOCRC)
+CORE_CLONEDEFNV(strxt_uk,strikext,"Striker Xtreme (UK)",1999,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Striker Extreme (Germany)
@@ -297,7 +297,7 @@ DE2S_SOUNDROM18888("sxsoundg.u7" ,CRC(b38ec07d) SHA1(239a3a51c049b007d4c16c3bd1e
 SE_ROMEND
 #define input_ports_strxt_gr input_ports_se
 #define init_strxt_gr init_strikext
-CORE_CLONEDEFNV(strxt_gr,strikext,"Striker Extreme (Germany)",1999,"Stern",de_mSES2,GAME_NOCRC)
+CORE_CLONEDEFNV(strxt_gr,strikext,"Striker Xtreme (Germany)",1999,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Striker Extreme (France)
@@ -312,7 +312,7 @@ DE2S_SOUNDROM18888("soc.u7" ,CRC(a03131cf) SHA1(e50f665eb15cef799fdc0d1d88bc7d5e
 SE_ROMEND
 #define input_ports_strxt_fr input_ports_se
 #define init_strxt_fr init_strikext
-CORE_CLONEDEFNV(strxt_fr,strikext,"Striker Extreme (France)",1999,"Stern",de_mSES2,GAME_NOCRC)
+CORE_CLONEDEFNV(strxt_fr,strikext,"Striker Xtreme (France)",1999,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Striker Extreme (Italy)
@@ -327,7 +327,7 @@ DE2S_SOUNDROM18888("s00.u7" ,CRC(80625d23) SHA1(3956744f20c5a3281715ff813a8fd37c
 SE_ROMEND
 #define input_ports_strxt_it input_ports_se
 #define init_strxt_it init_strikext
-CORE_CLONEDEFNV(strxt_it,strikext,"Striker Extreme (Italy)",1999,"Stern",de_mSES2,GAME_NOCRC)
+CORE_CLONEDEFNV(strxt_it,strikext,"Striker Xtreme (Italy)",1999,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Striker Extreme (Spain)
@@ -342,7 +342,7 @@ DE2S_SOUNDROM18888("soc.u7" ,CRC(a03131cf) SHA1(e50f665eb15cef799fdc0d1d88bc7d5e
 SE_ROMEND
 #define input_ports_strxt_sp input_ports_se
 #define init_strxt_sp init_strikext
-CORE_CLONEDEFNV(strxt_sp,strikext,"Striker Extreme (Spain)",1999,"Stern",de_mSES2,GAME_NOCRC)
+CORE_CLONEDEFNV(strxt_sp,strikext,"Striker Xtreme (Spain)",1999,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Sharkey's Shootout (2.11)
@@ -435,9 +435,9 @@ SE_ROMEND
 CORE_CLONEDEFNV(hirol_fr,hirolcas,"High Roller Casino (France)",2001,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ High Roller Casino (Germany)
+/ High Roller Casino (Germany, 2.10)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(hirol_gr,"hrccpu.300",CRC(0d1117fa) SHA1(a19f9dfc2288fc16cb8e992ffd7f13e70ef042c7))
+SE128_ROMSTART(hirol_gr,"hrccpu.210",CRC(2e3c682a) SHA1(d9993ae7a0aad80e1eeff226a635873cb25437ce))
 DE_DMD32ROM8x(        "hrcdispg.201",CRC(57b95712) SHA1(f7abe7511aa8b258615cd844dc76f3d2f9b47c31))
 DE2S_SOUNDROM18888(    "hrsndu7.100",CRC(c41f91a7) SHA1(2af3be10754ea633558bdbeded21c6f82d85cd1d),
                       "hrsndu17.100",CRC(5858dfd0) SHA1(0d88daf3b480f0e0a2653d9be37cafed79036a48),
@@ -447,7 +447,7 @@ DE2S_SOUNDROM18888(    "hrsndu7.100",CRC(c41f91a7) SHA1(2af3be10754ea633558bdbed
 SE_ROMEND
 #define input_ports_hirol_gr input_ports_se
 #define init_hirol_gr init_hirolcas
-CORE_CLONEDEFNV(hirol_gr,hirolcas,"High Roller Casino (Germany)",2001,"Stern",de_mSES2,GAME_NOCRC)
+CORE_CLONEDEFNV(hirol_gr,hirolcas,"High Roller Casino (Germany, 2.10)",2001,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / High Roller Casino (Italy)
@@ -773,7 +773,9 @@ static struct core_dispLayout dispSPP[] = {
   DISP_SEG_IMPORT(se_dmd128x32),
   {34,10,10,14, CORE_DMD|CORE_DMDNOAA, (void *)seminidmd4_update}, {0}
 };
-INITGAME(simpprty,GEN_WS,dispSPP,SE_MINIDMD2)
+static core_tGameData simpprtyGameData = { \
+  GEN_WS, dispSPP, {FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L), 0, 4, 0, 0, SE_MINIDMD2}}; \
+static void init_simpprty(void) { core_gameData = &simpprtyGameData; }
 SE128_ROMSTART(simpprty, "spp-cpu.400",CRC(530b9782) SHA1(573b20cac205b7989cdefceb2c31cb7d88c2951a))
 DE_DMD32ROM8x(           "sppdspa.400",CRC(cd5eaab7) SHA1(a06bef6fc0e7f3c0616439cb0e0431a3d52cdfa1))
 DE2S_SOUNDROM18888(      "spp101.u7",  CRC(32efcdf6) SHA1(1d437e8649408be91e0dd10598cc67336203077f),
@@ -921,11 +923,13 @@ SE_ROMEND
 #define init_term3i init_term3
 CORE_CLONEDEFNV(term3i,term3,"Terminator 3: Rise of the Machines (Italy)",2003,"Stern",de_mSES2,GAME_NOCRC)
 
-// Using 16-bit samples (not supported by a regular BSMT2000) from now on!
+// Using 16-bit samples (and a new sound CPU: ARM-7 type) from now on!
 /*-------------------------------------------------------------------
 / Lord Of The Rings (4.01)
 /-------------------------------------------------------------------*/
-INITGAME(lotr,GEN_WS,se_dmd128x32,0)
+static core_tGameData lotrGameData = { \
+  GEN_WS, se_dmd128x32, {FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L), 0, 5, 0, 0, SE_LED}}; \
+static void init_lotr(void) { core_gameData = &lotrGameData; }
 SE128_ROMSTART(lotr,	 "lotrcpu.401", CRC(b69cdecc) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
 DE_DMD32ROM8x(           "lotrdspa.403",CRC(2630cef1) SHA1(1dfd929e7eb57983f2fd9184d471f2e919359de0))
 DE2S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56a6ac29fce1c7082e470),
@@ -935,7 +939,7 @@ DE2S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56
                          "lotr-u37.100",CRC(8e637a6f) SHA1(8087744ce36fc143381d49a312c98cf38b2f9854))
 SE_ROMEND
 #define input_ports_lotr input_ports_se
-CORE_GAMEDEFNV(lotr,"Lord Of The Rings",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_IMPERFECT_SOUND|GAME_NOCRC)
+CORE_GAMEDEFNV(lotr,"Lord Of The Rings",2003,"Stern",de_mSES2,GAME_IMPERFECT_SOUND|GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Lord Of The Rings (Spain)
@@ -950,7 +954,7 @@ DE2S_SOUNDROM18888(      "lotrlu7.100", CRC(980d970a) SHA1(cf70deddcc146ef9eaa64
 SE_ROMEND
 #define input_ports_lotr_sp input_ports_lotr
 #define init_lotr_sp init_lotr
-CORE_CLONEDEFNV(lotr_sp,lotr,"Lord Of The Rings (Spain)",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_IMPERFECT_SOUND|GAME_NOCRC)
+CORE_CLONEDEFNV(lotr_sp,lotr,"Lord Of The Rings (Spain)",2003,"Stern",de_mSES2,GAME_IMPERFECT_SOUND|GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Lord Of The Rings (Germany)
@@ -965,7 +969,7 @@ DE2S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56
 SE_ROMEND
 #define input_ports_lotr_gr input_ports_lotr
 #define init_lotr_gr init_lotr
-CORE_CLONEDEFNV(lotr_gr,lotr,"Lord Of The Rings (Germany)",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_IMPERFECT_SOUND|GAME_NOCRC)
+CORE_CLONEDEFNV(lotr_gr,lotr,"Lord Of The Rings (Germany)",2003,"Stern",de_mSES2,GAME_IMPERFECT_SOUND|GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Lord Of The Rings (France)
@@ -980,7 +984,7 @@ DE2S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56
 SE_ROMEND
 #define input_ports_lotr_fr input_ports_lotr
 #define init_lotr_fr init_lotr
-CORE_CLONEDEFNV(lotr_fr,lotr,"Lord Of The Rings (France)",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_IMPERFECT_SOUND|GAME_NOCRC)
+CORE_CLONEDEFNV(lotr_fr,lotr,"Lord Of The Rings (France)",2003,"Stern",de_mSES2,GAME_IMPERFECT_SOUND|GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Lord Of The Rings (Italy)
@@ -995,4 +999,4 @@ DE2S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56
 SE_ROMEND
 #define input_ports_lotr_it input_ports_lotr
 #define init_lotr_it init_lotr
-CORE_CLONEDEFNV(lotr_it,lotr,"Lord Of The Rings (Italy)",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_IMPERFECT_SOUND|GAME_NOCRC)
+CORE_CLONEDEFNV(lotr_it,lotr,"Lord Of The Rings (Italy)",2003,"Stern",de_mSES2,GAME_IMPERFECT_SOUND|GAME_NOCRC)

@@ -31,8 +31,10 @@
 
 static NVRAM_HANDLER(se);
 static WRITE_HANDLER(mcpu_ram8000_w);
+static READ_HANDLER(mcpu_ram8000_r);
+
 /*----------------
-/  Local varibles
+/ Local variables
 /-----------------*/
 struct {
   int    vblankCount;
@@ -44,6 +46,7 @@ struct {
   int	 flipsol, flipsolPulse;
   int    dmdStatus;
   UINT8 *ram8000;
+  UINT8 *ram100;
   int    auxdata;
   /* Mini DMD stuff */
   int    lastgiaux, miniidx, miniframe;
@@ -59,7 +62,7 @@ static INTERRUPT_GEN(se_vblank) {
   /*-- lamps --*/
   if ((selocals.vblankCount % SE_LAMPSMOOTH) == 0) {
     memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
-    memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
+    memset(coreGlobals.tmpLampMatrix, 0, 10);
   }
   /*-- solenoids --*/
   coreGlobals.solenoids2 = selocals.flipsol; selocals.flipsol = selocals.flipsolPulse;
@@ -96,8 +99,13 @@ static MACHINE_INIT(se) {
   sndbrd_1_init(SNDBRD_DE2S,    1, memory_region(DE2S_ROMREGION), NULL, NULL);
 
   // Sharkeys got some extra ram
-  if (core_gameData->gen & GEN_WS_1)
+  if (core_gameData->gen & GEN_WS_1) {
     selocals.ram8000 = install_mem_write_handler(0,0x8000,0x81ff,mcpu_ram8000_w);
+    install_mem_read_handler(0,0x8000,0x81ff,mcpu_ram8000_r);
+  }
+  // many games write to obscure memory locations.
+  selocals.ram100 = malloc(0x100);
+  selocals.miniidx = selocals.lastgiaux = 0;
 }
 
 static MACHINE_STOP(se) {
@@ -116,6 +124,7 @@ static WRITE_HANDLER(mcpu_bank_w) {
 
 /* Sharkey's ShootOut got some ram at 0x8000-0x81ff */
 static WRITE_HANDLER(mcpu_ram8000_w) { selocals.ram8000[offset] = data; }
+static READ_HANDLER(mcpu_ram8000_r) { return selocals.ram8000[offset]; }
 
 /*-- Lamps --*/
 static WRITE_HANDLER(lampdriv_w) {
@@ -124,6 +133,11 @@ static WRITE_HANDLER(lampdriv_w) {
 }
 static WRITE_HANDLER(lampstrb_w) { core_setLamp(coreGlobals.tmpLampMatrix, selocals.lampColumn = (selocals.lampColumn & 0xff00) | data, selocals.lampRow);}
 static WRITE_HANDLER(auxlamp_w) { core_setLamp(coreGlobals.tmpLampMatrix, selocals.lampColumn = (selocals.lampColumn & 0x00ff) | (data<<8), selocals.lampRow);}
+static WRITE_HANDLER(gilamp_w) {
+  logerror("GI lamps %d=%02x\n", offset, data);
+  coreGlobals.tmpLampMatrix[10 + offset] = data;
+}
+static READ_HANDLER(gilamp_r) { return coreGlobals.tmpLampMatrix[10 + offset]; }
 
 /*-- Switches --*/
 static READ_HANDLER(switch_r)	{ return ~core_getSwCol(selocals.swCol); }
@@ -175,9 +189,11 @@ static READ_HANDLER(dmdstatus_r) {
 }
 
 static READ_HANDLER(dmdie_r) { /*What is this for?*/
-  DBGLOG(("DMD Input Enable Read PC=%x\n",activecpu_get_previouspc())); return 0x00;
+//DBGLOG(("DMD Input Enable Read PC=%x\n",activecpu_get_previouspc()));
+  return 0x00;
 }
 
+static READ_HANDLER(auxboard_r) { return selocals.auxdata; }
 static WRITE_HANDLER(auxboard_w) { selocals.auxdata = data; }
 static WRITE_HANDLER(giaux_w) {
   if (core_gameData->hw.display & SE_MINIDMD) {
@@ -218,6 +234,16 @@ static WRITE_HANDLER(giaux_w) {
       }
     }
     selocals.lastgiaux = data;
+  }
+  else if (core_gameData->hw.display & SE_LED) { // map LEDs as extra lamp columns
+    static int order[] = { 6, 2, 4, 5, 1, 3, 0 };
+    if (selocals.auxdata == 0x30 && (selocals.lastgiaux & 0x40)) selocals.miniidx = 0;
+    if (data == 0x7e) {
+      if (order[selocals.miniidx])
+        coreGlobals.tmpLampMatrix[9 + order[selocals.miniidx]] = selocals.auxdata;
+      if (selocals.miniidx < 6) selocals.miniidx++;
+    }
+    selocals.lastgiaux = selocals.auxdata;
   }
 }
 
@@ -322,16 +348,44 @@ PINMAME_VIDEO_UPDATE(seminidmd4_update) {
   return 0;
 }
 
+// A lot of addressing is going on that is not mapped, esp. on Sharkey/Golden Cue.
+// Might this be used for some kind of game protection???
+static READ_HANDLER(m110_r) {
+  return selocals.ram100[offset+0x10];
+}
+static READ_HANDLER(m1000_r) {
+  return selocals.ram100[offset%0x100];
+}
+static WRITE_HANDLER(m110_w) {
+  if (data) logerror("secret w: offset %02x, data %02x\n", offset+0x10, data);
+  selocals.ram100[offset+0x10] = data;
+}
+static WRITE_HANDLER(m1000_w) {
+  if (data) logerror("secret w: offset %02x, data %02x\n", offset%0x100, data);
+  selocals.ram100[offset%0x100] = data;
+}
+
 /*---------------------------
 /  Memory map for main CPU
 /----------------------------*/
 static MEMORY_READ_START(se_readmem)
   { 0x0000, 0x1fff, MRA_RAM },
+  { 0x2007, 0x2007, auxboard_r },
+  { 0x2010, 0x20ff, m110_r },
+  { 0x2100, 0x2fff, m1000_r },
   { 0x3000, 0x3000, dedswitch_r },
+  { 0x3010, 0x30ff, m110_r },
   { 0x3100, 0x3100, dip_r },
+  { 0x3110, 0x31ff, m110_r },
   { 0x3400, 0x3400, switch_r },
+  { 0x3406, 0x3407, gilamp_r }, // GI lamps on SPP?
+  { 0x3410, 0x34ff, m110_r },
   { 0x3500, 0x3500, dmdie_r },
+  { 0x3510, 0x35ff, m110_r },
+  { 0x3610, 0x36ff, m110_r },
   { 0x3700, 0x3700, dmdstatus_r },
+  { 0x3710, 0x37ff, m110_r },
+  { 0x3800, 0x3fff, m1000_r },
   { 0x4000, 0x7fff, MRA_BANK1 },
   { 0x8000, 0xffff, MRA_ROM },
 MEMORY_END
@@ -344,13 +398,22 @@ static MEMORY_WRITE_START(se_writemem)
   { 0x2009, 0x2009, auxlamp_w },
   { 0x200a, 0x200a, lampdriv_w },
   { 0x200b, 0x200b, giaux_w },
+  { 0x2010, 0x20ff, m110_w },
+  { 0x2100, 0x31ff, m1000_w },
   { 0x3200, 0x3200, mcpu_bank_w },
+  { 0x3210, 0x32ff, m110_w },
   { 0x3300, 0x3300, switch_w },
+  { 0x3310, 0x33ff, m110_w },
+  { 0x3406, 0x3407, gilamp_w }, // GI lamps on SPP?
+  { 0x3410, 0x34ff, m110_w },
+  { 0x3510, 0x35ff, m110_w },
   { 0x3600, 0x3600, dmdlatch_w },
   { 0x3601, 0x3601, dmdreset_w },
+  { 0x3610, 0x36ff, m110_w },
+  { 0x3710, 0x37ff, m110_w },
   { 0x3800, 0x3800, sndbrd_1_data_w },
-  { 0x4000, 0x7fff, MWA_ROM },
-  { 0x8000, 0xffff, MWA_ROM },
+  { 0x3810, 0x38ff, m110_w },
+  { 0x3900, 0xffff, m1000_w },
 MEMORY_END
 
 static MACHINE_DRIVER_START(se)
