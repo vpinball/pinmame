@@ -89,6 +89,8 @@ DRIVERNV(blakpyra)      //BY35-     07/84 Black Pyramid
 DRIVERNV(fbclass )      //BY35-     02/85 Fireball Classic
 DRIVERNV(cybrnaut)      //BY35-     05/85 Cybernaut
                         //BY??      09/85 Eight Ball Champ
+//DRIVERNV(atlantis)    //6803-2006: 03/89 Atlantis
+
 // ---------------------
 // GOTTLIEB GAMES BELOW
 // ---------------------
@@ -376,7 +378,6 @@ DRIVER(eshak,f1)    //S11-568:  02/89 W Earthshaker
 DRIVER(eshak,l3)
 DRIVER(bk2k,l4)     //S11-563:  04/89 W Black Knight 2000
 DRIVER(tsptr,l3)    //S11-2630: 04/89 B Transporter the Rescue
-                    //???:      04/89 B Atlantis
                     //S11:      05/89 W Pool
 DRIVER(polic,l4)    //S11-573:  08/89 W Police Force
 DRIVER(eatpm,l4)    //S11-782:  10/89 B Elvira and the Party Monsters
@@ -405,6 +406,7 @@ DRIVER(t2,p2f)                        // Profanity Speech version
 DRIVER(hurr,l2)     //WPC-512:  08/91 W Hurricane
 DRIVER(pz,f4)       //WPC:      08/91 B Party Zone
 DRIVER(gi,l9)       //WPC:      11/91 B Gilligan's Island
+DRIVER(strik,l4)  //WPC:     05/92 W Strike Master
 DRIVER(gw,l5)       //WPC-504:  02/92 W The Getaway: High Speed II
 DRIVER(taf,l5)      //WPC:      03/92 B The Addams Family
 DRIVER(taf,l6)      //WPC:      03/92 B The Addams Family L-6

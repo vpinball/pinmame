@@ -67,6 +67,27 @@ WPC_ROMEND
 
 CORE_GAMEDEF(sf,l1,"Slugfest (L-1)",1991,"Williams",wpc_mDMDS,0)
 
+/*-------------------
+/ Strike Master
+/--------------------*/
+static core_tGameData strikGameData = {
+  GEN_WPCFLIPTRON, NULL,
+  { 0 },
+  NULL,
+  { "",
+    { 0 }, /* No inverted switches */
+    /* Start    Tilt    SlamTilt    CoinDoor    Shooter */
+    { swStart, swTilt, swSlamTilt, swCoinDoor, 0}
+  }
+};
+INITGAME(strik,0)
+
+WPC_ROMSTART(strik,l4,"strik_l4.rom",0x40000,0xc99ea24c)
+
+WPC_ROMEND
+
+CORE_GAMEDEF(strik,l4,"Strike Master (L-4)",1992,"Williams",wpc_mFliptron,GAME_NO_SOUND)
+
 /*-------------
 / Ticket Tac Toe
 /--------------*/
