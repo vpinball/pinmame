@@ -11,7 +11,7 @@ their continued support and enthusiasm! It's great to see so many pinball fans c
 Bugs Fixed
 ----------
 -Hankin: Switch numbering now reflect the naming used in the manual
--Hanking: Fixed display issues
+-Hankin: Fixed display issues
  [Tom Haukap]
 
 -Rewrote Data East 128x16 DMD Emulation. (Now much more accurate than previous version)
