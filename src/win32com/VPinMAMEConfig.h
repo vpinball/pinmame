@@ -11,17 +11,15 @@ BOOL  WriteRegistry(char* pszKey, char* pszName, DWORD dwValue);
 DWORD ReadRegistry(char* pszKey, char* pszName, DWORD dwDefault);
 
 void LoadGlobalSettings();
-void SaveGlobalSettings();
 void DeleteGlobalSettings();
 
 void LoadGameSettings(char* pszGameName);
-void SaveGameSettings(char* pszGameName);
 void DeleteGameSettings(char *pszGameName);
 
 char* GetInstallDir(char *pszInstallDir, int iSize);
 
-BOOL PutGameSetting(char* pszGameName, char* pszName, VARIANT vValue);
-BOOL GetGameSetting(char* pszGameName, char* pszName, VARIANT *pVal);
+BOOL PutSetting(char* pszGameName, char* pszName, VARIANT vValue);
+BOOL GetSetting(char* pszGameName, char* pszName, VARIANT *pVal);
 
 BOOL SettingAffectsRunningGame(const char* pszName);
 
