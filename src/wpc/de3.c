@@ -23,6 +23,29 @@
 	4) 520-5126-xx Series:	??	(Baywatch to Batman Forever)
 
 *************************************************************************************************/
+
+/* Coin Door Buttons Operation
+   ---------------------------
+   Pre-"Portals" Menu (Games before Baywatch)
+   Buttons are: Green(Up/Down) & Black(Momentary Switch)
+   
+   a) If Green = Up and Black is pressed, enter Audits Menu.
+		1) If Green = Up and Black is pressed, Cycle to Next Audit Function
+		2) If Green = Down and Black is pressed, Cycle to Previous Audit Function
+
+   b) If Green = Down and Black is pressed, enter Diagnostics.
+		1) Start button to start a test
+		2) Black Button to cycle tests
+		3) Flippers can operate settings within a test (such as the Speaker/Sound Test)
+
+  Portals Menu System (Baywatch & Batman Forever)
+  Buttons are: Green(Momentary) & Black(Momentary Switch)
+  a) Pressing Black button brings up the Portals System
+  b) Flippers move the icon left or right
+  c) Start button or Black button will select an icon
+  d) Green button will also move the cursor to the right.
+*/
+
 #include <stdarg.h>
 #include "driver.h"
 #include "cpu/m6800/m6800.h"
@@ -116,14 +139,12 @@ static struct {
 static void de_piaMainIrq(int state) {
   delocals.mainIrq = state;
   cpu_set_irq_line(DE_CPUNO, M6808_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
-
-  //pia_set_input_ca1(2, state?0:!core_getSwSeq(DE_SWADVANCE));
-  //pia_set_input_cb1(2, state?0:!core_getSwSeq(DE_SWUPDN));
 }
 
 static int de_irq(void) {
-  //pia_set_input_ca1(2, 1);
-  //pia_set_input_cb1(2, 1);
+  //Reset the input latch for the Advance button.. 
+  //(This greatly increases the responsiveness of the button for some reason!)
+  pia_set_input_ca1(2, 1);
 
   if (delocals.mainIrq == 0) /* Don't send IRQ if already active */
     cpu_set_irq_line(DE_CPUNO, M6808_IRQ_LINE, PULSE_LINE);
@@ -135,7 +156,6 @@ static int de_vblank(void) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
-
   delocals.vblankCount = (delocals.vblankCount+1) % 16;
 
   /*-- lamps --*/
@@ -196,6 +216,7 @@ static WRITE_HANDLER(latch2200) {
   delocals.solenoids |= data;
 }
 
+/*Solenoids 19-22*/
 static WRITE_HANDLER(pia0cb2_w) { delocals.ssEn = !data;}
 static WRITE_HANDLER(pia1ca2_w) { setSSSol(data, 3); }		// Solenoid #20
 static WRITE_HANDLER(pia1cb2_w) { setSSSol(data, 4); }		// Solenoid #21
@@ -203,6 +224,7 @@ static WRITE_HANDLER(pia3ca2_w) { setSSSol(data, 5); }		// Solenoid #22
 static WRITE_HANDLER(pia3cb2_w) { setSSSol(data, 1); }		// Solenoid #18
 static WRITE_HANDLER(pia4ca2_w) { setSSSol(data, 0); }		// Solenoid #17
 static WRITE_HANDLER(pia4cb2_w) { setSSSol(data, 2); }		// Solenoid #19
+
 /*---------------
 / Switch reading
 /----------------*/
@@ -218,7 +240,7 @@ static READ_HANDLER (pia2a_r)  {return 1;} // { logerror("pia2a_r\n"); return 1;
      data = 0x04, CN2-Pin 1 (Enable) goes low    */
 static WRITE_HANDLER(pia2a_w) {
 	delocals.diagnosticLed = ~(data>>4);	/*LED = PA_4*/
-        //logerror("pia2a_w: %x\n",data);
+    //logerror("pia2a_w: %x\n",data);
 }
 static READ_HANDLER(pia2b_r) {return 0;} //{ logerror("pia2b_r\n"); return 0; }
 
@@ -232,23 +254,20 @@ static WRITE_HANDLER(pia5a_w) {} // logerror("pia5a_w\n"); }
 /*----------------
 /Sound Commands
 /-----------------*/
+//Send Sound Command
 static WRITE_HANDLER(pia5b_w)  {
 	if(UsingSound)
 	{
-//                soundlatch_w(0,data);
             if(1 || data==149)
                 des_soundCmd_w(0,data);
 	}
 }
-static WRITE_HANDLER(pia5cb2_w) {
-//	logerror("FIRQ Enable?:pia5cb2_w %x\n",data);
-//	if(UsingSound)
-}
+
+//Send Sound Strobe
+static WRITE_HANDLER(pia5cb2_w) {/*logerror("FIRQ Enable?:pia5cb2_w %x\n",data);*/}
 
 /*SHOULD be Unsused*/
-static WRITE_HANDLER(pia0ca2_w) {
-//logerror("pia0ca2_w\n");
-}
+static WRITE_HANDLER(pia0ca2_w) {/*logerror("pia0ca2_w\n");*/}
 static READ_HANDLER (pia3ca1_r) {return 0x00;}
 static READ_HANDLER (pia3cb1_r) {return 0x00;}
 static READ_HANDLER (pia3ca2_r) {return 0x00;}
@@ -257,8 +276,13 @@ static WRITE_HANDLER(pia2ca2_w) {/*logerror("Comma 3+4 %d\n",data);*/}
 static WRITE_HANDLER(pia2cb2_w) {/*logerror("Comma 1+2 %d\n",data);*/}
 static WRITE_HANDLER(pia5ca2_w) {/*logerror("pia5ca2_w %x\n",data);*/}
 
-static READ_HANDLER (pia2ca1_r) { return cpu_get_reg(M6808_IRQ_STATE) ? !0:core_getSwSeq(DE_SWADVANCE); }
-static READ_HANDLER (pia2cb1_r) { return cpu_get_reg(M6808_IRQ_STATE) ? !0:core_getSwSeq(DE_SWUPDN); }
+//Set state of up/down switch(inverted), and return state of advance switch(inverted)
+static READ_HANDLER (pia2ca1_r) { 
+	pia_set_input_cb1(2, !core_getSwSeq(DE_SWUPDN)); 
+	return !core_getSwSeq(DE_SWADVANCE);
+}
+//Not sure why this must always return 0, but otherwise, coin doors act very strange!
+static READ_HANDLER (pia2cb1_r) {return 0;}
 
 /************************************************/
 /*********** DMD HANDLING BELOW *****************/
@@ -476,25 +500,17 @@ static void de_updSw(int *inports) {
     coreGlobals.swMatrix[0] = (inports[DE_COMINPORT] & 0x7f00)>>8;
     coreGlobals.swMatrix[1] = inports[DE_COMINPORT];
   }
-  /*-- Diagnostic buttons on CPU board --*/
-  if (core_getSwSeq(DE_SWCPUDIAG))   cpu_set_nmi_line(DE_CPUNO, PULSE_LINE);
-  if(UsingSound)
-	if (core_getSwSeq(DE_SWSOUNDDIAG)) cpu_set_nmi_line(DE_SDCPU1, PULSE_LINE);
-
-  /*-- coin door switches --*/
-  //pia_set_input_ca1(2, !core_getSwSeq(DE_SWADVANCE));
-  //pia_set_input_cb1(2, !core_getSwSeq(DE_SWUPDN));
-
+  /* Show Status of Black Advance Switch */
   if(core_getSwSeq(DE_SWADVANCE))
-          core_textOutf(40, 20, BLACK, "%-7s","A-Up");
+          core_textOutf(40, 20, BLACK, "%-7s","B-Down");
   else
-          core_textOutf(40, 20, BLACK, "%-7s","A-Down");
+          core_textOutf(40, 20, BLACK, "%-7s","B-Up");
 
-  /* Show Status of Auto/Manual Switch */
+  /* Show Status of Green Up/Down Switch */
   if(core_getSwSeq(DE_SWUPDN))
-          core_textOutf(40, 30, BLACK, "%-7s","Up");
+          core_textOutf(40, 30, BLACK, "%-7s","G-Down");
   else
-          core_textOutf(40, 30, BLACK, "%-7s","Down");
+          core_textOutf(40, 30, BLACK, "%-7s","G-Up");
 }
 
 
