@@ -479,7 +479,7 @@ CORE_GAMEDEFNV(fball_ii,"Fireball II",1981,"Bally",by35_mBY35_61S,0)
 /*--------------------------------
 / Embryon
 /-------------------------------*/
-INITGAME(embryon ,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY61B,0)
+INITGAME(embryon ,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),8,SNDBRD_BY61B,0)
 BY35_ROMSTARTx00(embryon ,"841-06_2.732", 0x80ab18e7,
 			  "720-52_6.732", 0x2a43d9fb)
 BY61_SOUNDROMxx80("841-01_4.716",0xe8b234e3,
