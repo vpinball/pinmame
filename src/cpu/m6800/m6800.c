@@ -519,8 +519,8 @@ static void check_timer_event(void)
 	{
 		OCH++;	// next IRQ point
 		if (((m6800.tcsr & TCSR_OCF) == 0) && (m6800.port2_ddr & 0x02))
-			m6800.port2_data = ((m6800.port2_data & m6800.port2_ddr) |
-				                (cpu_readport16(M6803_PORT2) & ~m6800.port2_ddr) & 0x1d) |
+			m6800.port2_data = (m6800.port2_data & m6800.port2_ddr) |
+				               (cpu_readport16(M6803_PORT2) & ~m6800.port2_ddr & 0x1d) |
 							   ((m6800.tcsr & TCSR_OLVL) << 1);
 		m6800.tcsr |= TCSR_OCF;
 		m6800.pending_tcsr |= TCSR_OCF;

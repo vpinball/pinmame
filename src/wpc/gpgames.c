@@ -6,12 +6,14 @@
 //BDU-1: 4 X 7 Segment, 6 Digit Displays, 2 x 2 Digit 7 Segment
 //BDU-2: 4 X 7 Segment, 7 Digit Displays, 2 x 2 Digit 7 Segment
 
+#if 0
 //Use for testing segments only
 static core_tLCDLayout dispGP_TEST[] = {
  {0, 0, 00,16,CORE_SEG87},
  {2, 0, 16,16,CORE_SEG87}, 
  {4, 0, 32,16,CORE_SEG87}, {0}
 };
+#endif
 
 /*Ordering for DDU-1:
   --------
