@@ -32,6 +32,9 @@ static void SE_init(void);
 static void SE_exit(void);
 static void SE_nvram(void *file, int write);
 static WRITE_HANDLER(mcpu_ram8000_w);
+/* makes it easier to swap bits */
+                          // 0  1  2  3  4  5  6  7  8  9 10,11,12,13,14,15
+static const UINT8 swapNyb[16] = { 0, 8, 4,12, 2,10, 6,14, 1, 9, 5,13, 3,11, 7,15};
 /*----------------
 /  Local varibles
 /-----------------*/
@@ -39,6 +42,8 @@ struct {
   int    vblankCount;
   int    initDone;
   UINT32 solenoids;
+  UINT8  swMatrix[CORE_MAXSWCOL];
+  UINT8  lampMatrix[CORE_MAXLAMPCOL];
   int    lampRow, lampColumn;
   int    diagnosticLed;
   int    swCol;
@@ -64,8 +69,8 @@ static int SE_vblank(void) {
 
   /*-- lamps --*/
   if ((SElocals.vblankCount % SE_LAMPSMOOTH) == 0) {
-    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
-    memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
+    memcpy(coreGlobals.lampMatrix, SElocals.lampMatrix, sizeof(SElocals.lampMatrix));
+    memset(SElocals.lampMatrix, 0, sizeof(SElocals.lampMatrix));
   }
   /*-- solenoids --*/
   coreGlobals.solenoids2 = SElocals.flipsol; SElocals.flipsol = SElocals.flipsolPulse;
@@ -146,11 +151,11 @@ static WRITE_HANDLER(mcpu_ram8000_w) { SElocals.ram8000[offset] = data; }
 
 /*-- Lamps --*/
 static WRITE_HANDLER(lampdriv_w) {
-  SElocals.lampRow = CORE_SWAPBYTE(data);
-  core_setLamp(coreGlobals.tmpLampMatrix, SElocals.lampColumn, SElocals.lampRow);
+  SElocals.lampRow = (swapNyb[data&0x0f]<<4)|swapNyb[data>>4];
+  core_setLamp(SElocals.lampMatrix, SElocals.lampColumn, SElocals.lampRow);
 }
-static WRITE_HANDLER(lampstrb_w) { core_setLamp(coreGlobals.tmpLampMatrix, SElocals.lampColumn = (SElocals.lampColumn & 0xff00) | data, SElocals.lampRow);}
-static WRITE_HANDLER(auxlamp_w) { core_setLamp(coreGlobals.tmpLampMatrix, SElocals.lampColumn = (SElocals.lampColumn & 0x00ff) | (data<<8), SElocals.lampRow);}
+static WRITE_HANDLER(lampstrb_w) { core_setLamp(SElocals.lampMatrix, SElocals.lampColumn = (SElocals.lampColumn & 0xff00) | data, SElocals.lampRow);}
+static WRITE_HANDLER(auxlamp_w) { core_setLamp(SElocals.lampMatrix, SElocals.lampColumn = (SElocals.lampColumn & 0x00ff) | (data<<8), SElocals.lampRow);}
 
 /*-- Switches --*/
 static READ_HANDLER(switch_r)	{ return ~core_getSwCol(SElocals.swCol); }
@@ -170,7 +175,7 @@ static READ_HANDLER(dedswitch_r) {
   /* CORE Defines flippers in order as: RFlipEOS, RFlip, LFlipEOS, LFlip*/
   /* We need to adjust to: LFlip, LFlipEOS, RFlip, RFlipEOS*/
   /* Swap the 4 lowest bits*/
-  return ~((coreGlobals.swMatrix[0]) | CORE_SWAPNYB(coreGlobals.swMatrix[11] & 0x0f));
+  return ~((coreGlobals.swMatrix[0]) | swapNyb[coreGlobals.swMatrix[11] & 0x0f]);
 }
 
 /*-- Dip Switch SW300 - Country Settings --*/
@@ -275,26 +280,6 @@ static MEMORY_WRITE_START(se_dmdwritemem)
   { 0x8000, 0xffff, MWA_ROM },
 MEMORY_END
 
-struct MachineDriver machine_driver_SE_1 = {
-  {{  CPU_M6809, 2000000, /* 2 Mhz */
-      SE_readmem, SE_writemem, NULL, NULL,
-      SE_vblank, 1,
-      SE_irq, SE_IRQFREQ
-  },{ CPU_M6809, 4000000, /* 4 Mhz*/
-      se_dmdreadmem, se_dmdwritemem, NULL, NULL,
-      NULL, 0,
-      ignore_interrupt, 0
-  }},
-  SE_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, SE_init, CORE_EXITFUNC(SE_exit)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
-  NULL, NULL, de_dmd128x32_refresh,
-  0,0,0,0,{{ 0 }},
-  SE_nvram
-};
-
 struct MachineDriver machine_driver_SE_1S = {
   {{  CPU_M6809, 2000000, /* 2 Mhz */
       SE_readmem, SE_writemem, NULL, NULL,
@@ -311,14 +296,55 @@ struct MachineDriver machine_driver_SE_1S = {
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
   NULL, NULL, de_dmd128x32_refresh,
-  0,0,0,0,{ SES_SOUND },
+  SOUND_SUPPORTS_STEREO,0,0,0,{ SES_SOUND1 },
   SE_nvram
 };
+
+struct MachineDriver machine_driver_SE_2S = {
+  {{  CPU_M6809, 2000000, /* 2 Mhz */
+      SE_readmem, SE_writemem, NULL, NULL,
+      SE_vblank, 1,
+      SE_irq, SE_IRQFREQ
+  },{ CPU_M6809, 4000000, /* 4 Mhz*/
+      se_dmdreadmem, se_dmdwritemem, NULL, NULL,
+      NULL, 0,
+      ignore_interrupt, 0
+  } SES_SOUNDCPU },
+  SE_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  50, SE_init, CORE_EXITFUNC(SE_exit)
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
+  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
+  NULL, NULL, de_dmd128x32_refresh,
+  SOUND_SUPPORTS_STEREO,0,0,0,{ SES_SOUND2 },
+  SE_nvram
+};
+
+struct MachineDriver machine_driver_SE_3S = {
+  {{  CPU_M6809, 2000000, /* 2 Mhz */
+      SE_readmem, SE_writemem, NULL, NULL,
+      SE_vblank, 1,
+      SE_irq, SE_IRQFREQ
+  },{ CPU_M6809, 4000000, /* 4 Mhz*/
+      se_dmdreadmem, se_dmdwritemem, NULL, NULL,
+      NULL, 0,
+      ignore_interrupt, 0
+  } SES_SOUNDCPU },
+  SE_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  50, SE_init, CORE_EXITFUNC(SE_exit)
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
+  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
+  NULL, NULL, de_dmd128x32_refresh,
+  SOUND_SUPPORTS_STEREO,0,0,0,{ SES_SOUND3 },
+  SE_nvram
+};
+
 
 /*-----------------------------------------------
 / Load/Save static ram
 / Save RAM & CMOS Information
 /-------------------------------------------------*/
-static void SE_nvram(void *file, int write) {
+void SE_nvram(void *file, int write) {
   core_nvram(file, write, memory_region(SE_MEMREG_CPU), 0x2000);
 }

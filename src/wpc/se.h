@@ -85,7 +85,7 @@
 #define SE128_ROMSTART(name, n1, chk1) \
   ROM_START(name) \
     NORMALREGION(0x10000, SE_MEMREG_CPU) \
-    NORMALREGIONE(0x80000, SE_MEMREG_ROM) \
+    NORMALREGION(0x80000, SE_MEMREG_ROM) \
       ROM_LOAD(n1, 0x00000, 0x20000, chk1) \
         ROM_RELOAD(0x20000, 0x20000) \
 	ROM_RELOAD(0x40000, 0x20000) \
@@ -96,13 +96,16 @@
 /**************************************/
 #define SE_DMD524_ROMSTART(n1,chk1) \
   NORMALREGION(0x10000, SE_MEMREG_DCPU1)\
-  NORMALREGIONE(0x80000, SE_MEMREG_DROM1) \
+  NORMALREGION(0x80000, SE_MEMREG_DROM1) \
     ROM_LOAD(n1, 0x00000, 0x80000, chk1)
 
 /*-- These are only here so the game structure can be in the game file --*/
-extern struct MachineDriver machine_driver_SE_1;
 extern struct MachineDriver machine_driver_SE_1S;
-#define de_mSE         SE_1
-#define de_mSES        SE_1S
+extern struct MachineDriver machine_driver_SE_2S;
+extern struct MachineDriver machine_driver_SE_3S;
+
+#define de_mSES1        SE_1S
+#define de_mSES2        SE_2S
+#define de_mSES3        SE_3S
 #endif /* INC_SE */
 
