@@ -90,8 +90,8 @@ static WRITE_HANDLER(lamp_w) {
 static MEMORY_READ_START(readmem)
   { 0x0000, 0x0bff, MRA_ROM },
   { 0x0d00, 0x0dff, MRA_RAM },
-  { 0x0e00, 0x0e03, sw_r },
-  { 0x0e04, 0x0e07, dip_r },
+  { 0x0e00, 0x0e04, sw_r },
+  { 0x0e05, 0x0e07, dip_r },
   { 0x13ff, 0x17ff, MRA_ROM },
 MEMORY_END
 
@@ -135,99 +135,84 @@ INPUT_PORTS_START(strike) \
     COREPORT_BIT   (0x0800, "Tilt/Advance",  KEYCODE_INSERT) \
     COREPORT_BITTOG(0x0001, "Sense Input A", KEYCODE_PGDN) \
   PORT_START /* 1 */ \
-    COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
+    COREPORT_DIPNAME( 0x000f, 0x0002, "Coin slot #1 plays") \
       COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0001, "1" ) \
-    COREPORT_DIPNAME( 0x0002, 0x0000, "S2") \
-      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0001, "1/2" ) \
       COREPORT_DIPSET(0x0002, "1" ) \
-    COREPORT_DIPNAME( 0x0004, 0x0000, "S3") \
+      COREPORT_DIPSET(0x0003, "1 1/2" ) \
+      COREPORT_DIPSET(0x0004, "2" ) \
+      COREPORT_DIPSET(0x0005, "2 1/2" ) \
+      COREPORT_DIPSET(0x0006, "3" ) \
+      COREPORT_DIPSET(0x0007, "3 1/2" ) \
+      COREPORT_DIPSET(0x0008, "4" ) \
+      COREPORT_DIPSET(0x0009, "4 1/2" ) \
+      COREPORT_DIPSET(0x000a, "5" ) \
+      COREPORT_DIPSET(0x000b, "5 1/2" ) \
+      COREPORT_DIPSET(0x000c, "6" ) \
+      COREPORT_DIPSET(0x000d, "6 1/2" ) \
+      COREPORT_DIPSET(0x000e, "7" ) \
+      COREPORT_DIPSET(0x000f, "7 1/2" ) \
+    COREPORT_DIPNAME( 0x00f0, 0x0040, "Coin slot #1 plays") \
       COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0004, "1" ) \
-    COREPORT_DIPNAME( 0x0008, 0x0000, "S4") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0008, "1" ) \
-    COREPORT_DIPNAME( 0x0010, 0x0000, "S5") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0010, "1" ) \
-    COREPORT_DIPNAME( 0x0020, 0x0000, "S6") \
-      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0010, "1/2" ) \
       COREPORT_DIPSET(0x0020, "1" ) \
-    COREPORT_DIPNAME( 0x0040, 0x0000, "S7") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0040, "1" ) \
-    COREPORT_DIPNAME( 0x0080, 0x0000, "S8") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0080, "1" ) \
-    COREPORT_DIPNAME( 0x0100, 0x0000, "Coin Slot #1/1") \
+      COREPORT_DIPSET(0x0030, "1 1/2" ) \
+      COREPORT_DIPSET(0x0040, "2" ) \
+      COREPORT_DIPSET(0x0050, "2 1/2" ) \
+      COREPORT_DIPSET(0x0060, "3" ) \
+      COREPORT_DIPSET(0x0070, "3 1/2" ) \
+      COREPORT_DIPSET(0x0080, "4" ) \
+      COREPORT_DIPSET(0x0090, "4 1/2" ) \
+      COREPORT_DIPSET(0x00a0, "5" ) \
+      COREPORT_DIPSET(0x00b0, "5 1/2" ) \
+      COREPORT_DIPSET(0x00c0, "6" ) \
+      COREPORT_DIPSET(0x00d0, "6 1/2" ) \
+      COREPORT_DIPSET(0x00e0, "7" ) \
+      COREPORT_DIPSET(0x00f0, "7 1/2" ) \
+    COREPORT_DIPNAME( 0x0300, 0x0200, "Replays for beating HSTD") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0100, "1" ) \
-    COREPORT_DIPNAME( 0x0200, 0x0200, "Coin Slot #1/2") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0200, "1" ) \
-    COREPORT_DIPNAME( 0x0400, 0x0000, "Coin Slot #1/3") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0400, "1" ) \
-    COREPORT_DIPNAME( 0x0800, 0x0000, "Coin Slot #1/4") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0800, "1" ) \
-    COREPORT_DIPNAME( 0x1000, 0x0000, "Coin Slot #2/1") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x1000, "1" ) \
-    COREPORT_DIPNAME( 0x2000, 0x0000, "Coin Slot #2/2") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x2000, "1" ) \
-    COREPORT_DIPNAME( 0x4000, 0x4000, "Coin Slot #2/3") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x4000, "1" ) \
-    COREPORT_DIPNAME( 0x8000, 0x0000, "Coin Slot #2/4") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x8000, "1" ) \
-  PORT_START /* 2 */ \
-    COREPORT_DIPNAME( 0x0003, 0x0001, "High Score Display") \
-      COREPORT_DIPSET(0x0000, "none" ) \
-      COREPORT_DIPSET(0x0001, "Type A" ) \
-      COREPORT_DIPSET(0x0002, "Type B" ) \
-      COREPORT_DIPSET(0x0003, "Type C" ) \
-    COREPORT_DIPNAME( 0x0004, 0x0000, "S19") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0004, "1" ) \
-    COREPORT_DIPNAME( 0x0008, 0x0008, "Match feature") \
+      COREPORT_DIPSET(0x0200, "2" ) \
+      COREPORT_DIPSET(0x0300, "3" ) \
+    COREPORT_DIPNAME( 0x0400, 0x0000, "HSTD/Match award") \
+      COREPORT_DIPSET(0x0000, "Replay" ) \
+      COREPORT_DIPSET(0x0400, "Super Bonus" ) \
+    COREPORT_DIPNAME( 0x0800, 0x0800, "Match feature") \
       COREPORT_DIPSET(0x0000, " off" ) \
-      COREPORT_DIPSET(0x0008, " on" ) \
-    COREPORT_DIPNAME( 0x0010, 0x0000, "S21") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0010, "1" ) \
-    COREPORT_DIPNAME( 0x0020, 0x0000, "S22") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0020, "1" ) \
-    COREPORT_DIPNAME( 0x00c0, 0x0080, "Special Award") \
+      COREPORT_DIPSET(0x0800, " on" ) \
+    COREPORT_DIPNAME( 0x3000, 0x2000, "HSTD/Random award") \
       COREPORT_DIPSET(0x0000, "500,000 Pts" ) \
-      COREPORT_DIPSET(0x0040, "Extra Ball" ) \
-      COREPORT_DIPSET(0x0080, "Replay" ) \
-      COREPORT_DIPSET(0x00c0, "None" ) \
-    COREPORT_DIPNAME( 0x0100, 0x0000, "Random Millions") \
+      COREPORT_DIPSET(0x1000, "Extra Ball" ) \
+      COREPORT_DIPSET(0x2000, "Replay" ) \
+      COREPORT_DIPSET(0x3000, "Super Bonus" ) \
+    COREPORT_DIPNAME( 0xc000, 0x8000, "Special award") \
+      COREPORT_DIPSET(0x0000, "500,000 Pts" ) \
+      COREPORT_DIPSET(0x4000, "Extra Ball" ) \
+      COREPORT_DIPSET(0x8000, "Replay" ) \
+      COREPORT_DIPSET(0xc000, "Super Bonus" ) \
+  PORT_START /* 2 */ \
+    COREPORT_DIPNAME( 0x0001, 0x0000, "Random feature") \
       COREPORT_DIPSET(0x0000, " on" ) \
-      COREPORT_DIPSET(0x0100, " off" ) \
-    COREPORT_DIPNAME( 0x0600, 0x0400, "Balls in Play") \
+      COREPORT_DIPSET(0x0001, " off" ) \
+    COREPORT_DIPNAME( 0x0006, 0x0004, "Balls per game") \
       COREPORT_DIPSET(0x0000, "1" ) \
-      COREPORT_DIPSET(0x0200, "3" ) \
-      COREPORT_DIPSET(0x0400, "5" ) \
-      COREPORT_DIPSET(0x0600, "7" ) \
-    COREPORT_DIPNAME( 0x1800, 0x1800, "Strikes needed for Special") \
+      COREPORT_DIPSET(0x0002, "3" ) \
+      COREPORT_DIPSET(0x0004, "5" ) \
+      COREPORT_DIPSET(0x0006, "7" ) \
+    COREPORT_DIPNAME( 0x0018, 0x0018, "Strikes needed for Special") \
       COREPORT_DIPSET(0x0000, "1" ) \
-      COREPORT_DIPSET(0x0800, "2" ) \
-      COREPORT_DIPSET(0x1000, "3" ) \
-      COREPORT_DIPSET(0x1800, "4" ) \
-    COREPORT_DIPNAME( 0x2000, 0x0000, "Unlimited Specials") \
+      COREPORT_DIPSET(0x0008, "2" ) \
+      COREPORT_DIPSET(0x0010, "3" ) \
+      COREPORT_DIPSET(0x0018, "4" ) \
+    COREPORT_DIPNAME( 0x0020, 0x0000, "Unlimited Specials") \
       COREPORT_DIPSET(0x0000, " off" ) \
-      COREPORT_DIPSET(0x2000, " on" ) \
-    COREPORT_DIPNAME( 0x4000, 0x4000, "Bonus Ball Award") \
+      COREPORT_DIPSET(0x0020, " on" ) \
+    COREPORT_DIPNAME( 0x0040, 0x0040, "Bonus Ball Award") \
       COREPORT_DIPSET(0x0000, "200,000 Pts" ) \
-      COREPORT_DIPSET(0x4000, "Bonus Ball" ) \
-    COREPORT_DIPNAME( 0x8000, 0x0000, "S32") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x8000, "1" )
+      COREPORT_DIPSET(0x0040, "Bonus Ball" ) \
+    COREPORT_DIPNAME( 0x0080, 0x0000, "Unknown ") \
+      COREPORT_DIPSET(0x0000, " off" ) \
+      COREPORT_DIPSET(0x0080, " on" )
 INPUT_PORTS_END
 
 ROM_START(strike) \
