@@ -90,7 +90,7 @@ enum {
 #define		TI		0x99
 #define		RI		0x98
 
-extern int i8051_ICount;				/* cycle count */
+extern int i8051_icount;						/* cycle count */
 
 extern void i8051_init (void);					/* Initialize save states */
 extern void i8051_reset (void *param);			/* Reset registers to the initial values */
@@ -106,6 +106,9 @@ extern void i8051_state_save(void *file);
 extern void i8051_state_load(void *file);
 extern const char *i8051_info(void *context, int regnum);
 extern unsigned i8051_dasm(char *buffer, unsigned pc);
+
+WRITE_HANDLER( i8051_internal_w );
+READ_HANDLER( i8051_internal_r );
 
 #ifdef MAME_DEBUG
 extern unsigned Dasm8051( char *dst, unsigned pc );

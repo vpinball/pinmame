@@ -88,7 +88,7 @@ typedef struct {
 	int 	(*irq_callback)(int irqline);
 }	I8051;
 
-int i8051_ICount;
+int i8051_icount;
 
 static I8051 i8051;
 
@@ -145,6 +145,18 @@ static UINT8 i8051_win_layout[] = {
 #define DPTR_W(n)		SFR_W(DPH, ((n>>8)&0xff));\
 						SFR_W(DPL, (n&0xff));
 
+//Set Flags
+#define SET_CY(n)		R_PSW = (R_PSW & 0x7f) | (n<<7); 
+#define SET_AC(n)		R_PSW = (R_PSW & 0xbf) | (n<<6); 
+#define SET_RS(n)		R_PSW = (R_PSW & 0xe7) | (n<<3);
+#define SET_OV(n)		R_PSW = (R_PSW & 0xfb) | (n<<2);
+#define SET_P(n)		R_PSW = (R_PSW & 0xfe) | (n<<0);
+
+//Get Flags
+#define GET_CY			((R_PSW & 0x80)>>7)
+#define GET_AC			((R_PSW & 0x40)>>6)
+#define GET_RS			((R_PSW & 0x18)>>3)
+#define GET_OV			((R_PSW & 0x04)>>2)
 
 /* PC vectors */
 #define V_RESET 0x000	/* power on address */
@@ -324,7 +336,7 @@ void i8051_exit(void)
 /* Execute cycles - returns number of cycles actually run */
 int i8051_execute(int cycles)
 {
-	i8051_ICount = cycles;
+	i8051_icount = cycles;
 
 	do
 	{
@@ -338,7 +350,7 @@ int i8051_execute(int cycles)
 		if(PC != PPC)	op = cpu_readop(PC);
 
 		PC += 1;
-		i8051_ICount -= i8051_cycles[op];
+		i8051_icount -= i8051_cycles[op];
 
 #if 0
 		if( ENABLE & T )
@@ -1002,9 +1014,9 @@ int i8051_execute(int cycles)
 		}
 		//Flag Execution
 		EXEC = 0;
-	} while( i8051_ICount > 0 );
+	} while( i8051_icount > 0 );
 
-	return cycles - i8051_ICount;
+	return cycles - i8051_icount;
 }
 
 /* Get registers, return context size */
@@ -1185,7 +1197,7 @@ void i8051_state_load(void *file)
 
 const char *i8051_info(void *context, int regnum)
 {
-	static char buffer[8][10];
+	static char buffer[8][20];
 	static int which = 0;
 	I8051 *r = context;
 
@@ -1217,12 +1229,12 @@ const char *i8051_info(void *context, int regnum)
 			sprintf(buffer[which], "%c%c%c%c%c%c%c%c",
 				r->psw & 0x80 ? 'C':'.',
 				r->psw & 0x40 ? 'A':'.',
-				r->psw & 0x20 ? '0':'.',
-				r->psw & 0x10 ? 'B':'.',
-				r->psw & 0x08 ? '?':'.',
-				r->psw & 0x04 ? 's':'.',
-				r->psw & 0x02 ? 's':'.',
-				r->psw & 0x01 ? 's':'.');
+				r->psw & 0x20 ? 'F':'.',
+				r->psw & 0x10 ? '0':'.',
+				r->psw & 0x08 ? '1':'.',
+				r->psw & 0x04 ? 'V':'.',
+				r->psw & 0x02 ? '?':'.',
+				r->psw & 0x01 ? 'P':'.');
 			break;
 		case CPU_INFO_NAME: return "I8051";
 		case CPU_INFO_FAMILY: return "Intel 8051";
@@ -1439,4 +1451,31 @@ static void pop_pc()
 //Set the PSW Parity Flag
 static void set_parity()
 {
+	//This flag will be set when the accumulator contains an odd # of bits set..
+	int i, 
+	p = 0;
+	for (i=1; i<=128; i=i*2) {		//Test for each of the 8 bits in the ACC!
+		if ((R_ACC & i) != 0)
+			p++;					//Keep track of how many bits are set
+	}								
+
+	//Update the PSW Pairty bit
+	SET_P(p & 1);
+}
+
+READ_HANDLER(i8051_internal_r) 
+{
+	//Restrict internal ram to 256 Bytes max
+	//Todo, eventually we'll need a way to manage the 8052's upper 128 bytes of RAM since it 
+	//it lives at the same address space as the SFR's (0x80-0xFF)
+	if(offset > 0xff)
+		return 0;
+	else
+		return IRAM_R(offset);
+}
+WRITE_HANDLER(i8051_internal_w) 
+{
+	//Restrict internal ram to 256 Bytes max
+	if(offset < 0x100)
+		IRAM_W(offset,data);
 }
