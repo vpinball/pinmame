@@ -477,7 +477,7 @@ static READ_HANDLER(sd_status_r);
 const struct sndbrdIntf bySDIntf = {
   sd_init, NULL, sd_diag, sd_cmd_w, sd_status_r, sd_ctrl_w, NULL, 0//SNDBRD_NODATASYNC|SNDBRD_NOCBSYNC
 };
-struct DACinterface sd_dacInt = { 1, { 20 }};
+struct DACinterface sd_dacInt = { 1, { 80 }};
 MEMORY_READ16_START(sd_readmem)
   {0x00000000, 0x0003ffff, MRA16_ROM},		/*ROM (4 X 64K)*/
   {0x00060000, 0x00060007, pia_msb_r(SD_PIA0) },	/*PIA - CPU D8-15 connected to PIA D0-7*/
