@@ -880,7 +880,7 @@ unsigned Dasm8051(char *dst, unsigned pc)
 		case 0xae:
 		case 0xaf:
 			sym = get_data_address(cpu_readop_arg(PC++));
-			sprintf(dst, "mov   r%d,%s", op&1, sym);
+			sprintf(dst, "mov   r%d,%s", op&7, sym);
 			break;
 
 		//Unable to test
