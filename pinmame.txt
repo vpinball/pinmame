@@ -1,7 +1,7 @@
 **************************************************************************************
 		                       PinMAME
 		      (Pinball Multiple Arcade Machine Emulator)
-				     Version 1.?
+				     Version 1.31?
 			           (October 31, 2003)
                                  http://www.pinmame.com
 **************************************************************************************
@@ -75,7 +75,8 @@ Games supported
   Zaccaria Pinball: All games from Combat(1978) to Spooky(1987)
   Taito Pinball: All that's available... which is about a third of all games made.
   Midway Pinball: Dave Nutting's 1974 "Flicker" prototype, and also Rotation VIII.
-  Capcom Pinball: All games from Goofy Hoops(1995) to Kingpin(1996), none working.
+  Capcom Pinball: All games from Goofy Hoops(1995) to Kingpin(1996), **none working yet**
+  Alvin G. and Co: All games from World Tour(1992) to Pistol Poker(1993)
 
   Supported means that the game loads and the display starts up with lamps etc. All games
   enter attract mode and you can use the Coin Door switches to enter the menus.
@@ -327,6 +328,7 @@ Steve Ellenoff     (sellenoff@hotmail.com)
 Tom Haukap         (Tom.Haukap@t-online.de)
 Martin Adrian      (wpcmame@hotmail.com)
 Gerrit Volkenborn  (gaston@yomail.de)
+Destruk		   (destruk@vpforums.com)
 
 PinMAME Contributors
 --------------------
@@ -336,7 +338,6 @@ Jonathan N. Deitch (jdeitch@litz.org)
 Dave Roberts       (daverob@cwcom.net)
 Dorsola            (dorsola@descent2.com)
 Johan S		   (arcadepreserv@hotmail.com)
-Destruk		   (destruk@home.com)
 Guru		   (theguru@emuunlim.com)
 Martin Wiest	   (Mr.Startrek@gmx.de)
 Joep		   (veld2611@planet.nl)
