@@ -5,20 +5,20 @@
 //#define DISPLAYALL
 #ifdef DISPLAYALL
 static core_tLCDLayout dispBy6[] = {
-  { 0, 0, 0, 16, CORE_SEG7 }, { 2, 0,16, 16, CORE_SEG7 },
-  { 4, 0,32, 16, CORE_SEG7 }, {0}
+  { 0, 0, 0, 16, CORE_SEG7 }, { 2, 0,16+4, 16, CORE_SEG7 },
+  { 4, 0,32+8, 16, CORE_SEG7 }, {0}
 };
 #define dispBy7 dispBy6
 #else /* DISPLAYALL */
 static core_tLCDLayout dispBy6[] = {
   {0, 0, 2,6,CORE_SEG7}, {0,14,10,6,CORE_SEG7},
-  {2, 0,18,6,CORE_SEG7}, {2,14,26,6,CORE_SEG7},
-  {4, 4,35,2,CORE_SEG7}, {4,10,38,2,CORE_SEG7},{0}
+  {2, 0,18+4,6,CORE_SEG7}, {2,14,26+4,6,CORE_SEG7},
+  {4, 4,35+8,2,CORE_SEG7}, {4,10,38+8,2,CORE_SEG7},{0}
 };
 static core_tLCDLayout dispBy7[] = {
   {0, 0, 1,7,CORE_SEG7}, {0,16, 9,7,CORE_SEG7},
-  {2, 0,17,7,CORE_SEG7}, {2,16,25,7,CORE_SEG7},
-  {4, 4,35,2,CORE_SEG7}, {4,10,38,2,CORE_SEG7},{0}
+  {2, 0,17+4,7,CORE_SEG7}, {2,16,25+4,7,CORE_SEG7},
+  {4, 4,35+8,2,CORE_SEG7}, {4,10,38+8,2,CORE_SEG7},{0}
 };
 #endif /* DISPLAYALL */
 
