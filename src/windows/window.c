@@ -256,7 +256,14 @@ INLINE int get_aligned_window_pos(int x)
 			// compute the amount necessary to align to 16 byte boundary
 			int pixels_per_16bytes = 16 / bytes_per_pixel;
 			int extra_left = wnd_extra_left();
+#ifndef VPINMAME
 			x = (((x + extra_left) + pixels_per_16bytes - 1) / pixels_per_16bytes) * pixels_per_16bytes - extra_left;
+#else
+			if ( x>=0 )
+				x = (((x + extra_left) + pixels_per_16bytes - 1) / pixels_per_16bytes) * pixels_per_16bytes - extra_left;
+			else
+				x = (((x - extra_left) + pixels_per_16bytes - 1) / pixels_per_16bytes) * pixels_per_16bytes - extra_left;
+#endif
 		}
 
 		// release the DC
@@ -737,9 +744,11 @@ static LRESULT CALLBACK video_window_proc(HWND wnd, UINT message, WPARAM wparam,
 		// sizing: constrain to the aspect ratio unless control key is held down
 		case WM_SIZING:
 		{
+#ifndef VPINMAME
 			RECT *rect = (RECT *)lparam;
 			if (win_keep_aspect && !(GetAsyncKeyState(VK_CONTROL) & 0x8000))
 				win_constrain_to_aspect_ratio(rect, wparam);
+#endif
 			InvalidateRect(win_video_window, NULL, FALSE);
 			break;
 		}
