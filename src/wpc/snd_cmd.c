@@ -146,12 +146,10 @@ int manual_sound_commands(struct mame_bitmap *bitmap) {
       /*-- specific help --*/
       core_textOutf(SND_XROW, 65, BLACK, "LEFT/RIGHT  Move Left/Right");
       core_textOutf(SND_XROW, 75, BLACK, "UP/DOWN     Digit +1/-1");
-      if      ((keyboard_pressed_memory_repeat(SMDCMD_UP, REPEATKEY)) &&
-               (locals.digits[locals.currDigit] < 0x10))
-        locals.digits[locals.currDigit] += 1;
-      else if ((keyboard_pressed_memory_repeat(SMDCMD_DOWN, REPEATKEY)) &&
-               (locals.digits[locals.currDigit] > 0x00))
-        locals.digits[locals.currDigit] -= 1;
+      if      ((keyboard_pressed_memory_repeat(SMDCMD_UP, REPEATKEY)))
+        locals.digits[locals.currDigit] = (locals.digits[locals.currDigit]+1) & 0x0f;
+      else if ((keyboard_pressed_memory_repeat(SMDCMD_DOWN, REPEATKEY)))
+        locals.digits[locals.currDigit] = (locals.digits[locals.currDigit]-1) & 0x0f;
       else if ((keyboard_pressed_memory_repeat(SMDCMD_PREV, REPEATKEY)) &&
                (locals.currDigit > 0))
         locals.currDigit -= 1;
