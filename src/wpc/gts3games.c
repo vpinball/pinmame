@@ -13,12 +13,11 @@ N = No Lead, L = Have a Lead on Rom
 (L)Strikes 'N Spares 1995 (sound Y and D roms)
 (?)Brooks & Dunn 1996 (display, sound)
 */
-static struct core_dispLayout gts_128x32DMD[] = {
-  {0,0,32,128,CORE_DMD,(void *)gts3_dmd128x32}, {0}
-};
 
-#define ALPHA	 GTS3_dispAlpha
-#define DMD	 gts_128x32DMD
+#define ALPHA     GTS3_dispAlpha
+#define ALPHA_LED GTS3_dispAlphaLED
+#define DMD       GTS3_dispDMD
+
 #define FLIP67   FLIP_SWNO(6,7)
 #define FLIP2122 FLIP_SWNO(21,22)
 #define FLIP4142 FLIP_SWNO(41,42)
@@ -27,11 +26,20 @@ static struct core_dispLayout gts_128x32DMD[] = {
 #define FLIP5051 FLIP_SWNO(50,51)
 #define FLIP8182 FLIP_SWNO(81,82)
 #define FLIP8283 FLIP_SWNO(82,83)
-#define GDISP_SEG_20(row,type)    {2*row, 0, 20*row, 20, type}
+
+/* Dot-Matrix display */
+static struct core_dispLayout GTS3_dispDMD[] = {
+  {0,0,32,128,CORE_DMD,(void *)gts3_dmd128x32}, {0}
+};
 
 /* 2 X 20 AlphaNumeric Rows */
 static struct core_dispLayout GTS3_dispAlpha[] = {
-	GDISP_SEG_20(0,CORE_SEG16),GDISP_SEG_20(1,CORE_SEG16),{0}
+  {0, 0, 0,20,CORE_SEG16}, {2, 0,20,20,CORE_SEG16}, {0}
+};
+/* 2 X 20 AlphaNumeric Rows, 4 X 2 7-seg displays */
+static struct core_dispLayout GTS3_dispAlphaLED[] = {
+  DISP_SEG_IMPORT(GTS3_dispAlpha),
+  {5, 0,40,2,CORE_SEG7}, {5,12,42,2,CORE_SEG7}, {5,24,44,2,CORE_SEG7}, {5,36,46,2,CORE_SEG7}, {0}
 };
 
 #define INITGAME_IC(name, disptype, flippers, balls, sb, lamps) \
@@ -101,42 +109,42 @@ CORE_GAMEDEFNV(bellring,"Bell Ringer",1990,"Gottlieb",mGTS3,GAME_NO_SOUND)
 /*-------------------------------------------------------------------
 / Silver Slugger (#722)
 /-------------------------------------------------------------------*/
-INITGAME(silvslug, ALPHA, FLIP67, 3/*?*/, SNDBRD_GTS3, 5)
+INITGAME(silvslug, ALPHA_LED, FLIP67, 3/*?*/, SNDBRD_GTS3, 4)
 GTS3ROMSTART(silvslug,	"gprom.bin",CRC(a6c524e2) SHA1(dc12dd8e814a37aada021f84c58475efe72cb846))
 GTS3SOUND3232(			"yrom1.bin",CRC(20bc9797) SHA1(5d17b5f0423d8854fb7c4816d53a223ecc7c50c6),
 						"drom1.bin",CRC(eac3e1cc) SHA1(2725457231854e4f3d54fbba745b8fc6f55b1688))
 GTS3_ROMEND
-CORE_GAMEDEFNV(silvslug,"Silver Slugger",1990,"Gottlieb",mGTS3S,0)
+CORE_GAMEDEFNV(silvslug,"Silver Slugger",1990,"Gottlieb",mGTS3S,GAME_IMPERFECT_GRAPHICS)
 
 /*-------------------------------------------------------------------
 / Vegas (#723)
 /-------------------------------------------------------------------*/
-INITGAME(vegas, ALPHA, FLIP5051, 3/*?*/, SNDBRD_GTS3, 5)
+INITGAME(vegas, ALPHA_LED, FLIP5051, 3/*?*/, SNDBRD_GTS3, 4)
 GTS3ROMSTART(vegas,	"gprom.bin",CRC(48189981) SHA1(95144af4b222158becd4d5748d15b7b6c6021bd2))
 GTS3SOUND3232(		"yrom1.bin",CRC(af1095f1) SHA1(06609085cd74b969e4f2ec962c427c5c42ebc6ff),
 					"drom1.bin",CRC(46eb5755) SHA1(94ec2d0cf41f68a8c3d7505186b11b4abb4803db))
 GTS3_ROMEND
-CORE_GAMEDEFNV(vegas,"Vegas",1990,"Gottlieb",mGTS3S,0)
+CORE_GAMEDEFNV(vegas,"Vegas",1990,"Gottlieb",mGTS3S,GAME_IMPERFECT_GRAPHICS)
 
 /*-------------------------------------------------------------------
 / Deadly Weapon (#724)
 /-------------------------------------------------------------------*/
-INITGAME(deadweap, ALPHA, FLIP67, 3/*?*/, SNDBRD_GTS3, 5)
+INITGAME(deadweap, ALPHA_LED, FLIP67, 3/*?*/, SNDBRD_GTS3, 4)
 GTS3ROMSTART(deadweap,	"gprom.bin",CRC(07d84b32) SHA1(25d8772a5c8655b3406df94563076719b07129cd))
 GTS3SOUND3232(			"yrom1.bin",CRC(93369ed3) SHA1(3340478ffc00cf9991beabd4f0ecd89d0c88965e),
 						"drom1.bin",CRC(f55dd7ec) SHA1(fe306c40bf3d98e4076d0d8a935c3671469d4cff))
 GTS3_ROMEND
-CORE_GAMEDEFNV(deadweap,"Deadly Weapon",1990,"Gottlieb",mGTS3S,0)
+CORE_GAMEDEFNV(deadweap,"Deadly Weapon",1990,"Gottlieb",mGTS3S,GAME_IMPERFECT_GRAPHICS)
 
 /*-------------------------------------------------------------------
 / Title Fight (#726)
 /-------------------------------------------------------------------*/
-INITGAME(tfight, ALPHA, FLIP67, 3/*?*/, SNDBRD_GTS3, 5)
+INITGAME(tfight, ALPHA_LED, FLIP67, 3/*?*/, SNDBRD_GTS3, 4)
 GTS3ROMSTART(tfight,	"gprom.bin",CRC(43b3193a) SHA1(bd185fe67c147a6acca8e78da4b77c384124fc46))
 GTS3SOUND3232(			"yrom1.bin",CRC(8591d421) SHA1(74402cf8b419e0cb05069851b0d5616e66b2f0a9),
 						"drom1.bin",CRC(9514739f) SHA1(2794549f549d68e064a9a962a4e91fff7dcf0160))
 GTS3_ROMEND
-CORE_GAMEDEFNV(tfight,"Title Fight",1990,"Gottlieb",mGTS3S,0)
+CORE_GAMEDEFNV(tfight,"Title Fight",1990,"Gottlieb",mGTS3S,GAME_IMPERFECT_GRAPHICS)
 
 /*-------------------------------------------------------------------
 / Nudge It
@@ -368,7 +376,11 @@ CORE_GAMEDEFNV(freddy,"Freddy: A Nightmare on Elm Street",1994,"Gottlieb",mGTS3D
 /*-------------------------------------------------------------------
 / Shaq Attaq
 /-------------------------------------------------------------------*/
-INITGAME2(shaqattq, DMD, FLIP8182, 4, SNDBRD_GTS3, 5)
+static struct core_dispLayout dispShaq[] = {
+  DISP_SEG_IMPORT(GTS3_dispDMD),
+  {7, 1, 0,3,CORE_SEG7}, {7, 9, 3,3,CORE_SEG7}, {7,17, 6,3,CORE_SEG7}, {7,25, 9,3,CORE_SEG7}, {0}
+};
+INITGAME2(shaqattq, dispShaq, FLIP8182, 4, SNDBRD_GTS3, 4)
 GTS3ROMSTART(shaqattq,	"gprom.bin", CRC(7a967fd1) SHA1(c06e2aad9452150d92cfd3ba37b8e4a932cf4324))
 GTS3_DMD512_ROMSTART(	"dsprom.bin",CRC(d6cca842) SHA1(0498ab558d252e42dee9636e6736d159c7d06275))
 GTS3SOUND32512256(		"yrom1.bin",CRC(e81e2928) SHA1(4bfe57efa99bb762e4de6c7e88e79b8c5ff57626),
@@ -444,7 +456,11 @@ CORE_GAMEDEFNV(waterwld,"Waterworld",1995,"Gottlieb",mGTS3DMDS, 0)
 /*-------------------------------------------------------------------
 / Mario Andretti
 /-------------------------------------------------------------------*/
-INITGAME2(andretti, DMD, FLIP8283, 4, SNDBRD_GTS3, 5)
+static struct core_dispLayout dispAndretti[] = {
+  DISP_SEG_IMPORT(GTS3_dispDMD),
+  {7, 2, 0,2,CORE_SEG7}, {7,14, 2,2,CORE_SEG7}, {7,26, 4,2,CORE_SEG7}, {0}
+};
+INITGAME2(andretti, dispAndretti, FLIP8283, 4, SNDBRD_GTS3, 4)
 GTS3ROMSTART(andretti,	"gprom.bin", CRC(cffa788d) SHA1(84646880b09dce73a42a6d87666897f6bd74a8f9))
 GTS3_DMD512_ROMSTART(	"dsprom.bin",CRC(1f70baae) SHA1(cf07bb057093b2bd18e6ee45009245ea62094e53))
 GTS3SOUND32512256(		"yrom1.bin",CRC(4ffb15b0) SHA1(de4e9b2ccca865deb2595320015a149246795260),
