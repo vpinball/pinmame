@@ -119,7 +119,7 @@ filter* filter_lp_fir_alloc(double freq, int order) {
 	/* adjust the gain to be exact 1.0 */
 	for(i=0;i<=midorder;++i) {
 #ifdef FILTER_USE_INT
-		f->xcoeffs[i] /= (int) gain;
+		if ((int)gain > 0) f->xcoeffs[i] /= (int)gain;
 #else
 		f->xcoeffs[i] = f->xcoeffs[i] * (double)(1 << FILTER_INT_FRAC) / gain;
 #endif
