@@ -471,8 +471,8 @@ void at91_exit(void)
 
 int at91_execute( int cycles )
 {
-	//must call core...
-	return arm7_core_execute(cycles);
+	/*include the arm7 core execute code*/
+	#include "../arm7/arm7exec.c"
 }
 
 
