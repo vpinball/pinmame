@@ -218,7 +218,7 @@ static WRITE_HANDLER(pia1b_w) {
   if (~locals.b1 & data & core_gameData->hw.display & 0xf0)
     { locals.bcd[5] = locals.a0>>4; by35_dispStrobe(0x20); }
   locals.b1 = data;
-  if ((sb & 0xff00) != SNDBRD_ST300 && sb != SNDBRD_ASTRO)  sndbrd_0_data_w(0, data & 0x0f); 	// ok
+  if ((sb & 0xff00) != SNDBRD_ST300 && sb != SNDBRD_ASTRO && (sb & 0xff00) != SNDBRD_ST100)  sndbrd_0_data_w(0, data & 0x0f); 	// ok
   coreGlobals.pulsedSolState = 0;
   if (!locals.cb21)
     locals.solenoids |= coreGlobals.pulsedSolState = (1<<(data & 0x0f)) & 0x7fff;
@@ -231,7 +231,8 @@ static WRITE_HANDLER(pia1b_w) {
 static WRITE_HANDLER(pia1cb2_w) {
   int sb = core_gameData->hw.soundBoard;		// ok
   locals.cb21 = data;
-  if (((locals.hw & BY35HW_SCTRL) == 0) && ((sb & 0xff00) != SNDBRD_ST300) && (sb != SNDBRD_ASTRO)) 	// ok
+  if (((locals.hw & BY35HW_SCTRL) == 0) && ((sb & 0xff00) != SNDBRD_ST300) && (sb != SNDBRD_ASTRO) && (sb & 0xff00) != SNDBRD_ST100)
+   	// ok
     sndbrd_0_ctrl_w(1, (data ? 1 : 0) | (locals.a1 & 0x02));
 }
 
@@ -457,13 +458,16 @@ static WRITE_HANDLER(by35_CMOS_w) { by35_CMOS[offset] = data | 0x0f; }
 
 // These games use the A0 memory address for extra sound solenoids only.
 WRITE_HANDLER(extra_sol_w) {
-  if (data != 0)
-    coreGlobals.pulsedSolState = (data << 24);
-  locals.solenoids = (locals.solenoids & 0x00ffffff) | coreGlobals.pulsedSolState;
+  logerror("%04x: extra sol w (a0)  data  %02x \n", activecpu_get_previouspc(),data);
+  sndbrd_0_data_w(0,data);
+//if (data != 0)
+//  coreGlobals.pulsedSolState = (data << 24);
+//locals.solenoids = (locals.solenoids & 0x00ffffff) | coreGlobals.pulsedSolState;
 }
 
 WRITE_HANDLER(stern100_sol_w) {
-  extra_sol_w(offset, data ^ 0xff);
+  logerror("%04x: stern100_sol (c0) data  %02x \n", activecpu_get_previouspc(),data);
+//extra_sol_w(offset, data ^ 0xff);
 }
 
 static MACHINE_INIT(by35) {
@@ -588,6 +592,11 @@ MACHINE_DRIVER_START(byProto)
   MDRV_SWITCH_UPDATE(by35)
   MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_TIMER_ADD(by35p_zeroCross, 120) // won't work with 100Hz, ie. not in Europe!
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(st100s)
+  MDRV_IMPORT_FROM(by35)
+  MDRV_IMPORT_FROM(st100)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(by35_32S)
