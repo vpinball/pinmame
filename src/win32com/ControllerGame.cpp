@@ -466,6 +466,9 @@ int CRCSOFGAMESNOTSUPPORRTED[] = {
 	// The Simpsons Pinball Party (1st sound rom, game rom 204)
 	0x32efcdf6, 0x5bc155f7,
 
+	// Terminator 3: Rise of the Machines (1st sound rom, game rom 200)
+	0x7f99e3af, 0xb5cc4e24,
+
 	// end of the list
 	0x0
 };
