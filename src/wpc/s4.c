@@ -5,7 +5,7 @@
 #include "machine/6821pia.h"
 #include "core.h"
 #include "sndbrd.h"
-#include "s67s.h"
+#include "wmssnd.h"
 #include "s4.h"
 
 #define S4_PIA0 0

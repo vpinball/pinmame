@@ -36,7 +36,7 @@
 
 #include "driver.h"
 #include "core.h"
-#include "s67s.h"
+#include "wmssnd.h"
 #include "s7.h"
 #include "sim.h"
 

@@ -1,7 +1,7 @@
 #include "driver.h"
 #include "wpc.h"
 #include "sim.h"
-#include "dcs.h"
+#include "wmssnd.h"
 
 /* 231100 Added Sound Support (SJE) */
 /* 161000 Cleaned up BITIMP use */

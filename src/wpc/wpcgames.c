@@ -1,8 +1,7 @@
 #include "driver.h"
 #include "wpc.h"
 #include "sim.h"
-#include "dcs.h"
-#include "wpcsound.h"
+#include "wmssnd.h"
 
 /* 251200 Moved all the rest (except non-pin and the test fixtures) to own
           Simulator files (ML) */

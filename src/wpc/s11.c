@@ -6,7 +6,7 @@
 #include "core.h"
 #include "sndbrd.h"
 #include "snd_cmd.h"
-#include "s11csoun.h"
+#include "wmssnd.h"
 #include "desound.h"
 #include "dedmd.h"
 #include "s11.h"

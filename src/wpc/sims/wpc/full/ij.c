@@ -56,7 +56,7 @@
 #include "driver.h"
 #include "wpc.h"
 #include "sim.h"
-#include "dcs.h"
+#include "wmssnd.h"
 
 #define IJ_IDOLTICK      2     /* turn 2 degrees per simulator tick */
 #define IJ_POA_MIDPOS    180

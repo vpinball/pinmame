@@ -75,7 +75,7 @@
 #include "core.h"
 #include "sndbrd.h"
 #include "by35snd.h"
-#include "s11csoun.h"
+#include "wmssnd.h"
 #include "by6803.h"
 
 #define BY6803_PIA0 0

@@ -42,7 +42,7 @@
 #include "driver.h"
 #include "wpc.h"
 #include "sim.h"
-#include "dcs.h"
+#include "wmssnd.h"
 #include "wpcsam.h"
 
 #define MM_DRAWBRIDGETICK	2     /* turn 2 degrees per simulator tick */

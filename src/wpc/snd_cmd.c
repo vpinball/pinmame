@@ -14,8 +14,7 @@
 
 #include <ctype.h>
 #include "driver.h"
-#include "dcs.h"
-#include "wpcsound.h"
+#include "wmssnd.h"
 #include "snd_cmd.h"
 #include "wpc.h"
 

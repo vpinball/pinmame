@@ -1,6 +1,6 @@
 #include "driver.h"
 #include "sim.h"
-#include "s67s.h"
+#include "wmssnd.h"
 #include "s6.h"
 
 #define INITGAME(name, display, balls) \

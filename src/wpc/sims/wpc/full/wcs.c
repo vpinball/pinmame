@@ -1,7 +1,7 @@
 #include "driver.h"
 #include "wpc.h"
 #include "sim.h"
-#include "dcs.h"
+#include "wmssnd.h"
 #include "mech.h"
 
 /* 120700  Upgraded the Lamp Matrix to the new format (ML) */

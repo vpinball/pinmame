@@ -1,9 +1,404 @@
 #include "driver.h"
+#include "cpu/m6800/m6800.h"
+#include "cpu/m6809/m6809.h"
 #include "cpu/adsp2100/adsp2100.h"
-#include "wpc.h"
+#include "machine/6821pia.h"
+#include "sound/2151intf.h"
+#include "sound/hc55516.h"
+#include "sound/dac.h"
+#include "core.h"
+#include "snd_cmd.h"
 #include "sndbrd.h"
-#include "dcs.h"
+#include "wpc.h"
+#include "wmssnd.h"
 
+/*----------------------
+/    System 4 - 7
+/-----------------------*/
+#define S67S_PIA0 5
+
+static void s67s_init(struct sndbrdData *brdData);
+static WRITE_HANDLER(s67s_cmd_w);
+static void s67s_diag(int button);
+
+const struct sndbrdIntf s67sIntf = {
+  s67s_init, NULL, s67s_diag, s67s_cmd_w, NULL, NULL, NULL, SNDBRD_NOCTRLSYNC
+};
+
+struct DACinterface      s67s_dacInt     = { 1, { 50 }};
+struct hc55516_interface s67s_hc55516Int = { 1, { 80 }};
+
+MEMORY_READ_START(s67s_readmem )
+  { 0x0000, 0x007f, MRA_RAM },
+  { 0x0400, 0x0403, pia_r(S67S_PIA0) },
+  { 0x3000, 0x7fff, MRA_ROM },
+  { 0x8400, 0x8403, pia_r(S67S_PIA0) },
+  { 0xb000, 0xffff, MRA_ROM },
+MEMORY_END
+
+MEMORY_WRITE_START(s67s_writemem )
+  { 0x0000, 0x007f, MWA_RAM },
+  { 0x0400, 0x0403, pia_w(S67S_PIA0) },
+  { 0x3000, 0x7fff, MWA_ROM },
+  { 0x8400, 0x8403, pia_w(S67S_PIA0) },
+  { 0xb000, 0xffff, MWA_ROM },
+MEMORY_END
+
+static void s67s_piaIrq(int state);
+static const struct pia6821_interface s67s_pia = {
+ /* PIA0  (0400)
+    PA0-7  DAC
+    PB0-7  Sound input
+    CB1    Sound input != 0x1f
+    CB2    Speech clock
+    CA2    Speech data
+    CA1    NC */
+ /* in  : A/B,CA/B1,CA/B2 */ 0, 0, 0, 0, 0, 0,
+ /* out : A/B,CA/B2       */ DAC_0_data_w, 0, hc55516_0_digit_w, hc55516_0_clock_w,
+ /* irq : A/B             */ s67s_piaIrq, s67s_piaIrq
+};
+
+static struct {
+  struct sndbrdData brdData;
+} s67slocals;
+
+static void s67s_init(struct sndbrdData *brdData) {
+  s67slocals.brdData = *brdData;
+  pia_config(S67S_PIA0, PIA_STANDARD_ORDERING, &s67s_pia);
+}
+
+static WRITE_HANDLER(s67s_cmd_w) {
+  data = (data & 0x1f) | (core_getDip(0)<<5);
+  pia_set_input_b(S67S_PIA0, data);
+  pia_set_input_cb1(S67S_PIA0, !((data & 0x1f) == 0x1f));
+  snd_cmd_log(data);
+}
+static void s67s_diag(int button) {
+  cpu_set_nmi_line(s67slocals.brdData.cpuNo, button ? ASSERT_LINE : CLEAR_LINE);
+}
+
+static void s67s_piaIrq(int state) {
+  cpu_set_irq_line(s67slocals.brdData.cpuNo, M6808_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
+}
+
+/*----------------------------
+/  S11 CPU board sound
+/-----------------------------*/
+#define S11S_PIA0  6
+#define S11S_BANK0 1
+#define S11S_BANK1 2
+
+static void s11s_init(struct sndbrdData *brdData);
+static void s11s_diag(int button);
+static WRITE_HANDLER(s11s_bankSelect);
+const struct sndbrdIntf s11sIntf = {
+  s11s_init, NULL, s11s_diag, soundlatch_w, NULL, CAT3(pia_,S11S_PIA0,_ca1_w), NULL
+};
+
+MEMORY_READ_START(s11s_readmem)
+  { 0x0000, 0x0fff, MRA_RAM},
+  { 0x2000, 0x2003, pia_r(S11S_PIA0) },
+  { 0x8000, 0xbfff, MRA_BANKNO(S11S_BANK0)}, /* U22 */
+  { 0xc000, 0xffff, MRA_BANKNO(S11S_BANK1)}, /* U21 */
+MEMORY_END
+MEMORY_WRITE_START(s11s_writemem)
+  { 0x0000, 0x0fff, MWA_RAM },
+  { 0x1000, 0x1000, s11s_bankSelect},
+  { 0x2000, 0x2003, pia_w(S11S_PIA0)},
+  { 0x8000, 0xffff, MWA_ROM},
+MEMORY_END
+MEMORY_READ_START(s9s_readmem)
+  { 0x0000, 0x0fff, MRA_RAM},
+  { 0x2000, 0x2003, pia_r(S11S_PIA0)},
+  { 0x8000, 0xffff, MRA_ROM}, /* U22 */
+MEMORY_END
+MEMORY_WRITE_START(s9s_writemem)
+  { 0x0000, 0x0fff, MWA_RAM },
+  { 0x2000, 0x2003, pia_w(S11S_PIA0)},
+  { 0x8000, 0xffff, MWA_ROM}, /* U22 */
+MEMORY_END
+
+static void s11s_piaIrq(int state);
+static const struct pia6821_interface s11s_pia[] = {{
+ /* PIA 0 (sound 2000) S11 */
+ /* PA0 - PA7 (I) Sound Select Input (soundlatch) */
+ /* PB0 - PB7 DAC */
+ /* CA1       (I) Sound H.S */
+ /* CB1       (I) 1ms */
+ /* CA2       55516 Clk */
+ /* CB2       55516 Dig */
+ /* in  : A/B,CA/B1,CA/B2 */ soundlatch_r, 0, 0, 0, 0, 0,
+ /* out : A/B,CA/B2       */ 0, DAC_0_data_w, hc55516_0_clock_w, hc55516_0_digit_w,
+ /* irq : A/B             */ s11s_piaIrq, s11s_piaIrq
+},{
+ /* in  : A/B,CA/B1,CA/B2 */ soundlatch_r, 0, 0, 0, 0, 0,
+ /* out : A/B,CA/B2       */ 0, DAC_1_data_w, hc55516_1_clock_w, hc55516_1_digit_w,
+ /* irq : A/B             */ s11s_piaIrq, s11s_piaIrq
+}};
+
+static struct {
+  struct sndbrdData brdData;
+} s11slocals;
+
+static void s11s_init(struct sndbrdData *brdData) {
+  s11slocals.brdData = *brdData;
+  pia_config(S11S_PIA0, PIA_STANDARD_ORDERING, &s11s_pia[s11slocals.brdData.subType]);
+  if (s11slocals.brdData.subType) {
+    cpu_setbank(S11S_BANK0, s11slocals.brdData.romRegion+0xc000);
+    cpu_setbank(S11S_BANK1, s11slocals.brdData.romRegion+0x4000);
+  }
+}
+
+static WRITE_HANDLER(s11s_bankSelect) {
+  cpu_setbank(S11S_BANK0, s11slocals.brdData.romRegion + 0x8000+((data&0x01)<<14));
+  cpu_setbank(S11S_BANK1, s11slocals.brdData.romRegion + 0x0000+((data&0x02)<<13));
+}
+
+static void s11s_piaIrq(int state) {
+  cpu_set_irq_line(s11slocals.brdData.cpuNo, M6808_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
+}
+
+static void s11s_diag(int button) {
+  cpu_set_nmi_line(s11slocals.brdData.cpuNo, button ? ASSERT_LINE : CLEAR_LINE);
+}
+
+
+/*--------------------------
+/    System 11C sound board
+/---------------------------*/
+#define S11CS_PIA0    7
+#define S11CS_BANK0   4
+
+static void s11cs_ym2151IRQ(int state);
+static void s11cs_piaIrqA(int state);
+static void s11cs_piaIrqB(int state);
+static WRITE_HANDLER(s11cs_pia0ca2_w);
+static WRITE_HANDLER(s11cs_pia0cb2_w);
+static WRITE_HANDLER(s11cs_rombank_w);
+static void s11cs_init(struct sndbrdData *brdData);
+
+struct DACinterface s11_dacInt2 = { 2, { 50,50 }},
+                    s11_dacInt  = { 1, { 50 }};
+
+struct hc55516_interface s11_hc55516Int2 = { 2, { 80,80 }},
+                         s11_hc55516Int  = { 1, { 80 }};
+
+struct YM2151interface s11cs_ym2151Int = {
+  1, 3579545, /* Hz */
+  { YM3012_VOL(10,MIXER_PAN_CENTER,30,MIXER_PAN_CENTER) },
+  { s11cs_ym2151IRQ }
+};
+
+const struct sndbrdIntf s11csIntf = {
+  s11cs_init, NULL, NULL,
+  soundlatch2_w, NULL,
+  CAT3(pia_,S11CS_PIA0,_cb1_w), NULL
+};
+
+static struct {
+  struct sndbrdData brdData;
+} s11clocals;
+
+MEMORY_READ_START(s11cs_readmem)
+  { 0x0000, 0x1fff, MRA_RAM },
+  { 0x2001, 0x2001, YM2151_status_port_0_r }, /* 2001-2fff odd */
+  { 0x4000, 0x4003, pia_r(S11CS_PIA0) },      /* 4000-4fff */
+  { 0x8000, 0xffff, MRA_BANKNO(S11CS_BANK0) },
+MEMORY_END
+
+MEMORY_WRITE_START(s11cs_writemem)
+  { 0x0000, 0x1fff, MWA_RAM },
+  { 0x2000, 0x2000, YM2151_register_port_0_w },     /* 2000-2ffe even */
+  { 0x2001, 0x2001, YM2151_data_port_0_w },         /* 2001-2fff odd */
+  { 0x4000, 0x4003, pia_w(S11CS_PIA0) },            /* 4000-4fff */
+  { 0x6000, 0x6000, hc55516_0_digit_clock_clear_w },/* 6000-67ff */
+  { 0x6800, 0x6800, hc55516_0_clock_set_w },        /* 6800-6fff */
+  { 0x7800, 0x7800, s11cs_rombank_w },              /* 7800-7fff */
+MEMORY_END
+
+static const struct pia6821_interface s11cs_pia = {
+ /* PIA 0 (4000) */
+ /* PA0 - PA7 DAC */
+ /* PB0 - PB7 CPU interface (MDx) */
+ /* CA1       YM2151 IRQ */
+ /* CB1       (I) CPU interface (MCB2) */
+ /* CA2       YM 2151 pin 3 (Reset ?) */
+ /* CB2       CPU interface (MCB1) */
+ /* in  : A/B,CA/B1,CA/B2 */
+  0, soundlatch2_r, 0, 0, 0, 0,
+ /* out : A/B,CA/B2       */
+  DAC_0_data_w, soundlatch3_w, s11cs_pia0ca2_w, s11cs_pia0cb2_w,
+ /* irq : A/B             */
+  s11cs_piaIrqA, s11cs_piaIrqB
+};
+
+static WRITE_HANDLER(s11cs_rombank_w) {
+  cpu_setbank(S11CS_BANK0, s11clocals.brdData.romRegion + 0x10000*(data & 0x03) + 0x8000*((data & 0x04)>>2));
+}
+static void s11cs_init(struct sndbrdData *brdData) {
+  s11clocals.brdData = *brdData;
+  pia_config(S11CS_PIA0, PIA_STANDARD_ORDERING, &s11cs_pia);
+  cpu_setbank(S11CS_BANK0, s11clocals.brdData.romRegion);
+}
+
+static WRITE_HANDLER(s11cs_pia0ca2_w) { if (!data) YM2151_sh_reset(); }
+static WRITE_HANDLER(s11cs_pia0cb2_w) { sndbrd_data_cb(s11clocals.brdData.boardNo,data); }
+
+static void s11cs_ym2151IRQ(int state) { pia_set_input_ca1(S11CS_PIA0, !state); }
+static void s11cs_piaIrqA(int state) {
+  cpu_set_irq_line(s11clocals.brdData.cpuNo, M6809_FIRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
+}
+static void s11cs_piaIrqB(int state) {
+  cpu_set_nmi_line(s11clocals.brdData.cpuNo, state ? ASSERT_LINE : CLEAR_LINE);
+}
+
+
+/*------------------
+/  WPC sound board
+/-------------------*/
+#define WPCS_BANK0  4
+
+/*-- internal sound interface --*/
+static WRITE_HANDLER(wpcs_latch_w);
+static READ_HANDLER(wpcs_latch_r);
+
+/*-- external interfaces --*/
+static void wpcs_init(struct sndbrdData *brdData);
+static READ_HANDLER(wpcs_data_r);
+static WRITE_HANDLER(wpcs_data_w);
+static READ_HANDLER(wpcs_ctrl_r);
+static WRITE_HANDLER(wpcs_ctrl_w);
+const struct sndbrdIntf wpcsIntf = { wpcs_init, NULL, NULL, wpcs_data_w, wpcs_data_r, wpcs_ctrl_w, wpcs_ctrl_r };
+
+/*-- other memory handlers --*/
+static WRITE_HANDLER(wpcs_rombank_w);
+static WRITE_HANDLER(wpcs_volume_w);
+static void wpcs_ym2151IRQ(int state);
+
+/*-- local data --*/
+static struct {
+  struct sndbrdData brdData;
+  int replyAvail;
+  int volume;
+} locals;
+
+static WRITE_HANDLER(wpcs_rombank_w) {
+  /* the hardware can actually handle 1M chip but no games uses it */
+  /* if such ROM appear the region must be doubled and mask set to 0x1f */
+  /* this would be much easier if the region was filled in opposit order */
+  /* but I don't want to change it now */
+  int bankBase = data & 0x0f;
+#ifdef MAME_DEBUG
+  /* this register can no be read but this makes debugging easier */
+  *(memory_region(REGION_CPU1+locals.brdData.cpuNo) + 0x2000) = data;
+#endif /* MAME_DEBUG */
+
+  switch ((~data) & 0xe0) {
+    case 0x80: /* U18 */
+      bankBase |= 0x00; break;
+    case 0x40: /* U15 */
+      bankBase |= 0x10; break;
+    case 0x20: /* U14 */
+      bankBase |= 0x20; break;
+    default:
+      DBGLOG(("WPCS:Unknown bank %x\n",data)); return;
+  }
+  cpu_setbank(WPCS_BANK0, locals.brdData.romRegion + (bankBase<<15));
+}
+
+static WRITE_HANDLER(wpcs_volume_w) {
+  if (data & 0x01) {
+    if ((locals.volume > 0) && (data & 0x02))
+      locals.volume -= 1;
+    else if ((locals.volume < 0xff) && ((data & 0x02) == 0))
+      locals.volume += 1;
+    /* DBGLOG(("Volume set to %d\n",locals.volume)); */
+    {
+      int ch;
+      for (ch = 0; ch < MIXER_MAX_CHANNELS; ch++) {
+        if (mixer_get_name(ch) != NULL)
+          mixer_set_volume(ch, locals.volume * 100 / 127);
+      }
+    }
+  }
+}
+
+static WRITE_HANDLER(wpcs_latch_w) {
+  locals.replyAvail = TRUE; soundlatch2_w(0,data);
+  sndbrd_data_cb(locals.brdData.boardNo, data);
+}
+
+static READ_HANDLER(wpcs_latch_r) {
+  cpu_set_irq_line(locals.brdData.cpuNo, M6809_IRQ_LINE, CLEAR_LINE);
+  return soundlatch_r(0);
+}
+
+static void wpcs_ym2151IRQ(int state) {
+  cpu_set_irq_line(locals.brdData.cpuNo, M6809_FIRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
+}
+
+
+/*-------------------
+/ Exported interface
+/--------------------*/
+struct DACinterface wpcs_dacInt = { 1, { 50 }};
+struct hc55516_interface wpcs_hc55516Int = { 1, { 80 }};
+
+struct YM2151interface wpcs_ym2151Int = {
+  1, 3579545, /* Hz */
+  { YM3012_VOL(10,MIXER_PAN_CENTER,30,MIXER_PAN_CENTER) },
+  { wpcs_ym2151IRQ }
+};
+
+MEMORY_READ_START(wpcs_readmem)
+  { 0x0000, 0x1fff, MRA_RAM },
+  { 0x2401, 0x2401, YM2151_status_port_0_r }, /* 2401-27ff odd */
+  { 0x3000, 0x3000, wpcs_latch_r }, /* 3000-33ff */
+  { 0x4000, 0xbfff, CAT2(MRA_BANK, WPCS_BANK0) }, //32K
+  { 0xc000, 0xffff, MRA_ROM }, /* same as page 7f */	//16K
+MEMORY_END
+
+MEMORY_WRITE_START(wpcs_writemem)
+  { 0x0000, 0x1fff, MWA_RAM },
+  { 0x2000, 0x2000, wpcs_rombank_w }, /* 2000-23ff */
+  { 0x2400, 0x2400, YM2151_register_port_0_w }, /* 2400-27fe even */
+  { 0x2401, 0x2401, YM2151_data_port_0_w },     /* 2401-27ff odd */
+  { 0x2800, 0x2800, DAC_0_data_w }, /* 2800-2bff */
+  { 0x2c00, 0x2c00, hc55516_0_clock_set_w },  /* 2c00-2fff */
+  { 0x3400, 0x3400, hc55516_0_digit_clock_clear_w }, /* 3400-37ff */
+  { 0x3800, 0x3800, wpcs_volume_w }, /* 3800-3bff */
+  { 0x3c00, 0x3c00, wpcs_latch_w },  /* 3c00-3fff */
+MEMORY_END
+
+/*---------------------
+/  Interface functions
+/----------------------*/
+static READ_HANDLER(wpcs_data_r) {
+  locals.replyAvail = FALSE; return soundlatch2_r(0);
+}
+
+static WRITE_HANDLER(wpcs_data_w) {
+  soundlatch_w(0, data); cpu_set_irq_line(locals.brdData.cpuNo, M6809_IRQ_LINE, ASSERT_LINE);
+}
+
+static READ_HANDLER(wpcs_ctrl_r) {
+  return locals.replyAvail;
+}
+
+static WRITE_HANDLER(wpcs_ctrl_w) { /*-- a write here resets the CPU --*/
+  cpu_set_reset_line(locals.brdData.cpuNo, PULSE_LINE);
+}
+
+static void wpcs_init(struct sndbrdData *brdData) {
+  locals.brdData = *brdData;
+  /* the non-paged ROM is at the end of the image. move it to its correct place */
+  memcpy(memory_region(REGION_CPU1+locals.brdData.cpuNo) + 0x00c000, locals.brdData.romRegion + 0x07c000, 0x4000);
+  wpcs_rombank_w(0,0);
+}
+
+/*--------------------
+/  DCS sound board
+/---------------------*/
 /*-- ADSP core functions --*/
 static void adsp_init(UINT32 *(*getBootROM)(void),
                void (*txData)(UINT16 start, UINT16 size, UINT16 memStep, int sRate));
@@ -58,7 +453,7 @@ static struct {
   UINT8  *ROMbankPtr;
   UINT16 *RAMbankPtr;
   int     replyAvail;
-} locals;
+} dcslocals;
 
 /*--------------
 /  Memory maps
@@ -119,41 +514,41 @@ const struct sndbrdIntf dcsIntf = { dcs_init, NULL, NULL, dcs_data_w, dcs_data_r
 /  Bank handlers
 /----------------*/
 #define DCS1_ROMBANKBASE(bank) \
-  (locals.brdData.romRegion + (((bank) & 0x7ff)<<12))
+  (dcslocals.brdData.romRegion + (((bank) & 0x7ff)<<12))
 #define DCS2_ROMBANKBASE(bankH, bankL) \
-  (locals.brdData.romRegion + (((bankH) & 0x1c)<<18) + (((bankH) & 0x01)<<19) + (((bankL) & 0xff)<<11))
+  (dcslocals.brdData.romRegion + (((bankH) & 0x1c)<<18) + (((bankH) & 0x01)<<19) + (((bankL) & 0xff)<<11))
 #define DCS2_RAMBANKBASE(bank) \
   ((UINT16 *)(((bank) & 0x08) ? memory_region(WPC_MEMREG_SBANK) : \
-              (locals.cpuRegion + ADSP2100_DATA_OFFSET + (0x2000<<1))))
+              (dcslocals.cpuRegion + ADSP2100_DATA_OFFSET + (0x2000<<1))))
 
 static WRITE16_HANDLER(dcs1_ROMbankSelect1_w) {
-  locals.ROMbank1 = data;
-  locals.ROMbankPtr = DCS1_ROMBANKBASE(locals.ROMbank1);
+  dcslocals.ROMbank1 = data;
+  dcslocals.ROMbankPtr = DCS1_ROMBANKBASE(dcslocals.ROMbank1);
 }
 static WRITE16_HANDLER(dcs2_ROMbankSelect1_w) {
-  locals.ROMbank1 = data;
-  locals.ROMbankPtr = DCS2_ROMBANKBASE(locals.ROMbank2,locals.ROMbank1);
+  dcslocals.ROMbank1 = data;
+  dcslocals.ROMbankPtr = DCS2_ROMBANKBASE(dcslocals.ROMbank2,dcslocals.ROMbank1);
 }
 static WRITE16_HANDLER(dcs2_ROMbankSelect2_w) {
-  locals.ROMbank2 = data;
-  locals.ROMbankPtr = DCS2_ROMBANKBASE(locals.ROMbank2,locals.ROMbank1);
+  dcslocals.ROMbank2 = data;
+  dcslocals.ROMbankPtr = DCS2_ROMBANKBASE(dcslocals.ROMbank2,dcslocals.ROMbank1);
 }
 static WRITE16_HANDLER(dcs2_RAMbankSelect_w) {
-  locals.RAMbank  = data;
-  locals.RAMbankPtr = DCS2_RAMBANKBASE(locals.RAMbank);
+  dcslocals.RAMbank  = data;
+  dcslocals.RAMbankPtr = DCS2_RAMBANKBASE(dcslocals.RAMbank);
 }
 static READ16_HANDLER (dcs2_RAMbankSelect_r) {
-  return locals.RAMbank;
+  return dcslocals.RAMbank;
 }
 
-static READ16_HANDLER(dcs_ROMbank_r)   { return locals.ROMbankPtr[offset]; }
+static READ16_HANDLER(dcs_ROMbank_r)   { return dcslocals.ROMbankPtr[offset]; }
 
-static READ16_HANDLER(dcs2_RAMbank_r)  { return locals.RAMbankPtr[offset]; }
+static READ16_HANDLER(dcs2_RAMbank_r)  { return dcslocals.RAMbankPtr[offset]; }
 
-static WRITE16_HANDLER(dcs2_RAMbank_w) { locals.RAMbankPtr[offset] = data; }
+static WRITE16_HANDLER(dcs2_RAMbank_w) { dcslocals.RAMbankPtr[offset] = data; }
 
 static UINT32 *dcs_getBootROM(void) {
-  return (UINT32 *)(locals.brdData.romRegion + ((locals.ROMbank1 & 0xff)<<12));
+  return (UINT32 *)(dcslocals.brdData.romRegion + ((dcslocals.ROMbank1 & 0xff)<<12));
 }
 
 /*----------------------
@@ -162,14 +557,14 @@ static UINT32 *dcs_getBootROM(void) {
 /* These should be static but the patched ADSP core requires them */
 
 /*static*/ READ16_HANDLER(dcs_latch_r) {
-  cpu_set_irq_line(locals.brdData.cpuNo, ADSP2105_IRQ2, CLEAR_LINE);
+  cpu_set_irq_line(dcslocals.brdData.cpuNo, ADSP2105_IRQ2, CLEAR_LINE);
   return soundlatch_r(0);
 }
 
 /*static*/ WRITE16_HANDLER(dcs_latch_w) {
   soundlatch2_w(0, data);
-  locals.replyAvail = TRUE;
-  sndbrd_data_cb(locals.brdData.boardNo, data);
+  dcslocals.replyAvail = TRUE;
+  sndbrd_data_cb(dcslocals.brdData.boardNo, data);
 }
 
 
@@ -214,17 +609,17 @@ static void dcs_dacUpdate(int num, INT16 *buffer, int length) {
 / Exported interface
 /---------------------*/
 static READ_HANDLER(dcs_data_r) {
-  locals.replyAvail = FALSE;
+  dcslocals.replyAvail = FALSE;
   return soundlatch2_r(0) & 0xff;
 }
 
 static WRITE_HANDLER(dcs_data_w) {
   soundlatch_w(0, data);
-  cpu_set_irq_line(locals.brdData.cpuNo, ADSP2105_IRQ2, ASSERT_LINE);
+  cpu_set_irq_line(dcslocals.brdData.cpuNo, ADSP2105_IRQ2, ASSERT_LINE);
 }
 
 static READ_HANDLER(dcs_ctrl_r) {
-  return locals.replyAvail ? 0x80 : 0x00;
+  return dcslocals.replyAvail ? 0x80 : 0x00;
 }
 
 /*----------------------------
@@ -240,20 +635,20 @@ static READ_HANDLER(dcs_ctrl_r) {
 static OPBASE_HANDLER(opbaseoveride) { return -1; }
 
 static void dcs_init(struct sndbrdData *brdData) {
-  memset(&locals, 0, sizeof(locals));
-  locals.brdData = *brdData;
-  locals.cpuRegion = memory_region(REGION_CPU1+locals.brdData.cpuNo);
-  memory_set_opbase_handler(locals.brdData.cpuNo, opbaseoveride);
+  memset(&dcslocals, 0, sizeof(dcslocals));
+  dcslocals.brdData = *brdData;
+  dcslocals.cpuRegion = memory_region(REGION_CPU1+dcslocals.brdData.cpuNo);
+  memory_set_opbase_handler(dcslocals.brdData.cpuNo, opbaseoveride);
   /*-- initialize our structure --*/
-  locals.ROMbankPtr = locals.brdData.romRegion;
-  locals.RAMbankPtr = (UINT16 *)memory_region(WPC_MEMREG_SBANK);
+  dcslocals.ROMbankPtr = dcslocals.brdData.romRegion;
+  dcslocals.RAMbankPtr = (UINT16 *)memory_region(WPC_MEMREG_SBANK);
 
   adsp_init(dcs_getBootROM, dcs_txData);
 
   /*-- clear all interrupts --*/
-  cpu_set_irq_line(locals.brdData.cpuNo, ADSP2105_IRQ0, CLEAR_LINE );
-  cpu_set_irq_line(locals.brdData.cpuNo, ADSP2105_IRQ1, CLEAR_LINE );
-  cpu_set_irq_line(locals.brdData.cpuNo, ADSP2105_IRQ2, CLEAR_LINE );
+  cpu_set_irq_line(dcslocals.brdData.cpuNo, ADSP2105_IRQ0, CLEAR_LINE );
+  cpu_set_irq_line(dcslocals.brdData.cpuNo, ADSP2105_IRQ1, CLEAR_LINE );
+  cpu_set_irq_line(dcslocals.brdData.cpuNo, ADSP2105_IRQ2, CLEAR_LINE );
 
   /*-- speed up startup by disable checksum --*/
 #if 0
@@ -274,7 +669,7 @@ static void dcs_init(struct sndbrdData *brdData) {
 /*-- autobuffer SPORT transmission  --*/
 /*-- copy data to transmit into dac buffer --*/
 static void dcs_txData(UINT16 start, UINT16 size, UINT16 memStep, int sRate) {
-  UINT16 *mem = ((UINT16 *)(locals.cpuRegion + ADSP2100_DATA_OFFSET)) + start;
+  UINT16 *mem = ((UINT16 *)(dcslocals.cpuRegion + ADSP2100_DATA_OFFSET)) + start;
   int idx;
 
   stream_update(dcs_dac.stream, 0);
@@ -334,7 +729,7 @@ static void adsp_init(UINT32 *(*getBootROM)(void),
 
 static void adsp_boot(void) {
   UINT32 *src = adsp.getBootROM();
-  UINT32 *dst = (UINT32 *)(locals.cpuRegion + ADSP2100_PGM_OFFSET);
+  UINT32 *dst = (UINT32 *)(dcslocals.cpuRegion + ADSP2100_PGM_OFFSET);
   UINT32  data = src[0];
   UINT32  size;
   UINT32  ii;
@@ -365,7 +760,7 @@ static WRITE16_HANDLER(adsp_control_w) {
       if (data & 0x0200) {
         /* boot force */
         DBGLOG(("boot force\n"));
-        cpu_set_reset_line(locals.brdData.cpuNo, PULSE_LINE);
+        cpu_set_reset_line(dcslocals.brdData.cpuNo, PULSE_LINE);
         adsp_boot();
         adsp.ctrlRegs[SYSCONTROL_REG] &= ~0x0200;
       }
@@ -411,19 +806,19 @@ static void adsp_irqGen(int dummy) {
     adsp_aBufData.irqCount += 1;
 #ifdef WPCDCSSPEEDUP
     /* wake up suspended cpu by simulating an interrupt trigger */
-    cpu_triggerint(locals.brdData.cpuNo);
+    cpu_triggerint(dcslocals.brdData.cpuNo);
 #endif /* WPCDCSSPEEDUP */
   }
   else {
     adsp_aBufData.irqCount = 1;
     adsp_aBufData.last = 0;
-    cpu_set_irq_line(locals.brdData.cpuNo, ADSP2105_IRQ1, PULSE_LINE);
+    cpu_set_irq_line(dcslocals.brdData.cpuNo, ADSP2105_IRQ1, PULSE_LINE);
   }
 
   next = (adsp_aBufData.size / adsp_aBufData.step * adsp_aBufData.irqCount /
           DCS_IRQSTEPS - 1) * adsp_aBufData.step;
 
-  cpunum_set_reg(locals.brdData.cpuNo, ADSP2100_I0 + adsp_aBufData.iReg,
+  cpunum_set_reg(dcslocals.brdData.cpuNo, ADSP2100_I0 + adsp_aBufData.iReg,
                  adsp_aBufData.start + next);
 
   adsp.txData(adsp_aBufData.start + adsp_aBufData.last, (next - adsp_aBufData.last),
@@ -454,7 +849,7 @@ static void adsp_txCallback(int port, INT32 data) {
     adsp_aBufData.size  = activecpu_get_reg(ADSP2100_L0 + ireg);
     /*-- assume that the first sample comes from the memory position before --*/
     adsp_aBufData.start = activecpu_get_reg(ADSP2100_I0 + ireg) - adsp_aBufData.step;
-    adsp_aBufData.sRate = Machine->drv->cpu[locals.brdData.cpuNo].cpu_clock /
+    adsp_aBufData.sRate = Machine->drv->cpu[dcslocals.brdData.cpuNo].cpu_clock /
                           (2 * (adsp.ctrlRegs[S1_SCLKDIV_REG] + 1)) / 16;
     adsp_aBufData.iReg = ireg;
     adsp_aBufData.irqCount = adsp_aBufData.last = 0;
@@ -480,16 +875,16 @@ UINT32 dcs_speedup(UINT32 pc) {
   if (pc > 0x2000) {
     UINT32 volumeOP = *(UINT32 *)&OP_ROM[ADSP2100_PGM_OFFSET + ((pc+0x2b84-0x2b44)<<2)];
 
-    ram1source = (UINT16 *)(locals.cpuRegion + ADSP2100_DATA_OFFSET + (0x1000<<1));
-    ram2source = locals.RAMbankPtr;
+    ram1source = (UINT16 *)(dcslocals.cpuRegion + ADSP2100_DATA_OFFSET + (0x1000<<1));
+    ram2source = dcslocals.RAMbankPtr;
     volume = ram1source[((volumeOP>>4)&0x3fff)-0x1000];
     /*DBGLOG(("OP=%6x addr=%4x V=%4x\n",volumeOP,(volumeOP>>4)&0x3fff,volume));*/
   }
   else {
     UINT32 volumeOP = *(UINT32 *)&OP_ROM[ADSP2100_PGM_OFFSET + ((pc+0x2b84-0x2b44)<<2)];
 
-    ram1source = (UINT16 *)(locals.cpuRegion + ADSP2100_DATA_OFFSET + (0x0700<<1));
-    ram2source = (UINT16 *)(locals.cpuRegion + ADSP2100_DATA_OFFSET + (0x3800<<1));
+    ram1source = (UINT16 *)(dcslocals.cpuRegion + ADSP2100_DATA_OFFSET + (0x0700<<1));
+    ram2source = (UINT16 *)(dcslocals.cpuRegion + ADSP2100_DATA_OFFSET + (0x3800<<1));
     volume = ram2source[((volumeOP>>4)&0x3fff)-0x3800];
     /*DBGLOG(("OP=%6x addr=%4x V=%4x\n",volumeOP,(volumeOP>>4)&0x3fff,volume));*/
   }
@@ -665,3 +1060,5 @@ UINT32 dcs_speedup(UINT32 pc) {
 }
 
 #endif /* WPCDCSSPEEDUP */
+
+
