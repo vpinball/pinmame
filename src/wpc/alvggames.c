@@ -15,9 +15,10 @@ static struct core_dispLayout alvg_dispDMD[] = {
 };
 
 /* Alpha Numeric Display (2 X 20 Alpha-Numeric) */
-//Gerrit - please adjust this to 20 digits, instead of 16, thanks.
 static const core_tLCDLayout alvg_alpha[] = {
-  DISP_SEG_16(0,CORE_SEG16R),DISP_SEG_16(1,CORE_SEG16R),{0}
+  {0,0, 0,20,CORE_SEG16},
+  {3,0,20,20,CORE_SEG16},
+  {0}
 };
 
 #define INITGAME(name, disptype, flippers, balls, sb, db, lamps) \
