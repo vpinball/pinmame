@@ -398,7 +398,7 @@ DRIVERNV(hotshots)      //S80b-718: 04/89 Hot Shots
 DRIVERNV(bonebstr)      //S80b-719: 08/89 Bone Busters Inc
 //System 3 Alphanumeric
 DRIVERNV(ccruise)       //C-102:    ??/89 Caribbean Cruise (for International Concepts)
-                        //C-103?    ??/89 Night Moves (for International Concepts)
+DRIVERNV(nmoves)        //C-103?    ??/89 Night Moves (for International Concepts)
 DRIVERNV(lca)           //S3-720:   11/89 Lights, Camera, Action
 DRIVERNV(lca2)          //S3-720:   11/89 Lights, Camera, Action (rev.2)
 DRIVERNV(silvslug)      //S3-722:   02/90 Silver Slugger
