@@ -19,6 +19,29 @@ static void init_##name(void) { core_gameData = &name##GameData; }
 
 S7_INPUT_PORTS_START(s7, 1) S7_INPUT_PORTS_END
 
+/*-------------------------------
+/ Firepower - Sys.7 7-Digit Bootleg
+/------------------------------*/
+static const struct core_dispLayout fp_7digit_disp[] = {
+  // Player 1            Player 2
+  {0, 0, 0,7,CORE_SEG7}, {0,18, 7,7,CORE_SEG7},
+  // Player 3            Player 4
+  {2, 0,20,7,CORE_SEG7}, {2,18,27,7,CORE_SEG7},
+  // Left Side           Right Side
+  {4, 9,34,2,CORE_SEG7}, {4,14,14,2,CORE_SEG7}, {0}
+};
+INITGAMEFULL(frpwr,fp_7digit_disp,0,45,26,25,27,28,42,12)
+S7_ROMSTART808x(frpwr,b7,"f7ic14pr.716",CRC(c7a60d8a) SHA1(1921f2ddec96963d7f990cd6b1cdd6b4a6e42810),
+                         "f7ic17gr.532",CRC(a042201a) SHA1(1421e1dbbcb322d83838d68ac0909f4804249815),
+                         "f7ic20ga.716",CRC(584d7b45) SHA1(9ea01eda36dab77dec78c2d1207983c505e406b2))
+S67S_SOUNDROMS8(         "sound3.716",  CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
+S67S_SPEECHROMS000x(     "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c3319fdd72c1af2846659290),
+                         "v_ic5.532",   CRC(1737fdd2) SHA1(6307e0ae715e97294ee8aaaeb2e2bebb0cb590c2),
+                         "v_ic6.532",   CRC(e56f7aa2) SHA1(cb922c3f4d91285dda4ccae880c2d798a82fd51b))
+S7_ROMEND
+#define input_ports_frpwr input_ports_s7
+CORE_CLONEDEF(frpwr,b7,l2,"Firepower (Sys.7 7-digit bootleg)",2003,"Williams / Oliver",s7_mS7S,0)
+
 /*-----------------------------------
 / Cosmic Gunfight - Sys.7 (Game #502)
 /-----------------------------------*/

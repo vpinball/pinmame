@@ -74,8 +74,8 @@ CORE_GAMEDEF(grgar,l1,"Gorgar (L-1)",1979,"Williams",s6_mS6S,0)
 /*-------------------------------
 / Firepower - Sys.6 (Game #497)
 /------------------------------*/
-INITGAMEFULL(frpwr,s6_6digit_disp,0,45,26,25,27,28,42,12)
-S6_ROMSTARTPROM(frpwr,l2, "gamerom.716", CRC(fdd3b983) SHA1(fb5d1eb01589311cf4b2ef16e25db03d40bca2f7),
+INITGAMEFULL(frpwr_l2,s6_6digit_disp,0,45,26,25,27,28,42,12)
+S6_ROMSTARTPROM(frpwr_l2, "gamerom.716", CRC(fdd3b983) SHA1(fb5d1eb01589311cf4b2ef16e25db03d40bca2f7),
                           "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
                           "green2.716",  CRC(1c978a4a) SHA1(1959184764643d58f1740c54bb74c2aad7d667d2),
                           "prom1.474",   CRC(fbb7299f) SHA1(0ae9dbdc6ed8315596bf755ece34691671dc8d44),
@@ -86,8 +86,30 @@ S67S_SPEECHROMS000x(      "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c331
                           "v_ic5.532",   CRC(1737fdd2) SHA1(6307e0ae715e97294ee8aaaeb2e2bebb0cb590c2),
                           "v_ic6.532",   CRC(e56f7aa2) SHA1(cb922c3f4d91285dda4ccae880c2d798a82fd51b))
 S6_ROMEND
-#define input_ports_frpwr input_ports_s6
-CORE_GAMEDEF(frpwr,l2,"Firepower (L-2)",1980,"Williams",s6_mS6S,0)
+#define input_ports_frpwr_l2 input_ports_s6
+CORE_GAMEDEFNV(frpwr_l2,"Firepower (L-2)",1980,"Williams",s6_mS6S,0)
+/*-------------------------------
+/ Firepower - Sys.6 7-Digit Bootleg
+/------------------------------*/
+static const struct core_dispLayout fp_7digit_disp[] = {
+  // Player 1            Player 2
+  {0, 0, 0,7,CORE_SEG7}, {0,18, 7,7,CORE_SEG7},
+  // Player 3            Player 4
+  {2, 0,20,7,CORE_SEG7}, {2,18,27,7,CORE_SEG7},
+  // Left Side           Right Side
+  {4, 9,34,2,CORE_SEG7}, {4,14,14,2,CORE_SEG7}, {0}
+};
+INITGAMEFULL(frpwr_b6,fp_7digit_disp,0,45,26,25,27,28,42,12)
+S6_ROMSTARTMOD(frpwr_b6, "f6p7ic14.732",CRC(e3ecd6f8) SHA1(6fb7cf515804c5c552ef2b9868c561540adb70b4),
+                         "f6p7ic20.716",CRC(5f373730) SHA1(57262ed3d05cee100cd091fc068f09f63218d7e4),
+                         "f6p7ic17.716",CRC(8731ba39) SHA1(3adfde92fc27cc0bb1a21e287773a74365e68214))
+S67S_SOUNDROMS8(         "sound3.716",  CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
+S67S_SPEECHROMS000x(     "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c3319fdd72c1af2846659290),
+                         "v_ic5.532",   CRC(1737fdd2) SHA1(6307e0ae715e97294ee8aaaeb2e2bebb0cb590c2),
+                         "v_ic6.532",   CRC(e56f7aa2) SHA1(cb922c3f4d91285dda4ccae880c2d798a82fd51b))
+S6_ROMEND
+#define input_ports_frpwr_b6 input_ports_frpwr_l2
+CORE_CLONEDEFNV(frpwr_b6,frpwr_l2,"Firepower (Sys.6 7-digit bootleg)",2003,"Williams / Oliver",s6_mS6S,0)
 
 /* Following games used a 7 segment display */
 

@@ -88,28 +88,28 @@ DRIVERNV(startrek)      //BY35-745: 01/78 Star Trek
                         //??        02/78 Skateball (Prototype)
 DRIVERNV(kiss    )      //BY35-746: 04/78 Kiss
 DRIVERNV(ngndshkr)      //BY35-776: 05/78 Nitro Ground Shaker
-DRIVERNV(ngndshkb)      //BY35-776: 11/02 Nitro Ground Shaker (7-digit bootleg)
+DRIVERNV(ngndshkb)      //BY35:     11/02 Nitro Ground Shaker (7-digit bootleg)
 DRIVERNV(slbmania)      //BY35-786: 06/78 Silverball Mania
-DRIVERNV(slbmanib)      //BY35-786: 11/02 Silverball Mania (7-digit bootleg)
+DRIVERNV(slbmanib)      //BY35:     11/02 Silverball Mania (7-digit bootleg)
 DRIVERNV(hglbtrtr)      //BY35-750: 08/78 Harlem Globetrotters On Tour
-DRIVERNV(hglbtrtb)      //BY35-750: 11/02 Harlem Globetrotters On Tour (7-digit bootleg)
+DRIVERNV(hglbtrtb)      //BY35:     11/02 Harlem Globetrotters On Tour (7-digit bootleg)
 DRIVERNV(dollyptn)      //BY35-777: 10/78 Dolly Parton
-DRIVERNV(dollyptb)      //BY35-777: 11/02 Dolly Parton (7-digit bootleg)
+DRIVERNV(dollyptb)      //BY35:     11/02 Dolly Parton (7-digit bootleg)
 DRIVERNV(paragon )      //BY35-748: 12/78 Paragon
 DRIVERNV(futurspa)      //BY35-781: 03/79 Future Spa
-DRIVERNV(futurspb)      //BY35-781: 11/02 Future Spa (7-digit bootleg)
+DRIVERNV(futurspb)      //BY35:     11/02 Future Spa (7-digit bootleg)
 DRIVERNV(spaceinv)      //BY35-792: 05/79 Space Invaders
-DRIVERNV(spaceinb)      //BY35-792: 11/02 Space Invaders (7-digit bootleg)
+DRIVERNV(spaceinb)      //BY35:     11/02 Space Invaders (7-digit bootleg)
 DRIVERNV(rollston)      //BY35-796: 06/79 Rolling Stones
-DRIVERNV(rollstob)      //BY35-796: 11/02 Rolling Stones (7-digit bootleg)
+DRIVERNV(rollstob)      //BY35:     11/02 Rolling Stones (7-digit bootleg)
 DRIVERNV(mystic  )      //BY35-798: 08/79 Mystic
-DRIVERNV(mysticb )      //BY35-798: 11/02 Mystic (7-digit bootleg)
+DRIVERNV(mysticb )      //BY35:     11/02 Mystic (7-digit bootleg)
 DRIVERNV(xenon   )      //BY35-811: 11/79 Xenon
 DRIVERNV(xenonf  )      //BY35-811: 11/79 Xenon (French)
 DRIVERNV(hotdoggn)      //BY35-809: 12/79 Hotdoggin'
-DRIVERNV(hotdoggb)      //BY35-809: 11/02 Hotdoggin' (7-digit bootleg)
+DRIVERNV(hotdoggb)      //BY35:     11/02 Hotdoggin' (7-digit bootleg)
 DRIVERNV(viking  )      //BY35-802: 12/79 Viking
-DRIVERNV(vikingb )      //BY35-802: 11/02 Viking (7-digit bootleg)
+DRIVERNV(vikingb )      //BY35:     11/02 Viking (7-digit bootleg)
 DRIVERNV(skatebll)      //BY35-823: 04/80 Skateball
 DRIVERNV(frontier)      //BY35-819: 05/80 Frontier
 DRIVERNV(flashgdn)      //BY35-834: 05/80 Flash Gordon
@@ -117,7 +117,7 @@ DRIVERNV(flashgdf)      //BY35-834: 05/80 Flash Gordon (French)
 DRIVERNV(eballdlx)      //BY35-838: 09/80 Eight Ball Deluxe
 DRIVERNV(fball_ii)      //BY35-839: 09/80 Fireball II
 DRIVERNV(embryon )      //BY35-841: 09/80 Embryon
-DRIVERNV(embryonb)      //BY35-841: 10/02 Embryon (7-digit bootleg)
+DRIVERNV(embryonb)      //BY35:     10/02 Embryon (7-digit bootleg)
 DRIVERNV(fathom  )      //BY35-842: 12/80 Fathom
 DRIVERNV(medusa  )      //BY35-845: 02/81 Medusa
 DRIVERNV(centaur )      //BY35-848: 02/81 Centaur
@@ -605,7 +605,7 @@ DRIVERNV(taitest )      //??/8? Test Fixture
 // TECHNOPLAY GAMES
 // ----------------
 
-DRIVERNV(scram_tp)      //??/87 Scramble
+DRIVERNV(scram_tp)      //03/87 Scramble
 
 // ----------------
 // UNITED GAMES
@@ -640,6 +640,7 @@ DRIVER(tmwrp,l2)        //S6-489:   09/79 W Time Warp
 DRIVER(grgar,l1)        //S6-496:   11/79 W Gorgar
 DRIVER(lzbal,l2)        //S6-493:   12/79 W Laser Ball
 DRIVER(frpwr,l2)        //S6-497:   02/80 W Firepower
+DRIVER(frpwr,b6)        //S6:       12/03 W Firepower (Sys.6 7-digit bootleg)
 DRIVER(blkou,l1)        //S6-495:   06/80 W Blackout
 DRIVER(scrpn,l1)        //S6-494:   07/80 W Scorpion
 DRIVER(algar,l1)        //S6-499:   09/80 W Algar
@@ -647,6 +648,7 @@ DRIVER(alpok,l2)        //S6-501:   10/80 W Alien Poker L-2
 DRIVER(alpok,l6)        //S6-501:   10/80 W Alien Poker L-6
 DRIVER(alpok,f6)        //S6-501:   10/80 W Alien Poker L-6, French speech
 //System 7
+DRIVER(frpwr,b7)        //S7:       12/03 W Firepower (Sys.7 7-digit bootleg)
 DRIVER(bk,l4)           //S7-500:   11/80 W Black Knight
 DRIVER(jngld,l2)        //S7-503:   02/81 W Jungle Lord
 DRIVER(pharo,l2)        //S7-504:   05/81 W Pharoah

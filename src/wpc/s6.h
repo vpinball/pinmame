@@ -108,8 +108,18 @@
       ROM_LOAD(ic20, 0x7000, 0x0800, chk20) \
         ROM_RELOAD(  0xf000, 0x0800)
 
-#define S6_ROMSTARTPROM(name, ver, ic14,chk14, ic20,chk20, ic17,chk17, ic21,chk21, ic22,chk22, ic26,chk26) \
-  ROM_START(name##_##ver) \
+#define S6_ROMSTARTMOD(name, ic14,chk14, ic20,chk20, ic17,chk17) \
+  ROM_START(name) \
+    NORMALREGION(0x10000, S6_CPUREGION) \
+      ROM_LOAD(ic14, 0x6000, 0x1000, chk14) \
+        ROM_RELOAD(  0xe000, 0x1000) \
+      ROM_LOAD(ic17, 0x7800, 0x0800, chk17) \
+        ROM_RELOAD(  0xf800, 0x0800) \
+      ROM_LOAD(ic20, 0x7000, 0x0800, chk20) \
+        ROM_RELOAD(  0xf000, 0x0800)
+
+#define S6_ROMSTARTPROM(name, ic14,chk14, ic20,chk20, ic17,chk17, ic21,chk21, ic22,chk22, ic26,chk26) \
+  ROM_START(name) \
     NORMALREGION(0x10000, S6_CPUREGION) \
       ROM_LOAD(ic14, 0x6800, 0x0800, chk14) \
         ROM_RELOAD(  0xe800, 0x0800) \
