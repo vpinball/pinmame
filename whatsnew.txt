@@ -1,8 +1,11 @@
 Version 1.33 (??, 2004) - "??"
 ------------------------------
+The future of PinMAME has never looked better! With new team members Thomas Behrens and Oliver O? making huge
+and immediate contributions, and Steve's temporary break from retirement, this release is destined to be one
+of the largest and most significant yet. Many often requested features and bug fixes are included, as well as
+several new hardware systems. Pinball fans will definitely be pleased with this release. 
+(Gerrit to add more if necessary)
 
-Steve took a quick break from retirement to whip together the spinball emulation and to get the
-technoplay x-force driver working.. (gerrit add more text here)
 
 Bugs Fixed
 ----------
@@ -23,22 +26,36 @@ Bugs Fixed
   Also flipper keys can now be used to navigate the service menue on Blackwater
   and Truckstop.
   [Gerrit Volkenborn, Thomas Behrens]
-- Stern Colden Cue and Sharkey's Shootout: These games are now working. Emulation
+- WMS System 11 and Data East: Fixed code to remove erraneous solenoid "spikes".
+  While this primarily fixes DE Playboy 35th Anniversary, all Sys11/DE games
+  will show more precise solenoid operation now.
+  [Martin Adrian, Thomas Behrens]
+- Stern Golden Cue and Sharkey's Shootout: These games are now working. Emulation
   support for the upper left flipper is still missing.
   [Thomas Behrens]
 
 New Features
 ------------
+- Emulation of Stern Pinball's new Sound board - Used on LOTR and newer games.
+  Unfortunately the emulated 40Mhz cpu cannot run full speed with < 3-4 Ghz machine thus far.
+  (HUGE THANK YOU TO DESTRUK FOR DONATING HIS OWN $ TO BUY AN EXTREMELY EXPENSIVE
+   LOTR SOUND BOARD WITHOUT WHICH THE EMULATION COULD HAVE NEVER BEEN ACHIEVED!!)
+  [Steve Ellenoff]
 
 - Spinball emulation including full Sound and DMD support
   (Big thanks to inkochnito for posting links to both the manual and rom on the
   forum so we could access them)
   [Steve Ellenoff, Gerrit Volkenborn]
 
+- Working Tecnoplay driver (X-Force) including display, lamps, solenoids, switches.
+  (Need sound roms to be able to begin work on sound emulation)
+  [Steve Ellenoff]
+
+- New ARM7TDMI CPU Core and Atmel 9140008 CPU Core (for new Stern Sound)
 - Added External Hardware Addressing to 8051 cpu core
 - Added support for Serial UART mode 1 to 8051
-- Working Tecnoplay driver including display, lamps, solenoids, switches.
-  (Need sound roms to be able to begin work on sound emulation)
+- Emulation of the 4094 Serial shifter chip (used in Championship Pub Dual LEDS)
+- Preliminary Nuova Bell driver (F1 Grand Prix) - (not really working yet)
   [Steve Ellenoff]
 
 
