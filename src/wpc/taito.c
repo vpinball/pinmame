@@ -14,8 +14,13 @@
 
 static struct {
   int vblankCount;
+  core_tSeg segments;
+  UINT32 solenoids;
+  int sndCmd, oldsndCmd;
+
   void* timer_irq;
   UINT8* pDisplayRAM;
+  UINT8* pCommandsDMA;
 } locals;
 
 static NVRAM_HANDLER(taito);
@@ -30,8 +35,15 @@ static INTERRUPT_GEN(taito_vblank) {
   /--------------------------------*/
   locals.vblankCount += 1;
 
+  /*-- solenoids --*/
+  if ((locals.vblankCount % TAITO_SOLSMOOTH) == 0) {
+    coreGlobals.solenoids = locals.solenoids;
+  }
+
   /*-- display --*/
   if ((locals.vblankCount % TAITO_DISPLAYSMOOTH) == 0) {
+	memcpy(coreGlobals.segments, locals.segments, sizeof coreGlobals.segments);
+/*
 	int i = 0;
 
 	for (i=0; i<14; i++)
@@ -39,6 +51,7 @@ static INTERRUPT_GEN(taito_vblank) {
 		((int*) coreGlobals.segments)[2*i+segMap[i]]   = core_bcd2seg[(*(locals.pDisplayRAM+i)>>4)&0x0f];
 		((int*) coreGlobals.segments)[2*i+segMap[i]+1] = core_bcd2seg[*(locals.pDisplayRAM+i)&0x0f];
 	}
+*/
   }
 
   core_updateSw(core_getSol(16));
@@ -62,8 +75,8 @@ static void timer_irq(int data) {
 static MACHINE_INIT(taito) {
   memset(&locals, 0, sizeof(locals));
 
-  locals.pDisplayRAM = memory_region(TAITO_MEMREG_CPU) + 0x4080;
-
+  locals.pDisplayRAM  = memory_region(TAITO_MEMREG_CPU) + 0x4080;
+  locals.pCommandsDMA = memory_region(TAITO_MEMREG_CPU) + 0x4090;
 
   locals.timer_irq = timer_alloc(timer_irq);
   timer_adjust(locals.timer_irq, TIME_IN_HZ(TAITO_IRQFREQ), 0, TIME_IN_HZ(TAITO_IRQFREQ));
@@ -96,6 +109,61 @@ static WRITE_HANDLER(cmd_w) {
 	logerror("command (?) write: %i %i\n", offset, data);
 }
 
+static WRITE_HANDLER(dma_display)
+{
+	locals.pDisplayRAM[offset] = data;
+
+	((int*) locals.segments)[2*offset+segMap[offset]]   = core_bcd2seg[(data>>4)&0x0f];
+	((int*) locals.segments)[2*offset+segMap[offset]+1] = core_bcd2seg[data&0x0f];
+}
+
+static WRITE_HANDLER(dma_commands)
+{
+	// upper nibbles of offset 0-1: solenoids
+	// upper nibbles of offset 2-3: sound commands
+	// lower nibbles: lamps, offset 0-?
+	locals.pCommandsDMA[offset] = data;
+
+	switch ( offset ) {
+	case 0:
+		// upper nibble: - solenoids 13-14 (mux relay and play relay) 
+		//				 - solenoids 5-6 or 11-12 depending on mux relay
+		locals.solenoids = (locals.solenoids & 0xfff) | ((data&0xc0)<<6);
+		if ( locals.solenoids&0x1000 )
+			// 11-12
+			locals.solenoids = (locals.solenoids & 0x33ff) | ((data&0x30)<<6);
+		else
+			// 5-6
+			locals.solenoids = (locals.solenoids & 0x3fcf) | (data&0x30);
+		break;
+
+	case 1:
+		// upper nibble: solenoids 1-4 or 7-10 depending on mux relay
+		if ( locals.solenoids&0x1000 )
+			// 7-10
+			locals.solenoids = (locals.solenoids & 0x3c3f) | ((data&0xf0)<<2);
+		else
+			// 1-4
+			locals.solenoids = (locals.solenoids & 0x3ff0) | ((data&0xf0)>>4);
+		break;
+
+	case 2:
+		// upper nibble: sound command 5-8 (or vv)
+		locals.sndCmd = (locals.sndCmd & 0x0f) | (data&0xf0);
+		break;
+
+	case 3:
+		// upper nibble: sound command 1-4 (or vv)
+		locals.sndCmd = (locals.sndCmd & 0xf0) | ((data&0xf0)>>4);
+		break;
+	}
+
+	if ( locals.oldsndCmd!=locals.sndCmd ) {
+		logerror("new sound command: %i\n", locals.sndCmd);
+		locals.oldsndCmd = locals.sndCmd;
+	}
+}
+
 static MEMORY_READ_START(taito_readmem)
   { 0x0000, 0x1fff, MRA_ROM },
   { 0x3000, 0x3eff, MRA_ROM },
@@ -107,7 +175,10 @@ static MEMORY_WRITE_START(taito_writemem)
   { 0x0000, 0x1fff, MWA_ROM },
   { 0x3000, 0x3eff, MWA_ROM },
   { 0x3f00, 0x3fff, cmd_w },
-  { 0x4000, 0x40ff, MWA_RAM },
+  { 0x4000, 0x407f, MWA_RAM },
+  { 0x4080, 0x408f, dma_display },
+  { 0x4090, 0x409f, dma_commands },
+  { 0x40a0, 0x40ff, MWA_RAM },
 MEMORY_END
 
 MACHINE_DRIVER_START(taito)
