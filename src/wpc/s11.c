@@ -107,8 +107,14 @@ static INTERRUPT_GEN(s11_vblank) {
     coreGlobals.solenoids = locals.solenoids;
     coreGlobals.solenoids2 = (locals.extSol<<8);
     if ((core_gameData->sxx.muxSol) &&
-        (locals.solenoids & CORE_SOLBIT(core_gameData->sxx.muxSol)))
-      coreGlobals.solenoids = (locals.solenoids & 0x00ffff00) | (locals.solenoids<<24);
+        (locals.solenoids & CORE_SOLBIT(core_gameData->sxx.muxSol))) {
+      if (core_gameData->hw.gameSpecific1 & S11_RKMUX)
+        coreGlobals.solenoids = (locals.solenoids & 0x00ff8fef) |
+                               ((locals.solenoids & 0x00000010)<<20) |
+                               ((locals.solenoids & 0x00007000)<<13);
+      else
+        coreGlobals.solenoids = (locals.solenoids & 0x00ffff00) | (locals.solenoids<<24);
+    }
     if (locals.ssEn) {
       int ii;
       coreGlobals.solenoids |= CORE_SOLBIT(S11_GAMEONSOL);
@@ -413,9 +419,6 @@ static int s11_sw2m(int no) { return no+7; }
 static int s11_m2sw(int col, int row) { return col*8+row-7; }
 
 static MACHINE_INIT(s11) {
-  if (!core_gameData->hw.display & S11_ONELINE) {
-    set_visible_area(0, 255, 0, 255);
-  }
   if (core_gameData->gen & (GEN_DE | GEN_DEDMD16 | GEN_DEDMD32 | GEN_DEDMD64))
     locals.deGame = 1;
   pia_config(S11_PIA0, PIA_STANDARD_ORDERING, &s11_pia[0]);
