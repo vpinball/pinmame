@@ -728,6 +728,22 @@ CORE_CLONEDEFNV(austini,austin,"Austin Powers (Italy)",2001,"Stern",de_mSES2,GAM
 // Monopoly moved to its own sim file (gv)
 
 /*-------------------------------------------------------------------
+/ NFL
+/-------------------------------------------------------------------*/
+INITGAME(nfl,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(nfl,"nfl_v101.cpu", CRC(eeb81a51) SHA1(c87e5f50cc95b1d0206abc3c132f5f3314a9253c))
+DE_DMD32ROM8x(     "nfl_v102.dmd",CRC(fd7bc50a) SHA1(5c92af91e7e12024026a06002e6c6bf68230fcc0))
+DE2S_SOUNDROM18888("nfl_v100.u7" ,CRC(3fc766f8) SHA1(27341594e7d4a23146e6e6ec8ebdea125231cf91),
+                  "nfl_v100.u17",CRC(f36b72ed) SHA1(f8fcbdb31295d363d1e7ad98dc318ab52bcfc52b),
+                  "nfl_v100.u21",CRC(f5a6c053) SHA1(30a9cda6c9d9c43f0f6690138cf74c39c79ba43e),
+                  "nfl_v100.u36",CRC(26dae8ac) SHA1(ec18f13578c5c291b777344b2830cde2ecf3581c),
+                  "nfl_v100.u37",CRC(375d5a99) SHA1(4b49c58968da645bd0ad60ed16744974b863164e))
+SE_ROMEND
+#define input_ports_nfl input_ports_se
+CORE_GAMEDEFNV(nfl,"NFL",2001,"Stern",de_mSES2,GAME_NOCRC)
+
+
+/*-------------------------------------------------------------------
 / Playboy (5.0)
 /-------------------------------------------------------------------*/
 INITGAME(playboys,GEN_WS,se_dmd128x32,0)

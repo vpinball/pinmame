@@ -657,6 +657,7 @@ DRIVERNV(monopolg)      //Whitestar: 09/01 Monopoly (German display)
 DRIVERNV(monopoll)      //Whitestar: 09/01 Monopoly (Spanish display)
 DRIVERNV(monopolf)      //Whitestar: 09/01 Monopoly (French display)
 DRIVERNV(monopoli)      //Whitestar: 09/01 Monopoly (Italian display)
+DRIVERNV(nfl)			//Whitestar: 11/01 NFL
 
 #ifdef INCLUDE_NEW_STERN
 DRIVER  (harl,a18)      //Whitestar: 07/03 Harley Davidson (1.08)
