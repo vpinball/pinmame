@@ -8,6 +8,7 @@ extern "C" {
 static const struct tAliasTable { const char* alias; const char* real; } aliasTable[] = {
   { "eshak_f1", "esha_pr4" },
   { "eshak_l1", "esha_la1" },
+  { "eshak_l3", "esha_la3" },
   { "lwar", "lwar_a83" },
   { "ssvc", "ssvc_a26" },
   { "torpe", "torp_e21" },
