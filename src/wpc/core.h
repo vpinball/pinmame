@@ -153,19 +153,18 @@
 /------------------------------*/
 /* The different kind of display units */
 #define CORE_SEG16    0 // 16 segments
-#define CORE_SEG16R   1 // 16 segments
-#define CORE_SEG10    2 // 10 segments
-#define CORE_SEG9     3 // 10 segments
-#define CORE_SEG8     4 // 8  segments
-#define CORE_SEG7     5 // 7  segments
-#define CORE_SEG87    6 // 7  segments, comma every three
-#define CORE_SEG87F   7 // 7  segments, forced comma every three
-#define CORE_SEG98    8 // 9  segments, comma every three
-#define CORE_SEG98F   9 // 9  segments, forced comma every three
-#define CORE_SEG7S  0xa // 7  segments, small
-#define CORE_DMD    0xb // DMD Display
-#define CORE_DMD2   0xc // another DMD Display
-#define CORE_VIDEO  0xd // VIDEO Display
+#define CORE_SEG10    1 // 10 segments
+#define CORE_SEG9     2 // 10 segments
+#define CORE_SEG8     3 // 8  segments
+#define CORE_SEG7     4 // 7  segments
+#define CORE_SEG87    5 // 7  segments, comma every three
+#define CORE_SEG87F   6 // 7  segments, forced comma every three
+#define CORE_SEG98    7 // 9  segments, comma every three
+#define CORE_SEG98F   8 // 9  segments, forced comma every three
+#define CORE_SEG7S    9 // 7  segments, small
+#define CORE_DMD    0xa // DMD Display
+#define CORE_DMD2   0xb // another DMD Display
+#define CORE_VIDEO  0xc // VIDEO Display
 #define CORE_IMPORT 0xf // Link to another display layout
 
 #define CORE_SEGHIBIT 0x10
@@ -440,6 +439,13 @@ extern void core_nvram(void *file, int write, void *mem, int length, UINT8 init)
 extern const UINT8 core_swapNyb[16];
 INLINE UINT8 core_revbyte(UINT8 x) { return (core_swapNyb[x & 0xf]<<4)|(core_swapNyb[x>>4]); }
 INLINE UINT8 core_revnyb(UINT8 x) { return core_swapNyb[x]; }
+INLINE UINT16 core_revword(UINT16 x) {
+	UINT8 lo,hi;
+	lo = core_revbyte(x & 0x00ff);
+	hi = core_revbyte((x & 0xff00)>>8);
+	return ((lo<<8) | hi);
+}
+
 /*-- core DIP handling --*/
 //  Get the status of a DIP bank (8 dips)
 extern int core_getDip(int dipBank);
