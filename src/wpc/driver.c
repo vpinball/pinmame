@@ -782,7 +782,8 @@ DRIVER(mousn,l4)        //S11-1635: 12/89 B Mousin' Around! (L-4)
                         //???:      ??/90 B Mazatron
                         //???:      ??/90 B Player's Choice
                         //???:      ??/90 B Ghost Gallery
-DRIVER(whirl,l3)        //S11-574:  01/90 W Whirlwind
+DRIVER(whirl,l3)        //S11-574:  01/90 W Whirlwind (L-3)
+DRIVER(whirl,l2)        //S11-574:  01/90 W Whirlwind (L-2)
 DRIVER(gs,l3)           //S11-985:  04/90 B Game Show (L-3)
 DRIVER(gs,l4)           //S11-985:  04/90 B Game Show (L-4)
 DRIVER(rollr,l2)        //S11-576:  06/90 W Rollergames (L-2)
