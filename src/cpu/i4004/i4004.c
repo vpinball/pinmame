@@ -32,7 +32,7 @@ static UINT8 i4004_win_layout[] = {
 
 /* no idea what the original mapping is */
 static UINT8 kbptable[] = {
-	0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07
+	0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
 };
 
 typedef struct {
@@ -725,6 +725,7 @@ INLINE void execute_one(int opcode)
 			I.carry = 0;
 			break;
 		case 0xf2: /* IAC */
+			I.carry = (I.accu == 0x0f);
 			I.accu = (I.accu + 1) & 0x0f;
 			break;
 		case 0xf3: /* CMC */
@@ -748,7 +749,13 @@ INLINE void execute_one(int opcode)
 			I.carry = 0;
 			break;
 		case 0xf8: /* DAC */
-			I.accu = (I.accu - 1) & 0x0f;
+			if (I.accu == 0) {
+				I.accu = 0x0f;
+				I.carry = 1;
+			} else {
+				I.accu--;
+				I.carry = 0;
+			}
 			break;
 		case 0xf9: /* TCS */
 			I.accu = (I.accu - I.carry) & 0x0f;
@@ -822,7 +829,9 @@ void i4004_init(void)
  ****************************************************************************/
 void i4004_reset(void *param)
 {
+	int testSave = I.test;
 	memset(&I, 0, sizeof(i4004_Regs));
+	I.test = testSave;
 	change_pc16(I.PC.d);
 }
 
@@ -851,8 +860,10 @@ void i4004_set_context(void *src)
 {
 	if( src )
 	{
+		int testSave = I.test;
 		I = *(i4004_Regs*)src;
 		change_pc16(I.PC.d);
+		I.test = testSave;
 	}
 }
 
