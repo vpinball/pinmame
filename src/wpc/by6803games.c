@@ -34,7 +34,7 @@ static void init_##name(void) { core_gameData = &name##GameData; }
 / Eight Ball Champ (6803-0B38: 09/85) - Manual says can work with Cheap Squeek also via operator setting
 /------------------------------------*/
 //CPU Works
-INITGAME6803(eballchp,GEN_BY6803,dispBy7C,FLIP_SW(FLIP_L),4,SNDBRD_BY61, BY6803_DISP7SEG)
+INITGAME6803(eballchp,GEN_BY6803,dispBy7C,FLIP_SWNO(0,26),4,SNDBRD_BY61, BY6803_DISP7SEG)
 BY6803_ROMSTARTx4(eballchp,"u3_cpu.128",0x025f3008)
 BY61_SOUNDROMx000(         "u3_snd.532",0x4836d70d,
                            "u4_snd.532",0x4b49d94d,
@@ -43,7 +43,7 @@ BY6803_ROMEND
 #define input_ports_eballchp input_ports_by6803
 CORE_GAMEDEFNV(eballchp,"Eight Ball Champ",1985,"Bally",by_mBY6803_61S,0)
 
-INITGAME6803(eballch2,GEN_BY6803,dispBy7C,FLIP_SW(FLIP_L),4,SNDBRD_BY45, BY6803_DISP7SEG)
+INITGAME6803(eballch2,GEN_BY6803,dispBy7C,FLIP_SWNO(0,26),4,SNDBRD_BY45, BY6803_DISP7SEG)
 BY6803_ROMSTARTx4(eballch2,"u3_cpu.128",0x025f3008)
 BY45_SOUNDROM22(           "ebcu3.snd", 0x00000000,
                            "ebcu4.snd", 0x00000000)
