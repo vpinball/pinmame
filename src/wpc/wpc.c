@@ -304,11 +304,11 @@ READ_HANDLER(wpc_r) {
   switch (offset) {
     case WPC_FLIPPERS: /* Flipper switches */
       if (core_gameData->gen & (GEN_ALLWPC & ~(GEN_WPC95|GEN_WPC95DCS)))
-        return ~coreGlobals.swMatrix[WPC_CABINETSWCOL];
+        return ~coreGlobals.swMatrix[CORE_FLIPPERSWCOL];
       break;
     case WPC_FLIPPERSW95:
       if (core_gameData->gen & (GEN_WPC95|GEN_WPC95DCS))
-        return ~coreGlobals.swMatrix[WPC_CABINETSWCOL];
+        return ~coreGlobals.swMatrix[CORE_FLIPPERSWCOL];
       break;
     case WPC_SWCOINDOOR: /* cabinet switches */
       return coreGlobals.swMatrix[CORE_COINDOORSWCOL];
@@ -613,6 +613,12 @@ static void wpc_updSw(int *inports) {
   }
 }
 
+// convert lamp and switch numbers
+// both use column*10+row
+// convert to 0-63 (+8)
+// i.e. 11=8,12=9,21=16
+static int wpc_sw2m(int no) { return (no/10)*8+(no%10-1); }
+static int wpc_m2sw(int col, int row) { return col*10+row+1; }
 static void wpc_sndCmd(int cmd) {
   if (core_gameData->gen & (GEN_WPCDCS|GEN_WPCSECURITY|GEN_WPC95|GEN_WPC95DCS))
     dcs_data_w(0,cmd);
@@ -625,14 +631,16 @@ static core_tData dcs_coreData = {
   wpc_updSw,
   1,
   dcs_data_w,
-  "dcs"
+  "dcs",
+  wpc_sw2m, wpc_sw2m,wpc_m2sw,wpc_m2sw
 };
 static core_tData wpcs_coreData = {
   8, /* 8 DIPs */
   wpc_updSw,
   1,
   wpcs_data_w,
-  "wpcs"
+  "wpcs",
+  wpc_sw2m, wpc_sw2m,wpc_m2sw,wpc_m2sw
 };
 static void wpc_init(void) {
                               /*128K  256K        512K        768K       1024K*/

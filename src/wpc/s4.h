@@ -93,7 +93,6 @@
 
 #define S3_INPUT_PORTS_END INPUT_PORTS_END
 
-
 /*-- Common Inports for S4 Games --*/
 #define S4_COMPORTS \
   PORT_START /* 0 */ \
@@ -162,7 +161,6 @@
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x8000, "1" )
 
-
 /*-- Standard input ports --*/
 #define S4_INPUT_PORTS_START(name,balls) \
   INPUT_PORTS_START(name) \
@@ -175,11 +173,11 @@
 #define S4_COMINPORT       CORE_COREINPORT
 
 /*-- S4 switch numbers --*/
-#define S4_SWADVANCE     1
-#define S4_SWUPDN        2
-#define S4_SWCPUDIAG     3
-#define S4_SWSOUNDDIAG   4
-#define S4_ENTER		 5
+#define S4_SWADVANCE    -7
+#define S4_SWUPDN       -6
+#define S4_SWCPUDIAG    -5
+#define S4_SWSOUNDDIAG  -4
+#define S4_ENTER	-3
 
 /*-------------------------
 / Machine driver constants
@@ -219,7 +217,6 @@ extern struct MachineDriver machine_driver_s3c;
 
 /* standard 6 digit display layout */
 extern core_tLCDLayout s4_disp[];
-
 
 #endif /* INC_S4 */
 

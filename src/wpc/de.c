@@ -19,7 +19,7 @@
 	3) 520-5030-00: 2 X 16 Digit (16 Seg Alphanumeric)
 		(MNF to Simpsons)
 	
-   Sound Board Revisions: 
+   Sound Board Revisions:
 	1) 520-5002 Series: M6809 cpu, YM2151, MSM5205, hc4020 for stereo decoding.
 		a) -00 generation, used 27256 eproms (only Laser War)
 	    b) -02 generation, used 27256 & 27512 eproms (Laser War - Back to the Future)
@@ -29,7 +29,7 @@
 /* Coin Door Buttons Operation
    ---------------------------
    Buttons are: Green(Up/Down) & Black(Momentary Switch)
-   
+
    a) If Green = Up and Black is pressed, enter Audits Menu.
 		1) If Green = Up and Black is pressed, Cycle to Next Audit Function
 		2) If Green = Down and Black is pressed, Cycle to Previous Audit Function
@@ -85,7 +85,7 @@ static void de_piaMainIrq(int state) {
 }
 
 static int de_irq(void) {
-  //Reset the input latch for the Advance button.. 
+  //Reset the input latch for the Advance button..
   //(This greatly increases the responsiveness of the button for some reason!)
   pia_set_input_ca1(2, 1);
 
@@ -170,7 +170,7 @@ static WRITE_HANDLER(pia3a_w) {
 	delocals.segments[0][delocals.digSel].lo |= delocals.pseg[0][delocals.digSel].lo = data;
 }
 static WRITE_HANDLER(pia3b_w) {
-  /*Alpha Segments*/  
+  /*Alpha Segments*/
   delocals.segments[0][delocals.digSel].hi |= delocals.pseg[0][delocals.digSel].hi = data;
   //logerror("[0].hi = %x\n",data);
 }
@@ -236,9 +236,9 @@ static WRITE_HANDLER(pia5ca2_w) {}
 static READ_HANDLER (pia5a_r)  {return 0x00;}
 
 //Set state of up/down switch(inverted), and return state of advance switch(inverted)
-static READ_HANDLER (pia2ca1_r) { 
-	pia_set_input_cb1(2, !core_getSwSeq(DE_SWUPDN)); 
-	return !core_getSwSeq(DE_SWADVANCE);
+static READ_HANDLER (pia2ca1_r) {
+	pia_set_input_cb1(2, !core_getSw(DE_SWUPDN));
+	return !core_getSw(DE_SWADVANCE);
 }
 //Not sure why this must always return 0, but otherwise, coin doors act very strange!
 static READ_HANDLER (pia2cb1_r) {return 0;}
@@ -322,13 +322,13 @@ static void de_updSw(int *inports) {
     coreGlobals.swMatrix[1] = inports[DE_COMINPORT];
   }
   /* Show Status of Black Advance Switch */
-  if(core_getSwSeq(DE_SWADVANCE))
+  if(core_getSw(DE_SWADVANCE))
           core_textOutf(40, 20, BLACK, "%-7s","B-Down");
   else
           core_textOutf(40, 20, BLACK, "%-7s","B-Up");
 
   /* Show Status of Green Up/Down Switch */
-  if(core_getSwSeq(DE_SWUPDN))
+  if(core_getSw(DE_SWUPDN))
           core_textOutf(40, 30, BLACK, "%-7s","G-Down");
   else
           core_textOutf(40, 30, BLACK, "%-7s","G-Up");
@@ -344,8 +344,8 @@ static core_tData deData = {
   0, /* No DIPs */
   de_updSw,
   1,
-  de_sndCmd_w,
-  "de"
+  de_sndCmd_w, "de",
+  core_swSeq2m, core_swSeq2m,core_m2swSeq,core_m2swSeq
 };
 
 static void de_init(void) {

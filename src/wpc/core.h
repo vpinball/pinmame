@@ -43,16 +43,6 @@
   #define CORE_DOEXIT(x) x()
 #endif
 
-/*-- each core must fill in one of these --*/
-typedef struct {
-  int  coreDips;               /* Number of core DIPs */
-  void (*updSw)(int *inport);  /* update core specific switches */
-  int  diagLEDs;               /* number of diagnostic LEDs */
-  mem_write_handler sndCmd;    /* send a sound command */
-  char sndHead[10];            /* heading in sound.dat */
-} core_tData;
-#define CORE_DIAG7SEG           0xff
-#define DIAGLED_VERTICAL	0x100	/*Flag indicated DIAG LEDS are Vertically Positioned*/
 
 /*-- no of DMD frames to add together to create shades --*/
 /*-- (hardcoded, do not change)                        --*/
@@ -298,41 +288,33 @@ extern void gen_refresh(struct mame_bitmap *bitmap, int fullRefresh);
 #define CORE_STDLAMPCOLS   8
 #define CORE_STDSWCOLS    12
 
-#define CORE_COINDOORSWCOL  0   /* internal array number */
-#define CORE_MAXSWCOL      16   /* switch columns (0-9=sw matrix, 10=coin door, 11=cabinet/flippers) */
-#define WPC_CABINETSWCOL   11  /* internal array number */
+#define CORE_COINDOORSWCOL   0   /* internal array number */
+#define CORE_MAXSWCOL       16   /* switch columns (0-9=sw matrix, 10=coin door, 11=cabinet/flippers) */
+#define CORE_FLIPPERSWCOL   11   /* internal array number */
 #define CORE_CUSTSWCOL     CORE_STDSWCOLS  /* first custom (game specific) switch column */
-#define CORE_MAXLAMPCOL    20  /* lamp column (0-7=std lamp matrix 8- custom) */
+#define CORE_MAXLAMPCOL     20   /* lamp column (0-7=std lamp matrix 8- custom) */
 #define CORE_CUSTLAMPCOL   CORE_STDLAMPCOLS  /* first custom lamp column */
-#define CORE_MAXPORTS       8  /* Maximum input ports */
-#define CORE_MAXGI          5  /* Maximum GI strings */
+#define CORE_MAXPORTS        8   /* Maximum input ports */
+#define CORE_MAXGI           5   /* Maximum GI strings */
 
 /*-- create a custom switch number --*/
 /* example: #define swCustom CORE_CUSTSWNO(1,2)  // custom column 1 row 2 */
 #define CORE_CUSTSWNO(c,r) ((CORE_CUSTSWCOL-1+c)*10+r)
 
 /*-------------------
-/  Cabinet switches
+/  Flipper Switches
+/ in column FLIPPERSWCOL
 /--------------------*/
-#define swF1   111
-#define swF2   112
-#define swF3   113
-#define swF4   114
-#define swF5   115
-#define swF6   116
-#define swF7   117
-#define swF8   118
+#define CORE_SWLRFLIPEOSBIT 0x01
+#define CORE_SWLRFLIPBUTBIT 0x02
+#define CORE_SWLLFLIPEOSBIT 0x04
+#define CORE_SWLLFLIPBUTBIT 0x08
+#define CORE_SWURFLIPEOSBIT 0x10
+#define CORE_SWURFLIPBUTBIT 0x20
+#define CORE_SWULFLIPEOSBIT 0x40
+#define CORE_SWULFLIPBUTBIT 0x80
 
-#define swLRFlipEOS swF1
-#define swLRFlip    swF2
-#define swLLFlipEOS swF3
-#define swLLFlip    swF4
-#define swURFlipEOS swF5
-#define swURFlip    swF6
-#define swULFlipEOS swF7
-#define swULFlip    swF8
-
-#define SEQ_SWNO(x) ((((x)+7)/8)*10+(((x)-1)%8)+1)
+#define SEQ_SWNO(x) (x)
 
 #define CORE_FIRSTSIMROW   80 /* first free row on display */
 #define CORE_COLOR(x)      Machine->pens[(x)]
@@ -448,6 +430,21 @@ typedef struct {
 } core_tGameData;
 extern core_tGameData *core_gameData;
 
+/*-- each core must fill in one of these --*/
+typedef struct {
+  int  coreDips;               /* Number of core DIPs */
+  void (*updSw)(int *inport);  /* update core specific switches */
+  int  diagLEDs;               /* number of diagnostic LEDs */
+  mem_write_handler sndCmd;    /* send a sound command */
+  char sndHead[10];            /* heading in sound.dat */
+  int (*sw2m)(int no);         /* conversion function for switch */
+  int (*lamp2m)(int no);       /* conversion function for lamps */
+  int (*m2sw)(int col, int row);
+  int (*m2lamp)(int col, int row);
+} core_tData;
+#define CORE_DIAG7SEG           0xff
+#define DIAGLED_VERTICAL	0x100	/*Flag indicated DIAG LEDS are Vertically Positioned*/
+extern core_tData coreData;
 extern int core_bcd2seg[]; /* BCD to 7 segment display */
 
 /*-- Exported Display handling functions--*/
@@ -464,18 +461,14 @@ void CLIB_DECL core_textOutf(int x, int y, int color, char *text, ...);
 void core_setLamp(UINT8 *lampMatrix, int col, int row);
 
 /*-- switch handling --*/
-/*-- switches must be numbered as (10*column+row) --*/
+extern int core_swSeq2m(int no);
+extern int core_m2swSeq(int col, int row);
 extern void core_setSw(int swNo, int value);
 extern int core_getSw(int swNo);
 extern void core_updInvSw(int swNo, int inv);
 
 /*-- get a switch column. (colEn=bits) --*/
 extern int core_getSwCol(int colEn);
-
-/*-- sequentially numbered switches (pre-wpc) --*/
-/*-- note that invSw is not used --*/
-extern void core_setSwSeq(int swNo, int value);
-extern int core_getSwSeq(int swNo);
 
 /*-- solenoid handling --*/
 extern int core_getSol(int solNo);

@@ -97,11 +97,11 @@
 #define S6_COMINPORT       CORE_COREINPORT
 
 /*-- S6 switch numbers --*/
-#define S6_SWADVANCE     1
-#define S6_SWUPDN        2
-#define S6_SWCPUDIAG     3
-#define S6_SWSOUNDDIAG   4
-#define S6_ENTER         5
+#define S6_SWADVANCE    -7
+#define S6_SWUPDN       -6
+#define S6_SWCPUDIAG    -5
+#define S6_SWSOUNDDIAG  -4
+#define S6_ENTER        -3
 
 /*-------------------------
 / Machine driver constants

@@ -99,8 +99,8 @@ static core_tData SEData = {
   8, /* 8 DIPs */
   SE_updSw,
   1,
-  ses_soundCmd_w,
-  "SE"
+  ses_soundCmd_w, "SE",
+  core_swSeq2m, core_swSeq2m,core_m2swSeq,core_m2swSeq
 };
 
 static void SE_init(void) {

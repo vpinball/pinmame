@@ -43,7 +43,7 @@
 #define S11_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
 
 /*-- S11 switches are numbered from 1-64 (not column,row as WPC) --*/
-#define S11_SWNO(x) ((((x)+7)/8)*10+(((x)-1)%8)+1)
+#define S11_SWNO(x) (x)
 
 /*-- To access C-side multiplexed solenoid/flasher --*/
 #define S11_CSOL(x) ((x)+(WPC_FIRSTFLIPPERSOL-1))
@@ -149,7 +149,7 @@ extern core_tLCDLayout s11_dispS9[], s11_dispS11[], s11_dispS11a[], s11_dispS11b
      ROM_LOAD(u49, 0xc000, 0x4000, chk49)  \
      ROM_LOAD(u5,  0x9000, 0x1000, chk5) \
      ROM_LOAD(u6,  0xa000, 0x1000, chk6) \
-     ROM_LOAD(u4,  0xb000, 0x1000, chk4) 
+     ROM_LOAD(u4,  0xb000, 0x1000, chk4)
 
 #define S9S_SOUNDROM4(u49,chk49) \
    S9S_STDREG \

@@ -10,9 +10,6 @@
 #include "snd_cmd.h"
 #include "mech.h"
 #include "core.h"
-#ifdef VPINMAME
-  #include "vpintf.h"
-#endif /* VPINMAME */
 
 /* stuff to test VPINMAME */
 #if 0
@@ -26,6 +23,7 @@ int vp_getDip(int bank) return 0;
 #endif
 
 #ifdef VPINMAME
+  #include "vpintf.h"
   extern int g_fHandleKeyboard, g_fHandleMechanics;
   extern void OnSolenoid(int nSolenoid, int IsActive);
   extern void OnStateChange(int nChange);
@@ -46,9 +44,10 @@ tPMoptions pmoptions;
 static void drawChar1(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, int type);
 static UINT32 core_initDisplaySize(core_ptLCDLayout layout);
 
-core_tGlobals coreGlobals;
+core_tGlobals     coreGlobals;
+core_tData        coreData;
 core_tGlobals_dmd coreGlobals_dmd;
-core_tGameData *core_gameData = NULL;  /* data about the running game */
+core_tGameData   *core_gameData = NULL;  /* data about the running game */
 int core_bcd2seg[16] = {
 /* 0    1    2    3    4    5    6    7    8    9  */
   0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f
@@ -57,7 +56,6 @@ int core_bcd2seg[16] = {
  ,0x77,0x7c,0x39,0x5e,0x79
 #endif /* MAME_DEBUG */
 };
-static core_tData coreData;
 /* makes it easier to swap bits */
                          // 0  1  2  3  4  5  6  7  8  9 10,11,12,13,14,15
 const UINT8 core_swapNyb[16] = { 0, 8, 4,12, 2,10, 6,14, 1, 9, 5,13, 3,11, 7,15};
@@ -249,64 +247,67 @@ void core_updateSw(int flipEn) {
   /*-- handle flippers--*/
   int flip = core_gameData->hw.flippers;
   int inports[CORE_MAXPORTS];
+  UINT8 swFlip = coreGlobals.swMatrix[CORE_FLIPPERSWCOL] &
+                 (CORE_SWULFLIPBUTBIT|CORE_SWURFLIPBUTBIT|CORE_SWLLFLIPBUTBIT|CORE_SWLRFLIPBUTBIT);
   int ii;
 
   if (g_fHandleKeyboard) {
     for (ii = 0; ii < CORE_COREINPORT+(coreData.coreDips+31)/16; ii++)
       inports[ii] = readinputport(ii);
 
-    /*-- buttons **/
-    core_setSw(swLLFlip, inports[CORE_FLIPINPORT] & CORE_LLFLIPKEY);
-    core_setSw(swLRFlip, inports[CORE_FLIPINPORT] & CORE_LRFLIPKEY);
-    if (flip & FLIP_SW(FLIP_UL))     /* have UL switch */
-      core_setSw(swULFlip,
-                 inports[CORE_FLIPINPORT] & ((flip & FLIP_BUT(FLIP_UL)) ?
-                 CORE_ULFLIPKEY : CORE_LLFLIPKEY));
-    if (flip & FLIP_SW(FLIP_UR))     /* have UR swicth */
-      core_setSw(swURFlip,
-                 inports[CORE_FLIPINPORT] & ((flip & FLIP_BUT(FLIP_UR)) ?
-                 CORE_URFLIPKEY : CORE_LRFLIPKEY));
+    /*-- buttons --*/
+    swFlip = 0;
+    if (inports[CORE_FLIPINPORT] & CORE_LLFLIPKEY) swFlip |= CORE_SWLLFLIPBUTBIT;
+    if (inports[CORE_FLIPINPORT] & CORE_LRFLIPKEY) swFlip |= CORE_SWLRFLIPBUTBIT;
+    if (flip & FLIP_SW(FLIP_UL)) {    /* have UL switch */
+      if (flip & FLIP_BUT(FLIP_UL))
+        { if (inports[CORE_FLIPINPORT] & CORE_ULFLIPKEY) swFlip |= CORE_SWULFLIPBUTBIT; }
+      else
+        { if (inports[CORE_FLIPINPORT] & CORE_LLFLIPKEY) swFlip |= CORE_SWULFLIPBUTBIT; }
+    }
+    if (flip & FLIP_SW(FLIP_UR)) {    /* have UL switch */
+      if (flip & FLIP_BUT(FLIP_UR))
+        { if (inports[CORE_FLIPINPORT] & CORE_URFLIPKEY) swFlip |= CORE_SWURFLIPBUTBIT; }
+      else
+        { if (inports[CORE_FLIPINPORT] & CORE_LRFLIPKEY) swFlip |= CORE_SWURFLIPBUTBIT; }
+    }
   }
+
   /*-- set switches in matrix for non-fliptronic games --*/
-  if (FLIP_SWL(flip))    /* have LL switch in matrix */ {
-	  core_setSw(FLIP_SWL(flip), core_getSw(swLLFlip)); 
-	logerror("set %d to %d\n",FLIP_SWL(flip),core_getSw(swLLFlip));
-  }
-  if (FLIP_SWR(flip))    /* have LR switch in matrix */
-    core_setSw(FLIP_SWR(flip), core_getSw(swLRFlip));
+  if (FLIP_SWL(flip)) core_setSw(FLIP_SWL(flip), swFlip & CORE_SWLLFLIPBUTBIT);
+  if (FLIP_SWR(flip)) core_setSw(FLIP_SWR(flip), swFlip & CORE_SWLRFLIPBUTBIT);
 
   /*-- fake solenoids if not CPU controlled --*/
   if ((flip & FLIP_SOL(FLIP_L)) == 0) {
     coreGlobals.solenoids2 &= 0xffffff00;
     if (flipEn) {
-      if (core_getSw(swLLFlip))
-        coreGlobals.solenoids2 |= CORE_LLFLIPSOLBITS;
-      if (core_getSw(swLRFlip))
-        coreGlobals.solenoids2 |= CORE_LRFLIPSOLBITS;
-	}
+      if (swFlip & CORE_SWLLFLIPBUTBIT) coreGlobals.solenoids2 |= CORE_LLFLIPSOLBITS;
+      if (swFlip & CORE_SWLRFLIPBUTBIT) coreGlobals.solenoids2 |= CORE_LRFLIPSOLBITS;
+    }
   }
 
   /*-- EOS switches --*/
   if (flip & FLIP_EOS(FLIP_UL)) {
     if (core_getSol(sULFlip)) coreGlobals.flipTimer[0] += 1;
     else                      coreGlobals.flipTimer[0] = 0;
-    core_setSw(swULFlipEOS, (coreGlobals.flipTimer[0] >= CORE_FLIPSTROKETIME));
+    if (coreGlobals.flipTimer[0] >= CORE_FLIPSTROKETIME) swFlip |= CORE_SWULFLIPEOSBIT;
   }
   if (flip & FLIP_EOS(FLIP_UR)) {
     if (core_getSol(sURFlip)) coreGlobals.flipTimer[1] += 1;
     else                      coreGlobals.flipTimer[1] = 0;
-    core_setSw(swURFlipEOS, (coreGlobals.flipTimer[1] >= CORE_FLIPSTROKETIME));
+    if (coreGlobals.flipTimer[1] >= CORE_FLIPSTROKETIME) swFlip |= CORE_SWURFLIPEOSBIT;
   }
   if (flip & FLIP_EOS(FLIP_LL)) {
     if (core_getSol(sLLFlip)) coreGlobals.flipTimer[2] += 1;
     else                      coreGlobals.flipTimer[2] = 0;
-    core_setSw(swLLFlipEOS, (coreGlobals.flipTimer[2] >= CORE_FLIPSTROKETIME));
+    if (coreGlobals.flipTimer[2] >= CORE_FLIPSTROKETIME) swFlip |= CORE_SWLLFLIPEOSBIT;
   }
   if (flip & FLIP_EOS(FLIP_LR)) {
     if (core_getSol(sLRFlip)) coreGlobals.flipTimer[3] += 1;
     else                      coreGlobals.flipTimer[3] = 0;
-    core_setSw(swLRFlipEOS, (coreGlobals.flipTimer[3] >= CORE_FLIPSTROKETIME));
+    if (coreGlobals.flipTimer[3] >= CORE_FLIPSTROKETIME) swFlip |= CORE_SWLRFLIPEOSBIT;
   }
+  coreGlobals.swMatrix[CORE_FLIPPERSWCOL] = swFlip;
 
   /*-- update core dependent switches --*/
   if (coreData.updSw)  coreData.updSw(g_fHandleKeyboard ? inports : NULL);
@@ -361,7 +362,8 @@ void core_updateSw(int flipEn) {
         bit <<= 1;
       }
       if ((col != lastCol) || (row != lastRow)) {
-        core_setSw(col*10+row, !core_getSw(col*10+row));
+        coreGlobals.swMatrix[col] ^= (1<<(row-1));
+//        core_setSw(col*10+row, !core_getSw(col*10+row));
         lastCol = col; lastRow = row;
       }
     }
@@ -664,6 +666,11 @@ void core_setLamp(UINT8 *lampMatrix, int col, int row) {
   }
 }
 
+
+/*-- "normal" switch/lamp numbering (1-64) --*/
+int core_swSeq2m(int no) { return no+7; }
+int core_m2swSeq(int col, int row) { return col*8+row-7; }
+
 /*------------------------------------------
 /  Read the current switch value
 /
@@ -671,12 +678,8 @@ void core_setLamp(UINT8 *lampMatrix, int col, int row) {
 /  switches even if the switch is active low.
 /-------------------------------------------*/
 int core_getSw(int swNo) {
-  return (coreGlobals.swMatrix[swNo/10] ^ coreGlobals.invSw[swNo/10]) & (1<<(swNo%10-1));
-}
-
-int core_getSwSeq(int swNo) {
-  swNo += 7;
-  return coreGlobals.swMatrix[swNo/8] & (1<<(swNo%8));
+  if (coreData.sw2m) swNo = coreData.sw2m(swNo); else swNo = (swNo/10)*8+(swNo%10-1);
+  return (coreGlobals.swMatrix[swNo/8] ^ coreGlobals.invSw[swNo/8]) & (1<<(swNo%8));
 }
 
 int core_getSwCol(int colEn) {
@@ -694,29 +697,24 @@ int core_getSwCol(int colEn) {
 /  Set/reset a switch
 /-----------------------*/
 void core_setSw(int swNo, int value) {
-  coreGlobals.swMatrix[swNo/10] &= ~(1<<(swNo%10-1)); /* clear the bit first */
-  coreGlobals.swMatrix[swNo/10] |=  ((value ? 0xff : 0) ^ coreGlobals.invSw[swNo/10]) & (1<<(swNo%10-1));
-}
-
-void core_setSwSeq(int swNo, int value) {
-  swNo += 7;
-  if (value)
-    coreGlobals.swMatrix[swNo/8] |= (1<<(swNo%8));
-  else
-    coreGlobals.swMatrix[swNo/8] &= ~(1<<(swNo%8));
+  if (coreData.sw2m) swNo = coreData.sw2m(swNo); else swNo = (swNo/10)*8+(swNo%10-1);
+  coreGlobals.swMatrix[swNo/8] &= ~(1<<(swNo%8)); /* clear the bit first */
+  coreGlobals.swMatrix[swNo/8] |=  ((value ? 0xff : 0) ^ coreGlobals.invSw[swNo/8]) & (1<<(swNo%8));
 }
 
 /*-------------------------
 /  update active low/high
 /-------------------------*/
 void core_updInvSw(int swNo, int inv) {
-  int bit = (1 << (swNo%10-1));
+  int bit;
+  if (coreData.sw2m) swNo = coreData.sw2m(swNo); else swNo = (swNo/10)*8+(swNo%10-1);
+  bit = (1 << (swNo%8));
 
   if (inv)
     inv = bit;
-  if ((coreGlobals.invSw[swNo/10] ^ inv) & bit) {
-    coreGlobals.invSw[swNo/10] ^= bit;
-    coreGlobals.swMatrix[swNo/10] ^= bit;
+  if ((coreGlobals.invSw[swNo/8] ^ inv) & bit) {
+    coreGlobals.invSw[swNo/8] ^= bit;
+    coreGlobals.swMatrix[swNo/8] ^= bit;
   }
 }
 

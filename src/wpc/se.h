@@ -60,12 +60,12 @@
 #define SE_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
 
 /*-- SE switches are numbered from 1-64 (not column,row as WPC) --*/
-#define SE_SWNO(x) ((((x)+7)/8)*10+(((x)-1)%8)+1)
+#define SE_SWNO(x) (x)
 
 /*-- SE switch numbers --*/
-#define SE_SWRED      3
-#define SE_SWGREEN    2
-#define SE_SWBLACK    1
+#define SE_SWBLACK   -7
+#define SE_SWGREEN   -6
+#define SE_SWRED     -5
 
 
 /*-- Memory regions --*/

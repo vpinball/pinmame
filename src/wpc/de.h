@@ -32,7 +32,7 @@
 	6) 520-5092-01: 192X64 DMD - 68000 CPU + separate controller board
 	   (Maveric to Batman Forever)
 
-   Sound Board Revisions: 
+   Sound Board Revisions:
 	1) 520-5002 Series: M6809 cpu, YM2151, MSM5205, hc4020 for stereo decoding.
 		a) -00 generation, used 27256 eproms (only Laser War)
 	    b) -02 generation, used 27256 & 27512 eproms (Laser War - Back to the Future)
@@ -96,7 +96,7 @@
 #define DE_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
 
 /*-- DE switches are numbered from 1-64 (not column,row as WPC) --*/
-#define DE_SWNO(x) ((((x)+7)/8)*10+(((x)-1)%8)+1)
+#define DE_SWNO(x) (x)
 
 /*-- To access C-side multiplexed solenoid/flasher --*/
 #define DE_CSOL(x) ((x)+24)
@@ -164,7 +164,7 @@
 #define DE64_ROMSTART(name, n1, chk1) \
    ROM_START(name) \
        NORMALREGION(0x10000, DE_MEMREG_CPU) \
-       ROM_LOAD(n1, 0x0000, 0x10000, chk1) 
+       ROM_LOAD(n1, 0x0000, 0x10000, chk1)
 
 /*-- These are only here so the game structure can be in the game file --*/
 extern struct MachineDriver machine_driver_DE_AS;

@@ -153,8 +153,7 @@ static WRITE_HANDLER(s4_sol1_8_w) {
 static WRITE_HANDLER(s4_sol9_16_w) {
   /* If machine does not use Chimes, mask off sound command bits */
   if(!s4locals.hasChimes) {
-	s67s_cmd(0, ~data); 
-	data &= 0xe0;
+    s67s_cmd(0, ~data); data &= 0xe0;
   }
   coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffff00ff) | (data<<8);
   s4locals.solenoids |= (data<<8);
@@ -316,13 +315,13 @@ static core_tData s4Data = {
   16, /* 16 Dips */
   s4_updSw,
   2 | DIAGLED_VERTICAL,
-  s67s_cmd,
-  "s4"
+  s67s_cmd, "s4",
+  core_swSeq2m, core_swSeq2m,core_m2swSeq,core_m2swSeq
 };
 
 static void s3c_init(void) {
-	s4_init();
-	s4locals.hasChimes = 1;
+  s4_init();
+  s4locals.hasChimes = 1;
 }
 
 static void s4_init(void) {

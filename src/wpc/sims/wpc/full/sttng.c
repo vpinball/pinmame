@@ -210,7 +210,7 @@ WPC_INPUT_PORTS_END
 /*98 Not Used*/
 
 /*Spinner = F7*/
-#define swSpinner	swF7
+#define swSpinner	WPC_swF7
 
 
 /*---------------------

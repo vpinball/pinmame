@@ -192,8 +192,8 @@ static WRITE_HANDLER(pia2cb2_w) {
 /*--------------------
 /  Diagnostic buttons
 /---------------------*/
-static READ_HANDLER (pia2ca1_r) { return cpu_get_reg(M6808_IRQ_STATE) ? core_getSwSeq(S11_SWADVANCE) : 0; }
-static READ_HANDLER (pia2cb1_r) { return cpu_get_reg(M6808_IRQ_STATE) ? core_getSwSeq(S11_SWUPDN)    : 0; }
+static READ_HANDLER (pia2ca1_r) { return cpu_get_reg(M6808_IRQ_STATE) ? core_getSw(S11_SWADVANCE) : 0; }
+static READ_HANDLER (pia2cb1_r) { return cpu_get_reg(M6808_IRQ_STATE) ? core_getSw(S11_SWUPDN)    : 0; }
 
 /*------------
 /  Solenoids
@@ -361,21 +361,29 @@ static void s11_updSw(int *inports) {
     coreGlobals.swMatrix[1] = inports[S11_COMINPORT];
   }
   /*-- Generate interupts for diganostic keys --*/
-  if (core_getSwSeq(S11_SWCPUDIAG))   cpu_set_nmi_line(S11_CPUNO, PULSE_LINE);
-  if (core_getSwSeq(S11_SWSOUNDDIAG)) cpu_set_nmi_line(s11locals.sCPUNo, PULSE_LINE);
+  if (core_getSw(S11_SWCPUDIAG))   cpu_set_nmi_line(S11_CPUNO, PULSE_LINE);
+  if (core_getSw(S11_SWSOUNDDIAG)) cpu_set_nmi_line(s11locals.sCPUNo, PULSE_LINE);
   if ((core_gameData->gen & (GEN_S11B_2|GEN_S11B_2x|GEN_S11B_3|GEN_S11C)) && core_gameData->sxx.muxSol)
-    core_setSwSeq(2, core_getSol(core_gameData->sxx.muxSol));
-  pia_set_input_ca1(2, core_getSwSeq(S11_SWADVANCE));
-  pia_set_input_cb1(2, core_getSwSeq(S11_SWUPDN));
+    core_setSw(2, core_getSol(core_gameData->sxx.muxSol));
+  pia_set_input_ca1(2, core_getSw(S11_SWADVANCE));
+  pia_set_input_cb1(2, core_getSw(S11_SWUPDN));
 }
 
+// convert lamp and switch numbers
+// S11 is 1-64
+// convert to 0-64 (+8)
+// i.e. 1=8, 2=9...
+static int s11_sw2m(int no) { return no+7; }
+static int s11_m2sw(int col, int row) { return col*8+row-7; }
 static core_tData s11Data = {
   1, /* 1 DIP (actually a jumper) */
-  s11_updSw, CORE_DIAG7SEG, s11_sndCmd_w, "s11"
+  s11_updSw, CORE_DIAG7SEG, s11_sndCmd_w, "s11",
+  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
 };
 static core_tData s11AData = {
   1, /* 1 DIP (actually a jumper) */
-  s11_updSw, 1, s11_sndCmd_w, "s11"
+  s11_updSw, 1, s11_sndCmd_w, "s11",
+  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
 };
 
 static void s11_init(void) {

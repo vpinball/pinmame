@@ -27,9 +27,8 @@ void vp_init(void) {
 /  get status of a lamp (0=off, 1=on)
 /-------------------------------------*/
 int vp_getLamp(int lampNo) {
-  if (WPCNUMBERING)      return ((coreGlobals.lampMatrix[lampNo/10-1]>>((lampNo-1)%10)) & 0x01);
-  else if (S80NUMBERING) return ((coreGlobals.lampMatrix[(lampNo)/8]>>((lampNo)%8)) & 0x01);
-  else                   return ((coreGlobals.lampMatrix[(lampNo-1)/8]>>((lampNo-1)%8)) & 0x01);
+  if (coreData.lamp2m) lampNo = coreData.lamp2m(lampNo)-8;
+  return (coreGlobals.lampMatrix[lampNo/8]>>(lampNo%8)) & 0x01;
 }
 
 /*-------------------------------------------
@@ -53,9 +52,7 @@ int vp_getChangedLamps(vp_tChgLamps chgStat) {
 
       for (jj = 0; jj < 8; jj++) {
         if (chgLamp & 0x01) {
- 		  if (WPCNUMBERING)      chgStat[idx].lampNo = (ii+1)*10+(jj+1);
- 		  else if (S80NUMBERING) chgStat[idx].lampNo = (ii*8+jj);
- 		  else                   chgStat[idx].lampNo = (ii*8+jj+1);
+          chgStat[idx].lampNo = coreData.m2lamp ? coreData.m2lamp(ii+1, jj) : 0;
           chgStat[idx].currStat = tmpLamp & 0x01;
           idx += 1;
         }
@@ -174,7 +171,7 @@ void vp_setMechData(int para, int data) {
   else if (para == 5) locals.md.type   = (locals.md.type & 0xfffffe00) | data;
   else if (para == 6) locals.md.type   = (locals.md.type & 0xff0001ff) | (data<<9);
   else if (para == 7) locals.md.type   = (locals.md.type & 0x00ffffff) | (data<<24);
-  else if (para % 10 == 0) locals.md.sw[para/10-1].swNo     = WPCNUMBERING ? data : ((((data)+7)/8)*10+(((data)-1)%8)+1);
+  else if (para % 10 == 0) locals.md.sw[para/10-1].swNo     = coreData.sw2m ? coreData.sw2m(data) : data;
   else if (para % 10 == 1) locals.md.sw[para/10-1].startPos = data;
   else if (para % 10 == 2) locals.md.sw[para/10-1].endPos   = data;
 }

@@ -164,7 +164,7 @@ static READ_HANDLER(dmd_u4_pb_r)
 static READ_HANDLER( xvia_0_ca1_r )
 {
 	logerror1("READ: SLAM: via_0_ca1_r\n");
-	return core_getSwSeq(GTS3_SWSLAM) != 0;
+	return core_getSw(GTS3_SWSLAM) != 0;
 }
 
 //CA2:  To A1P6-12 & A1P7-6 Auxiliary (INPUT???)
@@ -460,18 +460,30 @@ static void GTS3_updSw(int *inports) {
     coreGlobals.swMatrix[0] = (inports[GTS3_COMINPORT] & 0x7f00)>>8;
     coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0xc0) | (inports[GTS3_COMINPORT] & 0x3f);
   }
-  GTS3locals.swDiag = (core_getSwSeq(GTS3_SWDIAG)>0?1:0);
-  GTS3locals.swTilt = (core_getSwSeq(GTS3_SWTILT)>0?1:0);
+  GTS3locals.swDiag = (core_getSw(GTS3_SWDIAG)>0?1:0);
+  GTS3locals.swTilt = (core_getSw(GTS3_SWTILT)>0?1:0);
 }
 
 static WRITE_HANDLER(GTS3_sndCmd_w) { GTS3_SoundCommand(data^0xff); }
-
+// gts numbering col11->col12, col12->col13, col13->col14, col14->col15, col15->col11
+static int gts3_sw2m(int no) {
+  no += 10;
+  no = (no/10)*8 + no%8;
+  if (no >= 128) no -= 32;
+  else if (no >= 96) no += 8;
+  return no;
+}
+static int gts3_m2sw(int col, int row) {
+  if (col == 11) col = 15;
+  else if (col > 11) col -= 1;
+  return (col-1)*10+row;
+}
 static core_tData GTS3Data = {
   0,	/* No DIPs */
   GTS3_updSw,
   4,	/* 4 Diagnostic LEDS (CPU,DMD,Sound 1, Sound 2*/
-  GTS3_sndCmd_w,
-  "GTS3"
+  GTS3_sndCmd_w, "GTS3",
+  gts3_sw2m, gts3_sw2m, gts3_m2sw, gts3_m2sw
 };
 
 static void GTS3_init(void) {
