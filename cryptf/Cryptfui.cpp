@@ -294,16 +294,19 @@ int APIENTRY WinMain(HINSTANCE hInstance,
                      LPSTR     lpCmdLine,
                      int       nCmdShow)
 {
+	int nReturnCode = SUCCESS;
+
 	/*Create Crypto Class*/
 	pCrypto = new CCrypto();
 	if(!pCrypto) {
 		Display("Unable to create crypto class!","ERROR","Application - Serious Error!");
-		return FALSE;
+		return FAILURE;
 	}
 
 	/*If Command Line options specified, process them and do not load the UI*/
 	if(!Empty(lpCmdLine))
-		return (int)RunFromCommandLine(lpCmdLine);
+		nReturnCode = (int)RunFromCommandLine(lpCmdLine);
+
 	/*No command line, so run the UI*/
 	else {
 		g_hInstance = hInstance;
@@ -313,5 +316,5 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	/*Remove class from memory*/
 	delete pCrypto;
 
-	return 1;
+	return nReturnCode;
 }
