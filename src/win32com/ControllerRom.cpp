@@ -150,12 +150,13 @@ STDMETHODIMP CRom::Audit(VARIANT_BOOL fStrict)
 {
 	int err;
 	char szHash[256];
+	lstrcpy(szHash, "");
 
 	/* obtain CRC-32 and length of ROM file */
 	const struct GameDriver *drv = m_gamedrv;
 	do
 	{
-		err = mame_fchecksum (drv->name, m_pszName, (unsigned int*) &m_dwLength, szHash);
+		err = mame_fchecksum(drv->name, m_pszName, (unsigned int*) &m_dwLength, szHash);
 		drv = drv->clone_of;
 	} while (err && drv);
 
