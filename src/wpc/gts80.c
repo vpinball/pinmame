@@ -219,7 +219,7 @@ static READ_HANDLER(riot6532_1a_r)  { /* logerror("riot6532_1a_r\n"); */ return 
 static WRITE_HANDLER(riot6532_1a_w)
 {
 	int segSel = ((data>>4)&0x07);
-	if ( core_gameData->gen & (GEN_GTS80B|GEN_GTS80B2K|GEN_GTS80B4K) ) {
+	if ( core_gameData->gen & (GEN_GTS80B2K|GEN_GTS80B4K|GEN_GTS80B8K) ) {
 		if ( (segSel&0x01) && !(GTS80locals.segSel&0x01) )
 			GTS80locals.data = (GTS80locals.data&0xf0) | (GTS80locals.disData&0x0f);
 		if ( (segSel&0x02) && !(GTS80locals.segSel&0x02) )
@@ -328,7 +328,7 @@ static WRITE_HANDLER(riot6532_1b_w)
 {
 //	logerror("riot6532_1b_w: 0x%02x\n", data);
 	GTS80locals.OpSwitchEnable = (data&0x80);
-	if ( core_gameData->gen & (GEN_GTS80B|GEN_GTS80B2K|GEN_GTS80B4K) ) {
+	if ( core_gameData->gen & (GEN_GTS80B2K|GEN_GTS80B4K||GEN_GTS80B8K) ) {
 		int value;
 
 		GTS80locals.disData = (data&0x3f);
