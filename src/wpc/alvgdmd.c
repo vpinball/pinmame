@@ -40,12 +40,14 @@ static INTERRUPT_GEN(dmd32_firq);
 static READ_HANDLER(read_ext_mem)
 {
 	//printf("reading external address %x\n",offset);
+	logerror("reading external address %x\n", offset);
 	return 0;
 }
 
 static WRITE_HANDLER(write_ext_mem)
 {
 	//printf("writing to external address %x, data=%x\n", offset, data);
+	logerror("writing to external address %x, data=%x\n", offset, data);
 }
 
 //This will need to be changed - since our program rom is 64K! (Not 32K as the schem shows)
