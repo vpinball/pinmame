@@ -6,7 +6,7 @@
 const core_tLCDLayout s7_dispS7[] = {
   DISP_SEG_7(0,0,CORE_SEG87),DISP_SEG_7(0,1,CORE_SEG87),
   DISP_SEG_7(1,0,CORE_SEG87),DISP_SEG_7(1,1,CORE_SEG87),
-  DISP_SEG_CREDIT(20,28,CORE_SEG7S),DISP_SEG_BALLS(0,8,CORE_SEG7S),{0}
+  DISP_SEG_CREDIT(0,8,CORE_SEG7S),DISP_SEG_BALLS(20,28,CORE_SEG7S),{0}
 };
 #define INITGAME(name, disp) \
 static core_tGameData name##GameData = { GEN_S7, disp }; \
@@ -101,15 +101,30 @@ CORE_GAMEDEF(solar,l2,"Solar Fire (L-2)",1981,"Williams",s7_mS7S,0)
 /*-------------------------------
 / Hyperball - Sys.7 - (Game #509)
 /-------------------------------*/
-//INITGAME(hypbl,FLIP_SW(FLIP_L),3) 0,59
-INITGAME(hypbl,s7_dispS7)
+static const core_tLCDLayout dispHypbl[] = {
+  { 0, 0, 1, 7,CORE_SEG87 }, { 0,16, 9, 7,CORE_SEG87 },
+  { 2,10, 0, 1,CORE_SEG87 }, { 2,12, 8, 1,CORE_SEG87 },
+  { 2,16,20, 1,CORE_SEG87 }, { 2,18,28, 1,CORE_SEG87 },
+  { 4, 3,43, 5,CORE_SEG16 }, { 4,13,49, 7,CORE_SEG16 }, {0}
+};
+static core_tGameData hypblGameData = { GEN_S7, dispHypbl, {0}, NULL, {"", {0,0,0,0xf8,0x0f}, {0} } };
+static void init_hypbl(void) { core_gameData = &hypblGameData; }
+#define input_ports_hypbl input_ports_s7
+
 S7_ROMSTART000x(hypbl,l4, "ic14.532",    0x8090fe71,
                           "ic17.532",    0x6f4c0c4c,
                           "ic20.532",    0xd13962e8)
 S67S_SOUNDROMS0(          "sound12.532", 0x06051e5e)
 S7_ROMEND
-#define input_ports_hypbl input_ports_s7
-CORE_GAMEDEF(hypbl,l4,"HyperBall (L-4)",1981,"Williams",s7_mS7S,GAME_NOT_WORKING)
+CORE_GAMEDEF(hypbl,l4,"HyperBall (L-4)",1981,"Williams",s7_mS7S,0)
+
+S7_ROMSTART000x(hypbl,l5, "ic14.532",    0x8090fe71,
+                          "ic17.532",    0x6f4c0c4c,
+                          "ic20_fix.532",    0x48958d77)
+S67S_SOUNDROMS0(          "sound12.532", 0x06051e5e)
+S7_ROMEND
+CORE_CLONEDEF(hypbl,l5,l4,"HyperBall (L-5)",1998,"Williams (High score bootleg)",s7_mS7S,0)
+
 
 /*----------------------------
 / Barracora- Sys.7 (Game #510)
