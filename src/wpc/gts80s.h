@@ -61,7 +61,7 @@ extern const struct Memory_WriteAddress GTS80SS_writemem[];
   ignore_interrupt, 0 \
 }
 
-extern const struct Samplesinterface votrax_interface;
+extern struct Samplesinterface votrax_interface;
 #define VOTRAXINTERFACE {SOUND_SAMPLES, &votrax_interface}
 
 #define GTS80SS_SOUND \
