@@ -484,10 +484,10 @@ CORE_GAMEDEFNV(rapidfir,"Rapid Fire",1982,"Bally",by35_mBY35_61BS,0)
 / Mr. and Mrs. Pacman
 /-------------------------------*/
 static core_tLCDLayout m_mpacDisp[] = {
-{ 0, 0, 1,7,CORE_SEG87},{ 0,25,17,7,CORE_SEG87},
-{ 3, 0, 9,7,CORE_SEG87},{ 3,25,25,7,CORE_SEG87},
-{ 2,17,34,6,CORE_SEG7}, /* credit/ball */
-{ 5,16,42,2,CORE_SEG7}, { 5,21,44,2,CORE_SEG7}, { 5,26,46,2,CORE_SEG7},
+{ 0, 0, 1,7,CORE_SEG87},{ 0,27,17,7,CORE_SEG87},
+{ 3, 0, 9,7,CORE_SEG87},{ 3,27,25,7,CORE_SEG87},
+{ 2,18,34,6,CORE_SEG7}, /* credit/ball */
+{ 5,17,42,2,CORE_SEG7}, { 5,22,44,2,CORE_SEG7}, { 5,27,46,2,CORE_SEG7},
 {0}
 };
 
