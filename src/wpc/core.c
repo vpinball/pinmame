@@ -957,7 +957,7 @@ static MACHINE_INIT(core) {
   }
   /*-- now reset everything --*/
   if (coreData->reset) coreData->reset();
-
+  mech_emuInit();
   OnStateChange(1); /* We have a lift-off */
 
 /* TOM: this causes to draw the static sim text */
@@ -966,6 +966,7 @@ static MACHINE_INIT(core) {
 
 static MACHINE_STOP(core) {
   int ii;
+  mech_emuExit();
   if (coreData->stop) coreData->stop();
   snd_cmd_exit();
   for (ii = 0; ii < 5; ii++) {
