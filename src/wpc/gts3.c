@@ -215,13 +215,16 @@ static WRITE_HANDLER(alpha_u4_pb_w) {
 		GTS3locals.lampColumn = ((GTS3locals.lampColumn << 1) & 0x0fff);
 		col++;
 		if (col < 12) coreGlobals.tmpLampMatrix[col] = 0;
+	} else {
+		if (GTS3locals.u4pb == data && ledOK) {
+			ledOK = 0;
+			if (core_gameData->hw.lampCol > 4) {
+				if (lampBits != 0x06) coreGlobals.tmpLampMatrix[12] = data;
+			} else { // the 6 in the fist digit is still showing up!
+				GTS3locals.segments[40 + (data>>4)].w = GTS3locals.pseg[40 + (data>>4)].w = core_bcd2seg[lampBits];
+			}
+		} else if (lampBits == 0x06 && GTS3locals.u4pb == (0x02 | dispBits)) ledOK = 1;
 	}
-
-	if (GTS3locals.u4pb == data && ledOK && lampBits != 0x06) {
-		ledOK = 0;
-		coreGlobals.tmpLampMatrix[12] = data;
-	}
-	if (lampBits == 0x06 && GTS3locals.u4pb == (0x02 | dispBits)) ledOK = 1;
 
 	if (dispBits == 0xe0) { GTS3locals.acol = 0; }
 	else if (dispBits == 0xc0) { GTS3locals.acol++; }
@@ -252,13 +255,16 @@ static WRITE_HANDLER(dmd_u4_pb_w) {
 			col++;
 		}
 		if (col < 12) coreGlobals.tmpLampMatrix[col] = 0;
+	} else {
+		if (GTS3locals.u4pb == data && ledOK) {
+			ledOK = 0;
+			if (core_gameData->hw.lampCol > 4) {
+				if (lampBits != 0x06) coreGlobals.tmpLampMatrix[12] = data;
+			} else {
+				coreGlobals.segments[data>>4].w = core_bcd2seg[lampBits];
+			}
+		} else if (lampBits == 0x06 && GTS3locals.u4pb == (0x02 | (data & 0xf0))) ledOK = 1;
 	}
-
-	if (GTS3locals.u4pb == data && ledOK && lampBits != 0x06) {
-		ledOK = 0;
-		coreGlobals.tmpLampMatrix[12] = data;
-	}
-	if (lampBits == 0x06 && GTS3locals.u4pb == (0x02 | (data & 0xf0))) ledOK = 1;
 
 	GTS3_dmdlocals.dstrb = (data & DSTRB) != 0;
 	if (GTS3_dmdlocals.version) { // probably wrong, but the only way to show *any* display
