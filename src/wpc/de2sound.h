@@ -1,5 +1,5 @@
-#ifndef INC_DESOUND
-#define INC_DESOUND
+#ifndef INC_DESOUND2
+#define INC_DESOUND2
 
 /*-- Sound rom macros --*/
 
@@ -121,4 +121,4 @@ extern int des_init(void);
 
 #define DES_SOUND \
   { SOUND_BSMT2000,  &des_bsmt2000Int }
-#endif /* INC_DESSOUND */
+#endif /* INC_DESSOUND2 */
