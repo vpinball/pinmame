@@ -40,13 +40,14 @@
 static struct {
 	struct sndbrdData boardData;
 
-	int   stream;
-	INT16 buffer[GTS80S_BUFFER_SIZE+1];
+	int    stream;
+	INT16  buffer[GTS80S_BUFFER_SIZE+1];
 	double clock[GTS80S_BUFFER_SIZE+1];
-	int   buf_pos;
+	int    buf_pos;
 
-	int   dips;
-	int	IRQEnabled;
+	int    dips;
+	UINT8* pRIOT6530_0_ram;
+	int	   IRQEnabled;
 } GTS80S_locals;
 
 /* digital sound data output */
@@ -77,7 +78,7 @@ static struct riot6530_interface GTS80S_riot6530_intf = {
 
 static WRITE_HANDLER(gts80s_riot6530_0_ram_w)
 {
-	UINT8 *pMem = memory_region(GTS80S_locals.boardData.cpuNo)+(offset%0x40);
+	UINT8 *pMem = GTS80S_locals.pRIOT6530_0_ram + (offset%0x40);
 
 	pMem[0x0000] = pMem[0x0040] = pMem[0x0080] = pMem[0x00c0] = \
 	pMem[0x0100] = pMem[0x0140] = pMem[0x0180] = pMem[0x01c0] = \
@@ -141,6 +142,7 @@ void gts80s_init(struct sndbrdData *brdData) {
 	memset(&GTS80S_locals, 0x00, sizeof GTS80S_locals);
 
 	GTS80S_locals.boardData = *brdData;
+	GTS80S_locals.pRIOT6530_0_ram = memory_region(GTS80S_locals.boardData.cpuNo);
 
 	/* init dips */
 	GTS80S_locals.dips =
@@ -225,14 +227,15 @@ const struct sndbrdIntf gts80sIntf = {
 static struct {
 	struct sndbrdData boardData;
 
-	int dips;
+	int    dips;
+	UINT8* pRIOT6532_3_ram;
 
-	int stream;
+	int    stream;
 	INT16  buffer[GTS80SS_BUFFER_SIZE+1];
 	double clock[GTS80SS_BUFFER_SIZE+1];
-	int	buf_pos;
+	int	   buf_pos;
 
-	void *timer;
+	void   *timer;
 } GTS80SS_locals;
 
 static void GTS80SS_irq(int state) {
@@ -314,7 +317,7 @@ static struct riot6532_interface GTS80SS_riot6532_intf = {
 
 static WRITE_HANDLER(GTS80SS_riot6532_3_ram_w)
 {
-	UINT8 *pMem = memory_region(GTS80SS_locals.boardData.cpuNo)+(offset%0x80);
+	UINT8 *pMem = GTS80SS_locals.pRIOT6532_3_ram + (offset%0x80);
 
 	pMem[0x0000] = pMem[0x0080] = pMem[0x0100] = pMem[0x0180] = data;
 }
@@ -382,6 +385,8 @@ void gts80ss_init(struct sndbrdData *brdData) {
 
 	memset(&GTS80SS_locals, 0x00, sizeof GTS80SS_locals);
 	GTS80SS_locals.boardData = *brdData;
+
+	GTS80SS_locals.pRIOT6532_3_ram = memory_region(GTS80SS_locals.boardData.cpuNo);
 
 	/* int dips */
 	GTS80SS_locals.dips =

@@ -92,6 +92,7 @@ static struct {
   int    disCmdMode2;
 
   int	 sound_data;
+  UINT8* pRAM;
 } GTS80locals;
 
 static void GTS80_irq(int state) {
@@ -457,24 +458,24 @@ static struct riot6532_interface GTS80_riot6532_intf[] = {
 
 
 static WRITE_HANDLER(ram_256w) {
-	UINT8 *pMem = memory_region(GTS80_MEMREG_CPU) + (offset%0x100);
+	UINT8 *pMem =  GTS80locals.pRAM + (offset%0x100);
 	pMem[0x1800] = pMem[0x1900] = pMem[0x1a00] = pMem[0x1b00] = \
 	pMem[0x1c00] = pMem[0x1d00] = pMem[0x1e00] = pMem[0x1f00] = \
 		data;
 }
 
 static WRITE_HANDLER(riot6532_0_ram_w) {
-	UINT8 *pMem = memory_region(GTS80_MEMREG_CPU) + (offset%0x80);
+	UINT8 *pMem = GTS80locals.pRAM + (offset%0x80);
 	pMem[0x0000] = pMem[0x4000] = pMem[0x8000] = pMem[0xc000] = data;
 }
 
 static WRITE_HANDLER(riot6532_1_ram_w) {
-	UINT8 *pMem = memory_region(GTS80_MEMREG_CPU) + (offset%0x80);
+	UINT8 *pMem = GTS80locals.pRAM + (offset%0x80);
 	pMem[0x0080] = pMem[0x4080] = pMem[0x8080] = pMem[0xc080] = data;
 }
 
 static WRITE_HANDLER(riot6532_2_ram_w) {
-	UINT8 *pMem = memory_region(GTS80_MEMREG_CPU) + (offset%0x80);
+	UINT8 *pMem = GTS80locals.pRAM + (offset%0x80);
 	pMem[0x0100] = pMem[0x4100] = pMem[0x8100] = pMem[0xc100] = data;
 }
 
@@ -730,6 +731,9 @@ static void GTS80_init(void) {
 		memcpy(memory_region(GTS80_MEMREG_CPU)+0xd000, memory_region(GTS80_MEMREG_CPU)+0x1800, 0x800);
 	}
   }
+
+  /* init RAM pointer */
+  GTS80locals.pRAM = memory_region(GTS80_MEMREG_CPU);
 
   /* init RIOTS */
   for (ii = 0; ii < sizeof(GTS80_riot6532_intf)/sizeof(GTS80_riot6532_intf[0]); ii++)
