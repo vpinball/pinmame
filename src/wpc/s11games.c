@@ -10,7 +10,6 @@
 //150401: Corrected Radical sound ROMs
 /*
 Issues:
-Grand Lizard: ROM missing
 Road Kings: Main CPU
 Jokerz: No soundboard
 Pool: Sound loops on startup
@@ -72,7 +71,7 @@ CORE_GAMEDEF(sorcr, l1, "Sorcerer (L-1)", 1985, "Williams", s9_mS9S,0)
 / Pennant Fever
 /--------------------*/
 static core_tLCDLayout dispPfever[] = { \
-  { 0, 0,17, 3, CORE_SEG7}, { 0, 8,21, 3, CORE_SEG7}, { 0,16,12, 4, CORE_SEG7},
+  { 0, 0,17, 3, CORE_SEG7},  { 0, 8,21, 3, CORE_SEG7}, { 0,16,12, 4, CORE_SEG7},
   { 2, 2, 0, 1, CORE_SEG7},  { 2, 4, 8, 1, CORE_SEG7},
   { 2, 8,16, 1, CORE_SEG7},  { 2,10,24, 1, CORE_SEG7},
   { 4, 4,29, 1, CORE_SEG7},  { 4, 8,31, 1, CORE_SEG7},
@@ -99,7 +98,7 @@ CORE_GAMEDEF(pfevr, p3, "Pennant Fever Baseball (P-3)", 1984, "Williams", s9_mS9
 / Comet (S9) 06/85
 /--------------------*/
 static core_tLCDLayout dispComet[] = { \
-  {  0, 0,17, 7, CORE_SEG87}, {3,  0,25,7,CORE_SEG87},
+  {  0, 0,17, 7, CORE_SEG87}, {3, 0,25,7,CORE_SEG87},
   {  0,18, 1, 7, CORE_SEG87}, {3,18, 9,7,CORE_SEG87},
   {  6, 3,16, 1, CORE_SEG7 }, {6, 5,24,1,CORE_SEG7},
   {  6, 8, 0, 1, CORE_SEG7 }, {6,10, 8,1,CORE_SEG7}, {0}
@@ -128,14 +127,8 @@ CORE_GAMEDEF(comet, l4, "Comet (L-4)", 1985, "Williams", s9_mS9S,0)
 /*--------------------
 / High Speed 01/86
 /--------------------*/
-static core_tLCDLayout dispHS[] = { \
-  { 0,  0, 1, 7, CORE_SEG16}, { 0, 16, 9,7,CORE_SEG16},
-  { 3,  0,17, 7, CORE_SEG8}, { 3, 16,25,7,CORE_SEG8},
-  { 6,  5,16, 1, CORE_SEG7 }, { 6,  7,24,1,CORE_SEG7},
-  { 6, 10, 0, 1, CORE_SEG7H}, { 6, 12, 8,1,CORE_SEG7H}, {0}
-};
 static core_tGameData hsGameData = {
-  GEN_S11, dispHS,
+  GEN_S11, s11_dispS11,
   {FLIP_SWNO(S11_SWNO(37),S11_SWNO(38))},
   NULL,
   {{0}},
@@ -158,8 +151,8 @@ CORE_GAMEDEF(hs, l4, "High Speed (L-4)", 1986, "Williams", s11_mS11S,0)
 / Grand Lizard 04/86
 /--------------------*/
 INITGAME(grand, GEN_S11, s11_dispS11, FLIP_SW(FLIP_L),0, 3/*?*/)
-S11_ROMSTART24(grand,l4,"lzrd_u26.l4", 0x5fe50db6,
-                        "lzrd_u27.l4", 0x00000000)
+S11_ROMSTART28(grand,l4,"lzrd_u26.l4", 0x5fe50db6,
+                        "lzrd_u27.l4", 0x6462ca55)
 S11S_SOUNDROM44(        "lzrd_u21.l1", 0x98859d37,
                         "lzrd_u22.l1", 0x4e782eba)
 S11CS_SOUNDROM8(        "lzrd_u4.l1",  0x4baafc11)
