@@ -21,6 +21,7 @@ struct BSMT2000interface
 #ifdef PINMAME
         int voladj[MAX_BSMT2000];               /* Adjust Volume Commands to create louder output */
 		int use_de_rom_banking;					/* Special flag to use Data East rom bank handling */
+		int shift_data;							/* Special flag to determine if ROM data should be shifted for better quality */
 #endif 
 };
 
