@@ -205,7 +205,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
 /*-----------------------------------
 /  Generic segement display handler
 /------------------------------------*/
-static VIDEO_UPDATE(core_gen) {
+VIDEO_UPDATE(core_gen) {
   const struct core_dispLayout *layout = core_gameData->lcdLayout;
   if (layout == NULL) { DBGLOG(("gen_refresh without LCD layout\n")); return; }
   for (; layout->length; layout += 1) {
@@ -229,8 +229,8 @@ static VIDEO_UPDATE(core_gen) {
 
           if ((tmpType == CORE_SEG87) || (tmpType == CORE_SEG87F)) {
             if ((ii > 0) && (ii % 3 == 0)) { // Handle Comma
-              tmpType = CORE_SEG8;
               if ((tmpType == CORE_SEG87F) && tmpSeg) tmpSeg |= 0x80;
+              tmpType = CORE_SEG8;
             }
             else
               tmpType = CORE_SEG7;
@@ -937,9 +937,9 @@ static MACHINE_INIT(core) {
     /*-- command line options --*/
     locals.displaySize = pmoptions.dmd_compact ? 1 : 2;
     // Skip core_initDisplaySize if using CORE_VIDEO flag.. but this code must also run if NO layout defined
-    if( !(core_gameData->lcdLayout) ||
-  	   (core_gameData->lcdLayout && core_gameData->lcdLayout->type != CORE_VIDEO)
-  	){
+    if (!(core_gameData->lcdLayout) ||
+  	   (core_gameData->lcdLayout && core_gameData->lcdLayout->type != CORE_VIDEO))
+	{
       UINT32 size = core_initDisplaySize(core_gameData->lcdLayout) >> 16;
   	  if ((size > CORE_SCREENX) && (locals.displaySize > 1)) {
   		/* force small display */
@@ -1030,10 +1030,11 @@ static UINT32 core_initDisplaySize(const struct core_dispLayout *layout) {
     if (maxX < 256) maxX = 256;
   }
   if (maxY >= CORE_SCREENY) maxY = CORE_SCREENY-1;
-  set_visible_area(0, maxX-1, 0, maxY);
 #ifndef VPINMAME
   if (maxX == 257) maxX = 256;
 #endif /* VPINMAME */
+  if (!(Machine->drv->video_attributes & VIDEO_FIXED_SIZE))
+    set_visible_area(0, maxX-1, 0, maxY);
   return (maxX<<16) | maxY;
 }
 
