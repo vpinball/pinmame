@@ -748,6 +748,17 @@ else
 CPUDEFS += -DHAS_Z8000=0
 endif
 
+CPU=$(strip $(findstring TMS7000@,$(CPUS)))
+ifneq ($(CPU),)
+OBJDIRS += $(OBJ)/cpu/tms7000
+CPUDEFS += -DHAS_TMS7000=1
+CPUOBJS += $(OBJ)/cpu/tms7000/tms7000.o
+DBGOBJS += $(OBJ)/cpu/tms7000/7000dasm.o
+$(OBJ)/cpu/tms7000/tms7000.o: tms7000.c tms7000.h tms70op.c tms70tb.c
+else
+CPUDEFS += -DHAS_TMS7000=0
+endif
+
 CPU=$(strip $(findstring TMS32010@,$(CPUS)))
 ifneq ($(CPU),)
 OBJDIRS += $(OBJ)/cpu/tms32010
