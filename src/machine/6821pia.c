@@ -208,7 +208,6 @@ void pia_config(int which, int addressing, const struct pia6821_interface *intf)
 	// Ports A,CA1,CA2 default to 1
 	// Ports B,CB1,CB2 are three-state and undefined (set to 0)
 	pia[which].in_a = pia[which].in_ca1 = pia[which].in_ca2 = 0xff;
-//    pia[0].in_ca1 = 0;
 	if ((intf->in_a_func) && ((FPTR)(intf->in_a_func) <= 0x100))
 		{ pia[which].in_a = ((FPTR)(intf->in_a_func) - 1); pia[which].in_set |= PIA_IN_SET_A; }
 	if ((intf->in_b_func) && ((FPTR)(intf->in_b_func) <= 0x100))
@@ -641,8 +640,10 @@ void pia_set_input_ca1(int which, int data)
     /* and should have been initialized. */
     /* To avoid problems with existing drivers we assume that the first call */
     /* to this function is an initialisation and doesn't cause a transition */
-    if (!(p->in_set & PIA_IN_SET_CA1))
+    if (!(p->in_set & PIA_IN_SET_CA1)) {
 	  logerror("PIA%d: Warning: CA1 not initialized before set_input_ca1\n",which);
+      p->in_set |= PIA_IN_SET_CA1;
+    }
     else
 	if (p->in_ca1 ^ data)
 	{
@@ -670,7 +671,6 @@ void pia_set_input_ca1(int which, int data)
 
 	/* set the new value for CA1 */
 	p->in_ca1 = data;
-	p->in_set |= PIA_IN_SET_CA1;
 }
 
 
@@ -688,8 +688,10 @@ void pia_set_input_ca2(int which, int data)
     /* and should have been initialized. */
     /* To avoid problems with existing drivers we assume that the first call */
     /* to this function is an initialisation and doesn't cause a transition */
-    if (!(p->in_set & PIA_IN_SET_CA2))
+    if (!(p->in_set & PIA_IN_SET_CA2)) {
 	  logerror("PIA%d: Warning: CA2 not initialized before set_input_ca2\n",which);
+	  p->in_set |= PIA_IN_SET_CA2;
+    }
     else
 	/* CA2 is in input mode */
 	if (C2_INPUT(p->ctl_a))
@@ -711,7 +713,6 @@ void pia_set_input_ca2(int which, int data)
 
 	/* set the new value for CA2 */
 	p->in_ca2 = data;
-	p->in_set |= PIA_IN_SET_CA2;
 }
 
 
@@ -742,8 +743,10 @@ void pia_set_input_cb1(int which, int data)
     /* and should have been initialized. */
     /* To avoid problems with existing drivers we assume that the first call */
     /* to this function is an initialisation and doesn't cause a transition */
-    if (!(p->in_set & PIA_IN_SET_CB1))
+    if (!(p->in_set & PIA_IN_SET_CB1)) {
 	  logerror("PIA%d: Warning: CB1 not initialized before set_input_cb1\n",which);
+	  p->in_set |= PIA_IN_SET_CB1;
+    }
     else
 	/* the new state has caused a transition */
 	if (p->in_cb1 ^ data)
@@ -776,7 +779,6 @@ void pia_set_input_cb1(int which, int data)
 
 	/* set the new value for CB1 */
 	p->in_cb1 = data;
-	p->in_set |= PIA_IN_SET_CB1;
 }
 
 
@@ -794,8 +796,10 @@ void pia_set_input_cb2(int which, int data)
     /* and should have been initialized. */
     /* To avoid problems with existing drivers we assume that the first call */
     /* to this function is an initialisation and doesn't cause a transition */
-    if (!(p->in_set & PIA_IN_SET_CB2))
+    if (!(p->in_set & PIA_IN_SET_CB2)) {
 	  logerror("PIA%d: Warning: CB2 not initialized before set_input_cb2\n",which);
+      p->in_set |= PIA_IN_SET_CB2;
+    }
     else
 
 	/* CB2 is in input mode */
@@ -818,7 +822,6 @@ void pia_set_input_cb2(int which, int data)
 
 	/* set the new value for CA2 */
 	p->in_cb2 = data;
-	p->in_set |= PIA_IN_SET_CB2;
 }
 
 
