@@ -35,9 +35,19 @@ DRIVERNV(st_game)       //Unknown game running on old Stern hardware
 // --------------------
 // ALVIN G. AND CO.
 // --------------------
+DRIVERNV(agsoccer)		//A.G. Soccer (1992)
+//DRIVERNV(agfootbl)	//A.G. Football (1992)
 DRIVERNV(wrldtour)		//Al's Garage Band Goes On A World Tour (1992)
+//DRIVERNV(usafootb)	//U.S.A. Football (1992)
+//DRIVERNV(dinoeggs)	//Dinosaur Eggs (1993)
+//DRIVERNV(dualpool)	//Dual Pool (1993) - 1 Unit
+//DRIVERNV(maxbadaz)	//Max Badazz (1993) - 1 Unit
 DRIVERNV(mystcast)		//Mystery Castle (1993)
 DRIVERNV(pstlpkr)		//Pistol Poker (1993)
+DRIVERNV(punchy)        //Punchy the Clown (1993)
+						//A-MAZE-ING Baseball (1994) - any units?
+//DRIVERNV(slamnjam)	//Slam N Jam (1994) - 2 Units
+
 #ifdef MAME_DEBUG
   DRIVERNV(test8031)		//Test 8031 cpu core
 #endif
