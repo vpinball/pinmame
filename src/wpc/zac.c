@@ -6,7 +6,6 @@
 */
 #include <stdlib.h>
 #include "driver.h"
-#include "cpu/m6800/m6800.h"
 #include "cpu/s2650/s2650.h"
 #include "core.h"
 #include "sndbrd.h"
@@ -23,12 +22,18 @@
 
 static WRITE_HANDLER(ZAC_soundCmd) { }
 static void ZAC_soundInit(void) {
-  sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(ZACSND_CPUAREGION), NULL, NULL);
-  sndbrd_1_init(core_gameData->hw.soundBoard, 2, memory_region(ZACSND_CPUBREGION), NULL, NULL);
+  if (core_gameData->hw.soundBoard == SNDBRD_ZAC13136) {
+    sndbrd_0_init(SNDBRD_ZAC1370, ZACSND_CPUA, memory_region(ZACSND_CPUAREGION), NULL, NULL);
+    sndbrd_1_init(SNDBRD_ZAC13136, ZACSND_CPUB, memory_region(ZACSND_CPUBREGION), NULL, NULL);
+  } else {
+    sndbrd_0_init(core_gameData->hw.soundBoard, ZACSND_CPUA, memory_region(ZACSND_CPUAREGION), NULL, NULL);
+  }
 }
 static void ZAC_soundExit(void) {
   sndbrd_0_exit();
-  sndbrd_1_exit();
+  if (core_gameData->hw.soundBoard == SNDBRD_ZAC13136) {
+    sndbrd_1_exit();
+  }
 }
 
 static struct {
@@ -235,6 +240,7 @@ static WRITE_HANDLER(ctrl_port_w)
 	}
 	locals.swCol+=1;
 #endif
+	sndbrd_0_ctrl_w(ZACSND_CPUA, data);
 //	logerror("strobe data = %x, swcol = %x\n",data&0x07,locals.swCol);
 //	logerror("refresh=%x\n",locals.refresh);
 }
@@ -242,6 +248,8 @@ static WRITE_HANDLER(ctrl_port_w)
 /*   DATA PORT : WRITE = Sound Data 0-7 */
 static WRITE_HANDLER(data_port_w)
 {
+	sndbrd_0_data_w(ZACSND_CPUA, data);
+//	cpu_set_irq_line(ZACSND_CPUA, M6802_IRQ_LINE, data ? ASSERT_LINE : CLEAR_LINE);
 	logerror("%x: Sound Data Write=%x\n",activecpu_get_previouspc(),data);
 }
 
@@ -317,17 +325,8 @@ static WRITE_HANDLER(ram_w) {
 			coreGlobals.tmpLampMatrix[offset/8] |= 1 << (offset%8);
 		else
 			coreGlobals.tmpLampMatrix[offset/8] &= ~(1 << (offset%8));
-	} else if (offset > 0x4bf && offset < 0x4e8) {
+	} else if (offset > 0x4bf && offset < 0x4e8)
 		locals.segments[0x4e7 - offset].w = core_bcd2seg7[data & 0x0f];
-		// handle comma in 5th display
-		if (locals.segments[5].w && locals.segments[6].w && locals.segments[7].w) {
-			if (locals.segments[4].w) locals.segments[4].w |= 0x80;
-			if (locals.segments[1].w) locals.segments[1].w |= 0x80;
-		} else {
-			locals.segments[4].w &= 0x7f;
-			locals.segments[1].w &= 0x7f;
-		}
-	}
 //	else logerror("ram_w: offset = %4x, data = %02x\n", offset, data);
 }
 
@@ -472,7 +471,7 @@ static PORT_READ_START( ZAC_readport )
 	{ S2650_SENSE_PORT, S2650_SENSE_PORT, sense_port_r },
 PORT_END
 
-MACHINE_DRIVER_START(ZAC1)
+MACHINE_DRIVER_START(ZAC)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(ZAC1,NULL,ZAC)
   MDRV_CPU_ADD_TAG("mcpu", S2650, 6000000/4)
@@ -487,16 +486,25 @@ MACHINE_DRIVER_START(ZAC1)
   MDRV_SWITCH_CONV(ZAC_sw2m,ZAC_m2sw)
   MDRV_SOUND_CMD(ZAC_soundCmd)
   MDRV_SOUND_CMDHEADING("ZAC")
-//  MDRV_IMPORT_FROM(zac1346)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(ZAC1)
+  MDRV_IMPORT_FROM(ZAC)
+  MDRV_IMPORT_FROM(zac1346)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(ZAC0)
-  MDRV_IMPORT_FROM(ZAC1)
+  MDRV_IMPORT_FROM(ZAC)
   MDRV_CPU_MODIFY("mcpu")
   MDRV_CPU_MEMORY(ZAC_readmem0, ZAC_writemem0)
 MACHINE_DRIVER_END
 
-MACHINE_DRIVER_START(ZAC2)
+MACHINE_DRIVER_START(ZAC0S)
+  MDRV_IMPORT_FROM(ZAC0)
+  MDRV_IMPORT_FROM(zac1346)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(ZAC2NS)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(ZAC2,NULL,ZAC)
   MDRV_CPU_ADD_TAG("mcpu", S2650, 6000000/4)
@@ -511,7 +519,11 @@ MACHINE_DRIVER_START(ZAC2)
   MDRV_SWITCH_CONV(ZAC_sw2m,ZAC_m2sw)
   MDRV_SOUND_CMD(ZAC_soundCmd)
   MDRV_SOUND_CMDHEADING("ZAC")
-//  MDRV_IMPORT_FROM(zac1370)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(ZAC2)
+  MDRV_IMPORT_FROM(ZAC2NS)
+  MDRV_IMPORT_FROM(zac1370)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(ZAC2A)
@@ -535,6 +547,17 @@ MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(ZAC2F)
   MDRV_IMPORT_FROM(ZAC2)
+  MDRV_CPU_MODIFY("mcpu")
+  MDRV_CPU_PERIODIC_INT(ZAC_irq, ZAC_IRQFREQ_F)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(ZAC2X)
+  MDRV_IMPORT_FROM(ZAC2NS)
+  MDRV_IMPORT_FROM(zac13136)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(ZAC2FX)
+  MDRV_IMPORT_FROM(ZAC2X)
   MDRV_CPU_MODIFY("mcpu")
   MDRV_CPU_PERIODIC_INT(ZAC_irq, ZAC_IRQFREQ_F)
 MACHINE_DRIVER_END
