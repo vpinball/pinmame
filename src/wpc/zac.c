@@ -369,9 +369,11 @@ static WRITE_HANDLER(ram_w) {
 static WRITE_HANDLER(ram1_w) {
 	ram1[offset] = data;
 
-	if (offset < 0x2e)
+	if (offset < 0x2e) {
 		locals.segments[0x2f - offset].w = core_bcd2seg7[data & 0x0f];
-	else if (offset > 0x3f && offset < 0x60) {
+		if ((core_gameData->hw.soundBoard & (SNDBRD_ZAC1125 | SNDBRD_ZAC1346)) && offset == 0x16)
+			sndbrd_data_w(0, data);
+	} else if (offset > 0x3f && offset < 0x60) {
 		UINT32 sol;
 		offset -= 0x40;
 		sol = 1 << offset;
@@ -381,9 +383,6 @@ static WRITE_HANDLER(ram1_w) {
 			locals.solenoids &= ~sol;
 		if (core_gameData->hw.soundBoard == SNDBRD_ZAC1311 && offset > 19 && offset < 24)
 			discrete_sound_w(1 << (offset-20), data);
-		else if (core_gameData->hw.soundBoard == SNDBRD_ZAC1125 && offset > 23) {
-			sndbrd_data_w(0, ((offset - 24) << 4) | (data & 0x0f));
-		}
 	} else if (offset > 0x7f && offset < 0xc0) {
 		offset -= 0x80;
 		if (data & 0x01)

@@ -104,12 +104,9 @@ static WRITE_HANDLER(zac1125_data_w) {
   static int vco[8] = { 1, 1, 1, 1, 0, 0, 1, 1 };
   static int mix[8] = { 0, 0, 0, 0, 0, 0, 2, 0 };
 
-  int ctrl = data >> 4;
-  int state = 7 - (ctrl & 0x07);
-  data = data & 0x0f;
-  logerror("Sound #%x plays %x\n", ctrl, data);
-
-  if (data) {
+  int state = (data & 0x0f) >> 1;
+  if (data & 1) {
+    logerror("Sound %x plays\n", state);
     SN76477_enable_w       (0, 1);
     SN76477_mixer_w        (0, mix[state]);
     SN76477_set_decay_res  (0, states[state][0]); /* 7 */
@@ -148,19 +145,18 @@ static void zac1125_init(struct sndbrdData *brdData) {
 static void sp_init(struct sndbrdData *brdData);
 static void sp_diag(int button);
 static WRITE_HANDLER(sp1346_data_w);
-static WRITE_HANDLER(sp1346_ctrl_w);
-static WRITE_HANDLER(sp1346_manCmd_w);
+
 /*-------------------
 / exported interface
 /--------------------*/
 const struct sndbrdIntf zac1346Intf = {
-  "ZAC1346", sp_init, NULL, sp_diag, sp1346_manCmd_w, sp1346_data_w, NULL, sp1346_ctrl_w, NULL, 0
+  "ZAC1346", sp_init, NULL, sp_diag, sp1346_data_w, sp1346_data_w, NULL, NULL, NULL, 0
 };
 static struct DACinterface sp1346_dacInt = { 1, { 20 }};
 
 static struct {
   struct sndbrdData brdData;
-  int lastcmd, lastctrl;
+  int lastcmd;
   int p20, p21, p22, wr, t1;
 } splocals;
 
@@ -173,18 +169,15 @@ static void sp_diag(int button) {
 }
 
 static WRITE_HANDLER(sp1346_data_w) {
-  splocals.lastcmd = (splocals.lastcmd & 0x10) | (data & 0x0f);
-}
-static WRITE_HANDLER(sp1346_ctrl_w) {
-  splocals.lastcmd = (splocals.lastcmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00);
-  splocals.t1 = 0;
-  I8039_Out(I8039_bus, splocals.lastcmd);
-}
-static WRITE_HANDLER(sp1346_manCmd_w) {
+  logerror("Sound %x plays\n", data);
+  i8035_set_reg(I8035_TC, data & 1);
   splocals.lastcmd = data;
-  splocals.t1 = 0;
-  I8039_Out(I8039_bus, data);
 }
+
+static READ_HANDLER(sp1346_data_r) {
+  return (core_getDip(0) << 4) | splocals.lastcmd;
+}
+
 static void sp_irq(int state) {
   cpu_set_irq_line(splocals.brdData.cpuNo, 0, state ? ASSERT_LINE : CLEAR_LINE);
 }
@@ -192,9 +185,9 @@ static void sp_irq(int state) {
 READ_HANDLER(rom_r) {
   UINT16 address;
   UINT8 *rom = memory_region(ZACSND_CPUAREGION);
-  splocals.p20 = i8035_get_reg(I8039_P2) & 0x01;
-  splocals.p21 = (i8035_get_reg(I8039_P2) >> 1) & 0x01;
-  splocals.p22 = (i8035_get_reg(I8039_P2) >> 2) & 0x01;
+  splocals.p20 = i8035_get_reg(I8035_P2) & 0x01;
+  splocals.p21 = (i8035_get_reg(I8035_P2) >> 1) & 0x01;
+  splocals.p22 = (i8035_get_reg(I8035_P2) >> 2) & 0x01;
   address = (offset & 0x7f) | ((offset & 0x100) >> 1)
    | (splocals.p20 << 8) | (splocals.p21 << 9) | (splocals.p22 << 10);
   splocals.wr = (offset & 0x80) ? 0 : 1;
@@ -203,12 +196,13 @@ READ_HANDLER(rom_r) {
 
 static MEMORY_READ_START(i8035_readmem)
   { 0x0000, 0x07ff, rom_r },
-  { 0x0800, 0x08ff, MRA_RAM },
+  { 0x0800, 0x087f, MRA_RAM },
+  { 0x0880, 0x08ff, sp1346_data_r },
 MEMORY_END
 
 static MEMORY_WRITE_START(i8035_writemem)
   { 0x0000, 0x07ff, MWA_ROM },
-  { 0x0800, 0x08ff, MWA_RAM },
+  { 0x0800, 0x087f, MWA_RAM },
 MEMORY_END
 
 READ_HANDLER(test_r) {
@@ -220,11 +214,10 @@ WRITE_HANDLER(port_w) {
   static UINT8 *ram;
   if (!ram) ram = memory_region(ZACSND_CPUAREGION) + 0x800;
   ram[offset & 0x7f] = data;
-  if (offset == 0x80) ram = memory_region(ZACSND_CPUAREGION) + 0x880;
 }
 READ_HANDLER(port_r) {
   UINT8 *ram = memory_region(ZACSND_CPUAREGION) + 0x800;
-  return ram[offset & 0x7f];
+  return ram[offset];
 }
 WRITE_HANDLER(dac_w) {
   logerror("Write to DAC:%02x\n", data);
