@@ -257,16 +257,12 @@ extern	UINT8	*RAM;
 	int c = (P & F_C);											\
 	int lo = (A & 0x0f) + (tmp & 0x0f) + c; 					\
 	int hi = (A & 0xf0) + (tmp & 0xf0); 						\
-		P &= ~(F_V | F_C|F_N|F_Z);								\
-		if (!((lo+hi)&0xff)) P|=F_Z;							\
+		P &= ~F_C;												\
 		if (lo > 0x09)											\
 		{														\
 			hi += 0x10; 										\
 			lo += 0x06; 										\
 		}														\
-		if (hi&0x80) P|=F_N;									\
-		if (~(A^tmp) & (A^hi) & F_N)							\
-			P |= F_V;											\
 		if (hi > 0x90)											\
 			hi += 0x60; 										\
 		if (hi & 0xff00)										\
@@ -382,7 +378,6 @@ extern	UINT8	*RAM;
  ***************************************************************/
 #define CLI 													\
 	if ((m6502.irq_state != CLEAR_LINE) && (P & F_I)) { 		\
-		logerror("M6502#%d CLI sets after_cli\n",cpu_getactivecpu()); \
 		m6502.after_cli = 1;									\
 	}															\
 	P &= ~F_I
@@ -637,17 +632,11 @@ extern	UINT8	*RAM;
 			lo -= 6;											\
 			hi--;												\
 		}														\
-		P &= ~(F_V | F_C|F_Z|F_N);								\
-		if( (A^tmp) & (A^sum) & F_N )							\
-			P |= F_V;											\
+		P &= ~F_C;												\
 		if( hi & 0x0100 )										\
 			hi -= 0x60; 										\
 		if( (sum & 0xff00) == 0 )								\
 			P |= F_C;											\
-		if( !((A-tmp-c) & 0xff) )								\
-			P |= F_Z;											\
-		if( (A-tmp-c) & 0x80 )									\
-			P |= F_N;											\
 		A = (lo & 0x0f) | (hi & 0xf0);							\
 	}															\
 	else														\

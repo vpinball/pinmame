@@ -62,20 +62,20 @@
 #define m65sc02_01 m6502_01 								/* 6 ORA IDX */
 #define m65sc02_21 m6502_21 								/* 6 AND IDX */
 #define m65sc02_41 m6502_41 								/* 6 EOR IDX */
-#define m65sc02_61 m6502_61 								/* 6 ADC IDX */
+#define m65sc02_61 m65c02_61 								/* 6 ADC IDX */
 #define m65sc02_81 m6502_81 								/* 6 STA IDX */
 #define m65sc02_a1 m6502_a1 								/* 6 LDA IDX */
 #define m65sc02_c1 m6502_c1 								/* 6 CMP IDX */
-#define m65sc02_e1 m6502_e1 								/* 6 SBC IDX */
+#define m65sc02_e1 m65c02_e1 								/* 6 SBC IDX */
 
 #define m65sc02_11 m6502_11 								/* 5 ORA IDY; */
 #define m65sc02_31 m6502_31 								/* 5 AND IDY; */
 #define m65sc02_51 m6502_51 								/* 5 EOR IDY; */
-#define m65sc02_71 m6502_71 								/* 5 ADC IDY; */
+#define m65sc02_71 m65c02_71 								/* 5 ADC IDY; */
 #define m65sc02_91 m6502_91 								/* 6 STA IDY; */
 #define m65sc02_b1 m6502_b1 								/* 5 LDA IDY; */
 #define m65sc02_d1 m6502_d1 								/* 5 CMP IDY; */
-#define m65sc02_f1 m6502_f1 								/* 5 SBC IDY; */
+#define m65sc02_f1 m65c02_f1 								/* 5 SBC IDY; */
 
 #define m65sc02_02 m6502_02 								/* 2 ILL */
 #define m65sc02_22 m6502_22 								/* 2 ILL */
@@ -134,20 +134,20 @@ OP(63) {		  m6502_ICount -= 6;		 BSR;		  } /* ? BSR */
 #define m65sc02_05 m6502_05 								/* 3 ORA ZPG */
 #define m65sc02_25 m6502_25 								/* 3 AND ZPG */
 #define m65sc02_45 m6502_45 								/* 3 EOR ZPG */
-#define m65sc02_65 m6502_65 								/* 3 ADC ZPG */
+#define m65sc02_65 m65c02_65 								/* 3 ADC ZPG */
 #define m65sc02_85 m6502_85 								/* 3 STA ZPG */
 #define m65sc02_a5 m6502_a5 								/* 3 LDA ZPG */
 #define m65sc02_c5 m6502_c5 								/* 3 CMP ZPG */
-#define m65sc02_e5 m6502_e5 								/* 3 SBC ZPG */
+#define m65sc02_e5 m65c02_e5 								/* 3 SBC ZPG */
 
 #define m65sc02_15 m6502_15 								/* 4 ORA ZPX */
 #define m65sc02_35 m6502_35 								/* 4 AND ZPX */
 #define m65sc02_55 m6502_55 								/* 4 EOR ZPX */
-#define m65sc02_75 m6502_75 								/* 4 ADC ZPX */
+#define m65sc02_75 m65c02_75 								/* 4 ADC ZPX */
 #define m65sc02_95 m6502_95 								/* 4 STA ZPX */
 #define m65sc02_b5 m6502_b5 								/* 4 LDA ZPX */
 #define m65sc02_d5 m6502_d5 								/* 4 CMP ZPX */
-#define m65sc02_f5 m6502_f5 								/* 4 SBC ZPX */
+#define m65sc02_f5 m65c02_f5 								/* 4 SBC ZPX */
 
 #define m65sc02_06 m6502_06 								/* 5 ASL ZPG */
 #define m65sc02_26 m6502_26 								/* 5 ROL ZPG */
@@ -206,20 +206,20 @@ OP(63) {		  m6502_ICount -= 6;		 BSR;		  } /* ? BSR */
 #define m65sc02_09 m6502_09 								/* 2 ORA IMM */
 #define m65sc02_29 m6502_29 								/* 2 AND IMM */
 #define m65sc02_49 m6502_49 								/* 2 EOR IMM */
-#define m65sc02_69 m6502_69 								/* 2 ADC IMM */
+#define m65sc02_69 m65c02_69 								/* 2 ADC IMM */
 #define m65sc02_89 m65c02_89								/* 2 BIT IMM */
 #define m65sc02_a9 m6502_a9 								/* 2 LDA IMM */
 #define m65sc02_c9 m6502_c9 								/* 2 CMP IMM */
-#define m65sc02_e9 m6502_e9 								/* 2 SBC IMM */
+#define m65sc02_e9 m65c02_e9 								/* 2 SBC IMM */
 
 #define m65sc02_19 m6502_19 								/* 4 ORA ABY */
 #define m65sc02_39 m6502_39 								/* 4 AND ABY */
 #define m65sc02_59 m6502_59 								/* 4 EOR ABY */
-#define m65sc02_79 m6502_79 								/* 4 ADC ABY */
+#define m65sc02_79 m65c02_79 								/* 4 ADC ABY */
 #define m65sc02_99 m6502_99 								/* 5 STA ABY */
 #define m65sc02_b9 m6502_b9 								/* 4 LDA ABY */
 #define m65sc02_d9 m6502_d9 								/* 4 CMP ABY */
-#define m65sc02_f9 m6502_f9 								/* 4 SBC ABY */
+#define m65sc02_f9 m65c02_f9 								/* 4 SBC ABY */
 
 #define m65sc02_0a m6502_0a 								/* 2 ASL */
 #define m65sc02_2a m6502_2a 								/* 2 ROL */
@@ -278,20 +278,20 @@ OP(63) {		  m6502_ICount -= 6;		 BSR;		  } /* ? BSR */
 #define m65sc02_0d m6502_0d 								/* 4 ORA ABS */
 #define m65sc02_2d m6502_2d 								/* 4 AND ABS */
 #define m65sc02_4d m6502_4d 								/* 4 EOR ABS */
-#define m65sc02_6d m6502_6d 								/* 4 ADC ABS */
+#define m65sc02_6d m65c02_6d 								/* 4 ADC ABS */
 #define m65sc02_8d m6502_8d 								/* 4 STA ABS */
 #define m65sc02_ad m6502_ad 								/* 4 LDA ABS */
 #define m65sc02_cd m6502_cd 								/* 4 CMP ABS */
-#define m65sc02_ed m6502_ed 								/* 4 SBC ABS */
+#define m65sc02_ed m65c02_ed 								/* 4 SBC ABS */
 
 #define m65sc02_1d m6502_1d 								/* 4 ORA ABX */
 #define m65sc02_3d m6502_3d 								/* 4 AND ABX */
 #define m65sc02_5d m6502_5d 								/* 4 EOR ABX */
-#define m65sc02_7d m6502_7d 								/* 4 ADC ABX */
+#define m65sc02_7d m65c02_7d 								/* 4 ADC ABX */
 #define m65sc02_9d m6502_9d 								/* 5 STA ABX */
 #define m65sc02_bd m6502_bd 								/* 4 LDA ABX */
 #define m65sc02_dd m6502_dd 								/* 4 CMP ABX */
-#define m65sc02_fd m6502_fd 								/* 4 SBC ABX */
+#define m65sc02_fd m65c02_fd 								/* 4 SBC ABX */
 
 #define m65sc02_0e m6502_0e 								/* 6 ASL ABS */
 #define m65sc02_2e m6502_2e 								/* 6 ROL ABS */
