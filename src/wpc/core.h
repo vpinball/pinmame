@@ -389,9 +389,9 @@ typedef struct {
 extern core_tGlobals_dmd coreGlobals_dmd;
 
 #ifdef LSB_FIRST
-typedef struct { UINT8 lo, hi, dmy1, dmy2; } core_tSeg[3][16];
+typedef struct { UINT8 lo, hi, dmy1, dmy2; } core_tSeg[3][20];
 #else /* LSB_FIRST */
-typedef struct { UINT8 dmy2, dmy1, hi, lo; } core_tSeg[3][16];
+typedef struct { UINT8 dmy2, dmy1, hi, lo; } core_tSeg[3][20];
 #endif /* LSB_FIRST */
 typedef struct {
   UINT8  swMatrix[CORE_MAXSWCOL];

@@ -108,10 +108,10 @@ void core_initpalette(unsigned char *game_palette, unsigned short *game_colortab
     gStart = pmoptions.dmd_green;
     bStart = pmoptions.dmd_blue;
   }
-  if ((pmoptions.dmd_perc1 > 0) || (pmoptions.dmd_perc2 > 0) || (pmoptions.dmd_perc3 > 0)) {
-    perc66 = pmoptions.dmd_perc2;
-    perc33 = pmoptions.dmd_perc3;
-    perc0  = pmoptions.dmd_perc1;
+  if ((pmoptions.dmd_perc0 > 0) || (pmoptions.dmd_perc33 > 0) || (pmoptions.dmd_perc66 > 0)) {
+    perc66 = pmoptions.dmd_perc66;
+    perc33 = pmoptions.dmd_perc33;
+    perc0  = pmoptions.dmd_perc0;
   }
 #endif /* PINMAME_EXT */
   /*-- Autogenerate DMD Color Shades--*/
@@ -268,8 +268,10 @@ void core_updateSw(int flipEn) {
                  CORE_URFLIPKEY : CORE_LRFLIPKEY));
   }
   /*-- set switches in matrix for non-fliptronic games --*/
-  if (FLIP_SWL(flip))    /* have LL switch in matrix */
-    core_setSw(FLIP_SWL(flip), core_getSw(swLLFlip));
+  if (FLIP_SWL(flip))    /* have LL switch in matrix */ {
+	  core_setSw(FLIP_SWL(flip), core_getSw(swLLFlip)); 
+	logerror("set %d to %d\n",FLIP_SWL(flip),core_getSw(swLLFlip));
+  }
   if (FLIP_SWR(flip))    /* have LR switch in matrix */
     core_setSw(FLIP_SWR(flip), core_getSw(swLRFlip));
 
@@ -847,7 +849,6 @@ static void drawChar1(struct mame_bitmap *bitmap, int row, int col, UINT32 bits,
 }
 
 int core_init(core_tData *cd) {
-  UINT32 size;
   /*-- init variables --*/
   memset(&coreGlobals, 0, sizeof(coreGlobals));
   memcpy(&coreData, cd, sizeof(coreData));
