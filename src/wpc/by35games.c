@@ -594,7 +594,7 @@ CORE_GAMEDEFNV(bmx,"BMX",1983,"Bally",by35_mBY35_51S,0)
 INITGAME(granslam ,GEN_BY35_51,dispBy7,FLIP_SW(FLIP_L),0)
 BY35_ROMSTARTx00(granslam,	"grndslam.u2", 0x66aea9dc,
 							"grndslam.u6", 0x9e6ccea1)
-BY35_SOUND51ROM0(			"grndslam.u4", 0x5692c679)
+BY35_SOUND51ROM0(			"grndslam.u4", 0xac34bc38)
 BY35_ROMEND
 CORE_GAMEDEFNV(granslam,"Grand Slam",1983,"Bally",by35_mBY35_51S,0)
 
