@@ -959,9 +959,6 @@ int s2650_execute(int cycles)
 				M_LOD( S.reg[S.r], RDMEM(S.ea) );
 				break;
 
-			case 0x10:		/* illegal */
-			case 0x11:		/* illegal */
-				break;
 			case 0x12:		/* SPSU */
 				M_SPSU();
 				break;
@@ -1220,9 +1217,6 @@ int s2650_execute(int cycles)
 				M_ADD( S.reg[S.r], RDMEM(S.ea) );
 				break;
 
-			case 0x90:		/* illegal */
-			case 0x91:		/* illegal */
-				break;
 			case 0x92:		/* LPSU */
 				S.psu = R0 & ~PSU34;
 				break;
@@ -1301,9 +1295,6 @@ int s2650_execute(int cycles)
 			case 0xb5:		/* TPSL */
 				M_TPSL();
 				break;
-			case 0xb6:		/* illegal */
-			case 0xb7:		/* illegal */
-				break;
 
 			case 0xb8:		/* BSFR,0 (*)a */
 			case 0xb9:		/* BSFR,1 (*)a */
@@ -1329,12 +1320,6 @@ int s2650_execute(int cycles)
 			case 0xc2:		/* STRZ,2 */
 			case 0xc3:		/* STRZ,3 */
 				M_LOD( S.reg[S.r], R0 );
-				break;
-
-			case 0xc4:		/* illegal */
-			case 0xc5:		/* illegal */
-			case 0xc6:		/* illegal */
-			case 0xc7:		/* illegal */
 				break;
 
 			case 0xc8:		/* STRR,0 (*)a */
@@ -1438,6 +1423,12 @@ int s2650_execute(int cycles)
 			case 0xff:		/* BDRA,3 (*)a */
 				M_BRA( --S.reg[S.r] );
 				break;
+
+			default:		/* illegal (assume it works like HALT instruction) */
+				S.iar = (S.iar - 1) & PMSK;
+				S.halt = 1;
+				if (s2650_ICount > 0)
+					s2650_ICount = 0;
 		}
 	} while( s2650_ICount > 0 );
 
