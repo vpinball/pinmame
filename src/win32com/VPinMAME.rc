@@ -99,7 +99,7 @@ BEGIN
             VALUE "OriginalFilename", "VPinMAME.DLL\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Visual PinMAME\0"
-            VALUE "ProductVersion", "1.20 Beta\0"
+            VALUE "ProductVersion", "1.20 Alpha\0"
             VALUE "SpecialBuild", "\0"
         END
     END

@@ -1,1 +1,1 @@
-char build_version[] = "1.2 Beta ("__DATE__")";
+char build_version[] = "1.2 Alpha ("__DATE__")";
