@@ -11,6 +11,7 @@ static struct {
   UINT32 solenoids;
   UINT16 sols2;
   int vblankCount;
+  int dispCount;
 } locals;
 
 static INTERRUPT_GEN(vblank) {
@@ -21,7 +22,10 @@ static INTERRUPT_GEN(vblank) {
   /--------------------------------*/
   memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
-
+  if (++locals.dispCount > 11) {
+    locals.dispCount = 0;
+    memset(locals.segments, 0, sizeof(locals.segments));
+  }
   if (locals.solenoids & 0xffff) {
     coreGlobals.solenoids = locals.solenoids;
     locals.vblankCount = 1;
@@ -58,6 +62,7 @@ static READ_HANDLER(dip_r) {
 }
 
 static WRITE_HANDLER(disp_w) {
+  locals.dispCount = 0;
   locals.segments[9-offset*2].w = core_bcd2seg7e[data & 0x0f];
   locals.segments[8-offset*2].w = core_bcd2seg7e[data >> 4];
   // fake single 0 digit
@@ -179,12 +184,11 @@ INPUT_PORTS_START(strike) \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x8000, "1" ) \
   PORT_START /* 2 */ \
-    COREPORT_DIPNAME( 0x0001, 0x0000, "Show High Score") \
-      COREPORT_DIPSET(0x0000, " off" ) \
-      COREPORT_DIPSET(0x0001, " on" ) \
-    COREPORT_DIPNAME( 0x0002, 0x0000, "Show High Score") \
-      COREPORT_DIPSET(0x0000, " off" ) \
-      COREPORT_DIPSET(0x0002, " on" ) \
+    COREPORT_DIPNAME( 0x0003, 0x0001, "High Score Display") \
+      COREPORT_DIPSET(0x0000, "none" ) \
+      COREPORT_DIPSET(0x0001, "Type A" ) \
+      COREPORT_DIPSET(0x0002, "Type B" ) \
+      COREPORT_DIPSET(0x0003, "Type C" ) \
     COREPORT_DIPNAME( 0x0004, 0x0000, "S19") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0004, "1" ) \
@@ -197,12 +201,11 @@ INPUT_PORTS_START(strike) \
     COREPORT_DIPNAME( 0x0020, 0x0000, "S22") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0020, "1" ) \
-    COREPORT_DIPNAME( 0x0040, 0x0000, "S23") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0040, "1" ) \
-    COREPORT_DIPNAME( 0x0080, 0x0000, "S24") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0080, "1" ) \
+    COREPORT_DIPNAME( 0x00c0, 0x0080, "Special Award") \
+      COREPORT_DIPSET(0x0000, "500,000 Pts" ) \
+      COREPORT_DIPSET(0x0040, "Extra Ball" ) \
+      COREPORT_DIPSET(0x0080, "Replay" ) \
+      COREPORT_DIPSET(0x00c0, "None" ) \
     COREPORT_DIPNAME( 0x0100, 0x0000, "Random Millions") \
       COREPORT_DIPSET(0x0000, " on" ) \
       COREPORT_DIPSET(0x0100, " off" ) \
@@ -211,18 +214,17 @@ INPUT_PORTS_START(strike) \
       COREPORT_DIPSET(0x0200, "3" ) \
       COREPORT_DIPSET(0x0400, "5" ) \
       COREPORT_DIPSET(0x0600, "7" ) \
-    COREPORT_DIPNAME( 0x0800, 0x0000, "S28") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0800, "1" ) \
-    COREPORT_DIPNAME( 0x1000, 0x0000, "S29") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x1000, "1" ) \
-    COREPORT_DIPNAME( 0x2000, 0x0000, "S30") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x2000, "1" ) \
-    COREPORT_DIPNAME( 0x4000, 0x0000, "S31") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x4000, "1" ) \
+    COREPORT_DIPNAME( 0x1800, 0x1800, "Strikes needed for Special") \
+      COREPORT_DIPSET(0x0000, "1" ) \
+      COREPORT_DIPSET(0x0800, "2" ) \
+      COREPORT_DIPSET(0x1000, "3" ) \
+      COREPORT_DIPSET(0x1800, "4" ) \
+    COREPORT_DIPNAME( 0x2000, 0x0000, "Unlimited Specials") \
+      COREPORT_DIPSET(0x0000, " off" ) \
+      COREPORT_DIPSET(0x2000, " on" ) \
+    COREPORT_DIPNAME( 0x4000, 0x4000, "Bonus Ball Award") \
+      COREPORT_DIPSET(0x0000, "200,000 Pts" ) \
+      COREPORT_DIPSET(0x4000, "Bonus Ball" ) \
     COREPORT_DIPNAME( 0x8000, 0x0000, "S32") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x8000, "1" )
