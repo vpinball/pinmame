@@ -1390,14 +1390,14 @@ static int read_rom_data(struct rom_load_data *romdata, const struct RomModule *
 		printf("Error in RomModule definition: %s out of memory region space\n", ROM_GETNAME(romp));
 		return -1;
 	}
-
+#ifndef PINMAME
 	/* make sure the length was valid */
 	if (numbytes == 0)
 	{
 		printf("Error in RomModule definition: %s has an invalid length\n", ROM_GETNAME(romp));
 		return -1;
 	}
-
+#endif /* PINMAME */
 	/* special case for simple loads */
 	if (datamask == 0xff && (groupsize == 1 || !reversed) && skip == 0)
 		return rom_fread(romdata, base, numbytes);
