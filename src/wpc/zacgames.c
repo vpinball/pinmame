@@ -187,19 +187,19 @@ ZAC_ROMEND
 CORE_CLONEDEFNV(pinchp82,pinchamp,"Pinball Champ '82 (german speech)",1982,"Zaccaria",mZAC2B,SOUNDFLAG)
 
 /*--------------------------------
-/ Soccer King (09/82)
+/ Soccer Kings (09/82)
 /-------------------------------*/
 INITGAME(socrking,GEN_ZAC2,dispZAC3,SNDBRD_ZAC1370)
 ZAC_ROMSTART000(socrking,	"soccer.ic1",CRC(3fbd7c32) SHA1(2f56f67d1ad987638284000cca1e20ff17fcd4f9),
 							"soccer.ic2",CRC(0cc0df1f) SHA1(2fd05af0ec63835a8f69fdc50e2faceb829b4df2),
 							"soccer.ic3",CRC(5da6ea20) SHA1(c0e740e20a968ee58e0cd12a0089bb047f5e2cbb))
-ZAC_SOUNDROM_cefgh(			"sound1.c",  CRC(ca1765bb) SHA1(ad9ffc2b3e5c1b3fbc795619dbf0c2730cf2e621),
-							"sound2.e",  CRC(4e60f05f) SHA1(2f4f0942f6b05a69a77a174e91aaf97c2eeaebb6),
-							"sound3.f",  CRC(c393305a) SHA1(c001a64ca57c8df46508e506815b150932df7f35),
-							"sound4.g",  CRC(ebf990f8) SHA1(d5c8c294b97bb11573e8166a4d551fe3c6256938),
-							"sound5.h",  CRC(1f047bd7) SHA1(91168388191ae4d664ecf2cb7565b2cae0a29440))
+ZAC_SOUNDROM_cefgh(			"sound1.c",  NO_DUMP,
+							"sound2.e",  NO_DUMP,
+							"sound3.f",  NO_DUMP,
+							"sound4.g",  NO_DUMP,
+							"sound5.h",  NO_DUMP)
 ZAC_ROMEND
-CORE_GAMEDEFNV(socrking,"Soccer King",1982,"Zaccaria",mZAC2A,GAME_NOT_WORKING|SOUNDFLAG)
+CORE_GAMEDEFNV(socrking,"Soccer Kings",1982,"Zaccaria",mZAC2A,GAME_NOT_WORKING|SOUNDFLAG)
 
 /*--------------------------------
 / Pinball Champ (??/83)
