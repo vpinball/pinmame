@@ -440,19 +440,21 @@ WRITE_HANDLER(wpc_w) {
       data |= wpc_data[offset];
       break;
     case 0x3fd1-WPC_BASE:
-	  DBGLOG(("sdataX:%2x\n",data));
-      sndbrd_0_data_w(0,data); sndbrd_0_ctrl_w(0,0); sndbrd_0_ctrl_w(0,1);
-	  snd_cmd_log(data);
-	  break;
-	case WPC_SOUNDIF:
-	  DBGLOG(("sdata:%2x\n",data));
+      DBGLOG(("sdataX:%2x\n",data));
+      if (core_gameData->gen & GEN_WPCALPHA_1) {
+        sndbrd_0_data_w(0,data); sndbrd_0_ctrl_w(0,0); sndbrd_0_ctrl_w(0,1);
+	snd_cmd_log(data);
+      }
+      break;
+    case WPC_SOUNDIF:
+      DBGLOG(("sdata:%2x\n",data));
       sndbrd_0_data_w(0,data); snd_cmd_log(data);
-	  if (sndbrd_0_type() == SNDBRD_S11CS) sndbrd_0_ctrl_w(0,0);
+      if (sndbrd_0_type() == SNDBRD_S11CS) sndbrd_0_ctrl_w(0,0);
       break;
     case WPC_SOUNDBACK:
-	  DBGLOG(("sctrl:%2x\n",data));
-	  if (sndbrd_0_type() == SNDBRD_S11CS)
-		{ sndbrd_0_data_w(0,data); sndbrd_0_ctrl_w(0,1); }
+      DBGLOG(("sctrl:%2x\n",data));
+      if (sndbrd_0_type() == SNDBRD_S11CS)
+        { sndbrd_0_data_w(0,data); sndbrd_0_ctrl_w(0,1); }
       else sndbrd_0_ctrl_w(0,data);
       break;
     case WPC_WATCHDOG:
