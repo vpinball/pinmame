@@ -117,14 +117,6 @@ struct GameOptions {
 	struct ImageFile image_files[MAX_IMAGES];
 	int image_count;
 	#endif
-#ifdef PINMAME_EXT		/* DMD Color & Intensity Options */
-        int dmd_red;
-	int dmd_green;
-	int dmd_blue;
-	int dmd_perc1;
-	int dmd_perc2;
-	int dmd_perc3;
-#endif /* PINMAME_EXT */
 };
 
 extern struct GameOptions options;
