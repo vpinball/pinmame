@@ -25,14 +25,16 @@ void sndbrd_init(int brdNo, int brdType, int cpuNo, UINT8 *romRegion,
   const struct sndbrdIntf *b = allsndboards[brdType>>8];
   struct intfData *i = &intf[brdNo];
   struct sndbrdData brdData;
-  brdData.boardNo = brdNo; brdData.subType = brdType & 0xff;
-  brdData.cpuNo   = cpuNo; brdData.romRegion = romRegion;
-  i->brdIntf = b;
-  i->type    = brdType;
-  i->data_cb = data_cb;
-  i->ctrl_cb = ctrl_cb;
-  if (b && (coreGlobals.soundEn || b->flags & SNDBRD_NOTSOUND) && b->init)
-    b->init(&brdData);
+  if (Machine->drv->sound[0].sound_type) {
+    brdData.boardNo = brdNo; brdData.subType = brdType & 0xff;
+    brdData.cpuNo   = cpuNo; brdData.romRegion = romRegion;
+    i->brdIntf = b;
+    i->type    = brdType;
+    i->data_cb = data_cb;
+    i->ctrl_cb = ctrl_cb;
+    if (b && (coreGlobals.soundEn || b->flags & SNDBRD_NOTSOUND) && b->init)
+      b->init(&brdData);
+  }
 }
 
 int sndbrd_exists(int board) {
