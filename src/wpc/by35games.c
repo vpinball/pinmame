@@ -672,7 +672,7 @@ BYVP_ROMSTART100(granny,	"cpu_u2.532", 0xd45bb956,
 							"vid_u9.764", 0x6b67a1f7,
 							"cs_u3.764", 0x0a39a51d)
 BYVP_ROMEND
-CORE_GAMEDEFNVR90(granny,"Granny and the Gators (Video/Pinball Combo)",1984,"Bally",byVP_mVP2,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(granny,"Granny and the Gators (Video/Pinball Combo)",1984,"Bally",byVP_mVP2,0)
 
 /*--------------------------------
 / Kings of Steel (BY35-???: 05/84)
