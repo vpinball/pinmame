@@ -42,9 +42,12 @@ New Features
    LOTR SOUND BOARD WITHOUT WHICH THE EMULATION COULD HAVE NEVER BEEN ACHIEVED!!)
   [Steve Ellenoff]
 
-- Spinball emulation including full Sound and DMD support
+- Spinball hardware emulation including full Sound and DMD support
   (Big thanks to inkochnito for posting links to both the manual and rom on the
   forum so we could access them)
+  [Steve Ellenoff, Gerrit Volkenborn]
+
+- Mr. Game hardware emulation including sound and video support (still some video & sound issues)
   [Steve Ellenoff, Gerrit Volkenborn]
 
 - Working Tecnoplay driver (X-Force) including display, lamps, solenoids, switches.
