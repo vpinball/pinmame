@@ -37,16 +37,6 @@ static void init_##name(void) { core_gameData = &name##GameData; }
 /* -------------------------------------------------------------*/
 
 /*--------------------------------
-/ Black Sheep Squadron (Astro game)
-/-------------------------------*/
-INITGAME(blkshpsq,GEN_ASTRO,dispBy6,FLIP_SW(FLIP_L),0,0,0)
-ASTRO_ROMSTART48(blkshpsq,"blkshpsq.u2",0x39c478d3,
-                          "blkshpsq.u6",0x00000000)
-BY17_ROMEND
-#define input_ports_blkshpsq input_ports_by35
-CORE_GAMEDEFNV(blkshpsq,"Black Sheep Squadron",1979,"Astro",by35_mAstro,GAME_USES_CHIMES)
-
-/*--------------------------------
 / Bow & Arrow (Prototype game)
 /-------------------------------*/
 static const core_tLCDLayout dispBA[] = {
@@ -54,7 +44,7 @@ static const core_tLCDLayout dispBA[] = {
   {2, 0,18,6,CORE_SEG7}, {2,14,26,6,CORE_SEG7},
   {4, 2,34,2,CORE_SEG7}, {4, 8,38,2,CORE_SEG7},{0}
 };
-INITGAME(bowarrow,GEN_BYPROTO,dispBA,FLIP_SW(FLIP_L),8,0,0)
+INITGAME(bowarrow,GEN_BYPROTO,dispBA,FLIP_SW(FLIP_L),7,0,0)
 BYPROTO_ROMSTART(bowarrow,"b14.bin",0xd4d0f92a,
                           "b16.bin",0xad2102e7,
                           "b18.bin",0x5d84656b,

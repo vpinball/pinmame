@@ -19,6 +19,38 @@ BY35_INPUT_PORTS_START(st,1) BY35_INPUT_PORTS_END
 static core_tGameData name##GameData = {gen,disp,{flip,0,lamps,0,sb,db}}; \
 static void init_##name(void) { core_gameData = &name##GameData; }
 
+/*--------------------------------
+/ Black Sheep Squadron (Astro game)
+/-------------------------------*/
+static const core_tLCDLayout dispBlkSheep[] = {
+  {0, 0, 1,7,CORE_SEG87F},{0,16, 9,7,CORE_SEG87F},
+  {2, 0,17,7,CORE_SEG87F},{2,16,25,7,CORE_SEG87F},
+  {4, 0,33,7,CORE_SEG87}, {0}
+};
+INITGAME(blkshpsq,GEN_ASTRO,dispBlkSheep,FLIP_SW(FLIP_L),0,0,0)
+ASTRO_ROMSTART88(blkshpsq,"cpu_u2.716",0xb9ac5204,
+                          "cpu_u6.716",0xe16fbde1)
+BY35_ROMEND
+#define input_ports_blkshpsq input_ports_st
+CORE_GAMEDEFNV(blkshpsq,"Black Sheep Squadron",1979,"Astro",by35_mAstro,GAME_NOT_WORKING|GAME_NO_SOUND)
+
+/*--------------------------------
+/ Big Ball Bowling (United game?)
+/-------------------------------*/
+static const core_tLCDLayout dispBowl[] = {
+  {0, 0, 4,4,CORE_SEG7}, {0,10,12,4,CORE_SEG7}, {0,20,20,4,CORE_SEG7}, {2, 0,28,4,CORE_SEG7},
+  {2,10,33,1,CORE_SEG7}, {2,12,41,1,CORE_SEG7}, {2,14,49,1,CORE_SEG7}, {2,16,57,1,CORE_SEG7},
+  {2,20,36,1,CORE_SEG7}, {2,22,45,1,CORE_SEG7}, {2,24,54,1,CORE_SEG7}, {2,26,63,1,CORE_SEG7},
+  {4, 7,52,1,CORE_SEG7}, {4, 9,60,1,CORE_SEG7}, {4,17,37,1,CORE_SEG7}, {4,19,44,1,CORE_SEG7},
+  {0}
+};
+INITGAME(bbbowlin,GEN_BOWLING,dispBowl,FLIP_SW(FLIP_L),0,0,0)
+BY17_ROMSTARTx88(bbbowlin,"cpu_u2.716",0x179e0c69,
+                          "cpu_u6.716",0x7b48e45b)
+BY35_ROMEND
+#define input_ports_bbbowlin input_ports_st
+CORE_GAMEDEFNV(bbbowlin,"Big Ball Bowling",19??,"United(?)",by35_mBowling,GAME_IMPERFECT_GRAPHICS|GAME_NO_SOUND)
+
 /****************************************************/
 /* STERN MPU-100 (almost identical to Bally MPU-17) */
 /****************************************************/
@@ -136,6 +168,15 @@ BY35_ROMEND
 #define input_ports_magic input_ports_st
 CORE_GAMEDEFNV(magic,"Magic",1979,"Stern",by35_mST100,GAME_NO_SOUND)
 
+/*--------------------------------
+/ Cosmic Princess
+/-------------------------------*/
+INITGAME(princess,GEN_STMPU100,dispst6,FLIP_SW(FLIP_L),0,0,0)
+BY17_ROMSTARTx88(princess,"cpu_u2.716",0x8838091f,
+                          "cpu_u6.716",0xfb955a6f)
+BY35_ROMEND
+#define input_ports_princess input_ports_st
+CORE_GAMEDEFNV(princess,"Cosmic Princess",1979,"Stern",by35_mST100,GAME_NO_SOUND)
 
 /****************************************************/
 /* STERN MPU-200 (almost identical to Bally MPU-35) */
@@ -249,7 +290,7 @@ ST200_ROMSTART8888(freefall,"cpu_u1.716",0xd13891ad,
                             "cpu_u6.716",0x68168b97)
 BY35_ROMEND
 #define input_ports_freefall input_ports_st
-CORE_GAMEDEFNV(freefall,"Free Fall",1981,"Stern",by35_mST200,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(freefall,"Free Fall",1981,"Stern",by35_mST200,GAME_NOT_WORKING|GAME_NO_SOUND)
 
 /*--------------------------------
 / Split Second

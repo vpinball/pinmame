@@ -35,11 +35,13 @@
 #define GEN_BY35        U64(0x00000400000)
 #define GEN_STMPU100    U64(0x00000800000) /* Stern MPU - 100*/
 #define GEN_STMPU200    U64(0x00001000000) /* Stern MPU - 200*/
-#define GEN_ASTRO       U64(0x00002000000) /* same as BY35 ?*/
+#define GEN_ASTRO       U64(0x00002000000) /* Black Sheep Squadron, Stern hardware */
 #define GEN_HNK	        U64(0x00004000000) /* Hankin */
 #define GEN_BYPROTO     U64(0x00008000000) /* Bally Bow & Arrow prototype */
 #define GEN_BY6803      U64(0x00010000000)
 #define GEN_BY6803A     U64(0x00020000000)
+#define GEN_BOWLING     U64(0x00040000000) /* Big Ball Bowling, Stern hardware */
+
 #define GEN_GTS80       U64(0x00200000000) /* GTS80 */
 #define GEN_GTS80A      GEN_GTS80
 #define GEN_GTS80B      U64(0x00400000000) /* GTS80B */
@@ -50,8 +52,8 @@
 
 #define GEN_ALLWPC      U64(0x000000000ff)
 #define GEN_ALLS11      U64(0x0000000ff00)
-#define GEN_ALLBY35     U64(0x00007e00000)
-#define GEN_ALLS80      U64(0x01e00000000)
+#define GEN_ALLBY35     U64(0x00047e00000)
+#define GEN_ALLS80      U64(0x00600000000)
 
 
 #endif /* INC_GEN */
