@@ -917,7 +917,7 @@ static MACHINE_INIT(core) {
       for (ii = 0; ii < 5; ii++) {
         if (coreData->timers[ii].callback) {
           locals.timers[ii] = timer_alloc(coreData->timers[ii].callback);
-          timer_adjust(locals.timers[ii], coreData->timers[ii].rate, 0, coreData->timers[ii].rate);
+          timer_adjust(locals.timers[ii], TIME_IN_HZ(coreData->timers[ii].rate), 0, TIME_IN_HZ(coreData->timers[ii].rate));
         }
       }
     }

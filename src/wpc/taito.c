@@ -165,7 +165,7 @@ MACHINE_DRIVER_START(taito)
   MDRV_DIPS(32)
   MDRV_SWITCH_UPDATE(taito)
   MDRV_DIAGNOSTIC_LEDH(1)
-  MDRV_TIMER_ADD(taito_zeroCross, TIME_IN_HZ(TAITO_ZCFREQ))
+  MDRV_TIMER_ADD(taito_zeroCross, TAITO_ZCFREQ)
 MACHINE_DRIVER_END
 
 /*-----------------------------------------------
