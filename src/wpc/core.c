@@ -758,7 +758,7 @@ UINT64 core_getAllSol(void) {
   /*-- simulated --*/
   sol |= sim_getSol(49) ? (((UINT64)1)<<48) : 0;
   /*-- custom --*/
-  if (0/*core_gameData->hw.getSol*/) {
+  if ( core_gameData->hw.getSol ) {
     UINT64 bit = ((UINT64)1)<<(CORE_FIRSTCUSTSOL-1);
     int ii;
 
@@ -1002,7 +1002,7 @@ MACHINE_DRIVER_START(PinMAME)
   MDRV_VISIBLE_AREA(0, CORE_SCREENX-1, 0, CORE_SCREENY-1)
   MDRV_PALETTE_INIT(core)
   MDRV_PALETTE_LENGTH(sizeof(core_palette)/sizeof(core_palette[0][0])/3)
-  MDRV_FRAMES_PER_SECOND(60)
+  MDRV_FRAMES_PER_SECOND(50)
   MDRV_SWITCH_CONV(core_swSeq2m,core_m2swSeq)
   MDRV_LAMP_CONV(core_swSeq2m,core_m2swSeq)
   MDRV_MACHINE_INIT(core) MDRV_MACHINE_STOP(core)
