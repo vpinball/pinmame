@@ -440,7 +440,7 @@ static const char *spiderWheelText[] =
   {"Collect Deadhead  ", "Jackpot Is Lit    ", "Double Trouble    ", "Collect Eyeball   ",
    "Beat The Crate    ", "Coffin Multiball  ", "Telepathetic Power", "Laboratory        ",
    "Telepathetic Power", "Boogie Man Boogie ", "Crate Multiball   ", "Collect Eyeball   ",
-   "Leaper Mania      ", "Beast Hurry Up    ", "Collect Deadhead  ", "Collect Eyeball   "};
+   "Leaper Mania      ", "Beast Hurry Up    ", "Collect Deadhead  ", "Collect Eyeball   ", "Collect Deadhead  "};
 /*--------------------
   Drawing information
   --------------------*/
