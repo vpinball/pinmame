@@ -1,6 +1,10 @@
 What's new in Visual PinMAME:
 -----------------------------
 
+Version 1.1x (xxx)
+------------------
+- Removed the need for the zlib.dll
+
 Version 1.10 (December 23, 2001)
 ---------------------------------------
 -Updated Visual PinMAME to 1.10 release of PinMAME Source Code.
