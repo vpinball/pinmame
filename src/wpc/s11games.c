@@ -367,7 +367,10 @@ CORE_GAMEDEF(polic,l4, "Police Force (L-4)", 1989, "Williams", s11_mS11BS,0)
 /*-----------------------------
 / Transporter the Rescue 6/89
 /----------------------------*/
-INITGAME(tsptr,GEN_S11B,s11_dispS11b2,12, FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
+static core_tLCDLayout disptsptr[] = { \
+  {0,0,0,16,CORE_SEG16},{0,33,20,16,CORE_SEG16}, {0}
+};
+INITGAME(tsptr,GEN_S11B,disptsptr,12, FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV|S11_ONELINE,S11_MUXSW2)
 S11_ROMSTART48(tsptr,l3,"tran_u26.l3", 0x2d48a108,
                         "tran_u27.l3", 0x50efb01c)
 S11S_SOUNDROM88(        "tran_u21.l2", 0xb10120ee,
@@ -401,8 +404,7 @@ CORE_GAMEDEF(bcats,l5, "Bad Cats (L-5)", 1989, "Williams", s11_mS11BS,0)
 static core_tLCDLayout dispmousn[] = { \
   {0,0,0,16,CORE_SEG16},{0,33,20,16,CORE_SEG16}, {0}
 };
-
-INITGAME(mousn,GEN_S11B,dispmousn,12, FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
+INITGAME(mousn,GEN_S11B,dispmousn,12, FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV|S11_ONELINE,S11_MUXSW2)
 S11_ROMSTART48(mousn,l4,"mous_u26.l4", 0xa540edc1,
                         "mous_u27.l4", 0xff108148)
 S11S_SOUNDROM88(        "mous_u21.bin",0x59b1b0c5,
@@ -432,7 +434,10 @@ CORE_GAMEDEF(whirl,l3, "Whirlwind (L-3)", 1990, "Williams", s11_mS11BS,0)
 /*--------------------
 / Game Show 4/90
 /--------------------*/
-INITGAME(gs   ,GEN_S11C,s11_dispS11c,12,FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
+static core_tLCDLayout dispgs[] = { \
+  {0,0,0,16,CORE_SEG16},{0,33,20,16,CORE_SEG16}, {0}
+};
+INITGAME(gs   ,GEN_S11C,dispgs,12,FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV|S11_ONELINE,S11_MUXSW2)
 S11_ROMSTART48(gs   ,l3,"gshw_u26.l3", 0x3419bfb2,
                         "gshw_u27.l3", 0x4f3babb6)
 S11CS_SOUNDROM000(      "gshw_u4.l2",  0xe89e0116,
@@ -484,7 +489,10 @@ CORE_GAMEDEF(diner, l4, "Diner (L-4)", 1990, "Williams", s11_mS11CS,0)
 /*--------------------
 / Radical 9/90
 /--------------------*/
-INITGAME(radcl,GEN_S11C,s11_dispS11c,12,FLIP_SW(FLIP_L),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
+static core_tLCDLayout dispradcl[] = { \
+  {0,0,0,16,CORE_SEG16},{0,33,20,16,CORE_SEG16}, {0}
+};
+INITGAME(radcl,GEN_S11C,dispradcl,12,FLIP_SW(FLIP_L),S11_LOWALPHA|S11_DISPINV|S11_ONELINE,S11_MUXSW2)
 S11_ROMSTART48(radcl,l1,"rad_u26.l1", 0x84b1a125,
                         "rad_u27.l1", 0x6f6ca382)
 S11CS_SOUNDROM008(      "rad_u4.l1",  0x5aafc09c,
@@ -520,7 +528,7 @@ static core_tLCDLayout dispbbb[] = { \
   {0,0,0,16,CORE_SEG16},{0,33,20,16,CORE_SEG16}, {0}
 };
 
-INITGAME(bbnny,GEN_S11C,dispbbb,12,FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
+INITGAME(bbnny,GEN_S11C,dispbbb,12,FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV|S11_ONELINE,S11_MUXSW2)
 S11_ROMSTART48(bbnny,l2,"bugs_u26.l2", 0xb4358920,
                         "bugs_u27.l2", 0x8ff29439)
 S11CS_SOUNDROM000(      "bugs_u4.l2",  0x04bc9aa5,

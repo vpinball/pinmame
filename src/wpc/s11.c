@@ -413,6 +413,9 @@ static int s11_sw2m(int no) { return no+7; }
 static int s11_m2sw(int col, int row) { return col*8+row-7; }
 
 static MACHINE_INIT(s11) {
+  if (!core_gameData->hw.display & S11_ONELINE) {
+    set_visible_area(0, 255, 0, 255);
+  }
   if (core_gameData->gen & (GEN_DE | GEN_DEDMD16 | GEN_DEDMD32 | GEN_DEDMD64))
     locals.deGame = 1;
   pia_config(S11_PIA0, PIA_STANDARD_ORDERING, &s11_pia[0]);
@@ -495,6 +498,8 @@ static MACHINE_DRIVER_START(s11)
   MDRV_CPU_PERIODIC_INT(s11_irq, S11_IRQFREQ)
   MDRV_DIPS(1) /* (actually a jumper) */
   MDRV_SWITCH_UPDATE(s11)
+  MDRV_SCREEN_SIZE(400, 256)
+  MDRV_VISIBLE_AREA(0, 399, 0, 255)
 MACHINE_DRIVER_END
 
 /* System 9 */
