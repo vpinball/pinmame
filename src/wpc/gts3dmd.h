@@ -5,7 +5,9 @@
 #define AVAIL_INTENSITY 3	//Max # of Intensity levels supported by PinMAME
 #define FRAMEDIV (GTS3DMD_FRAMES/AVAIL_INTENSITY)-1)	//Break Frames into pieces
 
-void gts3_dmd128x32_refresh(struct mame_bitmap *bitmap,int full_refresh);
+// void gts3_dmd128x32_refresh(struct mame_bitmap *bitmap,int full_refresh);
+
+VIDEO_UPDATE(gts3_dmd128x32);
 
 #endif /* INC_GTS3DMD */
 

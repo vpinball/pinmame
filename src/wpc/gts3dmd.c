@@ -13,7 +13,8 @@ static core_tLCDLayout gts_128x32DMD[] = {
 	{0,0,32,128,CORE_DMD}, {0}
 };
 
-void gts3_dmd128x32_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
+VIDEO_UPDATE(gts3_dmd128x32) {
+// void gts3_dmd128x32_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
   tDMDDot dotCol;
   UINT8 *frameData = &DMDFrames[0][0];
   int ii,jj,kk,ll;
@@ -24,7 +25,7 @@ void gts3_dmd128x32_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
 #endif
 
   /* Drawing is not optimised so just clear everything */
-  if (fullRefresh) fillbitmap(bitmap,Machine->pens[0],NULL);
+  // !!! if (fullRefresh) fillbitmap(bitmap,Machine->pens[0],NULL);
 
   memset(dotCol,0,sizeof(tDMDDot));
   for (ii = 0; ii < GTS3DMD_FRAMES; ii++) { // 24 frames
@@ -46,8 +47,13 @@ void gts3_dmd128x32_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
       else               data = 0;
       dotCol[ii][jj] = data;
   }
-// !!!  dmd_draw(bitmap, dotCol, gts_128x32DMD);
-// !!!  drawStatus(bitmap,fullRefresh);
+
+  video_update_core_dmd(bitmap, cliprect, dotCol, core_gameData->lcdLayout ? core_gameData->lcdLayout : &gts_128x32DMD[0]);
+
+  video_update_core_status(bitmap, cliprect);
+  
+  // !!! dmd_draw(bitmap, dotCol, gts_128x32DMD);
+  // !!! drawStatus(bitmap,fullRefresh);
 }
 
 #else
