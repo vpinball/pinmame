@@ -406,6 +406,10 @@ int VOTRAXSC01_num(const struct MachineSound *msound) { return ((struct VOTRAXSC
 #if (HAS_TMS320AV120)
 int TMS320AV120_num(const struct MachineSound *msound) { return ((struct TMS320AV120interface*)msound->sound_interface)->num; }
 #endif
+#if (HAS_M114S)
+int M114S_clock(const struct MachineSound *msound) { return ((struct M114Sinterface*)msound->sound_interface)->baseclock[0]; }
+int M114S_num(const struct MachineSound *msound) { return ((struct M114Sinterface*)msound->sound_interface)->num; }
+#endif
 #endif /* PINMAME */
 
 #ifdef MESS
@@ -1150,6 +1154,18 @@ struct snd_interface sndintf[] =
 		TMS320AV120_sh_stop,
 		TMS320AV120_sh_update,
 		TMS320AV120_sh_reset
+	},
+#endif
+#if (HAS_M114S)
+	{
+		SOUND_M114S,
+		"M114S",
+		M114S_num,
+		M114S_clock,
+		M114S_sh_start,
+		M114S_sh_stop,
+		0,
+		0
 	},
 #endif
 #endif /* PINMAME */

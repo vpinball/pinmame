@@ -48,6 +48,7 @@
 #include "mrgame.h"
 
 //use this to comment out video and sound cpu for quicker debugging of main cpu
+//#define NO_M114S
 //#define TEST_MAIN_CPU
 //#define TEST_MOTORSHOW
 //#define NOSOUND
@@ -69,7 +70,7 @@ static int vidcmd_buf[MRGAME_VID_MAX_BUF];
 static int vidcmd_next = 0;
 static int vidcmd_read = 0;
 
-#if 0
+#if 1
 #define LOG(x) printf x
 #else
 #define LOG(x) logerror x
@@ -137,6 +138,13 @@ struct DACinterface mrgame_dacInt =
  { MIXER(50,MIXER_PAN_LEFT), MIXER(50,MIXER_PAN_RIGHT) }		/* Volume */
 };
 struct TMS5220interface mrgame_tms5220Int = { 640000, 100, 0 };
+struct M114Sinterface mrgame_m114sInt = { 
+	1,					/* # of chips */
+	{4000000},			/* Clock Frequency 4Mhz */
+	{REGION_USER1},		/* ROM Region for samples */
+	{100},				/* Volume Level */
+	{1},				/* # of bytes to eat at start up */
+};
 
 /* Sound board */
 const struct sndbrdIntf mrgameIntf = {
@@ -280,8 +288,8 @@ static WRITE_HANDLER(mrgame_sndcmd)
 
 //Bit 7 of the data triggers NMI of the sound cpus
 static WRITE16_HANDLER(sound_w) { 
-	//LOG(("%08x: sound_w = %04x\n",activecpu_get_pc(),data)); 
-	//printf("Sound Command = %02x\n",data);
+	LOG(("%08x: sound_w = %04x\n",activecpu_get_pc(),data)); 
+
 	locals.sndcmd = data & 0xff;
 
 	//Main CPU sends 3 commands, Bit 7 set->cleared->set
@@ -445,11 +453,17 @@ static READ_HANDLER(i8255_portc_r) {
 }
 
 //Connected to monitor! Not sure what kind of data it could send here!
-static WRITE_HANDLER(i8255_portb_w) { LOG(("i8255_portb_w=%x\n",data)); }
+static WRITE_HANDLER(i8255_portb_w) { 
+	//LOG(("i8255_portb_w=%x\n",data)); 
+}
 
 //These don't make sense to me - they're read lines, so no idea what writes to here would do!
-static WRITE_HANDLER(i8255_porta_w) { LOG(("i8255_porta_w=%x\n",data)); }
-static WRITE_HANDLER(i8255_portc_w) { LOG(("i8255_portc_w=%x\n",data)); }
+static WRITE_HANDLER(i8255_porta_w) { 
+	//LOG(("i8255_porta_w=%x\n",data)); 
+}
+static WRITE_HANDLER(i8255_portc_w) { 
+	//LOG(("i8255_portc_w=%x\n",data)); 
+}
 
 
 //Video Registers
@@ -472,7 +486,7 @@ static WRITE_HANDLER(vid_registers_w) {
 			locals.vid_a13 = data & 1;
 			break;
 	}
-	LOG(("vid_register[%02x]_w=%x\n",offset,data)); 
+	//LOG(("vid_register[%02x]_w=%x\n",offset,data)); 
 }
 
 /* Sound CPU 1 Ports
@@ -483,14 +497,21 @@ static WRITE_HANDLER(vid_registers_w) {
 */
 static READ_HANDLER(soundg1_1_port_r) {
 	int data = 0;
-	if(offset == 1) {
-		data = locals.sndcmd;		//Data is inverted
-		//printf("SOUND CPU #1 - Reading data: %02x\n",data);
+	switch(offset)
+	{
+		case 1:
+			data = locals.sndcmd;		//Data is inverted
+			//printf("SOUND CPU #1 - Reading data: %02x\n",data);
+			break;
+		//Should not read at this port, but it does.. The value read is immediately discarded though..
+		case 2:
+			break;
+		default:
+			LOG(("%04x: Unhandled port read on Sound CPU #1 - Port %02x\n",activecpu_get_pc(),offset));
 	}
-	else
-		LOG(("Unhandled port read on Sound CPU #1 - Port %02x\n",offset));
 	return data;
 }
+
 static WRITE_HANDLER(soundg1_1_port_w) {
 	switch(offset)
 	{
@@ -503,14 +524,13 @@ static WRITE_HANDLER(soundg1_1_port_w) {
 			locals.ackspk = GET_BIT0;
 			break;
 		case 3:
+#ifndef NO_M114S
+			M114S_data_w(0,data);
+#endif
 			break;
 		default:
-			LOG(("Unhandled port write on Sound CPU #1 - Port %02x - Data %02x\n",offset,data));
+			LOG(("%04x: Unhandled port write on Sound CPU #1 - Port %02x - Data %02x\n",activecpu_get_pc(),offset,data));
 	}
-#if 0
-	if(offset != 3)
-		printf("S1: port [%02x] write = %02x \n",offset,data);
-#endif
 }
 
 /* Sound CPU 2 Ports
@@ -899,6 +919,7 @@ MACHINE_DRIVER_START(mrgame_snd1)
   MDRV_CPU_PORTS(soundg1_2_readport, soundg1_2_writeport)
   MDRV_SOUND_ADD(DAC, mrgame_dacInt)
   MDRV_SOUND_ADD(TMS5220, mrgame_tms5220Int)
+  MDRV_SOUND_ADD(M114S, mrgame_m114sInt)
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
 MACHINE_DRIVER_END
 
