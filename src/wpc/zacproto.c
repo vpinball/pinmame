@@ -23,30 +23,31 @@ static INTERRUPT_GEN(vblank) {
   core_updateSw(1);
 }
 
-//Generate the IRQ
-static INTERRUPT_GEN(irq) {
-  logerror("%04x: IRQ\n",activecpu_get_pc());
-  cpu_set_irq_line(0, 0, ASSERT_LINE);
-}
-
-static int irq_callback(int int_level) {
-  cpu_set_irq_line(0, 0, CLEAR_LINE);
-  return 0;
-}
-
-static MACHINE_INIT(strike) {
+static MACHINE_INIT(zacProto) {
   memset(&locals, 0, sizeof(locals));
-  cpu_set_irq_callback(0, irq_callback);
+}
+
+static SWITCH_UPDATE(zacProto) {
+  if (inports)
+    CORE_SETKEYSW(inports[CORE_COREINPORT],0x03,0);
+}
+
+static READ_HANDLER(sw_r) {
+  SCAMP_set_sense_a(coreGlobals.swMatrix[0] & 0x01);
+  SCAMP_set_sense_b(coreGlobals.swMatrix[0] & 0x02);
+  return coreGlobals.swMatrix[offset+1];
 }
 
 static MEMORY_READ_START(readmem)
   { 0x0000, 0x0bff, MRA_ROM },
-  { 0x0c00, 0x0fff, MRA_RAM },
-  { 0x1000, 0x1400, MRA_ROM },
+  { 0x0c00, 0x0dff, MRA_RAM },
+  { 0x0e00, 0x0e03, sw_r },
+  { 0x0e04, 0x13ff, MRA_RAM },
+  { 0x1400, 0x17ff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(writemem)
-  { 0x0c00, 0x0fff, MWA_RAM },
+  { 0x0c00, 0x13ff, MWA_RAM },
 MEMORY_END
 
 static core_tLCDLayout disp[] = {
@@ -59,18 +60,21 @@ static void init_strike(void) {
   core_gameData = &strikeGameData;
 }
 
-MACHINE_DRIVER_START(strike)
+MACHINE_DRIVER_START(zacProto)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CORE_INIT_RESET_STOP(strike,NULL,NULL)
+  MDRV_CORE_INIT_RESET_STOP(zacProto,NULL,NULL)
   MDRV_CPU_ADD_TAG("mcpu", SCAMP, 200000)
+  MDRV_SWITCH_UPDATE(zacProto)
   MDRV_CPU_MEMORY(readmem, writemem)
   MDRV_CPU_VBLANK_INT(vblank, 1)
 MACHINE_DRIVER_END
 
-INPUT_PORTS_START(strike) \
+INPUT_PORTS_START(zacProto) \
   CORE_PORTS \
   SIM_PORTS(1) \
   PORT_START /* 0 */ \
+    COREPORT_BITTOG(0x0001, "Sense A", KEYCODE_7) \
+    COREPORT_BITTOG(0x0002, "Sense B", KEYCODE_8) \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
       COREPORT_DIPSET(0x0000, "0" ) \
@@ -103,7 +107,9 @@ ROM_START(strike) \
     ROM_LOAD("strike1.bin", 0x0000, 0x0400, CRC(650abc54) SHA1(6a4f83016a38338ba6a04271532f0880264e61a7)) \
     ROM_LOAD("strike2.bin", 0x0400, 0x0400, CRC(13c5a168) SHA1(2da3a5bc0c28a2aacd8c1396dac95cf35f8797cd)) \
     ROM_LOAD("strike3.bin", 0x0800, 0x0400, CRC(ebbbf315) SHA1(c87e961c8e5e99b0672cd632c5e104ea52088b5d)) \
-    ROM_LOAD("strike4.bin", 0x1000, 0x0400, CRC(ca0eddd0) SHA1(52f9faf791c56b68b1806e685d0479ea67aba019))
+    ROM_LOAD("strike4.bin", 0x1400, 0x0400, CRC(ca0eddd0) SHA1(52f9faf791c56b68b1806e685d0479ea67aba019))
 ROM_END
 
-CORE_GAMEDEFNV(strike, "Strike", 1978, "Zaccaria", strike, GAME_USES_CHIMES)
+#define input_ports_strike input_ports_zacProto
+
+CORE_GAMEDEFNV(strike, "Strike", 1978, "Zaccaria", zacProto, GAME_USES_CHIMES)
