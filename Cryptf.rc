@@ -57,7 +57,7 @@ FONT 8, "MS Sans Serif"
 BEGIN
     ICON            IDI_ICON1,IDC_MYICON,14,9,20,20
     DEFPUSHBUTTON   "OK",IDOK,69,62,50,14
-    LTEXT           "File Crypter (Version 1.0)",IDC_STATIC,45,12,128,8
+    LTEXT           "File Crypter (Version 1.1)",IDC_STATIC,45,12,128,8
     LTEXT           "by Steve Ellenoff",IDC_STATIC,45,26,128,8
     LTEXT           "sellenoff@hotmail.com",IDC_EMAILLINK,67,42,71,8,
                     SS_NOTIFY | NOT WS_GROUP,WS_EX_TRANSPARENT
@@ -126,8 +126,8 @@ IDI_ICON1               ICON    DISCARDABLE     "SECUR02B.ICO"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,0
- PRODUCTVERSION 1,0,0,0
+ FILEVERSION 1,1,0,0
+ PRODUCTVERSION 1,1,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -144,15 +144,15 @@ BEGIN
         BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "SE Consulting\0"
-            VALUE "FileDescription", "File Crypter Version 1.0\0"
-            VALUE "FileVersion", "1, 0, 0, 0\0"
+            VALUE "FileDescription", "File Crypter Version 1.1\0"
+            VALUE "FileVersion", "1, 1, 0, 0\0"
             VALUE "InternalName", "Cryptf\0"
             VALUE "LegalCopyright", "Copyright © 2002\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "Cryptf.exe\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "File Crypter\0"
-            VALUE "ProductVersion", "1, 0, 0, 0\0"
+            VALUE "ProductVersion", "1, 1, 0, 0\0"
             VALUE "SpecialBuild", "\0"
         END
     END
