@@ -44,12 +44,14 @@ MEMORY_READ_START(taitos_readmem)
   { 0x0400, 0x0403, pia_r(SP_PIA0) },
   { 0x0800, 0x1fff, MRA_ROM }, // 0x800 - 0xfff for sureshot
   { 0x2000, 0x3fff, MRA_ROM }, // for sharkt & lunelle
+  { 0x7800, 0x7fff, MRA_ROM }, // for shock
   { 0xf800, 0xffff, MRA_ROM }, // reset vector
 MEMORY_END
 
 MEMORY_WRITE_START(taitos_writemem)
   { 0x0000, 0x007f, MWA_RAM },
   { 0x0400, 0x0403, pia_w(SP_PIA0) },
+  { 0x8400, 0x8403, pia_w(SP_PIA0) }, // for shock
 MEMORY_END
 
 static void taitos_irq(int state) {
