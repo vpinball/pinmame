@@ -8,7 +8,10 @@ Visual PinMAME will automatically alias the romsets, so you can still refer to t
 Controller.cGameName = "batmn", and it will internally convert it to "btmn_101". This will keep
 backward compatibility for VPM.
 
-current name           new name for romset
+since version 1.30:
+
+old name                new name for romset
+-------------------------------------------
 batmn            =      btmn_101
 bttf             =      bttf_a20
 chkpnt           =      ckpt_a17
@@ -36,3 +39,10 @@ torpe            =      torp_e21
 trek             =      trek_201
 wwfrumb          =      wwfr_103
 
+since version 1.31:
+
+old name                new name for romset
+-------------------------------------------
+gnr              =      gnr_300
+southpk          =      sprk_103
+twister          =      twst_405
