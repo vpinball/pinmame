@@ -21,7 +21,7 @@ What is it?
   Data East/Sega 192x64 DMD, Sega/Stern Whitestar System, Stern MPU-100, Stern MPU-200,
   Bally MPU-17 & MPU-35, Bally Video/Pinball, Bally 6803,
   Gottlieb System 80, 80a, 80b, System 3, Hankin, Gameplan MPU-1 & MPU-2, Atari,
-  Zaccaria, Taito of Brazil, Midway, Capcom, Alvin G. and Co.
+  Zaccaria, Taito of Brazil, Midway, Capcom, Alvin G. and Co., Technoplay
 
   *Note: Emulation is not 100% working on all hardware.
 
@@ -77,6 +77,7 @@ Games supported
   Midway Pinball: Dave Nutting's 1974 "Flicker" prototype, and also Rotation VIII.
   Capcom Pinball: All games from Goofy Hoops(1995) to Kingpin(1996)
   Alvin G. and Co: All games from World Tour(1992) to Pistol Poker(1993)
+  Technoplay: All that's available.. currently only 1 game
 
   Supported means that the game loads and the display starts up with lamps etc. All games
   enter attract mode and you can use the Coin Door switches to enter the menus.
@@ -328,7 +329,7 @@ Steve Ellenoff     (sellenoff@hotmail.com)
 Tom Haukap         (Tom.Haukap@t-online.de)
 Martin Adrian      (wpcmame@hotmail.com)
 Gerrit Volkenborn  (gaston@yomail.de)
-Destruk		   (destruk@vpforums.com)
+Brian Smith        (destruk@vpforums.com)
 
 PinMAME Contributors
 --------------------
