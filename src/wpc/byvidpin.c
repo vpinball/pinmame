@@ -26,9 +26,6 @@
 	Baby Pac - Videot (1 x TMS9928 Video Chip)
 	Granny & Gators - Videot Deluxe (2 x TMS9928 Video Chip - Master/Slave configuration)
 
-  The status should be (~data) & 0x03, and read from cpu as status (not inverted).. 
-  but right now, it's better as data & 0x03, read as ~status, but only if we incorrectly use if(~locals.status_enable) which is always true
-
   6800 vectors:
   RES:  597d
   NMI:  5950
@@ -59,7 +56,7 @@
 
 static int cmdnum = 0;
 
-#if 0
+#if 1
 	#define mlogerror logerror
 #else
 	#define mlogerror printf
@@ -73,7 +70,7 @@ static int cmdnum = 0;
 #define BYVP_ZCFREQ       120 /* Zero cross frequency */
 
 static struct {
-  int p0_a, p1_a, p1_b, p0_ca2, p1_ca2, p0_cb2, p1_cb2;
+  int p0_a, p1_a, p1_b, p0_ca2, p1_ca2, p0_cb2, p1_cb2, p2_a;
   int bcd[6];
   int lampadr1, lampadr2;
   UINT32 solenoids;
@@ -92,6 +89,7 @@ static struct {
   int u7_portcb2;			//U7 Port CB2
   int snddata;				//Sound Latch
   int lasttin;				//Track Last TIN IRQ Edge
+  int vidswitches;			//Track Video switches, there's only 1 column
   void *zctimer;
 } locals;
 
@@ -128,14 +126,24 @@ static void byVP_lampStrobe(int board, int lampadr) {
 (out) PA0-7: Vidiot Input Data (When Latch Input Flag is set?) */
 static WRITE_HANDLER(pia0a_w) {
   locals.p0_a = data;	//Controls Strobing
+
+  //Write Data To Vidiot Latch Pre-Buffers - Only When Latch Input is Low
+  if(locals.enable_input == 0) {
+	mlogerror("original buffer data = %x : modded %x\n",*(memory_region(BYVP_MEMREG_CPU) + 0x51),data);
+	//For some reason, code inverts lower nibble
+	data = (data&0xf0) | (~data & 0x0f);
+	locals.vidiot_u2_latch = data;
+	mlogerror("%x: Writing %x to vidiot u2 buffers: enable_input = %x\n",cpu_getpreviouspc(),data, locals.enable_input);
+  }
+
   byVP_lampStrobe(0,locals.lampadr1);
 }
 
 /* PIA1:A-W: Communications to Vidiot
 (out) PA0:	 N/A
-(out) PA1:   Video Enable Output
-(out) PA2:   Video Latch Input Data
-(out) PA3:   Video Status Enable
+(out) PA1:   Video Enable Output	(Active Low)
+(out) PA2:   Video Latch Input Data (When Low, Signals to Vidiot, that data is coming, When Transition to High, Latches Data)
+(out) PA3:   Video Status Enable	(Active Low)
 (out) PA4-7: N/A*/
 static WRITE_HANDLER(pia1a_w) {
 int tmp_input = locals.enable_input;
@@ -144,11 +152,12 @@ locals.enable_input  = (data>>2)&1;
 locals.status_enable = (data>>3)&1;
 logerror("%x: Setting: e_out = %x, e_in = %x, s_enable = %x\n",cpu_getpreviouspc(),
 		 locals.enable_output,locals.enable_input,locals.status_enable);
-//Latch data to U2 on positive edge
+
+//Latch data from pre-buffer to U2 on positive edge (We don't need to code this)
 if(locals.enable_input & ~tmp_input) {
-  locals.vidiot_u2_latch = data;
-  logerror("%x: Writing %x to vidiot u2\n",cpu_getpreviouspc(),data);
+	logerror("%x: Latching data to Vidiot U2: data = %x\n",cpu_getpreviouspc(),locals.vidiot_u2_latch);
 }
+
 //Update Vidiot PIA
 pia_set_input_ca1(2, locals.enable_output);
 pia_set_input_ca2(2, locals.enable_input);
@@ -164,7 +173,6 @@ static READ_HANDLER(pia0b_r) {
   if (!locals.status_enable) {
 	    logerror("%x: MPU: reading vidiot status %x\n",cpu_getpreviouspc(),locals.vidiot_status);
 		return locals.vidiot_status;
-		//return ~locals.vidiot_status;
 		
   }
   //Enable Output must be low to return data..
@@ -172,11 +180,12 @@ static READ_HANDLER(pia0b_r) {
 	    logerror("%x: MPU: reading vidiot data %x\n",cpu_getpreviouspc(),locals.vidiot_u1_latch);
 		return locals.vidiot_u1_latch;
   }
+
   if (locals.p0_a & 0x20) return core_getDip(0); // DIP#1-8
   if (locals.p0_a & 0x40) return core_getDip(1); // DIP#2-16
   if (locals.p0_a & 0x80) return core_getDip(2); // DIP#17-24
   if (locals.p0_cb2)      return core_getDip(3); // DIP#25-32
-  return core_getSwCol((locals.p0_a & 0x1f)); //| ((locals.p1_b & 0x80)>>2)); ??
+  return core_getSwCol((locals.p0_a & 0x1f) | ((locals.p1_b & 0x80)>>2));
 }
 
 /* PIA0:CB2-W Lamp Strobe #1, DIPBank3 STROBE */
@@ -238,12 +247,26 @@ static int byVP_vblank(void) {
 
 static void byVP_updSw(int *inports) {
   if (inports) {
-    coreGlobals.swMatrix[0] = (inports[BYVP_COMINPORT]>>11) & 0x0f;
-    coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & (~0x24)) |
-                              ((inports[BYVP_COMINPORT]<<2) & 0x24);
-    coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & (~0xc6)) |
-                              ((inports[BYVP_COMINPORT]>>3) & 0xc6);
-  }
+
+	//Load switches that don't belong in matrix (Diagnostics, Joystick, etc)
+	coreGlobals.swMatrix[0] = inports[BYVP_COMINPORT] & 0xff;
+
+	//Clear only bits we're using
+	coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & (~0x24));
+	coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & (~0xc3));
+
+	//Start Player 2
+    coreGlobals.swMatrix[1] |= (inports[BYVP_COMINPORT]>>6) & 0x04;
+	//Start Player 1
+    coreGlobals.swMatrix[1] |= (inports[BYVP_COMINPORT]>>4) & 0x20;
+	//Coin Chute #1 & #2
+    coreGlobals.swMatrix[2] |= (inports[BYVP_COMINPORT]>>10) & 0x03;
+	//Ball Tilt/Slam Tilt
+	coreGlobals.swMatrix[2] |= (inports[BYVP_COMINPORT]>>6) & 0xc0;
+
+	//Keep track of joystick switches
+	locals.vidswitches = (inports[BYVP_COMINPORT]) & 0xf0;
+ }
   /*-- Diagnostic buttons on CPU board --*/
   if (core_getSw(BYVP_SWCPUDIAG))  cpu_set_nmi_line(0, PULSE_LINE);
   if (core_getSw(BYVP_SWSOUNDDIAG)) cpu_set_nmi_line(BYVP_SCPUNO, PULSE_LINE);
@@ -255,16 +278,19 @@ static void byVP_updSw(int *inports) {
 /* PIA2:B Read */
 // Video Switch Returns (Bits 5-7 not connected)
 static READ_HANDLER(pia2b_r) { 
-	logerror("VID: Reading Switch Returns r\n");
-	return 0; 
+	logerror("VID: Reading Switch Returns from %x\n",locals.p2_a);
+	if(locals.p2_a & 0x80)
+		return locals.vidswitches; 
+	else
+		return 0;
 }
 
 /* PIA2:A Write */
 //PA0-3: Status Data Inverted! (Only Bits 0 & 1 Used however)
 //PA4-7: Video Switch Strobes (Only Bit 7 is used however)
 static WRITE_HANDLER(pia2a_w) {
+	locals.p2_a = data;
 	locals.vidiot_status = (~data) & 0x03;
-	//locals.vidiot_status = data & 0x03;
 	logerror("%x:VID: Setting status to %4x\n",cpu_getpreviouspc(),locals.vidiot_status);
 	logerror("%x:Setting Video Switch Strobe to %x\n",cpu_getpreviouspc(),data>>4);
 }
@@ -397,9 +423,12 @@ static core_tData byVPData = {
   core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
 };
 
+/* I read on a post in rgp, that they used both ends of the zero cross, so we emulate it */
 static void byVP_zeroCross(int data) {
+  static int last_zc = 0;
   /*- toggle zero/detection circuit-*/
-  pia_set_input_cb1(0, 0); pia_set_input_cb1(0, 1);
+  pia_set_input_cb1(0,last_zc);
+  last_zc = !last_zc;
 }
 static void byVP_init(void) {
   if (locals.initDone) CORE_DOEXIT(byVP_exit);
@@ -509,10 +538,13 @@ static int byVP_vvblank(void) {
 	if(keyboard_pressed_memory_repeat(KEYCODE_B,2))
 	{
 		ct = 0xf0;
+		*(memory_region(BYVP_MEMREG_CPU) + 0x52) = 0xa0;
 	}
 	if(keyboard_pressed_memory_repeat(KEYCODE_A,2))
 	{
-	locals.vidiot_u2_latch = ct++;
+	//locals.vidiot_u2_latch = ct++;
+	locals.vidiot_u1_latch = ct++;
+	locals.vidiot_status = 1;
 	mlogerror("sending %x\n",ct);
 	pia_set_input_ca2(2, 0);
 	pia_set_input_ca2(2, 1);
@@ -529,7 +561,7 @@ static READ_HANDLER(vdp_r) {
 }
 
 static WRITE_HANDLER(vdp_w) {
-	//logerror("%x:vdp_w=%x\n",offset,data);
+	logerror("%x:vdp_w=%x\n",cpu_getpreviouspc(),data);
 	if(offset==0)
 		TMS9928A_vram_w(offset,data);
 	else
@@ -584,18 +616,6 @@ static WRITE_HANDLER(misc_w)
 	logerror("%x: MISC_W: offset=%x, data=%x\n",cpu_getpreviouspc(),offset,data);
 }
 
-static int vidram[0xff];	
-
-static READ_HANDLER(vid_r) {
-	logerror("READ: %x %x\n",offset,vidram[offset]);
-	return vidram[offset];
-}
-static WRITE_HANDLER(vid_w) {
-	logerror("WRITE: %x = %x\n",offset,data);
-	vidram[offset] = data;
-}
-
-
 static struct DACinterface by_dacInt =
   { 1, { 50 }};
 
@@ -607,7 +627,7 @@ static MEMORY_READ_START(byVP_readmem)
   { 0x0088, 0x008b, pia_0_r }, /* U10 PIA: Switchs + Display + Lamps*/
   { 0x0090, 0x0093, pia_1_r }, /* U11 PIA: Solenoids/Sounds + Display Strobe */
   { 0x0200, 0x02ff, MRA_RAM }, /* CMOS Battery Backed*/
-//{0x0300,0x03ff, vid_r},		// What does this do?
+//{0x0300,0x03ff, MRA_NOP},		// What does this do?
   { 0x1000, 0x1fff, MRA_ROM },
   { 0x5000, 0x5fff, MRA_ROM },
   { 0xf000, 0xffff, MRA_ROM },
@@ -618,7 +638,7 @@ static MEMORY_WRITE_START(byVP_writemem)
   { 0x0088, 0x008b, pia_0_w }, /* U10 PIA: Switchs + Display + Lamps*/
   { 0x0090, 0x0093, pia_1_w }, /* U11 PIA: Solenoids/Sounds + Display Strobe */
   { 0x0200, 0x02ff, byVP_CMOS_w, &byVP_CMOS }, /* CMOS Battery Backed*/
-//{0x0300,0x03ff, vid_w},		// What does this do?
+//{0x0300,0x03ff, MWA_NOP},		// What does this do?
   { 0x1000, 0x1fff, MWA_ROM },
   { 0x5000, 0x5fff, MWA_ROM },
   { 0xf000, 0xffff, MWA_ROM },
@@ -647,17 +667,21 @@ MEMORY_END
 /  Memory map for VIDEO CPU (Located on Vidiot Board) - G&G
 /---------------------------------------------------------*/
 static MEMORY_READ_START(byVP2_video_readmem)
-	{ 0x0000, 0x1fff, misc_r },  
-	{ 0x0002, 0x0003, vdp_r },   /* U16 VDP*/
-	{ 0x0008, 0x000b, pia_2_r }, /* U7 PIA */
+	{ 0x0000, 0x0001, misc_r },
+	{ 0x0002, 0x0003, vdp_r },   /* VDP MASTER */
+		{ 0x0004, 0x0005, vdp_r },   /* VDP MASTER */
+//	{ 0x0004, 0x0005, vdp2_r },  /* VDP SLAVE  */
+	{ 0x0008, 0x000b, pia_2_r }, /* PIA */
 	{ 0x2400, 0x2800, MRA_RAM }, /* U13&U14 1024x4 Byte Ram*/
 	{ 0x4000, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(byVP2_video_writemem)
-	{ 0x0000, 0x1fff, misc_w },  
-	{ 0x0002, 0x0003, vdp_w },   /* U16 VDP*/
-	{ 0x0008, 0x000b, pia_2_w }, /* U7 PIA */
+	{ 0x0000, 0x0001, misc_w },
+	{ 0x0002, 0x0003, vdp_w },   /* VDP MASTER */
+		{ 0x0004, 0x0005, vdp_w },   /* VDP MASTER */
+//	{ 0x0004, 0x0005, vdp2_w },  /* VDP SLAVE  */
+	{ 0x0008, 0x000b, pia_2_w }, /* PIA */
 	{ 0x2400, 0x2800, MWA_RAM }, /* U13&U14 1024x4 Byte Ram*/
 	{ 0x4000, 0xffff, MWA_ROM },
 MEMORY_END
@@ -753,7 +777,7 @@ struct MachineDriver machine_driver_byVP2 = {
       byVP_readmem, byVP_writemem, NULL, NULL,
       byVP_vblank, 1, byVP_irq, BYVP_IRQFREQ
    },
-  {  CPU_M6809, 4000000/2, /* 2MHz */
+  {  CPU_M6809, 8000000/4, /* 2MHz */
       byVP2_video_readmem, byVP2_video_writemem, NULL, NULL,
       byVP_vvblank, 1
   },
