@@ -28,8 +28,6 @@
 #include "gp.h"
 #include "gpsnd.h"
 
-#define GP_VBLANKFREQ    60 /* VBLANK frequency */
-#define GP_IRQFREQ      150 /* IRQ (via PIA) frequency*/
 #define GP_ZCFREQ        85 /* Zero cross frequency (guessed; but anything above 85 will cause strange effects) */
 
 static WRITE_HANDLER(GP_soundCmd)  { }
@@ -53,7 +51,7 @@ static void GP_dispStrobe(int mask) {
   int digit = locals.disp_col;
   int ii,jj;
 //  logerror("mask = %x, digit = %x (%x,%x,%x,%x,%x)\n",mask, digit,locals.bcd[0],locals.bcd[1],locals.bcd[2],locals.bcd[3],locals.bcd[4]);
-  ii = digit;
+  ii = (digit < 7)? digit : 0;
   jj = mask;
   locals.segments[jj*8+ii].w |= locals.pseg[jj*8+ii].w = core_bcd2seg[locals.bcd[jj]];
 }
@@ -88,18 +86,27 @@ static void GP_lampStrobe2(int lampadr, int lampdata) {
 }
 
 static void GP_UpdateSolenoids (int bank, int soldata) {
-  UINT32 mask = 0xC0008000;
+  static UINT32 mask = 0xC0008000;
   UINT32 sols = 0;
 //  logerror("soldata = %x\n",soldata);
-  //Solenoids 1-15, 17-30
   soldata &= 0x0f;
-  if (soldata != 0x0f) {
-	sols = (1<<(soldata + (bank*16)));
-    coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & mask) | sols;
-    locals.solenoids |= sols;
-  } else { // until we find another way to turn the solenoids back off...
-    coreGlobals.pulsedSolState &= mask;
-    locals.solenoids &= mask;
+  if (bank == 0) { // solenoids 1-15
+    if (soldata != 0x0f) {
+	  if (core_gameData->hw.soundBoard == SNDBRD_GPSSU1 && (soldata < 2 || (soldata > 4 && soldata < 7)))
+        sndbrd_0_data_w(GP_SCPUNO, soldata);
+      else {
+        sols = 1 << soldata;
+        coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & mask) | sols;
+        locals.solenoids |= sols;
+      }
+    } else { // until we find another way to turn the solenoids back off...
+	  if (core_gameData->hw.soundBoard == SNDBRD_GPSSU1) sndbrd_0_data_w(0, soldata);
+      coreGlobals.pulsedSolState &= mask;
+      locals.solenoids &= mask;
+    }
+  } else { // sound commands
+    if (core_gameData->hw.soundBoard != SNDBRD_GPSSU1)
+      sndbrd_0_data_w(GP_SCPUNO, soldata);
   }
 }
 
@@ -133,15 +140,18 @@ static INTERRUPT_GEN(GP_vblank) {
 }
 
 static SWITCH_UPDATE(GP) {
+  static UINT8 val = 0;
   if (inports) {
-	coreGlobals.swMatrix[0] = (inports[GP_COMINPORT]>>9) & 0x01;
+	coreGlobals.swMatrix[0] = (inports[GP_COMINPORT]>>9) & 0x03;
 	coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & (~0xf7)) |
                               ((inports[GP_COMINPORT] & 0xff) & 0xf7);
 	coreGlobals.swMatrix[4] = (coreGlobals.swMatrix[4] & (~0x02)) |
                               ((inports[GP_COMINPORT]>>7) & 0x02);
   }
   /*-- Diagnostic buttons on CPU board --*/
-  if (core_getSw(GP_SWSOUNDDIAG)) cpu_set_nmi_line(GP_SCPUNO, PULSE_LINE);
+  if (core_getSw(GP_SWTEST)) generic_nvram[0xac] = val++;
+  if (core_getSw(GP_SWSOUNDDIAG) && core_gameData->hw.soundBoard == SNDBRD_GPMSU1)
+    cpu_set_nmi_line(GP_SCPUNO, PULSE_LINE);
 }
 
 /*
@@ -309,24 +319,16 @@ PORT C WRITE
 (out) P7 : Flipper enable (J7-8) - Mapped as solenoid #16
 */
 static WRITE_HANDLER(ppi0_pc_w) {
-	int sol16, sol31, sol32;
 	int col = data & 0x07;			//Display column in bits 0-2
+	//Active Display Digit Select not changed when value is 111 (0x07).
+	if (col < 0x07) locals.disp_col = 7-col;
 	locals.diagnosticLed = (data>>3)&1;
 	//Display Enabled only when this value is 0
 	locals.disp_enable = !((data>>4)&1);
-	//Active Display Digit Select not changed when value is 111 (0x07).
-	if(col < 7)
-		locals.disp_col = 6-col;	//Reverse the ordering
 
-//	logerror("disp_enable = %x\n",locals.disp_enable);
-//	logerror("col: %x \n",col);
-//	logerror("PC_W: %x\n",data);
-	sol16 = (data>>7)&1;
-	sol31 = (data>>5)&1;
-	sol32 = (data>>6)&1;
-	if (sol16) locals.solenoids |= 0x8000; else locals.solenoids &= ~0x8000;
-	if (sol31) locals.solenoids |= 0x40000000; else locals.solenoids &= ~0x40000000;
-	if (sol32) locals.solenoids |= 0x80000000; else locals.solenoids &= ~0x80000000;
+	if ((data>>7)&1) locals.solenoids |= 0x8000; else locals.solenoids &= ~0x8000;
+	if ((data>>5)&1) locals.solenoids |= 0x40000000; else locals.solenoids &= ~0x40000000;
+	if ((data>>6)&1) locals.solenoids |= 0x80000000; else locals.solenoids &= ~0x80000000;
 }
 
 /*
@@ -409,12 +411,9 @@ static z80ctc_interface ctc_intf =
 	{ 0 }							/* ZC/TO2 callback */
 };
 
-static INTERRUPT_GEN(GP_irq) {
-}
-
 static void GP_zeroCross(int data) {
   /*- toggle zero/detection circuit-*/
-  logerror("Zero cross\n");
+//  logerror("Zero cross\n");
   z80ctc_0_trg2_w(0, 1);
   z80ctc_0_trg2_w(0, 0);
 }
@@ -489,7 +488,6 @@ MACHINE_DRIVER_START(GP1)
   MDRV_CPU_MEMORY(GP_readmem, GP_writemem)
   MDRV_CPU_PORTS(GP_readport,GP_writeport)
   MDRV_CPU_VBLANK_INT(GP_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(GP_irq, GP_IRQFREQ)
   MDRV_TIMER_ADD(GP_zeroCross, GP_ZCFREQ)
   MDRV_CORE_INIT_RESET_STOP(GP1,NULL,GP)
   MDRV_NVRAM_HANDLER(generic_0fill)
@@ -500,12 +498,27 @@ MACHINE_DRIVER_START(GP1)
   MDRV_SOUND_CMDHEADING("GP")
 MACHINE_DRIVER_END
 
+MACHINE_DRIVER_START(GP1S1)
+  MDRV_IMPORT_FROM(GP1)
+  MDRV_IMPORT_FROM(gpSSU1)
+MACHINE_DRIVER_END
+
 MACHINE_DRIVER_START(GP2)
   MDRV_IMPORT_FROM(GP1)
   MDRV_CORE_INIT_RESET_STOP(GP2,NULL,GP)
 MACHINE_DRIVER_END
 
-MACHINE_DRIVER_START(GP2S)
+MACHINE_DRIVER_START(GP2S1)
+  MDRV_IMPORT_FROM(GP2)
+  MDRV_IMPORT_FROM(gpSSU1)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(GP2S2)
+  MDRV_IMPORT_FROM(GP2)
+  MDRV_IMPORT_FROM(gpSSU2)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(GP2SM)
   MDRV_IMPORT_FROM(GP2)
   MDRV_IMPORT_FROM(gpMSU1)
 MACHINE_DRIVER_END

@@ -72,6 +72,7 @@
 	COREPORT_BIT(     0x0100, "Diagnostic Switch",  KEYCODE_7)\
     /* These are put in switch column 0 */ \
     COREPORT_BIT(     0x0200, "Sound Diagnostic",   KEYCODE_0)\
+    COREPORT_BIT(     0x0400, "Test Input",         KEYCODE_9)\
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
       COREPORT_DIPSET(0x0000, "0" ) \
@@ -183,6 +184,7 @@
 #define GP_COMINPORT       CORE_COREINPORT
 
 /*-- GP switch numbers --*/
+#define GP_SWTEST  -6
 #define GP_SWSOUNDDIAG  -7
 
 /*-------------------------
@@ -239,11 +241,17 @@
 
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(GP1);
+extern MACHINE_DRIVER_EXTERN(GP1S1);
 extern MACHINE_DRIVER_EXTERN(GP2);
-extern MACHINE_DRIVER_EXTERN(GP2S);
+extern MACHINE_DRIVER_EXTERN(GP2S1);
+extern MACHINE_DRIVER_EXTERN(GP2S2);
+extern MACHINE_DRIVER_EXTERN(GP2SM);
 
 #define mGP1     GP1
+#define mGP1S1   GP1S1
 #define mGP2     GP2
-#define mGP2S    GP2S
+#define mGP2S1   GP2S1
+#define mGP2S2   GP2S2
+#define mGP2SM   GP2SM
 
 #endif /* INC_GP */

@@ -29,35 +29,33 @@ static core_tLCDLayout dispGP_TEST[] = {
 	cc = # of credits, up to 99
 */
 static core_tLCDLayout dispGP_DDU1[] = {
- {0, 0, 0,6,CORE_SEG7}, {0,16, 8,6,CORE_SEG7},
- {4, 0,16,6,CORE_SEG7}, {4,16,24,6,CORE_SEG7},
- {2, 4,14,1,CORE_SEG7}, {2, 6, 6,1,CORE_SEG7},
- {2,20,30,1,CORE_SEG7}, {2,22,22,1,CORE_SEG7}, {0}
+ {0, 0, 1,6,CORE_SEG7}, {0,16, 9,6,CORE_SEG7},
+ {4, 0,17,6,CORE_SEG7}, {4,16,25,6,CORE_SEG7},
+ {2, 4, 8,1,CORE_SEG7}, {2, 6, 0,1,CORE_SEG7},
+ {2,20,24,1,CORE_SEG7}, {2,22,16,1,CORE_SEG7}, {0}
 };
 
 /* DDU-2 is the same as DDU-1, but all starting panels shifted by 8 */
 static core_tLCDLayout dispGP_DDU2[] = {
-	{0, 0, 8,6,CORE_SEG7},{0,16,16,6,CORE_SEG7},
-	{4, 0,24,6,CORE_SEG7},{4,16,32,6,CORE_SEG7},
-	{2, 4,22,1,CORE_SEG7},{2, 6,14,1,CORE_SEG7},
-	{2,20,38,1,CORE_SEG7},{2,22,30,1,CORE_SEG7}, {0}
+ {0, 0, 9,6,CORE_SEG7},{0,16,17,6,CORE_SEG7},
+ {4, 0,25,6,CORE_SEG7},{4,16,33,6,CORE_SEG7},
+ {2, 4,16,1,CORE_SEG7},{2, 6, 8,1,CORE_SEG7},
+ {2,20,32,1,CORE_SEG7},{2,22,24,1,CORE_SEG7}, {0}
 };
 
 /*BDU-1*/
 static core_tLCDLayout dispGP_BDU1[] = {
- {0, 0, 0,6,CORE_SEG7}, {0,24, 8,6,CORE_SEG7},
- {4, 0,16,6,CORE_SEG7}, {4,24,24,6,CORE_SEG7},
- {4,13,32,2,CORE_SEG7}, {4,19,36,2,CORE_SEG7}, {0}
+ {0, 0, 1,6,CORE_SEG7}, {0,24, 9,6,CORE_SEG7},
+ {4, 0,17,6,CORE_SEG7}, {4,24,25,6,CORE_SEG7},
+ {4,13,33,2,CORE_SEG7}, {4,19,37,2,CORE_SEG7}, {0}
 };
 
 /*BDU-2*/
 //NOTE: 7th Digit order comes after digits 0-6, so we tack it onto front!
 static core_tLCDLayout dispGP_BDU2[] = {
- {0, 0, 6,1,CORE_SEG7}, {0, 2, 0,6,CORE_SEG7},
- {0,22,14,1,CORE_SEG7}, {0,24, 8,6,CORE_SEG7},
- {3, 0,22,1,CORE_SEG7}, {3, 2,16,6,CORE_SEG7},
- {3,22,30,1,CORE_SEG7}, {3,24,24,6,CORE_SEG7},
- {5,24,32,2,CORE_SEG7S},{5,30,36,2,CORE_SEG7S},{0}
+ {0, 0, 0,7,CORE_SEG7}, {0,22, 8,7,CORE_SEG7},
+ {3, 0,16,7,CORE_SEG7}, {3,22,24,7,CORE_SEG7},
+ {5,24,33,2,CORE_SEG7S},{5,30,37,2,CORE_SEG7S},{0}
 };
 
 #define INITGAME(name, gen, disp, flip, sb, lamps) \
@@ -119,20 +117,20 @@ CORE_GAMEDEFNV(rio,"Rio",1978,"Game Plan",mGP1,GAME_USES_CHIMES)
 /*-------------------------------------------------------------------
 / Star Trip (April 1979) - Model: Cocktail #120
 /-------------------------------------------------------------------*/
-INITGAME(startrip, 0,dispGP_DDU1,FLIP_SW(FLIP_L),0,-2)
+INITGAME(startrip, 0,dispGP_DDU1,FLIP_SW(FLIP_L),SNDBRD_GPSSU1,-2)
 GP_ROMSTART88(startrip,	"startrip.u12",CRC(98f27fdf),
 						"startrip.u13",CRC(b941a1a8))
 GP_ROMEND
-CORE_GAMEDEFNV(startrip,"Star Trip",1979,"Game Plan",mGP1,GAME_NO_SOUND)
+CORE_GAMEDEFNV(startrip,"Star Trip",1979,"Game Plan",mGP1S1,0)
 
 /*-------------------------------------------------------------------
 / Family Fun! (April 1979) - Model: Cocktail #120
 /-------------------------------------------------------------------*/
-INITGAME(famlyfun, 0,dispGP_DDU1,FLIP_SW(FLIP_L),0,-2)
+INITGAME(famlyfun, 0,dispGP_DDU1,FLIP_SW(FLIP_L),SNDBRD_GPSSU1,-2)
 GP_ROMSTART88(famlyfun,	"family.u12",CRC(98f27fdf),
 						"family.u13",CRC(b941a1a8))
 GP_ROMEND
-CORE_GAMEDEFNV(famlyfun,"Family Fun!",1979,"Game Plan",mGP1,GAME_NO_SOUND)
+CORE_GAMEDEFNV(famlyfun,"Family Fun!",1979,"Game Plan",mGP1S1,0)
 
 /***************************************************************************
  *Games below are regular standup pinball games (except where noted)
@@ -142,31 +140,31 @@ CORE_GAMEDEFNV(famlyfun,"Family Fun!",1979,"Game Plan",mGP1,GAME_NO_SOUND)
 /*-------------------------------------------------------------------
 / Sharpshooter (May 1979) - Model #130
 /-------------------------------------------------------------------*/
-INITGAME(sshooter, 0,dispGP_BDU1,FLIP_SW(FLIP_L),0,0)
+INITGAME(sshooter, 0,dispGP_BDU1,FLIP_SW(FLIP_L),SNDBRD_GPSSU2,0)
 GP_ROMSTART888(sshooter,"130a.716",CRC(dc402b37),
 						"130b.716",CRC(19a86f5e),
 						"130c.716",CRC(b956f67b))
 GP_ROMEND
-CORE_GAMEDEFNV(sshooter,"Sharpshooter",1979,"Game Plan",mGP2,GAME_NO_SOUND)
+CORE_GAMEDEFNV(sshooter,"Sharpshooter",1979,"Game Plan",mGP2S2,0)
 
 /*-------------------------------------------------------------------
 / Vegas (August 1979) - Cocktail Model #140
 /-------------------------------------------------------------------*/
-INITGAME(vegasgp, 0,dispGP_DDU2,FLIP_SW(FLIP_L),0,-2)
+INITGAME(vegasgp, 0,dispGP_DDU2,FLIP_SW(FLIP_L),SNDBRD_GPSSU1,-2)
 GP_ROMSTART88(vegasgp, "140a.12",CRC(2c00bc19),
 					   "140b.13",CRC(cf26d67b))
 GP_ROMEND
-CORE_GAMEDEFNV(vegasgp,"Vegas (Game Plan)",1979,"Game Plan",mGP2,GAME_NO_SOUND)
+CORE_GAMEDEFNV(vegasgp,"Vegas (Game Plan)",1979,"Game Plan",mGP2S1,0)
 
 /*-------------------------------------------------------------------
 / Coney Island! (December 1979) - Model #180
 /-------------------------------------------------------------------*/
-INITGAME(coneyis, 0,dispGP_BDU1,FLIP_SW(FLIP_L),0,0)
+INITGAME(coneyis, 0,dispGP_BDU1,FLIP_SW(FLIP_L),SNDBRD_GPSSU2,0)
 GP_ROMSTART888(coneyis,	"180a.716",CRC(dc402b37),
 						"180b.716",CRC(19a86f5e),
 						"180c.716",CRC(b956f67b))
 GP_ROMEND
-CORE_GAMEDEFNV(coneyis,"Coney Island!",1979,"Game Plan",mGP2,GAME_NO_SOUND)
+CORE_GAMEDEFNV(coneyis,"Coney Island!",1979,"Game Plan",mGP2S2,0)
 
 //Challenger I (?? / 1980)
 
@@ -180,17 +178,17 @@ GP_ROMSTART888(lizard,	"lizard.u12",CRC(dc402b37),
 GP_SOUNDROM88("lizard.u9", CRC(2d121b24),
               "lizard.u10",CRC(28b8f1f0))
 GP_ROMEND
-CORE_GAMEDEFNV(lizard,"(Pinball) Lizard",1980,"Game Plan",mGP2S,0)
+CORE_GAMEDEFNV(lizard,"(Pinball) Lizard",1980,"Game Plan",mGP2SM,0)
 
 /*-------------------------------------------------------------------
 / Global Warfare (June 1981)  - Model #???
 /-------------------------------------------------------------------*/
-INITGAME(gwarfare, 0,dispGP_BDU2,FLIP_SW(FLIP_L),0,0)
+INITGAME(gwarfare, 0,dispGP_BDU2,FLIP_SW(FLIP_L),SNDBRD_GPSSU2,0)
 GP_ROMSTART888(gwarfare,"240a.716",CRC(30206428),
 						"240b.716",CRC(a54eb15d),
 						"240c.716",CRC(60d115a8))
 GP_ROMEND
-CORE_GAMEDEFNV(gwarfare,"Global Warfare",1981,"Game Plan",mGP2,GAME_NO_SOUND)
+CORE_GAMEDEFNV(gwarfare,"Global Warfare",1981,"Game Plan",mGP2S2,0)
 
 /*-------------------------------------------------------------------
 / Mike Bossy (January 1982) - Model #???
@@ -202,18 +200,18 @@ GP_ROMSTART888(mbossy,	"mb_a.716",CRC(a811f936),
 GP_SOUNDROM88("mb.u9", CRC(dfa98db5),
               "mb.u10",CRC(2d3c91f9))
 GP_ROMEND
-CORE_GAMEDEFNV(mbossy,"Mike Bossy",1982,"Game Plan",mGP2S,0)
+CORE_GAMEDEFNV(mbossy,"Mike Bossy",1982,"Game Plan",mGP2SM,0)
 
 /*-------------------------------------------------------------------
 / Super Nova (May 1982) - Model #150
 /-------------------------------------------------------------------*/
 //Flyer suggests 6 digits for scoring??
-INITGAME(suprnova, 0,dispGP_BDU1,FLIP_SW(FLIP_L),0,0)
+INITGAME(suprnova, 0,dispGP_BDU1,FLIP_SW(FLIP_L),SNDBRD_GPSSU2,0)
 GP_ROMSTART888(suprnova,"130a.716",CRC(dc402b37),
 						"150b.716",CRC(8980a8bb),
 						"150c.716",CRC(6fe08f96))
 GP_ROMEND
-CORE_GAMEDEFNV(suprnova,"Super Nova",1982,"Game Plan",mGP2,GAME_NO_SOUND)
+CORE_GAMEDEFNV(suprnova,"Super Nova",1982,"Game Plan",mGP2S2,0)
 
 /*-------------------------------------------------------------------
 / Sharp Shooter II (November 1983) - Model #730
@@ -225,7 +223,7 @@ GP_ROMSTART888(sshootr2,"130a.716",CRC(dc402b37),
 GP_SOUNDROM88("730u9.snd", CRC(dfa98db5),
               "730u10.snd",CRC(6d3dcf44))
 GP_ROMEND
-CORE_GAMEDEFNV(sshootr2,"Sharp Shooter II",1983,"Game Plan",mGP2S,0)
+CORE_GAMEDEFNV(sshootr2,"Sharp Shooter II",1983,"Game Plan",mGP2SM,0)
 
 /*-------------------------------------------------------------------
 / Attila the Hun (April 1984) - Model #260
@@ -236,7 +234,7 @@ GP_ROMSTART888(attila,	"260.a",CRC(b31c11d8),
 						"260.c",CRC(206605c3))
 GP_SOUNDROM0("260.snd",CRC(21e6b188))
 GP_ROMEND
-CORE_GAMEDEFNV(attila,"Attila The Hun",1984,"Game Plan",mGP2S,0)
+CORE_GAMEDEFNV(attila,"Attila The Hun",1984,"Game Plan",mGP2SM,0)
 
 /*-------------------------------------------------------------------
 / Agents 777 (November 1984) - Model #770
@@ -247,7 +245,7 @@ GP_ROMSTART888(agent777,"770a",CRC(fc4eebcd),
 						"770c",CRC(59280db7))
 GP_SOUNDROM0("770snd",CRC(e4e66c9f))
 GP_ROMEND
-CORE_GAMEDEFNV(agent777,"Agents 777",1984,"Game Plan",mGP2S,0)
+CORE_GAMEDEFNV(agent777,"Agents 777",1984,"Game Plan",mGP2SM,0)
 
 /*-------------------------------------------------------------------
 / Captain Hook (April 1985) - Model #780
@@ -258,17 +256,17 @@ GP_ROMSTART888(cpthook,	"780.a",CRC(6bd5a495),
 						"780.c",CRC(e54bc51f))
 GP_SOUNDROM0("780.snd",CRC(95af3392))
 GP_ROMEND
-CORE_GAMEDEFNV(cpthook,"Captain Hook",1985,"Game Plan",mGP2S,0)
+CORE_GAMEDEFNV(cpthook,"Captain Hook",1985,"Game Plan",mGP2SM,0)
 
 /*-------------------------------------------------------------------
 / Lady Sharpshooter (May 1985) - Cocktail Model #???
 /-------------------------------------------------------------------*/
-INITGAME(ladyshot, 0,dispGP_BDU2,FLIP_SW(FLIP_L),0,0)
+INITGAME(ladyshot, 0,dispGP_BDU2,FLIP_SW(FLIP_L),SNDBRD_GPSSU2,0)
 GP_ROMSTART888(ladyshot,"830a.716",CRC(c055b993),
 						"830b.716",CRC(1e3308ea),
 						"830c.716",CRC(f5e1db15))
 GP_ROMEND
-CORE_GAMEDEFNV(ladyshot,"Lady Sharpshooter",1985,"Game Plan",mGP2,GAME_NO_SOUND)
+CORE_GAMEDEFNV(ladyshot,"Lady Sharpshooter",1985,"Game Plan",mGP2S2,0)
 
 /*-------------------------------------------------------------------
 / Andromeda (September 1985) - Model #850
@@ -278,7 +276,7 @@ GP_ROMSTART00(andromed,	"850.a",CRC(67ed03ee),
 						"850.b",CRC(37c244e8))
 GP_SOUNDROM8("850.snd",CRC(18e084a6))
 GP_ROMEND
-CORE_GAMEDEFNV(andromed,"Andromeda",1985,"Game Plan",mGP2S,0)
+CORE_GAMEDEFNV(andromed,"Andromeda",1985,"Game Plan",mGP2SM,0)
 
 /*-------------------------------------------------------------------
 / Cyclopes (November 1985) - Model #800
@@ -289,6 +287,6 @@ GP_ROMSTART000(cyclopes,"800.a",CRC(3e9628e5),
 						"800.c",CRC(7ea18e65))
 GP_SOUNDROM0("800.snd",CRC(290db3d2))
 GP_ROMEND
-CORE_GAMEDEFNV(cyclopes,"Cyclopes",1985,"Game Plan",mGP2S,0)
+CORE_GAMEDEFNV(cyclopes,"Cyclopes",1985,"Game Plan",mGP2SM,0)
 
 //Loch Ness Monster (November 1985) - Model #???
