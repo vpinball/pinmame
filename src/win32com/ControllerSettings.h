@@ -32,17 +32,10 @@ END_COM_MAP()
 // IControllerSettings
 public:
 	STDMETHOD(get_InstallDir)(/*[out, retval]*/ BSTR *pVal);
+	STDMETHOD(get_Value)(/*[in]*/ BSTR sName, /*[out, retval]*/ VARIANT *pVal);
+	STDMETHOD(put_Value)(/*[in]*/ BSTR sName, /*[in]*/ VARIANT newVal);
+	STDMETHOD(Clear)();
 	STDMETHOD(ShowSettingsDlg)(long hParentWnd);
-	STDMETHOD(get_SnapshotPath)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(put_SnapshotPath)(/*[in]*/ BSTR newVal);
-	STDMETHOD(get_CfgPath)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(put_CfgPath)(/*[in]*/ BSTR newVal);
-	STDMETHOD(get_SamplesPath)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(put_SamplesPath)(/*[in]*/ BSTR newVal);
-	STDMETHOD(get_NVRamPath)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(put_NVRamPath)(/*[in]*/ BSTR newVal);
-	STDMETHOD(get_RomPath)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(put_RomPath)(/*[in]*/ BSTR newVal);
 };
 
 #endif //__CONTROLLERSETTINGS_H_
