@@ -11,6 +11,8 @@ Version 1.20
 -Handles pulsed switches better in mech handler and increased size to 20 switches
  [Martin Adrian]
 
+- Fixed Gottlieb Sys80B games with 4K game PROMS (i.e. Bone Buster, Badgirls, etc.)
+
 Version 1.12.1 (April 14, 2002)
 -------------------------------
 This is just considered a bugfix release for some issues that became apparent
