@@ -94,7 +94,7 @@ CORE_GAMEDEFNV(lca,"Lights, Camera, Action",1989,"Gottlieb",mGTS3S,0)
 / Bell Ringer
 /-------------------------------------------------------------------*/
 INITGAME(bellring, ALPHA, FLIP_SW(FLIP_L), 3/*?*/, SNDBRD_NONE, 5)
-GTS3ROMSTART(bellring,	"gprom.bin",0x0)
+GTS3ROMSTART(bellring,	"gprom.bin",NO_DUMP)
 GTS3_ROMEND
 CORE_GAMEDEFNV(bellring,"Bell Ringer",1990,"Gottlieb",mGTS3,GAME_NO_SOUND)
 
@@ -142,7 +142,7 @@ CORE_GAMEDEFNV(tfight,"Title Fight",1990,"Gottlieb",mGTS3S,0)
 / Nudge It
 /-------------------------------------------------------------------*/
 INITGAME(nudgeit, ALPHA, FLIP_SW(FLIP_L), 3/*?*/, SNDBRD_NONE, 5)
-GTS3ROMSTART(nudgeit,	"gprom.bin",0x0)
+GTS3ROMSTART(nudgeit,	"gprom.bin",NO_DUMP)
 GTS3_ROMEND
 CORE_GAMEDEFNV(nudgeit,"Nudge It",1990,"Gottlieb",mGTS3,GAME_NO_SOUND)
 
@@ -160,7 +160,7 @@ CORE_GAMEDEFNV(carhop,"Car Hop",1991,"Gottlieb",mGTS3S,0)
 / Hoops
 /-------------------------------------------------------------------*/
 INITGAME(hoops, ALPHA, FLIP_SW(FLIP_L), 3/*?*/, SNDBRD_GTS3, 5)
-GTS3ROMSTART(hoops,	"gprom.bin",0x0)
+GTS3ROMSTART(hoops,	"gprom.bin",NO_DUMP)
 GTS3_ROMEND
 CORE_GAMEDEFNV(hoops,"Hoops",1991,"Gottlieb",mGTS3,GAME_NO_SOUND)
 
@@ -422,8 +422,8 @@ CORE_GAMEDEFNV(bighurt,"Big Hurt",1995,"Gottlieb",mGTS3DMDS, 0)
 INITGAME2(snspares, DMD, FLIP2122, 4, SNDBRD_GTS3, 4)
 GTS3ROMSTART(snspares,	"gprom.bin", CRC(9e018496))
 GTS3_DMD256_ROMSTART(	"dsprom.bin",CRC(5c901899))
-GTS3SOUND32512A(		"yrom1.bin",0x0,
-						"drom1.bin",0x0,
+GTS3SOUND32512A(		"yrom1.bin",NO_DUMP,
+						"drom1.bin",NO_DUMP,
 						"arom1.bin",CRC(e248574a))
 GTS3_ROMEND
 CORE_GAMEDEFNV(snspares,"Strikes n' Spares",1995,"Gottlieb",mGTS3DMDSA, 0)
@@ -472,10 +472,10 @@ CORE_GAMEDEFNV(barbwire,"Barb Wire",1996,"Gottlieb",mGTS3DMDSA, 0)
 /-------------------------------------------------------------------*/
 INITGAME2(brooks, DMD, FLIP4243, 4/*?*/, SNDBRD_GTS3, 4)
 GTS3ROMSTART(brooks,	"gprom.bin", CRC(26cebf07))
-GTS3_DMD512_ROMSTART(	"dsprom.bin",0x0)
-GTS3SOUND32512256(		"yrom1.bin",0x0,
-						"drom1.bin",0x0,
-						"arom1.bin",0x0,
-						"arom2.bin",0x0)
+GTS3_DMD512_ROMSTART(	"dsprom.bin",NO_DUMP)
+GTS3SOUND32512256(		"yrom1.bin",NO_DUMP,
+						"drom1.bin",NO_DUMP,
+						"arom1.bin",NO_DUMP,
+						"arom2.bin",NO_DUMP)
 GTS3_ROMEND
 CORE_GAMEDEFNV(brooks,"Brooks & Dunn (Prototype)",1996,"Gottlieb",mGTS3DMDSA, GAME_NO_SOUND)
