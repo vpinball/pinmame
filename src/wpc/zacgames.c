@@ -371,9 +371,12 @@ CORE_GAMEDEFNV(spooky,"Spooky",1987,"Zaccaria",mZAC2XS,SOUNDFLAG)
 / Scramble (Technoplay 1987)
 /-------------------------------*/
 INITGAME(scram_tp,1,dispZAC2,SNDBRD_TECHNO)
-ZAC_ROMSTART1820(scram_tp,	"scram_1.lgc",CRC(da565549),
-							"scram_2.lgc",CRC(537e6c61))
-TECHNO_SOUNDROM("scram_1.snd",CRC(ee5f868b),
-                "scram_2.snd",CRC(a04bf7d0))
+ZAC_ROMSTART1820(scram_tp,	"scram_1.lgc",CRC(da565549) SHA1(d187801428824df2b506c999548a5c6d146bc59e),
+							"scram_2.lgc",CRC(537e6c61) SHA1(84e0db4268d3c990c3834ebd20bf7c475a70082d))
+TECHNO_SOUNDROM1("scram_1.snd",CRC(ee5f868b) SHA1(23ef4112b94109ad4d4a6b9bb5215acec20e5e55),
+                 "scram_2.snd",CRC(a04bf7d0) SHA1(5be5d445b199e7dc9d42e7ee5e9b31c18dec3881))
+TECHNO_SOUNDROM2("scram_3.snd",CRC(ed27cd78) SHA1(a062ee1a3ec8819acddac13a4b454f5fd95d1e29),
+                 "scram_4.snd",CRC(943f279d) SHA1(52767708d706a01ea16e37c866eb5762297e1f86),
+                 "scram_5.snd",CRC(3aa782ec) SHA1(7cbbd3a737239b2755c6a6651a284e83fcfa22f6))
 ZAC_ROMEND
 CORE_GAMEDEFNV(scram_tp,"Scramble",1987,"Technoplay",mTECHNO,SOUNDFLAG)

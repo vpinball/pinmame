@@ -1,6 +1,7 @@
 #include "driver.h"
 #include "machine/6821pia.h"
 #include "cpu/m6800/m6800.h"
+#include "cpu/m6502/m6502.h"
 #include "cpu/i8039/i8039.h"
 #include "cpu/tms7000/tms7000.h"
 #include "sound/discrete.h"
@@ -421,40 +422,60 @@ static void sns_5220Irq(int state) { pia_set_input_cb1(SNS_PIA1, !state); }
 
 const struct sndbrdIntf technoIntf = {"TECHNO"};
 
-static MEMORY_READ_START(techno_readmem)
-  { 0x0000, 0x1fff, MRA_RAM },
-  { 0x2000, 0xffff, MRA_ROM },
-MEMORY_END
-
-static MEMORY_WRITE_START(techno_writemem)
-  { 0x0000, 0x1fff, MWA_RAM },
-  { 0x2000, 0xffff, MWA_ROM },
-MEMORY_END
-
-static READ_HANDLER(tms_port_r) {
+static WRITE_HANDLER(m2000_w) {
+  logerror("M6502: 2000w = %02x\n", data);
+}
+static WRITE_HANDLER(m4000_w) {
+  logerror("M6502: 4000w = %02x\n", data);
+}
+static WRITE_HANDLER(m8000_w) {
+  logerror("M6502: 8000w = %02x\n", data);
+}
+static WRITE_HANDLER(ma000_w) {
+  logerror("M6502: a000w = %02x\n", data);
+}
+static READ_HANDLER(m6000_r) {
+  logerror("M6502: 6000r\n");
+  return 0;
+}
+static READ_HANDLER(ma800_r) {
+  logerror("M6502: a800r\n");
   return 0;
 }
 
-static WRITE_HANDLER(tms_port_w) {
-}
+static MEMORY_READ_START(m6800_readmem)
+  { 0x0000, 0x03ff, MRA_RAM },
+  { 0x2000, 0x3fff, MRA_ROM },
+  { 0x6000, 0x7f00, MRA_ROM },
+  { 0xa800, 0xa800, ma800_r },
+  { 0xe000, 0xffff, MRA_ROM },
+MEMORY_END
 
-PORT_READ_START( tms_readport )
-{ TMS7000_PORTA, TMS7000_PORTA, tms_port_r },
-{ TMS7000_PORTB, TMS7000_PORTB, tms_port_r },
-{ TMS7000_PORTC, TMS7000_PORTC, tms_port_r },
-{ TMS7000_PORTD, TMS7000_PORTD, tms_port_r },
-PORT_END
+static MEMORY_WRITE_START(m6800_writemem)
+  { 0x0000, 0x03ff, MWA_RAM },
+  { 0x2000, 0x2000, m2000_w },
+  { 0x4000, 0x4000, m4000_w },
+  { 0x8000, 0x8000, m8000_w },
+  { 0xa000, 0xa000, ma000_w },
+MEMORY_END
 
-PORT_WRITE_START( tms_writeport )
-{ TMS7000_PORTA, TMS7000_PORTA, tms_port_w },
-{ TMS7000_PORTB, TMS7000_PORTB, tms_port_w },
-{ TMS7000_PORTC, TMS7000_PORTC, tms_port_w },
-{ TMS7000_PORTD, TMS7000_PORTD, tms_port_w },
-PORT_END
+static MEMORY_READ_START(tms_readmem)
+  { 0x0000, 0x01ff, MRA_RAM },
+  { 0x7000, 0x7fff, MRA_RAM },
+  { 0x8000, 0xffff, MRA_ROM },
+MEMORY_END
+
+static MEMORY_WRITE_START(tms_writemem)
+  { 0x0000, 0x01ff, MWA_RAM },
+  { 0x7000, 0x7fff, MWA_RAM },
+MEMORY_END
 
 MACHINE_DRIVER_START(techno)
+  MDRV_CPU_ADD(M6502, 1000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(m6800_readmem, m6800_writemem)
+
   MDRV_CPU_ADD(TMS7000, 6000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
-  MDRV_CPU_MEMORY(techno_readmem, techno_writemem)
-  MDRV_CPU_PORTS(tms_readport, tms_writeport)
+  MDRV_CPU_MEMORY(tms_readmem, tms_writemem)
 MACHINE_DRIVER_END
