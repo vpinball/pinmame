@@ -491,7 +491,7 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(gw,l5,"The Getaway: High Speed II (L-5)",1992, "Williams",wpc_mFliptronS,0)
-CORE_CLONEDEF(gw,l2,l5,"The Getaway: High Speed II (L-2)",1992,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(gw,l2,l5,"The Getaway: High Speed II (L-2)",1992,"Williams",wpc_mFliptronS,0)
 
 /*-----------------------
 / Simulation Definitions
