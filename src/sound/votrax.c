@@ -17,6 +17,8 @@ the variable VotraxBaseFrequency, this is defaulted to 8000
 
 **************************************************************************/
 
+#define VERBOSE 1
+
 #if VERBOSE
 #define LOG(x) logerror x
 #else
