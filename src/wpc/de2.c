@@ -16,8 +16,23 @@
 		a) -01 generation,	used 27020 voice eproms (Batman - Lethal Weapon 3)
 
 *************************************************************************************************/
+
+/* Coin Door Buttons Operation
+   ---------------------------
+   Buttons are: Green(Up/Down) & Black(Momentary Switch)
+   
+   a) If Green = Up and Black is pressed, enter Audits Menu.
+		1) If Green = Up and Black is pressed, Cycle to Next Audit Function
+		2) If Green = Down and Black is pressed, Cycle to Previous Audit Function
+
+   b) If Green = Down and Black is pressed, enter Diagnostics.
+		1) Start button to start a test
+		2) Black Button to cycle tests
+		3) Flippers can operate settings within a test (such as the Speaker/Sound Test)
+*/
+
+
 #include <stdarg.h>
-//#include <time.h>
 #include "driver.h"
 #include "cpu/m6800/m6800.h"
 #include "cpu/m6809/m6809.h"
@@ -111,14 +126,12 @@ int  de_dmd128x16[16][128] = {{0}};
 static void de_piaMainIrq(int state) {
   delocals.mainIrq = state;
   cpu_set_irq_line(DE_CPUNO, M6808_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
-
-  //pia_set_input_ca1(2, state?0:!core_getSw(DE_SWADVANCE));
-  //pia_set_input_cb1(2, state?0:!core_getSw(DE_SWUPDN));
 }
 
 static int de_irq(void) {
-  //pia_set_input_ca1(2, 1);
-  //pia_set_input_cb1(2, 1);
+  //Reset the input latch for the Advance button.. 
+  //(This greatly increases the responsiveness of the button for some reason!)
+  pia_set_input_ca1(2, 1);
 
   if (delocals.mainIrq == 0) /* Don't send IRQ if already active */
     cpu_set_irq_line(DE_CPUNO, M6808_IRQ_LINE, PULSE_LINE);
@@ -192,6 +205,7 @@ static WRITE_HANDLER(latch2200) {
   delocals.solenoids |= data;
 }
 
+/*Solenoids 19-22*/
 static WRITE_HANDLER(pia0cb2_w) { delocals.ssEn = !data;}
 static WRITE_HANDLER(pia1ca2_w) { setSSSol(data, 3); }		// Solenoid #20
 static WRITE_HANDLER(pia1cb2_w) { setSSSol(data, 4); }		// Solenoid #21
@@ -229,7 +243,7 @@ static void de1_sndCommand(int data)
 /*******Sound 2 Generation Command Function******/
 static void de2_sndCommand(int data)
 {
-	//Don't know why 0xfe commands are sent, but we must ignore them otherwise sound commands are ignored
+	//Don't know why 0xfe commands are sent, but we must ignore them otherwise sound commands are cut off too quickly!
 	if(data != 0xfe)
 		des_soundCmd_w(0,data);
 }
@@ -256,8 +270,13 @@ static WRITE_HANDLER(pia2ca2_w) { /*logerror("Comma 3+4 %d\n",data); */}
 static WRITE_HANDLER(pia2cb2_w) { /*logerror("Comma 1+2 %d\n",data); */}
 static WRITE_HANDLER(pia5ca2_w) { /*logerror("pia5ca2_w %x\n",data); */}
 
-static READ_HANDLER (pia2ca1_r) { return cpu_get_reg(M6808_IRQ_STATE) ? core_getSwSeq(DE_SWADVANCE) : 0; }
-static READ_HANDLER (pia2cb1_r) { return cpu_get_reg(M6808_IRQ_STATE) ? core_getSwSeq(DE_SWUPDN)    : 0; }
+//Set state of up/down switch(inverted), and return state of advance switch(inverted)
+static READ_HANDLER (pia2ca1_r) { 
+	pia_set_input_cb1(2, !core_getSwSeq(DE_SWUPDN)); 
+	return !core_getSwSeq(DE_SWADVANCE);
+}
+//Not sure why this must always return 0, but otherwise, coin doors act very strange!
+static READ_HANDLER (pia2cb1_r) {return 0;}
 
 /************************************************/
 /*********** DMD HANDLING BELOW *****************/
@@ -435,25 +454,17 @@ static void de_updSw(int *inports) {
     coreGlobals.swMatrix[0] = (inports[DE_COMINPORT] & 0x7f00)>>8;
     coreGlobals.swMatrix[1] = inports[DE_COMINPORT];
   }
-  /*-- Diagnostic buttons on CPU board --*/
-  if (core_getSwSeq(DE_SWCPUDIAG))   cpu_set_nmi_line(DE_CPUNO, PULSE_LINE);
-  if(UsingSound)
-	if (core_getSwSeq(DE_SWSOUNDDIAG)) cpu_set_nmi_line(DE_SDCPU1, PULSE_LINE);
-
-  /*-- coin door switches --*/
-  pia_set_input_ca1(2, core_getSwSeq(DE_SWADVANCE));
-  pia_set_input_cb1(2, core_getSwSeq(DE_SWUPDN));
-
+  /* Show Status of Black Advance Switch */
   if(core_getSwSeq(DE_SWADVANCE))
-          core_textOutf(40, 20, BLACK, "%-7s","A-Up");
+          core_textOutf(40, 20, BLACK, "%-7s","B-Down");
   else
-          core_textOutf(40, 20, BLACK, "%-7s","A-Down");
+          core_textOutf(40, 20, BLACK, "%-7s","B-Up");
 
-  /* Show Status of Auto/Manual Switch */
+  /* Show Status of Green Up/Down Switch */
   if(core_getSwSeq(DE_SWUPDN))
-          core_textOutf(40, 30, BLACK, "%-7s","Up");
+          core_textOutf(40, 30, BLACK, "%-7s","G-Down");
   else
-          core_textOutf(40, 30, BLACK, "%-7s","Down");
+          core_textOutf(40, 30, BLACK, "%-7s","G-Up");
 }
 
 
