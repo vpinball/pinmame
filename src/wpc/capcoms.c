@@ -8,6 +8,9 @@
 #include "capcoms.h"
 #include "sndbrd.h"
 
+//Remove this flag to test the real game sending data (otherwise, we simply feed data from the roms till we hit the end)
+//#define TEST_FROM_ROM
+
 #define VERBOSE
 
 #ifdef VERBOSE
@@ -21,6 +24,10 @@
 static void capcoms_init(struct sndbrdData *brdData);
 static void cap_bof(int chipnum,int state);
 static void cap_sreq(int chipnum,int state);
+
+#ifdef TEST_FROM_ROM
+void cap_FillBuff(int dummy);
+#endif
 
 /*Interfaces*/
 static struct TMS320AV120interface capcoms_TMS320AV120Int1 = {
@@ -51,6 +58,9 @@ static struct {
   int rombase;			//Points to current rom
   int bof_line[2];		//Track status of bof line for each tms chip
   int sreq_line[2];		//Track status of sreq line for each tms chip
+#ifdef TEST_FROM_ROM
+  int curr[2];			//Current position we've read from the rom
+#endif
 } locals;
 
 //Digital Volume Pot (x9241)
@@ -67,6 +77,7 @@ static struct {
   int nextram;		//Which position in ram to store next
 } x9241;
 
+//Track state of BOF & SREQ Lines
 void cap_bof(int chipnum,int state)
 {
 	locals.bof_line[chipnum]=state;
@@ -168,7 +179,7 @@ static READ_HANDLER(port_r)
 		case 2:
 			break;
 		/*PORT 1:
-			P1.0    (O) = LED (Inverted?)
+			P1.0    (O) = LED
 			P1.1    (X) = NC
 			P1.2    (I) = /CTS = CLEAR TO SEND   - From Main CPU(Active low)
 			P1.3    (I) = /RTS = REQEUST TO SEND - From Main CPU(Active low)
@@ -210,7 +221,7 @@ static WRITE_HANDLER(port_w)
 		case 2:
 			break;
 		/*PORT 1:
-			P1.0    (O) = LED (Inverted?)
+			P1.0    (O) = LED
 			P1.1    (X) = NC
 			P1.2    (I) = /CTS = CLEAR TO SEND   - From Main CPU(Active low)
 			P1.3    (I) = /RTS = REQEUST TO SEND - From Main CPU(Active low)
@@ -220,7 +231,7 @@ static WRITE_HANDLER(port_w)
 			P1.7    (O) = /CBOF2 = CLEAR BOF2 IRQ */
 		case 1:
 			//LED
-			cap_UpdateSoundLEDS(~data&0x01);
+			cap_UpdateSoundLEDS(data&0x01);
 			//CBOF1
 			if((data&0x40)==0)	{
 				cpu_set_irq_line(locals.brdData.cpuNo, I8051_INT0_LINE, CLEAR_LINE);
@@ -268,7 +279,6 @@ READ_HANDLER(rom_rd)
 	offset&=0xffff;	//strip off top bit
 	//Is a valid rom set for reading?
 	if(locals.rombase < 0) {
-		//LOG(("error from rom_rd - no ROM selected!\n"));
 		return 0;
 	}
 	else {
@@ -304,7 +314,9 @@ WRITE_HANDLER(ram_w)
 //Set the /MPEG1 or /MPEG2 lines (active low) - clocks data into each of the tms320av120 chips
 WRITE_HANDLER(mpeg_clock)
 {
+#ifndef TEST_FROM_ROM
 	TMS320AV120_data_w(offset,data);
+#endif
 }
 
 /*
@@ -316,12 +328,11 @@ D3 = A18 (+0x8000*4)
 D4 = A19 (+0x8000*5)*/
 WRITE_HANDLER(bankswitch)
 {
-//	LOG(("BANK SWITCH DATA=%x\n",data));
 	data &= 0x1f;	//Keep only bits 0-4
 	locals.rombase_offset = 0x8000*data;
 }
 
-
+//Calculates which rom to read from next based on inverted 4 bits of the data written
 void calc_rombase(int data)
 {
 	int activerom = (~data&0x0f);
@@ -334,7 +345,6 @@ void calc_rombase(int data)
 	}
 	else
 		locals.rombase = -1;
-//	LOG(("ROM ACCESS - DATA=%x, ROMBASE = %x\n",(~data&0x0f),locals.rombase));
 }
 
 /*
@@ -350,11 +360,12 @@ D7 = /MPG2 Mute   (0 = MUTE)*/
 WRITE_HANDLER(control_data)
 {
 	calc_rombase(data);							//Determine which ROM is active and set rombase
+#ifndef TEST_FROM_ROM
 	TMS320AV120_set_reset(0,(data&0x10)>>4);	//Reset TMS320AV120 Chip #1 (1 = Reset)
 	TMS320AV120_set_reset(1,(data&0x20)>>5);	//Reset TMS320AV120 Chip #2 (1 = Reset)
 	TMS320AV120_set_mute(0,((~data&0x40)>>6));	//Mute TMS320AV120 Chip #1 (Active low)
 	TMS320AV120_set_mute(1,((~data&0x80)>>7));	//Mute TMS320AV120 Chip #2 (Active low)
-//	LOG(("CONTROL_DATA - DATA=%x\n",data));
+#endif
 }
 
 /*Control Lines
@@ -447,18 +458,15 @@ MACHINE_DRIVER_START(capcom2s)
   MDRV_SOUND_ADD_TAG("tms320av120", TMS320AV120, capcoms_TMS320AV120Int2)
 MACHINE_DRIVER_END
 
-extern void tms_FillBuff(int);
-
-void cap_FillBuff(int dummy) {
-	tms_FillBuff(0);
-	tms_FillBuff(1);
-}
-
 static void capcoms_init(struct sndbrdData *brdData) {
   memset(&locals, 0, sizeof(locals));
   locals.brdData = *brdData;
-
   memset(&x9241, 0, sizeof(x9241));
+
+//Set up timer to force feed data to the TMS chips from the ROMS
+#ifdef TEST_FROM_ROM
+  locals.curr[0] = 0;
+  locals.curr[1] = 0;
 
   /* stupid timer/machine init handling in MAME */
   if (locals.buffTimer) timer_remove(locals.buffTimer);
@@ -467,5 +475,80 @@ static void capcoms_init(struct sndbrdData *brdData) {
   locals.buffTimer = timer_alloc(cap_FillBuff);
 
   /*-- start the timer --*/
-  timer_adjust(locals.buffTimer, 0, 0, TIME_IN_HZ(10));		//Frequency is somewhat arbitrary but must be fast enough to work
+  timer_adjust(locals.buffTimer, 0, 0, TIME_IN_HZ(40));		//Frequency is somewhat arbitrary but must be fast enough to work
+#endif
 }
+
+//Code to feed data from the ROMS directly to the TMS chips for testing
+
+#ifdef TEST_FROM_ROM
+
+//Get One Byte - Reads a single byte from the rom stream, returns 0 if unable to read the byte
+static int get_one_byte(int num, UINT8* byte, UINT32 pos)
+{
+	UINT8* base = (UINT8*)memory_region(REGION_SOUND1);
+	//If reached end of memory region, abort
+	if(pos>0x300000) return 0;
+	*byte = base[pos];
+	return 1;
+}
+
+//Find next MPG Header in rom stream, return 0 if not found - current position will be at start of frame if found
+static int Find_MPG_Header(int num)
+{	
+	UINT8 onebyte;
+	int quit = 0;
+	while(!quit) {
+		//Find start of possible syncword (begins with 0xff)
+		do {
+			//Grab 1 byte
+			if(!get_one_byte(num,&onebyte,locals.curr[num])) 
+				quit=1;
+			else
+				locals.curr[num]++;
+		}while(onebyte!=0xff && !quit);
+
+		//Found 0xff?
+		if(onebyte==0xff) {
+			//Next byte must be 0xfd (note: already positioned on it from above while() code)
+			if(get_one_byte(num, &onebyte,locals.curr[num]) && onebyte==0xfd) {
+				//Next byte must be 0x18 or 0x19
+				if(get_one_byte(num,&onebyte,locals.curr[num]+1) && (onebyte==0x18 || onebyte==0x19)) {
+					//Next byte must be 0xc0
+					if(get_one_byte(num,&onebyte,locals.curr[num]+2) && onebyte==0xc0) {
+						locals.curr[num]+=3;
+						return 1;
+					}
+				}
+			}
+		}
+	}
+	return 0;
+}
+
+//Find next header/frame, and send enough data to fill 1 frame
+void tms_FillBuff(int num) {
+	int i;
+	UINT8 onebyte;
+	//Abort if SREQ line is HI
+	if(locals.sreq_line[num])
+		return;
+	//Find Next Valid Header - Abort if not found
+	if(!Find_MPG_Header(num))
+		return;
+	//Backup and get header
+	locals.curr[num]-=4;
+	//Read full header+frame and send to tms chip
+	for(i=0; i<144; i++) {
+		if(!get_one_byte(num,&onebyte,locals.curr[num]++))
+			break;
+		TMS320AV120_data_w(num,onebyte);
+	}
+}
+
+void cap_FillBuff(int dummy) {
+	tms_FillBuff(0);
+	tms_FillBuff(1);
+}
+
+#endif
