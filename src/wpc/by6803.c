@@ -87,7 +87,7 @@
 
 #define BY6803_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
 #define BY6803_LAMPSMOOTH      6 /* Smooth the lamps over this number of VBLANKS */
-#define BY6803_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKS */
+#define BY6803_DISPLAYSMOOTH   3 /* Smooth the display over this number of VBLANKS */
 
 //#define mlogerror printf
 #define mlogerror logerror
@@ -208,7 +208,7 @@ static WRITE_HANDLER(by6803_dispdata2) {
 		} else if (row == 13) {		//1101 ~= 0010
 			locals.disprow = 1;
 			locals.DISPSTROBE(0);
-		} else if (row == 15) { // activate comma segments when PIA0 CA2 line goes low.
+		} else if (row == 15) { // activate comma segments when PIA0 CA2 line goes low again.
 			locals.disprow = 2;
 		}
 	}
@@ -217,24 +217,34 @@ static WRITE_HANDLER(by6803_dispdata2) {
 static void by6803_dispStrobe2(int mask) {
 	int data;
 	if (locals.disprow > 1) {
-/* The commas still need more work, I guess! */
+	/* The commas still need work, I guess. But it looks quite good now. */
 		data = locals.p1_a;
 		if (locals.dispcol > 7) {
-			locals.pseg[0][9].hi |= ((data & 0x80) >> 6);
-			locals.pseg[0][12].hi |= ((data & 0x80) >> 6);
-			locals.pseg[1][8].hi |= ((data & 0x20) >> 4);
-			locals.pseg[1][11].hi |= ((data & 0x20) >> 4);
+			if (locals.segments[0][9].lo)
+				locals.segments[0][9].hi |= ((data & 0x80) >> 6);
+			if (locals.segments[0][12].lo)
+				locals.segments[0][12].hi |= ((data & 0x80) >> 6);
+			if (locals.segments[1][8].lo)
+				locals.segments[1][8].hi |= ((data & 0x20) >> 4);
+			if (locals.segments[1][11].lo)
+				locals.segments[1][11].hi |= ((data & 0x20) >> 4);
 		} else {
-			locals.pseg[0][2].hi |= ((data & 0x40) >> 5);
-			locals.pseg[0][5].hi |= ((data & 0x40) >> 5);
-			locals.pseg[1][15].hi |= ((data & 0x10) >> 3);
-			locals.pseg[1][4].hi |= ((data & 0x10) >> 3);
+			if (locals.segments[0][2].lo)
+				locals.segments[0][2].hi |= ((data & 0x40) >> 5);
+			if (locals.segments[0][5].lo)
+				locals.segments[0][5].hi |= ((data & 0x40) >> 5);
+			if (locals.segments[1][15].lo)
+				locals.segments[1][15].hi |= ((data & 0x10) >> 3);
+			if (locals.segments[1][4].lo)
+				locals.segments[1][4].hi |= ((data & 0x10) >> 3);
 		}
 	} else {
 		//Segments H&J is inverted bit 0 (but it's bit 8 in core.c) - Not sure why it's inverted, this is not shown on the schematic
 		data = (locals.p1_a >> 1) | ((locals.p1_a & 1) ? 0 : 0x180);
-		locals.pseg[locals.disprow][locals.dispcol].lo |= data & 0xff;
-		locals.pseg[locals.disprow][locals.dispcol].hi |= data >> 8;
+		locals.pseg[locals.disprow][locals.dispcol].lo = data & 0xff;
+		locals.pseg[locals.disprow][locals.dispcol].hi = data >> 8;
+		locals.segments[locals.disprow][locals.dispcol].lo |= locals.pseg[locals.disprow][locals.dispcol].lo;
+		locals.segments[locals.disprow][locals.dispcol].hi |= locals.pseg[locals.disprow][locals.dispcol].hi;
 	}
 }
 
@@ -341,15 +351,16 @@ static INTERRUPT_GEN(by6803_vblank) {
     memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
     memcpy(locals.segments, locals.pseg, sizeof(locals.segments));
     memset(locals.pseg,0,sizeof(locals.pseg));
-    /*update leds*/
-    coreGlobals.diagnosticLed = locals.diagnosticLed | (locals.sounddiagnosticLed<<1);
-    locals.diagnosticLed = locals.sounddiagnosticLed = 0;
   }
+  /*update leds*/
+  coreGlobals.diagnosticLed = locals.diagnosticLed | (locals.sounddiagnosticLed<<1);
+  locals.diagnosticLed = locals.sounddiagnosticLed = 0;
+
   core_updateSw(core_getSol(19));
 }
 
 static SWITCH_UPDATE(by6803) {
-  int ext = (core_gameData->gen & GEN_BY6803A) ? 1 : 0;
+  int ext = (core_gameData->gen & GEN_BY6803A) ? 0 : 1;
   if (inports) {
     coreGlobals.swMatrix[0] = (inports[BY6803_COMINPORT]>>13) & 0x03;
     coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & (ext?0xd0:0xdf)) |
@@ -551,6 +562,7 @@ static MACHINE_DRIVER_START(by6803)
   MDRV_TIMER_ADD(by6803_zeroCross,BY6803_ZCFREQ)
   MDRV_SOUND_CMD(by6803_soundCmd)
   MDRV_SOUND_CMDHEADING("by6803")
+  MDRV_DIPS(1) // needed for extra core inport!
 MACHINE_DRIVER_END
 
 //6803 - Generation 1 Sound (Squawk & Talk)
