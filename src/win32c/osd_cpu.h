@@ -96,10 +96,12 @@ typedef union {
 #define HAS_Z80				1
 #define HAS_M6800			1
 #define HAS_M6802			1
+#define HAS_M6803			1
+#define HAS_M6808			1
 #define HAS_M6809			1
 #define HAS_M6502			1
 #define HAS_M65C02			1
-#define HAS_ADSP2100		1
+//#define HAS_ADSP2100		1
 #define HAS_ADSP2105		1
 #define HAS_M68000			1
 
@@ -116,4 +118,12 @@ typedef union {
 #define HAS_BSMT2000		1
 #define HAS_OKIM6295		1
 
+#if defined(MAMEVER) && MAMEVER > 3716
+#define BMTYPE UINT16
+#define M65C02_INT_IRQ M65C02_IRQ_LINE
+#define M65C02_INT_NMI INTERRUPT_NMI
+#else
+#define BMTYPE UINT8
+#define mame_bitmap osd_bitmap
+#endif
 #endif	/* defined OSD_CPU_H */
