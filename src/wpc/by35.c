@@ -260,7 +260,7 @@ static SWITCH_UPDATE(by35) {
   }
 }
 
-/* PIA 0 (U10) 
+/* PIA 0 (U10)
 PA0-1: (o) Cabinet Switches Strobe
 PA0-4: (o) Switch Strobe(Columns)
 PA0-3: (o) Lamp Address (Shared with Switch Strobe)
@@ -276,7 +276,7 @@ CB1:   (i) Zero Cross Detection
 CA2:   (o) Display blanking
 CB2:   (o) S25-S32 Dips, Lamp strobe #1
 */
-/* PIA 1 (U11) 
+/* PIA 1 (U11)
 PA0:   (o) 5th display strobe
 PA1:   (o) Sound Module Address E / 7th display digit
 PA2-7: (o) Display digit select
@@ -313,10 +313,16 @@ static void by35_zeroCross(int data) { pia_pulse_cb1(BY35_PIA0, 0); }
 static WRITE_HANDLER(piap0a_w) {
   // lamp row & strobe
   locals.a0 = data;
-  if (!locals.ca20)
-    by35_lampStrobe(0,locals.lampadr1);
-  if (locals.lampadr1 < 0x0f)
-    locals.lampadr1++;
+  if (!locals.ca20) {
+    by35_lampStrobe(locals.lampadr2, locals.lampadr1);
+    // this is weird; can a counter be that accurate?
+    if (locals.lampadr1 < 0x0e)
+   	  locals.lampadr1++;
+   	else {
+      locals.lampadr1 = 0;
+      locals.lampadr2 = !locals.lampadr2;
+    }
+  }
   // display data
   if (locals.lastbcd)
     locals.bcd[--locals.lastbcd] = data & 0x0f;
@@ -339,10 +345,6 @@ static WRITE_HANDLER(piap0ca2_w) {
   locals.lastbcd = 5;
   locals.ca20 = data;
 }
-
-static WRITE_HANDLER(piap0cb2_w) {
-  locals.cb20 = data;
-}
 // set display row
 static WRITE_HANDLER(piap1a_w) {
   locals.a1 = data;
@@ -350,8 +352,6 @@ static WRITE_HANDLER(piap1a_w) {
 }
 // solenoids
 static WRITE_HANDLER(piap1b_w) {
-  locals.lampadr1 = 0;
-
   locals.b1 = data;
   coreGlobals.pulsedSolState = 0;
   if (locals.cb21)
@@ -360,8 +360,9 @@ static WRITE_HANDLER(piap1b_w) {
   coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xfff87fff) | ((data & 0xf0)<<11);
   locals.solenoids |= (data & 0xf0)<<11;
 }
-//diag. LED?
+//diag. LED, also lamp row reset?
 static WRITE_HANDLER(piap1ca2_w) {
+  locals.lampadr1 = locals.lampadr2 = 0;
   locals.ca21 = locals.diagnosticLed = data;
 }
 // solenoid control?
@@ -371,7 +372,7 @@ static WRITE_HANDLER(piap1cb2_w) {
 
 static struct pia6821_interface by35Proto_pia[] = {{
 /* I:  A/B,CA1/B1,CA2/B2 */  0, piap0b_r, 0,0, 0,0,
-/* O:  A/B,CA2/B2        */  piap0a_w,0, piap0ca2_w,piap0cb2_w,
+/* O:  A/B,CA2/B2        */  piap0a_w,0, piap0ca2_w,0,
 /* IRQ: A/B              */  piaIrq,0
 },{
 /* I:  A/B,CA1/B1,CA2/B2 */  0, 0, 0,0, 0,0,
