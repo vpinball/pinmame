@@ -102,10 +102,6 @@ void votrax_w(int data)
 
 static void Votrax_Update(int num, INT16 *buffer, int length)
 {
-	int nextLength;
-
-	nextLength = length;
-
 	if ( iRemainingSamples<length )
 		iLastValue = (0x80-*(pActPos+iRemainingSamples-1))*0x00f0;
 
@@ -115,7 +111,7 @@ static void Votrax_Update(int num, INT16 *buffer, int length)
 		iRemainingSamples--;
 	}
 
-	if ( !iRemainingSamples && iRemainingSamples ) {
+	if ( !iRemainingSamples && iRemainingSamples1 ) {
 		iRemainingSamples = iRemainingSamples1;
 		pActPos = pActPos1;
 
@@ -133,7 +129,7 @@ static void Votrax_Update(int num, INT16 *buffer, int length)
 		length--;
 	}
 
-	if ( iRemainingSamples<=0 ) {
+	if ( (iRemainingSamples<=200) && (!iRemainingSamples1) ) {
 		if ( VotraxBusy ) {
 			VotraxBusy = 0;
 			if ( busy_callback )
@@ -143,7 +139,7 @@ static void Votrax_Update(int num, INT16 *buffer, int length)
 }
 
 static int votrax_sh_start(const struct MachineSound *msound) {
-    VotraxBaseFrequency = 8000;
+    VotraxBaseFrequency = 7000;
 	VotraxBusy = 0;
 
 	iRemainingSamples  = 0;
@@ -151,7 +147,7 @@ static int votrax_sh_start(const struct MachineSound *msound) {
 
 	iLastValue = 0x0000;
 
-	VotraxChannel = stream_init("SND DAC", 100, 8000, 0, Votrax_Update);
+	VotraxChannel = stream_init("SND DAC", 100, VotraxBaseFrequency, 0, Votrax_Update);
     set_RC_filter(VotraxChannel, 270000, 15000, 0, 10000);
 	return 0;
 }
