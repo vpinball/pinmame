@@ -258,7 +258,7 @@ STDMETHODIMP CGames::get_Item(VARIANT *pKey, IGame **pGame)
 			i++;
 		}
 
-		if ( i>=m_lGames )
+		if ( i>m_lGames )
 			i = 0; // return the "default" game
 
 		if ( m_pGamesList[i] )
