@@ -357,7 +357,7 @@ static int tommy_getSol(int solNo) { return (solNo == sBlinderMotor) ? (core_get
 static core_tGameData tommyGameData = {
   GEN_DEDMD32, 0,
   { FLIP6364, 0,0,1, // We need 1 custom solenoids!
-    SNDBRD_DE1S,SNDBRD_DEDMD32,0,0,
+    SNDBRD_DE2S,SNDBRD_DEDMD32,0,0,
     tommy_getSol
   }, NULL, {{0}}, {10}
 };
@@ -404,7 +404,7 @@ static int gnr_getSol(int solNo) {
 static core_tGameData gnrGameData = {
   GEN_DEDMD32, 0,
   { FLIP6364, 0,0,3, //We need 3 custom solenoids!
-    SNDBRD_DE1S,SNDBRD_DEDMD32,0,0, gnr_getSol
+    SNDBRD_DE2S,SNDBRD_DEDMD32,0,0, gnr_getSol
   }, NULL, {{0}}, {10}
 };
 static void init_gnr(void) { core_gameData = &gnrGameData; }
