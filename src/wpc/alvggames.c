@@ -16,7 +16,7 @@ static struct core_dispLayout alvg_dispDMD[] = {
 
 #define INITGAME(name, disptype, flippers, balls, sb, db, lamps) \
 	ALVG_INPUT_PORTS_START(name, balls) ALVG_INPUT_PORTS_END \
-	static core_tGameData name##GameData = {GEN_ALVG,disptype,{flippers,4,lamps,0,sb,db,0}}; \
+	static core_tGameData name##GameData = {GEN_ALVG,disptype,{flippers,4,4,0,sb,db,lamps}}; \
 	static void init_##name(void) { \
 		core_gameData = &name##GameData; \
 	}
@@ -26,7 +26,7 @@ static struct core_dispLayout alvg_dispDMD[] = {
 /*-------------------------------------------------------------------
 / Al's Garage Band Goes On A World Tour
 /-------------------------------------------------------------------*/
-INITGAME(wrldtour, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS, SNDBRD_ALVGDMD, 5)
+INITGAME(wrldtour, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS, SNDBRD_ALVGDMD, 0)
 ALVGROMSTART(wrldtour,	"cpu27c.512", CRC(c9572fb5) SHA1(47a3e8943ef4207011a33f4a03a6e722c937cc48))
 ALVGS_SOUNDROM(			"soundc.512", CRC(b44bee01) SHA1(795d8500e5bd73ce23756bf1f5c96db1a3621a70),
 						"samp_0.c21", CRC(37beb831) SHA1(2b90d2be0a1bd7c59469846631d2b44bdf9f5f9d),
@@ -42,7 +42,7 @@ CORE_GAMEDEFNV(wrldtour,"Al's Garage Band Goes On A World Tour",1992,"Alvin G",m
 /*-------------------------------------------------------------------
 / Mystery Castle
 /-------------------------------------------------------------------*/
-INITGAME(mystcast, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS, SNDBRD_ALVGDMD, 5)
+INITGAME(mystcast, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS, SNDBRD_ALVGDMD, 0)
 ALVGROMSTART(mystcast,	"mcastle.cpu", CRC(936e6799) SHA1(aa29fb5f12f34c695d1556232744f65cd576a2b1))
 ALVGS_SOUNDROM(			"mcastle.102", CRC(752822d0) SHA1(36461ef03cac5aefa0c03dfdc63c3d294a3b9c09),
 						"mcastle.sr0", CRC(0855cc73) SHA1(c46e08432bcff24594c33171f20669ba63828931),
@@ -57,7 +57,7 @@ CORE_GAMEDEFNV(mystcast,"Mystery Castle",1993,"Alvin G",mALVGS,0)
 /*-------------------------------------------------------------------
 / Pistol Poker
 /-------------------------------------------------------------------*/
-INITGAME(pstlpkr, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS, SNDBRD_ALVGDMD, 5)
+INITGAME(pstlpkr, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS, SNDBRD_ALVGDMD, 1)
 ALVGROMSTART(pstlpkr,	"p_peteu2.512", CRC(490a1e2d) SHA1(907dd858ed948681e7366a64a0e7537ebe301d6b))
 ALVGS_SOUNDROM(			"p_pu102.512" , CRC(b8fb806e) SHA1(c2dc19820ea22bbcf5808db2fb4be76a4033d6ea),
 						"p_parom0.c20", CRC(99986af2) SHA1(52fa7d2979f7f2d6d65ab6d4f7bbfbed16303991),
@@ -80,7 +80,7 @@ CORE_GAMEDEFNV(pstlpkr,"Pistol Poker",1993,"Alvin G",mALVGS,0)
 /*-------------------------------------------------------------------
 / Test 8031 CPU Core (uses either Pistol Poker dmd roms or World Tour)
 /-------------------------------------------------------------------*/
-INITGAME(test8031, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS, 0, 5)
+INITGAME(test8031, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS, 0, 1)
 ROM_START(test8031)
 
 TEST8031_ROM(			"addsub.bin", NO_DUMP,
