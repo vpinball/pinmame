@@ -4,7 +4,7 @@
 #include "snd_cmd.h"
 
 #ifdef VPINMAME
-	#define GAME_NOCRC 1
+	#define GAME_NOCRC 0x2000	//This should allow mame team to add at least a few more flags to gamedrv before it's a problem
 #else
 	#define GAME_NOCRC 0
 #endif
