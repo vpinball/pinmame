@@ -41,6 +41,7 @@
     COREPORT_BIT(     0x0100, "Black Button",     KEYCODE_8) \
     COREPORT_BITTOG(  0x0200, "Green Button",     KEYCODE_7)
 
+//Games after Frankenstein used Non-Toggling Up/Down(Green Button) Switch
 #define DE_COMPORTS2 \
   PORT_START /* 0 */ \
     /* Switch Column 1 */ \
