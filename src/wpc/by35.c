@@ -290,6 +290,21 @@ static INTERRUPT_GEN(by35_irq) {
 static void by35_zeroCross(int data) {
   pia_pulse_cb1(BY35_PIA0, 0);  /*- toggle zero/detection circuit-*/
 }
+
+/*-----------------------------------------------
+/ Load/Save static ram
+/-------------------------------------------------*/
+static UINT8 *by35_CMOS;
+
+static NVRAM_HANDLER(by35) {
+  core_nvram(file, read_or_write, by35_CMOS, 0x100, (core_gameData->gen & (GEN_STMPU100|GEN_STMPU200))?0x00:0xff);
+}
+// Stern uses 8 bits, Bally 4 top bits
+static WRITE_HANDLER(by35_CMOS_w) {
+  if ((core_gameData->gen & (GEN_STMPU100|GEN_STMPU200)) == 0) data |= 0x0f;
+  by35_CMOS[offset] = data;
+}
+
 static MACHINE_INIT(by35) {
   memset(&locals, 0, sizeof(locals));
 
@@ -323,12 +338,6 @@ static MACHINE_INIT(astro) {
   *mem++ = 0x18; *mem++ = 0x00;
 }
 
-static UINT8 *by35_CMOS;
-// Stern uses 8 bits, Bally 4 top bits
-static WRITE_HANDLER(by35_CMOS_w) {
-  if ((core_gameData->gen & (GEN_STMPU100|GEN_STMPU200)) == 0) data |= 0x0f;
-  by35_CMOS[offset] = data;
-}
 /*-----------------------------------
 /  Memory map for CPU board
 /------------------------------------*/
@@ -412,12 +421,6 @@ MACHINE_DRIVER_START(astro)
   MDRV_CORE_INIT_RESET_STOP(astro,by35,by35)
 MACHINE_DRIVER_END
 
-/*-----------------------------------------------
-/ Load/Save static ram
-/-------------------------------------------------*/
-static NVRAM_HANDLER(by35) {
-  core_nvram(file, read_or_write, by35_CMOS, 0x100,0xff);
-}
 #if 0
 #define BY35_CPU { \
   CPU_M6800, 500000, /* 500KHz */ \
