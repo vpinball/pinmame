@@ -98,9 +98,9 @@ static UINT8 m6809_reg_layout[] = {
 
 /* Layout of the debugger windows x,y,w,h */
 static UINT8 m6809_win_layout[] = {
-	27, 0,53, 4,	/* register window (top, right rows) */
+	27, 0,53, 2,	/* register window (top, right rows) */
 	 0, 0,26,22,	/* disassembler window (left colums) */
-	27, 5,53, 8,	/* memory #1 window (right, upper middle) */
+	27, 3,53,10,	/* memory #1 window (right, upper middle) */
 	27,14,53, 8,	/* memory #2 window (right, lower middle) */
 	 0,23,80, 1,	/* command line window (bottom rows) */
 };
