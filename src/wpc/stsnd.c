@@ -84,12 +84,12 @@ static void playsam3(int param) {
    if ((st300loc.cr3 & 0x80) && (st300loc.timlat3 > 0) && (st300loc.reset == 0))   { // output is enabled...
 	startvol(0);
 	mixer_set_volume(st300loc.channel,setvol(0)*ST300_VOL);
-	mixer_set_volume(st300loc.channel+2,setvol(0)*ST300_VOL*1.3);	
+	mixer_set_volume(st300loc.channel+2,setvol(0)*ST300_VOL);	
 	logerror("playsam3 \n");
     } else {	// q3 is not running...
 	startvol(0);
 	mixer_set_volume(st300loc.channel,setvol(0)*ST300_VOL);
-	mixer_set_volume(st300loc.channel+2,setvol(0)*ST300_VOL*1.3);	
+	mixer_set_volume(st300loc.channel+2,setvol(0)*ST300_VOL);	
 	logerror("playsam3 don't move \n");	
     }	
 }	
