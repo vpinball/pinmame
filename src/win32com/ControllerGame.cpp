@@ -460,11 +460,11 @@ int CRCSOFGAMESNOTSUPPORRTED[] = {
 	// Monopoly (first sound rom, game roms 233, 251, 301, 303)
 	0xf9bc55e8, 0xf20a5ca6, 0x0645cfae, 0x24978872,0x4a66c9e4, 						
 
-	// Playboy (first sound rom, game roms 300, 302, 303)
-	0xf5502fec, 0xd7e5bada, 0x206285ed, 0x6a6f6aab,
+	// Playboy (first sound rom, game roms 203, 300, 302, 303, 401)
+	0xf5502fec, 0x50eb01b0, 0xd7e5bada, 0x206285ed, 0x6a6f6aab, 0xcb2e2824,
 
-	// Roller Coaster Tycoon (first sound rom, game rom 400)
-	0x18ba20ec, 0x4691de23,
+	// Roller Coaster Tycoon (first sound rom, game rom 400, 600, 701)
+	0x18ba20ec, 0x4691de23, 0x2ada30e5, 0xe1fe89f6,
 
 	// end of the list
 	0x0
