@@ -3,9 +3,9 @@ What's new:
 
 Version 1.10 (December, 2001)
 -----------------------------------------
-This may very well be the most anticipated release of PinMAME to date. 4 Letters, BSMT. 
-What was once thought nearly impossible has become a reality for PinMAME, 
-thanks in large part to emulation wizard Aaron Giles(of MAME fame). 
+This may very well be the most anticipated release of PinMAME to date. 4 Letters, BSMT.
+What was once thought nearly impossible has become a reality for PinMAME,
+thanks in large part to emulation wizard Aaron Giles(of MAME fame).
 35 New Games now have fully working sound!
 As you can also see, we've realized, much like the MAME team, that using Beta naming is
 rather tedious and annoying, so we've dropped it.
@@ -16,16 +16,29 @@ Bugs Fixed
 -Fixed Coin Door buttons for games using Pre-Whitestar System Portals Menu
  [Steve Ellenoff]
 
--Limited the number of extra samples that can be generated per frame. 
- (Maybe it solves the strange slow sound under Win XP)
--Added missing end markers "{0}" for some s11 custom display layouts.
- [WPCMAME Author] 
+-Limited the number of extra samples that can be generated per frame.
+ (If the CPU can't keep up 100% emulation speed the sound will be distorted.
+  There are two options: either slow down the sound or break it up.
+  This is something in between. It will slow down the sound up to a certain
+  limit but if that is not enough it will break it up)
+-Corrected some s11 custom display layouts.
+-BPR debug command works again
+-Fixed 6th display in Mr. & Mrs. Pac-Man
+-Added 6th switch column to Bally -35 (switches 41-48)
+-Fixed dips 17-24 in Bally -35 and Stern MPUx00
+-Fixed sound board communication for Squawk'n'Talk board (i.e. Xenon etc now works)
+ [Martin Adrian]
 
 -Dip switches working now on Gottlieb games
  [Tom Haukap]
 
 -Corrected Grand Lizard to use the working romset
 -Fixed 7th digit on Gottlieb System80a games
+-Changed several MAME error messages to say PinMAME instead
+-Changed version number to say PinMAME version instead of MAME version
+(Martin: Isn't this a violation to the MAME licence)
+-Removed "sound not emulated yet" error message from games with only chimes
+ (There is no sound to emulate)
  [Gerrit Volkenborn]
 
 
@@ -36,9 +49,9 @@ New Features
 (Note: Emulation is not 100% perfect. Still some problems with compressed samples).
  [Aaron Giles]
  [Steve Ellenoff]
- [WPCMAME Author]
+ [Martin Adrian]
 
--Added Stereo Sound support for pre-BSMT Data East games 
+-Added Stereo Sound support for pre-BSMT Data East games
  (still not fully emulated, but better than previous mono output).
 -Added support for Sound Roms for remaining Data East/Sega/Stern(Post 1998) Games!
  [Steve Ellenoff]
@@ -47,21 +60,72 @@ New Features
 -Changed mech handler to be asynchronous to the vblank and increased
   polling rate by a factor 8. Riverboat Gambler wheel can now be handled.
 -Added aux solenoid board to Whirlwind
- [WPCMAME Author] 
+-Dip settings are saved in the nvram file for most games.
+-Added top and bottom segment to 6 & 9 in bcd-to-segment chip emulation
+-Corrected DIP setings for S3-S6 (sound board dips were missing)
+-Added GameOn solenoid (23) to Sega/Stern games
+-Changed hardware type of Jack*Bot to the odd WPC95+DCS sound board version
+ [Martin Adrian]
 
 -Added missing Gottlieb System 80/a/b sets and clones
 -Added Pennant Fever to S9 games (sound not working)
 -Added Strike Master to WPC games (no sound)
 -Added a lot of clones for existing WPC/DataEast/Sega/new Stern games!
+-Update several custom display layouts.
+(Martin: It seems like digits now overlap in Mr. & Mrs. Pac-Man non-compact display)
  [Gerrit Volkenborn]
 
-
+New Games
+---------
+Bally -35
+  Xenon (French)
+System80
+  James Bond (3/5 ball)
+  Force II
+  Black Hole (Rev 2)
+  Black Hole (Sound Only)
+  Test Fixture
+System80a
+  Devils Dare (Sound & Speech)
+  Devils Dare (Sound only)
+  Caveman
+  Rocky
+  Punk
+  Striker
+  Krull
+  Q*bert's Quest
+  Super Orbit
+  Royal Flush Deluxe
+  Goin' Nuts
+  Amazon Hunt
+  Rack 'Em Up
+  Ready Aim Fire
+  Jacks to Open
+  Alien Star
+  Touchdown
+  El Dorado
+  Ice Fever
+System80b
+  Chicago Cubs Triple Play
+  Bounty Hunter
+  Gold Wings
+  Spring Break
+  Arena
+  Diamond Lady
+  Excalibur
+System9
+  Pennant Fever (pitch & bat)
+WPC
+  Strike Master
+  The Addams Family L-6
+  Who dunnit (German)
+  Safe Cracker (New)
 
 Version 1.0 Beta 2   (September 28, 2001)
 -----------------------------------------
 This version was supposed to be a quick bug fix release for the gigantic 1.0 release.
-Instead, there was just so much added and improved that time simply flew by! 
-Please take a look at the bottom of the pinmame.txt file as many people have helped to 
+Instead, there was just so much added and improved that time simply flew by!
+Please take a look at the bottom of the pinmame.txt file as many people have helped to
 contribute to pinmame's success, and they deserve recognition.
 Enjoy this *huge* update to PinMAME!
 
@@ -105,7 +169,7 @@ Bugs Fixed
 -Corrected missing lamps bug for Gottlieb System80/a/b games.
 -Missing roms flagged with 0x000000 per Roman's(of Clrmame) request.
  [Tom Haukap]
- 
+
 
 New Features
 ------------
@@ -138,7 +202,7 @@ New Features
 -Added acceleration to mech handler and reworked interface
 -Updated simulators to new mech handler (t2,ss,cv,mb,ts,wd)
 -Added hybrid WPC95DCS support (such as W?D)
--DCS sound now uses the mame resampling code 
+-DCS sound now uses the mame resampling code
  (should in theory make the sound better for samplerates other than 32000).
 -Added AntiAlias support for Data East/Sega DMD games [except for 128x16 games]
  [WPCMAME Author]
@@ -151,10 +215,10 @@ New Features
 Version 1.0 Beta 1   (July 31, 2001)
 ------------------------------------
 Welcome to Version 1.0!
-This release had SO MANY additions, that we felt it would be a crime calling it anything other than 1.0! 
-Overall we've added 3 new manufacturers to the official supported list: Sega, Stern, and Gottlieb. 
-In addition, Data East support is greatly improved. 
-Early Bally support got big improvements as well. 
+This release had SO MANY additions, that we felt it would be a crime calling it anything other than 1.0!
+Overall we've added 3 new manufacturers to the official supported list: Sega, Stern, and Gottlieb.
+In addition, Data East support is greatly improved.
+Early Bally support got big improvements as well.
 We hope you enjoy all the great new things PINMAME 1.0 has to offer!
 
 Bugs Fixed
@@ -283,8 +347,8 @@ Version 0.99 Beta 2 (April 22, 2001)
 
 Bugs Fixed
 ----------
--Fixed no sound in DCS games when using -cheat/Skip Pinball Tests at Startup Option 
--Improved System 11 Multiplexed Solenoid Handling 
+-Fixed no sound in DCS games when using -cheat/Skip Pinball Tests at Startup Option
+-Improved System 11 Multiplexed Solenoid Handling
 -A/C Accelerator Bug Corrected  for F-14, PB, Fire!
 -Fixed ROM Sound Length for Radical
 -Fixed RTC clock bug in WPC games
@@ -321,7 +385,7 @@ New Simulators
 Version 0.99 Beta (March 29, 2001)
 ----------------------------------
 Welcome to the first official release of PinMAME, the emulator formerly known as WPCMAME!
-Below you'll find the many enhancements made to WPCMAME which have transformed it into 
+Below you'll find the many enhancements made to WPCMAME which have transformed it into
 PinMAME.
 
 New Features
@@ -396,8 +460,8 @@ New Sound Support
 
 0.37 BETA 8 (January 17, 2001)
 -------------------------------
-WOW!! Our biggest release ever, with a whopping 70 Enhancements!! 
-Happy Holidays, Happy New Year, and Happy New Millenium (for real this time)!!! 
+WOW!! Our biggest release ever, with a whopping 70 Enhancements!!
+Happy Holidays, Happy New Year, and Happy New Millenium (for real this time)!!!
 
 New Features
 ------------
@@ -405,7 +469,7 @@ New Features
  [Steve Ellenoff]
  [Tom Haukap]
 
--DMD Color & Intensity Can be Changed using command line or .cfg file (see wpcmame.txt)     
+-DMD Color & Intensity Can be Changed using command line or .cfg file (see wpcmame.txt)
  [Steve Ellenoff]
 
 -DCS Sound Speedups for *ALL DCS* Games!!!!
@@ -464,14 +528,14 @@ New Sound Support
 -Dracula                         [Steve Ellenoff]
 -Attack From Mars                [Steve Ellenoff]
 -Black Rose                      [Steve Ellenoff]
--Indiana Jones                   [Steve Ellenoff] 
--No Good Golfers                 [Steve Ellenoff] 
--Party Zone(New 100% working Rom)[Steve Ellenoff] 
--No Fear                         [Steve Ellenoff] 
--Corvette                        [Steve Ellenoff] 
--Harley Davidson                 [Steve Ellenoff] 
--Cirqus Voltaire                 [Steve Ellenoff] 
--Indianapolis 500                [Steve Ellenoff] 
+-Indiana Jones                   [Steve Ellenoff]
+-No Good Golfers                 [Steve Ellenoff]
+-Party Zone(New 100% working Rom)[Steve Ellenoff]
+-No Fear                         [Steve Ellenoff]
+-Corvette                        [Steve Ellenoff]
+-Harley Davidson                 [Steve Ellenoff]
+-Cirqus Voltaire                 [Steve Ellenoff]
+-Indianapolis 500                [Steve Ellenoff]
 -Judge Dredd                     [Steve Ellenoff]
 
 
@@ -579,7 +643,7 @@ New/Updated Sound Sample Support
   [Steve Ellenoff]
 
 - New sound support for the following games:
-  TAF(original), Popeye, The Machine: BOP, Party Zone, Whitewater, Safe Cracker, 
+  TAF(original), Popeye, The Machine: BOP, Party Zone, Whitewater, Safe Cracker,
   World Cup Soccer
   [Steve Ellenoff]
 
@@ -587,11 +651,11 @@ New/Updated Sound Sample Support
   [Steve Ellenoff]
 
 - New Sound Command Mode: Allows you to trigger any sound command, thus you can play
-  any sound in the pinball game. (For some reason, digital voices don't work in 
+  any sound in the pinball game. (For some reason, digital voices don't work in
   pre-dcs games yet)
   [Steve Ellenoff]
 
-- Record Sound output to a Wav file (files go to your wavefile directory.. works similar to 
+- Record Sound output to a Wav file (files go to your wavefile directory.. works similar to
   screen shots, aka, files are named with a number after them!)
   [Jarek Parchanski]
   [Steve Ellenoff]
