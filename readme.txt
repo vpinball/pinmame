@@ -1,0 +1,1 @@
+This folder contains the makefile for PinMAME.
