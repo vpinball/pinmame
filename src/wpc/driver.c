@@ -212,6 +212,7 @@ DRIVER(robo,a34)        //Data East MPU: 11/89 Robo Cop
 DRIVER(poto,a32)        //Data East MPU: 01/90 Phantom of the Opera
 DRIVER(bttf,a20)        //Data East MPU: 06/90 Back to the Future (2.0)
 DRIVER(bttf,a21)        //Data East MPU: ??/90 Back to the Future (2.1)
+DRIVER(bttf,a27)        //Data East MPU: ??/9? Back to the Future (2.7)
 DRIVER(bttf,g27)        //Data East MPU: ??/9? Back to the Future (2.7 Germany)
 DRIVER(simp,a27)        //Data East MPU: 09/90 The Simpsons
 //DMD 128 x 16
@@ -221,22 +222,28 @@ DRIVER(tmnt,104)        //Data East MPU: 05/91 Teenage Mutant Ninja Turtles
 DRIVER(btmn,101)        //Data East MPU: 07/91 Batman (1.01)
 DRIVER(btmn,103)        //Data East MPU: ??/91 Batman (1.03)
 DRIVER(btmn,g13)        //Data East MPU: ??/91 Batman (1.03 Germany)
-DRIVER(trek,201)        //Data East MPU: 10/91 Star Trek 25th Anniversary
+DRIVER(trek,200)        //Data East MPU: 10/91 Star Trek 25th Anniversary (2.00)
+DRIVER(trek,201)        //Data East MPU: 10/91 Star Trek 25th Anniversary (2.01)
 DRIVER(hook,401)        //Data East MPU: 01/92 Hook (4.01)
 DRIVER(hook,404)        //Data East MPU: 01/92 Hook (4.04)
 DRIVER(hook,408)        //Data East MPU: 01/92 Hook (4.08)
 //DMD 128 x 32
-DRIVER(lw3,208)         //Data East MPU: 06/92 Lethal Weapon
+DRIVER(lw3,205)         //Data East MPU: 06/92 Lethal Weapon (2.05)
+DRIVER(lw3,207)         //Data East MPU: 06/92 Lethal Weapon (2.07)
+DRIVER(lw3,208)         //Data East MPU: 06/92 Lethal Weapon (2.08)
 DRIVER(stwr,103)        //Data East MPU: 10/92 Star Wars (1.03)
+DRIVER(stwr,a14)        //Data East MPU: 10/92 Star Wars (Display Rev.1.04)
 DRIVER(stwr,g11)        //Data East MPU: 10/92 Star Wars (1.01 Germany)
 DRIVER(rab,130)         //Data East MPU: 02/93 Rocky & Bullwinkle
+DRIVER(rab,320)         //Data East MPU: 02/93 Rocky & Bullwinkle (3.20)
 DRIVER(jupk,513)        //Data East MPU: 04/93 Jurassic Park (5.13)
 DRIVER(jupk,g51)        //Data East MPU: 06/93 Jurassic Park (5.13 Germany)
 DRIVER(lah,l104)        //Data East MPU: 08/93 Last Action Hero (1.04 Spain)
 DRIVER(lah,l108)        //Data East MPU: 08/93 Last Action Hero (1.08 Spain)
 DRIVER(lah,110)         //Data East MPU: 08/93 Last Action Hero (1.10)
 DRIVER(lah,112)         //Data East MPU: 08/93 Last Action Hero (1.12)
-DRIVER(tftc,303)        //Data East MPU: 11/93 Tales From the Crypt
+DRIVER(tftc,200)        //Data East MPU: 11/93 Tales From the Crypt (2.00)
+DRIVER(tftc,303)        //Data East MPU: 11/93 Tales From the Crypt (3.03)
 DRIVER(tomy,h30)        //Data East MPU: 02/94 Tommy (3.00 Holland)
 DRIVER(tomy,400)        //Data East MPU: 02/94 Tommy (4.00)
 DRIVER(wwfr,103)        //Data East MPU: 05/94 WWF Royal Rumble (1.03)
@@ -445,7 +452,8 @@ DRIVERNV(wcup90)		//World Cup 90 (1990)
 // SEGA GAMES
 // --------------
 //Data East Hardare, DMD 192x64
-DRIVERNV(maverick)      //DE/Sega MPU: 09/94 Maverick
+DRIVERNV(mav_401)       //DE/Sega MPU: 09/94 Maverick 4.01 Display
+DRIVERNV(mav_402)       //DE/Sega MPU: 09/94 Maverick 4.02 Display
 DRIVERNV(frankst)       //DE/Sega MPU: 12/94 Frankenstein
 DRIVERNV(frankstg)      //DE/Sega MPU: 01/95 Frankenstein (Germany)
 DRIVERNV(baywatch)      //DE/Sega MPU: 03/95 Baywatch
@@ -472,6 +480,9 @@ DRIVER  (twst,300)      //Whitestar: 04/96 Twister (3.00)
 DRIVER  (twst,405)      //Whitestar: 04/96 Twister (4.05)
 DRIVERNV(id4)           //Whitestar: 07/96 ID4: Independance Day
 DRIVERNV(spacejam)      //Whitestar: 08/96 Space Jam
+DRIVERNV(spacejmf)      //Whitestar: 08/96 Space Jam (France)
+DRIVERNV(spacejmg)      //Whitestar: 08/96 Space Jam (Germany)
+DRIVERNV(spacejmi)      //Whitestar: 08/96 Space Jam (Italy)
 DRIVERNV(swtril)        //Whitestar: 02/97 Star Wars Trilogy
 DRIVERNV(jplstwld)      //Whitestar: 06/97 The Lost World: Jurassic Park
 DRIVERNV(xfiles)        //Whitestar: 08/97 X-Files

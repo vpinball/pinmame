@@ -230,14 +230,15 @@ CORE_GAMEDEF(poto,a32,"The Phantom of the Opera (3.2)",1990,"Data East",de_mDEAS
 / Back To the Future - CPU Rev 3 /Alpha Type 3 - 32K Roms - 32/64K Sound Roms
 /--------------------------------------------------------------------------------*/
 INITGAMES11(bttf,GEN_DE, de_dispAlpha3, FLIP1516, SNDBRD_DE1S, S11_LOWALPHA, 0)
-DE_ROMSTART48(bttf_a21,"bktofutr.b5",CRC(a651f867) SHA1(99cff09a06a99abac505c7732bb4ed985f0946e4),
-                   "bktofutr.c5",CRC(118ae58e) SHA1(a17e4cc3c12ca770e6e0674cfbeb55482739f735))
+DE_ROMSTART48(bttf_a27,"bttfb5.2-7",CRC(24b53174) SHA1(00a5e47e70ce4244873980c946479f0bbc414f2e),
+                   "bttfc5.2-7",CRC(c4d85d7e) SHA1(88bb91f9ed50335fc402b68983b49319c7dd4e99))
 DE1S_SOUNDROM244(  "bttfsf7.rom",CRC(7673146e) SHA1(d6bd7cf39c78c8aff0b1a0b6cfd46a2a8ce9e086),      //7f
                    "bttfsf6.rom",CRC(468a8d9c) SHA1(713cf84cc5f0531e2e9f7aaa58ebeb53c28ba395),      //6f
                    "bttfsf5.rom",CRC(37a6f6b8) SHA1(ebd603d36527a2af25dcda1fde5cdf9a34d1f9cd))      //4f
 DE_ROMEND
+
 #define input_ports_bttf input_ports_des11
-CORE_GAMEDEF(bttf,a21,"Back To The Future (2.1)",1990,"Data East",de_mDEAS1,0)
+CORE_GAMEDEF(bttf,a27,"Back To the Future (2.7)",1990,"Data East",de_mDEAS1,0)
 
 DE_ROMSTART88(bttf_a20,"bttfb5.2-0",CRC(c0d4df6b) SHA1(647d0d0a5af04f4255a588da41a6cdb2cf522875),
                    "bttfc5.2-0",CRC(a189a189) SHA1(9669653280c78c811931ea3944817c717f3b5b77))
@@ -245,7 +246,15 @@ DE1S_SOUNDROM244(  "bttfsf7.rom",CRC(7673146e) SHA1(d6bd7cf39c78c8aff0b1a0b6cfd4
                    "bttfsf6.rom",CRC(468a8d9c) SHA1(713cf84cc5f0531e2e9f7aaa58ebeb53c28ba395),      //6f
                    "bttfsf5.rom",CRC(37a6f6b8) SHA1(ebd603d36527a2af25dcda1fde5cdf9a34d1f9cd))      //4f
 DE_ROMEND
-CORE_CLONEDEF(bttf,a20,a21,"Back To the Future (2.0)",1990,"Data East",de_mDEAS1,0)
+CORE_CLONEDEF(bttf,a20,a27,"Back To the Future (2.0)",1990,"Data East",de_mDEAS1,0)
+
+DE_ROMSTART48(bttf_a21,"bktofutr.b5",CRC(a651f867) SHA1(99cff09a06a99abac505c7732bb4ed985f0946e4),
+                   "bktofutr.c5",CRC(118ae58e) SHA1(a17e4cc3c12ca770e6e0674cfbeb55482739f735))
+DE1S_SOUNDROM244(  "bttfsf7.rom",CRC(7673146e) SHA1(d6bd7cf39c78c8aff0b1a0b6cfd46a2a8ce9e086),      //7f
+                   "bttfsf6.rom",CRC(468a8d9c) SHA1(713cf84cc5f0531e2e9f7aaa58ebeb53c28ba395),      //6f
+                   "bttfsf5.rom",CRC(37a6f6b8) SHA1(ebd603d36527a2af25dcda1fde5cdf9a34d1f9cd))      //4f
+DE_ROMEND
+CORE_CLONEDEF(bttf,a21,a27,"Back To The Future (2.1)",1990,"Data East",de_mDEAS1,0)
 
 DE_ROMSTART48(bttf_g27,"bttfb5g.2-7",CRC(5e3e3cfa) SHA1(2d489c48463c7d28614d56aa566ffbc745bf6a8b),
                    "bttfc5g.2-7",CRC(31dec6d0) SHA1(b0f9323ace3f6d96790be7fe2df67b974c291a29))
@@ -253,7 +262,7 @@ DE1S_SOUNDROM244(  "bttfsf7.rom",CRC(7673146e) SHA1(d6bd7cf39c78c8aff0b1a0b6cfd4
                    "bttfsf6.rom",CRC(468a8d9c) SHA1(713cf84cc5f0531e2e9f7aaa58ebeb53c28ba395),      //6f
                    "bttfsf5.rom",CRC(37a6f6b8) SHA1(ebd603d36527a2af25dcda1fde5cdf9a34d1f9cd))      //4f
 DE_ROMEND
-CORE_CLONEDEF(bttf,g27,a21,"Back To the Future (2.7, Germany)",199?,"Data East",de_mDEAS1,0)
+CORE_CLONEDEF(bttf,g27,a27,"Back To the Future (2.7, Germany)",199?,"Data East",de_mDEAS1,0)
 
 /*------------------------------------------------------------------------
 / The Simpsons - CPU Rev 3 /Alpha Type 3 16/32K Roms - 32/128K Sound Roms
@@ -351,6 +360,14 @@ DE_ROMEND
 #define input_ports_trek input_ports_des11
 CORE_GAMEDEF(trek,201,"Star Trek 25th Anniversary (2.01)",1992,"Data East",de_mDEDMD16S2A,0)
 
+DE_ROMSTARTx0(trek_200,"trekcpuu.200",CRC(4528e803) SHA1(0ebb16ab8b95f04a19fa4510e58c01493393d48c))
+DE_DMD16ROM2(      "trekdspa.109",CRC(a7e7d44d) SHA1(d26126310b8b316ca161d4202645de8fb6359822))
+DE2S_SOUNDROM022(  "trek.u7"  ,CRC(f137abbb) SHA1(11731170ed4f04dd8af05d8f79ad727b0e0104d7),
+                   "trek.u17" ,CRC(531545da) SHA1(905f34173db0e04eaf5236191186ea209b8a0a34),
+                   "trek.u21" ,CRC(6107b004) SHA1(1f9bed9b06d5b19fbc0cc0bef2e493eb1a3f1aa4))
+DE_ROMEND
+CORE_CLONEDEF(trek,200,201,"Star Trek 25th Anniversary (2.00)",1992,"Data East",de_mDEDMD16S2A,0)
+
 /*-------------------------------------------------------------
 / Hook - CPU Rev 3 /DMD  Type 1 128K Rom - CPU Rom
 /------------------------------------------------------------*/
@@ -398,6 +415,24 @@ DE_ROMEND
 #define input_ports_lw3 input_ports_des11
 CORE_GAMEDEF(lw3,208,"Lethal Weapon 3 (2.08)",1992,"Data East",de_mDEDMD32S2A,0)
 
+DE_ROMSTARTx0(lw3_207,"lw3gc5.207",CRC(27aeaea9) SHA1(f8c40cbc37edac20187ac880be281dd45d8ad614))
+DE_DMD32ROM44(     "lw3drom1.a26",CRC(44a4cf81) SHA1(c7f3e3d5fbe930650e48423c8ba0ac484ce0640c),
+                   "lw3drom0.a26",CRC(22932ed5) SHA1(395aa376cd8562de7956a6e34b8747e7cf81f935))
+DE2S_SOUNDROM022(  "lw3u7.dat"  ,CRC(ba845ac3) SHA1(bb50413ace1885870cb3817edae478904b0eefb8),
+                   "lw3u17.dat" ,CRC(e34cf2fc) SHA1(417c83ded6637f891c8bb42b32d6898c90a0e5cf),
+                   "lw3u21.dat" ,CRC(82bed051) SHA1(49ddc4190762d9b473fda270e0d6d88a4422d5d7))
+DE_ROMEND
+CORE_CLONEDEF(lw3,207,208,"Lethal Weapon 3 (2.07)",1992,"Data East",de_mDEDMD32S2A,0)
+
+DE_ROMSTARTx0(lw3_205,"lw3gc5.205",CRC(5ad8ff4a) SHA1(6a01a2195543c0c57ce4ce78703c91500835a2da))
+DE_DMD32ROM44(     "lw3drom1.a26",CRC(44a4cf81) SHA1(c7f3e3d5fbe930650e48423c8ba0ac484ce0640c),
+                   "lw3drom0.a26",CRC(22932ed5) SHA1(395aa376cd8562de7956a6e34b8747e7cf81f935))
+DE2S_SOUNDROM022(  "lw3u7.dat"  ,CRC(ba845ac3) SHA1(bb50413ace1885870cb3817edae478904b0eefb8),
+                   "lw3u17.dat" ,CRC(e34cf2fc) SHA1(417c83ded6637f891c8bb42b32d6898c90a0e5cf),
+                   "lw3u21.dat" ,CRC(82bed051) SHA1(49ddc4190762d9b473fda270e0d6d88a4422d5d7))
+DE_ROMEND
+CORE_CLONEDEF(lw3,205,208,"Lethal Weapon 3 (2.05)",1992,"Data East",de_mDEDMD32S2A,0)
+
 /*-------------------------------------------------------------
 / Star Wars - CPU Rev 3 /DMD  Type 2 512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
@@ -419,18 +454,35 @@ DE2S_SOUNDROM042(     "s-wars.u7"  ,CRC(cefa19d5) SHA1(7ddf9cc85ab601514305bc460
 DE_ROMEND
 CORE_CLONEDEF(stwr,g11,103,"Star Wars (1.01, Germany)",1992,"Data East",de_mDEDMD32S2A,0)
 
+DE_ROMSTARTx0(stwr_a14,"starcpua.103",CRC(318085ca) SHA1(7c35bdee52e8093fe05f0624615baabe559a1917))
+DE_DMD32ROM44(     "swrom1.a14",CRC(4d577828) SHA1(8b1f302621fe2ee13a067b9c97e3dc33f4519cea),
+                   "swrom0.a14",CRC(104e5a6b) SHA1(b6a9e32f8aec078665faf2ba9ba4f9f51f68cea8))
+DE2S_SOUNDROM042(     "s-wars.u7"  ,CRC(cefa19d5) SHA1(7ddf9cc85ab601514305bc46083a07a3d087b286),
+                      "s-wars.u17" ,CRC(7950a147) SHA1(f5bcd5cf6b35f9e4f14d62b084495c3a743d92a1),
+                      "s-wars.u21" ,CRC(7b08fdf1) SHA1(489d21a10e97e886f948d81dedd7f8de3acecd2b))
+DE_ROMEND
+CORE_CLONEDEF(stwr,a14,103,"Star Wars (Display Rev.1.04)",1992,"Data East",de_mDEDMD32S2A,0)
+
 /*-------------------------------------------------------------
 / Rocky & Bullwinkle - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
 INITGAMES11(rab,GEN_DEDMD32, de_128x32DMD, FLIP1516, SNDBRD_DE2S, SNDBRD_DEDMD32, S11_PRINTERLINE)
+DE_ROMSTARTx0(rab_320,"rabcpua.320",CRC(21a2d518) SHA1(42123dca519034ecb740e5cb493b1b0b6b44e3be))
+DE_DMD32ROM8x(     "rbdspa.300",CRC(a5dc2f72) SHA1(60bbb4914ff56ad48c86c3550e094a3d9d70c700))
+DE2S_SOUNDROM142(  "rab.u7"  ,CRC(b232e630) SHA1(880fffc395d7c24bdea4e7e8000afba7ea71c094),
+                   "rab.u17" ,CRC(7f2b53b8) SHA1(fd4f4ed1ed343069ffc534fe4b20026fe7403220),
+                   "rab.u21" ,CRC(3de1b375) SHA1(a48bb80483ca03cd7c3bf0b5f2930a6ee9cc448d))
+DE_ROMEND
+#define input_ports_rab input_ports_des11
+CORE_GAMEDEF(rab,320,"Rocky & Bullwinkle (3.20)",1983,"Data East",de_mDEDMD32S2A,0)
+
 DE_ROMSTARTx0(rab_130,"rabcpua.130",CRC(f59b1a53) SHA1(046cd0eaee6e646286f3dfa73eeacfd93c2be273))
 DE_DMD32ROM8x(     "rbdspa.130",CRC(b6e2176e) SHA1(9ccbb30dc0f386fcf5e5255c9f80c720e601565f))
 DE2S_SOUNDROM142(  "rab.u7"  ,CRC(b232e630) SHA1(880fffc395d7c24bdea4e7e8000afba7ea71c094),
                    "rab.u17" ,CRC(7f2b53b8) SHA1(fd4f4ed1ed343069ffc534fe4b20026fe7403220),
                    "rab.u21" ,CRC(3de1b375) SHA1(a48bb80483ca03cd7c3bf0b5f2930a6ee9cc448d))
 DE_ROMEND
-#define input_ports_rab input_ports_des11
-CORE_GAMEDEF(rab,130,"Rocky & Bullwinkle (1.30)",1993,"Data East",de_mDEDMD32S2A,0)
+CORE_CLONEDEF(rab,130,320,"Rocky & Bullwinkle (1.30)",1993,"Data East",de_mDEDMD32S2A,0)
 
 /*-------------------------------------------------------------
 / Jurassic Park - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
@@ -502,6 +554,14 @@ DE2S_SOUNDROM144(   "sndu7.dat"    ,CRC(7963740e) SHA1(fc1f150dcbab8af865a8ea624
 DE_ROMEND
 #define input_ports_tftc input_ports_des11
 CORE_GAMEDEF(tftc,303,"Tales From the Crypt (3.03)",1993,"Data East",de_mDEDMD32S2A,0)
+
+DE_ROMSTARTx0(tftc_200,"tftcgc5.a20",CRC(94b61f83) SHA1(9f36353a06cacb8ad67f70cd8d9d8ac698905ba3))
+DE_DMD32ROM8x(      "tftcdot.a20",CRC(16b3968a) SHA1(6ce91774fc60187e4b0d8874a14ef64e2805eb3f))
+DE2S_SOUNDROM144(   "sndu7.dat"    ,CRC(7963740e) SHA1(fc1f150dcbab8af865a8ea624dfdcc03301f05e6),
+                    "sndu17.dat" ,CRC(5c5d009a) SHA1(57d0307ea682eca5a57957e4f61fd92bb7f40e17),
+                    "sndu21.dat" ,CRC(a0ae61f7) SHA1(c7b5766fda64642f77bdc03b2025cd84f29f4495))
+DE_ROMEND
+CORE_CLONEDEF(tftc,200,303,"Tales From the Crypt (2.00)",1993,"Data East",de_mDEDMD32S2A,0)
 
 /*-------------------------------------------------------------
 / Tommy - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
@@ -607,16 +667,25 @@ CORE_GAMEDEF(gnr,300,"Guns N Roses (3.00)",1994,"Data East",de_mDEDMD32S2A,0)
 /*-------------------------------------------------------------
 / Maverick - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
-INITGAMES11(maverick, GEN_DEDMD64, de_192x64DMD, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD64,S11_PRINTERLINE)
-DE_ROMSTARTx0(maverick, "mavcpua.404",CRC(9f06bd8d) SHA1(3b931af5455ed9c40f2b6c884427a326bba8f75a))
+INITGAMES11(mav, GEN_DEDMD64, de_192x64DMD, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD64,S11_PRINTERLINE)
+DE_ROMSTARTx0(mav_402, "mavcpua.404",CRC(9f06bd8d) SHA1(3b931af5455ed9c40f2b6c884427a326bba8f75a))
+DE_DMD64ROM88(   "mavdisp0.402",CRC(4e643525) SHA1(30b91c91c2f1295cdd018023c5ac783570a0aeea),
+                 "mavdisp3.402",CRC(8c5f9460) SHA1(6369b4c98ec6fd5e769275b44631b2b6dd5c411b))
+DE2S_SOUNDROM144("mavu7.dat"  , CRC(427e6ab9) SHA1(6ad9295097f3d498383c91adf4ca667f797f29b1),
+                 "mavu17.dat" , CRC(cba377b8) SHA1(b7551b6cb64357cdacf1a96cedfccbabf4bd070a),
+                 "mavu21.dat" , CRC(be0c6a6f) SHA1(4fee912d9f0d4b196dbfacf06a4202b2fa3037b1))
+DE_ROMEND
+#define input_ports_mav input_ports_des11
+CORE_GAMEDEF(mav,402,"Maverick (Display Rev. 4.02)",1994,"Sega",de_mDEDMD64S2A,0)
+
+DE_ROMSTARTx0(mav_401, "mavcpua.404",CRC(9f06bd8d) SHA1(3b931af5455ed9c40f2b6c884427a326bba8f75a))
 DE_DMD64ROM88(   "mavdsar0.401",CRC(35b811af) SHA1(1e235a0f16ef0eecca5b6ec7a2234ed1dc4e4440),
                  "mavdsar3.401",CRC(c4c126ae) SHA1(b4841e83ec075bddc919217b65afaac97709e69b))
 DE2S_SOUNDROM144("mavu7.dat"  , CRC(427e6ab9) SHA1(6ad9295097f3d498383c91adf4ca667f797f29b1),
                  "mavu17.dat" , CRC(cba377b8) SHA1(b7551b6cb64357cdacf1a96cedfccbabf4bd070a),
                  "mavu21.dat" , CRC(be0c6a6f) SHA1(4fee912d9f0d4b196dbfacf06a4202b2fa3037b1))
 DE_ROMEND
-#define input_ports_maverick input_ports_des11
-CORE_GAMEDEFNV(maverick,"Maverick",1994,"Sega",de_mDEDMD64S2A,0)
+CORE_CLONEDEF(mav,401,402,"Maverick (Display Rev. 4.01)",1994,"Sega",de_mDEDMD64S2A,0)
 
 /*-------------------------------------------------------------
 / Frankenstein - CPU Rev 3b /DMD  Type 3 2x512K Rom - 64K CPU Rom

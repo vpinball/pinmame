@@ -97,6 +97,51 @@ SE_ROMEND
 CORE_GAMEDEFNV(spacejam,"Space Jam",1997,"Sega",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
+/ Space Jam (Germany)
+/-------------------------------------------------------------------*/
+INITGAME(spacejmg,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(spacejmg,"jamcpu.300",CRC(9dc8df2e) SHA1(b3b111afb5b1f1236be73e899b34a5d5a73813e9))
+DE_DMD32ROM8x(  "jamdspg.300",CRC(41f6e188) SHA1(da2247022aadb0ead5a3b1d7b829c13ff1153ec8))
+DE2S_SOUNDROM1444("spcjam.u7" ,CRC(c693d853) SHA1(3e81e60967dff496c681962f3ff8c7c1fbb7746a),
+                  "spcjam.u17",CRC(ccefe457) SHA1(4186dee689fbfc08e5070ccfe8d4be95220cd87b),
+                  "spcjam.u21",CRC(9e7fe0a6) SHA1(187e5893f84d0c0fd70d15c3978fc3fc51e12a51),
+                  "spcjam.u36",CRC(7d11e1eb) SHA1(96d4635b1edf8a22947a5cd529ce9025cf7d0c71))
+SE_ROMEND
+#define input_ports_spacejmg input_ports_se
+#define init_spacejmg init_spacejam
+CORE_CLONEDEFNV(spacejmg,spacejam,"Space Jam (Germany)",1997,"Sega",de_mSES1,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Space Jam (France)
+/-------------------------------------------------------------------*/
+INITGAME(spacejmf,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(spacejmf,"jamcpu.300",CRC(9dc8df2e) SHA1(b3b111afb5b1f1236be73e899b34a5d5a73813e9))
+DE_DMD32ROM8x(  "jamdspf.300",CRC(1683909f) SHA1(e14810a5d8704ea052fddcb3b54043bf9d57b296))
+DE2S_SOUNDROM1444("spcjam.u7" ,CRC(c693d853) SHA1(3e81e60967dff496c681962f3ff8c7c1fbb7746a),
+                  "spcjam.u17",CRC(ccefe457) SHA1(4186dee689fbfc08e5070ccfe8d4be95220cd87b),
+                  "spcjam.u21",CRC(9e7fe0a6) SHA1(187e5893f84d0c0fd70d15c3978fc3fc51e12a51),
+                  "spcjam.u36",CRC(7d11e1eb) SHA1(96d4635b1edf8a22947a5cd529ce9025cf7d0c71))
+SE_ROMEND
+#define input_ports_spacejmf input_ports_se
+#define init_spacejmf init_spacejam
+CORE_CLONEDEFNV(spacejmf,spacejam,"Space Jam (France)",1997,"Sega",de_mSES1,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Space Jam (Italy)
+/-------------------------------------------------------------------*/
+INITGAME(spacejmi,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(spacejmi,"jamcpu.300",CRC(9dc8df2e) SHA1(b3b111afb5b1f1236be73e899b34a5d5a73813e9))
+DE_DMD32ROM8x(  "jamdspi.300",CRC(eb9b5971) SHA1(0bfac0511d0cd9d56eee59782c199ee0a78abe5e))
+DE2S_SOUNDROM1444("spcjam.u7" ,CRC(c693d853) SHA1(3e81e60967dff496c681962f3ff8c7c1fbb7746a),
+                  "spcjam.u17",CRC(ccefe457) SHA1(4186dee689fbfc08e5070ccfe8d4be95220cd87b),
+                  "spcjam.u21",CRC(9e7fe0a6) SHA1(187e5893f84d0c0fd70d15c3978fc3fc51e12a51),
+                  "spcjam.u36",CRC(7d11e1eb) SHA1(96d4635b1edf8a22947a5cd529ce9025cf7d0c71))
+SE_ROMEND
+#define input_ports_spacejmi input_ports_se
+#define init_spacejmi init_spacejam
+CORE_CLONEDEFNV(spacejmi,spacejam,"Space Jam (Italy)",1997,"Sega",de_mSES1,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
 / Star Wars Trilogy
 /-------------------------------------------------------------------*/
 INITGAME(swtril,GEN_WS,se_dmd128x32,0)
