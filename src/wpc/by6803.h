@@ -76,9 +76,6 @@
 
 #define BY6803_COMINPORT       CORE_COREINPORT
 
-/*-- BY6803 switches are numbered from 1-64 (not column,row as WPC) --*/
-#define BY6803_SWNO(x) (x)
-
 /*-- By6803 switch numbers --*/
 #define BY6803_SWSELFTEST   -7
 #define BY6803_SWSOUNDDIAG  -6
