@@ -73,7 +73,7 @@ GTS3ROMSTART(ccruise,	"gprom.bin",0x668b5757)
 GTS3SOUND3232(			"yrom1.bin",0x6e424e53,
 						"drom1.bin",0x4480257e)
 GTS3_ROMEND
-CORE_GAMEDEFNV(ccruise,"Caribbean Cruise",1989,"International Concepts",mGTS3S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(ccruise,"Caribbean Cruise",1989,"International Concepts",mGTS3S,0)
 
 // Night Moves 11/89
 
@@ -86,7 +86,7 @@ GTS3ROMSTART32(lca,	"gprom.bin",0x52957d70)
 GTS3SOUND3232(		"yrom1.bin",0x20919ebb,
 					"drom1.bin",0xa258d72d)
 GTS3_ROMEND
-CORE_GAMEDEFNV(lca,"Lights, Camera, Action",1989,"Gottlieb",mGTS3S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(lca,"Lights, Camera, Action",1989,"Gottlieb",mGTS3S,0)
 //62c0beda Rev 1?
 //937a8426 Rev 2?
 
@@ -106,7 +106,7 @@ GTS3ROMSTART(silvslug,	"gprom.bin",0xa6c524e2)
 GTS3SOUND3232(			"yrom1.bin",0x20bc9797,
 						"drom1.bin",0xeac3e1cc)
 GTS3_ROMEND
-CORE_GAMEDEFNV(silvslug,"Silver Slugger",1990,"Gottlieb",mGTS3S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(silvslug,"Silver Slugger",1990,"Gottlieb",mGTS3S,0)
 
 /*-------------------------------------------------------------------
 / Vegas (#723)
@@ -116,7 +116,7 @@ GTS3ROMSTART(vegas,	"gprom.bin",0x48189981)
 GTS3SOUND3232(		"yrom1.bin",0xaf1095f1,
 					"drom1.bin",0x46eb5755)
 GTS3_ROMEND
-CORE_GAMEDEFNV(vegas,"Vegas",1990,"Gottlieb",mGTS3S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(vegas,"Vegas",1990,"Gottlieb",mGTS3S,0)
 
 /*-------------------------------------------------------------------
 / Deadly Weapon (#724)
@@ -126,7 +126,7 @@ GTS3ROMSTART(deadweap,	"gprom.bin",0x07d84b32)
 GTS3SOUND3232(			"yrom1.bin",0x93369ed3,
 						"drom1.bin",0xf55dd7ec)
 GTS3_ROMEND
-CORE_GAMEDEFNV(deadweap,"Deadly Weapon",1990,"Gottlieb",mGTS3S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(deadweap,"Deadly Weapon",1990,"Gottlieb",mGTS3S,0)
 
 /*-------------------------------------------------------------------
 / Title Fight (#726)
@@ -136,7 +136,7 @@ GTS3ROMSTART(tfight,	"gprom.bin",0x43b3193a)
 GTS3SOUND3232(			"yrom1.bin",0x8591d421,
 						"drom1.bin",0x9514739f)
 GTS3_ROMEND
-CORE_GAMEDEFNV(tfight,"Title Fight",1990,"Gottlieb",mGTS3S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(tfight,"Title Fight",1990,"Gottlieb",mGTS3S,0)
 
 /*-------------------------------------------------------------------
 / Nudge It
@@ -154,7 +154,7 @@ GTS3ROMSTART(carhop,	"gprom.bin",0x164b2c9c)
 GTS3SOUND3232(			"yrom1.bin",0x831ee812,
 						"drom1.bin",0x9dec74e7)
 GTS3_ROMEND
-CORE_GAMEDEFNV(carhop,"Car Hop",1991,"Gottlieb",mGTS3S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(carhop,"Car Hop",1991,"Gottlieb",mGTS3S,0)
 
 /*-------------------------------------------------------------------
 / Hoops
@@ -174,7 +174,7 @@ GTS3SOUND32128(			"yrom1.bin",0x4554ed0d,
 						"arom1.bin",0xc890475f,
 						"arom2.bin",0xaba8fd98)
 GTS3_ROMEND
-CORE_GAMEDEFNV(cactjack,"Cactus Jack",1991,"Gottlieb",mGTS3S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(cactjack,"Cactus Jack",1991,"Gottlieb",mGTS3S,0)
 
 /*-------------------------------------------------------------------
 / Class of 1812 (#730)
@@ -186,7 +186,7 @@ GTS3SOUND32128(			"yrom1.bin",0x4ecf6ecb,
  						"arom1.bin",0x357b0069,
 						"arom2.bin",0x5be02ff7)
 GTS3_ROMEND
-CORE_GAMEDEFNV(clas1812,"Class of 1812",1991,"Gottlieb",mGTS3S,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(clas1812,"Class of 1812",1991,"Gottlieb",mGTS3S,0)
 
 /************************************************/
 /*Start of 2nd generation Alpha Numeric Hardware*/
@@ -202,7 +202,7 @@ GTS3SOUND32256A(		"yrom1.bin",0xa0480418,
 						"arom1.bin",0x38b569b2,
 						"arom2.bin",0x224c2021)
 GTS3_ROMEND
-CORE_GAMEDEFNV(surfnsaf,"Surf'n Safari",1991,"Gottlieb",mGTS3BS,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(surfnsaf,"Surf'n Safari",1991,"Gottlieb",mGTS3BS,0)
 
 /*-------------------------------------------------------------------
 / Operation Thunder (#732)
@@ -214,7 +214,7 @@ GTS3SOUND32256A(		"yrom1.bin",0x169816d1,
 						"arom1.bin",0x0fbb130a,
 						"arom2.bin",0x0f7632b3)
 GTS3_ROMEND
-CORE_GAMEDEFNV(opthund,"Operation Thunder",1992,"Gottlieb",mGTS3BS,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(opthund,"Operation Thunder",1992,"Gottlieb",mGTS3BS,0)
 
 /*************************
  ***Start of DMD 128x32***
@@ -231,7 +231,7 @@ GTS3SOUND32256(			"yrom1.bin",0xe1379106,
 						"arom1.bin",0xe9cef116,
 						"arom2.bin",0x0acdfd49)
 GTS3_ROMEND
-CORE_GAMEDEFNV(smb,"Super Mario Brothers",1992,"Gottlieb",mGTS3DMDSA, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(smb,"Super Mario Brothers",1992,"Gottlieb",mGTS3DMDSA, 0)
 
 /*-------------------------------------------------------------------
 / Super Mario Brothers Mushroom World
@@ -244,7 +244,7 @@ GTS3SOUND32256(			"yrom1.bin",0x09712c37,
 						"arom1.bin",0xedce7951,
 						"arom2.bin",0xdd7ea212)
 GTS3_ROMEND
-CORE_GAMEDEFNV(smbmush,"Super Mario Brothers Mushroom World",1992,"Gottlieb",mGTS3DMDS,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(smbmush,"Super Mario Brothers Mushroom World",1992,"Gottlieb",mGTS3DMDS,0)
 
 /*-------------------------------------------------------------------
 / Cue Ball Wizard
@@ -257,7 +257,7 @@ GTS3SOUND32256(			"yrom1.bin",0xc22f5cc5,
 						"arom1.bin",0x476bb11c,
 						"arom2.bin",0x23708ad9)
 GTS3_ROMEND
-CORE_GAMEDEFNV(cueball,"Cue Ball Wizard",1992,"Gottlieb",mGTS3DMDSA, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(cueball,"Cue Ball Wizard",1992,"Gottlieb",mGTS3DMDSA, 0)
 
 /************************************************/
 /* ALL GAMES BELOW HAD IMPROVED DIAGNOSTIC TEST */
@@ -274,7 +274,7 @@ GTS3SOUND32256(			"yrom1.bin",0x9009f461,
 						"arom1.bin",0x8518ff55,
 						"arom2.bin",0x85a304d9)
 GTS3_ROMEND
-CORE_GAMEDEFNV(sfight2,"Street Fighter 2",1993,"Gottlieb",mGTS3DMDS, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(sfight2,"Street Fighter 2",1993,"Gottlieb",mGTS3DMDS, 0)
 
 INITGAME2(sfight2a, DMD, FLIP8283, 4, SNDBRD_GTS3, 5)
 GTS3ROMSTART(sfight2a,  "gprom2.bin",0x26d24c06)
@@ -284,7 +284,7 @@ GTS3SOUND32256(			"yrom1.bin",0x9009f461,
 						"arom1.bin",0x8518ff55,
 						"arom2.bin",0x85a304d9)
 GTS3_ROMEND
-CORE_CLONEDEFNV(sfight2a,sfight2,"Street Fighter 2 (V.2)",1993,"Gottlieb",mGTS3DMDS, GAME_IMPERFECT_SOUND)
+CORE_CLONEDEFNV(sfight2a,sfight2,"Street Fighter 2 (V.2)",1993,"Gottlieb",mGTS3DMDS, 0)
 
 /*-------------------------------------------------------------------
 / Teed Off
@@ -297,7 +297,7 @@ GTS3SOUND32256(			"yrom1.bin",0xc51d98d8,
 						"arom1.bin",0x9e442b71,
 						"arom2.bin",0x3dad9508)
 GTS3_ROMEND
-CORE_GAMEDEFNV(teedoff,"Teed Off",1993,"Gottlieb",mGTS3DMDSA, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(teedoff,"Teed Off",1993,"Gottlieb",mGTS3DMDSA, 0)
 
 /*-------------------------------------------------------------------
 / Wipeout
@@ -310,7 +310,7 @@ GTS3SOUND32256(			"yrom1.bin",0xf08e6d7f,
 						"arom1.bin",0xcccdf23a,
 						"arom2.bin",0xd4cc44a1)
 GTS3_ROMEND
-CORE_GAMEDEFNV(wipeout,"Wipeout",1993,"Gottlieb",mGTS3DMDSA, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(wipeout,"Wipeout",1993,"Gottlieb",mGTS3DMDSA, 0)
 
 /*-------------------------------------------------------------------
 / Gladiators
@@ -323,7 +323,7 @@ GTS3SOUND32256(			"yrom1.bin",0xc5b72153,
 						"arom1.bin",0x85cbdda7,
 						"arom2.bin",0xda2c1073)
 GTS3_ROMEND
-CORE_GAMEDEFNV(gladiatr,"Gladiators",1993,"Gottlieb",mGTS3DMDSA, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(gladiatr,"Gladiators",1993,"Gottlieb",mGTS3DMDSA, 0)
 
 /*-------------------------------------------------------------------
 / World Challenge Soccer
@@ -336,7 +336,7 @@ GTS3SOUND32256(			"yrom1.bin",0x8b2795b0,
 						"arom1.bin",0xece4eebf,
 						"arom2.bin",0x4e466500)
 GTS3_ROMEND
-CORE_GAMEDEFNV(wcsoccer,"World Challenge Soccer",1994,"Gottlieb",mGTS3DMDS, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(wcsoccer,"World Challenge Soccer",1994,"Gottlieb",mGTS3DMDS, 0)
 
 /*-------------------------------------------------------------------
 / Rescue 911
@@ -349,7 +349,7 @@ GTS3SOUND32512256(		"yrom1.bin",0x14f86b56,
 						"arom1.bin",0xf6daa16c,
 						"arom2.bin",0x59374104)
 GTS3_ROMEND
-CORE_GAMEDEFNV(rescu911,"Rescue 911",1994,"Gottlieb",mGTS3DMDS, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(rescu911,"Rescue 911",1994,"Gottlieb",mGTS3DMDS, 0)
 
 /*-------------------------------------------------------------------
 / Freddy: A Nightmare on Elm Street
@@ -362,7 +362,7 @@ GTS3SOUND32512256(		"yrom1.bin",0x4a748665,
 						"arom1.bin",0x6bec0567,
 						"arom2.bin",0xf0e9284d)
 GTS3_ROMEND
-CORE_GAMEDEFNV(freddy,"Freddy: A Nightmare on Elm Street",1994,"Gottlieb",mGTS3DMDSA, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(freddy,"Freddy: A Nightmare on Elm Street",1994,"Gottlieb",mGTS3DMDSA, 0)
 
 /*-------------------------------------------------------------------
 / Shaq Attaq
@@ -375,7 +375,7 @@ GTS3SOUND32512256(		"yrom1.bin",0xe81e2928,
 						"arom1.bin",0x019014ec,
 						"arom2.bin",0xcc5f157d)
 GTS3_ROMEND
-CORE_GAMEDEFNV(shaqattq,"Shaq Attaq",1995,"Gottlieb",mGTS3DMDS, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(shaqattq,"Shaq Attaq",1995,"Gottlieb",mGTS3DMDS, 0)
 
 /************************************************************/
 /* ALL GAMES BELOW HAD IMPROVED DIAGNOSTIC TEST & UTILITIES */
@@ -391,7 +391,7 @@ GTS3SOUND32512A(		"yrom1.bin",0x53123fd4,
 						"drom1.bin",0x781b2b27,
 						"arom1.bin",0xa0f62605)
 GTS3_ROMEND
-CORE_GAMEDEFNV(stargate,"Stargate",1995,"Gottlieb",mGTS3DMDS, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(stargate,"Stargate",1995,"Gottlieb",mGTS3DMDS, 0)
 
 INITGAME2(stargat2, DMD, FLIP8182, 4, SNDBRD_GTS3, 5)
 GTS3ROMSTART(stargat2,	"gprom2.bin",0x862920f8)
@@ -400,7 +400,7 @@ GTS3SOUND32512A(		"yrom1.bin",0x53123fd4,
 						"drom1.bin",0x781b2b27,
 						"arom1.bin",0xa0f62605)
 GTS3_ROMEND
-CORE_CLONEDEFNV(stargat2,stargate,"Stargate (V.2)",1995,"Gottlieb",mGTS3DMDS, GAME_IMPERFECT_SOUND)
+CORE_CLONEDEFNV(stargat2,stargate,"Stargate (V.2)",1995,"Gottlieb",mGTS3DMDS, 0)
 
 /*-------------------------------------------------------------------
 / Big Hurt
@@ -413,7 +413,7 @@ GTS3SOUND32512256(		"yrom1.bin",0xc58941ed,
 						"arom1.bin",0xb3def376,
 						"arom2.bin",0x59789e66)
 GTS3_ROMEND
-CORE_GAMEDEFNV(bighurt,"Big Hurt",1995,"Gottlieb",mGTS3DMDS, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(bighurt,"Big Hurt",1995,"Gottlieb",mGTS3DMDS, 0)
 
 /*-------------------------------------------------------------------
 / Strikes n' Spares (#N111)
@@ -425,7 +425,7 @@ GTS3SOUND32512A(		"yrom1.bin",0x0,
 						"drom1.bin",0x0,
 						"arom1.bin",0xe248574a)
 GTS3_ROMEND
-CORE_GAMEDEFNV(snspares,"Strikes n' Spares",1995,"Gottlieb",mGTS3DMDSA, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(snspares,"Strikes n' Spares",1995,"Gottlieb",mGTS3DMDSA, 0)
 
 /*-------------------------------------------------------------------
 / Waterworld
@@ -438,7 +438,7 @@ GTS3SOUND32512(			"yrom1.bin",0x6dddce0a,
 						"arom1.bin",0x3ee37668,
 						"arom2.bin",0xa631bf12)
 GTS3_ROMEND
-CORE_GAMEDEFNV(waterwld,"Waterworld",1995,"Gottlieb",mGTS3DMDS, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(waterwld,"Waterworld",1995,"Gottlieb",mGTS3DMDS, 0)
 
 /*-------------------------------------------------------------------
 / Mario Andretti
@@ -451,7 +451,7 @@ GTS3SOUND32512256(		"yrom1.bin",0x4ffb15b0,
 						"arom1.bin",0x918c3270,
 						"arom2.bin",0x3c61a2f7)
 GTS3_ROMEND
-CORE_GAMEDEFNV(andretti,"Mario Andretti",1995,"Gottlieb",mGTS3DMDS, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(andretti,"Mario Andretti",1995,"Gottlieb",mGTS3DMDS, 0)
 
 /*-------------------------------------------------------------------
 / Barb Wire
@@ -464,7 +464,7 @@ GTS3SOUND32512256(		"yrom1.bin",0x7c602a35,
 						"arom1.bin",0x7171bc86,
 						"arom2.bin",0xce83c6c3)
 GTS3_ROMEND
-CORE_GAMEDEFNV(barbwire,"Barb Wire",1996,"Gottlieb",mGTS3DMDSA, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(barbwire,"Barb Wire",1996,"Gottlieb",mGTS3DMDSA, 0)
 
 /*-------------------------------------------------------------------
 / Brooks & Dunn (#749)
