@@ -150,7 +150,7 @@ static WRITE_HANDLER(port_w)
 			LOG(("writing to port %x data = %x\n",offset,data));
 			break;
 		/*PORT 3:
-			P3.0 = PLANSENABLE (Plane Enable)
+			P3.0 = PLANENABLE (Plane Enable)
 			P3.1 = LED
 			P3.2 = INT0 (Not used as output)
 			P3.3 = INT1 (Not used as output)
@@ -159,6 +159,7 @@ static WRITE_HANDLER(port_w)
 			P3.6 = /WR  (Used Internally only?)
 			P3.7 = /RD  (Used Internally only?) */
 		case 3:
+			dmdlocals.planenable = data & 1;
 			alvg_UpdateSoundLEDS(1,(data&2)>>1);
 			break;
 		default:
@@ -272,7 +273,7 @@ PINMAME_VIDEO_UPDATE(alvgdmd_update) {
 #endif
 
   RAM = RAM+offset+vid_page;
-  RAM2 = RAM + 0x200;
+  RAM2 = RAM + (dmdlocals.planenable*0x200);
 
   for (ii = 1; ii <= 32; ii++) {
     UINT8 *line = &dotCol[ii][0];
