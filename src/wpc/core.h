@@ -397,6 +397,8 @@ typedef struct {
   struct {
     UINT32  flippers;      /* flippers installed (see defines below) */
     int     swCol, lampCol, custSol; /* Custom switch columns, lamp columns and solenoids */
+    UINT32  soundBoard, display;
+    UINT32  gameSpecific1, gameSpecific2;
     /*-- custom functions --*/
     int  (*getSol)(int solNo);        /* get state of custom solenoid */
     void (*handleMech)(int mech);     /* update switches depending on playfield mechanics */
