@@ -436,6 +436,14 @@ WPC_ROMSTART(tafg,h3,"cpu-u6h3.rom",0x80000,CRC(2fe97098) SHA1(59767fce189385af1
 WPCS_SOUNDROM84x("ag_u18_s.l1",CRC(02e824a9) SHA1(ed8aa5161ea6c12cc9e646939290d848408a59a3),
                  "ag_u15_s.l1",CRC(b8c88c75) SHA1(b2b88e5192eb817ae60ab1f306e932d8bae3fbba))
 WPC_ROMEND
+WPC_ROMSTART(tafg,la2,"u6-la2.rom",0x80000,CRC(a9a42bff) SHA1(40bb8e2767219582e7e532d2154213748808c62b))
+WPCS_SOUNDROM84x("ag_u18_s.l1",CRC(02e824a9) SHA1(ed8aa5161ea6c12cc9e646939290d848408a59a3),
+                 "ag_u15_s.l1",CRC(b8c88c75) SHA1(b2b88e5192eb817ae60ab1f306e932d8bae3fbba))
+WPC_ROMEND
+WPC_ROMSTART(tafg,la3,"u6-la3.rom",0x80000,CRC(dbe4d791) SHA1(6906e9c2158e86ab05b6783567b42a245239fed9))
+WPCS_SOUNDROM84x("ag_u18_s.l1",CRC(02e824a9) SHA1(ed8aa5161ea6c12cc9e646939290d848408a59a3),
+                 "ag_u15_s.l1",CRC(b8c88c75) SHA1(b2b88e5192eb817ae60ab1f306e932d8bae3fbba))
+WPC_ROMEND
 /*--------------
 /  Game drivers
 /---------------*/
@@ -454,6 +462,8 @@ CORE_CLONEDEF(taf,l6,l5,    "The Addams Family (L-6)",1992,"Bally",wpc_mFliptron
 CORE_CLONEDEF(taf,h4,l5,    "The Addams Family (H-4)",1992,"Bally",wpc_mFliptronS,0)
 CORE_GAMEDEF(tafg,lx3,     "The Addams Family Special Collectors Edition Gold (LX-3)", 1994,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tafg,h3,lx3,"The Addams Family Special Collectors Edition (H-3)",1994,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tafg,la2,lx3,"The Addams Family Special Collectors Edition (LA-2)",1994,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tafg,la3,lx3,"The Addams Family Special Collectors Edition (LA-3)",1994,"Bally",wpc_mFliptronS,0)
 
 /*----------
 / Game Data
