@@ -31,6 +31,7 @@ static struct {
   int    vblankCount;
   int    diagnosticLed;
   int    soldisable;
+  UINT8  testSwBits;
   UINT32 solenoids;
   core_tSeg segments, pseg;
 } locals;
@@ -73,7 +74,10 @@ static INTERRUPT_GEN(ATARI1_vblank) {
 
   /*-- solenoids --*/
   coreGlobals.solenoids = locals.solenoids;
-  locals.solenoids = coreGlobals.pulsedSolState;
+  if ((locals.vblankCount % ATARI_SOLSMOOTH) == 0) {
+    locals.solenoids = coreGlobals.pulsedSolState;
+  }
+
 
   /*-- display --*/
   if ((locals.vblankCount % ATARI_DISPLAYSMOOTH) == 0) {
@@ -81,7 +85,7 @@ static INTERRUPT_GEN(ATARI1_vblank) {
   }
 
   //Flippers are activated differently for almost every pinball of this generation...
-  core_updateSw(core_getSol(4) || core_getSol(7) || core_getSol(16) || core_getSol(17));
+  core_updateSw(TRUE);
 }
 
 static INTERRUPT_GEN(ATARI2_vblank) {
@@ -158,11 +162,13 @@ static WRITE_HANDLER(swg1_w) {
 static READ_HANDLER(dipg1_r) {
 	UINT8 sw = (core_getDip(offset/8) & (1 << (offset % 8))) ? 0xff : 0;
 	/* test switch and dip #12 are the same line */
-	if (offset == 11)
-		sw = sw | (coreGlobals.swMatrix[0] ? 0xff : 0x00);
+	if (offset == 11) {
+		sw ^= locals.testSwBits;
+		sw = sw ^ (coreGlobals.swMatrix[0] ? 0xff : 0x00);
+	}
 	if (offset)
 		return sw;
-	return (toggle ? 0xff : 0x00);
+	return (toggle ? sw : ~sw);
 }
 // Gen 2
 static READ_HANDLER(sw_r) {
@@ -230,35 +236,43 @@ static WRITE_HANDLER(disp1_w) {
 /* solenoids */
 // Gen 1
 static UINT8 latch[] = {
-	0, 0, 0, 0, 0, 0, 0, 0
+	0, 0, 0, 0, 0
 };
 
 static WRITE_HANDLER(latch1080_w) {
 	latch[0] = data;
 	if (data & 0xf0) {
 		locals.solenoids |= ((data & 0xf0) << 8);
-		logerror("Write to Latch 1080 = %02x\n", data);
+//		logerror("Write to Latch 1080 = %02x\n", data);
 	}
 }
 static WRITE_HANDLER(latch1084_w) {
 	latch[1] = data;
 	if (data & 0xf0) {
 		locals.solenoids |= ((data & 0xf0) << 4);
-		logerror("Write to Latch 1084 = %02x\n", data);
+//		logerror("Write to Latch 1084 = %02x\n", data);
 	}
 }
 static WRITE_HANDLER(latch1088_w) {
 	latch[2] = data;
 	if (data & 0xf0) {
 		locals.solenoids |= (data & 0xf0);
-		logerror("Write to Latch 1088 = %02x\n", data);
+//		logerror("Write to Latch 1088 = %02x\n", data);
 	}
 }
 static WRITE_HANDLER(latch108c_w) {
 	latch[3] = data;
 	if (data) {
 		locals.solenoids |= ((data & 0xf0) >> 4) | ((data & 0x0f) << 16);
-		logerror("Write to Latch 108c = %02x\n", data);
+//		logerror("Write to Latch 108c = %02x\n", data);
+	}
+}
+/* Additional outputs on Time 2000 */
+static WRITE_HANDLER(latch508c_w) {
+	latch[4] = data;
+	if (data) {
+		locals.solenoids |= (data << 20);
+//		logerror("Write to Latch %x = %02x\n", 0x5080 + offset, data);
 	}
 }
 
@@ -273,16 +287,6 @@ static READ_HANDLER(latch1088_r) {
 }
 static READ_HANDLER(latch108c_r) {
 	return latch[3];
-}
-/* Additional outputs on Time 2000 */
-static WRITE_HANDLER(latch5x_w) {
-	latch[offset/4 + 4] = data;
-	if (data) {
-		if (offset == 12) {
-			locals.solenoids |= (data << 20);
-		}
-		logerror("Write to Latch %x = %02x\n", 0x5080 + offset, data);
-	}
 }
 // Gen 2
 static WRITE_HANDLER(sol0_w) {
@@ -338,29 +342,23 @@ static WRITE_HANDLER(ATARI_CMOS_w) {
   ATARI_CMOS[offset] = data;
 }
 
+static READ_HANDLER(ATARI_CMOS_r) {
+  return ATARI_CMOS[offset];
+}
+
 static NVRAM_HANDLER(ATARI2) {
 	core_nvram(file, read_or_write, ATARI_CMOS, 256, 0x00);
 }
 
 /*-----------------------------------------
 /  Memory map for CPU board (GENERATION 1)
-/------------------------------------------
-0000-00ff  1K RAM (When installed instead of 2K?)
-0300-04ff  2K RAM (When installed instead of 1K?)
-1000-10ff  1K RAM Mirror?
-1300-14ff  2K RAM Mirror?
-2000-????  Switch Read
-3000-????  Audio Enable
-4000-????  WatchDog Reset
-5000-????  Decode 5000 (Testing only?)
-6000-????  Audio Reset
-*/
+/------------------------------------------*/
 static MEMORY_READ_START(ATARI1_readmem)
 {0x0000,0x01ff, ram_r},			/* RAM */
-{0x1080,0x1080,	latch1080_r},	/* solenoids */
-{0x1084,0x1084,	latch1084_r},	/* solenoids */
-{0x1088,0x1088,	latch1088_r},	/* solenoids */
-{0x108c,0x108c,	latch108c_r},	/* solenoids */
+{0x1080,0x1080,	latch1080_r},	/* read latches */
+{0x1084,0x1084,	latch1084_r},	/* read latches */
+{0x1088,0x1088,	latch1088_r},	/* read latches */
+{0x108c,0x108c,	latch108c_r},	/* read latches */
 {0x2000,0x200f,	dipg1_r},		/* dips */
 {0x2010,0x204f,	swg1_r},		/* inputs */
 {0x7000,0x7fff,	MRA_ROM},		/* ROM */
@@ -369,23 +367,17 @@ MEMORY_END
 
 static MEMORY_WRITE_START(ATARI1_writemem)
 {0x0000,0x01ff, ram_w, &ram},	/* RAM */
-{0x1010,0x107f, MWA_NOP},		/* Middle Earth writes here */
 {0x1080,0x1080,	latch1080_w},	/* solenoids */
-{0x1081,0x1083, MWA_NOP},		/* Middle Earth writes here */
 {0x1084,0x1084,	latch1084_w},	/* solenoids */
-{0x1085,0x1087, MWA_NOP},		/* Middle Earth writes here */
 {0x1088,0x1088,	latch1088_w},	/* solenoids */
-{0x1089,0x108b, MWA_NOP},		/* Middle Earth writes here */
 {0x108c,0x108c,	latch108c_w},	/* solenoids */
-{0x108d,0x11ff, MWA_NOP},		/* Middle Earth writes here */
 {0x200b,0x200b,	swg1_w},		/* test switch write? */
 {0x3000,0x3000,	soundg1_w},		/* audio enable */
 {0x4000,0x4000,	watchdog_w},	/* watchdog reset? */
-{0x5080,0x508c,	latch5x_w},		/* additional solenoids, on Time 2000 only */
+{0x508c,0x508c,	latch508c_w},	/* additional solenoids, on Time 2000 only */
 {0x6000,0x6000,	audiog1_w},		/* audio reset */
 {0x7000,0x7fff,	MWA_ROM},		/* ROM */
-{0xf800,0xfffe,	MWA_ROM},		/* reset vector */
-{0xffff,0xffff,	MWA_RAM},		/* reset vector write! Needed for Middle Earth */
+{0xf800,0xffff,	MWA_ROM},		/* reset vector */
 MEMORY_END
 
 /*-----------------------------------------
@@ -394,7 +386,7 @@ MEMORY_END
 static MEMORY_READ_START(ATARI2_readmem)
 {0x0000,0x00ff,	MRA_RAM},	/* RAM */
 {0x0100,0x01ff,	MRA_NOP},	/* unmapped RAM */
-{0x0800,0x08ff,	MRA_RAM},	/* NVRAM */
+{0x0800,0x08ff,	ATARI_CMOS_r},	/* NVRAM */
 {0x0900,0x09ff,	MRA_NOP},	/* unmapped RAM */
 {0x1000,0x1007,	sw_r},		/* inputs */
 {0x2000,0x2003,	dip_r},		/* dip switches */
@@ -429,7 +421,16 @@ static void init_common(void) {
 
 static MACHINE_INIT(ATARI1) {
   init_common();
+}
+
+/* Middle Earth uses an unusual way of polling the test switch.
+   Also some impossible memory access. Bad programming, I think... */
+static MACHINE_INIT(ATARI1A) {
+  init_common();
+  /* as the original(?) roms don't blank out the correct ram area,
+     we'll do it for them; otherwise, the machine may hang upon reset. */
   memset(ram, 0, 512);
+  locals.testSwBits = 0x0f;
 }
 
 static MACHINE_INIT(ATARI2) {
@@ -458,6 +459,11 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(ATARI0)
   MDRV_IMPORT_FROM(ATARI1)
   MDRV_SWITCH_UPDATE(ATARI0)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(ATARI1A)
+  MDRV_IMPORT_FROM(ATARI1)
+  MDRV_CORE_INIT_RESET_STOP(ATARI1A,NULL,ATARI)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(ATARI2)

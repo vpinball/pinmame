@@ -74,7 +74,7 @@ INITGAME1(midearth, atari_disp1, FLIPSW1920, 1)
 ATARI_2_ROMSTART(midearth,	"608.bin",	0x28b92faf,
 							"609.bin",	0x589df745)
 ATARI_ROMEND
-CORE_GAMEDEFNV(midearth,"Middle Earth",1978,"Atari",gl_mATARI1,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(midearth,"Middle Earth",1978,"Atari",gl_mATARI1A,0)
 
 /*-------------------------------------------------------------------
 / Space Riders (09/1978)

@@ -256,12 +256,14 @@
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(ATARI0);
 extern MACHINE_DRIVER_EXTERN(ATARI1);
+extern MACHINE_DRIVER_EXTERN(ATARI1A);
 extern MACHINE_DRIVER_EXTERN(ATARI2);
 extern MACHINE_DRIVER_EXTERN(atari2s);
 extern MACHINE_DRIVER_EXTERN(atari1s);
 
 #define gl_mATARI0		ATARI0
 #define gl_mATARI1		ATARI1
+#define gl_mATARI1A		ATARI1A
 #define gl_mATARI2		ATARI2
 
 #endif /* INC_ATARI */
