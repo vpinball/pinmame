@@ -1,6 +1,7 @@
 #include "driver.h"
 #include "sim.h"
 #include "se.h"
+#include "sesound.h"
 
 /* NO OUTPUT */
 
@@ -140,8 +141,13 @@ CORE_GAMEDEFNV(godzilla,"Godzilla",1994,"Sega",de_mSE,GAME_NOCRC)
 INITGAME(southpk,GEN_WS,3/*?*/)
 SE128_ROMSTART(southpk,"spkcpu.103",0x55ca8aa1)
 SE_DMD524_ROMSTART(    "spdspa.101",0x048ca598d)
+SES_SOUNDROM00000("spku7.101" ,0x3d831d3e,
+                  "spku17.100",0x829262c9,
+                  "spku21.100",0x3a55eef3,
+                  "spku36.100",0xbcf6d2cb,
+                  "spku37.100",0x7d8f6bcb)
 SE_ROMEND
-CORE_GAMEDEFNV(southpk,"South Park",1998,"Sega",de_mSE,GAME_NOCRC)
+CORE_GAMEDEFNV(southpk,"South Park",1998,"Sega",de_mSES,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Harley Davidson
