@@ -230,7 +230,7 @@ MEMORY_WRITE_START(taitospp_writemem)
 MEMORY_END
 
 MACHINE_DRIVER_START(taitos_sintevoxpp)
-  MDRV_CPU_ADD_TAG("scpu", M6802, 500000) // 0.5 MHz ??? */
+  MDRV_CPU_ADD_TAG("scpu", M6802, 1000000) // 0.5 MHz ??? */
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(taitospp_readmem, taitospp_writemem)
   MDRV_INTERLEAVE(50)
