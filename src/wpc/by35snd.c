@@ -9,11 +9,11 @@
 static struct pia6821_interface snt_pia[2];
 static struct pia6821_interface sp_pia;
 
-static void snt_cmd(int data);
+void snt_cmd(int data);
 static void s32_cmd(int data);
 static void sp51_cmd(int data);
 static void sp56_cmd(int data);
-static void sp45_cmd(int data);
+void sp45_cmd(int data);
 
 /*-- note that the sound command includes the soundEnable (0x20) --*/
 WRITE_HANDLER(by35_soundCmd) {
@@ -345,7 +345,7 @@ static void snt_cmd_sync(int data) {
 }
 
 /* Collect two commands after rising edge */
-static void snt_cmd(int data) {
+void snt_cmd(int data) {
   if (data & ~sntlocals.lastcmd & 0x20)
     sntlocals.cmdsync = 0;
   else if ((data & 0x20) && sntlocals.cmdsync < 2) {
@@ -372,7 +372,7 @@ static void snt_5220Irq(int state) {
 }
 
 #if 1
-static void sp45_cmd(int data) {
+void sp45_cmd(int data) {
 	snd_cmd_log(data);
 	splocals.currcmd = data;
 	/*set 6803 P20 line*/
@@ -388,7 +388,7 @@ static void sp45_cmd_sync(int data) {
 }
 
 /* Collect two commands after rising edge */
-static void sp45_cmd(int data) {
+void sp45_cmd(int data) {
   if (data & ~sntlocals.lastcmd & 0x20)
     sntlocals.cmdsync = 0;
   else 
