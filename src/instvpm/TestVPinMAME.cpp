@@ -264,7 +264,7 @@ BOOL PopulateListGreaterV1_10(HWND hWnd, IController *pController)
 		/* get a pointer to the IRoms interface */
 		IRoms* pRoms;
 		if ( SUCCEEDED(pGame->get_Roms(&pRoms)) ) {
-			long fAvailable = -1;
+			VARIANT_BOOL fAvailable = VARIANT_FALSE;
 
 			/* check if the rom set is available */
 			hr = pRoms->get_Available(&fAvailable);
@@ -370,7 +370,7 @@ void CheckRoms(HWND hWnd, IController *pController)
 	pController->put_GameName(sGameName);
 	SysFreeString(sGameName);
 
-	long fResult;
+	VARIANT_BOOL fResult;
 	if ( FAILED(pController->CheckROMS(0, (long) hWnd, &fResult)) )
 		DisplayCOMError(pController, __uuidof(IController));
 
@@ -404,12 +404,11 @@ void GameOptions(HWND hWnd, IController *pController)
 }
 
 void EnableButtons(HWND hWnd, IController *pController) {
-	long fRunning;
+	VARIANT_BOOL fRunning;
 	pController->get_Running(&fRunning);
-	fRunning = fRunning==0?1:0;
 
 	char szState[256];
-	if ( fRunning ) {
+	if ( fRunning==VARIANT_TRUE ) {
 		char szGameName[256];
 		BSTR sGameName;
 		pController->get_GameName(&sGameName);
@@ -422,7 +421,7 @@ void EnableButtons(HWND hWnd, IController *pController) {
 	SendDlgItemMessage(hWnd, IDC_STATE, WM_SETTEXT, 0, (WPARAM) &szState);
 
 	EnableWindow(GetDlgItem(hWnd, IDC_START), SendDlgItemMessage(hWnd, IDC_GAMESLIST, LB_GETCURSEL, 0,0)>=0);
-	EnableWindow(GetDlgItem(hWnd, IDC_STOP), fRunning);
+	EnableWindow(GetDlgItem(hWnd, IDC_STOP), fRunning==VARIANT_TRUE);
 	EnableWindow(GetDlgItem(hWnd, IDC_OPTIONS), SendDlgItemMessage(hWnd, IDC_GAMESLIST, LB_GETCURSEL, 0,0)>=0);
 	EnableWindow(GetDlgItem(hWnd, IDC_CHECKROMS), SendDlgItemMessage(hWnd, IDC_GAMESLIST, LB_GETCURSEL, 0,0)>=0);
 }
