@@ -334,10 +334,10 @@ static void milln_drawMech(BMTYPE **line) {
 static void milln_drawStatic(BMTYPE **line) {
 
   core_textOutf(30, 60,BLACK,"Help on this Simulator:");
-  core_textOutf(30, 70,BLACK,"L/R Shift+L = L/R Lock");
-  core_textOutf(30, 80,BLACK,"L/R Shift+S = L/R Spin Hole");
-  core_textOutf(30, 90,BLACK,"L/R Shift+-/- = L/R Slingshot/10 Pts.");
-  core_textOutf(30,100,BLACK,"L/R Shift+I/O = L/R Inlane/Outlane");
+  core_textOutf(30, 70,BLACK,"L/R Ctrl+L = L/R Lock");
+  core_textOutf(30, 80,BLACK,"L/R Ctrl+S = L/R Spin Hole");
+  core_textOutf(30, 90,BLACK,"L/R Ctrl+- = L/R Slingshot/10 Pts.");
+  core_textOutf(30,100,BLACK,"L/R Ctrl+I/O = L/R Inlane/Outlane");
   core_textOutf(30,110,BLACK,"Q = Drain Ball, W/E/R = Jet Bumpers");
   core_textOutf(30,120,BLACK,"T/Y/U/I/O = M/O/N/E/Y Target");
   core_textOutf(30,130,BLACK,"S = Silver/Gold Target");

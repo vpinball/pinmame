@@ -401,14 +401,14 @@ static void mm_drawMech(BMTYPE **line) {
 
 static void mm_drawStatic(BMTYPE **line) {
   core_textOutf(30, 40,BLACK,"Help Keys:");
-  core_textOutf(30, 50,BLACK,"L/R Shift+R = L/R Ramp");
-  core_textOutf(30, 60,BLACK,"L/R Shift+R = L/R Loop");
-  core_textOutf(30, 70,BLACK,"L/R Shift+I = L/R Inlane");
-  core_textOutf(30, 80,BLACK,"L/R Shift+O = L/R Outlane");
-  core_textOutf(30, 90,BLACK,"L/R Shift+- = L/R Slingshot");
-  core_textOutf(30,100,BLACK,"L/R Shift+T = L/R Troll Head");
-  core_textOutf(30,110,BLACK,"L/R Shift+D = L/R Troll Target");
-  core_textOutf(30,120,BLACK,"L/R Shift+X = L/R Bonus X Rollover");
+  core_textOutf(30, 50,BLACK,"L/R Ctrl+R = L/R Ramp");
+  core_textOutf(30, 60,BLACK,"L/R Ctrl+R = L/R Loop");
+  core_textOutf(30, 70,BLACK,"L/R Ctrl+I = L/R Inlane");
+  core_textOutf(30, 80,BLACK,"L/R Ctrl+O = L/R Outlane");
+  core_textOutf(30, 90,BLACK,"L/R Ctrl+- = L/R Slingshot");
+  core_textOutf(30,100,BLACK,"L/R Ctrl+T = L/R Troll Head");
+  core_textOutf(30,110,BLACK,"L/R Ctrl+D = L/R Troll Target");
+  core_textOutf(30,120,BLACK,"L/R Ctrl+X = L/R Bonus X Rollover");
   core_textOutf(30,130,BLACK,"M = Merlin's Magic Hole");
   core_textOutf(30,140,BLACK,"V/B/N = Merlin's Drop Targets");
   core_textOutf(30,150,BLACK,"C = Castle, L = Lock, Z = Catapult");

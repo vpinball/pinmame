@@ -286,10 +286,10 @@ static core_tLampDisplay hurr_lampPos = {
   static void hurr_drawStatic(BMTYPE **line) {
 
   core_textOutf(30, 50,BLACK,"Help on this Simulator:");
-  core_textOutf(30, 60,BLACK,"L/R Shift+I = L/R Inlane");
-  core_textOutf(30, 70,BLACK,"L/R Shift+O = L/R Outlane");
-  core_textOutf(30, 80,BLACK,"L/R Shift+- = L/R Slingshot");
-  core_textOutf(30, 90,BLACK,"L/R Shift+R = Comet/Hurricane Ramp");
+  core_textOutf(30, 60,BLACK,"L/R Ctrl+I = L/R Inlane");
+  core_textOutf(30, 70,BLACK,"L/R Ctrl+O = L/R Outlane");
+  core_textOutf(30, 80,BLACK,"L/R Ctrl+- = L/R Slingshot");
+  core_textOutf(30, 90,BLACK,"L/R Ctrl+R = Comet/Hurricane Ramp");
   core_textOutf(30,100,BLACK,"Q = Drain Ball, W/E/R = Jet Bumpers");
   core_textOutf(30,110,BLACK,"D = Dunk The Dummy Target");
   core_textOutf(30,120,BLACK,"Z/X/C = Left Drop Targets");
