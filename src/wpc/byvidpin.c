@@ -65,6 +65,17 @@
 #define BYVP_IRQFREQ      316 /* IRQ (via PIA) frequency*/
 #define BYVP_ZCFREQ       120 /* Zero cross frequency */
 
+/*-----------------------------------------------
+/ Load/Save static ram
+/-------------------------------------------------*/
+static UINT8 *byVP_CMOS;
+static NVRAM_HANDLER(byVP) {
+  core_nvram(file, read_or_write, byVP_CMOS, 0x100, 0xff);
+}
+// Bally only uses top 4 bits
+static WRITE_HANDLER(byVP_CMOS_w) { byVP_CMOS[offset] = data | 0x0f; }
+
+
 static struct {
   int p0_a, p1_a, p1_b, p0_cb2, p1_cb2, p2_a, p2_b, p2_cb2;
   int lampadr1;
@@ -80,6 +91,7 @@ static void byVP_lampStrobe(int board, int lampadr) {
   if (lampadr != 0x0f) {
     //int lampdata = ((locals.p0_a>>4)^0x0f) & 0x03; //only 2 lamp drivers
 	int lampdata = ((~locals.p0_a)>>6) & 0x03; //only 2 lamp drivers
+//    logerror("byvp lampstrobe %d lampdadr %x\n",board,lampadr);
     UINT8 *matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)+4*board];
     int bit = 1<<(lampadr & 0x07);
     while (lampdata) {
@@ -102,6 +114,7 @@ static WRITE_HANDLER(pia0a_w) {
   locals.p0_a = data;	//Controls Strobing
   //Write Data To Vidiot Latch Pre-Buffers - Only When Latch Input is Low
   if ((locals.p1_a & 0x04) == 0) soundlatch2_w(0,data ^ 0x0f);
+//  logerror("writehandler lampstrobe %d \n",locals.phase_a);
   byVP_lampStrobe(locals.phase_a, locals.lampadr1);
 }
 
@@ -288,12 +301,15 @@ static WRITE_HANDLER(byVP_soundCmd) {
 
 /*- toggle zero/detection circuit-*/
 static void byVP_zeroCross(int data) {
+//  if (locals.vblankCount > 730)
   pia_set_input_cb1(BYVP_PIA0,locals.phase_a = !locals.phase_a);
+//  logerror("zerocross: count %d \n",locals.vblankCount);
 }
 
 static MACHINE_INIT(byVP) {
   memset(&locals, 0, sizeof(locals));
   sndbrd_0_init(core_gameData->hw.soundBoard,BYVP_SCPUNO,NULL,NULL,NULL);
+  install_mem_write_handler(0,0x0200, 0x02ff, byVP_CMOS_w);
   /* init PIAs */
   pia_config(BYVP_PIA0, PIA_STANDARD_ORDERING, &piaIntf[0]);
   pia_config(BYVP_PIA1, PIA_STANDARD_ORDERING, &piaIntf[1]);
@@ -301,13 +317,10 @@ static MACHINE_INIT(byVP) {
   pia_reset();
 }
 static MACHINE_STOP(byVP) { sndbrd_0_exit(); }
-/*-----------------------------------------------
-/ Load/Save static ram
-/-------------------------------------------------*/
-static UINT8 *byVP_CMOS;
-static NVRAM_HANDLER(byVP) {
-  core_nvram(file, read_or_write, byVP_CMOS, 0x100, 0xff);
-}
+
+
+
+
 
 //COMMENTS BELOW are directly from MESS source code..
 /***************************************************************************
