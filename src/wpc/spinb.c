@@ -819,12 +819,17 @@ WRITE_HANDLER(spinb_sndCmd_w) {
 	soundbd_w(0,data);
 }
 
+/*Switches are mapped in the manual as:
+  30-37, 40-47, 50-57, 60-67, 70-77, 80-87, 90-97
+  which must map to pinmame's internal numbering of 1-64.*/
 static int spinb_sw2m(int no) {
-	return no + 7;
+  if (no < 0) return no + 8;
+  else return (no%10) + ((( no / 10) - 3) * 8) + 8;
 }
 
+/*Col 1, Row 1 = 30... Col 2, Row 1 = 40, etc..*/
 static int spinb_m2sw(int col, int row) {
-	return col*8 + row - 9;
+	return col*10 + row + 20 - 1;
 }
 
 static void spinb_z80int(int data) {  cpu_set_irq_line(0, 0, PULSE_LINE); }
