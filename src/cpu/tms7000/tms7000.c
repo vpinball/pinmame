@@ -17,6 +17,9 @@
  *
  *****************************************************************************/
 
+//SJE: Changed all references to ICount to icount (to match MAME requirements)
+//SJE: Changed RM/WM macros to reference newly created tms7000 read/write handlers & removed unused SRM() macro
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "cpuintrf.h"
@@ -37,6 +40,8 @@
 static UINT16 bcd_add( UINT16 a, UINT16 b );
 static UINT16 bcd_tencomp( UINT16 a );
 static UINT16 bcd_sub( UINT16 a, UINT16 b);
+INLINE READ_HANDLER(tms7000_readmem);
+INLINE WRITE_HANDLER(tms7000_writemem);
 
 void tms7000_starttimer1( void );
 UINT8 tms7000_calculate_timer1_decrementator( void );
@@ -44,7 +49,7 @@ void tms7000_int2_callback( int	param );
 
 /* Public globals */
 
-int tms7000_ICount;
+int tms7000_icount;
 
 static UINT8 tms7000_reg_layout[] = {
 	TMS7000_PC, TMS7000_SP, TMS7000_ST, 0
@@ -61,9 +66,13 @@ static UINT8 tms7000_win_layout[] = {
 
 void tms7000_check_IRQ_lines( void );
 
-#define RM(Addr) ((unsigned)cpu_readmem16(Addr))
-#define SRM(Addr) ((signed)cpu_readmem16(Addr))
-#define WM(Addr,Value) (cpu_writemem16(Addr,Value))
+//SJE
+//#define RM(Addr) ((unsigned)cpu_readmem16(Addr))
+//#define WM(Addr,Value) (cpu_writemem16(Addr,Value))
+//#define SRM(Addr) ((signed)cpu_readmem16(Addr))			//SJE: NOT USED?
+
+#define RM(Addr) ((unsigned)tms7000_readmem(Addr))
+#define WM(Addr,Value) (tms7000_writemem(Addr,Value))
 
 UINT16 RM16( UINT32 mAddr );	/* Read memory (16-bit) */
 UINT16 RM16( UINT32 mAddr )
@@ -96,8 +105,9 @@ void WRF16( UINT32 mAddr, PAIR p )
 	WM( mAddr, p.b.l );
 }
 
-#define RPF(x)		tms7000_pf_r(x)
-#define WPF(x,y)	tms7000_pf_w(x,y)
+//SJE: Not used
+//#define RPF(x)		tms7000_pf_r(x)
+//#define WPF(x,y)	tms7000_pf_w(x,y)
 
 #define IMMBYTE(b)	b = ((unsigned)cpu_readop_arg(pPC)); pPC++
 #define SIMMBYTE(b)	b = ((signed)cpu_readop_arg(pPC)); pPC++
@@ -114,6 +124,7 @@ typedef struct
 	UINT8		sp;				/* Stack Pointer */
 	UINT8		sr;				/* Status Register */
 	UINT8		irq_state[3];	/* State of the three IRQs */
+	UINT8		rf[0x0ff];		/* Register file */				/*SJE*/
 	UINT8		pf[0x100];		/* Perpherial file */
 	int 		(*irq_callback)(int irqline);
 	UINT8		idle_state;		/* Set after the execution of an idle instruction */
@@ -133,8 +144,12 @@ static tms7000_Regs tms7000;
 
 #define RDA		RM(0x0000)
 #define RDB		RM(0x0001)
-#define WRA(Value) (cpu_writemem16(0x0000,Value))
-#define WRB(Value) (cpu_writemem16(0x0001,Value))
+
+//SJE: 
+//#define WRA(Value) (cpu_writemem16(0x0000,Value))
+//#define WRB(Value) (cpu_writemem16(0x0001,Value))
+#define WRA(Value) (tms7000_writemem(0x0000,Value))
+#define WRB(Value) (tms7000_writemem(0x0001,Value))
 
 #define SR_C	0x80		/* Carry */
 #define SR_N	0x40		/* Negative */
@@ -395,10 +410,10 @@ tms7000_interrupt:
 		CHANGE_PC;
 		
 		if( tms7000.idle_state != 0 )
-			tms7000_ICount -= 19;		/* 19 cycles used */
+			tms7000_icount -= 19;		/* 19 cycles used */
 		else
 		{
-			tms7000_ICount -= 17;		/* 17 if idled */
+			tms7000_icount -= 17;		/* 17 if idled */
 			tms7000.idle_state = 0;
 		}
 		
@@ -413,7 +428,7 @@ int tms7000_execute(int cycles)
 {
 	int op;
 	
-	tms7000_ICount = cycles;
+	tms7000_icount = cycles;
 
 	do
 	{
@@ -422,9 +437,9 @@ int tms7000_execute(int cycles)
 		pPC++;
 
 		opfn[op]();
-	} while( tms7000_ICount > 0 );
+	} while( tms7000_icount > 0 );
 	
-	return cycles - tms7000_ICount;
+	return cycles - tms7000_icount;
 
 }
 
@@ -509,7 +524,9 @@ WRITE_HANDLER( tms70x0_pf_w )	/* Perpherial file write */
 	{
 		case 0x00:	/* IOCNT0, Input/Ouput control */
 			temp1 = data & 0x2a;				/* Record which bits to clear */
-			temp2 = tms7000.pf[0x03] & 0x2a;	/* Get copy of current bits */
+			//SJE - Must be a mistake..
+			//temp2 = tms7000.pf[0x03] & 0x2a;	/* Get copy of current bits */
+			temp2 = tms7000.pf[0x00] & 0x2a;	/* Get copy of current bits */		
 			temp3 = (~temp1) & temp2;			/* Clear the requested bits */
 			temp4 = temp3 | (data & (~0x2a) );	/* OR in the remaining data */
 			
@@ -563,9 +580,10 @@ READ_HANDLER( tms70x0_pf_r )	/* Perpherial file read */
 	
 	switch( offset )
 	{
-//		case 0x00:	/* IOCNT0, Input/Ouput control */
-//			result = tms7000.pf[0x00];
-//			break;
+		//SJE: Why was this commented out?
+		case 0x00:	/* IOCNT0, Input/Ouput control */
+			result = tms7000.pf[0x00];
+			break;
 		
 		case 0x02:	/* T1DATA, timer 1 data */
 			if( tms7000.pf[ 0x03 ] & 0x40 )
@@ -588,10 +606,11 @@ READ_HANDLER( tms70x0_pf_r )	/* Perpherial file read */
 			result = cpu_readport16( TMS7000_PORTA );
 			break;
 			
-//		case 0x06: /* Port B read */
-//			/* Port B is write only, return a previous written value */
-//			result = tms7000.pf[ 0x06 ];
-//			break;
+//SJE: Why was this commented out?
+		case 0x06: /* Port B read */
+			/* Port B is write only, return a previous written value */
+			result = tms7000.pf[ 0x06 ];
+			break;
 		
 		case 0x08: /* Port C read */
 			temp1 = tms7000.pf[ 0x08 ] & tms7000.pf[ 0x09 ];	/* Get previous output bits */
@@ -651,5 +670,43 @@ static UINT16 bcd_tencomp( UINT16 a )
 static UINT16 bcd_sub( UINT16 a, UINT16 b)
 {
 	return bcd_tencomp(b) - bcd_tencomp(a);
+}
+
+
+//SJE: Return state of the internal registers
+WRITE_HANDLER( tms7000_internal_w ) {
+	tms7000.rf[ offset ]=data;
+}
+READ_HANDLER( tms7000_internal_r ) {
+	return tms7000.rf[ offset ]; 
+}
+
+//SJE: Note setup only works when in Microprocessor Mode (MC Pin = VCC)
+//Todo: Implement regular read/write if not in MC mode..
+INLINE READ_HANDLER(tms7000_readmem)
+{
+	//Internal RAM (0-0xff)
+	if(offset < 0x100)
+		return tms7000_internal_r(offset);
+	else
+	//PF Registers (0x100-0x10c)
+		if(offset < 0x10c)
+			return tms70x0_pf_r(offset&0xff);
+		else
+	//Everything else goes to external memory
+			return cpu_readmem16(offset);
+}
+INLINE WRITE_HANDLER(tms7000_writemem)
+{
+	//Internal RAM (0-0xff)
+	if(offset < 0x100)
+		tms7000_internal_w(offset,data);
+	else
+	//PF Registers (0x100-0x10c)
+		if(offset < 0x10c)
+			tms70x0_pf_w(offset&0xff,data);
+		else
+	//Everything else goes to external memory
+			cpu_writemem16(offset,data);
 }
 

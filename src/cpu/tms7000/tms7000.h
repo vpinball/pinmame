@@ -63,6 +63,11 @@ extern void tms7000_A6EC1( void );
 extern WRITE_HANDLER( tms70x0_pf_w );
 extern READ_HANDLER( tms70x0_pf_r );
 
+//SJE: Added these..
+extern WRITE_HANDLER( tms7000_internal_w );
+extern READ_HANDLER( tms7000_internal_r );
+extern int tms7000_icount;
+
 #ifdef MAME_DEBUG
 extern unsigned Dasm7000 (char *buffer, unsigned pc);
 #endif
