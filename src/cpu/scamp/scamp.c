@@ -5,7 +5,6 @@
 #include "osd_cpu.h"
 #include "mamedbg.h"
 #include "scamp.h"
-#include "scampcpu.h"
 
 #if VERBOSE
 #include <stdio.h>
@@ -96,7 +95,7 @@ INLINE void execute_one(int opcode)
 
 	if (opcode > 0x8e)
 		tmp = ARG();
-	if (opcode > 0x8f)
+	if (opcode > 0x8f && (opcode & 0x0f) != 0x0c && (opcode & 0x0f) != 0x04)
 		tmp = (tmp == 0x80) ? I.ereg : tmp;
 
 	switch (opcode)
@@ -234,8 +233,9 @@ INLINE void execute_one(int opcode)
 			break;
 		case 0x68: /* DADE */
 			tmp16 = I.accu + I.ereg + (I.sreg >> 7);
-			I.accu = (tmp16 & 0xff) % 100;
-			I.sreg = (I.sreg & 0x7f) | (tmp16 >> 1);
+			if ((tmp16 & 0x0f) > 9) tmp16 += 6;
+			I.accu = tmp16 % 0xa0;
+			I.sreg = (I.sreg & 0x7f) | (tmp16 > 0x99 ? 0x80 : 0);
 			break;
 
 		case 0x70: /* ADDE */
@@ -602,28 +602,33 @@ INLINE void execute_one(int opcode)
 			break;
 		case 0xe8: /* DAD PC */
 			tmp16 = I.accu + RM(I.PC.w.l + (INT8)tmp) + (I.sreg >> 7);
-			I.accu = (tmp16 & 0xff) % 100;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 & 0x100) >> 1);
+			if ((tmp16 & 0x0f) > 9) tmp16 += 6;
+			I.accu = tmp16 % 0xa0;
+			I.sreg = (I.sreg & 0x7f) | (tmp16 > 0x99 ? 0x80 : 0);
 			break;
 		case 0xe9: /* DAD P1 */
 			tmp16 = I.accu + RM(I.P1.w.l + (INT8)tmp) + (I.sreg >> 7);
-			I.accu = (tmp16 & 0xff) % 100;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 & 0x100) >> 1);
+			if ((tmp16 & 0x0f) > 9) tmp16 += 6;
+			I.accu = tmp16 % 0xa0;
+			I.sreg = (I.sreg & 0x7f) | (tmp16 > 0x99 ? 0x80 : 0);
 			break;
 		case 0xea: /* DAD P2 */
 			tmp16 = I.accu + RM(I.P2.w.l + (INT8)tmp) + (I.sreg >> 7);
-			I.accu = (tmp16 & 0xff) % 100;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 & 0x100) >> 1);
+			if ((tmp16 & 0x0f) > 9) tmp16 += 6;
+			I.accu = tmp16 % 0xa0;
+			I.sreg = (I.sreg & 0x7f) | (tmp16 > 0x99 ? 0x80 : 0);
 			break;
 		case 0xeb: /* DAD P3 */
 			tmp16 = I.accu + RM(I.P3.w.l + (INT8)tmp) + (I.sreg >> 7);
-			I.accu = (tmp16 & 0xff) % 100;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 & 0x100) >> 1);
+			if ((tmp16 & 0x0f) > 9) tmp16 += 6;
+			I.accu = tmp16 % 0xa0;
+			I.sreg = (I.sreg & 0x7f) | (tmp16 > 0x99 ? 0x80 : 0);
 			break;
 		case 0xec: /* DADI */
 			tmp16 = I.accu + tmp + (I.sreg >> 7);
-			I.accu = (tmp16 & 0xff) % 100;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 & 0x100) >> 1);
+			if ((tmp16 & 0x0f) > 9) tmp16 += 6;
+			I.accu = tmp16 % 0xa0;
+			I.sreg = (I.sreg & 0x7f) | (tmp16 > 0x99 ? 0x80 : 0);
 			break;
 		case 0xed: /* DADA P1 */
 			if (tmp & 0x80) {
@@ -633,8 +638,9 @@ INLINE void execute_one(int opcode)
 				tmp16 = I.accu + RM(I.P1.w.l) + (I.sreg >> 7);
 				I.P1.w.l += tmp;
 			}
-			I.accu = (tmp16 & 0xff) % 100;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 & 0x100) >> 1);
+			if ((tmp16 & 0x0f) > 9) tmp16 += 6;
+			I.accu = tmp16 % 0xa0;
+			I.sreg = (I.sreg & 0x7f) | (tmp16 > 0x99 ? 0x80 : 0);
 			break;
 		case 0xee: /* DADA P2 */
 			if (tmp & 0x80) {
@@ -644,8 +650,9 @@ INLINE void execute_one(int opcode)
 				tmp16 = I.accu + RM(I.P2.w.l) + (I.sreg >> 7);
 				I.P2.w.l += tmp;
 			}
-			I.accu = (tmp16 & 0xff) % 100;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 & 0x100) >> 1);
+			if ((tmp16 & 0x0f) > 9) tmp16 += 6;
+			I.accu = tmp16 % 0xa0;
+			I.sreg = (I.sreg & 0x7f) | (tmp16 > 0x99 ? 0x80 : 0);
 			break;
 		case 0xef: /* DADA P3 */
 			if (tmp & 0x80) {
@@ -655,8 +662,9 @@ INLINE void execute_one(int opcode)
 				tmp16 = I.accu + RM(I.P3.w.l) + (I.sreg >> 7);
 				I.P3.w.l += tmp;
 			}
-			I.accu = (tmp16 & 0xff) % 100;
-			I.sreg = (I.sreg & 0x7f) | ((tmp16 & 0x100) >> 1);
+			if ((tmp16 & 0x0f) > 9) tmp16 += 6;
+			I.accu = tmp16 % 0xa0;
+			I.sreg = (I.sreg & 0x7f) | (tmp16 > 0x99 ? 0x80 : 0);
 			break;
 
 		case 0xf0: /* ADD PC */
