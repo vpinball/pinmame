@@ -1,6 +1,14 @@
 What's new in Visual PinMAME:
 -----------------------------
 
+Version 1.xx ()
+---------------
+- Updated Visual PinMAME to 1.31 release of PinMAME Source Code.
+- the controller dislay will be moved to position where it is fully visible after a game was started
+  (prevent not visible controller windows after a game has set the location to a position out of the desktop)
+- added Controller.Hidden (bool) property to hide the controller window. The value is not persitent, hence
+  will not stored in the registry and resets to 'visible' on every call to Controller.GameName (set only)
+
 Version 1.31 (December 23, 2003)
 --------------------------------
 - Updated Visual PinMAME to 1.31 release of PinMAME Source Code.
