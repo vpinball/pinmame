@@ -38,6 +38,8 @@ static struct {
 //  int	 sound_data;
 } locals;
 
+static int dispPos[] = { 49, 1, 9, 21, 29, 41, 61, 69 };
+
 static void ATARI1_dmahi(int state) {
 	printf("DMA ");
 }
@@ -47,21 +49,19 @@ static void ATARI1_nmihi(int state) {
 }
 
 static void ATARI2_irq(int state) {
-  cpu_set_irq_line(ATARI_CPU, M6800_INT_IRQ, state ? ASSERT_LINE : CLEAR_LINE);
+  cpu_set_irq_line(ATARI_CPU, M6800_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
 static void ATARI2_irqhi(int dummy) {
-	printf("h");
   ATARI2_irq(1);
 }
 
 static WRITE_HANDLER(intack_w) {
-	printf("l");
   ATARI2_irq(0);
 }
 
 static WRITE_HANDLER(watchdog_w) {
-	printf("WATCHDOG!\n");
+  //printf("w");
 }
 
 static int ATARI_vblank(void) {
@@ -76,10 +76,12 @@ static int ATARI_vblank(void) {
 //    memset(locals.lampMatrix, 0, sizeof(locals.lampMatrix));
   }
   /*-- solenoids --*/
+
   if ((locals.vblankCount % ATARI_SOLSMOOTH) == 0) {
     coreGlobals.solenoids = locals.solenoids;
     locals.solenoids = coreGlobals.pulsedSolState;
   }
+
   /*-- display --*/
   if ((locals.vblankCount % ATARI_DISPLAYSMOOTH) == 0)
   {
@@ -88,6 +90,7 @@ static int ATARI_vblank(void) {
 //    memcpy(locals.segments, locals.pseg, sizeof(locals.segments));
 
   }
+
   /*update leds*/
   coreGlobals.diagnosticLed = 0;
   core_updateSw(TRUE); /* assume flipper enabled */
@@ -96,7 +99,7 @@ static int ATARI_vblank(void) {
 
 static void ATARI_updSw(int *inports) {
 	if (inports) {
-		coreGlobals.swMatrix[0] = inports[ATARI_COMINPORT]<<7;
+		coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0x22) | (inports[ATARI_COMINPORT] & 0xdd);
 	}
 }
 
@@ -125,7 +128,7 @@ static core_tData ATARI2Data = {
 
 /* Switch reading */
 static READ_HANDLER(sw_r) {
-	return core_getSwCol(offset);
+	return ~coreGlobals.swMatrix[offset+1];
 }
 
 static READ_HANDLER(dip_r)  {
@@ -135,22 +138,31 @@ static READ_HANDLER(dip_r)  {
 /* display */
 static WRITE_HANDLER(disp0_w)
 {
-	((int *)locals.segments)[offset] |= core_bcd2seg[data & 0x0f];
-	return;
+	((int *)locals.pseg)[offset] = core_bcd2seg[data & 0x0f];
 }
 
 static WRITE_HANDLER(disp1_w)
 {
-	printf("Digit select: %d\n", data & 0x07);
+	int ii;
+	data &= 0x07;
+	for (ii = 0; ii < 7; ii++) {
+		((int *)locals.segments)[dispPos[ii]+data] = ((int *)locals.pseg)[ii];
+	}
 }
 
 /* solenoids */
 static WRITE_HANDLER(sol0_w) {
-	locals.solenoids |= (data & 0x0f);
+	data &= 0x0f;
+	if (data > 0) {
+		locals.solenoids |= 1 << (data-1);
+	}
 }
 
 static WRITE_HANDLER(sol1_w) {
-	printf("Control Output #%d=%d\n", offset, data & 1);
+	if (offset != 7) {
+		if (data & 0x01) locals.solenoids |= (1 << (15 + offset));
+		else locals.solenoids &= ~(1 << (15 + offset));
+	}
 }
 
 /* lamps */
@@ -166,32 +178,30 @@ static UINT8 RAM_256[0x100];
 static UINT8 NVRAM_256[0x100];
 
 static READ_HANDLER(ram_r) {
-	return RAM_256[offset%0x100];
+	return RAM_256[offset];
 }
 
 static WRITE_HANDLER(ram_w) {
-	RAM_256[offset%0x100] = data;
+	RAM_256[offset] = data;
 }
 
 static READ_HANDLER(nvram_r) {
-	return NVRAM_256[offset%0x100] & 0x0f;
+	return NVRAM_256[offset] & 0x0f;
 }
 
 static WRITE_HANDLER(nvram_w) {
-	NVRAM_256[offset%0x100] = data & 0x0f;
+	NVRAM_256[offset] = data & 0x0f;
 }
 
 /*---------------------------
 /  Memory map for main CPU
 /----------------------------*/
 static MEMORY_READ_START(ATARI1_readmem)
-{0x0000,0x07ff,	MRA_ROM},	/* ROM #1 */
-{0x0800,0x0fff,	MRA_ROM},	/* ROM #2 */
+{0x0000,0x1fff,	MRA_ROM},	/* ROM */
+{0xf800,0xffff,	MRA_ROM},	/* reset vector */
 MEMORY_END
 
 static MEMORY_WRITE_START(ATARI1_writemem)
-{0x0000,0x07ff,	MWA_ROM},	/* ROM #1 */
-{0x0800,0x0fff,	MWA_ROM},	/* ROM #2 */
 MEMORY_END
 
 static MEMORY_READ_START(ATARI2_readmem)
@@ -199,10 +209,9 @@ static MEMORY_READ_START(ATARI2_readmem)
 {0x0800,0x08ff,	nvram_r},	/* NVRAM */
 {0x1000,0x1007,	sw_r},	/* inputs */
 {0x2000,0x2003,	dip_r},	/* dip switches */
-{0x3000,0x37ff,	MRA_ROM},	/* ROM #2 */
-{0x3800,0x3fff,	MRA_ROM},	/* ROM #3 */
-{0xa800,0xafff,	MRA_ROM},	/* ROM #1 */
-{0xf800,0xffff,	MRA_ROM},	/* ROM #3 */
+{0x2800,0x3fff,	MRA_ROM},	/* ROM */
+{0xa800,0xbfff,	MRA_ROM},	/* ROM */
+{0xf800,0xffff,	MRA_ROM},	/* reset vector */
 MEMORY_END
 
 static MEMORY_WRITE_START(ATARI2_writemem)
@@ -217,10 +226,6 @@ static MEMORY_WRITE_START(ATARI2_writemem)
 {0x18a0,0x18a7,	sol1_w},	/* solenoid enable & independent control output */
 {0x18c0,0x18c0,	watchdog_w},	/* watchdog reset */
 {0x18e0,0x18e0,	intack_w},	/* interrupt acknowledge (resets IRQ state) */
-{0x3000,0x37ff,	MWA_ROM},	/* ROM #2 */
-{0x3800,0x3fff,	MWA_ROM},	/* ROM #3 */
-{0xa800,0xafff,	MWA_ROM},	/* ROM #1 */
-{0xf800,0xffff,	MWA_ROM},	/* ROM #3 */
 MEMORY_END
 
 struct MachineDriver machine_driver_ATARI1 = {
@@ -273,7 +278,6 @@ static void ATARI1_init(void) {
   if (core_init(&ATARI1Data)) return;
   memset(&locals, 0, sizeof locals);
 
-  //cpu_irq_line_vector_w(ATARI_CPU, M6800_INT_IRQ, 0x18e0);
   locals.dmatimer = timer_pulse(TIME_IN_HZ(ATARI_DMAFREQ),0,ATARI1_dmahi);
   locals.nmitimer = timer_pulse(TIME_IN_HZ(ATARI_NMIFREQ),0,ATARI1_nmihi);
 
