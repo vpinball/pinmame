@@ -745,7 +745,7 @@ DRIVER(tdawg,l1)        //S11-921:  ??/88 W Top Dawg (Bowler)
 DRIVER(cycln,l5)        //S11-564:  02/88 W Cyclone
 DRIVER(bnzai,l3)        //S11-566:  05/88 W Banzai Run (L-3)
 DRIVER(bnzai,l1)        //S11-566:  05/88 W Banzai Run (L-1)
-DRIVER(bnzai,pa1)       //S11-566:  05/88 W Banzai Run (PA-1)
+DRIVER(bnzai,p1)        //S11-566:  05/88 W Banzai Run (P-1)
 DRIVER(swrds,l2)        //S11-559:  06/88 W Swords of Fury
 DRIVER(taxi,l4)         //S11-553:  08/88 W Taxi (Lola)
 DRIVER(taxi,l3)                           // Marylin

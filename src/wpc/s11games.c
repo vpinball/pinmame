@@ -291,7 +291,7 @@ S11CS_SOUNDROM888(      "banz_u4.l1",  CRC(8fd69c69) SHA1(c024cda85c6616943c3a12
                         "banz_u20.l1", CRC(26b3d15c) SHA1(528084b6c62394f8ed9fc0f90b91d844060fc904))
 S11_ROMEND
 
-S11_ROMSTART48(bnzai,pa1,"u26-pa.rom", CRC(65a73e31) SHA1(0332b51ecfc548f72eaca402d83a5ad6dd223272),
+S11_ROMSTART48(bnzai,p1,"u26-pa.rom", CRC(65a73e31) SHA1(0332b51ecfc548f72eaca402d83a5ad6dd223272),
                         "u27-pa.rom", CRC(c64e2898) SHA1(b2291e9e65f8392f2f05f116dc47fcaf37500e60))
 S11XS_SOUNDROM88(       "banz_u21.l1", CRC(cd06716e) SHA1(b61a0dc017dd4a09296a43a855461c5cee07517b),
                         "banz_u22.l1", CRC(e8159033) SHA1(e8f15801feefeb30768e88d685c208108aa134e8))
@@ -301,7 +301,7 @@ S11CS_SOUNDROM888(      "u4-p7.rom",  CRC(630d1ce9) SHA1(fb7f6004b94bf2028121651
 S11_ROMEND
 
 CORE_GAMEDEF(bnzai, l3, "Banzai Run (L-3)", 1988, "Williams", s11_mS11BS,0)
-CORE_CLONEDEF(bnzai,pa1,l3,"Banzai Run (PA-1)", 1988, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(bnzai,p1,l3,"Banzai Run (P-1)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(bnzai,l1,l3,"Banzai Run (L-1)", 1988, "Williams", s11_mS11BS,0)
 
 /*--------------------
