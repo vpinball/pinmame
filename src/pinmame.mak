@@ -76,6 +76,7 @@ COREOBJS += $(PINOBJ)/driver.o $(OBJ)/cheat.o $(PINOBJ)/mech.o
 
 # why isn't this part of the core
 DRVLIBS += $(OBJ)/vidhrdw/crtc6845.o $(OBJ)/machine/6532riot.o
+DRVLIBS += $(OBJ)/vidhrdw/tms9928a.o 
 
 #
 # Core drivers
@@ -90,7 +91,7 @@ DRVLIBS += $(PINOBJ)/de2.o $(PINOBJ)/de3.o $(PINOBJ)/dedmd.o
 DRVLIBS += $(PINOBJ)/gts3.o $(PINOBJ)/gts3dmd.o $(PINOBJ)/gts3sound.o
 DRVLIBS += $(PINOBJ)/se.o $(PINOBJ)/sesound.o
 DRVLIBS += $(PINOBJ)/s80.o $(PINOBJ)/s80sound0.o $(PINOBJ)/s80sound1.o $(PINOBJ)/s80sound2.o
-DRVLIBS += $(PINOBJ)/by35.o $(PINOBJ)/by35snd.o
+DRVLIBS += $(PINOBJ)/by35.o $(PINOBJ)/by35snd.o $(PINOBJ)/byvidpin.o
 #
 # Games
 #
