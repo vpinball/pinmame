@@ -23,6 +23,9 @@
  *
  *************************************/
 
+#if defined(PINMAME) && (HAS_AT91)
+#include "cpu/at91/at91.h"
+#endif
 #if defined(PINMAME) && (HAS_PPS4)
 #include "cpu/pps4/pps4.h"
 #endif
@@ -404,6 +407,9 @@ static unsigned dummy_dasm(char *buffer, unsigned pc);
 const struct cpu_interface cpuintrf[] =
 {
 	CPU0(DUMMY,    dummy,	 1,  0,1.00, 8, 16,	  0,16,LE,1, 1	),
+#if defined(PINMAME) && (HAS_AT91)
+	CPU0(AT91,	   at91, 	 2,  0,1.00,32,32ledw, 0,32,LE,4, 4	),
+#endif
 #if defined(PINMAME) && (HAS_PPS4)
 	CPU0(PPS4,	   PPS4,	 4,255,1.00, 8, 16,	  0,16,LE,1, 3	),
 #endif

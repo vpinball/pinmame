@@ -28,6 +28,9 @@ extern "C" {
 enum
 {
 	CPU_DUMMY,
+#if defined(PINMAME) && (HAS_AT91)
+	CPU_AT91,
+#endif
 #if defined(PINMAME) && (HAS_PPS4)
 	CPU_PPS4,
 #endif
