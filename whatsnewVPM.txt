@@ -1,7 +1,23 @@
 What's new in Visual PinMAME:
 -----------------------------
 
-Version 1.20 Alpha (August, 24, 2002)
+Version 1.21 (March 31, 2003)
+-------------------------------------
+The most prominent feature this time should be Tom's "SyncLevel"(TM),
+which is a most delicate and interesting way of synchronizing two separate
+Windows applications from one thread only!
+In other words: Visual PinMAME decides how fast any other application
+running in the same graphical environment will update its view...
+need I say more?
+
+- Added "SyncLevel" feature:
+  "Controller.Games(Controller.GameName).Settings.Value("synclevel")
+  This will help to keep the Emulation in sync with any other thread
+  running at the same time (like your favorite Pinball simulation software) ;)
+  This should boost game performance even on lower-end PCs...
+- went back to the orange display color everybody loved so much
+
+Version 1.20 Alpha (August 24, 2002)
 -------------------------------------
 - switched to link zlib 1.1.4 instead of 1.1.3
 - changed to use the mame .59 core and most of the mamew code (with some slight modifications)
