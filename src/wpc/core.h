@@ -292,30 +292,36 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 #define CORE_SWULFLIPBUTBIT 0x80
 
 #define CORE_FIRSTSIMROW   80 /* first free row on display */
-#define CORE_COLOR(x)      Machine->pens[(x)]
-#define DMD_DOTOFF  1
-#define DMD_DOT33   2
-#define DMD_DOT66   3
-#define DMD_DOTON   4
 
 /*-- Colours --*/
-#define DMD_COLORS  5   /* Includes Background color, DMD Dot Off, On, 33% & 66% */
-#define LAMP_COLORS 8   /* # of Colors available for use in Playfield Lamps*/
-                        /* Includes BLACK as 1 of the colors */
+#define CORE_COLOR(x)  Machine->pens[(x)]
+#define COL_DMD        1
+#define COL_DMDOFF     (COL_DMD+0)
+#define COL_DMD33      (COL_DMD+1)
+#define COL_DMD66      (COL_DMD+2)
+#define COL_DMDON      (COL_DMD+3)
+#define COL_DMDCOUNT   4
+#define COL_LAMP       (COL_DMD+COL_DMDCOUNT)
+#define COL_LAMPCOUNT  8
+#define COL_SHADE(x)   (COL_LAMPCOUNT+(x))
+#define COL_DMDAA      (COL_LAMP+COL_LAMPCOUNT*2)
+#define COL_DMDAACOUNT 7
+#define COL_SEGAAON1   (COL_DMDAA+COL_DMDAACOUNT)
+#define COL_SEGAAON2   (COL_SEGAAON1+1)
+#define COL_SEGAAOFF1  (COL_SEGAAON1+2)
+#define COL_SEGAAOFF2  (COL_SEGAAON1+3)
+#define COL_SEGAACOUNT 4
+#define COL_COUNT      (COL_SEGAAON1+COL_SEGAACOUNT)
 
-/* Marks where the antialias palette entries begin */
-#define START_ANTIALIAS (DMD_COLORS+(LAMP_COLORS*2))
-
-/* Colors Begin where DMD Ends */
-#define BLACK       (DMD_COLORS+0)
-#define WHITE       (DMD_COLORS+1)
-#define GREEN       (DMD_COLORS+2)
-#define RED         (DMD_COLORS+3)
-#define ORANGE      (DMD_COLORS+4)
-#define YELLOW      (DMD_COLORS+5)
-#define LBLUE       (DMD_COLORS+6)
-#define LPURPLE     (DMD_COLORS+7)
-#define SHADE(x)    ((x)+LAMP_COLORS)     /*Mark where the colors shade entry is*/
+/* Lamp Colors */
+#define BLACK       (COL_LAMP+0)
+#define WHITE       (COL_LAMP+1)
+#define GREEN       (COL_LAMP+2)
+#define RED         (COL_LAMP+3)
+#define ORANGE      (COL_LAMP+4)
+#define YELLOW      (COL_LAMP+5)
+#define LBLUE       (COL_LAMP+6)
+#define LPURPLE     (COL_LAMP+7)
 
 /*-------------------------------------------
 /  Draw data. draw lamps,switches,solenoids
