@@ -1236,6 +1236,18 @@ SOURCE=.\src\wpc\nuova.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\peyper.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\peyper.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\peypergames.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\pinmame.h
 # End Source File
 # Begin Source File
@@ -2105,6 +2117,14 @@ SOURCE=.\src\sound\sn76477.c
 # Begin Source File
 
 SOURCE=.\src\sound\sn76477.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\sn76496.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\sn76496.h
 # End Source File
 # Begin Source File
 
