@@ -54,9 +54,9 @@ LINK32=link.exe
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib zlibstatmt.lib /nologo /subsystem:console /machine:I386 /out:"obj/PinMAME/Debug/PinMAMEVC.exe" /pdbtype:sept /libpath:"zlib"
 # Begin Custom Build - Copying...
 ProjDir=.
-TargetPath=.\obj\PinMAME\Release\PinMAMEVC.exe
+TargetPath=.\obj\PinMAME\Debug\PinMAMEVC.exe
 TargetName=PinMAMEVC
-InputPath=.\obj\PinMAME\Release\PinMAMEVC.exe
+InputPath=.\obj\PinMAME\Debug\PinMAMEVC.exe
 SOURCE="$(InputPath)"
 
 "$(ProjDir)\$(TargetName).exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -929,6 +929,14 @@ SOURCE=src\machine\mathbox.h
 
 !ENDIF 
 
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\machine\pic8259.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\machine\pic8259.h
 # End Source File
 # Begin Source File
 
