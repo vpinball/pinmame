@@ -571,7 +571,8 @@ DRIVERNV(meteort )      //??/80 Meteor (S Meteor, 09/79)
 DRIVERNV(fireact )      //??/81 Fire Action (W Firepower, 02/80)
 DRIVERNV(cavnegro)      //??/81 Cavaleiro Negro (W Black Knight, 11/80)
 DRIVERNV(sureshot)      //??/81 Sure Shot (B Eight Ball Deluxe, 09/80)
-DRIVERNV(vegast  )      //??/81 Vegas / Lady Luck (B Mata Hari, 09/77)
+DRIVERNV(vegast  )      //??/81 Vegas (B Mata Hari, 09/77)
+DRIVERNV(ladylukt)      //??/81 Lady Luck (B Mata Hari, 09/77)
 DRIVERNV(cosmic  )      //??/81 Cosmic (S Galaxy, 01/80)
 DRIVERNV(gemini  )      //??/82 Gemini 2000 (B Centaur, 02/81)
 DRIVERNV(vortex  )      //??/82 Vortex (W Blackout, 06/80)
@@ -580,7 +581,7 @@ DRIVERNV(zarza   )      //??/82 Zarza (B Xenon, 11/79)
 DRIVERNV(sharkt  )      //??/82 Shark
 DRIVERNV(hawkman )		//??/82 Hawkman (B Fathom, 12/80)
 DRIVERNV(stest   )      //??/82 Speed Test
-                        //??/82 Lunelle (W Alien Poker, 10/80)
+DRIVERNV(lunelle )      //??/82 Lunelle (W Alien Poker, 10/80)
 DRIVERNV(rally   )      //??/82 Rally (B Skateball, 04/80)
 DRIVERNV(snake   )      //??/82 Snake Machine
 DRIVERNV(voleybal)      //??/?? Voley Ball
