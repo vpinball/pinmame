@@ -761,13 +761,13 @@ CORE_GAMEDEFNV(granslam,"Grand Slam",1983,"Bally",by35_mBY35_51S,0)
 /*----------------------------------------------------------
 / Gold Ball (BY35-???: 10/83)  - Uses AS2518-51 Sound Board
 /----------------------------------------------------------*/
-INITGAME2(goldball,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY51,0)
+INITGAME2(goldball,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
 BY35_ROMSTARTx00(goldball,"gold2732.u2",CRC(3169493c) SHA1(1335fcdfb2d6970d78c636748ff419baf85ef78b),
-                          "720-5332.u6",CRC(c2e92f80) SHA1(61de956a4b6e9fb9ef2b25c01bff1fb5972284ad))
+                          "goldball.u6",CRC(9b6e79d0) SHA1(4fcda91bbe930e6131d94964a08459e395f841af))
 BY51_SOUNDROM0(           "gb_u4.532",  CRC(2dcb0315) SHA1(8cb9c9f627f0c8420d3b3d9f0d10d77a82c8be56))
 BY35_ROMEND
 #define input_ports_goldball input_ports_by35
-CORE_GAMEDEFNV(goldball,"Gold Ball",1983,"Bally",by35_mBY35_51S,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(goldball,"Gold Ball",1983,"Bally",by35_mBY35_51S,0)
 
 /********************************************************/
 /******* Games Below use Cheap Squeak Sound Board *******/
