@@ -1770,6 +1770,12 @@ static int hit_brk_data(void)
 
 	if( DBG.brk_data == INVALID ) return 0;
 
+//Make WP work if viewing internal data
+#ifdef PINMAME
+		if( DBGMEM->internal )
+			data = RDINT( DBG.brk_data );
+		else
+#endif
 	data = RDMEM(DBG.brk_data);
 
 	if( DBG.brk_data_oldval != data )
@@ -3846,6 +3852,12 @@ static void cmd_brk_data_set( void )
 
 	if( length )
 	{
+//Make WP work if viewing internal data
+#ifdef PINMAME
+		if( DBGMEM->internal )
+			data = RDINT( DBG.brk_data );
+		else
+#endif
 		data = RDMEM(DBG.brk_data);
 
 		DBG.brk_data_oldval = data;
