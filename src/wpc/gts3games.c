@@ -103,8 +103,8 @@ CORE_GAMEDEFNV(bellring,"Bell Ringer",1990,"Gottlieb",mGTS3,GAME_NOT_WORKING)
 /-------------------------------------------------------------------*/
 INITGAME(silvslug, ALPHA, FLIP67, 3/*?*/)
 GTS3ROMSTART(silvslug,	"gprom.bin",0xa6c524e2)
-GTS3SOUND3232(			"yrom1.bin",0xeac3e1cc,
-						"drom1.bin",0x20bc9797)
+GTS3SOUND3232(			"yrom1.bin",0x20bc9797,
+						"drom1.bin",0xeac3e1cc)
 GTS3_ROMEND
 CORE_GAMEDEFNV(silvslug,"Silver Slugger",1990,"Gottlieb",mGTS3S,GAME_NOT_WORKING)
 /*-------------------------------------------------------------------
@@ -119,8 +119,6 @@ CORE_GAMEDEFNV(vegas,"Vegas",1990,"Gottlieb",mGTS3,GAME_NOT_WORKING)
 /-------------------------------------------------------------------*/
 INITGAME(deadweap, ALPHA, FLIP67, 3/*?*/)
 GTS3ROMSTART(deadweap,	"gprom.bin",0x0)
-GTS3SOUND3232(			"yrom1.bin",0xeac3e1cc,
-						"drom1.bin",0x20bc9797)
 GTS3_ROMEND
 CORE_GAMEDEFNV(deadweap,"Deadly Weapon",1990,"Gottlieb",mGTS3,GAME_NOT_WORKING)
 /*-------------------------------------------------------------------
@@ -142,8 +140,8 @@ CORE_GAMEDEFNV(nudgeit,"Nudge It",1990,"Gottlieb",mGTS3,GAME_NOT_WORKING)
 /-------------------------------------------------------------------*/
 INITGAME(carhop, ALPHA, FLIP67, 3/*?*/)
 GTS3ROMSTART(carhop,	"gprom.bin",0x164b2c9c)
-GTS3SOUND3232(			"yrom1.bin",0x9dec74e7,
-						"drom1.bin",0x831ee812)
+GTS3SOUND3232(			"yrom1.bin",0x831ee812,
+						"drom1.bin",0x9dec74e7)
 GTS3_ROMEND
 CORE_GAMEDEFNV(carhop,"Car Hop",1991,"Gottlieb",mGTS3S,GAME_NOT_WORKING)
 /*-------------------------------------------------------------------
