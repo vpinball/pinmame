@@ -8,6 +8,15 @@ extern "C" {
 #include "audit.h"
 }
 
+DWORD CRom::GetChecksumFromHash(char* szHash)
+{
+	DWORD dwChecksum = 0;
+	if ( szHash && *szHash )
+		sscanf(szHash, "c:%lx", &dwChecksum);
+
+	return dwChecksum;
+}
+
 STDMETHODIMP CRom::InterfaceSupportsErrorInfo(REFIID riid)
 {
 	static const IID* arr[] = 
@@ -61,7 +70,11 @@ HRESULT CRom::Init(const struct GameDriver *gamedrv, const struct RomModule *reg
 		m_dwExpLength += ROM_GETLENGTH(chunk);
 
 	m_dwChecksum = 0;
-	m_dwExpChecksum = 0;//ROM_GETCRC(m_rom);
+
+	char szExpChecksum[256];
+	lstrcpy(szExpChecksum, ROM_GETHASHDATA(m_rom));
+	m_dwExpChecksum = GetChecksumFromHash(szExpChecksum);
+
 	m_dwRegionFlags = ROMREGION_GETFLAGS(m_region);
 
 	return S_OK;
@@ -136,14 +149,13 @@ STDMETHODIMP CRom::get_StateDescription(BSTR *pVal)
 STDMETHODIMP CRom::Audit(VARIANT_BOOL fStrict)
 {
 	int err;
-
-	m_dwChecksum = fStrict?0xffffffff:0;//ROM_GETCRC(m_rom);
+	char szHash[256];
 
 	/* obtain CRC-32 and length of ROM file */
 	const struct GameDriver *drv = m_gamedrv;
 	do
 	{
-		err = 0;//osd_fchecksum (drv->name, m_pszName, (unsigned int*) &m_dwLength, (unsigned int*) &m_dwChecksum);
+		err = mame_fchecksum (drv->name, m_pszName, (unsigned int*) &m_dwLength, szHash);
 		drv = drv->clone_of;
 	} while (err && drv);
 
@@ -156,21 +168,24 @@ STDMETHODIMP CRom::Audit(VARIANT_BOOL fStrict)
 			/* not found */
 			m_dwState = AUD_ROM_NOT_FOUND;
 	}
+	else {
+		m_dwChecksum = GetChecksumFromHash(szHash);
 
-	/* all cases below assume the ROM was at least found */
-	else if (m_dwExpLength != m_dwLength)
-		m_dwState = AUD_LENGTH_MISMATCH;
-	else if (m_dwExpChecksum != m_dwChecksum)
-	{
-		if (!m_dwExpChecksum)
-			m_dwState = AUD_ROM_NEED_DUMP; /* new case - found but not known to be dumped */
-		else if (m_dwChecksum == BADCRC(m_dwExpChecksum))
-			m_dwState = AUD_ROM_NEED_REDUMP;
+		/* all cases below assume the ROM was at least found */
+		if (m_dwExpLength != m_dwLength)
+			m_dwState = AUD_LENGTH_MISMATCH;
+		else if (m_dwExpChecksum != m_dwChecksum)
+		{
+			if (!m_dwExpChecksum)
+				m_dwState = AUD_ROM_NEED_DUMP; /* new case - found but not known to be dumped */
+			else if (m_dwChecksum == BADCRC(m_dwExpChecksum))
+				m_dwState = AUD_ROM_NEED_REDUMP;
+			else
+				m_dwState = AUD_BAD_CHECKSUM;
+		}
 		else
-			m_dwState = AUD_BAD_CHECKSUM;
+			m_dwState = AUD_ROM_GOOD;
 	}
-	else
-		m_dwState = AUD_ROM_GOOD;
 
 	return S_OK;
 }
