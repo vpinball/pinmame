@@ -31,7 +31,6 @@ public:
 		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, OnCtrlColorStatic)
 		COMMAND_RANGE_HANDLER(IDC_USECHEAT, IDC_DOUBLESIZE, OnCheckBox)
 		COMMAND_CODE_RANGE_HANDLER(IDC_SAMPLERATE, IDC_DMDPERC0, EN_CHANGE, OnEditCtrlChanged)
-		COMMAND_CODE_RANGE_HANDLER(IDC_ANTIALIAS, IDC_ANTIALIAS, EN_CHANGE, OnEditCtrlChanged) 
 		COMMAND_ID_HANDLER(IDOK, OnOK)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCancel)
 		COMMAND_ID_HANDLER(IDABOUT, OnAbout)
@@ -75,13 +74,17 @@ private:
 		pGameSettings->get_Value(CComBSTR("dmd_doublesize"), &vValue);
 		CheckDlgButton(IDC_DOUBLESIZE, (vValue.boolVal==VARIANT_TRUE)?BST_CHECKED:BST_UNCHECKED);
 		VariantClear(&vValue);
+
+		pGameSettings->get_Value(CComBSTR("samplerate"), &vValue);
+		SetDlgItemInt(IDC_SAMPLERATE, vValue.lVal, FALSE);
+		VariantClear(&vValue);
 		
 		pGameSettings->get_Value(CComBSTR("dmd_antialias"), &vValue);
 		SetDlgItemInt(IDC_ANTIALIAS, vValue.lVal, FALSE);
 		VariantClear(&vValue);
 
-		pGameSettings->get_Value(CComBSTR("samplerate"), &vValue);
-		SetDlgItemInt(IDC_SAMPLERATE, vValue.lVal, FALSE);
+		pGameSettings->get_Value(CComBSTR("synclevel"), &vValue);
+		SetDlgItemInt(IDC_SYNCLEVEL, vValue.lVal, TRUE);
 		VariantClear(&vValue);
 
 		pGameSettings->get_Value(CComBSTR("dmd_red"), &vValue);
@@ -122,8 +125,9 @@ private:
 		pGameSettings->put_Value(CComBSTR("dmd_compact"), CComVariant((BOOL) IsDlgButtonChecked(IDC_COMPACTSIZE)));
 		pGameSettings->put_Value(CComBSTR("dmd_doublesize"), CComVariant((BOOL) IsDlgButtonChecked(IDC_DOUBLESIZE)));
 
-		pGameSettings->put_Value(CComBSTR("dmd_antialias"), CComVariant((int) GetDlgItemInt(IDC_ANTIALIAS,NULL,TRUE)));
 		pGameSettings->put_Value(CComBSTR("samplerate"), CComVariant((int) GetDlgItemInt(IDC_SAMPLERATE,NULL,TRUE)));
+		pGameSettings->put_Value(CComBSTR("dmd_antialias"), CComVariant((int) GetDlgItemInt(IDC_ANTIALIAS,NULL,TRUE)));
+		pGameSettings->put_Value(CComBSTR("synclevel"), CComVariant((int) GetDlgItemInt(IDC_SYNCLEVEL,NULL,TRUE)));
 
 		pGameSettings->put_Value(CComBSTR("dmd_red"), CComVariant((int) GetDlgItemInt(IDC_DMDRED,NULL,TRUE)));
 		pGameSettings->put_Value(CComBSTR("dmd_green"), CComVariant((int) GetDlgItemInt(IDC_DMDGREEN,NULL,TRUE)));

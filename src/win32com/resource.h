@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
+// Microsoft Visual C++ generated include file.
 // Used by VPinMAME.rc
 //
 #define IDS_PROJNAME                    100
@@ -23,6 +23,7 @@
 #define IDC_DOUBLESIZE                  104
 #define IDC_SAMPLERATE                  110
 #define IDC_ANTIALIAS                   111
+#define IDC_SYNCLEVEL                   112
 #define IDC_DMDRED                      120
 #define IDC_DMDGREEN                    121
 #define IDC_DMDBLUE                     122
@@ -76,7 +77,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        213
 #define _APS_NEXT_COMMAND_VALUE         32779
-#define _APS_NEXT_CONTROL_VALUE         239
+#define _APS_NEXT_CONTROL_VALUE         240
 #define _APS_NEXT_SYMED_VALUE           106
 #endif
 #endif
