@@ -1,6 +1,34 @@
 What's new:
 -----------
 
+Version 1.1x (xxx)
+------------------
+
+Bugs Fixed
+----------
+-Mech Handler bugs corrected
+-Scratchy Sound issues (see new sound limit option under new features)
+ [Martin Adrian]
+
+New Features
+------------
+-Bally Cheap & Squeak Sound Emulation (preliminary & not fully working yet)
+-Support for games using Bally Cheap & Squalk sound
+-Bally 6803 Emulation (not fully working yet)
+-Bally 6803 Turbo Cheap Squalk, Sounds Deluxe, System 11C Sound Support (preliminary & not fully working yet)
+-Support for all Bally 6803 Games
+-Support for Granny & the Gators (not working)
+-Missing sound rom support added for some Gottlieb System 3 games
+ [Steve Ellenoff]
+ 
+-New Sound Speed Limit Option
+ When 'ON' should eliminate scratchy sound introduced in 1.10 release
+ When 'OFF' should help eliminate sound slow downs reported from version 1.0 Beta 2
+ Users should set this value to whichever sounds better for their computer setup
+ [Martin Adrian]
+ [Steve Ellenoff]
+
+
 Version 1.10 (December 23, 2001) - Happy 30th Birthday Steve
 ------------------------------------------------------------
 This may very well be the most anticipated release of PinMAME to date: 4 Letters - BSMT.
