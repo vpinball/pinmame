@@ -818,8 +818,13 @@ static LRESULT CALLBACK video_window_proc(HWND wnd, UINT message, WPARAM wparam,
 		case WM_GETMINMAXINFO:
 		{
 			MINMAXINFO *minmax = (MINMAXINFO *)lparam;
+#ifdef VPINMAME
+			minmax->ptMinTrackSize.x = win_visible_width + 2 + wnd_extra_width();
+			minmax->ptMinTrackSize.y = win_visible_height + 2 + wnd_extra_height();
+#else
 			minmax->ptMinTrackSize.x = MIN_WINDOW_DIM;
 			minmax->ptMinTrackSize.y = MIN_WINDOW_DIM;
+#endif
 			break;
 		}
 
