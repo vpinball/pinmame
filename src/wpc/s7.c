@@ -172,8 +172,9 @@ static void setSSSol(int data, int solNo) {
 }
 
 static WRITE_HANDLER(pia1b_w) {
-  if (s7locals.s6sound)
+  if (s7locals.s6sound) {
     sndbrd_0_data_w(0, ~data); data &= 0xe0; /* mask of sound command bits */
+  }
   coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffff00ff) | (((UINT16)data)<<8);
   s7locals.solenoids |= (((UINT16)data)<<8);
 }
