@@ -2,6 +2,7 @@
 #include "sim.h"
 #include "zac.h"
 
+//Display: 6 X 6 Segment, 7 Digit Displays without commas
 static core_tLCDLayout dispZAC1[] = {
   {0, 0, 0,6,CORE_SEG7}, {0,16, 8,6,CORE_SEG7},
   {2, 0,16,6,CORE_SEG7}, {2,16,24,6,CORE_SEG7},
@@ -10,10 +11,17 @@ static core_tLCDLayout dispZAC1[] = {
 };
 
 //Display: 5 X 7 Segment, 7 Digit Displays with 2 commas
-static core_tLCDLayout dispZAC[] = {
-  {0, 0, 2,7,CORE_SEG87}, {0,16,10,7,CORE_SEG87},
-  {2, 0,18,7,CORE_SEG87}, {2,16,26,7,CORE_SEG87},
-  {4, 4,34,7,CORE_SEG87}, {0}
+static core_tLCDLayout dispZAC2[] = {
+  {0, 0,33,7,CORE_SEG87F}, {0,16,25,7,CORE_SEG87F},
+  {2, 0,17,7,CORE_SEG87F}, {2,16, 9,7,CORE_SEG87F},
+  {5, 0, 1,7,CORE_SEG87},  {0}
+};
+
+//Display: 5 X 8 Segment, 7 Digit Displays with 2 commas
+static core_tLCDLayout dispZAC3[] = {
+  {0, 0,32,8,CORE_SEG87F}, {0,18,24,8,CORE_SEG87F},
+  {2, 0,16,8,CORE_SEG87F}, {2,18, 8,8,CORE_SEG87F},
+  {5, 0, 0,8,CORE_SEG87},  {0}
 };
 
 #define INITGAME(name, gen, disp, flip, lamps) \
@@ -24,9 +32,6 @@ static void init_##name(void) { \
 ZAC_INPUT_PORTS_START(name, 1) ZAC_INPUT_PORTS_END
 
 //Games in rough production order
-
-//#define TEST 0
-#define TEST GAME_NOT_WORKING
 
 //10/77 Combat
 
@@ -40,7 +45,7 @@ ZAC_ROMSTART44444(wsports,	"ws1.bin",0x58feb058,
 							"ws4.bin",0x74460cf2,
 							"ws5.bin",0x5ef51ced)
 ZAC_ROMEND
-CORE_GAMEDEFNV(wsports,"Winter Sports",1978,"Zaccaria",mZAC0,TEST)
+CORE_GAMEDEFNV(wsports,"Winter Sports",1978,"Zaccaria",mZAC0,GAME_NOT_WORKING)
 
 //07/78 House of Diamonds
 //09/78 Strike
@@ -57,7 +62,7 @@ ZAC_ROMSTART44444(futurwld,	"futwld_1.lgc",0xd83b8793,
 							"futwld_4.lgc",0xb1de2120,
 							"futwld_5.lgc",0x6b7965f2)
 ZAC_ROMEND
-CORE_GAMEDEFNV(futurwld,"Future World",1978,"Zaccaria",mZAC0,TEST)
+CORE_GAMEDEFNV(futurwld,"Future World",1978,"Zaccaria",mZAC0,GAME_NOT_WORKING)
 
 /*--------------------------------
 / Shooting the Rapids (04/79)
@@ -69,7 +74,7 @@ ZAC_ROMSTART44444(strapids,	"rapids_1.lgc",0x2a30cef3,
 							"rapids_4.lgc",0x3319fa21,
 							"rapids_5.lgc",0x0dd67110)
 ZAC_ROMEND
-CORE_GAMEDEFNV(strapids,"Shooting the Rapids",1979,"Zaccaria",mZAC0,TEST)
+CORE_GAMEDEFNV(strapids,"Shooting the Rapids",1979,"Zaccaria",mZAC0,GAME_NOT_WORKING)
 
 //09/79 Hot Wheels
 //09/79 Space City
@@ -85,7 +90,7 @@ ZAC_ROMSTART84444B(firemntn,"zac_boot.lgc",0x62a3da59,
 							"firemt_4.lgc",0xb5cac3da,
 							"firemt_5.lgc",0x13f11d84)
 ZAC_ROMEND
-CORE_GAMEDEFNV(firemntn,"Fire Mountain",1980,"Zaccaria",mZAC0,TEST)
+CORE_GAMEDEFNV(firemntn,"Fire Mountain",1980,"Zaccaria",mZAC0,GAME_NOT_WORKING)
 
 /*--------------------------------
 / Star God (05/80)
@@ -98,7 +103,7 @@ ZAC_ROMSTART84444(stargod,	"zac_boot.lgc",0x62a3da59,
 							"stargod3.lgc",0x95492ac0,
 							"stargod5.lgc",0x03cd4e24)
 ZAC_ROMEND
-CORE_GAMEDEFNV(stargod,"Star God",1980,"Zaccaria",mZAC0,TEST)
+CORE_GAMEDEFNV(stargod,"Star God",1980,"Zaccaria",mZAC0,GAME_NOT_WORKING)
 
 /*--------------------------------
 / Space Shuttle (09/80)
@@ -110,7 +115,7 @@ ZAC_ROMSTART84444(sshtlzac,	"zac_boot.lgc",0x62a3da59,
 							"spcshtl4.lgc",0xa02ee0b5,
 							"spcshtl5.lgc",0xd1dabd9b)
 ZAC_ROMEND
-CORE_GAMEDEFNV(sshtlzac,"Space Shuttle (Zaccaria)",1980,"Zaccaria",mZAC0,TEST)
+CORE_GAMEDEFNV(sshtlzac,"Space Shuttle (Zaccaria)",1980,"Zaccaria",mZAC0,GAME_NOT_WORKING)
 
 /*--------------------------------
 / Earth, Wind & Fire (04/81)
@@ -123,7 +128,7 @@ ZAC_ROMSTART84444A(ewf,	"zac_boot.lgc",0x62a3da59,
 						"ewf_4.lgc",   0xd110da3f,
 						"ewf_5.lgc",   0x686c4a4b)
 ZAC_ROMEND
-CORE_GAMEDEFNV(ewf,"Earth, Wind & Fire",1981,"Zaccaria",mZAC0,TEST)
+CORE_GAMEDEFNV(ewf,"Earth, Wind & Fire",1981,"Zaccaria",mZAC0,GAME_NOT_WORKING)
 
 /*--------------------------------
 / Locomotion (09/81)
@@ -135,130 +140,130 @@ ZAC_ROMSTART84844(locomotn,	"loc-1.fil",0x8d0252a2,
 							"loc-4.fil",0x177c89b6,
 							"loc-5.fil",0xcad4122a)
 ZAC_ROMEND
-CORE_GAMEDEFNV(locomotn,"Locomotion",1981,"Zaccaria",mZAC1,TEST)
-
-//04/82 Pinball Champ '82 (Is this really different from the '83?)
+CORE_GAMEDEFNV(locomotn,"Locomotion",1981,"Zaccaria",mZAC1,GAME_NOT_WORKING)
 
 /*--------------------------------
 / Soccer King (09/82)
 /-------------------------------*/
-INITGAME(socrking,1,dispZAC,FLIP_SW(FLIP_L),2)
+INITGAME(socrking,1,dispZAC3,FLIP_SW(FLIP_L),2)
 ZAC_ROMSTART000(socrking,	"soccer.ic1",0x3fbd7c32,
 							"soccer.ic2",0x0cc0df1f,
 							"soccer.ic3",0x5da6ea20)
 ZAC_ROMEND
-CORE_GAMEDEFNV(socrking,"Soccer King",1982,"Zaccaria",mZAC2,TEST)
+CORE_GAMEDEFNV(socrking,"Soccer King",1982,"Zaccaria",mZAC2A,0)
+
+//04/82 Pinball Champ '82 (Is this really different from the '83?)
 
 /*--------------------------------
 / Pinball Champ (??/83)
 /-------------------------------*/
-INITGAME(pinchamp,1,dispZAC,FLIP_SW(FLIP_L),2)
+INITGAME(pinchamp,1,dispZAC3,FLIP_SW(FLIP_L),2)
 ZAC_ROMSTART000(pinchamp,	"pinchamp.ic1",0x1412ec33,
 							"pinchamp.ic2",0xa24ba4c6,
 							"pinchamp.ic3",0xdf5f4f88)
 ZAC_ROMEND
-CORE_GAMEDEFNV(pinchamp,"Pinball Champ",1983,"Zaccaria",mZAC2,TEST)
+CORE_GAMEDEFNV(pinchamp,"Pinball Champ",1983,"Zaccaria",mZAC2A,0)
 
 /*--------------------------------
 / Time Machine (04/83)
 /-------------------------------*/
-INITGAME(tmachzac,1,dispZAC,FLIP_SW(FLIP_L),2)
+INITGAME(tmachzac,1,dispZAC2,FLIP_SW(FLIP_L),2)
 ZAC_ROMSTART1820(tmachzac,	"timemach.ic1",0xd88f424b,
 							"timemach.ic2",0x3c313487)
 ZAC_ROMEND
-CORE_GAMEDEFNV(tmachzac,"Time Machine (Zaccaria)",1983,"Zaccaria",mZAC2,TEST)
+CORE_GAMEDEFNV(tmachzac,"Time Machine (Zaccaria)",1983,"Zaccaria",mZAC2A,0)
 
 /*--------------------------------
 / Farfalla (09/83)
 /-------------------------------*/
-INITGAME(farfalla,1,dispZAC,FLIP_SW(FLIP_L),2)
+INITGAME(farfalla,1,dispZAC2,FLIP_SW(FLIP_L),2)
 ZAC_ROMSTART1820(farfalla,	"cpurom1.bin",0xac249150,
 							"cpurom2.bin",0x6edc823f)
 ZAC_ROMEND
-CORE_GAMEDEFNV(farfalla,"Farfalla",1983,"Zaccaria",mZAC2,TEST)
+CORE_GAMEDEFNV(farfalla,"Farfalla",1983,"Zaccaria",mZAC2,0)
 
 /*--------------------------------
 / Devil Riders (04/84)
 /-------------------------------*/
-INITGAME(dvlrider,1,dispZAC,FLIP_SW(FLIP_L),2)
+INITGAME(dvlrider,1,dispZAC2,FLIP_SW(FLIP_L),2)
 ZAC_ROMSTART1820(dvlrider,	"cpu.ic1",0x5874ab12,
 							"cpu.ic2",0x09829446)
 ZAC_ROMEND
-CORE_GAMEDEFNV(dvlrider,"Devil Riders",1984,"Zaccaria",mZAC2,TEST)
+CORE_GAMEDEFNV(dvlrider,"Devil Riders",1984,"Zaccaria",mZAC2,0)
 
 /*--------------------------------
 / Magic Castle (09/84)
 /-------------------------------*/
-INITGAME(mcastle,1,dispZAC,FLIP_SW(FLIP_L),2)
+INITGAME(mcastle,1,dispZAC3,FLIP_SW(FLIP_L),2)
 ZAC_ROMSTART020(mcastle,	"cpu.ic1",0x50dd8209,
 							"cpu.ic2",0x11372bec)
 ZAC_ROMEND
-CORE_GAMEDEFNV(mcastle,"Magic Castle",1984,"Zaccaria",mZAC2,TEST)
+CORE_GAMEDEFNV(mcastle,"Magic Castle",1984,"Zaccaria",mZAC2,0)
 
 /*--------------------------------
 / Robot (01/85)
 /-------------------------------*/
-INITGAME(robot,1,dispZAC,FLIP_SW(FLIP_L),2)
+INITGAME(robot,1,dispZAC3,FLIP_SW(FLIP_L),2)
 ZAC_ROMSTART020(robot,	"robot_1.lgc",0x96a87432,
 						"robot_2.lgc",0x28ba9687)
 ZAC_ROMEND
-CORE_GAMEDEFNV(robot,"Robot",1985,"Zaccaria",mZAC2,TEST)
+CORE_GAMEDEFNV(robot,"Robot",1985,"Zaccaria",mZAC2,GAME_NOT_WORKING)
 
 /*--------------------------------
 / Clown (07/85)
 /-------------------------------*/
-INITGAME(clown,1,dispZAC,FLIP_SW(FLIP_L),2)
+INITGAME(clown,1,dispZAC3,FLIP_SW(FLIP_L),2)
 ZAC_ROMSTART020(clown,	"clown_1.lgc",0x16f09833,
 						"clown_2.lgc",0x697e6b5b)
 ZAC_ROMEND
-CORE_GAMEDEFNV(clown,"Clown",1985,"Zaccaria",mZAC2,TEST)
+CORE_GAMEDEFNV(clown,"Clown",1985,"Zaccaria",mZAC2,0)
 
 /*--------------------------------
 / Pool Champion (12/85)
 /-------------------------------*/
-INITGAME(poolcham,1,dispZAC,FLIP_SW(FLIP_L),2)
+INITGAME(poolcham,1,dispZAC3,FLIP_SW(FLIP_L),2)
 ZAC_ROMSTART020(poolcham,	"poolcham.ic1",0xfca2a2b2,
 							"poolcham.ic2",0x267a2a02)
 ZAC_ROMEND
-CORE_GAMEDEFNV(poolcham,"Pool Champion",1985,"Zaccaria",mZAC2,TEST)
+CORE_GAMEDEFNV(poolcham,"Pool Champion",1985,"Zaccaria",mZAC2,0)
 
 /*--------------------------------
 / Blackbelt (??/86)
 /-------------------------------*/
-INITGAME(bbeltzac,1,dispZAC,FLIP_SW(FLIP_L),2)
+INITGAME(bbeltzac,1,dispZAC3,FLIP_SW(FLIP_L),2)
 ZAC_ROMSTART1820(bbeltzac,	"bbz-1.fil",0x2e7e1575,
 							"bbz-2.fil",0xdbec92ae)
 ZAC_ROMEND
-CORE_GAMEDEFNV(bbeltzac,"Blackbelt (Zaccaria)",1986,"Zaccaria",mZAC2,TEST)
+CORE_GAMEDEFNV(bbeltzac,"Blackbelt (Zaccaria)",1986,"Zaccaria",mZAC2,0)
 
 /*--------------------------------
 / Mexico '86 (??/86)
 /-------------------------------*/
-INITGAME(mexico,1,dispZAC,FLIP_SW(FLIP_L),2)
+INITGAME(mexico,1,dispZAC3,FLIP_SW(FLIP_L),2)
 ZAC_ROMSTART1820(mexico,	"mex86_1.lgc",0x60d559b1,
 							"mex86_2.lgc",0x5c984c15)
 ZAC_ROMEND
-CORE_GAMEDEFNV(mexico,"Mexico '86",1986,"Zaccaria",mZAC2,TEST)
+CORE_GAMEDEFNV(mexico,"Mexico '86",1986,"Zaccaria",mZAC2,0)
 
 /*--------------------------------
 / Zankor (??/86)
 /-------------------------------*/
-INITGAME(zankor,1,dispZAC,FLIP_SW(FLIP_L),2)
+INITGAME(zankor,1,dispZAC3,FLIP_SW(FLIP_L),2)
 ZAC_ROMSTART1820(zankor,	"zan_ic1.764",0xe7ba5acf,
 							"zan_ic2.764",0x5804ff10)
 ZAC_ROMEND
-CORE_GAMEDEFNV(zankor,"Zankor",1986,"Zaccaria",mZAC2,TEST)
+CORE_GAMEDEFNV(zankor,"Zankor",1986,"Zaccaria",mZAC2,0)
 
 //??/86 Mystic Star (conversion kit with different hardware)
 
 /*--------------------------------
 / Spooky (??/87)
 /-------------------------------*/
-INITGAME(spooky,1,dispZAC,FLIP_SW(FLIP_L),2)
+INITGAME(spooky,1,dispZAC3,FLIP_SW(FLIP_L),2)
 ZAC_ROMSTART1820(spooky,	"spook_1.lgc",0x377b347d,
 							"spook_2.lgc",0xae0598b0)
 ZAC_ROMEND
-CORE_GAMEDEFNV(spooky,"Spooky",1987,"Zaccaria",mZAC2,TEST)
+CORE_GAMEDEFNV(spooky,"Spooky",1987,"Zaccaria",mZAC2,0)
 
 //??/87 Star's Phoenix
 //??/86 New Star's Phoenix
