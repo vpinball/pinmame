@@ -6,6 +6,7 @@
 #include "sound/2151intf.h"
 #include "sound/dac.h"
 #include "core.h"
+#include "sndbrd.h"
 
 #include "gts80.h"
 #include "gts80s.h"
@@ -28,24 +29,22 @@
 
 #define GTS80S_BUFFER_SIZE 8192
 
-typedef struct tagGTS80SL {
+struct {
   int   stream;
   INT16 buffer[GTS80S_BUFFER_SIZE+1];
   double clock[GTS80S_BUFFER_SIZE+1];
   int   buf_pos;
 
   int   dips;
-} GTS80SL;
+} GTS80S_locals;
 
-static GTS80SL GTS80S_locals;
-
-void GTS80S_sound_latch(int data)
+WRITE_HANDLER(gts80s_data_w)
 {
-	logerror("sound latch: 0x%02x\n", data);
-	riot6530_set_input_b(0, GTS80S_locals.dips | 0x60 | (data&0x0f));
+//	logerror("sound latch: 0x%02x\n", data);
+	riot6530_set_input_b(0, GTS80S_locals.dips | 0x20 | (data&0x0f));
 }
 
-/* configured as output, shouldn't be read */
+/* configured as output, shouldn't be read at all */
 READ_HANDLER(riot6530_0a_r)  {
 	logerror("riot6530_0a_r\n");
 	return 0x00;
@@ -62,7 +61,7 @@ WRITE_HANDLER(riot6530_0a_w) {
 	GTS80S_locals.buffer[GTS80S_locals.buf_pos++] = (0x80-data)<<8;
 }
 
-/* configured as input, shouldn't be read */
+/* configured as input, shouldn't be read at all */
 WRITE_HANDLER(riot6530_0b_w) { 
 	logerror("riot6530_0b_w: 0x%02x\n", data);
 }
@@ -137,7 +136,8 @@ static void GTS80S_Update(int num, INT16 *buffer, int length)
 /*--------------
 /  init
 /---------------*/
-void GTS80S_init(void) {
+
+void gts80s_init(struct sndbrdData *brdData) {
 	int i = 0;
 	UINT8 *pMem;
 
@@ -158,23 +158,29 @@ void GTS80S_init(void) {
 
 	pMem = memory_region(GTS80_MEMREG_SCPU1)+0x0400;
 	for(i=0x0400; i<0x0bff; i++) {
-		*pMem = (*pMem&0x0f);
+		*pMem = (*pMem&0x0f)|0xf0;
 		pMem++;
 		i++;
 	}
 
 	/* init the RIOT */
     riot6530_config(0, &GTS80S_riot6530_intf);
-	riot6530_set_clock(0, Machine->drv->cpu[GTS80_SCPU1].cpu_clock/4);
+	riot6530_set_clock(0, Machine->drv->cpu[GTS80_SCPU1].cpu_clock);
 	riot6530_reset();
 
 	GTS80S_locals.stream = stream_init("SND DAC", 100, 11025, 0, GTS80S_Update);
 	set_RC_filter(GTS80S_locals.stream, 270000, 15000, 0, 33000);
 }
 
-void GTS80S_exit(void) {
+void gts80s_exit(int boardNo)
+{
 	riot6530_unconfig();
 }
+
+const struct sndbrdIntf gts80sIntf = {
+  gts80s_init, gts80s_exit, NULL, gts80s_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+};
+
 
 /*----------------------------------------
 / Gottlieb Sys 80/80A Sound Board
@@ -376,7 +382,7 @@ MEMORY_WRITE_START(GTS80SS_writemem)
 { 0xff00, 0xffff, MWA_RAM},
 MEMORY_END
 
-void GTS80SS_sound_latch(int data)
+WRITE_HANDLER(gts80ss_data_w)
 {
 	data = (data&0x3f);
 
@@ -413,10 +419,7 @@ static void GTS80_ss_Update(int num, INT16 *buffer, int length)
 	GTS80SS_locals.buf_pos = 1;
 }
 
-/*--------------
-/  init
-/---------------*/
-void GTS80SS_init(void) {
+void gts80ss_init(struct sndbrdData *brdData) {
 	int i;
 
 	memset(&GTS80SS_locals, 0x00, sizeof GTS80SS_locals);
@@ -453,13 +456,17 @@ void GTS80SS_init(void) {
 	set_RC_filter(GTS80SS_locals.stream, 270000, 15000, 0, 10000);
 }
 
-void GTS80SS_exit(void)
+void gts80ss_exit(int boardNo)
 {
 	if ( GTS80SS_locals.timer ) {
 		timer_remove(GTS80SS_locals.timer);
 		GTS80SS_locals.timer = 0;
 	}
 }
+
+const struct sndbrdIntf gts80ssIntf = {
+  gts80ss_init, gts80ss_exit, NULL, gts80ss_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+};
 
 /*----------------------------------------
 / Gottlieb Sys 80B Sound Board
@@ -481,13 +488,14 @@ struct {
 WRITE_HANDLER(s80bs_ay8910_latch_w) { GTS80BS_locals.ay_latch = data;}
 
 // Init 
-void GTS80BS_init(void) { 
+void gts80b_init(struct sndbrdData *brdData) {
 	GTS80BS_locals.nmi_timer = NULL; 
 	memset(&GTS80BS_locals, 0, sizeof(GTS80BS_locals));
 }
 
 // Cleanup
-void GTS80BS_exit(void) { 
+void gts80b_exit(int boardNo)
+{
 	if(GTS80BS_locals.nmi_timer)
 		timer_remove(GTS80BS_locals.nmi_timer);
 	GTS80BS_locals.nmi_timer = NULL;
@@ -616,7 +624,7 @@ WRITE_HANDLER( s80bs_dac_data_w )
 }
 
 //Process command from Main CPU
-void GTS80BS_sound_latch(int data)
+WRITE_HANDLER(gts80b_data_w)
 {
 //	logerror("Sound Command %x\n",data);
 	s80bs_sh_w(0,data^0xff);	/*Data is inverted from main cpu*/
@@ -721,6 +729,11 @@ MEMORY_WRITE_START(GTS80BS3_writemem2)
 { 0x8000, 0x8000, s80bs_dac_vol_w },
 { 0x8001, 0x8001, s80bs_dac_data_w},
 MEMORY_END
+
+const struct sndbrdIntf gts80bIntf = {
+  gts80b_init, gts80b_exit, NULL, gts80b_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+};
+
 
 /*----------------
 / Sound interface

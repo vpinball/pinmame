@@ -41,10 +41,6 @@ extern const struct Memory_WriteAddress GTS80S_writemem[];
   ignore_interrupt, 0 \
 }
 
-void GTS80S_init(void);
-void GTS80S_exit(void);
-void GTS80S_sound_latch(int data);
-
 /* Gottlieb System 80/80A Sound & Speech Board */
 
 /*-- Sound & Speek Board, 2 X 2K Voice/Sound Roms --*/
@@ -63,10 +59,6 @@ extern const struct Memory_WriteAddress GTS80SS_writemem[];
   GTS80SS_readmem, GTS80SS_writemem, 0, 0, \
   ignore_interrupt, 0 \
 }
-
-void GTS80SS_init(void);
-void GTS80SS_exit(void);
-void GTS80SS_sound_latch(int data);
 
 /* Gottlieb System 80B Sound board Hardware Versions:
    -----------------------------------------
@@ -123,11 +115,6 @@ extern struct DACinterface      GTS80BS_dacInt;
 extern struct AY8910interface   GTS80BS_ay8910Int;
 extern struct YM2151interface   GTS80BS_ym2151Int;
 extern struct Samplesinterface	samples_interface;
-
-/*-- Sound interface communications --*/
-extern void GTS80BS_init(void);
-extern void GTS80BS_exit(void);
-extern void GTS80BS_sound_latch(int data);
 
 /****************/
 /* GENERATION 1 */
