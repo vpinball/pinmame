@@ -3,13 +3,16 @@ What's new:
 
 Version 1.xx (Month x, 2002)
 ----------------------------
-- Sound on Gottlieb System 80 games is now working fine, except for some minor games (thanks goes to Peter Hall
-  for providing very helpfully infos)
-- Hankin: Switch numbering changed
-- Sound for Hankin games working (minor issues on Orbit 1 and FJ, speed and pitch maybe not correct)
+- Gottlieb System 80: Sound (not speech!) for Sound-only and Sound & Speech board is now working fine
+- Gottlieb System 80: Added support for sound only PiggyPack board ("El Dorado City of Gold" isn't working,
+  probably due to a bad sound ROM)
+  (thanks goes to Peter Hall for providing very helpfully infos on these sound board)
+- Hankin: Switch numbering now reflexect the naming in the manual
+- Hankin: Added sound support (Orbit 1 and FJ Holden are working only particially)
+- Hanking: Fixed display issues
   [Tom Haukap]
 
-- Speech for Gottlieb System 80 games is working (prelimninary)
+- Gottlieb System 80: Added prelimninary speech support, it is understandable, but not quite good
   [Gerrit Volkenborn, Tom Haukap]
 
 
