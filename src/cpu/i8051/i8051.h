@@ -45,6 +45,7 @@ enum {
 #define I8051_INT1_LINE		1   /* External Interrupt 1 */
 #define I8051_T0_LINE		2   /* Timer 0 External Input */
 #define I8051_T1_LINE		3   /* Timer 1 External Input */
+#define I8051_RX_LINE		4   /* Serial Port Receive Line */
 
 /* definition of the special function registers. Note that the values are */
 /* the same as the internal memory address in the 8051 */
@@ -90,6 +91,9 @@ enum {
 #define		TI		0x99
 #define		RI		0x98
 
+#define TI_FLAG 1
+#define RI_FLAG 2
+
 extern int i8051_icount;						/* cycle count */
 
 extern void i8051_init (void);					/* Initialize save states */
@@ -109,6 +113,9 @@ extern unsigned i8051_dasm(char *buffer, unsigned pc);
 
 WRITE_HANDLER( i8051_internal_w );
 READ_HANDLER( i8051_internal_r );
+
+extern void i8051_set_serial_tx_callback(void (*callback)(int data));
+extern void i8051_set_serial_rx_callback(int (*callback)(void));
 
 #ifdef MAME_DEBUG
 extern unsigned Dasm8051( char *dst, unsigned pc );
@@ -134,6 +141,8 @@ extern void i8752_state_save(void *file);
 extern void i8752_state_load(void *file);
 extern const char *i8752_info(void *context, int regnum);
 extern unsigned i8752_dasm(char *buffer, unsigned pc);
+extern void i8752_set_serial_tx_callback(void (*callback)(int data));
+extern void i8752_set_serial_rx_callback(int (*callback)(void));
 WRITE_HANDLER( i8752_internal_w );
 READ_HANDLER( i8752_internal_r );
 #endif	//(HAS_8752)
