@@ -372,12 +372,12 @@ static wpc_tSamSolMap milln_samsolmap[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-S11_ROMSTART48(milln,l3,"mill_u26.l3", 0x07bc9fff,
-                        "mill_u27.l3", 0xba789c43)
-S11XS_SOUNDROM88(       "mill_u21.l1", 0x4cd1ee90,
-                        "mill_u22.l1", 0x73735cfc)
-S11CS_SOUNDROM88(       "mill_u4.l1",  0xcf766506,
-                        "mill_u19.l1", 0xe073245a)
+S11_ROMSTART48(milln,l3,"mill_u26.l3", CRC(07bc9fff),
+                        "mill_u27.l3", CRC(ba789c43))
+S11XS_SOUNDROM88(       "mill_u21.l1", CRC(4cd1ee90),
+                        "mill_u22.l1", CRC(73735cfc))
+S11CS_SOUNDROM88(       "mill_u4.l1",  CRC(cf766506),
+                        "mill_u19.l1", CRC(e073245a))
 S11_ROMEND
 
 /*--------------

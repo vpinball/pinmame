@@ -515,16 +515,16 @@ static void t2_drawStatic(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(t2,l8,"t2_l8.rom",0x80000,0xc00e52e9)
-WPCS_SOUNDROM222("t2_u18.l3",0x2280bdd0,
-                 "t2_u15.l3",0xdad03ad1,
-                 "t2_u14.l3",0x9addc9dc)
+WPC_ROMSTART(t2,l8,"t2_l8.rom",0x80000,CRC(c00e52e9))
+WPCS_SOUNDROM222("t2_u18.l3",CRC(2280bdd0),
+                 "t2_u15.l3",CRC(dad03ad1),
+                 "t2_u14.l3",CRC(9addc9dc))
 WPC_ROMEND
 /* Profanity speech ROM. Don't know if the sound rom works with L8 */
-WPC_ROMSTART(t2,p2f,"u6-nasty.rom",0x40000,0xadd685a4)
-WPCS_SOUNDROM222(   "t2_u18.l3",   0x2280bdd0,
-                    "t2_u15.l3",   0xdad03ad1,
-                    "u14-nsty.rom",0xb4d64152)
+WPC_ROMSTART(t2,p2f,"u6-nasty.rom",0x40000,CRC(add685a4))
+WPCS_SOUNDROM222(   "t2_u18.l3",   CRC(2280bdd0),
+                    "t2_u15.l3",   CRC(dad03ad1),
+                    "u14-nsty.rom",CRC(b4d64152))
 WPC_ROMEND
 
 /*--------------

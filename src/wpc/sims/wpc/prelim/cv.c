@@ -272,20 +272,20 @@ static void cv_drawMech(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(cv,14,"cirq_14.rom",0x100000,0x7a8bf999)
-DCS_SOUNDROM5xm("s2v1_0.rom",0x79dbb8ee,
-                "s3v0_4.rom",0x8c6c0c56,
-                "s4v0_4.rom",0xa9014b78,
-                "s5v0_4.rom",0x7e07a2fc,
-                "s6v0_4.rom",0x36ca43d3)
+WPC_ROMSTART(cv,14,"cirq_14.rom",0x100000,CRC(7a8bf999))
+DCS_SOUNDROM5xm("s2v1_0.rom",CRC(79dbb8ee),
+                "s3v0_4.rom",CRC(8c6c0c56),
+                "s4v0_4.rom",CRC(a9014b78),
+                "s5v0_4.rom",CRC(7e07a2fc),
+                "s6v0_4.rom",CRC(36ca43d3))
 WPC_ROMEND
 
-WPC_ROMSTART(cv, 20h, "cv200h.rom", 0x100000, 0x138a0c3c)
-DCS_SOUNDROM5xm("s2v1_0.rom",0x79dbb8ee,
-                "s3v0_4.rom",0x8c6c0c56,
-                "s4v0_4.rom",0xa9014b78,
-                "s5v0_4.rom",0x7e07a2fc,
-                "s6v0_4.rom",0x36ca43d3)
+WPC_ROMSTART(cv, 20h, "cv200h.rom", 0x100000, CRC(138a0c3c))
+DCS_SOUNDROM5xm("s2v1_0.rom",CRC(79dbb8ee),
+                "s3v0_4.rom",CRC(8c6c0c56),
+                "s4v0_4.rom",CRC(a9014b78),
+                "s5v0_4.rom",CRC(7e07a2fc),
+                "s6v0_4.rom",CRC(36ca43d3))
 WPC_ROMEND
 
 /*--------------

@@ -250,16 +250,16 @@ static sim_tInportData sc_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(sc,18,"safe_18g.rom",0x80000,0xaeb4b669)
-DCS_SOUNDROM3m(	"safsnds2.rom",0x20e14c63,
-		"safsnds3.rom",0x99e318e7,
-		"safsnds4.rom",0x9c8a23eb)
+WPC_ROMSTART(sc,18,"safe_18g.rom",0x80000,CRC(aeb4b669))
+DCS_SOUNDROM3m(	"safsnds2.rom",CRC(20e14c63),
+		"safsnds3.rom",CRC(99e318e7),
+		"safsnds4.rom",CRC(9c8a23eb))
 WPC_ROMEND
 
-WPC_ROMSTART(sc,18n,"safe_18n.rom",0x80000,0x4d5d5626)
-DCS_SOUNDROM3m(	"safsnds2.rom",0x20e14c63,
-		"safsnds3.rom",0x99e318e7,
-		"safsnds4.rom",0x9c8a23eb)
+WPC_ROMSTART(sc,18n,"safe_18n.rom",0x80000,CRC(4d5d5626))
+DCS_SOUNDROM3m(	"safsnds2.rom",CRC(20e14c63),
+		"safsnds3.rom",CRC(99e318e7),
+		"safsnds4.rom",CRC(9c8a23eb))
 WPC_ROMEND
 
 /*--------------

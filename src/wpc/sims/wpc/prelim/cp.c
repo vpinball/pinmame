@@ -235,13 +235,13 @@ static sim_tInportData cp_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(cp,16,"cp_g11.1_6",0x80000,0xd6d0b921)
-DCS_SOUNDROM6xm("cp_s2.bin",0xe0b67f6f,
-				"cp_s3.bin",0x68accf24,
-				"cp_s4.bin",0x50d1c920,
-				"cp_s5.bin",0x69af347a,
-				"cp_s6.bin",0x76ca4fed,
-				"cp_s7.bin",0xbe619157)
+WPC_ROMSTART(cp,16,"cp_g11.1_6",0x80000,CRC(d6d0b921))
+DCS_SOUNDROM6xm("cp_s2.bin",CRC(e0b67f6f),
+				"cp_s3.bin",CRC(68accf24),
+				"cp_s4.bin",CRC(50d1c920),
+				"cp_s5.bin",CRC(69af347a),
+				"cp_s6.bin",CRC(76ca4fed),
+				"cp_s7.bin",CRC(be619157))
 WPC_ROMEND
 
 /*--------------

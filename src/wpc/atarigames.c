@@ -44,8 +44,8 @@ core_tLCDLayout atari_disp2[] = {
 / The Atarians (11/1976)
 /-------------------------------------------------------------------*/
 INITGAME1(atarians, atari_disp1, FLIP_SWNO(36,37), 1)
-ATARI_2_ROMSTART(atarians,	"atarian.e0",	0x45cb0427,
-							"atarian.e00",	0x6066bd63)
+ATARI_2_ROMSTART(atarians,	"atarian.e0",	CRC(45cb0427),
+							"atarian.e00",	CRC(6066bd63))
 ATARI_ROMEND
 CORE_GAMEDEFNV(atarians,"The Atarians",1976,"Atari",gl_mATARI0,GAME_NOT_WORKING)
 
@@ -53,8 +53,8 @@ CORE_GAMEDEFNV(atarians,"The Atarians",1976,"Atari",gl_mATARI0,GAME_NOT_WORKING)
 / The Atarians (working bootleg)
 /-------------------------------------------------------------------*/
 INITGAME1(atarianb, atari_disp1, FLIP_SWNO(36,37), 1)
-ATARI_2_ROMSTART(atarianb,	"atarian.e0",	0x45cb0427,
-							"atarianb.e00",	0x74fc86e4)
+ATARI_2_ROMSTART(atarianb,	"atarian.e0",	CRC(45cb0427),
+							"atarianb.e00",	CRC(74fc86e4))
 ATARI_ROMEND
 CORE_CLONEDEFNV(atarianb,atarians,"The Atarians (working bootleg)",2002,"Atari / Gaston",gl_mATARI0,0)
 
@@ -62,8 +62,8 @@ CORE_CLONEDEFNV(atarianb,atarians,"The Atarians (working bootleg)",2002,"Atari /
 / Time 2000 (06/1977)
 /-------------------------------------------------------------------*/
 INITGAME1(time2000, atari_disp1, FLIPSW1920, 1)
-ATARI_2_ROMSTART(time2000,	"time.e0",	0x1e79c133,
-							"time.e00",	0xe380f35c)
+ATARI_2_ROMSTART(time2000,	"time.e0",	CRC(1e79c133),
+							"time.e00",	CRC(e380f35c))
 ATARI_ROMEND
 CORE_GAMEDEFNV(time2000,"Time 2000",1977,"Atari",gl_mATARI1,0)
 
@@ -71,8 +71,8 @@ CORE_GAMEDEFNV(time2000,"Time 2000",1977,"Atari",gl_mATARI1,0)
 / Airborne Avenger (09/1977)
 /-------------------------------------------------------------------*/
 INITGAME1(aavenger, atari_disp1, FLIPSW1920, 1)
-ATARI_2_ROMSTART(aavenger,	"airborne.e0",	0x44e67c54,
-							"airborne.e00",	0x05ac26b8)
+ATARI_2_ROMSTART(aavenger,	"airborne.e0",	CRC(44e67c54),
+							"airborne.e00",	CRC(05ac26b8))
 ATARI_ROMEND
 CORE_GAMEDEFNV(aavenger,"Airborne Avenger",1977,"Atari",gl_mATARI1,0)
 
@@ -80,8 +80,8 @@ CORE_GAMEDEFNV(aavenger,"Airborne Avenger",1977,"Atari",gl_mATARI1,0)
 / Middle Earth (02/1978)
 /-------------------------------------------------------------------*/
 INITGAME1(midearth, atari_disp1, FLIPSW1920, 1)
-ATARI_2_ROMSTART(midearth,	"608.bin",	0x28b92faf,
-							"609.bin",	0x589df745)
+ATARI_2_ROMSTART(midearth,	"608.bin",	CRC(28b92faf),
+							"609.bin",	CRC(589df745))
 ATARI_ROMEND
 CORE_GAMEDEFNV(midearth,"Middle Earth",1978,"Atari",gl_mATARI1A,0)
 
@@ -89,8 +89,8 @@ CORE_GAMEDEFNV(midearth,"Middle Earth",1978,"Atari",gl_mATARI1A,0)
 / Space Riders (09/1978)
 /-------------------------------------------------------------------*/
 INITGAME1(spcrider, atari_disp1, FLIPSW6667, 1)
-ATARI_2_ROMSTART(spcrider,	"spacel.bin",	0x66ffb04e,
-							"spacer.bin",	0x3cf1cd73)
+ATARI_2_ROMSTART(spcrider,	"spacel.bin",	CRC(66ffb04e),
+							"spacer.bin",	CRC(3cf1cd73))
 ATARI_ROMEND
 CORE_GAMEDEFNV(spcrider,"Space Riders",1978,"Atari",gl_mATARI1,GAME_IMPERFECT_SOUND)
 
@@ -98,9 +98,9 @@ CORE_GAMEDEFNV(spcrider,"Space Riders",1978,"Atari",gl_mATARI1,GAME_IMPERFECT_SO
 / Superman (03/1979)
 /-------------------------------------------------------------------*/
 INITGAME2(superman, atari_disp2, FLIPSW6667, 1)
-ATARI_3_ROMSTART(superman,	"supmn_k.rom",	0xa28091c2,
-							"atari_m.rom",	0x1bb6b72c,
-							"atari_j.rom",	0x26521779)
+ATARI_3_ROMSTART(superman,	"supmn_k.rom",	CRC(a28091c2),
+							"atari_m.rom",	CRC(1bb6b72c),
+							"atari_j.rom",	CRC(26521779))
 ATARI_ROMEND
 CORE_GAMEDEFNV(superman,"Superman",1979,"Atari",gl_mATARI2,0)
 
@@ -108,9 +108,9 @@ CORE_GAMEDEFNV(superman,"Superman",1979,"Atari",gl_mATARI2,0)
 / Hercules (05/1979)
 /-------------------------------------------------------------------*/
 INITGAME2(hercules, atari_disp2, FLIPSW6667, 1)
-ATARI_3_ROMSTART(hercules,	"herc_k.rom",	0x65e099b1,
-							"atari_m.rom",	0x1bb6b72c,
-							"atari_j.rom",	0x26521779)
+ATARI_3_ROMSTART(hercules,	"herc_k.rom",	CRC(65e099b1),
+							"atari_m.rom",	CRC(1bb6b72c),
+							"atari_j.rom",	CRC(26521779))
 ATARI_ROMEND
 CORE_GAMEDEFNV(hercules,"Hercules",1979,"Atari",gl_mATARI2,0)
 

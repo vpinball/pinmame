@@ -476,10 +476,10 @@ F*CKING diverter... it flicks so the sample gets played a lot of times!
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(drac,l1,"dracu_l1.rom",0x80000,0xb8679686)
-WPCS_SOUNDROM888("dracsnd.u18",0x372ffb90,
-                 "dracsnd.u15",0x77b5abe2,
-                 "dracsnd.u14",0x5137aaf5)
+WPC_ROMSTART(drac,l1,"dracu_l1.rom",0x80000,CRC(b8679686))
+WPCS_SOUNDROM888("dracsnd.u18",CRC(372ffb90),
+                 "dracsnd.u15",CRC(77b5abe2),
+                 "dracsnd.u14",CRC(5137aaf5))
 WPC_ROMEND
 
 /*--------------

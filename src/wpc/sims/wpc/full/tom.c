@@ -536,21 +536,21 @@ static void tom_drawStatic(BMTYPE **line) {
 /*-----------------
 /  ROM definitions  (Take them from Games.c)
 /------------------*/
-WPC_ROMSTART(tom,13,"tom1_3x.rom",0x80000,0xaff4d14c)
-DCS_SOUNDROM6x("tm_u2_s.l2",0xb128fbba,
-               "tm_u3_s.l2",0x128c7d3c,
-               "tm_u4_s.l2",0x3d9b2354,
-               "tm_u5_s.l2",0x44247b60,
-               "tm_u6_s.l2",0xf366bbe5,
-               "tm_u7_s.l2",0xf98e9e38)
+WPC_ROMSTART(tom,13,"tom1_3x.rom",0x80000,CRC(aff4d14c))
+DCS_SOUNDROM6x("tm_u2_s.l2",CRC(b128fbba),
+               "tm_u3_s.l2",CRC(128c7d3c),
+               "tm_u4_s.l2",CRC(3d9b2354),
+               "tm_u5_s.l2",CRC(44247b60),
+               "tm_u6_s.l2",CRC(f366bbe5),
+               "tm_u7_s.l2",CRC(f98e9e38))
 WPC_ROMEND
-WPC_ROMSTART(tom,12,"tom1_2x.rom",0x80000,0xbd8dd884)
-DCS_SOUNDROM6x("tm_u2_s.l2",0xb128fbba,
-               "tm_u3_s.l2",0x128c7d3c,
-               "tm_u4_s.l2",0x3d9b2354,
-               "tm_u5_s.l2",0x44247b60,
-               "tm_u6_s.l2",0xf366bbe5,
-               "tm_u7_s.l2",0xf98e9e38)
+WPC_ROMSTART(tom,12,"tom1_2x.rom",0x80000,CRC(bd8dd884))
+DCS_SOUNDROM6x("tm_u2_s.l2",CRC(b128fbba),
+               "tm_u3_s.l2",CRC(128c7d3c),
+               "tm_u4_s.l2",CRC(3d9b2354),
+               "tm_u5_s.l2",CRC(44247b60),
+               "tm_u6_s.l2",CRC(f366bbe5),
+               "tm_u7_s.l2",CRC(f98e9e38))
 WPC_ROMEND
 
 /*--------------

@@ -317,11 +317,11 @@ STDMETHODIMP CRoms::get_Available(VARIANT_BOOL *pVal)
 
 	/* check for existence of romset */
 	*pVal = VARIANT_TRUE;
-	if (!osd_faccess (m_gamedrv->name, OSD_FILETYPE_ROM))
+	if (!mame_faccess (m_gamedrv->name, FILETYPE_ROM))
 	{
 		/* if the game is a clone, check for parent */
 		if (m_gamedrv->clone_of == 0 || (m_gamedrv->clone_of->flags & NOT_A_DRIVER) ||
-				!osd_faccess(m_gamedrv->clone_of->name,OSD_FILETYPE_ROM))
+				!mame_faccess(m_gamedrv->clone_of->name,FILETYPE_ROM))
 			*pVal = VARIANT_FALSE;
 	}
 

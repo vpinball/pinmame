@@ -291,7 +291,10 @@ static INTERRUPT_GEN(by35_irq) {
   static int last = 0; pia_set_input_ca1(BY35_PIA1, last = !last);
 }
 
-static void by35_zeroCross(int data) { pia_pulse_cb1(BY35_PIA0, 0); }
+static void by35_zeroCross(int data) {
+  pia_set_input_cb1(BY35_PIA0, 0);
+  pia_set_input_cb1(BY35_PIA0, 1);
+}
 
 
 /* Bally Prototype changes below.
@@ -375,9 +378,13 @@ static struct pia6821_interface by35Proto_pia[] = {{
 /* IRQ: A/B              */  piaIrq,0
 }};
 
-static INTERRUPT_GEN(byProto_irq) { pia_pulse_ca1(BY35_PIA0, 0); }
+static INTERRUPT_GEN(byProto_irq) {
+  pia_set_input_ca1(BY35_PIA0, 0); pia_set_input_ca1(BY35_PIA0, 1);
+}
 
-static void by35p_zeroCross(int data) { pia_pulse_ca1(BY35_PIA1, 0); }
+static void by35p_zeroCross(int data) {
+  pia_set_input_ca1(BY35_PIA1, 0); pia_set_input_ca1(BY35_PIA1, 1);
+}
 
 
 /*-----------------------------------------------

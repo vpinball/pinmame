@@ -249,13 +249,13 @@ static sim_tInportData pop_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(pop,lx5,"peye_lx5.rom",0x80000,0xee1f7a67)
-DCS_SOUNDROM6x(	"popsndl2.u2",0x00590f2d,
-		"popsndl2.u3",0x87032b27,
-		"popsndl2.u4",0xb0808aa8,
-		"popsndl2.u5",0x3662206b,
-		"popsndl2.u6",0x84a5f317,
-		"popsndl2.u7",0xb8fde2c7)
+WPC_ROMSTART(pop,lx5,"peye_lx5.rom",0x80000,CRC(ee1f7a67))
+DCS_SOUNDROM6x(	"popsndl2.u2",CRC(00590f2d),
+		"popsndl2.u3",CRC(87032b27),
+		"popsndl2.u4",CRC(b0808aa8),
+		"popsndl2.u5",CRC(3662206b),
+		"popsndl2.u6",CRC(84a5f317),
+		"popsndl2.u7",CRC(b8fde2c7))
 WPC_ROMEND
 
 /*--------------

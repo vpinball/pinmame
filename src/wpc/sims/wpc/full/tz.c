@@ -405,7 +405,7 @@ static core_tLampDisplay tz_lampPos = {
 static void tz_drawMech(BMTYPE **line) {
 //  core_textOutf(50, 0,BLACK,"%2d:%02d",locals.clockTick/(4*),
 //                          (locals.clockTick*15/TZ_CLOCKTICKS) % 60);
-  core_textOutf(50,0,BLACK,"%2d:%2d",(mech_getPos(0)+4)/2%12,mech_getPos(1));
+  core_textOutf(50,0,BLACK,"%2d:%02d", mech_getPos(0)/60,mech_getPos(0) % 60);
   core_textOutf(50,10,BLACK,"Gum:%3d",locals.gumPos);
 }
   /* Help */
@@ -430,16 +430,16 @@ static void tz_drawStatic(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(tz, 94h, "tz_94h.rom", 0x80000, 0x5032e8c6)
-WPCS_SOUNDROM882("tzu18_l2.rom", 0x66575ec2,
-                 "tzu15_l2.rom", 0x389d2442,
-                 "tzu14_l2.rom", 0x5a67bd56)
+WPC_ROMSTART(tz, 94h, "tz_94h.rom", 0x80000, CRC(5032e8c6))
+WPCS_SOUNDROM882("tzu18_l2.rom", CRC(66575ec2),
+                 "tzu15_l2.rom", CRC(389d2442),
+                 "tzu14_l2.rom", CRC(5a67bd56))
 WPC_ROMEND
 
-WPC_ROMSTART(tz,92,"tzone9_2.rom",0x80000,0xec3e61c8)
-WPCS_SOUNDROM882("tzu18_l2.rom",0x66575ec2,
-                 "tzu15_l2.rom",0x389d2442,
-                 "tzu14_l2.rom",0x5a67bd56)
+WPC_ROMSTART(tz,92,"tzone9_2.rom",0x80000,CRC(ec3e61c8))
+WPCS_SOUNDROM882("tzu18_l2.rom",CRC(66575ec2),
+                 "tzu15_l2.rom",CRC(389d2442),
+                 "tzu14_l2.rom",CRC(5a67bd56))
 WPC_ROMEND
 
 /*--------------
@@ -499,22 +499,28 @@ READ_HANDLER(tz_swRowRead) {
             xxxxxxxxxx
         xxxxxx    xxxxxxxx
 */
-#define TZ_CLOCKTICKS    13 /* Time for clock to move 15 minutes */
-static mech_tInitData mechClockH = {
-  sClockRev, sClockFwd, MECH_TWODIRSOL|MECH_FAST,TZ_CLOCKTICKS*48*8,24,
-  {{swClockH4,3,6},{swClockH4,17,20},{swClockH3,1,12},{swClockH2,9,18},
-   {swClockH1,5,10},{swClockH1,15,22}}
-};
-static mech_tInitData mechClockM = {
-  sClockRev, sClockFwd, MECH_TWODIRSOL|MECH_FAST,TZ_CLOCKTICKS*4*8,60,
-  {{swClockM0, 0, 1},{swClockM15,15,16},{swClockM30,30,31},{swClockM45,45,46}}
+#define TZ_CLOCKTICKS   10 /* Time for clock to move 15 minutes */
+static mech_tInitData mechClock = {
+  sClockRev, sClockFwd, MECH_TWODIRSOL|MECH_FAST,TZ_CLOCKTICKS*48*8,720,
+  {{swClockH4,210,329}, //  3:30 -  5:30
+   {swClockH4,630,719}, // 10:30 - 12:00
+   {swClockH4,  0, 29}, // 12:00 - 12:30
+   {swClockH3,150,509}, //  2:30 -  8:30
+   {swClockH2,390,689}, //  6:30 - 11:30
+   {swClockH1,270,450}, //  4:30 -  7:30
+   {swClockH1,570,719}, //  9:30 - 12:00
+   {swClockH1,  0, 89}, // 12:00 -  1:30
+   {swClockM0,  0,  2,60}, //  0 min
+   {swClockM15,15, 17,60}, // 15 min
+   {swClockM30,30, 32,60}, // 30 min
+   {swClockM45,45, 47,60}} // 45 min
 };
 
 static void init_tz(void) {
   core_gameData = &tzGameData;
   install_mem_read_handler(WPC_CPUNO, WPC_SWROWREAD+WPC_BASE, WPC_SWROWREAD+WPC_BASE,
                            tz_swRowRead);
-  mech_add(0,&mechClockH); mech_add(1,&mechClockM);
+  mech_add(0,&mechClock);
 }
 
 static int tz_getSol(int solNo) {
@@ -572,5 +578,5 @@ static void tz_handleMech(int mech) {
 /* 0 = time min after 12:00 */
 /* 1 = Gumball motor position (0-119) */
 static int tz_getMech(int mechNo) {
-  return mechNo ? locals.gumPos : (((mech_getPos(0)+4)/2%12)*60+mech_getPos(1));
+  return mechNo ? locals.gumPos : mech_getPos(0);
 }

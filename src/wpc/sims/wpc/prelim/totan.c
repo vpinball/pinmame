@@ -262,11 +262,11 @@ static sim_tInportData totan_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(totan,14,"an_g11.1_4",0x80000,0x54db749e)
-DCS_SOUNDROM4mx("ans2v1_1.rom",0x0d023f90,
-                "ans3v1_0.rom",0x3f677813,
-                "ans4v1_0.rom",0xc26dff5f,
-                "ans5v1_0.rom",0x32ca1602)
+WPC_ROMSTART(totan,14,"an_g11.1_4",0x80000,CRC(54db749e))
+DCS_SOUNDROM4mx("ans2v1_1.rom",CRC(0d023f90),
+                "ans3v1_0.rom",CRC(3f677813),
+                "ans4v1_0.rom",CRC(c26dff5f),
+                "ans5v1_0.rom",CRC(32ca1602))
 WPC_ROMEND
 
 /*--------------

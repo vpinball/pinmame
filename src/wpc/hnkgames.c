@@ -36,10 +36,10 @@ static void init_##name(void) { \
 / FJ Holden
 /-------------------------------*/
 INITGAME(fjholden,GEN_HNK,dispHNK,FLIP_SW(FLIP_L),0,SNDBRD_HANKIN)
-HNK_ROMSTART(fjholden,  "fj_ic2.mpu",0xb47bc2c7,
-                        "fj_ic3.mpu",0xceaeb7d3)
-HNK_SOUNDROMS("fj_ic14.snd", 0x34fe3587,
-              "fj_ic3.snd",  0x09d3f020)
+HNK_ROMSTART(fjholden,  "fj_ic2.mpu",CRC(b47bc2c7),
+                        "fj_ic3.mpu",CRC(ceaeb7d3))
+HNK_SOUNDROMS("fj_ic14.snd", CRC(34fe3587),
+              "fj_ic3.snd",  CRC(09d3f020))
 HNK_ROMEND
 #define input_ports_fjholden input_ports_hnk
 CORE_GAMEDEFNV(fjholden,"FJ Holden",1978,"Hankin",by35_mHNK,GAME_IMPERFECT_SOUND)
@@ -48,10 +48,10 @@ CORE_GAMEDEFNV(fjholden,"FJ Holden",1978,"Hankin",by35_mHNK,GAME_IMPERFECT_SOUND
 / Orbit 1
 /-------------------------------*/
 INITGAME(orbit1,GEN_HNK,dispHNK,FLIP_SW(FLIP_L),0,SNDBRD_HANKIN)
-HNK_ROMSTART(orbit1,    "o1_ic2.mpu",0xb47bc2c7,
-                        "o1_ic3.mpu",0xfe7b61be)
-HNK_SOUNDROMS("o1_ic14.snd", 0x323bfbd5,
-              "o1_ic3.snd",  0xdfc57606)
+HNK_ROMSTART(orbit1,    "o1_ic2.mpu",CRC(b47bc2c7),
+                        "o1_ic3.mpu",CRC(fe7b61be))
+HNK_SOUNDROMS("o1_ic14.snd", CRC(323bfbd5),
+              "o1_ic3.snd",  CRC(dfc57606))
 HNK_ROMEND
 #define input_ports_orbit1 input_ports_hnk
 CORE_GAMEDEFNV(orbit1,"Orbit 1",1978,"Hankin",by35_mHNK,GAME_IMPERFECT_SOUND)
@@ -60,10 +60,10 @@ CORE_GAMEDEFNV(orbit1,"Orbit 1",1978,"Hankin",by35_mHNK,GAME_IMPERFECT_SOUND)
 / Howzat
 /-------------------------------*/
 INITGAME(howzat,GEN_HNK,dispHNK,FLIP_SW(FLIP_L),0,SNDBRD_HANKIN)
-HNK_ROMSTART(howzat,    "hz_ic2.mpu",0xb47bc2c7,
-                        "hz_ic3.mpu",0xd13df4bc)
-HNK_SOUNDROMS("hz_ic14.snd", 0x0e3fdb59,
-              "hz_ic3.snd",  0xdfc57606)
+HNK_ROMSTART(howzat,    "hz_ic2.mpu",CRC(b47bc2c7),
+                        "hz_ic3.mpu",CRC(d13df4bc))
+HNK_SOUNDROMS("hz_ic14.snd", CRC(0e3fdb59),
+              "hz_ic3.snd",  CRC(dfc57606))
 HNK_ROMEND
 #define input_ports_howzat input_ports_hnk
 CORE_GAMEDEFNV(howzat,"Howzat",1980,"Hankin",by35_mHNK,0)
@@ -72,10 +72,10 @@ CORE_GAMEDEFNV(howzat,"Howzat",1980,"Hankin",by35_mHNK,0)
 / Shark
 /-------------------------------*/
 INITGAME(shark,GEN_HNK,dispHNK,FLIP_SW(FLIP_L),0,SNDBRD_HANKIN)
-HNK_ROMSTART(shark,     "shk_ic2.mpu",0xb47bc2c7,
-                        "shk_ic3.mpu",0xc3ef936c)
-HNK_SOUNDROMS("shk_ic14.snd", 0x8f8b0e48,
-              "shk_ic3.snd",  0xdfc57606)
+HNK_ROMSTART(shark,     "shk_ic2.mpu",CRC(b47bc2c7),
+                        "shk_ic3.mpu",CRC(c3ef936c))
+HNK_SOUNDROMS("shk_ic14.snd", CRC(8f8b0e48),
+              "shk_ic3.snd",  CRC(dfc57606))
 HNK_ROMEND
 #define input_ports_shark input_ports_hnk
 CORE_GAMEDEFNV(shark,"Shark",1980,"Hankin",by35_mHNK,0)
@@ -84,10 +84,10 @@ CORE_GAMEDEFNV(shark,"Shark",1980,"Hankin",by35_mHNK,0)
 / The Empire Strike Back
 /-------------------------------*/
 INITGAME(empsback,GEN_HNK,dispHNK,FLIP_SW(FLIP_L),0,SNDBRD_HANKIN)
-HNK_ROMSTART(empsback,  "sw_ic2.mpu",0xb47bc2c7,
-                        "sw_ic3.mpu",0x837ffe32)
-HNK_SOUNDROMS("sw_ic14.snd", 0xc1eeb53b,
-              "sw_ic3.snd",  0xdb214f65)
+HNK_ROMSTART(empsback,  "sw_ic2.mpu",CRC(b47bc2c7),
+                        "sw_ic3.mpu",CRC(837ffe32))
+HNK_SOUNDROMS("sw_ic14.snd", CRC(c1eeb53b),
+              "sw_ic3.snd",  CRC(db214f65))
 HNK_ROMEND
 #define input_ports_empsback input_ports_hnk
 CORE_GAMEDEFNV(empsback,"The Empire Strike Back",1981,"Hankin",by35_mHNK,0)

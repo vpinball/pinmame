@@ -3,16 +3,6 @@
 #ifndef CONTROLLERROM_H
 #define CONTROLLERROM_H
 
-#define AUD_ROM_UNKNOWN		0x0000
-#define AUD_ROM_GOOD		0x0001
-#define AUD_ROM_NEED_REDUMP	0x0002
-#define AUD_ROM_NOT_FOUND	0x0004
-#define AUD_NOT_AVAILABLE	0x0008
-#define AUD_BAD_CHECKSUM	0x0010
-#define AUD_MEM_ERROR		0x0020
-#define AUD_LENGTH_MISMATCH	0x0040
-#define AUD_ROM_NEED_DUMP	0x0080
-
 /////////////////////////////////////////////////////////////////////////////
 // CRom
 class ATL_NO_VTABLE CRom : 

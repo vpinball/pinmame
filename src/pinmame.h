@@ -11,6 +11,24 @@
 #define NEOFREE
 
 
+#if MAMEVER >= 6800
+#  ifndef INVALID_FILE_ATTRIBUTES
+#    define INVALID_FILE_ATTRIBUTES 0xffffffff
+#  endif
+#  ifndef INVALID_SET_FILE_POINTER
+#    define INVALID_SET_FILE_POINTER 0xffffffff
+#  endif
+#  ifndef PI
+#    define PI 3.14159265354
+#  endif
+#  ifdef _MSC_VER
+#    define vsnprintf _vsnprintf
+#  endif
+#else // MAMEVER < 6800
+#  define CRC(a) 0x##a
+#  define SHA1(a)
+#  define NO_DUMP 0x00000000
+#endif // MAMEVER < 6800
 #if MAMEVER >= 6100
 #define osd_mark_dirty(a,b,c,d)
 #endif /* MAMEVER */
@@ -22,6 +40,7 @@
 #define FILETYPE_WAVE OSD_FILETYPE_WAVEFILE
 #define FILETYPE_HIGHSCORE_DB OSD_FILETYPE_HIGHSCORE_DB
 #define FILETYPE_PRINTER OSD_FILETYPE_MEMCARD
+#define FILETYPE_ROM OSD_FILETYPE_ROM
 #define mame_file void
 #define mame_fopen osd_fopen
 #define mame_fclose osd_fclose
@@ -63,9 +82,6 @@
 #define HAS_I86      1
 #define HAS_4004     1
 #define HAS_PPS4     1
-#if MAMEVER >= 6300
-#define HAS_ADSP2101 // to avoid compile errors
-#endif
 
 // Sound
 #define HAS_DAC        1
@@ -110,7 +126,12 @@
 #pragma warning(disable:4761)		// "integral size mismatch in argument"
 #pragma warning(disable:4068)
 #pragma warning(disable:4005)
-#define M_PI 3.14159265358
+#ifndef M_PI
+#  define M_PI 3.14159265358
+#endif // M_PI
+#ifndef PI
+#  define PI M_PI
+#endif // M_PI
 #define strcasecmp stricmp
 #define snprintf _snprintf
 

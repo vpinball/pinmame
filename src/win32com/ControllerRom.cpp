@@ -5,6 +5,7 @@
 
 extern "C" {
 #include "driver.h"
+#include "audit.h"
 }
 
 STDMETHODIMP CRom::InterfaceSupportsErrorInfo(REFIID riid)

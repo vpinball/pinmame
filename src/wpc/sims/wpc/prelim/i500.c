@@ -268,13 +268,13 @@ static sim_tInportData i500_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(i500,11r,"indy1_1r.rom",0x80000,0xec385bf5)
-DCS_SOUNDROM6x(	"su2",0xd2f9ab24,
-		"su3",0x067f4df6,
-		"su4",0x229b96c2,
-		"su5",0xf0c006a5,
-		"su6",0xa2b60d31,
-		"su7",0x94eea5a4)
+WPC_ROMSTART(i500,11r,"indy1_1r.rom",0x80000,CRC(ec385bf5))
+DCS_SOUNDROM6x(	"su2",CRC(d2f9ab24),
+		"su3",CRC(067f4df6),
+		"su4",CRC(229b96c2),
+		"su5",CRC(f0c006a5),
+		"su6",CRC(a2b60d31),
+		"su7",CRC(94eea5a4))
 WPC_ROMEND
 
 /*--------------

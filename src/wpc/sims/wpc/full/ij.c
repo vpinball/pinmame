@@ -591,14 +591,14 @@ static void ij_drawStatic(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(ij,l7,"ijone_l7.rom",0x80000,0x4658c877)
-DCS_SOUNDROM7x("ijsnd_l3.u2",0xfbd91a0d,
-               "ijsnd_l3.u3",0x3f12a996,
-               "ijsnd_l3.u4",0x05a92937,
-               "ijsnd_l3.u5",0xe6fe417c,
-               "ijsnd_l3.u6",0x975f3e48,
-               "ijsnd_l3.u7",0x2d9cd098,
-               "ijsnd_l3.u8",0x45e35bd7)
+WPC_ROMSTART(ij,l7,"ijone_l7.rom",0x80000,CRC(4658c877))
+DCS_SOUNDROM7x("ijsnd_l3.u2",CRC(fbd91a0d),
+               "ijsnd_l3.u3",CRC(3f12a996),
+               "ijsnd_l3.u4",CRC(05a92937),
+               "ijsnd_l3.u5",CRC(e6fe417c),
+               "ijsnd_l3.u6",CRC(975f3e48),
+               "ijsnd_l3.u7",CRC(2d9cd098),
+               "ijsnd_l3.u8",CRC(45e35bd7))
 WPC_ROMEND
 
 /*--------------

@@ -32,9 +32,9 @@ static core_tGameData tttGameData = {
 };
 INITGAME(ttt)
 
-WPC_ROMSTART(ttt,10,"tikt1_0.rom",0x80000,0xbf1d0382)
-DCS_SOUNDROM2m("ttt_s2.rom",0xfaae93eb,
-               "ttt_s3.rom",0x371ba9b3)
+WPC_ROMSTART(ttt,10,"tikt1_0.rom",0x80000,CRC(bf1d0382))
+DCS_SOUNDROM2m("ttt_s2.rom",CRC(faae93eb),
+               "ttt_s3.rom",CRC(371ba9b3))
 WPC_ROMEND
 #define input_ports_ttt input_ports_wpc
 CORE_GAMEDEF(ttt,10,"Ticket Tac Toe (1.0)",1996,"Williams",wpc_m95S,0)
@@ -54,7 +54,7 @@ static core_tGameData tfdmdGameData = {
   }
 };
 INITGAME(tfdmd)
-WPC_ROMSTART(tfdmd,l3,"u6_l3.rom",0x20000,0xbd43e28c) WPC_ROMEND
+WPC_ROMSTART(tfdmd,l3,"u6_l3.rom",0x20000,CRC(bd43e28c)) WPC_ROMEND
 #define input_ports_tfdmd input_ports_wpc
 CORE_GAMEDEF(tfdmd,l3,"WPC Test Fixture: DMD (L-3)",1991,"Bally",wpc_mDMD,GAME_NO_SOUND)
 
@@ -75,8 +75,8 @@ static core_tGameData tfsGameData = {
 };
 INITGAME(tfs)
 
-WPC_ROMSTART(tfs,12,"u6_12.rom",0x80000,0x12687d19)
-DCS_SOUNDROM1x("u2_10.rom",0xd705b41e)
+WPC_ROMSTART(tfs,12,"u6_12.rom",0x80000,CRC(12687d19))
+DCS_SOUNDROM1x("u2_10.rom",CRC(d705b41e))
 WPC_ROMEND
 #define input_ports_tfs input_ports_wpc
 CORE_GAMEDEF(tfs,12,"WPC Test Fixture: Security (1.2)",1994,"Bally",wpc_mSecurityS,0)
@@ -98,8 +98,8 @@ static core_tGameData tf95GameData = {
 };
 INITGAME(tf95)
 
-WPC_ROMSTART(tf95,12,"g11_12.rom",0x80000,0x259a2b23)
-DCS_SOUNDROM1m("s2_10.rom",0xceff7fe4)
+WPC_ROMSTART(tf95,12,"g11_12.rom",0x80000,CRC(259a2b23))
+DCS_SOUNDROM1m("s2_10.rom",CRC(ceff7fe4))
 WPC_ROMEND
 #define input_ports_tf95 input_ports_wpc
 CORE_GAMEDEF(tf95,12,"WPC 95 Test Fixture (1.2)",1996,"Bally",wpc_m95S,0)
@@ -120,6 +120,6 @@ static core_tGameData tfaGameData = {
   }
 };
 INITGAME(tfa)
-WPC_ROMSTART(tfa,13,"u6_l3.rom",0x020000,0xbf4a37b5) WPC_ROMEND
+WPC_ROMSTART(tfa,13,"u6_l3.rom",0x020000,CRC(bf4a37b5)) WPC_ROMEND
 #define input_ports_tfa input_ports_wpc
 CORE_GAMEDEF(tfa,13,"WPC Test Fixture: Alphanumeric (1.3)",1990,"Bally",wpc_mAlpha,GAME_NO_SOUND)

@@ -397,10 +397,10 @@ static wpc_tSamSolMap ww_samsolmap[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(ww,l5,"wwatr_l5.rom",0x80000,0x4eb1d233)
-WPCS_SOUNDROM248("ww_u18.l1",0x6f483215,
-                 "ww_u15.l1",0xfe1ae71b,
-                 "ww_u14.l1",0xf3faa427)
+WPC_ROMSTART(ww,l5,"wwatr_l5.rom",0x80000,CRC(4eb1d233))
+WPCS_SOUNDROM248("ww_u18.l1",CRC(6f483215),
+                 "ww_u15.l1",CRC(fe1ae71b),
+                 "ww_u14.l1",CRC(f3faa427))
 WPC_ROMEND
 
 /*--------------
