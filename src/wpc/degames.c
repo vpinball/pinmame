@@ -310,9 +310,9 @@ CORE_GAMEDEFNV(rab,"Rocky & Bullwinkle",1993,"Data East",de_mDE_DMD2S1,0)
 INITGAME(jurpark,DE_CPUREV3b, 0, FLIP6364, 3)
 DE64_ROMSTART(jurpark,"jpcpua.513",0x9f70a937)
 DE_DMD512_ROMSTART(	  "jpdspa.510",0x9ca61e3c)
-DES_SOUNDROM142(	"jp.u7"  ,0xf3afcf13,
-					"jp.u17" ,0x38135a23,
-					"jp.u21" ,0x6ac1554c)
+DES_SOUNDROM142(	"jpu7.dat"  ,0xf3afcf13,
+					"jpu17.dat" ,0x38135a23,
+					"jpu21.dat" ,0x6ac1554c)
 DE_ROMEND
 CORE_GAMEDEFNV(jurpark,"Jurassic Park",1993,"Data East",de_mDE_DMD2S1,0)
 
@@ -322,9 +322,9 @@ CORE_GAMEDEFNV(jurpark,"Jurassic Park",1993,"Data East",de_mDE_DMD2S1,0)
 INITGAME(lah,DE_CPUREV3b, 0, FLIP6364, 3)
 DE64_ROMSTART(lah,	"lahcpua.112",0xe7422236)
 DE_DMD512_ROMSTART(	"lahdispa.106",0xca6cfec5)
-DES_SOUNDROM142(	"snd_u7.512"  ,0x0279c45b,
-					"snd_u17.040" ,0xd0c15fa6,
-					"snd_u21.020" ,0x4571dc2e)
+DES_SOUNDROM142(	"lahsnd.u7"  ,0x0279c45b,
+					"lahsnd.u17" ,0xd0c15fa6,
+					"lahsnd.u21" ,0x4571dc2e)
 DE_ROMEND
 CORE_GAMEDEFNV(lah,"Last Action Hero",1993,"Data East",de_mDE_DMD2S1,0)
 
@@ -334,7 +334,7 @@ CORE_GAMEDEFNV(lah,"Last Action Hero",1993,"Data East",de_mDE_DMD2S1,0)
 INITGAME(tftc,DE_CPUREV3b, 0, FLIP6364, 3)
 DE64_ROMSTART(tftc,	"tftccpua.303",0xe9bec98e)
 DE_DMD512_ROMSTART(	"tftcdspa.301",0x3888d06f)
-DES_SOUNDROM144(	"tftc.u7"    ,0x7963740e,
+DES_SOUNDROM144(	"sndu7.dat"    ,0x7963740e,
 					"sndu17.dat" ,0x5c5d009a,
 					"sndu21.dat" ,0xa0ae61f7)
 DE_ROMEND
@@ -346,7 +346,7 @@ CORE_GAMEDEFNV(tftc,"Tales From the Crypt",1993,"Data East",de_mDE_DMD2S1,0)
 INITGAME(tommy,DE_CPUREV3b, 0, FLIP6364, 3)
 DE64_ROMSTART(tommy,"tomcpua.400",0xd0310a1a)
 DE_DMD512_ROMSTART(	"tommydva.400",0x9e640d09)
-DES_SOUNDROM14444(		"tommyu7.dat"  ,0xab0b4626,
+DES_SOUNDROM14444(		"tommysnd.u7"  ,0xab0b4626,
                         "tommysnd.u17" ,0x11bb2aa7,
                         "tommysnd.u21" ,0xbb4aeec3,
                         "tommysnd.u36" ,0x208d7aeb,
@@ -403,11 +403,11 @@ static void init_gnr(void) {
 DE_INPUT_PORTS_START(gnr, 6) DE_INPUT_PORTS_END
 DE64_ROMSTART(gnr,		"gnrcpua.300",0xfaf0cc8c)
 DE_DMD512_ROMSTART(		"gnrdispa.300",0x4abf29e3)
-DES_SOUNDROM14444(		"gnrsnd.u7"  ,0x3b9de915,
-                        "g&ru17.snd" ,0x3d3219d6,
-                        "g&ru21.snd" ,0xd2ca17ab,
-                        "g&ru36.snd" ,0x5b32396e,
-                        "g&ru37.snd" ,0x4930e1f2)
+DES_SOUNDROM14444(		"gnru7.snd"  ,0x3b9de915,
+                        "gnru17.snd" ,0x3d3219d6,
+                        "gnru21.snd" ,0xd2ca17ab,
+                        "gnru36.snd" ,0x5b32396e,
+                        "gnru37.snd" ,0x4930e1f2)
 DE_ROMEND
 CORE_GAMEDEFNV(gnr,"Guns N Roses",1994,"Data East",de_mDE_DMD2S1,0)
 
@@ -425,9 +425,9 @@ INITGAME(maverick,DE_CPUREV3b, de_192x64DMD, FLIP6364, 3)
 DE64_ROMSTART(maverick,	"mavcpua.404",0x9f06bd8d)
 DE_DMD1024_ROMSTART(	"mavdsar0.401",0x35b811af,
 						"mavdsar3.401",0xc4c126ae)
-DES_SOUNDROM144(		"u7_c512.snd"  ,0xcc7f45b9,
-                        "u17_c040.snd" ,0xcba377b8,
-                        "u21c4001.snd" ,0xbe0c6a6f)
+DES_SOUNDROM144(		"mavu7.dat"  ,0x427e6ab9,
+                        "mavu17.dat" ,0xcba377b8,
+                        "mavu21.dat" ,0xbe0c6a6f)
 DE_ROMEND
 CORE_GAMEDEFNV(maverick,"Maverick",1994,"Data East",de_mDE_DMD3S1,0)
 
