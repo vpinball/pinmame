@@ -26,7 +26,7 @@
 #include "wpc.h"
 #include "sim.h"
 #include "wmssnd.h"
-
+#include "mech.h"
 /*------------------
 /  Local functions
 /-------------------*/
@@ -259,6 +259,22 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(jm,12r,"Johnny Mnemonic (1.2R)",1995,"Williams",wpc_mSecurityS,0)
+static mech_tInitData mechX = {
+  22, -21, MECH_ONEDIRSOL|MECH_REVERSE|MECH_FAST|MECH_LENGTHSW,3500,3500,
+  {{12, 0,2},
+   {75, 0, 6,12},
+   {74, 4, 9,12}} 
+};
+static mech_tInitData mechY = {
+  24, -23, MECH_ONEDIRSOL|MECH_REVERSE|MECH_FAST|MECH_LENGTHSW,3000,3000,
+  {{37,1498,1502},
+   {76, 0, 6,12},
+   {77, 4, 9,12}} 
+};
+static void jm_drawMech(BMTYPE **line) {
+  core_textOutf(50, 0, BLACK,"%05d", mech_getPos(0));
+  core_textOutf(50,10, BLACK,"%05d", mech_getPos(1));
+}
 
 /*-----------------------
 / Simulation Definitions
@@ -281,7 +297,10 @@ static sim_tSimData jmSimData = {
 static core_tGameData jmGameData = {
   GEN_WPCSECURITY, wpc_dispDMD,
   {
-    FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L)
+    FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L) | FLIP_BUT(FLIP_U),
+    0,0,0,0,0,0,0,
+    0, 0, 0, jm_drawMech,
+    0, NULL
   },
   &jmSimData,
   {
@@ -298,5 +317,7 @@ static core_tGameData jmGameData = {
 /----------------*/
 static void init_jm(void) {
   core_gameData = &jmGameData;
+  mech_add(0,&mechX);
+  mech_add(1,&mechY);
 }
 

@@ -198,7 +198,7 @@ static void eatpm_drawStatic(BMTYPE **line) {
 /------------------*/
 S11_ROMSTART48(eatpm,l4,"elvi_u26.l4", 0x24e09bf6,
                         "elvi_u27.l4", 0x3614f3e2)
-S11S_SOUNDROM88(        "elvi_u21.l1", 0x68d44545,
+S11XS_SOUNDROM88(       "elvi_u21.l1", 0x68d44545,
                         "elvi_u22.l1", 0xe525b4fe)
 S11CS_SOUNDROM888(      "elvi_u4.l1",  0xb5afa4db,
                         "elvi_u19.l1", 0x806bc350,
