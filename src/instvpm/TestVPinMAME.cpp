@@ -129,7 +129,8 @@ const char* GetInstalledVersion(char* szVersion, int iSize)
 	if ( !szVersion )
 		return NULL;
 
-	lstrcpy(szVersion, "None.");
+	//lstrcpy(szVersion, "None.");
+	lstrcpy(szVersion, "");
 
 	HRESULT hr;
 
