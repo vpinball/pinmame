@@ -34,9 +34,11 @@
 
 
 /* for unzip.c */
+#if (!defined(PINMAME) || defined(MAME_DEBUG)) // In PinMAME, log only in debug mode.
 void CLIB_DECL logerror(const char *text,...)
 {
 }
+#endif /* PINMAME DEBUG */
 
 osd_file *osd_fopen(int pathtype, int pathindex, const char *filename, const char *mode)
 {
