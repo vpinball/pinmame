@@ -95,7 +95,7 @@ typedef struct {
 /  State definitions
 /---------------------*/
 typedef struct {
-  char *name;         /* Name to display on screen */
+  const char *name;   /* Name to display on screen */
   int   timer;        /* Switch down time (minimum) */
   int   swNo;         /* Switch to be triggered while in this state */
   int   solSwNo;      /* Solenoid/switch used to get out of state (0=leave ASAP)*/

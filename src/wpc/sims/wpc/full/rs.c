@@ -53,8 +53,8 @@ static void rs_drawMech(BMTYPE **line);
 static void rs_drawStatic(BMTYPE **line);
 static void init_rs(void);
 static int rs_getMech(int mechNo);
-static char* showtedeyepos(void);
-static char* showredeyepos(void);
+static const char* showtedeyepos(void);
+static const char* showredeyepos(void);
 
 /*-----------------------
   local static variables
@@ -706,7 +706,7 @@ static int rs_getMech(int mechNo) {
 /*--------------------------------
     Display Status of Ted's Eyes
   --------------------------------*/
-static char* showtedeyepos(void)
+static const char* showtedeyepos(void)
 {
 if(locals.tedeyesOC)
 	return "Closed";
@@ -725,7 +725,7 @@ else
 /*---------------------------------
     Display Status of Red's Eyes
   ---------------------------------*/
-static char* showredeyepos(void)
+static const char* showredeyepos(void)
 {
 if(locals.redeyesOC)
 	return "Closed";

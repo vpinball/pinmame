@@ -117,7 +117,7 @@ static void fh_handleMech(int mech);
 static void fh_drawMech(BMTYPE **line);
 static void fh_drawStatic(BMTYPE **line);
 static void init_fh(void);
-static char* showeyepos(void);
+static const char* showeyepos(void);
 
 /*-----------------------
   local static variables
@@ -802,7 +802,7 @@ static void fh_handleMech(int mech) {
 /**********************************
  Display Status of Rudy's Eyes
  *********************************/
-static char* showeyepos(void)
+static const char* showeyepos(void)
 {
 if(locals.rudyeyesOC)
 	return "Closed";

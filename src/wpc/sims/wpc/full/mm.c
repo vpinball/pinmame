@@ -57,7 +57,7 @@ static void mm_drawMech(BMTYPE **line);
 static void mm_drawStatic(BMTYPE **line);
 static int mm_getMech(int mechNo);
 static void init_mm(void);
-static char* showdrawbridgePos(void);
+static const char *showdrawbridgePos(void);
 
 /*-----------------------
   local static variables
@@ -542,7 +542,7 @@ static int mm_getMech(int mechNo) {
 /*---------------------------------
   Display Status of the DrawBridge
  ----------------------------------*/
-static char* showdrawbridgePos(void)
+static const char* showdrawbridgePos(void)
 {
   if(core_getSw(swDBUp) && !core_getSol(sDBMotor))
 	return "Up              ";

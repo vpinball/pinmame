@@ -6,7 +6,7 @@
 
 /* Exported Functions */
 int manual_sound_commands(struct mame_bitmap *bitmap);
-void snd_cmd_init(mem_write_handler soundCmd, char *head);
+void snd_cmd_init(mem_write_handler soundCmd, const char *head);
 void snd_cmd_exit(void);
 void snd_cmd_log(int cmd);
 int snd_get_cmd_log(int *last, int *buffer);
