@@ -393,8 +393,13 @@ S11_ROMEND
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF(dd, l2, "Dr. Dude (L-2)", 1990, "Bally", s11_mS11CS,0)
-CORE_CLONEDEF(dd,p6,l2, "Dr. Dude (P-6)", 1990, "Bally", s11_mS11CS,0)
+static MACHINE_DRIVER_START(s11c_one)
+  MDRV_IMPORT_FROM(s11_s11cS)
+  MDRV_SCREEN_SIZE(640, 400)
+  MDRV_VISIBLE_AREA(0, 639, 0, 399)
+MACHINE_DRIVER_END
+CORE_GAMEDEF(dd, l2, "Dr. Dude (LA-2)", 1990, "Bally", s11c_one,0)
+CORE_CLONEDEF(dd,p6,l2, "Dr. Dude (PA-6)", 1990, "Bally", s11c_one,0)
 
 /*-----------------------
 / Simulation Definitions
@@ -414,8 +419,11 @@ static sim_tSimData ddSimData = {
 /*----------------------
 / Game Data Information
 /----------------------*/
+static core_tLCDLayout disp16oneline[] = { \
+  {0,0,0,16,CORE_SEG16},{0,33,20,16,CORE_SEG16}, {0}
+};
 static core_tGameData ddGameData = {
-  GEN_S11C, s11_dispS11c,
+  GEN_S11C, disp16oneline,
   {
     FLIP_SWNO(swLFlip,swRFlip),
     0,0,0,0,S11_LOWALPHA|S11_DISPINV,S11_MUXSW2,0,

@@ -406,8 +406,13 @@ WPC_ROMEND
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_CLONEDEF(dd,p7,l2,"Dr. Dude (P-7 WPC)",1990,"Bally",wpc_mAlpha1S,0)
-CORE_CLONEDEF(dd,p06,l2,"Dr. Dude (P-6 WPC)",1990,"Bally",wpc_mAlpha1S,0)
+static MACHINE_DRIVER_START(wpc_a1_one)
+  MDRV_IMPORT_FROM(wpc_alpha1S)
+  MDRV_SCREEN_SIZE(640, 400)
+  MDRV_VISIBLE_AREA(0, 639, 0, 399)
+MACHINE_DRIVER_END
+CORE_CLONEDEF(dd,p7,l2,"Dr. Dude (PA-7 WPC)",1990,"Bally",wpc_a1_one,0)
+CORE_CLONEDEF(dd,p06,l2,"Dr. Dude (PA-6 WPC)",1990,"Bally",wpc_a1_one,0)
 
 /*-----------------------
 / Simulation Definitions
@@ -427,8 +432,11 @@ static sim_tSimData ddSimData = {
 /*----------------------
 / Game Data Information
 /----------------------*/
+static core_tLCDLayout disp16oneline[] = { \
+  {0,0,0,16,CORE_SEG16R},{0,33,20,16,CORE_SEG16R}, {0}
+};
 static core_tGameData ddGameData = {
-  GEN_WPCALPHA_1, wpc_dispAlpha, /* generation */
+  GEN_WPCALPHA_1, disp16oneline, /* generation */
   {
     FLIP_SWNO(82,81),
     0,0,0,0,0,0,0,
