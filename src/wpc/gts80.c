@@ -175,20 +175,20 @@ static WRITE_HANDLER(riot6532_1aBCD_w) {
   int pos = reorder[15 - (data & 0xf)];
   // Load buffers on rising edge 0x10,0x20,0x40
   if (data & ~GTS80locals.riot1a & 0x10)
-    GTS80locals.seg1 = core_bcd2seg9[GTS80locals.riot1b & 0x0f];
+    GTS80locals.seg1 = core_bcd2seg9a[GTS80locals.riot1b & 0x0f];
   if (data & ~GTS80locals.riot1a & 0x20)
-    GTS80locals.seg2 = core_bcd2seg9[GTS80locals.riot1b & 0x0f];
+    GTS80locals.seg2 = core_bcd2seg9a[GTS80locals.riot1b & 0x0f];
   if (data & ~GTS80locals.riot1a & 0x40)
-    GTS80locals.seg3 = core_bcd2seg9[GTS80locals.riot1b & 0x0f];
+    GTS80locals.seg3 = core_bcd2seg9a[GTS80locals.riot1b & 0x0f];
   // Set current digit to current value in buffers
   GTS80locals.segments[pos].w |= GTS80locals.seg1;
   GTS80locals.segments[20+pos].w |= GTS80locals.seg2;
   GTS80locals.segments[55 - (data & 0xf)].w |= GTS80locals.seg3;
   // Middle segments are controlled directly by portb 0x10,0x20,0x40
   // but digit is changed via porta so we set the segs here
-  if ((GTS80locals.riot1b & 0x10) == 0) GTS80locals.segments[pos].w |= core_bcd2seg9[1];
-  if ((GTS80locals.riot1b & 0x20) == 0) GTS80locals.segments[20+pos].w |= core_bcd2seg9[1];
-  if ((GTS80locals.riot1b & 0x40) == 0) GTS80locals.segments[55 - (data & 0xf)].w |= core_bcd2seg9[1];
+  if ((GTS80locals.riot1b & 0x10) == 0) GTS80locals.segments[pos].w |= core_bcd2seg9a[1];
+  if ((GTS80locals.riot1b & 0x20) == 0) GTS80locals.segments[20+pos].w |= core_bcd2seg9a[1];
+  if ((GTS80locals.riot1b & 0x40) == 0) GTS80locals.segments[55 - (data & 0xf)].w |= core_bcd2seg9a[1];
   GTS80locals.riot1a = data;
 }
 static WRITE_HANDLER(riot6532_1bBCD_w) { GTS80locals.riot1b = data; }

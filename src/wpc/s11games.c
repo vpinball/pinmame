@@ -23,6 +23,18 @@ static core_tLCDLayout disp16oneline[] = { \
   {0,0,0,16,CORE_SEG16},{0,33,20,16,CORE_SEG16}, {0}
 };
 
+static MACHINE_DRIVER_START(s11a_one)
+  MDRV_IMPORT_FROM(s11_s11aS)
+  MDRV_SCREEN_SIZE(640, 400)
+  MDRV_VISIBLE_AREA(0, 639, 0, 399)
+MACHINE_DRIVER_END
+
+static MACHINE_DRIVER_START(s11c_one)
+  MDRV_IMPORT_FROM(s11_s11cS)
+  MDRV_SCREEN_SIZE(640, 400)
+  MDRV_VISIBLE_AREA(0, 639, 0, 399)
+MACHINE_DRIVER_END
+
 /*--------------------
 / Space Shuttle (S9) 12/84
 /--------------------*/
@@ -403,7 +415,7 @@ S11CS_SOUNDROM888(      "tran_u4.l2",  CRC(a06ddd61) SHA1(630fe7ab94516930c4876a
 
 S11_ROMEND
 #define input_ports_tsptr input_ports_s11
-CORE_GAMEDEF(tsptr,l3, "Transporter the Rescue (L-3)", 1989, "Bally", s11_mS11BS,0)
+CORE_GAMEDEF(tsptr,l3, "Transporter the Rescue (L-3)", 1989, "Bally", s11a_one,0)
 
 /*-----------------------
 / Bad Cats 12/89
@@ -433,7 +445,7 @@ S11CS_SOUNDROM888(      "mous_u4.l2",  CRC(643add1e) SHA1(45dea0f4c6f24d17e6f7dd
                         "mous_u20.l2", CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7))
 S11_ROMEND
 #define input_ports_mousn input_ports_s11
-CORE_GAMEDEF(mousn,l4, "Mousin' Around (L-4)", 1989, "Bally", s11_mS11BS,0)
+CORE_GAMEDEF(mousn,l4, "Mousin' Around (L-4)", 1989, "Bally", s11a_one,0)
 
 /*-----------------------
 / Whirlwind 4/90
@@ -461,7 +473,7 @@ S11CS_SOUNDROM000(      "gshw_u4.l2",  CRC(e89e0116) SHA1(e96bee143d1662d078f215
                         "gshw_u20.l1", CRC(75ccbdf7) SHA1(7dce8ae427a621919caad8d8b08b06bb0adad850))
 S11_ROMEND
 #define input_ports_gs input_ports_s11
-CORE_GAMEDEF(gs   , l3, "Game Show (L-3)", 1990, "Bally", s11_mS11CS,0)
+CORE_GAMEDEF(gs   , l3, "Game Show (L-3)", 1990, "Bally", s11c_one,0)
 
 /*--------------------
 / Rollergames 5/90
@@ -487,7 +499,7 @@ S11CS_SOUNDROM000(      "pool_u4.l2",  CRC(04e95e10) SHA1(3873b3cd6c2961b3f2f28a
                         "pool_u20.l2", CRC(925f62d6) SHA1(21b8d6f9a8b98fce8a3cdf7f5f2d40200544a898))
 S11_ROMEND
 #define input_ports_pool input_ports_s11
-CORE_GAMEDEF(pool , l7, "Pool Sharks (L-7)", 1990, "Bally", s11_mS11CS,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEF(pool , l7, "Pool Sharks (L-7)", 1990, "Bally", s11c_one,GAME_IMPERFECT_SOUND)
 
 /*--------------------
 / Diner 8/90
@@ -513,7 +525,7 @@ S11CS_SOUNDROM008(      "rad_u4.l1",  CRC(5aafc09c) SHA1(27984bbc91dc7593e6a5b42
                         "rad_u20.l1", CRC(05b96292) SHA1(7da0289cf0a0c93768c0706fdedfc3a5f2101e77))
 S11_ROMEND
 #define input_ports_radcl input_ports_s11
-CORE_GAMEDEF(radcl, l1, "Radical (L-1)", 1990, "Bally", s11_mS11CS,0)
+CORE_GAMEDEF(radcl, l1, "Radical (L-1)", 1990, "Bally", s11c_one,0)
 
 /*--------------------
 / Riverboat Gambler 10/90
@@ -546,7 +558,7 @@ S11CS_SOUNDROM000(      "bugs_u4.l2",  CRC(04bc9aa5) SHA1(c3da2dc3e26b88a0ebc6f8
 S11_ROMEND
 #define input_ports_bbnny input_ports_s11
 
-CORE_GAMEDEF(bbnny, l2, "Bugs Bunny Birthday Ball (L-2)", 1990, "Bally", s11_mS11CS,0)
+CORE_GAMEDEF(bbnny, l2, "Bugs Bunny Birthday Ball (L-2)", 1990, "Bally", s11c_one,0)
 
 /*--------------------
 / Dr. Dude - moved to own simulator
