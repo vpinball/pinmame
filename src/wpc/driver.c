@@ -162,21 +162,23 @@ DRIVERNV(bighouse)    //System 80b: Big House
 DRIVERNV(bonebstr)    //System 80b: Bone Busters
 
 DRIVERNV(lca)	      //System 3: Lights, Camera, Action 1989
+DRIVERNV(bellring)    //System 3: Bell Ringer 1990
 DRIVERNV(silvslug)    //System 3: Silver Slugger 1990
 DRIVERNV(vegas)       //System 3: Vegas 1990
 DRIVERNV(deadweap)    //System 3: Deadly Weapon 1990
 DRIVERNV(tfight)      //System 3: Title Fight 1990
-DRIVERNV(bellring)    //System 3: Bell Ringer/Nudge It 1990
+DRIVERNV(nudgeit)     //System 3: Nudge It 1990
 DRIVERNV(carhop)      //System 3: Car Hop 1991
 DRIVERNV(hoops)       //System 3: Hoops 1991
-DRIVERNV(cactjack)     //System 3: Cactus Jacks 1991
+DRIVERNV(cactjack)    //System 3: Cactus Jacks 1991
 DRIVERNV(clas1812)    //System 3: Class of 1812 1991
 DRIVERNV(surfnsaf)    //System 3: Surf'n Safari 1991
 DRIVERNV(opthund)     //System 3: Operation: Thunder
 DRIVERNV(smb)         //System 3: Super Mario Brothers
 DRIVERNV(smbmush)     //System 3: Super Mario Brothers Mushroom World
 DRIVERNV(cueball)     //System 3: Cue Ball Wizard
-DRIVERNV(sf2)         //System 3: Street Fighter II
+DRIVERNV(sfight2)     //System 3: Street Fighter II
+DRIVERNV(sfight2a)    //System 3: Street Fighter II (V.2)
 DRIVERNV(teedoff)     //System 3: Tee'd Off
 DRIVERNV(wipeout)     //System 3: Wipe Out
 DRIVERNV(gladiatr)    //System 3: Gladiators
@@ -185,6 +187,7 @@ DRIVERNV(rescu911)    //System 3: Rescue 911
 DRIVERNV(freddy)      //System 3: Freddy: A Nightmare on Elm Street
 DRIVERNV(shaqattq)    //System 3: Shaq Attaq
 DRIVERNV(stargate)    //System 3: Stargate
+DRIVERNV(stargat2)    //System 3: Stargate (V.2)
 DRIVERNV(bighurt)     //System 3: Big Hurt
 DRIVERNV(waterwld)    //System 3: Waterworld
 DRIVERNV(andretti)    //System 3: Mario Andretti
