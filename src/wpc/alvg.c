@@ -342,26 +342,36 @@ void UpdateLampCol(void) {
 	//printf("LampColumn = %d\n",data);
 }
 
+/* - Lamp Handling -
+   -----------------
+   It seems Pistol Poker handles lamps differently from the other games.
+   First, the lamp columns are not standard ordering, like the others.
+   Second, it writes the lamp column data first, then the lamp data itself.
+   The other games write the lamp data first, then the lamp column data. - */
 WRITE_HANDLER(u14_porta_w) {
-	alvglocals.lampColumn = (alvglocals.lampColumn&0xff80) | data;
-	UpdateLampCol();
-	//printf("LAMP STROBE(1-7):  data = %x\n",data);
+	if (core_gameData->hw.gameSpecific1)
+		alvglocals.lampColumn = (alvglocals.lampColumn&0x0f01) | ((data & 0x7f)<<1);
+	else {
+		alvglocals.lampColumn = (alvglocals.lampColumn&0x0f80) | (data & 0x7f);
+		UpdateLampCol();
+	}
+	//printf("LAMP STROBE(1-7):  data = %x\n",data&0x7f);
 }
 WRITE_HANDLER(u14_portb_w) {
-	alvglocals.lampColumn = (alvglocals.lampColumn&0x007f) | (data<<7); 	//Remeber it's 8-12, not 9-12!!
-	UpdateLampCol();
+	if (core_gameData->hw.gameSpecific1)
+		alvglocals.lampColumn = (alvglocals.lampColumn&0x00fe) | ((data & 0x0f)<<8) | ((data & 0x10)>>4);
+	else {
+		alvglocals.lampColumn = (alvglocals.lampColumn&0x007f) | ((data & 0x1f)<<7);
+		UpdateLampCol();
+	}
 	//printf("LAMP STROBE(8-12): data = %x\n",data);
 }
 WRITE_HANDLER(u14_portc_w) {
 	alvglocals.lampRow = data;
+	if (core_gameData->hw.gameSpecific1)
+		UpdateLampCol();
 	//printf("LAMP RETURN: data = %x\n",data);
 }
-
-
-
-
-
-
 
 /*
 U7 - 6522
@@ -488,7 +498,7 @@ static INTERRUPT_GEN(alvg_vblank) {
 	alvglocals.diagnosticLeds1 = 0;
 	alvglocals.diagnosticLeds2 = 0;
   }
-  core_updateSw(core_getSol(27));
+  core_updateSw(core_getSol(27));	//Flipper Enable Relay
 }
 
 static SWITCH_UPDATE(alvg) {
@@ -613,7 +623,6 @@ MACHINE_DRIVER_START(alvg)
   MDRV_SWITCH_UPDATE(alvg)
   MDRV_DIAGNOSTIC_LEDH(3)
   MDRV_SWITCH_CONV(alvg_sw2m,alvg_m2sw)
-  MDRV_LAMP_CONV(alvg_sw2m,alvg_m2sw)
 MACHINE_DRIVER_END
 
 //Main CPU, DMD, Sound hardware Driver
