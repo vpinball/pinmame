@@ -358,6 +358,9 @@ void SN76477_enable_w(int chip, int data)
 				oneshot_envelope_cb(chip);
 			break;
 		}
+#ifdef PINMAME /* We need to reset the SLF value to 5 Volts if disabled! */
+		sn->slf_level = 5.0;
+#endif /* PINMAME */
 	}
 	LOG(1,("SN76477 #%d: ENABLE line %d [%s]\n", chip, sn->enable, sn->enable ? "Inhibited" : "Enabled" ));
 }
