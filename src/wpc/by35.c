@@ -45,6 +45,7 @@ static void by35_dispStrobe(int mask) {
       for (jj = 0; dispMask; jj++, dispMask>>=1)
         if (dispMask & 0x01)
           ((int *)locals.segments)[jj*8+ii] |= ((int *)locals.pseg)[jj*8+ii] = core_bcd2seg[locals.bcd[jj]];
+//Hnk: core_bcd2seg9
     }
 }
 
@@ -103,6 +104,7 @@ static READ_HANDLER(pia0b_r) {
   if (locals.a0 & 0x80) return core_getDip(2); // DIP#3 17-24
   if (locals.cb20)      return core_getDip(3); // DIP#4 25-32
   return core_getSwCol((locals.a0 & 0x1f) | ((locals.b1 & 0x80)>>2));
+//HNK: no dip3, revbyte
 }
 
 /* PIA0:CB2-W Lamp Strobe #1, DIPBank3 STROBE */
@@ -118,6 +120,7 @@ static WRITE_HANDLER(pia1ca2_w) {
   }
   locals.diagnosticLed = data;
   locals.ca21 = data;
+  // HNK: sndbrd_ctrl
 }
 
 /* PIA0:CA2-W Display Strobe */
@@ -128,8 +131,8 @@ static WRITE_HANDLER(pia0ca2_w) {
 
 /* PIA1:B-W Solenoid/Sound output */
 static WRITE_HANDLER(pia1b_w) {
-  // m_mpac got a 6th display connected to solenoid 20
-  if ((core_gameData->hw.display & 0x02) && (~locals.b1 & data & 0x80))
+  // check for extra display connected to solenoids
+  if (~locals.b1 & data & core_gameData->hw.display & 0xf0)
     { locals.bcd[5] = locals.a0>>4; by35_dispStrobe(0x20); }
   locals.b1 = data;
 
@@ -144,10 +147,9 @@ static WRITE_HANDLER(pia1b_w) {
 
 /* PIA1:CB2-W Solenoid/Sound select */
 static WRITE_HANDLER(pia1cb2_w) {
-  //DBGLOG(("PIA1:CB2=%d\n",data));
   locals.cb21 = data;
-//  sndbrd_0_data_w(0, (locals.cb21<<5) | ((locals.a1 & 0x02)<<3) | (locals.b1 & 0x0f));
   sndbrd_0_ctrl_w(1, (locals.cb21 ? 1 : 0) | (locals.a1 & 0x02));
+  // HNK: no sound
 }
 
 static INTERRUPT_GEN(by35_vblank) {
