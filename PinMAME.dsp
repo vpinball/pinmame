@@ -886,6 +886,22 @@ SOURCE=.\src\cpu\at91\at91.h
 SOURCE=.\src\cpu\at91\at91dasm.c
 # End Source File
 # End Group
+# Begin Group "ARM7"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\cpu\arm7\arm7.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\arm7\arm7.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\arm7\arm7dasm.c
+# End Source File
+# End Group
 # End Group
 # Begin Group "Machine"
 
@@ -1172,6 +1188,14 @@ SOURCE=src\sound\2151intf.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\sound\3812intf.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\3812intf.h
+# End Source File
+# Begin Source File
+
 SOURCE=src\sound\5220intf.c
 
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
@@ -1337,6 +1361,22 @@ SOURCE=.\src\sound\discrete.c
 # Begin Source File
 
 SOURCE=.\src\sound\discrete.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\fm.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\fm.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\fmopl.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\fmopl.h
 # End Source File
 # Begin Source File
 
