@@ -809,14 +809,20 @@ UINT64 core_getAllSol(void) {
   return sol;
 }
 
-/*---------------------------------------
-/  Get the status of a DIP bank (8 dips)
-/-----------------------------------------*/
+/*------------------------------------------
+/  Get/Set the status of a DIP bank (8 dips)
+/-------------------------------------------*/
 int core_getDip(int dipBank) {
 #ifdef VPINMAME
   return vp_getDIP(dipBank);
 #else /* VPINMAME */
   return (readinputport(CORE_COREINPORT+1+dipBank/2)>>((dipBank & 0x01)*8))&0xff;
+#endif /* VPINMAME */
+}
+
+void core_setDip(int dipBank, int value) {
+#ifdef VPINMAME
+  vp_setDIP(dipBank, value);
 #endif /* VPINMAME */
 }
 

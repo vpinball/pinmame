@@ -483,10 +483,11 @@ extern const UINT8 core_swapNyb[16];
 #define CORE_SWAPBYTE(x) ((core_swapNyb[(x)&0xf]<<4)|(core_swapNyb[(x)>>4]))
 #define CORE_SWAPNYB(x)  core_swapNyb[(x)]
 /*-- core DIP handling --*/
-/*---------------------------------------
-/  Get the status of a DIP bank (8 dips)
-/-----------------------------------------*/
+/*------------------------------------------
+/  Get/Set the status of a DIP bank (8 dips)
+/-------------------------------------------*/
 extern int core_getDip(int dipBank);
+extern void core_setDip(int dipBank, int value);
 
 /*-- startup/shutdown --*/
 int core_init(core_tData *cd);
