@@ -140,7 +140,7 @@ DRIVERNV(icefever)    //System 80a: Ice Fever
 DRIVERNV(triplay)     //System 80b: Chicago Cubs Triple Play
 DRIVERNV(bountyh)     //System 80b: Bounty Hunter
                       //System 80b: Tag Team
-                      //System 80b: Rock
+DRIVERNV(rock)        //System 80b: Rock
                       //System 80b: Rock Encore
 DRIVERNV(raven)       //System 80b: Raven
 DRIVERNV(hlywoodh)    //System 80b: Hollywood Heat
