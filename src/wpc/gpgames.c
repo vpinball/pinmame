@@ -203,7 +203,7 @@ GP_ROMSTART888(suprnova,"130a.716",CRC(dc402b37),
 						"150b.716",CRC(8980a8bb),
 						"150c.716",CRC(6fe08f96))
 GP_ROMEND
-CORE_CLONEDEFNV(suprnova,sshooter,"Super Nova",1982,"Game Plan",mGP2,GAME_NO_SOUND)
+CORE_GAMEDEFNV(suprnova,"Super Nova",1982,"Game Plan",mGP2,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
 / Sharp Shooter II (November 1983) - Model #730
@@ -212,9 +212,9 @@ INITGAME(sshootr2, 0,dispGP_BDU2,FLIP_SW(FLIP_L),SNDBRD_GPMSU1,0)
 GP_ROMSTART888(sshootr2,"130a.716",CRC(dc402b37),
 						"130b.716",CRC(19a86f5e),
 						"730c",CRC(d1af712b))
-GP_SOUNDROM8("730snd",NO_DUMP)
+GP_SOUNDROM0("730snd",NO_DUMP)
 GP_ROMEND
-CORE_CLONEDEFNV(sshootr2,sshooter,"Sharp Shooter II",1983,"Game Plan",mGP2S,0)
+CORE_GAMEDEFNV(sshootr2,"Sharp Shooter II",1983,"Game Plan",mGP2S,0)
 
 /*-------------------------------------------------------------------
 / Attila the Hun (April 1984) - Model #260

@@ -53,7 +53,7 @@
 #include "wpcsam.h"
 #include "sim.h"
 
-#define GP_SOLSMOOTH       3 /* Smooth the Solenoids over this numer of VBLANKS */
+#define GP_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
 #define GP_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
 #define GP_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
 
@@ -193,7 +193,7 @@
 
 /*-- Memory regions --*/
 #define GP_MEMREG_CPU	REGION_CPU1
-#define GP_MEMREG_SCPU	REGION_CPU2
+#define GP_MEMREG_SCPU	(REGION_CPU1 + GP_SCPUNO)
 
 /*-- Main CPU regions and ROM --*/
 
