@@ -62,7 +62,7 @@
 #define BYVP_PIA2 2
 
 #define BYVP_VBLANKFREQ    60 /* VBLANK frequency */
-#define BYVP_IRQFREQ      150 /* IRQ (via PIA) frequency*/
+#define BYVP_IRQFREQ      316 /* IRQ (via PIA) frequency*/
 #define BYVP_ZCFREQ       120 /* Zero cross frequency */
 
 static struct {
