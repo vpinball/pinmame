@@ -329,7 +329,7 @@ static void gpsm3_init(struct sndbrdData *brdData) {
 }
 
 static WRITE_HANDLER(gpsm3_data_w) {
-    pia_set_input_a(GPS_PIA0, ~data);
+    pia_set_input_b(GPS_PIA0, ~data);
 }
 
 static void pia_cb1_w(int data) {
