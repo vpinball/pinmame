@@ -193,11 +193,10 @@ INITGAME(socrking,GEN_ZAC2,dispZAC3,SNDBRD_ZAC1370)
 ZAC_ROMSTART000(socrking,	"soccer.ic1",CRC(3fbd7c32) SHA1(2f56f67d1ad987638284000cca1e20ff17fcd4f9),
 							"soccer.ic2",CRC(0cc0df1f) SHA1(2fd05af0ec63835a8f69fdc50e2faceb829b4df2),
 							"soccer.ic3",CRC(5da6ea20) SHA1(c0e740e20a968ee58e0cd12a0089bb047f5e2cbb))
-ZAC_SOUNDROM_cefgh(			"sound1.c",  NO_DUMP,
-							"sound2.e",  NO_DUMP,
-							"sound3.f",  NO_DUMP,
-							"sound4.g",  NO_DUMP,
-							"sound5.h",  NO_DUMP)
+ZAC_SOUNDROM_cefg1(			"sound1.c",  CRC(3aa95018) SHA1(5347c3aefb642fc5cabd9d5e61fe6515a2dcb2aa),
+							"sound2.e",  CRC(f9b57fd6) SHA1(50e42ed349680211eedf55ae639dbae899f3c6da),
+							"sound3.f",  CRC(d162b022) SHA1(3087554f254e2a8e59ed87feb2770a013d90b53d),
+							"sound4.g",  CRC(720593fb) SHA1(93aa9ae1be299548e17b4fe97a7fb4ddab76de40))
 ZAC_ROMEND
 CORE_GAMEDEFNV(socrking,"Soccer Kings",1982,"Zaccaria",mZAC2A,GAME_NOT_WORKING|SOUNDFLAG)
 
