@@ -566,6 +566,7 @@ static void dcs_txData(UINT16 start, UINT16 size, UINT16 memStep, int sRate);
 static READ_HANDLER(dcs_data_r);
 static WRITE_HANDLER(dcs_data_w);
 static READ_HANDLER(dcs_ctrl_r);
+static WRITE_HANDLER(dcs_ctrl_w);
 static void dcs_init(struct sndbrdData *brdData);
 
 /*-- local data --*/
@@ -655,7 +656,7 @@ MACHINE_DRIVER_END
 /*----------------
 / Sound interface
 /-----------------*/
-const struct sndbrdIntf dcsIntf = { dcs_init, NULL, NULL, dcs_data_w, dcs_data_r, NULL, dcs_ctrl_r };
+const struct sndbrdIntf dcsIntf = { dcs_init, NULL, NULL, dcs_data_w, dcs_data_r, dcs_ctrl_w, dcs_ctrl_r };
 
 /*---------------
 /  Bank handlers
@@ -705,7 +706,11 @@ static UINT32 *dcs_getBootROM(void) {
 
 /*static*/ READ16_HANDLER(dcs_latch_r) {
   cpu_set_irq_line(dcslocals.brdData.cpuNo, ADSP2105_IRQ2, CLEAR_LINE);
+#if 0
   return soundlatch_r(0);
+#else
+  { int x = soundlatch_r(0); DBGLOG(("Latch_r: %02x\n",x)); return x; }
+#endif
 }
 
 /*static*/ WRITE16_HANDLER(dcs_latch_w) {
@@ -761,8 +766,14 @@ static READ_HANDLER(dcs_data_r) {
 }
 
 static WRITE_HANDLER(dcs_data_w) {
+  DBGLOG(("Latch_w: %02x\n",data));
   soundlatch_w(0, data);
   cpu_set_irq_line(dcslocals.brdData.cpuNo, ADSP2105_IRQ2, ASSERT_LINE);
+}
+
+static WRITE_HANDLER(dcs_ctrl_w) {
+  cpu_set_reset_line(dcslocals.brdData.cpuNo, PULSE_LINE);
+  adsp_boot();
 }
 
 static READ_HANDLER(dcs_ctrl_r) {
@@ -903,7 +914,6 @@ static void adsp_boot(void) {
 }
 
 static WRITE16_HANDLER(adsp_control_w) {
-
   adsp.ctrlRegs[offset] = data;
   switch (offset) {
     case SYSCONTROL_REG:
