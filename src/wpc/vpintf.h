@@ -109,4 +109,9 @@ UINT64 vp_getSolMask64(void);
 /------------------------------------------------*/
 int vp_getNewSoundCommands(vp_tChgSound chgSound);
 
+/*-------------------------------------------------
+/ get alpha digit value
+/-------------------------------------------------*/
+INLINE long vp_getAlphaDisplayDigit(int no) { return (coreGlobals.segments[no/20][no%20].hi*0x100) + (coreGlobals.segments[no/20][no%20].lo); }
+
 #endif /* INC_VPINTF */
