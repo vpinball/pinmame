@@ -1,9 +1,9 @@
 **************************************************************************************
 		                       PinMAME
 		      (Pinball Multiple Arcade Machine Emulator)
-				  Version 1.20 Beta
-			         (September 29, 2002)
-                                http://www.pinmame.com
+				     Version 1.21 
+			           (March 30, 2003)
+                                 http://www.pinmame.com
 **************************************************************************************
 
 Latest Info
@@ -13,7 +13,7 @@ Latest Info
 What is it?
 -----------
   PinMAME emulates the hardware found in many solid state pinball machines created from 
-  the mid 1970's through 2002. Currently, the following pinball hardware is emulated:
+  the mid 1970's through 2003. Currently, the following pinball hardware is emulated:
 
   Williams/Bally WPC, Williams/Bally System 11, Williams System 9, Williams System 7,
   Williams System 6, Williams System 4, Williams System 3, 
@@ -59,7 +59,7 @@ Games supported
   Data East 128x32 DMD: All games from Lethal Weapon 3(1992) to Guns N Roses(1994)
   Data East 192x64 DMD: All games from Maverick(1994)
   Sega 192x64 DMD: All games from Frankenstein(1994) to Batman Forever(1995)
-  Sega/Stern Whitestar: All games from Apollo13(1995) to Rollercoaster Tycoon(2002)
+  Sega/Stern Whitestar: All games from Apollo13(1995) to Simpsons Party Machine(2003)
   Stern MPU-100: All games from Stingray(1977) to Magic(1979)
   Stern MPU-200: All games from Meteor(1979) to Lazer Lord(1984)
   Bally MPU-17: All games from Freedom(1977) to Black Jack(1978)
@@ -374,6 +374,8 @@ Johan S		   (arcadepreserv@hotmail.com)
 Destruk		   (destruk@home.com)
 Guru		   (theguru@emuunlim.com)
 Martin Wiest	   (Mr.Startrek@gmx.de)
+Joep		   (veld2611@planet.nl)
+Jim Hernandez	   (vidpro1@netzero.net)
 
 
 Note from the PinMAME Dev. team
