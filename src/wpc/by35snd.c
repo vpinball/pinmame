@@ -245,9 +245,9 @@ static void sp_irq(int state) {
 /     3   Vocalizer Data
 /     4-7 Sound volume
 / CA1:    NC
-/ CA2:    Self-test LED
-/ CB1:    Sound interrupt
-/ CB2:
+/ CA2:    Self-test LED (+5V)
+/ CB1:    Sound interrupt (assume it starts high)
+/ CB2:	  ?
 / IRQA, IRQB: CPU IRQ
 /
 / PIA1: 0090
@@ -259,6 +259,7 @@ static void sp_irq(int state) {
 / CA1:    NC
 / CA2:    TMS5200 Ready
 / CB1:    TMS5200 Int
+/ CB2:    NC
 / IRQA, IRQB: CPU IRQ
 */
 #define SNT_PIA0 2
@@ -318,11 +319,11 @@ static struct {
   int cmd[2], lastcmd, cmdin, cmdout, lastctrl;
 } sntlocals;
 static const struct pia6821_interface snt_pia[] = {{
-  /*i: A/B,CA/B1,CA/B2 */ snt_pia0a_r, 0, 0, 0, 0, 0,
+  /*i: A/B,CA/B1,CA/B2 */ snt_pia0a_r, 0, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(1), 0, 0,
   /*o: A/B,CA/B2       */ snt_pia0a_w, snt_pia0b_w, snt_pia0ca2_w, 0,
   /*irq: A/B           */ snt_irq, snt_irq
 },{
-  /*i: A/B,CA/B1,CA/B2 */ 0, 0, 0, 0, 0, 0,
+  /*i: A/B,CA/B1,CA/B2 */ 0, 0, 0, PIA_UNUSED_VAL(1), PIA_UNUSED_VAL(1), 0,
   /*o: A/B,CA/B2       */ snt_pia1a_w, snt_pia1b_w, 0, 0,
   /*irq: A/B           */ snt_irq, snt_irq
 }};
