@@ -13,14 +13,14 @@ GTS80VID_INPUT_PORTS_START(gts80vid, 1) GTS80_INPUT_PORTS_END
 
 /* 4 x 6 BCD + Ball,Credit */
 static core_tLCDLayout dispNumeric1[] = {
-  {0, 0, 2, 6,CORE_SEG98F}, {0,16, 9,6,CORE_SEG98F},
-  {4, 0,22, 6,CORE_SEG98F}, {4,16,29,6,CORE_SEG98F},
+  {0, 0, 2, 6,CORE_SEG9}, {0,16, 9, 6,CORE_SEG9},
+  {4, 0,22, 6,CORE_SEG9}, {4,16,29, 6,CORE_SEG9},
   DISP_SEG_CREDIT(40,41,CORE_SEG9), DISP_SEG_BALLS(42,43,CORE_SEG9), {0}
 };
 /* 5 x 6 BCD + Ball, Credit */
 static core_tLCDLayout dispNumeric2[] = {
-  {0, 0, 2, 6,CORE_SEG98F}, {0,16, 9, 6,CORE_SEG98F},
-  {4, 0,22, 6,CORE_SEG98F}, {4,16,29, 6,CORE_SEG98F},
+  {0, 0, 2, 6,CORE_SEG9}, {0,16, 9, 6,CORE_SEG9},
+  {4, 0,22, 6,CORE_SEG9}, {4,16,29, 6,CORE_SEG9},
   DISP_SEG_CREDIT(40,41,CORE_SEG9), DISP_SEG_BALLS(42,43,CORE_SEG9),
   {6, 8,50, 6,CORE_SEG9}, {0}
 };
@@ -313,7 +313,7 @@ CORE_GAMEDEFNV(s80tst,"System 80 Test",1981,"Gottlieb",gl_mGTS80SS,0)
 /-------------------------------------------------------------------*/
 static core_tLCDLayout dispDevilsdare[] = {
   DISP_SEG_IMPORT(dispNumeric3),
-  {6, 1,50,6,CORE_SEG9}, {6,17,44,6,CORE_SEG9}, {0}
+  {6, 1,50,6,CORE_SEG98F}, {6,17,44,6,CORE_SEG98F}, {0}
 };
 INITGAME(dvlsdre,GEN_GTS80A,0,dispDevilsdare, SNDBRD_GTS80SS,0,0)
 GTS80_1_ROMSTART(dvlsdre,"670-1.cpu", 0x6318bce2,
@@ -412,10 +412,12 @@ CORE_GAMEDEFNV(spirit,"Spirit",1982,"Gottlieb",gl_mGTS80SS,0)
 /*-------------------------------------------------------------------
 / Striker (#675)
 /-------------------------------------------------------------------*/
-static core_tLCDLayout dispStriker[] = {
-  DISP_SEG_IMPORT(dispNumeric3),
-  {0,32,52, 2,CORE_SEG9}, {0,38,50, 2,CORE_SEG9},
-  {4,32,48, 2,CORE_SEG9}, {4,38,46, 2,CORE_SEG9}, {0}
+static core_tLCDLayout dispStriker[] = { /* as displayed on real machine */
+  {2, 0, 2, 7,CORE_SEG98F}, {6, 0, 9, 7,CORE_SEG98F},
+  {2,16,22, 7,CORE_SEG98F}, {6,16,29, 7,CORE_SEG98F},
+  {0, 2,40, 2,CORE_SEG9},   {0, 8,42, 2,CORE_SEG9}, /* ball/credit */
+  {4, 2,52, 2,CORE_SEG9},   {4, 8,50, 2,CORE_SEG9},
+  {4,18,48, 2,CORE_SEG9},   {4,24,46, 2,CORE_SEG9}, {0}
 };
 INITGAME(striker, GEN_GTS80A,0, dispStriker, SNDBRD_GTS80SS,0,0)
 GTS80_1_ROMSTART(striker, "675.cpu",    0x06b66ce8,
