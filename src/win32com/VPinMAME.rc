@@ -1,0 +1,377 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE MOVEABLE PURE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE MOVEABLE PURE 
+BEGIN
+    "#include ""winres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE MOVEABLE PURE 
+BEGIN
+    "1 TYPELIB ""VPINMAME.tlb""\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_LOGO                BITMAP  MOVEABLE PURE   "Res\\VPinMAMELogo.bmp"
+IDB_SPLASH              BITMAP  MOVEABLE PURE   "Res\\VPinMAMESplash.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// REGISTRY
+//
+
+IDR_CONTROLLER          REGISTRY MOVEABLE PURE  "Controller.rgs"
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,1,0,0
+ PRODUCTVERSION 1,1,0,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "FileDescription", "COM class for PinMame\0"
+            VALUE "FileVersion", "1, 1, 0, 0\0"
+            VALUE "InternalName", "VPinMAME\0"
+            VALUE "LegalCopyright", "© 2001 by the Authors\0"
+            VALUE "OriginalFilename", "VPinMAME.DLL\0"
+            VALUE "ProductName", "Visual PinMAME\0"
+            VALUE "ProductVersion", "1.10 Beta 1\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+#endif    // !_MAC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_OPTIONSDLG DIALOGEX 0, 0, 237, 175
+STYLE DS_ABSALIGN | DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | DS_CENTER | 
+    WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Game Options"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Default Options",IDC_STATIC,7,7,217,140
+    CONTROL         "Skip Pinball Startup &Test",IDC_USECHEAT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,20,18,97,10
+    CONTROL         "Use &Sound",IDC_USESOUND,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,20,29,55,10
+    CONTROL         "Use S&amples",IDC_USESAMPLES,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,20,40,61,10
+    CONTROL         "&Compact Display",IDC_COMPACTSIZE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,20,51,73,10
+    CONTROL         "&Double Size",IDC_DOUBLESIZE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,20,62,54,10
+    LTEXT           "Sample&rate:",IDC_STATIC,127,18,38,8
+    EDITTEXT        IDC_SAMPLERATE,171,18,49,12,ES_AUTOHSCROLL
+    LTEXT           "&Antialias %:",IDC_STATIC,127,33,38,8
+    EDITTEXT        IDC_ANTIALIAS,171,32,49,12,ES_AUTOHSCROLL
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,78,215,1
+    GROUPBOX        "Color",IDC_STATIC,13,82,127,27
+    LTEXT           "R:",IDC_STATIC,19,94,8,8
+    EDITTEXT        IDC_DMDRED,29,94,17,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "G:",IDC_STATIC,49,94,8,8
+    EDITTEXT        IDC_DMDGREEN,57,94,17,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "B:",IDC_STATIC,79,94,8,8
+    EDITTEXT        IDC_DMDBLUE,87,94,17,12,ES_AUTOHSCROLL | ES_NUMBER
+    PUSHBUTTON      "&Color",IDGETCOLOR,107,91,27,14
+    GROUPBOX        "Intensity",IDC_STATIC,13,111,128,27
+    LTEXT           "66%",IDC_STATIC,21,123,15,8
+    EDITTEXT        IDC_DMDPERC66,39,121,17,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "33%",IDC_STATIC,61,123,16,8
+    EDITTEXT        IDC_DMDPERC33,77,121,17,12,ES_AUTOHSCROLL | ES_NUMBER
+    GROUPBOX        "Results",IDC_STATIC,151,82,58,62
+    RTEXT           "100%",IDC_STATIC,159,92,18,8
+    EDITTEXT        IDC_DMDSHOW1,179,90,12,12,WS_DISABLED | NOT WS_BORDER | 
+                    NOT WS_TABSTOP,WS_EX_STATICEDGE
+    RTEXT           "66%",IDC_STATIC,159,105,18,8
+    EDITTEXT        IDC_DMDSHOW2,179,103,12,12,WS_DISABLED | NOT WS_BORDER | 
+                    NOT WS_TABSTOP,WS_EX_STATICEDGE
+    RTEXT           "33%",IDC_STATIC,159,117,18,8
+    EDITTEXT        IDC_DMDSHOW3,179,116,12,12,WS_DISABLED | NOT WS_BORDER | 
+                    NOT WS_TABSTOP,WS_EX_STATICEDGE
+    PUSHBUTTON      "&Info...",IDABOUT,7,154,50,14
+    PUSHBUTTON      "R&eset ",IDRESETTODEFAULT,61,154,50,14
+    DEFPUSHBUTTON   "OK",IDOK,127,154,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,180,154,50,14
+    LTEXT           "Off",IDC_STATIC,96,123,16,8
+    EDITTEXT        IDC_DMDPERC0,113,121,17,12,ES_AUTOHSCROLL | ES_NUMBER
+    RTEXT           "Off",IDC_STATIC,159,130,18,8
+    EDITTEXT        IDC_DMDSHOW4,179,130,12,12,WS_DISABLED | NOT WS_BORDER | 
+                    NOT WS_TABSTOP,WS_EX_STATICEDGE
+END
+
+IDD_ABOUTDLG DIALOG DISCARDABLE  0, 0, 317, 188
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
+CAPTION "About Visual PinMAME..."
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,200,167,50,14
+    CONTROL         100,IDC_STATIC,"Static",SS_BITMAP,7,7,133,123
+    CTEXT           "Visual PinMAME\n",IDC_STATIC,150,6,160,8
+    CTEXT           "Version %s",IDC_VERSION,150,16,160,8
+    CTEXT           "Based on MAME and PinMAME",IDC_STATIC,150,42,160,8
+    CTEXT           "Portions taken from PINMAME32",IDC_STATIC,150,52,160,8
+    CTEXT           "Visual PinMAME written by\nSteve Ellenoff, Tom Haukap\n and the author of WPCMAME",
+                    IDC_STATIC,150,87,160,24
+    CTEXT           "Copyright© 1997-2001 by the authors of MAME, PINMAME and PINMAME32",
+                    IDC_STATIC,150,63,160,16
+    CTEXT           "Visual PinMAME is a COM class, designed to use the functionality of PinMAME in scripting languages.",
+                    IDC_STATIC,7,137,134,24
+    CTEXT           "Copyright © 2001 by the authors.",IDC_STATIC,150,116,
+                    160,8
+    CTEXT           "Thanks goes to all people involved producing MAME, PINMAME and PINMAME32 for their GREAT work!!!",
+                    IDC_STATIC,150,137,160,24
+    CTEXT           "Build Date %s",IDC_BUILDDATE,150,27,160,8
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYRECT | SS_SUNKEN,148,38,
+                    162,1
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYRECT | SS_SUNKEN,148,82,
+                    162,1
+    CONTROL         "",IDC_STATIC,"Static",SS_GRAYRECT | SS_SUNKEN,148,130,
+                    162,1
+    CONTROL         "For the latest info: http://www.pinmame.com",IDC_STATIC,
+                    "Static",SS_LEFTNOWORDWRAP,8,168,142,9
+END
+
+IDD_DISCLAIMERDLG DIALOG DISCARDABLE  0, 0, 213, 111
+STYLE DS_MODALFRAME | DS_SETFOREGROUND | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Please answer and press OK..."
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,78,90,50,14,WS_GROUP
+    CONTROL         "Yes, I am",IDC_YESIAM,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP | WS_TABSTOP,46,73,45,10
+    CONTROL         "No, I am not",IDC_NOIAMNOT,"Button",BS_AUTORADIOBUTTON,
+                    101,73,55,10
+    CTEXT           "Usage of emulators in conjuction with ROM images you are not legally entitled to own is forbidden by copyright law.",
+                    IDC_STATIC,7,7,199,16
+    CTEXT           "Game Description here",IDC_DISGAMESPEC,7,44,199,8
+    CTEXT           "ARE YOU LEGALLY ENTITLED TO PLAY",IDC_STATIC,7,32,199,8
+    CTEXT           "ON THIS EMULATOR?",IDC_STATIC,7,56,199,8
+END
+
+IDD_GAMEINFODLG DIALOG DISCARDABLE  0, 0, 393, 245
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Game Info"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,172,224,50,14
+    LTEXT           "Game Name",IDC_STATIC,7,7,379,8
+    LTEXT           "Static",IDC_GAMENAME,7,16,379,10,SS_SUNKEN
+    LTEXT           "ROM set name",IDC_STATIC,7,31,48,8
+    LTEXT           "Static",IDC_ROMSETNAME,7,40,379,10,SS_SUNKEN
+    LTEXT           "ROM directory(s)",IDC_STATIC,7,55,54,8
+    LTEXT           "",IDC_ROMDIRS,7,64,379,18,SS_SUNKEN
+    LTEXT           "VPinMAME is looking in the ROM directory(s) for a zip file or a subdirectory with the name of the ROM set. Inside there the following files are expected to be found:",
+                    IDC_STATIC,7,87,379,16
+    LISTBOX         IDC_ROMLIST,7,115,379,77,LBS_USETABSTOPS | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Name",IDC_STATIC,9,105,20,8
+    LTEXT           "Type",IDC_STATIC,79,105,17,8
+    LTEXT           "Length",IDC_STATIC,109,105,23,8
+    LTEXT           "Actual",IDC_STATIC,159,105,21,8
+    LTEXT           "Checksum",IDC_STATIC,209,105,34,8
+    LTEXT           "Actual",IDC_STATIC,269,105,21,8
+    LTEXT           "State",IDC_STATIC,328,105,18,8
+    LTEXT           "State:",IDC_STATIC,7,195,379,8
+    LTEXT           "Static",IDC_STATE,7,204,379,10,SS_SUNKEN
+    PUSHBUTTON      "Don't care results, continue anyway",IDC_DONTCARE,7,224,
+                    155,14
+END
+
+IDD_PATHESDLG DIALOG DISCARDABLE  0, 0, 311, 106
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Directorys"
+FONT 8, "MS Sans Serif"
+BEGIN
+    RTEXT           "R&oms:",IDC_STATIC,7,8,50,8
+    EDITTEXT        IDC_ROMDIRS,60,7,225,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDDIRBUTTONROM,290,7,14,12
+    RTEXT           "Con&figuration:",IDC_STATIC,7,22,50,8
+    EDITTEXT        IDC_CFGDIR,60,20,225,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDDIRBUTTONCFG,290,20,14,12
+    RTEXT           "&NVRAM:",IDC_STATIC,7,36,50,8
+    EDITTEXT        IDC_NVRAMDIR,60,35,225,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDDIRBUTTONNVRAM,290,34,14,12
+    RTEXT           "S&amples:",IDC_STATIC,7,50,50,8
+    EDITTEXT        IDC_SAMPLEDIRS,60,50,225,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDDIRBUTTONSAMPLE,290,50,14,12
+    RTEXT           "Screens&hots:",IDC_STATIC,7,66,50,8
+    EDITTEXT        IDC_IMGDIR,60,65,225,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDDIRBUTTONIMG,290,65,14,12
+    PUSHBUTTON      "&Info...",IDABOUT,7,85,50,14
+    PUSHBUTTON      "R&eset ",IDRESETTODEFAULT,61,85,50,14
+    DEFPUSHBUTTON   "OK",IDOK,199,85,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,254,85,50,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO MOVEABLE PURE 
+BEGIN
+    IDD_OPTIONSDLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 230
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 168
+    END
+
+    IDD_ABOUTDLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 310
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 181
+    END
+
+    IDD_DISCLAIMERDLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 206
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 104
+    END
+
+    IDD_GAMEINFODLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 386
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 238
+    END
+
+    IDD_PATHESDLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 304
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 99
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_CTXMENU MENU DISCARDABLE 
+BEGIN
+    POPUP "CTRL_CTX_MENU"
+    BEGIN
+        MENUITEM "&Options...",                 ID_CTRLCTXMENU_GAMEOPTIONS
+        MENUITEM "&Paths...",                   ID_CTRLCTXMENU_PATHES
+        POPUP "&Display"
+        BEGIN
+            MENUITEM "&Title",                      ID_CTRLCTXMENU_DISPLAY_TITLE
+
+            MENUITEM "&Border",                     ID_CTRLCTXMENU_DISPLAY_BORDER
+
+            MENUITEM "DMD &Only",                   ID_CTRLCTXMENU_DISPLAY_DMDONLY
+
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "In&fo...",                    ID_CTRLCTXMENU_INFO
+        MENUITEM "&Stop Emulation",             ID_CTRLCTXMENU_STOPEMULATION
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_PROJNAME            "VPinMAME"
+    IDS_CONTROLLER_DESC     "Controller Class"
+    IDS_EXPIRED             "Sorry, this beta version of Visual PinMAME has expired.\nPlease download the newest copy from\nhttp://www.pinmame.com"
+    IDS_EXPIREDTITLE        "This version has expired..."
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+1 TYPELIB "VPINMAME.tlb"
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
