@@ -144,12 +144,8 @@ static int S80_vblank(void) {
 
 static void S80_updSw(int *inports) {
 	if (inports) {
-//		if ( core_gameData->gen & GEN_S80B4K )
-			coreGlobals.swMatrix[0] = ((inports[S80_COMINPORT] & 0xff00)>>8);
-//		else
-//			coreGlobals.swMatrix[0] = ((inports[S80_COMINPORT] & 0xff00)>>8)^0x01;
-
-                coreGlobals.swMatrix[8] = (coreGlobals.swMatrix[8]&0xc0) | (inports[S80_COMINPORT] & 0x003f);
+		coreGlobals.swMatrix[0] = ((inports[S80_COMINPORT] & 0xff00)>>8);
+        coreGlobals.swMatrix[8] = (coreGlobals.swMatrix[8]&0xc0) | (inports[S80_COMINPORT] & 0x003f);
 	}
 
   /*-- slam tilt --*/
@@ -213,7 +209,6 @@ static int revertByte(int value) {
 /*---------------
 / Switch reading
 /----------------*/
-// static READ_HANDLER(riot0a_r)  { return S80locals.OpSwitchEnable?opSwitches[S80locals.swColOp]:(S80_getSwRow(S80locals.swRow)&0xff);}
 static READ_HANDLER(riot0a_r)  { return S80locals.OpSwitchEnable?revertByte(core_getDip(S80locals.swColOp)):(S80_getSwRow(S80locals.swRow)&0xff);}
 static WRITE_HANDLER(riot0a_w) { logerror("riot0a_w: 0x%02x\n", data); }
 
@@ -623,7 +618,7 @@ struct MachineDriver machine_driver_S80 = {
   },
   S80_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50,
-  S80_init,CORE_EXITFUNC(NULL)
+  S80_init,CORE_EXITFUNC(S80_exit)
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER,
@@ -646,7 +641,7 @@ struct MachineDriver machine_driver_S80SS = {
   },
   S80_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50,
-  S80_init,CORE_EXITFUNC(NULL)
+  S80_init,CORE_EXITFUNC(S80_exit)
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER,
@@ -669,7 +664,7 @@ struct MachineDriver machine_driver_S80B = {
   },
   S80_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50,
-  S80_init,CORE_EXITFUNC(NULL)
+  S80_init,CORE_EXITFUNC(S80_exit)
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER,
@@ -692,7 +687,7 @@ struct MachineDriver machine_driver_S80BS1 = {
     S80BS1_SOUNDCPU1},
   S80_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50,
-  S80_init,CORE_EXITFUNC(NULL)
+  S80_init,CORE_EXITFUNC(S80_exit)
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER,
@@ -715,7 +710,7 @@ struct MachineDriver machine_driver_S80BS2 = {
     S80BS2_SOUNDCPU1},
   S80_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50,
-  S80_init,CORE_EXITFUNC(NULL)
+  S80_init,CORE_EXITFUNC(S80_exit)
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER,
@@ -738,7 +733,7 @@ struct MachineDriver machine_driver_S80BS3 = {
     S80BS3_SOUNDCPU1},
   S80_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50,
-  S80_init,CORE_EXITFUNC(NULL)
+  S80_init,CORE_EXITFUNC(S80_exit)
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER,
@@ -795,6 +790,7 @@ static void S80_init(void) {
 }
 
 static void S80_exit(void) {
+  riot_unconfig();
   core_exit();
 }
 
