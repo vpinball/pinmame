@@ -49,7 +49,7 @@ INITGAME(taurs, GEN_S4, bowl_disp)
 S4_ROMSTART(taurs,l1,"gamerom.716",CRC(3246e285),
                      "b_ic20.716", CRC(c6f8e3b1),
                      "b_ic17.716", CRC(cfc2518a))
-S67S_SOUNDROMS8("sound.716",0x0)
+S67S_SOUNDROMS8("sound.716",NO_DUMP)
 S4_ROMEND
 #define input_ports_taurs input_ports_bowl
 CORE_GAMEDEF(taurs,l1,"Taurus (Shuffle) (L-1)",1979,"Williams",s4_mS4S,0)
@@ -78,7 +78,7 @@ INITGAME(bstrk, GEN_S4, bowl_disp)
 S4_ROMSTART(bstrk,l1,"gamerom.716",CRC(323dbcde),
                      "b_ic20.716", CRC(c6f8e3b1),
                      "b_ic17.716", CRC(cfc2518a))
-S67S_SOUNDROMS8("sound.716",0x0)
+S67S_SOUNDROMS8("sound.716",NO_DUMP)
 S4_ROMEND
 #define input_ports_bstrk input_ports_bowl
 CORE_GAMEDEF(bstrk,l1,"Big Strike (Bowler) (L-1)",1983,"Williams",s4_mS4S,0)
@@ -90,7 +90,7 @@ INITGAME(tstrk, GEN_S4, bowl_disp)
 S4_ROMSTART(tstrk,l1,"gamerom.716",CRC(b034c059),
                      "ic20.716",   CRC(f163fc88),
                      "b_ic17.716", CRC(cfc2518a))
-S67S_SOUNDROMS8("sound.716",0x0)
+S67S_SOUNDROMS8("sound.716",NO_DUMP)
 S4_ROMEND
 #define input_ports_tstrk input_ports_bowl
 CORE_GAMEDEF(tstrk,l1,"Triple Strike (Bowler) (L-1)",1983,"Williams",s4_mS4S,0)
