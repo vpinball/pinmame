@@ -2,9 +2,9 @@
 #include "sim.h"
 #include "gp.h"
 
-//DDU-1: 2 X (2 x 7 Segment, 6 Digit Displays, 2 x 2 Digit 7 Segment)
-//BDU-1: 4 X 7 Segment, 6 Digit Displays, 2 x 2 Digit 7 Segment
-//BDU-2: 4 X 7 Segment, 7 Digit Displays, 2 x 2 Digit 7 Segment
+//DDU-1/2: 2 X (2 x 7 Segment, 6 Digit Displays, 2 x 2 Digit 7 Segment)
+//BDU-1:   4 X 7 Segment, 6 Digit Displays, 2 x 2 Digit 7 Segment
+//BDU-2:   4 X 7 Segment, 7 Digit Displays, 2 x 2 Digit 7 Segment
 
 #if 0
 //Use for testing segments only
@@ -31,6 +31,14 @@ static core_tLCDLayout dispGP_DDU1[] = {
  {4, 0,16,6,CORE_SEG7}, {4,16,24,6,CORE_SEG7},
  {2, 4,14,1,CORE_SEG7}, {2, 6, 6,1,CORE_SEG7},
  {2,20,30,1,CORE_SEG7}, {2,22,22,1,CORE_SEG7}, {0}
+};
+
+/* DDU-2 is the same as DDU-1, but all starting panels shifted by 8 */
+static core_tLCDLayout dispGP_DDU2[] = {
+	{0, 0, 8,6,CORE_SEG7},{0,16,16,6,CORE_SEG7},
+	{4, 0,24,6,CORE_SEG7},{4,16,32,6,CORE_SEG7},
+	{2, 4,22,1,CORE_SEG7},{2, 6,14,1,CORE_SEG7},
+	{2,20,38,1,CORE_SEG7},{2,22,30,1,CORE_SEG7}, {0}
 };
 
 /*BDU-1*/
@@ -140,13 +148,13 @@ GP_ROMEND
 CORE_GAMEDEFNV(sshooter,"Sharpshooter",1979,"Game Plan",mGP2,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
-/ Vegas (August 1979) - Cocktail Model #140 (MPU-1??)
+/ Vegas (August 1979) - Cocktail Model #140
 /-------------------------------------------------------------------*/
-INITGAME(vegasgp, 0,dispGP_DDU1,FLIP_SW(FLIP_L),-2)
-GP_ROMSTART88(vegasgp,	"vegas.u12",0x0,
-						"vegas.u13",0x0)
+INITGAME(vegasgp, 0,dispGP_DDU2,FLIP_SW(FLIP_L),-2)
+GP_ROMSTART88(vegasgp, "140a.12",0x2c00bc19,
+					   "140b.13",0xcf26d67b)
 GP_ROMEND
-CORE_GAMEDEFNV(vegasgp,"Vegas (Game Plan)",1979,"Game Plan",mGP1,GAME_NO_SOUND)
+CORE_GAMEDEFNV(vegasgp,"Vegas (Game Plan)",1979,"Game Plan",mGP2,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
 / Coney Island! (December 1979) - Model #180
