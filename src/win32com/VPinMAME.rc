@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -27,18 +27,18 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE MOVEABLE PURE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE MOVEABLE PURE 
+2 TEXTINCLUDE 
 BEGIN
     "#include ""winres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE MOVEABLE PURE 
+3 TEXTINCLUDE 
 BEGIN
     "1 TYPELIB ""VPINMAME.tlb""\r\n"
     "\0"
@@ -52,29 +52,28 @@ END
 // Bitmap
 //
 
-IDB_LOGO                BITMAP  MOVEABLE PURE   "Res\\VPinMAMELogo.bmp"
-IDB_SPLASH              BITMAP  MOVEABLE PURE   "Res\\VPinMAMESplash.bmp"
-IDB_SPLASH2             BITMAP  MOVEABLE PURE   "Res\\VPinMAMESplash2.bmp"
-IDB_SPLASH3             BITMAP  MOVEABLE PURE   "Res\\VPinMAMESplash3.bmp"
-IDB_SPLASH4             BITMAP  MOVEABLE PURE   "Res\\VPinMAMESplash4.bmp"
+IDB_LOGO                BITMAP                  "Res\\VPinMAMELogo.bmp"
+IDB_SPLASH              BITMAP                  "Res\\VPinMAMESplash.bmp"
+IDB_SPLASH2             BITMAP                  "Res\\VPinMAMESplash2.bmp"
+IDB_SPLASH3             BITMAP                  "Res\\VPinMAMESplash3.bmp"
+IDB_SPLASH4             BITMAP                  "Res\\VPinMAMESplash4.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // REGISTRY
 //
 
-IDR_CONTROLLER          REGISTRY MOVEABLE PURE  "Controller.rgs"
-IDR_WSHDLG              REGISTRY MOVEABLE PURE  "WSHDlg.rgs"
+IDR_CONTROLLER          REGISTRY                "Controller.rgs"
+IDR_WSHDLG              REGISTRY                "WSHDlg.rgs"
 
-#ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,20,0,0
- PRODUCTVERSION 1,20,0,0
+ FILEVERSION 1,20,2,0
+ PRODUCTVERSION 1,20,2,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -89,18 +88,13 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "Comments", "\0"
-            VALUE "CompanyName", "\0"
-            VALUE "FileDescription", "COM class for PinMAME\0"
-            VALUE "FileVersion", "1, 20, 0, 0\0"
-            VALUE "InternalName", "VPinMAME\0"
-            VALUE "LegalCopyright", "© 2000-2002 by S. Ellenoff, T. Haukap, M. Adrian and G. Volkenborn\0"
-            VALUE "LegalTrademarks", "\0"
-            VALUE "OriginalFilename", "VPinMAME.DLL\0"
-            VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "Visual PinMAME\0"
-            VALUE "ProductVersion", "1.20 Beta\0"
-            VALUE "SpecialBuild", "\0"
+            VALUE "FileDescription", "COM class for PinMAME"
+            VALUE "FileVersion", "1, 20, 2, 0"
+            VALUE "InternalName", "VPinMAME"
+            VALUE "LegalCopyright", "© 2000-2003 by S. Ellenoff, T. Haukap, M. Adrian and G. Volkenborn"
+            VALUE "OriginalFilename", "VPinMAME.DLL"
+            VALUE "ProductName", "Visual PinMAME"
+            VALUE "ProductVersion", "1.20 Beta 2"
         END
     END
     BLOCK "VarFileInfo"
@@ -109,8 +103,6 @@ BEGIN
     END
 END
 
-#endif    // !_MAC
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -118,8 +110,8 @@ END
 //
 
 IDD_GAMESETTINGSDLG DIALOGEX 0, 0, 237, 175
-STYLE DS_ABSALIGN | DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | DS_CENTER | 
-    WS_POPUP | WS_CAPTION | WS_SYSMENU
+STYLE DS_ABSALIGN | DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | 
+    DS_3DLOOK | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Game Options"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
@@ -174,7 +166,7 @@ BEGIN
 END
 
 IDD_ABOUTDLG DIALOGEX 0, 0, 317, 188
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "About Visual PinMAME..."
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
@@ -206,8 +198,9 @@ BEGIN
                     "Static",SS_LEFTNOWORDWRAP,8,168,142,9
 END
 
-IDD_DISCLAIMERDLG DIALOG DISCARDABLE  0, 0, 213, 111
-STYLE DS_MODALFRAME | DS_SETFOREGROUND | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_DISCLAIMERDLG DIALOG  0, 0, 213, 111
+STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
 CAPTION "Please answer and press OK..."
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -223,8 +216,8 @@ BEGIN
     CTEXT           "ON THIS EMULATOR?",IDC_STATIC,7,56,199,8
 END
 
-IDD_GAMEINFODLG DIALOG DISCARDABLE  0, 0, 393, 245
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_GAMEINFODLG DIALOG  0, 0, 393, 245
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Game Info"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -252,8 +245,8 @@ BEGIN
                     155,14
 END
 
-IDD_CONTROLLERSETTINGSDLG DIALOG DISCARDABLE  0, 0, 312, 119
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_CONTROLLERSETTINGSDLG DIALOG  0, 0, 312, 119
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Global Settings"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -288,7 +281,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO MOVEABLE PURE 
+GUIDELINES DESIGNINFO 
 BEGIN
     IDD_GAMESETTINGSDLG, DIALOG
     BEGIN
@@ -338,7 +331,7 @@ END
 // Menu
 //
 
-IDR_CTXMENU MENU DISCARDABLE 
+IDR_CTXMENU MENU 
 BEGIN
     POPUP "CTRL_CTX_MENU"
     BEGIN
@@ -364,7 +357,7 @@ END
 // String Table
 //
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_PROJNAME            "VPinMAME"
     IDS_CONTROLLER_DESC     "Controller Class"
