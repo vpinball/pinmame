@@ -42,6 +42,7 @@ static const char *VotraxTable[65] =
 };
 
 void votrax_w(int data);
+int votrax_status_r(void);
 
 void sh_votrax_start(int Channel)
 {

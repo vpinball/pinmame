@@ -245,7 +245,7 @@ CORE_GAMEDEFNV(strikext,"Striker Extreme",1999,"Stern",de_mSES2,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / Striker Extreme (UK)
 /-------------------------------------------------------------------*/
-INITGAME(strxt_uk,GEN_WS)
+//INITGAME(strxt_uk,GEN_WS)
 SE128_ROMSTART(strxt_uk,"sxcpue.101", 0xeac29785)
 DE_DMD32ROM8x(     "sxdispa.101",0x1d2cb240)
 DE2S_SOUNDROM18888("sxsounda.u7" ,0xe7e1a0cb,
@@ -261,7 +261,7 @@ CORE_CLONEDEFNV(strxt_uk,strikext,"Striker Extreme (UK)",1999,"Stern",de_mSES2,G
 /*-------------------------------------------------------------------
 / Striker Extreme (DE)
 /-------------------------------------------------------------------*/
-INITGAME(strxt_gr,GEN_WS)
+//INITGAME(strxt_gr,GEN_WS)
 SE128_ROMSTART(strxt_gr,"sxcpug.102", 0x2686743b)
 DE_DMD32ROM8x(     "sxdispg.103",0xeb656489)
 DE2S_SOUNDROM18888("sxsoundg.u7" ,0xb38ec07d,
@@ -277,7 +277,7 @@ CORE_CLONEDEFNV(strxt_gr,strikext,"Striker Extreme (Germany)",1999,"Stern",de_mS
 /*-------------------------------------------------------------------
 / Striker Extreme (FR)
 /-------------------------------------------------------------------*/
-INITGAME(strxt_fr,GEN_WS)
+//INITGAME(strxt_fr,GEN_WS)
 SE128_ROMSTART(strxt_fr,"sxcpuf.102", 0x2804bc9f)
 DE_DMD32ROM8x(     "sxdispf.103",0x4b4b5c19)
 DE2S_SOUNDROM18888("soc.u7" ,0xa03131cf,
@@ -293,7 +293,7 @@ CORE_CLONEDEFNV(strxt_fr,strikext,"Striker Extreme (France)",1999,"Stern",de_mSE
 /*-------------------------------------------------------------------
 / Striker Extreme (IT)
 /-------------------------------------------------------------------*/
-INITGAME(strxt_it,GEN_WS)
+//INITGAME(strxt_it,GEN_WS)
 SE128_ROMSTART(strxt_it,"sxcpui.102", 0xf955d0ef)
 DE_DMD32ROM8x(     "sxdispi.103",0x40be3fe2)
 DE2S_SOUNDROM18888("s00.u7" ,0x80625d23,
@@ -309,7 +309,7 @@ CORE_CLONEDEFNV(strxt_it,strikext,"Striker Extreme (Italy)",1999,"Stern",de_mSES
 /*-------------------------------------------------------------------
 / Striker Extreme (SP)
 /-------------------------------------------------------------------*/
-INITGAME(strxt_sp,GEN_WS)
+//INITGAME(strxt_sp,GEN_WS)
 SE128_ROMSTART(strxt_sp,"sxcpul.102", 0x6b1e417f)
 DE_DMD32ROM8x(     "sxdispl.103",0x3efd4a18)
 DE2S_SOUNDROM18888("soc.u7" ,0xa03131cf,
@@ -354,7 +354,7 @@ CORE_GAMEDEFNV(hirolcas,"High Roller Casino",2001,"Stern",de_mSES2,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / High Roller Casino (DE)
 /-------------------------------------------------------------------*/
-INITGAME(hirol_gr,GEN_WS)
+//INITGAME(hirol_gr,GEN_WS)
 SE128_ROMSTART(hirol_gr,"hrccpu.210",  0x2e3c682a)
 DE_DMD32ROM8x(  "hrcdg201.bin",0x57b95712)
 DE2S_SOUNDROM18888("hrcu7.dat"   ,0xc41f91a7,
@@ -385,7 +385,7 @@ CORE_GAMEDEFNV(austin,"Austin Powers (3.0)",2001,"Stern",de_mSES2,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / Austin Powers (2.0)
 /-------------------------------------------------------------------*/
-INITGAME(austin2,GEN_WS)
+//INITGAME(austin2,GEN_WS)
 SE128_ROMSTART(austin2,"apcpu.201",   0xa4ddcdca)
 DE_DMD32ROM8x(    "apdisp-a.200",0xf3ca7fca)
 DE2S_SOUNDROM18888("apsndu7.100" ,0xd0e79d59,
