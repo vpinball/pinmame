@@ -891,8 +891,7 @@ static s_command commands[] = {
 {	(1<<EDIT_CMDS),
 	0,     0,          KEYCODE_ENTER,
 	"",
-	"\nRegular:\n  Execute current instruction.\n" \
-	"With SHIFT pressed:\n  Similar to F10, but also skips loops, function calls, etc.",
+	"\r[SHIFT+ENTER]\tSimilar to F10, but also skips loops, function calls, etc.",
 	cmd_jumpover },
 #endif
 {	(1<<EDIT_CMDS),
