@@ -6,19 +6,19 @@
 /* ROM STATUS
 N = No Lead, L = Have a Lead on Rom
 
-(N*)Lights, Camera, Action 1989
+(N*)Lights, Camera, Action 1989 (Sound roms only)
 (N*)Bell Ringer 1990
-(N*)Silver Slugger 1990
+Silver Slugger 1990
 (L)Vegas 1990
 (L)Deadly Weapon 1990
 (N*)Title Fight 1990
 (N*)Nudge It 1990
-(L)Car Hop 1991
+Car Hop 1991
 (N*)Hoops 1991
 Cactus Jacks 1991
 Class of 1812 1991
 Surf'n Safari 1991
-Operation: Thunderstorm (OT) /No. 1721/ Premier Technology , March 1992, 4 players
+(L)Operation: Thunderstorm(Need sound) (OT) /No. 1721/ Premier Technology , March 1992, 4 players
 Super Mario Bros. (SMB) /No. 2435/ Premier Technology , April 25, 1992, 4 players
 (N*)Super Mario Bros. Mushroom World (MW) /No. 3427/ Premier Technology , June 1992, 4 players
 Cue Ball Wizard (CBW) /No. 610/ Premier Technology , October 1992, 4 players
@@ -83,12 +83,14 @@ GTS33_INPUT_PORTS_START(name, balls) GTS3_INPUT_PORTS_END
 /* GAMES APPEAR IN PRODUCTION ORDER (MORE OR LESS) */
 
 /*-------------------------------------------------------------------
-/ Lights, Camera, Action
+/ Lights, Camera, Action (#720)
 /-------------------------------------------------------------------*/
 INITGAME(lca, ALPHA, FLIP67, 3/*?*/)
-GTS3ROMSTART(lca,	"gprom.bin",0x0)
+GTS3ROMSTART32(lca,	"gprom.bin",0x937a8426)
 GTS3_ROMEND
 CORE_GAMEDEFNV(lca,"Lights, Camera, Action",1989,"Gottlieb",mGTS3,GAME_NOT_WORKING)
+//62c0beda Rev 1?
+//52957d70 Rev 3?
 /*-------------------------------------------------------------------
 / Bell Ringer
 /-------------------------------------------------------------------*/
@@ -97,12 +99,14 @@ GTS3ROMSTART(bellring,	"gprom.bin",0x0)
 GTS3_ROMEND
 CORE_GAMEDEFNV(bellring,"Bell Ringer",1990,"Gottlieb",mGTS3,GAME_NOT_WORKING)
 /*-------------------------------------------------------------------
-/ Silver Slugger
+/ Silver Slugger (#722)
 /-------------------------------------------------------------------*/
 INITGAME(silvslug, ALPHA, FLIP67, 3/*?*/)
-GTS3ROMSTART(silvslug,	"gprom.bin",0x0)
+GTS3ROMSTART(silvslug,	"gprom.bin",0xa6c524e2)
+GTS3SOUND3232(			"yrom1.bin",0xeac3e1cc,
+						"drom1.bin",0x20bc9797)
 GTS3_ROMEND
-CORE_GAMEDEFNV(silvslug,"Silver Slugger",1990,"Gottlieb",mGTS3,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(silvslug,"Silver Slugger",1990,"Gottlieb",mGTS3S,GAME_NOT_WORKING)
 /*-------------------------------------------------------------------
 / Vegas
 /-------------------------------------------------------------------*/
@@ -115,6 +119,8 @@ CORE_GAMEDEFNV(vegas,"Vegas",1990,"Gottlieb",mGTS3,GAME_NOT_WORKING)
 /-------------------------------------------------------------------*/
 INITGAME(deadweap, ALPHA, FLIP67, 3/*?*/)
 GTS3ROMSTART(deadweap,	"gprom.bin",0x0)
+GTS3SOUND3232(			"yrom1.bin",0xeac3e1cc,
+						"drom1.bin",0x20bc9797)
 GTS3_ROMEND
 CORE_GAMEDEFNV(deadweap,"Deadly Weapon",1990,"Gottlieb",mGTS3,GAME_NOT_WORKING)
 /*-------------------------------------------------------------------
@@ -132,12 +138,14 @@ GTS3ROMSTART(nudgeit,	"gprom.bin",0x0)
 GTS3_ROMEND
 CORE_GAMEDEFNV(nudgeit,"Nudge It",1990,"Gottlieb",mGTS3,GAME_NOT_WORKING)
 /*-------------------------------------------------------------------
-/ Car Hop
+/ Car Hop (#725)
 /-------------------------------------------------------------------*/
 INITGAME(carhop, ALPHA, FLIP67, 3/*?*/)
-GTS3ROMSTART(carhop,	"gprom.bin",0x0)
+GTS3ROMSTART(carhop,	"gprom.bin",0x164b2c9c)
+GTS3SOUND3232(			"yrom1.bin",0x9dec74e7,
+						"drom1.bin",0x831ee812)
 GTS3_ROMEND
-CORE_GAMEDEFNV(carhop,"Car Hop",1991,"Gottlieb",mGTS3,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(carhop,"Car Hop",1991,"Gottlieb",mGTS3S,GAME_NOT_WORKING)
 /*-------------------------------------------------------------------
 / Hoops
 /-------------------------------------------------------------------*/
