@@ -841,7 +841,7 @@ DRIVER(tf95,12)         //WPC-648:          Test fixture WPC95
 //Other games created earlier by Zaccaria are EM
                         //10/77 Combat
 DRIVERNV(wsports)       //01/78 Winter Sports
-                        //07/78 House of Diamonds
+DRIVERNV(hod)           //07/78 House of Diamonds
 DRIVERNV(strike)        //09/78 Strike
                         //10/78 Ski Jump
 DRIVERNV(futurwld)      //10/78 Future World
