@@ -458,7 +458,8 @@ CORE_GAMEDEFNV(waterwld,"Waterworld",1995,"Gottlieb",mGTS3DMDS, 0)
 /-------------------------------------------------------------------*/
 static struct core_dispLayout dispAndretti[] = {
   DISP_SEG_IMPORT(GTS3_dispDMD),
-  {7, 2, 0,2,CORE_SEG7}, {7,14, 2,2,CORE_SEG7}, {7,26, 4,2,CORE_SEG7}, {0}
+  { 7,15,0,1,CORE_SEG7}, { 8,18,1,1,CORE_SEG7}, { 8,12,2,1,CORE_SEG7},
+  {10,18,3,1,CORE_SEG7}, {10,12,4,1,CORE_SEG7}, {11,15,5,1,CORE_SEG7}, {0}
 };
 INITGAME2(andretti, dispAndretti, FLIP8283, 4, SNDBRD_GTS3, 4)
 GTS3ROMSTART(andretti,	"gprom.bin", CRC(cffa788d) SHA1(84646880b09dce73a42a6d87666897f6bd74a8f9))
