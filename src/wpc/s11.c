@@ -7,8 +7,15 @@
 #include "sndbrd.h"
 #include "snd_cmd.h"
 #include "s11csoun.h"
+#include "desound.h"
 #include "s11.h"
 
+// TODO:
+// nvram save for DE games
+// de buttons
+// DE display layouts
+// DMD support
+// S2 sound support (BSMT)
 #define S11_PIA0 0
 #define S11_PIA1 1
 #define S11_PIA2 2
@@ -37,7 +44,7 @@ const core_tLCDLayout s11_dispS11a[] = {
   DISP_SEG_7(0,0,CORE_SEG16),DISP_SEG_7(0,1,CORE_SEG16),
   DISP_SEG_7(1,0,CORE_SEG8), DISP_SEG_7(1,1,CORE_SEG8) ,{0}
 };
-const core_tLCDLayout s11_dispS11b_2[] = {
+const core_tLCDLayout s11_dispS11b2[] = {
   DISP_SEG_16(0,CORE_SEG16),DISP_SEG_16(1,CORE_SEG16),{0}
 };
 
@@ -123,40 +130,40 @@ static READ_HANDLER (pia2a_r) { return core_getDip(0)<<7; }
 /-----------------*/
 static WRITE_HANDLER(pia2a_w) {
   s11locals.digSel = data & 0x0f;
-  if (core_gameData->gen & (GEN_S11|GEN_S9))
+  if (core_gameData->hw.display & S11_BCDDIAG)
     s11locals.diagnosticLed |= core_bcd2seg[(data & 0x70)>>4];
   else
     s11locals.diagnosticLed |= (data & 0x10)>>4;
 }
 
 static WRITE_HANDLER(pia2b_w) {
-  if (core_gameData->gen & GEN_S9) {
+  if (core_gameData->hw.display & S11_DISPINV) data = ~data;
+  if (core_gameData->hw.display & S11_BCDDISP) {
     s11locals.segments[0][s11locals.digSel].lo |=
          s11locals.pseg[0][s11locals.digSel].lo = core_bcd2seg[data&0x0f];
     s11locals.segments[1][s11locals.digSel].lo |=
          s11locals.pseg[1][s11locals.digSel].lo = core_bcd2seg[data>>4];
   }
-  else if (core_gameData->gen & (GEN_S11B_2|GEN_S11B_2x|GEN_S11B_3|GEN_S11C))
+  else if (core_gameData->hw.display & S11_LOWALPHA)
     s11locals.segments[1][s11locals.digSel].hi |=
-         s11locals.pseg[1][s11locals.digSel].hi = ~data;
+         s11locals.pseg[1][s11locals.digSel].hi = data;
   else
     s11locals.segments[1][s11locals.digSel].lo |=
          s11locals.pseg[1][s11locals.digSel].lo = data;
 }
 static WRITE_HANDLER(pia5a_w) {
-  if (core_gameData->gen & (GEN_S11B_2|GEN_S11B_2x|GEN_S11B_3|GEN_S11C))
+  if (core_gameData->hw.display & S11_DISPINV) data = ~data;
+  if (core_gameData->hw.display & S11_LOWALPHA)
     s11locals.segments[1][s11locals.digSel].lo |=
-         s11locals.pseg[1][s11locals.digSel].lo = ~data;
+         s11locals.pseg[1][s11locals.digSel].lo = data;
 }
 static WRITE_HANDLER(pia3a_w) {
-  if (core_gameData->gen & (GEN_S11B_2|GEN_S11B_2x|GEN_S11B_3|GEN_S11C))
-    data = ~data;
+  if (core_gameData->hw.display & S11_DISPINV) data = ~data;
   s11locals.segments[0][s11locals.digSel].lo |=
        s11locals.pseg[0][s11locals.digSel].lo = data;
 }
 static WRITE_HANDLER(pia3b_w) {
-  if (core_gameData->gen & (GEN_S11B_2|GEN_S11B_2x|GEN_S11B_3|GEN_S11C))
-    data = ~data;
+  if (core_gameData->hw.display & S11_DISPINV) data = ~data;
   s11locals.segments[0][s11locals.digSel].hi |=
        s11locals.pseg[0][s11locals.digSel].hi = data;
 }
@@ -180,8 +187,11 @@ static READ_HANDLER (pia2cb1_r) { return activecpu_get_reg(M6808_IRQ_STATE) ? co
 /*------------
 /  Solenoids
 /-------------*/
+
 static void setSSSol(int data, int solNo) {
-  int bit = CORE_SOLBIT(CORE_FIRSTSSSOL + solNo);
+                                    /*    WMS          DE */
+  static const int ssSolNo[2][6] = {{5,4,1,2,0,4},{3,4,5,1,0,2}};
+  int bit = CORE_SOLBIT(CORE_FIRSTSSSOL + ssSolNo[(core_gameData->gen & GEN_ALLS11) == 0][solNo]);
   if (s11locals.ssEn & (~data & 1))
     { coreGlobals.pulsedSolState |= bit;  s11locals.solenoids |= bit; }
   else
@@ -198,12 +208,12 @@ static WRITE_HANDLER(latch2200) {
 }
 static WRITE_HANDLER(pia0cb2_w) { s11locals.ssEn = !data;}
 
-static WRITE_HANDLER(pia1ca2_w) { setSSSol(data, 5); }
-static WRITE_HANDLER(pia1cb2_w) { setSSSol(data, 4); }
-static WRITE_HANDLER(pia3ca2_w) { setSSSol(data, 1); }
-static WRITE_HANDLER(pia3cb2_w) { setSSSol(data, 2); }
-static WRITE_HANDLER(pia4ca2_w) { setSSSol(data, 0); }
-static WRITE_HANDLER(pia4cb2_w) { setSSSol(data, 3); }
+static WRITE_HANDLER(pia1ca2_w) { setSSSol(data, 0); }
+static WRITE_HANDLER(pia1cb2_w) { setSSSol(data, 1); }
+static WRITE_HANDLER(pia3ca2_w) { setSSSol(data, 2); }
+static WRITE_HANDLER(pia3cb2_w) { setSSSol(data, 3); }
+static WRITE_HANDLER(pia4ca2_w) { setSSSol(data, 4); }
+static WRITE_HANDLER(pia4cb2_w) { setSSSol(data, 5); }
 
 /*---------------
 / Switch reading
@@ -224,9 +234,8 @@ static WRITE_HANDLER(pia5b_w) {
 /*-- Sound board sound command available --*/
 static WRITE_HANDLER(pia5cb2_w) {
   /* don't pass to sound board if a sound overlay board is available */
-  //printf("sndcmd:%2x avail=%d\n",s11locals.sndCmd,data);
-  if ((core_gameData->gen & GEN_S11B_2x) &&
-      ((s11locals.sndCmd & 0xe0) == 0)) {
+  if ((core_gameData->hw.gameSpecific1 & S11_SNDOVERLAY) &&
+    ((s11locals.sndCmd & 0xe0) == 0)) {
     if (!data) s11locals.extSol = (~s11locals.sndCmd) & 0x1f;
   }
   else sndbrd_1_ctrl_w(0,data);
@@ -317,7 +326,7 @@ static void s11_updSw(int *inports) {
   /*-- Generate interupts for diganostic keys --*/
   cpu_set_nmi_line(0, core_getSw(S11_SWCPUDIAG) ? ASSERT_LINE : CLEAR_LINE);
   sndbrd_0_diag(core_getSw(S11_SWSOUNDDIAG));
-  if ((core_gameData->gen & (GEN_S11B_2|GEN_S11B_2x|GEN_S11B_3|GEN_S11C)) && core_gameData->sxx.muxSol)
+  if ((core_gameData->hw.gameSpecific1 & S11_MUXSW2) && core_gameData->sxx.muxSol)
     core_setSw(2, core_getSol(core_gameData->sxx.muxSol));
   pia_set_input_ca1(S11_PIA2, core_getSw(S11_SWADVANCE));
   pia_set_input_cb1(S11_PIA2, core_getSw(S11_SWUPDN));
@@ -348,28 +357,25 @@ static void s11_init(void) {
   pia_config(S11_PIA3, PIA_STANDARD_ORDERING, &s11_pia[3]);
   pia_config(S11_PIA4, PIA_STANDARD_ORDERING, &s11_pia[4]);
   pia_config(S11_PIA5, PIA_STANDARD_ORDERING, &s11_pia[5]);
-  if (core_gameData->gen & GEN_S9) {
-    if (core_init(&s11Data)) return;
-    sndbrd_0_init(SNDBRD_S9S, 1, NULL, NULL, NULL);
-  }
-  else if (core_gameData->gen & GEN_S11) {
-    if (core_init(&s11Data)) return;
-    sndbrd_0_init(SNDBRD_S11S,  2, memory_region(S11S_ROMREGION), NULL, NULL);
-    sndbrd_1_init(SNDBRD_S11CS, 1, memory_region(S11CS_ROMREGION), pia_5_cb1_w, NULL);
-  }
-  else if (core_gameData->gen & GEN_S11B_3) {
-    if (core_init(&s11AData)) return;
-    sndbrd_0_init(SNDBRD_S11S,  1, memory_region(S11B3S_ROMREGION), NULL, NULL);
-//  sndbrd_1_init(SNDBRD_???,   2, memory_region(S11_MEMREG_SROM), pia_5_cb1_w, NULL);
-  }
-  else if (core_gameData->gen & GEN_S11C) {
-    if (core_init(&s11AData)) return;
-    sndbrd_1_init(SNDBRD_S11CS, 1, memory_region(S11CS_ROMREGION), pia_5_cb1_w, NULL);
-  }
-  else { /* all other S11 */
-    if (core_init(&s11AData)) return;
-    sndbrd_0_init(SNDBRD_S11S,  2, memory_region(S11S_ROMREGION), NULL, NULL);
-    sndbrd_1_init(SNDBRD_S11CS, 1, memory_region(S11CS_ROMREGION), pia_5_cb1_w, NULL);
+  if (core_init((core_gameData->hw.display & S11_BCDDIAG) ? &s11Data : &s11AData)) return;
+  switch (core_gameData->gen) {
+    case GEN_S9:
+      sndbrd_0_init(SNDBRD_S9S, 1, NULL, NULL, NULL);
+      break;
+    case GEN_S11:
+      sndbrd_0_init(SNDBRD_S11S,  2, memory_region(S11S_ROMREGION), NULL, NULL);
+      sndbrd_1_init(SNDBRD_S11CS, 1, memory_region(S11CS_ROMREGION), pia_5_cb1_w, NULL);
+      break;
+    case GEN_S11B2:
+      sndbrd_0_init(SNDBRD_S11S,  1, memory_region(S11B3S_ROMREGION), NULL, NULL);
+    //sndbrd_1_init(SNDBRD_???,   2, memory_region(S11_MEMREG_SROM), pia_5_cb1_w, NULL);
+      break;
+    case GEN_S11C:
+      sndbrd_1_init(SNDBRD_S11CS, 1, memory_region(S11CS_ROMREGION), pia_5_cb1_w, NULL);
+      break;
+    case GEN_DE:
+      sndbrd_1_init(SNDBRD_DE1S,  1, memory_region(DE1S_ROMREGION), pia_5_cb1_w, NULL);
+      break;
   }
   pia_reset();
 }
@@ -382,7 +388,7 @@ static void s11_exit(void) {
 /  Memory map for main CPU
 /----------------------------*/
 static MEMORY_READ_START(s11_readmem)
-  { 0x0000, 0x07ff, MRA_RAM},
+  { 0x0000, 0x1fff, MRA_RAM},
   { 0x2100, 0x2103, pia_r(S11_PIA0) },
   { 0x2400, 0x2403, pia_r(S11_PIA1) },
   { 0x2800, 0x2803, pia_r(S11_PIA2) },
@@ -393,7 +399,7 @@ static MEMORY_READ_START(s11_readmem)
 MEMORY_END
 
 static MEMORY_WRITE_START(s11_writemem)
-  { 0x0000, 0x07ff, MWA_RAM }, /* CMOS */
+  { 0x0000, 0x1fff, MWA_RAM }, /* CMOS */
   { 0x2100, 0x2103, pia_w(S11_PIA0) },
   { 0x2200, 0x2200, latch2200},
   { 0x2400, 0x2403, pia_w(S11_PIA1) },
@@ -407,13 +413,13 @@ MEMORY_END
 /*-----------------
 /  Machine drivers
 /------------------*/
-struct MachineDriver machine_driver_s9_s = {
+const struct MachineDriver machine_driver_s9_s = {
   {{  CPU_M6808, 1000000, /* 1 Mhz */
       s11_readmem, s11_writemem, NULL, NULL,
       s11_vblank, 1, s11_irq, S11_IRQFREQ
   },S9_SOUNDCPU },
   S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, s11_init, CORE_EXITFUNC(s11_exit)
+  50, s11_init, s11_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
@@ -422,13 +428,13 @@ struct MachineDriver machine_driver_s9_s = {
   s11_nvram
 };
 
-struct MachineDriver machine_driver_s11a_2_s = {
+const struct MachineDriver machine_driver_s11_s = {
   {{  CPU_M6808, 1000000, /* 1 Mhz */
       s11_readmem, s11_writemem, NULL, NULL,
       s11_vblank, 1, s11_irq, S11_IRQFREQ
   }, S11C_SOUNDCPU, S11_SOUNDCPU },
   S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, s11_init, CORE_EXITFUNC(s11_exit)
+  50, s11_init, s11_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
@@ -437,13 +443,13 @@ struct MachineDriver machine_driver_s11a_2_s = {
   s11_nvram
 };
 
-struct MachineDriver machine_driver_s11b_3_s = {
+const struct MachineDriver machine_driver_s11b2_s = {
   {{  CPU_M6808, 1000000, /* 1 Mhz */
       s11_readmem, s11_writemem, NULL, NULL,
       s11_vblank, 1, s11_irq, S11_IRQFREQ
   }, S11_SOUNDCPU },
   S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, s11_init, CORE_EXITFUNC(s11_exit)
+  50, s11_init, s11_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
@@ -452,13 +458,13 @@ struct MachineDriver machine_driver_s11b_3_s = {
   s11_nvram
 };
 
-struct MachineDriver machine_driver_s11c_s = {
+const struct MachineDriver machine_driver_s11c_s = {
   {{  CPU_M6808, 1000000, /* 1 Mhz */
       s11_readmem, s11_writemem, NULL, NULL,
       s11_vblank, 1, s11_irq, S11_IRQFREQ
   }, S11C_SOUNDCPU },
   S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50, s11_init, CORE_EXITFUNC(s11_exit)
+  50, s11_init, s11_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
@@ -467,7 +473,22 @@ struct MachineDriver machine_driver_s11c_s = {
   s11_nvram
 };
 
-struct MachineDriver machine_driver_s11a_2 = {
+const struct MachineDriver machine_driver_des11_s = {
+  {{  CPU_M6808, 1000000, /* 1 Mhz */
+      s11_readmem, s11_writemem, NULL, NULL,
+      s11_vblank, 1, s11_irq, S11_IRQFREQ
+  }, DE1S_SOUNDCPU },
+  S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  50, s11_init, s11_exit,
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
+  VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
+  NULL, NULL, gen_refresh,
+  0,0,0,0, { DE1S_SOUND },
+  s11_nvram
+};
+/* No Sound machine */
+const struct MachineDriver machine_driver_s11 = {
   {{  CPU_M6808, 1000000, /* 1 Mhz */
       s11_readmem, s11_writemem, NULL, NULL,
       s11_vblank, 1, s11_irq, S11_IRQFREQ
@@ -486,5 +507,5 @@ struct MachineDriver machine_driver_s11a_2 = {
 / Load/Save static ram
 /-------------------------------------------------*/
 static void s11_nvram(void *file, int write) {
-  core_nvram(file, write, memory_region(S11_MEMREG_CPU), 0x0800, 0xff);
+  core_nvram(file, write, memory_region(S11_CPUREGION), 0x0800, 0xff);
 }
