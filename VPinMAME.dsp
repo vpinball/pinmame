@@ -132,7 +132,7 @@ SOURCE=.\src\zlib\zconf.h
 SOURCE=.\src\zlib\zlib.h
 # End Source File
 # End Group
-# Begin Group "Win32COM"
+# Begin Group "VPinMAME"
 
 # PROP Default_Filter ""
 # Begin Source File
