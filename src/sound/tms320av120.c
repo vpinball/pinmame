@@ -100,7 +100,7 @@ typedef struct {
 //Different Quantization types
 static Layer2QuantClass l2qc3 = {3,5,1};
 static Layer2QuantClass l2qc5 = {5,7,1};
-static Layer2QuantClass l2qc7 = {7,3,0};
+//static Layer2QuantClass l2qc7 = {7,3,0};		Not used for our specific sampling frequencies
 static Layer2QuantClass l2qc9 = {9,10,1};
 static Layer2QuantClass l2qc15 = {15,4,0};
 static Layer2QuantClass l2qc31 = {31,5,0};
@@ -114,7 +114,7 @@ static Layer2QuantClass l2qc4095 = {4095,12,0};
 static Layer2QuantClass l2qc8191 = {8191,13,0};
 static Layer2QuantClass l2qc16383 = {16383,14,0};
 static Layer2QuantClass l2qc32767 = {32767,15,0};
-static Layer2QuantClass l2qc65535 = {65535,16,0};
+//static Layer2QuantClass l2qc65535 = {65535,16,0};		Not used for our specific sampling frequencies
 
 //Allocation Table
 Layer2QuantClass *l2allocationE[] = {
@@ -258,8 +258,8 @@ static void Matrix(long *V, long *subbandSamples, int numSamples) {
    pWorkI = workI; // 2.16
 
    for(n=0;n<16;n++) {
-      long a = subbandSamples[*next++];
-      long b = subbandSamples[*next++];
+      long a = subbandSamples[(int)*next++];
+      long b = subbandSamples[(int)*next++];
       *pWorkR++ = a+b;  *pWorkI++ = 0; 
       *pWorkR++ = a;    *pWorkI++ = b; 
       *pWorkR++ = a-b;  *pWorkI++ = 0; 
@@ -339,7 +339,7 @@ void Layer12Synthesis(  int num,
    // D is 3.12, V is 6.9, want 16 bit output
    nextD = D;
    for(j=0;j<32;j++) {
-      int i;
+//      int i;
       long sample = 0; // 8.16
       for(i=0;i<16;i+=2) {
          sample += (*nextD++ * V[i][j]) >> 8;
@@ -494,7 +494,6 @@ static int get_one_byte(int num, UINT8* byte, UINT32 pos)
 static int Read_Frame(int num)
 {	
 	UINT8 onebyte;
-	int quit = 0;
 	int i;
 
 	//clear current frame buffer
