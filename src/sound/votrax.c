@@ -18,62 +18,102 @@ the variable VotraxBaseFrequency, this is defaulted to 8000
 
 #include "driver.h"
 
-int		VotraxBaseFrequency;		/* Some games (Qbert) change this */
-int 	VotraxBaseVolume;
+int		VotraxBaseFrequency;
+int     VotraxBusy;
 int 	VotraxChannel;
+
+void (*busy_func)(int state);
+
+unsigned char* pActPos;
+int	iRemainingSamples;
+
+unsigned char* pActPos1;
+int	iRemainingSamples1;
+
+int iLastValue;
+
+#include "vtxsmpls.inc"
+
+static const char *PhonemeNames[65] =
+{
+ "EH3","EH2","EH1","PA0","DT" ,"A1" ,"A2" ,"ZH",
+ "AH2","I3" ,"I2" ,"I1" ,"M"  ,"N"  ,"B"  ,"V",
+ "CH" ,"SH" ,"Z"  ,"AW1","NG" ,"AH1","OO1","OO",
+ "L"  ,"K"  ,"J"  ,"H"  ,"G"  ,"F"  ,"D"  ,"S",
+ "A"  ,"AY" ,"Y1" ,"UH3","AH" ,"P"  ,"O"  ,"I",
+ "U"  ,"Y"  ,"T"  ,"R"  ,"E"  ,"W"  ,"AE" ,"AE1",
+ "AW2","UH2","UH1","UH" ,"O2" ,"O1" ,"IU" ,"U1",
+ "THV","TH" ,"ER" ,"EH" ,"E1" ,"AW" ,"PA1","STOP",
+ 0
+};
 
 struct  GameSamples *VotraxSamples;
 
-/****************************************************************************
- * 64 Phonemes - currently 1 sample per phoneme, will be combined sometime!
- ****************************************************************************/
-
-static const char *VotraxTable[65] =
-{
- "EH3.WAV","EH2.WAV","EH1.WAV","PA0.WAV","DT.WAV" ,"A1.WAV" ,"A2.WAV" ,"ZH.WAV",
- "AH2.WAV","I3.WAV" ,"I2.WAV" ,"I1.WAV" ,"M.WAV"  ,"N.WAV"  ,"B.WAV"  ,"V.WAV",
- "CH.WAV" ,"SH.WAV" ,"Z.WAV"  ,"AW1.WAV","NG.WAV" ,"AH1.WAV","OO1.WAV","OO.WAV",
- "L.WAV"  ,"K.WAV"  ,"J.WAV"  ,"H.WAV"  ,"G.WAV"  ,"F.WAV"  ,"D.WAV"  ,"S.WAV",
- "A.WAV"  ,"AY.WAV" ,"Y1.WAV" ,"UH3.WAV","AH.WAV" ,"P.WAV"  ,"O.WAV"  ,"I.WAV",
- "U.WAV"  ,"Y.WAV"  ,"T.WAV"  ,"R.WAV"  ,"E.WAV"  ,"W.WAV"  ,"AE.WAV" ,"AE1.WAV",
- "AW2.WAV","UH2.WAV","UH1.WAV","UH.WAV" ,"O2.WAV" ,"O1.WAV" ,"IU.WAV" ,"U1.WAV",
- "THV.WAV","TH.WAV" ,"ER.WAV" ,"EH.WAV" ,"E1.WAV" ,"AW.WAV" ,"PA1.WAV","STOP.WAV",
- 0
-};
-
-static const char *VotraxNameTable[] =
-{
- "*votrax",
- "EH3.WAV","EH2.WAV","EH1.WAV","PA0.WAV","DT.WAV" ,"A1.WAV" ,"A2.WAV" ,"ZH.WAV",
- "AH2.WAV","I3.WAV" ,"I2.WAV" ,"I1.WAV" ,"M.WAV"  ,"N.WAV"  ,"B.WAV"  ,"V.WAV",
- "CH.WAV" ,"SH.WAV" ,"Z.WAV"  ,"AW1.WAV","NG.WAV" ,"AH1.WAV","OO1.WAV","OO.WAV",
- "L.WAV"  ,"K.WAV"  ,"J.WAV"  ,"H.WAV"  ,"G.WAV"  ,"F.WAV"  ,"D.WAV"  ,"S.WAV",
- "A.WAV"  ,"AY.WAV" ,"Y1.WAV" ,"UH3.WAV","AH.WAV" ,"P.WAV"  ,"O.WAV"  ,"I.WAV",
- "U.WAV"  ,"Y.WAV"  ,"T.WAV"  ,"R.WAV"  ,"E.WAV"  ,"W.WAV"  ,"AE.WAV" ,"AE1.WAV",
- "AW2.WAV","UH2.WAV","UH1.WAV","UH.WAV" ,"O2.WAV" ,"O1.WAV" ,"IU.WAV" ,"U1.WAV",
- "THV.WAV","TH.WAV" ,"ER.WAV" ,"EH.WAV" ,"E1.WAV" ,"AW.WAV" ,"PA1.WAV","STOP.WAV",
- 0
-};
-
 struct Samplesinterface votrax_interface = {
   1, 100, 
-  VotraxNameTable
+  NULL
 };
 
 void votrax_w(int data);
-int votrax_status_r(void);
+
+int votrax_status_r(void)
+{
+    return VotraxBusy;
+}
+
+static void Votrax_Update(int num, INT16 *buffer, int length)
+{
+	int nextLength;
+
+	nextLength = length;
+
+	if ( iRemainingSamples<length )
+		iLastValue = (0x80-*(pActPos+iRemainingSamples-1))*0x00f0;
+
+	while ( length && iRemainingSamples ) {
+		*buffer++ = (0x80-*pActPos++)*0x0f0;
+		length--;
+		iRemainingSamples--;
+	}
+
+	if ( !iRemainingSamples && iRemainingSamples ) {
+		iRemainingSamples = iRemainingSamples1;
+		pActPos = pActPos1;
+
+		iRemainingSamples1 = 0;
+	}
+
+	while ( length && iRemainingSamples ) {
+		*buffer++ = (0x80-*pActPos++)*0x0f0;
+		length--;
+		iRemainingSamples--;
+	}
+
+	while ( length ) {
+		*buffer++ = iLastValue;
+		length--;
+	}
+
+	if ( iRemainingSamples<=0 )
+		VotraxBusy = 0;
+}
 
 void sh_votrax_start(int Channel)
 {
-//	VotraxSamples = readsamples(VotraxTable,"votrax");
     VotraxBaseFrequency = 8000;
-    VotraxBaseVolume = 230;
-    VotraxChannel = Channel;
+	VotraxBusy = 0;
+
+	iRemainingSamples  = 0;
+	iRemainingSamples1 = 0;
+
+	iLastValue = 0x0000;
+
+    VotraxChannel = stream_init("SND DAC", 100, 8000, 0, Votrax_Update);
+	set_RC_filter(VotraxChannel, 270000, 15000, 0, 10000);
 }
 
 void sh_votrax_stop(void)
 {
-//	freesamples(VotraxSamples);
 }
 
 void repeat_votrax_w(int dummy)
@@ -83,31 +123,21 @@ void repeat_votrax_w(int dummy)
 
 void votrax_w(int data)
 {
-	static int buffer[128];
-	static int pos;
-	int i,Phoneme,Intonation;
+	int Phoneme,Intonation;
 
-	if (data >= 0) {
-		if (pos < 128) buffer[pos++] = data;
+	Phoneme = data & 0x3F;
+	Intonation = data >> 6;
+	logerror("Speech : %s at intonation %d\n",PhonemeNames[Phoneme],Intonation);
+
+	if ( iRemainingSamples ) {
+		pActPos1           = PhonemeData[Phoneme].pStart;
+		iRemainingSamples1 = PhonemeData[Phoneme].iLength;
 	}
-	if (pos > 0 && votrax_status_r() < 1) {
-		data = buffer[0];
-		pos--;
-		for (i=0; i < pos; i++)
-			buffer[i] = buffer[i+1];
-		Phoneme = data & 0x3F;
-		Intonation = data >> 6;
-		logerror("Speech : %s at intonation %d\n",VotraxTable[Phoneme],Intonation);
-/*
-		if(Phoneme==63)
-			mixer_stop_sample(VotraxChannel);
-*/
-	    sample_start(0,Phoneme,0);
-	} else
-		timer_set(TIME_IN_USEC(24000),0,repeat_votrax_w);
+	else {
+		pActPos           = PhonemeData[Phoneme].pStart;
+		iRemainingSamples = PhonemeData[Phoneme].iLength;
+	}
+
+	VotraxBusy = 1;
 }
 
-int votrax_status_r(void)
-{
-    return mixer_is_sample_playing(VotraxChannel);
-}
