@@ -229,7 +229,9 @@ static void via_t1_timeout (int which)
     {
 		if (T1_SET_PB7(v->acr))
 			v->out_b |= 0x80;
+#ifndef PINMAME
 		v->t1 = 0;
+#endif
 		v->time1=timer_get_time();
     }
 	if (v->ddr_b)
@@ -255,7 +257,9 @@ static void via_t2_timeout (int which)
 	else
 		logerror("6522VIA chip %d: T2 timout occured but there is no callback.  PC: %08X\n", which, activecpu_get_pc());
 
+#ifndef PINMAME
 	v->t2 = 0;
+#endif
 	v->time2=timer_get_time();
 
 	if (!(v->ifr & INT_T2))
