@@ -30,6 +30,9 @@ const struct GameDriver *test_drivers[] = { 0 };
 	#define INCLUDE_NEW_STERN 1
 #endif
 
+
+DRIVERNV(lotrsnd)
+
 DRIVERNV(st_game)       //Unknown game running on old Stern hardware
 
 // --------------------
@@ -568,12 +571,13 @@ DRIVERNV(austin)        //Whitestar: 05/01 Austin Powers
 DRIVERNV(austing)       //Whitestar: 05/01 Austin Powers (German display)
 DRIVERNV(austinf)       //Whitestar: 05/01 Austin Powers (French display)
 DRIVERNV(austini)       //Whitestar: 05/01 Austin Powers (Italian display)
-#ifdef INCLUDE_NEW_STERN
 DRIVERNV(monopoly)      //Whitestar: 09/01 Monopoly
 DRIVERNV(monopolg)      //Whitestar: 09/01 Monopoly (German display)
 DRIVERNV(monopoll)      //Whitestar: 09/01 Monopoly (Spanish display)
 DRIVERNV(monopolf)      //Whitestar: 09/01 Monopoly (French display)
 DRIVERNV(monopoli)      //Whitestar: 09/01 Monopoly (Italian display)
+
+#ifdef INCLUDE_NEW_STERN
 DRIVERNV(playboys)      //Whitestar: 02/02 Playboy
 DRIVERNV(playboyg)      //Whitestar: 02/02 Playboy (German display)
 DRIVERNV(playboyl)      //Whitestar: 02/02 Playboy (Spanish display)
@@ -594,7 +598,12 @@ DRIVERNV(term3g)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (G
 DRIVERNV(term3l)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (Spain)
 DRIVERNV(term3f)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (France)
 DRIVERNV(term3i)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (Italy)
-// new sound board with ARM7 CPU
+
+// New CPU/Sound Board with ARM7 CPU + Xilinx FPGA controlling sound
+
+#ifdef MAME_DEBUG
+DRIVERNV(lotrsnd)		//Test ARM7 cpu/sound
+#endif
 DRIVERNV(lotr)          //Whitestar: 11/03 Lord Of The Rings
 DRIVERNV(lotr_gr)       //Whitestar: 11/03 Lord Of The Rings (Germany)
 DRIVERNV(lotr_sp)       //Whitestar: 11/03 Lord Of The Rings (Spain)
@@ -605,6 +614,11 @@ DRIVERNV(ripleysg)      //Whitestar: 03/04 Ripley's Believe It or Not! (Germany)
 DRIVERNV(ripleysl)      //Whitestar: 03/04 Ripley's Believe It or Not! (Spain)
 DRIVERNV(ripleysf)      //Whitestar: 03/04 Ripley's Believe It or Not! (France)
 DRIVERNV(ripleysi)      //Whitestar: 03/04 Ripley's Believe It or Not! (Italy)
+DRIVERNV(elvis)         //Whitestar: 10/04 Elvis
+DRIVERNV(elvisg)        //Whitestar: 10/04 Elvis (Germany)
+DRIVERNV(elvisl)        //Whitestar: 10/04 Elvis (Spain)
+DRIVERNV(elvisf)        //Whitestar: 10/04 Elvis (France)
+DRIVERNV(elvisi)        //Whitestar: 10/04 Elvis (Italy)
 #endif /* INCLUDE_NEW_STERN */
 
 // ---------------
