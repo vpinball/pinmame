@@ -118,7 +118,8 @@ DRIVERNV(flashgdf)      //BY35-834: 05/80 Flash Gordon (French)
 DRIVERNV(eballdlx)      //BY35-838: 09/80 Eight Ball Deluxe
 DRIVERNV(fball_ii)      //BY35-839: 09/80 Fireball II
 DRIVERNV(embryon )      //BY35-841: 09/80 Embryon
-DRIVERNV(embryonb)      //BY35:     10/02 Embryon (7-digit conversion)
+DRIVERNV(embryonb)      //BY35:     10/02 Embryon (7-digit conversion rev.1)
+DRIVERNV(embryonc)      //BY35:     05/04 Embryon (7-digit conversion rev.8)
 DRIVERNV(fathom  )      //BY35-842: 12/80 Fathom
 DRIVERNV(fathomb )      //BY35-842: 08/04 Fathom (modified rules)
 DRIVERNV(medusa  )      //BY35-845: 02/81 Medusa
@@ -220,34 +221,41 @@ DRIVER(bttf,a20)        //Data East MPU: 06/90 Back to the Future (2.0)
 DRIVER(bttf,a21)        //Data East MPU: ??/90 Back to the Future (2.1)
 DRIVER(bttf,a27)        //Data East MPU: 12/90 Back to the Future (2.7)
 DRIVER(bttf,g27)        //Data East MPU: ??/9? Back to the Future (2.7 Germany)
-DRIVER(simp,a27)        //Data East MPU: 09/90 The Simpsons
+DRIVER(simp,a20)        //Data East MPU: 09/90 The Simpsons (2.0)
+DRIVER(simp,a27)        //Data East MPU: 09/90 The Simpsons (2.7)
 //DMD 128 x 16
 DRIVER(ckpt,a17)        //Data East MPU: 02/91 Checkpoint
-DRIVER(tmnt,104)        //Data East MPU: 05/91 Teenage Mutant Ninja Turtles
+DRIVER(tmnt,103)        //Data East MPU: 05/91 Teenage Mutant Ninja Turtles (1.03)
+DRIVER(tmnt,104)        //Data East MPU: 05/91 Teenage Mutant Ninja Turtles (1.04)
 //BSMT2000 Sound chip
 DRIVER(btmn,101)        //Data East MPU: 07/91 Batman (1.01)
 DRIVER(btmn,103)        //Data East MPU: ??/91 Batman (1.03)
 DRIVER(btmn,g13)        //Data East MPU: ??/91 Batman (1.03 Germany)
+DRIVER(trek,110)        //Data East MPU: 11/91 Star Trek 25th Anniversary (1.10)
+DRIVER(trek,120)        //Data East MPU: 01/92 Star Trek 25th Anniversary (1.20)
 DRIVER(trek,200)        //Data East MPU: 04/92 Star Trek 25th Anniversary (2.00)
 DRIVER(trek,201)        //Data East MPU: 04/92 Star Trek 25th Anniversary (2.01)
 DRIVER(hook,401)        //Data East MPU: 01/92 Hook (4.01)
 DRIVER(hook,404)        //Data East MPU: 01/92 Hook (4.04)
 DRIVER(hook,408)        //Data East MPU: 01/92 Hook (4.08)
 //DMD 128 x 32
+DRIVER(lw3,200)         //Data East MPU: 06/92 Lethal Weapon (2.00)
 DRIVER(lw3,205)         //Data East MPU: 07/92 Lethal Weapon (2.05)
-DRIVER(lw3,207)         //Data East MPU: 08/92 Lethal Weapon (2.07)
+DRIVER(lw3,207)         //Data East MPU: 08/92 Lethal Weapon (2.07 Canada)
 DRIVER(lw3,208)         //Data East MPU: 11/92 Lethal Weapon (2.08)
 DRIVER(stwr,103)        //Data East MPU: 10/92 Star Wars (1.03)
 DRIVER(stwr,a14)        //Data East MPU: 10/92 Star Wars (Display Rev.1.04)
 DRIVER(stwr,g11)        //Data East MPU: 10/92 Star Wars (1.01 Germany)
 DRIVER(rab,130)         //Data East MPU: 04/93 Rocky & Bullwinkle
 DRIVER(rab,320)         //Data East MPU: 08/93 Rocky & Bullwinkle (3.20)
+DRIVER(jupk,501)        //Data East MPU: 09/93 Jurassic Park (5.01)
+DRIVER(jupk,g51)        //Data East MPU: 09/93 Jurassic Park (5.01 Germany)
 DRIVER(jupk,513)        //Data East MPU: 09/93 Jurassic Park (5.13)
-DRIVER(jupk,g51)        //Data East MPU: 09/93 Jurassic Park (5.13 Germany)
 DRIVER(lah,l104)        //Data East MPU: 08/93 Last Action Hero (1.04 Spain)
 DRIVER(lah,l108)        //Data East MPU: 08/93 Last Action Hero (1.08 Spain)
 DRIVER(lah,110)         //Data East MPU: 08/93 Last Action Hero (1.10)
 DRIVER(lah,112)         //Data East MPU: 08/93 Last Action Hero (1.12)
+DRIVER(tftc,104)        //Data East MPU: 11/93 Tales From the Crypt (1.04 Spain)
 DRIVER(tftc,200)        //Data East MPU: 11/93 Tales From the Crypt (2.00)
 DRIVER(tftc,303)        //Data East MPU: 11/93 Tales From the Crypt (3.03)
 DRIVER(tomy,h30)        //Data East MPU: 02/94 Tommy (3.00 Holland)
@@ -463,6 +471,7 @@ DRIVERNV(f1gp)			//F1 Grand Prix (1987)
 // SEGA GAMES
 // --------------
 //Data East Hardare, DMD 192x64
+DRIVERNV(mav_100)       //DE/Sega MPU: 09/94 Maverick 1.00
 DRIVERNV(mav_401)       //DE/Sega MPU: 09/94 Maverick 4.01 Display
 DRIVERNV(mav_402)       //DE/Sega MPU: 09/94 Maverick 4.02 Display
 DRIVERNV(frankst)       //DE/Sega MPU: 12/94 Frankenstein
@@ -733,7 +742,8 @@ DRIVER(trizn,l1)        //S6-487:   07/79 W TriZone
 DRIVER(tmwrp,l2)        //S6-489:   09/79 W Time Warp
 DRIVER(grgar,l1)        //S6-496:   11/79 W Gorgar
 DRIVER(lzbal,l2)        //S6-493:   12/79 W Laser Ball
-DRIVER(frpwr,l2)        //S6-497:   02/80 W Firepower
+DRIVER(frpwr,l2)        //S6-497:   02/80 W Firepower (L-2)
+DRIVER(frpwr,l6)        //S6-497:   02/80 W Firepower (L-6)
 DRIVER(frpwr,b6)        //S6:       12/03 W Firepower (Sys.6 7-digit conversion)
 DRIVER(blkou,l1)        //S6-495:   06/80 W Blackout
 DRIVER(scrpn,l1)        //S6-494:   07/80 W Scorpion
@@ -778,6 +788,7 @@ DRIVER(hs,l4)           //S11-541:  01/86 W High Speed (L-4)
                         //S11:      02/86 W Alley Cats (Bowler)
 DRIVER(grand,l4)        //S11-523:  04/86 W Grand Lizard
 DRIVER(rdkng,l1)        //S11-542:  07/86 W Road Kings (L-1)
+DRIVER(rdkng,l2)        //S11-542:  07/86 W Road Kings (L-2)
 DRIVER(rdkng,l3)        //S11-542:  07/86 W Road Kings (L-3)
 DRIVER(rdkng,l4)        //S11-542:  07/86 W Road Kings (L-4)
 DRIVER(pb,l5)           //S11-549:  10/86 W Pin-bot (L-5)
@@ -793,7 +804,8 @@ DRIVER(bguns,l8)        //S11-557:  10/87 W Big Guns (L-8)
 DRIVER(spstn,l5)        //S11-552:  12/87 W Space Station
 DRIVER(gmine,l2)        //S11-920:  ??/88 W Gold Mine (Bowler)
 DRIVER(tdawg,l1)        //S11-921:  ??/88 W Top Dawg (Bowler)
-DRIVER(cycln,l5)        //S11-564:  02/88 W Cyclone
+DRIVER(cycln,l4)        //S11-564:  02/88 W Cyclone (L-4)
+DRIVER(cycln,l5)        //S11-564:  02/88 W Cyclone (L-5)
 DRIVER(bnzai,l3)        //S11-566:  05/88 W Banzai Run (L-3)
 DRIVER(bnzai,l1)        //S11-566:  05/88 W Banzai Run (L-1)
 DRIVER(bnzai,p1)        //S11-566:  05/88 W Banzai Run (P-1)
@@ -815,6 +827,7 @@ DRIVER(bk2k,pu1)        //S11-563:  04/89 W Black Knight 2000 (PU-1)
 //First Game produced entirely by Williams after Merger to use Bally Name
 DRIVER(tsptr,l3)        //S11-2630: 04/89 B Transporter the Rescue
                         //S11:      05/89 W Pool
+DRIVER(polic,l2)        //S11-573:  08/89 W Police Force (LA-2)
 DRIVER(polic,l3)        //S11-573:  08/89 W Police Force (LA-3)
 DRIVER(polic,l4)        //S11-573:  08/89 W Police Force (LA-4)
 DRIVER(eatpm,l4)        //S11-782:  10/89 B Elvira and the Party Monsters (L-4)
@@ -855,9 +868,10 @@ DRIVER(fh,l5)           //WPC-503:  12/90 W Funhouse (L-5)
 DRIVER(fh,l9b)                            // bootleg with correct German translation
 DRIVER(bbnny,l2)        //S11-396:  01/91 B Bugs Bunny's Birthday Ball (L-2)
 DRIVER(bbnny,lu)        //S11-396:  01/91 B Bugs Bunny's Birthday Ball (LU-2) European
-DRIVER(bop,l7)          //WPC-502:  02/91 W The Machine: Bride of Pinbot
-DRIVER(bop,l4)          //WPC-502:  02/91 W The Machine: Bride of Pinbot (L-4)
-DRIVER(bop,l5)          //WPC-502:  02/91 W The Machine: Bride of Pinbot (L-5)
+DRIVER(bop,l2)          //WPC-502:  04/91 W The Machine: Bride of Pinbot (L-2)
+DRIVER(bop,l4)          //WPC-502:  04/91 W The Machine: Bride of Pinbot (L-4)
+DRIVER(bop,l5)          //WPC-502:  05/91 W The Machine: Bride of Pinbot (L-5)
+DRIVER(bop,l7)          //WPC-502:  12/92 W The Machine: Bride of Pinbot
 DRIVER(hd,l1)           //WPC:      02/91 B Harley Davidson (L-1)
 DRIVER(hd,l3)           //WPC:      02/91 B Harley Davidson (L-3)
 DRIVER(sf,l1)           //WPC-601:  03/91 W SlugFest
@@ -870,6 +884,7 @@ DRIVER(t2,p2f)                            // Profanity Speech version
 DRIVER(hurr,l2)         //WPC-512:  08/91 W Hurricane
 DRIVER(pz,f4)           //WPC:      08/91 B Party Zone (F-4)
 DRIVER(pz,l1)           //WPC:      08/91 B Party Zone (L-1)
+DRIVER(gi,l3)           //WPC-203:  07/91 B Gilligan's Island (L-3)
 DRIVER(gi,l4)           //WPC-203:  07/91 B Gilligan's Island (L-4)
 DRIVER(gi,l6)           //WPC-203:  08/91 B Gilligan's Island (L-6)
 DRIVER(gi,l9)           //WPC-203:  12/92 B Gilligan's Island (L-9)
@@ -883,22 +898,22 @@ DRIVER(taf,l7)          //WPC:      10/92 B The Addams Family (L-7) (Prototype L
 DRIVER(taf,l5)          //WPC:      12/92 B The Addams Family (L-5)
 DRIVER(taf,l6)          //WPC:      03/93 B The Addams Family (L-6)
 DRIVER(taf,h4)          //WPC:      05/94 B The Addams Family (H-4)
-DRIVER(gw,pc)           //WPC-504:  12/92 W The Getaway: High Speed II (P-C)
+DRIVER(gw,pc)           //WPC-504:  03/92 W The Getaway: High Speed II (P-C)
 DRIVER(gw,l1)           //WPC-504:  04/92 W The Getaway: High Speed II (L-1)
 DRIVER(gw,l2)           //WPC-504:  06/92 W The Getaway: High Speed II (L-2)
 DRIVER(gw,l5)           //WPC-504:  12/92 W The Getaway: High Speed II (L-5)
-DRIVER(br,l1)           //WPC:      07/92 B Black Rose (L-1)
-DRIVER(br,sp1)          //WPC:      07/92 B Black Rose (SP-1)
-DRIVER(br,l3)           //WPC:      07/92 B Black Rose (L-3)
-DRIVER(br,l4)           //WPC:      07/92 B Black Rose (L-4)
+DRIVER(br,p17)          //WPC:      05/92 B Black Rose (P-17)
+DRIVER(br,l1)           //WPC:      08/92 B Black Rose (L-1)
+DRIVER(br,l3)           //WPC:      01/93 B Black Rose (L-3)
+DRIVER(br,l4)           //WPC:      11/93 B Black Rose (L-4)
 DRIVER(ft,p4)           //WPC-505:  07/92 W Fish Tales (P-4)
 DRIVER(ft,l3)           //WPC-505:  09/92 W Fish Tales (L-3)
 DRIVER(ft,l4)           //WPC-505:  09/92 W Fish Tales (L-4)
 DRIVER(ft,l5)           //WPC-505:  12/92 W Fish Tales (L-5)
 DRIVER(dw,l1)           //WPC-206   10/92 B Doctor Who (L-1)
 DRIVER(dw,l2)           //WPC-206:  11/92 B Doctor Who (L-2)
-DRIVER(cftbl,l4)        //WPC:      12/92 B Creature from the Black Lagoon (L-4)
-DRIVER(cftbl,l4s)       //WPC:      12/92 B Creature from the Black Lagoon (L-4s)
+DRIVER(cftbl,l3)        //WPC:      01/93 B Creature from the Black Lagoon (L-3, Sound P-1)
+DRIVER(cftbl,l4)        //WPC:      02/93 B Creature from the Black Lagoon (L-4)
 DRIVER(ww,p1)           //WPC-518:  12/92 W White Water (L-2, P-1 sound)
 DRIVER(ww,p2)           //WPC-518:  12/92 W White Water (L-2, P-1 sound)
 DRIVER(ww,l2)           //WPC-518:  12/92 W White Water (L-2)
@@ -908,11 +923,14 @@ DRIVER(ww,l5)           //WPC-518:  05/93 W White Water (L-5)
 DRIVER(drac,p11)        //WPC-501:  02/93 W Bram Stoker's Dracula (P-11)
 DRIVER(drac,l1)         //WPC-501:  02/93 W Bram Stoker's Dracula
 DRIVER(tz,pa1)          //WPC-520:  03/93 B Twilight Zone (PA-1)
-DRIVER(tz,l1)           //WPC-520:  04/93 B Twilight Zone (L-2)
+DRIVER(tz,p4)           //WPC-520:  04/93 B Twilight Zone (P-4)
+DRIVER(tz,l1)           //WPC-520:  04/93 B Twilight Zone (L-1)
 DRIVER(tz,l2)           //WPC-520:  05/93 B Twilight Zone (L-2)
+DRIVER(tz,l3)           //WPC-520:  05/93 B Twilight Zone (L-3)
 DRIVER(tz,ifpa)         //WPC-520:  05/93 B Twilight Zone (IFPA)
 DRIVER(tz,l4)           //WPC-520:  06/93 B Twilight Zone (L-4)
 DRIVER(tz,h7)           //WPC-520:  10/94 B Twilight Zone (H-7)
+DRIVER(tz,h8)           //WPC-520:  11/94 B Twilight Zone (H-8)
 DRIVER(tz,92)           //WPC-520:  01/95 B Twilight Zone (9.2)
 DRIVER(tz,94h)			//WPC-520:  10/98 B Twilight Zone (9.4H - Home version)
 DRIVER(ij,l3)           //WPC-517:  07/93 W Indiana Jones (L-3)
@@ -968,7 +986,8 @@ DRIVER(nf,23x)          //WPC-525:  05/95 W No Fear: Dangerous Sports
 DRIVER(i500,11r)        //WPC-526:  06/95 B Indianapolis 500
 DRIVER(i500,11b)        //WPC-526:  06/95 B Indianapolis 500 (Belgium)
 DRIVER(jm,12r)          //WPC-542:  08/95 W Johnny Mnemonic
-DRIVER(wd,10)           //WPC-544: ?11/95 B Who dunnit (1.0)
+DRIVER(wd,03r)          //WPC-544: ?09/95 B Who dunnit (0.3 R)
+DRIVER(wd,10r)          //WPC-544: ?11/95 B Who dunnit (1.0 R)
 DRIVER(wd,10g)          //WPC-544: ?11/95 B Who dunnit (1.0 German)
 DRIVER(wd,10f)          //WPC-544: ?11/95 B Who dunnit (1.0 French)
 DRIVER(wd,11)           //WPC-544:  04/95 B Who dunnit (1.1)
@@ -1004,9 +1023,10 @@ DRIVER(nbaf,21)         //WPC-553:  03/97 B NBA Fastbreak (2.1)
 DRIVER(nbaf,22)         //WPC-553:  03/97 B NBA Fastbreak (2.2)
 DRIVER(nbaf,23)         //WPC-553:  03/97 B NBA Fastbreak (2.3)
 DRIVER(nbaf,31a)        //WPC-553:  03/97 B NBA Fastbreak (3.1a)
-DRIVER(mm,10)           //WPC-559:  06/97 W Medieval Madness (1.00)
-DRIVER(mm,050)          //WPC-559:  06/97 W Medieval Madness (0.50)
-DRIVER(mm,109)                            // Home version
+DRIVER(mm,05)           //WPC-559:  06/97 W Medieval Madness (0.5)
+DRIVER(mm,10)           //WPC-559:  07/97 W Medieval Madness (1.0)
+DRIVER(mm,109)          //WPC-559:  06/99 W Medieval Madness (1.09, Home version)
+DRIVER(mm,109c)         //WPC-559:  06/99 W Medieval Madness (1.09C, Home version w/ profanity speech)
 DRIVER(cv,14)           //WPC-562:  10/97 B Cirqus Voltaire (1.4)
 DRIVER(cv,10)           //WPC-562:  10/97 B Cirqus Voltaire (1.0)
 DRIVER(cv,11)           //WPC-562:  10/97 B Cirqus Voltaire (1.1)

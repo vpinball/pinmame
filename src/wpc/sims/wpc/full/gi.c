@@ -456,28 +456,21 @@ static wpc_tSamSolMap gi_samsolmap[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(gi,l9,"gilli_l9.rom",0x40000,CRC(af07a757) SHA1(29c4f4ac2aed5b36e1d22490d656b1c4acba7f4c))
-WPCS_SOUNDROM222("gi_u18.l2",CRC(ea53e196) SHA1(5dcf3f44d2d658f6a7b130fa9e48d3cd616b4300),
-                 "gi_u15.l2",CRC(f8241dc9) SHA1(118a65555b9fff6f94e5e8324ed97d6ddec3d82b),
+#define GI_SOUND \
+WPCS_SOUNDROM222("gi_u18.l2",CRC(ea53e196) SHA1(5dcf3f44d2d658f6a7b130fa9e48d3cd616b4300), \
+                 "gi_u15.l2",CRC(f8241dc9) SHA1(118a65555b9fff6f94e5e8324ed97d6ddec3d82b), \
                  "gi_u14.l2",CRC(0e7a4140) SHA1(c6408794120b5e45a48b35c380333879e1f0be78))
-WPC_ROMEND
 
-WPC_ROMSTART(gi,l4,"gi_l4.u6",0x40000,CRC(2313986d) SHA1(6e0dd293b869ea986ac9cb65b020463a86d955d4))
-WPCS_SOUNDROM222("gi_u18.l2",CRC(ea53e196) SHA1(5dcf3f44d2d658f6a7b130fa9e48d3cd616b4300),
-                 "gi_u15.l2",CRC(f8241dc9) SHA1(118a65555b9fff6f94e5e8324ed97d6ddec3d82b),
-                 "gi_u14.l2",CRC(0e7a4140) SHA1(c6408794120b5e45a48b35c380333879e1f0be78))
-WPC_ROMEND
-
-WPC_ROMSTART(gi,l6,"gi_l6.u6",0x40000,CRC(7b73eef2) SHA1(fade23019600d84492d5a0fc6f4f5be52ec319be))
-WPCS_SOUNDROM222("gi_u18.l2",CRC(ea53e196) SHA1(5dcf3f44d2d658f6a7b130fa9e48d3cd616b4300),
-                 "gi_u15.l2",CRC(f8241dc9) SHA1(118a65555b9fff6f94e5e8324ed97d6ddec3d82b),
-                 "gi_u14.l2",CRC(0e7a4140) SHA1(c6408794120b5e45a48b35c380333879e1f0be78))
-WPC_ROMEND
+WPC_ROMSTART(gi,l9,"gilli_l9.rom",0x40000,CRC(af07a757) SHA1(29c4f4ac2aed5b36e1d22490d656b1c4acba7f4c)) GI_SOUND WPC_ROMEND
+WPC_ROMSTART(gi,l3,"gi_l3.u6",    0x40000,CRC(d4e26140) SHA1(c2a9f02217071768ec1ef9169d2922c0e1585bee)) GI_SOUND WPC_ROMEND
+WPC_ROMSTART(gi,l4,"gi_l4.u6",    0x40000,CRC(2313986d) SHA1(6e0dd293b869ea986ac9cb65b020463a86d955d4)) GI_SOUND WPC_ROMEND
+WPC_ROMSTART(gi,l6,"gi_l6.u6",    0x40000,CRC(7b73eef2) SHA1(fade23019600d84492d5a0fc6f4f5be52ec319be)) GI_SOUND WPC_ROMEND
 
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(gi,l9,"Gilligan's Island (L-9)",1991,"Bally", wpc_mDMDS,0)
+CORE_CLONEDEF(gi,l3,l9,"Gilligan's Island (L-3)",1991,"Bally", wpc_mDMDS,0)
 CORE_CLONEDEF(gi,l4,l9,"Gilligan's Island (L-4)",1991,"Bally", wpc_mDMDS,0)
 CORE_CLONEDEF(gi,l6,l9,"Gilligan's Island (L-6)",1991,"Bally", wpc_mDMDS,0)
 
