@@ -13,6 +13,7 @@
 #define S7_PIA2  2
 #define S7_PIA3  3
 #define S7_PIA4  4
+#define S7_PIA5  5
 #define S7_BANK0 1
 
 #define S7_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
@@ -22,12 +23,13 @@
 static NVRAM_HANDLER(s7);
 
 /*----------------
-/  Local varibles
+/ Local variables
 /-----------------*/
 static struct {
   int    vblankCount;
   UINT32 solenoids;
   core_tSeg segments, pseg;
+  UINT16 alphaSegs;
   int    lampRow, lampColumn;
   int    digSel;
   int    diagnosticLed;
@@ -113,26 +115,51 @@ static WRITE_HANDLER(pia3a_w) {
     s7locals.diagnosticLed |= (data & 0x10)>>4;
 }
 static WRITE_HANDLER(pia3ca2_w) {
-  DBGLOG(("pia3ca2_w\n",data));
+  DBGLOG(("pia3ca2_w\n"));
 }
 
 static WRITE_HANDLER(pia3b_w) {
   s7locals.segments[s7locals.digSel].w |=
-    s7locals.pseg[s7locals.digSel].w = core_bcd2seg[data&0x0f];
+    s7locals.pseg[s7locals.digSel].w = core_bcd2seg[data>>4];
   s7locals.segments[20+s7locals.digSel].w |=
-    s7locals.pseg[20+s7locals.digSel].w = core_bcd2seg[data>>4];
+    s7locals.pseg[20+s7locals.digSel].w = core_bcd2seg[data&0x0f];
 }
 static WRITE_HANDLER(pia0b_w) {
-  s7locals.pseg[s7locals.digSel].w &= 0x7f;
-  s7locals.pseg[20+s7locals.digSel].w &= 0x7f;
-  if (data & 0x80) {
-    s7locals.segments[20+s7locals.digSel].w |= 0x80;
-    s7locals.pseg[20+s7locals.digSel].w |= 0x80;
-  }
   if (data & 0x40) {
-    s7locals.segments[s7locals.digSel].w |= 0x80;
-    s7locals.pseg[s7locals.digSel].w |= 0x80;
+    s7locals.segments[21+s7locals.digSel].w |= 0x80;
+    s7locals.pseg[21+s7locals.digSel].w |= 0x80;
   }
+  if (data & 0x80) {
+    s7locals.segments[1+s7locals.digSel].w |= 0x80;
+    s7locals.pseg[1+s7locals.digSel].w |= 0x80;
+  }
+}
+
+/*---------------------------
+/ Alpha Display on Hyperball
+/----------------------------*/
+static WRITE_HANDLER(pia5a_w) {
+  s7locals.alphaSegs = data & 0x3f;
+  if (data & 0x40) s7locals.alphaSegs |= 0x100;
+  if (data & 0x80) s7locals.alphaSegs |= 0x200;
+}
+static WRITE_HANDLER(pia5b_w) {
+  if (data & 0x01) s7locals.alphaSegs |= 0x400;
+  if (data & 0x02) s7locals.alphaSegs |= 0x40;
+  if (data & 0x04) s7locals.alphaSegs |= 0x800;
+  if (data & 0x08) s7locals.alphaSegs |= 0x4000;
+  if (data & 0x10) s7locals.alphaSegs |= 0x2000;
+  if (data & 0x20) s7locals.alphaSegs |= 0x1000;
+  if (data & 0x40) s7locals.alphaSegs |= 0x80;
+  if (data & 0x80) s7locals.alphaSegs |= 0x8000;
+  s7locals.segments[40+s7locals.digSel].w |=
+    s7locals.pseg[40+s7locals.digSel].w = s7locals.alphaSegs;
+}
+static WRITE_HANDLER(pia5ca2_w) {
+  DBGLOG(("pia5ca2_w\n"));
+}
+static WRITE_HANDLER(pia5cb2_w) {
+  DBGLOG(("pia5cb2_w\n"));
 }
 
 /*------------
@@ -208,7 +235,7 @@ static struct pia6821_interface s7_pia[] = {
     CB1    Diag In
     CB2    SS6
     CA2    Diagnostic LED control? */
- /* in  : A/B,CA/B1,CA/B2 */ 0, 0, 0,0, 0, 0,
+ /* in  : A/B,CA/B1,CA/B2 */ 0, 0, 0, 0, 0, 0,
  /* out : A/B,CA/B2       */ pia3a_w, pia3b_w, pia3ca2_w, pia3cb2_w,
  /* irq : A/B             */ s7_piaIrq, s7_piaIrq
 },{/* PIA 4 (3000)
@@ -218,6 +245,12 @@ static struct pia6821_interface s7_pia[] = {
     CA2    SS4 */
  /* in  : A/B,CA/B1,CA/B2 */ pia4a_r, 0, 0, 0, 0, 0,
  /* out : A/B,CA/B2       */ 0, pia4b_w, pia4ca2_w, pia4cb2_w,
+ /* irq : A/B             */ s7_piaIrq, s7_piaIrq
+},{/* PIA 5 (4000)
+    PA0-7  Digit Select
+    PB0-7  alphanumeric output */
+ /* in  : A/B,CA/B1,CA/B2 */ 0, 0, 0, 0, 0, 0,
+ /* out : A/B,CA/B2       */ pia5a_w, pia5b_w, pia5ca2_w, pia5cb2_w,
  /* irq : A/B             */ s7_piaIrq, s7_piaIrq
 }};
 
@@ -238,6 +271,7 @@ static MACHINE_INIT(s7) {
   pia_config(S7_PIA2, PIA_STANDARD_ORDERING, &s7_pia[2]);
   pia_config(S7_PIA3, PIA_STANDARD_ORDERING, &s7_pia[3]);
   pia_config(S7_PIA4, PIA_STANDARD_ORDERING, &s7_pia[4]);
+  pia_config(S7_PIA5, PIA_STANDARD_ORDERING, &s7_pia[5]);
   sndbrd_0_init(SNDBRD_S67S, 1, NULL, NULL, NULL);
   cpu_setbank(S7_BANK0, s7_rambankptr);
 }
@@ -275,11 +309,12 @@ static MEMORY_READ_START(s7_readmem)
   { 0x2400, 0x2403, pia_r(S7_PIA2)},
   { 0x2800, 0x2803, pia_r(S7_PIA3)},
   { 0x3000, 0x3003, pia_r(S7_PIA4)},
-  { 0x4000, 0xffff, MRA_ROM },
+  { 0x4000, 0x4003, pia_r(S7_PIA5)},
+  { 0x5000, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(s7_writemem)
-  { 0x0000, 0x00ff, MWA_BANKNO(S7_BANK0) },
+  { 0x0000, 0x00ff, MWA_BANKNO(S7_BANK0)},
   { 0x0100, 0x01ff, s7_CMOS_w, &s7_CMOS },
   { 0x1000, 0x13ff, MWA_RAM, &s7_rambankptr }, /* CMOS */
   { 0x2100, 0x2103, pia_w(S7_PIA0)},
@@ -287,7 +322,8 @@ static MEMORY_WRITE_START(s7_writemem)
   { 0x2400, 0x2403, pia_w(S7_PIA2)},
   { 0x2800, 0x2803, pia_w(S7_PIA3)},
   { 0x3000, 0x3003, pia_w(S7_PIA4)},
-  { 0x4000, 0xffff, MWA_ROM },
+  { 0x4000, 0x4003, pia_w(S7_PIA5)},
+  { 0x5000, 0xffff, MWA_ROM },
 MEMORY_END
 
 /*-----------------

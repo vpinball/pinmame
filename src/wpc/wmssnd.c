@@ -15,7 +15,7 @@
 /*----------------------
 /    System 3 - 7
 /-----------------------*/
-#define S67S_PIA0 5
+#define S67S_PIA0 6
 
 /* sound board interface */
 static void s67s_init(struct sndbrdData *brdData);
