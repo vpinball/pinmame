@@ -28,7 +28,7 @@
 /  Local functions
 /-------------------*/
 static void init_bk(void);
-static int  bk_handleBallState(sim_tBallStatus *ball, int *inports);
+//static int  bk_handleBallState(sim_tBallStatus *ball, int *inports);
 
 /*--------------------------
 / Game specific input ports
