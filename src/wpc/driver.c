@@ -539,6 +539,7 @@ DRIVERNV(detest)        //Data East MPU: ??/?? DE Test Chip
 // WILLIAMS & WILLIAMS/BALLY GAMES BELOW
 // -------------------------------------
 DRIVER(tstrk,l1)        //???       Triple Strike (Bowler)
+DRIVER(taurs,l1)        //???       Taurus (Shuffle Bowler)
 
                         //??-466:   06/76 W Aztec
                         //??-470:   10/77 W Wild Card
