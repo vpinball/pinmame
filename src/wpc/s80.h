@@ -25,7 +25,7 @@
     /* These are put in switch column 0 */ \
     COREPORT_BIT(     0x0100, "Slam Tilt",        KEYCODE_HOME)  \
 
-/*   COREPORT_BITTOG(  0x0040, "Outhole",          KEYCODE_9)  */
+// 07:Test, 17:Coin1, etc. 
 
 /*-- Standard input ports --*/
 #define S80_INPUT_PORTS_START(name,balls) \
@@ -49,7 +49,7 @@
 #define S80_CSOL(x) ((x)+24)
 
 /*-- S80 switch numbers --*/
-#define S80_SWSLAMTILT	  1
+#define S80_SWSLAMTILT	  -1
 
 /*-- Memory regions --*/
 #define S80_MEMREG_CPU		REGION_CPU1

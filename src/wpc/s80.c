@@ -172,16 +172,17 @@ static WRITE_HANDLER(S80_sndCmd_w) {
 }
 
 /* S80 switch numbering, row and column is swapped */
-static int S80_m2sw(int no) { no += 1; return (no%10)*8 + no/10; }
-static int S80_sw2m(int col, int row) { return row*10+col-1; }
+static int S80_sw2m(int no) {no += 1; return (no%10)*8 + no/10;}
+static int S80_m2sw(int col, int row) { return row*10+col-1; }
 static int S80_m2lamp(int no) { return no+8; }
 static int S80_lamp2m(int col, int row) { return col*8+row; }
+
 static core_tData S80Data = {
   4, /* 4 DIPs */
   S80_updSw,
   1,
   S80_sndCmd_w, "S80",
-  S80_m2sw, S80_m2lamp, S80_sw2m, S80_lamp2m
+  S80_sw2m, S80_m2lamp, S80_m2sw, S80_lamp2m
 };
 
 static int S80_getSwRow(int row) {
