@@ -100,9 +100,7 @@ void arm7_exit(void)
 
 int arm7_execute( int cycles )
 {
-	//must call core execute
-	//todo: is there a way we can do this without overhead of a function? Would be one hell of a long #define..
-	return arm7_core_execute(cycles);
+#include "arm7exec.c"
 } /* arm7_execute */
 
 
