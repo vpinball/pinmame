@@ -16,6 +16,8 @@ static struct {
   int vblankCount;
   int u16irqcount;
   int diagnosticLed;
+  int visible_page;
+  UINT8 lastb;
 } locals;
 
 static NVRAM_HANDLER(cc);
@@ -61,8 +63,7 @@ static SWITCH_UPDATE(cc) {
 }
 
 static void cc_zeroCross(int data) {
-  //cpu_set_irq_line(0,MC68306_IRQ_2,ASSERT_LINE);
-	cpu_set_irq_line(0,MC68306_IRQ_2,PULSE_LINE);
+ cpu_set_irq_line(0,MC68306_IRQ_2,ASSERT_LINE);
 }
 static READ16_HANDLER(cc_porta_r) { DBGLOG(("Port A read\n")); return 0; }
 static READ16_HANDLER(cc_portb_r) { DBGLOG(("Port B read\n")); return 0; }
@@ -71,13 +72,20 @@ static WRITE16_HANDLER(cc_porta_w) {
   locals.diagnosticLed = ((~data)&0x08>>3);
 }
 static WRITE16_HANDLER(cc_portb_w) {
+  locals.lastb = data;
   DBGLOG(("Port B write %04x\n",data));
-  //if (data & ~locals.lastb & 0x01) cpu_set_irq_line(0,MC68306_IRQ_2,CLEAR_LINE);
+  if (data & ~locals.lastb & 0x01) cpu_set_irq_line(0,MC68306_IRQ_2,CLEAR_LINE);
 }
 static WRITE16_HANDLER(u16_w) {
   offset &= 0x203;
   DBGLOG(("U16w [%03x]=%04x (%04x)\n",offset,data,mem_mask));
-  //printf("U16w [%03x]=%04x (%04x)\n",offset,data,mem_mask);
+
+  //Visible Page offset
+  if(offset==3) {
+	locals.visible_page = data >> 12;
+	//printf("U16w [%03x]=%04x (%04x)\n",offset,data,mem_mask);
+  }
+
   switch (offset) {
     case 0x000: case 0x001: case 0x002: case 0x003:
       locals.u16a[offset] = (locals.u16a[offset] & mem_mask) | data; break;
@@ -98,20 +106,29 @@ static void cc_u16irq4(int data) {
 	cpu_set_irq_line(0,MC68306_IRQ_4,PULSE_LINE);
 }
 
-static int fixaddr = 0;
+static fixaddr = 0;
 
 static READ16_HANDLER(u16_r) {
   static int readnum = 0;
+  int numcheck;
+
   //Once we've read the U16 3 times, we can safely return the ROM data we changed back, so U1 ROM test won't fail
-  readnum++;
-  if(readnum == 3)
+  if(offset==0)
+	readnum++;
+  
+  if(core_gameData->gen == 9 || core_gameData->gen == 11)
+	numcheck = 2;
+  else
+    numcheck = 3;
+  if(readnum == numcheck)
 	  *((UINT16 *)(memory_region(REGION_CPU1) + fixaddr)) = 0x6600;
+  //
 
   offset &= 0x203;
   DBGLOG(("U16r [%03x] (%04x)\n",offset,mem_mask));
   //printf("U16r [%03x] (%04x)\n",offset,mem_mask);
   //force U16 test to succeed
-  return 0x00bc;
+  //return 0x00bc;
   switch (offset) {
     case 0x000: case 0x001: case 0x002: case 0x003:
       return locals.u16a[offset];
@@ -122,25 +139,61 @@ static READ16_HANDLER(u16_r) {
 }
 
 static READ16_HANDLER(io_r) {
+#ifdef MAME_DEBUG
 	if(keyboard_pressed_memory_repeat(KEYCODE_R,2))
 	   printf("io_r [%03x] (%04x)\n",offset,mem_mask);
-   return 0;
+#endif
+   return 0xffff;		//Switches are inverted as evidence by breakshot "stuck switch" messages
 }
 
 static WRITE16_HANDLER(io_w) {
-if(keyboard_pressed_memory_repeat(KEYCODE_W,2))
-   printf("io_w [%03x]=%04x (%04x)\n",offset,data,mem_mask);
+#ifdef MAME_DEBUG
+	if(keyboard_pressed_memory_repeat(KEYCODE_W,2))
+		printf("io_w [%03x]=%04x (%04x)\n",offset,data,mem_mask);
+#endif
 }
 
 static MACHINE_INIT(cc) {
+  int i = 0;
   memset(&locals, 0, sizeof(locals));
   locals.u16a[0] = 0x00bc;
   locals.vblankCount = 1;
   timer_pulse(TIME_IN_CYCLES(2811,0),0,cc_u16irq1);
   timer_pulse(TIME_IN_HZ(400),0,cc_u16irq4);
+
   //Force U16 Check to succeed
-  fixaddr = 0x0004dd1c;	//BBB
-  //fixaddr = 0x00091FD8; //PMV
+	switch(core_gameData->gen){
+		case 0:
+			break;
+		case 1:
+			fixaddr = 0x00091FD8; //PM
+			break;
+		case 2:
+			break;
+		case 3:
+			fixaddr = 0x00089486; //AB
+			break;
+		case 4:
+			break;
+		case 5:
+			fixaddr = 0x0008b198; //BS
+			break;
+		case 6:
+		case 7:
+		case 8:
+			break;
+		case 9:
+			fixaddr = 0x00000302;	//FF
+			break;
+		case 10:
+			fixaddr = 0x0004dd1c;	//BBB
+			break;
+		case 11:
+			fixaddr = 0x00000316;	//KP
+			break;
+		default:
+			break;
+  }
   *((UINT16 *)(memory_region(REGION_CPU1) + fixaddr)) = 0x6700;
 }
 
@@ -194,18 +247,30 @@ AUX
 EXT
 SWITCH0
 CS
+From the very beginning of program execution, we see writes to the following registers, each bit specifies how CS0-CS7 will act:
+Note: Invert the mask to see the end address range
 
+CHIP  DATA        MASK     ADDRESS     RANGE             R/W
+--------------------------------------------------------------
 CS0 = 1000e680 => ff000000,10000000 => 10000000-10ffffff (R)
 CS1 = 0001a2df => fff80000,00000000 => 00000000-0007ffff (RW)
 CS2 = 4001a280 => ff000000,40000000 => 40000000-40ffffff (RW)
 CS3 = 3001a2f0 => fffe0000,30000000 => 30000000-3001ffff (RW)
+
+There are a # of issues with the memory map that need to be discussed:
+First - ROM accesses is of course @ address 0, but after the CS0 is redefined, it should be at 0x10000000
+DRAM access is moved to 0-7fffff.
+
+However, Martin said he couldn't map stuff that way, so he mapped it as 24 bit addresses and moved stuff around..
+Most obvious is that CS2 is @ 0x02000000 instead of 0x40000000, which means all I/O is in that range.
+All other addresses are mapped >> 4 bits, ie, 0x30000000 now becomes 0x03000000
 #endif
 
 static data16_t *ramptr;
 static MEMORY_READ16_START(cc_readmem)
   { 0x00000000, 0x00ffffff, MRA16_ROM },
   { 0x01000000, 0x0107ffff, MRA16_RAM },
-  { 0x02000000, 0x02bfffff, io_r },
+  { 0x02000000, 0x02bfffff, io_r }, 
 //{ 0x02000000, 0x02000001, MRA16_RAM }, /* AUX I/O */
 //{ 0x02400000, 0x02400001, MRA16_RAM }, /* EXT I/O */
 //{ 0x02800000, 0x02800001, MRA16_RAM }, /* SWITCH0 */
@@ -216,19 +281,20 @@ MEMORY_END
 static MEMORY_WRITE16_START(cc_writemem)
   { 0x00000000, 0x00ffffbf, MWA16_ROM },
   { 0x01000000, 0x0107ffff, MWA16_RAM, &ramptr },
-  { 0x02000000, 0x02bfffff, io_w },
+  { 0x02000000, 0x02bfffff, io_w },		
   { 0x02C00000, 0x02C007ff, u16_w },    /* U16 (A10,A2,A1)*/
   { 0x03000000, 0x0300ffff, MWA16_RAM }, /* NVRAM */
 MEMORY_END
 
 static PORT_READ16_START(cc_readport)
-  { M68306_PORTA, M68306_PORTA+1, cc_porta_r },
-  { M68306_PORTB+1, M68306_PORTB+2, cc_portb_r },
+  { M68306_PORTA, M68306_PORTA, cc_porta_r },
+  { M68306_PORTA, M68306_PORTA, cc_portb_r },
 PORT_END
 static PORT_WRITE16_START(cc_writeport)
-  { M68306_PORTA, M68306_PORTA+1, cc_porta_w },
-  { M68306_PORTB+1, M68306_PORTB+2, cc_portb_w },
+  { M68306_PORTA, M68306_PORTA, cc_porta_w },
+  { M68306_PORTA, M68306_PORTA, cc_portb_w },
 PORT_END
+static VIDEO_UPDATE(cc_dmd);
 
 MACHINE_DRIVER_START(cc)
   MDRV_IMPORT_FROM(PinMAME)
@@ -237,7 +303,6 @@ MACHINE_DRIVER_START(cc)
   MDRV_CPU_MEMORY(cc_readmem, cc_writemem)
   MDRV_CPU_PORTS(cc_readport, cc_writeport)
   MDRV_CPU_VBLANK_INT(cc_vblank, 1)
-  //MDRV_VIDEO_UPDATE(cc_dmd)
   MDRV_NVRAM_HANDLER(cc)
   MDRV_SWITCH_UPDATE(cc)
   MDRV_DIAGNOSTIC_LEDH(1)
@@ -251,28 +316,46 @@ static NVRAM_HANDLER(cc) {
 }
 
 PINMAME_VIDEO_UPDATE(cc_dmd) {
-  static UINT32 offset = 0x38000;
+  static UINT32 offset;
   tDMDDot dotCol;
-  int ii, jj, kk, ll;
+  int ii, jj, kk;
   UINT16 *RAM;
 
+#ifdef MAME_DEBUG
   core_textOutf(50,20,1,"offset=%4x", offset);
   memset(dotCol,0,sizeof(dotCol));
-#ifndef MAME_DEBUG
   if(keyboard_pressed_memory_repeat(KEYCODE_A,2))
 	 offset+=0x1;
   if(keyboard_pressed_memory_repeat(KEYCODE_B,2))
 	 offset-=0x1;
+  if(keyboard_pressed_memory_repeat(KEYCODE_C,2))
+	 offset+=0x10;
+  if(keyboard_pressed_memory_repeat(KEYCODE_D,2))
+	 offset-=0x10;
+  if(keyboard_pressed_memory_repeat(KEYCODE_E,2))
+	 offset+=0x20;
+  if(keyboard_pressed_memory_repeat(KEYCODE_F,2))
+	 offset-=0x20;
+  if(keyboard_pressed_memory_repeat(KEYCODE_G,2))
+	 offset+=0x200;
+  if(keyboard_pressed_memory_repeat(KEYCODE_H,2))
+	 offset-=0x200;
+  if(offset > 0x40000) offset = 0x40000;
 #endif
+  offset = 0x37ff0+(0x800*locals.visible_page);
   RAM = ramptr+offset;
-  for (kk = 0, ii = 1; ii < 33; ii++, kk += 8) {
-    UINT8 *line = (&dotCol[ii][0])-16;
-    for (jj = 0; jj < 8; jj++) {
-      UINT16 d = RAM[kk++];
-      line += 32;
-      for (ll = 0; ll < 16; ll++)
-        { *(--line) = d & 0x01; d>>=1; }
-    }
+  for (ii = 0; ii <= 32; ii++) {
+    UINT8 *line = &dotCol[ii][0];
+      for (kk = 0; kk < 16; kk++) {
+		UINT16 intens1 = RAM[0];
+		for(jj=0;jj<8;jj++) {
+			*line++ = (intens1&0xc000)>>14;
+			intens1 = intens1<<2;
+		}
+		RAM+=1;
+	  }
+    *line++ = 0;
+	RAM+=16;
   }
   video_update_core_dmd(bitmap, cliprect, dotCol, layout);
   return 0;
