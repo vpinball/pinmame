@@ -7,6 +7,7 @@
 import "oaidl.idl";
 import "ocidl.idl";
 
+	// ROM interface and related
 	[
 		object,
 		uuid(AF29EADA-63C3-4CB9-89AB-1A8D2F280710),
@@ -63,6 +64,7 @@ import "ocidl.idl";
 		HRESULT Clone([out] IUnknown **ppEnum);
 	};
 
+	// GAME interface and related
 	[
 		object,
 		uuid(BD262BEE-902B-47D2-8CC4-54890BB7DC1C),
@@ -199,6 +201,81 @@ import "ocidl.idl";
 		[propget, id(50), helpstring("property NewSoundCommands")] HRESULT NewSoundCommands([out, retval] VARIANT *pVal);
 		[propget, id(51), helpstring("property Games")] HRESULT Games([out, retval] IGames* *pVal);
 	};
+
+	// WSHDlg and related interfaces
+	[
+		object,
+		uuid(18B280D8-B768-4709-86F4-6675F3FE601B),
+		dual,
+		helpstring("IWSHDlgCtrl Interface"),
+		pointer_default(unique)
+	]
+	interface IWSHDlgCtrl : IDispatch
+	{
+		[propget, id(1), helpstring("property Type")] HRESULT Type([out, retval] BSTR *pVal);
+		[propget, id(2), helpstring("property Value")] HRESULT Value([out, retval] VARIANT *pVal);
+		[propput, id(2), helpstring("property Value")] HRESULT Value([in] VARIANT newVal);
+		[propget, id(3), helpstring("property Title")] HRESULT Title([out, retval] BSTR *pVal);
+		[propput, id(3), helpstring("property Title")] HRESULT Title([in] BSTR newVal);
+	};
+	
+	[
+		object,
+		uuid(80936D79-B8CA-45B1-93B5-224458C8AD5A),
+		dual,
+		helpstring("IWSHDlgCtrls Interface"),
+		pointer_default(unique),
+		hidden
+	]
+	interface IWSHDlgCtrls : IDispatch
+	{
+		[propget] HRESULT Count([out, retval] long* pnCount);
+		[propget, id(DISPID_VALUE)] HRESULT Item([in] VARIANT *pKey, [out, retval] IWSHDlgCtrl* *ppWSHDlgCtrl);
+		[propget, id(DISPID_NEWENUM)] HRESULT _NewEnum([out, retval] IUnknown** ppunkEnum);
+	};
+
+	[
+		object,
+		uuid(D52E5842-7A8D-4AB0-A8AE-E8FFC9EC9FB7),
+		dual,
+		helpstring("IEnumWSHDlgCtrls Interface"),
+		pointer_default(unique),
+		hidden
+	]
+	interface IEnumWSHDlgCtrls : IDispatch
+	{
+		[local] HRESULT Next([in] ULONG celt, [out] VARIANT* rgVar, [out] ULONG *pCeltFetched);
+		HRESULT Skip([in] ULONG celt);
+		HRESULT Reset();
+		HRESULT Clone([out] IUnknown **ppEnum);
+	};
+
+
+	[
+		object,
+		uuid(C0BC59EF-ED67-4FC0-AEE3-23BA1028F65D),
+		dual,
+		helpstring("IWSHDlg Interface"),
+		pointer_default(unique)
+	]
+	interface IWSHDlg : IDispatch
+	{
+		[propget, id(1), helpstring("property x")] HRESULT x([out, retval] long *pVal);
+		[propput, id(1), helpstring("property x")] HRESULT x([in] long newVal);
+		[propget, id(2), helpstring("property y")] HRESULT y([out, retval] long *pVal);
+		[propput, id(2), helpstring("property y")] HRESULT y([in] long newVal);
+		[propget, id(3), helpstring("property w")] HRESULT w([out, retval] long *pVal);
+		[propput, id(3), helpstring("property w")] HRESULT w([in] long newVal);
+		[propget, id(4), helpstring("property h")] HRESULT h([out, retval] long *pVal);
+		[propput, id(4), helpstring("property h")] HRESULT h([in] long newVal);
+		[propget, id(5), helpstring("property Title")] HRESULT Title([out, retval] BSTR *pVal);
+		[propput, id(5), helpstring("property Title")] HRESULT Title([in] BSTR newVal);
+		[id(6), helpstring("method AddCtrl")] HRESULT AddCtrl([in] BSTR sType, [in] long x, [in] long y, [in] long w, [in] long h, [in] BSTR sTitle, [in] VARIANT vValue, [in] long options, [out,retval] IUnknown **pRetVal);
+		[id(7), helpstring("method Show")] HRESULT Show([out, retval] VARIANT *RetVal);
+		[propget, id(8), helpstring("property get_Ctrls")] HRESULT Ctrls([out, retval] IWSHDlgCtrls **ppVal);
+	};
+
+
 [
 	uuid(57270B76-C846-4B1E-88D4-53C8337A0623),
 	version(1.0),
@@ -288,5 +365,43 @@ library VPinMAMELib
 	{
 		[default] interface IController;
 		[default, source] dispinterface _IControllerEvents;
+	};
+
+	[
+		uuid(D3BA6587-82A7-46A7-AEFE-7A75CAD51F31),
+		helpstring("WSHDlgCtrl Class")
+	]
+	coclass WSHDlgCtrl
+	{
+		[default] interface IWSHDlgCtrl;
+	};
+
+	[
+		uuid(73C1A53E-2C2B-42A3-BCEB-E9EE0539B0FF),
+		helpstring("WSHDlgCtrls Class"),
+		hidden
+	]
+	coclass WSHDlgCtrls
+	{
+		[default] interface IWSHDlgCtrls;
+	};
+
+	[
+		uuid(587ED49F-B712-48C7-A580-61C25257EB3E),
+		helpstring("EnumWSHDlgCtrls Class"),
+		hidden
+	]
+	coclass EnumWSHDlgCtrls
+	{
+		[default] interface IEnumWSHDlgCtrls;
+	};
+
+	[
+		uuid(1DCAFFA5-978D-4CC0-9576-73BC0293E67C),
+		helpstring("WSHDlg Class")
+	]
+	coclass WSHDlg
+	{
+		[default] interface IWSHDlg;
 	};
 };

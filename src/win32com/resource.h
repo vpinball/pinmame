@@ -57,6 +57,7 @@
 #define IDC_STATE                       236
 #define IDC_ROMLIST                     237
 #define IDC_DONTCARE                    238
+#define IDR_WSHDLG			239
 #define ID_CTRLCTXMENU_GAMEOPTIONS      32771
 #define ID_CTRLCTXMENU_PATHES           32772
 #define ID_CTRLCTXMENU_DISPLAY_TITLE    32773
