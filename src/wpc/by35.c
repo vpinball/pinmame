@@ -13,7 +13,7 @@
 
 #define BY35_VBLANKFREQ    60 /* VBLANK frequency */
 #define BY35_IRQFREQ      150 /* IRQ (via PIA) frequency*/
-#define BY35_ZCFREQ       100 /* Zero cross frequency */
+#define BY35_ZCFREQ        85 /* Zero cross frequency */
 
 static struct {
   int a0, a1, b1, ca20, ca21, cb20, cb21;
@@ -61,7 +61,7 @@ static void by35_lampStrobe(int board, int lampadr) {
 /* PIA0:A-W  Control what is read from PIA0:B */
 static WRITE_HANDLER(pia0a_w) {
   if (!locals.ca20) {
-    int bcdLoad = locals.a0 & ~data & 0x0f;
+    int bcdLoad = (locals.a0 & ~data) & 0x0f;
     int ii;
 
     for (ii = 0; bcdLoad; ii++, bcdLoad>>=1)
@@ -71,6 +71,7 @@ static WRITE_HANDLER(pia0a_w) {
   by35_lampStrobe(0,locals.lampadr1);
   if (core_gameData->hw.lampCol > 0) by35_lampStrobe(1,locals.lampadr2);
 }
+
 /* PIA1:A-W  0,2-7 Display handling */
 /*        W  1     Sound E */
 static WRITE_HANDLER(pia1a_w) {
@@ -80,9 +81,14 @@ static WRITE_HANDLER(pia1a_w) {
   sndbrd_0_ctrl_w(1, (locals.cb21 ? 1 : 0) | (locals.a1 & 0x02));
 
   if (!locals.ca20) {
-    if (tmp & ~data & 0x01) { // Positive edge
-      locals.bcd[4] = locals.a0>>4;
-      by35_dispStrobe(0x10);
+    if (core_gameData->gen & (GEN_BY17|GEN_STMPU100|GEN_STMPU200)) {
+      if (!((tmp & ~data) & 0x01)) { // Inverted positive edge
+        locals.bcd[4] = locals.a0>>4;
+        by35_dispStrobe(0x10);
+      }
+    } else if ((tmp & ~data) & 0x01) { // Positive edge
+        locals.bcd[4] = locals.a0>>4;
+        by35_dispStrobe(0x10);
     }
   }
 }
