@@ -475,7 +475,9 @@ DRIVERNV(petaco2 )      //Petaco 2
 DRIVERNV(bhol_ltd)      //Black Hole (clone of Gottlieb Black Hole)
 DRIVERNV(pecman  )      //Pec Man
 DRIVERNV(zephy   )      //Zephy (Xenon clone)
-DRIVERNV(cauboy  )      //Cauboy
+DRIVERNV(cowboy  )      //Cowboy
+DRIVERNV(atla_ltd)      //Atlantis
+DRIVERNV(columbia)      //Columbia
 
 // ----------------
 // MIDWAY GAMES

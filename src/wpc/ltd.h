@@ -148,6 +148,8 @@
    ROM_START(name) \
      NORMALREGION(0x10000, LTD_MEMREG_CPU) \
        ROM_LOAD(n1, 0xc000, 0x1000, chk1) \
+         ROM_RELOAD(0xd000, 0x1000) \
+         ROM_RELOAD(0xe000, 0x1000) \
          ROM_RELOAD(0xf000, 0x1000)
 
 /*-- LTD CPU regions and ROM, 2x4K game PROM version --*/
