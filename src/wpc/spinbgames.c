@@ -3,7 +3,7 @@
 #include "spinb.h"
 #include "sndbrd.h"
 
-#define GEN_SPINB GEN_ALVG
+#define GEN_SPINB 0
 
 /* Dot-Matrix display */
 static struct core_dispLayout spinb_dispDMD[] = {

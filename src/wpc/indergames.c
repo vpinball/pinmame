@@ -4,7 +4,7 @@
 #include "inder.h"
 #include "sndbrd.h"
 
-#define GEN_INDER GEN_ALVG
+#define GEN_INDER 0
 
 #define INITGAME(name, disptype, balls, inv1,inv2,inv3,inv4,inv5) \
 	INDER_INPUT_PORTS_START(name, balls) INDER_INPUT_PORTS_END \
