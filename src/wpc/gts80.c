@@ -17,14 +17,8 @@
 #include "core.h"
 #include "gts80.h"
 #include "gts80s.h"
-#include "gts80ss.h"
-#include "gts80bs.h"
 
 #define GTS80_VBLANKFREQ      60 /* VBLANK frequency */
-
-#define GTS80_CPU		0
-#define GTS80S_SCPU		1
-#define GTS80SS_SCPU	1
 
 static void GTS80_init(void);
 static void GTS80_exit(void);
@@ -189,7 +183,7 @@ static int GTS80_m2lamp(int no) { return no+8; }
 static int GTS80_lamp2m(int col, int row) { return (col-1)*8+row; }
 
 static core_tData GTS80Data = {
-  32, /* 32 DIPs */
+  42, /* 42 DIPs (32 for the controller board, 8 for the SS- and 2 for the S-Board*/
   GTS80_updSw,
   1,
   GTS80_sndCmd_w, "GTS80",
@@ -773,9 +767,9 @@ static void GTS80_init(void) {
   if (((Machine->gamedrv->flags & GAME_NO_SOUND)==0) && Machine->sample_rate)
   {
 	  if ( core_gameData->gen & (GEN_GTS80S|GEN_GTS80B) )
-		GTS80S_init(GTS80S_SCPU);
+		GTS80S_init();
 	  else if ( core_gameData->gen & GEN_GTS80SS )
-		GTS80SS_init(GTS80SS_SCPU);
+		GTS80SS_init();
 	  else if ( core_gameData->gen & (GEN_GTS80B2K|GEN_GTS80B4K) )
 	    GTS80BS_init();
   }

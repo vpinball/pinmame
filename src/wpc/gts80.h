@@ -121,7 +121,38 @@
       COREPORT_DIPSET(0x4000, "1" ) \
     COREPORT_DIPNAME( 0x8000, 0x8000, "S32") \
       COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x8000, "1" )
+      COREPORT_DIPSET(0x8000, "1" ) \
+  PORT_START /* 3 */ \
+    COREPORT_DIPNAME( 0x0001, 0x0000, "S1 (Sound & Speech Board)") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0001, "1" ) \
+    COREPORT_DIPNAME( 0x0002, 0x0000, "S2 (Sound & Speech Board)") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0002, "1" ) \
+    COREPORT_DIPNAME( 0x0004, 0x0004, "S3 (Sound & Speech Board)") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0004, "1" ) \
+    COREPORT_DIPNAME( 0x0008, 0x0000, "S4 (Sound & Speech Board)") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0008, "1" ) \
+    COREPORT_DIPNAME( 0x0010, 0x0010, "S5 (Sound & Speech Board)") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0010, "1" ) \
+    COREPORT_DIPNAME( 0x0020, 0x0020, "S6 (Sound & Speech Board)") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0020, "1" ) \
+    COREPORT_DIPNAME( 0x0040, 0x0000, "S7 (Sound & Speech Board)") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0040, "1" ) \
+    COREPORT_DIPNAME( 0x0080, 0x0000, "S8 (Sound & Speech Board)") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0080, "1" ) \
+    COREPORT_DIPNAME( 0x0100, 0x0100, "S1 (Sound Board)") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0100, "1" ) \
+    COREPORT_DIPNAME( 0x0200, 0x0200, "S2 (Sound Board)") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0200, "1" ) 
 
 // 07:Test, 17:Coin1, etc.
 
@@ -147,9 +178,14 @@
 #define GTS80_SWSLAMTILT	  -1
 
 /*-- Memory regions --*/
-#define GTS80_MEMREG_CPU		REGION_CPU1
-#define GTS80_MEMREG_SCPU1	REGION_CPU2
-#define GTS80_MEMREG_SCPU2	REGION_CPU3
+#define GTS80_MEMREG_CPU	REGION_CPU1
+#define GTS80_MEMREG_SCPU1	REGION_CPU2 /* used for sound, sound & speech and s3 sound board */
+#define GTS80_MEMREG_SCPU2	REGION_CPU3 /* used for s3 sound board */
+
+/* CPUs */
+#define GTS80_CPU		0
+#define GTS80_SCPU1		1
+#define GTS80_SCPU2		2
 
 /*-- GTS80/GTS80A Main CPU regions and ROM, 2 game PROM version --*/
 #define GTS80_2_ROMSTART(name, n1, chk1, n2, chk2, n3, chk3, n4, chk4) \
