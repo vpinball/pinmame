@@ -812,18 +812,23 @@ Private Sub Form_Load()
     HandleMech.Text = 255
         
     Dim Machines, GameName
-    
+ 
     GameNames.AddItem ("<Default>")
+    
+    If GetSetting("VPinMAMETest", "Settings", "GameName", "NotFound") = "NotFound" Then
+        SaveSetting "VPinMAMETest", "Settings", "GameName", "<Default>"
+    End If
     Machines = Controller.Machines
     If (Not IsEmpty(Machines)) Then
         For Each GameName In Machines
             GameNames.AddItem (GameName)
         Next
     End If
-    GameNames.Text = "<Default>"
-    'GameNames.Text = "blckhole"
+'    GameNames.Text = "<Default>"
+    GameNames.Text = GetSetting("VPinMAMETest", "Settings", "GameName")
 End Sub
 Private Sub Form_Unload(Cancel As Integer)
+    SaveSetting "VPinMAMETest", "Settings", "GameName", GameNames.Text
     Set Controller = Nothing
 End Sub
 
