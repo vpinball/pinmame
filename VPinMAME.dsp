@@ -496,6 +496,10 @@ SOURCE=.\src\sound\votrax.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\sound\votrax.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\sound\ym2151.c
 # End Source File
 # Begin Source File
