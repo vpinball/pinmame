@@ -19,11 +19,10 @@
   #1) Adding NMI pulse seems to have helped, but still something is quite wrong
   #2) Watching output of video commands from cpu->video, motor cross definitely loses some commands..
       (this occurs after drag race graphic)
-  #3) Have not figured out how object ram assigns colors to different areas of the screen
-  #4) There are sprites - these are not handled yet!
-  #5) I can see screen scroll registers, so the screen must scroll somehow..
-  #6) Sound not done yet
-  #7) Mr. Game Logo not correct color in Motor Show ( Bad Color Prom Read? )
+  #3) There are sprites - these are not handled yet!
+  #4) I can see screen scroll registers, so the screen must scroll somehow..
+  #5) Sound not done yet
+  #6) Mr. Game Logo not correct color in Motor Show ( Bad Color Prom Read? )
 ************************************************************************************************/
 #include "driver.h"
 #include "cpu/m68000/m68000.h"
@@ -336,7 +335,7 @@ static READ_HANDLER(i8255_porta_r) {
 	//if(locals.vid_data == 0x18) locals.vid_data = 0x13;
 
 	//Racecars
-    //if(locals.vid_data == 0x18) locals.vid_data = 0x1a;
+    if(locals.vid_data == 0x18) locals.vid_data = 0x1a;
 
 	//Bikes
     //if(locals.vid_data == 0x18) locals.vid_data = 0x19;
@@ -349,17 +348,7 @@ static READ_HANDLER(i8255_portb_r) { LOG(("UNDOCUMENTED: i8255_portb_r\n")); ret
 
 //Bits 0-3 = Video Dips (NOT INVERTED)
 //Bits   4 = Video Strobe from CPU
-static int lastr = 0;
-READ_HANDLER(i8255_portc_r) { 
-	int data = core_getDip(1) | (locals.vid_strb<<4);
-#if 0
-	if(lastr != data) {
-		LOG(("i8255_portc_r=%x\n",data));
-		lastr = data;
-	}
-#endif
-	return data;
-}
+READ_HANDLER(i8255_portc_r) { return core_getDip(1) | (locals.vid_strb<<4); }
 
 static WRITE_HANDLER(i8255_porta_w) { LOG(("i8255_porta_w=%x\n",data)); }
 
@@ -411,6 +400,7 @@ static int charoff = 0;
 PINMAME_VIDEO_UPDATE(mrgame_update) {
 	int offs = 0;
 	int color = 0;
+	int colorindex = 0;
 	int tile = 0;
 
 #ifdef MAME_DEBUG
@@ -440,16 +430,9 @@ if(!debugger_focus) {
 			sx = offs % 32;
 			sy = offs / 32;
 
-			//this works, but is wrong, as the object ram can vary the color in several places.
-#if 1
-			color = mrgame_objectram[1];
-#else
-			//This might be correct, but i'm not sure..
-			if(offs%2==0)
-				color = mrgame_objectram[(offs%32)+1];
-			else
-				color = mrgame_objectram[offs%32];
-#endif
+			colorindex = (colorindex+2);
+			if(sx==0) colorindex=1;
+			color = mrgame_objectram[colorindex];
 
 			tile = mrgame_videoram[offs]+
                    (locals.vid_a11*0x100)+(locals.vid_a12*0x200)+(locals.vid_a13*0x400)+charoff;
@@ -498,8 +481,8 @@ MEMORY_END
 static MEMORY_WRITE_START(videog1_writemem)
   { 0x0000, 0x3fff, MWA_ROM },
   { 0x4000, 0x47ff, MWA_RAM },
-  { 0x4800, 0x4be7, MWA_RAM, &mrgame_videoram, &videoram_size },
-  { 0x4be8, 0x4fff, MWA_RAM },
+  { 0x4800, 0x4bff, MWA_RAM, &mrgame_videoram, &videoram_size },
+  { 0x4c00, 0x4fff, MWA_RAM },
   { 0x5000, 0x50ff, MWA_RAM, &mrgame_objectram },
   { 0x5100, 0x7fff, MWA_RAM },
   { 0x8100, 0x8103, ppi8255_0_w},
@@ -609,6 +592,19 @@ static struct GfxLayout charlayout_g1 =
 	8*8	/* every char takes 8 consecutive bytes */
 };
 
+static struct GfxLayout spritelayout_g1 =
+{
+	16,16,						/* 8*8 characters */
+	4096/4,						/* 4096 characters = (32768 Bytes / 8 bits per byte)  */
+	2,							/* 2 bits per pixel */
+	{ 0, 0x8000*8 },			/* the bitplanes are separated across the 2 roms*/
+	{ 0, 1, 2, 3, 4, 5, 6, 7,
+			8*8+0, 8*8+1, 8*8+2, 8*8+3, 8*8+4, 8*8+5, 8*8+6, 8*8+7 },
+	{ 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8,
+			16*8, 17*8, 18*8, 19*8, 20*8, 21*8, 22*8, 23*8 },
+	32*8	/* every char takes 8 consecutive bytes */
+};
+
 static struct GfxLayout charlayout_g2 =
 {
 	8,8,						/* 8*8 characters */
@@ -623,6 +619,7 @@ static struct GfxLayout charlayout_g2 =
 static struct GfxDecodeInfo gfxdecodeinfo_g1[] =
 {
 	{ REGION_GFX1, 0, &charlayout_g1,   0, 32 },
+	{ REGION_GFX1, 0, &spritelayout_g1,   0, 32 },
 	{ -1 } /* end of array */
 };
 
