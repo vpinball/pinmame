@@ -858,7 +858,7 @@ STDMETHODIMP CGameSettings::put_DisplayPosY(long hParentWnd, long newVal)
 	if ( !fAllowWriteAccess )
 		return S_OK;
 
-	POINT Pos = {newVal,0};
+	POINT Pos = {0,newVal};
 	if ( IsWindow((HWND) hParentWnd) )
 		ClientToScreen((HWND) hParentWnd, &Pos);
 	newVal = Pos.y;
