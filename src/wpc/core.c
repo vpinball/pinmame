@@ -78,7 +78,7 @@ static const unsigned char core_palette[COL_COUNT][3] = {
 {/*  1 */ 0x30,0x00,0x00}, /* "Black" Dot - DMD Background */
 {/*  2 */ 0x00,0x00,0x00}, /* Intensity  33% - Filled in @ Run Time */
 {/*  3 */ 0x00,0x00,0x00}, /* Intensity  66% - Filled in @ Run Time */
-{/*  4 */ 255,104,53},     /* Intensity 100% - Changed @ Run Time to match config vars*/
+{/*  4 */ 0xff,0xe0,0x20}, /* Intensity 100% - Changed @ Run Time to match config vars*/
 /* -- PLAYFIELD LAMP COLORS -- */
 {/*  5 */ 0x00,0x00,0x00}, /* Black */
 {/*  6 */ 0xff,0xff,0xff}, /* White */
