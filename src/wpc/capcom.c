@@ -24,8 +24,8 @@
 
   Capcom "Classic" Pins: (Breakshot)
   Lamp Matrix     = 1 x (8x8 Matrixs) = 64 Lamps - 64 GI Lamps (not directly cpu controlled?)
-  Switch Matrix   = 1 x (8x7 Matrix)  = 56 Switches + 16 Cabinet Switches
-  Solenoids	= 24 Solenoids/Flashers
+  Switch Matrix   = 1 x (8x7 Matrix)  = 56 Switches + 9 Cabinet Switches
+  Solenoids	= 32 Solenoids/Flashers
   Sound: 1 Channel Mono Audio
 
   Milestones:
@@ -33,20 +33,18 @@
   09/21-09/24/03 - DMD working 100% incuding 256x64 size, switches, solenoids working on most games except kp, and ff
 
   Hacks & Issues that need to be looked into:
-  #1) U16 Needs to be better understood and emulated
-  #2) Once U16 better understood, remove hacks that bypass U16 startup check
-  #3) IRQ4 appears to do nothing, this seems odd
-  #4) Lamps and Solenoids don't work in Flipper Football and Kingpin
-  #5) Driver Board Detection needs to be implemented (Causes Improper Driver Error Msg on Startup)
-  #6) For some reason Zero Cross Circuit is not being detected (Causes Missing Zero X Msg on Startup)
-  #7) Power Line Detection needs to be implemented (Causes Bad Signals Error Msg on Startup)
-  #8) Lamps seem to flash too quickly, but only some, and only sometimes.
-  #9) Sound communication occurs via the 68306 UARTS (currently not really emulated in the 68306 core)
-  #10) Handle opto switches internally? Is this needed?
-  #11) Handle EOS switches internally? Is this needed?
-  #12) More complete M68306 emulation (although it's fairly good already)
-  #13) Figure out how Port A is getting data written in the top 8 bits
-  #14) Why are the port handlers 16 bit handlers? (Martin?)
+  - U16 Needs to be better understood and emulated
+  - Once U16 better understood, remove hacks that bypass U16 startup check
+  - IRQ4 appears to do nothing, this seems odd
+  - Lamps and Solenoids don't work in Flipper Football and Kingpin
+  - For some reason Zero Cross Circuit is not being detected (Causes Missing Zero X Msg on Startup)
+  - Power Line Detection needs to be implemented (Causes Bad Signals Error Msg on Startup)
+  - Sound communication occurs via the 68306 UARTS (currently not really emulated in the 68306 core)
+  - Handle opto switches internally? Is this needed?
+  - Handle EOS switches internally? Is this needed?
+  - More complete M68306 emulation (although it's fairly good already)
+  - Figure out how Port A is getting data written in the top 8 bits
+  - Why are the port handlers 16 bit handlers? (Martin?)
 
 **************************************************************************************/
 #include <stdarg.h>
@@ -57,13 +55,13 @@
 #define CC_VBLANKFREQ    60 /* VBLANK frequency */
 #define CC_ZCFREQ        60 /* Zero cross frequency?? */
 
-#define CC_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
-#define CC_LAMPSMOOTH      4 /* Smooth the lamps over this number of VBLANKS */
-#define CC_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKS */
+#define CC_SOLSMOOTH       3 /* Smooth the Solenoids over this numer of VBLANKS */
+#define CC_LAMPSMOOTH      3 /* Smooth the lamps over this number of VBLANKS */
 
 static struct {
   UINT32 solenoids;
   UINT16 u16a[4],u16b[4];
+  UINT16 driverBoard;
   int vblankCount;
   int u16irqcount;
   int diagnosticLed;
@@ -71,6 +69,7 @@ static struct {
   int zero_cross;
   int blanking;
   int swCol;
+  int read_u16;
   UINT8 lastb;
 } locals;
 
@@ -176,6 +175,7 @@ static READ16_HANDLER(cc_portb_r) {
 static WRITE16_HANDLER(cc_porta_w) {
   if(data !=0x0048 && data !=0x0040 && data !=0x0008)
 	DBGLOG(("Port A write %04x\n",data));
+  locals.driverBoard = 0x0700; // this value is expected by Breakshot after port writes
   locals.diagnosticLed = ((~data)&0x08>>3);
 }
 /****************/
@@ -199,17 +199,14 @@ static WRITE16_HANDLER(cc_portb_w) {
 /* U16 READ */
 /************/
 static READ16_HANDLER(u16_r) {
-  static int readnum = 0;
-  int numcheck;
-
   //Once we've read the U16 3 times, we can safely return the ROM data we changed back, so U1 ROM test won't fail
   //NOTE: doesn't work on Flipper Football and Kingpin, and I can't see a way to make it work, so rom test U1 will complain, but just an annoyance..
-  if(offset==0)
-	readnum++;
-    numcheck = 3;
-  if(readnum == numcheck)
-	  *((UINT16 *)(memory_region(REGION_CPU1) + fixaddr)) = 0x6600;
-  //
+  if (offset == 0 && locals.read_u16 < 3) {
+    locals.read_u16++;
+    if (locals.read_u16 == 3) {
+      *((UINT16 *)(memory_region(REGION_CPU1) + fixaddr)) = 0x6600;
+    }
+  }
 
   offset &= 0x203;
   //DBGLOG(("U16r [%03x] (%04x)\n",offset,mem_mask));
@@ -255,14 +252,24 @@ static WRITE16_HANDLER(u16_w) {
 /* I/O READ  */
 /*************/
 static READ16_HANDLER(io_r) {
-  static UINT16 data = 0;
+  UINT16 data = 0;
   static int swcol = 0;
 
   switch (offset) {
+    //Read from driver board
+    case 0x000008:
+      DBGLOG(("PC%08x - io_r: [%08x] (%04x)\n",activecpu_get_pc(),offset,mem_mask));
+      data = locals.driverBoard;
+      break;
+    //Read from other boards
+    case 0x000006:
+    case 0x00000a:
+      DBGLOG(("PC%08x - io_r: [%08x] (%04x)\n",activecpu_get_pc(),offset,mem_mask));
+      break;
     //Lamp A & B Matrix Row Status? Used to determine non-functioning bulbs?
     case 0x00000c:
     case 0x00000d:
-      data = (!locals.blanking) * 0xffff;
+      data = locals.blanking ? 0xffff : 0;
       break;
     //Playfield Switches
     case 0x200008:
@@ -270,7 +277,7 @@ static READ16_HANDLER(io_r) {
     case 0x20000a:
     case 0x20000b:
       swcol = offset-0x200007;
-      data = coreGlobals.swMatrix[swcol+4] << 8 | coreGlobals.swMatrix[swcol];
+      data = (coreGlobals.swMatrix[swcol+4] << 8 | coreGlobals.swMatrix[swcol]) ^ 0xffff; //Switches are inverted
       break;
     //Cabinet/Coin Door Switches OR (ALL SWITCH READS FOR GAMES USING ONLY LAMP B MATRIX)
     case 0x400000:
@@ -289,12 +296,13 @@ static READ16_HANDLER(io_r) {
         }
       } else
         data = coreGlobals.swMatrix[0] << 8 | coreGlobals.swMatrix[9];
+      data ^= 0xffff; //Switches are inverted
       break;
 
-     default:
-       DBGLOG(("io_r: [%08x] (%04x)\n",offset,mem_mask));
+    default:
+      DBGLOG(("PC%08x - io_r: [%08x] (%04x)\n",activecpu_get_pc(),offset,mem_mask));
   }
-  return data^0xffff;		//Switches are inverted
+  return data;
 }
 
 /*************/
@@ -305,6 +313,13 @@ static WRITE16_HANDLER(io_w) {
   //DBGLOG(("io_w: [%08x] (%04x) = %x\n",offset,mem_mask,data));
 
   switch (offset) {
+    //Write to other boards
+    case 0x00000006:
+    case 0x00000007:
+    case 0x0000000a:
+    case 0x0000000b:
+      DBGLOG(("PC%08x - io_w: [%08x] (%04x) = %x\n",activecpu_get_pc(),offset,mem_mask,data));
+      break;
     //Blanking (for lamps & solenoids?)
     case 0x00000008:
       locals.blanking = (data & 0x0c)?1:0;
@@ -314,33 +329,34 @@ static WRITE16_HANDLER(io_w) {
       if (!core_gameData->hw.lampCol)
         locals.swCol = data;
       else if (!locals.blanking) {
-        if (data & 0x0100) coreGlobals.tmpLampMatrix[0] = (~data & 0xff);
-        if (data & 0x0200) coreGlobals.tmpLampMatrix[1] = (~data & 0xff);
-        if (data & 0x0400) coreGlobals.tmpLampMatrix[2] = (~data & 0xff);
-        if (data & 0x0800) coreGlobals.tmpLampMatrix[3] = (~data & 0xff);
-        if (data & 0x1000) coreGlobals.tmpLampMatrix[4] = (~data & 0xff);
-        if (data & 0x2000) coreGlobals.tmpLampMatrix[5] = (~data & 0xff);
-        if (data & 0x4000) coreGlobals.tmpLampMatrix[6] = (~data & 0xff);
-        if (data & 0x8000) coreGlobals.tmpLampMatrix[7] = (~data & 0xff);
+        if (data & 0x0100) coreGlobals.tmpLampMatrix[0] |= (~data & 0xff);
+        if (data & 0x0200) coreGlobals.tmpLampMatrix[1] |= (~data & 0xff);
+        if (data & 0x0400) coreGlobals.tmpLampMatrix[2] |= (~data & 0xff);
+        if (data & 0x0800) coreGlobals.tmpLampMatrix[3] |= (~data & 0xff);
+        if (data & 0x1000) coreGlobals.tmpLampMatrix[4] |= (~data & 0xff);
+        if (data & 0x2000) coreGlobals.tmpLampMatrix[5] |= (~data & 0xff);
+        if (data & 0x4000) coreGlobals.tmpLampMatrix[6] |= (~data & 0xff);
+        if (data & 0x8000) coreGlobals.tmpLampMatrix[7] |= (~data & 0xff);
       }
       break;
     //Lamp B Matrix (for games that only have lamp b, shift to lower half of our lamp matrix for easier numbering)
     case 0x0000000d:
       if (!locals.blanking) {
-        if (data & 0x0100) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol] = (~data & 0xff);
-        if (data & 0x0200) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol+1] = (~data & 0xff);
-        if (data & 0x0400) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol+2] = (~data & 0xff);
-        if (data & 0x0800) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol+3] = (~data & 0xff);
-        if (data & 0x1000) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol+4] = (~data & 0xff);
-        if (data & 0x2000) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol+5] = (~data & 0xff);
-        if (data & 0x4000) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol+6] = (~data & 0xff);
-        if (data & 0x8000) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol+7] = (~data & 0xff);
+        if (data & 0x0100) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol] |= (~data & 0xff);
+        if (data & 0x0200) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol+1] |= (~data & 0xff);
+        if (data & 0x0400) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol+2] |= (~data & 0xff);
+        if (data & 0x0800) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol+3] |= (~data & 0xff);
+        if (data & 0x1000) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol+4] |= (~data & 0xff);
+        if (data & 0x2000) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol+5] |= (~data & 0xff);
+        if (data & 0x4000) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol+6] |= (~data & 0xff);
+        if (data & 0x8000) coreGlobals.tmpLampMatrix[core_gameData->hw.lampCol+7] |= (~data & 0xff);
       }
       break;
 
-    //??
+    //Write to driver board
     case 0x00200008:
-      DBGLOG(("io_w: [%08x] (%04x) = %x\n",offset,mem_mask,data));
+      DBGLOG(("PC%08x - io_w: [%08x] (%04x) = %x\n",activecpu_get_pc(),offset,mem_mask,data));
+      locals.driverBoard = data << 8;
       break;
 
     //Sols: 1-8 (hi byte) & 17-24 (lo byte)
@@ -359,7 +375,7 @@ static WRITE16_HANDLER(io_w) {
       break;
 
     default:
-      DBGLOG(("io_w: [%08x] (%04x) = %x\n",offset,mem_mask,data));
+      DBGLOG(("PC%08x - io_w: [%08x] (%04x) = %x\n",activecpu_get_pc(),offset,mem_mask,data));
   }
 }
 
@@ -376,25 +392,28 @@ static MACHINE_INIT(cc) {
 }
 
 void U16_Tests_Hack(void){
-	switch(core_gameData->gen){
+	switch (core_gameData->hw.gameSpecific1) {
 		case 0:
 			break;
 		case 1:
-			fixaddr = 0x00091FD8; //PM
-			break;
 		case 2:
+			fixaddr = 0x00091FD8; //PM
 			break;
 		case 3:
 			fixaddr = 0x00089486; //AB
 			break;
 		case 4:
+			fixaddr = 0x00084886; //ABR
 			break;
 		case 5:
+		case 6:
 			fixaddr = 0x0008b198; //BS
 			break;
-		case 6:
 		case 7:
+			fixaddr = 0x00086b56; //BS102R
+			break;
 		case 8:
+			fixaddr = 0x0007cc1c; //BSB
 			break;
 		case 9:
 			fixaddr = 0x00000302;	//FF
@@ -539,7 +558,7 @@ static MEMORY_READ16_START(cc_readmem)
 MEMORY_END
 
 static MEMORY_WRITE16_START(cc_writemem)
-  { 0x00000000, 0x00ffffbf, MWA16_ROM },
+  { 0x00000000, 0x00ffffff, MWA16_ROM },
   { 0x01000000, 0x0107ffff, MWA16_RAM, &ramptr },	/* DRAM */
   { 0x02000000, 0x02bfffff, io_w },					/* I/O */
   { 0x02C00000, 0x02C007ff, u16_w },				/* U16 (A10,A2,A1)*/

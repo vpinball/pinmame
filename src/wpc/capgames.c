@@ -12,9 +12,9 @@ const core_tLCDLayout cc_dispDMD256x64[] = {
   {0,0,64,256,CORE_DMD,(void *)cc_dmd256x64}, {0}
 };
 
-#define INITGAME(name, gen, disp, balls, lamps) \
+#define INITGAME(name, gameno, disp, balls, lamps) \
 	CC_INPUT_PORTS_START(name, balls) CC_INPUT_PORTS_END \
-	static core_tGameData name##GameData = {gen,disp,{FLIP,0,lamps}}; \
+	static core_tGameData name##GameData = {0,disp,{FLIP,0,lamps,0,0,0,gameno}}; \
 	static void init_##name(void) { \
 		core_gameData = &name##GameData; \
 	}
