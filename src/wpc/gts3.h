@@ -76,6 +76,26 @@
     SIM_PORTS(balls)\
     GTS32_COMPORTS
 
+#define GTS3_IC_COMPORTS \
+  PORT_START /* 0 */ \
+      /* Switch Column 1 */ \
+    COREPORT_BITDEF(  0x0001, IPT_COIN2,          KEYCODE_3) \
+    COREPORT_BITDEF(  0x0002, IPT_COIN1,          IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(  0x0004, IPT_COIN3,          KEYCODE_4) \
+    COREPORT_BITDEF(  0x0008, IPT_COIN4,          KEYCODE_6) \
+    COREPORT_BITDEF(  0x0010, IPT_START1,         IP_KEY_DEFAULT) \
+    /* These are put in switch column 0 since they are not read in the regular switch matrix */ \
+    COREPORT_BIT(     0x0100, "Slam Tilt",        KEYCODE_HOME) \
+    COREPORT_BIT(     0x0200, "Ball Tilt",        KEYCODE_INSERT) \
+    COREPORT_BIT(     0x0400, "Diagnostic",       KEYCODE_0) \
+    PORT_BITX(0x4000,IP_ACTIVE_LOW,IPT_UNUSED,"",0,IP_JOY_NONE) // flag 0x4000
+
+#define GTS3_IC_INPUT_PORTS_START(name,balls) \
+  INPUT_PORTS_START(name) \
+    CORE_PORTS \
+    SIM_PORTS(balls)\
+    GTS3_IC_COMPORTS
+
 
 #define GTS3_COMINPORT       CORE_COREINPORT
 

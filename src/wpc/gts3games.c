@@ -21,6 +21,7 @@ static struct core_dispLayout gts_128x32DMD[] = {
 #define ALPHA	 GTS3_dispAlpha
 #define DMD	 gts_128x32DMD
 #define FLIP67   FLIP_SWNO(6,7)
+#define FLIP2122 FLIP_SWNO(21,22)
 #define FLIP4142 FLIP_SWNO(41,42)
 #define FLIP4243 FLIP_SWNO(42,43)
 #define FLIP4547 FLIP_SWNO(45,47)
@@ -33,6 +34,13 @@ static struct core_dispLayout gts_128x32DMD[] = {
 static struct core_dispLayout GTS3_dispAlpha[] = {
 	GDISP_SEG_20(0,CORE_SEG16),GDISP_SEG_20(1,CORE_SEG16),{0}
 };
+
+#define INITGAME_IC(name, disptype, flippers, balls, sb, lamps) \
+	GTS3_IC_INPUT_PORTS_START(name, balls) GTS3_INPUT_PORTS_END \
+	static core_tGameData name##GameData = {GEN_GTS3,disptype,{flippers,4,lamps,0,sb,0}}; \
+	static void init_##name(void) { \
+		core_gameData = &name##GameData; \
+	}
 
 #define INITGAME(name, disptype, flippers, balls, sb, lamps) \
 	GTS3_INPUT_PORTS_START(name, balls) GTS3_INPUT_PORTS_END \
@@ -61,7 +69,7 @@ static struct core_dispLayout GTS3_dispAlpha[] = {
 /*-------------------------------------------------------------------
 / Caribbean Cruise (#C102)
 /-------------------------------------------------------------------*/
-INITGAME(ccruise, ALPHA, FLIP67, 2, SNDBRD_GTS3, 5)
+INITGAME_IC(ccruise, ALPHA, FLIP67, 2, SNDBRD_GTS3, 4)
 GTS3ROMSTART(ccruise,	"gprom.bin",0x668b5757)
 GTS3SOUND3232(			"yrom1.bin",0x6e424e53,
 						"drom1.bin",0x4480257e)
@@ -258,7 +266,7 @@ CORE_GAMEDEFNV(cueball,"Cue Ball Wizard",1992,"Gottlieb",mGTS3DMDSA, GAME_IMPERF
 / Street Fighter 2
 /-------------------------------------------------------------------*/
 INITGAME2(sfight2, DMD, FLIP8283, 4, SNDBRD_GTS3, 5)
-GTS3ROMSTART(sfight2,  "gprom.bin",0x299ad173)
+GTS3ROMSTART(sfight2,	"gprom.bin",0x299ad173)
 GTS3_DMD512_ROMSTART(	"dsprom.bin",0xe565e5e9)
 GTS3SOUND32256(			"yrom1.bin",0x9009f461,
 						"drom1.bin",0xf5c13e80,
@@ -407,17 +415,17 @@ GTS3_ROMEND
 CORE_GAMEDEFNV(bighurt,"Big Hurt",1995,"Gottlieb",mGTS3DMDS, GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
-/ Strikes 'N Spares (#N111)
+/ Strikes n' Spares (#N111)
 /-------------------------------------------------------------------*/
-INITGAME2(snspares, DMD, FLIP4243, 4, SNDBRD_GTS3, 4)
+INITGAME2(snspares, DMD, FLIP2122, 4, SNDBRD_GTS3, 4)
 GTS3ROMSTART(snspares,	"gprom.bin", 0x9e018496)
 GTS3_DMD256_ROMSTART(	"dsprom.bin",0x5c901899)
-GTS3SOUND32256(		"yrom1.bin",0x0,
-			"drom1.bin",0x0,
-			"arom1.bin",0x4db05a2f,
-			"arom2.bin",0x775b20bc)
+GTS3SOUND32256(			"yrom1.bin",0x0,
+						"drom1.bin",0x0,
+						"arom1.bin",0x4db05a2f,
+						"arom2.bin",0x775b20bc)
 GTS3_ROMEND
-CORE_GAMEDEFNV(snspares,"Strikes 'N Spares",1995,"Gottlieb",mGTS3DMDSA, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(snspares,"Strikes n' Spares",1995,"Gottlieb",mGTS3DMDSA, GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
 / Waterworld
@@ -461,12 +469,12 @@ CORE_GAMEDEFNV(barbwire,"Barb Wire",1996,"Gottlieb",mGTS3DMDSA, GAME_IMPERFECT_S
 /*-------------------------------------------------------------------
 / Brooks & Dunn (#749)
 /-------------------------------------------------------------------*/
-INITGAME2(brooks, DMD, FLIP4243, 4, SNDBRD_GTS3, 5)
+INITGAME2(brooks, DMD, FLIP4243, 4/*?*/, SNDBRD_GTS3, 4)
 GTS3ROMSTART(brooks,	"gprom.bin", 0x26cebf07)
 GTS3_DMD512_ROMSTART(	"dsprom.bin",0x0)
-GTS3SOUND32512256(	"yrom1.bin",0x0,
-			"drom1.bin",0x0,
-			"arom1.bin",0x0,
-			"arom2.bin",0x0)
+GTS3SOUND32512256(		"yrom1.bin",0x0,
+						"drom1.bin",0x0,
+						"arom1.bin",0x0,
+						"arom2.bin",0x0)
 GTS3_ROMEND
-CORE_GAMEDEFNV(brooks,"Brooks & Dunn (Prototype)",1996,"Gottlieb",mGTS3DMDS, GAME_NO_SOUND)
+CORE_GAMEDEFNV(brooks,"Brooks & Dunn (Prototype)",1996,"Gottlieb",mGTS3DMDSA, GAME_NO_SOUND)
