@@ -223,11 +223,6 @@ static WRITE_HANDLER(pia0b_w)
 	logerror("pia0b_w: %02x\n", data);
 }
 
-static WRITE_HANDLER(pia0ca2_w)
-{
-	logerror("pia0ca2_w: %02x\n", data);
-}
-
 static WRITE_HANDLER(pia0cb2_w)
 {
 	logerror("pia0cb2_w: %02x\n", data);
@@ -253,10 +248,16 @@ static WRITE_HANDLER(pia1cb2_w)
 	logerror("pia1cb2_w: %02x\n", data);
 }
 
+DISCRETE_SOUND_START(gpsm_discInt)
+	DISCRETE_INPUT(NODE_01,1,0x0001,0)
+	DISCRETE_SAWTOOTHWAVE(NODE_10,NODE_01,349,50000,10000,0,0)
+	DISCRETE_OUTPUT(NODE_10, 50)
+DISCRETE_SOUND_END
+
 static const struct pia6821_interface gps_pia[] = {
 {
   /*i: A/B,CA/B1,CA/B2 */ 0, 0, 0, 0, 0, 0,
-  /*o: A/B,CA/B2       */ pia0a_w, pia0b_w, pia0ca2_w, pia0cb2_w,
+  /*o: A/B,CA/B2       */ pia0a_w, pia0b_w, 0, pia0cb2_w,
   /*irq: A/B           */ 0, 0
 },
 {
@@ -340,6 +341,6 @@ MACHINE_DRIVER_START(gpMSU1)
   MDRV_CPU_ADD_TAG("scpu", M6802, 3579500) // NTSC quartz ???
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(gps_readmem, gps_writemem)
-  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD(DISCRETE, gpsm_discInt) // uses an MC6840, to be implemented yet!
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END
