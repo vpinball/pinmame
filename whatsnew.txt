@@ -7,11 +7,15 @@ Bugs Fixed
 - Removed flipper switches 5 & 7 from Dungeon & Dragons
 - Changed Mousin' around display to one row
 - Some small fixes in Bally cheap-squeek sound (Black pyramid is still strange)
+- Corrected 6809 core bug involving CC register
   [Martin Adrian]
 
-- Hack implemented which fixes Data East Robocop Music (should be 100% as far as I can tell)
 - Greatly improved lamps in Baby Pacman, although there are still some issues.
-- Gottlieb System 3 music and speech FINALLY working!! (Still some music tempo problems though)
+- Gottlieb System 3 music and speech FINALLY working!! (Requires hefty system to work perfectly unfortunately)
+  [Steve Ellenoff]
+
+- Robocop sound working 100%
+  [Martin Adrian]
   [Steve Ellenoff]
 
 New Features
@@ -26,6 +30,8 @@ New Features
   [Martin Adrian]
 
 - Added rom support for The Getaway: High Speed II (L-2)
+- Added rom support for Stern Simpsons Party Machine
+- Some sound working on Zaccaria Games, but still much work to be done
   [Steve Ellenoff]
 
 Version 1.20 Beta (September 29, 2002)
