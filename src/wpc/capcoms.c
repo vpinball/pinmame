@@ -109,16 +109,7 @@ extern void send_data_to_68306(int data);
 //Data From 8752 (Transmitted from 8752 Serial UART TX line)
 void data_from_8752(int data)
 {
-	static int eat=0;
 	locals.from_8752 = data;
-#if 0
-	if(eat++<6) {
-		printf("eating command %x\n",data);
-		return;
-	}
-	else
-		eat = 6;
-#endif
 	send_data_to_68306(data);
 }
 

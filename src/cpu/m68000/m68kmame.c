@@ -1299,10 +1299,10 @@ enum {  dirDUMR1A,dirDUMR2A,		//0,1 (exception, these are r&w, but there's 2 so 
 		dirDUOPS,dirDUOPRS			//28,29 (these are probably not needed)
 };
 static UINT16 m68306duartreg[0x20];							//Duart registers
-static m68306_duart_int=0;									//Is Interrupt triggered by DUART?
-static m68306_duart_mode_pointer[2] = {0,0};				//Mode Pointer for each UART
-static m68306_duart_tc_enable[2] = {0,0};					//Transmit Channel Enabled Status
-static m68306_duart_rc_enable[2] = {0,0};					//Receive Channel Enabled Status
+static int m68306_duart_int=0;								//Is Interrupt triggered by DUART?
+static int m68306_duart_mode_pointer[2] = {0,0};			//Mode Pointer for each UART
+static int m68306_duart_tc_enable[2] = {0,0};				//Transmit Channel Enabled Status
+static int m68306_duart_rc_enable[2] = {0,0};				//Receive Channel Enabled Status
 static void trigger_duart_int(int which);					//Cause a DUART Int to occur
 static void duart_command_register_w(int which,int data);	//Handle writes to command register
 static void m68306_duart_set_dusr(int which,int data);		//Set the DUSR register
