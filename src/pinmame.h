@@ -36,6 +36,7 @@
 #define HAS_M6502    1
 #define HAS_M65C02   1
 #define HAS_M68000   1
+#define HAS_M68306   1
 #define HAS_S2650    1
 #define HAS_8080	 1
 

@@ -552,11 +552,15 @@ void m68k_set_instr_hook_callback(void  (*callback)(void))
 /* Set the CPU type. */
 void m68k_set_cpu_type(unsigned int cpu_type)
 {
+	CPU_ADDRESS_MASK = 0xffffffff;
 	switch(cpu_type)
 	{
 		case M68K_CPU_TYPE_68000:
-			CPU_TYPE         = CPU_TYPE_000;
 			CPU_ADDRESS_MASK = 0x00ffffff;
+#ifdef PINMAME
+                case M68K_CPU_TYPE_68306:
+#endif // PINMAME
+			CPU_TYPE         = CPU_TYPE_000;
 			CPU_SR_MASK      = 0xa71f; /* T1 -- S  -- -- I2 I1 I0 -- -- -- X  N  Z  V  C  */
 			CYC_INSTRUCTION  = m68ki_cycles[0];
 			CYC_EXCEPTION    = m68ki_exception_cycle_table[0];
@@ -604,7 +608,6 @@ void m68k_set_cpu_type(unsigned int cpu_type)
 			return;
 		case M68K_CPU_TYPE_68020:
 			CPU_TYPE         = CPU_TYPE_020;
-			CPU_ADDRESS_MASK = 0xffffffff;
 			CPU_SR_MASK      = 0xf71f; /* T1 T0 S  M  -- I2 I1 I0 -- -- -- X  N  Z  V  C  */
 			CYC_INSTRUCTION  = m68ki_cycles[2];
 			CYC_EXCEPTION    = m68ki_exception_cycle_table[2];
