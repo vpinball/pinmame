@@ -114,6 +114,7 @@ static INTERRUPT_GEN(ATARI2_vblank) {
 static SWITCH_UPDATE(ATARI0) {
 	if (inports) {
 		coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0xc0) | (inports[ATARI_COMINPORT] & 0x0f) | ((inports[ATARI_COMINPORT] & 0x0300) >> 4);
+		coreGlobals.swMatrix[0] = (inports[ATARI_COMINPORT] & 0x8000) >> 15;
 	}
 }
 
@@ -121,6 +122,7 @@ static SWITCH_UPDATE(ATARI1) {
 	if (inports) {
 		coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0xf0) | (inports[ATARI_COMINPORT] & 0x0f);
 		coreGlobals.swMatrix[3] = (coreGlobals.swMatrix[3] & 0xfc) | ((inports[ATARI_COMINPORT] & 0x0300) >> 8);
+		coreGlobals.swMatrix[0] = (inports[ATARI_COMINPORT] & 0x8000) >> 15;
 	}
 }
 
@@ -141,8 +143,12 @@ static int ATARI_m2sw(int col, int row) {
 /* Switch reading */
 // Gen 1
 static READ_HANDLER(swg1_r) {
-	UINT8 sw = (coreGlobals.swMatrix[1+(offset/8)] & (1 << (offset % 8))) ? 0xff : 0;
-	return sw;
+	/* the replay selector influences this readout */
+	int i, dip2 = core_getDip(2);
+	for (i=0; i < 4; i++) {
+		core_setSw(ATARI_m2sw(8, 5+i), dip2 & (1 << i));
+	}
+	return (coreGlobals.swMatrix[1+(offset/8)] & (1 << (offset % 8))) ? 0xff : 0;
 }
 
 static WRITE_HANDLER(swg1_w) {
@@ -150,11 +156,10 @@ static WRITE_HANDLER(swg1_w) {
 }
 
 static READ_HANDLER(dipg1_r) {
-	int i, dip2 = core_getDip(2);
 	UINT8 sw = (core_getDip(offset/8) & (1 << (offset % 8))) ? 0xff : 0;
-	for (i=0; i < 4; i++) {
-		core_setSw(ATARI_m2sw(8, 5+i), dip2 & (1 << i));
-	}
+	/* test switch and dip #12 are the same line */
+	if (offset == 11)
+		sw = sw | (coreGlobals.swMatrix[0] ? 0xff : 0x00);
 	if (offset)
 		return sw;
 	return (toggle ? 0xff : 0x00);
@@ -176,26 +181,33 @@ static WRITE_HANDLER(ram_w) {
 	ram[offset] = data;
 	if (offset < 0x10) {
 		if (offset % 4 == 3) {
+			/* 1up to 4up lights */
 			if ((data & 0x0f) == 0x08)
-				coreGlobals.lampMatrix[8] |= (0x08 >> (offset/4));
+				coreGlobals.lampMatrix[16] |= (0x08 >> (offset/4));
 			else
-				coreGlobals.lampMatrix[8] &= ~(0x08 >> (offset/4));
+				coreGlobals.lampMatrix[16] &= ~(0x08 >> (offset/4));
 		} else {
+			/* player score displays */
 			((int *)locals.segments)[30 - offset*2] = core_bcd2seg[data >> 4];
 			((int *)locals.segments)[31 - offset*2] = core_bcd2seg[data & 0x0f];
 		}
 	} else if (offset == 0x1c || offset == 0x1d) {
+		/* match & credit display */
 		offset -= 0x1c;
 		((int *)locals.segments)[32 + offset*2] = core_bcd2seg[data >> 4];
 		((int *)locals.segments)[33 + offset*2] = core_bcd2seg[data & 0x0f];
 	} else if (offset > 0x2f && offset < 0x40) {
+		/* lamps (128 of them!) */
 		int col;
 		offset -= 0x30;
 		col = (offset%4)*2 + offset/8;
-		if (offset % 8 < 4)
+		if (offset % 8 < 4) {
 			coreGlobals.lampMatrix[col] = (coreGlobals.lampMatrix[col] & 0xf0) | (data & 0x0f);
-		else
+			coreGlobals.lampMatrix[col+8] = (coreGlobals.lampMatrix[col+8] & 0xf0) | (data >> 4);
+		} else {
 			coreGlobals.lampMatrix[col] = (coreGlobals.lampMatrix[col] & 0x0f) | (data << 4);
+			coreGlobals.lampMatrix[col+8] = (coreGlobals.lampMatrix[col+8] & 0x0f) | (data & 0xf0);
+		}
 	}
 }
 
@@ -320,11 +332,8 @@ static WRITE_HANDLER(sound1_w) {
 / Load/Save static ram
 / Save RAM & CMOS Information
 /-------------------------------------------------*/
-static NVRAM_HANDLER(ATARI1) {
-	core_nvram(file, read_or_write, ram, 512, 0x00);
-}
-
 static UINT8 *ATARI_CMOS;
+
 static WRITE_HANDLER(ATARI_CMOS_w) {
   ATARI_CMOS[offset] = data;
 }
@@ -413,9 +422,18 @@ static MEMORY_WRITE_START(ATARI2_writemem)
 {0xf800,0xffff,	MWA_ROM},	/* reset vector */
 MEMORY_END
 
-static MACHINE_INIT(ATARI) {
+static void init_common(void) {
   memset(&locals, 0, sizeof locals);
   sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(REGION_SOUND1), NULL, NULL);
+}
+
+static MACHINE_INIT(ATARI1) {
+  init_common();
+  memset(ram, 0, 512);
+}
+
+static MACHINE_INIT(ATARI2) {
+  init_common();
 }
 
 static MACHINE_STOP(ATARI) {
@@ -428,8 +446,7 @@ MACHINE_DRIVER_START(ATARI1)
   MDRV_CPU_MEMORY(ATARI1_readmem, ATARI1_writemem)
   MDRV_CPU_VBLANK_INT(ATARI1_vblank, 1)
   MDRV_CPU_PERIODIC_INT(ATARI1_nmihi, ATARI_NMIFREQ)
-  MDRV_CORE_INIT_RESET_STOP(ATARI,NULL,ATARI)
-  MDRV_NVRAM_HANDLER(ATARI1)
+  MDRV_CORE_INIT_RESET_STOP(ATARI1,NULL,ATARI)
   MDRV_DIPS(20)
   MDRV_SWITCH_UPDATE(ATARI1)
 
@@ -449,7 +466,7 @@ MACHINE_DRIVER_START(ATARI2)
   MDRV_CPU_MEMORY(ATARI2_readmem, ATARI2_writemem)
   MDRV_CPU_VBLANK_INT(ATARI2_vblank, 1)
   MDRV_CPU_PERIODIC_INT(ATARI2_irqhi, ATARI_IRQFREQ)
-  MDRV_CORE_INIT_RESET_STOP(ATARI,NULL,ATARI)
+  MDRV_CORE_INIT_RESET_STOP(ATARI2,NULL,ATARI)
   MDRV_NVRAM_HANDLER(ATARI2)
   MDRV_DIPS(32)
   MDRV_SWITCH_UPDATE(ATARI2)

@@ -22,6 +22,8 @@
     /* switch column 1 or 3, depending on the generation */ \
     COREPORT_BIT(     0x0100, "Cabinet Tilt", KEYCODE_DEL) \
     COREPORT_BIT(     0x0200, "Pendulum Tilt", KEYCODE_INSERT) \
+    /* switch column 0, as it's doubled from the dip switches */ \
+    COREPORT_BIT(     0x8000, "Test", KEYCODE_7) \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
       COREPORT_DIPSET(0x0000, "0" ) \
@@ -29,7 +31,7 @@
     COREPORT_DIPNAME( 0x0002, 0x0000, "S2") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0002, "1" ) \
-    COREPORT_DIPNAME( 0x0004, 0x0000, "S3") \
+    COREPORT_DIPNAME( 0x0004, 0x0004, "S3") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0004, "1" ) \
     COREPORT_DIPNAME( 0x0008, 0x0000, "S4") \
@@ -65,14 +67,14 @@
     COREPORT_DIPNAME( 0x2000, 0x0000, "S14") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x2000, "1" ) \
-    COREPORT_DIPNAME( 0x4000, 0x0000, "S15") \
+    COREPORT_DIPNAME( 0x4000, 0x4000, "S15") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x4000, "1" ) \
-    COREPORT_DIPNAME( 0x8000, 0x0000, "S16") \
+    COREPORT_DIPNAME( 0x8000, 0x8000, "S16") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x8000, "1" ) \
   PORT_START /* 2 */ \
-    COREPORT_DIPNAME( 0x000f, 0x0007, "Hi Score Settings") \
+    COREPORT_DIPNAME( 0x000f, 0x0004, "Replay Settings") \
       COREPORT_DIPSET(0x0000, "#1" ) \
       COREPORT_DIPSET(0x0001, "#2" ) \
       COREPORT_DIPSET(0x0002, "#3" ) \
