@@ -535,14 +535,23 @@ CORE_GAMEDEF(whirl,l3, "Whirlwind (L-3)", 1990, "Williams", s11_mS11BS,0)
 / Game Show 4/90
 /--------------------*/
 INITGAME(gs   ,GEN_S11C,disp16oneline,12,FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
-S11_ROMSTART48(gs   ,l3,"gshw_u26.l3", CRC(3419bfb2) SHA1(7ce294a3118d20c7cdc3d5cd946e4c43090c5151),
+S11_ROMSTART48(gs,l3,"gshw_u26.l3", CRC(3419bfb2) SHA1(7ce294a3118d20c7cdc3d5cd946e4c43090c5151),
                         "gshw_u27.l3", CRC(4f3babb6) SHA1(87091a6786fc6817529cfed7f60396babe153d8d))
 S11CS_SOUNDROM000(      "gshw_u4.l2",  CRC(e89e0116) SHA1(e96bee143d1662d078f21531f405d838fdace693),
                         "gshw_u19.l1", CRC(8bae0813) SHA1(a2b1beca13796892d8ee1533e395cabdbbb11f88),
                         "gshw_u20.l1", CRC(75ccbdf7) SHA1(7dce8ae427a621919caad8d8b08b06bb0adad850))
 S11_ROMEND
 #define input_ports_gs input_ports_s11
-CORE_GAMEDEF(gs   , l3, "Game Show (L-3)", 1990, "Bally", s11c_one,0)
+
+S11_ROMSTART48(gs,l4,"gshw_u26.l3", CRC(3419bfb2) SHA1(7ce294a3118d20c7cdc3d5cd946e4c43090c5151),
+                        "u27-lu4.rom", CRC(ba265978) SHA1(66ac8e83e35cdfd72f1d3aa8ce6d92c2c833f304))
+S11CS_SOUNDROM000(      "gshw_u4.l2",  CRC(e89e0116) SHA1(e96bee143d1662d078f21531f405d838fdace693),
+                        "gshw_u19.l1", CRC(8bae0813) SHA1(a2b1beca13796892d8ee1533e395cabdbbb11f88),
+                        "gshw_u20.l1", CRC(75ccbdf7) SHA1(7dce8ae427a621919caad8d8b08b06bb0adad850))
+S11_ROMEND
+
+CORE_CLONEDEF(gs,l3,l4,"Game Show (L-3)", 1990, "Bally", s11c_one,0)
+CORE_GAMEDEF(gs,l4,"Game Show (L-4)", 1990, "Bally", s11c_one,0)
 
 /*--------------------
 / Rollergames 5/90

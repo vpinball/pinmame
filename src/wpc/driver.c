@@ -776,7 +776,8 @@ DRIVER(mousn,l4)        //S11-1635: 12/89 B Mousin' Around!
                         //???:      ??/90 B Player's Choice
                         //???:      ??/90 B Ghost Gallery
 DRIVER(whirl,l3)        //S11-574:  01/90 W Whirlwind
-DRIVER(gs,l3)           //S11-985:  04/90 B Game Show
+DRIVER(gs,l3)           //S11-985:  04/90 B Game Show (L-3)
+DRIVER(gs,l4)           //S11-985:  04/90 B Game Show (L-4)
 DRIVER(rollr,l2)        //S11-576:  06/90 W Rollergames
 DRIVER(pool,l7)         //S11-1848: 06/90 B Pool Sharks (Shark?)
 DRIVER(diner,l4)        //S11-571:  09/90 W Diner (L-4)
