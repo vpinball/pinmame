@@ -47,6 +47,7 @@ static struct {
   int firstLog;
   mem_write_handler soundCmd;
   int boards; // 0 = none, 1 = board0, 2 = board1, 3 = both
+  int rollover; 
 } locals;
 
 static void wave_init(void);
@@ -146,16 +147,31 @@ int manual_sound_commands(struct mame_bitmap *bitmap) {
       /*-- specific help --*/
       core_textOutf(SND_XROW, 65, BLACK, "LEFT/RIGHT  Move Left/Right");
       core_textOutf(SND_XROW, 75, BLACK, "UP/DOWN     Digit +1/-1");
-      if      ((keyboard_pressed_memory_repeat(SMDCMD_UP, REPEATKEY)))
-        locals.digits[locals.currDigit] = (locals.digits[locals.currDigit]+1) & 0x0f;
-      else if ((keyboard_pressed_memory_repeat(SMDCMD_DOWN, REPEATKEY)))
-        locals.digits[locals.currDigit] = (locals.digits[locals.currDigit]-1) & 0x0f;
-      else if ((keyboard_pressed_memory_repeat(SMDCMD_PREV, REPEATKEY)) &&
+	  core_textOutf(SND_XROW, 85, BLACK, "INSERT      Turn Rollover %s",(locals.rollover)?"Off":"On ");
+	  if(locals.rollover) {
+		if      ((keyboard_pressed_memory_repeat(SMDCMD_UP, REPEATKEY)))
+			locals.digits[locals.currDigit] = (locals.digits[locals.currDigit]+1) % 0x11;
+		else if ((keyboard_pressed_memory_repeat(SMDCMD_DOWN, REPEATKEY))) {
+			locals.digits[locals.currDigit] = (locals.digits[locals.currDigit]-1) % 0x11;
+			if(locals.digits[locals.currDigit]<0) locals.digits[locals.currDigit] = 17;
+		}
+	  }
+	  else {
+			if      ((keyboard_pressed_memory_repeat(SMDCMD_UP, REPEATKEY)) &&
+				    (locals.digits[locals.currDigit] < 0x10))
+				locals.digits[locals.currDigit] += 1;       
+			else if ((keyboard_pressed_memory_repeat(SMDCMD_DOWN, REPEATKEY)) &&
+					(locals.digits[locals.currDigit] > 0x00))   
+					locals.digits[locals.currDigit] -= 1; 
+	  }
+      if ((keyboard_pressed_memory_repeat(SMDCMD_PREV, REPEATKEY)) &&
                (locals.currDigit > 0))
         locals.currDigit -= 1;
       else if ((keyboard_pressed_memory_repeat(SMDCMD_NEXT, REPEATKEY)) &&
                (locals.currDigit < (MAX_CMD_LENGTH*2-1)))
         locals.currDigit += 1;
+	  else if (keyboard_pressed_memory_repeat(SMDCMD_INSERT, REPEATKEY))
+        locals.rollover = !locals.rollover;
       else if (keyboard_pressed_memory_repeat(SMDCMD_PLAY, REPEATKEY)) {
         int command[MAX_CMD_LENGTH];
         int count = 0;
@@ -171,7 +187,7 @@ int manual_sound_commands(struct mame_bitmap *bitmap) {
       }
 
       for (ii = 0; ii < MAX_CMD_LENGTH*2; ii++)
-        core_textOutf(SND_XROW + 13*ii/2, 90, (ii == locals.currDigit) ? WHITE : BLACK,
+        core_textOutf(SND_XROW + 13*ii/2, 95, (ii == locals.currDigit) ? WHITE : BLACK,
                      (locals.digits[ii] > 0xf) ? "-" : "%x",locals.digits[ii]);
     }
     else { /* command mode */
@@ -183,9 +199,9 @@ int manual_sound_commands(struct mame_bitmap *bitmap) {
         { locals.currCmd = locals.currCmd->next; }
       else if (keyboard_pressed_memory_repeat(SMDCMD_PLAY, REPEATKEY))
         playCmd(locals.currCmd->length, locals.currCmd->cmd);
-      core_textOutf(SND_XROW, 90, BLACK, "%-30s",locals.currCmd->name);
+      core_textOutf(SND_XROW, 95, BLACK, "%-30s",locals.currCmd->name);
       for (ii = 0; ii < MAX_CMD_LENGTH; ii++)
-        core_textOutf(SND_XROW + 13*ii, 100, BLACK,
+        core_textOutf(SND_XROW + 13*ii, 105, BLACK,
                      (ii < locals.currCmd->length) ? "%02x" : "  ",
                      locals.currCmd->cmd[ii]);
     }

@@ -29,6 +29,7 @@ int snd_get_cmd_log(int *last, int *buffer);
 #define SMDCMD_DOWN		KEYCODE_DOWN
 #define SMDCMD_ZERO		KEYCODE_DEL
 #define SMDCMD_PLAY		KEYCODE_SPACE
+#define SMDCMD_INSERT	KEYCODE_INSERT
 
 #define MAX_CMD_LOG     16
 
