@@ -518,6 +518,10 @@ static void check_timer_event(void)
 	if( CTD >= OCD)
 	{
 		OCH++;	// next IRQ point
+		if (((m6800.tcsr & TCSR_OCF) == 0) && (m6800.port2_ddr & 0x02))
+			m6800.port2_data = ((m6800.port2_data & m6800.port2_ddr) |
+				                (cpu_readport16(M6803_PORT2) & ~m6800.port2_ddr) & 0x1d) |
+							   ((m6800.tcsr & TCSR_OLVL) << 1);
 		m6800.tcsr |= TCSR_OCF;
 		m6800.pending_tcsr |= TCSR_OCF;
 		MODIFIED_tcsr;
@@ -2451,18 +2455,8 @@ READ_HANDLER( m6803_internal_registers_r )
 		case 0x0a:
 			return m6800.counter.b.l;
 		case 0x0b:
-			if(0/*!(m6800.pending_tcsr&TCSR_OCF)*/)
-			{
-				m6800.tcsr &= ~TCSR_OCF;
-				MODIFIED_tcsr;
-			}
 			return m6800.output_compare.b.h;
 		case 0x0c:
-			if(0/*!(m6800.pending_tcsr&TCSR_OCF)*/)
-			{
-				m6800.tcsr &= ~TCSR_OCF;
-				MODIFIED_tcsr;
-			}
 			return m6800.output_compare.b.l;
 		case 0x0d:
 			if(!(m6800.pending_tcsr&TCSR_ICF))
@@ -2526,9 +2520,6 @@ WRITE_HANDLER( m6803_internal_registers_w )
 				else
 					cpu_writeport16(M6803_PORT2,(m6800.port2_data & m6800.port2_ddr)
 						| (cpu_readport16(M6803_PORT2) & (m6800.port2_ddr ^ 0xff)));
-
-				if (m6800.port2_ddr & 2)
-					logerror("CPU #%d PC %04x: warning - port 2 bit 1 set as output (OLVL) - not supported\n",cpu_getactivecpu(),cpu_get_pc());
 			}
 			break;
 		case 0x02:
@@ -2540,13 +2531,11 @@ WRITE_HANDLER( m6803_internal_registers_w )
 					| (cpu_readport16(M6803_PORT1) & (m6800.port1_ddr ^ 0xff)));
 			break;
 		case 0x03:
-			m6800.port2_data = data;
-			m6800.port2_ddr = data;
-			if(m6800.port2_ddr == 0xff)
-				cpu_writeport16(M6803_PORT2,m6800.port2_data);
-			else
-				cpu_writeport16(M6803_PORT2,(m6800.port2_data & m6800.port2_ddr)
-					| (cpu_readport16(M6803_PORT2) & (m6800.port2_ddr ^ 0xff)));
+			m6800.port2_data = (m6800.port2_data            & m6800.port2_ddr  & 0x02) | 
+							   (data                        & m6800.port2_ddr  & 0x1d) |
+							   (cpu_readport16(M6803_PORT2) & ~m6800.port2_ddr & 0x1d);
+				m6800.port2_data &= 0x1d;
+			cpu_writeport16(M6803_PORT2, m6800.port2_data);
 			break;
 		case 0x04:
 		case 0x05:
