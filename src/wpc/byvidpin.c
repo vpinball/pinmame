@@ -3,6 +3,22 @@
 /* MPU Board: MPU-133 (Equivalent of MPU-35 except for 1 diode change)
    VIDIOT Board: Handles Video/Joystick Switchs/Sound Board
 
+   Note from RGP:
+   
+		Bally video pins use an AS-2518-133 mpu.
+		I believe that some late games such as Grand Slam
+		may have also used the AS-2518-133 mpu.
+
+		This is the same as an  AS-2518-35  mpu except that
+		R113 which is fed from J4 by +43v is now CR52 a 1N4148
+		diode fed by 6.3vac from General Illumination.
+		To use the -133 as a -35 change CR52 to be
+		a 2k ohm 1/4 watt resistor or to use a -35 as a -133
+		change R113 from a resistor to a 1N4148 diode.
+		The cathode (ie: stripe end ) connects to capacitor C1
+		(it is the end away from J4).
+
+
    For simplicity sake, I just copied all code from by35 
    -but maybe someday we should merge common routines for easier maintenance
 
@@ -10,11 +26,25 @@
 	Baby Pac - Videot (1 x TMS9928 Video Chip)
 	Granny & Gators - Videot Deluxe (2 x TMS9928 Video Chip - Master/Slave configuration)
 
+  The status should be (~data) & 0x03, and read from cpu as status (not inverted).. 
+  but right now, it's better as data & 0x03, read as ~status, but only if we incorrectly use if(~locals.status_enable) which is always true
+
+  6800 vectors:
+  RES:  597d
+  NMI:  5950
+  SWI?: 597d
+  IRQ:  5955
+  FIRQ: 1f87
+
   6809 vectors:
-  RES: FFFE-F
-  NMI: FFFC-D
-  IRQ: FFF8-9
-  FIRQ: FFF6-7
+  RES:  FFFE-F (E016)
+  NMI:  FFFC-D (E17C) Used - Test Switch
+  SWI:  FFFA-B (801F) Not Used
+  IRQ:  FFF8-9 (801C) Used - VDP Triggered
+  FIRQ: FFF6-7 (8019) Used - PIA Triggered
+  SWI2: FFF4-5 (8016) Not Used
+  SWI3: FFF2-3 (8013) *Valid Code?
+  Rsvd: FFF0-1 (8010) *Valid Code?
 */
 #include <stdarg.h>
 #include <time.h>
@@ -40,7 +70,7 @@ static int cmdnum = 0;
 
 #define BYVP_VBLANKFREQ    60 /* VBLANK frequency */
 #define BYVP_IRQFREQ      150 /* IRQ (via PIA) frequency*/
-#define BYVP_ZCFREQ        85 /* Zero cross frequency */
+#define BYVP_ZCFREQ       120 /* Zero cross frequency */
 
 static struct {
   int p0_a, p1_a, p1_b, p0_ca2, p1_ca2, p0_cb2, p1_cb2;
@@ -68,7 +98,10 @@ static struct {
 static void byVP_exit(void);
 static void byVP_nvram(void *file, int write);
 
-static void piaIrq(int state) { cpu_set_irq_line(0, M6800_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE); }
+static void piaIrq(int state) { 
+	//mlogerror("piaIrq state=%x\n",state);
+	cpu_set_irq_line(0, M6800_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
+}
 
 static void byVP_lampStrobe(int board, int lampadr) {
   if (lampadr != 0x0f) {
@@ -96,9 +129,6 @@ static void byVP_lampStrobe(int board, int lampadr) {
 static WRITE_HANDLER(pia0a_w) {
   locals.p0_a = data;	//Controls Strobing
   byVP_lampStrobe(0,locals.lampadr1);
-  //Latch data to U2
-  locals.vidiot_u2_latch = data;
-  mlogerror("%x: Writing %x to vidiot u2\n",cpu_getpreviouspc(),data);
 }
 
 /* PIA1:A-W: Communications to Vidiot
@@ -108,11 +138,17 @@ static WRITE_HANDLER(pia0a_w) {
 (out) PA3:   Video Status Enable
 (out) PA4-7: N/A*/
 static WRITE_HANDLER(pia1a_w) {
+int tmp_input = locals.enable_input;
 locals.enable_output = (data>>1)&1;
 locals.enable_input  = (data>>2)&1;
 locals.status_enable = (data>>3)&1;
-mlogerror("Setting: e_out = %x, e_in = %x, s_enable = %x\n",
+logerror("%x: Setting: e_out = %x, e_in = %x, s_enable = %x\n",cpu_getpreviouspc(),
 		 locals.enable_output,locals.enable_input,locals.status_enable);
+//Latch data to U2 on positive edge
+if(locals.enable_input & ~tmp_input) {
+  locals.vidiot_u2_latch = data;
+  logerror("%x: Writing %x to vidiot u2\n",cpu_getpreviouspc(),data);
+}
 //Update Vidiot PIA
 pia_set_input_ca1(2, locals.enable_output);
 pia_set_input_ca2(2, locals.enable_input);
@@ -124,12 +160,16 @@ pia_set_input_ca2(2, locals.enable_input);
 (in)  PB0-7: Switch Returns/Rows and Cabinet Switch Returns/Rows
 (in)  PB0-7: Dip Returns */
 static READ_HANDLER(pia0b_r) {
-  if (locals.status_enable) {
-	    mlogerror("%x: MPU: reading vidiot status %x\n",cpu_getpreviouspc(),locals.vidiot_status&0x03);
+  //Enable Status must be low to return data..
+  if (!locals.status_enable) {
+	    logerror("%x: MPU: reading vidiot status %x\n",cpu_getpreviouspc(),locals.vidiot_status);
 		return locals.vidiot_status;
+		//return ~locals.vidiot_status;
+		
   }
-  if (~locals.enable_output) {
-	    mlogerror("%x: MPU: reading vidiot data %x\n",cpu_getpreviouspc(),locals.vidiot_u1_latch);
+  //Enable Output must be low to return data..
+  if (!locals.enable_output) {
+	    logerror("%x: MPU: reading vidiot data %x\n",cpu_getpreviouspc(),locals.vidiot_u1_latch);
 		return locals.vidiot_u1_latch;
   }
   if (locals.p0_a & 0x20) return core_getDip(0); // DIP#1-8
@@ -219,27 +259,14 @@ static READ_HANDLER(pia2b_r) {
 	return 0; 
 }
 
-/* PIA2:CA1 Read */
-// Read Enable Data Output to Main CPU
-static READ_HANDLER(pia2ca1_r) { 
-	mlogerror("%x:VID: Reading output enable=%x\n",cpu_getpreviouspc(),locals.enable_output);
-	return locals.enable_output;
-}
-
-/* PIA2:CA2 Read */
-// Read Main CPU Latch Data Input
-static READ_HANDLER(pia2ca2_r) { 
-	mlogerror("%x:VID: Reading input enable\n=%x",cpu_getpreviouspc(),locals.enable_input);
-	return locals.enable_input;   //Not Inverted 
-}
-
 /* PIA2:A Write */
 //PA0-3: Status Data Inverted! (Only Bits 0 & 1 Used however)
 //PA4-7: Video Switch Strobes (Only Bit 7 is used however)
 static WRITE_HANDLER(pia2a_w) {
-	locals.vidiot_status = ~(data & 0x03);
-	mlogerror("%x:VID: Setting status to %x\n",cpu_getpreviouspc(),data&0x03);
-	mlogerror("Setting Video Switch Strobe to %x\n",(data&0xf0)>>4);
+	locals.vidiot_status = (~data) & 0x03;
+	//locals.vidiot_status = data & 0x03;
+	logerror("%x:VID: Setting status to %4x\n",cpu_getpreviouspc(),locals.vidiot_status);
+	logerror("%x:Setting Video Switch Strobe to %x\n",cpu_getpreviouspc(),data>>4);
 }
 
 /* PIA2:B Write*/
@@ -268,7 +295,7 @@ static WRITE_HANDLER(pia2cb2_w) {
 
 //VIDEO PIA IRQ - TRIGGER VIDEO CPU (6809) FIRQ
 static void pia2Irq(int state) {
-  mlogerror("VID: PIA IRQ - MPU CAUSED FIRQ\n");
+  logerror("VID: PIA IRQ - MPU CAUSED FIRQ\n");
   cpu_set_irq_line(BYVP_VCPUNO, M6809_FIRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
@@ -355,7 +382,7 @@ static int byVP_irq(void) {
 static WRITE_HANDLER(byVP_soundCmd) {
 	snd_cmd_log(data);
 	if(data) {
-		printf("Sending..%x\n",data);
+		//printf("Sending..%x\n",data);
 		locals.snddata = data<<1;	//Data from PB0-3 is connected to P21-24 but port 2 starts at P20!
 		cmdnum = 0;
 		snd_cmd_log(locals.snddata);
@@ -413,12 +440,12 @@ static READ_HANDLER(sound_port1_r) {
 static READ_HANDLER(sound_port2_r) { 
 	cmdnum++;
 	if( cmdnum==1 || cmdnum==2 ) {
-		printf("cmd = %x: return = %x\n",cmdnum,locals.snddata &0x0f);
+		//printf("cmd = %x: return = %x\n",cmdnum,locals.snddata &0x0f);
 		return locals.snddata&0x0f;
 	}
 	else
 		{
-			printf("cmd = %x: return = %x\n",cmdnum,(locals.snddata &0xf0)>>4);
+			//printf("cmd = %x: return = %x\n",cmdnum,(locals.snddata &0xf0)>>4);
 			cmdnum = 0;
 			return (locals.snddata & 0xf0)>>4;
 		}
@@ -435,7 +462,7 @@ static WRITE_HANDLER(sound_port2_w) {
 	locals.diagnosticLedV = (data>>0)&1;
 	pia_set_input_cb2(2,locals.diagnosticLedV);
 	pia_set_input_b(2,data&0x1e);	//Keep only bits 1-4
-	logerror("sound port 2 write = %x\n",data);
+	//logerror("sound port 2 write = %x\n",data);
 }
 
 /***************************************************************************
@@ -455,18 +482,22 @@ static WRITE_HANDLER(sound_port2_w) {
 static int by_interrupt(void)
 {
     TMS9928A_interrupt();
-    return ignore_interrupt ();
+    //return ignore_interrupt ();
+
+	//The IRQ must be triggered constantly for the video cpu to read/write to the latch
+	//I'm not sure why doing it the way it was coded from MESS does not work.
+	return M6809_INT_IRQ;
 }
 
 static void by_vdp_interrupt (int state)
 {
 	static int last_state = 0;
 
-	logerror("vdp_int\n");
+	logerror("vdp_int: state = %x\n",state);
 
     /* only if it goes up */
 	if (state && !last_state) {
-		mlogerror("VDP Caused Vidiot CPU IRQ\n");
+		logerror("VDP Caused Vidiot CPU IRQ\n");
 		cpu_set_irq_line(BYVP_VCPUNO, M6809_IRQ_LINE, PULSE_LINE);
 	}
 	last_state = state;
@@ -474,11 +505,15 @@ static void by_vdp_interrupt (int state)
 
 //Video CPU Vertical Blank
 static int byVP_vvblank(void) {
+	static int ct=0;
+	if(keyboard_pressed_memory_repeat(KEYCODE_B,2))
+	{
+		ct = 0xf0;
+	}
 	if(keyboard_pressed_memory_repeat(KEYCODE_A,2))
 	{
-	static int ct=0;
 	locals.vidiot_u2_latch = ct++;
-	logerror("sending %x\n",ct);
+	mlogerror("sending %x\n",ct);
 	pia_set_input_ca2(2, 0);
 	pia_set_input_ca2(2, 1);
 	}
@@ -486,7 +521,7 @@ static int byVP_vvblank(void) {
 }
 
 static READ_HANDLER(vdp_r) {
-	logerror("vdp_r\n");
+	//logerror("vdp_r\n");
 	if(offset == 0)
 		return TMS9928A_vram_r(offset);
 	else
@@ -494,7 +529,7 @@ static READ_HANDLER(vdp_r) {
 }
 
 static WRITE_HANDLER(vdp_w) {
-	logerror("%x:vdp_w=%x\n",offset,data);
+	//logerror("%x:vdp_w=%x\n",offset,data);
 	if(offset==0)
 		TMS9928A_vram_w(offset,data);
 	else
@@ -540,13 +575,13 @@ static void by_vh_refresh (struct mame_bitmap *bmp, int full_refresh)
 static READ_HANDLER(misc_r)
 {
 	int data = locals.vidiot_u2_latch;
-	logerror("MISC_R: offset=%x, data=%x\n",offset,data);
+	logerror("%x: MISC_R: offset=%x, data=%x\n",cpu_getpreviouspc(),offset,data);
 	return data;
 }
 static WRITE_HANDLER(misc_w)
 {
 	locals.vidiot_u1_latch = data;
-	logerror("MISC_W: offset=%x, data=%x\n",offset,data);
+	logerror("%x: MISC_W: offset=%x, data=%x\n",cpu_getpreviouspc(),offset,data);
 }
 
 static int vidram[0xff];	
@@ -612,7 +647,7 @@ MEMORY_END
 /  Memory map for VIDEO CPU (Located on Vidiot Board) - G&G
 /---------------------------------------------------------*/
 static MEMORY_READ_START(byVP2_video_readmem)
-//	{ 0x0000, 0x1fff, misc_r },  
+	{ 0x0000, 0x1fff, misc_r },  
 	{ 0x0002, 0x0003, vdp_r },   /* U16 VDP*/
 	{ 0x0008, 0x000b, pia_2_r }, /* U7 PIA */
 	{ 0x2400, 0x2800, MRA_RAM }, /* U13&U14 1024x4 Byte Ram*/
@@ -620,7 +655,7 @@ static MEMORY_READ_START(byVP2_video_readmem)
 MEMORY_END
 
 static MEMORY_WRITE_START(byVP2_video_writemem)
-//	{ 0x0000, 0x1fff, misc_w },  
+	{ 0x0000, 0x1fff, misc_w },  
 	{ 0x0002, 0x0003, vdp_w },   /* U16 VDP*/
 	{ 0x0008, 0x000b, pia_2_w }, /* U7 PIA */
 	{ 0x2400, 0x2800, MWA_RAM }, /* U13&U14 1024x4 Byte Ram*/
