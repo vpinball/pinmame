@@ -1119,12 +1119,14 @@ void win_adjust_window_for_visible(int min_x, int max_x, int min_y, int max_y)
 			if (win_start_maximized)
 				win_toggle_maximize();
 
+#ifndef VPINMAME
 			// otherwise, just enforce the bounds
 			else
 				set_aligned_window_pos(win_video_window, NULL, non_maximized_bounds.left, non_maximized_bounds.top,
 						non_maximized_bounds.right - non_maximized_bounds.left,
 						non_maximized_bounds.bottom - non_maximized_bounds.top,
 						SWP_NOZORDER);
+#endif
 		}
 
 		// kludge to fix full screen mode for the non-ddraw case
