@@ -30,9 +30,6 @@ const struct GameDriver *test_drivers[] = { 0 };
 	#define INCLUDE_NEW_STERN 1
 #endif
 
-
-DRIVERNV(lotrsnd)
-
 DRIVERNV(st_game)       //Unknown game running on old Stern hardware
 
 // --------------------
