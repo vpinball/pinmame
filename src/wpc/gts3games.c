@@ -108,7 +108,7 @@ CORE_CLONEDEFNV(lca2,lca,"Lights, Camera, Action (rev.2)",1989,"Gottlieb",mGTS3S
 / Bell Ringer
 /-------------------------------------------------------------------*/
 INITGAME(bellring, ALPHA, FLIP_SW(FLIP_L), 3/*?*/, SNDBRD_NONE, 5)
-GTS3ROMSTART(bellring,	"gprom.bin",NO_DUMP)
+GTS3ROMSTARTX(bellring,	"gprom.bin",NO_DUMP)
 GTS3_ROMEND
 CORE_GAMEDEFNV(bellring,"Bell Ringer",1990,"Gottlieb",mGTS3,GAME_NO_SOUND)
 
@@ -156,7 +156,7 @@ CORE_GAMEDEFNV(tfight,"Title Fight",1990,"Gottlieb",mGTS3S,GAME_IMPERFECT_GRAPHI
 / Nudge It
 /-------------------------------------------------------------------*/
 INITGAME(nudgeit, ALPHA, FLIP_SW(FLIP_L), 3/*?*/, SNDBRD_NONE, 5)
-GTS3ROMSTART(nudgeit,	"gprom.bin",NO_DUMP)
+GTS3ROMSTARTX(nudgeit,	"gprom.bin",NO_DUMP)
 GTS3_ROMEND
 CORE_GAMEDEFNV(nudgeit,"Nudge It",1990,"Gottlieb",mGTS3,GAME_NO_SOUND)
 
@@ -174,7 +174,7 @@ CORE_GAMEDEFNV(carhop,"Car Hop",1991,"Gottlieb",mGTS3S,0)
 / Hoops
 /-------------------------------------------------------------------*/
 INITGAME(hoops, ALPHA, FLIP_SW(FLIP_L), 3/*?*/, SNDBRD_GTS3, 5)
-GTS3ROMSTART(hoops,	"gprom.bin",NO_DUMP)
+GTS3ROMSTARTX(hoops,	"gprom.bin",NO_DUMP)
 GTS3_ROMEND
 CORE_GAMEDEFNV(hoops,"Hoops",1991,"Gottlieb",mGTS3,GAME_NO_SOUND)
 
@@ -580,8 +580,8 @@ CORE_GAMEDEFNV(barbwire,"Barb Wire",1996,"Gottlieb",mGTS3DMDSA, 0)
 /-------------------------------------------------------------------*/
 INITGAME2(brooks, DMD, FLIP4243, 4/*?*/, SNDBRD_GTS3, 4)
 GTS3ROMSTART(brooks,	"gprom.bin", CRC(26cebf07) SHA1(14741e2d216528f176dc35ade856baffab0f99a0))
-GTS3_DMD512_ROMSTART(	"dsprom.bin",NO_DUMP)
-GTS3SOUND32512256(		"yrom1.bin",NO_DUMP,
+GTS3_DMD_ROMSTARTX(		"dsprom.bin",NO_DUMP)
+GTS3SOUNDX(				"yrom1.bin",NO_DUMP,
 						"drom1.bin",NO_DUMP,
 						"arom1.bin",NO_DUMP,
 						"arom2.bin",NO_DUMP)
