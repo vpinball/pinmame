@@ -14,8 +14,8 @@
 		SOUND:	 Chimes
 
    Rotation VIII:
-		CPU:     Z80 @ 1.1 MHz ?
-			INT: NMI @ 900Hz ?
+		CPU:     Z80 @ 1.65 MHz ?
+			INT: NMI @ 1350Hz ?
 		IO:      Z80 Ports
 		DISPLAY: 5 x 6 Digit 7-Segment panels
 		SOUND:	 ?
@@ -27,8 +27,8 @@
 #include "core.h"
 #include "midway.h"
 
-#define MIDWAY_VBLANKFREQ  60 /* VBLANK frequency in HZ */
-#define MIDWAY_NMIFREQ    900 /* NMI frequency in HZ - at this rate, solenoid test seems OK. */
+#define MIDWAY_VBLANKFREQ   60 /* VBLANK frequency in HZ */
+#define MIDWAY_NMIFREQ    1350 /* NMI frequency in HZ - at this rate, bumpers seems OK. */
 
 /*----------------
 /  Local variables
@@ -199,7 +199,7 @@ MEMORY_END
 
 MACHINE_DRIVER_START(MIDWAY)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CPU_ADD_TAG("mcpu", Z80, 1100000)
+  MDRV_CPU_ADD_TAG("mcpu", Z80, 1650000)
   MDRV_CPU_MEMORY(MIDWAY_readmem, MIDWAY_writemem)
   MDRV_CPU_PORTS(midway_readport,midway_writeport)
   MDRV_CPU_VBLANK_INT(MIDWAY_vblank, 1)
