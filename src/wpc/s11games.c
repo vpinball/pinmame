@@ -629,7 +629,11 @@ CORE_GAMEDEF(rvrbt, l3, "Riverboat Gambler (L-3)", 1990, "Williams", s11_mS11CS,
 /*--------------------
 / Bugs Bunny Birthday Ball 11/90
 /--------------------*/
-INITGAME(bbnny,GEN_S11C,s11_dispS11c,12,FLIP_SW(FLIP_L),3/*?*/)
+static core_tLCDLayout dispbbb[] = { \
+	{0,0,0,16,CORE_SEG16},{0,33,16,16,CORE_SEG16}, {0}
+};
+
+INITGAME(bbnny,GEN_S11C,dispbbb,12,FLIP_SW(FLIP_L),3/*?*/)
 S11_ROMSTART48(bbnny,l2,"bugs_u26.l2", 0xb4358920,
                         "bugs_u27.l2", 0x8ff29439)
 S11CS_SOUNDROM000(      "bugs_u4.l2",  0x04bc9aa5,
