@@ -50,6 +50,9 @@ struct pia6821
 	UINT8 irq_b1;
 	UINT8 irq_b2;
 	UINT8 irq_b_state;
+#ifdef MAME_DEBUG
+	UINT8 in_set; // which input ports are set
+#endif // MAME_DEBUG
 };
 
 
@@ -77,8 +80,14 @@ struct pia6821
 #define C2_OUTPUT(c)			(c & 0x20)
 #define C2_INPUT(c)				(!(c & 0x20))
 
-
-
+#ifdef MAME_DEBUG
+#  define PIA_IN_SET_A   0x01
+#  define PIA_IN_SET_CA1 0x02
+#  define PIA_IN_SET_CA2 0x04
+#  define PIA_IN_SET_B	 0x08
+#  define PIA_IN_SET_CB1 0x10
+#  define PIA_IN_SET_CB2 0x20
+#endif // MAME_DEBUG
 
 /******************* static variables *******************/
 
@@ -295,7 +304,17 @@ int pia_read(int which, int offset)
 			if (OUTPUT_SELECTED(p->ctl_a))
 			{
 				/* update the input */
-				if (p->intf->in_a_func) p->in_a = p->intf->in_a_func(0);
+				if (p->intf->in_a_func)
+					p->in_a = ((FPTR)(p->intf->in_a_func) <= 0x100) ?
+					            ((FPTR)(p->intf->in_a_func) - 1) :
+					            p->intf->in_a_func(0);
+#ifdef MAME_DEBUG
+				else if ((p->ddr_a ^ 0xff) && !(p->in_set & PIA_IN_SET_A)) {
+					logerror("PIA%d: Warning! no port A read handler. Assuming pins %02x not connected\n",
+					         which, p->ddr_a ^ 0xff);
+					p->in_a = 0xff; // not connected port A pins is Vcc
+				}
+#endif // MAME_DEBUG
 
 				/* combine input and output values */
 				val = (p->out_a & p->ddr_a) + (p->in_a & ~p->ddr_a);
@@ -338,7 +357,17 @@ int pia_read(int which, int offset)
 			if (OUTPUT_SELECTED(p->ctl_b))
 			{
 				/* update the input */
-				if (p->intf->in_b_func) p->in_b = p->intf->in_b_func(0);
+				if (p->intf->in_b_func)
+					p->in_b = ((FPTR)(p->intf->in_b_func) <= 0x100) ?
+					            ((FPTR)(p->intf->in_b_func) - 1) :
+					            p->intf->in_b_func(0);
+#ifdef MAME_DEBUG
+				else if ((p->ddr_b ^ 0xff) && !(p->in_set & PIA_IN_SET_B)) {
+					logerror("PIA%d: Error! no port B read handler. Three-state pins %02x are undefined\n",
+					         which, p->ddr_b ^ 0xff);
+					p->in_b = 0; // set to 0 to avoid problems with existing drivers
+				}
+#endif // MAME_DEBUG
 
 				/* combine input and output values */
 				val = (p->out_b & p->ddr_b) + (p->in_b & ~p->ddr_b);
@@ -362,8 +391,26 @@ int pia_read(int which, int offset)
 		case PIA_CTLA:
 
 			/* Update CA1 & CA2 if callback exists, these in turn may update IRQ's */
-			if (p->intf->in_ca1_func) pia_set_input_ca1(which, p->intf->in_ca1_func(0));
-			if (p->intf->in_ca2_func) pia_set_input_ca2(which, p->intf->in_ca2_func(0));
+			if (p->intf->in_ca1_func)
+				pia_set_input_ca1(which, ((FPTR)(p->intf->in_ca1_func) <= 0x100) ?
+				                           ((FPTR)(p->intf->in_ca1_func) - 1) :
+				                           p->intf->in_ca1_func(0));
+#ifdef MAME_DEBUG
+			else if (!(p->in_set & PIA_IN_SET_CA1)) {
+				logerror("PIA%d: Warning! no CA1 read handler. Assuming pin not connected\n",which);
+				pia_set_input_ca1(which, 1); // not connected pin is Vcc
+			}
+#endif // MAME_DEBUG
+			if (p->intf->in_ca2_func)
+				pia_set_input_ca2(which, ((FPTR)(p->intf->in_ca2_func) <= 0x100) ?
+				                           ((FPTR)(p->intf->in_ca2_func) - 1) :
+				                           p->intf->in_ca2_func(0));
+#ifdef MAME_DEBUG
+			else if (C2_INPUT(p->ctl_a) && !(p->in_set & PIA_IN_SET_CA2)) {
+				logerror("PIA%d: Warning! no CA2 read handler. Assuming pin not connected\n",which);
+				pia_set_input_ca2(which, 1); // not connected pin is Vcc
+			}
+#endif // MAME_DEBUG
 
 			/* read control register */
 			val = p->ctl_a;
@@ -379,8 +426,28 @@ int pia_read(int which, int offset)
 		case PIA_CTLB:
 
 			/* Update CB1 & CB2 if callback exists, these in turn may update IRQ's */
-			if (p->intf->in_cb1_func) pia_set_input_cb1(which, p->intf->in_cb1_func(0));
-			if (p->intf->in_cb2_func) pia_set_input_cb2(which, p->intf->in_cb2_func(0));
+			if (p->intf->in_cb1_func)
+				pia_set_input_cb1(which, ((FPTR)(p->intf->in_cb1_func) <= 0x100) ?
+				                           ((FPTR)(p->intf->in_cb1_func) - 1) :
+				                           p->intf->in_cb1_func(0));
+#ifdef MAME_DEBUG
+			else if (!(p->in_set & PIA_IN_SET_CB1)) {
+				logerror("PIA%d: Error! no CB1 read handler. Three-state pin is undefined\n",which);
+				pia_set_input_cb1(which, 0); // floating but set to 0 to avoid problems with existing drivers
+				p->in_set &= ~PIA_IN_SET_CB1;
+			}
+#endif // MAME_DEBUG
+			if (p->intf->in_cb2_func)
+				pia_set_input_cb2(which, ((FPTR)(p->intf->in_cb2_func) <= 0x100) ?
+				                           ((FPTR)(p->intf->in_cb2_func) - 1) :
+				                           p->intf->in_cb2_func(0));
+#ifdef MAME_DEBUG
+			else if (C2_INPUT(p->ctl_b) && !(p->in_set & PIA_IN_SET_CB2)) {
+				logerror("PIA%d: Error! PIA%d no CB2 read handler. Three-state pin is undefined\n",which);
+				pia_set_input_cb2(which, 0); // not connected pin is floating
+				p->in_set &= ~PIA_IN_SET_CB2;
+			}
+#endif // MAME_DEBUG
 
 			/* read control register */
 			val = p->ctl_b;
@@ -563,6 +630,9 @@ void pia_set_input_a(int which, int data)
 
 	/* set the input, what could be easier? */
 	p->in_a = data;
+#ifdef MAME_DEBUG
+	p->in_set |= PIA_IN_SET_A;
+#endif // MAME_DEBUG
 }
 
 
@@ -603,6 +673,9 @@ void pia_set_input_ca1(int which, int data)
 
 	/* set the new value for CA1 */
 	p->in_ca1 = data;
+#ifdef MAME_DEBUG
+	p->in_set |= PIA_IN_SET_CA1;
+#endif // MAME_DEBUG
 }
 
 
@@ -636,6 +709,9 @@ void pia_set_input_ca2(int which, int data)
 
 	/* set the new value for CA2 */
 	p->in_ca2 = data;
+#ifdef MAME_DEBUG
+	p->in_set |= PIA_IN_SET_CA2;
+#endif // MAME_DEBUG
 }
 
 
@@ -648,6 +724,9 @@ void pia_set_input_b(int which, int data)
 
 	/* set the input, what could be easier? */
 	p->in_b = data;
+#ifdef MAME_DEBUG
+    p->in_set |= PIA_IN_SET_B;
+#endif // MAME_DEBUG
 }
 
 
@@ -692,6 +771,9 @@ void pia_set_input_cb1(int which, int data)
 
 	/* set the new value for CB1 */
 	p->in_cb1 = data;
+#ifdef MAME_DEBUG
+	p->in_set |= PIA_IN_SET_CB1;
+#endif // MAME_DEBUG
 }
 
 
@@ -725,6 +807,9 @@ void pia_set_input_cb2(int which, int data)
 
 	/* set the new value for CA2 */
 	p->in_cb2 = data;
+#ifdef MAME_DEBUG
+	p->in_set |= PIA_IN_SET_CB2;
+#endif // MAME_DEBUG
 }
 
 
