@@ -203,7 +203,51 @@ S11XS_SOUNDROM88(       "elvi_u21.l1", CRC(68d44545) SHA1(8c3ea8521a44b1539cd148
 S11CS_SOUNDROM888(      "elvi_u4.l1",  CRC(b5afa4db) SHA1(59b72dac5301a4befa01b93da5162478682e6021),
                         "elvi_u19.l1", CRC(806bc350) SHA1(d170aef11001096da9f2f7240726662009e26f5f),
                         "elvi_u20.l1", CRC(3d92d5fd) SHA1(834d40a59be57057103d1d8ab48fdaaf7dc5eda2))
+S11_ROMEND
 
+S11_ROMSTART48(eatpm,l1,"u26-la1.rom", CRC(7a4873e6) SHA1(8e37ba2e428d83f6a84447761d99af12f5677c1d),
+                        "u27-la1.rom", CRC(d1c80549) SHA1(ab7dd88c460102e7db095a2df58c567ba43d81af))
+S11XS_SOUNDROM88(       "elvi_u21.l1", CRC(68d44545) SHA1(8c3ea8521a44b1539cd148f142cca14184174ba7),
+                        "elvi_u22.l1", CRC(e525b4fe) SHA1(be728ec33a00b93c3346428a9248b588460af945))
+S11CS_SOUNDROM888(      "elvi_u4.l1",  CRC(b5afa4db) SHA1(59b72dac5301a4befa01b93da5162478682e6021),
+                        "elvi_u19.l1", CRC(806bc350) SHA1(d170aef11001096da9f2f7240726662009e26f5f),
+                        "elvi_u20.l1", CRC(3d92d5fd) SHA1(834d40a59be57057103d1d8ab48fdaaf7dc5eda2))
+S11_ROMEND
+
+S11_ROMSTART48(eatpm,l2,"u26-la2.rom", CRC(c4dc967d) SHA1(e12d06282176d231ffa0e2895499ebd8dd8e6e4f),
+                        "u27-la2.rom", CRC(01e7aef5) SHA1(82c07635285ff9efb584043601ff5d811a1ab28b))
+S11XS_SOUNDROM88(       "elvi_u21.l1", CRC(68d44545) SHA1(8c3ea8521a44b1539cd148f142cca14184174ba7),
+                        "elvi_u22.l1", CRC(e525b4fe) SHA1(be728ec33a00b93c3346428a9248b588460af945))
+S11CS_SOUNDROM888(      "elvi_u4.l1",  CRC(b5afa4db) SHA1(59b72dac5301a4befa01b93da5162478682e6021),
+                        "elvi_u19.l1", CRC(806bc350) SHA1(d170aef11001096da9f2f7240726662009e26f5f),
+                        "elvi_u20.l1", CRC(3d92d5fd) SHA1(834d40a59be57057103d1d8ab48fdaaf7dc5eda2))
+S11_ROMEND
+
+S11_ROMSTART48(eatpm,4g,"u26-lg4.rom", CRC(5e196382) SHA1(e948993ae100ab3d7e1b771f4ce22e3faaad84b4),
+                        "u27-lg4.rom", CRC(3614f3e2) SHA1(3143fef8ab91ad357803d1e98b8ee953e6a194ef))
+S11XS_SOUNDROM88(       "elvi_u21.l1", CRC(68d44545) SHA1(8c3ea8521a44b1539cd148f142cca14184174ba7),
+                        "elvi_u22.l1", CRC(e525b4fe) SHA1(be728ec33a00b93c3346428a9248b588460af945))
+S11CS_SOUNDROM888(      "elvi_u4.l1",  CRC(b5afa4db) SHA1(59b72dac5301a4befa01b93da5162478682e6021),
+                        "elvi_u19.l1", CRC(806bc350) SHA1(d170aef11001096da9f2f7240726662009e26f5f),
+                        "elvi_u20.l1", CRC(3d92d5fd) SHA1(834d40a59be57057103d1d8ab48fdaaf7dc5eda2))
+S11_ROMEND
+
+S11_ROMSTART48(eatpm,4u,"u26-lu4.rom", CRC(504366c8) SHA1(1ca667208d4dcc8a09e35cad5f57798902611d7e),
+                        "u27-lu4.rom", CRC(3614f3e2) SHA1(3143fef8ab91ad357803d1e98b8ee953e6a194ef))
+S11XS_SOUNDROM88(       "elvi_u21.l1", CRC(68d44545) SHA1(8c3ea8521a44b1539cd148f142cca14184174ba7),
+                        "elvi_u22.l1", CRC(e525b4fe) SHA1(be728ec33a00b93c3346428a9248b588460af945))
+S11CS_SOUNDROM888(      "elvi_u4.l1",  CRC(b5afa4db) SHA1(59b72dac5301a4befa01b93da5162478682e6021),
+                        "elvi_u19.l1", CRC(806bc350) SHA1(d170aef11001096da9f2f7240726662009e26f5f),
+                        "elvi_u20.l1", CRC(3d92d5fd) SHA1(834d40a59be57057103d1d8ab48fdaaf7dc5eda2))
+S11_ROMEND
+
+S11_ROMSTART48(eatpm,p7,"u26-pa7.rom", CRC(0bcc6639) SHA1(016685f6f0ed144e673846c5d44c81baa273c949),
+                        "u27-pa7.rom", CRC(c9c2bbf0) SHA1(9d23ccd26dc103edee303759f10b11ce0381223b))
+S11XS_SOUNDROM88(       "elvi_u21.l1", CRC(68d44545) SHA1(8c3ea8521a44b1539cd148f142cca14184174ba7),
+                        "elvi_u22.l1", CRC(e525b4fe) SHA1(be728ec33a00b93c3346428a9248b588460af945))
+S11CS_SOUNDROM888(      "elvi_u4.l1",  CRC(b5afa4db) SHA1(59b72dac5301a4befa01b93da5162478682e6021),
+                        "elvi_u19.l1", CRC(806bc350) SHA1(d170aef11001096da9f2f7240726662009e26f5f),
+                        "elvi_u20.l1", CRC(3d92d5fd) SHA1(834d40a59be57057103d1d8ab48fdaaf7dc5eda2))
 S11_ROMEND
 
 /*--------------
@@ -216,6 +260,11 @@ static MACHINE_DRIVER_START(elvira)
 MACHINE_DRIVER_END
 
 CORE_GAMEDEF(eatpm, l4, "Elvira and the Party Monsters (L-4)", 1989, "Bally", elvira, 0)
+CORE_CLONEDEF(eatpm,l1,l4, "Elvira and the Party Monsters (L-1)", 1989, "Bally", elvira, 0)
+CORE_CLONEDEF(eatpm,l2,l4, "Elvira and the Party Monsters (L-2)", 1989, "Bally", elvira, 0)
+CORE_CLONEDEF(eatpm,4g,l4, "Elvira and the Party Monsters (L-4) German", 1989, "Bally", elvira, 0)
+CORE_CLONEDEF(eatpm,4u,l4, "Elvira and the Party Monsters (L-4) European", 1989, "Bally", elvira, 0)
+CORE_CLONEDEF(eatpm,p7,l4, "Elvira and the Party Monsters (PA-7)", 1989, "Bally", elvira, 0)
 
 /*-----------------------
 / Simulation Definitions

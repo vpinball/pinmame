@@ -763,7 +763,12 @@ DRIVER(tsptr,l3)        //S11-2630: 04/89 B Transporter the Rescue
                         //S11:      05/89 W Pool
 DRIVER(polic,l3)        //S11-573:  08/89 W Police Force (LA-3)
 DRIVER(polic,l4)        //S11-573:  08/89 W Police Force (LA-4)
-DRIVER(eatpm,l4)        //S11-782:  10/89 B Elvira and the Party Monsters
+DRIVER(eatpm,l4)        //S11-782:  10/89 B Elvira and the Party Monsters (L-4)
+DRIVER(eatpm,l1)        //S11-782:  10/89 B Elvira and the Party Monsters (L-1)
+DRIVER(eatpm,l2)        //S11-782:  10/89 B Elvira and the Party Monsters (L-2)
+DRIVER(eatpm,4u)        //S11-782:  10/89 B Elvira and the Party Monsters (L-4 European)
+DRIVER(eatpm,4g)        //S11-782:  10/89 B Elvira and the Party Monsters (L-4 German)
+DRIVER(eatpm,p7)        //S11-782:  10/89 B Elvira and the Party Monsters (PA-7)
 DRIVER(bcats,l5)        //S11-575:  11/89 W Bad Cats
 DRIVER(rvrbt,l3)        //S11-1966: 11/89 W Riverboat Gambler
 DRIVER(mousn,l4)        //S11-1635: 12/89 B Mousin' Around!
