@@ -85,11 +85,18 @@ static SWITCH_UPDATE(taito) {
 
 static INTERRUPT_GEN(taito_irq) {
 	// logerror("irq:\n");
-	cpu_set_irq_line(TAITO_CPU, 0, PULSE_LINE);
+	cpu_set_irq_line(TAITO_CPU, 0, ASSERT_LINE);
+}
+
+static int irq_callback(int irqline)
+{
+  cpu_set_irq_line(TAITO_CPU, 0, CLEAR_LINE);
+  return 0xff;
 }
 
 static MACHINE_INIT(taito) {
   memset(&locals, 0, sizeof(locals));
+  cpu_set_irq_callback(TAITO_CPU, irq_callback);
 
   locals.vblankCount = 1;
 }
@@ -157,8 +164,7 @@ MACHINE_DRIVER_END
 / Load/Save static ram
 /-------------------------------------------------*/
 static NVRAM_HANDLER(taito) {
-	memset(memory_region(TAITO_MEMREG_CPU)+0x4000, 0xff, 0x100);
-//  core_nvram(file, read_or_write, memory_region(TAITO_MEMREG_CPU)+0x4000, 0x100, 0xff);
+  core_nvram(file, read_or_write, memory_region(TAITO_MEMREG_CPU)+0x4000, 0x100, 0xff);
 }
 #if 0
 static core_tData taitoData = {
