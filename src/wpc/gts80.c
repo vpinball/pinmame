@@ -22,7 +22,7 @@
 
 #define GTS80_VBLANKFREQ      60 /* VBLANK frequency */
 
-#define GTS80_CPUNO	0
+#define GTS80S_SCPU		1
 #define GTS80SS_SCPU	1
 
 static void GTS80_init(void);
@@ -98,7 +98,7 @@ static struct {
 } GTS80locals;
 
 static void GTS80_irq(int state) {
-  cpu_set_irq_line(GTS80_CPUNO, M6502_INT_IRQ, state ? ASSERT_LINE : CLEAR_LINE);
+  cpu_set_irq_line(GTS80_CPU, M6502_INT_IRQ, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
 static int GTS80_vblank(void) {
@@ -772,7 +772,7 @@ static void GTS80_init(void) {
   if (((Machine->gamedrv->flags & GAME_NO_SOUND)==0) && Machine->sample_rate)
   {
 	  if ( core_gameData->gen & (GEN_GTS80S|GEN_GTS80B) )
-		GTS80S_init(GTS80SS_SCPU);
+		GTS80S_init(GTS80S_SCPU);
 	  else if ( core_gameData->gen & GEN_GTS80SS )
 		GTS80SS_init(GTS80SS_SCPU);
 	  else if ( core_gameData->gen & (GEN_GTS80B2K|GEN_GTS80B4K) )
@@ -788,7 +788,9 @@ static void GTS80_exit(void) {
   /* Sound Enabled? */
   if (((Machine->gamedrv->flags & GAME_NO_SOUND)==0) && Machine->sample_rate)
   {
-	  if ( core_gameData->gen & GEN_GTS80SS )
+	  if ( core_gameData->gen & (GEN_GTS80S|GEN_GTS80B) )
+		GTS80S_exit();
+	  else if ( core_gameData->gen & GEN_GTS80SS )
 		GTS80SS_exit();
 	  else if ( core_gameData->gen & (GEN_GTS80B2K|GEN_GTS80B4K) )
 	    GTS80BS_exit();
