@@ -27,7 +27,7 @@ static READ_HANDLER(snd300_r) {
 static WRITE_HANDLER(snd300_w) {
   snddatst300.ax[offset]=data;
   sndbrd_0_data_w(0,offset);
-} 
+}
 
 static WRITE_HANDLER(snd300_wex) {
   sndbrd_0_ctrl_w(0,data);
@@ -38,9 +38,6 @@ static WRITE_HANDLER(snd300_wex) {
 #define BY35_PIA1 1
 
 #define BY35_VBLANKFREQ    60 /* VBLANK frequency */
-#define BY35_IRQFREQ      317 /* IRQ (via PIA) frequency */
-#define BY35_6802IRQFREQ  431 /* IRQ (via PIA) frequency for games using 6802 cpu */
-#define BY35_ZCFREQ       100 /* Zero cross frequency */
 
 #define BY35_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
 #define BY35_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
@@ -181,8 +178,8 @@ static WRITE_HANDLER(pia0cb2_w) {
   int sb = core_gameData->hw.soundBoard;		// ok
   if (locals.cb20 & ~data) locals.lampadr1 = locals.a0 & 0x0f;
   locals.cb20 = data;
-// 
-  
+//
+
    if (sb == SNDBRD_ST300V) {
       if (snddatst300.sampleisplaying) {
    	  pia_set_input_cb1(BY35_PIA1,0); }
@@ -190,7 +187,7 @@ static WRITE_HANDLER(pia0cb2_w) {
    	  pia_set_input_cb1(BY35_PIA1,data);}
    }
 }
-   
+
 /* PIA1:CA2-W Lamp Strobe #2 */
 static WRITE_HANDLER(pia1ca2_w) {
   int sb = core_gameData->hw.soundBoard;		// ok
@@ -202,7 +199,7 @@ static WRITE_HANDLER(pia1ca2_w) {
   if (locals.hw & BY35HW_SCTRL) sndbrd_0_ctrl_w(0, data);
   if ((sb == SNDBRD_ST300V) && (data)) {
     sndbrd_1_ctrl_w(0, locals.a0); // ok
-  }  
+  }
   locals.ca21 = locals.diagnosticLed = data;
 }
 
@@ -569,14 +566,14 @@ MACHINE_DRIVER_START(by35)
   MDRV_CPU_ADD_TAG("mcpu", M6800, 500000)
   MDRV_CPU_MEMORY(by35_readmem, by35_writemem)
   MDRV_CPU_VBLANK_INT(by35_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(by35_irq, BY35_IRQFREQ) // the routine does the signal alternation!
+  MDRV_CPU_PERIODIC_INT(by35_irq, BY35_IRQFREQ)
   MDRV_NVRAM_HANDLER(by35)
   MDRV_DIPS(32)
   MDRV_SWITCH_UPDATE(by35)
   MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_TIMER_ADD(by35_zeroCross,BY35_ZCFREQ*2)
 MACHINE_DRIVER_END
-//  MDRV_TIMER_ADD(by35_zeroCross,BY35_ZCFREQ*2)
+
 MACHINE_DRIVER_START(byProto)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(by35Proto,by35,NULL)
@@ -588,7 +585,7 @@ MACHINE_DRIVER_START(byProto)
   MDRV_DIPS(32)
   MDRV_SWITCH_UPDATE(by35)
   MDRV_DIAGNOSTIC_LEDH(1)
-  MDRV_TIMER_ADD(by35p_zeroCross, BY35_ZCFREQ)
+  MDRV_TIMER_ADD(by35p_zeroCross, 120) // won't work with 100Hz, ie. not in Europe!
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(by35_32S)
@@ -620,7 +617,7 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(by6802_61S)
   MDRV_IMPORT_FROM(by35)
   MDRV_CPU_REPLACE("mcpu",M6802, 375000)
-  MDRV_CPU_PERIODIC_INT(by35_irq, BY35_6802IRQFREQ*2)
+  MDRV_CPU_PERIODIC_INT(by35_irq, BY35_6802IRQFREQ)
   MDRV_IMPORT_FROM(by61)
 MACHINE_DRIVER_END
 #endif
@@ -628,7 +625,7 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(by6802_45S)
   MDRV_IMPORT_FROM(by35)
   MDRV_CPU_REPLACE("mcpu",M6802, 375000)
-  MDRV_CPU_PERIODIC_INT(by35_irq, BY35_6802IRQFREQ*2)
+  MDRV_CPU_PERIODIC_INT(by35_irq, BY35_6802IRQFREQ)
   MDRV_IMPORT_FROM(by45)
 MACHINE_DRIVER_END
 
