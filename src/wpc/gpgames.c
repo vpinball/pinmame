@@ -278,12 +278,12 @@ CORE_GAMEDEFNV(ladyshot,"Lady Sharpshooter",1985,"Game Plan",mGP2SM,SOUNDFLAG)
 /*-------------------------------------------------------------------
 / Andromeda (September 1985) - Model #850
 /-------------------------------------------------------------------*/
-INITGAME(andromed, 0,dispGP_BDU2,FLIP_SW(FLIP_L),SNDBRD_GPMSU1,0)
+INITGAME(andromed, 0,dispGP_BDU2,FLIP_SW(FLIP_L),SNDBRD_GPMSU3,0)
 GP_ROMSTART00(andromed,	"850.a",CRC(67ed03ee) SHA1(efe7c495766ffb73545a77ab24f02925ac0395f1),
 						"850.b",CRC(37c244e8) SHA1(5cef0a1a6f2c34f2d01bdd12ce11da40c8be4296))
 GP_SOUNDROM8("850.snd",CRC(18e084a6) SHA1(56efbabe60305f168ca479295577bff7f3a4dace))
 GP_ROMEND
-CORE_GAMEDEFNV(andromed,"Andromeda",1985,"Game Plan",mGP2SM,SOUNDFLAG)
+CORE_GAMEDEFNV(andromed,"Andromeda",1985,"Game Plan",mGP2SM3,0)
 
 /*-------------------------------------------------------------------
 / Cyclopes (November 1985) - Model #800

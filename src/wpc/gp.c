@@ -132,9 +132,6 @@ static INTERRUPT_GEN(GP_vblank) {
     memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
     memcpy(locals.segments, locals.pseg, sizeof(locals.segments));
     memset(locals.pseg,0,sizeof(locals.pseg));
-    /*update leds*/
-    coreGlobals.diagnosticLed = locals.diagnosticLed;
-    locals.diagnosticLed = 0;
   }
   core_updateSw(core_getSol(16));
 }
@@ -322,7 +319,7 @@ static WRITE_HANDLER(ppi0_pc_w) {
 	int col = data & 0x07;			//Display column in bits 0-2
 	//Active Display Digit Select not changed when value is 111 (0x07).
 	if (col < 0x07) locals.disp_col = 7-col;
-	locals.diagnosticLed = (data>>3)&1;
+	coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 0x02) | ((data>>3) & 1);
 	//Display Enabled only when this value is 0
 	locals.disp_enable = !((data>>4)&1);
 
@@ -421,7 +418,6 @@ static void GP_zeroCross(int data) {
 static void GP_common_init(void) {
   /* init sound */
   sndbrd_0_init(core_gameData->hw.soundBoard, GP_SCPUNO, memory_region(GP_MEMREG_SCPU), NULL, NULL);
-
   memset(&locals, 0, sizeof(locals));
 
   /* init PPI */
@@ -521,4 +517,11 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(GP2SM)
   MDRV_IMPORT_FROM(GP2)
   MDRV_IMPORT_FROM(gpMSU1)
+  MDRV_DIAGNOSTIC_LEDH(2)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(GP2SM3)
+  MDRV_IMPORT_FROM(GP2)
+  MDRV_IMPORT_FROM(gpMSU3)
+  MDRV_DIAGNOSTIC_LEDH(2)
 MACHINE_DRIVER_END

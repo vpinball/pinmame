@@ -27,11 +27,11 @@ void sndbrd_init(int brdNo, int brdType, int cpuNo, UINT8 *romRegion,
   struct intfData *i = &intf[brdNo];
   struct sndbrdData brdData;
 #if HAS_SAMPLES
-  if ((brdType != SNDBRD_NONE) && 
-      ((b->flags & SNDBRD_NOTSOUND) || 
+  if ((brdType != SNDBRD_NONE) &&
+      ((b->flags & SNDBRD_NOTSOUND) ||
        (Machine->drv->sound[0].sound_type && (Machine->drv->sound[0].sound_type != SOUND_SAMPLES))))
 #else // HAS_SAMPLES
-  if ((brdType != SNDBRD_NONE) && 
+  if ((brdType != SNDBRD_NONE) &&
       ((b->flags & SNDBRD_NOTSOUND) || Machine->drv->sound[0].sound_type))
 #endif // HAS_SAMPLES
   {
@@ -211,6 +211,7 @@ const struct sndbrdIntf NULLIntf = { 0 }; // remove when all boards below works.
   SNDBRDINTF(gpSSU1)
   SNDBRDINTF(gpSSU2)
   SNDBRDINTF(gpMSU1)
+  SNDBRDINTF(gpMSU3)
   SNDBRDINTF(alvgs)
   SNDBRDINTF(alvgdmd)
   SNDBRDINTF(capcoms)
