@@ -580,11 +580,17 @@ void hash_data_print(const char* data, unsigned int functions, char* buffer)
 			for (j = 0; temp[j]; j++)
 				temp[j] = toupper(temp[j]);
 			strcat(buffer, temp);
+#ifdef PINMAME
+			strcat(buffer, ":");
+#else
 			strcat(buffer, "(");
+#endif /* PINMAME */
             
 			hash_data_extract_printable_checksum(data, func, temp);
 			strcat(buffer, temp);
+#ifndef PINMAME
 			strcat(buffer, ")");
+#endif /* PINMAME */
 		}	
 	}
 }
