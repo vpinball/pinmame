@@ -17,7 +17,7 @@
 #include "driver.h"
 #include "crtc6845.h"
 
-#if VERBOSE
+#ifdef VERBOSE
 #define LOG(x)	logerror x
 #else
 #define LOG(x)
