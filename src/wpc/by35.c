@@ -38,10 +38,9 @@ static WRITE_HANDLER(snd300_wex) {
 #define BY35_PIA1 1
 
 #define BY35_VBLANKFREQ    60 /* VBLANK frequency */
-// #define BY35_IRQFREQ      150 /* IRQ (via PIA) frequency*/
-#define BY35_IRQFREQ      320 /* IRQ (via PIA) frequency*/
-// #define BY35_ZCFREQ       85*2 /* Zero cross frequency */
-#define BY35_ZCFREQ       120 /* Zero cross frequency */ 
+#define BY35_IRQFREQ      316 /* IRQ (via PIA) frequency*/
+#define BY35_ZCFREQ       120 /* Zero cross frequency */
+
 #define BY35_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
 #define BY35_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
 #define BY35_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKS */
@@ -80,7 +79,8 @@ static void by35_dispStrobe(int mask) {
   int digit = locals.a1 & 0xfe;
   int ii,jj;
 
-  if (locals.hw & BY35HW_SOUNDE)
+  /* This handles O. Kaegi's 7-digit mod wiring */
+  if (locals.hw & BY35HW_SOUNDE && !(core_gameData->hw.gameSpecific1 & BY35GD_PHASE))
     digit = (digit & 0xf0) | ((digit & 0x0c) == 0x0c ? 0x02 : (digit & 0x0d));
 
   for (ii = 0; digit; ii++, digit>>=1)
@@ -90,6 +90,14 @@ static void by35_dispStrobe(int mask) {
         if (dispMask & 0x01)
           locals.segments[jj*8+ii].w |= locals.pseg[jj*8+ii].w = locals.bcd2seg[locals.bcd[jj] & 0x0f];
     }
+
+  /* This handles the fake zero for Nuova Bell games */
+  if (core_gameData->hw.gameSpecific1 & BY35GD_FAKEZERO) {
+	if (locals.segments[7].w) locals.segments[8].w = locals.pseg[8].w = locals.bcd2seg[0];
+	if (locals.segments[15].w) locals.segments[16].w = locals.pseg[16].w = locals.bcd2seg[0];
+	if (locals.segments[23].w) locals.segments[24].w = locals.pseg[24].w = locals.bcd2seg[0];
+	if (locals.segments[31].w) locals.segments[32].w = locals.pseg[32].w = locals.bcd2seg[0];
+  }
 }
 
 static void by35_lampStrobe(int board, int lampadr) {
@@ -628,12 +636,12 @@ MACHINE_DRIVER_START(byProto)
   MDRV_CPU_ADD_TAG("mcpu", M6800, 560000)
   MDRV_CPU_MEMORY(by35_readmem, by35_writemem)
   MDRV_CPU_VBLANK_INT(by35_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(byProto_irq, 316)
+  MDRV_CPU_PERIODIC_INT(byProto_irq, BY35_IRQFREQ)
   MDRV_NVRAM_HANDLER(by35)
   MDRV_DIPS(32)
   MDRV_SWITCH_UPDATE(by35)
   MDRV_DIAGNOSTIC_LEDH(1)
-  MDRV_TIMER_ADD(by35p_zeroCross, 120)
+  MDRV_TIMER_ADD(by35p_zeroCross, BY35_ZCFREQ)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(by35_32S)
