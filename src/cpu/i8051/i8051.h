@@ -70,9 +70,9 @@ enum {
 #if (HAS_I8052)
  #define		T2CON	0xc8
  #define		RCAP2L	0xca
- #define		RCAP2H	0xca
- #define		TL2		0xca
- #define		TH2		0xca
+ #define		RCAP2H	0xcb
+ #define		TL2		0xcc
+ #define		TH2		0xcd
 #endif
 #define		PSW		0xd0
 #define		ACC		0xe0
