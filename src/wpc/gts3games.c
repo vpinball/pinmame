@@ -173,6 +173,7 @@ GTS3SOUND32128(			"yrom1.bin",0x4554ed0d,
 						"drom1.bin",0x78c099e1,
 						"arom1.bin",0xc890475f,
 						"arom2.bin",0xaba8fd98)
+						
 GTS3_ROMEND
 CORE_GAMEDEFNV(cactjack,"Cactus Jack",1991,"Gottlieb",mGTS3S,0)
 
