@@ -1,3 +1,45 @@
+#ifdef PINMAME
+/**********************************************************************
+
+        Motorola 6845 CRT Controller interface and emulation
+
+        This function emulates the functionality of a single
+        crtc6845.
+
+	** REWRITTEN by Steve Ellenoff for multi-chip support (11/16/2003)
+
+**********************************************************************/
+
+#define MAX_6845 2
+
+void crtc6845_init(int chipnum);
+
+/*Direct handlers*/
+READ_HANDLER( crtc6845_register_r );
+WRITE_HANDLER( crtc6845_address_w );
+WRITE_HANDLER( crtc6845_register_w );
+
+//Return current video start address
+int crtc6845_start_address_r(offset);
+
+/*Convenience handlers*/
+READ_HANDLER( crtc6845_register_0_r );
+WRITE_HANDLER( crtc6845_address_0_w );
+WRITE_HANDLER( crtc6845_register_0_w );
+READ_HANDLER( crtc6845_register_1_r );
+WRITE_HANDLER( crtc6845_address_1_w );
+WRITE_HANDLER( crtc6845_register_1_w );
+
+
+
+
+
+
+
+#else
+
+//ORIGINAL MAME CODE HERE-
+
 /**********************************************************************
 
         Motorola 6845 CRT Controller interface and emulation
@@ -50,3 +92,5 @@
 READ_HANDLER( crtc6845_register_r );
 WRITE_HANDLER( crtc6845_address_w );
 WRITE_HANDLER( crtc6845_register_w );
+
+#endif
