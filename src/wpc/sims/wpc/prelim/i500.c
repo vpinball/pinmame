@@ -301,7 +301,7 @@ static sim_tSimData i500SimData = {
 / Game Data Information
 /----------------------*/
 static core_tGameData i500GameData = {
-  GEN_WPCSECURITY, NULL,
+  GEN_WPCSECURITY, wpc_dispDMD,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_UR),
     0,0,0,0,0,0,0,

@@ -486,7 +486,7 @@ static sim_tSimData giSimData = {
 / Game Data Information
 /----------------------*/
 static core_tGameData giGameData = {
-  GEN_WPCDMD, NULL,
+  GEN_WPCDMD, wpc_dispDMD,
   {
     FLIP_SWNO(12,11),
     0,0,0,0,0,0,0,

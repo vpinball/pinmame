@@ -431,7 +431,7 @@ static sim_tSimData wcsSimData = {
   NULL                 /* advanced key conditions */
 };
 static core_tGameData wcsGameData = {
-  GEN_WPCSECURITY, NULL,
+  GEN_WPCSECURITY, wpc_dispDMD,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
     0,0,0,0,0,0,0,

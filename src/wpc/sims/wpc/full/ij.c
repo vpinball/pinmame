@@ -622,7 +622,7 @@ static sim_tSimData ijSimData = {
 };
 
 static core_tGameData ijGameData = {
-  GEN_WPCDCS, NULL,
+  GEN_WPCDCS, wpc_dispDMD,
   {
     FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L),
     1,0,1,0,0,0,0,

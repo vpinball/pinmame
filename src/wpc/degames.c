@@ -86,40 +86,35 @@ DE_INPUT_PORTS_START2(des112, 1) DE_INPUT_PORTS_END
 #define FLIP1516    FLIP_SWNO(15,16)
 #define FLIP6364    FLIP_SWNO(63,64)
 
-
-/* 2 X 7 AlphaNumeric Rows, 2 X 7 Numeric Rows, 1 X 4 Numeric*/
-core_tLCDLayout de_dispAlpha1[] = {
+static struct core_dispLayout de_dispAlpha1[] = { /* 2 X 7 AlphaNumeric Rows, 2 X 7 Numeric Rows, 1 X 4 Numeric*/
   DISP_SEG_7(0,0, CORE_SEG16), DISP_SEG_7(0,1, CORE_SEG16),
   DISP_SEG_7(1,0, CORE_SEG7),  DISP_SEG_7(1,1, CORE_SEG7),
   DISP_SEG_CREDIT(20,28,CORE_SEG7),DISP_SEG_BALLS(0,8,CORE_SEG7H), {0}
 };
 
-/* 2 X 7 AlphaNumeric Rows, 2 X 7 Numeric Rows */
-core_tLCDLayout de_dispAlpha2[] = {
+static struct core_dispLayout de_dispAlpha2[] = { /* 2 X 7 AlphaNumeric Rows, 2 X 7 Numeric Rows */
   DISP_SEG_7(0,0, CORE_SEG16), DISP_SEG_7(0,1, CORE_SEG16),
   DISP_SEG_7(1,0, CORE_SEG7),  DISP_SEG_7(1,1, CORE_SEG7), {0}
 };
 
-/* 2 X 16 AlphaNumeric Rows */
-core_tLCDLayout de_dispAlpha3[] = {
+static struct core_dispLayout de_dispAlpha3[] = { /* 2 X 16 AlphaNumeric Rows */
   DISP_SEG_16(0,CORE_SEG16),DISP_SEG_16(1,CORE_SEG16),{0}
 };
 
-/* 128x16 DMD OUTPUT */
-core_tLCDLayout de_128x16DMD[] = {
-        {0,0,16,128,CORE_DMD}, {0}
+static struct core_dispLayout de_128x16DMD[] = { /* 128x16 DMD OUTPUT */
+  {0,0,16,128,CORE_DMD,dedmd16_update}, {0}
 };
 
-/* 192x64 DMD OUTPUT */
-core_tLCDLayout de_192x64DMD[] = {
-        {0,0,64,192,CORE_DMD}, {0}
+static struct core_dispLayout de_128x32DMD[] = { /* 128x32 DMD OUTPUT */
+  {0,0,32,128,CORE_DMD,dedmd32_update}, {0}
 };
 
-
+static struct core_dispLayout de_192x64DMD[] = { /* 192x64 DMD OUTPUT */
+  {0,0,64,192,CORE_DMD,dedmd64_update}, {0}
+};
 /***************************************************/
 /* GAMES APPEAR IN PRODUCTION ORDER (MORE OR LESS) */
 /***************************************************/
-
 /*-------------------------------------------------------------------
 / Laser War - CPU Rev 1 /Alpha Type 1 - 32K ROM - 32/64K Sound Roms
 /-------------------------------------------------------------------*/
@@ -254,7 +249,6 @@ CORE_GAMEDEFNV(simp,"The Simpsons",1990,"Data East",de_mDEAS1,0)
 /***********************************************************************/
 /*************** GAMES USING 128X16 DMD DISPLAY ************************/
 /***********************************************************************/
-
 /*------------------------------------------------------------
 / Checkpoint - CPU Rev 3 /DMD Type 1 64K Rom 16/32K CPU Roms
 /------------------------------------------------------------*/
@@ -333,11 +327,10 @@ CORE_GAMEDEFNV(hook,"Hook",1992,"Data East",de_mDEDMD16S2A,0)
 /***********************************************************************/
 /*************** GAMES USING 128X32 DMD DISPLAY ************************/
 /***********************************************************************/
-
 /*----------------------------------------------------------------
 / Lethal Weapon 3 - CPU Rev 3 /DMD  Type 2 512K Rom - 64K CPU Rom
 /---------------------------------------------------------------*/
-INITGAMES11(lw3,GEN_DEDMD32, 0, FLIP1516, SNDBRD_DE2S, SNDBRD_DEDMD32, 0)
+INITGAMES11(lw3,GEN_DEDMD32, de_128x32DMD, FLIP1516, SNDBRD_DE2S, SNDBRD_DEDMD32, 0)
 DE_ROMSTARTx0(lw3, "lw3cpuu.208",0xa3041f8a)
 DE_DMD32ROM44(     "lw3drom1.a26",0x44a4cf81,
                    "lw3drom0.a26",0x22932ed5)
@@ -351,7 +344,7 @@ CORE_GAMEDEFNV(lw3,"Lethal Weapon 3",1992,"Data East",de_mDEDMD32S2A,0)
 /*-------------------------------------------------------------
 / Star Wars - CPU Rev 3 /DMD  Type 2 512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
-INITGAMES11(stwarde,GEN_DEDMD32, 0, FLIP1516, SNDBRD_DE2S, SNDBRD_DEDMD32, 0)
+INITGAMES11(stwarde,GEN_DEDMD32, de_128x32DMD, FLIP1516, SNDBRD_DE2S, SNDBRD_DEDMD32, 0)
 DE_ROMSTARTx0(stwarde,"starcpua.103",0x318085ca)
 DE_DMD32ROM8x(        "sw4mrom.a15",0x00c87952)
 DE2S_SOUNDROM042(     "s-wars.u7"  ,0xcefa19d5,
@@ -364,7 +357,7 @@ CORE_GAMEDEFNV(stwarde,"Star Wars",1992,"Data East",de_mDEDMD32S2A,0)
 /*-------------------------------------------------------------
 / Rocky & Bullwinkle - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
-INITGAMES11(rab,GEN_DEDMD32, 0, FLIP1516, SNDBRD_DE2S, SNDBRD_DEDMD32, S11_PRINTERLINE)
+INITGAMES11(rab,GEN_DEDMD32, de_128x32DMD, FLIP1516, SNDBRD_DE2S, SNDBRD_DEDMD32, S11_PRINTERLINE)
 DE_ROMSTARTx0(rab, "rabcpua.130",0xf59b1a53)
 DE_DMD32ROM8x(     "rbdspa.130",0xb6e2176e)
 DE2S_SOUNDROM142(  "rab.u7"  ,0xb232e630,
@@ -377,7 +370,7 @@ CORE_GAMEDEFNV(rab,"Rocky & Bullwinkle",1993,"Data East",de_mDEDMD32S2A,0)
 /*-------------------------------------------------------------
 / Jurassic Park - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
-INITGAMES11(jurpark,GEN_DEDMD32, 0, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD32, S11_PRINTERLINE)
+INITGAMES11(jurpark,GEN_DEDMD32, de_128x32DMD, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD32, S11_PRINTERLINE)
 DE_ROMSTARTx0(jurpark,"jpcpua.513",0x9f70a937)
 DE_DMD32ROM8x(        "jpdspa.510",0x9ca61e3c)
 DE2S_SOUNDROM142(     "jpu7.dat"  ,0xf3afcf13,
@@ -390,7 +383,7 @@ CORE_GAMEDEFNV(jurpark,"Jurassic Park",1993,"Data East",de_mDEDMD32S2A,0)
 /*-------------------------------------------------------------
 / Last Action Hero - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
-INITGAMES11(lah,GEN_DEDMD32, 0, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD32, S11_PRINTERLINE)
+INITGAMES11(lah,GEN_DEDMD32, de_128x32DMD, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD32, S11_PRINTERLINE)
 DE_ROMSTARTx0(lah,  "lahcpua.112",0xe7422236)
 DE_DMD32ROM8x(      "lahdispa.106",0xca6cfec5)
 DE2S_SOUNDROM142(   "lahsnd.u7"  ,0x0279c45b,
@@ -403,7 +396,7 @@ CORE_GAMEDEFNV(lah,"Last Action Hero",1993,"Data East",de_mDEDMD32S2A,0)
 /*-------------------------------------------------------------
 / Tales From the Crypt - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
-INITGAMES11(tftc,GEN_DEDMD32, 0, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD32, S11_PRINTERLINE)
+INITGAMES11(tftc,GEN_DEDMD32, de_128x32DMD, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD32, S11_PRINTERLINE)
 DE_ROMSTARTx0(tftc, "tftccpua.303",0xe9bec98e)
 DE_DMD32ROM8x(      "tftcdspa.301",0x3888d06f)
 DE2S_SOUNDROM144(   "sndu7.dat"    ,0x7963740e,
@@ -422,7 +415,7 @@ CORE_GAMEDEFNV(tftc,"Tales From the Crypt",1993,"Data East",de_mDEDMD32S2A,0)
 /*-- return status of custom solenoids --*/
 static int tommy_getSol(int solNo) { return (solNo == sBlinderMotor) ? (core_getSol(44) > 0) : 0; }
 static core_tGameData tommyGameData = {
-  GEN_DEDMD32, 0,
+  GEN_DEDMD32, de_128x32DMD,
   { FLIP6364, 0,0,1, // We need 1 custom solenoids!
     SNDBRD_DE2S,SNDBRD_DEDMD32,S11_PRINTERLINE,0,
     tommy_getSol
@@ -443,7 +436,7 @@ CORE_GAMEDEFNV(tommy,"Tommy",1994,"Data East",de_mDEDMD32S2A,0)
 /*-------------------------------------------------------------
 / WWF Royal Rumble - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
-INITGAMES11(wwfrumb,GEN_DEDMD32, 0, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD32,S11_PRINTERLINE)
+INITGAMES11(wwfrumb,GEN_DEDMD32, de_128x32DMD, FLIP6364, SNDBRD_DE2S, SNDBRD_DEDMD32,S11_PRINTERLINE)
 DE_ROMSTARTx0(wwfrumb,  "wfcpuc5.512"  ,0x7e9ead89)
 DE_DMD32ROM8x(          "wfdisp0.400"  ,0xe190b90f)
 DE2S_SOUNDROM1444(      "wfsndu7.512"  ,0xeb01745c,
@@ -469,7 +462,7 @@ static int gnr_getSol(int solNo) {
 }
 
 static core_tGameData gnrGameData = {
-  GEN_DEDMD32, 0,
+  GEN_DEDMD32, de_128x32DMD,
   { FLIP6364, 0,0,3, //We need 3 custom solenoids!
     SNDBRD_DE2S,SNDBRD_DEDMD32,S11_PRINTERLINE,0, gnr_getSol
   }, NULL, {{0}}, {10}
@@ -766,7 +759,7 @@ CORE_CLONEDEFNV(bmf_time,batmanf,"Batman Forever (Timed Play)",1995,"Sega",de_mD
 /*************** SPECIAL TEST CHIP - NO DISPLAY ************************/
 /***********************************************************************/
 /* NO OUTPUT */
-static core_tLCDLayout de_NoOutput[] = {{0}};
+static struct core_dispLayout de_NoOutput[] = {{0}};
 /*-------------------------------------------------------------
 / Data East Test Chip 64K ROM
 /------------------------------------------------------------*/

@@ -351,7 +351,7 @@ static sim_tSimData hurrSimData = {
 / Game Data Information
 /----------------------*/
 static core_tGameData hurrGameData = {
-  GEN_WPCFLIPTRON, NULL,
+  GEN_WPCFLIPTRON, wpc_dispDMD,
   {
     FLIP_SWNO(12,11),
     0,0,0,0,0,0,0,

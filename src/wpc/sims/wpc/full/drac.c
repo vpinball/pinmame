@@ -506,7 +506,7 @@ static sim_tSimData dracSimData = {
 / Game Data Information
 /----------------------*/
 static core_tGameData dracGameData = {
-  GEN_WPCFLIPTRON, NULL,
+  GEN_WPCFLIPTRON, wpc_dispDMD,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
     0,0,0,0,0,0,0,

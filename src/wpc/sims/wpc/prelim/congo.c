@@ -277,7 +277,7 @@ static sim_tSimData congoSimData = {
 / Game Data Information
 /----------------------*/
 static core_tGameData congoGameData = {
-  GEN_WPC95, NULL,
+  GEN_WPC95, wpc_dispDMD,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_UL)
   },

@@ -579,7 +579,7 @@ static sim_tSimData tomSimData = {
 /----------------------*/
 
 static core_tGameData tomGameData = {
-  GEN_WPCSECURITY, NULL,
+  GEN_WPCSECURITY, wpc_dispDMD,
   {
     FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L),
     0,0,0,0,0,0,0,

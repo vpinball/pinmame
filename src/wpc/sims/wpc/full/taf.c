@@ -452,7 +452,7 @@ static sim_tSimData tafSimData = {
 };
 
 static core_tGameData tafGameData = {
-  GEN_WPCFLIPTRON, NULL,/* generation */
+  GEN_WPCFLIPTRON, wpc_dispDMD,/* generation */
   {
     FLIP_BUT(FLIP_L) | FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L|FLIP_U),
     0,0,0,0,0,0,0,

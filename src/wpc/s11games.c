@@ -6,7 +6,6 @@
 /*
 Issues:
 Road Kings: Main CPU
-Jokerz: No soundboard
 Pool: Sound loops on startup
 */
 #define INITGAME(name, gen, disp, mux, flip, db, gs1) \
@@ -131,7 +130,7 @@ CORE_GAMEDEF(grand, l4, "Grand Lizard (L-4)", 1986, "Williams", s11_mS11S,0)
 /*--------------------
 / Road Kings 07/86
 /--------------------*/
-INITGAME(rdkng, GEN_S11, s11_dispS11, 0, FLIP_SW(FLIP_L),S11_BCDDIAG,0)
+INITGAME(rdkng, GEN_S11, s11_dispS11, 0, FLIP_SWNO(47,48),S11_BCDDIAG,0)
 S11_ROMSTART28(rdkng,l5,"road_u26.l5", 0x22bcc70e,
                         "road_u27.l5", 0x3dcad794)
 S11S_SOUNDROM88(        "road_u21.l1", 0xf34efbf4,
@@ -242,7 +241,7 @@ CORE_GAMEDEF(cycln, l5, "Cyclone (L-5)", 1988, "Williams", s11_mS11BS,0)
 /*--------------------
 / Banzai Run 7/88
 /--------------------*/
-INITGAME(bnzai, GEN_S11B,s11_dispS11b1,12, FLIP_SW(FLIP_L),0,0)
+INITGAME(bnzai, GEN_S11B,s11_dispS11b1,12, FLIP_SWNO(25,34),0,0)
 S11_ROMSTART48(bnzai,l3,"banz_u26.l3", 0xca578aa3,
                         "banz_u27.l3", 0xaf66fac4)
 S11S_SOUNDROM88(        "banz_u21.l1", 0xcd06716e,
@@ -257,7 +256,7 @@ CORE_GAMEDEF(bnzai, l3, "Banzai Run (L-3)", 1988, "Williams", s11_mS11BS,0)
 /*--------------------
 / Swords of Fury 8/88
 /--------------------*/
-INITGAME(swrds, GEN_S11B, s11_dispS11b1,12, FLIP_SW(FLIP_L),0,0)
+INITGAME(swrds, GEN_S11B, s11_dispS11b1,12, FLIP_SWNO(58,57),0,0)
 S11_ROMSTART48(swrds,l2,"swrd_u26.l2", 0xc036f4ff,
                         "swrd_u27.l2", 0x33b0fb5a)
 S11S_SOUNDROM88(        "swrd_u21.l1", 0xee8b0a64,
@@ -298,7 +297,7 @@ CORE_CLONEDEF(taxi , l3, l4, "Taxi (Marylin) (L-3)", 1988, "Williams", s11_mS11B
 /*--------------------
 / Jokerz 1/89
 /--------------------*/
-INITGAME(jokrz, GEN_S11B2, s11_dispS11b2,12, FLIP_SW(FLIP_L),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
+INITGAME(jokrz, GEN_S11B2, s11_dispS11b2,12, FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
 S11_ROMSTART48(jokrz,l6,"jokeru26.l6", 0xc748c1ba,
                         "jokeru27.l6", 0x612d0ea7)
 S11S_SOUNDROM88(        "jokeru21.l1", 0x9e2be4f6,
@@ -368,7 +367,7 @@ CORE_GAMEDEF(polic,l4, "Police Force (L-4)", 1989, "Williams", s11_mS11BS,0)
 /*-----------------------------
 / Transporter the Rescue 6/89
 /----------------------------*/
-INITGAME(tsptr,GEN_S11B,s11_dispS11b2,12, FLIP_SW(FLIP_L),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
+INITGAME(tsptr,GEN_S11B,s11_dispS11b2,12, FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
 S11_ROMSTART48(tsptr,l3,"tran_u26.l3", 0x2d48a108,
                         "tran_u27.l3", 0x50efb01c)
 S11S_SOUNDROM88(        "tran_u21.l2", 0xb10120ee,
@@ -399,7 +398,7 @@ CORE_GAMEDEF(bcats,l5, "Bad Cats (L-5)", 1989, "Williams", s11_mS11BS,0)
 /*-----------------------
 / Mousin' Around 12/89
 /-----------------------*/
-INITGAME(mousn,GEN_S11B,s11_dispS11b2,12, FLIP_SW(FLIP_L),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
+INITGAME(mousn,GEN_S11B,s11_dispS11b2,12, FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
 S11_ROMSTART48(mousn,l4,"mous_u26.l4", 0xa540edc1,
                         "mous_u27.l4", 0xff108148)
 S11S_SOUNDROM88(        "mous_u21.bin",0x59b1b0c5,
@@ -429,7 +428,7 @@ CORE_GAMEDEF(whirl,l3, "Whirlwind (L-3)", 1990, "Williams", s11_mS11BS,0)
 /*--------------------
 / Game Show 4/90
 /--------------------*/
-INITGAME(gs   ,GEN_S11C,s11_dispS11c,12,FLIP_SW(FLIP_L),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
+INITGAME(gs   ,GEN_S11C,s11_dispS11c,12,FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
 S11_ROMSTART48(gs   ,l3,"gshw_u26.l3", 0x3419bfb2,
                         "gshw_u27.l3", 0x4f3babb6)
 S11CS_SOUNDROM000(      "gshw_u4.l2",  0xe89e0116,
@@ -442,7 +441,7 @@ CORE_GAMEDEF(gs   , l3, "Game Show (L-3)", 1990, "Bally", s11_mS11CS,0)
 /*--------------------
 / Rollergames 5/90
 /--------------------*/
-INITGAME(rollr,GEN_S11C,s11_dispS11c,12,FLIP_SW(FLIP_L),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
+INITGAME(rollr,GEN_S11C,s11_dispS11c,12,FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
 S11_ROMSTART48(rollr,l2,"rolr_u26.l2", 0xcd7cad9e,
                         "rolr_u27.l2", 0xf3bac2b8)
 S11CS_SOUNDROM000(      "rolr_u4.l3",  0xd366c705,
