@@ -38,10 +38,10 @@ END_COM_MAP()
 
 // IRoms
 public:
-	STDMETHOD(Audit)(/*[in]*/ BOOL fStrict);
+	STDMETHOD(Audit)(/*[in]*/ VARIANT_BOOL fStrict);
 	STDMETHOD(get_StateDescription)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(get_State)(/*[out, retval]*/ long *pVal);
-	STDMETHOD(get_Available)(/*[out, retval]*/ BOOL *pVal);
+	STDMETHOD(get_Available)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(get_Count)(long* pnCount);
 	STDMETHOD(get_Item)(VARIANT *pKey, IRom **pRom);
 	STDMETHOD(get__NewEnum)(IUnknown** ppunkEnum);

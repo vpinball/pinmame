@@ -42,7 +42,7 @@ END_COM_MAP()
 
 // IRom
 public:
-	STDMETHOD(Audit)(/*[in]*/ BOOL fStrict);
+	STDMETHOD(Audit)(/*[in]*/ VARIANT_BOOL fStrict);
 	STDMETHOD(get_StateDescription)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(get_State)(/*[out, retval]*/ long *pVal);
 	STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal);

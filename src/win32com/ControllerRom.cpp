@@ -132,7 +132,7 @@ STDMETHODIMP CRom::get_StateDescription(BSTR *pVal)
 	return S_OK;
 }
 
-STDMETHODIMP CRom::Audit(BOOL fStrict)
+STDMETHODIMP CRom::Audit(VARIANT_BOOL fStrict)
 {
 	int err;
 
