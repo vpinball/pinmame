@@ -606,10 +606,10 @@ static void fh_drawMech(BMTYPE **line) {
 
 static void fh_drawStatic(BMTYPE **line) {
   core_textOutf(30, 40,BLACK,"Help on this Simulator:");
-  core_textOutf(30, 50,BLACK,"L/R Shift+I/O = L/R Inlane/Outlane");
-  core_textOutf(30, 60,BLACK,"L/R Shift+- = L/R Slingshot");
-  core_textOutf(30, 70,BLACK,"L/R Shift+R = Ramp Shot");
-  core_textOutf(30, 80,BLACK,"L/R Shift+L = L/R Loop");
+  core_textOutf(30, 50,BLACK,"L/R Ctrl+I/O = L/R Inlane/Outlane");
+  core_textOutf(30, 60,BLACK,"L/R Ctrl+- = L/R Slingshot");
+  core_textOutf(30, 70,BLACK,"L/R Ctrl+R = L/R Ramp Shot");
+  core_textOutf(30, 80,BLACK,"L/R Ctrl+L = L/R Loop");
   core_textOutf(30, 90,BLACK,"Q = Drain Ball, W = Wind Tunnel");
   core_textOutf(30,100,BLACK,"E = Steps Hole, T = Trap Door Loop");
   core_textOutf(30,110,BLACK,"Y = Jet Bumper Lane, U = Hidden Hallw.");

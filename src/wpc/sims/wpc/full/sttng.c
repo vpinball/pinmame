@@ -549,10 +549,10 @@ static void sttng_drawMech(BMTYPE **line) {
 
 static void sttng_drawStatic(BMTYPE **line) {
   core_textOutf(30, 40,BLACK,"Help:");
-  core_textOutf(30, 50,BLACK,"L/R Shift+R = L/R Ramp");
-  core_textOutf(30, 60,BLACK,"L/R Shift+L = L/R Loop");
-  core_textOutf(30, 70,BLACK,"L/R Shift+- = L/R Slingshot");
-  core_textOutf(30, 80,BLACK,"L/R Shift+I/O = L/R Inlane/Outlane");
+  core_textOutf(30, 50,BLACK,"L/R Ctrl+R = L/R Ramp");
+  core_textOutf(30, 60,BLACK,"L/R Ctrl+L = L/R Loop");
+  core_textOutf(30, 70,BLACK,"L/R Ctrl+- = L/R Slingshot");
+  core_textOutf(30, 80,BLACK,"L/R Ctrl+I/O = L/R Inlane/Outlane");
   core_textOutf(30, 90,BLACK,"Q = Drain Ball, W = Q's Drop Target");
   core_textOutf(30,100,BLACK,"E = Neutral Zone, R = Center Ramp");
   core_textOutf(30,110,BLACK,"A/S/D = Left Drop Targets");
