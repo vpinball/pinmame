@@ -55,8 +55,8 @@ static const char* crcOfGamesNotSupported[] = {
 	// Terminator 3: Rise of the Machines (1st sound rom, game rom 200, 400)
 	CRC(7f99e3af), CRC(b5cc4e24), CRC(872f9351),
 
-	// Lord Of The Rings (1st sound rom en/sp, game roms 401, 700en, 700sp)
-	CRC(ba018c5c), CRC(980d970a), CRC(b69cdecc), CRC(208a4653), CRC(58d8611b),
+	// Lord Of The Rings (1st sound rom en/sp, game roms 401, 700en, 700sp, 800en, 800sp)
+	CRC(ba018c5c), CRC(980d970a), CRC(b69cdecc), CRC(208a4653), CRC(58d8611b), CRC(655e5b3c), CRC(38e83068),
 
 	// Ripley's Believe It or Not! (1st sound rom, game rom 300)
 	CRC(e5c7edea), CRC(8c4bf2a9),
