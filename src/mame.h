@@ -127,6 +127,7 @@ struct GameOptions
 	int vector_height;	/* requested height for vector games; 0 means default (480) */
 	int debug_width;	/* initial size of the debug_bitmap */
 	int debug_height;
+	int debug_depth;
 	int norotate;
 	int ror;
 	int rol;
