@@ -1053,7 +1053,7 @@ static core_tGameData elvisGameData = { \
 static void init_elvis(void) { core_gameData = &elvisGameData; }
 SE128_ROMSTART(elvis, "elvscpua.302", CRC(52fd7068) SHA1(548568aeb30a17541b07489dfecde9d4d63bf82b))
 DE_DMD32ROM8x(        "elvsdspa.302", CRC(892da6d2) SHA1(66a2f9faab9c7b925a90455ce7e1d31e19fce99e))
-DE3S_SOUNDROM10088(   "elvis.u7", CRC(ec9fc259) SHA1(7805356dc1e2b3eedf9989b2e5c90c2e65265a01),
+DE3S_SOUNDROM10088(   "elvis.u7", CRC(1df6c1b5) SHA1(7a9ebfc555e54ce92ad140ac6fcb82d9848ad8a6),
                       "elvis.u17",CRC(642519f3) SHA1(13f7a7011bd3771e7f5556cd6eb559e839418f4c),
                       "elvis.u21",CRC(a71f9f51) SHA1(8426a07cad42d14064419f839bb6e41525536e11),
                       "elvis.u36",CRC(e98f0dc9) SHA1(6dbab09435e993fef97d6a80a73675723bea7c1d),
@@ -1067,7 +1067,7 @@ CORE_GAMEDEFNV(elvis,"Elvis (3.02)",2004,"Stern",de_mSES3,GAME_NO_SOUND|GAME_NOC
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(elvisl, "elvscpul.302", CRC(0c6f1897) SHA1(ac71f833d4227c2d2d665a169eb0d12c73aeab04))
 DE_DMD32ROM8x(         "elvsdspl.302", CRC(f75ea4cb) SHA1(aa351bb0912fd9dc93e9c95f96af2d31aaf03777))
-DE3S_SOUNDROM10888(    "elvisl.u7", CRC(0e7fd03e) SHA1(28530a0b7161c663ce09d5d64ff9ca4d00de7ded),
+DE3S_SOUNDROM10888(    "elvisl.u7", CRC(f0d70ee6) SHA1(9fa2c9d7b3690ec0c17645be066496d6833da5d1),
                        "elvisl.u17",CRC(fb3da7df) SHA1(ac8f3bf060c0b9a1037e1abe327e6563bea52fd2),
                        "elvisl.u21",CRC(400c7174) SHA1(a4fa0d51b7c11e70f6b93068a6bf859cdf3359c3),
                        "elvisl.u36",CRC(01ebbdbe) SHA1(286fa471b20b6ffcb0114d66239ab6aebe9bca9d),
@@ -1082,7 +1082,7 @@ CORE_CLONEDEFNV(elvisl,elvis,"Elvis (Spain)",2004,"Stern",de_mSES3,GAME_NO_SOUND
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(elvisg, "elvscpug.302", CRC(9d907782) SHA1(3bad8d0429029b0055d09e50af16bca4da724e0f))
 DE_DMD32ROM8x(         "elvsdspg.302", CRC(6340bb11) SHA1(d510f1a913cd3fb9593ef88c5652e03a5d3c3ebb))
-DE3S_SOUNDROM10888(    "elvisg.u7", CRC(a8cb5492) SHA1(8fc45cbdcd091f81c59510bd3ba3c7f77a21d86d),
+DE3S_SOUNDROM10888(    "elvisg.u7", CRC(1085bd7c) SHA1(2c34ee7d7c44906b0894c0c01b0fad74cb0d2a32),
                        "elvisg.u17",CRC(4680d7ac) SHA1(e887102dda0372f980d0648ffab5dc42fc3d963e),
                        "elvisg.u21",CRC(79955b60) SHA1(36ad9e487408c9fd26641d484490b1b3bc8e1194),
                        "elvisg.u36",CRC(25ba1ad4) SHA1(1e1a846af4ff43bb47f081b0cc179cd732c0bbea),
@@ -1097,7 +1097,7 @@ CORE_CLONEDEFNV(elvisg,elvis,"Elvis (Germany)",2004,"Stern",de_mSES3,GAME_NO_SOU
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(elvisf, "elvscpuf.302", CRC(893a5ac6) SHA1(4be45cf036cdd643f10ecbb4d0b1778d25cf778a))
 DE_DMD32ROM8x(         "elvsdspf.302", CRC(410b6ae5) SHA1(ea29e1c81695df25ad61deedd84e6c3159976797))
-DE3S_SOUNDROM18088(    "elvisf.u7", CRC(caff766a) SHA1(00ad185c13eff65c1666f2744ddad7e61b1cb24e),
+DE3S_SOUNDROM18088(    "elvisf.u7", CRC(84a057cd) SHA1(70e626f13a164df184dc5b0c79e8d320eeafb13b),
                        "elvisf.u17",CRC(9b13e40d) SHA1(7e7eac1be5cbc7bde4296d168a1cc0716bcb293a),
                        "elvisf.u21",CRC(777ca040) SHA1(188657911edef3a7e59f9696701ece7a3a96c5b2),
                        "elvisf.u36",CRC(03ee0c04) SHA1(45a994589e3d9e6fe971db8722848b5f7432b675),
@@ -1112,7 +1112,7 @@ CORE_CLONEDEFNV(elvisf,elvis,"Elvis (France)",2004,"Stern",de_mSES3,GAME_NO_SOUN
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(elvisi, "elvscpui.302", CRC(a2c15460) SHA1(dcd4d4b61745ab2ccba662f9d72f56774a830ea0))
 DE_DMD32ROM8x(         "elvsdspi.302", CRC(217c7d17) SHA1(bfd67e876ea85847212c936f9f8477aba8a7b573))
-DE3S_SOUNDROM18088(    "elvisi.u7", CRC(6b3d7e89) SHA1(7916066b9bc37ef109127bcc7cf26ae04301083b),
+DE3S_SOUNDROM18088(    "elvisi.u7", CRC(8c270da4) SHA1(6a21332fdd1f2714aa78a1730e0f90159022ad1c),
                        "elvisi.u17",CRC(bd2e6580) SHA1(dc8c974860498d5766dbb0881cc9d6866c9a98a1),
                        "elvisi.u21",CRC(239a62bc) SHA1(02fe17a5de88f815f99f8f6a7c5c8b4d94d33ffc),
                        "elvisi.u36",CRC(df6772d7) SHA1(96e98ff4e93fc0c6fb2d9924da99b97f0c436c44),
