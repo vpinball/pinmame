@@ -208,6 +208,14 @@ WPC_INPUT_PORTS_END
 #define sWheelCL        CORE_CUSTSOLNO(0) //37
 #define sWheelCCL       CORE_CUSTSOLNO(1) //38
 
+#define sRight1  	CORE_CUSTSOLNO(5)	//42
+#define sRight2  	CORE_CUSTSOLNO(6)	//43
+#define sRight3  	CORE_CUSTSOLNO(7)	//44
+#define sPFRight 	CORE_CUSTSOLNO(8)	//45
+#define sPFLeft    	CORE_CUSTSOLNO(9)	//46
+#define sLeft3   	CORE_CUSTSOLNO(10)	//47
+#define sLeft2		CORE_CUSTSOLNO(11)	//48
+#define sLeft1		CORE_CUSTSOLNO(12)	//49
 
 /*---------------------
 /  Ball state handling
@@ -738,13 +746,17 @@ static void ngg_handleMech(int mech) {
 
 
 static int ngg_getSol(int solNo) {
-  static int bits[8] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
-
-  if ( (solNo<37) || (solNo>38) )
-    return 0;
-
-  return (wpc_data[WPC_SOLENOID1] & bits[solNo-37]) > 0;
+ return wpc_data[WPC_EXTBOARD2] & (1<<(solNo - CORE_CUSTSOLNO(1)));
 }
+
+//static int ngg_getSol(int solNo) {
+// static int bits[8] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
+
+// if ( (solNo<37) || (solNo>38) )
+//   return 0;
+
+// return (wpc_data[WPC_SOLENOID1]& bits[solNo-37]) > 0;
+//}
 
 /**********************************
  Display Status of Ramp Entries
