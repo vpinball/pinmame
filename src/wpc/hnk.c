@@ -276,8 +276,7 @@ static void hnk_init(void) {
   pia_config(0, PIA_STANDARD_ORDERING, &piaIntf[0]);
   pia_config(1, PIA_STANDARD_ORDERING, &piaIntf[1]);
   
-  if (coreGlobals.soundEn) 
-	  sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(HNK_MEMREG_SCPU), NULL, NULL);
+  sndbrd_0_init(core_gameData->hw.soundBoard, HNK_SCPU1, memory_region(HNK_MEMREG_SCPU), NULL, NULL);
 
   pia_reset();
   locals.vblankCount = 1;
@@ -288,10 +287,12 @@ static void hnk_init(void) {
 
 static void hnk_exit(void) {
 #ifdef PINMAME_EXIT
-  if (locals.zctimer) { timer_remove(locals.zctimer); locals.zctimer = NULL; }
+  if (locals.zctimer) { 
+	  timer_remove(locals.zctimer); 
+	  locals.zctimer = NULL; 
+  }
 #endif
-  if (coreGlobals.soundEn) 
-    sndbrd_0_exit();
+  sndbrd_0_exit();
 
   core_exit();
 }
