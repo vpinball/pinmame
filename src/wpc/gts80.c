@@ -125,7 +125,7 @@ static SWITCH_UPDATE(GTS80) {
   isSlammed = core_getSw(GTS80_SWSLAMTILT)? 0 : 0xff;
   riot6532_set_input_a(1, isSlammed);
   if (core_gameData->hw.display & GTS80_DISPVIDEO) { // Also triggers NMI on video CPU
-    cpu_set_irq_line(GTS80_VIDCPU, IRQ_LINE_NMI, isSlammed ? ASSERT_LINE : CLEAR_LINE);
+    cpu_set_irq_line(GTS80_VIDCPU, IRQ_LINE_NMI, isSlammed ? CLEAR_LINE : ASSERT_LINE);
   }
 }
 
@@ -648,10 +648,8 @@ MEMORY_END
 
 /* 4 x 7 BCD + Ball,Credit */
 core_tLCDLayout GTS80_dispCaveman[] = {
-  {0, 0,10,6,CORE_SEG9}, {0,12, 0,1,CORE_SEG9},
-  {0,16, 4,6,CORE_SEG9}, {0,28, 3,1,CORE_SEG9},
-  {4, 0,30,6,CORE_SEG9}, {4,12,20,1,CORE_SEG9},
-  {4,16,24,6,CORE_SEG9}, {4,28,23,1,CORE_SEG9},
+  {0, 0, 2, 7,CORE_SEG98F}, {0,16, 9, 7,CORE_SEG98F},
+  {4, 0,22, 7,CORE_SEG98F}, {4,16,29, 7,CORE_SEG98F},
   DISP_SEG_CREDIT(40,41,CORE_SEG9), DISP_SEG_BALLS(42,43,CORE_SEG9),
   {70,0,240,256,CORE_VIDEO,(void *)caveman_update},{0}
 };
