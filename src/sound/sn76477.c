@@ -27,6 +27,7 @@
 
 #include "driver.h"
 
+#undef  VERBOSE
 #define VERBOSE 1
 
 #if VERBOSE >= 0
