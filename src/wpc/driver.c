@@ -130,6 +130,7 @@ DRIVERNV(fball_ii)      //BY35-839: 09/80 Fireball II
 DRIVERNV(embryon )      //BY35-841: 09/80 Embryon
 DRIVERNV(embryonb)      //BY35:     10/02 Embryon (7-digit conversion rev.1)
 DRIVERNV(embryonc)      //BY35:     05/04 Embryon (7-digit conversion rev.8)
+DRIVERNV(embryond)      //BY35:     10/04 Embryon (7-digit conversion rev.9)
 DRIVERNV(fathom  )      //BY35-842: 12/80 Fathom
 DRIVERNV(fathomb )      //BY35-842: 08/04 Fathom (modified rules)
 DRIVERNV(medusa  )      //BY35-845: 02/81 Medusa
