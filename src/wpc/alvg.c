@@ -419,7 +419,7 @@ static SWITCH_UPDATE(alvg) {
   alvglocals.swVolUp = (core_getSw(ALVG_SWVOLUP)>0?1:0);
   alvglocals.swVolDn = (core_getSw(ALVG_SWVOLDN)>0?1:0);
 
-#if 0
+#if 1
   //handle my own fake sound command mode
 
   if ((keyboard_pressed_memory_repeat(KEYCODE_SPACE, 200))) {
@@ -440,7 +440,7 @@ static SWITCH_UPDATE(alvg) {
 
 WRITE_HANDLER(alvg_sndCmd_w)
 {
-	//printf("SOUND COMMAND: %x\n",data);
+	printf("SOUND COMMAND: %x\n",data);
 	soundlatch_w(0,data);
 	cpu_set_irq_line(ALVGS_CPUNO, 0, PULSE_LINE);
 	//cpu_set_irq_line(ALVGS_CPUNO, 0, HOLD_LINE);
