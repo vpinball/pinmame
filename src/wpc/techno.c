@@ -322,6 +322,10 @@ static void init_xforce(void) {
   core_gameData = &xforceGameData;
 }
 
+/* Manual starts with a switch # of 0 */
+static int xforce_sw2m(int no) { return no+7+1; }
+static int xforce_m2sw(int col, int row) { return col*8+row-7-1; }
+
 MACHINE_DRIVER_START(xforce)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(xforce, NULL, NULL)
@@ -329,6 +333,7 @@ MACHINE_DRIVER_START(xforce)
   MDRV_CPU_MEMORY(readmem, writemem)
   MDRV_CPU_VBLANK_INT(vblank, 1)
   MDRV_SWITCH_UPDATE(xforce)
+  MDRV_SWITCH_CONV(xforce_sw2m,xforce_m2sw)
   MDRV_NVRAM_HANDLER(techno_nvram)
 MACHINE_DRIVER_END
 
