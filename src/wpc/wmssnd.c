@@ -848,7 +848,10 @@ static WRITE_HANDLER(dcs_data_w) {
 
 static WRITE_HANDLER(dcs_ctrl_w) {
   DBGLOG(("ctrl_w: %02x\n",data));
-  if (dcslocals.brdData.subType < 2) {
+
+  // Tom: Removed the next line which now prevents some "sound board interface error"
+  // if (dcslocals.brdData.subType < 2) 
+  {
 #ifdef WPCDCSSPEEDUP
     // probably a bug in the mame reset handler
     // if a cpu is suspended for some reason a reset will not wake it up
