@@ -36,7 +36,7 @@ DRVLIBS += $(PINOBJ)/gts80.o $(PINOBJ)/gts80s.o
 DRVLIBS += $(PINOBJ)/by35.o $(PINOBJ)/by35snd.o $(PINOBJ)/stsnd.o
 DRVLIBS += $(PINOBJ)/by6803.o
 DRVLIBS += $(PINOBJ)/byvidpin.o
-DRVLIBS += $(PINOBJ)/capcom.o
+DRVLIBS += $(PINOBJ)/capcom.o $(PINOBJ)/capcoms.o
 DRVLIBS += $(PINOBJ)/hnks.o
 DRVLIBS += $(PINOBJ)/zac.o $(PINOBJ)/zacsnd.o
 DRVLIBS += $(PINOBJ)/gp.o $(PINOBJ)/gpsnd.o
@@ -170,6 +170,7 @@ SOUNDS += ADPCM@
 SOUNDS += SN76477@
 SOUNDS += DISCRETE@
 SOUNDS += SP0250@
+SOUNDS += TMS320AV120@
 
 OBJDIRS += $(PINOBJ)
 OBJDIRS += $(PINOBJ)/sims
