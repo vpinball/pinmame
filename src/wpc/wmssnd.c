@@ -503,7 +503,7 @@ static void wpcs_ym2151IRQ(int state) {
 	//This value is based on a lot of trial and error and comparing the same voice sample played with and without music playing
 	#define FIRQ_HACK_RATE        2000
 
-	extern int YM2151ReadOutputFlag();
+	extern int YM2151ReadOutputFlag(int chip);
 
 	//Force the FIRQ to toggle @ the specified rate, but only while the 2151 is not outputting sound
 	static void firq_hack(int data) {
