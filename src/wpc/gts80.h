@@ -16,14 +16,23 @@
 #define GTS80_COMPORTS \
   PORT_START /* 0 */ \
     /* switch column 8 */ \
-    COREPORT_BIT(     0x0001, "Test",             KEYCODE_8)  \
-    COREPORT_BITDEF(  0x0002, IPT_COIN1,          IP_KEY_DEFAULT)  \
-    COREPORT_BITDEF(  0x0004, IPT_COIN2,          IP_KEY_DEFAULT)  \
-    COREPORT_BITDEF(  0x0008, IPT_COIN3,          KEYCODE_3)  \
-    COREPORT_BITDEF(  0x0010, IPT_START1,         IP_KEY_DEFAULT)  \
-    COREPORT_BITDEF(  0x0020, IPT_TILT,           KEYCODE_INSERT)  \
+    COREPORT_BIT(     0x0001, "Test",             KEYCODE_8) \
+    COREPORT_BITDEF(  0x0002, IPT_COIN1,          IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(  0x0004, IPT_COIN2,          IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(  0x0008, IPT_COIN3,          KEYCODE_3) \
+    COREPORT_BITDEF(  0x0010, IPT_START1,         IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(  0x0020, IPT_TILT,           KEYCODE_INSERT) \
     /* These are put in switch column 0 */ \
-    COREPORT_BIT(     0x0100, "Slam Tilt",        KEYCODE_HOME)  \
+    COREPORT_BIT(     0x0100, "Slam Tilt",        KEYCODE_HOME)
+
+#define GTS80VID_COMPORTS \
+    COREPORT_BIT(     0x0200, "Video Test",       KEYCODE_7) \
+    COREPORT_BIT(     0x1000, "Left",             KEYCODE_LEFT) \
+    COREPORT_BIT(     0x2000, "Right",            KEYCODE_RIGHT) \
+    COREPORT_BIT(     0x4000, "Up",               KEYCODE_UP) \
+    COREPORT_BIT(     0x8000, "Down",             KEYCODE_DOWN)
+
+#define GTS80_DIPS \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
       COREPORT_DIPSET(0x0000, DEF_STR(Off) ) \
@@ -160,13 +169,22 @@
   INPUT_PORTS_START(name) \
     CORE_PORTS \
     SIM_PORTS(balls) \
-    GTS80_COMPORTS
+    GTS80_COMPORTS \
+    GTS80_DIPS
+
+#define GTS80VID_INPUT_PORTS_START(name,balls) \
+  INPUT_PORTS_START(name) \
+    CORE_PORTS \
+    SIM_PORTS(balls) \
+    GTS80_COMPORTS \
+    GTS80VID_COMPORTS \
+    GTS80_DIPS
 
 #define GTS80_INPUT_PORTS_END INPUT_PORTS_END
 
 #define GTS80_COMINPORT       CORE_COREINPORT
 
-#define GTS80_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
+#define GTS80_SOLSMOOTH       4 /* Smooth the Solenoids over this number of VBLANKS */
 #define GTS80_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
 #define GTS80_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
 
@@ -199,7 +217,7 @@
        ROM_LOAD(n3, 0x2000, 0x1000, chk3) \
        ROM_LOAD(n4, 0x3000, 0x1000, chk4)
 
-/*-- GTS80/GTS80A Main CPU regions and ROM, 2 game PROM version --*/
+/*-- GTS80/GTS80A Main CPU regions and ROM, 1 game PROM version --*/
 #define GTS80_1_ROMSTART(name, n1, chk1, n2, chk2, n3, chk3) \
    ROM_START(name) \
      NORMALREGION(0x10000, GTS80_MEMREG_CPU) \
@@ -207,7 +225,7 @@
        ROM_LOAD(n2, 0x2000, 0x1000, chk2) \
        ROM_LOAD(n3, 0x3000, 0x1000, chk3)
 
-/*-- Video roms for Caveman --*/
+/*-- Video roms for Caveman, they are copied to their right place by the driver --*/
 #define VIDEO_ROMSTART(n1,chk1,n2,chk2,n3,chk3,n4,chk4,n5,chk5,n6,chk6,n7,chk7,n8,chk8) \
      NORMALREGION(0x1000000, GTS80_MEMREG_VIDCPU) \
        ROM_LOAD(n1, 0x08000, 0x1000, chk1) \
@@ -240,7 +258,7 @@
 	   ROM_CONTINUE(0x9000, 0x0800)       \
        ROM_LOAD(n2, 0x2000, 0x2000, chk2) \
 
-/*-- TheGTS80 are only here so the game structure can be in the game file --*/
+/*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(gts80s);
 extern MACHINE_DRIVER_EXTERN(gts80ss);
 extern MACHINE_DRIVER_EXTERN(gts80vid);

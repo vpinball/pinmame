@@ -11,6 +11,7 @@
 	static void init_##name(void) { core_gameData = &name##GameData; }
 
 GTS80_INPUT_PORTS_START(gts80, 1) GTS80_INPUT_PORTS_END
+GTS80VID_INPUT_PORTS_START(gts80vid, 1) GTS80_INPUT_PORTS_END
 
 #define DISP_SEG_6(row,col,type) {4*row,16*col,row*20+col*8+2,6,type}
 
@@ -381,7 +382,7 @@ VIDEO_ROMSTART(          "v810-u8.bin", 0x514aa152,
                          "v810-u2.bin", 0xb793baf9,
                          "v810-u1.bin", 0x0a283b15)
 GTS80_ROMEND
-#define input_ports_caveman input_ports_gts80
+#define input_ports_caveman input_ports_gts80vid
 CORE_GAMEDEFNV(caveman,"Caveman (Pinball/Video Combo)",1981,"Gottlieb",gl_mGTS80VID,0)
 
 /*-------------------------------------------------------------------

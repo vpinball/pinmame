@@ -67,24 +67,13 @@ static struct {
   int    disCmdMode1;
   int    disCmdMode2;
   int	 sound_data;
-  int    hasVideo;
+  int	 video_data; // needed for video hardware
+  int    hasVideo; // indicates video hardware present
   UINT8* pRAM;
 } GTS80locals;
 
 static void GTS80_irq(int state) {
   cpu_set_irq_line(GTS80_CPU, M6502_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
-}
-
-static int irq_callback(int irqline)
-{
-  cpu_set_irq_line(GTS80_VIDCPU, irqline, CLEAR_LINE);
-  return 0;
-}
-
-static void video_irq()
-{
-  cpu_set_irq_callback(GTS80_VIDCPU, irq_callback);
-  cpu_set_irq_line(GTS80_VIDCPU, 0, ASSERT_LINE);
 }
 
 static INTERRUPT_GEN(GTS80_vblank) {
@@ -137,6 +126,7 @@ static SWITCH_UPDATE(GTS80) {
 
   /*-- slam tilt --*/
 	riot6532_set_input_a(1, (core_gameData->gen&GEN_GTS80B4K) ? (core_getSw(GTS80_SWSLAMTILT)?0x80:0x00) : (core_getSw(GTS80_SWSLAMTILT)?0x00:0x80));
+	/* i86 NMI line triggers Slam on the video board */
     if (GTS80locals.hasVideo && core_getSw(GTS80_SWSLAMTILT)) cpu_set_irq_line(GTS80_VIDCPU, IRQ_LINE_NMI, PULSE_LINE);
 }
 
@@ -389,6 +379,8 @@ static WRITE_HANDLER(riot6532_2a_w) {
 //	logerror("riot6532_2a_w: 0x%02x\n", data);
 }
 
+static void video_irq(int irqline);
+
 static READ_HANDLER(riot6532_2b_r)  { logerror("riot6532_2b_r\n"); return 0xff; }
 static WRITE_HANDLER(riot6532_2b_w) {
 	/* logerror("riot6532_2b_w: 0x%02x\n", data); */
@@ -403,7 +395,15 @@ static WRITE_HANDLER(riot6532_2b_w) {
                         //int iOld = GTS80locals.lampMatrix[1]&0x02;
 			GTS80locals.lampMatrix[col/2] = (GTS80locals.lampMatrix[col/2]&0xf0)|(data&0x0f);
 		}
-		if (GTS80locals.hasVideo && (GTS80locals.lampMatrix[1] & 0x80)) video_irq();
+		if (GTS80locals.hasVideo) {
+			/* The right game command is determined by a specific lamp combination. Weird! */
+			if (GTS80locals.lampMatrix[2] & 0x01) {
+				UINT8 val = (GTS80locals.lampMatrix[0] & 0xf0) | (GTS80locals.lampMatrix[1] >> 4);
+				GTS80locals.video_data = val;
+				video_irq(0);
+			}
+		}
+
 	}
 	GTS80locals.swColOp = (data>>4)&0x03;
 }
@@ -466,6 +466,9 @@ static WRITE_HANDLER(riot6532_2_ram_w) {
 	pMem[0x0100] = pMem[0x4100] = pMem[0x8100] = pMem[0xc100] = data;
 }
 
+/* for Caveman only */
+static READ_HANDLER(in_1cb_r);
+static READ_HANDLER(in_1e4_r);
 
 /*---------------------------
 /  Memory map for main CPU
@@ -474,6 +477,8 @@ static MEMORY_READ_START(GTS80_readmem)
 {0x0000,0x007f,	MRA_RAM},		/*U4 - 6532 RAM*/
 {0x0080,0x00ff,	MRA_RAM},		/*U5 - 6532 RAM*/
 {0x0100,0x017f,	MRA_RAM},		/*U6 - 6532 RAM*/
+{0x01cb,0x01cb, in_1cb_r},
+{0x01e4,0x01e4, in_1e4_r},
 {0x0200,0x027f, riot6532_0_r},	/*U4 - I/O*/
 {0x0280,0x02ff, riot6532_1_r},	/*U5 - I/O*/
 {0x0300,0x037f, riot6532_2_r},	/*U6 - I/O*/
@@ -564,17 +569,6 @@ static MEMORY_WRITE_START(GTS80_writemem)
 {0xf000,0xffff, MWA_ROM},			/*U3 ROM*/
 MEMORY_END
 
-static MEMORY_READ_START(video_readmem)
-{0x00000,0x07fff, MRA_RAM},
-{0x08f00,0x0ffff, MRA_ROM},
-{0xf8000,0xfffff, MRA_ROM},
-MEMORY_END
-
-static MEMORY_WRITE_START(video_writemem)
-{0x00000,0x07fff, MWA_RAM},
-{0x08000,0x0ffff, MWA_ROM},
-MEMORY_END
-
 static void init_common(void) {
   int ii;
 
@@ -611,27 +605,6 @@ static MACHINE_INIT(gts80) {
   init_common();
 }
 
-static MACHINE_INIT(gts80vid) {
-  int i;
-  UINT32 off, j = 0xf8000;
-  UINT8* pvrom = memory_region(GTS80_MEMREG_VIDCPU);
-
-  init_common();
-  GTS80locals.hasVideo = 1;
-
-  /* copying video ROM contents to the right place (in the right byte order). */
-  for (off = 0x08000; off < 0x10000; off += 0x2000) {
-	  for (i = 0; i < 0x1000; i++) {
-		  memcpy(pvrom + (j++), pvrom + off + i, 1);
-		  memcpy(pvrom + (j++), pvrom + off + i + 0x1000, 1);
-	  }
-  }
-  memcpy(pvrom + 0x08000, pvrom + 0xf8000, 0x08000);
-
-  /* clear RAM area */
-  memset(pvrom, 0, 0x8000);
-}
-
 static MACHINE_STOP(gts80)
 {
   sndbrd_0_exit();
@@ -651,47 +624,6 @@ static NVRAM_HANDLER(gts80) {
 		for(i=1;i<8;i++)
 			memcpy(memory_region(GTS80_MEMREG_CPU)+0x1800+(i*0x100), memory_region(GTS80_MEMREG_CPU)+0x1800, 0x100);
 }
-
-VIDEO_UPDATE(gts80vid)
-{
-	int x, y;
-
-	if (get_vh_global_attribute_changed())
-		for (y = Machine->visible_area.min_y; y <= Machine->visible_area.max_y; y+=2)
-		{
-			for (x = Machine->visible_area.min_x; x <= Machine->visible_area.max_x; x++)
-			{
-				plot_pixel (tmpbitmap, x, y+1, Machine->pens[videoram[0x80*y+x] & 0x0f]);
-				plot_pixel (tmpbitmap, x, y, Machine->pens[(videoram[0x80*y+x] >> 4)& 0x0f]);
-			}
-		}
-
-	copybitmap(bitmap,tmpbitmap,0,0,0,0,&Machine->visible_area,TRANSPARENCY_NONE,0);
-}
-
-static WRITE_HANDLER(port0xw) { }
-static WRITE_HANDLER(port1xw) { }
-static WRITE_HANDLER(port2xw) { }
-static WRITE_HANDLER(port3xw) { }
-static WRITE_HANDLER(port5xw) { }
-
-static READ_HANDLER(port1xr) { return 0; }
-static READ_HANDLER(port3xr) { return 0; }
-static READ_HANDLER(port4xr) { return 0; }
-
-PORT_READ_START(video_readport)
-	{ 0x102, 0x102, port1xr },
-	{ 0x300, 0x300, port3xr },
-	{ 0x400, 0x400, port4xr },
-PORT_END
-
-PORT_WRITE_START(video_writeport)
-	{ 0x000, 0x002, port0xw },
-	{ 0x100, 0x102, port1xw },
-	{ 0x200, 0x200, port2xw },
-	{ 0x300, 0x300, port3xw },
-	{ 0x500, 0x506, port5xw },
-PORT_END
 
 MACHINE_DRIVER_START(gts80)
   MDRV_IMPORT_FROM(PinMAME)
@@ -719,21 +651,6 @@ MACHINE_DRIVER_START(gts80ss)
   MDRV_IMPORT_FROM(gts80s_ss)
 MACHINE_DRIVER_END
 
-MACHINE_DRIVER_START(gts80vid)
-  MDRV_IMPORT_FROM(gts80ss)
-  MDRV_CPU_ADD_TAG("vcpu", I86, 5000000)
-  MDRV_CPU_MEMORY(video_readmem, video_writemem)
-  MDRV_CPU_PORTS(video_readport, video_writeport)
-  MDRV_CORE_INIT_RESET_STOP(gts80vid,NULL,gts80)
-  /* video hardware */
-  //MDRV_VIDEO_ATTRIBUTES(VIDEO_TYPE_RASTER)
-  //MDRV_SCREEN_SIZE(256, 256)
-  //MDRV_VISIBLE_AREA(0, 255, 0, 255)
-  //MDRV_PALETTE_LENGTH(16)
-  //MDRV_VIDEO_START(generic)
-  //MDRV_VIDEO_UPDATE(gts80vid)
-MACHINE_DRIVER_END
-
 MACHINE_DRIVER_START(gts80b)
   MDRV_IMPORT_FROM(gts80)
   MDRV_IMPORT_FROM(gts80s_s)
@@ -752,4 +669,316 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(gts80bs3)
   MDRV_IMPORT_FROM(gts80)
   MDRV_IMPORT_FROM(gts80s_b3)
+MACHINE_DRIVER_END
+
+
+
+/*
+	Additional code for Caveman below. Some notes:
+
+	The memory from 0x0000 to 0x00ff holds the 8086
+	IRQ vectors. I found only 4 vectors are filled
+	with any useful values: the NMI vector and
+	3 others, namely the ones at memory locations:
+
+	0x0008 -> #0x02 (fixed to NMI according to i86.h)
+	0x0080 -> #0x20
+	0x0084 -> #0x21
+	0x009c -> #0x27
+
+	I picked 0x20, because this way, the language selection
+	as described below works. No idea what the other IRQs
+	are used for yet...
+
+	Next, the command to be transmitted to the video board
+	is determined by a certain lamp pattern at strobe time.
+	The command consists of the number of the active player
+	in the high nibble and a state "code" in the low nibble.
+	The video game state is depending on these codes as
+	they are returned from Port 0x300.
+	I found the meaning of some of these codes:
+	(the alphabetic letter was taken from the test screen)
+
+	A - 0x01 - reset game screen
+	B - 0x02 - place Caveman on left hand side
+	C - 0x03 - place Caveman on right hand side
+	D - 0x04 - ??? (maybe set player number)
+	F - 0x06 - show extra ball spot
+	G - 0x07 - tilt
+	H - 0x08 - exit to demo mode
+	I - 0x09 - hide extra ball spot, also tilt reset
+	K - 0x0b - display english language instructions
+	L - 0x0c - display french language instructions
+	M - 0x0d - display german language instructions (code default!)
+
+	Game dip switches 6 to 8 control the language used.
+	Setting them all to 1 enables german text.
+	Setting either one to off sets english text.
+	(Didn't find the setting for french text yet)
+*/
+
+static void video_irq(int irqline)
+{
+  logerror("command to video board = %02X\n", GTS80locals.video_data);
+  cpu_set_irq_line(GTS80_VIDCPU, irqline, ASSERT_LINE);
+}
+
+/* The right i86 IRQ vector is determined by the return value of irq_callback(0)???
+   Why's that??? Sounds funny to me... but what the heck. */
+static int irq_callback(int irqline)
+{
+  cpu_set_irq_line(GTS80_VIDCPU, irqline, CLEAR_LINE);
+  return 0x20;
+}
+
+static int maxy = -1;
+
+static MACHINE_INIT(gts80vid) {
+  static int init_done = 0;
+  init_common();
+  GTS80locals.hasVideo = 1;
+  maxy = -1;
+  cpu_set_irq_callback(GTS80_VIDCPU, irq_callback);
+
+  if (!init_done) { /* the following must happen only once! */
+    int i;
+    UINT32 off, j = 0xf8000;
+    UINT8* pvrom = memory_region(GTS80_MEMREG_VIDCPU);
+
+    /* copying video ROM contents to the right place (in the right byte order). */
+    for (off = 0x08000; off < 0x10000; off += 0x2000) {
+      for (i = 0; i < 0x1000; i++) {
+        memcpy(pvrom + (j++), pvrom + off + i, 1);
+        memcpy(pvrom + (j++), pvrom + off + i + 0x1000, 1);
+      }
+    }
+    memcpy(pvrom + 0x08000, pvrom + 0xf8000, 0x08000);
+
+    init_done = 1;
+  }
+
+}
+
+/* this palette is a FAKE! I don't know where the original colors
+   come from yet, so I tried to make it look as nice as I could */
+static unsigned char gts80vid_palette[16*3] =
+{
+	0, 0, 0,
+	32, 32, 16,    //17, 17, 17,
+	64, 64, 32,    //34, 34, 34,
+	110, 110, 150, //51, 51, 51,
+	128, 136, 64,  //68, 68, 68,
+	160, 168, 80,  //85, 85, 85,
+	192, 200, 96,  //102, 102, 102,
+	224, 232, 112, //119, 119, 119,
+	31, 143, 16,   //136, 136, 136,
+	63, 159, 48,   //153, 153, 153,
+	75, 175, 80,   //170, 170, 170,
+	127, 191, 112, //187, 187, 187,
+	195, 195, 195, //204, 204, 204
+	64, 32, 32,    //221, 221, 221,
+	64, 48, 32,    //238, 238, 238
+	255, 255, 255  //255, 255, 255
+};
+
+/* initialize the palette. The way it's done here
+   allows for both configurable segment colors
+   as well as for the original game colors. */
+static void palette_init_gts80vid (unsigned char *palette,
+	unsigned short *colortable,const unsigned char *color_prom) {
+  int rStart = 0xff;
+  int gStart = 0xe0;
+  int bStart = 0x20;
+  int perc66 = 67;
+  int perc33 = 33;
+  int perc0  = 20;
+  int ii;
+
+#ifdef PINMAME_EXT
+  if ((pmoptions.dmd_red > 0) || (pmoptions.dmd_green > 0) || (pmoptions.dmd_blue > 0)) {
+    rStart = pmoptions.dmd_red;
+    gStart = pmoptions.dmd_green;
+    bStart = pmoptions.dmd_blue;
+  }
+  if ((pmoptions.dmd_perc0 > 0) || (pmoptions.dmd_perc33 > 0) || (pmoptions.dmd_perc66 > 0)) {
+    perc66 = pmoptions.dmd_perc66;
+    perc33 = pmoptions.dmd_perc33;
+    perc0  = pmoptions.dmd_perc0;
+  }
+#endif /* PINMAME_EXT */
+
+  palette[DMD_DOTOFF*3+0] = rStart * perc0 / 100;
+  palette[DMD_DOTOFF*3+1] = gStart * perc0 / 100;
+  palette[DMD_DOTOFF*3+2] = bStart * perc0 / 100;
+  palette[DMD_DOT33*3+0]  = rStart * perc33 / 100;
+  palette[DMD_DOT33*3+1]  = gStart * perc33 / 100;
+  palette[DMD_DOT33*3+2]  = bStart * perc33 / 100;
+  palette[DMD_DOT66*3+0]  = rStart * perc66 / 100;
+  palette[DMD_DOT66*3+1]  = gStart * perc66 / 100;
+  palette[DMD_DOT66*3+2]  = bStart * perc66 / 100;
+  palette[DMD_DOTON*3+0]  = rStart;
+  palette[DMD_DOTON*3+1]  = gStart;
+  palette[DMD_DOTON*3+2]  = bStart;
+
+  memcpy (palette + 15, &gts80vid_palette, sizeof(gts80vid_palette));
+}
+
+static VIDEO_START(gts80vid)
+{
+	if ((tmpbitmap = auto_bitmap_alloc(Machine->drv->screen_width,Machine->drv->screen_height)) == 0)
+		return 1;
+	return 0;
+}
+
+static VIDEO_STOP(gts80vid)
+{
+}
+
+static UINT8 *vram;
+
+/* The game resolution is actually just 128 * 256 pixels.
+   But we strech it right here and now to 256 * 256. */
+static WRITE_HANDLER(vram_w) {
+	int y = offset / 64;
+	int x = offset % 64;
+	int hi = 5 + (data >> 4);
+	int lo = 5 + (data & 0x0f);
+
+	plot_pixel(tmpbitmap, x*4,   maxy+y, hi);
+	plot_pixel(tmpbitmap, x*4+1, maxy+y, hi);
+	plot_pixel(tmpbitmap, x*4+2, maxy+y, lo);
+	plot_pixel(tmpbitmap, x*4+3, maxy+y, lo);
+	vram[offset] = data;
+}
+
+static READ_HANDLER(vram_r) {
+	return vram[offset];
+}
+
+/* in order to use the routine from core.c,
+   it has to be declared non-static there! */
+extern VIDEO_UPDATE(core_gen);
+
+/* clipping area if dmd_only is on */
+const struct rectangle clip1 = { 0, 255, 70, 309 };
+
+/* clipping area if dmd_only is off */
+const struct rectangle clip2 = { 0, 255, 140, 379 };
+
+static VIDEO_UPDATE(gts80vid)
+{
+	/* Draw regular display, lamps, etc */
+	video_update_core_gen(bitmap, cliprect);
+
+	if (maxy < 0) {
+		maxy = Machine->visible_area.max_y;
+		if (maxy < 140)
+			maxy = 70;
+		else
+		    maxy = 140;
+		set_visible_area(0, 255, 0, maxy + 239);
+	}
+
+	copybitmap(bitmap,tmpbitmap,0,0,0,0,(maxy < 100 ? &clip1 : &clip2),TRANSPARENCY_NONE,0);
+}
+
+static int read1x = 0;
+
+static WRITE_HANDLER(port00xw) {
+	logerror("write port 0%02x = %02x\n", offset, data);
+}
+static WRITE_HANDLER(port10xw) {
+	if (offset == 0 && data == 0x10)
+		read1x = 0;
+	if (offset == 0 && data == 0x11)
+		read1x = 1;
+	logerror("write port  1%02x = %02x\n", offset, data);
+}
+static READ_HANDLER(port102r) {
+	logerror("read  port  102\n", offset);
+	return 0x00;
+}
+static WRITE_HANDLER(port200w) {
+	logerror("write port   200 = %02x\n", offset, data);
+}
+static READ_HANDLER(port200r) {
+/* no idea what it is for, but its high nibble
+   has got to be all 1 after IRQ 0x20 is called,
+   or else the video code enters an endless loop. */
+	logerror("read  port   200\n", offset);
+	return 0xf0;
+}
+static WRITE_HANDLER(port300w) {
+	logerror("write port    300 = %02x\n", offset, data);
+}
+/* read game state and no. of active player */
+static READ_HANDLER(port300r) {
+	logerror("read  port    300\n", offset);
+	return GTS80locals.video_data;
+}
+/* diag switch for video board*/
+static READ_HANDLER(port400r) {
+//	logerror("read  port     4%02x\n", offset);
+	return (coreGlobals.swMatrix[0] & 0x02) ? 0x0f : 0x00;
+}
+static WRITE_HANDLER(port50xw) {
+	logerror("write port      5%02x = %02x\n", offset, data);
+}
+
+static READ_HANDLER(in_1cb_r) {
+	logerror("read Caveman input 1CB\n");
+	return coreGlobals.swMatrix[0] >> 4;
+}
+static READ_HANDLER(in_1e4_r) {
+	logerror("read Caveman input 1E4\n");
+	return coreGlobals.swMatrix[0] >> 4;
+}
+
+PORT_READ_START(video_readport)
+	{ 0x102, 0x102, port102r },
+	{ 0x200, 0x200, port200r },
+	{ 0x300, 0x300, port300r },
+	{ 0x400, 0x400, port400r },
+PORT_END
+
+PORT_WRITE_START(video_writeport)
+	{ 0x000, 0x002, port00xw },
+	{ 0x100, 0x102, port10xw },
+	{ 0x200, 0x200, port200w },
+	{ 0x300, 0x300, port300w },
+	{ 0x500, 0x506, port50xw },
+PORT_END
+
+static MEMORY_READ_START(video_readmem)
+{0x00000,0x0058e, MRA_RAM},
+{0x007cf,0x007fe, MRA_RAM},
+{0x02000,0x05fff, vram_r},
+{0x08000,0x0ffff, MRA_ROM},
+{0xf8000,0xfffff, MRA_ROM},
+MEMORY_END
+
+static MEMORY_WRITE_START(video_writemem)
+{0x00000,0x0058e, MWA_RAM},
+{0x007cf,0x007fe, MWA_RAM},
+{0x02000,0x05fff, vram_w, &vram},
+{0x08000,0x0ffff, MWA_ROM},
+{0xf8000,0xfffff, MWA_ROM},
+MEMORY_END
+
+MACHINE_DRIVER_START(gts80vid)
+  MDRV_IMPORT_FROM(gts80ss)
+  MDRV_CPU_ADD_TAG("vcpu", I86, 5000000)
+  MDRV_CPU_MEMORY(video_readmem, video_writemem)
+  MDRV_CPU_PORTS(video_readport, video_writeport)
+  MDRV_CORE_INIT_RESET_STOP(gts80vid,NULL,gts80)
+  /* video hardware */
+  MDRV_SCREEN_SIZE(640, 400)
+  MDRV_VISIBLE_AREA(0, 639, 0, 399)
+  MDRV_GFXDECODE(0)
+  MDRV_PALETTE_LENGTH(21) // 16 game colors + 5 segment colors
+  MDRV_PALETTE_INIT(gts80vid)
+  MDRV_VIDEO_ATTRIBUTES(VIDEO_TYPE_RASTER | VIDEO_MODIFIES_PALETTE)
+  MDRV_VIDEO_START(gts80vid)
+  MDRV_VIDEO_STOP(gts80vid)
+  MDRV_VIDEO_UPDATE(gts80vid)
 MACHINE_DRIVER_END
