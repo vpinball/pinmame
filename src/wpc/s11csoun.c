@@ -41,7 +41,7 @@ const struct sndbrdIntf s11csIntf = {
 
 static struct {
   struct sndbrdData brdData;
-} locals;
+} s11clocals;
 
 /*--------------
 /  Memory maps
@@ -80,23 +80,23 @@ static const struct pia6821_interface s11cs_pia = {
 };
 
 static WRITE_HANDLER(s11cs_rombank_w) {
-  cpu_setbank(S11CS_BANK0, locals.brdData.romRegion + 0x10000*(data & 0x03) + 0x8000*((data & 0x04)>>2));
+  cpu_setbank(S11CS_BANK0, s11clocals.brdData.romRegion + 0x10000*(data & 0x03) + 0x8000*((data & 0x04)>>2));
 }
 static void s11cs_init(struct sndbrdData *brdData) {
-  locals.brdData = *brdData;
+  s11clocals.brdData = *brdData;
   pia_config(S11CS_PIA0, PIA_STANDARD_ORDERING, &s11cs_pia);
-  cpu_setbank(S11CS_BANK0, locals.brdData.romRegion);
+  cpu_setbank(S11CS_BANK0, s11clocals.brdData.romRegion);
 }
 
 static WRITE_HANDLER(s11cs_pia0ca2_w) { if (!data) YM2151_sh_reset(); }
-static WRITE_HANDLER(s11cs_pia0cb2_w) { sndbrd_data_cb(locals.brdData.boardNo,data); }
+static WRITE_HANDLER(s11cs_pia0cb2_w) { sndbrd_data_cb(s11clocals.brdData.boardNo,data); }
 
 static void s11cs_ym2151IRQ(int state) { pia_set_input_ca1(S11CS_PIA0, !state); }
 static void s11cs_piaIrqA(int state) {
-  cpu_set_irq_line(locals.brdData.cpuNo, M6809_FIRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
+  cpu_set_irq_line(s11clocals.brdData.cpuNo, M6809_FIRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
 static void s11cs_piaIrqB(int state) {
-  cpu_set_nmi_line(locals.brdData.cpuNo, state ? ASSERT_LINE : CLEAR_LINE);
+  cpu_set_nmi_line(s11clocals.brdData.cpuNo, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
 /*----------------------------
@@ -154,24 +154,31 @@ static const struct pia6821_interface s11s_pia[] = {{
  /* irq : A/B             */ s11s_piaIrq, s11s_piaIrq
 }};
 
+static struct {
+  struct sndbrdData brdData;
+} s11slocals;
+
 static void s11s_init(struct sndbrdData *brdData) {
-  locals.brdData = *brdData;
-  pia_config(S11S_PIA0, PIA_STANDARD_ORDERING, &s11s_pia[locals.brdData.subType]);
-  if (locals.brdData.subType) {
-    cpu_setbank(S11S_BANK0,  locals.brdData.romRegion+0xc000);
-    cpu_setbank(S11S_BANK1,  locals.brdData.romRegion+0x4000);
+  s11slocals.brdData = *brdData;
+  pia_config(S11S_PIA0, PIA_STANDARD_ORDERING, &s11s_pia[s11slocals.brdData.subType]);
+  if (s11slocals.brdData.subType) {
+    cpu_setbank(S11S_BANK0, s11slocals.brdData.romRegion+0xc000);
+    cpu_setbank(S11S_BANK1, s11slocals.brdData.romRegion+0x4000);
   }
 }
 
 static WRITE_HANDLER(s11s_bankSelect) {
-  cpu_setbank(S11S_BANK0, locals.brdData.romRegion + 0x8000+((data&0x01)<<14));
-  cpu_setbank(S11S_BANK1, locals.brdData.romRegion + 0x0000+((data&0x02)<<13));
+  cpu_setbank(S11S_BANK0, s11slocals.brdData.romRegion + 0x8000+((data&0x01)<<14));
+  cpu_setbank(S11S_BANK1, s11slocals.brdData.romRegion + 0x0000+((data&0x02)<<13));
 }
 
 static void s11s_piaIrq(int state) {
-  cpu_set_irq_line(locals.brdData.cpuNo, M6808_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
+  cpu_set_irq_line(s11slocals.brdData.cpuNo, M6808_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
 static void s11s_diag(int button) {
-  cpu_set_nmi_line(locals.brdData.cpuNo, button ? ASSERT_LINE : CLEAR_LINE);
+  cpu_set_nmi_line(s11slocals.brdData.cpuNo, button ? ASSERT_LINE : CLEAR_LINE);
 }
+
+
+
