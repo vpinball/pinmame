@@ -54,7 +54,7 @@
 
 #define BY6803_VBLANKFREQ    60 /* VBLANK frequency */
 #define BY6803_IRQFREQ      150 /* IRQ (via PIA) frequency*/
-#define BY6803_ZCFREQ        85 /* Zero cross frequency (PHASE A)*/
+#define BY6803_ZCFREQ       120 /* Zero cross frequency (PHASE A = 1/2 of this)*/
 
 #define mlogerror printf
 
