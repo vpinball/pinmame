@@ -37,7 +37,6 @@ const struct sndbrdIntf alvgdmdIntf = {
 };
 
 static WRITE_HANDLER(dmd32_bank_w);
-static WRITE_HANDLER(dmd32_status_w);
 static READ_HANDLER(dmd32_latch_r);
 static INTERRUPT_GEN(dmd32_firq);
 
