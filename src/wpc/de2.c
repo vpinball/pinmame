@@ -1,49 +1,19 @@
 /*DE2.C - Includes support for
-         DMD 128x16 Games And 1st Sound Board Generations ONLY */
+         DMD 128x16 Games And 1st and 2nd Sound Board Generations ONLY */
 
 /************************************************************************************************
-  Data East Pinball -
-  Hardware from 1987-1994
-  CPU hardware is very similar to Williams System 11 Hardware!
+  Covers the following: (see de.h for full history)
 
   CPU Boards:
-	1) CPU Rev 1 : Ram size = 2k (0x0800)	(Early Laser War Only)
-	2) CPU Rev 2 : Ram size = 8k (0x2000)	(Later Laser War to Phantom of the Opera)
 	3) CPU Rev 3 : CPU Controlled solenoids	(Back to the Future to Jurassic Park)
-	4) CPU Rev 3b: Printer option			(Last Action Hero to Batman Forever)
 
   Display Boards:
-	1) 520-5004-00: 2 X 7 Digit (16 Seg. Alphanumeric), 2 X 7 Digit (7 Seg. Numeric), 1 X 4 Digit (7 Seg. Numeric)
-	   (Used in Laser War Only)
-
-	2) 520-5014-01: 2 X 7 Digit (16 Seg. Alphanumeric), 2 X 7 Digit (7 Seg. Alphanumeric)
-	   (Secret Service to Playboy)
-	
-	3) 520-5030-00: 2 X 16 Digit (16 Seg Alphanumeric)
-		(MNF to Simpsons)
-	
 	4) 520-5042-00: 128X16 DMD - z80 CPU + integrated controller.
 	   (Checkpoint to Hook)
 
-	5) 520-5505 Series: 128X32 DMD - m6809 CPU + separate controller board
-		a) -00 generation: (Lethal Weapon to Last Action Hero)
-		b) -01 generation: (Tales From the Crypt to Guns N Roses)
-
-	6) 520-5092-01: 192X64 DMD - 68000 CPU + separate controller board
-	   (Maveric to Batman Forever)
-
-   Sound Board Revisions:
-	1) 520-5002 Series: M6809 cpu, YM2151, MSM5205, hc4020 for stereo decoding.
-		a) -00 generation, used 27256 eproms (only Laser War)
-	    b) -02 generation, used 27256 & 27512 eproms (Laser War - Back to the Future)
-		c) -03 generation, used 27010 voice eproms (Simpsons - Checkpoint)
-
+   Sound Board Revisions: 
 	2) 520-5050-01 Series:	M6809 cpu, BSMT2000 16 bit stereo synth+dac, 2 custom PALS
 		a) -01 generation,	used 27020 voice eproms (Batman - Lethal Weapon 3)
-		b) -02 generation,	used 27040 voice eproms (Star Wars - J.Park)
-		c) -03 generation,	similar to 02, no more info known (LAH - Maverick)
-	3) 520-5077-00 Series:	??  (Tommy to Frankenstein)
-	4) 520-5126-xx Series:	??	(Baywatch to Batman Forever)
 
 *************************************************************************************************/
 #include <stdarg.h>
@@ -55,12 +25,13 @@
 #include "machine/6821pia.h"
 #include "core.h"
 #include "de1sound.h"
+#include "de2sound.h"
 #include "dedmd.h"
 #include "de.h"
 #include "de2.h"
 #include "snd_cmd.h"
 
-#define DE_DCPU1			1	/*DMD CPU IS #1*/
+#define DE_DCPU1            1   /*DMD CPU IS #1*/
 #define DE_SDCPU1			2   /*DMD SOUND GEN 1 CPU IS #2*/
 
 #define DE_VBLANKFREQ      50   /* VBLANK frequency */
@@ -69,16 +40,26 @@
 #define DE_DMDIRQFREQ	 2000   /* As measured on my Hook */
 
 static void de_init(void);
+static void de2_init(void);
+static void init_common(void);
 static void de_exit(void);
 static void de_nvram(void *file, int write);
+static void de1_sndCommand(int data);
+static void de1_sndStrobe(int data);
+static void de2_sndCommand(int data);
+static void de2_sndStrobe(int data);
 
 UINT32 hv5408_shift, hv5408_latch;
 UINT32 hv5308_shift, hv5308_latch;
 UINT32 hv5222;
 
-static UINT8 dmdRAM[0x2000] = {0};
+static unsigned char dmdRAM[0x2000] = {0};
 
 static int UsingSound = 0;
+
+//Sound Ddeclarations
+extern int des_init();
+
 
 /*----------------
 /  Local varibles
@@ -96,6 +77,8 @@ struct {
   int    swCol;
   int    ssEn;
   int    mainIrq;
+  void   (*sndSoundCommand)(int data);		//Pointer to Sound Command Function
+  void   (*sndSoundStrobe)(int data);		//Pointer to Sound Strobe Function
 } delocals;
 
 static struct {
@@ -164,7 +147,7 @@ static int de_vblank(void) {
 	/*If Mux. Solenoid 10 is firing, adjust solenoid # to 24!*/
     if((delocals.solenoids & CORE_SOLBIT(10)))
       coreGlobals.solenoids = (delocals.solenoids & 0x00ffff00) | (delocals.solenoids<<24);
-
+   
 	if (delocals.ssEn) {
       int ii;
       coreGlobals.solenoids |= CORE_SOLBIT(CORE_SSFLIPENSOL);
@@ -230,35 +213,52 @@ static WRITE_HANDLER(pia4b_w) { delocals.swCol = data; }
 /*-- Jumper J8 --*/
 static READ_HANDLER (pia2a_r)   { return 1; }
 static WRITE_HANDLER(pia2a_w) { delocals.diagnosticLed = (data>>4);	/*LED = PA_4*/ }
-static WRITE_HANDLER(pia2b_w) { logerror("pia2b_w\n"); }
-static WRITE_HANDLER(pia5a_w) { logerror("pia5a_w\n"); }
+static WRITE_HANDLER(pia2b_w) { /*logerror("pia2b_w\n"); */}
+static WRITE_HANDLER(pia5a_w) { /*logerror("pia5a_w\n"); */ }
 
 /*----------------
 /Sound Commands
 /-----------------*/
-static WRITE_HANDLER(pia5b_w)  {
-	//logerror("soundlatch_w %x\n",data);
-//	if(UsingSound){
-//		soundlatch_w(0,data);
-		snd_cmd_log(data);
-//	}
+static WRITE_HANDLER(pia5b_w)   { delocals.sndSoundCommand(data);}
+static WRITE_HANDLER(pia5cb2_w) { delocals.sndSoundStrobe(data); }
+
+/*******Sound 1 Generation Command Function******/
+static void de1_sndCommand(int data)
+{
+//	logerror("soundlatch_w %x\n",data);
+	if(UsingSound)
+		soundlatch_w(0,data);
 }
-static WRITE_HANDLER(pia5cb2_w) {
+
+/*******Sound 2 Generation Command Function******/
+static void de2_sndCommand(int data)
+{
+	//Don't know why 0xfe commands are sent, but we must ignore them otherwise sound commands are ignored
+	if(data != 0xfe)
+		des_soundCmd_w(0,data);
+}
+
+/*******Sound 1 Generation Strobe Function******/
+static void de1_sndStrobe(int data)
+{
 //	logerror("FIRQ Enable?:pia5cb2_w %x\n",data);
 	if(UsingSound)
 		if((data&0x01)==0)
 			cpu_cause_interrupt(DE_SDCPU1,M6809_INT_FIRQ);
 }
 
+/*******Sound 2 Generation Strobe Function******/
+static void de2_sndStrobe(int data) {}
+
 /*SHOULD be Unsused*/
-static WRITE_HANDLER(pia0ca2_w) {logerror("pia0ca2_w\n");}
+static WRITE_HANDLER(pia0ca2_w) { /*logerror("pia0ca2_w\n");*/}
 static READ_HANDLER (pia3ca1_r) {return 0x00;}
 static READ_HANDLER (pia3cb1_r) {return 0x00;}
 static READ_HANDLER (pia3ca2_r) {return 0x00;}
 static READ_HANDLER (pia3cb2_r) {return 0x00;}
-static WRITE_HANDLER(pia2ca2_w) { logerror("Comma 3+4 %d\n",data); }
-static WRITE_HANDLER(pia2cb2_w) { logerror("Comma 1+2 %d\n",data); }
-static WRITE_HANDLER(pia5ca2_w) { logerror("pia5ca2_w %x\n",data); }
+static WRITE_HANDLER(pia2ca2_w) { /*logerror("Comma 3+4 %d\n",data); */}
+static WRITE_HANDLER(pia2cb2_w) { /*logerror("Comma 1+2 %d\n",data); */}
+static WRITE_HANDLER(pia5ca2_w) { /*logerror("pia5ca2_w %x\n",data); */}
 
 static READ_HANDLER (pia2ca1_r) { return cpu_get_reg(M6808_IRQ_STATE) ? core_getSwSeq(DE_SWADVANCE) : 0; }
 static READ_HANDLER (pia2cb1_r) { return cpu_get_reg(M6808_IRQ_STATE) ? core_getSwSeq(DE_SWUPDN)    : 0; }
@@ -272,7 +272,7 @@ static READ_HANDLER(pia5a_r)
 {
 //	logerror("busy=%x status=%x\n",de_dmdlocals.busy,de_dmdlocals.status);
 	int busy = (de_dmdlocals.idat == 0 && de_dmdlocals.test == 1);
-	logerror("busy=%x status=%x\n",busy,de_dmdlocals.status);
+	//logerror("busy=%x status=%x\n",busy,de_dmdlocals.status);
 	return busy
 		 + de_dmdlocals.status    ? 0x02:0x00;
 		 //+ de_dmdlocals.nTest     ? 0x00:0x80;
@@ -306,11 +306,11 @@ static void HC7474Logic(int clock, int clear, int preset)
 	}
 	if ( nTemp!=de_dmdlocals.hc74_nq ) {
 		if ( !de_dmdlocals.hc74_nq ) {
-			cpu_set_irq_line(DE_DCPU1, Z80_INT_REQ, ASSERT_LINE);
-			logerror("z80 int\n");
+			cpu_set_irq_line(DE_DCPU1, Z80_INT_REQ, ASSERT_LINE); 
+			//logerror("z80 int\n");
 		}
 		else {
-			cpu_set_irq_line(DE_DCPU1, Z80_INT_REQ, CLEAR_LINE);
+			cpu_set_irq_line(DE_DCPU1, Z80_INT_REQ, CLEAR_LINE); 
 		}
 	}
 	de_dmdlocals.busy = de_dmdlocals.hc74_q;
@@ -318,7 +318,7 @@ static void HC7474Logic(int clock, int clear, int preset)
 
 static void switchbank(void)
 {
-	int addr =   (de_dmdlocals.bs0 *0x04000)
+	int addr =   (de_dmdlocals.bs0 *0x04000) 
 			   + (de_dmdlocals.bs1 *0x08000)
  			   + (de_dmdlocals.bs2 *0x10000);
 
@@ -330,13 +330,13 @@ static WRITE_HANDLER(pia3a_w) {
   /*DMD Data - Send DMD Command (PA0-PA7)*/
   de_dmdlocals.dmd_latch = data;
 
-  logerror("dmd_latch written (%x)\n", data);
+  //logerror("dmd_latch written (%x)\n", data);
 }
 static WRITE_HANDLER(pia3b_w) {
 	int nTemp;
     /*DMD Data - Clock & Reset signal (PB0-PB1)*/
 	nTemp = (data>>1) & 0x01;
-	logerror("pia3b_w %x\n", data);
+	//logerror("pia3b_w %x\n", data);
 
 	if ( nTemp != de_dmdlocals.dmd_reset ) {
 		de_dmdlocals.dmd_reset = nTemp;
@@ -352,13 +352,13 @@ static WRITE_HANDLER(pia3b_w) {
 			HC7474Logic(de_dmdlocals.dmd_clock, de_dmdlocals.idat, de_dmdlocals.test);
 			switchbank();
 			cpu_set_reset_line(DE_DCPU1, PULSE_LINE);
-			logerror("reset\n");
+			//logerror("reset\n");
 		}
 	}
 	nTemp = data & 0x01;
 	if ( de_dmdlocals.dmd_clock != nTemp ) {
 		de_dmdlocals.dmd_clock = nTemp;
-			logerror("clock set to %x\n",de_dmdlocals.dmd_clock);
+			//logerror("clock set to %x\n",de_dmdlocals.dmd_clock);
 		HC7474Logic(de_dmdlocals.dmd_clock, de_dmdlocals.idat, de_dmdlocals.test);
 	}
 }
@@ -474,7 +474,9 @@ static core_tData deData = {
   "de"
 };
 
-static void de_init(void) {
+//Common Init between both Generations
+static void init_common(void)
+{
   /* init PIAs */
   int ii;
   if (delocals.initDone)
@@ -508,11 +510,18 @@ static void de_init(void) {
   if(memory_region(DE_MEMREG_DCPU1))
   {
   memcpy(memory_region(DE_MEMREG_DCPU1),
-         memory_region(DE_MEMREG_DROM1) +
+         memory_region(DE_MEMREG_DROM1) + 
 	     (memory_region_length(DE_MEMREG_DROM1) - 0x4000), 0x4000);
   }
+  //Init the PIA
+  pia_reset();
+}
 
-  /*Sound Enabled?*/
+/*Generation 1 Specific Init Code*/
+static void de_init(void) {
+  init_common();
+
+  /*Init Sound if Sound Enabled?*/
   if (((Machine->gamedrv->flags & GAME_NO_SOUND) == 0) && Machine->sample_rate)
   {
 	  UsingSound=1;
@@ -521,9 +530,27 @@ static void de_init(void) {
   else
 	  UsingSound=0;
 
-  logerror("Using Sound = %s\n",UsingSound?"Yes":"No");
+  /*Setup Pointer Funcs*/
+  delocals.sndSoundCommand = de1_sndCommand;
+  delocals.sndSoundStrobe = de1_sndStrobe;
+}
 
-  pia_reset();
+/*Generation 2 Specific Init Code*/
+static void de2_init(void) {
+  init_common();
+
+  /*Init Sound if Sound Enabled?*/
+  if (((Machine->gamedrv->flags & GAME_NO_SOUND) == 0) && Machine->sample_rate)
+  {
+	  UsingSound=1;
+	  des_init();
+  }
+  else
+	  UsingSound=0;
+
+  /*Setup Pointer Funcs*/
+  delocals.sndSoundCommand = de2_sndCommand;
+  delocals.sndSoundStrobe = de2_sndStrobe;
 }
 
 static void de_exit(void) {
@@ -760,8 +787,8 @@ static int dmd_hc139(int a, int b, data8_t data)
 				de_dmdlocals.clatch = 0;
 				de_dmdlocals.idat = 1;
 				}
-				else
-					logerror("DMD_HC139: Control path failed!\n");
+				else ;
+					//logerror("DMD_HC139: Control path failed!\n");
 			}
 		}
 	}
@@ -820,19 +847,19 @@ static int dmd_portlogic(offs_t offset,data8_t data)
 		if (!a6) {		
 			if(!a4 & !a3){		//000		//SET BANK SWITCH BIT 0 (0x84)
 				de_dmdlocals.bs0 = !d0;
-				//logerror("*bs0=%x : bs1=%x: bs2=%x, data=%x, d0=%x\n",
+				//logerror("*bs0=%x : bs1=%x: bs2=%x, data=%x, d0=%x\n", 
 				//		  de_dmdlocals.bs0,de_dmdlocals.bs1,de_dmdlocals.bs2,data,d0);
 				switchbank();
 			}
 			if(!a4 & a3){		//001		//SET BANK SWITCH BIT 1	(0x8c)
 				de_dmdlocals.bs1 = !d0;
-				//logerror("bs0=%x : *bs1=%x: bs2=%x, data=%x, d0=%x\n",
+				//logerror("bs0=%x : *bs1=%x: bs2=%x, data=%x, d0=%x\n", 
 				//		  de_dmdlocals.bs0,de_dmdlocals.bs1,de_dmdlocals.bs2,data,d0);
 				switchbank();
 			}
 			if(a4 & !a3){		//010		//SET BANK SWITCH BIT 2	(0x94)
 				de_dmdlocals.bs2 = !d0;
-				//logerror("bs0=%x : bs1=%x: *bs2=%x, data=%x, d0=%x\n",
+				//logerror("bs0=%x : bs1=%x: *bs2=%x, data=%x, d0=%x\n", 
 				//		  de_dmdlocals.bs0,de_dmdlocals.bs1,de_dmdlocals.bs2,data,d0);
 				switchbank();
 			}
@@ -846,7 +873,7 @@ static int dmd_portlogic(offs_t offset,data8_t data)
 		else {
 			if(!a4 & !a3){  //100		//SET STATUS LINE
 				de_dmdlocals.status = d0;
-				logerror("status set to %x\n",de_dmdlocals.status);
+//				logerror("status set to %x\n",de_dmdlocals.status);
 			}
 			if(!a4 & a3){   //101		//SET ROW DATA LINE
 				de_dmdlocals.rowdata = d0;
@@ -863,7 +890,7 @@ static int dmd_portlogic(offs_t offset,data8_t data)
 			if(a4 & a3)    //111		//SET TEST LINE
 			{
 				de_dmdlocals.test = d0;
-				logerror("test set to %x\n",de_dmdlocals.test);
+//				logerror("test set to %x\n",de_dmdlocals.test);
 				HC7474Logic(de_dmdlocals.dmd_clock, de_dmdlocals.idat, de_dmdlocals.test);
 			}
 		}
@@ -876,7 +903,7 @@ static READ_HANDLER(de_dmdportread) {
 	int data;
 	read = 1;
 	data=dmd_portlogic(offset,0);	//Assume data bus 0 on a read
-	logerror("Read Port #%x returned %x\n",offset,data);
+	//logerror("Read Port #%x returned %x\n",offset,data);
 
 	if ( de_dmdlocals.dmd_latch==1 )
 		de_dmdlocals.nTest = 1;
@@ -913,13 +940,13 @@ static MEMORY_WRITE_START(de_writemem)
   { 0x2400, 0x2403, pia_1_w},
   { 0x2800, 0x2803, pia_2_w},
   { 0x2c00, 0x2c03, pia_3_w},
-  { 0x3000, 0x3003, pia_4_w},
+  { 0x3000, 0x3003, pia_4_w}, 
   { 0x3400, 0x3403, pia_5_w},
 MEMORY_END
 
 /*We'll handle RAM ourselves*/
 static READ_HANDLER(de_dmdmemread) {
-	return dmdRAM[offset];
+	return dmdRAM[offset]; 
 }
 static WRITE_HANDLER(de_dmdmemwrite) {
 	if ( offset<0x2000 )
@@ -957,88 +984,8 @@ static PORT_WRITE_START( de_dmdwriteport )
 	{0x00,0xff, de_dmdportwrite},
 PORT_END
 
-/*------------------------------------
-/  Memory map for BSMT2000 SOUN BOARD
-/------------------------------------*/
-static MEMORY_READ_START(de_snd2readmem)
-//	{ 0x0000, 0x1fff, MRA_RAM},			
-//	{ 0x4000, 0x7fff, MRA_BANK2},		
-    { 0x8000, 0xffff, MRA_ROM},
-MEMORY_END
-
-static MEMORY_WRITE_START(de_snd2writemem)
-// 	{ 0x0000, 0x1fff, MWA_RAM},			
-//	{ 0x4000, 0x7fff, MWA_ROM},			
-    { 0x8000, 0xffff, MWA_ROM},
-MEMORY_END
-
-
-/*DMD 128x16 Games w/o Emulated Sound*/
-struct MachineDriver machine_driver_DE_DMD1 = {
-  {
-    {
-      CPU_M6808, 1000000, /* 1 Mhz */
-      de_readmem, de_writemem, NULL, NULL,
-      de_vblank, 1,
-      de_irq, DE_IRQFREQ
-    },
-	{
-      CPU_Z80,   4000000, /* 4 Mhz*/
-      de_dmdreadmem, de_dmdwritemem, de_dmdreadport, de_dmdwriteport,
-	  NULL, 0,
-	  de_dmdirq, DE_DMDIRQFREQ
-    }
-  },
-  DE_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50,
-  de_init, CORE_EXITFUNC(NULL)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_TYPE_RASTER,
-  0,
-  NULL, NULL, de2_dmd128x16_refresh,
-  0,0,0,0, {{0}},
-  de_nvram
-};
-
-#if 0
-/*DMD 128x16 Games w/o Emulated Sound*/
-struct MachineDriver machine_driver_DE_DMD1 = {
-  {
-    {
-      CPU_M6808, 1000000, /* 1 Mhz */
-      de_readmem, de_writemem, NULL, NULL,
-      de_vblank, 1,
-      de_irq, DE_IRQFREQ
-    },
-	{
-      CPU_Z80,   4000000, /* 4 Mhz*/
-      de_dmdreadmem, de_dmdwritemem, de_dmdreadport, de_dmdwriteport,
-	  NULL, 0,
-	  de_dmdirq, DE_DMDIRQFREQ
-    },
-	{
-      CPU_M6809 | CPU_AUDIO_CPU,   2000000, /* 2 Mhz*/
-      de_snd2readmem, de_snd2writemem, 0,0,
-      NULL, 0,0,0
-	}
-  },
-  DE_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50,
-  de_init, CORE_EXITFUNC(NULL)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_TYPE_RASTER,
-  0,
-  NULL, NULL, de2_dmd128x16_refresh,
-  0,0,0,0, {{0}},
-  de_nvram
-};
-#endif
-
-
 /*DMD 128x16 Games with Generation 1 Emulated Sound*/
-struct MachineDriver machine_driver_DE_DMD1S = {
+struct MachineDriver machine_driver_DE_DMD1S1 = {
   {
     {
       CPU_M6808, 1000000, /* 1 Mhz */
@@ -1062,7 +1009,36 @@ struct MachineDriver machine_driver_DE_DMD1S = {
   VIDEO_TYPE_RASTER,
   0,
   NULL, NULL, de2_dmd128x16_refresh,
-  0,0,0,0, {DE_SOUND},
+  SOUND_SUPPORTS_STEREO,0,0,0, {DE_SOUND},
+  de_nvram
+};
+
+/*DMD 128x16 Games with Generation 2 Emulated Sound*/
+struct MachineDriver machine_driver_DE_DMD1S2 = {
+  {
+    {
+      CPU_M6808, 1000000, /* 1 Mhz */
+      de_readmem, de_writemem, NULL, NULL,
+      de_vblank, 1,
+      de_irq, DE_IRQFREQ
+    },
+	{
+      CPU_Z80,   4000000, /* 4 Mhz */
+      de_dmdreadmem, de_dmdwritemem, de_dmdreadport, de_dmdwriteport,
+	  NULL,0,
+	  de_dmdirq, DE_DMDIRQFREQ
+    }
+	DES_SOUNDCPU
+  },
+  DE_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  50,
+  de2_init, CORE_EXITFUNC(NULL)
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
+  VIDEO_TYPE_RASTER,
+  0,
+  NULL, NULL, de2_dmd128x16_refresh,
+  SOUND_SUPPORTS_STEREO,0,0,0, {DES_SOUND},
   de_nvram
 };
 

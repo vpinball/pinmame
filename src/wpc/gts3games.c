@@ -21,4 +21,4 @@ INITGAME(cueball,3/*?*/)
 GTS3ROMSTART(cueball,	"grom.rom",0x3437fdd8)
 GTS3_DMD256_ROMSTART(	"dsprom.dsp",0x3cc7f470)
 GTS3_ROMEND
-CORE_GAMEDEFNV(cueball,"Cue Ball Wizard",1992,"Gottlieb",de_mGTS3,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(cueball,"Cue Ball Wizard",1992,"Gottlieb",de_mGTS3,0)
