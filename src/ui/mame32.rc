@@ -196,8 +196,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,20,0,0
- PRODUCTVERSION 1,20,0,0
+ FILEVERSION 1,21,0,0
+ PRODUCTVERSION 1,21,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -216,13 +216,13 @@ BEGIN
             VALUE "Comments", "Multiple Pinball Machine Emulator for Win32\0"
             VALUE "CompanyName", "PinMAME Team\0"
             VALUE "FileDescription", "Multiple Pinball Machine Emulator for Win32\0"
-            VALUE "FileVersion", "1, 20, 0, 0\0"
+            VALUE "FileVersion", "1, 21, 0, 0\0"
             VALUE "InternalName", "PinMAME32\0"
-            VALUE "LegalCopyright", "Copyright © 2001-2002 by the PinMAME Team\0"
+            VALUE "LegalCopyright", "Copyright © 2001-2003 by the PinMAME Team\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "PinMAME32.exe\0"
             VALUE "ProductName", "PinMAME32\0"
-            VALUE "ProductVersion", "1, 20, 0, 0\0"
+            VALUE "ProductVersion", "1, 21, 0, 0\0"
         END
     END
     BLOCK "VarFileInfo"
@@ -278,7 +278,7 @@ BEGIN
     CTEXT           "Multiple Pinball Machine Emulator",IDC_STATIC,147,7,142,
                     11,NOT WS_GROUP
     CTEXT           "Version 0",IDC_VERSION,147,18,142,11,NOT WS_GROUP
-    CTEXT           "(C) 2001-2002 The PinMAME Team",IDC_STATIC,147,
+    CTEXT           "(C) 2001-2003 The PinMAME Team",IDC_STATIC,147,
                     29,142,10,NOT WS_GROUP
     CTEXT           "PinMAME32 version by",IDC_STATIC,147,51,142,10,NOT
                     WS_GROUP
