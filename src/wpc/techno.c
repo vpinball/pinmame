@@ -87,7 +87,7 @@ int xforce_irq_callback(int x)
 }
 
 //Generate a level 1 IRQ - IP0,IP1,IP2 = 0
-static xforce_irq(int data)
+static void xforce_irq(int data)
 {
   cpu_set_irq_line(0, MC68000_IRQ_1, PULSE_LINE);
 }

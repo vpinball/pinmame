@@ -233,10 +233,10 @@ WRITE_HANDLER(snd2_portb_w);
 WRITE_HANDLER(snd2_portc_w);
 static void SPINB_S1_msmIrq(int data);
 static void SPINB_S2_msmIrq(int data);
-READ_HANDLER(SPINB_S1_MSM5025_READROM);
-READ_HANDLER(SPINB_S2_MSM5025_READROM);
-WRITE_HANDLER(SPINB_S1_MSM5025_w);
-WRITE_HANDLER(SPINB_S2_MSM5025_w);
+static READ_HANDLER(SPINB_S1_MSM5025_READROM);
+static READ_HANDLER(SPINB_S2_MSM5025_READROM);
+static WRITE_HANDLER(SPINB_S1_MSM5025_w);
+static WRITE_HANDLER(SPINB_S2_MSM5025_w);
 static void spinb_z80int(int data);
 static void spinb_z80nmi(int data);
 
@@ -690,8 +690,8 @@ WRITE_HANDLER(snd1_portc_w)
 		SPINBlocals.S1_PC0 = 1;
 	else {
 	//Read Data from ROM & Write Data To MSM Chip
-		int data = SPINB_S1_MSM5025_READROM(0);
-		SPINB_S1_MSM5025_w(0,data);
+		int msmdata = SPINB_S1_MSM5025_READROM(0);
+		SPINB_S1_MSM5025_w(0,msmdata);
 	}
 	//Store reset value 
 	SPINBlocals.S1_Reset = GET_BIT6;
@@ -741,8 +741,8 @@ WRITE_HANDLER(snd2_portc_w)
 		SPINBlocals.S2_PC0 = 1;
 	else {
 	//Read Data from ROM & Write Data To MSM Chip
-		int data = SPINB_S2_MSM5025_READROM(0);
-		SPINB_S2_MSM5025_w(0,data);
+		int msmdata = SPINB_S2_MSM5025_READROM(0);
+		SPINB_S2_MSM5025_w(0,msmdata);
 	}
 	//Store reset value 
 	SPINBlocals.S2_Reset = GET_BIT6;
