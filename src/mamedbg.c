@@ -56,6 +56,10 @@ int debug_trace_delay = 0;	/* set to 0 to force a screen update */
 UINT8 debugger_bitmap_changed;
 UINT8 debugger_focus;
 
+#ifdef PINMAME
+static int shift_pressed = 0;	/*detects if shift key (either) was pressed */
+#endif
+
 /****************************************************************************
  * Limits
  ****************************************************************************/
@@ -354,6 +358,9 @@ static void cmd_search_memory( void );
 static void bpr_set(void);
 void edit_cmds_reset( void );
 #endif /* DBG_BPR */
+#ifdef PINMAME
+static void cmd_jumpover( void );
+#endif
 /****************************************************************************
  * Generic structure for saving points in the 'follow history'
  ****************************************************************************/
@@ -713,6 +720,11 @@ static int readkey(void)
 /*		if (keyboard_pressed(KEYCODE_LWIN)) k = KEYCODE_LWIN; */
 /*		if (keyboard_pressed(KEYCODE_RWIN)) k = KEYCODE_RWIN; */
 /*		if (keyboard_pressed(KEYCODE_MENU)) k = KEYCODE_MENU; */
+
+#ifdef PINMAME
+	//keep state of shift key
+	shift_pressed = (keyboard_pressed_memory_repeat(KEYCODE_LSHIFT,0) || keyboard_pressed_memory_repeat(KEYCODE_RSHIFT,0));
+#endif
 		if (k == KEYCODE_NONE)
 			debugger_idle = 1;
 
@@ -862,6 +874,13 @@ static s_command commands[] = {
 	"",
 	"Toggles the display of scanlines",
 	cmd_toggle_scanlines },
+#ifdef PINMAME
+{	(1<<EDIT_CMDS),
+	"SHIFT+ENTER",     0,          CODE_NONE,
+	"",
+	"Skip/Jump to next line (similar to F10 but also skips loops, function calls, etc..)",
+	cmd_jumpover },
+#endif
 {	(1<<EDIT_CMDS),
 	"IGNORE",       0,          CODE_NONE,
 	"<cpunum>",
@@ -3464,6 +3483,13 @@ static void edit_cmds(void)
 		}
 		else
 		{
+#ifdef PINMAME
+			/*Did user specify a SHIFT-ENTER keyboard combination?*/
+			if(shift_pressed) {
+				cmd_jumpover();
+			}
+			else
+#endif
 			/* ENTER in an empty line: do single step... */
 			i = KEYCODE_F8;
 		}
@@ -4506,6 +4532,27 @@ static void cmd_here( void )
 
 	edit_cmds_reset();
 }
+
+
+#ifdef PINMAME
+/**************************************************************************
+ * cmd_jumpover
+ * Set a temporary breakpoint at the PC directly after the cursor pc
+ * and let the emulation run
+ **************************************************************************/
+static void cmd_jumpover( void )
+{
+	DBG.brk_temp = dasm_line( DBGDASM.pc_cur, 1 );
+
+	dbg_update = 0;
+	dbg_active = 0;
+
+	osd_sound_enable(1);
+	debugger_focus = 0;
+
+	edit_cmds_reset();
+}
+#endif
 
 /**************************************************************************
  * cmd_set_ignore
