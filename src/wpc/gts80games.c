@@ -643,7 +643,7 @@ GTS80B_8K_ROMSTART(triplay, "prom1.cpu", CRC(42b29b01) SHA1(58145ce10939d00faff4
 GTS80S2K_ROMSTART(          "696-s.snd",CRC(deedea61) SHA1(6aec221397f250d5dd99faefa313e8028c8818f7))
 GTS80_ROMEND
 #define input_ports_triplay input_ports_gts80
-CORE_GAMEDEFNV(triplay, "Triple Play",1985,"Gottlieb",gl_mGTS80S,0)
+CORE_GAMEDEFNV(triplay, "Triple Play",1985,"Gottlieb",gl_mGTS80B,0)
 
 /*-------------------------------------------------------------------
 / Bounty Hunter (#694)
@@ -654,7 +654,7 @@ GTS80B_8K_ROMSTART(bountyh, "prom1.cpu", CRC(e8190df7) SHA1(5304918d35e379da17ab
 GTS80S2K_ROMSTART(          "694-s.snd", CRC(a0383e41) SHA1(156514d2b52fcd89b608b85991c5066780949979))
 GTS80_ROMEND
 #define input_ports_bountyh input_ports_gts80
-CORE_GAMEDEFNV(bountyh, "Bounty Hunter",1985,"Gottlieb",gl_mGTS80S,0)
+CORE_GAMEDEFNV(bountyh, "Bounty Hunter",1985,"Gottlieb",gl_mGTS80B,0)
 
 /*-------------------------------------------------------------------
 / Tag-Team Wrestling (#698)
@@ -665,7 +665,7 @@ GTS80B_2K_ROMSTART(tagteam, "prom2.cpu", CRC(fd1615ce) SHA1(3a6c3525552286b86e53
 GTS80S2K_ROMSTART("698-s.snd", CRC(9c8191b7) SHA1(12b017692f078dcdc8e4bbf1ffcea1c5d0293d06))
 GTS80_ROMEND
 #define input_ports_tagteam input_ports_gts80
-CORE_GAMEDEFNV(tagteam, "Tag-Team Wrestling",1985,"Gottlieb",gl_mGTS80S,0)
+CORE_GAMEDEFNV(tagteam, "Tag-Team Wrestling",1985,"Gottlieb",gl_mGTS80B,0)
 
 INITGAME(tagteam2, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80SP,GTS80_DISPALPHA,0)
 GTS80B_2K_ROMSTART(tagteam2,"prom2a.cpu", CRC(6d56b636) SHA1(8f50f2742be727835e7343307787b4b5daa1623a),
@@ -673,7 +673,7 @@ GTS80B_2K_ROMSTART(tagteam2,"prom2a.cpu", CRC(6d56b636) SHA1(8f50f2742be727835e7
 GTS80S2K_ROMSTART("698-s.snd", CRC(9c8191b7) SHA1(12b017692f078dcdc8e4bbf1ffcea1c5d0293d06))
 GTS80_ROMEND
 #define input_ports_tagteam2 input_ports_gts80
-CORE_CLONEDEFNV(tagteam2,tagteam,"Tag-Team Wrestling (rev.2)",1985,"Gottlieb",gl_mGTS80S,0)
+CORE_CLONEDEFNV(tagteam2,tagteam,"Tag-Team Wrestling (rev.2)",1985,"Gottlieb",gl_mGTS80B,0)
 
 /*-------------------------------------------------------------------
 / Rock (#697)
