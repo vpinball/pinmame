@@ -27,7 +27,7 @@
     COREPORT_BITDEF(  0x0080, IPT_START1,         IP_KEY_DEFAULT)\
     COREPORT_BIT(     0x0100, "Ball Tilt",        KEYCODE_INSERT)\
   PORT_START /* 1 */ \
-    COREPORT_DIPNAME( 0x0001, 0x0000, "CPU SW1-1")\
+    COREPORT_DIPNAME( 0x0001, 0x0001, "CPU SW1-1")\
 	  COREPORT_DIPSET(0x0000, "0" )\
       COREPORT_DIPSET(0x0001, "1" )\
     COREPORT_DIPNAME( 0x0002, 0x0000, "CPU SW1-2")\
@@ -66,7 +66,7 @@
 
 #define MRGAME_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
 #define MRGAME_LAMPSMOOTH      6 /* Smooth the lamps over this number of VBLANKS */
-#define MRGAME_DISPLAYSMOOTH   1 /* Smooth the display over this number of VBLANKS */
+#define MRGAME_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
 
 /*-- switch numbers --*/
 #define MRGAME_SWTEST     -7

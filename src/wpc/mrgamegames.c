@@ -23,7 +23,7 @@ core_tLCDLayout mrgame_disp[] = {
 /*-------------------------------------------------------------------
 / Dakar (1988?)
 /-------------------------------------------------------------------*/
-INITGAME(dakar, mrgame_disp, FLIP_SWNO(65,64), 4/*?*/, 0, 0)
+INITGAME(dakar, mrgame_disp, FLIP_SWNO(65,64), 4/*?*/, SNDBRD_MRGAME, 0)
 MRGAME_ROMSTART(dakar,	"cpu_ic13.rom", CRC(83183929) SHA1(977ac10a1e78c759eb0550794f2639fe0e2d1507),
 						"cpu_ic14.rom", CRC(2010d28d) SHA1(d262dabd9298566df43df298cf71c974bee1434a))
 MRGAME_VIDEOROM1(		"vid_ic14.rom", CRC(88a9ca81) SHA1(9660d416b2b8f1937cda7bca51bd287641c7730c),
@@ -36,12 +36,12 @@ MRGAME_SOUNDROM15(		"snd_ic06.rom", CRC(29e9417e) SHA1(24f465993da7c93d385ec4534
 						"snd_ic35.rom", CRC(7b2394d1) SHA1(f588f5105d75b54dd65bb6448a2d7774fb8477ec),
 						"snd_ic36.rom", CRC(4039ea65) SHA1(390fce94d1e48b395157d8d9afaa485114c58d52))
 MRGAME_ROMEND
-CORE_GAMEDEFNV(dakar,"Dakar",1988,"Mr. Game (Italy)",mMRGAME1,0)
+CORE_GAMEDEFNV(dakar,"Dakar",1988,"Mr. Game (Italy)",mMRGAME1,GAME_IMPERFECT_SOUND)
 
 /*-------------------------------------------------------------------
 / Motor Show (1988?)
 /-------------------------------------------------------------------*/
-INITGAME(motrshow, mrgame_disp, FLIP_SWNO(65,64), 4/*?*/, 0, 0)
+INITGAME(motrshow, mrgame_disp, FLIP_SWNO(65,64), 4/*?*/, SNDBRD_MRGAME, 0)
 MRGAME_ROMSTART(motrshow,	"cpu_ic13.rom", CRC(e862ca71) SHA1(b02e5f39f9427d58b70b7999a5ff6075beff05ae),
 							"cpu_ic14.rom", CRC(c898ae25) SHA1(f0e1369284a1e0f394f1d40281fd46252016602e))
 MRGAME_VIDEOROM1(		"vid_ic14.rom", CRC(1d4568e2) SHA1(bfc2bb59708ce3a09f9a1b3460ed8d5269840c97),
@@ -53,13 +53,13 @@ MRGAME_SOUNDROM14(		"snd_ic06.rom", CRC(fba5a8f1) SHA1(ddf989abebe05c569c9ecdd49
 						"snd_ic35.rom", CRC(9dec153d) SHA1(8a0140257316aa19c0401456839e11b6896609b1),
 						"snd_ic36.rom", CRC(4f42be6e) SHA1(684e988f413cd21c785ad5d60ef5eaddddaf72ab))
 MRGAME_ROMEND
-CORE_GAMEDEFNV(motrshow,"Motor Show",1988,"Mr. Game (Italy)",mMRGAME1,0)
+CORE_GAMEDEFNV(motrshow,"Motor Show",1988,"Mr. Game (Italy)",mMRGAME1,GAME_IMPERFECT_SOUND)
 
 
 /*-------------------------------------------------------------------
 / Mac Attack (1989?)
 /-------------------------------------------------------------------*/
-INITGAME(macattck, mrgame_disp, FLIP_SWNO(65,64), 4/*?*/, 0, 0)
+INITGAME(macattck, mrgame_disp, FLIP_SWNO(65,64), 4/*?*/, SNDBRD_MRGAME, 0)
 MRGAME_ROMSTART(macattck,	"cpu_ic13.rom", NO_DUMP,
 							"cpu_ic14.rom", NO_DUMP)
 MRGAME_VIDEOROM2(		"vid_ic14.rom", NO_DUMP,
@@ -75,13 +75,13 @@ MRGAME_SOUNDROM14(		"snd_ic06.rom", NO_DUMP,
 						"snd_ic35.rom", NO_DUMP)
 
 MRGAME_ROMEND
-CORE_GAMEDEFNV(macattck,"Mac Attack",1989,"Mr. Game (Italy)",mMRGAME1,0)
+CORE_GAMEDEFNV(macattck,"Mac Attack",1989,"Mr. Game (Italy)",mMRGAME1,GAME_IMPERFECT_SOUND)
 
 
 /*-------------------------------------------------------------------
 / World Cup 90 (1988?)
 /-------------------------------------------------------------------*/
-INITGAME(wcup90, mrgame_disp, FLIP_SWNO(65,64), 4/*?*/, 0, 0)
+INITGAME(wcup90, mrgame_disp, FLIP_SWNO(65,64), 4/*?*/, SNDBRD_MRGAME, 0)
 #if 0
 MRGAME_ROMSTART(wcup90,		"cpu_ic13.rom", NO_DUMP,
 							"cpu_ic14.rom", NO_DUMP)
@@ -103,4 +103,4 @@ MRGAME_SOUNDROM25(		"snd_ic06.rom", CRC(19a66331) SHA1(fbd71bc378b5a04247fd17545
 						"snd_ic45.rom", CRC(265aa979) SHA1(9ca10c41526a2d227c21f246273ca14bec7f1bc7),
 						"snd_ic46.rom", CRC(7edb321e) SHA1(b242e94c24e996d2de803d339aa9bf6e93586a4c))
 MRGAME_ROMEND
-CORE_GAMEDEFNV(wcup90,"World Cup 90",1990,"Mr. Game (Italy)",mMRGAME2,0)
+CORE_GAMEDEFNV(wcup90,"World Cup 90",1990,"Mr. Game (Italy)",mMRGAME2,GAME_IMPERFECT_SOUND)
