@@ -579,6 +579,10 @@ SOURCE=.\src\win32com\VPinMAME.def
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\win32com\autogen\VPinMAME.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\win32com\VPinMAME.idl
 # ADD MTL /tlb "VPinMAME.tlb" /h "VPinMAME.h" /iid "VPinMAME_i.c"
 # End Source File
@@ -2214,6 +2218,10 @@ SOURCE=.\src\windows\blit.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\windows\config.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\windows\dirty.h
 # End Source File
 # Begin Source File
@@ -2253,11 +2261,23 @@ SOURCE=.\src\windows\misc.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\windows\misc.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\windows\osd_cpu.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\windows\osinline.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\rc.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\windows\rc.h
 # End Source File
 # Begin Source File
 
@@ -2278,6 +2298,10 @@ SOURCE=.\src\windows\ticker.h
 # Begin Source File
 
 SOURCE=.\src\windows\video.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\windows\video.h
 # End Source File
 # Begin Source File
 
@@ -2312,6 +2336,10 @@ SOURCE=.\src\windows\window.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\windows\window.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\windows\winprefix.h
 # End Source File
 # End Group
@@ -2330,6 +2358,14 @@ SOURCE=.\src\win32com\Res\VPinMAMELogo.bmp
 # Begin Source File
 
 SOURCE=.\src\win32com\Res\VPinMAMESplash.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\Res\VPinMAMESplash2.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\Res\VPinMAMESplash3.bmp
 # End Source File
 # Begin Source File
 
