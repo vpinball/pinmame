@@ -1760,6 +1760,14 @@ SOURCE=.\src\common.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\config.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\config.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\cpuexec.c
 # End Source File
 # Begin Source File
