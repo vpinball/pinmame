@@ -1109,13 +1109,13 @@ CORE_CLONEDEFNV(term3i,term3,"Terminator 3: Rise of the Machines (Italy)",2003,"
 // All games below now using a new CPU/Sound board (520-5300-00) with an Atmel AT91 (ARM7DMI Variant) CPU for sound
 
 /*-------------------------------------------------------------------
-/ The Lord Of The Rings (8.00)
+/ The Lord Of The Rings (9.00)
 /-------------------------------------------------------------------*/
 static core_tGameData lotrGameData = { \
   GEN_WS, se_dmd128x32, {FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L), 0, 5, 0, 0, SE_LED}}; \
 static void init_lotr(void) { core_gameData = &lotrGameData; }
-SE128_ROMSTART(lotr, "lotrcpu.800", CRC(655e5b3c) SHA1(bd6fd25e17cee40d6bb842367b1ce922bbd46003))
-DE_DMD32ROM8x(      "lotrdspa.800", CRC(2aa1f00d) SHA1(e9df5b61b467c307aacdb5a6980a78af26492e6a))
+SE128_ROMSTART(lotr, "lotrcpu.900", CRC(eff1ab83) SHA1(cd9cfa3fa150224e44078602db7d8bbfe223b926))
+DE_DMD32ROM8x(      "lotrdspa.900", CRC(2b1debd3) SHA1(eab1ffa7b5111bf224c47688bb6c0f40ee6e12fb))
 DE3S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56a6ac29fce1c7082e470),
                          "lotr-u17.100",CRC(d503969d) SHA1(65a4313ca1b93391260c65fef6f878d264f9c8ab),
                          "lotr-u21.100",CRC(8b3f41af) SHA1(9b2d04144edeb499b4ae68a97c65ccb8ef4d26c0),
@@ -1128,8 +1128,8 @@ CORE_GAMEDEFNV(lotr,"Lord Of The Rings, The (8.00)",2003,"Stern",de_mSES3,GAME_N
 /*-------------------------------------------------------------------
 / The Lord Of The Rings (Spain)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(lotr_sp, "lotrcpul.800", CRC(38e83068) SHA1(603b1236bf195c72d32e5a1088a2806e77176436))
-DE_DMD32ROM8x(          "lotrdspl.800", CRC(137c1255) SHA1(43d9ffec18ab2aa80f30b195ca5270d4574d7b8d))
+SE128_ROMSTART(lotr_sp, "lotrcpul.900", CRC(155b5d5b) SHA1(c032e3828ed256240a5155ec4c7820d615a2cbe1))
+DE_DMD32ROM8x(          "lotrdspl.900", CRC(00f98242) SHA1(9a0e7e572e209b20691392a694a524192daa0d2a))
 DE3S_SOUNDROM18888(      "lotrlu7.100", CRC(980d970a) SHA1(cf70deddcc146ef9eaa64baec74ae800bebf8715),
                          "lotrlu17.100",CRC(c16d3e20) SHA1(43d9f186db361abb3aa119a7252f1bb13bbbbe39),
                          "lotrlu21.100",CRC(f956a1be) SHA1(2980e85463704a154ed81d3241f866442d1ea2e6),
@@ -1143,8 +1143,8 @@ CORE_CLONEDEFNV(lotr_sp,lotr,"Lord Of The Rings, The (Spain)",2003,"Stern",de_mS
 /*-------------------------------------------------------------------
 / The Lord Of The Rings (Germany)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(lotr_gr, "lotrcpu.800", CRC(655e5b3c) SHA1(bd6fd25e17cee40d6bb842367b1ce922bbd46003))
-DE_DMD32ROM8x(         "lotrdspg.800", CRC(55765c23) SHA1(690a72e8cb1099a6873eb3214e72bb0fea54fa22))
+SE128_ROMSTART(lotr_gr, "lotrcpu.900", CRC(eff1ab83) SHA1(cd9cfa3fa150224e44078602db7d8bbfe223b926))
+DE_DMD32ROM8x(         "lotrdspg.900", CRC(f5fdd2c2) SHA1(0c5f1b1efe3d38063e2327e2ccfe40936f3988b8))
 DE3S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56a6ac29fce1c7082e470),
                          "lotr-u17.100",CRC(d503969d) SHA1(65a4313ca1b93391260c65fef6f878d264f9c8ab),
                          "lotr-u21.100",CRC(8b3f41af) SHA1(9b2d04144edeb499b4ae68a97c65ccb8ef4d26c0),
@@ -1158,8 +1158,8 @@ CORE_CLONEDEFNV(lotr_gr,lotr,"Lord Of The Rings, The (Germany)",2003,"Stern",de_
 /*-------------------------------------------------------------------
 / The Lord Of The Rings (France)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(lotr_fr, "lotrcpu.800", CRC(655e5b3c) SHA1(bd6fd25e17cee40d6bb842367b1ce922bbd46003))
-DE_DMD32ROM8x(         "lotrdspf.800", CRC(e1ccc04b) SHA1(1d5c7ea06f0cb2e1965c968ed01330867aae8e2b))
+SE128_ROMSTART(lotr_fr, "lotrcpu.900", CRC(eff1ab83) SHA1(cd9cfa3fa150224e44078602db7d8bbfe223b926))
+DE_DMD32ROM8x(         "lotrdspf.900", CRC(f2d8296e) SHA1(3eb6e1e6ba299b720816bf165b1e20e02f6c0c1e))
 DE3S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56a6ac29fce1c7082e470),
                          "lotr-u17.100",CRC(d503969d) SHA1(65a4313ca1b93391260c65fef6f878d264f9c8ab),
                          "lotr-u21.100",CRC(8b3f41af) SHA1(9b2d04144edeb499b4ae68a97c65ccb8ef4d26c0),
@@ -1173,8 +1173,8 @@ CORE_CLONEDEFNV(lotr_fr,lotr,"Lord Of The Rings, The (France)",2003,"Stern",de_m
 /*-------------------------------------------------------------------
 / The Lord Of The Rings (Italy)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(lotr_it, "lotrcpu.800", CRC(655e5b3c) SHA1(bd6fd25e17cee40d6bb842367b1ce922bbd46003))
-DE_DMD32ROM8x(         "lotrdspi.800", CRC(b80730d7) SHA1(552c0bfac1c7a6b246829378a30d58769e695f7e))
+SE128_ROMSTART(lotr_it, "lotrcpu.900", CRC(eff1ab83) SHA1(cd9cfa3fa150224e44078602db7d8bbfe223b926))
+DE_DMD32ROM8x(         "lotrdspi.900", CRC(a09407d7) SHA1(2cdb70ee0bae7f67f4bf12b0dd3e6cf574087e3d))
 DE3S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56a6ac29fce1c7082e470),
                          "lotr-u17.100",CRC(d503969d) SHA1(65a4313ca1b93391260c65fef6f878d264f9c8ab),
                          "lotr-u21.100",CRC(8b3f41af) SHA1(9b2d04144edeb499b4ae68a97c65ccb8ef4d26c0),
@@ -1267,12 +1267,12 @@ SE_ROMEND
 CORE_CLONEDEFNV(ripleysl,ripleys,"Ripley's Believe It or Not! (Spain)",2004,"Stern",de_mSES3,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ Elvis (3.02)
+/ Elvis (3.03)
 /-------------------------------------------------------------------*/
 static core_tGameData elvisGameData = { \
   GEN_WS, se_dmd128x32, {FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L), 0, 5, 0, 0, SE_LED}}; \
 static void init_elvis(void) { core_gameData = &elvisGameData; }
-SE128_ROMSTART(elvis, "elvscpua.302", CRC(52fd7068) SHA1(548568aeb30a17541b07489dfecde9d4d63bf82b))
+SE128_ROMSTART(elvis, "elvscpua.303", CRC(a0dd77d8) SHA1(2882eed805c2eb3cabadcfe51997a534ddac9050))
 DE_DMD32ROM8x(        "elvsdspa.302", CRC(892da6d2) SHA1(66a2f9faab9c7b925a90455ce7e1d31e19fce99e))
 DE3SA_SOUNDROM18888(  "elvis.u7", CRC(1df6c1b5) SHA1(7a9ebfc555e54ce92ad140ac6fcb82d9848ad8a6),
                       "elvis.u17",CRC(ff032897) SHA1(bf347c26a450bc07cdc94fc582dedf3a0cdc2a1b),
@@ -1286,7 +1286,7 @@ CORE_GAMEDEFNV(elvis,"Elvis (3.02)",2004,"Stern",de_mSES3,GAME_IMPERFECT_SOUND |
 /*-------------------------------------------------------------------
 / Elvis (Spain)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(elvisl, "elvscpul.302", CRC(0c6f1897) SHA1(ac71f833d4227c2d2d665a169eb0d12c73aeab04))
+SE128_ROMSTART(elvisl, "elvscpul.303", CRC(691b9882) SHA1(fd8ceef9dbae6c788964d417ad1c61a4bb8e0d9b))
 DE_DMD32ROM8x(         "elvsdspl.302", CRC(f75ea4cb) SHA1(aa351bb0912fd9dc93e9c95f96af2d31aaf03777))
 DE3SA_SOUNDROM18888(   "elvisl.u7", CRC(f0d70ee6) SHA1(9fa2c9d7b3690ec0c17645be066496d6833da5d1),
                        "elvisl.u17",CRC(2f86bcda) SHA1(73972fd30e84a2f97478f076cc8771c501440be5),
@@ -1301,7 +1301,7 @@ CORE_CLONEDEFNV(elvisl,elvis,"Elvis (Spain)",2004,"Stern",de_mSES3,GAME_IMPERFEC
 /*-------------------------------------------------------------------
 / Elvis (Germany)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(elvisg, "elvscpug.302", CRC(9d907782) SHA1(3bad8d0429029b0055d09e50af16bca4da724e0f))
+SE128_ROMSTART(elvisg, "elvscpug.303", CRC(66b50538) SHA1(2612c0618c1d438632ff56b3b779214cf6534ff8))
 DE_DMD32ROM8x(         "elvsdspg.302", CRC(6340bb11) SHA1(d510f1a913cd3fb9593ef88c5652e03a5d3c3ebb))
 DE3SA_SOUNDROM18888(   "elvisg.u7", CRC(1085bd7c) SHA1(2c34ee7d7c44906b0894c0c01b0fad74cb0d2a32),
                        "elvisg.u17",CRC(8b888d75) SHA1(b8c654d0fb558c205c338be2b458cbf931b23bac),
@@ -1316,7 +1316,7 @@ CORE_CLONEDEFNV(elvisg,elvis,"Elvis (Germany)",2004,"Stern",de_mSES3,GAME_IMPERF
 /*-------------------------------------------------------------------
 / Elvis (France)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(elvisf, "elvscpuf.302", CRC(893a5ac6) SHA1(4be45cf036cdd643f10ecbb4d0b1778d25cf778a))
+SE128_ROMSTART(elvisf, "elvscpuf.303", CRC(bc5cc2b9) SHA1(f434164384153a3cca358af55ed82c7757e74fd9))
 DE_DMD32ROM8x(         "elvsdspf.302", CRC(410b6ae5) SHA1(ea29e1c81695df25ad61deedd84e6c3159976797))
 DE3SA_SOUNDROM18888(   "elvisf.u7", CRC(84a057cd) SHA1(70e626f13a164df184dc5b0c79e8d320eeafb13b),
                        "elvisf.u17",CRC(9b13e40d) SHA1(7e7eac1be5cbc7bde4296d168a1cc0716bcb293a),
@@ -1331,7 +1331,7 @@ CORE_CLONEDEFNV(elvisf,elvis,"Elvis (France)",2004,"Stern",de_mSES3,GAME_IMPERFE
 /*-------------------------------------------------------------------
 / Elvis (Italy)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(elvisi, "elvscpui.302", CRC(a2c15460) SHA1(dcd4d4b61745ab2ccba662f9d72f56774a830ea0))
+SE128_ROMSTART(elvisi, "elvscpui.303", CRC(11f47b7a) SHA1(4fbe64ed49719408b77ebf6871bb2211e03de394))
 DE_DMD32ROM8x(         "elvsdspi.302", CRC(217c7d17) SHA1(bfd67e876ea85847212c936f9f8477aba8a7b573))
 DE3SA_SOUNDROM18888(   "elvisi.u7", CRC(8c270da4) SHA1(6a21332fdd1f2714aa78a1730e0f90159022ad1c),
                        "elvisi.u17",CRC(bd2e6580) SHA1(dc8c974860498d5766dbb0881cc9d6866c9a98a1),
@@ -1347,13 +1347,13 @@ CORE_CLONEDEFNV(elvisi,elvis,"Elvis (Italy)",2004,"Stern",de_mSES3,GAME_IMPERFEC
 / The Sopranos
 /-------------------------------------------------------------------*/
 INITGAME(sopranos,GEN_WS,se_dmd128x32,SE_LED)
-SE128_ROMSTART(sopranos, "soprcpu.400", NO_DUMP)
-DE_DMD32ROM8x(      "soprdspa.400", NO_DUMP)
-DE3SA_SOUNDROM18888("sopr.u7",  NO_DUMP,
-                    "sopr.u17", NO_DUMP,
-                    "sopr.u21", NO_DUMP,
-                    "sopr.u36", NO_DUMP,
-                    "sopr.u37", NO_DUMP)
+SE128_ROMSTART(sopranos, "soprcpu.099", NO_DUMP)
+DE_DMD32ROM8x(      "soprdspa.099", NO_DUMP)
+DE3SA_SOUNDROM18888("sopran.u7",  NO_DUMP,
+                    "sopran.u17", NO_DUMP,
+                    "sopran.u21", NO_DUMP,
+                    "sopran.u36", NO_DUMP,
+                    "sopran.u37", NO_DUMP)
 SE_ROMEND
 #define input_ports_sopranos input_ports_se
-CORE_GAMEDEFNV(sopranos,"The Sopranos",2005,"Stern",de_mSES3,0)
+CORE_GAMEDEFNV(sopranos,"The Sopranos",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND)
