@@ -1,6 +1,21 @@
-/*Alvin G & Co. Sound Hardware
-  ------------------------------------
-*/
+/************************************************************************************************
+  Alvin G & Co. Sound Hardware
+  ----------------------------
+  by Steve Ellenoff
+
+  Hardware from 1991-1994
+
+  Generation #1 (Games Up to Al's Garage Band?)
+    CPU: 6809 @ 2 Mhz
+	I/O: 6255 VIA
+	SND: YM3812 (Music), OKI6295 (Speech)
+
+  Generation #2 (All remaining games)
+	CPU: 68B09 @ 8 Mhz? (Sound best @ 1 Mhz)
+	I/O: buffers
+	SND: BSMT2000 @ 24Mhz
+
+*************************************************************************************************/
 #include "driver.h"
 #include "core.h"
 #include "cpu/m6809/m6809.h"
@@ -8,7 +23,14 @@
 #include "alvgs.h"
 #include "machine/6821pia.h"
 #include "sound/3812intf.h"
+#include "machine/6522via.h"
 #include "sndbrd.h"
+
+#if 0
+#define LOG(x) printf x
+#else
+#define LOG(x) logerror x
+#endif
 
 /*-- local data --*/
 static struct {
@@ -24,7 +46,7 @@ static WRITE_HANDLER(data_to_main_cpu) { alvgslocals.data_to_main_cpu = data; }
 														GENERATION #1
 ******************************************************************************************************************/
 
-#define ALVGS1_SNDCPU_FREQ  2000000						//Schem shows an 8Mhz clock, but often we need to divide by 4 to make it work in MAME.
+#define ALVGS1_SNDCPU_FREQ  2000000		//Schem shows an 8Mhz clock, but often we need to divide by 4 to make it work in MAME.
 
 /*Declarations*/
 extern WRITE_HANDLER(alvg_sndCmd_w);
@@ -34,26 +56,26 @@ static WRITE_HANDLER(alvgs1_ctrl_w);
 static READ_HANDLER(alvgs1_ctrl_r);
 
 /* handler called by the 3812 when the internal timers cause an IRQ */
+//Odd - this doesn't seem to get called?
 static void ym3812_irq(int irq)
 {
-	cpu_set_irq_line(ALVGS_CPUNO, M6809_FIRQ_LINE, irq ? ASSERT_LINE : CLEAR_LINE);
+	cpu_set_irq_line(ALVGS_CPUNO, M6809_IRQ_LINE, irq ? ASSERT_LINE : CLEAR_LINE);
 }
 
 /*Interfaces*/
-
 static struct YM3812interface alvgs1_ym3812_intf =
 {
-	1,					/* 1 chip */
-	4000000,			/* 4 MHz */
-	{ 100 },			/* volume */
-	{ ym3812_irq },
+	1,						/* 1 chip */
+	4000000,				/* 4 MHz */
+	{ 100 },				/* volume */
+	{ ym3812_irq },			/* IRQ Callback */
 };
 static struct OKIM6295interface alvgs1_okim6295_intf =
 {
-	1,					/* 1 chip */
-	{ 8000 },			/* 8000Hz playback */
-	{ REGION_SOUND1 },
-	{ 100 }
+	1,						/* 1 chip */
+	{ 8000 },				/* 8000Hz playback */
+	{ ALVGS_ROMREGION },	/* ROM REGION */
+	{ 50 }					/* Volume */
 };
 
 /* Sound board */
@@ -65,7 +87,11 @@ const struct sndbrdIntf alvgs1Intf = {
 
 //SOUND DATA & CONTROL FUNCTIONS
 static WRITE_HANDLER(alvgs1_data_w){ soundlatch_w(0,data); }
-static WRITE_HANDLER(alvgs1_ctrl_w){	cpu_set_irq_line(ALVGS_CPUNO, 0, PULSE_LINE); }
+static WRITE_HANDLER(alvgs1_ctrl_w){
+	//simulate transition
+	via_2_ca2_w(0,0);
+	via_2_ca2_w(0,1);
+}
 static READ_HANDLER(alvgs1_ctrl_r){	return alvgslocals.data_to_main_cpu; }
 
 /* Addressing..U26 - 74LS138 
@@ -82,13 +108,64 @@ A14 A13 A12 Y0 Y1 Y2 Y3 Y4 Y5 Y6 Y7
 */
 
 
+//PA0-7: (IN) - Sound Data from Main CPU
+static READ_HANDLER( xvia_2_a_r ) { 
+	int data = soundlatch_r(0);
+	return data; 
+}
+
+//PB0-7: (OUT) - Bit 6 = LED
+static WRITE_HANDLER( xvia_2_b_w ) { 
+	alvg_UpdateSoundLEDS(0,(data&0x40)>>6);
+	//LOG(("WARNING: SOUND VIA -Port B Write = %x\n",data)); 
+}
+
+//IRQ:  FIRQ to Main CPU
+static void via_irq(int state) {
+	//printf("IN SOUND VIA_IRQ - STATE = %x\n",state);
+	cpu_set_irq_line(ALVGS_CPUNO, M6809_FIRQ_LINE, state?ASSERT_LINE:CLEAR_LINE);
+}
+
+/**********************************/
+/* NONE OF THESE SHOULD BE CALLED */
+/**********************************/
+
+//PB0-7: (IN) - N.C.
+static READ_HANDLER( xvia_2_b_r ) { LOG(("WARNING: SOUND VIA -Port B Read\n")); return 0; }
+//CA1: (IN) - Sound Control
+static READ_HANDLER( xvia_2_ca1_r ) { LOG(("WARNING: SOUND VIA CA1 Read\n")); return 0; }
+//CB1: (IN) - N.C.
+static READ_HANDLER( xvia_2_cb1_r ) { LOG(("WARNING: SOUND VIA CB1 Read\n")); return 0; }
+//CA2:  (IN) - N.C.
+static READ_HANDLER( xvia_2_ca2_r ) { LOG(("WARNING: SOUND VIA CA2 Read\n")); return 0; }
+//CB2: (IN) - N.C.
+static READ_HANDLER( xvia_2_cb2_r ) { LOG(("WARNING: SOUND VIA CB2 Read\n")); return 0; }
+//PA0-7: (OUT)
+static WRITE_HANDLER( xvia_2_a_w ) { LOG(("WARNING: SOUND VIA -Port A Write = %x\n",data)); }
+//CA2: (OUT)
+static WRITE_HANDLER( xvia_2_ca2_w ) { LOG(("WARNING: SOUND VIA CA2 Write = %x\n",data)); }
+//CB2: (OUT)
+static WRITE_HANDLER( xvia_2_cb2_w ) { LOG(("WARNING: SOUND VIA CB2 Write = %x\n",data)); }
+
+
+/* CPU MEMORY MAP */
+
+//Unexplained Read @ 1000 and some data being written to 0f,10 in memory..
+
 static MEMORY_READ_START(alvgs1_readmem)
+  { 0x2000, 0x2000, YM3812_status_port_0_r },
   { 0x3000, 0x3fff, MRA_RAM },
+  { 0x4000, 0x4000, OKIM6295_status_0_r },
+  { 0x5000, 0x500f, via_2_r },
   { 0x8000, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(alvgs1_writemem)
+  { 0x2000, 0x2000, YM3812_control_port_0_w },
+  { 0x2001, 0x2001, YM3812_write_port_0_w },
   { 0x3000, 0x3fff, MWA_RAM },
+  { 0x4000, 0x4000, OKIM6295_data_0_w },
+  { 0x5000, 0x500f, via_2_w },
   { 0x6000, 0x6000, MWA_NOP },	//Watch dog?
   { 0x8000, 0xffff, MWA_ROM },
 MEMORY_END
@@ -103,10 +180,25 @@ MACHINE_DRIVER_START(alvg_s1)
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
 MACHINE_DRIVER_END
 
+static struct via6522_interface via_2_interface =
+{
+	/*inputs : A/B           */ xvia_2_a_r, xvia_2_b_r,
+	/*inputs : CA1/B1,CA2/B2 */ xvia_2_ca1_r, xvia_2_cb1_r, xvia_2_ca2_r, xvia_2_cb2_r,
+	/*outputs: A/B,CA2/B2    */ xvia_2_a_w, xvia_2_b_w, xvia_2_ca2_w, xvia_2_cb2_w,
+	/*irq                    */ via_irq
+};
 
 static void alvgs1_init(struct sndbrdData *brdData) {
   memset(&alvgslocals, 0, sizeof(alvgslocals));
   alvgslocals.brdData = *brdData;
+
+  /* init VIA */
+  via_config(2, &via_2_interface);
+  via_reset();
+
+  //Start CA2 as Hi Level
+  via_2_ca2_w(0,1);
+
   //watchdog_reset_w(1,0);
 }
 
@@ -151,7 +243,7 @@ static WRITE_HANDLER(watch_w)
 
 //SOUND DATA & CONTROL FUNCTIONS
 static WRITE_HANDLER(alvgs_data_w){ soundlatch_w(0,data); }
-static WRITE_HANDLER(alvgs_ctrl_w){	cpu_set_irq_line(ALVGS_CPUNO, 0, PULSE_LINE); }
+static WRITE_HANDLER(alvgs_ctrl_w){	cpu_set_irq_line(ALVGS_CPUNO, M6809_IRQ_LINE, PULSE_LINE); }
 static READ_HANDLER(alvgs_ctrl_r){	return alvgslocals.data_to_main_cpu; }
 
 //BSMT DATA
