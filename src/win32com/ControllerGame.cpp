@@ -454,7 +454,7 @@ int CRCSOFGAMESNOTSUPPORRTED[] = {
 	0x0d1117fa,0x2e3c682a,										// High Roller Casino
 	0xa06b2b03,0xa4ddcdca,										// Austin Powers
 	0x24978872,													// Monopoly (251, 301)
-	0x2dbb372a,0x69ab3bb2,0xed7b7c62,0x74c8cedf,0xe7697fc3,		// Playboy
+	0xd7e5bada, 0x206285ed, 0x2dbb372a,0x69ab3bb2,0xed7b7c62,0x74c8cedf,0xe7697fc3,	// Playboy (300, 302)
 	0x0
 };
 
