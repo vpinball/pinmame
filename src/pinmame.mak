@@ -56,6 +56,7 @@ PINGAMES += $(PINOBJ)/hnkgames.o
 #PINGAMES += $(PINOBJ)/gpgames.o
 PINGAMES += $(PINOBJ)/atarigames.o
 PINGAMES += $(PINOBJ)/taitogames.o
+PINGAMES += $(PINOBJ)/capgames.o
 #
 # Simulators
 #
