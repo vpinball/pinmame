@@ -51,11 +51,11 @@ static core_tLCDLayout dispGP_BDU1[] = {
 /*BDU-2*/
 //NOTE: 7th Digit order comes after digits 0-6, so we tack it onto front!
 static core_tLCDLayout dispGP_BDU2[] = {
- {0, 0, 6,1,CORE_SEG7}, {0,22,14,1,CORE_SEG7},
- {4, 0,22,1,CORE_SEG7}, {4,22,30,1,CORE_SEG7},
- {0, 2, 0,6,CORE_SEG7}, {0,24, 8,6,CORE_SEG7},
- {4, 2,16,6,CORE_SEG7}, {4,24,24,6,CORE_SEG7},
- {4,20,32,2,CORE_SEG7S},{4,26,36,2,CORE_SEG7S},{0}
+ {0, 0, 6,1,CORE_SEG7}, {0, 2, 0,6,CORE_SEG7},
+ {0,22,14,1,CORE_SEG7}, {0,24, 8,6,CORE_SEG7},
+ {3, 0,22,1,CORE_SEG7}, {3, 2,16,6,CORE_SEG7},
+ {3,22,30,1,CORE_SEG7}, {3,24,24,6,CORE_SEG7},
+ {5,24,32,2,CORE_SEG7S},{5,30,36,2,CORE_SEG7S},{0}
 };
 
 #define INITGAME(name, gen, disp, flip, lamps) \
