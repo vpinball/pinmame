@@ -172,8 +172,8 @@ static void mech_update(int mechNo) {
 void mech_nv(void *file, int write) {
   int ii;
   for (ii = 0; ii < MECH_MAXMECH; ii++) {
-    if (write)     osd_fwrite(file, &locals.mechData[ii].anglePos, sizeof(int)); /* Save */
-    else if (file) osd_fread (file, &locals.mechData[ii].anglePos, sizeof(int)); /* Load */
+    if (write)     mame_fwrite(file, &locals.mechData[ii].anglePos, sizeof(int)); /* Save */
+    else if (file) mame_fread (file, &locals.mechData[ii].anglePos, sizeof(int)); /* Load */
     else locals.mechData[ii].anglePos = 0; /* First time */
     locals.mechData[ii].pos = -1;
   }
