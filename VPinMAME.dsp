@@ -790,6 +790,10 @@ SOURCE=.\src\wpc\by35snd.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\by6803.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\byvidpin.c
 # End Source File
 # Begin Source File
@@ -1444,6 +1448,10 @@ SOURCE=.\src\vidhrdw\vector.h
 # Begin Source File
 
 SOURCE=.\src\wpc\by35.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\by6803.h
 # End Source File
 # Begin Source File
 
