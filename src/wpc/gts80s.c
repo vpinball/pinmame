@@ -41,8 +41,8 @@ static GTS80SL GTS80S_locals;
 
 void GTS80S_sound_latch(int data)
 {
-//	logerror("sound latch: 0x%02x\n", GTS80S_locals.soundLatch);
-	riot6530_set_input_b(0, GTS80S_locals.dips | (data&0x0f));
+	logerror("sound latch: 0x%02x\n", data);
+	riot6530_set_input_b(0, GTS80S_locals.dips | 0x60 | (data&0x0f));
 }
 
 /* configured as output, shouldn't be read */
@@ -59,7 +59,7 @@ WRITE_HANDLER(riot6530_0a_w) {
 		return;
 
 	GTS80S_locals.clock[GTS80S_locals.buf_pos] = timer_get_time();
-	GTS80S_locals.buffer[GTS80S_locals.buf_pos++] = (0x80-data)*0x100;
+	GTS80S_locals.buffer[GTS80S_locals.buf_pos++] = (0x80-data)<<8;
 }
 
 /* configured as input, shouldn't be read */
@@ -145,8 +145,8 @@ void GTS80S_init(void) {
 
 	/* init dips */
 	GTS80S_locals.dips =
-		((core_getDip(5)&0x01) ? 0x80:0x00) | /* S1: Sound/Tones        */
-		((core_getDip(5)&0x02) ? 0x10:0x00);  /* S2: Attrach Mode Tunes */
+		((core_getDip(5)&0x01) ? 0x00:0x80) | /* S1: Sound/Tones        */
+		((core_getDip(5)&0x02) ? 0x00:0x10);  /* S2: Attrach Mode Tunes */
 
 	/* init sound buffer */
 	GTS80S_locals.clock[0]  = 0;
@@ -203,7 +203,7 @@ void GTS80SS_nmi(int state)
 {
 	if ( !GTS80SS_locals.NMIState && state ) {
 		logerror("NMI: %i\n",state);
-		cpu_set_irq_line(GTS80_SCPU1, M6502_INT_NMI, PULSE_LINE);
+/*		cpu_set_irq_line(GTS80_SCPU1, M6502_INT_NMI, PULSE_LINE); */
 	}
 	GTS80SS_locals.NMIState = state;
 }
@@ -237,7 +237,7 @@ WRITE_HANDLER(da1_latch_w) {
 		return;
 
 	GTS80SS_locals.clock[GTS80SS_locals.buf_pos] = timer_get_time();
-	GTS80SS_locals.buffer[GTS80SS_locals.buf_pos++] = (0x80-data)*0x100;
+	GTS80SS_locals.buffer[GTS80SS_locals.buf_pos++] = (0x80-data)*0xf0;
 }
 
 WRITE_HANDLER(da2_latch_w) {
@@ -450,7 +450,7 @@ void GTS80SS_init(void) {
 
 	GTS80SS_nmi(1);
 	GTS80SS_locals.stream = stream_init("SND DAC", 100, 11025, 0, GTS80_ss_Update); 
-	set_RC_filter(GTS80SS_locals.stream, 270000, 15000, 0, 33000);
+	set_RC_filter(GTS80SS_locals.stream, 270000, 15000, 0, 10000);
 }
 
 void GTS80SS_exit(void)
