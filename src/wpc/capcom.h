@@ -4,7 +4,8 @@
 #include "core.h"
 #include "sim.h"
 
-extern PINMAME_VIDEO_UPDATE(cc_dmd);
+extern PINMAME_VIDEO_UPDATE(cc_dmd128x32);
+extern PINMAME_VIDEO_UPDATE(cc_dmd256x64);
 
 #define CC_COMPORTS \
   PORT_START /* 0 */ \
@@ -41,29 +42,29 @@ extern PINMAME_VIDEO_UPDATE(cc_dmd);
 
 #define CC_ROMSTART_4(name,n1,chk1,n2,chk2,n3,chk3,n4,chk4) \
   ROM_START(name) \
-    NORMALREGION(0x00200000, REGION_CPU1) \
+    NORMALREGION(0x00500000, REGION_CPU1) \
       ROM_LOAD16_BYTE(n1, 0x000001, 0x80000, chk1) \
       ROM_LOAD16_BYTE(n2, 0x000000, 0x80000, chk2) \
-      ROM_LOAD16_BYTE(n3, 0x100001, 0x80000, chk3) \
-      ROM_LOAD16_BYTE(n4, 0x100000, 0x80000, chk4)
+      ROM_LOAD16_BYTE(n3, 0x400001, 0x80000, chk3) \
+      ROM_LOAD16_BYTE(n4, 0x400000, 0x80000, chk4)
 
 #define CC_ROMSTART_8(name,n1,chk1,n2,chk2,n3,chk3,n4,chk4,n5,chk5,n6,chk6,n7,chk7,n8,chk8) \
   ROM_START(name) \
-    NORMALREGION(0x00400000, REGION_CPU1) \
+    NORMALREGION(0x00d00000, REGION_CPU1) \
       ROM_LOAD16_BYTE(n1, 0x000001, 0x80000, chk1) \
       ROM_LOAD16_BYTE(n2, 0x000000, 0x80000, chk2) \
-      ROM_LOAD16_BYTE(n3, 0x100001, 0x80000, chk3) \
-      ROM_LOAD16_BYTE(n4, 0x100000, 0x80000, chk4) \
-      ROM_LOAD16_BYTE(n5, 0x200001, 0x80000, chk5) \
-      ROM_LOAD16_BYTE(n6, 0x200000, 0x80000, chk6) \
-      ROM_LOAD16_BYTE(n7, 0x300001, 0x80000, chk7) \
-      ROM_LOAD16_BYTE(n8, 0x300000, 0x80000, chk8)
+      ROM_LOAD16_BYTE(n3, 0x400001, 0x80000, chk3) \
+      ROM_LOAD16_BYTE(n4, 0x400000, 0x80000, chk4) \
+      ROM_LOAD16_BYTE(n5, 0x800001, 0x80000, chk5) \
+      ROM_LOAD16_BYTE(n6, 0x800000, 0x80000, chk6) \
+      ROM_LOAD16_BYTE(n7, 0xc00001, 0x80000, chk7) \
+      ROM_LOAD16_BYTE(n8, 0xc00000, 0x80000, chk8)
 
 #define CC_ROMSTART_2X(name, n1, chk1, n2, chk2) \
    ROM_START(name) \
-     NORMALREGION(0x00200000, REGION_CPU1) \
+     NORMALREGION(0x00500000, REGION_CPU1) \
        ROM_LOAD(n1, 0x000000, 0x100000, chk1) \
-       ROM_LOAD(n2, 0x100000, 0x100000, chk2)
+       ROM_LOAD(n2, 0x400000, 0x100000, chk2)
 
 #define CC_ROMEND ROM_END
 
