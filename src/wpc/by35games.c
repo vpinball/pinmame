@@ -516,7 +516,13 @@ CORE_GAMEDEFNV(elektra,"Elektra",1981,"Bally",by35_mBY35_61S,0)
 /*--------------------------------
 / Vector
 /-------------------------------*/
-INITGAME(vector  ,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY61,0)
+static core_tLCDLayout vectorDisp[] = {
+  {0, 0, 1,7,CORE_SEG7}, {0,16, 9,7,CORE_SEG7},
+  {2, 0,17,7,CORE_SEG7}, {2,16,25,7,CORE_SEG7},
+  {4, 4,35,2,CORE_SEG7}, {4,10,38,2,CORE_SEG7},
+  {4,17,42,3,CORE_SEG7}, {4,24,45,3,CORE_SEG7}, {0}
+};
+INITGAME(vector  ,GEN_BY35,vectorDisp,FLIP_SW(FLIP_L),8,SNDBRD_BY61,0x80)
 BY35_ROMSTARTx00(vector,"858-11_2.732",0x323e286b,
                         "720-53_6.732",0xc2e92f80)
 BY61_SOUNDROM0000(      "858-01_2.532",0xbd2edef9,
@@ -590,11 +596,10 @@ CORE_GAMEDEFNV(rapidfir,"Rapid Fire",1982,"Bally",by35_mBY35_61BS,0)
 / Mr. and Mrs. Pacman (BY35-872: 05/82)
 /--------------------------------------*/
 static core_tLCDLayout m_mpacDisp[] = {
-{ 0, 0, 1,7,CORE_SEG87},{ 0,27,17,7,CORE_SEG87},
-{ 3, 0, 9,7,CORE_SEG87},{ 3,27,25,7,CORE_SEG87},
-{ 2,18,34,6,CORE_SEG7}, /* credit/ball */
-{ 5,17,42,2,CORE_SEG7}, { 5,22,44,2,CORE_SEG7}, { 5,27,46,2,CORE_SEG7},
-{0}
+  {0, 0, 1,7,CORE_SEG7}, {0,16, 9,7,CORE_SEG7},
+  {2, 0,17,7,CORE_SEG7}, {2,16,25,7,CORE_SEG7},
+  {4, 4,35,2,CORE_SEG7}, {4,10,38,2,CORE_SEG7},
+  {4,16,42,2,CORE_SEG7}, {4,21,44,2,CORE_SEG7},{4,26,46,2,CORE_SEG7},{0}
 };
 
 INITGAME(m_mpac,GEN_BY35,m_mpacDisp,FLIP_SWNO(33,37),8,SNDBRD_BY61,0x80)
