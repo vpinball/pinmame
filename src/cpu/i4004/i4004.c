@@ -31,9 +31,11 @@ static UINT8 i4004_win_layout[] = {
 };
 
 /* no idea what the original mapping is */
-static UINT8 kbptable[] = {
-	0x00, 0x01, 0x02, 0x02, 0x03, 0x03, 0x03, 0x03, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04
+static INT8 daatable[2][16] = {
+	{ 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15 },
+	{ 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05 },
 };
+static INT8 kbptable[] = { 0, 1, 2, 5, 3, 6, 7, 8, 4, 9, 10, 11, 12, 13, 14, 15 };
 
 typedef struct {
 	int 	cputype;	/* 0 = 4004 */
@@ -758,19 +760,16 @@ INLINE void execute_one(int opcode)
 			}
 			break;
 		case 0xf9: /* TCS */
-			I.accu = (I.accu - I.carry) & 0x0f;
+			I.accu = I.carry ? 0 : 0x0f;
 			I.carry = 0;
 			break;
 		case 0xfa: /* STC */
 			I.carry = 1;
 			break;
 		case 0xfb: /* DAA */
-			/* no idea what the original mapping is */
-			if (I.accu > 9) {
-				I.accu -= 10;
-				I.carry = 1;
-			} else
-				I.carry = 0;
+			tmp = daatable[I.carry][I.accu];
+			I.carry = tmp >> 4;
+			I.accu = tmp & 0x0f;
 			break;
 		case 0xfc: /* KBP */
 			I.accu = kbptable[I.accu];
