@@ -37,7 +37,8 @@
 #include "Display.h"
 
 extern HWND	g_hMainWnd;
-
+#define SAMPLELOG
+#define MAX_SAMPLE_ADD 16
 /***************************************************************************
     function prototypes
  ***************************************************************************/
@@ -51,7 +52,12 @@ static void     DirectSound_set_mastervolume(int volume);
 static int      DirectSound_get_mastervolume(void);
 static void     DirectSound_sound_enable(int enable);
 static void     DirectSound_update_audio(void);
+#ifdef SAMPLELOG
+static int sampleAddLog[MAX_SAMPLE_ADD*2+2];
+#define LOGOVERRUN (MAX_SAMPLE_ADD*2)
+#define LOGUNDERRUN (MAX_SAMPLE_ADD*2+1)
 
+#endif
 /***************************************************************************
     External variables
  ***************************************************************************/
@@ -73,7 +79,7 @@ struct OSDSound DirectSound =
     Internal structures
  ***************************************************************************/
 
-#define BUFFER_SIZE_MILLIS 100 /* our play buffer is this long in milliseconds */
+#define BUFFER_SIZE_MILLIS 200 /* our play buffer is this long in milliseconds */
 
 /* keep ahead by this many samples, to help prevent gaps */
 #define EXTRA_SAMPLES 0
@@ -301,7 +307,18 @@ static void DirectSound_stop_audio_stream(void)
         IDirectSoundBuffer_Release(dsb);
         dsb = NULL;
     }
-
+#ifdef SAMPLELOG
+	{
+		int ii;
+		FILE *f = fopen("addLog.log","w");
+		for (ii = 0; ii < MAX_SAMPLE_ADD*2; ii++)
+			fprintf(f,"%3d %6d\n",ii-MAX_SAMPLE_ADD,sampleAddLog[ii]);
+		fprintf(f,"Over-run  %6d\n",sampleAddLog[LOGOVERRUN]);
+		fprintf(f,"Under-run %6d\n",sampleAddLog[LOGUNDERRUN]);
+		fclose(f);
+		memset(sampleAddLog,0,sizeof(sampleAddLog));
+	}
+#endif
 }
 
 static void DirectSound_set_mastervolume(int volume)
@@ -342,82 +359,67 @@ static void DirectSound_sound_enable(int enable)
 	    }
 	}
 }
-static void DirectSound_update_audio(void)
-{
-    HRESULT hr;
-    int next_voice_pos;
 
+static void DirectSound_update_audio(void) {
+  static int lastmargin = 0, sampleadd = 0;
+  HRESULT hr;
+  int nvoice_pos;
+  int length = stream_cache_len*sizeof(INT16)*stereo_factor;
+
+  if (dsb == NULL || new_sound_data == FALSE) return;
+
+  profiler_mark(PROFILER_MIXER);
+
+  nvoice_pos = voice_pos + length; if (nvoice_pos >= buffer_length) nvoice_pos -= buffer_length;
+
+  if (Display_Throttled()) { /* sync with audio only when speed throttling is not turned off */
+    LONG playpos, writepos;
+
+    IDirectSoundBuffer_GetCurrentPosition(dsb,&playpos,&writepos);
+    // Check if voice_pos is between playpos & writepos
+    if (((playpos < writepos) && ((voice_pos >= playpos) && (voice_pos < writepos))) ||
+        ((playpos > writepos) && ((voice_pos >= playpos) || (voice_pos < writepos)))) {
+			// We are behind the playing. Skip the missing samples
+			voice_pos = writepos;
+#ifdef SAMPLELOG
+			sampleAddLog[LOGUNDERRUN] += 1;
+#endif
+		}
+		// Check if nvoice_pos is between playpos & writepos
+    if (((playpos < writepos) && ((nvoice_pos >= playpos) && (nvoice_pos < writepos))) ||
+        ((playpos > writepos) && ((nvoice_pos >= playpos) || (nvoice_pos < writepos)))) {
+			// We are playing to fast??. Down't overwrite current area
+			length = playpos - voice_pos; if (length < 0) length += buffer_length;
+			nvoice_pos = playpos; sampleadd = 0;
+#ifdef SAMPLELOG
+			sampleAddLog[LOGOVERRUN] += 1;
+#endif
+		}
+    {	// see if we need to speed up or slow down sample generating
+	  int margin = voice_pos - playpos;
+  	  if (margin < 0) margin += buffer_length;
+      margin = (margin - buffer_length/2)*MAX_SAMPLE_ADD*2/buffer_length;
+	  sampleadd = -margin;
+  	  lastmargin = margin; samples_left_over = sampleadd;
+#ifdef SAMPLELOG
+  	  sampleAddLog[sampleadd+MAX_SAMPLE_ADD]++;
+#endif
+    }
+  }
+  {
     VOID *area1,*area2;
     DWORD len_area1,len_area2;
+    hr = IDirectSoundBuffer_Lock(dsb, voice_pos, length, &area1, &len_area1, &area2, &len_area2, 0);
+    if (FAILED(hr)) ErrorMsg("Unable to lock secondary sound buffer: %s",DirectXDecodeError(hr));
+    else {
+      memcpy(area1, stream_cache_data, len_area1);
+      memcpy(area2, ((byte *)stream_cache_data) + len_area1, len_area2);
 
-    if (dsb == NULL || new_sound_data == FALSE)
-        return;
-
-	profiler_mark(PROFILER_MIXER);
-
-    next_voice_pos = voice_pos + stream_cache_len*sizeof(INT16)*stereo_factor;
-    if (next_voice_pos >= buffer_length)
-        next_voice_pos -= buffer_length;
-
-    if (Display_Throttled()) /* sync with audio only when speed throttling is not turned off */
-    {
-        LONG curpos;
-	    LONG writepos;
-
-        profiler_mark(PROFILER_IDLE);
-        for (;;)
-        {
-
-            IDirectSoundBuffer_GetCurrentPosition(dsb,&curpos,&writepos);
-            if (voice_pos < next_voice_pos)
-            {
-                if (writepos < voice_pos || writepos >= next_voice_pos)
-                    break;
-            }
-            else
-            {
-                if (writepos < voice_pos && writepos >= next_voice_pos)
-                    break;
-            }
-			Sleep(5);
-        }
-        profiler_mark(PROFILER_END);
-		{
-			static int lastmargin = 0, sampleadd = 0;
-			int margin = voice_pos - writepos;
-			if ( ((voice_pos < next_voice_pos) && (writepos > next_voice_pos))) margin += buffer_length;
-			if (!((voice_pos < next_voice_pos) || (writepos > next_voice_pos))) margin -= buffer_length;
-			if ((margin < buffer_length/10) && (margin < lastmargin) &&
-			    (!pmoptions.soundlimit || (sampleadd < 64))) sampleadd += 1;
-			else if (sampleadd > 0) sampleadd -= 1;
-			samples_left_over = sampleadd;
-			lastmargin = margin;
-		}
+      hr = IDirectSoundBuffer_Unlock(dsb,area1,len_area1,area2,len_area2);
+      if (FAILED(hr)) ErrorMsg("Unable to unlock secondary sound buffer: %s",DirectXDecodeError(hr));
     }
-
-    hr = IDirectSoundBuffer_Lock(dsb,
-                                 voice_pos,
-                                 stream_cache_len * sizeof(INT16) * stereo_factor,
-                                 &area1, &len_area1,
-                                 &area2, &len_area2,
-                                 0);
-    if (FAILED(hr))
-    {
-        ErrorMsg("Unable to lock secondary sound buffer: %s",DirectXDecodeError(hr));
-    }
-    else
-    {
-        memcpy(area1, stream_cache_data, len_area1);
-        memcpy(area2, ((byte *)stream_cache_data) + len_area1, len_area2);
-
-        hr = IDirectSoundBuffer_Unlock(dsb,area1,len_area1,area2,len_area2);
-        if (FAILED(hr))
-            ErrorMsg("Unable to unlock secondary sound buffer: %s",DirectXDecodeError(hr));
-    }
-
-    voice_pos = next_voice_pos;
-
-	profiler_mark(PROFILER_END);
-
-    new_sound_data = FALSE;
+	}
+  voice_pos = nvoice_pos;
+  new_sound_data = FALSE;
+  profiler_mark(PROFILER_END);
 }
