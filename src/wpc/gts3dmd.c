@@ -9,11 +9,8 @@ extern UINT8 DMDFrames[GTS3DMD_FRAMES][0x200];
 extern int crtc6845_start_addr;
 
 #if 1
-static core_tLCDLayout gts_128x32DMD[] = {
-	{0,0,32,128,CORE_DMD}, {0}
-};
 
-VIDEO_UPDATE(gts3_dmd128x32) {
+PINMAME_VIDEO_UPDATE(gts3_dmd128x32) {
 // void gts3_dmd128x32_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
   tDMDDot dotCol;
   UINT8 *frameData = &DMDFrames[0][0];
@@ -48,12 +45,8 @@ VIDEO_UPDATE(gts3_dmd128x32) {
       dotCol[ii][jj] = data;
   }
 
-  video_update_core_dmd(bitmap, cliprect, dotCol, core_gameData->lcdLayout ? core_gameData->lcdLayout : &gts_128x32DMD[0]);
-
-  video_update_core_status(bitmap, cliprect);
-  
-  // !!! dmd_draw(bitmap, dotCol, gts_128x32DMD);
-  // !!! drawStatus(bitmap,fullRefresh);
+  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+  return 0;
 }
 
 #else
@@ -61,10 +54,6 @@ VIDEO_UPDATE(gts3_dmd128x32) {
 /*--------------------------------------*/
 /*Gottlieb System 3 128x32 DMD Handling*/
 /*-------------------------------------*/
-static core_tLCDLayout gts3_128x32DMD[] = {
-	{0,0,32,128,CORE_DMD}, {0}
-};
-
 #if 0
 void gts3_dmd128x32_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
   tDMDDot dotCol;
