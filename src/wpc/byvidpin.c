@@ -6,6 +6,10 @@
    For simplicity sake, I just copied all code from by35 
    -but maybe someday we should merge common routines for easier maintenance
 
+  Hardware:
+	Baby Pac - Videot (1 x TMS9928 Video Chip)
+	Granny & Gators - Videot Deluxe (2 x TMS9928 Video Chip - Master/Slave configuration)
+
   6809 vectors:
   RES: FFFE-F
   NMI: FFFC-D
