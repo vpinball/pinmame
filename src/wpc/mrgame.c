@@ -3,9 +3,9 @@
   ----------------
   by Steve Ellenoff (08/23/2004)
   
-  Thanks to Gerrit for helping out with Solenoid smoothing (better now) and getting those damn matrix
-  out of the way of the video display..
-
+  Thanks to Gerrit for:
+  a) helping out with Solenoid smoothing (better now) and getting those damn matrix out of the way of the video display..
+  b) Fixing switches and enabling the flippers to work
 
   Main CPU Board:
 
@@ -19,10 +19,9 @@
   #1) Adding NMI pulse seems to have helped, but still something is quite wrong
   #2) Watching output of video commands from cpu->video, motor cross definitely loses some commands..
       (this occurs after drag race graphic)
-  #3) There are sprites - these are not handled yet!
-  #4) I can see screen scroll registers, so the screen must scroll somehow..
-  #5) Sound not done yet
-  #6) Mr. Game Logo not correct color in Motor Show ( Bad Color Prom Read? )
+  #3) Screen has 32 scroll registers, these are not yet properly emulated.
+  #4) Sound not done yet
+  #5) Mr. Game Logo not correct color in Motor Show ( Bad Color Prom Read? )
 ************************************************************************************************/
 #include "driver.h"
 #include "cpu/m68000/m68000.h"
@@ -34,6 +33,7 @@
 
 //use this to comment out video and sound cpu for quicker debugging of main cpu
 //#define TEST_MAIN_CPU
+//#define TEST_MOTORSHOW
 #define NOSOUND
 
 #define MRGAME_DISPLAYSMOOTH 2
@@ -79,8 +79,8 @@ static struct {
   int vid_a13;
 } locals;
 
-data8_t *mrgame_videoram;
-data8_t *mrgame_objectram;
+static data8_t *mrgame_videoram;
+static data8_t *mrgame_objectram;
 
 /* -------------------*/
 /* --- Interfaces --- */
@@ -115,10 +115,7 @@ const struct sndbrdIntf spinbIntf = {
 
 
 //Generate a level 1 IRQ - IP0,IP1,IP2 = 0
-static void mrgame_irq(int data)
-{
-  cpu_set_irq_line(0, MC68000_IRQ_1, PULSE_LINE);
-}
+static void mrgame_irq(int data) { cpu_set_irq_line(0, MC68000_IRQ_1, PULSE_LINE); }
 
 static INTERRUPT_GEN(vblank) {
 
@@ -189,8 +186,7 @@ static READ16_HANDLER(rsw_ack_r) {
 	data |= (coreGlobals.swMatrix[9] << 6);
 	return data;
 }
-
-/*Solenoids - Need to verify correct solenoid # here!*/
+/*Solenoids*/
 static WRITE_HANDLER(solenoid_w)
 {
 	int sol = locals.a0a2;				//Controls which individual solenoid we're updating
@@ -211,6 +207,10 @@ static WRITE_HANDLER(solenoid_w)
 			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFF00FFFF) | (data<<16);
 			locals.solenoids |= data << 16;
             break;
+		case 3:
+			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x00FFFFFF) | (data<<24);
+			locals.solenoids |= data << 24;
+			break;
 		default:
 			LOG(("Solenoid_W Logic Error\n"));
 	}
@@ -220,8 +220,34 @@ static WRITE16_HANDLER(sound_w) {
 	//LOG(("%08x: sound_w = %04x\n",activecpu_get_pc(),data)); 
 }
 
+#ifdef TEST_MOTORSHOW
+const static int cycle[] = {0x18,0x19,0x1a};
+static int cycind=0;
+
+static WRITE_HANDLER(fake_w)
+{
+	locals.vid_data = cycle[cycind];
+	cycind = (cycind+1)%3;
+	printf("viddata=%x\n",locals.vid_data);
+}
+#endif
+
 //8 bit data to this latch comes from D8-D15 (ie, upper bits only)
-static WRITE16_HANDLER(video_w) { locals.vid_data = (data>>8) & 0xff; } //printf("viddata=%x\n",data>>8);}
+static WRITE16_HANDLER(video_w) { 
+#ifndef TEST_MOTORSHOW
+	locals.vid_data = (data>>8) & 0xff;  
+    //LOG(("viddata=%x\n",data>>8));
+#endif
+}
+
+static WRITE_HANDLER(lampdata_w) {
+	int lmpmsk;
+	data = locals.a0a2;
+	lmpmsk = (~(1<<data)) & 0xff;
+	locals.LampCol = offset;
+	coreGlobals.tmpLampMatrix[locals.LampCol] &= lmpmsk;					//Mask off the lamp we're updating
+	coreGlobals.tmpLampMatrix[locals.LampCol] |= (locals.d0d1&1)<<data;		//Set it based on d0d1 value
+}
 
 /*
 Bits 0-2 = D0-D2 selecting 0-7 output of selected bank (see below)
@@ -239,17 +265,13 @@ S15-S24 = Lamp Col 1-10 = 80 Lamps
 static WRITE16_HANDLER(ic35b_w) { 
 	int output = data & 0x07;
 	int bank = (data & 0x18)>>3;
-	int sol = locals.a0a2;
-	int lmpmsk = (~(1<<sol)) & 0xff;
-
 	switch(bank) {
 		//IC01 - Data Bits 3 = 0, 4 = 0 -> S0-S7 of CN14 & CN14A - Bit 7 is sent to S0-S7 via D0-D2
 		//S0-S5 = CN14 (Not Used!)
 		//S6-S7 = CN14A 
 		case 0:
 			locals.vid_strb = (data>>7);
-			//LOG(("S0-S7 = %04x\n",data));
-		break;
+			break;
 		//IC36 - Data Bits 3 = 1, 4 = 0 -> S9,10,11,15,16,17,18,19 of CN12 (D0-D2 generate 0-7 bits)
 		case 1:
 			switch(output) {
@@ -267,22 +289,16 @@ static WRITE16_HANDLER(ic35b_w) {
 					break;
 				//S15 - S19 (LAMP COLUMN 1,2,3,4,5)
 				default:
-					locals.LampCol = output-3;
-					coreGlobals.tmpLampMatrix[locals.LampCol] &= lmpmsk;
-					coreGlobals.tmpLampMatrix[locals.LampCol] |= (locals.d0d1&1)<<sol;
+					lampdata_w(output-3,0);
 			}
-		break;
+			break;
 
 		//IC37 - Data Bits 3 = 0, 4 = 1 -> S20,21,22,23,24 of CN12 (D0-D2 generate 0-7 bits)
 		//LAMP COLUMN 6,7,8,9,10
 		case 2:
 			//bits 5,6,7 not connected
-			if(output < 5) {
-				locals.LampCol = 5+output;
-				coreGlobals.tmpLampMatrix[locals.LampCol] &= lmpmsk;
-				coreGlobals.tmpLampMatrix[locals.LampCol] |= (locals.d0d1&1)<<sol;
-			}
-		break;
+			if(output < 5) lampdata_w(5+output,0);
+			break;
 	}
 }
 
@@ -303,15 +319,16 @@ static WRITE16_HANDLER(extadd_w) { locals.a0a2 = data & 0x07; }
 Bit 0 - Bit 2 => Rows 0->7
 Bit 3 = RFSH Line
 Bit 4 = LED
-Bit 5 = CN10-5 = enable flipper buttons readout? but is always 0
-Bit 6 = N/A
+Bit 5 = Pin 5 - CN10 & Pin 18 - CN11 (??)
+        CN10-5 = enable flipper buttons readout? but is always 0, strange!
+Bit 6 = NA
 Bit 7 = /RUNEN Line
 */
-static WRITE16_HANDLER(row_w) {
+static WRITE16_HANDLER(row_w) { 
 	locals.SwCol = data & 7;
 	locals.diagnosticLED = GET_BIT4;
 	locals.flipRead = GET_BIT5;
-//	LOG(("%08x: row_w = %04x\n",activecpu_get_pc(),data));
+//	LOG(("%08x: row_w = %04x\n",activecpu_get_pc(),data)); 
 }
 
 //NVRAM
@@ -327,34 +344,23 @@ static NVRAM_HANDLER(mrgame_nvram) {
 //Read D0-D7 from cpu
 static READ_HANDLER(i8255_porta_r) { 
 	//LOG(("i8255_porta_r=%x\n",locals.vid_data)); 
-
-	//title
-	//if(locals.vid_data == 0x18) locals.vid_data = 0x13;
-
-	//Racecars
-    if(locals.vid_data == 0x18) locals.vid_data = 0x1a;
-
-	//Bikes
-    //if(locals.vid_data == 0x18) locals.vid_data = 0x19;
-	
-	//printf("i8255_porta_r=%x\n",locals.vid_data);
-
 	return locals.vid_data; 
 }
 static READ_HANDLER(i8255_portb_r) { LOG(("UNDOCUMENTED: i8255_portb_r\n")); return 0; }
 
 //Bits 0-3 = Video Dips (NOT INVERTED)
 //Bits   4 = Video Strobe from CPU
-READ_HANDLER(i8255_portc_r) { return core_getDip(1) | (locals.vid_strb<<4); }
+static READ_HANDLER(i8255_portc_r) { return core_getDip(1) | (locals.vid_strb<<4); }
 
+//Connected to monitor! Not sure what kind of data it could send here!
+static WRITE_HANDLER(i8255_portb_w) { LOG(("i8255_portb_w=%x\n",data)); }
+
+//These don't make sense to me - they're read lines, so no idea what writes to here would do!
 static WRITE_HANDLER(i8255_porta_w) { LOG(("i8255_porta_w=%x\n",data)); }
-
-static WRITE_HANDLER(i8255_portb_w) {
-	//cpu_interrupt_enable(1,data&1);
-	//LOG(("i8255_portb_w=%x\n",data)); 
-}
 static WRITE_HANDLER(i8255_portc_w) { LOG(("i8255_portc_w=%x\n",data)); }
 
+
+//Video Registers
 static WRITE_HANDLER(vid_registers_w) {
 	switch(offset) {
 		//Graphics rom - address line 11 pin
@@ -363,7 +369,7 @@ static WRITE_HANDLER(vid_registers_w) {
 			break;
 		//?
 		case 1:
-			//cpu_interrupt_enable(1,data&1);
+			cpu_interrupt_enable(1,data&1);
  			break;
 		//Graphics rom - address line 12 pin
 		case 3:
@@ -389,24 +395,41 @@ static WRITE_HANDLER(soundg1_2_port_w) {
 }
 
 static VIDEO_START(mrgame) {
-  tmpbitmap = auto_bitmap_alloc(Machine->drv->screen_width, 248);
+  tmpbitmap = auto_bitmap_alloc(Machine->drv->screen_width,Machine->drv->screen_height);
   return (tmpbitmap == 0);
 }
 
+#ifdef MAME_DEBUG
 static int charoff = 0;
+#endif
+
+static const struct rectangle screen_visible_area =
+{
+	0, 255,
+	0, 239,
+};
+
 PINMAME_VIDEO_UPDATE(mrgame_update) {
 	int offs = 0;
 	int color = 0;
 	int colorindex = 0;
 	int tile = 0;
+	int flipx=0;
+	int flipy=0;
+	int sx=0;
+	int sy=0;
 
 #ifdef MAME_DEBUG
 
-if(!debugger_focus) {
+if(1 || !debugger_focus) {
   if(keyboard_pressed_memory_repeat(KEYCODE_Z,2))
-	  charoff+=0x100;
+#ifdef TEST_MOTORSHOW
+	  fake_w(0,0);
+#else
+	charoff = 0;
+#endif
   if(keyboard_pressed_memory_repeat(KEYCODE_X,2))
-	  charoff-=0x100;
+	  //charoff-=0x100;
   if(keyboard_pressed_memory_repeat(KEYCODE_C,2))
 	  charoff++;
   if(keyboard_pressed_memory_repeat(KEYCODE_V,2))
@@ -416,12 +439,10 @@ if(!debugger_focus) {
 
 	/* for every character in the Video RAM, check if it has been modified */
 	/* since last time and update it accordingly. */
-	for (offs = 0; offs < videoram_size-32; offs++) // the last character row contains garbage
+	for (offs = 0; offs < videoram_size - 1; offs++)
 	{
 		if (1) //dirtybuffer[offs])
 		{
-			int sx,sy;
-
 //			dirtybuffer[offs] = 0;
 
 			sx = offs % 32;
@@ -432,19 +453,38 @@ if(!debugger_focus) {
 			color = mrgame_objectram[colorindex];
 
 			tile = mrgame_videoram[offs]+
-                   (locals.vid_a11*0x100)+(locals.vid_a12*0x200)+(locals.vid_a13*0x400)+charoff;
+                   (locals.vid_a11<<8)+(locals.vid_a12<<9)+(locals.vid_a13<<10);
 
 			drawgfx(tmpbitmap,Machine->gfx[0],
 					tile,
-					color+2,
+					color+2,						//+2 to offset from PinMAME palette entries
 					0,0,
 					8*sx,8*sy,
 					0,TRANSPARENCY_NONE,0);
 		}
 	}
 
+	/* Draw Sprites - Not sure of total size here (this memory size allows 8 sprites on screen at once ) */
+	for (offs = 0x40; offs < 0x60; offs += 4)
+	{
+		sx = mrgame_objectram[offs + 3] + 1;
+		sy = 242 - mrgame_objectram[offs];
+		flipx = mrgame_objectram[offs + 1] & 0x40;
+		flipy = mrgame_objectram[offs + 1] & 0x80;
+		tile = (mrgame_objectram[offs + 1] & 0x3f) +
+				   (locals.vid_a11<<6) + (locals.vid_a12<<7) + (locals.vid_a13<<7);
+		color = mrgame_objectram[offs + 2];	//Note: This byte may have upper bits also used for other things, but no idea what if/any!
+
+		drawgfx(tmpbitmap,Machine->gfx[1],
+				tile,
+				color+2,							//+2 to offset from PinMAME palette entries
+				flipx,flipy,
+				sx,sy,
+				0,TRANSPARENCY_PEN,0);
+	}
+
 	/* copy the temporary bitmap to the screen */
-	copybitmap(bitmap,tmpbitmap,0,0,0,0,&Machine->visible_area,TRANSPARENCY_NONE,0);
+	copybitmap(bitmap,tmpbitmap,0,0,0,0,&screen_visible_area,TRANSPARENCY_NONE,0);
     return 0;
 }
 
@@ -459,7 +499,7 @@ static MEMORY_READ16_START(readmem)
 MEMORY_END
 static MEMORY_WRITE16_START(writemem)
   { 0x000000, 0x01ffff, MWA16_ROM },
-  { 0x020000, 0x02ffff, MWA16_RAM },
+  { 0x020000, 0x02ffff, MWA16_RAM, &NVRAM },
   { 0x030002, 0x030003, sound_w },
   { 0x030004, 0x030005, video_w },
   { 0x030006, 0x030007, ic35b_w },
@@ -496,8 +536,8 @@ MEMORY_END
 static MEMORY_WRITE_START(videog2_writemem)
   { 0x0000, 0x7fff, MWA_ROM },
   { 0x8000, 0x87ff, MWA_RAM },
-  { 0x8800, 0x8be7, MWA_RAM, &mrgame_videoram, &videoram_size },
-  { 0x8bef, 0x8fff, MWA_RAM },
+  { 0x8800, 0x8bff, MWA_RAM, &mrgame_videoram, &videoram_size },
+  { 0x8c00, 0x8fff, MWA_RAM },
   { 0x9000, 0x90ff, MWA_RAM, &mrgame_objectram },
   { 0x9100, 0xbfff, MWA_RAM },
   { 0xc000, 0xc003, ppi8255_0_w},
@@ -550,6 +590,7 @@ PALETTE_INIT( mrgame )
 {
 	int bit0,bit1,bit2,i,r,g,b;
 
+	//Add in PinMAME colors for the lamp,sw,sol matrix to display
 	palette_set_color(0,0,0,0);
 	palette_set_color(1,85,85,85);
 	palette_set_color(2,170,170,170);
@@ -584,6 +625,10 @@ PALETTE_INIT( mrgame )
  *
  *************************************/
 
+// ******************************
+// *** GENERATION 1 HARDWARE **** 
+// ******************************
+
 static struct GfxLayout charlayout_g1 =
 {
 	8,8,						/* 8*8 characters */
@@ -597,16 +642,28 @@ static struct GfxLayout charlayout_g1 =
 
 static struct GfxLayout spritelayout_g1 =
 {
-	16,16,						/* 8*8 characters */
-	4096/4,						/* 4096 characters = (32768 Bytes / 8 bits per byte)  */
+	16,16,						/* 16*16 characters */
+	4096/4,						/* 4096/4 characters = (32768 Bytes / 8 bits per byte)  */
 	2,							/* 2 bits per pixel */
 	{ 0, 0x8000*8 },			/* the bitplanes are separated across the 2 roms*/
 	{ 0, 1, 2, 3, 4, 5, 6, 7,
 			8*8+0, 8*8+1, 8*8+2, 8*8+3, 8*8+4, 8*8+5, 8*8+6, 8*8+7 },
 	{ 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8,
 			16*8, 17*8, 18*8, 19*8, 20*8, 21*8, 22*8, 23*8 },
-	32*8	/* every char takes 8 consecutive bytes */
+	32*8 /* every char takes 32 consecutive bytes */
 };
+
+static struct GfxDecodeInfo gfxdecodeinfo_g1[] =
+{
+	{ REGION_GFX1, 0, &charlayout_g1,   0, 32 },
+	{ REGION_GFX1, 0, &spritelayout_g1,   0, 32 },
+	{ -1 } /* end of array */
+};
+
+
+// ******************************
+// *** GENERATION 2 HARDWARE **** 
+// ******************************
 
 static struct GfxLayout charlayout_g2 =
 {
@@ -619,23 +676,30 @@ static struct GfxLayout charlayout_g2 =
 	8*8	/* every char takes 8 consecutive bytes */
 };
 
-static struct GfxDecodeInfo gfxdecodeinfo_g1[] =
+static struct GfxLayout spritelayout_g2 =
 {
-	{ REGION_GFX1, 0, &charlayout_g1,   0, 32 },
-	{ REGION_GFX1, 0, &spritelayout_g1,   0, 32 },
-	{ -1 } /* end of array */
+	16,16,						/* 16*16 characters */
+	4096/4,						/* 4096/4 characters = (32768 Bytes / 8 bits per byte)  */
+	5,							/* 5 bits per pixel */
+    { 0, 0x8000*8*1, 0x8000*8*2, 0x8000*8*3, 0x8000*8*4},		/* the bitplanes are separated across the 5 roms*/
+	{ 0, 1, 2, 3, 4, 5, 6, 7,
+			8*8+0, 8*8+1, 8*8+2, 8*8+3, 8*8+4, 8*8+5, 8*8+6, 8*8+7 },
+	{ 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8,
+			16*8, 17*8, 18*8, 19*8, 20*8, 21*8, 22*8, 23*8 },
+	32*8 /* every char takes 32 consecutive bytes */
 };
 
 static struct GfxDecodeInfo gfxdecodeinfo_g2[] =
 {
 	{ REGION_GFX1, 0, &charlayout_g2,   0, 32 },
+	{ REGION_GFX1, 0, &spritelayout_g2,   0, 32 },
 	{ -1 } /* end of array */
 };
 
 
 /* VIDEO GENERATION 1 DRIVER */
 MACHINE_DRIVER_START(mrgame_vid1)
-  MDRV_CPU_ADD(Z80,18432000/6)	/* 3.072 MHz */
+  MDRV_CPU_ADD(Z80,3000000)		/* 3 MHz */
   MDRV_CPU_MEMORY(videog1_readmem, videog1_writemem)
   MDRV_CPU_VBLANK_INT(nmi_line_pulse,1)
   MDRV_FRAMES_PER_SECOND(60)
@@ -685,10 +749,10 @@ MACHINE_DRIVER_START(mrgame_cpu)
   MDRV_CPU_ADD_TAG("mcpu", M68000, MRGAME_CPUFREQ)
   MDRV_CPU_MEMORY(readmem, writemem)
   MDRV_CPU_VBLANK_INT(vblank, 1)
+  MDRV_NVRAM_HANDLER(mrgame_nvram)
   MDRV_SWITCH_UPDATE(mrgame)
   MDRV_SWITCH_CONV(mrgame_sw2m,mrgame_m2sw)
   MDRV_DIAGNOSTIC_LEDH(1)
-//  MDRV_NVRAM_HANDLER(mrgame_nvram)
 MACHINE_DRIVER_END
 
 /* Video Board - Common among all */
@@ -696,7 +760,7 @@ MACHINE_DRIVER_START(mrgame_video_common)
   MDRV_SCREEN_SIZE(640, 400)
   MDRV_VISIBLE_AREA(0, 255, 0, 399)
   MDRV_VIDEO_ATTRIBUTES(VIDEO_TYPE_RASTER)
-  MDRV_PALETTE_LENGTH(40)
+  MDRV_PALETTE_LENGTH(32+8)		//We need extra entries for some pinmame colors
   MDRV_PALETTE_INIT(mrgame)
   MDRV_VIDEO_START(mrgame)
 MACHINE_DRIVER_END

@@ -7,15 +7,9 @@
 
 
 /* 10' Color Video Monitor */
-#if 1
 core_tLCDLayout mrgame_disp[] = {
   {0,0,248,256,CORE_VIDEO,(void *)mrgame_update},{0}
 };
-#else
-core_tLCDLayout mrgame_disp[] = {
-  {0},{0}
-};
-#endif
 
 #define INITGAME(name, disptype, flippers, balls, sb, db) \
 	MRGAME_INPUT_PORTS_START(name, balls) MRGAME_INPUT_PORTS_END \
