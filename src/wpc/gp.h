@@ -228,6 +228,14 @@
       ROM_LOAD( n1, 0x0000, 0x1000, chk1) \
       ROM_LOAD( n2, 0x1000, 0x1000, chk2)
 
+/* 3 X 4K ROMS */
+#define GP_ROMSTART000(name,n1,chk1,n2,chk2,n3,chk3) \
+  ROM_START(name) \
+	NORMALREGION(0x10000, GP_MEMREG_CPU) \
+      ROM_LOAD( n1, 0x0000, 0x1000, chk1) \
+      ROM_LOAD( n2, 0x1000, 0x1000, chk2) \
+      ROM_LOAD( n3, 0x2000, 0x1000, chk3)
+
 #define GP_ROMEND ROM_END
 
 /*-- These are only here so the game structure can be in the game file --*/

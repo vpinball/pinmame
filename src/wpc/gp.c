@@ -470,13 +470,13 @@ static WRITE_HANDLER(GP_CMOS_w) {
 /  Memory map for CPU board
 /------------------------------------*/
 static MEMORY_READ_START(GP_readmem)
-	{ 0x0000, 0x1fff, MRA_ROM },
+	{ 0x0000, 0x2fff, MRA_ROM },
 	{ 0x8c00, 0x8cff, MRA_RAM }, /*256K CMOS RAM - Battery Backed*/
 	{ 0x8d00, 0x8dff, MRA_RAM }, /*128K NMOS RAM*/
 MEMORY_END
 
 static MEMORY_WRITE_START(GP_writemem)
-	{ 0x0000, 0x1fff, MWA_ROM },
+	{ 0x0000, 0x2fff, MWA_ROM },
 	{ 0x8c00, 0x8cff, GP_CMOS_w, &GP_CMOS }, /*256K CMOS RAM - Battery Backed*/
 	{ 0x8d00, 0x8dff, MWA_RAM }, /*128K NMOS RAM*/
 MEMORY_END
