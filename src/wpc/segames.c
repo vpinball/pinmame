@@ -824,4 +824,85 @@ SE_ROMEND
 CORE_CLONEDEFNV(simpprti,simpprty,"The Simpsons Pinball Party (Italy)",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_NOCRC)
 
 
+/*-------------------------------------------------------------------
+/ Terminator 3: Rise of the Machines (2.00)
+/-------------------------------------------------------------------*/
+INITGAME(term3,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(term3,	 "t3cpu.200",0xb5cc4e24)
+DE_DMD32ROM8x(           "t3dispa.200",0xd664574c)
+DE2S_SOUNDROM18888(      "t3100.u7",  0x7f99e3af,
+                         "t3100.u17", 0xf0c71b5d,
+                         "t3100.u21", 0x694331f7,
+                         "t3100.u36", 0x9eb512e9,
+                         "t3100.u37", 0x3efb0c19)
+SE_ROMEND
+#define input_ports_term3 input_ports_se
+CORE_GAMEDEFNV(term3,"Terminator 3: Rise of the Machines",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_NOCRC)
 
+//What happened to the German Version? It's not in the rom!
+#if 0
+/*-------------------------------------------------------------------
+/ Terminator 3: Rise of the Machines (Germany)
+/-------------------------------------------------------------------*/
+INITGAME(term3g,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(term3g,	 "t3cpu.200",0xb5cc4e24)
+DE_DMD32ROM8x(           "t3dispg.200",0x39dd7f6e)
+DE2S_SOUNDROM18888(      "t3100.u7",  0x7f99e3af,
+                         "t3100.u17", 0xf0c71b5d,
+                         "t3100.u21", 0x694331f7,
+                         "t3100.u36", 0x9eb512e9,
+                         "t3100.u37", 0x3efb0c19)
+SE_ROMEND
+#define input_ports_term3g input_ports_se
+#define init_term3g init_term3
+CORE_CLONEDEFNV(term3g,term3,"Terminator 3: Rise of the Machines (Germany)",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_NOCRC)
+#endif
+
+/*-------------------------------------------------------------------
+/ Terminator 3: Rise of the Machines (Spain)
+/-------------------------------------------------------------------*/
+INITGAME(term3l,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(term3l,	 "t3cpu.200",0xb5cc4e24)
+DE_DMD32ROM8x(           "t3displ.200",0x41f14c9d)
+DE2S_SOUNDROM18888(      "t3100.u7",  0x7f99e3af,
+                         "t3100.u17", 0xf0c71b5d,
+                         "t3100.u21", 0x694331f7,
+                         "t3100.u36", 0x9eb512e9,
+                         "t3100.u37", 0x3efb0c19)
+SE_ROMEND
+#define input_ports_term3l input_ports_se
+#define init_term3l init_term3
+CORE_CLONEDEFNV(term3l,term3,"Terminator 3: Rise of the Machines (Spain)",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Terminator 3: Rise of the Machines (France)
+/-------------------------------------------------------------------*/
+INITGAME(term3f,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(term3f,	 "t3cpu.200",0xb5cc4e24)
+DE_DMD32ROM8x(           "t3dispf.200",0x0d3e4c77)
+DE2S_SOUNDROM18888(      "t3100.u7",  0x7f99e3af,
+                         "t3100.u17", 0xf0c71b5d,
+                         "t3100.u21", 0x694331f7,
+                         "t3100.u36", 0x9eb512e9,
+                         "t3100.u37", 0x3efb0c19)
+SE_ROMEND
+#define input_ports_term3f input_ports_se
+#define init_term3f init_term3
+CORE_CLONEDEFNV(term3f,term3,"Terminator 3: Rise of the Machines (France)",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_NOCRC)
+
+
+/*-------------------------------------------------------------------
+/ Terminator 3: Rise of the Machines (Italy)
+/-------------------------------------------------------------------*/
+INITGAME(term3i,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(term3i,	 "t3cpu.200",0xb5cc4e24)
+DE_DMD32ROM8x(           "t3dispi.200",0x39dd7f6e)
+DE2S_SOUNDROM18888(      "t3100.u7",  0x7f99e3af,
+                         "t3100.u17", 0xf0c71b5d,
+                         "t3100.u21", 0x694331f7,
+                         "t3100.u36", 0x9eb512e9,
+                         "t3100.u37", 0x3efb0c19)
+SE_ROMEND
+#define input_ports_term3i input_ports_se
+#define init_term3i init_term3
+CORE_CLONEDEFNV(term3i,term3,"Terminator 3: Rise of the Machines (Italy)",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_NOCRC)
