@@ -568,13 +568,13 @@ static void CreateCommandLine(int nGameIndex, char* pCmdLine)
 	sprintf(&pCmdLine[strlen(pCmdLine)], " -%ssteadykey",               pOpts->steadykey    ? "" : "no");
 
 	/* core video */
-	sprintf(&pCmdLine[strlen(pCmdLine)], " -bpp %d",                    pOpts->color_depth); 
+	sprintf(&pCmdLine[strlen(pCmdLine)], " -bpp %d",                    pOpts->color_depth);
 	sprintf(&pCmdLine[strlen(pCmdLine)], " -%snorotate",                pOpts->norotate        ? "" : "no");
 	sprintf(&pCmdLine[strlen(pCmdLine)], " -%sror",                     pOpts->ror             ? "" : "no");
 	sprintf(&pCmdLine[strlen(pCmdLine)], " -%srol",                     pOpts->rol             ? "" : "no");
 	sprintf(&pCmdLine[strlen(pCmdLine)], " -%sflipx",                   pOpts->flipx           ? "" : "no");
 	sprintf(&pCmdLine[strlen(pCmdLine)], " -%sflipy",                   pOpts->flipy           ? "" : "no");
-	sprintf(&pCmdLine[strlen(pCmdLine)], " -debug_resolution %s",       pOpts->debugres); 
+	sprintf(&pCmdLine[strlen(pCmdLine)], " -debug_resolution %s",       pOpts->debugres);
 	sprintf(&pCmdLine[strlen(pCmdLine)], " -gamma %f",                  pOpts->gamma_correct);
 
 	/* vector */
@@ -599,6 +599,18 @@ static void CreateCommandLine(int nGameIndex, char* pCmdLine)
 	if (g_pRecordName != NULL)
 		sprintf(&pCmdLine[strlen(pCmdLine)], " -record \"%s\"",         g_pRecordName);
 	sprintf(&pCmdLine[strlen(pCmdLine)], " -%slog",                     pOpts->errorlog        ? "" : "no");
+#ifdef PINMAME
+	sprintf(&pCmdLine[strlen(pCmdLine)], " -wave_directory \"%s\"",     GetWaveDir());
+	sprintf(&pCmdLine[strlen(pCmdLine)], " -dmd_red %d",                pOpts->dmd_red);
+	sprintf(&pCmdLine[strlen(pCmdLine)], " -dmd_green %d",              pOpts->dmd_green);
+	sprintf(&pCmdLine[strlen(pCmdLine)], " -dmd_blue %d",               pOpts->dmd_blue);
+	sprintf(&pCmdLine[strlen(pCmdLine)], " -dmd_perc0 %d",              pOpts->dmd_perc0);
+	sprintf(&pCmdLine[strlen(pCmdLine)], " -dmd_perc33 %d",             pOpts->dmd_perc33);
+	sprintf(&pCmdLine[strlen(pCmdLine)], " -dmd_perc66 %d",             pOpts->dmd_perc66);
+	sprintf(&pCmdLine[strlen(pCmdLine)], " -%sdmd_only",                pOpts->dmd_only?"" : "no");
+	sprintf(&pCmdLine[strlen(pCmdLine)], " -%sdmd_compact",             pOpts->dmd_compact?"" : "no");
+	sprintf(&pCmdLine[strlen(pCmdLine)], " -dmd_antialias %d",          pOpts->dmd_antialias);
+#endif /* PINMAME */
 }
 
 static BOOL WaitWithMessageLoop(HANDLE hEvent)
@@ -4829,7 +4841,7 @@ static void Header_Initialize(HWND hWndList)
 {
 	/*
 		this will subclass the listview (where WM_DRAWITEM gets sent for
-		the header control) 
+		the header control)
 	*/
 	g_lpHeaderWndProc = (WNDPROC)(LONG)GetWindowLong(hWndList, GWL_WNDPROC);
 	SetWindowLong(hWndList, GWL_WNDPROC, (LONG)HeaderWndProc);

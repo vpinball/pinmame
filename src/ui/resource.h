@@ -78,6 +78,7 @@
 #define IDD_ROM_ERROR                   177
 #define IDD_LANGUAGE                    178
 #define IDD_ERROR                       179
+#define IDD_PROP_PINMAME                180
 #define IDC_LIST                        1000
 #define IDC_PLAY                        1001
 #define IDC_DISPLAYS                    1004
@@ -227,6 +228,29 @@
 #define IDC_ASPECTRATIOTEXT             1270
 #define IDC_JOY_GUI                     1271
 #define IDC_BROADCAST                   1272
+#define IDC_DMD_ONLY                    1275
+#define IDC_DMD_COMPACT                 1276
+#define IDC_DMD_ANTIALIAS_TEXT          1277
+#define IDC_DMD_ANTIALIAS               1278
+#define IDC_DMD_ANTIALIAS_DISP          1279
+#define IDC_DMD_PERC0_TEXT              1280
+#define IDC_DMD_PERC0                   1281
+#define IDC_DMD_PERC0_DISP              1282
+#define IDC_DMD_PERC33_TEXT             1283
+#define IDC_DMD_PERC33                  1284
+#define IDC_DMD_PERC33_DISP             1285
+#define IDC_DMD_PERC66_TEXT             1286
+#define IDC_DMD_PERC66                  1287
+#define IDC_DMD_PERC66_DISP             1288
+#define IDC_DMD_RED_TEXT                1289
+#define IDC_DMD_RED                     1290
+#define IDC_DMD_RED_DISP                1291
+#define IDC_DMD_GREEN_TEXT              1292
+#define IDC_DMD_BLUE_TEXT               1293
+#define IDC_DMD_GREEN                   1294
+#define IDC_DMD_BLUE                    1295
+#define IDC_DMD_GREEN_DISP              1296
+#define IDC_DMD_BLUE_DISP               1297
 #define ID_FILE_EXIT                    40001
 #define ID_ABOUT                        40003
 #define ID_FILE_PLAY                    40004
@@ -275,14 +299,14 @@
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        181
 #define _APS_NEXT_COMMAND_VALUE         40062
-#define _APS_NEXT_CONTROL_VALUE         1273
+#define _APS_NEXT_CONTROL_VALUE         1283
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

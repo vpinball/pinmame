@@ -9,13 +9,13 @@
   that you have read the license and understand and accept it fully.
 
 ***************************************************************************/
- 
+
 /***************************************************************************
 
   Properties.c
 
     Properties Popup and Misc UI support routines.
-    
+
     Created 8/29/98 by Mike Haaland (mhaaland@hypertech.com)
 
 ***************************************************************************/
@@ -76,6 +76,15 @@ static void BrightnessSelectionChange(HWND hwnd);
 static void ResDepthSelectionChange(HWND hWnd, HWND hWndCtrl);
 static void RefreshSelectionChange(HWND hWnd, HWND hWndCtrl);
 static void VolumeSelectionChange(HWND hwnd);
+#ifdef PINMAME
+static void DMDREDSelectionChange(HWND hwnd);
+static void DMDGREENSelectionChange(HWND hwnd);
+static void DMDBLUESelectionChange(HWND hwnd);
+static void DMDPERC0SelectionChange(HWND hwnd);
+static void DMDPERC33SelectionChange(HWND hwnd);
+static void DMDPERC66SelectionChange(HWND hwnd);
+static void DMDANTIALIASSelectionChange(HWND hwnd);
+#endif /* PINMAME */
 static void UpdateDisplayModeUI(HWND hwnd, DWORD dwDepth, DWORD dwRefresh);
 static void InitializeDisplayModeUI(HWND hwnd);
 static void InitializeSoundUI(HWND hwnd);
@@ -116,6 +125,15 @@ static int  g_nRotateIndex     = 0;
 static int  g_nInputIndex      = 0;
 static int  g_nBrightnessIndex = 0;
 static int  g_nEffectIndex     = 0;
+#ifdef PINMAME
+static int  g_nDMDRedIndex     = 0;
+static int  g_nDMDGreenIndex   = 0;
+static int  g_nDMDBlueIndex    = 0;
+static int  g_nDMDPerc0Index   = 0;
+static int  g_nDMDPerc33Index  = 0;
+static int  g_nDMDPerc66Index  = 0;
+static int  g_nDMDAntialiasIndex= 0;
+#endif /* PINMAME */
 
 /* Game history variables */
 #define MAX_HISTORY_LEN     (8 * 1024)
@@ -133,6 +151,9 @@ static DWORD dwDlgId[] =
 	IDD_PROP_SOUND,
 	IDD_PROP_INPUT,
 	IDD_PROP_MISC,
+#ifdef PINMAME
+        IDD_PROP_PINMAME,
+#endif /* PINMAME */
 	IDD_PROP_VECTOR
 };
 
@@ -214,7 +235,7 @@ static struct ComboBoxEffect
 {
 	const char*	m_pText;
 	const char* m_pData;
-} g_ComboBoxEffect[] = 
+} g_ComboBoxEffect[] =
 {
 	{ "None",                           "none"    },
 	{ "25% scanlines",                  "scan25"  },
@@ -253,7 +274,7 @@ BOOL FindRomSet(int game)
 	unsigned int			length, icrc;
 
 	gamedrv = drivers[game];
- 
+
 	if (!osd_faccess(gamedrv->name, OSD_FILETYPE_ROM))
 	{
 		/* if the game is a clone, try loading the ROM from the main version */
@@ -531,7 +552,9 @@ void InitPropertyPageToPage(HINSTANCE hInst, HWND hWnd, int game_num, int start_
 	pspage[4].pfnDlgProc = GameOptionsProc;
 	pspage[5].pfnDlgProc = GameOptionsProc;
 	pspage[6].pfnDlgProc = GameOptionsProc;
-	
+#ifdef PINMAME
+	pspage[7].pfnDlgProc = GameOptionsProc;
+#endif /* PINMAME */
 	/* If this is a vector game, add the vector prop sheet */
 	if (maxPropSheets == NUM_PROPSHEETS)
 	{
@@ -694,7 +717,7 @@ static char *GameInfoManufactured(UINT nIndex)
 {
 	static char buf[1024];
 
-	sprintf(buf, "%s %s", drivers[nIndex]->year, drivers[nIndex]->manufacturer); 
+	sprintf(buf, "%s %s", drivers[nIndex]->year, drivers[nIndex]->manufacturer);
 	return buf;
 }
 
@@ -706,7 +729,7 @@ char *GameInfoTitle(UINT nIndex)
 	if (nIndex == -1)
 		strcpy(buf, "Global game options\nDefault options used by all games");
 	else
-		sprintf(buf, "%s\n\"%s\"", ModifyThe(drivers[nIndex]->description), drivers[nIndex]->name); 
+		sprintf(buf, "%s\n\"%s\"", ModifyThe(drivers[nIndex]->description), drivers[nIndex]->name);
 	return buf;
 }
 
@@ -722,7 +745,7 @@ static char *GameInfoCloneOf(UINT nIndex)
 	{
 		sprintf(buf, "%s - \"%s\"",
 				ConvertAmpersandString(ModifyThe(drivers[nIndex]->clone_of->description)),
-				drivers[nIndex]->clone_of->name); 
+				drivers[nIndex]->clone_of->name);
 	}
 
 	return buf;
@@ -805,7 +828,7 @@ static INT_PTR CALLBACK GameOptionsProc(HWND hDlg, UINT Msg, WPARAM wParam, LPAR
 
 		EnableWindow(GetDlgItem(hDlg, IDC_PROP_RESET), g_bReset);
 		ShowWindow(hDlg, SW_SHOW);
-    
+
 		return 1;
 
 	case WM_HSCROLL:
@@ -910,7 +933,7 @@ static INT_PTR CALLBACK GameOptionsProc(HWND hDlg, UINT Msg, WPARAM wParam, LPAR
 					}
 					EnableWindow(GetDlgItem(hDlg, IDC_USE_DEFAULT), (g_bUseDefaults) ? FALSE : TRUE);
 				}
-            
+
 				break;
 
 			default:
@@ -935,7 +958,7 @@ static INT_PTR CALLBACK GameOptionsProc(HWND hDlg, UINT Msg, WPARAM wParam, LPAR
 					changed = TRUE;
 				}
 			}
-        
+
 			/* Enable the apply button */
 			if (changed == TRUE)
 			{
@@ -987,7 +1010,7 @@ static INT_PTR CALLBACK GameOptionsProc(HWND hDlg, UINT Msg, WPARAM wParam, LPAR
 			pGameOpts->use_default = g_bUseDefaults;
 			PropToOptions(hDlg, pGameOpts);
 			SetWindowLong(hDlg, DWL_MSGRESULT, FALSE);
-			return 1;  
+			return 1;
 
 		case PSN_RESET:
 			/* Reset to the original values. Disregard changes */
@@ -1006,9 +1029,9 @@ static INT_PTR CALLBACK GameOptionsProc(HWND hDlg, UINT Msg, WPARAM wParam, LPAR
 		Help_HtmlHelp(((LPHELPINFO)lParam)->hItemHandle, MAME32HELP, HH_TP_HELP_WM_HELP, GetHelpIDs());
 		break;
 
-	case WM_CONTEXTMENU: 
+	case WM_CONTEXTMENU:
 		Help_HtmlHelp((HWND)wParam, MAME32HELP, HH_TP_HELP_CONTEXTMENU, GetHelpIDs());
-		break; 
+		break;
 
 	}
 	EnableWindow(GetDlgItem(hDlg, IDC_PROP_RESET), g_bReset);
@@ -1050,7 +1073,7 @@ static void PropToOptions(HWND hWnd, options_type *o)
 		else
 		{
 			int w, h;
-        
+
 			ComboBox_GetText(hCtrl, buf, 100);
 			if (sscanf(buf, "%d x %d", &w, &h) == 2)
 			{
@@ -1060,7 +1083,7 @@ static void PropToOptions(HWND hWnd, options_type *o)
 			{
 				strcpy(o->resolution, "0x0"); /* auto */
 			}
-		}   
+		}
 
 		/* resolution depth */
 		hCtrl = GetDlgItem(hWnd, IDC_RESDEPTH);
@@ -1162,14 +1185,14 @@ static void OptionsToProp(HWND hWnd, options_type* o)
 
 			/* Get the number of items in the control */
 			nCount = ComboBox_GetCount(hCtrl);
-        
+
 			while (0 < nCount--)
 			{
 				int nWidth, nHeight;
-            
+
 				/* Get the screen size */
 				ComboBox_GetLBText(hCtrl, nCount, buf);
-            
+
 				if (sscanf(buf, "%d x %d", &nWidth, &nHeight) == 2)
 				{
 					/* If we match, set nSelection to the right value */
@@ -1202,14 +1225,14 @@ static void OptionsToProp(HWND hWnd, options_type* o)
 
 			/* Get the number of items in the control */
 			nCount = ComboBox_GetCount(hCtrl);
-        
+
 			while (0 < nCount--)
 			{
 				int nDepth;
-            
+
 				/* Get the screen depth */
 				nDepth = ComboBox_GetItemData(hCtrl, nCount);
-            
+
 				/* If we match, set nSelection to the right value */
 				if (d == nDepth)
 				{
@@ -1238,14 +1261,14 @@ static void OptionsToProp(HWND hWnd, options_type* o)
 
 			/* Get the number of items in the control */
 			nCount = ComboBox_GetCount(hCtrl);
-        
+
 			while (0 < nCount--)
 			{
 				int nRefresh;
-            
+
 				/* Get the screen depth */
 				nRefresh = ComboBox_GetItemData(hCtrl, nCount);
-            
+
 				/* If we match, set nSelection to the right value */
 				if (o->gfx_refresh == nRefresh)
 				{
@@ -1316,7 +1339,50 @@ static void OptionsToProp(HWND hWnd, options_type* o)
 		sprintf(buf, "%ddB", o->attenuation);
 		Static_SetText(hCtrl, buf);
 	}
-
+#ifdef PINMAME
+	hCtrl = GetDlgItem(hWnd, IDC_DMD_RED_DISP);
+	if (hCtrl)
+	{
+		sprintf(buf, "%d", o->dmd_red);
+		Static_SetText(hCtrl, buf);
+	}
+	hCtrl = GetDlgItem(hWnd, IDC_DMD_GREEN_DISP);
+	if (hCtrl)
+	{
+		sprintf(buf, "%d", o->dmd_green);
+		Static_SetText(hCtrl, buf);
+	}
+	hCtrl = GetDlgItem(hWnd, IDC_DMD_BLUE_DISP);
+	if (hCtrl)
+	{
+		sprintf(buf, "%d", o->dmd_blue);
+		Static_SetText(hCtrl, buf);
+	}
+	hCtrl = GetDlgItem(hWnd, IDC_DMD_PERC0_DISP);
+	if (hCtrl)
+	{
+		sprintf(buf, "%d%%", o->dmd_perc0);
+		Static_SetText(hCtrl, buf);
+	}
+	hCtrl = GetDlgItem(hWnd, IDC_DMD_PERC33_DISP);
+	if (hCtrl)
+	{
+		sprintf(buf, "%d%%", o->dmd_perc33);
+		Static_SetText(hCtrl, buf);
+	}
+	hCtrl = GetDlgItem(hWnd, IDC_DMD_PERC66_DISP);
+	if (hCtrl)
+	{
+		sprintf(buf, "%d%%", o->dmd_perc66);
+		Static_SetText(hCtrl, buf);
+	}
+	hCtrl = GetDlgItem(hWnd, IDC_DMD_ANTIALIAS_DISP);
+	if (hCtrl)
+	{
+		sprintf(buf, "%d%%", o->dmd_antialias);
+		Static_SetText(hCtrl, buf);
+	}
+#endif /* PINMAME */
 	g_bInternalSet = FALSE;
 }
 
@@ -1380,13 +1446,13 @@ static void SetPropEnabledControls(HWND hWnd)
 		SetStereoEnabled(hWnd, nIndex);
 		SetYM3812Enabled(hWnd, nIndex);
 	}
-    
+
     dirty = (nIndex == -1);
     if (!dirty)
     {
         struct InternalMachineDriver drv;
         expand_machine_driver(drivers[nIndex]->drv,&drv);
-        if ((drv.video_attributes & VIDEO_SUPPORTS_DIRTY) 
+        if ((drv.video_attributes & VIDEO_SUPPORTS_DIRTY)
             || (drv.video_attributes & VIDEO_TYPE_VECTOR))
             dirty = TRUE;
     }
@@ -1493,7 +1559,36 @@ static void AssignEffect(HWND hWnd)
 	if (pData != NULL)
 		strcpy(pGameOpts->effect, pData);
 }
-
+#ifdef PINMAME
+static void AssignDMDRed(HWND hWnd)
+{
+	pGameOpts->dmd_red = g_nDMDRedIndex;
+}
+static void AssignDMDGreen(HWND hWnd)
+{
+	pGameOpts->dmd_green = g_nDMDGreenIndex;
+}
+static void AssignDMDBlue(HWND hWnd)
+{
+	pGameOpts->dmd_blue = g_nDMDBlueIndex;
+}
+static void AssignDMDPerc0(HWND hWnd)
+{
+	pGameOpts->dmd_perc0 = g_nDMDPerc0Index;
+}
+static void AssignDMDPerc33(HWND hWnd)
+{
+	pGameOpts->dmd_perc33 = g_nDMDPerc33Index;
+}
+static void AssignDMDPerc66(HWND hWnd)
+{
+	pGameOpts->dmd_perc66 = g_nDMDPerc66Index;
+}
+static void AssignDMDAntialias(HWND hWnd)
+{
+	pGameOpts->dmd_antialias = g_nDMDAntialiasIndex;
+}
+#endif /* PINMAME */
 /************************************************************
  * DataMap initializers
  ************************************************************/
@@ -1506,7 +1601,15 @@ static void ResetDataMap(void)
 	g_nBrightnessIndex = (int)((pGameOpts->gfx_brightness - 0.1) * 20.0);
 	g_nBeamIndex       = (int)((pGameOpts->f_beam         - 1.0) * 20.0);
 	g_nFlickerIndex    = (int)(pGameOpts->f_flicker);
-
+#ifdef PINMAME
+        g_nDMDRedIndex     = pGameOpts->dmd_red;
+        g_nDMDGreenIndex   = pGameOpts->dmd_green;
+        g_nDMDBlueIndex    = pGameOpts->dmd_blue;
+        g_nDMDPerc0Index   = pGameOpts->dmd_perc0;
+        g_nDMDPerc33Index  = pGameOpts->dmd_perc33;
+        g_nDMDPerc66Index  = pGameOpts->dmd_perc66;
+        g_nDMDAntialiasIndex= pGameOpts->dmd_antialias;
+#endif /* PINMAME */
 	if (pGameOpts->hotrod == 0 && pGameOpts->hotrodse == 0)
 		g_nInputIndex = 0;
 	else
@@ -1588,9 +1691,9 @@ static void BuildDataMap(void)
 
 	/* input */
 	DataMapAdd(IDC_DEFAULT_INPUT, DM_INT,  CT_COMBOBOX, &g_nInputIndex, 0, 0, AssignInput);
-	DataMapAdd(IDC_USE_MOUSE,     DM_BOOL, CT_BUTTON,   &pGameOpts->use_mouse,     0, 0, 0);   
-	DataMapAdd(IDC_JOYSTICK,      DM_BOOL, CT_BUTTON,   &pGameOpts->use_joystick,  0, 0, 0);   
-	DataMapAdd(IDC_STEADYKEY,     DM_BOOL, CT_BUTTON,   &pGameOpts->steadykey,     0, 0, 0);   
+	DataMapAdd(IDC_USE_MOUSE,     DM_BOOL, CT_BUTTON,   &pGameOpts->use_mouse,     0, 0, 0);
+	DataMapAdd(IDC_JOYSTICK,      DM_BOOL, CT_BUTTON,   &pGameOpts->use_joystick,  0, 0, 0);
+	DataMapAdd(IDC_STEADYKEY,     DM_BOOL, CT_BUTTON,   &pGameOpts->steadykey,     0, 0, 0);
 
 	/* core video */
 	DataMapAdd(IDC_DEPTH,         DM_INT,  CT_COMBOBOX, &g_nDepthIndex, 0, 0, AssignDepth);
@@ -1619,6 +1722,17 @@ static void BuildDataMap(void)
 	DataMapAdd(IDC_CHEAT,         DM_BOOL, CT_BUTTON,   &pGameOpts->cheat,         0, 0, 0);
 /*	DataMapAdd(IDC_DEBUG,         DM_BOOL, CT_BUTTON,   &pGameOpts->mame_debug,    0, 0, 0);*/
 	DataMapAdd(IDC_LOG,           DM_BOOL, CT_BUTTON,   &pGameOpts->errorlog,      0, 0, 0);
+#ifdef PINMAME
+	DataMapAdd(IDC_DMD_RED,       DM_INT,  CT_SLIDER,   &g_nDMDRedIndex,       0, 0, AssignDMDRed);
+	DataMapAdd(IDC_DMD_GREEN,     DM_INT,  CT_SLIDER,   &g_nDMDGreenIndex,     0, 0, AssignDMDGreen);
+	DataMapAdd(IDC_DMD_BLUE,      DM_INT,  CT_SLIDER,   &g_nDMDBlueIndex,      0, 0, AssignDMDBlue);
+	DataMapAdd(IDC_DMD_PERC0,     DM_INT,  CT_SLIDER,   &g_nDMDPerc0Index,     0, 0, AssignDMDPerc0);
+	DataMapAdd(IDC_DMD_PERC33,    DM_INT,  CT_SLIDER,   &g_nDMDPerc33Index,    0, 0, AssignDMDPerc33);
+	DataMapAdd(IDC_DMD_PERC66,    DM_INT,  CT_SLIDER,   &g_nDMDPerc66Index,    0, 0, AssignDMDPerc66);
+	DataMapAdd(IDC_DMD_ANTIALIAS, DM_INT,  CT_SLIDER,   &g_nDMDAntialiasIndex, 0, 0, AssignDMDAntialias);
+	DataMapAdd(IDC_DMD_ONLY,      DM_BOOL, CT_BUTTON,   &pGameOpts->dmd_only,      0, 0, 0);
+	DataMapAdd(IDC_DMD_COMPACT,   DM_BOOL, CT_BUTTON,   &pGameOpts->dmd_compact,   0, 0, 0);
+#endif /* PINMAME */
 }
 
 static void SetStereoEnabled(HWND hWnd, int nIndex)
@@ -1669,7 +1783,7 @@ static void SetYM3812Enabled(HWND hWnd, int nIndex)
 			)
 				enabled = TRUE;
 		}
-    
+
 		EnableWindow(hCtrl, enabled);
 	}
 }
@@ -1686,7 +1800,7 @@ static void SetSamplesEnabled(HWND hWnd, int nIndex, BOOL bSoundEnabled)
 
 	if (-1 != nIndex)
 		expand_machine_driver(drivers[nIndex]->drv,&drv);
-	
+
 	if (hCtrl)
 	{
 		for (i = 0; i < MAX_SOUND; i++)
@@ -1743,6 +1857,29 @@ static void InitializeMisc(HWND hDlg)
 	SendMessage(GetDlgItem(hDlg, IDC_VOLUME), TBM_SETRANGE,
 				(WPARAM)FALSE,
 				(LPARAM)MAKELONG(0, 32)); /* [-32, 0] */
+#ifdef PINMAME
+	SendMessage(GetDlgItem(hDlg, IDC_DMD_RED), TBM_SETRANGE,
+				(WPARAM)FALSE,
+				(LPARAM)MAKELONG(0, 255)); /* [0.0, 255.0] in 1.0 increments */
+	SendMessage(GetDlgItem(hDlg, IDC_DMD_GREEN), TBM_SETRANGE,
+				(WPARAM)FALSE,
+				(LPARAM)MAKELONG(0, 255)); /* [0.0, 255.0] in 1.0 increments */
+	SendMessage(GetDlgItem(hDlg, IDC_DMD_BLUE), TBM_SETRANGE,
+				(WPARAM)FALSE,
+				(LPARAM)MAKELONG(0, 255)); /* [0.0, 255.0] in 1.0 increments */
+	SendMessage(GetDlgItem(hDlg, IDC_DMD_PERC0), TBM_SETRANGE,
+				(WPARAM)FALSE,
+				(LPARAM)MAKELONG(0, 100)); /* [0.0, 100.0] in 1.0 increments */
+	SendMessage(GetDlgItem(hDlg, IDC_DMD_PERC33), TBM_SETRANGE,
+				(WPARAM)FALSE,
+				(LPARAM)MAKELONG(0, 100)); /* [0.0, 100.0] in 1.0 increments */
+	SendMessage(GetDlgItem(hDlg, IDC_DMD_PERC66), TBM_SETRANGE,
+				(WPARAM)FALSE,
+				(LPARAM)MAKELONG(0, 100)); /* [0.0, 100.0] in 1.0 increments */
+	SendMessage(GetDlgItem(hDlg, IDC_DMD_ANTIALIAS), TBM_SETRANGE,
+				(WPARAM)FALSE,
+				(LPARAM)MAKELONG(0, 100)); /* [0.0, 100.0] in 1.0 increments */
+#endif /* PINMAME */
 }
 
 static void OptOnHScroll(HWND hwnd, HWND hwndCtl, UINT code, int pos)
@@ -1776,6 +1913,43 @@ static void OptOnHScroll(HWND hwnd, HWND hwndCtl, UINT code, int pos)
 	{
 		VolumeSelectionChange(hwnd);
 	}
+#ifdef PINMAME
+	else
+	if (hwndCtl == GetDlgItem(hwnd, IDC_DMD_RED))
+	{
+		DMDREDSelectionChange(hwnd);
+	}
+	else
+	if (hwndCtl == GetDlgItem(hwnd, IDC_DMD_GREEN))
+	{
+		DMDGREENSelectionChange(hwnd);
+	}
+	else
+	if (hwndCtl == GetDlgItem(hwnd, IDC_DMD_BLUE))
+	{
+		DMDBLUESelectionChange(hwnd);
+	}
+        else
+	if (hwndCtl == GetDlgItem(hwnd, IDC_DMD_PERC0))
+	{
+		DMDPERC0SelectionChange(hwnd);
+	}
+        else
+	if (hwndCtl == GetDlgItem(hwnd, IDC_DMD_PERC33))
+	{
+		DMDPERC33SelectionChange(hwnd);
+	}
+        else
+	if (hwndCtl == GetDlgItem(hwnd, IDC_DMD_PERC66))
+	{
+		DMDPERC66SelectionChange(hwnd);
+	}
+        else
+	if (hwndCtl == GetDlgItem(hwnd, IDC_DMD_ANTIALIAS))
+	{
+		DMDANTIALIASSelectionChange(hwnd);
+	}
+#endif /* PINMAME */
 }
 
 /* Handle changes to the Beam slider */
@@ -1857,7 +2031,7 @@ static void ResDepthSelectionChange(HWND hWnd, HWND hWndCtrl)
 		HWND hRefreshCtrl;
 		int nResDepth = 0;
 		int nRefresh  = 0;
-    
+
 		nResDepth = ComboBox_GetItemData(hWndCtrl, nCurSelection);
 
 		hRefreshCtrl = GetDlgItem(hWnd, IDC_REFRESH);
@@ -1883,7 +2057,7 @@ static void RefreshSelectionChange(HWND hWnd, HWND hWndCtrl)
 		HWND hResDepthCtrl;
 		int nResDepth = 0;
 		int nRefresh  = 0;
-    
+
 		nRefresh = ComboBox_GetItemData(hWndCtrl, nCurSelection);
 
 		hResDepthCtrl = GetDlgItem(hWnd, IDC_RESDEPTH);
@@ -1911,7 +2085,93 @@ static void VolumeSelectionChange(HWND hwnd)
 	sprintf(buf, "%ddB", nValue - 32);
 	Static_SetText(GetDlgItem(hwnd, IDC_VOLUMEDISP), buf);
 }
+#ifdef PINMAME
+/* Handle changes to the Color slider */
+static void DMDREDSelectionChange(HWND hwnd)
+{
+	char buf[100];
+	int  nValue;
 
+	/* Get the current value of the control */
+	nValue = SendMessage(GetDlgItem(hwnd, IDC_DMD_RED), TBM_GETPOS, 0, 0);
+
+	/* Set the static display to the new value */
+	sprintf(buf, "%d", nValue);
+	Static_SetText(GetDlgItem(hwnd, IDC_DMD_RED_DISP), buf);
+}
+static void DMDGREENSelectionChange(HWND hwnd)
+{
+	char buf[100];
+	int  nValue;
+
+	/* Get the current value of the control */
+	nValue = SendMessage(GetDlgItem(hwnd, IDC_DMD_GREEN), TBM_GETPOS, 0, 0);
+
+	/* Set the static display to the new value */
+	sprintf(buf, "%d", nValue);
+	Static_SetText(GetDlgItem(hwnd, IDC_DMD_GREEN_DISP), buf);
+}
+static void DMDBLUESelectionChange(HWND hwnd)
+{
+	char buf[100];
+	int  nValue;
+
+	/* Get the current value of the control */
+	nValue = SendMessage(GetDlgItem(hwnd, IDC_DMD_BLUE), TBM_GETPOS, 0, 0);
+
+	/* Set the static display to the new value */
+	sprintf(buf, "%d", nValue);
+	Static_SetText(GetDlgItem(hwnd, IDC_DMD_BLUE_DISP), buf);
+}
+static void DMDPERC0SelectionChange(HWND hwnd)
+{
+	char buf[100];
+	int  nValue;
+
+	/* Get the current value of the control */
+	nValue = SendMessage(GetDlgItem(hwnd, IDC_DMD_PERC0), TBM_GETPOS, 0, 0);
+
+	/* Set the static display to the new value */
+	sprintf(buf, "%d%%", nValue);
+	Static_SetText(GetDlgItem(hwnd, IDC_DMD_PERC0_DISP), buf);
+}
+static void DMDPERC33SelectionChange(HWND hwnd)
+{
+	char buf[100];
+	int  nValue;
+
+	/* Get the current value of the control */
+	nValue = SendMessage(GetDlgItem(hwnd, IDC_DMD_PERC33), TBM_GETPOS, 0, 0);
+
+	/* Set the static display to the new value */
+	sprintf(buf, "%d%%", nValue);
+	Static_SetText(GetDlgItem(hwnd, IDC_DMD_PERC33_DISP), buf);
+}
+static void DMDPERC66SelectionChange(HWND hwnd)
+{
+	char buf[100];
+	int  nValue;
+
+	/* Get the current value of the control */
+	nValue = SendMessage(GetDlgItem(hwnd, IDC_DMD_PERC66), TBM_GETPOS, 0, 0);
+
+	/* Set the static display to the new value */
+	sprintf(buf, "%d%%", nValue);
+	Static_SetText(GetDlgItem(hwnd, IDC_DMD_PERC66_DISP), buf);
+}
+static void DMDANTIALIASSelectionChange(HWND hwnd)
+{
+	char buf[100];
+	int  nValue;
+
+	/* Get the current value of the control */
+	nValue = SendMessage(GetDlgItem(hwnd, IDC_DMD_ANTIALIAS), TBM_GETPOS, 0, 0);
+
+	/* Set the static display to the new value */
+	sprintf(buf, "%d%%", nValue);
+	Static_SetText(GetDlgItem(hwnd, IDC_DMD_ANTIALIAS_DISP), buf);
+}
+#endif /* PINMAME */
 /* Adjust possible choices in the Screen Size drop down */
 static void UpdateDisplayModeUI(HWND hwnd, DWORD dwDepth, DWORD dwRefresh)
 {

@@ -18,7 +18,7 @@
 
 #define MAX_GAMEDESC 256
 
-enum 
+enum
 {
 	COLUMN_GAMES = 0,
 	COLUMN_ROMS,
@@ -77,7 +77,7 @@ enum
 };
 
 /* Default input */
-enum 
+enum
 {
 	INPUT_LAYOUT_STD,
 	INPUT_LAYOUT_HR,
@@ -171,7 +171,11 @@ typedef struct
 	char*  playbackname; // ?
 	char*  recordname; // ?
 	BOOL   errorlog;
-
+#ifdef PINMAME
+        int dmd_red,    dmd_green,   dmd_blue;
+        int dmd_perc66, dmd_perc33,  dmd_perc0;
+        int dmd_only,   dmd_compact, dmd_antialias;
+#endif /* PINMAME */
 } options_type;
 
 typedef struct
@@ -207,6 +211,9 @@ typedef struct
 	char*    sampledirs;
 	char*    cfgdir;
 	char*    nvramdir;
+#ifdef PINMAME
+        char*    wavedir;
+#endif /* PINMAME */
 	char*    memcarddir;
 	char*    inpdir;
 	char*    hidir;
@@ -304,6 +311,11 @@ void  SetSampleDirs(const char* paths);
 
 const char* GetCfgDir(void);
 void SetCfgDir(const char* path);
+
+#ifdef PINMAME
+const char* GetWaveDir(void);
+void SetWaveDir(const char* path);
+#endif /* PINMAME */
 
 const char* GetHiDir(void);
 void SetHiDir(const char* path);

@@ -36,6 +36,9 @@ enum
 	CFG,
 	HI,
 	IMG,
+#ifdef PINMAME
+        WAVE,
+#endif /* PINMAME */
 	INP,
 	STATE,
 	ART,
@@ -58,6 +61,9 @@ char *dir_names[LASTDIR] =
 	"Config",
 	"High Scores",
 	"Snapshots",
+#ifdef PINMAME
+        "Wave files",
+#endif /* PINMAME */
 	"Input files (*.inp)",
 	"State",
 	"Artwork",
@@ -261,7 +267,7 @@ static void UpdateDirectoryList(HWND hDlg)
 static void Directories_OnSelChange(HWND hDlg)
 {
 	UpdateDirectoryList(hDlg);
-	
+
 	if (ComboBox_GetCurSel(GetDlgItem(hDlg, IDC_DIR_COMBO)) == 0
 	||	ComboBox_GetCurSel(GetDlgItem(hDlg, IDC_DIR_COMBO)) == 1)
 	{
@@ -302,7 +308,7 @@ static BOOL Directories_OnInitDialog(HWND hDlg, HWND hwndFocus, LPARAM lParam)
 	memset(&LVCol, 0, sizeof(LVCOLUMN));
 	LVCol.mask	  = LVCF_WIDTH;
 	LVCol.cx	  = rectClient.right - rectClient.left - GetSystemMetrics(SM_CXHSCROLL);
-	
+
 	ListView_InsertColumn(GetDlgItem(hDlg, IDC_DIR_LIST), 0, &LVCol);
 
 
@@ -344,7 +350,9 @@ static BOOL Directories_OnInitDialog(HWND hDlg, HWND hwndFocus, LPARAM lParam)
 	strcpy(DirInfo_Dir(pDirInfo, CABINET),	GetCabinetDir());
 	strcpy(DirInfo_Dir(pDirInfo, MARQUEE),	GetMarqueeDir());
 	strcpy(DirInfo_Dir(pDirInfo, NVRAM),	GetNvramDir());
-
+#ifdef PINMAME
+	strcpy(DirInfo_Dir(pDirInfo, WAVE),	GetWaveDir());
+#endif
 	UpdateDirectoryList(hDlg);
 
 	return TRUE;
@@ -416,7 +424,9 @@ static void Directories_OnOk(HWND hDlg)
 	SetCabinetDir(FixSlash(DirInfo_Dir(pDirInfo, CABINET)));
 	SetMarqueeDir(FixSlash(DirInfo_Dir(pDirInfo, MARQUEE)));
 	SetNvramDir(  FixSlash(DirInfo_Dir(pDirInfo, NVRAM)));
-
+#ifdef PINMAME
+	SetWaveDir(  FixSlash(DirInfo_Dir(pDirInfo, NVRAM)));
+#endif /* PINMAME */
 	EndDialog(hDlg, nResult);
 }
 
@@ -485,7 +495,7 @@ static void Directories_OnBrowse(HWND hDlg)
 		/* Last item is placeholder for append */
 		if (nItem == ListView_GetItemCount(hList) - 1)
 		{
-			Directories_OnInsert(hDlg); 
+			Directories_OnInsert(hDlg);
 			return;
 		}
 	}
@@ -643,6 +653,9 @@ static BOOL Directories_OnEndLabelEdit(HWND hDlg, NMHDR* pNMHDR)
 		case CABINET:
 		case MARQUEE:
 		case NVRAM:
+#ifdef PINMAME
+		case WAVE:
+#endif /* PINMAME */
 			DirInfo_SetDir(pDirInfo, nType, pItem->iItem, pItem->pszText);
 			break;
 			}
@@ -735,7 +748,7 @@ static int CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lParam, LPAR
 	return 0;
 }
 
-BOOL BrowseForDirectory(HWND hwnd, const char* pStartDir, char* pResult) 
+BOOL BrowseForDirectory(HWND hwnd, const char* pStartDir, char* pResult)
 {
 	BOOL		bResult = FALSE;
 	IMalloc*	piMalloc = 0;

@@ -13,6 +13,15 @@
 #define HIDC_DEFAULT_INPUT              0x809d04d0    // IDD_PROP_INPUT
 #define HIDC_DEPTH                      0x809a0424    // IDD_PROP_DISPLAY
 #define HIDC_DIRTY                      0x809a041d    // IDD_PROP_DISPLAY
+#define HIDC_DMD_ANTIALIAS              0x80b304fe    // IDD_PROP_PINMAME
+#define HIDC_DMD_BLUE                   0x80b3050f    // IDD_PROP_PINMAME
+#define HIDC_DMD_COMPACT                0x80b304fc    // IDD_PROP_PINMAME
+#define HIDC_DMD_GREEN                  0x80b3050e    // IDD_PROP_PINMAME
+#define HIDC_DMD_ONLY                   0x80b304fb    // IDD_PROP_PINMAME
+#define HIDC_DMD_PERC0                  0x80b30501    // IDD_PROP_PINMAME
+#define HIDC_DMD_PERC33                 0x80b30504    // IDD_PROP_PINMAME
+#define HIDC_DMD_PERC66                 0x80b30507    // IDD_PROP_PINMAME
+#define HIDC_DMD_RED                    0x80b3050a    // IDD_PROP_PINMAME
 #define HIDC_EFFECT                     0x809a04ee    // IDD_PROP_DISPLAY
 #define HIDC_FILTER_CLONES              0x80a9049a    // IDD_FILTERS
 #define HIDC_FILTER_EDIT                0x80a904d5    // IDD_FILTERS

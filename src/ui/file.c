@@ -13,7 +13,7 @@
 /***************************************************************************
 
   file.c
-  
+
 	File handling code.
 	
 ***************************************************************************/
@@ -107,7 +107,7 @@ int File_Init(void)
 }
 
 void File_Exit(void)
-{	 
+{	
 	if (RomDirPath.m_Buf != NULL)
 	{
 		free(RomDirPath.m_Buf);
@@ -217,11 +217,14 @@ void File_UpdatePaths(void)
 
 	File_SetPaths(&RomDirPath,	  GetRomDirs());
 	File_SetPaths(&SampleDirPath, GetSampleDirs());
-	
+
 	rc_set_option2(fileio_opts, "rompath",			  GetRomDirs(), 		 MAXINT_PTR);
 	rc_set_option2(fileio_opts, "samplepath",		  GetSampleDirs(),		 MAXINT_PTR);
 	rc_set_option2(fileio_opts, "cfg_directory",	  GetCfgDir(),			 MAXINT_PTR);
 	rc_set_option2(fileio_opts, "nvram_directory",	  GetNvramDir(),		 MAXINT_PTR);
+#ifdef PINMAME
+	rc_set_option2(fileio_opts, "wave_directory",	  GetWaveDir(),		         MAXINT_PTR);
+#endif /* PINMAME */
 	rc_set_option2(fileio_opts, "memcard_directory",  GetMemcardDir(),		 MAXINT_PTR);
 	rc_set_option2(fileio_opts, "input_directory",	  GetInpDir(),			 MAXINT_PTR);
 	rc_set_option2(fileio_opts, "hiscore_directory",  GetHiDir(),			 MAXINT_PTR);
@@ -261,7 +264,7 @@ void* osd_fopen2(const char *gamename, const char *filename, int filetype, int o
 		/* Fallthrough to OSD_FILETYPE_SCREENSHOT */
 
 	case OSD_FILETYPE_SCREENSHOT:
-		
+
 		LOG(("osd_fopen: attempting to %s screenshot '%s' with name '%s'\n", openforwrite ? "write" : "read", filename, gamename));
 
 		if (openforwrite && imgType != PICT_SCREENSHOT)
@@ -371,7 +374,7 @@ void* osd_fopen2(const char *gamename, const char *filename, int filetype, int o
 }
 
 /***************************************************************************
- Internal functions  
+ Internal functions
 ***************************************************************************/
 
 static void File_SetPaths(tDirPaths* pDirPath, const char* path)
