@@ -859,6 +859,18 @@ GTS80_ROMEND
 CORE_GAMEDEFNV(bighouse, "Big House",1989,"Gottlieb",gl_mGTS80BS3,0)
 
 /*-------------------------------------------------------------------
+/ Hot Shots
+/-------------------------------------------------------------------*/
+INITGAME(hotshots, GEN_GTS80B,0, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
+GTS80B_4K_ROMSTART(hotshots, "prom2.cpu", 0x7695c7db,
+                             "prom1.cpu", 0x122ff4a8)
+GTS80BSSOUND3232(            "drom1.snd", 0x42c3cc3d,
+                             "yrom1.snd", 0x2933a80e)
+GTS80_ROMEND
+#define input_ports_hotshots input_ports_gts80
+CORE_GAMEDEFNV(hotshots, "Hot Shots",1989,"Gottlieb",gl_mGTS80BS3,0)
+
+/*-------------------------------------------------------------------
 / Bone Busters (Why is there an extra drom2 listed in the rom file? Could this use different hardware?)
 /-------------------------------------------------------------------*/
 INITGAME(bonebstr, GEN_GTS80B,0, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
