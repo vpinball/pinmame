@@ -12,20 +12,19 @@
 /*-- Common Inports for BY35 Games --*/
 #define BYVP_COMPORTS \
   PORT_START /* 0 */ \
-    /* Switch Column 1 (Switches #6 & #7) */ \
-    COREPORT_BITDEF(  0x0001, IPT_START1,         IP_KEY_DEFAULT)  \
-    COREPORT_BIT(     0x0002, "Ball Tilt",        KEYCODE_2)  \
-    /* Switch Column 2 (Switches #9 - #16) */ \
-	/* For Stern MPU-200 (Switches #1-3, and #8) */ \
-    COREPORT_BITDEF(  0x0004, IPT_COIN1,          IP_KEY_DEFAULT) \
-    COREPORT_BITDEF(  0x0008, IPT_COIN2,          IP_KEY_DEFAULT) \
-    COREPORT_BITDEF(  0x0010, IPT_COIN3,          KEYCODE_3) \
-    COREPORT_BIT(     0x0200, "Slam Tilt",        KEYCODE_HOME)  \
+    /* Switch Column 1 (Switches #3 & #6)*/ \
+    COREPORT_BITDEF(  0x0001, IPT_START2,        KEYCODE_2)  \
+    COREPORT_BITDEF(  0x0008, IPT_START1,        KEYCODE_1)  \
+    /* Switch Column 2 (Switches #2,#3,#7,#8)*/ \
+    COREPORT_BITDEF(  0x0010, IPT_COIN1,          IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(  0x0020, IPT_COIN2,          IP_KEY_DEFAULT) \
+	COREPORT_BIT(     0x0200, "Ball Tilt",        KEYCODE_DEL)  \
+    COREPORT_BIT(     0x0400, "Slam Tilt",        KEYCODE_HOME)  \
     /* These are put in switch column 0 */ \
-    COREPORT_BIT(     0x0400, "Self Test",        KEYCODE_7) \
-    COREPORT_BIT(     0x0800, "CPU Diagnostic",   KEYCODE_9) \
-    COREPORT_BIT(     0x1000, "Sound Diagnostic", KEYCODE_0) \
-    COREPORT_BIT(     0x2000, "Video Diagnostic", KEYCODE_8) \
+    COREPORT_BIT(     0x0800, "Self Test",        KEYCODE_7) \
+    COREPORT_BIT(     0x1000, "CPU Diagnostic",   KEYCODE_9) \
+    COREPORT_BIT(     0x2000, "Sound Diagnostic", KEYCODE_0) \
+    COREPORT_BIT(     0x4000, "Video Diagnostic", KEYCODE_8) \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
       COREPORT_DIPSET(0x0000, "0" ) \
