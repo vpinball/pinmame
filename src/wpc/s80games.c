@@ -624,6 +624,7 @@ CORE_GAMEDEFNV(icefever,"Ice Fever",1985,"Gottlieb",gl_mS80,GAME_IMPERFECT_SOUND
 / Chicago Cubs' Triple Play (#696)
 /-------------------------------------------------------------------*/
 //(No info on what sound hardware they use, presume Gen 1)
+//Update - Has 1x2k rom. Assumed to use s80a sound board. Need to update s80.c for this
 INITGAME(triplay,GEN_S80B2K,gottlieb_dispAlpha, 1)
 S80B_2K_ROMSTART(triplay, "prom2.cpu", 0xdeedea61,
                           "prom1.cpu", 0x42b29b01)
@@ -634,6 +635,7 @@ CORE_GAMEDEFNV(triplay, "Triple Play",1985,"Gottlieb",gl_mS80B,GAME_NO_SOUND)
 / Bounty Hunter (#694)
 /-------------------------------------------------------------------*/
 //(No info on what sound hardware they use, presume Gen 1)
+//Update - Has 1x2k rom. Assumed to use s80a sound board. Need to update s80.c for this
 INITGAME(bountyh,GEN_S80B2K,gottlieb_dispAlpha, 1)
 S80B_2K_ROMSTART(bountyh, "prom2.cpu", 0xa0383e41,
                           "prom1.cpu", 0xe8190df7)
