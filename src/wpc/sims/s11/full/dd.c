@@ -383,10 +383,18 @@ S11CS_SOUNDROM000(   "dude_u4.l1",  CRC(3eeef714) SHA1(74dcc83958cb62819e0ac36ca
                      "dude_u20.l1", CRC(a83d53dd) SHA1(92a81069c42c7760888201fb0787fa7ddfbf1658))
 S11_ROMEND
 
+S11_ROMSTART48(dd,p6,"u26-pa6.11c", CRC(6f6a6e22) SHA1(2d8a1b472eb06a9f7aeea4b2f9a82f83eb4ee08a),
+                     "u27-pa6.11c", CRC(26022273) SHA1(ca66139c3bd0c313d41a396c484d2c1b8f4ae536))
+S11CS_SOUNDROM000(   "dude_u4.l1",  CRC(3eeef714) SHA1(74dcc83958cb62819e0ac36ca83001694faafec7),
+                     "dude_u19.l1", CRC(dc7b985b) SHA1(f672d1f1fe1d1d887113ea6ccd745a78f7760526),
+                     "dude_u20.l1", CRC(a83d53dd) SHA1(92a81069c42c7760888201fb0787fa7ddfbf1658))
+S11_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(dd, l2, "Dr. Dude (L-2)", 1990, "Bally", s11_mS11CS,0)
+CORE_CLONEDEF(dd,p6,l2, "Dr. Dude (P-6)", 1990, "Bally", s11_mS11CS,0)
 
 /*-----------------------
 / Simulation Definitions

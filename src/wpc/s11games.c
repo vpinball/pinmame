@@ -581,7 +581,24 @@ S11CS_SOUNDROM000(      "dinr_u4.l1",  CRC(3bd28368) SHA1(41eec2f5f863039deaabfa
                         "dinr_u20.l1", CRC(511fb260) SHA1(e6e25b464c5c38f3c0492436f1e8aa2be33dd278))
 S11_ROMEND
 #define input_ports_diner input_ports_s11
+
+S11_ROMSTART48(diner,l3,"u26-la3.rom", CRC(8b6aa22e) SHA1(6b802a85fc2babf5a183fb434df11597363c1c9d),
+                        "u27-la3.rom", CRC(4171451a) SHA1(818e330245691d9ef3181b885c9342880f89d912))
+S11CS_SOUNDROM000(      "dinr_u4.l1",  CRC(3bd28368) SHA1(41eec2f5f863039deaabfae8aece4b1cf15e4b78),
+                        "dinr_u19.l1", CRC(278b9a30) SHA1(41e59adb8b6c08caee46c3dd73256480b4041619),
+                        "dinr_u20.l1", CRC(511fb260) SHA1(e6e25b464c5c38f3c0492436f1e8aa2be33dd278))
+S11_ROMEND
+
+S11_ROMSTART48(diner,l1,"u26-lu1.rom", CRC(259b302f) SHA1(d7e19c2d2ad7805d9158178c24d180d158a59b0c),
+                        "u27-lu1.rom", CRC(35fafbb3) SHA1(0db3d0c9421f4fdcf4d376d543626559e1bf2daa))
+S11CS_SOUNDROM000(      "dinr_u4.l1",  CRC(3bd28368) SHA1(41eec2f5f863039deaabfae8aece4b1cf15e4b78),
+                        "dinr_u19.l1", CRC(278b9a30) SHA1(41e59adb8b6c08caee46c3dd73256480b4041619),
+                        "dinr_u20.l1", CRC(511fb260) SHA1(e6e25b464c5c38f3c0492436f1e8aa2be33dd278))
+S11_ROMEND
+
 CORE_GAMEDEF(diner, l4, "Diner (L-4)", 1990, "Williams", s11_mS11CS,0)
+CORE_CLONEDEF(diner,l3,l4, "Diner (L-3)", 1990, "Williams", s11_mS11CS,0)
+CORE_CLONEDEF(diner,l1,l4, "Diner (L-1) European", 1990, "Williams", s11_mS11CS,0)
 
 /*--------------------
 / Radical 9/90

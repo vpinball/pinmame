@@ -258,6 +258,14 @@ DCS_SOUNDROM6x("dm_u2_s.l2",CRC(85fb8bce) SHA1(f2e912113d08b230e32aeeb4143485f26
                "dm_u6_s.l2",CRC(3efc2c0e) SHA1(bc4efdee44ff635771629a2bde79e230b7643f31),
                "dm_u7_s.l2",CRC(75066af1) SHA1(4d70bce8a96343afcf02c89240b11faf19e11f02))
 WPC_ROMEND
+WPC_ROMSTART(dm,pa2,"u6-pa2.rom",0x80000,CRC(862be56a) SHA1(95e1f899963762cb1a9de4eb5d6d57183ed1da38))
+DCS_SOUNDROM6x("dm_u2_s.l2",CRC(85fb8bce) SHA1(f2e912113d08b230e32aeeb4143485f266574fa2),
+               "dm_u3_s.l2",CRC(2b65a66e) SHA1(7796082ecd7af29a240190aff654320375502a8b),
+               "dm_u4_s.l2",CRC(9d6815fe) SHA1(fb4be63dee54a883884f1600565011cb9740a866),
+               "dm_u5_s.l2",CRC(9f614c27) SHA1(f8f2f083b644517582a748bda0a3f69c14583f13),
+               "dm_u6_s.l2",CRC(3efc2c0e) SHA1(bc4efdee44ff635771629a2bde79e230b7643f31),
+               "dm_u7_s.l2",CRC(75066af1) SHA1(4d70bce8a96343afcf02c89240b11faf19e11f02))
+WPC_ROMEND
 WPC_ROMSTART(dm,px5,"dman_px5.rom",0x80000,CRC(42673371) SHA1(77570902c1ca13956fa65214184bce79bcc67173))
 DCS_SOUNDROM6x("dm_u2_s.l2",CRC(85fb8bce) SHA1(f2e912113d08b230e32aeeb4143485f266574fa2),
                "dm_u3_s.l2",CRC(2b65a66e) SHA1(7796082ecd7af29a240190aff654320375502a8b),
@@ -271,6 +279,7 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(dm,lx4,     "Demolition Man (LX-4)",1994,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(dm,pa2,lx4,"Demolition Man (PA-2)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,px5,lx4,"Demolition Man (PX-5)",1994,"Williams",wpc_mDCSS,0)
 
 /*-----------------------
