@@ -44,7 +44,7 @@ DRVLIBS += $(PINOBJ)/atari.o $(PINOBJ)/atarisnd.o
 DRVLIBS += $(PINOBJ)/taito.o $(PINOBJ)/taitos.o
 DRVLIBS += $(PINOBJ)/midway.o
 DRVLIBS += $(PINOBJ)/gts1.o
-DRVLIBS += $(PINOBJ)/alvg.o
+DRVLIBS += $(PINOBJ)/alvg.o $(PINOBJ)/alvgs.o
 #
 # Games
 #
