@@ -10,6 +10,8 @@
   M6840 Timer
 */
 
+extern MACHINE_DRIVER_EXTERN(gpSSU1);
+extern MACHINE_DRIVER_EXTERN(gpSSU2);
 extern MACHINE_DRIVER_EXTERN(gpMSU1);
 
 #define GP_SOUNDROM8(u9,chk9) \
