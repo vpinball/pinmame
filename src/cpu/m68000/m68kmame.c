@@ -1310,7 +1310,6 @@ enum {  dirDUMR1A,dirDUMR2A,		//0,1 (exception, these are r&w, but there's 2 so 
 };
 static UINT16 m68306duartreg[0x20];							//Duart registers
 static int m68306_duart_int=0;								//Is Interrupt triggered by DUART?
-static int m68306_duart_mode_pointer[2] = {0,0};			//Mode Pointer for each UART
 static void trigger_duart_int(int which);					//Cause a DUART Int to occur
 static void duart_command_register_w(int which,int data);	//Handle writes to command register
 static void m68306_duart_set_dusr(int which,int data);		//Set the DUSR register
@@ -1340,6 +1339,7 @@ static struct {
 	void *timer;			//Pointer to MAME timer
 	int timer_output;		//Timer's output bit
 	uart channel[2];		//Channels A & B
+	int mode_pointer[2];	//Mode Pointer for Channels A & B
 } m68306_duart;
 
 //temporary hacks to get direct access to capcoms.c funcs
@@ -1471,13 +1471,13 @@ static data16_t m68306_duart_reg_r(offs_t address, int word) {
 		//F7E1 - MODE A REGISTERS (DUMR1A & DUMR2A)
 		case 0xf7e1:
 			//Mode pointer determines whether we return dumr1 or dumr2
-			data = m68306duartreg[dirDUMR1A+m68306_duart_mode_pointer[0]];
-			if(m68306_duart_mode_pointer[0])
+			data = m68306duartreg[dirDUMR1A+m68306_duart.mode_pointer[0]];
+			if(m68306_duart.mode_pointer[0])
 				LOG(("%8x:MODE A REGISTER - DUMR2A Read = %x\n",activecpu_get_pc(),data));
 			else
 				LOG(("%8x:MODE A REGISTER - DUMR1A Read = %x\n",activecpu_get_pc(),data));
 			//After reading, update the mode pointer (note, it can only go to 1)
-			m68306_duart_mode_pointer[0]=1;
+			m68306_duart.mode_pointer[0]=1;
 			break;
 		//F7E3 - STATUS REGISTER A (DUSRA)
 		case 0xf7e3:
@@ -1514,13 +1514,13 @@ static data16_t m68306_duart_reg_r(offs_t address, int word) {
 		//F7F1 - MODE B (DUMR1B,DUMR2B)
 		case 0xf7f1:
 			//Mode pointer determines whether we return dumr1 or dumr2
-			data = m68306duartreg[dirDUMR1B+m68306_duart_mode_pointer[1]];
-			if(m68306_duart_mode_pointer[1])
+			data = m68306duartreg[dirDUMR1B+m68306_duart.mode_pointer[1]];
+			if(m68306_duart.mode_pointer[1])
 				LOG(("%8x:MODE B REGISTER - DUMR2B Read = %x\n",activecpu_get_pc(),data));
 			else
 				LOG(("%8x:MODE B REGISTER - DUMR1B Read = %x\n",activecpu_get_pc(),data));
 			//After reading, update the mode pointer (note, it can only go to 1)
-			m68306_duart_mode_pointer[1]=1;
+			m68306_duart.mode_pointer[1]=1;
 			break;
 		//F7F3 - STATUS REGISTER B (DUSRB)
 		case 0xf7f3:
@@ -1535,8 +1535,8 @@ static data16_t m68306_duart_reg_r(offs_t address, int word) {
 			LOG(("%8x:RECEIVE BUFFER B(DURBB) Read = %x\n",activecpu_get_pc(),data));
 			PRINTF(("%8x:RECEIVE BUFFER B(DURBB) Read = %x\n",activecpu_get_pc(),data));
 			//Clear RxRDY status (bit 0)
-			m68306_duart_set_dusr(1,m68306duartreg[dirDUSRB]&(~1));
-			//Set CTS to 0, so we can receive more data.. - this is a hack
+			m68306_duart_set_dusr(1,m68306duartreg[dirDUSRB]&(~0x01));
+			//Set CTS to 0, so we can receive more data.. - this is a hack to ensure no more data is received before being read!
 			set_cts_line_to_8752(0);
 			break;
 		}
@@ -1558,14 +1558,14 @@ static data16_t m68306_duart_reg_r(offs_t address, int word) {
 					//Set CTR/TMR RDY bit (3) in DUISR
 					m68306_duart_set_duisr(m68306duartreg[dirDUISR] | 0x08);
 				}
-			//Clear OP3 output
-			m68306_duart.timer_output = 0;
-			//Restart timer!
-			duart_start_timer();
+				//Clear OP3 output
+				m68306_duart.timer_output = 0;
+				//Restart timer!
+				duart_start_timer();
 			}
 			//COUNTER MODE?
 			else {
-			//Start count down from preloaded value
+				//Start count down from preloaded value
 			}
 			break;
 		//F7FF - STOP COUNTER COMMAND
@@ -1576,9 +1576,9 @@ static data16_t m68306_duart_reg_r(offs_t address, int word) {
 
 			//COUNTER MODE? - NOT IMPLEMENTED
 			if((m68306duartreg[dirDUACR] & 0x40) == 0) {
-			//Clear OP3 output
-			m68306_duart.timer_output = 0;
-			//Stop the counter..
+				//Clear OP3 output
+				m68306_duart.timer_output = 0;
+				//Stop the counter..
 			}
 			break;
 
@@ -1598,13 +1598,13 @@ static void m68306_duart_reg_w(offs_t address, data16_t data, int word) {
 		//F7E1 - MODE A REGISTERS (DUMR1A & DUMR2A)
 		case 0xf7e1:
 			//Mode pointer determines whether we return dumr1 or dumr2
-			m68306duartreg[dirDUMR1A+m68306_duart_mode_pointer[0]] = data;
-			if(m68306_duart_mode_pointer[0])
+			m68306duartreg[dirDUMR1A+m68306_duart.mode_pointer[0]] = data;
+			if(m68306_duart.mode_pointer[0])
 				LOG(("%8x:MODE A REGISTER - DUMR2A Write = %x\n",activecpu_get_pc(),data));
 			else
 				LOG(("%8x:MODE A REGISTER - DUMR1A Write = %x\n",activecpu_get_pc(),data));
 			//After writing, update the mode pointer (note, it can only go to 1)
-			m68306_duart_mode_pointer[0]=1;
+			m68306_duart.mode_pointer[0]=1;
 			return;	//We're done
 
 		//F7E3 - CLOCK SELECT (DUCSRA)
@@ -1657,13 +1657,13 @@ static void m68306_duart_reg_w(offs_t address, data16_t data, int word) {
 		//F7F1 - MODE B (DUMR1B,DUMR2B)
 		case 0xf7f1:
 			//Mode pointer determines whether we return dumr1 or dumr2
-			m68306duartreg[dirDUMR1B+m68306_duart_mode_pointer[1]] = data;
-			if(m68306_duart_mode_pointer[1])
+			m68306duartreg[dirDUMR1B+m68306_duart.mode_pointer[1]] = data;
+			if(m68306_duart.mode_pointer[1])
 				LOG(("%8x:MODE B REGISTER - DUMR2B Write = %x\n",activecpu_get_pc(),data));
 			else
 				LOG(("%8x:MODE B REGISTER - DUMR1B Write = %x\n",activecpu_get_pc(),data));
 			//After writing, update the mode pointer (note, it can only go to 1)
-			m68306_duart_mode_pointer[1]=1;
+			m68306_duart.mode_pointer[1]=1;
 			return;	//We're done
 
 		//F7F3 - CLOCK SELECT (DUCSRB)
@@ -1817,7 +1817,8 @@ static void m68306_rx_cause_int(int which,int data)
 	if(m68306_duart.channel[which].rx_enable) {
 
 		//Set CTS to 1, so we can't receive any more data..
-		set_cts_line_to_8752(1);
+		if(which==1)
+			set_cts_line_to_8752(1);
 
 		//Force CPU 0 to be active - otherwise this doesn't work!
 		if(cpu_getactivecpu() != 0) {
@@ -1893,10 +1894,11 @@ static void m68306_duart_check_int()
 				case 1:
 					LOG(("Timer /IRQ \n"));
 					break;	//do nothing, and fall through to IRQ code below for handling
-				//TIRQ
+				//TIRQ - Enabled
 				case 2:
 					trigger_duart_int(0);
 					return;
+				//BOTH?!?
 				case 3:
 					LOG(("PROBLEM: Both /IRQ & /TIRQ Enabled for a 68306 Timer Overflow Interrupt!\n"));
 					return;
@@ -2012,7 +2014,7 @@ static void duart_command_register_w(int which, int data)
 			//Reset Mode Register Pointer
 			case 1:
 				LOG(("- RESET MODE REGISTER!\n"));
-				m68306_duart_mode_pointer[which] = 0;						//Mode Pointer
+				m68306_duart.mode_pointer[which] = 0;						//Mode Pointer
 				break;
 			//Reset Receiver
 			case 2:
@@ -2343,11 +2345,8 @@ void m68306_reset(void* param) {
   //duart stuff
   memset(m68306duartreg, 0, sizeof(m68306duartreg));
   memset(&m68306_duart,0, sizeof(m68306_duart));
-  m68306_duart_mode_pointer[0] = 0;				//Mode Pointer
-  m68306_duart_mode_pointer[1] = 0;				//Mode Pointer
-  //duart
   m68306_duart.timer = timer_alloc(duart_timer_callback);	//setup timer
-  timer_enable(m68306_duart.timer, 0);			//Reset the timer
+  timer_enable(m68306_duart.timer, 0);						//Reset the timer
 
   m68k_pulse_reset();
 }
