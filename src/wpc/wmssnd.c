@@ -247,7 +247,7 @@ static WRITE_HANDLER(s11cs_manCmd_w);
 static void s11cs_init(struct sndbrdData *brdData);
 
 const struct sndbrdIntf s11csIntf = {
-  "WMSS11C", s11cs_init, NULL, NULL, s11cs_manCmd_w, 
+  "WMSS11C", s11cs_init, NULL, NULL, s11cs_manCmd_w,
   soundlatch2_w, NULL,
   CAT3(pia_,S11CS_PIA0,_cb1_w), soundlatch3_r
 };
@@ -339,7 +339,7 @@ static WRITE_HANDLER(s11js_rombank_w);
 static WRITE_HANDLER(s11js_ctrl_w);
 static WRITE_HANDLER(s11js_manCmd_w);
 const struct sndbrdIntf s11jsIntf = {
-  "WMSS11J", s11js_init, NULL, NULL, s11js_manCmd_w, 
+  "WMSS11J", s11js_init, NULL, NULL, s11js_manCmd_w,
   soundlatch2_w, soundlatch3_r,
   s11js_ctrl_w, NULL, 0
 };
@@ -801,19 +801,16 @@ static WRITE_HANDLER(dcs_data_w) {
 }
 
 static WRITE_HANDLER(dcs_ctrl_w) {
-  if (dcslocals.brdData.subType == 0) {
-    DBGLOG(("ctrl_w: %02x\n",data));
-    if (data) {
+  DBGLOG(("ctrl_w: %02x\n",data));
+  if (dcslocals.brdData.subType < 2) {
 #ifdef WPCDCSSPEEDUP
     // probably a bug in the mame reset handler
     // if a cpu is suspended for some reason a reset will not wake it up
     cpu_triggerint(dcslocals.brdData.cpuNo);
 #endif /* WPCDCSSPEEDUP */
-      cpunum_set_reset_line(dcslocals.brdData.cpuNo, ASSERT_LINE);
-      adsp_boot(0);
-    }
-    else
-      cpunum_set_reset_line(dcslocals.brdData.cpuNo, CLEAR_LINE);
+    // Reset is triggered on write so just pulse the line
+    cpunum_set_reset_line(dcslocals.brdData.cpuNo, PULSE_LINE);
+    adsp_boot(0);
   }
 }
 
