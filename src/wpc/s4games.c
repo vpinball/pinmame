@@ -53,7 +53,7 @@ CORE_GAMEDEF(trizn,l1,"Tri Zone (L-1)",1978,"Williams",s4_mS4S,0)
 /*--------------------------------
 / Pokerino - Sys.4 (Game #488)
 /-------------------------------*/
-INITGAME(pkrno,s4_disp,FLIP_SW(FLIP_L))
+INITGAMEFULL(pkrno,s4_disp,0,0,38,39,40,30,0,28)
 S4_ROMSTART(pkrno,l1,"gamerom.716", CRC(9b4d01a8) SHA1(1bd51745f38381ffc66fde4b28b76aab33b573ca),
                      "white1.716", CRC(9bbbf14f) SHA1(b0542ffdd683fa0ea4a9819576f3789cd5a4b2eb),
                      "white2.716", CRC(4d4010dd) SHA1(11221124fef3b7bf82d353d65ce851495f6946a7))

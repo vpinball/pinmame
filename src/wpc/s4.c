@@ -25,7 +25,7 @@ static struct {
   int    vblankCount;
   UINT32 solenoids;
   UINT32 solsmooth[S4_SOLSMOOTH];
-  core_tSeg segments, pseg;
+  core_tSeg segments;
   int    lampRow, lampColumn;
   int    diagnosticLed;
   int    swCol;
@@ -56,7 +56,6 @@ const struct core_dispLayout s4_disp[] = {
 static NVRAM_HANDLER(s4);
 
 static READ_HANDLER(s4_dips_r);
-static READ_HANDLER(s4_entersw_r);
 static READ_HANDLER(s4_swrow_r);
 static WRITE_HANDLER(s4_swcol_w);
 static WRITE_HANDLER(s4_alpha_w);
@@ -111,7 +110,6 @@ static READ_HANDLER(s4_dips_r) {
 /************/
 /* SWITCHES */
 /************/
-static READ_HANDLER(s4_entersw_r) { return core_getSw(S4_ENTER); }
 /* SWITCH MATRIX */
 static READ_HANDLER(s4_swrow_r) { return core_getSwCol(s4locals.swCol); }
 static WRITE_HANDLER(s4_swcol_w) { s4locals.swCol = data; }
@@ -120,10 +118,10 @@ static WRITE_HANDLER(s4_swcol_w) { s4locals.swCol = data; }
 /*DISPLAY ALPHA  */
 /*****************/
 static WRITE_HANDLER(s4_alpha_w) {
-  s4locals.segments[s4locals.alphapos].w |=
-    s4locals.pseg[s4locals.alphapos].w = core_bcd2seg[data>>4];
-  s4locals.segments[20+s4locals.alphapos].w |=
-    s4locals.pseg[20+s4locals.alphapos].w = core_bcd2seg[data&0x0f];
+  int seg7 = core_bcd2seg[data >> 4];
+  if (seg7) s4locals.segments[   s4locals.alphapos].w = seg7;
+  seg7 = core_bcd2seg[data & 15];
+  if (seg7) s4locals.segments[20+s4locals.alphapos].w = seg7;
 }
 
 static WRITE_HANDLER(s4_pa_w) {
@@ -198,7 +196,7 @@ static const struct pia6821_interface s4_pia[] = {{
 		  7,8,16 = (Status)5,6,(2&3)
 		  9-14 = (P2&4)1-6
 */
- /* i : A/B,CA1/B1,CA2/B2 */ s4_dips_r, 0, PIA_UNUSED_VAL(0), PIA_UNUSED_VAL(0), s4_entersw_r, 0,
+ /* i : A/B,CA1/B1,CA2/B2 */ s4_dips_r, 0, PIA_UNUSED_VAL(0), PIA_UNUSED_VAL(0), 0, 0,
  /* o : A/B,CA2/B2        */ s4_pa_w, s4_alpha_w, 0, s4_specsol6_w,
  /* irq: A/B              */ 0, 0
 },{
@@ -278,11 +276,10 @@ static INTERRUPT_GEN(s4_vblank) {
   /*-- display --*/
   if ((s4locals.vblankCount % S4_DISPLAYSMOOTH) == 0) {
     memcpy(coreGlobals.segments, s4locals.segments, sizeof(coreGlobals.segments));
-    memcpy(s4locals.segments, s4locals.pseg, sizeof(s4locals.segments));
+    memset(s4locals.segments,0,sizeof(s4locals.segments));
 
     /*update leds*/
     coreGlobals.diagnosticLed = s4locals.diagnosticLed;
-    s4locals.diagnosticLed = 0;
   }
   core_updateSw(s4locals.ssEn);
 }
@@ -293,17 +290,11 @@ static SWITCH_UPDATE(s4) {
     coreGlobals.swMatrix[0] = (inports[S4_COMINPORT] & 0xff00)>>8;
   }
   /*-- Diagnostic buttons on CPU board --*/
-  if (core_getSw(S4_SWCPUDIAG)) {
-    cpu_set_nmi_line(0, ASSERT_LINE);
-    memset(&s4locals.pseg,0,sizeof(s4locals.pseg));
-  }
-  else
-    cpu_set_nmi_line(0, CLEAR_LINE);
-
+  cpu_set_nmi_line(0, core_getSw(S4_SWCPUDIAG) ? ASSERT_LINE : CLEAR_LINE);
   sndbrd_0_diag(core_getSw(S4_SWSOUNDDIAG));
 
   /* Show Status of Auto/Manual Switch */
-  core_textOutf(40, 30, BLACK, core_getSw(S4_SWUPDN) ? "Auto  " : "Manual");
+  core_textOutf(40, 30, BLACK, core_getSw(S4_SWUPDN) ? "Up/Auto " : "Down/Man");
 }
 
 static MACHINE_INIT(s4) {
