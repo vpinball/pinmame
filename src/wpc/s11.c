@@ -37,7 +37,7 @@ const struct core_dispLayout s11_dispS9[] = {
 const struct core_dispLayout s11_dispS11[] = {
   DISP_SEG_7(0,0,CORE_SEG16),DISP_SEG_7(0,1,CORE_SEG16),
   DISP_SEG_7(1,0,CORE_SEG8), DISP_SEG_7(1,1,CORE_SEG8),
-  DISP_SEG_CREDIT(20,28,CORE_SEG7S),DISP_SEG_BALLS(0,8,CORE_SEG7SH),{0}
+  DISP_SEG_CREDIT(20,28,CORE_SEG7S),DISP_SEG_BALLS(0,8,CORE_SEG7S),{0}
 };
 const struct core_dispLayout s11_dispS11a[] = {
   DISP_SEG_7(0,0,CORE_SEG16),DISP_SEG_7(0,1,CORE_SEG16),
