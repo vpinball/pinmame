@@ -32,19 +32,16 @@
 #define MIDWAYP_COMPORTS \
   PORT_START /* 0 */ \
     /* switch column 5 */ \
-    COREPORT_BITIMP(  0x0001, "Slam Tilt",         KEYCODE_HOME) \
-    COREPORT_BITIMP(  0x0002, "Coin #1",           KEYCODE_3) \
-    COREPORT_BITIMP(  0x0004, "Coin #2",           KEYCODE_4) \
-    COREPORT_BITIMP(  0x0008, "Coin #3",           KEYCODE_5) \
-    COREPORT_BITIMP(  0x0010, "1 Credit",          KEYCODE_1_PAD) \
-    COREPORT_BITIMP(  0x0020, "2 Credits",         KEYCODE_2_PAD) \
-    COREPORT_BITIMP(  0x0040, "3 Credits",         KEYCODE_3_PAD) \
-    COREPORT_BITIMP(  0x0080, "4 Credits",         KEYCODE_4_PAD) \
-    /* switch column 5 */ \
-    COREPORT_BITIMP(  0x0100, "5 Credits",         KEYCODE_5_PAD) \
-    COREPORT_BITIMP(  0x0200, "6 Credits",         KEYCODE_6_PAD) \
-    COREPORT_BIT(     0x0400, "Ball Tilt",         KEYCODE_INSERT) \
-    COREPORT_BITIMP(  0x0800, "Game Start",        KEYCODE_1) \
+    COREPORT_BITIMP(  0x0002, "Slam Tilt",         KEYCODE_HOME) \
+    COREPORT_BITIMP(  0x0020, "1 Credit",          KEYCODE_5) \
+    COREPORT_BITIMP(  0x0040, "2 Credits",         KEYCODE_3) \
+    COREPORT_BITIMP(  0x0080, "3 Credits",         KEYCODE_4) \
+    /* switch column 6 */ \
+    COREPORT_BITIMP(  0x0100, "4 Credits",         KEYCODE_6) \
+    COREPORT_BITIMP(  0x0200, "5 Credits",         KEYCODE_7) \
+    COREPORT_BITIMP(  0x0400, "6 Credits",         KEYCODE_8) \
+    COREPORT_BIT(     0x0800, "Ball Tilt",         KEYCODE_INSERT) \
+    COREPORT_BITIMP(  0x1000, "Game Start",        KEYCODE_1) \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
       COREPORT_DIPSET(0x0000, "0" ) \
