@@ -466,16 +466,10 @@ static WRITE16_HANDLER(io_w) {
   }
 }
 
-static int last_gameno=0;
-
 static MACHINE_INIT(cc) {
-  int i;
   memset(&locals, 0, sizeof(locals));
   locals.u16a[0] = 0x00bc;
   locals.vblankCount = 1;
-
-  //Only do this once for each game, otherwise, an F3 - Reset will screw things up for some reason!
-  if(last_gameno != core_gameData->hw.gameSpecific1) {
 
   //Skip showing error messages? (NOTE: MUST COME BEFORE WE COPY ROMS BELOW)
 #if SKIP_ERROR_MSG
@@ -483,15 +477,9 @@ static MACHINE_INIT(cc) {
 #endif
 
   //Copy roms into correct location (ie, starting at 0x10000000 where they are mapped)
-  memcpy(rom_base, memory_region(REGION_CPU1), memory_region_length(REGION_CPU1));
-
-  //Clear out ram - except for vector table
-  for(i = 0x101; i<memory_region_length(REGION_CPU1); i++)
-	*((UINT8 *)(memory_region(REGION_CPU1) + i)) = 0;
-
-  //Flag that roms setup complete
-  last_gameno = core_gameData->hw.gameSpecific1;
-  }
+  memcpy(rom_base, memory_region(REGION_USER1), memory_region_length(REGION_USER1));
+  //Copy 1st 0x100 bytes of rom into RAM for vector table
+  memcpy(ramptr, memory_region(REGION_USER1), 0x100);
 
   //Init soundboard
   sndbrd_0_init(core_gameData->hw.soundBoard, CAPCOMS_CPUNO, memory_region(CAPCOMS_ROMREGION),NULL,NULL);
@@ -509,7 +497,8 @@ static MACHINE_INIT(cc) {
 #endif
 }
 
-//NOTE: Due to the way we load the roms, the fixaddress values must remove the top 8th bit, ie, 0x10092192 becomes 0x00092192
+//NOTE: Due to the way we load the roms, the fixaddress values must remove the top 8th bit, ie, 
+//		0x10092192 becomes 0x00092192
 static void Skip_Error_Msg(void){
 	UINT32 fixaddr = 0;
 	switch (core_gameData->hw.gameSpecific1) {
@@ -548,7 +537,7 @@ static void Skip_Error_Msg(void){
 			break;
   }
   //Skip Error Message Routine
-  *((UINT16 *)(memory_region(REGION_CPU1) + fixaddr))   = 0x4e75;	//RTS
+  *((UINT16 *)(memory_region(REGION_USER1) + fixaddr))   = 0x4e75;	//RTS
 }
 
 //Show Sound & DMD Diagnostic LEDS
