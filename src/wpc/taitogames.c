@@ -54,6 +54,16 @@ TAITO_ROMEND
 #define input_ports_obaoba input_ports_taito
 CORE_GAMEDEFNV(obaoba,"Oba-Oba",1980,"Taito",taito_sintetizador,0)
 
+TAITO_ROMSTART22_2(obaoba1,"ob1a.bin",CRC(f5a468d6) SHA1(01108281298fd092834f3a771eeda85b34a21745),
+                           "ob2a.bin",CRC(a2cb84ad) SHA1(f7efb4474a8b3ca79e9f37ca342f8373fcbde56d),
+                           "ob3a.bin",CRC(9fe1e0fd) SHA1(e0ae32ed1f45fbf9de4daa73f662e4e2c91d5c0b))
+TAITO_SOUNDROMS22("ob_s1a.bin", CRC(fa106de6) SHA1(be4dee9c2f10cf64a3b71cf65386e02323f040c7),
+                  "ob_s2a.bin", CRC(08d22ca7) SHA1(9121f0d21a796c10adf443b63e1c5451468d9f9f))
+TAITO_ROMEND
+#define init_obaoba1 init_obaoba
+#define input_ports_obaoba1 input_ports_obaoba
+CORE_CLONEDEFNV(obaoba1,obaoba,"Oba-Oba (alternate set)",1980,"Taito",taito_sintetizador,0)
+
 /*--------------------------------
 / Drakor
 /-------------------------------*/
@@ -103,13 +113,35 @@ CORE_GAMEDEFNV(fireact,"Fire Action",1981,"Taito",taito_sintevox,0)
 INITGAME(cavnegro,SNDBRD_TAITO_SINTEVOX)
 TAITO_ROMSTART2222(cavnegro,"cn1.bin",CRC(6b414089) SHA1(5f6042cc85a9319b3e34bdf39fd1f7feb5db0ec2),
                             "cn2.bin",CRC(9641f2e5) SHA1(4d7e522bd1d691901868abd191010b62a9032fda),
-                            "cn3.bin",CRC(e1c5afd8) SHA1(0995325444ada4aa5cd19a90230bcad58c6cd072),
+                            "cn3.bin",CRC(4ca99983) SHA1(0995325444ada4aa5cd19a90230bcad58c6cd072),
                             "cn4.bin",CRC(0cf4c1fa) SHA1(f0170da2c3fb138cc9f6c076a2d3f4fbf529e923))
 TAITO_SOUNDROMS22("cn_s1.bin", CRC(aec5069a) SHA1(4ec1f1f054e010caf9ffdda60071f96ba772c01a),
                   "cn_s2.bin", CRC(a0508863) SHA1(b4f343ed48960048c6b2b36c5ce0bad0fdb7ac62))
 TAITO_ROMEND
 #define input_ports_cavnegro input_ports_taito
 CORE_GAMEDEFNV(cavnegro,"Cavaleiro Negro",1981,"Taito",taito_sintevox,0)
+
+TAITO_ROMSTART2222(cavnegr1,"cn1.bin", CRC(6b414089) SHA1(5f6042cc85a9319b3e34bdf39fd1f7feb5db0ec2),
+                            "cn2.bin", CRC(9641f2e5) SHA1(4d7e522bd1d691901868abd191010b62a9032fda),
+                            "cn3a.bin",CRC(7e489691) SHA1(af020d2a88ade5084508c2d134823af6e5c81b02),
+                            "cn4a.bin",CRC(0a4c7c00) SHA1(ada0bb7aa33bac6238a9b3e62f0c9b1dffb06194))
+TAITO_SOUNDROMS22("cn_s1.bin", CRC(aec5069a) SHA1(4ec1f1f054e010caf9ffdda60071f96ba772c01a),
+                  "cn_s2.bin", CRC(a0508863) SHA1(b4f343ed48960048c6b2b36c5ce0bad0fdb7ac62))
+TAITO_ROMEND
+#define init_cavnegr1 init_cavnegro
+#define input_ports_cavnegr1 input_ports_cavnegro
+CORE_CLONEDEFNV(cavnegr1,cavnegro,"Cavaleiro Negro (alternate set 1)",1981,"Taito",taito_sintevox,0)
+
+TAITO_ROMSTART2222(cavnegr2,"cn1.bin", CRC(6b414089) SHA1(5f6042cc85a9319b3e34bdf39fd1f7feb5db0ec2),
+                            "cn2.bin", CRC(9641f2e5) SHA1(4d7e522bd1d691901868abd191010b62a9032fda),
+                            "cn3b.bin",CRC(e1c5afd8) SHA1(88c806f013cc31443c842fb7925f97b0ed1bbdc9),
+                            "cn4b.bin",CRC(b5130b00) SHA1(79efae0e8041dc152b68b304c632c9de857ad620))
+TAITO_SOUNDROMS22("cn_s1.bin", CRC(aec5069a) SHA1(4ec1f1f054e010caf9ffdda60071f96ba772c01a),
+                  "cn_s2.bin", CRC(a0508863) SHA1(b4f343ed48960048c6b2b36c5ce0bad0fdb7ac62))
+TAITO_ROMEND
+#define init_cavnegr2 init_cavnegro
+#define input_ports_cavnegr2 input_ports_cavnegro
+CORE_CLONEDEFNV(cavnegr2,cavnegro,"Cavaleiro Negro (alternate set 2)",1981,"Taito",taito_sintevox,0)
 
 /*--------------------------------
 / Sure Shot
@@ -134,8 +166,8 @@ TAITO_ROMSTART2222(vegast,"vegas1.bin",CRC(be242895) SHA1(0528e9049e44b5ae7bba4a
                           "vegas2.bin",CRC(48169726) SHA1(282a322178e007df1183620dfcf3411bc67d8a0a),
                           "vegas3.bin",CRC(bd1fdbc3) SHA1(e184cec644b2d5cc05c3d458a06299359322df00),
                           "vegas4.bin",CRC(61f733a9) SHA1(a86ac621d81eb69a56706f9b0d49c0816f14a016))
-TAITO_SOUNDROMS22("vegas_s1.bin", CRC(740bdd3e) SHA1(ed86bd65ac4b6d43f91a95d44d48b04adb631ee3),
-                  "vegas_s2.bin", CRC(4250e02e) SHA1(5a67aac55728e6661d85e31b01a5263b9d4a22db))
+TAITO_SOUNDROMS22("vrtex_s1.bin", CRC(740bdd3e) SHA1(ed86bd65ac4b6d43f91a95d44d48b04adb631ee3),
+                  "vrtex_s2.bin", CRC(4250e02e) SHA1(5a67aac55728e6661d85e31b01a5263b9d4a22db))
 TAITO_ROMEND
 #define input_ports_vegast input_ports_taito
 CORE_GAMEDEFNV(vegast,"Vegas (Taito)",1981,"Taito",taito_sintetizador,0)
@@ -147,8 +179,8 @@ TAITO_ROMSTART2222(ladylukt,"vegas1.bin",CRC(be242895) SHA1(0528e9049e44b5ae7bba
                             "vegas2.bin",CRC(48169726) SHA1(282a322178e007df1183620dfcf3411bc67d8a0a),
                             "lluck3.bin",CRC(f22666f6) SHA1(2b92007cc4c91a2804d9f6229fa68be35be849ce),
                             "lluck4.bin",CRC(1715ee7e) SHA1(45677053f501d687d7482e70b7902a67d277eee9))
-TAITO_SOUNDROMS22("vegas_s1.bin", CRC(740bdd3e) SHA1(ed86bd65ac4b6d43f91a95d44d48b04adb631ee3),
-                  "vegas_s2.bin", CRC(4250e02e) SHA1(5a67aac55728e6661d85e31b01a5263b9d4a22db))
+TAITO_SOUNDROMS22("vrtex_s1.bin", CRC(740bdd3e) SHA1(ed86bd65ac4b6d43f91a95d44d48b04adb631ee3),
+                  "vrtex_s2.bin", CRC(4250e02e) SHA1(5a67aac55728e6661d85e31b01a5263b9d4a22db))
 TAITO_ROMEND
 #define init_ladylukt init_vegast
 #define input_ports_ladylukt input_ports_vegast
@@ -182,6 +214,17 @@ TAITO_ROMEND
 #define input_ports_gemini input_ports_taito
 CORE_GAMEDEFNV(gemini,"Gemini 2000",1982,"Taito",taito_sintetizador,0)
 
+TAITO_ROMSTART2222(gemini1,"gemini1a.bin",CRC(947017c5) SHA1(81456bc0f09e2d3418941b3d254ba1d4999a2fea),
+                           "gemini2.bin", CRC(8903ee53) SHA1(81f0c02872327b2b589001265f2761666bf45ba2),
+                           "gemini3.bin", CRC(1f11b5e5) SHA1(043dd68e51428e9123cb3c50c499b87478062c86),
+                           "gemini4a.bin",CRC(63d3a705) SHA1(157e45d05afde69dedb43c5987ad4f6e9c1e228b))
+TAITO_SOUNDROMS22("gemin_s1.bin", CRC(b9a80ab2) SHA1(9fdfeae5c9bc735e6a9ad42d925a1217c30a3386),
+                  "gemin_s2.bin", CRC(312a5c35) SHA1(82be0ca6f4430e54bbf963a879b85636537146a1))
+TAITO_ROMEND
+#define init_gemini1 init_gemini
+#define input_ports_gemini1 input_ports_gemini
+CORE_CLONEDEFNV(gemini1,gemini,"Gemini 2000 (alternate set)",1982,"Taito",taito_sintetizador,0)
+
 /*--------------------------------
 / Vortex
 /-------------------------------*/
@@ -210,6 +253,17 @@ TAITO_ROMEND
 #define input_ports_titan input_ports_taito
 CORE_GAMEDEFNV(titan,"Titan",1982,"Taito",taito_sintevox,0)
 
+TAITO_ROMSTART2222(titan1,"titan1a.bin",CRC(d5437261) SHA1(649e1852dece8fcd036b9162d262fb535fb4a4e2),
+                          "titan2.bin", CRC(f2e5a7d0) SHA1(e0c6a969765e433c448d54f2307767adda1254f9),
+                          "titan3.bin", CRC(e0827a82) SHA1(7245bab117234c0286aad4a5f45bbb8cb843a3f0),
+                          "titan4.bin", CRC(fb3d0282) SHA1(d0f47deab82bcf15e6129c0960c94493e78a1c51))
+TAITO_SOUNDROMS22("titn_s1a.bin", CRC(9840dd80) SHA1(44217dcf7ae5c6f4f4801568e020ee770b4c994b),
+                  "titn_s2a.bin", CRC(5c91592d) SHA1(567d646652e441f83bc4797d1c8c004b3d071744))
+TAITO_ROMEND
+#define init_titan1 init_titan
+#define input_ports_titan1 input_ports_titan
+CORE_CLONEDEFNV(titan1, titan,"Titan (alternate set)",1982,"Taito",taito_sintevox,0)
+
 /*--------------------------------
 / Zarza
 /-------------------------------*/
@@ -223,6 +277,17 @@ TAITO_SOUNDROMS22("zarza_s1.bin", CRC(f076c2a8) SHA1(f626556e1aea7a36a801e8f0fc9
 TAITO_ROMEND
 #define input_ports_zarza input_ports_taito
 CORE_GAMEDEFNV(zarza,"Zarza",1982,"Taito",taito_sintetizador,0)
+
+TAITO_ROMSTART2222(zarza1,"zarza1.bin", CRC(81a35f85) SHA1(3086f47573c683f86c371954c2be6ee51b75c83b),
+                          "zarza2a.bin",CRC(a1ada4be) SHA1(59709faad7f059766bc28e99901b24fed1fd9780),
+                          "zarza3.bin", CRC(a5faf4d5) SHA1(84bb1e89dac9008e226c5d64f62f245632fe9634),
+                          "zarza4a.bin",CRC(dc124f7b) SHA1(a513013bbd173dfe80c108e140e9546b17e3cedd))
+TAITO_SOUNDROMS22("zarza_s1.bin", CRC(f076c2a8) SHA1(f626556e1aea7a36a801e8f0fc9a762f8eea636f),
+                  "zarza_s2.bin", CRC(a98e13b7) SHA1(7416a941ee87fd456a5c4115e6933b8b7ad69681))
+TAITO_ROMEND
+#define init_zarza1 init_zarza
+#define input_ports_zarza1 input_ports_zarza
+CORE_CLONEDEFNV(zarza1,zarza,"Zarza (alternate set)",1982,"Taito",taito_sintetizador,0)
 
 /*--------------------------------
 / Shark (Taito)
@@ -250,6 +315,17 @@ TAITO_SOUNDROMS22("hawk_s1.bin", CRC(47549394) SHA1(f5731200db73e8751d2ec4a072b6
 TAITO_ROMEND
 #define input_ports_hawkman input_ports_taito
 CORE_GAMEDEFNV(hawkman,"Hawkman",1982,"Taito",taito_sintevox,0)
+
+TAITO_ROMSTART2222(hawkman1,"hawk1a.bin",CRC(b4fe0cbd) SHA1(5b0cdcbcc144eb94d3c6be8d1282488d54e8578e),
+                            "hawk2.bin", CRC(568ac529) SHA1(d1f8034c9980f4a525d55189f68ab2a63abcf2a5),
+                            "hawk3.bin", CRC(14be7e31) SHA1(86877bedb2df6edefc436dea20fcf04bf5a31641),
+                            "hawk4a.bin",CRC(a5928ac3) SHA1(598462783fb27c6657ca0eac2d5daef8eff8e5c9))
+TAITO_SOUNDROMS22("hawk_s1.bin", CRC(47549394) SHA1(f5731200db73e8751d2ec4a072b679127b6f0afa),
+                  "hawk_s2.bin", CRC(29bef82f) SHA1(5f393cc1cb6047cba1186e332e840bce8e59509b))
+TAITO_ROMEND
+#define init_hawkman1 init_hawkman
+#define input_ports_hawkman1 input_ports_hawkman
+CORE_CLONEDEFNV(hawkman1,hawkman,"Hawkman (alternate set)",1982,"Taito",taito_sintevox,0)
 
 /*--------------------------------
 / Speed Test
@@ -368,6 +444,17 @@ TAITO_SOUNDROMS22("rally_s1.bin", CRC(0c7ca1bc) SHA1(09df10b1b295b9a7f5c337eb4f1
 TAITO_ROMEND
 #define input_ports_sshuttle input_ports_taito
 CORE_GAMEDEFNV(sshuttle,"Space Shuttle (Taito)",1985,"Taito",taito_sintetizador,0)
+
+TAITO_ROMSTART2222(sshuttl1,"sshtl1.bin", CRC(ab67ed50) SHA1(0f627b007d74b81aba6b4ad0f4cf6782e42e24c9),
+                            "sshtl2.bin", CRC(ed5130a4) SHA1(3e99c151d6649c4b19d59ab2128ee3160c6462a9),
+                            "sshtl3a.bin",CRC(b1ddb78b) SHA1(ffa2aa6f501a06b2a3a92b1926050bd3ca053d0d),
+                            "sshtl4a.bin",CRC(163a569d) SHA1(9fe259d09944eacd30582e36d9a1dcbb6f5e1ea2))
+TAITO_SOUNDROMS22("rally_s1.bin", CRC(0c7ca1bc) SHA1(09df10b1b295b9a7f5c337eb4f1e1e4db0f3d113),
+                  "rally_s2.bin", CRC(a409d9d1) SHA1(3005cfaedd6edf3d80cac539563655f3bcc342ca))
+TAITO_ROMEND
+#define init_sshuttl1 init_sshuttle
+#define input_ports_sshuttl1 input_ports_sshuttle
+CORE_CLONEDEFNV(sshuttl1,sshuttle,"Space Shuttle (Taito) (alternate set)",1985,"Taito",taito_sintetizador,0)
 
 /*--------------------------------
 / Polar Explorer

@@ -564,22 +564,29 @@ DRIVERNV(lotr_it)       //Whitestar: 11/03 Lord Of The Rings (Italy)
                         //??/79 Shock (W Flash, 01/79)
                         //??/?? Sultan (G Sinbad, 05/78)
 DRIVERNV(obaoba  )      //??/80 Oba Oba (B Playboy, 10/77)
+DRIVERNV(obaoba1 )      //??/80 Oba Oba alternate set
 DRIVERNV(drakor  )      //??/80 Drakor (W Gorgar, 11/79)
                         //??/?? Roman Victory
                         //??/?? Space Patrol
 DRIVERNV(meteort )      //??/80 Meteor (S Meteor, 09/79)
 DRIVERNV(fireact )      //??/81 Fire Action (W Firepower, 02/80)
 DRIVERNV(cavnegro)      //??/81 Cavaleiro Negro (W Black Knight, 11/80)
+DRIVERNV(cavnegr1)      //??/81 Cavaleiro Negro alternate set 1
+DRIVERNV(cavnegr2)      //??/81 Cavaleiro Negro alternate set 2
 DRIVERNV(sureshot)      //??/81 Sure Shot (B Eight Ball Deluxe, 09/80)
 DRIVERNV(vegast  )      //??/81 Vegas (B Mata Hari, 09/77)
 DRIVERNV(ladylukt)      //??/81 Lady Luck (B Mata Hari, 09/77)
 DRIVERNV(cosmic  )      //??/81 Cosmic (S Galaxy, 01/80)
 DRIVERNV(gemini  )      //??/82 Gemini 2000 (B Centaur, 02/81)
+DRIVERNV(gemini1 )      //??/82 Gemini 2000 alternate set
 DRIVERNV(vortex  )      //??/82 Vortex (W Blackout, 06/80)
 DRIVERNV(titan   )      //??/82 Titan (W Barracora, 09/81)
+DRIVERNV(titan1  )      //??/82 Titan alternate set
 DRIVERNV(zarza   )      //??/82 Zarza (B Xenon, 11/79)
+DRIVERNV(zarza1  )      //??/82 Zarza alternate set
 DRIVERNV(sharkt  )      //??/82 Shark
 DRIVERNV(hawkman )		//??/82 Hawkman (B Fathom, 12/80)
+DRIVERNV(hawkman1)		//??/82 Hawkman alternate set
 DRIVERNV(stest   )      //??/82 Speed Test
 DRIVERNV(lunelle )      //??/82 Lunelle (W Alien Poker, 10/80)
 DRIVERNV(rally   )      //??/82 Rally (B Skateball, 04/80)
@@ -590,6 +597,7 @@ DRIVERNV(voleybal)      //??/?? Voley Ball
 DRIVERNV(mrblack )		//??/84 Mr. Black (W Defender, 12/82)
 DRIVERNV(fireactd)      //??/8? Fire Action De Luxe (W Firepower II, 08/83)
 DRIVERNV(sshuttle)      //??/85 Space Shuttle (W Space Shuttle, 12/84)
+DRIVERNV(sshuttl1)      //??/85 Space Shuttle alternate set
 DRIVERNV(polar   )      //??/8? Polar Explorer
 DRIVERNV(taitest )      //??/8? Test Fixture
 
