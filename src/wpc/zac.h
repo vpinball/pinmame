@@ -30,6 +30,63 @@
     COREPORT_DIPNAME( 0x0002, 0x0002, "Sound 2") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0002, "1" ) \
+    COREPORT_DIPNAME( 0x0004, 0x0000, "S3") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0004, "1" ) \
+    COREPORT_DIPNAME( 0x0008, 0x0000, "S4") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0008, "1" ) \
+    /* Dips A1-8 and B1-8 are only used on Gen1-games sshtlzac, ewf and locomotn */ \
+    /* to define CMOS defaults which can later be adjusted in programming mode.  */ \
+    COREPORT_DIPNAME( 0x0100, 0x0000, "A1 coin L credits") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0100, "1" ) \
+    COREPORT_DIPNAME( 0x0200, 0x0200, "A2    - \" -") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0200, "1" ) \
+    COREPORT_DIPNAME( 0x0400, 0x0000, "A3 coin R value") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0400, "1" ) \
+    COREPORT_DIPNAME( 0x0800, 0x0800, "A4    - \" -") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0800, "1" ) \
+    COREPORT_DIPNAME( 0x1000, 0x0000, "A5 coin R credits") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x1000, "1" ) \
+    COREPORT_DIPNAME( 0x2000, 0x0000, "A6    - \" -") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x2000, "1" ) \
+    COREPORT_DIPNAME( 0x4000, 0x4000, "A7    - \" -") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x4000, "1" ) \
+    COREPORT_DIPNAME( 0x8000, 0x8000, "A8 3 balls") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x8000, "1" ) \
+  PORT_START /* 2 */ \
+    COREPORT_DIPNAME( 0x0001, 0x0001, "B1 coin C value") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0001, "1" ) \
+    COREPORT_DIPNAME( 0x0002, 0x0000, "B2    - \" -") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0002, "1" ) \
+    COREPORT_DIPNAME( 0x0004, 0x0004, "B3 coin C credits") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0004, "1" ) \
+    COREPORT_DIPNAME( 0x0008, 0x0000, "B4    - \" -") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0008, "1" ) \
+    COREPORT_DIPNAME( 0x0010, 0x0000, "B5    - \" -") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0010, "1" ) \
+    COREPORT_DIPNAME( 0x0020, 0x0000, "B6 match disable") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0020, "1" ) \
+    COREPORT_DIPNAME( 0x0040, 0x0000, "B7 save high score") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0040, "1" ) \
+    COREPORT_DIPNAME( 0x0080, 0x0080, "B8 replay") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0080, "1" ) \
 
 #define ZAC_COMPORTS \
   PORT_START /* 0 */ \
@@ -48,16 +105,16 @@
     COREPORT_BIT   (0x0400, "Ball Tilt", KEYCODE_INSERT) \
     COREPORT_BIT   (0x8000, "Printer Log", KEYCODE_0) \
   PORT_START /* 1 */ \
-    COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
+    COREPORT_DIPNAME( 0x0001, 0x0001, "S1 cmos defaults") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0001, "1" ) \
-    COREPORT_DIPNAME( 0x0002, 0x0000, "S2") \
+    COREPORT_DIPNAME( 0x0002, 0x0002, "S2    - \" -") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0002, "1" ) \
-    COREPORT_DIPNAME( 0x0004, 0x0000, "S3") \
+    COREPORT_DIPNAME( 0x0004, 0x0000, "S3    - \" -") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0004, "1" ) \
-    COREPORT_DIPNAME( 0x0008, 0x0000, "S4") \
+    COREPORT_DIPNAME( 0x0008, 0x0000, "S4 prog enable") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0008, "1" )
 
