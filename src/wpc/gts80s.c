@@ -533,6 +533,7 @@ static void nmi_callback(int param)
 	if(GTS80BS_locals.nmi_enable) {
 		//logerror("PULSING NMI for Y-CPU\n");
 		//timer_set(TIME_NOW, 1, NULL);
+		cpu_boost_interleave(TIME_IN_HZ(1650*60), TIME_IN_MSEC(2));
 		cpu_set_nmi_line(cpu_gettotalcpu()-1, PULSE_LINE);
 	}
 }
@@ -570,7 +571,6 @@ WRITE_HANDLER(s80bs_sh_w)
 		soundlatch_w(offset,data);
 		cpu_set_irq_line(cpu_gettotalcpu()-1, 0, HOLD_LINE);
 		cpu_set_irq_line(cpu_gettotalcpu()-2, 0, HOLD_LINE);
-		cpu_boost_interleave(TIME_IN_HZ(1650), 0.01);
 	}
 #else
 	int clear_irq = 0;
@@ -594,7 +594,6 @@ WRITE_HANDLER(s80bs_sh_w)
 		soundlatch_w(offset,data);
 		cpu_set_irq_line(cpu_gettotalcpu()-1, 0, HOLD_LINE);
 		cpu_set_irq_line(cpu_gettotalcpu()-2, 0, HOLD_LINE);
-		cpu_boost_interleave(TIME_IN_HZ(1650), 0.01);
 	}
 #endif
 }
