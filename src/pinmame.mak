@@ -34,7 +34,7 @@ DRVLIBS += $(PINOBJ)/se.o $(PINOBJ)/sesound.o
 DRVLIBS += $(PINOBJ)/gts80.o $(PINOBJ)/gts80s.o
 DRVLIBS += $(PINOBJ)/by35.o $(PINOBJ)/by35snd.o $(PINOBJ)/byvidpin.o
 DRVLIBS += $(PINOBJ)/by6803.o
-DRVLIBS += $(PINOBJ)/hnk.o $(PINOBJ)/zac.o $(PINOBJ)/gp.o
+DRVLIBS += $(PINOBJ)/hnk.o $(PINOBJ)/zac.o $(PINOBJ)/gp.o $(PINOBJ)/atari.o
 #
 # Games
 #
@@ -43,7 +43,7 @@ PINGAMES += $(PINOBJ)/s3games.o $(PINOBJ)/s4games.o $(PINOBJ)/s6games.o
 PINGAMES += $(PINOBJ)/s7games.o $(PINOBJ)/s11games.o
 PINGAMES += $(PINOBJ)/degames.o $(PINOBJ)/gts3games.o $(PINOBJ)/gts80games.o
 PINGAMES += $(PINOBJ)/segames.o $(PINOBJ)/wpcgames.o
-PINGAMES += $(PINOBJ)/hnkgames.o $(PINOBJ)/zacgames.o $(PINOBJ)/gpgames.o
+PINGAMES += $(PINOBJ)/hnkgames.o $(PINOBJ)/zacgames.o $(PINOBJ)/gpgames.o $(PINOBJ)/atarigames.o
 #
 # Simulators
 #

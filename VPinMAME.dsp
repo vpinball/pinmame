@@ -80,7 +80,7 @@ SOURCE="$(InputPath)"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_ATL_STATIC_REGISTRY" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /G5 /MT /W3 /O2 /I "src" /I "src\zlib" /I "src\wpc" /I "src\vc" /I "src\win32c" /I "src\win32com" /I "src\win32com\autogen" /D "NDEBUG" /D "_ATL_STATIC_REGISTRY" /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE="static __inline" /D inline=__inline /D __inline__=__inline /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D "ZLIB_DLL" /D "VPINMAME" /D "PINMAME" /D MAMEVER=3716 /YX /FD /c
+# ADD CPP /nologo /G5 /MT /W3 /O2 /I "src" /I "src\zlib" /I "src\wpc" /I "src\vc" /I "src\win32c" /I "src\win32com" /I "src\win32com\autogen" /D "NDEBUG" /D "_ATL_STATIC_REGISTRY" /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE="static __inline" /D inline=__inline /D __inline__=__inline /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D "ZLIB_DLL" /D "VPINMAME" /D "PINMAME" /D MAMEVER=3716 /D "USE_SOUND_C" /YX /FD /c
 # ADD MTL /out ".\src\win32com\autogen"
 # ADD BASE RSC /l 0x407 /d "NDEBUG"
 # ADD RSC /l 0x409 /i ".\src\win32com\autogen" /d "NDEBUG"
@@ -1320,6 +1320,18 @@ SOURCE=.\src\wpc\sims\s7\full\tmfnt.c
 # End Group
 # End Group
 # End Group
+# Begin Source File
+
+SOURCE=.\src\wpc\atari.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\atari.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\atarigames.c
+# End Source File
 # Begin Source File
 
 SOURCE=.\src\wpc\by35.c
