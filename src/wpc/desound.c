@@ -387,6 +387,7 @@ static INTERRUPT_GEN(de2s_firq) {
 */
 
 #define USE_ACTUAL_FREQ 1
+#define REMOVE_LED_CODE 1
 
 void *		wavraw;					/* raw waveform */
 
@@ -404,7 +405,6 @@ void *		wavraw;					/* raw waveform */
 #define ARMSNDBUFSIZE 400
 #define BUFFSIZE 0x100000
 static INT16 samplebuf[BUFFSIZE];
-//static INT16 tmpbuf[BUFFSIZE];
 
 static READ_HANDLER(scmd_r);
 
@@ -417,21 +417,7 @@ static int spos=0;
 
 static int sampout = 0;
 static int sampnum = 0;
-//static int tmpnum = 0;
 
-#if 0
-#define FRAC 32	//Must by power of 2
-
-int resample(INT16 *romdata, INT16 *output, UINT64 sample_rate, UINT64 output_rate, UINT64 sample_len)
-{
-UINT64 index = 0;
-UINT64 incr = (sample_rate<<FRAC)/output_rate;
-UINT64 ctr = 0;
-for (index=0; index < (sample_len << FRAC); index+=incr)
-	output[ctr++] = romdata[index>>FRAC];
-return ctr-1;
-}
-#endif
 
 static INTERRUPT_GEN(arm_irq)
 {
@@ -446,6 +432,12 @@ static WRITE32_HANDLER(arm_irq_ready)
 	arm_ready_irq = data;
 }
 
+static const int rommap[4] = {4,2,3,1};
+
+#define READWRITE_METHOD 3
+
+#if READWRITE_METHOD == 1
+//This approach uses if/else/if and is not optimized but here for comparisons to the other ways
 static READ32_HANDLER(arm_cs_r)
 {
 	data32_t data = 0;
@@ -475,7 +467,6 @@ static READ32_HANDLER(arm_cs_r)
 		else
 		//Read from U17-U37 ROMS
 		{
-			int rommap[4] = {4,2,3,1};
 			//remove a29 & a22
 			int romaddr = offset & 0xDFBFFFFF;
 			//determine which chip (combine A21 & A0 into 2 bit #)
@@ -561,6 +552,229 @@ static WRITE32_HANDLER(arm_cs_w)
 		LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));
 	}
 }
+#endif
+
+#if READWRITE_METHOD == 2
+//This approach attempts to use switch for optimization
+static READ32_HANDLER(arm_cs_r)
+{
+	data32_t data = 0;
+
+	switch( (offset & 0xF0000000) >> 28 )
+	{
+		case 0:
+		//CSR 0 Mapped to 0x10000000 - BIOS ROM U8
+		case 1:
+			LOG(("%08x: reading from: %08x = %08x\n",activecpu_get_pc(),offset,data));
+			break;
+		//CSR 2 Mapped to 0x20000000 (Xilinx & U17-U37 ROMS)	
+		case 2:
+			//Xilinx Provides Sound Command from Main CPU
+			if(offset == 0x20000000)
+			{
+				//static int lastcmd = 0;
+				//data = soundlatch_r(0);
+				data = scmd_r(0);
+				#if 0
+				if(lastcmd != data) {
+					LOG(("%08x: reading from: %08x = %08x\n",activecpu_get_pc(),offset,data));
+					lastcmd = data;
+				}
+				#endif
+			}
+			else
+			//Read from U17-U37 ROMS
+			{
+				//remove a29 & a22
+				int romaddr = offset & 0xDFBFFFFF;
+				//determine which chip (combine A21 & A0 into 2 bit #)
+				int romchip = rommap[(((romaddr& 0x200000)>>20)|(romaddr&1))];
+				//remove a21 and >>1 the address
+				romaddr = (romaddr&0xFFDFFFFF)>>1;
+
+				data = (data8_t)*((memory_region(REGION_SOUND2) + romaddr + ((romchip-1) * 0x100000)));
+				LOG(("%08x: reading from U%d: %08x = %08x (%08x)\n",activecpu_get_pc(),romchip,romaddr,data,offset));	
+			}
+			break;
+		//CSR 3 Mapped to 0x30000000 - U412 (Not Used)
+		case 3:
+			LOG(("%08x: reading from: %08x = %08x\n",activecpu_get_pc(),offset,data));
+			break;
+		//CSR 1 Mapped to 0x40000000 - U7 ROM
+		case 4:
+			offset &= 0xffffff;	//strip off top 8 bits
+			data = (data32_t)*(memory_region(REGION_SOUND1) + offset);
+			LOG(("%08x: reading from u7: %08x = %08x\n",activecpu_get_pc(),offset,data));
+			break;
+		default:
+			LOG(("%08x: reading from: %08x = %08x\n",activecpu_get_pc(),offset,data));
+	}
+	return data & mem_mask;
+}
+
+
+static WRITE32_HANDLER(arm_cs_w)
+{
+	data &= mem_mask;
+	
+	switch( (offset & 0xF0000000) >> 28 )
+	{
+		case 0:
+			LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));
+			break;
+		//CSR 0 Mapped to 0x10000000 - BIOS ROM U8
+		case 1:
+			LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));
+			break;
+		//CSR 2 Mapped to 0x20000000 (Xilinx & U17-U37 ROMS)
+		case 2:
+			//Data Stream Output
+			//if( (offset == 0x20400000) || (offset == 0x20400002) )
+			{
+				//Store 16 bit data to our buffer
+				samplebuf[sampnum] = data & 0xffff;
+				sampnum = (sampnum + 1) % BUFFSIZE;
+
+				//Dump to Wave File
+				#if MAKE_WAVS
+				if(wavraw)
+				{
+					INT16 d;
+					d = (INT16)data;
+					wav_add_data_16(wavraw, &d, 1);
+				}
+				#endif
+
+				#if 0
+				LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));
+				#endif
+			}
+			break;
+		//CSR 3 Mapped to 0x30000000 - U412 (Not Used)
+		case 3:
+			LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));
+			break;
+		//CSR 1 Mapped to 0x40000000 - U7 ROM
+		case 4:
+			LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));		
+			break;
+		default:
+			LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));
+	}
+}
+#endif
+
+#if READWRITE_METHOD == 3
+//This approach attempts to use optimized if/else structure
+static READ32_HANDLER(arm_cs_r)
+{
+	data32_t data = 0;
+	data32_t offcheck = (offset & 0xF0000000);
+
+	//CSR 2 Mapped to 0x20000000 (Xilinx & U17-U37 ROMS)	
+	if(offcheck == 0x20000000)
+	{
+		//Xilinx Provides Sound Command from Main CPU
+		if(offset == 0x20000000)
+		{
+			//static int lastcmd = 0;
+			//data = soundlatch_r(0);
+			data = scmd_r(0);
+			#if 0
+			if(lastcmd != data) {
+				LOG(("%08x: reading from: %08x = %08x\n",activecpu_get_pc(),offset,data));
+				lastcmd = data;
+			}
+			#endif
+		}
+		else
+		//Read from U17-U37 ROMS
+		{
+			//remove a29 & a22
+			int romaddr = offset & 0xDFBFFFFF;
+			//determine which chip (combine A21 & A0 into 2 bit #)
+			int romchip = rommap[(((romaddr & 0x200000)>>20)|(romaddr&1))];
+			//remove a21 and >>1 the address
+			romaddr = (romaddr&0xFFDFFFFF)>>1;
+
+			data = (data8_t)*((memory_region(REGION_SOUND2) + romaddr + ((romchip-1) * 0x100000)));
+			LOG(("%08x: reading from U%d: %08x = %08x (%08x)\n",activecpu_get_pc(),romchip,romaddr,data,offset));	
+		}
+	}
+	else
+	//CSR 1 Mapped to 0x40000000 - U7 ROM
+	if(offcheck == 0x40000000)
+	{
+		offset &= 0xffffff;	//strip off top 8 bits
+		data = (data32_t)*(memory_region(REGION_SOUND1) + offset);
+		LOG(("%08x: reading from u7: %08x = %08x\n",activecpu_get_pc(),offset,data));
+	}
+	else
+	{
+		//CSR 0 Mapped to 0x10000000 - BIOS ROM U8 
+		//OR
+		//CSR 3 Mapped to 0x30000000 - U412 (Not Used)
+		//OR 
+		//Whatever else..
+		LOG(("%08x: reading from: %08x = %08x\n",activecpu_get_pc(),offset,data));
+	}
+	return data & mem_mask;
+}
+
+static WRITE32_HANDLER(arm_cs_w)
+{
+	data32_t offcheck = (offset & 0xF0000000);
+	data &= mem_mask;
+
+	//CSR 2 Mapped to 0x20000000 (Xilinx & U17-U37 ROMS)	
+	if(offcheck == 0x20000000)	
+	{
+		//Data Stream Output
+		//if( (offset == 0x20400000) || (offset == 0x20400002) )
+		{
+			//Store 16 bit data to our buffer
+			samplebuf[sampnum] = data & 0xffff;
+			sampnum = (sampnum + 1) % BUFFSIZE;
+
+			//Dump to Wave File
+			#if MAKE_WAVS
+			if(wavraw)
+			{
+				INT16 d;
+				d = (INT16)data;
+				wav_add_data_16(wavraw, &d, 1);
+			}
+			#endif
+
+			#if 0
+			LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));
+			#endif
+		}
+	}
+	else
+	{	//CSR 0 Mapped to 0x10000000 - BIOS ROM U8 
+		//OR
+		//CSR 3 Mapped to 0x30000000 - U412 (Not Used)
+		//OR 
+		//CSR 1 Mapped to 0x40000000 - U7 ROM
+		//Whatever else..
+		LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));
+	}
+}
+#endif
+
+//Remove Delay from LED Flashing code to speed up the boot time of the cpu
+static void remove_led_code()
+{
+  de3as_page0_ram[0xa854/4] = (UINT32)0;
+  de3as_page0_ram[0xa860/4] = (UINT32)0;
+  de3as_page0_ram[0xa86c/4] = (UINT32)0;
+  de3as_page0_ram[0xa878/4] = (UINT32)0;
+  de3as_page0_ram[0xa884/4] = (UINT32)0;
+  de3as_page0_ram[0xa890/4] = (UINT32)0;
+  de3as_page0_ram[0xa89c/4] = (UINT32)0;
+  de3as_page0_ram[0xa8a8/4] = (UINT32)0;
+}
 
 static void setup_at91(void)
 {
@@ -584,15 +798,9 @@ static void de3s_init(struct sndbrdData *brdData) {
 	wavraw = wav_open("raw.wav", WAVE_OUT_RATE, 2);
   #endif
 
-  //Remove Delay from LED Flashing
-  de3as_page0_ram[0xa854/4] = (UINT32)0;
-  de3as_page0_ram[0xa860/4] = (UINT32)0;
-  de3as_page0_ram[0xa86c/4] = (UINT32)0;
-  de3as_page0_ram[0xa878/4] = (UINT32)0;
-  de3as_page0_ram[0xa884/4] = (UINT32)0;
-  de3as_page0_ram[0xa890/4] = (UINT32)0;
-  de3as_page0_ram[0xa89c/4] = (UINT32)0;
-  de3as_page0_ram[0xa8a8/4] = (UINT32)0;
+  #if REMOVE_LED_CODE
+	remove_led_code();
+  #endif
 }
 
 //Write new sound command to the command queue
@@ -634,7 +842,7 @@ static void at91_sh_update(int num, INT16 *buffer, int length)
 		break;	//drop out of loop
 	}
 	 
-	//Send next pcm sample to output buffer (mute if it is set)
+	//Send next pcm sample to output buffer
 	buffer[ii] = samplebuf[sampout];
 
 	//Loop to beginning if we reach end of pcm buffer
@@ -668,7 +876,7 @@ static WRITE_HANDLER(man3_w)
 
 
 const struct sndbrdIntf de3sIntf = {
-	"BSMT", de3s_init, NULL, NULL, man3_w, scmd_w, NULL, NULL, NULL, SNDBRD_NODATASYNC
+	"AT91", de3s_init, NULL, NULL, man3_w, scmd_w, NULL, NULL, NULL, SNDBRD_NODATASYNC
 };
 
 static struct CustomSound_interface at91CustIntf =
@@ -706,6 +914,9 @@ MACHINE_DRIVER_END
 static MACHINE_INIT(lotrsnd) {
 	de2slocals.brdData.cpuNo = 0;
 	setup_at91();
+    #if REMOVE_LED_CODE
+    	remove_led_code();
+    #endif
 }
 
 static core_tGameData lotrsndGameData = {0, 0};
