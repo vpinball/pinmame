@@ -7,19 +7,21 @@
 CFG=Visual PinMame - Win32 Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
-!MESSAGE 
+!MESSAGE
 !MESSAGE NMAKE /f "VPinMAME.mak".
-!MESSAGE 
+!MESSAGE
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
-!MESSAGE 
+!MESSAGE
 !MESSAGE NMAKE /f "VPinMAME.mak" CFG="Visual PinMame - Win32 Debug"
-!MESSAGE 
+!MESSAGE
 !MESSAGE Possible choices for configuration are:
-!MESSAGE 
+!MESSAGE
 !MESSAGE "Visual PinMame - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "Visual PinMame - Win32 MAME Debug" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "Visual PinMame - Win32 VC+MAME Debug" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "Visual PinMame - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE 
+!MESSAGE
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
@@ -43,7 +45,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /G5 /MTd /W3 /Gm /ZI /Od /I "src" /I "src\zlib" /I "src\wpc" /I "src\vc" /I "src\win32c" /I "src\win32com" /I "src\win32com\autogen" /I "src\windows" /D "_DEBUG" /D "MAME_DEBUG" /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE=__inline /D inline=__inline /D __inline__=__inline /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D "ZLIB_DLL" /D "VPINMAME" /D "PINMAME" /D MAMEVER=5900 /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /YX /FD /GZ /c
+# ADD CPP /nologo /G5 /MTd /W3 /Gm /ZI /Od /I "src" /I "src\zlib" /I "src\wpc" /I "src\vc" /I "src\win32c" /I "src\win32com" /I "src\win32com\autogen" /I "src\windows" /D "_DEBUG" /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE=__inline /D inline=__inline /D __inline__=__inline /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D "ZLIB_DLL" /D "VPINMAME" /D "PINMAME" /D MAMEVER=5900 /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /YX /FD /GZ /c
 # SUBTRACT CPP /Fr
 # ADD MTL /out ".\src\win32com\autogen"
 # ADD BASE RSC /l 0x407 /d "_DEBUG"
@@ -61,8 +63,90 @@ InputPath=.\obj\VPinMAME\Debug\VPinMAME.dll
 SOURCE="$(InputPath)"
 
 "$(IntDir)\regsvr32.trg" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	regsvr32 /s /c "$(TargetPath)" 
-	echo regsvr32 exec. time > "$(IntDir)\regsvr32.trg" 
+	regsvr32 /s /c "$(TargetPath)"
+	echo regsvr32 exec. time > "$(IntDir)\regsvr32.trg"
+	
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "Release"
+# PROP BASE Intermediate_Dir "Release"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "obj/VPinMAME/MDebug"
+# PROP Intermediate_Dir "obj/VPinMAME/MDebug"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MT /W3 /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_ATL_STATIC_REGISTRY" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /G5 /MT /w /W0 /O2 /I "src" /I "src\zlib" /I "src\wpc" /I "src\vc" /I "src\win32c" /I "src\win32com" /I "src\win32com\autogen" /I "src\windows" /D "NDEBUG" /D "_ATL_STATIC_REGISTRY" /D "MAME_DEBUG" /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE=__inline /D inline=__inline /D __inline__=__inline /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D "ZLIB_DLL" /D "VPINMAME" /D "PINMAME" /D MAMEVER=5900 /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /YX /FD /c
+# ADD MTL /out ".\src\win32com\autogen"
+# ADD BASE RSC /l 0x407 /d "NDEBUG"
+# ADD RSC /l 0x409 /i ".\src\win32com\autogen" /d "NDEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386
+# ADD LINK32 kernel32.lib user32.lib shell32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zlibstatmt.lib winmm.lib dsound.lib version.lib dxguid.lib ddraw.lib dinput.lib /nologo /version:20.0 /subsystem:windows /dll /machine:I386 /libpath:"zlib"
+# Begin Custom Build - Copying and performing registration
+IntDir=.\obj/VPinMAME/MDebug
+ProjDir=.
+TargetPath=.\obj\VPinMAME\MDebug\VPinMAME.dll
+TargetName=VPinMAME
+InputPath=.\obj\VPinMAME\MDebug\VPinMAME.dll
+SOURCE="$(InputPath)"
+
+BuildCmds= \
+	copy "$(TargetPath)" "$(ProjDir)\$(TargetName).dll" \
+	regsvr32 /s /c "$(ProjDir)\$(TargetName).dll" \
+	echo regsvr32 exec.time > "$(IntDir)\regsvr32.trg" \
+	
+
+"$(ProjDir)\$(TargetName).dll" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+
+"$(IntDir)\regsvr32.trg" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "Debug"
+# PROP BASE Intermediate_Dir "Debug"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "obj/VPinMAME/VCMDebug"
+# PROP Intermediate_Dir "obj/VPinMAME/VCMDebug"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MTd /W3 /Gm /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /Yu"stdafx.h" /FD /GZ /c
+# ADD CPP /nologo /G5 /MTd /W3 /Gm /ZI /Od /I "src" /I "src\zlib" /I "src\wpc" /I "src\vc" /I "src\win32c" /I "src\win32com" /I "src\win32com\autogen" /I "src\windows" /D "_DEBUG" /D "MAME_DEBUG" /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE=__inline /D inline=__inline /D __inline__=__inline /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D "ZLIB_DLL" /D "VPINMAME" /D "PINMAME" /D MAMEVER=5900 /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /YX /FD /GZ /c
+# SUBTRACT CPP /Fr
+# ADD MTL /out ".\src\win32com\autogen"
+# ADD BASE RSC /l 0x407 /d "_DEBUG"
+# ADD RSC /l 0x409 /i ".\src\win32com\autogen" /d "_DEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib shell32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zlibstatmtd.lib winmm.lib dsound.lib version.lib dxguid.lib ddraw.lib dinput.lib /nologo /version:4.0 /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept /libpath:"zlib"
+# Begin Custom Build - Performing registration
+IntDir=.\obj/VPinMAME/VCMDebug
+TargetPath=.\obj\VPinMAME\VCMDebug\VPinMAME.dll
+InputPath=.\obj\VPinMAME\VCMDebug\VPinMAME.dll
+SOURCE="$(InputPath)"
+
+"$(IntDir)\regsvr32.trg" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	regsvr32 /s /c "$(TargetPath)"
+	echo regsvr32 exec. time > "$(IntDir)\regsvr32.trg"
 	
 # End Custom Build
 
@@ -111,11 +195,13 @@ BuildCmds= \
    $(BuildCmds)
 # End Custom Build
 
-!ENDIF 
+!ENDIF
 
 # Begin Target
 
 # Name "Visual PinMame - Win32 Debug"
+# Name "Visual PinMame - Win32 MAME Debug"
+# Name "Visual PinMame - Win32 VC+MAME Debug"
 # Name "Visual PinMame - Win32 Release"
 # Begin Group "Source Files"
 
@@ -141,7 +227,127 @@ SOURCE=.\src\win32com\Controller.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\win32com\Controller.cpp.crypt
+
+!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+# Begin Custom Build - Decrypting $(InputPath)
+InputDir=.\src\win32com
+InputPath=.\src\win32com\Controller.cpp.crypt
+InputName=Controller.cpp
+
+"$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
+	echo >NUL
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
+# Begin Custom Build - Decrypting $(InputPath)
+InputDir=.\src\win32com
+InputPath=.\src\win32com\Controller.cpp.crypt
+InputName=Controller.cpp
+
+"$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
+	echo >NUL
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
+# Begin Custom Build - Decrypting $(InputPath)
+InputDir=.\src\win32com
+InputPath=.\src\win32com\Controller.cpp.crypt
+InputName=Controller.cpp
+
+"$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
+	echo >NUL
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+
+# Begin Custom Build - Decrypting $(InputPath)
+InputDir=.\src\win32com
+InputPath=.\src\win32com\Controller.cpp.crypt
+InputName=Controller.cpp
+
+"$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
+	echo >NUL
+
+# End Custom Build
+
+!ENDIF
+
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\win32com\Controller.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\Controller.h.crypt
+
+!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+# Begin Custom Build - Decrypting $(InputPath)
+InputDir=.\src\win32com
+InputPath=.\src\win32com\Controller.h.crypt
+InputName=Controller.h
+
+"$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
+	echo >NUL
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
+# Begin Custom Build - Decrypting $(InputPath)
+InputDir=.\src\win32com
+InputPath=.\src\win32com\Controller.h.crypt
+InputName=Controller.h
+
+"$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
+	echo >NUL
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
+# Begin Custom Build - Decrypting $(InputPath)
+InputDir=.\src\win32com
+InputPath=.\src\win32com\Controller.h.crypt
+InputName=Controller.h
+
+"$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
+	echo >NUL
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+
+# Begin Custom Build - Decrypting $(InputPath)
+InputDir=.\src\win32com
+InputPath=.\src\win32com\Controller.h.crypt
+InputName=Controller.h
+
+"$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
+	echo >NUL
+
+# End Custom Build
+
+!ENDIF
+
 # End Source File
 # Begin Source File
 
@@ -201,6 +407,66 @@ SOURCE=.\src\win32com\ControllerRun.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\win32com\ControllerRun.cpp.crypt
+
+!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+# Begin Custom Build - Decrypting $(InputPath)
+InputDir=.\src\win32com
+InputPath=.\src\win32com\ControllerRun.cpp.crypt
+InputName=ControllerRun.cpp
+
+"$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
+	echo >NUL
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
+# Begin Custom Build - Decrypting $(InputPath)
+InputDir=.\src\win32com
+InputPath=.\src\win32com\ControllerRun.cpp.crypt
+InputName=ControllerRun.cpp
+
+"$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
+	echo >NUL
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
+# Begin Custom Build - Decrypting $(InputPath)
+InputDir=.\src\win32com
+InputPath=.\src\win32com\ControllerRun.cpp.crypt
+InputName=ControllerRun.cpp
+
+"$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
+	echo >NUL
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+
+# Begin Custom Build - Decrypting $(InputPath)
+InputDir=.\src\win32com
+InputPath=.\src\win32com\ControllerRun.cpp.crypt
+InputName=ControllerRun.cpp
+
+"$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
+	echo >NUL
+
+# End Custom Build
+
+!ENDIF
+
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\win32com\ControllerSettings.cpp
 # End Source File
 # Begin Source File
@@ -234,6 +500,66 @@ SOURCE=.\src\win32com\StdAfx.h
 # Begin Source File
 
 SOURCE=.\src\win32com\VPinMAME.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\VPinMAME.cpp.crypt
+
+!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
+# Begin Custom Build - Decrypting $(InputPath)
+InputDir=.\src\win32com
+InputPath=.\src\win32com\VPinMAME.cpp.crypt
+InputName=VPinMAME.cpp
+
+"$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
+	echo >NUL
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
+# Begin Custom Build - Decrypting $(InputPath)
+InputDir=.\src\win32com
+InputPath=.\src\win32com\VPinMAME.cpp.crypt
+InputName=VPinMAME.cpp
+
+"$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
+	echo >NUL
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
+# Begin Custom Build - Decrypting $(InputPath)
+InputDir=.\src\win32com
+InputPath=.\src\win32com\VPinMAME.cpp.crypt
+InputName=VPinMAME.cpp
+
+"$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
+	echo >NUL
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
+
+# Begin Custom Build - Decrypting $(InputPath)
+InputDir=.\src\win32com
+InputPath=.\src\win32com\VPinMAME.cpp.crypt
+InputName=VPinMAME.cpp
+
+"$(InputDir)/$(InputName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	if exist "$(InputDir)\$(InputName)" copy "$(InputDir)\$(InputName)" "$(InputDir)\$(InputName).bak" >NUL
+	cryptf -D "$(InputPath)" "$(InputDir)\$(InputName)" crypt.ini
+	echo >NUL
+
+# End Custom Build
+
+!ENDIF
+
 # End Source File
 # Begin Source File
 
@@ -567,15 +893,6 @@ SOURCE=.\src\wpc\atari.c
 # Begin Source File
 
 SOURCE=.\src\wpc\atari.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-# PROP Exclude_From_Build 1
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -630,15 +947,6 @@ SOURCE=.\src\wpc\byvidpin.c
 # Begin Source File
 
 SOURCE=.\src\wpc\byvidpin.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-# PROP Exclude_From_Build 1
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -719,15 +1027,6 @@ SOURCE=.\src\wpc\gts3.c
 # Begin Source File
 
 SOURCE=.\src\wpc\gts3.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-# PROP Exclude_From_Build 1
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -736,15 +1035,6 @@ SOURCE=.\src\wpc\gts3dmd.c
 # Begin Source File
 
 SOURCE=.\src\wpc\gts3dmd.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-# PROP Exclude_From_Build 1
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -962,15 +1252,6 @@ SOURCE=.\src\wpc\zac.c
 # Begin Source File
 
 SOURCE=.\src\wpc\zac.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-# PROP Exclude_From_Build 1
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -1795,9 +2076,32 @@ SOURCE=.\src\windows\asmblit.asm
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
 # Begin Custom Build
-IntDir=.\obj/VPinMAME/Debug/Windows
+IntDir=.\obj/VPinMAME/Debug
+InputPath=.\src\windows\asmblit.asm
+InputName=asmblit
+
+"$(IntDir)\$(InputName).obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	nasmw -f coff -o $(IntDir)\$(InputName).obj $(InputPath)
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
+
+# Begin Custom Build
+IntDir=.\obj/VPinMAME/MDebug
+InputPath=.\src\windows\asmblit.asm
+InputName=asmblit
+
+"$(IntDir)\$(InputName).obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	nasmw -f coff -o $(IntDir)\$(InputName).obj $(InputPath)
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
+
+# Begin Custom Build
+IntDir=.\obj/VPinMAME/VCMDebug
 InputPath=.\src\windows\asmblit.asm
 InputName=asmblit
 
@@ -1808,9 +2112,8 @@ InputName=asmblit
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
 # Begin Custom Build
-IntDir=.\obj/VPinMAME/Release/Windows
+IntDir=.\obj/VPinMAME/Release
 InputPath=.\src\windows\asmblit.asm
 InputName=asmblit
 
@@ -1819,7 +2122,7 @@ InputName=asmblit
 
 # End Custom Build
 
-!ENDIF 
+!ENDIF
 
 # End Source File
 # Begin Source File
@@ -1828,9 +2131,32 @@ SOURCE=.\src\windows\asmtile.asm
 
 !IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
 # Begin Custom Build
-IntDir=.\obj/VPinMAME/Debug/Windows
+IntDir=.\obj/VPinMAME/Debug
+InputPath=.\src\windows\asmtile.asm
+InputName=asmtile
+
+"$(IntDir)\$(InputName).obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	nasmw -f coff -o $(IntDir)\$(InputName).obj $(InputPath)
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
+
+# Begin Custom Build
+IntDir=.\obj/VPinMAME/MDebug
+InputPath=.\src\windows\asmtile.asm
+InputName=asmtile
+
+"$(IntDir)\$(InputName).obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	nasmw -f coff -o $(IntDir)\$(InputName).obj $(InputPath)
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
+
+# Begin Custom Build
+IntDir=.\obj/VPinMAME/VCMDebug
 InputPath=.\src\windows\asmtile.asm
 InputName=asmtile
 
@@ -1841,9 +2167,8 @@ InputName=asmtile
 
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
 # Begin Custom Build
-IntDir=.\obj/VPinMAME/Release/Windows
+IntDir=.\obj/VPinMAME/Release
 InputPath=.\src\windows\asmtile.asm
 InputName=asmtile
 
@@ -1852,83 +2177,32 @@ InputName=asmtile
 
 # End Custom Build
 
-!ENDIF 
+!ENDIF
 
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\blit.c
 
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\blit.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
-
-!ENDIF 
 
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\dirty.h
 
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\fileio.c
 
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\fronthlp.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
-# PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
-
-!ENDIF 
 
 # End Source File
 # Begin Source File
@@ -1939,160 +2213,69 @@ SOURCE=.\src\windows\input.c
 
 # PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
 
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
+
+# PROP Intermediate_Dir "obj/VPinMAME/MDebug/Windows"
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
+
+# PROP Intermediate_Dir "obj/VPinMAME/VCMDebug/Windows"
+
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
 # PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
 
-!ENDIF 
+!ENDIF
 
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\misc.c
 
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\osinline.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
-
-!ENDIF 
 
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\rc.c
 
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\snprintf.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
-
-!ENDIF 
 
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\sound.c
 
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\ticker.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
-
-!ENDIF 
 
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\ticker.h
 
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\video.c
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
-
-!ENDIF 
 
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\winddraw.c
 
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\winddraw.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
-# PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
-
-!ENDIF 
 
 # End Source File
 # Begin Source File
@@ -2103,26 +2286,24 @@ SOURCE=.\src\windows\window.c
 
 # PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
 
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 MAME Debug"
+
+# PROP Intermediate_Dir "obj/VPinMAME/MDebug/Windows"
+
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 VC+MAME Debug"
+
+# PROP Intermediate_Dir "obj/VPinMAME/VCMDebug/Windows"
+
 !ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
 # PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
 
-!ENDIF 
+!ENDIF
 
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\windows\winprefix.h
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Debug/Windows"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
-
-# PROP Intermediate_Dir "obj/VPinMAME/Release/Windows"
-
-!ENDIF 
 
 # End Source File
 # End Group
