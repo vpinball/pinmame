@@ -6,16 +6,42 @@
 #include "core.h"
 #include "sndbrd.h"
 #include "by35snd.h"
+#include "stsnd.h"
 #include "hnks.h"
 #include "by35.h"
+
+static char debugms[] = "01234567";
+// ok
+static READ_HANDLER(snd300_r) {
+  logerror("%04x: snd300_r adress A%c data latch %02x give %02x \n", activecpu_get_previouspc(), debugms[offset],snddatst300.ax[offset],snddatst300.axb[offset]);
+  snddatst300.axb[2] = snddatst300.timer1 / 256;
+  snddatst300.axb[3] = snddatst300.timer1 -  (snddatst300.axb[2] * 256);
+  snddatst300.axb[4] = snddatst300.timer2 / 256;
+  snddatst300.axb[5] = snddatst300.timer2 -  (snddatst300.axb[4] * 256);
+  snddatst300.axb[6] = snddatst300.timer3 / 256;
+  snddatst300.axb[7] = snddatst300.timer3 -  (snddatst300.axb[6] * 256);
+
+  return snddatst300.axb[offset];
+}
+
+static WRITE_HANDLER(snd300_w) {
+  snddatst300.ax[offset]=data;
+  sndbrd_0_data_w(0,offset);
+}
+
+static WRITE_HANDLER(snd300_wex) {
+  sndbrd_0_ctrl_w(0,data);
+}
+
 
 #define BY35_PIA0 0
 #define BY35_PIA1 1
 
 #define BY35_VBLANKFREQ    60 /* VBLANK frequency */
-#define BY35_IRQFREQ      316 /* IRQ (via PIA) frequency*/
-#define BY35_ZCFREQ       120 /* Zero cross frequency */
-
+// #define BY35_IRQFREQ      150 /* IRQ (via PIA) frequency*/
+#define BY35_IRQFREQ      320 /* IRQ (via PIA) frequency*/
+// #define BY35_ZCFREQ       85*2 /* Zero cross frequency */
+#define BY35_ZCFREQ       120 /* Zero cross frequency */ 
 #define BY35_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
 #define BY35_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
 #define BY35_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKS */
@@ -54,8 +80,7 @@ static void by35_dispStrobe(int mask) {
   int digit = locals.a1 & 0xfe;
   int ii,jj;
 
-  /* This handles O. Kaegi's 7-digit mod wiring */
-  if (locals.hw & BY35HW_SOUNDE && !(core_gameData->hw.gameSpecific1 & BY35GD_PHASE))
+  if (locals.hw & BY35HW_SOUNDE)
     digit = (digit & 0xf0) | ((digit & 0x0c) == 0x0c ? 0x02 : (digit & 0x0d));
 
   for (ii = 0; digit; ii++, digit>>=1)
@@ -65,14 +90,6 @@ static void by35_dispStrobe(int mask) {
         if (dispMask & 0x01)
           locals.segments[jj*8+ii].w |= locals.pseg[jj*8+ii].w = locals.bcd2seg[locals.bcd[jj] & 0x0f];
     }
-
-  /* This handles the fake zero for Nuova Bell games */
-  if (core_gameData->hw.gameSpecific1 & BY35GD_FAKEZERO) {
-	if (locals.segments[7].w) locals.segments[8].w = locals.pseg[8].w = locals.bcd2seg[0];
-	if (locals.segments[15].w) locals.segments[16].w = locals.pseg[16].w = locals.bcd2seg[0];
-	if (locals.segments[23].w) locals.segments[24].w = locals.pseg[24].w = locals.bcd2seg[0];
-	if (locals.segments[31].w) locals.segments[32].w = locals.pseg[32].w = locals.bcd2seg[0];
-  }
 }
 
 static void by35_lampStrobe(int board, int lampadr) {
@@ -173,13 +190,13 @@ static WRITE_HANDLER(pia0ca2_w) {
 }
 
 /* PIA1:B-W Solenoid/Sound output */
-static WRITE_HANDLER(pia1b_w) {
+static WRITE_HANDLER(pia1b_w) {		
+  int sb = core_gameData->hw.soundBoard;		// ok
   // check for extra display connected to solenoids
   if (~locals.b1 & data & core_gameData->hw.display & 0xf0)
     { locals.bcd[5] = locals.a0>>4; by35_dispStrobe(0x20); }
   locals.b1 = data;
-
-  sndbrd_0_data_w(0, data & 0x0f);
+  if ((sb & 0xff00) != SNDBRD_ST300)  sndbrd_0_data_w(0, data & 0x0f); 	// ok
   coreGlobals.pulsedSolState = 0;
   if (!locals.cb21)
     locals.solenoids |= coreGlobals.pulsedSolState = (1<<(data & 0x0f)) & 0x7fff;
@@ -190,8 +207,9 @@ static WRITE_HANDLER(pia1b_w) {
 
 /* PIA1:CB2-W Solenoid/Sound select */
 static WRITE_HANDLER(pia1cb2_w) {
+  int sb = core_gameData->hw.soundBoard;		// ok
   locals.cb21 = data;
-  if ((locals.hw & BY35HW_SCTRL) == 0)
+  if (((locals.hw & BY35HW_SCTRL) == 0) && ((sb & 0xff00) != SNDBRD_ST300)) 	// ok
     sndbrd_0_ctrl_w(1, (data ? 1 : 0) | (locals.a1 & 0x02));
 }
 
@@ -497,7 +515,7 @@ static MACHINE_INIT(by35) {
 
   pia_config(BY35_PIA0, PIA_STANDARD_ORDERING, &by35_pia[0]);
   pia_config(BY35_PIA1, PIA_STANDARD_ORDERING, &by35_pia[1]);
-  if ((sb & 0xff00) != SNDBRD_ST300)
+//   if ((sb & 0xff00) != SNDBRD_ST300)		// ok
     sndbrd_0_init(sb, 1, memory_region(REGION_SOUND1), NULL, NULL);
   locals.vblankCount = 1;
   // set up hardware
@@ -523,15 +541,17 @@ static MACHINE_INIT(by35) {
     locals.bcd2seg = core_bcd2seg9;
   }
 
+
   if (sb == SNDBRD_ASTRO) {
     init_m6840();
     install_mem_write_handler(0,0x00a0, 0x00a7, m6840_w_common);
     install_mem_read_handler (0,0x00a0, 0x00a7, astro_sol_r);
     install_mem_write_handler(0,0x00c0, 0x00c0, astro_sol_w);
   } else if ((sb & 0xff00) == SNDBRD_ST300) {
-    init_m6840();
-    install_mem_write_handler(0,0x00a0, 0x00a7, m6840_w_common);
-    install_mem_write_handler(0,0x00c0, 0x00c0, stern200_sol_w);
+//    init_m6840();				// ok
+    install_mem_write_handler(0,0x00a0, 0x00a7, snd300_w);	// ok
+    install_mem_read_handler (0,0x00a0, 0x00a7, snd300_r);    	// ok
+    install_mem_write_handler(0,0x00c0, 0x00c0, snd300_wex);	// ok
   } else if (sb == SNDBRD_ST100) {
     install_mem_write_handler(0,0x00a0, 0x00a0, extra_sol_w); // sounds on (DIP 23 = 1)
     install_mem_write_handler(0,0x00c0, 0x00c0, stern100_sol_w); // chimes on (DIP 23 = 0)
@@ -608,12 +628,12 @@ MACHINE_DRIVER_START(byProto)
   MDRV_CPU_ADD_TAG("mcpu", M6800, 560000)
   MDRV_CPU_MEMORY(by35_readmem, by35_writemem)
   MDRV_CPU_VBLANK_INT(by35_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(byProto_irq, BY35_IRQFREQ)
+  MDRV_CPU_PERIODIC_INT(byProto_irq, 316)
   MDRV_NVRAM_HANDLER(by35)
   MDRV_DIPS(32)
   MDRV_SWITCH_UPDATE(by35)
   MDRV_DIAGNOSTIC_LEDH(1)
-  MDRV_TIMER_ADD(by35p_zeroCross, BY35_ZCFREQ)
+  MDRV_TIMER_ADD(by35p_zeroCross, 120)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(by35_32S)
@@ -644,6 +664,7 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(st200)
   MDRV_IMPORT_FROM(by35)
   MDRV_CPU_REPLACE("mcpu",M6800, 1000000)
+  MDRV_IMPORT_FROM(st300)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(hnk)
