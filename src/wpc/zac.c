@@ -262,7 +262,7 @@ static WRITE_HANDLER(sense_port_w)
 	if (locals.printfile == NULL) {
 	  char filename[13];
 	  sprintf(filename,"%s.prt", Machine->gamedrv->name);
-	  locals.printfile = osd_fopen(Machine->gamedrv->name,filename,OSD_FILETYPE_MEMCARD,2); // APPEND write mode
+	  locals.printfile = mame_fopen(Machine->gamedrv->name,filename,FILETYPE_PRINTER,2); // APPEND write mode
 	}
 	if (data && startbit < 1)
 		startbit = 1;
@@ -271,7 +271,7 @@ static WRITE_HANDLER(sense_port_w)
 	else if (bitno < 8 && startbit > 1)
 		printdata[0] |= (data << bitno++);
 	if (bitno == 8 && startbit > 1)
-    	if (locals.printfile) osd_fwrite(locals.printfile, printdata, 1);
+    	if (locals.printfile) mame_fwrite(locals.printfile, printdata, 1);
     if (bitno > 7) {
 		printdata[0] = 0;
 		bitno = 0;
