@@ -322,13 +322,13 @@ static READ_HANDLER(sense_port_r)
 */
 static WRITE_HANDLER(ctrl_port_w)
 {
-	int tmp;
 	//logerror("%x: Ctrl Port Write=%x\n",cpu_getpreviouspc(),data);
 	//logerror("%x: Switch Strobe & LED Write=%x\n",cpu_getpreviouspc(),data);
 	locals.refresh = (data>>3)&1;
 	locals.diagnosticLed = (data>>5)&1;
 	locals.swCol = data & 0x07;
-#if
+#if 0
+	int tmp;
 	locals.swCol = 0;
 	//3-8 Demultiplexed
 	for(tmp = 0; tmp < 3; tmp++) {
