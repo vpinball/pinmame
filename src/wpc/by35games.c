@@ -3,6 +3,7 @@
 #include "by35.h"
 #include "by35snd.h"
 #include "byvidpin.h"
+#include "by6803.h"
 
 //#define DISPLAYALL
 #ifdef DISPLAYALL
@@ -633,6 +634,46 @@ BY35_ROMSTARTx00(granslam,"grndslam.u2", 0x66aea9dc,
 		          "grndslam.u6", 0x9e6ccea1)
 BY35_ROMEND
 CORE_GAMEDEFNV(granslam,"Grand Slam",1983,"Bally",by35_mBY35_51,GAME_NO_SOUND)
+
+/****************************************************/
+/* BALLY MPU-6803*/
+/****************************************************/
+
+/*--------------------------------
+/ Atlantis
+/-------------------------------*/
+INITGAME(atlantis,0,dispBy7,FLIP_SW(FLIP_L),0)
+BY6803_ROMSTART(atlantis,	"cpu_u2.128", 0x66aea9dc,
+							"cpu_u3.128", 0x9e6ccea1)
+BY6803_ROMEND
+CORE_GAMEDEFNV(atlantis,"Atlantis",1989,"Bally",by_mBY6803,0)
+
+/*--------------------------------
+/ Party Animal
+/-------------------------------*/
+INITGAME(prtyanim,0,dispBy7,FLIP_SW(FLIP_L),0)
+BY6803_ROMSTART(prtyanim,	"cpu_u2.128", 0xabdc0b2d,
+							"cpu_u3.128", 0xe48b2d63)
+BY6803_ROMEND
+CORE_GAMEDEFNV(prtyanim,"Party Animal",1989,"Bally",by_mBY6803,0)
+
+/*--------------------------------
+/ Heavy Metal Meltdown
+/-------------------------------*/
+INITGAME(hvymetal,0,dispBy7,FLIP_SW(FLIP_L),0)
+BY6803_ROMSTART(hvymetal,	"hvymt_u2.hex", 0x53466e4e,
+							"hvymt_u3.hex", 0x0a08ae7e)
+BY6803_ROMEND
+CORE_GAMEDEFNV(hvymetal,"Heavy Metal Meltdown",1989,"Bally",by_mBY6803,0)
+
+/*--------------------------------
+/ MotorDome
+/-------------------------------*/
+INITGAME(motrdome,0,dispBy7,FLIP_SW(FLIP_L),0)
+BY6803_ROMSTART(motrdome,	"cpu_u2.128", 0x66aea9dc,
+							"cpu_u3.128", 0x9e6ccea1)
+BY6803_ROMEND
+CORE_GAMEDEFNV(motrdome,"MotorDome",1989,"Bally",by_mBY6803,0)
 
 
 /****************************************************/
