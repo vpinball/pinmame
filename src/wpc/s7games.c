@@ -79,6 +79,21 @@ S7_ROMEND
 #define input_ports_solar input_ports_s7
 CORE_GAMEDEF(solar,l2,"Solar Fire (L-2)",1981,"Williams",s7_mS7S,0)
 
+/*-----------------------------------
+/ Thunderball - Sys.7 (Game #508)
+/-----------------------------------*/
+INITGAMEFULL(thund,s7_dispS7,0,0,0,0,0,0,0,0)
+S7_ROMSTART000x(thund,p1, "ic14.716",   CRC(1cd34f1f) SHA1(3f5b5a319570c26a3d34d640fef2ac6c04b83b70),
+                          "ic17.532",   CRC(bb571a17) SHA1(fb0b7f247673dae0744d4188e1a03749a2237165),
+                          "ic20.716",   CRC(aa3f07dc) SHA1(f31662972046f9a874380a8dcd1bc9259de5f6ba))
+S67S_SOUNDROMS0(          "sound12.716",CRC(cc70af52) SHA1(d9c2840acdcd69aab39fc647dd4819eccc06af33))
+S67S_SPEECHROMS0000(      "speech7.532",CRC(33e1b041) SHA1(f50c0311bde69fa6e8071e297a81cc3ef3dcf44f),
+                          "speech5.532",CRC(11780c80) SHA1(bcc5efcd69b4f776feef32484a872863847d64cd),
+                          "speech6.532",CRC(ab688698) SHA1(e0cbac44a6fe30a49da478c32500a0b43903cc2b),
+                          "speech4.532",CRC(2a4d6f4b) SHA1(e6f8a1a6e6abc81f980a4938d98abb250e8e1e3b))
+S7_ROMEND
+#define input_ports_thund input_ports_s7
+CORE_GAMEDEF(thund,p1,"Thunderball (P-1)",1982,"Williams",s7_mS7S,0)
 
 /*-------------------------------
 / Hyperball - Sys.7 - (Game #509)
