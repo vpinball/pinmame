@@ -33,6 +33,11 @@ Bugs Fixed
 -Fixed dips 17-24 in Bally -35 and Stern MPUx00
 -Fixed sound board communication for Squawk'n'Talk board (i.e. Xenon etc now works)
 -Got Pinmame32 working again!
+-Limited the number of extra samples that can be generated per frame.
+ (If the CPU can't keep up 100% emulation speed the sound will be distorted.
+  There are two options: either slow down the sound or break it up.
+  This is something in between. It will slow down the sound up to a certain
+  limit but if that is not enough it will break it up)
  [Martin Adrian]
 
 -Dip switches working now on Gottlieb games
