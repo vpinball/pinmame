@@ -12,7 +12,7 @@
 	static core_tGameData name##GameData = {gen, disptype}; \
 	static void init_##name(void) { \
 	  core_gameData = &name##GameData; \
-	} \
+	}
 
 #define DISP_SEG_6(row,col,type) {4*row,20*col,row*16+col*8+2,6,type}
 
@@ -636,6 +636,15 @@ S80_ROMEND
 CORE_GAMEDEFNV(bountyh, "Bounty Hunter",1985,"Gottlieb",gl_mS80B,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
+/ Rock
+/-------------------------------------------------------------------*/
+INITGAME(rock,GEN_S80B2K,gottlieb_dispAlpha, 1)
+S80B_2K_ROMSTART(rock, "prom2.cpu", 0xa3317b4b,
+                       "prom1.cpu", 0x1146c1d3)
+S80_ROMEND
+CORE_GAMEDEFNV(rock, "Rock",1986,"Gottlieb",gl_mS80B,GAME_NO_SOUND)
+
+/*-------------------------------------------------------------------
 / Raven
 /-------------------------------------------------------------------*/
 INITGAME(raven,GEN_S80B2K,gottlieb_dispAlpha, 1)
@@ -739,7 +748,17 @@ CORE_GAMEDEFNV(robowars, "Robo-War",1988,"Gottlieb",gl_mS80B,GAME_NO_SOUND)
 /*-------------------------------------------------------------------
 / Excalibur
 /-------------------------------------------------------------------*/
-INITGAME(excalibr,GEN_S80B4K,gottlieb_dispAlpha, 3)
+S80_INPUT_PORTS_START(excalibr, 3) S80_INPUT_PORTS_END \
+  static core_tGameData excalibrGameData = { \
+    GEN_S80B4K, gottlieb_dispAlpha, { 0 }, NULL, { "", \
+    /*Coin    1     2     3     4     5     6     7     8     9    10   Cab.  Cust */ \
+    { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, \
+    { 0 }, \
+  } \
+};
+static void init_excalibr(void) {
+  core_gameData = &excalibrGameData;
+}
 S80B_4K_ROMSTART(excalibr, "prom2.cpu", 0x499e2e41,
                            "prom1.cpu", 0xed1083d7)
 S80_ROMEND
