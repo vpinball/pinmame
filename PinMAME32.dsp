@@ -1240,32 +1240,6 @@ SOURCE=.\src\sound\discrete.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\fm.c
-
-!IF  "$(CFG)" == "PinMAME32 - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sound\fm.h
-
-!IF  "$(CFG)" == "PinMAME32 - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\sound\hc55516.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
