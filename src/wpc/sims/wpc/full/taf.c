@@ -395,17 +395,36 @@ static void taf_drawStatic(BMTYPE **line) {
   core_textOutf(30,140,BLACK,"C = Chair, V = Vault");
   core_textOutf(30,150,BLACK,"B = Bookcase, K = Lock Kickout");
   core_textOutf(30,160,BLACK,"N/M/,/.// = Jet Bumpers");
-
 }
-
 /*-----------------
 /  ROM definitions
 /------------------*/
+WPC_ROMSTART(taf,p2,  "addam_p2.rom", 0x40000, CRC(eabf0e72) SHA1(5b84d0315702b39b90beb6a92fb7ad9aba7e620c))
+WPCS_SOUNDROM8xx("afsnd_p2.rom" , CRC(73d19698) SHA1(d14a6ea36a93db185a599a7810dfbef2deb0adc0))
+WPC_ROMEND
+WPC_ROMSTART(taf,l1,  "addam_l1.rom", 0x40000, CRC(db287bf7) SHA1(51574c7c04d85aa816a0bc6e9db74f2d2b407525))
+WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
+WPC_ROMEND
+WPC_ROMSTART(taf,l2,  "addam_l2.rom", 0x40000, CRC(952bfc92) SHA1(d95b4b9e6c496a9ce4ceb1aa368c862b2beeffd9))
+WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
+WPC_ROMEND
+WPC_ROMSTART(taf,l3,  "addam_l3.rom", 0x40000, CRC(d428a760) SHA1(29afee7b1ae64d7a41faf813cdfa1ab7cef1f247))
+WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
+WPC_ROMEND
+WPC_ROMSTART(taf,l4,  "addam_l4.rom", 0x40000, CRC(ea29935f) SHA1(9f711396728026546c8bd1f69a0833d15e02c192))
+WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
+WPC_ROMEND
+WPC_ROMSTART(taf,l7,  "addam_l7.rom", 0x80000, CRC(4401b43a) SHA1(64e9678334cc900d1f44b95d25bb90c1fff566f8))
+WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
+WPC_ROMEND
 WPC_ROMSTART(taf,l5,  "addam_l5.rom",0x80000,CRC(4c071564) SHA1(d643506db1b3ba1ea20f34ddb38837df379fb5ab))
 WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
 WPC_ROMEND
 
 WPC_ROMSTART(taf,l6,  "taf_l6.u6",0x80000,CRC(06b37e65) SHA1(ce6f9cc45df08f50f5ece2a4c9376ecf67b0466a))
+WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
+WPC_ROMEND
+WPC_ROMSTART(taf,h4,  "addam_h4.rom",0x80000, CRC(d0bbd679) SHA1(ebd8c4981dd68a4f8e2dea90144486cb3cbd6b84))
 WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
 WPC_ROMEND
 
@@ -424,8 +443,15 @@ WPC_ROMEND
 #define input_ports_tafg input_ports_taf
 #define init_tafg        init_taf
 
-CORE_GAMEDEF(taf,l5,       "The Addams Family (L-5)",1992,"Bally",wpc_mFliptronS,0)
+CORE_GAMEDEF(taf,l5,        "The Addams Family (L-5)",1992,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(taf,p2,l5,    "The Addams Family (Prototype) (P-2)",1992,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(taf,l1,l5,    "The Addams Family (L-1)",1992,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(taf,l2,l5,    "The Addams Family (L-2)",1992,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(taf,l3,l5,    "The Addams Family (L-3)",1992,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(taf,l4,l5,    "The Addams Family (L-4)",1992,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(taf,l7,l5,    "The Addams Family (Prototype L-5) (L-7)",1992,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(taf,l6,l5,    "The Addams Family (L-6)",1992,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(taf,h4,l5,    "The Addams Family (H-4)",1992,"Bally",wpc_mFliptronS,0)
 CORE_GAMEDEF(tafg,lx3,     "The Addams Family Special Collectors Edition Gold (LX-3)", 1994,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tafg,h3,lx3,"The Addams Family Special Collectors Edition (H-3)",1994,"Bally",wpc_mFliptronS,0)
 
