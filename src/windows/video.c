@@ -822,6 +822,7 @@ static void check_inputs(void)
 extern HANDLE g_hEnterThrottle;
 extern int    g_iSyncFactor;
 int           iCurrentSyncValue = 512;
+extern HANDLE g_hEventHeartbeat;
 #endif
 
 static void throttle_speed(void)
@@ -830,7 +831,15 @@ static void throttle_speed(void)
 	TICKER target, curr;
 
 #ifdef VPINMAME
-	if ( (g_hEnterThrottle!=INVALID_HANDLE_VALUE) && g_iSyncFactor ) {
+	if ( g_hEventHeartbeat!=INVALID_HANDLE_VALUE ) {
+		SetEvent(g_hEnterThrottle);
+		if ( WaitForSingleObject(g_hEventHeartbeat, 0)==WAIT_OBJECT_0 ) {
+			Sleep(0);
+		}
+		else
+			WaitForSingleObject(g_hEventHeartbeat, INFINITE);
+	}
+	else if ( (g_hEnterThrottle!=INVALID_HANDLE_VALUE) && g_iSyncFactor ) {
 		iCurrentSyncValue += g_iSyncFactor;
 		if ( iCurrentSyncValue>=1024 ) {
 			SetEvent(g_hEnterThrottle);
@@ -861,7 +870,7 @@ static void throttle_speed(void)
 		while (curr - target < 0)
 		{
 #ifdef VPINMAME
-			Sleep((target-curr)/ticks_per_sleep_msec);
+			Sleep((target-curr)/(ticks_per_sleep_msec*1.1));
 #else
 			// if we have enough time to sleep, do it
 			// ...but not if we're autoframeskipping and we're behind
@@ -870,15 +879,13 @@ static void throttle_speed(void)
 			{
 				// keep track of how long we actually slept
 				ticks_per_sleep_msec = (ticks_per_sleep_msec * 0.90) + ((double)(ticker() - curr) * 0.10);
-				Sleep(1);
+				Sleep(0);
 			}
 #endif
 			// update the current time
 			curr = ticker();
 		}
 	}
-	else
-		Sleep(0);
 
 	// idle time done
 	profiler_mark(PROFILER_END);
@@ -1024,7 +1031,7 @@ static void render_frame(struct mame_bitmap *bitmap)
 	int i;
 
 	// if we're throttling, synchronize
-	if (throttle)
+//	if (throttle)
 		throttle_speed();
 
 	// at the end, we need the current time
