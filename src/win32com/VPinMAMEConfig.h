@@ -1,8 +1,10 @@
 #ifndef VPINMAMECONFIG_H
 #define VPINMAMECONFIG_H
 
-void cli_frontend_init();
-void cli_frontend_exit();
+extern void vpm_frontend_init(void);
+extern void vpm_frontend_exit(void);
+#define cli_frontend_init vpm_frontend_init
+#define cli_frontend_exit vpm_frontend_exit
 
 int set_option(const char *name, const char *arg, int priority);
 void *get_option(const char *name);
