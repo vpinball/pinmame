@@ -54,6 +54,7 @@
 /*-- Memory regions --*/
 #define S80_MEMREG_CPU		REGION_CPU1
 #define S80_MEMREG_SCPU1	REGION_CPU2
+#define S80_MEMREG_SCPU2	REGION_CPU3
 
 /*-- S80/S80A Main CPU regions and ROM, 2 game PROM version --*/
 #define S80_2_ROMSTART(name, n1, chk1, n2, chk2, n3, chk3, n4, chk4) \
@@ -99,9 +100,15 @@
 extern struct MachineDriver machine_driver_S80;
 extern struct MachineDriver machine_driver_S80SS;
 extern struct MachineDriver machine_driver_S80B;
+extern struct MachineDriver machine_driver_S80BS1;
+extern struct MachineDriver machine_driver_S80BS2;
+extern struct MachineDriver machine_driver_S80BS3;
 
 #define gl_mS80		S80
 #define gl_mS80SS	S80SS
 #define gl_mS80B	S80B
+#define gl_mS80BS1	S80BS1
+#define gl_mS80BS2	S80BS2
+#define gl_mS80BS3	S80BS3
 
 #endif /* INC_S80 */
