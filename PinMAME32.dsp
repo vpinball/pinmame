@@ -858,6 +858,22 @@ SOURCE=.\src\cpu\tms7000\tms7000.c
 SOURCE=.\src\cpu\tms7000\tms7000.h
 # End Source File
 # End Group
+# Begin Group "AT91"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\cpu\at91\at91.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\at91\at91.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\at91\at91dasm.c
+# End Source File
+# End Group
 # End Group
 # Begin Group "Machine"
 
@@ -4347,6 +4363,10 @@ SOURCE=.\src\wpc\mrgame.h
 # Begin Source File
 
 SOURCE=.\src\wpc\mrgamegames.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\nuova.c
 # End Source File
 # Begin Source File
 
