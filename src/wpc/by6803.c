@@ -60,7 +60,7 @@
 
 //#define mlogerror printf
 #define mlogerror logerror
-
+/*
 static void drawit(int seg) {
 	int segs[8] = {0};
 	int i;
@@ -75,7 +75,7 @@ static void drawit(int seg) {
 	logerror("%x    %x\n",segs[4],segs[2]);
 	logerror("   %x   \n",segs[3]);
 }
-
+*/
 static struct {
   int p0_a, p1_a, p1_b, p0_ca2, p1_ca2, p0_cb2, p1_cb2;
   int bcd[6];
@@ -152,39 +152,48 @@ static void by6803_dispStrobe1(int mask) {
 /**************************************************/
 
 static WRITE_HANDLER(by6803_segwrite2) {
+/*
   if(data>1 && !locals.p0_ca2) {
 		mlogerror("seg_w %x : module=%x : digit=%x : blank=%x\n",data,
 					locals.p0_a & 0x0f, locals.p0_a>>4, locals.p0_ca2);
 		drawit(data);
   }
+*/
   /*Save segment for later*/
   locals.p1_a = data;
-  /*If display blanking low..*/
-  if (!locals.p0_ca2) 
-     locals.DISPSTROBE(0);
+
+  // If display blanking low... what happens then?
+/*
+  if (!locals.p0_ca2) {
+	locals.DISPSTROBE(0);
+  }
+*/
 }
 
 static WRITE_HANDLER(by6803_dispdata2) {
-	int digit = data >> 4;
+/*
 	int tmp;
 
 	logerror("pia0a_w: Module 0-3 [%x][%x][%x][%x] = %x\n",
 		(data & 0x0f & 1)?1:0, (data & 0x0f & 2)?1:0,(data & 0x0f & 4)?1:0, (data & 0x0f & 8)?1:0, data & 0x0f);
-    logerror("pia0a_w: Digit  4-7 = %x\n",data>>4);
-
+	logerror("pia0a_w: Digit  4-7 = %x\n",data>>4);
+*/
 	//Store Row for later
-	locals.disprow = data & 0x0f;
+	int row = data & 0x0f;
 
 	//Digit Column/Select is 1-16 Demultiplexed!
-	locals.dispcol=0;
-	for(tmp = 0; tmp < 4; tmp++) {
-		if((digit>>tmp)&1) {
-			locals.dispcol |= 1<<tmp;
-		}
-	}
-	locals.dispcol+=1;
-	/* Now must adjust for proper ordering...
-
+	int col = 16 - (data >> 4);
+	// very odd row / column assignment, but it works!
+	if (row == 14) {
+		locals.disprow = 0;
+		locals.dispcol = col-1;
+	} else if (row == 13) {
+		locals.disprow = 1;
+	} else if (row == 1) {
+		locals.disprow = 1;
+		locals.dispcol = col;
+	} else locals.disprow = 2;
+/*
 	Digit Select Ordering:
 	Player 1/3            Player 2/4
 	------------------------------------------
@@ -192,38 +201,16 @@ static WRITE_HANDLER(by6803_dispdata2) {
 	------------------------------------------
 	01 02 03 04 05 06 07  08 09 10 11 12 13 14 (OUR ORDERING)
 	------------------------------------------
-	07 06 05 04 03 02 01  14 13 12 11 10 09 08 (6803 ORDERING)*/
-
-	if(locals.dispcol != 4 && locals.dispcol != 11) {
-		if(locals.dispcol<4)
-			locals.dispcol += 2 * (4-locals.dispcol);
-		else
-			if(locals.dispcol>4)
-				locals.dispcol -= 2 * (locals.dispcol-4);
-			else
-				if(locals.dispcol<11)
-					locals.dispcol += 2 * (11-locals.dispcol);
-				else
-					if(locals.dispcol>11)
-						locals.dispcol -= 2 * (locals.dispcol-11);
-	}
+	07 06 05 04 03 02 01  14 13 12 11 10 09 08 (6803 ORDERING)
+*/
 	locals.DISPSTROBE(0);
 }
 
 static void by6803_dispStrobe2(int mask) {
-	
-#if 0
-	//Segments H&J is bit 0 (but it's bit 8 in core.c)
-	int data = (locals.p1_a >> 1) | ((locals.p1_a & 1)<<7);
-#else
-	int data = (locals.p1_a >> 1);
-#endif
-	//Display Row Bit 0 - Selects Dual Display Module for Player 1 & 2
-	if(locals.disprow & 0x01)
-		locals.segments[0][locals.dispcol].lo |= locals.pseg[0][locals.dispcol].lo = data;
-	//Display Row Bit 1 - Selects Dual Display Module for Player 3 & 4
-	if(locals.disprow & 0x02)
-		locals.segments[1][locals.dispcol].lo |= locals.pseg[1][locals.dispcol].lo = data;
+	//Segments H&J is inverted bit 0 (but it's bit 8 in core.c)
+	int data = (locals.p1_a >> 1) | (((locals.p1_a & 1)<<7)^0x80);
+	if(locals.disprow < 2)
+		locals.segments[locals.disprow][locals.dispcol].lo |= locals.pseg[locals.disprow][locals.dispcol].lo = data;
 }
 
 
