@@ -1,6 +1,6 @@
 /* Bally MPU-6803 Hardware
   6803 vectors:
-  RES: FFFE-F 
+  RES: FFFE-F
   SWI: FFFA-B Software Interrupt (Not Used)
   NMI: FFFC-D (Not Used)
   IRQ: FFF8-9 (c042 in Party Animal)
@@ -11,26 +11,26 @@
 
 
   Notes:
-  It is almost identical to the Bally -35 hardware with the exception of a 6803 CPU and that it addresses the segments directly on the display. 
-  But here is what Clive writes: 
-  
-  You see Bally came up with this neat idea: 
-  Take the xero-crossing (which occurs 120 times/sec for a 60Hz AC wave, and 
-  generate two 180 degree phase shifted signals - each occuring 60 times/sec. 
-  They then used this principle to generate two seperate phase controllers. 
-  The first phase controller had phases A and B for the feature lamps, and the 
-  second had phases C and D for the solenoids/flashers. 
-  The two phase controllers were totally independant of each other 
-  (tapped from different secondary windings). 
+  It is almost identical to the Bally -35 hardware with the exception of a 6803 CPU and that it addresses the segments directly on the display.
+  But here is what Clive writes:
+
+  You see Bally came up with this neat idea:
+  Take the xero-crossing (which occurs 120 times/sec for a 60Hz AC wave, and
+  generate two 180 degree phase shifted signals - each occuring 60 times/sec.
+  They then used this principle to generate two seperate phase controllers.
+  The first phase controller had phases A and B for the feature lamps, and the
+  second had phases C and D for the solenoids/flashers.
+  The two phase controllers were totally independant of each other
+  (tapped from different secondary windings).
   This way, Bally were able to wire two feature lamps or two solenoids to the
-  same driver circuit and toggle them on different phases. 
-  For instance, the Extra ball lamp and the Multi-ball lamp could be wired to the 
-  same driver circuit. The EB lamp would be "on" for phase A and "off" for phase B, 
-  the Multi-ball lamp would be "off" for phase A but "on" for phase B. 
-  The driver transistor was obviously on for both phases. 
-  Bally where able to double their lamps and coils/flashers by using the same 
-  hardware without resorting to auxillary lamp or solenoid driver boards. 
-  Simple...but brilliant. 
+  same driver circuit and toggle them on different phases.
+  For instance, the Extra ball lamp and the Multi-ball lamp could be wired to the
+  same driver circuit. The EB lamp would be "on" for phase A and "off" for phase B,
+  the Multi-ball lamp would be "off" for phase A but "on" for phase B.
+  The driver transistor was obviously on for both phases.
+  Bally where able to double their lamps and coils/flashers by using the same
+  hardware without resorting to auxillary lamp or solenoid driver boards.
+  Simple...but brilliant.
 
   Display:
   7 Segment,7 Digit X 4 + 7 Segment, 2 Digit X 2 (Eight Ball Champ->Lady Luck)
@@ -56,7 +56,7 @@
 
 #define BY6803_VBLANKFREQ    60 /* VBLANK frequency */
 #define BY6803_IRQFREQ      150 /* IRQ (via PIA) frequency*/
-#define BY6803_ZCFREQ        60 /* Zero cross frequency (PHASE A = this value)*/
+#define BY6803_ZCFREQ       120 /* Zero cross frequency (PHASE A is 1/2 this value)*/
 
 //#define mlogerror printf
 #define mlogerror logerror
@@ -172,7 +172,7 @@ static WRITE_HANDLER(by6803_dispdata2) {
 	logerror("pia0a_w: Module 0-3 [%x][%x][%x][%x] = %x\n",
 		(data & 0x0f & 1)?1:0, (data & 0x0f & 2)?1:0,(data & 0x0f & 4)?1:0, (data & 0x0f & 8)?1:0, data & 0x0f);
 	logerror("pia0a_w: Digit  4-7 = %x\n",data>>4);
-	*/	
+	*/
 
 	/*Row/Column Data can only change if blanking is lo..*/
 	if(!locals.p0_ca2) {
@@ -184,13 +184,12 @@ static WRITE_HANDLER(by6803_dispdata2) {
 		if (row == 14) {			//1110 ~= 0001
 			locals.disprow = 0;
 			locals.dispcol = col-1;
-		} else if (row == 13) {		//1101 ~= 0010 
+		} else if (row == 13) {		//1101 ~= 0010
 			locals.disprow = 1;
-		} else if (row == 1) {
-			locals.disprow = 1;		//0001 ~= 1110
+		} else if (row == 1) {		//0001 ~= 1110
 			locals.dispcol = col;
 		} else locals.disprow = 2;
-	locals.DISPSTROBE(0);
+		locals.DISPSTROBE(0);
 	}
 }
 
@@ -216,14 +215,14 @@ static void by6803_lampStrobe(int board, int lampadr) {
   }
 }
 
-/* PIA0:A-W  Control what is read from PIA0:B 
+/* PIA0:A-W  Control what is read from PIA0:B
 (out) PA0-3: Display Latch Strobe (Select 1 of 4 display modules)			(SAME AS BALLY MPU35 - Only 2 Strobes used instead of 4)
 (out) PA4-7: BCD Lamp Data													(SAME AS BALLY MPU35)
 (out) PA4-7: BCD Display Data (Digit Select 1-16 for 1 disp module)			(SAME AS BALLY MPU35)
 */
 static WRITE_HANDLER(pia0a_w) {
-  locals.p0_a = data;
   locals.DISPDATA(offset,data);
+  locals.p0_a = data;
   by6803_lampStrobe(!locals.phase_a,locals.lampadr1);
 }
 
@@ -314,17 +313,23 @@ static int by6803_vblank(void) {
 }
 
 static void by6803_updSw(int *inports) {
+  int ext = coreData.coreDips?1:0;
   if (inports) {
     coreGlobals.swMatrix[0] = (inports[BY6803_COMINPORT]>>13) & 0x03;
-	coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & (~0x2f)) |
-                              ((inports[BY6803_COMINPORT]) & 0x2f);
-    coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & (~0x6f)) |
-                              ((inports[BY6803_COMINPORT]>>6) & 0x6f);
-	coreGlobals.swMatrix[3] = (coreGlobals.swMatrix[3] & (~0x0f)) |
-                              ((inports[BY6803_COMINPORT]>>16) & 0x0f);
-    coreGlobals.swMatrix[4] = (coreGlobals.swMatrix[4] & (~0x0f)) |
-                              ((inports[BY6803_COMINPORT]>>20) & 0x0f);
+	coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & (ext?0xd0:0xdf)) |
+                              ((inports[BY6803_COMINPORT]) & 0x20) |
+							  (ext?(inports[BY6803_COMINPORT+1] & 0x0f):0);
+    coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & (ext?0x90:0x98)) |
+                              ((inports[BY6803_COMINPORT]>>6) & 0x67) |
+                              (ext?((inports[BY6803_COMINPORT+1]>>4) & 0x0f):0);
+	if (ext) {
+		coreGlobals.swMatrix[3] = (coreGlobals.swMatrix[3] & 0xf0) |
+								  ((inports[BY6803_COMINPORT+1]>>8) & 0x0f);
+		coreGlobals.swMatrix[4] = (coreGlobals.swMatrix[4] & 0xf0) |
+								  ((inports[BY6803_COMINPORT+1]>>12) & 0x0f);
+	}
   }
+
   /*-- Diagnostic buttons on CPU board --*/
   //if (core_getSw(BY6803_SWCPUDIAG))  cpu_set_nmi_line(0, PULSE_LINE);
   if (core_getSw(BY6803_SWSOUNDDIAG)) locals.SOUNDDIAG();
@@ -339,7 +344,7 @@ static void by6803_updSw(int *inports) {
 (in)  PB0-7: Switch Returns/Rows and Cabinet Switch Returns/Rows			(SAME AS BALLY MPU35)
 (in)  CA1:   Self Test Switch												(SAME AS BALLY MPU35)
 (in)  CB1:   Zero Cross/Phase B Detection									(ZERO CROSS IN BALLY MPU35)
-(in)  CA2:   N/A															(SAME AS BALLY MPU35)	
+(in)  CA2:   N/A															(SAME AS BALLY MPU35)
 (in)  CB2:   N/A?
 (out) PA0-3: Cabinet Switches Strobe (shared below)							(SAME AS BALLY MPU35 + 2 Extra Columns)
 (out) PA0-4: Switch Strobe(Columns)											(SAME AS BALLY MPU35)
@@ -388,12 +393,18 @@ static int by6803_irq(void) {
   return 0;
 }
 
-static WRITE_HANDLER(by6803_soundCmd) { 
+static WRITE_HANDLER(by6803_soundCmd) {
 	locals.SOUNDCOMMAND(offset,data);
 }
 
 static core_tData by6803Data = {
-  0,
+  1, // keypad inports
+  by6803_updSw, 2, by6803_soundCmd, "by6803",
+  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
+};
+
+static core_tData by6803aData = {
+  0, // no keypad
   by6803_updSw, 2, by6803_soundCmd, "by6803",
   core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
 };
@@ -417,8 +428,9 @@ static void by6803_zeroCross(int data) {
   /*set 6803 P20 line*/
   cpu_set_irq_line(0, M6800_TIN_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
-static void by6803_init_common(void) {
-  if (core_init(&by6803Data)) return;
+
+static void by6803_init_common(int hasKeypad) {
+  if (hasKeypad?core_init(&by6803Data):core_init(&by6803aData)) return;
   /* init PIAs */
   pia_config(0, PIA_STANDARD_ORDERING, &piaIntf[0]);
   pia_config(1, PIA_STANDARD_ORDERING, &piaIntf[1]);
@@ -440,7 +452,7 @@ static void by6803_init1(void) {
 	locals.DISPSTROBE = by6803_dispStrobe1;
 	locals.SEGWRITE = by6803_segwrite1;
 	locals.DISPDATA = by6803_dispdata1;
-	by6803_init_common();
+	by6803_init_common(1);
 }
 static void by6803_init1a(void) {
 	if (locals.initDone) CORE_DOEXIT(by6803_exit);
@@ -452,7 +464,7 @@ static void by6803_init1a(void) {
 	locals.DISPSTROBE = by6803_dispStrobe1;
 	locals.SEGWRITE = by6803_segwrite1;
 	locals.DISPDATA = by6803_dispdata1;
-	by6803_init_common();
+	by6803_init_common(1);
 }
 static void by6803_init2(void) {
 	if (locals.initDone) CORE_DOEXIT(by6803_exit);
@@ -464,7 +476,7 @@ static void by6803_init2(void) {
 	locals.DISPSTROBE = by6803_dispStrobe2;
 	locals.SEGWRITE = by6803_segwrite2;
 	locals.DISPDATA = by6803_dispdata2;
-	by6803_init_common();
+	by6803_init_common(1);
 }
 static void by6803_init3(void) {
 	if (locals.initDone) CORE_DOEXIT(by6803_exit);
@@ -476,7 +488,19 @@ static void by6803_init3(void) {
 	locals.DISPSTROBE = by6803_dispStrobe2;
 	locals.SEGWRITE = by6803_segwrite2;
 	locals.DISPDATA = by6803_dispdata2;
-	by6803_init_common();
+	by6803_init_common(1);
+}
+static void by6803_init3a(void) {
+	if (locals.initDone) CORE_DOEXIT(by6803_exit);
+	memset(&locals, 0, sizeof(locals));
+	locals.SOUNDINIT = by6803_sndinit3;
+  	locals.SOUNDEXIT = by6803_sndexit3;
+	locals.SOUNDCOMMAND = by6803_sndcmd3;
+	locals.SOUNDDIAG = by6803_snddiag3;
+	locals.DISPSTROBE = by6803_dispStrobe2;
+	locals.SEGWRITE = by6803_segwrite2;
+	locals.DISPDATA = by6803_dispdata2;
+	by6803_init_common(0);
 }
 static void by6803_init4(void) {
 	if (locals.initDone) CORE_DOEXIT(by6803_exit);
@@ -488,7 +512,7 @@ static void by6803_init4(void) {
 	locals.DISPSTROBE = by6803_dispStrobe2;
 	locals.SEGWRITE = by6803_segwrite2;
 	locals.DISPDATA = by6803_dispdata2;
-	by6803_init_common();
+	by6803_init_common(0);
 }
 
 static void by6803_exit(void) {
@@ -500,7 +524,7 @@ static void by6803_exit(void) {
 }
 
 //NA?
-static READ_HANDLER(port1_r) { 
+static READ_HANDLER(port1_r) {
 	int data = 0;
 	//logerror("%x: port 1 read: %x\n",cpu_getpreviouspc(),data);
 	return data;
@@ -508,14 +532,14 @@ static READ_HANDLER(port1_r) {
 
 //Read Phase A Status? (Not sure if this is used)
 //JW7 (PB3) should not be set, which breaks the gnd connection, so we set the line high.
-static READ_HANDLER(port2_r) { 
+static READ_HANDLER(port2_r) {
 	int data = locals.phase_a | 0x08;
 	//mlogerror("%x: port 2 read: %x\n",cpu_getpreviouspc(),data);
 	return data;
 }
 
 //Sound Data (PB0-3 only connected on schem, but later generations may use all 8 bits)
-static WRITE_HANDLER(port1_w) { 
+static WRITE_HANDLER(port1_w) {
 	locals.snddata = data;
 	//printf("snddata: port 1 write = %x\n",data);
 }
@@ -654,7 +678,7 @@ struct MachineDriver machine_driver_by6803S2a = {
   0,0,0,0, {BY6803_GEN2_SOUND},
   by6803_nvram
 };
-//6803 - Generation 3 Sound (Sounds Deluxe)
+//6803 - Generation 3 Sound (Sounds Deluxe) with keypad
 struct MachineDriver machine_driver_by6803S3 = {
   {{  CPU_M6803, 3580000/4, /* 3.58/4 = 900hz */
       by6803_readmem, by6803_writemem, by6803_readport, by6803_writeport,
@@ -670,7 +694,23 @@ struct MachineDriver machine_driver_by6803S3 = {
   0,0,0,0, {BY6803_GEN3_SOUND},
   by6803_nvram
 };
-//6803 - Generation 4 Sound (Williams System 11C)
+//6803 - Generation 3 Sound (Sounds Deluxe) without keypad
+struct MachineDriver machine_driver_by6803S3a = {
+  {{  CPU_M6803, 3580000/4, /* 3.58/4 = 900hz */
+      by6803_readmem, by6803_writemem, by6803_readport, by6803_writeport,
+      by6803_vblank, 1, by6803_irq, BY6803_IRQFREQ
+  }
+  BY6803_SOUNDCPU3},
+  BY6803_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  50, by6803_init3a, CORE_EXITFUNC(by6803_exit)
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
+  VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
+  NULL, NULL, gen_refresh,
+  0,0,0,0, {BY6803_GEN3_SOUND},
+  by6803_nvram
+};
+//6803 - Generation 4 Sound (Williams System 11C) without keypad
 struct MachineDriver machine_driver_by6803S4 = {
   {{  CPU_M6803, 3580000/4, /* 3.58/4 = 900hz */
       by6803_readmem, by6803_writemem, by6803_readport, by6803_writeport,
