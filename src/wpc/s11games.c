@@ -19,6 +19,10 @@ static void init_##name(void) { core_gameData = &name##GameData; }
 
 S11_INPUT_PORTS_START(s11, 1) S11_INPUT_PORTS_END
 
+static core_tLCDLayout disp16oneline[] = { \
+  {0,0,0,16,CORE_SEG16},{0,33,20,16,CORE_SEG16}, {0}
+};
+
 /*--------------------
 / Space Shuttle (S9) 12/84
 /--------------------*/
@@ -329,10 +333,7 @@ CORE_GAMEDEF(polic,l4, "Police Force (L-4)", 1989, "Williams", s11_mS11BS,0)
 /*-----------------------------
 / Transporter the Rescue 6/89
 /----------------------------*/
-static core_tLCDLayout disptsptr[] = { \
-  {0,0,0,16,CORE_SEG16},{0,33,20,16,CORE_SEG16}, {0}
-};
-INITGAME(tsptr,GEN_S11B,disptsptr,12, FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
+INITGAME(tsptr,GEN_S11B,disp16oneline,12, FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
 S11_ROMSTART48(tsptr,l3,"tran_u26.l3", CRC(2d48a108) SHA1(d41bf077aab1201b08ea14725d4a0d841ee6b919),
                         "tran_u27.l3", CRC(50efb01c) SHA1(941f18d51bf8a5d209ed90e0865b7fa638a6eab3))
 S11XS_SOUNDROM88(       "tran_u21.l2", CRC(b10120ee) SHA1(305a898a8b762c27dba26921ef169556bf96e518),
@@ -363,10 +364,7 @@ CORE_GAMEDEF(bcats,l5, "Bad Cats (L-5)", 1989, "Williams", s11_mS11BS,0)
 /*-----------------------
 / Mousin' Around 12/89
 /-----------------------*/
-static core_tLCDLayout dispmousn[] = { \
-  {0,0,0,16,CORE_SEG16},{0,33,20,16,CORE_SEG16}, {0}
-};
-INITGAME(mousn,GEN_S11B,dispmousn,12, FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
+INITGAME(mousn,GEN_S11B,disp16oneline,12, FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
 S11_ROMSTART48(mousn,l4,"mous_u26.l4", CRC(a540edc1) SHA1(c0b208369ac770f0d4cd7decfce5f8401ded082f),
                         "mous_u27.l4", CRC(ff108148) SHA1(32b44286d43a39d5677c6582c5b09fc3b9833806))
 S11XS_SOUNDROM88(       "mous_u21.bin",CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7),
@@ -396,10 +394,7 @@ CORE_GAMEDEF(whirl,l3, "Whirlwind (L-3)", 1990, "Williams", s11_mS11BS,0)
 /*--------------------
 / Game Show 4/90
 /--------------------*/
-static core_tLCDLayout dispgs[] = { \
-  {0,0,0,16,CORE_SEG16},{0,33,20,16,CORE_SEG16}, {0}
-};
-INITGAME(gs   ,GEN_S11C,dispgs,12,FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
+INITGAME(gs   ,GEN_S11C,disp16oneline,12,FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
 S11_ROMSTART48(gs   ,l3,"gshw_u26.l3", CRC(3419bfb2) SHA1(7ce294a3118d20c7cdc3d5cd946e4c43090c5151),
                         "gshw_u27.l3", CRC(4f3babb6) SHA1(87091a6786fc6817529cfed7f60396babe153d8d))
 S11CS_SOUNDROM000(      "gshw_u4.l2",  CRC(e89e0116) SHA1(e96bee143d1662d078f21531f405d838fdace693),
@@ -425,7 +420,7 @@ CORE_GAMEDEF(rollr, l2, "Rollergames (L-2)", 1990, "Williams", s11_mS11CS,0)
 /*--------------------
 / Pool Sharks 6/90
 /--------------------*/
-INITGAME(pool ,GEN_S11C,s11_dispS11c,12,FLIP_SW(FLIP_L),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
+INITGAME(pool ,GEN_S11C,disp16oneline,12,FLIP_SW(FLIP_L),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
 S11_ROMSTART48(pool ,l7,"pool_u26.l7", CRC(cee98aed) SHA1(5b652684c10ab4945783089d848b2f663d3b2547),
                         "pool_u27.l7", CRC(356d9a89) SHA1(ce795c535d03a14d28fb3f2071cae48ccdb1a856))
 S11CS_SOUNDROM000(      "pool_u4.l2",  CRC(04e95e10) SHA1(3873b3cd6c2961b3f2f28a1e17f8a63c6db808d2),
@@ -451,10 +446,7 @@ CORE_GAMEDEF(diner, l4, "Diner (L-4)", 1990, "Williams", s11_mS11CS,0)
 /*--------------------
 / Radical 9/90
 /--------------------*/
-static core_tLCDLayout dispradcl[] = { \
-  {0,0,0,16,CORE_SEG16},{0,33,20,16,CORE_SEG16}, {0}
-};
-INITGAME(radcl,GEN_S11C,dispradcl,12,FLIP_SW(FLIP_L),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
+INITGAME(radcl,GEN_S11C,disp16oneline,12,FLIP_SW(FLIP_L),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
 S11_ROMSTART48(radcl,l1,"rad_u26.l1", CRC(84b1a125) SHA1(dd01fb9189acd2620c57149921aadb051f7a2412),
                         "rad_u27.l1", CRC(6f6ca382) SHA1(a61055aab97d3fe2ecd0ed4281a9681b1d910269))
 S11CS_SOUNDROM008(      "rad_u4.l1",  CRC(5aafc09c) SHA1(27984bbc91dc7593e6a5b42f74dd6ddf58189bec),
@@ -486,11 +478,7 @@ CORE_GAMEDEF(rvrbt, l3, "Riverboat Gambler (L-3)", 1990, "Williams", s11_mS11CS,
 /*--------------------
 / Bugs Bunny Birthday Ball 11/90
 /--------------------*/
-static core_tLCDLayout dispbbb[] = { \
-  {0,0,0,16,CORE_SEG16},{0,33,20,16,CORE_SEG16}, {0}
-};
-
-INITGAME(bbnny,GEN_S11C,dispbbb,12,FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
+INITGAME(bbnny,GEN_S11C,disp16oneline,12,FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
 S11_ROMSTART48(bbnny,l2,"bugs_u26.l2", CRC(b4358920) SHA1(93af1cf5dc2b5442f428a621c0f73b27c197a3df),
                         "bugs_u27.l2", CRC(8ff29439) SHA1(8fcdcea556e9e01ea8cb7c1548f98af2467c8a5f))
 S11CS_SOUNDROM000(      "bugs_u4.l2",  CRC(04bc9aa5) SHA1(c3da2dc3e26b88a0ebc6f87e61fc71bec45330c3),
