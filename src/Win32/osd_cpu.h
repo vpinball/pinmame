@@ -25,7 +25,9 @@
 #define OSD_CPU_H
 
 #include <stddef.h>
-
+#ifdef PINMAME
+#include "pinmame.h"
+#endif /* PINMAME */
 #if defined(__GNUC__)
 #include <basetsd.h> /* from w32api */
 typedef unsigned char       UINT8;

@@ -1,70 +1,11 @@
-#
-# MAME source version
-# PinMAME requires patches in the following files:
-# src/cpu/adsp2100/adsp2100.c
-# src/sound/hc55516.h
-# src/sound/hc55516.C
-
-# Visual PinMAME requires patches in the following files:
-# src/unzip.c
-
 MAMEVER=3716
-
-#MAMEVER > 3716
-#DEFS += -DBMTYPE=UINT16
-#DEFS += -DM65C02_INT_IRQ=M65C02_IRQ_LINE
-#DEFS += -DM65C02_INT_NMI=INTERRUPT_NMI
-#else
-DEFS += -DBMTYPE=UINT8
-DEFS += -Dmame_bitmap=osd_bitmap
-
 PINMAMESRC=wpc
-#
-# enable PinMAME extension (sound recording, command line switches)
-# requires patches in the following MAME files:
-# src/osdepend.h
-# src/mame.h
-# src/common.c
-# src/msdos/fileio.c
-# src/msdos/config.c
-# src/windows/fileio.c
-# src/sound/mixer.c
-#
-
-PINMAME_EXT=1
-
-#
-# enable DCS speedups
-# requires patches in
-# src/cpu/adsp2100/adsp2100.c
-#
-
-WPCDCSSPEEDUP=1
-
-#
-# enabled MESS exit handling for PinMAME
-# requires patch in
-# src/driver.h
-# src/cpuintrf.c
-
-PINMAME_EXIT=1
-
 #
 # PinMAME specific flags
 #
 PINOBJ=$(OBJ)/$(PINMAMESRC)
 CFLAGS += -Isrc/$(PINMAMESRC)
-COREDEFS += -DTINY_COMPILE=1 -DNEOFREE
-DEFS += -DMAMEVER=$(MAMEVER) -DPINMAME=1
-ifdef PINMAME_EXT
-DEFS += -DPINMAME_EXT=1
-endif
-ifdef WPCDCSSPEEDUP
-DEFS += -DWPCDCSSPEEDUP=1
-endif
-ifdef PINMAME_EXIT
-DEFS += -DPINMAME_EXIT
-endif
+DEFS += -DPINMAME=1 -DMAMEVER=$(MAMEVER)
 
 #
 # Common stuff
@@ -76,7 +17,7 @@ COREOBJS += $(PINOBJ)/driver.o $(OBJ)/cheat.o $(PINOBJ)/mech.o
 
 # why isn't this part of the core
 DRVLIBS += $(OBJ)/vidhrdw/crtc6845.o $(OBJ)/machine/6532riot.o
-DRVLIBS += $(OBJ)/vidhrdw/tms9928a.o 
+DRVLIBS += $(OBJ)/vidhrdw/tms9928a.o
 
 #
 # Core drivers
@@ -101,7 +42,7 @@ PINGAMES  = $(PINOBJ)/by35games.o
 PINGAMES += $(PINOBJ)/s3games.o $(PINOBJ)/s4games.o $(PINOBJ)/s6games.o
 PINGAMES += $(PINOBJ)/s7games.o $(PINOBJ)/s11games.o
 PINGAMES += $(PINOBJ)/degames.o $(PINOBJ)/gts3games.o $(PINOBJ)/s80games.o
-PINGAMES += $(PINOBJ)/segames.o $(PINOBJ)/wpcgames.o 
+PINGAMES += $(PINOBJ)/segames.o $(PINOBJ)/wpcgames.o
 PINGAMES += $(PINOBJ)/hnkgames.o
 #
 # Simulators
@@ -200,10 +141,6 @@ TEXTS += gamelist.txt
 gamelist.txt: $(EMULATOR)
 	@echo Generating $@...
 	@$(CURPATH)$(EMULATOR) -gamelist -noclones -sortname > gamelist.txt
-
-ifdef DEBUG
-DEFS += -DDBG_BPR=1
-endif
 
 cleanpinmame:
 	@echo Deleting $(target) object tree $(PINOBJ)...

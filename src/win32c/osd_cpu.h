@@ -22,23 +22,40 @@
 *******************************************************************************/
 
 
-/***************************** DOS Section ************************************/
-
 #ifndef OSD_CPU_H
 #define OSD_CPU_H
+#ifdef PINMAME
+#include "pinmame.h"
+#endif /* PINMAME */
 
-#include <stddef.h>
+#ifdef __MWERKS__
+#define INLINE static inline
+#define __extension__
+#endif
 
-typedef unsigned char		UINT8;
-typedef unsigned short		UINT16;
-typedef unsigned int		UINT32;
-typedef unsigned __int64	UINT64;
-typedef signed char 		INT8;
-typedef signed short		INT16;
-typedef signed int			INT32;
-typedef signed __int64	    INT64;
 
-/* Combine to 32-bit integers into a 64-bit integer */
+typedef unsigned char						UINT8;
+typedef unsigned short						UINT16;
+#ifndef _WINDOWS_H
+typedef unsigned int						UINT32;
+#ifdef _MSC_VER
+typedef unsigned __int64					UINT64;
+#else /* _MSC_VER */
+__extension__ typedef unsigned long long	UINT64;
+#endif /* _MSC_VER */
+#endif
+typedef signed char 						INT8;
+typedef signed short						INT16;
+#ifndef _WINDOWS_H
+typedef signed int							INT32;
+#ifdef _MSC_VER
+typedef signed __int64						INT64;
+#else /* _MSC_VER */
+__extension__ typedef signed long long		INT64;
+#endif /* _MSC_VER */
+#endif
+
+/* Combine two 32-bit integers into a 64-bit integer */
 #define COMBINE_64_32_32(A,B)     ((((UINT64)(A))<<32) | (UINT32)(B))
 #define COMBINE_U64_U32_U32(A,B)  COMBINE_64_32_32(A,B)
 
@@ -59,7 +76,6 @@ typedef signed __int64	    INT64;
 #define MUL_64_32_32(A,B)	  ((A)*(INT64)(B))
 #define MUL_U64_U32_U32(A,B)  ((A)*(UINT64)(UINT32)(B))
 
-/***************************** Common types ***********************************/
 
 /******************************************************************************
  * Union of UINT8, UINT16 and UINT32 in native endianess of the target
@@ -79,51 +95,4 @@ typedef union {
 	UINT32 d;
 }	PAIR;
 
-/* Turn off type mismatch warnings */
-#pragma warning (disable:4244)
-#pragma warning (disable:4761)
-#pragma warning (disable:4018)
-#pragma warning (disable:4146)
-#pragma warning (disable:4068)
-#pragma warning (disable:4005)
-#pragma warning (disable:4305)
-
-/* Unused variables */
-/* #pragma warning (disable:4101) */
-
-
-/* CPUs available */
-#define HAS_Z80				1
-#define HAS_M6800			1
-#define HAS_M6802			1
-#define HAS_M6803			1
-#define HAS_M6808			1
-#define HAS_M6809			1
-#define HAS_M6502			1
-#define HAS_M65C02			1
-//#define HAS_ADSP2100		1
-#define HAS_ADSP2105		1
-#define HAS_M68000			1
-
-
-#define HAS_SOUND			1
-#define HAS_CUSTOM			1
-#define HAS_SAMPLES			1
-#define HAS_DAC				1
-#define HAS_YM2151			1
-#define HAS_HC55516			1
-#define HAS_AY8910			1
-#define HAS_MSM5205			1
-#define HAS_TMS5220			1
-#define HAS_BSMT2000		1
-#define HAS_OKIM6295		1
-
-#if defined(MAMEVER) && MAMEVER > 3716
-#define BMTYPE UINT16
-#define M65C02_INT_IRQ M65C02_IRQ_LINE
-#define M65C02_INT_NMI INTERRUPT_NMI
-#else
-#define BMTYPE UINT8
-#define mame_bitmap osd_bitmap
-#endif
 #endif	/* defined OSD_CPU_H */
