@@ -138,7 +138,7 @@ CORE_CLONEDEFNV(jamesb2,jamesb,"James Bond (3/5-Ball)",1980,"Gottlieb",gl_mGTS80
 / Time Line
 /-------------------------------------------------------------------*/
 static core_tLCDLayout dispTimeline[] = {
-  DISP_SEG_IMPORT(dispNumeric1), {6, 11, 50, 3, CORE_SEG9}, {0}
+  DISP_SEG_IMPORT(dispNumeric1), {6, 12, 50, 2, CORE_SEG9}, {0}
 };
 INITGAME(timeline,GEN_GTS80,0,dispTimeline, SNDBRD_GTS80S,0,0)
 GTS80_1_ROMSTART(timeline, "659.cpu",      0x0d6950e3b,
