@@ -119,11 +119,9 @@ static READ_HANDLER(sp_8910a_r);
 / exported interface
 /--------------------*/
 const struct sndbrdIntf by51Intf = {
-//  sp_init, NULL, NULL, sp51_cmd_w, NULL, NULL, NULL
-  sp_init, NULL, NULL, sp51_data_w, NULL, sp51_ctrl_w, NULL,
+  sp_init, NULL, NULL, sp51_data_w, NULL, sp51_ctrl_w, NULL, 
 };
 const struct sndbrdIntf by56Intf = {
-//  sp_init, NULL, NULL, sp56_cmd_w, NULL, NULL, NULL, SNDBRD_NODATASYNC
   sp_init, NULL, NULL, sp56_data_w, NULL, sp56_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
@@ -163,12 +161,13 @@ static const struct pia6821_interface sp_pia = {
 static struct {
   struct sndbrdData brdData;
   int pia0a, pia0b;
-  int lastcmd, currcmd, cmdout, cmd[2],strobe;
+  int lastcmd, cmdin, cmdout, cmd[2];
 } splocals;
 
 static void sp_init(struct sndbrdData *brdData) {
   splocals.brdData = *brdData;
   pia_config(SP_PIA0, PIA_STANDARD_ORDERING, &sp_pia);
+  splocals.cmdin = splocals.cmdout = 2;
 }
 static READ_HANDLER(sp_8910r) {
   if ((splocals.pia0b & 0x03) == 0x01) return AY8910Read(0);
@@ -186,31 +185,27 @@ static WRITE_HANDLER(sp_pia0b_w) {
   }
   if (splocals.pia0b & 0x02) AY8910Write(0, splocals.pia0b ^ 0x01, splocals.pia0a);
 }
-#if 0
-static WRITE_HANDLER(sp51_cmd_w) {
-  if ((data ^ splocals.lastcmd) & 0x20) {
-    pia_set_input_ca1(SP_PIA0, data & 0x20);
-    splocals.currcmd = ~data & 0x1f;
-  }
-  splocals.lastcmd = data;
-}
-#endif
 
-static WRITE_HANDLER(sp51_data_w) { splocals.currcmd = ~data & 0x1f; }
+static WRITE_HANDLER(sp51_data_w) { splocals.lastcmd = ~data & 0x1f; }
 static WRITE_HANDLER(sp51_ctrl_w) { pia_set_input_ca1(SP_PIA0, data); }
 
 static WRITE_HANDLER(sp56_data_w) {
-  splocals.cmd[splocals.currcmd ^= 1] = ~data & 0x1f;
-  if (splocals.strobe) { pia_pulse_ca1(SP_PIA0, 0); splocals.strobe = 0; }
+  splocals.lastcmd = ~data & 0x1f;
+  if (splocals.cmdin < 2) {
+    splocals.cmd[splocals.cmdin++] = splocals.lastcmd;
+    if (splocals.cmdin == 2) {
+      pia_pulse_ca1(SP_PIA0, 0); splocals.cmdout = 0;
+    }
+  }    
 }
 static WRITE_HANDLER(sp56_ctrl_w) {
-  if (!data) splocals.strobe = 1;
+  if (!data) splocals.cmdin = 0;
 }
 static READ_HANDLER(sp_8910a_r) {
-  if (splocals.brdData.subType == 1) // -56 board
-    return splocals.cmd[splocals.currcmd ^= 1];
+  if ((splocals.brdData.subType == 1) && (splocals.cmdout < 2)) // -56 board
+    return splocals.cmd[splocals.cmdout++];
   else
-    return splocals.currcmd;
+    return splocals.lastcmd;
 }
 
 static void sp_irq(int state) {
@@ -298,7 +293,7 @@ static void snt_irq(int state);
 static struct {
   struct sndbrdData brdData;
   int pia0a, pia0b, pia1a, pia1b;
-  int cmd[2], lastcmd, cmdsync, cmdout, strobe, currcmd;
+  int cmd[2], lastcmd, cmdin, cmdout;
 } sntlocals;
 static const struct pia6821_interface snt_pia[] = {{
   /*i: A/B,CA/B1,CA/B2 */ snt_pia0a_r, 0, 0, 0, 0, 0,
@@ -313,6 +308,7 @@ static void snt_init(struct sndbrdData *brdData) {
   sntlocals.brdData = *brdData;
   pia_config(SNT_PIA0, PIA_STANDARD_ORDERING, &snt_pia[0]);
   pia_config(SNT_PIA1, PIA_STANDARD_ORDERING, &snt_pia[1]);
+  sntlocals.cmdin = sntlocals.cmdout = 2;
 }
 static READ_HANDLER(snt_pia0a_r) {
   if (sntlocals.brdData.subType == 1)   return snt_8910a_r(0); // -61B
@@ -340,46 +336,24 @@ static WRITE_HANDLER(snt_pia1b_w) {
   sntlocals.pia1b = data;
 }
 
-/*-- pass command from main cpu to sound cpu --*/
-/* The main CPU causes an IRQ and then sends two commands
-   To sync the CPUs we wait until both commands has been sent
-   before causing the IRQ. If the command is read outside
-   the IRQ the result is undefined.
-   I read somewhere that the main CPU creates sounds at the same
-   time as solenoids are activated. This will probably not work.
-*/
 static WRITE_HANDLER(snt_data_w) {
-  sntlocals.cmd[sntlocals.currcmd ^= 1] = ~data & 0x1f;
-  if (sntlocals.strobe) { pia_pulse_cb1(SNT_PIA0, 0); sntlocals.strobe = 0; }
-}
-static WRITE_HANDLER(snt_ctrl_w) {
-  if (!data) sntlocals.strobe = 1;
-}
-static READ_HANDLER(snt_8910a_r) {
-  return sntlocals.cmd[sntlocals.currcmd ^= 1];
-}
-#if 0
-static WRITE_HANDLER(snt_data_w) {
-  if (sntlocals.strobe && (sntlocals.cmdsync < 2)) {
-    sntlocals.cmd[sntlocals.cmdsync++] = data;
-    if (sntlocals.cmdsync == 2) { /* two commands received */
-      sntlocals.cmdout = 0; /* start reading commands */
-      sndbrd_sync_w(pia_pulse_cb1, SNT_PIA0, 0);
+  sntlocals.lastcmd = ~data & 0x1f;
+  if (sntlocals.cmdin < 2) {
+    sntlocals.cmd[sntlocals.cmdin++] = sntlocals.lastcmd;
+    if (sntlocals.cmdin == 2) {
+      pia_pulse_cb1(SNT_PIA0,0); sntlocals.cmdout = 0;
     }
   }
-  sntlocals.lastcmd = data;
 }
 static WRITE_HANDLER(snt_ctrl_w) {
-  if (data && !sntlocals.strobe) sntlocals.cmdsync = 0;
-  sntlocals.strobe = data;
+  if (!data) sntlocals.cmdin = 0;
 }
 
 static READ_HANDLER(snt_8910a_r) {
-  int tmp = (sntlocals.cmdout < 2) ? sntlocals.cmd[sntlocals.cmdout++] :
-                                     sntlocals.lastcmd;
-  return ~tmp & 0x1f;
+  if (sntlocals.cmdout < 2) return sntlocals.cmd[sntlocals.cmdout++];
+  return sntlocals.lastcmd;
 }
-#endif
+
 static WRITE_HANDLER(snt_pia0ca2_w) { sndbrd_ctrl_cb(sntlocals.brdData.boardNo,data); } // diag led
 
 static void snt_irq(int state) {
@@ -428,7 +402,7 @@ static void cs_init(struct sndbrdData *brdData) {
   cslocals.brdData = *brdData;
 }
 
-// there is no way to write into a port
+// there is no way to write into a port 
 // so we save the value and use it in the read handler
 static WRITE_HANDLER(cs_cmd_w) {
   cslocals.cmd = data;
@@ -641,6 +615,6 @@ WRITE_HANDLER(by35_soundCmd) {
     }
   }
 }
-#endif
 
+#endif
 
