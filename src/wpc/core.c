@@ -947,8 +947,11 @@ void core_nvram(void *file, int write, void *mem, int length, UINT8 init) {
       for (ii = 0; ii < 4; ii++) vp_setDIP(ii, dips[ii]);
     }
     else { // always get the default from the inports
-      for (ii = 0; ii < (coreData.coreDips+7)/8; ii++)
-        vp_setDIP(ii, readinputport(CORE_COREINPORT+1+ii/2)>>((ii & 0x01)*8) & 0xff);
+      /* coreData not initialised yet. Don't know exact number of DIPs */
+      vp_setDIP(0, readinputport(CORE_COREINPORT+1) & 0xff);
+      vp_setDIP(1, readinputport(CORE_COREINPORT+1)>>8);
+      vp_setDIP(2, readinputport(CORE_COREINPORT+2) & 0xff);
+      vp_setDIP(3, readinputport(CORE_COREINPORT+2)>>8);
     }
   }
 }
