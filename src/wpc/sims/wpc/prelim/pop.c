@@ -282,7 +282,7 @@ static sim_tSimData popSimData = {
 / Game Data Information
 /----------------------*/
 static core_tGameData popGameData = {
-  GEN_WPCDCS, NULL,
+  GEN_WPCDCS, wpc_dispDMD,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_U)
   },

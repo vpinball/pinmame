@@ -579,7 +579,7 @@ static sim_tSimData rsSimData = {
 / Game Data Information
 /----------------------*/
 static core_tGameData rsGameData = {
-  GEN_WPCSECURITY, NULL,
+  GEN_WPCSECURITY, wpc_dispDMD,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_U), /* actually 3 left flippers */
     0,0,0,0,0,0,0,

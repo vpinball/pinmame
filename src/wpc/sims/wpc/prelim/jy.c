@@ -274,7 +274,7 @@ static sim_tSimData jySimData = {
 / Game Data Information
 /----------------------*/
 static core_tGameData jyGameData = {
-  GEN_WPC95, NULL,
+  GEN_WPC95, wpc_dispDMD,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L)
   },

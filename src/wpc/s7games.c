@@ -70,7 +70,7 @@ CORE_GAMEDEF(jngld,l2,"Jungle Lord (L-2)",1981,"Williams",s7_mS7S,0)
 /*--------------------------------
 / Pharaoh - Sys.7 (Game #504)
 /--------------------------------*/
-INITGAME(pharo,s7_dispS7)
+INITGAMEFULL(pharo,s7_dispS7,0,0,20,24,44,0,0,0)
 S7_ROMSTART8088(pharo,l2, "ic14.716",   0xcef00088,
                           "ic17.532",   0xbb571a17,
                           "ic20.716",   0xdfb4b75a,
@@ -87,7 +87,7 @@ CORE_GAMEDEF(pharo,l2,"Pharaoh (L-2)",1981,"Williams",s7_mS7S,0)
 /*-----------------------------------
 / Solar Fire - Sys.7 (Game #507)
 /-----------------------------------*/
-INITGAME(solar,s7_dispS7)
+INITGAMEFULL(solar,s7_dispS7,0,0,11,12,0,0,0,0)
 S7_ROMSTART8088(solar,l2, "ic14.716",   0xcec19a55,
                           "ic17.532",   0xbb571a17,
                           "ic20.716",   0xdfb4b75a,

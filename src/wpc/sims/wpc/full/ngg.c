@@ -603,7 +603,7 @@ static sim_tSimData nggSimData = {
 / Game Data Information
 /----------------------*/
 static core_tGameData nggGameData = {
-  GEN_WPC95, NULL,
+  GEN_WPC95, wpc_dispDMD,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_UR),
     0,0,8,0,0,0,0,

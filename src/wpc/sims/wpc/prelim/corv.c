@@ -342,7 +342,7 @@ static sim_tSimData corvSimData = {
 / Corvette
 /---------------*/
 static core_tGameData corvGameData = {
-  GEN_WPCSECURITY, NULL,
+  GEN_WPCSECURITY, wpc_dispDMD,
   {
   FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_UL),
     0,0,0,0,0,0,0,

@@ -427,7 +427,7 @@ static sim_tSimData wwSimData = {
 / Game Data Information
 /----------------------*/
 static core_tGameData wwGameData = {
-  GEN_WPCFLIPTRON, NULL,
+  GEN_WPCFLIPTRON, wpc_dispDMD,
   {
     FLIP_SW(FLIP_L | FLIP_UR) | FLIP_SOL(FLIP_L | FLIP_UR),
     0,0,0,0,0,0,0,

@@ -509,7 +509,7 @@ static sim_tSimData gwSimData = {
 / Game Data Information
 /----------------------*/
 static core_tGameData gwGameData = {
-  GEN_WPCFLIPTRON, NULL,	/* generation */
+  GEN_WPCFLIPTRON, wpc_dispDMD,	/* generation */
   {
     FLIP_SW(FLIP_L | FLIP_UR) | FLIP_SOL(FLIP_L | FLIP_UR),	/* Which switches are the flippers */
     0,0,0,0,0,0,0,

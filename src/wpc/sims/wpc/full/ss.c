@@ -399,7 +399,7 @@ static sim_tSimData ssSimData = {
 / Game Data Information
 /----------------------*/
 static core_tGameData ssGameData = {
-  GEN_WPC95, NULL,
+  GEN_WPC95, wpc_dispDMD,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
     0,0,0,0,0,0,0,

@@ -14,9 +14,12 @@ N = No Lead, L = Have a Lead on Rom
 (N)Stargate (Bad Soun rom)
 ??Strikes 'N Spares 1995 (????????)
 */
+static struct core_dispLayout gts_128x32DMD[] = {
+  {0,0,32,128,CORE_DMD,gts3_dmd128x32}, {0}
+};
 
 #define ALPHA	 GTS3_dispAlpha
-#define DMD		 0
+#define DMD	 gts_128x32DMD
 #define FLIP67   FLIP_SWNO(6,7)
 #define FLIP4142 FLIP_SWNO(41,42)
 #define FLIP4243 FLIP_SWNO(42,43)
@@ -26,12 +29,12 @@ N = No Lead, L = Have a Lead on Rom
 #define GDISP_SEG_20(row,type)    {2*row, 0, 20*row, 20, type}
 
 /* 2 X 20 AlphaNumeric Rows */
-core_tLCDLayout GTS3_dispAlpha[] = {
+static struct core_dispLayout GTS3_dispAlpha[] = {
 	GDISP_SEG_20(0,CORE_SEG16),GDISP_SEG_20(1,CORE_SEG16),{0}
 };
 
 /* 2 X 20 AlphaNumeric Rows & LED Board with 4x2 7 Segments*/
-core_tLCDLayout GTS3_dispAlpha1[] = {
+static struct core_dispLayout GTS3_dispAlpha1[] = {
 	GDISP_SEG_20(0,CORE_SEG16),GDISP_SEG_20(1,CORE_SEG16),{4,0,1,8,CORE_SEG7},{0}
 };
 
