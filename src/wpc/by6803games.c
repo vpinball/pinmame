@@ -197,7 +197,7 @@ CORE_GAMEDEFNV(hvymetal,"Heavy Metal Meltdown",1987,"Bally",by_mBY6803_SDS,0)
 / Dungeons & Dragons (6803-0H06: 10/87)
 /------------------------------------*/
 //CPU & Sound Works?
-INITGAME6803(dungdrag,GEN_BY6803,dispBy104,FLIP6803,4,SNDBRD_BYSD, BY6803_DISPALPHA)
+INITGAME6803(dungdrag,GEN_BY6803,dispBy104,FLIP_SW(FLIP_L),4,SNDBRD_BYSD, BY6803_DISPALPHA)
 BY6803_ROMSTART44(dungdrag,"cpu_u2.128", 0xcefd4330,
                            "cpu_u3.128", 0x4bacc7f5)
 BYSD_SOUNDROM0000(         "snd_u12.512",0xdd95f851,
