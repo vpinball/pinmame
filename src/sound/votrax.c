@@ -84,6 +84,12 @@ void votrax_w(int data)
 	Intonation = data >> 6;
 	LOG(("Speech : %s at intonation %d\n",PhonemeNames[Phoneme],Intonation));
 
+	if ( Phoneme==0x3f ) {
+		iRemainingSamples = 0;
+		iRemainingSamples1 = 0;
+		return;
+	}
+
 	if ( iRemainingSamples ) {
 		pActPos1           = PhonemeData[Phoneme].pStart;
 		iRemainingSamples1 = PhonemeData[Phoneme].iLength;
@@ -102,7 +108,7 @@ void votrax_w(int data)
 
 static void Votrax_Update(int num, INT16 *buffer, int length)
 {
-	if ( iRemainingSamples<length )
+	if ( iRemainingSamples<length && pActPos )
 		iLastValue = (0x80-*(pActPos+iRemainingSamples-1))*0x00f0;
 
 	while ( length && iRemainingSamples ) {
