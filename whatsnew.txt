@@ -1,6 +1,7 @@
 Version 1.33 (??, 2004) - "??"
 
-Steve took a quick break from retirement to whip together the spinball emulation.. (gerrit add more text here)
+Steve took a quick break from retirement to whip together the spinball emulation and to get the
+technoplay x-force driver working.. (gerrit add more text here)
 
 Bugs Fixed
 ----------
@@ -18,6 +19,7 @@ New Features
 
 - Added External Hardware Addressing to 8051 cpu core
 - Added support for Serial UART mode 1 to 8051
+- Working Tecnoplay driver including display, lamps, solenoids, switches.
   [Steve Ellenoff]
 
 
