@@ -46,7 +46,6 @@ static struct {
 
 #include "vtxsmpls.inc"
 
-#if (!defined(PINMAME) || defined(MAME_DEBUG)) // In PinMAME, log only in debug mode.
 static const char *PhonemeNames[65] =
 {
  "EH3","EH2","EH1","PA0","DT" ,"A1" ,"A2" ,"ZH",
@@ -59,7 +58,6 @@ static const char *PhonemeNames[65] =
  "THV","TH" ,"ER" ,"EH" ,"E1" ,"AW" ,"PA1","STOP",
  0
 };
-#endif
 
 WRITE_HANDLER(votraxsc01_w)
 {

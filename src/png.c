@@ -273,9 +273,7 @@ int png_read_file(mame_file *fp, struct png_info *p)
 
 		case PNG_CN_tIME:
 			{
-#if (!defined(PINMAME) || defined(MAME_DEBUG)) // In PinMAME, log only in debug mode.
 				UINT8 *t=chunk_data;
-#endif
 				logerror("Image last-modification time: %i/%i/%i (%i:%i:%i) GMT\n",
 					((short)(*t) << 8)+ (short)(*(t+1)), *(t+2), *(t+3), *(t+4), *(t+5), *(t+6));
 			}

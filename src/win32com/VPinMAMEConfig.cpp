@@ -182,7 +182,8 @@ void vpm_frontend_exit(void) {
     { fclose(logfile); logfile = NULL; }
 }
 
-void CLIB_DECL logerror(const char *text,...) {
+#if (!defined(PINMAME) || defined(MAME_DEBUG)) // In PinMAME, log only in debug mode.
+INLINE void CLIB_DECL logerror(const char *text,...) {
   va_list arg;
   /* standard vfprintf stuff here */
   va_start(arg, text);
@@ -194,6 +195,7 @@ void CLIB_DECL logerror(const char *text,...) {
   }
   va_end(arg);
 }
+#endif /* PINMAME DEBUG */
 
 int set_option(const char *name, const char *arg, int priority)
 {

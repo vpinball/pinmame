@@ -426,13 +426,11 @@ void TMS9928A_register_w(int which,int offset,int data)
 static void _TMS9928A_change_register (int which, int reg, UINT8 val) {
     static const UINT8 Mask[8] =
         { 0x03, 0xfb, 0x0f, 0xff, 0x07, 0x7f, 0x07, 0xff };
-#if (!defined(PINMAME) || defined(MAME_DEBUG)) // In PinMAME, log only in debug mode.
     static const char *modes[] = {
         "Mode 0 (GRAPHIC 1)", "Mode 1 (TEXT 1)", "Mode 2 (GRAPHIC 2)",
         "Mode 1+2 (TEXT 1 variation)", "Mode 3 (MULTICOLOR)",
         "Mode 1+3 (BOGUS)", "Mode 2+3 (MULTICOLOR variation)",
         "Mode 1+2+3 (BOGUS)" };
-#endif
     UINT8 b;
     int mode;
 

@@ -391,13 +391,13 @@ int osd_net_game_exit(void);
 
 #if (!defined(PINMAME) || defined(MAME_DEBUG)) // In PinMAME, log only in debug mode.
 #ifdef __GNUC__
-void CLIB_DECL logerror(const char *text,...)
+INLINE void CLIB_DECL logerror(const char *text,...)
       __attribute__ ((format (printf, 1, 2)));
 #else
-void CLIB_DECL logerror(const char *text,...);
+INLINE void CLIB_DECL logerror(const char *text,...);
 #endif
 #else /* PINMAME DEBUG */
-#define logerror(...)
+INLINE void CLIB_DECL logerror(const char *text,...) {}
 #endif /* PINMAME DEBUG */
 
 #ifdef __cplusplus
