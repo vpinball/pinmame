@@ -33,13 +33,14 @@
   Simple...but brilliant. 
 
   Display:
-  7 Segment,7 Digit X 4 + 7 Segment, 2 Digit X 2 (Eight Ball Champ->??)
+  7 Segment,7 Digit X 4 + 7 Segment, 2 Digit X 2 (Eight Ball Champ->Lady Luck)
   9 Segment, 14 Digit X 2 (Special Force -> Truck Stop)
 
   Sound Hardware:
-  Squalk & Talk (Eight Ball Champ->?)
-  Turbo Cheap Squeak (6809,6821,DAC)
-  Sounds Deluxe (68000,6821,PAL,DAC)
+  Squalk & Talk (Eight Ball Champ->Beat The Clock)
+  Cheap Squeak (Lady Luck)
+  Turbo Cheap Squeak (6809,6821,DAC) (Motor Dome -> Black Belt)
+  Sounds Deluxe (68000,6821,PAL,DAC) (Special Forces -> Black Water 100)
   Williams System 11C (Truck Stop & Atlantis)
 
 */
@@ -51,12 +52,29 @@
 #include "core.h"
 #include "by6803.h"
 #include "by6803snd.h"
+#include "by35snd.h"
 
 #define BY6803_VBLANKFREQ    60 /* VBLANK frequency */
 #define BY6803_IRQFREQ      150 /* IRQ (via PIA) frequency*/
 #define BY6803_ZCFREQ       120 /* Zero cross frequency (PHASE A = 1/2 of this)*/
 
-#define mlogerror printf
+//#define mlogerror printf
+#define mlogerror logerror
+
+static void drawit(int seg) {
+	int segs[8] = {0};
+	int i;
+	seg = seg>>1;	//Remove HJ segment for now
+	for(i=0; i<7; i++) {
+		segs[i] = seg & 1;
+		seg = seg>>1;
+	}
+	logerror("   %x   \n",segs[0]);
+	logerror("%x    %x\n",segs[5],segs[1]);
+	logerror("   %x   \n",segs[6]);
+	logerror("%x    %x\n",segs[4],segs[2]);
+	logerror("   %x   \n",segs[3]);
+}
 
 static struct {
   int p0_a, p1_a, p1_b, p0_ca2, p1_ca2, p0_cb2, p1_cb2;
@@ -64,6 +82,7 @@ static struct {
   int lampadr1, lampadr2;
   UINT32 solenoids;
   core_tSeg segments,pseg;
+  int dispcol, disprow;
   int diagnosticLed;
   int sounddiagnosticLed;
   int vblankCount;
@@ -76,6 +95,9 @@ static struct {
   void (*SOUNDEXIT)(void);
   WRITE_HANDLER((*SOUNDCOMMAND));
   void (*SOUNDDIAG)(void);
+  void (*DISPSTROBE)(int mask);
+  WRITE_HANDLER((*SEGWRITE));
+  WRITE_HANDLER((*DISPDATA));
 } locals;
 
 static void by6803_exit(void);
@@ -86,10 +108,36 @@ static void piaIrq(int state) {
   cpu_set_irq_line(0, M6803_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
-static void by6803_dispStrobe(int mask) {
+/**************************************************/
+/* GENERATION 1 Display Handling (Same as MPU-35) */
+/**************************************************/
+
+/*Same as Bally MPU-35*/
+static WRITE_HANDLER(by6803_segwrite1) {
+  int tmp = locals.p1_a;
+  locals.p1_a = data;
+  if (!locals.p0_ca2) {
+    if (tmp & ~data & 0x01) { // Positive edge
+      locals.bcd[4] = locals.p0_a>>4;
+      locals.DISPSTROBE(0x10);
+    }
+  }
+}
+
+/*Same as Bally MPU-35*/
+static WRITE_HANDLER(by6803_dispdata1) {
+	if (!locals.p0_ca2) {
+		int bcdLoad = locals.p0_a & ~data & 0x0f;
+		int ii;
+		for (ii = 0; bcdLoad; ii++, bcdLoad>>=1)
+		  if (bcdLoad & 0x01) locals.bcd[ii] = data>>4;
+	}
+}
+
+/*Same as Bally MPU-35*/
+static void by6803_dispStrobe1(int mask) {
   int digit = locals.p1_a & 0xfe;
   int ii,jj;
-  //DBGLOG(("digit = %x (%x,%x,%x,%x,%x,%x)\n",digit,locals.bcd[0],locals.bcd[1],locals.bcd[2],locals.bcd[3],locals.bcd[4],locals.bcd[5]));
   for (ii = 0; digit; ii++, digit>>=1)
     if (digit & 0x01) {
       UINT8 dispMask = mask;
@@ -98,6 +146,86 @@ static void by6803_dispStrobe(int mask) {
           ((int *)locals.segments)[jj*8+ii] |= ((int *)locals.pseg)[jj*8+ii] = core_bcd2seg[locals.bcd[jj]];
     }
 }
+
+/**************************************************/
+/* GENERATION 2 Display Handling				  */
+/**************************************************/
+
+static WRITE_HANDLER(by6803_segwrite2) {
+  if(data>1 && !locals.p0_ca2) {
+		mlogerror("seg_w %x : module=%x : digit=%x : blank=%x\n",data,
+					locals.p0_a & 0x0f, locals.p0_a>>4, locals.p0_ca2);
+		drawit(data);
+  }
+  /*Save segment for later*/
+  locals.p1_a = data;
+  /*If display blanking low..*/
+  if (!locals.p0_ca2) 
+     locals.DISPSTROBE(0);
+}
+
+static WRITE_HANDLER(by6803_dispdata2) {
+	int digit = data >> 4;
+	int tmp;
+
+	logerror("pia0a_w: Module 0-3 [%x][%x][%x][%x] = %x\n",
+		(data & 0x0f & 1)?1:0, (data & 0x0f & 2)?1:0,(data & 0x0f & 4)?1:0, (data & 0x0f & 8)?1:0, data & 0x0f);
+    logerror("pia0a_w: Digit  4-7 = %x\n",data>>4);
+
+	//Store Row for later
+	locals.disprow = data & 0x0f;
+
+	//Digit Column/Select is 1-16 Demultiplexed!
+	locals.dispcol=0;
+	for(tmp = 0; tmp < 4; tmp++) {
+		if((digit>>tmp)&1) {
+			locals.dispcol |= 1<<tmp;
+		}
+	}
+	locals.dispcol+=1;
+	/* Now must adjust for proper ordering...
+
+	Digit Select Ordering:
+	Player 1/3            Player 2/4
+	------------------------------------------
+	0  0  0  0  0  0  0 x 0  0  0  0  0  0  0
+	------------------------------------------
+	01 02 03 04 05 06 07  08 09 10 11 12 13 14 (OUR ORDERING)
+	------------------------------------------
+	07 06 05 04 03 02 01  14 13 12 11 10 09 08 (6803 ORDERING)*/
+
+	if(locals.dispcol != 4 && locals.dispcol != 11) {
+		if(locals.dispcol<4)
+			locals.dispcol += 2 * (4-locals.dispcol);
+		else
+			if(locals.dispcol>4)
+				locals.dispcol -= 2 * (locals.dispcol-4);
+			else
+				if(locals.dispcol<11)
+					locals.dispcol += 2 * (11-locals.dispcol);
+				else
+					if(locals.dispcol>11)
+						locals.dispcol -= 2 * (locals.dispcol-11);
+	}
+	locals.DISPSTROBE(0);
+}
+
+static void by6803_dispStrobe2(int mask) {
+	
+#if 0
+	//Segments H&J is bit 0 (but it's bit 8 in core.c)
+	int data = (locals.p1_a >> 1) | ((locals.p1_a & 1)<<7);
+#else
+	int data = (locals.p1_a >> 1);
+#endif
+	//Display Row Bit 0 - Selects Dual Display Module for Player 1 & 2
+	if(locals.disprow & 0x01)
+		locals.segments[0][locals.dispcol].lo |= locals.pseg[0][locals.dispcol].lo = data;
+	//Display Row Bit 1 - Selects Dual Display Module for Player 3 & 4
+	if(locals.disprow & 0x02)
+		locals.segments[1][locals.dispcol].lo |= locals.pseg[1][locals.dispcol].lo = data;
+}
+
 
 static void by6803_lampStrobe(int board, int lampadr) {
   if (lampadr != 0x0f) {
@@ -113,31 +241,28 @@ static void by6803_lampStrobe(int board, int lampadr) {
   }
 }
 
-/* PIA0:A-W  Control what is read from PIA0:B */
+/* PIA0:A-W  Control what is read from PIA0:B 
+(out) PA0-3: Display Latch Strobe (Select 1 of 4 display modules)			(SAME AS BALLY MPU35 - Only 2 Strobes used instead of 4)
+(out) PA4-7: BCD Lamp Data													(SAME AS BALLY MPU35)
+(out) PA4-7: BCD Display Data (Digit Select 1-16 for 1 disp module)			(SAME AS BALLY MPU35)
+*/
 static WRITE_HANDLER(pia0a_w) {
-  if (!locals.p0_ca2) {
-    int bcdLoad = locals.p0_a & ~data & 0x0f;
-    int ii;
-
-    for (ii = 0; bcdLoad; ii++, bcdLoad>>=1)
-      if (bcdLoad & 0x01) locals.bcd[ii] = data>>4;
-  }
+  locals.DISPDATA(offset,data);
   locals.p0_a = data;
-  by6803_lampStrobe(0,locals.lampadr1);
-  if (core_gameData->hw.lampCol > 0) by6803_lampStrobe(1,locals.lampadr2);
+  by6803_lampStrobe(!locals.phase_a,locals.lampadr1);
 }
-/* PIA1:A-W  0,2-7 Display handling */
-static WRITE_HANDLER(pia1a_w) {
-  int tmp = locals.p1_a;
-  mlogerror("seg_w %x\n",data);
-  locals.p1_a = data;
-  if (!locals.p0_ca2) {
-    if (tmp & ~data & 0x01) { // Positive edge
-      locals.bcd[4] = locals.p0_a>>4;
-      by6803_dispStrobe(0x10);
-    }
-  }
-}
+
+/* PIA1:A-W  0,2-7 Display handling:
+(out) PA0 = PA10 = SEG DATA H+J
+(out) PA1 = J2-8 = SEG DATA A
+(out) PA2 = J2-7 = SEG DATA B
+(out) PA3 = J2-6 = SEG DATA C
+(out) PA4 = J2-5 = SEG DATA D
+(out) PA5 = J2-4 = SEG DATA E
+(out) PA6 = J2-3 = SEG DATA F
+(out) PA7 = J2-2 = SEG DATA G
+*/
+static WRITE_HANDLER(pia1a_w) { locals.SEGWRITE(offset,data); }
 
 /* PIA0:B-R  Switch & Cabinet Returns */
 static READ_HANDLER(pia0b_r) {
@@ -158,11 +283,11 @@ static WRITE_HANDLER(pia1ca2_w) {
   locals.p1_ca2 = data;
 }
 
-/* PIA0:CA2-W Display Strobe */
+/* PIA0:CA2-W Display Blanking/Select */
 static WRITE_HANDLER(pia0ca2_w) {
   //DBGLOG(("PIA0:CA2=%d\n",data));
   locals.p0_ca2 = data;
-  if (!data) by6803_dispStrobe(0x1f);
+  if (!data) locals.DISPSTROBE(0x1f);
 }
 
 /* PIA1:B-W Solenoid output */
@@ -244,8 +369,9 @@ static void by6803_updSw(int *inports) {
 (out) PA0-3: Cabinet Switches Strobe (shared below)							(SAME AS BALLY MPU35 + 2 Extra Columns)
 (out) PA0-4: Switch Strobe(Columns)											(SAME AS BALLY MPU35)
 (out) PA0-3: Lamp Address (Shared with Switch Strobe)						(SAME AS BALLY MPU35)
-(out) PA0-3: Display Latch Strobe											(SAME AS BALLY MPU35 - Only 2 Strobes used instead of 4)
-(out) PA4-7: BCD Lamp Data & BCD Display Data								(SAME AS BALLY MPU35)
+(out) PA0-3: Display Latch Strobe (Select 1 of 4 display modules)			(SAME AS BALLY MPU35 - Only 2 Strobes used instead of 4)
+(out) PA4-7: BCD Lamp Data													(SAME AS BALLY MPU35)
+(out) PA4-7: BCD Display Data (Digit Select 1-16 for 1 disp module)			(SAME AS BALLY MPU35)
 (out) CA2:   Display Blanking/(Select?)										(SAME AS BALLY MPU35)
 (out) CB2:   Lamp Strobe #1 (Drives Main Lamp Driver - Playfield Lamps)		(SAME AS BALLY MPU35)
 	  IRQ:	 Wired to Main 6803 CPU IRQ.									(SAME AS BALLY MPU35)
@@ -331,6 +457,21 @@ static void by6803_init1(void) {
   	locals.SOUNDEXIT = by6803_sndexit1;
 	locals.SOUNDCOMMAND = by6803_sndcmd1;
 	locals.SOUNDDIAG = by6803_snddiag1;
+	locals.DISPSTROBE = by6803_dispStrobe1;
+	locals.SEGWRITE = by6803_segwrite1;
+	locals.DISPDATA = by6803_dispdata1;
+	by6803_init_common();
+}
+static void by6803_init1a(void) {
+	if (locals.initDone) CORE_DOEXIT(by6803_exit);
+	memset(&locals, 0, sizeof(locals));
+	locals.SOUNDINIT = by6803_sndinit1a;
+  	locals.SOUNDEXIT = by6803_sndexit1;
+	locals.SOUNDCOMMAND = by6803_sndcmd1a;
+	locals.SOUNDDIAG = by6803_snddiag1;
+	locals.DISPSTROBE = by6803_dispStrobe1;
+	locals.SEGWRITE = by6803_segwrite1;
+	locals.DISPDATA = by6803_dispdata1;
 	by6803_init_common();
 }
 static void by6803_init2(void) {
@@ -340,6 +481,9 @@ static void by6803_init2(void) {
   	locals.SOUNDEXIT = by6803_sndexit2;
 	locals.SOUNDCOMMAND = by6803_sndcmd2;
 	locals.SOUNDDIAG = by6803_snddiag2;
+	locals.DISPSTROBE = by6803_dispStrobe2;
+	locals.SEGWRITE = by6803_segwrite2;
+	locals.DISPDATA = by6803_dispdata2;
 	by6803_init_common();
 }
 static void by6803_init3(void) {
@@ -349,6 +493,9 @@ static void by6803_init3(void) {
   	locals.SOUNDEXIT = by6803_sndexit3;
 	locals.SOUNDCOMMAND = by6803_sndcmd3;
 	locals.SOUNDDIAG = by6803_snddiag3;
+	locals.DISPSTROBE = by6803_dispStrobe2;
+	locals.SEGWRITE = by6803_segwrite2;
+	locals.DISPDATA = by6803_dispdata2;
 	by6803_init_common();
 }
 static void by6803_init4(void) {
@@ -358,6 +505,9 @@ static void by6803_init4(void) {
   	locals.SOUNDEXIT = by6803_sndexit4;
 	locals.SOUNDCOMMAND = by6803_sndcmd4;
 	locals.SOUNDDIAG = by6803_snddiag4;
+	locals.DISPSTROBE = by6803_dispStrobe2;
+	locals.SEGWRITE = by6803_segwrite2;
+	locals.DISPDATA = by6803_dispdata2;
 	by6803_init_common();
 }
 
@@ -372,7 +522,7 @@ static void by6803_exit(void) {
 //NA?
 static READ_HANDLER(port1_r) { 
 	int data = 0;
-	logerror("port 1 read: %x\n",data);
+	//logerror("%x: port 1 read: %x\n",cpu_getpreviouspc(),data);
 	return data;
 }
 
@@ -380,7 +530,7 @@ static READ_HANDLER(port1_r) {
 //JW7 (PB3) should not be set, which breaks the gnd connection, so we set the line high.
 static READ_HANDLER(port2_r) { 
 	int data = locals.phase_a | 0x08;
-	mlogerror("%x: port 2 read: %x\n",cpu_getpreviouspc(),data);
+	//mlogerror("%x: port 2 read: %x\n",cpu_getpreviouspc(),data);
 	return data;
 }
 
@@ -474,6 +624,24 @@ struct MachineDriver machine_driver_by6803S1 = {
   0,0,0,0, {BY6803_GEN1_SOUND},
   by6803_nvram
 };
+
+//6803 - Generation 1A Sound (Cheap Squeak)
+struct MachineDriver machine_driver_by6803S1a = {
+  {{  CPU_M6803, 3580000/4, /* 3.58/4 = 900hz */
+      by6803_readmem, by6803_writemem, by6803_readport, by6803_writeport,
+      by6803_vblank, 1, by6803_irq, BY6803_IRQFREQ
+  }
+  BY6803_SOUNDCPU1A},
+  BY6803_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
+  50, by6803_init1a, CORE_EXITFUNC(by6803_exit)
+  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
+  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
+  VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
+  NULL, NULL, gen_refresh,
+  0,0,0,0, {BY6803_GEN1A_SOUND},
+  by6803_nvram
+};
+
 //6803 - Generation 2 Sound (Turbo Cheap Squeak)
 struct MachineDriver machine_driver_by6803S2 = {
   {{  CPU_M6803, 3580000/4, /* 3.58/4 = 900hz */
