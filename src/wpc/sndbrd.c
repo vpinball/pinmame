@@ -52,7 +52,7 @@ WRITE_HANDLER(sndbrd_data_w) {
   }
 }
 READ_HANDLER(sndbrd_data_r) {
-  return (coreGlobals.soundEn && intf[offset].brdIntf && intf[offset].brdIntf->data_r) ? 
+  return (coreGlobals.soundEn && intf[offset].brdIntf && intf[offset].brdIntf->data_r) ?
          intf[offset].brdIntf->data_r(offset) : 0;
 }
 WRITE_HANDLER(sndbrd_ctrl_w) {
@@ -149,6 +149,8 @@ void sndbrd_sync_w(WRITE_HANDLER((*handler)),int offset, int data) {
   SNDBRDINTF(bySD)
   SNDBRDINTF(s67s)
   SNDBRDINTF(s11s)
+  SNDBRDINTF(de2s)
+  SNDBRDINTF(de1s)
 #endif /* SNDBRD_RECURSIVE */
 
 
