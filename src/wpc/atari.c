@@ -24,6 +24,9 @@
 #define ATARI_IRQFREQ       2048 /* IRQ interval in USEC */
 #define ATARI_NMIFREQ        250 /* NMI frequency in HZ */
 
+extern void atari_snd0_w(int a);
+extern void atari_snd1_w(int b);
+
 static void ATARI1_init(void);
 static void ATARI1_exit(void);
 static void ATARI1_nvram(void *file, int write);
@@ -45,7 +48,6 @@ static struct {
   UINT8  lampMatrix[CORE_MAXLAMPCOL];
   core_tSeg segments, pseg;
   void   *irqtimer, *nmitimer;
-//  int	 sound_data;
 } locals;
 
 static int dispPos[] = { 49, 1, 9, 21, 29, 41, 61, 69 };
@@ -107,6 +109,10 @@ static int ATARI_vblank(void) {
 }
 
 static void ATARI1_updSw(int *inports) {
+	if (inports) {
+		coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0xf0) | (inports[ATARI_COMINPORT] & 0x0f);
+		coreGlobals.swMatrix[3] = (coreGlobals.swMatrix[3] & 0xfc) | ((inports[ATARI_COMINPORT] & 0x0300) >> 8);
+	}
 }
 
 static void ATARI2_updSw(int *inports) {
@@ -115,19 +121,15 @@ static void ATARI2_updSw(int *inports) {
 	}
 }
 
-static WRITE_HANDLER(ATARI_sndCmd_w) {
-	if ( Machine->gamedrv->flags & GAME_NO_SOUND )
-		return;
-
-	//ATARIS_sound_latch(data);
-}
-
 static int ATARI_sw2m(int no) {
 	return no + 8;
 }
 
 static int ATARI_m2sw(int col, int row) {
 	return col*8 + row - 8;
+}
+
+static WRITE_HANDLER(ATARI_sndCmd_w) {
 }
 
 static core_tData ATARI1Data = {
@@ -151,18 +153,19 @@ static READ_HANDLER(readCRC) {
 }
 
 /* Switch reading */
+// Gen 1
 static READ_HANDLER(swg1_r) {
 	return (coreGlobals.swMatrix[1+(offset/8)] & (1 << (offset % 8)))?0:0xff;
-}
-
-static READ_HANDLER(dipg1_r) {
-	return (core_getDip(offset/8) & (1 << (offset % 8)))?0:0xff;
 }
 
 static WRITE_HANDLER(swg1_w) {
 	logerror("Test switch write %2x\n", data);
 }
 
+static READ_HANDLER(dipg1_r) {
+	return (core_getDip(offset/8) & (1 << (offset % 8)))?0:0xff;
+}
+// Gen 2
 static READ_HANDLER(sw_r) {
 	return ~coreGlobals.swMatrix[offset+1];
 }
@@ -172,6 +175,7 @@ static READ_HANDLER(dip_r)  {
 }
 
 /* display */
+// Gen 2
 static WRITE_HANDLER(disp0_w) {
 	((int *)locals.pseg)[offset] = core_bcd2seg[data & 0x0f];
 }
@@ -185,6 +189,7 @@ static WRITE_HANDLER(disp1_w) {
 }
 
 /* solenoids */
+// Gen 2
 static WRITE_HANDLER(sol0_w) {
 	data &= 0x0f;
 	if (data) {
@@ -201,6 +206,7 @@ static WRITE_HANDLER(sol1_w) {
 }
 
 /* lamps */
+// Gen 1 (all outputs)
 static WRITE_HANDLER(latch10_w) {
 	locals.lampMatrix[0] = data;
 }
@@ -233,11 +239,13 @@ static WRITE_HANDLER(latch5c_w) {
 	locals.lampMatrix[7] = data;
 }
 
+// Gen 2
 static WRITE_HANDLER(lamp_w) {
 	locals.lampMatrix[offset] = data;
 }
 
 /* sound */
+// Gen 1
 static WRITE_HANDLER(soundg1_w) {
 	logerror("Play sound %2x\n", data);
 }
@@ -245,24 +253,28 @@ static WRITE_HANDLER(soundg1_w) {
 static WRITE_HANDLER(audiog1_w) {
 	logerror("Audio Reset %2x\n", data);
 }
-
+// Gen 2
 static WRITE_HANDLER(sound0_w) {
 	locals.diagnosticLed = data & 0x0f; /* coupled with waveform select */
-	if (data & 0x80) logerror("noise on\n");
-	if (data & 0x40) logerror("wave on\n");
-	if (data & 0x30) logerror("octave=%d\n", data >> 4);
-	if (data & 0x0f) logerror("waveform=%d\n", data & 0x0f);
-//ATARI_sndCmd_w(0,!(data&0x10)?(~data)&0x0f:0x00);
+	atari_snd0_w(data);
 }
 
 static WRITE_HANDLER(sound1_w) {
-	if (data & 0xf0) logerror("freq.div=%d\n", data >> 4);
-	if (data & 0x0f) logerror("amplitude=%d\n", data & 0x0f);
-//ATARI_sndCmd_w(1,!(data&0x10)?(~data)&0x0f:0x00);
+	atari_snd1_w(data);
 }
 
 /* RAM */
+// Gen 1
 static UINT8 NVRAM_512[0x200];
+
+static READ_HANDLER(nvram1_r) {
+	return NVRAM_512[offset];
+}
+
+static WRITE_HANDLER(nvram1_w) {
+	NVRAM_512[offset] = data;
+}
+// Gen 2
 static UINT8 NVRAM_256[0x100];
 
 static READ_HANDLER(nvram_r) {
@@ -271,14 +283,6 @@ static READ_HANDLER(nvram_r) {
 
 static WRITE_HANDLER(nvram_w) {
 	NVRAM_256[offset] = data & 0x0f;
-}
-
-static READ_HANDLER(nvram1_r) {
-	return NVRAM_512[offset];
-}
-
-static WRITE_HANDLER(nvram1_w) {
-	NVRAM_512[offset] = data;
 }
 
 /*-----------------------------------------
@@ -327,9 +331,9 @@ MEMORY_END
 /------------------------------------------*/
 static MEMORY_READ_START(ATARI2_readmem)
 {0x0000,0x00ff,	MRA_RAM},	/* RAM */
-{0x0100,0x01ff,	nvram_r},	/* unmapped RAM */
+{0x0100,0x01ff,	MRA_NOP},	/* unmapped RAM */
 {0x0800,0x08ff,	nvram_r},	/* NVRAM */
-{0x0900,0x09ff,	nvram_r},	/* unmapped RAM */
+{0x0900,0x09ff,	MRA_NOP},	/* unmapped RAM */
 {0x1000,0x1007,	sw_r},		/* inputs */
 {0x2000,0x2003,	dip_r},		/* dip switches */
 {0x2800,0x3fff,	MRA_ROM},	/* ROM */
@@ -339,8 +343,8 @@ MEMORY_END
 
 static MEMORY_WRITE_START(ATARI2_writemem)
 {0x0000,0x00ff,	MWA_RAM},	/* RAM */
-{0x0100,0x0100,	MWA_RAM},	/* unmapped RAM */
-{0x0700,0x07ff,	MWA_RAM},	/* unmapped RAM */
+{0x0100,0x0100,	MWA_NOP},	/* unmapped RAM */
+{0x0700,0x07ff,	MWA_NOP},	/* unmapped RAM */
 {0x0800,0x08ff,	nvram_w},	/* NVRAM */
 {0x1800,0x1800,	sound0_w},	/* sound */
 {0x1820,0x1820,	sound1_w},	/* sound */
@@ -396,7 +400,7 @@ struct MachineDriver machine_driver_ATARI2 = {
   VIDEO_TYPE_RASTER,
   0,
   NULL, NULL, gen_refresh,
-  0,0,0,0,{{0}},
+  0,0,0,0,{ATARI_SOUND},
   ATARI2_nvram
 };
 
