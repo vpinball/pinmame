@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
+#include "osd_cpu.h"
 #ifndef M_PI
 #define M_PI PI
 #endif
