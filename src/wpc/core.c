@@ -910,7 +910,7 @@ static MACHINE_INIT(core) {
     memset(&coreGlobals, 0, sizeof(coreGlobals));
     memset(&locals, 0, sizeof(locals));
     memset(&locals.lastSeg, -1, sizeof(locals.lastSeg));
-    coreData = &Machine->drv->pinmame;
+    coreData = (struct pinMachine *)&Machine->drv->pinmame;
     //-- initialise timers --
     if (coreData->timers[0].callback) {
       int ii;
