@@ -492,6 +492,9 @@ void parse_cmdline (int argc, char **argv, int game_index, char *override_defaul
 	cfgdir		= get_string ("directory", "cfg",     NULL, "CFG");
 	screenshotdir = get_string ("directory", "snap", NULL, "SNAP");
 #ifdef PINMAME_EXT
+        { extern char *wavedir;
+	wavedir 	= get_string ("directory", "wavefile", NULL, "WAVEFILE");
+
 	/* read palette info */
         pmoptions.dmd_red   = get_int("config", "dmd_red",   NULL, 225);
         pmoptions.dmd_green = get_int("config", "dmd_green", NULL, 224);
