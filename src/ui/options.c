@@ -9,7 +9,7 @@
   that you have read the license and understand and accept it fully.
 
  ***************************************************************************/
- 
+
  /***************************************************************************
 
   options.c
@@ -127,6 +127,9 @@ static REG_OPTIONS regSettings[] =
 	{"samplepath",         RO_PSTRING, &settings.sampledirs,       0, 0},
 	{"cfg_directory",      RO_PSTRING, &settings.cfgdir,           0, 0},
 	{"nvram_directory",    RO_PSTRING, &settings.nvramdir,         0, 0},
+#ifdef PINMAME
+	{"wave_directory",     RO_PSTRING, &settings.wavedir,          0, 0},
+#endif /* PINMAME */
 	{"memcard_directory",  RO_PSTRING, &settings.memcarddir,       0, 0},
 	{"input_directory",    RO_PSTRING, &settings.inpdir,           0, 0},
 	{"hiscore_directory",  RO_PSTRING, &settings.hidir,            0, 0},
@@ -182,13 +185,13 @@ static REG_OPTIONS regGameOpts[] =
 	{ "steadykey",              RO_BOOL,    &gOpts.steadykey,         0, 0},
 
 	/* core video */
-	{ "bpp",                    RO_INT,     &gOpts.color_depth,       0, 0}, 
+	{ "bpp",                    RO_INT,     &gOpts.color_depth,       0, 0},
 	{ "norotate",               RO_BOOL,    &gOpts.norotate,          0, 0},
 	{ "ror",                    RO_BOOL,    &gOpts.ror,               0, 0},
 	{ "rol",                    RO_BOOL,    &gOpts.rol,               0, 0},
 	{ "flipx",                  RO_BOOL,    &gOpts.flipx,             0, 0},
 	{ "flipy",                  RO_BOOL,    &gOpts.flipy,             0, 0},
-	{ "debug_resolution",       RO_STRING,  &gOpts.debugres,          0, 0}, 
+	{ "debug_resolution",       RO_STRING,  &gOpts.debugres,          0, 0},
 	{ "gamma",                  RO_DOUBLE,  &gOpts.gamma_correct,     0, 0},
 
 	/* vector */
@@ -211,7 +214,17 @@ static REG_OPTIONS regGameOpts[] =
 /*	{ "playback",               RO_STRING,  &gOpts.playbackname,      0, 0},*/
 /*	{ "record",                 RO_STRING,  &gOpts.recordname,        0, 0},*/
 	{ "log",                    RO_BOOL,    &gOpts.errorlog,          0, 0},
-
+#ifdef PINMAME
+	{ "dmd_red",                RO_INT,     &gOpts.dmd_red,           0, 0},
+	{ "dmd_green",              RO_INT,     &gOpts.dmd_green,         0, 0},
+	{ "dmd_blue",               RO_INT,     &gOpts.dmd_blue,          0, 0},
+	{ "dmd_perc0",              RO_INT,     &gOpts.dmd_perc0,         0, 0},
+	{ "dmd_perc33",             RO_INT,     &gOpts.dmd_perc33,        0, 0},
+	{ "dmd_perc66",             RO_INT,     &gOpts.dmd_perc66,        0, 0},
+	{ "dmd_antialias",          RO_INT,     &gOpts.dmd_antialias,     0, 0},
+	{ "dmd_only",               RO_BOOL,    &gOpts.dmd_only,          0, 0},
+	{ "dmd_compact",            RO_BOOL,    &gOpts.dmd_only,          0, 0},
+#endif /* PINMAME */
 };
 
 #define NUM_SETTINGS (sizeof(regSettings) / sizeof(regSettings[0]))
@@ -229,7 +242,7 @@ static int default_column_order[] = {   0,  2,  3,  4,  5,  6,  7,  8,  9,  1 };
 
 static char *view_modes[VIEW_MAX] = { "Large Icons", "Small Icons", "List", "Details" };
 
-static char oldInfoMsg[400] = 
+static char oldInfoMsg[400] =
 MAME32NAME " has detected outdated configuration data.\n\n\
 The detected configuration data is from Version %s of " MAME32NAME ".\n\
 The current version is %s. It is recommended that the\n\
@@ -239,7 +252,7 @@ Would you like to use the new configuration?";
 #define DEFAULT_GAME "pacman"
 
 /***************************************************************************
-    External functions  
+    External functions
  ***************************************************************************/
 
 void OptionsInit(int total_games)
@@ -285,6 +298,9 @@ void OptionsInit(int total_games)
 	settings.sampledirs        = strdup("samples");
 	settings.cfgdir            = strdup("cfg");
 	settings.nvramdir          = strdup("nvram");
+#ifdef PINMAME
+	settings.wavedir           = strdup("wave");
+#endif /* PINMAME */
 	settings.memcarddir        = strdup("memcard");
 	settings.inpdir            = strdup("inp");
 	settings.hidir             = strdup("hi");
@@ -384,7 +400,17 @@ void OptionsInit(int total_games)
 	global.playbackname      = NULL;
 	global.recordname        = NULL;
 	global.errorlog          = FALSE;
-
+#ifdef PINMAME
+        global.dmd_red           = 225;
+        global.dmd_green         = 224;
+        global.dmd_blue          = 32;
+        global.dmd_perc66        = 67;
+        global.dmd_perc33        = 33;
+        global.dmd_perc0         = 20;
+        global.dmd_only          = FALSE;
+        global.dmd_compact       = FALSE;
+        global.dmd_antialias     = 50;
+#endif /* PINMAME */
 	/* This allocation should be checked */
 	game = (options_type *)malloc(num_games * sizeof(options_type));
 
@@ -416,6 +442,9 @@ void OptionsExit(void)
     free(settings.cabinetdir);
     free(settings.marqueedir);
     free(settings.nvramdir);
+#ifdef PINMAME
+    free(settings.wavedir);
+#endif /* PINMAME */
 	free(settings.cheatdir);
 	free(settings.cheatfile);
 	free(settings.history_filename);
@@ -760,7 +789,24 @@ void SetCfgDir(const char* path)
 	if (path != NULL)
 		settings.cfgdir = strdup(path);
 }
+#ifdef PINMAME
+const char* GetWaveDir(void)
+{
+	return settings.wavedir;
+}
 
+void SetWaveDir(const char* path)
+{
+	if (settings.wavedir != NULL)
+	{
+		free(settings.wavedir);
+		settings.wavedir = NULL;
+	}
+
+	if (path != NULL)
+		settings.wavedir = strdup(path);
+}
+#endif /* PINMAME */
 const char* GetHiDir(void)
 {
 	return settings.hidir;
@@ -1542,7 +1588,7 @@ void SaveDefaultOptions(void)
 	DWORD dwDisposition = 0;
 	LONG  result;
 	char  keyString[300];
-   
+
 
 	/* Get to HKEY_CURRENT_USER\Software\Freeware\Mame32 */
 	result = RegCreateKeyEx(HKEY_CURRENT_USER,KEY_BASE,

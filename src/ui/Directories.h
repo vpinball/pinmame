@@ -20,7 +20,9 @@
 #define DIRDLG_HI           0x0080
 #define DIRDLG_IMG          0x0100
 #define DIRDLG_INP          0x0200
-
+#ifdef PINMAME
+#define DIRDLG_WAVE         0x0400
+#endif /* PINMAME */
 INT_PTR CALLBACK DirectoriesDialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lParam);
 
 #endif
