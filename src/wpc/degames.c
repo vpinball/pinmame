@@ -5,6 +5,8 @@
 #include "de1sound.h"
 #include "de2sound.h"
 
+extern int de_data;	//Used for custom solenoids hooked to CN3 of CPU board.
+
 #define INITGAME(name, gen, disptype, flippers, balls) \
 	static core_tGameData name##GameData = { gen, disptype, {flippers}}; \
 static void init_##name(void) { \
@@ -343,7 +345,32 @@ CORE_GAMEDEFNV(tftc,"Tales From the Crypt",1993,"Data East",de_mDE_DMD2S1,0)
 /*-------------------------------------------------------------
 / Tommy - CPU Rev 3b /DMD  Type 2 512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
-INITGAME(tommy,DE_CPUREV3b, 0, FLIP6364, 3)
+//INITGAME(tommy,DE_CPUREV3b, 0, FLIP6364, 3)
+
+#define sBlinderMotor   CORE_CUSTSOLNO(1) /* 33 */
+
+static int  tommy_getSol(int solNo);
+/*-- return status of custom solenoids --*/
+static int tommy_getSol(int solNo) {
+	if (solNo == sBlinderMotor) return (de_data & 0x80) > 0;
+  return 0;
+}
+
+static core_tGameData tommyGameData = {
+	DE_CPUREV3b, 0, {
+    FLIP6364,
+    0,0,1,				//We need 1 custom solenoids!
+    tommy_getSol,NULL, NULL, NULL,
+    NULL,NULL
+  },
+  NULL,
+  {{0}},
+  {0}
+};
+static void init_tommy(void) {
+  core_gameData = &tommyGameData;
+}
+DE_INPUT_PORTS_START(tommy, 6) DE_INPUT_PORTS_END
 DE64_ROMSTART(tommy,"tomcpua.400",0xd0310a1a)
 DE_DMD512_ROMSTART(	"tommydva.400",0x9e640d09)
 DES_SOUNDROM14444(		"tommysnd.u7"  ,0xab0b4626,
@@ -372,7 +399,6 @@ CORE_GAMEDEFNV(wwfrumb,"WWF Royal Rumble",1994,"Data East",de_mDE_DMD2S1,0)
 /------------------------------------------------------------*/
 //INITGAME(gnr,DE_CPUREV3b, 0, FLIP6364, 3)
 
-extern int de_data;
 #define sLMagnet   CORE_CUSTSOLNO(1) /* 33 */
 #define sTMagnet   CORE_CUSTSOLNO(2) /* 34 */
 #define sRMagnet   CORE_CUSTSOLNO(3) /* 35 */
