@@ -90,6 +90,7 @@ struct M114SChannel
 		UINT8			active;							/* is the channel active */
 		INT16			output[4096];					/* Holds output samples mixed from table 1 & 2 */
 		UINT32			outpos;							/* Index into output samples */
+		int				end_of_table;					/* End of Table Flag */
 		struct M114STable table1;						/* Table 1 Data */
 		struct M114STable table2;						/* Table 2 Data */
 };
@@ -219,8 +220,11 @@ static INT16 read_sample(struct M114SChannel *channel, int sample_rate, int leng
 		sample = channel->output[offset];
 		channel->outpos += incr;
 	}
-	else
+	else {
+		//printf("End of Table\n");
+		channel->end_of_table++;
 		channel->outpos = 0;
+	}
 	return sample;
 }
 
@@ -445,6 +449,8 @@ static void process_freq_codes(struct M114SChip *chip)
 			break;
 		//FFT - Forced Table Termination
 		case 0xff:
+			//Stop whatever output from playing by simulating an end of table event!
+			channel->outpos = 0;
 			LOG(("* * Channel: %02d: Frequency Code: %02x - FFT * * \n",chip->channel,channel->regs.frequency));
 			break;
 		default:
@@ -546,20 +552,23 @@ static void process_channel_data(struct M114SChip *chip)
 		channel->table2.total_length = lent2*rep2;
 
 		//Temp hack to ensure we only generate the ouput data 1x - this is WRONG and needs to be addressed eventually!
-		if(channel->output[0] == 0)
+		//if(channel->output[0] == 0)
 			read_table(chip,channel);
 
 #if 0
+if(chip->channel == 2) {
+		printf("EOT=%d\n",channel->end_of_table);
 		LOG(("V:%02d FQ:%03x TS1:%02x TS2:%02x T1L:%04d T1R:%01d T2L:%04d T2R:%01d OD=%01d I:%02d E:%01d\n",
-		channel->atten,
+		channel->regs.atten,
 		channel->regs.frequency,
 		t1start,t2start,
 		lent1,rep1,
 		lent2,rep2,
-		channel->oct_divisor,
-		channel->interp,
-		channel->env_enable
+		channel->regs.oct_divisor,
+		channel->regs.interp,
+		channel->regs.env_enable
 		));
+}
 #endif
 
 	}
