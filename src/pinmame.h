@@ -5,6 +5,7 @@
 #define PINMAME_EXIT  1   // Use Machine->exitfunc (normally only in MESS)
 #define WPCDCSSPEEDUP 1   // DCS Speedup added to MAME ADSP emulation
 #define DBG_BPR       1   // BPR command added to debugger
+#define PINMAME_SAMPLES 1 // Sample Support
 
 #define TINY_COMPILE
 #define NEOFREE
