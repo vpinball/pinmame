@@ -36,8 +36,6 @@ static struct {
   core_tSeg segments, pseg;
 } locals;
 
-static int dispPos[] = { 49, 1, 9, 21, 29, 41, 61, 69 };
-
 static int toggle = 0;
 static INTERRUPT_GEN(ATARI1_nmihi) {
 	static int dmaCount = 0;
@@ -77,7 +75,6 @@ static INTERRUPT_GEN(ATARI1_vblank) {
   if ((locals.vblankCount % ATARI_SOLSMOOTH) == 0) {
     locals.solenoids = coreGlobals.pulsedSolState;
   }
-
 
   /*-- display --*/
   if ((locals.vblankCount % ATARI_DISPLAYSMOOTH) == 0) {
@@ -161,14 +158,17 @@ static WRITE_HANDLER(swg1_w) {
 
 static READ_HANDLER(dipg1_r) {
 	UINT8 sw = (core_getDip(offset/8) & (1 << (offset % 8))) ? 0xff : 0;
-	/* test switch and dip #12 are the same line */
+	/* test switch and dip switch 1/1 are the same line */
 	if (offset == 11) {
 		sw ^= locals.testSwBits;
 		sw = sw ^ (coreGlobals.swMatrix[0] ? 0xff : 0x00);
 	}
 	if (offset)
 		return sw;
-	return (toggle ? sw : ~sw);
+	/* every fourth NMI pulse, a DMA interrupt is triggered.
+	   Only if the 7th bit of dip switch 2/4 has changed when
+	   that dip is read, the game code will proceed! */
+	return toggle ? (sw | 0x40) : (sw & 0xbf);
 }
 // Gen 2
 static READ_HANDLER(sw_r) {
@@ -216,6 +216,18 @@ static WRITE_HANDLER(ram_w) {
 		}
 	}
 }
+static WRITE_HANDLER(ram_w1) {
+	ram[offset+0x81] = data;
+}
+static WRITE_HANDLER(ram_w2) {
+	ram[offset+0x85] = data;
+}
+static WRITE_HANDLER(ram_w3) {
+	ram[offset+0x89] = data;
+}
+static WRITE_HANDLER(ram_w4) {
+	ram[offset+0x8d] = data;
+}
 
 static READ_HANDLER(ram_r) {
 	return ram[offset];
@@ -226,6 +238,7 @@ static WRITE_HANDLER(disp0_w) {
 }
 
 static WRITE_HANDLER(disp1_w) {
+	static int dispPos[] = { 49, 1, 9, 21, 29, 41, 61, 69 };
 	int ii;
 	data &= 0x07;
 	for (ii = 0; ii < 7; ii++) {
@@ -367,10 +380,15 @@ MEMORY_END
 
 static MEMORY_WRITE_START(ATARI1_writemem)
 {0x0000,0x01ff, ram_w, &ram},	/* RAM */
+{0x1000,0x107f, ram_w},			/* RAM mirror, on Middle Earth only */
 {0x1080,0x1080,	latch1080_w},	/* solenoids */
+{0x1081,0x1083, ram_w1},		/* RAM mirror, on Middle Earth only */
 {0x1084,0x1084,	latch1084_w},	/* solenoids */
+{0x1085,0x1087, ram_w2},		/* RAM mirror, on Middle Earth only */
 {0x1088,0x1088,	latch1088_w},	/* solenoids */
+{0x1089,0x108b, ram_w3},		/* RAM mirror, on Middle Earth only */
 {0x108c,0x108c,	latch108c_w},	/* solenoids */
+{0x108d,0x11ff, ram_w4},		/* RAM mirror, on Middle Earth only */
 {0x200b,0x200b,	swg1_w},		/* test switch write? */
 {0x3000,0x3000,	soundg1_w},		/* audio enable */
 {0x4000,0x4000,	watchdog_w},	/* watchdog reset? */
@@ -423,13 +441,9 @@ static MACHINE_INIT(ATARI1) {
   init_common();
 }
 
-/* Middle Earth uses an unusual way of polling the test switch.
-   Also some impossible memory access. Bad programming, I think... */
+/* Middle Earth uses an unusual way of polling the test switch. */
 static MACHINE_INIT(ATARI1A) {
   init_common();
-  /* as the original(?) roms don't blank out the correct ram area,
-     we'll do it for them; otherwise, the machine may hang upon reset. */
-  memset(ram, 0, 512);
   locals.testSwBits = 0x0f;
 }
 
