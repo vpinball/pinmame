@@ -18,8 +18,7 @@ CFG=Visual PinMame - Win32 Debug
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
 !MESSAGE "Visual PinMame - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "Visual PinMame - Win32 Release MinSize" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "Visual PinMame - Win32 Release MinDependency" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "Visual PinMame - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 
 # Begin Project
@@ -39,13 +38,13 @@ RSC=rc.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "obj/Debug"
-# PROP Intermediate_Dir "obj/Debug"
+# PROP Output_Dir "obj/VPinMAME/Debug"
+# PROP Intermediate_Dir "obj/VPinMAME/Debug"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /G5 /MTd /W3 /Gm /ZI /Od /I ".\src" /I ".\src\wpc" /I ".\src\win32c" /I ".\src\zlib" /I ".\src\win32com" /I ".\src\win32com\autogen" /D "_DEBUG" /D "WPC_DCSSOUND" /D "WPC_WPCSOUND" /D BETA_VERSION=8 /D "WPCEXTENSION" /D mame_bitmap=osd_bitmap /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE="static __inline" /D inline=__inline /D __inline__=__inline /D VERSION=37 /D "MAME_MMX" /D MAMEVER=3716 /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D PI=3.1415926535 /D "PNG_SAVE_SUPPORT" /D "ZLIB_DLL" /D "HAS_M6800" /D "HAS_M6803" /D "HAS_M6808" /D "HAS_M6809" /D "WPCDCSSPEEDUP" /D "NOMIDAS" /D "TINY_COMPILE" /D "NEOFREE" /D "WPCMAME" /D "VPINMAME" /D "PINMAME" /D "PINMAME_EXT" /D BMTYPE=UINT8 /D "PINMAME_EXIT" /FR /YX /FD /GZ /c
-# ADD MTL /out ".\src\win32com\AutoGen"
+# ADD CPP /nologo /G5 /MTd /W3 /Gm /ZI /Od /I ".\src" /I ".\src\wpc" /I ".\src\win32c" /I ".\src\zlib" /I ".\src\win32com" /I ".\src\win32com\autogen" /D "_DEBUG" /D "WPC_DCSSOUND" /D "WPC_WPCSOUND" /D BETA_VERSION=8 /D "WPCEXTENSION" /D mame_bitmap=osd_bitmap /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE="static __inline" /D inline=__inline /D __inline__=__inline /D VERSION=37 /D "MAME_MMX" /D MAMEVER=3716 /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D PI=3.1415926535 /D "PNG_SAVE_SUPPORT" /D "ZLIB_DLL" /D "WPCDCSSPEEDUP" /D "NOMIDAS" /D "TINY_COMPILE" /D "NEOFREE" /D "WPCMAME" /D "VPINMAME" /D "PINMAME" /D "PINMAME_EXT" /D BMTYPE=UINT8 /D "PINMAME_EXIT" /FR /YX /FD /GZ /c
+# ADD MTL /out ".\src\win32com\autogen"
 # ADD BASE RSC /l 0x407 /d "_DEBUG"
 # ADD RSC /l 0x409 /i ".\src\win32com\autogen" /d "_DEBUG"
 BSC32=bscmake.exe
@@ -53,71 +52,35 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib shell32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zlib.lib winmm.lib version.lib /nologo /version:4.0 /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept /libpath:".\zlib"
+# ADD LINK32 kernel32.lib user32.lib shell32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zlibstatmtd.lib winmm.lib version.lib /nologo /version:4.0 /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept /libpath:".\zlib"
 # Begin Custom Build - Performing registration
-OutDir=.\obj/Debug
-TargetPath=.\obj\Debug\VPinMAME.dll
-InputPath=.\obj\Debug\VPinMAME.dll
+IntDir=.\obj/VPinMAME/Debug
+TargetPath=.\obj\VPinMAME\Debug\VPinMAME.dll
+InputPath=.\obj\VPinMAME\Debug\VPinMAME.dll
 SOURCE="$(InputPath)"
 
-"$(OutDir)\regsvr32.trg" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+"$(IntDir)\regsvr32.trg" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	regsvr32 /s /c "$(TargetPath)" 
-	echo regsvr32 exec. time > "$(OutDir)\regsvr32.trg" 
+	echo regsvr32 exec. time > "$(IntDir)\regsvr32.trg" 
 	
 # End Custom Build
 
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release MinSize"
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "ReleaseMinSize"
-# PROP BASE Intermediate_Dir "ReleaseMinSize"
+# PROP BASE Output_Dir "Release"
+# PROP BASE Intermediate_Dir "Release"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "obj/ReleaseMinSize"
-# PROP Intermediate_Dir "obj/ReleaseMinSize"
-# PROP Ignore_Export_Lib 0
-# PROP Target_Dir ""
-# ADD BASE CPP /nologo /MT /W3 /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_ATL_DLL" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /G5 /MT /W3 /O2 /I ".\src" /I ".\src\wpc" /I ".\src\win32c" /I ".\src\zlib" /I ".\src\win32com" /I ".\src\win32com\autogen" /D "NDEBUG" /D "WPC_DCSSOUND" /D "WPC_WPCSOUND" /D BETA_VERSION=9 /D MAME_BITMAP=OSD_BITMAP /D mame_bitmap=osd_bitmap /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE="static __inline" /D inline=__inline /D __inline__=__inline /D VERSION=37 /D "MAME_MMX" /D MAMEVER=3716 /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D PI=3.1415926535 /D "PNG_SAVE_SUPPORT" /D "ZLIB_DLL" /D "HAS_M6800" /D "HAS_M6803" /D "HAS_M6808" /D "HAS_M6809" /D "WPCDCSSPEEDUP" /D "NOMIDAS" /D "TINY_COMPILE" /D "NEOFREE" /D "WPCMAME" /D "VPINMAME" /D "PINMAME" /D "PINMAME_EXT" /D BMTYPE=UINT8 /D "PINMAME_EXIT" /FR /YX /FD /c
-# ADD MTL /out ".\src\win32com\AutoGen"
-# ADD BASE RSC /l 0x407 /d "NDEBUG"
-# ADD RSC /l 0x409 /i ".\src\win32com\autogen" /d "NDEBUG"
-BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
-# ADD BSC32 /nologo
-LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 kernel32.lib user32.lib shell32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zlib.lib winmm.lib version.lib /nologo /version:4.0 /subsystem:windows /dll /machine:I386 /libpath:".\zlib"
-# Begin Custom Build - Performing registration
-OutDir=.\obj/ReleaseMinSize
-TargetPath=.\obj\ReleaseMinSize\VPinMAME.dll
-InputPath=.\obj\ReleaseMinSize\VPinMAME.dll
-SOURCE="$(InputPath)"
-
-"$(OutDir)\regsvr32.trg" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	regsvr32 /s /c "$(TargetPath)" 
-	echo regsvr32 exec. time > "$(OutDir)\regsvr32.trg" 
-	
-# End Custom Build
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release MinDependency"
-
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "ReleaseMinDependency"
-# PROP BASE Intermediate_Dir "ReleaseMinDependency"
-# PROP BASE Target_Dir ""
-# PROP Use_MFC 0
-# PROP Use_Debug_Libraries 0
-# PROP Output_Dir "obj/ReleaseMinDependency"
-# PROP Intermediate_Dir "obj/ReleaseMinDependency"
+# PROP Output_Dir "obj/VPinMAME/Release"
+# PROP Intermediate_Dir "obj/VPinMAME/Release"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_ATL_STATIC_REGISTRY" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /G5 /MT /W3 /O2 /I ".\src" /I ".\src\wpc" /I ".\src\win32c" /I ".\src\zlib" /I ".\src\win32com" /I ".\src\win32com\autogen" /D "NDEBUG" /D "_ATL_STATIC_REGISTRY" /D WPC_DCSSOUND=1 /D WPC_WPCSOUND=1 /D "WPCMMAME" /D BETA_VERSION=9 /D "WPCEXTENSION" /D mame_bitmap=osd_bitmap /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE="static __inline" /D inline=__inline /D __inline__=__inline /D VERSION=37 /D "MAME_MMX" /D MAMEVER=3716 /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D PI=3.1415926535 /D "PNG_SAVE_SUPPORT" /D "ZLIB_DLL" /D "HAS_M6800" /D "HAS_M6803" /D "HAS_M6808" /D "HAS_M6809" /D "WPCDCSSPEEDUP" /D "NOMIDAS" /D "TINY_COMPILE" /D "NEOFREE" /D "WPCMAME" /D "VPINMAME" /D "PINMAME" /D "PINMAME_EXT" /D BMTYPE=UINT8 /D "PINMAME_EXIT" /YX /FD /c
-# ADD MTL /out ".\src\win32com\AutoGen"
+# ADD CPP /nologo /G5 /MT /W3 /O2 /I ".\src" /I ".\src\wpc" /I ".\src\win32c" /I ".\src\zlib" /I ".\src\win32com" /I ".\src\win32com\autogen" /D "NDEBUG" /D "_ATL_STATIC_REGISTRY" /D WPC_DCSSOUND=1 /D WPC_WPCSOUND=1 /D "WPCMMAME" /D BETA_VERSION=9 /D "WPCEXTENSION" /D mame_bitmap=osd_bitmap /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE="static __inline" /D inline=__inline /D __inline__=__inline /D VERSION=37 /D "MAME_MMX" /D MAMEVER=3716 /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D PI=3.1415926535 /D "PNG_SAVE_SUPPORT" /D "ZLIB_DLL" /D "WPCDCSSPEEDUP" /D "NOMIDAS" /D "TINY_COMPILE" /D "NEOFREE" /D "WPCMAME" /D "VPINMAME" /D "PINMAME" /D "PINMAME_EXT" /D BMTYPE=UINT8 /D "PINMAME_EXIT" /YX /FD /c
+# ADD MTL /out ".\src\win32com\autogen"
 # ADD BASE RSC /l 0x407 /d "NDEBUG"
 # ADD RSC /l 0x409 /i ".\src\win32com\autogen" /d "NDEBUG"
 BSC32=bscmake.exe
@@ -125,20 +88,19 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 kernel32.lib user32.lib shell32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zlib.lib winmm.lib version.lib /nologo /version:4.0 /subsystem:windows /dll /machine:I386 /libpath:".\zlib"
+# ADD LINK32 kernel32.lib user32.lib shell32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib zlibstatmt.lib winmm.lib version.lib /nologo /version:4.0 /subsystem:windows /dll /machine:I386 /libpath:".\zlib"
 # Begin Custom Build - Copying and performing registration
-IntDir=.\obj/ReleaseMinDependency
+IntDir=.\obj/VPinMAME/Release
 ProjDir=.
-TargetPath=.\obj\ReleaseMinDependency\VPinMAME.dll
+TargetPath=.\obj\VPinMAME\Release\VPinMAME.dll
 TargetName=VPinMAME
-InputPath=.\obj\ReleaseMinDependency\VPinMAME.dll
+InputPath=.\obj\VPinMAME\Release\VPinMAME.dll
 SOURCE="$(InputPath)"
 
 BuildCmds= \
 	copy "$(TargetPath)" "$(ProjDir)\$(TargetName).dll" \
 	regsvr32 /s /c "$(ProjDir)\$(TargetName).dll" \
 	echo regsvr32 exec.time > "$(IntDir)\regsvr32.trg" \
-	echo "$(ProjDir)\$(TargetName).dll" \
 	
 
 "$(ProjDir)\$(TargetName).dll" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -153,8 +115,7 @@ BuildCmds= \
 # Begin Target
 
 # Name "Visual PinMame - Win32 Debug"
-# Name "Visual PinMame - Win32 Release MinSize"
-# Name "Visual PinMame - Win32 Release MinDependency"
+# Name "Visual PinMame - Win32 Release"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
@@ -393,9 +354,7 @@ SOURCE=.\src\machine\6532riot.c
 
 # ADD CPP /W3
 
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release MinSize"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release MinDependency"
+!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release"
 
 !ENDIF 
 
@@ -1052,27 +1011,10 @@ SOURCE=.\src\win32com\VPinMAME.idl
 # Begin Source File
 
 SOURCE=.\src\win32com\VPinMAME.rc
-
-!IF  "$(CFG)" == "Visual PinMame - Win32 Debug"
-
 # ADD BASE RSC /l 0x407 /i "src\win32com"
 # SUBTRACT BASE RSC /i ".\src\win32com\autogen"
-# ADD RSC /l 0x409 /i ".\src\win32com" /i "src\win32com"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release MinSize"
-
-# ADD BASE RSC /l 0x407 /i "src\win32com"
-# SUBTRACT BASE RSC /i ".\src\win32com\autogen"
-# ADD RSC /l 0x407 /i ".\src\win32com" /i "src\win32com"
-
-!ELSEIF  "$(CFG)" == "Visual PinMame - Win32 Release MinDependency"
-
-# ADD BASE RSC /l 0x407 /i "src\win32com"
-# SUBTRACT BASE RSC /i ".\src\win32com\autogen"
-# ADD RSC /l 0x407 /i ".\src\win32com" /i "src\win32com"
-
-!ENDIF 
-
+# ADD RSC /l 0x409 /i "src\win32com" /i "src\win32com\autogen"
+# SUBTRACT RSC /i ".\src\win32com\autogen"
 # End Source File
 # Begin Source File
 
