@@ -116,7 +116,6 @@ static struct {
   int snddata_lo;			//Lo Nibble Sound Command
   int snddata_hi;			//Hi Nibble Sound Command
   int lasttin;				//Track Last TIN IRQ Edge
-  int vidswitches;			//Track Video switches, there's only 1 column
   void *zctimer;
 } locals;
 
@@ -151,7 +150,6 @@ static WRITE_HANDLER(pia0a_w) {
 
   //Write Data To Vidiot Latch Pre-Buffers - Only When Latch Input is Low
   if(locals.enable_input == 0) {
-	//logerror("original buffer data = %x : modded %x\n",*(memory_region(BYVP_MEMREG_CPU) + 0x51),data);
 	/*For some reason, code inverts lower nibble*/
 	data = (data&0xf0) | (~data & 0x0f);
 	locals.vidiot_u2_latch = data;
@@ -172,15 +170,13 @@ int tmp_input = locals.enable_input;
 locals.enable_output = (data>>1)&1;
 locals.enable_input  = (data>>2)&1;
 locals.status_enable = (data>>3)&1;
-//logerror("%x: Setting: e_out = %x, e_in = %x, s_enable = %x\n",cpu_getpreviouspc(),
-//		 locals.enable_output,locals.enable_input,locals.status_enable);
 
 //Latch data from pre-buffer to U2 on positive edge (We don't need to code this)
 if(locals.enable_input & ~tmp_input) {
 	logerror("%x: Latching data to Vidiot U2: data = %x\n",cpu_getpreviouspc(),locals.vidiot_u2_latch);
 }
 
-//Update Vidiot PIA
+//Update Vidiot PIA - This will trigger an IRQ also, depending on how the ca lines are configured
 pia_set_input_ca1(2, locals.enable_output);
 pia_set_input_ca2(2, locals.enable_input);
 }
@@ -204,7 +200,7 @@ static READ_HANDLER(pia0b_r) {
   }
 
   if (locals.p0_a & 0x20) return core_getDip(0); // DIP#1-8
-  if (locals.p0_a & 0x40) return core_getDip(1); // DIP#2-16
+  if (locals.p0_a & 0x40) return core_getDip(1); // DIP#9-16
   if (locals.p0_a & 0x80) return core_getDip(2); // DIP#17-24
   if (locals.p0_cb2)      return core_getDip(3); // DIP#25-32
   return core_getSwCol((locals.p0_a & 0x1f) | ((locals.p1_b & 0x80)>>2));
@@ -288,14 +284,12 @@ static void byVP_updSw(int *inports) {
     coreGlobals.swMatrix[2] |= (inports[BYVP_COMINPORT]>>10) & 0x03;
 	//Ball Tilt/Slam Tilt
 	coreGlobals.swMatrix[2] |= (inports[BYVP_COMINPORT]>>6) & 0xc0;
-
-	//Keep track of joystick switches
-	locals.vidswitches = (inports[BYVP_COMINPORT]) & 0xf0;
  }
   /*-- Diagnostic buttons on CPU board --*/
   if (core_getSw(BYVP_SWCPUDIAG))  cpu_set_nmi_line(0, PULSE_LINE);
   if (core_getSw(BYVP_SWSOUNDDIAG)) cpu_set_nmi_line(BYVP_SCPUNO, PULSE_LINE);
   if (core_getSw(BYVP_SWVIDEODIAG)) cpu_set_nmi_line(BYVP_VCPUNO, PULSE_LINE);
+
   /*-- coin door switches --*/
   pia_set_input_ca1(0, !core_getSw(BYVP_SWSELFTEST));
 }
@@ -303,9 +297,9 @@ static void byVP_updSw(int *inports) {
 /* PIA2:B Read */
 // Video Switch Returns (Bits 5-7 not connected)
 static READ_HANDLER(pia2b_r) { 
-	//logerror("VID: Reading Switch Returns from %x\n",locals.p2_a);
+	logerror("VID: Reading Switch Returns from %x\n",locals.p2_a);
 	if(locals.p2_a & 0x80)
-		return locals.vidswitches; 
+		return coreGlobals.swMatrix[0]&0xf0;
 	else
 		return 0;
 }
