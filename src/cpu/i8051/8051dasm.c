@@ -836,7 +836,7 @@ unsigned Dasm8051(char *dst, unsigned pc)
 		//ORL C, /bit addr
 		case 0xa0:				  /* 1: 1010 0000 */
 			sym = get_bit_address(cpu_readop_arg(PC++));
-			sprintf(dst, "orl   c,//%s", sym);		
+			sprintf(dst, "orl   c,/%s", sym);		
 			break;
 
 		
@@ -888,7 +888,7 @@ unsigned Dasm8051(char *dst, unsigned pc)
 		//ANL C,/bit addr
 		case 0xb0:						 /* 1: 1011 0000 */
 			sym = get_bit_address(cpu_readop_arg(PC++));
-			sprintf(dst, "anl   c,//%s", sym);		
+			sprintf(dst, "anl   c,/%s", sym);		
 			break;
 
 		//CPL bit addr
