@@ -512,7 +512,7 @@ const struct cpu_interface cpuintrf[] =
 	CPU0(M68000,   m68000,	 8, -1,1.00,16,24bew,  0,24,BE,2,10	),
 #endif
 #if defined(PINMAME) && (HAS_M68306)
-        CPU0(M68306,   m68306,   8, -1,1.00,16,32bedw, 0,32,BE,2,10     ),
+        CPU0(M68306,   m68306,   8, -1,1.00,16,32bew,  0,32,BE,2,10     ),
 #endif
 #if (HAS_M68010)
 	CPU0(M68010,   m68010,	 8, -1,1.00,16,24bew,  0,24,BE,2,10	),
