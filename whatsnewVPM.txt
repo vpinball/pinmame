@@ -116,4 +116,4 @@ Version 0.99 Beta 1 (March 31, 2001)
 
 Version 0.99 Beta (March 30, 2001)
 ----------------------------------
--Welcome to the first official release of Visual PinMAME!
+- Welcome to the first official release of Visual PinMAME!
