@@ -188,27 +188,25 @@ int vp_getNewSoundCommands(vp_tChgSound chgSound) {
 static int vp_getAllLED(UINT16 *ledArray) {
   const struct core_dispLayout *layout = core_gameData->lcdLayout;
   int idx = 0;
+  int seg;
   if (layout == NULL) return 0;
   for (; layout->length; layout += 1) {
     if (layout->type >= CORE_DMD) continue;
     {
       int zeros = layout->type/32; // dummy zeros
       int ii    = layout->length + zeros;
-      int *seg     = ((int *)coreGlobals.segments) + layout->start;
       int step  = (layout->type & CORE_SEGREV) ? -1 : 1;
-
-      if (step < 0) seg += ii-1;
+      seg = 0;
       while (ii--) {
-        int tmpSeg = (ii < zeros) ? ((core_bcd2seg7[0]<<8) | (core_bcd2seg7[0])) : *seg;
+        int tmpSeg = (ii < zeros) ? core_bcd2seg7[0] : coreGlobals.segments[layout->start + (seg++) * step].w;
         int tmpType = layout->type & CORE_SEGMASK;
 
         tmpSeg >>= (layout->type & CORE_SEGHIBIT) ? 8 : 0;
         if ((tmpType == CORE_SEG87F) && (ii > 0) && (ii % 3 == 0) && tmpSeg)
           tmpSeg |= 0x80; // add comma
         else if (tmpType == CORE_SEG9)
-          tmpSeg |= (tmpSeg & 0x80)<<1; // duplicate 9th segment
+          tmpSeg |= (tmpSeg & 0x100)<<1; // duplicate 9th segment
         ledArray[idx++] = tmpSeg;
-        seg += step;
       }
     }
   }
