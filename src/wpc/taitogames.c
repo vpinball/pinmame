@@ -3,9 +3,13 @@
 #include "sim.h"
 #include "taito.h"
 
+#define DISP_SEG_6(row,col,type) {4*row,16*col,row*12+col*6,6,type}
+
 static const core_tLCDLayout dispTaito[] = {
-  { 0, 0, 0, 16, CORE_SEG7 }, { 2, 0,16, 16, CORE_SEG7 },
-  { 4, 0,32, 16, CORE_SEG7 }, {0}
+  DISP_SEG_6(0,0, CORE_SEG7), DISP_SEG_6(0,1, CORE_SEG7),
+  DISP_SEG_6(1,0, CORE_SEG7), DISP_SEG_6(1,1, CORE_SEG7),
+  DISP_SEG_BALLS(26,27,CORE_SEG7), DISP_SEG_CREDIT(24,25,CORE_SEG7),
+  {0}
 };
 
 TAITO_INPUT_PORTS_START(taito,1)        TAITO_INPUT_PORTS_END
