@@ -678,8 +678,17 @@ static void draw_video_contents(HDC dc, struct mame_bitmap *bitmap, int update)
 //	video_window_proc
 //============================================================
 
+#ifdef VPINMAME
+extern LRESULT CALLBACK osd_hook(HWND wnd, UINT message, WPARAM wparam, LPARAM lparam, BOOL *pfhandled);
+#endif 
+
 static LRESULT CALLBACK video_window_proc(HWND wnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
+#ifdef VPINMAME
+	LRESULT lresult = 0;
+	BOOL    fhandled = FALSE;
+#endif
+
 	// handle a few messages
 	switch (message)
 	{
@@ -743,12 +752,22 @@ static LRESULT CALLBACK video_window_proc(HWND wnd, UINT message, WPARAM wparam,
 
 		// everything else: defaults
 		default:
+#ifdef VPINMAME
+			lresult = osd_hook(wnd, message, wparam, lparam, &fhandled);
+			return fhandled?lresult:DefWindowProc(wnd, message, wparam, lparam);
+#else
+
 			return DefWindowProc(wnd, message, wparam, lparam);
+#endif
 	}
 
+#ifdef VPINMAME
+	lresult = osd_hook(wnd, message, wparam, lparam, &fhandled);
+	return fhandled?lresult:0;
+#else
 	return 0;
+#endif
 }
-
 
 
 //============================================================

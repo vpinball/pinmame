@@ -50,7 +50,7 @@
 #define IDGETCOLOR                      207
 #define IDD_DISCLAIMERDLG               208
 #define IDD_GAMEINFODLG                 209
-#define IDD_PATHESDLG                   210
+#define IDD_PATHSDLG					210
 #define IDR_CTXMENU                     211
 #define IDD_DIALOG1                     212
 #define IDC_YESIAM                      228

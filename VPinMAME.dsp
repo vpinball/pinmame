@@ -2030,6 +2030,14 @@ SOURCE=.\src\win32com\Res\VPinMAMELogo.bmp
 
 SOURCE=.\src\win32com\Res\VPinMAMESplash.bmp
 # End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\Res\VPinMAMESplash4.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\WSHDlg.rgs
+# End Source File
 # End Group
 # Begin Group "Included Files"
 

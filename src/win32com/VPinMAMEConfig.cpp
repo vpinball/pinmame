@@ -1,8 +1,10 @@
+#include "stdafx.h"
 #include <stdarg.h>
 #include <ctype.h>
 #include <time.h>
 #include "windows.h"
 #include "VPinMAMEConfig.h"
+#include "ControllerRegKeys.h"
 
 extern "C" {
 #include "driver.h"
@@ -425,6 +427,96 @@ int set_option(const char *name, const char *arg, int priority)
 	return rc_set_option(rc, name, arg, priority);
 }
 
+void *get_option(const char *name)
+{
+	void *Value = *(char**) rc_get_option(rc, name)->dest;
+
+	return Value;
+}
+
+void Load_fileio_opts()
+{
+	BOOL fNew = FALSE;
+
+	rc_option *opts = fileio_opts;
+
+	// initialize all
+	char szInstallDir[MAX_PATH];
+	GetInstallDir(szInstallDir, sizeof szInstallDir);
+	lstrcat(szInstallDir, "\\");
+
+	char szKey[MAX_PATH];
+	lstrcpy(szKey, REG_BASEKEY);
+	lstrcat(szKey, "\\");
+	lstrcat(szKey, REG_GLOBALS);
+
+	HKEY hKey = 0;
+	if ( RegOpenKeyEx(HKEY_CURRENT_USER, szKey, 0, KEY_QUERY_VALUE, &hKey)!=ERROR_SUCCESS )
+		hKey = 0;
+
+	char szPath[4096];
+	DWORD dwType;
+	DWORD dwSize;
+	while ( opts->name ) {
+		if ( opts->type==rc_string ) {
+			dwType = REG_SZ;
+ 			dwSize = sizeof szPath; 
+
+			if ( !hKey || (RegQueryValueEx(hKey, opts->name, 0, &dwType, (LPBYTE) &szPath, &dwSize)!=ERROR_SUCCESS) ) {
+				lstrcpy(szPath, szInstallDir);
+				lstrcat(szPath, opts->deflt);
+				fNew = TRUE;
+			}
+			rc_set_option(rc, opts->name, szPath, 0);
+		}
+		opts++;
+	}
+
+	if ( hKey )
+		RegCloseKey(hKey);
+
+	if ( fNew )
+		Save_fileio_opts();
+}
+
+void Save_fileio_opts()
+{
+	char szKey[MAX_PATH];
+	lstrcpy(szKey, REG_BASEKEY);
+	lstrcat(szKey, "\\");
+	lstrcat(szKey, REG_GLOBALS);
+
+	HKEY hKey;
+	DWORD dwDisposition;
+   	if ( RegCreateKeyEx(HKEY_CURRENT_USER, szKey, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_SET_VALUE, NULL, &hKey, &dwDisposition)!=ERROR_SUCCESS )
+		return;
+
+	rc_option *opts = fileio_opts;
+	while ( opts->name ) {
+		if ( opts->type==rc_string ) {
+			char *szPath = *(char**) opts->dest;
+			RegSetValueEx(hKey, opts->name, 0, REG_SZ, (LPBYTE) szPath, lstrlen(szPath)+1);
+		}
+		opts++;
+	}
+	RegCloseKey(hKey);
+}
+
+void Delete_fileio_opts()
+{
+	char szKey[MAX_PATH];
+	lstrcpy(szKey, REG_BASEKEY);
+
+	HKEY hKey;
+   	if ( RegOpenKeyEx(HKEY_CURRENT_USER, szKey, 0, KEY_WRITE, &hKey)!=ERROR_SUCCESS )
+		return;
+
+	RegDeleteKey(hKey, REG_GLOBALS);
+
+	RegCloseKey(hKey);
+}
+
+
 /* Registry function */
 
 /*Writes a DWORD to the Registry! Opens the Registry Key Specified & Closes When Done*/
@@ -467,4 +559,24 @@ DWORD ReadRegistry(char* pszKey, char* pszName, DWORD dwDefault) {
 
 	RegCloseKey(hKey);
 	return dwValue;
+}
+
+char* GetInstallDir(char *pszInstallDir, int iSize)
+{
+	if ( !pszInstallDir )
+		return NULL;
+
+	GetModuleFileName(_Module.m_hInst, pszInstallDir, iSize);
+
+	char *lpHelp = pszInstallDir;
+	char *lpSlash = NULL;
+	while ( *lpHelp ) {
+		if ( *lpHelp=='\\' )
+			lpSlash = lpHelp;
+		lpHelp++;
+	}
+	if ( lpSlash )
+		*lpSlash = '\0';
+
+	return pszInstallDir;
 }

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "VPinMAME.h"
 #include "VPinMAMEAboutDlg.h"
+#include "VPinMAMEConfig.h"
 
 #include "Controller.h"
 #include "ControllerOptionsDlg.h"
@@ -301,9 +302,9 @@ void ShowOptionsDlg(HWND hParentWnd, Controller* pController) {
 	OptionsDlg.DoModal(hParentWnd, (LPARAM) pController);
 }
 
-class CPathesDlg : public CDialogImpl<CPathesDlg> {
+class CPathsDlg : public CDialogImpl<CPathsDlg> {
 public:
-	BEGIN_MSG_MAP(CPathesDlg)
+	BEGIN_MSG_MAP(CPathsDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		COMMAND_CODE_RANGE_HANDLER(IDC_ROMDIRS, IDC_IMGDIR, EN_CHANGE, OnEditCtrlChanged)
 		COMMAND_ID_HANDLER(IDOK, OnOK)
@@ -313,11 +314,10 @@ public:
 		COMMAND_RANGE_HANDLER(IDDIRBUTTONROM, IDDIRBUTTONIMG, OnBrowseForDir)
 	END_MSG_MAP()
 
-	enum { IDD = IDD_PATHESDLG };
+	enum { IDD = IDD_PATHSDLG };
 
 private:
 	Controller*			m_pController;
-	PCONTROLLERPATHS	m_pControllerPaths;
 	bool				m_fChanged;
 
 	// helper functions
@@ -327,19 +327,30 @@ private:
 		/******************************************/
 
 		// Path Values
-		SetDlgItemText(IDC_ROMDIRS,    m_pControllerPaths->szRomDirs);
-		SetDlgItemText(IDC_CFGDIR,	   m_pControllerPaths->szCfgDir);
-		SetDlgItemText(IDC_NVRAMDIR,   m_pControllerPaths->szNVRamDir);
-		SetDlgItemText(IDC_SAMPLEDIRS, m_pControllerPaths->szSampleDirs);
-		SetDlgItemText(IDC_IMGDIR,     m_pControllerPaths->szImgDir);
+		SetDlgItemText(IDC_ROMDIRS,    (char*) get_option("rompath"));
+		SetDlgItemText(IDC_CFGDIR,	   (char*) get_option("cfg_directory"));
+		SetDlgItemText(IDC_NVRAMDIR,   (char*) get_option("nvram_directory"));
+		SetDlgItemText(IDC_SAMPLEDIRS, (char*) get_option("samplepath"));
+		SetDlgItemText(IDC_IMGDIR,     (char*) get_option("snapshot_directory"));
 	}
 
 	void GetControlValues() {
-		GetDlgItemText(IDC_ROMDIRS,    m_pControllerPaths->szRomDirs,    sizeof(m_pControllerPaths->szRomDirs));
-		GetDlgItemText(IDC_CFGDIR,     m_pControllerPaths->szCfgDir,     sizeof(m_pControllerPaths->szCfgDir));
-		GetDlgItemText(IDC_NVRAMDIR,   m_pControllerPaths->szNVRamDir,   sizeof(m_pControllerPaths->szNVRamDir));
-		GetDlgItemText(IDC_SAMPLEDIRS, m_pControllerPaths->szSampleDirs, sizeof(m_pControllerPaths->szSampleDirs));
-		GetDlgItemText(IDC_IMGDIR,     m_pControllerPaths->szImgDir,     sizeof(m_pControllerPaths->szImgDir));
+		char szPath[4096];
+		
+		GetDlgItemText(IDC_ROMDIRS, szPath, sizeof(szPath));
+		set_option("rompath", szPath, 0);
+
+		GetDlgItemText(IDC_CFGDIR, szPath, sizeof(szPath));
+		set_option("cfg_directory", szPath, 0);
+
+		GetDlgItemText(IDC_NVRAMDIR, szPath, sizeof(szPath));
+		set_option("nvram_directory", szPath, 0);
+
+		GetDlgItemText(IDC_SAMPLEDIRS, szPath, sizeof(szPath));
+		set_option("snapshot_directory", szPath, 0);
+
+		GetDlgItemText(IDC_IMGDIR, szPath, sizeof(szPath));
+		set_option("samplepath", szPath, 0);
 	}
 
 	/***************************************************************/
@@ -394,9 +405,6 @@ private:
 		if ( !m_pController )
 			return 1;
 
-		// init pControllerOptions
-		m_pControllerPaths = &m_pController->m_ControllerPaths;
-
 		/*Init Dialog*/
 		SetControlValues();
 		SetChanged(false);
@@ -415,7 +423,7 @@ private:
 			GetControlValues();
 
 			// save them
-			PutPaths(m_pControllerPaths);
+			Save_fileio_opts();
 
 			// emulation is running?
 			if ( WaitForSingleObject(m_pController->m_hEmuIsRunning, 0)==WAIT_OBJECT_0 )
@@ -437,8 +445,8 @@ private:
 
 	LRESULT OnResetToDefault(WORD, UINT, HWND, BOOL&) {
 		/* Delete Paths settings for the registry and reload them */
-		DelPaths();
-		GetPaths(m_pControllerPaths);
+		Delete_fileio_opts();
+		Load_fileio_opts();
 
 		SetControlValues();
 		SetChanged(false);
@@ -475,7 +483,7 @@ private:
 /*************************/
 /*LAUNCH THE PATHS DIALOG*/
 /*************************/
-void ShowPathesDlg(HWND hParentWnd, Controller* pController) {
-	CPathesDlg PathesDlg;
-	PathesDlg.DoModal(hParentWnd, (LPARAM) pController);
+void ShowPathsDlg(HWND hParentWnd, Controller* pController) {
+	CPathsDlg PathsDlg;
+	PathsDlg.DoModal(hParentWnd, (LPARAM) pController);
 }
