@@ -263,11 +263,11 @@ CORE_GAMEDEF(jm,12r,"Johnny Mnemonic (1.2R)",1995,"Williams",wpc_mSecurityS,0)
 
 static void jm_handleMech(int mech) {
 	static UINT8 twobits_x, twobits_y;
+	UINT8 sols = wpc_data[WPC_SOLENOID3] >> 4; /* The normal solenoids are smoothed too much */
 
 	core_setSw(68, core_getSw(118));
 	core_setSw(67, core_getSw(116));
 
-	UINT8 sols = wpc_data[WPC_SOLENOID3] >> 4; /* The normal solenoids are smoothed too much */
 	/* Hand X-axis */
 	if (mech & 0x01) {
 		if (sols & 0x02) { /* enable */
