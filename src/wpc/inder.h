@@ -113,6 +113,7 @@
 
 /*-- Memory regions --*/
 #define INDER_MEMREG_CPU	REGION_CPU1
+#define INDER_MEMREG_SND	REGION_CPU2
 
 /* CPUs */
 #define INDER_CPU	0
@@ -123,11 +124,28 @@
        ROM_LOAD(n1, 0x0000, 0x1000, chk1) \
        ROM_LOAD(n2, 0x1000, 0x1000, chk2)
 
+#define INDER_ROMSTART1(name, n1, chk1) \
+   ROM_START(name) \
+     NORMALREGION(0x10000, INDER_MEMREG_CPU) \
+       ROM_LOAD(n1, 0x0000, 0x2000, chk1)
+
+/*-- SOUND ROMS --*/
+#define INDER_SNDROM4(n1, chk1, n2, chk2, n3, chk3, n4, chk4, n5, chk5) \
+  NORMALREGION(0x10000, INDER_MEMREG_SND) \
+    ROM_LOAD(n1, 0x00000, 0x2000, chk1) \
+  NORMALREGION(0x40000, REGION_USER1) \
+    ROM_LOAD(n2, 0x0000, 0x10000, chk2) \
+    ROM_LOAD(n3, 0x10000, 0x10000, chk3) \
+    ROM_LOAD(n4, 0x20000, 0x10000, chk4) \
+    ROM_LOAD(n5, 0x30000, 0x10000, chk5)
+
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(INDER0);
 extern MACHINE_DRIVER_EXTERN(INDER1);
+extern MACHINE_DRIVER_EXTERN(INDERS);
 
 #define gl_mINDER0		INDER0
 #define gl_mINDER1		INDER1
+#define gl_mINDERS		INDERS
 
 #endif /* INC_INDER */
