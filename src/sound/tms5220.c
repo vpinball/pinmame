@@ -821,6 +821,7 @@ static int parse_frame(int the_first_frame)
 			fifo_head = fifo_tail = fifo_count = fifo_bits_taken = 0;
 			speak_external = tms5220_speaking = 0;
 			last_frame = 1;
+			tms5220_reset();
 		}
 		goto done;
 	}
