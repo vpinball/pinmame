@@ -155,7 +155,7 @@ static WRITE_HANDLER(sp_pia2b_w);
 static void sp_irq(int state);
 
 struct AY8910interface sp_ay8910Int = {
-  1, 3580000/4, {100}, {sp_8910a_r}
+  1, 3580000/4, {10}, {sp_8910a_r}
 };
 struct hc55516_interface sp_hc55516Int = { 1, {100}};
 
