@@ -112,13 +112,10 @@ static READ16_HANDLER(u16_r) {
   static int readnum = 0;
   int numcheck;
 
-  //Once we've read the U16 2 or 3 times(depending on the game), we can safely return the ROM data we changed back, so U1 ROM test won't fail
+  //Once we've read the U16 3 times, we can safely return the ROM data we changed back, so U1 ROM test won't fail
+  //NOTE: doesn't work on Flipper Football and Kingpin, and I can't see a way to make it work, so rom test U1 will complain, but just an annoyance..
   if(offset==0)
 	readnum++;
-  
-  //if(core_gameData->gen == 9 || core_gameData->gen == 11)
-//	numcheck = 2;
-//  else
     numcheck = 3;
   if(readnum == numcheck)
 	  *((UINT16 *)(memory_region(REGION_CPU1) + fixaddr)) = 0x6600;
