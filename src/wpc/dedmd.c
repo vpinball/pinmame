@@ -31,7 +31,6 @@ static READ_HANDLER(dmd_busy_r)   { return dmdlocals.busy; }
 
 static WRITE_HANDLER(dmd32_ctrl_w);
 static void dmd32_init(struct sndbrdData *brdData);
-static VIDEO_UPDATE(dmd32);
 
 const struct sndbrdIntf dedmd32Intf = {
   dmd32_init, NULL, NULL,
@@ -67,7 +66,6 @@ MACHINE_DRIVER_START(de_dmd32)
   MDRV_CPU_MEMORY(dmd32_readmem, dmd32_writemem)
   MDRV_CPU_PERIODIC_INT(dmd32_firq, DMD32_FIRQFREQ)
   MDRV_INTERLEAVE(50)
-  MDRV_VIDEO_UPDATE(dmd32)
 MACHINE_DRIVER_END
 
 static void dmd32_init(struct sndbrdData *brdData) {
@@ -111,7 +109,7 @@ static INTERRUPT_GEN(dmd32_firq) {
   cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_FIRQ_LINE, HOLD_LINE);
 }
 
-static VIDEO_UPDATE(dmd32) {
+PINMAME_VIDEO_UPDATE(dedmd32_update) {
   UINT8 *RAM  = ((UINT8 *)dmd32RAM) + ((crtc6845_start_addr & 0x0100)<<2);
   UINT8 *RAM2 = RAM + 0x200;
   tDMDDot dotCol;
@@ -134,11 +132,8 @@ static VIDEO_UPDATE(dmd32) {
     }
     *line = 0;
   }
-  {
-    static const core_tLCDLayout dmd32_disp[] = {{0,0,32,128,CORE_DMD}, {0}};
-    video_update_core_dmd(bitmap, cliprect, dotCol, core_gameData->lcdLayout ? core_gameData->lcdLayout : dmd32_disp);
-    video_update_core_status(bitmap, cliprect);
-  }
+  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+  return 0;
 }
 
 /*-----------------------------*/
@@ -148,7 +143,6 @@ static VIDEO_UPDATE(dmd32) {
 
 static WRITE_HANDLER(dmd64_ctrl_w);
 static void dmd64_init(struct sndbrdData *brdData);
-static VIDEO_UPDATE(dmd64);
 
 const struct sndbrdIntf dedmd64Intf = {
   dmd64_init, NULL, NULL,
@@ -182,7 +176,6 @@ MACHINE_DRIVER_START(de_dmd64)
   MDRV_CPU_MEMORY(dmd64_readmem, dmd64_writemem)
   MDRV_CPU_PERIODIC_INT(dmd64_irq2, DMD64_IRQ2FREQ)
   MDRV_INTERLEAVE(50)
-  MDRV_VIDEO_UPDATE(dmd64)
 MACHINE_DRIVER_END
 
 static void dmd64_init(struct sndbrdData *brdData) {
@@ -218,7 +211,7 @@ static WRITE16_HANDLER(crtc6845_msb_register_w) { if (ACCESSING_MSB) crtc6845_re
 static READ16_HANDLER(crtc6845_msb_register_r)  { return crtc6845_register_r(offset)<<8; }
 
 /*-- update display --*/
-static VIDEO_UPDATE(dmd64) {
+PINMAME_VIDEO_UPDATE(dedmd64_update) {
   UINT8 *RAM  = (UINT8 *)(dmd64RAM) + ((crtc6845_start_addr & 0x400)<<2);
   UINT8 *RAM2 = RAM + 0x800;
   tDMDDot dotCol;
@@ -251,8 +244,8 @@ static VIDEO_UPDATE(dmd64) {
     }
     *line = 0;
   }
-  video_update_core_dmd(bitmap, cliprect, dotCol, core_gameData->lcdLayout);
-  video_update_core_status(bitmap, cliprect);
+  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+  return 0;
 }
 
 /*------------------------------*/
@@ -271,7 +264,6 @@ static VIDEO_UPDATE(dmd64) {
 static void dmd16_init(struct sndbrdData *brdData);
 static WRITE_HANDLER(dmd16_ctrl_w);
 static INTERRUPT_GEN(dmd16_nmi);
-static VIDEO_UPDATE(dmd16);
 
 const struct sndbrdIntf dedmd16Intf = {
   dmd16_init, NULL, NULL,
@@ -307,7 +299,6 @@ MACHINE_DRIVER_START(de_dmd16)
   MDRV_CPU_PORTS(dmd16_readport, dmd16_writeport)
   MDRV_CPU_PERIODIC_INT(dmd16_nmi, DMD16_NMIFREQ)
   MDRV_INTERLEAVE(50)
-  MDRV_VIDEO_UPDATE(dmd16)
 MACHINE_DRIVER_END
 
 static void dmd16_setbusy(int bit, int value);
@@ -460,7 +451,7 @@ static void dmd16_setbank(int bit, int value) {
 static INTERRUPT_GEN(dmd16_nmi) { cpu_set_nmi_line(dmdlocals.brdData.cpuNo, PULSE_LINE); }
 
 /*-- update display --*/
-static VIDEO_UPDATE(dmd16) {
+PINMAME_VIDEO_UPDATE(dedmd16_update) {
   UINT32 *frame = &dmdlocals.framedata[(!dmdlocals.frame)*0x80];
   tDMDDot dotCol;
   int ii,jj,kk;
@@ -482,10 +473,7 @@ static VIDEO_UPDATE(dmd16) {
     }
     *line++ = 0;
   }
-  {
-    static const core_tLCDLayout dmd16_disp[] = {{0,0,16,128,CORE_DMD}, {0}};
-    video_update_core_dmd(bitmap, cliprect, dotCol, core_gameData->lcdLayout ? core_gameData->lcdLayout : dmd16_disp);
-    video_update_core_status(bitmap, cliprect);
-  }
+  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+  return 0;
 }
 

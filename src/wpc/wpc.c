@@ -39,7 +39,7 @@ static void wpc_pic_w(int data);
 static void wpc_serialCnv(const char no[21], UINT8 schip[16], UINT8 code[3]);
 /*-- DMD --*/
 static VIDEO_START(wpc_dmd);
-static VIDEO_UPDATE(wpc_dmd);
+PINMAME_VIDEO_UPDATE(wpcdmd_update);
 
 /*-- misc. --*/
 static MACHINE_INIT(wpc);
@@ -60,11 +60,11 @@ static SWITCH_UPDATE(wpc);
 /---------------------*/
 UINT8 *wpc_data;     /* WPC registers */
 int WPC_gWPC95;      /* dcs95 sound, used in ADSP2100 patch ? */
-const core_tLCDLayout wpc_dispAlpha[] = {
+const struct core_dispLayout wpc_dispAlpha[] = {
   DISP_SEG_16(0,CORE_SEG16),DISP_SEG_16(1,CORE_SEG16),{0}
 };
-const core_tLCDLayout wpc_dispDMD[] = {
-  {0,0,32,128,CORE_DMD}, {0}
+const struct core_dispLayout wpc_dispDMD[] = {
+  {0,0,32,128,CORE_DMD,wpcdmd_update}, {0}
 };
 
 /*------------------
@@ -147,12 +147,12 @@ MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(wpc_alpha)
   MDRV_IMPORT_FROM(wpc)
-  MDRV_VIDEO_UPDATE(core_led)
+//  MDRV_VIDEO_UPDATE(core_led)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(wpc_alpha1S)
   MDRV_IMPORT_FROM(wpc)
-  MDRV_VIDEO_UPDATE(core_led)
+//  MDRV_VIDEO_UPDATE(core_led)
   MDRV_IMPORT_FROM(wmssnd_s11cs)
   MDRV_SOUND_CMD(sndbrd_1_data_w)
   MDRV_SOUND_CMDHEADING("s11cs")
@@ -160,7 +160,7 @@ MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(wpc_alpha2S)
   MDRV_IMPORT_FROM(wpc)
-  MDRV_VIDEO_UPDATE(core_led)
+//  MDRV_VIDEO_UPDATE(core_led)
   MDRV_IMPORT_FROM(wmssnd_wpcs)
   MDRV_SOUND_CMD(sndbrd_1_data_w)
   MDRV_SOUND_CMDHEADING("wpcs")
@@ -169,13 +169,13 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(wpc_dmd)
   MDRV_IMPORT_FROM(wpc)
   MDRV_VIDEO_START(wpc_dmd)
-  MDRV_VIDEO_UPDATE(wpc_dmd)
+//  MDRV_VIDEO_UPDATE(wpc_dmd)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(wpc_dmdS)
   MDRV_IMPORT_FROM(wpc)
   MDRV_VIDEO_START(wpc_dmd)
-  MDRV_VIDEO_UPDATE(wpc_dmd)
+//  MDRV_VIDEO_UPDATE(wpc_dmd)
   MDRV_IMPORT_FROM(wmssnd_wpcs)
   MDRV_SOUND_CMD(sndbrd_1_data_w)
   MDRV_SOUND_CMDHEADING("wpcs")
@@ -184,7 +184,7 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(wpc_dcsS)
   MDRV_IMPORT_FROM(wpc)
   MDRV_VIDEO_START(wpc_dmd)
-  MDRV_VIDEO_UPDATE(wpc_dmd)
+//  MDRV_VIDEO_UPDATE(wpc_dmd)
   MDRV_IMPORT_FROM(wmssnd_dcs1)
   MDRV_SOUND_CMD(sndbrd_1_data_w)
   MDRV_SOUND_CMDHEADING("dcs")
@@ -193,7 +193,7 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(wpc_95S)
   MDRV_IMPORT_FROM(wpc)
   MDRV_VIDEO_START(wpc_dmd)
-  MDRV_VIDEO_UPDATE(wpc_dmd)
+//  MDRV_VIDEO_UPDATE(wpc_dmd)
   MDRV_IMPORT_FROM(wmssnd_dcs2)
   MDRV_SOUND_CMD(sndbrd_1_data_w)
   MDRV_SOUND_CMDHEADING("dcs")
@@ -731,7 +731,8 @@ static VIDEO_START(wpc_dmd) {
   return 0;
 }
 
-static VIDEO_UPDATE(wpc_dmd) {
+//static VIDEO_UPDATE(wpc_dmd) {
+PINMAME_VIDEO_UPDATE(wpcdmd_update) {
   tDMDDot dotCol;
   int ii,jj,kk;
 
@@ -760,10 +761,11 @@ static VIDEO_UPDATE(wpc_dmd) {
     }
     *line = 0; /* to simplify antialiasing */
   }
-  video_update_core_dmd(bitmap, cliprect, dotCol, core_gameData->lcdLayout ? core_gameData->lcdLayout : &wpc_dispDMD[0]);
-
-  video_update_core_status(bitmap, cliprect);
+  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+//  video_update_core_status(bitmap, cliprect);
+  return 0;
 }
+
 #if 0
 const struct MachineDriver machine_driver_wpcDMD = {
   {{  CPU_M6809, 2000000, /* 2 Mhz? */
