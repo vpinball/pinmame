@@ -17,12 +17,15 @@ char *trans_text[UI_last_entry + 1];
 /* All entries in this table must match the enum ordering in "ui_text.h" */
 const char * default_text[] =
 {
+#ifdef PINMAME
+	"PINMAME",
+#else
 #ifndef MESS
 	"MAME",
 #else
 	"MESS",
 #endif
-
+#endif  //PINMAME
 	/* copyright stuff */
 	"Usage of emulators in conjunction with ROMs you don't own is forbidden by copyright law.",
 	"IF YOU ARE NOT LEGALLY ENTITLED TO PLAY \"%s\" ON THIS EMULATOR, PRESS ESC.",
