@@ -163,7 +163,7 @@ typedef struct {
     void (*INTCallback)(int);
     /* memory */
     UINT8 *vMem, *dBackMem;
-    struct osd_bitmap *tmpbmp;
+    struct osd_bitmap *tmpbmp, *tmpsbmp;
     int vramsize, model;
     /* emulation settings */
     int LimitSprites; /* max 4 sprites on a row, like original TMS9918A */
@@ -258,6 +258,17 @@ int TMS9928A_start (int which, int model, unsigned int vram) {
 		return 1;
 	}
 
+	/* sprite bitmap */
+	tms[which].tmpsbmp = bitmap_alloc (256, 192);
+	if (!tms[which].tmpsbmp) {
+		free (tms[which].vMem);
+		free (tms[which].dBackMem);
+		free (tms[which].DirtyName);
+		free (tms[which].DirtyPattern);
+		free (tms[which].DirtyColour);
+		return 1;
+	}
+
 	TMS9928A_reset (which);
 	tms[which].LimitSprites = 1;
 
@@ -296,16 +307,17 @@ void TMS9928A_post_load (int which) {
 	if (tms[which].INTCallback) tms[which].INTCallback (tms[which].INT);
 }
 
-void TMS9928A_stop () {
+void TMS9928A_stop (int num_chips) {
 	int which;
 	/*For each chip*/
-	for (which = 0; which < MAX_VDP; which++) {
+	for (which = 0; which < num_chips; which++) {
 		free (tms[which].vMem); tms[which].vMem = NULL;
 		free (tms[which].dBackMem); tms[which].dBackMem = NULL;
 		free (tms[which].DirtyColour); tms[which].DirtyColour = NULL;
 		free (tms[which].DirtyName); tms[which].DirtyName = NULL;
 		free (tms[which].DirtyPattern); tms[which].DirtyPattern = NULL;
 		osd_free_bitmap (tms[which].tmpbmp); tms[which].tmpbmp = NULL;
+		osd_free_bitmap (tms[which].tmpsbmp); tms[which].tmpsbmp = NULL;
 	}
 }
 
@@ -505,6 +517,10 @@ void TMS9928A_set_spriteslimit (int which, int limit) {
 /*
 ** Updates the screen (the dMem memory area).
 */
+
+
+/* REWRITTEN TO SUPPORT MULTI-CHIPS IN 1 FUNCTION CALL */
+#if 0
 //STEVE: Need to rework palette for multi chip support? How does this work?
 void TMS9928A_refresh (int which, struct osd_bitmap *bmp, int full_refresh) {
     int c;
@@ -526,17 +542,21 @@ void TMS9928A_refresh (int which, struct osd_bitmap *bmp, int full_refresh) {
 
     if (tms[which].Change || full_refresh) {
         if (! (tms[which].Regs[1] & 0x40) ) {
-            fillbitmap (bmp, Machine->pens[tms[which].BackColour],
-                &Machine->visible_area);
-        } else {
-            if (tms[which].Change) ModeHandlers[tms[which].mode] (which, tms[which].tmpbmp);
-            copybitmap (bmp, tms[which].tmpbmp, 0, 0, 0, 0,
-                &Machine->visible_area, TRANSPARENCY_NONE, 0);
+            fillbitmap (bmp, Machine->pens[tms[which].BackColour],&Machine->visible_area);
+        } 
+		else {
+            if (tms[which].Change) 
+				ModeHandlers[tms[which].mode] (which, tms[which].tmpbmp);
+
+			copybitmap (bmp, tms[0].tmpbmp, 0, 0, 0, 0,&Machine->visible_area, TRANSPARENCY_NONE, 0);
+			copybitmap (bmp, tms[1].tmpbmp, 0, 0, 0, 0,&Machine->visible_area, TRANSPARENCY_COLOR, 0);
             if (TMS_SPRITES_ENABLED) {
-                _TMS9928A_sprites (which, bmp);
+//                _TMS9928A_sprites (which, bmp);
+				_TMS9928A_sprites (which, NULL);
             }
         }
-    } else {
+    } 
+	else {
 		tms[which].StatusReg = tms[which].oldStatusReg;
     }
 
@@ -546,6 +566,230 @@ void TMS9928A_refresh (int which, struct osd_bitmap *bmp, int full_refresh) {
     tms[which].Change = 0;
 	return;
 }
+
+/*This version basically draws a composite screen on the left,
+  then master output in the middle, and slave output on the right, for 
+  comparison*/
+void TMS9928A_refresh_test (int which, struct osd_bitmap *bmp, int full_refresh) {
+    int c;
+
+    if (tms[which].Change) {
+        c = tms[which].Regs[7] & 15; if (!c) c=1;
+        if (tms[which].BackColour != c) {
+            tms[which].BackColour = c;
+            palette_change_color (0,
+                TMS9928A_palette[c * 3], TMS9928A_palette[c * 3 + 1],
+                TMS9928A_palette[c * 3 + 2]);
+        }
+    }
+
+	if (palette_recalc() ) {
+		_TMS9928A_set_dirty (which,1);
+		tms[which].Change = 1;
+	}
+
+    if (tms[which].Change || full_refresh) {
+        if (! (tms[which].Regs[1] & 0x40) ) {
+            fillbitmap (bmp, Machine->pens[tms[which].BackColour],&Machine->visible_area);
+        } else {
+            if (tms[which].Change) 
+				ModeHandlers[tms[which].mode] (which, tms[which].tmpbmp);
+			copybitmap (bmp, tms[0].tmpbmp, 0, 0, 0, 0,&Machine->visible_area, TRANSPARENCY_NONE, 0);
+			copybitmap (bmp, tms[1].tmpbmp, 0, 0, 0, 0,&Machine->visible_area, TRANSPARENCY_COLOR, 0);
+			if(which<1)
+				copybitmap (bmp, tms[which].tmpbmp, 0, 0, 256, 0,&Machine->visible_area, TRANSPARENCY_NONE, 0);
+			else 
+				copybitmap (bmp, tms[which].tmpbmp, 0, 0, 512, 0,&Machine->visible_area, TRANSPARENCY_NONE, 0);
+            if (TMS_SPRITES_ENABLED) {
+				fillbitmap (tms[which].tmpsbmp, 0,&Machine->visible_area);
+				_TMS9928A_sprites (which, tms[which].tmpsbmp);
+				copybitmap (bmp, tms[which].tmpsbmp, 0, 0, 0, 0,&Machine->visible_area, TRANSPARENCY_PEN, 0);
+				if(which<1)
+					copybitmap (bmp, tms[which].tmpsbmp, 0, 0, 256, 0,&Machine->visible_area, TRANSPARENCY_PEN, 0);
+				else 
+					copybitmap (bmp, tms[which].tmpsbmp, 0, 0, 512, 0,&Machine->visible_area, TRANSPARENCY_PEN, 0);
+
+                //_TMS9928A_sprites (which, NULL);
+            }
+        }
+    } 
+	else {
+		tms[which].StatusReg = tms[which].oldStatusReg;
+    }
+
+    /* store Status register, so it can be restored at the next frame
+       if there are no changes (sprite collision bit is lost) */
+    tms[which].oldStatusReg = tms[which].StatusReg;
+    tms[which].Change = 0;
+	return;
+}
+#endif
+
+void TMS9928A_refresh (int num_chips, struct osd_bitmap *bmp, int full_refresh) {
+    int c,which;
+	int update=0;
+
+	/*For each chip*/
+	for (which = 0; which < num_chips; which++) {
+		if (tms[which].Change) {
+			c = tms[which].Regs[7] & 15; if (!c) c=1;
+			if (tms[which].BackColour != c) {
+				tms[which].BackColour = c;
+				palette_change_color (0,
+					TMS9928A_palette[c * 3], TMS9928A_palette[c * 3 + 1],
+					TMS9928A_palette[c * 3 + 2]);
+			}
+		}
+
+		if (palette_recalc() ) {
+			_TMS9928A_set_dirty (which,1);
+			tms[which].Change = 1;
+		}
+	}
+
+	/*For each chip*/
+	for (which = 0; which < num_chips; which++) {
+		if (tms[which].Change || full_refresh) {
+			update = 1;
+		}
+		else
+			tms[which].StatusReg = tms[which].oldStatusReg;
+	}
+
+	if(update) {
+
+		/*For each chip*/
+		for (which = 0; which < num_chips; which++) {
+			if (! (tms[which].Regs[1] & 0x40) ) {
+				fillbitmap (bmp, Machine->pens[tms[which].BackColour],&Machine->visible_area);
+			} 
+			else {
+				if (tms[which].Change) 
+					ModeHandlers[tms[which].mode] (which, tms[which].tmpbmp);
+			}
+		}
+
+		/*For each chip*/
+		for (which = 0; which < num_chips; which++) {
+			/*Master Chip, must be set as chip 0, is always drawn first, and opaque*/
+			if(which == 0)
+				copybitmap (bmp, tms[0].tmpbmp, 0, 0, 0, 0,&Machine->visible_area, TRANSPARENCY_NONE, 0);
+			else {
+			/*Any other slave chips will have transparent colors*/
+				copybitmap (bmp, tms[which].tmpbmp, 0, 0, 0, 0,&Machine->visible_area, TRANSPARENCY_COLOR, 0);
+			}
+			if (TMS_SPRITES_ENABLED) 
+				_TMS9928A_sprites (which, bmp);
+		}
+	}
+
+	/*For each chip*/
+	for (which = 0; which < num_chips; which++) {
+		/* store Status register, so it can be restored at the next frame
+		   if there are no changes (sprite collision bit is lost) */
+		tms[which].oldStatusReg = tms[which].StatusReg;
+		tms[which].Change = 0;
+	}
+	return;
+}
+
+/*This version basically draws a composite screen on the left,
+  then master output in the middle, and slave output on the right, for 
+  comparison
+  NOTE: For this to work with sprites, we needed to add a temporary sprite bitmap
+        called tmpsbmp
+
+  NOTE2: Drawing of sprites is not correct for composite shot.. need to adjust
+         so that the background of master then master sprites are drawn, then the slave..
+		 This is correct in the "non test" refresh code above.. Haven't had time to fix here..
+*/
+void TMS9928A_refresh_test (int num_chips, struct osd_bitmap *bmp, int full_refresh) {
+    int c,which;
+	int update=0;
+
+	/*For each chip*/
+	for (which = 0; which < MAX_VDP; which++) {
+		if (tms[which].Change) {
+			c = tms[which].Regs[7] & 15; if (!c) c=1;
+			if (tms[which].BackColour != c) {
+				tms[which].BackColour = c;
+				palette_change_color (0,
+					TMS9928A_palette[c * 3], TMS9928A_palette[c * 3 + 1],
+					TMS9928A_palette[c * 3 + 2]);
+			}
+		}
+
+		if (palette_recalc() ) {
+			_TMS9928A_set_dirty (which,1);
+			tms[which].Change = 1;
+		}
+	}
+
+	/*For each chip*/
+	for (which = 0; which < MAX_VDP; which++) {
+		if (tms[which].Change || full_refresh) {
+			update = 1;
+		}
+		else
+			tms[which].StatusReg = tms[which].oldStatusReg;
+	}
+
+	if(update) {
+
+		/*For each chip*/
+		for (which = 0; which < MAX_VDP; which++) {
+			if (! (tms[which].Regs[1] & 0x40) ) {
+				fillbitmap (bmp, Machine->pens[tms[which].BackColour],&Machine->visible_area);
+			} 
+			else {
+				if (tms[which].Change) 
+					ModeHandlers[tms[which].mode] (which, tms[which].tmpbmp);
+			}
+		}
+
+		/*For each chip*/
+		for (which = 0; which < MAX_VDP; which++) {
+			/*Master Chip, must be set as chip 0, is always drawn first, and opaque*/
+			if(which == 0)
+				copybitmap (bmp, tms[0].tmpbmp, 0, 0, 0, 0,&Machine->visible_area, TRANSPARENCY_NONE, 0);
+			else {
+			/*Any other slave chips will have transparent colors*/
+				copybitmap (bmp, tms[which].tmpbmp, 0, 0, 0, 0,&Machine->visible_area, TRANSPARENCY_COLOR, 0);
+			}
+		}
+
+		/*For each chip*/
+		for (which = 0; which < MAX_VDP; which++) {
+			copybitmap (bmp, tms[which].tmpbmp, 0, 0, 256*(which+1), 0,&Machine->visible_area, TRANSPARENCY_NONE, 0);
+		}
+
+		/*For each chip*/
+		for (which = 0; which < MAX_VDP; which++) {
+			if (TMS_SPRITES_ENABLED) {
+				fillbitmap (tms[which].tmpsbmp, 0,&Machine->visible_area);
+				_TMS9928A_sprites (which, tms[which].tmpsbmp);
+			}
+		}
+
+		/*For each chip*/
+		for (which = 0; which < MAX_VDP; which++) {
+			copybitmap (bmp, tms[which].tmpsbmp, 0, 0, 0, 0,&Machine->visible_area, TRANSPARENCY_PEN, 0);
+			copybitmap (bmp, tms[which].tmpsbmp, 0, 0, 256*(which+1), 0,&Machine->visible_area, TRANSPARENCY_PEN, 0);
+		}
+	}
+
+	/*For each chip*/
+	for (which = 0; which < MAX_VDP; which++) {
+		/* store Status register, so it can be restored at the next frame
+		   if there are no changes (sprite collision bit is lost) */
+		tms[which].oldStatusReg = tms[which].StatusReg;
+		tms[which].Change = 0;
+	}
+	return;
+}
+
+
+
 
 int TMS9928A_interrupt (int which) {
     int b;
