@@ -14,6 +14,7 @@
 #include "driver.h"
 #include "cpu/m6502/m6502.h"
 #include "machine/6532riot.h"
+#include "sound/votrax.h"
 #include "core.h"
 #include "sndbrd.h"
 #include "gts80.h"
