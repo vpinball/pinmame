@@ -788,7 +788,10 @@ DRIVER(dd,p6)           //S11-737:  11/90 B Dr. Dude (P-6)
 //WPC
 DRIVER(dd,p7)           //WPC:      11/90 B Dr. Dude (P-7 WPC)
 DRIVER(dd,p06)          //WPC:      11/90 B Dr. Dude (P-6 WPC)
-DRIVER(fh,l9)           //WPC-503:  12/90 W Funhouse
+DRIVER(fh,l9)           //WPC-503:  12/90 W Funhouse (L=9)
+DRIVER(fh,l3)           //WPC-503:  12/90 W Funhouse (L-3)
+DRIVER(fh,l4)           //WPC-503:  12/90 W Funhouse (L-4)
+DRIVER(fh,l5)           //WPC-503:  12/90 W Funhouse (L-5)
 DRIVER(fh,l9b)                            // bootleg with correct German translation
 DRIVER(bbnny,l2)        //S11-396:  01/91 B Bugs Bunny's Birthday Ball (L-2)
 DRIVER(bbnny,lu)        //S11-396:  01/91 B Bugs Bunny's Birthday Ball (LU-2) European
