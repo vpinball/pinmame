@@ -43,7 +43,8 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /G5 /MTd /W3 /Gm /ZI /Od /I ".\src" /I ".\src\wpc" /I ".\src\win32c" /I ".\src\zlib" /I ".\src\win32com" /I ".\src\win32com\autogen" /D "_DEBUG" /D "WPC_DCSSOUND" /D "WPC_WPCSOUND" /D BETA_VERSION=8 /D "WPCEXTENSION" /D mame_bitmap=osd_bitmap /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE="static __inline" /D inline=__inline /D __inline__=__inline /D VERSION=37 /D "MAME_MMX" /D MAMEVER=3716 /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D PI=3.1415926535 /D "PNG_SAVE_SUPPORT" /D "ZLIB_DLL" /D "WPCDCSSPEEDUP" /D "NOMIDAS" /D "TINY_COMPILE" /D "NEOFREE" /D "WPCMAME" /D "VPINMAME" /D "PINMAME" /D "PINMAME_EXT" /D BMTYPE=UINT8 /D "PINMAME_EXIT" /FR /YX /FD /GZ /c
+# ADD CPP /nologo /G5 /MTd /W3 /Gm /ZI /Od /I ".\src" /I ".\src\wpc" /I ".\src\win32c" /I ".\src\zlib" /I ".\src\win32com" /I ".\src\win32com\autogen" /D "_DEBUG" /D "WPC_DCSSOUND" /D "WPC_WPCSOUND" /D BETA_VERSION=8 /D "WPCEXTENSION" /D mame_bitmap=osd_bitmap /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D INLINE="static __inline" /D inline=__inline /D __inline__=__inline /D VERSION=37 /D "MAME_MMX" /D MAMEVER=3716 /D PROCESSOR_ARCHITECTURE=x86 /D "LSB_FIRST" /D PI=3.1415926535 /D "PNG_SAVE_SUPPORT" /D "ZLIB_DLL" /D "WPCDCSSPEEDUP" /D "NOMIDAS" /D "TINY_COMPILE" /D "NEOFREE" /D "WPCMAME" /D "VPINMAME" /D "PINMAME" /D "PINMAME_EXT" /D BMTYPE=UINT8 /D "PINMAME_EXIT" /YX /FD /GZ /c
+# SUBTRACT CPP /Fr
 # ADD MTL /out ".\src\win32com\autogen"
 # ADD BASE RSC /l 0x407 /d "_DEBUG"
 # ADD RSC /l 0x409 /i ".\src\win32com\autogen" /d "_DEBUG"
@@ -973,7 +974,15 @@ SOURCE=.\src\win32com\Controller.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\win32com\ControllerGame.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\win32com\ControllerGameInfo.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\ControllerGames.cpp
 # End Source File
 # Begin Source File
 
@@ -986,6 +995,14 @@ SOURCE=.\src\win32com\ControllerOptions.cpp
 # Begin Source File
 
 SOURCE=.\src\win32com\ControllerOptionsDlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\ControllerRom.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\ControllerRoms.cpp
 # End Source File
 # Begin Source File
 
@@ -1562,7 +1579,15 @@ SOURCE=.\src\win32com\Controller.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\win32com\ControllerGame.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\win32com\ControllerGameInfo.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\ControllerGames.h
 # End Source File
 # Begin Source File
 
@@ -1579,6 +1604,14 @@ SOURCE=.\src\win32com\ControllerOptionsDlg.h
 # Begin Source File
 
 SOURCE=.\src\win32com\ControllerRegkeys.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\ControllerRom.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\ControllerRoms.h
 # End Source File
 # Begin Source File
 
