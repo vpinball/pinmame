@@ -590,7 +590,7 @@ struct MachineDriver machine_driver_s11a_2 = {
 / Load/Save static ram
 /-------------------------------------------------*/
 static void s11_nvram(void *file, int write) {
-  core_nvram(file, write, memory_region(S11_MEMREG_CPU), 0x0800);
+  core_nvram(file, write, memory_region(S11_MEMREG_CPU), 0x0800, 0xff);
 }
 
 

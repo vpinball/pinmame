@@ -427,5 +427,5 @@ struct MachineDriver machine_driver_s4s= {
 / Load/Save static ram
 /-------------------------------------------------*/
 static void s4_nvram(void *file, int write) {
-  core_nvram(file, write, s4_CMOS, 0x100);
+  core_nvram(file, write, s4_CMOS, 0x100, 0xff);
 }

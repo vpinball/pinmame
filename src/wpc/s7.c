@@ -329,7 +329,7 @@ struct MachineDriver machine_driver_s7 = {
 / Load/Save static ram
 /-------------------------------------------------*/
 static void s7_nvram(void *file, int write) {
-  core_nvram(file, write, s7_CMOS, 0x0100);
+  core_nvram(file, write, s7_CMOS, 0x0100, 0xff);
 }
 
 

@@ -360,6 +360,6 @@ struct MachineDriver machine_driver_s6s= {
 / Load/Save static ram
 /-------------------------------------------------*/
 static void s6_nvram(void *file, int write) {
-  core_nvram(file, write, s6_CMOS, 0x0100);
+  core_nvram(file, write, s6_CMOS, 0x0100, 0xff);
 }
 

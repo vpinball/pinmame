@@ -933,10 +933,10 @@ static UINT32 core_initDisplaySize(core_ptLCDLayout layout) {
   return (maxX<<16) | maxY;
 }
 
-void core_nvram(void *file, int write, void *mem, int length) {
+void core_nvram(void *file, int write, void *mem, int length, UINT8 init) {
   if (write)     osd_fwrite(file, mem, length); /* save */
   else if (file) osd_fread(file,  mem, length); /* load */
-  else           memset(mem, 0xff, length);     /* first time */
+  else           memset(mem, init, length);     /* first time */
   mech_nv(file, write); /* save mech positions */
   vp_dipnv(file,write);
 }

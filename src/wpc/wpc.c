@@ -714,7 +714,7 @@ static void wpc_exit(void) {
 /-------------------------------------------------*/
 void wpc_nvram(void *file, int write) {
   core_nvram(file, write, memory_region(WPC_MEMREG_CPU),
-	         (core_gameData->gen & (GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS)) ? 0x3800 : 0x2000);
+	         (core_gameData->gen & (GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS)) ? 0x3800 : 0x2000,0xff);
 }
 
 static void wpc_serialCnv(char no[21], UINT8 pic[16], UINT8 code[3]) {
