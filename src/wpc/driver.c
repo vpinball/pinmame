@@ -366,13 +366,18 @@ DRIVERNV(strxt_gr)    //Whitestar: 03/00 Striker Extreme (Germany)
 DRIVERNV(strxt_fr)    //Whitestar: 03/00 Striker Extreme (France)
 DRIVERNV(strxt_it)    //Whitestar: 03/00 Striker Extreme (Italy)
 DRIVERNV(strxt_sp)    //Whitestar: 03/00 Striker Extreme (Spain)
-DRIVERNV(shrkysht)    //Whitestar: 09/00 Sharky's Shootout
+DRIVERNV(shrkysht)    //Whitestar: 09/00 Sharkey's Shootout (2.11)
 #ifndef VPINMAME
 DRIVERNV(hirolcas)    //Whitestar: 01/01 High Roller Casino
 DRIVERNV(hirol_gr)    //Whitestar: 01/01 High Roller Casino (Germany)
 DRIVERNV(austin)      //Whitestar: 05/01 Austin Powers (3.0)
 DRIVERNV(austin2)     //Whitestar: 05/01 Austin Powers (2.0)
-DRIVERNV(monopoly)    //Whitestar: 09/01 Monopoly (2.33)
+DRIVERNV(monopoly)    //Whitestar: 09/01 Monopoly (3.01)
+DRIVERNV(playboys)    //Whitestar: 02/02 Playboy (2.03)
+DRIVERNV(playboyd)    //Whitestar: 02/02 Playboy (German display)
+DRIVERNV(playboye)    //Whitestar: 02/02 Playboy (Spanish display)
+DRIVERNV(playboyf)    //Whitestar: 02/02 Playboy (French display)
+DRIVERNV(playboyi)    //Whitestar: 02/02 Playboy (Italian display)
 #endif /* VPINMAME */
 // ---------------------
 // SEGA GAMES BELOW
