@@ -33,15 +33,16 @@
 #define GEN_S3          U64(0x00000100000)
 #define GEN_BY17        U64(0x00000200000)
 #define GEN_BY35        U64(0x00000400000)
-#define GEN_STMPU100	U64(0x00000800000) /* Stern MPU - 100*/
-#define GEN_STMPU200	U64(0x00001000000) /* Stern MPU - 200*/
-#define GEN_ASTRO	U64(0x00002000000) /* same as BY35 ?*/
+#define GEN_STMPU100    U64(0x00000800000) /* Stern MPU - 100*/
+#define GEN_STMPU200    U64(0x00001000000) /* Stern MPU - 200*/
+#define GEN_ASTRO       U64(0x00002000000) /* same as BY35 ?*/
 #define GEN_HNK	        U64(0x00004000000) /* Hankin */
+#define GEN_BYPROTO     U64(0x00008000000) /* Bally Bow & Arrow prototype */
 #define GEN_BY6803      U64(0x00010000000)
 #define GEN_BY6803A     U64(0x00020000000)
 #define GEN_GTS80       U64(0x00200000000) /* GTS80 */
 #define GEN_GTS80A      GEN_GTS80
-#define GEN_GTS80B	U64(0x00400000000) /* GTS80B */
+#define GEN_GTS80B      U64(0x00400000000) /* GTS80B */
 #define GEN_WS          U64(0x04000000000) /* Whitestar */
 #define GEN_WS_1        U64(0x08000000000) /* Whitestar with extra RAM */
 #define GEN_WS_2        U64(0x10000000000) /* Whitestar with extra DMD */
