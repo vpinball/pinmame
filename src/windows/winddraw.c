@@ -115,6 +115,19 @@ void win_ddraw_fullscreen_margins(DWORD desc_width, DWORD desc_height, RECT *mar
 	margins->top = 0;
 	margins->right = desc_width;
 	margins->bottom = desc_height;
+	if (win_has_menu())
+	{
+		static int height_with_menubar = 0;
+		if (height_with_menubar == 0)
+		{
+			RECT with_menu = { 100, 100, 200, 200 };
+			RECT without_menu = { 100, 100, 200, 200 };
+			AdjustWindowRect(&with_menu, WS_OVERLAPPED, TRUE);
+			AdjustWindowRect(&without_menu, WS_OVERLAPPED, FALSE);
+			height_with_menubar = (with_menu.bottom - with_menu.top) - (without_menu.bottom - without_menu.top);
+		}
+		margins->top = height_with_menubar;
+	}
 }
 
 

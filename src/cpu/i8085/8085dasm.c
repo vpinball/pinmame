@@ -523,7 +523,7 @@ unsigned Dasm8085(char *buff, unsigned pc)
 		case 0xdf: sprintf (buff,"rst  3");                          break;
 		case 0xe0: sprintf (buff,"rpe");                             break;
 		case 0xe1: sprintf (buff,"pop  h");                          break;
-		case 0xe2: sprintf (buff,"jpe  $%04x", ARGW(pc)); pc+=2;     break;
+		case 0xe2: sprintf (buff,"jpo  $%04x", ARGW(pc)); pc+=2;     break;
 		case 0xe3: sprintf (buff,"xthl");                            break;
 		case 0xe4: sprintf (buff,"cpe  $%04x", ARGW(pc)); pc+=2;     break;
 		case 0xe5: sprintf (buff,"push h");                          break;
@@ -531,7 +531,7 @@ unsigned Dasm8085(char *buff, unsigned pc)
 		case 0xe7: sprintf (buff,"rst  4");                          break;
 		case 0xe8: sprintf (buff,"rpo");                             break;
 		case 0xe9: sprintf (buff,"pchl");                            break;
-		case 0xea: sprintf (buff,"jpo  $%04x", ARGW(pc)); pc+=2;     break;
+		case 0xea: sprintf (buff,"jpe  $%04x", ARGW(pc)); pc+=2;     break;
 		case 0xeb: sprintf (buff,"xchg");                            break;
 		case 0xec: sprintf (buff,"cpo  $%04x", ARGW(pc)); pc+=2;     break;
 		case 0xed: sprintf (buff,"lhlx d (*)");                      break;

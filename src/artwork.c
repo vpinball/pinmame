@@ -735,7 +735,7 @@ void artwork_update_video_and_audio(struct mame_display *display)
 	int artwork_changed = 0, ui_visible = 0;
 
 	/* do nothing if no artwork */
-	if (!artwork_list)
+	if (!artwork_list && !uioverlay)
 	{
 		osd_update_video_and_audio(display);
 		return;
@@ -1959,21 +1959,21 @@ static void render_ui_overlay(struct mame_bitmap *bitmap, UINT32 *dirty, const r
 	to locate an artwork file
 -------------------------------------------------*/
 
-mame_file *artwork_load_artwork_file(const struct GameDriver *driver)
+mame_file *artwork_load_artwork_file(const struct GameDriver **driver)
 {
 	char filename[100];
 	mame_file *artfile = NULL;
 
-	while (driver)
+	while (*driver)
 	{
-		if (driver->name)
+		if ((*driver)->name)
 		{
-			sprintf(filename, "%s.art", driver->name);
-			artfile = mame_fopen(driver->name, filename, FILETYPE_ARTWORK, 0);
+			sprintf(filename, "%s.art", (*driver)->name);
+			artfile = mame_fopen((*driver)->name, filename, FILETYPE_ARTWORK, 0);
 			if (artfile)
 				break;
 		}
-		driver = driver->clone_of;
+		*driver = (*driver)->clone_of;
 	}
 	return artfile;
 }
@@ -2013,7 +2013,7 @@ static int artwork_load(const struct GameDriver *driver, int width, int height, 
 		return 0;
 
 	/* attempt to open the .ART file; if none, that's okay */
-	artfile = callbacks->load_artwork(driver);
+	artfile = callbacks->load_artwork(&driver);
 	if (!artfile && !list)
 		return 1;
 

@@ -65,7 +65,7 @@ struct artwork_callbacks
 	int (*activate_artwork)(struct osd_create_params *params);
 
 	/* function to load an artwork file for a particular driver */
-	mame_file *(*load_artwork)(const struct GameDriver *driver);
+	mame_file *(*load_artwork)(const struct GameDriver **driver);
 };
 
 struct overlay_piece
@@ -95,7 +95,7 @@ void artwork_enable(int enable);
 void artwork_set_overlay(const struct overlay_piece *overlist);
 void artwork_show(const char *tag, int show);
 
-mame_file *artwork_load_artwork_file(const struct GameDriver *driver);
+mame_file *artwork_load_artwork_file(const struct GameDriver **driver);
 
 #endif /* ARTWORK_H */
 

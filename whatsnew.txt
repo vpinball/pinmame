@@ -11,11 +11,12 @@ Bugs Fixed
 
 New Features
 ------------
-- Moved to MAME 71u2 core
+- Moved to MAME 73 core
   [All]
 
 - Reworked sound commander internally. No visible change
 - Simulator for Black Knight
+- SHA1 checksums
   [Martin Adrian]
 
 - Alvin G. and Co. emulation including sound and dmd (still quite a few issues to fix)

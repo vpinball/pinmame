@@ -831,7 +831,7 @@ static void render_frame(struct mame_bitmap *bitmap, const struct rectangle *bou
 	cycles_t curr;
 
 	// if we're throttling, synchronize
-	if (throttle)
+	if (throttle || game_is_paused)
 		throttle_speed();
 
 	// at the end, we need the current time

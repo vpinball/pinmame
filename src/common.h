@@ -396,7 +396,7 @@ int new_memory_region(int num, size_t length, UINT32 flags);
 void free_memory_region(int num);
 
 /* common coin counter helpers */
-#define COIN_COUNTERS	4	/* total # of coin counters */
+#define COIN_COUNTERS	8	/* total # of coin counters */
 void coin_counter_w(int num,int on);
 void coin_lockout_w(int num,int on);
 void coin_lockout_global_w(int on);  /* Locks out all coin inputs */

@@ -118,6 +118,10 @@ enum { IPT_END=1,IPT_PORT,
 	IPT_UI_WATCH_VALUE,
 	IPT_UI_EDIT_CHEAT,
 	IPT_UI_TOGGLE_CROSSHAIR,
+
+	/* 8 player support */
+	IPT_START5, IPT_START6, IPT_START7, IPT_START8,
+	IPT_COIN5, IPT_COIN6, IPT_COIN7, IPT_COIN8,
 	__ipt_max
 };
 
@@ -136,11 +140,15 @@ enum { IPT_END=1,IPT_PORT,
 									/* so on). MAME will not recognize it when the */
 									/* -nocheat command line option is specified. */
 
-#define IPF_PLAYERMASK 0x00030000	/* use IPF_PLAYERn if more than one person can */
+#define IPF_PLAYERMASK 0x00070000	/* use IPF_PLAYERn if more than one person can */
 #define IPF_PLAYER1    0         	/* play at the same time. The IPT_ should be the same */
 #define IPF_PLAYER2    0x00010000	/* for all players (e.g. IPT_BUTTON1 | IPF_PLAYER2) */
 #define IPF_PLAYER3    0x00020000	/* IPF_PLAYER1 is the default and can be left out to */
 #define IPF_PLAYER4    0x00030000	/* increase readability. */
+#define IPF_PLAYER5    0x00040000
+#define IPF_PLAYER6    0x00050000
+#define IPF_PLAYER7    0x00060000
+#define IPF_PLAYER8    0x00070000
 
 #define IPF_8WAY       0         	/* Joystick modes of operation. 8WAY is the default, */
 #define IPF_4WAY       0x00080000	/* it prevents left/right or up/down to be pressed at */
@@ -175,6 +183,7 @@ enum { IPT_END=1,IPT_PORT,
 #define IPF_SENSITIVITY(percent)	((percent & 0xff) << 8)
 #define IPF_DELTA(val)				((val & 0xff) << 16)
 
+#define IP_GET_PLAYER(port) (((port)->type >> 16) & 7)
 #define IP_GET_IMPULSE(port) (((port)->type >> 8) & 0xff)
 #define IP_GET_SENSITIVITY(port) ((((port)+1)->type >> 8) & 0xff)
 #define IP_SET_SENSITIVITY(port,val) ((port)+1)->type = ((port+1)->type & 0xffff00ff)|((val&0xff)<<8)

@@ -90,6 +90,7 @@ struct handler_data
 {
 	void *				handler;			/* function pointer for handler */
 	offs_t				offset;				/* base offset for handler */
+	offs_t				top;				/* maximum offset for handler */
 };
 
 struct table_data
@@ -114,10 +115,13 @@ struct memport_data
 struct cpu_data
 {
 	void *				rambase;			/* RAM base pointer */
+	size_t				ramlength;			/* RAM length pointer */
 	opbase_handler 		opbase;				/* opcode base handler */
 
-	void *				op_ram;				/* dynamic ROM base pointer */
-	void *				op_rom;				/* dynamic RAM base pointer */
+	void *				op_ram;				/* dynamic RAM base pointer */
+	void *				op_rom;				/* dynamic ROM base pointer */
+	offs_t				op_mem_min;			/* dynamic ROM/RAM min */
+	offs_t				op_mem_max;			/* dynamic ROM/RAM max */
 	UINT8		 		opcode_entry;		/* opcode base handler */
 
 	struct memport_data	mem;				/* memory tables */
@@ -140,6 +144,8 @@ static int					cur_context;					/* current CPU context */
 
 UINT8 *						OP_ROM;							/* opcode ROM base */
 UINT8 *						OP_RAM;							/* opcode RAM base */
+offs_t						OP_MEM_MIN;						/* opcode memory minimum */
+offs_t						OP_MEM_MAX;						/* opcode memory maximum */
 UINT8		 				opcode_entry;					/* opcode readmem entry */
 
 UINT8 *						readmem_lookup;					/* memory read lookup table */
@@ -309,9 +315,17 @@ void memory_shutdown(void)
 void memory_set_opcode_base(int cpunum, void *base)
 {
 	if (cur_context == cpunum)
+	{
 		OP_ROM = base;
+		OP_MEM_MIN = (offs_t) 0x00000000;
+		OP_MEM_MAX = (offs_t) 0x7fffffff;
+	}
 	else
+	{
 		cpudata[cpunum].op_rom = base;
+		cpudata[cpunum].op_mem_min = (offs_t) 0x00000000;
+		cpudata[cpunum].op_mem_max = (offs_t) 0x7fffffff;
+	}
 }
 
 
@@ -333,6 +347,8 @@ void memory_set_context(int activecpu)
 	{
 		cpudata[cur_context].op_ram = OP_RAM;
 		cpudata[cur_context].op_rom = OP_ROM;
+		cpudata[cur_context].op_mem_min = OP_MEM_MIN;
+		cpudata[cur_context].op_mem_max = OP_MEM_MAX;
 		cpudata[cur_context].opcode_entry = opcode_entry;
 	}
 	cur_context = activecpu;
@@ -340,6 +356,8 @@ void memory_set_context(int activecpu)
 	cpu_bankbase[STATIC_RAM] = cpudata[activecpu].rambase;
 	OP_RAM = cpudata[activecpu].op_ram;
 	OP_ROM = cpudata[activecpu].op_rom;
+	OP_MEM_MIN = cpudata[activecpu].op_mem_min;
+	OP_MEM_MAX = cpudata[activecpu].op_mem_max;
 	opcode_entry = opcode_entry;
 
 	readmem_lookup = cpudata[activecpu].mem.read.table;
@@ -886,7 +904,10 @@ void populate_table(struct memport_data *memport, int iswrite, offs_t start, off
 
 	/* set the base for non RAM/ROM cases */
 	if (handler != STATIC_RAM && handler != STATIC_ROM && handler != STATIC_RAMROM)
+	{
 		tabledata->handlers[handler].offset = start;
+		tabledata->handlers[handler].top = stop;
+	}
 
 	/* remember the base for banks */
 	if (handler >= STATIC_BANK1 && handler <= STATIC_BANKMAX)
@@ -1061,6 +1082,8 @@ static int init_cpudata(void)
 
 		/* set the RAM/ROM base */
 		cpudata[cpunum].rambase = cpudata[cpunum].op_ram = cpudata[cpunum].op_rom = memory_region(REGION_CPU1 + cpunum);
+		cpudata[cpunum].op_mem_max = cpudata[cpunum].ramlength = memory_region_length(REGION_CPU1 + cpunum);
+		cpudata[cpunum].op_mem_min = 0;
 		cpudata[cpunum].opcode_entry = STATIC_ROM;
 		cpudata[cpunum].opbase = NULL;
 		encrypted_opcode_start[cpunum] = 0;
@@ -2317,6 +2340,10 @@ void name(offs_t pc)																	\
 	/* compute the adjusted base */														\
 	OP_ROM = base - table[entry].offset + (OP_ROM - OP_RAM);							\
 	OP_RAM = base - table[entry].offset;												\
+	OP_MEM_MIN = table[entry].offset;													\
+	OP_MEM_MAX = (entry >= STATIC_RAM && entry <= STATIC_RAMROM)						\
+		? cpudata[cpu_getactivecpu()].ramlength - 1										\
+		: table[entry].top;																\
 }
 
 
@@ -2484,6 +2511,45 @@ GENERATE_PORT_HANDLERS_32BIT_BE(16)
 GENERATE_PORT_HANDLERS_32BIT_LE(16)
 GENERATE_PORT_HANDLERS_32BIT_LE(24)
 GENERATE_PORT_HANDLERS_32BIT_LE(32)
+/*-------------------------------------------------
+	safe opcode reading
+-------------------------------------------------*/
+
+data8_t cpu_readop_safe(offs_t offset)
+{
+	activecpu_set_op_base(offset);
+	return cpu_readop_unsafe(offset);
+}
+
+data16_t cpu_readop16_safe(offs_t offset)
+{
+	activecpu_set_op_base(offset);
+	return cpu_readop16_unsafe(offset);
+}
+
+data32_t cpu_readop32_safe(offs_t offset)
+{
+	activecpu_set_op_base(offset);
+	return cpu_readop32_unsafe(offset);
+}
+
+data8_t cpu_readop_arg_safe(offs_t offset)
+{
+	activecpu_set_op_base(offset);
+	return cpu_readop_arg_unsafe(offset);
+}
+
+data16_t cpu_readop_arg16_safe(offs_t offset)
+{
+	activecpu_set_op_base(offset);
+	return cpu_readop_arg16_unsafe(offset);
+}
+
+data32_t cpu_readop_arg32_safe(offs_t offset)
+{
+	activecpu_set_op_base(offset);
+	return cpu_readop_arg32_unsafe(offset);
+}
 
 
 /*-------------------------------------------------

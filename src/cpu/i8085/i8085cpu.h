@@ -10,6 +10,9 @@
  *
  *******************************************************/
 
+/* Set to 1 for a more exact i8080 emulation */
+#define I8080_EXACT	1
+
 #define SF              0x80
 #define ZF              0x40
 #define YF              0x20
@@ -88,6 +91,15 @@ int q = I.AF.b.h+R; 											\
 }
 #endif
 
+#if I8080_EXACT
+#define M_ADC(R) {						\
+	int q = I.AF.b.h+R+(I.AF.b.l&CF);			\
+	I.AF.b.l=ZSP[q&255]|((q>>8)&CF)| 			\
+		((I.AF.b.h^q^R)&HF)|				\
+		(((R^I.AF.b.h^SF)&(R^q)&SF)>>5);		\
+	I.AF.b.h=q; 						\
+}
+#else
 #ifdef X86_ASM
 #define M_ADC(R)												\
  asm (															\
@@ -98,17 +110,18 @@ int q = I.AF.b.h+R; 											\
  " shlb $2,%%al         \n" /* shift to P/V bit position */     \
  " andb $0xd1,%%ah      \n" /* sign, zero, half carry, carry */ \
  " orb %%ah,%%al        \n" /* combine with P/V */              \
- :"=mq" (I.AF.b.h), "=a" (I.AF.b.l)                              \
+ :"=mq" (I.AF.b.h), "=a" (I.AF.b.l)				\
  :"q" (R), "a" (I.AF.b.l), "0" (I.AF.b.h)                       \
  )
 #else
-#define M_ADC(R) {												\
-	int q = I.AF.b.h+R+(I.AF.b.l&CF);							\
-	I.AF.b.l=ZS[q&255]|((q>>8)&CF)| 							\
-		((I.AF.b.h^q^R)&HF)|									\
-		(((R^I.AF.b.h^SF)&(R^q)&SF)>>5);						\
-	I.AF.b.h=q; 												\
+#define M_ADC(R) {						\
+	int q = I.AF.b.h+R+(I.AF.b.l&CF);			\
+	I.AF.b.l=ZSP[q&255]|((q>>8)&CF)| 			\
+		((I.AF.b.h^q^R)&HF)|				\
+		(((R^I.AF.b.h^SF)&(R^q)&SF)>>5);		\
+	I.AF.b.h=q; 						\
 }
+#endif
 #endif
 
 #ifdef X86_ASM
@@ -134,9 +147,18 @@ int q = I.AF.b.h+R; 											\
 }
 #endif
 
+#if I8080_EXACT
+#define M_SBB(R) {                                              \
+	int q = I.AF.b.h-R-(I.AF.b.l&CF);			\
+	I.AF.b.l=ZSP[q&255]|((q>>8)&CF)|NF|			\
+		((I.AF.b.h^q^R)&HF)|				\
+		(((R^I.AF.b.h)&(I.AF.b.h^q)&SF)>>5);		\
+	I.AF.b.h=q; 						\
+}
+#else
 #ifdef X86_ASM
-#define M_SBB(R)												\
- asm (															\
+#define M_SBB(R)						\
+ asm (								\
  " shrb $1,%%al         \n"                                     \
  " sbbb %2,%0           \n"                                     \
  " lahf                 \n"                                     \
@@ -145,17 +167,18 @@ int q = I.AF.b.h+R; 											\
  " andb $0xd1,%%ah      \n" /* sign, zero, half carry, carry */ \
  " orb $2,%%al          \n" /* set N flag */                    \
  " orb %%ah,%%al        \n" /* combine with P/V */              \
- :"=mq" (I.AF.b.h), "=a" (I.AF.b.l)                              \
+ :"=mq" (I.AF.b.h), "=a" (I.AF.b.l)				\
  :"q" (R), "a" (I.AF.b.l), "0" (I.AF.b.h)                       \
  )
 #else
 #define M_SBB(R) {                                              \
-	int q = I.AF.b.h-R-(I.AF.b.l&CF);							\
-	I.AF.b.l=ZS[q&255]|((q>>8)&CF)|NF|							\
-		((I.AF.b.h^q^R)&HF)|									\
-		(((R^I.AF.b.h)&(I.AF.b.h^q)&SF)>>5);					\
-	I.AF.b.h=q; 												\
+	int q = I.AF.b.h-R-(I.AF.b.l&CF);			\
+	I.AF.b.l=ZSP[q&255]|((q>>8)&CF)|NF|			\
+		((I.AF.b.h^q^R)&HF)|				\
+		(((R^I.AF.b.h)&(I.AF.b.h^q)&SF)>>5);		\
+	I.AF.b.h=q; 						\
 }
+#endif
 #endif
 
 #ifdef X86_ASM
@@ -168,7 +191,7 @@ int q = I.AF.b.h+R; 											\
  " andb $0xd1,%%ah     \n" /* sign, zero, half carry, carry */  \
  " orb $2,%%al         \n" /* set N flag */                     \
  " orb %%ah,%%al       \n" /* combine with P/V */               \
- :"=mq" (I.AF.b.h), "=a" (I.AF.b.l)                              \
+ :"=mq" (I.AF.b.h), "=a" (I.AF.b.l)				\
  :"q" (R), "0" (I.AF.b.h)                                       \
  )
 #else
