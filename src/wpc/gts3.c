@@ -505,6 +505,7 @@ static void GTS3_init(void) {
   GTS3locals.initDone = TRUE;
 
   memset(&GTS3_dmdlocals, 0, sizeof(GTS3_dmdlocals));
+  memset(&DMDFrames, 0, sizeof(DMDFrames));
 
   via_config(0, &via_0_interface);
   via_config(1, &via_1_interface);
@@ -543,6 +544,7 @@ static void GTS3_init2(void) {
   GTS3locals.initDone = TRUE;
 
   memset(&GTS3_dmdlocals, 0, sizeof(GTS3_dmdlocals));
+  memset(&DMDFrames, 0, sizeof(DMDFrames));
 
   via_config(0, &via_0_interface);
   via_config(1, &via_1_interface);
@@ -837,7 +839,7 @@ struct MachineDriver machine_driver_GTS3_1 = {
   },
   GTS3_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50,
-  GTS3_init,CORE_EXITFUNC(NULL)
+  GTS3_init,CORE_EXITFUNC(GTS3_exit)
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER,
@@ -859,7 +861,7 @@ struct MachineDriver machine_driver_GTS3_1S = {
     GTS3_SOUNDCPU1},
   GTS3_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50,
-  GTS3_init,CORE_EXITFUNC(NULL)
+  GTS3_init,CORE_EXITFUNC(GTS3_exit)
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER,
@@ -885,7 +887,7 @@ struct MachineDriver machine_driver_GTS3_2 = {
   },
   GTS3_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50,
-  GTS3_init2,CORE_EXITFUNC(NULL)
+  GTS3_init2,CORE_EXITFUNC(GTS3_exit)
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER,
@@ -912,7 +914,7 @@ struct MachineDriver machine_driver_GTS3_2S = {
     GTS3_SOUNDCPU1},
   GTS3_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50,
-  GTS3_init2,CORE_EXITFUNC(NULL)
+  GTS3_init2,CORE_EXITFUNC(GTS3_exit)
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_TYPE_RASTER,
