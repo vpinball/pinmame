@@ -82,7 +82,7 @@ static struct {
 /*--------
 / Palette
 /---------*/
-static unsigned char core_palette[(DMD_COLORS+(LAMP_COLORS*2)+7)][3] = {
+static const unsigned char core_palette[(DMD_COLORS+(LAMP_COLORS*2)+7)][3] = {
 {/*  0 */ 0x00,0x00,0x00}, /* Background */
 /* -- DMD DOT COLORS-- */
 {/*  1 */ 0x30,0x00,0x00}, /* "Black" Dot - DMD Background */
@@ -102,6 +102,7 @@ static unsigned char core_palette[(DMD_COLORS+(LAMP_COLORS*2)+7)][3] = {
 
 /* Initialize the game palette */
 static PALETTE_INIT(core) {
+  unsigned char tmpPalette[sizeof(core_palette)/3][3];
   int rStart = 0xff;
   int gStart = 0xe0;
   int bStart = 0x20;
@@ -122,48 +123,53 @@ static PALETTE_INIT(core) {
     perc0  = pmoptions.dmd_perc0;
   }
 #endif /* PINMAME_EXT */
-  /*-- Copy the WPC palette to the MAME game palette --*/
-  memcpy(palette, core_palette, sizeof(core_palette));
+  memcpy(tmpPalette, core_palette, sizeof(core_palette));
 
   /*-- Autogenerate DMD Color Shades--*/
-  palette[DMD_DOTOFF*3+0] = rStart * perc0 / 100;
-  palette[DMD_DOTOFF*3+1] = gStart * perc0 / 100;
-  palette[DMD_DOTOFF*3+2] = bStart * perc0 / 100;
-  palette[DMD_DOT33*3+0]  = rStart * perc33 / 100;
-  palette[DMD_DOT33*3+1]  = gStart * perc33 / 100;
-  palette[DMD_DOT33*3+2]  = bStart * perc33 / 100;
-  palette[DMD_DOT66*3+0]  = rStart * perc66 / 100;
-  palette[DMD_DOT66*3+1]  = gStart * perc66 / 100;
-  palette[DMD_DOT66*3+2]  = bStart * perc66 / 100;
-  palette[DMD_DOTON*3+0]  = rStart;
-  palette[DMD_DOTON*3+1]  = gStart;
-  palette[DMD_DOTON*3+2]  = bStart;
+  tmpPalette[DMD_DOTOFF][0] = rStart * perc0 / 100;
+  tmpPalette[DMD_DOTOFF][1] = gStart * perc0 / 100;
+  tmpPalette[DMD_DOTOFF][2] = bStart * perc0 / 100;
+  tmpPalette[DMD_DOT33][0]  = rStart * perc33 / 100;
+  tmpPalette[DMD_DOT33][1]  = gStart * perc33 / 100;
+  tmpPalette[DMD_DOT33][2]  = bStart * perc33 / 100;
+  tmpPalette[DMD_DOT66][0]  = rStart * perc66 / 100;
+  tmpPalette[DMD_DOT66][1]  = gStart * perc66 / 100;
+  tmpPalette[DMD_DOT66][2]  = bStart * perc66 / 100;
+  tmpPalette[DMD_DOTON][0]  = rStart;
+  tmpPalette[DMD_DOTON][1]  = gStart;
+  tmpPalette[DMD_DOTON][2]  = bStart;
 
   /*-- Autogenerate Dark Playfield Lamp Colors --*/
   for (ii = 0; ii < LAMP_COLORS; ii++) {
     /* Reduce by 75% */
-    palette[(DMD_COLORS+LAMP_COLORS+ii)*3+0] = (palette[(DMD_COLORS+ii)*3+0] * 25) / 100;
-    palette[(DMD_COLORS+LAMP_COLORS+ii)*3+1] = (palette[(DMD_COLORS+ii)*3+1] * 25) / 100;
-    palette[(DMD_COLORS+LAMP_COLORS+ii)*3+2] = (palette[(DMD_COLORS+ii)*3+2] * 25) / 100;
+    tmpPalette[DMD_COLORS+LAMP_COLORS+ii][0] = (tmpPalette[DMD_COLORS+ii][0] * 25) / 100;
+    tmpPalette[DMD_COLORS+LAMP_COLORS+ii][1] = (tmpPalette[DMD_COLORS+ii][1] * 25) / 100;
+    tmpPalette[DMD_COLORS+LAMP_COLORS+ii][2] = (tmpPalette[DMD_COLORS+ii][2] * 25) / 100;
   }
 
   { /*-- Autogenerate antialias colours --*/
     int rStep, gStep, bStep;
 
-    rStart = palette[DMD_DOTOFF*3+0];
-    gStart = palette[DMD_DOTOFF*3+1];
-    bStart = palette[DMD_DOTOFF*3+2];
-    rStep = (palette[DMD_DOTON*3+0] * pmoptions.dmd_antialias / 100 - rStart) / 6;
-    gStep = (palette[DMD_DOTON*3+1] * pmoptions.dmd_antialias / 100 - gStart) / 6;
-    bStep = (palette[DMD_DOTON*3+2] * pmoptions.dmd_antialias / 100 - bStart) / 6;
+    rStart = tmpPalette[DMD_DOTOFF][0];
+    gStart = tmpPalette[DMD_DOTOFF][1];
+    bStart = tmpPalette[DMD_DOTOFF][2];
+    rStep = (tmpPalette[DMD_DOTON][0] * pmoptions.dmd_antialias / 100 - rStart) / 6;
+    gStep = (tmpPalette[DMD_DOTON][1] * pmoptions.dmd_antialias / 100 - gStart) / 6;
+    bStep = (tmpPalette[DMD_DOTON][2] * pmoptions.dmd_antialias / 100 - bStart) / 6;
 
     for (ii = START_ANTIALIAS+1; ii < (START_ANTIALIAS+1)+6; ii++) {
-      palette[ii*3+0] = rStart;
-      palette[ii*3+1] = gStart;
-      palette[ii*3+2] = bStart;
+      tmpPalette[ii][0] = rStart;
+      tmpPalette[ii][1] = gStart;
+      tmpPalette[ii][2] = bStart;
       rStart += rStep; gStart += gStep; bStart += bStep;
     }
   }
+#if MAMEVER >= 6100
+  for (ii = 0; ii < sizeof(tmpPalette)/3; ii++)
+    palette_set_color(ii, tmpPalette[ii][0], tmpPalette[ii][1], tmpPalette[ii][2]);
+#else /* MAMEVER */
+  memcpy(palette, tmpPalette, sizeof(tmpPalette));
+#endif /* MAMEVER */
 }
 
 /*-----------------------------------
@@ -444,8 +450,6 @@ static VIDEO_UPDATE(core_status) {
     core_tLampDisplay *drawData = core_gameData->hw.lampData;
     int startx = drawData->startpos.x;
     int starty = drawData->startpos.y;
-    int sizex = drawData->size.x;
-    int sizey = drawData->size.y;
     BMTYPE **line = &lines[locals.firstSimRow+startx];
     int num = 0;
     int qq;
@@ -467,9 +471,9 @@ static VIDEO_UPDATE(core_status) {
       }
     }
     osd_mark_dirty(starty,  startx + locals.firstSimRow,
-                   starty + sizey,
-                   startx + sizex + locals.firstSimRow);
-    firstRow = startx + sizex + locals.firstSimRow;
+                   starty + drawData->size.y,
+                   startx + drawData->size.x + locals.firstSimRow);
+    firstRow = startx + drawData->size.x + locals.firstSimRow;
   }
   /*-- Normal square lamp matrix layout --*/
   else {
