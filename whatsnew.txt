@@ -8,10 +8,14 @@ well as preliminary support for 1 more (Zaccaria). Of course, we're thrilled to 
 add working fully working Baby Pacman emulation, which has been a long standing request going back to the 
 very first few versions of PinMAME. 
 Finally, we close the book on missing Bally support, by adding working 6803 emulation. 
-Hope you enjoy this latest release.
+Last but not least, we hope to have solved the sound stuttering/scratchy issues introduced
+in version 1.10, but with so many possible configurations, it's hard to know for sure.
+So please post on the forum if you still have trouble, and be sure to include your setup.
+
 *IMPORTANT NOTE: 
-  This release has not been beta tested and may contan many bugs! 
-  We wanted to get a release out now, because for the next month or so, we won't have time.
+  This release has not been beta tested and may contain many bugs! 
+  We wanted to get a release out now, because for the next month or so, we won't have time,
+  and we thought we should at least get the bugs from last version fixed and out the door.
                  
 Bugs Fixed
 ----------
@@ -20,6 +24,7 @@ Bugs Fixed
 
 -Mech Handler bugs corrected
 -Scratchy Sound issues
+-Lamp Phasing in Baby Pac
  [Martin Adrian]
 
 New Features
