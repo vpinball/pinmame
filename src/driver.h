@@ -475,6 +475,7 @@ struct GameDriver
 	const struct RomModule *rom;
 #ifdef MESS
 	void (*sysconfig_ctor)(struct SystemConfigurationParamBlock *cfg);
+	const struct GameDriver *compatible_with;
 #endif
 
 	UINT32 flags;	/* orientation and other flags; see defines below */
@@ -508,7 +509,6 @@ struct GameDriver
 #ifdef MESS
 #define GAME_COMPUTER               0x8000  /* Driver is a computer (needs full keyboard) */
 #define GAME_COMPUTER_MODIFIED      0x0800	/* Official? Hack */
-#define GAME_ALIAS                  NOT_A_DRIVER	/* Driver is only an alias for an existing model */
 #endif
 
 

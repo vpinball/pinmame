@@ -20,6 +20,9 @@
 #include "window.h"
 #include "rc.h"
 
+#ifdef MESS
+#include "menu.h"
+#endif
 
 
 //============================================================
@@ -195,7 +198,7 @@ struct rc_option video_opts[] =
 	{ "frames_to_run", "ftr", rc_int, &frames_to_display, "0", 0, 0, NULL, "sets the number of frames to run within the game" },
 	{ "effect", NULL, rc_string, &effect, "none", 0, 0, decode_effect, "specify the blitting effect" },
 	{ "screen_aspect", NULL, rc_string, &aspect, "4:3", 0, 0, decode_aspect, "specify an alternate monitor aspect ratio" },
-	{ "sleep", NULL, rc_bool, &allow_sleep, "1", 0, 0, NULL, "allow MAME to give back time to the system when it's not needed" },
+	{ "sleep", NULL, rc_bool, &allow_sleep, "1", 0, 0, NULL, "allow " APPNAME " to give back time to the system when it's not needed" },
 	{ "rdtsc", NULL, rc_bool, &win_force_rdtsc, "0", 0, 0, NULL, "prefer RDTSC over QueryPerformanceCounter for timing" },
 	{ "high_priority", NULL, rc_bool, &win_high_priority, "0", 0, 0, NULL, "increase thread priority" },
 
@@ -609,6 +612,12 @@ static void check_inputs(void)
 	// check for toggling fullscreen mode
 	if (input_ui_pressed(IPT_OSD_1))
 		win_toggle_full_screen();
+
+#ifdef MESS
+	// check for toggling menu bar
+	if (input_ui_pressed(IPT_OSD_2))
+		win_toggle_menubar();
+#endif
 }
 
 
