@@ -50,7 +50,7 @@ DRIVERNV(bbbowlin)      //Big Ball Bowling - using Bally hardware
 
 // ALVIN G. AND CO.
 DRIVERNV(wtgband)		//World Tour Garage Band (1992)
-						//Mystery Castle (1993)
+DRIVERNV(mystcast)		//Mystery Castle (1993)
 DRIVERNV(pstlpkr)		//Pistol Poker (1993)
 
 
