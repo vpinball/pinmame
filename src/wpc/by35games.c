@@ -775,7 +775,7 @@ CORE_GAMEDEFNV(cybrnaut,"Cybernaut",1985,"Bally",by35_mBY35_45S,GAME_IMPERFECT_S
 / Eight Ball Champ (6803-0B38: 09/85) - Manual says can work with Cheap Squeek also via operator setting
 /------------------------------------*/
 //CPU Works
-INITGAME6803(eballchp,GEN_BY6803,dispBy7C,FLIP6803,4,SNDBRD_BY61, BY6803_DISP7SEG)
+INITGAME6803(eballchp,GEN_BY6803,dispBy7C,FLIP_SW(FLIP_L),4,SNDBRD_BY61, BY6803_DISP7SEG)
 BY6803_ROMSTARTx4(eballchp,"u3_cpu.128",0x025f3008)
 BY61_SOUNDROMx000(         "u3_snd.532",0x4836d70d,
                            "u4_snd.532",0x4b49d94d,
@@ -784,7 +784,7 @@ BY6803_ROMEND
 #define input_ports_eballchp input_ports_by6803
 CORE_GAMEDEFNV(eballchp,"Eight Ball Champ",1985,"Bally",by_mBY6803_61S,0)
 
-INITGAME6803(eballch2,GEN_BY6803,dispBy7C,FLIP6803,4,SNDBRD_BY45, BY6803_DISP7SEG)
+INITGAME6803(eballch2,GEN_BY6803,dispBy7C,FLIP_SW(FLIP_L),4,SNDBRD_BY45, BY6803_DISP7SEG)
 BY6803_ROMSTARTx4(eballch2,"u3_cpu.128",0x025f3008)
 BY45_SOUNDROM22(           "ebcu3.snd", 0x00000000,
                            "ebcu4.snd", 0x00000000)
@@ -796,7 +796,7 @@ CORE_CLONEDEFNV(eballch2,eballchp,"Eight Ball Champ (Cheap Squeek)",1985,"Bally"
 / Beat the Clock (6803-0C70: 11/85) - ??
 /------------------------------------*/
 //CPU Works
-INITGAME6803(beatclck,GEN_BY6803,dispBy7C,FLIP6803,4,SNDBRD_BY61, BY6803_DISP7SEG)
+INITGAME6803(beatclck,GEN_BY6803,dispBy7C,FLIP_SW(FLIP_L),4,SNDBRD_BY61, BY6803_DISP7SEG)
 BY6803_ROMSTARTx4(beatclck,"btc_u3.cpu",0x9ba822ab)
 BY61_SOUNDROM0000(         "btc_u2.snd",0xfd22fd2a,
                            "btc_u3.snd",0x22311a4a,
@@ -810,7 +810,7 @@ CORE_GAMEDEFNV(beatclck,"Beat the Clock",1985,"Bally",by_mBY6803_61S,0)
 / Lady Luck (6803-0E34: 02/86) - Uses Cheap Squeek (Same as Last MPU-35 Line of games)
 /------------------------------------*/
 //CPU Works
-INITGAME6803(ladyluck,GEN_BY6803,dispBy7C,FLIP6803,4,SNDBRD_BY45, BY6803_DISP7SEG)
+INITGAME6803(ladyluck,GEN_BY6803,dispBy7C,FLIP_SWNO(0,0),4,SNDBRD_BY45, BY6803_DISP7SEG)
 BY6803_ROMSTARTx4(ladyluck,"u3.cpu",    0x129f41f5)
 BY45_SOUNDROM22(           "u3_snd.532",0x1bdd6e2b,
                            "u4_snd.532",0xe9ef01e6)
