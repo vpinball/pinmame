@@ -102,8 +102,8 @@ DRIVERNV(robot)         //01/85 Robot
 DRIVERNV(clown)         //07/85 Clown
 DRIVERNV(poolcham)      //12/85 Pool Champion
 DRIVERNV(bbeltzac)      //??/86 Blackbelt
-                        //??/86 Mexico
-                        //??/86 Zankor
+                        //??/86 Mexico '86
+DRIVERNV(zankor)        //??/86 Zankor
                         //??/86 Mystic Star
 DRIVERNV(spooky)        //??/87 Spooky
                         //??/87 Star's Phoenix
@@ -121,19 +121,38 @@ DRIVERNV(empsback)      //Star Wars - The Empire Strike Back
 // ---------------------
 // TAITO GAMES BELOW
 // ---------------------
-DRIVERNV(zarza   )      //Zarza (Xenon Clone)
-DRIVERNV(gemini  )      //Gemini
-DRIVERNV(cosmic  )      //Cosmic
-DRIVERNV(hawkman )		//Hawkman
-DRIVERNV(polar   )      //Polar
-DRIVERNV(rally   )      //Rally
-DRIVERNV(sharkt  )      //Shark (Taito)
-DRIVERNV(snake   )      //Snake
-DRIVERNV(titan   )      //Titan
-DRIVERNV(vortex  )      //Vortex
-DRIVERNV(stest   )      //Speed Test
-DRIVERNV(sshuttle)      //Space Shuttle (Taito)
-
+                        //??/?? Apache!
+                        //??/?? Football
+                        //??/?? Gork
+                        //??/?? Lunelle
+                        //??/?? Ogar
+DRIVERNV(polar   )      //??/?? Polar Explorer
+                        //??/?? Roman Victory
+DRIVERNV(snake   )      //??/?? Snake Machine
+                        //??/?? Space Patrol
+DRIVERNV(stest   )      //??/?? Speed Test
+                        //??/?? Voley Ball
+                        //??/?? Hot Ball (B Eight Ball, 01/77)
+                        //??/?? Vegas / Lady Luck (B Mata Hari, 09/77)
+                        //??/?? Oba Oba (B Playboy, 10/77)
+                        //??/?? Sultan (G Sinbad, 05/78)
+                        //??/?? Shock (W Flash, 01/79)
+DRIVERNV(meteort )      //??/?? Meteor (S Meteor, 09/79)
+                        //??/?? Drakor (W Gorgar, 11/79)
+DRIVERNV(zarza   )      //??/?? Zarza (B Xenon, 11/79)
+DRIVERNV(cosmic  )      //??/?? Cosmic (S Galaxy, 01/80)
+                        //??/?? Fire Action (W Firepower, 02/80)
+DRIVERNV(vortex  )      //??/?? Vortex (W Blackout, 06/80)
+                        //??/?? Sure Shot (B Eight Ball Deluxe, 09/80)
+DRIVERNV(hawkman )		//??/?? Hawkman (B Fathom, 12/80)
+                        //??/81 Cavaleiro Negro (W Black Knight, 11/80)
+DRIVERNV(gemini  )      //??/?? Gemini 2000 (B Centaur, 02/81)
+DRIVERNV(titan   )      //??/?? Titan (W Barracora, 09/81)
+DRIVERNV(sharkt  )      //??/82 Shark
+                        //??/?? Mr. Black (W Defender, 12/82)
+DRIVERNV(rally   )      //??/83 Rally (B Skateball, 04/80)
+                        //??/?? Fire Action De Luxe (W Firepower II, 08/83)
+DRIVERNV(sshuttle)      //??/85 Space Shuttle (W Space Shuttle, 12/84)
 
 // ---------------------
 // BALLY GAMES BELOW
@@ -141,37 +160,37 @@ DRIVERNV(sshuttle)      //Space Shuttle (Taito)
 //MPU-17
 DRIVERNV(freedom )      //BY17-720: 08/76 Freedom
 DRIVERNV(nightrdr)      //BY17-721: 01/76 Night Rider (EM release date)
-DRIVERNV(blackjck)      //BY17-728: 05/76 Black Jack  (EM release date)
 DRIVERNV(evelknie)      //BY17-722: 09/76 Evel Knievel
-DRIVERNV(matahari)      //BY17-725: 09/77 Mata Hari
-DRIVERNV(sst     )      //BY35-741: 10/76 Supersonic
 DRIVERNV(eightbll)      //BY17-723: 01/77 Eight Ball
 DRIVERNV(pwerplay)      //BY17-724: 02/77 Power Play
 DRIVERNV(stk_sprs)      //BY17-740: 08/77 Strikes and Spares
+DRIVERNV(matahari)      //BY17-725: 09/77 Mata Hari
+DRIVERNV(blackjck)      //BY17-728: 05/76 Black Jack  (EM release date)
 //MPU-35
 DRIVERNV(lostwrld)      //BY35-729: 02/77 Lost World
+DRIVERNV(sst     )      //BY35-741: 10/76 Supersonic (EM "Star Ship" release date)
 DRIVERNV(smman   )      //BY35-742: 08/77 The Six Million Dollar Man
-DRIVERNV(playboy )      //BY35-743: 09/76 Playboy
-                        //??          /78 Big Foot
-DRIVERNV(startrek)      //BY35-745: 01/78 Star Trek
+DRIVERNV(playboy )      //BY35-743: 09/76 Playboy (release date is wrong!)
+                        //??        ??/78 Big Foot
 DRIVERNV(voltan  )      //BY35-744: 01/78 Voltan Escapes Cosmic Doom
-                        //??        02/78 Skateball
-DRIVERNV(paragon )      //BY35-748: 12/78 Paragon
-DRIVERNV(hglbtrtr)      //BY35-750: 08/78 Harlem Globetrotters On Tour
-DRIVERNV(dollyptn)      //BY35-777: 10/78 Dolly Parton
+DRIVERNV(startrek)      //BY35-745: 01/78 Star Trek
+                        //??        02/78 Skateball (Prototype)
 DRIVERNV(kiss    )      //BY35-746: 04/78 Kiss
-DRIVERNV(futurspa)      //BY35-781: 03/79 Future Spa
-DRIVERNV(spaceinv)      //BY35-792: 05/79 Space Invaders
 DRIVERNV(ngndshkr)      //BY35-776: 05/78 Nitro Ground Shaker
 DRIVERNV(slbmania)      //BY35-786: 06/78 Silverball Mania
+DRIVERNV(hglbtrtr)      //BY35-750: 08/78 Harlem Globetrotters On Tour
+DRIVERNV(dollyptn)      //BY35-777: 10/78 Dolly Parton
+DRIVERNV(paragon )      //BY35-748: 12/78 Paragon
+DRIVERNV(futurspa)      //BY35-781: 03/79 Future Spa
+DRIVERNV(spaceinv)      //BY35-792: 05/79 Space Invaders
 DRIVERNV(rollston)      //BY35-796: 06/79 Rolling Stones
 DRIVERNV(mystic  )      //BY35-798: 08/79 Mystic
+DRIVERNV(xenon   )      //BY35-811: 11/79 Xenon
+DRIVERNV(xenonf  )      //BY35-811: 11/79 Xenon (French)
 DRIVERNV(hotdoggn)      //BY35-809: 12/79 Hotdoggin'
 DRIVERNV(viking  )      //BY35-802: 12/79 Viking
 DRIVERNV(skatebll)      //BY35-823: 04/80 Skateball
 DRIVERNV(frontier)      //BY35-819: 05/80 Frontier
-DRIVERNV(xenon   )      //BY35-811: 11/79 Xenon
-DRIVERNV(xenonf  )      //BY35-811: 11/79 Xenon (French)
 DRIVERNV(flashgdn)      //BY35-834: 05/80 Flash Gordon
 DRIVERNV(flashgdf)      //BY35-834: 05/80 Flash Gordon (French)
 DRIVERNV(eballdlx)      //BY35-838: 09/80 Eight Ball Deluxe
@@ -189,7 +208,7 @@ DRIVERNV(speakes4)      //BY35-877: 08/82 Speakeasy 4 (4 player)
 DRIVERNV(rapidfir)      //BY35-869: 06/81 Rapid Fire
 DRIVERNV(m_mpac  )      //BY35-872: 05/82 Mr. & Mrs. Pac-Man
 /*same as eballdlx*/    //BY35      10/82 Eight Ball Deluxe Limited Edition
-DRIVERNV(babypac )      //??        10/82 Baby Pac-Man
+DRIVERNV(babypac )      //BY35-891  10/82 Baby Pac-Man
 DRIVERNV(bmx     )      //BY35-888: 11/82 BMX
 DRIVERNV(granslam)      //BY35-     01/83 Grand Slam
 /*same as cenatur*/     //BY35      06/83 Centaur II
@@ -230,7 +249,7 @@ DRIVERNV(atlantis)      //6803-2006: 03/89 Atlantis
 // GOTTLIEB GAMES BELOW
 // ---------------------
 //System 1
-DRIVERNV(cleoptra)      //S1-409    11/77 Cleopatra
+                        //S1-409    11/77 Cleopatra
                         //S1-412    05/78 Sinbad
                         //S1-417    08/78 Joker Poker
                         //S1-419    10/78 Dragon
