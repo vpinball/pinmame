@@ -204,6 +204,21 @@ TAITO_ROMEND
 CORE_GAMEDEFNV(sshuttle,"Space Shuttle (Taito)",1985,"Taito",taito_sintetizador,GAME_IMPERFECT_SOUND)
 
 /*--------------------------------
+/ Drakor
+/-------------------------------*/
+// The 4th rom isn't available, so it's marked as NOT AVAILABLE
+INITGAME(drakor,SNDBRD_TAITO_SINTETIZADOR)
+TAITO_ROMSTART2222(drakor,"drakor1.bin",0xb0ba866e,
+                          "drakor2.bin",0x91dbb199,
+                          "drakor3.bin",0x7ecf377b,
+                          "drakor4.bin",0x00000000)
+TAITO_SOUNDROMS22("drakors1.bin", 0x00000000,
+                  "drakors2.bin", 0x00000000)
+TAITO_ROMEND
+#define input_ports_drakor input_ports_taito
+CORE_GAMEDEFNV(drakor,"Drakor (Taito)",1985,"Taito",taito_sintetizador,GAME_IMPERFECT_SOUND)
+
+/*--------------------------------
 / Polar Explorer
 /-------------------------------*/
 INITGAME(polar,SNDBRD_TAITO_SINTEVOXPP)
