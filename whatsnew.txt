@@ -5,10 +5,18 @@ Version 1.?  (October 31, 2003)
 Bugs Fixed
 ----------
 - Implemented memory protection in wpc games.
-- Fixed rom write problems in wms soundboards
+- Fixed rom write problems in wms soundboards.
+- Fixed bug with System 7 games (e.g. Black Knight)
+[Martin Adrian]
 
 New Features
 ------------
+- Moved to MAME 71u2 core
+[All]
+
+- Reworked sound commander internally. No visible change
+- Simulator for Black Knight
+[Martin Adrian]
 
 Version 1.21 (March 31, 2002)
 -----------------------------

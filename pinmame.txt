@@ -304,43 +304,6 @@ Recording Sounds to a Wave File
   MP3 files, so be carefull. You can easily end up with 50MB wav files
   for just a few minutes of recording!
 
-Creating Animations
--------------------
-
-  This is one suggested way to create animations with PinMAME.
-
-  1. First find a way get the animation on the display via the simulator
-     or the switch keys.
-
-  2. Delete the .nv file and restart pinmamew with the -record <name> switch
-     (e.g. pinmamew afm -record exball)
-
-  3. Repeat the simulator/switch keys until the animation is shown.
-
-  4. Delete .nv file and restart with playback without the simulator display
-     (e.g. pinmamew afm -notranslucency -playback exball)
-     You may want to use -noantialias as well.
-
-  5. Press pause just before the animation starts. Press F12 to save a
-     snapshot and the SHIFT-P to advance to next frame and repeat.
-
-  6. A sequence of PNG files will appear in your SNAP directory.
-
-  7. Convert the PNG files to a gif animation with your favorite graphic tool
-     (I use a program called "PictView 1.92" for the PNG to GIF conversion
-     and then another tool called "GifMake 2.1" to create the animation. Both
-     can be run from a batch file.)
-
-  8. Reduce the number of colours to decrease the filesize. The palette
-     is a mess right now but generally the colors are:
-     0:     background
-     1:     unlit DMD dot
-     2-4:   lit DMD dot
-     5-16:  Lamps switches etc.
-     17-23: antialiased DMD
-     All but 0,2,3,4 can be removed in an amination.
-
-
 Accessing Williams/Bally WPC - Hidden Menu
 ------------------------------------------
 
