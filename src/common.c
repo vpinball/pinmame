@@ -251,6 +251,9 @@ static struct GameSample *read_wav_sample(mame_file *f)
 /*-------------------------------------------------
 	readsamples - load all samples
 -------------------------------------------------*/
+#ifdef VPINMAME
+extern int g_fMechSamples;
+#endif
 
 struct GameSamples *readsamples(const char **samplenames,const char *basename)
 /* V.V - avoids samples duplication */
@@ -279,6 +282,11 @@ struct GameSamples *readsamples(const char **samplenames,const char *basename)
 	samples->total = i;
 	for (i = 0;i < samples->total;i++)
 		samples->sample[i] = 0;
+
+#ifdef VPINMAME
+	if ( (!g_fMechSamples) && strcmpi(*samplenames, "*pinmame")==0 )
+		return samples;
+#endif
 
 	for (i = 0;i < samples->total;i++)
 	{
@@ -1221,7 +1229,7 @@ static int display_rom_load_results(struct rom_load_data *romdata)
 		if (romdata->errors)
 		{
 			strcat(romdata->errorbuf, "ERROR: required files are missing, the game cannot be run.\n");
-			bailing = 1;
+			// bailing = 1;
 		}
 		else
 			strcat(romdata->errorbuf, "WARNING: the game might not run correctly.\n");
@@ -1603,8 +1611,9 @@ static int process_rom_entries(struct rom_load_data *romdata, const struct RomMo
 
 				/* open the file */
 				debugload("Opening ROM file: %s\n", ROM_GETNAME(romp));
-				if (!open_rom_file(romdata, romp))
+				if (!open_rom_file(romdata, romp)) {
 					handle_missing_file(romdata, romp);
+				}
 
 				/* loop until we run out of reloads */
 				do
@@ -1871,8 +1880,28 @@ int rom_load(const struct RomModule *romp)
 		/* now process the entries in the region */
 		if (ROMREGION_ISROMDATA(region))
 		{
+#ifdef PINMAME
+			// if loading of rom for this region fails, check if this is a SOUNDONLY region; 
+			// if so, disable sound
+			int lastErrorCount = romdata.errors;
+			int f = ROMREGION_ISSOUNDONLY(region);
 			if (!process_rom_entries(&romdata, region + 1))
 				return 1;
+
+			if ( lastErrorCount!=romdata.errors && ROMREGION_ISSOUNDONLY(region) ) {
+				// make a warning out of the error(s) for this region
+				romdata.errors = lastErrorCount;
+
+				romdata.warnings++;
+				sprintf(&romdata.errorbuf[strlen(romdata.errorbuf)], "SOUND WAS DISABLED DUE TO PROBLEMS WITH SOUND ROMS\n");
+
+				// disable sound
+				Machine->sample_rate = 0;
+			}
+#else
+			if (!process_rom_entries(&romdata, region + 1))
+				return 1;
+#endif
 		}
 		else if (ROMREGION_ISDISKDATA(region))
 		{
