@@ -54,7 +54,9 @@
 //Comment out to remove U16 Test bypass..
 #define USE_U16_TEST_BYPASS
 //Comment out when not testing mpg audio
-//#define TEST_MPGAUDIO
+#ifdef MAME_DEBUG
+#define TEST_MPGAUDIO
+#endif
 
 //Comment out to use the correct actual frequency values, but the animations are much too slow..
 #define USE_ADJUSTED_FREQ		
