@@ -784,6 +784,7 @@ DRIVER(bbnny,l2)        //S11-396:  01/91 B Bugs Bunny's Birthday Ball (L-2)
 DRIVER(bbnny,lu)        //S11-396:  01/91 B Bugs Bunny's Birthday Ball (LU-2) European
 DRIVER(bop,l7)          //WPC-502:  02/91 W The Machine: Bride of Pinbot
 DRIVER(bop,l4)          //WPC-502:  02/91 W The Machine: Bride of Pinbot (L-4)
+DRIVER(bop,l5)          //WPC-502:  02/91 W The Machine: Bride of Pinbot (L-5)
 DRIVER(hd,l3)           //WPC:      02/91 B Harley Davidson
 DRIVER(sf,l1)           //WPC-601:  03/91 W SlugFest
 DRIVER(t2,l6)           //WPC-513:  10/91 W Terminator 2: Judgement Day (L-6)
@@ -807,7 +808,10 @@ DRIVER(taf,h4)          //WPC:      05/94 B The Addams Family (H-4)
 DRIVER(gw,l1)           //WPC-504:  04/92 W The Getaway: High Speed II (L-1)
 DRIVER(gw,l2)           //WPC-504:  06/92 W The Getaway: High Speed II (L-2)
 DRIVER(gw,l5)           //WPC-504:  12/92 W The Getaway: High Speed II (L-5)
-DRIVER(br,l4)           //WPC:      07/92 B Black Rose
+DRIVER(br,l1)           //WPC:      07/92 B Black Rose (L-1)
+DRIVER(br,sp1)          //WPC:      07/92 B Black Rose (SP-1)
+DRIVER(br,l3)           //WPC:      07/92 B Black Rose (L-3)
+DRIVER(br,l4)           //WPC:      07/92 B Black Rose (L-4)
 DRIVER(ft,p4)           //WPC-505:  07/92 W Fish Tales (P-4)
 DRIVER(ft,l4)           //WPC-505:  09/92 W Fish Tales (L-4)
 DRIVER(ft,l5)           //WPC-505:  12/92 W Fish Tales (L-5)
@@ -838,7 +842,9 @@ DRIVER(wcs,p3)                            // (Px-3)
 DRIVER(fs,lx2)          //WPC-529:  07/94 W The Flintstones (LX-2)
 DRIVER(fs,lx4)          //WPC-529:  09/94 W The Flintstones (LX-4)
 DRIVER(fs,lx5)          //WPC-529:  11/94 W The Flintstones (LX-5)
-DRIVER(corv,21)         //WPC-536:  08/94 B Corvette
+DRIVER(corv,21)         //WPC-536:  08/94 B Corvette (2.1)
+DRIVER(corv,lx1)        //WPC-536:  08/94 B Corvette (LX1)
+DRIVER(corv,px4)        //WPC-536:  08/94 B Corvette (PX4)
                         //WPC-617:  10/94 W Hot Shots
 DRIVER(rs,lx2)          //WPC-524:  10/94 W Red & Ted's Road Show (Lx_2)
 DRIVER(rs,l6)           //WPC-524:  10/94 W Red & Ted's Road Show (L_6)
@@ -874,11 +880,15 @@ DRIVER(nbaf,31)         //WPC-553:  03/97 B NBA Fastbreak
 DRIVER(nbaf,31a)
 DRIVER(mm,10)           //WPC-559:  06/97 W Medieval Madness
 DRIVER(mm,109)                            // Home version
-DRIVER(cv,14)           //WPC-562:  10/97 B Cirqus Voltaire
+DRIVER(cv,14)           //WPC-562:  10/97 B Cirqus Voltaire (1.4)
+DRIVER(cv,10)           //WPC-562:  10/97 B Cirqus Voltaire (1.0)
+DRIVER(cv,11)           //WPC-562:  10/97 B Cirqus Voltaire (1.1)
+DRIVER(cv,13)           //WPC-562:  10/97 B Cirqus Voltaire (1.3)
 DRIVER(cv,20h)                            // Home version
 DRIVER(ngg,13)          //WPC-561:  12/97 W No Good Gofers
 DRIVER(ngg,p06)                           // Prototype
-DRIVER(cp,16)           //WPC-563:  04/98 B The Champion Pub
+DRIVER(cp,16)           //WPC-563:  04/98 B The Champion Pub (1.6)
+DRIVER(cp,15)           //WPC-563:  04/98 B The Champion Pub (1.5)
 DRIVER(mb,10)           //WPC-565:  07/98 W Monster Bash
 DRIVER(mb,106)                            // Home version
 DRIVER(cc,12)           //WPC-566:  10/98 B Cactus Canyon
