@@ -129,7 +129,7 @@
     COREPORT_DIPNAME( 0x0002, 0x0000, "SS:S2: Not Used") \
       COREPORT_DIPSET(0x0000, DEF_STR(Off) ) \
       COREPORT_DIPSET(0x0002, DEF_STR(On) ) \
-    COREPORT_DIPNAME( 0x000c, 0x0004, "SS:S3-S4: Attrach Mode Speech") \
+    COREPORT_DIPNAME( 0x000c, 0x0004, "SS:S3-S4: Attract Mode Speech") \
       COREPORT_DIPSET(0x0000, DEF_STR(Off) ) \
       COREPORT_DIPSET(0x0004, "10s" ) \
       COREPORT_DIPSET(0x0008, "2m" ) \
@@ -205,6 +205,26 @@
        ROM_LOAD(n2, 0x2000, 0x1000, chk2) \
        ROM_LOAD(n3, 0x3000, 0x1000, chk3)
 
+/*-- Video roms for Caveman --*/
+#define VIDEO_ROMSTART(n1,chk1,n2,chk2,n3,chk3,n4,chk4,n5,chk5,n6,chk6,n7,chk7,n8,chk8) \
+     NORMALREGION(0x100000, REGION_CPU3) \
+       ROM_LOAD(n1, 0x08000, 0x1000, chk1) \
+	     ROM_RELOAD(0xf8000, 0x1000) \
+       ROM_LOAD(n2, 0x09000, 0x1000, chk2) \
+	     ROM_RELOAD(0xf9000, 0x1000) \
+       ROM_LOAD(n3, 0x0a000, 0x1000, chk3) \
+	     ROM_RELOAD(0xfa000, 0x1000) \
+       ROM_LOAD(n4, 0x0b000, 0x1000, chk4) \
+	     ROM_RELOAD(0xfb000, 0x1000) \
+       ROM_LOAD(n5, 0x0c000, 0x1000, chk5) \
+	     ROM_RELOAD(0xfc000, 0x1000) \
+       ROM_LOAD(n6, 0x0d000, 0x1000, chk6) \
+	     ROM_RELOAD(0xfd000, 0x1000) \
+       ROM_LOAD(n7, 0x0e000, 0x1000, chk7) \
+	     ROM_RELOAD(0xfe000, 0x1000) \
+       ROM_LOAD(n8, 0x0f000, 0x1000, chk8) \
+	     ROM_RELOAD(0xff000, 0x1000)
+
 /*-- GTS80B Main CPU regions and ROM, 8K single game PROM --*/
 #define GTS80B_8K_ROMSTART(name, n1, chk1) \
    ROM_START(name) \
@@ -229,6 +249,7 @@
 /*-- TheGTS80 are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(gts80s);
 extern MACHINE_DRIVER_EXTERN(gts80ss);
+extern MACHINE_DRIVER_EXTERN(gts80vid);
 extern MACHINE_DRIVER_EXTERN(gts80b);
 extern MACHINE_DRIVER_EXTERN(gts80bs1);
 extern MACHINE_DRIVER_EXTERN(gts80bs2);
@@ -236,6 +257,7 @@ extern MACHINE_DRIVER_EXTERN(gts80bs3);
 
 #define gl_mGTS80S		gts80s
 #define gl_mGTS80SS		gts80ss
+#define gl_mGTS80VID	gts80vid
 #define gl_mGTS80B		gts80b
 #define gl_mGTS80BS1	gts80bs1
 #define gl_mGTS80BS2	gts80bs2

@@ -388,14 +388,22 @@ CORE_GAMEDEFNV(rocky,"Rocky",1982,"Gottlieb",gl_mGTS80SS,GAME_IMPERFECT_SOUND)
 / Caveman (#810?)
 /-------------------------------------------------------------------*/
 INITGAME(caveman, GEN_GTS80, gottlieb_dispNumeric3, 1, SNDBRD_GTS80SS)
-GTS80_1_ROMSTART(caveman, "pv810-1.cpu",  0xdd8d516c,
-                          "u2_80a.bin",   0x241de1d4,
-                          "u3_80a.bin",   0x2d77ccdc)
-GTS80SS22_ROMSTART("pv810-s1.snd", 0xa491664d,
-                   "pv810-s2.snd", 0xd8654e6e)
+GTS80_1_ROMSTART(caveman,"pv810-1.cpu", 0xdd8d516c,
+                         "u2_80a.bin",  0x241de1d4,
+                         "u3_80a.bin",  0x2d77ccdc)
+GTS80SS22_ROMSTART(      "pv810-s1.snd",0xa491664d,
+                         "pv810-s2.snd",0xd8654e6e)
+VIDEO_ROMSTART(          "v810-u1.bin", 0x0a283b15,
+                         "v810-u2.bin", 0xb793baf9,
+                         "v810-u3.bin", 0x740e9ec3,
+                         "v810-u4.bin", 0x2dfe8492,
+                         "v810-u5.bin", 0x2fb15da3,
+                         "v810-u6.bin", 0x2fd0ee95,
+                         "v810-u7.bin", 0x74c6533e,
+                         "v810-u8.bin", 0x514aa152)
 GTS80_ROMEND
 #define input_ports_caveman input_ports_gts80
-CORE_GAMEDEFNV(caveman,"Caveman",1982,"Gottlieb",gl_mGTS80SS,0)
+CORE_GAMEDEFNV(caveman,"Caveman",1982,"Gottlieb",gl_mGTS80VID,0)
 
 /*-------------------------------------------------------------------
 / Spirit (#673)

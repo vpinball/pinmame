@@ -12,7 +12,9 @@
 ************************************************************************************************/
 #include <stdarg.h>
 #include "driver.h"
+#include "vidhrdw/generic.h"
 #include "cpu/m6502/m6502.h"
+#include "cpu/i86/i86.h"
 #include "machine/6532riot.h"
 #include "sound/votrax.h"
 #include "core.h"
@@ -365,7 +367,7 @@ static WRITE_HANDLER(riot6532_2a_w) {
 
 	/* sound */
 	GTS80_sndCmd_w(0,!(data&0x10)?(~data)&0x0f:0x00);
-	
+
 //	logerror("riot6532_2a_w: 0x%02x\n", data);
 }
 
@@ -543,6 +545,18 @@ static MEMORY_WRITE_START(GTS80_writemem)
 {0xf000,0xffff, MWA_ROM},			/*U3 ROM*/
 MEMORY_END
 
+static MEMORY_READ_START(video_readmem)
+{0x00000,0x07fff, MRA_RAM},
+{0x08000,0x0ffff, MRA_ROM},
+{0xf8000,0xfffff, MRA_ROM},
+MEMORY_END
+
+static MEMORY_WRITE_START(video_writemem)
+{0x00000,0x07fff, MWA_RAM},
+{0x08000,0x0ffff, MWA_ROM},
+{0xf8000,0xfffff, MWA_ROM},
+MEMORY_END
+
 #if 0
 /* GTS80b - Gen 1 Sound Hardware*/
 struct MachineDriver machine_driver_GTS80BS1 = {
@@ -663,6 +677,23 @@ static NVRAM_HANDLER(gts80) {
 			memcpy(memory_region(GTS80_MEMREG_CPU)+0x1800+(i*0x100), memory_region(GTS80_MEMREG_CPU)+0x1800, 0x100);
 }
 
+VIDEO_UPDATE(gts80vid)
+{
+	int x, y;
+
+	if (get_vh_global_attribute_changed())
+		for (y = Machine->visible_area.min_y; y <= Machine->visible_area.max_y; y+=2)
+		{
+			for (x = Machine->visible_area.min_x; x <= Machine->visible_area.max_x; x++)
+			{
+				plot_pixel (tmpbitmap, x, y+1, Machine->pens[videoram[0x80*y+x] & 0x0f]);
+				plot_pixel (tmpbitmap, x, y, Machine->pens[(videoram[0x80*y+x] >> 4)& 0x0f]);
+			}
+		}
+
+	copybitmap(bitmap,tmpbitmap,0,0,0,0,&Machine->visible_area,TRANSPARENCY_NONE,0);
+}
+
 MACHINE_DRIVER_START(gts80)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(gts80,NULL,gts80)
@@ -687,6 +718,19 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(gts80ss)
   MDRV_IMPORT_FROM(gts80)
   MDRV_IMPORT_FROM(gts80s_ss)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(gts80vid)
+  MDRV_IMPORT_FROM(gts80ss)
+  MDRV_CPU_ADD_TAG("vcpu", I86, 5000000)
+  MDRV_CPU_MEMORY(video_readmem, video_writemem)
+/* video hardware */
+  //MDRV_VIDEO_ATTRIBUTES(VIDEO_TYPE_RASTER)
+  //MDRV_SCREEN_SIZE(256, 256)
+  //MDRV_VISIBLE_AREA(0, 255, 0, 255)
+  //MDRV_PALETTE_LENGTH(16)
+  //MDRV_VIDEO_START(generic)
+  //MDRV_VIDEO_UPDATE(gts80vid)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(gts80b)
