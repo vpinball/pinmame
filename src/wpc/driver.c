@@ -160,6 +160,7 @@ DRIVERNV(prtyanim)      //6803-0H01: 05/87 Party Animal
 DRIVERNV(hvymetal)      //6803-0H03: 08/87 Heavy Metal Meltdown
 DRIVERNV(dungdrag)      //6803-0H06: 10/87 Dungeons & Dragons
 DRIVERNV(esclwrld)      //6803-0H05: 01/88 Escape from the Lost World
+DRIVERNV(esclwrlg)      //6803-0H05: 01/88 Escape from the Lost World (German)
 DRIVERNV(black100)      //6803-0H07: 03/88 Blackwater 100
                         //??         06/88 Ramp Warrior (Became Truck Stop after Merger)
 //Williams Merger begins here.. but these are still under the Bally name
@@ -191,7 +192,8 @@ DRIVER(lwar,a83)        //Data East MPU: 05/87 Laser War
 //4 x 2 x 7 (mixed) A/N Display
 DRIVER(ssvc,a26)        //Data East MPU: 03/88 Secret Service
 DRIVER(torp,e21)        //Data East MPU: 08/88 Torpedo Alley
-DRIVER(tmac,a24)        //Data East MPU: 12/88 Time Machine
+DRIVER(tmac,a18)        //Data East MPU: 12/88 Time Machine (1.8)
+DRIVER(tmac,a24)        //Data East MPU: 12/88 Time Machine (2.4)
 DRIVER(play,a24)        //Data East MPU: 05/89 Playboy 35th Anniversary
 //2 x 16 A/N Display
 DRIVER(mnfb,c27)        //Data East MPU: 09/89 ABC Monday Night Football
@@ -207,15 +209,21 @@ DRIVER(tmnt,104)        //Data East MPU: 05/91 Teenage Mutant Ninja Turtles
 DRIVER(btmn,101)        //Data East MPU: 07/91 Batman (1.01)
 DRIVER(btmn,103)        //Data East MPU: ??/91 Batman (1.03)
 DRIVER(trek,201)        //Data East MPU: 10/91 Star Trek 25th Anniversary
-DRIVER(hook,408)        //Data East MPU: 01/92 Hook
+DRIVER(hook,401)        //Data East MPU: 01/92 Hook (4.01)
+DRIVER(hook,404)        //Data East MPU: 01/92 Hook (4.04)
+DRIVER(hook,408)        //Data East MPU: 01/92 Hook (4.08)
 //DMD 128 x 32
 DRIVER(lw3,208)         //Data East MPU: 06/92 Lethal Weapon
 DRIVER(stwr,103)        //Data East MPU: 10/92 Star Wars
 DRIVER(rab,130)         //Data East MPU: 02/93 Rocky & Bullwinkle
 DRIVER(jupk,513)        //Data East MPU: 04/93 Jurasic Park
-DRIVER(lah,112)         //Data East MPU: 08/93 Last Action Hero
+DRIVER(lah,l104)        //Data East MPU: 08/93 Last Action Hero (1.04 Spain)
+DRIVER(lah,l108)        //Data East MPU: 08/93 Last Action Hero (1.08 Spain)
+DRIVER(lah,110)         //Data East MPU: 08/93 Last Action Hero (1.10)
+DRIVER(lah,112)         //Data East MPU: 08/93 Last Action Hero (1.12)
 DRIVER(tftc,303)        //Data East MPU: 11/93 Tales From the Crypt
-DRIVER(tomy,400)        //Data East MPU: 02/94 Tommy
+DRIVER(tomy,h30)        //Data East MPU: 02/94 Tommy (3.00 Holland)
+DRIVER(tomy,400)        //Data East MPU: 02/94 Tommy (4.00)
 DRIVER(wwfr,103)        //Data East MPU: 05/94 WWF Royal Rumble (1.03)
 DRIVER(wwfr,106)        //Data East MPU: 08/94 WWF Royal Rumble (1.06)
 DRIVER(gnr,300)         //Data East MPU: 07/94 Guns N Roses
@@ -319,7 +327,8 @@ DRIVERNV(icefever)      //S80a-695: 02/85 Ice Fever
 //System 80b
 DRIVERNV(triplay)       //S80b-696: 05/85 Chicago Cubs Triple Play
 DRIVERNV(bountyh)       //S80b-694: 07/85 Bounty Hunter
-DRIVERNV(tagteam)       //S80b-698: 09/85 Tag Team Pinball
+DRIVERNV(tagteam)       //S80b-698: 09/85 Tag Team Wrestling
+DRIVERNV(tagteam2)      //S80b-698: 09/85 Tag Team Wrestling (rev.2)
 DRIVERNV(rock)          //S80b-697: 10/85 Rock
 DRIVERNV(raven)         //S80b-702: 03/86 Raven
                         //S80b-704: 04/86 Rock Encore
@@ -342,38 +351,49 @@ DRIVERNV(bonebstr)      //S80b-719: 08/89 Bone Busters Inc
 //System 3 Alphanumeric
 DRIVERNV(ccruise)       //C-102:    ??/89 Caribbean Cruise (for International Concepts)
                         //C-103?    ??/89 Night Moves (for International Concepts)
-DRIVERNV(lca)           //S3-720:   11/89 Lights, Camera, Action 1989
-DRIVERNV(silvslug)      //S3-722:   02/90 Silver Slugger 1990
-DRIVERNV(vegas)         //S3-723:   07/90 Vegas 1990
-DRIVERNV(deadweap)      //S3-724:   09/90 Deadly Weapon 1990
-DRIVERNV(tfight)        //S3-726:   10/90 Title Fight 1990
-DRIVERNV(bellring)      //S3-???:   12/90 Bell Ringer 1990
-DRIVERNV(nudgeit)       //S3-???:   12/90 Nudge It 1990
+DRIVERNV(lca)           //S3-720:   11/89 Lights, Camera, Action
+DRIVERNV(lca2)          //S3-720:   11/89 Lights, Camera, Action (rev.2)
+DRIVERNV(silvslug)      //S3-722:   02/90 Silver Slugger
+DRIVERNV(vegas)         //S3-723:   07/90 Vegas
+DRIVERNV(deadweap)      //S3-724:   09/90 Deadly Weapon
+DRIVERNV(tfight)        //S3-726:   10/90 Title Fight
+DRIVERNV(bellring)      //S3-???:   12/90 Bell Ringer
+DRIVERNV(nudgeit)       //S3-???:   12/90 Nudge It
                         //??-???:   ??/91 Amazon Hunt III
-DRIVERNV(carhop)        //S3-725:   01/91 Car Hop 1991
-DRIVERNV(hoops)         //S3-727:   02/91 Hoops 1991
-DRIVERNV(cactjack)      //S3-729:   04/91 Cactus Jack's 1991
-DRIVERNV(clas1812)      //S3-730:   08/91 Class of 1812 1991
-DRIVERNV(surfnsaf)      //S3-731:   11/91 Surf'n Safari 1991
+DRIVERNV(carhop)        //S3-725:   01/91 Car Hop
+DRIVERNV(hoops)         //S3-727:   02/91 Hoops
+DRIVERNV(cactjack)      //S3-729:   04/91 Cactus Jack's
+DRIVERNV(clas1812)      //S3-730:   08/91 Class of 1812
+DRIVERNV(surfnsaf)      //S3-731:   11/91 Surf'n Safari
 DRIVERNV(opthund)       //S3-732:   02/92 Operation: Thunder
 //System 3 128x32 DMD
 DRIVERNV(smb)           //S3-733:   04/92 Super Mario Bros.
+DRIVERNV(smb2)          //S3-733:   04/92 Super Mario Bros. (rev.2)
+DRIVERNV(smb3)          //S3-733:   04/92 Super Mario Bros. (rev.3)
 DRIVERNV(smbmush)       //S3-N105:  06/92 Super Mario Bros. Mushroom World
 DRIVERNV(cueball)       //S3-734:   10/92 Cue Ball Wizard
 DRIVERNV(sfight2)       //S3-735:   03/93 Street Fighter II
-DRIVERNV(sfight2a)      //                Street Fighter II (V2)
+DRIVERNV(sfight2a)      //                Street Fighter II (rev.1)
+DRIVERNV(sfight2b)      //                Street Fighter II (rev.2)
 DRIVERNV(teedoff)       //S3-736:   05/93 Tee'd Off
+DRIVERNV(teedoff1)      //S3-736:   05/93 Tee'd Off (rev.1)
+DRIVERNV(teedoff3)      //S3-736:   05/93 Tee'd Off (rev.3)
 DRIVERNV(wipeout)       //S3-738:   10/93 Wipe Out
 DRIVERNV(gladiatr)      //S3-737:   11/93 Gladiators
 DRIVERNV(wcsoccer)      //S3-741:   02/94 World Challenge Soccer
 DRIVERNV(rescu911)      //S3-740:   05/94 Rescue 911
 DRIVERNV(freddy)        //S3-744:   10/94 Freddy: A Nightmare on Elm Street
-DRIVERNV(shaqattq)      //S3-743:   02/95 Shaq Attaq
+DRIVERNV(shaqattq)      //S3-743:   02/95 Shaq Attaq (rev.5)
+DRIVERNV(shaqatt2)      //S3-743:   02/95 Shaq Attaq (rev.2)
 DRIVERNV(stargate)      //S3-742:   03/95 Stargate
-DRIVERNV(stargat2)      //                Stargate (V2)
+DRIVERNV(stargat1)      //                Stargate (rev.1)
+DRIVERNV(stargat2)      //                Stargate (rev.2)
+DRIVERNV(stargat3)      //                Stargate (rev.3)
+DRIVERNV(stargat4)      //                Stargate (rev.4)
 DRIVERNV(bighurt)       //S3-743:   06/95 Big Hurt
 DRIVERNV(snspares)      //S3-N111:  10/95 Strikes 'N Spares
-DRIVERNV(waterwld)      //S3-746:   10/95 Waterworld
+DRIVERNV(waterwld)      //S3-746:   10/95 Waterworld (rev.3)
+DRIVERNV(waterwl2)      //S3-746:   10/95 Waterworld (rev.2)
 DRIVERNV(andretti)      //S3-747:   12/95 Mario Andretti
 DRIVERNV(barbwire)      //S3-748:   04/96 Barb Wire
 DRIVERNV(brooks)        //S3-749:   08/96 Brooks & Dunn (never produced)
@@ -424,7 +444,8 @@ DRIVERNV(bmf_time)      //DE/Sega MPU: 07/95 Batman Forever (Timed Version)
 //Whitestar Hardware DMD 128x32
 DRIVERNV(apollo13)      //Whitestar: 11/95 Apollo 13
 DRIVERNV(gldneye)       //Whitestar: 02/96 Golden Eye
-DRIVERNV(twister)       //Whitestar: 04/96 Twister
+DRIVER  (twst,300)      //Whitestar: 04/96 Twister (3.00)
+DRIVER  (twst,405)      //Whitestar: 04/96 Twister (4.05)
 DRIVERNV(id4)           //Whitestar: 07/96 ID4: Independance Day
 DRIVERNV(spacejam)      //Whitestar: 08/96 Space Jam
 DRIVERNV(swtril)        //Whitestar: 02/97 Star Wars Trilogy
@@ -435,7 +456,8 @@ DRIVERNV(viprsega)      //Whitestar: 02/98 Viper Night Drivin'
 DRIVERNV(lostspc)       //Whitestar: 06/98 Lost in Space
 DRIVERNV(goldcue)       //Whitestar: 06/98 Golden Cue
 DRIVERNV(godzilla)      //Whitestar: 09/98 Godzilla
-DRIVERNV(southpk)       //Whitestar: 01/99 South Park
+DRIVER  (sprk,090)      //Whitestar: 01/99 South Park (0.90)
+DRIVER  (sprk,103)      //Whitestar: 01/99 South Park (1.03)
 DRIVERNV(harley)        //Whitestar: 08/99 Harley Davidson
 
 // ---------------
@@ -639,14 +661,18 @@ DRIVER(strlt,l1)        //S7-530:   06/84 W Star Light (Came out after System 9 
 DRIVER(pfevr,p3)        //S9-526:   05/84 W Pennant Fever (pitch & bat)
                         //S?-538:   10/84 W Gridiron
 DRIVER(sshtl,l7)        //S9-535:   12/84 W Space Shuttle
-DRIVER(szone,l5)        //S9-916:   ??/8? W Strike Zone (Shuffle)
+DRIVER(szone,l2)        //S9-916:   ??/8? W Strike Zone (L-2) (Shuffle)
+DRIVER(szone,l5)        //S9-916:   ??/8? W Strike Zone (L-5) (Shuffle)
 DRIVER(sorcr,l1)        //S9-532:   03/85 W Sorcerer
-DRIVER(comet,l4)        //S9-540:   06/85 W Comet
+DRIVER(comet,l4)        //S9-540:   06/85 W Comet (L-4)
+DRIVER(comet,l5)        //S9-540:   06/85 W Comet (L-5)
 //System 11
 DRIVER(hs,l4)           //S11-541:  01/86 W High Speed
                         //S11:      02/86 W Alley Cats (Bowler)
 DRIVER(grand,l4)        //S11-523:  04/86 W Grand Lizard
-DRIVER(rdkng,l4)        //S11-542:  07/86 W Road Kings
+DRIVER(rdkng,l1)        //S11-542:  07/86 W Road Kings (L-1)
+DRIVER(rdkng,l3)        //S11-542:  07/86 W Road Kings (L-3)
+DRIVER(rdkng,l4)        //S11-542:  07/86 W Road Kings (L-4)
 DRIVER(pb,l5)           //S11-549:  10/86 W Pin-bot
                         //S11:      10/86 W Strike Force
 DRIVER(milln,l3)        //S11-555:  01/87 W Millionaire
@@ -671,7 +697,8 @@ DRIVER(bk2k,l4)         //S11-563:  04/89 W Black Knight 2000
 //First Game produced entirely by Williams after Merger to use Bally Name
 DRIVER(tsptr,l3)        //S11-2630: 04/89 B Transporter the Rescue
                         //S11:      05/89 W Pool
-DRIVER(polic,l4)        //S11-573:  08/89 W Police Force
+DRIVER(polic,l3)        //S11-573:  08/89 W Police Force (LA-3)
+DRIVER(polic,l4)        //S11-573:  08/89 W Police Force (LA-4)
 DRIVER(eatpm,l4)        //S11-782:  10/89 B Elvira and the Party Monsters
 DRIVER(bcats,l5)        //S11-575:  11/89 W Bad Cats
 DRIVER(rvrbt,l3)        //S11-1966: 11/89 W Riverboat Gambler
@@ -694,14 +721,15 @@ DRIVER(bbnny,l2)        //S11-396:  01/91 B Bugs Bunny's Birthday Ball
 DRIVER(bop,l7)          //WPC-502:  02/91 W The Machine: Bride of Pinbot
 DRIVER(hd,l3)           //WPC:      02/91 B Harley Davidson
 DRIVER(sf,l1)           //WPC-601:  03/91 W SlugFest
-DRIVER(t2,l8)           //WPC-513:  07/91 W Terminator 2: Judgement Day
+DRIVER(t2,l6)           //WPC-513:  10/91 W Terminator 2: Judgement Day (L-6)
+DRIVER(t2,l8)           //WPC-513:  12/91 W Terminator 2: Judgement Day (L-8)
 DRIVER(t2,p2f)                            // Profanity Speech version
 DRIVER(hurr,l2)         //WPC-512:  08/91 W Hurricane
 DRIVER(pz,f4)           //WPC:      08/91 B Party Zone
-DRIVER(gi,l9)           //WPC:      11/91 B Gilligan's Island
+DRIVER(gi,l4)           //WPC-203:  07/91 B Gilligan's Island (L-4)
+DRIVER(gi,l6)           //WPC-203:  08/91 B Gilligan's Island (L-6)
+DRIVER(gi,l9)           //WPC-203:  12/92 B Gilligan's Island (L-9)
 DRIVER(strik,l4)        //WPC:      05/92 W Strike Master
-DRIVER(gw,l5)           //WPC-504:  02/92 W The Getaway: High Speed II (L-5)
-DRIVER(gw,l2)           //WPC-504:  02/92 W The Getaway: High Speed II (L-2)
 DRIVER(taf,p2)          //WPC:      01/92 B The Addams Family (P-2)
 DRIVER(taf,l1)          //WPC:      01/92 B The Addams Family (L-1)
 DRIVER(taf,l2)          //WPC:      03/92 B The Addams Family (L-2)
@@ -710,28 +738,41 @@ DRIVER(taf,l4)          //WPC:      05/92 B The Addams Family (L-4)
 DRIVER(taf,l7)          //WPC:      10/92 B The Addams Family (L-7) (Prototype L-5)
 DRIVER(taf,l5)          //WPC:      12/92 B The Addams Family (L-5)
 DRIVER(taf,l6)          //WPC:      03/93 B The Addams Family (L-6)
-DRIVER(taf,h4)          //WPC:      05/94 B The Addams Family (H-5)
+DRIVER(taf,h4)          //WPC:      05/94 B The Addams Family (H-4)
+DRIVER(gw,l1)           //WPC-504:  04/92 W The Getaway: High Speed II (L-1)
+DRIVER(gw,l2)           //WPC-504:  06/92 W The Getaway: High Speed II (L-2)
+DRIVER(gw,l5)           //WPC-504:  12/92 W The Getaway: High Speed II (L-5)
 DRIVER(br,l4)           //WPC:      07/92 B Black Rose
-DRIVER(dw,l2)           //WPC:      09/92 B Doctor Who
-DRIVER(ft,l5)           //WPC-505:  10/92 W Fish Tales
+DRIVER(ft,p4)           //WPC-505:  07/92 W Fish Tales (P-4)
+DRIVER(ft,l4)           //WPC-505:  09/92 W Fish Tales (L-4)
+DRIVER(ft,l5)           //WPC-505:  12/92 W Fish Tales (L-5)
+DRIVER(dw,l1)           //WPC-206   10/92 B Doctor Who (L-1)
+DRIVER(dw,l2)           //WPC-206:  11/92 B Doctor Who (L-2)
 DRIVER(cftbl,l4)        //WPC:      12/92 B Creature from the Black Lagoon
 DRIVER(ww,l5)           //WPC-518:  01/93 W White Water
 DRIVER(drac,l1)         //WPC-501:  04/93 W Bram Stoker's Dracula
-DRIVER(tz,92)           //WPC:      04/93 B Twilight Zone
-DRIVER(tz,94h)							  // Home version
+DRIVER(tz,l2)           //WPC-520:  05/93 B Twilight Zone (L-2)
+DRIVER(tz,l4)           //WPC-520:  06/93 B Twilight Zone (L-4)
+DRIVER(tz,92)           //WPC-520:  01/95 B Twilight Zone (9.2)
+DRIVER(tz,94h)			//WPC-520:  10/98 B Twilight Zone (9.4H - Home version)
 DRIVER(ij,l3)           //WPC-517:  07/93 W Indiana Jones (L-3)
+DRIVER(ij,l4)           //WPC-517:  08/93 W Indiana Jones (L-4)
 DRIVER(ij,l5)           //WPC-517:  09/93 W Indiana Jones (L-5)
 DRIVER(ij,l6)           //WPC-517:  10/93 W Indiana Jones (L-6)
 DRIVER(ij,l7)           //WPC-517:  11/93 W Indiana Jones (L-7)
-DRIVER(jd,l7)           //WPC:      09/93 B Judge Dredd
-DRIVER(sttng,l7)        //WPC-523:  11/93 W Star Trek: The Next Generation
+DRIVER(jd,l6)           //WPC-220:  10/93 B Judge Dredd (L-6)
+DRIVER(jd,l7)           //WPC-220:  12/93 B Judge Dredd (L-7)
+DRIVER(sttng,p5)        //WPC-523:  11/93 W Star Trek: The Next Generation (P-5)
+DRIVER(sttng,l7)        //WPC-523:  02/94 W Star Trek: The Next Generation (LX-7)
 DRIVER(dm,lx4)          //WPC-528:  02/94 W Demolition Man
 DRIVER(dm,px5)
 DRIVER(pop,lx5)         //WPC:      02/94 B Popeye Saves the Earth
 DRIVER(wcs,l2)          //WPC-531:  02/94 B World Cup Soccer (Lx-2)
 DRIVER(wcs,p3)                            // (Px-3)
                         //WPC-620:  06/94 W Pinball Circus
-DRIVER(fs,lx5)          //WPC-529:  07/94 W The Flintstones
+DRIVER(fs,lx2)          //WPC-529:  07/94 W The Flintstones (LX-2)
+DRIVER(fs,lx4)          //WPC-529:  09/94 W The Flintstones (LX-4)
+DRIVER(fs,lx5)          //WPC-529:  11/94 W The Flintstones (LX-5)
 DRIVER(corv,21)         //WPC-536:  08/94 B Corvette
                         //WPC-617:  10/94 W Hot Shots
 DRIVER(rs,l6)           //WPC-524:  10/94 W Red & Ted's Road Show (L_6)

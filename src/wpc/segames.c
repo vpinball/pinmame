@@ -51,15 +51,23 @@ CORE_GAMEDEFNV(gldneye,"Goldeneye",1996,"Sega",de_mSES3,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / Twister
 /-------------------------------------------------------------------*/
-INITGAME(twister,GEN_WS,se_dmd128x32,0)
-SE128_ROMSTART(twister, "twstcpu.405",CRC(8c3ea1a8) SHA1(d495b7dc79186d442a89b6382a6dc1c83e64ef95))
+INITGAME(twst,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(twst_405, "twstcpu.405",CRC(8c3ea1a8) SHA1(d495b7dc79186d442a89b6382a6dc1c83e64ef95))
 DE_DMD32ROM8x(   "twstdspa.400",CRC(a6a3d41d) SHA1(ad42b3390ceeeea43c1cd47f300bcd4b4a4d2558))
 DE2S_SOUNDROM144("twstsnd.u7" ,CRC(5ccf0798) SHA1(ac591c508de8e9687c20b01c298084c99a251016),
                  "twstsnd.u17",CRC(0e35d640) SHA1(ce38a03fcc321cd9af07d24bf7aa35f254b629fc),
                  "twstsnd.u21",CRC(c3eae590) SHA1(bda3e0a725339069c49c4282676a07b4e0e8d2eb))
 SE_ROMEND
-#define input_ports_twister input_ports_se
-CORE_GAMEDEFNV(twister,"Twister",1996,"Sega",de_mSES1,GAME_NOCRC)
+#define input_ports_twst input_ports_se
+CORE_GAMEDEF(twst,405,"Twister (4.05)",1996,"Sega",de_mSES1,GAME_NOCRC)
+
+SE128_ROMSTART(twst_300, "twstcpu.300",CRC(5cc057d4) SHA1(9ff4b6951a974e3013edc30ba2310c3bffb224d2))
+DE_DMD32ROM8x(   "twstdspa.301",CRC(78bc45cb) SHA1(d1915fab46f178c9842e44701c91a0db2495e4fd))
+DE2S_SOUNDROM144("twstsnd.u7" ,CRC(5ccf0798) SHA1(ac591c508de8e9687c20b01c298084c99a251016),
+                 "twstsnd.u17",CRC(0e35d640) SHA1(ce38a03fcc321cd9af07d24bf7aa35f254b629fc),
+                 "twstsnd.u21",CRC(c3eae590) SHA1(bda3e0a725339069c49c4282676a07b4e0e8d2eb))
+SE_ROMEND
+CORE_CLONEDEF(twst,300,405,"Twister (3.00)",1996,"Sega",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / ID4: Independence Day
@@ -205,8 +213,8 @@ CORE_GAMEDEFNV(godzilla,"Godzilla",1998,"Sega",de_mSES1,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / South Park
 /-------------------------------------------------------------------*/
-INITGAME(southpk,GEN_WS,se_dmd128x32,0)
-SE128_ROMSTART(southpk,"spkcpu.103",CRC(55ca8aa1) SHA1(ee3dda7d7e6ad32072cbf3acc8087a27b95cc68d))
+INITGAME(sprk,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(sprk_103,"spkcpu.103",CRC(55ca8aa1) SHA1(ee3dda7d7e6ad32072cbf3acc8087a27b95cc68d))
 DE_DMD32ROM8x(    "spdspa.101",CRC(48ca598d) SHA1(0827ac7bb5cf12b0e63860b73a808273d984509e))
 DE2S_SOUNDROM18888("spku7.101" ,CRC(3d831d3e) SHA1(fd12e4639bf806c518a2733c32572b051517ff27),
                   "spku17.100",CRC(829262c9) SHA1(88adb13a6773f88658d6b8d6520a03ecd377e4e7),
@@ -214,8 +222,18 @@ DE2S_SOUNDROM18888("spku7.101" ,CRC(3d831d3e) SHA1(fd12e4639bf806c518a2733c32572
                   "spku36.100",CRC(bcf6d2cb) SHA1(8e8186f08ff1e39a7889469ec1fdfa9402a8695c),
                   "spku37.100",CRC(7d8f6bcb) SHA1(579cfef19cf9b5c91151ae833bc6c21734589849))
 SE_ROMEND
-#define input_ports_southpk input_ports_se
-CORE_GAMEDEFNV(southpk,"South Park",1999,"Sega",de_mSES1,GAME_NOCRC)
+#define input_ports_sprk input_ports_se
+CORE_GAMEDEF(sprk,103,"South Park (1.03)",1999,"Sega",de_mSES1,GAME_NOCRC)
+
+SE128_ROMSTART(sprk_090,"spkcpu.090",CRC(bc3f8531) SHA1(5408e008c4f545bb4f82308b118d15525f8a263a))
+DE_DMD32ROM8x(    "spdspa.101",CRC(48ca598d) SHA1(0827ac7bb5cf12b0e63860b73a808273d984509e))
+DE2S_SOUNDROM18888("spku7.090",CRC(19937fbd) SHA1(ebd7c8f1604accbeb7c00066ecf811193a2cb588),
+                  "spku17.090",CRC(05a8670e) SHA1(7c0f1f0c9b94f0327c820f002bffc4ea05670ec8),
+                  "spku21.090",CRC(c8629ee7) SHA1(843a742cb5cfce21a83618d14ae08ee1930d36cc),
+                  "spku36.090",CRC(727d4624) SHA1(9019014e6057d279a37cc3ce269a1c68baeb9673),
+                  "spku37.090",CRC(0c01b0c7) SHA1(76b5af50514d110b49721e6916dd16b3e3a2f5fa))
+SE_ROMEND
+CORE_CLONEDEF(sprk,090,103,"South Park (0.90)",1999,"Sega",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Harley Davidson
