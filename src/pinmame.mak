@@ -83,6 +83,7 @@ PINGAMES += $(PINOBJ)/sims/s7/full/tmfnt.o
 PINGAMES += $(PINOBJ)/sims/s11/prelim/eatpm.o
 PINGAMES += $(PINOBJ)/sims/s11/full/milln.o
 PINGAMES += $(PINOBJ)/sims/s11/full/dd.o
+PINGAMES += $(PINOBJ)/sims/se/prelim/monopoly.o
 PINGAMES += $(PINOBJ)/sims/wpc/full/afm.o
 PINGAMES += $(PINOBJ)/sims/wpc/full/bop.o
 PINGAMES += $(PINOBJ)/sims/wpc/full/br.o
@@ -191,6 +192,8 @@ OBJDIRS += $(PINOBJ)/sims/s11/full
 OBJDIRS += $(PINOBJ)/sims/s11/prelim
 OBJDIRS += $(PINOBJ)/sims/s7
 OBJDIRS += $(PINOBJ)/sims/s7/full
+OBJDIRS += $(PINOBJ)/sims/se
+OBJDIRS += $(PINOBJ)/sims/se/prelim
 
 $(OBJ)/allgames.a: $(PINGAMES)
 #
