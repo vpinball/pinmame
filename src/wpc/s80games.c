@@ -618,7 +618,7 @@ CORE_GAMEDEFNV(icefever,"Ice Fever",1985,"Gottlieb",gl_mS80,GAME_IMPERFECT_SOUND
 // System 80b
 
 /*-------------------------------------------------------------------
-/ Chicago Cubs' Triple Play 
+/ Chicago Cubs' Triple Play
 /-------------------------------------------------------------------*/
 //(No info on what sound hardware they use, presume Gen 1)
 INITGAME(triplay,GEN_S80B2K,gottlieb_dispAlpha, 1)
@@ -628,7 +628,7 @@ S80_ROMEND
 CORE_GAMEDEFNV(triplay, "Triple Play",1985,"Gottlieb",gl_mS80B,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
-/ Bounty Hunter 
+/ Bounty Hunter
 /-------------------------------------------------------------------*/
 //(No info on what sound hardware they use, presume Gen 1)
 INITGAME(bountyh,GEN_S80B2K,gottlieb_dispAlpha, 1)
@@ -643,8 +643,8 @@ CORE_GAMEDEFNV(bountyh, "Bounty Hunter",1985,"Gottlieb",gl_mS80B,GAME_NO_SOUND)
 //(I assume these are using Gen.1 hardware, but there's 1 less rom, so who knows)
 INITGAME(rock,GEN_S80B2K,gottlieb_dispAlpha, 1)
 S80B_8K_ROMSTART(rock, "prom1.cpu", 0x1146c1d3)
-S80BSSOUND88(             "drom1.snd", 0xa698ec33,
-						  "yrom1.snd", 0x9232591e)
+S80BSSOUND88(          "drom1.snd", 0x03830e81,
+					   "yrom1.snd", 0xeffba2ad)
 S80_ROMEND
 CORE_GAMEDEFNV(rock, "Rock",1986,"Gottlieb",gl_mS80BS1,GAME_IMPERFECT_SOUND)
 
@@ -655,8 +655,8 @@ CORE_GAMEDEFNV(rock, "Rock",1986,"Gottlieb",gl_mS80BS1,GAME_IMPERFECT_SOUND)
 INITGAME(raven,GEN_S80B2K,gottlieb_dispAlpha, 1)
 S80B_2K_ROMSTART(raven, "prom2.cpu", 0x481f3fb8,
                         "prom1.cpu", 0xedc88561)
-S80BSSOUND88(           "drom1.snd", 0xa698ec33,
-						"yrom1.snd", 0x51709c2f)
+S80BSSOUND88(           "drom1.snd", 0xa04bf7d0,
+						"yrom1.snd", 0xee5f868b)
 S80_ROMEND
 CORE_GAMEDEFNV(raven, "Raven",1986,"Gottlieb",gl_mS80BS1,GAME_IMPERFECT_SOUND)
 
@@ -667,8 +667,8 @@ INITGAME(hlywoodh,GEN_S80B2K,gottlieb_dispAlpha, 1)
 S80B_2K_ROMSTART(hlywoodh, "prom2.cpu", 0xa465e5f3,
                            "prom1.cpu", 0x0493e27a)
 S80BSSOUND888(             "drom1.snd", 0xa698ec33,
-						   "yrom1.snd", 0x51709c2f,
-						   "yrom2.snd", 0x9232591e)
+						   "yrom1.snd", 0x9232591e,
+						   "yrom2.snd", 0x51709c2f)
 S80_ROMEND
 CORE_GAMEDEFNV(hlywoodh, "Hollywood Heat",1986,"Gottlieb",gl_mS80BS1,GAME_IMPERFECT_SOUND)
 
@@ -704,9 +704,9 @@ CORE_GAMEDEFNV(goldwing, "Gold Wings",1986,"Gottlieb",gl_mS80BS1,GAME_IMPERFECT_
 INITGAME(mntecrlo,GEN_S80B2K,gottlieb_dispAlpha, 1)
 S80B_2K_ROMSTART(mntecrlo, "prom2.cpu", 0x6860e315,
                            "prom1.cpu", 0x0fbf15a3)
-S80BSSOUND888(             "drom1.snd", 0xa698ec33,
-						   "yrom1.snd", 0x51709c2f,
-						   "yrom2.snd", 0x9232591e)
+S80BSSOUND888(             "drom1.snd", 0x1a53ac15,
+						   "yrom1.snd", 0x6e234c49,
+						   "yrom2.snd", 0xa95d1a6b)
 S80_ROMEND
 CORE_GAMEDEFNV(mntecrlo, "Monte Carlo",1987,"Gottlieb",gl_mS80BS1,GAME_IMPERFECT_SOUND)
 
@@ -728,9 +728,9 @@ CORE_GAMEDEFNV(sprbreak, "Spring Break",1987,"Gottlieb",gl_mS80BS1,GAME_IMPERFEC
 INITGAME(arena,GEN_S80B2K,gottlieb_dispAlpha, 1)
 S80B_2K_ROMSTART(arena, "prom2.cpu", 0x4783b689,
                         "prom1.cpu", 0x8c9f8ee9)
-S80BSSOUND888(             "drom1.snd", 0xa698ec33,
-						   "yrom1.snd", 0x51709c2f,
-						   "yrom2.snd", 0x9232591e)
+S80BSSOUND888(             "drom1.snd", 0x78e6cbf1,
+						   "yrom1.snd", 0xf7a951c2,
+						   "yrom2.snd", 0xcc2aef4e)
 S80_ROMEND
 CORE_GAMEDEFNV(arena, "Arena",1987,"Gottlieb",gl_mS80BS1,GAME_IMPERFECT_SOUND)
 
@@ -739,13 +739,13 @@ CORE_GAMEDEFNV(arena, "Arena",1987,"Gottlieb",gl_mS80BS1,GAME_IMPERFECT_SOUND)
 /****************************************/
 
 /*-------------------------------------------------------------------
-/ Victory 
+/ Victory
 /-------------------------------------------------------------------*/
 INITGAME(victory,GEN_S80B2K,gottlieb_dispAlpha, 1)
 S80B_2K_ROMSTART(victory, "prom2.cpu", 0x6a42eaf4,
                           "prom1.cpu", 0xe724db90)
-S80BSSOUND3232(           "drom1.snd", 0x61d66ca1,
-						  "yrom1.snd", 0x469ef444)
+S80BSSOUND3232(           "drom1.snd", 0x4ab6dab7,
+						  "yrom1.snd", 0x921a100e)
 S80_ROMEND
 CORE_GAMEDEFNV(victory, "Victory",1987,"Gottlieb",gl_mS80BS2,0)
 
@@ -755,8 +755,8 @@ CORE_GAMEDEFNV(victory, "Victory",1987,"Gottlieb",gl_mS80BS2,0)
 INITGAME(diamond,GEN_S80B2K,gottlieb_dispAlpha, 1)
 S80B_2K_ROMSTART(diamond, "prom2.cpu", 0x862951dc,
                           "prom1.cpu", 0x7a011757)
-S80BSSOUND3232(           "drom1.snd", 0x61d66ca1,
-						  "yrom1.snd", 0x469ef444)
+S80BSSOUND3232(           "drom1.snd", 0xc216d1e4,
+						  "yrom1.snd", 0x0a18d626)
 S80_ROMEND
 CORE_GAMEDEFNV(diamond, "Diamond Lady",1988,"Gottlieb",gl_mS80BS2,0)
 
@@ -777,8 +777,8 @@ CORE_GAMEDEFNV(txsector, "TX-Sector",1988,"Gottlieb",gl_mS80BS2,0)
 INITGAME(robowars,GEN_S80B2K,gottlieb_dispAlpha, 1)
 S80B_2K_ROMSTART(robowars, "prom2.cpu", 0x893177ed,
                            "prom1.cpu", 0xcd1587d8)
-S80BSSOUND3232(            "drom1.snd", 0x61d66ca1,
-						   "yrom1.snd", 0x469ef444)
+S80BSSOUND3232(            "drom1.snd", 0xea59b6a1,
+						   "yrom1.snd", 0x7ecd8b67)
 S80_ROMEND
 CORE_GAMEDEFNV(robowars, "Robo-War",1988,"Gottlieb",gl_mS80BS2,0)
 
@@ -803,8 +803,8 @@ static void init_excalibr(void) {
 }
 S80B_4K_ROMSTART(excalibr, "prom2.cpu", 0x499e2e41,
                            "prom1.cpu", 0xed1083d7)
-S80BSSOUND3232(            "drom1.snd", 0x61d66ca1, 
-						   "yrom1.snd", 0x469ef444)	
+S80BSSOUND3232(            "drom1.snd", 0xa4368cd0,
+						   "yrom1.snd", 0x9f194744)
 S80_ROMEND
 CORE_GAMEDEFNV(excalibr, "Excalibur",1988,"Gottlieb",gl_mS80BS3,0)
 
@@ -814,8 +814,8 @@ CORE_GAMEDEFNV(excalibr, "Excalibur",1988,"Gottlieb",gl_mS80BS3,0)
 INITGAME(badgirls,GEN_S80B4K,gottlieb_dispAlpha, 1)
 S80B_4K_ROMSTART(badgirls, "prom2.cpu", 0x583933ec,
                            "prom1.cpu", 0x956aeae0)
-S80BSSOUND3232(            "yrom2.snd", 0x61d66ca1, //Should be labeled DROM!
-						   "yrom1.snd", 0x469ef444)	
+S80BSSOUND3232(            "yrom2.snd", 0x452dec20, //Should be labeled DROM!
+						   "yrom1.snd", 0xab3b8e2d)
 S80_ROMEND
 CORE_GAMEDEFNV(badgirls, "Bad Girls",1988,"Gottlieb",gl_mS80BS3,0)
 
@@ -825,8 +825,8 @@ CORE_GAMEDEFNV(badgirls, "Bad Girls",1988,"Gottlieb",gl_mS80BS3,0)
 INITGAME(bighouse,GEN_S80B4K,gottlieb_dispAlpha, 1)
 S80B_4K_ROMSTART(bighouse, "prom2.cpu", 0x047c8ef5,
                            "prom1.cpu", 0x0ecef900)
-S80BSSOUND3232(            "drom1.snd", 0x61d66ca1, 
-						   "yrom1.snd", 0x469ef444)	
+S80BSSOUND3232(            "drom1.snd", 0xf330fd04,
+						   "yrom1.snd", 0x0b1ba1cb)
 S80_ROMEND
 CORE_GAMEDEFNV(bighouse, "Big House",1989,"Gottlieb",gl_mS80BS3,0)
 
@@ -836,7 +836,7 @@ CORE_GAMEDEFNV(bighouse, "Big House",1989,"Gottlieb",gl_mS80BS3,0)
 INITGAME(bonebstr,GEN_S80B4K,gottlieb_dispAlpha, 1)
 S80B_4K_ROMSTART(bonebstr, "prom2.cpu", 0x681643df,
                            "prom1.cpu", 0x052f97be)
-S80BSSOUND3232(            "drom1.snd", 0x61d66ca1, 
-						   "yrom1.snd", 0x469ef444)	
+S80BSSOUND3232(            "drom1.snd", 0xec43f4e9,
+						   "yrom1.snd", 0xa95eedfc)
 S80_ROMEND
 CORE_GAMEDEFNV(bonebstr, "Bone Busters",1989,"Gottlieb",gl_mS80BS3,0)
