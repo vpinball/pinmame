@@ -749,7 +749,8 @@ DRIVER(bnzai,pa1)       //S11-566:  05/88 W Banzai Run (PA-1)
 DRIVER(swrds,l2)        //S11-559:  06/88 W Swords of Fury
 DRIVER(taxi,l4)         //S11-553:  08/88 W Taxi (Lola)
 DRIVER(taxi,l3)                           // Marylin
-DRIVER(jokrz,l6)        //S11-567:  12/88 W Jokerz!
+DRIVER(jokrz,l6)        //S11-567:  12/88 W Jokerz! (L-6)
+DRIVER(jokrz,l3)        //S11-567:  12/88 W Jokerz! (L-3)
 DRIVER(esha,la3)        //S11-568:  02/89 W Earthshaker
 DRIVER(esha,pr4)                          // Family version
 DRIVER(esha,lg1)                          // LG-1 version (German)
@@ -883,6 +884,7 @@ DRIVER(tom,13)          //WPC-539:  03/95 B Theatre of Magic
 DRIVER(tom,12)							  // 1.2
 DRIVER(nf,23x)          //WPC-525:  05/95 W No Fear: Dangerous Sports
 DRIVER(i500,11r)        //WPC-526:  06/95 B Indianapolis 500
+DRIVER(i500,11b)        //WPC-526:  06/95 B Indianapolis 500 (Belgium)
 DRIVER(jm,12r)          //WPC-542:  08/95 W Johnny Mnemonic
 DRIVER(wd,12)           //WPC-544:  09/95 B Who dunnit
 DRIVER(wd,12g)                            // German
