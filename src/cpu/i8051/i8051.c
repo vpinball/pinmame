@@ -1243,6 +1243,7 @@ unsigned i8051_get_reg(int regnum)
 	case REG_PREVIOUSPC: return PPC;
 	case REG_PC:
 	case I8051_PC:	return PC;
+	case REG_SP:
 	case I8051_SP:	return R_SP;
 	case I8051_ACC:	return R_ACC;
 	case I8051_PSW: return R_PSW;
@@ -1724,11 +1725,11 @@ INLINE void push_pc()
 INLINE void pop_pc()
 {
 	UINT8 tmpSP = R_SP;							//Grab Stack Pointer
-	PC = (IRAM_IR(tmpSP) & 0xff) << 8;			//Store hi byte to PC
+	PC = (IRAM_IR(tmpSP) & 0xff) << 8;			//Store hi byte to PC (must use IRAM_IR to access stack pointing above 128 bytes)
 	tmpSP = R_SP-1;								//Decrement Stack Pointer
 	SFR_W(SP,tmpSP);							// ""
 	if (tmpSP == R_SP)							//Ensure it was able to write to new stack location
-		PC = PC | IRAM_IR(tmpSP);				//Store lo byte to PC
+		PC = PC | IRAM_IR(tmpSP);				//Store lo byte to PC (must use IRAM_IR to access stack pointing above 128 bytes)
 	SFR_W(SP,tmpSP-1);							//Decrement Stack Pointer
 }
 
