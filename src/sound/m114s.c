@@ -28,7 +28,7 @@
 #include "driver.h"
 #include "m114s.h"
 
-#if 0
+#if 1
 #define LOG(x) printf x
 #else
 #define LOG(x) logerror x
@@ -161,6 +161,7 @@ static const int mode_to_len_t2[8][8] = {
 {16,16,16, 16, 32, 64, 128, 256 },	//Mode 7
 };
 
+#if 0
 /* Frequency Table for a 4Mhz Clocked Chip */
 static const double freqtable4Mhz[0xff] = {
  1016.78,1021.45,1026.69,1031.46,1036.27,1041.67,1044.39,1045.48,
@@ -196,7 +197,61 @@ static const double freqtable4Mhz[0xff] = {
  0,0,0,0,0,0,0,
  0,0,0,0,0,0,0,														//0xF0 - 0xFF (Special codes)
 };
+#else
+/* Frequency Table for a 4Mhz Clocked Chip 
+   Note: Only the 1st set of frequencies came from the manual, the rest were calculated using 1 semitone increments
+   using a program called Test Tone Generator 3.91
+*/
+static const double freqtable4Mhz[0xff] = {
+ 1016.78,1021.45,1026.69,1031.46,1036.27,1041.67,1044.39,1045.48,
+ 1046.57,1047.67,1048.77,1051.52,1056.52,1061.57,1066.67,1071.81,	//0x00 - 0x0F
 
+ 1077.24,1082.19,1087.74,1092.79,1097.89,1103.61,1106.49,1107.65,
+ 1108.80,1109.97,1111.13,1114.05,1119.34,1124.69,1130.10,1135.54,	//0x10 - 0x1F
+
+ 1141.29,1146.54,1152.42,1157.77,1163.17,1169.24,1172.29,1173.51,
+ 1174.74,1175.97,1177.20,1180.29,1185.90,1191.57,1197.30,1203.07,	//0x20 - 0x2F
+
+ 1209.16,1214.72,1220.95,1226.62,1232.34,1238.76,1242.00,1243.29,
+ 1244.59,1245.90,1247.20,1250.47,1256.42,1262.43,1268.49,1274.60,	//0x30 - 0x3F
+
+ 1281.06,1286.95,1293.55,1299.56,1305.62,1312.42,1315.85,1317.22,
+ 1318.60,1319.98,1321.37,1324.83,1331.13,1337.49,1343.92,1350.40,	//0x40 - 0x4F
+
+ 1357.24,1363.47,1370.46,1376.83,1383.25,1390.46,1394.09,1395.55,
+ 1397.00,1398.47,1399.94,1403.61,1410.29,1417.03,1423.83,1430.70,	//0x50 - 0x5F
+
+ 1437.94,1444.55,1451.96,1457.07,1465.51,1473.14,1477.00,1478.53,
+ 1480.07,1481.63,1483.18,1486.99,1494.14,1501.29,1508.50,1515.77,	//0x60 - 0x6F
+
+ 1523.45,1530.45,1538.30,1545.44,1552.65,1560.74,1564.82,1566.45,
+ 1568.08,1569.73,1571.38,1575.50,1583.00,1590.56,1598.20,1605.90,	//0x70 - 0x7F
+
+ 1614.04,1621.45,1629.77,1637.34,1644.98,1653.55,1657.87,1659.60,
+ 1661.33,1663.07,1664.82,1669.18,1677.12,1685.14,1693.23,1701.39,	//0x80 - 0x8F
+
+ 1710.01,1717.87,1726.69,1734.70,1742.79,1751.87,1756.45,1758.28,	//(2nd entry in manual shows 1781.21 but that's cleary wrong)
+ 1760.11,1761.96,1763.81,1768.44,1776.85,1785.34,1793.92,1802.56,	//0x90 - 0x9F
+
+ 1811.70,1820.02,1829.35,1837.85,1846.42,1856.05,1860.89,1862.83,
+ 1864.78,1866.74,1868.70,1873.60,1882.50,1891.50,1900.59,1909.75,	//0xA0 - 0xAF
+
+ 1919.43,1928.24,1938.13,1947.14,1956.22,1966.41,1971.55,1973.60,
+ 1975.66,1977.74,1979.81,1985.01,1994.44,2003.98,2013.61,2023.31,	//0xB0 - 0xBF
+
+ 2033.56,2042.90,2053.38,2062.92,2072.54,2083.34,2088.78,2090.96,
+ 2093.14,2095.34,2097.54,2103.04,2113.04,2123.14,2133.34,2143.62,	//0xC0 - 0xCF
+
+ 2154.48,2164.38,2175.48,2185.59,2195.78,2207.22,2212.99,2215.30,
+ 2217.60,2219.94,2222.27,2228.09,2238.69,2249.39,2260.20,2271.09,	//0xD0 - 0xDF
+
+ 2282.59,2293.08,2304.84,2315.55,2326.35,2338.47,2344.58,2347.02,
+ 2349.47,2351.94,2354.41,2360.58,2371.80,2383.14,2394.59,2406.13,	//0xE0 - 0xEF
+
+ 0,0,0,0,0,0,0,
+ 0,0,0,0,0,0,0,														//0xF0 - 0xFF (Special codes)
+};
+#endif
 /**********************************************************************************************
 
      build_vol_table -- Create volume table for each of the 62 possible volume codes
@@ -210,7 +265,8 @@ static void build_vol_table(void)
 	/* calculate the volume->voltage conversion table */
 	/* The M114S has 62 levels, in a logarithmic scale (0.75 dB per step) */
 
-	out = 0x7f;		//Max Volume is 0x7F for an INT16 value
+	//out = 0x7f;		//Max Volume is 0x7F for an INT16 value
+	out = 0x6f;		//Max Volume is 0x7F for an INT16 value
 	for (i = 0;i < 62;i++)
 	{
 		VolTable[i] = out + 0.5;	/* round to nearest */
@@ -453,6 +509,9 @@ int M114S_sh_start(const struct MachineSound *msound)
 				return 1;
 		}
 
+		//If this value is not used, the pitch is wrong, why?!!
+		Machine->sample_rate = 44100;
+
 		/* create the stream */
 		m114schip[i].stream = stream_init_multi(M114S_OUTPUT_CHANNELS, stream_name_ptrs, vol, Machine->sample_rate, i, m114s_update);
 		if (m114schip[i].stream == -1)
@@ -657,10 +716,16 @@ static void process_channel_data(struct M114SChip *chip)
 		//if(channel->output[0] == 0)
 			read_table(chip,channel);
 
-#if 0
-if(chip->channel == 2) {
-		printf("EOT=%d\n",channel->end_of_table);
-		LOG(("V:%02d FQ:%03x TS1:%02x TS2:%02x T1L:%04d T1R:%01d T2L:%04d T2R:%01d OD=%01d I:%02d E:%01d\n",
+#if 1
+//if(chip->channel == 2) {
+if(channel->regs.outputs == 2) {
+	if(channel->regs.frequency == 0x70)
+	{
+		printf("orig: = %0f, freq1 = %0f, sample_rate = %0d \n",freqtable4Mhz[channel->regs.frequency],freq1,channel->table1.sample_rate);
+	}
+		//printf("EOT=%d\n",channel->end_of_table);
+	LOG(("C:%02d V:%02d FQ:%03x TS1:%02x TS2:%02x T1L:%04d T1R:%01d T2L:%04d T2R:%01d OD=%01d I:%02d E:%01d\n",
+		chip->channel,
 		channel->regs.atten,
 		channel->regs.frequency,
 		t1start,t2start,
