@@ -1,7 +1,7 @@
 #include "driver.h"
 #include "machine/6821pia.h"
 #include "cpu/m6800/m6800.h"
-#include "cpu/i8085/i8085.h"
+#include "cpu/i8039/i8039.h"
 #include "sound/discrete.h"
 #include "sound/sn76477.h"
 #include "core.h"
@@ -100,10 +100,10 @@ static void zac1125_init(struct sndbrdData *brdData) {
 
 /*----------------------------------------
 / Zaccaria Sound Board 1346
-/ i8085 CPU (8035 on Locomotion?), no PIAs
+/ i8035 MCU, no PIAs
 /-----------------------------------------*/
 /*
-/ CPU I8085
+/ MCU I8035
 / ROM 0000-07ff
 */
 static void sp_init(struct sndbrdData *brdData);
@@ -119,14 +119,12 @@ const struct sndbrdIntf zac1346Intf = {
 
 static struct {
   struct sndbrdData brdData;
-  int lastcmd, cmdin, cmdout, cmd[2], lastctrl;
+  int lastcmd, lastctrl;
   int p20, p21, p22, wr;
 } splocals;
 
 static void sp_init(struct sndbrdData *brdData) {
-  splocals.p20 = splocals.p21 = splocals.p22 = 0;
   splocals.brdData = *brdData;
-  splocals.cmdin = splocals.cmdout = 2;
 }
 
 static WRITE_HANDLER(sp1346_data_w) {
@@ -139,31 +137,34 @@ static WRITE_HANDLER(sp1346_manCmd_w) {
   splocals.lastcmd = data;
 }
 static void sp_irq(int state) {
-  cpu_set_irq_line(splocals.brdData.cpuNo, I8085_INTR_LINE, state ? ASSERT_LINE : CLEAR_LINE);
+  cpu_set_irq_line(splocals.brdData.cpuNo, 0, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
 READ_HANDLER(rom_r) {
   UINT8 *rom = memory_region(ZACSND_CPUAREGION);
+  splocals.p20 = i8035_get_reg(I8039_P2) & 0x01;
+  splocals.p21 = (i8035_get_reg(I8039_P2) >> 1) & 0x01;
+  splocals.p22 = (i8035_get_reg(I8039_P2) >> 2) & 0x01;
   UINT16 address = (offset & 0x7f) | ((offset & 0x100) >> 1)
    | (splocals.p20 << 8) | (splocals.p21 << 9) | (splocals.p22 << 10);
   splocals.wr = (offset & 0x80) ? 0 : 1;
   return rom[address];
 }
 
-static MEMORY_READ_START(i8085_readmem)
+static MEMORY_READ_START(i8035_readmem)
   { 0x0000, 0x07ff, rom_r },
   { 0x0800, 0x08ff, MRA_RAM },
 MEMORY_END
 
-static MEMORY_WRITE_START(i8085_writemem)
-  { 0x0000, 0x0001, MWA_NOP },
+static MEMORY_WRITE_START(i8035_writemem)
+  { 0x0000, 0x07ff, MWA_ROM },
   { 0x0800, 0x08ff, MWA_RAM },
 MEMORY_END
 
 MACHINE_DRIVER_START(zac1346)
-  MDRV_CPU_ADD_TAG("scpu", 8085A, 6000000)
+  MDRV_CPU_ADD_TAG("scpu", I8035, 6000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
-  MDRV_CPU_MEMORY(i8085_readmem, i8085_writemem)
+  MDRV_CPU_MEMORY(i8035_readmem, i8035_writemem)
 
   MDRV_INTERLEAVE(500)
 MACHINE_DRIVER_END
