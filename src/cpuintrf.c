@@ -403,7 +403,7 @@ const struct cpu_interface cpuintrf[] =
 	CPU1(Z180,	   z180, 	 1,255,1.00, 8, 20,	  0,20,LE,1, 4	),
 #endif
 #if defined(PINMAME) && (HAS_4004)
-	CPU0(4004,	   i4004,	 4,255,1.00, 8, 16,	  0,16,LE,1, 3	),
+	CPU0(4004,	   i4004,	 0,255,1.00, 8, 16,	  0,16,LE,1, 3	),
 #endif
 #if (HAS_8080)
 	CPU0(8080,	   i8080,	 4,255,1.00, 8, 16,	  0,16,LE,1, 3	),
@@ -496,10 +496,10 @@ const struct cpu_interface cpuintrf[] =
 	CPU0(I8X41,    i8x41,	 1,  0,1.00, 8, 16,	  0,16,LE,1, 2	),
 #endif
 #if defined(PINMAME)  &&  (HAS_I8051)
-//	CPU4(I8051,    i8051,	 1,  0,1.00, 8, 16,	  0,16,LE,1, 3	),
+//	CPU4(I8051,    i8051,	 4,  0,1.00, 8, 16,	  0,16,LE,1, 3	),
 	//To accomodate external rom & ram, we use 1 extra address line and map the ram above the rom
 	//but MAME doesn't have 17 bit address handlers, so we use 20
-	CPU4(I8051,    i8051,	 1,  0,1.00, 8, 20,	  0,20,LE,1, 3	),	
+	CPU4(I8051,    i8051,	 4,  0,1.00, 8, 20,	  0,20,LE,1, 3	),	
 #endif
 #if (HAS_M6800)
 	CPU0(M6800,    m6800,	 1,  0,1.00, 8, 16,	  0,16,BE,1, 4	),
