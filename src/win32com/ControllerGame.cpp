@@ -136,7 +136,8 @@ private:
 
 			if ( !(m_nShowOptions & CHECKOPTIONS_IGNORESOUNDROMS) || !(lFlags & ROMREGION_SOUNDONLY) ) {
 				fOK &= (lState==AUD_ROM_GOOD);
-				fMaybeOK &= (lState==AUD_ROM_GOOD) || (lState==AUD_LENGTH_MISMATCH) || (lState==AUD_BAD_CHECKSUM);
+				fMaybeOK &= (lState==AUD_ROM_GOOD) || (lState==AUD_ROM_NEED_DUMP) || (lState==AUD_ROM_NEED_REDUMP)
+					|| (lState==AUD_NOT_AVAILABLE) || (lState==AUD_LENGTH_MISMATCH) || (lState==AUD_BAD_CHECKSUM);
 			}
 
 			pRom->Release();
