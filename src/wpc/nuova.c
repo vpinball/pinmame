@@ -1,7 +1,7 @@
 /************************************************************************************************
   Nuova Bell Games
   ----------------
-  by Steve Ellenoff
+  by Steve Ellenoff, with fixes / hacks by Gerrit Volkenborn
 
   Main CPU Board:
 
@@ -11,15 +11,9 @@
   I/O: 2 X 6821
 
   Issues/Todo:
-
-  This hardware is a total nightmare.. The display stuff makes no sense to me. I haven't tried looking at
-  solenoids/lamps, or to see if switches are working.
-
-
-  Notes:
-  Manual shows only 48 switches, implying a 8x6 matrix (6 Strobes) - It shows 4 Switch Strobe & 2 Cab Strobe (shared)
-
+  Sound,
   Lamps: Lamp Addr is 1-16 data, Lamp Data 0-3 (each bit selects different 1-16 mux) - Strobe 2 used for Aux Lamps
+  But the lamp data never changes???
 
   Game is done with testing @ 14A3?
   143E - Display some digits?
@@ -37,12 +31,12 @@
 #include "sim.h"
 
 #define NUOVA_SOLSMOOTH 4
-#define NUOVA_CPUFREQ		1000000			//1 Mhz (NO IDEA)
-#define F1GP_ZCFREQ				240			//120 Hz (NO IDEA)
-#define F1GP_555TIMER_FREQ		317			//??
+#define NUOVA_CPUFREQ		1000000			//1 Mhz ??
+#define F1GP_ZCFREQ				240			//120 Hz * 2 ??
+#define F1GP_555TIMER_FREQ		 10			//??
 
-#define F1GP_SWCPUBUTT    -7
-#define F1GP_SWCPUDIAG    -6
+#define F1GP_SWCPUDIAG		-1
+#define F1GP_SWCPUBUTT		0
 
 #if 0
 #define LOG(x) printf x
@@ -68,7 +62,6 @@ static struct {
   int pia0_cb2;
   int pia0_da_enable;
 } locals;
-//static data8_t *f1gp_CMOS;
 
 /***************/
 /* ZERO CROSS? */
@@ -103,18 +96,14 @@ static INTERRUPT_GEN(f1gp_vblank) {
   coreGlobals.diagnosticLed = locals.diagnosticLed;
   locals.diagnosticLed = 0;
 
-  core_updateSw(1);
+  core_updateSw(core_getSol(18));
 }
 
 static SWITCH_UPDATE(f1gp) {
   if (inports) {
-	  //Column 0 Switches
-	  coreGlobals.swMatrix[0] = (inports[CORE_COREINPORT] & 0x00c0)>>6;
-	  //Column 1 Switches
-	  coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0x9f) | ((inports[CORE_COREINPORT] & 0x03)<<5);
-	  //Column 2 Switches
-	  coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0x78) |
-		  ((inports[CORE_COREINPORT] & 0x1c)>>2) | ((inports[CORE_COREINPORT] & 0x20)<<2);
+    CORE_SETKEYSW(inports[CORE_COREINPORT]<<4,0xc0,0);
+    CORE_SETKEYSW(inports[CORE_COREINPORT],   0x60,1);
+    CORE_SETKEYSW(inports[CORE_COREINPORT]>>8,0x87,2);
   }
   // CPU DIAG SWITCH
   if (core_getSw(F1GP_SWCPUBUTT))
@@ -133,18 +122,11 @@ static SWITCH_UPDATE(f1gp) {
 		  cpu_set_nmi_line(0, CLEAR_LINE);
 	  }
   }
+  pia_set_input_ca1(0,core_getSw(F1GP_SWCPUDIAG));
 }
 
 static void f1gp_irqline(int state) {
-  if (state) {
-    cpu_set_irq_line(0, M6808_IRQ_LINE, ASSERT_LINE);
-    pia_set_input_ca1(0, (core_getSw(F1GP_SWCPUDIAG))?1:0);
-  }
-  //else if (!locals.piaIrq) {
-  else {
-    cpu_set_irq_line(0, M6808_IRQ_LINE, CLEAR_LINE);
-    pia_set_input_ca1(0, 0);
-  }
+  cpu_set_irq_line(0, M6808_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
 static void f1gp_piaIrq(int state) {
@@ -155,7 +137,7 @@ static void f1gp_piaIrq(int state) {
 /* PIA 0 */
 /* ----- */
 
-/*  i  PB0-7:  Dips  1-32 Read & Swtich Read 0-7 & Cabinet Switch Read 0-7 */
+/*  i  PB0-7:  Dips  1-32 Read & Switch Read 0-7 & Cabinet Switch Read 0-7 */
 static READ_HANDLER(pia0_b_r)
 {
 	int data = 0;
@@ -174,17 +156,8 @@ static READ_HANDLER(pia0_b_r)
 		data = coreGlobals.swMatrix[locals.SwCol+1];	//+1 so we begin by reading column 1 of input matrix instead of 0 which is used for special switches in many drivers
 		LOG(("%04x: SWITCH COL #%d - READ: pia0_b_r =%x\n",activecpu_get_previouspc(),locals.SwCol,data));
 	}
-	//return data;
-	return 0;
-}
-/*  i  CA1:    Diagnostic Switch? */
-static READ_HANDLER(pia0_ca1_r)
-{
-	int data = (core_getSw(F1GP_SWCPUDIAG))?1:0;
-	LOG(("%04x: DIAG SWITCH: pia0_ca1_r =%x \n",activecpu_get_previouspc(),data));
 	return data;
 }
-
 /*
   o  PA0-PA1 Switch Strobe 0 - 1 & Cabinet Switch Strobe 0 - 1 & Lamp Addr 0 - 1 & Disp Strobe 0 - 1
   o  PA2-PA3 Switch Strobe 2 - 3 & Lamp Addr 2 - 3 & Disp Strobe 2 - 3
@@ -196,7 +169,7 @@ static READ_HANDLER(pia0_ca1_r)
 static WRITE_HANDLER(pia0_a_w)
 {
 	locals.pia0_a = data;
-	locals.SwCol = core_BitColToNum(data & 0xf);
+	locals.SwCol = (data & 0x1f) ? core_BitColToNum(data & 0x1f) : 5;
 	LOG(("%04x: EVERYTHING: pia0_a_w = %x \n",activecpu_get_previouspc(),data));
 }
 /*  o  CA2:    Display Blank */
@@ -233,7 +206,7 @@ static const UINT16 core_ascii2seg[] = {
   /* 0x08-0x0f */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
   /* 0x10-0x17 */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
   /* 0x18-0x1f */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
-  /* 0x20-0x27 */ 0x0000, 0x0309, 0x0220, 0x2A4E, 0x2A6D, 0x6E65, 0x135D, 0x0400,
+  /* 0x20-0x27 */ 0x0000, 0x0309, 0x0220, 0x2A4E, 0x2A6D, 0x5d64, 0x135D, 0x0400,
   /* 0x28-0x2f */ 0x1400, 0x4100, 0x7F40, 0x2A40, 0x0000, 0x0840, 0x0000, 0x4400,
   /* 0x30-0x37 */ 0x003f, 0x2200, 0x085B, 0x084f, 0x0866, 0x086D, 0x087D, 0x0007,
   /* 0x38-0x3f */ 0x087F, 0x086F, 0x0848, 0x4040, 0x1400, 0x0848, 0x4100, 0x2803,
@@ -283,6 +256,8 @@ static WRITE_HANDLER(pia1_a_w)
 */
 static WRITE_HANDLER(pia1_b_w)
 {
+	if ((data & 0x20) == 0) // activates any solenoid
+		locals.solenoids = 0xf7fff & ((core_revbyte(~data & 0xd0) << 16) | (1 << (data & 0x0f)));
 	LOG(("%04x: SOLS & (SOUND?): pia1_b_w = %x \n",activecpu_get_previouspc(),data));
 }
 /* o  CA2:    LED & Lamp Strobe #2 */
@@ -316,7 +291,7 @@ static const struct pia6821_interface f1gp_pia[] = {
   i  CB1:    Tied to 43V line (Some kind of zero cross detection?)
   o  CA2:    Activates Disp Addr Data
   o  CB2:    Dips 25-32 Strobe & Lamp Strobe #1 */
- /* in  : A/B,CA1/B1,CA2/B2 */ 0, pia0_b_r, pia0_ca1_r, 0, 0, 0,
+ /* in  : A/B,CA1/B1,CA2/B2 */ 0, pia0_b_r, 0, 0, 0, 0,
  /* out : A/B,CA2/B2        */ pia0_a_w, 0, pia0_ca2_w, pia0_cb2_w,
  /* irq : A/B               */ f1gp_piaIrq, f1gp_piaIrq
 },{
@@ -359,26 +334,40 @@ static MACHINE_STOP(f1gp) {
   //sndbrd_0_exit();
 }
 
-
-//Lamp Rows (actually columns) 1-8
-static WRITE16_HANDLER(lamp1_w) { locals.LampCol = core_BitColToNum(data >> 8); }
-//Lamp Cols (actually rows) 1-8
-static WRITE16_HANDLER(lamp2_w) { 	coreGlobals.tmpLampMatrix[locals.LampCol] = data>>8; }
-
-//Solenoids 1-16
-static WRITE16_HANDLER(sol1_w) { coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFFFF0000) | data; }
-//Solenoids 17-32
-static WRITE16_HANDLER(sol2_w) { coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x0000FFFF) | (data<<16); }
-
+/*-----------------------------------------------
+/ Load/Save static ram
+/-------------------------------------------------*/
+static data8_t *s6_CMOS;
+static NVRAM_HANDLER(f1gp) {
+  core_nvram(file, read_or_write, s6_CMOS, 0x0800, 0x00); // 2K of RAM, battery-backed
+}
+static WRITE_HANDLER(s6_CMOS_w_0) {
+	s6_CMOS[offset] = data;
+}
+static READ_HANDLER(s6_CMOS_r_0) {
+	return s6_CMOS[offset];
+}
+static WRITE_HANDLER(s6_CMOS_w_1) {
+	s6_CMOS[0x8c + offset] = data;
+}
+static READ_HANDLER(s6_CMOS_r_1) {
+	return s6_CMOS[0x8c + offset];
+}
+static WRITE_HANDLER(s6_CMOS_w_2) {
+	s6_CMOS[0x94 + offset] = data;
+}
+static READ_HANDLER(s6_CMOS_r_2) {
+	return s6_CMOS[0x94 + offset];
+}
 /*-----------------------------------
 /  Memory map for Main CPU board
 /------------------------------------*/
 static MEMORY_READ_START(cpu_readmem)
-  { 0x0000, 0x0087, MRA_RAM },
+  { 0x0000, 0x0087, s6_CMOS_r_0 },
   { 0x0088, 0x008b, pia_r(0)},
-  { 0x008c, 0x008f, MRA_RAM },
+  { 0x008c, 0x008f, s6_CMOS_r_1 },
   { 0x0090, 0x0093, pia_r(1)},
-  { 0x0094, 0x07ff, MRA_RAM },
+  { 0x0094, 0x07ff, s6_CMOS_r_2 },
   { 0x1000, 0x1fff, MRA_ROM },
   { 0x5000, 0x5fff, MRA_ROM },
   { 0x7000, 0x7fff, MRA_ROM },
@@ -389,11 +378,12 @@ static MEMORY_READ_START(cpu_readmem)
 MEMORY_END
 
 static MEMORY_WRITE_START(cpu_writemem)
-  { 0x0000, 0x0087, MWA_RAM },
+  { 0x0000, 0x0087, s6_CMOS_w_0 },
   { 0x0088, 0x008b, pia_w(0)},
-  { 0x008c, 0x008f, MWA_RAM },
+  { 0x008c, 0x008f, s6_CMOS_w_1 },
   { 0x0090, 0x0093, pia_w(1)},
-  { 0x0094, 0x07ff, MWA_RAM },
+  { 0x0094, 0x07ff, s6_CMOS_w_2 },
+  { 0x0800, 0x0fff, MWA_RAM, &s6_CMOS }, // initialization of the RAM
   { 0x1000, 0x1fff, MWA_ROM },
   { 0x5000, 0x5fff, MWA_ROM },
   { 0x7000, 0x7fff, MWA_ROM },
@@ -408,20 +398,9 @@ static core_tLCDLayout disp[] = {
   {3, 0,16,16,CORE_SEG16},
   {0}
 };
-static core_tGameData f1gpGameData = {GEN_ZAC2, disp, {FLIP_SW(FLIP_L), 0, 2}};
+static core_tGameData f1gpGameData = {GEN_ZAC2, disp, {FLIP_SWNO(48, 0), 0, 2}};
 static void init_f1gp(void) {
   core_gameData = & f1gpGameData;
-}
-
-/* Manual starts with a switch # of 0 */
-static int f1gp_sw2m(int no) { return no+7+1; }
-static int f1gp_m2sw(int col, int row) { return col*8+row-7-1; }
-
-/*-----------------------------------------------
-/ Load/Save static ram
-/-------------------------------------------------*/
-static NVRAM_HANDLER(f1gp) {
-  //core_nvram(file, read_or_write, s6_CMOS, 0x0100, 0xff);
 }
 
 MACHINE_DRIVER_START(f1gp)
@@ -442,22 +421,16 @@ INPUT_PORTS_START(f1gp) \
   CORE_PORTS \
   SIM_PORTS(4) \
   PORT_START /* 0 */ \
-  /* Switch Column 1 */
-    /* Switch  6 (SW Col 1?)*/
-    COREPORT_BITDEF(  0x0001, IPT_START1,         IP_KEY_DEFAULT) \
-    /* Switch  7 (SW Col 1?)*/
-    COREPORT_BIT(     0x0002, "Ball Tilt",        KEYCODE_INSERT) \
-    /* Switch  9 (SW Col 2?)*/
-    COREPORT_BITDEF(  0x0004, IPT_COIN2,          KEYCODE_3) \
-	/* Switch 10 (SW Col 2?)*/
-    COREPORT_BITDEF(  0x0008, IPT_COIN1,          IP_KEY_DEFAULT) \
-	/* Switch 11 (SW Col 2?)*/
-    COREPORT_BITDEF(  0x0010, IPT_COIN3,          KEYCODE_4) \
-	/* Switch 16 (SW Col 2?)*/
-    COREPORT_BIT   (  0x0020, "Slam Tilt",        KEYCODE_DEL) \
-    /* These are put in switch column 0 since they are not read in the regular switch matrix */ \
-    COREPORT_BIT(     0x0040, "CPU Button",       KEYCODE_7) \
-	COREPORT_BIT(     0x0080, "Self Test",        KEYCODE_8) \
+  /* Switch Column 1 */ \
+    COREPORT_BITDEF(  0x0020, IPT_START1,         IP_KEY_DEFAULT) \
+    COREPORT_BIT(     0x0040, "Ball Tilt",        KEYCODE_INSERT) \
+    COREPORT_BITDEF(  0x0100, IPT_COIN1,          IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(  0x0200, IPT_COIN2,          KEYCODE_3) \
+    COREPORT_BITDEF(  0x0400, IPT_COIN3,          KEYCODE_4) \
+    COREPORT_BIT   (  0x8000, "Slam Tilt",        KEYCODE_HOME) \
+  /* These are put in switch column 0 since they are not read in the regular switch matrix */ \
+    COREPORT_BIT(     0x0008, "CPU Button",       KEYCODE_7) \
+	COREPORT_BIT(     0x0004, "Self Test",        KEYCODE_8) \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
       COREPORT_DIPSET(0x0000, "0" ) \
