@@ -145,6 +145,7 @@ DRIVERNV(spyhuntr)      //BY35-     10/84 Spy Hunter
                         //??        ??/85 Hot Shotz
 DRIVERNV(fbclass )      //BY35-     02/85 Fireball Classic
 DRIVERNV(cybrnaut)      //BY35-     05/85 Cybernaut
+DRIVERNV(spacehaw)      //BY35-     05/85 Nuova Bell Italy Cybernaut Clone
 //MPU-6803
 DRIVERNV(eballchp)      //6803-0B38: 09/85 Eight Ball Champ
 DRIVERNV(eballch2)      //                 Eight Ball Champ (cheap squeak)
