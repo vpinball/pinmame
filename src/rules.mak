@@ -362,6 +362,17 @@ else
 CPUDEFS += -DHAS_I8052=0
 endif
 
+CPU=$(strip $(findstring I8752@,$(CPUS)))
+ifneq ($(CPU),)
+OBJDIRS += $(OBJ)/cpu/i8051
+CPUDEFS += -DHAS_I8752=1
+CPUOBJS += $(OBJ)/cpu/i8051/i8051.o
+DBGOBJS += $(OBJ)/cpu/i8051/8051dasm.o
+$(OBJ)/cpu/i8051/i8051.o: i8051.c i8051.h
+else
+CPUDEFS += -DHAS_I8752=0
+endif
+
 CPU=$(strip $(findstring I8X41@,$(CPUS)))
 ifneq ($(CPU),)
 OBJDIRS += $(OBJ)/cpu/i8x41
