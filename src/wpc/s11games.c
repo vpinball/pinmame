@@ -591,7 +591,7 @@ static core_tLCDLayout dispRvrbt[] = {
 static char *wheel[] = {"Red","Green","Black","Red","Black","Red*","Black","Red",
                         "Black","Green","Red","Black","Red","Black*","Red","Black"};
 #endif
-static void rvrbt_drawMech(unsigned char **line) {
+static void rvrbt_drawMech(BMTYPE **line) {
   core_textOutf(50, 0,BLACK,"wheel:%3d", mech_getPos(0));
   core_textOutf(50,10,BLACK,"wheel:%-7s", wheel[mech_getPos(0)]);
 }
