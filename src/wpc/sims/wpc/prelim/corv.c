@@ -7,7 +7,7 @@
  Read PZ.c or FH.c if you like more help.
 
  Mech Handling by Destruk (destruk@home.com) and Steve Ellenoff(sellenoff@hotmail.com)
-
+ Additional engine mech by Gaston (gaston@yomail.de) and WPCMame (wpcmame@hotmail.com)
  ******************************************************************************/
 
 /*------------------------------------------------------------------------------
@@ -57,7 +57,6 @@ static struct {
   int active_blue;		/* # of ticks the blue car has been active*/
   int active_red;		/* # of ticks the blue car has been active*/
 } locals;
-extern UINT8 *wpc_data;
 
 /*--------------------------
 / Game specific input ports
@@ -337,6 +336,13 @@ static sim_tSimData corvSimData = {
   NULL  				/* Custom key conditions? */
 };
 
+/* 3 extra solenoids for magnet at engine, or lights inside the engine maybe? */
+static int corv_getSol(int solNo) {
+  if (solNo <= CORE_CUSTSOLNO(3))
+    return wpc_data[WPC_EXTBOARD3] & (1<<(solNo - CORE_CUSTSOLNO(1)));
+  return 0;
+}
+
 /*----------------------
 / Game Data Information
 /----------------------*/
@@ -346,9 +352,9 @@ static sim_tSimData corvSimData = {
 static core_tGameData corvGameData = {
   GEN_WPCSECURITY, wpc_dispDMD,
   {
-  FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_UL),
-    0,0,0,0,0,0,0,
-    NULL, corv_handleMech, corv_getMech, corv_drawMech,
+    FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_UL),
+    0,0,3,0,0,0,0, // 3 extra solenoids
+    corv_getSol, corv_handleMech, corv_getMech, corv_drawMech,
     NULL, NULL
   },
   &corvSimData,
@@ -443,9 +449,6 @@ static void corv_handleMech(int mech) {
 		core_setSw(71, locals.enginePos < 3 ? 1 : 0);
 		core_setSw(72, locals.enginePos > 252 ? 1 : 0);
 	}
-
-	/* magnet at engine, or lights inside the engine maybe? */
-	coreGlobals.solenoids = (coreGlobals.solenoids & 0xf0ffffff) | (wpc_data[WPC_EXTBOARD3] << 24);
 }
 
 static int corv_getMech(int mechNo){
