@@ -21,7 +21,7 @@ static struct {
   int bcd[5];	//There are 5 Displays
   int lampadr1;
   UINT32 solenoids;
-  core_tSeg segments,pseg;
+  core_tSeg segments;
   int    diagnosticLed;
   int vblankCount;
   int initDone;
@@ -37,16 +37,15 @@ static void piaIrq(int state) {
 }
 
 static void hnk_dispStrobe(int mask) {
-  int digit = locals.p1_a & 0xfc; //PA2-7 Selects Digits 1-6
+  int digit = (locals.p1_a>>2) & 0x3f; //PA2-7 Selects Digits 1-6
   int ii,jj;
 //  logerror("digit = %x (%x,%x,%x,%x,%x)\n",digit,locals.bcd[0],locals.bcd[1],locals.bcd[2],locals.bcd[3],locals.bcd[4]);
   for (ii = 0; digit; ii++, digit>>=1)
     if (digit & 0x01) {
       UINT8 dispMask = mask;
       for (jj = 0; dispMask; jj++, dispMask>>=1)
-		if (dispMask & 0x01) {
-          ((int *)locals.segments)[jj*8+ii] |= ((int *)locals.pseg)[jj*8+ii] = core_bcd2seg9[locals.bcd[jj]];
-		}
+		if (dispMask & 0x01) 
+          ((int *)locals.segments)[jj*8+ii] = core_bcd2seg9[locals.bcd[jj]];
     }
 }
 
@@ -100,18 +99,13 @@ static WRITE_HANDLER(pia0a_w) {
 			 2-7 Display Digit Select 1-6
 */
 static WRITE_HANDLER(pia1a_w) {
-  int tmp = locals.p1_a;
-//  logerror("digit_w: %x\n",data);
   locals.p1_a = data;
-//  logerror("setting digit to %x\n",locals.p1_a);
-  return;
-  //if (!locals.p0_ca2) {		  // If Display Blanking cleared
-    if (tmp & ~data & 0x01) { // Positive Edge
+  
+  if (!locals.p0_ca2) {		  // If Display Blanking cleared
 //	  logerror("Latch #5: ca2 = %x, p0_a = %x\n",locals.p0_ca2,locals.p0_a);
       locals.bcd[4] = locals.p0_a>>4;
       hnk_dispStrobe(0x10);
-    }
-//  }
+  }
 }
 
 /* PIA0:B-R  Get Data depending on PIA0:A */
@@ -184,8 +178,7 @@ static int hnk_vblank(void) {
   /*-- display --*/
   if ((locals.vblankCount % HNK_DISPLAYSMOOTH) == 0) {
     memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
-    memcpy(locals.segments, locals.pseg, sizeof(locals.segments));
-    memset(locals.pseg,0,sizeof(locals.pseg));
+    memset(locals.segments,0,sizeof(locals.segments));
     /*update leds*/
     coreGlobals.diagnosticLed = locals.diagnosticLed;
     locals.diagnosticLed = 0;

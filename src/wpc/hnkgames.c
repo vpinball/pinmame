@@ -11,9 +11,9 @@
 (34)(35)(36)(37)(39)(40)
 */
 static core_tLCDLayout dispHNK[] = {
-  {0, 0, 2,6,CORE_SEG9}, {0,14,10,6,CORE_SEG9},
-  {2, 0,18,6,CORE_SEG9}, {2,14,26,6,CORE_SEG9},
-  {4, 4,34,2,CORE_SEG9}, {4,10,36,2,CORE_SEG9},{0}
+  {0, 0, 0,6,CORE_SEG9}, {0,14,8,6,CORE_SEG9},
+  {2, 0,16,6,CORE_SEG9}, {2,14,24,6,CORE_SEG9},
+  {4, 4,33,2,CORE_SEG9}, {4,10,36,2,CORE_SEG9},{0}
 };
 
 #define INITGAME(name, gen, disp, flip, lamps, sb) \
