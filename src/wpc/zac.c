@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include "driver.h"
 #include "cpu/s2650/s2650.h"
+#include "machine/6821pia.h"
 #include "core.h"
 #include "sndbrd.h"
 #include "zac.h"
@@ -42,6 +43,9 @@ static struct {
   UINT32 solenoids;
   UINT16 sols2;
   int diagnosticLed;
+  int diagnosticSLed;
+  int actsnd;
+  int actspk;
   int refresh;
   int gen;
   void *printfile;
@@ -69,22 +73,27 @@ static INTERRUPT_GEN(ZAC_vblank) {
   coreGlobals.solenoids2 = locals.sols2;
   coreGlobals.solenoids = locals.solenoids;
   /*update leds*/
-    coreGlobals.diagnosticLed = locals.diagnosticLed;
+    //coreGlobals.diagnosticLed = locals.diagnosticLed;
+	coreGlobals.diagnosticLed = locals.diagnosticLed | (locals.diagnosticSLed<<1);
     //locals.diagnosticLed = 0;
   core_updateSw(coreGlobals.lampMatrix[2] & 0x08);
 }
 
 static SWITCH_UPDATE(ZAC1) {
   if (inports) {
+    sndbrd_0_diag(core_getSw(-1));
+    coreGlobals.swMatrix[0] = (inports[ZAC_COMINPORT] & 0x1000) >> 5;
     coreGlobals.swMatrix[1] = inports[ZAC_COMINPORT] & 0xff;
-    coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0x7f) | (inports[ZAC_COMINPORT] >> 8);
+    coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0x7f) | ((inports[ZAC_COMINPORT] & 0xefff) >> 8);
   }
 }
 
 static SWITCH_UPDATE(ZAC2) {
   if (inports) {
+    sndbrd_0_diag(core_getSw(-1));
+    coreGlobals.swMatrix[0] = (inports[ZAC_COMINPORT] & 0x1000) >> 5;
     coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0x80) | (inports[ZAC_COMINPORT] & 0xff);
-    coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0x79) | (inports[ZAC_COMINPORT] >> 8);
+    coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0x79) | ((inports[ZAC_COMINPORT] & 0xefff) >> 8);
   }
 }
 
@@ -185,13 +194,19 @@ static READ_HANDLER(ctrl_port_r)
 }
 
 /*   DATA PORT : READ = D0-D3 = Dip Switch Read D0-D3 & Program Switch 1 on D3
-						D4-D7 = ActSnd & ActSpk? Pin 20,19,18,17 of CN?
+						D4-D7 = ActSnd(D4) & ActSpk(D6) Pin 20,19,18,17 of CN?
 */
 static READ_HANDLER(data_port_r)
 {
+	int data = core_getDip(0)&0x0f;
+	data |= (locals.actsnd<<4);
+	data |= (locals.actspk<<6);
 	//logerror("%x: Data Port Read\n",activecpu_get_previouspc());
-//	logerror("%x: Dip & ActSnd/Spk Read - Dips=%x\n",activecpu_get_previouspc(),core_getDip(0)&0x0f);
-	return ~(core_getDip(0)&0x0f); // 4Bit Dip Switch;
+	//logerror("%x: Dip & ActSnd/Spk Read - Dips=%x\n",activecpu_get_previouspc(),core_getDip(0)&0x0f);
+	//return 0xff;
+	//return 0;
+	//logerror("data_port_r: %x ~%x\n",data,~data);
+	return ~data; // 4Bit Dip Switch;
 }
 
 /*
@@ -236,8 +251,10 @@ static WRITE_HANDLER(ctrl_port_w)
 	}
 	locals.swCol+=1;
 #endif
-	logerror("%x: Sound Ctrl Write=%x\n",activecpu_get_previouspc(),data);
-	sndbrd_0_ctrl_w(ZACSND_CPUA, data);
+	if(activecpu_get_previouspc() > 0x14a) {
+		//logerror("%x: Sound Ctrl Write=%x\n",activecpu_get_previouspc(),data);
+		//sndbrd_0_ctrl_w(ZACSND_CPUA, data);
+	}
 //	logerror("strobe data = %x, swcol = %x\n",data&0x07,locals.swCol);
 //	logerror("refresh=%x\n",locals.refresh);
 }
@@ -246,7 +263,6 @@ static WRITE_HANDLER(ctrl_port_w)
 static WRITE_HANDLER(data_port_w)
 {
 	sndbrd_0_data_w(ZACSND_CPUA, data);
-//	cpu_set_irq_line(ZACSND_CPUA, M6802_IRQ_LINE, data ? ASSERT_LINE : CLEAR_LINE);
 	logerror("%x: Sound Data Write=%x\n",activecpu_get_previouspc(),data);
 }
 
@@ -479,7 +495,7 @@ MACHINE_DRIVER_START(ZAC)
   MDRV_NVRAM_HANDLER(ZAC1)
   MDRV_DIPS(4)
   MDRV_SWITCH_UPDATE(ZAC1)
-  MDRV_DIAGNOSTIC_LEDH(1)
+  MDRV_DIAGNOSTIC_LEDH(2)
   MDRV_SWITCH_CONV(ZAC_sw2m,ZAC_m2sw)
   MDRV_SOUND_CMD(ZAC_soundCmd)
   MDRV_SOUND_CMDHEADING("ZAC")
@@ -512,7 +528,7 @@ MACHINE_DRIVER_START(ZAC2NS)
   MDRV_NVRAM_HANDLER(ZAC2)
   MDRV_DIPS(4)
   MDRV_SWITCH_UPDATE(ZAC2)
-  MDRV_DIAGNOSTIC_LEDH(1)
+  MDRV_DIAGNOSTIC_LEDH(2)
   MDRV_SWITCH_CONV(ZAC_sw2m,ZAC_m2sw)
   MDRV_SOUND_CMD(ZAC_soundCmd)
   MDRV_SOUND_CMDHEADING("ZAC")
@@ -558,3 +574,15 @@ MACHINE_DRIVER_START(ZAC2FX)
   MDRV_CPU_MODIFY("mcpu")
   MDRV_CPU_PERIODIC_INT(ZAC_irq, ZAC_IRQFREQ_F)
 MACHINE_DRIVER_END
+
+void UpdateZACSoundLED(int data)
+{
+	locals.diagnosticSLed = data;
+}
+
+void UpdateZACSoundACT(int data)
+{
+  locals.actspk = data & 0x01;
+  locals.actsnd = (data>>1) & 0x01;
+ // logerror("sound act = %x\n",data);
+}

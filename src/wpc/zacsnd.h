@@ -14,19 +14,29 @@ extern MACHINE_DRIVER_EXTERN(zac13136);
   SOUNDREGION(0x10000, ZACSND_CPUAREGION) \
     ROM_LOAD(u1, 0x0000, 0x0800, chk1)
 
+//Board 1370 configuration (3 x 4K ROMS, 1 x 2K ROM)
 #define ZAC_SOUNDROM_cefg0(uc,chkc,ue,chke,uf,chkf,ug,chkg) \
   SOUNDREGION(0x10000, ZACSND_CPUAREGION) \
-    ROM_LOAD(uc, 0xf000, 0x1000, chkc) \
-    ROM_LOAD(ue, 0xe000, 0x1000, chke) \
-    ROM_LOAD(uf, 0xd000, 0x1000, chkf) \
-    ROM_LOAD(ug, 0xc800, 0x0800, chkg)
+    ROM_LOAD(ug, 0x8000, 0x0800, chkg) \
+    ROM_RELOAD(  0xc000, 0x0800) \
+    ROM_LOAD(uf, 0x9000, 0x1000, chkf) \
+	ROM_RELOAD(  0xd000, 0x1000) \
+    ROM_LOAD(ue, 0xa000, 0x1000, chke) \
+	ROM_RELOAD(  0xe000, 0x1000) \
+    ROM_LOAD(uc, 0xb000, 0x1000, chkc) \
+	ROM_RELOAD(  0xf000, 0x1000)
 
+//Board 1370 configuration (4 x 4K ROMS)
 #define ZAC_SOUNDROM_cefg1(uc,chkc,ue,chke,uf,chkf,ug,chkg) \
   SOUNDREGION(0x10000, ZACSND_CPUAREGION) \
-    ROM_LOAD(uc, 0xf000, 0x1000, chkc) \
-    ROM_LOAD(ue, 0xe000, 0x1000, chke) \
-    ROM_LOAD(uf, 0xd000, 0x1000, chkf) \
-    ROM_LOAD(ug, 0xc000, 0x1000, chkg)
+    ROM_LOAD(ug, 0x8000, 0x1000, chkg) \
+    ROM_RELOAD(  0xc000, 0x1000) \
+    ROM_LOAD(uf, 0x9000, 0x1000, chkf) \
+	ROM_RELOAD(  0xd000, 0x1000) \
+    ROM_LOAD(ue, 0xa000, 0x1000, chke) \
+	ROM_RELOAD(  0xe000, 0x1000) \
+    ROM_LOAD(uc, 0xb000, 0x1000, chkc) \
+	ROM_RELOAD(  0xf000, 0x1000)
 
 #define ZAC_SOUNDROM_de1g(ud,chkd,ue,chke,ug,chkg) \
   SOUNDREGION(0x10000, ZACSND_CPUAREGION) \

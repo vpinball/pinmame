@@ -205,7 +205,7 @@ CORE_GAMEDEFNV(pinchamp,"Pinball Champ",1983,"Zaccaria",mZAC2B,GAME_NOT_WORKING|
 /*--------------------------------
 / Time Machine (04/83)
 /-------------------------------*/
-INITGAME(tmachzac,1,dispZAC2,SNDBRD_ZAC1370)
+INITGAME(tmachzac,1,dispZAC2,SNDBRD_ZAC13136)
 ZAC_ROMSTART1820(tmachzac,	"timemach.ic1",0xd88f424b,
 							"timemach.ic2",0x3c313487)
 ZAC_SOUNDROM_de1g(			"sound1.d",    0xefc1d724,
@@ -217,7 +217,7 @@ CORE_GAMEDEFNV(tmachzac,"Time Machine (Zaccaria)",1983,"Zaccaria",mZAC2C,GAME_NO
 /*--------------------------------
 / Farfalla (09/83)
 /-------------------------------*/
-INITGAME(farfalla,1,dispZAC2,SNDBRD_ZAC1370)
+INITGAME(farfalla,1,dispZAC2,SNDBRD_ZAC13136)
 ZAC_ROMSTART1820(farfalla,	"cpurom1.bin",0xac249150,
 							"cpurom2.bin",0x6edc823f)
 ZAC_SOUNDROM_de1g(			"rom1.snd",   0xaca09674,
@@ -229,7 +229,7 @@ CORE_GAMEDEFNV(farfalla,"Farfalla",1983,"Zaccaria",mZAC2F,SOUNDFLAG)
 /*--------------------------------
 / Devil Riders (04/84)
 /-------------------------------*/
-INITGAME(dvlrider,1,dispZAC2,SNDBRD_ZAC1370)
+INITGAME(dvlrider,1,dispZAC2,SNDBRD_ZAC13136)
 ZAC_ROMSTART1820(dvlrider,	"cpu.ic1",0x5874ab12,
 							"cpu.ic2",0x09829446)
 ZAC_SOUNDROM_de2g(		"gb01snd1.1d",0x5d48462c,
@@ -239,12 +239,12 @@ ZAC_SOUNDROM_de2g(		"gb01snd1.1d",0x5d48462c,
 //						"g_snd_2.bin",0x31e35fd4,
 //						"g_snd_3.bin",0x2e64a401)
 ZAC_ROMEND
-CORE_GAMEDEFNV(dvlrider,"Devil Riders",1984,"Zaccaria",mZAC2,SOUNDFLAG)
+CORE_GAMEDEFNV(dvlrider,"Devil Riders",1984,"Zaccaria",mZAC2X,SOUNDFLAG)
 
 /*--------------------------------
 / Magic Castle (09/84)
 /-------------------------------*/
-INITGAME(mcastle,1,dispZAC3,SNDBRD_ZAC1370)
+INITGAME(mcastle,1,dispZAC3,SNDBRD_ZAC13136)
 ZAC_ROMSTART020(mcastle,	"cpu.ic1",0x50dd8209,
 							"cpu.ic2",0x11372bec)
 ZAC_SOUNDROM_de2g(		"gb01snd1.1d",0xcd6a4a07,
