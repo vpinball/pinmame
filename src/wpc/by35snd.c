@@ -104,8 +104,7 @@ static void s32_cmd(int data) {
   if (data & 0x20) { /* sound is enabled -> change frequency */
     if ((data & 0x0f) != 0x0f) {
       UINT8 sData; int f;
-      sData = *((UINT8 *)(memory_region(BY35_MEMREG_SROM) + (data & 0x1f)));
-      sData = CORE_SWAPBYTE(sData);
+      sData = core_revbyte(*((UINT8 *)(memory_region(BY35_MEMREG_SROM) + (data & 0x1f))));
       f= sizeof(sineWave)/((1.1E-6+S32_PITCH*1E-8)*sData)/8;
 
       mixer_set_sample_frequency(s32locals.channel, f);
