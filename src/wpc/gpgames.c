@@ -25,29 +25,29 @@ static core_tLCDLayout dispGP_TEST[] = {
   For balls/credits - left side displays [pb], right side [cc]
 	p = # of players in game, b = which ball is in play
 	cc = # of credits, up to 99
-    pb might be reversed as bp, need confirmation from real game*/
+*/
 static core_tLCDLayout dispGP_DDU1[] = {
- {0, 0,0, 6,CORE_SEG7}, {0,16,8, 6,CORE_SEG7},
- {4, 0,16, 6,CORE_SEG7}, {4,16,24, 6,CORE_SEG7},
- {2, 4,6, 1, CORE_SEG7}, {2, 6,14, 1, CORE_SEG7},
- {2,20,30,1, CORE_SEG7}, {2,22,22, 1, CORE_SEG7},{0}
+ {0, 0, 0,6,CORE_SEG7}, {0,16, 8,6,CORE_SEG7},
+ {4, 0,16,6,CORE_SEG7}, {4,16,24,6,CORE_SEG7},
+ {2, 4,14,1,CORE_SEG7}, {2, 6, 6,1,CORE_SEG7},
+ {2,20,30,1,CORE_SEG7}, {2,22,22,1,CORE_SEG7}, {0}
 };
 
 /*BDU-1*/
 static core_tLCDLayout dispGP_BDU1[] = {
- {0, 0,0, 6,CORE_SEG7}, {0,24,8, 6,CORE_SEG7},
- {4, 0,16, 6,CORE_SEG7}, {4,24,24, 6,CORE_SEG7},
- {4, 13,32, 2, CORE_SEG7},{4,19,36,2, CORE_SEG7},{0}
+ {0, 0, 0,6,CORE_SEG7}, {0,24, 8,6,CORE_SEG7},
+ {4, 0,16,6,CORE_SEG7}, {4,24,24,6,CORE_SEG7},
+ {4,13,32,2,CORE_SEG7}, {4,19,36,2,CORE_SEG7}, {0}
 };
 
 /*BDU-2*/
 //NOTE: 7th Digit order comes after digits 0-6, so we tack it onto front!
 static core_tLCDLayout dispGP_BDU2[] = {
- {0, 0,6, 1,CORE_SEG7},  {0,22,14, 1,CORE_SEG7},
- {4, 0,22, 1,CORE_SEG7}, {4,22,30, 1,CORE_SEG7},
- {0, 2,0, 6,CORE_SEG7},   {0,24,8, 6,CORE_SEG7},
- {4, 2,16, 6,CORE_SEG7},  {4,24,24, 6,CORE_SEG7},
- {4, 20,32, 2, CORE_SEG7S},{4,26,36,2, CORE_SEG7S},{0}
+ {0, 0, 6,1,CORE_SEG7}, {0,22,14,1,CORE_SEG7},
+ {4, 0,22,1,CORE_SEG7}, {4,22,30,1,CORE_SEG7},
+ {0, 2, 0,6,CORE_SEG7}, {0,24, 8,6,CORE_SEG7},
+ {4, 2,16,6,CORE_SEG7}, {4,24,24,6,CORE_SEG7},
+ {4,20,32,2,CORE_SEG7S},{4,26,36,2,CORE_SEG7S},{0}
 };
 
 #define INITGAME(name, gen, disp, flip, lamps) \
