@@ -135,6 +135,7 @@ DRIVERNV(bmx     )      //BY35-888: 11/82 BMX
 DRIVERNV(granslam)      //BY35-     01/83 Grand Slam
 /*same as cenatur*/     //BY35      06/83 Centaur II
 DRIVERNV(goldball)      //BY35-     10/83 Gold Ball
+DRIVERNV(goldbaln)      //BY35-     10/83 Gold Ball Alternate
 DRIVERNV(xsandos )      //BY35-     12/83 X's & O's
                         //??        ??/84 Mysterian
 DRIVERNV(granny )       //BY35-     01/84 Granny and the Gators
