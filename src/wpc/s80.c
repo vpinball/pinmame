@@ -153,7 +153,7 @@ static WRITE_HANDLER(S80_sndCmd_w) {
 	if ( Machine->gamedrv->flags & GAME_NO_SOUND )
 		return;
 
-	if ( core_gameData->gen & GEN_S80 ) {
+	if ( core_gameData->gen & (GEN_S80|GEN_S80B) ) {
 		// sys80 sound board
 		sys80_sound_latch_s(data);
 	}
@@ -161,7 +161,7 @@ static WRITE_HANDLER(S80_sndCmd_w) {
 		// sys80 sound & speech board
 		sys80_sound_latch_ss(data|((S80locals.lampMatrix[1]&0x02)?0x10:0x00));
 	}
-	if ( core_gameData->gen & GEN_S80B2K || core_gameData->gen & GEN_S80B4K) {
+	if ( core_gameData->gen & (GEN_S80B2K|GEN_S80B4K) ) {
 		// sys80b sound board (all generations)
 		S80Bs_soundlatch(data);
 	}
@@ -234,7 +234,7 @@ static READ_HANDLER(riot1a_r)  { /* logerror("riot1a_r\n"); */ return core_gameD
 static WRITE_HANDLER(riot1a_w)
 {
 	int segSel = ((data>>4)&0x07);
-	if ( core_gameData->gen & (GEN_S80B2K|GEN_S80B4K) ) {
+	if ( core_gameData->gen & (GEN_S80B|GEN_S80B2K|GEN_S80B4K) ) {
 		if ( (segSel&0x01) && !(S80locals.segSel&0x01) )
 			S80locals.data = (S80locals.data&0xf0) | (S80locals.disData&0x0f);
 		if ( (segSel&0x02) && !(S80locals.segSel&0x02) )
@@ -343,7 +343,7 @@ static WRITE_HANDLER(riot1b_w)
 {
 //	logerror("riot1b_w: 0x%02x\n", data);
 	S80locals.OpSwitchEnable = (data&0x80);
-	if ( core_gameData->gen & (GEN_S80B2K|GEN_S80B4K) ) {
+	if ( core_gameData->gen & (GEN_S80B|GEN_S80B2K|GEN_S80B4K) ) {
 		int value;
 
 		S80locals.disData = (data&0x3f);
@@ -662,7 +662,7 @@ struct MachineDriver machine_driver_S80SS = {
   S80_nvram
 };
 
-/* s80b - no sound (needed until all known hardware is deteremined) */
+/* s80b - System80a sound only hardware with 2K sound rom */
 struct MachineDriver machine_driver_S80B = {
   {
     {
@@ -671,7 +671,7 @@ struct MachineDriver machine_driver_S80B = {
 	  S80_vblank, 1,
 	  NULL, 0
 	},
-	/* plug in sound here */
+	S80S_SOUNDCPU
   },
   S80_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50,
@@ -789,11 +789,11 @@ static void S80_init(void) {
   /* Sound Enabled? */
   if (((Machine->gamedrv->flags & GAME_NO_SOUND)==0) && Machine->sample_rate)
   {
-	  if ( core_gameData->gen & GEN_S80 )
+	  if ( core_gameData->gen & (GEN_S80|GEN_S80B) )
 		S80S_sinit(S80SS_SCPU);
 	  else if ( core_gameData->gen & GEN_S80SS )
 		S80SS_sinit(S80SS_SCPU);
-	  else if ( core_gameData->gen & GEN_S80B2K || core_gameData->gen & GEN_S80B4K )
+	  else if ( core_gameData->gen & (GEN_S80B2K|GEN_S80B4K) )
 	    S80Bs_sound_init();
   }
 
@@ -804,7 +804,7 @@ static void S80_exit(void) {
   /* Sound Enabled? */
   if (((Machine->gamedrv->flags & GAME_NO_SOUND)==0) && Machine->sample_rate)
   {
-	  if ( core_gameData->gen & GEN_S80B2K || core_gameData->gen & GEN_S80B4K )
+	  if ( core_gameData->gen & (GEN_S80B2K|GEN_S80B4K) )
 	    S80Bs_sound_exit();
   }
   riot_unconfig();
