@@ -483,26 +483,21 @@ STDMETHODIMP CGameSettings::put_Value(BSTR sName, VARIANT newVal)
 	return hr;
 }
 
-STDMETHODIMP CGameSettings::DisplayPositionX(VARIANT newVal, long hParentWnd)
+STDMETHODIMP CGameSettings::SetDisplayPosition(VARIANT newValX, VARIANT newValY, long hWnd)
 {
-	VariantChangeType(&newVal, &newVal, 0, VT_I4);
-	if ( IsWindow((HWND) hParentWnd) ) {
+	VariantChangeType(&newValX, &newValX, 0, VT_I4);
+	VariantChangeType(&newValY, &newValY, 0, VT_I4);
+	if ( IsWindow((HWND) hWnd) ) {
 		RECT rect;
-		GetWindowRect((HWND) hParentWnd, &rect);
-		newVal.lVal += rect.left;
+		GetClientRect((HWND) hWnd, &rect);
+		::ClientToScreen((HWND) hWnd, (LPPOINT) &rect.left);
+		newValX.lVal += rect.left;
+		newValY.lVal += rect.top;
 	}
 
-	return put_Value(CComBSTR("dmd_pos_x"), newVal);
-}
+	HRESULT hr = put_Value(CComBSTR("dmd_pos_x"), newValX);
+	if ( SUCCEEDED(hr) )
+		hr = put_Value(CComBSTR("dmd_pos_y"), newValY);
 
-STDMETHODIMP CGameSettings::DisplayPositionY(VARIANT newVal, long hParentWnd)
-{
-	VariantChangeType(&newVal, &newVal, 0, VT_I4);
-	if ( IsWindow((HWND) hParentWnd) ) {
-		RECT rect;
-		GetWindowRect((HWND) hParentWnd, &rect);
-		newVal.lVal += rect.top;
-	}
-
-	return put_Value(CComBSTR("dmd_pos_y"), newVal);
+	return hr;
 }
