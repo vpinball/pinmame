@@ -23,6 +23,7 @@ const struct GameDriver *drivers[] = {
 // -----------------
                         //Triangle (Prototype, 1976?)
 DRIVERNV(atarians)      //The Atarians (November 1976)
+DRIVERNV(atarianb)      //The Atarians (2002 bootleg)
 DRIVERNV(time2000)      //Time 2000 (June 1977)
 DRIVERNV(aavenger)      //Airborne Avenger (September 1977)
 DRIVERNV(midearth)      //Middle Earth (February 1978)
@@ -91,7 +92,7 @@ DRIVERNV(stargod)       //05/80 Star God
 DRIVERNV(sshtlzac)      //09/80 Space Shuttle
 DRIVERNV(ewf)           //04/81 Earth, Wind & Fire
 DRIVERNV(locomotn)      //09/81 Locomotion
-                        //04/82 Pinball Champ '82 (Is this really different from the '83?)
+DRIVERNV(pinchp82)      //04/82 Pinball Champ '82 (Is this really different from the '83?)
 DRIVERNV(socrking)      //09/82 Soccer King
 DRIVERNV(pinchamp)      //??/83 Pinball Champ
 DRIVERNV(tmachzac)      //04/83 Time Machine

@@ -6,20 +6,46 @@
 #include "sim.h"
 
 /*-- Common Inports for ZAC Games --*/
+#define ZAC_COMPORTS_OLD \
+  PORT_START /* 0 */ \
+    /* These are put in switch column 1 */ \
+    COREPORT_BITIMP(  0x0008, "Start", KEYCODE_1) \
+    COREPORT_BITIMP(  0x0010, "Coin 1", KEYCODE_3) \
+    COREPORT_BITIMP(  0x0020, "Coin 2", KEYCODE_4) \
+    COREPORT_BITIMP(  0x0040, "Coin 3", KEYCODE_5) \
+    COREPORT_BITIMP(  0x0001, "Diagnostics", KEYCODE_7) \
+    COREPORT_BIT   (  0x0002, "Ball Tilt", KEYCODE_INSERT) \
+    COREPORT_BITIMP(  0x0004, "Slam Tilt", KEYCODE_HOME) \
+    /* These are put in switch column 2 */ \
+    COREPORT_BIT   (  0x8000, "Test Mode", KEYCODE_END) \
+  PORT_START /* 1 */ \
+    COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0001, "1" ) \
+    COREPORT_DIPNAME( 0x0002, 0x0000, "S2") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0002, "1" ) \
+    COREPORT_DIPNAME( 0x0004, 0x0000, "S3") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0004, "1" ) \
+    COREPORT_DIPNAME( 0x0008, 0x0000, "S4") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0008, "1" )
+
 #define ZAC_COMPORTS \
   PORT_START /* 0 */ \
     /* These are put in switch column 1 */ \
     COREPORT_BITIMP(  0x0010, "Coin 1", KEYCODE_3) \
     COREPORT_BITIMP(  0x0020, "Coin 2", KEYCODE_4) \
     COREPORT_BITIMP(  0x0040, "Coin 3", KEYCODE_5) \
-    COREPORT_BITIMP(  0x0008, "Coin 4 / Start", KEYCODE_6) \
+    COREPORT_BITIMP(  0x0008, "Service Coin", KEYCODE_6) \
     COREPORT_BITIMP(  0x0001, "Diag. Up", KEYCODE_7) \
     COREPORT_BITIMP(  0x0002, "Diag. Down", KEYCODE_8) \
-    COREPORT_BITIMP(  0x0004, "Reset", KEYCODE_0) \
+    COREPORT_BITIMP(  0x0004, "Slam Tilt", KEYCODE_HOME) \
     /* These are put in switch column 2 */ \
     COREPORT_BIT   (  0x0200, "Start", KEYCODE_1) \
     COREPORT_BIT   (  0x0400, "Ball Tilt", KEYCODE_INSERT) \
-    COREPORT_BITIMP(  0x8000, "Slam Tilt", KEYCODE_HOME) \
+    COREPORT_BITIMP(  0x8000, "Printer Log", KEYCODE_0) \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
       COREPORT_DIPSET(0x0000, "0" ) \
@@ -35,6 +61,12 @@
       COREPORT_DIPSET(0x0008, "1" )
 
 /*-- Standard input ports --*/
+#define ZACOLD_INPUT_PORTS_START(name,balls) \
+  INPUT_PORTS_START(name) \
+    CORE_PORTS \
+    SIM_PORTS(balls) \
+    ZAC_COMPORTS_OLD
+
 #define ZAC_INPUT_PORTS_START(name,balls) \
   INPUT_PORTS_START(name) \
     CORE_PORTS \
@@ -76,25 +108,6 @@
       ROM_LOAD ( n3, 0x0800, 0x0400, chk3) \
       ROM_LOAD ( n4, 0x0c00, 0x0400, chk4) \
       ROM_LOAD ( n5, 0x1000, 0x0400, chk5)
-
-#define ZAC_ROMSTART84444A(name,n1,chk1,n2,chk2,n3,chk3,n4,chk4,n5,chk5) \
-  ROM_START(name) \
-	NORMALREGION(0x8000, ZAC_MEMREG_CPU) \
-      ROM_LOAD ( n1, 0x0000, 0x0800, chk1) \
-      ROM_LOAD ( n2, 0x1400, 0x0400, chk2) \
-      ROM_LOAD ( n3, 0x0800, 0x0400, chk3) \
-       ROM_RELOAD   (0x1c00, 0x0400) \
-      ROM_LOAD ( n4, 0x0c00, 0x0400, chk4) \
-      ROM_LOAD ( n5, 0x1000, 0x0400, chk5)
-
-#define ZAC_ROMSTART84444B(name,n1,chk1,n2,chk2,n3,chk3,n4,chk4,n5,chk5) \
-  ROM_START(name) \
-	NORMALREGION(0x8000, ZAC_MEMREG_CPU) \
-      ROM_LOAD ( n1, 0x0000, 0x0800, chk1) \
-       ROM_RELOAD   (0x1c00, 0x0400) \
-      ROM_LOAD ( n3, 0x0800, 0x0400, chk3) \
-      ROM_LOAD ( n4, 0x0c00, 0x0400, chk4) \
-      ROM_LOAD ( n5, 0x1000, 0x0400, chk5) \
 
 /* 2 X 2716, 3 X 2708 ROMS */
 #define ZAC_ROMSTART84844(name,n1,chk1,n2,chk2,n3,chk3,n4,chk4,n5,chk5) \
