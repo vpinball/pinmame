@@ -701,9 +701,8 @@ CORE_CLONEDEFNV(speakes4,speakesy,"Speakeasy 4 Player",1982,"Bally",by35_mBY35_5
 / Rapid Fire
 /-------------------------------*/
 static core_tLCDLayout dispRapid[] = {
-  {0, 0, 1,7,CORE_SEG87F}, {0,16, 9,7,CORE_SEG87F},
-  {2, 4,33,2,CORE_SEG7},   {2,10,36,2,CORE_SEG7},
-  {2,16,41,7,CORE_SEG87F}, {0}
+  {0, 0, 1,7,CORE_SEG87F}, {4, 0, 9,7,CORE_SEG87F},
+  {2,16,33,7,CORE_SEG7}, {0}
 };
 INITGAME2(rapidfir,GEN_BY35,dispRapid,FLIP_SW(FLIP_L),8,SNDBRD_BY61B,0)
 BY35_ROMSTARTx00(rapidfir,"869-04_2.732",CRC(26fdf048),
