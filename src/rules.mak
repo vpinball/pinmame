@@ -1596,6 +1596,17 @@ else
 CPUDEFS += -DHAS_M68306=0
 endif
 
+CPU=$(strip $(findstring AT91@,$(CPUS)))
+ifneq ($(CPU),)
+OBJDIRS += $(OBJ)/cpu/at91
+CPUDEFS += -DHAS_AT91=1
+CPUOBJS += $(OBJ)/cpu/at91/at91.o
+DBGOBJS += $(OBJ)/cpu/at91/at91dasm.o
+$(OBJ)/cpu/at91/at91.o: at91.c at91.h
+else
+CPUDEFS += -DHAS_AT91=0
+endif
+
 SOUND=$(strip $(findstring X1_010@,$(SOUNDS)))
 ifneq ($(SOUND),)
 SOUNDDEFS += -DHAS_X1_010=1

@@ -18,6 +18,9 @@ Hardware from 1994-present
     11/2003 -New CPU/Sound board (520-5300-00) with an Atmel AT91 (ARM7DMI Variant) CPU for sound & Xilinx FPGA
              emulating the BSMT2000 as well as added 16 bit sample playback and ADPCM compression.
 
+Issues:
+DMD Timing is still wrong.. FIRQ rate is variable, and it's not fully understood.
+
 *************************************************************************************************/
 #include <stdarg.h>
 #include "driver.h"
