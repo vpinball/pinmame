@@ -110,6 +110,13 @@ int snd_get_cmd_log(int *last, int *buffer) {
 /*-----------------------------------*/
 /*-- handle manual command display --*/
 /*-----------------------------------*/
+static void insert_char(char data) {
+  locals.digits[locals.currDigit] = data;
+  if (locals.rollover || (locals.currDigit < (MAX_CMD_LENGTH*2-1))) {
+    if (++locals.currDigit > (MAX_CMD_LENGTH*2-1)) locals.currDigit = 0;
+  }
+}
+
 int manual_sound_commands(struct mame_bitmap *bitmap) {
   int ii;
 
@@ -154,7 +161,56 @@ int manual_sound_commands(struct mame_bitmap *bitmap) {
       core_textOutf(SND_XROW, 65, BLACK, "LEFT/RIGHT  Move Left/Right");
       core_textOutf(SND_XROW, 75, BLACK, "UP/DOWN     Digit +1/-1");
       core_textOutf(SND_XROW, 85, BLACK, "INSERT      Turn Rollover %s",(locals.rollover)?"Off":"On ");
-      if      ((keyboard_pressed_memory_repeat(SMDCMD_UP, REPEATKEY)) &&
+      if      ((keyboard_pressed_memory_repeat(KEYCODE_0, REPEATKEY)) ||
+               (keyboard_pressed_memory_repeat(KEYCODE_0_PAD, REPEATKEY)))
+        insert_char(0x00);
+      else if ((keyboard_pressed_memory_repeat(KEYCODE_1, REPEATKEY)) ||
+               (keyboard_pressed_memory_repeat(KEYCODE_1_PAD, REPEATKEY)))
+        insert_char(0x01);
+      else if ((keyboard_pressed_memory_repeat(KEYCODE_2, REPEATKEY)) ||
+               (keyboard_pressed_memory_repeat(KEYCODE_2_PAD, REPEATKEY)))
+        insert_char(0x02);
+      else if ((keyboard_pressed_memory_repeat(KEYCODE_3, REPEATKEY)) ||
+               (keyboard_pressed_memory_repeat(KEYCODE_3_PAD, REPEATKEY)))
+        insert_char(0x03);
+      else if ((keyboard_pressed_memory_repeat(KEYCODE_4, REPEATKEY)) ||
+               (keyboard_pressed_memory_repeat(KEYCODE_4_PAD, REPEATKEY)))
+        insert_char(0x04);
+      else if ((keyboard_pressed_memory_repeat(KEYCODE_5, REPEATKEY)) ||
+               (keyboard_pressed_memory_repeat(KEYCODE_5_PAD, REPEATKEY)))
+        insert_char(0x05);
+      else if ((keyboard_pressed_memory_repeat(KEYCODE_6, REPEATKEY)) ||
+               (keyboard_pressed_memory_repeat(KEYCODE_6_PAD, REPEATKEY)))
+        insert_char(0x06);
+      else if ((keyboard_pressed_memory_repeat(KEYCODE_7, REPEATKEY)) ||
+               (keyboard_pressed_memory_repeat(KEYCODE_7_PAD, REPEATKEY)))
+        insert_char(0x07);
+      else if ((keyboard_pressed_memory_repeat(KEYCODE_8, REPEATKEY)) ||
+               (keyboard_pressed_memory_repeat(KEYCODE_8_PAD, REPEATKEY)))
+        insert_char(0x08);
+      else if ((keyboard_pressed_memory_repeat(KEYCODE_9, REPEATKEY)) ||
+               (keyboard_pressed_memory_repeat(KEYCODE_9_PAD, REPEATKEY)))
+        insert_char(0x09);
+      else if  (keyboard_pressed_memory_repeat(KEYCODE_A, REPEATKEY))
+        insert_char(0x0a);
+      else if  (keyboard_pressed_memory_repeat(KEYCODE_B, REPEATKEY))
+        insert_char(0x0b);
+      else if  (keyboard_pressed_memory_repeat(KEYCODE_C, REPEATKEY))
+        insert_char(0x0c);
+      else if  (keyboard_pressed_memory_repeat(KEYCODE_D, REPEATKEY))
+        insert_char(0x0d);
+      else if  (keyboard_pressed_memory_repeat(KEYCODE_E, REPEATKEY))
+        insert_char(0x0e);
+      else if  (keyboard_pressed_memory_repeat(KEYCODE_F, REPEATKEY))
+        insert_char(0x0f);
+      else if ((keyboard_pressed_memory_repeat(KEYCODE_MINUS, REPEATKEY)) ||
+               (keyboard_pressed_memory_repeat(KEYCODE_MINUS_PAD, REPEATKEY)))
+        insert_char(0x10);
+      else if  (keyboard_pressed_memory_repeat(KEYCODE_HOME, REPEATKEY))
+        locals.currDigit = 0;
+      else if  (keyboard_pressed_memory_repeat(KEYCODE_END, REPEATKEY))
+        locals.currDigit = MAX_CMD_LENGTH*2-1;
+      else if ((keyboard_pressed_memory_repeat(SMDCMD_UP, REPEATKEY)) &&
                (locals.rollover || (locals.digits[locals.currDigit] < 0x10))) {
         if (++locals.digits[locals.currDigit] > 0x10) locals.digits[locals.currDigit] = 0;
       }
