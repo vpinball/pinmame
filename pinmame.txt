@@ -12,7 +12,7 @@ Latest Info
 
 What is it?
 -----------
-  PinMAME emulates the hardware found in many solid state pinball machines created from
+  PinMAME emulates the hardware found in almost every solid state pinball machines created from
   the mid 1970's through 2003. Currently, the following pinball hardware is emulated:
 
   Williams/Bally WPC, Williams/Bally System 11, Williams System 9, Williams System 7,
@@ -21,11 +21,11 @@ What is it?
   Data East/Sega 192x64 DMD, Sega/Stern Whitestar System, Stern MPU-100, Stern MPU-200,
   Bally MPU-17 & MPU-35, Bally Video/Pinball, Bally 6803,
   Gottlieb System 80, 80a, 80b, System 3, Hankin, Gameplan MPU-1 & MPU-2, Atari,
-  Zaccaria, Taito of Brazil, Midway, Capcom (not working).
+  Zaccaria, Taito of Brazil, Midway, Capcom, Alvin G. and Co.
 
   *Note: Emulation is not 100% working on all hardware.
 
-  PinMAME is built as an add-on to the MAME 0.59 Source Code.
+  PinMAME is built as an add-on to the MAME 0.74 Source Code.
 
   All the MAME readme file with all disclaimers, credits and instructions are included for
   info on using MAME related functions.
@@ -75,7 +75,7 @@ Games supported
   Zaccaria Pinball: All games from Combat(1978) to Spooky(1987)
   Taito Pinball: All that's available... which is about a third of all games made.
   Midway Pinball: Dave Nutting's 1974 "Flicker" prototype, and also Rotation VIII.
-  Capcom Pinball: All games from Goofy Hoops(1995) to Kingpin(1996), **none working yet**
+  Capcom Pinball: All games from Goofy Hoops(1995) to Kingpin(1996)
   Alvin G. and Co: All games from World Tour(1992) to Pistol Poker(1993)
 
   Supported means that the game loads and the display starts up with lamps etc. All games

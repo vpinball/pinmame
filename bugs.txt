@@ -32,3 +32,7 @@ Bugs in Pinmame that we are aware of:
 
 #12) Sound gets cut off in Alvin G games sometimes, and some weird notes in World Tour occasionally
 
+#13) Switches don't work in Capcom Breakshot
+
+#14) Graphics issues, missing lamps & Solenoids in Capcom Flipper Football and Kingpin
+
