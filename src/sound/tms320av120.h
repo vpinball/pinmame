@@ -16,18 +16,20 @@ struct TMS320AV120interface
 {
         int num;											/* total number of chips */
         int mixing_level[MAX_TMS320AV120];					/* master volume */
-		void (*bof_line[MAX_TMS320AV120])(int state);		/* BOF Line Callback */
-		void (*sreq_line[MAX_TMS320AV120])(int state);		/* SREQ Line Callback */
+		void (*bof_line)(int chipnum,int state);			/* BOF Line Callback */
+		void (*sreq_line)(int chipnum,int state);			/* SREQ Line Callback */
 };
 
+/*Called from MAME core*/
 int TMS320AV120_sh_start(const struct MachineSound *msound);
 void TMS320AV120_sh_stop(void);
 void TMS320AV120_sh_reset(void);
 void TMS320AV120_sh_update(void);
 
-WRITE_HANDLER( TMS320AV120_data_0_w );
-WRITE_HANDLER( TMS320AV120_data_1_w );
+/*Externally called functions from drivers*/
+WRITE_HANDLER( TMS320AV120_data_w );
 void TMS320AV120_set_mute(int chipnum, int state);
 void TMS320AV120_set_reset(int chipnum, int state);
-//void TMS320AV120_reset(int chipnum);
+
 #endif
+
