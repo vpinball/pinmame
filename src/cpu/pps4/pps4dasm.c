@@ -75,7 +75,7 @@ unsigned DasmPPS4(char *buff, unsigned pc)
 		case 0x60: case 0x61: case 0x62: case 0x63: case 0x64: case 0x66: case 0x67:
 		case 0x68: case 0x69: case 0x6a: case 0x6b: case 0x6c: case 0x6d: case 0x6e:
 			sprintf (buff,"adi   #$%x", (~op & 0x0f)); break;
-		case 0x65: sprintf (buff,"dc    (adi #$a)");                 break;
+		case 0x65: sprintf (buff,"dc");                              break;
 		case 0x6f: sprintf (buff,"cys");                             break;
 
 		case 0x70: case 0x71: case 0x72: case 0x73: case 0x74: case 0x75: case 0x76: case 0x77:

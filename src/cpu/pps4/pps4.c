@@ -18,7 +18,7 @@
 /* Layout of the registers in the debugger */
 static UINT8 PPS4_reg_layout[] = {
 	PPS4_PC, PPS4_SA, PPS4_SB, PPS4_AB, PPS4_BX, PPS4_A, PPS4_X,
-	/* PPS4_C, PPS4_F1, PPS4_F2, */ 0
+	/* PPS4_C, PPS4_F1, PPS4_F2, PPS4_SK, */ 0
 };
 
 /* Layout of the debugger windows x,y,w,h */
@@ -33,14 +33,34 @@ static UINT8 PPS4_win_layout[] = {
 typedef struct {
 	int 	cputype;	/* 0 = PPS-4 (10660), 1 = PPS-4/2 (11660) */
 	PAIR	PC, SA, SB, AB, BX;
-	INT8	accu, xreg, carry, ff1, ff2;
+	INT8	accu, xreg, carry, ff1, ff2, skip;
 }	PPS4_Regs;
+
+static PPS4_Regs I;
 
 int PPS4_ICount = 0;
 int wasLB = 0;
 int wasLDI = 0;
 
-static PPS4_Regs I;
+/* Word count for all opcodes */
+static int words[] = {
+	2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+};
 
 static UINT8 ROP(void)
 {
@@ -76,9 +96,12 @@ INLINE void execute_one(int opcode)
 {
 	PAIR tmpPair;
 	int tmp;
+
 	PPS4_ICount--;
 	if (wasLB) wasLB--;
 	if (wasLDI) wasLDI--;
+	I.skip = 0;
+
 	switch (opcode)
 	{
 		case 0x00: /* LBL */
@@ -96,7 +119,6 @@ INLINE void execute_one(int opcode)
 		case 0x01: case 0x02: case 0x03:
 			I.SB = I.SA;
 			I.SA = I.PC;
-			I.SA.w.l++;
 			M_JMP(opcode)
 			break;
 		case 0x04: /* LBUA */
@@ -124,21 +146,13 @@ INLINE void execute_one(int opcode)
 			break;
 		case 0x08: /* ADCSK */
 			I.accu += I.carry + RM(0x1000 | I.AB.w.l);
-			I.carry = I.accu >> 4;
+			I.skip = I.carry = I.accu >> 4;
 			I.accu &= 0x0f;
-			if (I.carry) {
-				I.PC.w.l++;
-				change_pc16(I.PC.d);
-			}
 			break;
 		case 0x09: /* ADSK */
 			I.accu += RM(0x1000 | I.AB.w.l);
-			I.carry = I.accu >> 4;
+			I.skip = I.carry = I.accu >> 4;
 			I.accu &= 0x0f;
-			if (I.carry) {
-				I.PC.w.l++;
-				change_pc16(I.PC.d);
-			}
 			break;
 		case 0x0a: /* ADC */
 			I.accu += I.carry + RM(0x1000 | I.AB.w.l);
@@ -177,28 +191,18 @@ INLINE void execute_one(int opcode)
 			I.AB.w.l = I.BX.w.l & 0x0f;
 			break;
 		case 0x14: /* SKF2 */
-			if (I.ff2) {
-				I.PC.w.l++;
-				change_pc16(I.PC.d);
-			}
+			I.skip = I.ff2;
 			break;
 		case 0x15: /* SKC */
-			if (I.carry) {
-				I.PC.w.l++;
-				change_pc16(I.PC.d);
-			}
+			I.skip = I.carry;
 			break;
 		case 0x16: /* SKF1 */
-			if (I.ff1) {
-				I.PC.w.l++;
-				change_pc16(I.PC.d);
-			}
+			I.skip = I.ff1;
 			break;
 		case 0x17: /* INCB */
 			if ((I.BX.w.l & 0x0f) == 0x0f) {
 				I.BX.w.l &= 0xff0;
-				I.PC.w.l++;
-				change_pc16(I.PC.d);
+				I.skip = 1;
 			} else
 				I.BX.w.l++;
 			I.AB = I.BX;
@@ -226,7 +230,8 @@ INLINE void execute_one(int opcode)
 		case 0x1c: /* IOL */
 			tmp = ARG();
 			I.accu = tmp & 0x0f;
-			M_OUT(0x10, tmp);
+			M_OUT(0x10, tmp & 0x0f)
+			M_OUT(0x11, tmp >> 4)
 			break;
 		case 0x1d: /* DOA */
 			M_OUT(0, I.accu)
@@ -234,16 +239,12 @@ INLINE void execute_one(int opcode)
 				M_OUT(1, I.xreg) // PPS-4/2 only!
 			break;
 		case 0x1e: /* SKZ */
-			if (!I.accu) {
-				I.PC.w.l++;
-				change_pc16(I.PC.d);
-			}
+			I.skip = (!I.accu);
 			break;
 		case 0x1f: /* DECB */
 			if (!(I.BX.w.l & 0x0f)) {
 				I.BX.w.l |= 0x00f;
-				I.PC.w.l++;
-				change_pc16(I.PC.d);
+				I.skip = 1;
 			} else
 				I.BX.w.l--;
 			I.AB = I.BX;
@@ -281,8 +282,7 @@ INLINE void execute_one(int opcode)
 			I.BX.w.l = (I.BX.w.l & 0xf8f) | ((I.BX.w.l ^ ((~opcode) << 4)) & 0x070);
 			if (!(I.BX.w.l & 0x0f)) {
 				I.BX.w.l |= 0x00f;
-				I.PC.w.l++;
-				change_pc16(I.PC.d);
+				I.skip = 1;
 			} else
 				I.BX.w.l--;
 			I.AB = I.BX;
@@ -306,10 +306,7 @@ INLINE void execute_one(int opcode)
 		/* SKBI */
 		case 0x40: case 0x41: case 0x42: case 0x43: case 0x44: case 0x45: case 0x46: case 0x47:
 		case 0x48: case 0x49: case 0x4a: case 0x4b: case 0x4c: case 0x4d: case 0x4e: case 0x4f:
-			if ((I.BX.w.l & 0x0f) == (opcode & 0x0f)) {
-				I.PC.w.l++;
-				change_pc16(I.PC.d);
-			}
+			I.skip = ((I.BX.w.l & 0x0f) == (opcode & 0x0f));
 			break;
 
 		/* TL */
@@ -319,17 +316,15 @@ INLINE void execute_one(int opcode)
 			break;
 
 		/* ADI */
-		case 0x60: case 0x61: case 0x62: case 0x63: case 0x64: case 0x65: case 0x66: case 0x67:
+		case 0x60: case 0x61: case 0x62: case 0x63: case 0x64: case 0x66: case 0x67:
 		case 0x68: case 0x69: case 0x6a: case 0x6b: case 0x6c: case 0x6d: case 0x6e:
 			I.accu += ((~opcode) & 0x0f);
-			I.carry = I.accu >> 4;
+			I.skip = I.carry = I.accu >> 4;
 			I.accu &= 0x0f;
-			if (I.carry) {
-				I.PC.w.l++;
-				change_pc16(I.PC.d);
-			}
 			break;
-
+		case 0x65: /* DC */
+			I.accu = (I.accu + 0x0a) & 0x0f;
+			break;
 		case 0x6f: /* CYS */
 			tmp = ~I.accu;
 			I.accu = (~I.SA.w.l) & 0x0f;
@@ -376,8 +371,8 @@ INLINE void execute_one(int opcode)
 				I.SB = I.PC;
 			} else {
 				I.PC.w.l++;
+				change_pc16(I.PC.d);
 			}
-			change_pc16(I.PC.d);
 			wasLB = 2;
 			break;
 
@@ -392,13 +387,17 @@ INLINE void execute_one(int opcode)
 		case 0xf8: case 0xf9: case 0xfa: case 0xfb: case 0xfc: case 0xfd: case 0xfe: case 0xff:
 			I.SB = I.SA;
 			I.SA = I.PC;
-			I.SA.w.l++;
 			I.PC.w.l = opcode;
 			M_JMP(0x01)
 			break;
 
 		default:
 			illegal();
+	}
+	if (I.skip) {
+		opcode = ROP();
+		I.PC.w.l += words[opcode] - 1;
+		PPS4_ICount -= words[opcode] + 1;
 	}
 }
 
@@ -434,6 +433,7 @@ void PPS4_init(void)
 	state_save_register_INT8("PPS4", cpu, "X", &I.xreg, 1);
 	state_save_register_INT8("PPS4", cpu, "FF1", &I.ff1, 1);
 	state_save_register_INT8("PPS4", cpu, "FF2", &I.ff2, 1);
+	state_save_register_INT8("PPS4", cpu, "SKIP", &I.skip, 1);
 }
 
 /****************************************************************************
@@ -494,6 +494,7 @@ unsigned PPS4_get_reg(int regnum)
 		case PPS4_X: return I.xreg;
 		case PPS4_F1: return I.ff1;
 		case PPS4_F2: return I.ff2;
+		case PPS4_SK: return I.skip;
 		case REG_PREVIOUSPC: return 0; /* previous pc not supported */
 		default:
 			if( regnum <= REG_SP_CONTENTS )
@@ -525,6 +526,7 @@ void PPS4_set_reg(int regnum, unsigned val)
 		case PPS4_C: I.carry = (val > 0); break;
 		case PPS4_F1: I.ff1 = (val > 0); break;
 		case PPS4_F2: I.ff2 = (val > 0); break;
+		case PPS4_SK: I.skip = (val > 0); break;
 		default:
 			if( regnum <= REG_SP_CONTENTS )
 			{
@@ -543,11 +545,11 @@ void PPS4_set_reg(int regnum, unsigned val)
  ****************************************************************************/
 const char *PPS4_info(void *context, int regnum)
 {
-	static char buffer[11][47+1];
+	static char buffer[12][47+1];
 	static int which = 0;
 	PPS4_Regs *r = context;
 
-	which = (which+1) % 11;
+	which = (which+1) % 12;
 	buffer[which][0] = '\0';
 	if( !context )
 		r = &I;
@@ -564,7 +566,9 @@ const char *PPS4_info(void *context, int regnum)
 		case CPU_INFO_REG+PPS4_X: sprintf(buffer[which], "X:%X", I.xreg); break;
 		case CPU_INFO_REG+PPS4_F1: sprintf(buffer[which], "FF1:%X", I.ff1); break;
 		case CPU_INFO_REG+PPS4_F2: sprintf(buffer[which], "FF2:%X", I.ff2); break;
-		case CPU_INFO_FLAGS: sprintf(buffer[which], "%c%c%c", (I.carry ? 'C' : '.'), (I.ff1 ? '1' : '.'), (I.ff2 ? '2' : '.')); break;
+		case CPU_INFO_REG+PPS4_SK: sprintf(buffer[which], "SKP:%X", I.skip); break;
+		case CPU_INFO_FLAGS: sprintf(buffer[which], "%c%c%c%c",
+		  (I.carry ? 'C' : '.'), (I.ff1 ? '1' : '.'), (I.ff2 ? '2' : '.'), (I.skip ? 'S' : '.')); break;
 		case CPU_INFO_NAME: return (I.cputype ? "PPS-4/2" : "PPS-4");
 		case CPU_INFO_FAMILY: return (I.cputype ? "Rockwell PPS-4/2" : "Rockwell PPS-4");
 		case CPU_INFO_VERSION: return "1.0";
