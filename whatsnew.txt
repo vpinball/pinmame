@@ -1,7 +1,7 @@
 What's new:
 -----------
 
-Version 1.10 (December 13, 2001)
+Version 1.10 (December 23, 2001)
 -----------------------------------------
 This may very well be the most anticipated release of PinMAME to date: 4 Letters - BSMT.
 
@@ -68,6 +68,7 @@ New Features
 -Added Stereo Sound support for pre-BSMT Data East games. (still not fully emulated, but better than previous mono output).
 -Added support for Sound Roms for remaining Data East/Sega/Stern(Post 1998) Games.
 -Added support for Gottlieb System 3 games.
+-Added preliminary support for Bally Pinball/Video combination games (not working yet)
  [Steve Ellenoff]
 
 -New option to set the intensity of segments when they are off.
