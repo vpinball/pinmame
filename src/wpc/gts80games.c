@@ -746,9 +746,9 @@ CORE_GAMEDEFNV(mntecrlo, "Monte Carlo",1987,"Gottlieb",gl_mGTS80BS1,0)
 INITGAME(sprbreak, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
 GTS80B_2K_ROMSTART(sprbreak, "prom2.cpu", CRC(47171062),
                              "prom1.cpu", CRC(53ed608b))
-GTS80BSSOUND888(             "drom1.snd", 0x0,
-                             "yrom1.snd", 0x0,
-                             "yrom2.snd", 0x0)
+GTS80BSSOUND888(             "drom1.snd", NO_DUMP,
+                             "yrom1.snd", NO_DUMP,
+                             "yrom2.snd", NO_DUMP)
 GTS80_ROMEND
 #define input_ports_sprbreak input_ports_gts80
 CORE_GAMEDEFNV(sprbreak, "Spring Break",1987,"Gottlieb",gl_mGTS80BS1,0)
