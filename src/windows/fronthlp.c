@@ -770,7 +770,11 @@ int frontend_help (const char *gamename)
 			break;
 
 		case LIST_GAMELIST: /* GAMELIST.TXT */
+#ifdef PINMAME
+			printf("This is the complete list of games supported by PinMAME %s.\n",build_version);
+#else
 			printf("This is the complete list of games supported by MAME %s.\n",build_version);
+#endif /* PINMAME */
 			if (!listclones)
 				printf("Variants of the same game are not included, you can use the -listclones command\n"
 					"to get a list of the alternate versions of a given game.\n");
