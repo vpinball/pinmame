@@ -608,6 +608,7 @@ DRIVER(nbaf,31a)
 DRIVER(mm,109)      //WPC-559:  06/97 W Medieval Madness
 DRIVER(mm,10)
 DRIVER(cv,14)       //WPC-562:  10/97 B Cirqus Voltaire
+DRIVER(cv,20h)      //WPC-562:  04/02 B Cirqus Voltaire (Home Roms)
 DRIVER(ngg,13)      //WPC-561:  12/97 W No Good Gofers
 DRIVER(cp,16)       //WPC-563:  04/98 B The Champion Pub
 DRIVER(mb,106)      //WPC-565:  07/98 W Monster Bash
