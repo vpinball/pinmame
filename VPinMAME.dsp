@@ -1466,14 +1466,6 @@ SOURCE=.\src\wpc\gts3games.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\gts3sound.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\wpc\gts3sound.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\wpc\gts80.c
 # End Source File
 # Begin Source File
