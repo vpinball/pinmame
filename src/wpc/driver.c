@@ -208,7 +208,8 @@ DRIVERNV(bsv100r)       // 05/96    Breakshot (Redemption, 1.0)
 DRIVERNV(bsv102r)       // 05/96    Breakshot (Redemption, 1.2)
 DRIVERNV(bsv103)        // 05/96    Breakshot (1.3)
 DRIVERNV(bsb105)        // 05/96    Breakshot (Beta, 1.5)
-DRIVERNV(ffv104)        // 10/96    Flipper Football
+DRIVERNV(ffv101)        // 10/96    Flipper Football (1.01)
+DRIVERNV(ffv104)        // 10/96    Flipper Football (1.04)
 DRIVERNV(bbb108)        // 11/96    Big Bang Bar (Beta, 1.8)
 DRIVERNV(bbb109)        // 11/96    Big Bang Bar (Beta, 1.9)
 DRIVERNV(kpv106)        // 12/96    Kingpin
