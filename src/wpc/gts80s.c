@@ -32,6 +32,10 @@
 
 #define GTS80S_BUFFER_SIZE 8192
 
+extern void sh_votrax_start(int Channel);
+extern void sh_votrax_stop(void);
+extern void votrax_w(int data);
+
 struct {
 	struct sndbrdData boardData;
 
@@ -332,6 +336,7 @@ void GTS80SS_speachtimeout(int state)
 WRITE_HANDLER(vs_latch_w) {
 	static int queue[100],pos;
 
+	votrax_w(data^0xff);
 	data = (data^0xff) & 0x3f;
 	if ( pos<100 )
 		queue[pos++] = data;
@@ -439,7 +444,6 @@ void gts80ss_init(struct sndbrdData *brdData) {
 	int i;
 
 	memset(&GTS80SS_locals, 0x00, sizeof GTS80SS_locals);
-
 	GTS80SS_locals.boardData = *brdData;
 
 	/* int dips */
@@ -472,6 +476,7 @@ void gts80ss_init(struct sndbrdData *brdData) {
 	GTS80SS_nmi(1);
 	GTS80SS_locals.stream = stream_init("SND DAC", 100, 11025, 0, GTS80_ss_Update); 
 	set_RC_filter(GTS80SS_locals.stream, 270000, 15000, 0, 10000);
+	sh_votrax_start(mixer_allocate_channel(15));
 }
 
 void gts80ss_exit(int boardNo)
@@ -480,6 +485,7 @@ void gts80ss_exit(int boardNo)
 		timer_remove(GTS80SS_locals.timer);
 		GTS80SS_locals.timer = 0;
 	}
+	sh_votrax_stop();
 }
 
 const struct sndbrdIntf gts80ssIntf = {
