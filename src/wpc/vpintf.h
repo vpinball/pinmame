@@ -14,7 +14,7 @@ typedef struct { int solNo,  currStat; } vp_tChgSols[64];
 typedef struct { int giNo,   currStat; } vp_tChgGIs[CORE_MAXGI];
 typedef struct { int sndNo			 ; } vp_tChgSound[MAX_CMD_LOG];
 
-#define VP_MAXDIPBANKS 5
+#define VP_MAXDIPBANKS 6
 /*----------------------------------------------------
 / Switches/Lamps are numbered differently in WPCgames
 /----------------------------------------------------*/

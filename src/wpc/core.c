@@ -1009,12 +1009,12 @@ void core_nvram(void *file, int write, void *mem, int length, UINT8 init) {
     int   ii;
 
     if (write) {
-      for (ii = 0; ii < 5; ii++) dips[ii] = core_getDip(ii);
+      for (ii = 0; ii < 6; ii++) dips[ii] = core_getDip(ii);
       osd_fwrite(file, dips, sizeof(dips));
     }
     else if (file) {
       osd_fread(file, dips, sizeof(dips));
-      for (ii = 0; ii < 5; ii++) vp_setDIP(ii, dips[ii]);
+      for (ii = 0; ii < 6; ii++) vp_setDIP(ii, dips[ii]);
     }
     else { // always get the default from the inports
       /* coreData not initialised yet. Don't know exact number of DIPs */
@@ -1023,6 +1023,7 @@ void core_nvram(void *file, int write, void *mem, int length, UINT8 init) {
       vp_setDIP(2, readinputport(CORE_COREINPORT+2) & 0xff);
       vp_setDIP(3, readinputport(CORE_COREINPORT+2)>>8);
       vp_setDIP(4, readinputport(CORE_COREINPORT+3) & 0xff);
+      vp_setDIP(5, readinputport(CORE_COREINPORT+3)>>8);
     }
   }
 }
