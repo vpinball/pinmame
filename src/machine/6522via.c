@@ -244,7 +244,7 @@ static void via_t1_timeout (int which)
     }
 	if (v->ddr_b)
 	{
-		UINT8 write_data = (v->out_b & v->ddr_b) | (v->ddr_b ^ 0xff);
+		UINT8 write_data = v->out_b & v->ddr_b;
 
 		if (v->intf->out_b_func)
 			v->intf->out_b_func(0, write_data);
@@ -516,7 +516,7 @@ void via_write(int which, int offset, int data)
 
 		if (v->ddr_b)
 		{
-			UINT8 write_data = (v->out_b & v->ddr_b) | (v->ddr_b ^ 0xff);
+			UINT8 write_data = v->out_b & v->ddr_b;
 
 			if (v->intf->out_b_func)
 				v->intf->out_b_func(0, write_data);
@@ -549,7 +549,7 @@ void via_write(int which, int offset, int data)
 
 		if (v->ddr_a)
 		{
-			UINT8 write_data = (v->out_a & v->ddr_a) | (v->ddr_a ^ 0xff);
+			UINT8 write_data = v->out_a & v->ddr_a;
 
 			if (v->intf->out_a_func)
 				v->intf->out_a_func(0, write_data);
@@ -597,7 +597,7 @@ void via_write(int which, int offset, int data)
 
 		if (v->ddr_a)
 		{
-			UINT8 write_data = (v->out_a & v->ddr_a) | (v->ddr_a ^ 0xff);
+			UINT8 write_data = v->out_a & v->ddr_a;
 
 			if (v->intf->out_a_func)
 				v->intf->out_a_func(0, write_data);
@@ -613,9 +613,9 @@ void via_write(int which, int offset, int data)
     	{
 			v->ddr_b = data;
 
-			//if (v->ddr_b)
+			if (v->ddr_b)
 			{
-				UINT8 write_data = (v->out_b & v->ddr_b) | (v->ddr_b ^ 0xff);
+				UINT8 write_data = v->out_b & v->ddr_b;
 
 				if (v->intf->out_b_func)
 					v->intf->out_b_func(0, write_data);
@@ -631,9 +631,9 @@ void via_write(int which, int offset, int data)
     	{
 			v->ddr_a = data;
 
-			//if (v->ddr_a)
+			if (v->ddr_a)
 			{
-				UINT8 write_data = (v->out_a & v->ddr_a) | (v->ddr_a ^ 0xff);
+				UINT8 write_data = v->out_a & v->ddr_a;
 
 				if (v->intf->out_a_func)
 					v->intf->out_a_func(0, write_data);
@@ -663,9 +663,9 @@ void via_write(int which, int offset, int data)
 		{
 			v->out_b &= 0x7f;
 
-			//if (v->ddr_b)
+			if (v->ddr_b)
 			{
-				UINT8 write_data = (v->out_b & v->ddr_b) | (v->ddr_b ^ 0xff);
+				UINT8 write_data = v->out_b & v->ddr_b;
 
 				if (v->intf->out_b_func)
 					v->intf->out_b_func(0, write_data);
@@ -760,9 +760,9 @@ LOG(("6522VIA chip %d: PCR = %02X.  PC: %08X\n", which, data, activecpu_get_pc()
 			else
 				v->out_b |= 0x80;
 
-			//if (v->ddr_b)
+			if (v->ddr_b)
 			{
-				UINT8 write_data = (v->out_b & v->ddr_b) | (v->ddr_b ^ 0xff);
+				UINT8 write_data = v->out_b & v->ddr_b;
 
 				if (v->intf->out_b_func)
 					v->intf->out_b_func(0, write_data);
