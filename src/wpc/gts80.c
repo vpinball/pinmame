@@ -66,8 +66,8 @@ static struct {
   int    sndCmd;
   int    disCmdMode1;
   int    disCmdMode2;
-
   int	 sound_data;
+  int    hasVideo;
   UINT8* pRAM;
 } GTS80locals;
 
@@ -75,11 +75,23 @@ static void GTS80_irq(int state) {
   cpu_set_irq_line(GTS80_CPU, M6502_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
+static int irq_callback(int irqline)
+{
+  cpu_set_irq_line(GTS80_VIDCPU, irqline, CLEAR_LINE);
+  return 0;
+}
+
+static void video_irq()
+{
+  cpu_set_irq_callback(GTS80_VIDCPU, irq_callback);
+  cpu_set_irq_line(GTS80_VIDCPU, 0, ASSERT_LINE);
+}
+
 static INTERRUPT_GEN(GTS80_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
-
+  int active;
   GTS80locals.vblankCount += 1;
   /*-- lamps --*/
   if ((GTS80locals.vblankCount % GTS80_LAMPSMOOTH) == 0) {
@@ -109,7 +121,12 @@ static INTERRUPT_GEN(GTS80_vblank) {
     /*update leds*/
     coreGlobals.diagnosticLed = 0;
   }
-  core_updateSw(TRUE); /* assume flipper enabled */
+  /* Lamp 0 controls game enable */
+  active = coreGlobals.lampMatrix[0] & 1;
+  /* Lamp 1 controls tilt on System80 & System80a */
+  if (!(core_gameData->gen & (GEN_GTS80B2K|GEN_GTS80B4K|GEN_GTS80B8K)))
+	  active = active && !(coreGlobals.lampMatrix[0] & 2);
+  core_updateSw(active);
 }
 
 static SWITCH_UPDATE(GTS80) {
@@ -120,6 +137,7 @@ static SWITCH_UPDATE(GTS80) {
 
   /*-- slam tilt --*/
 	riot6532_set_input_a(1, (core_gameData->gen&GEN_GTS80B4K) ? (core_getSw(GTS80_SWSLAMTILT)?0x80:0x00) : (core_getSw(GTS80_SWSLAMTILT)?0x00:0x80));
+    if (GTS80locals.hasVideo && core_getSw(GTS80_SWSLAMTILT)) cpu_set_irq_line(GTS80_VIDCPU, IRQ_LINE_NMI, PULSE_LINE);
 }
 
 static WRITE_HANDLER(GTS80_sndCmd_w) {
@@ -146,8 +164,8 @@ static int GTS80_m2sw(int col, int row) {
 	else
 		return row*10+col-1;
 }
-static int GTS80_m2lamp(int no) { return no+8; }
-static int GTS80_lamp2m(int col, int row) { return (col-1)*8+row; }
+static int GTS80_lamp2m(int no) { return no+8; }
+static int GTS80_m2lamp(int col, int row) { return (col-1)*8+row; }
 
 
 static int GTS80_getSwRow(int row) {
@@ -385,6 +403,7 @@ static WRITE_HANDLER(riot6532_2b_w) {
                         //int iOld = GTS80locals.lampMatrix[1]&0x02;
 			GTS80locals.lampMatrix[col/2] = (GTS80locals.lampMatrix[col/2]&0xf0)|(data&0x0f);
 		}
+		if (GTS80locals.hasVideo && (GTS80locals.lampMatrix[1] & 0x80)) video_irq();
 	}
 	GTS80locals.swColOp = (data>>4)&0x03;
 }
@@ -547,88 +566,16 @@ MEMORY_END
 
 static MEMORY_READ_START(video_readmem)
 {0x00000,0x07fff, MRA_RAM},
-{0x08000,0x0ffff, MRA_ROM},
+{0x08f00,0x0ffff, MRA_ROM},
 {0xf8000,0xfffff, MRA_ROM},
 MEMORY_END
 
 static MEMORY_WRITE_START(video_writemem)
 {0x00000,0x07fff, MWA_RAM},
 {0x08000,0x0ffff, MWA_ROM},
-{0xf8000,0xfffff, MWA_ROM},
 MEMORY_END
 
-#if 0
-/* GTS80b - Gen 1 Sound Hardware*/
-struct MachineDriver machine_driver_GTS80BS1 = {
-  {
-    {
-      CPU_M6502, 850000, /* 0.85 Mhz */
-      GTS80_readmem, GTS80_writemem, NULL, NULL,
-	  GTS80_vblank, 1,
-	  NULL, 0
-	}
-	GTS80BS1_SOUNDCPU2
-    GTS80BS1_SOUNDCPU1},
-  GTS80_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50,
-  GTS80_init,CORE_EXITFUNC(GTS80_exit)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_TYPE_RASTER,
-  0,
-  NULL, NULL, gen_refresh,
-  0,0,0,0,{GTS80BS1_SOUND},
-  GTS80_nvram
-};
-
-/* GTS80b - Gen 2 Sound Hardware*/
-struct MachineDriver machine_driver_GTS80BS2 = {
-  {
-    {
-      CPU_M6502, 850000, /* 0.85 Mhz */
-      GTS80_readmem, GTS80_writemem, NULL, NULL,
-	  GTS80_vblank, 1,
-	  NULL, 0
-	}
-	GTS80BS2_SOUNDCPU2
-    GTS80BS2_SOUNDCPU1},
-  GTS80_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50,
-  GTS80_init,CORE_EXITFUNC(GTS80_exit)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_TYPE_RASTER,
-  0,
-  NULL, NULL, gen_refresh,
-  0,0,0,0,{GTS80BS2_SOUND},
-  GTS80_nvram
-};
-
-/* GTS80b - Gen 3 Sound Hardware*/
-struct MachineDriver machine_driver_GTS80BS3 = {
-  {
-    {
-      CPU_M6502, 850000, /* 0.85 Mhz */
-      GTS80_readmem, GTS80_writemem, NULL, NULL,
-	  GTS80_vblank, 1,
-	  NULL, 0
-	}
-	GTS80BS3_SOUNDCPU2
-    GTS80BS3_SOUNDCPU1},
-  GTS80_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  50,
-  GTS80_init,CORE_EXITFUNC(GTS80_exit)
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_TYPE_RASTER,
-  0,
-  NULL, NULL, gen_refresh,
-  0,0,0,0,{GTS80BS3_SOUND},
-  GTS80_nvram
-};
-#endif
-
-static MACHINE_INIT(gts80) {
+static void init_common(void) {
   int ii;
 
   memset(&GTS80locals, 0, sizeof GTS80locals);
@@ -658,6 +605,31 @@ static MACHINE_INIT(gts80) {
   riot6532_reset();
 
   GTS80locals.initDone = TRUE;
+}
+
+static MACHINE_INIT(gts80) {
+  init_common();
+}
+
+static MACHINE_INIT(gts80vid) {
+  int i;
+  UINT32 off, j = 0xf8000;
+  UINT8* pvrom = memory_region(GTS80_MEMREG_VIDCPU);
+
+  init_common();
+  GTS80locals.hasVideo = 1;
+
+  /* copying video ROM contents to the right place (in the right byte order). */
+  for (off = 0x08000; off < 0x10000; off += 0x2000) {
+	  for (i = 0; i < 0x1000; i++) {
+		  memcpy(pvrom + (j++), pvrom + off + i, 1);
+		  memcpy(pvrom + (j++), pvrom + off + i + 0x1000, 1);
+	  }
+  }
+  memcpy(pvrom + 0x08000, pvrom + 0xf8000, 0x08000);
+
+  /* clear RAM area */
+  memset(pvrom, 0, 0x8000);
 }
 
 static MACHINE_STOP(gts80)
@@ -697,6 +669,30 @@ VIDEO_UPDATE(gts80vid)
 	copybitmap(bitmap,tmpbitmap,0,0,0,0,&Machine->visible_area,TRANSPARENCY_NONE,0);
 }
 
+static WRITE_HANDLER(port0xw) { }
+static WRITE_HANDLER(port1xw) { }
+static WRITE_HANDLER(port2xw) { }
+static WRITE_HANDLER(port3xw) { }
+static WRITE_HANDLER(port5xw) { }
+
+static READ_HANDLER(port1xr) { return 0; }
+static READ_HANDLER(port3xr) { return 0; }
+static READ_HANDLER(port4xr) { return 0; }
+
+PORT_READ_START(video_readport)
+	{ 0x102, 0x102, port1xr },
+	{ 0x300, 0x300, port3xr },
+	{ 0x400, 0x400, port4xr },
+PORT_END
+
+PORT_WRITE_START(video_writeport)
+	{ 0x000, 0x002, port0xw },
+	{ 0x100, 0x102, port1xw },
+	{ 0x200, 0x200, port2xw },
+	{ 0x300, 0x300, port3xw },
+	{ 0x500, 0x506, port5xw },
+PORT_END
+
 MACHINE_DRIVER_START(gts80)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(gts80,NULL,gts80)
@@ -708,7 +704,7 @@ MACHINE_DRIVER_START(gts80)
   MDRV_SWITCH_UPDATE(GTS80)
   MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_SWITCH_CONV(GTS80_sw2m,GTS80_m2sw)
-  MDRV_LAMP_CONV(GTS80_m2lamp,GTS80_lamp2m)
+  MDRV_LAMP_CONV(GTS80_lamp2m,GTS80_m2lamp)
   MDRV_SOUND_CMD(GTS80_sndCmd_w)
   MDRV_SOUND_CMDHEADING("GTS80")
 MACHINE_DRIVER_END
@@ -727,7 +723,9 @@ MACHINE_DRIVER_START(gts80vid)
   MDRV_IMPORT_FROM(gts80ss)
   MDRV_CPU_ADD_TAG("vcpu", I86, 5000000)
   MDRV_CPU_MEMORY(video_readmem, video_writemem)
-/* video hardware */
+  MDRV_CPU_PORTS(video_readport, video_writeport)
+  MDRV_CORE_INIT_RESET_STOP(gts80vid,NULL,gts80)
+  /* video hardware */
   //MDRV_VIDEO_ATTRIBUTES(VIDEO_TYPE_RASTER)
   //MDRV_SCREEN_SIZE(256, 256)
   //MDRV_VISIBLE_AREA(0, 255, 0, 255)
@@ -755,12 +753,3 @@ MACHINE_DRIVER_START(gts80bs3)
   MDRV_IMPORT_FROM(gts80)
   MDRV_IMPORT_FROM(gts80s_b3)
 MACHINE_DRIVER_END
-#if 0
-static core_tData GTS80Data = {
-  42, /* 42 DIPs (32 for the controller board, 8 for the SS- and 2 for the S-Board*/
-  GTS80_updSw,
-  1,
-  GTS80_sndCmd_w, "GTS80",
-  GTS80_sw2m, GTS80_lamp2m, GTS80_m2sw, GTS80_m2lamp
-};
-#endif

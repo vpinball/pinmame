@@ -341,10 +341,10 @@ core_tLCDLayout dispDevilsdare[] = {
 };
 
 INITGAME(dvlsdre,GEN_GTS80,dispDevilsdare, 1, SNDBRD_GTS80SS)
-GTS80_1_ROMSTART(dvlsdre, "670-1.cpu",  0x6318bce2,
+GTS80_1_ROMSTART(dvlsdre,"670-1.cpu", 0x6318bce2,
                         "u2_80a.bin", 0x241de1d4,
                         "u3_80a.bin", 0x2d77ccdc)
-GTS80SS22_ROMSTART(    "670-s1.snd", 0x506bc22a,
+GTS80SS22_ROMSTART(     "670-s1.snd", 0x506bc22a,
                         "670-s2.snd", 0xf662ee4b)
 GTS80_ROMEND
 #define input_ports_dvlsdre input_ports_gts80
@@ -362,6 +362,27 @@ GTS80S1K_ROMSTART("670-a-s.snd",  0xf141d535,
 GTS80_ROMEND
 #define input_ports_dvlsdre2 input_ports_gts80
 CORE_CLONEDEFNV(dvlsdre2,dvlsdre,"Devil's Dare (Sound Only)",1981,"Gottlieb",gl_mGTS80S,0)
+
+/*-------------------------------------------------------------------
+/ Caveman (#PV-810) Pinball/Video Combo
+/-------------------------------------------------------------------*/
+INITGAME(caveman, GEN_GTS80, gottlieb_dispNumeric3, 1, SNDBRD_GTS80SS)
+GTS80_1_ROMSTART(caveman,"pv810-1.cpu", 0xdd8d516c,
+                         "u2_80a.bin",  0x241de1d4,
+                         "u3_80a.bin",  0x2d77ccdc)
+GTS80SS22_ROMSTART(      "pv810-s1.snd",0xa491664d,
+                         "pv810-s2.snd",0xd8654e6e)
+VIDEO_ROMSTART(          "v810-u8.bin", 0x514aa152,
+                         "v810-u7.bin", 0x74c6533e,
+                         "v810-u6.bin", 0x2fd0ee95,
+                         "v810-u5.bin", 0x2fb15da3,
+                         "v810-u4.bin", 0x2dfe8492,
+                         "v810-u3.bin", 0x740e9ec3,
+                         "v810-u2.bin", 0xb793baf9,
+                         "v810-u1.bin", 0x0a283b15)
+GTS80_ROMEND
+#define input_ports_caveman input_ports_gts80
+CORE_GAMEDEFNV(caveman,"Caveman (Pinball/Video Combo)",1981,"Gottlieb",gl_mGTS80VID,0)
 
 /*-------------------------------------------------------------------
 / Rocky (#672)
@@ -383,27 +404,6 @@ GTS80SS22_ROMSTART("672-s1.snd", 0x10ba523c,
 GTS80_ROMEND
 #define input_ports_rocky input_ports_gts80
 CORE_GAMEDEFNV(rocky,"Rocky",1982,"Gottlieb",gl_mGTS80SS,GAME_IMPERFECT_SOUND)
-
-/*-------------------------------------------------------------------
-/ Caveman (#810?)
-/-------------------------------------------------------------------*/
-INITGAME(caveman, GEN_GTS80, gottlieb_dispNumeric3, 1, SNDBRD_GTS80SS)
-GTS80_1_ROMSTART(caveman,"pv810-1.cpu", 0xdd8d516c,
-                         "u2_80a.bin",  0x241de1d4,
-                         "u3_80a.bin",  0x2d77ccdc)
-GTS80SS22_ROMSTART(      "pv810-s1.snd",0xa491664d,
-                         "pv810-s2.snd",0xd8654e6e)
-VIDEO_ROMSTART(          "v810-u1.bin", 0x0a283b15,
-                         "v810-u2.bin", 0xb793baf9,
-                         "v810-u3.bin", 0x740e9ec3,
-                         "v810-u4.bin", 0x2dfe8492,
-                         "v810-u5.bin", 0x2fb15da3,
-                         "v810-u6.bin", 0x2fd0ee95,
-                         "v810-u7.bin", 0x74c6533e,
-                         "v810-u8.bin", 0x514aa152)
-GTS80_ROMEND
-#define input_ports_caveman input_ports_gts80
-CORE_GAMEDEFNV(caveman,"Caveman",1982,"Gottlieb",gl_mGTS80VID,0)
 
 /*-------------------------------------------------------------------
 / Spirit (#673)

@@ -180,11 +180,13 @@
 #define GTS80_MEMREG_CPU	REGION_CPU1
 #define GTS80_MEMREG_SCPU1	REGION_CPU2 /* used for sound, sound & speech and s3 sound board */
 #define GTS80_MEMREG_SCPU2	REGION_CPU3 /* used for s3 sound board */
+#define GTS80_MEMREG_VIDCPU	REGION_CPU3 /* Caveman Video CPU */
 
 /* CPUs */
 #define GTS80_CPU		0
 #define GTS80_SCPU1		1
 #define GTS80_SCPU2		2
+#define GTS80_VIDCPU	2
 
 /*-- GTS80/GTS80A Main CPU regions and ROM, 2 game PROM version --*/
 #define GTS80_2_ROMSTART(name, n1, chk1, n2, chk2, n3, chk3, n4, chk4) \
@@ -207,23 +209,15 @@
 
 /*-- Video roms for Caveman --*/
 #define VIDEO_ROMSTART(n1,chk1,n2,chk2,n3,chk3,n4,chk4,n5,chk5,n6,chk6,n7,chk7,n8,chk8) \
-     NORMALREGION(0x100000, REGION_CPU3) \
+     NORMALREGION(0x1000000, GTS80_MEMREG_VIDCPU) \
        ROM_LOAD(n1, 0x08000, 0x1000, chk1) \
-	     ROM_RELOAD(0xf8000, 0x1000) \
        ROM_LOAD(n2, 0x09000, 0x1000, chk2) \
-	     ROM_RELOAD(0xf9000, 0x1000) \
        ROM_LOAD(n3, 0x0a000, 0x1000, chk3) \
-	     ROM_RELOAD(0xfa000, 0x1000) \
        ROM_LOAD(n4, 0x0b000, 0x1000, chk4) \
-	     ROM_RELOAD(0xfb000, 0x1000) \
        ROM_LOAD(n5, 0x0c000, 0x1000, chk5) \
-	     ROM_RELOAD(0xfc000, 0x1000) \
        ROM_LOAD(n6, 0x0d000, 0x1000, chk6) \
-	     ROM_RELOAD(0xfd000, 0x1000) \
        ROM_LOAD(n7, 0x0e000, 0x1000, chk7) \
-	     ROM_RELOAD(0xfe000, 0x1000) \
-       ROM_LOAD(n8, 0x0f000, 0x1000, chk8) \
-	     ROM_RELOAD(0xff000, 0x1000)
+       ROM_LOAD(n8, 0x0f000, 0x1000, chk8)
 
 /*-- GTS80B Main CPU regions and ROM, 8K single game PROM --*/
 #define GTS80B_8K_ROMSTART(name, n1, chk1) \
