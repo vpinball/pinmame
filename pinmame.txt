@@ -1,8 +1,8 @@
 **************************************************************************************
 		                       PinMAME
 		      (Pinball Multiple Arcade Machine Emulator)
-		                     Version 1.30
-		                  (October 1, 2003)
+		                     Version 1.31
+		                  (December 23, 2003)
 		                http://www.pinmame.com
 **************************************************************************************
 
@@ -75,7 +75,7 @@ Games supported
   Zaccaria Pinball: All games from Combat(1978) to Spooky(1987)
   Taito Pinball: All that's available... which is about half of all games made.
   Midway Pinball: Dave Nutting's 1974 "Flicker" prototype, and also Rotation VIII.
-  Capcom Pinball: All games from Goofy Hoops(1995) to Kingpin(1996)
+  Capcom Pinball: All games from Pinball Magic(1995) to Kingpin(1996)
   Alvin G. and Co: All games from World Tour(1992) to Pistol Poker(1993)
   Technoplay: All that's available.. currently only 1 game
 

@@ -1,28 +1,55 @@
-What's new:
-Version 1.31 (??, 2003)
------------------------
-Yahoo! Working Capcom Sound! It was probably the hardest challenge we've faced ever, and although
-it's not working perfectly, we're thrilled to have made it this far. Hopefully fixes to the 50V
-solenoid detection line will allow the other capcom games to function properly now.
+Version 1.31 (December 23, 2003) - Happy 32nd Birthday Steve
+-------------------------------------------------------------
+They say that history repeats itself, and we would have to agree! 
+It was exactly 2 years ago to the day that PinMAME was released with a major new breakthrough in sound
+emulation, namely BSMT emulation, at the time.
 
-(gerrit to fill in rest here)
+Today, the major new breakthough is fully working Capcom sound, which will no doubt make this release 
+one of the best releases in the history of the project. This achievement was without question the most
+difficult challenge ever faced (even more than the original capcom emulation itself). Along with the new
+sound support, additional improvements in the capcom emulation, and a major speed increase bring 
+the reality of capcom pinball emulation to life like never before.
+
+(Gerrit to add additional project improvements here - ie, fixed gottlieb stuff?)
+
+On a bittersweet note, project leader Steve Ellenoff will be retiring from the project as of this release.
+With a new child on the way, and massive new real life job committments to meet, he simply doesn't see
+much time in his future for contributing to PinMAME. Steve would like to personally thank everyone he's 
+worked with over the years who've contributed their time and effort into making PinMAME such a 
+great success. He further would like to add that it's been an honor for him to have been at the healm of
+one of the coolest software projects ever, and he is thankful to have had the opportunity to help make the
+incredible advances the software has made over the years.
+
+Gerrit Volkenborn will be taking over the project lead position and will no doubt continue to 
+improve this great project! His tireless efforts and dedication to the project made him the obvious choice
+to take on the new position.
+
+(Gerrit anything you want to add here?)
+
+Happy holidays to everyone and we hope you enjoy our latest release!
 
 
 Bugs Fixed
 ----------
 - Missing 50V Solenoid Detection in Capcom Games fixed (reports as 99V but that's fine)
-- Flipper Football & Kingpin now fire 50V solenoids 
+- Flipper Football & Kingpin now fire 50V solenoids
+- Data East/Sega 192x64 DMD games should now be as fast as they were in version 1.12.2
+  (since the 68306 cpu core now no longer slows down the original 68000 cpu emulation)
   [Steve Ellenoff]
 
 
 New Features
 ------------
-- Working Capcom Sound (though it's not quite perfect and does suffer frequent cut offs/resets)
+- Major speed boost in the 68306 cpu core, which means Capcom emulation is now much faster!
+- Fully working Capcom Sound emulation (might still be some minor issues, but overall it's excellent)
 - Added multi chip TMS320AV120 MPG Audio Decoder Sound core
 - Upgraded 8051 CPU core to handle 8752 CPU core functionality
 - Added UART serial port support to 8051 core, plus a few new timer modes
 - Implemented 68306 DUART Serial ports & Timer functionality
 - Added mostly working X9241 Digital EPot to Capcom Sound board emulation.
+- Added multi chip capability to the 6845 CRT video driver (will be needed for Gottlieb Strikes N Spares)
+- Added some new features to the debugger (Shift+Enter command, Sound Enabling/Disabling, Stack pointer hilight)
+- Changes to allow sound commander to work in debug mode for easier testing
   [Steve Ellenoff]
 
 

@@ -1,3 +1,5 @@
+******  As of Version 1.31 (December 23, 2003) ******
+
 Bugs in Pinmame that we are aware of:
 -------------------------------------
 (Note: Many of these bugs have been extremely difficult to track down and fix, 
@@ -32,12 +34,9 @@ Bugs in Pinmame that we are aware of:
 
 #12) Sound gets cut off in Alvin G games sometimes, and some weird notes in World Tour occasionally
 
-#13) Non-working lamps & solenoids in Capcom Flipper Football and Kingpin
+#13) All Gottlieb System80a games are not working correctly right now. We're on it!!!
 
-#14) All Gottlieb System80a games are not working correctly right now. We're on it!!!
+#14) No sound on some Hankin games.
 
-#15) No sound on some Hankin games.
+#15) Switch problems with Dataeast Playboy and the Grotto/VUK
 
-#16) Switch problems with Dataeast Playboy and the Grotto/VUK
-
-#17) Sound gets cut off or sounboard resets in capcom games, also some distortion sometimes
