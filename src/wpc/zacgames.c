@@ -296,51 +296,51 @@ CORE_GAMEDEFNV(robot,"Robot",1985,"Zaccaria",mZAC2F,GAME_NOT_WORKING|SOUNDFLAG)
 /*--------------------------------
 / Clown (07/85)
 /-------------------------------*/
-INITGAME(clown,1,dispZAC3,SNDBRD_ZAC13136)
+INITGAME(clown,1,dispZAC3,SNDBRD_ZAC11178)
 ZAC_ROMSTART020(clown,	"clown_1.lgc",CRC(16f09833),
 						"clown_2.lgc",CRC(697e6b5b))
 ZAC_SOUNDROM_e2f2(		"clown_e.snd",CRC(04a34cc1),
 						"clown_f.snd",CRC(e35a4f72))
 ZAC_ROMEND
-CORE_GAMEDEFNV(clown,"Clown",1985,"Zaccaria",mZAC2X,SOUNDFLAG)
+CORE_GAMEDEFNV(clown,"Clown",1985,"Zaccaria",mZAC2XS,SOUNDFLAG)
 
 /*--------------------------------
 / Pool Champion (12/85)
 /-------------------------------*/
-INITGAME(poolcham,1,dispZAC3,SNDBRD_ZAC13136)
+INITGAME(poolcham,1,dispZAC3,SNDBRD_ZAC11178)
 ZAC_ROMSTART020(poolcham,	"poolcham.ic1",CRC(fca2a2b2),
 							"poolcham.ic2",CRC(267a2a02))
 ZAC_SOUNDROM_f(				"poolcham.1f", CRC(efe33926))
 // ZAC_SOUNDROM_f(			"sound1.f",    CRC(b4b4e31e)) // different language?
 ZAC_ROMEND
-CORE_GAMEDEFNV(poolcham,"Pool Champion",1985,"Zaccaria",mZAC2D,SOUNDFLAG)
+CORE_GAMEDEFNV(poolcham,"Pool Champion",1985,"Zaccaria",mZAC2DS,SOUNDFLAG)
 
 /*--------------------------------
 / Black Belt (03/86)
 /-------------------------------*/
-INITGAME(bbeltzac,1,dispZAC3,SNDBRD_ZAC13136)
+INITGAME(bbeltzac,1,dispZAC3,SNDBRD_ZAC11178)
 ZAC_ROMSTART1820(bbeltzac,	"bbz-1.fil",CRC(2e7e1575),
 							"bbz-2.fil",CRC(dbec92ae))
 ZAC_SOUNDROM_e2f4(			"bbz-e.snd",CRC(1fe045d2),
 							"bbz-f.snd",CRC(9f58f369))
 ZAC_ROMEND
-CORE_GAMEDEFNV(bbeltzac,"Black Belt (Zaccaria)",1986,"Zaccaria",mZAC2D,SOUNDFLAG)
+CORE_GAMEDEFNV(bbeltzac,"Black Belt (Zaccaria)",1986,"Zaccaria",mZAC2DS,SOUNDFLAG)
 
 /*--------------------------------
 / Mexico '86 (07/86)
 /-------------------------------*/
-INITGAME(mexico,1,dispZAC3,SNDBRD_ZAC13136)
+INITGAME(mexico,1,dispZAC3,SNDBRD_ZAC11178)
 ZAC_ROMSTART1820(mexico,	"mex86_1.lgc",CRC(60d559b1),
 							"mex86_2.lgc",CRC(5c984c15))
 ZAC_SOUNDROM_e2f4(			"mex86_e.snd",CRC(a985e8db),
 							"mex86_f.snd",CRC(301c2b63))
 ZAC_ROMEND
-CORE_GAMEDEFNV(mexico,"Mexico '86",1986,"Zaccaria",mZAC2F,SOUNDFLAG)
+CORE_GAMEDEFNV(mexico,"Mexico '86",1986,"Zaccaria",mZAC2FS,SOUNDFLAG)
 
 /*--------------------------------
 / Zankor (12/86)
 /-------------------------------*/
-INITGAME(zankor,1,dispZAC3,SNDBRD_ZAC13136)
+INITGAME(zankor,1,dispZAC3,SNDBRD_ZAC11178)
 ZAC_ROMSTART1820(zankor,	"zan_ic1.764",CRC(e7ba5acf),
 							"zan_ic2.764",CRC(5804ff10))
 ZAC_SOUNDROM_e4f4(			"zan_1e.128", CRC(d467000f),
@@ -349,12 +349,12 @@ ZAC_SOUNDROM_456(			"zan_ic4.128",CRC(f34a2aaa),
 							"zan_ic5.128",CRC(bf61aab0),
 							"zan_ic6.128",CRC(13a5b8d4))
 ZAC_ROMEND
-CORE_GAMEDEFNV(zankor,"Zankor",1986,"Zaccaria",mZAC2F,SOUNDFLAG)
+CORE_GAMEDEFNV(zankor,"Zankor",1986,"Zaccaria",mZAC2FS,SOUNDFLAG)
 
 /*--------------------------------
 / Spooky (04/87)
 /-------------------------------*/
-INITGAME(spooky,1,dispZAC3,SNDBRD_ZAC13136)
+INITGAME(spooky,1,dispZAC3,SNDBRD_ZAC11178)
 ZAC_ROMSTART1820(spooky,	"spook_1.lgc",CRC(377b347d),
 							"spook_2.lgc",CRC(ae0598b0))
 ZAC_SOUNDROM_e2f4(			"spook_e.snd",CRC(3d632c93),
@@ -362,7 +362,7 @@ ZAC_SOUNDROM_e2f4(			"spook_e.snd",CRC(3d632c93),
 ZAC_SOUNDROM_46(			"spook_4.snd",CRC(3ab517a4),
 							"spook_6.snd",CRC(d4320bc7))
 ZAC_ROMEND
-CORE_GAMEDEFNV(spooky,"Spooky",1987,"Zaccaria",mZAC2X,SOUNDFLAG)
+CORE_GAMEDEFNV(spooky,"Spooky",1987,"Zaccaria",mZAC2XS,SOUNDFLAG)
 
 //??/87 Star's Phoenix
 //??/86 New Star's Phoenix

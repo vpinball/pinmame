@@ -11,11 +11,13 @@ extern MACHINE_DRIVER_EXTERN(zac1125);
 extern MACHINE_DRIVER_EXTERN(zac1346);
 extern MACHINE_DRIVER_EXTERN(zac1370);
 extern MACHINE_DRIVER_EXTERN(zac13136);
+extern MACHINE_DRIVER_EXTERN(zac11178);
 
 //Board 1346 configuration (1 x 2K ROM)
 #define ZAC_SOUNDROM_0(u1, chk1) \
   SOUNDREGION(0x10000, ZACSND_CPUAREGION) \
-    ROM_LOAD(u1, 0x0000, 0x0800, chk1)
+    ROM_LOAD(u1, 0x0400, 0x0400, chk1) \
+    ROM_CONTINUE(0x0000, 0x0400)
 
 //Board 1370 configuration (3 x 4K ROMS, 1 x 2K ROM)
 #define ZAC_SOUNDROM_cefg0(uc,chkc,ue,chke,uf,chkf,ug,chkg) \
