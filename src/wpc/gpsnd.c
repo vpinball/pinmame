@@ -15,6 +15,7 @@
 / SSU-2/3: 3 x SN76477
 / MSU-1:   6802 CPU, 2 PIAs, 6840 timer,
 /          but only discrete circuits used!
+/ MSU-3:   6802 CPU, 1 PIA, DAC
 /-----------------------------------------*/
 
 // SSU-1
@@ -199,7 +200,7 @@ static void gpss2_init(struct sndbrdData *brdData)
   SN76477_envelope_w(2, 0);
 }
 
-// MSU-1
+// MSU-1 and MSU-3
 
 static struct {
   struct sndbrdData brdData;
@@ -221,6 +222,12 @@ static WRITE_HANDLER(pia0a_w)
 static WRITE_HANDLER(pia0b_w)
 {
 	logerror("pia0b_w: %02x\n", data);
+}
+
+static WRITE_HANDLER(pia0ca2_w)
+{
+	logerror("pia0ca2_w: %02x\n", data);
+	coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 0x01) | (data << 1);
 }
 
 static WRITE_HANDLER(pia0cb2_w)
@@ -257,12 +264,17 @@ DISCRETE_SOUND_END
 static const struct pia6821_interface gps_pia[] = {
 {
   /*i: A/B,CA/B1,CA/B2 */ 0, 0, 0, 0, 0, 0,
-  /*o: A/B,CA/B2       */ pia0a_w, pia0b_w, 0, pia0cb2_w,
+  /*o: A/B,CA/B2       */ pia0a_w, pia0b_w, pia0ca2_w, pia0cb2_w,
   /*irq: A/B           */ 0, 0
 },
 {
   /*i: A/B,CA/B1,CA/B2 */ 0, 0, 0, 0, 0, 0,
   /*o: A/B,CA/B2       */ pia1a_w, pia1b_w, pia1ca2_w, pia1cb2_w,
+  /*irq: A/B           */ 0, gps_irq
+},
+{
+  /*i: A/B,CA/B1,CA/B2 */ 0, 0, 0, 0, 0, 0,
+  /*o: A/B,CA/B2       */ 0, 0, pia0ca2_w, 0,
   /*irq: A/B           */ 0, gps_irq
 }};
 
@@ -291,10 +303,6 @@ static WRITE_HANDLER( m6840_w ) {
     logerror("M6840: offset %d = %02x\n", offset, data);
 }
 
-static WRITE_HANDLER( mem_3000_w ) {
-    logerror("Unknown output write = %02x\n", data);
-}
-
 MEMORY_READ_START(gps_readmem)
   { 0x0000, 0x00ff, MRA_RAM },
   { 0x0810, 0x0813, pia_r(GPS_PIA0) },
@@ -308,10 +316,40 @@ MEMORY_WRITE_START(gps_writemem)
   { 0x0810, 0x0813, pia_w(GPS_PIA0) },
   { 0x0820, 0x0823, pia_w(GPS_PIA1) },
   { 0x0840, 0x0847, m6840_w },
-  { 0x3000, 0x3000, mem_3000_w }, // for Andromeda
   { 0x3001, 0x3fff, MWA_ROM },
   { 0x7800, 0x7fff, MWA_ROM },
   { 0xf000, 0xffff, MWA_ROM },
+MEMORY_END
+
+static void gpsm3_init(struct sndbrdData *brdData) {
+	memset(&gps_locals, 0, sizeof(gps_locals));
+	gps_locals.brdData = *brdData;
+
+	pia_config(GPS_PIA0, PIA_STANDARD_ORDERING, &gps_pia[2]);
+}
+
+static WRITE_HANDLER(gpsm3_data_w) {
+    pia_set_input_a(GPS_PIA0, ~data);
+}
+
+static void pia_cb1_w(int data) {
+	static int last;
+    pia_set_input_cb1(GPS_PIA0, (last = !last));
+}
+
+static struct DACinterface msu3_dacInt = { 1, { 30 }};
+
+MEMORY_READ_START(gps3_readmem)
+  { 0x0000, 0x007f, MRA_RAM },
+  { 0x0810, 0x0813, pia_r(GPS_PIA0) },
+  { 0x3800, 0x3fff, MRA_ROM },
+  { 0xf800, 0xffff, MRA_ROM },
+MEMORY_END
+
+MEMORY_WRITE_START(gps3_writemem)
+  { 0x0000, 0x007f, MWA_RAM },
+  { 0x0810, 0x0813, pia_w(GPS_PIA0) },
+  { 0x3000, 0x3000, DAC_0_data_w },
 MEMORY_END
 
 /*-------------------
@@ -329,6 +367,10 @@ const struct sndbrdIntf gpMSU1Intf = {
   "GPSM", gpsm_init, NULL, NULL, gpsm_data_w, gpsm_data_w, NULL, gpsm_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
+const struct sndbrdIntf gpMSU3Intf = {
+  "GPSM3", gpsm3_init, NULL, NULL, gpsm3_data_w, gpsm3_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+};
+
 MACHINE_DRIVER_START(gpSSU1)
   MDRV_SOUND_ADD(SN76477, gpSS1_sn76477Int)
 MACHINE_DRIVER_END
@@ -343,4 +385,13 @@ MACHINE_DRIVER_START(gpMSU1)
   MDRV_CPU_MEMORY(gps_readmem, gps_writemem)
   MDRV_SOUND_ADD(DISCRETE, gpsm_discInt) // uses an MC6840, to be implemented yet!
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(gpMSU3)
+  MDRV_CPU_ADD_TAG("scpu", M6802, 3579500) // NTSC quartz ???
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(gps3_readmem, gps3_writemem)
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
+  MDRV_SOUND_ADD(DAC, msu3_dacInt)
+  MDRV_TIMER_ADD(pia_cb1_w, 500)
 MACHINE_DRIVER_END

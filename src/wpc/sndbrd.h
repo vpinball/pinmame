@@ -54,7 +54,7 @@ struct sndbrdIntf {
   UINT32 flags;
 };
 
-#define SNDBRD_NODATASYNC 0x0001 // Don't use cpu sync'ed data writes 
+#define SNDBRD_NODATASYNC 0x0001 // Don't use cpu sync'ed data writes
 #define SNDBRD_NOCTRLSYNC 0x0002 // Don't use cpu sync'ed ctrl writes
 #define SNDBRD_NOCBSYNC   0x0004 // Don't use cpu sync'ed callbacks
 #define SNDBRD_DOUBLECMD  0x0010 // Requires 2 bytes for each manual sound command
@@ -117,11 +117,12 @@ struct sndbrdIntf {
 #define SNDBRD_GPSSU2  SNDBRD_TYPE(34,0)
 #define SNDBRD_GPSSU3  SNDBRD_TYPE(34,1)
 #define SNDBRD_GPMSU1  SNDBRD_TYPE(35,0)
-#define SNDBRD_ALVGS   SNDBRD_TYPE(36,0)
-#define SNDBRD_ALVGDMD SNDBRD_TYPE(37,0)
-#define SNDBRD_CAPCOMS SNDBRD_TYPE(38,0)
-#define SNDBRD_SPINB   SNDBRD_TYPE(39,0)
-#define SNDBRD_MRGAME  SNDBRD_TYPE(40,0)
-#define SNDBRD_DE3S    SNDBRD_TYPE(41,0)
+#define SNDBRD_GPMSU3  SNDBRD_TYPE(36,0)
+#define SNDBRD_ALVGS   SNDBRD_TYPE(37,0)
+#define SNDBRD_ALVGDMD SNDBRD_TYPE(38,0)
+#define SNDBRD_CAPCOMS SNDBRD_TYPE(39,0)
+#define SNDBRD_SPINB   SNDBRD_TYPE(40,0)
+#define SNDBRD_MRGAME  SNDBRD_TYPE(41,0)
+#define SNDBRD_DE3S    SNDBRD_TYPE(42,0)
 
 #endif /* INC_SNDBRD */
