@@ -574,12 +574,12 @@ static void ij_drawMech(BMTYPE **line) {
 /* Help */
 static void ij_drawStatic(BMTYPE **line) {
   core_textOutf(30, 40,BLACK,"Help:");
-  core_textOutf(30, 50,BLACK,"L/R Shift+R = L/R Ramp");
-  core_textOutf(30, 60,BLACK,"L/R Shift+L = L/R Loop");
-  core_textOutf(30, 70,BLACK,"L/R Shift+- = L/R Sling");
-  core_textOutf(30, 80,BLACK,"L/R Shift+I/O,O = L/R Inlane/Outlane");
-  core_textOutf(30, 90,BLACK,"L/R Shift+=/[ = L/R Top/TopMid PoA Sw");
-  core_textOutf(30,100,BLACK,"L/R Shift+//' = L/R Bot/BotMid PoA Sw");
+  core_textOutf(30, 50,BLACK,"L/R Ctrl+R = L/R Ramp");
+  core_textOutf(30, 60,BLACK,"L/R Ctrl+L = L/R Loop");
+  core_textOutf(30, 70,BLACK,"L/R Ctrl+- = L/R Sling");
+  core_textOutf(30, 80,BLACK,"L/R Ctrl+I/O = L/R Inlane/Outlane");
+  core_textOutf(30, 90,BLACK,"L/R Ctrl+=/[ = L/R Top/TopMid PoA Sw");
+  core_textOutf(30,100,BLACK,"L/R Ctrl+//' = L/R Bot/BotMid PoA Sw");
   core_textOutf(30,110,BLACK,"I/N = PoA Pit/EB Hole, B = Totem");
   core_textOutf(30,120,BLACK,"M = Mode Start, C = Center Hole");
   core_textOutf(30,130,BLACK,"W/E/S = Right/Left/Bottom Jet Bumpers");

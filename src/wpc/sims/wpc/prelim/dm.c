@@ -232,9 +232,9 @@ static sim_tInportData dm_inportData[] = {
 /* Help */
 
   core_textOutf(30, 60,BLACK,"Help on this Simulator:");
-  core_textOutf(30, 70,BLACK,"L/R Shift+J = L/R Jet Bumper");
-  core_textOutf(30, 80,BLACK,"L/R Shift+-/- = L/R/Top Slingshot");
-  core_textOutf(30, 90,BLACK,"L/R Shift+I/O = L/R Inlane/Outlane");
+  core_textOutf(30, 70,BLACK,"L/R Ctrl+J = L/R Jet Bumper");
+  core_textOutf(30, 80,BLACK,"L/R Ctrl+- = L/R/Top Slingshot");
+  core_textOutf(30, 90,BLACK,"L/R Ctrl+I/O = L/R Inlane/Outlane");
   core_textOutf(30,100,BLACK,"Q = Drain Ball");
   core_textOutf(30,110,BLACK,"");
   core_textOutf(30,120,BLACK,"");
