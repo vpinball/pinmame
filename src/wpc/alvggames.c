@@ -7,7 +7,7 @@
 
 #define DMD       alvg_dispDMD
 
-#define FLIP78   FLIP_SWNO(6,7)		//really 7,8 in the matrix, but for some reason isn't showing properly
+#define FLIP78    FLIP_SWNO(7,8)
 
 /* Dot-Matrix display */
 static struct core_dispLayout alvg_dispDMD[] = {
