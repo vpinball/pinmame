@@ -423,10 +423,11 @@ CORE_GAMEDEFNV(spooky,"Spooky",1987,"Zaccaria",ZAC2XS,SOUNDFLAG)
 INITGAME(strsphnx,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178,470)
 ZAC_ROMSTART1820(strsphnx,	"strphnx1.cpu",CRC(2a31b7da) SHA1(05f2173783e686cc8774bed6eb59b41f7af88d11),
 							"strphnx2.cpu",CRC(db830505) SHA1(55d6d6e12e2861fec81b46fb90c29aad5ad922aa))
-ZAC_SOUNDROM_e2f4(			"strphnxe.snd",NO_DUMP,
-							"strphnxf.snd",NO_DUMP)
-ZAC_SOUNDROM_46(			"strphnx4.snd",NO_DUMP,
-							"strphnx6.snd",NO_DUMP)
+ZAC_SOUNDROM_5x256(			"snd_ic05.bin",CRC(74cc4902) SHA1(e2f46bcf5446f98d098c49f8c2416292401265b9),
+							"snd_ic06.bin",CRC(a0400411) SHA1(da9de6105639c4f6174f5bc92f44e02c339a2bc3),
+							"snd_ic24.bin",CRC(158d6f83) SHA1(281e1b13be43025be1b33dcd366cec0b36f29e5c),
+							"snd_ic25.bin",CRC(b1c9238e) SHA1(88c9df1fca94d32a0fa5d75312dabff257e867dd),
+							"snd_ic40.bin",CRC(974ceb9c) SHA1(3665af9170a2afbe26f68e8f3cedb0d177f476c4))
 ZAC_ROMEND
 CORE_GAMEDEFNV(strsphnx,"Star's Phoenix",1987,"Zaccaria",ZAC2XS,SOUNDFLAG)
 

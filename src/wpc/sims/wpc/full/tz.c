@@ -430,37 +430,36 @@ static void tz_drawStatic(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(tz, 94h, "tz_94h.rom", 0x80000, CRC(5032e8c6) SHA1(d7481612b1c3040823e1f7b9e53ebbaa83de0532))
-WPCS_SOUNDROM882("tzu18_l2.rom", CRC(66575ec2) SHA1(deceb56324ee9785946f5771f8cfbaf1b1d2c8bc),
-                 "tzu15_l2.rom", CRC(389d2442) SHA1(58a4bc7cc7a28b47c75d5c9bbf14abf34bd7a9e3),
+#define TZ_SOUND \
+WPCS_SOUNDROM882("tzu18_l2.rom", CRC(66575ec2) SHA1(deceb56324ee9785946f5771f8cfbaf1b1d2c8bc), \
+                 "tzu15_l2.rom", CRC(389d2442) SHA1(58a4bc7cc7a28b47c75d5c9bbf14abf34bd7a9e3), \
                  "tzu14_l2.rom", CRC(5a67bd56) SHA1(98669fbfdc5793bcf09fe72c231e2b4fa2524cc5))
-WPC_ROMEND
 
-WPC_ROMSTART(tz,92,"tzone9_2.rom",0x80000,CRC(ec3e61c8) SHA1(378c33add72c934aa2ee32e71830297ad1f08ce5))
-WPCS_SOUNDROM882("tzu18_l2.rom",CRC(66575ec2) SHA1(deceb56324ee9785946f5771f8cfbaf1b1d2c8bc),
-                 "tzu15_l2.rom",CRC(389d2442) SHA1(58a4bc7cc7a28b47c75d5c9bbf14abf34bd7a9e3),
-                 "tzu14_l2.rom",CRC(5a67bd56) SHA1(98669fbfdc5793bcf09fe72c231e2b4fa2524cc5))
-WPC_ROMEND
+WPC_ROMSTART(tz,92,  "tzone9_2.rom",0x80000,CRC(ec3e61c8) SHA1(378c33add72c934aa2ee32e71830297ad1f08ce5)) TZ_SOUND WPC_ROMEND
+WPC_ROMSTART(tz,94h, "tz_94h.rom",  0x80000,CRC(5032e8c6) SHA1(d7481612b1c3040823e1f7b9e53ebbaa83de0532)) TZ_SOUND WPC_ROMEND
+WPC_ROMSTART(tz,l2,  "tz_l2.u6",    0x80000,CRC(1f0f5611) SHA1(e8860b1c288039682e56bbf8dd0c263b2632c4b7)) TZ_SOUND WPC_ROMEND
+WPC_ROMSTART(tz,l4,  "tz_l4.u6",    0x80000,CRC(4baf5acd) SHA1(1edef7de6c3d24ef61e59b688d7b6871d88fd3b5)) TZ_SOUND WPC_ROMEND
+WPC_ROMSTART(tz,l1,  "u6-l1.040",   0x80000,CRC(6db6ae06) SHA1(a0e15c5f5e94391c3f0e77155307c3aacba1aff9)) TZ_SOUND WPC_ROMEND
+WPC_ROMSTART(tz,ifpa,"u6-ifpa.040", 0x80000,CRC(57f4c514) SHA1(17064a76e1037d439639ebbc9e64ca4fd1e5e62d)) TZ_SOUND WPC_ROMEND
+WPC_ROMSTART(tz,h7,  "u6-h7.040",   0x80000,CRC(84f29e46) SHA1(744c7e64418c8d95972470e4aafe42e96d2ea9cf)) TZ_SOUND WPC_ROMEND
 
-WPC_ROMSTART(tz,l2,"tz_l2.u6",0x80000,CRC(1f0f5611) SHA1(e8860b1c288039682e56bbf8dd0c263b2632c4b7))
-WPCS_SOUNDROM882("tzu18_l2.rom",CRC(66575ec2) SHA1(deceb56324ee9785946f5771f8cfbaf1b1d2c8bc),
-                 "tzu15_l2.rom",CRC(389d2442) SHA1(58a4bc7cc7a28b47c75d5c9bbf14abf34bd7a9e3),
-                 "tzu14_l2.rom",CRC(5a67bd56) SHA1(98669fbfdc5793bcf09fe72c231e2b4fa2524cc5))
-WPC_ROMEND
-
-WPC_ROMSTART(tz,l4,"tz_l4.u6",0x80000,CRC(4baf5acd) SHA1(1edef7de6c3d24ef61e59b688d7b6871d88fd3b5))
-WPCS_SOUNDROM882("tzu18_l2.rom",CRC(66575ec2) SHA1(deceb56324ee9785946f5771f8cfbaf1b1d2c8bc),
-                 "tzu15_l2.rom",CRC(389d2442) SHA1(58a4bc7cc7a28b47c75d5c9bbf14abf34bd7a9e3),
-                 "tzu14_l2.rom",CRC(5a67bd56) SHA1(98669fbfdc5793bcf09fe72c231e2b4fa2524cc5))
+WPC_ROMSTART(tz,pa1,"u6-pa1.040",  0x80000,CRC(c34e06a6) SHA1(09c8097a54fdc15de7ee3e3eb5b12952c0bf5eaf))
+WPCS_SOUNDROM888("u18-sp1.040", CRC(1632951e) SHA1(041396411dc5343fe7e5147d26e038de79982464),
+                 "u15-sp1.040", CRC(0f17c9e9) SHA1(fcaa6f87ebd03222e3a40be08eb5aa6a5e002a8b),
+                 "u14-sp1.040", CRC(ad7cb98b) SHA1(a84bf157cb535acaf811e93ad22a505e1dd08dad))
 WPC_ROMEND
 
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF (tz,92,     "Twilight Zone (9.2)",1993,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tz,94h,92, "Twilight Zone (9.4H)", 1993,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tz,l2, 92, "Twilight Zone (L-2)", 1993,"Bally",wpc_mFliptronS,0)
-CORE_CLONEDEF(tz,l4, 92, "Twilight Zone (L-4)", 1993,"Bally",wpc_mFliptronS,0)
+CORE_GAMEDEF (tz,92,     "Twilight Zone (9.2)", 1995,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,94h, 92,"Twilight Zone (9.4H)",1998,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,pa1, 92,"Twilight Zone (PA-1)", 1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,ifpa,92,"Twilight Zone (IFPA rules)", 1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,l1,  92,"Twilight Zone (L-1)", 1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,l2,  92,"Twilight Zone (L-2)", 1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,l4,  92,"Twilight Zone (L-4)", 1993,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,h7,  92,"Twilight Zone (H-7)", 1993,"Bally",wpc_mFliptronS,0)
 
 /*----------
 / Game Data

@@ -245,7 +245,7 @@ CORE_GAMEDEFNV(hglbtrtr,"Harlem Globetrotters",1979,"Bally",by35_mBY35_50S,0)
 
 INITGAME(hglbtrtb,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY50,0)
 BY35_ROMSTARTx00(hglbtrtb,"harl2732.u2", CRC(f70a2981) SHA1(dd3e6448efa0dff49ed84c1f586d3b817598fa31),
-                          "720-3532.u6b",CRC(cb4243e7) SHA1(a4224ff3c7ef81a8adfb1af4e2d2c8b7f5b2f488))
+                          "720-3532.u6b",CRC(b5e6a3d5) SHA1(fa1593eeed449dbac87965e613b501108a015eb2))
 BY50_SOUNDROM(            "729-51_3.123",CRC(6e7d3e8b) SHA1(7a93d82a05213ffa6eacfa318051414f872a701d))
 BY35_ROMEND
 #define input_ports_hglbtrtb input_ports_hglbtrtr
@@ -264,7 +264,7 @@ CORE_GAMEDEFNV(dollyptn,"Dolly Parton",1979,"Bally",by35_mBY35_50S,0)
 
 INITGAME(dollyptb,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY50,0)
 BY35_ROMSTARTx00(dollyptb,"doll2732.u2", CRC(cd649da3) SHA1(10fbffa0dc620d8bc35b8236b1d55fbf3338b6b7),
-                          "720-3532.u6b",CRC(cb4243e7) SHA1(a4224ff3c7ef81a8adfb1af4e2d2c8b7f5b2f488))
+                          "720-3532.u6b",CRC(b5e6a3d5) SHA1(fa1593eeed449dbac87965e613b501108a015eb2))
 BY50_SOUNDROM(            "729-51_3.123",CRC(6e7d3e8b) SHA1(7a93d82a05213ffa6eacfa318051414f872a701d))
 BY35_ROMEND
 #define input_ports_dollyptb input_ports_dollyptn
@@ -298,7 +298,7 @@ CORE_GAMEDEFNV(futurspa,"Future Spa",1979,"Bally",by35_mBY35_51S,0)
 
 INITGAME(futurspb,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY51,0)
 BY35_ROMSTARTx00(futurspb,"fspa2732.u2", CRC(8c4bf58f) SHA1(7235b205b9817d6e227683b26779d3fd4f1df11b),
-                          "720-3532.u6b",CRC(cb4243e7) SHA1(a4224ff3c7ef81a8adfb1af4e2d2c8b7f5b2f488))
+                          "720-3532.u6b",CRC(b5e6a3d5) SHA1(fa1593eeed449dbac87965e613b501108a015eb2))
 BY51_SOUNDROM8(           "781-02_4.716",CRC(364f7c9a) SHA1(e6a3d425317eaeba4109712c6949f11c50b82892))
 BY35_ROMEND
 #define input_ports_futurspb input_ports_futurspa
@@ -317,7 +317,7 @@ CORE_GAMEDEFNV(spaceinv,"Space Invaders",1980,"Bally",by35_mBY35_51S,0)
 
 INITGAME(spaceinb,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY51,0)
 BY35_ROMSTARTx00(spaceinb,"inva2732.u2", CRC(3d21bb0c) SHA1(b361adc3f0d83b873101ff5354d2d3b876128f4a),
-                          "720-3532.u6b",CRC(cb4243e7) SHA1(a4224ff3c7ef81a8adfb1af4e2d2c8b7f5b2f488))
+                          "720-3532.u6b",CRC(b5e6a3d5) SHA1(fa1593eeed449dbac87965e613b501108a015eb2))
 BY51_SOUNDROM8(           "792-07_4.716",CRC(787ffd5e) SHA1(4dadad7095de27622c2120311a84555dacdc3364))
 BY35_ROMEND
 #define input_ports_spaceinb input_ports_spaceinv
@@ -336,7 +336,7 @@ CORE_GAMEDEFNV(ngndshkr,"Nitro Groundshaker",1980,"Bally",by35_mBY35_51S,0)
 
 INITGAME(ngndshkb,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
 BY35_ROMSTARTx00(ngndshkb,"nitr2732.u2", CRC(3b8d62ef) SHA1(da9652de8930bdd092928775a886252798ce6bf8),
-                          "720-3532.u6b",CRC(cb4243e7) SHA1(a4224ff3c7ef81a8adfb1af4e2d2c8b7f5b2f488))
+                          "720-3532.u6b",CRC(b5e6a3d5) SHA1(fa1593eeed449dbac87965e613b501108a015eb2))
 BY51_SOUNDROM8(           "776-15_4.716",CRC(63c80c52) SHA1(3350919fce237b308b8f960948f70d01d312e9c0))
 BY35_ROMEND
 #define input_ports_ngndshkb input_ports_ngndshkr
@@ -355,7 +355,7 @@ CORE_GAMEDEFNV(slbmania,"Silverball Mania",1980,"Bally",by35_mBY35_51S,0)
 
 INITGAME(slbmanib,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
 BY35_ROMSTARTx00(slbmanib,"silv2732.u2", CRC(2687a4bc) SHA1(88eb8f793d44b820a0e79789db8cd48eec451c73),
-                          "720-3532.u6b",CRC(cb4243e7) SHA1(a4224ff3c7ef81a8adfb1af4e2d2c8b7f5b2f488))
+                          "720-3532.u6b",CRC(b5e6a3d5) SHA1(fa1593eeed449dbac87965e613b501108a015eb2))
 BY51_SOUNDROM8(           "786-11_4.716",CRC(2a3641e6) SHA1(64693d424277e2aaf5fd4af33b2d348a8a455448))
 BY35_ROMEND
 #define input_ports_slbmanib input_ports_slbmania
@@ -374,7 +374,7 @@ CORE_GAMEDEFNV(rollston,"Rolling Stones",1980,"Bally",by35_mBY35_51S,0)
 
 INITGAME(rollstob,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
 BY35_ROMSTARTx00(rollstob,"roll2732.u2", CRC(28c48275) SHA1(578f774bbeca228ef381531563d1d56dc9b612e5),
-                          "720-3532.u6b",CRC(cb4243e7) SHA1(a4224ff3c7ef81a8adfb1af4e2d2c8b7f5b2f488))
+                          "720-3532.u6b",CRC(b5e6a3d5) SHA1(fa1593eeed449dbac87965e613b501108a015eb2))
 BY51_SOUNDROM8(           "796-19_4.716",CRC(b740d047) SHA1(710edb6bbba0a03e4f516b501f019493a3a4033e))
 BY35_ROMEND
 #define input_ports_rollstob input_ports_rollston
@@ -393,7 +393,7 @@ CORE_GAMEDEFNV(mystic  ,"Mystic",1980,"Bally",by35_mBY35_51S,0)
 
 INITGAME(mysticb ,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
 BY35_ROMSTARTx00(mysticb, "myst2732.u2", CRC(ee743ef9) SHA1(121d3d912983c70d967e9f9fc2230faa59fd37cd),
-                          "720-3532.u6b",CRC(cb4243e7) SHA1(a4224ff3c7ef81a8adfb1af4e2d2c8b7f5b2f488))
+                          "720-3532.u6b",CRC(b5e6a3d5) SHA1(fa1593eeed449dbac87965e613b501108a015eb2))
 BY51_SOUNDROM8(           "798-05_4.716",CRC(e759e093) SHA1(e635dac4aa925804ec658e856f7830290bfbc7b8))
 BY35_ROMEND
 #define input_ports_mysticb input_ports_mystic
@@ -412,7 +412,7 @@ CORE_GAMEDEFNV(hotdoggn,"Hot Doggin",1980,"Bally",by35_mBY35_51S,0)
 
 INITGAME(hotdoggb,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
 BY35_ROMSTARTx00(hotdoggb,"hotd2732.u2", CRC(709305ee) SHA1(37d5e681a1a2b8b2782dae3007db3e5036003e00),
-                          "720-3532.u6b",CRC(cb4243e7) SHA1(a4224ff3c7ef81a8adfb1af4e2d2c8b7f5b2f488))
+                          "720-3532.u6b",CRC(b5e6a3d5) SHA1(fa1593eeed449dbac87965e613b501108a015eb2))
 BY51_SOUNDROM8(           "809-07_4.716",CRC(43f28d7f) SHA1(01fca0ee0137a0715421eaa3582ff8d324340ecf))
 BY35_ROMEND
 #define input_ports_hotdoggb input_ports_hotdoggn
@@ -431,7 +431,7 @@ CORE_GAMEDEFNV(viking  ,"Viking",1980,"Bally",by35_mBY35_51S,0)
 
 INITGAME(vikingb ,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
 BY35_ROMSTARTx00(vikingb, "vikg2732.u2", CRC(7a5c24e6) SHA1(073b16eb6d77684ba99e3bf340a3bc9dfb537560),
-                          "720-3532.u6b",CRC(cb4243e7) SHA1(a4224ff3c7ef81a8adfb1af4e2d2c8b7f5b2f488))
+                          "720-3532.u6b",CRC(b5e6a3d5) SHA1(fa1593eeed449dbac87965e613b501108a015eb2))
 BY51_SOUNDROM8(           "802-07-4.716",CRC(62bc5030) SHA1(5a696f784a415d5b16ee23cd72a905264a2bbeac))
 BY35_ROMEND
 #define input_ports_vikingb input_ports_viking
@@ -598,7 +598,7 @@ CORE_GAMEDEFNV(fathom  ,"Fathom",1981,"Bally",by35_mBY35_61BS,0)
 
 #define init_fathomb init_fathom
 BY35_ROMSTARTx00(fathomb,"fathomu2.732",CRC(e964af0d) SHA1(f7282767db1eba9b5cf12e1c064376c0fdda5505),
-                         "fathomu6.732",CRC(4fcf467e) SHA1(97686cf3495e3a4175ff5d16e0dc8d158c124910))
+                         "fathomu6.732",CRC(0c169a11) SHA1(cbcfe3ce84a1b049706f54b6d606ea54e9a0a06c))
 BY61_SOUNDROMxx00(       "842-01_4.532",CRC(2ac02093) SHA1(a89c1d24f4f3e1f58ca4e476f408835efb368a90),
                          "842-02_5.532",CRC(736800bc) SHA1(2679d4d76e7258ad18ffe05cf333f21c35adfe0e))
 BY35_ROMEND
@@ -679,8 +679,8 @@ BY35_ROMEND
 CORE_GAMEDEFNV(vector ,"Vector",1982,"Bally",by35_mBY35_61S,0)
 
 #define init_vectorb init_vector
-BY35_ROMSTARTx00(vectorb,"vectoru2.732",CRC(1b1740d5) SHA1(0e4e932bcdf37ac033fa1f9fe5ead4073a6280f0),
-                         "vectoru6.732",CRC(42d7f176) SHA1(93460c46b3cf033ff23d063e8160cc2c18d00458))
+BY35_ROMSTARTx00(vectorb,"vectoru2.732",CRC(6b2cbd42) SHA1(f778d19f8ff7a6228ccd3b49af9d60bc9eeffe7b),
+                         "vectoru6.732",CRC(fe504d05) SHA1(27c72358ea53fd051e64c0179019116356f543d5))
 BY61_SOUNDROM0000(       "858-01_2.532",CRC(bd2edef9) SHA1(8f129016440bad5e78d4b073268e76e542b61684),
                          "858-02_3.532",CRC(c592fb35) SHA1(5201824f129812c907e7d8a4600de23d95fd1eb0),
                          "858-03_4.532",CRC(8661d312) SHA1(36d04d875382ff5387991d660d031c662b414698),

@@ -91,6 +91,14 @@ extern MACHINE_DRIVER_EXTERN(techno);
     ROM_LOAD(u4, 0x0000, 0x8000, chk4) \
     ROM_LOAD(u6, 0x8000, 0x8000, chk6)
 
+#define ZAC_SOUNDROM_5x256(u05,chk1,u06,chk2,u24,chk3,u25,chk4,u40,chk5) \
+  SOUNDREGION(0x30000, ZACSND_CPUAREGION) \
+    ROM_LOAD(u05, 0x08000, 0x8000, chk1) \
+    ROM_LOAD(u06, 0x10000, 0x8000, chk2) \
+    ROM_LOAD(u24, 0x18000, 0x8000, chk3) \
+    ROM_LOAD(u25, 0x20000, 0x8000, chk4) \
+    ROM_LOAD(u40, 0x28000, 0x8000, chk5)
+
 #define TECHNO_SOUNDROM1(n1,chk1,n2,chk2) \
   SOUNDREGION(0x10000, ZACSND_CPUAREGION) \
     ROM_LOAD(n1, 0xe000, 0x2000, chk1) \
