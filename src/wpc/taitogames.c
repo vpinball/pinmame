@@ -36,7 +36,22 @@ static void init_##name(void) { core_gameData = &name##GameData; }
 //??/?? Apache!
 //??/?? Football
 //??/79 Hot Ball (B Eight Ball, 01/77)
-//??/79 Shock (W Flash, 01/79)
+
+/*--------------------------------
+/ Shock
+/-------------------------------*/
+INITGAME(shock,SNDBRD_TAITO_SINTETIZADOR)
+TAITO_ROMSTART11111(shock,"shock1.bin",NO_DUMP,
+                          "shock2.bin",NO_DUMP,
+                          "shock3.bin",NO_DUMP,
+                          "shock4.bin",NO_DUMP,
+                          "shock5.bin",NO_DUMP)
+TAITO_SOUNDROMS11("shock_s1.bin", CRC(1f8543e9) SHA1(209c88198659844aeba1e4c39c04eb4d96b10de4),
+				  "shock_s2.bin", CRC(c03e8009) SHA1(33e7e90f313d4dd2555feae9bd9912989c7d2de2))
+TAITO_ROMEND
+#define input_ports_shock input_ports_taito
+CORE_GAMEDEFNV(shock,"Shock",1979,"Taito",taito_sintetizador,0)
+
 //??/?? Sultan (G Sinbad, 05/78)
 
 /*--------------------------------
