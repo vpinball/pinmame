@@ -139,8 +139,9 @@ static MEMORY_READ_START(PEYPER_readmem)
   {0x6000,0x67ff, MRA_RAM},
 MEMORY_END
 
+// although the RAM is battery-backed, it seems not to store anything?
 static MEMORY_WRITE_START(PEYPER_writemem)
-  {0x6000,0x67ff, MWA_RAM},
+  {0x6000,0x67ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
 MEMORY_END
 
 static PORT_READ_START(PEYPER_readport)
@@ -173,6 +174,7 @@ MACHINE_DRIVER_START(PEYPER)
   MDRV_CPU_PERIODIC_INT(PEYPER_irq, PEYPER_IRQFREQ)
   MDRV_CORE_INIT_RESET_STOP(PEYPER,NULL,NULL)
   MDRV_DIPS(16)
+  MDRV_NVRAM_HANDLER(generic_1fill)
   MDRV_SWITCH_UPDATE(PEYPER)
   MDRV_SWITCH_CONV(PEYPER_sw2m,PEYPER_m2sw)
   MDRV_SOUND_ADD(AY8910, PEYPER_ay8910Int)
