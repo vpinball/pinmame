@@ -20,9 +20,9 @@
 / Flicker (Prototype, 09/1974)
 /-------------------------------------------------------------------*/
 core_tLCDLayout flicker_disp[] = {
-  {0, 0, 0, 5,CORE_SEG7}, {0,12, 7, 5,CORE_SEG7},
-  {2, 3, 5, 2,CORE_SEG7}, {2, 9,12, 2,CORE_SEG7}, {2,15,14, 2,CORE_SEG7},
-  {0}
+  {0, 0, 0,6,CORE_SEG7}, {0,14, 7,6,CORE_SEG7},
+  {3, 4,14,2,CORE_SEG7}, {3,12, 6,1,CORE_SEG7},
+  {3,18,13,1,CORE_SEG7}, {3,20,16,1,CORE_SEG7}, {0}
 };
 INITGAMEP(flicker, flicker_disp, 1)
 MIDWAY_1_ROMSTART(flicker,"flicker.rom", 0xe3445e7c)
@@ -35,9 +35,7 @@ CORE_GAMEDEFNV(flicker,"Flicker (Prototype)",1974,"Nutting Associates",gl_mMIDWA
 core_tLCDLayout rot_disp[] = {
   {0, 0, 0, 6,CORE_SEG7}, {0,16, 7, 6,CORE_SEG7},
   {2, 0,14, 6,CORE_SEG7}, {2,16,21, 6,CORE_SEG7},
-/*{4, 0,28, 2,CORE_SEG7}, {4,24,32, 2,CORE_SEG7},*/
-  {4, 8,35, 6,CORE_SEG7},
-  {0}
+  {4, 8,35, 6,CORE_SEG7}, {0}
 };
 INITGAME(rotation, rot_disp, 1)
 MIDWAY_3_ROMSTART(rotation,	"rot-a117.dat",	0x7bb6beb3,
