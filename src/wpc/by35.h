@@ -473,7 +473,7 @@ extern MACHINE_DRIVER_EXTERN(hnk);
 #define by35_mBY35_56S  by35_56S // XENON
 #define by35_mBY35_45S  by35_45S
 #define by35_mBowling   by35
-#define by35_mAstro     by35
+#define by35_mAstro     st200
 #define by35_mHNK       hnk
 #define by35_mST100     by35
 #define by35_mST200     st200
