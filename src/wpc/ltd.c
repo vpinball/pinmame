@@ -137,21 +137,14 @@ static WRITE_HANDLER(sw_w) {
 /  Memory map for CPU board
 /------------------------------------------*/
 static MEMORY_READ_START(LTD_readmem)
-//	AM_RANGE(0x0000,0x00ff) AM_READ(ram_r)		/* RAM */
-//	AM_RANGE(0xc000,0xdfff) AM_READ(MRA_ROM)		/* ROM */
-//	AM_RANGE(0xe000,0xffff) AM_READ(MRA_ROM)		/* reset vector */
-  {0x0000,0x00ff,ram_r},
+  {0x0000,0x01ff,ram_r},
   {0xc000,0xdfff,MRA_ROM},
   {0xe000,0xffff,MRA_ROM},
 MEMORY_END
 
 static MEMORY_WRITE_START(LTD_writemem)
-//	AM_RANGE(0x0000,0x00ff) AM_WRITE(ram_w) AM_BASE(&ram)	/* RAM */
-//	AM_RANGE(0xc000,0xdfff) AM_WRITE(MWA_ROM)		/* ROM */
-//	AM_RANGE(0xfff5,0xfff5) AM_WRITE(sw_w)		/* periphal select */
-  {0x0000,0x00ff,ram_w,&ram},
-  {0xc000,0xdfff,MWA_ROM},
-  {0xe000,0xffff,sw_w},
+  {0x0000,0x01ff,ram_w,&ram},
+  {0xfff5,0xfff5,sw_w}, // periphal select
 MEMORY_END
 
 static MACHINE_INIT(LTD) {
@@ -160,7 +153,7 @@ static MACHINE_INIT(LTD) {
 
 MACHINE_DRIVER_START(LTD)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CPU_ADD_TAG("mcpu", M6800, LTD_CPUFREQ)
+  MDRV_CPU_ADD_TAG("mcpu", M6803, LTD_CPUFREQ)
   MDRV_CPU_MEMORY(LTD_readmem, LTD_writemem)
   MDRV_CPU_VBLANK_INT(LTD_vblank, 1)
   MDRV_CPU_PERIODIC_INT(ltd_irq, LTD_IRQFREQ)
