@@ -22,7 +22,7 @@
 #include "capcoms.h"
 #include "sndbrd.h"
 
-#define VERBOSE
+//#define VERBOSE
 //#define DEBUGGING
 
 #ifdef VERBOSE
