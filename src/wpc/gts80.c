@@ -75,26 +75,28 @@ static void GTS80_irq(int state) {
 }
 
 static INTERRUPT_GEN(GTS80_vblank) {
+  static UINT32 gameOn;
   GTS80locals.vblankCount += 1;
   /*-- lamps are not strobed so no need to smooth --*/
   /*-- solenoids --*/
   if ((GTS80locals.vblankCount % GTS80_SOLSMOOTH) == 0) {
     // Lamp 0 controls GameOn relay (map as sol 10)
     // Lamp 1 controls Tilt relay (map as sol 11) for S80 & S80A
-    UINT32 gameOn = (coreGlobals.lampMatrix[0] & 0x03);
+    gameOn = (coreGlobals.lampMatrix[0] & 0x03);
     if (core_gameData->gen & (GEN_GTS80 | GEN_GTS80A))
       gameOn &= (gameOn ^ 0x06)>>1; // combine tilt & GameOn
     else
       gameOn &= 1; // only GameOn
     coreGlobals.solenoids = GTS80locals.solenoids | (gameOn << 9);
     GTS80locals.solenoids = coreGlobals.pulsedSolState;
+    coreGlobals.pulsedSolState = 0;
   }
   /*-- display --*/
   if ((GTS80locals.vblankCount % GTS80_DISPLAYSMOOTH) == 0) {
     memcpy(coreGlobals.segments, GTS80locals.segments, sizeof(coreGlobals.segments));
     memcpy(GTS80locals.segments, GTS80locals.pseg, sizeof(GTS80locals.segments));
   }
-  core_updateSw(coreGlobals.lampMatrix[0] & 0x01);
+  core_updateSw(gameOn & 0x01);
 }
 
 /* GTS80 switch numbering, row and column is swapped */
@@ -117,7 +119,7 @@ static SWITCH_UPDATE(GTS80) {
   if (inports) {
     CORE_SETKEYSW(inports[GTS80_COMINPORT], 0x3f, 8);
     // Set slam switch
-    coreGlobals.swMatrix[0] = (inports[GTS80_COMINPORT] & 0xf000) >> 8;
+    coreGlobals.swMatrix[0] = ((inports[GTS80_COMINPORT] & 0xf000) >> 8) ^ coreGlobals.invSw[0];
     if (core_gameData->hw.display & GTS80_DISPVIDEO)
       CORE_SETKEYSW(inports[GTS80_COMINPORT]>>8,0x0f,0);
   }
