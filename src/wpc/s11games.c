@@ -358,6 +358,14 @@ S11_ROMEND
 #define input_ports_jokrz input_ports_s11
 CORE_GAMEDEF(jokrz, l6, "Jokerz (L-6)", 1989, "Williams", s11_mS11B2S,GAME_IMPERFECT_SOUND)
 
+S11_ROMSTART48(jokrz,l3,"u26-l3.rom", CRC(3bf963df) SHA1(9f7757d96deca8638dbc1fe3669eee78dc222ebb),
+                        "u27-l3.rom", CRC(32526aff) SHA1(c4ee4b58e90f214012addada114fc9333d2d274c))
+S11XS_SOUNDROM88(       "jokeru21.l1", CRC(9e2be4f6) SHA1(6e26b55935d0c8138176b54a11c1a9ab58366628),
+                        "jokeru22.l1", CRC(2f67160c) SHA1(f1e179fde41f9bf8226069c24b0bd5152a13e518))
+S11JS_SOUNDROM(         "jokeru5.l2" , CRC(e9dc0095) SHA1(23a99555e50461ccc8e67de01796642c080294c2))
+S11_ROMEND
+CORE_CLONEDEF(jokrz,l3,l6,"Jokerz (L-3)", 1989, "Williams", s11_mS11B2S,GAME_IMPERFECT_SOUND)
+
 /*--------------------
 / Earthshaker 4/89
 /--------------------*/
