@@ -352,6 +352,9 @@ BEGIN
 
             MENUITEM "Border&less",                 ID_CTRLCTXMENU_DISPLAY_DMDONLY
 
+            MENUITEM SEPARATOR
+            MENUITEM "Restore window size",         ID_CTRLCTXMENU_DISPLAY_RESTORESIZE
+
         END
         MENUITEM SEPARATOR
         MENUITEM "In&fo...",                    ID_CTRLCTXMENU_INFO

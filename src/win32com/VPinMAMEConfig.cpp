@@ -40,6 +40,8 @@ int dmd_title  = 1;
 int dmd_pos_x  = 0;
 int dmd_pos_y  = 0;
 int dmd_doublesize = 0;
+int dmd_width = 0;
+int dmd_height = 0;
 
 static int config_handle_arg(char *arg);
 
@@ -179,6 +181,8 @@ static struct rc_option pinmame_opts[] = {
 	{ "dmd_title",  NULL, rc_bool, &dmd_title,  "1", 0, 0, NULL, "DMD display title" },
 	{ "dmd_pos_x",  NULL, rc_int,  &dmd_pos_x,  "0", 0, 10000, NULL, "DMD display position x" },
 	{ "dmd_pos_y",  NULL, rc_int,  &dmd_pos_y,  "0", 0, 10000, NULL, "DMD display position y" },
+	{ "dmd_width",  NULL, rc_int,  &dmd_width,  "0", 0, 10000, NULL, "DMD display width" },
+	{ "dmd_height", NULL, rc_int,  &dmd_height, "0", 0, 10000, NULL, "DMD display height" },
 	{ "dmd_doublesize",  NULL, rc_bool,  &dmd_doublesize,  "0", 0, 0, NULL, "DMD display doublesize" },
 	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
 };
@@ -302,6 +306,8 @@ static char* RunningGameSettings[] = {
 	"dmd_doublesize", 
 	"dmd_border",
 	"dmd_title",
+	"dmd_width",
+	"dmd_height",
 
 	NULL
 };
