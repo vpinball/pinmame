@@ -246,12 +246,18 @@ static SWITCH_UPDATE(by35) {
       CORE_SETKEYSW(inports[BY35_COMINPORT],   0x06,1);
       CORE_SETKEYSW(inports[BY35_COMINPORT],   0x81,2);
     }
+    else if (core_gameData->gen & GEN_BYPROTO) {
+      CORE_SETKEYSW(inports[BY35_COMINPORT]>>8,0x01,3);
+      CORE_SETKEYSW(inports[BY35_COMINPORT],   0x1f,4);
+    }
   }
-  /*-- Diagnostic buttons on CPU board --*/
-  cpu_set_nmi_line(0, core_getSw(BY35_SWCPUDIAG) ? ASSERT_LINE : CLEAR_LINE);
-  sndbrd_0_diag(core_getSw(BY35_SWSOUNDDIAG));
-  /*-- coin door switches --*/
-  pia_set_input_ca1(BY35_PIA0, !core_getSw(BY35_SWSELFTEST));
+  if ((core_gameData->gen & GEN_BYPROTO) == 0) {
+    /*-- Diagnostic buttons on CPU board --*/
+    cpu_set_nmi_line(0, core_getSw(BY35_SWCPUDIAG) ? ASSERT_LINE : CLEAR_LINE);
+    sndbrd_0_diag(core_getSw(BY35_SWSOUNDDIAG));
+    /*-- coin door switches --*/
+    pia_set_input_ca1(BY35_PIA0, !core_getSw(BY35_SWSELFTEST));
+  }
 }
 
 /* PIA 0 (U10) 
@@ -297,13 +303,98 @@ static INTERRUPT_GEN(by35_irq) {
 
 static void by35_zeroCross(int data) { pia_pulse_cb1(BY35_PIA0, 0); }
 
+
+/* Bally Prototype changes below.
+   Issues:
+   - where is the ball in play digit connected?
+   - lamps are wrong
+ */
+
+static WRITE_HANDLER(piap0a_w) {
+  // lamp row & strobe
+  int which = locals.lampadr2 * 10 + locals.lampadr1;
+  coreGlobals.tmpLampMatrix[8*locals.ca20 + which / 2] = (which % 2 ? (data & 0xf0) ^ 0xf0 : (data >> 4) ^ 0x0f);
+  if (locals.lampadr1 < 0x0f)
+    locals.lampadr1++;
+  // display data
+  if (locals.lastbcd)
+    locals.bcd[--locals.lastbcd] = data & 0x0f;
+  locals.a0 = data;
+}
+// switches & dips (inverted)
+static READ_HANDLER(piap0b_r) {
+  UINT8 sw = 0;
+  if (locals.a0 & 0x10) sw = core_getDip(0); // DIP#1 1-8
+  else if (locals.a0 & 0x20) sw = core_getDip(1); // DIP#2 9-16
+  else if (locals.a0 & 0x40) sw = core_getDip(2); // DIP#3 17-24
+  else if (locals.a0 & 0x80) sw = core_getDip(3); // DIP#4 25-32
+  else sw = core_getSwCol(locals.a0 & 0x0f);
+  return core_revbyte(sw);
+}
+// display strobe
+static WRITE_HANDLER(piap0ca2_w) {
+  if (data & ~locals.ca20) {
+    by35_dispStrobe(0x1f);
+  }
+  locals.lastbcd = 5;
+  locals.ca20 = data;
+}
+
+static WRITE_HANDLER(piap0cb2_w) {
+  if (data & ~locals.cb20) {
+    locals.lampadr2 = (locals.lampadr1 < 6) ? 0 : 1;
+    locals.lampadr1 = 0;
+  }
+  locals.cb20 = data;
+}
+// set display row
+static WRITE_HANDLER(piap1a_w) {
+  locals.a1 = data;
+  if (data & 0x01) logerror("PIA#1 Port A = %02X\n", data);
+}
+// solenoids
+static WRITE_HANDLER(piap1b_w) {
+  locals.b1 = data;
+  coreGlobals.pulsedSolState = 0;
+  if (locals.cb21)
+    locals.solenoids |= coreGlobals.pulsedSolState = (1<<(data & 0x0f)) & 0x7fff;
+  data ^= 0xf0;
+  coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xfff87fff) | ((data & 0xf0)<<11);
+  locals.solenoids |= (data & 0xf0)<<11;
+}
+//diag. LED?
+static WRITE_HANDLER(piap1ca2_w) {
+  locals.ca21 = locals.diagnosticLed = data;
+}
+// solenoid control?
+static WRITE_HANDLER(piap1cb2_w) {
+  locals.cb21 = data;
+}
+
+static struct pia6821_interface by35Proto_pia[] = {{
+/* I:  A/B,CA1/B1,CA2/B2 */  0, piap0b_r, 0,0, 0,0,
+/* O:  A/B,CA2/B2        */  piap0a_w,0, piap0ca2_w,piap0cb2_w,
+/* IRQ: A/B              */  piaIrq,0
+},{
+/* I:  A/B,CA1/B1,CA2/B2 */  0, 0, 0,0, 0,0,
+/* O:  A/B,CA2/B2        */  piap1a_w,piap1b_w, piap1ca2_w,piap1cb2_w,
+/* IRQ: A/B              */  piaIrq,0
+}};
+
+static INTERRUPT_GEN(byProto_irq) {
+  static int last = -1;
+  last++; if (last > 3) last = 0;
+  pia_set_input_ca1(BY35_PIA0, last % 2);
+  pia_set_input_ca1(BY35_PIA1, last & 2);
+}
+
 /*-----------------------------------------------
 / Load/Save static ram
 /-------------------------------------------------*/
 static UINT8 *by35_CMOS;
 
 static NVRAM_HANDLER(by35) {
-  core_nvram(file, read_or_write, by35_CMOS, 0x100, (core_gameData->gen & (GEN_STMPU100|GEN_STMPU200))?0x00:0xff);
+  core_nvram(file, read_or_write, by35_CMOS, 0x100, (core_gameData->gen & (GEN_STMPU100|GEN_STMPU200|GEN_BYPROTO))?0x00:0xff);
 }
 // Bally only uses top 4 bits
 static WRITE_HANDLER(by35_CMOS_w) { by35_CMOS[offset] = data | 0x0f; }
@@ -321,6 +412,11 @@ static MACHINE_INIT(by35) {
     install_mem_write_handler(0,0x0200, 0x02ff, by35_CMOS_w);
     locals.bcd2seg = core_bcd2seg;
   }
+  else if (core_gameData->gen & GEN_ASTRO) { // Bally hardware?
+    locals.hw = BY35HW_INVDISP4|BY35HW_DIP4;
+    install_mem_write_handler(0,0x0200, 0x02ff, by35_CMOS_w);
+    locals.bcd2seg = core_bcd2seg;
+  }
   else if (core_gameData->gen & GEN_BY35) {
     locals.hw = BY35HW_SOUNDE|BY35HW_DIP4;
     install_mem_write_handler(0,0x0200, 0x02ff, by35_CMOS_w);
@@ -332,16 +428,23 @@ static MACHINE_INIT(by35) {
     install_mem_write_handler(0,0x00a0, 0x00a7, e_sol1_w);
     install_mem_write_handler(0,0x00a0, 0x00a7, e_sol2_w);
   }
-  else if (core_gameData->gen & GEN_ASTRO) { // Bally hardware?
-    locals.hw = BY35HW_SOUNDE|BY35HW_DIP4;
-    install_mem_write_handler(0,0x0200, 0x02ff, by35_CMOS_w);
-    locals.bcd2seg = core_bcd2seg;
-  }
   else if (core_gameData->gen & GEN_HNK) {
     locals.hw = BY35HW_REVSW|BY35HW_SCTRL|BY35HW_INVDISP4;
     install_mem_write_handler(0,0x0200, 0x02ff, by35_CMOS_w);
     locals.bcd2seg = core_bcd2seg9;
   }
+}
+
+static MACHINE_INIT(by35Proto) {
+  memset(&locals, 0, sizeof(locals));
+
+  pia_config(BY35_PIA0, PIA_STANDARD_ORDERING, &by35Proto_pia[0]);
+  pia_config(BY35_PIA1, PIA_STANDARD_ORDERING, &by35Proto_pia[1]);
+  locals.vblankCount = 1;
+  // set up hardware
+  locals.hw = BY35HW_REVSW|BY35HW_INVDISP4|BY35HW_DIP4;
+  install_mem_write_handler(0,0x0200, 0x02ff, by35_CMOS_w);
+  locals.bcd2seg = core_bcd2seg;
 }
 
 static MACHINE_RESET(by35) { pia_reset(); }
@@ -391,6 +494,19 @@ MACHINE_DRIVER_START(by35)
   MDRV_TIMER_ADD(by35_zeroCross, BY35_ZCFREQ)
   MDRV_SOUND_CMD(sndbrd_0_data_w)
   MDRV_SOUND_CMDHEADING("by35")
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(byProto)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CORE_INIT_RESET_STOP(by35Proto,by35,NULL)
+  MDRV_CPU_ADD_TAG("mcpu", M6800, 500000)
+  MDRV_CPU_MEMORY(by35_readmem, by35_writemem)
+  MDRV_CPU_VBLANK_INT(by35_vblank, 1)
+  MDRV_CPU_PERIODIC_INT(byProto_irq, 600)
+  MDRV_NVRAM_HANDLER(by35)
+  MDRV_DIPS(32)
+  MDRV_SWITCH_UPDATE(by35)
+  MDRV_DIAGNOSTIC_LEDH(1)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(by35_32S)

@@ -23,24 +23,10 @@ static const core_tLCDLayout dispBy7[] = {
   {2, 0,17,7,CORE_SEG87F}, {2,16,25,7,CORE_SEG87F},
   {4, 4,35,2,CORE_SEG87}, {4,10,38,2,CORE_SEG87},{0}
 };
-
-/* 4 x 7 digit 7 Segment Display (6 Scoring Digits, & 1 Comma Digit)
-   AND 1 x 6 digit 7 Segment for Ball & Credit (But appears as 2 x 2 digit*/
-static const core_tLCDLayout dispBy7C[] = {
-  {0, 0, 1,7,CORE_SEG87F}, {0,16, 9,7,CORE_SEG87F},
-  {2, 0,17,7,CORE_SEG87F}, {2,16,25,7,CORE_SEG87F},
-  {4, 4,35,2,CORE_SEG87}, {4,10,38,2,CORE_SEG87},{0}
-};
-
-/* 4 x 7 digit 9 Segment Display */
-static const core_tLCDLayout dispBy104[] = {
-  {0, 0, 9, 7,CORE_SEG9}, {0,16, 2, 7,CORE_SEG9},
-  {0,32,28, 7,CORE_SEG9}, {0,48,35, 1,CORE_SEG9}, {0,50,22, 6,CORE_SEG9}, {0}
-};
-
 #endif /* DISPLAYALL */
 
 BY35_INPUT_PORTS_START(by35,1)        BY35_INPUT_PORTS_END
+BY35PROTO_INPUT_PORTS_START(by35p,1)  BY35_INPUT_PORTS_END
 
 #define INITGAME(name, gen, disp, flip, lamps, sb, db) \
 static core_tGameData name##GameData = {gen,disp,{flip,0,lamps,0,sb,db}}; \
@@ -59,6 +45,25 @@ ASTRO_ROMSTART48(blkshpsq,"blkshpsq.u2",0x39c478d3,
 BY17_ROMEND
 #define input_ports_blkshpsq input_ports_by35
 CORE_GAMEDEFNV(blkshpsq,"Black Sheep Squadron",1979,"Astro",by35_mAstro,GAME_USES_CHIMES)
+
+/*--------------------------------
+/ Bow & Arrow (Prototype game)
+/-------------------------------*/
+static const core_tLCDLayout dispBA[] = {
+  {0, 0, 2,6,CORE_SEG7}, {0,14,10,6,CORE_SEG7},
+  {2, 0,18,6,CORE_SEG7}, {2,14,26,6,CORE_SEG7},
+  {4, 2,34,2,CORE_SEG7}, {4, 8,38,2,CORE_SEG7},{0}
+};
+INITGAME(bowarrow,GEN_BYPROTO,dispBA,FLIP_SW(FLIP_L),8,0,0)
+BYPROTO_ROMSTART(bowarrow,"b14.bin",0xd4d0f92a,
+                          "b16.bin",0xad2102e7,
+                          "b18.bin",0x5d84656b,
+                          "b1a.bin",0x6f083ce6,
+                          "b1c.bin",0x6ed4d39e,
+                          "b1e.bin",0xff2f97de)
+BY17_ROMEND
+#define input_ports_bowarrow input_ports_by35p
+CORE_GAMEDEFNV(bowarrow,"Bow & Arrow (Prototype)",1976,"Bally",by35_mBYPROTO,GAME_USES_CHIMES)
 
 /*--------------------------------
 / Freedom
