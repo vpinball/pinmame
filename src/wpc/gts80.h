@@ -26,11 +26,11 @@
     COREPORT_BIT(     0x0100, "Slam Tilt",        KEYCODE_HOME)
 
 #define GTS80VID_COMPORTS \
-    COREPORT_BIT(     0x0200, "Video Test",       KEYCODE_7) \
-    COREPORT_BIT(     0x1000, "Left",             KEYCODE_LEFT) \
-    COREPORT_BIT(     0x2000, "Right",            KEYCODE_RIGHT) \
-    COREPORT_BIT(     0x4000, "Up",               KEYCODE_UP) \
-    COREPORT_BIT(     0x8000, "Down",             KEYCODE_DOWN)
+    COREPORT_BIT(     0xf000, "Video Test",       KEYCODE_7) \
+    COREPORT_BIT(     0x1000, "Joystick Right",   KEYCODE_RIGHT) \
+    COREPORT_BIT(     0x2000, "Joystick Left",    KEYCODE_LEFT) \
+    COREPORT_BIT(     0x4000, "Joystick Up",      KEYCODE_UP) \
+    COREPORT_BIT(     0x8000, "Joystick Down",    KEYCODE_DOWN)
 
 #define GTS80_DIPS \
   PORT_START /* 1 */ \
