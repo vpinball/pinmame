@@ -519,8 +519,8 @@ int VOTRAXSC01_sh_start(const struct MachineSound *msound)
 //		set_RC_filter(votraxsc01_locals.channels[i], 270000, 15000, 0, 10000);
 	}
 
-	if ( votraxsc01_locals.intf->BusyCallback[0] )
-		(*votraxsc01_locals.intf->BusyCallback[0])(votraxsc01_locals.busy);
+//	if ( votraxsc01_locals.intf->BusyCallback[0] )
+//		(*votraxsc01_locals.intf->BusyCallback[0])(votraxsc01_locals.busy);
 
 #else
 	DlPortWritePortUshort(_dataOutAdr, 0x3f);
