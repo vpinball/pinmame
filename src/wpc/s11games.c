@@ -288,7 +288,7 @@ CORE_GAMEDEF(bnzai, l3, "Banzai Run (L-3)", 1988, "Williams", s11_mS11BS,0)
 /*--------------------
 / Swords of Fury 8/88
 /--------------------*/
-INITGAME(swrds, GEN_S11B, s11_dispS11b1,12, FLIP_SWNO(58,57),0,0)
+INITGAME(swrds, GEN_S11B, s11_dispS11b1,12, FLIP_SWNO(58,60),0,0)
 S11_ROMSTART48(swrds,l2,"swrd_u26.l2", 0xc036f4ff,
                         "swrd_u27.l2", 0x33b0fb5a)
 S11S_SOUNDROM88(        "swrd_u21.l1", 0xee8b0a64,
