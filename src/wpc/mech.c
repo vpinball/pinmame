@@ -11,6 +11,7 @@
 typedef struct {
   int fast;       /* running fast */
   int sol1, sol2; /* Controlling solenoids */
+  int solinv;     /* inverted solenoids (active low) */
   int length;     /* Length to move from one end to the other in VBLANKS 1/60s */
   int steps;      /* steps returned */
   int type;       /* type */
@@ -50,7 +51,9 @@ void mech_addLong(int mechNo, int sol1, int sol2, int type, int length, int step
   if ((mechNo >= 0) && (mechNo < MECH_MAXMECH)) {
     ptMechData md = &locals.mechData[mechNo];
     int ii = 0;
-
+    md->solinv = 0;
+    if (sol1 < 0) { md->solinv |= 1; sol1 = -sol1; }
+    if (sol2 < 0) { md->solinv |= 2; sol2 = -sol2; }
     md->sol1 = sol1; md->sol2 = sol2;
     md->length = length; md->steps = steps;
     md->type = type & 0x1ff;
@@ -95,8 +98,8 @@ static void mech_update(int mechNo) {
   int currPos, ii;
 
   { /*-- check power direction -1, 0, 1 --*/
-    int sol = (core_getPulsedSol(md->sol1) != 0) +
-              (md->sol2 ? 2*(core_getPulsedSol(md->sol2) != 0) : 0);
+    int sol = ((core_getPulsedSol(md->sol1) != 0) +
+              (md->sol2 ? 2*(core_getPulsedSol(md->sol2) != 0) : 0)) ^ md->solinv;
     if (md->type & MECH_TWOSTEPSOL)
       dir = (sol != md->last);
     else if (md->type & MECH_TWODIRSOL)
