@@ -478,5 +478,9 @@ extern MACHINE_DRIVER_EXTERN(hnk);
 #define by35_mST100     by35
 #define by35_mST200     st200
 
+/* gameSpecific1 values */
+#define BY35GD_NOSOUNDE 0x01 // doesn't use SOUNDE
+#define BY35GD_PHASE    0x02 // phased lamps
+
 #endif /* INC_BY35 */
 

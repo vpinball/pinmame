@@ -14,7 +14,7 @@
 
 #define BY35_VBLANKFREQ    60 /* VBLANK frequency */
 #define BY35_IRQFREQ      150 /* IRQ (via PIA) frequency*/
-#define BY35_ZCFREQ        85 /* Zero cross frequency */
+#define BY35_ZCFREQ       85*2 /* Zero cross frequency */
 
 #define BY35_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
 #define BY35_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
@@ -43,6 +43,7 @@ static struct {
   int diagnosticLed;
   int vblankCount;
   int hw;
+  int phaseA;
 } locals;
 
 static void piaIrq(int state) {
@@ -89,8 +90,12 @@ static WRITE_HANDLER(pia0a_w) {
     locals.lastbcd = (locals.lastbcd & 0x10) | (data & 0x0f);
   }
   locals.a0 = data;
-  by35_lampStrobe(0,locals.lampadr1);
-  if (core_gameData->hw.lampCol > 0) by35_lampStrobe(1,locals.lampadr2);
+  if (core_gameData->hw.gameSpecific1 & BY35GD_PHASE) 
+    by35_lampStrobe(locals.phaseA, locals.lampadr1);
+  else {
+    by35_lampStrobe(0, locals.lampadr1);
+    if (core_gameData->hw.lampCol > 0) by35_lampStrobe(1,locals.lampadr2);
+  }
 }
 
 /* PIA1:A-W  0,2-7 Display handling */
@@ -165,7 +170,7 @@ static WRITE_HANDLER(pia1b_w) {
     { locals.bcd[5] = locals.a0>>4; by35_dispStrobe(0x20); }
   locals.b1 = data;
 
-  if (!(core_gameData->gen & GEN_BY17)) sndbrd_0_data_w(0, data & 0x0f);
+  sndbrd_0_data_w(0, data & 0x0f);
   coreGlobals.pulsedSolState = 0;
   if (!locals.cb21)
     locals.solenoids |= coreGlobals.pulsedSolState = (1<<(data & 0x0f)) & 0x7fff;
@@ -178,7 +183,7 @@ static WRITE_HANDLER(pia1b_w) {
 static WRITE_HANDLER(pia1cb2_w) {
   locals.cb21 = data;
   if ((locals.hw & BY35HW_SCTRL) == 0)
-    if (!(core_gameData->gen & GEN_BY17)) sndbrd_0_ctrl_w(1, (data ? 1 : 0) | (locals.a1 & 0x02));
+    sndbrd_0_ctrl_w(1, (data ? 1 : 0) | (locals.a1 & 0x02));
 }
 
 static INTERRUPT_GEN(by35_vblank) {
@@ -245,7 +250,7 @@ static SWITCH_UPDATE(by35) {
   if ((core_gameData->gen & GEN_BYPROTO) == 0) {
     /*-- Diagnostic buttons on CPU board --*/
     cpu_set_nmi_line(0, core_getSw(BY35_SWCPUDIAG) ? ASSERT_LINE : CLEAR_LINE);
-    if (!(core_gameData->gen & GEN_BY17)) sndbrd_0_diag(core_getSw(BY35_SWSOUNDDIAG));
+    sndbrd_0_diag(core_getSw(BY35_SWSOUNDDIAG));
     /*-- coin door switches --*/
     pia_set_input_ca1(BY35_PIA0, !core_getSw(BY35_SWSELFTEST));
   }
@@ -279,7 +284,7 @@ CB1:   ?
 CB2:   (o) Solenoid/Sound Bank Select
 */
 static struct pia6821_interface by35_pia[] = {{
-/* I:  A/B,CA1/B1,CA2/B2 */  0, pia0b_r, 0,0, 0,0,
+/* I:  A/B,CA1/B1,CA2/B2 */  0, pia0b_r, PIA_UNUSED_VAL(1),PIA_UNUSED_VAL(1), 0,0,
 /* O:  A/B,CA2/B2        */  pia0a_w,0, pia0ca2_w,pia0cb2_w,
 /* IRQ: A/B              */  piaIrq,piaIrq
 },{
@@ -293,8 +298,7 @@ static INTERRUPT_GEN(by35_irq) {
 }
 
 static void by35_zeroCross(int data) {
-  pia_set_input_cb1(BY35_PIA0, 0);
-  pia_set_input_cb1(BY35_PIA0, 1);
+  pia_set_input_cb1(BY35_PIA0, locals.phaseA = !locals.phaseA);
 }
 
 
@@ -487,7 +491,7 @@ static MACHINE_INIT(by35) {
   pia_config(BY35_PIA0, PIA_STANDARD_ORDERING, &by35_pia[0]);
   pia_config(BY35_PIA1, PIA_STANDARD_ORDERING, &by35_pia[1]);
   if ((sb & 0xff00) != SNDBRD_ST300)
-    if (!(core_gameData->gen & GEN_BY17)) sndbrd_0_init(sb, 1, memory_region(REGION_SOUND1), NULL, NULL);
+    sndbrd_0_init(sb, 1, memory_region(REGION_SOUND1), NULL, NULL);
   locals.vblankCount = 1;
   // set up hardware
   if (core_gameData->gen & (GEN_BY17|GEN_BOWLING)) {
@@ -497,7 +501,7 @@ static MACHINE_INIT(by35) {
   }
   else if (core_gameData->gen & GEN_BY35) {
     locals.hw = BY35HW_DIP4;
-    if (!core_gameData->hw.gameSpecific1)
+    if ((core_gameData->hw.gameSpecific1 & BY35GD_NOSOUNDE) == 0)
       locals.hw |= BY35HW_SOUNDE;
     install_mem_write_handler(0,0x0200, 0x02ff, by35_CMOS_w);
     locals.bcd2seg = core_bcd2seg;
@@ -543,7 +547,7 @@ static MACHINE_INIT(by35Proto) {
 static MACHINE_RESET(by35) { pia_reset(); }
 static MACHINE_STOP(by35) {
   if ((core_gameData->hw.soundBoard & 0xff00) != SNDBRD_ST300)
-    if (!(core_gameData->gen & GEN_BY17)) sndbrd_0_exit();
+    sndbrd_0_exit();
 }
 
 /*-----------------------------------
@@ -588,8 +592,6 @@ MACHINE_DRIVER_START(by35)
   MDRV_SWITCH_UPDATE(by35)
   MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_TIMER_ADD(by35_zeroCross, BY35_ZCFREQ)
-  MDRV_SOUND_CMD(sndbrd_0_data_w)
-  MDRV_SOUND_CMDHEADING("by35")
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(byProto)
@@ -642,7 +644,6 @@ MACHINE_DRIVER_START(hnk)
   MDRV_CPU_PERIODIC_INT(NULL, 0) // no irq
   MDRV_DIPS(24)
   MDRV_IMPORT_FROM(hnks)
-  MDRV_SOUND_CMDHEADING("hnk")
 MACHINE_DRIVER_END
 
 /*************************************
