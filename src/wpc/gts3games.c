@@ -82,8 +82,6 @@ GTS3SOUND3232(			"yrom1.bin",CRC(6e424e53) SHA1(90a9bf5ce84680972f9d12eb38621549
 GTS3_ROMEND
 CORE_GAMEDEFNV(ccruise,"Caribbean Cruise",1989,"International Concepts",mGTS3S,0)
 
-// Night Moves 11/89
-
 // Premier games below
 /*-------------------------------------------------------------------
 / Lights, Camera, Action (#720)
