@@ -20,7 +20,7 @@ for quite awhile!
 
 Additionally, we've expanded core support for alternate rom revisions so that many older
 rom revisions can be used. This change will require some current romsets to be renamed.
-Please see the enclosed "alias.txt" file for details, and use the included "romupdate.bat"
+Please see the enclosed "alias.txt" file for details, and use the included "romupd.bat"
 file to update the names of all affected rom zip files which you are legally entitled to have.
 
 Unfortunately, the switch to the MAME 74 core has created a number of new bugs which we did not have
