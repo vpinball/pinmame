@@ -429,6 +429,14 @@ DRIVERNV(rotation)      //Rotation VIII (September 1978)
 // ----------------
 DRIVERNV(monrobwl)      //Stars & Strikes (1980??)
 
+// ----------------
+// MR. GAME
+// ----------------
+DRIVERNV(dakar)			//Dakar (1988?)
+DRIVERNV(motrshow)		//Motor Show (1988?)
+DRIVERNV(macattck)		//Mac Attack (1989?)
+DRIVERNV(wcup90)		//World Cup 90 (1990)
+
 // --------------
 // SEGA GAMES
 // --------------

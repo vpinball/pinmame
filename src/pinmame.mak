@@ -48,6 +48,7 @@ DRVLIBS += $(PINOBJ)/alvg.o $(PINOBJ)/alvgdmd.o $(PINOBJ)/alvgs.o
 DRVLIBS += $(PINOBJ)/bingo.o
 DRVLIBS += $(PINOBJ)/techno.o
 DRVLIBS += $(PINOBJ)/spinb.o
+DRVLIBS += $(PINOBJ)/mrgame.o
 #
 # Games
 #
@@ -72,6 +73,7 @@ PINGAMES += $(PINOBJ)/midgames.o
 PINGAMES += $(PINOBJ)/gts1games.o
 PINGAMES += $(PINOBJ)/alvggames.o
 PINGAMES += $(PINOBJ)/spinbgames.o
+PINGAMES += $(PINOBJ)/mrgamegames.o
 #
 # Simulators
 #
