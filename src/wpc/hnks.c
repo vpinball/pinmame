@@ -41,16 +41,16 @@ MEMORY_END
 
 static WRITE_HANDLER(pia0a_w)
 {
-};
+}
 
 static WRITE_HANDLER(pia0b_w)
 {
-};
+}
 
 static void pia0_irq(int state)
 {
   cpu_set_irq_line(hnks_locals.brdData.cpuNo, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
-};
+}
 
 /*
   CA1     : input: sound strobe

@@ -31,7 +31,8 @@ DRVLIBS += $(PINOBJ)/se.o
 DRVLIBS += $(PINOBJ)/gts80.o $(PINOBJ)/gts80s.o
 DRVLIBS += $(PINOBJ)/by35.o $(PINOBJ)/by35snd.o $(PINOBJ)/byvidpin.o
 DRVLIBS += $(PINOBJ)/by6803.o
-DRVLIBS += $(PINOBJ)/hnk.o $(PINOBJ)/zac.o $(PINOBJ)/gp.o $(PINOBJ)/atari.o
+DRVLIBS += $(PINOBJ)/hnk.o $(PINOBJ)/hnks.o 
+DRVLIBS += $(PINOBJ)/zac.o $(PINOBJ)/gp.o $(PINOBJ)/atari.o
 #
 # Games
 #
