@@ -10,7 +10,13 @@ difficult challenge ever faced (even more than the original capcom emulation its
 sound support, additional improvements in the capcom emulation, and a major speed increase bring 
 the reality of capcom pinball emulation to life like never before.
 
-(Gerrit to add additional project improvements here - ie, fixed gottlieb stuff?)
+We also worked around the bug preventing the Gottlieb System 80A games from working introduced with
+the 1.30 release; it turned out they worked with the "buggy" timer system from MAME 0.75 alone,
+as opposed to all the other games. The games will still lock up on slamming, but that's minor...
+
+Bally games using the "Squalk & Talk" sound also received an update:
+Sound is no longer breaking up, or speech becoming garbled during a game.
+Maybe it's also sounding a bit closer to the original chip now, but that's not confirmed.
 
 On a bittersweet note, project leader Steve Ellenoff will be retiring from the project as of this release.
 With a new child on the way, and massive new real life job committments to meet, he simply doesn't see
@@ -21,10 +27,7 @@ one of the coolest software projects ever, and he is thankful to have had the op
 incredible advances the software has made over the years.
 
 Gerrit Volkenborn will be taking over the project lead position and will no doubt continue to 
-improve this great project! His tireless efforts and dedication to the project made him the obvious choice
-to take on the new position.
-
-(Gerrit anything you want to add here?)
+improve this great project! Not without serious help from Tom & Brian, however... ;)
 
 Happy holidays to everyone and we hope you enjoy our latest release!
 
@@ -37,6 +40,9 @@ Bugs Fixed
   (since the 68306 cpu core now no longer slows down the original 68000 cpu emulation)
   [Steve Ellenoff]
 
+- TMS5220 speech emulation more reliable & accurate
+- Gottlieb System 80A games working again
+  [Gerrit Volkenborn]
 
 New Features
 ------------
@@ -52,6 +58,9 @@ New Features
 - Changes to allow sound commander to work in debug mode for easier testing
   [Steve Ellenoff]
 
+- Moved to MAME .75 core (.76 for some drivers, depending on the timer implementation)
+- Added lots of clones
+  [Gerrit Volkenborn]
 
 
 Version 1.30 (October 1, 2003)
