@@ -108,6 +108,10 @@
 #define CORE_SIMINPORT      1  /* Inport for simulator */
 #define CORE_COREINPORT     2  /* Inport for core use */
 
+// Macro to ease switch assignment
+#define CORE_SETKEYSW(value, mask, swcol) \
+  coreGlobals.swMatrix[(swcol)] = (coreGlobals.swMatrix[(swcol)] & ~(mask)) | ((value) & (mask))
+
 /*------------------------------------------------------
 / Flipper hardware is described with the following macros
 /  (macros use FLIP_LL, FLIP_LR, FLIP_UL, FLIP_UR)
@@ -156,7 +160,8 @@
 #define CORE_SEG7S    7 // 7  segements, small
 #define CORE_DMD      8 // DMD Display
 #define CORE_DMD2     9 // Another DMD Display
-#define CORE_VIDEO   10 // VIDEO displ
+#define CORE_VIDEO  0xa // VIDEO displ
+#define CORE_IMPORT 0xf // Link to another display layout
 
 #define CORE_SEGHIBIT 0x10
 #define CORE_SEGREV   0x20
@@ -172,8 +177,6 @@
 #define DMD_MAXX 192
 #define DMD_MAXY 64
 
-#define PINMAME_VIDEO_UPDATE(name) int (name)(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout)
-
 typedef UINT8 tDMDDot[DMD_MAXY+2][DMD_MAXX+2];
 
 /* Shortcuts for some common display sizes */
@@ -181,17 +184,19 @@ typedef UINT8 tDMDDot[DMD_MAXY+2][DMD_MAXX+2];
 #define DISP_SEG_7(row,col,type) {4*row,16*col,row*20+col*8+1,7,type}
 #define DISP_SEG_CREDIT(no1,no2,type) {2,2,no1,1,type},{2,4,no2,1,type}
 #define DISP_SEG_BALLS(no1,no2,type)  {2,8,no1,1,type},{2,10,no2,1,type}
+#define DISP_SEG_IMPORT(x) {0,0,0,1,CORE_IMPORT,x}
 /* display layout structure */
 /* Don't know how the LCD got in there. Should have been LED but now it
    handles all kinds of displays so we call it dispLayout.
    Keep the typedef of core_tLCDLayout for some time. */
 struct core_dispLayout {
-  UINT8  top, left;
-  UINT16 start, length, type;
-  PINMAME_VIDEO_UPDATE(*update);
+  UINT16 top, left, start, length, type;
+  void *ptr;
 };
 typedef struct core_dispLayout core_tLCDLayout, *core_ptLCDLayout;
 
+#define PINMAME_VIDEO_UPDATE(name) int (name)(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout)
+typedef int (*ptPinMAMEvidUpdate)(struct mame_bitmap *bitmap, const struct rectangle *cliprect, const struct core_dispLayout *layout);
 extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *cliprect, tDMDDot dotCol, const struct core_dispLayout *layout);
 
 /*----------------------
@@ -220,19 +225,15 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 /*       BY17/BY35         */
 /*  1-15 Standard Pulse */
 /* 17-20 Standard Hold */
-#define CORE_STDSOLS       28
-
+/*       GTS80 */
+/*  1- 9 Standard */
+/* 10    GameOn (fake) */
+/* 11    Tilt (for GI) (fake) */
 #define CORE_FIRSTEXTSOL   37
 #define CORE_FIRSTUFLIPSOL 33
 #define CORE_FIRSTCUSTSOL  51
 #define CORE_FIRSTLFLIPSOL 45
 #define CORE_FIRSTSIMSOL   49
-
-#define CORE_LASTSTDSOL   28
-#define CORE_LASTEXTSOL   44
-#define CORE_LASTUFLIPSOL 36
-#define CORE_LASTLFLIPSOL 48
-#define CORE_LASTSIMSOL   50
 
 #define CORE_SSFLIPENSOL  23
 #define CORE_FIRSTSSSOL   17
@@ -288,8 +289,6 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 #define CORE_SWULFLIPEOSBIT 0x40
 #define CORE_SWULFLIPBUTBIT 0x80
 
-#define SEQ_SWNO(x) (x)
-
 #define CORE_FIRSTSIMROW   80 /* first free row on display */
 #define CORE_COLOR(x)      Machine->pens[(x)]
 #define DMD_DOTOFF  1
@@ -335,16 +334,18 @@ typedef struct {
   core_tLampData lamps[CORE_MAXLAMPCOL*8];      /*Can support up to 160 lamps!*/
 } core_tLampDisplay;
 
+#define CORE_SEGCOUNT 64
 #ifdef LSB_FIRST
-typedef union { struct { UINT8 lo, hi; } b; UINT16 w; } core_tSeg[60];
+typedef union { struct { UINT8 lo, hi; } b; UINT16 w; } core_tSeg[CORE_SEGCOUNT];
 #else /* LSB_FIRST */
-typedef union { struct { UINT8 hi, lo; } b; UINT16 w; } core_tSeg[60];
+typedef union { struct { UINT8 hi, lo; } b; UINT16 w; } core_tSeg[CORE_SEGCOUNT];
 #endif /* LSB_FIRST */
 typedef struct {
   UINT8  swMatrix[CORE_MAXSWCOL];
   UINT8  invSw[CORE_MAXSWCOL];   /* Active low switches */
   UINT8  lampMatrix[CORE_MAXLAMPCOL], tmpLampMatrix[CORE_MAXLAMPCOL];
-  core_tSeg segments;
+  core_tSeg segments;     /* segments data from driver */
+  UINT16 drawSeg[CORE_SEGCOUNT]; /* segments drawn */
   UINT32 solenoids;       /* on power driver bord */
   UINT32 solenoids2;      /* flipper solenoids */
   UINT32 pulsedSolState;  /* current pulse value of solenoids on driver board */
@@ -394,11 +395,10 @@ typedef struct {
 extern const core_tGameData *core_gameData;
 
 extern const int core_bcd2seg9[]; /* BCD to 9 segment display */
-extern const int core_bcd2seg7[]; /* BCD to 9 segment display */
+extern const int core_bcd2seg7[]; /* BCD to 7 segment display */
 #define core_bcd2seg  core_bcd2seg7
 
 /*-- Exported Display handling functions--*/
-//extern VIDEO_UPDATE(core_status);
 void core_updateSw(int flipEn);
 
 /*-- text output functions --*/
@@ -409,8 +409,6 @@ void CLIB_DECL core_textOutf(int x, int y, int color, char *text, ...);
 void core_setLamp(UINT8 *lampMatrix, int col, int row);
 
 /*-- switch handling --*/
-//extern int core_swSeq2m(int no);
-//extern int core_m2swSeq(int col, int row);
 extern void core_setSw(int swNo, int value);
 extern int core_getSw(int swNo);
 extern void core_updInvSw(int swNo, int inv);
@@ -431,14 +429,8 @@ extern const UINT8 core_swapNyb[16];
 INLINE UINT8 core_revbyte(UINT8 x) { return (core_swapNyb[x & 0xf]<<4)|(core_swapNyb[x>>4]); }
 INLINE UINT8 core_revnyb(UINT8 x) { return core_swapNyb[x]; }
 /*-- core DIP handling --*/
-/*---------------------------------------
-/  Get the status of a DIP bank (8 dips)
-/-----------------------------------------*/
+//  Get the status of a DIP bank (8 dips)
 extern int core_getDip(int dipBank);
-
-/*-- startup/shutdown --*/
-//int core_init(void);
-//void core_exit(void);
 
 extern MACHINE_DRIVER_EXTERN(PinMAME);
 #endif /* INC_CORE */
