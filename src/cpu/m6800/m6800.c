@@ -2451,14 +2451,14 @@ READ_HANDLER( m6803_internal_registers_r )
 		case 0x0a:
 			return m6800.counter.b.l;
 		case 0x0b:
-			if(!(m6800.pending_tcsr&TCSR_OCF))
+			if(0/*!(m6800.pending_tcsr&TCSR_OCF)*/)
 			{
 				m6800.tcsr &= ~TCSR_OCF;
 				MODIFIED_tcsr;
 			}
 			return m6800.output_compare.b.h;
 		case 0x0c:
-			if(!(m6800.pending_tcsr&TCSR_OCF))
+			if(0/*!(m6800.pending_tcsr&TCSR_OCF)*/)
 			{
 				m6800.tcsr &= ~TCSR_OCF;
 				MODIFIED_tcsr;
@@ -2574,6 +2574,11 @@ WRITE_HANDLER( m6803_internal_registers_w )
 			MODIFIED_counters;
 			break;
 		case 0x0b:
+			if(!(m6800.pending_tcsr&TCSR_OCF))
+			{
+				m6800.tcsr &= ~TCSR_OCF;
+				MODIFIED_tcsr;
+			}
 			if( m6800.output_compare.b.h != data)
 			{
 				m6800.output_compare.b.h = data;
@@ -2581,6 +2586,11 @@ WRITE_HANDLER( m6803_internal_registers_w )
 			}
 			break;
 		case 0x0c:
+			if(!(m6800.pending_tcsr&TCSR_OCF))
+			{
+				m6800.tcsr &= ~TCSR_OCF;
+				MODIFIED_tcsr;
+			}
 			if( m6800.output_compare.b.l != data)
 			{
 				m6800.output_compare.b.l = data;
