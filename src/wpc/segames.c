@@ -369,31 +369,31 @@ SE_ROMEND
 CORE_CLONEDEFNV(hirol_gr,hirolcas,"High Roller Casino (Germany)",2001,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ Austin Powers (3.0)
+/ Austin Powers (3.01)
 /-------------------------------------------------------------------*/
 INITGAME(austin,GEN_WS,se_dmd128x32,0)
-SE128_ROMSTART(austin,"apcpu.300",   0xa06b2b03)
-DE_DMD32ROM8x(   "apdsp-a.300", 0xecf2c3bb)
-DE2S_SOUNDROM18888("apsndu7.100" ,0xd0e79d59,
-                  "apsndu17.100",0xc1e33fee,
-                  "apsndu21.100",0x07c3e077,
-                  "apsndu36.100",0xf70f2828,
-                  "apsndu37.100",0xddf0144b)
+SE128_ROMSTART(austin, "apcpu.301",0x868d1f38)
+DE_DMD32ROM8x(       "apdsp-a.300",0xecf2c3bb)
+DE2S_SOUNDROM18888(  "apsndu7.100",0xd0e79d59,
+                    "apsndu17.100",0xc1e33fee,
+                    "apsndu21.100",0x07c3e077,
+                    "apsndu36.100",0xf70f2828,
+                    "apsndu37.100",0xddf0144b)
 SE_ROMEND
 #define input_ports_austin input_ports_se
 CORE_GAMEDEFNV(austin,"Austin Powers (3.0)",2001,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ Austin Powers (2.0)
+/ Austin Powers (2.01)
 /-------------------------------------------------------------------*/
 //INITGAME(austin2,GEN_WS,se_dmd128x32,0)
-SE128_ROMSTART(austin2,"apcpu.201",   0xa4ddcdca)
-DE_DMD32ROM8x(    "apdisp-a.200",0xf3ca7fca)
-DE2S_SOUNDROM18888("apsndu7.100" ,0xd0e79d59,
-                  "apsndu17.100",0xc1e33fee,
-                  "apsndu21.100",0x07c3e077,
-                  "apsndu36.100",0xf70f2828,
-                  "apsndu37.100",0xddf0144b)
+SE128_ROMSTART(austin2,"apcpu.201",0xa4ddcdca)
+DE_DMD32ROM8x(      "apdisp-a.200",0xf3ca7fca)
+DE2S_SOUNDROM18888(  "apsndu7.100",0xd0e79d59,
+                    "apsndu17.100",0xc1e33fee,
+                    "apsndu21.100",0x07c3e077,
+                    "apsndu36.100",0xf70f2828,
+                    "apsndu37.100",0xddf0144b)
 SE_ROMEND
 #define input_ports_austin2 input_ports_se
 #define init_austin2 init_austin
@@ -401,7 +401,7 @@ CORE_CLONEDEFNV(austin2,austin,"Austin Powers (2.0)",2001,"Stern",de_mSES2,GAME_
 
 //Strange that they went back to the 11 voice model here!
 /*-------------------------------------------------------------------
-/ Monopoly 3.01
+/ Monopoly (3.01)
 /-------------------------------------------------------------------*/
 INITGAME(monopoly,GEN_WS,se_dmd128x32mini,SE_MINIDMD)
 SE128_ROMSTART(monopoly,"moncpu.301",  0x24978872)
@@ -415,10 +415,10 @@ SE_ROMEND
 CORE_GAMEDEFNV(monopoly,"Monopoly",2001,"Stern",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ Playboy 3.02
+/ Playboy (3.03)
 /-------------------------------------------------------------------*/
 INITGAME(playboys,GEN_WS,se_dmd128x32,0)
-SE128_ROMSTART(playboys, "pbcpu302.bin", 0x206285ed)
+SE128_ROMSTART(playboys, "pbcpu.303",    0x6a6f6aab)
 DE_DMD32ROM8x(           "pbdisp-a.300", 0x2dbb372a)
 DE2S_SOUNDROM18888(      "pbsndu7.102",  0x12a68f34,
                          "pbsndu17.100", 0xf5502fec,
@@ -432,7 +432,7 @@ CORE_GAMEDEFNV(playboys,"Playboy (Stern)",2002,"Stern",de_mSES2,GAME_NOCRC)
 /*-------------------------------------------------------------------
 / Playboy (France)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(playboyf, "pbcpu302.bin", 0x206285ed)
+SE128_ROMSTART(playboyf, "pbcpu.303",    0x6a6f6aab)
 DE_DMD32ROM8x(           "pbdisp-f.300", 0x69ab3bb2)
 DE2S_SOUNDROM18888(      "pbsndu7.102",  0x12a68f34,
                          "pbsndu17.100", 0xf5502fec,
@@ -447,7 +447,7 @@ CORE_CLONEDEFNV(playboyf,playboys,"Playboy (France)",2002,"Stern",de_mSES2,GAME_
 /*-------------------------------------------------------------------
 / Playboy (Germany)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(playboyd, "pbcpu302.bin", 0x206285ed)
+SE128_ROMSTART(playboyd, "pbcpu.303",    0x6a6f6aab)
 DE_DMD32ROM8x(           "pbdisp-g.300", 0xed7b7c62)
 DE2S_SOUNDROM18888(      "pbsndu7.102",  0x12a68f34,
                          "pbsndu17.100", 0xf5502fec,
@@ -462,7 +462,7 @@ CORE_CLONEDEFNV(playboyd,playboys,"Playboy (Germany)",2002,"Stern",de_mSES2,GAME
 /*-------------------------------------------------------------------
 / Playboy (Italy)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(playboyi, "pbcpu302.bin", 0x206285ed)
+SE128_ROMSTART(playboyi, "pbcpu.303",    0x6a6f6aab)
 DE_DMD32ROM8x(           "pbdisp-i.300", 0x74c8cedf)
 DE2S_SOUNDROM18888(      "pbsndu7.102",  0x12a68f34,
                          "pbsndu17.100", 0xf5502fec,
@@ -477,7 +477,7 @@ CORE_CLONEDEFNV(playboyi,playboys,"Playboy (Italy)",2002,"Stern",de_mSES2,GAME_N
 /*-------------------------------------------------------------------
 / Playboy (Spain)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(playboye, "pbcpu302.bin", 0x206285ed)
+SE128_ROMSTART(playboye, "pbcpu.303",    0x6a6f6aab)
 DE_DMD32ROM8x(           "pbdisp-l.300", 0xe7697fc3)
 DE2S_SOUNDROM18888(      "pbsndu7.102",  0x12a68f34,
                          "pbsndu17.100", 0xf5502fec,
