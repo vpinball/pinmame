@@ -9,7 +9,7 @@
 
 #define FLIP78    FLIP_SWNO(7,8)
 
-/* Dot-Matrix display */
+/* Dot-Matrix display (128 x 32) */
 static struct core_dispLayout alvg_dispDMD[] = {
   {0,0,32,128,CORE_DMD,(void *)alvgdmd_update}, {0}
 };

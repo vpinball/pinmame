@@ -1,22 +1,39 @@
 /************************************************************************************************
   Alvin G and Company
-  -----------------
-  by Steve Ellenoff (08/20/2003)
+  -------------------
+  by Steve Ellenoff (08/20/2003) and Gerrit (for Alpha Numeric Display in Generation 1)
 
   Hardware from 1991-1994
 
-  CPU BOARD:
+  CPU BOARD: (Might have been a slight revision between generations but otherwise functionally the same)
 	CPU: 65c02 @ 2 Mhz?
 	I/O: 2 x 6522 VIA, 3 X 8255
 
+  Generation #1 (Games Up to Al's Garage Band?)
+  ---------------------------------------------
+  SOUND BOARD:
+    CPU: 6809 @ 2 Mhz
+	I/O: 6255 VIA
+	SND: YM3812 (Music), OKI6295 (Speech)
+ 
+  DISPLAY BOARD:
+    ALPHA NUMERIC SEGMENTS ( 2 DISPLAYS OF 20 DIGIT 16 ALPHA/NUMERIC SEGMENTS )
+	I/O: 8255
+
+  Generation #2 (All remaining games)
+  -----------------------------------
   SOUND BOARD:
 	CPU: 68B09 @ 8 Mhz? (Sound best @ 1 Mhz)
 	I/O: buffers
 	SND: BSMT2000 @ 24Mhz
 
-  DMD BOARD (not on all games):
+  DISPLAY BOARD:
+    DMD CONTROLLER:
 	CPU: 8031 @ 12 Mhz? (Displays properly @ 1-2 Mhz)
 
+
+  All Generations
+  ---------------
   Lamp Matrix     = 8x12 = 96 Lamps
   Switch Matrix   = 8X12 = 96 Switches
   Solenoids	= 32 Solenoids
@@ -28,22 +45,24 @@
   4 Flashes and stops: 4 Direct switches or U7 - 6522
   5 Flashes and stops: U8 - 6522
 
+  Misc
+  ----
   Main CPU NMI - Controls DMD Commands (and Lamp Generation in Pistol Poker)
   Main CPU IRQ - Switch Strobing/Reading (and maybe other stuff)
-
   65c02: Vectors: FFFE&F = IRQ, FFFA&B = NMI, FFFC&D = RESET
 
-  Hacks & Issues that need to be looked into:
-  #1) Manually calling the VIA_IRQ	(VIA BUG?)
-  #2) Manually calling the NMI		(VIA BUG?)
-  #3) Clearing the Lamp Matrix at the appropriate time
-  #4) Lamp and Switch Column handling needs to be improved (use core functions)
-  #5) Not sure if I did the sw2m and m2sw functions properly
-  #6) Solenoid handling needs to be cleaned up (ie, remove unnecessary code)
-  #7) Sound board FIRQ freq. is set by a jumper (don't know which is used) nor what the value of E is.
-  #8) There's probably more I can't think of at the moment
-  #9) Look into error log message from VIA chip about no callback handler for Timer.
-
+   Hacks & Issues that need to be looked into:
+   -------------------------------------------
+   #1) Manually calling the VIA_IRQ	(VIA BUG?)
+   #2) Manually calling the NMI		(VIA BUG?)
+   #3) Clearing the Lamp Matrix at the appropriate time
+   #4) Lamp and Switch Column handling needs to be improved (use core functions)
+   #5) Not sure if I did the sw2m and m2sw functions properly
+   #6) Solenoid handling needs to be cleaned up (ie, remove unnecessary code)
+   #7) Sound board (gen #2) FIRQ freq. is set by a jumper (don't know which is used) nor what the value of E is.
+   #8) There's probably more I can't think of at the moment
+   #9) Look into error log message from VIA chip about no callback handler for Timer.
+  #10) Hack used to get U8 test to pass on Generation #1 games
 
 **************************************************************************************/
 #include <stdarg.h>
@@ -264,9 +283,9 @@ static WRITE_HANDLER( xvia_1_a_w ) { sndbrd_0_data_w(0,data); }
 /*
 PB7        = NU
 PB6        = NU
-PB5        = NU
-PB4        = NU
-PB3		   = NU
+PB5        = Display Data (Generation #1 Only)
+PB4        = Display Clock (Generation #1 Only)
+PB3		   = Display Enable (Generation #1 Only)
 PB2        = NU
 PB1  (Out) = Sound Clock
 PB0        = NU
@@ -641,7 +660,8 @@ static NVRAM_HANDLER(alvg) {
   core_nvram(file, read_or_write, memory_region(ALVG_MEMREG_CPU), 0x2000, 0x00);
 }
 
-//Hack to get Punchy & Other Older generation games to pass the U8 startup test..
+//Hack to get Punchy & Other Generation #1 games to pass the U8 startup test..
+//NOTE: LED 5 Flashes Test of U8 begins @ line 40FC in Punchy
 READ_HANDLER(cust_via_1_r)
 {
 	if(offset==0)
@@ -669,7 +689,6 @@ READ_HANDLER(cust_via_1_r)
 1  1  1  = Y7 = 0x3C00 = U7 - 6255 Enable
 */
 
-//NOTE: LED 5 Flashes Test of U8 begins @ line 40FC
 static MEMORY_READ_START(alvg_readmem)
 {0x0000,0x1fff,MRA_RAM},
 {0x2000,0x2003,ppi8255_0_r},
@@ -704,7 +723,7 @@ MACHINE_DRIVER_START(alvg)
   MDRV_SWITCH_CONV(alvg_sw2m,alvg_m2sw)
 MACHINE_DRIVER_END
 
-//Main CPU, Sound hardware Driver (generation 1)
+//Main CPU, Sound hardware Driver (Generation #1)
 MACHINE_DRIVER_START(alvgs1)
   MDRV_IMPORT_FROM(alvg)
   MDRV_IMPORT_FROM(alvg_s1)
@@ -713,7 +732,7 @@ MACHINE_DRIVER_START(alvgs1)
   MDRV_SOUND_CMDHEADING("alvg")
 MACHINE_DRIVER_END
 
-//Main CPU, DMD, Sound hardware Driver (generation 2)
+//Main CPU, DMD, Sound hardware Driver (Generation #2)
 MACHINE_DRIVER_START(alvgs2)
   MDRV_IMPORT_FROM(alvg)
   MDRV_IMPORT_FROM(alvg_s2)
