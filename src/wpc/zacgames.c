@@ -75,7 +75,7 @@ ZAC_ROMSTART44444(hod,		"hod_1.bin",CRC(b666af0e) SHA1(e6a96ed30733e7b011ba35d1a
 							"hod_2.bin",CRC(956aac25) SHA1(2a59c3589d14e36ab2c61c6fbc9e8212410a385b),
 							"hod_3.bin",CRC(88b05360) SHA1(44992a01eaa8f58296d6fb003da8dad528f2b937),
 							"hod_4.bin",CRC(25b6be1f) SHA1(351138404865d69ccb3ad450deda0776e987fdd2),
-							"hod_5.bin",CRC(7adff5a2) SHA1(63359e564b05720c55905be0a1045fcf41850f53))
+							"hod_5.bin",CRC(81b73c40) SHA1(21b80cff132becdb028e6ee895231da635189ef4))
 ZAC_ROMEND
 CORE_GAMEDEFNV(hod,"House of Diamonds",1978,"Zaccaria",mZAC1311,0)
 
