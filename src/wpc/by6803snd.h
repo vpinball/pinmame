@@ -5,14 +5,14 @@
 	NORMALREGION(0x10000, BY6803_MEMREG_SCPU) \
 	ROM_LOAD(n2, 0xd000, 0x1000, chk2) \
 	ROM_LOAD(n3, 0xe000, 0x1000, chk3) \
-	ROM_LOAD(n4, 0xf000, 0x1000, chk4) 
+	ROM_LOAD(n4, 0xf000, 0x1000, chk4)
 
 #define BY6803_SOUND_S1_1111(n1,chk1, n2, chk2, n3,chk3, n4, chk4) \
 	NORMALREGION(0x10000, BY6803_MEMREG_SCPU) \
 	ROM_LOAD(n1, 0xc000, 0x1000, chk1) \
 	ROM_LOAD(n2, 0xd000, 0x1000, chk2) \
 	ROM_LOAD(n3, 0xe000, 0x1000, chk3) \
-	ROM_LOAD(n4, 0xf000, 0x1000, chk4) 
+	ROM_LOAD(n4, 0xf000, 0x1000, chk4)
 
 /* Turbo Cheak Squalk - 1 x 16K ROM */
 #define BY6803_SOUND_S2_4(n1,chk1) \
@@ -23,19 +23,19 @@
 /* Turbo Cheak Squalk - 1 x 32K ROM */
 #define BY6803_SOUND_S2_8(n1,chk1) \
     NORMALREGION(0x10000, BY6803_MEMREG_SCPU) \
-    ROM_LOAD(n1, 0x8000, 0x8000, chk1) 
+    ROM_LOAD(n1, 0x8000, 0x8000, chk1)
 
 /* Turbo Cheak Squalk - 1 x 64K ROM */
 #define BY6803_SOUND_S2_0(n1,chk1) \
     NORMALREGION(0x10000, BY6803_MEMREG_SCPU) \
-    ROM_LOAD(n1, 0x0000, 0x10000, chk1) 
+    ROM_LOAD(n1, 0x0000, 0x10000, chk1)
 
 /* Sounds Deluxe - 2 x 64K ROM */
 #if defined(MAMEVER) && (MAMEVER > 3709)
 #  define BY6803_SOUND_S3_00xx(n1,chk1, n2, chk2) \
     NORMALREGION(0x01000000, BY6803_MEMREG_SCPU) \
     ROM_LOAD16_BYTE(n1, 0x00001, 0x10000, chk1) \
-    ROM_LOAD16_BYTE(n2, 0x00000, 0x10000, chk2) 
+    ROM_LOAD16_BYTE(n2, 0x00000, 0x10000, chk2)
 #else /* MAMEVER */
 #  define BY6803_SOUND_S3_00xx(n1,chk1, n2, chk2) \
     NORMALREGION(0x01000000, BY6803_MEMREG_SCPU) \
@@ -50,14 +50,14 @@
     ROM_LOAD16_BYTE(n1, 0x00001, 0x10000, chk1) \
     ROM_LOAD16_BYTE(n2, 0x00000, 0x10000, chk2) \
 	ROM_LOAD16_BYTE(n3, 0x20001, 0x10000, chk3) \
-    ROM_LOAD16_BYTE(n4, 0x20000, 0x10000, chk4) 
+    ROM_LOAD16_BYTE(n4, 0x20000, 0x10000, chk4)
 #else /* MAMEVER */
 #  define BY6803_SOUND_S3_0000(n1,chk1, n2, chk2, n3,chk3, n4, chk4) \
     NORMALREGION(0x01000000, BY6803_MEMREG_SCPU) \
       ROM_LOAD_ODD( n1, 0x00000, 0x10000, chk1) \
       ROM_LOAD_EVEN(n2, 0x00000, 0x10000, chk2) \
 	  ROM_LOAD_ODD( n3, 0x20000, 0x10000, chk3) \
-      ROM_LOAD_EVEN(n4, 0x20000, 0x10000, chk4) 
+      ROM_LOAD_EVEN(n4, 0x20000, 0x10000, chk4)
 #endif /* MAMEVER */
 
 /* Williams System 11C - 3 x 32K ROM */
@@ -98,8 +98,8 @@ extern struct AY8910interface  snt_ay8910Int;
 /********** GENERATION 1A - CHEAP SQUEAK **************/
 /******************************************************/
 
-#define BY6803_GEN1A_SOUND		SP45_SOUND
-#define BY6803_SOUNDCPU1A		,SP45_SOUND_CPU
+#define BY6803_GEN1A_SOUND		BY45_SOUND
+#define BY6803_SOUNDCPU1A		,BY45_SOUND_CPU
 
 /***********************************************************/
 /********** GENERATION 2 - TURBO CHEAP SQUALK **************/

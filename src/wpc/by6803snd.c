@@ -12,7 +12,6 @@
 #include "snd_cmd.h"
 #include "by35snd.h"
 
-extern void by35_soundInit(void);
 extern void snt_cmd(int data);
 extern void sp45_cmd(int data);
 
@@ -29,7 +28,7 @@ ipl2 ipl1 ipl0
 0     0     0  = IRQ_7 (NMI)
 ----------------------------
 
-Sounds Deluxe: 
+Sounds Deluxe:
 	IPL0 = IPL1 = Test Switch = IRQ_3
 	IPL2 = PIA_IRQ = IRQ_4
 */
@@ -53,7 +52,7 @@ static struct {
 
 /* Generation 2 */
 // Sound data is sent as 2 nibbles, first low nibble, then high nibble
-static READ_HANDLER(pia_s2_b_r) { 
+static READ_HANDLER(pia_s2_b_r) {
 	if((++locals.cmdnum)==1) {
 		//printf("cmd = %x: return = %x\n",locals.cmdnum,locals.snddata &0x0f);
 		return locals.snddata & 0x0f;
@@ -63,13 +62,13 @@ static READ_HANDLER(pia_s2_b_r) {
 		locals.cmdnum = 0;
 		return (locals.snddata & 0xf0)>>4;
 	}
-} 
+}
 
-static WRITE_HANDLER(pia_s2_a_w) { 
+static WRITE_HANDLER(pia_s2_a_w) {
 	locals.dacdata = (locals.dacdata & ~0x3fc) | (data << 2);
 	DAC_signed_data_16_w(0, locals.dacdata << 6);
 }
-static WRITE_HANDLER(pia_s2_b_w) { 
+static WRITE_HANDLER(pia_s2_b_w) {
 	locals.dacdata = (locals.dacdata & ~0x003) | (data >> 6);
 	DAC_signed_data_16_w(0, locals.dacdata << 6);
 }
@@ -81,9 +80,9 @@ static void pia_s2_irq (int state) {
 }
 
 /* Generation 3 */
-static READ_HANDLER(pia_s3_b_r) { return pia_s2_b_r(offset); } 
-static WRITE_HANDLER(pia_s3_a_w) { pia_s2_a_w(offset,data); } 
-static WRITE_HANDLER(pia_s3_b_w) { pia_s2_b_w(offset,data); } 
+static READ_HANDLER(pia_s3_b_r) { return pia_s2_b_r(offset); }
+static WRITE_HANDLER(pia_s3_a_w) { pia_s2_a_w(offset,data); }
+static WRITE_HANDLER(pia_s3_b_w) { pia_s2_b_w(offset,data); }
 static WRITE_HANDLER(pia_s3_cb2_w) { BY6803_UpdateSoundLED(data); }
 static void pia_s3_irq (int state) {
 	//if(state) printf("Triggering Sound IRQ\n"); else printf("Clearing Sound IRQ\n");
@@ -121,7 +120,7 @@ static void s4_piaIrqB(int state) {
  PIA 0 - COMMON TO BOTH Generation 2 & 3
 -----------------------------------------
 (in)  PB0-3: Sound Data Input
-(in)  CA1:   Sound Interrupt Data 
+(in)  CA1:   Sound Interrupt Data
 (in)  CB1:   NA
 (in)  CA2:   NA
 (in)  CB2:   NA
@@ -150,7 +149,7 @@ static struct pia6821_interface pia_s3 = {
 (in)  PB0 - PB7 CPU interface (MDx)
 (in)  CA1       YM2151 IRQ
 (in)  CB1		CPU interface (MCB2)???
-(out) PA0 - PA7 DAC 
+(out) PA0 - PA7 DAC
 (out) CA2       YM 2151 pin 3 (Reset ?)
 (out) CB2       CPU interface (MCB1)???
 */
@@ -214,23 +213,23 @@ MEMORY_END
 //Sound Init
 void by6803_sndinit1(){
 	memset(&locals, 0, sizeof(locals));
-	core_gameData->gen = GEN_BY35_61;
-	by35_soundInit();
+//	core_gameData->gen = GEN_BY35_61;
+//	by35_soundInit();
 }
 void by6803_sndinit1a(){
 	memset(&locals, 0, sizeof(locals));
 }
-void by6803_sndinit2(){ 
+void by6803_sndinit2(){
 	memset(&locals, 0, sizeof(locals));
 	//Configure PIA to use #4
 	pia_config(4, PIA_ALTERNATE_ORDERING, &pia_s2);	//Alt Ordering for 16bit Write Access to Ports A+B
 }
-void by6803_sndinit3(){ 
+void by6803_sndinit3(){
 	memset(&locals, 0, sizeof(locals));
 	//Configure PIA to use #5
 	pia_config(5, PIA_ALTERNATE_ORDERING, &pia_s3);	//Alt Ordering for 16bit Write Access to Ports A+B
 }
-void by6803_sndinit4(){ 
+void by6803_sndinit4(){
 	memset(&locals, 0, sizeof(locals));
 	//Configure PIA to use #6
     pia_config(6, PIA_STANDARD_ORDERING, &pia_s4);
@@ -244,19 +243,19 @@ void by6803_sndexit3(){ }
 void by6803_sndexit4(){ }
 
 //Sound Command
-WRITE_HANDLER(by6803_sndcmd1) { 
+WRITE_HANDLER(by6803_sndcmd1) {
 	logerror("Sound Command %x\n",data);
 	locals.snddata = data;
-	snt_cmd(data);
+//	snt_cmd(data);
 }
 
-WRITE_HANDLER(by6803_sndcmd1a) { 
+WRITE_HANDLER(by6803_sndcmd1a) {
 	logerror("Sound Command %x\n",data);
 	locals.snddata = data;
-	sp45_cmd(data);
+	//sp45_cmd(data);
 }
 
-WRITE_HANDLER(by6803_sndcmd2) { 
+WRITE_HANDLER(by6803_sndcmd2) {
 	locals.snddata = data;
 	//printf("Sound Command %x\n",data);
 	snd_cmd_log(data);
@@ -264,7 +263,7 @@ WRITE_HANDLER(by6803_sndcmd2) {
 	pia_set_input_ca1(4, 1);
 }
 
-WRITE_HANDLER(by6803_sndcmd3) { 
+WRITE_HANDLER(by6803_sndcmd3) {
 	locals.snddata = data;
 	//printf("Sound Command %x\n",data);
 	snd_cmd_log(data);
@@ -272,7 +271,7 @@ WRITE_HANDLER(by6803_sndcmd3) {
 	pia_set_input_ca1(5, 1);
 }
 
-WRITE_HANDLER(by6803_sndcmd4) { 
+WRITE_HANDLER(by6803_sndcmd4) {
 	logerror("Sound Command %x\n",data);
 	locals.snddata = data;
 	pia_set_input_cb1(6, 0);
@@ -281,23 +280,23 @@ WRITE_HANDLER(by6803_sndcmd4) {
 }
 
 
-void by6803_snddiag1(){ 
+void by6803_snddiag1(){
 	//Trigger an NMI to sound cpu
-	cpu_set_nmi_line(BY6803_SCPU1NO, PULSE_LINE); 
+	cpu_set_nmi_line(BY6803_SCPU1NO, PULSE_LINE);
 }
-void by6803_snddiag2(){ 
+void by6803_snddiag2(){
 	//Trigger an NMI to sound cpu
-	cpu_set_nmi_line(BY6803_SCPU1NO, PULSE_LINE); 
+	cpu_set_nmi_line(BY6803_SCPU1NO, PULSE_LINE);
 }
-void by6803_snddiag3(){ 
+void by6803_snddiag3(){
 	//M68000 DMD - Trigger IPL1 & IPL0 (Level 3) Interrupt!
 	cpu_set_irq_line(BY6803_SCPU1NO, MC68000_IRQ_3, PULSE_LINE);
 }
-void by6803_snddiag4(){ 
+void by6803_snddiag4(){
 	//NO Test Switch??
 
 	//Trigger an NMI to sound cpu
-	//cpu_set_nmi_line(BY6803_SCPU1NO, PULSE_LINE); 
+	//cpu_set_nmi_line(BY6803_SCPU1NO, PULSE_LINE);
 }
 
 /*Interfaces*/
