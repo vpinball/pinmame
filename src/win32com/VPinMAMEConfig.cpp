@@ -45,6 +45,7 @@ static int config_handle_arg(char *arg);
 
 static FILE *logfile;
 static int errorlog;
+static int errorlogfile;
 static int showconfig;
 static int showusage;
 static int readconfig;
@@ -118,7 +119,7 @@ static int init_errorlog(struct rc_option *option, const char *arg, int priority
 {
 	/* provide errorlog from here on */
 
-	if ( errorlog )
+	if ( errorlog && errorlogfile )
 	{
 		if ( !logfile ) {
 			logfile = fopen("error.log","wa");
@@ -156,7 +157,7 @@ static struct rc_option core_opts[] = {
 	{ "rol", NULL, rc_bool, &options.rol, "0", 0, 0, NULL, "rotate screen anti-clockwise" },
 	{ "flipx", NULL, rc_bool, &options.flipx, "0", 0, 0, NULL, "flip screen upside-down" },
 	{ "flipy", NULL, rc_bool, &options.flipy, "0", 0, 0, NULL, "flip screen left-right" },
-	{ "debug_resolution", "dr", rc_string, &debugres, "auto", 0, 0, video_set_debugres, "set resolution for debugger window" },
+	{ "debug_resolution", "dr", rc_string, &debugres, "640x480x16", 0, 0, video_set_debugres, "set resolution for debugger window" },
 	// make it options.gamma_correction? 
 	{ "gamma", NULL, rc_float, &gamma_correct , "1.0", 0.5, 2.0, NULL, "gamma correction"},
 	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
@@ -209,7 +210,12 @@ static struct rc_option misc_opts[] = {
 	{ "debug", "d", rc_bool, &options.mame_debug, "0", 0, 0, NULL, "enable/disable debugger (only if available)" },
 	{ "playback", "pb", rc_string, &playbackname, NULL, 0, 0, NULL, "playback an input file" },
 	{ "record", "rec", rc_string, &recordname, NULL, 0, 0, NULL, "record an input file" },
-	{ "log", NULL, rc_bool, &errorlog, "0", 0, 0, init_errorlog, "generate error.log" },
+#ifdef DEBUG
+	{ "log", NULL, rc_bool, &errorlog, "1", 0, 0, init_errorlog, "turn on error loging to console or file" },
+#else
+	{ "log", NULL, rc_bool, &errorlog, "0", 0, 0, init_errorlog, "turn on error loging to console or file" },
+	{ "errorlogfile", NULL, rc_bool, &errorlogfile, "1", 0, 0, init_errorlog, "generate error.log" },
+#endif
 	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
 };
 
@@ -282,6 +288,7 @@ static char* PathOrFileSettings[] = {
 static char* IgnoredSettings[] = {
 	"window",
 	"resolution",
+	"debug_resolution",
 	"maximize",
 	"throttle",
 	"sleep",
@@ -346,8 +353,6 @@ void cli_frontend_exit(void)
 
 	if ( logfile ) fclose(logfile);
 	logfile = 0;
-
-	errorlog = 0;
 }
 
 
