@@ -14,6 +14,11 @@ static struct core_dispLayout alvg_dispDMD[] = {
   {0,0,32,128,CORE_DMD,(void *)alvgdmd_update}, {0}
 };
 
+static const core_tLCDLayout disp_socr[] = {
+  { 0, 0, 0, 16, CORE_SEG8 }, { 2, 0,16, 16, CORE_SEG8 },
+  { 4, 0,32, 16, CORE_SEG8 }, {0}
+};
+
 #define INITGAME(name, disptype, flippers, balls, sb, db, lamps) \
 	ALVG_INPUT_PORTS_START(name, balls) ALVG_INPUT_PORTS_END \
 	static core_tGameData name##GameData = {GEN_ALVG,disptype,{flippers,4,4,0,sb,db,lamps}}; \
@@ -22,6 +27,16 @@ static struct core_dispLayout alvg_dispDMD[] = {
 	}
 
 /* GAMES APPEAR IN PRODUCTION ORDER (MORE OR LESS) */
+
+/*-------------------------------------------------------------------
+/ Soccer Ball
+/-------------------------------------------------------------------*/
+INITGAME(socrball, disp_socr, FLIP78, 3/*?*/, SNDBRD_ALVGS, 0, 0)
+ALVGROMSTART(socrball,	"agscpu1r.18u", CRC(37affcf4) SHA1(017d47f54d5b34a4b71c2f5b84ba9bdb1c924299))
+ALVGS_SOUNDROM11(		"ags_snd.v21",  CRC(aa30bfe4) SHA1(518f7019639a0284461e83ad849bee0be5371580),
+						"ags_voic.v12", CRC(bac70b18) SHA1(0a699eb95d7d6b071b2cd9d0bf73df355e2ffce8))
+ALVG_ROMEND
+CORE_GAMEDEFNV(socrball,"Soccer Ball",1991,"Alvin G",mALVGS0,0)
 
 /*-------------------------------------------------------------------
 / Al's Garage Band Goes On A World Tour
@@ -46,7 +61,7 @@ INITGAME(mystcast, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS, SNDBRD_ALVGDMD, 0)
 ALVGROMSTART(mystcast,	"mcastle.cpu", CRC(936e6799) SHA1(aa29fb5f12f34c695d1556232744f65cd576a2b1))
 ALVGS_SOUNDROM(			"mcastle.102", CRC(752822d0) SHA1(36461ef03cac5aefa0c03dfdc63c3d294a3b9c09),
 						"mcastle.sr0", CRC(0855cc73) SHA1(c46e08432bcff24594c33171f20669ba63828931),
-						"mcastle.sr1", CRC(3b5d76e0) SHA1(b2e1bca3c596eba89feda868fa56c71a6b22414c),			   
+						"mcastle.sr1", CRC(3b5d76e0) SHA1(b2e1bca3c596eba89feda868fa56c71a6b22414c),
 						"mcastle.sr2", CRC(c3ffd277) SHA1(d16d1b22089b89bbf0db7d2b66c9745a56034322),
 						"mcastle.sr3", CRC(740858bb) SHA1(d2e9a0a178977dcc873368b042cea7052578df66))
 ALVGDMD_ROM2R(			"mcastle.du4", CRC(686e253a) SHA1(28aff34c120c61e231e2111dc396df515bcbbb89),

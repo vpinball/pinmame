@@ -28,7 +28,7 @@
 	COREPORT_BIT(     0x1000, "Volume -",         KEYCODE_0) \
     /* These are put in switch column 0 since they are not read in the regular switch matrix */ \
     COREPORT_BIT(     0x0100, "Test",			  KEYCODE_7) \
-    COREPORT_BIT(     0x0200, "Enter",			  KEYCODE_8) 
+    COREPORT_BIT(     0x0200, "Enter",			  KEYCODE_8)
 
 /*-- Standard input ports --*/
 #define ALVG_INPUT_PORTS_START(name,balls) \
@@ -68,9 +68,11 @@ extern void alvg_UpdateSoundLEDS(int num,int data);
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(alvg);
 extern MACHINE_DRIVER_EXTERN(alvgs1);
+extern MACHINE_DRIVER_EXTERN(alvgs0);
 
 #define mALVG         alvg
 #define mALVGS		  alvgs1
+#define mALVGS0		  alvgs0
 
 //Use only for testing the 8031 core emulation
 #ifdef MAME_DEBUG
