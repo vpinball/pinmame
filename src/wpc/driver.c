@@ -91,7 +91,7 @@ DRIVERNV(wsports)       //01/78 Winter Sports
                         //10/78 Ski Jump
 DRIVERNV(futurwld)      //10/78 Future World
 DRIVERNV(strapids)      //04/79 Shooting the Rapids
-                        //09/79 Hot Wheels
+DRIVERNV(hotwheel)      //09/79 Hot Wheels
                         //09/79 Space City
 DRIVERNV(firemntn)      //01/80 Fire Mountain
 DRIVERNV(stargod)       //05/80 Star God
@@ -104,7 +104,9 @@ DRIVERNV(pinchamp)      //??/83 Pinball Champ
 DRIVERNV(tmachzac)      //04/83 Time Machine
 DRIVERNV(farfalla)      //09/83 Farfalla
 DRIVERNV(dvlrider)      //04/84 Devil Riders
+DRIVERNV(dvlrideg)      //04/84 Devil Riders (german speech)
 DRIVERNV(mcastle)       //09/84 Magic Castle
+DRIVERNV(mcastleg)      //09/84 Magic Castle (german speech)
 DRIVERNV(myststar)      //??/84 Mystic Star
 DRIVERNV(robot)         //01/85 Robot
 DRIVERNV(clown)         //07/85 Clown
@@ -459,7 +461,7 @@ DRIVERNV(monopold)      //Whitestar: 09/01 Monopoly (German display)
 DRIVERNV(monopole)      //Whitestar: 09/01 Monopoly (Spanish display)
 DRIVERNV(monopolf)      //Whitestar: 09/01 Monopoly (French display)
 DRIVERNV(monopoli)      //Whitestar: 09/01 Monopoly (Italian display)
-DRIVERNV(playboys)      //Whitestar: 02/02 Playboy (4.01)
+DRIVERNV(playboys)      //Whitestar: 02/02 Playboy (5.0)
 DRIVERNV(playboyd)      //Whitestar: 02/02 Playboy (German display)
 DRIVERNV(playboye)      //Whitestar: 02/02 Playboy (Spanish display)
 DRIVERNV(playboyf)      //Whitestar: 02/02 Playboy (French display)
