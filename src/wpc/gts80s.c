@@ -209,10 +209,10 @@ void GTS80SS_irq(int state) {
 
 void GTS80SS_nmi(int state)
 {
-//	logerror("NMI: %i\n",state);
+	logerror("NMI: %i\n",state);
 	/* Devils Dare will not play any sound if the NMI occurs */
-//	if ( state )
-//		cpu_set_irq_line(GTS80SS_locals.boardData.cpuNo, M6502_INT_NMI, PULSE_LINE);
+	if ( !state )
+		cpu_set_irq_line(GTS80SS_locals.boardData.cpuNo, M6502_INT_NMI, PULSE_LINE);
 }
 
 UINT8 RIOT6532_3_RAM[256];
@@ -427,12 +427,12 @@ void gts80ss_init(struct sndbrdData *brdData) {
 	for(i = 0; i<8; i++)
 		memcpy(memory_region(GTS80SS_locals.boardData.cpuNo)+0x8000+0x1000*i, memory_region(GTS80SS_locals.boardData.cpuNo)+0x7000, 0x1000);
 
-	GTS80SS_nmi(1);
 	GTS80SS_locals.stream = stream_init("SND DAC", 100, 11025, 0, GTS80_ss_Update); 
 	set_RC_filter(GTS80SS_locals.stream, 270000, 15000, 0, 10000);
 
 	votrax_set_busy_func(GTS80SS_nmi);
 	votrax_set_base_freqency(7000);
+	GTS80SS_nmi(0);
 }
 
 void gts80ss_exit(int boardNo)
