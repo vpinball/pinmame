@@ -120,7 +120,7 @@ static SWITCH_UPDATE(GTS80) {
   if (inports) {
     CORE_SETKEYSW(inports[GTS80_COMINPORT], 0x3f, 8);
     // Set slam switch
-    CORE_SETKEYSW((inports[GTS80_COMINPORT]>> 8) ^ invPattern ? 0x80 : 0,0x80,0);
+    CORE_SETKEYSW(((inports[GTS80_COMINPORT] >> 8) & 0x80) ^ invPattern ? 0x80 : 0,0x80,0);
     if (core_gameData->hw.display & GTS80_DISPVIDEO)
       CORE_SETKEYSW(inports[GTS80_COMINPORT]>>8,0x0f,0);
   }
@@ -587,18 +587,21 @@ static void GTS80_vidStatus(int strobe, int data) {
   data <<= (strobe-1);
   for (ii = 1; ii < 8; ii++, data >>= 1)
     coreGlobals.swMatrix[ii] = (coreGlobals.swMatrix[ii] & ~strobe) | (data & strobe);
-  GTS80locals.buf8212int &= strobe; // clear interrupt pin
+  GTS80locals.buf8212int &= ~strobe; // clear interrupt pin
 }
 
 /* output to game switches, row 0 */
-static WRITE_HANDLER(port200w) { GTS80_vidStatus(1,data); }
+static WRITE_HANDLER(port200w) { if (data) GTS80_vidStatus(1,data); }
 /* output to game switches, row 1 */
-static WRITE_HANDLER(port300w) { GTS80_vidStatus(2,data); }
+static WRITE_HANDLER(port300w) { if (data) GTS80_vidStatus(2,data); }
 // Check if the main CPU has read the data in the 8212s
 static READ_HANDLER(port200r) {
   const int stat = ((GTS80locals.buf8212int & 0x01)<<7) |
                    ((GTS80locals.buf8212int & 0x02)<<5);
-  GTS80locals.buf8212int &= 0x01; // reading clears int pin
+  // reset switch lines
+  if (GTS80locals.buf8212int & 0x01) GTS80_vidStatus(1,0);
+  if (GTS80locals.buf8212int & 0x02) GTS80_vidStatus(2,0);
+  GTS80locals.buf8212int = 0; // reading clears int pin
   return stat;
 }
 
