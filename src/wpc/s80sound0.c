@@ -22,12 +22,19 @@ static int s80s_sndCPUNo;
 #define BUFFER_SIZE 1024
 
 typedef struct tagS80S0L {
+  UINT8 timer_start;
   UINT16 timer_divider;
-  UINT8 timer_value;
   UINT8 timer_irq_enabled;
-  UINT8 timer;
+  
   UINT8 irq_state;
   UINT8 irq;
+
+  double cycles_to_sec;
+  double sec_to_cycles;
+  
+  void *t;
+  double time;
+
   UINT8 edge_detect_ctrl;
 
   int soundLatch;
@@ -36,6 +43,11 @@ typedef struct tagS80S0L {
   UINT8 buffer[BUFFER_SIZE];
   int   buf_pos;
 } S80S0L;
+
+#define V_CYCLES_TO_TIME(c) ((double)(c) * p->cycles_to_sec)
+#define V_TIME_TO_CYCLES(t) ((int)((t) * p->sec_to_cycles))
+
+#define IFR_DELAY 3
 
 static S80S0L S80sound0_locals;
 
@@ -60,10 +72,25 @@ static void update_6530_interrupts(void)
 	if (new_state != p->irq)
 	{
 		p->irq = new_state;
-/*		if (p->intf->irq_func) update_shared_irq_handler(p->intf->irq_func); */
 	}
 }
 
+static void riot_6530_timeout(int which)
+{
+	S80S0L *p = &S80sound0_locals;
+
+	if ( p->irq_state & RIOT_TIMERIRQ ) {
+		p->t = 0;
+	}
+	else {
+		timer_reset(p->t, V_CYCLES_TO_TIME(255));
+		p->time = timer_get_time();
+
+		p->irq_state |= RIOT_TIMERIRQ;
+		update_6530_interrupts();
+	}
+//	logerror("timer timeout\n");
+}
 
 static READ_HANDLER(riot6530_r) {
 	S80S0L *p = &S80sound0_locals;
@@ -74,32 +101,44 @@ static READ_HANDLER(riot6530_r) {
 		// I/O
 		switch ( offset&0x03 ) {
 		case 0x00:
-			logerror("read PA\n");
+			// logerror("read PA\n");
 			break;
 
 		case 0x01:
-			logerror("read DDRA\n");
+			// logerror("read DDRA\n");
 			break;
 
 		case 0x02:
 			val = S80sound0_locals.soundLatch | ATTRACT_ENABLED*ATTRACT_MODE_TUNE | SOUND_ENABLED*SOUND_TONES;
-			// logerror("read PB (0x%02x)\n", val);
 			break;
 
 		case 0x03:
-			logerror("read DDRB\n");
+			// logerror("read DDRB\n");
 			break;
 		}
 	}
 	else {
 		if ( !(offset&0x01) ) {
-			val = p->timer_value;
+			if ( p->t ) {
+				if ( p->irq_state & RIOT_TIMERIRQ ) {
+					val = 255 - V_TIME_TO_CYCLES(timer_get_time() - p->time);
+					timer_remove(p->t);
+					p->t = 0;
+				}
+				else
+					val = p->timer_start - V_TIME_TO_CYCLES(timer_get_time() - p->time) / p->timer_divider;
+			}
+			else {
+				val = p->timer_start - V_TIME_TO_CYCLES(timer_get_time() - p->time) / p->timer_divider;
+				if ( val<0 )
+					val = 0;
+			}
 
 			p->irq_state &= ~RIOT_TIMERIRQ;
 			p->timer_irq_enabled = offset&0x08;
 			update_6530_interrupts();
 
-//			logerror("RIOT6530 read timer = %02X %02X\n", val, offset&0x08);
+			// logerror("read timer: %i\n", val);
 		}
 		else
 			logerror("read IRQ\n");
@@ -127,20 +166,20 @@ static WRITE_HANDLER(riot6530_w) {
 			break;
 
 		case 0x02:
-			logerror("write PB (0x%02x)\n", data);
+			// logerror("write PB (0x%02x)\n", data);
 			break;
 
 		case 0x03:
-			logerror("write DDRB(0x%02x)\n", data);
+			// logerror("write DDRB(0x%02x)\n", data);
 			break;
 		}
 	}
 	else {
-//		logerror("write timer (0x%02x)\n", data);
+		// logerror("write timer: %i\n", data);
 
 		p->timer_irq_enabled = offset&0x08;
-		p->timer_value = data;
-		
+		p->timer_start = data;
+
 		switch ( offset & 0x03 ) {
 		case 0:
 			p->timer_divider = 1;
@@ -160,6 +199,14 @@ static WRITE_HANDLER(riot6530_w) {
 		}
 		p->irq_state &= ~RIOT_TIMERIRQ;
 		update_6530_interrupts();
+
+		if ( p->timer_irq_enabled ) {
+			if ( p->t )
+				timer_reset(p->t, V_CYCLES_TO_TIME(p->timer_divider * p->timer_start + IFR_DELAY));
+			else
+				p->t = timer_set(V_CYCLES_TO_TIME(p->timer_divider * p->timer_start + IFR_DELAY), 0, riot_6530_timeout);
+		}
+		p->time = timer_get_time();
 	}
 }
 
@@ -195,27 +242,6 @@ MEMORY_WRITE_START(S80S_swritemem)
 { 0xfc00, 0xffff, MWA_ROM},
 MEMORY_END
 
-void riot6530_clk(int param)
-{
-	S80S0L *p = &S80sound0_locals;
-
-	if ( p->irq_state & RIOT_TIMERIRQ ) {
-		if ( p->timer_value )
-			p->timer_value--;
-	}
-	else {
-		p->timer--;
-		if ( !p->timer ) {
-			p->timer = p->timer_divider;
-
-			p->timer_value--;
-			if ( p->timer_value==0xff ) {
-				p->irq_state |= RIOT_TIMERIRQ;
-			}
-		}
-	}
-}
-
 static void s80_s_Update(int num, INT16 *buffer, int length)
 {
 	int i = 0;
@@ -243,12 +269,15 @@ void S80S_sinit(int num) {
 
 	memset(&S80sound0_locals, 0x00, sizeof S80sound0_locals);
 
+	S80sound0_locals.timer_start = 0;
 	S80sound0_locals.timer_divider = 1;
-	S80sound0_locals.timer_value   = 0x00;
 	S80sound0_locals.timer_irq_enabled = 0;
-	S80sound0_locals.timer = S80sound0_locals.timer_divider;
+	
+	S80sound0_locals.time = timer_get_time();
+	S80sound0_locals.t = NULL;
+
+	S80sound0_locals.sec_to_cycles = Machine->drv->cpu[s80s_sndCPUNo].cpu_clock;
+	S80sound0_locals.cycles_to_sec = 1.0 / S80sound0_locals.sec_to_cycles;
 
 	S80sound0_locals.stream = stream_init("SND DAC", 100, 12000, 0, s80_s_Update);
-
-	timer_pulse(TIME_IN_HZ(1000000/16), 0, riot6530_clk);
 }
