@@ -218,6 +218,31 @@ MACHINE_DRIVER_START(zac1346)
   MDRV_INTERLEAVE(500)
 MACHINE_DRIVER_END
 
+static struct SN76477interface  zac1146_sn76477Int = { 1, { 50 }, /* mixing level */
+/*						   pin description		*/
+	{ RES_K(39)   },	/*	4  noise_res		*/
+	{ RES_K(100)  },	/*	5  filter_res		*/
+	{ CAP_P(470)  },	/*	6  filter_cap		*/
+	{ RES_M(1)    },	/*	7  decay_res		*/
+	{ CAP_U(22)   },	/*	8  attack_decay_cap */
+	{ RES_K(4.7)  },	/* 10  attack_res		*/
+	{ RES_K(47)   },	/* 11  amplitude_res	*/
+	{ RES_K(87.7) },	/* 12  feedback_res 	*/
+	{ 0           },	/* 16  vco_voltage		*/
+	{ 0           },	/* 17  vco_cap			*/
+	{ 0           },	/* 18  vco_res			*/
+	{ 5.0		  },	/* 19  pitch_voltage	*/
+	{ 0           },	/* 20  slf_res			*/
+	{ CAP_N(220)  },	/* 21  slf_cap			*/
+	{ CAP_U(1)    },	/* 23  oneshot_cap		*/
+	{ RES_K(330)  }		/* 24  oneshot_res		*/
+};
+
+MACHINE_DRIVER_START(zac1146)
+  MDRV_IMPORT_FROM(zac1346)
+  MDRV_SOUND_ADD(SN76477, zac1146_sn76477Int)
+MACHINE_DRIVER_END
+
 /*----------------------------------------
 / Zaccaria Sound & Speech Board 1B1370
 / (almost identical to BY61, TMS5200 chip)
