@@ -2,15 +2,94 @@ VERSION 5.00
 Begin VB.Form VPinMAMETest 
    BorderStyle     =   1  'Fixed Single
    Caption         =   "VPinMame Test"
-   ClientHeight    =   6930
+   ClientHeight    =   7875
    ClientLeft      =   45
    ClientTop       =   330
    ClientWidth     =   5640
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   6930
+   ScaleHeight     =   7875
    ScaleWidth      =   5640
+   Begin VB.CommandButton GSGet 
+      Caption         =   "G"
+      Height          =   375
+      Left            =   5160
+      TabIndex        =   52
+      Top             =   6960
+      Width           =   375
+   End
+   Begin VB.CommandButton GSPut 
+      Caption         =   "P"
+      Height          =   375
+      Left            =   4680
+      TabIndex        =   51
+      Top             =   6960
+      Width           =   375
+   End
+   Begin VB.TextBox GSValue 
+      Height          =   285
+      Left            =   3240
+      TabIndex        =   50
+      Top             =   6960
+      Width           =   1335
+   End
+   Begin VB.TextBox GSName 
+      Height          =   285
+      Left            =   1320
+      TabIndex        =   49
+      Top             =   6960
+      Width           =   1815
+   End
+   Begin VB.CommandButton GetDIP 
+      Caption         =   "G"
+      Height          =   375
+      Left            =   5160
+      TabIndex        =   47
+      Top             =   6480
+      Width           =   375
+   End
+   Begin VB.CommandButton PutDIP 
+      Caption         =   "P"
+      Height          =   375
+      Left            =   4680
+      TabIndex        =   46
+      Top             =   6480
+      Width           =   375
+   End
+   Begin VB.TextBox DipValue 
+      Height          =   285
+      Left            =   3600
+      TabIndex        =   45
+      Text            =   "0"
+      Top             =   6480
+      Width           =   975
+   End
+   Begin VB.TextBox DipBank 
+      Height          =   285
+      Left            =   3000
+      MaxLength       =   1
+      TabIndex        =   44
+      Text            =   "0"
+      Top             =   6480
+      Width           =   495
+   End
+   Begin VB.CommandButton GetLamp 
+      Caption         =   "L?"
+      Height          =   375
+      Left            =   1920
+      TabIndex        =   42
+      Top             =   6480
+      Width           =   375
+   End
+   Begin VB.TextBox LampNo 
+      Height          =   285
+      Left            =   1320
+      TabIndex        =   41
+      Text            =   "0"
+      Top             =   6480
+      Width           =   495
+   End
    Begin VB.CheckBox DebugBox 
       Caption         =   "MAME Debug"
       Height          =   255
@@ -80,7 +159,7 @@ Begin VB.Form VPinMAMETest
       Height          =   375
       Left            =   1440
       TabIndex        =   28
-      Top             =   6480
+      Top             =   7440
       Width           =   1215
    End
    Begin VB.CheckBox DoubleSize 
@@ -156,7 +235,7 @@ Begin VB.Form VPinMAMETest
       Height          =   375
       Left            =   4200
       TabIndex        =   19
-      Top             =   6480
+      Top             =   7440
       Width           =   1215
    End
    Begin VB.ComboBox GameNames 
@@ -175,7 +254,7 @@ Begin VB.Form VPinMAMETest
       Height          =   375
       Left            =   2760
       TabIndex        =   17
-      Top             =   6480
+      Top             =   7440
       Width           =   1335
    End
    Begin VB.CommandButton ResumeButton 
@@ -282,6 +361,30 @@ Begin VB.Form VPinMAMETest
       Top             =   2160
       Width           =   975
    End
+   Begin VB.Label slsl 
+      Caption         =   "Game settings"
+      Height          =   255
+      Left            =   120
+      TabIndex        =   48
+      Top             =   6960
+      Width           =   1095
+   End
+   Begin VB.Label Label2 
+      Caption         =   "DIP:"
+      Height          =   255
+      Left            =   2520
+      TabIndex        =   43
+      Top             =   6480
+      Width           =   495
+   End
+   Begin VB.Label Label1 
+      Caption         =   "Lamp"
+      Height          =   255
+      Left            =   120
+      TabIndex        =   40
+      Top             =   6480
+      Width           =   975
+   End
    Begin VB.Label Label7 
       Caption         =   "Switch"
       Height          =   255
@@ -382,7 +485,9 @@ Private Sub BorderSizeY_Change()
 End Sub
 
 Private Sub CheckRoms_Click()
-    Controller.CheckRoms (0)
+    If (Not Controller.CheckRoms(0)) Then
+        MsgBox "ROM set is invalid"
+    End If
 End Sub
 
 Private Sub DebugBox_Click()
@@ -410,16 +515,31 @@ Private Sub GameNames_Click()
     End If
 End Sub
 
+Private Sub GetDIP_Click()
+    DipValue.Text = "&H" + Hex(Controller.Dip(CInt(DipBank.Text)))
+End Sub
+
 Private Sub GetMech_Click()
     MechResult.Caption = Controller.GetMech(MechNo.Text)
 End Sub
 
 Private Sub GetSwitch_Click()
-    Dim i
     If (Controller.Switch(Int(SwitchNo.Text))) Then
         MsgBox ("Switch is set")
     Else
         MsgBox ("Switch is cleared")
+    End If
+End Sub
+
+Private Sub GSGet_Click()
+    If (Controller.GameName <> "") Then
+        GSValue.Text = Controller.Games(Controller.GameName).Settings.Value(GSName)
+    End If
+End Sub
+
+Private Sub GSPut_Click()
+    If (Controller.GameName <> "") Then
+        Controller.Games(Controller.GameName).Settings.Value(GSName) = GSValue.Text
     End If
 End Sub
 
@@ -435,6 +555,10 @@ Private Sub PauseButton_Click()
     Controller.Pause = 1
     ResumeButton.Enabled = True
     PauseButton.Enabled = False
+End Sub
+
+Private Sub PutDIP_Click()
+    Controller.Dip(CInt(DipBank.Text)) = CInt(DipValue.Text)
 End Sub
 
 Private Sub ResumeButton_Click()
@@ -480,7 +604,11 @@ Private Sub DownButton_MouseUp(Button As Integer, Shift As Integer, X As Single,
 End Sub
 
 Private Sub GetLamp_Click()
-    Text1.Text = Controller.Lamp(11)
+    If (Controller.Lamp(Int(LampNo.Text))) Then
+        MsgBox ("Lamp is on")
+    Else
+        MsgBox ("Lamp if off")
+    End If
 End Sub
 
 Private Sub SetSwitch_Click()
