@@ -900,7 +900,8 @@ DRIVER(sc,18)           //WPC-903:  03/96 B Safe Cracker
 DRIVER(sc,18n)                            // alternate version
 DRIVER(totan,14)        //WPC-547:  05/96 W Tales of the Arabian Nights
 DRIVER(ss,15)           //WPC-548:  09/96 B Scared Stiff
-DRIVER(jy,12)           //WPC-552:  12/96 W Junk Yard
+DRIVER(jy,12)           //WPC-552:  12/96 W Junk Yard (1.2)
+DRIVER(jy,11)           //WPC-552:  12/96 W Junk Yard (1.1)
 DRIVER(nbaf,31)         //WPC-553:  03/97 B NBA Fastbreak
 DRIVER(nbaf,31a)
 DRIVER(mm,10)           //WPC-559:  06/97 W Medieval Madness
