@@ -369,40 +369,40 @@ static int wave_open(char *filename) {
 
   if (!wavelocals.file) return -1;
   /* write the core header for a WAVE file */
-  wavelocals.offs = osd_fwrite(wavelocals.file, "RIFF", 4);
+  wavelocals.offs = mame_fwrite(wavelocals.file, "RIFF", 4);
   /* filesize, updated when the file is closed */
   temp32 = 0;
-  wavelocals.offs += osd_fwrite(wavelocals.file, &temp32, 4);
+  wavelocals.offs += mame_fwrite(wavelocals.file, &temp32, 4);
   /* write the RIFF file type 'WAVE' */
-  wavelocals.offs += osd_fwrite(wavelocals.file, "WAVE", 4);
+  wavelocals.offs += mame_fwrite(wavelocals.file, "WAVE", 4);
   /* write a format tag */
-  wavelocals.offs += osd_fwrite(wavelocals.file, "fmt ", 4);
+  wavelocals.offs += mame_fwrite(wavelocals.file, "fmt ", 4);
   /* size of the following 'fmt ' fields */
   temp32 = intel32(16);
-  wavelocals.offs += osd_fwrite(wavelocals.file, &temp32, 4);
+  wavelocals.offs += mame_fwrite(wavelocals.file, &temp32, 4);
   /* format: PCM */
   temp16 = intel16(1);
-  wavelocals.offs += osd_fwrite(wavelocals.file, &temp16, 2);
+  wavelocals.offs += mame_fwrite(wavelocals.file, &temp16, 2);
   /* channels: one or two?  */
   temp16 = intel16(channels);
-  wavelocals.offs += osd_fwrite(wavelocals.file, &temp16, 2);
+  wavelocals.offs += mame_fwrite(wavelocals.file, &temp16, 2);
   /* sample rate */
   temp32 = intel32(Machine->sample_rate);
-  wavelocals.offs += osd_fwrite(wavelocals.file, &temp32, 4);
+  wavelocals.offs += mame_fwrite(wavelocals.file, &temp32, 4);
   /* byte rate */
   temp32 = intel32(channels * Machine->sample_rate * 2);
-  wavelocals.offs += osd_fwrite(wavelocals.file, &temp32, 4);
+  wavelocals.offs += mame_fwrite(wavelocals.file, &temp32, 4);
   /* block align */
   temp16 = intel16(2*channels);
-  wavelocals.offs += osd_fwrite(wavelocals.file, &temp16, 2);
+  wavelocals.offs += mame_fwrite(wavelocals.file, &temp16, 2);
   /* resolution */
   temp16 = intel16(16);
-  wavelocals.offs += osd_fwrite(wavelocals.file, &temp16, 2);
+  wavelocals.offs += mame_fwrite(wavelocals.file, &temp16, 2);
   /* 'data' tag */
-  wavelocals.offs += osd_fwrite(wavelocals.file, "data", 4);
+  wavelocals.offs += mame_fwrite(wavelocals.file, "data", 4);
   /* data size */
   temp32 = 0;
-  wavelocals.offs += osd_fwrite(wavelocals.file, &temp32, 4);
+  wavelocals.offs += mame_fwrite(wavelocals.file, &temp32, 4);
   if (wavelocals.offs < 44) return -1;
   return 1;
 }
@@ -410,15 +410,15 @@ static int wave_open(char *filename) {
 static void wave_close(void) {
   if (wavelocals.recording == 1) {
     UINT32 temp32;
-    osd_fseek(wavelocals.file, 4, SEEK_SET);
+    mame_fseek(wavelocals.file, 4, SEEK_SET);
     temp32 = intel32(wavelocals.offs);
-    osd_fwrite(wavelocals.file, &temp32, 4);
+    mame_fwrite(wavelocals.file, &temp32, 4);
 
-    osd_fseek(wavelocals.file, 40, SEEK_SET);
+    mame_fseek(wavelocals.file, 40, SEEK_SET);
     temp32 = intel32(wavelocals.offs-44);
-    osd_fwrite(wavelocals.file, &temp32, 4);
+    mame_fwrite(wavelocals.file, &temp32, 4);
 
-    osd_fclose(wavelocals.file);
+    mame_fclose(wavelocals.file);
     wavelocals.file = NULL;
   }
 }
