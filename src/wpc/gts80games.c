@@ -15,14 +15,14 @@ GTS80VID_INPUT_PORTS_START(gts80vid, 1) GTS80_INPUT_PORTS_END
 static core_tLCDLayout dispNumeric1[] = {
   {0, 0, 2, 6,CORE_SEG98F}, {0,16, 9,6,CORE_SEG98F},
   {4, 0,22, 6,CORE_SEG98F}, {4,16,29,6,CORE_SEG98F},
-  DISP_SEG_CREDIT(40,41,CORE_SEG9),DISP_SEG_BALLS(42,43,CORE_SEG9), {0}
+  DISP_SEG_CREDIT(40,41,CORE_SEG9), DISP_SEG_BALLS(42,43,CORE_SEG9), {0}
 };
 /* 5 x 6 BCD + Ball, Credit */
 static core_tLCDLayout dispNumeric2[] = {
   {0, 0, 2, 6,CORE_SEG98F}, {0,16, 9, 6,CORE_SEG98F},
   {4, 0,22, 6,CORE_SEG98F}, {4,16,29, 6,CORE_SEG98F},
-  DISP_SEG_CREDIT(40,41,CORE_SEG9),DISP_SEG_BALLS(42,43,CORE_SEG9),
-  {6, 8, 50, 6, CORE_SEG9}, {0}
+  DISP_SEG_CREDIT(40,41,CORE_SEG9), DISP_SEG_BALLS(42,43,CORE_SEG9),
+  {6, 8,50, 6,CORE_SEG9}, {0}
 };
 /* 4 x 7 BCD + Ball,Credit */
 static core_tLCDLayout dispNumeric3[] = {
@@ -328,6 +328,7 @@ CORE_GAMEDEFNV(dvlsdre,"Devil's Dare",1981,"Gottlieb",gl_mGTS80SS,0)
 /*-------------------------------------------------------------------
 / Devil's Dare (Sound Only) (#670)
 /-------------------------------------------------------------------*/
+INITGAME(dvlsdre2,GEN_GTS80A,0,dispDevilsdare, SNDBRD_GTS80S,0,0)
 GTS80_1_ROMSTART(dvlsdre2, "670-a.cpu",    0x353b2e18,
                            "u2_80a.bin",   0x241de1d4,
                            "u3_80a.bin",   0x2d77ccdc)
@@ -335,7 +336,6 @@ GTS80S1K_ROMSTART(         "670-a-s.snd",  0xf141d535,
                            "6530sy80.bin", 0xc8ba951d)
 GTS80_ROMEND
 #define input_ports_dvlsdre2 input_ports_gts80
-#define init_dvlsdre2 init_dvlsdre
 CORE_CLONEDEFNV(dvlsdre2,dvlsdre,"Devil's Dare (Sound Only)",1981,"Gottlieb",gl_mGTS80S,0)
 
 /*-------------------------------------------------------------------
