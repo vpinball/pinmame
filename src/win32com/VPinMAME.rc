@@ -72,8 +72,8 @@ IDR_WSHDLG              REGISTRY                "WSHDlg.rgs"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,20,2,0
- PRODUCTVERSION 1,20,2,0
+ FILEVERSION 1,21,0,0
+ PRODUCTVERSION 1,21,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -89,12 +89,12 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "FileDescription", "COM class for PinMAME"
-            VALUE "FileVersion", "1, 20, 2, 0"
+            VALUE "FileVersion", "1, 21, 0, 0"
             VALUE "InternalName", "VPinMAME"
             VALUE "LegalCopyright", "© 2000-2003 by S. Ellenoff, T. Haukap, M. Adrian and G. Volkenborn"
             VALUE "OriginalFilename", "VPinMAME.DLL"
             VALUE "ProductName", "Visual PinMAME"
-            VALUE "ProductVersion", "1.20 Beta 2"
+            VALUE "ProductVersion", "1.21"
         END
     END
     BLOCK "VarFileInfo"
