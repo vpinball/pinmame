@@ -225,7 +225,7 @@ CORE_GAMEDEF(fpwr2,l2,"Firepower II (L-2)",1983,"Williams",s7_mS7S,0)
 /*-----------------------------
 / Starlight - Sys.7 (Game #530)
 /-----------------------------*/
-INITGAMEFULL(strlt,s7_dispS7,0,54,50,51,41,42,43,0)
+INITGAMEFULL(strlt,s7_dispS7,0,0,50,51,41,42,43,0)
 S7_ROMSTART000x(strlt,l1,"ic14.532",   CRC(292f1c4a),
                          "ic17.532",   CRC(a43d8518),
                          "ic20.532",   CRC(66876b56))
