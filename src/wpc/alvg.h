@@ -56,9 +56,6 @@
 #define ALVG_MEMREG_CPU		REGION_CPU1
 //#define ALVG_MEMREG_DCPU	REGION_CPU2
 //#define ALVG_MEMREG_DROM	REGION_USER1
-//#define ALVG_MEMREG_SCPU	REGION_CPU3
-//#define ALVG_MEMREG_SROM	REGION_SOUND1
-
 
 /*-- Main CPU regions and ROM --*/
 
@@ -68,11 +65,14 @@
      NORMALREGION(0x10000, ALVG_MEMREG_CPU) \
        ROM_LOAD(n1, 0x0000, 0x10000, chk1)
 
-extern void ALVG_UpdateSoundLEDS(int num,int data);
+extern void alvg_UpdateSoundLEDS(int num,int data);
 //extern PINMAME_VIDEO_UPDATE(ALVG_dmd128x32);
 
 /*-- These are only here so the game structure can be in the game file --*/
-extern MACHINE_DRIVER_EXTERN(ALVG);
+extern MACHINE_DRIVER_EXTERN(alvg);
+extern MACHINE_DRIVER_EXTERN(alvgs1);
 
-#define mALVG         ALVG
+#define mALVG         alvg
+#define mALVGS		  alvgs1
+
 #endif /* INC_ALVG */
