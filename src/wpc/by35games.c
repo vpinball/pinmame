@@ -467,26 +467,19 @@ BY35_SOUND51ROM("877-01_4.716",0x6534e826)
 BY35_ROMEND
 CORE_CLONEDEFNV(speakes4,speakesy,"Speakeasy 4 Player",1982,"Bally",by35_mBY35_51S,0)
 /*--------------------------------
-/ Rapid Fire (no sound)
+/ Rapid Fire
 /-------------------------------*/
-/*
 static core_tLCDLayout dispRapid[] = {
   {0, 0, 1,7,CORE_SEG7}, {0,16, 9,7,CORE_SEG7},
-  {2, 4,33,2,CORE_SEG7}, {2,10,36,2,CORE_SEG7},{0}
-};
-*/
-static core_tLCDLayout dispRapid[] = {
-  {0, 0, 0,16,CORE_SEG7},
-  {2, 0,16,16,CORE_SEG7},
-  {4, 0,32,16,CORE_SEG7},
-  {0}
+  {2, 4,33,2,CORE_SEG7}, {2,10,36,2,CORE_SEG7},
+  {2,16,41,7,CORE_SEG7}, {0}
 };
 INITGAME(rapidfir,GEN_BY35_61B,dispRapid,FLIP_SW(FLIP_L),8)
 BY35_ROMSTARTx00(rapidfir,"869-04_2.732", 0x26fdf048,
                           "869-03_6.732", 0xf6af5e8d)
 BY35_SOUND61ROMxxx0("869-02_5.532",0x5a74cb86)
 BY35_ROMEND
-CORE_GAMEDEFNV(rapidfir,"Rapid Fire",1982,"Bally",by35_mBY35_61BS,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(rapidfir,"Rapid Fire",1982,"Bally",by35_mBY35_61BS,0)
 /*--------------------------------
 / Mr. and Mrs. Pacman
 /-------------------------------*/
