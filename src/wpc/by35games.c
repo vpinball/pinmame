@@ -588,8 +588,8 @@ BYVP_ROMSTARTx00(babypac,	"891-u2.732", 0x7f7242d1,
 							"891-u12.764", 0x58cfe542,
 							"891-u29.764", 0x0b57fd5d)
 BYVP_ROMEND
-CORE_GAMEDEFNV(babypac,"Baby Pacman (Video/Pinball Combo)",1982,"Bally",byVP_mVP1,GAME_NOT_WORKING)
-//CORE_GAMEDEFNVR90(babypac,"Baby Pacman (Video/Pinball Combo)",1982,"Bally",byVP_mVP1,GAME_NOT_WORKING)
+//CORE_GAMEDEFNV(babypac,"Baby Pacman (Video/Pinball Combo)",1982,"Bally",byVP_mVP1,0)
+CORE_GAMEDEFNVR90(babypac,"Baby Pacman (Video/Pinball Combo)",1982,"Bally",byVP_mVP1,0)
 
 /*same as eballdlx*/    //BY35      10/82 Eight Ball Deluxe Limited Edition
 
