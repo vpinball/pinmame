@@ -8,19 +8,22 @@ extern PINMAME_VIDEO_UPDATE(cc_dmd);
 
 #define CC_COMPORTS \
   PORT_START /* 0 */ \
-    /* Switch Column 1 (Switches #6 & #7) */ \
-    COREPORT_BITDEF(  0x0001, IPT_START1,         IP_KEY_DEFAULT)  \
-    COREPORT_BIT(     0x0002, "Ball Tilt",        KEYCODE_2)  \
-    /* Switch Column 2 (Switches #9 - #16) */ \
-	/* For Stern MPU-200 (Switches #1-3, and #8) */ \
-    COREPORT_BITDEF(  0x0004, IPT_COIN1,          IP_KEY_DEFAULT) \
-    COREPORT_BITDEF(  0x0008, IPT_COIN2,          IP_KEY_DEFAULT) \
-    COREPORT_BITDEF(  0x0010, IPT_COIN3,          KEYCODE_3) \
-    COREPORT_BIT(     0x0200, "Slam Tilt",        KEYCODE_HOME)  \
+    /* These are put in switch column 9 */ \
+    COREPORT_BIT(     0x0040, "Start Game",KEYCODE_1) \
+    COREPORT_BIT(     0x0001, "Coin #1",   KEYCODE_3) \
+    COREPORT_BIT(     0x0002, "Coin #2",   KEYCODE_4) \
+    COREPORT_BIT(     0x0004, "Coin #3",   KEYCODE_5) \
+    COREPORT_BIT(     0x0008, "Coin #4",   KEYCODE_6) \
+    COREPORT_BITTOG(  0x0080, "Coin Door", KEYCODE_7) \
     /* These are put in switch column 0 */ \
-    COREPORT_BIT(     0x0400, "Self Test",        KEYCODE_7) \
-    COREPORT_BIT(     0x0800, "CPU Diagnostic",   KEYCODE_9) \
-    COREPORT_BIT(     0x1000, "Sound Diagnostic", KEYCODE_0)
+    COREPORT_BIT(     0x0400, "Buy In",    KEYCODE_2) \
+    COREPORT_BIT(     0x0200, "Tilt",      KEYCODE_INSERT) \
+    COREPORT_BIT(     0x0100, "Slam Tilt", KEYCODE_HOME) \
+    COREPORT_BIT(     0x0800, "Unused #1", KEYCODE_8) \
+    COREPORT_BIT(     0x1000, "Unused #2", KEYCODE_9) \
+    COREPORT_BIT(     0x2000, "Unused #3", KEYCODE_0) \
+    COREPORT_BIT(     0x4000, "Unused #4", KEYCODE_PGUP) \
+    COREPORT_BIT(     0x8000, "Unused #5", KEYCODE_PGDN)
 
 #define CC_INPUT_PORTS_START(name,balls) \
   INPUT_PORTS_START(name) \
