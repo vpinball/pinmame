@@ -206,7 +206,7 @@ CORE_CLONEDEFNV(pinchp82,pinchamp,"Pinball Champ '82 (german speech)",1982,"Zacc
 / Soccer Kings (09/82)
 /-------------------------------*/
 MACHINE_DRIVER_START(ZAC_skings)
-  MDRV_IMPORT_FROM(ZAC2AX)
+  MDRV_IMPORT_FROM(ZAC2A)
   MDRV_CPU_MODIFY("mcpu")
   MDRV_CPU_PERIODIC_INT(ZAC_ownirq, 1827)
 MACHINE_DRIVER_END
