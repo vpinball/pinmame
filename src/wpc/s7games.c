@@ -219,7 +219,7 @@ CORE_GAMEDEF(jst,l2,"Joust (L-2)",1983,"Williams",s7_mS7S,0)
 /*---------------------------
 / Laser Cue - Sys.7 (Game #520)
 /--------------------------*/
-INITGAMEFULL(lsrcu,s7_dispS7,0,43,41,29,18,17,0,0)
+INITGAMEFULL(lsrcu,s7_dispS7,0,43,41,19,18,17,0,0)
 S7_ROMSTART8088(lsrcu,l2, "ic14.716",   CRC(39fc350d) SHA1(46e95f4016907c21c69472e6ef4a68a9adc3be77),
                           "ic17.532",   CRC(bb571a17) SHA1(fb0b7f247673dae0744d4188e1a03749a2237165),
                           "ic20.716",   CRC(dfb4b75a) SHA1(bcf017b01236f755cee419e398bbd8955ae3576a),
