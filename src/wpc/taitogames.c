@@ -83,7 +83,20 @@ TAITO_ROMEND
 #define input_ports_meteort input_ports_taito
 CORE_GAMEDEFNV(meteort,"Meteor (Taito)",1980,"Taito",taito_sintetizador,0)
 
-//??/81 Fire Action (W Firepower, 02/80)
+/*--------------------------------
+/ Fire Action
+/-------------------------------*/
+INITGAME(fireact,SNDBRD_TAITO_SINTEVOX)
+TAITO_ROMSTART2222(fireact,"fire1.bin",CRC(3059876d),
+                           "fire2.bin",CRC(7906a193),
+                           "fire3.bin",CRC(92135de4),
+                           "fire4.bin",CRC(68de7753))
+// not available
+TAITO_SOUNDROMS22("fire_s1.bin", NO_DUMP,
+				  "fire_s2.bin", NO_DUMP)
+TAITO_ROMEND
+#define input_ports_fireact input_ports_taito
+CORE_GAMEDEFNV(fireact,"Fire Action",1981,"Taito",taito_sintevox,0)
 
 /*--------------------------------
 / Cavaleiro Negro
@@ -114,7 +127,19 @@ TAITO_ROMEND
 #define input_ports_sureshot input_ports_taito
 CORE_GAMEDEFNV(sureshot,"Sure Shot",1981,"Taito",taito_sintevox,GAME_IMPERFECT_SOUND)
 
-//??/81 Vegas / Lady Luck (B Mata Hari, 09/77)
+/*--------------------------------
+/ Vegas
+/-------------------------------*/
+INITGAME(vegast,SNDBRD_TAITO_SINTETIZADOR)
+TAITO_ROMSTART2222(vegast,"vegas1.bin",CRC(be242895),
+                          "vegas2.bin",CRC(48169726),
+                          "vegas3.bin",CRC(bd1fdbc3),
+                          "vegas4.bin",CRC(61f733a9))
+TAITO_SOUNDROMS22("vegas_s1.bin", CRC(740bdd3e),
+                  "vegas_s2.bin", CRC(4250e02e))
+TAITO_ROMEND
+#define input_ports_vegast input_ports_taito
+CORE_GAMEDEFNV(vegast,"Vegas",1981,"Taito",taito_sintetizador,0)
 
 /*--------------------------------
 / Cosmic
@@ -261,7 +286,23 @@ CORE_GAMEDEFNV(snake,"Snake Machine",1982,"Taito",taito_sintetizadorpp,GAME_IMPE
 
 //??/82 Gork
 //??/8? Ogar
-//??/84 Mr. Black (W Defender, 12/82)
+
+/*--------------------------------
+/ Mr. Black
+/-------------------------------*/
+INITGAME(mrblack,SNDBRD_TAITO_SINTEVOXPP)
+TAITO_ROMSTART22222(mrblack,"mrb1.bin",CRC(c2a43f6f),
+                            "mrb2.bin",CRC(ddf2a88e),
+                            "mrb3.bin",CRC(f319f68f),
+                            "mrb4.bin",CRC(84367699),
+                            "mrb5.bin",CRC(18d8f2cc))
+// NOT AVAILABLE
+TAITO_SOUNDROMS444("mrb_s1.bin", NO_DUMP,
+                   "mrb_s2.bin", NO_DUMP,
+                   "mrb_s3.bin", NO_DUMP)
+TAITO_ROMEND
+#define input_ports_mrblack input_ports_taito
+CORE_GAMEDEFNV(mrblack,"Mr. Black",1984,"Taito",taito_sintevoxpp,GAME_IMPERFECT_SOUND)
 
 /*--------------------------------
 / Fire Action Deluxe
