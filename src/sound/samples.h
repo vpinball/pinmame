@@ -6,6 +6,9 @@ struct Samplesinterface
 	int channels;	/* number of discrete audio channels needed */
 	int volume;		/* global volume for all samples */
 	const char **samplenames;
+#ifdef PINMAME
+	const char *prefix;
+#endif
 };
 
 
@@ -19,5 +22,8 @@ void sample_stop(int channel);
 int sample_playing(int channel);
 
 int samples_sh_start(const struct MachineSound *msound);
+#ifdef PINMAME
+void samples_sh_stop(void);
+#endif
 
 #endif

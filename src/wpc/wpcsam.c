@@ -49,7 +49,8 @@ static const char *pinmame_sample_names[] = {
 
 struct Samplesinterface samples_interface = {
   6, 100, /* 6 channels full volume */
-  pinmame_sample_names
+  pinmame_sample_names,
+  "Mech. sounds"
 };
 
 

@@ -455,7 +455,11 @@ struct snd_interface sndintf[] =
 		0,
 		0,
 		samples_sh_start,
+#ifdef PINMAME
+		samples_sh_stop,
+#else
 		0,
+#endif
 		0,
 		0
 	},

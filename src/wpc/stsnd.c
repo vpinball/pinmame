@@ -24,25 +24,6 @@
 
 static const char *f2k_sample_names[] =
 {
-	"*flight2k",
-  "knocker.wav",
-  "lsling.wav",
-  "rsling.wav",
-  "solenoid.wav",
-  "popper.wav",
-  "ballrel.wav",
-  "diverter.wav",
-  "flapopen.wav",
-  "flapclos.wav",
-  "lflipper.wav",
-  "rflipper.wav",
-  "jet1.wav",
-  "jet2.wav",
-  "jet3.wav",
-  "motor1.wav",
-  "motor2.wav",
-  "solon.wav",
-  "soloff.wav",
 	"f2k00.wav",
 	"f2k01.wav",
 	"f2k02.wav",
@@ -69,33 +50,15 @@ static const char *f2k_sample_names[] =
 
 struct Samplesinterface f2k_samples_interface =
 {
-	7,	/* 6 internal for wpcsam, 1 progam  */
+	1,
 	100,	/* volume */
-	f2k_sample_names
+	f2k_sample_names,
+	"TSI S14001A"
 };
 
 
 static const char *spl_sample_names[] =
 {
-   "*splitsec",
-  "knocker.wav",
-  "lsling.wav",
-  "rsling.wav",
-  "solenoid.wav",
-  "popper.wav",
-  "ballrel.wav",
-  "diverter.wav",
-  "flapopen.wav",
-  "flapclos.wav",
-  "lflipper.wav",
-  "rflipper.wav",
-  "jet1.wav",
-  "jet2.wav",
-  "jet3.wav",
-  "motor1.wav",
-  "motor2.wav",
-  "solon.wav",
-  "soloff.wav",
 	"spl00.wav",
 	"spl01.wav",
 	"spl02.wav",
@@ -142,33 +105,15 @@ static const char *spl_sample_names[] =
 
 struct Samplesinterface spl_samples_interface =
 {
-	7,	/* 6 internal for wpcsam, 1 progam  */
+	1,
 	100,	/* volume */
-	spl_sample_names
+	spl_sample_names,
+	"TSI S14001A"
 };
 
 
 static const char *lig_sample_names[] =
 {
-   "*lightnin",
-  "knocker.wav",
-  "lsling.wav",
-  "rsling.wav",
-  "solenoid.wav",
-  "popper.wav",
-  "ballrel.wav",
-  "diverter.wav",
-  "flapopen.wav",
-  "flapclos.wav",
-  "lflipper.wav",
-  "rflipper.wav",
-  "jet1.wav",
-  "jet2.wav",
-  "jet3.wav",
-  "motor1.wav",
-  "motor2.wav",
-  "solon.wav",
-  "soloff.wav",
 	"lig00.wav",
 	"lig01.wav",
 	"lig02.wav",
@@ -209,32 +154,14 @@ static const char *lig_sample_names[] =
 
 struct Samplesinterface lig_samples_interface =
 {
-	7,	/* 6 internal for wpcsam, 1 progam  */
+	1,
 	100,	/* volume */
-	lig_sample_names
+	lig_sample_names,
+	"TSI S14001A"
 };
 
 static const char *orb_sample_names[] =
 {
-   "*orbitor1",
-  "knocker.wav",
-  "lsling.wav",
-  "rsling.wav",
-  "solenoid.wav",
-  "popper.wav",
-  "ballrel.wav",
-  "diverter.wav",
-  "flapopen.wav",
-  "flapclos.wav",
-  "lflipper.wav",
-  "rflipper.wav",
-  "jet1.wav",
-  "jet2.wav",
-  "jet3.wav",
-  "motor1.wav",
-  "motor2.wav",
-  "solon.wav",
-  "soloff.wav",
 	"orb00.wav",
 	"orb01.wav",
 	"orb02.wav",
@@ -301,33 +228,15 @@ static const char *orb_sample_names[] =
 
 struct Samplesinterface orb_samples_interface =
 {
-	7,	/* 6 internal for wpcsam, 1 progam  */
+	1,
 	100,	/* volume */
-	orb_sample_names
+	orb_sample_names,
+	"TSI S14001A"
 };
 
 
 static const char *cat_sample_names[] =
 {
-   "*catacomb",
-  "knocker.wav",
-  "lsling.wav",
-  "rsling.wav",
-  "solenoid.wav",
-  "popper.wav",
-  "ballrel.wav",
-  "diverter.wav",
-  "flapopen.wav",
-  "flapclos.wav",
-  "lflipper.wav",
-  "rflipper.wav",
-  "jet1.wav",
-  "jet2.wav",
-  "jet3.wav",
-  "motor1.wav",
-  "motor2.wav",
-  "solon.wav",
-  "soloff.wav",
 	"cat00.wav",
 	"cat01.wav",
 	"cat02.wav",
@@ -373,41 +282,24 @@ static const char *cat_sample_names[] =
 
 struct Samplesinterface cat_samples_interface =
 {
-	7,	/* 6 internal for wpcsam, 1 progam  */
+	1,
 	100,	/* volume */
-	cat_sample_names
+	cat_sample_names,
+	"TSI S14001A"
 };
 
 
 static const char *fff_sample_names[] =
 {
-   "*catitsec",
-  "knocker.wav",
-  "lsling.wav",
-  "rsling.wav",
-  "solenoid.wav",
-  "popper.wav",
-  "ballrel.wav",
-  "diverter.wav",
-  "flapopen.wav",
-  "flapclos.wav",
-  "lflipper.wav",
-  "rflipper.wav",
-  "jet1.wav",
-  "jet2.wav",
-  "jet3.wav",
-  "motor1.wav",
-  "motor2.wav",
-  "solon.wav",
-  "soloff.wav",
 	0   /* end of array */
 };
 
 struct Samplesinterface fff_samples_interface =
 {
-	7,	/* 6 internal for wpcsam, 1 progam  */
+	1,
 	100,	/* volume */
-	fff_sample_names
+	fff_sample_names,
+	"TSI S14001A"
 };
 
 
@@ -699,12 +591,11 @@ static WRITE_HANDLER(st300_ctrl_w) {
 		wordsam = data & 0x3f;
   		logerror("%04x: st300_CTRL_W Voice data %02x sam %02x \n", activecpu_get_previouspc(), data,wordsam);
 		if (st300loc.speechsam) 
-		    {
-// all samples where recorded with speed = 02, vol = 	5
+	    {
+// all samples were recorded with speed = 2, vol = 5
 			sample_start(6,18 + wordsam,0);
 			snddatst300.sampleisplaying = 1;
-  	logerror("sample number allocated %d \n",Machine->samples->total);
-		    }		
+		}
 	}
 
   }
@@ -886,30 +777,36 @@ MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(st300f2k)
   MDRV_SOUND_ADD(CUSTOM, st300sam_custInt)
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
   MDRV_SOUND_ADD_TAG("flight2k", SAMPLES, f2k_samples_interface)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(st300fal)
   MDRV_SOUND_ADD(CUSTOM, st300sam_custInt)
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
   MDRV_SOUND_ADD_TAG("freefall", SAMPLES, fff_samples_interface)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(st300lit)
   MDRV_SOUND_ADD(CUSTOM, st300sam_custInt)
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
   MDRV_SOUND_ADD_TAG("lightnin", SAMPLES, lig_samples_interface)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(st300sec)
   MDRV_SOUND_ADD(CUSTOM, st300sam_custInt)
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
   MDRV_SOUND_ADD_TAG("splitsec", SAMPLES, spl_samples_interface)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(st300cat)
   MDRV_SOUND_ADD(CUSTOM, st300sam_custInt)
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
   MDRV_SOUND_ADD_TAG("catacomb", SAMPLES, cat_samples_interface)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(st300orb)
   MDRV_SOUND_ADD(CUSTOM, st300sam_custInt)
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
   MDRV_SOUND_ADD_TAG("orbitor1", SAMPLES, orb_samples_interface)
 MACHINE_DRIVER_END
