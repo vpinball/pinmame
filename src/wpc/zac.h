@@ -228,19 +228,25 @@ setup mirrors
 
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(ZAC0);
+extern MACHINE_DRIVER_EXTERN(ZAC0S);
 extern MACHINE_DRIVER_EXTERN(ZAC1);
 extern MACHINE_DRIVER_EXTERN(ZAC2);
+extern MACHINE_DRIVER_EXTERN(ZAC2X);
 extern MACHINE_DRIVER_EXTERN(ZAC2A);
 extern MACHINE_DRIVER_EXTERN(ZAC2B);
 extern MACHINE_DRIVER_EXTERN(ZAC2C);
 extern MACHINE_DRIVER_EXTERN(ZAC2F);
+extern MACHINE_DRIVER_EXTERN(ZAC2FX);
 
 #define mZAC0     ZAC0
+#define mZAC0s    ZAC0S
 #define mZAC1     ZAC1
 #define mZAC2     ZAC2
+#define mZAC2X    ZAC2X
 #define mZAC2A    ZAC2A
 #define mZAC2B    ZAC2B
 #define mZAC2C    ZAC2C
 #define mZAC2F    ZAC2F
+#define mZAC2FX   ZAC2FX
 
 #endif /* INC_ZAC */
