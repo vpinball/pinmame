@@ -77,7 +77,7 @@ static WRITE_HANDLER(pia1a_w) {
   int tmp = locals.a1;
   locals.a1 = data;
 
-  sndbrd_0_data_w(0, ((locals.a1 & 0x02)<<3) | (locals.b1 & 0x0f));
+  sndbrd_0_ctrl_w(1, (locals.cb21 ? 1 : 0) | (locals.a1 & 0x02));
 
   if (!locals.ca20) {
     if (tmp & ~data & 0x01) { // Positive edge
@@ -124,7 +124,7 @@ static WRITE_HANDLER(pia1b_w) {
     { locals.bcd[5] = locals.a0>>4; by35_dispStrobe(0x20); }
   locals.b1 = data;
 
-  sndbrd_0_data_w(0, ((locals.a1 & 0x02)<<3) | (data & 0x0f));
+  sndbrd_0_data_w(0, data & 0x0f);
   coreGlobals.pulsedSolState = 0;
   if (!locals.cb21)
     locals.solenoids |= coreGlobals.pulsedSolState = (1<<(data & 0x0f)) & 0x7fff;
@@ -138,7 +138,7 @@ static WRITE_HANDLER(pia1cb2_w) {
   //DBGLOG(("PIA1:CB2=%d\n",data));
   locals.cb21 = data;
 //  sndbrd_0_data_w(0, (locals.cb21<<5) | ((locals.a1 & 0x02)<<3) | (locals.b1 & 0x0f));
-  sndbrd_0_ctrl_w(0, data);
+  sndbrd_0_ctrl_w(1, (locals.cb21 ? 1 : 0) | (locals.a1 & 0x02));
 }
 
 static int by35_vblank(void) {
