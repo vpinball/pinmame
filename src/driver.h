@@ -400,6 +400,10 @@ struct InternalMachineDriver
 
 
 /* ----- flags for video_attributes ----- */
+#ifdef PINMAME
+/* bit 2 of the video attributes decides if the display size is fixed or may be shrunk down */
+#define	VIDEO_FIXED_SIZE			0x0004
+#endif /* PINMAME */
 
 /* bit 1 of the video attributes indicates whether or not dirty rectangles will work */
 #define	VIDEO_SUPPORTS_DIRTY		0x0002
