@@ -396,8 +396,8 @@ static WRITE_HANDLER(dmd16_ctrl_w) {
   }
   if (~data & dmdlocals.ctrl & 0x02) {
     sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, dmdlocals.status = 0);
-    dmd16_setbank(0x07, 0x07);
-    dmd16_setbusy(BUSY_CLR|BUSY_SET, 0);
+    dmd16_setbank(0x07, 0x07); dmd16_setbusy(BUSY_SET, 0);
+    dmdlocals.rowdata = dmdlocals.rowdata = dmdlocals.blnk = 0;
     cpu_set_reset_line(dmdlocals.brdData.cpuNo, PULSE_LINE);
   }
   dmdlocals.ctrl = data;
