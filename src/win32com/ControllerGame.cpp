@@ -44,7 +44,7 @@ private:
 
 		CComBSTR sHelp;
 		char szHelp[256];
-		
+
 		pGame->get_Name(&sHelp);
 		WideCharToMultiByte(CP_ACP, 0, sHelp, -1, szHelp, sizeof szHelp, NULL, NULL);
 		::SetWindowText(GetDlgItem(IDC_ROMSETNAME), szHelp);
@@ -70,7 +70,7 @@ private:
 		BOOL fMaybeOK = false;
 
 		IRoms *pRoms;
-		if ( FAILED(pGame->get_Roms(&pRoms)) ) 
+		if ( FAILED(pGame->get_Roms(&pRoms)) )
 			return 1;
 
 		pRoms->Audit(VARIANT_FALSE);
@@ -89,7 +89,7 @@ private:
 
 		fOK      = true;
 		fMaybeOK = true;
-		
+
 		while ( SUCCEEDED(pEnumRoms->Next(1, &vRom, &uFetched)) && uFetched ) {
 			HRESULT hr = vRom.pdispVal->QueryInterface(__uuidof(IRom), (void**) &pRom);
 			VariantClear(&vRom);
@@ -170,7 +170,7 @@ private:
 				strcpy(szLine, "ROM set is good; VPinMAME is able to use it");
 				fROMSetOK = true;
 			}
-			else if ( fMaybeOK ) 
+			else if ( fMaybeOK )
 				strcpy(szLine, "There are CRC and/or length errors! VPinMAME may or may not successfully be able to use the ROM set.");
 			else
 				strcpy(szLine, "ROM set is bad: VPinMAME can't use it (if sound roms are missing disable the sound)");
@@ -228,7 +228,7 @@ private:
 
 STDMETHODIMP CGame::InterfaceSupportsErrorInfo(REFIID riid)
 {
-	static const IID* arr[] = 
+	static const IID* arr[] =
 	{
 		&IID_IGame
 	};
@@ -306,7 +306,7 @@ STDMETHODIMP CGame::get_Year(BSTR *pVal)
 		*pVal = Year.Detach();
 		return S_OK;
 	}
-	
+
 	CComBSTR Year(m_gamedrv->year);
 	*pVal = Year.Detach();
 
@@ -350,7 +350,7 @@ STDMETHODIMP CGame::get_Settings(IGameSettings **pVal)
 	CComObject<CGameSettings> *pGameSettings;
 
 	HRESULT hr = CComObject<CGameSettings>::CreateInstance(&pGameSettings);
-	if ( FAILED(hr) ) 
+	if ( FAILED(hr) )
 		return hr;
 
 	pGameSettings->AddRef();
@@ -387,11 +387,11 @@ char* GetGameRegistryKey(char *pszRegistryKey, char* pszROMName)
 	lstrcat(pszRegistryKey, "\\");
 
 	// dealing with default options?
-	if ( !pszROMName || !*pszROMName ) 
+	if ( !pszROMName || !*pszROMName )
 		lstrcat(pszRegistryKey, REG_DEFAULT);
-	else if ( GetGameNumFromString(pszROMName)>=0 ) 
+	else if ( GetGameNumFromString(pszROMName)>=0 )
 		lstrcat(pszRegistryKey, pszROMName);
-	else 
+	else
 		lstrcpy(pszRegistryKey, "");
 
 	return pszRegistryKey;
@@ -451,17 +451,14 @@ STDMETHODIMP CGame::ShowInfoDlg(int nShowOptions, long hParentWnd, int *pVal)
 }
 
 int CRCSOFGAMESNOTSUPPORRTED[] = {
-	// High Roller Casino (1st sound rom, game roms 210, 300)
-	0x5858dfd0, 0x0d1117fa, 0x2e3c682a,										
-
 	// Austin Powers (1st sound rom, game roms 201, 300, 301, 302)
 	0xc1e33fee, 0xa06b2b03, 0xa06b2b03, 0xa4ddcdca, 0x2920b59b,
 
 	// Monopoly (1st sound rom, game roms 233, 251, 301, 303)
-	0xf9bc55e8, 0xf20a5ca6, 0x0645cfae, 0x24978872,0x4a66c9e4, 						
+	0xf9bc55e8, 0xf20a5ca6, 0x0645cfae, 0x24978872,0x4a66c9e4,
 
-	// Playboy (1st sound rom, game roms 203, 300, 302, 303, 401)
-	0xf5502fec, 0x50eb01b0, 0xd7e5bada, 0x206285ed, 0x6a6f6aab, 0xcb2e2824,
+	// Playboy (1st sound rom, game roms 203, 300, 302, 303, 401, 500)
+	0xf5502fec, 0x50eb01b0, 0xd7e5bada, 0x206285ed, 0x6a6f6aab, 0xcb2e2824, 0xe4d924ae,
 
 	// Roller Coaster Tycoon (1st sound rom, game rom 400, 600, 701)
 	0x18ba20ec, 0x4691de23, 0x2ada30e5, 0xe1fe89f6,
