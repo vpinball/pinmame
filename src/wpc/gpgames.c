@@ -192,7 +192,17 @@ GP_ROMSTART888(gwarfare,"240a.716",CRC(30206428),
 GP_ROMEND
 CORE_GAMEDEFNV(gwarfare,"Global Warfare",1981,"Game Plan",mGP2,GAME_NO_SOUND)
 
-//Mike Bossy (January 1982) - Model #???
+/*-------------------------------------------------------------------
+/ Mike Bossy (January 1982) - Model #???
+/-------------------------------------------------------------------*/
+INITGAME(mbossy, 0,dispGP_BDU1,FLIP_SW(FLIP_L),SNDBRD_GPMSU1,0)
+GP_ROMSTART888(mbossy,	"mb_a.716",CRC(a811f936),
+						"mb_b.716",CRC(75ec7247),
+						"mb_c.716",CRC(75dc73c4))
+GP_SOUNDROM88("mb.u9", CRC(dfa98db5),
+              "mb.u10",CRC(2d3c91f9))
+GP_ROMEND
+CORE_GAMEDEFNV(mbossy,"Mike Bossy",1982,"Game Plan",mGP2S,0)
 
 /*-------------------------------------------------------------------
 / Super Nova (May 1982) - Model #150
