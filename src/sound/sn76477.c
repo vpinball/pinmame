@@ -149,7 +149,6 @@ static void oneshot_envelope_cb(int param)
 	attack_decay(param);
 }
 
-#if (!defined(PINMAME) || defined(MAME_DEBUG)) // In PinMAME, log only in debug mode.
 #if VERBOSE
 static const char *mixer_mode[8] = {
 	"VCO",
@@ -162,7 +161,6 @@ static const char *mixer_mode[8] = {
 	"Inhibit"
 };
 #endif
-#endif /* PINMAME DEBUG */
 
 /*****************************************************************************
  * set MIXER select inputs
@@ -222,7 +220,6 @@ void SN76477_mixer_c_w(int chip, int data)
 	LOG(1,("SN76477 #%d: MIXER mode %d [%s]\n", chip, sn->mixer, mixer_mode[sn->mixer]));
 }
 
-#if (!defined(PINMAME) || defined(MAME_DEBUG)) // In PinMAME, log only in debug mode.
 #if VERBOSE
 static const char *envelope_mode[4] = {
 	"VCO",
@@ -231,7 +228,6 @@ static const char *envelope_mode[4] = {
 	"VCO with alternating Polarity"
 };
 #endif
-#endif /* PINMAME DEBUG */
 
 /*****************************************************************************
  * set ENVELOPE select inputs
