@@ -8,6 +8,12 @@
  *   Big thanks to Destruk for help in tracking down the data sheet.. Could have never done it
  *   without it!!
  *
+ *   A note about the word "table" as used by the M114S datasheet. A table refers to rom data
+ *   representing 1 full period/cycle of a sound. The chip always reads from 2 different tables
+ *   and intermixes them during playback for smoother sound. Different table lengths simply allow
+ *   the chip to play lower frequencies due to the fact that the table represents 1 full period,ie
+ *   1 full sine wave, if that's what the rom data happens to contain.
+ *
  *   Some ideas were taken from the source from BSMT2000 & AY8910
  **********************************************************************************************/
 #include <stdio.h>
@@ -17,6 +23,8 @@
 #include "driver.h"
 
 #define LOG_DATA_IN 0
+
+#define OUTPUT_CHANNELS 16
 
 #if LOG_DATA_IN	
 static FILE *fp;	//For logging
@@ -46,39 +54,57 @@ static FILE *fp;	//For logging
 
 ***********************************************************************************************/
 
-/* struct describing a single playing voice/channel */
-struct M114SChannel
+/* struct describing a single table */
+struct M114STable
 {
-	/* registers */
+		UINT32			sample_rate;				/* Current Sample Rate to play back table */
+		UINT8			reread;						/* # of times to re-read each byte from table */
+        UINT32          position;                   /* current reading position for table */
+        UINT32          start_address;				/* start address (offset into ROM) for table */
+        UINT32          stop_address;				/* stop address (offset into ROM) for table */
+		UINT16			length;						/* length in bytes of the table */
+		UINT16			total_length;				/* total length in bytes of the table (including repetitions) */			
+};
+
+/* struct describing the registers for a single channel */
+struct M114SChannelRegs
+{
         UINT8			atten;							/* Attenuation Register */
 		UINT8			outputs;						/* Output Pin Register */
 		UINT8			table1_addr;					/* Table 1 MSB Starting Address Register */
 		UINT8			table2_addr;					/* Table 2 MSB Starting Address Register */
 		UINT8			table_len;						/* Table Length Register */
-		UINT8			read_meth;						/* Read Meathod Register */
+		UINT8			read_meth;						/* Read Method Register */
 		UINT8			interp;							/* Interpolation Register */
 		UINT8			env_enable;						/* Envelope Enable Register */
 		UINT8			oct_divisor;					/* Octave Divisor Register */
 		UINT8			frequency;						/* Frequency Register */
-	/* internal state */
-		UINT8			active;							/* is the channel active */
-		UINT8			reread[2];						/* # of times to re-read wave for tables 1 & 2 */
-        UINT32          position[2];                    /* current position for tables 1 & 2 */
-        UINT32          loop_start_position[2];         /* loop start position for tables 1 & 2 */
-        UINT32          loop_stop_position[2];          /* loop stop position for tables 1 & 2 */
-        UINT32          adjusted_rate;				    /* adjusted rate */
 };
 
+/* struct describing a single playing channel */
+struct M114SChannel
+{
+	/* registers */
+		struct M114SChannelRegs regs;					/* register data for the channel */
+	/* internal state */
+		UINT8			active;							/* is the channel active */
+		INT16			output[4096];					/* Holds output samples mixed from table 1 & 2 */
+		UINT32			outpos;							/* Index into output samples */
+		struct M114STable table1;						/* Table 1 Data */
+		struct M114STable table2;						/* Table 2 Data */
+};
+
+/* struct describing the entire M114S chip */
 struct M114SChip
 {
-	int			stream;								/* which stream are we using */
-	INT8 *		region_base;						/* pointer to the base of the region */
-
-	struct M114SChannel channels[M114S_CHANNELS];	/* All the chip's internal channels */
-	struct M114SChannel tempchannel;				/* temporary channel for gathering the data programming */
-	int			eatbytes;							/* # of bytes to eat at start up before processing data */
-	int			bytes_read;							/* # of bytes read */
-	int			channel;							/* Which channel is being programmed via the data bus */
+	int							stream;						/* which stream are we using */
+	INT8 *						region_base;				/* pointer to the base of the ROM region */
+	struct M114Sinterface*		intf;						/* Pointer to the interface */
+	int							eatbytes;					/* # of bytes to eat at start up before processing data */
+	int							bytes_read;					/* # of bytes read */
+	int							channel;					/* Which channel is being programmed via the data bus */
+	struct M114SChannel			channels[M114S_CHANNELS];	/* All the chip's internal channels */
+	struct M114SChannelRegs		tempch_regs;				/* temporary channel register data for gathering the data programming */
 };
 
 
@@ -164,7 +190,6 @@ static const double freqtable4Mhz[0xff] = {
 
 static INT8 tb1[4096];
 static INT8 tb2[4096];
-static INT16 out[4096];
 
 static void record_it(int len)
 {
@@ -184,21 +209,18 @@ static void record_it(int len)
 	#endif
 }
 
-static INT16 read_sample(struct M114SChannel *channel)
+static INT16 read_sample(struct M114SChannel *channel, int sample_rate, int length)
 {
-	static UINT32 indx=0;
-	int lent1 = (channel->loop_stop_position[0] - channel->loop_start_position[0]+1);
-	int rep1 = channel->reread[0];
-	UINT32 incr = (channel->adjusted_rate<<FRAC_BITS)/Machine->sample_rate;
+	UINT32 incr = (sample_rate<<FRAC_BITS)/Machine->sample_rate;
 	INT16 sample = 0;
-	if(indx < (lent1*rep1) << FRAC_BITS)
+	INT16 offset = channel->outpos >> FRAC_BITS;
+	if(channel->outpos < (length << FRAC_BITS))
 	{
-//		printf("index = %d, pos = %d\n",index,index>>FRAC_BITS);
-		sample = out[indx>>FRAC_BITS];
-		indx+= incr;
+		sample = channel->output[offset];
+		channel->outpos += incr;
 	}
 	else
-		indx = 0;
+		channel->outpos = 0;
 	return sample;
 }
 
@@ -207,17 +229,18 @@ static void read_table(struct M114SChip *chip, struct M114SChannel *channel)
 	int t1start, t2start, lent1,lent2, rep1, rep2, i,j,intp;
 	INT16 d;
 	INT8 *rom = &chip->region_base[0];
-	t1start = channel->loop_start_position[0];
-	t2start = channel->loop_start_position[1];
-	lent1 = channel->loop_stop_position[0] - channel->loop_start_position[0]+1;
-	lent2 = channel->loop_stop_position[1] - channel->loop_start_position[1]+1;
-	rep1 = channel->reread[0];
-	rep2 = channel->reread[1];
-	intp = channel->interp;
+	t1start = channel->table1.start_address;
+	t2start = channel->table2.start_address;
+	lent1 = channel->table1.length;
+	lent2 = channel->table2.length;
+	rep1 = channel->table1.reread;
+	rep2 = channel->table2.reread;
+	intp = channel->regs.interp;
 	memset(&tb1,0,sizeof(tb1));
 	memset(&tb2,0,sizeof(tb2));
-	memset(&out,0,sizeof(out));
 	
+	//printf("t1s = %d t2s = %d, l1=%d l2=%d, r1=%d, r2=%d, int = %d\n",t1start,t2start,lent1,lent2,rep1,rep2,intp);
+
 	//Table1 is always larger, so use that as the size
 	//Scan Table 1
 	for(i=0; i<lent1; i++)
@@ -234,10 +257,10 @@ static void read_table(struct M114SChip *chip, struct M114SChannel *channel)
 	//Now Mix based on Interpolation Bits
 	for(i=0; i<lent1*rep1; i++)	{
 		d = (INT16)(tb1[i] * (intp + 1) / 16) + (tb2[i] * (15-intp) / 16);
-		out[i] = d;
+		channel->output[i] = d;
 	}
 	//freq out is the value from the frequency table.. only divided by octave bit.
-	record_it(lent1*rep1);
+	//record_it(lent1*rep1);
 }
 
 /**********************************************************************************************
@@ -245,42 +268,37 @@ static void read_table(struct M114SChip *chip, struct M114SChannel *channel)
      m114s_update -- update the sound chip so that it is in sync with CPU execution
 
 ***********************************************************************************************/
-
-static void m114s_update(int num, INT16 **buffer, int length)
+static void m114s_update(int num, INT16 **buffer, int samples)
 {
 	struct M114SChip *chip = &m114schip[num];
 	struct M114SChannel *channel;
-	INT16 *ldest = buffer[0];
-	INT16 *rdest = buffer[1];
 	INT16 sample;
+	//Eventually the volume needs to be calculated for each channel and it's appropriate envelope
+	INT16 vol = 0x7f;		
 	int c;
-	int remaining = length;
-
-	while (remaining > 0)
+	while (samples > 0)
 	{
 
 		/* loop over channels */
 		//for (c = 0; c < M114S_CHANNELS; c++)
-		for (c = 2; c < 3; c++)
+		for (c = 0; c < OUTPUT_CHANNELS; c++)
 		{
+			sample = 0;
 			channel = &chip->channels[c];
-			if(channel->active)
-//			if(channel->atten !=0x3f)
-			{
-				sample = read_sample(channel);
-				*ldest++ = sample * 0x7fff;
-				*rdest++ = sample * 0x7fff;
+
+			/* Grab the next sample from the table data if the channel is active */
+			if(channel->active)	{
+				//We use Table 1 to drive everything, as Table 2 is really for mixing into Table 1..
+				sample = read_sample(channel, channel->table1.sample_rate, channel->table1.total_length);
+				*buffer[c]++ = sample * vol;			
 			}
-			else
-			{
-				*ldest++ = 0;
-				*rdest++ = 0;
+			else {
+			*buffer[c]++ = 0;
 			}
 		}
-		remaining--;
+		samples--;
 	}
 }
-
 
 
 /**********************************************************************************************
@@ -293,15 +311,11 @@ INLINE void init_channel(struct M114SChannel *channel)
  {
 	//set all internal registers to 0!
 	channel->active = 0;
-	channel->reread[0] = 0;
-	channel->reread[1] = 0;
- 	channel->position[0] = 0;
-	channel->position[1] = 0;
-	channel->loop_start_position[0] = 0;
-	channel->loop_start_position[1] = 0;
-	channel->loop_stop_position[0] = 0;
-	channel->loop_stop_position[1] = 0;
- 	channel->adjusted_rate = 0;
+	channel->outpos = 0;
+	memset(&channel->output,0,sizeof(channel->output));
+	memset(&channel->regs,0,sizeof(channel->regs));
+	memset(&channel->table1,0,sizeof(channel->table1));
+	memset(&channel->table2,0,sizeof(channel->table2));
  }
  
  
@@ -314,50 +328,42 @@ INLINE void init_all_channels(struct M114SChip *chip)
  		init_channel(&chip->channels[i]);
 
 	//Chip init stuff
-	memset(&chip->tempchannel,0,sizeof(&chip->tempchannel));
+	memset(&chip->tempch_regs,0,sizeof(&chip->tempch_regs));
 	chip->channel = 0;
 	chip->bytes_read = 0;
  }
- 
+
+
 int M114S_sh_start(const struct MachineSound *msound)
 {
 	const struct M114Sinterface *intf = msound->sound_interface;
-	char stream_name[2][40];
-	const char *stream_name_ptrs[2];
-	int vol[2];
-	int i;
-
-//	Machine->sample_rate = 6092;
+	char stream_name[OUTPUT_CHANNELS][40];
+	const char *stream_name_ptrs[OUTPUT_CHANNELS];
+	int vol[OUTPUT_CHANNELS];
+	int i,j;
 
 	memset(&tb1,0,sizeof(tb1));
 	memset(&tb2,0,sizeof(tb2));
-	memset(&out,0,sizeof(out));
-
 	
 	/* initialize the chips */
 	memset(&m114schip, 0, sizeof(m114schip));
 	for (i = 0; i < intf->num; i++)
 	{
 		/* generate the name and create the stream */
-		sprintf(stream_name[0], "%s #%d Ch1", sound_name(msound), i);
-		sprintf(stream_name[1], "%s #%d Ch2", sound_name(msound), i);
-		stream_name_ptrs[0] = stream_name[0];
-		stream_name_ptrs[1] = stream_name[1];
-
-		/* set the volumes */
-		vol[0] = MIXER(intf->mixing_level[i], MIXER_PAN_LEFT);
-		vol[1] = MIXER(intf->mixing_level[i], MIXER_PAN_RIGHT);
+		for(j=0; j<OUTPUT_CHANNELS; j++) {
+			sprintf(stream_name[j], "%s #%d Ch%d",sound_name(msound),i,j);
+			stream_name_ptrs[j] = stream_name[j];
+			vol[j] = 25;
+		}
 
 		/* create the stream */
-		m114schip[i].stream = stream_init_multi(2, stream_name_ptrs, vol, Machine->sample_rate, i, m114s_update);
+		m114schip[i].stream = stream_init_multi(OUTPUT_CHANNELS, stream_name_ptrs, vol, Machine->sample_rate, i, m114s_update);
 		if (m114schip[i].stream == -1)
 			return 1;
 
 		/* initialize the regions */
 		m114schip[i].region_base = (INT8 *)memory_region(intf->region[i]);
-
-		/* set up # of eat bytes */
-		m114schip[i].eatbytes = intf->eatbytes[i];
+		m114schip[i].intf = intf;
 
 		/* init the channels */
 		init_all_channels(&m114schip[i]);
@@ -371,8 +377,6 @@ int M114S_sh_start(const struct MachineSound *msound)
 	/* success */
 	return 0;
 }
-
-
 
 /**********************************************************************************************
 
@@ -399,8 +403,12 @@ void M114S_sh_stop(void)
 void M114S_sh_reset(void)
 {
 	int i;
-	for (i = 0; i < MAX_M114S; i++)
+	for (i = 0; i < MAX_M114S; i++) {
+		/* reset all channels */
 		init_all_channels(&m114schip[i]);
+		/* set up # of bytes to eat */
+		m114schip[i].eatbytes = m114schip[i].intf->eatbytes[i];
+	}
 }
 
 
@@ -413,34 +421,34 @@ static void process_freq_codes(struct M114SChip *chip)
 {
 	//Grab pointer to channel being programmed
 	struct M114SChannel *channel = &chip->channels[chip->channel];
-	switch(channel->frequency)
+	switch(channel->regs.frequency)
 	{
 		//ROMID - ROM Identification  (Are you kidding me?)
 		case 0xf8:
-			LOG(("* * Channel: %02d: Frequency Code: %02x - ROMID * * \n",chip->channel,channel->frequency));
+			LOG(("* * Channel: %02d: Frequency Code: %02x - ROMID * * \n",chip->channel,channel->regs.frequency));
 			break;
 		//SSG - Set Syncro Global
 		case 0xf9:
-			LOG(("* * Channel: %02d: Frequency Code: %02x - SSG * * \n",chip->channel,channel->frequency));
+			LOG(("* * Channel: %02d: Frequency Code: %02x - SSG * * \n",chip->channel,channel->regs.frequency));
 			break;
 		//RSS - Reverse Syncro Status
 		case 0xfa:
-			LOG(("* * Channel: %02d: Frequency Code: %02x - RSS * * \n",chip->channel,channel->frequency));
+			LOG(("* * Channel: %02d: Frequency Code: %02x - RSS * * \n",chip->channel,channel->regs.frequency));
 			break;
 		//RSG - Reset Syncro Global
 		case 0xfb:
-			LOG(("* * Channel: %02d: Frequency Code: %02x - RSG * * \n",chip->channel,channel->frequency));
+			LOG(("* * Channel: %02d: Frequency Code: %02x - RSG * * \n",chip->channel,channel->regs.frequency));
 			break;
 		//PSF - Previously Selected Frequency
 		case 0xfc:
-			LOG(("* * Channel: %02d: Frequency Code: %02x - PSF * * \n",chip->channel,channel->frequency));
+			LOG(("* * Channel: %02d: Frequency Code: %02x - PSF * * \n",chip->channel,channel->regs.frequency));
 			break;
 		//FFT - Forced Table Termination
 		case 0xff:
-			LOG(("* * Channel: %02d: Frequency Code: %02x - FFT * * \n",chip->channel,channel->frequency));
+			LOG(("* * Channel: %02d: Frequency Code: %02x - FFT * * \n",chip->channel,channel->regs.frequency));
 			break;
 		default:
-			LOG(("* * Channel: %02d: Frequency Code: %02x - UNKNOWN * * \n",chip->channel,channel->frequency));
+			LOG(("* * Channel: %02d: Frequency Code: %02x - UNKNOWN * * \n",chip->channel,channel->regs.frequency));
 	}
 }
 
@@ -461,51 +469,45 @@ static void process_channel_data(struct M114SChip *chip)
 	//Reset # of bytes for next group
 	chip->bytes_read = 0;
 
-	//Copy data to the appropriate channel from our temp channel
-	memcpy(channel,&chip->tempchannel,sizeof(chip->tempchannel));
+	//Copy data to the appropriate channel registers from our temp channel registers
+	memcpy(channel,&chip->tempch_regs,sizeof(chip->tempch_regs));
 
 	//Look for the 16 special frequency codes starting from 0xff
-	if(channel->frequency > (0xff-16)) {
+	if(channel->regs.frequency > (0xff-16)) {
 			process_freq_codes(chip);
-			if(channel->frequency != 0xff)
+			//FFT & PSF are the only codes that should continue to process channel data AFAIK
+			if(channel->regs.frequency != 0xff && channel->regs.frequency !=0xfc)
 				return;
 	}
 
-	//If Attenuation set to 0x3F - The channel becomes inactive - if it was previously active, force stream update
-	if(channel->atten == 0x3f) {
-		int update=channel->active;
+	//If Attenuation set to 0x3F - The channel becomes inactive
+	if(channel->regs.atten == 0x3f) {
 		channel->active = 0;
-		channel->position[0] = 0;
-		if(update)	
-			stream_update(chip->stream, 0);
 		return;
 	}
-
+	else
 	//Process this channel
-	if(0 || chip->channel == 2)
 	{
 		//Calculate # of repetitions for Table 1 & Table 2
-		int rep1 = mode_to_rep[channel->read_meth][0];
-		int rep2 = mode_to_rep[channel->read_meth][1];
+		int rep1 = mode_to_rep[channel->regs.read_meth][0];
+		int rep2 = mode_to_rep[channel->regs.read_meth][1];
 		//Calculate Table Length for Table 1 & Table 2
-		int lent1 = mode_to_len_t1[channel->read_meth][channel->table_len];
-		int lent2 = mode_to_len_t2[channel->read_meth][channel->table_len];
+		int lent1 = mode_to_len_t1[channel->regs.read_meth][channel->regs.table_len];
+		int lent2 = mode_to_len_t2[channel->regs.read_meth][channel->regs.table_len];
 		//Calculate Table 1 Start & End Address in ROM
-		int t1start = (channel->table1_addr<<5) & (~(lent1-1)&0x1fff);		//T1 Addr is upper 8 bits, but masked by length
+		int t1start = (channel->regs.table1_addr<<5) & (~(lent1-1)&0x1fff);		//T1 Addr is upper 8 bits, but masked by length
 		int t1end = t1start + (lent1-1);
 		//Calculate Table 2 Start & End Address in ROM
-		int t2start = (channel->table2_addr<<5) & (~(lent2-1)&0x1fff);		//T2 Addr is upper 8 bits, but masked by length
+		int t2start = (channel->regs.table2_addr<<5) & (~(lent2-1)&0x1fff);		//T2 Addr is upper 8 bits, but masked by length
 		int t2end = t2start + (lent2-1);
+		//Calculate initial frequency of both tables
 		double freq1, freq2;
-		freq1 = freq2 = freqtable4Mhz[channel->frequency];
-
-#if 1
+		freq1 = freq2 = freqtable4Mhz[channel->regs.frequency];
 		//Freq Table is based on 16 byte length & 1 pass read - adjust for length..
 		if(lent1>16) freq1 /= (double)(lent1/16);
 		if(lent2>16) freq2 /= (double)(lent2/16);
-#endif
-		
-		//Special case for table length of 16 - Bit 5 always 1 in this case
+	
+		//Adjust Start & Stop Address - Special case for table length of 16 - Bit 5 always 1 in this case
 		if(lent1 == 16) {
 			t1start |= 0x10;
 			t1end |= 0x10;
@@ -519,45 +521,38 @@ static void process_channel_data(struct M114SChip *chip)
 		channel->active = 1;
 
 		//Adjust frequency if octave divisor set
-		if(channel->oct_divisor) channel->frequency = channel->frequency / 2;
+		if(channel->regs.oct_divisor) 
+		{
+			freq1/=2;
+			freq2/=2;
+		}
 
-#if 0
+		//Setup Sample Rate - Current Adjusted Frequency * the length of the table
+		channel->table1.sample_rate = freq1 * lent1;
+		channel->table2.sample_rate = freq2 * lent2;
 
-		//Divide the frequency based on # of times to re-read the chip (1x, 2x, 4x)
-		freq1 /= (double)rep1;
-		freq2 /= (double)rep2;
-#endif
+		//Assign start & stop address offsets to ROM
+		channel->table1.start_address = t1start;
+		channel->table2.start_address = t2start;
+		channel->table1.stop_address = t1end;
+		channel->table2.stop_address = t2end;
 
-//		wavegen((int)(freq1*128),t1start,lent1,t2start,lent2,chip->channel);
+		//Assign # of times to re-read & Length
+		channel->table1.reread = rep1;
+		channel->table2.reread = rep2;
+		channel->table1.length = lent1;
+		channel->table2.length = lent2;
+		channel->table1.total_length = lent1*rep1;
+		channel->table2.total_length = lent2*rep2;
 
-		//Assign Frequency
-//		channel->adjusted_rate = (UINT32)((freq1 * (double)FRAC_ONE) / (double)Machine->sample_rate);
-		channel->adjusted_rate = freq1 * lent1;
-
-		//Assign loop start & stop
-		channel->loop_start_position[0] = t1start;
-		channel->loop_stop_position[0] = t1end;
-		channel->loop_start_position[1] = t2start;
-		channel->loop_stop_position[1] = t2end;
-
-		//Assign # of times to re-read tables 1 & 2
-		channel->reread[0] = rep1;
-		channel->reread[1] = rep2;
-
-		//Start reading at the start..
-		channel->position[0] = t1start;
-
-//		printf("freq = %d\n",channel->adjusted_rate);
-
-		if(out[0] == 0)
+		//Temp hack to ensure we only generate the ouput data 1x - this is WRONG and needs to be addressed eventually!
+		if(channel->output[0] == 0)
 			read_table(chip,channel);
-
-		//		wavegen((int)(freq1*128),t1start,lent1,t2start,lent2,chip->channel);
 
 #if 0
 		LOG(("V:%02d FQ:%03x TS1:%02x TS2:%02x T1L:%04d T1R:%01d T2L:%04d T2R:%01d OD=%01d I:%02d E:%01d\n",
 		channel->atten,
-		channel->frequency,
+		channel->regs.frequency,
 		t1start,t2start,
 		lent1,rep1,
 		lent2,rep2,
@@ -588,8 +583,8 @@ static void m114s_data_write(struct M114SChip *chip, data8_t data)
 	/*  BYTE #1 - 
 	    Bits 0-5: Attenuation Value (0-63) - 0 = No Attenuation, 3E = Max, 3F = Silence active channel */
 		case 1:
-			chip->tempchannel.atten = data;
-			//LOG(("%02x: M114S = %02x, ATTEN = %02x(%02d)\n",locals.chip->bytes_read,data,chip->tempchannel.atten,chip->tempchannel.atten));
+			chip->tempch_regs.atten = data;
+			//LOG(("%02x: M114S = %02x, ATTEN = %02x(%02d)\n",locals.chip->bytes_read,data,chip->tempch_regs.atten,chip->tempch_regs.atten));
 			break;
 		
 	/*  BYTE #2 - 
@@ -597,33 +592,33 @@ static void m114s_data_write(struct M114SChip *chip, data8_t data)
 		Bits 2-3: Table 1 Address (Bits 6-7)
 		Bits 3-5: Output Pin Selection (0-3)  */
 		case 2:
-			chip->tempchannel.table2_addr = (data & 0x03)<<6;
-			chip->tempchannel.table1_addr = (data & 0x0c)<<4;
-			chip->tempchannel.outputs = (data & 0x30)>>4;
-			//LOG(("%02x: M114S = %02x, OUTPUTS = %02x, T1ADDR_MSB = %02x, T2ADDR_MSB = %02x\n",locals.chip->bytes_read,data,chip->tempchannel.outputs,chip->tempchannel.table1_addr,chip->tempchannel.table2_addr));
+			chip->tempch_regs.table2_addr = (data & 0x03)<<6;
+			chip->tempch_regs.table1_addr = (data & 0x0c)<<4;
+			chip->tempch_regs.outputs = (data & 0x30)>>4;
+			//LOG(("%02x: M114S = %02x, OUTPUTS = %02x, T1ADDR_MSB = %02x, T2ADDR_MSB = %02x\n",locals.chip->bytes_read,data,chip->tempch_regs.outputs,chip->tempch_regs.table1_addr,chip->tempch_regs.table2_addr));
 			break;
 
 	/*  BYTE #3 -
 		Bits 0-5: Table 2 Address (Bits 0-5) */
 		case 3:
-			chip->tempchannel.table2_addr |= data;
-			//LOG(("%02x: M114S = %02x, T2ADDR_LSB = %02x - T2ADDR=%02x\n",locals.chip->bytes_read,data,data,chip->tempchannel.table2_addr));
+			chip->tempch_regs.table2_addr |= data;
+			//LOG(("%02x: M114S = %02x, T2ADDR_LSB = %02x - T2ADDR=%02x\n",locals.chip->bytes_read,data,data,chip->tempch_regs.table2_addr));
 			break;
 
 	/*	BYTE #4 -
 		Bits 0-5: Table 1 Address (Bits 0-5) */
 		case 4:
-			chip->tempchannel.table1_addr |= data;
-			//LOG(("%02x: M114S = %02x, T1ADDR_LSB = %02x - T1ADDR=%02x\n",locals.chip->bytes_read,data,data,chip->tempchannel.table1_addr));
+			chip->tempch_regs.table1_addr |= data;
+			//LOG(("%02x: M114S = %02x, T1ADDR_LSB = %02x - T1ADDR=%02x\n",locals.chip->bytes_read,data,data,chip->tempch_regs.table1_addr));
 			break;
 
 	/*  BYTE #5 -
 		Bits 0-2: Reading Method
 		Bits 3-5: Table Length */
 		case 5:
-			chip->tempchannel.read_meth = data & 0x07;
-			chip->tempchannel.table_len = (data & 0x38)>>3;
-			//LOG(("%02x: M114S = %02x, TABLE LEN = %02x, READ METH = %02x\n",locals.chip->bytes_read,data,chip->tempchannel.table_len,chip->tempchannel.read_meth));
+			chip->tempch_regs.read_meth = data & 0x07;
+			chip->tempch_regs.table_len = (data & 0x38)>>3;
+			//LOG(("%02x: M114S = %02x, TABLE LEN = %02x, READ METH = %02x\n",locals.chip->bytes_read,data,chip->tempch_regs.table_len,chip->tempch_regs.read_meth));
 			break;
 
 	/*	BYTE #6 -
@@ -631,26 +626,26 @@ static void m114s_data_write(struct M114SChip *chip, data8_t data)
 		Bits 1  : Envelope Enable/Disable
 		Bits 2-5: Interpolation Value (0-4)	*/
 		case 6:
-			chip->tempchannel.oct_divisor = data & 1;
-			chip->tempchannel.env_enable = (data & 2)>>1;
-			chip->tempchannel.interp = (data & 0x3c)>>2; 
-			//LOG(("%02x: M114S = %02x, INTERP = %02x, ENV ENA = %02x, OCT DIV = %02x\n",locals.chip->bytes_read,data,chip->tempchannel.interp,chip->tempchannel.env_enable,chip->tempchannel.oct_divisor));
+			chip->tempch_regs.oct_divisor = data & 1;
+			chip->tempch_regs.env_enable = (data & 2)>>1;
+			chip->tempch_regs.interp = (data & 0x3c)>>2; 
+			//LOG(("%02x: M114S = %02x, INTERP = %02x, ENV ENA = %02x, OCT DIV = %02x\n",locals.chip->bytes_read,data,chip->tempch_regs.interp,chip->tempch_regs.env_enable,chip->tempch_regs.oct_divisor));
 			break;
 
 	/*	BYTE #7 -
 		Bits 0-1: Frequency (Bits 0-1)
 		Bits 2-5: Channel */
 		case 7:
-			chip->tempchannel.frequency = (data&0x03);
+			chip->tempch_regs.frequency = (data&0x03);
 			chip->channel = (data & 0x3c)>>2; 
-			//LOG(("%02x: M114S = %02x, CHANNEL = %02d, FREQ D0-D1= %02x\n",locals.chip->bytes_read,data,chip->tempchannel.channel,chip->tempchannel.frequency));
+			//LOG(("%02x: M114S = %02x, CHANNEL = %02d, FREQ D0-D1= %02x\n",locals.chip->bytes_read,data,chip->tempch_regs.channel,chip->tempch_regs.frequency));
 			break;
 
 	/*	BYTE #8 -
 		Bits 0-5: Frequency (Bits 2-7) */
 		case 8:
-			chip->tempchannel.frequency |= (data<<2);
-			//LOG(("%02x: M114S = %02x, FREQ D2-D7 = %02x - FREQ=%02x\n",locals.chip->bytes_read,data,data,chip->tempchannel.frequency));
+			chip->tempch_regs.frequency |= (data<<2);
+			//LOG(("%02x: M114S = %02x, FREQ D2-D7 = %02x - FREQ=%02x\n",locals.chip->bytes_read,data,data,chip->tempch_regs.frequency));
 
 			/* Process the channel data */
 			process_channel_data(chip);

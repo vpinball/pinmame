@@ -1165,7 +1165,7 @@ struct snd_interface sndintf[] =
 		M114S_sh_start,
 		M114S_sh_stop,
 		0,
-		0
+		M114S_sh_reset
 	},
 #endif
 #endif /* PINMAME */

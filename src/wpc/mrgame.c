@@ -33,7 +33,7 @@
   #1) Used a hack to ensure all video commands are read by the video cpu - not sure if the "underlying" 
       cause is still making other things wrong!
   #2) Timing of animations might be too slow..
-  #3) M114S Sound chip not emulated (so no music)
+  #3) M114S Sound chip emulated but needs to be improved for much better accuracy
 
 ************************************************************************************************/
 #include "driver.h"
@@ -288,7 +288,7 @@ static WRITE_HANDLER(mrgame_sndcmd)
 
 //Bit 7 of the data triggers NMI of the sound cpus
 static WRITE16_HANDLER(sound_w) { 
-	LOG(("%08x: sound_w = %04x\n",activecpu_get_pc(),data)); 
+//	LOG(("%08x: sound_w = %04x\n",activecpu_get_pc(),data)); 
 
 	locals.sndcmd = data & 0xff;
 
