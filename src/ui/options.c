@@ -9,7 +9,7 @@
   that you have read the license and understand and accept it fully.
 
  ***************************************************************************/
-
+ 
  /***************************************************************************
 
   options.c
@@ -30,6 +30,7 @@
 #include <malloc.h>
 #include <math.h>
 #include <driver.h>
+
 #include "screenshot.h"
 #include "bitmask.h"
 #include "mame32.h"
@@ -251,8 +252,8 @@ static REG_OPTION regGameOpts[] =
 	{ "ctrlr",                  RO_STRING,  &gOpts.ctrlr,             0, 0},
 
 	// core video
-	{ "brightness",             RO_DOUBLE,  &gOpts.f_bright_correct,  0, 0},
-	{ "pause_brightness",       RO_DOUBLE,  &gOpts.f_pause_bright    ,0, 0},
+	{ "brightness",             RO_DOUBLE,  &gOpts.f_bright_correct,  0, 0}, 
+	{ "pause_brightness",       RO_DOUBLE,  &gOpts.f_pause_bright    ,0, 0}, 
 	{ "norotate",               RO_BOOL,    &gOpts.norotate,          0, 0},
 	{ "ror",                    RO_BOOL,    &gOpts.ror,               0, 0},
 	{ "rol",                    RO_BOOL,    &gOpts.rol,               0, 0},
@@ -260,7 +261,7 @@ static REG_OPTION regGameOpts[] =
 	{ "autorol",                RO_BOOL,    &gOpts.auto_rol,          0, 0},
 	{ "flipx",                  RO_BOOL,    &gOpts.flipx,             0, 0},
 	{ "flipy",                  RO_BOOL,    &gOpts.flipy,             0, 0},
-	{ "debug_resolution",       RO_STRING,  &gOpts.debugres,          0, 0},
+	{ "debug_resolution",       RO_STRING,  &gOpts.debugres,          0, 0}, 
 	{ "gamma",                  RO_DOUBLE,  &gOpts.f_gamma_correct,   0, 0},
 
 	// vector
@@ -364,9 +365,9 @@ static GAMEVARIABLE_OPTION gamevariable_options[] =
 // (TAB_...)
 const char* image_tabs_long_name[MAX_TAB_TYPES] =
 {
-	"Snapshot",
-	"Flyer",
-	"Cabinet",
+	"Snapshot ",
+	"Flyer ",
+	"Cabinet ",
 	"Marquee",
 	"Title",
 	"Control Panel",
@@ -383,8 +384,6 @@ const char* image_tabs_short_name[MAX_TAB_TYPES] =
 	"cpanel",
 	"history",
 };
-
-
 
 // must match D3D_EFFECT_... in options.h, and count must match MAX_D3D_EFFECTS
 const char * d3d_effects_long_name[MAX_D3D_EFFECTS] =
@@ -504,7 +503,7 @@ int size_folder_filters;
 int num_folder_filters;
 
 /***************************************************************************
-    External functions
+    External functions  
  ***************************************************************************/
 
 BOOL OptionsInit()
@@ -792,7 +791,7 @@ BOOL OptionsInit()
 		game_variables[i].play_time = 0;
 		game_variables[i].rom_audit_results = UNKNOWN;
 		game_variables[i].samples_audit_results = UNKNOWN;
-
+		
 		game_variables[i].options_loaded = FALSE;
 		game_variables[i].use_default = TRUE;
 	}
@@ -858,6 +857,7 @@ void OptionsExit(void)
 	FreeIfAllocated(&settings.mameinfo_filename);
     FreeIfAllocated(&settings.ctrlrdir);
 	FreeIfAllocated(&settings.folderdir);
+
 	DeleteBits(settings.show_folder_flags);
 	settings.show_folder_flags = NULL;
 
@@ -872,7 +872,7 @@ void FreeGameOptions(options_type *o)
 	{
 		if (regGameOpts[i].m_iType == RO_STRING)
 		{
-			char **string_to_free =
+			char **string_to_free = 
 				(char **)((char *)o + ((char *)regGameOpts[i].m_vpData - (char *)&gOpts));
 			if (*string_to_free  != NULL)
 			{
@@ -896,7 +896,7 @@ void CopyGameOptions(options_type *source,options_type *dest)
 	{
 		if (regGameOpts[i].m_iType == RO_STRING)
 		{
-			char **string_to_copy =
+			char **string_to_copy = 
 				(char **)((char *)dest + ((char *)regGameOpts[i].m_vpData - (char *)&gOpts));
 			if (*string_to_copy != NULL)
 			{
@@ -1627,7 +1627,7 @@ void SetControlPanelDir(const char *path)
 		settings.cpaneldir = strdup(path);
 }
 
-const char* GetDiffDir(void)
+const char * GetDiffDir(void)
 {
 	return settings.diffdir;
 }
@@ -2132,7 +2132,7 @@ static void JoyInfoDecodeString(const char* str, void* data)
 
 static void ColumnDecodeWidths(const char* str, void* data)
 {
-		ColumnDecodeString(str, data);
+	ColumnDecodeString(str, data);
 }
 
 static void SplitterEncodeString(void* data, char* str)
@@ -2529,7 +2529,6 @@ static void LoadOption(REG_OPTION *option,const char *value_str)
 static BOOL LoadGameVariableOrFolderFilter(char *key,const char *value)
 {
 	REG_OPTION fake_option;
-
 	int i;
 	int driver_index;
 	const char *suffix;
@@ -2662,6 +2661,7 @@ static void LoadOptionsAndSettings(void)
 
 			if (buffer[0] == '\0' || buffer[0] == '#')
 				continue;
+
 			// we're guaranteed that strlen(buffer) >= 1 now
 			buffer[strlen(buffer)-1] = '\0';
 
@@ -2671,6 +2671,7 @@ static void LoadOptionsAndSettings(void)
 				//dprintf("invalid line [%s]",buffer);
 				continue;
 			}
+
 			option = GetOption(regSettings,NUM_SETTINGS,key);
 			if (option == NULL)
 			{
@@ -2731,8 +2732,10 @@ static BOOL LoadOptions(const char *filename,options_type *o,BOOL load_global_ga
 
 		if (buffer[0] == '\0')
 			continue;
+
 		// we're guaranteed that strlen(buffer) >= 1 now
 		buffer[strlen(buffer)-1] = '\0';
+		
 		// # starts a comment, but #* is a special MAME32 code
 		// saying it's an option for us, but NOT for the main
 		// MAME
@@ -2741,7 +2744,7 @@ static BOOL LoadOptions(const char *filename,options_type *o,BOOL load_global_ga
 			if (buffer[1] != '*')
 				continue;
 		}
-		
+
 		ParseKeyValueStrings(buffer,&key,&value_str);
 		if (key == NULL || value_str == NULL)
 		{
@@ -2824,7 +2827,8 @@ void SaveOptions(void)
 			int nValue;
 			const char *pValue;
 			void *pv;
-			int driver_index = GetIndexFromSortedIndex(i);
+			int driver_index = GetIndexFromSortedIndex(i); 
+
 			// need to improve this to not save too many
 			for (j = 0; j < sizeof(gamevariable_options) / sizeof(gamevariable_options[0]); j++)
 			{
@@ -2941,8 +2945,8 @@ void SaveDefaultOptions(void)
 			for (i=0;i<NUM_GLOBAL_GAME_OPTIONS;i++)
 			{
 				if (!global_game_options[i].m_bOnlyOnGame)
-				WriteOptionToFile(fptr,&global_game_options[i]);
-		}
+					WriteOptionToFile(fptr,&global_game_options[i]);
+			}
 		}
 
 		if (save_default_options)
@@ -2952,7 +2956,7 @@ void SaveDefaultOptions(void)
 			for (i=0;i<NUM_GAME_OPTIONS;i++)
 			{
 				if (!regGameOpts[i].m_bOnlyOnGame)
-				WriteOptionToFile(fptr,&regGameOpts[i]);
+					WriteOptionToFile(fptr,&regGameOpts[i]);
 			}
 		}
 

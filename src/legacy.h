@@ -271,7 +271,7 @@ static int seq_partial_is_special_code(InputCode code) {
 	return 1;
 }
 
-static int seq_partial_read(void* f, InputSeq* seq, unsigned* pos, unsigned len, int (*code_table)(int))
+static int seq_partial_read(mame_file *f, InputSeq* seq, unsigned* pos, unsigned len, int (*code_table)(int))
 {
 	UINT16 w;
 	unsigned j = 0;
@@ -332,7 +332,7 @@ static int seq_partial_read(void* f, InputSeq* seq, unsigned* pos, unsigned len,
 	return 0;
 }
 
-static int seq_read_ver_5(void* f, InputSeq* seq)
+static int seq_read_ver_5(mame_file *f, InputSeq* seq)
 {
 	unsigned pos = 0;
 	seq_set_0(seq);
@@ -344,7 +344,7 @@ static int seq_read_ver_5(void* f, InputSeq* seq)
 	return 0;
 }
 
-static int seq_read_ver_6(void* f, InputSeq* seq)
+static int seq_read_ver_6(mame_file *f, InputSeq* seq)
 {
 	unsigned pos = 0;
 	seq_set_0(seq);
@@ -356,7 +356,7 @@ static int seq_read_ver_6(void* f, InputSeq* seq)
 	return 0;
 }
 
-static int seq_read_ver_7(void* f, InputSeq* seq)
+static int seq_read_ver_7(mame_file *f, InputSeq* seq)
 {
 	unsigned pos = 0;
 	seq_set_0(seq);
@@ -368,7 +368,7 @@ static int seq_read_ver_7(void* f, InputSeq* seq)
 	return 0;
 }
 
-static int input_port_read_ver_5(void *f, struct InputPort *in)
+static int input_port_read_ver_5(mame_file *f, struct InputPort *in)
 {
 	UINT32 i;
 	UINT16 w;
@@ -389,7 +389,7 @@ static int input_port_read_ver_5(void *f, struct InputPort *in)
 	return 0;
 }
 
-static int input_port_read_ver_6(void *f, struct InputPort *in)
+static int input_port_read_ver_6(mame_file *f, struct InputPort *in)
 {
 	UINT32 i;
 	UINT16 w;
@@ -410,7 +410,7 @@ static int input_port_read_ver_6(void *f, struct InputPort *in)
 	return 0;
 }
 
-static int input_port_read_ver_7(void *f, struct InputPort *in)
+static int input_port_read_ver_7(mame_file *f, struct InputPort *in)
 {
 	UINT32 i;
 	UINT16 w;

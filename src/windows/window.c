@@ -466,19 +466,11 @@ int win_init_window(void)
 	}
 
 	// make the window title
-#ifdef PINMAME
 #ifdef VPINMAME
 	sprintf(title, "%s", Machine->gamedrv->description);
 #else
-	sprintf(title, "PINMAME: %s [%s]", Machine->gamedrv->description, Machine->gamedrv->name);
+	sprintf(title, APPNAME ": %s [%s]", Machine->gamedrv->description, Machine->gamedrv->name);
 #endif
-#else /* PINMAME */
-#ifndef MESS
-	sprintf(title, "MAME: %s [%s]", Machine->gamedrv->description, Machine->gamedrv->name);
-#else
-	sprintf(title, "MESS: %s [%s]", Machine->gamedrv->description, Machine->gamedrv->name);
-#endif
-#endif /* PINMAME */
 
 #if HAS_WINDOW_MENU
 	if (win_create_menu(&menu))

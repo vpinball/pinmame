@@ -1061,10 +1061,13 @@ void mixer_read_config(mame_file *f)
 	UINT8 mixing_levels[MIXER_MAX_CHANNELS];
 	int i;
 
+	if (mame_fread(f, default_levels, MIXER_MAX_CHANNELS) < MIXER_MAX_CHANNELS ||
+	    mame_fread(f, mixing_levels, MIXER_MAX_CHANNELS) < MIXER_MAX_CHANNELS)
+	{
 	memset(default_levels, 0xff, sizeof(default_levels));
 	memset(mixing_levels, 0xff, sizeof(mixing_levels));
-	mame_fread(f, default_levels, MIXER_MAX_CHANNELS);
-	mame_fread(f, mixing_levels, MIXER_MAX_CHANNELS);
+	}
+
 	for (i = 0; i < MIXER_MAX_CHANNELS; i++)
 	{
 		config_default_mixing_level[i] = default_levels[i];

@@ -904,7 +904,7 @@ struct snd_interface sndintf[] =
 		0,
 		SEGAPCM_sh_start,
 		SEGAPCM_sh_stop,
-		SEGAPCM_sh_update,
+		0,
 		0
 	},
 #endif

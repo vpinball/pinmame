@@ -405,13 +405,10 @@ static void CLIB_DECL DetailsPrintf(const char *fmt, ...)
 	va_end(marker);
 
 	s = ConvertToWindowsNewlines(buffer);
-	//RS this works for both, Edit COntrol and RichEditControl
-	l = Edit_GetTextLength(hEdit);
-	SendMessage( hEdit, EM_REPLACESEL, FALSE, (WPARAM)s );
 
-	// used to be
-	//Edit_SetSel(hEdit, Edit_GetTextLength(hEdit), Edit_GetTextLength(hEdit));
-	//Edit_ReplaceSel(hEdit, s);
+	l = Edit_GetTextLength(hEdit);
+	Edit_SetSel(hEdit, Edit_GetTextLength(hEdit), Edit_GetTextLength(hEdit));
+	SendMessage( hEdit, EM_REPLACESEL, FALSE, (WPARAM)s );
 }
 
 static const char * StatusString(int iStatus)
