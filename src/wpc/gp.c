@@ -34,7 +34,7 @@
 
 #define GP_VBLANKFREQ    60 /* VBLANK frequency */
 #define GP_IRQFREQ      150 /* IRQ (via PIA) frequency*/
-#define GP_ZCFREQ        90 /* Zero cross frequency (guessed; but anything above 90 will cause strange effects) */
+#define GP_ZCFREQ        85 /* Zero cross frequency (guessed; but anything above 85 will cause strange effects) */
 
 static WRITE_HANDLER(GP_soundCmd)  { }
 
