@@ -2371,9 +2371,11 @@ READ_HANDLER( m6803_internal_registers_r )
 		case 0x01:
 			return m6800.port2_ddr;
 		case 0x02:
+                        if (m6800.port1_ddr == 0xff) return m6800.port1_data;
 			return (cpu_readport16(M6803_PORT1) & (m6800.port1_ddr ^ 0xff))
 					| (m6800.port1_data & m6800.port1_ddr);
 		case 0x03:
+                        if ((m6800.port2_ddr & 0x1f) == 0x1f) return m6800.port2_data;
 			return (cpu_readport16(M6803_PORT2) & (m6800.port2_ddr ^ 0xff))
 					| (m6800.port2_data & m6800.port2_ddr);
 		case 0x04:
