@@ -1,5 +1,15 @@
 What's new:
 
+Version 1.?  (October 31, 2003)
+-------------------------------
+Bugs Fixed
+----------
+- Implemented memory protection in wpc games.
+- Fixed rom write problems in wms soundboards
+
+New Features
+------------
+
 Version 1.21 (March 31, 2002)
 -----------------------------
 Happy late 2nd birthday greetings to PinMAME!
@@ -20,9 +30,20 @@ Bugs Fixed
 ----------
 - Fixed crashes in some DCS games.
 - Removed flipper switches 5 & 7 from Dungeon & Dragons
+- Corrected flipper switches for EBC
 - Changed Mousin' around display to one row
 - Some small fixes in Bally cheap-squeek sound (Black pyramid is still strange)
-- Corrected 6809 core bug involving CC register
+- Corrected 6809 core bug with CC register and exg + tfr instructions.
+  (if a memedev reads this: the bug is also in mame66)
+- Fixed a small port read problem on 6803
+- Corrected 68306 cpu emulation (Capcom)
+- Merged Hankin driver with bally -35 games
+- Rewrote gts80 driver.
+- Added support for road kings' muxed slenoids
+- mini dmd support for HRC & RCT
+- bally video games now use same sound board as other bally games
+- Added "special solenoid" handling for Grand Lizard & Space Station
+- Added 8259 emulation (slightly modified from MESS source)
   [Martin Adrian]
 
 - Greatly improved lamps in Baby Pacman, although there are still some issues.
@@ -48,6 +69,7 @@ New Features
 - Added GameOn and Tilt solenoid for GTS80 games (Sol 10 & 11)
   GameOn is adjusted to mean "game in progress and not tilted"
 - Solenoid display now shows 4 last activated solenoids
+- Added funhouse bootleg with corrected German translation
   [Martin Adrian]
 
 - Added rom support for The Getaway: High Speed II (L-2)
