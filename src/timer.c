@@ -33,7 +33,10 @@
 #include "cpuintrf.h"
 #include "driver.h"
 #include "timer.h"
-
+#ifdef PINMAME
+#include "wpc/core.h"
+#include "wpc/gen.h"
+#endif /* PINMAME */
 
 #define MAX_TIMERS 256
 
@@ -102,11 +105,12 @@ INLINE double get_relative_time(void)
 	activecpu = cpu_getactivecpu();
 	if (activecpu >= 0)
 		return cpunum_get_localtime(activecpu);
-	
-	/* if we're currently in a callback, use the timer's expiration time as a base */
+#ifdef PINMAME /* HACK to make GTS80A games work with MAME core */
+  if (core_gameData->gen & (GEN_GTS80A | GEN_ZAC2))
+#endif /* PINMAME */
+    /* if we're currently in a callback, use the timer's expiration time as a base */
 	if (callback_timer)
 		return callback_timer->expire;
-	
 	/* otherwise, return 0 */
 	return 0;
 }
