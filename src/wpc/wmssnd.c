@@ -269,7 +269,7 @@ static WRITE_HANDLER(s11js_ctrl_w);
 
 struct YM2151interface s11js_ym2151Int = {
   1, 3579545, /* Hz */
-  { YM3012_VOL(10,MIXER_PAN_CENTER,30,MIXER_PAN_CENTER) },
+  { YM3012_VOL(30,MIXER_PAN_LEFT,30,MIXER_PAN_RIGHT) },
   { s11js_ym2151IRQ }
 };
 
@@ -311,7 +311,7 @@ static void s11js_init(struct sndbrdData *brdData) {
 }
 static WRITE_HANDLER(s11js_ctrl_w) {
 //  cpu_set_irq_line(s11jlocals.brdData.cpuNo, M6809_IRQ_LINE, data ? ASSERT_LINE : CLEAR_LINE);
-  if (!data) cpu_set_irq_line(s11jlocals.brdData.cpuNo, M6809_IRQ_LINE, PULSE_LINE);
+  if (!data) cpu_set_irq_line(s11jlocals.brdData.cpuNo, M6809_IRQ_LINE, HOLD_LINE);
 }
 static WRITE_HANDLER(s11js_reply_w) {
   soundlatch3_w(0,data);
