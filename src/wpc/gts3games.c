@@ -38,21 +38,21 @@ core_tLCDLayout GTS3_dispAlpha1[] = {
 
 
 #define INITGAME(name, disptype, flippers, balls) \
-	static core_tGameData name##GameData = {0,disptype,{flippers}}; \
+	static core_tGameData name##GameData = {0,disptype,{flippers,0,4}}; \
 static void init_##name(void) { \
   core_gameData = &name##GameData; \
 } \
 GTS3_INPUT_PORTS_START(name, balls) GTS3_INPUT_PORTS_END
 
 #define INITGAME2(name, disptype, flippers, balls) \
-	static core_tGameData name##GameData = {0,disptype,{flippers}}; \
+	static core_tGameData name##GameData = {0,disptype,{flippers,0,4}}; \
 static void init_##name(void) { \
   core_gameData = &name##GameData; \
 } \
 GTS32_INPUT_PORTS_START(name, balls) GTS3_INPUT_PORTS_END
 
 #define INITGAME3(name, disptype, flippers, balls) \
-	static core_tGameData name##GameData = {0,disptype,{flippers}}; \
+	static core_tGameData name##GameData = {0,disptype,{flippers,0,4}}; \
 static void init_##name(void) { \
   core_gameData = &name##GameData; \
 } \
