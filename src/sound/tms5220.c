@@ -6,6 +6,8 @@
      With help from Neill Corlett
      Additional tweaking by Aaron Giles
 
+  2003-12-06 GV: some modifications for clearer speech output
+
 ***********************************************************************************************/
 
 #include <stdio.h>
@@ -71,28 +73,28 @@ static void (*irq_func)(int state); /* called when the state of the IRQ pin chan
 /* these contain data describing the current and previous voice frames */
 static UINT16 old_energy;
 static UINT16 old_pitch;
-static int old_k[10];
+static INT16 old_k[10];
 
 static UINT16 new_energy;
 static UINT16 new_pitch;
-static int new_k[10];
+static INT16 new_k[10];
 
 
 /* these are all used to contain the current state of the sound generation */
 static UINT16 current_energy;
 static UINT16 current_pitch;
-static int current_k[10];
+static INT16 current_k[10];
 
 static UINT16 target_energy;
 static UINT16 target_pitch;
-static int target_k[10];
+static INT16 target_k[10];
 
 static UINT8 interp_count;		/* number of interp periods (0-7) */
 static UINT8 sample_count;		/* sample number within interp (0-24) */
 static int pitch_count;
 
-static int u[11];
-static int x[10];
+static INT16 u[11];
+static INT16 x[10];
 
 static INT8 randbit;
 
@@ -442,7 +444,7 @@ tryagain:
     /* loop until the buffer is full or we've stopped speaking */
 	while ((size > 0) && talk_status)
     {
-        int current_val;
+        INT16 current_val;
 
         /* if we're ready for a new frame */
         if ((interp_count == 0) && (sample_count == 0))
@@ -552,13 +554,13 @@ tryagain:
         {
             /* generate unvoiced samples here */
             randbit = (rand() % 2) * 2 - 1;
-            current_val = (randbit * current_energy) / 4;
+            current_val = (randbit * current_energy) >> 2;
         }
         else
         {
             /* generate voiced samples here */
             if (pitch_count < sizeof(chirptable))
-                current_val = (chirptable[pitch_count] * current_energy) / 256;
+                current_val = ((INT8)chirptable[pitch_count] * current_energy) >> 7;
             else
                 current_val = 0x00;
         }
@@ -569,23 +571,22 @@ tryagain:
 
         for (i = 9; i >= 0; i--)
         {
-            u[i] = u[i+1] - ((current_k[i] * x[i]) / 32768);
+            u[i] = u[i+1] - ((current_k[i] * x[i]) / 35000);
         }
         for (i = 9; i >= 1; i--)
         {
-            x[i] = x[i-1] + ((current_k[i-1] * u[i-1]) / 32768);
+            x[i] = x[i-1] + ((current_k[i-1] * u[i-1]) / 35000);
         }
 
         x[0] = u[0];
 
         /* clipping, just like the chip */
-
-        if (u[0] > 511)
-            buffer[buf_count] = 127<<8;
-        else if (u[0] < -512)
-            buffer[buf_count] = -128<<8;
+        if (u[0] > 2047)
+            buffer[buf_count] = 32767;
+        else if (u[0] < -2048)
+            buffer[buf_count] = -32768;
         else
-            buffer[buf_count] = u[0] << 6;
+            buffer[buf_count] = u[0] << 4;
 
         /* Update all counts */
 
@@ -698,6 +699,7 @@ static void process_command(void)
             if (!buffer_empty)
             {
                 buffer_empty = 1;
+                tms5220_reset();
                 set_interrupt_state(1);
             }
 
@@ -790,6 +792,7 @@ static int parse_frame(int the_first_frame)
 		/*return 1;*/
 	{
 		buffer_empty = 1;
+		tms5220_reset();
 		return 1;
 	}
 
@@ -839,7 +842,7 @@ static int parse_frame(int the_first_frame)
         goto ranout;
 	}
     indx = extract_bits(6);
-    new_pitch = pitchtable[indx] / 256;
+    new_pitch = pitchtable[indx] >> 8;
 
     /* if this is a repeat frame, just copy the k's */
     if (rep_flag)
@@ -861,13 +864,13 @@ static int parse_frame(int the_first_frame)
         if (bits < 0)
             goto ranout;
 		}
-        new_k[0] = k1table[extract_bits(5)];
-        new_k[1] = k2table[extract_bits(5)];
-        new_k[2] = k3table[extract_bits(4)];
+        new_k[0] = (INT16)k1table[extract_bits(5)];
+        new_k[1] = (INT16)k2table[extract_bits(5)];
+        new_k[2] = (INT16)k3table[extract_bits(4)];
 		if (variant == variant_tms0285)
-			new_k[3] = k3table[extract_bits(4)];	/* ??? */
+			new_k[3] = (INT16)k3table[extract_bits(4)];	/* ??? */
 		else
-			new_k[3] = k4table[extract_bits(4)];
+			new_k[3] = (INT16)k4table[extract_bits(4)];
 
         if (DEBUG_5220) logerror("  (29-bit energy=%d pitch=%d rep=%d 4K frame)\n", new_energy, new_pitch, rep_flag);
         goto done;
@@ -881,19 +884,19 @@ static int parse_frame(int the_first_frame)
         goto ranout;
 	}
 
-    new_k[0] = k1table[extract_bits(5)];
-    new_k[1] = k2table[extract_bits(5)];
-    new_k[2] = k3table[extract_bits(4)];
+    new_k[0] = (INT16)k1table[extract_bits(5)];
+    new_k[1] = (INT16)k2table[extract_bits(5)];
+    new_k[2] = (INT16)k3table[extract_bits(4)];
 	if (variant == variant_tms0285)
-		new_k[3] = k3table[extract_bits(4)];	/* ??? */
+		new_k[3] = (INT16)k3table[extract_bits(4)];	/* ??? */
 	else
-		new_k[3] = k4table[extract_bits(4)];
-    new_k[4] = k5table[extract_bits(4)];
-    new_k[5] = k6table[extract_bits(4)];
-    new_k[6] = k7table[extract_bits(4)];
-    new_k[7] = k8table[extract_bits(3)];
-    new_k[8] = k9table[extract_bits(3)];
-    new_k[9] = k10table[extract_bits(3)];
+		new_k[3] = (INT16)k4table[extract_bits(4)];
+    new_k[4] = (INT16)k5table[extract_bits(4)];
+    new_k[5] = (INT16)k6table[extract_bits(4)];
+    new_k[6] = (INT16)k7table[extract_bits(4)];
+    new_k[7] = (INT16)k8table[extract_bits(3)];
+    new_k[8] = (INT16)k9table[extract_bits(3)];
+    new_k[9] = (INT16)k10table[extract_bits(3)];
 
     if (DEBUG_5220) logerror("  (50-bit energy=%d pitch=%d rep=%d 10K frame)\n", new_energy, new_pitch, rep_flag);
 
@@ -932,6 +935,7 @@ ranout:
 
     /* generate an interrupt if necessary */
     set_interrupt_state(1);
+    tms5220_reset();
     return 0;
 }
 
