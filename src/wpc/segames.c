@@ -1285,9 +1285,7 @@ CORE_CLONEDEFNV(ripleysl,ripleys,"Ripley's Believe It or Not! (Spain)",2004,"Ste
 /*-------------------------------------------------------------------
 / Elvis (3.03)
 /-------------------------------------------------------------------*/
-static core_tGameData elvisGameData = { \
-  GEN_WS, se_dmd128x32, {FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L), 0, 5, 0, 0, SE_LED}}; \
-static void init_elvis(void) { core_gameData = &elvisGameData; }
+INITGAME(elvis,GEN_WS,se_dmd128x32,SE_LED)
 SE128_ROMSTART(elvis, "elvscpua.303", CRC(a0dd77d8) SHA1(2882eed805c2eb3cabadcfe51997a534ddac9050))
 DE_DMD32ROM8x(        "elvsdspa.302", CRC(892da6d2) SHA1(66a2f9faab9c7b925a90455ce7e1d31e19fce99e))
 DE3SA_SOUNDROM18888(  "elvis.u7", CRC(1df6c1b5) SHA1(7a9ebfc555e54ce92ad140ac6fcb82d9848ad8a6),
@@ -1360,16 +1358,76 @@ SE_ROMEND
 CORE_CLONEDEFNV(elvisi,elvis,"Elvis (Italy)",2004,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ The Sopranos
+/ The Sopranos (2.04)
 /-------------------------------------------------------------------*/
 INITGAME(sopranos,GEN_WS,se_dmd128x32,SE_LED)
-SE128_ROMSTART(sopranos, "soprcpu.099", NO_DUMP)
-DE_DMD32ROM8x(      "soprdspa.099", NO_DUMP)
-DE3SA_SOUNDROM18888("sopran.u7",  NO_DUMP,
-                    "sopran.u17", NO_DUMP,
-                    "sopran.u21", NO_DUMP,
-                    "sopran.u36", NO_DUMP,
-                    "sopran.u37", NO_DUMP)
+SE128_ROMSTART(sopranos, "sopcpua.204", CRC(95251d1e) SHA1(c22754647afd07f42bb6b2d0944f696922e68feb))
+DE_DMD32ROM8x(      "sopdspa.200", CRC(e5de9a5d) SHA1(6e18d4bdf2d35c9c0743fa6f91f540686d0a706b))
+DE3SA_SOUNDROM18888("sopsnda.u7",  CRC(4f6748b5) SHA1(63e953a1455dee2a44484fef951fa34cb2e55d7b),
+                    "sopsnda.u17", CRC(1ecc5ecc) SHA1(42897387b90df8da8ae556ccc46e281ca461c063),
+                    "sopsnda.u21", CRC(257ab09d) SHA1(1d18e279139b1658ce02160d9a37b4bf043393f0),
+                    "sopsnda.u36", CRC(db33b45c) SHA1(d3285008a3c770371389be470c1ec5ca49c1e568),
+                    "sopsnda.u37", CRC(06a2a6e1) SHA1(fdbe622223724ac2b4c5183c43d3e635654864bf))
 SE_ROMEND
 #define input_ports_sopranos input_ports_se
-CORE_GAMEDEFNV(sopranos,"The Sopranos",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(sopranos,"The Sopranos",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ The Sopranos (1.07 Germany)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(sopranog, "sopcpug.107", CRC(e9c83725) SHA1(958155919cbb347b72784c7da112b188e06c908f))
+DE_DMD32ROM8x(      "sopdspg.100", CRC(38625560) SHA1(c41a6808fe05cafe44ea5026689b2ea6eb195e41))
+DE3SA_SOUNDROM18888("sopsndg.u7",  CRC(bb615e03) SHA1(ce5ef766376c060fc071d54aa878d69b3aa30294),
+                    "sopsndg.u17", CRC(cfa7fca1) SHA1(2efbc8c3e8ad6dc39973908e37ecdc7b02be720a),
+                    "sopsndg.u21", CRC(caae114a) SHA1(84703649d7ba05d011348f84e4cac31a023146c0),
+                    "sopsndg.u36", CRC(08d715b5) SHA1(ddccd311ba2b608ab0845afb3ef63b8d3425d530),
+                    "sopsndg.u37", CRC(2405df73) SHA1(b8074610d9d87d3f1c0244ef0f450c766aac8a20))
+SE_ROMEND
+#define input_ports_sopranog input_ports_sopranos
+#define init_sopranog init_sopranos
+CORE_CLONEDEFNV(sopranog,sopranos,"The Sopranos (1.07 Germany)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ The Sopranos (1.07 France)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(sopranof, "sopcpuf.107", CRC(1cc86040) SHA1(0b4322eca8a5be7ea92356adf65b6c6c6f4205ca))
+DE_DMD32ROM8x(      "sopdspf.100", CRC(18c36c19) SHA1(2b2e5cb00b92d7c8875de2d2d19b82305d9fb27f))
+DE3SA_SOUNDROM18888("sopsndf.u7",  CRC(57426738) SHA1(393e1d654ef09172580ad9a2722f696b6e44ec0f),
+                    "sopsndf.u17", CRC(9e0dd4a8) SHA1(82b772eb7081f22f1203ed113ec7b05f2e26258c),
+                    "sopsndf.u21", CRC(28726d20) SHA1(63c6bea953cc34b6a3c2c9688ab86641f94cd227),
+                    "sopsndf.u36", CRC(99549d4a) SHA1(15e3d35b9cefbc8825a7dee5309adc2526de3dec),
+                    "sopsndf.u37", CRC(2b4a9130) SHA1(eed9c84c932bb86954226b0d51461c5094ebe02e))
+SE_ROMEND
+#define input_ports_sopranof input_ports_sopranos
+#define init_sopranof init_sopranos
+CORE_CLONEDEFNV(sopranof,sopranos,"The Sopranos (1.07 France)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ The Sopranos (1.07 Spain)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(sopranol, "sopcpul.107", CRC(a08311fe) SHA1(93e3ecc3e2c69f30d0fbb72c7426f3c2ba4b27b4))
+DE_DMD32ROM8x(      "sopdspl.100", CRC(1f52723e) SHA1(c972252a139c871e4bbbf20382ceb738b84f9a18))
+DE3SA_SOUNDROM18888("sopsndl.u7",  CRC(137110f2) SHA1(9bd911fc74b91e811ada4c66bec214d22506a646),
+                    "sopsndl.u17", CRC(3d5189e6) SHA1(7d846d0b18678ff7aa44029643571e237bc48d58),
+                    "sopsndl.u21", CRC(66cdb90d) SHA1(d96e1b92e54a94b5e0ed9d62cff9220b9e215e85),
+                    "sopsndl.u36", CRC(147c4216) SHA1(ded2917188bea51cb03db72fe53fcd76a3e66ab9),
+                    "sopsndl.u37", CRC(cfe814fb) SHA1(51b6b10dda4640f8569e610b41c77e3657eabff2))
+SE_ROMEND
+#define input_ports_sopranol input_ports_sopranos
+#define init_sopranol init_sopranos
+CORE_CLONEDEFNV(sopranol,sopranos,"The Sopranos (1.07 Spain)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ The Sopranos (1.07 Italy)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(sopranoi, "sopcpui.107", CRC(d5cd6b07) SHA1(830de4af7f54c85feeae6fb7f630f84e48fdb98b))
+DE_DMD32ROM8x(      "sopdspi.100", CRC(2a6320c1) SHA1(8cd25c53abb353cbbb88af3e7384c7275d836dbb))
+DE3SA_SOUNDROM18888("sopsndi.u7",  CRC(afb9c474) SHA1(fd184e8cd6afff61fd2874b08f0e841934916ccb),
+                    "sopsndi.u17", CRC(7cb762dd) SHA1(84ec54d6495ccb02052c8d5b6b66c018a702bb4e),
+                    "sopsndi.u21", CRC(37727b76) SHA1(8801091870a30222d5a99535bbe15ac97334e368),
+                    "sopsndi.u36", CRC(71568348) SHA1(516d5ea35f8323e247c25000cb223f3539796ea1),
+                    "sopsndi.u37", CRC(b34c0a5f) SHA1(b84979d6eef7d23e6dd5410993d83fba2121bc6a))
+SE_ROMEND
+#define input_ports_sopranoi input_ports_sopranos
+#define init_sopranoi init_sopranos
+CORE_CLONEDEFNV(sopranoi,sopranos,"The Sopranos (1.07 Italy)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
