@@ -18,6 +18,9 @@
 //MAME core bug with timing, but I can't find it. I really hope someone can fix this hack someday..SJE 09/17/03
 #define PREDCS_FIRQ_HACK
 
+// fix for sshtl_l7 not playing soundcommand 0x3F
+#define SPACE_SHUTTLE_FIX 1
+
 /*----------------------
 /    System 3 - 7
 /-----------------------*/
@@ -198,14 +201,17 @@ static const struct pia6821_interface s11s_pia[] = {{
  /* CB1       (I) 1ms */
  /* CA2       55516 Clk */
  /* CB2       55516 Dig */
- /* in  : A/B,CA/B1,CA/B2 */ soundlatch_r, 0, 0, 0, 0, 0,
+ /* subType 0 and 4 for S9 and S11S */
+ /* in  : A/B,CA/B1,CA/B2 */ soundlatch_r, 0, PIA_UNUSED_VAL(0), 0, 0, 0,
  /* out : A/B,CA/B2       */ 0, DAC_0_data_w, hc55516_0_clock_w, hc55516_0_digit_w,
  /* irq : A/B             */ s11s_piaIrq, s11s_piaIrq
 },{
+ /* subType 1 for S11X */
  /* in  : A/B,CA/B1,CA/B2 */ soundlatch_r, 0, 0, 0, 0, 0,
  /* out : A/B,CA/B2       */ 0, DAC_1_data_w, hc55516_1_clock_w, hc55516_1_digit_w,
  /* irq : A/B             */ s11s_piaIrq, s11s_piaIrq
 },{
+ /* subType 2 for S11B2 */
  /* in  : A/B,CA/B1,CA/B2 */ soundlatch_r, 0, 0, 0, 0, 0,
  /* out : A/B,CA/B2       */ 0, DAC_1_data_w, hc55516_0_clock_w, hc55516_0_digit_w,
  /* irq : A/B             */ s11s_piaIrq, s11s_piaIrq
@@ -222,6 +228,13 @@ static void s11s_init(struct sndbrdData *brdData) {
     cpu_setbank(S11S_BANK0, s11slocals.brdData.romRegion+0xc000);
     cpu_setbank(S11S_BANK1, s11slocals.brdData.romRegion+0x4000);
   }
+#if SPACE_SHUTTLE_FIX
+  // Give Space Shuttle a nonzero random seed so soundcommand #3F will be audible
+  if (strcmp(Machine->gamedrv->name,"sshtl_l7")==0) {
+    logerror("wmssnd.c: applying space shuttle specific ram init\n");
+    memory_region(S9S_CPUREGION)[0x61] = 0xFF;
+  }
+#endif
 }
 static WRITE_HANDLER(s11s_manCmd_w) {
   soundlatch_w(0, data); pia_set_input_ca1(S11S_PIA0, 1); pia_set_input_ca1(S11S_PIA0, 0);
