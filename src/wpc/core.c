@@ -43,8 +43,7 @@ static void drawChar1(struct mame_bitmap *bitmap, int row, int col, UINT32 bits,
 static UINT32 core_initDisplaySize(const core_tLCDLayout *layout);
 
 core_tGlobals     coreGlobals;
-core_tData        coreData;
-core_tGlobals_dmd coreGlobals_dmd;
+struct pinMachine *coreData;
 const core_tGameData *core_gameData = NULL;  /* data about the running game */
 const int core_bcd2seg7[16] = {
 /* 0    1    2    3    4    5    6    7    8    9  */
@@ -55,7 +54,7 @@ const int core_bcd2seg7[16] = {
 #endif /* MAME_DEBUG */
 };
 const int core_bcd2seg9[16] = {
-/* 0    1    2    3    4    5    6    7    8    9  */
+/* 0     1    2    3    4    5    6    7    8    9  */
   0x3f,0x80,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f
 #ifdef MAME_DEBUG
 /* A    B    C    D    E */
@@ -73,6 +72,8 @@ static struct {
   core_tSeg lastSeg;
   int       firstSimRow;
   tSegData  *segData;
+  void      *timers[5];
+  int       displaySize; // 1=compact 2=normal
 } locals;
 
 /*--------
@@ -152,9 +153,9 @@ static PALETTE_INIT(core) {
     rStart = palette[DMD_DOTOFF*3+0];
     gStart = palette[DMD_DOTOFF*3+1];
     bStart = palette[DMD_DOTOFF*3+2];
-    rStep = (palette[DMD_DOTON*3+0] * options.vector_flicker / 0xff - rStart) / 6;
-    gStep = (palette[DMD_DOTON*3+1] * options.vector_flicker / 0xff - gStart) / 6;
-    bStep = (palette[DMD_DOTON*3+2] * options.vector_flicker / 0xff - bStart) / 6;
+    rStep = (palette[DMD_DOTON*3+0] * pmoptions.dmd_antialias / 100 - rStart) / 6;
+    gStep = (palette[DMD_DOTON*3+1] * pmoptions.dmd_antialias / 100 - gStart) / 6;
+    bStep = (palette[DMD_DOTON*3+2] * pmoptions.dmd_antialias / 100 - bStart) / 6;
 
     for (ii = START_ANTIALIAS+1; ii < (START_ANTIALIAS+1)+6; ii++) {
       rStart += rStep; gStart += gStep; bStart += bStep;
@@ -182,11 +183,11 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
     if (ii > 0) {
       for (jj = 0; jj < layout->length; jj++) {
         *line++ = dmdColor[dotCol[ii][jj]];
-        if (coreGlobals_dmd.DMDsize > 1)
+        if (locals.displaySize > 1)
           *line++ = aaColor[dotCol[ii][jj] + dotCol[ii][jj+1]];
       }
     }
-    if (coreGlobals_dmd.DMDsize > 1) {
+    if (locals.displaySize > 1) {
       int col1 = dotCol[ii][0] + dotCol[ii+1][0];
       line = (*lines++) + layout->left;
       for (jj = 0; jj < layout->length; jj++) {
@@ -197,7 +198,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
       }
     }
   }
-  osd_mark_dirty(0,0,layout->length*coreGlobals_dmd.DMDsize,layout->start*coreGlobals_dmd.DMDsize);
+  osd_mark_dirty(0,0,layout->length*locals.displaySize,layout->start*locals.displaySize);
 }
 
 /*-----------------------------------
@@ -262,7 +263,7 @@ void core_updateSw(int flipEn) {
   int ii;
 
   if (g_fHandleKeyboard) {
-    for (ii = 0; ii < CORE_COREINPORT+(coreData.coreDips+31)/16; ii++)
+    for (ii = 0; ii < CORE_COREINPORT+(coreData->coreDips+31)/16; ii++)
       inports[ii] = readinputport(ii);
 
     /*-- buttons --*/
@@ -320,7 +321,7 @@ void core_updateSw(int flipEn) {
   coreGlobals.swMatrix[(core_gameData->gen & GEN_GTS3) ? 15 : CORE_FLIPPERSWCOL] = swFlip;
 
   /*-- update core dependent switches --*/
-  if (coreData.updSw)  coreData.updSw(g_fHandleKeyboard ? inports : NULL);
+  if (coreData->updSw)  coreData->updSw(g_fHandleKeyboard ? inports : NULL);
 
   /*-- update game dependent switches --*/
   if (g_fHandleMechanics) {
@@ -328,7 +329,7 @@ void core_updateSw(int flipEn) {
   }
   /*-- Run simulator --*/
   if (coreGlobals.simAvail)
-    sim_run(inports, CORE_COREINPORT+(coreData.coreDips+31)/16,
+    sim_run(inports, CORE_COREINPORT+(coreData->coreDips+31)/16,
             (inports[CORE_SIMINPORT] & SIM_SWITCHKEY) == 0,
             (SIM_BALLS(inports[CORE_SIMINPORT])));
   { /*-- check changed solenoids --*/
@@ -341,7 +342,7 @@ void core_updateSw(int flipEn) {
         if (chgSol & 0x01) {
           /*-- solenoid has changed state --*/
           OnSolenoid(ii, allSol & 0x01);
-          if (!coreGlobals_dmd.dmdOnly && (allSol & 0x01))
+          if (!pmoptions.dmd_only && (allSol & 0x01))
 			core_textOutf(235,0,BLACK,"%2d",ii);
 
           if (coreGlobals.soundEn)
@@ -432,7 +433,7 @@ VIDEO_UPDATE(core_status) {
 
 
   /*-- anything to do ? --*/
-  if ((coreGlobals_dmd.dmdOnly) ||
+  if ((pmoptions.dmd_only) ||
       (coreGlobals.soundEn && (!manual_sound_commands(bitmap))))
     return;
 
@@ -522,20 +523,20 @@ VIDEO_UPDATE(core_status) {
   firstRow += 20;
   {
     BMTYPE **line = &lines[firstRow];
-    if (coreData.diagLEDs == CORE_DIAG7SEG)
+    if (coreData->diagLEDs == 0xff) /* 7 SEG */
       drawChar1(bitmap, firstRow, 5, coreGlobals.diagnosticLed,2);
     else {
       bits = coreGlobals.diagnosticLed;
 
       // Draw LEDS Vertically
-      if (coreData.diagLEDs & DIAGLED_VERTICAL) {
-        for (ii = 0; ii < (coreData.diagLEDs & ~DIAGLED_VERTICAL); ii++) {
+      if (coreData->diagLEDs & DIAGLED_VERTICAL) {
+        for (ii = 0; ii < (coreData->diagLEDs & ~DIAGLED_VERTICAL); ii++) {
 	  line[0][5] = dotColor[bits & 0x01];
 	  line += 2; bits >>= 1;
 	}
       }
       else { // Draw LEDS Horizontally
-	for (ii = 0; ii < coreData.diagLEDs; ii++) {
+	for (ii = 0; ii < coreData->diagLEDs; ii++) {
 	  line[0][5+ii*2] = dotColor[bits & 0x01];
 	  bits >>= 1;
 	}
@@ -735,7 +736,7 @@ int core_m2swSeq(int col, int row) { return col*8+row-7; }
 /  switches even if the switch is active low.
 /-------------------------------------------*/
 int core_getSw(int swNo) {
-  if (coreData.sw2m) swNo = coreData.sw2m(swNo); else swNo = (swNo/10)*8+(swNo%10-1);
+  if (coreData->sw2m) swNo = coreData->sw2m(swNo); else swNo = (swNo/10)*8+(swNo%10-1);
   return (coreGlobals.swMatrix[swNo/8] ^ coreGlobals.invSw[swNo/8]) & (1<<(swNo%8));
 }
 
@@ -754,7 +755,7 @@ int core_getSwCol(int colEn) {
 /  Set/reset a switch
 /-----------------------*/
 void core_setSw(int swNo, int value) {
-  if (coreData.sw2m) swNo = coreData.sw2m(swNo); else swNo = (swNo/10)*8+(swNo%10-1);
+  if (coreData->sw2m) swNo = coreData->sw2m(swNo); else swNo = (swNo/10)*8+(swNo%10-1);
   coreGlobals.swMatrix[swNo/8] &= ~(1<<(swNo%8)); /* clear the bit first */
   coreGlobals.swMatrix[swNo/8] |=  ((value ? 0xff : 0) ^ coreGlobals.invSw[swNo/8]) & (1<<(swNo%8));
 }
@@ -764,7 +765,7 @@ void core_setSw(int swNo, int value) {
 /-------------------------*/
 void core_updInvSw(int swNo, int inv) {
   int bit;
-  if (coreData.sw2m) swNo = coreData.sw2m(swNo); else swNo = (swNo/10)*8+(swNo%10-1);
+  if (coreData->sw2m) swNo = coreData->sw2m(swNo); else swNo = (swNo/10)*8+(swNo%10-1);
   bit = (1 << (swNo%8));
 
   if (inv)
@@ -903,67 +904,96 @@ static void drawChar1(struct mame_bitmap *bitmap, int row, int col, UINT32 bits,
   osd_mark_dirty(col,row,col+s->cols,row+s->rows);
 }
 
-int core_init(const core_tData *cd) {
-  UINT32 size;
-  /*-- init variables --*/
-  memset(&coreGlobals, 0, sizeof(coreGlobals));
-  memcpy(&coreData, cd, sizeof(coreData));
-  memset(&locals.lastSeg, -1, sizeof(locals.lastSeg));
+static MACHINE_INIT(core) {
+  if (!coreData) { // first time
+    /*-- init variables --*/
+    memset(&coreGlobals, 0, sizeof(coreGlobals));
+    memset(&locals, 0, sizeof(locals));
+    memset(&locals.lastSeg, -1, sizeof(locals.lastSeg));
+    coreData = &Machine->drv->pinmame;
+    //-- initialise timers --
+    if (coreData->timers[0].callback) {
+      int ii;
+      for (ii = 0; ii < 5; ii++) {
+        if (coreData->timers[ii].callback) {
+          locals.timers[ii] = timer_alloc(coreData->timers[ii].callback);
+          timer_adjust(locals.timers[ii], coreData->timers[ii].rate, 0, coreData->timers[ii].rate);
+        }
+      }
+    }
+    /*-- init switch matrix --*/
+    memcpy(&coreGlobals.invSw, core_gameData->wpc.invSw, sizeof(core_gameData->wpc.invSw));
+    memcpy(coreGlobals.swMatrix, coreGlobals.invSw, sizeof(coreGlobals.invSw));
 
-  /*-- init switch matrix --*/
-  memcpy(&coreGlobals.invSw, core_gameData->wpc.invSw, sizeof(core_gameData->wpc.invSw));
-  memcpy(coreGlobals.swMatrix, coreGlobals.invSw, sizeof(coreGlobals.invSw));
+    /*-- command line options --*/
+    locals.displaySize = pmoptions.dmd_compact ? 1 : 2;
+    // Skip core_initDisplaySize if using CORE_VIDEO flag.. but this code must also run if NO layout defined
+    if( !(core_gameData->lcdLayout) ||
+  	   (core_gameData->lcdLayout && core_gameData->lcdLayout->type != CORE_VIDEO)
+  	){
+      UINT32 size = core_initDisplaySize(core_gameData->lcdLayout) >> 16;
+  	  if ((size > CORE_SCREENX) && (locals.displaySize > 1)) {
+  		/* force small display */
+  		locals.displaySize = 1;
+  		core_initDisplaySize(core_gameData->lcdLayout);
+  	  }
+    }
+    /*-- Sound enabled ? */
+    if (((Machine->gamedrv->flags & GAME_NO_SOUND) == 0) && Machine->sample_rate) {
+      coreGlobals.soundEn = TRUE;
+      /*-- init sound commander --*/
+      snd_cmd_init(coreData->sndCmd, coreData->sndHead);
+    }
+    else
+      snd_cmd_init(NULL, NULL);
 
-  /*-- command line options --*/
-  coreGlobals_dmd.DMDsize = options.antialias ? 2 : 1;
-  coreGlobals_dmd.dmdOnly = !options.translucency;
-  //Skip core_initDisplaySize if using CORE_VIDEO flag.. but this code must also run if NO layout defined
-  if( !(core_gameData->lcdLayout) ||
-	   (core_gameData->lcdLayout && core_gameData->lcdLayout->type != CORE_VIDEO)
-	){
-	  size = core_initDisplaySize(core_gameData->lcdLayout) >> 16;
-	  if ((size > CORE_SCREENX) && (coreGlobals_dmd.DMDsize > 1)) {
-		/* force small display */
-		coreGlobals_dmd.DMDsize = 1;
-		core_initDisplaySize(core_gameData->lcdLayout);
-	  }
+    /*-- init simulator --*/
+    if (g_fHandleKeyboard && core_gameData->simData) {
+      int inports[CORE_MAXPORTS];
+      int ii;
+
+      for (ii = 0; ii < CORE_COREINPORT+(coreData->coreDips+31)/16; ii++)
+        inports[ii] = readinputport(ii);
+
+      coreGlobals.simAvail = sim_init((sim_tSimData *)core_gameData->simData,
+                                         inports,CORE_COREINPORT+(coreData->coreDips+31)/16);
+    }
+    /*-- finally init the core --*/
+    if (coreData->init) coreData->init();
   }
-  /*-- Sound enabled ? */
-  if (((Machine->gamedrv->flags & GAME_NO_SOUND) == 0) && Machine->sample_rate) {
-    coreGlobals.soundEn = TRUE;
-    /*-- init sound commander --*/
-    snd_cmd_init(coreData.sndCmd, coreData.sndHead);
-  }
-  else
-    snd_cmd_init(NULL, NULL);
+  /*-- now reset everything --*/
+  if (coreData->reset) coreData->reset();
 
-  /*-- init simulator --*/
-  if (g_fHandleKeyboard && core_gameData->simData) {
-    int inports[CORE_MAXPORTS];
-    int ii;
-
-    for (ii = 0; ii < CORE_COREINPORT+(coreData.coreDips+31)/16; ii++)
-      inports[ii] = readinputport(ii);
-
-    coreGlobals.simAvail = sim_init((sim_tSimData *)core_gameData->simData,
-                                       inports,CORE_COREINPORT+(coreData.coreDips+31)/16);
-  }
   OnStateChange(1); /* We have a lift-off */
 
 /* TOM: this causes to draw the static sim text */
   schedule_full_refresh();
-
-  return 0;
 }
 
-void core_exit(void) {
+static MACHINE_STOP(core) {
+  int ii;
+  if (coreData->stop) coreData->stop();
   snd_cmd_exit();
-//  mech_exit();
+  for (ii = 0; ii < 5; ii++) {
+    if (locals.timers[ii])
+      timer_remove(locals.timers[ii]);
+  }
+  memset(locals.timers, 0, sizeof(locals.timers));
+  coreData = NULL;
 }
+
+void machine_add_timer(struct InternalMachineDriver *machine, void (*func)(int), int rate) {
+  int ii;
+  for (ii = 0; machine->pinmame.timers[ii].callback; ii++)
+    ;
+  machine->pinmame.timers[ii].callback = func;
+  machine->pinmame.timers[ii].rate = rate;
+}
+
 static UINT32 core_initDisplaySize(const core_tLCDLayout *layout) {
   int maxX = 0, maxY = 0;
 
-  locals.segData = &segData[coreGlobals_dmd.DMDsize == 1][0];
+  locals.segData = &segData[locals.displaySize == 1][0];
   if (layout) {
     while (layout->length) {
       int tmp;
@@ -976,7 +1006,7 @@ static UINT32 core_initDisplaySize(const core_tLCDLayout *layout) {
       layout += 1;
     }
   }
-  else if (coreGlobals_dmd.DMDsize > 1)
+  else if (locals.displaySize > 1)
 #ifndef VPINMAME
     { maxX = 256; maxY = 65; }
 #else
@@ -985,7 +1015,7 @@ static UINT32 core_initDisplaySize(const core_tLCDLayout *layout) {
   else
     { maxX = 129; maxY = 33; }
   locals.firstSimRow = maxY + 5;
-  if (!coreGlobals_dmd.dmdOnly) {
+  if (!pmoptions.dmd_only) {
     maxY += 180;
     if (maxX < 256) maxX = 256;
   }
@@ -1042,4 +1072,7 @@ MACHINE_DRIVER_START(PinMAME)
   MDRV_PALETTE_INIT(core)
   MDRV_PALETTE_LENGTH(sizeof(core_palette)/sizeof(core_palette[0][0])/3)
   MDRV_FRAMES_PER_SECOND(60)
+  MDRV_SWITCH_CONV(core_swSeq2m,core_m2swSeq)
+  MDRV_LAMP_CONV(core_swSeq2m,core_m2swSeq)
+  MDRV_MACHINE_INIT(core) MDRV_MACHINE_STOP(core)
 MACHINE_DRIVER_END

@@ -24,10 +24,6 @@
   #define SOUNDREGION(size ,reg)   ROM_REGION(size, reg, ROMREGION_SOUNDONLY)
   #define SOUNDREGIONE(size ,reg)  ROM_REGION(size, reg, ROMREGION_SOUNDONLY|ROMREGION_ERASE)
 
-/*-- no of DMD frames to add together to create shades --*/
-/*-- (hardcoded, do not change)                        --*/
-#define DMD_FRAMES         3
-
 /*-- default screen size */
 #ifdef VPINMAME
 #  define CORE_SCREENX 640
@@ -332,15 +328,6 @@ typedef struct {
   core_tLampData lamps[88];      /*Can support up to 88 lamps!*/
 } core_tLampDisplay;
 
-/*-- Interface data --*/
-typedef struct {
-  UINT8 *DMDFrames[DMD_FRAMES];
-  int    nextDMDFrame;
-  int    dmdOnly;         /* draw only the dmd (or alpha segemnts) */
-  int    DMDsize;         /* 1=compact, 2=Normal */
-} core_tGlobals_dmd;
-extern core_tGlobals_dmd coreGlobals_dmd;
-
 #ifdef LSB_FIRST
 typedef struct { UINT8 lo, hi, dmy1, dmy2; } core_tSeg[3][20];
 #else /* LSB_FIRST */
@@ -364,7 +351,7 @@ typedef struct {
 extern core_tGlobals coreGlobals;
 /* shortcut for coreGlobals */
 #define cg coreGlobals
-
+extern struct pinMachine *coreData;
 /*Exported variables*/
 /*-- There are no custom fields in the game driver --*/
 /*-- so I have to invent some by myself. Each driver --*/
@@ -400,24 +387,9 @@ typedef struct {
 } core_tGameData;
 extern const core_tGameData *core_gameData;
 
-/*-- each core must fill in one of these --*/
-typedef struct {
-  int  coreDips;               /* Number of core DIPs */
-  void (*updSw)(int *inport);  /* update core specific switches */
-  int  diagLEDs;               /* number of diagnostic LEDs */
-  mem_write_handler sndCmd;    /* send a sound command */
-  char sndHead[10];            /* heading in sound.dat */
-  int (*sw2m)(int no);         /* conversion function for switch */
-  int (*lamp2m)(int no);       /* conversion function for lamps */
-  int (*m2sw)(int col, int row);
-  int (*m2lamp)(int col, int row);
-} core_tData;
-#define CORE_DIAG7SEG           0xff
-#define DIAGLED_VERTICAL	0x100	/*Flag indicated DIAG LEDS are Vertically Positioned*/
-extern core_tData coreData;
-extern const int core_bcd2seg7[]; /* BCD to 7 segment display */
 extern const int core_bcd2seg9[]; /* BCD to 9 segment display */
-#define core_bcd2seg core_bcd2seg7
+extern const int core_bcd2seg7[]; /* BCD to 9 segment display */
+#define core_bcd2seg  core_bcd2seg7
 
 /*-- Exported Display handling functions--*/
 extern VIDEO_UPDATE(core_status);
@@ -431,8 +403,8 @@ void CLIB_DECL core_textOutf(int x, int y, int color, char *text, ...);
 void core_setLamp(UINT8 *lampMatrix, int col, int row);
 
 /*-- switch handling --*/
-extern int core_swSeq2m(int no);
-extern int core_m2swSeq(int col, int row);
+//extern int core_swSeq2m(int no);
+//extern int core_m2swSeq(int col, int row);
 extern void core_setSw(int swNo, int value);
 extern int core_getSw(int swNo);
 extern void core_updInvSw(int swNo, int inv);
@@ -459,8 +431,8 @@ INLINE UINT8 core_revnyb(UINT8 x) { return core_swapNyb[x]; }
 extern int core_getDip(int dipBank);
 
 /*-- startup/shutdown --*/
-int core_init(const core_tData *cd);
-void core_exit(void);
+//int core_init(void);
+//void core_exit(void);
 
 extern MACHINE_DRIVER_EXTERN(PinMAME);
 #endif /* INC_CORE */
