@@ -30,6 +30,8 @@ const struct GameDriver *test_drivers[] = { 0 };
 	#define INCLUDE_NEW_STERN 1
 #endif
 
+DRIVERNV(st_game)       //Unknown game running on old Stern hardware
+
 // --------------------
 // ALVIN G. AND CO.
 // --------------------
@@ -43,7 +45,7 @@ DRIVERNV(pstlpkr)		//Pistol Poker (1993)
 // ---------------
 // ASTRO GAMES
 // ---------------
-DRIVERNV(blkshpsq)      //Black Sheep Squadron (1979) - using Bally hardware
+DRIVERNV(blkshpsq)      //Black Sheep Squadron (1979) - using old Stern hardware
 
 // ---------------
 // ATARI GAMES
@@ -493,27 +495,27 @@ DRIVERNV(hirol_gr)      //Whitestar: 01/01 High Roller Casino (French display)
 DRIVERNV(hirol_it)      //Whitestar: 01/01 High Roller Casino (Italian display)
 //
 #ifdef INCLUDE_NEW_STERN
-DRIVERNV(austin)        //Whitestar: 05/01 Austin Powers (3.01)
+DRIVERNV(austin)        //Whitestar: 05/01 Austin Powers
 DRIVERNV(austind)       //Whitestar: 05/01 Austin Powers (German display)
 DRIVERNV(austinf)       //Whitestar: 05/01 Austin Powers (French display)
 DRIVERNV(austini)       //Whitestar: 05/01 Austin Powers (Italian display)
 DRIVERNV(austin2)       //Whitestar: 05/01 Austin Powers (2.0 - With "White House" scenes)
-DRIVERNV(monopoly)      //Whitestar: 09/01 Monopoly (3.03)
+DRIVERNV(monopoly)      //Whitestar: 09/01 Monopoly
 DRIVERNV(monopold)      //Whitestar: 09/01 Monopoly (German display)
 DRIVERNV(monopole)      //Whitestar: 09/01 Monopoly (Spanish display)
 DRIVERNV(monopolf)      //Whitestar: 09/01 Monopoly (French display)
 DRIVERNV(monopoli)      //Whitestar: 09/01 Monopoly (Italian display)
-DRIVERNV(playboys)      //Whitestar: 02/02 Playboy (5.0)
+DRIVERNV(playboys)      //Whitestar: 02/02 Playboy
 DRIVERNV(playboyd)      //Whitestar: 02/02 Playboy (German display)
 DRIVERNV(playboye)      //Whitestar: 02/02 Playboy (Spanish display)
 DRIVERNV(playboyf)      //Whitestar: 02/02 Playboy (French display)
 DRIVERNV(playboyi)      //Whitestar: 02/02 Playboy (Italian display)
-DRIVERNV(rctycn)        //Whitestar: 09/02 Roller Coaster Tycoon (7.01)
+DRIVERNV(rctycn)        //Whitestar: 09/02 Roller Coaster Tycoon
 DRIVERNV(rctycnd)       //Whitestar: 09/02 Roller Coaster Tycoon (German display)
 DRIVERNV(rctycne)       //Whitestar: 09/02 Roller Coaster Tycoon (Spanish display)
 DRIVERNV(rctycnf)       //Whitestar: 09/02 Roller Coaster Tycoon (French display)
 DRIVERNV(rctycni)       //Whitestar: 09/02 Roller Coaster Tycoon (Italian display)
-DRIVERNV(simpprty)      //Whitestar: 01/03 The Simpsons Pinball Party (2.04)
+DRIVERNV(simpprty)      //Whitestar: 01/03 The Simpsons Pinball Party
 DRIVERNV(simpprtd)      //Whitestar: 01/03 The Simpsons Pinball Party (German display)
 DRIVERNV(simpprte)      //Whitestar: 01/03 The Simpsons Pinball Party (Spanish display)
 DRIVERNV(simpprtf)      //Whitestar: 01/03 The Simpsons Pinball Party (French display)
@@ -523,6 +525,11 @@ DRIVERNV(term3g)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (G
 DRIVERNV(term3l)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (Spain)
 DRIVERNV(term3f)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (France)
 DRIVERNV(term3i)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (Italy)
+DRIVERNV(lotr)          //Whitestar: 11/03 Lord Of The Rings
+DRIVERNV(lotr_gr)       //Whitestar: 11/03 Lord Of The Rings (Germany)
+DRIVERNV(lotr_sp)       //Whitestar: 11/03 Lord Of The Rings (Spain)
+DRIVERNV(lotr_fr)       //Whitestar: 11/03 Lord Of The Rings (France)
+DRIVERNV(lotr_it)       //Whitestar: 11/03 Lord Of The Rings (Italy)
 #endif /* INCLUDE_NEW_STERN */
 
 // ---------------

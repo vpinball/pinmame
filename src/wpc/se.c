@@ -47,7 +47,7 @@ struct {
   int    auxdata;
   /* Mini DMD stuff */
   int    lastgiaux, miniidx, miniframe;
-  int    minidata[4], minidmd[4][3][8];
+  int    minidata[7], minidmd[4][3][8];
 } selocals;
 
 static INTERRUPT_GEN(se_vblank) {
@@ -200,6 +200,23 @@ static WRITE_HANDLER(giaux_w) {
     }
     selocals.lastgiaux = data;
   }
+  else if (core_gameData->hw.display & SE_MINIDMD2) {
+    int ii, bits;
+    if (data & ~selocals.lastgiaux & 0x80) { /* clock in data to minidmd */
+      selocals.miniidx = (selocals.miniidx + 1) % 7;
+      selocals.minidata[selocals.miniidx] = selocals.auxdata & 0x7f;
+      for (ii=0, bits = 0x01; ii < 14; ii++, bits <<= 1) {
+        if (bits & ((selocals.minidata[3] << 7) | selocals.minidata[4])) {
+          selocals.minidmd[0][ii/7][ii%7] = selocals.minidata[0];
+          selocals.minidmd[1][ii/7][ii%7] = selocals.minidata[1];
+          selocals.minidmd[2][ii/7][ii%7] = selocals.minidata[5];
+          selocals.minidmd[3][ii/7][ii%7] = selocals.minidata[6];
+          break;
+        }
+      }
+    }
+    selocals.lastgiaux = data;
+  }
 }
 
 // MINI DMD Type 1 (HRC) (15x7)
@@ -252,6 +269,29 @@ PINMAME_VIDEO_UPDATE(seminidmd3_update) {
       for (ii = 0, bits = 0x01; ii < 7; ii++, bits <<= 1)
         *line++ = ((selocals.minidmd[0][jj][kk] & bits) + (selocals.minidmd[1][jj][kk] & bits) +
                    (selocals.minidmd[2][jj][kk] & bits))/bits;
+  }
+  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+  return 0;
+}
+// 3-Color MINI DMD Type 4 (Simpsons) (14x10)
+PINMAME_VIDEO_UPDATE(seminidmd4_update) {
+  static int color[2][2] = {
+    { 0, 6 }, { 7, 9 } // off, green, red, yellow
+  };
+  int ii, kk, bits, isRed, isGrn;
+  UINT8 *line;
+  tDMDDot dotCol;
+  for (ii=0; ii < 14; ii++) {
+    for (kk=0, bits = 0x40; kk < 7; kk++, bits >>= 1) {
+	  isRed = (selocals.minidmd[0][ii/7][ii%7] & bits) > 0;
+	  isGrn = (selocals.minidmd[1][ii/7][ii%7] & bits) > 0;
+	  line = &dotCol[ii+1][kk];
+      *line = color[isRed][isGrn];
+	  isRed = (selocals.minidmd[2][ii/7][ii%7] & bits) > 0;
+	  isGrn = (selocals.minidmd[3][ii/7][ii%7] & bits) > 0;
+      line = &dotCol[ii+1][7+kk];
+      *line = color[isRed][isGrn];
+    }
   }
   video_update_core_dmd(bitmap, cliprect, dotCol, layout);
   return 0;

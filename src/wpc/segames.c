@@ -527,7 +527,7 @@ CORE_CLONEDEFNV(austin2,austin,"Austin Powers (2.0)",2001,"Stern",de_mSES2,GAME_
 /-------------------------------------------------------------------*/
 static struct core_dispLayout dispMonopoly[] = {
   DISP_SEG_IMPORT(se_dmd128x32),
-  {34,10, 7, 15, CORE_DMD, (void *)seminidmd2_update}, {0}
+  {34,10, 7,15, CORE_DMD|CORE_DMDNOAA, (void *)seminidmd2_update}, {0}
 };
 INITGAME(monopoly,GEN_WS,dispMonopoly,SE_MINIDMD)
 SE128_ROMSTART(monopoly,"moncpu.303",CRC(4a66c9e4) SHA1(a368b0ced32f1017e781a59108670b979b50c9d7))
@@ -677,7 +677,7 @@ CORE_CLONEDEFNV(playboye,playboys,"Playboy (Spain)",2002,"Stern",de_mSES2,GAME_N
 /-------------------------------------------------------------------*/
 static struct core_dispLayout dispRCT[] = {
   DISP_SEG_IMPORT(se_dmd128x32),
-  {34,10, 5,21, CORE_DMD, (void *)seminidmd3_update}, {0}
+  {34,10, 5,21, CORE_DMD|CORE_DMDNOAA, (void *)seminidmd3_update}, {0}
 };
 INITGAME(rctycn, GEN_WS, dispRCT, SE_MINIDMD)
 SE128_ROMSTART(rctycn, "rctcpu.701",CRC(e1fe89f6) SHA1(9a76a5c267e055fcf0418394762bcea758da02d6))
@@ -751,7 +751,11 @@ CORE_CLONEDEFNV(rctycne,rctycn,"Roller Coaster Tycoon (Spain)",2002,"Stern",de_m
 /*-------------------------------------------------------------------
 / The Simpsons Pinball Party (4.00)
 /-------------------------------------------------------------------*/
-INITGAME(simpprty,GEN_WS,se_dmd128x32,0)
+static struct core_dispLayout dispSPP[] = {
+  DISP_SEG_IMPORT(se_dmd128x32),
+  {34,10,10,14, CORE_DMD|CORE_DMDNOAA, (void *)seminidmd4_update}, {0}
+};
+INITGAME(simpprty,GEN_WS,dispSPP,SE_MINIDMD2)
 SE128_ROMSTART(simpprty, "spp-cpu.400",CRC(530b9782) SHA1(573b20cac205b7989cdefceb2c31cb7d88c2951a))
 DE_DMD32ROM8x(           "sppdspa.400",CRC(cd5eaab7) SHA1(a06bef6fc0e7f3c0616439cb0e0431a3d52cdfa1))
 DE2S_SOUNDROM18888(      "spp101.u7",  CRC(32efcdf6) SHA1(1d437e8649408be91e0dd10598cc67336203077f),
@@ -761,7 +765,7 @@ DE2S_SOUNDROM18888(      "spp101.u7",  CRC(32efcdf6) SHA1(1d437e8649408be91e0dd1
                          "spp100.u37", CRC(0738e1fc) SHA1(268462c06e5c1f286e5faaee1c0815448cc2eafa))
 SE_ROMEND
 #define input_ports_simpprty input_ports_se
-CORE_GAMEDEFNV(simpprty,"The Simpsons Pinball Party",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_NOCRC)
+CORE_GAMEDEFNV(simpprty,"The Simpsons Pinball Party",2003,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / The Simpsons Pinball Party (Germany)
@@ -776,7 +780,7 @@ DE2S_SOUNDROM18888(      "spp101.u7",  CRC(32efcdf6) SHA1(1d437e8649408be91e0dd1
 SE_ROMEND
 #define input_ports_simpprtd input_ports_se
 #define init_simpprtd init_simpprty
-CORE_CLONEDEFNV(simpprtd,simpprty,"The Simpsons Pinball Party (Germany)",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_NOCRC)
+CORE_CLONEDEFNV(simpprtd,simpprty,"The Simpsons Pinball Party (Germany)",2003,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / The Simpsons Pinball Party (Spain)
@@ -791,7 +795,7 @@ DE2S_SOUNDROM18888(      "spp101.u7",  CRC(32efcdf6) SHA1(1d437e8649408be91e0dd1
 SE_ROMEND
 #define input_ports_simpprte input_ports_se
 #define init_simpprte init_simpprty
-CORE_CLONEDEFNV(simpprte,simpprty,"The Simpsons Pinball Party (Spain)",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_NOCRC)
+CORE_CLONEDEFNV(simpprte,simpprty,"The Simpsons Pinball Party (Spain)",2003,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / The Simpsons Pinball Party (France)
@@ -806,7 +810,7 @@ DE2S_SOUNDROM18888(      "spp101.u7",  CRC(32efcdf6) SHA1(1d437e8649408be91e0dd1
 SE_ROMEND
 #define input_ports_simpprtf input_ports_se
 #define init_simpprtf init_simpprty
-CORE_CLONEDEFNV(simpprtf,simpprty,"The Simpsons Pinball Party (France)",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_NOCRC)
+CORE_CLONEDEFNV(simpprtf,simpprty,"The Simpsons Pinball Party (France)",2003,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / The Simpsons Pinball Party (Italy)
@@ -821,7 +825,7 @@ DE2S_SOUNDROM18888(      "spp101.u7",  CRC(32efcdf6) SHA1(1d437e8649408be91e0dd1
 SE_ROMEND
 #define input_ports_simpprti input_ports_se
 #define init_simpprti init_simpprty
-CORE_CLONEDEFNV(simpprti,simpprty,"The Simpsons Pinball Party (Italy)",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_NOCRC)
+CORE_CLONEDEFNV(simpprti,simpprty,"The Simpsons Pinball Party (Italy)",2003,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Terminator 3: Rise of the Machines (2.05)
@@ -836,13 +840,12 @@ DE2S_SOUNDROM18888(      "t3100.u7",  CRC(7f99e3af) SHA1(4916c074e2a4c947d1a6583
                          "t3100.u37", CRC(3efb0c19) SHA1(6894295eef05891d64c7274512ba27f2b63ca3ec))
 SE_ROMEND
 #define input_ports_term3 input_ports_se
-CORE_GAMEDEFNV(term3,"Terminator 3: Rise of the Machines",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_NOCRC)
+CORE_GAMEDEFNV(term3,"Terminator 3: Rise of the Machines",2003,"Stern",de_mSES2,GAME_NOCRC)
 
 //What happened to the German Version? It's not in the rom!
 /*-------------------------------------------------------------------
 / Terminator 3: Rise of the Machines (Germany)
 /-------------------------------------------------------------------*/
-INITGAME(term3g,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(term3g,	 "t3cpu.205",  CRC(219d8155) SHA1(dac3c390d238872703a0ec65cb3dddc89630359c))
 DE_DMD32ROM8x(           "t3dispg.201",NO_DUMP)
 DE2S_SOUNDROM18888(      "t3100.u7",  CRC(7f99e3af) SHA1(4916c074e2a4c947d1a658300f9f9629da1a8bb8),
@@ -853,12 +856,11 @@ DE2S_SOUNDROM18888(      "t3100.u7",  CRC(7f99e3af) SHA1(4916c074e2a4c947d1a6583
 SE_ROMEND
 #define input_ports_term3g input_ports_se
 #define init_term3g init_term3
-CORE_CLONEDEFNV(term3g,term3,"Terminator 3: Rise of the Machines (Germany)",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_NOCRC)
+CORE_CLONEDEFNV(term3g,term3,"Terminator 3: Rise of the Machines (Germany)",2003,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Terminator 3: Rise of the Machines (Spain)
 /-------------------------------------------------------------------*/
-INITGAME(term3l,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(term3l,	 "t3cpu.205",  CRC(219d8155) SHA1(dac3c390d238872703a0ec65cb3dddc89630359c))
 DE_DMD32ROM8x(           "t3displ.201",CRC(180b55a2) SHA1(1d8161fc806804e0712ee8a07a2cac0561949f0c))
 DE2S_SOUNDROM18888(      "t3100.u7",  CRC(7f99e3af) SHA1(4916c074e2a4c947d1a658300f9f9629da1a8bb8),
@@ -869,12 +871,11 @@ DE2S_SOUNDROM18888(      "t3100.u7",  CRC(7f99e3af) SHA1(4916c074e2a4c947d1a6583
 SE_ROMEND
 #define input_ports_term3l input_ports_se
 #define init_term3l init_term3
-CORE_CLONEDEFNV(term3l,term3,"Terminator 3: Rise of the Machines (Spain)",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_NOCRC)
+CORE_CLONEDEFNV(term3l,term3,"Terminator 3: Rise of the Machines (Spain)",2003,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Terminator 3: Rise of the Machines (France)
 /-------------------------------------------------------------------*/
-INITGAME(term3f,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(term3f,	 "t3cpu.205",  CRC(219d8155) SHA1(dac3c390d238872703a0ec65cb3dddc89630359c))
 DE_DMD32ROM8x(           "t3dispf.201",CRC(ced87154) SHA1(893c071bb2427429ca45f4d2088b015c5f638207))
 DE2S_SOUNDROM18888(      "t3100.u7",  CRC(7f99e3af) SHA1(4916c074e2a4c947d1a658300f9f9629da1a8bb8),
@@ -885,13 +886,11 @@ DE2S_SOUNDROM18888(      "t3100.u7",  CRC(7f99e3af) SHA1(4916c074e2a4c947d1a6583
 SE_ROMEND
 #define input_ports_term3f input_ports_se
 #define init_term3f init_term3
-CORE_CLONEDEFNV(term3f,term3,"Terminator 3: Rise of the Machines (France)",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_NOCRC)
-
+CORE_CLONEDEFNV(term3f,term3,"Terminator 3: Rise of the Machines (France)",2003,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Terminator 3: Rise of the Machines (Italy)
 /-------------------------------------------------------------------*/
-INITGAME(term3i,GEN_WS,se_dmd128x32,0)
 SE128_ROMSTART(term3i,	 "t3cpu.205",  CRC(219d8155) SHA1(dac3c390d238872703a0ec65cb3dddc89630359c))
 DE_DMD32ROM8x(           "t3dispi.201",CRC(c1f3604f) SHA1(8a391e6471ced52662aa69261ac29a279c7b8a7d))
 DE2S_SOUNDROM18888(      "t3100.u7",  CRC(7f99e3af) SHA1(4916c074e2a4c947d1a658300f9f9629da1a8bb8),
@@ -902,4 +901,80 @@ DE2S_SOUNDROM18888(      "t3100.u7",  CRC(7f99e3af) SHA1(4916c074e2a4c947d1a6583
 SE_ROMEND
 #define input_ports_term3i input_ports_se
 #define init_term3i init_term3
-CORE_CLONEDEFNV(term3i,term3,"Terminator 3: Rise of the Machines (Italy)",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_NOCRC)
+CORE_CLONEDEFNV(term3i,term3,"Terminator 3: Rise of the Machines (Italy)",2003,"Stern",de_mSES2,GAME_NOCRC)
+
+// Using 16-bit samples (not support by a regular BSMT2000) from now on!
+/*-------------------------------------------------------------------
+/ Lord Of The Rings (4.01)
+/-------------------------------------------------------------------*/
+INITGAME(lotr,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(lotr,	 "lotrcpu.401", CRC(b69cdecc) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
+DE_DMD32ROM8x(           "lotrdspa.403",CRC(2630cef1) SHA1(1dfd929e7eb57983f2fd9184d471f2e919359de0))
+DE2S_SOUNDROM18888(      "lotr101.u7",  CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56a6ac29fce1c7082e470),
+                         "lotr100.u17", CRC(d503969d) SHA1(65a4313ca1b93391260c65fef6f878d264f9c8ab),
+                         "lotr100.u21", CRC(8b3f41af) SHA1(9b2d04144edeb499b4ae68a97c65ccb8ef4d26c0),
+                         "lotr100.u36", CRC(9575981e) SHA1(38083fd923c4a168a94d998ec3c4db42c1e2a2da),
+                         "lotr100.u37", CRC(8e637a6f) SHA1(8087744ce36fc143381d49a312c98cf38b2f9854))
+SE_ROMEND
+#define input_ports_lotr input_ports_se
+CORE_GAMEDEFNV(lotr,"Lord Of The Rings",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_IMPERFECT_SOUND|GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Lord Of The Rings (Spain)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(lotr_sp,	 "lotrcpul.401",CRC(a9571728) SHA1(f21dd77003f42fafd9293fab3a077c5abf6d572a))
+DE_DMD32ROM8x(           "lotrdspl.403",CRC(6d4075c9) SHA1(7944ba597cb476c33060cead4feaf6dcad4f4b16))
+DE2S_SOUNDROM18888(      "lotr101l.u7", CRC(980d970a) SHA1(cf70deddcc146ef9eaa64baec74ae800bebf8715),
+                         "lotr100l.u17",CRC(c16d3e20) SHA1(43d9f186db361abb3aa119a7252f1bb13bbbbe39),
+                         "lotr100l.u21",CRC(f956a1be) SHA1(2980e85463704a154ed81d3241f866442d1ea2e6),
+                         "lotr100l.u36",CRC(502c3d93) SHA1(4ee42d70bccb9253fe1f8f441de6b5018257f107),
+                         "lotr100l.u37",CRC(61f21c6d) SHA1(3e9781b4981bd18cdb8c59c55b9942de6ae286db))
+SE_ROMEND
+#define input_ports_lotr_sp input_ports_lotr
+#define init_lotr_sp init_lotr
+CORE_CLONEDEFNV(lotr_sp,lotr,"Lord Of The Rings (Spain)",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_IMPERFECT_SOUND|GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Lord Of The Rings (Germany)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(lotr_gr,	 "lotrcpu.401", CRC(b69cdecc) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
+DE_DMD32ROM8x(           "lotrdspg.403",CRC(74e925cb) SHA1(2edc8666d53f212a053b7a356d2bf6e3180d7bfb))
+DE2S_SOUNDROM18888(      "lotr101.u7",  CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56a6ac29fce1c7082e470),
+                         "lotr100.u17", CRC(d503969d) SHA1(65a4313ca1b93391260c65fef6f878d264f9c8ab),
+                         "lotr100.u21", CRC(8b3f41af) SHA1(9b2d04144edeb499b4ae68a97c65ccb8ef4d26c0),
+                         "lotr100.u36", CRC(9575981e) SHA1(38083fd923c4a168a94d998ec3c4db42c1e2a2da),
+                         "lotr100.u37", CRC(8e637a6f) SHA1(8087744ce36fc143381d49a312c98cf38b2f9854))
+SE_ROMEND
+#define input_ports_lotr_gr input_ports_lotr
+#define init_lotr_gr init_lotr
+CORE_CLONEDEFNV(lotr_gr,lotr,"Lord Of The Rings (Germany)",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_IMPERFECT_SOUND|GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Lord Of The Rings (France)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(lotr_fr,	 "lotrcpu.401", CRC(b69cdecc) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
+DE_DMD32ROM8x(           "lotrdspf.403",CRC(d02a77cf) SHA1(8cf4312a04ad486714de5c0041cacb1eb475478f))
+DE2S_SOUNDROM18888(      "lotr101.u7",  CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56a6ac29fce1c7082e470),
+                         "lotr100.u17", CRC(d503969d) SHA1(65a4313ca1b93391260c65fef6f878d264f9c8ab),
+                         "lotr100.u21", CRC(8b3f41af) SHA1(9b2d04144edeb499b4ae68a97c65ccb8ef4d26c0),
+                         "lotr100.u36", CRC(9575981e) SHA1(38083fd923c4a168a94d998ec3c4db42c1e2a2da),
+                         "lotr100.u37", CRC(8e637a6f) SHA1(8087744ce36fc143381d49a312c98cf38b2f9854))
+SE_ROMEND
+#define input_ports_lotr_fr input_ports_lotr
+#define init_lotr_fr init_lotr
+CORE_CLONEDEFNV(lotr_fr,lotr,"Lord Of The Rings (France)",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_IMPERFECT_SOUND|GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Lord Of The Rings (Italy)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(lotr_it,	 "lotrcpu.401", CRC(b69cdecc) SHA1(40f7c2d25a1028255be8fe25e3aa6d11976edd25))
+DE_DMD32ROM8x(           "lotrdspi.403",CRC(5922ce10) SHA1(c57f2de4e3344f16056405d71510c0c0b60ef86d))
+DE2S_SOUNDROM18888(      "lotr101.u7",  CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56a6ac29fce1c7082e470),
+                         "lotr100.u17", CRC(d503969d) SHA1(65a4313ca1b93391260c65fef6f878d264f9c8ab),
+                         "lotr100.u21", CRC(8b3f41af) SHA1(9b2d04144edeb499b4ae68a97c65ccb8ef4d26c0),
+                         "lotr100.u36", CRC(9575981e) SHA1(38083fd923c4a168a94d998ec3c4db42c1e2a2da),
+                         "lotr100.u37", CRC(8e637a6f) SHA1(8087744ce36fc143381d49a312c98cf38b2f9854))
+SE_ROMEND
+#define input_ports_lotr_it input_ports_lotr
+#define init_lotr_it init_lotr
+CORE_CLONEDEFNV(lotr_it,lotr,"Lord Of The Rings (Italy)",2003,"Stern",de_mSES2,GAME_IMPERFECT_GRAPHICS|GAME_IMPERFECT_SOUND|GAME_NOCRC)
