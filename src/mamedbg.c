@@ -2523,6 +2523,10 @@ static void dump_regs( void )
 	if (dbg_show_scanline)
 	{
 		win_printf( win, "Scanline: %d Horz: %d\n", cpu_getscanline(), cpu_gethorzbeampos());
+//Need room to show registers
+#ifdef PINMAME
+		if(y<1) y = 1;
+#endif
 	}
 
 	regs->top = y;
@@ -2950,7 +2954,11 @@ static void edit_regs( void )
 		regs->base = pedit[ regs->idx ].y - win_get_h( win ) + regs->top + 1;
 		dump_regs();
 	}
+#ifdef PINMAME	//Correct annoying scanline behavior
+	win_set_curpos( win, pedit[regs->idx].x + pedit[regs->idx].n + regs->nibble, pedit[regs->idx].y - regs->base + regs->top);
+#else
 	win_set_curpos( win, pedit[regs->idx].x + pedit[regs->idx].n + regs->nibble, pedit[regs->idx].y - regs->base + regs->top + (dbg_show_scanline ? 1 : 0));
+#endif
 	set_screen_curpos( win_get_cx_abs(win), win_get_cy_abs(win) );
 
 	i = readkey();
