@@ -14,10 +14,15 @@ void LoadGlobalSettings();
 void SaveGlobalSettings();
 void DeleteGlobalSettings();
 
-void LoadGameSettings(char *szName);
-void SaveGameSettings(char *szName);
-void DeleteGameSettings(char *szName);
+void LoadGameSettings(char* pszGameName);
+void SaveGameSettings(char* pszGameName);
+void DeleteGameSettings(char *pszGameName);
 
 char* GetInstallDir(char *pszInstallDir, int iSize);
+
+BOOL PutGameSetting(char* pszGameName, char* pszName, VARIANT vValue);
+BOOL GetGameSetting(char* pszGameName, char* pszName, VARIANT *pVal);
+
+BOOL SettingAffectsRunningGame(const char* pszName);
 
 #endif // VPINMAMECONFIG_H
