@@ -731,7 +731,9 @@ DRIVER(grand,l4)        //S11-523:  04/86 W Grand Lizard
 DRIVER(rdkng,l1)        //S11-542:  07/86 W Road Kings (L-1)
 DRIVER(rdkng,l3)        //S11-542:  07/86 W Road Kings (L-3)
 DRIVER(rdkng,l4)        //S11-542:  07/86 W Road Kings (L-4)
-DRIVER(pb,l5)           //S11-549:  10/86 W Pin-bot
+DRIVER(pb,l5)           //S11-549:  10/86 W Pin-bot (L-5)
+DRIVER(pb,l2)           //S11-549:  10/86 W Pin-bot (L-2)
+DRIVER(pb,l3)           //S11-549:  10/86 W Pin-bot (L-3)
                         //S11:      10/86 W Strike Force
 DRIVER(milln,l3)        //S11-555:  01/87 W Millionaire
 DRIVER(f14,l1)          //S11-554:  03/87 W F-14 Tomcat
@@ -782,7 +784,9 @@ DRIVER(mousn,l4)        //S11-1635: 12/89 B Mousin' Around! (L-4)
 DRIVER(whirl,l3)        //S11-574:  01/90 W Whirlwind
 DRIVER(gs,l3)           //S11-985:  04/90 B Game Show (L-3)
 DRIVER(gs,l4)           //S11-985:  04/90 B Game Show (L-4)
-DRIVER(rollr,l2)        //S11-576:  06/90 W Rollergames
+DRIVER(rollr,l2)        //S11-576:  06/90 W Rollergames (L-2)
+DRIVER(rollr,l3)        //S11-576:  06/90 W Rollergames (L-3) Europe
+DRIVER(rollr,g3)        //S11-576:  06/90 W Rollergames (L-3) Germany
 DRIVER(pool,l7)         //S11-1848: 06/90 B Pool Sharks (Shark?)
 DRIVER(diner,l4)        //S11-571:  09/90 W Diner (L-4)
 DRIVER(diner,l3)        //S11-571:  09/90 W Diner (L-3)
