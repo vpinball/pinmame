@@ -15,49 +15,6 @@ static void init_##name(void) { \
 
 WPC_INPUT_PORTS_START(wpc, 0) WPC_INPUT_PORTS_END
 
-/*--------------------
-/ Slugfest baseball
-/--------------------*/
-static core_tGameData sfGameData = {
-  GEN_WPCDMD, wpc_dispDMD,
-  { 0 },
-  NULL,
-  { "",
-    /*Coin    1     2     3     4     5     6     7     8     9    10   Cab.  Cust */
-    { 0x00, 0x00, 0x00, 0x00, 0x00, 0x18, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00 },
-    /* Start    Tilt    SlamTilt    CoinDoor    Shooter */
-    { swStart, swTilt, swSlamTilt, swCoinDoor, 0}
-  }
-};
-INITGAME(sf)
-
-WPC_ROMSTART(sf,l1,"sf_u6.l1",0x40000,0xada93967)
-WPCS_SOUNDROM222("sf_u18.l1",0x78092c83,
-                 "sf_u15.l1",0xadcaeaa1,
-                 "sf_u14.l1",0xb830b419)
-WPC_ROMEND
-#define input_ports_sf input_ports_wpc
-CORE_GAMEDEF(sf,l1,"Slugfest (L-1)",1991,"Williams",wpc_mDMDS,0)
-
-/*-------------------
-/ Strike Master
-/--------------------*/
-static core_tGameData strikGameData = {
-  GEN_WPCFLIPTRON, wpc_dispDMD,
-  { 0 },
-  NULL,
-  { "",
-    { 0 }, /* No inverted switches */
-    /* Start    Tilt    SlamTilt    CoinDoor    Shooter */
-    { swStart, swTilt, swSlamTilt, swCoinDoor, 0}
-  }
-};
-INITGAME(strik)
-WPC_ROMSTART(strik,l4,"strik_l4.rom",0x40000,0xc99ea24c)
-WPC_ROMEND
-#define input_ports_strik input_ports_wpc
-CORE_GAMEDEF(strik,l4,"Strike Master (L-4)",1992,"Williams",wpc_mFliptron,GAME_NO_SOUND)
-
 /*-------------
 / Ticket Tac Toe
 /--------------*/
@@ -81,26 +38,6 @@ DCS_SOUNDROM2m("ttt_s2.rom",0xfaae93eb,
 WPC_ROMEND
 #define input_ports_ttt input_ports_wpc
 CORE_GAMEDEF(ttt,10,"Ticket Tac Toe (1.0)",1996,"Williams",wpc_m95S,0)
-
-/*-----------------------------
-/ League Champ (Shuffle Alley)
-/------------------------------*/
-static core_tGameData lcGameData = {
-  GEN_WPCFLIPTRON, wpc_dispDMD,
-  { 0 },
-  NULL,
-  {
-    "",
-    /*Coin    1     2     3     4     5     6     7     8     9    10   Cab.  Cust */
-    { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
-    /*Start    Tilt    SlamTilt    CoinDoor    Shooter */
-    { swStart, swTilt, swSlamTilt, swCoinDoor}
-  }
-};
-INITGAME(lc)
-WPC_ROMSTART(lc,11,"lchmp1_1.rom",0x80000,0x60ab944c) WPC_ROMEND
-#define input_ports_lc input_ports_wpc
-CORE_GAMEDEF(lc,11,"League Champ (1.1)",1996,"Bally",wpc_mFliptron,GAME_NO_SOUND)
 
 /*--------------
 / Test Fixture DMD generation
