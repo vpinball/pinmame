@@ -39,6 +39,7 @@ int dmd_width = 0;
 int dmd_height = 0;
 
 int threadpriority = 1;
+int synclevel = 0;
 
 static FILE *logfile;
 
@@ -52,6 +53,7 @@ static struct rc_option vpinmame_opts[] = {
 	{ "dmd_height", NULL, rc_int,  &dmd_height, "0", 0, 10000, NULL, "DMD display height" },
 	{ "dmd_doublesize",  NULL, rc_bool,  &dmd_doublesize,  "0", 0, 0, NULL, "DMD display doublesize" },
 	{ "threadpriority",  NULL, rc_int,  &threadpriority,  "1", 0, 2, NULL, "priority of the worker thread" },
+	{ "synclevel",  NULL, rc_int,  &synclevel,  "0", 0, 60, NULL, "sync. of frame rate for external programs (fps)" },
 	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
 };
 
@@ -125,7 +127,9 @@ static char* IgnoredSettings[] = {
 	"maximize",
 	"throttle",
 	"sleep",
-        "debug","log",
+    "debug",
+	"log",
+	
 	NULL
 };
 
