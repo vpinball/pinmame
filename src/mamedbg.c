@@ -3543,11 +3543,7 @@ static void cmd_help( void )
 {
 	UINT32 win = WIN_HELP;
 	const char *title = "";
-#ifdef PINMAME
-	char *help = malloc(4096+1), *dst;
-#else /* more space for additional commands */
 	char *help = malloc(8192), *dst;
-#endif
 	const char *src;
 	unsigned w, h;
 	int cmd = INVALID;
