@@ -639,8 +639,7 @@ CORE_GAMEDEFNV(bountyh, "Bounty Hunter",1985,"Gottlieb",gl_mS80B,GAME_NO_SOUND)
 / Rock
 /-------------------------------------------------------------------*/
 INITGAME(rock,GEN_S80B2K,gottlieb_dispAlpha, 1)
-S80B_2K_ROMSTART(rock, "prom2.cpu", 0xa3317b4b,
-                       "prom1.cpu", 0x1146c1d3)
+S80B_8K_ROMSTART(rock, "prom1.cpu", 0x1146c1d3)
 S80_ROMEND
 CORE_GAMEDEFNV(rock, "Rock",1986,"Gottlieb",gl_mS80B,GAME_NO_SOUND)
 
