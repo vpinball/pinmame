@@ -179,7 +179,7 @@
 
 #define CORE_DUMMYZERO(x) ((x)*0x40)
 
-#define DMD_MAXX 192
+#define DMD_MAXX 256
 #define DMD_MAXY 64
 
 typedef UINT8 tDMDDot[DMD_MAXY+2][DMD_MAXX+2];

@@ -116,9 +116,9 @@ static READ16_HANDLER(u16_r) {
   if(offset==0)
 	readnum++;
   
-  if(core_gameData->gen == 9 || core_gameData->gen == 11)
-	numcheck = 2;
-  else
+  //if(core_gameData->gen == 9 || core_gameData->gen == 11)
+//	numcheck = 2;
+//  else
     numcheck = 3;
   if(readnum == numcheck)
 	  *((UINT16 *)(memory_region(REGION_CPU1) + fixaddr)) = 0x6600;
@@ -126,7 +126,7 @@ static READ16_HANDLER(u16_r) {
 
   offset &= 0x203;
   DBGLOG(("U16r [%03x] (%04x)\n",offset,mem_mask));
-  //printf("U16r [%03x] (%04x)\n",offset,mem_mask);
+  printf("U16r [%03x] (%04x)\n",offset,mem_mask);
   switch (offset) {
     case 0x000: case 0x001: case 0x002: case 0x003:
       return locals.u16a[offset];
@@ -283,6 +283,7 @@ PA5       : Line V
 PA6       : V Set
 PA7       : GReset
 
+CS0 ROM
 CS1 DRAM
 CS2 I/O
 CS3 NVRAM (D0-D7, A0-A14)
@@ -292,26 +293,50 @@ CS6 A22
 CS7 A23
 !I/O & A23
 
+AT BOOT TIME:
+
 CS0
-0x000000-0x1fffff : ROM0 (U1)
-0x400000-0x5fffff : ROM1 (U2)
-0x800000-0x9fffff : ROM2 (U3)
-0xc00000-0xdfffff : ROM3 (U4)
+0x00000000-0x000fffff : ROM0 (U1)
+0x00400000-0x004fffff : ROM1 (U2)
+0x00800000-0x008fffff : ROM2 (U3)
+0x00c00000-0x00cfffff : ROM3 (U4)
+
+AFTER CS0 is configured by software:
+
+0x10000000-0x100fffff : ROM0 (U1)
+0x10400000-0x104fffff : ROM1 (U2)
+0x10800000-0x108fffff : ROM2 (U3)
+0x10c00000-0x10cfffff : ROM3 (U4)
+
+Our Emulation Mappings:
+
+0x00000000-0x000fffff : ROM0 (U1)
+0x00400000-0x004fffff : ROM1 (U2)
+0x00800000-0x008fffff : ROM2 (U3)
+0x00c00000-0x00cfffff : ROM3 (U4)
 
 CS2
 AUX
 EXT
 SWITCH0
 CS
+
+CS0 defined by writes to internal registers @ ffc0,ffc2
+...
+CS7 defined by writes to internal registers @ ffdc,ffde
+
 From the very beginning of program execution, we see writes to the following registers, each bit specifies how CS0-CS7 will act:
 Note: Invert the mask to see the end address range
 
 CHIP  DATA        MASK     ADDRESS     RANGE             R/W
 --------------------------------------------------------------
 CS0 = 1000e680 => ff000000,10000000 => 10000000-10ffffff (R)
-CS1 = 0001a2df => fff80000,00000000 => 00000000-0007ffff (RW)
+CS1 = 0001a2df => fff80000,00000000 => 00000000-0007ffff (RW) * Note: CSFC6,2 = 0, CSFC5,1 = 1
 CS2 = 4001a280 => ff000000,40000000 => 40000000-40ffffff (RW)
 CS3 = 3001a2f0 => fffe0000,30000000 => 30000000-3001ffff (RW)
+
+On flipper football & kingpin:
+CS1 = 0001e6df => fff80000,00000000 => 00000000-0007ffff (RW) * Note: CSFC6,5,2,1 = 1
 
 There are a # of issues with the memory map that need to be discussed:
 First - ROM accesses is of course @ address 0, but after the CS0 is redefined, it should be at 0x10000000
@@ -379,13 +404,22 @@ MACHINE_DRIVER_START(cc)
   MDRV_TIMER_ADD(cc_zeroCross, CC_ZCFREQ)
 MACHINE_DRIVER_END
 
-PINMAME_VIDEO_UPDATE(cc_dmd) {
+/********************************/
+/*** 128 X 32 NORMAL SIZE DMD ***/
+/********************************/
+PINMAME_VIDEO_UPDATE(cc_dmd128x32) {
   static UINT32 offset;
   tDMDDot dotCol;
   int ii, jj, kk;
   UINT16 *RAM;
 
   offset = 0x37ff0+(0x800*locals.visible_page);
+
+#ifndef MAME_DEBUG
+  core_textOutf(50,20,1,"offset=%4x", offset);
+  memset(dotCol,0,sizeof(dotCol));
+#endif
+
   RAM = ramptr+offset;
   for (ii = 0; ii <= 32; ii++) {
     UINT8 *line = &dotCol[ii][0];
@@ -404,3 +438,51 @@ PINMAME_VIDEO_UPDATE(cc_dmd) {
   return 0;
 }
 
+/*******************************/
+/*** 256 X 64 SUPER HUGE DMD ***/
+/*******************************/
+PINMAME_VIDEO_UPDATE(cc_dmd256x64) {
+  static UINT32 offset=0x38fe0;
+  tDMDDot dotCol;
+  int ii, jj, kk;
+  UINT16 *RAM;
+
+  offset = 0x37fe0+(0x800*locals.visible_page);
+
+#ifndef MAME_DEBUG
+  core_textOutf(50,20,1,"offset=%4x", offset);
+  memset(dotCol,0,sizeof(dotCol));
+#endif
+  //Draw Left Side of DMD (0-128)
+  RAM = ramptr+offset;
+  for (ii = 0; ii <= 64; ii++) {
+    UINT8 *line = &dotCol[ii][0];
+      for (kk = 0; kk < 16; kk++) {
+		UINT16 intens1 = RAM[0];
+		for(jj=0;jj<8;jj++) {
+			*line++ = (intens1&0xc000)>>14;
+			intens1 = intens1<<2;
+		}
+		RAM+=1;
+	  }
+    *line++ = 0;
+	RAM+=16;
+  }
+  //Draw Right Side of DMD (129-256)
+  RAM = ramptr+offset+0x10;
+  for (ii = 0; ii <= 64; ii++) {
+    UINT8 *line = &dotCol[ii][128];
+      for (kk = 0; kk < 16; kk++) {
+		UINT16 intens1 = RAM[0];
+		for(jj=0;jj<8;jj++) {
+			*line++ = (intens1&0xc000)>>14;
+			intens1 = intens1<<2;
+		}
+		RAM+=1;
+	  }
+    *line++ = 0;
+	RAM+=16;
+  }
+  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+  return 0;
+}
