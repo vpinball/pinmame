@@ -36,6 +36,8 @@ static struct {
   int refresh;
   int gen;
   void *printfile;
+  mame_timer *irqtimer;
+  int irqfreq;
 } locals;
 
 static INTERRUPT_GEN(ZAC_vblank_old) {
@@ -59,15 +61,47 @@ static INTERRUPT_GEN(ZAC_vblank) {
   core_updateSw(coreGlobals.lampMatrix[2] & 0x08);
 }
 
+#ifdef MAME_DEBUG
+static void adjust_timer(int offset) {
+  locals.irqfreq += offset;
+  if (locals.irqfreq < 1) locals.irqfreq = 1;
+  static char s[4];
+  sprintf(s, "%4d", locals.irqfreq);
+  core_textOut(s, 4, 25, 5, 5);
+  timer_adjust(locals.irqtimer, 1.0/(double)locals.irqfreq, 0, 1.0/(double)locals.irqfreq);
+}
+#endif /* MAME_DEBUG */
+
 static SWITCH_UPDATE(ZAC1) {
+#ifdef MAME_DEBUG
+  if      (keyboard_pressed_memory_repeat(KEYCODE_Z, 2))
+    adjust_timer(-10);
+  else if (keyboard_pressed_memory_repeat(KEYCODE_X, 2))
+    adjust_timer(-1);
+  else if (keyboard_pressed_memory_repeat(KEYCODE_C, 2))
+    adjust_timer(1);
+  else if (keyboard_pressed_memory_repeat(KEYCODE_V, 2))
+    adjust_timer(10);
+#endif /* MAME_DEBUG */
   if (inports) {
     coreGlobals.swMatrix[0] = (inports[ZAC_COMINPORT] & 0x1000) >> 5;
+    sndbrd_0_diag(core_getSw(-1));
     coreGlobals.swMatrix[1] = inports[ZAC_COMINPORT] & 0xff;
     coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0x7f) | ((inports[ZAC_COMINPORT] & 0xefff) >> 8);
   }
 }
 
 static SWITCH_UPDATE(ZAC2) {
+#ifdef MAME_DEBUG
+  if      (keyboard_pressed_memory_repeat(KEYCODE_Z, 2))
+    adjust_timer(-10);
+  else if (keyboard_pressed_memory_repeat(KEYCODE_X, 2))
+    adjust_timer(-1);
+  else if (keyboard_pressed_memory_repeat(KEYCODE_C, 2))
+    adjust_timer(1);
+  else if (keyboard_pressed_memory_repeat(KEYCODE_V, 2))
+    adjust_timer(10);
+#endif /* MAME_DEBUG */
   if (inports) {
     coreGlobals.swMatrix[0] = (inports[ZAC_COMINPORT] & 0x1000) >> 5;
     sndbrd_0_diag(core_getSw(-1));
@@ -82,6 +116,10 @@ static int ZAC_sw2m(int no) {
 
 static int ZAC_m2sw(int col, int row) {
 	return col*8 + row - 8;
+}
+
+static void timer_callback(int n) {
+  cpu_set_irq_line(ZAC_CPUNO, 0, PULSE_LINE);
 }
 
 static int irq_callback(int int_level) {
@@ -107,14 +145,6 @@ static NVRAM_HANDLER(ZAC2) {
 
 //Generate the IRQ
 static INTERRUPT_GEN(ZAC_irq) {
-/*
-	static char s[3] = { ' ', ' ', ' ' };
-	static int delay = 148;
-	static int count = 0;
-	if (keyboard_pressed_memory(KEYCODE_Z)) { delay--; sprintf(s, "%3d", delay); core_textOut(s, 3, 25, 5, 5); }
-	if (keyboard_pressed_memory(KEYCODE_X)) { delay++; sprintf(s, "%3d", delay); core_textOut(s, 3, 25, 5, 5); }
-	if (count > delay) { cpu_set_irq_line(ZAC_CPUNO, 0, PULSE_LINE); count = 0; } else count++;
-*/
 //	logerror("%x: IRQ\n",activecpu_get_previouspc());
 	cpu_set_irq_line(ZAC_CPUNO, 0, PULSE_LINE);
 }
@@ -129,7 +159,9 @@ static MACHINE_INIT(ZAC1) {
 
   memset(&locals, 0, sizeof(locals));
   locals.gen = 1;
-
+  locals.irqtimer = timer_alloc(timer_callback);
+  locals.irqfreq = core_gameData->hw.gameSpecific1;
+  timer_adjust(locals.irqtimer, 1.0/(double)locals.irqfreq, 0, 1.0/(double)locals.irqfreq);
   /* Set IRQ Vector Routine */
   cpu_set_irq_callback(0, irq_callback_old);
 
@@ -146,7 +178,9 @@ static MACHINE_INIT(ZAC1) {
 static MACHINE_INIT(ZAC2) {
   memset(&locals, 0, sizeof(locals));
   locals.gen = 2;
-
+  locals.irqtimer = timer_alloc(timer_callback);
+  locals.irqfreq = core_gameData->hw.gameSpecific1;
+  timer_adjust(locals.irqtimer, 1.0/(double)locals.irqfreq, 0, 1.0/(double)locals.irqfreq);
   /* Set IRQ Vector Routine */
   cpu_set_irq_callback(0, irq_callback);
 
@@ -156,7 +190,9 @@ static MACHINE_INIT(ZAC2) {
 static MACHINE_INIT(ZAC2A) {
   memset(&locals, 0, sizeof(locals));
   locals.gen = 3;
-
+  locals.irqtimer = timer_alloc(timer_callback);
+  locals.irqfreq = core_gameData->hw.gameSpecific1;
+  timer_adjust(locals.irqtimer, 1.0/(double)locals.irqfreq, 0, 1.0/(double)locals.irqfreq);
   /* Set IRQ Vector Routine */
   cpu_set_irq_callback(0, irq_callback);
 
@@ -508,7 +544,6 @@ MACHINE_DRIVER_START(ZAC)
   MDRV_CPU_MEMORY(ZAC_readmem, ZAC_writemem)
   MDRV_CPU_PORTS(ZAC_readport, ZAC_writeport)
   MDRV_CPU_VBLANK_INT(ZAC_vblank_old, 1)
-  MDRV_CPU_PERIODIC_INT(ZAC_irq, 169) /* (guessed) */
   MDRV_NVRAM_HANDLER(ZAC1)
   MDRV_DIPS(4)
   MDRV_SWITCH_UPDATE(ZAC1)
@@ -551,7 +586,6 @@ MACHINE_DRIVER_START(ZAC2)
   MDRV_CPU_MEMORY(ZAC_readmem2, ZAC_writemem2)
   MDRV_CPU_PORTS(ZAC_readport, ZAC_writeport)
   MDRV_CPU_VBLANK_INT(ZAC_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(ZAC_irq, 431) /* (guessed) */
   MDRV_NVRAM_HANDLER(ZAC2)
   MDRV_DIPS(4)
   MDRV_SWITCH_UPDATE(ZAC2)
@@ -589,7 +623,5 @@ MACHINE_DRIVER_END
 //Technoplay sound board
 MACHINE_DRIVER_START(TECHNO)
   MDRV_IMPORT_FROM(ZAC2)
-  MDRV_CPU_MODIFY("mcpu")
-  MDRV_CPU_PERIODIC_INT(ZAC_irq, 400)
   MDRV_IMPORT_FROM(techno)
 MACHINE_DRIVER_END
