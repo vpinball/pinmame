@@ -275,7 +275,7 @@ int riot_read(int which, int offset)
 					val = p->timer_start - V_TIME_TO_CYCLES(timer_get_time() - p->time) / p->timer_divider;
 			}
 			else
-				val = 0x01;
+				val = 0xff;
 
 			p->irq_state &= ~RIOT_TIMERIRQ;
 			p->timer_irq_enabled = offset&0x08;
@@ -286,7 +286,7 @@ int riot_read(int which, int offset)
 
 		case RIOT_IRF:
 			val = p->irq_state;
-			p->irq_state &= ~RIOT_PA7IRQ;
+			p->irq_state =0; //&= ~RIOT_PA7IRQ;
 			update_6532_interrupts(p);
 
 			LOG(("RIOT%d read interrupt flags = %02X\n", which, val));
