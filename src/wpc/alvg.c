@@ -227,7 +227,7 @@ static READ_HANDLER( xvia_1_b_r ) {
 	return data; 
 }
 //CA1: (IN) - Sound Control
-static READ_HANDLER( xvia_1_ca1_r ) { return sndbrd_ctrl_r(0); }
+static READ_HANDLER( xvia_1_ca1_r ) { return sndbrd_1_ctrl_r; }
 //CB1: (IN) - N.C.
 static READ_HANDLER( xvia_1_cb1_r ) { logerror("WARNING: N.C.: U8-CB1-R\n"); return 0; }
 //CA2:  (IN) - N.C.
@@ -236,7 +236,7 @@ static READ_HANDLER( xvia_1_ca2_r ) { logerror("WARNING: N.C.: U8-CA2-R\n"); ret
 static READ_HANDLER( xvia_1_cb2_r ) { logerror("WARNING: U8-CB2-R\n"); return 0; }
 
 //PA0-7: (OUT) - Sound Data
-static WRITE_HANDLER( xvia_1_a_w ) { sndbrd_0_data_w(0,data); }
+static WRITE_HANDLER( xvia_1_a_w ) { sndbrd_1_data_w(0,data); }
 
 //PB0-7: (OUT)
 /*
@@ -253,7 +253,7 @@ static WRITE_HANDLER( xvia_1_b_w ) {
 	alvglocals.via_1_b = data;			//Probably not necessary
 
 	//On clock transition - write to sound latch
-	if(!alvglocals.sound_strobe && (data & 0x02))	sndbrd_0_ctrl_w(0,0);
+	if(!alvglocals.sound_strobe && (data & 0x02))	sndbrd_1_ctrl_w(0,0);
 	alvglocals.sound_strobe = data&0x02;
 }
 //CA2: (OUT) - CPU DIAG LED
@@ -503,8 +503,8 @@ static SWITCH_UPDATE(alvg) {
 }
 
 WRITE_HANDLER(alvg_sndCmd_w) { 
-	sndbrd_0_data_w(0, data); 
-	sndbrd_0_ctrl_w(0, 0);
+	sndbrd_1_data_w(0, data); 
+	sndbrd_1_ctrl_w(0, 0);
 }
 
 static int alvg_sw2m(int no) {
@@ -532,13 +532,14 @@ static MACHINE_INIT(alvg) {
   /*watchdog*/
   //watchdog_reset_w(0,0);
 
-  /* Init the sound board */
-  sndbrd_0_init(core_gameData->hw.soundBoard, ALVGS_CPUNO, memory_region(ALVGS_ROMREGION), NULL, NULL);
-
+  /* Init the dmd & sound board */
+  sndbrd_0_init(core_gameData->hw.display,    ALVGDMD_CPUNO, memory_region(ALVGDMD_ROMREGION),NULL,NULL);
+  sndbrd_1_init(core_gameData->hw.soundBoard, ALVGS_CPUNO,   memory_region(ALVGS_ROMREGION)  ,NULL,NULL);
 }
 
 static MACHINE_STOP(alvg) {
   sndbrd_0_exit();
+  sndbrd_1_exit();
 }
 //Show Sound Diagnostic LEDS
 void alvg_UpdateSoundLEDS(int num,int data)
@@ -551,6 +552,8 @@ void alvg_UpdateSoundLEDS(int num,int data)
 
 static WRITE_HANDLER(DMD_LATCH) {
 	alvg_dmdlocals.dmd_latch = data;
+	sndbrd_0_data_w(0,data);
+	sndbrd_0_ctrl_w(0,0);
 	//printf("DMD_LATCH: data=%x\n",data);
 }
 
