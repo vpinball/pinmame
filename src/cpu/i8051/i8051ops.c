@@ -752,7 +752,7 @@ INLINE void ret(void)
 INLINE void reti(void)
 {
 	POP_PC
-	i8051.cur_irq = 0xff;	//Clear current irq flag
+	CLEAR_CURRENT_IRQ
 }
 
 //RL A										/* 1: 0010 0011 */
