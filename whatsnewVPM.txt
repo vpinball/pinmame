@@ -3,7 +3,11 @@ What's new in Visual PinMAME:
 
 Version 1.30 (October 1, 2003)
 -----------------------------
+- Updated Visual PinMAME to 1.30 release of PinMAME Source Code.
+- Please see "whatsnew.txt" for PinMAME version 1.30 enhancements!
 - Fixed the bug in the VPM-Setup-Program where the "Test" feature crashed under w9x
+- Default synclevel is now 0 since many people are getting newer faster computers.
+- Rom Aliasing: Older romset names will internally be converted to new romset names for backward compatibility
 
 Version 1.21 (March 31, 2003)
 -------------------------------------
