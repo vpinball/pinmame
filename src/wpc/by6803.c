@@ -576,29 +576,29 @@ MACHINE_DRIVER_END
 //6803 - Generation 2 Sound (Turbo Cheap Squeak)
 MACHINE_DRIVER_START(by6803_TCSS)
   MDRV_IMPORT_FROM(by6803)
-  MDRV_SCREEN_SIZE(640,480)
-  MDRV_VISIBLE_AREA(0, 639, 0, 319)
+  MDRV_SCREEN_SIZE(640,400)
+  MDRV_VISIBLE_AREA(0, 639, 0, 399)
   MDRV_IMPORT_FROM(byTCS)
 MACHINE_DRIVER_END
 //6803 - Generation 2A Sound (Turbo Cheap Squeak 2)
 MACHINE_DRIVER_START(by6803_TCS2S)
   MDRV_IMPORT_FROM(by6803)
-  MDRV_SCREEN_SIZE(640,480)
-  MDRV_VISIBLE_AREA(0, 639, 0, 319)
+  MDRV_SCREEN_SIZE(640,400)
+  MDRV_VISIBLE_AREA(0, 639, 0, 399)
   MDRV_IMPORT_FROM(byTCS2)
 MACHINE_DRIVER_END
 //6803 - Generation 3 Sound (Sounds Deluxe) with keypad
 MACHINE_DRIVER_START(by6803_SDS)
   MDRV_IMPORT_FROM(by6803)
-  MDRV_SCREEN_SIZE(640,480)
-  MDRV_VISIBLE_AREA(0, 639, 0, 319)
+  MDRV_SCREEN_SIZE(640,400)
+  MDRV_VISIBLE_AREA(0, 639, 0, 399)
   MDRV_IMPORT_FROM(bySD)
 MACHINE_DRIVER_END
 //6803 - Generation 4 Sound (Williams System 11C) without keypad
 MACHINE_DRIVER_START(by6803_S11CS)
   MDRV_IMPORT_FROM(by6803)
-  MDRV_SCREEN_SIZE(640,480)
-  MDRV_VISIBLE_AREA(0, 639, 0, 319)
+  MDRV_SCREEN_SIZE(640,400)
+  MDRV_VISIBLE_AREA(0, 639, 0, 399)
   MDRV_IMPORT_FROM(wmssnd_s11cs)
 MACHINE_DRIVER_END
 
@@ -608,93 +608,3 @@ MACHINE_DRIVER_END
 static NVRAM_HANDLER(by6803) {
   core_nvram(file, read_or_write, memory_region(BY6803_CPUREGION)+0x1000, 0x800,0xff);
 }
-
-#if 0
-#define BY6803_CPU { \
-  CPU_M6803, 3580000/4, /* 3.58/4 = 900hz */ \
-  by6803_readmem, by6803_writemem, by6803_readport, by6803_writeport, \
-  by6803_vblank, 1, by6803_irq, BY6803_IRQFREQ }
-
-const struct MachineDriver machine_driver_by6803_61S = {
-  { BY6803_CPU, BY61_SOUND_CPU },
-  BY6803_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  500, by6803_init, by6803_exit,
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
-  NULL, NULL, gen_refresh,
-  0,0,0,0, { BY61_SOUND },
-  by6803_nvram
-};
-
-const struct MachineDriver machine_driver_by6803_45S = {
-  { BY6803_CPU, BY45_SOUND_CPU },
-  BY6803_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  500, by6803_init, by6803_exit,
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
-  NULL, NULL, gen_refresh,
-  0,0,0,0, { BY45_SOUND },
-  by6803_nvram
-};
-
-//6803 - Generation 2 Sound (Turbo Cheap Squeak)
-const struct MachineDriver machine_driver_by6803_TCSS = {
-  { BY6803_CPU, BYTCS_SOUND_CPU },
-  BY6803_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  500, by6803_init, by6803_exit,
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
-  NULL, NULL, gen_refresh,
-  0,0,0,0, { BYTCS_SOUND },
-  by6803_nvram
-};
-const struct MachineDriver machine_driver_by6803_TCS2S = {
-  { BY6803_CPU, BYTCS2_SOUND_CPU },
-  BY6803_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  500, by6803_init, by6803_exit,
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
-  NULL, NULL, gen_refresh,
-  0,0,0,0, { BYTCS_SOUND },
-  by6803_nvram
-};
-
-const struct MachineDriver machine_driver_by6803_SDS = {
-  { BY6803_CPU, BYSD_SOUND_CPU },
-  BY6803_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  500, by6803_init, by6803_exit,
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
-  NULL, NULL, gen_refresh,
-  0,0,0,0, { BYSD_SOUND },
-  by6803_nvram
-};
-
-const struct MachineDriver machine_driver_by6803_S11CS = {
-  { BY6803_CPU, S11C_SOUNDCPU },
-  BY6803_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
-  500, by6803_init, by6803_exit,
-  CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
-  0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
-  VIDEO_TYPE_RASTER | VIDEO_SUPPORTS_DIRTY, 0,
-  NULL, NULL, gen_refresh,
-  0,0,0,0, { S11C_SOUND },
-  by6803_nvram
-};
-static core_tData by6803Data = {
-  1, // keypad inports
-  by6803_updSw, 2, by6803_soundCmd, "by6803",
-  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
-};
-
-static core_tData by6803aData = {
-  0, // no keypad
-  by6803_updSw, 2, by6803_soundCmd, "by6803",
-  core_swSeq2m, core_swSeq2m, core_m2swSeq, core_m2swSeq
-};
-#endif
