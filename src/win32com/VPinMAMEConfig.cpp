@@ -442,8 +442,16 @@ bool RegLoadOpts(HKEY hKey, rc_option *pOpt, char* pszDefault, char* pszValue)
 		if ( !hKey || (RegQueryValueEx(hKey, pOpt->name, 0, &dwType, (LPBYTE) &szValue, &dwSize)!=ERROR_SUCCESS) ) {
 			if ( pszDefault )
 				lstrcpy(szValue, pszDefault);
-			else
-				lstrcpy(szValue, pOpt->deflt);
+			else {
+				if ( pOpt->deflt )
+					lstrcpy(szValue, pOpt->deflt);
+				else {
+					if ( pOpt->type==rc_string )
+						lstrcpy(szValue, "");
+					else
+						lstrcpy(szValue, "0.0");
+				}
+			}
 
 			fNew = true;
 		}
@@ -455,7 +463,13 @@ bool RegLoadOpts(HKEY hKey, rc_option *pOpt, char* pszDefault, char* pszValue)
 		if ( !hKey || (RegQueryValueEx(hKey, pOpt->name, 0, &dwType, (LPBYTE) &dwValue, &dwSize)!=ERROR_SUCCESS) ) {
 			if ( pszDefault )
 				lstrcpy(szValue, pszDefault);
-			else
+			else {
+				if ( pOpt->deflt )
+					lstrcpy(szValue, pOpt->deflt);
+				else
+					lstrcpy(szValue, "0");
+			}
+
 				lstrcpy(szValue, pOpt->deflt);
 
 			fNew = true;
@@ -470,8 +484,12 @@ bool RegLoadOpts(HKEY hKey, rc_option *pOpt, char* pszDefault, char* pszValue)
 		if ( !hKey || (RegQueryValueEx(hKey, pOpt->name, 0, &dwType, (LPBYTE) &dwValue, &dwSize)!=ERROR_SUCCESS) ) {
 			if ( pszDefault )
 				lstrcpy(szValue, pszDefault);
-			else
-				lstrcpy(szValue, pOpt->deflt);
+			else {
+				if ( pOpt->deflt )
+					lstrcpy(szValue, pOpt->deflt);
+				else
+					lstrcpy(szValue, "0");
+			}
 
 			fNew = true;
 		}
