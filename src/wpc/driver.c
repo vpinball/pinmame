@@ -724,7 +724,8 @@ DRIVER(sorcr,l1)        //S9-532:   03/85 W Sorcerer
 DRIVER(comet,l4)        //S9-540:   06/85 W Comet (L-4)
 DRIVER(comet,l5)        //S9-540:   06/85 W Comet (L-5)
 //System 11
-DRIVER(hs,l4)           //S11-541:  01/86 W High Speed
+DRIVER(hs,l3)           //S11-541:  01/86 W High Speed (L-3)
+DRIVER(hs,l4)           //S11-541:  01/86 W High Speed (L-4)
                         //S11:      02/86 W Alley Cats (Bowler)
 DRIVER(grand,l4)        //S11-523:  04/86 W Grand Lizard
 DRIVER(rdkng,l1)        //S11-542:  07/86 W Road Kings (L-1)
