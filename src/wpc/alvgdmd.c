@@ -1,10 +1,8 @@
 #include "driver.h"
-//#include "cpu/m6809/m6809.h"
+#include "cpu/i8051/i8051.h"
 #include "core.h"
 #include "sndbrd.h"
 #include "alvgdmd.h"
-
-#if 0
 
 /*--------- Common DMD stuff ----------*/
 static struct {
@@ -29,7 +27,7 @@ static READ_HANDLER(dmd_busy_r)   { return dmdlocals.busy; }
 static WRITE_HANDLER(dmd32_ctrl_w);
 static void dmd32_init(struct sndbrdData *brdData);
 
-const struct sndbrdIntf dedmd32Intf = {
+const struct sndbrdIntf alvgdmdIntf = {
   NULL, dmd32_init, NULL, NULL,NULL, 
   dmd_data_w, dmd_busy_r, dmd32_ctrl_w, dmd_status_r, SNDBRD_NOTSOUND
 };
@@ -39,44 +37,65 @@ static WRITE_HANDLER(dmd32_status_w);
 static READ_HANDLER(dmd32_latch_r);
 static INTERRUPT_GEN(dmd32_firq);
 
-static MEMORY_READ_START(dmd32_readmem)
-  { 0x0000, 0x1fff, MRA_RAM },
-  { 0x2000, 0x2fff, MRA_RAM }, /* DMD RAM PAGE 0-7 512 bytes each */
-  { 0x3000, 0x3000, crtc6845_register_r },
-  { 0x3003, 0x3003, dmd32_latch_r },
-  { 0x4000, 0x7fff, MRA_BANKNO(DMD32_BANK0) }, /* Banked ROM */
-  { 0x8000, 0xffff, MRA_ROM },
+static READ_HANDLER(read_ext_mem)
+{
+	//printf("reading external address %x\n",offset);
+	return 0;
+}
+
+static WRITE_HANDLER(write_ext_mem)
+{
+	//printf("writing to external address %x, data=%x\n", offset, data);
+}
+
+//This will need to be changed - since our program rom is 64K! (Not 32K as the schem shows)
+
+static MEMORY_READ_START(alvgdmd_readmem)
+	{ 0x0000, 0xffff, read_ext_mem },
 MEMORY_END
 
-static MEMORY_WRITE_START(dmd32_writemem)
-  { 0x0000, 0x1fff, MWA_RAM },
-  { 0x2000, 0x2fff, MWA_RAM, &dmd32RAM }, /* DMD RAM PAGE 0-7 512 bytes each*/
-  { 0x3000, 0x3000, crtc6845_address_w },
-  { 0x3001, 0x3001, crtc6845_register_w },
-  { 0x3002, 0x3002, dmd32_bank_w }, /* DMD Bank Switching*/
-  { 0x4000, 0x4000, dmd32_status_w },   /* DMD Status*/
-  { 0x8000, 0xffff, MWA_ROM },
+static MEMORY_WRITE_START(alvgdmd_writemem)
+	{ 0x0000, 0xffff, write_ext_mem },
 MEMORY_END
 
-MACHINE_DRIVER_START(de_dmd32)
-  MDRV_CPU_ADD(M6809, 4000000)
-  MDRV_CPU_MEMORY(dmd32_readmem, dmd32_writemem)
-  MDRV_CPU_PERIODIC_INT(dmd32_firq, DMD32_FIRQFREQ)
+static PORT_READ_START( alvgdmd_readport )
+PORT_END
+
+static PORT_WRITE_START( alvgdmd_writeport )
+PORT_END
+
+MACHINE_DRIVER_START(alvgdmd)
+  MDRV_CPU_ADD(I8051, 12000000)		/*12 Mhz*/
+  MDRV_CPU_MEMORY(alvgdmd_readmem, alvgdmd_writemem)
+  MDRV_CPU_PORTS(alvgdmd_readport, alvgdmd_writeport)
+//  MDRV_CPU_PERIODIC_INT(dmd32_firq, DMD32_FIRQFREQ)
   MDRV_INTERLEAVE(50)
 MACHINE_DRIVER_END
+
+//Use only for testing the 8031 core emulation
+#ifdef MAME_DEBUG
+MACHINE_DRIVER_START(test8031)
+  MDRV_CPU_ADD(I8051, 12000000)		/*12 Mhz*/
+  MDRV_CPU_MEMORY(alvgdmd_readmem, alvgdmd_writemem)
+  MDRV_CPU_PORTS(alvgdmd_readport, alvgdmd_writeport)
+//  MDRV_CPU_PERIODIC_INT(dmd32_firq, DMD32_FIRQFREQ)
+MACHINE_DRIVER_END
+#endif
 
 static void dmd32_init(struct sndbrdData *brdData) {
   memset(&dmdlocals, 0, sizeof(dmdlocals));
   dmdlocals.brdData = *brdData;
+#if 0
   cpu_setbank(DMD32_BANK0, dmdlocals.brdData.romRegion);
   /* copy last 16K of ROM into last 16K of CPU region*/
   memcpy(memory_region(DE_DMD32CPUREGION) + 0x8000,
          memory_region(DE_DMD32ROMREGION) + memory_region_length(DE_DMD32ROMREGION)-0x8000,0x8000);
+#endif
 }
 
 static WRITE_HANDLER(dmd32_ctrl_w) {
   if ((data | dmdlocals.ctrl) & 0x01) {
-    cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_IRQ_LINE, (data & 0x01) ? ASSERT_LINE : CLEAR_LINE);
+    //cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_IRQ_LINE, (data & 0x01) ? ASSERT_LINE : CLEAR_LINE);
     if (data & 0x01) {
       sndbrd_ctrl_cb(dmdlocals.brdData.boardNo, dmdlocals.busy = 1);
       dmdlocals.cmd = dmdlocals.ncmd;
@@ -98,14 +117,13 @@ static WRITE_HANDLER(dmd32_bank_w) {
 }
 static READ_HANDLER(dmd32_latch_r) {
   sndbrd_data_cb(dmdlocals.brdData.boardNo, dmdlocals.busy = 0); // Clear Busy
-  cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_IRQ_LINE, CLEAR_LINE);
+//  cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_IRQ_LINE, CLEAR_LINE);
   return dmdlocals.cmd;
 }
 
 static INTERRUPT_GEN(dmd32_firq) {
-  cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_FIRQ_LINE, HOLD_LINE);
+//  cpu_set_irq_line(dmdlocals.brdData.cpuNo, M6809_FIRQ_LINE, HOLD_LINE);
 }
-#endif
 
 PINMAME_VIDEO_UPDATE(alvgdmd_update) {
 

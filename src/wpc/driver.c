@@ -52,7 +52,9 @@ DRIVERNV(bbbowlin)      //Big Ball Bowling - using Bally hardware
 DRIVERNV(wtgband)		//World Tour Garage Band (1992)
 DRIVERNV(mystcast)		//Mystery Castle (1993)
 DRIVERNV(pstlpkr)		//Pistol Poker (1993)
-
+#ifdef MAME_DEBUG
+  DRIVERNV(test8031)		//Test 8031 cpu core
+#endif
 
 // ---------------------
 // GAME PLAN GAMES BELOW
