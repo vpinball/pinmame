@@ -224,7 +224,7 @@ S11CS_SOUNDROM888(      "elvi_u4.l1",  CRC(b5afa4db) SHA1(59b72dac5301a4befa01b9
 S11_ROMEND
 
 S11_ROMSTART48(eatpm,4g,"u26-lg4.rom", CRC(5e196382) SHA1(e948993ae100ab3d7e1b771f4ce22e3faaad84b4),
-                        "u27-lg4.rom", CRC(3614f3e2) SHA1(3143fef8ab91ad357803d1e98b8ee953e6a194ef))
+                        "elvi_u27.l4", CRC(3614f3e2) SHA1(3143fef8ab91ad357803d1e98b8ee953e6a194ef))
 S11XS_SOUNDROM88(       "elvi_u21.l1", CRC(68d44545) SHA1(8c3ea8521a44b1539cd148f142cca14184174ba7),
                         "elvi_u22.l1", CRC(e525b4fe) SHA1(be728ec33a00b93c3346428a9248b588460af945))
 S11CS_SOUNDROM888(      "elvi_u4.l1",  CRC(b5afa4db) SHA1(59b72dac5301a4befa01b93da5162478682e6021),
@@ -233,7 +233,7 @@ S11CS_SOUNDROM888(      "elvi_u4.l1",  CRC(b5afa4db) SHA1(59b72dac5301a4befa01b9
 S11_ROMEND
 
 S11_ROMSTART48(eatpm,4u,"u26-lu4.rom", CRC(504366c8) SHA1(1ca667208d4dcc8a09e35cad5f57798902611d7e),
-                        "u27-lu4.rom", CRC(3614f3e2) SHA1(3143fef8ab91ad357803d1e98b8ee953e6a194ef))
+                        "elvi_u27.l4", CRC(3614f3e2) SHA1(3143fef8ab91ad357803d1e98b8ee953e6a194ef))
 S11XS_SOUNDROM88(       "elvi_u21.l1", CRC(68d44545) SHA1(8c3ea8521a44b1539cd148f142cca14184174ba7),
                         "elvi_u22.l1", CRC(e525b4fe) SHA1(be728ec33a00b93c3346428a9248b588460af945))
 S11CS_SOUNDROM888(      "elvi_u4.l1",  CRC(b5afa4db) SHA1(59b72dac5301a4befa01b93da5162478682e6021),
@@ -259,11 +259,11 @@ static MACHINE_DRIVER_START(elvira)
   MDRV_VISIBLE_AREA(0, 639, 0, 399)
 MACHINE_DRIVER_END
 
-CORE_GAMEDEF(eatpm, l4, "Elvira and the Party Monsters (L-4)", 1989, "Bally", elvira, 0)
-CORE_CLONEDEF(eatpm,l1,l4, "Elvira and the Party Monsters (L-1)", 1989, "Bally", elvira, 0)
-CORE_CLONEDEF(eatpm,l2,l4, "Elvira and the Party Monsters (L-2)", 1989, "Bally", elvira, 0)
-CORE_CLONEDEF(eatpm,4g,l4, "Elvira and the Party Monsters (L-4) German", 1989, "Bally", elvira, 0)
-CORE_CLONEDEF(eatpm,4u,l4, "Elvira and the Party Monsters (L-4) European", 1989, "Bally", elvira, 0)
+CORE_GAMEDEF(eatpm, l4, "Elvira and the Party Monsters (LA-4)", 1989, "Bally", elvira, 0)
+CORE_CLONEDEF(eatpm,l1,l4, "Elvira and the Party Monsters (LA-1)", 1989, "Bally", elvira, 0)
+CORE_CLONEDEF(eatpm,l2,l4, "Elvira and the Party Monsters (LA-2)", 1989, "Bally", elvira, 0)
+CORE_CLONEDEF(eatpm,4g,l4, "Elvira and the Party Monsters (LG-4)", 1989, "Bally", elvira, 0)
+CORE_CLONEDEF(eatpm,4u,l4, "Elvira and the Party Monsters (LU-4)", 1989, "Bally", elvira, 0)
 CORE_CLONEDEF(eatpm,p7,l4, "Elvira and the Party Monsters (PA-7)", 1989, "Bally", elvira, 0)
 
 /*-----------------------
