@@ -1721,7 +1721,6 @@ static void m68306_duart_reg_w(offs_t address, data16_t data, int word) {
 //TX Byte sent
 static void m68306_tx_byte_sent(int which)
 {
-	int data=0;
 	int check_cts = (m68306duartreg[dirDUMR2A+(which*0x10)]&0x10)>>4;
 	int get_rts = 0;
 
@@ -1764,7 +1763,6 @@ static void m68306_tx_byte_sent(int which)
 //Send a byte of data out the tx line
 static void m68306_tx_send_byte(int which)
 {
-	int data=0;
 	//Are we already sending data(more accurately, have we not yet sent it?)
 	//If so, call again in a bit..
 	if(m68306_duart.channel[which].tx_sending) {
@@ -2020,7 +2018,7 @@ static void duart_command_register_w(int which, int data)
 			case 2:
 				LOG(("- RESET RECEIVER(misc)!\n"));
 				//Disable receiver
-				m68306_duart.channel[which].rx_enable;
+				m68306_duart.channel[which].rx_enable=0;
 				//Clear FFUL and RxRDY bits (bits 1 & 0) in DUSR
 				m68306_duart_set_dusr(which,m68306duartreg[dirDUSRA+(which*0x10)] & (~0x03));
 				//FIFO Pointer re-initialized
