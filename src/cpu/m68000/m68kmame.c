@@ -1245,7 +1245,7 @@ unsigned m68020_dasm(char *buffer, unsigned pc)
 /****************************************************************************
  * 68306 section
  ****************************************************************************/
-#if HAS_M68306
+#if defined(PINMAME) && (HAS_M68306)
 // Could not find any other way to get the interrupts to work than inlcuding this
 #include "m68kcpu.h"
 #undef REG_PC
@@ -1427,7 +1427,7 @@ static void m68306_intreg_w(offs_t address, data16_t data, int word) {
         break;
       case irSYSTEM: /* system */
         m68306intreg[irSYSTEM] = (oldval & 0x8000) | (data & 0x7fff); // BTERR bit ignored
-        if (data & 0x4000) logerror("Bus Timeout Error not implmented\n",data);
+        if (data & 0x4000) logerror("Bus Timeout Error not implmented %x\n",data);
         break;
     } /* switch */
   }
