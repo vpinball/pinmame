@@ -92,11 +92,6 @@ static WRITE_HANDLER(col_w) {
 static WRITE_HANDLER(disp_w) {
   locals.segments[15-locals.dispCol].w = core_bcd2seg7[data >> 4];
   locals.segments[31-locals.dispCol].w = core_bcd2seg7[data & 0x0f];
-  // fake the single points zeroes
-  locals.segments[32].w = locals.segments[3].w ? core_bcd2seg7[0] : 0;
-  locals.segments[33].w = locals.segments[11].w ? core_bcd2seg7[0] : 0;
-  locals.segments[34].w = locals.segments[19].w ? core_bcd2seg7[0] : 0;
-  locals.segments[35].w = locals.segments[27].w ? core_bcd2seg7[0] : 0;
   // mapping various lamps (million, player up, game over, tilt) from segments data
   if (locals.dispCol < 3) coreGlobals.tmpLampMatrix[12 + locals.dispCol] = data;
   if (locals.dispCol > 7 && locals.dispCol < 11) coreGlobals.tmpLampMatrix[7 + locals.dispCol] = data;
