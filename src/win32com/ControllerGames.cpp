@@ -262,11 +262,8 @@ STDMETHODIMP CGames::get_Item(VARIANT *pKey, IGame **pGame)
 		}
 
 		if ( i<m_lGames ) {
-			if ( m_pGamesList[i] ) {
+			if ( m_pGamesList[i] )
 				hr = m_pGamesList[i]->QueryInterface(IID_IUnknown, (void**) pGame);
-				if ( SUCCEEDED(hr) )
-					m_pGamesList[i]->AddRef();
-			}
 		}
 	}
 	else {
@@ -275,11 +272,8 @@ STDMETHODIMP CGames::get_Item(VARIANT *pKey, IGame **pGame)
 		if ( pKey->lVal<0 || pKey->lVal>m_lGames )
 			return E_INVALIDARG;
 
-		if ( m_pGamesList[pKey->lVal] ) {
+		if ( m_pGamesList[pKey->lVal] )
 			hr = m_pGamesList[pKey->lVal]->QueryInterface(IID_IUnknown, (void**) pGame);
-			if ( SUCCEEDED(hr) )
-				m_pGamesList[pKey->lVal]->AddRef();
-		}
 	}
 
 	return hr;
