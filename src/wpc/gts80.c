@@ -27,14 +27,14 @@ static int core_ascii2seg[] = {
 	/* 0x08-0x0f */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
 	/* 0x10-0x17 */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
 	/* 0x18-0x1f */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
-	/* 0x20-0x27 */ 0x0000, 0x0903, 0x2002, 0x4E2A, 0x6D2A, 0x656E, 0x5D13, 0x0004,
-	/* 0x28-0x2f */ 0x0014, 0x0041, 0x407F, 0x402A, 0x0000, 0x4008, 0x0000, 0x0044,
-	/* 0x30-0x37 */ 0x3f00, 0x0022, 0x5B08, 0x4F08, 0x6608, 0x6D08, 0x7D08, 0x0700,
-	/* 0x38-0x3f */ 0x7F08, 0x6F08, 0x0900, 0x0140, 0x0844, 0x4808, 0x0811, 0x0328,
-	/* 0x40-0x47 */ 0x5F20, 0x7708, 0x0F2A, 0x3900, 0x0F22, 0x7900, 0x7100, 0x3D08,
-	/* 0x48-0x4f */ 0x7608, 0x0922, 0x1E00, 0x7014, 0x3800, 0x3605, 0x3611, 0x3f00,
-	/* 0x50-0x57 */ 0x7308, 0x3F10, 0x7318, 0x6D08, 0x0122, 0x3E00, 0x3044, 0x3650,
-	/* 0x58-0x5f */ 0x0055, 0x0025, 0x0944, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
+	/* 0x20-0x27 */ 0x0000, 0x0309, 0x0220, 0x2A4E, 0x2A6D, 0x6E65, 0x135D, 0x0400,
+	/* 0x28-0x2f */ 0x1400, 0x4100, 0x7F40, 0x2A40, 0x0000, 0x0840, 0x0000, 0x4400,
+	/* 0x30-0x37 */ 0x003f, 0x2200, 0x085B, 0x084f, 0x0866, 0x086D, 0x087D, 0x0707,
+	/* 0x38-0x3f */ 0x087F, 0x086F, 0x0009, 0x4001, 0x4408, 0x0848, 0x1108, 0x2803,
+	/* 0x40-0x47 */ 0x205F, 0x0877, 0x2A0F, 0x0039, 0x220F, 0x0079, 0x0071, 0x083D,
+	/* 0x48-0x4f */ 0x0876, 0x2209, 0x001E, 0x1470, 0x0038, 0x0536, 0x1136, 0x003f,
+	/* 0x50-0x57 */ 0x0873, 0x103F, 0x1873, 0x086D, 0x2201, 0x003E, 0x4430, 0x5036,
+	/* 0x58-0x5f */ 0x5500, 0x2500, 0x4409, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
 	/* 0x60-0x67 */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
 	/* 0x68-0x6f */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
 	/* 0x70-0x77 */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
@@ -50,7 +50,7 @@ static struct {
   UINT32 solenoids;
   UINT8  swMatrix[CORE_MAXSWCOL];
   UINT8  lampMatrix[CORE_MAXLAMPCOL];
-  core_tSeg segments, pseg;
+  core_tSeg segments;
   int    swColOp;
   int    swRow;
   int    ssEn;
@@ -105,7 +105,6 @@ static INTERRUPT_GEN(GTS80_vblank) {
   {
     memcpy(coreGlobals.segments, GTS80locals.segments, sizeof(coreGlobals.segments));
 	memset(GTS80locals.segments, 0x00, sizeof GTS80locals.segments);
-//    memcpy(GTS80locals.segments, GTS80locals.pseg, sizeof(GTS80locals.segments));
 
     /*update leds*/
     coreGlobals.diagnosticLed = 0;
@@ -241,75 +240,55 @@ static WRITE_HANDLER(riot6532_1a_w)
 			GTS80locals.seg3 = core_bcd2seg9[0x01];
 
 		if ( strobe<=5 ) {
-			if ( GTS80locals.seg1 ) {
-				GTS80locals.segments[0][7-strobe].lo = GTS80locals.seg1 & 0x00ff;
-				GTS80locals.segments[0][7-strobe].hi = GTS80locals.seg1 >> 8;
-			}
-			if ( GTS80locals.seg2 ) {
-				GTS80locals.segments[1][7-strobe].lo = GTS80locals.seg2 & 0x00ff;
-				GTS80locals.segments[1][7-strobe].hi = GTS80locals.seg2 >> 8;
-			}
-			if ( GTS80locals.seg3 ) {
-				GTS80locals.segments[2][7-strobe].lo = GTS80locals.seg3 & 0x00ff;
-				GTS80locals.segments[2][7-strobe].hi = GTS80locals.seg3 >> 8;
-			}
+			if ( GTS80locals.seg1 ) 
+				GTS80locals.segments[7-strobe].w = GTS80locals.seg1;
+			
+			if ( GTS80locals.seg2 ) 
+				GTS80locals.segments[20 + 7-strobe].w = GTS80locals.seg2;
+			
+			if ( GTS80locals.seg3 ) 
+				GTS80locals.segments[40 + 7-strobe].w = GTS80locals.seg3;
 		}
 		else if ( strobe<=11 ) {
-			if ( GTS80locals.seg1 ) {
-				GTS80locals.segments[0][21-strobe].lo = GTS80locals.seg1 & 0x00ff;
-				GTS80locals.segments[0][21-strobe].hi = GTS80locals.seg1 >> 8;
-			}
-			if ( GTS80locals.seg2 ) {
-				GTS80locals.segments[1][21-strobe].lo = GTS80locals.seg2 & 0x00ff;
-				GTS80locals.segments[1][21-strobe].hi = GTS80locals.seg2 >> 8;
-			}
-			if ( GTS80locals.seg3 ) {
-				GTS80locals.segments[2][21-strobe].lo = GTS80locals.seg3 & 0x00ff;
-				GTS80locals.segments[2][21-strobe].hi = GTS80locals.seg3 >> 8;
-			}
+			if ( GTS80locals.seg1 ) 
+				GTS80locals.segments[21-strobe].w = GTS80locals.seg1;
+
+			if ( GTS80locals.seg2 ) 
+				GTS80locals.segments[20 + 21-strobe].w = GTS80locals.seg2;
+
+			if ( GTS80locals.seg3 ) 
+				GTS80locals.segments[40 + 21-strobe].w = GTS80locals.seg3;
 		}
 		else {
 			// 7th digits in score display for GTS80a
 			if ( GTS80locals.seg1 ) {
-				if ( strobe==12 ) {
-					GTS80locals.segments[0][9].lo = GTS80locals.seg1 & 0x00ff;
-					GTS80locals.segments[0][9].hi = GTS80locals.seg1 >> 8;
-				}
-				else if ( strobe==15 ) {
-					GTS80locals.segments[0][1].lo = GTS80locals.seg1 & 0x00ff;
-					GTS80locals.segments[0][1].hi = GTS80locals.seg1 >> 8;
-				}
+				if ( strobe==12 ) 
+					GTS80locals.segments[9].w = GTS80locals.seg1;
+				else if ( strobe==15 ) 
+					GTS80locals.segments[1].w = GTS80locals.seg1;
 			}
 			if ( GTS80locals.seg2 ) {
-				if ( strobe==12 ) {
-					GTS80locals.segments[1][9].lo = GTS80locals.seg2 & 0x00ff;
-					GTS80locals.segments[1][9].hi = GTS80locals.seg2 >> 8;
-				}
-				else if ( strobe==15 ) {
-					GTS80locals.segments[1][1].lo = GTS80locals.seg2 & 0x00ff;
-					GTS80locals.segments[1][1].hi = GTS80locals.seg2 >> 8;
-				}
+				if ( strobe==12 ) 
+					GTS80locals.segments[29].w = GTS80locals.seg2;
+				else if ( strobe==15 ) 
+					GTS80locals.segments[21].w = GTS80locals.seg2;
 			}
 			if ( GTS80locals.seg3 ) {
 				switch ( strobe ) {
 				case 12:
-					GTS80locals.segments[0][8].lo = GTS80locals.seg3 & 0x00ff;
-					GTS80locals.segments[0][8].hi = GTS80locals.seg3 >> 8;
+					GTS80locals.segments[8].w = GTS80locals.seg3;
 					break;
 
 				case 13:
-					GTS80locals.segments[0][0].lo = GTS80locals.seg3 & 0x00ff;
-					GTS80locals.segments[0][0].hi = GTS80locals.seg3 >> 8;
+					GTS80locals.segments[0].w = GTS80locals.seg3;
 					break;
 
 				case 14:
-					GTS80locals.segments[1][8].lo = GTS80locals.seg3 & 0x00ff;
-					GTS80locals.segments[1][8].hi = GTS80locals.seg3 >> 8;
+					GTS80locals.segments[28].w = GTS80locals.seg3;
 					break;
 
 				case 15:
-					GTS80locals.segments[1][0].lo = GTS80locals.seg3 & 0x00ff;
-					GTS80locals.segments[1][0].hi = GTS80locals.seg3 >> 8;
+					GTS80locals.segments[20].w = GTS80locals.seg3;
 					break;
 				}
 			}
@@ -326,8 +305,6 @@ static WRITE_HANDLER(riot6532_1b_w)
 //	logerror("riot6532_1b_w: 0x%02x\n", data);
 	GTS80locals.OpSwitchEnable = (data&0x80);
 	if ( core_gameData->gen & (GEN_GTS80B2K|GEN_GTS80B4K|GEN_GTS80B8K) ) {
-		int value;
-
 		GTS80locals.disData = (data&0x3f);
 		if ( data&0x40 ) {
 			GTS80locals.segPos1 = 0;
@@ -346,9 +323,7 @@ static WRITE_HANDLER(riot6532_1b_w)
 				GTS80locals.disCmdMode1 = 1;
 			}
 			else {
-				value = core_ascii2seg[GTS80locals.data&0x7f] | (GTS80locals.data&0x80?0x8080:0x0000);
-				GTS80locals.segments[0][GTS80locals.segPos1].lo = value&0x00ff;
-				GTS80locals.segments[0][GTS80locals.segPos1].hi = value>>8;
+				GTS80locals.segments[GTS80locals.segPos1].w = core_ascii2seg[GTS80locals.data&0x7f] | (GTS80locals.data&0x80?0x8080:0x0000);
 				GTS80locals.segPos1 = (GTS80locals.segPos1+1)%20;
 			}
 		}
@@ -362,9 +337,7 @@ static WRITE_HANDLER(riot6532_1b_w)
 				GTS80locals.disCmdMode2 = 1;
 			}
 			else {
-				value = core_ascii2seg[GTS80locals.data&0x7f] | (GTS80locals.data&0x80?0x8080:0x0000);
-				GTS80locals.segments[1][GTS80locals.segPos2].lo = value&0x00ff;
-				GTS80locals.segments[1][GTS80locals.segPos2].hi = value>>8;
+				GTS80locals.segments[20+GTS80locals.segPos2].w = core_ascii2seg[GTS80locals.data&0x7f] | (GTS80locals.data&0x80?0x8080:0x0000);
 				GTS80locals.segPos2 = (GTS80locals.segPos2+1)%20;
 			}
 		}
