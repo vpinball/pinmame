@@ -499,6 +499,8 @@ static struct {
   void   *nmi_timer;		// Timer for NMI
   UINT8  dac_volume;
   UINT8  dac_data;
+  UINT8  speechboard_drq;	// Gen 1 Only
+  UINT8  sp0250_latch;		// Gen 1 Only
 
   int u2_latch;				// GTS3 - Store U2 data
   int enable_cs;			// GTS3 - OKI6295 ~CS pin
@@ -507,6 +509,24 @@ static struct {
   int rom_cs;				// GTS3 - OKI6295 Rom Bank Select
   int nmi_enable;			// GTS3 - Enable NMI triggered by Programmable Circuit
 } GTS80BS_locals;
+
+//Speechboard IRQ callback, will be set to 1 while speech is busy..
+static void speechboard_drq_w(int level)
+{
+	GTS80BS_locals.speechboard_drq = (level == ASSERT_LINE);
+}
+
+struct sp0250_interface GTS80BS_sp0250_interface =
+{
+	100,				/*Volume*/
+	speechboard_drq_w	/*IRQ Callback*/
+};
+
+
+//Latch data to the SP0250
+static WRITE_HANDLER(sp0250_latch) {
+	GTS80BS_locals.sp0250_latch = data;
+}
 
 // Latch data for AY chips
 WRITE_HANDLER(s80bs_ay8910_latch_w)
@@ -599,13 +619,15 @@ WRITE_HANDLER(s80bs_sh_w)
 }
 
 //Generation 1 Specific
+/* bits 0-3 are probably unused (future expansion) */
+/* bits 4 & 5 are two dip switches. Unused? */
+/* bit 6 is the test switch. When 0, the CPU plays a pulsing tone. */
+/* bit 7 comes from the speech chip DATA REQUEST pin */
 READ_HANDLER(s80bs1_sound_input_r)
 {
-	/* bits 0-3 are probably unused (future expansion) */
-	/* bits 4 & 5 are two dip switches. Unused? */
-	/* bit 6 is the test switch. When 0, the CPU plays a pulsing tone. */
-	/* bit 7 comes from the speech chip DATA REQUEST pin */
-	return 0xc0;
+	int data = 0x40;
+	if(GTS80BS_locals.speechboard_drq)	data |= 0x80;
+	return data;
 }
 
 //Common to All Generations - Set NMI Timer Enable
@@ -644,14 +666,16 @@ WRITE_HANDLER( s80bs1_sound_control_w )
 	}
 
 	/* bit 5 goes to the speech chip DIRECT DATA TEST pin */
+	//NO IDEA WHAT THIS DOES - No interface in the sp0250 emulation for it yet?
 
 	/* bit 6 = speech chip DATA PRESENT pin; high then low to make the chip read data */
 	if ((last & 0x40) == 0x40 && (data & 0x40) == 0x00)
 	{
+		sp0250_w(0,GTS80BS_locals.sp0250_latch);
 	}
 
 	/* bit 7 goes to the speech chip RESET pin */
-
+	//No interface in the sp0250 emulation for it yet?
 	last = data & 0x44;
 }
 
@@ -709,9 +733,9 @@ MEMORY_READ_START( GTS80BS1_readmem )
 MEMORY_END
 MEMORY_WRITE_START( GTS80BS1_writemem )
 	{ 0x0000, 0x03ff, MWA_RAM },
-	{ 0x2000, 0x2000, MWA_NOP },	/* speech chip. The game sends strings */
-									/* of 15 bytes (clocked by 4000). The chip also */
-									/* checks a DATA REQUEST bit in 6000. */
+	{ 0x2000, 0x2000, sp0250_latch },	/* speech chip. The game sends strings */
+										/* of 15 bytes (clocked by 4000). The chip also */
+										/* checks a DATA REQUEST bit in 6000. */
 	{ 0x4000, 0x4000, s80bs1_sound_control_w },
 	{ 0x8000, 0x8000, s80bs_ay8910_latch_w },
 	{ 0xa000, 0xa000, s80bs_nmi_rate_w },	   /* set Y-CPU NMI rate */
@@ -1034,6 +1058,8 @@ void gts80b_init(struct sndbrdData *brdData) {
 	memset(&GTS80BS_locals, 0, sizeof(GTS80BS_locals));
 	//Start the programmable timer circuit
 	timer_set(TIME_IN_HZ(250000>>8), 0, nmi_callback);
+	//Must be 1 to start or speechboard will never work
+	GTS80BS_locals.speechboard_drq = 1;
 }
 
 // Cleanup
@@ -1048,6 +1074,7 @@ const struct sndbrdIntf gts80bIntf = {
   "GTS80B", gts80b_init, gts80b_exit, NULL, gts80b_data_w, gts80b_data_w, NULL, NULL, NULL, 0 //SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
+//System S80B - Gen 1
 MACHINE_DRIVER_START(gts80s_b1)
   MDRV_CPU_ADD_TAG("d-cpu", M6502, 1000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
@@ -1058,9 +1085,10 @@ MACHINE_DRIVER_START(gts80s_b1)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(GTS80BS1_readmem, GTS80BS1_writemem)
   MDRV_SOUND_ADD(AY8910, GTS80BS_ay8910Int)
+  MDRV_SOUND_ADD(SP0250, GTS80BS_sp0250_interface)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END
-
+//System S80B - Gen 2
 MACHINE_DRIVER_START(gts80s_b2)
   MDRV_CPU_ADD_TAG("d-cpu", M6502, 2000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
@@ -1073,7 +1101,7 @@ MACHINE_DRIVER_START(gts80s_b2)
   MDRV_SOUND_ADD(AY8910, GTS80BS_ay8910Int)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END
-
+//System S80B - Gen 3
 MACHINE_DRIVER_START(gts80s_b3)
   MDRV_CPU_ADD_TAG("d-cpu", M6502, 2000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
@@ -1087,7 +1115,7 @@ MACHINE_DRIVER_START(gts80s_b3)
   MDRV_SOUND_ADD(YM2151, GTS80BS_ym2151Int)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END
-
+//System GTS3 - Gen 1
 MACHINE_DRIVER_START(gts80s_s3)
   MDRV_CPU_ADD_TAG("d-cpu", M6502, 2000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
