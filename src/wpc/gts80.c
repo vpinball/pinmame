@@ -146,8 +146,8 @@ static int GTS80_m2sw(int col, int row) {
 	else
 		return row*10+col-1;
 }
-static int GTS80_lamp2m(int no) { return no+8; }
-static int GTS80_m2lamp(int col, int row) { return (col-1)*8+row; }
+static int GTS80_m2lamp(int no) { return no+8; }
+static int GTS80_lamp2m(int col, int row) { return (col-1)*8+row; }
 
 
 static int GTS80_getSwRow(int row) {
@@ -708,7 +708,7 @@ MACHINE_DRIVER_START(gts80)
   MDRV_SWITCH_UPDATE(GTS80)
   MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_SWITCH_CONV(GTS80_sw2m,GTS80_m2sw)
-  MDRV_LAMP_CONV(GTS80_lamp2m,GTS80_m2lamp)
+  MDRV_LAMP_CONV(GTS80_m2lamp,GTS80_lamp2m)
   MDRV_SOUND_CMD(GTS80_sndCmd_w)
   MDRV_SOUND_CMDHEADING("GTS80")
 MACHINE_DRIVER_END
@@ -761,6 +761,6 @@ static core_tData GTS80Data = {
   GTS80_updSw,
   1,
   GTS80_sndCmd_w, "GTS80",
-  GTS80_sw2m, GTS80_m2lamp, GTS80_m2sw, GTS80_lamp2m
+  GTS80_sw2m, GTS80_lamp2m, GTS80_m2sw, GTS80_m2lamp
 };
 #endif
