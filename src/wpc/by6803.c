@@ -82,11 +82,11 @@
 #define BY6803_PIA1 1
 
 #define BY6803_VBLANKFREQ     60 /* VBLANK frequency */
-#define BY6803_IRQFREQ       150 /* IRQ (via PIA) frequency*/
+#define BY6803_IRQFREQ       316 /* IRQ (via PIA) frequency*/
 #define BY6803_ZCFREQ        240/* Zero cross frequency (PHASE A is 1/2 this value)*/
 
 #define BY6803_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
-#define BY6803_LAMPSMOOTH      6 /* Smooth the lamps over this number of VBLANKS */
+#define BY6803_LAMPSMOOTH      4 /* Smooth the lamps over this number of VBLANKS */
 #define BY6803_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKS */
 
 //#define mlogerror printf
