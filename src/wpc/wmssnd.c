@@ -134,6 +134,10 @@ static const struct pia6821_interface s11s_pia[] = {{
  /* in  : A/B,CA/B1,CA/B2 */ soundlatch_r, 0, 0, 0, 0, 0,
  /* out : A/B,CA/B2       */ 0, DAC_1_data_w, hc55516_1_clock_w, hc55516_1_digit_w,
  /* irq : A/B             */ s11s_piaIrq, s11s_piaIrq
+},{
+ /* in  : A/B,CA/B1,CA/B2 */ soundlatch_r, 0, 0, 0, 0, 0,
+ /* out : A/B,CA/B2       */ 0, DAC_1_data_w, hc55516_0_clock_w, hc55516_0_digit_w,
+ /* irq : A/B             */ s11s_piaIrq, s11s_piaIrq
 }};
 
 static struct {
@@ -192,7 +196,7 @@ struct YM2151interface s11cs_ym2151Int = {
 const struct sndbrdIntf s11csIntf = {
   s11cs_init, NULL, NULL,
   soundlatch2_w, NULL,
-  CAT3(pia_,S11CS_PIA0,_cb1_w), NULL
+  CAT3(pia_,S11CS_PIA0,_cb1_w), soundlatch3_r
 };
 
 static struct {
@@ -252,6 +256,70 @@ static void s11cs_piaIrqB(int state) {
   cpu_set_nmi_line(s11clocals.brdData.cpuNo, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
+/*--------------------------
+/   S11 Jokerz sound board
+/---------------------------*/
+#define S11JS_BANK0   4
+
+static void s11js_ym2151IRQ(int state);
+static void s11js_init(struct sndbrdData *brdData);
+static WRITE_HANDLER(s11js_reply_w);
+static WRITE_HANDLER(s11js_rombank_w);
+static WRITE_HANDLER(s11js_ctrl_w);
+
+struct YM2151interface s11js_ym2151Int = {
+  1, 3579545, /* Hz */
+  { YM3012_VOL(10,MIXER_PAN_CENTER,30,MIXER_PAN_CENTER) },
+  { s11js_ym2151IRQ }
+};
+
+const struct sndbrdIntf s11jsIntf = {
+  s11js_init, NULL, NULL,
+  soundlatch2_w, soundlatch3_r,
+  s11js_ctrl_w, NULL, 0
+};
+
+static struct {
+  struct sndbrdData brdData;
+} s11jlocals;
+
+MEMORY_READ_START(s11js_readmem)
+  { 0x0000, 0x1fff, MRA_RAM },
+  { 0x2001, 0x2001, YM2151_status_port_0_r }, /* 2001-2fff odd */
+  { 0x3400, 0x3400, soundlatch2_r },
+  { 0x4000, 0xbfff, MRA_BANKNO(S11JS_BANK0) },
+  { 0xc000, 0xffff, MRA_ROM },
+MEMORY_END
+
+MEMORY_WRITE_START(s11js_writemem)
+  { 0x0000, 0x1fff, MWA_RAM },
+  { 0x2000, 0x2000, YM2151_register_port_0_w },     /* 2000-2ffe even */
+  { 0x2001, 0x2001, YM2151_data_port_0_w },         /* 2001-2fff odd */
+  { 0x2800, 0x2800, s11js_reply_w },
+  { 0x3000, 0x3000, DAC_0_data_w },
+  { 0x3800, 0x3800, s11js_rombank_w },
+  { 0x8000, 0xffff, MWA_ROM },
+MEMORY_END
+
+static WRITE_HANDLER(s11js_rombank_w) {
+  cpu_setbank(S11JS_BANK0, s11jlocals.brdData.romRegion + 0x8000*(data & 0x01));
+}
+static void s11js_init(struct sndbrdData *brdData) {
+  s11jlocals.brdData = *brdData;
+  memcpy(memory_region(REGION_CPU1+s11jlocals.brdData.cpuNo) + 0x00c000, s11jlocals.brdData.romRegion + 0x0c000, 0x4000);
+  cpu_setbank(S11JS_BANK0, s11jlocals.brdData.romRegion);
+}
+static WRITE_HANDLER(s11js_ctrl_w) {
+//  cpu_set_irq_line(s11jlocals.brdData.cpuNo, M6809_IRQ_LINE, data ? ASSERT_LINE : CLEAR_LINE);
+  if (!data) cpu_set_irq_line(s11jlocals.brdData.cpuNo, M6809_IRQ_LINE, PULSE_LINE);
+}
+static WRITE_HANDLER(s11js_reply_w) {
+  soundlatch3_w(0,data);
+  sndbrd_data_cb(s11jlocals.brdData.boardNo, 0); sndbrd_data_cb(s11jlocals.brdData.boardNo, 1);
+}
+static void s11js_ym2151IRQ(int state) {
+  cpu_set_irq_line(s11jlocals.brdData.cpuNo, M6809_FIRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
+}
 
 /*------------------
 /  WPC sound board

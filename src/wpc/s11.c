@@ -312,7 +312,7 @@ static WRITE_HANDLER(de_sndCmd_w) {
 //NOTE: Not used for Data East
 static WRITE_HANDLER(pia0ca2_w) { sndbrd_0_ctrl_w(0,data); }
 //NOTE: Not used for Data East
-static READ_HANDLER(pia5b_r) { return soundlatch3_r(offset); }
+static READ_HANDLER(pia5b_r) { return sndbrd_1_ctrl_r(0); }
 
 static struct pia6821_interface s11_pia[] = {
 {/* PIA 0 (2100) */
@@ -459,8 +459,8 @@ static void s11_init(void) {
       sndbrd_1_init(SNDBRD_S11CS, 1, memory_region(S11CS_ROMREGION), pia_5_cb1_w, NULL);
       break;
     case GEN_S11B2:
-      sndbrd_0_init(SNDBRD_S11S,  1, memory_region(S11B3S_ROMREGION), NULL, NULL);
-    //sndbrd_1_init(SNDBRD_???,   2, memory_region(S11_MEMREG_SROM), pia_5_cb1_w, NULL);
+      sndbrd_0_init(SNDBRD_S11BS, 2, memory_region(S11S_ROMREGION), NULL, NULL);
+      sndbrd_1_init(SNDBRD_S11JS, 1, memory_region(S11JS_ROMREGION), pia_5_cb1_w, NULL);
       break;
     case GEN_S11C:
       sndbrd_1_init(SNDBRD_S11CS, 1, memory_region(S11CS_ROMREGION), pia_5_cb1_w, NULL);
@@ -543,16 +543,16 @@ const struct MachineDriver machine_driver_s11_s = {
   s11_nvram
 };
 
-/* Williams System 11b */
+/* Williams System 11b Jokerz */
 const struct MachineDriver machine_driver_s11b2_s = {
-  { S11_CPU, S11_SOUNDCPU },
+  { S11_CPU, S11J_SOUNDCPU, S11_SOUNDCPU },
   S11_VBLANKFREQ, DEFAULT_60HZ_VBLANK_DURATION,
   50, s11_init, s11_exit,
   CORE_SCREENX, CORE_SCREENY, { 0, CORE_SCREENX-1, 0, CORE_SCREENY-1 },
   0, sizeof(core_palette)/sizeof(core_palette[0][0])/3, 0, core_initpalette,
   VIDEO_SUPPORTS_DIRTY | VIDEO_TYPE_RASTER, 0,
   NULL, NULL, gen_refresh,
-  0,0,0,0, { S11B3_SOUND },
+  SOUND_SUPPORTS_STEREO,0,0,0, { S11J_SOUND },
   s11_nvram
 };
 
