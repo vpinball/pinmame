@@ -32,9 +32,9 @@ static core_tGameData tttGameData = {
 };
 INITGAME(ttt)
 
-WPC_ROMSTART(ttt,10,"tikt1_0.rom",0x80000,CRC(bf1d0382))
-DCS_SOUNDROM2m("ttt_s2.rom",CRC(faae93eb),
-               "ttt_s3.rom",CRC(371ba9b3))
+WPC_ROMSTART(ttt,10,"tikt1_0.rom",0x80000,CRC(bf1d0382) SHA1(3d26413400915594e9f1cc08a551c05526b94223))
+DCS_SOUNDROM2m("ttt_s2.rom",CRC(faae93eb) SHA1(672758544b260d7751ac296f5beb2e271e77c50a),
+               "ttt_s3.rom",CRC(371ba9b3) SHA1(de6a8cb78e08a434f6668dd4a93cad857acba310))
 WPC_ROMEND
 #define input_ports_ttt input_ports_wpc
 CORE_GAMEDEF(ttt,10,"Ticket Tac Toe (1.0)",1996,"Williams",wpc_m95S,0)
@@ -54,7 +54,7 @@ static core_tGameData tfdmdGameData = {
   }
 };
 INITGAME(tfdmd)
-WPC_ROMSTART(tfdmd,l3,"u6_l3.rom",0x20000,CRC(bd43e28c)) WPC_ROMEND
+WPC_ROMSTART(tfdmd,l3,"u6_l3.rom",0x20000,CRC(bd43e28c) SHA1(df0a64a9fddbc59e3edde56ae12b68f76e44ba2e)) WPC_ROMEND
 #define input_ports_tfdmd input_ports_wpc
 CORE_GAMEDEF(tfdmd,l3,"WPC Test Fixture: DMD (L-3)",1991,"Bally",wpc_mDMD,GAME_NO_SOUND)
 
@@ -75,8 +75,8 @@ static core_tGameData tfsGameData = {
 };
 INITGAME(tfs)
 
-WPC_ROMSTART(tfs,12,"u6_12.rom",0x80000,CRC(12687d19))
-DCS_SOUNDROM1x("u2_10.rom",CRC(d705b41e))
+WPC_ROMSTART(tfs,12,"u6_12.rom",0x80000,CRC(12687d19) SHA1(bcc3116328a8c6f0ed430a6d2343d01fcdf2459f))
+DCS_SOUNDROM1x("u2_10.rom",CRC(d705b41e) SHA1(a7811b4bb1b2b5f7e3d1a809da3363b97dfca680))
 WPC_ROMEND
 #define input_ports_tfs input_ports_wpc
 CORE_GAMEDEF(tfs,12,"WPC Test Fixture: Security (1.2)",1994,"Bally",wpc_mSecurityS,0)
@@ -98,8 +98,8 @@ static core_tGameData tf95GameData = {
 };
 INITGAME(tf95)
 
-WPC_ROMSTART(tf95,12,"g11_12.rom",0x80000,CRC(259a2b23))
-DCS_SOUNDROM1m("s2_10.rom",CRC(ceff7fe4))
+WPC_ROMSTART(tf95,12,"g11_12.rom",0x80000,CRC(259a2b23) SHA1(16f8c15e046809e0b1587b0c981d36f4d8a750ca))
+DCS_SOUNDROM1m("s2_10.rom",CRC(ceff7fe4) SHA1(ff2574f65e09d446b9e446abd58159a7d100059b))
 WPC_ROMEND
 #define input_ports_tf95 input_ports_wpc
 CORE_GAMEDEF(tf95,12,"WPC 95 Test Fixture (1.2)",1996,"Bally",wpc_m95S,0)
@@ -120,6 +120,6 @@ static core_tGameData tfaGameData = {
   }
 };
 INITGAME(tfa)
-WPC_ROMSTART(tfa,13,"u6_l3.rom",0x020000,CRC(bf4a37b5)) WPC_ROMEND
+WPC_ROMSTART(tfa,13,"u6_l3.rom",0x020000,CRC(bf4a37b5) SHA1(91b8bba6182e818a34252a4b2a0b86a2a44d9c42)) WPC_ROMEND
 #define input_ports_tfa input_ports_wpc
 CORE_GAMEDEF(tfa,13,"WPC Test Fixture: Alphanumeric (1.3)",1990,"Bally",wpc_mAlpha,GAME_NO_SOUND)

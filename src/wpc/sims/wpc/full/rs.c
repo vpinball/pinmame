@@ -538,23 +538,23 @@ static wpc_tSamSolMap rs_samsolmap[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(rs,l6,"rshw_l6.rom",0x80000,CRC(3986d402))
-DCS_SOUNDROM7x("rs_u2_s.l1",CRC(5a2db20c),
-               "rs_u3_s.l1",CRC(719be036),
-               "rs_u4_s.l1",CRC(d452d007),
-               "rs_u5_s.l1",CRC(1faa04c9),
-               "rs_u6_s.l1",CRC(eee00add),
-               "rs_u7_s.l1",CRC(3a222a54),
-               "rs_u8_s.l1",CRC(c70f2210))
+WPC_ROMSTART(rs,l6,"rshw_l6.rom",0x80000,CRC(3986d402) SHA1(1a67e5bafb7a6aa1d42b2e631e2294a3c1403038))
+DCS_SOUNDROM7x("rs_u2_s.l1",CRC(5a2db20c) SHA1(34ce236cc874b820db2d2268cc77815ed7ca061b),
+               "rs_u3_s.l1",CRC(719be036) SHA1(fa975a6a93fcaefddcbd1c0b97c49bd9f9608ad4),
+               "rs_u4_s.l1",CRC(d452d007) SHA1(b850bc8e17d8940f93c1e7b6a0ab786b092694b3),
+               "rs_u5_s.l1",CRC(1faa04c9) SHA1(817bbd7fc0781d84af6c40cb477adf83cef07ab2),
+               "rs_u6_s.l1",CRC(eee00add) SHA1(96d664ca73ac896e918d7011c1cda3e55e3731b7),
+               "rs_u7_s.l1",CRC(3a222a54) SHA1(2a788e4ac573bf1d128e5bef9357e62c805014b9),
+               "rs_u8_s.l1",CRC(c70f2210) SHA1(9be9f271d81d15a4eb123f1377b0c077eef97774))
 WPC_ROMEND
-WPC_ROMSTART(rs,lx4,"rshw_lx4.rom",0x80000,CRC(866f16a5))
-DCS_SOUNDROM7x("rs_u2_s.l1",CRC(5a2db20c),
-               "rs_u3_s.l1",CRC(719be036),
-               "rs_u4_s.l1",CRC(d452d007),
-               "rs_u5_s.l1",CRC(1faa04c9),
-               "rs_u6_s.l1",CRC(eee00add),
-               "rs_u7_s.l1",CRC(3a222a54),
-               "rs_u8_s.l1",CRC(c70f2210))
+WPC_ROMSTART(rs,lx4,"rshw_lx4.rom",0x80000,CRC(866f16a5) SHA1(09180ca87b1b4a9f8f81d81fc2d08092f357205a))
+DCS_SOUNDROM7x("rs_u2_s.l1",CRC(5a2db20c) SHA1(34ce236cc874b820db2d2268cc77815ed7ca061b),
+               "rs_u3_s.l1",CRC(719be036) SHA1(fa975a6a93fcaefddcbd1c0b97c49bd9f9608ad4),
+               "rs_u4_s.l1",CRC(d452d007) SHA1(b850bc8e17d8940f93c1e7b6a0ab786b092694b3),
+               "rs_u5_s.l1",CRC(1faa04c9) SHA1(817bbd7fc0781d84af6c40cb477adf83cef07ab2),
+               "rs_u6_s.l1",CRC(eee00add) SHA1(96d664ca73ac896e918d7011c1cda3e55e3731b7),
+               "rs_u7_s.l1",CRC(3a222a54) SHA1(2a788e4ac573bf1d128e5bef9357e62c805014b9),
+               "rs_u8_s.l1",CRC(c70f2210) SHA1(9be9f271d81d15a4eb123f1377b0c077eef97774))
 WPC_ROMEND
 
 /*--------------

@@ -243,11 +243,11 @@ static sim_tInportData jy_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(jy,12,"jy_g11.1_2",0x80000,CRC(16fb4bb3))
-DCS_SOUNDROM4xm("jy_s2.rom",CRC(1a1bc2ca),
-                "jy_s3.rom",CRC(0fc36a8e),
-                "jy_s4.rom",CRC(0aebcd77),
-                "jy_s5.rom",CRC(f18ad10b))
+WPC_ROMSTART(jy,12,"jy_g11.1_2",0x80000,CRC(16fb4bb3) SHA1(fbd8b37c129f7e07e8c44b7a33754ee346473377))
+DCS_SOUNDROM4xm("jy_s2.rom",CRC(1a1bc2ca) SHA1(db949d49560a26fc280cd9e746aa99dfafbd6daa),
+                "jy_s3.rom",CRC(0fc36a8e) SHA1(335013ebe08d34a24b0b472c6d5f042e455facee),
+                "jy_s4.rom",CRC(0aebcd77) SHA1(62aee2685c0ae4bc1df8e4a4515ca34a078c72ad),
+                "jy_s5.rom",CRC(f18ad10b) SHA1(1d02a388b43d3863030e01bf567f30337d37b2e8))
 WPC_ROMEND
 
 /*--------------

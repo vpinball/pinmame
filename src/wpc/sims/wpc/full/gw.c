@@ -480,12 +480,12 @@ static void gw_drawStatic(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(gw,l5,"getaw_l5.rom",0x80000,CRC(b97f3d62))
-WPCS_SOUNDROM8xx("u18snd",CRC(37bbe485))
+WPC_ROMSTART(gw,l5,"getaw_l5.rom",0x80000,CRC(b97f3d62) SHA1(c87c36a2327561c50b37d587d3bd0782acf8860d))
+WPCS_SOUNDROM8xx("u18snd",CRC(37bbe485) SHA1(e6b7ccef250db0c801e3dd8ebf93522b466ca1ec))
 WPC_ROMEND
 
-WPC_ROMSTART(gw,l2,"get_l2.u6",0x80000,CRC(9efc0005))
-WPCS_SOUNDROM8xx("u18snd",CRC(37bbe485))
+WPC_ROMSTART(gw,l2,"get_l2.u6",0x80000,CRC(9efc0005) SHA1(037ede538fb2c6f18980484528680fe90ccbb355))
+WPCS_SOUNDROM8xx("u18snd",CRC(37bbe485) SHA1(e6b7ccef250db0c801e3dd8ebf93522b466ca1ec))
 WPC_ROMEND
 /*--------------
 /  Game drivers

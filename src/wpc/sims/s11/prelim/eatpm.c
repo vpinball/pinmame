@@ -196,13 +196,13 @@ static void eatpm_drawStatic(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
-S11_ROMSTART48(eatpm,l4,"elvi_u26.l4", CRC(24e09bf6),
-                        "elvi_u27.l4", CRC(3614f3e2))
-S11XS_SOUNDROM88(       "elvi_u21.l1", CRC(68d44545),
-                        "elvi_u22.l1", CRC(e525b4fe))
-S11CS_SOUNDROM888(      "elvi_u4.l1",  CRC(b5afa4db),
-                        "elvi_u19.l1", CRC(806bc350),
-                        "elvi_u20.l1", CRC(3d92d5fd))
+S11_ROMSTART48(eatpm,l4,"elvi_u26.l4", CRC(24e09bf6) SHA1(0ff686c671e8cb2b2c8a9669bf44c3b0ba32ed4d),
+                        "elvi_u27.l4", CRC(3614f3e2) SHA1(3143fef8ab91ad357803d1e98b8ee953e6a194ef))
+S11XS_SOUNDROM88(       "elvi_u21.l1", CRC(68d44545) SHA1(8c3ea8521a44b1539cd148f142cca14184174ba7),
+                        "elvi_u22.l1", CRC(e525b4fe) SHA1(be728ec33a00b93c3346428a9248b588460af945))
+S11CS_SOUNDROM888(      "elvi_u4.l1",  CRC(b5afa4db) SHA1(59b72dac5301a4befa01b93da5162478682e6021),
+                        "elvi_u19.l1", CRC(806bc350) SHA1(d170aef11001096da9f2f7240726662009e26f5f),
+                        "elvi_u20.l1", CRC(3d92d5fd) SHA1(834d40a59be57057103d1d8ab48fdaaf7dc5eda2))
 
 S11_ROMEND
 

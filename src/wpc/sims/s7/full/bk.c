@@ -232,15 +232,15 @@ static void bk_drawStatic(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
-S7_ROMSTART8088(bk,l4,"ic14.716",   CRC(fcbe3d44),
-                      "ic17.532",   CRC(bb571a17),
-                      "ic20.716",   CRC(dfb4b75a),
-                      "ic26.716",   CRC(104b78da))
-S67S_SOUNDROMS8(      "sound12.716",CRC(6d454c0e))
-S67S_SPEECHROMS0000(  "speech7.532",CRC(c7e229bf),
-                      "speech5.532",CRC(411bc92f),
-                      "speech6.532",CRC(fc985005),
-                      "speech4.532",CRC(f36f12e5))
+S7_ROMSTART8088(bk,l4,"ic14.716",   CRC(fcbe3d44) SHA1(92ec4d41beea205ba29530624b68dd1139053535),
+                      "ic17.532",   CRC(bb571a17) SHA1(fb0b7f247673dae0744d4188e1a03749a2237165),
+                      "ic20.716",   CRC(dfb4b75a) SHA1(bcf017b01236f755cee419e398bbd8955ae3576a),
+                      "ic26.716",   CRC(104b78da) SHA1(c3af2563b3b380fe0e154b737799f6beacf8998c))
+S67S_SOUNDROMS8(      "sound12.716",CRC(6d454c0e) SHA1(21640b9ed3bdbae8bf27629891f355304e467c64))
+S67S_SPEECHROMS0000(  "speech7.532",CRC(c7e229bf) SHA1(3b2ab41031f507963af828639f1690dc350737af),
+                      "speech5.532",CRC(411bc92f) SHA1(6c8d26fd13ed5eeba5cc40886d39c65a64beb377),
+                      "speech6.532",CRC(fc985005) SHA1(9df4ad12cf98a5a92b8f933e6b6788a292c8776b),
+                      "speech4.532",CRC(f36f12e5) SHA1(24fb192ad029cd35c08f4899b76d527776a4895b))
 S7_ROMEND
 
 /*--------------

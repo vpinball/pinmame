@@ -277,22 +277,22 @@ static void wd_drawMech(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(wd,12,"whod1_2.rom",0x80000,CRC(d49be363))
-DCS_SOUNDROM6x("wdu2_10.rom",CRC(2fd534be),
-               "wdu3_10.rom",CRC(be9b312f),
-               "wdu4_10.rom",CRC(46965682),
-               "wdu5_10.rom",CRC(0a787015),
-               "wdu6_10.rom",CRC(d2e05659),
-               "wdu7_10.rom",CRC(36285ca2))
+WPC_ROMSTART(wd,12,"whod1_2.rom",0x80000,CRC(d49be363) SHA1(a265110170e1debf4a566d91c12e0e4c93838d08))
+DCS_SOUNDROM6x("wdu2_10.rom",CRC(2fd534be) SHA1(9fcbcfb9bc6fc410398413dea71a6fcbe69f761f),
+               "wdu3_10.rom",CRC(be9b312f) SHA1(53038a8a264da4e62455240f2016309462c28275),
+               "wdu4_10.rom",CRC(46965682) SHA1(b12c21a17090480c0960aec808908f2d37c4b498),
+               "wdu5_10.rom",CRC(0a787015) SHA1(e01a19ac0a1b674e2b348d77e584275ef1359cd7),
+               "wdu6_10.rom",CRC(d2e05659) SHA1(3f926dac710adadc38afd70618a84c9f049ebfd0),
+               "wdu7_10.rom",CRC(36285ca2) SHA1(d42f04aa62b9859ce2452fa05da2049fe39e9411))
 WPC_ROMEND
 
-WPC_ROMSTART(wd,12g,"whod1_2.rom",0x80000,CRC(d49be363))
-DCS_SOUNDROM6x("wdu2_20g.rom",CRC(2fe0ce7e),
-               "wdu3_20g.rom",CRC(f01142ab),
-               "wdu4_10.rom",CRC(46965682),
-               "wdu5_10.rom",CRC(0a787015),
-               "wdu6_10.rom",CRC(d2e05659),
-               "wdu7_10.rom",CRC(36285ca2))
+WPC_ROMSTART(wd,12g,"whod1_2.rom",0x80000,CRC(d49be363) SHA1(a265110170e1debf4a566d91c12e0e4c93838d08))
+DCS_SOUNDROM6x("wdu2_20g.rom",CRC(2fe0ce7e) SHA1(ae148809b8f8925376bc6b6b0478176cae490a2b),
+               "wdu3_20g.rom",CRC(f01142ab) SHA1(ee2620b6238df0069c9b10d1fee3ea0607b022da),
+               "wdu4_10.rom",CRC(46965682) SHA1(b12c21a17090480c0960aec808908f2d37c4b498),
+               "wdu5_10.rom",CRC(0a787015) SHA1(e01a19ac0a1b674e2b348d77e584275ef1359cd7),
+               "wdu6_10.rom",CRC(d2e05659) SHA1(3f926dac710adadc38afd70618a84c9f049ebfd0),
+               "wdu7_10.rom",CRC(36285ca2) SHA1(d42f04aa62b9859ce2452fa05da2049fe39e9411))
 WPC_ROMEND
 
 /*--------------

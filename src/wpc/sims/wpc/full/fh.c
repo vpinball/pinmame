@@ -623,20 +623,20 @@ static void fh_drawStatic(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(fh,l9,"funh_l9.rom",0x040000,CRC(c8f90ff8))
-WPCS_SOUNDROM222("fh_u18.l2m",CRC(7f6c7045),
-                 "fh_u15.l2", CRC(0744b9f5),
-                 "fh_u14.l2", CRC(3394b69b))
+WPC_ROMSTART(fh,l9,"funh_l9.rom",0x040000,CRC(c8f90ff8) SHA1(8d200ea30a68f5e3ba1ac9232a516c44b765eb45))
+WPCS_SOUNDROM222("fh_u18.l2m",CRC(7f6c7045) SHA1(8c8d601e8e6598507d75b4955ccc51623124e8ab),
+                 "fh_u15.l2", CRC(0744b9f5) SHA1(b626601d82e6b1cf25f7fdcca31e623fc14a3f92),
+                 "fh_u14.l2", CRC(3394b69b) SHA1(34690688f00106b725b27a6975cdbf1e077e3bb3))
 WPC_ROMEND
 // Found this on the stormaster site
 // It is an updated L9 rom where the German text translation is corrected
 // Author is unknown but it is definetly not from WMS
 // (author didn't know how to calculate the checksum so he
 //  altered some blanks in the credits to match the original checksum)
-WPC_ROMSTART(fh,l9b,"fh_l9ger.rom",0x040000,CRC(e9b32a8f))
-WPCS_SOUNDROM222("fh_u18.l2m",CRC(7f6c7045),
-                 "fh_u15.l2", CRC(0744b9f5),
-                 "fh_u14.l2", CRC(3394b69b))
+WPC_ROMSTART(fh,l9b,"fh_l9ger.rom",0x040000,CRC(e9b32a8f) SHA1(deb77f0d025001ddcc3045b4e49176c54896da3f))
+WPCS_SOUNDROM222("fh_u18.l2m",CRC(7f6c7045) SHA1(8c8d601e8e6598507d75b4955ccc51623124e8ab),
+                 "fh_u15.l2", CRC(0744b9f5) SHA1(b626601d82e6b1cf25f7fdcca31e623fc14a3f92),
+                 "fh_u14.l2", CRC(3394b69b) SHA1(34690688f00106b725b27a6975cdbf1e077e3bb3))
 WPC_ROMEND
 
 /*--------------

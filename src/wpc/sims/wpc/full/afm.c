@@ -329,16 +329,16 @@ static void afm_drawStatic(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(afm,11, "mars1_1.rom",  0x080000,CRC(13b174d9))
-DCS_SOUNDROM3m(	"afm_s2.l1",CRC(6e39d96e),
-		"afm_s3.l1",CRC(1cbce9b1),
-		"afm_s4.l1",CRC(5ff7fbb7))
+WPC_ROMSTART(afm,11, "mars1_1.rom",  0x080000,CRC(13b174d9) SHA1(57952f3184496b0316e4cf301e0181cb9de3519a))
+DCS_SOUNDROM3m(	"afm_s2.l1",CRC(6e39d96e) SHA1(b34e31bb1734c86614f153f7201163aaa9943cec),
+		"afm_s3.l1",CRC(1cbce9b1) SHA1(7f258bfe1904a879a2cb007419483f4fee91e072),
+		"afm_s4.l1",CRC(5ff7fbb7) SHA1(ebaf825d3b90b6acee1920e6703801a4bcddfc5b))
 WPC_ROMEND
 
-WPC_ROMSTART(afm,113,"afm_1_13.bin", 0x100000,CRC(e1fbd81b))
-DCS_SOUNDROM3m(	"afm_s2.l1",CRC(6e39d96e),
-		"afm_s3.l1",CRC(1cbce9b1),
-		"afm_s4.l1",CRC(5ff7fbb7))
+WPC_ROMSTART(afm,113,"afm_1_13.bin", 0x100000,CRC(e1fbd81b) SHA1(0ff35253d8eac7b75abb3e4db84cdcca458182cd))
+DCS_SOUNDROM3m(	"afm_s2.l1",CRC(6e39d96e) SHA1(b34e31bb1734c86614f153f7201163aaa9943cec),
+		"afm_s3.l1",CRC(1cbce9b1) SHA1(7f258bfe1904a879a2cb007419483f4fee91e072),
+		"afm_s4.l1",CRC(5ff7fbb7) SHA1(ebaf825d3b90b6acee1920e6703801a4bcddfc5b))
 WPC_ROMEND
 
 /*--------------

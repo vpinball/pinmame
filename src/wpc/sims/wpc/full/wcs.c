@@ -394,23 +394,23 @@ static core_tLampDisplay wcs_lampPos = {
 }
 };
 
-WPC_ROMSTART(wcs,l2,"wcup_lx2.rom",0x80000,CRC(0e4514e8))
-DCS_SOUNDROM7x("wcup_u2.rom",CRC(92252f28),
-               "wcup_u3.rom",CRC(83f541ad),
-               "wcup_u4.rom",CRC(1540c505),
-               "wcup_u5.rom",CRC(bddad8d4),
-               "wcup_u6.rom",CRC(00f46c12),
-               "wcup_u7.rom",CRC(fff01703),
-               "wcup_u8.rom",CRC(670cd382))
+WPC_ROMSTART(wcs,l2,"wcup_lx2.rom",0x80000,CRC(0e4514e8) SHA1(4ef8b78777b8caf1a1ab8f63383c8a7a74d5189a))
+DCS_SOUNDROM7x("wcup_u2.rom",CRC(92252f28) SHA1(962a58ea910bcb90c82c81456a888d45f23fcd9a),
+               "wcup_u3.rom",CRC(83f541ad) SHA1(2d81d89e43f350caba60d5bec8a66560f8556ad8),
+               "wcup_u4.rom",CRC(1540c505) SHA1(aca5a421a0fd067f5411fae2fc3c7c3bcfa1b12f),
+               "wcup_u5.rom",CRC(bddad8d4) SHA1(ae6bb1ca3d97a56d1ba984060a1c1ef6c7a00159),
+               "wcup_u6.rom",CRC(00f46c12) SHA1(64e99eb32908dbb7b90ee8fa92a20aacf800aeac),
+               "wcup_u7.rom",CRC(fff01703) SHA1(fb8d7212fe562e9933941b7bfc707aed1eb74e79),
+               "wcup_u8.rom",CRC(670cd382) SHA1(89548420c3b6b8a3d7621b10c538ee1dc6a7be62))
 WPC_ROMEND
-WPC_ROMSTART(wcs,p3,"wcup_px3.rom",0x80000,CRC(617ea2bc))
-DCS_SOUNDROM7x("wcup_u2.rom",CRC(92252f28),
-               "wcup_u3.rom",CRC(83f541ad),
-               "wcup_u4.rom",CRC(1540c505),
-               "wcup_u5.rom",CRC(bddad8d4),
-               "wcup_u6.rom",CRC(00f46c12),
-               "wcup_u7.rom",CRC(fff01703),
-               "wcup_u8.rom",CRC(670cd382))
+WPC_ROMSTART(wcs,p3,"wcup_px3.rom",0x80000,CRC(617ea2bc) SHA1(f8e025b62d509126fb4ba425ac4a025dcf13ad99))
+DCS_SOUNDROM7x("wcup_u2.rom",CRC(92252f28) SHA1(962a58ea910bcb90c82c81456a888d45f23fcd9a),
+               "wcup_u3.rom",CRC(83f541ad) SHA1(2d81d89e43f350caba60d5bec8a66560f8556ad8),
+               "wcup_u4.rom",CRC(1540c505) SHA1(aca5a421a0fd067f5411fae2fc3c7c3bcfa1b12f),
+               "wcup_u5.rom",CRC(bddad8d4) SHA1(ae6bb1ca3d97a56d1ba984060a1c1ef6c7a00159),
+               "wcup_u6.rom",CRC(00f46c12) SHA1(64e99eb32908dbb7b90ee8fa92a20aacf800aeac),
+               "wcup_u7.rom",CRC(fff01703) SHA1(fb8d7212fe562e9933941b7bfc707aed1eb74e79),
+               "wcup_u8.rom",CRC(670cd382) SHA1(89548420c3b6b8a3d7621b10c538ee1dc6a7be62))
 WPC_ROMEND
 
 CORE_GAMEDEF(wcs,l2,"World Cup Soccer (Lx-2)",1994,"Bally",wpc_mSecurityS,0)

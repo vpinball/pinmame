@@ -401,21 +401,21 @@ static void taf_drawStatic(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(taf,l5,  "addam_l5.rom",0x80000,CRC(4c071564))
-WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471))
+WPC_ROMSTART(taf,l5,  "addam_l5.rom",0x80000,CRC(4c071564) SHA1(d643506db1b3ba1ea20f34ddb38837df379fb5ab))
+WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
 WPC_ROMEND
 
-WPC_ROMSTART(taf,l6,  "taf_l6.u6",0x80000,CRC(06b37e65))
-WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471))
+WPC_ROMSTART(taf,l6,  "taf_l6.u6",0x80000,CRC(06b37e65) SHA1(ce6f9cc45df08f50f5ece2a4c9376ecf67b0466a))
+WPCS_SOUNDROM8xx("tafu18l1.rom",CRC(131ae471) SHA1(5ed03b521dfef56cbb99814539d4c74da4216f67))
 WPC_ROMEND
 
-WPC_ROMSTART(tafg,lx3,"afgldlx3.rom",0x80000,CRC(0cc62fa5))
-WPCS_SOUNDROM84x("ag_u18_s.l1",CRC(02e824a9),
-                 "ag_u15_s.l1",CRC(b8c88c75))
+WPC_ROMSTART(tafg,lx3,"afgldlx3.rom",0x80000,CRC(0cc62fa5) SHA1(295bd8c483132c8fe7c38646847067041fc98b2f))
+WPCS_SOUNDROM84x("ag_u18_s.l1",CRC(02e824a9) SHA1(ed8aa5161ea6c12cc9e646939290d848408a59a3),
+                 "ag_u15_s.l1",CRC(b8c88c75) SHA1(b2b88e5192eb817ae60ab1f306e932d8bae3fbba))
 WPC_ROMEND
-WPC_ROMSTART(tafg,h3,"cpu-u6h3.rom",0x80000,CRC(2fe97098))
-WPCS_SOUNDROM84x("ag_u18_s.l1",CRC(02e824a9),
-                 "ag_u15_s.l1",CRC(b8c88c75))
+WPC_ROMSTART(tafg,h3,"cpu-u6h3.rom",0x80000,CRC(2fe97098) SHA1(59767fce189385af16064abf0d640ef74a3450f8))
+WPCS_SOUNDROM84x("ag_u18_s.l1",CRC(02e824a9) SHA1(ed8aa5161ea6c12cc9e646939290d848408a59a3),
+                 "ag_u15_s.l1",CRC(b8c88c75) SHA1(b2b88e5192eb817ae60ab1f306e932d8bae3fbba))
 WPC_ROMEND
 /*--------------
 /  Game drivers

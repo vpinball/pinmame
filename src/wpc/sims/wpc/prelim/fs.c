@@ -245,15 +245,15 @@ static sim_tInportData fs_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(fs,lx5,"flin_lx5.rom",0x80000,CRC(06707244))
-DCS_SOUNDROM8x("fs_u2_s.l1",CRC(aa3da768),
-               "fs_u3_s.l1",CRC(e8a0b2d1),
-               "fs_u4_s.l1",CRC(a5de69f4),
-               "fs_u5_s.l1",CRC(74b4d495),
-               "fs_u6_s.l1",CRC(3c7f7a04),
-               "fs_u7_s.l1",CRC(f32b9271),
-               "fs_u8_s.l1",CRC(a7aafa3e),
-               "fs_u9_s.l1",CRC(0a6664fb))
+WPC_ROMSTART(fs,lx5,"flin_lx5.rom",0x80000,CRC(06707244) SHA1(d86d4564fb27a81e8ab896e2efaf05f4f4a4a152))
+DCS_SOUNDROM8x("fs_u2_s.l1",CRC(aa3da768) SHA1(b9ab9d716f03c3fa4dc7352993477c021a07138a),
+               "fs_u3_s.l1",CRC(e8a0b2d1) SHA1(5fd7ff4a194f845db53573a1a44efbfffed292f9),
+               "fs_u4_s.l1",CRC(a5de69f4) SHA1(a7e7f35964ec8b40a971920c2c6cf2ecb730bc60),
+               "fs_u5_s.l1",CRC(74b4d495) SHA1(98a145c07694db7b56f5c6ba84bc631fb5c18bae),
+               "fs_u6_s.l1",CRC(3c7f7a04) SHA1(45e017dc36922ad2ff420724f912e109a75a15a3),
+               "fs_u7_s.l1",CRC(f32b9271) SHA1(19308cb54ae6fc6343ab7411546b251ba66b0905),
+               "fs_u8_s.l1",CRC(a7aafa3e) SHA1(54dca32dc2bec5432cd3664bb5aa45d367560b96),
+               "fs_u9_s.l1",CRC(0a6664fb) SHA1(751a726e3ea6a808bb137f3563d54acd1580836d))
 WPC_ROMEND
 
 /*--------------

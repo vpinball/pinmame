@@ -250,21 +250,21 @@ static sim_tInportData dm_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(dm,lx4,"dman_lx4.rom",0x80000,CRC(c2d0f493))
-DCS_SOUNDROM6x("dm_u2_s.l2",CRC(85fb8bce),
-               "dm_u3_s.l2",CRC(2b65a66e),
-               "dm_u4_s.l2",CRC(9d6815fe),
-               "dm_u5_s.l2",CRC(9f614c27),
-               "dm_u6_s.l2",CRC(3efc2c0e),
-               "dm_u7_s.l2",CRC(75066af1))
+WPC_ROMSTART(dm,lx4,"dman_lx4.rom",0x80000,CRC(c2d0f493) SHA1(26ee970827dd96f3b3c56aa548cf7629ed6a16c1))
+DCS_SOUNDROM6x("dm_u2_s.l2",CRC(85fb8bce) SHA1(f2e912113d08b230e32aeeb4143485f266574fa2),
+               "dm_u3_s.l2",CRC(2b65a66e) SHA1(7796082ecd7af29a240190aff654320375502a8b),
+               "dm_u4_s.l2",CRC(9d6815fe) SHA1(fb4be63dee54a883884f1600565011cb9740a866),
+               "dm_u5_s.l2",CRC(9f614c27) SHA1(f8f2f083b644517582a748bda0a3f69c14583f13),
+               "dm_u6_s.l2",CRC(3efc2c0e) SHA1(bc4efdee44ff635771629a2bde79e230b7643f31),
+               "dm_u7_s.l2",CRC(75066af1) SHA1(4d70bce8a96343afcf02c89240b11faf19e11f02))
 WPC_ROMEND
-WPC_ROMSTART(dm,px5,"dman_px5.rom",0x80000,CRC(42673371))
-DCS_SOUNDROM6x("dm_u2_s.l2",CRC(85fb8bce),
-               "dm_u3_s.l2",CRC(2b65a66e),
-               "dm_u4_s.l2",CRC(9d6815fe),
-               "dm_u5_s.l2",CRC(9f614c27),
-               "dm_u6_s.l2",CRC(3efc2c0e),
-               "dm_u7_s.l2",CRC(75066af1))
+WPC_ROMSTART(dm,px5,"dman_px5.rom",0x80000,CRC(42673371) SHA1(77570902c1ca13956fa65214184bce79bcc67173))
+DCS_SOUNDROM6x("dm_u2_s.l2",CRC(85fb8bce) SHA1(f2e912113d08b230e32aeeb4143485f266574fa2),
+               "dm_u3_s.l2",CRC(2b65a66e) SHA1(7796082ecd7af29a240190aff654320375502a8b),
+               "dm_u4_s.l2",CRC(9d6815fe) SHA1(fb4be63dee54a883884f1600565011cb9740a866),
+               "dm_u5_s.l2",CRC(9f614c27) SHA1(f8f2f083b644517582a748bda0a3f69c14583f13),
+               "dm_u6_s.l2",CRC(3efc2c0e) SHA1(bc4efdee44ff635771629a2bde79e230b7643f31),
+               "dm_u7_s.l2",CRC(75066af1) SHA1(4d70bce8a96343afcf02c89240b11faf19e11f02))
 WPC_ROMEND
 
 /*--------------

@@ -456,10 +456,10 @@ static wpc_tSamSolMap gi_samsolmap[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(gi,l9,"gilli_l9.rom",0x40000,CRC(af07a757))
-WPCS_SOUNDROM222("gi_u18.l2",CRC(ea53e196),
-                 "gi_u15.l2",CRC(f8241dc9),
-                 "gi_u14.l2",CRC(0e7a4140))
+WPC_ROMSTART(gi,l9,"gilli_l9.rom",0x40000,CRC(af07a757) SHA1(29c4f4ac2aed5b36e1d22490d656b1c4acba7f4c))
+WPCS_SOUNDROM222("gi_u18.l2",CRC(ea53e196) SHA1(5dcf3f44d2d658f6a7b130fa9e48d3cd616b4300),
+                 "gi_u15.l2",CRC(f8241dc9) SHA1(118a65555b9fff6f94e5e8324ed97d6ddec3d82b),
+                 "gi_u14.l2",CRC(0e7a4140) SHA1(c6408794120b5e45a48b35c380333879e1f0be78))
 WPC_ROMEND
 
 /*--------------

@@ -299,10 +299,10 @@ static sim_tInportData dw_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(dw,l2,"drwho_l2.rom",0x80000,CRC(988c2deb))
-WPCS_SOUNDROM288("dw_u18.l1",CRC(1ca78024),
-                 "dw_u15.l1",CRC(9b87ff26),
-                 "dw_u14.l1",CRC(71f7d55b))
+WPC_ROMSTART(dw,l2,"drwho_l2.rom",0x80000,CRC(988c2deb) SHA1(e1f703a03f8fc594ae324c46ca77a54ead956094))
+WPCS_SOUNDROM288("dw_u18.l1",CRC(1ca78024) SHA1(e652b07e21b59c8c497a20dfddcb9ddd8cad228d),
+                 "dw_u15.l1",CRC(9b87ff26) SHA1(483206ca0abdad4557843f83f245a1c20234af64),
+                 "dw_u14.l1",CRC(71f7d55b) SHA1(c3a22cfce2d10fe94a9749af7018e17e5e3bf4b3))
 WPC_ROMEND
 
 /*--------------

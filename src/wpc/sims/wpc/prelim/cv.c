@@ -272,20 +272,20 @@ static void cv_drawMech(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(cv,14,"cirq_14.rom",0x100000,CRC(7a8bf999))
-DCS_SOUNDROM5xm("s2v1_0.rom",CRC(79dbb8ee),
-                "s3v0_4.rom",CRC(8c6c0c56),
-                "s4v0_4.rom",CRC(a9014b78),
-                "s5v0_4.rom",CRC(7e07a2fc),
-                "s6v0_4.rom",CRC(36ca43d3))
+WPC_ROMSTART(cv,14,"cirq_14.rom",0x100000,CRC(7a8bf999) SHA1(b33baabf4f6cbf8615cc00eb1286238c5aea386a))
+DCS_SOUNDROM5xm("s2v1_0.rom",CRC(79dbb8ee) SHA1(f76c0db93b89beaf1e90c5f2199262e296fb1b78),
+                "s3v0_4.rom",CRC(8c6c0c56) SHA1(792431cc5b06c3d5028168297614f5eb7e8af34f),
+                "s4v0_4.rom",CRC(a9014b78) SHA1(abffe32ab729fb39ab2360d850c8b5476094fd92),
+                "s5v0_4.rom",CRC(7e07a2fc) SHA1(f908363c968c15c0dc62e32695e5e2d0ca869391),
+                "s6v0_4.rom",CRC(36ca43d3) SHA1(b599f88649c220143aa44cd5213e725e62afb0bc))
 WPC_ROMEND
 
-WPC_ROMSTART(cv, 20h, "cv200h.rom", 0x100000, CRC(138a0c3c))
-DCS_SOUNDROM5xm("s2v1_0.rom",CRC(79dbb8ee),
-                "s3v0_4.rom",CRC(8c6c0c56),
-                "s4v0_4.rom",CRC(a9014b78),
-                "s5v0_4.rom",CRC(7e07a2fc),
-                "s6v0_4.rom",CRC(36ca43d3))
+WPC_ROMSTART(cv, 20h, "cv200h.rom", 0x100000, CRC(138a0c3c) SHA1(dd6d4b5519ca161bd6779ed60cc7f52542a10147))
+DCS_SOUNDROM5xm("s2v1_0.rom",CRC(79dbb8ee) SHA1(f76c0db93b89beaf1e90c5f2199262e296fb1b78),
+                "s3v0_4.rom",CRC(8c6c0c56) SHA1(792431cc5b06c3d5028168297614f5eb7e8af34f),
+                "s4v0_4.rom",CRC(a9014b78) SHA1(abffe32ab729fb39ab2360d850c8b5476094fd92),
+                "s5v0_4.rom",CRC(7e07a2fc) SHA1(f908363c968c15c0dc62e32695e5e2d0ca869391),
+                "s6v0_4.rom",CRC(36ca43d3) SHA1(b599f88649c220143aa44cd5213e725e62afb0bc))
 WPC_ROMEND
 
 /*--------------

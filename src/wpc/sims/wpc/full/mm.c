@@ -448,19 +448,19 @@ static wpc_tSamSolMap mm_samsolmap[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(mm,109,"mm_1_09.bin",0x100000,CRC(9bac4d0c))
-DCS_SOUNDROM5xm("mm_s2.1_0",  CRC(c55c3b71),
-                "mm_sav3.rom",CRC(ed1be570),
-                "mm_sav4.rom",CRC(9c89eacf),
-                "mm_sav5.rom",CRC(45089e30),
-                "mm_sav6.rom",CRC(439d55f2))
+WPC_ROMSTART(mm,109,"mm_1_09.bin",0x100000,CRC(9bac4d0c) SHA1(92cbe21802e1a77feff77b78f4dbbdbffb7b14bc))
+DCS_SOUNDROM5xm("mm_s2.1_0",  CRC(c55c3b71) SHA1(95febbf16645dd897bdd459ccad9501d2457d1f1),
+                "mm_sav3.rom",CRC(ed1be570) SHA1(ead4c4f89d63ee0b46d8a8bcd8650d506542d1ee),
+                "mm_sav4.rom",CRC(9c89eacf) SHA1(594a2aa81e34658862a9b7f0a83cf514182f2a2d),
+                "mm_sav5.rom",CRC(45089e30) SHA1(e83492109c59e8a2f1ba9e1f793788b97d150a9b),
+                "mm_sav6.rom",CRC(439d55f2) SHA1(d80e7268223157d864674261d140322634fb3bc2))
 WPC_ROMEND
-WPC_ROMSTART(mm,10, "mm_g11.1_0", 0x080000,CRC(6bd735c6))
-DCS_SOUNDROM5xm("mm_s2.1_0",  CRC(c55c3b71),
-                "mm_sav3.rom",CRC(ed1be570),
-                "mm_sav4.rom",CRC(9c89eacf),
-                "mm_sav5.rom",CRC(45089e30),
-                "mm_sav6.rom",CRC(439d55f2))
+WPC_ROMSTART(mm,10, "mm_g11.1_0", 0x080000,CRC(6bd735c6) SHA1(3922df00e785610837230d5d9c24b9e082aa6fb6))
+DCS_SOUNDROM5xm("mm_s2.1_0",  CRC(c55c3b71) SHA1(95febbf16645dd897bdd459ccad9501d2457d1f1),
+                "mm_sav3.rom",CRC(ed1be570) SHA1(ead4c4f89d63ee0b46d8a8bcd8650d506542d1ee),
+                "mm_sav4.rom",CRC(9c89eacf) SHA1(594a2aa81e34658862a9b7f0a83cf514182f2a2d),
+                "mm_sav5.rom",CRC(45089e30) SHA1(e83492109c59e8a2f1ba9e1f793788b97d150a9b),
+                "mm_sav6.rom",CRC(439d55f2) SHA1(d80e7268223157d864674261d140322634fb3bc2))
 WPC_ROMEND
 
 /*--------------
