@@ -1503,7 +1503,7 @@ static data16_t m68306_duart_reg_r(offs_t address, int word) {
 		case 0xf7f7: {
 			int stat = m68306duartreg[dirDUSRB];
 			LOG(("%8x:RECEIVE BUFFER B(DURBB) Read = %x\n",activecpu_get_pc(),data));
-			printf("%8x:RECEIVE BUFFER B(DURBB) Read = %x\n",activecpu_get_pc(),data);
+			//printf("%8x:RECEIVE BUFFER B(DURBB) Read = %x\n",activecpu_get_pc(),data);
 			//Clear RxRDY status (bit 0)
 			stat &= ~1;
 			m68306_duart_set_dusr(1,stat);
@@ -1568,7 +1568,7 @@ static void m68306_duart_reg_w(offs_t address, data16_t data, int word) {
 		case 0xf7e7:
 			if(m68306_duart_tc_enable[0]) {
 				LOG(("%8x:TRANSMIT BUFFER A(DUTBA) Write = %x\n",activecpu_get_pc(),data));
-				printf("%8x:TRANSMIT BUFFER A(DUTBA) Write = %x\n",activecpu_get_pc(),data);
+				//printf("%8x:TRANSMIT BUFFER A(DUTBA) Write = %x\n",activecpu_get_pc(),data);
 				m68306duartreg[dirDUTBA] = data;
 			}
 			else
@@ -1644,12 +1644,12 @@ static void m68306_duart_reg_w(offs_t address, data16_t data, int word) {
 		//F7FD - OUTPUT PORT(DUOP) BIT SET
 		case 0xf7fd:
 			LOG(("%8x:OUTPUT PORT(DUOP) BIT SET Write = %x\n",activecpu_get_pc(),data));
-			printf("%8x:OUTPUT PORT(DUOP) BIT SET Write = %x\n",activecpu_get_pc(),data);
+			//printf("%8x:OUTPUT PORT(DUOP) BIT SET Write = %x\n",activecpu_get_pc(),data);
 			break;
 		//F7FF - OUTPUT PORT(DUOP) BIT RESET
 		case 0xf7ff:
 			LOG(("%8x:OUTPUT PORT(DUOP) BIT RESET Write = %x\n",activecpu_get_pc(),data));
-			printf("%8x:OUTPUT PORT(DUOP) BIT RESET Write = %x\n",activecpu_get_pc(),data);
+			//printf("%8x:OUTPUT PORT(DUOP) BIT RESET Write = %x\n",activecpu_get_pc(),data);
 			break;
 
 		default:
