@@ -452,6 +452,12 @@ extern MACHINE_DRIVER_EXTERN(by35_61S);
 extern MACHINE_DRIVER_EXTERN(by35_45S);
 extern MACHINE_DRIVER_EXTERN(by6802_45S);
 extern MACHINE_DRIVER_EXTERN(st200);
+extern MACHINE_DRIVER_EXTERN(st200f2k);
+extern MACHINE_DRIVER_EXTERN(st200fal);
+extern MACHINE_DRIVER_EXTERN(st200lit);
+extern MACHINE_DRIVER_EXTERN(st200sec);
+extern MACHINE_DRIVER_EXTERN(st200cat);
+extern MACHINE_DRIVER_EXTERN(st200orb);
 extern MACHINE_DRIVER_EXTERN(hnk);
 
 #define by35_mBYPROTO   byProto
@@ -471,6 +477,12 @@ extern MACHINE_DRIVER_EXTERN(hnk);
 #define by35_mHNK       hnk
 #define by35_mST100     by35
 #define by35_mST200     st200
+#define by35_mST200f2k	st200f2k
+#define by35_mST200fal	st200fal
+#define by35_mST200lit	st200lit
+#define by35_mST200sec	st200sec
+#define by35_mST200cat	st200cat
+#define by35_mST200orb	st200orb
 
 #ifdef MAME_DEBUG
 extern MACHINE_DRIVER_EXTERN(by6802_61S);

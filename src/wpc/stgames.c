@@ -2,6 +2,7 @@
 #include "core.h"
 #include "by35.h"
 #include "sndbrd.h"
+#include "stsnd.h"
 
 static const core_tLCDLayout dispst6[] = {
   {0, 0, 2,6,CORE_SEG7}, {0,14,10,6,CORE_SEG7},
@@ -49,16 +50,6 @@ CORE_GAMEDEFNV(st_game,"Unknown Game",198?,"Unknown Manufacturer",by35_mAstro,GA
 /* STERN MPU-100 (almost identical to Bally MPU-17) */
 /****************************************************/
 /*--------------------------------
-/ Stingray
-/-------------------------------*/
-INITGAME(stingray,GEN_STMPU100,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_NONE,0)
-BY17_ROMSTARTx88(stingray,"cpu_u2.716",CRC(1db32a33) SHA1(2f0a3ca36968b81f29373e4f2cf7ee28a4071882),
-                          "cpu_u6.716",CRC(432e9b9e) SHA1(292e509f50bc841f6e469c198fc82c2a9095f008))
-BY35_ROMEND
-#define input_ports_stingray input_ports_st
-CORE_GAMEDEFNV(stingray,"Stingray",1977,"Stern",by35_mST100,GAME_USES_CHIMES)
-
-/*--------------------------------
 / Pinball
 /-------------------------------*/
 INITGAME(pinball,GEN_STMPU100,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_NONE,0)
@@ -67,6 +58,16 @@ BY17_ROMSTARTx88(pinball,"cpu_u2.716",CRC(1db32a33) SHA1(2f0a3ca36968b81f29373e4
 BY35_ROMEND
 #define input_ports_pinball input_ports_st
 CORE_GAMEDEFNV(pinball,"Pinball",1977,"Stern",by35_mST100,GAME_USES_CHIMES)
+
+/*--------------------------------
+/ Stingray
+/-------------------------------*/
+INITGAME(stingray,GEN_STMPU100,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_NONE,0)
+BY17_ROMSTARTx88(stingray,"cpu_u2.716",CRC(1db32a33) SHA1(2f0a3ca36968b81f29373e4f2cf7ee28a4071882),
+                          "cpu_u6.716",CRC(432e9b9e) SHA1(292e509f50bc841f6e469c198fc82c2a9095f008))
+BY35_ROMEND
+#define input_ports_stingray input_ports_st
+CORE_GAMEDEFNV(stingray,"Stingray",1977,"Stern",by35_mST100,GAME_USES_CHIMES)
 
 /*--------------------------------
 / Stars
@@ -274,6 +275,31 @@ BY35_ROMEND
 CORE_GAMEDEFNV(quicksil,"Quicksilver",1980,"Stern",by35_mST200,0)
 
 /*--------------------------------
+/ Stargazer
+/-------------------------------*/
+INITGAME(stargzr,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ST200_ROMSTART8888(stargzr,"cpu_u1.716",CRC(83606fd4) SHA1(7f6448bc0dabe50de40fd47a7242c1be4a93e84d),
+                           "cpu_u5.716",CRC(c54ae389)       SHA1(062e64e8ced723adb7f4040539ba6400fc4a9c9a),
+                           "cpu_u2.716",CRC(1a4c7dcb) SHA1(54888a8867b8d60f215b7e683ae4966f14ddca15),
+                           "cpu_u6.716",CRC(4e1f4dc6) SHA1(1f63a0b71af84fb6e1168ff77cbcbabcaa1323f3))
+BY35_ROMEND
+#define input_ports_stargzr input_ports_st
+CORE_GAMEDEFNV(stargzr,"Stargazer",1980,"Stern",by35_mST200,0)
+
+/*--------------------------------
+/ Flight 2000
+/-------------------------------*/
+INITGAME(flight2k,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300V,0)
+ST200_ROMSTART8888(flight2k,"cpu_u1.716",CRC(df9efed9) SHA1(47727664e745e77ca1c221a32bd56d936f5b31bc),
+                            "cpu_u5.716",CRC(38c13649) SHA1(bcdbd17b48edd41ec7d38261595ac06eb8fc6a4d),
+                            "cpu_u2.716",CRC(425fae6a) SHA1(fde8d23e6ebb176ba72f763d66c2e17e51237fa1),
+                            "cpu_u6.716",CRC(dc243186) SHA1(046ce51b8a8218214088c4264548c753bd880e19))
+VSU100_SOUNDROM_U9(         "snd_u9.716",CRC(d816573c) SHA1(75134a017c34abbb149159ca001d35464a3f5128))
+BY35_ROMEND
+#define input_ports_flight2k input_ports_st
+CORE_GAMEDEFNV(flight2k,"Flight 2000",1979,"Stern",by35_mST200f2k,0)
+
+/*--------------------------------
 / Nine Ball
 /-------------------------------*/
 INITGAME(nineball,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
@@ -288,38 +314,63 @@ CORE_GAMEDEFNV(nineball,"Nine Ball",1980,"Stern",by35_mST200,0)
 /*--------------------------------
 / Free Fall
 /-------------------------------*/
-INITGAME(freefall,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+INITGAME(freefall,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300V,0)
 ST200_ROMSTART8888(freefall,"cpu_u1.716",CRC(d13891ad) SHA1(afb40c51f2d5695c74ce9979c0a818845f95edd4),
                             "cpu_u5.716",CRC(77bc7759) SHA1(3f739757180b3dcce5426935a51e4b615f157199),
                             "cpu_u2.716",CRC(82bda054) SHA1(32772e878d2a4bba8f67e419a68a81fec2a5f6d7),
                             "cpu_u6.716",CRC(68168b97) SHA1(defa4bba465182db22debddb4070c40c048c95e2))
+VSU100_SOUNDROM_U9U10(      "snd_u9.716",NO_DUMP,
+                           "snd_u10.716",NO_DUMP)
 BY35_ROMEND
 #define input_ports_freefall input_ports_st
-CORE_GAMEDEFNV(freefall,"Free Fall",1981,"Stern",by35_mST200,0)
+CORE_GAMEDEFNV(freefall,"Free Fall",1981,"Stern",by35_mST200fal,0)
+
+/*--------------------------------
+/ Lightning
+/-------------------------------*/
+static core_tLCDLayout dispLightnin[] = {
+  {0, 0, 1,7,CORE_SEG87F},{0,16, 9,7,CORE_SEG87F},
+  {2, 0,17,7,CORE_SEG87F},{2,16,25,7,CORE_SEG87F},
+  {4, 4,34,2,CORE_SEG87}, {4,10,38,2,CORE_SEG87}, {4,20,36,2,CORE_SEG87},{0}
+};
+INITGAME(lightnin,GEN_STMPU200,dispLightnin,FLIP_SW(FLIP_L),0,SNDBRD_ST300V,0)
+ST200_ROMSTART8888(lightnin,"cpu_u1.716",CRC(d3469d0a) SHA1(18565f5c85694da8eaf850146d3d9a90a17b7816),
+                            "cpu_u5.716",CRC(cd52262d) SHA1(099aeda2183822046cce907b265b42319007ac32),
+                            "cpu_u2.716",CRC(e0933419) SHA1(1f7cad915496f34473dffde7e320d51838acd0fd),
+                            "cpu_u6.716",CRC(df221c6b) SHA1(5935020d3a24d829fbeaa8cf764daff48a151a81))
+VSU100_SOUNDROM_U9U10(      "snd_u9.716",CRC(00ffa77c) SHA1(242efd800731a7f84369c6ce54298d0a227dd8ba),
+                           "snd_u10.716",CRC(80fe9158) SHA1(20fcdb4c09b25e494f02bbfb20c07ff2870d5798))
+BY35_ROMEND
+#define input_ports_lightnin input_ports_st
+CORE_GAMEDEFNV(lightnin,"Lightning",1981,"Stern",by35_mST200lit,0)
 
 /*--------------------------------
 / Split Second
 /-------------------------------*/
-INITGAME(splitsec,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+INITGAME(splitsec,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300V,0)
 ST200_ROMSTART8888(splitsec,"cpu_u1.716",CRC(c6ff9aa9) SHA1(39f80faca16c869ac14df7c5fc3dfa80b47dad95),
                             "cpu_u5.716",CRC(fda74efc) SHA1(31becc243ada23e2f4d17927985772c9fcf8a3c3),
                             "cpu_u2.716",CRC(81b9f784) SHA1(43cf71b51eda70a3c126340ea658c03c438e4f18),
                             "cpu_u6.716",CRC(ecbedb0a) SHA1(8cc7281dd2bd300ab95a08761c12733d98599ebd))
+VSU100_SOUNDROM_U9U10(      "snd_u9.716",CRC(e6ed5f48) SHA1(ea2bbc607acb2b816667cd54f3d07605110c252e),
+                           "snd_u10.716",CRC(36e6ee70) SHA1(61bd89d69627bea89b7f31af63ff90ace6db3c85))
 BY35_ROMEND
 #define input_ports_splitsec input_ports_st
-CORE_GAMEDEFNV(splitsec,"Split Second",1981,"Stern",by35_mST200,0)
+CORE_GAMEDEFNV(splitsec,"Split Second",1981,"Stern",by35_mST200sec,0)
 
 /*--------------------------------
 / Catacomb
 /-------------------------------*/
-INITGAME(catacomb,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+INITGAME(catacomb,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300V,0)
 ST200_ROMSTART8888(catacomb,"cpu_u1.716",CRC(d445dd40) SHA1(9ff5896977d7e2a0cf788c77dcfd7c010e17d2fb),
                             "cpu_u5.716",CRC(d717a545) SHA1(a183f3b1f766c3a82ae52defc38d84328fb7b31a),
                             "cpu_u2.716",CRC(bc504409) SHA1(cd3e948d34a8db71fc841261e683988c9df31ef8),
                             "cpu_u6.716",CRC(da61b5a2) SHA1(ec4a914cd57b37921578699bc427f12a3670c7eb))
+VSU100_SOUNDROM_U9U10(      "snd_u9.716",NO_DUMP,
+                           "snd_u10.716",CRC(2b31f8be) SHA1(05b394bd8b6c04e34fe2bab19cbd0f06d9e4b90d))
 BY35_ROMEND
 #define input_ports_catacomb input_ports_st
-CORE_GAMEDEFNV(catacomb,"Catacomb",1981,"Stern",by35_mST200,0)
+CORE_GAMEDEFNV(catacomb,"Catacomb",1981,"Stern",by35_mST200cat,0)
 
 /*--------------------------------
 / Iron Maiden
@@ -362,67 +413,24 @@ BY35_ROMEND
 #define input_ports_dragfist input_ports_st
 CORE_GAMEDEFNV(dragfist,"Dragonfist",1982,"Stern",by35_mST200,0)
 
-/* -----------------------------------------------------------*/
-/* All games below used MPU-200 - Sound Board: SB-300, VS-100 */
-/* -----------------------------------------------------------*/
-
-/*--------------------------------
-/ Flight 2000
-/-------------------------------*/
-INITGAME(flight2k,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300V,0)
-ST200_ROMSTART8888(flight2k,"cpu_u1.716",CRC(df9efed9) SHA1(47727664e745e77ca1c221a32bd56d936f5b31bc),
-                            "cpu_u5.716",CRC(38c13649) SHA1(bcdbd17b48edd41ec7d38261595ac06eb8fc6a4d),
-                            "cpu_u2.716",CRC(425fae6a) SHA1(fde8d23e6ebb176ba72f763d66c2e17e51237fa1),
-                            "cpu_u6.716",CRC(dc243186) SHA1(046ce51b8a8218214088c4264548c753bd880e19))
-BY35_ROMEND
-#define input_ports_flight2k input_ports_st
-CORE_GAMEDEFNV(flight2k,"Flight 2000",1979,"Stern",by35_mST200,0)
-
-/*--------------------------------
-/ Stargazer
-/-------------------------------*/
-INITGAME(stargzr,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300V,0)
-ST200_ROMSTART8888(stargzr,"cpu_u1.716",CRC(83606fd4) SHA1(7f6448bc0dabe50de40fd47a7242c1be4a93e84d),
-                           "cpu_u5.716",CRC(c54ae389)       SHA1(062e64e8ced723adb7f4040539ba6400fc4a9c9a),
-                           "cpu_u2.716",CRC(1a4c7dcb) SHA1(54888a8867b8d60f215b7e683ae4966f14ddca15),
-                           "cpu_u6.716",CRC(4e1f4dc6) SHA1(1f63a0b71af84fb6e1168ff77cbcbabcaa1323f3))
-BY35_ROMEND
-#define input_ports_stargzr input_ports_st
-CORE_GAMEDEFNV(stargzr,"Stargazer",1980,"Stern",by35_mST200,0)
-
-/*--------------------------------
-/ Lightning
-/-------------------------------*/
-static core_tLCDLayout dispLightnin[] = {
-  {0, 0, 1,7,CORE_SEG87F},{0,16, 9,7,CORE_SEG87F},
-  {2, 0,17,7,CORE_SEG87F},{2,16,25,7,CORE_SEG87F},
-  {4, 4,34,2,CORE_SEG87}, {4,10,38,2,CORE_SEG87}, {4,20,36,2,CORE_SEG87},{0}
-};
-INITGAME(lightnin,GEN_STMPU200,dispLightnin,FLIP_SW(FLIP_L),0,SNDBRD_ST300V,0)
-ST200_ROMSTART8888(lightnin,"cpu_u1.716",CRC(d3469d0a) SHA1(18565f5c85694da8eaf850146d3d9a90a17b7816),
-                            "cpu_u5.716",CRC(cd52262d) SHA1(099aeda2183822046cce907b265b42319007ac32),
-                            "cpu_u2.716",CRC(e0933419) SHA1(1f7cad915496f34473dffde7e320d51838acd0fd),
-                            "cpu_u6.716",CRC(df221c6b) SHA1(5935020d3a24d829fbeaa8cf764daff48a151a81))
-BY35_ROMEND
-#define input_ports_lightnin input_ports_st
-CORE_GAMEDEFNV(lightnin,"Lightning",1981,"Stern",by35_mST200,0)
-
 /*--------------------------------
 / Orbitor 1
 /-------------------------------*/
 static core_tLCDLayout dispOrbitor[] = {
   {0, 0, 1,7,CORE_SEG87F},{0,16, 9,7,CORE_SEG87F},
   {2, 0,17,7,CORE_SEG87F},{2,16,25,7,CORE_SEG87F},
-  {4, 4,36,2,CORE_SEG87}, {4,10,38,2,CORE_SEG87}, {4,20,34,2,CORE_SEG87},{0}
+  {4, 4,36,2,CORE_SEG87}, {4,10,38,2,CORE_SEG87}, {4,20,33,3,CORE_SEG87},{0}
 };
 INITGAME(orbitor1,GEN_STMPU200,dispOrbitor,FLIP_SW(FLIP_L),0,SNDBRD_ST300V,0)
-ST200_ROMSTART8888(orbitor1, "cpu_u1.716",CRC(575520e3) SHA1(9d52b065a14d4f95cebd48f60f628f2c246385fa),
-                             "cpu_u5.716",CRC(d31f27a8) SHA1(0442260db42192a95f6292e6b57000c127871d28),
-                             "cpu_u2.716",CRC(4421d827) SHA1(9b617215f2d92ef2c69104eb4e63a924704665aa),
-                             "cpu_u6.716",CRC(8861155a) SHA1(81a1b3434d4f80dee5704454f8359200faea173d))
+ST200_ROMSTART8888(orbitor1,"cpu_u1.716",CRC(575520e3) SHA1(9d52b065a14d4f95cebd48f60f628f2c246385fa),
+                            "cpu_u5.716",CRC(d31f27a8) SHA1(0442260db42192a95f6292e6b57000c127871d28),
+                            "cpu_u2.716",CRC(4421d827) SHA1(9b617215f2d92ef2c69104eb4e63a924704665aa),
+                            "cpu_u6.716",CRC(8861155a) SHA1(81a1b3434d4f80dee5704454f8359200faea173d))
+VSU100_SOUNDROM_U9U10(      "snd_u9.716",CRC(2ba24569) SHA1(da2f4a4eeed9ae7ff8a342f4d630e12dcb2decf5),
+                           "snd_u10.716",CRC(8e5b4a38) SHA1(de3f59363553f5f0d6098401734436930e64fbbd))
 BY35_ROMEND
 #define input_ports_orbitor1 input_ports_st
-CORE_GAMEDEFNV(orbitor1,"Orbitor 1",1982,"Stern",by35_mST200,0)
+CORE_GAMEDEFNV(orbitor1,"Orbitor 1",1982,"Stern",by35_mST200orb,0)
 
 /*--------------------------------
 / Cue (Proto - Never released)
