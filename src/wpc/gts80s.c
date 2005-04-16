@@ -203,7 +203,7 @@ void gts80s_exit(int boardNo)
 static WRITE_HANDLER(gts80s_data_w)
 {
 	// logerror("sound latch: 0x%02x\n", data);
-	data &= 0x0f;
+//	data &= 0x0f; /* commented out as System1 really uses the upper nybble for its sound commands!
 	riot6530_set_input_b(0, GTS80S_locals.dips | 0x20 | data);
 
 	/* the PiggyPack board is really firing an interrupt; sound board layout

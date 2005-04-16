@@ -32,6 +32,9 @@ But in time, we'll iron out as many bugs as possible...
 #include "driver.h"
 #include "core.h"
 #include "gts1.h"
+#include "gts80.h"
+#include "sndbrd.h"
+#include "gts80s.h"
 
 #if 0
 #define TRACE(x) printf x
@@ -192,7 +195,7 @@ static void sleepTimer(int data) {
       exec_pgol(codeOffset + 1);
       break;
     default: // no idea so far
-      TRACE(("%03x: %x     opc   #%x\n", codeOffset, data1, data1));
+      TRACE(("%03x: %x     opc   #%x\n", codeOffset, data0, data0));
       exec_pgol(codeOffset + 1);
   }
 }
@@ -321,13 +324,15 @@ static MACHINE_INIT(GTS1) {
   memset(&locals, 0, sizeof locals);
   locals.sleepTimer = timer_alloc(sleepTimer);
   timer_adjust(locals.sleepTimer, TIME_NEVER, 0, TIME_NEVER);
+  if (core_gameData->hw.soundBoard)
+    sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(GTS80_MEMREG_SCPU1), NULL, NULL);
 }
 
 static MACHINE_STOP(GTS1) {
   timer_adjust(locals.sleepTimer, TIME_NEVER, 0, TIME_NEVER);
 }
 
-MACHINE_DRIVER_START(GTS1)
+static MACHINE_DRIVER_START(GTS1NS)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CPU_ADD_TAG("mcpu", PPS4, 198864)
   MDRV_CPU_MEMORY(GTS1_readmem, GTS1_writemem)
@@ -338,4 +343,14 @@ MACHINE_DRIVER_START(GTS1)
   MDRV_DIPS(24)
   MDRV_SWITCH_UPDATE(GTS1)
 //  MDRV_DIAGNOSTIC_LEDH(4)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(GTS1)
+  MDRV_IMPORT_FROM(GTS1NS)
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(GTS1S80)
+  MDRV_IMPORT_FROM(GTS1NS)
+  MDRV_IMPORT_FROM(gts80s_s)
 MACHINE_DRIVER_END
