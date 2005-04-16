@@ -131,7 +131,9 @@
 
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(GTS1);
+extern MACHINE_DRIVER_EXTERN(GTS1S80);
 
 #define gl_mGTS1		GTS1
+#define gl_mGTS1S		GTS1S80
 
 #endif /* INC_GTS1 */
