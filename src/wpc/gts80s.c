@@ -203,13 +203,16 @@ void gts80s_exit(int boardNo)
 static WRITE_HANDLER(gts80s_data_w)
 {
 	// logerror("sound latch: 0x%02x\n", data);
-//	data &= 0x0f; /* commented out as System1 really uses the upper nybble for its sound commands!
+  if (Machine->drv->pinmame.coreDips < 32) { // this is a System1 game, so use all the bits!
+	riot6530_set_input_b(0, data);
+  } else {
+	data &= 0x0f;
 	riot6530_set_input_b(0, GTS80S_locals.dips | 0x20 | data);
-
 	/* the PiggyPack board is really firing an interrupt; sound board layout
 	   for theses game is different, because the IRQ line is connected */
 	if ( (GTS80S_locals.boardData.subType==1) && data && GTS80S_locals.IRQEnabled )
 		cpu_set_irq_line(GTS80S_locals.boardData.cpuNo, 0, PULSE_LINE);
+  }
 }
 
 /* only in at the moment for the pinmame startup information */
