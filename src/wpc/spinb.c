@@ -308,6 +308,14 @@ static ppi8255_interface ppi8255_intf =
 	{ci20_portc_w, ci23_portc_w, ci22_portc_w, ci21_portc_w, snd1_portc_w, snd2_portc_w},		/* Port C write */
 };
 /* MSM6585 ADPCM CHIP INTERFACE */
+static struct MSM5205interface SPINB_msm5205Int = {
+	2,										//# of chips
+	384000,									//384Khz Clock Frequency
+	{SPINB_S1_msmIrq, SPINB_S2_msmIrq},		//VCLK Int. Callback
+	{MSM5205_S48_4B, MSM5205_S48_4B},		//Sample Mode
+	{100,75}								//Volume
+};
+/* MSM6585 ADPCM CHIP INTERFACE */
 static struct MSM5205interface SPINB_msm6585Int = {
 	2,										//# of chips
 	640000,									//640Khz Clock Frequency
@@ -1128,7 +1136,19 @@ MACHINE_DRIVER_START(spinbdmd)
 MACHINE_DRIVER_END
 
 /* SOUND SECTION DRIVER */
-MACHINE_DRIVER_START(spinbs)
+static MACHINE_DRIVER_START(spinbs5205)
+  MDRV_CPU_ADD(Z80, 6000000)		//Schem shows 5 or 6/2 = 2.5/3Mhz, but sound is distorted otherwise
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(spinbsnd1_readmem, spinbsnd1_writemem)
+  MDRV_CPU_ADD(Z80, 6000000)		//Schem shows 6/2 = 2.5/3Mhz, but sound is distorted otherwise
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(spinbsnd2_readmem, spinbsnd2_writemem)
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD(MSM5205, SPINB_msm5205Int)
+MACHINE_DRIVER_END
+
+/* SOUND SECTION DRIVER */
+static MACHINE_DRIVER_START(spinbs6585)
   MDRV_CPU_ADD(Z80, 6000000)		//Schem shows 5 or 6/2 = 2.5/3Mhz, but sound is distorted otherwise
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(spinbsnd1_readmem, spinbsnd1_writemem)
@@ -1156,7 +1176,7 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(spinbs1)
   MDRV_IMPORT_FROM(spinb)
   MDRV_IMPORT_FROM(spinbdmd)
-  MDRV_IMPORT_FROM(spinbs)
+  MDRV_IMPORT_FROM(spinbs5205)
   MDRV_SOUND_CMD(spinb_sndCmd_w)
   MDRV_SOUND_CMDHEADING("spinb")
 MACHINE_DRIVER_END
@@ -1167,7 +1187,7 @@ MACHINE_DRIVER_START(spinbs1n)
   MDRV_CPU_MODIFY("mcpu")
   MDRV_CPU_PERIODIC_INT(spinb_z80nmi, SPINB_NMIFREQ)
   MDRV_IMPORT_FROM(spinbdmd)
-  MDRV_IMPORT_FROM(spinbs)
+  MDRV_IMPORT_FROM(spinbs6585)
   MDRV_SOUND_CMD(spinb_sndCmd_w)
   MDRV_SOUND_CMDHEADING("spinb")
 MACHINE_DRIVER_END
