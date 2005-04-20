@@ -39,17 +39,16 @@ CORE_GAMEDEFNV(bushido,"Bushido",1993,"Inder/Spinball (Spain)",mSPINBS,0)
 / Mach 2 (1995)
 /-------------------------------------------------------------------*/
 INITGAME(mach2, spinb_dispDMD, FLIP_SWNO(47,57), 4/*?*/, SNDBRD_SPINB, 0)
-SPINB_ROMSTART(mach2,	"jpcpu0.rom", NO_DUMP,
-						"jpcpu1.rom", NO_DUMP)
-SPINB_DMDROM1(			"jpdmd0.rom", NO_DUMP)
-SPINB_SNDROM22(			"jpsndc1.rom", NO_DUMP,
-						"jpsndm4.rom", NO_DUMP,	//Sound Effects 1
-						"jpsndm5.rom", NO_DUMP,	//Sound Effects 2
-						"jpsndc0.rom", NO_DUMP,
-						"jpsndm1.rom", NO_DUMP,	//Music 1
-						"jpsndm2.rom", NO_DUMP)	//Music 2
+SPINB_ROMSTART(mach2,	"m2cpu0.19", CRC(274c8040) SHA1(6b039b79b7e08f2bf2045bc4f1cbba790c999fed),
+						"m2cpu1.19", CRC(c445df0b) SHA1(1f346c1df8df0a3c4e8cb1186280d2f34959b3f8))
+SPINB_DMDROM1(			"m2dmdf.01", CRC(c45ccc74) SHA1(8362e799a76536a16dd2d5dde500ad3db273180f))
+SPINB_SNDROM12(			"m2sndd.01", CRC(e789f22d) SHA1(36aa7eac1dd37a02c982d109462dddbd85a305cc),
+						"m2snde.01", CRC(f5721119) SHA1(9082198e8d875b67323266c4bf8c2c378b63dfbb),	//Sound Effects
+						"m2musa.01", CRC(2d92a882) SHA1(cead22e434445e5c25414646b1e9ae2b9457439d),
+						"m2musb.01", CRC(6689cd19) SHA1(430092d51704dfda8bd8264875f1c1f4461c56e5),	//Music 1
+						"m2musc.01", CRC(88851b82) SHA1(d0c9fa391ca213a69b7c8ae7ca52063503b5656e))	//Music 2
 SPINB_ROMEND
-CORE_GAMEDEFNV(mach2,"Mach 2",1995,"Spinball (Spain)",mSPINBSNMI,0)
+CORE_GAMEDEFNV(mach2,"Mach 2",1995,"Spinball (Spain)",mSPINBS,0)
 
 /*-------------------------------------------------------------------
 / Jolly Park (1996)
@@ -73,18 +72,11 @@ CORE_GAMEDEFNV(jolypark,"Jolly Park",1996,"Spinball (Spain)",mSPINBSNMI,0)
 /*-------------------------------------------------------------------
 / Verne's World (1996)
 /-------------------------------------------------------------------*/
-INITGAME(vrnwrld, spinb_dispDMD, FLIP_SWNO(47,57), 4/*?*/, SNDBRD_SPINB, 0)
-SPINB_ROMSTART(vrnwrld,	"jpcpu0.rom", NO_DUMP,
-						"jpcpu1.rom", NO_DUMP)
-SPINB_DMDROM2(			"jpdmd0.rom", NO_DUMP,
-						"jpdmd1.rom", NO_DUMP)
-SPINB_SNDROM23(			"jpsndc1.rom", NO_DUMP,
-						"jpsndm4.rom", NO_DUMP,	//Sound Effects 1
-						"jpsndm5.rom", NO_DUMP,	//Sound Effects 2
-						"jpsndc0.rom", NO_DUMP,
-						"jpsndm1.rom", NO_DUMP,	//Music 1
-						"jpsndm2.rom", NO_DUMP,	//Music 2
-						"jpsndm3.rom", NO_DUMP)	//Music 3
+INITGAME(vrnwrld, spinb_dispDMD, FLIP_SWNO(47,57), 4/*?*/, SNDBRD_NONE, 0)
+SPINB_ROMSTART(vrnwrld,	"vwcpu0.rom", NO_DUMP,
+						"vwcpu1.rom", NO_DUMP)
+SPINB_DMDROM2(			"vwdmd0.rom", NO_DUMP,
+						"vwdmd1.rom", NO_DUMP)
 SPINB_ROMEND
-CORE_GAMEDEFNV(vrnwrld,"Verne's World",1996,"Spinball (Spain)",mSPINBSNMI,0)
+CORE_GAMEDEFNV(vrnwrld,"Verne's World",1996,"Spinball (Spain)",mSPINB,0)
 
