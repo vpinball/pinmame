@@ -352,6 +352,7 @@ MEMORY_READ_START(gps3_readmem)
   { 0x0000, 0x007f, MRA_RAM },
   { 0x0810, 0x0813, pia_r(GPS_PIA0) },
   { 0x3800, 0x3fff, MRA_ROM },
+  { 0x7800, 0x7fff, MRA_ROM },
   { 0xf800, 0xffff, MRA_ROM },
 MEMORY_END
 
