@@ -288,12 +288,12 @@ CORE_GAMEDEFNV(andromed,"Andromeda",1985,"Game Plan",mGP2SM3,0)
 /*-------------------------------------------------------------------
 / Cyclopes (November 1985) - Model #800
 /-------------------------------------------------------------------*/
-INITGAME(cyclopes, 0,dispGP_BDU2,FLIP_SW(FLIP_L),SNDBRD_GPMSU1,0)
+INITGAME(cyclopes, 0,dispGP_BDU2,FLIP_SW(FLIP_L),SNDBRD_GPMSU3,0)
 GP_ROMSTART000(cyclopes,"800.a",CRC(3e9628e5) SHA1(4dad9e082a9f4140162bc155f2b0f0a948ba012f),
 						"800.b",CRC(3f945c46) SHA1(25eb543e0b0edcd0a0dcf8e4aa1405cda55ebe2e),
 						"800.c",CRC(7ea18e65) SHA1(e86d82e3ba659499dfbf14920b196252784724f7))
 GP_SOUNDROM0("800.snd",CRC(290db3d2) SHA1(a236594f7a89969981bd5707d6dfbb5120fb8f46))
 GP_ROMEND
-CORE_GAMEDEFNV(cyclopes,"Cyclopes",1985,"Game Plan",mGP2SM,SOUNDFLAG)
+CORE_GAMEDEFNV(cyclopes,"Cyclopes",1985,"Game Plan",mGP2SM3,0)
 
 //Loch Ness Monster (November 1985) - Model #???
