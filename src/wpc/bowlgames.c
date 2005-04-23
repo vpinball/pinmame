@@ -172,6 +172,23 @@ S9_ROMEND
 CORE_CLONEDEF(szone,l2,l5,"Strike Zone (Shuffle) (L-2)", 198?, "Williams", s9_mS9S,0)
 
 /*--------------------
+/ Alley Cat (#unk)
+/--------------------*/
+static core_tLCDLayout dispAlcat[] = {
+  { 0, 0,20, 4, CORE_SEG7 }, { 0,12,24, 4, CORE_SEG7 },
+  { 2, 0,28, 4, CORE_SEG7 }, { 2,12, 0, 4, CORE_SEG7 },
+  { 4, 0, 4, 4, CORE_SEG7 }, { 4,12, 8, 4, CORE_SEG7 },
+  { 6, 4,33, 1, CORE_SEG7 }, { 6, 6,32, 1, CORE_SEG7 }, { 6,12,34, 2, CORE_SEG7 }, {0}
+};
+INITGAME_S10(alcat, GEN_S9, dispAlcat, 0, FLIP_SW(FLIP_L), S11_BCDDIAG|S11_BCDDISP, 0)
+S9_ROMSTART12(alcat,l7,"u26_rev7.rom", CRC(4d274dd3) SHA1(80d72bd0f85ce2cac04f6d9f59dc1fcccc86d402),
+                       "u27_rev7.rom", CRC(9c7faf8a) SHA1(dc1a561948b9a303f7924d7bebcd972db766827b))
+S9S_SOUNDROM4("sound.xxx",NO_DUMP)
+S9_ROMEND
+S11_INPUT_PORTS_START(alcat, 1) S11_INPUT_PORTS_END
+CORE_GAMEDEF(alcat, l7, "Alley Cat (Shuffle) (L-7)", 1986, "Williams", s9_mS9S,0)
+
+/*--------------------
 / Gold Mine (#920)
 /--------------------*/
 INITGAME_S10(gmine, GEN_S11, dispS10, 0, FLIP_SW(FLIP_L), S11_BCDDISP, 0)
