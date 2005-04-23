@@ -615,7 +615,7 @@ INITGAME(eldorado, GEN_GTS80A,0, dispNumeric3, SNDBRD_GTS80SP,0,0)
 GTS80_1_ROMSTART(eldorado, "692-2.cpu",  CRC(4ee6d09b) SHA1(5da0556204e76029380366f9fbb5662715cc3257),
                            "u2_80a.bin", CRC(241de1d4) SHA1(9d5942704cbdec6565d6335e33e9f7e4c60a41ac),
                            "u3_80a.bin", CRC(2d77ccdc) SHA1(47241ccd365e8d74d5aa5b775acf6445cc95b8a8))
-GTS80S2K_ROMSTART(         "692-s.snd",  NO_DUMP)
+GTS80S2K_ROMSTART(         "692-s.dat",  CRC(9bfbf400) SHA1(58aed9c0b1f52bcd0b53edcdf7af576bb175e3d6))
 GTS80_ROMEND
 #define input_ports_eldorado input_ports_gts80
 CORE_GAMEDEFNV(eldorado,"El Dorado City of Gold",1984,"Gottlieb",gl_mGTS80S,0)
