@@ -29,11 +29,25 @@ SPINB_DMDROM1(			"g-disply.bin", CRC(9a1df82f) SHA1(4ad6a12ae36ec898b8ac5243da6d
 SPINB_SNDROM22(			"a-sonido.bin", CRC(cf7d5399) SHA1(c79145826cfa6be2487e3add477d9b452c553762),
 						"b-sonido.bin", CRC(cb4fc885) SHA1(569f389fa8f91f886b58f44f701d2752ef01f3fa),	//Sound Effects 1
 						"c-sonido.bin", CRC(35a43dd8) SHA1(f2b1994f67f749c65a88c95d970b655990d85b96),	//Sound Effects 2
-						"d-musica.bin", CRC(2263d41b) SHA1(7c6631df12726ca5cf326c5856d51098635b9c73),
+						"d-musica.bin", CRC(2cb9697c) SHA1(d5c66d616ccd5e299832704e494743429dafd569),
 						"e-musica.bin", CRC(1414b921) SHA1(5df9e538ee109df28953ec8f162c60cb8c6e4d96),	//Music 1
 						"f-musica.bin", CRC(80f3a6df) SHA1(e09ad4660e511779c6e55559fa0c2c0b0c6600c8))	//Music 2
 SPINB_ROMEND
-CORE_GAMEDEFNV(bushido,"Bushido",1993,"Inder/Spinball (Spain)",mSPINBS,0)
+CORE_GAMEDEFNV(bushido,"Bushido",1993,"Inder/Spinball (Spain)",mSPINBS,GAME_NOT_WORKING)
+
+SPINB_ROMSTART(bushidoa,"0-cpu.bin", CRC(7f7e6642) SHA1(6872397eed7525f384b79cdea13531d273d8cf14),
+						"1-cpu.bin", CRC(a538d37f) SHA1(d2878ad0d31b4221b823812485c7faaf666ce185))
+SPINB_DMDROM1(			"g-disply.bin", CRC(9a1df82f) SHA1(4ad6a12ae36ec898b8ac5243da6dec3abcd9dc33))
+SPINB_SNDROM22(			"a-sonido.bin", CRC(cf7d5399) SHA1(c79145826cfa6be2487e3add477d9b452c553762),
+						"b-sonido.bin", CRC(cb4fc885) SHA1(569f389fa8f91f886b58f44f701d2752ef01f3fa),	//Sound Effects 1
+						"c-sonido.bin", CRC(35a43dd8) SHA1(f2b1994f67f749c65a88c95d970b655990d85b96),	//Sound Effects 2
+						"d-musica.bin", CRC(2cb9697c) SHA1(d5c66d616ccd5e299832704e494743429dafd569),
+						"e-musica.bin", CRC(1414b921) SHA1(5df9e538ee109df28953ec8f162c60cb8c6e4d96),	//Music 1
+						"f-musica.bin", CRC(80f3a6df) SHA1(e09ad4660e511779c6e55559fa0c2c0b0c6600c8))	//Music 2
+SPINB_ROMEND
+#define init_bushidoa init_bushido
+#define input_ports_bushidoa input_ports_bushido
+CORE_CLONEDEFNV(bushidoa,bushido,"Bushido (alternate set)",1993,"Inder/Spinball (Spain)",mSPINBS,GAME_NOT_WORKING)
 
 /*-------------------------------------------------------------------
 / Mach 2 (1995)
