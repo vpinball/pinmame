@@ -189,12 +189,13 @@ CORE_GAMEDEFNV(lizard,"(Pinball) Lizard",1980,"Game Plan",mGP2SM,SOUNDFLAG)
 /*-------------------------------------------------------------------
 / Global Warfare (June 1981)  - Model #240
 /-------------------------------------------------------------------*/
-INITGAME(gwarfare, 0,dispGP_BDU2,FLIP_SW(FLIP_L),SNDBRD_GPSSU2,0)
+INITGAME(gwarfare, 0,dispGP_BDU2,FLIP_SW(FLIP_L),SNDBRD_GPMSU1,0)
 GP_ROMSTART888(gwarfare,"240a.716",CRC(30206428) SHA1(7a9029e4fd4c4c00da3256ed06464c0bd8022168),
 						"240b.716",CRC(a54eb15d) SHA1(b9235bd188c1251eb213789800b7686b5e3c557f),
 						"240c.716",CRC(60d115a8) SHA1(e970fdd7cbbb2c81ab8c8209edfb681798c683b9))
+GP_SOUNDROM88("gw.u9", NO_DUMP, "gw.u10",NO_DUMP)
 GP_ROMEND
-CORE_GAMEDEFNV(gwarfare,"Global Warfare",1981,"Game Plan",mGP2S2,0)
+CORE_GAMEDEFNV(gwarfare,"Global Warfare",1981,"Game Plan",mGP2SM,SOUNDFLAG)
 
 /*-------------------------------------------------------------------
 / Mike Bossy (January 1982) - Model #???
@@ -212,12 +213,12 @@ CORE_GAMEDEFNV(mbossy,"Mike Bossy",1982,"Game Plan",mGP2SM,GAME_NOT_WORKING|SOUN
 / Super Nova (May 1982) - Model #150
 /-------------------------------------------------------------------*/
 //Flyer suggests 6 digits for scoring??
-INITGAME(suprnova, 0,dispGP_BDU1,FLIP_SW(FLIP_L),SNDBRD_GPSSU2,0)
+INITGAME(suprnova, 0,dispGP_BDU1,FLIP_SW(FLIP_L),SNDBRD_GPSSU4,0)
 GP_ROMSTART888(suprnova,"130a.716",CRC(dc402b37) SHA1(90c46391a1e5f000f3b235d580463bf96b45bd3e),
 						"150b.716",CRC(8980a8bb) SHA1(129816fe85681b760307a713c667737a750b0c04),
 						"150c.716",CRC(6fe08f96) SHA1(1309619a2400674fa1d05dc9214fdb85419fd1c3))
 GP_ROMEND
-CORE_GAMEDEFNV(suprnova,"Super Nova",1982,"Game Plan",mGP2S2,0)
+CORE_GAMEDEFNV(suprnova,"Super Nova",1982,"Game Plan",mGP2S4,0)
 
 /*-------------------------------------------------------------------
 / Sharp Shooter II (November 1983) - Model #730

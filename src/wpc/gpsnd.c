@@ -41,9 +41,10 @@ static struct SN76477interface  gpSS1_sn76477Int = { 1, { 50 }, /* mixing level 
 };
 
 static WRITE_HANDLER(gpss1_data_w)
-{ // tone frequencies       C    E             A    A low
- static double voltage[] = {2.8, 3.3, 0, 0, 0, 4.5, 2.2};
-  if (data != 0x0f) {
+{ // tone frequencies          C    E             A    A low
+  static double voltage[16] = {2.8, 3.3, 0, 0, 0, 4.5, 2.2};
+  data &= 0x0f;
+  if (voltage[data]) {
     SN76477_set_vco_voltage(0, voltage[data]);
     SN76477_enable_w(0, 0);
   } else {
@@ -83,10 +84,11 @@ static struct SN76477interface  gpSS2_sn76477Int = { 3, { 50, 50, 50 }, /* mixin
 };
 
 static WRITE_HANDLER(gpss2_data_w)
-{ // tone frequencies        D'   C'   B    A    H    G    F          E    D
-  static double voltage[] = {5.7, 5.4, 4.8, 4.5, 5.1, 4.0, 3.6, 0, 0, 3.3, 3.0};
+{ // tone frequencies          D'   C'   B    A    H    G    F          E    D
+  static double voltage[16] = {5.7, 5.4, 4.8, 4.5, 5.1, 4.0, 3.6, 0, 0, 3.3, 3.0};
   static int howl_or_whoop = 0;
   int sb = core_gameData->hw.soundBoard & 0x01; // 1 if SSU3
+  data &= 0x0f;
   switch (data) {
     case 0x07: // gunshot
       SN76477_enable_w(1, 1);
@@ -178,12 +180,13 @@ static WRITE_HANDLER(gpss2_data_w)
       SN76477_enable_w(0, 1);
       SN76477_enable_w(0, 0);
       break;
-    case 0x0f: // sounds off
-      SN76477_enable_w(2, 1);
-      break;
-    default:   // chime sounds
-      SN76477_set_vco_voltage(2, voltage[data]);
-      SN76477_enable_w(2, 0);
+  }
+  if (voltage[data]) {
+    SN76477_set_vco_voltage(2, voltage[data]);
+    SN76477_enable_w(2, 0);
+  } else {
+    SN76477_set_vco_voltage(2, 0.8);
+    SN76477_enable_w(2, 1);
   }
 }
 
@@ -198,6 +201,155 @@ static void gpss2_init(struct sndbrdData *brdData)
   SN76477_mixer_w(2, 0);
   /* ENVELOPE is constant: pin1 = lo, pin 28 = lo */
   SN76477_envelope_w(2, 0);
+}
+
+// SSU-4
+
+static struct SN76477interface  gpSS4_sn76477Int = { 4, { 50, 50, 50, 50 }, /* mixing levels */
+/*			#0			#1			#2			#3			  pin  description		*/
+	{	RES_K(47),	RES_K(100),	0,			0			},	/*	4  noise_res		*/
+	{	RES_K(330),	RES_K(470),	0,			0			},	/*	5  filter_res		*/
+	{	CAP_P(680),	CAP_P(680),	0,			0			},	/*	6  filter_cap		*/
+	{	RES_M(2.2),	RES_M(2.2),	0,			0			},	/*	7  decay_res		*/
+	{	CAP_U(1),	CAP_U(0.1),	0,			0			},	/*	8  attack_decay_cap */
+	{	RES_K(4.7),	RES_K(4.7),	0,			0			},	/* 10  attack_res		*/
+	{	RES_K(68),	RES_K(68),	RES_K(68),	RES_K(68),	},	/* 11  amplitude_res	*/
+	{	RES_K(57.4),RES_K(57.4),RES_K(57.4),RES_K(57.4)	},	/* 12  feedback_res 	*/
+	{ 	0,			0,			0.8,/* ? */	0			},	/* 16  vco_voltage		*/
+	{ 	0,			CAP_U(0.1),	CAP_U(0.1),	CAP_U(0.1),	},	/* 17  vco_cap			*/
+	{	0,			RES_K(56),	RES_K(100),	RES_K(100),	},	/* 18  vco_res			*/
+	{	0,			5.0,		5.0,		0			},	/* 19  pitch_voltage	*/
+	{	0,			RES_M(2.2),	0,			RES_M(4.7)	},	/* 20  slf_res			*/
+	{	0,			CAP_U(0.1),	0,			CAP_U(47)	},	/* 21  slf_cap			*/
+	{	CAP_U(10),	CAP_U(1),	0,			0			},	/* 23  oneshot_cap		*/
+	{	RES_K(100),	RES_K(330),	0,			0			}	/* 24  oneshot_res		*/
+};
+
+
+static mame_timer *capTimer;
+static void capTimer_timer(int n) {
+  static int offset = 1;
+  static int pin18res = 320;
+  pin18res += offset;
+  if (pin18res > 419)
+    offset = -1;
+  else if (pin18res < 321)
+    offset = 1;
+  SN76477_set_vco_res(3, RES_K(pin18res)); /* 18 */
+}
+
+static WRITE_HANDLER(gpss4_data_w)
+{ // tone frequencies             C'   B    A
+  static double voltage[16] = {0, 5.4, 4.8, 4.5};
+  data &= 0x0f;
+  if (data < 0x0f) SN76477_enable_w(1, 1);
+  switch (data) {
+    case 0x00: // stop wave
+      SN76477_enable_w(3, 1);
+      timer_adjust(capTimer, TIME_NEVER, 0, TIME_NEVER);
+      break;
+    case 0x06: // start wave
+      SN76477_enable_w(3, 0);
+      timer_adjust(capTimer, 0.005, 0, 0.005);
+      break;
+    case 0x07: // twang
+      SN76477_mixer_w(1, 0);
+      SN76477_set_filter_res(1, RES_K(470)); /* 5 */
+      SN76477_set_decay_res(1, RES_M(2.2)); /* 7 */
+      SN76477_set_attack_decay_cap(1, CAP_U(0.2)); /* 8 */
+      SN76477_set_vco_res(1, RES_K(28)); /* 18 */
+      SN76477_set_slf_res(1, RES_K(99.5)); /* 20 */
+      SN76477_set_slf_cap(1, CAP_U(0.1)); /* 21 */
+      SN76477_set_oneshot_cap(1, CAP_U(2)); /* 23 */
+      SN76477_set_oneshot_res(1, RES_K(110)); /* 24 */
+      SN76477_enable_w(1, 0);
+      break;
+    case 0x08: // spark
+      SN76477_mixer_w(1, 4);
+      SN76477_set_filter_res(1, RES_K(120)); /* 5 */
+      SN76477_set_decay_res(1, RES_K(4.7)); /* 7 */
+      SN76477_set_attack_decay_cap(1, CAP_U(0.1)); /* 8 */
+      SN76477_set_vco_res(1, RES_K(56)); /* 18 */
+      SN76477_set_slf_res(1, RES_K(99.5)); /* 20 */
+      SN76477_set_slf_cap(1, CAP_U(0.1)); /* 21 */
+      SN76477_set_oneshot_cap(1, CAP_U(1)); /* 23 */
+      SN76477_set_oneshot_res(1, RES_K(330)); /* 24 */
+      SN76477_enable_w(1, 0);
+      break;
+    case 0x0b: // siren
+      SN76477_mixer_w(1, 0);
+      SN76477_set_filter_res(1, RES_K(470)); /* 5 */
+      SN76477_set_decay_res(1, RES_K(47)); /* 7 */
+      SN76477_set_attack_decay_cap(1, CAP_U(10.1)); /* 8 */
+      SN76477_set_vco_res(1, RES_K(8.5)); /* 18 */
+      SN76477_set_slf_res(1, RES_M(2.2)); /* 20 */
+      SN76477_set_slf_cap(1, CAP_U(1)); /* 21 */
+      SN76477_set_oneshot_cap(1, CAP_U(1)); /* 23 */
+      SN76477_set_oneshot_res(1, RES_K(330)); /* 24 */
+      SN76477_enable_w(1, 0);
+      break;
+    case 0x0c: // howl
+      SN76477_mixer_w(1, 0);
+      SN76477_set_filter_res(1, RES_K(470)); /* 5 */
+      SN76477_set_decay_res(1, RES_K(47)); /* 7 */
+      SN76477_set_attack_decay_cap(1, CAP_U(10.1)); /* 8 */
+      SN76477_set_vco_res(1, RES_K(40)); /* 18 */
+      SN76477_set_slf_res(1, RES_M(2.2)); /* 20 */
+      SN76477_set_slf_cap(1, CAP_U(22.1)); /* 21 */
+      SN76477_set_oneshot_cap(1, CAP_U(11)); /* 23 */
+      SN76477_set_oneshot_res(1, RES_K(330)); /* 24 */
+      SN76477_enable_w(1, 0);
+      break;
+    case 0x0d: // warble
+      SN76477_mixer_w(1, 0);
+      SN76477_set_filter_res(1, RES_K(470)); /* 5 */
+      SN76477_set_decay_res(1, RES_M(2.2)); /* 7 */
+      SN76477_set_attack_decay_cap(1, CAP_U(0.2)); /* 8 */
+      SN76477_set_vco_res(1, RES_K(28)); /* 18 */
+      SN76477_set_slf_res(1, RES_M(1.1)); /* 20 */
+      SN76477_set_slf_cap(1, CAP_U(1)); /* 21 */
+      SN76477_set_oneshot_cap(1, CAP_U(2)); /* 23 */
+      SN76477_set_oneshot_res(1, RES_K(110)); /* 24 */
+      SN76477_enable_w(1, 0);
+      break;
+    case 0x0e: // explosion
+      SN76477_enable_w(0, 1);
+      SN76477_enable_w(0, 0);
+      break;
+  }
+  if (voltage[data]) {
+    SN76477_set_vco_voltage(2, voltage[data]);
+    SN76477_enable_w(2, 0);
+  } else {
+    SN76477_set_vco_voltage(2, 0.8);
+    SN76477_enable_w(2, 1);
+  }
+}
+
+static void gpss4_init(struct sndbrdData *brdData)
+{
+  capTimer = timer_alloc(capTimer_timer);
+  timer_adjust(capTimer, TIME_NEVER, 0, TIME_NEVER);
+
+  /* MIXER (pins 27,25,26) = 010 */
+  SN76477_mixer_w(0, 2);
+  /* ENVELOPE is constant: pin1 = hi, pin 28 = lo */
+  SN76477_envelope_w(0, 1);
+
+  /* ENVELOPE is constant: pin1 = hi, pin 28 = lo */
+  SN76477_envelope_w(1, 1);
+  SN76477_vco_w(1, 1);
+
+  /* MIXER = 0 */
+  SN76477_mixer_w(2, 0);
+  /* ENVELOPE is constant: pin1 = lo, pin 28 = lo */
+  SN76477_envelope_w(2, 0);
+
+  /* MIXER = 0 */
+  SN76477_mixer_w(3, 0);
+  /* ENVELOPE is constant: pin1 = lo, pin 28 = hi */
+  SN76477_envelope_w(3, 2);
+  SN76477_vco_w(3, 1);
 }
 
 // MSU-1 and MSU-3
@@ -341,7 +493,6 @@ static void gpsm3_init(struct sndbrdData *brdData) {
 }
 
 static WRITE_HANDLER(gpsm3_data_w) {
-    logerror("snd_data_w: %02x\n", data);
     gps_locals.sndCmd = 0xf0 | (data & 0x0f);
     pia_set_input_b(GPS_PIA0, gps_locals.sndCmd);
 }
@@ -373,6 +524,10 @@ const struct sndbrdIntf gpSSU2Intf = {
   "GPS2", gpss2_init, NULL, NULL, gpss2_data_w, gpss2_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
+const struct sndbrdIntf gpSSU4Intf = {
+  "GPS4", gpss4_init, NULL, NULL, gpss4_data_w, gpss4_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+};
+
 const struct sndbrdIntf gpMSU1Intf = {
   "GPSM", gpsm_init, NULL, NULL, gpsm_data_w, gpsm_data_w, NULL, gpsm_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
@@ -383,10 +538,17 @@ const struct sndbrdIntf gpMSU3Intf = {
 
 MACHINE_DRIVER_START(gpSSU1)
   MDRV_SOUND_ADD(SN76477, gpSS1_sn76477Int)
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(gpSSU2)
   MDRV_SOUND_ADD(SN76477, gpSS2_sn76477Int)
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(gpSSU4)
+  MDRV_SOUND_ADD(SN76477, gpSS4_sn76477Int)
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(gpMSU1)
