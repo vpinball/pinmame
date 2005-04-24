@@ -589,6 +589,7 @@ DRIVERNV(poleposn)		// Pole Position (1987)
 // SPINBALL GAMES
 // ---------------
 DRIVERNV(bushido)		//1993 - Bushido     ( Last game by Inder - before becomming Spinball - but same hardware)
+DRIVERNV(bushidoa)		//1993 - Bushido (alternate set)
 DRIVERNV(mach2)			//1995 - Mach 2
 DRIVERNV(jolypark)      //1996 - Jolly Park
 DRIVERNV(vrnwrld)		//1996 - Verne's World
