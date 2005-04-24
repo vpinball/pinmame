@@ -87,11 +87,10 @@ static void GP_lampStrobe2(int lampadr, int lampdata) {
   }
 }
 
-static void GP_UpdateSolenoids (int bank, int soldata) {
+static void GP_UpdateSolenoids (int bank, int data) {
   static UINT32 mask = 0xC0008000;
   UINT32 sols = 0;
-//  logerror("soldata = %x\n",soldata);
-  soldata &= 0x0f;
+  int soldata = data & 0x0f;
   if (bank == 0) { // solenoids 1-15
     if (soldata != 0x0f) {
       if (core_gameData->hw.soundBoard == SNDBRD_GPSSU1 && (soldata < 2 || (soldata > 4 && soldata < 7)))
@@ -105,8 +104,9 @@ static void GP_UpdateSolenoids (int bank, int soldata) {
       locals.solenoids &= mask;
     }
   } else { // sound commands, solenoids 17-30
+//  if ((data & 0x0f) != 0x0f) printf("snd = %02x\n", data);
     if (core_gameData->hw.soundBoard != SNDBRD_GPSSU1)
-      sndbrd_0_data_w(GP_SCPUNO, soldata);
+      sndbrd_0_data_w(GP_SCPUNO, data);
     if (soldata != 0x0f) {
       sols = 0x10000 << soldata;
       coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & mask) | sols;
@@ -524,6 +524,11 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(GP2S2)
   MDRV_IMPORT_FROM(GP2)
   MDRV_IMPORT_FROM(gpSSU2)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(GP2S4)
+  MDRV_IMPORT_FROM(GP2)
+  MDRV_IMPORT_FROM(gpSSU4)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(GP2SM)
