@@ -17,9 +17,9 @@
   PORT_START /* 0 */ \
     /* Switch Column 1 */ \
 	COREPORT_BITDEF(  0x0001, IPT_COIN1,          KEYCODE_3)\
-	COREPORT_BITDEF(  0x0002, IPT_COIN2,          KEYCODE_4)\
-	COREPORT_BITDEF(  0x0004, IPT_COIN3,          KEYCODE_5)\
-	COREPORT_BIT(     0x0008, "Ball Tilt",        KEYCODE_INSERT)\
+/*	COREPORT_BITDEF(  0x0002, IPT_COIN2,          KEYCODE_4)\	commented out as it interferes with Bushido's trough switches,
+	COREPORT_BITDEF(  0x0004, IPT_COIN3,          KEYCODE_5)\	and it doesn't seem to be connected on Jolly Park either!?
+*/	COREPORT_BIT(     0x0008, "Ball Tilt",        KEYCODE_INSERT)\
     COREPORT_BITDEF(  0x0010, IPT_START1,         IP_KEY_DEFAULT)\
     COREPORT_BIT(     0x0020, "Puesta A Cero",    KEYCODE_HOME)\
     COREPORT_BIT(     0x0040, "Test Economico",	  KEYCODE_9)\
