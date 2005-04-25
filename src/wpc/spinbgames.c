@@ -22,7 +22,7 @@ static struct core_dispLayout spinb_dispDMD[] = {
 /*-------------------------------------------------------------------
 / Bushido (1993) - ( Last game by Inder - before becomming Spinball - but same hardware)
 /-------------------------------------------------------------------*/
-INITGAME(bushido, spinb_dispDMD, FLIP_SWNO(47,57), 4/*?*/, SNDBRD_SPINB, 0)
+INITGAME(bushido, spinb_dispDMD, FLIP_SWNO(47,57), 3, SNDBRD_SPINB, 0)
 SPINB_ROMSTART(bushido,	"0-z80.bin", CRC(3ea1eb1d) SHA1(cceb6c68e481f36a5646ff4f38d3dfc4275b0c79),
 						"1-z80.bin", CRC(648da72b) SHA1(1005a13b4746e302d979c8b1da300e943cdcab3d))
 SPINB_DMDROM1(			"g-disply.bin", CRC(9a1df82f) SHA1(4ad6a12ae36ec898b8ac5243da6dec3abcd9dc33))
@@ -47,7 +47,7 @@ SPINB_SNDROM22(			"a-sonido.bin", CRC(cf7d5399) SHA1(c79145826cfa6be2487e3add477
 SPINB_ROMEND
 #define init_bushidoa init_bushido
 #define input_ports_bushidoa input_ports_bushido
-CORE_CLONEDEFNV(bushidoa,bushido,"Bushido (alternate set)",1993,"Inder/Spinball (Spain)",mSPINBS,GAME_NOT_WORKING)
+CORE_CLONEDEFNV(bushidoa,bushido,"Bushido (alternate set)",1993,"Inder/Spinball (Spain)",mSPINBS,0)
 
 /*-------------------------------------------------------------------
 / Mach 2 (1995)
