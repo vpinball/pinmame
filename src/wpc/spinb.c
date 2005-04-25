@@ -760,7 +760,7 @@ static SWITCH_UPDATE(spinb) {
 #endif /* MAME_DEBUG */
   if (inports) {
 	  coreGlobals.swMatrix[0] = (inports[SPINB_COMINPORT] & 0x0100)>>8;  //Column 0 Switches
-	  coreGlobals.swMatrix[1] = (inports[SPINB_COMINPORT] & 0x00ff);     //Column 1 Switches
+	  coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0x06) | (inports[SPINB_COMINPORT] & 0x00f9);     //Column 1 Switches
   }
   SPINBlocals.TestContactos = (core_getSw(-7)>0?1:0);
 }
