@@ -32,7 +32,7 @@
   I/O: PIA 8255
   Roms: IC9 (8192 Bytes), IC15, IC16, IC17 (524288 Bytes)
   Ram: 6116 - 2048 Bytes Hooked to the PIA
-  Audio: MSM6586 (Upgraded 5205) - Toggles between 4Khz, 8Khz from PIA - PC5 Pin
+  Audio: MSM6585 (5205 with higher clocking) - Toggles between 4Khz, 8Khz from PIA - PC5 Pin
 
   Page 2 - Music Section
   CPU: Z80
@@ -41,7 +41,7 @@
   I/O: PIA 8255
   Roms: IC30 (8192 Bytes), IC25, IC26, IC27 (524288 Bytes)
   Ram: 6116 - 2048 Bytes Hooked to the PIA
-  Audio: MSM6586 (Upgraded 5205) - Toggles between 4Khz, 8Khz from PIA - PC5 Pin
+  Audio: MSM6585 (5205 with higher clocking) - Toggles between 4Khz, 8Khz from PIA - PC5 Pin
 
   To get past "Introduzca Bola" (Install Ball) - set the 4 ball switches to 1 in column 7, switches 1 - 4 (keys: T+A,T+S,T+D,T+F)
   To begin a game, press start, then open first ball switch (T+A) and put in switch #5 (T+G)
@@ -132,8 +132,8 @@ SND CPU #1 8255 PPI
     (IN)(P0)    - Detects nibble feeds to MSM6585
 		(P1-P3) - Not Used?
 		(P4)    - Ready Status to Main CPU
-		(P5)    - S1 Pin on MSM6858 (Sample Rate Select 1)
-		(P6)    - Reset on MSM6858
+		(P5)    - S1 Pin on MSM6585 (Sample Rate Select 1)
+		(P6)    - Reset on MSM6585
 		(P7)    - Not Used?
 
 SND CPU #2 8255 PPI
@@ -149,8 +149,8 @@ SND CPU #2 8255 PPI
 		(IN)(P0)- Detects nibble feeds to MSM6585
 		(P1-P3) - Not Used?
 		(P4)    - Not Used?
-		(P5)    - S1 Pin on MSM6858 (Sample Rate Select 1)
-		(P6)    - Reset on MSM6858
+		(P5)    - S1 Pin on MSM6585 (Sample Rate Select 1)
+		(P6)    - Reset on MSM6585
 		(P7)    - Not Used?
 
 ***************************************************************************************/
@@ -226,10 +226,10 @@ WRITE_HANDLER(snd2_portb_w);
 WRITE_HANDLER(snd2_portc_w);
 static void SPINB_S1_msmIrq(int data);
 static void SPINB_S2_msmIrq(int data);
-static READ_HANDLER(SPINB_S1_MSM5025_READROM);
-static READ_HANDLER(SPINB_S2_MSM5025_READROM);
-static WRITE_HANDLER(SPINB_S1_MSM5025_w);
-static WRITE_HANDLER(SPINB_S2_MSM5025_w);
+static READ_HANDLER(SPINB_S1_MSM5205_READROM);
+static READ_HANDLER(SPINB_S2_MSM5205_READROM);
+static WRITE_HANDLER(SPINB_S1_MSM5205_w);
+static WRITE_HANDLER(SPINB_S2_MSM5205_w);
 static void spinb_z80int(int data);
 
 #if DMD_FROM_RAM
@@ -307,7 +307,7 @@ static ppi8255_interface ppi8255_intf =
 	{ci20_portb_w, ci23_portb_w, ci22_portb_w, ci21_portb_w, snd1_portb_w, snd2_portb_w},		/* Port B write */
 	{ci20_portc_w, ci23_portc_w, ci22_portc_w, ci21_portc_w, snd1_portc_w, snd2_portc_w},		/* Port C write */
 };
-/* MSM6585 ADPCM CHIP INTERFACE */
+/* MSM5205 ADPCM CHIP INTERFACE */
 static struct MSM5205interface SPINB_msm5205Int = {
 	2,										//# of chips
 	384000,									//384Khz Clock Frequency
@@ -624,8 +624,8 @@ SND CPU #1 8255 PPI
     (IN)(P0)    - Detects nibble feeds to MSM6585
 		(P1-P3) - Not Used?
 		(P4)    - Ready Status to Main CPU
-		(P5)    - S1 Pin on MSM6858 (Sample Rate Select 1)
-		(P6)    - Reset on MSM6858
+		(P5)    - S1 Pin on MSM6585 (Sample Rate Select 1)
+		(P6)    - Reset on MSM6585
 		(P7)    - Not Used?
 */
 WRITE_HANDLER(snd1_porta_w) { SPINBlocals.S1_AHI = data; }
@@ -643,8 +643,8 @@ WRITE_HANDLER(snd1_portc_w)
 		SPINBlocals.S1_PC0 = 1;
 	else {
 	//Read Data from ROM & Write Data To MSM Chip
-		int msmdata = SPINB_S1_MSM5025_READROM(0);
-		SPINB_S1_MSM5025_w(0,msmdata);
+		int msmdata = SPINB_S1_MSM5205_READROM(0);
+		SPINB_S1_MSM5205_w(0,msmdata);
 	}
 	//Store reset value
 	SPINBlocals.S1_Reset = GET_BIT6;
@@ -665,8 +665,8 @@ SND CPU #2 8255 PPI
     (IN)(P0)    - Detects nibble feeds to MSM6585
 		(P1-P3) - Not Used?
 		(P4)    - Not Used?
-		(P5)    - S1 Pin on MSM6858 (Sample Rate Select 1)
-		(P6)    - Reset on MSM6858
+		(P5)    - S1 Pin on MSM6585 (Sample Rate Select 1)
+		(P6)    - Reset on MSM6585
 		(P7)    - Not Used?
 */
 READ_HANDLER(snd2_porta_r) { LOGSND(("SND2_PORTA_R\n")); return 0; }
@@ -694,8 +694,8 @@ WRITE_HANDLER(snd2_portc_w)
 		SPINBlocals.S2_PC0 = 1;
 	else {
 	//Read Data from ROM & Write Data To MSM Chip
-		int msmdata = SPINB_S2_MSM5025_READROM(0);
-		SPINB_S2_MSM5025_w(0,msmdata);
+		int msmdata = SPINB_S2_MSM5205_READROM(0);
+		SPINB_S2_MSM5205_w(0,msmdata);
 	}
 	//Store reset value
 	SPINBlocals.S2_Reset = GET_BIT6;
@@ -762,7 +762,7 @@ static SWITCH_UPDATE(spinb) {
 	  coreGlobals.swMatrix[0] = (inports[SPINB_COMINPORT] & 0x0100)>>8;  //Column 0 Switches
 	  coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0x06) | (inports[SPINB_COMINPORT] & 0x00f9);     //Column 1 Switches
   }
-  SPINBlocals.TestContactos = (core_getSw(-7)>0?1:0);
+  SPINBlocals.TestContactos = (core_getSw(-8)>0?1:0);
 }
 
 //Send a sound command to the sound board
@@ -979,7 +979,7 @@ WRITE_HANDLER(sndctrl_2_w)
 	SPINBlocals.S2_CS2 = !(GET_BIT5);	//Active Low
 }
 
-static READ_HANDLER(SPINB_S1_MSM5025_READROM)
+static READ_HANDLER(SPINB_S1_MSM5205_READROM)
 {
 	int addr, data;
 	addr = (SPINBlocals.S1_CS2<<20) | (SPINBlocals.S1_CS1<<19) |
@@ -990,7 +990,7 @@ static READ_HANDLER(SPINB_S1_MSM5025_READROM)
 	return data;
 }
 
-static READ_HANDLER(SPINB_S2_MSM5025_READROM)
+static READ_HANDLER(SPINB_S2_MSM5205_READROM)
 {
 	int addr, data;
 	addr = (SPINBlocals.S2_CS2<<20) | (SPINBlocals.S2_CS1<<19) |
@@ -1002,10 +1002,10 @@ static READ_HANDLER(SPINB_S2_MSM5025_READROM)
 }
 
 
-static WRITE_HANDLER(SPINB_S1_MSM5025_w) {
+static WRITE_HANDLER(SPINB_S1_MSM5205_w) {
   SPINBlocals.S1_MSMDATA = data;
 }
-static WRITE_HANDLER(SPINB_S2_MSM5025_w) {
+static WRITE_HANDLER(SPINB_S2_MSM5205_w) {
   SPINBlocals.S2_MSMDATA = data;
 }
 
