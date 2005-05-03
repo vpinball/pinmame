@@ -183,8 +183,8 @@ SND CPU #2 8255 PPI
 #define SPINB_8051CPU_FREQ 16000000
 
 #define SPINB_VBLANKFREQ      60 /* VBLANK frequency*/
-#define SPINB_INTFREQ        200 /* Z80 Interrupt frequency*/
-#define SPINB_NMIFREQ       2500 /* Z80 NMI frequency*/
+#define SPINB_INTFREQ        180 /* Z80 Interrupt frequency (variable! according to schematics! 250 as used on earlier Inder games will flicker...) */
+#define SPINB_NMIFREQ       1440 /* Z80 NMI frequency (confirmed by Jolly Park schematics) */
 
 /* Declarations */
 WRITE_HANDLER(spinb_sndCmd_w);
@@ -290,6 +290,7 @@ struct {
   UINT8  volume;
   mame_timer *irqtimer;
   int irqfreq;
+  int nonmi;
 } SPINBlocals;
 
 /* -------------------*/
@@ -505,8 +506,12 @@ WRITE_HANDLER(ci20_portb_w) {
 	if (data) SPINBlocals.swCol = 8 + core_BitColToNum(data & 0x0f);
 }
 
-WRITE_HANDLER(ci20_portc_w) { LOG(("UNDOCUMENTED: ci20_portc_w = %x\n",data)); }
-
+WRITE_HANDLER(ci20_portc_w) {
+	if (SPINBlocals.nonmi)
+		coreGlobals.tmpLampMatrix[0] = data;
+	else
+		LOG(("UNDOCUMENTED: ci20_portc_w = %x\n",data));
+}
 /*
 CI-23 8255 PPI
 --------------
@@ -515,16 +520,24 @@ CI-23 8255 PPI
   (out) P2-P7 : J4 - Pins 13-19 (no 17) (Bit Luces 2-7) - Lamp Data 2-7
   Summary: P0-P7 - Lamp Data Bits 0-7
 */
-WRITE_HANDLER(ci23_porta_w) { coreGlobals.tmpLampMatrix[SPINBlocals.lampColumn] = data; }
-
+WRITE_HANDLER(ci23_porta_w) {
+	if (SPINBlocals.nonmi)
+		coreGlobals.tmpLampMatrix[4] = data;
+	else
+		coreGlobals.tmpLampMatrix[SPINBlocals.lampColumn] = data;
+}
 /*
 CI-23 8255 PPI
 --------------
   Port B:
   (out) P0-P7 : J3 - Pins 11 - 19 (no 18) (Nivel Luces 0-7) - Lamp Column Strobe 0 - 7
 */
-WRITE_HANDLER(ci23_portb_w) { SPINBlocals.lampColumn = core_BitColToNum(data); }
-
+WRITE_HANDLER(ci23_portb_w) {
+	if (SPINBlocals.nonmi)
+		coreGlobals.tmpLampMatrix[5] = data;
+	else
+		SPINBlocals.lampColumn = core_BitColToNum(data);
+}
 /*
 CI-23 8255 PPI
 --------------
@@ -548,20 +561,34 @@ WRITE_HANDLER(ci23_portc_w) {
 #endif
 }
 
+static WRITE_HANDLER(lamp_ex_w) {
+	coreGlobals.tmpLampMatrix[6+offset] = data;
+}
+
 /*
 CI-22 8255 PPI
 --------------
   Port A:
   (out) P0-P7 : J5 - Pins 7 - 14 (Marked Various) - Fixed Lamps Head & Playfield (??)
 */
-WRITE_HANDLER(ci22_porta_w) { solenoid_w(3,data); }
+WRITE_HANDLER(ci22_porta_w) {
+	if (SPINBlocals.nonmi)
+		coreGlobals.tmpLampMatrix[1] = data;
+	else
+		solenoid_w(3,data);
+}
 /*
 CI-22 8255 PPI
 --------------
   Port B:
   (out) P0-P7 : J4 - Pins 5 - 12 (Marked Various) - Flasher Control 5-12
 */
-WRITE_HANDLER(ci22_portb_w) { solenoid_w(4,data); }
+WRITE_HANDLER(ci22_portb_w) {
+	if (SPINBlocals.nonmi)
+		coreGlobals.tmpLampMatrix[2] = data;
+	else
+		solenoid_w(4,data);
+}
 /*
 CI-22 8255 PPI
 --------------
@@ -569,8 +596,12 @@ CI-22 8255 PPI
   (out) P0-P3 : J4 - Pins 1 - 4 (Marked Various) - Flasher Control 1-4
   (out) P4-P7 : J5 - Pins 15-19 (no 16) (Marked Various) - Fixed Lamps Head & Playfield (??)
 */
-WRITE_HANDLER(ci22_portc_w) { solenoid_w(5,data); }
-
+WRITE_HANDLER(ci22_portc_w) {
+	if (SPINBlocals.nonmi)
+		coreGlobals.tmpLampMatrix[3] = data;
+	else
+		solenoid_w(5,data);
+}
 /*
 CI-21 8255 PPI
 --------------
@@ -586,8 +617,12 @@ CI-21 8255 PPI
   (out) P0-P5 : J5 - Pins 1 - 6 (Marked Various) - Solenoids 19-24?
   (out) P6-P7 : J6 - Pins 18-19 (Marked Various) - Solenoids 17-18?
 */
-WRITE_HANDLER(ci21_portb_w) { solenoid_w(2,data); }
-
+WRITE_HANDLER(ci21_portb_w) {
+	if (SPINBlocals.nonmi)
+		coreGlobals.tmpLampMatrix[0] = data;
+	else
+		solenoid_w(2,data);
+}
 /*
 CI-21 8255 PPI
 --------------
@@ -805,6 +840,12 @@ static MACHINE_INIT(spinb) {
 
   /* Init the dmd & sound board */
   sndbrd_0_init(core_gameData->hw.soundBoard,   2, memory_region(SPINB_MEMREG_SND1),NULL,NULL);
+  SPINBlocals.nonmi=1;
+}
+
+static MACHINE_INIT(spinbnmi) {
+  machine_init_spinb();
+  SPINBlocals.nonmi=0;
 }
 
 static MACHINE_RESET(spinb) {
@@ -1051,6 +1092,7 @@ static MEMORY_WRITE_START(spinb_writemem)
 {0x6800,0x6803,ppi8255_2_w},
 {0x6c00,0x6c03,ppi8255_3_w},
 {0x6c20,0x6c20,soundbd_w},
+{0x6c40,0x6c45,lamp_ex_w},
 {0x6c60,0x6c60,dmdbd_w},
 MEMORY_END
 
@@ -1185,6 +1227,7 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(spinbs1n)
   MDRV_IMPORT_FROM(spinb)
   MDRV_CPU_MODIFY("mcpu")
+  MDRV_CORE_INIT_RESET_STOP(spinbnmi,spinb,spinb)
   MDRV_CPU_PERIODIC_INT(spinb_z80nmi, SPINB_NMIFREQ)
   MDRV_IMPORT_FROM(spinbdmd)
   MDRV_IMPORT_FROM(spinbs6585)
