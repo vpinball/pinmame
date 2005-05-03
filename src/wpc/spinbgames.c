@@ -12,7 +12,7 @@ static struct core_dispLayout spinb_dispDMD[] = {
 
 #define INITGAME(name, disptype, flippers, balls, sb, db) \
 	SPINB_INPUT_PORTS_START(name, balls) SPINB_INPUT_PORTS_END \
-	static core_tGameData name##GameData = {GEN_SPINB,disptype,{flippers,0,3,0,sb,db}}; \
+	static core_tGameData name##GameData = {GEN_SPINB,disptype,{flippers,0,4,0,sb,db}}; \
 	static void init_##name(void) { \
 		core_gameData = &name##GameData; \
 	}
@@ -22,7 +22,7 @@ static struct core_dispLayout spinb_dispDMD[] = {
 /*-------------------------------------------------------------------
 / Bushido (1993) - ( Last game by Inder - before becomming Spinball - but same hardware)
 /-------------------------------------------------------------------*/
-INITGAME(bushido, spinb_dispDMD, FLIP_SWNO(47,57), 3, SNDBRD_SPINB, 0)
+INITGAME(bushido, spinb_dispDMD, FLIP_SWNO(0,45), 3, SNDBRD_SPINB, 0)
 SPINB_ROMSTART(bushido,	"0-z80.bin", CRC(3ea1eb1d) SHA1(cceb6c68e481f36a5646ff4f38d3dfc4275b0c79),
 						"1-z80.bin", CRC(648da72b) SHA1(1005a13b4746e302d979c8b1da300e943cdcab3d))
 SPINB_DMDROM1(			"g-disply.bin", CRC(9a1df82f) SHA1(4ad6a12ae36ec898b8ac5243da6dec3abcd9dc33))
@@ -52,7 +52,7 @@ CORE_CLONEDEFNV(bushidoa,bushido,"Bushido (alternate set)",1993,"Inder/Spinball 
 /*-------------------------------------------------------------------
 / Mach 2 (1995)
 /-------------------------------------------------------------------*/
-INITGAME(mach2, spinb_dispDMD, FLIP_SWNO(47,57), 4/*?*/, SNDBRD_SPINB, 0)
+INITGAME(mach2, spinb_dispDMD, FLIP_SWNO(31,32), 4/*?*/, SNDBRD_SPINB, 0)
 SPINB_ROMSTART(mach2,	"m2cpu0.19", CRC(274c8040) SHA1(6b039b79b7e08f2bf2045bc4f1cbba790c999fed),
 						"m2cpu1.19", CRC(c445df0b) SHA1(1f346c1df8df0a3c4e8cb1186280d2f34959b3f8))
 SPINB_DMDROM1(			"m2dmdf.01", CRC(c45ccc74) SHA1(8362e799a76536a16dd2d5dde500ad3db273180f))
