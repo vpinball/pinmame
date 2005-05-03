@@ -506,12 +506,8 @@ WRITE_HANDLER(ci20_portb_w) {
 	if (data) SPINBlocals.swCol = 8 + core_BitColToNum(data & 0x0f);
 }
 
-WRITE_HANDLER(ci20_portc_w) {
-	if (SPINBlocals.nonmi)
-		coreGlobals.tmpLampMatrix[0] = data;
-	else
-		LOG(("UNDOCUMENTED: ci20_portc_w = %x\n",data));
-}
+WRITE_HANDLER(ci20_portc_w) { LOG(("UNDOCUMENTED: ci20_portc_w = %x\n",data)); }
+
 /*
 CI-23 8255 PPI
 --------------
@@ -845,6 +841,8 @@ static MACHINE_INIT(spinb) {
 
 static MACHINE_INIT(spinbnmi) {
   machine_init_spinb();
+  SPINBlocals.irqfreq = SPINB_INTFREQ * 2;
+  timer_adjust(SPINBlocals.irqtimer, 1.0/(double)SPINBlocals.irqfreq, 0, 1.0/(double)SPINBlocals.irqfreq);
   SPINBlocals.nonmi=0;
 }
 
