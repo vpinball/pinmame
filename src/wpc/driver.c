@@ -927,6 +927,7 @@ DRIVER(gs,l4)           //S11-985:  04/90 B Game Show (L-4)
 DRIVER(rollr,l2)        //S11-576:  06/90 W Rollergames (L-2)
 DRIVER(rollr,l3)        //S11-576:  06/90 W Rollergames (L-3) Europe
 DRIVER(rollr,g3)        //S11-576:  06/90 W Rollergames (L-3) Germany
+DRIVER(rollr,ex)        //S11-576:  01/91 W Rollergames (EXPERIMENTAL)
 DRIVER(pool,l7)         //S11-1848: 06/90 B Pool Sharks (Shark?)
 DRIVER(diner,l4)        //S11-571:  09/90 W Diner (L-4)
 DRIVER(diner,l3)        //S11-571:  09/90 W Diner (L-3)
