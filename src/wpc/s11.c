@@ -184,12 +184,14 @@ static WRITE_HANDLER(pia2a_w) {
 static WRITE_HANDLER(pia2b_w) {
   /* Data East writes auxiliary solenoids here for DMD games
      CN3 Printer Data Lines (Used by various games)
-       data = 0x01, CN3-Pin 9 (GNR Magnet 3)
-       data = 0x02, CN3-Pin 8 (GNR Magnet 2)
-       data = 0x04, CN3-Pin 7 (GNR Magnet 1)
+       data = 0x01, CN3-Pin 9 (GNR Magnet 3, inverted for Star Trek 25th chase lights)
+       data = 0x02, CN3-Pin 8 (GNR Magnet 2, -"-)
+       data = 0x04, CN3-Pin 7 (GNR Magnet 1, -"-)
        ....
        data = 0x80, CN3-Pin 1 (Blinder on Tommy)*/
-  if (core_gameData->gen & (GEN_DEDMD16|GEN_DEDMD32|GEN_DEDMD64)) {
+  if (core_gameData->gen & GEN_DEDMD16) {
+    if (core_gameData->hw.gameSpecific1 & S11_PRINTERLINE) locals.extSol |= locals.extSolPulse = (data ^ 0xff);
+  } else if (core_gameData->gen & (GEN_DEDMD32|GEN_DEDMD64)) {
     if (core_gameData->hw.gameSpecific1 & S11_PRINTERLINE) locals.extSol |= locals.extSolPulse = data;
   }
   else {
