@@ -365,7 +365,25 @@ CORE_CLONEDEF(btmn,g13,103,"Batman (1.03, Germany)",1991,"Data East",de_mDEDMD16
 /*-------------------------------------------------------------
 / Star Trek - CPU Rev 3 /DMD Type 1 128K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
-INITGAMES11(trek,GEN_DEDMD16, de_128x16DMD, FLIP1516, SNDBRD_DE2S, SNDBRD_DEDMD16, 0)
+#define sChase1   CORE_CUSTSOLNO(1) /* 33 */
+#define sChase2   CORE_CUSTSOLNO(2) /* 34 */
+#define sChase3   CORE_CUSTSOLNO(3) /* 35 */
+
+/*-- return status of custom solenoids --*/
+static int trek_getSol(int solNo) {
+  if ((solNo == sChase1) || (solNo == sChase2) || (solNo == sChase3)) {
+    return core_getSol(CORE_FIRSTEXTSOL + solNo - CORE_FIRSTCUSTSOL);
+  }
+  return 0;
+}
+
+static core_tGameData trekGameData = {
+  GEN_DEDMD16, de_128x16DMD,
+  { FLIP1516, 0,0,3, //We need 3 custom solenoids!
+    SNDBRD_DE2S,SNDBRD_DEDMD16,S11_PRINTERLINE,0, trek_getSol
+  }, NULL, {{0}}, {10}
+};
+static void init_trek(void) { core_gameData = &trekGameData; }
 DE_ROMSTARTx0(trek_201,"trekcpuu.201",CRC(ea0681fe) SHA1(282c8181e60da6358ef320358575a538aa4abe8c))
 DE_DMD16ROM2(      "trekdspa.109",CRC(a7e7d44d) SHA1(d26126310b8b316ca161d4202645de8fb6359822))
 DE2S_SOUNDROM022(  "trek.u7"  ,CRC(f137abbb) SHA1(11731170ed4f04dd8af05d8f79ad727b0e0104d7),
