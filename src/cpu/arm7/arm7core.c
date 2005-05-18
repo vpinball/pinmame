@@ -1037,6 +1037,8 @@ static void HandleSwap(data32_t insn)
 	// Todo: I have no valid source to verify this function works.. so it needs to be tested
 	data32_t rn,rnv,rm,rmv,rd;
 
+	LOG(("%08x: HandleSwap called!\n",R15));
+
 	rn = GET_REGISTER((insn>>16)&0xf);
 	rm = GET_REGISTER(insn&0xf);
 	rd = GET_REGISTER((insn>>12)&0xf);
@@ -1145,7 +1147,7 @@ static void HandleALU( data32_t insn )
 		}
 		else
 		{
-			op2 = insn & INSN_OP2;		//SJE: Shouldn't this be INSN_OP2_IMM?
+			op2 = insn & INSN_OP2_IMM;
 			sc = GET_CPSR & C_MASK;
 		}
 	}
@@ -1163,10 +1165,12 @@ static void HandleALU( data32_t insn )
 	{
 		if ((rn = (insn & INSN_RN) >> INSN_RN_SHIFT) == eR15)
 		{
+			int addpc = (insn&INSN_I?8:insn&0x10u?12:8);
 			#if ARM7_DEBUG_CORE
-				LOG(("%08x:  Pipelined R15 (Shift %d)\n",R15,(insn&INSN_I?8:insn&0x10u?12:12)));
+				LOG(("%08x:  Pipelined R15 (Shift %d)\n",R15,addpc));
 			#endif
-			rn=R15+8;
+			//rn=R15+8;
+			rn=R15+addpc;
 		}
 		else
 		{
@@ -1331,7 +1335,7 @@ static void HandleSMulLong( data32_t insn)
 	rlo = (insn>>12)&0xf;
 
 	#if ARM7_DEBUG_CORE
-		if( ((insn&0xf) == 15) || (((insn>>8)&0xf) == 15) || (((insn>>16)&0xf) == 15) || (((insn>>12)&0xf) == 15)
+		if( ((insn&0xf) == 15) || (((insn>>8)&0xf) == 15) || (((insn>>16)&0xf) == 15) || (((insn>>12)&0xf) == 15) )
 			LOG(("%08x: Illegal use of PC as a register in SMULL opcode\n",R15));
 	#endif
 
@@ -1363,13 +1367,13 @@ static void HandleUMulLong( data32_t insn)
 	data32_t rhi,rlo;
 	UINT64 res=0;
 
-	rm  = (INT32)GET_REGISTER(insn&0xf);
-	rs  = (INT32)GET_REGISTER(((insn>>8)&0xf));
+	rm  = (UINT32)GET_REGISTER(insn&0xf);
+	rs  = (UINT32)GET_REGISTER(((insn>>8)&0xf));
 	rhi = (insn>>16)&0xf;
 	rlo = (insn>>12)&0xf;
 
 	#if ARM7_DEBUG_CORE
-		if( ((insn&0xf) == 15) || (((insn>>8)&0xf) == 15) || (((insn>>16)&0xf) == 15) || (((insn>>12)&0xf) == 15)
+		if( ((insn&0xf) == 15) || (((insn>>8)&0xf) == 15) || (((insn>>16)&0xf) == 15) || (((insn>>12)&0xf) == 15) )
 			LOG(("%08x: Illegal use of PC as a register in SMULL opcode\n",R15));
 	#endif
 
@@ -1444,7 +1448,7 @@ static void HandleMemBlock( data32_t insn)
 
 			//R15 included? (NOTE: CPSR restore must occur LAST otherwise wrong registers restored!)
 			if (insn & 0x8000) {
-				R15-=4;		//SJE: I forget why i did this?
+				R15-=4;		//SJE: Remove 4, since we're adding +4 after this code executes
 				//S - Flag Set? Signals transfer of current mode SPSR->CPSR
 				if(insn & INSN_BDT_S) {
 					SET_CPSR(GET_REGISTER(SPSR));
@@ -1485,7 +1489,7 @@ static void HandleMemBlock( data32_t insn)
 			
 			//R15 included? (NOTE: CPSR restore must occur LAST otherwise wrong registers restored!)
 			if (insn & 0x8000) {
-				R15-=4;		//SJE: I forget why i did this?
+				R15-=4;		//SJE: Remove 4, since we're adding +4 after this code executes
 				//S - Flag Set? Signals transfer of current mode SPSR->CPSR
 				if(insn & INSN_BDT_S) {
 					SET_CPSR(GET_REGISTER(SPSR));
@@ -1567,7 +1571,7 @@ static void HandleMemBlock( data32_t insn)
 			}
 		}
 		if( insn & (1<<eR15) )
-			R15 -= 12;
+			R15 -= 12; //SJE: We added 12 for storing, but put it back as it was for executing
 
 		//STM takes (n+1)S+2N+1I cycles (n = # of register transfers)
 		ARM7_ICOUNT -= ((result+1)+2+1);
