@@ -466,6 +466,9 @@ DRIVERNV(empsback)      //Star Wars - The Empire Strike Back
 DRIVERNV(brvteam )      //Brave Team (1985)
 DRIVERNV(canasta )      //Canasta '86' (1986)
 DRIVERNV(pinclown)      //Pinball Clown (1988)
+DRIVERNV(corsario)		//Corsario (1989)
+DRIVERNV(ind250cc)		//250 CC (1992)
+
 
 // ----------------
 // JUEGOS POPULARES

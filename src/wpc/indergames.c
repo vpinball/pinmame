@@ -57,3 +57,30 @@ INDER_SNDROM4(			"clown_b.bin", CRC(acb16108) SHA1(b9003bac44b8bac406950ffb6696e
 						"clown_f.bin", CRC(5f01b531) SHA1(116b1670ef4d5c054bb09dc55aa7d5d3ca047079))
 INDER_ROMEND
 CORE_GAMEDEFNV(pinclown,"Clown (Inder)",1988,"Inder (Spain)",gl_mINDERS,GAME_IMPERFECT_SOUND)
+
+/*-------------------------------------------------------------------
+/ Corsario (1989)
+/-------------------------------------------------------------------*/
+INITGAME(corsario, inderDisp7, 1, 0,0,0,0,0)
+INDER_ROMSTART1(corsario,"0-corsar.bin", CRC(800f6895) SHA1(a222e7ea959629202686815646fc917ffc5a646c))
+INDER_SNDROM4(			"a-corsar.bin", CRC(e14b7918) SHA1(5a5fc308b0b70fe041b81071ba4820782b6ff988),
+						"b-corsar.bin", CRC(7f155828) SHA1(e459c81b2c2e47d4276344d8d6a08c2c6242f941),
+						"c-corsar.bin", CRC(047fd722) SHA1(2385507459f85c68141adc7084cb51dfa02462f6),
+						"d-corsar.bin", CRC(10d8b448) SHA1(ed1918e6c55eba07dde31b9755c9403e073cad98),
+						"e-corsar.bin", CRC(918ee349) SHA1(17cded8b5626c91e400d26332a160704f2fd2b55))
+INDER_ROMEND
+CORE_GAMEDEFNV(corsario,"Corsario",1989,"Inder (Spain)",gl_mINDERS,GAME_IMPERFECT_SOUND)
+
+/*-------------------------------------------------------------------
+/ 250 CC (1992)
+/-------------------------------------------------------------------*/
+INITGAME(ind250cc, inderDisp7, 1, 0,0,0,0,0)
+INDER_ROMSTART1(ind250cc,"0-250cc.bin", CRC(753d82ec) SHA1(61950336ba571f9f75f2fc31ccb7beaf4e05dddc))
+INDER_SNDROM4(			"a-250cc.bin", CRC(b64bdafb) SHA1(eab6d54d34b44187d454c1999e4bcf455183d5a0),
+						"b-250cc.bin", CRC(884c31c8) SHA1(23a838f1f0cb4905fa8552579b5452134f0fc9cc),
+						"c-250cc.bin", CRC(5a1dfa1d) SHA1(4957431d87be0bb6d27910b718f7b7edcd405fff),
+						"d-250cc.bin", CRC(a0940387) SHA1(0e06483e3e823bf4673d8e0bd120b0a6b802035d),
+						"e-250cc.bin", CRC(538b3274) SHA1(eb76c41a60199bb94aec4666222e405bbcc33494))
+INDER_ROMEND
+CORE_GAMEDEFNV(ind250cc,"250 CC",1992,"Inder (Spain)",gl_mINDERS,GAME_IMPERFECT_SOUND)
+
