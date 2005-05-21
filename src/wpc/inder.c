@@ -151,7 +151,7 @@ static READ_HANDLER (ay8910_0_r)        { return AY8910Read(0); }
 static UINT8 *INDER_CMOS;
 
 static NVRAM_HANDLER(INDER) {
-  core_nvram(file, read_or_write, INDER_CMOS, 0x100, 0x00);
+  core_nvram(file, read_or_write, INDER_CMOS, 0x100, 0xff);
 }
 // 5101 RAM only uses 4 bits, but they used 2 chips for 8 bits?
 static WRITE_HANDLER(INDER_CMOS_w) { INDER_CMOS[offset] = data; }
@@ -401,22 +401,23 @@ static WRITE_HANDLER(snd_porta_w) {
 	sndlocals.ALO = data;
 }
 static WRITE_HANDLER(snd_portb_w) {
-	sndlocals.AHI = data;
+	sndlocals.AHI = (data & 0x7f) | 0x80;
 }
 static WRITE_HANDLER(snd_portc_w) {
+//printf("snd:%02x:%02x%02x\n", data, sndlocals.AHI, sndlocals.ALO);
 	//Set Reset Line on the chip
-	MSM5205_reset_w(0, GET_BIT6);
+//	MSM5205_reset_w(0, GET_BIT6);
 
 	//PC0 = 1 on Reset
-	if(GET_BIT6)
-		sndlocals.PC0 = 1;
-	else {
+//	if(GET_BIT6)
+//		sndlocals.PC0 = 1;
+//	else {
 	//Read Data from ROM & Write Data To MSM Chip
 		sndlocals.MSMDATA = (UINT8)*(memory_region(REGION_USER1) +
 			((sndlocals.CS<<16) | (sndlocals.AHI<<8) | sndlocals.ALO));
-	}
+//	}
 	//Store reset value
-	sndlocals.Reset = GET_BIT6;
+//	sndlocals.Reset = GET_BIT6;
 }
 
 static READ_HANDLER(sndcmd_r) {
@@ -452,14 +453,14 @@ static MEMORY_READ_START(indersnd_readmem)
 MEMORY_END
 
 static MEMORY_WRITE_START(indersnd_writemem)
-	{ 0x0000, 0x1fff, MWA_NOP },
+//	{ 0x0000, 0x1fff, MWA_NOP },
 	{ 0x2000, 0x23ff, MWA_RAM },
 	{ 0x2900, 0x2900, MWA_RAM },
-	{ 0x32af, 0x32b0, MWA_NOP },
+//	{ 0x32af, 0x32b0, MWA_NOP },
 	{ 0x4000, 0x4003, ppi8255_4_w},
-	{ 0x4004, 0x5fff, MWA_NOP },
+//	{ 0x4004, 0x5fff, MWA_NOP },
 	{ 0x6000, 0x6000, sndctrl_w},
-	{ 0x6001, 0xffff, MWA_NOP },
+//	{ 0x6001, 0xffff, MWA_NOP },
 MEMORY_END
 
 MACHINE_DRIVER_START(INDERS)

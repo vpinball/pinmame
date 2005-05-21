@@ -61,7 +61,7 @@ CORE_GAMEDEFNV(pinclown,"Clown (Inder)",1988,"Inder (Spain)",gl_mINDERS,GAME_IMP
 /*-------------------------------------------------------------------
 / Corsario (1989)
 /-------------------------------------------------------------------*/
-INITGAME(corsario, inderDisp7, 1, 0,0,0,0,0)
+INITGAME(corsario, inderDisp7, 1, 0,0x10,0,0,0)
 INDER_ROMSTART1(corsario,"0-corsar.bin", CRC(800f6895) SHA1(a222e7ea959629202686815646fc917ffc5a646c))
 INDER_SNDROM4(			"a-corsar.bin", CRC(e14b7918) SHA1(5a5fc308b0b70fe041b81071ba4820782b6ff988),
 						"b-corsar.bin", CRC(7f155828) SHA1(e459c81b2c2e47d4276344d8d6a08c2c6242f941),
