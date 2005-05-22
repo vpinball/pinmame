@@ -56,6 +56,7 @@ DRVLIBS += $(PINOBJ)/inder.o
 DRVLIBS += $(PINOBJ)/jp.o
 DRVLIBS += $(PINOBJ)/ltd.o
 DRVLIBS += $(PINOBJ)/peyper.o
+DRVLIBS += $(PINOBJ)/sleic.o
 #
 # Games
 #
@@ -85,6 +86,7 @@ PINGAMES += $(PINOBJ)/indergames.o
 PINGAMES += $(PINOBJ)/jpgames.o
 PINGAMES += $(PINOBJ)/ltdgames.o
 PINGAMES += $(PINOBJ)/peypergames.o
+PINGAMES += $(PINOBJ)/sleicgames.o
 #
 # Simulators
 #
@@ -159,7 +161,10 @@ CPUS += M68306@
 CPUS += S2650@
 CPUS += 8080@
 CPUS += I8035@
+CPUS += I8039@
 CPUS += I86@
+CPUS += I186@
+CPUS += I188@
 CPUS += 4004@
 CPUS += PPS4@
 CPUS += I8051@

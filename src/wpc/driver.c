@@ -77,6 +77,10 @@ DRIVERNV(roadrunr)      //Road Runner (Prototype, 1979)
 // ---------------
 // BALLY GAMES
 // ---------------
+#ifdef MAME_DEBUG
+DRIVERNV(bingo)         //10/80 Continental Bingo
+#endif
+
 //MPU-17
 DRIVERNV(bowarrow)      //BY17-720: 08/76 Bow & Arrow (Prototype)
 DRIVERNV(freedom )      //BY17-720: 08/76 Freedom
@@ -577,6 +581,13 @@ DRIVER  (harl,i13)      //Whitestar: 10/99 Harley Davidson (1.03 Italy)
 DRIVER  (harl,l13)      //Whitestar: 10/99 Harley Davidson (1.03 Spain)
 
 // ----------------
+// SLEIC
+// ----------------
+						// (1993)
+DRIVERNV(sleicpin)		// Pin-Ball (1993)
+						// (1993)
+
+// ----------------
 // SONIC
 // ----------------
 						// Night Fever (1979)
@@ -920,6 +931,7 @@ DRIVER(rvrbt,l3)        //S11-1966: 11/89 W Riverboat Gambler
 DRIVER(mousn,l1)        //S11-1635: 12/89 B Mousin' Around! (L-1)
 DRIVER(mousn,lu)        //S11-1635: 12/89 B Mousin' Around! (Europe)
 DRIVER(mousn,l4)        //S11-1635: 12/89 B Mousin' Around! (L-4)
+DRIVER(mousn,lx)        //S11-1635: 12/89 B Mousin' Around! (L-4)
                         //???:      ??/90 B Mazatron
                         //???:      ??/90 B Player's Choice
                         //???:      ??/90 B Ghost Gallery

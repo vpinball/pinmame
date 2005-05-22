@@ -741,6 +741,14 @@ SOURCE=.\src\cpu\i86\host.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\cpu\i86\i186intf.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i86\i188intf.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\cpu\i86\i86.c
 # End Source File
 # Begin Source File
@@ -762,6 +770,10 @@ SOURCE=.\src\cpu\i86\i86time.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\cpu\i86\instr186.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\cpu\i86\instr86.c
 # PROP Exclude_From_Build 1
 # End Source File
@@ -772,6 +784,10 @@ SOURCE=.\src\cpu\i86\instr86.h
 # Begin Source File
 
 SOURCE=.\src\cpu\i86\modrm.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\i86\table186.h
 # End Source File
 # Begin Source File
 
@@ -4632,6 +4648,18 @@ SOURCE=src\wpc\sim.h
 
 !ENDIF 
 
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\sleic.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\sleic.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\sleicgames.c
 # End Source File
 # Begin Source File
 

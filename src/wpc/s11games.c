@@ -600,9 +600,19 @@ S11CS_SOUNDROM888(      "mous_u4.l2",  CRC(643add1e) SHA1(45dea0f4c6f24d17e6f7dd
                         "mous_u20.l2", CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7))
 S11_ROMEND
 
+S11_ROMSTART48(mousn,lx,"mous_u26.l4", CRC(a540edc1) SHA1(c0b208369ac770f0d4cd7decfce5f8401ded082f),
+                        "mous_u27.l4", CRC(ff108148) SHA1(32b44286d43a39d5677c6582c5b09fc3b9833806))
+S11XS_SOUNDROM88(       "mous_u20.l2", CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7),
+                        "mous_u22.l1", CRC(00ad198c) SHA1(4f15696909e1f3574ad20b28e31da2c155ed129f))
+S11CS_SOUNDROM888(      "mous_u4.lx",  CRC(d311db4a) SHA1(d9d20921eb42c19c5074c976608bfec0d3130204),
+                        "mous_u19.lx", CRC(c7a6f494) SHA1(272f0bd3885bb81da13ee6ed3d66f9424ccf4b0d),
+                        "mous_u20.l2", CRC(59b1b0c5) SHA1(443426be41c1413f22b137145dbc3bcf84d9ccc7))
+S11_ROMEND
+
 CORE_GAMEDEF(mousn,l4,"Mousin' Around (LA-4)", 1989, "Bally", s11a_one,0)
 CORE_CLONEDEF(mousn,l1,l4,"Mousin' Around (LA-1)", 1989, "Bally", s11a_one,0)
 CORE_CLONEDEF(mousn,lu,l4,"Mousin' Around (LU-1)", 1989, "Bally", s11a_one,0)
+CORE_CLONEDEF(mousn,lx,l4,"Mousin' Around (LX-1)", 1989, "Bally", s11a_one,0)
 
 /*-----------------------
 / Whirlwind 4/90

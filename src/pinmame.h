@@ -84,7 +84,10 @@
 #define HAS_S2650    1
 #define HAS_8080     1
 #define HAS_I8035    1
+#define HAS_I8039    1
 #define HAS_I86      1
+#define HAS_I186     1
+#define HAS_I188     1
 #define HAS_4004     1
 #define HAS_PPS4     1
 #define HAS_SCAMP    1
