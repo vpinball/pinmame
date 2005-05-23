@@ -8,9 +8,7 @@
 N = No Lead, L = Have a Lead on Rom
 -----------------------------------------------
 (N)Bell Ringer 1990
-(N)Nudge It 1990
 (N)Hoops 1991
-(L)Strikes 'N Spares 1995 (sound Y and D roms)
 (?)Brooks & Dunn 1996 (display, sound)
 */
 
