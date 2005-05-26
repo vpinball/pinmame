@@ -170,7 +170,7 @@ static READ_HANDLER(pia0b_r) {
   if (locals.a0 & 0x80) return core_getDip(2); // DIP#3 17-24
   if ((locals.hw & BY35HW_DIP4) && locals.cb20) return core_getDip(3); // DIP#4 25-32
   {
-    UINT8 sw = core_getSwCol((locals.a0 & 0x1f) | ((locals.b1 & 0x80)>>2));
+    UINT8 sw = core_getSwCol((locals.a0 & 0x1f) | ((locals.b1 & 0x10)<<1));
     return (locals.hw & BY35HW_REVSW) ? core_revbyte(sw) : sw;
   }
 }
