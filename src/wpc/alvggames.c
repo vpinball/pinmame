@@ -97,7 +97,13 @@ ALVGS_SOUNDROM11(		"eps061.r02", CRC(cfde1b9a) SHA1(cbf9e67df6a6762843272493c2ca
 ALVG_ROMEND
 CORE_GAMEDEFNV(punchy,"Punchy The Clown",1993,"Alvin G",mALVGS1,0)
 
-
+/*-------------------------------------------------------------------
+/ Dinosaur Eggs
+/-------------------------------------------------------------------*/
+INITGAME(dinoeggs, alvg_alpha, FLIP78, 3/*?*/, SNDBRD_NONE, 0, 0)
+ALVGROMSTART(dinoeggs,	"dinoeggs.512", CRC(4712f97f) SHA1(593351dcfd475e685c1e5eb2c1006769d3325c8b))
+ALVG_ROMEND
+CORE_GAMEDEFNV(dinoeggs,"Dinosaur Eggs",1993,"Alvin G",mALVG,GAME_NO_SOUND)
 
 
 //Use only for testing the 8031 core emulation
