@@ -21,6 +21,12 @@ static const core_tLCDLayout alvg_alpha[] = {
   {0}
 };
 
+/* Alpha Numeric Display (1 X 20 Alpha-Numeric) */
+static const core_tLCDLayout alvg_alpha1[] = {
+  {0,0, 0,20,CORE_SEG16},
+  {0}
+};
+
 #define INITGAME(name, disptype, flippers, balls, sb, db, lamps) \
 	ALVG_INPUT_PORTS_START(name, balls) ALVG_INPUT_PORTS_END \
 	static core_tGameData name##GameData = {GEN_ALVG,disptype,{flippers,4,4,0,sb,db,lamps}}; \
@@ -100,7 +106,7 @@ CORE_GAMEDEFNV(punchy,"Punchy The Clown",1993,"Alvin G",mALVGS1,0)
 /*-------------------------------------------------------------------
 / Dinosaur Eggs
 /-------------------------------------------------------------------*/
-INITGAME(dinoeggs, alvg_alpha, FLIP78, 3/*?*/, SNDBRD_NONE, 0, 0)
+INITGAME(dinoeggs, alvg_alpha1, FLIP78, 3/*?*/, SNDBRD_NONE, 0, 0)
 ALVGROMSTART(dinoeggs,	"dinoeggs.512", CRC(4712f97f) SHA1(593351dcfd475e685c1e5eb2c1006769d3325c8b))
 ALVG_ROMEND
 CORE_GAMEDEFNV(dinoeggs,"Dinosaur Eggs",1993,"Alvin G",mALVG,GAME_NO_SOUND)
