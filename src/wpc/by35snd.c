@@ -258,15 +258,17 @@ static void by32_init(struct sndbrdData *brdData) {
 #define SP_PIA0  2
 
 static void sp_init(struct sndbrdData *brdData);
+static void sp_diag(int button);
 static WRITE_HANDLER(sp51_data_w);
 static WRITE_HANDLER(sp51_ctrl_w);
 static WRITE_HANDLER(sp51_manCmd_w);
 static READ_HANDLER(sp_8910a_r);
+
 /*-------------------
 / exported interface
 /--------------------*/
 const struct sndbrdIntf by51Intf = {
-  "BY51", sp_init, NULL, NULL, sp51_manCmd_w, sp51_data_w, NULL, sp51_ctrl_w, NULL,
+  "BY51", sp_init, NULL, sp_diag, sp51_manCmd_w, sp51_data_w, NULL, sp51_ctrl_w, NULL,
 };
 
 static struct AY8910interface   sp_ay8910Int  = { 1, 3580000/4, {20}, {sp_8910a_r} };
@@ -327,6 +329,9 @@ static void sp_init(struct sndbrdData *brdData) {
   splocals.brdData = *brdData;
   pia_config(SP_PIA0, PIA_STANDARD_ORDERING, &sp_pia);
   splocals.cmdin = splocals.cmdout = 2;
+}
+static void sp_diag(int button) {
+  cpu_set_nmi_line(splocals.brdData.cpuNo, button ? ASSERT_LINE : CLEAR_LINE);
 }
 static READ_HANDLER(sp_8910r) {
   if ((splocals.pia0b & 0x03) == 0x01) return AY8910Read(0);
@@ -533,13 +538,14 @@ static void snt_5220Irq(int state) { pia_set_input_cb1(SNT_PIA1, !state); }
 /    Cheap Squalk  -45
 /-----------------------------------------*/
 static void cs_init(struct sndbrdData *brdData);
+static void cs_diag(int button);
 static WRITE_HANDLER(cs_cmd_w);
 static WRITE_HANDLER(cs_ctrl_w);
 static READ_HANDLER(cs_port1_r);
 static WRITE_HANDLER(cs_port2_w);
 
 const struct sndbrdIntf by45Intf = {
-  "BY45", cs_init, NULL, NULL, NULL, cs_cmd_w, NULL, cs_ctrl_w, NULL, 0
+  "BY45", cs_init, NULL, cs_diag, NULL, cs_cmd_w, NULL, cs_ctrl_w, NULL, 0
 };
 static struct DACinterface cs_dacInt = { 1, { 20 }};
 static MEMORY_READ_START(cs_readmem)
@@ -578,6 +584,10 @@ static struct {
 
 static void cs_init(struct sndbrdData *brdData) {
   cslocals.brdData = *brdData;
+}
+
+static void cs_diag(int button) {
+  cpu_set_nmi_line(cslocals.brdData.cpuNo, button ? ASSERT_LINE : CLEAR_LINE);
 }
 
 static WRITE_HANDLER(cs_cmd_w) { cslocals.cmd = data; }
