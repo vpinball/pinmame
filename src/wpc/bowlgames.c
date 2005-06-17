@@ -114,10 +114,9 @@ INITGAME(bstrk, GEN_S4, dispS5)
 S4_ROMSTART(bstrk,l1,"gamerom.716",CRC(323dbcde) SHA1(a75cbb5de97cb9afc1d36e9b6ff593bb482fcf8b),
                      "b_ic20.716", CRC(c6f8e3b1) SHA1(cb78d42e1265162132a1ab2320148b6857106b0e),
                      "b_ic17.716", CRC(cfc2518a) SHA1(5e99e40dcb7e178137db8d7d7d6da82ba87130fa))
-S67S_SOUNDROMS8("sound.716",NO_DUMP)
 S4_ROMEND
 #define input_ports_bstrk input_ports_bowl
-CORE_GAMEDEF(bstrk,l1,"Big Strike (Bowler) (L-1)",1983,"Williams",s4_mS4S,0)
+CORE_GAMEDEF(bstrk,l1,"Big Strike (Bowler) (L-1)",1983,"Williams",s4_mS4,0)
 
 /*----------------------------
 / Triple Strike
@@ -126,10 +125,9 @@ INITGAME(tstrk, GEN_S4, dispS5)
 S4_ROMSTART(tstrk,l1,"gamerom.716",CRC(b034c059) SHA1(76b3926b87b3c137fcaf33021a586827e3c030af),
                      "ic20.716",   CRC(f163fc88) SHA1(988b60626f3d4dc8f4a1dbd0c99282418bc53aae),
                      "b_ic17.716", CRC(cfc2518a) SHA1(5e99e40dcb7e178137db8d7d7d6da82ba87130fa))
-S67S_SOUNDROMS8("sound.716",NO_DUMP)
 S4_ROMEND
 #define input_ports_tstrk input_ports_bowl
-CORE_GAMEDEF(tstrk,l1,"Triple Strike (Bowler) (L-1)",1983,"Williams",s4_mS4S,0)
+CORE_GAMEDEF(tstrk,l1,"Triple Strike (Bowler) (L-1)",1983,"Williams",s4_mS4,0)
 
 /*--------------------
 / Pennant Fever (#526)
