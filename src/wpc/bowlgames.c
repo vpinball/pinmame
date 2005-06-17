@@ -163,13 +163,13 @@ S9_ROMSTART12(szone,l5,"sz_u19r5.732", CRC(c79c46cb) SHA1(422ba74ae67bebbe02f85a
 S9S_SOUNDROM4("szs_u49.128", CRC(144c3c07) SHA1(57be6f336f200079cd698b13f8fa4755cf694274))
 S9_ROMEND
 S11_INPUT_PORTS_START(szone, 1) S11_INPUT_PORTS_END
-CORE_GAMEDEF(szone, l5, "Strike Zone (Shuffle) (L-5)", 198?, "Williams", s9_mS9S,0)
+CORE_GAMEDEF(szone, l5, "Strike Zone (Shuffle) (L-5)", 1984, "Williams", s9_mS9S,0)
 
 S9_ROMSTART12(szone,l2,"sz_u19r2.732", CRC(c0e4238b) SHA1(eae60ccd5b5001671cd6d2685fd588494d052d1e),
                        "sz_u20r2.764", CRC(91c08137) SHA1(86da08f346f85810fceceaa7b9824ab76a68da54))
 S9S_SOUNDROM4("szs_u49.128", CRC(144c3c07) SHA1(57be6f336f200079cd698b13f8fa4755cf694274))
 S9_ROMEND
-CORE_CLONEDEF(szone,l2,l5,"Strike Zone (Shuffle) (L-2)", 198?, "Williams", s9_mS9S,0)
+CORE_CLONEDEF(szone,l2,l5,"Strike Zone (Shuffle) (L-2)", 1984, "Williams", s9_mS9S,0)
 
 /*--------------------
 / Alley Cat (#918)
