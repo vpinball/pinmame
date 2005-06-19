@@ -116,7 +116,7 @@ S4_ROMSTART(bstrk,l1,"gamerom.716",CRC(323dbcde) SHA1(a75cbb5de97cb9afc1d36e9b6f
                      "b_ic17.716", CRC(cfc2518a) SHA1(5e99e40dcb7e178137db8d7d7d6da82ba87130fa))
 S4_ROMEND
 #define input_ports_bstrk input_ports_bowl
-CORE_GAMEDEF(bstrk,l1,"Big Strike (Bowler) (L-1)",1983,"Williams",s4_mS4,0)
+CORE_GAMEDEF(bstrk,l1,"Big Strike (Bowler) (L-1)",1983,"Williams",s4_mS4,GAME_USES_CHIMES)
 
 /*----------------------------
 / Triple Strike
@@ -127,7 +127,7 @@ S4_ROMSTART(tstrk,l1,"gamerom.716",CRC(b034c059) SHA1(76b3926b87b3c137fcaf33021a
                      "b_ic17.716", CRC(cfc2518a) SHA1(5e99e40dcb7e178137db8d7d7d6da82ba87130fa))
 S4_ROMEND
 #define input_ports_tstrk input_ports_bowl
-CORE_GAMEDEF(tstrk,l1,"Triple Strike (Bowler) (L-1)",1983,"Williams",s4_mS4,0)
+CORE_GAMEDEF(tstrk,l1,"Triple Strike (Bowler) (L-1)",1983,"Williams",s4_mS4,GAME_USES_CHIMES)
 
 /*--------------------
 / Pennant Fever (#526)
