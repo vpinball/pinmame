@@ -131,6 +131,7 @@ DRIVERNV(flashgdn)      //BY35-834: 05/80 Flash Gordon
 DRIVERNV(flashgdv)      //BY35-834: 05/80 Flash Gordon (Vocalizer sound)
 DRIVERNV(flashgdf)      //BY35-834: 05/80 Flash Gordon (French)
 DRIVERNV(eballdlx)      //BY35-838: 09/80 Eight Ball Deluxe
+DRIVERNV(eballdlb)      //BY35      02/05 Eight Ball Deluxe custom rom rev.24
 DRIVERNV(fball_ii)      //BY35-839: 09/80 Fireball II
 DRIVERNV(embryon )      //BY35-841: 09/80 Embryon
 DRIVERNV(embryonb)      //BY35:     10/02 Embryon (7-digit conversion rev.1)

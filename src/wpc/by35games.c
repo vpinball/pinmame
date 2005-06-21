@@ -560,6 +560,15 @@ BY61_SOUNDROMx080(        "838-08_3.532",CRC(c39478d7) SHA1(8148aca7c4113921ab88
 BY35_ROMEND
 #define input_ports_eballdlx input_ports_by35
 CORE_GAMEDEFNV(eballdlx,"Eight Ball Deluxe",1981,"Bally",by35_mBY35_61S,0)
+#define init_eballdlb init_eballdlx
+BY35_ROMSTARTx00(eballdlb,"8bd24.u2",CRC(9eca22ae) SHA1(d7dfd7bd355c468b7845d8c6ae2001b5735d0730),
+                          "8bd24.u6",CRC(bedb8c64) SHA1(a89df17ddbb744987ab02af3ab6c6ff876a8f34b))
+BY61_SOUNDROMx080(        "838-08_3.532",CRC(c39478d7) SHA1(8148aca7c4113921ab882da32d6d88e66abb22cc),
+                          "838-09_4.716",CRC(518ea89e) SHA1(a387274ef530bb57f31819733b35615a39260126),
+                          "838-10_5.532",CRC(9c63925d) SHA1(abd1fa6308d3569e16ee10bfabce269a124d8f26))
+BY35_ROMEND
+#define input_ports_eballdlb input_ports_by35
+CORE_CLONEDEFNV(eballdlb,eballdlx,"Eight Ball Deluxe (modified rules)",2005,"Bally / Oliver",by35_mBY35_61S,0)
 /*--------------------------------
 / Fireball II
 /-------------------------------*/
