@@ -164,12 +164,12 @@ void cdp1802_reset(void *param)
 	if (param) {
 		cdp1802.config=(CDP1802_CONFIG *)param;
 	}
-	cdp1802.p=cdp1802.q=0;
+	cdp1802.p=0;
 	cdp1802.q=0;
 	cdp1802.ie=1;
 	cdp1802.df=0;
 	cdp1802.reg[0].w.l=0;
-	change_pc16(PC);
+//	change_pc16(PC);
 
 	cdp1802.idle=0;
 	cdp1802.dma_cycles=0;
@@ -196,30 +196,12 @@ void cdp1802_set_context (void *src)
 	}
 }
 
-unsigned cdp1802_get_pc (void)
-{
-	return PC;
-}
-
-void cdp1802_set_pc (unsigned val)
-{
-	PC = val;
-	change_pc16(PC);
-}
-
-unsigned cdp1802_get_sp (void)
-{
-	return 0;
-}
-
-void cdp1802_set_sp (unsigned val)
-{
-}
-
 unsigned cdp1802_get_reg (int regnum)
 {
 	switch( regnum )
 	{
+	case REG_PC: return PC;
+	case REG_SP: return 0;
 	case CDP1802_P: return cdp1802.p;
 	case CDP1802_X: return cdp1802.x;
 	case CDP1802_T: return cdp1802.t;
@@ -246,15 +228,6 @@ unsigned cdp1802_get_reg (int regnum)
 	case CDP1802_Q: return cdp1802.q;
 	case REG_PREVIOUSPC: return cdp1802.oldpc;
 	case CDP1802_IRQ_STATE: return cdp1802.irq_state;
-#if 0
-		default:
-			if( regnum <= REG_SP_CONTENTS )
-			{
-				unsigned offset = S + 2 * (REG_SP_CONTENTS - regnum);
-				if( offset < 0x1ff )
-					return RDMEM( offset ) | ( RDMEM( offset + 1 ) << 8 );
-			}
-#endif
 	}
 	return 0;
 }
@@ -263,6 +236,8 @@ void cdp1802_set_reg (int regnum, unsigned val)
 {
 	switch( regnum )
 	{
+	case REG_PC: PC=val;change_pc16(PC);break;
+	case REG_SP: break;
 	case CDP1802_P: cdp1802.p=val;break;
 	case CDP1802_X: cdp1802.x=val;break;
 	case CDP1802_T: cdp1802.t=val;break;
@@ -289,18 +264,6 @@ void cdp1802_set_reg (int regnum, unsigned val)
 	case CDP1802_Q: cdp1802.q=val;break;
 	case REG_PREVIOUSPC: cdp1802.oldpc=val;break;
 	case CDP1802_IRQ_STATE: cdp1802.irq_state=val;break;
-#if 0
-	default:
-		if( regnum <= REG_SP_CONTENTS )
-		{
-			unsigned offset = S + 2 * (REG_SP_CONTENTS - regnum);
-			if( offset < 0x1ff )
-			{
-				WRMEM( offset, val & 0xfff );
-				WRMEM( offset + 1, (val >> 8) & 0xff );
-			}
-		}
-#endif
 	}
 }
 
@@ -326,7 +289,7 @@ int cdp1802_execute(int cycles)
 		if (!cdp1802.idle) cdp1802_instruction();
 		else cdp1802_icount--;
 
-		if (cdp1802.config->dma) {
+		if (cdp1802.config && cdp1802.config->dma) {
 			cdp1802.config->dma(ref-cdp1802_icount);ref=cdp1802_icount;
 		}
 	} while (cdp1802_icount > 0);
