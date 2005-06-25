@@ -40,6 +40,9 @@ enum
 #if defined(PINMAME) && (HAS_SCAMP)
 	CPU_SCAMP,
 #endif
+#if defined(PINMAME) && (HAS_CDP1802)
+	CPU_CDP1802,
+#endif
 #if (HAS_Z80)
 	CPU_Z80,
 #endif

@@ -918,6 +918,22 @@ SOURCE=.\src\cpu\arm7\arm7.h
 SOURCE=.\src\cpu\arm7\arm7dasm.c
 # End Source File
 # End Group
+# Begin Group "CDP1802"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\cpu\cdp1802\1802dasm.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\cdp1802\cdp1802.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\cdp1802\cdp1802.h
+# End Source File
+# End Group
 # End Group
 # Begin Group "Machine"
 

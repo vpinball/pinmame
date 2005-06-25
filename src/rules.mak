@@ -1618,6 +1618,17 @@ else
 CPUDEFS += -DHAS_AT91=0
 endif
 
+CPU=$(strip $(findstring CDP1802@,$(CPUS)))
+ifneq ($(CPU),)
+OBJDIRS += $(OBJ)/cpu/cdp1802
+CPUDEFS += -DHAS_CDP1802=1
+CPUOBJS += $(OBJ)/cpu/cdp1802/cdp1802.o
+DBGOBJS += $(OBJ)/cpu/cdp1802/1802dasm.o
+$(OBJ)/cpu/cdp1802/cdp1802.o: 1802tbl.c
+else
+CPUDEFS += -DHAS_CDP1802=0
+endif
+
 SOUND=$(strip $(findstring X1_010@,$(SOUNDS)))
 ifneq ($(SOUND),)
 SOUNDDEFS += -DHAS_X1_010=1
