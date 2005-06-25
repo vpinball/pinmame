@@ -53,10 +53,9 @@ INITGAME(topaz, GEN_S3, dispS5)
 S4_ROMSTART(topaz,l1,"gamerom.716",CRC(cb287b10) SHA1(7fb6b6a26237cf85d5e02cf35271231267f90fc1),
                      "b_ic20.716", CRC(c6f8e3b1) SHA1(cb78d42e1265162132a1ab2320148b6857106b0e),
                      "b_ic17.716", CRC(cfc2518a) SHA1(5e99e40dcb7e178137db8d7d7d6da82ba87130fa))
-S67S_SOUNDROMS8("sound1.716",CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
 S4_ROMEND
 #define input_ports_topaz input_ports_bowl
-CORE_GAMEDEF(topaz,l1,"Topaz (Shuffle) (L-1)",1978,"Williams",s4_mS4S,0)
+CORE_GAMEDEF(topaz,l1,"Topaz (Shuffle) (L-1)",1978,"Williams",s4_mS4,GAME_USES_CHIMES)
 
 /*----------------------------
 / Taurus
@@ -65,10 +64,9 @@ INITGAME(taurs, GEN_S4, dispS5)
 S4_ROMSTART(taurs,l1,"gamerom.716",CRC(3246e285) SHA1(4f76784ecb5063a49c24795ae61db043a51e2c89),
                      "b_ic20.716", CRC(c6f8e3b1) SHA1(cb78d42e1265162132a1ab2320148b6857106b0e),
                      "b_ic17.716", CRC(cfc2518a) SHA1(5e99e40dcb7e178137db8d7d7d6da82ba87130fa))
-S67S_SOUNDROMS8("sound.716",NO_DUMP)
 S4_ROMEND
 #define input_ports_taurs input_ports_bowl
-CORE_GAMEDEF(taurs,l1,"Taurus (Shuffle) (L-1)",1979,"Williams",s4_mS4S,0)
+CORE_GAMEDEF(taurs,l1,"Taurus (Shuffle) (L-1)",1979,"Williams",s4_mS4,GAME_USES_CHIMES)
 
 /*--------------------------------
 / Big Ball Bowling (United game?)
