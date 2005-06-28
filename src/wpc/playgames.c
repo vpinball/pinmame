@@ -1,0 +1,92 @@
+#include "driver.h"
+#include "gen.h"
+#include "sim.h"
+#include "play.h"
+
+#define GEN_PLAYMATIC 0
+
+#ifdef MAME_DEBUG
+#define GAME_STATUS 0
+#else
+#define GAME_STATUS GAME_NOT_WORKING
+#endif
+
+#define INITGAME(name, disptype, balls) \
+	PLAYMATIC_INPUT_PORTS_START(name, balls) PLAYMATIC_INPUT_PORTS_END \
+	static core_tGameData name##GameData = {GEN_PLAYMATIC,disptype,{FLIP_SW(FLIP_L)}}; \
+	static void init_##name(void) { \
+		core_gameData = &name##GameData; \
+	}
+
+core_tLCDLayout play_disp6[] = {
+  { 0, 0, 0,16, CORE_SEG87 },
+  { 2, 0,16,16, CORE_SEG87 },
+  { 4, 0,32,16, CORE_SEG87 },
+  {0}
+/*
+  DISP_SEG_6(0,0,CORE_SEG7), DISP_SEG_6(0,1,CORE_SEG7),
+  DISP_SEG_6(1,0,CORE_SEG7), DISP_SEG_6(1,1,CORE_SEG7),
+  DISP_SEG_CREDIT(42,43,CORE_SEG7), DISP_SEG_BALLS(46,47,CORE_SEG7), {0}
+*/
+};
+
+core_tLCDLayout play_disp7[] = {
+  { 0, 0, 0,16, CORE_SEG87 },
+  { 2, 0,16,16, CORE_SEG87 },
+  { 4, 0,32,16, CORE_SEG87 },
+  {0}
+};
+
+/*-------------------------------------------------------------------
+/ Antar (1979)
+/-------------------------------------------------------------------*/
+INITGAME(antar, play_disp6, 1)
+PLAYMATIC_ROMSTART8888(antar,	"antar08.bin", CRC(f6207f77) SHA1(f68ce967c6189457bd0ce8638e9c477f16e65763),
+						"antar09.bin", CRC(2c954f1a) SHA1(fa83a5f1c269ea28d4eeff181f493cbb4dc9bc47),
+						"antar10.bin", CRC(a6ce5667) SHA1(85ecd4fce94dc419e4c210262f867310b0889cd3),
+						"antar11.bin", CRC(6474b17f) SHA1(e4325ceff820393b06eb2e8e4a85412b0d01a385))
+PLAYMATIC_ROMEND
+CORE_GAMEDEFNV(antar,"Antar",1979,"Playmatic",gl_mPLAYMATIC,GAME_STATUS)
+
+/*-------------------------------------------------------------------
+/ Evil Fight (1980)
+/-------------------------------------------------------------------*/
+INITGAME(evlfight, play_disp6, 1)
+PLAYMATIC_ROMSTART8888(evlfight,	"evfg08.bin", CRC(2cc2e79a) SHA1(17440512c419b3bb2012539666a5f052f3cd8c1d),
+						"evfg09.bin", CRC(5232dc4c) SHA1(6f95a578e9f09688e6ce8b0a622bcee887936c82),
+						"evfg10.bin", CRC(de2f754d) SHA1(0287a9975095bcbf03ddb2b374ff25c080c8020f),
+						"evfg11.bin", CRC(5eb8ac02) SHA1(31c80e74a4272becf7014aa96eaf7de555e26cd6))
+PLAYMATIC_ROMEND
+CORE_GAMEDEFNV(evlfight,"Evil Fight",1980,"Playmatic",gl_mPLAYMATIC,GAME_STATUS)
+
+/*-------------------------------------------------------------------
+/ KZ-26 (1984)
+/-------------------------------------------------------------------*/
+INITGAME(kz26, play_disp7, 1)
+PLAYMATIC_ROMSTART64(kz26,	"kz26.cpu", CRC(8030a699) SHA1(4f86b325801d8ce16011f7b6ba2f3633e2f2af35))
+PLAYMATIC_SOUNDROM6432(	"sound1.su3", CRC(f9550ab4) SHA1(7186158f515fd9fbe5a7a09c6b7d2e8dfc3b4bb2),
+						"sound2.su4", CRC(b66100d3) SHA1(85f5a319715f99d1b7afeca0d01c81aa615d416a))
+PLAYMATIC_ROMEND
+CORE_GAMEDEFNV(kz26,"KZ-26",1984,"Playmatic",gl_mPLAYMATIC2,GAME_STATUS)
+
+/*-------------------------------------------------------------------
+/ Meg-Aaton (1985)
+/-------------------------------------------------------------------*/
+INITGAME(megaaton, play_disp7, 1)
+PLAYMATIC_ROMSTART64(megaaton,	"cpumegat.bin", CRC(7e7a4ede) SHA1(3194b367cbbf6e0cb2629cd5d82ddee6fe36985a))
+PLAYMATIC_SOUNDROM6432(	"smogot.bin", CRC(92fa0742) SHA1(ef3100a53323fd67e23b47fc3e72fdb4671e9b0a),
+						"smegat.bin", CRC(910ab7fe) SHA1(0ddfd15c9c25f43b8fcfc4e11bc8ea180f6bd761))
+PLAYMATIC_ROMEND
+CORE_GAMEDEFNV(megaaton,"Meg-Aaton",1985,"Playmatic",gl_mPLAYMATIC2,GAME_STATUS)
+
+/*-------------------------------------------------------------------
+/ Mad Race (1985)
+/-------------------------------------------------------------------*/
+INITGAME(madrace, play_disp7, 1)
+PLAYMATIC_ROMSTART000(madrace,	"madrace.2a0", CRC(ab487c79) SHA1(a5df29b2af4c9d94d8bf54c5c91d1e9b5ca4d065),
+								"madrace.2b0", CRC(dcb54b39) SHA1(8e2ca7180f5ea3a28feb34b01f3387b523dbfa3b),
+								"madrace.2c0", CRC(b24ea245) SHA1(3f868ccbc4bfb77c40c4cc05dcd8eeca85ecd76f))
+PLAYMATIC_SOUNDROM6416(	"madrace1.snd", CRC(49e956a5) SHA1(8790cc27a0fda7b8e07bee65109874140b4018a2),
+						"madrace2.snd", CRC(c19283d3) SHA1(42f9770c46030ef20a80cc94fdbe6548772aa525))
+PLAYMATIC_ROMEND
+CORE_GAMEDEFNV(madrace,"Mad Race",1985,"Playmatic",gl_mPLAYMATIC2,GAME_STATUS)

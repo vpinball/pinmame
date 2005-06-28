@@ -4511,6 +4511,18 @@ SOURCE=.\src\pinmame.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\play.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\play.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\playgames.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\s11.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
