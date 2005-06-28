@@ -169,7 +169,7 @@ void cdp1802_reset(void *param)
 	cdp1802.ie=1;
 	cdp1802.df=0;
 	cdp1802.reg[0].w.l=0;
-//	change_pc16(PC);
+	change_pc16(PC);
 
 	cdp1802.idle=0;
 	cdp1802.dma_cycles=0;
