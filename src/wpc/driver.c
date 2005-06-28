@@ -533,6 +533,36 @@ DRIVERNV(f1gp)			//F1 Grand Prix (1987)
 DRIVERNV(odisea)		//Odisea Paris-Dakar (1987)
                         // Sir Lancelot (1994)
 
+// ----------------
+// PLAYMATIC
+// ----------------
+						//Last Lap (1978)
+						//Chance (1978)
+						//Space Gambler (1978)
+						//Attack (1979)
+						//Big Town (1979)
+DRIVERNV(antar)			//Antar (1979)
+						//Party (1979)
+						//Black Fever (1980)
+DRIVERNV(evlfight)		//Evil Fight (1980)
+						//Zira (1980)
+						//Cerberus (1981)
+						//Spain 82 (1982)
+DRIVERNV(kz26)			//KZ-26 (1984)
+						//The Raid (1984)
+						//UFO-X (1984)
+						//Nautilus (1984)
+DRIVERNV(megaaton)		//Meg-Aaton (1985)
+						//Trailer (1985)
+DRIVERNV(madrace)		//Mad Race (1985)
+						//Flash Dragon (1986)
+						//Star Fire (1986)
+						//Pinball Champ (1986)
+						//Rock 2500 (1986)
+						//Phantom Ship (1987)
+						//Skill Flight (1987)
+
+
 // --------------
 // SEGA GAMES
 // --------------
