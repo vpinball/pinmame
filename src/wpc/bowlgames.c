@@ -53,9 +53,10 @@ INITGAME(topaz, GEN_S3, dispS5)
 S4_ROMSTART(topaz,l1,"gamerom.716",CRC(cb287b10) SHA1(7fb6b6a26237cf85d5e02cf35271231267f90fc1),
                      "b_ic20.716", CRC(c6f8e3b1) SHA1(cb78d42e1265162132a1ab2320148b6857106b0e),
                      "b_ic17.716", CRC(cfc2518a) SHA1(5e99e40dcb7e178137db8d7d7d6da82ba87130fa))
+S67S_SOUNDROMS8("sound1.716",CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
 S4_ROMEND
 #define input_ports_topaz input_ports_bowl
-CORE_GAMEDEF(topaz,l1,"Topaz (Shuffle) (L-1)",1978,"Williams",s4_mS4,GAME_USES_CHIMES)
+CORE_GAMEDEF(topaz,l1,"Topaz (Shuffle) (L-1)",1978,"Williams",s4_mS4S,0)
 
 /*----------------------------
 / Taurus
@@ -64,9 +65,10 @@ INITGAME(taurs, GEN_S4, dispS5)
 S4_ROMSTART(taurs,l1,"gamerom.716",CRC(3246e285) SHA1(4f76784ecb5063a49c24795ae61db043a51e2c89),
                      "b_ic20.716", CRC(c6f8e3b1) SHA1(cb78d42e1265162132a1ab2320148b6857106b0e),
                      "b_ic17.716", CRC(cfc2518a) SHA1(5e99e40dcb7e178137db8d7d7d6da82ba87130fa))
+S67S_SOUNDROMS8("sound.716",NO_DUMP)
 S4_ROMEND
 #define input_ports_taurs input_ports_bowl
-CORE_GAMEDEF(taurs,l1,"Taurus (Shuffle) (L-1)",1979,"Williams",s4_mS4,GAME_USES_CHIMES)
+CORE_GAMEDEF(taurs,l1,"Taurus (Shuffle) (L-1)",1979,"Williams",s4_mS4S,0)
 
 /*--------------------------------
 / Big Ball Bowling (United game?)
@@ -77,7 +79,7 @@ BY17_ROMSTARTx88(bbbowlin,"cpu_u2.716",CRC(179e0c69) SHA1(7921839d2014a00b99ce7c
                           "cpu_u6.716",CRC(7b48e45b) SHA1(ac32292ef593bf8350e8bbc41113b6c1cb78a79e))
 BY35_ROMEND
 BY35_INPUT_PORTS_START(bbbowlin,1) BY35_INPUT_PORTS_END
-CORE_GAMEDEFNV(bbbowlin,"Big Ball Bowling",19??,"United(?)",by35_mBowling,GAME_NO_SOUND)
+CORE_GAMEDEFNV(bbbowlin,"Big Ball Bowling",19??,"United(?)",by35_mBowling,0)
 
 /*----------------------------
 / Stars & Strikes
@@ -90,7 +92,7 @@ ST200_ROMSTART8888(monrobwl,"cpu_u1.716",CRC(42592cc9) SHA1(22452072199c4b82a413
                             "cpu_u6.716",CRC(ad77d719) SHA1(f8f8d0d183d639d19fea552d35a7be3aa7f07c17))
 BY35_ROMEND
 BY35_INPUT_PORTS_START(monrobwl, 1) BY35_INPUT_PORTS_END
-CORE_GAMEDEFNV(monrobwl,"Stars & Strikes (Bowler)",198?,"Monroe Bowling Co.",by35_mST200,GAME_NO_SOUND)
+CORE_GAMEDEFNV(monrobwl,"Stars & Strikes (Bowler)",198?,"Monroe Bowling Co.",by35_mBowling2,0)
 
 /*----------------------------
 / Black Beauty
@@ -103,7 +105,7 @@ ST200_ROMSTART8888(blbeauty,"cpu_u1.716",CRC(e2550957) SHA1(e445548b650fec5d593c
                             "cpu_u6.716",CRC(842cd307) SHA1(8429d84e8bc4343b437801d0236150e04de79b75))
 BY35_ROMEND
 BY35_INPUT_PORTS_START(blbeauty, 1) BY35_INPUT_PORTS_END
-CORE_GAMEDEFNV(blbeauty,"Black Beauty (Bowler)",198?,"Stern",by35_mST200,GAME_NO_SOUND)
+CORE_GAMEDEFNV(blbeauty,"Black Beauty (Bowler)",198?,"Stern",by35_mBowling2,0)
 
 /*----------------------------
 / Big Strike
