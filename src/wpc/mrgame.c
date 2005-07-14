@@ -2,7 +2,7 @@
   Mr. Game (Italy)
   ----------------
   by Steve Ellenoff (08/23/2004)
-  
+
   Huge Thanks to Gerrit for:
   a) helping out with Solenoid smoothing (better now)
   b) Fixing switches and enabling the flippers to work
@@ -30,7 +30,7 @@
   Audio: 3 X DAC (1 used to drive volume), 1 X TMS 5220 Speech Chip, 1 X M114S Digital Wave Table Synth Chip
 
   Issues/Todo:
-  #1) Used a hack to ensure all video commands are read by the video cpu - not sure if the "underlying" 
+  #1) Used a hack to ensure all video commands are read by the video cpu - not sure if the "underlying"
       cause is still making other things wrong!
   #2) Timing of animations might be too slow..
   #3) M114S Sound chip emulated but needs to be improved for much better accuracy
@@ -64,9 +64,9 @@
 #define Z80_NMI 127
 
 //Jumper on board shows 200Hz hard wired - 6Mhz clock feeds 74393 as / 16 -> 4040 to Q11 as / 2048 = ~183Hz
-#define MRGAME_IRQ_FREQ TIME_IN_HZ((6000000/16)/2048)
+#define MRGAME_IRQ_FREQ (6000000/16)/2048
 //Jumper on sound board shows 60Hz hard wired - 4Mhz clock feeds 74393 as /16 -> 4040 to Q12 as / 4096 = ~61Hz
-#define MRGAME_SIRQ_FREQ TIME_IN_HZ((4000000/16)/4096)
+#define MRGAME_SIRQ_FREQ (4000000/16)/4096
 
 //Video Commands buffering
 #define MRGAME_VID_MAX_BUF 40
@@ -142,7 +142,7 @@ struct DACinterface mrgame_dacInt =
  { MIXER(50,MIXER_PAN_LEFT), MIXER(50,MIXER_PAN_RIGHT) }		/* Volume */
 };
 struct TMS5220interface mrgame_tms5220Int = { 640000, 100, 0 };
-struct M114Sinterface mrgame_m114sInt = { 
+struct M114Sinterface mrgame_m114sInt = {
 	1,					/* # of chips */
 	{4000000},			/* Clock Frequency 4Mhz */
 	{REGION_USER1},		/* ROM Region for samples */
@@ -156,10 +156,10 @@ const struct sndbrdIntf mrgameIntf = {
 };
 
 //Generate a level 1 IRQ - IP0,IP1,IP2 = 0
-static void mrgame_irq(int data) { cpu_set_irq_line(0, MC68000_IRQ_1, PULSE_LINE); }
+static INTERRUPT_GEN(mrgame_irq) { cpu_set_irq_line(0, MC68000_IRQ_1, PULSE_LINE); }
 
 //Generate an IRQ on the sound chip's z80
-static void snd_irq(int data) { 
+static INTERRUPT_GEN(snd_irq) {
 	cpu_set_irq_line(2,Z80_IRQ,PULSE_LINE);
     cpu_set_irq_line(3,Z80_IRQ,PULSE_LINE);
 }
@@ -216,12 +216,6 @@ static MACHINE_INIT(mrgame) {
   /* init PPI */
   ppi8255_init(&ppi8255_intf);
 
-  //setup IRQ timer for Main CPU
-  timer_pulse(MRGAME_IRQ_FREQ,0,mrgame_irq);
-
-  //setup IRQ timer for Sound CPUS
-  timer_pulse(MRGAME_SIRQ_FREQ,0,snd_irq);
-
   //pull video registers out of ram space
   install_mem_write_handler(1,0x6800, 0x68ff, vid_registers_w);
 
@@ -230,7 +224,7 @@ static MACHINE_INIT(mrgame) {
 
 
 //Reads current switch column (really row) - Inverted
-static READ16_HANDLER(col_r) { 
+static READ16_HANDLER(col_r) {
 	UINT8 switches = coreGlobals.swMatrix[locals.SwCol+1];	//+1 so we begin by reading column 1 of input matrix instead of 0 which is used for special switches in many drivers
 	return switches^0xff;
 }
@@ -247,7 +241,7 @@ static READ16_HANDLER(rsw_ack_r) {
 	data |= (locals.acksnd << 4);
 	data |= (locals.ackspk << 5);
 	data |= (coreGlobals.swMatrix[9] << 6);
-	//printf("%08x: rsw_ack_r = %04x\n",activecpu_get_pc(),data); 
+	//printf("%08x: rsw_ack_r = %04x\n",activecpu_get_pc(),data);
 	return data;
 }
 /*Solenoids*/
@@ -291,8 +285,8 @@ static WRITE_HANDLER(mrgame_sndcmd)
 }
 
 //Bit 7 of the data triggers NMI of the sound cpus
-static WRITE16_HANDLER(sound_w) { 
-//	LOG(("%08x: sound_w = %04x\n",activecpu_get_pc(),data)); 
+static WRITE16_HANDLER(sound_w) {
+//	LOG(("%08x: sound_w = %04x\n",activecpu_get_pc(),data));
 
 	locals.sndcmd = data & 0xff;
 
@@ -315,11 +309,11 @@ static WRITE_HANDLER(fake_w)
 #endif
 
 //8 bit data to this latch comes from D8-D15 (ie, upper bits only)
-static WRITE16_HANDLER(video_w) { 
+static WRITE16_HANDLER(video_w) {
 #ifndef TEST_MOTORSHOW
 	vidcmd_buf[vidcmd_next] = (data>>8) & 0xff;
 	vidcmd_next = (vidcmd_next + 1) % MRGAME_VID_MAX_BUF;
-	//locals.vid_data = (data>>8) & 0xff;  
+	//locals.vid_data = (data>>8) & 0xff;
 	//LOG(("viddata=%x\n",data>>8));
 #endif
 }
@@ -346,13 +340,13 @@ IC37 - Data Bits 3 = 0, 4 = 1 -> S20,21,22,23,24 of CN12         (D0-D2 generate
 S9,S10,S11 = Solenoid bank 1,2,3 X 8 = 24 Sols
 S15-S24 = Lamp Col 1-10 = 80 Lamps
 */
-static WRITE16_HANDLER(ic35b_w) { 
+static WRITE16_HANDLER(ic35b_w) {
 	int output = data & 0x07;
 	int bank = (data & 0x18)>>3;
 	switch(bank) {
 		//IC01 - Data Bits 3 = 0, 4 = 0 -> S0-S7 of CN14 & CN14A - Bit 7 is sent to S0-S7 via D0-D2
 		//S0-S5 = CN14 (Not Used!)
-		//S6-S7 = CN14A 
+		//S6-S7 = CN14A
 		case 0:
 			locals.vid_strb = (data>>7);
 			break;
@@ -408,11 +402,11 @@ Bit 5 = Pin 5 - CN10 & Pin 18 - CN11 (??)
 Bit 6 = NA
 Bit 7 = /RUNEN Line
 */
-static WRITE16_HANDLER(row_w) { 
+static WRITE16_HANDLER(row_w) {
 	locals.SwCol = data & 7;
 	locals.diagnosticLED = GET_BIT4;
 	locals.flipRead = GET_BIT5;
-//	LOG(("%08x: row_w = %04x\n",activecpu_get_pc(),data)); 
+//	LOG(("%08x: row_w = %04x\n",activecpu_get_pc(),data));
 }
 
 //NVRAM
@@ -426,7 +420,7 @@ static NVRAM_HANDLER(mrgame_nvram) {
 /***************************************************************************/
 
 //Read D0-D7 from cpu
-static READ_HANDLER(i8255_porta_r) { 
+static READ_HANDLER(i8255_porta_r) {
 #ifndef TEST_MOTORSHOW
 	int data = vidcmd_buf[vidcmd_read];
 	vidcmd_read = (vidcmd_read + 1) % MRGAME_VID_MAX_BUF;
@@ -435,8 +429,8 @@ static READ_HANDLER(i8255_porta_r) {
 	}
 	return data;
 #else
-	//LOG(("i8255_porta_r=%x\n",locals.vid_data)); 
-	return locals.vid_data; 
+	//LOG(("i8255_porta_r=%x\n",locals.vid_data));
+	return locals.vid_data;
 #endif
 }
 static READ_HANDLER(i8255_portb_r) { LOG(("UNDOCUMENTED: i8255_portb_r\n")); return 0; }
@@ -445,8 +439,8 @@ static READ_HANDLER(i8255_portb_r) { LOG(("UNDOCUMENTED: i8255_portb_r\n")); ret
 //Bits   4 = Video Strobe from CPU
 //static READ_HANDLER(i8255_portc_r) { return core_getDip(1) | (locals.vid_strb<<4); }
 static int pulse=0;
-static READ_HANDLER(i8255_portc_r) { 
-	int data = core_getDip(1);
+static READ_HANDLER(i8255_portc_r) {
+	int data = core_getDip(2); // core_getDip(1) only works if the 16 bits of the 1st dip switch row was used.
 	int strobe = (locals.vid_strb<<4);
 	//Force a strobe if data waiting in buffer
 	if(vidcmd_next > 1) {
@@ -457,16 +451,16 @@ static READ_HANDLER(i8255_portc_r) {
 }
 
 //Connected to monitor! Not sure what kind of data it could send here!
-static WRITE_HANDLER(i8255_portb_w) { 
-	//LOG(("i8255_portb_w=%x\n",data)); 
+static WRITE_HANDLER(i8255_portb_w) {
+	//LOG(("i8255_portb_w=%x\n",data));
 }
 
 //These don't make sense to me - they're read lines, so no idea what writes to here would do!
-static WRITE_HANDLER(i8255_porta_w) { 
-	//LOG(("i8255_porta_w=%x\n",data)); 
+static WRITE_HANDLER(i8255_porta_w) {
+	//LOG(("i8255_porta_w=%x\n",data));
 }
-static WRITE_HANDLER(i8255_portc_w) { 
-	//LOG(("i8255_portc_w=%x\n",data)); 
+static WRITE_HANDLER(i8255_portc_w) {
+	//LOG(("i8255_portc_w=%x\n",data));
 }
 
 
@@ -490,7 +484,7 @@ static WRITE_HANDLER(vid_registers_w) {
 			locals.vid_a13 = data & 1;
 			break;
 	}
-	//LOG(("vid_register[%02x]_w=%x\n",offset,data)); 
+	//LOG(("vid_register[%02x]_w=%x\n",offset,data));
 }
 
 /* Sound CPU 1 Ports
@@ -829,7 +823,7 @@ PALETTE_INIT( mrgame )
  *************************************/
 
 // ******************************
-// *** GENERATION 1 HARDWARE **** 
+// *** GENERATION 1 HARDWARE ****
 // ******************************
 
 static struct GfxLayout charlayout_g1 =
@@ -865,7 +859,7 @@ static struct GfxDecodeInfo gfxdecodeinfo_g1[] =
 
 
 // ******************************
-// *** GENERATION 2 HARDWARE **** 
+// *** GENERATION 2 HARDWARE ****
 // ******************************
 
 static struct GfxLayout charlayout_g2 =
@@ -921,6 +915,7 @@ MACHINE_DRIVER_START(mrgame_snd1)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(soundg1_1_readmem, soundg1_1_writemem)
   MDRV_CPU_PORTS(soundg1_1_readport, soundg1_1_writeport)
+  MDRV_CPU_PERIODIC_INT(snd_irq, MRGAME_SIRQ_FREQ)
   MDRV_CPU_ADD(Z80, 4000000)	/*4 Mhz*/
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(soundg1_2_readmem, soundg1_2_writemem)
@@ -955,6 +950,7 @@ MACHINE_DRIVER_START(mrgame_cpu)
   MDRV_CORE_INIT_RESET_STOP(mrgame, NULL, NULL)
   MDRV_CPU_ADD_TAG("mcpu", M68000, MRGAME_CPUFREQ)
   MDRV_CPU_MEMORY(readmem, writemem)
+  MDRV_CPU_PERIODIC_INT(mrgame_irq, MRGAME_IRQ_FREQ)
   MDRV_CPU_VBLANK_INT(vblank, 1)
   MDRV_NVRAM_HANDLER(mrgame_nvram)
   MDRV_SWITCH_UPDATE(mrgame)
@@ -973,7 +969,7 @@ MACHINE_DRIVER_START(mrgame_video_common)
 MACHINE_DRIVER_END
 
 
-//Generation 1 
+//Generation 1
 MACHINE_DRIVER_START(mrgame1)
 	MDRV_IMPORT_FROM(mrgame_cpu)
 #ifndef TEST_MAIN_CPU
