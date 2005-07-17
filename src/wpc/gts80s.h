@@ -49,7 +49,7 @@ extern MACHINE_DRIVER_EXTERN(gts80s_ss);
    -----------------------------------------
    ALL   - CPU: 2x(6502): DAC: 2x(AD7528)
    --------------------------------------
-   Gen 1 - DSP: 2x(AY8913): OTHER: SP0-250 (SPEECH GENERATOR)    (Not Emulated)
+   Gen 1 - DSP: 2x(AY8913): OTHER: SP0-250 (SPEECH GENERATOR)
    Gen 2 - DSP: 2x(AY8913): OTHER: Programmable Capacitor Filter (Not Emulated)
    Gen 3 - DSP: 1x(YM2151): OTHER: None
 */
@@ -82,9 +82,19 @@ extern MACHINE_DRIVER_EXTERN(gts80s_ss);
   SOUNDREGION(0x10000, GTS80_MEMREG_SCPU2) \
     GTS80BS_ROMLOAD32(0x8000, n2, chk2)
 
+/*-- Gen 2 & 3: 2 x 32K Sound CPU Roms --*/
+#define GTS80BSSOUND3x32(n1,chk1,n2,chk2,n3,chk3) \
+  SOUNDREGION(0x10000, GTS80_MEMREG_SCPU1) \
+    GTS80BS_ROMLOAD32(0x8000, n1, chk1) \
+  SOUNDREGION(0x10000, GTS80_MEMREG_SCPU2) \
+    GTS80BS_ROMLOAD32(0x8000, n2, chk2) \
+  SOUNDREGION(0x10000, GTS80_MEMREG_SCPU3) \
+    GTS80BS_ROMLOAD32(0x8000, n3, chk3)
+
 extern MACHINE_DRIVER_EXTERN(gts80s_b1);
 extern MACHINE_DRIVER_EXTERN(gts80s_b2);
 extern MACHINE_DRIVER_EXTERN(gts80s_b3);
+extern MACHINE_DRIVER_EXTERN(gts80s_b3a);
 
 /*-- GTS3 --*/
 
