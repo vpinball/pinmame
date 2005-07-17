@@ -301,7 +301,7 @@ DRIVERNV(blvelvet)      //Black Velvet (May 1978)
 DRIVERNV(camlight)      //Camel Lights (May 1978)
 DRIVERNV(real)          //Real (to Real) (May 1978)
 DRIVERNV(rio)           //Rio (?? / 1978)
-                        //Chuck-A-Luck (October 1978)
+DRIVERNV(chucklck)      //Chuck-A-Luck (October 1978)
 /*Games below are Cocktail #120 Model*/
 DRIVERNV(startrip)      //Star Trip (April 1979)
 DRIVERNV(famlyfun)      //Family Fun! (April 1979)
