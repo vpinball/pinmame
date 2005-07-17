@@ -504,6 +504,11 @@ MACHINE_DRIVER_START(gts80bs3)
   MDRV_IMPORT_FROM(gts80s_b3)
 MACHINE_DRIVER_END
 
+MACHINE_DRIVER_START(gts80bs3a)
+  MDRV_IMPORT_FROM(gts80b_ns)
+  MDRV_IMPORT_FROM(gts80s_b3a)
+MACHINE_DRIVER_END
+
 /*-------------------------------------------------------
         Additional code for Caveman below. Some notes:
 

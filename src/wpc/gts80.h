@@ -186,13 +186,15 @@
 /*-- Memory regions --*/
 #define GTS80_MEMREG_CPU	REGION_CPU1
 #define GTS80_MEMREG_SCPU1	REGION_CPU2 /* used for sound, sound & speech and s3 sound board */
-#define GTS80_MEMREG_SCPU2	REGION_CPU3 /* used for s3 sound board */
+#define GTS80_MEMREG_SCPU2	REGION_CPU3 /* used for s80b and s3 sound board */
+#define GTS80_MEMREG_SCPU3	REGION_CPU4 /* used for s80b sound board with extra DAC */
 #define GTS80_MEMREG_VIDCPU	REGION_CPU3 /* Caveman Video CPU */
 
 /* CPUs */
 #define GTS80_CPU		0
 #define GTS80_SCPU1		1
 #define GTS80_SCPU2		2
+#define GTS80_SCPU3		3
 #define GTS80_VIDCPU	2
 
 /*-- GTS80/GTS80A Main CPU regions and ROM, 2 game PROM version --*/
@@ -239,7 +241,7 @@
       ROM_LOAD(n3, 0x3000, 0x1000, chk3) \
         ROM_RELOAD(0x7000, 0x1000)       \
         ROM_RELOAD(0xb000, 0x1000)       \
-        ROM_RELOAD(0xf000, 0x1000)      
+        ROM_RELOAD(0xf000, 0x1000)
 
 /*-- Video roms for Caveman, they are copied to their right place by the driver --*/
 #define VIDEO_ROMSTART(n1,chk1,n2,chk2,n3,chk3,n4,chk4,n5,chk5,n6,chk6,n7,chk7,n8,chk8) \
@@ -315,6 +317,7 @@ extern MACHINE_DRIVER_EXTERN(gts80b);
 extern MACHINE_DRIVER_EXTERN(gts80bs1);
 extern MACHINE_DRIVER_EXTERN(gts80bs2);
 extern MACHINE_DRIVER_EXTERN(gts80bs3);
+extern MACHINE_DRIVER_EXTERN(gts80bs3a);
 
 #define gl_mGTS80S		gts80s
 #define gl_mGTS80SS		gts80ss
@@ -323,6 +326,7 @@ extern MACHINE_DRIVER_EXTERN(gts80bs3);
 #define gl_mGTS80BS1	gts80bs1
 #define gl_mGTS80BS2	gts80bs2
 #define gl_mGTS80BS3	gts80bs3
+#define gl_mGTS80BS3A	gts80bs3a
 
 /* Display types */
 #define GTS80_DISPBCD   0x00

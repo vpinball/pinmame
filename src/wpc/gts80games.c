@@ -852,7 +852,7 @@ CORE_GAMEDEFNV(excalibr, "Excalibur",1988,"Gottlieb",gl_mGTS80BS3,0)
 INITGAME(badgirls, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
 GTS80B_4K_ROMSTART(badgirls, "prom2.cpu", CRC(583933ec) SHA1(89da6750d779d68db578715b058f9321695b79b0),
                              "prom1.cpu", CRC(956aeae0) SHA1(24d9d514fc83aba1ab310bfe4ed80605df399417))
-GTS80BSSOUND3232(            "drom1.snd", CRC(452dec20) SHA1(a9c41dfb2d83c5671ab96e946f13df774b567976), //Should be labeled DROM!
+GTS80BSSOUND3232(            "drom1.snd", CRC(452dec20) SHA1(a9c41dfb2d83c5671ab96e946f13df774b567976),
                              "yrom1.snd", CRC(ab3b8e2d) SHA1(b57a0b804b42b923bb102d295e3b8a69b1033d27))
 GTS80_ROMEND
 #define input_ports_badgirls input_ports_gts80
@@ -883,16 +883,17 @@ GTS80_ROMEND
 CORE_GAMEDEFNV(hotshots, "Hot Shots",1989,"Gottlieb",gl_mGTS80BS3,0)
 
 /*-------------------------------------------------------------------
-/ Bone Busters (Why is there an extra drom2 listed in the rom file? Could this use different hardware?)
+/ Bone Busters Inc.
 /-------------------------------------------------------------------*/
 INITGAME(bonebstr, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0x80)
 GTS80B_4K_ROMSTART(bonebstr, "prom2.cpu", CRC(681643df) SHA1(76af6951e4403b4951298d35a9058bcebfa6bc43),
                              "prom1.cpu", CRC(052f97be) SHA1(0ee108e79c4196dffedc64d7f7a576e0394427c1))
-GTS80BSSOUND3232(            "drom1.snd", CRC(ec43f4e9) SHA1(77b0988700be7a597dca7e5f06ac5d3c6834ce21),
+GTS80BSSOUND3x32(            "drom2.snd", CRC(d147d78d) SHA1(f8f6d6a1921685b883b224a9ea85ead52a32a4c3),
+                             "drom1.snd", CRC(ec43f4e9) SHA1(77b0988700be7a597dca7e5f06ac5d3c6834ce21),
                              "yrom1.snd", CRC(a95eedfc) SHA1(5ced2d6869a9895f8ff26d830b21d3c9364b32e7))
 GTS80_ROMEND
 #define input_ports_bonebstr input_ports_gts80
-CORE_GAMEDEFNV(bonebstr, "Bone Busters",1989,"Gottlieb",gl_mGTS80BS3,0)
+CORE_GAMEDEFNV(bonebstr, "Bone Busters Inc.",1989,"Gottlieb",gl_mGTS80BS3A,0)
 
 
 /*-------------------------------------------------------------------
