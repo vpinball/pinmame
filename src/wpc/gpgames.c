@@ -118,7 +118,14 @@ GP_ROMSTART88(rio,	"a-110.u12",CRC(ed0d518b) SHA1(8f3ca8792ad907c660d9149a1aa3a3
 GP_ROMEND
 CORE_GAMEDEFNV(rio,"Rio",1978,"Game Plan",mGP1,GAME_USES_CHIMES)
 
-//Chuck-A-Luck (October 1978)
+/*-------------------------------------------------------------------
+/Chuck-A-Luck (October 1978)
+/-------------------------------------------------------------------*/
+INITGAME(chucklck, 0,dispGP_DDU1,FLIP_SW(FLIP_L),0,-2)
+GP_ROMSTART88(chucklck,	"a-110.u12",CRC(ed0d518b) SHA1(8f3ca8792ad907c660d9149a1aa3a3528c7573e3),
+					"b1-110.u13",CRC(a223f2e8) SHA1(767e15e19e11399935c890c1d1034dccf1ad7f92))
+GP_ROMEND
+CORE_GAMEDEFNV(chucklck,"Chuck-A-Luck",1978,"Game Plan",mGP1,GAME_USES_CHIMES)
 
 /*-------------------------------------------------------------------
 / Star Trip (April 1979) - Model: Cocktail #120
