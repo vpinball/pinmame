@@ -36,6 +36,10 @@ static void init_##name(void) { core_gameData = &name##GameData; }
 static core_tGameData name##GameData = {gen,disp,{flip,0,lamps,0,sb,db,BY35GD_NOSOUNDE}}; \
 static void init_##name(void) { core_gameData = &name##GameData; }
 
+#define INITGAME2B(name, gen, disp, flip, lamps, sb, db) \
+static core_tGameData name##GameData = {gen,disp,{flip,0,lamps,0,sb,db,BY35GD_NOSOUNDE | BY35GD_SWVECTOR}}; \
+static void init_##name(void) { core_gameData = &name##GameData; }
+
 #define INITGAME3(name, gen, disp, flip, lamps, sb, db) \
 static core_tGameData name##GameData = {gen,disp,{flip,0,lamps,0,sb,db,BY35GD_PHASE}}; \
 static void init_##name(void) { core_gameData = &name##GameData; }
@@ -759,7 +763,7 @@ static core_tLCDLayout vectorDisp[] = {
   DISP_SEG_IMPORT(dispBy7),
   {4,17,42,3,CORE_SEG7}, {4,24,45,3,CORE_SEG7}, {0}
 };
-INITGAME2(vector  ,GEN_BY35,vectorDisp,FLIP_SW(FLIP_L),8,SNDBRD_BY61,0x80)
+INITGAME2B(vector  ,GEN_BY35,vectorDisp,FLIP_SW(FLIP_L),8,SNDBRD_BY61,0x80)
 BY35_ROMSTARTx00(vector,"858-11_2.732",CRC(323e286b) SHA1(998387900363fd46d392a931c1f092c886a23c69),
                         "720-53_6.732",CRC(c2e92f80) SHA1(61de956a4b6e9fb9ef2b25c01bff1fb5972284ad))
 BY61_SOUNDROM0000(      "858-01_2.532",CRC(bd2edef9) SHA1(8f129016440bad5e78d4b073268e76e542b61684),
