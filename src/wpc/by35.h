@@ -502,6 +502,7 @@ extern MACHINE_DRIVER_EXTERN(by6802_61S);
 #define BY35GD_NOSOUNDE 0x01 // doesn't use SOUNDE
 #define BY35GD_PHASE    0x02 // phased lamps
 #define BY35GD_FAKEZERO 0x04 // fake some zero digits for Nuova Bell games
+#define BY35GD_SWVECTOR 0x08 // read switch column 6 like Vector
 
 #endif /* INC_BY35 */
 
