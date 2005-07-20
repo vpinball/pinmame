@@ -116,17 +116,22 @@ GTS3ROMSTART(silvslug,	"gprom.bin",CRC(a6c524e2) SHA1(dc12dd8e814a37aada021f84c5
 GTS3SOUND3232(			"yrom1.bin",CRC(20bc9797) SHA1(5d17b5f0423d8854fb7c4816d53a223ecc7c50c6),
 						"drom1.bin",CRC(eac3e1cc) SHA1(2725457231854e4f3d54fbba745b8fc6f55b1688))
 GTS3_ROMEND
-CORE_GAMEDEFNV(silvslug,"Silver Slugger",1990,"Gottlieb",mGTS3S,GAME_IMPERFECT_GRAPHICS)
+CORE_GAMEDEFNV(silvslug,"Silver Slugger",1990,"Gottlieb",mGTS3S,0)
 
 /*-------------------------------------------------------------------
 / Vegas (#723)
 /-------------------------------------------------------------------*/
-INITGAME(vegas, ALPHA_LED, FLIP5051, 3/*?*/, SNDBRD_GTS3, 4)
+/* 2 X 20 AlphaNumeric Rows, 3 X 14-seg alpha digits (without commas) */
+static struct core_dispLayout dispVegas[] = {
+  DISP_SEG_IMPORT(GTS3_dispAlpha),
+  {5,16,40,1,CORE_SEG16}, {5,19,41,1,CORE_SEG16}, {5,22,42,1,CORE_SEG16}, {0}
+};
+INITGAME(vegas, dispVegas, FLIP5051, 3/*?*/, SNDBRD_GTS3, 4)
 GTS3ROMSTART(vegas,	"gprom.bin",CRC(48189981) SHA1(95144af4b222158becd4d5748d15b7b6c6021bd2))
 GTS3SOUND3232(		"yrom1.bin",CRC(af1095f1) SHA1(06609085cd74b969e4f2ec962c427c5c42ebc6ff),
 					"drom1.bin",CRC(46eb5755) SHA1(94ec2d0cf41f68a8c3d7505186b11b4abb4803db))
 GTS3_ROMEND
-CORE_GAMEDEFNV(vegas,"Vegas",1990,"Gottlieb",mGTS3S,GAME_IMPERFECT_GRAPHICS)
+CORE_GAMEDEFNV(vegas,"Vegas",1990,"Gottlieb",mGTS3S,0)
 
 /*-------------------------------------------------------------------
 / Deadly Weapon (#724)
@@ -136,7 +141,7 @@ GTS3ROMSTART(deadweap,	"gprom.bin",CRC(07d84b32) SHA1(25d8772a5c8655b3406df94563
 GTS3SOUND3232(			"yrom1.bin",CRC(93369ed3) SHA1(3340478ffc00cf9991beabd4f0ecd89d0c88965e),
 						"drom1.bin",CRC(f55dd7ec) SHA1(fe306c40bf3d98e4076d0d8a935c3671469d4cff))
 GTS3_ROMEND
-CORE_GAMEDEFNV(deadweap,"Deadly Weapon",1990,"Gottlieb",mGTS3S,GAME_IMPERFECT_GRAPHICS)
+CORE_GAMEDEFNV(deadweap,"Deadly Weapon",1990,"Gottlieb",mGTS3S,0)
 
 /*-------------------------------------------------------------------
 / Title Fight (#726)
@@ -146,7 +151,7 @@ GTS3ROMSTART(tfight,	"gprom.bin",CRC(43b3193a) SHA1(bd185fe67c147a6acca8e78da4b7
 GTS3SOUND3232(			"yrom1.bin",CRC(8591d421) SHA1(74402cf8b419e0cb05069851b0d5616e66b2f0a9),
 						"drom1.bin",CRC(9514739f) SHA1(2794549f549d68e064a9a962a4e91fff7dcf0160))
 GTS3_ROMEND
-CORE_GAMEDEFNV(tfight,"Title Fight",1990,"Gottlieb",mGTS3S,GAME_IMPERFECT_GRAPHICS)
+CORE_GAMEDEFNV(tfight,"Title Fight",1990,"Gottlieb",mGTS3S,0)
 
 /*-------------------------------------------------------------------
 / Nudge It
@@ -177,7 +182,7 @@ GTS3_ROMEND
 CORE_GAMEDEFNV(hoops,"Hoops",1991,"Gottlieb",mGTS3,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
-/ Cactus Jack (#729)
+/ Cactus Jack's (#729)
 /-------------------------------------------------------------------*/
 INITGAME(cactjack, ALPHA, FLIP67, 3/*?*/, SNDBRD_GTS3, 4)
 GTS3ROMSTART(cactjack,	"gprom.bin",CRC(5661ab06) SHA1(12b7066110feab0aef36ff7bdc74690fc8da4ed3))
@@ -187,7 +192,7 @@ GTS3SOUND32128(			"yrom1.bin",CRC(4554ed0d) SHA1(df0a9225f961e0ee876c3e63ad54c6e
 						"arom2.bin",CRC(aba8fd98) SHA1(81b8af4d2d8e40b5b44f114c095371afe5539549))
 
 GTS3_ROMEND
-CORE_GAMEDEFNV(cactjack,"Cactus Jack",1991,"Gottlieb",mGTS3S,0)
+CORE_GAMEDEFNV(cactjack,"Cactus Jack's",1991,"Gottlieb",mGTS3S,0)
 
 /*-------------------------------------------------------------------
 / Class of 1812 (#730)
