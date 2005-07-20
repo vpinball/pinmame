@@ -8,7 +8,9 @@
 
   65c02: Vectors: FFFE&F = IRQ, FFFA&B = NMI, FFFC&D = RESET
   //Cueball: CPU0: RST = FEF0, IRQ=462F, NMI=477A
-**************************************************************************************/
+
+  //GV 07/20/05: Finally found the typo that prevented the extra displays from working perfectly!
+*************************************************************************************************/
 #include <stdarg.h>
 #include "driver.h"
 #include "cpu/m6502/m65ce02.h"
@@ -43,9 +45,6 @@ static WRITE_HANDLER(display_control);
 /*Alpha Display Generation Specific*/
 static WRITE_HANDLER(alpha_u4_pb_w);
 static READ_HANDLER(alpha_u4_pb_r);
-static WRITE_HANDLER(alpha_u5_pb_w);
-static WRITE_HANDLER(alpha_u5_cb1_w);
-static WRITE_HANDLER(alpha_u5_cb2_w);
 static WRITE_HANDLER(alpha_display);
 static WRITE_HANDLER(alpha_aux);
 static void alpha_update(void);
@@ -53,9 +52,6 @@ static void alpha_update(void);
 static void dmdswitchbank(void);
 static WRITE_HANDLER(dmd_u4_pb_w);
 static READ_HANDLER(dmd_u4_pb_r);
-static WRITE_HANDLER(dmd_u5_pb_w);
-static WRITE_HANDLER(dmd_u5_cb1_w);
-static WRITE_HANDLER(dmd_u5_cb2_w);
 static WRITE_HANDLER(dmd_display);
 static WRITE_HANDLER(dmd_aux);
 static void dmd_vblank(void);
@@ -83,12 +79,11 @@ struct {
   int    u4pb;
   WRITE_HANDLER((*U4_PB_W));
   READ_HANDLER((*U4_PB_R));
-  WRITE_HANDLER((*U5_PB_W));
-  WRITE_HANDLER((*U5_CB1_W));
-  WRITE_HANDLER((*U5_CB2_W));
   WRITE_HANDLER((*DISPLAY_CONTROL));
   WRITE_HANDLER((*AUX_W));
   void (*UPDATE_DISPLAY)(void);
+  UINT8  ax[7], cx1, cx2, ex1;
+  char   extra16led;
 } GTS3locals;
 
 struct {
@@ -159,7 +154,7 @@ static READ_HANDLER(dmd_u4_pb_r)
 //CA2:  To A1P6-12 & A1P7-6 Auxiliary (INPUT???)
 static READ_HANDLER( xvia_0_ca2_r )
 {
-	// logerror1("READ: NA?: via_0_ca2_r\n");
+	logerror1("READ: NA?: via_0_ca2_r\n");
 	return 0;
 }
 static READ_HANDLER( xvia_0_cb1_r )
@@ -198,32 +193,21 @@ static WRITE_HANDLER( xvia_0_b_w ) { GTS3locals.U4_PB_W(offset,data); }
 #define DBLNK 0x80
 
 static WRITE_HANDLER(alpha_u4_pb_w) {
-	static int ledOK = 0;
 	static int col = 0;
 
-	int lampBits = data & 0x0f;
 	int dispBits = data & 0xf0;
 
 	//logerror("lampcolumn=%4x STRB=%d LCLR=%d\n",GTS3locals.lampColumn,data&LSTRB,data&LCLR);
 	core_setLamp(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
-
-	if (lampBits == 0x07 && GTS3locals.u4pb == (0x05 | dispBits)) {
-		GTS3locals.lampColumn = 1;
-		col = 0;
-		coreGlobals.tmpLampMatrix[0] = 0;
-	} else if (lampBits == 0x06 && GTS3locals.u4pb == (0x04 | dispBits)) {
-		GTS3locals.lampColumn = ((GTS3locals.lampColumn << 1) & 0x0fff);
-		col++;
+	if (data & ~GTS3locals.u4pb & LSTRB) { // Positive edge
+		if ((data & LCLR) && (data & LDATA)) {
+			GTS3locals.lampColumn = 1;
+			col = 0;
+		} else {
+			GTS3locals.lampColumn = ((GTS3locals.lampColumn << 1) & 0x0fff);
+			col++;
+		}
 		if (col < 12) coreGlobals.tmpLampMatrix[col] = 0;
-	} else {
-		if (GTS3locals.u4pb == data && ledOK) {
-			ledOK = 0;
-			if (core_gameData->hw.lampCol > 4) {
-				if (lampBits != 0x06) coreGlobals.tmpLampMatrix[12] = data;
-			} else { // the 6 in the fist digit is still showing up!
-				GTS3locals.segments[40 + (data>>4)].w = GTS3locals.pseg[40 + (data>>4)].w = core_bcd2seg[lampBits];
-			}
-		} else if (lampBits == 0x06 && GTS3locals.u4pb == (0x02 | dispBits)) ledOK = 1;
 	}
 
 	if (dispBits == 0xe0) { GTS3locals.acol = 0; }
@@ -240,11 +224,9 @@ static WRITE_HANDLER(alpha_u4_pb_w) {
   PB6:  Display Strobe (DSTRB)
 */
 static WRITE_HANDLER(dmd_u4_pb_w) {
-	static int ledOK = 0;
 	static int bitSet = 0;
 	static int col = 0;
 
-	int lampBits = data & 0x0f;
 	core_setLamp(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
 	if (data & ~GTS3locals.u4pb & LSTRB) { // Positive edge
 		if ((data & LCLR) && (data & LDATA)) {
@@ -255,15 +237,6 @@ static WRITE_HANDLER(dmd_u4_pb_w) {
 			col++;
 		}
 		if (col < 12) coreGlobals.tmpLampMatrix[col] = 0;
-	} else {
-		if (GTS3locals.u4pb == data && ledOK) {
-			ledOK = 0;
-			if (core_gameData->hw.lampCol > 4) {
-				if (lampBits != 0x06) coreGlobals.tmpLampMatrix[12] = data;
-			} else {
-				coreGlobals.segments[data>>4].w = core_bcd2seg[lampBits];
-			}
-		} else if (lampBits == 0x06 && GTS3locals.u4pb == (0x02 | (data & 0xf0))) ledOK = 1;
 	}
 
 	GTS3_dmdlocals.dstrb = (data & DSTRB) != 0;
@@ -282,7 +255,8 @@ static WRITE_HANDLER(dmd_u4_pb_w) {
 //AUX DATA? See ca2 above!
 static WRITE_HANDLER( xvia_0_ca2_w )
 {
-	logerror("WRITE:AUX W??:via_0_ca2_w: %x\n",data);
+	logerror1("EX1: via_0_ca2_w %x\n",data);
+	GTS3locals.ex1 = data;
 }
 
 //CB2:  NMI to Main CPU
@@ -339,25 +313,27 @@ static WRITE_HANDLER( xvia_1_a_w )
 	sndbrd_0_data_w(0, ~data);
 }
 
-//PB0-7 Varies on Alpha or DMD Generation!
-static WRITE_HANDLER( xvia_1_b_w ) { GTS3locals.U4_PB_W(offset,data); }
-
-/* ALPHA GENERATION
-   ----------------
-   Data to A1P6 LED Display Board
-		DX0-DX3 = BCD Data
-		DX4-DX6 = Column
-		AX4(DX7?) = Latch the Data
+/* Data to A1P6 (extra LED Display or Flashers board)
+   ------------
+		DX0-DX3 = BCD Data / flasher lines
+		DX4-DX7 = Column
+		AX4     = Latch the Data (set by aux write handler)
 */
-static WRITE_HANDLER(alpha_u5_pb_w) {
-	// logerror1("ALPHA DATA: %x\n",data);
+static WRITE_HANDLER( xvia_1_b_w ) {
+	if (GTS3locals.extra16led) { // used for alpha display digits on Vegas only
+		if (data > 0 && data < 4 && GTS3locals.ax[4] == GTS3locals.ax[6])
+			GTS3locals.segments[39 + data].w = GTS3locals.pseg[39 + data].w =
+			(GTS3locals.ax[6] & 0x3f) | ((GTS3locals.ax[6] & 0xc0) << 3)
+			| ((GTS3locals.ax[5] & 0x0f) << 11) | ((GTS3locals.ax[5] & 0x10) << 2) | ((GTS3locals.ax[5] & 0x20) << 3);
+	} else if (core_gameData->hw.lampCol > 4) { // flashers
+		coreGlobals.tmpLampMatrix[12] = data;
+	} else if (!(GTS3locals.ax[4] & 1)) { // LEDs
+		if (GTS3locals.alphagen)
+			GTS3locals.segments[40 + (data >> 4)].w = GTS3locals.pseg[40 + (data >> 4)].w = core_bcd2seg[data & 0x0f];
+		else
+			coreGlobals.segments[data >> 4].w = core_bcd2seg[data & 0x0f];
+	}
 }
-
-/* DMD GENERATION
-   ----------------
-   Data to A1P6 Auxilary
-*/
-static WRITE_HANDLER(dmd_u5_pb_w) { logerror1("AUX: WRITE:via_1_b_w: %x\n",data); }
 
 //Should be not used!
 static WRITE_HANDLER( xvia_1_ca1_w )
@@ -370,31 +346,13 @@ static WRITE_HANDLER( xvia_1_ca2_w )
 	GTS3locals.diagnosticLed = data;
 }
 
-//CB1 Varies on Alpha or DMD Generation!
-static WRITE_HANDLER( xvia_1_cb1_w ) { GTS3locals.U5_CB1_W(offset,data); }
-/* ALPHA GENERATION
-   ----------------
-   CB1:   CX1 - A1P6 Where Does this GO?
-*/
-static WRITE_HANDLER(alpha_u5_cb1_w) { logerror1("WRITE:via_1_cb1_w: %x\n",data); }
-/* DMD GENERATION
-   ----------------
-   CB1:   CX1 - A1P6 (Auxilary)
-*/
-static WRITE_HANDLER(dmd_u5_cb1_w) { logerror1("WRITE:via_1_cb1_w: %x\n",data); }
+static WRITE_HANDLER( xvia_1_cb1_w ) {
+	GTS3locals.cx1 = data;
+}
 
-//CB2 Varies on Alpha or DMD Generation!
-static WRITE_HANDLER( xvia_1_cb2_w ) { GTS3locals.U5_CB2_W(offset,data); }
-/* ALPHA GENERATION
-   ----------------
-   CB2:   CX2 - A1P6 Where Does this GO?
-*/
-static WRITE_HANDLER(alpha_u5_cb2_w) { logerror1("WRITE:via_1_cb2_w: %x\n",data); }
-/* DMD GENERATION
-   ----------------
-   CB2:   CX2 - A1P6 (Auxilary)
-*/
-static WRITE_HANDLER(dmd_u5_cb2_w) { logerror1("WRITE:via_1_cb2_w: %x\n",data); }
+static WRITE_HANDLER( xvia_1_cb2_w ) {
+	GTS3locals.cx2 = data;
+}
 
 //IRQ:  IRQ to Main CPU
 static void via_irq(int state) {
@@ -544,9 +502,6 @@ static void GTS3_alpha_common_init(void) {
 
   GTS3locals.U4_PB_W  = alpha_u4_pb_w;
   GTS3locals.U4_PB_R  = alpha_u4_pb_r;
-  GTS3locals.U5_PB_W  = alpha_u5_pb_w;
-  GTS3locals.U5_CB1_W = alpha_u5_cb1_w;
-  GTS3locals.U5_CB2_W = alpha_u5_cb2_w;
   GTS3locals.DISPLAY_CONTROL = alpha_display;
   GTS3locals.UPDATE_DISPLAY = alpha_update;
   GTS3locals.AUX_W = alpha_aux;
@@ -600,9 +555,6 @@ static void gts3dmd_init(void) {
 
   GTS3locals.U4_PB_W  = dmd_u4_pb_w;
   GTS3locals.U4_PB_R  = dmd_u4_pb_r;
-  GTS3locals.U5_PB_W  = dmd_u5_pb_w;
-  GTS3locals.U5_CB1_W = dmd_u5_cb1_w;
-  GTS3locals.U5_CB2_W = dmd_u5_cb2_w;
   GTS3locals.DISPLAY_CONTROL = dmd_display;
   GTS3locals.UPDATE_DISPLAY = dmd_update;
   GTS3locals.AUX_W = dmd_aux;
@@ -753,25 +705,23 @@ static WRITE_HANDLER(lds_w)
 
 //PB0-7 Varies on Alpha or DMD Generation!
 static WRITE_HANDLER(aux_w) {
-	if(offset==0) GTS3locals.AUX_W(offset,data);
-	else
-	   logerror1("aux_w: %x %x\n",offset,data);
+	//logerror1("aux_w: %x %x\n",offset,data);
+	GTS3locals.AUX_W(offset,data);
 }
 /* ALPHA GENERATION
    ----------------
    LED Board Digit Strobe
 */
 static WRITE_HANDLER(alpha_aux) {
-//	GTS3locals.ax4 = data;
-//	logerror1("LED Strobe: %x\n",data);
+	GTS3locals.ax[4+offset] = data;
+	if (!GTS3locals.extra16led && offset) GTS3locals.extra16led = 1;
 }
 /* DMD GENERATION
    ----------------
    Auxilary Data
 */
 static WRITE_HANDLER(dmd_aux) {
-//	logerror1("AUX Write: Offset: %x Data: %x\n",offset,data);
-	dmd_vblank();
+	if (!offset) dmd_vblank();
 }
 //Update the DMD Frames
 static void dmd_vblank(void) {
@@ -783,6 +733,7 @@ static void dmd_vblank(void) {
 
 static WRITE_HANDLER(aux1_w)
 {
+	GTS3locals.ax[1+(offset>>4)] = data;
 	logerror1("Aux1 Write: Offset: %x Data: %x\n",offset,data);
 }
 
