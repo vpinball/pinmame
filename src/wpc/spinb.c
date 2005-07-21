@@ -50,11 +50,11 @@
   Issues:
   #1) Timing all guessed, and still far from good as a result:
       a) switch registering doesn't always seem to work (although it's pretty decent now)
-	  b) game sometimes is unresponsive - especially when it says Ball is Lost
-	  c) After a special is awarded - cpu totally freezes.
+      b) game sometimes is unresponsive - especially when it says Ball is Lost
+      c) After a special is awarded - cpu totally freezes.
   #2) DMD Flicker or DMD Paging problems
       If we use serial port for data, flicker is kind of bad, but paging is fine.
-	  If we use ram for data, there's paging problems
+      If we use ram for data, there's paging problems
   #3) Would love to hear samples of the real machine to see if the music/effects are playing
       at the proper speed.
   #4) After entering sound commander, game does strange things..
@@ -179,12 +179,13 @@ SND CPU #2 8255 PPI
 //Set to 1 to display DMD from RAM, otherwise, it uses Serial Port Data (more accurate, but flicker problem)
 #define DMD_FROM_RAM 0
 
-#define SPINB_Z80CPU_FREQ   2500000
-#define SPINB_8051CPU_FREQ 16000000
+#define SPINB_Z80CPU_FREQ   5000000 /* should be  2500000 2.5 MHz, tweaked for playability */
+#define SPINB_8051CPU_FREQ 24000000 /* should be 16000000  16 MHz, tweaked for playability */
 
 #define SPINB_VBLANKFREQ      60 /* VBLANK frequency*/
-#define SPINB_INTFREQ        180 /* Z80 Interrupt frequency (variable! according to schematics! 250 as used on earlier Inder games will flicker...) */
-#define SPINB_NMIFREQ       1440 /* Z80 NMI frequency (confirmed by Jolly Park schematics) */
+#define SPINB_INTFREQ        210 /* (180 ?) Z80 Interrupt frequency (variable! according to schematics!) */
+#define INTCYCLES             90 /* keep irq high for this many cycles */
+#define SPINB_NMIFREQ       1440 /* Z80 NMI frequency (confirmed by Jolly Park schematics) (should probably be INTFRQ*8=2000) */
 
 /* Declarations */
 WRITE_HANDLER(spinb_sndCmd_w);
@@ -235,8 +236,8 @@ static void spinb_z80int(int data);
 #if DMD_FROM_RAM
 	static UINT8  *dmd32RAM;
 #else
-	static UINT8 dmd32RAM[64][16];
-	static UINT8 dmd32TMP[64][16];
+	// up to 3 frames, 32 rows, 128 columns
+	static UINT8 dmd32RAM[3][32][128/8];
 #endif
 
 /*----------------
@@ -249,9 +250,10 @@ struct {
   int    lampRow, swCol;
   int    diagnosticLed;
   int    ssEn;
+  int    L16isGameOn;
   int    mainIrq;
-  int    DMDBusy;
-  int    DMDStat0;
+  int    DMDReady;
+  int    DMDStat0,DMDStat0pend;
   int    DMDStat1;
   int    DMDData;
   int    DMDPort2;
@@ -260,6 +262,7 @@ struct {
   int    DMDA16Enabled;
   int    DMDA17Enabled;
   int    DMDPage;
+  int    DMDFrame;
   int    DMDRow;
   int    DMDCol;
   int    S1_ALO;
@@ -288,10 +291,17 @@ struct {
   int    SoundCmd;
   int    TestContactos;
   UINT8  volume;
+  UINT8  solInv0,solInv1,solInv2;
   mame_timer *irqtimer;
-  int irqfreq;
-  int nonmi;
+  int    irqfreq;
+  int    nonmi;
+  int    dmdframes;
+  UINT8  dmdP1;
 } SPINBlocals;
+
+// meaning of the DMD stat0/1 lines and a macro to evaluate them
+enum DMDSTATUSCODE { IDLE=0, ERROR, UNKNOWN, BUSY };
+#define DMDSTATUS (SPINBlocals.DMDStat1*2 + SPINBlocals.DMDStat0)
 
 /* -------------------*/
 /* --- Interfaces --- */
@@ -357,11 +367,17 @@ void dmd_serial_callback(int data)
 	if(r5 >= 26 && r5 <= 29) SPINBlocals.DMDPage = 0x1a00;
     if(r5 >= 30 && r5 <= 33) SPINBlocals.DMDPage = 0x1e00;
 #else
-	//if(data > 0)
-	//printf("dmdrow=%02x,r4,5:%02x%02x  - Serial = %x\n",SPINBlocals.DMDRow,r5,r4,data);
-	//dmd32RAM[SPINBlocals.DMDRow][SPINBlocals.DMDCol]=data;
-	dmd32TMP[SPINBlocals.DMDRow][SPINBlocals.DMDCol]=data;
-	SPINBlocals.DMDCol = (SPINBlocals.DMDCol+1) % 16;
+  if (    (SPINBlocals.DMDFrame >= SPINBlocals.dmdframes )
+       || (SPINBlocals.DMDRow   >= 32)
+       || (SPINBlocals.DMDCol   >= 16)) {
+    logerror("bad DMD position, frame=%d, row=%d, col=%d", SPINBlocals.DMDFrame,
+                                                           SPINBlocals.DMDRow,
+                                                           SPINBlocals.DMDCol);
+  }
+  else {
+    dmd32RAM [SPINBlocals.DMDFrame] [SPINBlocals.DMDRow] [SPINBlocals.DMDCol] = data;
+    SPINBlocals.DMDCol++;
+  }
 #endif
 }
 
@@ -414,23 +430,16 @@ static WRITE_HANDLER(solenoid_w)
 {
 	switch(offset){
 		case 0:
+			SPINBlocals.solenoids |=
 			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFFFFFF00) | data;
 			break;
 		case 1:
+			SPINBlocals.solenoids |=
 			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFFFF00FF) | (data<<8);
-            break;
+			break;
 		case 2:
+			SPINBlocals.solenoids |=
 			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFF00FFFF) | (data<<16);
-            break;
-		case 3: // solenoid #25 activates flippers, rest are "fixed" lamps.
-			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFEFFFFFF) | ((data & 0x80)<<17);
-			coreGlobals.tmpLampMatrix[8] = data & 0x7f;
-			break;
-		case 4:
-			coreGlobals.tmpLampMatrix[9] = data;
-			break;
-		case 5:
-			coreGlobals.tmpLampMatrix[10] = data;
 			break;
 		default:
 			LOG(("Solenoid_W Logic Error\n"));
@@ -466,14 +475,21 @@ CI-23 8255 PPI
 		(P4)   Pin  6     : To Sound Board (Ready)
         (P5-P7)Pins 3 - 5 : NC
 */
+
+
 READ_HANDLER(ci23_portc_r) {
 	int data = 0;
 	data |= (SPINBlocals.DMDStat0)<<0;
 	data |= (SPINBlocals.DMDStat1)<<1;
-	data |= !(SPINBlocals.DMDBusy)<<2;
+	data |= !(SPINBlocals.DMDReady)<<2;
 	data |= !(SPINBlocals.TestContactos)<<3;
 	data |= (SPINBlocals.SoundReady)<<4;
 //	LOG(("ci23 = %04x\n",data));
+
+	// let the DMD get some work done 
+	if ((SPINBlocals.DMDReady==0) || (DMDSTATUS==BUSY)) {
+		activecpu_abort_timeslice();
+	}
 	return data;
 }
 
@@ -518,9 +534,9 @@ CI-23 8255 PPI
 */
 WRITE_HANDLER(ci23_porta_w) {
 	if (SPINBlocals.nonmi)
-		coreGlobals.tmpLampMatrix[4] = data;
+		coreGlobals.tmpLampMatrix[4] |= data;
 	else
-		coreGlobals.tmpLampMatrix[SPINBlocals.lampColumn] = data;
+		coreGlobals.tmpLampMatrix[SPINBlocals.lampColumn] |= data;
 }
 /*
 CI-23 8255 PPI
@@ -530,7 +546,7 @@ CI-23 8255 PPI
 */
 WRITE_HANDLER(ci23_portb_w) {
 	if (SPINBlocals.nonmi)
-		coreGlobals.tmpLampMatrix[5] = data;
+		coreGlobals.tmpLampMatrix[5] |= data;
 	else
 		SPINBlocals.lampColumn = core_BitColToNum(data);
 }
@@ -558,7 +574,7 @@ WRITE_HANDLER(ci23_portc_w) {
 }
 
 static WRITE_HANDLER(lamp_ex_w) {
-	coreGlobals.tmpLampMatrix[6+offset] = data;
+	coreGlobals.tmpLampMatrix[6+offset] |= data;
 }
 
 /*
@@ -568,10 +584,15 @@ CI-22 8255 PPI
   (out) P0-P7 : J5 - Pins 7 - 14 (Marked Various) - Fixed Lamps Head & Playfield (??)
 */
 WRITE_HANDLER(ci22_porta_w) {
+	if (SPINBlocals.L16isGameOn) {
+		SPINBlocals.solenoids |=
+		coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFEFFFFFF) | ((data & 0x80)<<17);
+		data &= 0x7f;
+	}
 	if (SPINBlocals.nonmi)
-		coreGlobals.tmpLampMatrix[1] = data;
+		coreGlobals.tmpLampMatrix[1] |= data;
 	else
-		solenoid_w(3,data);
+		coreGlobals.tmpLampMatrix[8] |= data;
 }
 /*
 CI-22 8255 PPI
@@ -581,9 +602,9 @@ CI-22 8255 PPI
 */
 WRITE_HANDLER(ci22_portb_w) {
 	if (SPINBlocals.nonmi)
-		coreGlobals.tmpLampMatrix[2] = data;
+		coreGlobals.tmpLampMatrix[2] |= data;
 	else
-		solenoid_w(4,data);
+		coreGlobals.tmpLampMatrix[9] |= data;
 }
 /*
 CI-22 8255 PPI
@@ -594,9 +615,9 @@ CI-22 8255 PPI
 */
 WRITE_HANDLER(ci22_portc_w) {
 	if (SPINBlocals.nonmi)
-		coreGlobals.tmpLampMatrix[3] = data;
+		coreGlobals.tmpLampMatrix[3] |= data;
 	else
-		solenoid_w(5,data);
+		coreGlobals.tmpLampMatrix[10] |= data;
 }
 /*
 CI-21 8255 PPI
@@ -604,7 +625,10 @@ CI-21 8255 PPI
   Port A:
   (out) P0-P7 : J6 - Pins 1 - 8 (Marked Various) - Solenoids 1-8
 */
-WRITE_HANDLER(ci21_porta_w) { solenoid_w(0,~data); }
+
+WRITE_HANDLER(ci21_porta_w) {
+  if (data) solenoid_w(0, data ^ ~SPINBlocals.solInv0);
+}
 
 /*
 CI-21 8255 PPI
@@ -614,10 +638,10 @@ CI-21 8255 PPI
   (out) P6-P7 : J6 - Pins 18-19 (Marked Various) - Solenoids 17-18?
 */
 WRITE_HANDLER(ci21_portb_w) {
-	if (SPINBlocals.nonmi)
-		coreGlobals.tmpLampMatrix[0] = data;
-	else
-		solenoid_w(2,data);
+  if (SPINBlocals.nonmi)
+    coreGlobals.tmpLampMatrix[0] |= data;
+  else
+    if (data) solenoid_w(2,data ^ ~SPINBlocals.solInv2);
 }
 /*
 CI-21 8255 PPI
@@ -625,7 +649,9 @@ CI-21 8255 PPI
   Port C:
   (out) P0-P7 : J6 - Pins 9 - 17 (no 15) (Marked Various) - Solenoids 9-16
 */
-WRITE_HANDLER(ci21_portc_w) { solenoid_w(1,~data); }
+WRITE_HANDLER(ci21_portc_w) {
+  if (data) solenoid_w(1,data ^ ~SPINBlocals.solInv1);
+}
 
 /*
 SND CPU #1 8255 PPI
@@ -742,9 +768,10 @@ static WRITE_HANDLER(dmdbd_w)
 {
 	LOG(("DMD WRITE = %x\n",data));
 	SPINBlocals.DMDData = data;
-	SPINBlocals.DMDBusy = 0;
+	SPINBlocals.DMDReady = 0;
 	//Trigger an interrupt on INT0
-	cpu_set_irq_line(1, I8051_INT0_LINE, ASSERT_LINE);
+	cpu_set_irq_line(SPINB_CPU_DMD, I8051_INT0_LINE, ASSERT_LINE);
+	activecpu_abort_timeslice();
 }
 
 static INTERRUPT_GEN(spinb_vblank) {
@@ -758,22 +785,15 @@ static INTERRUPT_GEN(spinb_vblank) {
   /*-- lamps --*/
   if ((SPINBlocals.vblankCount % SPINB_LAMPSMOOTH) == 0) {
 	memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
-//	memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
+	memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
   /*-- solenoids --*/
-  coreGlobals.solenoids = SPINBlocals.solenoids;
   if ((SPINBlocals.vblankCount % SPINB_SOLSMOOTH) == 0) {
-	if (SPINBlocals.ssEn) {
-	  int ii;
-	  coreGlobals.solenoids |= CORE_SOLBIT(CORE_SSFLIPENSOL);
-	  /*-- special solenoids updated based on switches --*/
-	  for (ii = 0; ii < 6; ii++)
-		if (core_gameData->sxx.ssSw[ii] && core_getSw(core_gameData->sxx.ssSw[ii]))
-		  coreGlobals.solenoids |= CORE_SOLBIT(CORE_FIRSTSSSOL+ii);
-	}
+	coreGlobals.solenoids = SPINBlocals.solenoids;
+	SPINBlocals.ssEn = (coreGlobals.solenoids >> (SPINBlocals.L16isGameOn ? 25-1 : 5-1)) & 1;
 	SPINBlocals.solenoids = coreGlobals.pulsedSolState;
   }
-  core_updateSw(core_getSol(25));
+  core_updateSw(SPINBlocals.ssEn);
 }
 
 static SWITCH_UPDATE(spinb) {
@@ -793,12 +813,21 @@ static SWITCH_UPDATE(spinb) {
 	  coreGlobals.swMatrix[0] = (inports[SPINB_COMINPORT] & 0x0100)>>8;  //Column 0 Switches
 	  coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0x06) | (inports[SPINB_COMINPORT] & 0x00f9);     //Column 1 Switches
   }
-  SPINBlocals.TestContactos = (core_getSw(-8)>0?1:0);
+  SPINBlocals.TestContactos = (core_getSw(SPINB_SWTEST)>0?1:0);
 }
 
 //Send a sound command to the sound board
 WRITE_HANDLER(spinb_sndCmd_w) {
 	soundbd_w(0,data);
+}
+
+// Unknown write address. Used on Bushido only.
+static WRITE_HANDLER(X6ce0_w) {
+  static int suppresslog=0;
+  if (!suppresslog) {
+    logerror("Unknown write to 0x6ce0\n");
+    suppresslog=1;
+  }
 }
 
 /*Switches are mapped in the manual as:
@@ -814,13 +843,28 @@ static int spinb_m2sw(int col, int row) {
 	return col*10 + row + 20 - 1;
 }
 
-static void spinb_z80int(int data) {  cpu_set_irq_line(0, 0, PULSE_LINE); }
+static void setirqline(int state) {
+  cpu_set_irq_line(SPINB_CPU_GAME, 0, state);
+}
 
-static INTERRUPT_GEN(spinb_z80nmi) {  cpu_set_nmi_line(0, PULSE_LINE); }
+static void spinb_z80int(int data) {
+  setirqline(ASSERT_LINE);
+  timer_set(TIME_IN_CYCLES(INTCYCLES,SPINB_CPU_GAME),CLEAR_LINE,setirqline);
+}
+
+static INTERRUPT_GEN(spinb_z80nmi) {  cpu_set_nmi_line(SPINB_CPU_GAME, PULSE_LINE); }
 
 /*Machine Init*/
 static MACHINE_INIT(spinb) {
   memset(&SPINBlocals, 0, sizeof(SPINBlocals));
+
+  memset(dmd32RAM,0,sizeof(dmd32RAM));
+  SPINBlocals.dmdframes = core_gameData->hw.display;
+
+  SPINBlocals.solInv0     = (core_gameData->hw.gameSpecific1 >> 24) & 0xff;
+  SPINBlocals.solInv1     = (core_gameData->hw.gameSpecific1 >> 16) & 0xff;
+  SPINBlocals.solInv2     = (core_gameData->hw.gameSpecific1 >>  8) & 0xff;
+  SPINBlocals.L16isGameOn =  core_gameData->hw.gameSpecific1        & 0xff;
 
   SPINBlocals.irqtimer = timer_alloc(spinb_z80int);
   SPINBlocals.irqfreq = SPINB_INTFREQ;
@@ -841,14 +885,10 @@ static MACHINE_INIT(spinb) {
 
 static MACHINE_INIT(spinbnmi) {
   machine_init_spinb();
-  SPINBlocals.irqfreq = SPINB_INTFREQ * 2;
-  timer_adjust(SPINBlocals.irqtimer, 1.0/(double)SPINBlocals.irqfreq, 0, 1.0/(double)SPINBlocals.irqfreq);
   SPINBlocals.nonmi=0;
 }
 
 static MACHINE_RESET(spinb) {
-  //Is always off by 1 if we don't correct it here!
-  SPINBlocals.DMDRow = 64-33;
   SPINBlocals.volume = 122;
 }
 
@@ -864,98 +904,129 @@ static READ_HANDLER(i8031_port_read)
 	return data;
 }
 
+/*PORT 1:
+    P1.0    (O) = Active Low Chip Enable for RAM (must be 0 to access ram)
+    P1.1    (O) = DESP (Data Enable?) - Goes to 0 while not sending serial data, 1 otherwise
+    P1.2    (O) = RDATA  (Set to 1 when beginning @ row 0)
+    P1.3    (O) = ROWCK  (Clocked after 16 bytes sent (ie, 1 row) : 0->1 transition)
+    P1.4    (O) = COLATCH (Clocked after 1 row sent also) 1->0 transition
+    P1.5    (O) = Active Low - Clears INT0? & Enables data in from main cpu
+    P1.6    (O) = STAT0
+    P1.7    (O) = STAT1 */
+
+enum P1BITS { RAMCE=0, DESP=1, RDATA=2, ROWCK=3, COLATCH=4, READY=5, STAT0=6, STAT1=7 };
+#define GETBIT(value,bitno) (((value) >> (bitno)) & 1)
+
+static void P1_update(int data)
+{
+  int chg = data ^ SPINBlocals.dmdP1;	// bits which have changed
+  int whi = chg & data;					// bits which went high
+  int wlo = chg & SPINBlocals.dmdP1;	// bits which went low
+
+  if (SPINBlocals.DMDStat0pend) {
+    SPINBlocals.DMDStat0 = GETBIT(data,STAT0);
+    SPINBlocals.DMDStat0pend = FALSE;
+  }
+
+  if (chg)
+  {
+    // RAM Chip ~Enable
+    if (GETBIT(chg,RAMCE)) {
+      SPINBlocals.DMDRamEnabled = !GETBIT(data,RAMCE);
+    }
+  
+    // Data Enable
+    if (GETBIT(chg,DESP)) {
+    }
+  
+    // Row Data
+    if (GETBIT(whi,RDATA)) {
+      SPINBlocals.DMDRow = 0;
+      SPINBlocals.DMDCol = 0;
+    }
+  
+    // Row Clock
+    if (GETBIT(whi,ROWCK)) {
+      SPINBlocals.DMDCol = 0;
+      SPINBlocals.DMDRow++;
+      if (SPINBlocals.DMDRow >= 32) {
+        SPINBlocals.DMDRow = 0;
+        SPINBlocals.DMDFrame++;
+        if (SPINBlocals.DMDFrame >= SPINBlocals.dmdframes) {
+          SPINBlocals.DMDFrame = 0;
+        }
+      }
+    }
+  
+    // Column Latch
+    if (GETBIT(chg,COLATCH)) {
+    }
+  
+    // DMD Ready (to read next command)
+    if (GETBIT(chg,READY)) {
+      SPINBlocals.DMDReady = GETBIT(data,READY);
+      if (GETBIT(wlo,READY)) {
+        cpu_set_irq_line(SPINB_CPU_DMD, I8051_INT0_LINE, CLEAR_LINE);
+      }
+    }
+  
+    // DMD Status 0
+    if (GETBIT(chg,STAT0)) {
+      SPINBlocals.DMDStat0pend = TRUE;
+    }
+  
+    // DMD Status 1
+    if (GETBIT(chg,STAT1)) {
+      SPINBlocals.DMDStat1 = GETBIT(data,STAT1);
+    }
+  }
+
+#ifdef MAME_DEBUG
+{
+  static int prvstat;
+  int newstat=DMDSTATUS;
+  if (newstat!=prvstat && newstat==ERROR) logerror("DMD reports error\n");
+  prvstat=newstat;
+}
+#endif
+
+  SPINBlocals.dmdP1 = data;
+}
+
 static WRITE_HANDLER(i8031_port_write)
 {
-	switch(offset) {
-		//Used for external addressing...
-		case 0:
-		//Port 2 Used for external addressing, but we need to capture it here for access to external ram
-		case 2:
-			SPINBlocals.DMDPort2 = data;
-			break;
-		/*PORT 1:
-			P1.0    (O) = Active Low Chip Enable for RAM (must be 0 to access ram)
-			P1.1    (O) = DESP (Data Enable?) - Goes to 0 while not sending serial data, 1 otherwise
-			P1.2    (O) = RDATA  (Set to 1 when beginning @ row 0)
-			P1.3    (O) = ROWCK  (Clocked after 16 bytes sent (ie, 1 row) : 0->1 transition)
-			P1.4    (O) = COLATCH (Clocked after 1 row sent also) 1->0 transition
-			P1.5    (O) = Active Low - Clears INT0? & Enables data in from main cpu
-			P1.6    (O) = STAT0
-			P1.7    (O) = STAT1 */
-		case 1:
-			SPINBlocals.DMDRamEnabled = !(data & 1);
-			if(!(GET_BIT5)) {
-				//Clear it
-				cpu_set_irq_line(1, I8051_INT0_LINE, CLEAR_LINE);
-				SPINBlocals.DMDBusy = 1;	//Busy = 1 when no INT
-				//LOG(("Clearing INT and Reading Data\n"));
-			}
-			SPINBlocals.DMDStat0 = GET_BIT6;
-			SPINBlocals.DMDStat1 = GET_BIT7;
+    switch(offset) {
+        //Used for external addressing...
+        case 0:
+        // break ?
 
-			{
-			static int de=0;
-			static int rd=0;
-			static int rc=0;
-			static int cl=0;
-			//Data Enable
-			if(de != GET_BIT1) {
-				de = GET_BIT1;
-				//printf("DE = %x\n",de);
-			}
-			//Row Data
-			if(rd != GET_BIT2) {
-				rd = GET_BIT2;
-				//printf("RD = %x\n",rd);
-#if DMD_FROM_RAM
-#else
-				if (rd) {
-					if (SPINBlocals.DMDRow == 32)
-						memcpy(dmd32RAM,dmd32TMP,sizeof(dmd32TMP));
-					if (SPINBlocals.DMDRow > 32) {
-						SPINBlocals.DMDRow = 0;
-						SPINBlocals.DMDCol = 0;
-					}
-				}
-#endif
-			}
-			//Row Clock
-			if(rc != GET_BIT3) {
-				rc = GET_BIT3;
-				//printf("RC = %x\n",rc);
-#if DMD_FROM_RAM
-#else
-				if (rc) {
-					SPINBlocals.DMDCol = 0;
-					SPINBlocals.DMDRow = (SPINBlocals.DMDRow+1) % 64;
-				}
-#endif
-			}
-			//Column Latch
-			if(cl != GET_BIT4) {
-				cl = GET_BIT4;
-				//printf("CL = %x\n",cl);
-			}
-			}
+        //Port 2 Used for external addressing, but we need to capture it here for access to external ram
+        case 2:
+            SPINBlocals.DMDPort2 = data;
+            break;
 
-			break;
-		/*PORT 3:
-			P3.0/RXD (O) = SDATA (Output?)
-			P3.1/TXD (O) = DOTCK
-			P3.2/INT0(I) = Command Ready from Main CPU
-			P3.3/INT1(O) = A16 to ROM1
-			P3.4/TO  (O) = ROM1 Chip Enable (Active Low)
-			P3.5/T1  (O) = A17 to ROM1 (not connected)
-			P3.6     (O) = /WR
-			P3.7     (O) = /RD*/
-		case 3:
-			SPINBlocals.DMDA16Enabled = GET_BIT3;
-			SPINBlocals.DMDRom1Enabled = !(GET_BIT4);
-			SPINBlocals.DMDA17Enabled = GET_BIT5;
-			break;
-		default:
-			LOG(("writing to port %x data = %x\n",offset,data));
-	}
+        case 1:
+            P1_update(data);
+            break;
+
+        /*PORT 3:
+            P3.0/RXD (O) = SDATA (Output?)
+            P3.1/TXD (O) = DOTCK
+            P3.2/INT0(I) = Command Ready from Main CPU
+            P3.3/INT1(O) = A16 to ROM1
+            P3.4/TO  (O) = ROM1 Chip Enable (Active Low)
+            P3.5/T1  (O) = A17 to ROM1 (not connected)
+            P3.6     (O) = /WR
+            P3.7     (O) = /RD*/
+        case 3:
+            SPINBlocals.DMDA16Enabled = GET_BIT3;
+            SPINBlocals.DMDRom1Enabled = !(GET_BIT4);
+            SPINBlocals.DMDA17Enabled = GET_BIT5;
+            break;
+
+        default:
+            LOG(("writing to port %x data = %x\n",offset,data));
+    }
 }
 
 //Read the command from the main cpu
@@ -1084,7 +1155,9 @@ MEMORY_END
 
 static MEMORY_WRITE_START(spinb_writemem)
 {0x0000,0x3fff,MWA_ROM},
-{0x4000,0x5fff,MWA_RAM, &generic_nvram, &generic_nvram_size},
+{0x4000,0x43ff,MWA_RAM},
+{0x4400,0x45ff,MWA_RAM, &generic_nvram, &generic_nvram_size},
+{0x4600,0x5fff,MWA_RAM},
 {0x6000,0x6003,ppi8255_0_w},
 {0x6400,0x6403,ppi8255_1_w},
 {0x6800,0x6803,ppi8255_2_w},
@@ -1092,6 +1165,7 @@ static MEMORY_WRITE_START(spinb_writemem)
 {0x6c20,0x6c20,soundbd_w},
 {0x6c40,0x6c45,lamp_ex_w},
 {0x6c60,0x6c60,dmdbd_w},
+{0x6ce0,0x6ce0,X6ce0_w},
 MEMORY_END
 
 /* ------------------- */
@@ -1206,8 +1280,7 @@ MACHINE_DRIVER_START(spinb)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_CPU_ADD_TAG("mcpu", Z80, SPINB_Z80CPU_FREQ)
   MDRV_CPU_MEMORY(spinb_readmem, spinb_writemem)
-  MDRV_CPU_VBLANK_INT(spinb_vblank, SPINB_VBLANKFREQ)
-
+  MDRV_CPU_VBLANK_INT(spinb_vblank, 1)
   MDRV_SWITCH_UPDATE(spinb)
   MDRV_SWITCH_CONV(spinb_sw2m,spinb_m2sw)
 MACHINE_DRIVER_END
@@ -1301,36 +1374,39 @@ PINMAME_VIDEO_UPDATE(SPINBdmd_update) {
 
 //DRAW DMD FROM SERIAL PORT DATA
 
+// translate dot intensities
+static int intens[3][4]= {
+ {0,3,3,3},
+ {0,1,3,3},
+ {0,1,2,3}
+};
+
 PINMAME_VIDEO_UPDATE(SPINBdmd_update) {
-  UINT8 *RAM  = ((UINT8 *)dmd32RAM);
-  UINT8 *RAM2;
-  tDMDDot dotCol;
-  int ii,jj;
-  RAM2 = RAM;
-  RAM2 = RAM+0x200;
+  int     row,col,bit,dot;
+  UINT8   *line;
+  tDMDDot dotCol={0};
+  UINT8   d1,d2,d3;
 
-  for (ii = 1; ii <= 32; ii++) {
-    UINT8 *line = &dotCol[ii][0];
-    for (jj = 0; jj < (128/8); jj++) {
-	  UINT8 intens1, intens2, dot1, dot2;
-	  dot1 = core_revbyte(RAM[0]);
-	  dot2 = core_revbyte(RAM2[0]);
-	  intens1 = 2*(dot1 & 0x55) + (dot2 & 0x55);
-      intens2 =   (dot1 & 0xaa) + (dot2 & 0xaa)/2;
-
-      *line++ = (intens2>>6) & 0x03;
-      *line++ = (intens1>>6) & 0x03;
-      *line++ = (intens2>>4) & 0x03;
-      *line++ = (intens1>>4) & 0x03;
-      *line++ = (intens2>>2) & 0x03;
-      *line++ = (intens1>>2) & 0x03;
-      *line++ = (intens2)    & 0x03;
-      *line++ = (intens1)    & 0x03;
-      RAM += 1; RAM2 += 1;
+  for (row=0; row < 32; row++)
+  {
+    line = &dotCol[row+1][0];
+    for (col=0; col < 16; col++)
+    {
+      d1=dmd32RAM[0][row][col];
+      d2=dmd32RAM[1][row][col];
+      d3=dmd32RAM[2][row][col];
+      for(bit=0; bit < 8; bit++)
+      {
+        dot = (d1&1) + (d2&1) + (d3&1);
+        dot = intens[SPINBlocals.dmdframes-1][dot];
+        *line++ = dot;
+        d1>>=1; d2>>=1; d3>>=1;
+      }
     }
     *line = 0;
   }
   video_update_core_dmd(bitmap, cliprect, dotCol, layout);
   return 0;
+
 }
 #endif
