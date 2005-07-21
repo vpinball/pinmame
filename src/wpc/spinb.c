@@ -486,7 +486,7 @@ READ_HANDLER(ci23_portc_r) {
 	data |= (SPINBlocals.SoundReady)<<4;
 //	LOG(("ci23 = %04x\n",data));
 
-	// let the DMD get some work done 
+	// let the DMD get some work done
 	if ((SPINBlocals.DMDReady==0) || (DMDSTATUS==BUSY)) {
 		activecpu_abort_timeslice();
 	}
@@ -934,17 +934,17 @@ static void P1_update(int data)
     if (GETBIT(chg,RAMCE)) {
       SPINBlocals.DMDRamEnabled = !GETBIT(data,RAMCE);
     }
-  
+
     // Data Enable
     if (GETBIT(chg,DESP)) {
     }
-  
+
     // Row Data
     if (GETBIT(whi,RDATA)) {
       SPINBlocals.DMDRow = 0;
       SPINBlocals.DMDCol = 0;
     }
-  
+
     // Row Clock
     if (GETBIT(whi,ROWCK)) {
       SPINBlocals.DMDCol = 0;
@@ -957,11 +957,11 @@ static void P1_update(int data)
         }
       }
     }
-  
+
     // Column Latch
     if (GETBIT(chg,COLATCH)) {
     }
-  
+
     // DMD Ready (to read next command)
     if (GETBIT(chg,READY)) {
       SPINBlocals.DMDReady = GETBIT(data,READY);
@@ -969,12 +969,12 @@ static void P1_update(int data)
         cpu_set_irq_line(SPINB_CPU_DMD, I8051_INT0_LINE, CLEAR_LINE);
       }
     }
-  
+
     // DMD Status 0
     if (GETBIT(chg,STAT0)) {
       SPINBlocals.DMDStat0pend = TRUE;
     }
-  
+
     // DMD Status 1
     if (GETBIT(chg,STAT1)) {
       SPINBlocals.DMDStat1 = GETBIT(data,STAT1);
@@ -1384,7 +1384,7 @@ static int intens[3][4]= {
 PINMAME_VIDEO_UPDATE(SPINBdmd_update) {
   int     row,col,bit,dot;
   UINT8   *line;
-  tDMDDot dotCol={0};
+  tDMDDot dotCol={{0}};
   UINT8   d1,d2,d3;
 
   for (row=0; row < 32; row++)
