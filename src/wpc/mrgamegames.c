@@ -3,6 +3,7 @@
 #include "mrgame.h"
 #include "sndbrd.h"
 
+//cheap hack to avoid the problem that we've run out of generation flags again
 #define GEN_MRGAME GEN_ALVG
 
 
@@ -55,6 +56,22 @@ MRGAME_SOUNDROM14(		"snd_ic06.rom", CRC(fba5a8f1) SHA1(ddf989abebe05c569c9ecdd49
 MRGAME_ROMEND
 CORE_GAMEDEFNV(motrshow,"Motor Show",1988,"Mr. Game (Italy)",mMRGAME1,GAME_IMPERFECT_SOUND)
 
+//Alternate Rom Set (cpu only)
+MRGAME_ROMSTART(motrshwa,	"cpuic13a.rom", CRC(2dbdd9d4) SHA1(b404814a4e83ead6da3c57818ae97f23d380f9da),
+							"cpuic14b.rom", CRC(0bd98fec) SHA1(b90a7e997db59740398003ba94a69118b1ee70af))
+MRGAME_VIDEOROM1(		"vid_ic14.rom", CRC(1d4568e2) SHA1(bfc2bb59708ce3a09f9a1b3460ed8d5269840c97),
+						"vid_ic55.rom", CRC(c27a4ded) SHA1(9c2c9b17f1e71afb74bdfbdcbabb99ef935d32db),
+						"vid_ic56.rom", CRC(1664ec8d) SHA1(e7b15acdac7dfc51b668e908ca95f02a2b569737),
+						"vid_ic66.rom", CRC(5b585252) SHA1(b88e56ebdce2c3a4b170aff4b05018e7c21a79b8))
+MRGAME_SOUNDROM14(		"snd_ic06.rom", CRC(fba5a8f1) SHA1(ddf989abebe05c569c9ecdd498bd8ea409df88ac),
+						"snd_ic22.rom", CRC(e6c1098e) SHA1(06bf8917a27d5e46e4aab93e1f212918418e3a82),
+						"snd_ic35.rom", CRC(9dec153d) SHA1(8a0140257316aa19c0401456839e11b6896609b1),
+						"snd_ic36.rom", CRC(4f42be6e) SHA1(684e988f413cd21c785ad5d60ef5eaddddaf72ab))
+MRGAME_ROMEND
+#define init_motrshwa init_motrshow
+#define input_ports_motrshwa input_ports_motrshow
+CORE_CLONEDEFNV(motrshwa,motrshow,"Motor Show (alternate set)",1988,"Mr. Game (Italy)",mMRGAME1,GAME_IMPERFECT_SOUND)
+
 
 /*-------------------------------------------------------------------
 / Mac Attack (1989?)
@@ -73,17 +90,17 @@ MRGAME_SOUNDROM14(		"snd_ic06.rom", NO_DUMP,
 						"snd_ic07.rom", NO_DUMP,
 						"snd_ic22.rom", NO_DUMP,
 						"snd_ic35.rom", NO_DUMP)
-
+ 
 MRGAME_ROMEND
 CORE_GAMEDEFNV(macattck,"Mac Attack",1989,"Mr. Game (Italy)",mMRGAME1,GAME_IMPERFECT_SOUND)
 
 
 /*-------------------------------------------------------------------
-/ World Cup 90 (1988?)
+/ World Cup 90 (1990)
 /-------------------------------------------------------------------*/
 INITGAME(wcup90, mrgame_disp, FLIP_SWNO(65,64), 4/*?*/, SNDBRD_MRGAME, 0)
-MRGAME_ROMSTART(wcup90,	"cpu_ic13.rom", NO_DUMP,
-						"cpu_ic14.rom", NO_DUMP)
+MRGAME_ROMSTART(wcup90,	"cpu_ic13.rom", CRC(0e2edfb0) SHA1(862fb1f6509fb1f560d0b2bb8a5764f64b259f04),
+						"cpu_ic14.rom", CRC(fdd03165) SHA1(6dc6e68197218f8808436098c26cd04fc3215b1c))
 MRGAME_VIDEOROM2(		"vid_ic91.rom", CRC(3287ad20) SHA1(d5a453efc7292670073f157dca04897be857b8ed),
 						"vid_ic14.rom", CRC(a101d562) SHA1(ad9ad3968f13169572ec60e22e84acf43382b51e),
 						"vid_ic15.rom", CRC(40791e7a) SHA1(788760b8527df48d1825be88099491b6e94f0a19),

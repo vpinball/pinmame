@@ -88,7 +88,7 @@
 	   ROM_LOAD16_BYTE(n2, 0x000001, 0x8000, chk2)
 
 /*-- VIDEO ROMS --*/
-
+ 
 //Generation 1 
 #define MRGAME_VIDEOROM1(n1, chk1, n2, chk2, n3, chk3, n4, chk4) \
   NORMALREGION(0x10000, MRGAME_MEMREG_VID) \
@@ -106,9 +106,9 @@
   ROM_REGION( 0x30000, REGION_GFX1, ROMREGION_DISPOSE ) \
    ROM_LOAD(n2, 0x0000, 0x8000, chk2) \
    ROM_LOAD(n3, 0x8000, 0x8000, chk3) \
-   ROM_LOAD(n4, 0x0000, 0x8000, chk4) \
-   ROM_LOAD(n5, 0x8000, 0x8000, chk5) \
-   ROM_LOAD(n6, 0x10000, 0x8000, chk6) \
+   ROM_LOAD(n4, 0x10000, 0x8000, chk4) \
+   ROM_LOAD(n5, 0x18000, 0x8000, chk5) \
+   ROM_LOAD(n6, 0x20000, 0x8000, chk6) \
   ROM_REGION( 0x0020, REGION_PROMS, 0 ) \
    ROM_LOAD(n7, 0x0000, 0x0020, chk7)
 

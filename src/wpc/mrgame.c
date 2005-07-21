@@ -22,6 +22,8 @@
   Clock: 3 Mhz
   Interrupt: Some funky timing thing..
   I/O: 8255
+  Generation #1 - 2 roms for characters & sprites ( 2 bits per pixel )
+  Generation #2 - 5 roms for characters & sprites ( 5 bits per pixel ) - Manual calls it '32 Color Video Board'
 
   Sound Board:
   CPU: 2 x Z80
@@ -33,7 +35,9 @@
   #1) Used a hack to ensure all video commands are read by the video cpu - not sure if the "underlying"
       cause is still making other things wrong!
   #2) Timing of animations might be too slow..
-  #3) M114S Sound chip emulated but needs to be improved for much better accuracy
+  #3) M114S Sound chip emulated but needs to be improved for better accuracy
+  #4) No sprites on Generation 2 hardware
+  #5) Colors not working properly on Generation 2 hardware
 
 ************************************************************************************************/
 #include "driver.h"
@@ -74,7 +78,7 @@ static int vidcmd_buf[MRGAME_VID_MAX_BUF];
 static int vidcmd_next = 0;
 static int vidcmd_read = 0;
 
-#if 1
+#if 0
 #define LOG(x) printf x
 #else
 #define LOG(x) logerror x
@@ -110,6 +114,7 @@ static struct {
   int vid_a11;
   int vid_a12;
   int vid_a13;
+  int vid_a14;
   int sndstb;
   int sndcmd;
 } locals;
@@ -215,9 +220,6 @@ static MACHINE_INIT(mrgame) {
 
   /* init PPI */
   ppi8255_init(&ppi8255_intf);
-
-  //pull video registers out of ram space
-  install_mem_write_handler(1,0x6800, 0x68ff, vid_registers_w);
 
   sndbrd_0_init(core_gameData->hw.soundBoard,   2, memory_region(MRGAME_MEMREG_SND1),NULL,NULL);
 }
@@ -471,9 +473,13 @@ static WRITE_HANDLER(vid_registers_w) {
 		case 0:
 			locals.vid_a11 = data & 1;
 			break;
-		//?
+		//Interrupt Enable or Strobe? INTST/ on schems
 		case 1:
 			cpu_interrupt_enable(1,data&1);
+			break;
+		//Graphics rom - address line 14 pin
+		case 2:
+			locals.vid_a14 = data & 1;
 			break;
 		//Graphics rom - address line 12 pin
 		case 3:
@@ -483,8 +489,22 @@ static WRITE_HANDLER(vid_registers_w) {
 		case 4:
 			locals.vid_a13 = data & 1;
 			break;
+
+		//?? - POUT2 on schems for Generation #2 board
+		case 5:
+			break;
+
+		//Not used?
+		case 6:
+		case 7:
+			break;
 	}
-	//LOG(("vid_register[%02x]_w=%x\n",offset,data));
+
+#ifdef MAME_DEBUG
+	if(offset != 1)
+		LOG(("vid_register[%02x]_w=%x\n",offset,data));
+#endif
+
 }
 
 /* Sound CPU 1 Ports
@@ -623,11 +643,14 @@ if(keyboard_pressed_memory_repeat(KEYCODE_Z,25)) {
 	locals.acksnd = !locals.acksnd;
 #endif
 }
-  if(keyboard_pressed_memory_repeat(KEYCODE_X,2))
-	  //charoff-=0x100;
-  if(keyboard_pressed_memory_repeat(KEYCODE_C,2))
+  core_textOutf(50,20,1,"offset=%08x", charoff);
+  if(keyboard_pressed_memory_repeat(KEYCODE_Z,4))
+	  charoff+=0x100;
+  if(keyboard_pressed_memory_repeat(KEYCODE_X,4))
+	  charoff-=0x100;
+  if(keyboard_pressed_memory_repeat(KEYCODE_C,4))
 	  charoff++;
-  if(keyboard_pressed_memory_repeat(KEYCODE_V,2))
+  if(keyboard_pressed_memory_repeat(KEYCODE_V,4))
 	  charoff--;
 }
 #endif
@@ -641,7 +664,7 @@ if(keyboard_pressed_memory_repeat(KEYCODE_Z,25)) {
 //			dirtybuffer[offs] = 0;
 
 			sx = offs % 32;
-			sy = offs / 32;
+			sy = offs / 32; 
 
 			colorindex = (colorindex+2);
 			if(sx==0) colorindex=1;
@@ -649,7 +672,11 @@ if(keyboard_pressed_memory_repeat(KEYCODE_Z,25)) {
 			scrollers[sx] = -mrgame_objectram[colorindex-1];
 
 			tile = mrgame_videoram[offs]+
-                   (locals.vid_a11<<8)+(locals.vid_a12<<9)+(locals.vid_a13<<10);
+                   (locals.vid_a11<<8)+(locals.vid_a12<<9)+(locals.vid_a13<<10)+(locals.vid_a14<<11);
+
+			#ifdef MAME_DEBUG
+			color+=charoff;
+			#endif
 
 			drawgfx(tmpbitmap,Machine->gfx[0],
 					tile,
@@ -671,6 +698,11 @@ if(keyboard_pressed_memory_repeat(KEYCODE_Z,25)) {
 		flipy = mrgame_objectram[offs + 1] & 0x80;
 		tile = (mrgame_objectram[offs + 1] & 0x3f) +
 				   (locals.vid_a11<<6) + (locals.vid_a12<<7) + (locals.vid_a13<<7);
+
+		#ifdef MAME_DEBUG
+			tile+=charoff;
+		#endif
+
 		color = mrgame_objectram[offs + 2];	//Note: This byte may have upper bits also used for other things, but no idea what if/any!
 
 		drawgfx(tmpbitmap2,Machine->gfx[1],
@@ -718,7 +750,9 @@ static MEMORY_WRITE_START(videog1_writemem)
   { 0x4800, 0x4bff, MWA_RAM, &mrgame_videoram, &videoram_size },
   { 0x4c00, 0x4fff, MWA_RAM },
   { 0x5000, 0x50ff, MWA_RAM, &mrgame_objectram },
-  { 0x5100, 0x7fff, MWA_RAM },
+  { 0x5100, 0x67ff, MWA_RAM },
+  { 0x6800, 0x68ff, vid_registers_w },
+  { 0x6900, 0x7fff, MWA_RAM },
   { 0x8100, 0x8103, ppi8255_0_w},
 MEMORY_END
 
@@ -736,7 +770,9 @@ static MEMORY_WRITE_START(videog2_writemem)
   { 0x8800, 0x8bff, MWA_RAM, &mrgame_videoram, &videoram_size },
   { 0x8c00, 0x8fff, MWA_RAM },
   { 0x9000, 0x90ff, MWA_RAM, &mrgame_objectram },
-  { 0x9100, 0xbfff, MWA_RAM },
+  { 0x9100, 0xa7ff, MWA_RAM },
+  { 0xa800, 0xa8ff, vid_registers_w },
+  { 0xa900, 0xbfff, MWA_RAM },
   { 0xc000, 0xc003, ppi8255_0_w},
 MEMORY_END
 
@@ -868,6 +904,7 @@ static struct GfxLayout charlayout_g2 =
 	4096,						/* 4096 characters = (32768 Bytes / 8 bits per byte)  */
 	5,							/* 5 bits per pixel */
 	{ 0, 0x8000*8*1, 0x8000*8*2, 0x8000*8*3, 0x8000*8*4},		/* the bitplanes are separated across the 5 roms*/
+/*	{ 0x8000*8*4, 0x8000*8*3, 0x8000*8*2, 0x8000*8*1, 0x8000*8*0},		/* the bitplanes are separated across the 5 roms*/
 	{ 0, 1, 2, 3, 4, 5, 6, 7 },	/* pretty straightforward layout */
 	{ 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8 },
 	8*8	/* every char takes 8 consecutive bytes */
