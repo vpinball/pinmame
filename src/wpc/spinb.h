@@ -5,7 +5,10 @@
 #include "wpcsam.h"
 #include "sim.h"
 
-#define SPINB_CPUNO	0
+#define SPINB_CPU_GAME 0
+#define SPINB_CPU_DMD  1
+#define SPINB_CPU_SND1 2
+#define SPINB_CPU_SND2 3
 
 /*-------------------------
 / Machine driver constants
@@ -26,7 +29,7 @@
     COREPORT_BIT(     0x0080, "Test Tecnico",	  KEYCODE_8)\
 	COREPORT_BIT(     0x0100, "Test Contacto",	  KEYCODE_7)\
   PORT_START /* 1 */ \
-    COREPORT_DIPNAME( 0x000f, 0x0008, "Coins Per Game") \
+    COREPORT_DIPNAME( 0x000f, 0x0002, "Coins Per Game") \
       COREPORT_DIPSET(0x0000, "25 ptas 2 Games" ) \
       COREPORT_DIPSET(0x0008, "25 ptas 1 Game" ) \
       COREPORT_DIPSET(0x0004, "25 ptas 1 Game, 100 ptas 5 Games" ) \
@@ -111,16 +114,15 @@
 
 #define SPINB_COMINPORT       CORE_COREINPORT
 
-#define SPINB_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
-#define SPINB_LAMPSMOOTH      6 /* Smooth the lamps over this number of VBLANKS */
+#define SPINB_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
+#define SPINB_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
 #define SPINB_DISPLAYSMOOTH   1 /* Smooth the display over this number of VBLANKS */
 
 /*-- To access C-side multiplexed solenoid/flasher --*/
 #define SPINB_CSOL(x) ((x)+24)
 
 /*-- switch numbers --*/
-#define SPINB_SWTEST     -7
-#define SPINB_SWENTER    -6
+#define SPINB_SWTEST     -8
 
 /*-- Memory regions --*/
 #define SPINB_MEMREG_CPU		REGION_CPU1
