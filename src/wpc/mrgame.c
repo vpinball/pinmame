@@ -904,7 +904,9 @@ static struct GfxLayout charlayout_g2 =
 	4096,						/* 4096 characters = (32768 Bytes / 8 bits per byte)  */
 	5,							/* 5 bits per pixel */
 	{ 0, 0x8000*8*1, 0x8000*8*2, 0x8000*8*3, 0x8000*8*4},		/* the bitplanes are separated across the 5 roms*/
-/*	{ 0x8000*8*4, 0x8000*8*3, 0x8000*8*2, 0x8000*8*1, 0x8000*8*0},		/* the bitplanes are separated across the 5 roms*/
+#if 0
+	{ 0x8000*8*4, 0x8000*8*3, 0x8000*8*2, 0x8000*8*1, 0x8000*8*0},		/* the bitplanes are separated across the 5 roms*/
+#endif
 	{ 0, 1, 2, 3, 4, 5, 6, 7 },	/* pretty straightforward layout */
 	{ 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8 },
 	8*8	/* every char takes 8 consecutive bytes */
