@@ -514,6 +514,7 @@ DRIVERNV(monrobwl)      //Stars & Strikes (1980??)
 // ----------------
 DRIVERNV(dakar)			//Dakar (1988?)
 DRIVERNV(motrshow)		//Motor Show (1988?)
+DRIVERNV(motrshwa)		//Motor Show (alternate set)
 DRIVERNV(macattck)		//Mac Attack (1989?)
 DRIVERNV(wcup90)		//World Cup 90 (1990)
 
