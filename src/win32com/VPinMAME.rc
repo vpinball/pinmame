@@ -57,6 +57,7 @@ IDB_SPLASH              BITMAP                  "Res\\VPinMAMESplash.bmp"
 IDB_SPLASH2             BITMAP                  "Res\\VPinMAMESplash2.bmp"
 IDB_SPLASH3             BITMAP                  "Res\\VPinMAMESplash3.bmp"
 IDB_SPLASH4             BITMAP                  "Res\\VPinMAMESplash4.bmp"
+IDB_EASTEREGG           BITMAP                  "Res\\VPinMAMEEasterEgg.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
