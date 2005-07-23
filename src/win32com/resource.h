@@ -52,6 +52,7 @@
 #define IDD_GAMEINFODLG                 209
 #define IDD_CONTROLLERSETTINGSDLG       210
 #define IDR_CTXMENU                     211
+#define IDB_EASTEREGG                   213
 #define IDC_YESIAM                      228
 #define IDC_NOIAMNOT                    230
 #define IDC_DISGAMESPEC                 231
@@ -76,7 +77,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        213
+#define _APS_NEXT_RESOURCE_VALUE        214
 #define _APS_NEXT_COMMAND_VALUE         32779
 #define _APS_NEXT_CONTROL_VALUE         241
 #define _APS_NEXT_SYMED_VALUE           106

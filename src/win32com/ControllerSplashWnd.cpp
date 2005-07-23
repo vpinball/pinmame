@@ -15,7 +15,7 @@ public:
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_LBUTTONDOWN, OnClick)
 		MESSAGE_HANDLER(WM_TIMER, OnClick)
-		MESSAGE_HANDLER(WM_CHAR, OnClick)
+		MESSAGE_HANDLER(WM_CHAR, OnChar)
 		MESSAGE_HANDLER(WM_PAINT, OnPaint) 
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 	END_MSG_MAP()
@@ -28,6 +28,7 @@ private:
 	HFONT		m_hFont;			// font for the credit line
 	COLORREF	m_Color;			// color for the credit line
 	int			m_iCreditStartY;	// start of the credit box (Y direction)
+	bool		m_fEasterEggScreen; // true if the easter egg screen is displayed
 
 	void DoPaint(HDC hPaintDC=0) {
 		HDC hDC = hPaintDC;
@@ -42,7 +43,7 @@ private:
 			DeleteDC(hMemDC);
 		}
 
-		if ( m_pszCredits && *m_pszCredits ) {
+		if ( m_pszCredits && *m_pszCredits && !m_fEasterEggScreen ) {
 			int OldTextColor = SetTextColor(hDC, m_Color);
 			int OldBkMode    = SetBkMode(hDC, TRANSPARENT);
 			HFONT hOldFont   = (HFONT) SelectObject(hDC, m_hFont);
@@ -61,11 +62,14 @@ private:
 			SetBkMode(hDC, OldBkMode);
 			SetTextColor(hDC, OldTextColor);
 		}
+
 		if ( !hPaintDC )
 			ReleaseDC(hDC);
 	}
 
 	LRESULT OnCreate(UINT, WPARAM, LPARAM lParam, BOOL&) {
+		m_fEasterEggScreen = false;
+
 		m_pszCredits = (char*) ((LPCREATESTRUCT) lParam)->lpCreateParams;
 
 		srand( (unsigned)time(NULL));
@@ -118,6 +122,39 @@ private:
 		return 1;
 	}
 
+	LRESULT OnChar(UINT, WPARAM wParam, LPARAM, BOOL&) {
+		if ( wParam!='a' )
+			DestroyWindow();
+		else if ( !m_fEasterEggScreen ) {
+			HBITMAP hBitmap = LoadBitmap(_Module.m_hInst, MAKEINTRESOURCE(IDB_EASTEREGG));
+			if ( hBitmap ) {
+				m_fEasterEggScreen = true;
+
+				m_hBitmap = hBitmap;
+
+				// get the bitmap
+				GetObject(m_hBitmap, sizeof m_Bitmap, &m_Bitmap);
+
+				// resize the window so it fits the bitmap
+				RECT Rect = {0, 0, m_Bitmap.bmWidth, m_Bitmap.bmHeight};
+				SetWindowPos((HWND) 0, &Rect, SWP_NOMOVE|SWP_NOZORDER);
+				
+				// center all
+				CenterWindow();
+
+				// repaint the window
+				InvalidateRect(NULL, true);
+				
+				if ( m_uClosedTimer ) {
+					KillTimer(m_uClosedTimer);
+					m_uClosedTimer = 0;
+				}
+			}
+		}
+
+		return 1;
+	}
+
 	LRESULT OnPaint(UINT, WPARAM, LPARAM, BOOL&) {
 		RECT Rect;
 		if ( !GetUpdateRect(&Rect) )
@@ -131,7 +168,10 @@ private:
 	};
 
 	LRESULT OnDestroy(UINT, WPARAM, LPARAM, BOOL&) {
-		KillTimer(m_uClosedTimer);
+		if ( m_uClosedTimer ) {
+			KillTimer(m_uClosedTimer);
+			m_uClosedTimer = 0;
+		}
 		DeleteObject(m_hFont);
 		return 1;
 	}
