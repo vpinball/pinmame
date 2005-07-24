@@ -432,6 +432,7 @@ DRIVERNV(surfnsaf)      //S3-731:   11/91 Surf'n Safari
 DRIVERNV(opthund)       //S3-732:   02/92 Operation: Thunder
 //System 3 128x32 DMD
 DRIVERNV(smb)           //S3-733:   04/92 Super Mario Bros.
+DRIVERNV(smb1)          //S3-733:   04/92 Super Mario Bros. (rev.1)
 DRIVERNV(smb2)          //S3-733:   04/92 Super Mario Bros. (rev.2)
 DRIVERNV(smb3)          //S3-733:   04/92 Super Mario Bros. (rev.3)
 DRIVERNV(smbmush)       //S3-N105:  06/92 Super Mario Bros. Mushroom World
