@@ -115,11 +115,13 @@
 
 /*-- Memory regions --*/
 #define GTS3_MEMREG_DROM1	REGION_USER1
+#define GTS3_MEMREG_DROM2	REGION_USER2
 
 #define GTS3_MEMREG_CPU		REGION_CPU1
 #define GTS3_MEMREG_DCPU1	REGION_CPU2
 #define GTS3_MEMREG_SCPU1	REGION_CPU3
 #define GTS3_MEMREG_SCPU2	REGION_CPU4
+#define GTS3_MEMREG_DCPU2	REGION_CPU5
 #define GTS3_MEMREG_SROM1	REGION_SOUND1
 
 
@@ -153,6 +155,19 @@
 	   ROM_RELOAD(  0x40000, 0x40000)
 
 /**************************************/
+/** DMD (128x32) ROM 256K (2 boards) **/
+/**************************************/
+#define GTS3_DMD256_ROMSTART2(n1,chk1) \
+	 NORMALREGION(0x10000, GTS3_MEMREG_DCPU1) \
+     NORMALREGION(0x80000, GTS3_MEMREG_DROM1) \
+       ROM_LOAD(n1, 0x00000, 0x40000, chk1) \
+	   ROM_RELOAD(  0x40000, 0x40000) \
+	 NORMALREGION(0x10000, GTS3_MEMREG_DCPU2) \
+     NORMALREGION(0x80000, GTS3_MEMREG_DROM2) \
+       ROM_LOAD(n1, 0x00000, 0x40000, chk1) \
+	   ROM_RELOAD(  0x40000, 0x40000)
+
+/**************************************/
 /** DMD (128x32) ROM 512K            **/
 /**************************************/
 #define GTS3_DMD512_ROMSTART(n1,chk1) \
@@ -170,6 +185,7 @@
 
 extern void UpdateSoundLEDS(int num,int data);
 extern PINMAME_VIDEO_UPDATE(gts3_dmd128x32);
+extern PINMAME_VIDEO_UPDATE(gts3_dmd128x32a);
 
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(gts3_1a);
@@ -179,6 +195,7 @@ extern MACHINE_DRIVER_EXTERN(gts3_1b);
 extern MACHINE_DRIVER_EXTERN(gts3_1bs);
 extern MACHINE_DRIVER_EXTERN(gts3_2);
 extern MACHINE_DRIVER_EXTERN(gts3_2a);
+extern MACHINE_DRIVER_EXTERN(gts3_22);
 
 #define mGTS3         gts3_1a
 #define mGTS3S        gts3_1as
@@ -187,5 +204,6 @@ extern MACHINE_DRIVER_EXTERN(gts3_2a);
 #define mGTS3BS       gts3_1bs
 #define mGTS3DMDS     gts3_2
 #define mGTS3DMDSA    gts3_2a
+#define mGTS3DMDS2    gts3_22
 
 #endif /* INC_GTS3 */

@@ -506,6 +506,7 @@ MACHINE_DRIVER_END
 /  Local variables
 /-----------------*/
 static struct {
+  int    cpuNo;             // # of the fist sound CPU
   int    ay_latch;			// Data Latch to AY-8913 chips
   int    ym2151_port;		// Bit determines if Registor or Data is written to YM2151
   int    nmi_rate;			// Programmable NMI rate
@@ -567,7 +568,7 @@ static void nmi_callback(int param)
 		//logerror("PULSING NMI for Y-CPU\n");
 		//timer_set(TIME_NOW, 1, NULL);
 		cpu_boost_interleave(TIME_IN_USEC(10), TIME_IN_USEC(800));
-		cpu_set_nmi_line(cpu_gettotalcpu()-1, PULSE_LINE);
+		cpu_set_nmi_line(GTS80BS_locals.cpuNo, PULSE_LINE);
 	}
 }
 
@@ -580,15 +581,16 @@ static WRITE_HANDLER(s80bs_nmi_rate_w)
 //Fire the NMI for the D CPU
 static WRITE_HANDLER(s80bs_cause_dac_nmi_w)
 {
-	int cpuCount = cpu_gettotalcpu();
 	//if(!keyboard_pressed_memory_repeat(KEYCODE_A,2)) {
-	//logerror("PULSING NMI for D-CPU\n");
-	//timer_set(TIME_NOW, 1, NULL);
-	cpu_set_nmi_line(cpuCount-2, PULSE_LINE);
-	if (cpuCount > 3) {
-		cpu_set_nmi_line(cpuCount-3, PULSE_LINE);
+	//	logerror("PULSING NMI for D-CPU\n");
+	//	timer_set(TIME_NOW, 1, NULL);
+	cpu_set_nmi_line(GTS80BS_locals.cpuNo+1, PULSE_LINE);
+	/* if this is BoneBusters, trigger the 2nd DAC CPU's NMI */
+	if (GTS80BS_locals.cpuNo == 1 && cpu_gettotalcpu() == 4) {
+		//logerror("BoneBusters NMI\n");
+		cpu_set_nmi_line(GTS80BS_locals.cpuNo+2, PULSE_LINE);
 	}
-//	}
+	//}
 }
 
 static READ_HANDLER(s80bs_cause_dac_nmi_r)
@@ -602,15 +604,16 @@ static READ_HANDLER(s80bs_cause_dac_nmi_r)
 //Latch a command into the Sound Latch and generate the IRQ interrupts
 WRITE_HANDLER(s80bs_sh_w)
 {
-	int cpuCount = cpu_gettotalcpu();
 #ifdef test1
 	if(data != 0xff)
 	{
 		soundlatch_w(offset,data);
-		cpu_set_irq_line(cpuCount-1, 0, HOLD_LINE);
-		cpu_set_irq_line(cpuCount-2, 0, HOLD_LINE);
-		if (cpuCount > 3) {
-			cpu_set_irq_line(cpuCount-3, 0, HOLD_LINE);
+		cpu_set_irq_line(GTS80BS_locals.cpuNo, 0, HOLD_LINE);
+		cpu_set_irq_line(GTS80BS_locals.cpuNo+1, 0, HOLD_LINE);
+		/* if this is BoneBusters, trigger the 2nd DAC CPU's interrupt */
+		if (GTS80BS_locals.cpuNo == 1 && cpu_gettotalcpu() == 4) {
+			//logerror("BoneBusters IRQ\n");
+			cpu_set_irq_line(GTS80BS_locals.cpuNo+2, 0, HOLD_LINE);
 		}
 	}
 #else
@@ -628,18 +631,18 @@ WRITE_HANDLER(s80bs_sh_w)
 	}
 
 	if (clear_irq) 	{
-		cpu_set_irq_line(cpuCount-1, 0, CLEAR_LINE);
-		cpu_set_irq_line(cpuCount-2, 0, CLEAR_LINE);
-		if (cpuCount > 3) {
-			cpu_set_irq_line(cpuCount-3, 0, CLEAR_LINE);
+		cpu_set_irq_line(GTS80BS_locals.cpuNo, 0, CLEAR_LINE);
+		cpu_set_irq_line(GTS80BS_locals.cpuNo+1, 0, CLEAR_LINE);
+		if (GTS80BS_locals.cpuNo == 1 && cpu_gettotalcpu() == 4) {
+			cpu_set_irq_line(GTS80BS_locals.cpuNo+2, 0, CLEAR_LINE);
 		}
 	}
 	else {
 		soundlatch_w(offset,data);
-		cpu_set_irq_line(cpuCount-1, 0, HOLD_LINE);
-		cpu_set_irq_line(cpuCount-2, 0, HOLD_LINE);
-		if (cpuCount > 3) {
-			cpu_set_irq_line(cpuCount-3, 0, HOLD_LINE);
+		cpu_set_irq_line(GTS80BS_locals.cpuNo, 0, HOLD_LINE);
+		cpu_set_irq_line(GTS80BS_locals.cpuNo+1, 0, HOLD_LINE);
+		if (GTS80BS_locals.cpuNo == 1 && cpu_gettotalcpu() == 4) {
+			cpu_set_irq_line(GTS80BS_locals.cpuNo+2, 0, HOLD_LINE);
 		}
 	}
 #endif
@@ -1038,7 +1041,7 @@ static WRITE_HANDLER(sound_control_w)
 static READ_HANDLER(s3_soundlatch_y)
 {
 #ifdef test1
-	cpu_set_irq_line(cpu_gettotalcpu()-1, 0, CLEAR_LINE);
+	cpu_set_irq_line(GTS80BS_locals.cpuNo, 0, CLEAR_LINE);
 #endif
 	return soundlatch_r(0);
 }
@@ -1046,7 +1049,7 @@ static READ_HANDLER(s3_soundlatch_y)
 static READ_HANDLER(s3_soundlatch_d)
 {
 #ifdef test1
-	cpu_set_irq_line(cpu_gettotalcpu()-2, 0, CLEAR_LINE);
+	cpu_set_irq_line(GTS80BS_locals.cpuNo+1, 0, CLEAR_LINE);
 #endif
 	return soundlatch_r(0);
 }
@@ -1066,6 +1069,7 @@ MEMORY_WRITE_START(GTS3_ywritemem)
 { 0x6000, 0x6000, s80bs_nmi_rate_w},
 { 0x7000, 0x7000, s80bs_cause_dac_nmi_w},
 { 0x7800, 0x7800, u2latch_w},
+{ 0x8000, 0x8000, MWA_NOP },
 { 0xa000, 0xa000, sound_control_w },
 MEMORY_END
 /*********/
@@ -1099,6 +1103,7 @@ static struct OKIM6295interface GTS3_okim6295_interface = {
 void gts80b_init(struct sndbrdData *brdData) {
 	//GTS80BS_locals.nmi_timer = NULL;
 	memset(&GTS80BS_locals, 0, sizeof(GTS80BS_locals));
+	GTS80BS_locals.cpuNo = brdData->cpuNo;
 	//Start the programmable timer circuit
 	timer_set(TIME_IN_HZ(250000>>8), 0, nmi_callback);
 	//Must be 1 to start or speechboard will never work
@@ -1119,40 +1124,42 @@ const struct sndbrdIntf gts80bIntf = {
 
 //System S80B - Gen 1
 MACHINE_DRIVER_START(gts80s_b1)
-  MDRV_CPU_ADD_TAG("d-cpu", M6502, 1000000)
-  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
-  MDRV_CPU_MEMORY(GTS80BS1_readmem2, GTS80BS1_writemem2)
-  MDRV_SOUND_ADD(DAC, GTS80BS_dacInt)
-
   MDRV_CPU_ADD_TAG("y-cpu", M6502, 1000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(GTS80BS1_readmem, GTS80BS1_writemem)
+
+  MDRV_CPU_ADD_TAG("d-cpu", M6502, 1000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(GTS80BS1_readmem2, GTS80BS1_writemem2)
+
+  MDRV_SOUND_ADD(DAC, GTS80BS_dacInt)
   MDRV_SOUND_ADD(AY8910, GTS80BS_ay8910Int)
   MDRV_SOUND_ADD(SP0250, GTS80BS_sp0250_interface)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END
 //System S80B - Gen 2
 MACHINE_DRIVER_START(gts80s_b2)
-  MDRV_CPU_ADD_TAG("d-cpu", M6502, 2000000)
-  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
-  MDRV_CPU_MEMORY(GTS80BS2_readmem2, GTS80BS2_writemem2)
-  MDRV_SOUND_ADD(DAC, GTS80BS_dacInt)
-
   MDRV_CPU_ADD_TAG("y-cpu", M6502, 2000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(GTS80BS2_readmem, GTS80BS2_writemem)
+
+  MDRV_CPU_ADD_TAG("d-cpu", M6502, 2000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(GTS80BS2_readmem2, GTS80BS2_writemem2)
+
+  MDRV_SOUND_ADD(DAC, GTS80BS_dacInt)
   MDRV_SOUND_ADD(AY8910, GTS80BS_ay8910Int)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END
 //System S80B - Gen 3
 MACHINE_DRIVER_START(gts80s_b3)
-  MDRV_CPU_ADD_TAG("d-cpu", M6502, 2000000)
-  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
-  MDRV_CPU_MEMORY(GTS80BS3_dreadmem, GTS80BS3_dwritemem)
-
   MDRV_CPU_ADD_TAG("y-cpu", M6502, 2000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(GTS80BS3_yreadmem, GTS80BS3_ywritemem)
+
+  MDRV_CPU_ADD_TAG("d-cpu", M6502, 2000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(GTS80BS3_dreadmem, GTS80BS3_dwritemem)
 
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
   MDRV_SOUND_ADD(DAC, GTS80BS_dacInt)
@@ -1162,23 +1169,25 @@ MACHINE_DRIVER_END
 
 //System S80B - Gen 3 with additional DAC (Bone Busters only)
 MACHINE_DRIVER_START(gts80s_b3a)
+  MDRV_IMPORT_FROM(gts80s_b3)
+
   MDRV_CPU_ADD_TAG("d-cpu2", M6502, 2000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(GTS80BS3_dreadmem, GTS80BS3_d2writemem)
-  MDRV_IMPORT_FROM(gts80s_b3)
 MACHINE_DRIVER_END
 
 //System GTS3 - Gen 1
 MACHINE_DRIVER_START(gts80s_s3)
-  MDRV_CPU_ADD_TAG("d-cpu", M6502, 2000000)
-  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
-  MDRV_CPU_MEMORY(GTS3_dreadmem, GTS3_dwritemem)
-  MDRV_SOUND_ADD(DAC, GTS3_dacInt)
-
   MDRV_CPU_ADD_TAG("y-cpu", M6502, 2000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(GTS3_yreadmem, GTS3_ywritemem)
+
+  MDRV_CPU_ADD_TAG("d-cpu", M6502, 2000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(GTS3_dreadmem, GTS3_dwritemem)
+
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
+  MDRV_SOUND_ADD(DAC, GTS3_dacInt)
   MDRV_SOUND_ADD(YM2151,  GTS80BS_ym2151Int)
   MDRV_SOUND_ADD(OKIM6295,GTS3_okim6295_interface)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)

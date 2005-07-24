@@ -6,13 +6,45 @@
 //#define DEBUGSWAP
 
 extern UINT8 DMDFrames[GTS3DMD_FRAMES][0x200];
+extern UINT8 DMDFrames2[GTS3DMD_FRAMES][0x200];
+#ifdef DEBUGSWAP
 extern int crtc6845_start_addr;
+#endif
+
+PINMAME_VIDEO_UPDATE(gts3_dmd128x32a) {
+  tDMDDot dotCol;
+  UINT8 *frameData = &DMDFrames2[0][0];
+  int ii,jj,kk,ll;
+
+  memset(dotCol,0,sizeof(tDMDDot));
+  for (ii = 0; ii < GTS3DMD_FRAMES; ii++) {
+    for (jj = 1; jj <= 32; jj++) {           // 32 lines
+      UINT8 *line = &dotCol[jj][0];
+      for (kk = 0; kk < 16; kk++) {      // 16 columns/line
+        UINT8 data = *frameData++;
+        for (ll = 0; ll < 8; ll++)          // 8 pixels/column
+          { (*line++) += (data>>7); data <<= 1; }
+      }
+    }
+  }
+  for (ii = 1; ii <= 32; ii++)               // 32 lines
+    for (jj = 0; jj < 128; jj++) {          // 128 pixels/line
+      UINT8 data = dotCol[ii][jj];
+      if (data >= GTS3DMD_100)     data = 3; // 100% intensity
+      else if (data >= GTS3DMD_66) data = 2; // 66% intensity
+      else if (data >= GTS3DMD_33) data = 1; // 33% intensity
+      else                         data = 0; // nothing.
+      dotCol[ii][jj] = data;
+  }
+
+  video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+  return 0;
+}
 
 #if 1
 
 // void gts3_dmd128x32_refresh(struct mame_bitmap *bitmap, int fullRefresh) {
 PINMAME_VIDEO_UPDATE(gts3_dmd128x32) {
-  static int initTime = 1;
   tDMDDot dotCol;
   UINT8 *frameData = &DMDFrames[0][0];
   int ii,jj,kk,ll;
@@ -22,12 +54,9 @@ PINMAME_VIDEO_UPDATE(gts3_dmd128x32) {
   core_textOutf(50,50,1,temp);
 #endif
 
-  if (initTime) {
   /* Drawing is not optimised so just clear everything */
   // !!! if (fullRefresh) fillbitmap(bitmap,Machine->pens[0],NULL);
-    memset(dotCol,0,sizeof(tDMDDot));
-    initTime = 0;
-  }
+  memset(dotCol,0,sizeof(tDMDDot));
   for (ii = 0; ii < GTS3DMD_FRAMES; ii++) {
     for (jj = 1; jj <= 32; jj++) {           // 32 lines
       UINT8 *line = &dotCol[jj][0];
