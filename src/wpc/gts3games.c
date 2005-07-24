@@ -21,6 +21,7 @@ N = No Lead, L = Have a Lead on Rom
 #define FLIP4243 FLIP_SWNO(42,43)
 #define FLIP4547 FLIP_SWNO(45,47)
 #define FLIP5051 FLIP_SWNO(50,51)
+#define FLIP6061 FLIP_SWNO(60,61)
 #define FLIP8182 FLIP_SWNO(81,82)
 #define FLIP8283 FLIP_SWNO(82,83)
 
@@ -84,7 +85,7 @@ CORE_GAMEDEFNV(ccruise,"Caribbean Cruise",1989,"International Concepts",mGTS3S,0
 /*-------------------------------------------------------------------
 / Lights, Camera, Action (#720)
 /-------------------------------------------------------------------*/
-INITGAME(lca, ALPHA, FLIP_SW(FLIP_L), 3 /*?*/, SNDBRD_GTS3, 4)
+INITGAME(lca, ALPHA, FLIP6061, 3 /*?*/, SNDBRD_GTS3, 4)
 GTS3ROMSTART32(lca,	"gprom.bin",CRC(52957d70) SHA1(0c24d824b1aa966eb3af3db3ff02870ba463dcd6))
 GTS3SOUND3232(		"yrom1.bin",CRC(20919ebb) SHA1(a2ea79863b41a04aa23ea596932825408cca64e3),
 					"drom1.bin",CRC(a258d72d) SHA1(eeb4768c8b2f57509a088d3ac8d35aa34f2cfc2c))
@@ -93,7 +94,7 @@ CORE_GAMEDEFNV(lca,"Lights, Camera, Action",1989,"Gottlieb",mGTS3S,0)
 
 //62c0beda Rev 1?
 
-INITGAME(lca2, ALPHA, FLIP_SW(FLIP_L), 3 /*?*/, SNDBRD_GTS3, 4)
+INITGAME(lca2, ALPHA, FLIP6061, 3 /*?*/, SNDBRD_GTS3, 4)
 GTS3ROMSTART32(lca2,"gprom2.bin",CRC(937a8426) SHA1(6bc2d1b0c3dc273577376654ba72b60febe32529))
 GTS3SOUND3232(		"yrom1.bin",CRC(20919ebb) SHA1(a2ea79863b41a04aa23ea596932825408cca64e3),
 					"drom1.bin",CRC(a258d72d) SHA1(eeb4768c8b2f57509a088d3ac8d35aa34f2cfc2c))
@@ -239,17 +240,29 @@ CORE_GAMEDEFNV(opthund,"Operation Thunder",1992,"Gottlieb",mGTS3BS,0)
  *************************/
 
 /*-------------------------------------------------------------------
-/ Super Mario Brothers
+/ Super Mario Brothers (#733) - Only one dsprom dump seems to work?
 /-------------------------------------------------------------------*/
 INITGAME1(smb, DMD, FLIP4547, 3, SNDBRD_GTS3, 4)
 GTS3ROMSTART(smb,		"gprom.bin", CRC(fa1f6e52) SHA1(d7ade0e129cb399494967e025d25614bf1650db7))
-GTS3_DMD256_ROMSTART(	"dsprom.bin",CRC(59639112) SHA1(e0cbd3a38cd99f0f5f6e85d7eee4772f462c1990))
+//GTS3_DMD256_ROMSTART(	"dsprom.bin",CRC(59639112) SHA1(e0cbd3a38cd99f0f5f6e85d7eee4772f462c1990))
+GTS3_DMD256_ROMSTART(	"dsprom2.bin",CRC(181e8234) SHA1(9b22681f61cae401269a88c3cfd783d683390877))
 GTS3SOUND32256(			"yrom1.bin",CRC(e1379106) SHA1(10c46bad7cbae528716c5ba0709bb1fd3574a0a8),
 						"drom1.bin",CRC(6f1d0a3e) SHA1(c7f665d79b9073f28f90debde16cafa9ab57a47c),
 						"arom1.bin",CRC(e9cef116) SHA1(5f710bc24e1a168f296a22417aebecbde3bfaa5c),
 						"arom2.bin",CRC(0acdfd49) SHA1(0baabd32b546842bc5c76a61b509b558677b50f9))
 GTS3_ROMEND
 CORE_GAMEDEFNV(smb,"Super Mario Brothers",1992,"Gottlieb",mGTS3DMDSA, 0)
+
+INITGAME1(smb1, DMD, FLIP4547, 3, SNDBRD_GTS3, 4)
+GTS3ROMSTART(smb1,		"gprom1.bin", CRC(1d8c4df8) SHA1(e301bf3b2a8ed6ef902fe15b890b4c06c4606aa9))
+//GTS3_DMD256_ROMSTART(	"dsprom1.bin",CRC(1363af26) SHA1(28c3eb62ea2dd13dd3e18158e91e4f51abca4f55))
+GTS3_DMD256_ROMSTART(	"dsprom2.bin",CRC(181e8234) SHA1(9b22681f61cae401269a88c3cfd783d683390877))
+GTS3SOUND32256(			"yrom1.bin",CRC(e1379106) SHA1(10c46bad7cbae528716c5ba0709bb1fd3574a0a8),
+						"drom1.bin",CRC(6f1d0a3e) SHA1(c7f665d79b9073f28f90debde16cafa9ab57a47c),
+						"arom1.bin",CRC(e9cef116) SHA1(5f710bc24e1a168f296a22417aebecbde3bfaa5c),
+						"arom2.bin",CRC(0acdfd49) SHA1(0baabd32b546842bc5c76a61b509b558677b50f9))
+GTS3_ROMEND
+CORE_CLONEDEFNV(smb1,smb,"Super Mario Brothers (rev.1)",1992,"Gottlieb",mGTS3DMDSA, 0)
 
 INITGAME1(smb2, DMD, FLIP4547, 3, SNDBRD_GTS3, 4)
 GTS3ROMSTART(smb2,		"gprom2.bin", CRC(5b0f44c4) SHA1(ca9b0cd82c75612c85c956497c8f9c12992f6ad5))
@@ -264,6 +277,7 @@ CORE_CLONEDEFNV(smb2,smb,"Super Mario Brothers (rev.2)",1992,"Gottlieb",mGTS3DMD
 INITGAME1(smb3, DMD, FLIP4547, 3, SNDBRD_GTS3, 4)
 GTS3ROMSTART(smb3,		"gprom3.bin", CRC(5a40822c) SHA1(a87ec6307f848483c76141e47fd67e4549f9c9d3))
 GTS3_DMD256_ROMSTART(	"dsprom2.bin",CRC(181e8234) SHA1(9b22681f61cae401269a88c3cfd783d683390877))
+//GTS3_DMD256_ROMSTART(	"dsprom3.bin",CRC(40e42f12) SHA1(d053e13e28c73e68e75beb9745947ec72201cead))
 GTS3SOUND32256(			"yrom1.bin",CRC(e1379106) SHA1(10c46bad7cbae528716c5ba0709bb1fd3574a0a8),
 						"drom1.bin",CRC(6f1d0a3e) SHA1(c7f665d79b9073f28f90debde16cafa9ab57a47c),
 						"arom1.bin",CRC(e9cef116) SHA1(5f710bc24e1a168f296a22417aebecbde3bfaa5c),
