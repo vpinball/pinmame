@@ -77,6 +77,7 @@
 #define LOG(x)
 #endif
 
+#define FIXIRQ     1
 
 //Prototypes
 INLINE void push_pc(void);
@@ -126,6 +127,9 @@ typedef struct {
 	int last_int1;			//Store state of int1
 	UINT8 int_vec;			//Pending Interrupt Vector
 	int priority_request;	//Priority level of incoming new irq
+#if FIXIRQ
+	int intsBlocked;	// interrupts blocked for one cycle by RETI
+#endif
 	//SFR Registers			(Note: Appear in order as they do in memory)
 	UINT8	po;				//Port 0
 	UINT8	sp;				//Stack Pointer
@@ -434,6 +438,13 @@ static READ32_HANDLER((*hold_eram_iaddr_callback));
 #define CLEAR_CURRENT_IRQ i8051.cur_irq = 0xff;\
 						  i8051.irq_priority = 0;
 
+#if FIXIRQ
+/* block interrupts */
+#define GET_INTS_BLOCKED   i8051.intsBlocked
+#define SET_INTS_BLOCKED   i8051.intsBlocked=1
+#define CLR_INTS_BLOCKED   i8051.intsBlocked=0
+#endif
+
 /* shorter names for the I8051 structure elements */
 
 //Internal stuff
@@ -587,6 +598,9 @@ void i8051_reset(void *param)
 
 	/* Flag as NO IRQ in Progress */
 	CLEAR_CURRENT_IRQ
+#if FIXIRQ
+	CLR_INTS_BLOCKED;
+#endif
 }
 
 /* Shut down CPU core */
@@ -1301,6 +1315,10 @@ int i8051_execute(int cycles)
 		//Check for pending interrupts & handle - remove cycles used
 		i8051_icount-=check_interrupts();
 
+#if FIXIRQ
+		CLR_INTS_BLOCKED;
+#endif
+
 	} while( i8051_icount > 0 );
 
 	return cycles - i8051_icount;
@@ -1473,6 +1491,10 @@ void i8051_set_irq_line(int irqline, int state)
  **********************************************************************************/
 INLINE UINT8 check_interrupts(void)
 {
+#if FIXIRQ
+	//Interrupts blocked by RETI or IE-/IP-write
+	if(GET_INTS_BLOCKED) return 0;
+#endif
 	//If All Inerrupts Disabled or no pending abort..
 	if(!GET_EA)	return 0;
 
@@ -1721,14 +1743,24 @@ static WRITE_HANDLER(sfr_write)
 			OUT(2,data);
 			break;
 
-		case IE:		R_IE  = data; break;
+		case IE:
+			R_IE = data;
+#if FIXIRQ
+			SET_INTS_BLOCKED;
+#endif
+			break;
 
 		case P3:
 			R_P3 = data;
 			OUT(3,data);
 			break;
 
-		case IP:		R_IP  = data; break;
+	        case IP:
+			R_IP = data;
+#if FIXIRQ
+			SET_INTS_BLOCKED;
+#endif
+			break;
 
 	//8052 Only registers
 	#if (HAS_I8052 || HAS_I8752)
