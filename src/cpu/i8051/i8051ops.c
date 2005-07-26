@@ -762,6 +762,9 @@ INLINE void reti(void)
 {
 	POP_PC
 	CLEAR_CURRENT_IRQ
+#if FIXIRQ
+	SET_INTS_BLOCKED;
+#endif
 }
 
 //RL A										/* 1: 0010 0011 */
