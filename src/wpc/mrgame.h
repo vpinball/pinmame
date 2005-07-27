@@ -154,6 +154,7 @@ extern MACHINE_DRIVER_EXTERN(mrgame2);
 #define mMRGAME1        mrgame1
 #define mMRGAME2		mrgame2
 
-extern PINMAME_VIDEO_UPDATE(mrgame_update);
+extern PINMAME_VIDEO_UPDATE(mrgame_update_g1);
+extern PINMAME_VIDEO_UPDATE(mrgame_update_g2);
 
 #endif /* INC_MRGAME */
