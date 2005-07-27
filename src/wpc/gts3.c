@@ -335,7 +335,7 @@ static WRITE_HANDLER( xvia_1_a_w )
 	GTS3locals.sound_data = data^0xff;
 
 	//Unless it's Strikes N Spares, send the sound command now!
-    if (GTS3_dmdlocals[0].version != 2) 
+    if (GTS3_dmdlocals[0].version != 2)
 		sndbrd_0_data_w(0, GTS3locals.sound_data);
 }
 
@@ -739,7 +739,7 @@ static WRITE_HANDLER(dmd_outport)
 	GTS3_dmdlocals[offset].pa1=(data>>1)&1;
 	GTS3_dmdlocals[offset].pa2=(data>>2)&1;
 	GTS3_dmdlocals[offset].pa3=(data>>3)&1;
-	GTS3_dmdlocals[offset].q3 =(data>>4)&1; 
+	GTS3_dmdlocals[offset].q3 =(data>>4)&1;
 	GTS3_dmdlocals[offset].a18=GTS3_dmdlocals[offset].q3;
 	GTS3_dmdlocals[offset].status1=(data>>5)&1;
 	GTS3_dmdlocals[offset].status2=(data>>6)&1;
@@ -788,14 +788,14 @@ static WRITE_HANDLER(dmd_aux) {
 	GTS3locals.ax[4+offset] = data;
 
 	//Generate an dmd vblank?
-	if (!offset) { 
-		dmd_vblank(0); 
+	if (!offset) {
+		dmd_vblank(0);
 		//2nd DMD for Strikes N Spares
 		if(GTS3_dmdlocals[0].version == 2)
 			dmd_vblank(1);
 	}
 
-	//Strikes N Spares Stuff 
+	//Strikes N Spares Stuff
 	if (GTS3_dmdlocals[0].version == 2)
 	{
 		//AX4 Line - Clocks in a new DMD command for Display #2
@@ -1012,7 +1012,7 @@ MACHINE_DRIVER_END
 //Sound Interface for Strikes N Spares
 static struct OKIM6295interface sns_okim6295_interface = {
 	1,					/* 1 chip */
-	{ 15250 },			/* 15,25 kHz frequency */
+	{ 15000 },			/* 15 kHz frequency */
 	{ REGION_USER3 },	/* memory region */
 	{ 75 }				/* volume */
 };
