@@ -621,7 +621,92 @@ static const struct rectangle screen_visible_area =
 	8, 247,
 };
 
-PINMAME_VIDEO_UPDATE(mrgame_update) {
+PINMAME_VIDEO_UPDATE(mrgame_update_g1) {
+    static int scrollers[32];
+	int offs = 0;
+	int color = 0;
+	int colorindex = 0;
+	int tile = 0;
+	int flipx=0;
+	int flipy=0;
+	int sx=0;
+	int sy=0;
+
+#ifdef MAME_DEBUG
+
+if(1 || !debugger_focus) {
+if(keyboard_pressed_memory_repeat(KEYCODE_Z,25)) {
+#ifdef TEST_MOTORSHOW
+	  fake_w(0,0);
+#else
+	charoff = 0;
+	locals.acksnd = !locals.acksnd;
+#endif
+}
+  //core_textOutf(50,20,1,"offset=%08x", charoff);
+  if(keyboard_pressed_memory_repeat(KEYCODE_Z,4))
+	  charoff+=0x100;
+  if(keyboard_pressed_memory_repeat(KEYCODE_X,4))
+	  charoff-=0x100;
+  if(keyboard_pressed_memory_repeat(KEYCODE_C,4))
+	  charoff++;
+  if(keyboard_pressed_memory_repeat(KEYCODE_V,4))
+	  charoff--;
+}
+#endif
+
+	/* for every character in the Video RAM, check if it has been modified */
+	/* since last time and update it accordingly. */
+	for (offs = 0; offs < videoram_size; offs++)
+	{
+		if (1) //dirtybuffer[offs])
+		{
+//			dirtybuffer[offs] = 0;
+
+			sx = offs % 32;
+			sy = offs / 32; 
+
+			colorindex = (colorindex+2);
+			if(sx==0) colorindex=1;
+			color = mrgame_objectram[colorindex];
+			scrollers[sx] = -mrgame_objectram[colorindex-1];
+
+			tile = mrgame_videoram[offs]+
+                   (locals.vid_a11<<8)+(locals.vid_a12<<9)+(locals.vid_a13<<10)+(locals.vid_a14<<11);
+
+			drawgfx(tmpbitmap,Machine->gfx[0],
+					tile,
+					color+2,						//+2 to offset from PinMAME palette entries
+					0,0,
+					8*sx,8*sy,
+					0,TRANSPARENCY_NONE,0);
+		}
+	}
+	/* copy the temporary bitmap to the screen with scolling */
+	copyscrollbitmap(tmpbitmap2,tmpbitmap,0,0,32,scrollers,&screen_all_area,TRANSPARENCY_NONE,0);
+
+	/* Draw Sprites - Not sure of total size here (this memory size allows 8 sprites on screen at once ) */
+	for (offs = 0x40; offs < 0x60; offs += 4)
+	{
+		sx = mrgame_objectram[offs + 3] + 1;
+		sy = 240 - mrgame_objectram[offs];
+		flipx = mrgame_objectram[offs + 1] & 0x40;
+		flipy = mrgame_objectram[offs + 1] & 0x80;
+		tile = (mrgame_objectram[offs + 1] & 0x3f) +
+				   (locals.vid_a11<<6) + (locals.vid_a12<<7) + (locals.vid_a13<<7);
+		color = mrgame_objectram[offs + 2];	//Note: This byte may have upper bits also used for other things, but no idea what if/any!
+		drawgfx(tmpbitmap2,Machine->gfx[1],
+				tile,
+				color+2,							//+2 to offset from PinMAME palette entries
+				flipx,flipy,
+				sx,sy,
+				0,TRANSPARENCY_PEN,0);
+	}
+	copybitmap(bitmap,tmpbitmap2,0,0,0,-8,&screen_visible_area,TRANSPARENCY_NONE,0);
+    return 0;
+}
+
+PINMAME_VIDEO_UPDATE(mrgame_update_g2) {
     static int scrollers[32];
 	int offs = 0;
 	int color = 0;
@@ -680,7 +765,8 @@ if(keyboard_pressed_memory_repeat(KEYCODE_Z,25)) {
 
 			drawgfx(tmpbitmap,Machine->gfx[0],
 					tile,
-					color+2,						//+2 to offset from PinMAME palette entries
+//					color+2,						//+2 to offset from PinMAME palette entries
+					0,
 					0,0,
 					8*sx,8*sy,
 					0,TRANSPARENCY_NONE,0);
@@ -716,6 +802,7 @@ if(keyboard_pressed_memory_repeat(KEYCODE_Z,25)) {
 
     return 0;
 }
+
 
 /***********************/
 /* Main CPU Memory Map */
@@ -819,7 +906,7 @@ MEMORY_END
 static int mrgame_sw2m(int no) { return no+7+1; }
 static int mrgame_m2sw(int col, int row) { return col*8+row-7-1; }
 
-PALETTE_INIT( mrgame )
+PALETTE_INIT( mrgame_g1 )
 {
 	int bit0,bit1,bit2,i,r,g,b;
 
@@ -852,6 +939,31 @@ PALETTE_INIT( mrgame )
 	}
 }
 
+PALETTE_INIT( mrgame_g2 )
+{
+	int bit0,bit1,bit2,i,r,g,b;
+	for (i = 0; i < Machine->drv->total_colors; i++)
+	{
+		/* red component */
+		bit0 = (*color_prom >> 0) & 0x01;
+		bit1 = (*color_prom >> 1) & 0x01;
+		bit2 = (*color_prom >> 2) & 0x01;
+		r = 0x21 * bit0 + 0x47 * bit1 + 0x97 * bit2;
+		/* green component */
+		bit0 = (*color_prom >> 3) & 0x01;
+		bit1 = (*color_prom >> 4) & 0x01;
+		bit2 = (*color_prom >> 5) & 0x01;
+		g = 0x21 * bit0 + 0x47 * bit1 + 0x97 * bit2;
+		/* blue component */
+		bit0 = 0;
+		bit1 = (*color_prom >> 6) & 0x01;
+		bit2 = (*color_prom >> 7) & 0x01;
+		b = 0x21 * bit0 + 0x47 * bit1 + 0x97 * bit2;
+		palette_set_color(i,r,g,b);
+		color_prom++;
+	}
+}
+
 /*************************************
  *
  *	Graphics layouts
@@ -861,7 +973,6 @@ PALETTE_INIT( mrgame )
 // ******************************
 // *** GENERATION 1 HARDWARE ****
 // ******************************
-
 static struct GfxLayout charlayout_g1 =
 {
 	8,8,						/* 8*8 characters */
@@ -898,18 +1009,16 @@ static struct GfxDecodeInfo gfxdecodeinfo_g1[] =
 // *** GENERATION 2 HARDWARE ****
 // ******************************
 
-static struct GfxLayout charlayout_g2 =
+static struct GfxLayout charlayout_g2 = 
 {
-	8,8,						/* 8*8 characters */
-	4096,						/* 4096 characters = (32768 Bytes / 8 bits per byte)  */
-	5,							/* 5 bits per pixel */
-	{ 0, 0x8000*8*1, 0x8000*8*2, 0x8000*8*3, 0x8000*8*4},		/* the bitplanes are separated across the 5 roms*/
-#if 0
-	{ 0x8000*8*4, 0x8000*8*3, 0x8000*8*2, 0x8000*8*1, 0x8000*8*0},		/* the bitplanes are separated across the 5 roms*/
-#endif
-	{ 0, 1, 2, 3, 4, 5, 6, 7 },	/* pretty straightforward layout */
-	{ 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8 },
-	8*8	/* every char takes 8 consecutive bytes */
+    8,8,						/* 8*8 characters */
+    4096,						/* 4096 characters = (32768 Bytes / 8 bits per byte)  */
+    5,							/* 5 bits per pixel */
+    //3,2,1,5,4 Plane Ordering
+    { 0x8000*8*2, 0x8000*8*1, 0x8000*8*0, 0x8000*8*4, 0x8000*8*3 },		/* the bitplanes are separated across the 5 roms */
+    { 0, 1, 2, 3, 4, 5, 6, 7 },	/* pretty straightforward layout */
+    { 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8 },
+    8*8	/* every char takes 8 consecutive bytes */
 };
 
 static struct GfxLayout spritelayout_g2 =
@@ -917,7 +1026,8 @@ static struct GfxLayout spritelayout_g2 =
 	16,16,						/* 16*16 characters */
 	4096/4,						/* 4096/4 characters = (32768 Bytes / 8 bits per byte)  */
 	5,							/* 5 bits per pixel */
-    { 0, 0x8000*8*1, 0x8000*8*2, 0x8000*8*3, 0x8000*8*4},		/* the bitplanes are separated across the 5 roms*/
+    //3,2,1,5,4 Plane Ordering
+    { 0x8000*8*2, 0x8000*8*1, 0x8000*8*0, 0x8000*8*4, 0x8000*8*3 },		/* the bitplanes are separated across the 5 roms */
 	{ 0, 1, 2, 3, 4, 5, 6, 7,
 			8*8+0, 8*8+1, 8*8+2, 8*8+3, 8*8+4, 8*8+5, 8*8+6, 8*8+7 },
 	{ 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8,
@@ -927,11 +1037,10 @@ static struct GfxLayout spritelayout_g2 =
 
 static struct GfxDecodeInfo gfxdecodeinfo_g2[] =
 {
-	{ REGION_GFX1, 0, &charlayout_g2,   0, 32 },
-	{ REGION_GFX1, 0, &spritelayout_g2,   0, 32 },
+	{ REGION_GFX1, 0, &charlayout_g2,   0, 1 },
+	{ REGION_GFX1, 0, &spritelayout_g2, 0, 1 },
 	{ -1 } /* end of array */
 };
-
 
 /* VIDEO GENERATION 1 DRIVER */
 MACHINE_DRIVER_START(mrgame_vid1)
@@ -940,12 +1049,19 @@ MACHINE_DRIVER_START(mrgame_vid1)
   MDRV_CPU_VBLANK_INT(nmi_line_pulse,1)
   MDRV_FRAMES_PER_SECOND(60)
   MDRV_VBLANK_DURATION(DEFAULT_60HZ_VBLANK_DURATION)
+  MDRV_PALETTE_LENGTH(32+8)		//We need extra entries for some pinmame colors
+  MDRV_PALETTE_INIT(mrgame_g1)
 MACHINE_DRIVER_END
 
 /* VIDEO GENERATION 2 DRIVER */
 MACHINE_DRIVER_START(mrgame_vid2)
   MDRV_CPU_ADD(Z80, 3000000)	/*3 Mhz?*/
   MDRV_CPU_MEMORY(videog2_readmem, videog2_writemem)
+  MDRV_CPU_VBLANK_INT(nmi_line_pulse,1)
+  MDRV_FRAMES_PER_SECOND(60)
+  MDRV_VBLANK_DURATION(DEFAULT_60HZ_VBLANK_DURATION)
+  MDRV_PALETTE_LENGTH(32)
+  MDRV_PALETTE_INIT(mrgame_g2)
 MACHINE_DRIVER_END
 
 /* SOUND GENERATION 1 DRIVER */
@@ -1002,8 +1118,6 @@ MACHINE_DRIVER_START(mrgame_video_common)
   MDRV_SCREEN_SIZE(640, 400)
   MDRV_VISIBLE_AREA(0, 255, 0, 399)
   MDRV_VIDEO_ATTRIBUTES(VIDEO_TYPE_RASTER)
-  MDRV_PALETTE_LENGTH(32+8)		//We need extra entries for some pinmame colors
-  MDRV_PALETTE_INIT(mrgame)
   MDRV_VIDEO_START(mrgame)
 MACHINE_DRIVER_END
 
