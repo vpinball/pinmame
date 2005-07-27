@@ -9,7 +9,10 @@
   65c02: Vectors: FFFE&F = IRQ, FFFA&B = NMI, FFFC&D = RESET
   //Cueball: CPU0: RST = FEF0, IRQ=462F, NMI=477A
 
-  //GV 07/20/05: Finally found the typo that prevented the extra displays from working perfectly!
+  GV 07/20/05: Finally found the typo that prevented the extra displays from working perfectly!
+  GV 07/27/05: Fixed the missing sound in Strikes And Spares
+  SE 07/27/05: Finally got that DAMN 2nd DMD working
+
 *************************************************************************************************/
 #include <stdarg.h>
 #include "driver.h"
@@ -23,7 +26,8 @@
 #include "gts80s.h"
 
 UINT8 DMDFrames[GTS3DMD_FRAMES][0x200];
-UINT8 DMDFrames2[GTS3DMD_FRAMES][0x200];
+UINT8 DMDFrames2[GTS3DMD_FRAMES][0x200];		//2nd DMD Display for Strikes N Spares
+
 #define GTS3_VBLANKFREQ      60 /* VBLANK frequency*/
 #define GTS3_IRQFREQ        975 /* IRQ Frequency (Guessed)*/
 #define GTS3_ALPHANMIFREQ   300 /* Alpha NMI Frequency (Guessed)*/
@@ -31,7 +35,7 @@ UINT8 DMDFrames2[GTS3DMD_FRAMES][0x200];
 #define GTS3_CPUNO	0
 #define GTS3_DCPUNO 1
 #define GTS3_SCPUNO 2
-#define GTS3_DCPUNO2 4
+#define GTS3_DCPUNO2 2
 
 #if 1
 #define logerror1 logerror
@@ -56,7 +60,7 @@ static WRITE_HANDLER(dmd_u4_pb_w);
 static READ_HANDLER(dmd_u4_pb_r);
 static WRITE_HANDLER(dmd_display);
 static WRITE_HANDLER(dmd_aux);
-static void dmd_vblank(void);
+static void dmd_vblank(int which);
 static void dmd_update(void);
 
 /*----------------
@@ -86,6 +90,7 @@ struct {
   void (*UPDATE_DISPLAY)(void);
   UINT8  ax[7], cx1, cx2, ex1;
   char   extra16led;
+  int    sound_data;
 } GTS3locals;
 
 typedef struct {
@@ -105,6 +110,7 @@ typedef struct {
   int    nextDMDFrame;
 } GTS3_DMDlocals;
 
+//We need 2 structures, since Strikes N Spares has 2 DMD Displays
 GTS3_DMDlocals GTS3_dmdlocals[2];
 
 /* U4 */
@@ -179,6 +185,15 @@ static WRITE_HANDLER( xvia_0_a_w )
 //PB0-7 Varies on Alpha or DMD Generation!
 static WRITE_HANDLER( xvia_0_b_w ) { GTS3locals.U4_PB_W(offset,data); }
 
+// like core_setLamp, but erasing the designated lamp rows before filling in the data
+static void setLampBlank(UINT8 *lampMatrix, int col, int row) {
+  while (col) {
+    if (col & 0x01) *lampMatrix = row;
+    col >>= 1;
+    lampMatrix += 1;
+  }
+}
+
 /* ALPHA GENERATION
    ----------------
   PB0:  Lamp Data      (LDATA)
@@ -196,22 +211,19 @@ static WRITE_HANDLER( xvia_0_b_w ) { GTS3locals.U4_PB_W(offset,data); }
 #define DBLNK 0x80
 
 static WRITE_HANDLER(alpha_u4_pb_w) {
-	static int col = 0;
-
 	int dispBits = data & 0xf0;
 
 	//logerror("lampcolumn=%4x STRB=%d LCLR=%d\n",GTS3locals.lampColumn,data&LSTRB,data&LCLR);
 	if (data & ~GTS3locals.u4pb & LSTRB) { // Positive edge
 		if ((data & LCLR) && (data & LDATA)) {
 			GTS3locals.lampColumn = 1;
-			col = 0;
+			setLampBlank(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
 		} else {
 			GTS3locals.lampColumn = ((GTS3locals.lampColumn << 1) & 0x0fff);
-			col++;
+			setLampBlank(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
 		}
-		if (col < 12) coreGlobals.tmpLampMatrix[col] = 0;
-	}
-	core_setLamp(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
+	} else
+		core_setLamp(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
 
 	if (dispBits == 0xe0) { GTS3locals.acol = 0; }
 	else if (dispBits == 0xc0) { GTS3locals.acol++; }
@@ -228,26 +240,28 @@ static WRITE_HANDLER(alpha_u4_pb_w) {
 */
 static WRITE_HANDLER(dmd_u4_pb_w) {
 	static int bitSet = 0;
-	static int col = 0;
 
 	if (data & ~GTS3locals.u4pb & LSTRB) { // Positive edge
 		if ((data & LCLR) && (data & LDATA)) {
 			GTS3locals.lampColumn = 1;
-			col = 0;
+			setLampBlank(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
 		} else {
 			GTS3locals.lampColumn = ((GTS3locals.lampColumn << 1) & 0x0fff);
-			col++;
+			setLampBlank(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
 		}
-		if (col < 12) coreGlobals.tmpLampMatrix[col] = 0;
-	}
-	core_setLamp(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
+	} else
+		core_setLamp(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
 
 	GTS3_dmdlocals[0].dstrb = (data & DSTRB) != 0;
 	if (GTS3_dmdlocals[0].version) { // probably wrong, but the only way to show *any* display
 		if (GTS3_dmdlocals[0].dstrb) {
 			bitSet++;
 			if (bitSet == 4)
-				dmd_vblank();
+			{
+				dmd_vblank(0);
+				if(GTS3_dmdlocals[0].version == 2)
+					dmd_vblank(1);
+			}
 		} else
 			bitSet = 0;
 	}
@@ -277,11 +291,16 @@ static READ_HANDLER( xvia_1_a_r )
 	return 0;
 }
 
-//Data to A1P6 Auxilary? Not used on a read?
+//Data to A1P6 Auxilary - Not Used
+//Strikes & Spares reads the DMD #2 status line as the 8th bit.
 static READ_HANDLER( xvia_1_b_r )
 {
 	// logerror1("via_1_b_r\n");
-	return 0;
+	int data = 0 ;
+	if(GTS3_dmdlocals[0].version == 2)
+		data |= (GTS3_dmdlocals[1].status1 << 7);
+	//printf("%04x: read via_1_b_r = %x\n",activecpu_get_pc(),data);
+	return data;
 }
 //CA1:   Sound Return/Status
 static READ_HANDLER( xvia_1_ca1_r )
@@ -313,7 +332,11 @@ static WRITE_HANDLER( xvia_1_a_w )
 {
 	// logerror1("Sound Command: WRITE:via_1_a_w: %x\n",data);
 	// SJE - data commands to sound cpu need to be inverted.
-	sndbrd_0_data_w(0, ~data);
+	GTS3locals.sound_data = data^0xff;
+
+	//Unless it's Strikes N Spares, send the sound command now!
+    if (GTS3_dmdlocals[0].version != 2) 
+		sndbrd_0_data_w(0, GTS3locals.sound_data);
 }
 
 /* Data to A1P6 (extra LED Display or Flashers board)
@@ -392,7 +415,7 @@ IRQ:  IRQ to Main CPU
 U5:
 --
 (O)PA0-7: SD0-7 - A1P4 (Sound data)
-(O)PB0-7: DX0-7 - A1P6 (Auxilary)
+(O)PB0-7: DX0-7 - A1P6 (Auxilary) - DMD #2 Data on Strikes & Spares
 (I)CA1:   Sound Return/Status
 (O)CA2:   LED
 (I)CB1:   CX1 - A1P6 (Auxilary)
@@ -447,12 +470,18 @@ static INTERRUPT_GEN(GTS3_vblank) {
     GTS3locals.UPDATE_DISPLAY();
 
 	/*update leds*/
-	coreGlobals.diagnosticLed = (GTS3locals.diagnosticLeds2<<3) |
-								(GTS3locals.diagnosticLeds1<<2) |
-								(GTS3_dmdlocals[0].diagnosticLed<<1) |
-								GTS3locals.diagnosticLed;
-	if (GTS3_dmdlocals[0].version == 2)
-		coreGlobals.diagnosticLed |= (GTS3_dmdlocals[1].diagnosticLed << 4);
+
+	//Strikes N Spares has 2 DMD LED, but no Sound Board LED
+	if (GTS3_dmdlocals[0].version == 2) {
+		coreGlobals.diagnosticLed = GTS3locals.diagnosticLed |
+									(GTS3_dmdlocals[0].diagnosticLed << 1) |
+									(GTS3_dmdlocals[1].diagnosticLed << 2);
+	} else {
+		coreGlobals.diagnosticLed = (GTS3locals.diagnosticLeds2<<3) |
+									(GTS3locals.diagnosticLeds1<<2) |
+									(GTS3_dmdlocals[0].diagnosticLed<<1) |
+									GTS3locals.diagnosticLed;
+	}
   }
   core_updateSw(GTS3locals.solenoids & 0x80000000);
 }
@@ -493,7 +522,7 @@ static int gts3_m2sw(int col, int row) {
 /*Alpha Numeric First Generation Init*/
 static void GTS3_alpha_common_init(void) {
   memset(&GTS3locals, 0, sizeof(GTS3locals));
-  memset(&GTS3_dmdlocals, 0, sizeof(GTS3_dmdlocals));
+  memset(&GTS3_dmdlocals[0], 0, sizeof(GTS3_DMDlocals));
 
   via_config(0, &via_0_interface);
   via_config(1, &via_1_interface);
@@ -548,9 +577,6 @@ static void gts3dmd_init(void) {
     memory_region(GTS3_MEMREG_DROM1) +
      (memory_region_length(GTS3_MEMREG_DROM1) - 0x8000), 0x8000);
   }
-  //GTS3_dmdlocals[0].pa0 = GTS3_dmdlocals[0].pa1 = GTS3_dmdlocals[0].pa2 = GTS3_dmdlocals[0].pa3 = 0;
-  //GTS3_dmdlocals[0].a18 = 0;
-  //dmdswitchbank(0);
 
   GTS3locals.U4_PB_W  = dmd_u4_pb_w;
   GTS3locals.U4_PB_R  = dmd_u4_pb_r;
@@ -618,7 +644,7 @@ static WRITE_HANDLER(solenoid_w)
 	}
 }
 
-/*DMD*/
+/*DMD Bankswitching - can handle two DMD displays*/
 static void dmdswitchbank(int which)
 {
 	int	addr =	(GTS3_dmdlocals[which].pa0 *0x04000)+
@@ -629,8 +655,18 @@ static void dmdswitchbank(int which)
 	cpu_setbank(STATIC_BANK1+which, memory_region(which ? GTS3_MEMREG_DROM2 : GTS3_MEMREG_DROM1) + addr);
 }
 
-static READ_HANDLER(dmdlatch_r) { return GTS3_dmdlocals[0].dmd_latch; }
+/*Common DMD Data Latch Read routine*/
+static READ_HANDLER(dmdlatch_read)
+{
+	int data = GTS3_dmdlocals[offset].dmd_latch;
+//	if(offset)
+//		printf("reading dmd #%x latch = %x\n",offset+1,data);
+	return data;
+}
 
+/* Each specific DMD read latch routine */
+static READ_HANDLER(dmdlatch_r) { return dmdlatch_read(0); }
+static READ_HANDLER(dmdlatch2_r) { return dmdlatch_read(1); }
 
 //PB0-7 Varies on Alpha or DMD Generation!
 static WRITE_HANDLER(display_control) { GTS3locals.DISPLAY_CONTROL(offset,data); }
@@ -678,15 +714,9 @@ static WRITE_HANDLER(dmd_display){
 	GTS3_dmdlocals[0].dmd_latch = data;
 	if (offset == 0) {
 		cpu_set_irq_line(GTS3_DCPUNO, 0, HOLD_LINE);
-		if (GTS3_dmdlocals[0].version == 2)
-			cpu_set_irq_line(GTS3_DCPUNO2, 0, HOLD_LINE);
 	} else if (offset == 1) {
 		cpu_set_irq_line(GTS3_DCPUNO, 0, CLEAR_LINE);
-		if (GTS3_dmdlocals[0].version == 2)
-			cpu_set_irq_line(GTS3_DCPUNO2, 0, CLEAR_LINE);
 		cpu_set_reset_line(GTS3_DCPUNO, PULSE_LINE);
-		if (GTS3_dmdlocals[0].version == 2)
-			cpu_set_reset_line(GTS3_DCPUNO2, PULSE_LINE);
 	} else
 		logerror("DMD Signal: Offset: %x Data: %x\n",offset,data);
 }
@@ -701,32 +731,28 @@ static WRITE_HANDLER(dmd_display){
   D6=Q6=PB7(U4)=DMD Status 2
   D7=DMD LED
 */
-static WRITE_HANDLER(dmdoport)
+
+//Common DMD Output Port Handler
+static WRITE_HANDLER(dmd_outport)
 {
-	GTS3_dmdlocals[0].pa0=(data>>0)&1;
-	GTS3_dmdlocals[0].pa1=(data>>1)&1;
-	GTS3_dmdlocals[0].pa2=(data>>2)&1;
-	GTS3_dmdlocals[0].pa3=(data>>3)&1;
-	GTS3_dmdlocals[0].q3 =(data>>4)&1; GTS3_dmdlocals[0].a18=GTS3_dmdlocals[0].q3;
-	GTS3_dmdlocals[0].status1=(data>>5)&1;
-	GTS3_dmdlocals[0].status2=(data>>6)&1;
-	GTS3_dmdlocals[0].diagnosticLed = data>>7;
-	dmdswitchbank(0);
+	GTS3_dmdlocals[offset].pa0=(data>>0)&1;
+	GTS3_dmdlocals[offset].pa1=(data>>1)&1;
+	GTS3_dmdlocals[offset].pa2=(data>>2)&1;
+	GTS3_dmdlocals[offset].pa3=(data>>3)&1;
+	GTS3_dmdlocals[offset].q3 =(data>>4)&1; 
+	GTS3_dmdlocals[offset].a18=GTS3_dmdlocals[offset].q3;
+	GTS3_dmdlocals[offset].status1=(data>>5)&1;
+	GTS3_dmdlocals[offset].status2=(data>>6)&1;
+	GTS3_dmdlocals[offset].diagnosticLed = data>>7;
+	dmdswitchbank(offset);
 }
-static WRITE_HANDLER(dmdoport2)
-{
-	GTS3_dmdlocals[1].pa0= data    &1;
-	GTS3_dmdlocals[1].pa1=(data>>1)&1;
-	GTS3_dmdlocals[1].pa2=(data>>2)&1;
-	GTS3_dmdlocals[1].pa3=(data>>3)&1;
-	GTS3_dmdlocals[1].q3 =(data>>4)&1; GTS3_dmdlocals[1].a18=GTS3_dmdlocals[1].q3;
-	GTS3_dmdlocals[1].diagnosticLed = data>>7;
-	dmdswitchbank(1);
-}
+
+//DMD Output port handling for up to 2 DMD Displays
+static WRITE_HANDLER(dmdoport) { dmd_outport(0,data); }
+static WRITE_HANDLER(dmdoport2) { dmd_outport(1,data); }
 
 //This should never be called!
 static READ_HANDLER(display_r){ /* logerror("DISPLAY_R\n"); */ return 0;}
-
 
 //Writes Lamp Returns
 static WRITE_HANDLER(lds_w)
@@ -751,23 +777,57 @@ static WRITE_HANDLER(alpha_aux) {
 /* DMD GENERATION
    ----------------
    Auxilary Data
+   AX4 = (offset = 0)
+   AX5 = (offset = 1)
+   AX6 = (offset = 2)
 */
 static WRITE_HANDLER(dmd_aux) {
+	logerror1("dmd_aux: offset=%02x, data=%02x\n", offset, data);
+
+	//Store it since the data is referred elsewhere
 	GTS3locals.ax[4+offset] = data;
-	if (offset) logerror1("dmd_aux: offset=%02x, data=%02x\n", offset, data);
-	if (!offset) dmd_vblank();
+
+	//Generate an dmd vblank?
+	if (!offset) { 
+		dmd_vblank(0); 
+		//2nd DMD for Strikes N Spares
+		if(GTS3_dmdlocals[0].version == 2)
+			dmd_vblank(1);
+	}
+
+	//Strikes N Spares Stuff 
+	if (GTS3_dmdlocals[0].version == 2)
+	{
+		//AX4 Line - Clocks in a new DMD command for Display #2
+		if (GTS3_dmdlocals[0].version == 2 && offset == 0) {
+			//printf("Sending DMD #2 Command = %x\n",data);
+			GTS3_dmdlocals[1].dmd_latch = data;
+			cpu_set_irq_line(GTS3_DCPUNO2, 0, HOLD_LINE);
+		}
+		// AX5 Line - Triggers data to OKI chip
+		if (offset == 1) {
+			OKIM6295_set_bank_base(0, (GTS3locals.ax[6] & 0x40) << 12);
+			OKIM6295_data_0_w(0, data);
+		}
+	}
 }
-//Update the DMD Frames
-static void dmd_vblank(void) {
-  int offset = (crtc6845_start_address_r(0)>>2);
-  memcpy(DMDFrames[GTS3_dmdlocals[0].nextDMDFrame],memory_region(GTS3_MEMREG_DCPU1)+0x1000+offset,0x200);
-  GTS3_dmdlocals[0].nextDMDFrame = (GTS3_dmdlocals[0].nextDMDFrame + 1) % GTS3DMD_FRAMES;
-  cpu_set_nmi_line(GTS3_DCPUNO, PULSE_LINE);
-  if (GTS3_dmdlocals[0].version == 2) {
-    offset = crtc6845_start_address_r(1) >> 2;
-    memcpy(DMDFrames2[GTS3_dmdlocals[0].nextDMDFrame],memory_region(GTS3_MEMREG_DCPU2)+0x1000+offset,0x200);
-    cpu_set_nmi_line(GTS3_DCPUNO2, PULSE_LINE);
-    //printf("%04x:%04x\n", crtc6845_start_address_r(0), offset);
+
+//Update the DMD Frames during a simulated DMD VBLANK - Supports 2 DMD Displays
+static void dmd_vblank(int which) {
+  int offset;
+  if(which == 0)
+  {
+	offset = (crtc6845_start_address_r(0)>>2);
+	memcpy(DMDFrames[GTS3_dmdlocals[0].nextDMDFrame],memory_region(GTS3_MEMREG_DCPU1)+0x1000+offset,0x200);
+	cpu_set_nmi_line(GTS3_DCPUNO, PULSE_LINE);
+	GTS3_dmdlocals[0].nextDMDFrame = (GTS3_dmdlocals[0].nextDMDFrame + 1) % GTS3DMD_FRAMES;
+  }
+  else
+  {
+	offset = (crtc6845_start_address_r(1)>>2);
+	memcpy(DMDFrames2[GTS3_dmdlocals[1].nextDMDFrame],memory_region(GTS3_MEMREG_DCPU2)+0x1000+offset,0x200);
+	cpu_set_nmi_line(GTS3_DCPUNO2, PULSE_LINE);
+	GTS3_dmdlocals[1].nextDMDFrame = (GTS3_dmdlocals[1].nextDMDFrame + 1) % GTS3DMD_FRAMES;
   }
 }
 
@@ -851,14 +911,17 @@ MEMORY_END
 /----------------------------*/
 static MEMORY_READ_START(GTS3_dmdreadmem)
 {0x0000,0x1fff, MRA_RAM},
+{0x2000,0x2000, crtc6845_register_0_r},
 {0x3000,0x3000, dmdlatch_r}, /*Input Enable*/
 {0x4000,0x7fff, MRA_BANK1},
 {0x8000,0xffff, MRA_ROM},
 MEMORY_END
 
+//NOTE: DMD #2 for Strikes N Spares - Identical to DMD #1 hardware & memory map
 static MEMORY_READ_START(GTS3_dmdreadmem2)
 {0x0000,0x1fff, MRA_RAM},
-{0x3000,0x3000, dmdlatch_r}, /*Input Enable*/
+{0x2000,0x2000, crtc6845_register_1_r},
+{0x3000,0x3000, dmdlatch2_r}, /*Input Enable*/
 {0x4000,0x7fff, MRA_BANK2},
 {0x8000,0xffff, MRA_ROM},
 MEMORY_END
@@ -866,6 +929,7 @@ MEMORY_END
 static MEMORY_WRITE_START(GTS3_dmdwritemem)
 {0x0000,0x0fff, MWA_RAM},
 {0x1000,0x1fff, MWA_RAM},    /*DMD Display RAM*/
+{0x2000,0x2001, MWA_NOP},
 {0x2800,0x2800, crtc6845_address_0_w},
 {0x2801,0x2801, crtc6845_register_0_w},
 {0x3800,0x3800, dmdoport},   /*Output Enable*/
@@ -873,9 +937,11 @@ static MEMORY_WRITE_START(GTS3_dmdwritemem)
 {0x8000,0xffff, MWA_ROM},
 MEMORY_END
 
+//NOTE: DMD #2 for Strikes N Spares - Identical to DMD #1 hardware & memory map
 static MEMORY_WRITE_START(GTS3_dmdwritemem2)
 {0x0000,0x0fff, MWA_RAM},
 {0x1000,0x1fff, MWA_RAM},    /*DMD Display RAM*/
+{0x2000,0x2001, MWA_NOP},
 {0x2800,0x2800, crtc6845_address_1_w},
 {0x2801,0x2801, crtc6845_register_1_w},
 {0x3800,0x3800, dmdoport2},   /*Output Enable*/
@@ -942,11 +1008,24 @@ MACHINE_DRIVER_START(gts3_2a)
   MDRV_CORE_INIT_RESET_STOP(gts3dmda,NULL,gts3)
 MACHINE_DRIVER_END
 
+
+//Sound Interface for Strikes N Spares
+static struct OKIM6295interface sns_okim6295_interface = {
+	1,					/* 1 chip */
+	{ 15250 },			/* 15,25 kHz frequency */
+	{ REGION_USER3 },	/* memory region */
+	{ 75 }				/* volume */
+};
+
 // 2nd DMD CPU for Strikes n' Spares
 MACHINE_DRIVER_START(gts3_22)
-  MDRV_IMPORT_FROM(gts3_2)
+  MDRV_IMPORT_FROM(gts3)
+  MDRV_CPU_ADD(M65C02, 3579000/2)
+  MDRV_CPU_MEMORY(GTS3_dmdreadmem, GTS3_dmdwritemem)
+  MDRV_CORE_INIT_RESET_STOP(gts3dmd,NULL,gts3)
   MDRV_CPU_ADD(M65C02, 3579000/2)
   MDRV_CPU_MEMORY(GTS3_dmdreadmem2, GTS3_dmdwritemem2)
   MDRV_CORE_INIT_RESET_STOP(gts3dmd2,NULL,gts3)
-  MDRV_DIAGNOSTIC_LEDH(5)
+  MDRV_SOUND_ADD(OKIM6295, sns_okim6295_interface)
+  MDRV_DIAGNOSTIC_LEDH(3)
 MACHINE_DRIVER_END

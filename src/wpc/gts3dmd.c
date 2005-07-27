@@ -11,6 +11,7 @@ extern UINT8 DMDFrames2[GTS3DMD_FRAMES][0x200];
 extern int crtc6845_start_addr;
 #endif
 
+//DMD #2 Display routine for Strikes N Spares - code is IDENTICAL to the gts3_dmd128x32
 PINMAME_VIDEO_UPDATE(gts3_dmd128x32a) {
   tDMDDot dotCol;
   UINT8 *frameData = &DMDFrames2[0][0];
