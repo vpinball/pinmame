@@ -272,6 +272,8 @@ DRIVER(lw3,208)         //Data East MPU: 11/92 Lethal Weapon (2.08)
 DRIVER(stwr,103)        //Data East MPU: 10/92 Star Wars (1.03)
 DRIVER(stwr,a14)        //Data East MPU: 10/92 Star Wars (Display Rev.1.04)
 DRIVER(stwr,g11)        //Data East MPU: 10/92 Star Wars (1.01 Germany)
+DRIVER(stwr,102)        //Data East MPU: 11/92 Star Wars (1.02)
+DRIVER(stwr,e12)        //Data East MPU: 11/92 Star Wars (1.02 England)
 DRIVER(rab,130)         //Data East MPU: 04/93 Rocky & Bullwinkle
 DRIVER(rab,320)         //Data East MPU: 08/93 Rocky & Bullwinkle (3.20)
 DRIVER(jupk,501)        //Data East MPU: 09/93 Jurassic Park (5.01)
