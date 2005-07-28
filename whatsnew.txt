@@ -1,3 +1,25 @@
+Version 1.52 (August 1, 2005) - ...
+------------------------------------------------------------------------------
+...
+
+Bugs Fixed
+----------
+...
+
+- WMS-S7: Fixed multiplexed solenoids on Defender.
+- WMS-S4: Defined missing special solenoids on some games.
+- Gameplan: These games are now well behaved on game over/match.
+- Bally-35: Fixed switch column 6 on Vector and added some missing sound
+  diagnostic switches.
+- Spinball: Some improvements and tweaks. These games should work now. We still
+  miss the roms for Verne's World.
+  [TomB]
+
+New Features
+------------
+...
+
+
 Version 1.51 (January 11, 2005) - "Coming of age" (Happy 36th Birthday Gerrit)
 ------------------------------------------------------------------------------
 PinMAME has grown up to be a relatively stable and mature software with only little
