@@ -1,6 +1,10 @@
 What's new in Visual PinMAME:
 -----------------------------
 
+Version 1.52 August 1th, 2005)
+------------------------------
+- Added an easter egg screen: THANK YOU GUYS!
+
 Version 1.51 (January 11, 2005)
 -------------------------------
 - New properties for the Controller object:
