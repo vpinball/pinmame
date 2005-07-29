@@ -85,20 +85,20 @@ CORE_CLONEDEFNV(motrshwa,motrshow,"Motor Show (alternate set)",1988,"Mr. Game (I
 INITGAME(macattck, mrgame_disp_g2, FLIP_SWNO(65,64), 4/*?*/, SNDBRD_MRGAME, 0)
 MRGAME_ROMSTART(macattck,	"cpu_ic13.rom", NO_DUMP,
 							"cpu_ic14.rom", NO_DUMP)
-MRGAME_VIDEOROM2(		"vid_ic14.rom", NO_DUMP,
+MRGAME_VIDEOROM2(		"vid_ic91.rom", NO_DUMP,
+						"vid_ic14.rom", NO_DUMP,
 						"vid_ic15.rom", NO_DUMP,
 						"vid_ic16.rom", NO_DUMP,
 						"vid_ic17.rom", NO_DUMP,
 						"vid_ic18.rom", NO_DUMP,
-						"vid_ic61.rom", NO_DUMP,
-						"vid_ic91.rom", NO_DUMP)
+						"vid_ic61.rom", NO_DUMP)
 MRGAME_SOUNDROM14(		"snd_ic06.rom", NO_DUMP,
 						"snd_ic07.rom", NO_DUMP,
 						"snd_ic22.rom", NO_DUMP,
 						"snd_ic35.rom", NO_DUMP)
  
 MRGAME_ROMEND
-CORE_GAMEDEFNV(macattck,"Mac Attack",1989,"Mr. Game (Italy)",mMRGAME1,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(macattck,"Mac Attack",1989,"Mr. Game (Italy)",mMRGAME2,GAME_IMPERFECT_SOUND)
 
 
 /*-------------------------------------------------------------------
@@ -120,4 +120,4 @@ MRGAME_SOUNDROM25(		"snd_ic06.rom", CRC(19a66331) SHA1(fbd71bc378b5a04247fd17545
 						"snd_ic45.rom", CRC(265aa979) SHA1(9ca10c41526a2d227c21f246273ca14bec7f1bc7),
 						"snd_ic46.rom", CRC(7edb321e) SHA1(b242e94c24e996d2de803d339aa9bf6e93586a4c))
 MRGAME_ROMEND
-CORE_GAMEDEFNV(wcup90,"World Cup 90",1990,"Mr. Game (Italy)",mMRGAME2,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(wcup90,"World Cup 90",1990,"Mr. Game (Italy)",mMRGAME3,GAME_IMPERFECT_SOUND)

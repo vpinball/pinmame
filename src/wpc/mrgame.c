@@ -13,31 +13,32 @@
 
   CPU: Motorola M68000
   Clock: 6 Mhz
-  Interrupt: Tied to a Fixed System Timer
+  Interrupt: Tied to a Fixed System Timer - Hard wired & Jumpered to 200Hz
   I/O: DMA
 
   Video Board:
 
   CPU: Z80
   Clock: 3 Mhz
-  Interrupt: Some funky timing thing..
+  Interrupt: Some funky timing & control generates an NMI, IRQ doesn't appear to be used
   I/O: 8255
+  32 Color Fixed Palette rom
   Generation #1 - 2 roms for characters & sprites ( 2 bits per pixel )
   Generation #2 - 5 roms for characters & sprites ( 5 bits per pixel ) - Manual calls it '32 Color Video Board'
 
   Sound Board:
   CPU: 2 x Z80
   Clock: 4 Mhz
-  Interrupt: IRQ via a timer, NMI via the 7th bit of the sound command
-  Audio: 3 X DAC (1 used to drive volume), 1 X TMS 5220 Speech Chip, 1 X M114S Digital Wave Table Synth Chip
+  Interrupt: IRQ via a timer - hardwired & jumpered to 60Hz, NMI via the 7th bit of the sound command
+  Generation #1 - Audio: 3 X DAC (1 used to drive volume), 1 X TMS 5220 Speech Chip, 1 X M114S Digital Wave Table Synth Chip
+  Generation #2 - Audio: 3 X DAC (1 used to drive volume), 1 X M114S Digital Wave Table Synth Chip 
 
   Issues/Todo:
   #1) Used a hack to ensure all video commands are read by the video cpu - not sure if the "underlying"
       cause is still making other things wrong!
   #2) Timing of animations might be too slow..
   #3) M114S Sound chip emulated but needs to be improved for better accuracy
-  #4) No sprites on Generation 2 hardware
-  #5) Colors not working properly on Generation 2 hardware
+  #4) Generation #2 Video - some corrupt sprites appear on the soccer screen (right hand side)
 
 ************************************************************************************************/
 #include "driver.h"
@@ -57,6 +58,7 @@
 //#define TEST_MAIN_CPU
 //#define TEST_MOTORSHOW
 //#define NOSOUND
+#define DISABLE_INTST
 
 //Define Total # of Mixing Channels Used ( 2 for the DAC, 1 for the TMS5220, and whatever else for the M114S )
 #define MRGAME_TOTCHANNELS 3 + M114S_OUTPUT_CHANNELS
@@ -468,26 +470,30 @@ static WRITE_HANDLER(i8255_portc_w) {
 
 //Video Registers
 static WRITE_HANDLER(vid_registers_w) {
+	int bitval = data & 1;
 	switch(offset) {
 		//Graphics rom - address line 11 pin
 		case 0:
-			locals.vid_a11 = data & 1;
+			locals.vid_a11 = bitval;
 			break;
 		//Interrupt Enable or Strobe? INTST/ on schems
 		case 1:
-			cpu_interrupt_enable(1,data&1);
+#ifndef DISABLE_INTST
+			//printf("setting intst/ to value of %x\n",bitval);
+			cpu_interrupt_enable(1,bitval);
+#endif
 			break;
 		//Graphics rom - address line 14 pin
 		case 2:
-			locals.vid_a14 = data & 1;
+			locals.vid_a14 = bitval;
 			break;
 		//Graphics rom - address line 12 pin
 		case 3:
-			locals.vid_a12 = data & 1;
+			locals.vid_a12 = bitval;
 			break;
 		//Graphics rom - address line 13 pin
 		case 4:
-			locals.vid_a13 = data & 1;
+			locals.vid_a13 = bitval;
 			break;
 
 		//?? - POUT2 on schems for Generation #2 board
@@ -497,6 +503,7 @@ static WRITE_HANDLER(vid_registers_w) {
 		//Not used?
 		case 6:
 		case 7:
+			//printf("vid_register[%02x]_w=%x\n",offset,data);
 			break;
 	}
 
@@ -519,7 +526,7 @@ static READ_HANDLER(soundg1_1_port_r) {
 	{
 		case 1:
 			data = locals.sndcmd;		//Data is inverted
-			//printf("SOUND CPU #1 - Reading data: %02x\n",data);
+			LOG(("SOUND CPU #1 - Reading data: %02x\n",data));
 			break;
 		//Should not read at this port, but it does.. The value read is immediately discarded though..
 		case 2:
@@ -542,6 +549,7 @@ static WRITE_HANDLER(soundg1_1_port_w) {
 			break;
 		}
 		case 2:
+			//Write Status bit for main cpu to read
 			locals.ackspk = GET_BIT0;
 			break;
 		case 3:
@@ -568,7 +576,7 @@ static READ_HANDLER(soundg1_2_port_r) {
 	{
 		case 1:
 			data = locals.sndcmd;
-			//printf("SOUND CPU #2 - Reading data: %02x\n",data);
+			LOG(("SOUND CPU #2 - Reading data: %02x\n",data));
 			break;
 		case 3:
 			data = tms5220_status_r(0);
@@ -583,15 +591,19 @@ static WRITE_HANDLER(soundg1_2_port_w) {
 	switch(offset)
 	{
 		case 0:
+			//Data to DAC #1
 			DAC_data_w(0,data);
 			break;
 		case 2:
+			//Write Status bit for main cpu to read
 			locals.acksnd = GET_BIT0;
 			break;
 		case 3:
+			//Data to TMS5220
 			tms5220_data_w(0,data);
 			break;
 		case 4:
+			//Data to DAC #2
 			DAC_data_w(1,data);
 			break;
 		default:
@@ -599,6 +611,60 @@ static WRITE_HANDLER(soundg1_2_port_w) {
 	}
 }
 
+/* Sound Generation #2 */
+
+/* Sound CPU 2 Ports
+   Port 0 (W)  - CSD/A2   -> DAC #2
+   Port 1 (R)  - CSINS2   -> Read Main CPU Command
+   Port 2 (W)  - CSAKL2   -> Set Status line back to Main CPU - Data on D0
+   Port 3 (W)  - ROM BANK SELECT
+   Port 4 (W)  - CSD/A3   -> DAC #3
+*/
+static READ_HANDLER(soundg2_2_port_r) {
+	int data = 0;
+	switch(offset)
+	{
+		case 1:
+			data = locals.sndcmd;
+			LOG(("SOUND CPU #2 - Reading data: %02x\n",data & 0x7f));
+			break;
+		case 3:
+			LOG(("SOUND CPU #2 - Reading data on Port 3: %02x\n",data));
+			break;
+		default:
+			LOG(("Unhandled port read on Sound CPU #2 - Port %02x\n",offset));
+	}
+	return data;
+}
+
+static WRITE_HANDLER(soundg2_2_port_w) {
+	switch(offset)
+	{
+		case 0:
+			//Data to DAC #1
+			DAC_data_w(0,data);
+			break;
+		case 2:
+			//Write Status bit for main cpu to read
+			locals.acksnd = GET_BIT0;
+			break;
+		case 3: {
+			//SOUND ROM BANKING
+			int snd_a15 = GET_BIT0;
+			int snd_csrom46 = !(GET_BIT2);
+			cpu_setbank(1, memory_region(REGION_USER2) + (snd_a15*0x8000) + (snd_csrom46*0x10000));
+			break;
+		}
+		case 4:
+			//Data to DAC #2
+			DAC_data_w(1,data);
+			break;
+		default:
+			LOG(("Unhandled port write on Sound CPU #2 - Port %02x - Data %02x\n",offset,data));
+	}
+}
+
+//Video Setup 
 static struct mame_bitmap *tmpbitmap2;
 static VIDEO_START(mrgame) {
   tmpbitmap =  auto_bitmap_alloc(256, 256);
@@ -621,6 +687,7 @@ static const struct rectangle screen_visible_area =
 	8, 247,
 };
 
+//Video Update - Generation #1
 PINMAME_VIDEO_UPDATE(mrgame_update_g1) {
     static int scrollers[32];
 	int offs = 0;
@@ -693,7 +760,7 @@ if(keyboard_pressed_memory_repeat(KEYCODE_Z,25)) {
 		flipx = mrgame_objectram[offs + 1] & 0x40;
 		flipy = mrgame_objectram[offs + 1] & 0x80;
 		tile = (mrgame_objectram[offs + 1] & 0x3f) +
-				   (locals.vid_a11<<6) + (locals.vid_a12<<7) + (locals.vid_a13<<7);
+				   (locals.vid_a11<<6) + (locals.vid_a12<<7) + (locals.vid_a13<<8);
 		color = mrgame_objectram[offs + 2];	//Note: This byte may have upper bits also used for other things, but no idea what if/any!
 		drawgfx(tmpbitmap2,Machine->gfx[1],
 				tile,
@@ -706,6 +773,7 @@ if(keyboard_pressed_memory_repeat(KEYCODE_Z,25)) {
     return 0;
 }
 
+//Video Update - Generation #2
 PINMAME_VIDEO_UPDATE(mrgame_update_g2) {
     static int scrollers[32];
 	int offs = 0;
@@ -716,29 +784,6 @@ PINMAME_VIDEO_UPDATE(mrgame_update_g2) {
 	int flipy=0;
 	int sx=0;
 	int sy=0;
-
-#ifdef MAME_DEBUG
-
-if(1 || !debugger_focus) {
-if(keyboard_pressed_memory_repeat(KEYCODE_Z,25)) {
-#ifdef TEST_MOTORSHOW
-	  fake_w(0,0);
-#else
-	charoff = 0;
-	locals.acksnd = !locals.acksnd;
-#endif
-}
-  core_textOutf(50,20,1,"offset=%08x", charoff);
-  if(keyboard_pressed_memory_repeat(KEYCODE_Z,4))
-	  charoff+=0x100;
-  if(keyboard_pressed_memory_repeat(KEYCODE_X,4))
-	  charoff-=0x100;
-  if(keyboard_pressed_memory_repeat(KEYCODE_C,4))
-	  charoff++;
-  if(keyboard_pressed_memory_repeat(KEYCODE_V,4))
-	  charoff--;
-}
-#endif
 
 	/* for every character in the Video RAM, check if it has been modified */
 	/* since last time and update it accordingly. */
@@ -753,20 +798,13 @@ if(keyboard_pressed_memory_repeat(KEYCODE_Z,25)) {
 
 			colorindex = (colorindex+2);
 			if(sx==0) colorindex=1;
-			color = mrgame_objectram[colorindex];
 			scrollers[sx] = -mrgame_objectram[colorindex-1];
 
 			tile = mrgame_videoram[offs]+
                    (locals.vid_a11<<8)+(locals.vid_a12<<9)+(locals.vid_a13<<10)+(locals.vid_a14<<11);
-
-			#ifdef MAME_DEBUG
-			color+=charoff;
-			#endif
-
 			drawgfx(tmpbitmap,Machine->gfx[0],
 					tile,
-//					color+2,						//+2 to offset from PinMAME palette entries
-					0,
+					0,			//Always color 0 because there's no color data used
 					0,0,
 					8*sx,8*sy,
 					0,TRANSPARENCY_NONE,0);
@@ -775,25 +813,21 @@ if(keyboard_pressed_memory_repeat(KEYCODE_Z,25)) {
 	/* copy the temporary bitmap to the screen with scolling */
 	copyscrollbitmap(tmpbitmap2,tmpbitmap,0,0,32,scrollers,&screen_all_area,TRANSPARENCY_NONE,0);
 
+
 	/* Draw Sprites - Not sure of total size here (this memory size allows 8 sprites on screen at once ) */
-	for (offs = 0x40; offs < 0x60; offs += 4)
+	/* NOTE: We loop backwards in sprite memory so that we draw the last sprites first so overlapping priority is correct */
+	for (offs = 0x5f; offs > 0x3F; offs -= 4)
 	{
-		sx = mrgame_objectram[offs + 3] + 1;
-		sy = 240 - mrgame_objectram[offs];
-		flipx = mrgame_objectram[offs + 1] & 0x40;
-		flipy = mrgame_objectram[offs + 1] & 0x80;
-		tile = (mrgame_objectram[offs + 1] & 0x3f) +
-				   (locals.vid_a11<<6) + (locals.vid_a12<<7) + (locals.vid_a13<<7);
-
-		#ifdef MAME_DEBUG
-			tile+=charoff;
-		#endif
-
-		color = mrgame_objectram[offs + 2];	//Note: This byte may have upper bits also used for other things, but no idea what if/any!
-
+		sx = mrgame_objectram[offs] + 1;
+		sy = 240 - mrgame_objectram[offs-3];
+		flipx = mrgame_objectram[offs - 2] & 0x40;
+		flipy = mrgame_objectram[offs - 2] & 0x80;
+		tile = (mrgame_objectram[offs - 2] & 0x3f) +
+				   (locals.vid_a11<<6) + (locals.vid_a12<<7) + (locals.vid_a13<<8) + (locals.vid_a14<<9);
+		//Draw it
 		drawgfx(tmpbitmap2,Machine->gfx[1],
 				tile,
-				color+2,							//+2 to offset from PinMAME palette entries
+				0,			//Always color 0 because there's no color data used
 				flipx,flipy,
 				sx,sy,
 				0,TRANSPARENCY_PEN,0);
@@ -855,11 +889,8 @@ static MEMORY_WRITE_START(videog2_writemem)
   { 0x0000, 0x7fff, MWA_ROM },
   { 0x8000, 0x87ff, MWA_RAM },
   { 0x8800, 0x8bff, MWA_RAM, &mrgame_videoram, &videoram_size },
-  { 0x8c00, 0x8fff, MWA_RAM },
   { 0x9000, 0x90ff, MWA_RAM, &mrgame_objectram },
-  { 0x9100, 0xa7ff, MWA_RAM },
   { 0xa800, 0xa8ff, vid_registers_w },
-  { 0xa900, 0xbfff, MWA_RAM },
   { 0xc000, 0xc003, ppi8255_0_w},
 MEMORY_END
 
@@ -901,10 +932,33 @@ MEMORY_END
 static PORT_WRITE_START(soundg1_2_writeport)
   { 0x00, 0xff, soundg1_2_port_w },
 MEMORY_END
+/**********************************/
+/* Sound CPU #2 Gen #2 Memory Map */
+/**********************************/
+static MEMORY_READ_START(soundg2_2_readmem)
+  { 0x0000, 0x7bff, MRA_ROM },
+  { 0x7c00, 0x7fff, MRA_RAM },  
+  { 0x8000, 0xfbff, MRA_BANK1 },
+  { 0xfc00, 0xffff, MRA_RAM },			//this shouldn't really be ram according to my best guess of schematics, but code writes here and it seems to be ok
+MEMORY_END
+static MEMORY_WRITE_START(soundg2_2_writemem)
+  { 0x0000, 0x7bff, MWA_ROM },
+  { 0x7c00, 0x7fff, MWA_RAM },  
+  { 0x8000, 0xfbff, MWA_BANK1 },
+  { 0xfc00, 0xffff, MWA_RAM },			//this shouldn't really be ram according to my best guess of schematics, but code writes here and it seems to be ok  
+MEMORY_END
+static PORT_READ_START(soundg2_2_readport)
+  { 0x00, 0xff, soundg2_2_port_r },
+MEMORY_END
+static PORT_WRITE_START(soundg2_2_writeport)
+  { 0x00, 0xff, soundg2_2_port_w },
+MEMORY_END
 
 /* Manual starts with a switch # of 0 */
 static int mrgame_sw2m(int no) { return no+7+1; }
 static int mrgame_m2sw(int col, int row) { return col*8+row-7-1; }
+
+//Video Generation #1 - Palette Init
 
 PALETTE_INIT( mrgame_g1 )
 {
@@ -938,6 +992,8 @@ PALETTE_INIT( mrgame_g1 )
 		color_prom++;
 	}
 }
+
+//Video Generation #2 - Palette Init
 
 PALETTE_INIT( mrgame_g2 )
 {
@@ -1042,6 +1098,28 @@ static struct GfxDecodeInfo gfxdecodeinfo_g2[] =
 	{ -1 } /* end of array */
 };
 
+/* Main CPU - Common among all generations */
+MACHINE_DRIVER_START(mrgame_cpu)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CORE_INIT_RESET_STOP(mrgame, NULL, NULL)
+  MDRV_CPU_ADD_TAG("mcpu", M68000, MRGAME_CPUFREQ)
+  MDRV_CPU_MEMORY(readmem, writemem)
+  MDRV_CPU_PERIODIC_INT(mrgame_irq, MRGAME_IRQ_FREQ)
+  MDRV_CPU_VBLANK_INT(vblank, 1)
+  MDRV_NVRAM_HANDLER(mrgame_nvram)
+  MDRV_SWITCH_UPDATE(mrgame)
+  MDRV_SWITCH_CONV(mrgame_sw2m,mrgame_m2sw)
+  MDRV_DIAGNOSTIC_LEDH(1)
+MACHINE_DRIVER_END
+
+/* Video Board - Common among all generations */
+MACHINE_DRIVER_START(mrgame_video_common)
+  MDRV_SCREEN_SIZE(640, 400)
+  MDRV_VISIBLE_AREA(0, 255, 0, 399)
+  MDRV_VIDEO_ATTRIBUTES(VIDEO_TYPE_RASTER)
+  MDRV_VIDEO_START(mrgame)
+MACHINE_DRIVER_END
+
 /* VIDEO GENERATION 1 DRIVER */
 MACHINE_DRIVER_START(mrgame_vid1)
   MDRV_CPU_ADD(Z80,3000000)		/* 3 MHz */
@@ -1057,7 +1135,7 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(mrgame_vid2)
   MDRV_CPU_ADD(Z80, 3000000)	/*3 Mhz?*/
   MDRV_CPU_MEMORY(videog2_readmem, videog2_writemem)
-  MDRV_CPU_VBLANK_INT(nmi_line_pulse,1)
+  MDRV_CPU_VBLANK_INT(irq0_line_pulse,1)
   MDRV_FRAMES_PER_SECOND(60)
   MDRV_VBLANK_DURATION(DEFAULT_60HZ_VBLANK_DURATION)
   MDRV_PALETTE_LENGTH(32)
@@ -1081,9 +1159,36 @@ MACHINE_DRIVER_START(mrgame_snd1)
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
 MACHINE_DRIVER_END
 
+/* SOUND GENERATION 2 DRIVER */
+MACHINE_DRIVER_START(mrgame_snd2)
+  MDRV_CPU_ADD(Z80, 4000000)	/*4 Mhz*/
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(soundg1_1_readmem, soundg1_1_writemem)		//1st Z80 is identical to Gen #1 sound
+  MDRV_CPU_PORTS(soundg1_1_readport, soundg1_1_writeport)		//1st Z80 is identical to Gen #1 sound
+  MDRV_CPU_PERIODIC_INT(snd_irq, MRGAME_SIRQ_FREQ)
+  MDRV_CPU_ADD(Z80, 4000000)	/*4 Mhz*/
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(soundg2_2_readmem, soundg2_2_writemem)
+  MDRV_CPU_PORTS(soundg2_2_readport, soundg2_2_writeport)
+  MDRV_SOUND_ADD(DAC, mrgame_dacInt)
+  MDRV_SOUND_ADD(M114S, mrgame_m114sInt)
+  MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
+MACHINE_DRIVER_END
+
+/* -- Helper Drivers referred to by actual driver definitions below */
+
 /* Gen 1 - Vid & Sound */
 MACHINE_DRIVER_START(mrgame_vidsnd_g1)
   MDRV_IMPORT_FROM(mrgame_vid1)
+#ifndef NOSOUND
+  MDRV_IMPORT_FROM(mrgame_snd1)
+#endif
+  MDRV_INTERLEAVE(50)
+MACHINE_DRIVER_END
+
+/* Gen 2 - Vid & Gen 1 - Sound */
+MACHINE_DRIVER_START(mrgame_vidg2_sndg1)
+  MDRV_IMPORT_FROM(mrgame_vid2)
 #ifndef NOSOUND
   MDRV_IMPORT_FROM(mrgame_snd1)
 #endif
@@ -1094,36 +1199,18 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(mrgame_vidsnd_g2)
   MDRV_IMPORT_FROM(mrgame_vid2)
 #ifndef NOSOUND
-  MDRV_IMPORT_FROM(mrgame_snd1)
+  MDRV_IMPORT_FROM(mrgame_snd2)
 #endif
   MDRV_INTERLEAVE(50)
 MACHINE_DRIVER_END
 
-/* Main CPU - Common among all */
-MACHINE_DRIVER_START(mrgame_cpu)
-  MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CORE_INIT_RESET_STOP(mrgame, NULL, NULL)
-  MDRV_CPU_ADD_TAG("mcpu", M68000, MRGAME_CPUFREQ)
-  MDRV_CPU_MEMORY(readmem, writemem)
-  MDRV_CPU_PERIODIC_INT(mrgame_irq, MRGAME_IRQ_FREQ)
-  MDRV_CPU_VBLANK_INT(vblank, 1)
-  MDRV_NVRAM_HANDLER(mrgame_nvram)
-  MDRV_SWITCH_UPDATE(mrgame)
-  MDRV_SWITCH_CONV(mrgame_sw2m,mrgame_m2sw)
-  MDRV_DIAGNOSTIC_LEDH(1)
-MACHINE_DRIVER_END
 
-/* Video Board - Common among all */
-MACHINE_DRIVER_START(mrgame_video_common)
-  MDRV_SCREEN_SIZE(640, 400)
-  MDRV_VISIBLE_AREA(0, 255, 0, 399)
-  MDRV_VIDEO_ATTRIBUTES(VIDEO_TYPE_RASTER)
-  MDRV_VIDEO_START(mrgame)
-MACHINE_DRIVER_END
+/* ---------------------------- */
+/* Actual Drivers Used are Here */
+/* ---------------------------- */
 
-
-//Generation 1
-MACHINE_DRIVER_START(mrgame1)
+//Generation 1 - Video & Sound
+MACHINE_DRIVER_START(mrgame_g1)
 	MDRV_IMPORT_FROM(mrgame_cpu)
 #ifndef TEST_MAIN_CPU
 	MDRV_IMPORT_FROM(mrgame_vidsnd_g1)
@@ -1132,8 +1219,18 @@ MACHINE_DRIVER_START(mrgame1)
 	MDRV_GFXDECODE(gfxdecodeinfo_g1)
 MACHINE_DRIVER_END
 
-//Generation 2
-MACHINE_DRIVER_START(mrgame2)
+//Generation 2 - Video & Generation 1 - Sound
+MACHINE_DRIVER_START(mrgame_vg2_sg1)
+	MDRV_IMPORT_FROM(mrgame_cpu)
+#ifndef TEST_MAIN_CPU
+	MDRV_IMPORT_FROM(mrgame_vidg2_sndg1)
+#endif
+	MDRV_IMPORT_FROM(mrgame_video_common)
+	MDRV_GFXDECODE(gfxdecodeinfo_g2)
+MACHINE_DRIVER_END
+
+//Generation 2 - Video & Sound
+MACHINE_DRIVER_START(mrgame_g2)
   MDRV_IMPORT_FROM(mrgame_cpu)
 #ifndef TEST_MAIN_CPU
   MDRV_IMPORT_FROM(mrgame_vidsnd_g2)

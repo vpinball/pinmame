@@ -141,18 +141,20 @@
    ROM_LOAD(n1, 0x0000, 0x8000, chk1) \
   NORMALREGION(0x4000, REGION_USER1) \
    ROM_LOAD(n2, 0x0000, 0x4000, chk2) \
-  NORMALREGION(0x30000, MRGAME_MEMREG_SND2) \
-   ROM_LOAD(n3, 0x00000, 0x8000, chk3) \
-   ROM_LOAD(n4, 0x08000, 0x10000, chk4) \
-   ROM_LOAD(n5, 0x18000, 0x10000, chk5)
-
+  NORMALREGION(0x30000, REGION_USER2) \
+   ROM_LOAD(n4, 0x00000, 0x10000, chk4) \
+   ROM_LOAD(n5, 0x10000, 0x10000, chk5) \
+  NORMALREGION(0x10000, MRGAME_MEMREG_SND2) \
+   ROM_LOAD(n3, 0x00000, 0x8000, chk3)    
 
 /*-- These are only here so the game structure can be in the game file --*/
-extern MACHINE_DRIVER_EXTERN(mrgame1);
-extern MACHINE_DRIVER_EXTERN(mrgame2);
+extern MACHINE_DRIVER_EXTERN(mrgame_g1);
+extern MACHINE_DRIVER_EXTERN(mrgame_vg2_sg1);
+extern MACHINE_DRIVER_EXTERN(mrgame_g2);
 
-#define mMRGAME1        mrgame1
-#define mMRGAME2		mrgame2
+#define mMRGAME1        mrgame_g1
+#define mMRGAME2		mrgame_vg2_sg1
+#define mMRGAME3		mrgame_g2
 
 extern PINMAME_VIDEO_UPDATE(mrgame_update_g1);
 extern PINMAME_VIDEO_UPDATE(mrgame_update_g2);
