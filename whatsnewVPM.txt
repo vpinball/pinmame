@@ -4,6 +4,7 @@ What's new in Visual PinMAME:
 Version 1.52 August 1th, 2005)
 ------------------------------
 - Added an easter egg screen: THANK YOU GUYS!
+- Controller.Hidden fixed
 
 Version 1.51 (January 11, 2005)
 -------------------------------
