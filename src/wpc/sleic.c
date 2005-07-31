@@ -106,7 +106,7 @@ static struct OKIM6295interface SLEIC_okim6376_intf =
 {
 	1,						/* 1 chip */
 	{ 8000 },				/* 8000Hz playback */
-	{ SLEIC_MEMREG_CPU },	/* ROM REGION */
+	{ REGION_USER1 },		/* ROM REGION */
 	{ 50 }					/* Volume */
 };
 static struct DACinterface SLEIC_dac_intf = { 1, { 25 }};

@@ -58,12 +58,13 @@
 #define SLEIC_ROMSTART4(name, n1, chk1, n2, chk2, n3, chk3, n4, chk4) \
 ROM_START(name) \
   NORMALREGION(0x100000, SLEIC_MEMREG_CPU) \
-    ROM_LOAD(n2, 0x00000, 0x80000, chk2) \
     ROM_LOAD(n3, 0xe0000, 0x20000, chk3) \
   NORMALREGION(0x10000, SLEIC_MEMREG_DISPLAY) \
     ROM_LOAD(n1, 0x0000, 0x2000, chk1) \
   NORMALREGION(0x10000, SLEIC_MEMREG_IO) \
     ROM_LOAD(n4, 0x0000, 0x8000, chk4) \
+  NORMALREGION(0x100000, REGION_USER1) \
+    ROM_LOAD(n2, 0x00000, 0x80000, chk2)
 
 /*-- These are only here so the game structure can be in the game file --*/
 extern PINMAME_VIDEO_UPDATE(sleic_dmd_update);
