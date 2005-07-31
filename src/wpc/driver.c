@@ -722,6 +722,11 @@ DRIVERNV(playboyg)      //Whitestar: 02/02 Playboy (German display)
 DRIVERNV(playboyl)      //Whitestar: 02/02 Playboy (Spanish display)
 DRIVERNV(playboyf)      //Whitestar: 02/02 Playboy (French display)
 DRIVERNV(playboyi)      //Whitestar: 02/02 Playboy (Italian display)
+DRIVERNV(rctycn)        //Whitestar: 09/02 Roller Coaster Tycoon
+DRIVERNV(rctycng)       //Whitestar: 09/02 Roller Coaster Tycoon (German display)
+DRIVERNV(rctycnl)       //Whitestar: 09/02 Roller Coaster Tycoon (Spanish display)
+DRIVERNV(rctycnf)       //Whitestar: 09/02 Roller Coaster Tycoon (French display)
+DRIVERNV(rctycni)       //Whitestar: 09/02 Roller Coaster Tycoon (Italian display)
 
 #ifdef INCLUDE_NEW_STERN
 DRIVER  (harl,a18)      //Whitestar: 07/03 Harley Davidson (1.08)
@@ -734,11 +739,6 @@ DRIVER  (harl,f30)      //Whitestar: 10/04 Harley Davidson (3.00 France)
 DRIVER  (harl,g30)      //Whitestar: 10/04 Harley Davidson (3.00 Germany)
 DRIVER  (harl,i30)      //Whitestar: 10/04 Harley Davidson (3.00 Italy)
 DRIVER  (harl,l30)      //Whitestar: 10/04 Harley Davidson (3.00 Spain)
-DRIVERNV(rctycn)        //Whitestar: 09/02 Roller Coaster Tycoon
-DRIVERNV(rctycng)       //Whitestar: 09/02 Roller Coaster Tycoon (German display)
-DRIVERNV(rctycnl)       //Whitestar: 09/02 Roller Coaster Tycoon (Spanish display)
-DRIVERNV(rctycnf)       //Whitestar: 09/02 Roller Coaster Tycoon (French display)
-DRIVERNV(rctycni)       //Whitestar: 09/02 Roller Coaster Tycoon (Italian display)
 DRIVERNV(simpprty)      //Whitestar: 01/03 The Simpsons Pinball Party
 DRIVERNV(simpprtg)      //Whitestar: 01/03 The Simpsons Pinball Party (German display)
 DRIVERNV(simpprtl)      //Whitestar: 01/03 The Simpsons Pinball Party (Spanish display)
