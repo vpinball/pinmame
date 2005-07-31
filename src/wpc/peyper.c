@@ -17,7 +17,7 @@
 #include "sndbrd.h"
 
 #define PEYPER_VBLANKFREQ   60 /* VBLANK frequency */
-#define PEYPER_IRQFREQ    1250 /* IRQ frequency */
+#define PEYPER_IRQFREQ    1800 /* IRQ frequency */
 #define PEYPER_CPUFREQ 2500000 /* CPU clock frequency */
 
 /*----------------
