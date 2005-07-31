@@ -31,7 +31,7 @@
   Clock: 4 Mhz
   Interrupt: IRQ via a timer - hardwired & jumpered to 60Hz, NMI via the 7th bit of the sound command
   Generation #1 - Audio: 3 X DAC (1 used to drive volume), 1 X TMS 5220 Speech Chip, 1 X M114S Digital Wave Table Synth Chip
-  Generation #2 - Audio: 3 X DAC (1 used to drive volume), 1 X M114S Digital Wave Table Synth Chip 
+  Generation #2 - Audio: 3 X DAC (1 used to drive volume), 1 X M114S Digital Wave Table Synth Chip
 
   Issues/Todo:
   #1) Used a hack to ensure all video commands are read by the video cpu - not sure if the "underlying"
@@ -664,7 +664,7 @@ static WRITE_HANDLER(soundg2_2_port_w) {
 	}
 }
 
-//Video Setup 
+//Video Setup
 static struct mame_bitmap *tmpbitmap2;
 static VIDEO_START(mrgame) {
   tmpbitmap =  auto_bitmap_alloc(256, 256);
@@ -731,7 +731,7 @@ if(keyboard_pressed_memory_repeat(KEYCODE_Z,25)) {
 //			dirtybuffer[offs] = 0;
 
 			sx = offs % 32;
-			sy = offs / 32; 
+			sy = offs / 32;
 
 			colorindex = (colorindex+2);
 			if(sx==0) colorindex=1;
@@ -777,7 +777,6 @@ if(keyboard_pressed_memory_repeat(KEYCODE_Z,25)) {
 PINMAME_VIDEO_UPDATE(mrgame_update_g2) {
     static int scrollers[32];
 	int offs = 0;
-	int color = 0;
 	int colorindex = 0;
 	int tile = 0;
 	int flipx=0;
@@ -794,7 +793,7 @@ PINMAME_VIDEO_UPDATE(mrgame_update_g2) {
 //			dirtybuffer[offs] = 0;
 
 			sx = offs % 32;
-			sy = offs / 32; 
+			sy = offs / 32;
 
 			colorindex = (colorindex+2);
 			if(sx==0) colorindex=1;
@@ -937,15 +936,15 @@ MEMORY_END
 /**********************************/
 static MEMORY_READ_START(soundg2_2_readmem)
   { 0x0000, 0x7bff, MRA_ROM },
-  { 0x7c00, 0x7fff, MRA_RAM },  
+  { 0x7c00, 0x7fff, MRA_RAM },
   { 0x8000, 0xfbff, MRA_BANK1 },
   { 0xfc00, 0xffff, MRA_RAM },			//this shouldn't really be ram according to my best guess of schematics, but code writes here and it seems to be ok
 MEMORY_END
 static MEMORY_WRITE_START(soundg2_2_writemem)
   { 0x0000, 0x7bff, MWA_ROM },
-  { 0x7c00, 0x7fff, MWA_RAM },  
+  { 0x7c00, 0x7fff, MWA_RAM },
   { 0x8000, 0xfbff, MWA_BANK1 },
-  { 0xfc00, 0xffff, MWA_RAM },			//this shouldn't really be ram according to my best guess of schematics, but code writes here and it seems to be ok  
+  { 0xfc00, 0xffff, MWA_RAM },			//this shouldn't really be ram according to my best guess of schematics, but code writes here and it seems to be ok
 MEMORY_END
 static PORT_READ_START(soundg2_2_readport)
   { 0x00, 0xff, soundg2_2_port_r },
@@ -1065,7 +1064,7 @@ static struct GfxDecodeInfo gfxdecodeinfo_g1[] =
 // *** GENERATION 2 HARDWARE ****
 // ******************************
 
-static struct GfxLayout charlayout_g2 = 
+static struct GfxLayout charlayout_g2 =
 {
     8,8,						/* 8*8 characters */
     4096,						/* 4096 characters = (32768 Bytes / 8 bits per byte)  */
