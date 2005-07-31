@@ -95,10 +95,10 @@ static void exec_pgol(int address) {
 }
 
 /* This routine will be called whenever the execution timer is active */
+static int accu;
+static int ifActive;
+static int score;
 static void sleepTimer(int data) {
-  static int accu;
-  static int ifActive;
-  static int score;
   UINT8* mem = memory_region(GTS1_MEMREG_CPU);
   int data0 = mem[codeOffset] & 0x0f;
   int data1 = mem[codeOffset+1] & 0x0f;
@@ -326,6 +326,7 @@ static MACHINE_INIT(GTS1) {
   timer_adjust(locals.sleepTimer, TIME_NEVER, 0, TIME_NEVER);
   if (core_gameData->hw.soundBoard)
     sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(GTS80_MEMREG_SCPU1), NULL, NULL);
+  accu = ifActive = score = 0;
 }
 
 static MACHINE_STOP(GTS1) {
