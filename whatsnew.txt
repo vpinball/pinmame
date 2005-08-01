@@ -1,23 +1,71 @@
-Version 1.52 (August 1, 2005) - ...
+Version 1.52 (August 1, 2005) - "The first light doesn't count!"
 ------------------------------------------------------------------------------
-...
+The PinMAME developers meeting in Atlanta (Devcon 2005) took place no more than two weeks ago,
+but already we have been able to add signficant improvements as a result of all the great sessions
+we had together! It was great getting to meet each other in person for the first time ever.
+Next time we hope Martin, Tom B, and Okaegi can join in the fun!
+
+Let me use this occasion to thank all the great pinball fans in and around the city of Atlanta, GA 
+for their unparalleled enthusiasm, support and hospitality in hosting our meetings, and helping us
+to find bugs and missing features we never would have had known about otherwise. A huge thank you to
+Al, Craig, Jeff, and Jon, for tons of pinball fun and the best of times! You guys are great!!! :)
+
+We also decided as a team that there's no real need to upgrade to the latest M.A.M.E. core.
+We now have support for all the CPUs ever used on pinball hardware, and all the other type chips
+that aren't supported yet won't probably be supported by M.A.M.E. anytime soon either,
+so we'll stick with the tested, proven, reliable, and FAST older 0.76 core. 
+Why break a good thing?
+
+Amazing how time flies: Okaegi and TomB joined the team a year ago this month!
+Thanks to both of them for contributing so much to the project since then!!!
+
+Much to our surprise we've added some nice improvements since the 1.52 beta release
+just six short weeks ago, so enjoy our latest version!
 
 Bugs Fixed
 ----------
-...
+- Fixes for Bally Vector switches
+- WMS-S7: Fixed multiplexed solenoids on Defender
+- WMS-S4: Defined missing special solenoids on some games
+- GamePlan: These games are now well behaved on game over/match
+- Bally-35: Fixed switch column 6 on Vector and added some missing sound diagnostic switches
+- Spinball: Some improvements and tweaks. These games should work much better now
+  (We still need to find the roms for Verne's World)
+- Overflow Interrupt handling improved on I8051 CPU core to help prevent hang-ups on Spinball emulation
+  [Thomas Behrens]
 
-- WMS-S7: Fixed multiplexed solenoids on Defender.
-- WMS-S4: Defined missing special solenoids on some games.
-- Gameplan: These games are now well behaved on game over/match.
-- Bally-35: Fixed switch column 6 on Vector and added some missing sound
-  diagnostic switches.
-- Spinball: Some improvements and tweaks. These games should work now. We still
-  miss the roms for Verne's World.
-  [TomB]
+- Mr. Game: Video dip switch bug resolved that permanently disabled collision detection
+- Gottlieb: System3 driver bug found that kept displays from working perfectly,
+  so now all alphanumeric games should have their correct displays
+  [Gerrit Volkenborn, Steve Ellenoff]
+
+- No Good Gofers flippers working reliably now
+  [Gerrit Volkenborn]
 
 New Features
 ------------
-...
+- Premier Strikes n' Spares: Support for 2nd DMD, fully working.
+- Mr. Game: Support for 2nd Generation Video & Sound Hardware, working very well, but still some glitches exist.
+- Mr. Game: Rom support for World Cup 90
+  [Steve Ellenoff]
+
+- Premier Strikes n' Spares: Support for Sound, fully working.
+- Added CDP1802 CPU support from MESS (for Playmatic games)
+- Working support for Peyper / Sonic (Spain) hardware
+- Added preliminary support for Playmatic, Sleic (Spain), LTD (Brazil)
+- Sound support for GamePlan Cyclopes and Inder Brave Team
+  [Gerrit Volkenborn]
+
+- Bally sound diagnostic function implemented
+  [Thomas Behrens]
+
+- Support for Gottlieb's "Bone Busters Inc." extra DAC sound board
+  [Gerrit Volkenborn, Steve Ellenoff, Tom Haukap, Brian Smith]
+
+- Added support for ROMs: RCT, Playboy (Stern), NFL, House of Diamonds,
+  Dinosaur Eggs, Mach 2, 250cc, Corsario, Night Moves, alternate sets for
+  Data East Star Wars and Mr. Game Motor Show, and some others..
+  [all]
 
 
 Version 1.51 (January 11, 2005) - "Coming of age" (Happy 36th Birthday Gerrit)
@@ -1076,11 +1124,11 @@ Version 0.99 Beta 1 (March 31, 2001)
 
 Bugs Fixed
 ----------
--Solenoid Numbering Issues	[WPCMAME Author]
+-Solenoid Numbering Issues  [WPCMAME Author]
 
 New Simulators
 --------------
--Time Fantasy			[Marton Larrosa]
+-Time Fantasy           [Marton Larrosa]
 
 
 
@@ -1141,9 +1189,9 @@ New Features
 
 New Simulators
 --------------
--Harley Davidson		[Marton Larrosa]
--Millionaire			[Marton Larrosa]
--Elivira & Party Monsters	[WPCMAME Author] *(Preliminary)
+-Harley Davidson        [Marton Larrosa]
+-Millionaire            [Marton Larrosa]
+-Elivira & Party Monsters   [WPCMAME Author] *(Preliminary)
 -No Good Golphers               [Dave Roberts]
 
 New/Updated Custom Lamp Matrixes
@@ -1153,8 +1201,8 @@ New/Updated Custom Lamp Matrixes
 New Sound Support
 -----------------
 -Dirty Harry                    [Steve Ellenoff]
--Congo				[Steve Ellenoff]
--Who Dunnit			[Steve Ellenoff]
+-Congo              [Steve Ellenoff]
+-Who Dunnit         [Steve Ellenoff]
 
 
 ***************************
@@ -1211,9 +1259,9 @@ New Features
 
 New Simulators
 --------------
--Scared Stiff			 [Tom Haukap]
--Theater of Magic		 [Tom Haukap]
--Indiana Jones			 [Tom Haukap]
+-Scared Stiff            [Tom Haukap]
+-Theater of Magic        [Tom Haukap]
+-Indiana Jones           [Tom Haukap]
 -Medieval Madness                [Marton Larrosa]
 -White Water                     [Marton Larrosa]
 -Dr. Dude                        [Marton Larrosa]
@@ -1256,8 +1304,8 @@ New/Updated Custom Lamp Matrixes
 -Doctor Dude                     [Marton Larrosa]
 -Hurricane                       [Marton Larrosa]
 -Medieval Madness                [Marton Larrosa]
--Theater of Magic		 [Tom Haukap]
--Indiana Jones			 [Tom Haukap]
+-Theater of Magic        [Tom Haukap]
+-Indiana Jones           [Tom Haukap]
 -World Cup Soccer                [WPCMAME Author]
 
 
@@ -1266,17 +1314,17 @@ New/Updated Sound Sample Support
 -Funhouse                        [Steve Ellenoff]
 -Star Trek: TNG                  [Steve Ellenoff]
 -Terminator 2                    [Steve Ellenoff]
--Indiana Jones			 [Tom Haukap]
--Theater of Magic		 [Tom Haukap]
+-Indiana Jones           [Tom Haukap]
+-Theater of Magic        [Tom Haukap]
 -Machine:Bride of Pinbot         [Marton Larrosa]
 -Black Rose                      [Marton Larrosa]
--Creature From Black Lagoon	 [Marton Larrosa]
+-Creature From Black Lagoon  [Marton Larrosa]
 -Dr. Dude                        [Marton Larrosa]
 -Dracula                         [Marton Larrosa]
 -Gilligan's Island               [Marton Larrosa]
 -Hurricane                       [Marton Larrosa]
 -Medieval Madness                [Marton Larrosa]
--Party Zone			 [Marton Larrosa]
+-Party Zone          [Marton Larrosa]
 -Road Show                       [Marton Larrosa]
 -White Water                     [Marton Larrosa]
 

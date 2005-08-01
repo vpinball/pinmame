@@ -1,9 +1,9 @@
 **************************************************************************************
-		                       PinMAME
-		      (Pinball Multiple Arcade Machine Emulator)
-		                     Version 1.51
-		                  (January 11, 2005)
-		                http://www.pinmame.com
+                               PinMAME
+              (Pinball Multiple Arcade Machine Emulator)
+                             Version 1.52
+                           (August 1, 2005)
+                        http://www.pinmame.com
 **************************************************************************************
 
 Latest Info
@@ -13,7 +13,7 @@ Latest Info
 What is it?
 -----------
   PinMAME emulates the hardware found in almost every solid state pinball machine created from
-  the mid 1970's through 2003. Currently, the following pinball hardware is emulated:
+  the mid 1970's through 2005. Currently, the following pinball hardware is emulated:
 
   Williams/Bally WPC, Williams/Bally System 11, Williams System 9, Williams System 7,
   Williams System 6, Williams System 4, Williams System 3,
@@ -22,7 +22,7 @@ What is it?
   Bally MPU-17 & MPU-35, Bally Video/Pinball, Bally 6803,
   Gottlieb System 80, 80a, 80b, System 3, Hankin, Gameplan MPU-1 & MPU-2, Atari,
   Zaccaria, Taito of Brazil, Midway, Capcom, Alvin G. and Co., Technoplay, Mr.Game, Spinball,
-  (Nuova Bell), Inder, Juegos Populares.
+  (Nuova Bell), Inder, Juegos Populares, LTD, Peyper, Sonic, Sleic, Playmatic.
 
   *Note: Emulation is not 100% working on all hardware.
 
@@ -59,7 +59,7 @@ Games supported
   Data East 128x16 DMD: All games from Checkpoint (1991) to Hook (1992)
   Data East 128x32 DMD: All games from Lethal Weapon 3 (1992) to Guns 'n Roses (1994)
   Sega 192x64 DMD: All games from Maverick (1994) to Batman Forever(1995)
-  Sega/Stern Whitestar: All games from Apollo 13 (1995) to Ripley's (2004)
+  Sega/Stern Whitestar: All games from Apollo 13 (1995) to The Soranos (2005)
   Stern MPU-100: All games from Stingray (1977) to Magic (1979)
   Stern MPU-200: All games from Meteor (1979) to Lazer Lord (1984)
   Bally MPU-17: All games from Freedom (1977) to Black Jack (1978)
@@ -78,11 +78,16 @@ Games supported
   Capcom Pinball: All games from Pinball Magic (1995) to Kingpin (1996)
   Alvin G. and Co: All games from World Tour (1992) to Pistol Poker (1993)
   Technoplay: Scramble (1987)
-  Mr. Game: Dakar and Motor Show (1988)
-  Spinball: Jolly Park (1996)
+  Mr. Game: Dakar, Motor Show (1988), World Cup '90 (1990)
+  Spinball: Mach 2 (1995), Jolly Park (1996)
   Nuova Bell: F1 Grand Prix (1987) - Not working yet
-  Inder: Brave Team (1985), Canasta 86 (1986), Bushido (1993 - not working yet)
+  Inder: Brave Team (1985), Canasta 86 (1986), Clown (1988), Corsario (1989), 250cc (1992), Bushido (1993)
   Juegos Populares: America 1492 (198?)
+  LTD: A selection of unconfirmed game roms, not much is working yet
+  Peyper: Odisea Paris-Dakar (1987)
+  Sonic: Pole Position (1987)
+  Sleic: Pin-Ball (1993) (not working)
+  Playmatic: Antar (1979), Evil Fight (1980), KZ-26 (1984), Meg-Aaton, Mad Race (1985) (not working)
   Prototype games: Dave Nutting's Flicker (Sep 1974), Bally's Bow & Arrow (Jan 1976), Williams Rat Race (Jan 1983)
 
   Supported means that the game loads and the display starts up with lamps etc. All games
@@ -218,10 +223,10 @@ Display
   The display shows the DMD or the Alphanumeric LEDs and optionally
   (via the -[no]dmd_only command line option) three matrices:
 
-  Top:		Lamp Matrix
-  Middle:	Switche Matrix
-  Bottom: 	Solenoids/Flasher Matrix
-  Below: 	Diagnostic Lights found on the main hardware board.
+  Top:      Lamp Matrix
+  Middle:   Switche Matrix
+  Bottom:   Solenoids/Flasher Matrix
+  Below:    Diagnostic Lights found on the main hardware board.
 
   PinMAME contains functionality to diplay the lamp matrix laid out similar
   to the real pinball machine. See TZ for an example.
@@ -332,27 +337,29 @@ Known Bugs
 
 The PinMAME Development Team
 ----------------------------
-Steve Ellenoff     (sellenoff@hotmail.com)
-Tom Haukap         (Tom.Haukap@t-online.de)
-Martin Adrian      (wpcmame@hotmail.com)
-Gerrit Volkenborn  (gaston@yomail.de)
-Brian Smith        (destruk@vpforums.com)
+Steve Ellenoff     (sellenoff at hotmail.com)
+Tom Haukap         (Tom.Haukap at t-online.de)
+Martin Adrian      (wpcmame at hotmail.com)
+Gerrit Volkenborn  (gaston at yomail.de)
+Brian Smith        (destruk at vpforums.com)
+Thomas Behrens     (behrens at tecs.de)
+Oliver Kaegi       (okaegi at freesurf.ch)
 
 PinMAME Contributors
 --------------------
-Marton Larrosa     (marton@mail.com)
-Jarek Parchanski   (jpdev@priv6.onet.pl)
-Jonathan N. Deitch (jdeitch@litz.org)
-Dave Roberts       (daverob@cwcom.net)
-Dorsola            (dorsola@descent2.com)
-Johan S            (arcadepreserv@hotmail.com)
-Guru               (theguru@emuunlim.com)
-Martin Wiest       (Mr.Startrek@gmx.de)
-Joep               (veld2611@planet.nl)
-Jim Hernandez      (vidpro1@netzero.net)
-Douglas Cope       (djcope11@yahoo.co.uk)
-Silvio Finotti     (silviorf@yahoo.com)
-Yvon Poulin        (darkness21@globetrotter.net)
+Marton Larrosa     (marton at mail.com)
+Jarek Parchanski   (jpdev at priv6.onet.pl)
+Jonathan N. Deitch (jdeitch at litz.org)
+Dave Roberts       (daverob at cwcom.net)
+Dorsola            (dorsola at descent2.com)
+Johan S            (arcadepreserv at hotmail.com)
+Guru               (theguru at emuunlim.com)
+Martin Wiest       (Mr.Startrek at gmx.de)
+Joep               (veld2611 at planet.nl)
+Jim Hernandez      (vidpro1 at netzero.net)
+Douglas Cope       (djcope11 at yahoo.co.uk)
+Silvio Finotti     (silviorf at yahoo.com)
+Yvon Poulin        (darkness21 at globetrotter.net)
 
 Note from the PinMAME Dev. team
 -------------------------------
