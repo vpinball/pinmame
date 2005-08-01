@@ -20,22 +20,39 @@
     COREPORT_BITDEF(  0x0200, IPT_COIN1,          IP_KEY_DEFAULT) \
     COREPORT_BITDEF(  0x0400, IPT_COIN2,          IP_KEY_DEFAULT) \
   PORT_START /* 1 */ \
-    COREPORT_DIPNAME( 0x000f, 0x0000, "Dip SW300") \
+    COREPORT_DIPNAME( 0x001f, 0x0000, "Dip SW300") \
       COREPORT_DIPSET(0x0000, "USA" ) \
       COREPORT_DIPSET(0x0001, "Austria" ) \
       COREPORT_DIPSET(0x0002, "Belgium" ) \
-      COREPORT_DIPSET(0x000d, "Brazil" ) \
+      COREPORT_DIPSET(0x000d, "Brazil / Australia (New)" ) \
       COREPORT_DIPSET(0x0003, "Canada" ) \
+      COREPORT_DIPSET(0x0013, "Chuck E. Cheese (New)" ) \
+      COREPORT_DIPSET(0x0016, "Croatia (New)" ) \
       COREPORT_DIPSET(0x0006, "France" ) \
       COREPORT_DIPSET(0x0007, "Germany" ) \
+      COREPORT_DIPSET(0x000f, "Greece (New)" ) \
       COREPORT_DIPSET(0x0008, "Italy" ) \
-      COREPORT_DIPSET(0x0009, "Japan" ) \
+      COREPORT_DIPSET(0x0009, "Japan / Denmark (New)" ) \
+      COREPORT_DIPSET(0x0015, "Japan (New)" ) \
+      COREPORT_DIPSET(0x0017, "Middle East (New)" ) \
       COREPORT_DIPSET(0x0004, "Netherlands" ) \
+      COREPORT_DIPSET(0x0010, "New Zealand (New)" ) \
       COREPORT_DIPSET(0x000a, "Norway" ) \
+      COREPORT_DIPSET(0x0011, "Portugal (New)" ) \
+      COREPORT_DIPSET(0x0014, "South Africa (New)" ) \
+      COREPORT_DIPSET(0x0012, "Spain (New)" ) \
       COREPORT_DIPSET(0x000b, "Sweden" ) \
       COREPORT_DIPSET(0x000c, "Switzerland" ) \
-      COREPORT_DIPSET(0x0005, "UK" ) \
-      COREPORT_DIPSET(0x000e, "UK (New)" )
+      COREPORT_DIPSET(0x0005, "UK / Finland (New)" ) \
+      COREPORT_DIPSET(0x000e, "UK (New)" ) \
+      COREPORT_DIPSET(0x0018, "Unknown (00011000)" ) \
+      COREPORT_DIPSET(0x0019, "Unknown (00011001)" ) \
+      COREPORT_DIPSET(0x001a, "Unknown (00011010)" ) \
+      COREPORT_DIPSET(0x001b, "Unknown (00011011)" ) \
+      COREPORT_DIPSET(0x001c, "Unknown (00011100)" ) \
+      COREPORT_DIPSET(0x001d, "Unknown (00011101)" ) \
+      COREPORT_DIPSET(0x001e, "Unknown (00011110)" ) \
+      COREPORT_DIPSET(0x001f, "Unknown (00011111)" )
 
 /*-- Standard input ports --*/
 #define SE_INPUT_PORTS_START(name,balls) \
