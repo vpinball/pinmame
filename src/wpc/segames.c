@@ -1363,8 +1363,8 @@ CORE_CLONEDEFNV(elvisi,elvis,"Elvis (Italy)",2004,"Stern",de_mSES3,GAME_IMPERFEC
 INITGAME(sopranos,GEN_WS,se_dmd128x32,SE_LED)
 SE128_ROMSTART(sopranos, "sopcpua.300", CRC(cca0e551) SHA1(ef109b871605879b55abb966d6736d7deeca404f))
 DE_DMD32ROM8x(      "sopdspa.300", CRC(aa6306ac) SHA1(80737bd2b93bfc64490d07d2cd482350ed3303b3))
-DE3SA_SOUNDROM18888("sopsnda.u7",  CRC(4f6748b5) SHA1(63e953a1455dee2a44484fef951fa34cb2e55d7b),
-                    "sopsnda.u17", CRC(1ecc5ecc) SHA1(42897387b90df8da8ae556ccc46e281ca461c063),
+DE3SA_SOUNDROM18888("sopsnda.u7",  CRC(b22ba5aa) SHA1(8f69932e3b115ae7a6bcb9a15a8b5bf6579e94e0),
+                    "sopsnda.u17", CRC(21e0cfd2) SHA1(d2ff1242f1f4a206e0b2884c079ef2be5df143ac),
                     "sopsnda.u21", CRC(257ab09d) SHA1(1d18e279139b1658ce02160d9a37b4bf043393f0),
                     "sopsnda.u36", CRC(db33b45c) SHA1(d3285008a3c770371389be470c1ec5ca49c1e568),
                     "sopsnda.u37", CRC(06a2a6e1) SHA1(fdbe622223724ac2b4c5183c43d3e635654864bf))
@@ -1379,7 +1379,7 @@ SE128_ROMSTART(sopranog, "sopcpug.300", CRC(acfa9c83) SHA1(8a31b1008097ff86930b2
 DE_DMD32ROM8x(      "sopdspg.300", CRC(9fa4f9d6) SHA1(86af57435d3d33f8686a56ac59e411f2cb69f565))
 DE3SA_SOUNDROM18888("sopsndg.u7",  CRC(bb615e03) SHA1(ce5ef766376c060fc071d54aa878d69b3aa30294),
                     "sopsndg.u17", CRC(cfa7fca1) SHA1(2efbc8c3e8ad6dc39973908e37ecdc7b02be720a),
-                    "sopsndg.u21", CRC(caae114a) SHA1(84703649d7ba05d011348f84e4cac31a023146c0),
+                    "sopsndg.u21", CRC(7669769b) SHA1(adf0c0dbfbaa981fa90db4e54702a4dbaf474e82),
                     "sopsndg.u36", CRC(08d715b5) SHA1(ddccd311ba2b608ab0845afb3ef63b8d3425d530),
                     "sopsndg.u37", CRC(2405df73) SHA1(b8074610d9d87d3f1c0244ef0f450c766aac8a20))
 SE_ROMEND
@@ -1393,7 +1393,7 @@ CORE_CLONEDEFNV(sopranog,sopranos,"Sopranos, The (Germany)",2005,"Stern",de_mSES
 SE128_ROMSTART(sopranof, "sopcpuf.300", CRC(0bd0f8c4) SHA1(df32dcf1db996203fc8b50c78e973b784ae58dbd))
 DE_DMD32ROM8x(      "sopdspf.300", CRC(693bd940) SHA1(dd277da4e8239ae5ede3ded37efc8377ba85919a))
 DE3SA_SOUNDROM18888("sopsndf.u7",  CRC(57426738) SHA1(393e1d654ef09172580ad9a2722f696b6e44ec0f),
-                    "sopsndf.u17", CRC(9e0dd4a8) SHA1(82b772eb7081f22f1203ed113ec7b05f2e26258c),
+                    "sopsndf.u17", CRC(0e34f843) SHA1(2a026bda4c44803239a93e6603a4dfb25e3103b5),
                     "sopsndf.u21", CRC(28726d20) SHA1(63c6bea953cc34b6a3c2c9688ab86641f94cd227),
                     "sopsndf.u36", CRC(99549d4a) SHA1(15e3d35b9cefbc8825a7dee5309adc2526de3dec),
                     "sopsndf.u37", CRC(2b4a9130) SHA1(eed9c84c932bb86954226b0d51461c5094ebe02e))
@@ -1409,7 +1409,7 @@ SE128_ROMSTART(sopranol, "sopcpul.300", CRC(2efd7a45) SHA1(d179605c385c3e3b269bb
 DE_DMD32ROM8x(      "sopdspl.300", CRC(d6f7a723) SHA1(462c8c82ffb6e386adfc411d3e70c4b25553dc7a))
 DE3SA_SOUNDROM18888("sopsndl.u7",  CRC(137110f2) SHA1(9bd911fc74b91e811ada4c66bec214d22506a646),
                     "sopsndl.u17", CRC(3d5189e6) SHA1(7d846d0b18678ff7aa44029643571e237bc48d58),
-                    "sopsndl.u21", CRC(66cdb90d) SHA1(d96e1b92e54a94b5e0ed9d62cff9220b9e215e85),
+                    "sopsndl.u21", CRC(0ac4f407) SHA1(9473ab42c0f758901644256d7cd1cb47c8396433),
                     "sopsndl.u36", CRC(147c4216) SHA1(ded2917188bea51cb03db72fe53fcd76a3e66ab9),
                     "sopsndl.u37", CRC(cfe814fb) SHA1(51b6b10dda4640f8569e610b41c77e3657eabff2))
 SE_ROMEND
@@ -1423,7 +1423,7 @@ CORE_CLONEDEFNV(sopranol,sopranos,"Sopranos, The (Spain)",2005,"Stern",de_mSES3,
 SE128_ROMSTART(sopranoi, "sopcpui.300", CRC(1a2846e6) SHA1(10dd57d5f65f397d67105f7e1d0e8d920753893c))
 DE_DMD32ROM8x(      "sopdspi.300", CRC(d7903ed2) SHA1(ae54952cd3e6f7fb0075e71d484701def764f0d6))
 DE3SA_SOUNDROM18888("sopsndi.u7",  CRC(afb9c474) SHA1(fd184e8cd6afff61fd2874b08f0e841934916ccb),
-                    "sopsndi.u17", CRC(7cb762dd) SHA1(84ec54d6495ccb02052c8d5b6b66c018a702bb4e),
+                    "sopsndi.u17", CRC(ec8e4e36) SHA1(312f1d86bf6703b8ff6b807a3a2abea9fe0c20b8),
                     "sopsndi.u21", CRC(37727b76) SHA1(8801091870a30222d5a99535bbe15ac97334e368),
                     "sopsndi.u36", CRC(71568348) SHA1(516d5ea35f8323e247c25000cb223f3539796ea1),
                     "sopsndi.u37", CRC(b34c0a5f) SHA1(b84979d6eef7d23e6dd5410993d83fba2121bc6a))
