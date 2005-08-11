@@ -182,17 +182,31 @@ SE_ROMEND
 CORE_CLONEDEFNV(swtril41,swtril43,"Star Wars Trilogy (4.01)",1997,"Sega",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ The Lost World: Jurassic Park
+/ The Lost World: Jurassic Park (2.02)
 /-------------------------------------------------------------------*/
-INITGAME(jplstwld,GEN_WS,se_dmd128x32,0)
-SE128_ROMSTART(jplstwld,"jp2cpu.202",CRC(d317e601) SHA1(fb4fee5fd08e0f1b5afb9817654bdb3d54a5220d))
+INITGAME(jplstw22,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(jplstw22,"jp2cpu.202",CRC(d317e601) SHA1(fb4fee5fd08e0f1b5afb9817654bdb3d54a5220d))
 DE_DMD32ROM8x(    "jp2dspa.201",CRC(8fc41ace) SHA1(9d11f7623eec41972d2be4313c7715e30116d889))
 DE2S_SOUNDROM144("jp2_u7.bin" ,CRC(73b74c96) SHA1(ffa47cbf1491ed4fbadc984189abbfffc70c9888),
                  "jp2_u17.bin",CRC(8d6c0dbd) SHA1(e1179b2c94927a07efa7d16cf841d5ff7334ff36),
                  "jp2_u21.bin",CRC(c670a997) SHA1(1576e11ec3669f61ff16188de31b9ef3a067c473))
 SE_ROMEND
-#define input_ports_jplstwld input_ports_se
-CORE_GAMEDEFNV(jplstwld,"Lost World: Jurassic Park, The",1997,"Sega",de_mSES1,GAME_NOCRC)
+#define input_ports_jplstw22 input_ports_se
+CORE_GAMEDEFNV(jplstw22,"Lost World: Jurassic Park, The (2.02)",1997,"Sega",de_mSES1,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ The Lost World: Jurassic Park (2.00)
+/-------------------------------------------------------------------*/
+INITGAME(jplstw20,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(jplstw20,"jp2cpu.200",CRC(42f5526e) SHA1(66254492c981117c06567305237cadfc0ce391b0))
+DE_DMD32ROM8x(    "jp2dspa.201",CRC(8fc41ace) SHA1(9d11f7623eec41972d2be4313c7715e30116d889))
+DE2S_SOUNDROM144("jp2_u7.bin" ,CRC(73b74c96) SHA1(ffa47cbf1491ed4fbadc984189abbfffc70c9888),
+                 "jp2_u17.bin",CRC(8d6c0dbd) SHA1(e1179b2c94927a07efa7d16cf841d5ff7334ff36),
+                 "jp2_u21.bin",CRC(c670a997) SHA1(1576e11ec3669f61ff16188de31b9ef3a067c473))
+SE_ROMEND
+#define input_ports_jplstw20 input_ports_se
+#define init_jplstw20 init_jplstw22
+CORE_CLONEDEFNV(jplstw20,jplstw22,"Lost World: Jurassic Park, The (2.00)",1997,"Sega",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / X-Files

@@ -606,7 +606,8 @@ DRIVERNV(spacejmg)      //Whitestar: 08/96 Space Jam (Germany)
 DRIVERNV(spacejmi)      //Whitestar: 08/96 Space Jam (Italy)
 DRIVERNV(swtril43)      //Whitestar: 02/97 Star Wars Trilogy (4.03)
 DRIVERNV(swtril41)      //Whitestar: 02/97 Star Wars Trilogy (4.01)
-DRIVERNV(jplstwld)      //Whitestar: 06/97 The Lost World: Jurassic Park
+DRIVERNV(jplstw22)      //Whitestar: 06/97 The Lost World: Jurassic Park (2.02)
+DRIVERNV(jplstw20)      //Whitestar: 06/97 The Lost World: Jurassic Park (2.00)
 DRIVERNV(xfiles)        //Whitestar: 08/97 X-Files
 DRIVERNV(startrp)       //Whitestar: 11/97 Starship Troopers
 DRIVERNV(viprsega)      //Whitestar: 02/98 Viper Night Drivin'
