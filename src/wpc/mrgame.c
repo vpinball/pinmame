@@ -407,7 +407,6 @@ static READ_HANDLER(i8255_portb_r) { LOG(("UNDOCUMENTED: i8255_portb_r\n")); ret
 //Bits 0-3 = Video Dips (NOT INVERTED)
 //Bits   4 = Video Strobe from CPU
 //static READ_HANDLER(i8255_portc_r) { return core_getDip(1) | (locals.vid_strb<<4); }
-static int pulse=0;
 static READ_HANDLER(i8255_portc_r) {
 	int data = core_getDip(2); // core_getDip(1) only works if the 16 bits of the 1st dip switch row was used.
 	int strobe = (locals.vid_strb<<4);
