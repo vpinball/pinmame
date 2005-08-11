@@ -604,7 +604,8 @@ DRIVERNV(spacejam)      //Whitestar: 08/96 Space Jam
 DRIVERNV(spacejmf)      //Whitestar: 08/96 Space Jam (France)
 DRIVERNV(spacejmg)      //Whitestar: 08/96 Space Jam (Germany)
 DRIVERNV(spacejmi)      //Whitestar: 08/96 Space Jam (Italy)
-DRIVERNV(swtril)        //Whitestar: 02/97 Star Wars Trilogy
+DRIVERNV(swtril43)      //Whitestar: 02/97 Star Wars Trilogy (4.03)
+DRIVERNV(swtril41)      //Whitestar: 02/97 Star Wars Trilogy (4.01)
 DRIVERNV(jplstwld)      //Whitestar: 06/97 The Lost World: Jurassic Park
 DRIVERNV(xfiles)        //Whitestar: 08/97 X-Files
 DRIVERNV(startrp)       //Whitestar: 11/97 Starship Troopers
