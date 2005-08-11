@@ -64,13 +64,12 @@
 
 #define MRGAME_COMINPORT       CORE_COREINPORT
 
-#define MRGAME_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
-#define MRGAME_LAMPSMOOTH      6 /* Smooth the lamps over this number of VBLANKS */
+#define MRGAME_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
+#define MRGAME_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
 #define MRGAME_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
 
 /*-- switch numbers --*/
-#define MRGAME_SWTEST     -7
-#define MRGAME_SWENTER    -6
+// no switches outside switchmatrix
 
 /*-- Memory regions --*/
 #define MRGAME_MEMREG_CPU		REGION_CPU1
