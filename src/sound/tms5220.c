@@ -6,8 +6,9 @@
      With help from Neill Corlett
      Additional tweaking by Aaron Giles
 
-  addaped to mame 098 by okaegi (09/08/2005)
-
+  2003-12-11 GV: some modifications for clearer speech output
+  adapted to mame 098 by okaegi (08/09/2005)
+  slightly changed again for clearer speech output by gaston (08/11/2005)
 ***********************************************************************************************/
 
 #include <stdio.h>
@@ -571,22 +572,39 @@ tryagain:
 
         for (i = 9; i >= 0; i--)
         {
+#ifdef PINMAME
+            u[i] = u[i+1] - ((current_k[i] * x[i]) >> 15);
+#else
             u[i] = u[i+1] - ((current_k[i] * x[i]) / 32768);
+#endif
         }
         for (i = 9; i >= 1; i--)
         {
+#ifdef PINMAME
+            x[i] = x[i-1] + ((current_k[i-1] * u[i-1]) >> 15);
+#else
             x[i] = x[i-1] + ((current_k[i-1] * u[i-1]) / 32768);
+#endif
         }
 
         x[0] = u[0];
 
         /* clipping, just like the chip */
+#ifdef PINMAME
+        if (u[0] > 1023)
+            buffer[buf_count] = 32750;
+        else if (u[0] < -1024)
+            buffer[buf_count] = -32750;
+        else
+            buffer[buf_count] = u[0] << 5;
+#else
         if (u[0] > 511)
             buffer[buf_count] = 127<<8;
         else if (u[0] < -512)
             buffer[buf_count] = -128<<8;
         else
             buffer[buf_count] = u[0] << 6;
+#endif
 
         /* Update all counts */
 
@@ -792,10 +810,9 @@ static int parse_frame(int the_first_frame)
 		/*return 1;*/
 	{
 		buffer_empty = 1;
-// is a different to  mame 096s okaegi
+#ifdef PINMAME
 		tms5220_reset();
-// is a different to  mame 096s okaegi
-
+#endif
 		return 1;
 	}
 
@@ -824,9 +841,9 @@ static int parse_frame(int the_first_frame)
 			fifo_head = fifo_tail = fifo_count = fifo_bits_taken = 0;
 			speak_external = tms5220_speaking = 0;
 			last_frame = 1;
-// is a different to  mame 096s okaegi
+#ifdef PINMAME
 			tms5220_reset();
-// is a different to  mame 096s okaegi			
+#endif
 		}
 		goto done;
 	}
@@ -848,8 +865,11 @@ static int parse_frame(int the_first_frame)
         goto ranout;
 	}
     indx = extract_bits(6);
+#ifdef PINMAME
+    new_pitch = pitchtable[indx] >> 8;
+#else
     new_pitch = pitchtable[indx] / 256;
-
+#endif
     /* if this is a repeat frame, just copy the k's */
     if (rep_flag)
     {
@@ -941,9 +961,9 @@ ranout:
 
     /* generate an interrupt if necessary */
     set_interrupt_state(1);
-// differs to mame098s okaegi
+#ifdef PINMAME
     tms5220_reset();
-// differs to mame098s okaegi
+#endif
     return 0;
 }
 
