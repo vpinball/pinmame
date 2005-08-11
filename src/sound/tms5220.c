@@ -6,7 +6,7 @@
      With help from Neill Corlett
      Additional tweaking by Aaron Giles
 
-  2003-12-11 GV: some modifications for clearer speech output
+  addaped to mame 098 by okaegi (09/08/2005)
 
 ***********************************************************************************************/
 
@@ -340,7 +340,7 @@ int tms5220_cycles_to_ready(void)
 	{
 		int val;
 
-		answer = 200-sample_count+1;
+		answer = 200-sample_count+8;
 
 		/* total number of bits available in current byte is (8 - fifo_bits_taken) */
 		/* if more than 4 are available, we need to check the energy */
@@ -571,22 +571,22 @@ tryagain:
 
         for (i = 9; i >= 0; i--)
         {
-            u[i] = u[i+1] - ((current_k[i] * x[i]) / 35000);
+            u[i] = u[i+1] - ((current_k[i] * x[i]) / 32768);
         }
         for (i = 9; i >= 1; i--)
         {
-            x[i] = x[i-1] + ((current_k[i-1] * u[i-1]) / 35000);
+            x[i] = x[i-1] + ((current_k[i-1] * u[i-1]) / 32768);
         }
 
         x[0] = u[0];
 
         /* clipping, just like the chip */
-        if (u[0] > 2047)
-            buffer[buf_count] = 32767;
-        else if (u[0] < -2048)
-            buffer[buf_count] = -32768;
+        if (u[0] > 511)
+            buffer[buf_count] = 127<<8;
+        else if (u[0] < -512)
+            buffer[buf_count] = -128<<8;
         else
-            buffer[buf_count] = u[0] << 4;
+            buffer[buf_count] = u[0] << 6;
 
         /* Update all counts */
 
@@ -792,7 +792,10 @@ static int parse_frame(int the_first_frame)
 		/*return 1;*/
 	{
 		buffer_empty = 1;
+// is a different to  mame 096s okaegi
 		tms5220_reset();
+// is a different to  mame 096s okaegi
+
 		return 1;
 	}
 
@@ -821,7 +824,9 @@ static int parse_frame(int the_first_frame)
 			fifo_head = fifo_tail = fifo_count = fifo_bits_taken = 0;
 			speak_external = tms5220_speaking = 0;
 			last_frame = 1;
+// is a different to  mame 096s okaegi
 			tms5220_reset();
+// is a different to  mame 096s okaegi			
 		}
 		goto done;
 	}
@@ -843,7 +848,7 @@ static int parse_frame(int the_first_frame)
         goto ranout;
 	}
     indx = extract_bits(6);
-    new_pitch = pitchtable[indx] >> 8;
+    new_pitch = pitchtable[indx] / 256;
 
     /* if this is a repeat frame, just copy the k's */
     if (rep_flag)
@@ -936,7 +941,9 @@ ranout:
 
     /* generate an interrupt if necessary */
     set_interrupt_state(1);
+// differs to mame098s okaegi
     tms5220_reset();
+// differs to mame098s okaegi
     return 0;
 }
 
