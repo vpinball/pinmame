@@ -34,8 +34,6 @@
   Generation #2 - Audio: 3 X DAC (1 used to drive volume), 1 X M114S Digital Wave Table Synth Chip
 
   Issues/Todo:
-  #1) Used a hack to ensure all video commands are read by the video cpu - not sure if the "underlying"
-      cause is still making other things wrong!
   #2) Timing of animations might be too slow..
   #3) M114S Sound chip emulated but needs to be improved for better accuracy
   #4) Generation #2 Video - some corrupt sprites appear on the soccer screen (right hand side)
@@ -60,6 +58,8 @@
 //#define NOSOUND
 #define DISABLE_INTST
 
+#define FIX_CMOSINIT 1		// fix nvram-initialization
+
 //Define Total # of Mixing Channels Used ( 2 for the DAC, 1 for the TMS5220, and whatever else for the M114S )
 #define MRGAME_TOTCHANNELS 3 + M114S_OUTPUT_CHANNELS
 
@@ -73,12 +73,6 @@
 #define MRGAME_IRQ_FREQ (6000000/16)/2048
 //Jumper on sound board shows 60Hz hard wired - 4Mhz clock feeds 74393 as /16 -> 4040 to Q12 as / 4096 = ~61Hz
 #define MRGAME_SIRQ_FREQ (4000000/16)/4096
-
-//Video Commands buffering
-#define MRGAME_VID_MAX_BUF 40
-static int vidcmd_buf[MRGAME_VID_MAX_BUF];
-static int vidcmd_next = 0;
-static int vidcmd_read = 0;
 
 #if 0
 #define LOG(x) printf x
@@ -111,6 +105,7 @@ static struct {
   int flipRead;
   int a0a2;
   int d0d1;
+  int vid_stat;
   int vid_data;
   int vid_strb;
   int vid_a11;
@@ -119,6 +114,7 @@ static struct {
   int vid_a14;
   int sndstb;
   int sndcmd;
+  int gameOn;
 } locals;
 
 static data8_t *mrgame_videoram;
@@ -185,17 +181,17 @@ static INTERRUPT_GEN(vblank) {
   /--------------------------------*/
   locals.vblankCount += 1;
 
-  memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
-
-#if 1
-  coreGlobals.solenoids = locals.solenoids;
-//  locals.solenoids = coreGlobals.pulsedSolState;
-  if ((locals.vblankCount % MRGAME_SOLSMOOTH) == 0) {
-    locals.solenoids = 0;
+  /*-- lamps --*/
+  if ((locals.vblankCount % MRGAME_LAMPSMOOTH) == 0) {
+    locals.gameOn = (coreGlobals.tmpLampMatrix[2]>>4) & 1;	// lamp 21 is game on
+    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   }
-#else
-  coreGlobals.solenoids = coreGlobals.pulsedSolState;
-#endif
+
+  /*-- solenoids --*/
+  if ((locals.vblankCount % MRGAME_SOLSMOOTH) == 0) {
+    coreGlobals.solenoids = locals.solenoids | (locals.gameOn<<24);
+    locals.solenoids      = coreGlobals.pulsedSolState;
+  }
 
   /*-- display --*/
   if ((locals.vblankCount % MRGAME_DISPLAYSMOOTH) == 0) {
@@ -203,7 +199,7 @@ static INTERRUPT_GEN(vblank) {
 	coreGlobals.diagnosticLed = locals.diagnosticLED;
   }
 
-  core_updateSw(1);
+  core_updateSw(locals.gameOn);
 }
 
 static SWITCH_UPDATE(mrgame) {
@@ -214,6 +210,7 @@ static SWITCH_UPDATE(mrgame) {
 }
 
 static MACHINE_INIT(mrgame) {
+
   memset(&locals, 0, sizeof(locals));
 
   locals.sndstb = 1;
@@ -229,7 +226,12 @@ static MACHINE_INIT(mrgame) {
 
 //Reads current switch column (really row) - Inverted
 static READ16_HANDLER(col_r) {
-	UINT8 switches = coreGlobals.swMatrix[locals.SwCol+1];	//+1 so we begin by reading column 1 of input matrix instead of 0 which is used for special switches in many drivers
+	UINT8 switches;
+	// 8th column is feedback byte from video cpu
+	if (locals.SwCol==7) return locals.vid_stat;
+	// +1 so we begin by reading column 1 of input matrix instead of 0
+	// which is used for special switches in many drivers
+	switches = coreGlobals.swMatrix[locals.SwCol+1];
 	return switches^0xff;
 }
 
@@ -251,31 +253,16 @@ static READ16_HANDLER(rsw_ack_r) {
 /*Solenoids*/
 static WRITE_HANDLER(solenoid_w)
 {
-	int sol = locals.a0a2;				//Controls which individual solenoid we're updating
-	int msk = (~(1<<sol)) & 0xff;		//Mask it off..
-	data &= msk;
-	data |= (locals.d0d1&1)<<sol;
+	if (offset < 4) {
+		int    sol = offset*8+locals.a0a2;	// sol #
+		UINT32 msk = ~(1<<sol);			// mask this bit
+		UINT32 bit = (locals.d0d1&1)<<sol;	// data bit
 
-	switch(offset){
-		case 0:
-			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFFFFFF00) | data;
-			locals.solenoids |= data;
-			break;
-		case 1:
-			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFFFF00FF) | (data<<8);
-			locals.solenoids |= data << 8;
-            break;
-		case 2:
-			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFF00FFFF) | (data<<16);
-			locals.solenoids |= data << 16;
-            break;
-		//Not used but here anyway..
-		case 3:
-			coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x00FFFFFF) | (data<<24);
-			locals.solenoids |= data << 24;
-			break;
-		default:
-			LOG(("Solenoid_W Logic Error\n"));
+	        locals.solenoids |=
+	        coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & msk) | bit;
+	}
+	else {
+		LOG(("Solenoid_W Logic Error\n"));
 	}
 }
 
@@ -301,25 +288,9 @@ static WRITE16_HANDLER(sound_w) {
 	locals.sndstb = GET_BIT7;
 }
 
-#ifdef TEST_MOTORSHOW
-const static int cycle[] = {0x18,0x19,0x1a};
-static int cycind=0;
-static WRITE_HANDLER(fake_w)
-{
-	locals.vid_data = cycle[cycind];
-	cycind = (cycind+1)%3;
-	printf("viddata=%x\n",locals.vid_data);
-}
-#endif
-
 //8 bit data to this latch comes from D8-D15 (ie, upper bits only)
 static WRITE16_HANDLER(video_w) {
-#ifndef TEST_MOTORSHOW
-	vidcmd_buf[vidcmd_next] = (data>>8) & 0xff;
-	vidcmd_next = (vidcmd_next + 1) % MRGAME_VID_MAX_BUF;
-	//locals.vid_data = (data>>8) & 0xff;
-	//LOG(("viddata=%x\n",data>>8));
-#endif
+	locals.vid_data = (data>>8) & 0xff;
 }
 
 static WRITE_HANDLER(lampdata_w) {
@@ -417,6 +388,9 @@ static WRITE16_HANDLER(row_w) {
 static UINT16 *NVRAM;
 static NVRAM_HANDLER(mrgame_nvram) {
   core_nvram(file, read_or_write, NVRAM, 0x10000, 0x00);
+#if FIX_CMOSINIT
+  if (*NVRAM==0) *NVRAM=0xFFFF;
+#endif
 }
 
 /***************************************************************************/
@@ -425,18 +399,9 @@ static NVRAM_HANDLER(mrgame_nvram) {
 
 //Read D0-D7 from cpu
 static READ_HANDLER(i8255_porta_r) {
-#ifndef TEST_MOTORSHOW
-	int data = vidcmd_buf[vidcmd_read];
-	vidcmd_read = (vidcmd_read + 1) % MRGAME_VID_MAX_BUF;
-	if(vidcmd_read >= vidcmd_next) {
-		vidcmd_read = vidcmd_next = 0;
-	}
-	return data;
-#else
-	//LOG(("i8255_porta_r=%x\n",locals.vid_data));
 	return locals.vid_data;
-#endif
 }
+
 static READ_HANDLER(i8255_portb_r) { LOG(("UNDOCUMENTED: i8255_portb_r\n")); return 0; }
 
 //Bits 0-3 = Video Dips (NOT INVERTED)
@@ -446,17 +411,12 @@ static int pulse=0;
 static READ_HANDLER(i8255_portc_r) {
 	int data = core_getDip(2); // core_getDip(1) only works if the 16 bits of the 1st dip switch row was used.
 	int strobe = (locals.vid_strb<<4);
-	//Force a strobe if data waiting in buffer
-	if(vidcmd_next > 1) {
-		strobe = pulse<<4;
-		pulse = !pulse;
-	}
 	return  data | strobe;
 }
 
-//Connected to monitor! Not sure what kind of data it could send here!
+//Connected to monitor! (?)
 static WRITE_HANDLER(i8255_portb_w) {
-	//LOG(("i8255_portb_w=%x\n",data));
+	locals.vid_stat = data;
 }
 
 //These don't make sense to me - they're read lines, so no idea what writes to here would do!
