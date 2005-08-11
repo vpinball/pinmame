@@ -155,17 +155,31 @@ SE_ROMEND
 CORE_CLONEDEFNV(spacejmi,spacejam,"Space Jam (Italy)",1997,"Sega",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ Star Wars Trilogy
+/ Star Wars Trilogy (4.03)
 /-------------------------------------------------------------------*/
-INITGAME(swtril,GEN_WS,se_dmd128x32,0)
-SE128_ROMSTART(swtril,"swcpu.403",CRC(d022880e) SHA1(c1a2acf5740cef6a8aeee9b6a60942b51147963f))
+INITGAME(swtril43,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(swtril43,"swcpu.403",CRC(d022880e) SHA1(c1a2acf5740cef6a8aeee9b6a60942b51147963f))
 DE_DMD32ROM8x(    "swsedspa.400",CRC(b9bcbf71) SHA1(036f53e638699de0447ecd02221f673a40f656be))
 DE2S_SOUNDROM144("sw0219.u7" ,CRC(cd7c84d9) SHA1(55b0208089933e4a30f0eb87b123dd178383ed43),
                  "sw0211.u17",CRC(6863e7f6) SHA1(99f1e0170fbbb91a0eb7a796ab3bf757cb1b23ce),
                  "sw0211.u21",CRC(6be68450) SHA1(d24652f74b109e47eb5d3d02e04f63c99e92c590))
 SE_ROMEND
-#define input_ports_swtril input_ports_se
-CORE_GAMEDEFNV(swtril,"Star Wars Trilogy",1997,"Sega",de_mSES1,GAME_NOCRC)
+#define input_ports_swtril43 input_ports_se
+CORE_GAMEDEFNV(swtril43,"Star Wars Trilogy (4.03)",1997,"Sega",de_mSES1,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Star Wars Trilogy (4.01)
+/-------------------------------------------------------------------*/
+INITGAME(swtril41,GEN_WS,se_dmd128x32,0)
+SE128_ROMSTART(swtril41,"swcpu.401",CRC(707dce87) SHA1(45fc3ffe646e5be72af9f7f00990ee5f85338f34))
+DE_DMD32ROM8x(    "swsedspa.400",CRC(b9bcbf71) SHA1(036f53e638699de0447ecd02221f673a40f656be))
+DE2S_SOUNDROM144("sw0219.u7" ,CRC(cd7c84d9) SHA1(55b0208089933e4a30f0eb87b123dd178383ed43),
+                 "sw0211.u17",CRC(6863e7f6) SHA1(99f1e0170fbbb91a0eb7a796ab3bf757cb1b23ce),
+                 "sw0211.u21",CRC(6be68450) SHA1(d24652f74b109e47eb5d3d02e04f63c99e92c590))
+SE_ROMEND
+#define input_ports_swtril41 input_ports_se
+#define init_swtril41 init_swtril43
+CORE_CLONEDEFNV(swtril41,swtril43,"Star Wars Trilogy (4.01)",1997,"Sega",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / The Lost World: Jurassic Park
