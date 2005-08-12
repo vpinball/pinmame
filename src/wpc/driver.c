@@ -970,7 +970,8 @@ DRIVER(eatpm,l2)        //S11-782:  10/89 B Elvira and the Party Monsters (L-2)
 DRIVER(eatpm,4u)        //S11-782:  10/89 B Elvira and the Party Monsters (L-4 European)
 DRIVER(eatpm,4g)        //S11-782:  10/89 B Elvira and the Party Monsters (L-4 German)
 DRIVER(eatpm,p7)        //S11-782:  10/89 B Elvira and the Party Monsters (PA-7)
-DRIVER(bcats,l5)        //S11-575:  11/89 W Bad Cats
+DRIVER(bcats,l5)        //S11-575:  11/89 W Bad Cats (L-5)
+DRIVER(bcats,l2)        //S11-575:  11/89 W Bad Cats (LA-2)
 DRIVER(rvrbt,l3)        //S11-1966: 11/89 W Riverboat Gambler
 DRIVER(mousn,l1)        //S11-1635: 12/89 B Mousin' Around! (L-1)
 DRIVER(mousn,lu)        //S11-1635: 12/89 B Mousin' Around! (Europe)
