@@ -635,7 +635,7 @@ CORE_CLONEDEFNV(hironew,hirolcas,"High Roller Casino (ARM7 Sound Board)",2001,"S
 / High Roller Casino (2.90) TEST BUILD 1820
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(hirolcat,"hrccput3.300",CRC(b70e04a0) SHA1(0c8d6c1e488471617ba9e24704d0d44826c1daf3))
-DE_DMD32ROM8x(        "hrcdispt3.300",CRC(e262f36c) SHA1(116b2b96adce953e00d1e6d7f2b4ed4cdc4a3f61))
+DE_DMD32ROM8x(        "hrcdspt3.300",CRC(e262f36c) SHA1(116b2b96adce953e00d1e6d7f2b4ed4cdc4a3f61))
 DE2S_SOUNDROM18888(    "hrsndu7.100",CRC(c41f91a7) SHA1(2af3be10754ea633558bdbeded21c6f82d85cd1d),
                       "hrsndu17.100",CRC(5858dfd0) SHA1(0d88daf3b480f0e0a2653d9be37cafed79036a48),
                       "hrsndu21.100",CRC(c653de96) SHA1(352567f4f4f973ed3d8c018c9bf37aeecdd101bf),
