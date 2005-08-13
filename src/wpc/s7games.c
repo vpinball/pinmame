@@ -274,15 +274,3 @@ S7_ROMEND
 #define input_ports_strlt input_ports_s7
 CORE_GAMEDEF(strlt,l1,"Star Light (L-1)",1984,"Williams",s7_mS7S,0)
 
-/*-----------------------------
-/ Kiss Extreme (L-1) Evolution Studios ORIGINAL
-/-----------------------------*/
-INITGAMEFULL(kissx,s7_dispS7,34,35,0,20,21,22,29,30)
-S7_ROMSTART8088(kissx,l1, "ke_ic14.716",   CRC(ffa132bf) SHA1(a586117547d7cccc9819f4d51d8c36a5e4f16664),
-                          "ke_ic17.532",   CRC(bb571a17) SHA1(fb0b7f247673dae0744d4188e1a03749a2237165),
-                          "ke_ic20.716",   CRC(dfb4b75a) SHA1(bcf017b01236f755cee419e398bbd8955ae3576a),
-                          "ke_ic26.716",   CRC(1d170e55) SHA1(c59c1d52b418564f5d86ba1026d8f3066020b1d0))
-S67S_SOUNDROMS8(          "ke_snd12.716", CRC(1888c635) SHA1(5dcdaee437a69c6027c24310f0cd2cae4e89fa05))
-S7_ROMEND
-#define input_ports_kissx input_ports_s7
-CORE_GAMEDEF(kissx,l1,"Kiss Extreme (L-1)",2005,"Evolution Studios",s7_mS7S,0)
