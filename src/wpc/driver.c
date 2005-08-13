@@ -907,7 +907,6 @@ DRIVER(jst,l2)          //S7-519:   04/83 W Joust
 DRIVER(fpwr2,l2)        //S7-521:   08/83 W Firepower II
 DRIVER(lsrcu,l2)        //S7-520:   02/84 W Laser Cue
 DRIVER(strlt,l1)        //S7-530:   06/84 W Star Light (Came out after System 9 produced)
-DRIVER(kissx,l1)		//S7:		08/05 Evolution Studios Kiss Extreme (ORIGINAL)
 //System 9
 DRIVER(pfevr,p3)        //S9-526:   05/84 W Pennant Fever (pitch & bat)
                         //S?-538:   10/84 W Gridiron
