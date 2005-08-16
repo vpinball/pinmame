@@ -297,6 +297,8 @@ static READ_HANDLER(sns_8910a_r);
 static WRITE_HANDLER(sns_8910b_w);
 static READ_HANDLER(sns2_8910a_r);
 static WRITE_HANDLER(sns_dac_w);
+static READ_HANDLER(snd_cmd_r);
+static WRITE_HANDLER(snd_act_w);
 
 const struct sndbrdIntf zac1370Intf = {
   "ZAC1370", sns_init, NULL, sns_diag, sns_data_w, sns_data_w, NULL, sns_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
@@ -311,6 +313,7 @@ static struct TMS5220interface sns_tms5220Int = { 640000, 100, sns_5220Irq };
 static struct DACinterface     sns_dacInt = { 1, { 20 }};
 static struct AY8910interface  sns_ay8910Int = { 1, 3580000/4, {25}, {sns_8910a_r}, {0}, {0}, {sns_8910b_w}};
 static struct AY8910interface  sns2_ay8910Int = { 2, 3580000/4, {25, 25}, {sns_8910a_r, sns2_8910a_r}, {0}, {0}, {sns_8910b_w}};
+static struct DACinterface     z80_dacInt = { 4, { 20, 20, 30, 30 }};
 
 static WRITE_HANDLER(ram80_w) {
   logerror("CEM3374 offset=%d, data=%02x\n", offset, data);
@@ -343,6 +346,11 @@ static MEMORY_READ_START(sns3_readmem)
   { 0x4000, 0xffff, MRA_ROM },
 MEMORY_END
 
+static MEMORY_READ_START(z80_readmem)
+  { 0x0000, 0xfbff, MRA_ROM },
+  { 0xfc00, 0xffff, MRA_RAM },
+MEMORY_END
+
 static MEMORY_WRITE_START(sns_writemem)
   { 0x0000, 0x007f, MWA_RAM },
   { 0x0080, 0x0083, pia_w(SNS_PIA0) },
@@ -358,6 +366,41 @@ static MEMORY_WRITE_START(sns3_writemem)
   { 0x00a0, 0x00a7, rama0_w },
   { 0x1000, 0x1000, sns_dac_w },
 MEMORY_END
+
+static MEMORY_WRITE_START(z80_writemem)
+  { 0xfc00, 0xffff, MWA_RAM },
+MEMORY_END
+
+static WRITE_HANDLER(DAC_2_signed_data_w) { DAC_signed_data_w(2, data); }
+static WRITE_HANDLER(DAC_3_signed_data_w) { DAC_signed_data_w(3, data); }
+
+static PORT_READ_START(z80_readport)
+  { 0x01, 0x01, snd_cmd_r },
+PORT_END
+
+static PORT_WRITE_START(z80_writeport_a)
+  { 0x00, 0x00, DAC_0_signed_data_w },
+  { 0x02, 0x02, snd_act_w },
+PORT_END
+static PORT_WRITE_START(z80_writeport_b)
+  { 0x00, 0x00, DAC_1_signed_data_w },
+  { 0x02, 0x03, snd_act_w },
+  { 0x04, 0x04, DAC_2_signed_data_w },
+  { 0x08, 0x08, DAC_3_signed_data_w },
+PORT_END
+
+static PORT_READ_START(z80_readport_c)
+  { 0x01, 0x01, snd_cmd_r },
+  { 0x03, 0x03, tms5220_status_r },
+PORT_END
+static PORT_WRITE_START(z80_writeport_c)
+  { 0x02, 0x02, snd_act_w },
+  { 0x03, 0x03, tms5220_data_w },
+PORT_END
+
+static INTERRUPT_GEN(cpu_a_irq) { cpu_set_irq_line(ZACSND_CPUA, 0, PULSE_LINE); }
+static INTERRUPT_GEN(cpu_b_irq) { cpu_set_irq_line(ZACSND_CPUB, 0, PULSE_LINE); }
+static INTERRUPT_GEN(cpu_c_irq) { cpu_set_irq_line(ZACSND_CPUC, 0, PULSE_LINE); }
 
 MACHINE_DRIVER_START(zac1370)
   MDRV_CPU_ADD(M6802, 3580000/4)
@@ -389,6 +432,46 @@ MACHINE_DRIVER_START(zac11178)
   MDRV_INTERLEAVE(500)
   MDRV_SOUND_ADD(TMS5220, sns_tms5220Int)
   MDRV_SOUND_ADD(DAC,     sns_dacInt)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(zac11178_13181)
+  MDRV_CPU_ADD(M6802, 3580000/4)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(sns3_readmem, sns3_writemem)
+
+  MDRV_CPU_ADD(Z80, 4000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(z80_readmem, z80_writemem)
+  MDRV_CPU_PORTS(z80_readport, z80_writeport_b)
+  MDRV_CPU_PERIODIC_INT(cpu_b_irq, 60)
+
+  MDRV_INTERLEAVE(500)
+  MDRV_SOUND_ADD(TMS5220, sns_tms5220Int)
+  MDRV_SOUND_ADD(DAC,     z80_dacInt)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(zac13181x3)
+  MDRV_CPU_ADD(Z80, 4000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(z80_readmem, z80_writemem)
+  MDRV_CPU_PORTS(z80_readport, z80_writeport_b)
+  MDRV_CPU_PERIODIC_INT(cpu_b_irq, 60)
+
+  MDRV_CPU_ADD(Z80, 4000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(z80_readmem, z80_writemem)
+  MDRV_CPU_PORTS(z80_readport, z80_writeport_a)
+  MDRV_CPU_PERIODIC_INT(cpu_a_irq, 60)
+
+  MDRV_CPU_ADD(Z80, 4000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(z80_readmem, z80_writemem)
+  MDRV_CPU_PORTS(z80_readport_c, z80_writeport_c)
+  MDRV_CPU_PERIODIC_INT(cpu_c_irq, 60)
+
+  MDRV_INTERLEAVE(500)
+  MDRV_SOUND_ADD(TMS5220, sns_tms5220Int)
+  MDRV_SOUND_ADD(DAC,     z80_dacInt)
 MACHINE_DRIVER_END
 
 static READ_HANDLER(sns_pia0a_r);
@@ -512,6 +595,30 @@ static WRITE_HANDLER(sns_data_w) {
   pia_set_input_cb1(SNS_PIA0, data & 0x80 ? 1 : 0);
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC13136)
     pia_set_input_cb1(SNS_PIA2, data & 0x80 ? 1 : 0);
+  if (core_gameData->hw.soundBoard == SNDBRD_ZAC11178_13181) {
+    cpu_set_nmi_line(ZACSND_CPUB, data & 0xc0 ? CLEAR_LINE : ASSERT_LINE);
+    snslocals.cmd[0] = data;
+  }
+  if (core_gameData->hw.soundBoard == SNDBRD_ZAC13181x3) {
+    cpu_set_nmi_line(ZACSND_CPUA, data & 0xc0 ? CLEAR_LINE : ASSERT_LINE);
+    cpu_set_nmi_line(ZACSND_CPUB, data & 0xc0 ? CLEAR_LINE : ASSERT_LINE);
+    cpu_set_nmi_line(ZACSND_CPUC, data & 0xc0 ? CLEAR_LINE : ASSERT_LINE);
+    snslocals.cmd[0] = data;
+  }
+}
+
+static READ_HANDLER(snd_cmd_r) {
+  return ~snslocals.cmd[0];
+}
+
+static WRITE_HANDLER(snd_act_w) {
+  logerror("cpu #%d ACT:%d:%02x\n", cpu_getexecutingcpu(), offset, data);
+  if (cpu_getexecutingcpu() == 3 && data) tms5220_reset(); // speech on strsphnx is garbled if this is omitted!
+
+  if (cpu_getexecutingcpu() == 3) snslocals.cmd[1] = (snslocals.cmd[1] & 0x06) | (data & 0x01);
+  if (cpu_getexecutingcpu() == 1) snslocals.cmd[1] = (snslocals.cmd[1] & 0x05) | ((data & 0x01) << 1);
+  if (cpu_getexecutingcpu() == 2) snslocals.cmd[1] = (snslocals.cmd[1] & 0x03) | ((data & 0x01) << 2);
+  UpdateZACSoundACT(snslocals.cmd[1]);
 }
 
 static WRITE_HANDLER(sns_ctrl_w) {

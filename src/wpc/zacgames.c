@@ -392,7 +392,7 @@ CORE_GAMEDEFNV(mexico,"Mexico '86",1986,"Zaccaria",mZAC2XS,SOUNDFLAG)
 /*--------------------------------
 / Zankor (12/86)
 /-------------------------------*/
-INITGAME(zankor,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178,366)
+INITGAME(zankor,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178_13181,366)
 ZAC_ROMSTART1820(zankor,	"zan_ic1.764",CRC(e7ba5acf) SHA1(48b64921dd8a22c2483162db571512cad8cbb072),
 							"zan_ic2.764",CRC(5804ff10) SHA1(fc3c4acb183c5c3e0a6504583c78f25a7a322cce))
 ZAC_SOUNDROM_e4f4(			"zan_1e.128", CRC(d467000f) SHA1(ee806c485520042755078c49a020b5bc06913fa3),
@@ -401,12 +401,12 @@ ZAC_SOUNDROM_456(			"zan_ic4.128",CRC(f34a2aaa) SHA1(5e415874f68586aa30dba9fff0d
 							"zan_ic5.128",CRC(bf61aab0) SHA1(939266696d0562f255f0fa5068280fe6a4cf8267),
 							"zan_ic6.128",CRC(13a5b8d4) SHA1(d8c976b3f5e9c7cded0922feefa1531c59432515))
 ZAC_ROMEND
-CORE_GAMEDEFNV(zankor,"Zankor",1986,"Zaccaria",ZAC2XS,SOUNDFLAG)
+CORE_GAMEDEFNV(zankor,"Zankor",1986,"Zaccaria",ZAC2XS2,SOUNDFLAG)
 
 /*--------------------------------
 / Spooky (04/87)
 /-------------------------------*/
-INITGAME(spooky,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178,366)
+INITGAME(spooky,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178_13181,366)
 ZAC_ROMSTART1820(spooky,	"spook_1.lgc",CRC(377b347d) SHA1(c7334cf2b10b749f5f75b8feaa8ec773a576b2f1),
 							"spook_2.lgc",CRC(ae0598b0) SHA1(aab725d1e386a3792100eb55c5836e6ed68cafdd))
 ZAC_SOUNDROM_e2f4(			"spook_e.snd",CRC(3d632c93) SHA1(3cc127956a6df1a4fd551826068810724b32ad0e),
@@ -414,12 +414,12 @@ ZAC_SOUNDROM_e2f4(			"spook_e.snd",CRC(3d632c93) SHA1(3cc127956a6df1a4fd55182606
 ZAC_SOUNDROM_46(			"spook_4.snd",CRC(3ab517a4) SHA1(4a9dd9d571f958c270b437a1665e6d3dd3eef598),
 							"spook_6.snd",CRC(d4320bc7) SHA1(30b959f5df44d097baffc2de70b12fc767f5663b))
 ZAC_ROMEND
-CORE_GAMEDEFNV(spooky,"Spooky",1987,"Zaccaria",ZAC2XS,SOUNDFLAG)
+CORE_GAMEDEFNV(spooky,"Spooky",1987,"Zaccaria",ZAC2XS2,SOUNDFLAG)
 
 /*--------------------------------
 / Star's Phoenix (??/87)
 /-------------------------------*/
-INITGAME(strsphnx,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178,366)
+INITGAME(strsphnx,GEN_ZAC2,dispZAC3,SNDBRD_ZAC13181x3,366)
 ZAC_ROMSTART1820(strsphnx,	"strphnx1.cpu",CRC(2a31b7da) SHA1(05f2173783e686cc8774bed6eb59b41f7af88d11),
 							"strphnx2.cpu",CRC(db830505) SHA1(55d6d6e12e2861fec81b46fb90c29aad5ad922aa))
 ZAC_SOUNDROM_5x256(			"snd_ic05.bin",CRC(74cc4902) SHA1(e2f46bcf5446f98d098c49f8c2416292401265b9),
@@ -428,7 +428,7 @@ ZAC_SOUNDROM_5x256(			"snd_ic05.bin",CRC(74cc4902) SHA1(e2f46bcf5446f98d098c49f8
 							"snd_ic25.bin",CRC(b1c9238e) SHA1(88c9df1fca94d32a0fa5d75312dabff257e867dd),
 							"snd_ic40.bin",CRC(974ceb9c) SHA1(3665af9170a2afbe26f68e8f3cedb0d177f476c4))
 ZAC_ROMEND
-CORE_GAMEDEFNV(strsphnx,"Star's Phoenix",1987,"Zaccaria",ZAC2XS,SOUNDFLAG)
+CORE_GAMEDEFNV(strsphnx,"Star's Phoenix",1987,"Zaccaria",ZAC2XS3,SOUNDFLAG)
 
 //??/86 New Star's Phoenix
 
