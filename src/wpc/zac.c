@@ -37,8 +37,7 @@ static struct {
   UINT32 solenoids;
   UINT32 solsmooth[ZAC_SOLSMOOTH];
   UINT16 sols2;
-  int actsnd;
-  int actspk;
+  int actsnd, actsnd2, actspk;
   int refresh;
   int gen;
   void *printfile;
@@ -265,6 +264,7 @@ static READ_HANDLER(data_port_r)
 {
 	int data = core_getDip(0)&0x0f;
 	data |= (locals.actsnd<<4);
+	data |= (locals.actsnd2<<5);
 	data |= (locals.actspk<<6);
 	//logerror("%x: Data Port Read\n",activecpu_get_previouspc());
 	//logerror("%x: Dip & ActSnd/Spk Read - Dips=%x\n",activecpu_get_previouspc(),core_getDip(0)&0x0f);
@@ -425,6 +425,7 @@ void UpdateZACSoundACT(int data)
 {
   locals.actspk = data & 0x01;
   locals.actsnd = (data>>1) & 0x01;
+  locals.actsnd2 = (data>>2) & 0x01;
  // logerror("sound act = %x\n",data);
 }
 
@@ -625,6 +626,18 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(ZAC2XS)
   MDRV_IMPORT_FROM(ZAC2)
   MDRV_IMPORT_FROM(zac11178)
+MACHINE_DRIVER_END
+
+//Sound boards 11178 + 13181
+MACHINE_DRIVER_START(ZAC2XS2)
+  MDRV_IMPORT_FROM(ZAC2)
+  MDRV_IMPORT_FROM(zac11178_13181)
+MACHINE_DRIVER_END
+
+//3 x Sound board 13181
+MACHINE_DRIVER_START(ZAC2XS3)
+  MDRV_IMPORT_FROM(ZAC2)
+  MDRV_IMPORT_FROM(zac13181x3)
 MACHINE_DRIVER_END
 
 //Technoplay sound board
