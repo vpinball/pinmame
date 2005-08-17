@@ -454,14 +454,14 @@ MACHINE_DRIVER_START(zac13181x3)
   MDRV_CPU_ADD(Z80, 4000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(z80_readmem, z80_writemem)
-  MDRV_CPU_PORTS(z80_readport, z80_writeport_b)
-  MDRV_CPU_PERIODIC_INT(cpu_b_irq, 60)
+  MDRV_CPU_PORTS(z80_readport, z80_writeport_a)
+  MDRV_CPU_PERIODIC_INT(cpu_a_irq, 60)
 
   MDRV_CPU_ADD(Z80, 4000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(z80_readmem, z80_writemem)
-  MDRV_CPU_PORTS(z80_readport, z80_writeport_a)
-  MDRV_CPU_PERIODIC_INT(cpu_a_irq, 60)
+  MDRV_CPU_PORTS(z80_readport, z80_writeport_b)
+  MDRV_CPU_PERIODIC_INT(cpu_b_irq, 60)
 
   MDRV_CPU_ADD(Z80, 4000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
@@ -600,9 +600,9 @@ static WRITE_HANDLER(sns_data_w) {
     snslocals.cmd[0] = data;
   }
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC13181x3) {
-    cpu_set_nmi_line(ZACSND_CPUA, data & 0xc0 ? CLEAR_LINE : ASSERT_LINE);
-    cpu_set_nmi_line(ZACSND_CPUB, data & 0xc0 ? CLEAR_LINE : ASSERT_LINE);
-    cpu_set_nmi_line(ZACSND_CPUC, data & 0xc0 ? CLEAR_LINE : ASSERT_LINE);
+    cpu_set_nmi_line(ZACSND_CPUA, data & 0x80 ? CLEAR_LINE : ASSERT_LINE);
+    cpu_set_nmi_line(ZACSND_CPUB, data & 0x40 ? CLEAR_LINE : ASSERT_LINE);
+    cpu_set_nmi_line(ZACSND_CPUC, data & 0x20 ? CLEAR_LINE : ASSERT_LINE);
     snslocals.cmd[0] = data;
   }
 }
@@ -613,11 +613,10 @@ static READ_HANDLER(snd_cmd_r) {
 
 static WRITE_HANDLER(snd_act_w) {
   logerror("cpu #%d ACT:%d:%02x\n", cpu_getexecutingcpu(), offset, data);
-  if (cpu_getexecutingcpu() == 3 && data) tms5220_reset(); // speech on strsphnx is garbled if this is omitted!
 
   if (cpu_getexecutingcpu() == 3) snslocals.cmd[1] = (snslocals.cmd[1] & 0x06) | (data & 0x01);
-  if (cpu_getexecutingcpu() == 1) snslocals.cmd[1] = (snslocals.cmd[1] & 0x05) | ((data & 0x01) << 1);
-  if (cpu_getexecutingcpu() == 2) snslocals.cmd[1] = (snslocals.cmd[1] & 0x03) | ((data & 0x01) << 2);
+  if (cpu_getexecutingcpu() == 2) snslocals.cmd[1] = (snslocals.cmd[1] & 0x05) | ((data & 0x01) << 1);
+  if (cpu_getexecutingcpu() == 1) snslocals.cmd[1] = (snslocals.cmd[1] & 0x03) | ((data & 0x01) << 2);
   UpdateZACSoundACT(snslocals.cmd[1]);
 }
 
