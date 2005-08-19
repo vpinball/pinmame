@@ -37,7 +37,7 @@ static struct {
   UINT32 solenoids;
   UINT32 solsmooth[ZAC_SOLSMOOTH];
   UINT16 sols2;
-  int actsnd, actsnd2, actspk;
+  int actsnd[3], actspk;
   int refresh;
   int gen;
   void *printfile;
@@ -258,14 +258,15 @@ static READ_HANDLER(ctrl_port_r)
 }
 
 /*   DATA PORT : READ = D0-D3 = Dip Switch Read D0-D3 & Program Switch 1 on D3
-						D4-D7 = ActSnd(D4) & ActSpk(D6) Pin 20,19,18,17 of CN?
+						D4-D7 = ActSnd(D4) & ActSpk(D6) Pin 20,19,18,17 of CN8
 */
 static READ_HANDLER(data_port_r)
 {
 	int data = core_getDip(0)&0x0f;
-	data |= (locals.actsnd<<4);
-	data |= (locals.actsnd2<<5);
+	data |= (locals.actsnd[0]<<4);
+	data |= (locals.actsnd[1]<<5);
 	data |= (locals.actspk<<6);
+	data |= (locals.actsnd[2]<<7);
 	//logerror("%x: Data Port Read\n",activecpu_get_previouspc());
 	//logerror("%x: Dip & ActSnd/Spk Read - Dips=%x\n",activecpu_get_previouspc(),core_getDip(0)&0x0f);
 	//return 0xff;
@@ -423,9 +424,10 @@ WRITE_HANDLER(UpdateZACSoundLED)
 
 void UpdateZACSoundACT(int data)
 {
+  int i;
   locals.actspk = data & 0x01;
-  locals.actsnd = (data>>1) & 0x01;
-  locals.actsnd2 = (data>>2) & 0x01;
+  for (i=0; i < 3; i++)
+    locals.actsnd[i] = (data >> (i+1)) & 0x01;
  // logerror("sound act = %x\n",data);
 }
 
