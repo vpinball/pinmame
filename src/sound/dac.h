@@ -5,7 +5,11 @@
 extern "C" {
 #endif
 
+#ifdef PINMAME
+#define MAX_DAC 8
+#else
 #define MAX_DAC 4
+#endif
 
 struct DACinterface
 {

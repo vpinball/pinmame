@@ -414,7 +414,7 @@ ZAC_SOUNDROM_e2f4(			"spook_e.snd",CRC(3d632c93) SHA1(3cc127956a6df1a4fd55182606
 ZAC_SOUNDROM_46(			"spook_4.snd",CRC(3ab517a4) SHA1(4a9dd9d571f958c270b437a1665e6d3dd3eef598),
 							"spook_6.snd",CRC(d4320bc7) SHA1(30b959f5df44d097baffc2de70b12fc767f5663b))
 ZAC_ROMEND
-CORE_GAMEDEFNV(spooky,"Spooky",1987,"Zaccaria",ZAC2XS2,SOUNDFLAG)
+CORE_GAMEDEFNV(spooky,"Spooky",1987,"Zaccaria",ZAC2XS2A,SOUNDFLAG)
 
 /*--------------------------------
 / Star's Phoenix (??/87)
