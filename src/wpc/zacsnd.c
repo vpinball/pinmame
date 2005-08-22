@@ -10,6 +10,22 @@
 #include "sndbrd.h"
 #include "zacsnd.h"
 
+#define SHOW_MAME_BUG 0
+/*
+  In order to demonstrate a MAME / mingw bug,
+  set the define above to 1, recompile and
+  start tmachzac. Enter test mode, go to sound test (#5).
+  Sound #28 ("Play the Time Machine!") will not play,
+  but only produce some garbage sound.
+  This is due to this single line, which may not be
+  executed for proper behaviour:
+
+    pia_set_input_a(SNS_PIA1, (snslocals.pia1a = tms5220_status_r(0)));
+
+  so if the status value is stored in a variable before the PIA port is set,
+  instead of setting it right from the value itself, sound will crash!
+*/
+
 extern WRITE_HANDLER(UpdateZACSoundLED);
 extern void UpdateZACSoundACT(int data);
 
@@ -298,24 +314,35 @@ MACHINE_DRIVER_END
 #define SNS_PIA1 1
 #define SNS_PIA2 2
 
+#define TMS11178_IRQFREQ 3580000.0/4096.0
+
 static void sns_init(struct sndbrdData *brdData);
 static void sns_diag(int button);
 static WRITE_HANDLER(sns_data_w);
-static WRITE_HANDLER(sns_ctrl_w);
 static void sns_5220Irq(int state);
 static READ_HANDLER(sns_8910a_r);
 static WRITE_HANDLER(sns_8910b_w);
 static READ_HANDLER(sns2_8910a_r);
 static WRITE_HANDLER(sns_dac_w);
 
+static WRITE_HANDLER(dacxfer);
+static WRITE_HANDLER(storelatch);
+static WRITE_HANDLER(storebyte1);
+static WRITE_HANDLER(storebyte2);
+static READ_HANDLER(readlatch);
+static READ_HANDLER(readcmd);
+static READ_HANDLER(read5000);
+
+static INTERRUPT_GEN(tms_irq);
+
 const struct sndbrdIntf zac1370Intf = {
-  "ZAC1370", sns_init, NULL, sns_diag, sns_data_w, sns_data_w, NULL, sns_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "ZAC1370", sns_init, NULL, sns_diag, sns_data_w, sns_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 const struct sndbrdIntf zac13136Intf = {
-  "ZAC13136", sns_init, NULL, sns_diag, sns_data_w, sns_data_w, NULL, sns_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "ZAC13136", sns_init, NULL, sns_diag, sns_data_w, sns_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 const struct sndbrdIntf zac11178Intf = {
-  "ZAC11178", sns_init, NULL, sns_diag, sns_data_w, sns_data_w, NULL, sns_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "ZAC11178", sns_init, NULL, sns_diag, sns_data_w, sns_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 static struct TMS5220interface sns_tms5220Int = { 680000, 100, sns_5220Irq }; // the frequency may vary by up to 30 percent!!!
 static struct DACinterface     sns_dacInt = { 1, { 20 }};
@@ -328,10 +355,9 @@ static MEMORY_READ_START(sns_readmem)
   { 0x0080, 0x0083, pia_r(SNS_PIA0) },
   { 0x0084, 0x0087, pia_r(SNS_PIA2) }, // 13136 only
   { 0x0090, 0x0093, pia_r(SNS_PIA1) },
-//  { 0x00ff, 0x00ff, },
   { 0x1800, 0x1800, sns2_8910a_r }, // 13136 only
   { 0x2000, 0x2000, sns_8910a_r },
-  { 0x4000, 0xffff, MRA_ROM },
+  { 0x8000, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(sns_writemem)
@@ -343,19 +369,25 @@ static MEMORY_WRITE_START(sns_writemem)
   { 0x4000, 0x4000, DAC_1_data_w }, // 13136 only (never accessed)
 MEMORY_END
 
+static MEMORY_READ_START(sns3_readmem)
+  { 0x0000, 0x007f, MRA_RAM },
+  { 0x0090, 0x0093, pia_r(SNS_PIA1) },
+  { 0x00b0, 0x00b0, readcmd},
+  { 0x00ff, 0x00ff, readlatch },
+//  { 0x5000, 0x5000, read5000 },
+  { 0x8000, 0xffff, MRA_ROM },
+MEMORY_END
+
 static MEMORY_WRITE_START(sns3_writemem)
   { 0x0000, 0x007f, MWA_RAM },
 //  { 0x0080, 0x0087, },
   { 0x0090, 0x0093, pia_w(SNS_PIA1) },
 //  { 0x00a0, 0x00a7, },
-//  { 0x00c0, 0x00c0, },
-//  { 0x00d0, 0x00d0, },
-//  { 0x00e0, 0x00e0, },
-//  { 0x00f0, 0x00f0, },
-  { 0x1000, 0x1000, sns_dac_w },
+  { 0x00c0, 0x00c0, dacxfer },
+  { 0x00d0, 0x00d0, storebyte1 },
+  { 0x00e0, 0x00e0, storebyte2 },
+  { 0x00f0, 0x00f0, storelatch },
 MEMORY_END
-
-static INTERRUPT_GEN(tms_irq) { static int state = 0; pia_set_input_cb1(SNS_PIA1, (state = !state)); }
 
 static MACHINE_DRIVER_START(zac1370_nosound)
   MDRV_CPU_ADD(M6802, 3580000/4)
@@ -381,8 +413,8 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(zac11178)
   MDRV_CPU_ADD(M6802, 3580000/4)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
-  MDRV_CPU_MEMORY(sns_readmem, sns3_writemem)
-  MDRV_CPU_PERIODIC_INT(tms_irq, 3580000.0/4096.0)
+  MDRV_CPU_MEMORY(sns3_readmem, sns3_writemem)
+  MDRV_CPU_PERIODIC_INT(tms_irq, TMS11178_IRQFREQ)
 
   MDRV_INTERLEAVE(500)
   MDRV_SOUND_ADD(TMS5220, sns_tms5220Int)
@@ -394,8 +426,11 @@ static WRITE_HANDLER(sns_pia0a_w);
 static WRITE_HANDLER(sns_pia0b_w);
 static WRITE_HANDLER(sns_pia0ca2_w);
 static WRITE_HANDLER(sns_pia0cb2_w);
+static READ_HANDLER(sns_pia1a_r);
 static WRITE_HANDLER(sns_pia1a_w);
 static WRITE_HANDLER(sns_pia1b_w);
+static READ_HANDLER(sns_pia1ca2_r);
+static READ_HANDLER(sns_pia1cb1_r);
 static READ_HANDLER(sns_pia2a_r);
 static WRITE_HANDLER(sns_pia2a_w);
 static WRITE_HANDLER(sns_pia2b_w);
@@ -408,9 +443,9 @@ static void sns_irq1b(int state);
 
 static struct {
   struct sndbrdData brdData;
-  int pia0a, pia0b, pia1a, pia1b, pia2a, pia2b;
-  int cmd[2], lastcmd, cmdin, cmdout, lastctrl;
-  int dacMute;
+  int pia0a, pia0b, pia1a, pia1b, pia1cb1, pia2a, pia2b;
+  UINT8 lastcmd, daclatch, dacbyte1, dacbyte2;
+  int dacMute, sndReturn;
 } snslocals;
 
 static const struct pia6821_interface sns_pia[] = {{
@@ -418,7 +453,11 @@ static const struct pia6821_interface sns_pia[] = {{
   /*o: A/B,CA/B2       */ sns_pia0a_w, sns_pia0b_w, sns_pia0ca2_w, sns_pia0cb2_w,
   /*irq: A/B           */ sns_irq0a, sns_irq0b
 },{
-  /*i: A/B,CA/B1,CA/B2 */ 0, 0, 0, 0, 0, 0,
+#if SHOW_MAME_BUG
+  /*i: A/B,CA/B1,CA/B2 */ sns_pia1a_r, 0, 0, sns_pia1cb1_r, sns_pia1ca2_r, 0,
+#else
+  /*i: A/B,CA/B1,CA/B2 */ 0, 0, 0, sns_pia1cb1_r, sns_pia1ca2_r, 0,
+#endif
   /*o: A/B,CA/B2       */ sns_pia1a_w, sns_pia1b_w, 0, 0,
   /*irq: A/B           */ sns_irq1a, sns_irq1b
 },{
@@ -431,16 +470,22 @@ static void sns_init(struct sndbrdData *brdData) {
   snslocals.brdData = *brdData;
   pia_config(SNS_PIA0, PIA_STANDARD_ORDERING, &sns_pia[0]);
   pia_config(SNS_PIA1, PIA_STANDARD_ORDERING, &sns_pia[1]);
-  if (core_gameData->hw.soundBoard == SNDBRD_ZAC13136)
+  if (core_gameData->hw.soundBoard == SNDBRD_ZAC13136) {
+    snslocals.pia1a = 0xff;
     pia_config(SNS_PIA2, PIA_STANDARD_ORDERING, &sns_pia[2]);
-  snslocals.cmdin = snslocals.cmdout = 2;
-  if (core_gameData->hw.soundBoard & 0x02) { // true for 11178
+  }
+  if (core_gameData->hw.soundBoard & 0x02) { // true for all 11178
     UpdateZACSoundLED(1, 1);
   }
 }
 
 static void sns_diag(int button) {
   cpu_set_nmi_line(ZACSND_CPUA, button ? ASSERT_LINE : CLEAR_LINE);
+}
+
+static INTERRUPT_GEN(tms_irq) {
+  snslocals.pia1cb1 = !snslocals.pia1cb1;
+  pia_set_input_cb1(SNS_PIA1, snslocals.pia1cb1);
 }
 
 static WRITE_HANDLER(sns_dac_w) {
@@ -461,30 +506,46 @@ static WRITE_HANDLER(sns_pia0b_w) {
   if (snslocals.pia0b & 0x02) AY8910Write(0, snslocals.pia0b ^ 0x01, snslocals.pia0a);
 }
 static WRITE_HANDLER(sns_pia0ca2_w) {
-  //sndbrd_ctrl_cb(snslocals.brdData.boardNo,data);
   UpdateZACSoundLED(1, data);
 } // diag led
 static WRITE_HANDLER(sns_pia0cb2_w) {
   snslocals.dacMute = data;
 } // mute DAC
 
+static READ_HANDLER(sns_pia1a_r) { return snslocals.pia1a; }
 static WRITE_HANDLER(sns_pia1a_w) { snslocals.pia1a = data; }
 static WRITE_HANDLER(sns_pia1b_w) {
-  if (snslocals.pia1b & ~data & 0x02) { // write
+  if (~data & 0x02) { // write
     tms5220_data_w(0, snslocals.pia1a);
     pia_set_input_ca2(SNS_PIA1, 1); pia_set_input_ca2(SNS_PIA1, 0);
   }
-  else /* if (snslocals.pia1b & ~data & 0x01) */ { // read
+  if (~data & 0x01) { // read
+#if SHOW_MAME_BUG
+    pia_set_input_a(SNS_PIA1, (snslocals.pia1a = tms5220_status_r(0)));
+#else
     pia_set_input_a(SNS_PIA1, tms5220_status_r(0));
+#endif
     pia_set_input_ca2(SNS_PIA1, 1); pia_set_input_ca2(SNS_PIA1, 0);
   }
   if ((data & 0xf0) != (snslocals.pia1b & 0xf0)) logerror("TMS5200 modulation: %x\n", data >> 4);
   snslocals.pia1b = data;
-  if (core_gameData->hw.soundBoard & 0x02) { // true for 11178
-    UpdateZACSoundACT(((data>>2) & 1) ? 0x03 : 0);	//both ACTSND & ACTSPK on bit 2
+  if (core_gameData->hw.soundBoard == SNDBRD_ZAC11178) {
+    UpdateZACSoundACT(data & 0x04 ? 0 : 0x03);	//both ACTSND & ACTSPK inverted on bit 2
+  } else if (core_gameData->hw.soundBoard == SNDBRD_ZAC11178_13181) {
+    UpdateZACSoundACT(data & 0x04 ? 0 : 0x02);	//only ACTSND inverted on bit 2, ACTSPK not used?
   } else {
     UpdateZACSoundACT((data>>2) & 0x03);	//ACTSPK & ACTSND on bits 2 & 3
   }
+}
+static READ_HANDLER(sns_pia1ca2_r) {
+//logerror("sns_pia1ca2_r TMS5220 ready \n");
+  return tms5220_ready_r();
+}
+static READ_HANDLER(sns_pia1cb1_r) {
+  if (core_gameData->hw.soundBoard & 0x02) // true for all 11178
+    return snslocals.pia1cb1;
+  else
+    return tms5220_int_r();
 }
 
 static READ_HANDLER(sns_pia2a_r) {
@@ -504,42 +565,23 @@ static WRITE_HANDLER(sns_pia2ca2_w) {
 } // diag led
 
 static WRITE_HANDLER(sns_data_w) {
-  snslocals.lastcmd = data & 0x7f;
+  snslocals.lastcmd = data;
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370)
     pia_set_input_cb1(SNS_PIA0, data & 0x80 ? 1 : 0);
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC13136)
     cpu_set_irq_line(ZACSND_CPUA, M6802_IRQ_LINE, data & 0x80 ? ASSERT_LINE : CLEAR_LINE);
-  if (core_gameData->hw.soundBoard & 0x02) // true for 11178
+  if (core_gameData->hw.soundBoard == SNDBRD_ZAC11178)
     pia_set_input_ca1(SNS_PIA1, data & 0x80 ? 1 : 0);
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC11178_13181) {
     cpu_set_nmi_line(ZACSND_CPUB, data & 0xc0 ? CLEAR_LINE : ASSERT_LINE);
-    snslocals.cmd[0] = data;
+    pia_set_input_ca1(SNS_PIA1, data & 0x80 ? 1 : 0); // CA1 should connect to GND according to schematics... or to DB7! :)
+//    logerror("sns_data_ command stored %x\n", data);
+// cpu reads command from adress b0 after nmi !!!
   }
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC13181x3) {
-    cpu_set_nmi_line(ZACSND_CPUA, data & 0x40 ? CLEAR_LINE : ASSERT_LINE);
+    cpu_set_nmi_line(ZACSND_CPUA, data & 0xe0 ? CLEAR_LINE : ASSERT_LINE);
     cpu_set_nmi_line(ZACSND_CPUB, data & 0xc0 ? CLEAR_LINE : ASSERT_LINE);
     cpu_set_nmi_line(ZACSND_CPUC, data & 0x80 ? CLEAR_LINE : ASSERT_LINE);
-    snslocals.cmd[0] = data;
-  }
-}
-
-static WRITE_HANDLER(sns_ctrl_w) {
-  snslocals.lastcmd = (snslocals.lastcmd & 0x0f) | ((data & 0x02) ? 0x10 : 0x00);
-  if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370)
-    pia_set_input_cb1(SNS_PIA0, 0);
-  if (core_gameData->hw.soundBoard == SNDBRD_ZAC13136)
-    cpu_set_irq_line(ZACSND_CPUA, M6802_IRQ_LINE, CLEAR_LINE);
-  if (core_gameData->hw.soundBoard & 0x02) // true for 11178
-    pia_set_input_ca1(SNS_PIA1, 0);
-  if (core_gameData->hw.soundBoard == SNDBRD_ZAC11178_13181) {
-    cpu_set_nmi_line(ZACSND_CPUB, ASSERT_LINE);
-    snslocals.cmd[0] = snslocals.lastcmd;
-  }
-  if (core_gameData->hw.soundBoard == SNDBRD_ZAC13181x3) {
-    cpu_set_nmi_line(ZACSND_CPUA, ASSERT_LINE);
-    cpu_set_nmi_line(ZACSND_CPUB, ASSERT_LINE);
-    cpu_set_nmi_line(ZACSND_CPUC, ASSERT_LINE);
-    snslocals.cmd[0] = snslocals.lastcmd;
   }
 }
 
@@ -582,6 +624,36 @@ static void sns_5220Irq(int state) {
     pia_set_input_cb1(SNS_PIA1, !state);
 }
 
+// OK: the following addresses are only used by the 11178 sound board variants
+static READ_HANDLER(readcmd) {
+  logerror("readcmd: %x\n", snslocals.lastcmd ^ 0xff);
+  return snslocals.lastcmd ^ 0xff;
+}
+static READ_HANDLER(readlatch) {
+  logerror("readlatch: %x\n", snslocals.daclatch);
+  return snslocals.daclatch;
+}
+static WRITE_HANDLER(storelatch) {
+  snslocals.daclatch = data;
+  logerror("Storelatch: %x\n", data);
+}
+static WRITE_HANDLER(storebyte1) {
+  snslocals.dacbyte1 = snslocals.daclatch;
+  logerror("Storebyte1: %x\n", snslocals.dacbyte1);
+}
+static WRITE_HANDLER(storebyte2) {
+  snslocals.dacbyte2 = snslocals.daclatch;
+  logerror("Storebyte2: %x\n", snslocals.dacbyte2);
+}
+static WRITE_HANDLER(dacxfer) {
+// this dac uses 12 bits, so a 16 bit dac must be used...
+  DAC_data_16_w(0, 0xffff ^ ((snslocals.dacbyte1 << 8) | (snslocals.dacbyte2 & 0xf0)));
+  logerror("dacxfer: %x\n", (snslocals.dacbyte1 << 8) | (snslocals.dacbyte2 & 0xf0));
+}
+static READ_HANDLER(read5000) {
+  return snslocals.sndReturn;
+}
+
 /*----------------------------------------
 / Sound & Speech board 1B11178 with 1B13181 / 1B11181 daughter board.
 / This daughter board is equipped with a Z80 processor, and
@@ -595,7 +667,6 @@ static void sns_5220Irq(int state) {
 / some siren-like effects (not played back in sound test).
 / That's five DAC chips playing at the same time! :)
 /-----------------------------------------*/
-static READ_HANDLER(snd_cmd_r);
 static WRITE_HANDLER(snd_act_w);
 static WRITE_HANDLER(snd_mod_w);
 
@@ -617,7 +688,7 @@ static WRITE_HANDLER(DAC_3_signed_data_w) { DAC_signed_data_w(3, data); }
 static WRITE_HANDLER(DAC_4_signed_data_w) { DAC_signed_data_w(4, data); }
 
 static PORT_READ_START(z80_readport)
-  { 0x01, 0x01, snd_cmd_r },
+  { 0x01, 0x01, readcmd },
 PORT_END
 
 static PORT_WRITE_START(z80_writeport_a)
@@ -632,7 +703,7 @@ static PORT_WRITE_START(z80_writeport_b)
 PORT_END
 
 static PORT_READ_START(z80_readport_c)
-  { 0x01, 0x01, snd_cmd_r },
+  { 0x01, 0x01, readcmd },
   { 0x03, 0x03, tms5220_status_r },
 PORT_END
 static PORT_WRITE_START(z80_writeport_c)
@@ -647,8 +718,8 @@ static INTERRUPT_GEN(cpu_c_irq) { cpu_set_irq_line(ZACSND_CPUC, 0, PULSE_LINE); 
 static MACHINE_DRIVER_START(zac11178_13181_nodac)
   MDRV_CPU_ADD(M6802, 3580000/4)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
-  MDRV_CPU_MEMORY(sns_readmem, sns3_writemem)
-  MDRV_CPU_PERIODIC_INT(tms_irq, 3580000.0/4096.0)
+  MDRV_CPU_MEMORY(sns3_readmem, sns3_writemem)
+  MDRV_CPU_PERIODIC_INT(tms_irq, TMS11178_IRQFREQ)
 
   MDRV_CPU_ADD(Z80, 4000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
@@ -691,10 +762,6 @@ MACHINE_DRIVER_START(zac11183)
   MDRV_SOUND_ADD(TMS5220, sns_tms5220Int)
   MDRV_SOUND_ADD(DAC,     z80_5dacInt)
 MACHINE_DRIVER_END
-
-static READ_HANDLER(snd_cmd_r) {
-  return ~snslocals.cmd[0];
-}
 
 static WRITE_HANDLER(snd_act_w) {
   logerror("cpu #%d ACT:%d:%02x\n", cpu_getexecutingcpu(), offset, data);
