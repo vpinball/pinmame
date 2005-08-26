@@ -314,7 +314,7 @@ MACHINE_DRIVER_END
 #define SNS_PIA1 1
 #define SNS_PIA2 2
 
-#define TMS11178_IRQFREQ 3580000.0/4096.0
+#define TMS11178_IRQFREQ 3580000.0/8192.0
 
 static void sns_init(struct sndbrdData *brdData);
 static void sns_diag(int button);
@@ -344,7 +344,7 @@ const struct sndbrdIntf zac13136Intf = {
 const struct sndbrdIntf zac11178Intf = {
   "ZAC11178", sns_init, NULL, sns_diag, sns_data_w, sns_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
-static struct TMS5220interface sns_tms5220Int = { 680000, 100, sns_5220Irq }; // the frequency may vary by up to 30 percent!!!
+static struct TMS5220interface sns_tms5220Int = { 668000, 100, sns_5220Irq }; // the frequency may vary by up to 30 percent!!!
 static struct DACinterface     sns_dacInt = { 1, { 20 }};
 static struct DACinterface     sns2_dacInt = { 2, { 20, 20 }};
 static struct AY8910interface  sns_ay8910Int = { 1, 3580000/4, {25}, {sns_8910a_r}, {0}, {0}, {sns_8910b_w}};
@@ -418,7 +418,6 @@ MACHINE_DRIVER_START(zac11178)
 
   MDRV_INTERLEAVE(500)
   MDRV_SOUND_ADD(TMS5220, sns_tms5220Int)
-  MDRV_SOUND_ADD(DAC,     sns_dacInt)
 MACHINE_DRIVER_END
 
 static READ_HANDLER(sns_pia0a_r);
@@ -573,15 +572,16 @@ static WRITE_HANDLER(sns_data_w) {
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC11178)
     pia_set_input_ca1(SNS_PIA1, data & 0x80 ? 1 : 0);
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC11178_13181) {
-    cpu_set_nmi_line(ZACSND_CPUB, data & 0xc0 ? CLEAR_LINE : ASSERT_LINE);
-    pia_set_input_ca1(SNS_PIA1, data & 0x80 ? 1 : 0); // CA1 should connect to GND according to schematics... or to DB7! :)
-//    logerror("sns_data_ command stored %x\n", data);
+    // CA1 should connect to GND according to schematics... or to DB7! :)
+    pia_set_input_ca1(SNS_PIA1, data & 0x80 ? 1 : 0);
+    if (~data & 0x40) cpu_set_nmi_line(ZACSND_CPUB, data & 0x80 ? ASSERT_LINE : CLEAR_LINE);
+//    logerror("sns_data_w command stored %x\n", data);
 // cpu reads command from adress b0 after nmi !!!
   }
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC13181x3) {
-    cpu_set_nmi_line(ZACSND_CPUA, data & 0xe0 ? CLEAR_LINE : ASSERT_LINE);
-    cpu_set_nmi_line(ZACSND_CPUB, data & 0xc0 ? CLEAR_LINE : ASSERT_LINE);
-    cpu_set_nmi_line(ZACSND_CPUC, data & 0x80 ? CLEAR_LINE : ASSERT_LINE);
+    if (~data & 0x40) cpu_set_nmi_line(ZACSND_CPUA, data & 0x80 ? ASSERT_LINE : CLEAR_LINE);
+    if (~data & 0x40) cpu_set_nmi_line(ZACSND_CPUB, data & 0x80 ? ASSERT_LINE : CLEAR_LINE);
+    if (data & 0x40) cpu_set_nmi_line(ZACSND_CPUC, data & 0x80 ? ASSERT_LINE : CLEAR_LINE);
   }
 }
 
@@ -620,8 +620,10 @@ static void sns_irq1b(int state) {
 }
 
 static void sns_5220Irq(int state) {
-  if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370 || core_gameData->hw.soundBoard == SNDBRD_ZAC13136)
-    pia_set_input_cb1(SNS_PIA1, !state);
+  if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370 || core_gameData->hw.soundBoard == SNDBRD_ZAC13136) {
+    snslocals.pia1cb1 = !state;
+    pia_set_input_cb1(SNS_PIA1, snslocals.pia1cb1);
+  }
 }
 
 // OK: the following addresses are only used by the 11178 sound board variants
@@ -646,9 +648,8 @@ static WRITE_HANDLER(storebyte2) {
   logerror("Storebyte2: %x\n", snslocals.dacbyte2);
 }
 static WRITE_HANDLER(dacxfer) {
-// this dac uses 12 bits, so a 16 bit dac must be used...
-  DAC_data_16_w(0, 0xffff ^ ((snslocals.dacbyte1 << 8) | (snslocals.dacbyte2 & 0xf0)));
-  logerror("dacxfer: %x\n", (snslocals.dacbyte1 << 8) | (snslocals.dacbyte2 & 0xf0));
+// a 12-bit-DAC is used to create the voltage for the VCO.
+  logerror("dacxfer: %x\n", (snslocals.dacbyte1 << 4) | (snslocals.dacbyte2 >> 4));
 }
 static READ_HANDLER(read5000) {
   return snslocals.sndReturn;
@@ -670,9 +671,9 @@ static READ_HANDLER(read5000) {
 static WRITE_HANDLER(snd_act_w);
 static WRITE_HANDLER(snd_mod_w);
 
-static struct DACinterface     z80_2dacInt = { 2, { 20, 50 }};
-static struct DACinterface     z80_4dacInt = { 4, { 20, 20, 30, 30 }};
-static struct DACinterface     z80_5dacInt = { 5, { 20, 20, 30, 30, 20 }};
+static struct DACinterface     z80_1dacInt = { 1, { 50 }};
+static struct DACinterface     z80_3dacInt = { 3, { 20, 30, 30 }};
+static struct DACinterface     z80_5dacInt = { 5, { 20, 30, 30, 20, 20 }};
 
 static MEMORY_READ_START(z80_readmem)
   { 0x0000, 0xfbff, MRA_ROM },
@@ -696,10 +697,10 @@ static PORT_WRITE_START(z80_writeport_a)
   { 0x02, 0x02, snd_mod_w },
 PORT_END
 static PORT_WRITE_START(z80_writeport_b)
-  { 0x00, 0x00, DAC_1_signed_data_w },
+  { 0x00, 0x00, DAC_0_signed_data_w },
   { 0x02, 0x03, snd_mod_w },
-  { 0x04, 0x04, DAC_2_signed_data_w },
-  { 0x08, 0x08, DAC_3_signed_data_w },
+  { 0x04, 0x04, DAC_1_signed_data_w },
+  { 0x08, 0x08, DAC_2_signed_data_w },
 PORT_END
 
 static PORT_READ_START(z80_readport_c)
@@ -707,7 +708,7 @@ static PORT_READ_START(z80_readport_c)
   { 0x03, 0x03, tms5220_status_r },
 PORT_END
 static PORT_WRITE_START(z80_writeport_c)
-  { 0x00, 0x00, DAC_0_signed_data_w },
+  { 0x00, 0x00, DAC_3_signed_data_w },
   { 0x02, 0x02, snd_act_w },
   { 0x03, 0x03, tms5220_data_w },
 PORT_END
@@ -733,12 +734,12 @@ MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(zac11178_13181)
   MDRV_IMPORT_FROM(zac11178_13181_nodac)
-  MDRV_SOUND_ADD(DAC,     z80_2dacInt)
+  MDRV_SOUND_ADD(DAC,     z80_1dacInt)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(zac11178_11181)
   MDRV_IMPORT_FROM(zac11178_13181_nodac)
-  MDRV_SOUND_ADD(DAC,     z80_4dacInt)
+  MDRV_SOUND_ADD(DAC,     z80_3dacInt)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(zac11183)
@@ -756,7 +757,7 @@ MACHINE_DRIVER_START(zac11183)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(z80_readmem, z80_writemem)
   MDRV_CPU_PORTS(z80_readport_c, z80_writeport_c)
-  MDRV_CPU_PERIODIC_INT(cpu_c_irq, 120)
+  MDRV_CPU_PERIODIC_INT(cpu_c_irq, 100)
 
   MDRV_INTERLEAVE(500)
   MDRV_SOUND_ADD(TMS5220, sns_tms5220Int)
@@ -766,7 +767,7 @@ MACHINE_DRIVER_END
 static WRITE_HANDLER(snd_act_w) {
   logerror("cpu #%d ACT:%d:%02x\n", cpu_getexecutingcpu(), offset, data);
   // ACTSPK & ACTSND
-  UpdateZACSoundACT(data & 0x01 ? 0 : 0x03);
+  UpdateZACSoundACT(data & 0x01 ? 0 : 0x02);	// only ACTSND inverted on bit 0, ACTSPK not used?
 }
 
 static WRITE_HANDLER(snd_mod_w) {
