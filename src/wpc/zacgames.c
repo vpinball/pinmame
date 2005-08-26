@@ -428,7 +428,7 @@ ZAC_SOUNDROM_5x256(			"snd_ic05.bin",CRC(74cc4902) SHA1(e2f46bcf5446f98d098c49f8
 							"snd_ic25.bin",CRC(b1c9238e) SHA1(88c9df1fca94d32a0fa5d75312dabff257e867dd),
 							"snd_ic40.bin",CRC(974ceb9c) SHA1(3665af9170a2afbe26f68e8f3cedb0d177f476c4))
 ZAC_ROMEND
-CORE_GAMEDEFNV(strsphnx,"Star's Phoenix",1987,"Zaccaria",ZAC2XS3,SOUNDFLAG)
+CORE_GAMEDEFNV(strsphnx,"Star's Phoenix",1987,"Zaccaria",ZAC2XS3,0)
 
 //??/86 New Star's Phoenix
 
