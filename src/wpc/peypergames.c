@@ -72,4 +72,14 @@ PEYPER_ROMSTART(poleposn, "1.bin", CRC(fdd37f6d) SHA1(863fef32ab9b5f3aca51788b6b
 PEYPER_ROMEND
 CORE_GAMEDEFNV(poleposn,"Pole Position (Sonic)",1987,"Sonic (Spain)",gl_mPEYPER,0)
 
+/*-------------------------------------------------------------------
+/ Star Wars (1987)
+/-------------------------------------------------------------------*/
+INITGAME(sonstwar, sonicDisp7, 1, 4)
+PEYPER_ROMSTART(sonstwar, "sw1.bin", CRC(a2555d92) SHA1(5c82be85bf097e94953d11c0d902763420d64de4),
+						  "sw2.bin", CRC(c2ae34a7) SHA1(0f59242e3aec5da7111e670c4d7cf830d0030597),
+						  "sw3.bin", CRC(aee516d9) SHA1(b50e54d4d5db59e3fb71fb000f9bc5e34ff7de9c))
+PEYPER_ROMEND
+CORE_GAMEDEFNV(sonstwar,"Star Wars (Sonic)",1987,"Sonic (Spain)",gl_mPEYPER,0)
+
 // Hang-On (1988)
