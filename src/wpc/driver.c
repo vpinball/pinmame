@@ -638,7 +638,7 @@ DRIVERNV(sleicpin)		// Pin-Ball (1993)
 						// Odin De Luxe (1985)
 						// Gamatron (1986)
 						// Solar Wars (1986)
-						// Star Wars (1987)
+DRIVERNV(sonstwar)		// Star Wars (1987)
 DRIVERNV(poleposn)		// Pole Position (1987)
 						// Hang-On (1988)
 
