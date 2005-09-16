@@ -790,6 +790,13 @@ DRIVERNV(sopranog)      //Whitestar: 02/05 The Sopranos (Germany)
 DRIVERNV(sopranol)      //Whitestar: 02/05 The Sopranos (Spain)
 DRIVERNV(sopranof)      //Whitestar: 02/05 The Sopranos (France)
 DRIVERNV(sopranoi)      //Whitestar: 02/05 The Sopranos (Italy)
+DRIVERNV(nascar)		//Whitestar: 05/05 Nascar
+DRIVERNV(nascarl)		//Whitestar: 05/05 Nascar (Spain)
+DRIVERNV(gprix)			//Whitestar: 05/05 Grand Prix
+DRIVERNV(gprixg)		//Whitestar: 05/05 Grand Prix (Germany)
+DRIVERNV(gprixl)		//Whitestar: 05/05 Grand Prix (Spain)
+DRIVERNV(gprixf)		//Whitestar: 05/05 Grand Prix (France)
+DRIVERNV(gprixi)		//Whitestar: 05/05 Grand Prix (Italy)
 #endif /* INCLUDE_NEW_STERN */
 
 // ---------------

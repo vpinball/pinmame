@@ -1474,3 +1474,109 @@ SE_ROMEND
 #define input_ports_sopranoi input_ports_sopranos
 #define init_sopranoi init_sopranos
 CORE_CLONEDEFNV(sopranoi,sopranos,"Sopranos, The (Italy)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Nascar (3.01)
+/-------------------------------------------------------------------*/
+INITGAME(nascar,GEN_WS,se_dmd128x32,SE_LED)
+SE128_ROMSTART(nascar, "nascpua.301", CRC(8ede60c2) SHA1(aa49da40f2ed858c5fa260ce5e7dd096b4217544))
+DE_DMD32ROM8x(      "nasdspa.301", CRC(4de3c8d5) SHA1(c2c08ddd0ecc511cf34ba6a6cae9968e903b88ad))
+DE3SA_SOUNDROM18888("nassnd.u7",   CRC(3a3c8203) SHA1(c64c424c01ec91e2578fd6ddc5d3596b8a485c22),
+                    "nassnd.u17", CRC(4dcf65fa) SHA1(bc745e16f1f4b92b97fd0536bea789909b9c0c67),
+                    "nassnd.u21", CRC(82ac1e4f) SHA1(8a6518885d89651df31afc8119d87a46fd802e16),
+                    "nassnd.u36", CRC(2385ada2) SHA1(d3b59beffe6817cc3ea1140698095886ec2f2324),
+                    "nassnd.u37", CRC(458ba148) SHA1(594fd9b48aa48ab7b3df921e689b1acba2b09d79))
+SE_ROMEND
+#define input_ports_nascar input_ports_se
+CORE_GAMEDEFNV(nascar,"Nascar (3.01)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Nascar (Spain)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(nascarl, "nascpul.301", CRC(6c8fc295) SHA1(2852afb38807a96907bc7357c08235de643dfb29))
+DE_DMD32ROM8x(      "nasdspl.301", CRC(a6d4a9e7) SHA1(c87286bd173a50e17994474f98574c30cd6d8d39))
+DE3SA_SOUNDROM18888("nascsp.u7",   CRC(03a34394) SHA1(d1e3a1a8e14525c40e9f8a5441a106df662608f1),
+                    "nassndl.u17", CRC(058c67ad) SHA1(70e22d8a1842108309f6c03dcc6ac23a822da3c3),
+                    "nassndl.u21", CRC(e34d3b6f) SHA1(63ef27ed5965d719215d0a469886d3852b6bffb6),
+                    "nassndl.u36", CRC(9e2658b1) SHA1(0d93a381a65f11022a1a6da5e5b0e4a0e779f336),
+                    "nassndl.u37", CRC(63f084ab) SHA1(519807bf6e868df6f756ad30af2f6636804f167c))
+SE_ROMEND
+#define input_ports_nascarl input_ports_se
+#define init_nascarl init_nascar
+CORE_CLONEDEFNV(nascarl,nascar,"Nascar (Spain)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
+
+
+/*-------------------------------------------------------------------
+/ Grand Prix (3.01)
+/-------------------------------------------------------------------*/
+INITGAME(gprix,GEN_WS,se_dmd128x32,SE_LED)
+SE128_ROMSTART(gprix, "gpcpua.301", CRC(07cdb3eb) SHA1(2246d253dca93ce8c5f6775352611a3145ab8776))
+DE_DMD32ROM8x(      "gpdspa.301", CRC(b11d752d) SHA1(c0e6f5544a3061027bf9addef4363c744aaaf736))
+DE3SA_SOUNDROM18888("gpsnda.u7",  CRC(f784634f) SHA1(40847986003b01c9de5d9af4c66a0f1f9fb0cac8),
+                    "gpsnda.u17", CRC(43dca7e2) SHA1(30726897950b168ffa5e0e8a4ff12856fd50f132),
+                    "gpsnda.u21", CRC(77717142) SHA1(055f975c3d1cf6560908f5d8553f7e64580a2bba),
+                    "gpsnda.u36", CRC(6e414e19) SHA1(5b7c9da9c340ec3b55163f5674d72ab30ffbb866),
+                    "gpsnda.u37", CRC(caf4c3f3) SHA1(ebdbaccf951ef6525f0fafa7e23d8140ef6b84e5))
+SE_ROMEND
+#define input_ports_gprix input_ports_se
+CORE_GAMEDEFNV(gprix,"Grand Prix (3.01)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Grand Prix (Germany)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(gprixg, "gpcpug.301", CRC(23ac882e) SHA1(5194c3ea18a08f844f4ee293c9de44b62a956ee6))
+DE_DMD32ROM8x(      "gpdspg.301", CRC(0d214a2a) SHA1(c7f9bbd56d7038931c8658bc586d29ad2b9ecac2))
+DE3SA_SOUNDROM18888("gpsndg.u7",  CRC(95129e03) SHA1(5fddd9d8213f9f1f68fe9e96c9e78dc6771fab21),
+                    "gpsndg.u17", CRC(27ef97ea) SHA1(8ba941d5d4f929b8ec3222f1c91452395e2f690f),
+                    "gpsndg.u21", CRC(71391d71) SHA1(690b280710c79d94fc271541066ae90e462bbce2),
+                    "gpsndg.u36", CRC(415baa1b) SHA1(cca21e0e5ef0cbe34c9514d72a06fc129990787a),
+                    "gpsndg.u37", CRC(e4a6ae7f) SHA1(4a4cd973f90c13ced07459c8f457314c8280dd6a))
+SE_ROMEND
+#define input_ports_gprixg input_ports_se
+#define init_gprixg init_gprix
+CORE_CLONEDEFNV(gprixg,gprix,"Grand Prix (Germany)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Grand Prix (Spain)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(gprixl, "gpcpul.301", CRC(ad739825) SHA1(c2fbc25985b83bacd4285b6608366de485f16982))
+DE_DMD32ROM8x(      "gpdspl.301", CRC(2f483f0a) SHA1(42550741bee6af022bccd130626913edff6180a0))
+DE3SA_SOUNDROM18888("gpsndl.u7",  CRC(0640fe8f) SHA1(aa45bf89c4cae5b4c2143656cfe19fe8f1ec30a3),
+                    "gpsndl.u17", CRC(2581ef04) SHA1(2d85040e355ed410c7d8348ef64fc2c8e76ec0f0),
+                    "gpsndl.u21", CRC(f4c97c9e) SHA1(ae04f416a7582efee20469ec686d02727558d850),
+                    "gpsndl.u36", CRC(863de01a) SHA1(3f1fd157c2abacdab072146499b64b9e0853fb3e),
+                    "gpsndl.u37", CRC(db16b68a) SHA1(815fdcd4ae01c6264133389ce3194da572e1c232))
+SE_ROMEND
+#define input_ports_gprixl input_ports_se
+#define init_gprixl init_gprix
+CORE_CLONEDEFNV(gprixl,gprix,"Grand Prix (Spain)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Grand Prix (France)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(gprixf, "gpcpuf.301", CRC(6f9d34ee) SHA1(a8b60300cc1e07d3beb8d607e24285dbbd871e83))
+DE_DMD32ROM8x(      "gpdspf.301", CRC(b19729cd) SHA1(491fdf356f5a24b9895d2feccfe29d0bf45f4e27))
+DE3SA_SOUNDROM18888("gpsndf.u7",  CRC(9b34e55a) SHA1(670fe4e4b62c46266667f37c0341bb4266e55067),
+                    "gpsndf.u17", CRC(18beb699) SHA1(a3bbd7c9fc1165da5e502e09f68321bd56992e76),
+                    "gpsndf.u21", CRC(b64702dd) SHA1(8762fb00d5549649444f7f85c3f6d72f27c6ba41),
+                    "gpsndf.u36", CRC(4e41f0bb) SHA1(4a25b472a9435c77712559d7ded1649dffbc885c),
+                    "gpsndf.u37", CRC(e6d96767) SHA1(a471d51796edad71eb21aadc4a26bb1529a0b9cc))
+SE_ROMEND
+#define input_ports_gprixf input_ports_se
+#define init_gprixf init_gprix
+CORE_CLONEDEFNV(gprixf,gprix,"Grand Prix (France)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Grand Prix (Italy)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(gprixi, "gpcpui.301", CRC(d9be9fd7) SHA1(3dfc997d8d17d153ee42df0adb7993293bfff7e8))
+DE_DMD32ROM8x(      "gpdspi.301", CRC(1fc478da) SHA1(5307e9b302a7e49eb3460e8ba1e4c22525a1dcfe))
+DE3SA_SOUNDROM18888("gpsndi.u7",  CRC(37d66e66) SHA1(219fd734d3a19407d9d47de198429c770d7d8856),
+                    "gpsndi.u17", CRC(868b225d) SHA1(bc169cf5882002a1b58973a22a78d8dd4467bc51),
+                    "gpsndi.u21", CRC(b6692c39) SHA1(ac36ffb37ad945a857d5098547479c8cd62b6356),
+                    "gpsndi.u36", CRC(f8558b24) SHA1(ceb3880b026fb7fcc69eb8d94e33e30c56c24de8),
+                    "gpsndi.u37", CRC(a76c6682) SHA1(6d319a8f07c10fe392fc0b8e177cc6abbce0b536))
+SE_ROMEND
+#define input_ports_gprixi input_ports_se
+#define init_gprixi init_gprix
+CORE_CLONEDEFNV(gprixi,gprix,"Grand Prix (Italy)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
