@@ -1017,6 +1017,7 @@ DRIVER(bbnny,lu)        //S11-396:  01/91 B Bugs Bunny's Birthday Ball (LU-2) Eu
 DRIVER(bop,l2)          //WPC-502:  04/91 W The Machine: Bride of Pinbot (L-2)
 DRIVER(bop,l4)          //WPC-502:  04/91 W The Machine: Bride of Pinbot (L-4)
 DRIVER(bop,l5)          //WPC-502:  05/91 W The Machine: Bride of Pinbot (L-5)
+DRIVER(bop,l6)          //WPC-502:  05/91 W The Machine: Bride of Pinbot (L-6)
 DRIVER(bop,l7)          //WPC-502:  12/92 W The Machine: Bride of Pinbot
 DRIVER(hd,l1)           //WPC:      02/91 B Harley Davidson (L-1)
 DRIVER(hd,l3)           //WPC:      02/91 B Harley Davidson (L-3)
