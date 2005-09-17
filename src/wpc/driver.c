@@ -1061,6 +1061,7 @@ DRIVER(cftbl,l3)        //WPC:      01/93 B Creature from the Black Lagoon (L-3,
 DRIVER(cftbl,l4)        //WPC:      02/93 B Creature from the Black Lagoon (L-4)
 DRIVER(ww,p1)           //WPC-518:  12/92 W White Water (L-2, P-1 sound)
 DRIVER(ww,p2)           //WPC-518:  12/92 W White Water (L-2, P-1 sound)
+DRIVER(ww,p8)           //WPC-518:  12/92 W White Water (P-8, P-1 sound)
 DRIVER(ww,l2)           //WPC-518:  12/92 W White Water (L-2)
 DRIVER(ww,l3)           //WPC-518:  01/93 W White Water (L-3)
 DRIVER(ww,l4)           //WPC-518:  02/93 W White Water (L-4)
