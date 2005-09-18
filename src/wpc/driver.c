@@ -257,6 +257,7 @@ DRIVER(tmnt,104)        //Data East MPU: 05/91 Teenage Mutant Ninja Turtles (1.0
 DRIVER(btmn,101)        //Data East MPU: 07/91 Batman (1.01)
 DRIVER(btmn,103)        //Data East MPU: ??/91 Batman (1.03)
 DRIVER(btmn,g13)        //Data East MPU: ??/91 Batman (1.03 Germany)
+DRIVER(trek,11a)        //Data East MPU: 11/91 Star Trek 25th Anniversary (1.10 Alpha Display)
 DRIVER(trek,110)        //Data East MPU: 11/91 Star Trek 25th Anniversary (1.10)
 DRIVER(trek,120)        //Data East MPU: 01/92 Star Trek 25th Anniversary (1.20)
 DRIVER(trek,200)        //Data East MPU: 04/92 Star Trek 25th Anniversary (2.00)
@@ -1032,6 +1033,7 @@ DRIVER(t2,p2f)                            // Profanity Speech version
 DRIVER(hurr,l2)         //WPC-512:  08/91 W Hurricane
 DRIVER(pz,f4)           //WPC:      08/91 B Party Zone (F-4)
 DRIVER(pz,l1)           //WPC:      08/91 B Party Zone (L-1)
+DRIVER(pz,l2)           //WPC:      08/91 B Party Zone (L-2)
 DRIVER(gi,l3)           //WPC-203:  07/91 B Gilligan's Island (L-3)
 DRIVER(gi,l4)           //WPC-203:  07/91 B Gilligan's Island (L-4)
 DRIVER(gi,l6)           //WPC-203:  08/91 B Gilligan's Island (L-6)
