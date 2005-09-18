@@ -766,6 +766,14 @@ S11_ROMEND
 #define input_ports_radcl input_ports_s11
 CORE_GAMEDEF(radcl, l1, "Radical (L-1)", 1990, "Bally", s11c_one,0)
 
+S11_ROMSTART48(radcl,g1,"rad_u26.l1", CRC(84b1a125) SHA1(dd01fb9189acd2620c57149921aadb051f7a2412),
+                        "u27-lg1.rom", CRC(4f2eca4b) SHA1(ff44deded1686cfa0351c4499485d6eb4561cbc1))
+S11CS_SOUNDROM008(      "rad_u4.l1",  CRC(5aafc09c) SHA1(27984bbc91dc7593e6a5b42f74dd6ddf58189bec),
+                        "rad_u19.l1", CRC(7c005e1f) SHA1(bdeea7517f2adf72b4b642bffb25ba5b98453127),
+                        "rad_u20.l1", CRC(05b96292) SHA1(7da0289cf0a0c93768c0706fdedfc3a5f2101e77))
+S11_ROMEND
+CORE_CLONEDEF(radcl,g1,l1, "Radical (G-1)", 1990, "Bally", s11c_one,0)
+
 /*--------------------
 / Riverboat Gambler 10/90
 /--------------------*/
