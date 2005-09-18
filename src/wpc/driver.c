@@ -998,6 +998,8 @@ DRIVER(rollr,l2)        //S11-576:  06/90 W Rollergames (L-2)
 DRIVER(rollr,l3)        //S11-576:  06/90 W Rollergames (L-3) Europe
 DRIVER(rollr,g3)        //S11-576:  06/90 W Rollergames (L-3) Germany
 DRIVER(rollr,ex)        //S11-576:  01/91 W Rollergames (EXPERIMENTAL)
+DRIVER(rollr,e1)        //S11-576:  01/91 W Rollergames (PU-1) Europe
+DRIVER(rollr,p2)        //S11-576:  01/91 W Rollergames (PA-2, PA-1 Sound)
 DRIVER(pool,l7)         //S11-1848: 06/90 B Pool Sharks (Shark?)
 DRIVER(diner,l4)        //S11-571:  09/90 W Diner (L-4)
 DRIVER(diner,l3)        //S11-571:  09/90 W Diner (L-3)
