@@ -864,6 +864,7 @@ DRIVERNV(bbbowlin)      //Big Ball Bowling - using Bally hardware
 // -----------------------------------
 DRIVER(topaz,l1)        //???       Topaz (Shuffle)
 DRIVER(taurs,l1)        //???       Taurus (Shuffle)
+DRIVER(omni,l1)         //???       Omni (Shuffle)
 DRIVER(bstrk,l1)        //???       Big Strike (Bowler)
 DRIVER(tstrk,l1)        //???       Triple Strike (Bowler)
 

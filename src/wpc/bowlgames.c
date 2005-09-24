@@ -70,6 +70,18 @@ S4_ROMEND
 #define input_ports_taurs input_ports_bowl
 CORE_GAMEDEF(taurs,l1,"Taurus (Shuffle) (L-1)",1979,"Williams",s4_mS4S,0)
 
+/*----------------------------
+/ Omni
+/----------------------------*/
+INITGAME(omni, GEN_S3, dispS5)
+S4_ROMSTART(omni,l1,"omni-1a.u21",CRC(443bd170) SHA1(cc1ebd72d77ec2014cbd84534380e5ea1f12c022),
+                     "5a-9140.u20", CRC(c6f8e3b1) SHA1(cb78d42e1265162132a1ab2320148b6857106b0e),
+                     "5a-9141.u17", CRC(cfc2518a) SHA1(5e99e40dcb7e178137db8d7d7d6da82ba87130fa))
+S67S_SOUNDROMS8("sound.716",NO_DUMP)
+S4_ROMEND
+#define input_ports_omni input_ports_bowl
+CORE_GAMEDEF(omni,l1,"Omni (Shuffle) (L-1)",1980,"Williams",s4_mS4S,0)
+
 /*--------------------------------
 / Big Ball Bowling (United game?)
 /-------------------------------*/
