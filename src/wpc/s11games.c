@@ -72,6 +72,16 @@ S9_ROMEND
 #define input_ports_sorcr input_ports_s11
 CORE_GAMEDEF(sorcr, l1, "Sorcerer (L-1)", 1985, "Williams", s9_mS9S,0)
 
+S9_ROMSTART12(sorcr,l2,"cpu_u19.l2", CRC(faf738db) SHA1(a3b3f4160dc837ddf5379e1edb0eafeefcc11e3d),
+                       "cpu_u20.l2", CRC(74fc8117) SHA1(c228c76ade670603f77bb324e6794ec6dd358285))
+S9S_SOUNDROM41111(     "cpu_u49.128", CRC(a0bae1e4) SHA1(dc5172aa1d59191d4119da20757cb2c2469f8fe3),
+                       "spch_u4.732", CRC(0c81902d) SHA1(6d8f703327e5c73a321fc4aa3a67ce68fff82d70),
+                       "spch_u5.732", CRC(d48c68ad) SHA1(b1391b87519ad47be3dcce7f8581f871e6a3669f),
+                       "spch_u6.732", CRC(a5c54d47) SHA1(4e1206412ecf52ae61c9df2055e0715749a6325d),
+                       "spch_u7.732", CRC(bba9ed18) SHA1(8e37ba8cb6bbc1e0afeef230088beda4513adddb))
+S9_ROMEND
+CORE_CLONEDEF(sorcr, l2, l1, "Sorcerer (L-2)", 1985, "Williams", s9_mS9S,0)
+
 /*--------------------
 / Comet (S9) 06/85
 /--------------------*/
