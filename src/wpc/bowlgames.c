@@ -77,7 +77,7 @@ INITGAME(omni, GEN_S3, dispS5)
 S4_ROMSTART(omni,l1,"omni-1a.u21",CRC(443bd170) SHA1(cc1ebd72d77ec2014cbd84534380e5ea1f12c022),
                      "5a-9140.u20", CRC(c6f8e3b1) SHA1(cb78d42e1265162132a1ab2320148b6857106b0e),
                      "5a-9141.u17", CRC(cfc2518a) SHA1(5e99e40dcb7e178137db8d7d7d6da82ba87130fa))
-S67S_SOUNDROMS8("sound.716",NO_DUMP)
+S67S_SOUNDROMS8("sound.716", CRC(db085cbb) SHA1(9a57abbad183ba16b3dba16d16923c3bfc46a0c3))
 S4_ROMEND
 #define input_ports_omni input_ports_bowl
 CORE_GAMEDEF(omni,l1,"Omni (Shuffle) (L-1)",1980,"Williams",s4_mS4S,0)
@@ -151,12 +151,18 @@ static core_tLCDLayout dispPfevr[] = {
   { 4, 4,33, 1, CORE_SEG7 }, { 4, 8,35, 1, CORE_SEG7 }, {0}
 };
 INITGAME_S10(pfevr, GEN_S9, dispPfevr, 0, FLIP_SW(FLIP_L), S11_BCDDIAG|S11_BCDDISP, 0x08)
+S9_ROMSTART12(pfevr,l2,"pf-rom1.u19", CRC(00be42bd) SHA1(72ca21c96e3ffa3c43499165f3339b669c8e94a5),
+                       "pf-rom2.u20", CRC(7b101534) SHA1(21e886d5872104d71bb528b9affb12230268597a))
+S9S_SOUNDROM4("cpu_u49.128", CRC(b0161712) SHA1(5850f1f1f11e3ac9b9629cff2b26c4ad32436b55))
+S9_ROMEND
+S11_INPUT_PORTS_START(pfevr, 1) S11_INPUT_PORTS_END
+CORE_GAMEDEF(pfevr, l2, "Pennant Fever Baseball (L-2)", 1984, "Williams", s9_mS9S, GAME_IMPERFECT_SOUND)
+
 S9_ROMSTART12(pfevr,p3,"cpu_u19.732", CRC(03796c6d) SHA1(38c95fcce9d0f357a74f041f0df006b9c6f6efc7),
                        "cpu_u20.764", CRC(3a3acb39) SHA1(7844cc30a9486f718a556850fc9cef3be82f26b7))
 S9S_SOUNDROM4("cpu_u49.128", CRC(b0161712) SHA1(5850f1f1f11e3ac9b9629cff2b26c4ad32436b55))
 S9_ROMEND
-S11_INPUT_PORTS_START(pfevr, 1) S11_INPUT_PORTS_END
-CORE_GAMEDEF(pfevr, p3, "Pennant Fever Baseball (P-3)", 1984, "Williams", s9_mS9S,GAME_IMPERFECT_SOUND)
+CORE_CLONEDEF(pfevr, p3, l2, "Pennant Fever Baseball (P-3)", 1984, "Williams", s9_mS9S, GAME_IMPERFECT_SOUND)
 
 /*--------------------
 / Strike Zone (#916)
@@ -265,7 +271,7 @@ static struct core_dispLayout GTS3_dispDMD[] = {
   {34,0,32,128,CORE_DMD,(void *)gts3_dmd128x32a},
   {0}
 };
-static core_tGameData snsparesGameData = {GEN_GTS3,GTS3_dispDMD,{FLIP_SWNO(21,22),4,4,0,SNDBRD_GTS3,0}};
+static core_tGameData snsparesGameData = {GEN_GTS3,GTS3_dispDMD,{FLIP_SWNO(21,22),4,4,0,SNDBRD_NONE,0}};
 static void init_snspares(void) { core_gameData = &snsparesGameData; }
 GTS3ROMSTART(snspares,	"gprom.bin", CRC(9e018496) SHA1(a4995f153ba2179198cfc56b7011707328e4ec89))
 GTS3_DMD256_ROMSTART2(	"dsprom.bin",CRC(5c901899) SHA1(d106561b2e382afdb16e938072c9c8f1d1ccdae6))
