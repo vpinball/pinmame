@@ -349,10 +349,17 @@ DCS_SOUNDROM3m(	"afm_s2.l1",CRC(6e39d96e) SHA1(b34e31bb1734c86614f153f7201163aaa
 		"afm_s4.l1",CRC(5ff7fbb7) SHA1(ebaf825d3b90b6acee1920e6703801a4bcddfc5b))
 WPC_ROMEND
 
+WPC_ROMSTART(afm,113b,"afm_113b.bin", 0x100000,CRC(49ead7db) SHA1(3def843a5cf9c6da44c5768bbc64e5950791afa5))
+DCS_SOUNDROM3m(	"afm_s2.l1",CRC(6e39d96e) SHA1(b34e31bb1734c86614f153f7201163aaa9943cec),
+		"afm_s3.l1",CRC(1cbce9b1) SHA1(7f258bfe1904a879a2cb007419483f4fee91e072),
+		"afm_s4.l1",CRC(5ff7fbb7) SHA1(ebaf825d3b90b6acee1920e6703801a4bcddfc5b))
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF( afm,113,   "Attack From Mars (1.13)",1995, "Bally",wpc_m95S,0)
+CORE_CLONEDEF(afm,113b,113,"Attack From Mars (1.13b)",1995, "Bally",wpc_m95S,0)
 CORE_CLONEDEF(afm,11,113,"Attack From Mars (1.1)", 1995, "Bally",wpc_m95S,0)
 CORE_CLONEDEF(afm,10,113,"Attack From Mars (1.0)", 1995, "Bally",wpc_m95S,0)
 
