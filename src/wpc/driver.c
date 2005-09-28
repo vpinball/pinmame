@@ -1155,6 +1155,7 @@ DRIVER(congo,20)        //WPC-550:  11/95 W Congo (2.0)
 DRIVER(afm,10)          //WPC-541:  12/95 B Attack from Mars (1.0)
 DRIVER(afm,11)          //WPC-541:  12/95 B Attack from Mars
 DRIVER(afm,113)							  // Home version
+DRIVER(afm,113b)						  // (1.13b Coin Play)
 DRIVER(lc,11)           //WPC:      ??/96 B League Champ (Shuffle Alley)
 DRIVER(ttt,10)          //WPC-905:  03/96 W Ticket Tac Toe
 DRIVER(sc,14)           //WPC-903:  06/96 B Safe Cracker (1.4)
@@ -1182,6 +1183,7 @@ DRIVER(nbaf,31a)        //WPC-553:  09/97 B NBA Fastbreak (3.1a)
 DRIVER(mm,05)           //WPC-559:  06/97 W Medieval Madness (0.5)
 DRIVER(mm,10)           //WPC-559:  07/97 W Medieval Madness (1.0)
 DRIVER(mm,109)          //WPC-559:  06/99 W Medieval Madness (1.09, Home version)
+DRIVER(mm,109b)         //WPC-559:  06/99 W Medieval Madness (1.09B, Home version Coin Play)
 DRIVER(mm,109c)         //WPC-559:  06/99 W Medieval Madness (1.09C, Home version w/ profanity speech)
 DRIVER(cv,14)           //WPC-562:  10/97 B Cirqus Voltaire (1.4)
 DRIVER(cv,10)           //WPC-562:  10/97 B Cirqus Voltaire (1.0)
@@ -1194,6 +1196,7 @@ DRIVER(cp,16)           //WPC-563:  04/98 B The Champion Pub (1.6)
 DRIVER(cp,15)           //WPC-563:  04/98 B The Champion Pub (1.5)
 DRIVER(mb,10)           //WPC-565:  07/98 W Monster Bash
 DRIVER(mb,106)                            // Home version
+DRIVER(mb,106b)                           // (1.06b Coin Play)
 DRIVER(cc,12)           //WPC-566:  10/98 B Cactus Canyon
 DRIVER(cc,13)							  // 1.3 version
 //Test Fixtures
