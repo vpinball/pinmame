@@ -2966,7 +2966,7 @@ sopranos:
 :fc2d:Hey, who taught you how to play
 :fc2e:Yo, forget about it
 :fc2f:Who's the big cheese around here
-FC30:That's a beautiful thing
+:fc30:That's a beautiful thing
 :fc31:That was some sweet shootin' kid
 :fc33: badda bing bada boom
 :fc34:where did I put my earplugs
@@ -3469,3 +3469,1075 @@ FC30:That's a beautiful thing
 :feF9:exit test mode
 :feFa:slide
 :feFb:drum
+#
+#
+nascar:
+:fc02:nut, get back to racin'
+:fc03:let's bring it into the garage
+:fc04:get ready
+:fc05:green green green
+:fc06:just hang right in there
+:fc0a:this isn't for the faint hearted
+:fc0e:use the draft, then pass him
+:fc10:find the groove and gun it
+:fc12:just hold your position
+:fc13:keep her steady man
+:fc1a:Woohoo, that's gotta hurt
+:fc1c:Man, that guy is somethin'
+:fc1e:I think you've finally found the line
+:fc1f:Keep the line and hit it again
+:fc22:Come on, make your move
+:fc23:You're runnin' out of time
+:fc24:Do it again
+:fc25:One more time
+:fc27:Think back to your short track days
+:fc2b:He was way sideways on that one
+:fc2f:Hit the garage
+:fc31:Now it's hard racin'
+:fc32:Now it's our turn
+:fc33:You're a gos
+:fc34:This is all about speed
+:fc36:Great Job
+:fc37:Nice Drivin'
+:fc38:Whoohoo
+:fc39:Keep it goin' chief
+:fc3a:Now keep it steady or dialed in
+:fc3c:You were the best man today
+:fc3e:You are handlin' it like a pro
+:fc3f:You are a fan favorite, listen to them
+:fc42:You almost had 'em
+:fc43:We were so close
+:fc47:You missed everything
+:fc48:Hurry, go go go
+:fc49:Come on come on
+:fc4a:Go Go Go
+:fc4b:Come on, keep diggin'
+:fc4c:Shoot the left ramp
+:fc4d:Shoot the right ramp
+:fc4e:Shoot the left orbit
+:fc4f:Shoot the right orbit
+:fc51:Spell RACE to light locks
+:fc52:Just a little more
+:fc53:Hit the standups
+:fc54:You go and hit the drops
+:fc55:Hit the captive ball
+:fc56:Hit the car
+:fc57:Whoo that was a close one
+:fc58:Hold that line
+:fc5a:Get back to the garage
+:fc5b:Hang right
+:fc60:Aw man
+:fc61:All that hard work for nothin'
+:fc62:Million
+:fc63:Gentlemen, start your engines
+:fc64:Jackpot
+:fc65:Bonus Jackpot
+:fc66:Super Jackpot
+:fc67:Nascar encourages you to party responsibly
+:fc68:Party in the infield
+:fc69:Extra Ball
+:fc6a:Replay
+:fc6b:Special
+:fc6c:Ticket
+:fc6d:Bump 'n Win
+:fc6e:One Million
+:fc6f:Two Million
+:fc70:Three Million
+:fc71:Four Million
+:fc72:Five Million
+:fc73:Six Million
+:fc74:Seven Million
+:fc75Eight Million
+:fc76:Nine Million
+:fc77:Ten Million
+:fc78:Whoa, what a beauty
+:fc7a:Yeah baby
+:fc7b:Oooh yeah
+:fc7c:Charge it, (horn honk)
+:fc7d:Step on it man
+:fc7f :Hey, did someone say party?
+:fc80:Party
+:fc81:Whoo
+:fc82:Whoo
+:fc83:Whoo hoo
+:fc84:Alright
+:fc85:Alright
+:fc86:Alright
+:fc87:Oh
+:fc88:Oh
+:fc89:Oh
+:fc8a:Woohoo
+:fc8b:Woohoo
+:fc8c:Woohoo
+:fc8d:Speed Shots
+:fc8e:He's got a real shot to be champion
+:fc8f:The championship is within reach
+:fc90:One more victory and the championship is his
+:fc91:Great season
+:fc92:You're the champ
+:fc94:We're pickin' up chatter on the scanner
+:fc95:Good thinking
+:fc96:Let's hit the road course
+:fc97:Road Course
+:fc98:It's all up to the crew chiefs
+:fc99:It's crazy out there
+:fc9a:Looks like he's trying to move him out of the groove
+:fc9b:We only have a few laps left folks
+:fc9c:An amazing stop by the pit crew
+:fc9d:This pit crew is fast
+:fc9e:That's a huge move on pit road
+:fc9f:All ride
+:fca0:Takin' a ride in the hauler
+:fca1:Come on, get in close
+:fca3:Alright, don't let that wreck throw ya
+:fca4:Fake inside and go out
+:fca5:Ooh ooh feels sweet today
+:fca6:Gonna need those drop targets if you want to get ahead
+:fca7:blue's green man, now go after the ultimate prize
+:fca8:aaaw damn, I thought we had 'em
+:fca9:it's just you and the track now
+:fcaa:it's time, keep steady
+:fcab:it's yours for the takin'
+:fcac:Let's go
+:fcad:Nice job
+:fcae:Now the fun begins
+:fcaf:One more to go
+:fcb0:Party in the infield
+:fcb1:Pass him on the inside
+:fcb2:Pass him on the outside
+:fcb4:The garage is lit
+:fcb5:We'll get 'em next time
+:fcb6:Hey what's goin' on down there?
+:fcb7:You did it
+:fcb8:Right turn
+:fcb9:Hard right
+:fcba:One more tweak and we got it
+:fcbb:Hurry up
+:fcbc:Better get a move on
+:fcbd:We don't have much time
+:fcbe:Only a few laps to go
+:fcbf:Move up on him
+:fcc0:Come on get in there
+:fcc1:Try and pass him
+:fcc2:Make a move on him
+:fcc3:Great pitstop
+:fcc4:Great stop
+:fcc5:Two cars only
+:fcc6:Woo great move
+:fcc7:We moved up on the track
+:fcc8:Great job, get the bonus
+:fcc9:Woohoo we did it
+:fcca:Take your victory lap
+:fccb:Where's my paycheck
+:fccc:Can I come down now?
+:fccd:Hey where'd everybody go?
+:fcce:Guys?
+:fccf:Let's just take two
+:fcd0:As fast as we can now boys
+:fcd1:Nice slide job
+:fcd2:Let's bear down here
+:fcd3:Lap times are good
+:fcd4:The fans love ya
+:fcd5:Make your move now
+:fcd6:What a pass
+:fcd7:What a move
+:fcd8:You're way up on the wheel now
+:fcd9:Woho don't panic
+:fcda:This a big opportunity
+:fcdb:Don't give up
+:fcdc:Wham bam what a lap
+:fcdd:That shows some muscle
+:fcde:Everyone's watchin' it now
+:fcdf:Now make it stick
+:fce0:Big time move
+:fce1:How'd you do that?
+:fce2:This isn't for the faint hearted
+:fce3:Fake left and go right
+:fce4:Use the drafts then pass him
+:fce5:Too much downforce in the corner
+:fce6:Party in the infield
+:fd03:Title music
+:fd04:Title music 2
+:fd05:Title music 3 repeat hihat
+:fd06:Title music 4
+:fd08:Title end
+:fd09:Title music 5
+:fd0a:Victory Lap theme
+:fd0b:Groovy music
+:fd0c:Drum beat tune
+:fd0d:Racing jam
+:fd0e:All drum beat
+:fd0f:Mixed up
+:fd10:cymbal
+:fd11:Dance music
+:fd12:Party in the infield tune
+:fd13:Horns mixed up
+:fd14:I can't drive 55 lyrics version +midi
+:fd15:Bar jam
+:fd16:Drum beat tune 2
+:fd17:Fight tune horns
+:fd18:Happy tune
+:fd19:Fight tune horns 2
+:fd1a:Happy tune 2
+:fd1b:Happy tune 3
+:fd1c:Slow jam
+:fd28:two hihats
+:fd29:hihat
+:fd2a:hihat
+:fd2b:hihat
+:fd3c:drums hit echo
+:fd40:gunshot
+:fd41:flyby
+:fd42:louder flyby
+:fd43:two drums
+:fd44:louder two drums
+:fd45:drum
+:fd46:string
+:fd47:higher string
+:fd48:chimes up scale
+:fd49:repeated air
+:fd4a:explode
+:fd4b:louder explode
+:fd4c:even louder explode
+:fd4d:higher louder explode
+:fd4e:electric guittar
+:fd4f:strings down
+:fd50:engine rev
+:fd51:engine rev 2
+:fd52:engine rev 3
+:fd53:driveby
+:fd54:driveby 2
+:fd55:driveby 3
+:fd56:driveby 4
+:fd57:driveby 5
+:fd58:driveby 6
+:fd59:driveby 7
+:fd5a:driveby 8
+:fd5b:driveby 9
+:fd5c:chink
+:fd5d:chink 2
+:fd5e:chink 3
+:fd5f:chink 4
+:fd60:chink 5
+:fd61:chink 6
+:fd62:chink 7
+:fd63:chink 8
+:fd64:chink 9
+:fd65:thunder
+:fd66:honk
+:fd67:honk 2
+:fd68:honk 3
+:fd69:honk 4
+:fd6a:honk 5
+:fd6b:honk 6
+:fd6c:honk 7
+:fd6d:honk 8
+:fd6e:electric hum
+:fd6f:electric hum 2
+:fd70:electric hum 3
+:fd71:electric hum 4
+:fd72:electric hum 5
+:fd73:electric hum 6
+:fd74:electric hum 7
+:fd75:electric hum 8
+:fd76:electric hum 9
+:fd77:electric hum 10
+:fd78:gun cymbal
+:fd79:tire screech
+:fd7a:tire screech 2
+:fd7b:tire screech 3
+:fd7f:driveby cheer
+:fd80:driveby cheer 2
+:fd81:driveby cheer 3
+:fd82:cheer
+:fd83:cheer 2
+:fd84:cheer 3
+:fd85:rev hit
+:fd86:rev
+:fd87:rev 2
+:fd88:rev 3
+:fd89:rev 4
+:fd8a:rev 5
+:fd8b:rev 6
+:fd8c:rev 7
+:fd8d:rev 8
+:fd8e:rev 9
+:fd8f:repeat swish
+:fd90:swish
+:fd91:jet
+:fd92:jet horn
+:fd93:crash
+:fd94:crash 2
+:fd95:complete
+:fd96:footfall
+:fd97:cymbal beat
+:fd98:buzz
+:fd99:buzz 2
+:fd9a:buzz 3
+:fd9b:buzz 4
+:fd9c:buzz 5
+:fd9d:buzz 6
+:fd9e:complete 2
+:fd9f:rev scale
+:fda0:burn rubber
+:fda1:complete 3
+:fda2:complete 4
+:fda3:driveby loud
+:fda4:complete 5
+:fda5:OW!
+:fda6:OW!
+:fda7:OW!
+:fda8:WHOO!
+:fda9:WHOO!
+:fdaa:WHOO!
+:fdab:Alright!
+:fdac:Alright!
+:fdad:Alright!
+:fdae:Woo!
+:fdaf:Woo!
+:fdb0:Woo!
+:fdb1:Whoohoo!
+:fdb2:Whoohoo!
+:fdb3:Whoohoo!
+:fdb4:Yeah!
+:fdb5:Yeah!
+:fdb6:Yeah!
+:fdb7:complete 6
+:fdb8:driveby again
+:fdb9:driveby again 2
+:fdba:driveby again 3
+:fdbb:driveby again 4
+:fdbc:driveby again 5
+:fdbd:driveby again 6
+:fdbe:driveby again 7
+:fdbf:driveby again 8
+:fdc0:driveby again 9
+:fdc1:jet flyby high
+:fdc2:jet flyby high 2
+:fdc3:jet flyby high 3
+:fdc4:jet flyby high 4
+:fdc5:jet flyby high 5
+:fdc6:Speeder repeat
+:fdc7:Speeder repeat 2
+:fdc8:Speeder repeat 3
+:fdc9:complete 7
+:fdca:complete 8
+:fdcb:complete 9
+:fdcc:complete 10
+:fdcd:upscale hits
+:fdce:top hit
+:fdcf:downshift guittar
+:fdd0:downshift guittar 2
+:fdd1:string strum
+:fdd2:explode completion
+:fdd3:loud explosion
+:fdd4:mid hit
+:fdd5:driveby drum scale
+:fdd6:hit with cymbal
+:fdd7:guitar wave
+:fdd8:complete beat tune 11
+:fdd9:complete beat tune 12
+:fdda:complete beat tune 13
+:fddb:short hits
+:fddc:siren scale complete
+:fddd:complete 14
+:fdde:guittar song
+:fddf:short guittar riff
+:fde0:complete 15
+:fde1:reverb hit
+:fde2:downscale guittar song
+:fde3:downward bubbles
+:fdf5:Speaker Test Tone
+:fdf7:two cymbals
+:fdf8:beep
+:fdf9:downward scale
+:fdfa:slide
+:fdfb:drum
+:fe31:Allen Bestwick here bringing you Nascar Pinball
+:fe32:Let's go racing
+:fe33:Welcome race fans, to Nascar Pinball
+:fe34:We have a late entry in today's field
+:fe35:Player 1
+:fe36:Player 2
+:fe37:Player 3
+:fe38:Player 4
+:fe39:Player 2, a late addition
+:fe3a:Player 3, a late addition
+:fe3b:Player 4, a late addition
+:fe3c:Player 2 has joined the field
+:fe3d:Player 3 has joined the field
+:fe3e:Player 4 has joined the field
+:fe3f:Player 1, you're up
+:fe40:Player 2, you're up
+:fe41:Player 3, you're up
+:fe42:Player 4, you're up
+:fe43:Player 1, don't move
+:fe44:Player 2, don't move
+:fe45:Player 3, don't move
+:fe46:Player 4, don't move
+:fe47:Player 1 shoot again
+:fe48:Player 2 shoot again
+:fe49:Player 3 shoot again
+:fe4a:Player 4 shoot again
+:fe4e:Pops at max
+:fe51:Lock is lit
+:fe52:Ball 1 locked
+:fe53:Ball 2 locked
+:fe54:Multiball is lit
+:fe56:It's time to rock and roll
+:fe57:We're racing
+:fe58:Jackpot is lit
+:fe59:Super Jackpot is lit
+:fe5a:Bonus Jackpot is lit
+:fe5b:He's moved in to 10th position
+:fe5c:He's moved in to 9th position
+:fe5d:He's moved in to 8th position
+:fe5e:He's moved in to 7th position
+:fe5f:He's moved in to 6th position
+:fe60:He's moved in to 5th position
+:fe61:He's moved in to 4th position
+:fe62:He's moved in to 3rd position
+:fe63:He's moved in to 2nd poisition
+:fe64:He's moved in to 10th place
+:fe65:He's moved in to 9th place
+:fe66:He's moved in to 8th place
+:fe67:He's moved in to 7th place
+:fe68:He's moved in to 6th place
+:fe69:He's moved in to 5th place
+:fe6a:He's moved in to 4th place
+:fe6b:He's moved in to 3rd place
+:fe6c:He's moved in to 2nd place
+:fe6d:Trouble in turn 3
+:fe6e:He's taken the lead
+:fe70:Now that's a real Nascar fan folks
+:fe72:Our fans are the best
+:fe73:Welcome to the short track
+:fe74:Small tracks, big action
+:fe79:Bump 'n Run
+:fe7a:Right sides only
+:fe7b:Gas 'n Go
+:fe7c:Take on fuel now, collect the prize later
+:fe8b:That was beautiful
+:fe8c:Hard Racin'
+:fe8d:Speed Shots
+:fe8e:Extra Ball is lit
+:fe8f:Special is lit
+:fe91:There's a big payback at the end of this line
+:fe93:This driver's havin' a great season
+:fe96:We have a new champion
+:fe97:Victory Lap
+:fe98:Congratulations
+:fe99:Great shot
+:fe9a:That was perfect
+:fe9b:Beautiful
+:fe9c:Now that's how to drive
+:fe9d:Put the operator on hold, he's dialed in
+:fea1:He almost has it
+:fea2:Time is a factor
+:fea3:Time's running out
+:fea4:The garage is open
+:fea6:Careful
+:fea7:He's out of control
+:fea9:You just knew how that was gonna end up
+:feaa:You could see that comin' from two turns back
+:feab:This is as intense as it gets
+:feac:Ten million
+:fead:Nine million
+:feae:Eight million
+:feaf:Seven million
+:feb0:Six million
+:feb1:Five million
+:feb2:Four million
+:feb3:Three million
+:feb4:Two million
+:feb5:One million
+:feb6:Ten
+:feb7:Nine
+:feb8:Eight
+:feb9:Seven
+:feba:Six
+:febb:Five
+:febc:Four
+:febd:Three
+:febe:Two
+:febf:One
+:fec0:Big points
+:fec2:This driver is unstopable
+:fec3:Looks like
+:fec4:The 29 car
+:fec5:The 21 car
+:fec6:The 2 car
+:fec7:is particularly fast today
+:fec8:is ready to go
+:feca:Rusty Wallace
+:fecb:Ricky Rudd
+:fecc:Kevin Harvick
+:fecd:has his race face on today
+:fece:is ready
+:fecf:is gonna be a contender before this race is over
+:fed0:We're almost ready to race
+:fed1:an amazing finish
+:fed2:It's a beautiful day for racing
+:fed3:Big mess in turn 2
+:fed4:Can he do it again?
+:fed5:The checkered flag is out
+:fed6:The crowd is on its feet
+:fed7:This driver is the new points leader
+:fed8:Get the extra ball
+:fed9:This is gonna pay off down the road
+:feda:He's gonna take at least two right sides here
+:fedb:Great job
+:fedc:He did it
+:fedd:He's comin' up on the leader
+:fedf:It's a jungle out there
+:fee0:It's war out there
+:fee1:Last chance to tune up the cars
+:fee2:Magnificent
+:fee3:Those marbles will get ya every time
+:fee4:Nice shot
+:fee5:Now that's pretty special
+:fee6:One lap to go
+:fee7:The pit crew's having trouble
+:fee8:I'd rather be lucky than good
+:fee9:Stay right there
+:feea:Sweet
+:feeb:That's worth doin' over
+:feec:That was some spectacular driving
+:feed:We're three wide
+:feee:It's time for some hard racin'
+:feef:We're two wide
+:fef0:Welcome back
+:fef1:Welcome to happy hour folks
+:fef2:Welcome to Nascar Pinball
+:fef3:There's always a party on the infield
+:fef4:Nascar fans sure know how to have a good time
+:fef5:Test beep
+:fef7:cymbal cymbal
+:fef8:beep beep
+:fef9:horns
+:fefa:slide
+:fefb:drum
+#
+#
+gprix:
+:fc02:now, get back to racing
+:fc03:let's bring it into the garage
+:fc04:get ready
+:fc05:green green green
+:fc06:just hang right in there
+:fc0a:this isn't for the faint hearted
+:fc10:find the groove and whalie it
+:fc12:just hold your position
+:fc13:keep her steady
+:fc1a:Ooh, that's gotta hurt
+:fc1c:Sure, that geezer is somethin'
+:fc1e:I think you've found the line
+:fc1f :Keep the line and hit it again
+:fc22:Make your move
+:fc23:You're running out of time
+:fc24:Do it again
+:fc25:One more time
+:fc27:Think back to your early racing days
+:fc2b:He was well sideways on that one
+:fc2f:Hit the garage
+:fc31:Now it's hard racing
+:fc32:Now it's our turn
+:fc33:Whalie it!
+:fc34:This is all about speed
+:fc36:Great Job
+:fc37:Nice Driving
+:fc38:Whoohoo
+:fc39:Keep it going mate
+:fc3a:Now keep it steady you're dialed in
+:fc3c:You were the best man today
+:fc3e:You are handlin'  like a pro
+:fc3f:You're a fan favorite
+:fc42:Oh, you almost had 'em
+:fc43:We were so close
+:fc47:You missed everything
+:fc48:Hurry, go go go go go
+:fc49:Come on come on
+:fc4a:Go Go Go
+:fc4b:Stick with it
+:fc4c:Shoot the left ramp
+:fc4d:Shoot the right ramp
+:fc4e:Shoot the left orbit
+:fc4f:Shoot the right orbit
+:fc51:Spell RACE to light locks
+:fc52:Just a little more
+:fc53:Hit the standups
+:fc54:Hit the drops
+:fc55:Hit the captive ball
+:fc56:Hit the car
+:fc57:That was a close one
+:fc58:Hold that line
+:fc5a:Get back to the garage
+:fc5b:Hang right
+:fc60:Aw man
+:fc61:All that hard work for nothing
+:fc62:Million
+:fc63:Ladies and gentlemen, let's go racing
+:fc64:Jackpot
+:fc65:Bonus Jackpot
+:fc66:Super Jackpot
+:fc67:Grand Prix encourages you to party responsibly
+:fc68:Party in the infield
+:fc69:Extra Ball
+:fc6a:Replay
+:fc6b:Special
+:fc6c:Ticket
+:fc6d:Bump 'n Win
+:fc6e:One Million
+:fc6f:Two Million
+:fc70:Three Million
+:fc71:Four Million
+:fc72:Five Million
+:fc73:Six Million
+:fc74:Seven Million
+:fc75:Eight Million
+:fc76:Nine Million
+:fc77:Ten Million
+:fc78:What a beauty
+:fc7a:come on come on come on come on come on
+:fc7b:Go go go go go go go
+:fc7c:Come on
+:fc7d:Yeah
+:fc7f:Did someone say party?
+:fc80:Party
+:fc81:Ah
+:fc82:Ah
+:fc83:Ah
+:fc84:No
+:fc85:No
+:fc86:No
+:fc87:Whoo
+:fc88:Whoo
+:fc89:Whoo
+:fc8a:Yeah
+:fc8b:Yeah
+:fc8c:Yeah
+:fc8d:Speed Shots
+:fc8e:He's got a real shot to be champion
+:fc8f:The championship is within reach
+:fc90:One more victory and the championship is his
+:fc91:Great season
+:fc92:You're the champ
+:fc94:We're picking up chatter on the scanner
+:fc95:Good thinking
+:fc96:Let's hit the esses
+:fc97:Esses are lit
+:fc98:It's all up to the crew chiefs
+:fc99:It's crazy out there
+:fc9a:Looks like he's trying to move him out of the groove
+:fc9b:We only have a few laps left folks
+:fc9c:An amazing stop by the pit crew
+:fc9d:This pit crew is fast
+:fc9e:That's a huge move on pit road
+:fc9f:Hauler ride
+:fca1:Come on, get in close
+:fca3:Don't let that crash throw ya
+:fca4:Fake inside and go out
+:fca5:Feels sweet today
+:fca6:Gonna need those drop targets if you want to get ahead
+:fca7:Great, now go after the ultimate prize
+:fca8:I thought we had 'em
+:fca9:it's just you and the track now
+:fcaa:it's tight, keep steady
+:fcab:it's yours for the taking
+:fcac:Let's go
+:fcad:Well nice
+:fcae:Now the fun begins
+:fcaf:One more to go
+:fcb0:Party in the infield
+:fcb1:Pass him on the inside
+:fcb2:Pass him on the outside
+:fcb4:The garage is lit
+:fcb5:Oh, you almost had 'em
+:fcb6:What's goin' on down there?
+:fcb7:You did it
+:fcb8:Right turn
+:fcb9:Hard right
+:fcbb:Hurry up
+:fcbc:Better get a move on
+:fcbd:We don't have much time
+:fcbe:Only a few laps left to go
+:fcbf:Move up on him
+:fcc0:Get in there
+:fcc1:Try and pass
+:fcc2:Make a move on him
+:fcc3:Great pitstop
+:fcc4:Great stop
+:fcc5:Quick stop
+:fcc6:Great move
+:fcc7:We moved up on the track
+:fcc8:Great job, get the bonus
+:fcc9:We did it
+:fcca:Take your victory lap
+:fccf:Make it quick
+:fcd0:As fast as we can now boys
+:fcd1:Nice drift
+:fcd2:Let's bear down here
+:fcd3:Lap times are good
+:fcd4:The fans love ya
+:fcd5:Make your move now
+:fcd6:What a pass
+:fcd7:What a move
+:fcd8:You're way up on the wheel now
+:fcd9:Don't panic
+:fcda:This a big opportunity
+:fcdb:Don't give up
+:fcdc:Wham bam what a lap
+:fcdd:That's showing some muscle
+:fcde:Everyone's watching you now
+:fcdf:Now make it stick
+:fce0:Big time move
+:fce1:How'd you do that?
+:fce2:This isn't for the faint hearted
+:fce3:Fake left and go right
+:fce6:Party in the infield
+:fd03:Title music
+:fd04:Title music 2
+:fd05:Title music 3 repeat hihat
+:fd06:Title music 4
+:fd08:Title end
+:fd09:Title music 5
+:fd0a:Victory Lap theme
+:fd0b:Groovy music
+:fd0c:Drum beat tune
+:fd0d:Racing jam
+:fd0e:All drum beat
+:fd0f:Mixed up
+:fd10:cymbal
+:fd11:Dance music
+:fd12:Party in the infield tune
+:fd13:Horns mixed up
+:fd14:I can't drive 55 lyrics version +midi
+:fd15:Bar jam
+:fd16:Drum beat tune 2
+:fd17:Fight tune horns
+:fd18:Happy tune
+:fd19:Fight tune horns 2
+:fd1a:Happy tune 2
+:fd1b:Happy tune 3
+:fd1c:Slow jam
+:fd28:two hihats
+:fd29:hihat
+:fd2a:hihat
+:fd2b:hihat
+:fd3c:drums hit echo
+:fd40:gunshot
+:fd41:flyby
+:fd42:louder flyby
+:fd43:two drums
+:fd44:louder two drums
+:fd45:drum
+:fd46:string
+:fd47:higher string
+:fd48:chimes up scale
+:fd49:repeated air
+:fd4a:explode
+:fd4b:louder explode
+:fd4c:even louder explode
+:fd4d:higher louder explode
+:fd4e:electric guittar
+:fd4f:strings down
+:fd50:engine rev
+:fd51:engine rev 2
+:fd52:engine rev 3
+:fd53:driveby
+:fd54:driveby 2
+:fd55:driveby 3
+:fd56:driveby 4
+:fd57:driveby 5
+:fd58:driveby 6
+:fd59:driveby 7
+:fd5a:driveby 8
+:fd5b:driveby 9
+:fd5c:chink
+:fd5d:chink 2
+:fd5e:chink 3
+:fd5f:chink 4
+:fd60:chink 5
+:fd61:chink 6
+:fd62:chink 7
+:fd63:chink 8
+:fd64:chink 9
+:fd65:thunder
+:fd66:honk
+:fd67:honk 2
+:fd68:honk 3
+:fd69:honk 4
+:fd6a:honk 5
+:fd6b:honk 6
+:fd6c:honk 7
+:fd6d:honk 8
+:fd6e:electric hum
+:fd6f:electric hum 2
+:fd70:electric hum 3
+:fd71:electric hum 4
+:fd72:electric hum 5
+:fd73:electric hum 6
+:fd74:electric hum 7
+:fd75:electric hum 8
+:fd76:electric hum 9
+:fd77:electric hum 10
+:fd78:gun cymbal
+:fd79:tire screech
+:fd7a:tire screech 2
+:fd7b:tire screech 3
+:fd7f:driveby cheer
+:fd80:driveby cheer 2
+:fd81:driveby cheer 3
+:fd82:cheer
+:fd83:cheer 2
+:fd84:cheer 3
+:fd85:rev hit
+:fd86:rev
+:fd87:rev 2
+:fd88:rev 3
+:fd89:rev 4
+:fd8a:rev 5
+:fd8b:rev 6
+:fd8c:rev 7
+:fd8d:rev 8
+:fd8e:rev 9
+:fd8f:repeat swish
+:fd90:swish
+:fd91:jet
+:fd92:jet horn
+:fd93:crash
+:fd94:crash 2
+:fd95:complete
+:fd96:footfall
+:fd97:cymbal beat
+:fd98:buzz
+:fd99:buzz 2
+:fd9a:buzz 3
+:fd9b:buzz 4
+:fd9c:buzz 5
+:fd9d:buzz 6
+:fd9e:complete 2
+:fd9f:rev scale
+:fda0:burn rubber
+:fda1:complete 3
+:fda2:complete 4
+:fda3:driveby loud
+:fda4:complete 5
+:fda5:OW!
+:fda6:OW!
+:fda7:OW!
+:fda8:WHOO!
+:fda9:WHOO!
+:fdaa:WHOO!
+:fdab:Alright!
+:fdac:Alright!
+:fdad:Alright!
+:fdae:Woo!
+:fdaf:Woo!
+:fdb0:Woo!
+:fdb1:Whoohoo!
+:fdb2:Whoohoo!
+:fdb3:Whoohoo!
+:fdb4:Yeah!
+:fdb5:Yeah!
+:fdb6:Yeah!
+:fdb7:complete 6
+:fdb8:driveby again
+:fdb9:driveby again 2
+:fdba:driveby again 3
+:fdbb:driveby again 4
+:fdbc:driveby again 5
+:fdbd:driveby again 6
+:fdbe:driveby again 7
+:fdbf:driveby again 8
+:fdc0:driveby again 9
+:fdc1:jet flyby high
+:fdc2:jet flyby high 2
+:fdc3:jet flyby high 3
+:fdc4:jet flyby high 4
+:fdc5:jet flyby high 5
+:fdc6:Speeder repeat
+:fdc7:Speeder repeat 2
+:fdc8:Speeder repeat 3
+:fdc9:complete 7
+:fdca:complete 8
+:fdcb:complete 9
+:fdcc:complete 10
+:fdcd:upscale hits
+:fdce:top hit
+:fdcf:downshift guittar
+:fdd0:downshift guittar 2
+:fdd1:string strum
+:fdd2:explode completion
+:fdd3:loud explosion
+:fdd4:mid hit
+:fdd5:driveby drum scale
+:fdd6:hit with cymbal
+:fdd7:guitar wave
+:fdd8:complete beat tune 11
+:fdd9:complete beat tune 12
+:fdda:complete beat tune 13
+:fddb:short hits
+:fddc:siren scale complete
+:fddd:complete 14
+:fdde:guittar song
+:fddf:short guittar riff
+:fde0:complete 15
+:fde1:reverb hit
+:fde2:downscale guittar song
+:fde3:downward bubbles
+:fdf5:Speaker Test Tone
+:fdf7:two cymbals
+:fdf8:beep
+:fdf9:downward scale
+:fdfa:slide
+:fdfb:drum
+:fe31:Kevin Smith here bringing you Grand Prix Pinball
+:fe32:Let's go racing
+:fe33:Welcome race fans, to Grand Prix Pinball
+:fe34:We have a late entry in today's field
+:fe35:Player 1
+:fe36:Player 2
+:fe37:Player 3
+:fe38:Player 4
+:fe39:Player 2, a late addition
+:fe3a:Player 3, a late addition
+:fe3b:Player 4, a late addition
+:fe3c:Player 2 has joined the field
+:fe3d:Player 3 has joined the field
+:fe3e:Player 4 has joined the field
+:fe3f:Player 1, you're up
+:fe40:Player 2, you're up
+:fe41:Player 3, you're up
+:fe42:Player 4, you're up
+:fe43:Player 1, don't move
+:fe44:Player 2, don't move
+:fe45:Player 3, don't move
+:fe46:Player 4, don't move
+:fe47:Player 1 shoot again
+:fe48:Player 2 shoot again
+:fe49:Player 3 shoot again
+:fe4a:Player 4 shoot again
+:fe4e:Pops at max
+:fe51:Lock is lit
+:fe52:Ball 1 locked
+:fe53:Ball 2 locked
+:fe54:Multiball is lit
+:fe56:It's time to rock and roll
+:fe57:We're racing
+:fe58:Jackpot is lit
+:fe59:Super Jackpot is lit
+:fe5a:Bonus Jackpot is lit
+:fe5b:He's moved in to 10th position
+:fe5c:He's moved in to 9th position
+:fe5d:He's moved in to 8th position
+:fe5e:He's moved in to 7th position
+:fe5f:He's moved in to 6th position
+:fe60:He's moved in to 5th position
+:fe61:He's moved in to 4th position
+:fe62:He's moved in to 3rd position
+:fe63:He's moved in to 2nd poisition
+:fe64:He's moved in to 10th place
+:fe65:He's moved in to 9th place
+:fe66:He's moved in to 8th place
+:fe67:He's moved in to 7th place
+:fe68:He's moved in to 6th place
+:fe69:He's moved in to 5th place
+:fe6a:He's moved in to 4th place
+:fe6b:He's moved in to 3rd place
+:fe6c:He's moved in to 2nd place
+:fe6d:Trouble in turn 3
+:fe6e:He's taken the lead
+:fe70:Now that's a real Grand Prix fan folks
+:fe72:Our fans are the best
+:fe73:Welcome to the fast track
+:fe74:Fast tracks, big action
+:fe79:Tough Racing
+:fe7a:Fast Pitstop
+:fe7b:Fuel Only
+:fe7c:Take on fuel now, collect the prize later
+:fe8b:That was beautiful
+:fe8c:Hard Racing
+:fe8d:Speed Shots
+:fe8e:Extra Ball is lit
+:fe8f:Special is lit
+:fe91:There's a big payback at the end of this line
+:fe93:This driver's having a great season
+:fe96:We have a new champion
+:fe97:Victory Lap
+:fe98:Congratulations
+:fe99:Great shot
+:fe9a:That was perfect
+:fe9b:Beautiful
+:fe9c:Now that's how to drive
+:fe9d:Put the operator on hold, he's dialed in
+:fea1:He almost has it
+:fea2:Time is a factor
+:fea3:Time's running out
+:fea4:The garage is open
+:fea6:Careful
+:fea7:He's out of control
+:fea9:You just knew how that was gonna end up
+:feaa:You could see that coming from two turns back
+:feab:This is as intense as it gets
+:feac:Ten million
+:fead:Nine million
+:feae:Eight million
+:feaf:Seven million
+:feb0:Six million
+:feb1:Five million
+:feb2:Four million
+:feb3:Three million
+:feb4:Two million
+:feb5:One million
+:feb6:Ten
+:feb7:Nine
+:feb8:Eight
+:feb9:Seven
+:feba:Six
+:febb:Five
+:febc:Four
+:febd:Three
+:febe:Two
+:febf:One
+:fec0:Big points
+:fec2:This driver is unstopable
+:fed0:We're almost ready to race
+:fed1:an amazing finish
+:fed2:It's a beautiful day for racing
+:fed3:Big mess in turn 2
+:fed4:Can he do it again?
+:fed5:The checkered flag is out
+:fed6:The crowd is on its feet
+:fed7:This driver is the new points leader
+:fed8:Get the extra ball
+:fed9:This will very likely pay off down the road
+:feda:He'll make a quick pitstop here
+:fedb:Great job
+:fedc:He did it
+:fedd:He's coming up on the leader
+:fedf:It's a jungle out there
+:fee0:It's war out there
+:fee1:Last chance to tune up the cars
+:fee2:Magnificent
+:fee4:Nice shot
+:fee5:Now that's pretty special
+:fee6:One lap to go
+:fee7:The pit crew is having trouble
+:fee8:I'd rather be lucky than good
+:fee9:Stay right there
+:feea:Sweet
+:feeb:That's worth doing over
+:feec:That was some spectacular driving
+:feee:It's time for some hard racing
+:fef0:Welcome back
+:fef1:Welcome to final practice
+:fef2:Welcome to Grand Prix Pinball
+:fef3:There's always a party on the infield
+:fef4:Grand Prix fans sure know how to have a good time
+:fef5:Test beep
+:fef7:cymbal cymbal
+:fef8:beep beep
+:fef9:horns
+:fefa:slide
+:fefb:drum
