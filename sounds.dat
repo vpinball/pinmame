@@ -2275,13 +2275,13 @@ lotr:
 :fdf9:ping ping
 :fdfa:credit sound
 :fdfb:low drum
-:fe30: =They are the Nazgul
-:fe31: =He needs elvish medicine AAAh!
-:fe32: =ride hard
-:fe33: =you have my sword
-:fe35: =I do not :fear them
-:fe36: =if you want him come and claim him
-:fe37: =welcome
+:fe30:They are the Nazgul
+:fe31:He needs elvish medicine AAAh!
+:fe32:ride hard
+:fe33:you have my sword
+:fe35:I do not :fear them
+:fe36:if you want him come and claim him
+:fe37:welcome
 :fe38:this is indeed, gondor is done
 :fe39:this is no mine it's a tomb
 :fe3a:they have a cave troll
@@ -2922,6 +2922,399 @@ ripleys:
 :feEa:?
 :feEb:?
 :feEc:ooh ooh ooh ooh ooh ooh
+#
+#
+elvis:
+:fd02:Main Theme
+:fd03:ooh ooh ooh song (cc rider acoustic)
+:fd04:Blue Suede Shoes song (with lyrics)
+:fd05:CC Rider song (with lyrics)
+:fd06:horns CC Rider part 2
+:fd07:Hound Dog sound (with lyrics)
+:fd08:I'm All Shook Up (with lyrics)
+:fd09:Burning Love song (with lyrics)
+:fd0a:Heartbreak Hotel song (with lyrics)
+:fd0b:Jailhouse Rock (with lyrics)
+:fd0c:2001 Theme part 1
+:fd0d:2001 Theme part 2
+:fd0e:2001 Theme part 3
+:fd0f:2001 Theme part 4
+:fd10:hihat
+:fd11:drumroll/horns - needs break
+:fd12:end horn
+:fd14:Jailhouse Rock dum/bass start -needs break
+:fd15:Siren/Drunk Jam -needs break
+:fd16:Drunk Jam 2 -needs break
+:fd17:Drunk Jam 2 higher -needs break
+:fd18:Drunk Jam 2 even higher -needs break
+:fd19:Catchy rock (MIDI)
+:fd1a:Horns acoustic -repeats indefinately
+:fd1b:dance jam
+:fd1c:drums - long intro shakers/piccolo/horns
+:fd1d:Drunk Jam 3 (MIDI)
+:fd20:Piano jam
+:fd21:ex-ripleys victory type tune
+:fd22:ex-ripleys victory type tune 2
+:fd23:Piano Jam 2
+:fd24:complete
+:fd25:rolling drums -needs break
+:fd26:cymbal
+:fd27:yet another dance jam - same as FD03
+:fd28:Catchy rock intro piece (otherwise same as FD19)
+:fd3c:Error?  Plays a bunch of samples in sequence
+:fd3d:uh huh I'm bustin my s? - stops mid-sentence
+:fd40:Fireworks
+:fd41:Swoosh
+:fd42:Swoosh 2
+:fd43:Drum Drum
+:fd44:Higher Drum Drum
+:fd45:Even higher Drum Drum
+:fd46:drum drum, string
+:fd47:drum, higher string
+:fd48:Harp scale up
+:fd49:Nine Inch Nails type drum (from closer)
+:fd4a:gunshot
+:fd4b:gunshot 2
+:fd4c:explosion
+:fd4d:explosion +string
+:fd4e:string
+:fd4f:Harp scale down
+:fd50:Electric guittar +explosion and hihats
+:fd51:Electric guittar +explosion and hihats 2
+:fd52:rolling hubcap +explosion
+:fd53:scratching record up
+:fd54:door slam
+:fd55:complete 2 horns
+:fd56:aaah
+:fd57:higher aaah
+:fd58:even higher aaah
+:fd59:low low aaah
+:fd5a:medium low aaah
+:fd5b:high low aaah
+:fd5c:painful aaah
+:fd5d:higher painful aaah
+:fd5e:even higher painful aaah
+:fd5f:bark
+:fd60:bark 2
+:fd61:bark 3
+:fd62:woof
+:fd63:woof 2
+:fd64:woof 3 woof 3
+:fd65:big woof
+:fd66:big woof 2 big woof 2
+:fd67:big woof 3
+:fd68:big bark
+:fd69:big bark 2
+:fd6a:big bark 3
+:fd6b:"E" - these all remind me of "WHEEL OF FORTUNE!"
+:fd6c:"L"
+:fd6d:"V"
+:fd6e:"I"
+:fd6f:"S"  - yes there are 2 S's...
+:fd70:"ELVIS"
+:fd71:Screams 1
+:fd72:rolling medium drum
+:fd73:lower rolling medium drum
+:fd74:lowest rolling medium drum
+:fd75:yip yip
+:fd76:yip
+:fd77:low yip
+:fd78:lower yip
+:fd79:even lower yip
+:fd7a:even even lower yip
+:fd7b:yet another yip
+:fd7c:low yip low yip
+:fd7d:another low yip
+:fd7e:and again...much lower yip
+:fd7f:how low can you yip?  as low as this one?
+:fd80:and on and on, more low yips
+:fd81:same, but lower
+:fd82:same, but lower than that
+:fd83:same, lower than that one too
+:fd84:and again, lower
+:fd85:Michael Jackson style "Yow!" with backup music
+:fd86:Michael Jackson style "Yow!" with better backup completion music
+:fd87:Police siren
+:fd88:Police Siren +Jailhouse rock intro bass
+:fd89:Police Siren +completion music
+:fd8a:Police Siren +completion music 2
+:fd8b:twang down
+:fd8c:twang up +screams
+:fd8d:twang up higher
+:fd8e:swoosh upwards
+:fd8f:swoosh downwards
+:fd90:twang skid down
+:fd91:Complete 2
+:fd92:twang up + complete 2
+:fd93:zipper string up
+:fd94:bang
+:fd95:zipper string down
+:fd96:plasma +organ
+:fd97:synth down
+:fd98:synth serene
+:fd99:synth coaster
+:fd9a:synth note
+:fd9b:synth slide up
+:fd9c:bouncing drums
+:fd9d:WLVS station identification
+:fd9e:complete 3
+:fd9f:complete 4
+:fda0:jumping notes synth down
+:fda1:jumping notes synth up
+:fda2:complete 5
+:fda3:complete 6
+:fda4:complete 7
+:fda5:zap downwards
+:fda6:complete 8 +Screams
+:fda7:longer complete 8 +screams
+:fda8:Thankyou, you all are beautiful, thankyou very much, I'd like to do one more for you (screaming background)
+:fda9:complete 9
+:fdaa:complete 10
+:fdab:complete 11
+:fdac:Welcome to Graceland (with music complete backup)
+:fdad:Complete 12
+:fdae:Rising sliding synth scale +hit
+:fdaf:guittar (1)
+:fdb0:higher guittar (2)
+:fdb1:even higher guittar (3)
+:fdb2:even higher guittar (4)
+:fdb3:even higher guittar (5)
+:fdb4:rolling drum complete 13
+:fdb5:complete 14
+:fdb6:Crowd screams
+:fdb7:lower crowd screams
+:fdb8:noisy crowd screams
+:fdb9:reverb hit
+:fdba:high hit slide down
+:fdbb:rolling drums up
+:fdbc:snare drums
+:fdbd:slam door 2
+:fdbe:slam door 2 +rising sliding synth
+:fdbf:triple hit +harp
+:fdc0:high key guittar
+:fdc1:lower key guittar
+:fdc2:lower key guittar (2)
+:fdc3:lower key guittar (3)
+:fdc4:lower key guittar (4)
+:fdc5:lower key guittar (5)
+:fdc6:lower key guittar (6)
+:fdc7:lower key guittar (7)
+:fdc8:lower key guittar (8)
+:fdc9:lower key guittar (9)
+:fdca:lower key guittar (10)
+:fdcb:lower key guittar (11)
+:fdcc:lower key guittar (12)
+:fdcd:lower key guittar (13)
+:fdce:lower key guittar (14)
+:fdcf:lower key guittar (15)
+:fdd0:lower key guittar (16)
+:fdd1:lower key guittar (17)
+:fdd2:lower key guittar (18)
+:fdd3:lower key guittar (19)
+:fdd4:5 strums guittar (possible extra ball lit prelude)
+:fdd5:complete 15
+:fdd6:thunder
+:fdd7:thunder +guittar
+:fdd8:WLVS Station Identification (copy of FD9d)
+:fdd9:complete 16
+:fdda:complete 17
+:fddb:Doppler effect screams
+:fddc:bing synth
+:fddd:siren rising scale background
+:fdde:electric bass low
+:fddf:same as FDDe
+:fde0:choppy rising scale
+:fdf1:choppy falling scale
+:fdf6:speaker test tone
+:fdf8:diagnostic change menu
+:fdf9:diagnostic change selection ping
+:fdfa:diagnostic exit
+:fdfb:out of credits?
+:fdfc:low bass drums (diagnostic something)
+:fe30:Ladies and gentleman
+:fe31:an extra ball
+:fe32:Elvis Presley
+:fe33:The King of rock 'n roll
+:fe34:Elvis has left the building
+:fe36:It's the Elvis has left the building bonus
+:fe37:Thanks
+:fe38:Thankyou
+:fe39:You all are beautiful
+:fe3a:Thankyou very much
+:fe3b:Welcome to the show
+:fe3c:Shoot the hound dog
+:fe3d:Shoot the dog
+:fe3e:Let's shake it up
+:fe3f:Shake it up a bit
+:fe40:You can do anything you want to do baby, but hit that innter loop
+:fe41:Let's take it to the jailhouse
+:fe42:Room service at the Heartbreak hotel, hehe, you're on your own son
+:fe43:Pull back around you missed it that time
+:fe44:Checking in?
+:fe46:Yes?
+:fe47:You called?
+:fe48:Say what?
+:fe49:Welcome to Graceland
+:fe4b:The Billiard Room
+:fe4c:The Jungle Room
+:fe4d:The Music Room
+:fe4e:The Trophy Room
+:fe4f:The TV Room
+:fe50:Jam til dawn baby
+:fe51:Taking care of business...in a flash
+:fe52:TCB
+:fe53:Double Scoring
+:fe54:Man I just work here!
+:fe55:I plead innocent of all charges
+:fe56:Whoa oh oh oh start over
+:fe57:Do over baby
+:fe58:Come on up and get a scarf
+:fe59:Here you go
+:fe5a:This is for you
+:fe5b:Get the extra ball
+:fe5c:Get the special
+:fe5f:Play it again, man
+:fe60:Put it in the Heartbreak Hotel
+:fe61:Put it in the inner loop
+:fe62:Put it in the jailhouse
+:fe63:Put it in the left
+:fe64:Ramp
+:fe65:Loop
+:fe66:Put it in the right
+:fe67:You're doin' great
+:fe69:Two more
+:fe6a:One More Time
+:fe6b:Keep it up
+:fe6c:Let 'em have it
+:fe6d:Let 'er rip
+:fe6e:My boy my boy
+:fe6f:Hot damn
+:fe70:Beautiful
+:fe71:Fantastic
+:fe72:Great shot
+:fe73:Nicely done
+:fe75:Outstanding
+:fe76:That's amazing
+:fe77:Way to go
+:fe78:You're beautiful
+:fe79:You done this before
+:fe7a:Just missed it
+:fe7b:So close
+:fe7c:You'll get that later
+:fe7d:What went wrong?
+:fe7e:Hey, don't be cruel
+:fe7f:So you're lookin' for trouble?
+:fe80:Hehe who broke it?
+:fe82:Ten
+:fe83:Nine
+:fe84:Eight
+:fe85:Seven
+:fe86:Six
+:fe87:Five
+:fe88:Four
+:fe89:Three
+:fe8a:Two
+:fe8b:One
+:fe8c:See ya around kid
+:fe8d:I'd like to do one more for you
+:fe8f:Hit it
+:fe90:Take a lead man
+:fe91:WLVS
+:fe92:Elvis Radio
+:fe94:One
+:fe95:In the top ten this week
+:fe96:Coming in
+:fe97:at
+:fe98:number
+:fe99:Ten
+:fe9a:Nine
+:fe9b:Eight
+:fe9c:Seven
+:fe9d:Six
+:fe9e:Five
+:fe9f:Four
+:fea0:Three
+:fea1:Two
+:fea2:Moving up
+:fea3:Four
+:fea4:Three
+:fea5:Two
+:fea6:Places to
+:fea7:The top 10's number 1 hit is
+:fea8:All the way up to number 1
+:fea9:He's the king of the charts at number 1
+:feaa:A fool such as I
+:feab:Are you lonesome tonight
+:feac:Can't help falling in love
+:fead:Cryin' in the chapel
+:feae:Don't
+:feaf:Don't be cruel
+:feb0:Good luck charm
+:feb1:Guittar Man
+:feb2:His latest flame
+:feb3:In the ghetto
+:feb4:Love me tender
+:feb5:One night with you
+:feb6:Return to sender
+:feb7:rubber neckin'
+:feb8:She's not you
+:feb9:Surrender
+:feba:Suspicious minds
+:febb:Teddy bear
+:febc:This week's
+:febd:Way down
+:febf:Special
+:fec0:Replay
+:fec1:Ticket
+:fec2:Bump 'n win
+:fec3:Jackpot
+:fec4:Jackpot!
+:fec5:Super Jackpot!
+:fec6:Stay tuned for a special encore performance
+:fec8:Almost done
+:fec9:Door's always open at the Heartbreak Hotel
+:feca:Easy baby
+:fecb:Extra Ball
+:fecc:Extra Ball is lit
+:fecd:Good try man
+:fece:Good Shot
+:fecf:Great shootin'
+:fed0:Hit it man
+:fed1:Hurry
+:fed2:Hurry up
+:fed3:Just keep cool
+:fed4:That's a thing of beauty
+:fed5:Let's try that over, alright?
+:fed6:Let's try that again shall we?
+:fed7:Now that's taking care of business
+:fed8:Party at the jailhouse
+:fed9:Ready when you are
+:feda:Special is lit
+:fedb:Well done
+:fedc:Whoa, careful man
+:fedd:You just took this show off the air
+:fede:You just won an extra ball
+:fee0:Welcome to Graceland
+:fee1:Do over baby
+:fee2:You called?
+:fee3:Room service at the Heartbreak Hotel, hehe You're on your own son
+:fee4:Put it in the Heartbreak Hotel
+:fee5:Put it in the Jailhouse
+:fee6:Put it in the inner loop
+:fee7:Eight
+:fee8:Ten
+:fee9:One
+:feea:Elvis Radio
+:feeb:WLVS
+:feec:Get the Extra Ball
+:feed:Get the Special
+:feee:Put it in the Heartbreak Hotel
+:feef:Five
+:fef0:Put it in the Heartbreak Hotel
+:fef1:Put it in the Jailhouse
+:fef2:Ten
+:fef3:Get the Special
+:fef4:Heartbreak Hotel MUSIC (Plus singing)
 #
 #
 sopranos:
