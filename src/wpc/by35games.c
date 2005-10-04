@@ -422,7 +422,7 @@ BY35_ROMEND
 #define input_ports_slbmania input_ports_by35
 CORE_GAMEDEFNV(slbmania,"Silverball Mania",1980,"Bally",by35_mBY35_51S,0)
 
-INITGAME(slbmanib,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
+INITGAME(slbmanib,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
 BY35_ROMSTARTx00(slbmanib,"silv2732.u2", CRC(2687a4bc) SHA1(88eb8f793d44b820a0e79789db8cd48eec451c73),
                           "720-3532.u6b",CRC(b5e6a3d5) SHA1(fa1593eeed449dbac87965e613b501108a015eb2))
 BY51_SOUNDROM8(           "786-11_4.716",CRC(2a3641e6) SHA1(64693d424277e2aaf5fd4af33b2d348a8a455448))
