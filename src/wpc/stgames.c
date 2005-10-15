@@ -46,6 +46,15 @@ BY35_ROMEND
 #define input_ports_st_game input_ports_st
 CORE_GAMEDEFNV(st_game,"Unknown Game",198?,"Unknown Manufacturer",by35_mAstro,GAME_NOT_WORKING)
 
+/*--------------------------------
+/ Gamatron (Pinstar game, 1985)
+/-------------------------------*/
+INITGAME(gamatron,GEN_STMPU200,dispst6,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+PS_ROMSTART8K(gamatron,"gamatron.764",CRC(fa9f7676) SHA1(8c56868eb6af7bb8ad73523ab6583100fcadc3c1))
+BY35_ROMEND
+#define input_ports_gamatron input_ports_st
+CORE_GAMEDEFNV(gamatron,"Gamatron",1985,"Pinstar",by35_mST200,0)
+
 /****************************************************/
 /* STERN MPU-100 (almost identical to Bally MPU-17) */
 /****************************************************/

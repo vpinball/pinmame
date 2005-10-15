@@ -297,6 +297,11 @@ DRIVER(gnr,300)         //Data East MPU: 07/94 Guns N Roses
 //MISC
 DRIVERNV(detest)        //Data East MPU: ??/?? DE Test Chip
 
+// ---------------
+// GAMATRON GAMES
+// ---------------
+DRIVERNV(gamatron)      //Pinstar Gamatron (December 85)
+
 // -------------------
 // GAME PLAN GAMES
 // -------------------
@@ -920,6 +925,7 @@ DRIVER(lsrcu,l2)        //S7-520:   02/84 W Laser Cue
 DRIVER(strlt,l1)        //S7-530:   06/84 W Star Light (Came out after System 9 produced)
 //System 9
 DRIVER(pfevr,p3)        //S9-526:   05/84 W Pennant Fever (pitch & bat)
+DRIVER(pfevr,l2)        //S9-526:   05/84 W Pennant Fever (pitch & bat)
                         //S?-538:   10/84 W Gridiron
 DRIVER(sshtl,l7)        //S9-535:   12/84 W Space Shuttle
 DRIVER(szone,l2)        //S9-916:   ??/84 W Strike Zone (L-2) (Shuffle)
@@ -1240,6 +1246,7 @@ DRIVERNV(robot)         //01/85 Robot
 DRIVERNV(robotg)        //01/85 Robot (German speech)
 DRIVERNV(clown)         //07/85 Clown
 DRIVERNV(poolcham)      //12/85 Pool Champion
+DRIVERNV(poolchap)      //12/85 Pool Champion (alternate sound)
 DRIVERNV(bbeltzac)      //??/86 Blackbelt
 DRIVERNV(mexico)        //??/86 Mexico '86
 DRIVERNV(zankor)        //??/86 Zankor
