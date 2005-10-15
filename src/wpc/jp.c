@@ -16,6 +16,7 @@
 		SOUND:	 AY8910 @ 2 MHz on CPU board,
 		         Z80 CPU with DAC? on separate board.
  ************************************************************************************************/
+//Games: Aqualand 1986, Olympus 1986
 
 #include "driver.h"
 #include "cpu/z80/z80.h"
