@@ -443,6 +443,15 @@
       ROM_LOAD(  n2, 0x1800, 0x0800, chk2) \
 	    ROM_RELOAD(  0xf800, 0x0800)
 
+#define PS_ROMSTART8K(name,n1,chk1) \
+  ROM_START(name) \
+    NORMALREGION(0x10000, BY35_CPUREGION) \
+      ROM_LOAD(  n1, 0x1000, 0x0800, chk1) \
+      ROM_CONTINUE(  0x5000, 0x0800) \
+      ROM_CONTINUE(  0x1800, 0x0800) \
+      ROM_CONTINUE(  0x5800, 0x0800) \
+	    ROM_RELOAD(  0xe000, 0x2000)
+
 #define BY35_ROMEND ROM_END
 #define BY17_ROMEND ROM_END
 #define ST200_ROMEND ROM_END
