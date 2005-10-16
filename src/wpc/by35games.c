@@ -516,6 +516,20 @@ BY51_SOUNDROM8(           "823-02_4.716",CRC(d1037b20) SHA1(8784728540573be5e8eb
 BY35_ROMEND
 #define input_ports_skatebll input_ports_by35
 CORE_GAMEDEFNV(skatebll,"Skateball",1980,"Bally",by35_mBY35_51S,0)
+
+
+/*--------------------------------
+/ Skateball custom rom rev 3
+/-------------------------------*/
+INITGAME2(skateblb,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY51,0)
+BY35_ROMSTARTx00(skateblb,"skate02.u2",CRC(91607e8a) SHA1(00d4ff84acc594037b8b90504af11ff648f8d746),
+                          "skate02.u6",CRC(b93e27c7) SHA1(86feb778571cb507c2059acc08101e1eb1c7a26e))
+BY51_SOUNDROM8(           "823-02_4.716",CRC(d1037b20) SHA1(8784728540573be5e8ebb940ec0046b778f9413b))
+BY35_ROMEND
+#define input_ports_skateblb input_ports_skatebll
+CORE_CLONEDEFNV(skateblb,skatebll,"Skateball (alternate set rev. 3)",2005,"Bally / Oliver",by35_mBY35_51S,0)
+
+
 /*--------------------------------
 / Frontier
 /-------------------------------*/
