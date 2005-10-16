@@ -132,6 +132,7 @@ DRIVERNV(hotdoggb)      //BY35:     11/02 Hotdoggin' (7-digit conversion)
 DRIVERNV(viking  )      //BY35-802: 12/79 Viking
 DRIVERNV(vikingb )      //BY35:     11/02 Viking (7-digit conversion)
 DRIVERNV(skatebll)      //BY35-823: 04/80 Skateball
+DRIVERNV(skateblb)      //BY35      09/05 Skateball (rev. 3)
 DRIVERNV(frontier)      //BY35-819: 05/80 Frontier
 DRIVERNV(flashgdn)      //BY35-834: 05/80 Flash Gordon
 DRIVERNV(flashgdv)      //BY35-834: 05/80 Flash Gordon (Vocalizer sound)
