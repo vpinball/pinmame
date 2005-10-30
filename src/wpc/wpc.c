@@ -54,6 +54,10 @@ static SWITCH_UPDATE(wpc);
 /*------------------------
 /  DMD display registers
 /-------------------------*/
+#define DMD_PAGE3000    (0x3fb9 - WPC_BASE)
+#define DMD_PAGE3200    (0x3fb8 - WPC_BASE)
+#define DMD_PAGE3400    (0x3fbb - WPC_BASE)
+#define DMD_PAGE3600    (0x3fba - WPC_BASE)
 #define DMD_PAGE3A00    (0x3fbc - WPC_BASE)
 #define DMD_PAGE3800    (0x3fbe - WPC_BASE)
 #define DMD_VISIBLEPAGE (0x3fbf - WPC_BASE)
@@ -101,11 +105,16 @@ static struct {
 /*-- pointers --*/
 static mame_file *wpc_printfile = NULL;
 static UINT8 *wpc_ram = NULL;
+
 /*---------------------------
 /  Memory map for CPU board
 /----------------------------*/
 static MEMORY_READ_START(wpc_readmem)
-  { 0x0000, 0x37ff, MRA_RAM },
+  { 0x0000, 0x2fff, MRA_RAM },
+  { 0x3000, 0x31ff, MRA_BANK4 },  /* DMD */
+  { 0x3200, 0x33ff, MRA_BANK5 },  /* DMD */
+  { 0x3400, 0x35ff, MRA_BANK6 },  /* DMD */
+  { 0x3600, 0x37ff, MRA_BANK7 },  /* DMD */
   { 0x3800, 0x39ff, MRA_BANK2 },  /* DMD */
   { 0x3A00, 0x3bff, MRA_BANK3 },  /* DMD */
   { 0x3c00, 0x3faf, MRA_RAM },
@@ -115,9 +124,13 @@ static MEMORY_READ_START(wpc_readmem)
 MEMORY_END
 
 static MEMORY_WRITE_START(wpc_writemem)
-  { 0x0000, 0x37ff, wpc_ram_w, &wpc_ram },
-  { 0x3800, 0x39ff, MWA_BANK2 },
-  { 0x3A00, 0x3bff, MWA_BANK3 },
+  { 0x0000, 0x2fff, wpc_ram_w, &wpc_ram },
+  { 0x3000, 0x31ff, MWA_BANK4 },  /* DMD */
+  { 0x3200, 0x33ff, MWA_BANK5 },  /* DMD */
+  { 0x3400, 0x35ff, MWA_BANK6 },  /* DMD */
+  { 0x3600, 0x37ff, MWA_BANK7 },  /* DMD */
+  { 0x3800, 0x39ff, MWA_BANK2 },  /* DMD */
+  { 0x3A00, 0x3bff, MWA_BANK3 },  /* DMD */
   { 0x3c00, 0x3faf, MWA_RAM },
   { 0x3fb0, 0x3fff, wpc_w, &wpc_data },
   { 0x8000, 0xffff, MWA_ROM },
@@ -342,7 +355,6 @@ READ_HANDLER(wpc_r) {
       struct tm *systime;
       time(&now);
       systime = localtime(&now);
-
       return (systime->tm_min);
     }
     case WPC_WATCHDOG:
@@ -357,6 +369,10 @@ READ_HANDLER(wpc_r) {
       return 0;
     case DMD_VISIBLEPAGE:
       break;
+    case DMD_PAGE3000:
+    case DMD_PAGE3200:
+    case DMD_PAGE3400:
+    case DMD_PAGE3600:
     case DMD_PAGE3800:
     case DMD_PAGE3A00:
       return 0; /* these can't be read */
@@ -470,6 +486,14 @@ WRITE_HANDLER(wpc_w) {
     case WPC_IRQACK:
       cpu_set_irq_line(WPC_CPUNO, M6809_IRQ_LINE, CLEAR_LINE);
       break;
+    case DMD_PAGE3000: /* set the page that is visible at 0x3000 */
+      cpu_setbank(4, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
+    case DMD_PAGE3200: /* set the page that is visible at 0x3200 */
+      cpu_setbank(5, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
+    case DMD_PAGE3400: /* set the page that is visible at 0x3400 */
+      cpu_setbank(6, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
+    case DMD_PAGE3600: /* set the page that is visible at 0x3600 */
+      cpu_setbank(7, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
     case DMD_PAGE3800: /* set the page that is visible at 0x3800 */
       cpu_setbank(2, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
     case DMD_PAGE3A00: /* set the page that is visible at 0x3A00 */
@@ -598,6 +622,13 @@ static MACHINE_INIT(wpc) {
   int romLength = memory_region_length(WPC_ROMREGION);
 
   memset(&wpclocals, 0, sizeof(wpclocals));
+
+  // map dmd banks to standard ram for games that don't use it
+  cpu_setbank(4, memory_region(WPC_CPUREGION) + 0x3000);
+  cpu_setbank(5, memory_region(WPC_CPUREGION) + 0x3200);
+  cpu_setbank(6, memory_region(WPC_CPUREGION) + 0x3400);
+  cpu_setbank(7, memory_region(WPC_CPUREGION) + 0x3600);
+
   switch (core_gameData->gen) {
     case GEN_WPCALPHA_1:
       sndbrd_0_init(SNDBRD_S11CS, 1, memory_region(S11CS_ROMREGION),NULL,NULL);
@@ -662,7 +693,7 @@ static MACHINE_STOP(wpc) {
 /-------------------------------------------------*/
 static NVRAM_HANDLER(wpc) {
   core_nvram(file, read_or_write, wpc_ram,
-             (core_gameData->gen & (GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS)) ? 0x3800 : 0x2000,0xff);
+             (core_gameData->gen & (GEN_WPCDCS | GEN_WPCSECURITY | GEN_WPC95 | GEN_WPC95DCS)) ? 0x3000 : 0x2000,0xff);
 }
 
 static void wpc_serialCnv(const char no[21], UINT8 pic[16], UINT8 code[3]) {
@@ -749,4 +780,3 @@ PINMAME_VIDEO_UPDATE(wpcdmd_update) {
   video_update_core_dmd(bitmap, cliprect, dotCol, layout);
   return 0;
 }
-
