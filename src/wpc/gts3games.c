@@ -7,8 +7,7 @@
 /* ROM STATUS
 N = No Lead, L = Have a Lead on Rom
 -----------------------------------------------
-(N)Bell Ringer 1990
-(N)Hoops 1991
+(L)Hoops 1991
 (?)Brooks & Dunn 1996 (display, sound)
 */
 
@@ -104,10 +103,13 @@ CORE_CLONEDEFNV(lca2,lca,"Lights, Camera, Action (rev.2)",1989,"Gottlieb",mGTS3S
 /*-------------------------------------------------------------------
 / Bell Ringer
 /-------------------------------------------------------------------*/
-INITGAME(bellring, ALPHA, FLIP_SW(FLIP_L), 3/*?*/, SNDBRD_NONE, 5)
-GTS3ROMSTARTX(bellring,	"gprom.bin",NO_DUMP)
+INITGAME(bellring, ALPHA, FLIP_SW(FLIP_L), 1, SNDBRD_GTS3, 4)
+//INITGAME(bellring, ALPHA, FLIP_SW(FLIP_L), 3/*?*/, SNDBRD_NONE, 5)
+GTS3ROMSTART(bellring,	"br_gprom.bin",CRC(a9a59b36) SHA1(ca6d0e54a5c85ef72485975c632660831a3b8c82))
+GTS3SOUND3232(			"br_yrom1.bin",CRC(d5aab379) SHA1(b3995f8aa2e54f91f2a0fd010c807fbfbf9ae847),
+						"br_drom1.bin",CRC(99f38229) SHA1(f63d743e63e88728e8d53320b21b2fda1b6385f8))
 GTS3_ROMEND
-CORE_GAMEDEFNV(bellring,"Bell Ringer",1990,"Gottlieb",mGTS3,GAME_NO_SOUND)
+CORE_GAMEDEFNV(bellring,"Bell Ringer",1990,"Gottlieb",mGTS3S80B,0)
 
 /*-------------------------------------------------------------------
 / Silver Slugger (#722)
