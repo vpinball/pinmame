@@ -20,6 +20,8 @@
     COREPORT_BITDEF(  0x0040, IPT_COIN3,          KEYCODE_4) \
     COREPORT_BIT(     0x0008, "Ball Tilt",        KEYCODE_INSERT) \
     COREPORT_BIT(     0x0004, "Reset",            KEYCODE_0) \
+    COREPORT_BIT(     0x0002, "Extra 1",          KEYCODE_8) \
+    COREPORT_BIT(     0x0001, "Extra 2",          KEYCODE_9) \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
       COREPORT_DIPSET(0x0000, "0" ) \
