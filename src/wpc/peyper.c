@@ -58,16 +58,16 @@ static INTERRUPT_GEN(PEYPER_vblank) {
 
 static SWITCH_UPDATE(PEYPER) {
   if (inports) {
-    CORE_SETKEYSW(inports[CORE_COREINPORT], 0xfc, 0);
+    CORE_SETKEYSW(inports[CORE_COREINPORT], 0xff, 0);
   }
 }
 
 static int PEYPER_sw2m(int no) {
-  return 1 + 8 * (no / 10) + (no % 10);
+  return no + 8;
 }
 
 static int PEYPER_m2sw(int col, int row) {
-  return (col-1)*10 + row;
+  return (col - 1) * 8 + row;
 }
 
 static READ_HANDLER(dip_r) {
