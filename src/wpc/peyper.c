@@ -63,11 +63,11 @@ static SWITCH_UPDATE(PEYPER) {
 }
 
 static int PEYPER_sw2m(int no) {
-  return no + 8;
+  return no < 10 ? 8 + no : 8 + (no / 10) * 8 + (no % 10);
 }
 
 static int PEYPER_m2sw(int col, int row) {
-  return (col - 1) * 8 + row;
+  return (col - 1) * 10 + row;
 }
 
 static READ_HANDLER(dip_r) {
