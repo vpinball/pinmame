@@ -1168,13 +1168,13 @@ CORE_CLONEDEFNV(term3i,term3,"Terminator 3: Rise of the Machines (Italy)",2003,"
 // All games below now using a new CPU/Sound board (520-5300-00) with an Atmel AT91 (ARM7DMI Variant) CPU for sound
 
 /*-------------------------------------------------------------------
-/ The Lord Of The Rings (9.00)
+/ The Lord Of The Rings (10.00)
 /-------------------------------------------------------------------*/
 static core_tGameData lotrGameData = { \
   GEN_WS, se_dmd128x32, {FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L), 0, 5, 0, 0, SE_LED}}; \
 static void init_lotr(void) { core_gameData = &lotrGameData; }
-SE128_ROMSTART(lotr, "lotrcpu.900", CRC(eff1ab83) SHA1(cd9cfa3fa150224e44078602db7d8bbfe223b926))
-DE_DMD32ROM8x(      "lotrdspa.900", CRC(2b1debd3) SHA1(eab1ffa7b5111bf224c47688bb6c0f40ee6e12fb))
+SE128_ROMSTART(lotr, "lotrcpua.a00", CRC(00e43b70) SHA1(7100da644a1b166051915870d01cfa6baaf87293))
+DE_DMD32ROM8x(      "lotrdspa.a00", CRC(99634603) SHA1(c40d1480e5df10a491bcd471c6a3a118a9120bcb))
 DE3S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56a6ac29fce1c7082e470),
                          "lotr-u17.100",CRC(d503969d) SHA1(65a4313ca1b93391260c65fef6f878d264f9c8ab),
                          "lotr-u21.100",CRC(8b3f41af) SHA1(9b2d04144edeb499b4ae68a97c65ccb8ef4d26c0),
@@ -1182,13 +1182,13 @@ DE3S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56
                          "lotr-u37.100",CRC(8e637a6f) SHA1(8087744ce36fc143381d49a312c98cf38b2f9854))
 SE_ROMEND
 #define input_ports_lotr input_ports_se
-CORE_GAMEDEFNV(lotr,"Lord Of The Rings, The (9.00)",2003,"Stern",de_mSES3,GAME_NOCRC)
+CORE_GAMEDEFNV(lotr,"Lord Of The Rings, The (10.00)",2003,"Stern",de_mSES3,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / The Lord Of The Rings (Spain)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(lotr_sp, "lotrcpul.900", CRC(155b5d5b) SHA1(c032e3828ed256240a5155ec4c7820d615a2cbe1))
-DE_DMD32ROM8x(          "lotrdspl.900", CRC(00f98242) SHA1(9a0e7e572e209b20691392a694a524192daa0d2a))
+SE128_ROMSTART(lotr_sp, "lotrcpul.a00", CRC(c62aba47) SHA1(2fef599313e5cd9bded3ab00b933631586e2a1e7))
+DE_DMD32ROM8x(          "lotrdspl.a00", CRC(2494a5ee) SHA1(5b95711858d88eeb445503cac8b9b754cf8e9960))
 DE3S_SOUNDROM18888(      "lotrlu7.100", CRC(980d970a) SHA1(cf70deddcc146ef9eaa64baec74ae800bebf8715),
                          "lotrlu17.100",CRC(c16d3e20) SHA1(43d9f186db361abb3aa119a7252f1bb13bbbbe39),
                          "lotrlu21.100",CRC(f956a1be) SHA1(2980e85463704a154ed81d3241f866442d1ea2e6),
@@ -1202,8 +1202,8 @@ CORE_CLONEDEFNV(lotr_sp,lotr,"Lord Of The Rings, The (Spain)",2003,"Stern",de_mS
 /*-------------------------------------------------------------------
 / The Lord Of The Rings (Germany)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(lotr_gr, "lotrcpu.900", CRC(eff1ab83) SHA1(cd9cfa3fa150224e44078602db7d8bbfe223b926))
-DE_DMD32ROM8x(         "lotrdspg.900", CRC(f5fdd2c2) SHA1(0c5f1b1efe3d38063e2327e2ccfe40936f3988b8))
+SE128_ROMSTART(lotr_gr, "lotrcpua.a00", CRC(00e43b70) SHA1(7100da644a1b166051915870d01cfa6baaf87293))
+DE_DMD32ROM8x(         "lotrdspg.a00", CRC(6743a910) SHA1(977773515f00af3937aa59426917e8111ec855ab))
 DE3S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56a6ac29fce1c7082e470),
                          "lotr-u17.100",CRC(d503969d) SHA1(65a4313ca1b93391260c65fef6f878d264f9c8ab),
                          "lotr-u21.100",CRC(8b3f41af) SHA1(9b2d04144edeb499b4ae68a97c65ccb8ef4d26c0),
@@ -1217,8 +1217,8 @@ CORE_CLONEDEFNV(lotr_gr,lotr,"Lord Of The Rings, The (Germany)",2003,"Stern",de_
 /*-------------------------------------------------------------------
 / The Lord Of The Rings (France)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(lotr_fr, "lotrcpu.900", CRC(eff1ab83) SHA1(cd9cfa3fa150224e44078602db7d8bbfe223b926))
-DE_DMD32ROM8x(         "lotrdspf.900", CRC(f2d8296e) SHA1(3eb6e1e6ba299b720816bf165b1e20e02f6c0c1e))
+SE128_ROMSTART(lotr_fr, "lotrcpua.a00", CRC(00e43b70) SHA1(7100da644a1b166051915870d01cfa6baaf87293))
+DE_DMD32ROM8x(         "lotrdspf.a00", CRC(15c26c2d) SHA1(c8e4b442d717aa5881f3d92f044c44d29a14126c))
 DE3S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56a6ac29fce1c7082e470),
                          "lotr-u17.100",CRC(d503969d) SHA1(65a4313ca1b93391260c65fef6f878d264f9c8ab),
                          "lotr-u21.100",CRC(8b3f41af) SHA1(9b2d04144edeb499b4ae68a97c65ccb8ef4d26c0),
@@ -1232,8 +1232,8 @@ CORE_CLONEDEFNV(lotr_fr,lotr,"Lord Of The Rings, The (France)",2003,"Stern",de_m
 /*-------------------------------------------------------------------
 / The Lord Of The Rings (Italy)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(lotr_it, "lotrcpu.900", CRC(eff1ab83) SHA1(cd9cfa3fa150224e44078602db7d8bbfe223b926))
-DE_DMD32ROM8x(         "lotrdspi.900", CRC(a09407d7) SHA1(2cdb70ee0bae7f67f4bf12b0dd3e6cf574087e3d))
+SE128_ROMSTART(lotr_it, "lotrcpua.a00", CRC(00e43b70) SHA1(7100da644a1b166051915870d01cfa6baaf87293))
+DE_DMD32ROM8x(         "lotrdspi.a00", CRC(6c88f395) SHA1(365d5c6908f5861816b73f287194c85d2300635d))
 DE3S_SOUNDROM18888(      "lotr-u7.101", CRC(ba018c5c) SHA1(67e4b9729f086de5e8d56a6ac29fce1c7082e470),
                          "lotr-u17.100",CRC(d503969d) SHA1(65a4313ca1b93391260c65fef6f878d264f9c8ab),
                          "lotr-u21.100",CRC(8b3f41af) SHA1(9b2d04144edeb499b4ae68a97c65ccb8ef4d26c0),
@@ -1326,11 +1326,11 @@ SE_ROMEND
 CORE_CLONEDEFNV(ripleysl,ripleys,"Ripley's Believe It or Not! (Spain)",2004,"Stern",de_mSES3,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ Elvis (4.00)
+/ Elvis (5.00)
 /-------------------------------------------------------------------*/
 INITGAME(elvis,GEN_WS,se_dmd128x32,SE_LED)
-SE128_ROMSTART(elvis, "elvscpua.400", CRC(385be9ed) SHA1(c25b54a9b52bece17de9c394c019a4d2649bcf47))
-DE_DMD32ROM8x(        "elvsdspa.401", CRC(fb08d5c3) SHA1(03f9886381d32bfd012a2663d2b7331a76c8c1c0))
+SE128_ROMSTART(elvis, "elvscpua.500", CRC(aae9d65d) SHA1(d6e789f7257448e97697c406561c14a0abc45187))
+DE_DMD32ROM8x(        "elvsdspa.500", CRC(76a672cb) SHA1(8a9d4ac9538f0f91f2e95800147478cbaeb152a5))
 DE3SA_SOUNDROM18888(  "elvis.u7", CRC(1df6c1b5) SHA1(7a9ebfc555e54ce92ad140ac6fcb82d9848ad8a6),
                       "elvis.u17",CRC(ff032897) SHA1(bf347c26a450bc07cdc94fc582dedf3a0cdc2a1b),
                       "elvis.u21",CRC(c3c19a40) SHA1(97f7f36eed62ca389c770bf5d746721724e17250),
@@ -1338,13 +1338,13 @@ DE3SA_SOUNDROM18888(  "elvis.u7", CRC(1df6c1b5) SHA1(7a9ebfc555e54ce92ad140ac6fc
                       "elvis.u37",CRC(88ba0966) SHA1(43ea198c9fcdc1c396d4180308042c6c08311829))
 SE_ROMEND
 #define input_ports_elvis input_ports_se
-CORE_GAMEDEFNV(elvis,"Elvis (4.00)",2004,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
+CORE_GAMEDEFNV(elvis,"Elvis (5.00)",2004,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Elvis (Spain)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(elvisl, "elvscpul.400", CRC(536d4e3c) SHA1(3470ffdc32dbce9142dab82c25915d617e1429e6))
-DE_DMD32ROM8x(         "elvsdspl.401", CRC(57fc6ed2) SHA1(3349a56ce38ab4ffdf1469bac8dbc9d08c077f6e))
+SE128_ROMSTART(elvisl, "elvscpul.500", CRC(d6813d67) SHA1(863a1b5bc62eca218f64d9bae24b205e1a8e2b6c))
+DE_DMD32ROM8x(         "elvsdspl.500", CRC(68946b3b) SHA1(5764a5f6779097acfcf82eb176f6d966f6bb6988))
 DE3SA_SOUNDROM18888(   "elvisl.u7", CRC(f0d70ee6) SHA1(9fa2c9d7b3690ec0c17645be066496d6833da5d1),
                        "elvisl.u17",CRC(2f86bcda) SHA1(73972fd30e84a2f97478f076cc8771c501440be5),
                        "elvisl.u21",CRC(400c7174) SHA1(a4fa0d51b7c11e70f6b93068a6bf859cdf3359c3),
@@ -1358,8 +1358,8 @@ CORE_CLONEDEFNV(elvisl,elvis,"Elvis (Spain)",2004,"Stern",de_mSES3,GAME_IMPERFEC
 /*-------------------------------------------------------------------
 / Elvis (Germany)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(elvisg, "elvscpug.400", CRC(c5992b96) SHA1(0e8c285b76374daad17017994cd9d8e68a98ba42))
-DE_DMD32ROM8x(         "elvsdspg.401", CRC(a694f642) SHA1(a44febcc08445f53aa96b0c791a636d541cebb97))
+SE128_ROMSTART(elvisg, "elvscpug.500", CRC(1582dd3a) SHA1(9a5d044dbad03e3ec2358ef16d983195761cb17b))
+DE_DMD32ROM8x(         "elvsdspg.500", CRC(4b6e7d37) SHA1(259a5d0d11392f05504d4477cf03f2a270db670c))
 DE3SA_SOUNDROM18888(   "elvisg.u7", CRC(1085bd7c) SHA1(2c34ee7d7c44906b0894c0c01b0fad74cb0d2a32),
                        "elvisg.u17",CRC(8b888d75) SHA1(b8c654d0fb558c205c338be2b458cbf931b23bac),
                        "elvisg.u21",CRC(79955b60) SHA1(36ad9e487408c9fd26641d484490b1b3bc8e1194),
@@ -1373,8 +1373,8 @@ CORE_CLONEDEFNV(elvisg,elvis,"Elvis (Germany)",2004,"Stern",de_mSES3,GAME_IMPERF
 /*-------------------------------------------------------------------
 / Elvis (France)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(elvisf, "elvscpuf.400", CRC(9ae4f3c4) SHA1(5ec1590ca54f36565953467226a85491a96d2d3c))
-DE_DMD32ROM8x(         "elvsdspf.401", CRC(1ddd1823) SHA1(86c2bacb596265a28a4b6dce3cd47ed5a2cf74d7))
+SE128_ROMSTART(elvisf, "elvscpuf.500", CRC(e977fdb0) SHA1(aa24b4e6c461188b330bbc01204af8bfb03a9abf))
+DE_DMD32ROM8x(         "elvsdspf.500", CRC(e4ce2da7) SHA1(030d9200844fc47d5ea6c4afeab0851de5b42b23))
 DE3SA_SOUNDROM18888(   "elvisf.u7", CRC(84a057cd) SHA1(70e626f13a164df184dc5b0c79e8d320eeafb13b),
                        "elvisf.u17",CRC(9b13e40d) SHA1(7e7eac1be5cbc7bde4296d168a1cc0716bcb293a),
                        "elvisf.u21",CRC(5b668b6d) SHA1(9b104af5df5cc21c2504760b119f3e6584a1871b),
@@ -1388,8 +1388,8 @@ CORE_CLONEDEFNV(elvisf,elvis,"Elvis (France)",2004,"Stern",de_mSES3,GAME_IMPERFE
 /*-------------------------------------------------------------------
 / Elvis (Italy)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(elvisi, "elvscpui.400", CRC(dd2876fc) SHA1(3b860ad176e3fda58be1f165fc2f9965f36259ef))
-DE_DMD32ROM8x(         "elvsdspi.401", CRC(51f92cec) SHA1(a678dcb29f867b07641f39f5e0a9bf0e5daf9dc3))
+SE128_ROMSTART(elvisi, "elvscpui.500", CRC(11bafdbb) SHA1(51036cdf4beda20f2680fff7cd8cae25219406bd))
+DE_DMD32ROM8x(         "elvsdspi.500", CRC(3ecbadb2) SHA1(589cf6de348359944585b718b2289dd70676807a))
 DE3SA_SOUNDROM18888(   "elvisi.u7", CRC(8c270da4) SHA1(6a21332fdd1f2714aa78a1730e0f90159022ad1c),
                        "elvisi.u17",CRC(bd2e6580) SHA1(dc8c974860498d5766dbb0881cc9d6866c9a98a1),
                        "elvisi.u21",CRC(1932a22b) SHA1(864d6bc2c60e763431fd19511dc1a946cf131d63),
@@ -1401,26 +1401,26 @@ SE_ROMEND
 CORE_CLONEDEFNV(elvisi,elvis,"Elvis (Italy)",2004,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ The Sopranos (3.00)
+/ The Sopranos (5.00)
 /-------------------------------------------------------------------*/
 INITGAME(sopranos,GEN_WS,se_dmd128x32,SE_LED)
-SE128_ROMSTART(sopranos, "sopcpua.300", CRC(cca0e551) SHA1(ef109b871605879b55abb966d6736d7deeca404f))
-DE_DMD32ROM8x(      "sopdspa.300", CRC(aa6306ac) SHA1(80737bd2b93bfc64490d07d2cd482350ed3303b3))
-DE3SA_SOUNDROM18888("sopsnda.u7",  CRC(b22ba5aa) SHA1(8f69932e3b115ae7a6bcb9a15a8b5bf6579e94e0),
+SE128_ROMSTART(sopranos, "sopcpua.500", CRC(e3430f28) SHA1(3b942922087cca41701ef70fbc84baaffe8da90d))
+DE_DMD32ROM8x(      "sopdspa.500", CRC(170bd8d1) SHA1(df8d240425ac2c1aa4bea560ecdd3d64120faeb7))
+DE3SC_SOUNDROM18888("sopsnda.u7",  CRC(47817240) SHA1(da2ff205fb5fe732514e7aa312ff552ecd4b31b7),
                     "sopsnda.u17", CRC(21e0cfd2) SHA1(d2ff1242f1f4a206e0b2884c079ef2be5df143ac),
-                    "sopsnda.u21", CRC(257ab09d) SHA1(1d18e279139b1658ce02160d9a37b4bf043393f0),
-                    "sopsnda.u36", CRC(db33b45c) SHA1(d3285008a3c770371389be470c1ec5ca49c1e568),
-                    "sopsnda.u37", CRC(06a2a6e1) SHA1(fdbe622223724ac2b4c5183c43d3e635654864bf))
+                    "sopsnda.u21", CRC(10669399) SHA1(6ad31c91ba3c772f7a79e4408a4422332243c7d1),
+                    "sopsnda.u36", CRC(f3535025) SHA1(3fc22af5db0a8b744c0513e24a6331c9cf82e3ed),
+                    "sopsnda.u37", CRC(4b67fe8a) SHA1(b980b9705b4a41a0524b3b0095d6398bdbed609f))
 SE_ROMEND
 #define input_ports_sopranos input_ports_se
-CORE_GAMEDEFNV(sopranos,"Sopranos, The (3.00)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
+CORE_GAMEDEFNV(sopranos,"Sopranos, The (5.00)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / The Sopranos (Germany)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(sopranog, "sopcpug.300", CRC(acfa9c83) SHA1(8a31b1008097ff86930b2c946c2777511efc8f9a))
-DE_DMD32ROM8x(      "sopdspg.300", CRC(9fa4f9d6) SHA1(86af57435d3d33f8686a56ac59e411f2cb69f565))
-DE3SA_SOUNDROM18888("sopsndg.u7",  CRC(bb615e03) SHA1(ce5ef766376c060fc071d54aa878d69b3aa30294),
+SE128_ROMSTART(sopranog, "sopcpug.500", CRC(e6317603) SHA1(2e7f49cd77f65d0af08ab503fc82ec56c8890926))
+DE_DMD32ROM8x(      "sopdspg.500", CRC(d8f365e9) SHA1(395209169e023913bf0bf3c3837e9a1b6b636e75))
+DE3SC_SOUNDROM18888("sopsndg.u7",  CRC(bb615e03) SHA1(ce5ef766376c060fc071d54aa878d69b3aa30294),
                     "sopsndg.u17", CRC(cfa7fca1) SHA1(2efbc8c3e8ad6dc39973908e37ecdc7b02be720a),
                     "sopsndg.u21", CRC(7669769b) SHA1(adf0c0dbfbaa981fa90db4e54702a4dbaf474e82),
                     "sopsndg.u36", CRC(08d715b5) SHA1(ddccd311ba2b608ab0845afb3ef63b8d3425d530),
@@ -1433,9 +1433,9 @@ CORE_CLONEDEFNV(sopranog,sopranos,"Sopranos, The (Germany)",2005,"Stern",de_mSES
 /*-------------------------------------------------------------------
 / The Sopranos (France)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(sopranof, "sopcpuf.300", CRC(0bd0f8c4) SHA1(df32dcf1db996203fc8b50c78e973b784ae58dbd))
-DE_DMD32ROM8x(      "sopdspf.300", CRC(693bd940) SHA1(dd277da4e8239ae5ede3ded37efc8377ba85919a))
-DE3SA_SOUNDROM18888("sopsndf.u7",  CRC(57426738) SHA1(393e1d654ef09172580ad9a2722f696b6e44ec0f),
+SE128_ROMSTART(sopranof, "sopcpuf.500", CRC(d047d4bd) SHA1(588ba8f6c7af32f6aa94f29e59ad2bcd2bc64968))
+DE_DMD32ROM8x(      "sopdspf.500", CRC(e4252fb5) SHA1(be54181af8f3650023f20cf1bf3b8b0310adb1bb))
+DE3SC_SOUNDROM18888("sopsndf.u7",  CRC(57426738) SHA1(393e1d654ef09172580ad9a2722f696b6e44ec0f),
                     "sopsndf.u17", CRC(0e34f843) SHA1(2a026bda4c44803239a93e6603a4dfb25e3103b5),
                     "sopsndf.u21", CRC(28726d20) SHA1(63c6bea953cc34b6a3c2c9688ab86641f94cd227),
                     "sopsndf.u36", CRC(99549d4a) SHA1(15e3d35b9cefbc8825a7dee5309adc2526de3dec),
@@ -1448,9 +1448,9 @@ CORE_CLONEDEFNV(sopranof,sopranos,"Sopranos, The (France)",2005,"Stern",de_mSES3
 /*-------------------------------------------------------------------
 / The Sopranos (Spain)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(sopranol, "sopcpul.300", CRC(2efd7a45) SHA1(d179605c385c3e3b269bb81295f79a52e0f3f627))
-DE_DMD32ROM8x(      "sopdspl.300", CRC(d6f7a723) SHA1(462c8c82ffb6e386adfc411d3e70c4b25553dc7a))
-DE3SA_SOUNDROM18888("sopsndl.u7",  CRC(137110f2) SHA1(9bd911fc74b91e811ada4c66bec214d22506a646),
+SE128_ROMSTART(sopranol, "sopcpul.500", CRC(ba978d00) SHA1(afe561cc439d9e51dee0697f423fce103448504c))
+DE_DMD32ROM8x(      "sopdspl.500", CRC(a4100c9e) SHA1(08ea2424ff315f6174d56301c7a8164a32629367))
+DE3SC_SOUNDROM18888("sopsndl.u7",  CRC(137110f2) SHA1(9bd911fc74b91e811ada4c66bec214d22506a646),
                     "sopsndl.u17", CRC(3d5189e6) SHA1(7d846d0b18678ff7aa44029643571e237bc48d58),
                     "sopsndl.u21", CRC(0ac4f407) SHA1(9473ab42c0f758901644256d7cd1cb47c8396433),
                     "sopsndl.u36", CRC(147c4216) SHA1(ded2917188bea51cb03db72fe53fcd76a3e66ab9),
@@ -1463,9 +1463,9 @@ CORE_CLONEDEFNV(sopranol,sopranos,"Sopranos, The (Spain)",2005,"Stern",de_mSES3,
 /*-------------------------------------------------------------------
 / The Sopranos (Italy)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(sopranoi, "sopcpui.300", CRC(1a2846e6) SHA1(10dd57d5f65f397d67105f7e1d0e8d920753893c))
-DE_DMD32ROM8x(      "sopdspi.300", CRC(d7903ed2) SHA1(ae54952cd3e6f7fb0075e71d484701def764f0d6))
-DE3SA_SOUNDROM18888("sopsndi.u7",  CRC(afb9c474) SHA1(fd184e8cd6afff61fd2874b08f0e841934916ccb),
+SE128_ROMSTART(sopranoi, "sopcpui.500", CRC(c6b29efb) SHA1(1d7045c06bd8c6fc2304fba150c201e920ae92b4))
+DE_DMD32ROM8x(      "sopdspi.500", CRC(5a3f479b) SHA1(43f36e27549259df172ed4340ae891eca634a594))
+DE3SC_SOUNDROM18888("sopsndi.u7",  CRC(afb9c474) SHA1(fd184e8cd6afff61fd2874b08f0e841934916ccb),
                     "sopsndi.u17", CRC(ec8e4e36) SHA1(312f1d86bf6703b8ff6b807a3a2abea9fe0c20b8),
                     "sopsndi.u21", CRC(37727b76) SHA1(8801091870a30222d5a99535bbe15ac97334e368),
                     "sopsndi.u36", CRC(71568348) SHA1(516d5ea35f8323e247c25000cb223f3539796ea1),
@@ -1476,11 +1476,11 @@ SE_ROMEND
 CORE_CLONEDEFNV(sopranoi,sopranos,"Sopranos, The (Italy)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ Nascar (3.01)
+/ Nascar (4.00)
 /-------------------------------------------------------------------*/
 INITGAME(nascar,GEN_WS,se_dmd128x32,SE_LED)
-SE128_ROMSTART(nascar, "nascpua.340", CRC(120dc65a) SHA1(151c1604dacb1c1cf74449291d81629a05fb1b09))
-DE_DMD32ROM8x(      "nasdspa.303", CRC(86e20410) SHA1(c499682713facc6b2923fdd0eff47b98f6a36d14))
+SE128_ROMSTART(nascar, "nascpua.400", CRC(24a72071) SHA1(5bfe473e85e12b30963b15dfc8732f2ef9c299c3))
+DE_DMD32ROM8x(      "nasdspa.400", CRC(364878bf) SHA1(a1fb477a37459a3583d3767386f87aa620e31e34))
 DE3SC_SOUNDROM18888("nassnd.u7",   CRC(3a3c8203) SHA1(c64c424c01ec91e2578fd6ddc5d3596b8a485c22),
                     "nassnd.u17", CRC(4dcf65fa) SHA1(bc745e16f1f4b92b97fd0536bea789909b9c0c67),
                     "nassnd.u21", CRC(82ac1e4f) SHA1(8a6518885d89651df31afc8119d87a46fd802e16),
@@ -1488,13 +1488,13 @@ DE3SC_SOUNDROM18888("nassnd.u7",   CRC(3a3c8203) SHA1(c64c424c01ec91e2578fd6ddc5
                     "nassnd.u37", CRC(458ba148) SHA1(594fd9b48aa48ab7b3df921e689b1acba2b09d79))
 SE_ROMEND
 #define input_ports_nascar input_ports_se
-CORE_GAMEDEFNV(nascar,"Nascar (3.40)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
+CORE_GAMEDEFNV(nascar,"Nascar (4.00)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Nascar (Spain)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(nascarl, "nascpul.340", CRC(d5827082) SHA1(660216472a1faa445701eb3735771568cdba7b24))
-DE_DMD32ROM8x(      "nasdspl.303", CRC(868277f0) SHA1(9c058054e6dc3b838bfc3a91d37438afcd59aa4b))
+SE128_ROMSTART(nascarl, "nascpul.400", CRC(23ca7b4a) SHA1(9ea7afb283157a8e65106dc027cfd45eecc3f86a))
+DE_DMD32ROM8x(      "nasdspl.400", CRC(a4de490f) SHA1(bc1aa9fc0182045f5d10044b3e4fa083572be4ac))
 DE3SC_SOUNDROM18888("nascsp.u7",   CRC(03a34394) SHA1(d1e3a1a8e14525c40e9f8a5441a106df662608f1),
                     "nassndl.u17", CRC(058c67ad) SHA1(70e22d8a1842108309f6c03dcc6ac23a822da3c3),
                     "nassndl.u21", CRC(e34d3b6f) SHA1(63ef27ed5965d719215d0a469886d3852b6bffb6),
@@ -1507,11 +1507,11 @@ CORE_CLONEDEFNV(nascarl,nascar,"Nascar (Spain)",2005,"Stern",de_mSES3,GAME_IMPER
 
 
 /*-------------------------------------------------------------------
-/ Grand Prix (3.40)
+/ Grand Prix (4.00)
 /-------------------------------------------------------------------*/
 INITGAME(gprix,GEN_WS,se_dmd128x32,SE_LED)
-SE128_ROMSTART(gprix, "gpcpua.340", CRC(798f2ab3) SHA1(046cbbd0115511b2cbd7f132b0755d03edce1e7b))
-DE_DMD32ROM8x(      "gpdspa.303", CRC(814f6a50) SHA1(727eac96c4beaafc3ddd9ccd9ef098bd557cbc74))
+SE128_ROMSTART(gprix, "gpcpua.400", CRC(c6042517) SHA1(19729a86a3afafb516f000489c38d00379e4f85c))
+DE_DMD32ROM8x(      "gpdspa.400", CRC(ce431306) SHA1(2573049b52b928052f196371dbc3a5236ce8cfc3))
 DE3SC_SOUNDROM18888("gpsnda.u7",  CRC(f784634f) SHA1(40847986003b01c9de5d9af4c66a0f1f9fb0cac8),
                     "gpsnda.u17", CRC(43dca7e2) SHA1(30726897950b168ffa5e0e8a4ff12856fd50f132),
                     "gpsnda.u21", CRC(77717142) SHA1(055f975c3d1cf6560908f5d8553f7e64580a2bba),
@@ -1519,13 +1519,13 @@ DE3SC_SOUNDROM18888("gpsnda.u7",  CRC(f784634f) SHA1(40847986003b01c9de5d9af4c66
                     "gpsnda.u37", CRC(caf4c3f3) SHA1(ebdbaccf951ef6525f0fafa7e23d8140ef6b84e5))
 SE_ROMEND
 #define input_ports_gprix input_ports_se
-CORE_GAMEDEFNV(gprix,"Grand Prix (3.40)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
+CORE_GAMEDEFNV(gprix,"Grand Prix (4.00)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Grand Prix (Germany)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(gprixg, "gpcpug.340", CRC(34afe4e4) SHA1(0655be39f309f32dffca22d7ab780263da5e8cb2))
-DE_DMD32ROM8x(      "gpdspg.303", CRC(0be9eb1d) SHA1(78c402efcc818e4960ef5ca17e7fa43a028b5c9b))
+SE128_ROMSTART(gprixg, "gpcpug.400", CRC(98d69588) SHA1(9d248b00a1aa966e69816cd7aaf869737e7a1ca7))
+DE_DMD32ROM8x(      "gpdspg.400", CRC(b3f64332) SHA1(84e1b094c74b2dfae8e3cd3ce3f1cd20dc400fd7))
 DE3SC_SOUNDROM18888("gpsndg.u7",  CRC(95129e03) SHA1(5fddd9d8213f9f1f68fe9e96c9e78dc6771fab21),
                     "gpsndg.u17", CRC(27ef97ea) SHA1(8ba941d5d4f929b8ec3222f1c91452395e2f690f),
                     "gpsndg.u21", CRC(71391d71) SHA1(690b280710c79d94fc271541066ae90e462bbce2),
@@ -1539,8 +1539,8 @@ CORE_CLONEDEFNV(gprixg,gprix,"Grand Prix (Germany)",2005,"Stern",de_mSES3,GAME_I
 /*-------------------------------------------------------------------
 / Grand Prix (Spain)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(gprixl, "gpcpul.340", CRC(2cd2f25f) SHA1(ee21a680cf56b6b415b2b9f5d89125062b24f8ae))
-DE_DMD32ROM8x(      "gpdspl.303", CRC(82f30b13) SHA1(2f15228dbd6f3957f657772725f3280adf778d72))
+SE128_ROMSTART(gprixl, "gpcpul.400", CRC(90f506f0) SHA1(4642fa8bf15955a32b6ae8c6b859d94dcd40c542))
+DE_DMD32ROM8x(      "gpdspl.400", CRC(74d9aa40) SHA1(802c6fbe4248a516f18e4b69997254b3dcf27706))
 DE3SC_SOUNDROM18888("gpsndl.u7",  CRC(0640fe8f) SHA1(aa45bf89c4cae5b4c2143656cfe19fe8f1ec30a3),
                     "gpsndl.u17", CRC(2581ef04) SHA1(2d85040e355ed410c7d8348ef64fc2c8e76ec0f0),
                     "gpsndl.u21", CRC(f4c97c9e) SHA1(ae04f416a7582efee20469ec686d02727558d850),
@@ -1554,8 +1554,8 @@ CORE_CLONEDEFNV(gprixl,gprix,"Grand Prix (Spain)",2005,"Stern",de_mSES3,GAME_IMP
 /*-------------------------------------------------------------------
 / Grand Prix (France)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(gprixf, "gpcpuf.340", CRC(cefc30e4) SHA1(2ffdfd09ed8ba00a36a6bf12b79200c562b7dc0d))
-DE_DMD32ROM8x(      "gpdspf.303", CRC(f48f3a4b) SHA1(74c7d1670d6f1ed68d5aed5a755f27ffdb566cbd))
+SE128_ROMSTART(gprixf, "gpcpuf.400", CRC(0e7f8776) SHA1(0731c3a5350445f70dd8bdac68b2554942f12c8d))
+DE_DMD32ROM8x(      "gpdspf.400", CRC(f9b1ef9a) SHA1(a7e3c0fc1526cf3632e6b1f22caf7f73749e77a6))
 DE3SC_SOUNDROM18888("gpsndf.u7",  CRC(9b34e55a) SHA1(670fe4e4b62c46266667f37c0341bb4266e55067),
                     "gpsndf.u17", CRC(18beb699) SHA1(a3bbd7c9fc1165da5e502e09f68321bd56992e76),
                     "gpsndf.u21", CRC(b64702dd) SHA1(8762fb00d5549649444f7f85c3f6d72f27c6ba41),
@@ -1569,8 +1569,8 @@ CORE_CLONEDEFNV(gprixf,gprix,"Grand Prix (France)",2005,"Stern",de_mSES3,GAME_IM
 /*-------------------------------------------------------------------
 / Grand Prix (Italy)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(gprixi, "gpcpui.340", CRC(35f4a870) SHA1(24293fafcec6180ab62ef3298e4b53910e05a937))
-DE_DMD32ROM8x(      "gpdspi.303", CRC(36418722) SHA1(66f04e3069c51004cb82961a7d82ac0a5f6a84dd))
+SE128_ROMSTART(gprixi, "gpcpui.400", CRC(49e161b7) SHA1(855e35ddedf35055de384bade4b237810bc5ffec))
+DE_DMD32ROM8x(      "gpdspi.400", CRC(88675cdf) SHA1(b305a683350d38b43f2e3c9277af14d5503b3219))
 DE3SC_SOUNDROM18888("gpsndi.u7",  CRC(37d66e66) SHA1(219fd734d3a19407d9d47de198429c770d7d8856),
                     "gpsndi.u17", CRC(868b225d) SHA1(bc169cf5882002a1b58973a22a78d8dd4467bc51),
                     "gpsndi.u21", CRC(b6692c39) SHA1(ac36ffb37ad945a857d5098547479c8cd62b6356),
