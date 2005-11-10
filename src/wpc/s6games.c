@@ -26,6 +26,14 @@ S6_ROMEND
 #define input_ports_lzbal input_ports_s6
 CORE_GAMEDEF(lzbal,l2,"Laser Ball (L-2)",1979,"Williams",s6_mS6S,0)
 
+S6_ROMSTART(lzbal,t2, "gamerom.716", CRC(9c5ffe2f) SHA1(f0db627abaeb8c023a3ccc75262e236c998a5d6f),
+                      "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
+                      "green2a.716",  CRC(16621eec) SHA1(14e1cf5f7227860a3219b2b79fa66dcf252dce98))
+S67S_SOUNDROMS8(	  "sound2.716",  CRC(c9103a68) SHA1(cc77af54fdb192f0b334d9d1028210618c3f1d95))
+S6_ROMEND
+#define input_ports_lzbal_t2 input_ports_s6
+CORE_CLONEDEF(lzbal,t2,l2,"Laser Ball (T-2) Ted Estes",1980,"Williams",s6_mS6S,0)
+
 /*-----------------------------
 / Scorpion - Sys.6 (Game #494)
 /----------------------------*/
@@ -38,6 +46,13 @@ S6_ROMEND
 #define input_ports_scrpn input_ports_s6
 CORE_GAMEDEF(scrpn,l1,"Scorpion (L-1)",1980,"Williams",s6_mS6S,0)
 
+S6_ROMSTART(scrpn,t1,  "gamerom.716", CRC(881109a9) SHA1(53d4275c76b47b68a74209fe660d943a51e90eca),
+                       "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
+                       "green2a.716",  CRC(16621eec) SHA1(14e1cf5f7227860a3219b2b79fa66dcf252dce98))
+S67S_SOUNDROMS8(       "sound1.716",  CRC(f4190ca3) SHA1(ee234fb5c894fca5876ee6dc7ea8e89e7e0aec9c))
+S6_ROMEND
+#define input_ports_scrpn_t1 input_ports_s6
+CORE_CLONEDEF(scrpn,t1,l1,"Scorpion (T-1) Ted Estes",1980,"Williams",s6_mS6S,0)
 
 /*----------------------------
 / Blackout - Sys.6 (Game #495)
@@ -54,6 +69,16 @@ S6_ROMEND
 #define input_ports_blkou input_ports_s6
 CORE_GAMEDEF(blkou,l1,"Blackout (L-1)",1979,"Williams",s6_mS6S,0)
 
+S6_ROMSTART(blkou,t1,  "gamerom.716", CRC(4b407ae2) SHA1(46a2afcfc2d969c5acae18b57a678265257a6102),
+                       "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
+                       "green2a.716",  CRC(16621eec) SHA1(14e1cf5f7227860a3219b2b79fa66dcf252dce98))
+S67S_SOUNDROMS8(       "sound2.716",  CRC(c9103a68) SHA1(cc77af54fdb192f0b334d9d1028210618c3f1d95))
+S67S_SPEECHROMS000x(   "v_ic7.532" ,  CRC(87864071) SHA1(d03c71efc0431f30a07c8194c0614c96fb683710),
+                       "v_ic5.532" ,  CRC(046a96d8) SHA1(879127a88b3640bbb202c64cbf8678869c964177),
+                       "v_ic6.532" ,  CRC(0104e5c4) SHA1(c073cb4bdea189085ae074e9c16872752b6ffba0))
+S6_ROMEND
+#define input_ports_blkou_t1 input_ports_s6
+CORE_CLONEDEF(blkou,t1,l1,"Blackout (T-1) Ted Estes",1979,"Williams",s6_mS6S,0)
 
 /*--------------------------
 / Gorgar - Sys.6 (Game #496)
@@ -69,6 +94,17 @@ S67S_SPEECHROMS000x(   "v_ic7.532" ,  CRC(0b1879e3) SHA1(2c34a815f598b4413e9229e
 S6_ROMEND
 #define input_ports_grgar input_ports_s6
 CORE_GAMEDEF(grgar,l1,"Gorgar (L-1)",1979,"Williams",s6_mS6S,0)
+
+S6_ROMSTART(grgar,t1,  "gamerom.716", CRC(1c6f3e48) SHA1(ba5536e6fbcaf3709277fe27827d7f75c1889ba3),
+                       "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
+                       "green2a.716",  CRC(16621eec) SHA1(14e1cf5f7227860a3219b2b79fa66dcf252dce98))
+S67S_SOUNDROMS8(       "sound2.716",  CRC(c9103a68) SHA1(cc77af54fdb192f0b334d9d1028210618c3f1d95))
+S67S_SPEECHROMS000x(   "v_ic7.532" ,  CRC(0b1879e3) SHA1(2c34a815f598b4413e9229e8eb1322ec9e7cc9d6),
+                       "v_ic5.532" ,  CRC(0ceaef37) SHA1(33b5f5286b8588162d56dbc5c9a8ccb70d3b9090),
+                       "v_ic6.532" ,  CRC(218290b9) SHA1(6afeff1413895489e92a4bb1c05f6de5773dbb6a))
+S6_ROMEND
+#define input_ports_grgar_t1 input_ports_s6
+CORE_CLONEDEF(grgar,t1,l1,"Gorgar (T-1) Ted Estes",1979,"Williams",s6_mS6S,0)
 
 /*-------------------------------
 / Firepower - Sys.6 (Game #497)
@@ -87,6 +123,21 @@ S67S_SPEECHROMS000x(      "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c331
 S6_ROMEND
 #define input_ports_frpwr_l6 input_ports_s6
 CORE_GAMEDEFNV(frpwr_l6,"Firepower (L-6)",1980,"Williams",s6_mS6S,0)
+
+INITGAMEFULL(frpwr_t6,s6_6digit_disp,0,45,26,25,27,28,42,12)
+S6_ROMSTARTPROM(frpwr_t6, "gamerom.716", CRC(fdd3b983) SHA1(fb5d1eb01589311cf4b2ef16e25db03d40bca2f7),
+                          "green1.716",  CRC(2145f8ab) SHA1(ddf63208559a3a08d4e88327c55426b0eed27654),
+		                  "green2a.716",  CRC(16621eec) SHA1(14e1cf5f7227860a3219b2b79fa66dcf252dce98),
+                          "prom1_6.474", CRC(af6eb0b9) SHA1(28f8366737e09ffd60cb5ea55a5734143cdb9663),
+                          "prom2.474",   CRC(f75ade1a) SHA1(a5572c5c721dbcb82988b709f4ef2119118e37c2),
+                          "prom3.474",   CRC(242ec687) SHA1(c3366c898a66c78034687e6a6000193d52be4141))
+S67S_SOUNDROMS8(          "sound3.716",  CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
+S67S_SPEECHROMS000x(      "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c3319fdd72c1af2846659290),
+                          "v_ic5.532",   CRC(1737fdd2) SHA1(6307e0ae715e97294ee8aaaeb2e2bebb0cb590c2),
+                          "v_ic6.532",   CRC(e56f7aa2) SHA1(cb922c3f4d91285dda4ccae880c2d798a82fd51b))
+S6_ROMEND
+#define input_ports_frpwr_t6 input_ports_frpwr_l6
+CORE_CLONEDEFNV(frpwr_t6,frpwr_l6,"Firepower (T-6) Ted Estes",1980,"Williams",s6_mS6S,0)
 
 INITGAMEFULL(frpwr_l2,s6_6digit_disp,0,45,26,25,27,28,42,12)
 S6_ROMSTARTPROM(frpwr_l2, "gamerom.716", CRC(fdd3b983) SHA1(fb5d1eb01589311cf4b2ef16e25db03d40bca2f7),
