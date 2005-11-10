@@ -886,18 +886,26 @@ DRIVER(disco,l1)        //S3-483:   08/78 W Disco Fever
 DRIVER(pkrno,l1)        //S4-488:   10/78 W Pokerino
 DRIVER(phnix,l1)        //S4-485:   11/78 W Phoenix
 DRIVER(flash,l1)        //S4-486:   01/79 W Flash
+DRIVER(flash,t1)        //S4-486:   01/79 W Flash /10 Scoring Ted Estes
 DRIVER(stlwr,l2)        //S4-490:   03/79 W Stellar Wars
                         //S?-491:   06/79 W Rock'N Roll
 //System 6
 DRIVER(trizn,l1)        //S6-487:   07/79 W TriZone
+DRIVER(trizn,t1)        //S6-487:   07/79 W TriZone /10 Scoring Ted Estes
 DRIVER(tmwrp,l2)        //S6-489:   09/79 W Time Warp
+DRIVER(tmwrp,t2)        //S6-489:   09/79 W Time Warp /10 Scoring Ted Estes
 DRIVER(grgar,l1)        //S6-496:   11/79 W Gorgar
+DRIVER(grgar,t1)        //S6-496:   11/79 W Gorgar /10 Scoring Ted Estes
 DRIVER(lzbal,l2)        //S6-493:   12/79 W Laser Ball
+DRIVER(lzbal,t2)        //S6-493:   12/79 W Laser Ball /10 Scoring Ted Estes
 DRIVER(frpwr,l2)        //S6-497:   02/80 W Firepower (L-2)
 DRIVER(frpwr,l6)        //S6-497:   02/80 W Firepower (L-6)
+DRIVER(frpwr,t6)        //S6-497:   02/80 W Firepower (L-6) /10 Scoring Ted Estes
 DRIVER(frpwr,b6)        //S6:       12/03 W Firepower (Sys.6 7-digit conversion)
 DRIVER(blkou,l1)        //S6-495:   06/80 W Blackout
+DRIVER(blkou,t1)        //S6-495:   06/80 W Blackout /10 Scoring Ted Estes
 DRIVER(scrpn,l1)        //S6-494:   07/80 W Scorpion
+DRIVER(scrpn,t1)        //S6-494:   07/80 W Scorpion /10 Scoring Ted Estes
 DRIVER(algar,l1)        //S6-499:   09/80 W Algar
 DRIVER(alpok,l2)        //S6-501:   10/80 W Alien Poker L-2
 DRIVER(alpok,l6)        //S6-501:   10/80 W Alien Poker L-6
