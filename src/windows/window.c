@@ -18,6 +18,7 @@
 #include <math.h>
 
 // MAME headers
+// JB #include "multidef.h"
 #include "driver.h"
 #include "window.h"
 #include "winddraw.h"
@@ -37,6 +38,9 @@
 extern void win_pause_input(int pause);
 extern int win_is_mouse_captured(void);
 extern UINT8 win_trying_to_quit;
+
+// from video.c
+HMONITOR monitor;
 
 // from wind3dfx.c
 int win_d3d_effects_in_use(void);
@@ -296,21 +300,36 @@ INLINE int get_aligned_window_pos(int x)
 
 INLINE void get_screen_bounds(RECT *bounds)
 {
-	// get a DC for the screen
-	HDC dc = GetDC(NULL);
-
 	// reset the bounds to a reasonable default
 	bounds->top = bounds->left = 0;
 	bounds->right = 640;
 	bounds->bottom = 480;
-	if (dc)
-	{
-		// get the bounds from the DC
-		bounds->right = GetDeviceCaps(dc, HORZRES);
-		bounds->bottom = GetDeviceCaps(dc, VERTRES);
 
-		// release the DC
-		ReleaseDC(NULL, dc);
+	if (monitor == NULL)
+	{
+		// get entire windows desktop rect
+		// get a DC for the screen
+		HDC dc = GetDC(NULL);
+		if (dc)
+		{
+			// get the bounds from the DC
+			bounds->right = GetDeviceCaps(dc, HORZRES);
+			bounds->bottom = GetDeviceCaps(dc, VERTRES);
+
+			// release the DC
+			ReleaseDC(NULL, dc);
+		}
+	}
+	else
+	{
+		MONITORINFO info;
+
+		// get the position and size of the chosen monitor only
+		info.cbSize = sizeof(info);
+		if (GetMonitorInfo(monitor,&info))
+		{
+			*bounds = info.rcMonitor;
+		}
 	}
 }
 
@@ -841,7 +860,7 @@ static LRESULT CALLBACK video_window_proc(HWND wnd, UINT message, WPARAM wparam,
 #ifndef VPINMAME
 			RECT *rect = (RECT *)lparam;
 			if (win_keep_aspect && !(GetAsyncKeyState(VK_CONTROL) & 0x8000))
-				win_constrain_to_aspect_ratio(rect, wparam, 0);
+				win_constrain_to_aspect_ratio(rect, wparam, 0, COORDINATES_DESKTOP);
 #endif
 			InvalidateRect(win_video_window, NULL, FALSE);
 			break;
@@ -850,6 +869,10 @@ static LRESULT CALLBACK video_window_proc(HWND wnd, UINT message, WPARAM wparam,
 		// syscommands: catch win_start_maximized
 		case WM_SYSCOMMAND:
 		{
+			// prevent screensaver or monitor power events
+			if (wparam == SC_MONITORPOWER || wparam == SC_SCREENSAVE)
+				return 1;
+
 			InvalidateRect(win_video_window, NULL, FALSE);
 			if ((wparam & 0xfff0) == SC_MAXIMIZE)
 			{
@@ -900,7 +923,7 @@ static LRESULT CALLBACK video_window_proc(HWND wnd, UINT message, WPARAM wparam,
 //	win_constrain_to_aspect_ratio
 //============================================================
 
-void win_constrain_to_aspect_ratio(RECT *rect, int adjustment, int constraints)
+void win_constrain_to_aspect_ratio(RECT *rect, int adjustment, int constraints, int coordinate_system)
 {
 	double adjusted_ratio = aspect_ratio;
 	int extrawidth = wnd_extra_width();
@@ -931,7 +954,17 @@ void win_constrain_to_aspect_ratio(RECT *rect, int adjustment, int constraints)
 	if (win_window_mode)
 		get_work_area(&maxrect);
 	else
+	{
 		get_screen_bounds(&maxrect);
+		if (coordinate_system == COORDINATES_DISPLAY)
+		{
+			// normalize the rect back to the top left at 0,0
+			maxrect.right -= maxrect.left;
+			maxrect.left = 0;
+			maxrect.bottom -= maxrect.top;
+			maxrect.top = 0;
+		}
+	}
 
 	// expand the initial rect past the minimum
 	temp = rectcopy;
@@ -1176,7 +1209,7 @@ void win_toggle_maximize(void)
 	constrained = maximum;
 	if (win_default_constraints)
 	{
-		win_constrain_to_aspect_ratio(&constrained, WMSZ_BOTTOMRIGHT, win_default_constraints);
+		win_constrain_to_aspect_ratio(&constrained, WMSZ_BOTTOMRIGHT, win_default_constraints, COORDINATES_DESKTOP);
 	}
 
 	if (win_default_constraints)
@@ -1192,7 +1225,7 @@ void win_toggle_maximize(void)
 		{
 			current = maximum;
 
-			win_constrain_to_aspect_ratio(&current, WMSZ_BOTTOMRIGHT, 0);
+			win_constrain_to_aspect_ratio(&current, WMSZ_BOTTOMRIGHT, 0, COORDINATES_DESKTOP);
 			center_window = 1;
 		}
 		else if ((current.right - current.left) > (constrained.right - constrained.left) &&
@@ -1203,7 +1236,7 @@ void win_toggle_maximize(void)
 
 			current = maximum;
 
-			win_constrain_to_aspect_ratio(&current, WMSZ_BOTTOMRIGHT, 0);
+			win_constrain_to_aspect_ratio(&current, WMSZ_BOTTOMRIGHT, 0, COORDINATES_DESKTOP);
 			center_window = 1;
 		}
 		else
@@ -1232,7 +1265,7 @@ void win_toggle_maximize(void)
 			center_window = 1;
 		}
 
-		win_constrain_to_aspect_ratio(&current, WMSZ_BOTTOMRIGHT, 0);
+		win_constrain_to_aspect_ratio(&current, WMSZ_BOTTOMRIGHT, 0, COORDINATES_DESKTOP);
 	}
 
 	if (center_window == 1)
@@ -1385,7 +1418,7 @@ void win_adjust_window(void)
 	{
 		// constrain the existing size to the aspect ratio
 		window = original;
-		win_constrain_to_aspect_ratio(&window, WMSZ_BOTTOMRIGHT, 0);
+		win_constrain_to_aspect_ratio(&window, WMSZ_BOTTOMRIGHT, 0, COORDINATES_DESKTOP);
 	}
 
 	// in full screen, make sure it covers the primary display

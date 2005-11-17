@@ -104,6 +104,13 @@ extern int			win_color32_bdst_shift;
 #define CONSTRAIN_INTEGER_WIDTH 1
 #define CONSTRAIN_INTEGER_HEIGHT 2
 
+// win_constrain_to_aspect_ratio() coordinate_system parameter
+// desktop coordinates--when not in any full screen mode
+#define COORDINATES_DESKTOP 1
+// display coordinates, when each display is 0,0 at the top left
+#define COORDINATES_DISPLAY 2
+
+
 // win_force_int_stretch values
 #define FORCE_INT_STRECT_NONE 0
 #define FORCE_INT_STRECT_FULL 1
@@ -125,7 +132,7 @@ void win_toggle_maximize(void);
 void win_toggle_full_screen(void);
 void win_adjust_window(void);
 
-void win_constrain_to_aspect_ratio(RECT *rect, int adjustment, int constraints);
+void win_constrain_to_aspect_ratio(RECT *rect, int adjustment, int constraints, int coordinate_system);
 void win_adjust_window_for_visible(int min_x, int max_x, int min_y, int max_y);
 void win_wait_for_vsync(void);
 

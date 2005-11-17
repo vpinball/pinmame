@@ -7,6 +7,7 @@
 // standard windows headers
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <ddraw.h>
 
 // standard C headers
 #include <math.h>
@@ -33,6 +34,7 @@
 extern void win_poll_input(void);
 extern void win_pause_input(int pause);
 extern UINT8 win_trying_to_quit;
+extern int verbose;
 
 // from wind3dfx.c
 extern struct rc_option win_d3d_opts[];
@@ -51,6 +53,10 @@ extern struct rc_option win_d3d_opts[];
 //============================================================
 //	GLOBAL VARIABLES
 //============================================================
+
+// screen to draw on
+HMONITOR monitor;
+GUID *screen_guid_ptr;
 
 // current frameskip/autoframeskip settings
 int frameskip;
@@ -74,6 +80,11 @@ UINT8 blit_swapxy;
 //============================================================
 //	LOCAL VARIABLES
 //============================================================
+
+// screen info
+char *screen_name;
+
+static GUID ddraw_device_guid;
 
 // core video input parameters
 static int video_width;
@@ -179,13 +190,16 @@ struct rc_option video_opts[] =
 	{ "waitvsync", NULL, rc_bool, &win_wait_vsync, "0", 0, 0, NULL, "wait for vertical sync (reduces tearing)"},
 	{ "triplebuffer", "tb", rc_bool, &win_triple_buffer, "0", 0, 0, NULL, "triple buffering (only if fullscreen)" },
 #ifdef VPINMAME
+	// default window mode for VPM is run inside a window
 	{ "window", "w", rc_bool, &win_window_mode, "1", 0, 0, NULL, "run in a window/run on full screen" },
 #else
+	// default window mode for PinMAME is full screen
 	{ "window", "w", rc_bool, &win_window_mode, "0", 0, 0, NULL, "run in a window/run on full screen" },
 #endif
 	{ "ddraw", "dd", rc_bool, &win_use_ddraw, "1", 0, 0, NULL, "use DirectDraw for rendering" },
 	{ "direct3d", "d3d", rc_bool, &win_use_d3d, "0", 0, 0, NULL, "use Direct3D for rendering" },
 	{ "hwstretch", "hws", rc_bool, &win_dd_hw_stretch, "1", 0, 0, NULL, "(dd) stretch video using the hardware" },
+	{ "screen", NULL, rc_string, &screen_name, NULL, 0, 0, NULL, "specify which screen to use" },
 	{ "cleanstretch", "cs", rc_string, &cleanstretch, "auto", 0, 0, decode_cleanstretch, "stretch to integer ratios" },
 	{ "resolution", "r", rc_string, &resolution, "auto", 0, 0, video_set_resolution, "set resolution" },
 	{ "zoom", "z", rc_int, &win_gfx_zoom, "2", 1, 8, NULL, "force specific zoom level" },
@@ -405,6 +419,30 @@ void win_disorient_rect(struct rectangle *rect)
 
 
 //============================================================
+//  devices_enum_callback
+//============================================================
+static BOOL WINAPI devices_enum_callback(GUID *lpGUID, LPSTR lpDriverDescription,
+										 LPSTR lpDriverName, LPVOID lpContext, HMONITOR hm)
+{
+	if (verbose)
+		fprintf(stderr, "Enumerating video device %s\n",lpDriverName);
+
+	if (stricmp(lpDriverName, screen_name) == 0)
+	{
+		ddraw_device_guid = *lpGUID;
+		monitor = hm;
+
+		// no more enumeration
+		return 0;
+	}
+
+	// continue enumeration
+	return 1;
+}
+
+
+
+//============================================================
 //	osd_create_display
 //============================================================
 
@@ -413,6 +451,7 @@ int osd_create_display(const struct osd_create_params *params, UINT32 *rgb_compo
 	struct mame_display dummy_display;
 	double aspect_ratio;
 	int r, g, b;
+	HRESULT result;
 
 	logerror("width %d, height %d depth %d\n", params->width, params->height, params->depth);
 
@@ -433,11 +472,30 @@ int osd_create_display(const struct osd_create_params *params, UINT32 *rgb_compo
 	vector_game			= ((params->video_attributes & VIDEO_TYPE_VECTOR) != 0);
 	rgb_direct			= ((params->video_attributes & VIDEO_RGB_DIRECT) != 0);
 
-	// create the window
 	if (!blit_swapxy)
 		aspect_ratio = (double)params->aspect_x / (double)params->aspect_y;
 	else
 		aspect_ratio = (double)params->aspect_y / (double)params->aspect_x;
+
+	// if not using the primary display, enumerate the display devices and find the
+	// proper screen
+
+	screen_guid_ptr = NULL;
+	monitor = NULL;
+	memset(&ddraw_device_guid, 0, sizeof(ddraw_device_guid));
+ 	if (win_use_ddraw)
+ 	{
+		result = DirectDrawEnumerateEx(devices_enum_callback, NULL, DDENUM_ATTACHEDSECONDARYDEVICES | DDENUM_DETACHEDSECONDARYDEVICES);
+		if (result != DD_OK)
+		{
+			fprintf(stderr, "Error enumerating DirectDraw: %08x\n", (UINT32)result);
+			return 1;
+		}
+
+		screen_guid_ptr = &ddraw_device_guid;
+	}
+
+	// create the window
 	if (win_create_window(video_width, video_height, video_depth, video_attributes, aspect_ratio))
 		return 1;
 

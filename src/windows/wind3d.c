@@ -41,6 +41,9 @@
 // from input.c
 extern int verbose;
 
+// from video.c
+GUID *screen_guid_ptr;
+
 // from wind3dfx.c
 extern UINT32 win_d3d_tfactor;
 extern UINT32 win_d3d_preprocess_tfactor;
@@ -573,7 +576,7 @@ int win_d3d_init(int width, int height, int depth, int attributes, double aspect
 		goto error_handling;
 	}
 
-	result = fn_directdraw_create_ex(NULL, (void **)&ddraw7, &IID_IDirectDraw7, NULL);
+	result = fn_directdraw_create_ex(screen_guid_ptr, (void **)&ddraw7, &IID_IDirectDraw7, NULL);
 	if (result != DD_OK)
 	{
 		fprintf(stderr, "Error creating DirectDraw7: %08x\n", (UINT32)result);
@@ -1648,7 +1651,7 @@ static void erase_surfaces(void)
 	}
 	else
 	{
-		// do a color fill blit on both primary adn back buffer
+		// do a color fill blit on both primary and back buffer
 		result = IDirectDrawSurface7_Blt(primary_surface, NULL, NULL, NULL, DDBLT_COLORFILL | DDBLT_WAIT, &blitfx);
 		result = IDirectDrawSurface7_Blt(back_surface, NULL, NULL, NULL, DDBLT_COLORFILL | DDBLT_WAIT, &blitfx);
 	}
@@ -2040,7 +2043,7 @@ tryagain:
 		dst.right = primary_desc.dwWidth;
 		dst.bottom = primary_desc.dwHeight;
 
-		win_constrain_to_aspect_ratio(&dst, WMSZ_BOTTOMRIGHT, win_default_constraints);
+			win_constrain_to_aspect_ratio(&dst, WMSZ_BOTTOMRIGHT, win_default_constraints, COORDINATES_DISPLAY);
 
 		// center
 		dst.left += (primary_desc.dwWidth - (dst.right - dst.left)) / 2;

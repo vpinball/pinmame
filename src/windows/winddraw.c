@@ -35,6 +35,8 @@
 // from input.c
 extern int verbose;
 
+// from video.c
+GUID *screen_guid_ptr;
 
 
 //============================================================
@@ -225,7 +227,7 @@ int win_ddraw_init(int width, int height, int depth, int attributes, const struc
 	}
 
 	// now attempt to create it
-	result = DirectDrawCreate(NULL, &ddraw, NULL);
+	result = DirectDrawCreate(screen_guid_ptr, &ddraw, NULL);
 	if (result != DD_OK)
 	{
 		fprintf(stderr, "Error creating DirectDraw: %08x\n", (UINT32)result);
@@ -1146,7 +1148,7 @@ tryagain:
 		dst.left = dst.top = 0;
 		dst.right = primary_desc.dwWidth;
 		dst.bottom = primary_desc.dwHeight;
-		win_constrain_to_aspect_ratio(&dst, WMSZ_BOTTOMRIGHT, 0);
+		win_constrain_to_aspect_ratio(&dst, WMSZ_BOTTOMRIGHT, 0, COORDINATES_DISPLAY);
 
 		// center
 		dst.left += (primary_desc.dwWidth - (dst.right - dst.left)) / 2;
@@ -1310,7 +1312,7 @@ tryagain:
 		// win_start_maximized the rect, constraining to the aspect ratio
 		win_ddraw_fullscreen_margins(primary_desc.dwWidth, primary_desc.dwHeight, &outer);
 		inner = outer;
-		win_constrain_to_aspect_ratio(&inner, WMSZ_BOTTOMRIGHT, 0);
+		win_constrain_to_aspect_ratio(&inner, WMSZ_BOTTOMRIGHT, 0, COORDINATES_DISPLAY);
 
 		// target surface is the back buffer
 		target_surface = back_surface ? back_surface : primary_surface;
