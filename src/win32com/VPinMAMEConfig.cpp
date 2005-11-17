@@ -178,14 +178,6 @@ void vpm_frontend_exit(void) {
 }
 
 extern "C" {
-extern int video_norotate = 0;
-extern int video_flipy = 0;
-extern int video_flipx = 0;
-extern int video_ror = 0;
-extern int video_rol = 0;
-extern int video_autoror = 0;
-extern int video_autorol = 0;
-
 // rotation
 extern UINT8		blit_flipx;
 extern UINT8		blit_flipy;
@@ -208,11 +200,13 @@ void vpm_game_init(int game_index) {
 	}
 
 	/* override if no rotation requested */
-	if (video_norotate)
+	// if (video_norotate)
+	if ( (int) get_option("norotate") )
 		orientation = options.ui_orientation = ROT0;
 
 	/* rotate right */
-	if (video_ror)
+//	if (video_ror)
+	if ( (int) get_option("ror") )
 	{
 		/* if only one of the components is inverted, switch them */
 		if ((orientation & ROT180) == ORIENTATION_FLIP_X ||
@@ -223,7 +217,8 @@ void vpm_game_init(int game_index) {
 	}
 
 	/* rotate left */
-	if (video_rol)
+	// if (video_rol)
+	if ( (int) get_option("rol") )
 	{
 		/* if only one of the components is inverted, switch them */
 		if ((orientation & ROT180) == ORIENTATION_FLIP_X ||
@@ -234,7 +229,8 @@ void vpm_game_init(int game_index) {
 	}
 
 	/* auto-rotate right (e.g. for rotating lcds), based on original orientation */
-	if (video_autoror && (drivers[game_index]->flags & ORIENTATION_SWAP_XY) )
+	// if (video_autoror && (drivers[game_index]->flags & ORIENTATION_SWAP_XY) )
+	if ( (int) get_option("autoror") && (drivers[game_index]->flags & ORIENTATION_SWAP_XY) )
 	{
 		/* if only one of the components is inverted, switch them */
 		if ((orientation & ROT180) == ORIENTATION_FLIP_X ||
@@ -245,7 +241,8 @@ void vpm_game_init(int game_index) {
 	}
 
 	/* auto-rotate left (e.g. for rotating lcds), based on original orientation */
-	if (video_autorol && (drivers[game_index]->flags & ORIENTATION_SWAP_XY) )
+	// if (video_autorol && (drivers[game_index]->flags & ORIENTATION_SWAP_XY) )
+	if ( (int) get_option("autorol") && (drivers[game_index]->flags & ORIENTATION_SWAP_XY) )
 	{
 		/* if only one of the components is inverted, switch them */
 		if ((orientation & ROT180) == ORIENTATION_FLIP_X ||
@@ -256,9 +253,11 @@ void vpm_game_init(int game_index) {
 	}
 
 	/* flip X/Y */
-	if (video_flipx)
+	// if (video_flipx)
+	if ( (int) get_option("flipx") )
 		orientation ^= ORIENTATION_FLIP_X;
-	if (video_flipy)
+	// if (video_flipy)
+	if ( (int) get_option("flipy") )
 		orientation ^= ORIENTATION_FLIP_Y;
 
 	blit_flipx = ((orientation & ORIENTATION_FLIP_X) != 0);
