@@ -10,6 +10,8 @@
 #include <atlwin.h>
 #include <shlobj.h>
 
+#include "DisplayInfoList.h"
+
 // from ControllerRun.cpp
 extern BOOL IsEmulationRunning();
 
@@ -29,6 +31,8 @@ public:
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		COMMAND_CODE_RANGE_HANDLER(IDC_ROMDIRS, IDC_IMGDIR, EN_CHANGE, OnEditCtrlChanged)
 		COMMAND_HANDLER(IDC_ALLOWWRITEACCESS, BN_CLICKED, OnEditCtrlChanged)
+		COMMAND_HANDLER(IDC_FULLSCREEN, BN_CLICKED, OnEditCtrlChanged)
+		COMMAND_HANDLER(IDC_DISPLAYLIST, CBN_SELCHANGE, OnEditCtrlChanged)
 		COMMAND_ID_HANDLER(IDOK, OnOK)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCancel)
 		COMMAND_ID_HANDLER(IDABOUT, OnAbout)
@@ -41,20 +45,75 @@ public:
 private:
 	bool			     m_fChanged;
 	CControllerSettings* pControllerSettings;
+	CWindow displayList;
 
+private:
 	// helper functions
+
+	//============================================================
+	//  ShowDisplays
+	//============================================================
+	// Uses the displays collection to fill in the IDC_DISPLAYLIST combo box.
+	void ShowDisplays()
+	{
+		CDisplayInfoList displays = CDisplayInfoList();
+	
+		// Add each display to the combo box
+		for (size_t i=0; i < displays.Count(); i++)
+		{
+			// Get the display at the index
+			CDisplayInfo* display = displays.Item(i);
+
+			// Add to the list
+			displayList.SendMessage(CB_ADDSTRING, 0, (LPARAM)display->GetDriverDescription());
+		}
+	}
+
+	//============================================================
+	//  SelectCurrentDisplay
+	//============================================================
+	// Selects item in the IDC_DISPLAYLIST combo box that matches the currently stored display name.
+	void SelectCurrentDisplay() {
+		
+		// Get the current display name
+		char* szDisplayName = (char*) get_option("screen");
+
+		// Find the item in the combo box that matches the name
+		long idx = (long) displayList.SendMessage(CB_FINDSTRINGEXACT, -1, (LPARAM)szDisplayName);
+
+		// If not found, select the first one which is the default one (the combo box is not sorted anymore)
+		if (idx == CB_ERR)
+			idx = 0;
+
+		displayList.SendMessage(CB_SETCURSEL, 0, 0);
+	}
+
+	//============================================================
+	//  SetControlValues
+	//============================================================
+	// Sets the values from the configuration data into the dialog controls
 	void SetControlValues() {
 		/******************************************/
 		/*POPULATE CONTROLS FROM OPTIONS IN MEMORY*/
 		/******************************************/
 
-		// Path Values
+		VARIANT vValue;
+		VariantInit(&vValue);
 
+		// Path Values
 		SetDlgItemText(IDC_ROMDIRS,    (char*) get_option("rompath"));
 		SetDlgItemText(IDC_CFGDIR,	   (char*) get_option("cfg_directory"));
 		SetDlgItemText(IDC_NVRAMDIR,   (char*) get_option("nvram_directory"));
 		SetDlgItemText(IDC_SAMPLEDIRS, (char*) get_option("samplepath"));
 		SetDlgItemText(IDC_IMGDIR,     (char*) get_option("snapshot_directory"));
+
+		// Select the current display
+		SelectCurrentDisplay();
+
+		// Set check boxes
+		pControllerSettings->get_Value(CComBSTR("window"), &vValue);
+		CheckDlgButton(IDC_FULLSCREEN, (vValue.boolVal==VARIANT_TRUE)?BST_UNCHECKED:BST_CHECKED); // NOTE: Inverted
+		VariantClear(&vValue);
 
 		char szRegKey[256];
 		lstrcpy(szRegKey, REG_BASEKEY);
@@ -62,6 +121,10 @@ private:
 		CheckDlgButton(IDC_ALLOWWRITEACCESS, ReadRegistry(szRegKey, REG_DWALLOWWRITEACCESS, REG_DWALLOWWRITEACCESSDEF));
 	}
 
+	//============================================================
+	//  GetControlValues
+	//============================================================
+	// Gets the values from the dialog controls and stores them into the configuration data
 	void GetControlValues() {
 		char szPath[4096];
 
@@ -79,6 +142,18 @@ private:
 
 		GetDlgItemText(IDC_IMGDIR, szPath, sizeof(szPath));
 		pControllerSettings->put_Value(CComBSTR("snapshot_directory"), CComVariant(szPath));
+
+		GetDlgItemText(IDC_DISPLAYLIST, szPath, sizeof(szPath));
+		if (strcmp(szPath, "(Default)") == 0)
+		{
+			pControllerSettings->put_Value(CComBSTR("screen"), CComVariant(""));
+		}
+		else
+		{
+			pControllerSettings->put_Value(CComBSTR("screen"), CComVariant(szPath));
+		}
+
+		pControllerSettings->put_Value(CComBSTR("window"), CComVariant((BOOL) !IsDlgButtonChecked(IDC_FULLSCREEN))); // NOTE: Inverted
 
 		fAllowWriteAccess = IsDlgButtonChecked(IDC_ALLOWWRITEACCESS);
 
@@ -138,6 +213,12 @@ private:
 		CenterWindow();
 
 		pControllerSettings = (CControllerSettings*) lParam;
+
+		// Get the display list control (combo box)
+		displayList = CWindow(GetDlgItem(IDC_DISPLAYLIST));
+
+		// Show displays
+		ShowDisplays();
 
 		/*Init Dialog*/
 		SetControlValues();
