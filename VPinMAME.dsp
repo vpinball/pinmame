@@ -500,6 +500,22 @@ SOURCE=.\src\win32com\ControllerSplashWnd.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\win32com\DisplayInfo.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\DisplayInfo.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\DisplayInfoList.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\win32com\DisplayInfoList.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\win32com\dlldatax.h
 # End Source File
 # Begin Source File
@@ -2471,6 +2487,10 @@ SOURCE=.\src\memory.c
 # Begin Source File
 
 SOURCE=.\src\memory.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\multidef.h
 # End Source File
 # Begin Source File
 
