@@ -18,7 +18,7 @@
 #include <math.h>
 
 // MAME headers
-// JB #include "multidef.h"
+#include "multidef.h"
 #include "driver.h"
 #include "window.h"
 #include "winddraw.h"
