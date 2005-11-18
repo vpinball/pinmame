@@ -735,14 +735,19 @@ MACHINE_DRIVER_START(alvgs1)
   MDRV_SOUND_CMDHEADING("alvg")
 MACHINE_DRIVER_END
 
-//Main CPU, DMD, Sound hardware Driver (Generation #2)
+//Main CPU, Sound hardware Driver (Generation #2)
 MACHINE_DRIVER_START(alvgs2)
   MDRV_IMPORT_FROM(alvg)
   MDRV_IMPORT_FROM(alvg_s2)
-  MDRV_IMPORT_FROM(alvgdmd)
-  MDRV_CORE_INIT_RESET_STOP(alvgdmd,NULL,alvg)
   MDRV_SOUND_CMD(alvg_sndCmd_w)
   MDRV_SOUND_CMDHEADING("alvg")
+MACHINE_DRIVER_END
+
+//Main CPU, DMD, Sound hardware Driver (Generation #2)
+MACHINE_DRIVER_START(alvgs2dmd)
+  MDRV_IMPORT_FROM(alvgs2)
+  MDRV_IMPORT_FROM(alvgdmd)
+  MDRV_CORE_INIT_RESET_STOP(alvgdmd,NULL,alvg)
 MACHINE_DRIVER_END
 
 //Use only to test 8031 core
@@ -753,5 +758,3 @@ MACHINE_DRIVER_START(alvg_test8031)
   MDRV_SWITCH_UPDATE(alvg)
 MACHINE_DRIVER_END
 #endif
-
-

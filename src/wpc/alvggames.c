@@ -60,7 +60,7 @@ ALVGDMD_SPLIT_ROM(		"dot27c.512", CRC(c8bd48e7) SHA1(e2dc513dd42c05c2018e6d8c0b6
 						"romdef1.c20",CRC(045b21c1) SHA1(134b7eb0f71506d12d9ded24999d530126c558fc),
 						"romdef2.c20",CRC(23c32ee5) SHA1(429b3b069251bb8b681bbc6382ceb6b85125eb79))
 ALVG_ROMEND
-CORE_GAMEDEFNV(wrldtour,"Al's Garage Band Goes On A World Tour",1992,"Alvin G",mALVGS2,0)
+CORE_GAMEDEFNV(wrldtour,"Al's Garage Band Goes On A World Tour",1992,"Alvin G",mALVGS2DMD,0)
 
 /*-------------------------------------------------------------------
 / Mystery Castle
@@ -75,7 +75,7 @@ ALVGS_SOUNDROM(			"mcastle.102", CRC(752822d0) SHA1(36461ef03cac5aefa0c03dfdc63c
 ALVGDMD_ROM2R(			"mcastle.du4", CRC(686e253a) SHA1(28aff34c120c61e231e2111dc396df515bcbbb89),
 						"mcastle.du5", CRC(9095c367) SHA1(9d3e9416f662ee2aad891eef059278c530448fcc))
 ALVG_ROMEND
-CORE_GAMEDEFNV(mystcast,"Mystery Castle",1993,"Alvin G",mALVGS2,0)
+CORE_GAMEDEFNV(mystcast,"Mystery Castle",1993,"Alvin G",mALVGS2DMD,0)
 
 /*-------------------------------------------------------------------
 / Pistol Poker
@@ -91,7 +91,7 @@ ALVGDMD_ROM(			"p_peteu4.512", CRC(caa0cabd) SHA1(caff6ca4a9cce4e3d846502696c883
 						"p_peteu5.c20", CRC(1d2cecd8) SHA1(6072a0f744fb9eef728fe7cf5e17d0007edbddd7),
 						"p_peteu6.c20", CRC(3a56376c) SHA1(69febc17b8416c03a58e651447bbe1e14ff27e50))
 ALVG_ROMEND
-CORE_GAMEDEFNV(pstlpkr,"Pistol Poker",1993,"Alvin G",mALVGS2,0)
+CORE_GAMEDEFNV(pstlpkr,"Pistol Poker",1993,"Alvin G",mALVGS2DMD,0)
 
 /*-------------------------------------------------------------------
 / Punchy The Clown
@@ -106,10 +106,12 @@ CORE_GAMEDEFNV(punchy,"Punchy The Clown",1993,"Alvin G",mALVGS1,0)
 /*-------------------------------------------------------------------
 / Dinosaur Eggs
 /-------------------------------------------------------------------*/
-INITGAME(dinoeggs, alvg_alpha1, FLIP78, 3/*?*/, SNDBRD_NONE, 0, 0)
+INITGAME(dinoeggs, alvg_alpha1, FLIP78, 3/*?*/, SNDBRD_ALVGS2, 0, 0)
 ALVGROMSTART(dinoeggs,	"dinoeggs.512", CRC(4712f97f) SHA1(593351dcfd475e685c1e5eb2c1006769d3325c8b))
+ALVGS_SOUNDROM11(		"eps071.r02", CRC(288f116c) SHA1(5d03ce66bffe39ec02173525078ff07c5005ef18),
+						"eps072.r02", CRC(780a4364) SHA1(d8a972debee669f0fe66c7407fbed5ef9cd2ce01))
 ALVG_ROMEND
-CORE_GAMEDEFNV(dinoeggs,"Dinosaur Eggs",1993,"Alvin G",mALVG,GAME_NO_SOUND)
+CORE_GAMEDEFNV(dinoeggs,"Dinosaur Eggs",1993,"Alvin G",mALVGS2,0)
 
 
 //Use only for testing the 8031 core emulation

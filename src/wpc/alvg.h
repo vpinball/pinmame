@@ -71,10 +71,12 @@ extern void alvg_UpdateSoundLEDS(int num,int data);
 extern MACHINE_DRIVER_EXTERN(alvg);
 extern MACHINE_DRIVER_EXTERN(alvgs1);
 extern MACHINE_DRIVER_EXTERN(alvgs2);
+extern MACHINE_DRIVER_EXTERN(alvgs2dmd);
 
 #define mALVG         alvg
 #define mALVGS1		  alvgs1
 #define mALVGS2		  alvgs2
+#define mALVGS2DMD    alvgs2dmd
 
 //Use only for testing the 8031 core emulation
 #ifdef MAME_DEBUG
