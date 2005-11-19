@@ -18,8 +18,8 @@
 #include <math.h>
 
 // MAME headers
-#ifdef VPINMAME
-#include "multidef.h"
+#ifndef __GNUC__
+  #include "multidef.h"
 #endif
 #include "driver.h"
 #include "window.h"
