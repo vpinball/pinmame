@@ -257,11 +257,19 @@ DCS_SOUNDROM4xm("jy_s2.rom",CRC(1a1bc2ca) SHA1(db949d49560a26fc280cd9e746aa99dfa
                 "jy_s5.rom",CRC(f18ad10b) SHA1(1d02a388b43d3863030e01bf567f30337d37b2e8))
 WPC_ROMEND
 
+WPC_ROMSTART(jy,03,"jy_cpu.0_3",0x80000,CRC(015d0253) SHA1(733740645fb300f48f57a74dea5fa31758628d24))
+DCS_SOUNDROM4m("jy_s2.0_2",CRC(8a6e0eaa) SHA1(758609b946d10dca70c46da0403d8ed36f8cbd5c),
+               "jy_s3.0_2",CRC(53987d09) SHA1(c1f34d564a8f69413878a7adc089181e562a347c),
+               "jy_s4.0_2",CRC(f82481cd) SHA1(a8283ac4a2dee636f4ec17d3fddf09920c7e3802),
+               "jy_s5.0_2",CRC(5adb2d4c) SHA1(566a27238d643aaf7764e23bc1ce46cc5d7883dd))
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(jy,12,"Junk Yard (1.2)",1996,"Williams",wpc_m95S,0)
 CORE_CLONEDEF(jy,11,12,"Junk Yard (1.1)",1996,"Williams",wpc_m95S,0)
+CORE_CLONEDEF(jy,03,12,"Junk Yard (0.3)",1996,"Williams",wpc_m95S,0)
 
 /*-----------------------
 / Simulation Definitions
