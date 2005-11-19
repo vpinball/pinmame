@@ -18,7 +18,9 @@
 #include <math.h>
 
 // MAME headers
+#ifdef VPINMAME
 #include "multidef.h"
+#endif
 #include "driver.h"
 #include "window.h"
 #include "winddraw.h"
@@ -517,7 +519,7 @@ int win_init_window(void)
 }
 
 #ifdef PINMAME
-// moved them here (from local static vars in draw_video_contents and 
+// moved them here (from local static vars in draw_video_contents and
 // draw_debug_contents) so they can be initialized in win_create_window
 // (th, vpm team)
 
@@ -729,7 +731,7 @@ static void draw_video_contents(HDC dc, struct mame_bitmap *bitmap, const struct
 {
 #ifndef PINMAME
 	static struct mame_bitmap *last;
-#else 
+#else
 	struct mame_bitmap *last;
 	last = last_video_bitmap;
 #endif
@@ -1174,7 +1176,7 @@ void win_adjust_window_for_visible(int min_x, int max_x, int min_y, int max_y)
 		// show the result
 #ifdef VPINMAME
 		VPM_ShowVideoWindow();
-#else 
+#else
 		ShowWindow(win_video_window, SW_SHOW);
 		SetForegroundWindow(win_video_window);
 #endif
