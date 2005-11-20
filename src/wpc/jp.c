@@ -34,16 +34,67 @@
 /  Local variables
 /-----------------*/
 static struct {
-  int    vblankCount;
+  int    vblankCount, solCount;
   UINT32 solenoids;
   core_tSeg segments;
   UINT32 dispData;
-  UINT8  sndCmd;
   int    swCol;
 } locals;
 
 static INTERRUPT_GEN(JP_irq) {
   cpu_set_irq_line(JP_CPU, 0, PULSE_LINE);
+}
+
+/*-------------------------------
+/  copy local data to interface
+/--------------------------------*/
+static INTERRUPT_GEN(JP_vblank) {
+  locals.vblankCount++;
+
+  /*-- lamps --*/
+  if ((locals.vblankCount % JP_LAMPSMOOTH) == 0)
+    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+  /*-- solenoids --*/
+  coreGlobals.solenoids = locals.solenoids;
+  if ((++locals.solCount % JP_SOLSMOOTH) == 0) {
+    coreGlobals.solenoids = locals.solenoids;
+    locals.solenoids = 0;
+  }
+  /*-- display --*/
+  if ((locals.vblankCount % JP_DISPLAYSMOOTH) == 0) {
+    memcpy(coreGlobals.segments, locals.segments, sizeof(locals.segments));
+    memset(locals.segments, 0xff, sizeof(locals.segments));
+  }
+
+  core_updateSw(core_getSol(7));
+}
+
+static SWITCH_UPDATE(JP) {
+  static char s[4];
+  static int sndcmd;
+  int i;
+#ifdef MAME_DEBUG
+  if      (keyboard_pressed_memory_repeat(KEYCODE_Z, 2) && sndcmd > 0) {
+    sndcmd--;
+    sprintf(s, "%2d", sndcmd);
+    core_textOut(s, 2, 35, 5, 5);
+    for (i=0; i < sndcmd; i++) {
+      cpu_set_nmi_line(1, ASSERT_LINE);
+      cpu_set_nmi_line(1, CLEAR_LINE);
+    }
+  } else if (keyboard_pressed_memory_repeat(KEYCODE_X, 2) && sndcmd < 0x40) {
+    sndcmd++;
+    sprintf(s, "%2d", sndcmd);
+    core_textOut(s, 2, 35, 5, 5);
+    for (i=0; i < sndcmd; i++) {
+      cpu_set_nmi_line(1, ASSERT_LINE);
+      cpu_set_nmi_line(1, CLEAR_LINE);
+    }
+  }
+#endif /* MAME_DEBUG */
+  if (inports) {
+    CORE_SETKEYSW(inports[CORE_COREINPORT], 0x7e, 4);
+  }
 }
 
 // bits 24 to 27 decide about the lit segment (4 bits decoded by a 4028 chip),
@@ -78,6 +129,49 @@ static void dispStrobe(void) {
   }
 }
 
+// The schematics won't tell, but the order should be:
+// DATA, CLOCK, LATCH, X0, X1, X2, X3, X4
+static WRITE_HANDLER(disp_w) {
+  data ^= 0xff;
+  // top 5 bits: switch column strobes
+  locals.swCol = core_BitColToNum(data >> 3);
+  // bottom 3 bits: serial display data
+  HC4094_data_w (0, GET_BIT0);
+  HC4094_strobe_w(0, GET_BIT2);
+  HC4094_strobe_w(1, GET_BIT2);
+  HC4094_strobe_w(2, GET_BIT2);
+  HC4094_strobe_w(3, GET_BIT2);
+  HC4094_clock_w(0, GET_BIT1);
+  HC4094_clock_w(1, GET_BIT1);
+  HC4094_clock_w(2, GET_BIT1);
+  HC4094_clock_w(3, GET_BIT1);
+  dispStrobe();
+}
+
+// As usually on spanish-made games, lamps and solenoids are heavily mixed up...
+static WRITE_HANDLER(lamp1_w) {
+  if (offset == 0 && (data & 0x07)) {
+    locals.solCount = 0;
+    locals.solenoids |= (data & 0x07) << 8;
+  } else if (offset == 2 && (data & 0x07)) {
+    locals.solCount = 0;
+    locals.solenoids |= (data & 0x07) << 11;
+  } else if (offset == 4 && (data & 0x03)) {
+    locals.solCount = 0;
+    locals.solenoids |= (data & 0x03) << 14;
+  }
+  coreGlobals.tmpLampMatrix[offset] = data;
+}
+
+static WRITE_HANDLER(lamp2_w) {
+  coreGlobals.tmpLampMatrix[6+offset] = data;
+}
+
+static WRITE_HANDLER(sol_w) {
+  locals.solCount = 0;
+  locals.solenoids |= data;
+}
+
 static WRITE_HANDLER(parallel_0_out) {
   locals.dispData = (locals.dispData & 0xffffff00) | data;
 }
@@ -107,68 +201,6 @@ static HC4094interface hc4094jp = {
   { qs1pin_0_out, qs1pin_1_out, qs1pin_2_out }
 };
 
-/*-------------------------------
-/  copy local data to interface
-/--------------------------------*/
-static INTERRUPT_GEN(JP_vblank) {
-  locals.vblankCount++;
-
-  /*-- lamps --*/
-  if ((locals.vblankCount % JP_LAMPSMOOTH) == 0)
-    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
-  /*-- solenoids --*/
-  if ((locals.vblankCount % JP_SOLSMOOTH) == 0)
-    coreGlobals.solenoids = locals.solenoids;
-  /*-- display --*/
-  if ((locals.vblankCount % JP_DISPLAYSMOOTH) == 0) {
-    memcpy(coreGlobals.segments, locals.segments, sizeof(locals.segments));
-    memset(locals.segments, 0xff, sizeof(locals.segments));
-  }
-
-  core_updateSw(core_getSol(7));
-}
-
-static SWITCH_UPDATE(JP) {
-  if (inports) {
-    CORE_SETKEYSW(inports[CORE_COREINPORT], 0x7e, 4);
-  }
-}
-
-static READ_HANDLER(dip_r) {
-  return core_getDip(3-offset);
-}
-
-// No idea which bit does what here...
-// The schematics won't tell, but the order should be:
-// DATA, CLOCK, LATCH, X0, X1, X2, X3, X4
-static WRITE_HANDLER(disp_w) {
-  data ^= 0xff;
-  locals.swCol = core_BitColToNum((data >> 3) & 0x1f);
-  HC4094_data_w (0, GET_BIT0);
-  HC4094_strobe_w(0, GET_BIT2);
-  HC4094_strobe_w(1, GET_BIT2);
-  HC4094_strobe_w(2, GET_BIT2);
-  HC4094_strobe_w(3, GET_BIT2);
-  HC4094_clock_w(0, GET_BIT1);
-  HC4094_clock_w(1, GET_BIT1);
-  HC4094_clock_w(2, GET_BIT1);
-  HC4094_clock_w(3, GET_BIT1);
-  dispStrobe();
-}
-
-// As usually on spanish-made games, lamps and solenoids are heavily mixed up...
-static WRITE_HANDLER(lamp1_w) {
-  coreGlobals.tmpLampMatrix[offset] = data;
-}
-
-static WRITE_HANDLER(lamp2_w) {
-  coreGlobals.tmpLampMatrix[6+offset] = data;
-}
-
-static WRITE_HANDLER(sol_w) {
-  locals.solenoids = (locals.solenoids & 0xffffff00) | data;
-}
-
 static WRITE_HANDLER(ay8910_ctrl_w) { AY8910Write(0,0,data); }
 static WRITE_HANDLER(ay8910_data_w) { AY8910Write(0,1,data); }
 static READ_HANDLER (ay8910_r)      { return AY8910Read(0); }
@@ -197,13 +229,12 @@ struct AY8910interface JP_ay8910Int = {
 
 static MEMORY_READ_START(JP_readmem)
   {0x0000,0x3fff, MRA_ROM},
-  {0x4300,0x47ff, MRA_RAM},
+  {0x4000,0x47ff, MRA_RAM},
   {0x6001,0x6001, ay8910_r},
 MEMORY_END
 
 static MEMORY_WRITE_START(JP_writemem)
-  {0x4300,0x43ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
-  {0x4400,0x47ff, MWA_RAM},
+  {0x4000,0x47ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
   {0x6000,0x6000, ay8910_ctrl_w},
   {0x6002,0x6002, ay8910_data_w},
   {0xa000,0xa000, sol_w},
@@ -251,22 +282,48 @@ static INTERRUPT_GEN(JPS_irq) {
   cpu_set_irq_line(1, 0, PULSE_LINE);
 }
 
-static struct DACinterface JP_dacInt = { 1, { 25 }};
+/* MSM5205 interrupt callback */
+static UINT8 mdata;
+static int which;
+static void JP_msmIrq(int data) {
+	MSM5205_data_w(0, (which = !which) ? mdata >> 4 : mdata & 0x0f);
+}
+
+static struct MSM5205interface JP_msm5205Int = {
+	1,					//# of chips
+	384000,				//Clock Frequency
+	{JP_msmIrq},		//VCLK Int. Callback
+	{MSM5205_S48_4B},	//Sample Mode
+	{60}				//Volume
+};
 
 static WRITE_HANDLER(bank_w) {
-  cpu_setbank(1, memory_region(REGION_SOUND1) + (0x8000 * data & 0x07));
+//logerror("bank_w: %02x\n", data);
+  cpu_setbank(1, memory_region(REGION_SOUND1) + 0x8000 * (data & 7));
+}
+
+static WRITE_HANDLER(snd_w) {
+//logerror("snd_w: %02x\n", data);
+  mdata = data;
+  which = 0;
+}
+
+static WRITE_HANDLER(enable_w) {
+//logerror("enable_w: %02x\n", data);
+  MSM5205_reset_w(0, data & 1);
 }
 
 static MEMORY_READ_START(jpsnd_readmem)
   {0x0000,0x3fff, MRA_ROM},
-  {0x47fc,0x47ff, MRA_RAM},
+  {0x4000,0x47ff, MRA_RAM},
   {0x8000,0xffff, MRA_BANKNO(1) },
 MEMORY_END
 
 static MEMORY_WRITE_START(jpsnd_writemem)
-  {0x47fc,0x47ff, MWA_RAM},
-  {0x5000,0x5000, bank_w  },
-  {0x7000,0x7000, DAC_0_data_w },
+  {0x4000,0x47ff, MWA_RAM},
+  {0x5000,0x5000, bank_w},
+  {0x6000,0x6000, snd_w},
+  {0x7000,0x7000, enable_w},
 MEMORY_END
 
 MACHINE_DRIVER_START(JPS)
@@ -274,8 +331,8 @@ MACHINE_DRIVER_START(JPS)
   MDRV_CPU_ADD_TAG("scpu", Z80, JP_CPUFREQ)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(jpsnd_readmem, jpsnd_writemem)
-  MDRV_CPU_PERIODIC_INT(JPS_irq, JP_CPUFREQ / 4096)
+  MDRV_CPU_PERIODIC_INT(JPS_irq, 4000)
   MDRV_CORE_INIT_RESET_STOP(JPS,NULL,JPS)
   MDRV_INTERLEAVE(50)
-  MDRV_SOUND_ADD(DAC, JP_dacInt)
+  MDRV_SOUND_ADD(MSM5205, JP_msm5205Int)
 MACHINE_DRIVER_END
