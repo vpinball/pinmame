@@ -14,7 +14,7 @@
 		IO:      DMA, AY8910 input ports
 		DISPLAY: 7-digit 8-segment panels with direct segment access, driven by 4x 4094 serial controllers.
 		SOUND:	 AY8910 @ 2 MHz on CPU board,
-		         Z80 CPU with DAC? on separate board.
+		         Z80 CPU with ADPCM chip (probably an MSM5205 @ 384 kHz) on separate board.
  ************************************************************************************************/
 //Games: America 1492 1986, Aqualand 1986, Faeton 1985, Halley Comet 1986,
 //       Lortium 1987, Olympus 1986, Petaco 1984
@@ -70,10 +70,10 @@ static INTERRUPT_GEN(JP_vblank) {
 }
 
 static SWITCH_UPDATE(JP) {
+#ifdef MAME_DEBUG
   static char s[4];
   static int sndcmd;
   int i;
-#ifdef MAME_DEBUG
   if      (keyboard_pressed_memory_repeat(KEYCODE_Z, 2) && sndcmd > 0) {
     sndcmd--;
     sprintf(s, "%2d", sndcmd);
@@ -207,7 +207,9 @@ static READ_HANDLER (ay8910_r)      { return AY8910Read(0); }
 
 // Funny: they use the ports of the AY8910 sound chip as switch inputs! :)
 static READ_HANDLER (ay8910_portA_r) {
-	if (locals.swCol)
+	if (locals.swCol == 4)
+		return ~core_getDip(2);
+	else if (locals.swCol)
 		return ~coreGlobals.swMatrix[4+locals.swCol];
 	else
 		return ~core_getDip(1);
