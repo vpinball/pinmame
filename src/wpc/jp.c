@@ -5,6 +5,7 @@
    This system doesn't seem to have any kind of diagnostic tests, which makes emulation a pain in the a..
    Also, the display board is just being fed 3 serial bits, and everything else goes from there.
    I still haven't found where the external sound board gets its commands from either...
+   I use a hack tthat monitors the memory location that contains the sound command as of now.
    The Aqualand schematics unfortunately aren't very detailed; at least all the chips are visible.
 
    Hardware:
@@ -235,7 +236,16 @@ static MEMORY_READ_START(JP_readmem)
   {0x6001,0x6001, ay8910_r},
 MEMORY_END
 
+static WRITE_HANDLER(test_w) {
+  int i;
+  for (i=0; i < data; i++) {
+    cpu_set_nmi_line(1, ASSERT_LINE);
+    cpu_set_nmi_line(1, CLEAR_LINE);
+  }
+}
+
 static MEMORY_WRITE_START(JP_writemem)
+  {0x442b,0x442b, test_w},
   {0x4000,0x47ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
   {0x6000,0x6000, ay8910_ctrl_w},
   {0x6002,0x6002, ay8910_data_w},
