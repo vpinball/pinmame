@@ -4,9 +4,7 @@
    NOTES:
    This system doesn't seem to have any kind of diagnostic tests, which makes emulation a pain in the a..
    Also, the display board is just being fed 3 serial bits, and everything else goes from there.
-   I still haven't found where the external sound board gets its commands from either...
-   I use a hack tthat monitors the memory location that contains the sound command as of now.
-   The Aqualand schematics unfortunately aren't very detailed; at least all the chips are visible.
+   The external sound board gets its morse-code style sound commands from an undocumented lamp output!!!
 
    Hardware:
    ---------
@@ -73,23 +71,21 @@ static INTERRUPT_GEN(JP_vblank) {
 static SWITCH_UPDATE(JP) {
 #ifdef MAME_DEBUG
   static char s[4];
-  static int sndcmd;
+  static int sndcmd = 3;
   int i;
-  if      (keyboard_pressed_memory_repeat(KEYCODE_Z, 2) && sndcmd > 0) {
+  if (keyboard_pressed_memory_repeat(KEYCODE_Z, 4) && sndcmd > 3) {
     sndcmd--;
     sprintf(s, "%2d", sndcmd);
     core_textOut(s, 2, 35, 5, 5);
     for (i=0; i < sndcmd; i++) {
-      cpu_set_nmi_line(1, ASSERT_LINE);
-      cpu_set_nmi_line(1, CLEAR_LINE);
+      cpu_set_nmi_line(1, PULSE_LINE);
     }
-  } else if (keyboard_pressed_memory_repeat(KEYCODE_X, 2) && sndcmd < 0x40) {
+  } else if (keyboard_pressed_memory_repeat(KEYCODE_X, 4) && sndcmd < 0x20) {
     sndcmd++;
     sprintf(s, "%2d", sndcmd);
     core_textOut(s, 2, 35, 5, 5);
     for (i=0; i < sndcmd; i++) {
-      cpu_set_nmi_line(1, ASSERT_LINE);
-      cpu_set_nmi_line(1, CLEAR_LINE);
+      cpu_set_nmi_line(1, PULSE_LINE);
     }
   }
 #endif /* MAME_DEBUG */
@@ -165,6 +161,10 @@ static WRITE_HANDLER(lamp1_w) {
 }
 
 static WRITE_HANDLER(lamp2_w) {
+  // morse code; pulses the NMI of the external sound board CPU a couple of times!
+  if (offset == 5 && (data & 0x02)) {
+    cpu_set_nmi_line(1, PULSE_LINE);
+  }
   coreGlobals.tmpLampMatrix[6+offset] = data;
 }
 
@@ -236,16 +236,7 @@ static MEMORY_READ_START(JP_readmem)
   {0x6001,0x6001, ay8910_r},
 MEMORY_END
 
-static WRITE_HANDLER(test_w) {
-  int i;
-  for (i=0; i < data; i++) {
-    cpu_set_nmi_line(1, ASSERT_LINE);
-    cpu_set_nmi_line(1, CLEAR_LINE);
-  }
-}
-
 static MEMORY_WRITE_START(JP_writemem)
-  {0x442b,0x442b, test_w},
   {0x4000,0x47ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
   {0x6000,0x6000, ay8910_ctrl_w},
   {0x6002,0x6002, ay8910_data_w},
