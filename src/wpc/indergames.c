@@ -58,13 +58,13 @@ CORE_GAMEDEFNV(canasta,"Canasta '86'",1986,"Inder (Spain)",gl_mINDER1,0)
 /-------------------------------------------------------------------*/
 INITGAME(pinclown, inderDisp7, 1, 0,0,0,0,0)
 INDER_ROMSTART1(pinclown,"clown_a.bin", CRC(b7c3f9ab) SHA1(89ede10d9e108089da501b28f53cd7849f791a00))
-INDER_SNDROM4(			"clown_b.bin", CRC(acb16108) SHA1(b9003bac44b8bac406950ffb6696eef9a07f16c7),
+INDER_SNDROM4(			"clown_b.bin", CRC(81a66302) SHA1(3d1243ae878747f20e54cd3322c5a54ded45ce21),
 						"clown_c.bin", CRC(dff89319) SHA1(3745a02c3755d11ea7fb552f7a5df2e8bbee2c29),
 						"clown_d.bin", CRC(cce4e1dc) SHA1(561c9331d2d110d34cf250cd7b25be16a72a1d79),
 						"clown_e.bin", CRC(98263526) SHA1(509764e65847637824ba93f7e6ce926501c431ce),
 						"clown_f.bin", CRC(5f01b531) SHA1(116b1670ef4d5c054bb09dc55aa7d5d3ca047079))
 INDER_ROMEND
-CORE_GAMEDEFNV(pinclown,"Clown (Inder)",1988,"Inder (Spain)",gl_mINDERS,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(pinclown,"Clown (Inder)",1988,"Inder (Spain)",gl_mINDERS,0)
 
 /*-------------------------------------------------------------------
 / Corsario (1989)
@@ -77,7 +77,7 @@ INDER_SNDROM4(			"a-corsar.bin", CRC(e14b7918) SHA1(5a5fc308b0b70fe041b81071ba48
 						"d-corsar.bin", CRC(10d8b448) SHA1(ed1918e6c55eba07dde31b9755c9403e073cad98),
 						"e-corsar.bin", CRC(918ee349) SHA1(17cded8b5626c91e400d26332a160704f2fd2b55))
 INDER_ROMEND
-CORE_GAMEDEFNV(corsario,"Corsario",1989,"Inder (Spain)",gl_mINDERS,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(corsario,"Corsario",1989,"Inder (Spain)",gl_mINDERS,0)
 
 /*-------------------------------------------------------------------
 / 250 CC (1992)
@@ -90,4 +90,4 @@ INDER_SNDROM4(			"a-250cc.bin", CRC(b64bdafb) SHA1(eab6d54d34b44187d454c1999e4bc
 						"d-250cc.bin", CRC(a0940387) SHA1(0e06483e3e823bf4673d8e0bd120b0a6b802035d),
 						"e-250cc.bin", CRC(538b3274) SHA1(eb76c41a60199bb94aec4666222e405bbcc33494))
 INDER_ROMEND
-CORE_GAMEDEFNV(ind250cc,"250 CC",1992,"Inder (Spain)",gl_mINDERS,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(ind250cc,"250 CC",1992,"Inder (Spain)",gl_mINDERS,0)
