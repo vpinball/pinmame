@@ -27,6 +27,14 @@ static core_tLCDLayout inderDisp7[] = {
   {0}
 };
 
+static core_tLCDLayout inderDisp7a[] = {
+  {0, 0, 1,7,CORE_SEG7}, {0,22, 9,7,CORE_SEG7},
+  {3, 0,17,7,CORE_SEG7}, {3,22,25,7,CORE_SEG7},
+  {1,24,34,2,CORE_SEG7S},{1,29,38,2,CORE_SEG7S},
+  {4,24,41,1,CORE_SEG7S},
+  {0}
+};
+
 /*-------------------------------------------------------------------
 / Brave Team (1985)
 /-------------------------------------------------------------------*/
@@ -61,7 +69,7 @@ CORE_GAMEDEFNV(pinclown,"Clown (Inder)",1988,"Inder (Spain)",gl_mINDERS,GAME_IMP
 /*-------------------------------------------------------------------
 / Corsario (1989)
 /-------------------------------------------------------------------*/
-INITGAME(corsario, inderDisp7, 1, 0,0x10,0,0,0)
+INITGAME(corsario, inderDisp7a, 1, 0,0x10,0,0,0)
 INDER_ROMSTART1(corsario,"0-corsar.bin", CRC(800f6895) SHA1(a222e7ea959629202686815646fc917ffc5a646c))
 INDER_SNDROM4(			"a-corsar.bin", CRC(e14b7918) SHA1(5a5fc308b0b70fe041b81071ba4820782b6ff988),
 						"b-corsar.bin", CRC(7f155828) SHA1(e459c81b2c2e47d4276344d8d6a08c2c6242f941),
@@ -74,7 +82,7 @@ CORE_GAMEDEFNV(corsario,"Corsario",1989,"Inder (Spain)",gl_mINDERS,GAME_IMPERFEC
 /*-------------------------------------------------------------------
 / 250 CC (1992)
 /-------------------------------------------------------------------*/
-INITGAME(ind250cc, inderDisp7, 1, 0,0,0,0,0)
+INITGAME(ind250cc, inderDisp7a, 1, 0,0,0,0,0)
 INDER_ROMSTART1(ind250cc,"0-250cc.bin", CRC(753d82ec) SHA1(61950336ba571f9f75f2fc31ccb7beaf4e05dddc))
 INDER_SNDROM4(			"a-250cc.bin", CRC(b64bdafb) SHA1(eab6d54d34b44187d454c1999e4bcf455183d5a0),
 						"b-250cc.bin", CRC(884c31c8) SHA1(23a838f1f0cb4905fa8552579b5452134f0fc9cc),
@@ -83,4 +91,3 @@ INDER_SNDROM4(			"a-250cc.bin", CRC(b64bdafb) SHA1(eab6d54d34b44187d454c1999e4bc
 						"e-250cc.bin", CRC(538b3274) SHA1(eb76c41a60199bb94aec4666222e405bbcc33494))
 INDER_ROMEND
 CORE_GAMEDEFNV(ind250cc,"250 CC",1992,"Inder (Spain)",gl_mINDERS,GAME_IMPERFECT_SOUND)
-

@@ -3,7 +3,6 @@
  -------------
 
  ISSUES:
- - Sound for Brave Team (does it use an AY8910 as well? Only 8 bits are hooked to the chip...)
  - Missing memory write handlers, esp. for 0x4805, which seems to be a timer of some sort?
  - Does the NVRAM really use 8 bits? It's 256 Bytes long, and has 2 5101 chips.
 
@@ -208,7 +207,7 @@ static WRITE_HANDLER(ci21_portb_w) {
 }
 // lamps
 static WRITE_HANDLER(ci21_portc_w) {
-	coreGlobals.tmpLampMatrix[1] = data ^ 0x80;
+	coreGlobals.tmpLampMatrix[1] = data;
 }
 
 // lamps
@@ -226,11 +225,11 @@ static WRITE_HANDLER(ci22_portc_w) {
 
 // lamps
 static WRITE_HANDLER(ci23_porta_w) {
-	coreGlobals.tmpLampMatrix[4] = data ^ 0x80;
+	coreGlobals.tmpLampMatrix[4] = data;
 }
 // lamps
 static WRITE_HANDLER(ci23_portb_w) {
-	coreGlobals.tmpLampMatrix[5] = data ^ 0x55;
+	coreGlobals.tmpLampMatrix[5] = data;
 }
 // display strobes
 static WRITE_HANDLER(ci23_portc_w) {
@@ -264,8 +263,6 @@ static MEMORY_READ_START(INDER_readmem)
   {0x0000,0x1fff, MRA_ROM},
   {0x4000,0x43ff, MRA_RAM},
   {0x4400,0x44ff, INDER_CMOS_r},
-  {0x4800,0x4802, dip_r},
-  {0x4805,0x4809, sw_r},
   {0x6000,0x6003, ppi8255_0_r},
   {0x6400,0x6403, ppi8255_1_r},
   {0x6800,0x6803, ppi8255_2_r},
@@ -275,16 +272,13 @@ MEMORY_END
 static MEMORY_WRITE_START(INDER_writemem)
   {0x4000,0x43ff, MWA_RAM},
   {0x4400,0x44ff, INDER_CMOS_w, &INDER_CMOS},
-  {0x4806,0x480a, sw_w},
-  {0x4900,0x4900, sol_w},
-  {0x4901,0x4907, lamp_w},
   {0x6000,0x6003, ppi8255_0_w},
   {0x6400,0x6403, ppi8255_1_w},
   {0x6800,0x6803, ppi8255_2_w},
   {0x6c00,0x6c03, ppi8255_3_w},
   {0x6c20,0x6c20, snd_w},
   {0x6c60,0x6c66, disp16_w},
-//{0x6ce0,0x6ce0, ?},
+//{0x6ce0,0x6ce0, ?}, // unknown stuff here
 MEMORY_END
 
 static MEMORY_READ_START(INDER1_readmem)
@@ -406,7 +400,7 @@ static WRITE_HANDLER(snd_portb_w) {
 static WRITE_HANDLER(snd_portc_w) {
 //printf("snd:%02x:%02x%02x\n", data, sndlocals.AHI, sndlocals.ALO);
 	//Set Reset Line on the chip
-//	MSM5205_reset_w(0, GET_BIT6);
+	MSM5205_reset_w(0, !GET_BIT6);
 
 	//PC0 = 1 on Reset
 //	if(GET_BIT6)
