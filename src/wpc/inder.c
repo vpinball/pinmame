@@ -361,16 +361,13 @@ static struct {
 	int CS;
 	int PC0;
 	int MSMDATA;
-	int Reset;
 } sndlocals;
 
 /* MSM5205 interrupt callback */
 static void INDER_msmIrq(int data) {
 	//Write data
-	if(!sndlocals.Reset) {
-		int mdata = sndlocals.MSMDATA>>(4*sndlocals.PC0);	//PC0 determines if lo or hi nibble is fed
-		MSM5205_data_w(0, mdata&0x0f);
-	}
+	int mdata = sndlocals.MSMDATA>>(4*sndlocals.PC0);	//PC0 determines if lo or hi nibble is fed
+	MSM5205_data_w(0, mdata&0x0f);
 	//Flip it..
 	sndlocals.PC0 = !sndlocals.PC0;
 }
@@ -381,7 +378,7 @@ static struct MSM5205interface INDER_msm5205Int = {
 	384000,				//384Khz Clock Frequency?
 	{INDER_msmIrq},		//VCLK Int. Callback
 	{MSM5205_S48_4B},	//Sample Mode
-	{75}				//Volume
+	{80}				//Volume
 };
 
 static READ_HANDLER(snd_porta_r) { logerror(("SND1_PORTA_R\n")); return 0; }
@@ -395,23 +392,18 @@ static WRITE_HANDLER(snd_porta_w) {
 	sndlocals.ALO = data;
 }
 static WRITE_HANDLER(snd_portb_w) {
-	sndlocals.AHI = (data & 0x7f) | 0x80;
+	sndlocals.AHI = data;
 }
 static WRITE_HANDLER(snd_portc_w) {
-//printf("snd:%02x:%02x%02x\n", data, sndlocals.AHI, sndlocals.ALO);
-	//Set Reset Line on the chip
-	MSM5205_reset_w(0, !GET_BIT6);
+	//Set Reset Line on the chip. This is done totally silly in the real machine;
+	//They even used an R/C timer to pulse the reset line to avoid static!
+	if ((data & 0xc0) == 0x40) MSM5205_reset_w(0, 1);
+	if ((data & 0xc0) == 0x80) MSM5205_reset_w(0, 0);
 
-	//PC0 = 1 on Reset
-//	if(GET_BIT6)
-//		sndlocals.PC0 = 1;
-//	else {
-	//Read Data from ROM & Write Data To MSM Chip
-		sndlocals.MSMDATA = (UINT8)*(memory_region(REGION_USER1) +
-			((sndlocals.CS<<16) | (sndlocals.AHI<<8) | sndlocals.ALO));
-//	}
-	//Store reset value
-//	sndlocals.Reset = GET_BIT6;
+	if (GET_BIT6)
+		sndlocals.PC0 = 1;
+	if (!GET_BIT7)
+		sndlocals.PC0 = 1;
 }
 
 static READ_HANDLER(sndcmd_r) {
@@ -420,6 +412,9 @@ static READ_HANDLER(sndcmd_r) {
 
 static WRITE_HANDLER(sndctrl_w) {
 	sndlocals.CS = core_BitColToNum(data^0xff);
+	//Read Data from ROM & Write Data To MSM Chip
+	sndlocals.MSMDATA = (UINT8)*(memory_region(REGION_USER1) +
+	  ((sndlocals.CS<<16) | (sndlocals.AHI<<8) | sndlocals.ALO));
 }
 
 static MACHINE_INIT(INDERS) {
@@ -438,23 +433,15 @@ static MACHINE_STOP(INDERS) {
 
 static MEMORY_READ_START(indersnd_readmem)
 	{ 0x0000, 0x1fff, MRA_ROM },
-	{ 0x2000, 0x23ff, MRA_RAM },
-	{ 0x2900, 0x2900, MRA_RAM },
+	{ 0x2000, 0x2fff, MRA_RAM },
 	{ 0x4000, 0x4003, ppi8255_4_r},
-	{ 0x4004, 0x7fff, MRA_NOP },
-	{ 0x8000, 0x8000, sndcmd_r},
-	{ 0x8001, 0xffff, MRA_NOP },
+	{ 0x8000, 0x8000, sndcmd_r },
 MEMORY_END
 
 static MEMORY_WRITE_START(indersnd_writemem)
-//	{ 0x0000, 0x1fff, MWA_NOP },
-	{ 0x2000, 0x23ff, MWA_RAM },
-	{ 0x2900, 0x2900, MWA_RAM },
-//	{ 0x32af, 0x32b0, MWA_NOP },
+	{ 0x2000, 0x2fff, MWA_RAM },
 	{ 0x4000, 0x4003, ppi8255_4_w},
-//	{ 0x4004, 0x5fff, MWA_NOP },
 	{ 0x6000, 0x6000, sndctrl_w},
-//	{ 0x6001, 0xffff, MWA_NOP },
 MEMORY_END
 
 MACHINE_DRIVER_START(INDERS)
