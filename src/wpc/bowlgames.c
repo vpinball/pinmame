@@ -156,13 +156,13 @@ S9_ROMSTART12(pfevr,l2,"pf-rom1.u19", CRC(00be42bd) SHA1(72ca21c96e3ffa3c4349916
 S9S_SOUNDROM4("cpu_u49.128", CRC(b0161712) SHA1(5850f1f1f11e3ac9b9629cff2b26c4ad32436b55))
 S9_ROMEND
 S11_INPUT_PORTS_START(pfevr, 1) S11_INPUT_PORTS_END
-CORE_GAMEDEF(pfevr, l2, "Pennant Fever Baseball (L-2)", 1984, "Williams", s11_mS11S, GAME_IMPERFECT_SOUND)
+CORE_GAMEDEF(pfevr, l2, "Pennant Fever Baseball (L-2)", 1984, "Williams", s9_mS9PS, 0)
 
 S9_ROMSTART12(pfevr,p3,"cpu_u19.732", CRC(03796c6d) SHA1(38c95fcce9d0f357a74f041f0df006b9c6f6efc7),
                        "cpu_u20.764", CRC(3a3acb39) SHA1(7844cc30a9486f718a556850fc9cef3be82f26b7))
 S9S_SOUNDROM4("cpu_u49.128", CRC(b0161712) SHA1(5850f1f1f11e3ac9b9629cff2b26c4ad32436b55))
 S9_ROMEND
-CORE_CLONEDEF(pfevr, p3, l2, "Pennant Fever Baseball (P-3)", 1984, "Williams", s11_mS11S, GAME_IMPERFECT_SOUND)
+CORE_CLONEDEF(pfevr, p3, l2, "Pennant Fever Baseball (P-3)", 1984, "Williams", s9_mS9PS, 0)
 
 /*--------------------
 / Strike Zone (#916)
