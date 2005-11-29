@@ -248,6 +248,70 @@ static void s11s_diag(int button) {
 }
 
 /*--------------------------
+/ Pennant Fever sound board.
+/ Thanks to Destruk for
+/ buying the schematics! :)
+/---------------------------*/
+#define S9P_PIA0    6
+
+static struct {
+  struct sndbrdData brdData;
+} s9plocals;
+
+static void s9p_piaIrq(int state) {
+  cpu_set_irq_line(s9plocals.brdData.cpuNo, M6808_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
+}
+
+static const struct pia6821_interface s9p_pia = {
+ /* PIA 0 (4000) */
+ /* PA0 - PA7 CPU interface (MDx) */
+ /* PB0 - PB7 DAC */
+ /* in  : A/B,CA/B1,CA/B2 */
+  soundlatch_r, 0, 0, 0, 0, 0,
+ /* out : A/B,CA/B2       */
+  0, DAC_0_data_w, 0, 0,
+ /* irq : A/B             */
+  s9p_piaIrq, s9p_piaIrq
+};
+
+static void s9p_init(struct sndbrdData *brdData) {
+  s9plocals.brdData = *brdData;
+  pia_config(S9P_PIA0, PIA_STANDARD_ORDERING, &s9p_pia);
+}
+
+static void s9p_diag(int state) {
+  cpu_set_nmi_line(s9plocals.brdData.cpuNo, state ? ASSERT_LINE : CLEAR_LINE);
+}
+
+static MEMORY_READ_START(s9p_readmem)
+  { 0x0000, 0x00ff, MRA_RAM },
+  { 0x4000, 0x4003, pia_r(S9P_PIA0) },
+  { 0xc000, 0xffff, MRA_ROM },
+MEMORY_END
+
+static MEMORY_WRITE_START(s9p_writemem)
+  { 0x0000, 0x00ff, MWA_RAM },
+  { 0x4000, 0x4003, pia_w(S9P_PIA0) },
+MEMORY_END
+
+static struct DACinterface      s9p_dacInt      = { 1, { 50 }};
+static struct hc55516_interface s9p_hc55516Int  = { 1, { 80 }};
+
+const struct sndbrdIntf s9psIntf = {
+  "WMSS9P", s9p_init, NULL, s9p_diag, soundlatch_w, soundlatch_w, NULL, NULL, soundlatch_r
+};
+
+MACHINE_DRIVER_START(wmssnd_s9ps)
+  MDRV_CPU_ADD(M6808, 1000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(s9p_readmem, s9p_writemem)
+  MDRV_INTERLEAVE(50)
+  MDRV_SOUND_ADD_TAG("dac",  DAC,    s9p_dacInt)
+  MDRV_SOUND_ADD_TAG("cvsd", HC55516,s9p_hc55516Int)
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
+MACHINE_DRIVER_END
+
+/*--------------------------
 /    System 11C sound board
 /---------------------------*/
 #define S11CS_PIA0    7
@@ -850,7 +914,7 @@ static WRITE_HANDLER(dcs_ctrl_w) {
   DBGLOG(("ctrl_w: %02x\n",data));
 
   // Tom: Removed the next line which now prevents some "sound board interface error"
-  // if (dcslocals.brdData.subType < 2) 
+  // if (dcslocals.brdData.subType < 2)
   {
 #ifdef WPCDCSSPEEDUP
     // probably a bug in the mame reset handler
