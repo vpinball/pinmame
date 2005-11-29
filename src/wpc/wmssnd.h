@@ -132,6 +132,7 @@ extern MACHINE_DRIVER_EXTERN(wmssnd_s11b2s); /* with jokerz sound board */
 #define S9S_CPUNO     1
 #define S9S_CPUREGION (REGION_CPU1+S9S_CPUNO)
 extern MACHINE_DRIVER_EXTERN(wmssnd_s9s);
+extern MACHINE_DRIVER_EXTERN(wmssnd_s9ps);  /* pennant fever */
 
 #define S9S_STDREG SOUNDREGION(0x10000, S9S_CPUREGION)
 
