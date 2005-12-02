@@ -362,6 +362,15 @@ DE2S_SOUNDROM021(   "batman.u7" ,CRC(b2e88bf5) SHA1(28f814ea73f8eefd1bb5499a599e
 DE_ROMEND
 CORE_CLONEDEF(btmn,g13,103,"Batman (1.03, Germany)",1991,"Data East",de_mDEDMD16S2A,0)
 
+DE_ROMSTART48(btmn_106,"b5_a106.128",CRC(5aa7fbe3) SHA1(587be4fd18ad730e675e720923e00d1775a4560e),
+                    "c5_a106.256",CRC(79e86ccd) SHA1(430ac436bd1c8841950986af80747285a7d25942))
+DE_DMD16ROM2(       "batdsp.106",CRC(4c4120e7) SHA1(ba7d78c933f6709b3db4efcca5e7bb9099074550))
+DE2S_SOUNDROM021(   "batman.u7" ,CRC(b2e88bf5) SHA1(28f814ea73f8eefd1bb5499a599e67a6850c92c0),
+                    "batman.u17" ,CRC(b84914dd) SHA1(333d88033428705cbd0a40d70d938c0021bb0015),
+                    "batman.u21" ,CRC(42dab6ac) SHA1(facf993db2ce240c9e825ca9a21ac65a0fbba188))
+DE_ROMEND
+CORE_CLONEDEF(btmn,106,103,"Batman (1.06)",1991,"Data East",de_mDEDMD16S2A,0)
+
 /*-------------------------------------------------------------
 / Star Trek - CPU Rev 3 /DMD Type 1 128K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
