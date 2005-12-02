@@ -258,6 +258,8 @@ static struct {
   struct sndbrdData brdData;
 } s9plocals;
 
+static WRITE_HANDLER(s9p_hs_w) { pia_set_input_ca1(0, data); }
+static WRITE_HANDLER(ext_hs_w) { pia_set_input_ca1(S9P_PIA0, data); }
 static void s9p_piaIrq(int state) {
   cpu_set_irq_line(s9plocals.brdData.cpuNo, M6808_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
@@ -269,7 +271,7 @@ static const struct pia6821_interface s9p_pia = {
  /* in  : A/B,CA/B1,CA/B2 */
   soundlatch_r, 0, 0, 0, 0, 0,
  /* out : A/B,CA/B2       */
-  0, DAC_0_data_w, 0, 0,
+  0, DAC_0_data_w, s9p_hs_w, 0,
  /* irq : A/B             */
   s9p_piaIrq, s9p_piaIrq
 };
@@ -294,11 +296,10 @@ static MEMORY_WRITE_START(s9p_writemem)
   { 0x4000, 0x4003, pia_w(S9P_PIA0) },
 MEMORY_END
 
-static struct DACinterface      s9p_dacInt      = { 1, { 50 }};
-static struct hc55516_interface s9p_hc55516Int  = { 1, { 80 }};
+static struct DACinterface      s9p_dacInt      = { 1, { 60 }};
 
 const struct sndbrdIntf s9psIntf = {
-  "WMSS9P", s9p_init, NULL, s9p_diag, soundlatch_w, soundlatch_w, NULL, NULL, soundlatch_r
+  "WMSS9P", s9p_init, NULL, s9p_diag, soundlatch_w, soundlatch_w, NULL, ext_hs_w
 };
 
 MACHINE_DRIVER_START(wmssnd_s9ps)
@@ -307,7 +308,6 @@ MACHINE_DRIVER_START(wmssnd_s9ps)
   MDRV_CPU_MEMORY(s9p_readmem, s9p_writemem)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD_TAG("dac",  DAC,    s9p_dacInt)
-  MDRV_SOUND_ADD_TAG("cvsd", HC55516,s9p_hc55516Int)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END
 
