@@ -14,11 +14,11 @@
 		SOUND:	 Chimes
 
    Rotation VIII:
-		CPU:     Z80 @ 1.65 MHz ?
-			INT: NMI @ 1350Hz ?
-		IO:      Z80 Ports
+		CPU:     Z80 @ 1.77 MHz
+			INT: NMI via 8156 timer output
+		IO:      Z80 Ports, 8156 PIA
 		DISPLAY: 5 x 6 Digit 7-Segment panels
-		SOUND:	 ?
+		SOUND:	 integrated analog chip (part no. 0066-117XX, marked as "K3-4" on schematic
 ************************************************************************************************/
 #include <stdarg.h>
 #include "driver.h"
@@ -106,10 +106,12 @@ static INTERRUPT_GEN(MIDWAY_vblank) {
 
 static SWITCH_UPDATE(MIDWAY) {
   if (inports) {
-    coreGlobals.swMatrix[0] = inports[MIDWAY_COMINPORT] & 0xff;
-    coreGlobals.swMatrix[2] = (coreGlobals.swMatrix[2] & 0x0f) | ((inports[MIDWAY_COMINPORT] & 0x0f00) >> 4);
-    coreGlobals.swMatrix[3] = (coreGlobals.swMatrix[3] & 0x2f) | ((inports[MIDWAY_COMINPORT] & 0xd000) >> 8);
-    coreGlobals.swMatrix[4] = (coreGlobals.swMatrix[4] & 0xbf) | ((inports[MIDWAY_COMINPORT] & 0x2000) >> 7);
+    CORE_SETKEYSW(inports[CORE_COREINPORT], 0xff, 0);
+    CORE_SETKEYSW(inports[CORE_COREINPORT]>>4, 0xf0, 2);
+    CORE_SETKEYSW(inports[CORE_COREINPORT]>>8, 0xd0, 3);
+    CORE_SETKEYSW(inports[CORE_COREINPORT]>>7, 0x40, 4);
+    CORE_SETKEYSW(inports[CORE_COREINPORT+1], 0xff, 8);
+    CORE_SETKEYSW(inports[CORE_COREINPORT+1]>>8, 0xff, 9);
   }
 }
 
@@ -120,7 +122,24 @@ static READ_HANDLER(mem1800_r) {
 
 /* game switches */
 static READ_HANDLER(port_2x_r) {
-  return coreGlobals.swMatrix[offset ? 0 : locals.tmpSwCol];
+  if (!offset)
+    return coreGlobals.swMatrix[locals.tmpSwCol];
+  else // translate keypad to usable switch columns
+    switch (locals.tmpSwCol) {
+      // 3, 2, 1, 0
+      case 1: return ((coreGlobals.swMatrix[8] & 0x07) << 3) | ((coreGlobals.swMatrix[8] & 0x80) >> 1);
+      // 7, 6, 5, 4
+      case 2: return coreGlobals.swMatrix[8] & 0x78;
+       // set, dot, 9, 8
+      case 3: return ((coreGlobals.swMatrix[0] & 0x07) << 3) | ((coreGlobals.swMatrix[0] & 0x80) >> 1);
+      // test 3, test 2, test 1, game
+      case 4: return coreGlobals.swMatrix[0] & 0x78;
+       // test 7, test 6, test 5, test 4
+      case 5: return ((coreGlobals.swMatrix[9] & 0x07) << 3) | ((coreGlobals.swMatrix[9] & 0x80) >> 1);
+      // end, test 10, test 9, test 8
+      case 6: return coreGlobals.swMatrix[9] & 0x78;
+      default: return 0;
+    }
 }
 
 /* lamps & solenoids */
@@ -138,7 +157,7 @@ static WRITE_HANDLER(port_1x_w) {
   if (offset == 1)
     locals.solenoids = (locals.solenoids & 0xff00ffff) | (data << 16);
   else if (data != 0 && !((offset == 0 && data == 0x47) || (offset == 6 && data == 0x0f)))
-    logerror("Unexpected output on port %02x = %02x\n", offset, data);
+    logerror("Unexpected output on port 1%x = %02x\n", offset, data);
 }
 
 /* display data */
@@ -158,7 +177,7 @@ static WRITE_HANDLER(port_2x_w) {
         locals.lampMatrix[data] = locals.tmpLampData;
         locals.tmpSwCol = data + 1;
       } else
-        locals.tmpSwCol = 8;
+        logerror("Write to column %x\n", data);
       break;
     default:
       logerror("Write to port 2%x = %02x\n", offset, data);
@@ -199,14 +218,14 @@ MEMORY_END
 
 MACHINE_DRIVER_START(MIDWAY)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CPU_ADD_TAG("mcpu", Z80, 1650000)
+  MDRV_CPU_ADD_TAG("mcpu", Z80, 14138000/8)
   MDRV_CPU_MEMORY(MIDWAY_readmem, MIDWAY_writemem)
   MDRV_CPU_PORTS(midway_readport,midway_writeport)
   MDRV_CPU_VBLANK_INT(MIDWAY_vblank, 1)
   MDRV_CPU_PERIODIC_INT(MIDWAY_nmihi, MIDWAY_NMIFREQ)
   MDRV_CORE_INIT_RESET_STOP(MIDWAY,NULL,MIDWAY)
   MDRV_NVRAM_HANDLER(MIDWAY)
-  MDRV_DIPS(0) // no dips!
+  MDRV_DIPS(1) // no dips actually, but needed for extra core inport!
   MDRV_SWITCH_UPDATE(MIDWAY)
 MACHINE_DRIVER_END
 

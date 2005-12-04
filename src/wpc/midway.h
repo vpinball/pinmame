@@ -13,21 +13,45 @@
 /*-- Common Inports for MIDWAY Games --*/
 #define MIDWAY_COMPORTS \
   PORT_START /* 0 */ \
-    /* switch column 0 */ \
+    /* switch column 2 */ \
     COREPORT_BIT(     0x0100, "Player #1 Start",   KEYCODE_1) \
     COREPORT_BIT(     0x0400, "Player #2 Start",   KEYCODE_2) \
     COREPORT_BIT(     0x0800, "Player #3 Start",   KEYCODE_3) \
     COREPORT_BIT(     0x0200, "Player #4 Start",   KEYCODE_4) \
-    COREPORT_BIT(     0x0008, "Solenoid Test",     KEYCODE_7) \
-    COREPORT_BIT(     0x0010, "Switch Test",       KEYCODE_8) \
-    COREPORT_BIT(     0x0020, "Lamp/Display Test", KEYCODE_9) \
-    COREPORT_BIT(     0x0040, "Reset",             KEYCODE_0) \
     /* switch column 3 */ \
-    COREPORT_BIT(     0x1000, "Slam Tilt",         KEYCODE_HOME) \
     COREPORT_BIT(     0x8000, "Ball Tilt",         KEYCODE_INSERT) \
-    COREPORT_BITDEF(  0x4000, IPT_COIN1, IP_KEY_DEFAULT) \
+    COREPORT_BIT(     0x1000, "Slam Tilt",         KEYCODE_HOME) \
+    COREPORT_BITDEF(  0x4000, IPT_COIN1,           IP_KEY_DEFAULT) \
     /* switch column 4 */ \
-    COREPORT_BITDEF(  0x2000, IPT_COIN2, KEYCODE_6)
+    COREPORT_BITDEF(  0x2000, IPT_COIN2,           KEYCODE_6) \
+    /* switch column 0 */ \
+    COREPORT_BIT(     0x0080, "Keypad 8",          KEYCODE_8_PAD) \
+    COREPORT_BIT(     0x0004, "Keypad 9",          KEYCODE_9_PAD) \
+    COREPORT_BIT(     0x0001, "Keypad Set",        KEYCODE_ENTER) \
+    COREPORT_BIT(     0x0002, "Keypad Dot",        KEYCODE_STOP) \
+    COREPORT_BIT(     0x0040, "Keypad Game",       KEYCODE_0) \
+    COREPORT_BIT(     0x0020, "Test 1 (Lamps)",    KEYCODE_9) \
+    COREPORT_BIT(     0x0010, "Test 2 (Switches)", KEYCODE_8) \
+    COREPORT_BIT(     0x0008, "Test 3 (Solenoids)",KEYCODE_7) \
+  PORT_START /* 1 */ \
+    /* switch column 9 */ \
+    COREPORT_BIT(     0x8000, "Test 4 (Encoder)",  KEYCODE_V) \
+    COREPORT_BIT(     0x0400, "Test 5 (Display)",  KEYCODE_C) \
+    COREPORT_BIT(     0x0200, "Test 6 (Position)", KEYCODE_X) \
+    COREPORT_BIT(     0x0100, "Test 7 (unused)",   KEYCODE_Z) \
+    COREPORT_BIT(     0x4000, "Test 8 (Reset NVRAM)",KEYCODE_M) \
+    COREPORT_BIT(     0x2000, "Test 9 (unused)",   KEYCODE_N) \
+    COREPORT_BIT(     0x1000, "Test 10 (unused)",  KEYCODE_B) \
+    COREPORT_BIT(     0x0800, "Keypad End",        KEYCODE_END) \
+    /* switch column 8 */ \
+    COREPORT_BIT(     0x0080, "Keypad 0",          KEYCODE_0_PAD) \
+    COREPORT_BIT(     0x0004, "Keypad 1",          KEYCODE_1_PAD) \
+    COREPORT_BIT(     0x0002, "Keypad 2",          KEYCODE_2_PAD) \
+    COREPORT_BIT(     0x0001, "Keypad 3",          KEYCODE_3_PAD) \
+    COREPORT_BIT(     0x0040, "Keypad 4",          KEYCODE_4_PAD) \
+    COREPORT_BIT(     0x0020, "Keypad 5",          KEYCODE_5_PAD) \
+    COREPORT_BIT(     0x0010, "Keypad 6",          KEYCODE_6_PAD) \
+    COREPORT_BIT(     0x0008, "Keypad 7",          KEYCODE_7_PAD)
 
 #define MIDWAYP_COMPORTS \
   PORT_START /* 0 */ \
