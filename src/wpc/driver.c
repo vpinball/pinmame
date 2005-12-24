@@ -1131,7 +1131,7 @@ DRIVER(fs,lx5)          //WPC-529:  11/94 W The Flintstones (LX-5)
 DRIVER(corv,21)         //WPC-536:  08/94 B Corvette (2.1)
 DRIVER(corv,lx1)        //WPC-536:  08/94 B Corvette (LX1)
 DRIVER(corv,px4)        //WPC-536:  08/94 B Corvette (PX4)
-                        //WPC-617:  10/94 W Hot Shots
+DRIVER(hsts,p8)         //WPC-617:  10/92 W Hot Shots
 DRIVER(rs,lx2)          //WPC-524:  10/94 W Red & Ted's Road Show (Lx_2)
 DRIVER(rs,lx5)          //WPC-524:  10/94 W Red & Ted's Road Show (Lx_5)
 DRIVER(rs,la5)          //WPC-524:  10/94 W Red & Ted's Road Show (La_5)
