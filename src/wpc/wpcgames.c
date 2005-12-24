@@ -16,6 +16,30 @@ static void init_##name(void) { \
 WPC_INPUT_PORTS_START(wpc, 0) WPC_INPUT_PORTS_END
 
 /*-------------
+/ Hot Shots
+/--------------*/
+static core_tGameData hstsGameData = {
+  GEN_WPC95, wpc_dispDMD,
+  { FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L) },
+  NULL,
+  {
+    "905  123456 12345 123",
+    /*Coin    1     2     3     4     5     6     7     8     9    10   Cab.  Cust */
+    { 0x00, 0x00, 0x00, 0x3f, 0x0f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
+    /*Start    Tilt    SlamTilt    CoinDoor    Shooter */
+    { swStart, swTilt, swSlamTilt, swCoinDoor}
+  }
+};
+INITGAME(hsts)
+
+WPC_ROMSTART(hsts,p8,"hshot_p8.u6",0x80000,CRC(26dd6bb2) SHA1(45674885052838b6bd6b3ed0a276a4d9323290c5))
+DCS_SOUNDROM2m("hshot_l1.u14",CRC(a3ccf557) SHA1(a8e518ea115cd1963544273c45d9ae9a6cab5e1f),
+               "hshot_l1.u18",CRC(a0e5beba) SHA1(c54a22527d861df54891308752ebdec5829deceb))
+WPC_ROMEND
+#define input_ports_hsts input_ports_wpc
+CORE_GAMEDEF(hsts,p8,"Hot Shots (P8)",1992,"Williams",wpc_m95S,0)
+
+/*-------------
 / Ticket Tac Toe
 /--------------*/
 static core_tGameData tttGameData = {
