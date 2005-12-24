@@ -105,7 +105,7 @@ WPC_ROMEND
 CORE_GAMEDEF(tf95,12,"WPC 95 Test Fixture (1.2)",1996,"Bally",wpc_m95S,0)
 
 /*===========
-/  Test Ficture Alphanumeric
+/  Test Fixture Alphanumeric
 /============*/
 static core_tGameData tfaGameData = {
   GEN_WPCALPHA_2, wpc_dispAlpha,
