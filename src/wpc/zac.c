@@ -218,18 +218,6 @@ static MACHINE_INIT(ZAC2) {
   ZAC_soundInit();
 }
 
-static MACHINE_INIT(ZAC2A) {
-  memset(&locals, 0, sizeof(locals));
-  locals.gen = 3;
-  locals.irqtimer = timer_alloc(timer_callback);
-  locals.irqfreq = core_gameData->hw.gameSpecific1;
-  timer_adjust(locals.irqtimer, 1.0/(double)locals.irqfreq, 0, 1.0/(double)locals.irqfreq);
-  /* Set IRQ Vector Routine */
-  cpu_set_irq_callback(0, irq_callback);
-
-  ZAC_soundInit();
-}
-
 static MACHINE_STOP(ZAC) {
   if (locals.printfile) {
     mame_fclose(locals.printfile);
@@ -609,7 +597,6 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(ZAC2A)
   MDRV_IMPORT_FROM(ZAC2)
   MDRV_IMPORT_FROM(zac1370)
-  MDRV_CORE_INIT_RESET_STOP(ZAC2A,NULL,ZAC)
 MACHINE_DRIVER_END
 
 //Sound board 13136
@@ -617,11 +604,6 @@ MACHINE_DRIVER_START(ZAC2X)
   MDRV_IMPORT_FROM(ZAC2)
   MDRV_DIAGNOSTIC_LEDH(3)
   MDRV_IMPORT_FROM(zac13136)
-MACHINE_DRIVER_END
-
-MACHINE_DRIVER_START(ZAC2AX)
-  MDRV_IMPORT_FROM(ZAC2X)
-  MDRV_CORE_INIT_RESET_STOP(ZAC2A,NULL,ZAC)
 MACHINE_DRIVER_END
 
 //Sound board 11178

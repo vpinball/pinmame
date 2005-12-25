@@ -3,7 +3,6 @@
 #include "cpu/m6800/m6800.h"
 #include "cpu/m6502/m6502.h"
 #include "cpu/i8039/i8039.h"
-#include "cpu/tms7000/tms7000.h"
 #include "sound/discrete.h"
 #include "sound/sn76477.h"
 #include "core.h"
@@ -314,7 +313,9 @@ MACHINE_DRIVER_END
 #define SNS_PIA1 1
 #define SNS_PIA2 2
 
-#define TMS11178_IRQFREQ 3580000.0/8192.0
+#define TMS11178_IRQFREQ 3579500.0/8192.0
+
+#define SW_TRUE 1
 
 static void sns_init(struct sndbrdData *brdData);
 static void sns_diag(int button);
@@ -332,6 +333,8 @@ static WRITE_HANDLER(storebyte2);
 static READ_HANDLER(readlatch);
 static READ_HANDLER(readcmd);
 static READ_HANDLER(read5000);
+static WRITE_HANDLER(chip3h259);
+static WRITE_HANDLER(chip3i259);
 
 static INTERRUPT_GEN(tms_irq);
 
@@ -347,8 +350,8 @@ const struct sndbrdIntf zac11178Intf = {
 static struct TMS5220interface sns_tms5220Int = { 668000, 100, sns_5220Irq }; // the frequency may vary by up to 30 percent!!!
 static struct DACinterface     sns_dacInt = { 1, { 20 }};
 static struct DACinterface     sns2_dacInt = { 2, { 20, 20 }};
-static struct AY8910interface  sns_ay8910Int = { 1, 3580000/4, {25}, {sns_8910a_r}, {0}, {0}, {sns_8910b_w}};
-static struct AY8910interface  sns2_ay8910Int = { 2, 3580000/4, {25, 25}, {sns_8910a_r, sns2_8910a_r}, {0}, {0}, {sns_8910b_w}};
+static struct AY8910interface  sns_ay8910Int = { 1, 3579500/4, {25}, {sns_8910a_r}, {0}, {0}, {sns_8910b_w}};
+static struct AY8910interface  sns2_ay8910Int = { 2, 3579500/4, {25, 25}, {sns_8910a_r, sns2_8910a_r}, {0}, {0}, {sns_8910b_w}};
 
 static MEMORY_READ_START(sns_readmem)
   { 0x0000, 0x007f, MRA_RAM },
@@ -374,15 +377,15 @@ static MEMORY_READ_START(sns3_readmem)
   { 0x0090, 0x0093, pia_r(SNS_PIA1) },
   { 0x00b0, 0x00b0, readcmd},
   { 0x00ff, 0x00ff, readlatch },
-//  { 0x5000, 0x5000, read5000 },
+  { 0x5000, 0x5000, read5000 }, // only to prevent error messages
   { 0x8000, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(sns3_writemem)
   { 0x0000, 0x007f, MWA_RAM },
-//  { 0x0080, 0x0087, },
+  { 0x0080, 0x0087, chip3h259 },
   { 0x0090, 0x0093, pia_w(SNS_PIA1) },
-//  { 0x00a0, 0x00a7, },
+  { 0x00a0, 0x00a7, chip3i259 },
   { 0x00c0, 0x00c0, dacxfer },
   { 0x00d0, 0x00d0, storebyte1 },
   { 0x00e0, 0x00e0, storebyte2 },
@@ -390,7 +393,7 @@ static MEMORY_WRITE_START(sns3_writemem)
 MEMORY_END
 
 static MACHINE_DRIVER_START(zac1370_nosound)
-  MDRV_CPU_ADD(M6802, 3580000/4)
+  MDRV_CPU_ADD(M6802, 3579500/4)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(sns_readmem, sns_writemem)
 
@@ -411,13 +414,14 @@ MACHINE_DRIVER_START(zac13136)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(zac11178)
-  MDRV_CPU_ADD(M6802, 3580000/4)
+  MDRV_CPU_ADD(M6802, 3579500/4)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(sns3_readmem, sns3_writemem)
   MDRV_CPU_PERIODIC_INT(tms_irq, TMS11178_IRQFREQ)
 
   MDRV_INTERLEAVE(500)
   MDRV_SOUND_ADD(TMS5220, sns_tms5220Int)
+  MDRV_SOUND_ADD(DAC,     sns_dacInt)
 MACHINE_DRIVER_END
 
 static READ_HANDLER(sns_pia0a_r);
@@ -426,6 +430,7 @@ static WRITE_HANDLER(sns_pia0b_w);
 static WRITE_HANDLER(sns_pia0ca2_w);
 static WRITE_HANDLER(sns_pia0cb2_w);
 static READ_HANDLER(sns_pia1a_r);
+static READ_HANDLER(sns_pia1b_r);
 static WRITE_HANDLER(sns_pia1a_w);
 static WRITE_HANDLER(sns_pia1b_w);
 static READ_HANDLER(sns_pia1ca2_r);
@@ -444,8 +449,36 @@ static struct {
   struct sndbrdData brdData;
   int pia0a, pia0b, pia1a, pia1b, pia1cb1, pia2a, pia2b;
   UINT8 lastcmd, daclatch, dacbyte1, dacbyte2;
-  int dacMute, sndReturn;
+  int dacMute, sndReturn,dacinp,channel;
+  UINT8 snot_ab1, snot_ab2, snot_ab3, snot_ab4; // output from ls139 2d
+  UINT8 s_ensynca,s_ensawb,s_entrigb,s_enpwma,s_ensawa,s_entriga,s_refsel,s_dacsh; // output from ls259 3h
+  UINT8 s_inh4,s_inh3,s_inh2,s_inh1,s_envca,s_ensyncb; // output from ls259 3I
+  int vcrfreq,rescntl,levchb,pwmb,freqb,levcha,pwma,freqa,r500cmd,w500cmd;
 } snslocals;
+
+static const UINT8 triangleWave[] = {
+	0x00, 0x07, 0x0f, 0x17, 0x1f, 0x27, 0x2f, 0x37, //    *
+	0x3f, 0x47, 0x4f, 0x57, 0x5f, 0x67, 0x6f, 0x77, //   * *
+	0x7f, 0x77, 0x6f, 0x67, 0x5f, 0x57, 0x4f, 0x47, //  *   *
+	0x3f, 0x37, 0x2f, 0x27, 0x1f, 0x17, 0x0f, 0x07, // *     *
+	0x00, 0xf9, 0xf1, 0xe9, 0xe1, 0xd9, 0xd1, 0xc9, //        *     *
+	0xc1, 0xb9, 0xb1, 0xa9, 0xa1, 0x99, 0x91, 0x89, //         *   *
+	0x81, 0x89, 0x91, 0x99, 0xa1, 0xa9, 0xb1, 0xb9, //          * *
+	0xc1, 0xc9, 0xd1, 0xd9, 0xe1, 0xe9, 0xf1, 0xf9  //           *
+};
+static UINT8 triangleWaver[64];
+
+static const UINT8 sawtoothWave[] = {
+	0x02, 0x06, 0x0a, 0x0e, 0x12, 0x16, 0x1a, 0x1e, //       *
+	0x22, 0x26, 0x2a, 0x2e, 0x32, 0x36, 0x3a, 0x3e, //     * *
+	0x42, 0x46, 0x4a, 0x4e, 0x52, 0x57, 0x5b, 0x5f, //   *   *
+	0x63, 0x67, 0x6b, 0x6f, 0x73, 0x77, 0x7b, 0x7f, // *     *
+	0x81, 0x85, 0x89, 0x8d, 0x91, 0x95, 0x99, 0x9d, //       *     *
+	0xa1, 0xa5, 0xa9, 0xae, 0xb2, 0xb6, 0xba, 0xbe, //       *   *
+	0xc2, 0xc6, 0xca, 0xce, 0xd2, 0xd6, 0xda, 0xde, //       * *
+	0xe2, 0xe6, 0xea, 0xee, 0xf2, 0xf6, 0xfa, 0xfe  //       *
+};
+static  UINT8 sawtoothWaver[64];
 
 static const struct pia6821_interface sns_pia[] = {{
   /*i: A/B,CA/B1,CA/B2 */ sns_pia0a_r, 0, 0, 0, 0, 0,
@@ -453,9 +486,9 @@ static const struct pia6821_interface sns_pia[] = {{
   /*irq: A/B           */ sns_irq0a, sns_irq0b
 },{
 #if SHOW_MAME_BUG
-  /*i: A/B,CA/B1,CA/B2 */ sns_pia1a_r, 0, 0, sns_pia1cb1_r, sns_pia1ca2_r, 0,
+  /*i: A/B,CA/B1,CA/B2 */ sns_pia1a_r, 0, 0, sns_pia1cb1_r, sns_pia1ca2_r, 0,		// ok modified
 #else
-  /*i: A/B,CA/B1,CA/B2 */ 0, 0, 0, sns_pia1cb1_r, sns_pia1ca2_r, 0,
+  /*i: A/B,CA/B1,CA/B2 */ sns_pia1a_r, sns_pia1b_r, 0, sns_pia1cb1_r, sns_pia1ca2_r, 0,
 #endif
   /*o: A/B,CA/B2       */ sns_pia1a_w, sns_pia1b_w, 0, 0,
   /*irq: A/B           */ sns_irq1a, sns_irq1b
@@ -465,8 +498,73 @@ static const struct pia6821_interface sns_pia[] = {{
   /*irq: A/B           */ 0, 0
 }};
 
+static void stopcm3374a(int param)	{
+  logerror("stopcm3374a \n");
+  if (snslocals.freqa) {
+	mixer_stop_sample(snslocals.channel+0);
+	mixer_stop_sample(snslocals.channel+1);
+  	snslocals.freqa = 0;
+  }
+}
+
+static void stopcm3374b(int param)	{
+  logerror("stopcm3374b \n");
+  if (snslocals.freqb) {
+
+	mixer_stop_sample(snslocals.channel+2);
+	mixer_stop_sample(snslocals.channel+3);
+  	snslocals.freqb = 0;
+  }
+}
+
+static void startcm3374a(int param)	{
+  if (snslocals.freqa) {
+	logerror("startcm3374a %x\n",snslocals.freqa);
+  	mixer_play_sample(snslocals.channel+0, (signed char *)triangleWave, sizeof(triangleWave),(snslocals.freqa*sizeof(triangleWave) / 2 ), 1);
+  	mixer_play_sample(snslocals.channel+1, (signed char *)sawtoothWave, sizeof(sawtoothWave),(snslocals.freqa*sizeof(sawtoothWave) / 2 ), 1);
+  }
+}
+
+static void startcm3374b(int param)	{
+  if ((snslocals.freqb) && (param == 0)) {
+	logerror("startcm3374b %x\n",snslocals.freqb);
+  	mixer_play_sample(snslocals.channel+2, (signed char *)triangleWave, sizeof(triangleWave),(snslocals.freqb*sizeof(triangleWave) / 2 ), 1);
+  	mixer_play_sample(snslocals.channel+3, (signed char *)sawtoothWave, sizeof(sawtoothWave),(snslocals.freqb*sizeof(sawtoothWave) / 2 ), 1);
+  }
+  if ((snslocals.freqb) && (param == 1)) {
+	logerror("startcm3374b R %x\n",snslocals.freqb);
+  	mixer_play_sample(snslocals.channel+2, (signed char *)triangleWaver, sizeof(triangleWaver),(snslocals.freqb*sizeof(triangleWaver) / 2 ), 1);
+  	mixer_play_sample(snslocals.channel+3, (signed char *)sawtoothWaver, sizeof(sawtoothWaver),(snslocals.freqb*sizeof(sawtoothWaver) / 2 ), 1);
+  }
+}
+
+static void synccm3374a(int param)	{
+  int work = snslocals.freqa;
+  if (snslocals.freqa) {
+	stopcm3374a(0);
+	snslocals.freqa = work;
+	startcm3374a(0);
+  }
+}
+static void synccm3374b(int param)	{
+  int work = snslocals.freqb;
+  if (snslocals.freqb) {
+	stopcm3374b(0);
+	snslocals.freqb = work;
+	startcm3374b(1);
+  }
+}
+
 static void sns_init(struct sndbrdData *brdData) {
+  UINT8 i = 0;
+  int mixing_levels[4] = {25,25,25,25};
+  for (i=0; i < 64; i++) {	// reverse waves
+  	triangleWaver[63-i]=triangleWave[i];
+  	sawtoothWaver[63-i]=sawtoothWave[i];
+  }
+
   snslocals.brdData = *brdData;
+
   pia_config(SNS_PIA0, PIA_STANDARD_ORDERING, &sns_pia[0]);
   pia_config(SNS_PIA1, PIA_STANDARD_ORDERING, &sns_pia[1]);
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC13136) {
@@ -475,6 +573,18 @@ static void sns_init(struct sndbrdData *brdData) {
   }
   if (core_gameData->hw.soundBoard & 0x02) { // true for all 11178
     UpdateZACSoundLED(1, 1);
+// allocate channels
+    snslocals.channel = mixer_allocate_channels(4, mixing_levels);
+    mixer_set_name  (snslocals.channel+0, "CEM 3374 A TR");
+    mixer_set_volume(snslocals.channel+0,0);
+    mixer_set_name  (snslocals.channel+1, "CEM 3374 A SA");
+    mixer_set_volume(snslocals.channel+1,0);
+    mixer_set_name  (snslocals.channel+2, "CEM 3374 B TR");
+    mixer_set_volume(snslocals.channel+2,0);
+    mixer_set_name  (snslocals.channel+3, "CEM 3374 B SA");
+    mixer_set_volume(snslocals.channel+3,0);
+// reset tms5220
+    tms5220_reset();
   }
 }
 
@@ -483,8 +593,8 @@ static void sns_diag(int button) {
 }
 
 static INTERRUPT_GEN(tms_irq) {
-  snslocals.pia1cb1 = !snslocals.pia1cb1;
-  pia_set_input_cb1(SNS_PIA1, snslocals.pia1cb1);
+    snslocals.pia1cb1 = !snslocals.pia1cb1;
+    pia_set_input_cb1(SNS_PIA1, snslocals.pia1cb1);
 }
 
 static WRITE_HANDLER(sns_dac_w) {
@@ -511,20 +621,44 @@ static WRITE_HANDLER(sns_pia0cb2_w) {
   snslocals.dacMute = data;
 } // mute DAC
 
-static READ_HANDLER(sns_pia1a_r) { return snslocals.pia1a; }
-static WRITE_HANDLER(sns_pia1a_w) { snslocals.pia1a = data; }
+
+static READ_HANDLER(sns_pia1a_r) {
+  logerror("%04x:sns_pia1a_r %x\n", activecpu_get_previouspc(),snslocals.pia1a);
+  return snslocals.pia1a;
+}
+static READ_HANDLER(sns_pia1b_r) {
+  logerror("%04x:sns_pia1b_r %x\n", activecpu_get_previouspc(),snslocals.pia1b);
+  return snslocals.pia1b;
+}
+static WRITE_HANDLER(sns_pia1a_w) {
+  logerror("%04x:sns_pia1a_w %x\n", activecpu_get_previouspc(),data);
+  snslocals.pia1a = data;
+}
 static WRITE_HANDLER(sns_pia1b_w) {
-  if (~data & 0x02) { // write
-    tms5220_data_w(0, snslocals.pia1a);
-    pia_set_input_ca2(SNS_PIA1, 1); pia_set_input_ca2(SNS_PIA1, 0);
-  }
-  if (~data & 0x01) { // read
+  logerror("%04x:sns_pia1b_w %x\n", activecpu_get_previouspc(),data);
+  if ((data & 0x02) && (data & 0x01)) {
+      logerror("high impedance state \n");
+      snslocals.r500cmd = snslocals.w500cmd = 0;
+  } else {
+    if (~data & 0x02)  { // write
+      logerror("write \n");
+      snslocals.w500cmd = 1;
+      snslocals.r500cmd = 0;
+      tms5220_data_w(0, snslocals.pia1a);
+      pia_set_input_ca2(SNS_PIA1, 1); pia_set_input_ca2(SNS_PIA1, 0);
+    }
+    if (~data & 0x01) { // read
+      logerror("read \n");
+      snslocals.w500cmd = 0;
+      snslocals.r500cmd = 1;
 #if SHOW_MAME_BUG
-    pia_set_input_a(SNS_PIA1, (snslocals.pia1a = tms5220_status_r(0)));
+      pia_set_input_a(SNS_PIA1, (snslocals.pia1a = tms5220_status_r(0)));
 #else
-    pia_set_input_a(SNS_PIA1, tms5220_status_r(0));
+//      snslocals.pia1a = tms5220_status_r(0);
+//      pia_set_input_a(SNS_PIA1, tms5220_status_r(0));
 #endif
-    pia_set_input_ca2(SNS_PIA1, 1); pia_set_input_ca2(SNS_PIA1, 0);
+      pia_set_input_ca2(SNS_PIA1, 1); pia_set_input_ca2(SNS_PIA1, 0);
+    }
   }
   if ((data & 0xf0) != (snslocals.pia1b & 0xf0)) logerror("TMS5200 modulation: %x\n", data >> 4);
   snslocals.pia1b = data;
@@ -532,12 +666,60 @@ static WRITE_HANDLER(sns_pia1b_w) {
     UpdateZACSoundACT(data & 0x04 ? 0 : 0x03);	//both ACTSND & ACTSPK inverted on bit 2
   } else if (core_gameData->hw.soundBoard == SNDBRD_ZAC11178_13181) {
     UpdateZACSoundACT(data & 0x04 ? 0 : 0x02);	//only ACTSND inverted on bit 2, ACTSPK not used?
+    logerror("%04x:UpdateZACSoundACT %x\n", activecpu_get_previouspc(),data);
   } else {
     UpdateZACSoundACT((data>>2) & 0x03);	//ACTSPK & ACTSND on bits 2 & 3
   }
+  // set ab1 to ab4 switches based on pb3 & pb4 IC 2d
+  if (core_gameData->hw.soundBoard & 0x02) { // true for all 11178
+  	snslocals.snot_ab4 = snslocals.snot_ab3 = snslocals.snot_ab2 = snslocals.snot_ab1 = 0;
+  	if ((data & 0x08) && (data & 0x10)) snslocals.snot_ab4 = SW_TRUE;	// pb3 and pb4 set -> snot_ab4 true
+	if ((~data & 0x08) && (data & 0x10)) snslocals.snot_ab3 = SW_TRUE;
+	if ((data & 0x08) && (~data & 0x10)) snslocals.snot_ab2 = SW_TRUE;
+	if ((~data & 0x08) && (~data & 0x10)) snslocals.snot_ab1 = SW_TRUE;
+	logerror("sns_pia1b_w: data %x snot_ab4 %x snot_ab3 %x snot_ab2 %x snot_ab1 %x \n", data,snslocals.snot_ab4,snslocals.snot_ab3,snslocals.snot_ab2,snslocals.snot_ab1);
+	if (!snslocals.s_inh4) {
+	  if ((data & 0x20) && (data & 0x40) && (data & 0x80)) {
+		snslocals.vcrfreq = snslocals.dacinp;
+	  }
+	  if ((~data & 0x20) && (data & 0x40) && (data & 0x80)) {
+		snslocals.rescntl = snslocals.dacinp;
+	  }
+	  if ((data & 0x20) && (~data & 0x40) && (data & 0x80)) {
+		snslocals.levchb = snslocals.dacinp;
+	  }
+	  if ((~data & 0x20) && (~data & 0x40) && (data & 0x80)) {
+		snslocals.pwmb = snslocals.dacinp;
+	  }
+	  if ((data & 0x20) && (data & 0x40) && (~data & 0x80)) {
+		if (snslocals.freqb != snslocals.dacinp)   {
+		  stopcm3374b(0);
+		  snslocals.freqb = snslocals.dacinp;
+		  startcm3374b(0);
+		}
+	  }
+	  if ((~data & 0x20) && (data & 0x40) && (~data & 0x80)) {
+		snslocals.levcha = snslocals.dacinp;
+	  }
+	  if ((data & 0x20) && (~data & 0x40) && (~data & 0x80)) {
+		snslocals.pwma = snslocals.dacinp;
+	  }
+	  if ((~data & 0x20) && (~data & 0x40) && (~data & 0x80)) {
+		if (snslocals.freqa != snslocals.dacinp) {
+		  stopcm3374a(0);
+		  snslocals.freqa = snslocals.dacinp;
+		  startcm3374a(0);
+		}
+	  }
+  	}
+  }
 }
 static READ_HANDLER(sns_pia1ca2_r) {
-//logerror("sns_pia1ca2_r TMS5220 ready \n");
+  logerror("sns_pia1ca2_r TMS5220 ready %x\n",tms5220_ready_r());
+// oliver
+  if (snslocals.r500cmd) snslocals.pia1a = tms5220_status_r(0);
+// keeps if
+//  snslocals.pia1a = tms5220_status_r(0);
   return tms5220_ready_r();
 }
 static READ_HANDLER(sns_pia1cb1_r) {
@@ -564,7 +746,6 @@ static WRITE_HANDLER(sns_pia2ca2_w) {
 } // diag led
 
 static WRITE_HANDLER(sns_data_w) {
-  snslocals.lastcmd = data;
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370)
     pia_set_input_cb1(SNS_PIA0, data & 0x80 ? 1 : 0);
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC13136)
@@ -572,17 +753,17 @@ static WRITE_HANDLER(sns_data_w) {
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC11178)
     pia_set_input_ca1(SNS_PIA1, data & 0x80 ? 1 : 0);
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC11178_13181) {
-    // CA1 should connect to GND according to schematics... or to DB7! :)
-    pia_set_input_ca1(SNS_PIA1, data & 0x80 ? 1 : 0);
-    if (~data & 0x40) cpu_set_nmi_line(ZACSND_CPUB, data & 0x80 ? ASSERT_LINE : CLEAR_LINE);
-//    logerror("sns_data_w command stored %x\n", data);
+    if (!(data & 0x40)) cpu_set_nmi_line(ZACSND_CPUB, data & 0x80 ? ASSERT_LINE : CLEAR_LINE);
+    pia_set_input_ca1(SNS_PIA1, data & 0x80 ? 1 : 0); // CA1 should connect to GND according to schematics... or to DB7! :)
+//    logerror("sns_data_ command stored %x\n", data);
 // cpu reads command from adress b0 after nmi !!!
   }
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC13181x3) {
-    if (~data & 0x40) cpu_set_nmi_line(ZACSND_CPUA, data & 0x80 ? ASSERT_LINE : CLEAR_LINE);
-    if (~data & 0x40) cpu_set_nmi_line(ZACSND_CPUB, data & 0x80 ? ASSERT_LINE : CLEAR_LINE);
+    if (!(data & 0x40)) cpu_set_nmi_line(ZACSND_CPUA, data & 0x80 ? ASSERT_LINE : CLEAR_LINE);
+    if (!(data & 0x40)) cpu_set_nmi_line(ZACSND_CPUB, data & 0x80 ? ASSERT_LINE : CLEAR_LINE);
     if (data & 0x40) cpu_set_nmi_line(ZACSND_CPUC, data & 0x80 ? ASSERT_LINE : CLEAR_LINE);
   }
+  snslocals.lastcmd = data;
 }
 
 static READ_HANDLER(sns_8910a_r) { return ~snslocals.lastcmd; }
@@ -620,15 +801,15 @@ static void sns_irq1b(int state) {
 }
 
 static void sns_5220Irq(int state) {
-  if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370 || core_gameData->hw.soundBoard == SNDBRD_ZAC13136) {
-    snslocals.pia1cb1 = !state;
-    pia_set_input_cb1(SNS_PIA1, snslocals.pia1cb1);
-  }
+  if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370 || core_gameData->hw.soundBoard == SNDBRD_ZAC13136)
+    pia_set_input_cb1(SNS_PIA1, !state);
+  logerror("sns_5220Irq: state=%x\n",state);
+
 }
 
 // OK: the following addresses are only used by the 11178 sound board variants
 static READ_HANDLER(readcmd) {
-  logerror("readcmd: %x\n", snslocals.lastcmd ^ 0xff);
+  logerror("%04x:readcmd: %x\n",activecpu_get_previouspc(), snslocals.lastcmd ^ 0xff);
   return snslocals.lastcmd ^ 0xff;
 }
 static READ_HANDLER(readlatch) {
@@ -637,20 +818,104 @@ static READ_HANDLER(readlatch) {
 }
 static WRITE_HANDLER(storelatch) {
   snslocals.daclatch = data;
-  logerror("Storelatch: %x\n", data);
+//  logerror("Storelatch: %x\n", data);
 }
 static WRITE_HANDLER(storebyte1) {
   snslocals.dacbyte1 = snslocals.daclatch;
-  logerror("Storebyte1: %x\n", snslocals.dacbyte1);
+//  logerror("Storebyte1: %x\n", snslocals.dacbyte1);
 }
 static WRITE_HANDLER(storebyte2) {
   snslocals.dacbyte2 = snslocals.daclatch;
-  logerror("Storebyte2: %x\n", snslocals.dacbyte2);
+//  logerror("Storebyte2: %x\n", snslocals.dacbyte2);
 }
 static WRITE_HANDLER(dacxfer) {
-// a 12-bit-DAC is used to create the voltage for the VCO.
-  logerror("dacxfer: %x\n", (snslocals.dacbyte1 << 4) | (snslocals.dacbyte2 >> 4));
+// this dac uses 12 bits, so a 16 bit dac must be used...
+// ok dac input: first byte (msb bit) second byte (only 4 bits are used and contains lsb bit)
+  snslocals.dacinp = (snslocals.dacbyte2 >> 4) | (snslocals.dacbyte1 << 4);
+//  DAC_signed_data_16_w(0, (snslocals.dacbyte2 << 8) | (snslocals.dacbyte1 & 0xf0));
+  logerror("dacxfer: %x\n", snslocals.dacinp);
 }
+
+static WRITE_HANDLER(chip3h259) {
+  if (snslocals.snot_ab1) { 	// Enable is logic low, latch adressable
+    switch (offset) {
+    case 0:
+    	snslocals.s_dacsh = data & 0x01;
+      	break;
+    case 1:
+    	snslocals.s_refsel = data & 0x01;
+       	break;
+    case 2:
+    	snslocals.s_entriga = data & 0x01;
+        if (snslocals.s_entriga) {
+          mixer_set_volume(snslocals.channel+0,100);
+        } else {
+          mixer_set_volume(snslocals.channel+0,0);
+        }
+      	break;
+    case 3:
+    	snslocals.s_ensawa = data & 0x01;
+        if (snslocals.s_ensawa) {
+          mixer_set_volume(snslocals.channel+1,100);
+        } else {
+          mixer_set_volume(snslocals.channel+1,0);
+        }
+      	break;
+    case 4:
+    	snslocals.s_enpwma = data & 0x01;
+      	break;
+    case 5:
+    	snslocals.s_entrigb = data & 0x01;
+        if (snslocals.s_entrigb) {
+          mixer_set_volume(snslocals.channel+2,100);
+        } else {
+          mixer_set_volume(snslocals.channel+2,0);
+        }
+      	break;
+    case 6:
+    	snslocals.s_ensawb = data & 0x01;
+        if (snslocals.s_ensawb) {
+          mixer_set_volume(snslocals.channel+3,100);
+        } else {
+          mixer_set_volume(snslocals.channel+3,0);
+        }
+      	break;
+    case 7:
+    	snslocals.s_ensynca = data & 0x01;
+    }
+    logerror("%04x:chip3h259: offset %x data %x s_dacsh %x s_refsel %x s_entriga %x s_ensawa %x s_enpwma %x s_entrigb %x s_ensawb %x s_ensynca %x \n",activecpu_get_previouspc(),offset,data,snslocals.s_dacsh,snslocals.s_refsel,snslocals.s_entriga,snslocals.s_ensawa,snslocals.s_enpwma ,snslocals.s_entrigb,snslocals.s_ensawb,snslocals.s_ensynca);
+  }
+}
+
+static WRITE_HANDLER(chip3i259) {
+  if (snslocals.snot_ab1) { 	// Enable is logic low, latch adressable
+    switch (offset) {
+    case 0:
+    	snslocals.s_ensyncb = data & 0x01;
+      	break;
+    case 1:
+    	snslocals.s_envca = data & 0x01;
+       	break;
+    case 2:
+    	snslocals.s_inh1 = data & 0x01;
+      	break;
+    case 3:
+    	snslocals.s_inh2 = data & 0x01;
+      	break;
+    case 4:
+    	snslocals.s_inh3 = data & 0x01;
+      	break;
+    case 5:
+    	snslocals.s_inh4 = data & 0x01;
+      	if (snslocals.s_inh4) { // stop cm3374
+      	   stopcm3374b(0);
+      	   stopcm3374a(0);
+      	}
+    }
+    logerror("%04x:chip3i259: offset %x data %x s_ensyncb %x s_envca %x s_inh1 %x s_inh2 %x s_inh3 %x s_inh4 %x \n",activecpu_get_previouspc(),offset,data,snslocals.s_ensyncb,snslocals.s_envca,snslocals.s_inh1,snslocals.s_inh2,snslocals.s_inh3 ,snslocals.s_inh4);
+  }
+}
+
 static READ_HANDLER(read5000) {
   return snslocals.sndReturn;
 }
@@ -668,12 +933,9 @@ static READ_HANDLER(read5000) {
 / some siren-like effects (not played back in sound test).
 / That's five DAC chips playing at the same time! :)
 /-----------------------------------------*/
-static WRITE_HANDLER(snd_act_w);
-static WRITE_HANDLER(snd_mod_w);
-
-static struct DACinterface     z80_1dacInt = { 1, { 50 }};
-static struct DACinterface     z80_3dacInt = { 3, { 20, 30, 30 }};
-static struct DACinterface     z80_5dacInt = { 5, { 20, 30, 30, 20, 20 }};
+static struct DACinterface     z80_2dacInt = { 2, { 20, 50 }};
+static struct DACinterface     z80_4dacInt = { 4, { 20, 20, 30, 30 }};
+static struct DACinterface     z80_5dacInt = { 5, { 20, 20, 30, 30, 20 }};
 
 static MEMORY_READ_START(z80_readmem)
   { 0x0000, 0xfbff, MRA_ROM },
@@ -688,6 +950,17 @@ static WRITE_HANDLER(DAC_2_signed_data_w) { DAC_signed_data_w(2, data); }
 static WRITE_HANDLER(DAC_3_signed_data_w) { DAC_signed_data_w(3, data); }
 static WRITE_HANDLER(DAC_4_signed_data_w) { DAC_signed_data_w(4, data); }
 
+static WRITE_HANDLER(snd_act_w) {
+//  logerror("cpu #%d ACT:%d:%02x\n", cpu_getexecutingcpu(), offset, data);
+  // ACTSPK & ACTSND
+  UpdateZACSoundACT(data & 0x01 ? 0 : 0x02);	// only ACTSND inverted on bit 0, ACTSPK not used?
+}
+
+static WRITE_HANDLER(snd_mod_w) {
+  // sound modulation for different chips maybe?
+//  logerror("cpu #%d MOD:%d:%02x\n", cpu_getexecutingcpu(), offset, data);
+}
+
 static PORT_READ_START(z80_readport)
   { 0x01, 0x01, readcmd },
 PORT_END
@@ -697,10 +970,10 @@ static PORT_WRITE_START(z80_writeport_a)
   { 0x02, 0x02, snd_mod_w },
 PORT_END
 static PORT_WRITE_START(z80_writeport_b)
-  { 0x00, 0x00, DAC_0_signed_data_w },
+  { 0x00, 0x00, DAC_1_signed_data_w },
   { 0x02, 0x03, snd_mod_w },
-  { 0x04, 0x04, DAC_1_signed_data_w },
-  { 0x08, 0x08, DAC_2_signed_data_w },
+  { 0x04, 0x04, DAC_2_signed_data_w },
+  { 0x08, 0x08, DAC_3_signed_data_w },
 PORT_END
 
 static PORT_READ_START(z80_readport_c)
@@ -708,7 +981,7 @@ static PORT_READ_START(z80_readport_c)
   { 0x03, 0x03, tms5220_status_r },
 PORT_END
 static PORT_WRITE_START(z80_writeport_c)
-  { 0x00, 0x00, DAC_3_signed_data_w },
+  { 0x00, 0x00, DAC_0_signed_data_w },
   { 0x02, 0x02, snd_act_w },
   { 0x03, 0x03, tms5220_data_w },
 PORT_END
@@ -717,7 +990,7 @@ static INTERRUPT_GEN(cpu_b_irq) { cpu_set_irq_line(ZACSND_CPUB, 0, PULSE_LINE); 
 static INTERRUPT_GEN(cpu_c_irq) { cpu_set_irq_line(ZACSND_CPUC, 0, PULSE_LINE); }
 
 static MACHINE_DRIVER_START(zac11178_13181_nodac)
-  MDRV_CPU_ADD(M6802, 3580000/4)
+  MDRV_CPU_ADD(M6802, 3579500/4)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(sns3_readmem, sns3_writemem)
   MDRV_CPU_PERIODIC_INT(tms_irq, TMS11178_IRQFREQ)
@@ -734,12 +1007,12 @@ MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(zac11178_13181)
   MDRV_IMPORT_FROM(zac11178_13181_nodac)
-  MDRV_SOUND_ADD(DAC,     z80_1dacInt)
+  MDRV_SOUND_ADD(DAC,     z80_2dacInt)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(zac11178_11181)
   MDRV_IMPORT_FROM(zac11178_13181_nodac)
-  MDRV_SOUND_ADD(DAC,     z80_3dacInt)
+  MDRV_SOUND_ADD(DAC,     z80_4dacInt)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(zac11183)
@@ -762,376 +1035,4 @@ MACHINE_DRIVER_START(zac11183)
   MDRV_INTERLEAVE(500)
   MDRV_SOUND_ADD(TMS5220, sns_tms5220Int)
   MDRV_SOUND_ADD(DAC,     z80_5dacInt)
-MACHINE_DRIVER_END
-
-static WRITE_HANDLER(snd_act_w) {
-  logerror("cpu #%d ACT:%d:%02x\n", cpu_getexecutingcpu(), offset, data);
-  // ACTSPK & ACTSND
-  UpdateZACSoundACT(data & 0x01 ? 0 : 0x02);	// only ACTSND inverted on bit 0, ACTSPK not used?
-}
-
-static WRITE_HANDLER(snd_mod_w) {
-  // sound modulation for different chips maybe?
-  logerror("cpu #%d MOD:%d:%02x\n", cpu_getexecutingcpu(), offset, data);
-}
-
-
-
-/* TECHNOPLAY sound board -
-
-   Pretty much stole the Gottlieb System 80b Generation 1 sound board, plus..
-   added a TMS7000 and an extra DAC for additional sounds */
-
-/*----------------
-/  Local variables
-/-----------------*/
-static struct {
-  struct sndbrdData brdData;
-  int    ay_latch;			// Data Latch to AY-8913 chips
-  int    nmi_rate;			// Programmable NMI rate
-  void   *nmi_timer;		// Timer for NMI (NOT USED ANYMORE?)
-  int	 nmi_enable;		// Enable NMI triggered by Programmable Circuit
-  int    snd_data;			// Command from cpu
-  UINT8  dac_volume;
-  UINT8  dac_data;
-  UINT8  speechboard_drq;
-  UINT8  sp0250_latch;
-} techno_locals;
-
-// Latch data for AY chips
-WRITE_HANDLER(techno_ay8910_latch_w)
-{
-	techno_locals.ay_latch = data;
-}
-
-//NMI Timer - Setup the next frequency for the timer to fire, and Trigger an NMI if enabled
-static void nmi_callback(int param)
-{
-	//Reset the timing frequency
-	double interval;
-	int cl1, cl2;
-	cl1 = 16-(techno_locals.nmi_rate&0x0f);
-	cl2 = 16-((techno_locals.nmi_rate&0xf0)>>4);
-	interval = (250000>>8);
-	if(cl1>0)	interval /= cl1;
-	if(cl2>0)	interval /= cl2;
-
-	//Set up timer to fire again
-	timer_set(TIME_IN_HZ(interval), 0, nmi_callback);
-
-	//If enabled, fire the NMI for the Y CPU
-	if(techno_locals.nmi_enable) {
-		//seems to have no effect!
-		//cpu_boost_interleave(TIME_IN_USEC(10), TIME_IN_USEC(800));
-		cpu_set_nmi_line(ZACSND_CPUA, PULSE_LINE);
-	}
-}
-
-WRITE_HANDLER(techno_nmi_rate_w)
-{
-	techno_locals.nmi_rate = data;
-	logerror("NMI RATE SET TO %d\n",data);
-}
-
-//Fire the NMI for the 2nd 6502
-WRITE_HANDLER(techno_cause_dac_nmi_w)
-{
-	cpu_set_nmi_line(ZACSND_CPUB, PULSE_LINE);
-}
-
-READ_HANDLER(techno_cause_dac_nmi_r)
-{
-	techno_cause_dac_nmi_w(offset, 0);
-	return 0;
-}
-
-//Latch a command into the Sound Latch and generate the IRQ interrupts
-WRITE_HANDLER(techno_sh_w)
-{
-	techno_locals.snd_data = data;
-	cpu_set_irq_line(ZACSND_CPUA, 0, HOLD_LINE);
-	cpu_set_irq_line(ZACSND_CPUB, 0, HOLD_LINE);
-	//Bit 6 if NOT set, fires TMS IRQ 1
-	if(~data & 0x40) cpu_set_irq_line(ZACSND_CPUC, TMS7000_IRQ1_LINE, ASSERT_LINE);
-}
-
-/* bits 0-3 are probably unused (future expansion) */
-/* bits 4 & 5 are two dip switches. Unused? */
-/* bit 6 is the test switch. When 0, the CPU plays a pulsing tone. */
-/* bit 7 comes from the speech chip DATA REQUEST pin */
-READ_HANDLER(techno_sound_input_r)
-{
-	int data = 0x40;
-	if(techno_locals.speechboard_drq)	data |= 0x80;
-	return data;
-}
-
-//Common to All Generations - Set NMI Timer Enable
-static WRITE_HANDLER( common_sound_control_w )
-{
-	techno_locals.nmi_enable = data&0x01;
-}
-
-//Generation 1 sound control
-WRITE_HANDLER( techno_sound_control_w )
-{
-	static int last;
-
-	common_sound_control_w(offset, data);
-
-	/* bit 2 goes to 8913 BDIR pin  */
-	if ((last & 0x04) == 0x04 && (data & 0x04) == 0x00)
-	{
-		/* bit 3 selects which of the two 8913 to enable */
-		if (data & 0x08)
-		{
-			/* bit 4 goes to the 8913 BC1 pin */
-			if (data & 0x10)
-				AY8910_control_port_0_w(0,techno_locals.ay_latch);
-			else
-				AY8910_write_port_0_w(0,techno_locals.ay_latch);
-		}
-		else
-		{
-			/* bit 4 goes to the 8913 BC1 pin */
-			if (data & 0x10)
-				AY8910_control_port_1_w(0,techno_locals.ay_latch);
-			else
-				AY8910_write_port_1_w(0,techno_locals.ay_latch);
-		}
-	}
-
-	/* bit 5 goes to the speech chip DIRECT DATA TEST pin */
-	//NO IDEA WHAT THIS DOES - No interface in the sp0250 emulation for it yet?
-
-	/* bit 6 = speech chip DATA PRESENT pin; high then low to make the chip read data */
-	if ((last & 0x40) == 0x40 && (data & 0x40) == 0x00)
-	{
-		sp0250_w(0,techno_locals.sp0250_latch);
-	}
-
-	/* bit 7 goes to the speech chip RESET pin */
-	//No interface in the sp0250 emulation for it yet?
-	last = data & 0x44;
-}
-
-// Init
-static void tsns_init(struct sndbrdData *brdData) {
-	memset(&techno_locals, 0, sizeof(techno_locals));
-	techno_locals.brdData = *brdData;
-	//Start the programmable timer circuit
-	timer_set(TIME_IN_HZ(250000>>8), 0, nmi_callback);
-	//Set bank
-	cpu_setbank(1, techno_locals.brdData.romRegion + 0x10000);
-	//Must be 1 to start or speechboard will never work
-	techno_locals.speechboard_drq = 1;
-}
-
-// Cleanup
-void tsns_exit(int boardNo)
-{
-	if(techno_locals.nmi_timer)
-		timer_remove(techno_locals.nmi_timer);
-	techno_locals.nmi_timer = NULL;
-}
-
-static WRITE_HANDLER(tsns_data_w) {
-  data ^= 0xff;	/*Data is inverted from main cpu*/
-
-  //Bit 7 is the strobe - so commands are sent 2x, once with strobe set, then again, with it cleared..
-  //Doesn't seem to matter much if we put this in or leave it out..
-  //if(data & 0x80)
-	//  return;
-
-  logerror("tsns_data_w = %x\n",data);
-  techno_sh_w(0,data);
-}
-
-static READ_HANDLER(techno_snd_r)
-{
-//	cpu_set_irq_line(ZACSND_CPUA, 0, CLEAR_LINE);
-	return techno_locals.snd_data;
-}
-
-static READ_HANDLER(techno_b_snd_r)
-{
-//	cpu_set_irq_line(ZACSND_CPUB, 0, CLEAR_LINE);
-	return techno_locals.snd_data;
-}
-
-//Read data command
-READ_HANDLER(tms_porta_r)
-{
-	int data = techno_locals.snd_data & 0x1f;	//Only bits 0-4 used
-	logerror("reading porta =%x\n",data);
-	return data;
-}
-
-//Should not be used for input
-READ_HANDLER(tms_portb_r)
-{
-	logerror("reading portb\n");
-	return 0;
-}
-//Should not be used since it's used for address and data lines
-READ_HANDLER(tms_portc_r)
-{
-	logerror("reading portc\n");
-	return 0;
-}
-//Should not be used since it's used for address and data lines
-READ_HANDLER(tms_portd_r)
-{
-	logerror("reading portd\n");
-	return 0;
-}
-
-//Should not be used for output?
-WRITE_HANDLER(tms_porta_w) { logerror("writing port a = %x\n",data); }
-
-/*
-D0 = U25 ROM Select
-D1 = U36 ROM Select
-D2 = NA?
-D3 = NA?
-D4-D7 = Used for Bus Control
-*/
-WRITE_HANDLER(tms_portb_w)
-{
-	cpu_setbank(1, techno_locals.brdData.romRegion + (0x10000) + ((data&2)>>1)*0x8000);
-}
-
-//should not be used since it's used for address and data lines
-WRITE_HANDLER(tms_portc_w){	logerror("writing port c = %x\n",data); }
-WRITE_HANDLER(tms_portd_w){	logerror("writing port d = %x\n",data); }
-
-//Speechboard IRQ callback, will be set to 1 while speech is busy..
-static void speechboard_drq_w(int level)
-{
-	techno_locals.speechboard_drq = (level == ASSERT_LINE);
-}
-
-//Latch data to the SP0250
-static WRITE_HANDLER(sp0250_latch) {
-	techno_locals.sp0250_latch = data;
-}
-
-//DAC Handling.. Set volume
-static WRITE_HANDLER( dac_vol_w )
-{
-	techno_locals.dac_volume = data;
-	DAC_data_16_w(0, techno_locals.dac_volume * techno_locals.dac_data);
-}
-//DAC Handling.. Set data to send
-static WRITE_HANDLER( dac_data_w )
-{
-	techno_locals.dac_data = data;
-	DAC_data_16_w(0, techno_locals.dac_volume * techno_locals.dac_data);
-}
-
-//TMS7000 will use dac chip #1
-static WRITE_HANDLER(DAC_TMS_w)
-{
-	DAC_data_w(1,data);
-}
-
-const struct sndbrdIntf technoIntf =
-{"TECHNO", tsns_init, tsns_exit, sns_diag, tsns_data_w, tsns_data_w, NULL, NULL, NULL, 0 //SNDBRD_NODATASYNC
-};
-
-struct AY8910interface techno_ay8910Int = {
-	2,			/* 2 chips */
-	2000000,	/* 2 MHz */
-	{ 25, 25 }, /* Volume */
-	{ 0 },
-	{ 0 },
-	{ 0 },
-	{ 0 }
-};
-
-struct DACinterface techno_6502dacInt =
-{
-  2,			/*2 Chips */
- {50,50}		/* Volume */
-};
-
-struct sp0250_interface techno_sp0250_interface =
-{
-	100,				/*Volume*/
-	speechboard_drq_w	/*IRQ Callback*/
-};
-
-//6502 #1 CPU
-MEMORY_READ_START( m6502_readmem )
-	{ 0x0000, 0x03ff, MRA_RAM },
-	{ 0x6000, 0x6000, techno_sound_input_r },
-	{ 0xa800, 0xa800, techno_snd_r },
-	{ 0xe000, 0xffff, MRA_ROM },
-MEMORY_END
-MEMORY_WRITE_START( m6502_writemem )
-	{ 0x0000, 0x03ff, MWA_RAM },
-	{ 0x2000, 0x2000, sp0250_latch },	/* speech chip. The game sends strings */
-										/* of 15 bytes (clocked by 4000). The chip also */
-										/* checks a DATA REQUEST bit in 6000. */
-	{ 0x4000, 0x4000, techno_sound_control_w },
-	{ 0x8000, 0x8000, techno_ay8910_latch_w },
-	{ 0xa000, 0xa000, techno_nmi_rate_w },	   /* set Y-CPU NMI rate */
-	{ 0xb000, 0xb000, techno_cause_dac_nmi_w }, /*Trigger D-CPU NMI*/
-	{ 0xe000, 0xffff, MWA_ROM },
-MEMORY_END
-
-//6502 #2 CPU
-MEMORY_READ_START( m6502_b_readmem )
-	{ 0x0000, 0x03ff, MRA_RAM },
-	{ 0x8000, 0x8000, techno_b_snd_r },
-	{ 0xe000, 0xffff, MRA_ROM },
-MEMORY_END
-MEMORY_WRITE_START( m6502_b_writemem )
-	{ 0x0000, 0x03ff, MWA_RAM },
-	{ 0x4000, 0x4000, dac_vol_w},
-	{ 0x4001, 0x4001, dac_data_w},
-	{ 0xe000, 0xffff, MWA_ROM },
-MEMORY_END
-
-//TMS7000 CPU
-static MEMORY_READ_START(tms_readmem)
-  { 0x0000, 0x7fff, MRA_BANK1 },		/* ROM BANK */
-  { 0x8000, 0xffff, MRA_ROM },
-MEMORY_END
-static MEMORY_WRITE_START(tms_writemem)
-  { 0x0000, 0x7fff, MWA_ROM },
-  { 0x8000, 0x8000, DAC_TMS_w },		/* DAC */
-MEMORY_END
-
-static PORT_READ_START(tms_readport)
-  { TMS7000_PORTA, TMS7000_PORTA, tms_porta_r },
-  { TMS7000_PORTB, TMS7000_PORTB, tms_portb_r },
-  { TMS7000_PORTA, TMS7000_PORTC, tms_portc_r },
-  { TMS7000_PORTB, TMS7000_PORTD, tms_portd_r },
-PORT_END
-static PORT_WRITE_START(tms_writeport)
-  { TMS7000_PORTA, TMS7000_PORTA, tms_porta_w },
-  { TMS7000_PORTB, TMS7000_PORTB, tms_portb_w },
-  { TMS7000_PORTA, TMS7000_PORTC, tms_portc_w },
-  { TMS7000_PORTB, TMS7000_PORTD, tms_portd_w },
-PORT_END
-
-MACHINE_DRIVER_START(techno)
-  MDRV_CPU_ADD(M6502, 1000000)
-  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
-  MDRV_CPU_MEMORY(m6502_readmem, m6502_writemem)
-  MDRV_SOUND_ADD(AY8910, techno_ay8910Int)
-  MDRV_SOUND_ADD(SP0250, techno_sp0250_interface)
-
-  MDRV_CPU_ADD(M6502, 1000000)
-  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
-  MDRV_CPU_MEMORY(m6502_b_readmem, m6502_b_writemem)
-  MDRV_SOUND_ADD(DAC, techno_6502dacInt)
-
-  //MDRV_CPU_ADD(TMS7000, 4000000)
-  MDRV_CPU_ADD(TMS7000, 1500000)		//Sounds much better at 1.5Mhz than 4Mhz
-  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
-  MDRV_CPU_MEMORY(tms_readmem, tms_writemem)
-  MDRV_CPU_PORTS(tms_readport, tms_writeport)
-
 MACHINE_DRIVER_END
