@@ -1,6 +1,7 @@
 #include "driver.h"
 #include "memory.h"
 #include "cpu/m6502/m6502.h"
+#include "cpu/tms7000/tms7000.h"
 #include "machine/6530riot.h"
 #include "machine/6532riot.h"
 #include "sound/2151intf.h"
@@ -1191,4 +1192,362 @@ MACHINE_DRIVER_START(gts80s_s3)
   MDRV_SOUND_ADD(YM2151,  GTS80BS_ym2151Int)
   MDRV_SOUND_ADD(OKIM6295,GTS3_okim6295_interface)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
+MACHINE_DRIVER_END
+
+
+
+/* TECHNOPLAY sound board -
+
+   Pretty much stole the Gottlieb System 80b Generation 1 sound board, then
+   added a TMS7000 and an extra DAC for additional sounds.
+
+   In fact, Technoplay's "Scramble" even uses the exact same sound roms
+   for the D- and Y-CPUs as Gottlieb's "Raven"!
+*/
+
+/*----------------
+/  Local variables
+/-----------------*/
+static struct {
+  struct sndbrdData brdData;
+  int    ay_latch;			// Data Latch to AY-8913 chips
+  int    nmi_rate;			// Programmable NMI rate
+  void   *nmi_timer;		// Timer for NMI (NOT USED ANYMORE?)
+  int	 nmi_enable;		// Enable NMI triggered by Programmable Circuit
+  int    snd_data;			// Command from cpu
+  UINT8  dac_volume;
+  UINT8  dac_data;
+  UINT8  speechboard_drq;
+  UINT8  sp0250_latch;
+} techno_locals;
+
+// Latch data for AY chips
+WRITE_HANDLER(techno_ay8910_latch_w)
+{
+	techno_locals.ay_latch = data;
+}
+
+//NMI Timer - Setup the next frequency for the timer to fire, and Trigger an NMI if enabled
+static void techno_nmi_callback(int param)
+{
+	//Reset the timing frequency
+	double interval;
+	int cl1, cl2;
+	cl1 = 16-(techno_locals.nmi_rate&0x0f);
+	cl2 = 16-((techno_locals.nmi_rate&0xf0)>>4);
+	interval = (250000>>8);
+	if(cl1>0)	interval /= cl1;
+	if(cl2>0)	interval /= cl2;
+
+	//Set up timer to fire again
+	timer_set(TIME_IN_HZ(interval), 0, techno_nmi_callback);
+
+	//If enabled, fire the NMI for the Y CPU
+	if(techno_locals.nmi_enable) {
+		//seems to have no effect!
+		//cpu_boost_interleave(TIME_IN_USEC(10), TIME_IN_USEC(800));
+		cpu_set_nmi_line(techno_locals.brdData.cpuNo, PULSE_LINE);
+	}
+}
+
+WRITE_HANDLER(techno_nmi_rate_w)
+{
+	techno_locals.nmi_rate = data;
+	logerror("NMI RATE SET TO %d\n",data);
+}
+
+//Fire the NMI for the 2nd 6502
+WRITE_HANDLER(techno_cause_dac_nmi_w)
+{
+	cpu_set_nmi_line(techno_locals.brdData.cpuNo+1, PULSE_LINE);
+}
+
+READ_HANDLER(techno_cause_dac_nmi_r)
+{
+	techno_cause_dac_nmi_w(offset, 0);
+	return 0;
+}
+
+//Latch a command into the Sound Latch and generate the IRQ interrupts
+WRITE_HANDLER(techno_sh_w)
+{
+	techno_locals.snd_data = data;
+	cpu_set_irq_line(techno_locals.brdData.cpuNo, 0, HOLD_LINE);
+	cpu_set_irq_line(techno_locals.brdData.cpuNo+1, 0, HOLD_LINE);
+	//Bit 6 if NOT set, fires TMS IRQ 1
+	if(~data & 0x40) cpu_set_irq_line(techno_locals.brdData.cpuNo+2, TMS7000_IRQ1_LINE, ASSERT_LINE);
+}
+
+/* bits 0-3 are probably unused (future expansion) */
+/* bits 4 & 5 are two dip switches. Unused? */
+/* bit 6 is the test switch. When 0, the CPU plays a pulsing tone. */
+/* bit 7 comes from the speech chip DATA REQUEST pin */
+READ_HANDLER(techno_sound_input_r)
+{
+	int data = 0x40;
+	if(techno_locals.speechboard_drq)	data |= 0x80;
+	return data;
+}
+
+//Generation 1 sound control
+WRITE_HANDLER( techno_sound_control_w )
+{
+	static int last;
+
+	techno_locals.nmi_enable = data&0x01;
+
+	/* bit 2 goes to 8913 BDIR pin  */
+	if ((last & 0x04) == 0x04 && (data & 0x04) == 0x00)
+	{
+		/* bit 3 selects which of the two 8913 to enable */
+		if (data & 0x08)
+		{
+			/* bit 4 goes to the 8913 BC1 pin */
+			if (data & 0x10)
+				AY8910_control_port_0_w(0,techno_locals.ay_latch);
+			else
+				AY8910_write_port_0_w(0,techno_locals.ay_latch);
+		}
+		else
+		{
+			/* bit 4 goes to the 8913 BC1 pin */
+			if (data & 0x10)
+				AY8910_control_port_1_w(0,techno_locals.ay_latch);
+			else
+				AY8910_write_port_1_w(0,techno_locals.ay_latch);
+		}
+	}
+
+	/* bit 5 goes to the speech chip DIRECT DATA TEST pin */
+	//NO IDEA WHAT THIS DOES - No interface in the sp0250 emulation for it yet?
+
+	/* bit 6 = speech chip DATA PRESENT pin; high then low to make the chip read data */
+	if ((last & 0x40) == 0x40 && (data & 0x40) == 0x00)
+	{
+		sp0250_w(0,techno_locals.sp0250_latch);
+	}
+
+	/* bit 7 goes to the speech chip RESET pin */
+	//No interface in the sp0250 emulation for it yet?
+	last = data & 0x44;
+}
+
+// Init
+static void tsns_init(struct sndbrdData *brdData) {
+	memset(&techno_locals, 0, sizeof(techno_locals));
+	techno_locals.brdData = *brdData;
+	//Start the programmable timer circuit
+	timer_set(TIME_IN_HZ(250000>>8), 0, techno_nmi_callback);
+	//Set bank
+	cpu_setbank(1, techno_locals.brdData.romRegion + 0x10000);
+	//Must be 1 to start or speechboard will never work
+	techno_locals.speechboard_drq = 1;
+}
+
+// Cleanup
+void tsns_exit(int boardNo)
+{
+	if(techno_locals.nmi_timer)
+		timer_remove(techno_locals.nmi_timer);
+	techno_locals.nmi_timer = NULL;
+}
+
+static WRITE_HANDLER(tsns_data_w) {
+  data ^= 0xff;	/*Data is inverted from main cpu*/
+
+  //Bit 7 is the strobe - so commands are sent 2x, once with strobe set, then again, with it cleared..
+  //Doesn't seem to matter much if we put this in or leave it out..
+  //if(data & 0x80)
+	//  return;
+
+  logerror("tsns_data_w = %x\n",data);
+  techno_sh_w(0,data);
+}
+
+static READ_HANDLER(techno_snd_r)
+{
+//	cpu_set_irq_line(techno_locals.brdData.cpuNo, 0, CLEAR_LINE);
+	return techno_locals.snd_data;
+}
+
+static READ_HANDLER(techno_b_snd_r)
+{
+//	cpu_set_irq_line(techno_locals.brdData.cpuNo+1, 0, CLEAR_LINE);
+	return techno_locals.snd_data;
+}
+
+//Read data command
+READ_HANDLER(tms_porta_r)
+{
+	int data = techno_locals.snd_data & 0x1f;	//Only bits 0-4 used
+	logerror("reading porta =%x\n",data);
+	return data;
+}
+
+//Should not be used for input
+READ_HANDLER(tms_portb_r)
+{
+	logerror("reading portb\n");
+	return 0;
+}
+//Should not be used since it's used for address and data lines
+READ_HANDLER(tms_portc_r)
+{
+	logerror("reading portc\n");
+	return 0;
+}
+//Should not be used since it's used for address and data lines
+READ_HANDLER(tms_portd_r)
+{
+	logerror("reading portd\n");
+	return 0;
+}
+
+//Should not be used for output?
+WRITE_HANDLER(tms_porta_w) { logerror("writing port a = %x\n",data); }
+
+/*
+D0 = U25 ROM Select
+D1 = U36 ROM Select
+D2 = NA?
+D3 = NA?
+D4-D7 = Used for Bus Control
+*/
+WRITE_HANDLER(tms_portb_w)
+{
+	cpu_setbank(1, techno_locals.brdData.romRegion + (0x10000) + ((data&2)>>1)*0x8000);
+}
+
+//should not be used since it's used for address and data lines
+WRITE_HANDLER(tms_portc_w){	logerror("writing port c = %x\n",data); }
+WRITE_HANDLER(tms_portd_w){	logerror("writing port d = %x\n",data); }
+
+//Speechboard IRQ callback, will be set to 1 while speech is busy..
+static void techno_speechboard_drq_w(int level)
+{
+	techno_locals.speechboard_drq = (level == ASSERT_LINE);
+}
+
+//Latch data to the SP0250
+static WRITE_HANDLER(techno_sp0250_latch) {
+	techno_locals.sp0250_latch = data;
+}
+
+//DAC Handling.. Set volume
+static WRITE_HANDLER( techno_dac_vol_w )
+{
+	techno_locals.dac_volume = data;
+	DAC_data_16_w(0, techno_locals.dac_volume * techno_locals.dac_data);
+}
+//DAC Handling.. Set data to send
+static WRITE_HANDLER( techno_dac_data_w )
+{
+	techno_locals.dac_data = data;
+	DAC_data_16_w(0, techno_locals.dac_volume * techno_locals.dac_data);
+}
+
+//TMS7000 will use dac chip #1
+static WRITE_HANDLER(DAC_TMS_w)
+{
+	DAC_data_w(1,data);
+}
+
+static void tsns_diag(int button) {
+  cpu_set_nmi_line(techno_locals.brdData.cpuNo, button ? ASSERT_LINE : CLEAR_LINE);
+}
+
+const struct sndbrdIntf technoIntf =
+{"TECHNO", tsns_init, tsns_exit, tsns_diag, tsns_data_w, tsns_data_w, NULL, NULL, NULL, 0 //SNDBRD_NODATASYNC
+};
+
+struct AY8910interface techno_ay8910Int = {
+	2,			/* 2 chips */
+	2000000,	/* 2 MHz */
+	{ 25, 25 }	/* Volume */
+};
+
+struct DACinterface techno_6502dacInt =
+{
+	2,			/* 2 chips */
+	{50,50}		/* Volume */
+};
+
+struct sp0250_interface techno_sp0250_interface =
+{
+	100,		/* Volume */
+	techno_speechboard_drq_w	/*IRQ Callback*/
+};
+
+//6502 #1 CPU
+MEMORY_READ_START( m6502_readmem )
+  { 0x0000, 0x03ff, MRA_RAM },
+  { 0x6000, 0x6000, techno_sound_input_r },
+  { 0xa800, 0xa800, techno_snd_r },
+  { 0xe000, 0xffff, MRA_ROM },
+MEMORY_END
+MEMORY_WRITE_START( m6502_writemem )
+  { 0x0000, 0x03ff, MWA_RAM },
+  { 0x2000, 0x2000, techno_sp0250_latch },	/* speech chip. The game sends strings */
+											/* of 15 bytes (clocked by 4000). The chip also */
+											/* checks a DATA REQUEST bit in 6000. */
+  { 0x4000, 0x4000, techno_sound_control_w },
+  { 0x8000, 0x8000, techno_ay8910_latch_w },
+  { 0xa000, 0xa000, techno_nmi_rate_w },	/* set Y-CPU NMI rate */
+  { 0xb000, 0xb000, techno_cause_dac_nmi_w },	/* Trigger D-CPU NMI */
+  { 0xe000, 0xffff, MWA_ROM },
+MEMORY_END
+
+//6502 #2 CPU
+MEMORY_READ_START( m6502_b_readmem )
+  { 0x0000, 0x03ff, MRA_RAM },
+  { 0x8000, 0x8000, techno_b_snd_r },
+  { 0xe000, 0xffff, MRA_ROM },
+MEMORY_END
+MEMORY_WRITE_START( m6502_b_writemem )
+  { 0x0000, 0x03ff, MWA_RAM },
+  { 0x4000, 0x4000, techno_dac_vol_w},
+  { 0x4001, 0x4001, techno_dac_data_w},
+  { 0xe000, 0xffff, MWA_ROM },
+MEMORY_END
+
+//TMS7000 CPU
+static MEMORY_READ_START(tms_readmem)
+  { 0x0000, 0x7fff, MRA_BANK1 },		/* ROM BANK */
+  { 0x8000, 0xffff, MRA_ROM },
+MEMORY_END
+static MEMORY_WRITE_START(tms_writemem)
+  { 0x0000, 0x7fff, MWA_ROM },
+  { 0x8000, 0x8000, DAC_TMS_w },		/* DAC */
+MEMORY_END
+
+static PORT_READ_START(tms_readport)
+  { TMS7000_PORTA, TMS7000_PORTA, tms_porta_r },
+  { TMS7000_PORTB, TMS7000_PORTB, tms_portb_r },
+  { TMS7000_PORTA, TMS7000_PORTC, tms_portc_r },
+  { TMS7000_PORTB, TMS7000_PORTD, tms_portd_r },
+PORT_END
+static PORT_WRITE_START(tms_writeport)
+  { TMS7000_PORTA, TMS7000_PORTA, tms_porta_w },
+  { TMS7000_PORTB, TMS7000_PORTB, tms_portb_w },
+  { TMS7000_PORTA, TMS7000_PORTC, tms_portc_w },
+  { TMS7000_PORTB, TMS7000_PORTD, tms_portd_w },
+PORT_END
+
+MACHINE_DRIVER_START(techno)
+  MDRV_CPU_ADD(M6502, 1000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(m6502_readmem, m6502_writemem)
+  MDRV_SOUND_ADD(AY8910, techno_ay8910Int)
+  MDRV_SOUND_ADD(SP0250, techno_sp0250_interface)
+
+  MDRV_CPU_ADD(M6502, 1000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(m6502_b_readmem, m6502_b_writemem)
+  MDRV_SOUND_ADD(DAC, techno_6502dacInt)
+
+  //MDRV_CPU_ADD(TMS7000, 4000000)
+  MDRV_CPU_ADD(TMS7000, 1500000)		//Sounds much better at 1.5Mhz than 4Mhz
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(tms_readmem, tms_writemem)
+  MDRV_CPU_PORTS(tms_readport, tms_writeport)
 MACHINE_DRIVER_END
