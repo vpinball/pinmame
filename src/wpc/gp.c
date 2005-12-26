@@ -470,13 +470,13 @@ static Z80_DaisyChain GP_DaisyChain[] =
 static MEMORY_READ_START(GP_readmem)
 	{ 0x0000, 0x2fff, MRA_ROM },
 	{ 0x8c00, 0x8cff, MRA_RAM }, /*256B CMOS RAM - Battery Backed*/
-	{ 0x8d00, 0x8dff, MRA_RAM }, /*256B NMOS RAM*/
+	{ 0x8d00, 0x8d7f, MRA_RAM }, /*128B NMOS RAM*/
 MEMORY_END
 
 static MEMORY_WRITE_START(GP_writemem)
 	{ 0x0000, 0x2fff, MWA_ROM },
 	{ 0x8c00, 0x8cff, MWA_RAM, &generic_nvram, &generic_nvram_size}, /*256B CMOS RAM - Battery Backed*/
-	{ 0x8d00, 0x8dff, MWA_RAM }, /*256B NMOS RAM*/
+	{ 0x8d00, 0x8d7f, MWA_RAM }, /*128B NMOS RAM*/
 MEMORY_END
 
 static PORT_READ_START( GP_readport )
