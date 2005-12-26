@@ -209,13 +209,13 @@ CORE_GAMEDEFNV(gwarfare,"Global Warfare",1981,"Game Plan",mGP2SM,SOUNDFLAG)
 / Mike Bossy (January 1982) - Model #???
 /-------------------------------------------------------------------*/
 INITGAME(mbossy, 0,dispGP_BDU1,FLIP_SW(FLIP_L),SNDBRD_GPMSU1,0)
-GP_ROMSTART888(mbossy,	"mb_a.716",CRC(a811f936) SHA1(f44fed7acd26a621f105925d52405e985d0b5e5d),
-						"mb_b.716",CRC(75ec7247) SHA1(10fa1e3ac2adbd7b24744a4fb0149bcc74df6b4c),
-						"mb_c.716",CRC(75dc73c4) SHA1(79fadec7650a1419f47b22875dee6f678114b439))
+GP_ROMSTART888(mbossy,	"mb_a.716",NO_DUMP,
+						"mb_b.716",NO_DUMP,
+						"mb_c.716",NO_DUMP)
 GP_SOUNDROM88("mb.u9", CRC(dfa98db5) SHA1(65361630f530383e67837c428050bcdb15373c0b),
               "mb.u10",CRC(2d3c91f9) SHA1(7e1f067af29d9e484da234382d7dc821ca07b6c4))
 GP_ROMEND
-CORE_GAMEDEFNV(mbossy,"Mike Bossy",1982,"Game Plan",mGP2SM,GAME_NOT_WORKING|SOUNDFLAG)
+CORE_GAMEDEFNV(mbossy,"Mike Bossy",1982,"Game Plan",mGP2SM,SOUNDFLAG)
 
 /*-------------------------------------------------------------------
 / Super Nova (May 1982) - Model #150
@@ -285,7 +285,7 @@ GP_ROMEND
 CORE_GAMEDEFNV(ladyshot,"Lady Sharpshooter",1985,"Game Plan",mGP2SM,SOUNDFLAG)
 
 /*-------------------------------------------------------------------
-/ Andromeda (September 1985) - Model #850
+/ Andromeda (August 1985) - Model #850
 /-------------------------------------------------------------------*/
 INITGAME(andromed, 0,dispGP_BDU2,FLIP_SW(FLIP_L),SNDBRD_GPMSU3,0)
 GP_ROMSTART00(andromed,	"850.a",CRC(67ed03ee) SHA1(efe7c495766ffb73545a77ab24f02925ac0395f1),
@@ -293,6 +293,14 @@ GP_ROMSTART00(andromed,	"850.a",CRC(67ed03ee) SHA1(efe7c495766ffb73545a77ab24f02
 GP_SOUNDROM8("850.snd",CRC(18e084a6) SHA1(56efbabe60305f168ca479295577bff7f3a4dace))
 GP_ROMEND
 CORE_GAMEDEFNV(andromed,"Andromeda",1985,"Game Plan",mGP2SM3,0)
+
+GP_ROMSTART00(andromea,	"850.a",CRC(67ed03ee) SHA1(efe7c495766ffb73545a77ab24f02925ac0395f1),
+						"850b.rom",CRC(fc1829a5) SHA1(9761543d17c0a5c08b0fec45c35648ce769a3463))
+GP_SOUNDROM8("850.snd",CRC(18e084a6) SHA1(56efbabe60305f168ca479295577bff7f3a4dace))
+GP_ROMEND
+#define init_andromea init_andromed
+GP_INPUT_PORTS_START(andromea, 1) GP_INPUT_PORTS_END
+CORE_CLONEDEFNV(andromea,andromed,"Andromeda (alternate set)",1985,"Game Plan",mGP2SM3,0)
 
 /*-------------------------------------------------------------------
 / Cyclopes (November 1985) - Model #800
