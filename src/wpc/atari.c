@@ -12,6 +12,10 @@
 		IO: DMA (Direct Memory Access/Address)
 		DISPLAY: 5x6 Digit 7 Segment Display
 		SOUND:	 Frequency + Noise Generator, Programmable Timers
+
+   Generation 3: Hardware: (Road Runner and beyond?)
+		same as generation 2, but more dip switches (maybe related to prototype states)
+
 ************************************************************************************************/
 #include <stdarg.h>
 #include "driver.h"
@@ -39,7 +43,7 @@ static struct {
 static int toggle = 0;
 static INTERRUPT_GEN(ATARI1_nmihi) {
 	static int dmaCount = 0;
-//	cpu_set_nmi_line(ATARI_CPU, PULSE_LINE);
+	cpu_set_nmi_line(ATARI_CPU, PULSE_LINE);
 	dmaCount++;
 	if (dmaCount > 3) {
 		dmaCount = 0;
@@ -152,31 +156,48 @@ static READ_HANDLER(swg1_r) {
 	return (coreGlobals.swMatrix[1+(offset/8)] & (1 << (offset % 8))) ? 0xff : 0;
 }
 
-static WRITE_HANDLER(swg1_w) {
-	logerror("Test switch write %2x\n", data);
-}
-
 static READ_HANDLER(dipg1_r) {
-	UINT8 sw = (core_getDip(offset/8) & (1 << (offset % 8))) ? 0xff : 0;
+	UINT8 *dipram = memory_region(ATARI_MEMREG_CPU) + 0x2000;
+	dipram[offset] = (core_getDip(offset/8) & (1 << (offset % 8))) ? 0xff : 0;
 	/* test switch and dip switch 1/1 are the same line */
 	if (offset == 11) {
-		sw ^= locals.testSwBits;
-		sw = sw ^ (coreGlobals.swMatrix[0] ? 0xff : 0x00);
+		dipram[offset] ^= locals.testSwBits;
+		dipram[offset] = dipram[offset] ^ (coreGlobals.swMatrix[0] ? 0xff : 0x00);
 	}
 	if (offset)
-		return sw;
+		return dipram[offset];
 	/* every fourth NMI pulse, a DMA interrupt is triggered.
 	   Only if the 7th bit of dip switch 2/4 has changed when
 	   that dip is read, the game code will proceed! */
-	return toggle ? (sw | 0x40) : (sw & 0xbf);
+	return toggle ? (dipram[offset] | 0x40) : (dipram[offset] & 0xbf);
 }
+static WRITE_HANDLER(dipg1_w) {
+	/* In fact, some games try to do that bit toggling stuff by themselves,
+	   only MAME has a problem handling this: The code does a ROL instruction,
+	   so MAME will perform a read followed by a write to that address.
+	   The read process will overwrite the data with the dip settings. */
+	UINT8 *dipram = memory_region(ATARI_MEMREG_CPU) + 0x2000;
+	dipram[offset] = data;
+}
+
 // Gen 2
 static READ_HANDLER(sw_r) {
 	return ~coreGlobals.swMatrix[offset+1];
 }
 
 static READ_HANDLER(dip_r)  {
-	return ~core_getDip(offset);
+	UINT8 *dipram = memory_region(ATARI_MEMREG_CPU) + 0x2000;
+	dipram[offset] = ~core_getDip(offset);
+	return dipram[offset];
+}
+static WRITE_HANDLER(dip_w)  {
+	UINT8 *dipram = memory_region(ATARI_MEMREG_CPU) + 0x2000;
+	dipram[offset] = data;
+}
+static READ_HANDLER(dip2_r)  {
+	UINT8 *dipram2 = memory_region(ATARI_MEMREG_CPU) + 0x2008;
+	dipram2[offset] = core_getDip(offset+4);
+	return dipram2[offset];
 }
 
 /* display */
@@ -358,7 +379,7 @@ static MEMORY_READ_START(ATARI1_readmem)
 {0x2000,0x200f,	dipg1_r},		/* dips */
 {0x2010,0x204f,	swg1_r},		/* inputs */
 {0x7000,0x7fff,	MRA_ROM},		/* ROM */
-{0xf800,0xffff,	MRA_ROM},		/* reset vector */
+{0xf000,0xffff,	MRA_ROM},		/* reset vector */
 MEMORY_END
 
 static MEMORY_WRITE_START(ATARI1_writemem)
@@ -373,13 +394,12 @@ static MEMORY_WRITE_START(ATARI1_writemem)
 {0x1089,0x108b, ram_w3},		/* RAM mirror, on Middle Earth only */
 {0x108c,0x108c,	latch108c_w},	/* solenoids */
 {0x108d,0x11ff, ram_w4},		/* RAM mirror, on Middle Earth only */
-{0x200b,0x200b,	swg1_w},		/* test switch write? */
+{0x2000,0x200f,	dipg1_w},		/* dip switch memory area is written to by code */
 {0x3000,0x3000,	soundg1_w},		/* audio enable */
 {0x4000,0x4000,	watchdog_w},	/* watchdog reset? */
 {0x508c,0x508c,	latch508c_w},	/* additional solenoids, on Time 2000 only */
 {0x6000,0x6000,	audiog1_w},		/* audio reset */
-{0x7000,0x7fff,	MWA_ROM},		/* ROM */
-{0xf800,0xffff,	MWA_ROM},		/* reset vector */
+{0xffff,0xffff,	MWA_NOP},		/* Middle Earth writes here */
 MEMORY_END
 
 // Gen 2 memory handling - RAM and NVRAM is mirrored!
@@ -399,44 +419,21 @@ static WRITE_HANDLER(nvram_w) { atari_CMOS[offset] = data & 0x0f; }
 static MEMORY_READ_START(ATARI2_readmem)
 {0x0000,0x00ff,	ram2_r},	/* RAM */
 {0x0100,0x01ff,	ram2_r},	/* mirrored RAM */
-{0x0200,0x02ff,	ram2_r},	/* mirrored RAM */
-{0x0300,0x03ff,	ram2_r},	/* mirrored RAM */
-{0x0400,0x04ff,	ram2_r},	/* mirrored RAM */
-{0x0500,0x05ff,	ram2_r},	/* mirrored RAM */
-{0x0600,0x06ff,	ram2_r},	/* mirrored RAM */
-{0x0700,0x07ff,	ram2_r},	/* mirrored RAM */
 {0x0800,0x08ff,	nvram_r},	/* NVRAM */
 {0x0900,0x09ff,	nvram_r},	/* mirrored NVRAM */
-{0x0a00,0x0aff,	nvram_r},	/* mirrored NVRAM */
-{0x0b00,0x0bff,	nvram_r},	/* mirrored NVRAM */
-{0x0c00,0x0cff,	nvram_r},	/* mirrored NVRAM */
-{0x0d00,0x0dff,	nvram_r},	/* mirrored NVRAM */
-{0x0e00,0x0eff,	nvram_r},	/* mirrored NVRAM */
-{0x0f00,0x0fff,	nvram_r},	/* mirrored NVRAM */
 {0x1000,0x1007,	sw_r},		/* inputs */
 {0x2000,0x2003,	dip_r},		/* dip switches */
+{0x2008,0x200b,	dip2_r},	/* more dip switches??? Road Runner only! */
 {0x2800,0x3fff,	MRA_ROM},	/* ROM */
 {0xa800,0xbfff,	MRA_ROM},	/* ROM */
-{0xf800,0xffff,	MRA_ROM},	/* reset vector */
+{0xe800,0xffff,	MRA_ROM},	/* reset vector */
 MEMORY_END
 
 static MEMORY_WRITE_START(ATARI2_writemem)
 {0x0000,0x00ff,	ram2_w, &atari_RAM},	/* RAM */
 {0x0100,0x01ff,	ram2_w},	/* mirrored RAM */
-{0x0200,0x02ff,	ram2_w},	/* mirrored RAM */
-{0x0300,0x03ff,	ram2_w},	/* mirrored RAM */
-{0x0400,0x04ff,	ram2_w},	/* mirrored RAM */
-{0x0500,0x05ff,	ram2_w},	/* mirrored RAM */
-{0x0600,0x06ff,	ram2_w},	/* mirrored RAM */
 {0x0700,0x07ff,	ram2_w},	/* mirrored RAM */
 {0x0800,0x08ff,	nvram_w, &atari_CMOS},	/* NVRAM */
-{0x0900,0x09ff,	nvram_w},	/* mirrored NVRAM */
-{0x0a00,0x0aff,	nvram_w},	/* mirrored NVRAM */
-{0x0b00,0x0bff,	nvram_w},	/* mirrored NVRAM */
-{0x0c00,0x0cff,	nvram_w},	/* mirrored NVRAM */
-{0x0d00,0x0dff,	nvram_w},	/* mirrored NVRAM */
-{0x0e00,0x0eff,	nvram_w},	/* mirrored NVRAM */
-{0x0f00,0x0fff,	nvram_w},	/* mirrored NVRAM */
 {0x1800,0x1800,	sound0_w},	/* sound */
 {0x1820,0x1820,	sound1_w},	/* sound */
 {0x1840,0x1846,	disp0_w},	/* display data output */
@@ -446,9 +443,7 @@ static MEMORY_WRITE_START(ATARI2_writemem)
 {0x18a0,0x18a7,	sol1_w},	/* solenoid enable & independent control output */
 {0x18c0,0x18c1,	watchdog_w},/* watchdog reset */
 {0x18e0,0x18e0,	intack_w},	/* interrupt acknowledge (resets IRQ state) */
-{0x2800,0x3fff,	MWA_ROM},	/* ROM */
-{0xa800,0xbfff,	MWA_ROM},	/* ROM */
-{0xf800,0xffff,	MWA_ROM},	/* reset vector */
+{0x2000,0x2003,	dip_w},		/* dip switch memory area is written to by code */
 MEMORY_END
 
 static void init_common(void) {
@@ -516,4 +511,9 @@ MACHINE_DRIVER_START(ATARI2)
   MDRV_IMPORT_FROM(atari2s)
   MDRV_SOUND_CMD(sndbrd_0_data_w)
   MDRV_SOUND_CMDHEADING("ATARI2")
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(ATARI3)
+  MDRV_IMPORT_FROM(ATARI2)
+  MDRV_DIPS(64)
 MACHINE_DRIVER_END

@@ -20,6 +20,13 @@
 		core_gameData = &name##GameData; \
 	}
 
+#define INITGAME3(name, disptype, flippers, balls) \
+	ATARI3_INPUT_PORTS_START(name, balls) ATARI_INPUT_PORTS_END \
+	static core_tGameData name##GameData = {0,disptype,{flippers,0,0,0,SNDBRD_ATARI2,0}}; \
+	static void init_##name(void) { \
+		core_gameData = &name##GameData; \
+	}
+
 /* 4 X 6 Segments, 2 X 2 Segments */
 core_tLCDLayout atari_disp1[] = {
   { 0, 0, 2, 3, CORE_SEG87 }, { 0, 6, 5, 3, CORE_SEG87 },
@@ -117,12 +124,12 @@ CORE_GAMEDEFNV(hercules,"Hercules",1979,"Atari",gl_mATARI2,0)
 /*-------------------------------------------------------------------
 / Road Runner (??/1979)
 /-------------------------------------------------------------------*/
-INITGAME2(roadrunr, atari_disp2, FLIPSW6667, 1)
+INITGAME3(roadrunr, atari_disp2, FLIPSW6667, 1)
 ATARI_3_ROMSTART(roadrunr,	"0000.716",	CRC(62f5f394) SHA1(ff91066d43d788119e3337788abd86e5c0bf2d92),
 							"3000.716",	CRC(2fc01359) SHA1(d3df20c764bb68a5316367bb18d34a03293e7fa6),
 							"3800.716",	CRC(77262408) SHA1(3045a732c39c96002f495f64ed752279f7d43ee7))
 ATARI_ROMEND
-CORE_GAMEDEFNV(roadrunr,"Road Runner",1979,"Atari",gl_mATARI2,0)
+CORE_GAMEDEFNV(roadrunr,"Road Runner",1979,"Atari",gl_mATARI3,0)
 
 //Monza (1980)
 //Neutron Star (1981)
