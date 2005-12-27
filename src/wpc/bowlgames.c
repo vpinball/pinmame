@@ -73,10 +73,10 @@ CORE_GAMEDEF(taurs,l1,"Taurus (Shuffle) (L-1)",1979,"Williams",s4_mS4S,0)
 /*----------------------------
 / Omni
 /----------------------------*/
-INITGAME(omni, GEN_S3, dispS5)
+INITGAME(omni, GEN_S4, dispS5)
 S4_ROMSTART(omni,l1,"omni-1a.u21",CRC(443bd170) SHA1(cc1ebd72d77ec2014cbd84534380e5ea1f12c022),
-                     "5a-9140.u20", CRC(c6f8e3b1) SHA1(cb78d42e1265162132a1ab2320148b6857106b0e),
-                     "5a-9141.u17", CRC(cfc2518a) SHA1(5e99e40dcb7e178137db8d7d7d6da82ba87130fa))
+                    "b_ic20.716", CRC(c6f8e3b1) SHA1(cb78d42e1265162132a1ab2320148b6857106b0e),
+                    "b_ic17.716", CRC(cfc2518a) SHA1(5e99e40dcb7e178137db8d7d7d6da82ba87130fa))
 S67S_SOUNDROMS8("sound.716", CRC(db085cbb) SHA1(9a57abbad183ba16b3dba16d16923c3bfc46a0c3))
 S4_ROMEND
 #define input_ports_omni input_ports_bowl
@@ -262,6 +262,29 @@ WPCS_SOUNDROM222("lc_u18.l1",CRC(beb84fd9) SHA1(b1d5472af5e3c0f5c67e7d636122eb79
 WPC_ROMEND
 WPC_INPUT_PORTS_START(strik, 0) WPC_INPUT_PORTS_END
 CORE_GAMEDEF(strik,l4,"Strike Master (L-4)",1992,"Williams",wpc_mFliptronS,0)
+
+/*------------------
+/ Hot Shot (#60017)
+/------------------*/
+static core_tGameData hshotGameData = {
+  GEN_WPCFLIPTRON, wpc_dispDMD,
+  { FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L) },
+  NULL,
+  {
+    "905  123456 12345 123",
+    /*Coin    1     2     3     4     5     6     7     8     9    10   Cab.  Cust */
+    { 0x00, 0x00, 0x20, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
+    /*Start  Tilt  SlamTilt  CoinDoor  Shooter */
+    { 13,    0,    21,       22,       26 }
+  }
+};
+static void init_hshot(void) { core_gameData = &hshotGameData; }
+WPC_ROMSTART(hshot,p8,"hshot_p8.u6",0x80000,CRC(26dd6bb2) SHA1(45674885052838b6bd6b3ed0a276a4d9323290c5))
+WPCS_SOUNDROM2x8("hshot_l1.u18",CRC(a0e5beba) SHA1(c54a22527d861df54891308752ebdec5829deceb),
+                 "hshot_l1.u14",CRC(a3ccf557) SHA1(a8e518ea115cd1963544273c45d9ae9a6cab5e1f))
+WPC_ROMEND
+WPC_INPUT_PORTS_START(hshot, 0) WPC_INPUT_PORTS_END
+CORE_GAMEDEF(hshot,p8,"Hot Shot Basketball (P-8)",1992,"Midway",wpc_mFliptronS,0)
 
 /*-------------------------------------------------------------------
 / Strikes n' Spares (#N111)
