@@ -208,6 +208,7 @@ DRIVERNV(atlantis)      //6803-2006: 03/89 Atlantis
 // ------------------
 // (NUOVA) BELL GAMES
 // ------------------
+DRIVERNV(newwave)       //BY35:     04/85 New Wave, Bally Black Pyramid Clone
 DRIVERNV(saturn2)       //BY35:     08/85 Saturn 2, Bally Spy Hunter Clone
 DRIVERNV(spacehaw)      //BY35:     04/86 Space Hawks, Bally Cybernaut Clone
 
