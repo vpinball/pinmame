@@ -3,13 +3,14 @@
 
  by Gerrit Volkenborn (gaston@yomail.de)
  Sep 22, 2004
+ updated Dec 26, 2005 by Brian Smith (destruk@vpforums.com)
 
  Read PZ.c or FH.c if you like more help.
 
  ******************************************************************************/
 
 /*------------------------------------------------------------------------------
-  Keys for The Champion Pub Simulator:
+  Keys for The Monopoly Simulator:
   ------------------------------------
     +I  L/R Inlane
     +O  L/R Outlane
@@ -393,13 +394,13 @@ static WRITE_HANDLER(monopoly_w) {
   if (offset == 3) {
     locals.flipperDir = ((data & 0x04) >> 1) - 1; // so +1 for cw, -1 for ccw
 	if (data & 0x01) { // increase flipper speed if set
-      if (locals.flipperSpeed < 4) locals.flipperSpeed++;
+      if (locals.flipperSpeed < 1) locals.flipperSpeed++;
     } else { // decrease flipper speed if not set
       if (locals.flipperSpeed) locals.flipperSpeed--;
     }
     locals.flipperPos += locals.flipperDir * locals.flipperSpeed;
-    if (locals.flipperPos < 0) locals.flipperPos += 5000;
-    if (locals.flipperPos > 4999) locals.flipperPos -= 5000;
+    if (locals.flipperPos < 0) locals.flipperPos += 360;
+    if (locals.flipperPos > 360) locals.flipperPos -= 360;
 #ifndef VPINMAME // must be disabled, as the switch is set by script in VPM
     core_setSw(30, locals.flipperPos < 33);
 #endif
@@ -424,7 +425,7 @@ static void monopoly_handleMech(int mech) {
 
 static int monopoly_getMech(int mechNo){
   switch (mechNo) {
-    case 0: return locals.flipperPos / 5;
+    case 0: return locals.flipperPos;
     case 1: return locals.flipperDir * locals.flipperSpeed;
   }
   return 0;
