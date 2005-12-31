@@ -1020,18 +1020,6 @@ CORE_GAMEDEFNV(cybrnaut,"Cybernaut",1985,"Bally",by35_mBY35_45S,0)
 /******* Games below by different manufacturers *******/
 /******************************************************/
 /*--------------------------------
-/ New Wave (Black Pyramid) Bell, Italy
-/-------------------------------*/
-INITGAME2(newwave,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY45,0)
-BY35_ROMSTARTx00(newwave,"newwu2.532",CRC(600535b0) SHA1(33d080f4430ad9c33ee9de1bfbb5cfde50f0776e),
-                          "newwu6.532",CRC(ca72a96b) SHA1(efcd8b41bf0c19ebd7db492632e046b348619460))
-BY45_SOUNDROM11(          "newwu3.532",  CRC(a5005067) SHA1(bd460a20a6e8f33746880d72241d6776b85126cf),
-                          "newwu4.532",  CRC(6f4f2a95) SHA1(a7a375827c0429b8b3d2ee9e471f557152492993))
-BY35_ROMEND
-#define input_ports_newwave input_ports_by35
-CORE_GAMEDEFNV(newwave,"New Wave",1985,"Bell Games (Italy)",by35_mBY35_45S,0)
-
-/*--------------------------------
 / Saturn 2 (Spy Hunter Clone) Bell, Italy
 /-------------------------------*/
 static core_tLCDLayout dispSH[] = {
@@ -1047,6 +1035,18 @@ BY45_SOUNDROM11(         "spy_u3.532", CRC(95ffc1b8) SHA1(28f058f74abbbee120dca0
 BY35_ROMEND
 #define input_ports_saturn2 input_ports_by35
 CORE_CLONEDEFNV(saturn2,spyhuntr,"Saturn 2",1985,"Bell Games (Italy)",by35_mBY35_45S,0)
+
+/*--------------------------------
+/ New Wave (Black Pyramid Clone) Bell, Italy
+/-------------------------------*/
+INITGAMENB(newwave,GEN_BY35,dispSH,FLIP_SW(FLIP_L),8,SNDBRD_BY45,0)
+BY35_ROMSTARTx00(newwave,"blkp2732.u2",CRC(600535b0) SHA1(33d080f4430ad9c33ee9de1bfbb5cfde50f0776e),
+                         "newwu6.532", CRC(ca72a96b) SHA1(efcd8b41bf0c19ebd7db492632e046b348619460))
+BY45_SOUNDROM11(         "bp_u3.532",  CRC(a5005067) SHA1(bd460a20a6e8f33746880d72241d6776b85126cf),
+                         "newwu4.532", CRC(6f4f2a95) SHA1(a7a375827c0429b8b3d2ee9e471f557152492993))
+BY35_ROMEND
+#define input_ports_newwave input_ports_by35
+CORE_CLONEDEFNV(newwave,blakpyra,"New Wave",1985,"Bell Games (Italy)",by35_mBY35_45S,0)
 
 /*--------------------------------
 / Space Hawks (Cybernaut Clone) Nuova Bell, Italy
