@@ -720,6 +720,7 @@ DRIVERNV(shrky_it)      //Whitestar: 09/00 Sharkey's Shootout (Italian display)
 DRIVERNV(hirolcas)      //Whitestar: 01/01 High Roller Casino (3.0)
 DRIVERNV(hirolcat)      //Whitestar: 01/01 High Roller Casino (2.90) TEST BUILD 1820
 DRIVERNV(hirol_gr)      //Whitestar: 01/01 High Roller Casino (Germany, 2.10)
+DRIVERNV(hirol_g3)      //Whitestar: 01/01 High Roller Casino (German display)
 DRIVERNV(hirol_fr)      //Whitestar: 01/01 High Roller Casino (French display)
 DRIVERNV(hirol_it)      //Whitestar: 01/01 High Roller Casino (Italian display)
 DRIVERNV(austin)        //Whitestar: 05/01 Austin Powers
