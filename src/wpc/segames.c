@@ -556,7 +556,7 @@ CORE_CLONEDEFNV(shrknew,shrkysht,"Sharkey's Shootout (ARM7 Sound Board)",2001,"S
 / Sharkey's Shootout (Germany)
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(shrky_gr,"sscpu.211",CRC(66a0e5ce) SHA1(d33615081cd8cdf8a17a44b389c6d9746e093510))
-DE_DMD32ROM8x(        "ssdispg.201",NO_DUMP)
+DE_DMD32ROM8x(        "ssdispg.201",CRC(1ad88b75) SHA1(f82ae59b59e545e2023879aad7e99862d9d339c5))
 DE2S_SOUNDROM1888(    "sssndu7.101",CRC(fbc6267b) SHA1(e6e70662031e5209385f8b9c59296d7423cc03b4),
                      "sssndu17.100",CRC(dae78d8d) SHA1(a0e1722a19505e7d08266c490d27f772357722d3),
                      "sssndu21.100",CRC(e1fa3f2a) SHA1(08731fd53ef81453a8f20602e76d435c6771bbb9),
@@ -570,7 +570,7 @@ CORE_CLONEDEFNV(shrky_gr,shrkysht,"Sharkey's Shootout (Germany)",2001,"Stern",de
 / Sharkey's Shootout (France)
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(shrky_fr,"sscpu.211",CRC(66a0e5ce) SHA1(d33615081cd8cdf8a17a44b389c6d9746e093510))
-DE_DMD32ROM8x(        "ssdispf.201",NO_DUMP)
+DE_DMD32ROM8x(        "ssdispf.201",CRC(89eaaebf) SHA1(0945a11a8f632cea3b9e9982cc4aed54f12ec55a))
 DE2S_SOUNDROM1888(    "sssndu7.101",CRC(fbc6267b) SHA1(e6e70662031e5209385f8b9c59296d7423cc03b4),
                      "sssndu17.100",CRC(dae78d8d) SHA1(a0e1722a19505e7d08266c490d27f772357722d3),
                      "sssndu21.100",CRC(e1fa3f2a) SHA1(08731fd53ef81453a8f20602e76d435c6771bbb9),
@@ -584,7 +584,7 @@ CORE_CLONEDEFNV(shrky_fr,shrkysht,"Sharkey's Shootout (France)",2001,"Stern",de_
 / Sharkey's Shootout (Italy)
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(shrky_it,"sscpu.211",CRC(66a0e5ce) SHA1(d33615081cd8cdf8a17a44b389c6d9746e093510))
-DE_DMD32ROM8x(        "ssdispi.201",NO_DUMP)
+DE_DMD32ROM8x(        "ssdispi.201",CRC(fb70641d) SHA1(d152838eeacacc5dfe6fc3bc3f26b4d3e9e4c9cc))
 DE2S_SOUNDROM1888(    "sssndu7.101",CRC(fbc6267b) SHA1(e6e70662031e5209385f8b9c59296d7423cc03b4),
                      "sssndu17.100",CRC(dae78d8d) SHA1(a0e1722a19505e7d08266c490d27f772357722d3),
                      "sssndu21.100",CRC(e1fa3f2a) SHA1(08731fd53ef81453a8f20602e76d435c6771bbb9),
@@ -650,7 +650,7 @@ CORE_CLONEDEFNV(hirolcat,hirolcas,"High Roller Casino (3.00) TEST",2001,"Stern",
 / High Roller Casino (France)
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(hirol_fr,"hrccpu.300",CRC(0d1117fa) SHA1(a19f9dfc2288fc16cb8e992ffd7f13e70ef042c7))
-DE_DMD32ROM8x(        "hrcdispf.300",NO_DUMP)
+DE_DMD32ROM8x(        "hrcdispf.300",CRC(1fb5046b) SHA1(8b121a9c75a7d9a312b8c03615838b748d149819))
 DE2S_SOUNDROM18888(    "hrsndu7.100",CRC(c41f91a7) SHA1(2af3be10754ea633558bdbeded21c6f82d85cd1d),
                       "hrsndu17.100",CRC(5858dfd0) SHA1(0d88daf3b480f0e0a2653d9be37cafed79036a48),
                       "hrsndu21.100",CRC(c653de96) SHA1(352567f4f4f973ed3d8c018c9bf37aeecdd101bf),
@@ -660,6 +660,21 @@ SE_ROMEND
 #define input_ports_hirol_fr input_ports_se
 #define init_hirol_fr init_hirolcas
 CORE_CLONEDEFNV(hirol_fr,hirolcas,"High Roller Casino (France)",2001,"Stern",de_mSES2,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ High Roller Casino (Germany)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(hirol_g3,"hrccpu.300",CRC(0d1117fa) SHA1(a19f9dfc2288fc16cb8e992ffd7f13e70ef042c7))
+DE_DMD32ROM8x(        "hrcdispg.300",CRC(a880903a) SHA1(4049f50ceaeb6c9e869150ec3d903775cdd865ff))
+DE2S_SOUNDROM18888(    "hrsndu7.100",CRC(c41f91a7) SHA1(2af3be10754ea633558bdbeded21c6f82d85cd1d),
+                      "hrsndu17.100",CRC(5858dfd0) SHA1(0d88daf3b480f0e0a2653d9be37cafed79036a48),
+                      "hrsndu21.100",CRC(c653de96) SHA1(352567f4f4f973ed3d8c018c9bf37aeecdd101bf),
+                      "hrsndu36.100",CRC(5634eb4e) SHA1(8c76f49423fc0d7887aa5c57ad029b7371372739),
+                      "hrsndu37.100",CRC(d4d23c00) SHA1(c574dc4553bff693d9216229ce38a55f69e7368a))
+SE_ROMEND
+#define input_ports_hirol_g3 input_ports_se
+#define init_hirol_g3 init_hirolcas
+CORE_CLONEDEFNV(hirol_g3,hirolcas,"High Roller Casino (Germany)",2001,"Stern",de_mSES2,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / High Roller Casino (Germany, 2.10)
@@ -680,7 +695,7 @@ CORE_CLONEDEFNV(hirol_gr,hirolcas,"High Roller Casino (2.10, Germany)",2001,"Ste
 / High Roller Casino (Italy)
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(hirol_it,"hrccpu.300",CRC(0d1117fa) SHA1(a19f9dfc2288fc16cb8e992ffd7f13e70ef042c7))
-DE_DMD32ROM8x(        "hrcdispi.300",NO_DUMP)
+DE_DMD32ROM8x(        "hrcdispi.300",CRC(2734f746) SHA1(aa924d998b6c3fbd80e9325093c9b3267dfaadef))
 DE2S_SOUNDROM18888(    "hrsndu7.100",CRC(c41f91a7) SHA1(2af3be10754ea633558bdbeded21c6f82d85cd1d),
                       "hrsndu17.100",CRC(5858dfd0) SHA1(0d88daf3b480f0e0a2653d9be37cafed79036a48),
                       "hrsndu21.100",CRC(c653de96) SHA1(352567f4f4f973ed3d8c018c9bf37aeecdd101bf),
