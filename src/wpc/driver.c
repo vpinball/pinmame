@@ -1244,10 +1244,15 @@ DRIVERNV(stargoda)      //05/80 Star God (alternate sound)
 DRIVERNV(sshtlzac)      //09/80 Space Shuttle
 DRIVERNV(ewf)           //04/81 Earth, Wind & Fire
 DRIVERNV(locomotn)      //09/81 Locomotion
-DRIVERNV(pinchp82)      //04/82 Pinball Champ '82 (German speech - is this really different from the '83?)
+                        //04/82 Pinball Champ '82 (is this really different from the '83?)
 DRIVERNV(socrking)      //09/82 Soccer Kings
 DRIVERNV(socrkngg)      //09/82 Soccer Kings (German speech)
-DRIVERNV(pinchamp)      //??/83 Pinball Champ
+DRIVERNV(pinchamp)      //04/83 Pinball Champ
+DRIVERNV(pinchamg)      //04/83 Pinball Champ (German speech)
+DRIVERNV(pinchami)      //04/83 Pinball Champ (Italian speech)
+DRIVERNV(pincham7)      //04/83 Pinball Champ (7 digits)
+DRIVERNV(pincha7g)      //04/83 Pinball Champ (7 digits, German speech)
+DRIVERNV(pincha7i)      //04/83 Pinball Champ (7 digits, Italian speech)
 DRIVERNV(tmachzac)      //04/83 Time Machine
 DRIVERNV(farfalla)      //09/83 Farfalla
 DRIVERNV(farfalli)      //09/83 Farfalla (Italian speech)
