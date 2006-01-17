@@ -195,19 +195,7 @@ CORE_GAMEDEFNV(locomotn,"Locomotion",1981,"Zaccaria",mZAC1146,SOUNDFLAG)
 
 // Generation 2 games below
 
-/*--------------------------------
-/ Pinball Champ '82 (04/82) (Is this really different from the '83?)
-/-------------------------------*/
-INITGAME(pinchp82,GEN_ZAC2,dispZAC3,SNDBRD_ZAC1370,366)
-ZAC_ROMSTART000(pinchp82,	"pinchamp.ic1",CRC(1412ec33) SHA1(82c158ec0536f76cbe80e8c12e0047579439a5b7),
-							"pinchamp.ic2",CRC(a24ba4c6) SHA1(4f02c4d6cd727fa96a68c72012b0b4a4484397c4),
-							"pinchp82.ic3",CRC(ab7a92ac) SHA1(6e810bd6f5934b05b39e34e09a0940f7f5d8fc0c))
-ZAC_SOUNDROM_cefg0(			"pbc_1c.snd",  CRC(6e2defe5) SHA1(fcb62da1aed23d9fb9a222862b4b772aad9792a1),
-							"pbc_1e.snd",  CRC(703b3cae) SHA1(c7bd021e936fb0fd4bc16d48c3ef1df69d1fe01a),
-							"pbc_1f.snd",  CRC(f3f4b950) SHA1(ed5c02f701530d2d6255cc72d695e24d4df40fc3),
-							"pbc_1g.snd",  CRC(44adae13) SHA1(0d8d538704db62b41ad5781ec53c34e482342025))
-ZAC_ROMEND
-CORE_CLONEDEFNV(pinchp82,pinchamp,"Pinball Champ '82 (German speech)",1982,"Zaccaria",ZAC2A,0)
+// Pinball Champ '82 (04/82) - still no sight of some ROMs, probably used the same ones as Pinball Champ?
 
 /*--------------------------------
 / Soccer Kings (09/82)
@@ -236,18 +224,73 @@ ZAC_ROMEND
 CORE_CLONEDEFNV(socrkngg,socrking,"Soccer Kings (German speech)",1982,"Zaccaria",ZAC2A,0)
 
 /*--------------------------------
-/ Pinball Champ (??/83)
+/ Pinball Champ (04/83)
 /-------------------------------*/
 INITGAME(pinchamp,GEN_ZAC2,dispZAC3,SNDBRD_ZAC1370,366)
 ZAC_ROMSTART000(pinchamp,	"pinchamp.ic1",CRC(1412ec33) SHA1(82c158ec0536f76cbe80e8c12e0047579439a5b7),
 							"pinchamp.ic2",CRC(a24ba4c6) SHA1(4f02c4d6cd727fa96a68c72012b0b4a4484397c4),
 							"pinchamp.ic3",CRC(df5f4f88) SHA1(249cf958b0998aa41fa26c617be9b6c52c2f5549))
-ZAC_SOUNDROM_cefg0(			"sound1.c",    CRC(f739fcba) SHA1(7460f1da99c474601e8cec64683cbd61837a82e8),
-							"sound2.e",    CRC(24d83e74) SHA1(f78e151c9885b965cd5209777580414522362ebf),
-							"sound3.f",    CRC(d055e8c6) SHA1(0820d941880aa8925b400c792af7ce6b80dcbc48),
-							"sound4.g",    CRC(39b68215) SHA1(4d57f1f1f71f7bdbef67ca4cc62cfde80d1ab04c))
+ZAC_SOUNDROM_cefg0(			"pchmp_gb.1c", CRC(f739fcba) SHA1(7460f1da99c474601e8cec64683cbd61837a82e8),
+							"pchmp_gb.1e", CRC(24d83e74) SHA1(f78e151c9885b965cd5209777580414522362ebf),
+							"pchmp_gb.1f", CRC(d055e8c6) SHA1(0820d941880aa8925b400c792af7ce6b80dcbc48),
+							"pchmp_gb.1g", CRC(39b68215) SHA1(4d57f1f1f71f7bdbef67ca4cc62cfde80d1ab04c))
 ZAC_ROMEND
 CORE_GAMEDEFNV(pinchamp,"Pinball Champ",1983,"Zaccaria",ZAC2A,0)
+
+INITGAME(pinchamg,GEN_ZAC2,dispZAC3,SNDBRD_ZAC1370,366)
+ZAC_ROMSTART000(pinchamg,	"pinchamp.ic1",CRC(1412ec33) SHA1(82c158ec0536f76cbe80e8c12e0047579439a5b7),
+							"pinchamp.ic2",CRC(a24ba4c6) SHA1(4f02c4d6cd727fa96a68c72012b0b4a4484397c4),
+							"pinchamp.ic3",CRC(df5f4f88) SHA1(249cf958b0998aa41fa26c617be9b6c52c2f5549))
+ZAC_SOUNDROM_cefg0(			"pchmp_de.1c", CRC(6e2defe5) SHA1(fcb62da1aed23d9fb9a222862b4b772aad9792a1),
+							"pchmp_de.1e", CRC(703b3cae) SHA1(c7bd021e936fb0fd4bc16d48c3ef1df69d1fe01a),
+							"pchmp_de.1f", CRC(f3f4b950) SHA1(ed5c02f701530d2d6255cc72d695e24d4df40fc3),
+							"pchmp_de.1g", CRC(44adae13) SHA1(0d8d538704db62b41ad5781ec53c34e482342025))
+ZAC_ROMEND
+CORE_CLONEDEFNV(pinchamg,pinchamp,"Pinball Champ (German speech)",1983,"Zaccaria",ZAC2A,0)
+
+INITGAME(pinchami,GEN_ZAC2,dispZAC3,SNDBRD_ZAC1370,366)
+ZAC_ROMSTART000(pinchami,	"pinchamp.ic1",CRC(1412ec33) SHA1(82c158ec0536f76cbe80e8c12e0047579439a5b7),
+							"pinchamp.ic2",CRC(a24ba4c6) SHA1(4f02c4d6cd727fa96a68c72012b0b4a4484397c4),
+							"pinchamp.ic3",CRC(df5f4f88) SHA1(249cf958b0998aa41fa26c617be9b6c52c2f5549))
+ZAC_SOUNDROM_cefg1(			"pchmp_it.1c", CRC(a0033b90) SHA1(bca8fe29fdfcbc22fd0e8bafbd7946db5c2c4041),
+							"pchmp_de.1e", CRC(703b3cae) SHA1(c7bd021e936fb0fd4bc16d48c3ef1df69d1fe01a),
+							"pchmp_it.1f", CRC(5555f341) SHA1(8aa27d17711f4162c9d10f60afba7f823112bfe0),
+							"pchmp_it.1g", CRC(2561579b) SHA1(a280cd81f58a17601adfa9ce17f225111c7d9f95))
+ZAC_ROMEND
+CORE_CLONEDEFNV(pinchami,pinchamp,"Pinball Champ (Italian speech)",1983,"Zaccaria",ZAC2A,0)
+
+INITGAME(pincham7,GEN_ZAC2,dispZAC2,SNDBRD_ZAC1370,366)
+ZAC_ROMSTART000(pincham7,	"pblchmp7.ic1",CRC(f050b7fa) SHA1(918bdfd77e785c546202c29b1e296ca5f683ca66),
+							"pblchmp7.ic2",CRC(cbcb63c7) SHA1(c15329482f02614185adcd0475a02c667cadfc98),
+							"pblchmp7.ic3",CRC(54abff9c) SHA1(925c7c1fb903bd6069aee1967c75eb8e61ecf591))
+ZAC_SOUNDROM_cefg0(			"pchmp_gb.1c", CRC(f739fcba) SHA1(7460f1da99c474601e8cec64683cbd61837a82e8),
+							"pchmp_gb.1e", CRC(24d83e74) SHA1(f78e151c9885b965cd5209777580414522362ebf),
+							"pchmp_gb.1f", CRC(d055e8c6) SHA1(0820d941880aa8925b400c792af7ce6b80dcbc48),
+							"pchmp_gb.1g", CRC(39b68215) SHA1(4d57f1f1f71f7bdbef67ca4cc62cfde80d1ab04c))
+ZAC_ROMEND
+CORE_CLONEDEFNV(pincham7,pinchamp,"Pinball Champ (7 digits)",1983,"Zaccaria",ZAC2A,0)
+
+INITGAME(pincha7g,GEN_ZAC2,dispZAC2,SNDBRD_ZAC1370,366)
+ZAC_ROMSTART000(pincha7g,	"pblchmp7.ic1",CRC(f050b7fa) SHA1(918bdfd77e785c546202c29b1e296ca5f683ca66),
+							"pblchmp7.ic2",CRC(cbcb63c7) SHA1(c15329482f02614185adcd0475a02c667cadfc98),
+							"pblchmp7.ic3",CRC(54abff9c) SHA1(925c7c1fb903bd6069aee1967c75eb8e61ecf591))
+ZAC_SOUNDROM_cefg0(			"pchmp_de.1c", CRC(6e2defe5) SHA1(fcb62da1aed23d9fb9a222862b4b772aad9792a1),
+							"pchmp_de.1e", CRC(703b3cae) SHA1(c7bd021e936fb0fd4bc16d48c3ef1df69d1fe01a),
+							"pchmp_de.1f", CRC(f3f4b950) SHA1(ed5c02f701530d2d6255cc72d695e24d4df40fc3),
+							"pchmp_de.1g", CRC(44adae13) SHA1(0d8d538704db62b41ad5781ec53c34e482342025))
+ZAC_ROMEND
+CORE_CLONEDEFNV(pincha7g,pinchamp,"Pinball Champ (7 digits, German speech)",1983,"Zaccaria",ZAC2A,0)
+
+INITGAME(pincha7i,GEN_ZAC2,dispZAC2,SNDBRD_ZAC1370,366)
+ZAC_ROMSTART000(pincha7i,	"pblchmp7.ic1",CRC(f050b7fa) SHA1(918bdfd77e785c546202c29b1e296ca5f683ca66),
+							"pblchmp7.ic2",CRC(cbcb63c7) SHA1(c15329482f02614185adcd0475a02c667cadfc98),
+							"pblchmp7.ic3",CRC(54abff9c) SHA1(925c7c1fb903bd6069aee1967c75eb8e61ecf591))
+ZAC_SOUNDROM_cefg1(			"pchmp_it.1c", CRC(a0033b90) SHA1(bca8fe29fdfcbc22fd0e8bafbd7946db5c2c4041),
+							"pchmp_de.1e", CRC(703b3cae) SHA1(c7bd021e936fb0fd4bc16d48c3ef1df69d1fe01a),
+							"pchmp_it.1f", CRC(5555f341) SHA1(8aa27d17711f4162c9d10f60afba7f823112bfe0),
+							"pchmp_it.1g", CRC(2561579b) SHA1(a280cd81f58a17601adfa9ce17f225111c7d9f95))
+ZAC_ROMEND
+CORE_CLONEDEFNV(pincha7i,pinchamp,"Pinball Champ (7 digits, Italian speech)",1983,"Zaccaria",ZAC2A,0)
 
 /*--------------------------------
 / Time Machine (04/83)
