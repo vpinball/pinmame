@@ -577,6 +577,16 @@ DCS_SOUNDROM7x("ng_u2_s.l1",CRC(c3bd7bf5) SHA1(2476ff90232a52d667a407fac81ee4db0
                "ng_u8_s.l1",CRC(c9fb065e) SHA1(c148178ee0ea787acc88078db01d17073e75fdc7))
 WPC_ROMEND
 
+WPC_ROMSTART(sttng,x7,"trek_x7.rom",0x80000,CRC(4e71c9c7) SHA1(8a7ec42dfb4a6902ba745548b40e84de5305c295))
+DCS_SOUNDROM7x("ngs_u2.rom",CRC(e9fe68fe) SHA1(3d7631aa5ddd52f7c3c00cd091e212430faea249),
+               "ngs_u3.rom",CRC(368cfd89) SHA1(40ddc12b2cabbcf73ababf753f3a2fd4bcc10737),
+               "ngs_u4.rom",CRC(8e79a513) SHA1(4b763d7445acd921a0a6d64d18b5df8ff9e3257e),
+               "ngs_u5.rom",CRC(46049eb0) SHA1(02991bf1d33ac1df91f459b2d37cf7e07e347b04),
+               "ngs_u6.rom",CRC(e0124da0) SHA1(bfdba059d084c93122ad291aa8def61f43c26d47),
+               "ngs_u7.rom",CRC(dc1c74d0) SHA1(21b6b4d2cdd5086bcbbc7ee7a2abdc550a45d2e3),
+               "ng_u8_s.l1",CRC(c9fb065e) SHA1(c148178ee0ea787acc88078db01d17073e75fdc7))
+WPC_ROMEND
+
 WPC_ROMSTART(sttng,s7,"trek_lx7.rom",0x80000,CRC(d439fdbb) SHA1(12d1c72cd6cc18db53e51ebb4c1e55ca9bcf9908))
 DCS_SOUNDROM7x("su2-sp1.rom",CRC(bdef8b2c) SHA1(188d8d2a652844e9885bd9e9ad4143927ddc6fee),
                "ng_u3_s.l1",CRC(9456cac7) SHA1(83e415e0f21bb5418f3677dbc13433e056c523ab),
@@ -601,6 +611,7 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(sttng,l7,"Star Trek: The Next Generation (LX-7)",1993,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(sttng,x7,l7,"Star Trek: The Next Generation (LX-7 Special)",1993,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(sttng,p5,l7,"Star Trek: The Next Generation (P-5)",1993,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(sttng,s7,l7,"Star Trek: The Next Generation (LX-7) SP1",1993,"Williams",wpc_mDCSS,0)
 

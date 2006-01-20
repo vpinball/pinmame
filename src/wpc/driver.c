@@ -1119,6 +1119,7 @@ DRIVER(jd,l6)           //WPC-220:  10/93 B Judge Dredd (L-6)
 DRIVER(jd,l7)           //WPC-220:  12/93 B Judge Dredd (L-7)
 DRIVER(sttng,p5)        //WPC-523:  11/93 W Star Trek: The Next Generation (P-5)
 DRIVER(sttng,l7)        //WPC-523:  02/94 W Star Trek: The Next Generation (LX-7)
+DRIVER(sttng,x7)        //WPC-523:  02/94 W Star Trek: The Next Generation (LX-7 Special)
 DRIVER(sttng,s7)        //WPC-523:  02/94 W Star Trek: The Next Generation (LX-7) SP1
 DRIVER(dm,lx4)          //WPC-528:  02/94 W Demolition Man (LX-4)
 DRIVER(dm,pa2)          //WPC-528:  02/94 W Demolition Man (PA-2)
