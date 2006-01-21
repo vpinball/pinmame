@@ -544,6 +544,7 @@ DRIVERNV(f1gp)			//F1 Grand Prix (1987)
                         // Tally Hoo
                         // Fantastic World (1985)
                         // Odin (1985)
+DRIVERNV(odin_dlx)      // Odin Deluxe (1985)
                         // Nemesis (1986)
                         // Wolfman (1987)
 DRIVERNV(odisea)		//Odisea Paris-Dakar (1987)
