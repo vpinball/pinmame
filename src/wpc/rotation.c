@@ -1,19 +1,14 @@
 /************************************************************************************************
  Midway Pinball games
  --------------------
+ Only one game produced before the Midway/Bally merger: Rotation VIII,
+ a rotating 4-player cocktail table.
+ Funny issue: Midway used a built-in keyboard for diagnostics and maintenace,
+ a cute idea that was discarded at first, but picked up again by Bally in 1986 for their
+ 6803-based pinball game series!
 
-   Hardware:
-   ---------
-   Flicker: (Customized version of Bally EM machine by Dave Nutting; no production run.
-             The SS patent was sold to Midway in 1977, and a few home pinball models
-             were built using the same hardware design)
-
-		CPU:     I4004 @ 750 kHz
-		IO:      4004 Ports
-		DISPLAY: 2 x 6 Digit, 2 x 2 Digit, 1 x 1 Digit 7-Segment panels
-		SOUND:	 Chimes
-
-   Rotation VIII:
+	Hardware:
+	---------
 		CPU:     Z80 @ 1.77 MHz
 			INT: NMI via 8156 timer output
 		IO:      Z80 Ports, 8156 PIA
@@ -22,13 +17,15 @@
 ************************************************************************************************/
 #include <stdarg.h>
 #include "driver.h"
-#include "cpu/i4004/i4004.h"
 #include "cpu/z80/z80.h"
 #include "core.h"
-#include "midway.h"
 
 #define MIDWAY_VBLANKFREQ   60 /* VBLANK frequency in HZ */
 #define MIDWAY_NMIFREQ    1350 /* NMI frequency in HZ - at this rate, bumpers seems OK. */
+
+#define MIDWAY_SOLSMOOTH       4 /* Smooth the Solenoids over this number of VBLANKS */
+#define MIDWAY_LAMPSMOOTH      1 /* Smooth the lamps over this number of VBLANKS */
+#define MIDWAY_DISPLAYSMOOTH   3 /* Smooth the display over this number of VBLANKS */
 
 /*----------------
 /  Local variables
@@ -69,15 +66,8 @@ static MACHINE_INIT(MIDWAY) {
   memset(&locals, 0, sizeof locals);
 }
 
-static MACHINE_STOP(MIDWAY) {
-}
-
-
-
-/* ROTATION VIII */
-
 static INTERRUPT_GEN(MIDWAY_nmihi) {
-  cpu_set_nmi_line(MIDWAY_CPU, PULSE_LINE);
+  cpu_set_nmi_line(0, PULSE_LINE);
 }
 
 /*-------------------------------
@@ -184,16 +174,15 @@ static WRITE_HANDLER(port_2x_w) {
   }
 }
 
-/* port read / write for Rotation VIII */
 PORT_READ_START( midway_readport )
-{ 0x21, 0x22, port_2x_r },
+  { 0x21, 0x22, port_2x_r },
 PORT_END
 
 PORT_WRITE_START( midway_writeport )
-{ 0x00, 0x02, disp_w },
-{ 0x03, 0x07, port_0x_w },
-{ 0x10, 0x17, port_1x_w },
-{ 0x20, 0x25, port_2x_w },
+  { 0x00, 0x02, disp_w },
+  { 0x03, 0x07, port_0x_w },
+  { 0x10, 0x17, port_1x_w },
+  { 0x20, 0x25, port_2x_w },
 PORT_END
 
 /*-----------------------------------------
@@ -204,16 +193,15 @@ c000-c0ff  RAM
 e000-e0ff  NVRAM
 */
 static MEMORY_READ_START(MIDWAY_readmem)
-{0x0000,0x17ff,	MRA_ROM},	/* ROM */
-{0x1800,0x1800,	mem1800_r}, /* Possible code extension. More roms to come? */
-{0xc000,0xc0ff, MRA_RAM},   /* RAM */
-{0xe000,0xe0ff,	MRA_RAM},	/* NVRAM */
+  {0x0000,0x17ff, MRA_ROM},	/* ROM */
+  {0x1800,0x1800, mem1800_r},	/* Possible code extension. More roms to come? */
+  {0xc000,0xc0ff, MRA_RAM},	/* RAM */
+  {0xe000,0xe0ff, MRA_RAM},	/* NVRAM */
 MEMORY_END
 
 static MEMORY_WRITE_START(MIDWAY_writemem)
-{0x0000,0x17ff,	MWA_ROM},	/* ROM */
-{0xc000,0xc0ff, MWA_RAM},   /* RAM */
-{0xe000,0xe0ff,	MIDWAY_CMOS_w, &MIDWAY_CMOS},	/* NVRAM */
+  {0xc000,0xc0ff, MWA_RAM},	/* RAM */
+  {0xe000,0xe0ff, MIDWAY_CMOS_w, &MIDWAY_CMOS},	/* NVRAM */
 MEMORY_END
 
 MACHINE_DRIVER_START(MIDWAY)
@@ -223,132 +211,73 @@ MACHINE_DRIVER_START(MIDWAY)
   MDRV_CPU_PORTS(midway_readport,midway_writeport)
   MDRV_CPU_VBLANK_INT(MIDWAY_vblank, 1)
   MDRV_CPU_PERIODIC_INT(MIDWAY_nmihi, MIDWAY_NMIFREQ)
-  MDRV_CORE_INIT_RESET_STOP(MIDWAY,NULL,MIDWAY)
+  MDRV_CORE_INIT_RESET_STOP(MIDWAY,NULL,NULL)
   MDRV_NVRAM_HANDLER(MIDWAY)
   MDRV_DIPS(1) // no dips actually, but needed for extra core inport!
   MDRV_SWITCH_UPDATE(MIDWAY)
 MACHINE_DRIVER_END
 
+/*-------------------------------------------------------------------
+/ Rotation VIII (09/1978)
+/-------------------------------------------------------------------*/
+INPUT_PORTS_START(rotation)
+  CORE_PORTS
+  SIM_PORTS(1)
+  PORT_START /* 0 */ \
+    /* switch column 2 */ \
+    COREPORT_BIT(     0x0100, "Player #1 Start",   KEYCODE_1) \
+    COREPORT_BIT(     0x0400, "Player #2 Start",   KEYCODE_2) \
+    COREPORT_BIT(     0x0800, "Player #3 Start",   KEYCODE_3) \
+    COREPORT_BIT(     0x0200, "Player #4 Start",   KEYCODE_4) \
+    /* switch column 3 */ \
+    COREPORT_BIT(     0x8000, "Ball Tilt",         KEYCODE_INSERT) \
+    COREPORT_BIT(     0x1000, "Slam Tilt",         KEYCODE_HOME) \
+    COREPORT_BITDEF(  0x4000, IPT_COIN1,           IP_KEY_DEFAULT) \
+    /* switch column 4 */ \
+    COREPORT_BITDEF(  0x2000, IPT_COIN2,           KEYCODE_6) \
+    /* switch column 0 */ \
+    COREPORT_BIT(     0x0080, "Keypad 8",          KEYCODE_8_PAD) \
+    COREPORT_BIT(     0x0004, "Keypad 9",          KEYCODE_9_PAD) \
+    COREPORT_BIT(     0x0001, "Keypad Set",        KEYCODE_ENTER) \
+    COREPORT_BIT(     0x0002, "Keypad Dot",        KEYCODE_STOP) \
+    COREPORT_BIT(     0x0040, "Keypad Game",       KEYCODE_0) \
+    COREPORT_BIT(     0x0020, "Test 1 (Lamps)",    KEYCODE_9) \
+    COREPORT_BIT(     0x0010, "Test 2 (Switches)", KEYCODE_8) \
+    COREPORT_BIT(     0x0008, "Test 3 (Solenoids)",KEYCODE_7) \
+  PORT_START /* 1 */ \
+    /* switch column 9 */ \
+    COREPORT_BIT(     0x8000, "Test 4 (Encoder)",  KEYCODE_V) \
+    COREPORT_BIT(     0x0400, "Test 5 (Display)",  KEYCODE_C) \
+    COREPORT_BIT(     0x0200, "Test 6 (Position)", KEYCODE_X) \
+    COREPORT_BIT(     0x0100, "Test 7 (unused)",   KEYCODE_Z) \
+    COREPORT_BIT(     0x4000, "Test 8 (Reset NVRAM)",KEYCODE_M) \
+    COREPORT_BIT(     0x2000, "Test 9 (unused)",   KEYCODE_N) \
+    COREPORT_BIT(     0x1000, "Test 10 (unused)",  KEYCODE_B) \
+    COREPORT_BIT(     0x0800, "Keypad End",        KEYCODE_END) \
+    /* switch column 8 */ \
+    COREPORT_BIT(     0x0080, "Keypad 0",          KEYCODE_0_PAD) \
+    COREPORT_BIT(     0x0004, "Keypad 1",          KEYCODE_1_PAD) \
+    COREPORT_BIT(     0x0002, "Keypad 2",          KEYCODE_2_PAD) \
+    COREPORT_BIT(     0x0001, "Keypad 3",          KEYCODE_3_PAD) \
+    COREPORT_BIT(     0x0040, "Keypad 4",          KEYCODE_4_PAD) \
+    COREPORT_BIT(     0x0020, "Keypad 5",          KEYCODE_5_PAD) \
+    COREPORT_BIT(     0x0010, "Keypad 6",          KEYCODE_6_PAD) \
+    COREPORT_BIT(     0x0008, "Keypad 7",          KEYCODE_7_PAD)
+INPUT_PORTS_END
 
-
-/* FLICKER */
-
-/*-------------------------------
-/  copy local data to interface
-/--------------------------------*/
-static INTERRUPT_GEN(MIDWAYP_vblank) {
-  locals.vblankCount++;
-
-  /*-- lamps --*/
-  if ((locals.vblankCount % MIDWAY_LAMPSMOOTH) == 0)
-    memcpy(coreGlobals.lampMatrix, locals.lampMatrix, sizeof(locals.lampMatrix));
-  /*-- solenoids --*/
-  coreGlobals.solenoids = locals.solenoids;
-  if ((locals.vblankCount % (MIDWAY_SOLSMOOTH)) == 0)
-    locals.solenoids &= 0x8000;
-  /*-- display --*/
-  if ((locals.vblankCount % MIDWAY_DISPLAYSMOOTH) == 0) {
-    memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
-    memset(locals.segments, 0x00, sizeof locals.segments);
-  }
-  /*update leds*/
-  coreGlobals.diagnosticLed = locals.diagnosticLed;
-
-  core_updateSw(core_getSol(16));
+core_tLCDLayout rot_disp[] = {
+  {0, 0, 0, 6,CORE_SEG7}, {0,16, 7, 6,CORE_SEG7},
+  {2, 0,14, 6,CORE_SEG7}, {2,16,21, 6,CORE_SEG7},
+  {4, 8,35, 6,CORE_SEG7}, {0}
+};
+static core_tGameData rotationGameData = {0,rot_disp,{FLIP_SW(FLIP_L),0,-1}};
+static void init_rotation(void) {
+  core_gameData = &rotationGameData;
 }
-
-static SWITCH_UPDATE(MIDWAYP) {
-  if (inports) {
-    coreGlobals.swMatrix[5] = (coreGlobals.swMatrix[5] & ~0xe2) | (inports[MIDWAY_COMINPORT] & 0xff);
-    coreGlobals.swMatrix[6] = (coreGlobals.swMatrix[6] & ~0x9f) | (inports[MIDWAY_COMINPORT] >> 8);
-  }
-}
-
-/* "dips" (just connectable wires IRL) & normal switches */
-static READ_HANDLER(rom2_r) {
-  UINT8 sw;
-  if (offset > 7)
-    sw = core_getDip(offset/2 - 4);
-  else
-    sw = coreGlobals.swMatrix[offset/2 + 1];
-  return (offset % 2) ? sw >> 4 : sw & 0x0f;
-}
-
-/* display (16 digits) */
-static WRITE_HANDLER(rom1_w) {
-  locals.segments[15 - offset].w = core_bcd2seg[data];
-  // These next lines make up for a flaw in the rom code:
-  // when you first make a 10 pt target in the game, and a
-  // 1000 pt target thereafter, the 100s digit in between
-  // will remain off! I'm sure Dave & Jeff did it similarily
-  // on the prototype by wiring the segments accordingly;
-  // maybe they also rewrote some of the code to fix it later on?
-  if (locals.segments[2].w && !locals.segments[3].w)
-    locals.segments[3].w = core_bcd2seg[0];
-  if (locals.segments[9].w && !locals.segments[10].w)
-    locals.segments[10].w = core_bcd2seg[0];
-}
-
-/* lamps (up to 64 are possible) */
-static WRITE_HANDLER(rom2_w) {
-  UINT8 lamp = locals.lampMatrix[offset/2];
-  locals.lampMatrix[offset/2] = (offset % 2) ? (lamp & 0x0f) | (data << 4) : (lamp & 0xf0) | data;
-  // map game on to solenoid #16
-  locals.solenoids = (locals.solenoids & 0x7fff) | (((locals.lampMatrix[0] & 0x05) == 0x05) << 15);
-  // Display the "0" at the single match units.
-  if (locals.lampMatrix[5] & 0x01)
-    locals.segments[16].w = core_bcd2seg[0];
-}
-
-/* solenoids 1-15 & test switch reading */
-static WRITE_HANDLER(ram_w) {
-  if (data && data != offset)
-    locals.solenoids |= (1 << (data-1));
-  else {
-	UINT16 specialSw = (coreGlobals.swMatrix[6] << 8) | coreGlobals.swMatrix[5];
-    // The 4004's test line is used to gain an extra switch row.
-    i4004_set_TEST((specialSw >> offset) & 1);
-  }
-}
-
-/* port read / write for Flicker */
-PORT_READ_START( midway_readport2 )
-{ 0x20, 0x2f, rom2_r },
-PORT_END
-
-PORT_WRITE_START( midway_writeport2 )
-{ 0x00, 0x0f, rom1_w },
-{ 0x10, 0x1f, rom2_w },
-{ 0x110,0x11f,ram_w },
-PORT_END
-
-/*-----------------------------------------
-/  Memory map for Flicker CPU board
-/------------------------------------------
-0000-03ff  1K ROM
-1000-10ff  NVRAM (planned)
-2000-20ff  RAM
-*/
-static MEMORY_READ_START(MIDWAYP_readmem)
-{0x0000,0x03ff,	MRA_ROM},	/* ROM */
-{0x1000,0x10ff, MRA_RAM},   /* NVRAM */
-{0x2000,0x20ff, MRA_RAM},   /* RAM */
-MEMORY_END
-
-static MEMORY_WRITE_START(MIDWAYP_writemem)
-{0x0000,0x03ff,	MWA_ROM},	/* ROM */
-{0x1000,0x10ff,	MIDWAY_CMOS_w, &MIDWAY_CMOS},	/* NVRAM */
-{0x2000,0x20ff, MWA_RAM},   /* RAM */
-MEMORY_END
-
-MACHINE_DRIVER_START(MIDWAYProto)
-  MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CPU_ADD_TAG("mcpu", 4004, 750000)
-  MDRV_CPU_MEMORY(MIDWAYP_readmem, MIDWAYP_writemem)
-  MDRV_CPU_PORTS(midway_readport2,midway_writeport2)
-  MDRV_CPU_VBLANK_INT(MIDWAYP_vblank, 1)
-  MDRV_CORE_INIT_RESET_STOP(MIDWAY,NULL,MIDWAY)
-  MDRV_NVRAM_HANDLER(MIDWAY) // not used so far, but there'll be a bootleg that does!
-  MDRV_DIPS(32) // 32 dips
-  MDRV_SWITCH_UPDATE(MIDWAYP)
-MACHINE_DRIVER_END
+ROM_START(rotation)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("rot-a117.dat", 0x0000, 0x0800, CRC(7bb6beb3) SHA1(5ee62246032158c68d426c11a4a9a889ee7655d7))
+    ROM_LOAD("rot-b117.dat", 0x0800, 0x0800, CRC(538e37b2) SHA1(d283ac4d0024388b92b6494fcde63957b705bf48))
+    ROM_LOAD("rot-c117.dat", 0x1000, 0x0800, CRC(3321ff08) SHA1(d6d94fea27ef58ca648b2829b32d62fcec108c9b))
+ROM_END
+CORE_GAMEDEFNV(rotation,"Rotation VIII",1978,"Midway",MIDWAY,GAME_NO_SOUND)
