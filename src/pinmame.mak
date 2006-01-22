@@ -44,7 +44,6 @@ DRVLIBS += $(PINOBJ)/zac.o $(PINOBJ)/zacproto.o $(PINOBJ)/zacsnd.o
 DRVLIBS += $(PINOBJ)/gp.o $(PINOBJ)/gpsnd.o
 DRVLIBS += $(PINOBJ)/atari.o $(PINOBJ)/atarisnd.o
 DRVLIBS += $(PINOBJ)/taito.o $(PINOBJ)/taitos.o
-DRVLIBS += $(PINOBJ)/midway.o
 DRVLIBS += $(PINOBJ)/gts1.o
 DRVLIBS += $(PINOBJ)/alvg.o $(PINOBJ)/alvgdmd.o $(PINOBJ)/alvgs.o
 DRVLIBS += $(PINOBJ)/bingo.o
@@ -58,6 +57,8 @@ DRVLIBS += $(PINOBJ)/ltd.o
 DRVLIBS += $(PINOBJ)/peyper.o
 DRVLIBS += $(PINOBJ)/sleic.o
 DRVLIBS += $(PINOBJ)/play.o
+DRVLIBS += $(PINOBJ)/flicker.o
+DRVLIBS += $(PINOBJ)/rotation.o
 #
 # Games
 #
@@ -78,7 +79,6 @@ PINGAMES += $(PINOBJ)/gpgames.o
 PINGAMES += $(PINOBJ)/atarigames.o
 PINGAMES += $(PINOBJ)/taitogames.o
 PINGAMES += $(PINOBJ)/capgames.o
-PINGAMES += $(PINOBJ)/midgames.o
 PINGAMES += $(PINOBJ)/gts1games.o
 PINGAMES += $(PINOBJ)/alvggames.o
 PINGAMES += $(PINOBJ)/spinbgames.o
