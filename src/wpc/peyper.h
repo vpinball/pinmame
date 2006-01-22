@@ -100,6 +100,12 @@
        ROM_LOAD(n2, 0x2000, 0x2000, chk2) \
        ROM_LOAD(n3, 0x4000, 0x2000, chk3)
 
+#define PEYPER_ROMSTART2(name, n1, chk1, n2, chk2) \
+   ROM_START(name) \
+     NORMALREGION(0x10000, PEYPER_MEMREG_CPU) \
+       ROM_LOAD(n1, 0x0000, 0x2000, chk1) \
+       ROM_LOAD(n2, 0x2000, 0x2000, chk2)
+
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(PEYPER);
 

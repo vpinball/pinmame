@@ -648,7 +648,7 @@ DRIVERNV(sleicpin)		// Pin-Ball (1993)
 // ----------------
 						// Night Fever (1979)
 						// Storm (1979)
-						// Odin De Luxe (1985)
+DRIVERNV(odin_dlx)		// Odin De Luxe (1985)
 						// Gamatron (1986)
 						// Solar Wars (1986)
 DRIVERNV(sonstwar)		// Star Wars (1987)
