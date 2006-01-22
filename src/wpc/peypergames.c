@@ -26,16 +26,6 @@ static core_tLCDLayout peyperDisp7[] = {
 // Tally Hoo (19??)
 // Fantastic World (1985)
 // Odin (1985) - 6 digits (according to manual)
-
-/*-------------------------------------------------------------------
-// Odin Deluxe (1985) - 6 digits (according to manual)
-/*-------------------------------------------------------------------*/
-INITGAME(odin_dlx, peyperDisp7, 1, 6)
-PEYPER_ROMSTART(odin_dlx, "1a.bin", CRC(4fca9bfc) SHA1(05dce75919375d01a306aef385bcaac042243695),
-						"2a.bin", CRC(46744695) SHA1(fdbd8a93b3e4a9697e77e7d381759829b86fe28b))
-PEYPER_ROMEND
-CORE_GAMEDEFNV(odin_dlx,"Odin Deluxe",1985,"Peyper (Spain)",gl_mPEYPER,0)
-
 // Nemesis (1986) - 7 digits
 // Wolfman (1987)
 
