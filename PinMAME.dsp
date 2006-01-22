@@ -4094,6 +4094,10 @@ SOURCE=src\wpc\driver.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\flicker.c
+# End Source File
+# Begin Source File
+
 SOURCE=src\wpc\gen.h
 
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
@@ -4380,18 +4384,6 @@ SOURCE=src\wpc\mech.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\midgames.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\wpc\midway.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\wpc\midway.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\wpc\mrgame.c
 # End Source File
 # Begin Source File
@@ -4442,6 +4434,10 @@ SOURCE=.\src\wpc\play.h
 # Begin Source File
 
 SOURCE=.\src\wpc\playgames.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wpc\rotation.c
 # End Source File
 # Begin Source File
 
