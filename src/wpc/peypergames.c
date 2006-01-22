@@ -45,6 +45,16 @@ CORE_GAMEDEFNV(odisea,"Odisea Paris-Dakar",1987,"Peyper (Spain)",gl_mPEYPER,0)
 
 // Sonic games below - using same hardware
 
+static core_tLCDLayout sonicDisp6f[] = {
+  {0, 0,32,1,CORE_SEG7}, {0, 2, 8,5,CORE_SEG7}, {0,12,22,1,CORE_SEG7},
+  {0,22,33,1,CORE_SEG7}, {0,24, 0,5,CORE_SEG7}, {0,34,22,1,CORE_SEG7},
+  {3, 0,34,1,CORE_SEG7}, {3, 2,16,5,CORE_SEG7}, {3,12,22,1,CORE_SEG7},
+  {3,22,35,1,CORE_SEG7}, {3,24,24,5,CORE_SEG7}, {3,34,22,1,CORE_SEG7},
+  {1,23,31,1,CORE_SEG7S},{1,25,30,1,CORE_SEG7S},{1,29,15,1,CORE_SEG7S},{1,32,14,1,CORE_SEG7S},
+  {3,17, 6,1,CORE_SEG7},
+  {0}
+};
+
 static core_tLCDLayout sonicDisp7[] = {
   {0, 0, 8,6,CORE_SEG7}, {0,12,22,1,CORE_SEG7},
   {0,22, 0,6,CORE_SEG7}, {0,34,22,1,CORE_SEG7},
@@ -61,7 +71,7 @@ static core_tLCDLayout sonicDisp7[] = {
 /*-------------------------------------------------------------------
 / Odin De Luxe (1985)
 /-------------------------------------------------------------------*/
-INITGAME(odin_dlx, sonicDisp7, 1, 4)
+INITGAME(odin_dlx, sonicDisp6f, 1, 6)
 PEYPER_ROMSTART2(odin_dlx, "1a.bin", CRC(4fca9bfc) SHA1(05dce75919375d01a306aef385bcaac042243695),
 						   "2a.bin", CRC(46744695) SHA1(fdbd8a93b3e4a9697e77e7d381759829b86fe28b))
 PEYPER_ROMEND
