@@ -67,7 +67,16 @@ static core_tLCDLayout sonicDisp7[] = {
 
 // Night Fever (1979)
 // Storm (1979)
-// Odin De Luxe (1985)
+
+/*-------------------------------------------------------------------
+/ Odin De Luxe (1985)
+/-------------------------------------------------------------------*/
+INITGAME(odin_dlx, sonicDisp7, 1, 4)
+PEYPER_ROMSTART2(odin_dlx, "1a.bin", CRC(4fca9bfc) SHA1(05dce75919375d01a306aef385bcaac042243695),
+						   "2a.bin", CRC(46744695) SHA1(fdbd8a93b3e4a9697e77e7d381759829b86fe28b))
+PEYPER_ROMEND
+CORE_GAMEDEFNV(odin_dlx,"Odin De Luxe (1985)",1987,"Sonic (Spain)",gl_mPEYPER,0)
+
 // Gamatron (1986)
 // Solar Wars (1986)
 // Star Wars (1987)
