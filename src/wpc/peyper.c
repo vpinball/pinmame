@@ -94,6 +94,11 @@ static WRITE_HANDLER(disp_w) {
   locals.segments[31-locals.dispCol].w = core_bcd2seg7[data & 0x0f];
   // mapping various lamps (million, player up, game over, tilt) from segments data
   if (colMap[locals.dispCol]) coreGlobals.tmpLampMatrix[colMap[locals.dispCol]] = data;
+  // mapping lamps to million display digit for early Sonic games
+  locals.segments[32].w = core_bcd2seg7[coreGlobals.tmpLampMatrix[12] & 0x40 ? 1 : 0x0f];
+  locals.segments[33].w = core_bcd2seg7[coreGlobals.tmpLampMatrix[13] & 0x40 ? 1 : 0x0f];
+  locals.segments[34].w = core_bcd2seg7[coreGlobals.tmpLampMatrix[13] & 0x04 ? 1 : 0x0f];
+  locals.segments[35].w = core_bcd2seg7[coreGlobals.tmpLampMatrix[12] & 0x04 ? 1 : 0x0f];
   locals.dispCol = (locals.dispCol + 1) % 16;
 }
 
