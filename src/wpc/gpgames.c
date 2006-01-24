@@ -65,11 +65,6 @@ static void init_##name(void) { \
 } \
 GP_INPUT_PORTS_START(name, 1) GP_INPUT_PORTS_END
 
-#ifdef MAME_DEBUG
-#define SOUNDFLAG 0
-#else
-#define SOUNDFLAG GAME_IMPERFECT_SOUND
-#endif
 
 //Games in rough production order
 
@@ -191,7 +186,7 @@ GP_ROMSTART888(lizard,	"130a.716",CRC(dc402b37) SHA1(90c46391a1e5f000f3b235d5804
 GP_SOUNDROM88("lizard.u9", CRC(2d121b24) SHA1(55c16951538229571165c35a353da53e22d11f81),
               "lizard.u10",CRC(28b8f1f0) SHA1(db6d816366e0bca59376f6f8bf87e6a2d849aa72))
 GP_ROMEND
-CORE_GAMEDEFNV(lizard,"(Pinball) Lizard",1980,"Game Plan",mGP2SM,SOUNDFLAG)
+CORE_GAMEDEFNV(lizard,"(Pinball) Lizard",1980,"Game Plan",mGP2SM,0)
 
 /*-------------------------------------------------------------------
 / Global Warfare (June 1981)  - Model #240
@@ -203,7 +198,7 @@ GP_ROMSTART888(gwarfare,"240a.716",CRC(30206428) SHA1(7a9029e4fd4c4c00da3256ed06
 GP_SOUNDROM88("gw240bot.rom", CRC(3245a206) SHA1(b321b2d276fbd74199eff2d8c0d1b8a2f5c93604),
               "gw240top.rom",CRC(faaf3de1) SHA1(9c984d1ac696eb16f7bf35463a69a470344314a7))
 GP_ROMEND
-CORE_GAMEDEFNV(gwarfare,"Global Warfare",1981,"Game Plan",mGP2SM,SOUNDFLAG)
+CORE_GAMEDEFNV(gwarfare,"Global Warfare",1981,"Game Plan",mGP2SM,0)
 
 /*-------------------------------------------------------------------
 / Mike Bossy (January 1982) - Model #???
@@ -215,7 +210,7 @@ GP_ROMSTART888(mbossy,	"mb_a.716",NO_DUMP,
 GP_SOUNDROM88("mb.u9", CRC(dfa98db5) SHA1(65361630f530383e67837c428050bcdb15373c0b),
               "mb.u10",CRC(2d3c91f9) SHA1(7e1f067af29d9e484da234382d7dc821ca07b6c4))
 GP_ROMEND
-CORE_GAMEDEFNV(mbossy,"Mike Bossy",1982,"Game Plan",mGP2SM,SOUNDFLAG)
+CORE_GAMEDEFNV(mbossy,"Mike Bossy",1982,"Game Plan",mGP2SM,0)
 
 /*-------------------------------------------------------------------
 / Super Nova (May 1982) - Model #150
@@ -238,7 +233,7 @@ GP_ROMSTART888(sshootr2,"130a.716",CRC(dc402b37) SHA1(90c46391a1e5f000f3b235d580
 GP_SOUNDROM88("730u9.snd", CRC(dfa98db5) SHA1(65361630f530383e67837c428050bcdb15373c0b),
               "730u10.snd",CRC(6d3dcf44) SHA1(3703313d4172ebfec1dcacca949076541ee35cb7))
 GP_ROMEND
-CORE_GAMEDEFNV(sshootr2,"Sharp Shooter II",1983,"Game Plan",mGP2SM,SOUNDFLAG)
+CORE_GAMEDEFNV(sshootr2,"Sharp Shooter II",1983,"Game Plan",mGP2SM,0)
 
 /*-------------------------------------------------------------------
 / Attila the Hun (April 1984) - Model #260
@@ -249,7 +244,7 @@ GP_ROMSTART888(attila,	"260.a",CRC(b31c11d8) SHA1(d3f2ad84cc28e99acb54349b232dbf
 						"260.c",CRC(206605c3) SHA1(14f61a2f43c29370bcb6db29969e8dfcfe3da1ab))
 GP_SOUNDROM0("260.snd",CRC(21e6b188) SHA1(84148942e6007d49bb4085ec3678954d48e4439e))
 GP_ROMEND
-CORE_GAMEDEFNV(attila,"Attila The Hun",1984,"Game Plan",mGP2SM,SOUNDFLAG)
+CORE_GAMEDEFNV(attila,"Attila The Hun",1984,"Game Plan",mGP2SM,0)
 
 /*-------------------------------------------------------------------
 / Agents 777 (November 1984) - Model #770
@@ -260,7 +255,7 @@ GP_ROMSTART888(agent777,"770a",CRC(fc4eebcd) SHA1(742a201e89c1357d2a1f24b0acf3b7
 						"770c",CRC(59280db7) SHA1(8f199be7bfbc01466541c07dc4c365e20055a66c))
 GP_SOUNDROM0("770snd",CRC(e4e66c9f) SHA1(f373facefb18c64377da47308a8bbd5fc80e9c2d))
 GP_ROMEND
-CORE_GAMEDEFNV(agent777,"Agents 777",1984,"Game Plan",mGP2SM,SOUNDFLAG)
+CORE_GAMEDEFNV(agent777,"Agents 777",1984,"Game Plan",mGP2SM,0)
 
 /*-------------------------------------------------------------------
 / Captain Hook (April 1985) - Model #780
@@ -271,7 +266,7 @@ GP_ROMSTART888(cpthook,	"780.a",CRC(6bd5a495) SHA1(8462e0c68176daee6b23dce9091f5
 						"780.c",CRC(e54bc51f) SHA1(3480e0cdd43f9ac3fda8cd466b2f039210525e8b))
 GP_SOUNDROM0("780.snd",CRC(95af3392) SHA1(73a2b583b7fc423c2e4390667aebc90ad41f4f93))
 GP_ROMEND
-CORE_GAMEDEFNV(cpthook,"Captain Hook",1985,"Game Plan",mGP2SM,SOUNDFLAG)
+CORE_GAMEDEFNV(cpthook,"Captain Hook",1985,"Game Plan",mGP2SM,0)
 
 /*-------------------------------------------------------------------
 / Lady Sharpshooter (May 1985) - Cocktail Model #830
@@ -282,7 +277,7 @@ GP_ROMSTART888(ladyshot,"830a.716",CRC(c055b993) SHA1(a9a7156e5ec0a32db1ffe36b3c
 						"830c.716",CRC(f5e1db15) SHA1(e8168ab37ba30211045fc96b23dad5f06592b38d))
 GP_SOUNDROM0("830.snd",NO_DUMP)
 GP_ROMEND
-CORE_GAMEDEFNV(ladyshot,"Lady Sharpshooter",1985,"Game Plan",mGP2SM,SOUNDFLAG)
+CORE_GAMEDEFNV(ladyshot,"Lady Sharpshooter",1985,"Game Plan",mGP2SM,0)
 
 /*-------------------------------------------------------------------
 / Andromeda (August 1985) - Model #850
