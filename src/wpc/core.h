@@ -168,21 +168,22 @@
 #define CORE_SEG10    2 // 10 segments
 #define CORE_SEG9     3 // 10 segments
 #define CORE_SEG8     4 // 8  segments
-#define CORE_SEG7     5 // 7  segments
-#define CORE_SEG87    6 // 7  segments, comma every three
-#define CORE_SEG87F   7 // 7  segments, forced comma every three
-#define CORE_SEG87FD  8 // 7  segments, forced dot every three
-#define CORE_SEG98    9 // 9  segments, comma every three
-#define CORE_SEG98F 0xa // 9  segments, forced comma every three
-#define CORE_SEG7S  0xb // 7  segments, small
-#define CORE_DMD    0xc // DMD Display
-#define CORE_DMD2   0xd // another DMD Display
-#define CORE_VIDEO  0xe // VIDEO Display
-#define CORE_IMPORT 0xf // Link to another display layout
+#define CORE_SEG8D    5 // 7  segments, period lights up along with digit
+#define CORE_SEG7     6 // 7  segments
+#define CORE_SEG87    7 // 7  segments, comma every three
+#define CORE_SEG87F   8 // 7  segments, forced comma every three
+#define CORE_SEG87FD  9 // 7  segments, forced dot every three
+#define CORE_SEG98   10 // 9  segments, comma every three
+#define CORE_SEG98F  11 // 9  segments, forced comma every three
+#define CORE_SEG7S   12 // 7  segments, small
+#define CORE_DMD     13 // DMD Display
+#define CORE_DMD2    14 // another DMD Display
+#define CORE_VIDEO   15 // VIDEO Display
 
-#define CORE_SEGHIBIT 0x10
-#define CORE_SEGREV   0x20
-#define CORE_DMDNOAA  0x40
+#define CORE_IMPORT   0x10 // Link to another display layout
+#define CORE_SEGHIBIT 0x20
+#define CORE_SEGREV   0x40
+#define CORE_DMDNOAA  0x80
 #define CORE_SEGMASK  0x0f
 #define CORE_SEG8H    (CORE_SEG8  | CORE_SEGHIBIT)
 #define CORE_SEG7H    (CORE_SEG7  | CORE_SEGHIBIT)
@@ -378,6 +379,7 @@ typedef struct {
   int    simAvail;        /* simulator (keys) available */
   int    soundEn;         /* Sound enabled ? */
   int    diagnosticLed;	  /* data relating to diagnostic led(s)*/
+  char   segDim[CORE_SEGCOUNT]; /* segments dimming */
 } core_tGlobals;
 extern core_tGlobals coreGlobals;
 /* shortcut for coreGlobals */
@@ -434,6 +436,7 @@ void CLIB_DECL core_textOutf(int x, int y, int color, const char *text, ...);
 
 /*-- lamp handling --*/
 void core_setLamp(UINT8 *lampMatrix, int col, int row);
+void core_setLampBlank(UINT8 *lampMatrix, int col, int row);
 
 /*-- switch handling --*/
 extern void core_setSw(int swNo, int value);

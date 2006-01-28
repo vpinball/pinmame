@@ -36,7 +36,7 @@ void vp_setDIP(int bank, int value) { }
   #define vp_setDIP(x,y)
 #endif /* VPINMAME */
 
-static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, int type);
+static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, int type, int dimming);
 static UINT32 core_initDisplaySize(const struct core_dispLayout *layout);
 static VIDEO_UPDATE(core_status);
 
@@ -98,7 +98,7 @@ const int core_bcd2seg9a[16] = {
 const UINT8 core_swapNyb[16] = { 0, 8, 4,12, 2,10, 6,14, 1, 9, 5,13, 3,11, 7,15};
 /* Palette */
 
-static const unsigned char core_palette[COL_COUNT][3] = {
+static const unsigned char core_palette[48+COL_COUNT][3] = {
 {/*  0 */ 0x00,0x00,0x00}, /* Background */
 /* -- DMD DOT COLORS-- */
 {/*  1 */ 0x30,0x00,0x00}, /* "Black" Dot - DMD Background */
@@ -134,11 +134,13 @@ static struct {
   int       solLogCount;
 } locals;
 
-extern tSegData segData[2][15]; // How do you do a forward static declaration?
+extern tSegData segData[2][16]; // How do you do a forward static declaration?
 /*-------------------------------
 /  Initialize the game palette
 /-------------------------------*/
 static PALETTE_INIT(core) {
+  int diff;
+  const int palSize = sizeof(core_palette)/3;
   unsigned char tmpPalette[sizeof(core_palette)/3][3];
   int rStart = 0xff, gStart = 0xe0, bStart = 0x20;
   int perc66 = 67, perc33 = 33, perc0  = 20;
@@ -181,6 +183,28 @@ static PALETTE_INIT(core) {
   tmpPalette[COL_SEGAAOFF2][0] = rStart * 33 / 100;
   tmpPalette[COL_SEGAAOFF2][1] = gStart * 33 / 100;
   tmpPalette[COL_SEGAAOFF2][2] = bStart * 33 / 100;
+
+  /*-- generate 16 shades of the segment color for all antialiased segments --*/
+  diff = 100 - perc0;
+  for (ii = 0; ii < 16; ii++) {
+    tmpPalette[palSize-16+ii][0]  = rStart * diff * ii / 300 + tmpPalette[COL_DMDOFF][0];
+    tmpPalette[palSize-16+ii][1]  = gStart * diff * ii / 300 + tmpPalette[COL_DMDOFF][1];
+    tmpPalette[palSize-16+ii][2]  = bStart * diff * ii / 300 + tmpPalette[COL_DMDOFF][2];
+  }
+  diff = 72 - perc0;
+  for (ii = 0; ii < 16; ii++) {
+    tmpPalette[palSize-32+ii][0]  = rStart * diff * ii / 300 + tmpPalette[COL_SEGAAOFF1][0];
+    tmpPalette[palSize-32+ii][1]  = gStart * diff * ii / 300 + tmpPalette[COL_SEGAAOFF1][1];
+    tmpPalette[palSize-32+ii][2]  = bStart * diff * ii / 300 + tmpPalette[COL_SEGAAOFF1][2];
+  }
+  diff = 33 - perc0;
+  for (ii = 0; ii < 16; ii++) {
+    tmpPalette[palSize-48+ii][0]  = rStart * diff * ii / 300 + tmpPalette[COL_SEGAAOFF2][0];
+    tmpPalette[palSize-48+ii][1]  = gStart * diff * ii / 300 + tmpPalette[COL_SEGAAOFF2][1];
+    tmpPalette[palSize-48+ii][2]  = bStart * diff * ii / 300 + tmpPalette[COL_SEGAAOFF2][2];
+  }
+
+//for (int i = 0; i < palSize; i++) printf("Col %d: %02x %02x %02x\n", i, tmpPalette[i][0],tmpPalette[i][1],tmpPalette[i][2]);
 
   /*-- Autogenerate Dark Playfield Lamp Colors --*/
   for (ii = 0; ii < COL_LAMPCOUNT; ii++) { /* Reduce by 75% */
@@ -256,7 +280,7 @@ INLINE int inRect(const struct rectangle *r, int left, int top, int width, int h
 #endif /* VPINMAME */
 
 /*-----------------------------------
-/  Generic segement display handler
+/  Generic segment display handler
 /------------------------------------*/
 static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cliprect,
                           const struct core_dispLayout *layout, int *pos) {
@@ -303,6 +327,9 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
             } else
               tmpType = CORE_SEG7;
             break;
+          case CORE_SEG8D:
+            if (tmpSeg) tmpSeg |= 0x80;
+            break;
           case CORE_SEG98: case CORE_SEG98F:
             tmpSeg |= (tmpSeg & 0x100)<<1;
             if ((ii > 0) && (ii % 3 == 0)) { // Handle Comma
@@ -315,7 +342,7 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
             tmpSeg |= (tmpSeg & 0x100)<<1;
             break;
           }
-          drawChar(bitmap,  top, left, tmpSeg, tmpType);
+          drawChar(bitmap,  top, left, tmpSeg, tmpType, coreGlobals.segDim[*pos]);
           coreGlobals.drawSeg[*pos] = tmpSeg;
         }
 		(*pos)++;
@@ -615,7 +642,7 @@ static VIDEO_UPDATE(core_status) {
   if (startRow + 16 >= locals.maxSimRows) { startRow = 0; thisCol = nextCol; }
 
   if (coreData->diagLEDs == 0xff) { /* 7 SEG */
-    drawChar(bitmap, locals.firstSimRow + startRow, thisCol, coreGlobals.diagnosticLed, CORE_SEG7);
+    drawChar(bitmap, locals.firstSimRow + startRow, thisCol, coreGlobals.diagnosticLed, CORE_SEG7, 0);
     startRow += 16; if (thisCol + 12 > nextCol) nextCol = thisCol + 12;
   }
   else {
@@ -658,6 +685,13 @@ static VIDEO_UPDATE(core_status) {
 void core_setLamp(UINT8 *lampMatrix, int col, int row) {
   while (col) {
     if (col & 0x01) *lampMatrix |= row;
+    col >>= 1;
+    lampMatrix += 1;
+  }
+}
+void core_setLampBlank(UINT8 *lampMatrix, int col, int row) {
+  while (col) {
+    if (col & 0x01) *lampMatrix = row;
     col >>= 1;
     lampMatrix += 1;
   }
@@ -828,11 +862,13 @@ int core_getDip(int dipBank) {
 /*--------------------
 /   Draw a LED digit
 /---------------------*/
-static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, int type) {
+static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, int type, int dimming) {
   const tSegData *s = &locals.segData[type];
+  int palSize = sizeof(core_palette)/3;
   UINT32 pixel[21];
   int kk,ll;
 
+  if (dimming > 15) dimming = 15;
   memset(pixel,0,sizeof(pixel));
 
   for (kk = 1; bits; kk++, bits >>= 1) {
@@ -841,10 +877,17 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, 
         pixel[ll] |= s->segs[ll][kk];
   }
   for (kk = 0; kk < s->rows; kk++) {
+#if 0
     static const int pens[4][4] = {{         0,    COL_DMDON, COL_SEGAAON1, COL_SEGAAON2},
                                    {COL_DMDOFF,    COL_DMDON, COL_SEGAAON1, COL_SEGAAON2},
                                    {COL_SEGAAOFF1, COL_DMDON, COL_SEGAAON1, COL_SEGAAON2},
                                    {COL_SEGAAOFF2, COL_DMDON, COL_SEGAAON1, COL_SEGAAON2}};
+#else
+    int pens[4][4] = {{             0, palSize-1-dimming, palSize-17-dimming, palSize-33-dimming},
+                      { COL_DMDOFF,    palSize-1-dimming, palSize-17-dimming, palSize-33-dimming},
+                      { COL_SEGAAOFF1, palSize-1-dimming, palSize-17-dimming, palSize-33-dimming},
+                      { COL_SEGAAOFF2, palSize-1-dimming, palSize-17-dimming, palSize-33-dimming}};
+#endif
     BMTYPE *line = &((BMTYPE **)(bitmap->line))[row+kk][col + s->cols];
     // why don't the bitmap use the leftmost bits. i.e. size is limited to 15
     UINT32 p = pixel[kk]>>(30-2*s->cols), np = s->segs[kk][0]>>(30-2*s->cols);
@@ -1377,12 +1420,13 @@ static tSegRow segSize3[4][8] = {
 }};
 
 // This should be static but then you can't do a forward declaration
-/*static*/ tSegData segData[2][15] = {{
+/*static*/ tSegData segData[2][16] = {{
   {20,15,&segSize1C[0][0]},/* SEG16 */
   {20,15,&segSize1C[3][0]},/* SEG16R*/
   {20,15,&segSize1C[2][0]},/* SEG10 */
   {20,15,&segSize1[2][0]}, /* SEG9 */
   {20,15,&segSize1C[1][0]},/* SEG8 */
+  {20,15,&segSize1C[4][0]},/* SEG8FD */
   {20,15,&segSize1[1][0]}, /* SEG7 */
   {20,15,&segSize1C[1][0]},/* SEG87 */
   {20,15,&segSize1C[1][0]},/* SEG87F */
@@ -1398,6 +1442,7 @@ static tSegRow segSize3[4][8] = {
   {12,11,&segSize2C[2][0]},/* SEG10 */
   {12,11,&segSize2[2][0]}, /* SEG9 */
   {12,11,&segSize2C[1][0]},/* SEG8 */
+  {12,11,&segSize2C[4][0]},/* SEG8D */
   {12,11,&segSize2[1][0]}, /* SEG7 */
   {12,11,&segSize2C[1][0]},/* SEG87 */
   {12,11,&segSize2C[1][0]},/* SEG87F */
