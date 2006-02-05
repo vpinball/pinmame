@@ -41,6 +41,23 @@ S67S_SPEECHROMS000x(     "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c3319
 S7_ROMEND
 #define input_ports_frpwr input_ports_s7
 CORE_CLONEDEF(frpwr,b7,l6,"Firepower (Sys.7 7-digit conversion)",2003,"Williams / Oliver",s7_mS7S6,0)
+/*-------------------------------
+/ Firepower - Sys.7 7-Digit conversion, , rev. 38
+/------------------------------*/
+S7_ROMSTART8088(frpwr,c7,"f7ic14pr.716",CRC(4cd22956) SHA1(86380754b9cbb0a81b4fa4d26cff71b9a70d2a96),
+                         "f7ic17gr.532",CRC(3a1b7cc7) SHA1(1f32ef6d66040a53b04a0cddb1ffbf197a29c940),
+                         "f7ic20ga.716",CRC(5ed61e41) SHA1(b73a05b336f7bb8ee528205612bd0744e86498f5),
+                         "f7ic26.716"  ,CRC(aaf82d89) SHA1(c481a49c7e7d4734c0eeab31b9970ca62a3995f0))
+S67S_SOUNDROMS8(         "sound3.716",  CRC(55a10d13) SHA1(521d4cdfb0ed8178b3594cedceae93b772a951a4))
+S67S_SPEECHROMS0000(     "v_ic7.532",   CRC(94c5c0a7) SHA1(ff7c618d1666c1d5c3319fdd72c1af2846659290),
+                         "v_ic5.532",   CRC(1737fdd2) SHA1(6307e0ae715e97294ee8aaaeb2e2bebb0cb590c2),
+                         "v_ic6.532",   CRC(35db11d2) SHA1(001df0d5245230b960ff69c30ee2b305b3a5e4b4),
+                         "v_ic4.532",   CRC(8d4ff909) SHA1(b82666fe96bdf174bc4f347d7139da9ab7dadee1))
+
+
+S7_ROMEND
+#define input_ports_frpwr input_ports_s7
+CORE_CLONEDEF(frpwr,c7,l6,"Firepower (Sys.7 7-digit conversion, new version)",2005,"Williams / Oliver",s7_mS7S6,0)
 
 /*-----------------------------------
 / Cosmic Gunfight - Sys.7 (Game #502)
