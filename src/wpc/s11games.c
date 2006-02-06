@@ -277,6 +277,15 @@ S11CS_SOUNDROM88(       "gund_u4.l1",  CRC(d4a430a3) SHA1(5b44e3f313cc7cb75f51c2
 S11_ROMEND
 CORE_CLONEDEF(bguns,la,l8,"Big Guns (L-A)", 1987, "Williams", s11_mS11AS,0)
 
+S11_ROMSTART48(bguns,p1,"u26-p-1.rom", CRC(26b8d58f) SHA1(678d4f706b862f3168d6d15859dba6288912e462),
+                        "u27-p-1.rom", CRC(2fba9a0d) SHA1(16629a5f009865825207378118a147e3135c51cf))
+S11XS_SOUNDROM88(        "guns_u21.l1", CRC(35c6bfe4) SHA1(83dbd10311add75f56046de58d315f8a87389703),
+                        "guns_u22.l1", CRC(091a5cb8) SHA1(db77314241eb6ed7f4385f99312a49b7caad1283))
+S11CS_SOUNDROM88(       "gund_u4.l1",  CRC(d4a430a3) SHA1(5b44e3f313cc7cb75f51c239013d46e5eb986f9d),
+                        "guns_u19.l1", CRC(ec1a6c23) SHA1(45bb4f78b89de9e690b5f9741d17f97766e702d6))
+S11_ROMEND
+CORE_CLONEDEF(bguns,p1,l8,"Big Guns (P-1)", 1987, "Williams", s11_mS11AS,0)
+
 /*--------------------
 / Space Station 1/88
 /--------------------*/
