@@ -6,7 +6,7 @@
 
  Known Issues/Problems with this Simulator:
 
- None.
+ Feb 8, 2006: Added backboard lamps (GV)
 
  Read PZ.c or FH.c if you like more help.
 
@@ -38,6 +38,7 @@
 #include "wpc.h"
 #include "sim.h"
 #include "wmssnd.h"
+#include "machine/4094.h"
 
 /*------------------
 /  Local functions
@@ -460,7 +461,7 @@ static core_tGameData wwGameData = {
   GEN_WPCFLIPTRON, wpc_dispDMD,
   {
     FLIP_SW(FLIP_L | FLIP_UR) | FLIP_SOL(FLIP_L | FLIP_UR),
-    0,0,0,0,0,0,0,
+    0,2,0,0,0,0,0,
     NULL, ww_handleMech, ww_getMech, ww_drawMech,
     NULL, ww_samsolmap
   },
@@ -472,11 +473,42 @@ static core_tGameData wwGameData = {
   }
 };
 
+static WRITE_HANDLER(parallel_0_out) {
+  coreGlobals.lampMatrix[8] = coreGlobals.tmpLampMatrix[8] = data ^ 0xff;
+}
+static WRITE_HANDLER(parallel_1_out) {
+  coreGlobals.lampMatrix[9] = coreGlobals.tmpLampMatrix[9] = data ^ 0xff;
+}
+static WRITE_HANDLER(qspin_0_out) {
+  HC4094_data_w(1, data);
+}
+
+static HC4094interface hc4094ww = {
+  2, // 2 chips
+  { parallel_0_out, parallel_1_out },
+  { qspin_0_out }
+};
+
+static WRITE_HANDLER(ww_wpc_w) {
+  wpc_w(offset, data);
+  if (offset == WPC_SOLENOID1) {
+    HC4094_data_w (0, GET_BIT3);
+    HC4094_clock_w(0, GET_BIT2);
+    HC4094_clock_w(1, GET_BIT2);
+  }
+}
+
 /*---------------
 /  Game handling
 /----------------*/
 static void init_ww(void) {
   core_gameData = &wwGameData;
+  install_mem_write_handler(0, 0x3fb0, 0x3fff, ww_wpc_w);
+  HC4094_init(&hc4094ww);
+  HC4094_oe_w(0, 1);
+  HC4094_oe_w(1, 1);
+  HC4094_strobe_w(0, 1);
+  HC4094_strobe_w(1, 1);
 }
 
 static void ww_handleMech(int mech) {
