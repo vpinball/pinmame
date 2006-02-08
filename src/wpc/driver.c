@@ -743,6 +743,11 @@ DRIVERNV(rctycng)       //Whitestar: 09/02 Roller Coaster Tycoon (German display
 DRIVERNV(rctycnl)       //Whitestar: 09/02 Roller Coaster Tycoon (Spanish display)
 DRIVERNV(rctycnf)       //Whitestar: 09/02 Roller Coaster Tycoon (French display)
 DRIVERNV(rctycni)       //Whitestar: 09/02 Roller Coaster Tycoon (Italian display)
+DRIVERNV(simpprty)      //Whitestar: 01/03 The Simpsons Pinball Party
+DRIVERNV(simpprtg)      //Whitestar: 01/03 The Simpsons Pinball Party (German display)
+DRIVERNV(simpprtl)      //Whitestar: 01/03 The Simpsons Pinball Party (Spanish display)
+DRIVERNV(simpprtf)      //Whitestar: 01/03 The Simpsons Pinball Party (French display)
+DRIVERNV(simpprti)      //Whitestar: 01/03 The Simpsons Pinball Party (Italian display)
 
 #ifdef INCLUDE_NEW_STERN
 DRIVER  (harl,a18)      //Whitestar: 07/03 Harley Davidson (1.08)
@@ -755,11 +760,6 @@ DRIVER  (harl,f30)      //Whitestar: 10/04 Harley Davidson (3.00 France)
 DRIVER  (harl,g30)      //Whitestar: 10/04 Harley Davidson (3.00 Germany)
 DRIVER  (harl,i30)      //Whitestar: 10/04 Harley Davidson (3.00 Italy)
 DRIVER  (harl,l30)      //Whitestar: 10/04 Harley Davidson (3.00 Spain)
-DRIVERNV(simpprty)      //Whitestar: 01/03 The Simpsons Pinball Party
-DRIVERNV(simpprtg)      //Whitestar: 01/03 The Simpsons Pinball Party (German display)
-DRIVERNV(simpprtl)      //Whitestar: 01/03 The Simpsons Pinball Party (Spanish display)
-DRIVERNV(simpprtf)      //Whitestar: 01/03 The Simpsons Pinball Party (French display)
-DRIVERNV(simpprti)      //Whitestar: 01/03 The Simpsons Pinball Party (Italian display)
 DRIVERNV(term3)         //Whitestar: 06/03 Terminator 3: Rise of the Machines
 DRIVERNV(term3g)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (Germany)
 DRIVERNV(term3l)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (Spain)
@@ -1097,6 +1097,7 @@ DRIVER(ww,l2)           //WPC-518:  12/92 W White Water (L-2)
 DRIVER(ww,l3)           //WPC-518:  01/93 W White Water (L-3)
 DRIVER(ww,l4)           //WPC-518:  02/93 W White Water (L-4)
 DRIVER(ww,l5)           //WPC-518:  05/93 W White Water (L-5)
+DRIVER(ww,lh5)          //WPC-518:  10/00 W White Water (LH-5)
 DRIVER(drac,p11)        //WPC-501:  02/93 W Bram Stoker's Dracula (P-11)
 DRIVER(drac,l1)         //WPC-501:  02/93 W Bram Stoker's Dracula
 DRIVER(tz,pa1)          //WPC-520:  03/93 B Twilight Zone (PA-1)
