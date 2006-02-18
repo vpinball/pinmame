@@ -158,3 +158,4 @@ CDisplayInfo CDisplayInfo::operator=(const CDisplayInfo &ob)
 
     return *this;
 }
+
