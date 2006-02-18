@@ -49,8 +49,8 @@ static struct rc_option vpinmame_opts[] = {
 	/* name, shortname, type, dest, deflt, min, max, func, help */
 	{ "dmd_border", NULL, rc_bool, &dmd_border, "1", 0, 0, NULL, "DMD display border" },
 	{ "dmd_title",  NULL, rc_bool, &dmd_title,  "1", 0, 0, NULL, "DMD display title" },
-	{ "dmd_pos_x",  NULL, rc_int,  &dmd_pos_x,  "0", 0, 10000, NULL, "DMD display position x" },
-	{ "dmd_pos_y",  NULL, rc_int,  &dmd_pos_y,  "0", 0, 10000, NULL, "DMD display position y" },
+	{ "dmd_pos_x",  NULL, rc_int,  &dmd_pos_x,  "0", -10000, 10000, NULL, "DMD display position x" },
+	{ "dmd_pos_y",  NULL, rc_int,  &dmd_pos_y,  "0", -10000, 10000, NULL, "DMD display position y" },
 	{ "dmd_width",  NULL, rc_int,  &dmd_width,  "0", 0, 10000, NULL, "DMD display width" },
 	{ "dmd_height", NULL, rc_int,  &dmd_height, "0", 0, 10000, NULL, "DMD display height" },
 	{ "dmd_doublesize",  NULL, rc_bool,  &dmd_doublesize,  "0", 0, 0, NULL, "DMD display doublesize" },
