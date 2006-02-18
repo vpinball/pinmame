@@ -29,6 +29,7 @@ class CControllerSettingsDlg : public CDialogImpl<CControllerSettingsDlg> {
 public:
 	BEGIN_MSG_MAP(CControllerSettingsDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
+		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		COMMAND_CODE_RANGE_HANDLER(IDC_ROMDIRS, IDC_IMGDIR, EN_CHANGE, OnEditCtrlChanged)
 		COMMAND_HANDLER(IDC_ALLOWWRITEACCESS, BN_CLICKED, OnEditCtrlChanged)
 		COMMAND_HANDLER(IDC_FULLSCREEN, BN_CLICKED, OnEditCtrlChanged)
@@ -56,8 +57,11 @@ private:
 	// Uses the displays collection to fill in the IDC_DISPLAYLIST combo box.
 	void ShowDisplays()
 	{
+		// Get the current display name (for selection)
+		char* szDisplayName = (char*) get_option("screen");
+
 		CDisplayInfoList displays = CDisplayInfoList();
-	
+
 		// Add each display to the combo box
 		for (size_t i=0; i < displays.Count(); i++)
 		{
@@ -65,27 +69,35 @@ private:
 			CDisplayInfo* display = displays.Item(i);
 
 			// Add to the list
-			displayList.SendMessage(CB_ADDSTRING, 0, (LPARAM)display->GetDriverDescription());
+			// displayList.SendMessage(CB_ADDSTRING, 0, (LPARAM)display->GetDriverDescription());
+			int index = displayList.SendMessage(CB_ADDSTRING, 0, (LPARAM) display->GetFriendlyName());
+
+			char* szItemData = new char[256];
+			if ( display->GetIsDefault() )
+				lstrcpy(szItemData, "");
+			else
+				lstrcpy(szItemData, display->GetDriverName());
+			displayList.SendMessage(CB_SETITEMDATA, (WPARAM) index, (LPARAM) szItemData);
+
+			if ( lstrcmpi(szItemData, szDisplayName)==0 )
+				displayList.SendMessage(CB_SETCURSEL, (WPARAM) index, (LPARAM) 0);
+
 		}
+
+		if ( displayList.SendMessage(CB_GETCURSEL, (WPARAM) 0, (LPARAM) 0)<0 )
+			displayList.SendMessage(CB_SETCURSEL, (WPARAM) 0, (LPARAM) 0);
 	}
 
-	//============================================================
-	//  SelectCurrentDisplay
-	//============================================================
-	// Selects item in the IDC_DISPLAYLIST combo box that matches the currently stored display name.
-	void SelectCurrentDisplay() {
-		
-		// Get the current display name
-		char* szDisplayName = (char*) get_option("screen");
+	void CleanupDisplayComboBox()
+	{
+		int count = displayList.SendMessage(CB_GETCOUNT, 0, 0);
+		for(int i=0; i<count; i++) 
+		{
+			char* szItemData = (char*) displayList.SendMessage(CB_GETITEMDATA, (WPARAM) i, (LPARAM) NULL);	
+			displayList.SendMessage(CB_SETITEMDATA, (WPARAM) i, (LPARAM) NULL);	
 
-		// Find the item in the combo box that matches the name
-		long idx = (long) displayList.SendMessage(CB_FINDSTRINGEXACT, -1, (LPARAM)szDisplayName);
-
-		// If not found, select the first one which is the default one (the combo box is not sorted anymore)
-		if (idx == CB_ERR)
-			idx = 0;
-
-		displayList.SendMessage(CB_SETCURSEL, 0, 0);
+			delete szItemData;
+		}
 	}
 
 	//============================================================
@@ -106,9 +118,6 @@ private:
 		SetDlgItemText(IDC_NVRAMDIR,   (char*) get_option("nvram_directory"));
 		SetDlgItemText(IDC_SAMPLEDIRS, (char*) get_option("samplepath"));
 		SetDlgItemText(IDC_IMGDIR,     (char*) get_option("snapshot_directory"));
-
-		// Select the current display
-		SelectCurrentDisplay();
 
 		// Set check boxes
 		pControllerSettings->get_Value(CComBSTR("window"), &vValue);
@@ -143,15 +152,9 @@ private:
 		GetDlgItemText(IDC_IMGDIR, szPath, sizeof(szPath));
 		pControllerSettings->put_Value(CComBSTR("snapshot_directory"), CComVariant(szPath));
 
-		GetDlgItemText(IDC_DISPLAYLIST, szPath, sizeof(szPath));
-		if (strcmp(szPath, "(Default)") == 0)
-		{
-			pControllerSettings->put_Value(CComBSTR("screen"), CComVariant(""));
-		}
-		else
-		{
-			pControllerSettings->put_Value(CComBSTR("screen"), CComVariant(szPath));
-		}
+		int index = displayList.SendMessage(CB_GETCURSEL, (WPARAM) 0, (LPARAM) 0);
+		char* szItemData = (char*) displayList.SendMessage(CB_GETITEMDATA, (WPARAM) index, (LPARAM) NULL);
+		pControllerSettings->put_Value(CComBSTR("screen"), CComVariant(szItemData));
 
 		pControllerSettings->put_Value(CComBSTR("window"), CComVariant((BOOL) !IsDlgButtonChecked(IDC_FULLSCREEN))); // NOTE: Inverted
 
@@ -223,6 +226,12 @@ private:
 		/*Init Dialog*/
 		SetControlValues();
 		SetChanged(false);
+
+		return 1;
+	}
+
+	LRESULT OnDestroy(UINT, WPARAM, LPARAM lParam, BOOL&) {
+		CleanupDisplayComboBox();
 
 		return 1;
 	}
