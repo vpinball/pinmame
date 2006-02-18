@@ -1,8 +1,15 @@
 What's new in Visual PinMAME:
 -----------------------------
 
-Version 1.52 August 1th, 2005)
-------------------------------
+Version 1.5x, (xxx xx, 2006)
+----------------------------
+- added the code from Jarez Bienz which allows you to set the display dd3 surface
+- fixed a bug in the pahtes dialog (the first three weren't displayed anymore after a game was started)
+- If you execute Controler.Run without a parent window VPM will now search for a running VPPlayer-Window and
+  if it's found it's used
+
+Version 1.52 (August 1th, 2005)
+-------------------------------
 - Added an easter egg screen: THANK YOU GUYS!
 - Controller.Hidden fixed
 
