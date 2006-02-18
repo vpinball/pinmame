@@ -322,7 +322,7 @@ static void expand_pathlist(struct pathdata *list)
 
 	// when finished, reset the path info, so that future INI parsing will
 	// cause us to get called again
-	list->rawpath = NULL;
+	// list->rawpath = NULL;
 	return;
 
 out_of_memory:
