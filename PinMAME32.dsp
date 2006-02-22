@@ -2626,7 +2626,7 @@ InputPath=.\src\windows\asmblit.asm
 InputName=asmblit
 
 "$(IntDir)\$(InputName).obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	nasmw -f coff -o $(IntDir)\$(InputName).obj $(InputPath)
+	nasmw -f coff -o "$(IntDir)\$(InputName).obj" "$(InputPath)"
 
 # End Custom Build
 
@@ -2640,7 +2640,7 @@ InputPath=.\src\windows\asmblit.asm
 InputName=asmblit
 
 "$(IntDir)\$(InputName).obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	nasmw -f coff -o $(IntDir)\$(InputName).obj $(InputPath)
+	nasmw -f coff -o "$(IntDir)\$(InputName).obj" "$(InputPath)"
 
 # End Custom Build
 
@@ -2661,7 +2661,7 @@ InputPath=.\src\windows\asmtile.asm
 InputName=asmtile
 
 "$(IntDir)\$(InputName).obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	nasmw -f coff -o $(IntDir)\$(InputName).obj $(InputPath)
+	nasmw -f coff -o "$(IntDir)\$(InputName).obj" "$(InputPath)"
 
 # End Custom Build
 
@@ -2675,7 +2675,7 @@ InputPath=.\src\windows\asmtile.asm
 InputName=asmtile
 
 "$(IntDir)\$(InputName).obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	nasmw -f coff -o $(IntDir)\$(InputName).obj $(InputPath)
+	nasmw -f coff -o "$(IntDir)\$(InputName).obj" "$(InputPath)"
 
 # End Custom Build
 
