@@ -29,8 +29,8 @@ UINT8 DMDFrames[GTS3DMD_FRAMES][0x200];
 UINT8 DMDFrames2[GTS3DMD_FRAMES][0x200];		//2nd DMD Display for Strikes N Spares
 
 #define GTS3_VBLANKFREQ      60 /* VBLANK frequency*/
-#define GTS3_IRQFREQ        975 /* IRQ Frequency (Guessed)*/
-#define GTS3_ALPHANMIFREQ   300 /* Alpha NMI Frequency (Guessed)*/
+#define GTS3_IRQFREQ       1500 /* IRQ Frequency (Guessed)*/
+#define GTS3_ALPHANMIFREQ  1000 /* Alpha NMI Frequency (Guessed)*/
 
 #define GTS3_CPUNO	0
 #define GTS3_DCPUNO 1
@@ -81,6 +81,7 @@ struct {
   int	 swDiag;
   int    swTilt;
   int    swSlam;
+  int    swPrin;
   int    acol;
   int    u4pb;
   WRITE_HANDLER((*U4_PB_W));
@@ -91,6 +92,7 @@ struct {
   UINT8  ax[7], cx1, cx2, ex1;
   char   extra16led;
   int    sound_data;
+  UINT8  prn[8];
 } GTS3locals;
 
 typedef struct {
@@ -378,10 +380,11 @@ static WRITE_HANDLER( xvia_1_cb2_w ) {
 }
 
 //IRQ:  IRQ to Main CPU
-static void via_irq(int state) {
+static void GTS3_irq(int state) {
 	// logerror("IN VIA_IRQ - STATE = %x\n",state);
-	cpu_set_irq_line(GTS3_CPUNO, 0, state?ASSERT_LINE:CLEAR_LINE);
-//	cpu_set_irq_line(GTS3_CPUNO, 0, PULSE_LINE);
+	static int irq = 0;
+	cpu_set_irq_line(GTS3_CPUNO, 0, irq?ASSERT_LINE:CLEAR_LINE);
+	irq = !irq;
 }
 
 /*
@@ -422,19 +425,15 @@ static struct via6522_interface via_0_interface =
 	/*inputs : A/B         */ xvia_0_a_r, xvia_0_b_r,
 	/*inputs : CA1/B1,CA2/B2 */ 0, xvia_0_cb1_r, xvia_0_ca2_r, xvia_0_cb2_r,
 	/*outputs: A/B,CA2/B2   */ xvia_0_a_w, xvia_0_b_w, xvia_0_ca2_w, xvia_0_cb2_w,
-	/*irq                  */ via_irq
+	/*irq                  */ 0 /* via_irq */
 };
 static struct via6522_interface via_1_interface =
 {
 	/*inputs : A/B         */ xvia_1_a_r, xvia_1_b_r,
 	/*inputs : CA1/B1,CA2/B2 */ xvia_1_ca1_r, xvia_1_cb1_r, xvia_1_ca2_r, xvia_1_cb2_r,
 	/*outputs: A/B,CA2/B2   */ xvia_1_a_w, xvia_1_b_w, xvia_1_ca2_w, xvia_1_cb2_w,
-	/*irq                  */ via_irq
+	/*irq                  */ 0 /* via_irq */
 };
-
-static void GTS3_irq(int data) {
-//	cpu_set_irq_line(GTS3_CPUNO, 0, PULSE_LINE);
-}
 
 static INTERRUPT_GEN(GTS3_vblank) {
   /*-------------------------------
@@ -482,7 +481,6 @@ static INTERRUPT_GEN(GTS3_vblank) {
 }
 
 static SWITCH_UPDATE(GTS3) {
-  via_irq(1);
   if (inports) {
     coreGlobals.swMatrix[0] = (inports[GTS3_COMINPORT] & 0x0f00)>>8;
 	if (inports[GTS3_COMINPORT] & 0x8000) // DMD games with tournament mode
@@ -492,6 +490,7 @@ static SWITCH_UPDATE(GTS3) {
     else // alpha games
 	  coreGlobals.swMatrix[1] = (coreGlobals.swMatrix[1] & 0xc0) | (inports[GTS3_COMINPORT] & 0x3f);
   }
+  GTS3locals.swPrin = (core_getSw(GTS3_SWPRIN)>0?1:0);
   GTS3locals.swDiag = (core_getSw(GTS3_SWDIAG)>0?1:0);
   GTS3locals.swTilt = (core_getSw(GTS3_SWTILT)>0?1:0);
   GTS3locals.swSlam = (core_getSw(GTS3_SWSLAM)>0?1:0);
@@ -531,11 +530,6 @@ static void GTS3_alpha_common_init(void) {
 
   /* Init the sound board */
   sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(GTS3_MEMREG_SCPU1), NULL, NULL);
-
-// Manually call the CPU NMI at the specified rate
-// !!! GTS3locals.timer_nmi = timer_pulse(TIME_IN_HZ(GTS3_ALPHANMIFREQ), 0, alphanmi);
-//  GTS3locals.timer_nmi = timer_alloc(alphanmi);
-//  timer_adjust(GTS3locals.timer_nmi, TIME_IN_HZ(GTS3_ALPHANMIFREQ), 0, TIME_IN_HZ(GTS3_ALPHANMIFREQ));
 }
 
 /*Alpha Numeric First Generation Init*/
@@ -581,9 +575,6 @@ static void gts3dmd_init(void) {
 
   /* Init the sound board */
   sndbrd_0_init(core_gameData->hw.soundBoard, 2, memory_region(GTS3_MEMREG_SCPU1), NULL, NULL);
-
-  // Manually call the DMD NMI at the specified rate  (Although the code simply returns rti in most cases, we should call the nmi anyway, incase a game uses it)
-  // GTS3locals.timer_nmi = timer_pulse(TIME_IN_HZ(GTS3_DMDNMIFREQ), 0, dmdnmi);
 }
 
 /*DMD Generation Init*/
@@ -680,6 +671,11 @@ static WRITE_HANDLER(alpha_display){
 		switch ( offset ) {
 		case 0:
 			GTS3locals.segments[20+GTS3locals.acol].b.lo |= GTS3locals.pseg[20+GTS3locals.acol].b.lo = data;
+			if (GTS3locals.pseg[20+GTS3locals.acol].w) coreGlobals.segDim[20+GTS3locals.acol] = 0;
+			if (!GTS3locals.pseg[20+GTS3locals.acol].w && coreGlobals.segDim[20+GTS3locals.acol] < 15) {
+				coreGlobals.segDim[20+GTS3locals.acol] +=3;
+				GTS3locals.pseg[20+GTS3locals.acol].w = GTS3locals.segments[20+GTS3locals.acol].w;
+			}
 			break;
 
 		case 1:
@@ -688,6 +684,11 @@ static WRITE_HANDLER(alpha_display){
 
 		case 2:
 			GTS3locals.segments[GTS3locals.acol].b.lo |= GTS3locals.pseg[GTS3locals.acol].b.lo = data;
+			if (GTS3locals.pseg[GTS3locals.acol].w) coreGlobals.segDim[GTS3locals.acol] = 0;
+			if (!GTS3locals.pseg[GTS3locals.acol].w && coreGlobals.segDim[GTS3locals.acol] < 15) {
+				coreGlobals.segDim[GTS3locals.acol] +=3;
+				GTS3locals.pseg[GTS3locals.acol].w = GTS3locals.segments[GTS3locals.acol].w;
+			}
 			break;
 
 		case 3:
@@ -819,10 +820,37 @@ static void dmd_vblank(int which) {
 	GTS3_dmdlocals[which].nextDMDFrame = (GTS3_dmdlocals[which].nextDMDFrame + 1) % GTS3DMD_FRAMES;
 }
 
+/* Printer connector */
 static WRITE_HANDLER(aux1_w)
 {
+    static void *printfile;
+	static UINT8 printdata[] = {0};
+	if (printfile == NULL) {
+		char filename[13];
+		sprintf(filename,"%s.prt", Machine->gamedrv->name);
+		printfile = mame_fopen(Machine->gamedrv->name,filename,FILETYPE_PRINTER,2); // APPEND write mode
+	}
 	GTS3locals.ax[1+(offset>>4)] = data;
+	if (offset < 8) {
+		GTS3locals.prn[offset] = data;
+		if (!offset) {
+			printdata[0] = data;
+			mame_fwrite(printfile, printdata, 1);
+		}
+	}
 	logerror1("Aux1 Write: Offset: %x Data: %x\n",offset,data);
+}
+
+/* Communication adapter (printer) status */
+static READ_HANDLER(aux1_r) {
+	if (GTS3locals.swPrin) {
+		GTS3locals.prn[1]=0xbf;
+	} else {
+		GTS3locals.prn[1]=0x40;
+		GTS3locals.prn[3]=0;
+	}
+	logerror("Aux1 Read: %04x:%x:%02x\n", activecpu_get_previouspc(), offset, GTS3locals.prn[offset]);
+	return GTS3locals.prn[offset];
 }
 
 static INTERRUPT_GEN(alphanmi) {
@@ -877,6 +905,7 @@ static MEMORY_READ_START(GTS3_readmem)
 {0x2000,0x200f,via_0_r},
 {0x2010,0x201f,via_1_r},
 {0x2020,0x2023,display_r},
+{0x2050,0x2057,aux1_r},
 {0x4000,0xffff,MRA_ROM},
 MEMORY_END
 

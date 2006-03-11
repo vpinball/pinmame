@@ -68,6 +68,7 @@
     COREPORT_BIT(     0x0100, "Diagnostic",       KEYCODE_0) \
     COREPORT_BIT(     0x0200, "Ball Tilt",        KEYCODE_INSERT) \
     COREPORT_BIT(     0x0400, "Slam Tilt",        KEYCODE_HOME) \
+    COREPORT_BITTOG(  0x0800, "Printer",          KEYCODE_9) \
     PORT_BITX(0x8000,IP_ACTIVE_LOW,IPT_UNUSED,"",0,IP_JOY_NONE) // flag 0x8000
 
 #define GTS32_INPUT_PORTS_START(name,balls) \
@@ -110,7 +111,7 @@
 #define GTS3_SWDIAG     -8
 #define GTS3_SWTILT     -7
 #define GTS3_SWSLAM     -6
-
+#define GTS3_SWPRIN     -5
 
 
 /*-- Memory regions --*/
