@@ -157,7 +157,7 @@ GTS3_ROMEND
 CORE_GAMEDEFNV(tfight,"Title Fight",1990,"Gottlieb",mGTS3S,0)
 
 /*-------------------------------------------------------------------
-/ Nudge It
+/ Nudge It (N102)
 /-------------------------------------------------------------------*/
 INITGAME(nudgeit, ALPHA, FLIP_SW(FLIP_L), 1, SNDBRD_GTS3, 4)
 GTS3ROMSTART(nudgeit,	"gprom.bin",CRC(3d9e0309) SHA1(caaa28482e7f260668aa05b39b551acb8e4cc41a))
@@ -177,12 +177,17 @@ GTS3_ROMEND
 CORE_GAMEDEFNV(carhop,"Car Hop",1991,"Gottlieb",mGTS3S,0)
 
 /*-------------------------------------------------------------------
-/ Hoops
+/ Hoops (#727)
 /-------------------------------------------------------------------*/
-INITGAME(hoops, ALPHA, FLIP_SW(FLIP_L), 3/*?*/, SNDBRD_GTS3, 5)
+/* 2 X 20 AlphaNumeric Rows, 4 X 3 7-seg displays */
+static struct core_dispLayout dispHoops[] = {
+  DISP_SEG_IMPORT(GTS3_dispAlpha),
+  {5, 0,40,3,CORE_SEG7}, {5,11,43,3,CORE_SEG7}, {5,23,46,3,CORE_SEG7}, {5,34,49,3,CORE_SEG7}, {0}
+};
+INITGAME1(hoops, dispHoops, FLIP67, 3/*?*/, SNDBRD_NONE, 4)
 GTS3ROMSTARTX(hoops,	"gprom.bin",NO_DUMP)
 GTS3_ROMEND
-CORE_GAMEDEFNV(hoops,"Hoops",1991,"Gottlieb",mGTS3,GAME_NO_SOUND)
+CORE_GAMEDEFNV(hoops,"Hoops",1991,"Gottlieb",mGTS3B,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
 / Cactus Jack's (#729)
