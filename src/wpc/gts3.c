@@ -187,15 +187,6 @@ static WRITE_HANDLER( xvia_0_a_w )
 //PB0-7 Varies on Alpha or DMD Generation!
 static WRITE_HANDLER( xvia_0_b_w ) { GTS3locals.U4_PB_W(offset,data); }
 
-// like core_setLamp, but erasing the designated lamp rows before filling in the data
-static void setLampBlank(UINT8 *lampMatrix, int col, int row) {
-  while (col) {
-    if (col & 0x01) *lampMatrix = row;
-    col >>= 1;
-    lampMatrix += 1;
-  }
-}
-
 /* ALPHA GENERATION
    ----------------
   PB0:  Lamp Data      (LDATA)
@@ -221,7 +212,7 @@ static WRITE_HANDLER(alpha_u4_pb_w) {
 			GTS3locals.lampColumn = 1;
 		else
 			GTS3locals.lampColumn = ((GTS3locals.lampColumn << 1) & 0x0fff);
-		setLampBlank(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
+		core_setLampBlank(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
 	} else
 		core_setLamp(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
 
@@ -246,7 +237,7 @@ static WRITE_HANDLER(dmd_u4_pb_w) {
 			GTS3locals.lampColumn = 1;
 		else
 			GTS3locals.lampColumn = ((GTS3locals.lampColumn << 1) & 0x0fff);
-		setLampBlank(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
+		core_setLampBlank(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
 	} else
 		core_setLamp(coreGlobals.tmpLampMatrix, GTS3locals.lampColumn, GTS3locals.lampRow);
 
@@ -671,9 +662,10 @@ static WRITE_HANDLER(alpha_display){
 		switch ( offset ) {
 		case 0:
 			GTS3locals.segments[20+GTS3locals.acol].b.lo |= GTS3locals.pseg[20+GTS3locals.acol].b.lo = data;
-			if (GTS3locals.pseg[20+GTS3locals.acol].w) coreGlobals.segDim[20+GTS3locals.acol] = 0;
-			if (!GTS3locals.pseg[20+GTS3locals.acol].w && coreGlobals.segDim[20+GTS3locals.acol] < 15) {
-				coreGlobals.segDim[20+GTS3locals.acol] +=3;
+			if (GTS3locals.pseg[20+GTS3locals.acol].w) {
+				coreGlobals.segDim[20+GTS3locals.acol] /=2;
+			} else {
+				if (coreGlobals.segDim[20+GTS3locals.acol] < 15) coreGlobals.segDim[20+GTS3locals.acol] +=3;
 				GTS3locals.pseg[20+GTS3locals.acol].w = GTS3locals.segments[20+GTS3locals.acol].w;
 			}
 			break;
@@ -684,9 +676,10 @@ static WRITE_HANDLER(alpha_display){
 
 		case 2:
 			GTS3locals.segments[GTS3locals.acol].b.lo |= GTS3locals.pseg[GTS3locals.acol].b.lo = data;
-			if (GTS3locals.pseg[GTS3locals.acol].w) coreGlobals.segDim[GTS3locals.acol] = 0;
-			if (!GTS3locals.pseg[GTS3locals.acol].w && coreGlobals.segDim[GTS3locals.acol] < 15) {
-				coreGlobals.segDim[GTS3locals.acol] +=3;
+			if (GTS3locals.pseg[GTS3locals.acol].w) {
+				coreGlobals.segDim[GTS3locals.acol] /=2;
+			} else {
+				if (coreGlobals.segDim[GTS3locals.acol] < 15) coreGlobals.segDim[GTS3locals.acol] +=3;
 				GTS3locals.pseg[GTS3locals.acol].w = GTS3locals.segments[GTS3locals.acol].w;
 			}
 			break;
