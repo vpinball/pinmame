@@ -1,4 +1,3 @@
-#include <stdarg.h>
 #include "driver.h"
 #include "core.h"
 #include "ltd.h"
@@ -13,10 +12,27 @@ static struct {
   UINT32 solenoids;
   core_tSeg segments;
   UINT8 pseg1, pseg2;
+  mame_timer *irqtimer;
+  int irqfreq;
 } locals;
 
 #define LTD_CPUFREQ	3579545/4
-#define LTD_IRQFREQ 250
+#define LTD_IRQFREQ 500
+
+#ifdef MAME_DEBUG
+static void adjust_timer(int offset) {
+  static char s[4];
+  locals.irqfreq += offset;
+  if (locals.irqfreq < 1) locals.irqfreq = 1;
+  sprintf(s, "%4d", locals.irqfreq);
+  core_textOut(s, 4, 25, 5, 5);
+  timer_adjust(locals.irqtimer, 1.0/(double)locals.irqfreq, 0, 1.0/(double)locals.irqfreq);
+}
+#endif /* MAME_DEBUG */
+
+static void timer_callback(int n) {
+  cpu_set_irq_line(0, 0, PULSE_LINE);
+}
 
 /*-------------------------------
 /  copy local data to interface
@@ -42,56 +58,21 @@ static INTERRUPT_GEN(LTD_vblank) {
   core_updateSw(TRUE);
 }
 
-static INTERRUPT_GEN(ltd_irq) {
-  static int state = 0;
-  cpu_set_irq_line(LTD_CPU, 0, state ? ASSERT_LINE : CLEAR_LINE);
-  state = !state;
-}
-
 static SWITCH_UPDATE(LTD) {
   if (inports) {
-    coreGlobals.swMatrix[0] = inports[LTD_COMINPORT] & 0x01;
-    cpu_set_nmi_line(LTD_CPU, coreGlobals.swMatrix[0] & 0x01);
+    coreGlobals.swMatrix[0] = inports[LTD_COMINPORT] & 1;
+    cpu_set_nmi_line(LTD_CPU, coreGlobals.swMatrix[0] & 1);
   }
-}
-
-static int LTD_sw2m(int no) {
-  return no + 8;
-}
-
-static int LTD_m2sw(int col, int row) {
-  return col*8 + row - 8;
-}
-
-static UINT8* ram;
-static WRITE_HANDLER(ram_w) {
-  static int dispPos[] = { 6, 14, 4, 12, 2, 10, 0, 8 };
-  int panel;
-  ram[offset] = data;
-  locals.db = data;
-
-  if (offset > 0x5f && offset < 0x70) { // display
-    panel = (offset - 0x60) / 8 * 16 + dispPos[offset % 8];
-    locals.segments[panel].w = core_bcd2seg[ram[offset] >> 4];
-    locals.segments[1 + panel].w = core_bcd2seg[ram[offset] & 0x0f];
-  }
-
-  if (offset > 0x6f && offset < 0x80) { // lamps
-    coreGlobals.tmpLampMatrix[offset - 0x70] = data;
-  }
-}
-
-static READ_HANDLER(ram_r) {
-
-  if (offset > 0x50 && offset < 0x59) { // switches
-    ram[offset] |= coreGlobals.swMatrix[offset - 0x50];
-  }
-
-  if (offset > 0x57 && offset < 0x60) { // switches
-    ram[offset] |= coreGlobals.swMatrix[offset - 0x57];
-  }
-
-  return ram[offset];
+#ifdef MAME_DEBUG
+  if      (keyboard_pressed_memory_repeat(KEYCODE_Z, 2))
+    adjust_timer(-10);
+  else if (keyboard_pressed_memory_repeat(KEYCODE_X, 2))
+    adjust_timer(-1);
+  else if (keyboard_pressed_memory_repeat(KEYCODE_C, 2))
+    adjust_timer(1);
+  else if (keyboard_pressed_memory_repeat(KEYCODE_V, 2))
+    adjust_timer(10);
+#endif /* MAME_DEBUG */
 }
 
 /* Activate periphal write:
@@ -101,54 +82,68 @@ static READ_HANDLER(ram_r) {
    9   : INT10     - Display strobe & sound
    15  : CLR       - resets all output
  */
-static WRITE_HANDLER(sw_w) {
-//  int intr = 1 + (data & 0x0f);
-//  logerror("INT%d = %02x\n", intr, locals.db);
-/*
-  int i, snd, pos;
-  switch (intr) {
-    case 1: case 2: case 3: case 4: case 5: case 6: case 7:
-      coreGlobals.tmpLampMatrix[intr-1] = locals.db;
+static WRITE_HANDLER(peri_w) {
+  switch (offset) {
+    case 0: case 2: case 4:
+      locals.segments[4 - offset].w = core_bcd2seg[data >> 4];
+      locals.segments[5 - offset].w = core_bcd2seg[data & 0x0f];
+      break;
+    case 1: case 3: case 5:
+      locals.segments[11 - offset].w = core_bcd2seg[data >> 4];
+      locals.segments[12 - offset].w = core_bcd2seg[data & 0x0f];
       break;
     case 8:
-      locals.solenoids = locals.db;
+      locals.segments[12].w = core_bcd2seg[data >> 4];
+      locals.segments[13].w = core_bcd2seg[data & 0x0f];
       break;
     case 9:
-      locals.pseg1 = core_bcd2seg[locals.db >> 4];
-      locals.pseg2 = core_bcd2seg[locals.db & 0x0f];
+      locals.segments[14].w = core_bcd2seg[data >> 4];
+      locals.segments[15].w = core_bcd2seg[data & 0x0f];
       break;
-    case 10:
-      snd = (locals.db & 0x3c) >> 2;
-      pos = (locals.db & 0xc0) >> 4 | (locals.db & 0x03);
-      locals.segments[pos * 2].w = locals.pseg1;
-      locals.segments[1 + pos * 2].w = locals.pseg2;
+    case 0x10: case 0x11: case 0x12: case 0x13: case 0x14: case 0x15:
+      coreGlobals.tmpLampMatrix[offset - 0x10] = data;
       break;
-    case 16:
-      for (i=0; i < 7; i++)
-        coreGlobals.tmpLampMatrix[i] = 0;
-      locals.solenoids = 0;
-      for (i=0; i < 32; i++)
-        locals.segments[i].w = 0;
+    case 0x16:
+      locals.solenoids = (locals.solenoids &= 0x00ff) | (data << 8);
+      break;
+    case 0x17:
+      locals.solenoids = (locals.solenoids &= 0xff00) | data;
+      break;
   }
-*/
+}
+
+static WRITE_HANDLER(ram_w) {
+  generic_nvram[offset] = data;
+  if (offset >= 0x60 && offset < 0x78) peri_w(offset-0x60, data);
+}
+
+static READ_HANDLER(ram_r) {
+  static UINT8 sw;
+  if (offset > 0x4f && offset < 0x60) { // switches
+    sw = coreGlobals.swMatrix[1 + offset % 8];
+  } else
+    sw = 0;
+  return generic_nvram[offset] ^ sw;
 }
 
 /*-----------------------------------------
 /  Memory map for CPU board
 /------------------------------------------*/
 static MEMORY_READ_START(LTD_readmem)
-  {0x0000,0x01ff,ram_r},
-  {0xc000,0xdfff,MRA_ROM},
-  {0xe000,0xffff,MRA_ROM},
+  {0x0000,0x01ff, ram_r},
+  {0xc000,0xffff, MRA_ROM},
 MEMORY_END
 
 static MEMORY_WRITE_START(LTD_writemem)
-  {0x0000,0x01ff,ram_w,&ram},
-  {0xfff5,0xfff5,sw_w}, // periphal select
+  {0x0000,0x01ff, ram_w, &generic_nvram, &generic_nvram_size},
+  {0xf000,0xffff, MWA_NOP},
 MEMORY_END
 
 static MACHINE_INIT(LTD) {
   memset(&locals, 0, sizeof locals);
+  locals.irqtimer = timer_alloc(timer_callback);
+  locals.irqfreq = LTD_IRQFREQ;
+  timer_adjust(locals.irqtimer, 1.0/(double)locals.irqfreq, 0, 1.0/(double)locals.irqfreq);
 }
 
 MACHINE_DRIVER_START(LTD)
@@ -156,9 +151,7 @@ MACHINE_DRIVER_START(LTD)
   MDRV_CPU_ADD_TAG("mcpu", M6803, LTD_CPUFREQ)
   MDRV_CPU_MEMORY(LTD_readmem, LTD_writemem)
   MDRV_CPU_VBLANK_INT(LTD_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(ltd_irq, LTD_IRQFREQ)
   MDRV_CORE_INIT_RESET_STOP(LTD,NULL,NULL)
   MDRV_NVRAM_HANDLER(generic_0fill)
-  MDRV_DIPS(32)
   MDRV_SWITCH_UPDATE(LTD)
 MACHINE_DRIVER_END
