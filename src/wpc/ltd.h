@@ -14,8 +14,11 @@
 #define LTD_COMPORTS \
   PORT_START /* 0 */ \
     /* switch column 0 */ \
-    COREPORT_BIT(     0x0001, "Game", KEYCODE_1) \
-  PORT_START /* 1 */
+    COREPORT_BITDEF(  0x0001, IPT_COIN1,  IP_KEY_DEFAULT) \
+    /* switch column 1 */ \
+    COREPORT_BIT(     0x0100,"Ball Tilt", KEYCODE_INSERT) \
+    /* switch column 4 */ \
+    COREPORT_BITDEF(  0x2000, IPT_START1, IP_KEY_DEFAULT) \
 
 /*-- Standard input ports --*/
 #define LTD_INPUT_PORTS_START(name,balls) \
@@ -28,7 +31,7 @@
 
 #define LTD_COMINPORT       CORE_COREINPORT
 
-#define LTD_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
+#define LTD_SOLSMOOTH       6 /* Smooth the Solenoids over this numer of VBLANKS */
 #define LTD_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
 #define LTD_DISPLAYSMOOTH   2 /* Smooth the display over this number of VBLANKS */
 
@@ -71,7 +74,9 @@
 
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(LTD);
+extern MACHINE_DRIVER_EXTERN(LTD4);
 
 #define gl_mLTD		LTD
+#define gl_mLTD4	LTD4
 
 #endif /* INC_LTD */
