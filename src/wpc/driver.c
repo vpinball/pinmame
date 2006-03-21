@@ -701,6 +701,7 @@ DRIVERNV(dragfist)      //MPU-200: 01/82 Dragonfist
 // MPU-200 - Sound Board: SB-300, VS-100
 DRIVERNV(flight2k)      //MPU-200: 08/80 Flight 2000
 DRIVERNV(stargzr)       //MPU-200: 08/80 Stargazer
+DRIVERNV(stargzrb)      //MPU-200: 03/06 Stargazer (modified rules rev.9)
 DRIVERNV(lightnin)      //MPU-200: 03/81 Lightning
 DRIVERNV(orbitor1)      //MPU-200: 04/82 Orbitor One
 DRIVERNV(cue)           //MPU-200: ??/82 Cue            (Proto - Never released)
