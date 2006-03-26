@@ -115,8 +115,14 @@ ROM_START(name) \
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(PLAYMATIC);
 extern MACHINE_DRIVER_EXTERN(PLAYMATIC2);
+extern MACHINE_DRIVER_EXTERN(PLAYMATIC2S);
+extern MACHINE_DRIVER_EXTERN(PLAYMATIC3S);
+extern MACHINE_DRIVER_EXTERN(PLAYMATIC4S);
 
 #define gl_mPLAYMATIC      PLAYMATIC
 #define gl_mPLAYMATIC2     PLAYMATIC2
+#define gl_mPLAYMATIC2S    PLAYMATIC2S
+#define gl_mPLAYMATIC3S    PLAYMATIC3S
+#define gl_mPLAYMATIC4S    PLAYMATIC4S
 
 #endif /* INC_PLAYMATIC */
