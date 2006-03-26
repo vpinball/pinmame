@@ -36,7 +36,7 @@
 
 #define PLAYMATIC_LAMPSMOOTH      1 /* Smooth the lamps over this number of VBLANKS */
 #define PLAYMATIC_DISPLAYSMOOTH   1 /* Smooth the display over this number of VBLANKS */
-#define PLAYMATIC_SOLSMOOTH       1 /* Smooth the Solenoids over this number of VBLANKS */
+#define PLAYMATIC_SOLSMOOTH       6 /* Smooth the Solenoids over this number of VBLANKS */
 
 /*-- Memory regions --*/
 #define PLAYMATIC_MEMREG_CPU      REGION_CPU1
