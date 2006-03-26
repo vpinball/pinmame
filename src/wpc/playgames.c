@@ -19,11 +19,20 @@
 	}
 
 core_tLCDLayout play_disp6[] = {
-  { 0, 0,32,6,CORE_SEG7 },
-  { 0,16,24,6,CORE_SEG7 },
-  { 4, 0,16,6,CORE_SEG7 },
-  { 4,16, 8,6,CORE_SEG7 },
-  { 2,10, 0,6,CORE_SEG7 },
+  { 0, 0,37,1,CORE_SEG7 }, { 0, 2,32,5,CORE_SEG7 },
+  { 3, 0,29,1,CORE_SEG7 }, { 3, 2,24,5,CORE_SEG7 },
+  { 6, 0,21,1,CORE_SEG7 }, { 6, 2,16,5,CORE_SEG7 },
+  { 9, 0,13,1,CORE_SEG7 }, { 9, 2, 8,5,CORE_SEG7 },
+  {12, 0, 5,1,CORE_SEG7 }, {12, 2, 0,5,CORE_SEG7 },
+  {0}
+};
+
+core_tLCDLayout play_disp6a[] = {
+  { 0, 0,37,1,CORE_SEG7 }, { 0, 2,32,5,CORE_SEG7 },
+  { 6, 0,29,1,CORE_SEG7 }, { 6, 2,24,5,CORE_SEG7 },
+  { 0,20,21,1,CORE_SEG7 }, { 0,22,16,5,CORE_SEG7 },
+  { 6,20,13,1,CORE_SEG7 }, { 6,22, 8,5,CORE_SEG7 },
+  { 3,10, 5,1,CORE_SEG7 }, { 3,12, 0,5,CORE_SEG7 },
   {0}
 };
 
@@ -52,7 +61,7 @@ CORE_GAMEDEFNV(evlfight,"Evil Fight",1980,"Playmatic",gl_mPLAYMATIC2,GAME_STATUS
 /*-------------------------------------------------------------------
 / Mad Race (1982)
 /-------------------------------------------------------------------*/
-INITGAME(madrace, play_disp6, 1)
+INITGAME(madrace, play_disp6a, 1)
 PLAYMATIC_ROMSTART000(madrace,	"madrace.2a0", CRC(ab487c79) SHA1(a5df29b2af4c9d94d8bf54c5c91d1e9b5ca4d065),
 								"madrace.2b0", CRC(dcb54b39) SHA1(8e2ca7180f5ea3a28feb34b01f3387b523dbfa3b),
 								"madrace.2c0", CRC(b24ea245) SHA1(3f868ccbc4bfb77c40c4cc05dcd8eeca85ecd76f))
@@ -64,7 +73,7 @@ CORE_GAMEDEFNV(madrace,"Mad Race",1982,"Playmatic",gl_mPLAYMATIC2S,GAME_STATUS)
 /*-------------------------------------------------------------------
 / Meg-Aaton (1983)
 /-------------------------------------------------------------------*/
-INITGAME(megaaton, play_disp6, 1)
+INITGAME(megaaton, play_disp6a, 1)
 PLAYMATIC_ROMSTART64(megaaton,	"cpumegat.bin", CRC(7e7a4ede) SHA1(3194b367cbbf6e0cb2629cd5d82ddee6fe36985a))
 PLAYMATIC_SOUNDROM6432(	"smogot.bin", CRC(92fa0742) SHA1(ef3100a53323fd67e23b47fc3e72fdb4671e9b0a),
 						"smegat.bin", CRC(910ab7fe) SHA1(0ddfd15c9c25f43b8fcfc4e11bc8ea180f6bd761))
@@ -74,7 +83,7 @@ CORE_GAMEDEFNV(megaaton,"Meg-Aaton",1983,"Playmatic",gl_mPLAYMATIC3S,GAME_STATUS
 /*-------------------------------------------------------------------
 / KZ-26 (1984)
 /-------------------------------------------------------------------*/
-INITGAME(kz26, play_disp6, 1)
+INITGAME(kz26, play_disp6a, 1)
 PLAYMATIC_ROMSTART64(kz26,	"kz26.cpu", CRC(8030a699) SHA1(4f86b325801d8ce16011f7b6ba2f3633e2f2af35))
 PLAYMATIC_SOUNDROM6432(	"sound1.su3", CRC(f9550ab4) SHA1(7186158f515fd9fbe5a7a09c6b7d2e8dfc3b4bb2),
 						"sound2.su4", CRC(b66100d3) SHA1(85f5a319715f99d1b7afeca0d01c81aa615d416a))
