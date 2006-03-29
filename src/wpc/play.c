@@ -41,6 +41,7 @@ static struct {
   UINT32 solenoids;
   UINT8  sndCmd;
   int    ef[5];
+  int    q;
   int    lampCol;
   int    digitSel;
   int    panelSel;
@@ -51,8 +52,8 @@ static INTERRUPT_GEN(PLAYMATIC_irq) {
   cpu_set_irq_line(PLAYMATIC_CPU, 0, PULSE_LINE);
 }
 
-static int zc = 0;
 static void PLAYMATIC_zeroCross(int data) {
+  static int zc = 0;
   static int state = 0;
   locals.ef[3] = (zc = !zc);
   if (zc) {
@@ -83,7 +84,7 @@ static SWITCH_UPDATE(PLAYMATIC) {
   if (inports) {
     CORE_SETKEYSW(inports[CORE_COREINPORT], 0xff, 0);
   }
-  locals.ef[4] = (coreGlobals.swMatrix[0] & 1) ? 0 : 1; // test button
+//  locals.ef[4] = (coreGlobals.swMatrix[0] & 1) ? 0 : 1; // test button
 }
 
 static READ_HANDLER(sw_r) {
@@ -129,13 +130,13 @@ static void out_n(int data, int n) {
         locals.panelSel = 0;
       else
         locals.digitSel = bitColToNum(data & 0x7f);
-      coreGlobals.diagnosticLed = data >> 6;
+      coreGlobals.diagnosticLed = data >> 7;
       break;
     case DISPLAY:
       disp_w(8 * (locals.panelSel++) + locals.digitSel, data);
       break;
     case SOUND:
-      if (locals.cpuType > 1) {
+      if (cpu_gettotalcpu() > 1) {
         cpu_set_irq_line(PLAYMATIC_SCPU, 0, PULSE_LINE);
       }
       break;
@@ -161,15 +162,15 @@ static void out_n(int data, int n) {
 static int in_n(int n) {
   switch (n) {
     case SWITCH:
-      if (zc) return (UINT8)coreGlobals.swMatrix[locals.digitSel+1];
+      if (locals.q) return (UINT8)coreGlobals.swMatrix[locals.digitSel+1]; else return 0;
       break;
     case DIAG:
-      if (zc && locals.digitSel < 3) return (UINT8)coreGlobals.swMatrix[locals.digitSel ? locals.digitSel+6 : 0];
+      if (locals.q && locals.digitSel < 3) return (UINT8)coreGlobals.swMatrix[locals.digitSel ? locals.digitSel + 7 : 0]; else return 0;
       break;
   }
   return 0;
 }
-static void out_q(int level) { /* connected to RST1 pin of flip flop U2 */ }
+static void out_q(int level) { locals.q = level; /* connected to RST1 pin of flip flop U2 */ }
 static int in_ef(void) { return locals.ef[1] | (locals.ef[2] << 1) | (locals.ef[3] << 2) | (locals.ef[4] << 3); }
 
 static CDP1802_CONFIG play1802_config= { dma, out_n, in_n, out_q, in_ef };
@@ -244,7 +245,7 @@ MACHINE_DRIVER_START(PLAYMATIC)
   MDRV_CORE_INIT_RESET_STOP(PLAYMATIC,NULL,NULL)
   MDRV_SWITCH_UPDATE(PLAYMATIC)
   MDRV_DIPS(0)
-  MDRV_DIAGNOSTIC_LEDH(2)
+  MDRV_DIAGNOSTIC_LEDH(1)
 //  MDRV_NVRAM_HANDLER(generic_0fill)
 
   MDRV_SOUND_ADD(DISCRETE, play_tones)
@@ -261,7 +262,7 @@ MACHINE_DRIVER_START(PLAYMATIC2)
   MDRV_CORE_INIT_RESET_STOP(PLAYMATIC2,NULL,NULL)
   MDRV_SWITCH_UPDATE(PLAYMATIC)
   MDRV_DIPS(0)
-  MDRV_DIAGNOSTIC_LEDH(2)
+  MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_NVRAM_HANDLER(generic_0fill)
 
   MDRV_SOUND_ADD(DISCRETE, play_tones)
