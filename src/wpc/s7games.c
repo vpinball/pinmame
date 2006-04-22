@@ -160,7 +160,7 @@ S7_ROMSTART000x(hypbl,l5, "ic14.532",    CRC(8090fe71) SHA1(0f1f40c0ee8da5b2fd51
                           "ic20_fix.532",    CRC(48958d77) SHA1(ddfec991ef99606b866ced08b59e205a0b2cadd1))
 S67S_SOUNDROMS0(          "sound12.532", CRC(06051e5e) SHA1(f0ab4be812ceaf771829dd549f2a612156102a93))
 S7_ROMEND
-CORE_CLONEDEF(hypbl,l5,l4,"HyperBall (L-5)",1998,"Unknown (High score bootleg)",s7_mS7S,0)
+CORE_CLONEDEF(hypbl,l5,l4,"HyperBall (L-5)",1998,"Jess M. Askey (High score bootleg)",s7_mS7S,0)
 
 
 /*----------------------------
