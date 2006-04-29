@@ -392,7 +392,9 @@ PINMAME_VIDEO_UPDATE(seminidmd1_update) {
       bits = (bits<<2) | dotCol[jj+1][ii];
     *seg++ = bits;
   }
+#ifndef VPINMAME
   video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+#endif
   return 0;
 }
 // MINI DMD Type 1 (Ripley's) (3 x 5x7)
@@ -413,7 +415,9 @@ PINMAME_VIDEO_UPDATE(seminidmd1a_update) {
       bits = (bits<<2) | dotCol[kk+1][ii];
     *seg++ = bits;
   }
+#ifndef VPINMAME
   video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+#endif
   return 0;
 }
 PINMAME_VIDEO_UPDATE(seminidmd1b_update) {
@@ -433,7 +437,9 @@ PINMAME_VIDEO_UPDATE(seminidmd1b_update) {
       bits = (bits<<2) | dotCol[kk+1][ii];
     *seg++ = bits;
   }
+#ifndef VPINMAME
   video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+#endif
   return 0;
 }
 PINMAME_VIDEO_UPDATE(seminidmd1c_update) {
@@ -453,7 +459,9 @@ PINMAME_VIDEO_UPDATE(seminidmd1c_update) {
       bits = (bits<<2) | dotCol[kk+1][ii];
     *seg++ = bits;
   }
+#ifndef VPINMAME
   video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+#endif
   return 0;
 }
 // MINI DMD Type 2 (Monopoly) (15x7)
@@ -475,7 +483,9 @@ PINMAME_VIDEO_UPDATE(seminidmd2_update) {
       bits = (bits<<2) | dotCol[jj+1][ii];
     *seg++ = bits;
   }
+#ifndef VPINMAME
   video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+#endif
   return 0;
 }
 // MINI DMD Type 3 (RCT) (21x5)
@@ -498,7 +508,9 @@ PINMAME_VIDEO_UPDATE(seminidmd3_update) {
       bits = (bits<<2) | dotCol[jj+1][ii];
     *seg++ = bits;
   }
+#ifndef VPINMAME
   video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+#endif
   return 0;
 }
 // 3-Color MINI DMD Type 4 (Simpsons) (14x10)
@@ -530,7 +542,9 @@ PINMAME_VIDEO_UPDATE(seminidmd4_update) {
     *seg++ = bits1;
     *seg++ = bits2;
   }
+#ifndef VPINMAME
   video_update_core_dmd(bitmap, cliprect, dotCol, layout);
+#endif
   return 0;
 }
 
