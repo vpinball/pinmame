@@ -17,7 +17,7 @@ static struct {
 } locals;
 
 #define LTD_CPUFREQ	3579545/4
-#define LTD_IRQFREQ 250
+#define LTD_IRQFREQ 120
 
 #ifdef MAME_DEBUG
 static void adjust_timer(int offset) {
@@ -104,27 +104,27 @@ static WRITE_HANDLER(peri_w) {
 }
 
 static WRITE_HANDLER(auxlamp1_w) {
-  coreGlobals.tmpLampMatrix[7] = ~data;
+  coreGlobals.tmpLampMatrix[7] = data;
 }
 
 static WRITE_HANDLER(auxlamp2_w) {
-  coreGlobals.tmpLampMatrix[8] = ~data;
+  coreGlobals.tmpLampMatrix[8] = data;
 }
 
 static WRITE_HANDLER(auxlamp3_w) {
-  coreGlobals.tmpLampMatrix[9] = ~data;
+  coreGlobals.tmpLampMatrix[9] = data;
 }
 
 static WRITE_HANDLER(auxlamp4_w) {
-  coreGlobals.tmpLampMatrix[10] = ~data;
+  coreGlobals.tmpLampMatrix[10] = data;
 }
 
 static WRITE_HANDLER(auxlamp5_w) {
-  coreGlobals.tmpLampMatrix[11] = ~data;
+  coreGlobals.tmpLampMatrix[11] = data;
 }
 
 static WRITE_HANDLER(auxlamp6_w) {
-  coreGlobals.tmpLampMatrix[12] = ~data;
+  coreGlobals.tmpLampMatrix[12] = data;
 }
 
 static WRITE_HANDLER(auxlamp7_w) {
@@ -183,17 +183,58 @@ MACHINE_DRIVER_START(LTD)
   MDRV_SWITCH_UPDATE(LTD)
 MACHINE_DRIVER_END
 
+static WRITE_HANDLER(peri4_w) {
+  if (offset == 4) {
+    locals.solenoids = (locals.solenoids & 0x1ff00) | data;
+  } else if (offset > 4 && offset < 0x17) {
+    locals.segments[offset-5].w = data;
+  } else if (offset == 0x17) {
+    locals.segments[18].w = core_bcd2seg[data >> 4];
+    locals.segments[19].w = core_bcd2seg[data & 0x0f];
+  } else if (offset == 0x18) {
+    locals.segments[20].w = core_bcd2seg[data >> 4];
+    locals.segments[21].w = core_bcd2seg[data & 0x0f];
+  } else if (offset == 0x19) {
+    locals.segments[22].w = core_bcd2seg[data >> 4];
+    locals.segments[23].w = core_bcd2seg[data & 0x0f];
+  } else if (offset >= 0x20 && offset < 0x2c) {
+    coreGlobals.tmpLampMatrix[offset - 0x20] = data;
+    // map flippers enable to sol 17
+    if (offset == 0x10) {
+      locals.solenoids = (locals.solenoids & 0x0ffff) | ((coreGlobals.tmpLampMatrix[0] & 0x40) ? 0 : 0x10000);
+      locals.diagnosticLed = coreGlobals.tmpLampMatrix[0] >> 7;
+    }
+  }
+}
+
+static READ_HANDLER(sw4_r) {
+  UINT8 sw = coreGlobals.swMatrix[offset + 1];
+  if (offset == 1) sw ^= 0x01;
+  return sw;
+}
+
+static WRITE_HANDLER(ram4_w) {
+  generic_nvram[offset] = data;
+  if (offset >= 0xd0 && offset < 0xfc) peri4_w(offset-0xd0, data);
+}
+
 /*-----------------------------------------
 /  Memory map for system 4 CPU board
 /------------------------------------------*/
 static MEMORY_READ_START(LTD_readmem2)
-  {0x0000,0x01ff, ram_r},
+  {0x0000,0x01f7, ram_r},
+  {0x01f8,0x01ff, sw4_r},
   {0xc000,0xffff, MRA_ROM},
 MEMORY_END
 
 static MEMORY_WRITE_START(LTD_writemem2)
-  {0x0000,0x01ff, ram_w, &generic_nvram, &generic_nvram_size},
-  {0xf000,0xffff, MWA_NOP},
+  {0x0000,0x01ff, ram4_w, &generic_nvram, &generic_nvram_size},
+  {0x0800,0x0800, auxlamp6_w},
+  {0x0c00,0x0c00, auxlamp7_w},
+  {0x1400,0x1400, auxlamp6_w},
+  {0x1800,0x1800, auxlamp7_w},
+  {0x1c00,0x1c00, auxlamp6_w},
+  {0x2800,0x2800, auxlamp7_w},
 MEMORY_END
 
 MACHINE_DRIVER_START(LTD4)
@@ -202,7 +243,7 @@ MACHINE_DRIVER_START(LTD4)
   MDRV_CPU_MEMORY(LTD_readmem2, LTD_writemem2)
   MDRV_CPU_VBLANK_INT(LTD_vblank, 1)
   MDRV_CORE_INIT_RESET_STOP(LTD,NULL,NULL)
-  MDRV_NVRAM_HANDLER(generic_1fill)
+  MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_SWITCH_UPDATE(LTD)
 MACHINE_DRIVER_END
