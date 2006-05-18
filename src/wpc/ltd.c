@@ -17,7 +17,6 @@ static struct {
 } locals;
 
 #define LTD_CPUFREQ	3579545/4
-#define LTD_IRQFREQ 120
 
 #ifdef MAME_DEBUG
 static void adjust_timer(int offset) {
@@ -147,7 +146,7 @@ static READ_HANDLER(sw_r) {
 static MACHINE_INIT(LTD) {
   memset(&locals, 0, sizeof locals);
   locals.irqtimer = timer_alloc(timer_callback);
-  locals.irqfreq = LTD_IRQFREQ;
+  locals.irqfreq = 200;
   timer_adjust(locals.irqtimer, 1.0/(double)locals.irqfreq, 0, 1.0/(double)locals.irqfreq);
 }
 
@@ -218,6 +217,13 @@ static WRITE_HANDLER(ram4_w) {
   if (offset >= 0xd0 && offset < 0xfc) peri4_w(offset-0xd0, data);
 }
 
+static MACHINE_INIT(LTD4) {
+  memset(&locals, 0, sizeof locals);
+  locals.irqtimer = timer_alloc(timer_callback);
+  locals.irqfreq = 100;
+  timer_adjust(locals.irqtimer, 1.0/(double)locals.irqfreq, 0, 1.0/(double)locals.irqfreq);
+}
+
 /*-----------------------------------------
 /  Memory map for system 4 CPU board
 /------------------------------------------*/
@@ -242,7 +248,7 @@ MACHINE_DRIVER_START(LTD4)
   MDRV_CPU_ADD_TAG("mcpu", M6803, LTD_CPUFREQ)
   MDRV_CPU_MEMORY(LTD_readmem2, LTD_writemem2)
   MDRV_CPU_VBLANK_INT(LTD_vblank, 1)
-  MDRV_CORE_INIT_RESET_STOP(LTD,NULL,NULL)
+  MDRV_CORE_INIT_RESET_STOP(LTD4,NULL,NULL)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_SWITCH_UPDATE(LTD)
