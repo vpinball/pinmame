@@ -1030,7 +1030,7 @@ CORE_CLONEDEFNV(simpnew,simpprty,"Simpsons Pinball Party, The (ARM7 Sound Board)
 / The Simpsons Pinball Party (Germany)
 /-------------------------------------------------------------------*/
 SE128_ROMSTART(simpprtg, "spp-cpu.400",CRC(530b9782) SHA1(573b20cac205b7989cdefceb2c31cb7d88c2951a))
-DE_DMD32ROM8x(           "sppdspg.400",NO_DUMP)
+DE_DMD32ROM8x(           "sppdspg.400",CRC(3b408fe2) SHA1(ce8d7f0d58b5f8fb4df0b9811449e4dc0e1e6580))
 DE2S_SOUNDROM18888(      "spp101.u7",  CRC(32efcdf6) SHA1(1d437e8649408be91e0dd10598cc67336203077f),
                          "spp100.u17", CRC(65e9344e) SHA1(fe4797ccb71b31aa39d6a5d373a01fc22f9d055c),
                          "spp100.u21", CRC(17fee0f9) SHA1(5b5ceb667f3bc9bde4ea08a1ef837e3b56c01977),
