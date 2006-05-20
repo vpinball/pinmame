@@ -22,13 +22,13 @@ const struct GameDriver *test_drivers[] = { 0 };
 #else /* DRIVER_RECURSIVE */
 
 //Include New Stern Game Support if not running VPM or if Test New Stern Game flag found
-#ifdef VPINMAME
-	#ifdef TEST_NEW_STERN
-		#define INCLUDE_NEW_STERN 1
-	#endif
-#else
-	#define INCLUDE_NEW_STERN 1
-#endif
+//#ifdef VPINMAME
+//	#ifdef TEST_NEW_STERN
+		#define INCLUDE_NEW_STERN
+//	#endif
+//#else
+//	#define INCLUDE_NEW_STERN
+//#endif
 
 DRIVERNV(st_game)       //Unknown game running on old Stern hardware
 
@@ -927,6 +927,7 @@ DRIVER(solar,l2)        //S7-507:   07/81 W Solar Fire
 DRIVER(barra,l1)        //S7-510:   09/81 W Barracora
 DRIVER(hypbl,l4)        //S7-509:   12/81 W HyperBall
 DRIVER(hypbl,l5)        //S7-509:   04/98 W HyperBall (bootleg w/ high score save)
+DRIVER(hypbl,l6)        //S7-509:   05/06 W HyperBall (bootleg w/ high score save)
 DRIVER(thund,p1)        //S7-508:   05/82 W Thunderball
 DRIVER(csmic,l1)        //S7-502:   06/82 W Cosmic Gunfight
 DRIVER(vrkon,l1)        //S7-512:   09/82 W Varkon
