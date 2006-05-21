@@ -221,6 +221,16 @@ GTS80_ROMEND
 #define input_ports_vlcno_1b input_ports_gts80
 CORE_CLONEDEFNV(vlcno_1b,vlcno_ax,"Volcano (Sound Only)",1981,"Gottlieb",gl_mGTS80S,0)
 
+INITGAME(vlcno_1a,GEN_GTS80,0,dispNumeric1, SNDBRD_GTS80S,0,0)
+GTS80_1_ROMSTART(vlcno_1a,"667-1a.cpu" ,  CRC(5931c6f7) SHA1(e104a6c3ca2175bb49199e06963e26185dd563d2),
+                          "u2_80.bin",    CRC(4f0bc7b1) SHA1(612cbacdca5cfa6ad23940796df3b7c385be79fe),
+                          "u3_80.bin",    CRC(1e69f9d0) SHA1(ad738cac2555830257b531e5e533b15362f624b9))
+GTS80S1K_ROMSTART("667-a-s.snd",  CRC(894b4e2e) SHA1(d888f8e00b2b50cef5cc916d46e4c5e6699914a1),
+                  "6530sy80.bin", CRC(c8ba951d) SHA1(e4aa152b36695a0205c19a8914e4d77373f64c6c))
+GTS80_ROMEND
+#define input_ports_vlcno_1a input_ports_gts80
+CORE_CLONEDEFNV(vlcno_1a,vlcno_ax,"Volcano (Sound Only, alternate version)",1981,"Gottlieb",gl_mGTS80S,0)
+
 /*-------------------------------------------------------------------
 / Black Hole (Rev. 4)
 /-------------------------------------------------------------------*/
