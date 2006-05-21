@@ -372,6 +372,7 @@ DRIVERNV(pnkpnthr)      //S80-664:  03/81 Pink Panther
 DRIVERNV(mars)          //S80-666:  03/81 Mars God of War
 DRIVERNV(vlcno_ax)      //S80-667:  09/81 Volcano (Sound & Speech)
 DRIVERNV(vlcno_1b)      //                Volcano (Sound Only)
+DRIVERNV(vlcno_1a)      //                Volcano (Sound Only, alternate version)
 DRIVERNV(blckhole)      //S80-668:  10/81 Black Hole (Sound & Speech, Rev 4)
 DRIVERNV(blkhole2)      //                Black Hole (Sound & Speech, Rev 2)
 DRIVERNV(blkholea)      //                Black Hole (Sound Only)
