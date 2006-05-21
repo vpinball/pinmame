@@ -453,6 +453,27 @@ MACHINE_DRIVER_START(s7S6)
   MDRV_SOUND_CMDHEADING("s7")
 MACHINE_DRIVER_END
 
+/*-------------------------
+/  Changes for Thunderball
+/--------------------------*/
+// This game won't use sound dips, but transmit 7 sound bits!
+static MACHINE_INIT(s7nd) {
+  if (core_gameData == NULL) return;
+  memset(&s7locals,0,sizeof(s7locals));
+  pia_config(S7_PIA0, PIA_STANDARD_ORDERING, &s7_pia[0]);
+  pia_config(S7_PIA1, PIA_STANDARD_ORDERING, &s7_pia[1]);
+  pia_config(S7_PIA2, PIA_STANDARD_ORDERING, &s7_pia[2]);
+  pia_config(S7_PIA3, PIA_STANDARD_ORDERING, &s7_pia[3]);
+  pia_config(S7_PIA4, PIA_STANDARD_ORDERING, &s7_pia[4]);
+  sndbrd_0_init(SNDBRD_S7S_ND, 1, NULL, NULL, NULL);
+  cpu_setbank(S7_BANK0, s7_rambankptr);
+}
+
+MACHINE_DRIVER_START(s7SND)
+  MDRV_IMPORT_FROM(s7S)
+  MDRV_CORE_INIT_RESET_STOP(s7nd,s7,s7)
+MACHINE_DRIVER_END
+
 /*----------------------
 /  Changes for Rat Race
 /-----------------------*/

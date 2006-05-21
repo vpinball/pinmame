@@ -85,9 +85,17 @@ static void s67s_init(struct sndbrdData *brdData) {
 }
 
 static WRITE_HANDLER(s67s_cmd_w) {
-  data = (data & 0x1f) | (core_getDip(0)<<5);
+  if (s67slocals.brdData.subType) { // don't use sound dips
+	data &= 0x7f;
+  } else {
+    data = (data & 0x1f) | (core_getDip(0)<<5);
+  }
   pia_set_input_b(S67S_PIA0, data);
-  pia_set_input_cb1(S67S_PIA0, !((data & 0x1f) == 0x1f));
+  if (s67slocals.brdData.subType) {
+    pia_set_input_cb1(S67S_PIA0, !((data & 0x7f) == 0x7f));
+  } else {
+    pia_set_input_cb1(S67S_PIA0, !((data & 0x1f) == 0x1f));
+  }
 }
 static void s67s_diag(int button) {
   cpu_set_nmi_line(s67slocals.brdData.cpuNo, button ? ASSERT_LINE : CLEAR_LINE);

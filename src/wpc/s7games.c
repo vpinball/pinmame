@@ -133,7 +133,7 @@ S67S_SPEECHROMS0000(      "speech7.532",CRC(33e1b041) SHA1(f50c0311bde69fa6e8071
                           "speech4.532",CRC(2a4d6f4b) SHA1(e6f8a1a6e6abc81f980a4938d98abb250e8e1e3b))
 S7_ROMEND
 #define input_ports_thund input_ports_s7
-CORE_GAMEDEF(thund,p1,"Thunderball (P-1)",1982,"Williams",s7_mS7S,0)
+CORE_GAMEDEF(thund,p1,"Thunderball (P-1)",1982,"Williams",s7_mS7SND,0)
 
 /*-------------------------------
 / Hyperball - Sys.7 - (Game #509)
@@ -167,7 +167,7 @@ S7_ROMSTART000x(hypbl,l6, "ic14.532",    CRC(8090fe71) SHA1(0f1f40c0ee8da5b2fd51
                           "ic20_l6.532",    CRC(e40c27cd) SHA1(337bd8450be305796e52c1b7d3ae3cc8cc972525))
 S67S_SOUNDROMS0(          "sound12.532", CRC(06051e5e) SHA1(f0ab4be812ceaf771829dd549f2a612156102a93))
 S7_ROMEND
-CORE_CLONEDEF(hypbl,l6,l4,"HyperBall (L-6)",1998,"Jess M. Askey (High score bootleg)",s7_mS7S,0)
+CORE_CLONEDEF(hypbl,l6,l4,"HyperBall (L-6)",2006,"Jess M. Askey (High score bootleg)",s7_mS7S,0)
 
 /*----------------------------
 / Barracora- Sys.7 (Game #510)
