@@ -453,10 +453,10 @@ CORE_CLONEDEFNV(strknew,strikext,"Striker Xtreme (ARM7 Sound Board)",1999,"Stern
 SE128_ROMSTART(strxt_uk,"sxcpue.101", CRC(eac29785) SHA1(42e01c501b4a0a7eaae244040777be8ba69860d5))
 DE_DMD32ROM8x(     "sxdispa.101",CRC(1d2cb240) SHA1(ab9156281374694ee214d4c05d08eecfdf364f9f))
 DE2S_SOUNDROM18888("sxsounda.u7" ,CRC(e7e1a0cb) SHA1(be8b3e4d4232519db8344ae9e75f77d159bb1911),
-                  "soceng.u17",CRC(779d8a98) SHA1(c9d57f86ea0059406fec381fbfec0eab75db9b93),
-                  "soceng.u21",CRC(47b4838c) SHA1(a954451fc82de6b6de7ac9f6e33f9481088912d7),
-                  "soceng.u36",CRC(ab65d6f0) SHA1(4af45213fb2dd923c2ade428b5d96f7c6741c633),
-                  "soceng.u37",CRC(d73254f1) SHA1(57e82dc3e582da783b1cc9a822d9b67c4b106803))
+                  "sxvoicea.u17",CRC(aeeed88f) SHA1(e150fd243feffcdc5d66487e840cefdfb50213da),
+                  "sxvoicea.u21",CRC(62c9bfe3) SHA1(14a65a673a33b7e3d3005f76acf3098dc37958f8),
+                  "sxvoicea.u36",CRC(a0bc0edb) SHA1(1025a28fe9a0e3681e8e99b513da29ec294da045),
+                  "sxvoicea.u37",CRC(4c08c33c) SHA1(36bfad0c59fd228db76a6ff36698edd929c11336))
 SE_ROMEND
 #define input_ports_strxt_uk input_ports_se
 #define init_strxt_uk init_strikext
