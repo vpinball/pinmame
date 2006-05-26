@@ -437,6 +437,7 @@ WPCS_SOUNDROM882("tzu18_l2.rom", CRC(66575ec2) SHA1(deceb56324ee9785946f5771f8cf
 
 WPC_ROMSTART(tz,92,  "tzone9_2.rom",0x80000,CRC(ec3e61c8) SHA1(378c33add72c934aa2ee32e71830297ad1f08ce5)) TZ_SOUND WPC_ROMEND
 WPC_ROMSTART(tz,94h, "tz_94h.rom",  0x80000,CRC(5032e8c6) SHA1(d7481612b1c3040823e1f7b9e53ebbaa83de0532)) TZ_SOUND WPC_ROMEND
+WPC_ROMSTART(tz,94ch, "tz_94ch.rom",0x80000,CRC(e3d3f3ef) SHA1(c2a856ffef84718382d840d9aa7ae41706fef1fd)) TZ_SOUND WPC_ROMEND
 WPC_ROMSTART(tz,l2,  "tz_l2.u6",    0x80000,CRC(1f0f5611) SHA1(e8860b1c288039682e56bbf8dd0c263b2632c4b7)) TZ_SOUND WPC_ROMEND
 WPC_ROMSTART(tz,l3,  "tz_l3.u6",    0x80000,CRC(c35fe03c) SHA1(44d2267ab278d092385e7ba21da8e6cbc2b69bf4)) TZ_SOUND WPC_ROMEND
 WPC_ROMSTART(tz,l4,  "tz_l4.u6",    0x80000,CRC(4baf5acd) SHA1(1edef7de6c3d24ef61e59b688d7b6871d88fd3b5)) TZ_SOUND WPC_ROMEND
@@ -467,6 +468,7 @@ WPC_ROMEND
 /---------------*/
 CORE_GAMEDEF (tz,92,     "Twilight Zone (9.2)", 1995,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tz,94h, 92,"Twilight Zone (9.4H)",1998,"Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(tz,94ch, 92,"Twilight Zone (9.4CH)",1998,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tz,pa1, 92,"Twilight Zone (PA-1)",1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tz,p4,  92,"Twilight Zone (P-4)", 1993,"Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(tz,l1,  92,"Twilight Zone (L-1)", 1993,"Bally",wpc_mFliptronS,0)
