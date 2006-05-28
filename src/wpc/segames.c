@@ -899,10 +899,9 @@ CORE_CLONEDEFNV(playboyl,playboys,"Playboy (Spain)",2002,"Stern",de_mSES2,GAME_N
 /-------------------------------------------------------------------*/
 static struct core_dispLayout dispRCT[] = {
   DISP_SEG_IMPORT(se_dmd128x32),
-	{34,10, 5,21, CORE_DMD|CORE_DMDNOAA, (void *)seminidmd3_update}, {0}
+  {34,10, 5,21, CORE_DMD|CORE_DMDNOAA, (void *)seminidmd3_update}, {0}
 };
-
-INITGAME(rctycn, GEN_WS, dispRCT, SE_MINIDMD3);
+INITGAME(rctycn, GEN_WS, dispRCT, SE_MINIDMD3)
 SE128_ROMSTART(rctycn, "rctcpu.702",CRC(5736a816) SHA1(fcfd06eeca74df0bca2c0bc57aeaa00400e4ab55))
 DE_DMD32ROM8x(       "rctdispa.701",CRC(0d527f13) SHA1(954116a79578b2a7679c401a2bb99b5bbfb603f2))
 DE2S_SOUNDROM1888(    "rcsndu7.100",CRC(e6cde9b1) SHA1(cbaadafd18ad9c0338bf2cce94b2c2a89e734778),
@@ -912,7 +911,6 @@ DE2S_SOUNDROM1888(    "rcsndu7.100",CRC(e6cde9b1) SHA1(cbaadafd18ad9c0338bf2cce9
 SE_ROMEND
 #define input_ports_rctycn input_ports_se
 CORE_GAMEDEFNV(rctycn,"Roller Coaster Tycoon (7.02)",2002,"Stern",de_mSES1,GAME_NOCRC)
-
 
 #ifdef TEST_NEW_SOUND
 /*-------------------------------------------------------------------
