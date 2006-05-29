@@ -7,4 +7,4 @@ void WaitForSplashWndToClose(void **ppData);
 
 #endif // CONTROLLERSPLASHWND_H
 
-#define ULTRACADE
+//#define ULTRACADE
