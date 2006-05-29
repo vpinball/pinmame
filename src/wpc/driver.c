@@ -22,13 +22,13 @@ const struct GameDriver *test_drivers[] = { 0 };
 #else /* DRIVER_RECURSIVE */
 
 //Include New Stern Game Support if not running VPM or if Test New Stern Game flag found
-//#ifdef VPINMAME
-//	#ifdef TEST_NEW_STERN
+#ifdef VPINMAME
+	#ifdef TEST_NEW_STERN
 		#define INCLUDE_NEW_STERN
-//	#endif
-//#else
-//	#define INCLUDE_NEW_STERN
-//#endif
+	#endif
+#else
+	#define INCLUDE_NEW_STERN
+#endif
 
 DRIVERNV(st_game)       //Unknown game running on old Stern hardware
 
@@ -750,6 +750,11 @@ DRIVERNV(simpprtg)      //Whitestar: 01/03 The Simpsons Pinball Party (German di
 DRIVERNV(simpprtl)      //Whitestar: 01/03 The Simpsons Pinball Party (Spanish display)
 DRIVERNV(simpprtf)      //Whitestar: 01/03 The Simpsons Pinball Party (French display)
 DRIVERNV(simpprti)      //Whitestar: 01/03 The Simpsons Pinball Party (Italian display)
+DRIVERNV(term3)         //Whitestar: 06/03 Terminator 3: Rise of the Machines
+DRIVERNV(term3g)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (Germany)
+DRIVERNV(term3l)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (Spain)
+DRIVERNV(term3f)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (France)
+DRIVERNV(term3i)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (Italy)
 
 #ifdef INCLUDE_NEW_STERN
 DRIVER  (harl,a18)      //Whitestar: 07/03 Harley Davidson (1.08)
@@ -762,11 +767,6 @@ DRIVER  (harl,f30)      //Whitestar: 10/04 Harley Davidson (3.00 France)
 DRIVER  (harl,g30)      //Whitestar: 10/04 Harley Davidson (3.00 Germany)
 DRIVER  (harl,i30)      //Whitestar: 10/04 Harley Davidson (3.00 Italy)
 DRIVER  (harl,l30)      //Whitestar: 10/04 Harley Davidson (3.00 Spain)
-DRIVERNV(term3)         //Whitestar: 06/03 Terminator 3: Rise of the Machines
-DRIVERNV(term3g)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (Germany)
-DRIVERNV(term3l)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (Spain)
-DRIVERNV(term3f)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (France)
-DRIVERNV(term3i)        //Whitestar: 06/03 Terminator 3: Rise of the Machines (Italy)
 
 //The following are all Stern Whitestar games using 8MB Roms running on the new ARM7 sound board for testing the ARM7
 #ifdef TEST_NEW_SOUND
