@@ -94,7 +94,7 @@ void fprint_colums(FILE *f, const char *text1, const char *text2)
    /* initialize our arrays */
    text[0] = text1;
    text[1] = text2;
-   width[0] = cols * 0.4;
+   width[0] = (int)(cols * 0.4); //rlc Ultracade prevent warning
    width[1] = cols - width[0];
 
    while(!done)
@@ -118,7 +118,7 @@ void fprint_colums(FILE *f, const char *text1, const char *text2)
             }
 
          /* if we don't have enough space, break at the first ' ' or '\n' */
-         if(to_print < strlen(text[i]))
+         if(to_print < (int)strlen(text[i]))  //rlc Ultracade prevent warning
          {
            while(to_print && (text[i][to_print] != ' ') &&
               (text[i][to_print] != '\n'))
