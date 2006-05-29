@@ -92,10 +92,10 @@ BEGIN
             VALUE "FileDescription", "COM class for PinMAME"
             VALUE "FileVersion", "1, 53, 0, 0"
             VALUE "InternalName", "VPinMAME"
-            VALUE "LegalCopyright", "© 2000-2005 by S. Ellenoff, T. Haukap, M. Adrian, G. Volkenborn, B. Smith, O. Kaegi, and T. Behrens"
+            VALUE "LegalCopyright", "© 2000-2006 by S. Ellenoff, T. Haukap, M. Adrian, G. Volkenborn, B. Smith, O. Kaegi, and T. Behrens"
             VALUE "OriginalFilename", "VPinMAME.DLL"
             VALUE "ProductName", "Visual PinMAME"
-            VALUE "ProductVersion", "1.52"
+            VALUE "ProductVersion", "1.53"
         END
     END
     BLOCK "VarFileInfo"
