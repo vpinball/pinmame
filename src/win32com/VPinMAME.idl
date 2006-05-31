@@ -244,11 +244,6 @@ import "ocidl.idl";
 		[propput, id(56), helpstring("property MechSamples")] HRESULT MechSamples([in] VARIANT_BOOL newVal);
 		[id(57), helpstring("method GetWindowRect")] HRESULT GetWindowRect([in,defaultvalue(0)] long hWnd, [out, retval] VARIANT *pVal);
 		[id(58), helpstring("method GetClientRect")] HRESULT GetClientRect([in,defaultvalue(0)] long hWnd, [out, retval] VARIANT *pVal);
-#ifdef ULTRACADE		
-		//rlc  UltraCade Change
-		[propget, id(59), helpstring("property FastFrames")] HRESULT FastFrames([out, retval] int *pVal);
-		[propput, id(59), helpstring("property FastFrames")] HRESULT FastFrames([in] int newVal);
-#endif
 	};
 
 	// WSHDlg and related interfaces

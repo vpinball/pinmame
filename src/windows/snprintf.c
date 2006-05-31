@@ -550,7 +550,7 @@ static long round (LDOUBLE value)
 {
   long intpart;
 
-  intpart = (long)value;  //rlc Ultracade prevent warning
+  intpart = value;
   value = value - intpart;
   if (value >= 0.5)
     intpart++;
@@ -595,7 +595,7 @@ static void fmtfp (char *buffer, size_t *currlen, size_t maxlen,
   if (flags & DP_F_UP) caps = 1; /* Should characters be upper case? */
 #endif
 
-  intpart = (long)ufvalue;
+  intpart = ufvalue;
 
   /*
    * Sorry, we only support 9 digits past the decimal because of our
@@ -612,7 +612,7 @@ static void fmtfp (char *buffer, size_t *currlen, size_t maxlen,
   if (fracpart >= pow10 (max))
   {
     intpart++;
-    fracpart = (long)(fracpart - pow10 (max));
+    fracpart -= pow10 (max);
   }
 
 #ifdef DEBUG_SNPRINTF
@@ -822,3 +822,5 @@ int main (void)
 #endif /* SNPRINTF_TEST */
 
 #endif /* !HAVE_SNPRINTF */
+
+

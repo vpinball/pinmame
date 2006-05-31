@@ -55,7 +55,7 @@ extern struct rc_option win_d3d_opts[];
 //============================================================
 
 // screen to draw on
-HMONITOR monitor;
+GUID screen_guid;
 GUID *screen_guid_ptr;
 
 // current frameskip/autoframeskip settings
@@ -64,7 +64,6 @@ int autoframeskip;
 
 // speed throttling
 int throttle = 1;
-int fastfrms = 0;
 
 // palette lookups
 UINT8 palette_lookups_invalid;
@@ -84,8 +83,6 @@ UINT8 blit_swapxy;
 
 // screen info
 char *screen_name;
-
-static GUID ddraw_device_guid;
 
 // core video input parameters
 static int video_width;
@@ -190,7 +187,7 @@ struct rc_option video_opts[] =
 	{ "frameskip", "fs", rc_int, &frameskip, "0", 0, 12, NULL, "set frameskip explicitly (autoframeskip needs to be off)" },
 	{ "waitvsync", NULL, rc_bool, &win_wait_vsync, "0", 0, 0, NULL, "wait for vertical sync (reduces tearing)"},
 	{ "triplebuffer", "tb", rc_bool, &win_triple_buffer, "0", 0, 0, NULL, "triple buffering (only if fullscreen)" },
-#ifdef VPINMAME 
+#ifdef VPINMAME
 	// default window mode for VPM is run inside a window
 	{ "window", "w", rc_bool, &win_window_mode, "1", 0, 0, NULL, "run in a window/run on full screen" },
 	{ "ddraw", "dd", rc_bool, &win_use_ddraw, "1", 0, 0, NULL, "use DirectDraw for rendering" },
@@ -426,13 +423,16 @@ void win_disorient_rect(struct rectangle *rect)
 static BOOL WINAPI devices_enum_callback(GUID *lpGUID, LPSTR lpDriverDescription,
 										 LPSTR lpDriverName, LPVOID lpContext, HMONITOR hm)
 {
-	if (verbose)
-		fprintf(stderr, "Enumerating video device %s\n",lpDriverName);
-
+	screen_guid_ptr = NULL;
 	if (stricmp(lpDriverName, screen_name) == 0)
 	{
-		ddraw_device_guid = *lpGUID;
-		monitor = hm;
+		// found 
+		if ( lpGUID ) {
+			memcpy(&screen_guid, lpGUID, sizeof(screen_guid));
+			screen_guid_ptr = &screen_guid;
+		}
+		else // default device
+			screen_guid_ptr = NULL;
 
 		// no more enumeration
 		return 0;
@@ -453,7 +453,6 @@ int osd_create_display(const struct osd_create_params *params, UINT32 *rgb_compo
 	struct mame_display dummy_display;
 	double aspect_ratio;
 	int r, g, b;
-	HRESULT result;
 
 	logerror("width %d, height %d depth %d\n", params->width, params->height, params->depth);
 
@@ -483,19 +482,8 @@ int osd_create_display(const struct osd_create_params *params, UINT32 *rgb_compo
 	// proper screen
 
 	screen_guid_ptr = NULL;
-	monitor = NULL;
-	memset(&ddraw_device_guid, 0, sizeof(ddraw_device_guid));
  	if (win_use_ddraw)
- 	{
-		result = DirectDrawEnumerateEx(devices_enum_callback, NULL, DDENUM_ATTACHEDSECONDARYDEVICES | DDENUM_DETACHEDSECONDARYDEVICES);
-		if (result != DD_OK)
-		{
-			fprintf(stderr, "Error enumerating DirectDraw: %08x\n", (UINT32)result);
-			return 1;
-		}
-
-		screen_guid_ptr = &ddraw_device_guid;
-	}
+		DirectDrawEnumerateEx(devices_enum_callback, NULL, DDENUM_ATTACHEDSECONDARYDEVICES | DDENUM_DETACHEDSECONDARYDEVICES);
 
 	// create the window
 	if (win_create_window(video_width, video_height, video_depth, video_attributes, aspect_ratio))
@@ -902,14 +890,6 @@ void update_autoframeskip(void)
 static void render_frame(struct mame_bitmap *bitmap, const struct rectangle *bounds, void *vector_dirty_pixels)
 {
 	cycles_t curr;
-
-#ifdef VPINMAME  	//rlc ultracade begin	
-	if (fastfrms >= 0)
-		{
-		if(fastfrms-- == 0) throttle = 1;
-		else throttle = 0;
-		}		
-#endif  //rlc end
 
 	// if we're throttling, synchronize
 	if (throttle || game_is_paused)
