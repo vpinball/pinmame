@@ -37,7 +37,6 @@ int dmd_pos_y  = 0;
 int dmd_doublesize = 0;
 int dmd_width = 0;
 int dmd_height = 0;
-extern "C" int	fastfrms;  //rlc Ultracade
 
 int threadpriority = 1;
 //int synclevel = 60;
@@ -50,14 +49,13 @@ static struct rc_option vpinmame_opts[] = {
 	/* name, shortname, type, dest, deflt, min, max, func, help */
 	{ "dmd_border", NULL, rc_bool, &dmd_border, "1", 0, 0, NULL, "DMD display border" },
 	{ "dmd_title",  NULL, rc_bool, &dmd_title,  "1", 0, 0, NULL, "DMD display title" },
-	{ "dmd_pos_x",  NULL, rc_int,  &dmd_pos_x,  "0", 0, 10000, NULL, "DMD display position x" },//rlc Ultracade
-	{ "dmd_pos_y",  NULL, rc_int,  &dmd_pos_y,  "0", 0, 10000, NULL, "DMD display position y" },//rlc Ultracade
+	{ "dmd_pos_x",  NULL, rc_int,  &dmd_pos_x,  "0", -10000, 10000, NULL, "DMD display position x" },
+	{ "dmd_pos_y",  NULL, rc_int,  &dmd_pos_y,  "0", -10000, 10000, NULL, "DMD display position y" },
 	{ "dmd_width",  NULL, rc_int,  &dmd_width,  "0", 0, 10000, NULL, "DMD display width" },
 	{ "dmd_height", NULL, rc_int,  &dmd_height, "0", 0, 10000, NULL, "DMD display height" },
 	{ "dmd_doublesize",  NULL, rc_bool,  &dmd_doublesize,  "0", 0, 0, NULL, "DMD display doublesize" },
 	{ "threadpriority",  NULL, rc_int,  &threadpriority,  "1", 0, 2, NULL, "priority of the worker thread" },
 	{ "synclevel",  NULL, rc_int,  &synclevel,  "0", -50, 60, NULL, "Sync. of frame rate for external programs (fps)" },	//SJE: Default synclevel is 0 now.. 10/01/03
-	{ "fastframes",  NULL, rc_int,  &fastfrms,  "-1", -1, 100000, NULL, "Unthrottled frames at game start" },//rlc Ultracade
 	{ NULL,	NULL, rc_end, NULL, NULL, 0, 0,	NULL, NULL }
 };
 
