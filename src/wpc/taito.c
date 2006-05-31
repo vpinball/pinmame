@@ -39,6 +39,7 @@ static struct {
 } TAITOlocals;
 
 static NVRAM_HANDLER(taito);
+static NVRAM_HANDLER(taito_old);
 
 static int segMap[] = {
 	4,0,-4,4,0,-4,4,0,-4,4,0,-4,0,0
@@ -118,8 +119,8 @@ static WRITE_HANDLER(taito_sndCmd_w) {
 static READ_HANDLER(switches_r) {
 	if ( offset==6 )
 		return core_getDip(0)^0xff;
-	else
-		return coreGlobals.swMatrix[offset+1]^0xff;
+	if (offset == 8) offset = 6;
+	return coreGlobals.swMatrix[offset+1]^0xff;
 }
 
 static WRITE_HANDLER(switches_w) {
@@ -192,7 +193,7 @@ static WRITE_HANDLER(dma_commands)
 
 	case 2:
 		// upper nibble: sound command bits 1-4, sound enable
-		TAITOlocals.sndCmd = (TAITOlocals.sndCmd & 0xf0) | (((data&0xf0)>>4) & ~core_getDip(1));
+		TAITOlocals.sndCmd = (TAITOlocals.sndCmd & 0xf0) | (((data>>4)^core_getDip(1)) & 0x0f);
 		if ( TAITOlocals.oldsndCmd!=TAITOlocals.sndCmd ) {
 			TAITOlocals.oldsndCmd = TAITOlocals.sndCmd;
 			taito_sndCmd_w(0, TAITOlocals.sndCmd);
@@ -201,7 +202,7 @@ static WRITE_HANDLER(dma_commands)
 
 	case 3:
 		// upper nibble: sound command bits 5-8, solenoids 13-14
-		TAITOlocals.sndCmd = (TAITOlocals.sndCmd & 0x0f) | ((data&0xf0) & ~core_getDip(1));
+		TAITOlocals.sndCmd = (TAITOlocals.sndCmd & 0x0f) | ((data ^ core_getDip(1)) & 0xf0);
 		TAITOlocals.solenoids = (TAITOlocals.solenoids & 0xffffcfff) | ((data & 0xc0) << 6);
 		break;
 
@@ -266,20 +267,20 @@ static MEMORY_WRITE_START(taito_writemem)
   { 0x4080, 0x408f, dma_display },
   { 0x4090, 0x409f, dma_commands },
   { 0x40a0, 0x40ff, MWA_RAM },
-  { 0x4800, 0xffff, MWA_ROM },
 MEMORY_END
 
 static MEMORY_READ_START(taito_readmem_old)
   { 0x0000, 0x0fff, MRA_ROM },
   { 0x1000, 0x10ff, MRA_RAM },
-  { 0x1400, 0x1406, switches_r },
+  { 0x1400, 0x1408, switches_r },
+  { 0x14d8, 0x14df, switches_r },
   { 0x1800, 0x1bff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(taito_writemem_old)
-  { 0x1000, 0x10ff, MWA_RAM },
-//  { 0x4080, 0x408f, dma_display },
-//  { 0x4090, 0x409f, dma_commands },
+  { 0x1000, 0x100f, dma_display },
+  { 0x1010, 0x101f, dma_commands },
+  { 0x1020, 0x10ff, MWA_RAM },
 MEMORY_END
 
 MACHINE_DRIVER_START(taito)
@@ -333,6 +334,7 @@ MACHINE_DRIVER_START(taito_old)
 
   MDRV_CPU_MODIFY("mcpu")
   MDRV_CPU_MEMORY(taito_readmem_old, taito_writemem_old)
+  MDRV_NVRAM_HANDLER(taito_old)
 MACHINE_DRIVER_END
 
 //-----------------------------------------------
@@ -340,4 +342,8 @@ MACHINE_DRIVER_END
 //-----------------------------------------------
 static NVRAM_HANDLER(taito) {
   core_nvram(file, read_or_write, memory_region(TAITO_MEMREG_CPU)+0x4000, 0x100, 0x00);
+}
+
+static NVRAM_HANDLER(taito_old) {
+  core_nvram(file, read_or_write, memory_region(TAITO_MEMREG_CPU)+0x1000, 0x100, 0x00);
 }
