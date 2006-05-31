@@ -31,3 +31,5 @@ Bugs in Pinmame that we are aware of:
 #10) Gottlieb System 3 percussive sounds might still have some timing issues
 
 #11) Sound gets cut off in Alvin G games sometimes, and some weird notes in World Tour occasionally
+
+#12) Slugfest will work with pinmame sf_l1 -cheat   alternately, check the "skip pinball startup test" in vpm
