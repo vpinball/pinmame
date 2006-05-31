@@ -50,9 +50,14 @@ static struct {
 
 static INTERRUPT_GEN(PLAYMATIC_irq) {
   cpu_set_irq_line(PLAYMATIC_CPU, 0, PULSE_LINE);
+  locals.ef[1] = !locals.ef[1];
 }
 
-static void PLAYMATIC_zeroCross(int data) {
+static INTERRUPT_GEN(PLAYMATIC_irq2) {
+  cpu_set_irq_line(PLAYMATIC_CPU, 0, PULSE_LINE);
+}
+
+static void PLAYMATIC_zeroCross2(int data) {
   static int zc = 0;
   static int state = 0;
   locals.ef[3] = (zc = !zc);
@@ -81,10 +86,11 @@ static INTERRUPT_GEN(PLAYMATIC_vblank) {
 }
 
 static SWITCH_UPDATE(PLAYMATIC) {
+  int reset = keyboard_pressed_memory_repeat(KEYCODE_9, 0);
   if (inports) {
     CORE_SETKEYSW(inports[CORE_COREINPORT], 0xff, 0);
   }
-//  locals.ef[4] = (coreGlobals.swMatrix[0] & 1) ? 0 : 1; // test button
+  locals.ef[4] = !reset;
 }
 
 static READ_HANDLER(sw_r) {
@@ -146,14 +152,18 @@ static void out_n(int data, int n) {
       locals.lampCol = data & 0x07;
       break;
     case LAMP:
-      if (locals.lampCol & 1) {
-        if (data & 0x08) coreGlobals.tmpLampMatrix[0] |= 1 << (data & 0x07); else coreGlobals.tmpLampMatrix[0] &= 0xff ^ (1 << (data & 0x07));
-      }
-      if (locals.lampCol & 2) {
-        if (data & 0x08) coreGlobals.tmpLampMatrix[1] |= 1 << (data & 0x07); else coreGlobals.tmpLampMatrix[1] &= 0xff ^ (1 << (data & 0x07));
-      }
-      if (locals.lampCol & 4) {
-        if (data & 0x08) coreGlobals.tmpLampMatrix[2] |= 1 << (data & 0x07); else coreGlobals.tmpLampMatrix[2] &= 0xff ^ (1 << (data & 0x07));
+      if (locals.cpuType < 2) {
+        if (locals.lampCol & 1) {
+          if (data & 0x08) coreGlobals.tmpLampMatrix[0] |= 1 << (data & 0x07); else coreGlobals.tmpLampMatrix[0] &= 0xff ^ (1 << (data & 0x07));
+        }
+        if (locals.lampCol & 2) {
+          if (data & 0x08) coreGlobals.tmpLampMatrix[1] |= 1 << (data & 0x07); else coreGlobals.tmpLampMatrix[1] &= 0xff ^ (1 << (data & 0x07));
+        }
+        if (locals.lampCol & 4) {
+          if (data & 0x08) coreGlobals.tmpLampMatrix[2] |= 1 << (data & 0x07); else coreGlobals.tmpLampMatrix[2] &= 0xff ^ (1 << (data & 0x07));
+        }
+      } else {
+        coreGlobals.tmpLampMatrix[locals.lampCol] = data;
       }
       break;
   }
@@ -162,10 +172,18 @@ static void out_n(int data, int n) {
 static int in_n(int n) {
   switch (n) {
     case SWITCH:
-      if (locals.q) return (UINT8)coreGlobals.swMatrix[locals.digitSel+1]; else return 0;
+//printf(" 4%d:%02x  ", locals.digitSel, memory_region(PLAYMATIC_MEMREG_CPU)[cdp1802_get_reg(8)+1]);
+//      if (!locals.q)
+//        return coreGlobals.swMatrix[locals.digitSel+1];
+//      else
+        return coreGlobals.swMatrix[locals.digitSel+1] ^ memory_region(PLAYMATIC_MEMREG_CPU)[cdp1802_get_reg(8)+1];
       break;
     case DIAG:
-      if (locals.q && locals.digitSel < 3) return (UINT8)coreGlobals.swMatrix[locals.digitSel ? locals.digitSel + 7 : 0]; else return 0;
+//printf(" 5%d:%02x  ", locals.digitSel, memory_region(PLAYMATIC_MEMREG_CPU)[cdp1802_get_reg(8)+1]);
+//      if (!locals.q)
+//        return locals.digitSel < 3 ? coreGlobals.swMatrix[locals.digitSel ? locals.digitSel+6 : 0] : core_getDip(locals.digitSel-3);
+//      else
+        return coreGlobals.swMatrix[locals.digitSel ? locals.digitSel+6 : 0] ^ memory_region(PLAYMATIC_MEMREG_CPU)[cdp1802_get_reg(8)+1];
       break;
   }
   return 0;
@@ -198,12 +216,21 @@ static MACHINE_INIT(PLAYMATIC4) {
 / Load/Save static ram
 /-------------------------------------------------*/
 static MEMORY_READ_START(PLAYMATIC_readmem)
+  {0x0000,0x07ff, MRA_ROM},
+  {0x0800,0x0fff, MRA_RAM},
+MEMORY_END
+
+static MEMORY_WRITE_START(PLAYMATIC_writemem)
+  {0x0800,0x0fff, MWA_RAM},
+MEMORY_END
+
+static MEMORY_READ_START(PLAYMATIC_readmem2)
   {0x0000,0x1fff, MRA_ROM},
   {0x2000,0x20ff, MRA_RAM},
   {0xa000,0xafff, MRA_ROM},
 MEMORY_END
 
-static MEMORY_WRITE_START(PLAYMATIC_writemem)
+static MEMORY_WRITE_START(PLAYMATIC_writemem2)
   {0x0000,0x00ff, MWA_NOP},
   {0x2000,0x20ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
 MEMORY_END
@@ -236,17 +263,16 @@ DISCRETE_SOUND_END
 
 MACHINE_DRIVER_START(PLAYMATIC)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CPU_ADD_TAG("mcpu", CDP1802, 400000)
+  MDRV_CPU_ADD_TAG("mcpu", CDP1802, 50000)
   MDRV_CPU_MEMORY(PLAYMATIC_readmem, PLAYMATIC_writemem)
   MDRV_CPU_CONFIG(play1802_config)
   MDRV_CPU_PERIODIC_INT(PLAYMATIC_irq, 100)
-  MDRV_TIMER_ADD(PLAYMATIC_zeroCross, 100)
   MDRV_CPU_VBLANK_INT(PLAYMATIC_vblank, 1)
   MDRV_CORE_INIT_RESET_STOP(PLAYMATIC,NULL,NULL)
   MDRV_SWITCH_UPDATE(PLAYMATIC)
-  MDRV_DIPS(0)
+  MDRV_DIPS(24)
   MDRV_DIAGNOSTIC_LEDH(1)
-//  MDRV_NVRAM_HANDLER(generic_0fill)
+//  MDRV_NVRAM_HANDLER(generic_1fill)
 
   MDRV_SOUND_ADD(DISCRETE, play_tones)
 MACHINE_DRIVER_END
@@ -254,14 +280,14 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(PLAYMATIC2)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CPU_ADD_TAG("mcpu", CDP1802, 2950000.0/8.0)
-  MDRV_CPU_MEMORY(PLAYMATIC_readmem, PLAYMATIC_writemem)
+  MDRV_CPU_MEMORY(PLAYMATIC_readmem2, PLAYMATIC_writemem2)
   MDRV_CPU_CONFIG(play1802_config)
-  MDRV_CPU_PERIODIC_INT(PLAYMATIC_irq, 2950000.0/8192.0)
-  MDRV_TIMER_ADD(PLAYMATIC_zeroCross, 100)
+  MDRV_CPU_PERIODIC_INT(PLAYMATIC_irq2, 2950000.0/8192.0)
+  MDRV_TIMER_ADD(PLAYMATIC_zeroCross2, 100)
   MDRV_CPU_VBLANK_INT(PLAYMATIC_vblank, 1)
   MDRV_CORE_INIT_RESET_STOP(PLAYMATIC2,NULL,NULL)
   MDRV_SWITCH_UPDATE(PLAYMATIC)
-  MDRV_DIPS(0)
+  MDRV_DIPS(24)
   MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_NVRAM_HANDLER(generic_0fill)
 
