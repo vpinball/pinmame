@@ -37,6 +37,15 @@ core_tLCDLayout play_disp6a[] = {
 };
 
 /*-------------------------------------------------------------------
+/ Last Lap (1978)
+/-------------------------------------------------------------------*/
+INITGAME(lastlap, play_disp6, 1)
+PLAYMATIC_ROMSTART88(lastlap,	"lastlapa.bin", CRC(253f1b93) SHA1(7ff5267d0dfe6ae19ec6b0412902f4ce83f23ed1),
+						"lastlapb.bin", CRC(5e2ba9c0) SHA1(abd285aa5702c7fb84257b4341f64ff83c1fc0ce))
+PLAYMATIC_ROMEND
+CORE_GAMEDEFNV(lastlap,"Last Lap",1978,"Playmatic",gl_mPLAYMATIC,GAME_STATUS)
+
+/*-------------------------------------------------------------------
 / Antar (1979)
 /-------------------------------------------------------------------*/
 INITGAME(antar, play_disp6, 1)
