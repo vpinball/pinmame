@@ -1,3 +1,67 @@
+Version 1.53 (June 1, 2006) - "GO FASTER!"
+------------------------------------------------------------------------------
+It's been 10 months since our last release.  Every time we thought about making
+this available, a new issue cropped up that we couldn't resist.  Just one more
+challenge around the corner to overcome.  I'd like to think this version has had
+the most testing ever, but if you do find a bug, please let us know.
+
+1.53 changes:
+
+*** SOUND ***
+Improved Inder Sound (Gerrit Volkenborn)
+Juegos Populares Sound (Gerrit Volkenborn)
+Improved Zaccaria Sound (Gerrit Volenborn/Oliver Kaegi)
+Gameplan Sound (Oliver Kaegi)
+Added correct sound support for Pennant Fever (Gerrit Volkenborn)
+America 1492 sound now works (Gerrit Volkenborn)
+Fixed Williams Thunderball Sound (Gerrit Volkenborn)
+
+*** CORE/CPU ***
+Added keyboard inputs for Rotation 8 - setup/configuration now possible (Gerrit Volkenborn)
+Gottlieb Preliminary Display fading (Gerrit Volkenborn)
+Mr Game improvements (Steve Ellenoff/Tom Behrens/Gerrit Volkenborn)
+Corrected score displays for Peyper/Inder/Sonic (Gerrit Volkenborn)
+Added support for LTD - should be working (no sound) - Gerrit Volkenborn
+Added improved preliminary support for Playmatic (Gerrit Volkenborn)
+Corrected displays for Safecracker, and other WPC games (Tom Behrens/Brian Smith)
+Added Stern new region DMD dips (Gerrit Volkenborn)
+
+*** COM DLL ***
+VPM Display handling changes (Tom Haukaup)
+Added dual monitor support (Excentric/Tom Haukap)
+Added display rotation for vpm (Tom Haukap)
+Corrected direct draw problem for PINMame (Tom Haukap)
+
+*** ROM SUPPORT ***
+Updated Alien Poker multiball roms (Oliver Kaegi)
+Updated Firepower Custom roms (Oliver Kaegi)
+Added Attack From Mars 1.13B (Brian Smith/Wod)
+Added Austin Powers display roms for foregin languages (Brian Smith)
+Added Bell Ringer roms (Cliffy)
+Added Big Guns Prototype (Brian Smith)
+Added Data East Batman 1.06 (Brian Smith)
+Added Dinosaur Eggs sound rom (Brian Smith/Gerrit Volkenborn)
+Added Gamatron roms (Gerrit Volkenborn)
+Added High Roller Casino and Sharkey's Shootout display roms for added languages (Brian Smith)
+Added Hot Shot Basketball (Brian Smith/Gerrit Volkenborn)
+Added Hyperball (L=6) (Brian Smith/Jess Askey)
+Added Junkyard Prototype (Gerrit Volkenborn)
+Added Medieval Madness 1.09B (Brian Smith/Wod)
+Added Monopoly French, German, Italian, and Spanish Display Roms (Brian Smith)
+Added Monster Bash 1.06B (Brian Smith/Wod)
+Added Odin Deluxe (Brian Smith/Gerrit Volkenborn)
+Added Omni Sound (Brian Smith)
+Added Sonic Star Wars (Steve Ellenoff/Joxer)
+Added Sopranos 3.00
+Added Stargazer Custom rom (Oliver Kaegi)
+Added STTNG Special set (Brian Smith)
+Added Ted Estes bootleg roms for early Williams games (Brian Smith)
+Added Twilight Zone 9.4ch (Brian Smith)
+Added Volcano 1a - alternate sound only (Gerrit Volkenborn)
+Added Whitewater Home Roms (Gerrit Volkenborn)
+Corrected Zaccaria Zankor (Oliver Kaegi)
+
+
 Version 1.52 (August 1, 2005) - "The first light doesn't count!"
 ------------------------------------------------------------------------------
 The PinMAME developers meeting in Atlanta (Devcon 2005) took place no more than two weeks ago,
