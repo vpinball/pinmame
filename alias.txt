@@ -54,3 +54,10 @@ old name                new name for romset
 maverick         =      mav_401
 truckstp         =      trucksp2
 harley           =      harl_a10
+
+since version 1.53:
+
+old name                new name for romset
+-------------------------------------------
+swtril           =      swtril43
+jplstwld         =      jplstw22

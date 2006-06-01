@@ -35,4 +35,7 @@ copy maverick.zip mav_401.zip > nul
 copy truckstp.zip trucksp2.zip > nul
 copy harley.zip harl_a10.zip > nul
 
+copy swtril.zip swtril43.zip > nul
+copy jplstwld.zip jplstw22.zip > nul
+
 cd ..
