@@ -3,10 +3,10 @@ Important steps to take before a release:
 - check out EVERYTHING again. Update the pinmame folder, remove sticky tags, create subfolders.
 - check whatsnew.txt" if nobody was forgotten concerning contributions, bugs fixes, and so on. Check the date in all .txt files!
 - remove the entire obj folder preferrably. Only this way you may ensure nothing was forgotten!
-- remove the DEBUG define in the makefile!
+- remove the DEBUG define in the makefile (which is probably not there anyway)!
 - execute "make" to build pinmamew.
-- Make sure to regenerate gamelist and include it ( I believe it's regenerated automatically on a build) 
-- execute "make -f pinmame32.mak" to build pinmame32.
+- Make sure to regenerate gamelist and include it (I believe it's regenerated automatically on a build) 
+- execute "make WINUI=1 SUFFIX=32" to build pinmame32.
 - edit "src/version.c" for the correct version number
 - edit "src/win32com/VPinMAME.cpp" for the desired release date
 - edit "src/win32com/VPinMAME.rc" for the correct version number and build (MinDependency)
