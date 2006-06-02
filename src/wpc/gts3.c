@@ -416,14 +416,14 @@ static struct via6522_interface via_0_interface =
 	/*inputs : A/B         */ xvia_0_a_r, xvia_0_b_r,
 	/*inputs : CA1/B1,CA2/B2 */ 0, xvia_0_cb1_r, xvia_0_ca2_r, xvia_0_cb2_r,
 	/*outputs: A/B,CA2/B2   */ xvia_0_a_w, xvia_0_b_w, xvia_0_ca2_w, xvia_0_cb2_w,
-	/*irq                  */ 0 /* via_irq */
+	/*irq                  */ 0 /* GTS3_irq */
 };
 static struct via6522_interface via_1_interface =
 {
 	/*inputs : A/B         */ xvia_1_a_r, xvia_1_b_r,
 	/*inputs : CA1/B1,CA2/B2 */ xvia_1_ca1_r, xvia_1_cb1_r, xvia_1_ca2_r, xvia_1_cb2_r,
 	/*outputs: A/B,CA2/B2   */ xvia_1_a_w, xvia_1_b_w, xvia_1_ca2_w, xvia_1_cb2_w,
-	/*irq                  */ 0 /* via_irq */
+	/*irq                  */ 0 /* GTS3_irq */
 };
 
 static INTERRUPT_GEN(GTS3_vblank) {
@@ -665,7 +665,10 @@ static WRITE_HANDLER(alpha_display){
 			if (GTS3locals.pseg[20+GTS3locals.acol].w) {
 				coreGlobals.segDim[20+GTS3locals.acol] /=2;
 			} else {
-				if (coreGlobals.segDim[20+GTS3locals.acol] < 15) coreGlobals.segDim[20+GTS3locals.acol] +=3;
+				if (coreGlobals.segDim[20+GTS3locals.acol] < 15)
+				  coreGlobals.segDim[20+GTS3locals.acol] +=3;
+				else
+				  GTS3locals.segments[20+GTS3locals.acol].w = 0;
 				GTS3locals.pseg[20+GTS3locals.acol].w = GTS3locals.segments[20+GTS3locals.acol].w;
 			}
 			break;
@@ -679,7 +682,10 @@ static WRITE_HANDLER(alpha_display){
 			if (GTS3locals.pseg[GTS3locals.acol].w) {
 				coreGlobals.segDim[GTS3locals.acol] /=2;
 			} else {
-				if (coreGlobals.segDim[GTS3locals.acol] < 15) coreGlobals.segDim[GTS3locals.acol] +=3;
+				if (coreGlobals.segDim[GTS3locals.acol] < 15)
+				  coreGlobals.segDim[GTS3locals.acol] +=3;
+				else
+				  GTS3locals.segments[GTS3locals.acol].w = 0;
 				GTS3locals.pseg[GTS3locals.acol].w = GTS3locals.segments[GTS3locals.acol].w;
 			}
 			break;
