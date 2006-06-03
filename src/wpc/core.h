@@ -176,8 +176,8 @@
 #define CORE_SEG98   10 // 9  segments, comma every three
 #define CORE_SEG98F  11 // 9  segments, forced comma every three
 #define CORE_SEG7S   12 // 7  segments, small
-#define CORE_DMD     13 // DMD Display
-#define CORE_DMD2    14 // another DMD Display
+#define CORE_SEG16S  13 // 16 segments with split top and bottom line
+#define CORE_DMD     14 // DMD Display
 #define CORE_VIDEO   15 // VIDEO Display
 
 #define CORE_IMPORT   0x10 // Link to another display layout
