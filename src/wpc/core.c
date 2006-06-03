@@ -865,11 +865,12 @@ int core_getDip(int dipBank) {
 static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, int type, int dimming) {
   const tSegData *s = &locals.segData[type];
   int palSize = sizeof(core_palette)/3;
-  UINT32 pixel[21];
+  UINT32 pixel[21] = {0};
   int kk,ll;
-
-  if (dimming > 15) dimming = 15;
-  memset(pixel,0,sizeof(pixel));
+  int pens[4][4] = {{             0, palSize-1-(dimming > 15 ? 15 : dimming), palSize-17-(dimming > 15 ? 15 : dimming), palSize-33-(dimming > 15 ? 15 : dimming)},
+                    { COL_DMDOFF,    palSize-1-(dimming > 15 ? 15 : dimming), palSize-17-(dimming > 15 ? 15 : dimming), palSize-33-(dimming > 15 ? 15 : dimming)},
+                    { COL_SEGAAOFF1, palSize-1-(dimming > 15 ? 15 : dimming), palSize-17-(dimming > 15 ? 15 : dimming), palSize-33-(dimming > 15 ? 15 : dimming)},
+                    { COL_SEGAAOFF2, palSize-1-(dimming > 15 ? 15 : dimming), palSize-17-(dimming > 15 ? 15 : dimming), palSize-33-(dimming > 15 ? 15 : dimming)}};
 
   for (kk = 1; bits; kk++, bits >>= 1) {
     if (bits & 0x01)
@@ -877,17 +878,6 @@ static void drawChar(struct mame_bitmap *bitmap, int row, int col, UINT32 bits, 
         pixel[ll] |= s->segs[ll][kk];
   }
   for (kk = 0; kk < s->rows; kk++) {
-#if 0
-    static const int pens[4][4] = {{         0,    COL_DMDON, COL_SEGAAON1, COL_SEGAAON2},
-                                   {COL_DMDOFF,    COL_DMDON, COL_SEGAAON1, COL_SEGAAON2},
-                                   {COL_SEGAAOFF1, COL_DMDON, COL_SEGAAON1, COL_SEGAAON2},
-                                   {COL_SEGAAOFF2, COL_DMDON, COL_SEGAAON1, COL_SEGAAON2}};
-#else
-    int pens[4][4] = {{             0, palSize-1-dimming, palSize-17-dimming, palSize-33-dimming},
-                      { COL_DMDOFF,    palSize-1-dimming, palSize-17-dimming, palSize-33-dimming},
-                      { COL_SEGAAOFF1, palSize-1-dimming, palSize-17-dimming, palSize-33-dimming},
-                      { COL_SEGAAOFF2, palSize-1-dimming, palSize-17-dimming, palSize-33-dimming}};
-#endif
     BMTYPE *line = &((BMTYPE **)(bitmap->line))[row+kk][col + s->cols];
     // why don't the bitmap use the leftmost bits. i.e. size is limited to 15
     UINT32 p = pixel[kk]>>(30-2*s->cols), np = s->segs[kk][0]>>(30-2*s->cols);
