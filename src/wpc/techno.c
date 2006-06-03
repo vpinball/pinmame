@@ -1,8 +1,8 @@
 /************************************************************************************************
-  Technoplay
-  ----------
+  Tecnoplay
+  ---------
   by Gerrit Volkenborn & Steve Ellenoff
-  
+
   Main CPU Board:
 
   CPU: Motorola M68000
@@ -51,7 +51,7 @@ static struct {
 } locals;
 
 /* Each time an IRQ is fired, the Vector # is incremented (since the IRQ generation is via a 4040 timer)
- 
+
    Bit 7, 3 are always 1, and 5, 6 are always 0!
    Therefore, the sequence is:
    0x88,0x89,0x8a,0x8b,0x8c,0x8d,0x8e,0x8f,0x98,0x99,0x9a,0x9b,0x9c,0x9d,0x9e,0x9f (and repeat)
@@ -85,7 +85,7 @@ static INTERRUPT_GEN(vblank) {
 
   memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
-  
+
   coreGlobals.solenoids = locals.solenoids;
   if ((locals.vblankCount % TECHNO_SOLSMOOTH) == 0) {
 	locals.solenoids = coreGlobals.pulsedSolState;
@@ -114,21 +114,21 @@ static MACHINE_INIT(xforce) {
 }
 
 //Input Key - Return Switches (uses Lamp Column Strobe)
-READ16_HANDLER(input_key_r) { 
+READ16_HANDLER(input_key_r) {
 	UINT8 switches = coreGlobals.swMatrix[locals.LampCol+1];	//+1 so we begin by reading column 1 of input matrix instead of 0 which is used for special switches in many drivers
 	return (UINT16)core_revbyte(switches);	//Reverse bits to align with switch matrix from manual
 }
 
 //Return Soudn Status?
-READ16_HANDLER(input_sound_r) { 
+READ16_HANDLER(input_sound_r) {
 	LOG(("input_sound_r\n"));
-	return 0; 
+	return 0;
 }
 
 //The value here is read, which is tied to a ls74 flip, not sure what it's purpose.
-READ16_HANDLER(rtrg_r) { 
-	//LOG(("%08x: rtrg_r\n",activecpu_get_pc())); 
-	return 0; 
+READ16_HANDLER(rtrg_r) {
+	//LOG(("%08x: rtrg_r\n",activecpu_get_pc()));
+	return 0;
 }
 
 //Lamp Rows (actually columns) 1-8
@@ -149,11 +149,11 @@ WRITE16_HANDLER(sol2_w) { coreGlobals.pulsedSolState = (coreGlobals.pulsedSolSta
 //D10     = Display Data Clock
 //D11-D15 = AUX 1-5
 //******************************
-WRITE16_HANDLER(sound_w) { 
-	//LOG(("sound_w = %04x\n",data)); 
+WRITE16_HANDLER(sound_w) {
+	//LOG(("sound_w = %04x\n",data));
 
 	int dclk = (data & 0x400) >> 10;
-	//LOG(("%08x: dclk_w = %04x\n",activecpu_get_pc(),dclk)); 
+	//LOG(("%08x: dclk_w = %04x\n",activecpu_get_pc(),dclk));
 
 	//Increment Display Column on if not waiting for transition!
 	if(locals.DispNoWait) {
@@ -167,9 +167,7 @@ WRITE16_HANDLER(sound_w) {
 }
 
 /*********************************************************************************************
-    Convert Techno Segment Arrangement to our standard core 16 segment
-
-	Tecmo Layout ( this was guessed by me since not shown in schematics, but seems correct )
+	Tecno Layout ( this was guessed by me since not shown in schematics, but seems correct )
 
 
      a1   a2
@@ -184,88 +182,22 @@ WRITE16_HANDLER(sound_w) {
     ---- ----
      d2   d1
 
-   Core16 Segment Layout
 
-         1
-    ---------
-   |\ 9 |10 /|
- 6 | \  |  / | 2 
-   |7 \ | /11|
-    ---- ----
-   |15/ |\ 12|
- 5 | /  | \  | 3 
-   |/ 14|13\ |
-    ---------  
-        4      8 = comma, 16 = period
+This is now handled by core.c
+******************************/
 
-Conversion to core.c:
-Bit0(a1) & Bit1(a2) = Bit 0 (1)
-Bit2(b)             = Bit 1 (2)
-Bit3(c)             = Bit 2 (3)
-Bit4(d1) & Bit5(d2) = Bit 3 (4)
-Bit6(e)             = Bit 4 (5)
-Bit7(f)             = Bit 5 (6)
-Bit8(h)             = Bit 8 (9)
-Bit9(j)             = Bit 9 (10)
-Bit10(k)            = Bit10 (11)
-Bit11(m)            = Bit11 (12)
-Bit12(n)            = Bit12 (13)
-Bit13(p)            = Bit13 (14)
-Bit14(r)            = Bit14 (15)
-Bit15(q)            = Bit6  (7)
- xx                 = Bit7  (8)
- xx                 = Bit15 (16)
-*/
-
-//Todo: Someone please clean up this code! :)
-static int techno_seg_to_coreseg(UINT16 data)
-{
-	int coreseg = 0;
-	//a1 & a2 = bit 0 of coreseg
-	if( (data & 0x01) || (data & 0x02) )	coreseg |= 0x01;
-	//b = bit 1 of corseg;
-	if(data & 0x04) coreseg |= 0x02;
-	//c = bit 2 of coreseg;
-	if(data & 0x08) coreseg |= 0x04;
-	//d1 & d2 = bit 3 of coreseg
-	if( (data & 0x10) || (data & 0x20) )	coreseg |= 0x08;
-	//e = bit 4 of coreseg;
-	if(data & 0x40) coreseg |= 0x10;
-	//f = bit 5 of coreseg;
-	if(data & 0x80) coreseg |= 0x20;
-	//h = bit 8 of coreseg;
-	if(data & 0x100) coreseg |= 0x100;
-	//h = bit 8 of coreseg;
-	if(data & 0x100) coreseg |= 0x100;
-	//j = bit 9 of coreseg;
-	if(data & 0x200) coreseg |= 0x200;
-	//k = bit10 of coreseg;
-	if(data & 0x400) coreseg |= 0x400;
-	//m = bit11 of coreseg;
-	if(data & 0x800) coreseg |= 0x800;
-	//n = bit12 of coreseg;
-	if(data & 0x1000) coreseg |= 0x1000;
-	//p = bit13 of coreseg;
-	if(data & 0x2000) coreseg |= 0x2000;
-	//r = bit14 of coreseg;
-	if(data & 0x4000) coreseg |= 0x4000;
-	//q = bit6 of coreseg;
-	if(data & 0x8000) coreseg |= 0x40;
-	return coreseg;
+WRITE16_HANDLER(disp1_w) {
+	//LOG(("%08x: disp1_w = %04x\n",activecpu_get_pc(),data));
+    locals.segments[locals.DispCol].w = data;
 }
-
-WRITE16_HANDLER(disp1_w) { 
-	//LOG(("%08x: disp1_w = %04x\n",activecpu_get_pc(),data)); 
-    locals.segments[locals.DispCol].w = techno_seg_to_coreseg(data);
-}
-WRITE16_HANDLER(disp2_w) { 
-	//LOG(("%08x: disp2_w = %04x\n",activecpu_get_pc(),data)); 
-	locals.segments[locals.DispCol+16].w = techno_seg_to_coreseg(data);
+WRITE16_HANDLER(disp2_w) {
+	//LOG(("%08x: disp2_w = %04x\n",activecpu_get_pc(),data));
+	locals.segments[locals.DispCol+16].w = data;
 }
 
 //Like rtrg - setout is connected to the same ls74 flip flop - not sure of it's purpose.
-WRITE16_HANDLER(setout_w) { 
-	//LOG(("%08x: setout_w = %04x\n",activecpu_get_pc(),data)); 
+WRITE16_HANDLER(setout_w) {
+	//LOG(("%08x: setout_w = %04x\n",activecpu_get_pc(),data));
 }
 
 //NVRAM
@@ -298,8 +230,8 @@ static MEMORY_WRITE16_START(writemem)
 MEMORY_END
 
 static core_tLCDLayout disp[] = {
-  {0, 0, 0,16,CORE_SEG16},
-  {3, 0,16,16,CORE_SEG16},
+  {0, 0, 0,16,CORE_SEG16S},
+  {3, 0,16,16,CORE_SEG16S},
   {0}
 };
 static core_tGameData xforceGameData = {GEN_ZAC2, disp};
@@ -372,4 +304,4 @@ ROM_START(xforce) \
     ROM_LOAD16_BYTE("ic17", 0x000000, 0x8000, CRC(122ef649))
 ROM_END
 
-CORE_GAMEDEFNV(xforce, "X Force", 1987, "Technoplay", xforce, GAME_NO_SOUND)
+CORE_GAMEDEFNV(xforce, "X Force", 1987, "Tecnoplay", xforce, GAME_NO_SOUND)
