@@ -470,8 +470,18 @@ INLINE UINT16 core_revword(UINT16 x) {
 //  Get the status of a DIP bank (8 dips)
 extern int core_getDip(int dipBank);
 
-//Easy Bit Column to Number conversion
-extern int core_BitColToNum(int tmp);
+/*-- Easy Bit Column to Number conversion
+ *   Convert Bit Column Data to corresponding #, ie, if Bit 3=1, return 3 - Zero Based (Bit1=1 returns 0)
+ *   Assumes only 1 bit is set at a time. --*/
+INLINE int core_BitColToNum(int tmp)
+{
+	int data=0, i=0;
+	do {
+		if (tmp & 1) data += i;
+		i++;
+	} while (tmp >>= 1);
+	return data;
+}
 
 extern MACHINE_DRIVER_EXTERN(PinMAME);
 #endif /* INC_CORE */
