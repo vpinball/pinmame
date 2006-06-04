@@ -511,6 +511,7 @@ DRIVERNV(bhol_ltd)      //Black Hole (clone of Gottlieb Black Hole)
 DRIVERNV(pecman  )      //Pec Man
 DRIVERNV(zephy   )      //Zephy (Xenon clone)
 DRIVERNV(cowboy  )      //Cowboy
+DRIVERNV(alcapone)      //Al Capone
 DRIVERNV(atla_ltd)      //Atlantis
 DRIVERNV(columbia)      //Columbia
 

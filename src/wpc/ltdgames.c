@@ -117,6 +117,15 @@ LTD_ROMEND
 CORE_GAMEDEFNV(cowboy,"Cowboy Eight Ball",1981,"LTD",gl_mLTD4,GAME_NOT_WORKING|GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
+/ Al Capone
+/-------------------------------------------------------------------*/
+INITGAME2(alcapone, cowboy_disp, 1)
+LTD_44_ROMSTART(alcapone, "alcapo_l.bin", CRC(362c7a07) SHA1(4aea7b72db16ef9791444c56f65dcb66b91cdc20),
+                          "alcapo_h.bin", CRC(279f766d) SHA1(453c58e44c4ef8f1f9eb752b6163c61ebed70b27))
+LTD_ROMEND
+CORE_GAMEDEFNV(alcapone,"Al Capone",1981,"LTD",gl_mLTD4,GAME_NOT_WORKING|GAME_NO_SOUND)
+
+/*-------------------------------------------------------------------
 / Columbia
 /-------------------------------------------------------------------*/
 INITGAME(columbia, ltd_disp, 1)
