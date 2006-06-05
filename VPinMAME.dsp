@@ -1276,6 +1276,10 @@ SOURCE=.\src\wpc\rotation.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\rowamet.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\s11.c
 # End Source File
 # Begin Source File

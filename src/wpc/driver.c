@@ -580,6 +580,10 @@ DRIVERNV(madrace)		//Mad Race (1985)
 						//Phantom Ship (1987)
 						//Skill Flight (1987)
 
+// ----------------
+// ROWAMET
+// ----------------
+DRIVERNV(heavymtl)		//Heavy Metal (198?)
 
 // --------------
 // SEGA GAMES
