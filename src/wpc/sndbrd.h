@@ -131,5 +131,6 @@ struct sndbrdIntf {
 #define SNDBRD_SPINB   SNDBRD_TYPE(42,0)
 #define SNDBRD_MRGAME  SNDBRD_TYPE(43,0)
 #define SNDBRD_DE3S    SNDBRD_TYPE(44,0)
+#define SNDBRD_ROWAMET SNDBRD_TYPE(45,0)
 
 #endif /* INC_SNDBRD */

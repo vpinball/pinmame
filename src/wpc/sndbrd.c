@@ -225,4 +225,5 @@ const struct sndbrdIntf NULLIntf = { 0 }; // remove when all boards below works.
   SNDBRDINTF(spinb)
   SNDBRDINTF(mrgame)
   SNDBRDINTF(de3s)
+  SNDBRDINTF(rowamet)
 #endif /* SNDBRD_RECURSIVE */
