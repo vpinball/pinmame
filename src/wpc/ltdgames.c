@@ -82,14 +82,6 @@ LTD_ROMEND
 CORE_GAMEDEFNV(bhol_ltd,"Black Hole (LTD)",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
-/ Pec Man
-/-------------------------------------------------------------------*/
-INITGAME(pecman, ltd_disp, 1)
-LTD_2_ROMSTART(pecman, "pecman.bin", NO_DUMP)
-LTD_ROMEND
-CORE_GAMEDEFNV(pecman,"Pec Man",19??,"LTD",gl_mLTD,GAME_NO_SOUND)
-
-/*-------------------------------------------------------------------
 / Zephy
 /-------------------------------------------------------------------*/
 core_tLCDLayout zephy_disp[] = {
@@ -115,6 +107,15 @@ LTD_44_ROMSTART(cowboy, "cauboy.l",     CRC(87befe2a) SHA1(93fdf40b10e53d7d95e5d
                         "cauboy.h",     CRC(105e5d7b) SHA1(75edeab8c8ba19f334479133802acbc25f405763))
 LTD_ROMEND
 CORE_GAMEDEFNV(cowboy,"Cowboy Eight Ball",1981,"LTD",gl_mLTD4,GAME_NOT_WORKING|GAME_NO_SOUND)
+
+/*-------------------------------------------------------------------
+/ Pec Man
+/-------------------------------------------------------------------*/
+INITGAME(pecman, cowboy_disp, 1)
+LTD_44_ROMSTART(pecman, "pecman_l.bin",  CRC(f86c724e) SHA1(635ec94a1c6e77800ef9774102cc639be86c4261),
+                        "pecman_h.bin",  CRC(013abca0) SHA1(269376af92368d214c3d09ec6d3eb653841666f3))
+LTD_ROMEND
+CORE_GAMEDEFNV(pecman,"Pec Man",19??,"LTD",gl_mLTD4,GAME_NOT_WORKING|GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
 / Al Capone
