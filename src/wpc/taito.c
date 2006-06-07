@@ -347,3 +347,156 @@ static NVRAM_HANDLER(taito) {
 static NVRAM_HANDLER(taito_old) {
   core_nvram(file, read_or_write, memory_region(TAITO_MEMREG_CPU)+0x1000, 0x100, 0x00);
 }
+
+
+
+//-----------------------------------------------
+// Taito Z80 section (only used on same Mr. Black machines)
+//
+// Lots of guess work here due to a lack of manual and schematics.
+// Sound is just as bad as in the regular Mr. Black game,
+// so I assume the sound roms might be bad (or different ones).
+//-----------------------------------------------
+
+static struct {
+  int vblankCount;
+  int swCol;
+  int solNo;
+  UINT32 solenoids;
+} z80locals;
+
+static WRITE_HANDLER(col_w) {
+  z80locals.solNo = data >> 4;
+  z80locals.swCol = data & 0x0f;
+}
+
+static READ_HANDLER(sw_r) { // 16 switch colums with 4 bits each
+  if (z80locals.swCol % 2)
+    return ~(coreGlobals.swMatrix[1+(z80locals.swCol / 2)] >> 4);
+  else
+    return ~(coreGlobals.swMatrix[1+(z80locals.swCol / 2)] & 0x0f);
+}
+
+static WRITE_HANDLER(disp_w) { // there's room for 5 player displays, but only 4 are used.
+  coreGlobals.segments[31-2*z80locals.swCol].w = core_bcd2seg7e[data&0x0f];
+  coreGlobals.segments[30-2*z80locals.swCol].w = core_bcd2seg7e[data >> 4];
+}
+
+static WRITE_HANDLER(lamp_w) {
+  coreGlobals.lampMatrix[z80locals.swCol] = data;
+}
+
+static WRITE_HANDLER(sol_w) {
+  coreGlobals.lampMatrix[16] = data;
+  if (z80locals.solNo) // how to activate sols 1 and 17 without turning them on all the time???
+    z80locals.solenoids |= 1 << (z80locals.solNo + ((data & 0x80) >> 3));
+  z80locals.solenoids |= (data & 0x10) << 12; // mapping game on sol to 17
+}
+
+static WRITE_HANDLER(p12_w) {
+  logerror("Port 0x1%d write = %02x\n", offset+2, data);
+}
+static WRITE_HANDLER(p22_w) {
+  logerror("Port 0x2%d write = %02x\n", offset+2, data);
+}
+
+static MEMORY_READ_START(z80_readmem)
+  { 0x0000, 0x1fff, MRA_ROM },
+  { 0x4800, 0x4bff, MRA_RAM },
+MEMORY_END
+static MEMORY_WRITE_START(z80_writemem)
+  { 0x4800, 0x4bff, MWA_RAM, &generic_nvram, &generic_nvram_size },
+  { 0x5800, 0x5800, col_w },
+MEMORY_END
+
+static PORT_READ_START(z80_readport)
+  { 0x21, 0x21, sw_r },
+PORT_END
+static PORT_WRITE_START(z80_writeport)
+  { 0x10, 0x10, disp_w },
+  { 0x11, 0x11, taito_sndCmd_w },
+  { 0x12, 0x13, p12_w },
+  { 0x20, 0x20, lamp_w },
+  { 0x21, 0x21, sol_w },
+  { 0x22, 0x23, p22_w },
+PORT_END
+
+static INTERRUPT_GEN(z80_nmi) {
+  cpu_set_nmi_line(0, PULSE_LINE);
+}
+
+static MACHINE_INIT(taitoz80) {
+  memset(&z80locals, 0, sizeof(z80locals));
+  sndbrd_0_init(core_gameData->hw.soundBoard, TAITO_SCPU, memory_region(TAITO_MEMREG_SCPU), NULL, NULL);
+}
+static MACHINE_STOP(taitoz80) {
+  sndbrd_0_exit();
+}
+
+static INTERRUPT_GEN(taitoz80_vblank) {
+  z80locals.vblankCount++;
+
+  coreGlobals.solenoids = z80locals.solenoids;
+  if (z80locals.vblankCount % 4 == 0)
+    z80locals.solenoids = 0;
+
+  core_updateSw(core_getSol(17));
+}
+
+static SWITCH_UPDATE(taitoz80) {
+  if (inports) {
+    CORE_SETKEYSW(inports[TAITO_COMINPORT],    0x7f, 1);
+  }
+}
+
+MACHINE_DRIVER_START(taitoz80)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CPU_ADD_TAG("mcpu", Z80, 5000000)
+  MDRV_CPU_MEMORY(z80_readmem, z80_writemem)
+  MDRV_CPU_PORTS(z80_readport, z80_writeport)
+  MDRV_CPU_VBLANK_INT(taitoz80_vblank, 1)
+  MDRV_CPU_PERIODIC_INT(z80_nmi, 1000)
+  MDRV_CORE_INIT_RESET_STOP(taitoz80,NULL,taitoz80)
+  MDRV_NVRAM_HANDLER(generic_0fill)
+  MDRV_SWITCH_UPDATE(taitoz80)
+
+  MDRV_IMPORT_FROM(taitos_sintetizadorpp)
+MACHINE_DRIVER_END
+
+static core_tLCDLayout disp[] = {
+  {0, 0,26,6,CORE_SEG7},
+  {3, 0,20,6,CORE_SEG7},
+  {6, 0,14,6,CORE_SEG7},
+  {9, 0, 8,6,CORE_SEG7},
+  {13,0, 7,1,CORE_SEG7}, {13,10,6,1,CORE_SEG7},
+  {0}
+};
+static core_tGameData mrblkz80GameData = {0, disp, {FLIP_SW(FLIP_L),0,9,0,SNDBRD_TAITO_SINTETIZADORPP,0}};
+static void init_mrblkz80(void) {
+  core_gameData = &mrblkz80GameData;
+}
+
+TAITO_ROMSTART2222(mrblkz80, "mb01z80.dat", CRC(7f883a70) SHA1(848783123b55ade769cac3c1b3d4a2c759a6c5b6),
+                             "mb02z80.dat", CRC(68de8f50) SHA1(7076297060e927da1aefae8bf75c8cda18031660),
+                             "mb03z80.dat", CRC(5a8e55e8) SHA1(b93102254004d258998bd6ab7d7b333361b37830),
+                             "mb04z80.dat", CRC(ecf30c2f) SHA1(404c891bc420cfe540e829a1cd05ced10ea5a09c))
+TAITO_SOUNDROMS444("mrb_s1.bin", CRC(ff28b2b9) SHA1(3106811740e0206ad4ba7845e204e721b0da70e2),
+                   "mrb_s2.bin", CRC(34d52449) SHA1(bdd5db5e58ca997d413d18f291928ad1a45c194e),
+                   "mrb_s3.bin", CRC(276fb897) SHA1(b1a4323a4d921e3ae4beefaa04cd95e18cc33b9d))
+TAITO_ROMEND
+
+INPUT_PORTS_START(mrblkz80)
+  CORE_PORTS
+  SIM_PORTS(3)
+  PORT_START /* 0 */
+    /* Switch Column 1 */
+    COREPORT_BIT(   0x0001, "Coin",         KEYCODE_5)
+    COREPORT_BIT(   0x0002, "Start",        KEYCODE_1)
+    COREPORT_BIT(   0x0004, "Slam",         KEYCODE_HOME)
+    COREPORT_BIT(   0x0008, "Tilt",         KEYCODE_INSERT)
+    COREPORT_BIT(   0x0010, "Test / Reset", KEYCODE_7)
+    COREPORT_BITTOG(0x0020, "Coin Door",    KEYCODE_8)
+    COREPORT_BIT(   0x0040, "Statistics",   KEYCODE_9)
+INPUT_PORTS_END
+
+CORE_CLONEDEFNV(mrblkz80, mrblack, "Mr. Black (Z-80 CPU)", 198?, "Taito", taitoz80, GAME_IMPERFECT_SOUND)

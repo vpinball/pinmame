@@ -858,6 +858,7 @@ DRIVERNV(voleybal)      //??/?? Voley Ball
                         //??/8? Ogar
 DRIVERNV(mrblack )		//??/84 Mr. Black (W Defender, 12/82)
 DRIVERNV(mrblack1)		//??/84 Mr. Black alternate set
+DRIVERNV(mrblkz80)		//??/8? Mr. Black (Z-80 CPU)
 DRIVERNV(fireactd)      //??/8? Fire Action De Luxe (W Firepower II, 08/83)
 DRIVERNV(sshuttle)      //??/85 Space Shuttle (W Space Shuttle, 12/84)
 DRIVERNV(sshuttl1)      //??/85 Space Shuttle alternate set
