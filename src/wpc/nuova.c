@@ -20,9 +20,6 @@
   152e - CLI - Clear Interrupt Disable
   RAM - 680 - Contains text for display driver
   DP @ 1098 for display out routine (loop begins @ 1089?) - similar @ 10c9 (starts @ 10ba?)
-
-
-
 ************************************************************************************************/
 #include "driver.h"
 #include "cpu/m6800/m6800.h"
@@ -31,14 +28,14 @@
 #include "sim.h"
 #include "sndbrd.h"
 
-#define NUOVA_SOLSMOOTH 4
-#define NUOVA_CPUFREQ		1000000			//1 Mhz ??
-#define F1GP_ZCFREQ				240			//120 Hz * 2 ??
-#define F1GP_555TIMER_FREQ		 10			//??
+#define NUOVA_SOLSMOOTH		4
+#define NUOVA_CPUFREQ		1000000		//1 Mhz ??
+#define NOUVA_ZCFREQ		240			//120 Hz * 2 ??
+#define NOUVA_555TIMER_FREQ	10			//??
 
-#define F1GP_SWSNDDIAG		-2
-#define F1GP_SWCPUDIAG		-1
-#define F1GP_SWCPUBUTT		0
+#define NOUVA_SWSNDDIAG		-2
+#define NOUVA_SWCPUDIAG		-1
+#define NOUVA_SWCPUBUTT		0
 
 #if 0
 #define LOG(x) logerror x
@@ -76,7 +73,7 @@ static struct {
 /***************/
 /* ZERO CROSS? */
 /***************/
-static void f1gp_zeroCross(int data) {
+static void nuova_zeroCross(int data) {
 	 locals.zero_cross = !locals.zero_cross;
 	 pia_set_input_cb1(0,locals.zero_cross);
 }
@@ -84,12 +81,12 @@ static void f1gp_zeroCross(int data) {
 /********************/
 /* 555 Timer CROSS? */
 /********************/
-static void f1gp_555timer(int data) {
+static void nuova_555timer(int data) {
 	 locals.timer_555 = !locals.timer_555;
 	 pia_set_input_ca1(1,locals.timer_555);
 }
 
-static INTERRUPT_GEN(f1gp_vblank) {
+static INTERRUPT_GEN(nuova_vblank) {
   /*-------------------------------
   /  copy local data to interface
   /--------------------------------*/
@@ -108,14 +105,14 @@ static INTERRUPT_GEN(f1gp_vblank) {
   core_updateSw(core_getSol(18));
 }
 
-static SWITCH_UPDATE(f1gp) {
+static SWITCH_UPDATE(nuova) {
   if (inports) {
     CORE_SETKEYSW(inports[CORE_COREINPORT]<<4,0xe0,0);
     CORE_SETKEYSW(inports[CORE_COREINPORT],   0x60,1);
     CORE_SETKEYSW(inports[CORE_COREINPORT]>>8,0x87,2);
   }
   // CPU DIAG SWITCH
-  if (core_getSw(F1GP_SWCPUBUTT))
+  if (core_getSw(NOUVA_SWCPUBUTT))
   {
 	  if(!locals.last_nmi_state)
 	  {
@@ -131,8 +128,8 @@ static SWITCH_UPDATE(f1gp) {
 		  cpu_set_nmi_line(0, CLEAR_LINE);
 	  }
   }
-  pia_set_input_ca1(0,core_getSw(F1GP_SWCPUDIAG));
-  if (core_getSw(F1GP_SWSNDDIAG)) {
+  pia_set_input_ca1(0,core_getSw(NOUVA_SWCPUDIAG));
+  if (core_getSw(NOUVA_SWSNDDIAG)) {
     cpu_set_nmi_line(1, ASSERT_LINE);
     cpu_set_irq_line(1, M6803_IRQ_LINE, ASSERT_LINE);
   } else {
@@ -141,12 +138,12 @@ static SWITCH_UPDATE(f1gp) {
   }
 }
 
-static void f1gp_irqline(int state) {
+static void nuova_irqline(int state) {
   cpu_set_irq_line(0, M6808_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
 }
 
-static void f1gp_piaIrq(int state) {
-  f1gp_irqline(locals.piaIrq = state);
+static void nuova_piaIrq(int state) {
+  nuova_irqline(locals.piaIrq = state);
 }
 
 /* ----- */
@@ -298,7 +295,7 @@ static WRITE_HANDLER(pia1_cb2_w)
 	LOG(("%04x: SOL BANK SELECT: pia1_cb2_w = %x \n",activecpu_get_previouspc(),data));
 }
 
-static const struct pia6821_interface f1gp_pia[] = {
+static const struct pia6821_interface nuova_pia[] = {
 { /* PIA 0 (U9)
   -------------
   o  PA0-PA1 Switch Strobe 0 - 1 & Cabinet Switch Strobe 0 - 1 & Lamp Addr 0 - 1 & Disp Addr 0 - 1
@@ -314,7 +311,7 @@ static const struct pia6821_interface f1gp_pia[] = {
   o  CB2:    Dips 25-32 Strobe & Lamp Strobe #1 */
  /* in  : A/B,CA1/B1,CA2/B2 */ 0, pia0_b_r, 0, 0, 0, 0,
  /* out : A/B,CA2/B2        */ pia0_a_w, 0, pia0_ca2_w, pia0_cb2_w,
- /* irq : A/B               */ f1gp_piaIrq, f1gp_piaIrq
+ /* irq : A/B               */ nuova_piaIrq, nuova_piaIrq
 },{
  /* PIA 1 (U10)
  -------------
@@ -334,22 +331,22 @@ static const struct pia6821_interface f1gp_pia[] = {
   o  CB2:    Solenoid Bank Select */
  /* in  : A/B,CA1/B1,CA2/B2 */ 0, 0, 0, pia1_cb1_r, 0, 0,
  /* out : A/B,CA2/B2        */ pia1_a_w, pia1_b_w, pia1_ca2_w, pia1_cb2_w,
- /* irq : A/B               */ f1gp_piaIrq, f1gp_piaIrq
+ /* irq : A/B               */ nuova_piaIrq, nuova_piaIrq
 }
 };
 
-static MACHINE_INIT(f1gp) {
+static MACHINE_INIT(nuova) {
   memset(&locals, 0, sizeof(locals));
-  pia_config(0, PIA_STANDARD_ORDERING, &f1gp_pia[0]);
-  pia_config(1, PIA_STANDARD_ORDERING, &f1gp_pia[1]);
+  pia_config(0, PIA_STANDARD_ORDERING, &nuova_pia[0]);
+  pia_config(1, PIA_STANDARD_ORDERING, &nuova_pia[1]);
   sndbrd_0_init(SNDBRD_ZAC1346, 1, memory_region(REGION_CPU2), NULL, NULL);
 }
 
-static MACHINE_RESET(f1gp) {
+static MACHINE_RESET(nuova) {
   pia_reset();
 }
 
-static MACHINE_STOP(f1gp) {
+static MACHINE_STOP(nuova) {
   //sndbrd_0_exit();
 }
 
@@ -357,7 +354,7 @@ static MACHINE_STOP(f1gp) {
 / Load/Save static ram
 /-------------------------------------------------*/
 static data8_t *s6_CMOS;
-static NVRAM_HANDLER(f1gp) {
+static NVRAM_HANDLER(nuova) {
   core_nvram(file, read_or_write, s6_CMOS, 0x0800, 0x00); // 2K of RAM, battery-backed
 }
 static WRITE_HANDLER(s6_CMOS_w_0) {
@@ -387,13 +384,7 @@ static MEMORY_READ_START(cpu_readmem)
   { 0x008c, 0x008f, s6_CMOS_r_1 },
   { 0x0090, 0x0093, pia_r(1)},
   { 0x0094, 0x07ff, s6_CMOS_r_2 },
-  { 0x1000, 0x1fff, MRA_ROM },
-  { 0x5000, 0x5fff, MRA_ROM },
-  { 0x7000, 0x7fff, MRA_ROM },
-  { 0x9000, 0x9fff, MRA_ROM },
-  { 0xb000, 0xbfff, MRA_ROM },
-  { 0xd000, 0xdfff, MRA_ROM },
-  { 0xf000, 0xffff, MRA_ROM },
+  { 0x1000, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(cpu_writemem)
@@ -403,13 +394,6 @@ static MEMORY_WRITE_START(cpu_writemem)
   { 0x0090, 0x0093, pia_w(1)},
   { 0x0094, 0x07ff, s6_CMOS_w_2 },
   { 0x0800, 0x0fff, MWA_RAM, &s6_CMOS }, // initialization of the RAM
-  { 0x1000, 0x1fff, MWA_ROM },
-  { 0x5000, 0x5fff, MWA_ROM },
-  { 0x7000, 0x7fff, MWA_ROM },
-  { 0x9000, 0x9fff, MWA_ROM },
-  { 0xb000, 0xbfff, MWA_ROM },
-  { 0xd000, 0xdfff, MWA_ROM },
-  { 0xf000, 0xffff, MWA_ROM },
 MEMORY_END
 
 static WRITE_HANDLER(bank_w) {
@@ -454,24 +438,24 @@ static core_tLCDLayout disp[] = {
   {3, 0,16,16,CORE_SEG16},
   {0}
 };
-static core_tGameData f1gpGameData = {GEN_ZAC2, disp, {FLIP_SWNO(48, 0), 0, 2}};
-static void init_f1gp(void) {
-  core_gameData = & f1gpGameData;
+static core_tGameData nuovaGameData = {GEN_ZAC2, disp, {FLIP_SWNO(48, 0), 0, 2}};
+static void init_nuova(void) {
+  core_gameData = &nuovaGameData;
 }
 static struct DACinterface nuova_dacInt = { 1, { 25 }};
 
-MACHINE_DRIVER_START(f1gp)
+MACHINE_DRIVER_START(nuova)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CORE_INIT_RESET_STOP(f1gp,f1gp,f1gp)
+  MDRV_CORE_INIT_RESET_STOP(nuova,nuova,nuova)
   MDRV_CPU_ADD_TAG("mcpu", M6802, NUOVA_CPUFREQ)
   MDRV_CPU_MEMORY(cpu_readmem, cpu_writemem)
-  MDRV_CPU_VBLANK_INT(f1gp_vblank, 1)
-  MDRV_NVRAM_HANDLER(f1gp)
+  MDRV_CPU_VBLANK_INT(nuova_vblank, 1)
+  MDRV_NVRAM_HANDLER(nuova)
   MDRV_DIPS(32)
-  MDRV_SWITCH_UPDATE(f1gp)
+  MDRV_SWITCH_UPDATE(nuova)
   MDRV_DIAGNOSTIC_LEDH(2)
-  MDRV_TIMER_ADD(f1gp_zeroCross, F1GP_ZCFREQ)
-  MDRV_TIMER_ADD(f1gp_555timer,  F1GP_555TIMER_FREQ)
+  MDRV_TIMER_ADD(nuova_zeroCross, NOUVA_ZCFREQ)
+  MDRV_TIMER_ADD(nuova_555timer,  NOUVA_555TIMER_FREQ)
 
   MDRV_CPU_ADD_TAG("scpu", M6803, 1000000)
   MDRV_CPU_MEMORY(snd_readmem, snd_writemem)
@@ -480,7 +464,7 @@ MACHINE_DRIVER_START(f1gp)
   MDRV_INTERLEAVE(500)
 MACHINE_DRIVER_END
 
-INPUT_PORTS_START(f1gp) \
+INPUT_PORTS_START(nuova) \
   CORE_PORTS \
   SIM_PORTS(4) \
   PORT_START /* 0 */ \
@@ -636,5 +620,24 @@ ROM_START(f1gp)
   ROM_COPY(REGION_SOUND1, 0x0000, 0x8000,0x8000)
 ROM_END
 
-CORE_GAMEDEFNV(f1gp, "F1 Grand Prix", 1987, "Nuova Bell Games", f1gp, GAME_NOT_WORKING)
+#define init_f1gp init_nuova
+#define input_ports_f1gp input_ports_nuova
+CORE_GAMEDEFNV(f1gp, "F1 Grand Prix", 1987, "Nuova Bell Games", nuova, GAME_NOT_WORKING)
 
+// Rom areas are not determined yet.
+ROM_START(futrquen)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("mpu_u2.bin", 0xc000, 0x4000, CRC(bc66b636) SHA1(65f3e6461a1eca8542bbbc5b8c7cd1fca1b3011f))
+  ROM_COPY(REGION_CPU1, 0xc000, 0x1000,0x1000)
+  NORMALREGION(0x40000, REGION_SOUND1)
+    ROM_LOAD("snd_u8.bin", 0x0000, 0x8000, CRC(3d254d89) SHA1(2b4aa3387179e2c0fbf18684128761d3f778dcb2))
+    ROM_LOAD("snd_u9.bin", 0x10000,0x8000, CRC(9560f2c3) SHA1(3de6d074e2a3d3c8377fa330d4562b2d266bbfff))
+    ROM_LOAD("snd_u10.bin",0x20000,0x8000, CRC(70f440bc) SHA1(9fa4d33cc6174ce8f43f030487171bfbacf65537))
+    ROM_LOAD("snd_u11.bin",0x30000,0x8000, CRC(71d98d17) SHA1(9575b80a91a67b1644e909f70d364e0a75f73b02))
+  NORMALREGION(0x10000, REGION_CPU2)
+  ROM_COPY(REGION_SOUND1, 0x0000, 0x8000,0x8000)
+ROM_END
+
+#define init_futrquen init_nuova
+#define input_ports_futrquen input_ports_nuova
+CORE_GAMEDEFNV(futrquen, "Future Queen", 198?, "Nuova Bell Games", nuova, GAME_NOT_WORKING)
