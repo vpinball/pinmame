@@ -19,26 +19,27 @@
 #include "by35.h"
 #include "by35snd.h"
 
-// For some models, the CMOS is bigger than on normal bally machines
+// For later models, the CMOS is bigger than on normal bally machines,
+// and even occupies the same RAM area as the PIAs!
 static UINT8 *nuova_CMOS;
 static NVRAM_HANDLER(nuova) {
-  core_nvram(file, read_or_write, nuova_CMOS, 0x500, 0x0f);
+  core_nvram(file, read_or_write, nuova_CMOS, 0x800, 0xff);
 }
 static WRITE_HANDLER(nuova_CMOS_w) { nuova_CMOS[offset] = data | 0x0f; }
 
 static MEMORY_READ_START(nuova_readmem)
-  { 0x0000, 0x007f, MRA_RAM }, /* U7 128 Byte Ram*/
+  { 0x0000, 0x007f, MRA_RAM }, /* U7 128 Byte Ram, this needs all 8 bits */
   { 0x0088, 0x008b, pia_r(0) }, /* U10 PIA: Switchs + Display + Lamps*/
   { 0x0090, 0x0093, pia_r(1) }, /* U11 PIA: Solenoids/Sounds + Display Strobe */
-  { 0x0200, 0x06ff, MRA_RAM }, /* CMOS Battery Backed*/
+  { 0x0000, 0x07ff, MRA_RAM }, /* CMOS Battery Backed, overlaps other areas */
   { 0x1000, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(nuova_writemem)
-  { 0x0000, 0x007f, MWA_RAM }, /* U7 128 Byte Ram*/
+  { 0x0000, 0x007f, MWA_RAM }, /* U7 128 Byte Ram, this needs all 8 bits*/
   { 0x0088, 0x008b, pia_w(0) }, /* U10 PIA: Switchs + Display + Lamps*/
   { 0x0090, 0x0093, pia_w(1) }, /* U11 PIA: Solenoids/Sounds + Display Strobe */
-  { 0x0200, 0x06ff, nuova_CMOS_w, &nuova_CMOS }, /* CMOS Battery Backed*/
+  { 0x0000, 0x07ff, nuova_CMOS_w, &nuova_CMOS }, /* CMOS Battery Backed, overlaps other areas */
 MEMORY_END
 
 
@@ -54,27 +55,30 @@ static void nuova_init(struct sndbrdData *brdData) {
   locals.brdData = *brdData;
 }
 
+static void nuova_diag(int button) {
+  cpu_set_nmi_line(locals.brdData.cpuNo, button ? ASSERT_LINE : CLEAR_LINE);
+}
+
 static WRITE_HANDLER(nuova_data_w) {
   locals.sndCmd = data;
-  cpu_set_nmi_line(1, PULSE_LINE);
+}
+
+static WRITE_HANDLER(dac_w) {
+  DAC_0_data_w(0, data);
 }
 
 static WRITE_HANDLER(bank_w) {
   data = ~data;
-  logerror("m8000w = %x\n",data);
+  logerror("bank_w = %x\n",data);
   coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 1) | ((data >> 6) & 2);
   if (data & 0x0f)
-    cpu_setbank(1, memory_region(REGION_SOUND1) + (0x8000 * data & 0x07));
+    cpu_setbank(1, memory_region(REGION_SOUND1) + 0x8000 * (data & 0x07));
   else
     cpu_setbank(1, memory_region(REGION_SOUND1));
 }
 
 static READ_HANDLER(snd_cmd_r) {
   return locals.sndCmd;
-}
-
-static WRITE_HANDLER(snd_enable) {
-  logerror("sound P2w: %02x\n", data);
 }
 
 static MEMORY_READ_START(snd_readmem)
@@ -92,8 +96,7 @@ static PORT_READ_START(snd_readport)
 PORT_END
 
 static PORT_WRITE_START(snd_writeport)
-  { M6803_PORT1, M6803_PORT1, DAC_0_data_w },
-  { M6803_PORT2, M6803_PORT2, snd_enable },
+  { M6803_PORT1, M6803_PORT1, dac_w },
 PORT_END
 
 static struct DACinterface nuova_dacInt = { 1, { 25 }};
@@ -102,7 +105,7 @@ static struct DACinterface nuova_dacInt = { 1, { 25 }};
 / exported interface
 /--------------------*/
 const struct sndbrdIntf nuovaIntf = {
-  "NUOVA", nuova_init, NULL, NULL, nuova_data_w, nuova_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "NUOVA", nuova_init, NULL, nuova_diag, nuova_data_w, nuova_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
 MACHINE_DRIVER_START(nuova)
@@ -113,6 +116,7 @@ MACHINE_DRIVER_START(nuova)
   MDRV_DIAGNOSTIC_LEDH(2)
 
   MDRV_CPU_ADD_TAG("scpu", M6803, 1000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(snd_readmem, snd_writemem)
   MDRV_CPU_PORTS(snd_readport, snd_writeport)
   MDRV_SOUND_ADD(DAC, nuova_dacInt)
@@ -199,9 +203,9 @@ ROM_START(futrquen)
   ROM_COPY(REGION_SOUND1, 0x0000, 0x8000,0x8000)
 ROM_END
 
-INITGAMENB(futrquen,GEN_BY35,dispNB,FLIP_SW(FLIP_L),8,0,0)
+INITGAMENB(futrquen,GEN_BY35,dispNB,FLIP_SW(FLIP_L),8,SNDBRD_NUOVA,0)
 BY35_INPUT_PORTS_START(futrquen, 1) BY35_INPUT_PORTS_END
-CORE_GAMEDEFNV(futrquen, "Future Queen", 1987, "Nuova Bell Games", nuova, GAME_NO_SOUND)
+CORE_GAMEDEFNV(futrquen, "Future Queen", 1987, "Nuova Bell Games", nuova, 0)
 
 /*--------------------------------
 / F1 Grand Prix
@@ -247,6 +251,6 @@ ROM_START(f1gp)
   ROM_COPY(REGION_SOUND1, 0x0000, 0x8000,0x8000)
 ROM_END
 
-INITGAMEAL(f1gp,GEN_BY35,dispAlpha,FLIP_SWNO(48,0),8,0,0)
+INITGAMEAL(f1gp,GEN_BY35,dispAlpha,FLIP_SWNO(48,0),8,SNDBRD_NUOVA,0)
 BY35_INPUT_PORTS_START(f1gp, 1) BY35_INPUT_PORTS_END
-CORE_GAMEDEFNV(f1gp, "F1 Grand Prix", 1987, "Nuova Bell Games", nuova, GAME_NO_SOUND)
+CORE_GAMEDEFNV(f1gp, "F1 Grand Prix", 1987, "Nuova Bell Games", nuova, 0)
