@@ -132,12 +132,47 @@ static WRITE_HANDLER(pia0a_w) {
   }
 }
 
+static const UINT16 nuova_ascii2seg[] = {
+  /* 0x00-0x07 */ 0x0000, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
+  /* 0x08-0x0f */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
+  /* 0x10-0x17 */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
+  /* 0x18-0x1f */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
+  /* 0x20-0x27 */ 0x0000, 0x0309, 0x0220, 0x2A4E, 0x2A6D, 0x5d64, 0x135D, 0x0200, //  !"#$%&'
+  /* 0x28-0x2f */ 0x1400, 0x4100, 0x7F40, 0x2A40, 0x0080, 0x0840, 0x8000, 0x4400, // ()*+,-./
+  /* 0x30-0x37 */ 0x003f, 0x2200, 0x085B, 0x084f, 0x0866, 0x086D, 0x087D, 0x0007, // 01234567
+  /* 0x38-0x3f */ 0x087F, 0x086F, 0x0800, 0x8080, 0x1400, 0x0848, 0x4100, 0x2803, // 89:;<=>?
+  /* 0x40-0x47 */ 0x205F, 0x0877, 0x2A0F, 0x0039, 0x220F, 0x0079, 0x0071, 0x083D, // @ABCDEFG
+  /* 0x48-0x4f */ 0x0876, 0x2209, 0x001E, 0x1470, 0x0038, 0x0536, 0x1136, 0x003f, // HIJKLMNO
+  /* 0x50-0x57 */ 0x0873, 0x103F, 0x1873, 0x086D, 0x2201, 0x003E, 0x4430, 0x5036, // PRQSTUVW
+  /* 0x58-0x5f */ 0x5500, 0x2500, 0x4409, 0x0039, 0x1100, 0x000f, 0x0402, 0x0008, // XYZ[\]^_
+  /* 0x60-0x67 */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
+  /* 0x68-0x6f */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
+  /* 0x70-0x77 */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
+  /* 0x78-0x7f */ 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
+};
+
 /* PIA1:A-W  0,2-7 Display handling */
 /*        W  1     Sound E */
 static WRITE_HANDLER(pia1a_w) {
+  static int counter, pos0, pos1;
   if (locals.hw & BY35HW_SOUNDE) sndbrd_0_ctrl_w(1, (locals.cb21 ? 1 : 0) | (data & 0x02));
 
-  if (!locals.ca20) {
+  if (core_gameData->hw.gameSpecific1 & BY35GD_ALPHA) {
+    if (data & 0x80) { // 1st alphanumeric display strobe
+      if (pos0 < 20)
+        locals.segments[pos0++].w = nuova_ascii2seg[locals.a0 & 0x7f];
+      counter++;
+      if (counter > 7) {
+        counter = 0;
+        pos0 = 0;
+        pos1 = 0;
+      }
+    } else if (data & 0x40) { // 2nd alphanumeric display strobe
+      counter = 0;
+      if (pos1 < 12)
+        locals.segments[20+(pos1++)].w = nuova_ascii2seg[locals.a0 & 0x7f];
+    }
+  } else if (!locals.ca20) {
     if (locals.hw & BY35HW_INVDISP4) {
       if (core_gameData->gen & GEN_BOWLING) {
         if (data & 0x02) {
@@ -212,7 +247,7 @@ static WRITE_HANDLER(pia1ca2_w) {
 /* PIA0:CA2-W Display Strobe */
 static WRITE_HANDLER(pia0ca2_w) {
   locals.ca20 = data;
-  if (data) by35_dispStrobe(0x0f);
+  if (data && !(core_gameData->hw.gameSpecific1 & BY35GD_ALPHA)) by35_dispStrobe(0x0f);
 }
 
 /* PIA1:B-W Solenoid/Sound output */
@@ -260,8 +295,10 @@ static INTERRUPT_GEN(by35_vblank) {
   /*-- display --*/
   if ((locals.vblankCount % BY35_DISPLAYSMOOTH) == 0) {
     memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
-    memcpy(locals.segments, locals.pseg, sizeof(locals.segments));
-    memset(locals.pseg,0,sizeof(locals.pseg));
+	if (!(core_gameData->hw.gameSpecific1 & BY35GD_ALPHA)) {
+	  memcpy(locals.segments, locals.pseg, sizeof(locals.segments));
+      memset(locals.pseg,0,sizeof(locals.pseg));
+	}
     coreGlobals.diagnosticLed = locals.diagnosticLed;
     locals.diagnosticLed = 0;
   }
@@ -489,14 +526,12 @@ static MACHINE_INIT(by35) {
   // set up hardware
   if (core_gameData->gen & (GEN_BY17|GEN_BOWLING)) {
     locals.hw = BY35HW_INVDISP4|BY35HW_DIP4;
-    install_mem_write_handler(0,0x0200, 0x02ff, by35_CMOS_w);
     locals.bcd2seg = core_bcd2seg;
   }
   else if (core_gameData->gen & GEN_BY35) {
     locals.hw = BY35HW_DIP4;
     if ((core_gameData->hw.gameSpecific1 & BY35GD_NOSOUNDE) == 0)
       locals.hw |= BY35HW_SOUNDE;
-    install_mem_write_handler(0,0x0200, 0x02ff, by35_CMOS_w);
     locals.bcd2seg = core_bcd2seg;
   }
   else if (core_gameData->gen & (GEN_STMPU100|GEN_STMPU200|GEN_ASTRO)) {
@@ -505,10 +540,8 @@ static MACHINE_INIT(by35) {
   }
   else if (core_gameData->gen & GEN_HNK) {
     locals.hw = BY35HW_REVSW|BY35HW_SCTRL|BY35HW_INVDISP4;
-    install_mem_write_handler(0,0x0200, 0x02ff, by35_CMOS_w);
     locals.bcd2seg = core_bcd2seg9;
   }
-
 
   if ((sb & 0xff00) == SNDBRD_ST300 || sb == SNDBRD_ASTRO) {
     install_mem_write_handler(0,0x00a0, 0x00a7, snd300_w);	// ok
@@ -530,7 +563,6 @@ static MACHINE_INIT(by35Proto) {
   locals.vblankCount = 1;
   // set up hardware
   locals.hw = BY35HW_REVSW|BY35HW_INVDISP4|BY35HW_DIP4;
-  install_mem_write_handler(0,0x0200, 0x02ff, by35_CMOS_w);
   locals.bcd2seg = core_bcd2seg;
 }
 
@@ -552,9 +584,9 @@ static MACHINE_STOP(by35) {
 */
 static MEMORY_READ_START(by35_readmem)
   { 0x0000, 0x0080, MRA_RAM }, /* U7 128 Byte Ram*/
-  { 0x0200, 0x02ff, MRA_RAM }, /* CMOS Battery Backed*/
   { 0x0088, 0x008b, pia_r(BY35_PIA0) }, /* U10 PIA: Switchs + Display + Lamps*/
   { 0x0090, 0x0093, pia_r(BY35_PIA1) }, /* U11 PIA: Solenoids/Sounds + Display Strobe */
+  { 0x0200, 0x02ff, MRA_RAM }, /* CMOS Battery Backed*/
   { 0x1000, 0x1fff, MRA_ROM },
   { 0x5000, 0x5fff, MRA_ROM },
   { 0xf000, 0xffff, MRA_ROM },
@@ -562,12 +594,9 @@ MEMORY_END
 
 static MEMORY_WRITE_START(by35_writemem)
   { 0x0000, 0x0080, MWA_RAM }, /* U7 128 Byte Ram*/
-  { 0x0200, 0x02ff, MWA_RAM, &by35_CMOS }, /* CMOS Battery Backed*/
   { 0x0088, 0x008b, pia_w(BY35_PIA0) }, /* U10 PIA: Switchs + Display + Lamps*/
   { 0x0090, 0x0093, pia_w(BY35_PIA1) }, /* U11 PIA: Solenoids/Sounds + Display Strobe */
-  { 0x1000, 0x1fff, MWA_ROM },
-  { 0x5000, 0x5fff, MWA_ROM },
-  { 0xf000, 0xffff, MWA_ROM },
+  { 0x0200, 0x02ff, by35_CMOS_w, &by35_CMOS }, /* CMOS Battery Backed*/
 MEMORY_END
 
 MACHINE_DRIVER_START(by35)

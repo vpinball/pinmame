@@ -44,10 +44,6 @@ static void init_##name(void) { core_gameData = &name##GameData; }
 static core_tGameData name##GameData = {gen,disp,{flip,0,lamps,0,sb,db,BY35GD_PHASE}}; \
 static void init_##name(void) { core_gameData = &name##GameData; }
 
-#define INITGAMENB(name, gen, disp, flip, lamps, sb, db) \
-static core_tGameData name##GameData = {gen,disp,{flip,0,lamps,0,sb,db,BY35GD_FAKEZERO}}; \
-static void init_##name(void) { core_gameData = &name##GameData; }
-
 /* -------------------------------------------------------------*/
 /* All games below use CHIMES for sound - ie, no sound hardware */
 /* -------------------------------------------------------------*/
@@ -1019,45 +1015,6 @@ CORE_GAMEDEFNV(cybrnaut,"Cybernaut",1985,"Bally",by35_mBY35_45S,0)
 /******************************************************/
 /******* Games below by different manufacturers *******/
 /******************************************************/
-/*--------------------------------
-/ Saturn 2 (Spy Hunter Clone) Bell, Italy
-/-------------------------------*/
-static core_tLCDLayout dispSH[] = {
-  {0, 0, 2,7,CORE_SEG87F}, {0,16,10,7,CORE_SEG87F},
-  {2, 0,18,7,CORE_SEG87F}, {2,16,26,7,CORE_SEG87F},
-  {4, 4,35,2,CORE_SEG7},   {4,10,38,2,CORE_SEG7},{0}
-};
-INITGAMENB(saturn2,GEN_BY35,dispSH,FLIP_SW(FLIP_L),8,SNDBRD_BY45,0)
-BY35_ROMSTARTx00(saturn2,"spy-2732.u2",CRC(9e930f2d) SHA1(fb48ce0d8d8f8a695827c0eea57510b53daa7c39),
-                         "saturn2.u6", CRC(ca72a96b) SHA1(efcd8b41bf0c19ebd7db492632e046b348619460))
-BY45_SOUNDROM11(         "spy_u3.532", CRC(95ffc1b8) SHA1(28f058f74abbbee120dca06f7321bcb588bef3c6),
-                         "spy_u4.532", CRC(a43887d0) SHA1(6bbc55943fa9f0cd97f946767f21652e19d85265))
-BY35_ROMEND
-#define input_ports_saturn2 input_ports_by35
-CORE_CLONEDEFNV(saturn2,spyhuntr,"Saturn 2",1985,"Bell Games (Italy)",by35_mBY35_45S,0)
-
-/*--------------------------------
-/ New Wave (Black Pyramid Clone) Bell, Italy
-/-------------------------------*/
-INITGAMENB(newwave,GEN_BY35,dispSH,FLIP_SW(FLIP_L),8,SNDBRD_BY45,0)
-BY35_ROMSTARTx00(newwave,"blkp2732.u2",CRC(600535b0) SHA1(33d080f4430ad9c33ee9de1bfbb5cfde50f0776e),
-                         "newwu6.532", CRC(ca72a96b) SHA1(efcd8b41bf0c19ebd7db492632e046b348619460))
-BY45_SOUNDROM11(         "bp_u3.532",  CRC(a5005067) SHA1(bd460a20a6e8f33746880d72241d6776b85126cf),
-                         "newwu4.532", CRC(6f4f2a95) SHA1(a7a375827c0429b8b3d2ee9e471f557152492993))
-BY35_ROMEND
-#define input_ports_newwave input_ports_by35
-CORE_CLONEDEFNV(newwave,blakpyra,"New Wave",1985,"Bell Games (Italy)",by35_mBY35_45S,0)
-
-/*--------------------------------
-/ Space Hawks (Cybernaut Clone) Nuova Bell, Italy
-/-------------------------------*/
-INITGAMENB(spacehaw,GEN_BY35,dispSH,FLIP_SW(FLIP_L),8,SNDBRD_BY45,0)
-BY35_ROMSTARTx00(spacehaw,"cybe2732.u2g",CRC(d4a5e2f6) SHA1(841e940632993919a68c905546f533ff38a0ce31),
-                          "spacehaw.u6",CRC(b154a3a3) SHA1(d632c5eddd0582ba2ca778ab03e11ca3f6f4e1ed))
-BY45_SOUNDROMx2(          "cybu3.snd",  CRC(a3c1f6e7) SHA1(35a5e828a6f2dd9009e165328a005fa079bad6cb))
-BY35_ROMEND
-#define input_ports_spacehaw input_ports_by35
-CORE_CLONEDEFNV(spacehaw,cybrnaut,"Space Hawks",1986,"Nuova Bell Games (Italy)",by35_mBY35_45S,0)
 
 /*--------------------------------
 / Mystic Star (Zaccaria game, 1984)
