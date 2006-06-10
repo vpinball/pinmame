@@ -16,12 +16,6 @@
 		core_gameData = &name##GameData; \
 	}
 
-core_tLCDLayout ltd_disp[] = {
-  { 0, 0, 0,16,CORE_SEG7 },
-  { 2, 0,16,16,CORE_SEG7 },
-  {0}
-};
-
 /*
 O Gaucho 1977
 Samba 1977
@@ -40,7 +34,7 @@ Haunted Hotel 1981
 Hustler 1981
 King Kong 1981
 Kung Fu 1981
-Pec Men 1981
+Mr. & Mrs. Pec-Men 1981
 Martian Queen 1981
 Space Poker 1981
 Time Machine 1981
@@ -92,45 +86,41 @@ core_tLCDLayout zephy_disp[] = {
 INITGAME2(zephy, zephy_disp, 1)
 LTD_4_ROMSTART(zephy, "zephy.l2", CRC(8dd11287) SHA1(8133d0c797eb0fdb56d83fc55da91bfc3cddc9e3))
 LTD_ROMEND
-CORE_GAMEDEFNV(zephy,"Zephy",1982,"LTD",gl_mLTD,GAME_NO_SOUND)
+CORE_GAMEDEFNV(zephy,"Zephy",198?,"LTD",gl_mLTD,GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
 / Cowboy Eight Ball
 /-------------------------------------------------------------------*/
 core_tLCDLayout cowboy_disp[] = {
-  { 0, 0,12,6,CORE_SEG7 }, { 3, 0, 6,6,CORE_SEG7 }, { 6, 0, 0,6,CORE_SEG7 },
-  { 9, 0,18,2,CORE_SEG7 }, { 9, 5,20,2,CORE_SEG7 }, { 9,10,22,2,CORE_SEG7 },
+  { 0, 0, 0,6,CORE_SEG7 }, { 3, 0, 6,6,CORE_SEG7 }, { 6, 0,12,6,CORE_SEG7 },
+  { 9, 2,24,1,CORE_SEG7 }, { 9, 8,25,1,CORE_SEG7 },
   {0}
 };
 INITGAME2(cowboy, cowboy_disp, 1)
-LTD_44_ROMSTART(cowboy, "cauboy.l",     CRC(87befe2a) SHA1(93fdf40b10e53d7d95e5dc72923b6be887411fc0),
-                        "cauboy.h",     CRC(105e5d7b) SHA1(75edeab8c8ba19f334479133802acbc25f405763))
+LTD_44_ROMSTART(cowboy, "cowboy_l.bin", CRC(87befe2a) SHA1(93fdf40b10e53d7d95e5dc72923b6be887411fc0),
+                        "cowboy_h.bin", CRC(105e5d7b) SHA1(75edeab8c8ba19f334479133802acbc25f405763))
 LTD_ROMEND
-CORE_GAMEDEFNV(cowboy,"Cowboy Eight Ball",1981,"LTD",gl_mLTD4,GAME_NOT_WORKING|GAME_NO_SOUND)
+CORE_GAMEDEFNV(cowboy,"Cowboy Eight Ball",198?,"LTD",gl_mLTD4,GAME_NOT_WORKING|GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
-/ Pec Man
+/ Mr. & Mrs. Pec-Men
 /-------------------------------------------------------------------*/
-INITGAME(pecman, cowboy_disp, 1)
-LTD_44_ROMSTART(pecman, "pecman_l.bin",  CRC(f86c724e) SHA1(635ec94a1c6e77800ef9774102cc639be86c4261),
-                        "pecman_h.bin",  CRC(013abca0) SHA1(269376af92368d214c3d09ec6d3eb653841666f3))
+core_tLCDLayout pecmen_disp[] = {
+  { 0, 0, 0,6,CORE_SEG7 }, { 3, 0, 6,6,CORE_SEG7 }, { 6, 0,12,6,CORE_SEG7 }, { 9, 0,18,6,CORE_SEG7 },
+  {12, 2,24,1,CORE_SEG7 }, {12, 8,25,1,CORE_SEG7 },
+  {0}
+};
+INITGAME2(pecmen, pecmen_disp, 1)
+LTD_44_ROMSTART(pecmen, "pecmen_l.bin", CRC(f86c724e) SHA1(635ec94a1c6e77800ef9774102cc639be86c4261),
+                        "pecmen_h.bin", CRC(013abca0) SHA1(269376af92368d214c3d09ec6d3eb653841666f3))
 LTD_ROMEND
-CORE_GAMEDEFNV(pecman,"Pec Man",19??,"LTD",gl_mLTD4,GAME_NOT_WORKING|GAME_NO_SOUND)
+CORE_GAMEDEFNV(pecmen,"Mr. & Mrs. Pec-Men",198?,"LTD",gl_mLTD4,GAME_NOT_WORKING|GAME_NO_SOUND)
 
 /*-------------------------------------------------------------------
 / Al Capone
 /-------------------------------------------------------------------*/
-INITGAME2(alcapone, cowboy_disp, 1)
+INITGAME2(alcapone, pecmen_disp, 1)
 LTD_44_ROMSTART(alcapone, "alcapo_l.bin", CRC(362c7a07) SHA1(4aea7b72db16ef9791444c56f65dcb66b91cdc20),
                           "alcapo_h.bin", CRC(279f766d) SHA1(453c58e44c4ef8f1f9eb752b6163c61ebed70b27))
 LTD_ROMEND
-CORE_GAMEDEFNV(alcapone,"Al Capone",1981,"LTD",gl_mLTD4,GAME_NOT_WORKING|GAME_NO_SOUND)
-
-/*-------------------------------------------------------------------
-/ Columbia
-/-------------------------------------------------------------------*/
-INITGAME(columbia, ltd_disp, 1)
-LTD_44_ROMSTART(columbia, "columb-d.bin", NO_DUMP,
-                          "columb-e.bin", CRC(013abca0) SHA1(269376af92368d214c3d09ec6d3eb653841666f3))
-LTD_ROMEND
-CORE_GAMEDEFNV(columbia,"Columbia",19??,"LTD",gl_mLTD4,GAME_NOT_WORKING|GAME_NO_SOUND)
+CORE_GAMEDEFNV(alcapone,"Al Capone",198?,"LTD",gl_mLTD4,GAME_NOT_WORKING|GAME_NO_SOUND)

@@ -208,9 +208,33 @@ DRIVERNV(atlantis)      //6803-2006: 03/89 Atlantis
 // ------------------
 // (NUOVA) BELL GAMES
 // ------------------
-DRIVERNV(newwave)       //BY35:     04/85 New Wave, Bally Black Pyramid Clone
-DRIVERNV(saturn2)       //BY35:     08/85 Saturn 2, Bally Spy Hunter Clone
-DRIVERNV(spacehaw)      //BY35:     04/86 Space Hawks, Bally Cybernaut Clone
+// Bell Coin Matics
+						//			??/78 The King
+						//BY35      ??/79 Sexy Girl (Bally Playboy clone with image projector)
+						//			??/80 The Hunter
+						//			??/80 Cosmodrome
+// Bell Games
+						//			01/82 Magic Picture Pin
+						//BY35      ??/82 Fantasy (Bally Centaur clone)
+						//			02/83 Pinball (Zaccaria Pinball Champ '82 clone)
+						//			??/8? Movie (Zaccaria Pinball Champ clone)
+						//BY35      12/83 Pin Ball Pool (Bally Eight Ball Deluxe clone)
+						//			??/84 Cosmic Flash
+						//BY35      06/84 Super Bowl (Bally X's & O's clone)
+						//BY35      ??/84 Tiger Rag (Bally Kings Of Steel clone)
+DRIVERNV(newwave)       //BY35      04/85 New Wave (Bally Black Pyramid clone)
+DRIVERNV(saturn2)       //BY35      08/85 Saturn 2 (Bally Spy Hunter clone)
+						//			??/?? World Cup / World Championship (redemption game)
+// Nuova Bell Games
+						//BY35      11/85 World Defender
+DRIVERNV(spacehaw)      //BY35      04/86 Space Hawks (Bally Cybernaut clone)
+						//			??/86 Dark Shadow
+						//BY35      09/86 Skill Flight
+						//			02/87 Cobra
+DRIVERNV(futrquen)      //BY35      ??/87 Future Queen
+DRIVERNV(f1gp)          //BY35ALPHA ??/87 F1 Grand Prix
+						//			??/88 Top Pin (WMS Pin*Bot conversion)
+						//BY35ALPHA 06/88 U-Boat 65
 
 // ----------------
 // CAPCOM GAMES
@@ -505,15 +529,38 @@ DRIVERNV(lortium )      //Lortium
 DRIVERNV(petaco2 )      //Petaco 2
 
 // ----------------
-// LTD (Brazil)
+// LTD
 // ----------------
-DRIVERNV(bhol_ltd)      //Black Hole (clone of Gottlieb Black Hole)
-DRIVERNV(pecman  )      //Pec Man
-DRIVERNV(zephy   )      //Zephy (Xenon clone)
-DRIVERNV(cowboy  )      //Cowboy
-DRIVERNV(alcapone)      //Al Capone
+// Sistema III
+                        //O Gaucho
+                        //Samba
 DRIVERNV(atla_ltd)      //Atlantis
-DRIVERNV(columbia)      //Columbia
+                        //Grand Prix
+                        //Amazon
+                        //Arizona
+                        //Black Hole
+                        //Galaxia
+                        //Hustler
+                        //Martian Queen
+DRIVERNV(bhol_ltd)      //Black Hole (clone of Gottlieb game)
+DRIVERNV(zephy   )      //Zephy (clone of Bally Xenon)
+// Sistema IV
+DRIVERNV(alcapone)      //Al Capone
+                        //Alien Warrior
+                        //Carnaval no Rio
+                        //Columbia
+DRIVERNV(cowboy  )      //Cowboy Eight Ball (clone of Bally Eight Ball Deluxe)
+                        //Cowboy 2
+                        //Disco Dancing
+                        //Force
+                        //Haunted Hotel
+                        //King Kong
+                        //Kung Fu
+DRIVERNV(pecmen  )      //Mr. & Mrs. Pec-Men (clone of Bally's... guess the game! :))
+                        //Space Poker
+                        //Time Machine
+                        //Trick Shooter
+                        //Viking King
 
 // ----------------
 // MIDWAY GAMES
@@ -534,12 +581,6 @@ DRIVERNV(motrshow)		//Motor Show (1988?)
 DRIVERNV(motrshwa)		//Motor Show (alternate set)
 DRIVERNV(macattck)		//Mac Attack (1989?)
 DRIVERNV(wcup90)		//World Cup 90 (1990)
-
-// ----------------
-// NUOVA BELL GAMES
-// ----------------
-DRIVERNV(f1gp)			//F1 Grand Prix (1987)
-DRIVERNV(futrquen)		//Future Queen (1987)
 
 // ----------------
 // PEYPER
