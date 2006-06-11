@@ -117,7 +117,7 @@
     COREPORT_DIPNAME( 0x0008, 0x0000, "S4 prog enable") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0008, "1" ) \
-    COREPORT_DIPNAME( 0x00f0, 0x0070, "Speech clock speed") \
+    COREPORT_DIPNAME( 0x00f0, 0x00b0, "Speech clock speed") \
       COREPORT_DIPSET(0x0000, "530 kHz" ) \
       COREPORT_DIPSET(0x0010, "540 kHz" ) \
       COREPORT_DIPSET(0x0020, "550 kHz" ) \
