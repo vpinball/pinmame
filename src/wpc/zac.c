@@ -363,7 +363,7 @@ static WRITE_HANDLER(ram_w) {
 		else
 			coreGlobals.tmpLampMatrix[offset/8] &= ~(1 << (offset%8));
 	} else if (offset > 0x4bf && offset < 0x4e8)
-		locals.segments[0x4e7 - offset].w = core_bcd2seg7[data & 0x0f];
+		locals.segments[0x4e7 - offset].w = core_bcd2seg7a[data & 0x0f] | 0x80;
 //	else if (offset < 0x500) logerror("ram_w: offset = %4x, data = %02x\n", offset, data);
 }
 
@@ -371,7 +371,7 @@ static WRITE_HANDLER(ram1_w) {
 	ram1[offset] = data;
 
 	if (offset < 0x2e) {
-		locals.segments[0x2f - offset].w = core_bcd2seg7[data & 0x0f];
+		locals.segments[0x2f - offset].w = core_bcd2seg7a[data & 0x0f];
 		if (offset == 0x16) {
 			if (core_gameData->hw.soundBoard == SNDBRD_ZAC1125 || core_gameData->hw.soundBoard == SNDBRD_ZAC1346)
 				sndbrd_data_w(0, data);

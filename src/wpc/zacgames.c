@@ -485,7 +485,7 @@ CORE_GAMEDEFNV(strsphnx,"Star's Phoenix (Italian speech)",1987,"Zaccaria",ZAC2XS
 //??/86 New Star's Phoenix
 
 /*--------------------------------
-/ Scramble (Technoplay 1987)
+/ Scramble (Tecnoplay 1987)
 /-------------------------------*/
 INITGAME(scram_tp,GEN_ZAC2,dispZAC2,SNDBRD_TECHNO,366)
 ZAC_ROMSTART1820(scram_tp,	"scram_1.lgc",CRC(da565549) SHA1(d187801428824df2b506c999548a5c6d146bc59e),
@@ -496,4 +496,4 @@ TECHNO_SOUNDROM2("scram_3.snd",CRC(ed27cd78) SHA1(a062ee1a3ec8819acddac13a4b454f
                  "scram_4.snd",CRC(943f279d) SHA1(52767708d706a01ea16e37c866eb5762297e1f86),
                  "scram_5.snd",CRC(3aa782ec) SHA1(7cbbd3a737239b2755c6a6651a284e83fcfa22f6))
 ZAC_ROMEND
-CORE_GAMEDEFNV(scram_tp,"Scramble",1987,"Technoplay",mTECHNO,0)
+CORE_GAMEDEFNV(scram_tp,"Scramble",1987,"Tecnoplay",mTECHNO,0)
