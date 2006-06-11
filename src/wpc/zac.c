@@ -362,8 +362,11 @@ static WRITE_HANDLER(ram_w) {
 			coreGlobals.tmpLampMatrix[offset/8] |= 1 << (offset%8);
 		else
 			coreGlobals.tmpLampMatrix[offset/8] &= ~(1 << (offset%8));
-	} else if (offset > 0x4bf && offset < 0x4e8)
-		locals.segments[0x4e7 - offset].w = core_bcd2seg7a[data & 0x0f] | 0x80;
+	} else if (offset > 0x4bf && offset < 0x4e8) {
+		offset = 0x4e7 - offset;
+		locals.segments[offset].w = core_bcd2seg7a[data & 0x0f];
+		if (offset % 8 == 1 || offset % 8 == 4) locals.segments[offset].w |= 0x80;
+	}
 //	else if (offset < 0x500) logerror("ram_w: offset = %4x, data = %02x\n", offset, data);
 }
 
