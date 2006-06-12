@@ -160,7 +160,7 @@ static WRITE_HANDLER(pia1a_w) {
   if (core_gameData->hw.gameSpecific1 & BY35GD_ALPHA) {
     if (data & 0x80) { // 1st alphanumeric display strobe
       if (pos0 < 20)
-        locals.segments[pos0++].w = nuova_ascii2seg[locals.a0 & 0x7f];
+        locals.segments[pos0++].w = nuova_ascii2seg[locals.a0 & 0x7f] | (locals.a0 & 0x80);
       counter++;
       if (counter > 7) {
         counter = 0;
@@ -170,7 +170,7 @@ static WRITE_HANDLER(pia1a_w) {
     } else if (data & 0x40) { // 2nd alphanumeric display strobe
       counter = 0;
       if (pos1 < 12)
-        locals.segments[20+(pos1++)].w = nuova_ascii2seg[locals.a0 & 0x7f];
+        locals.segments[20+(pos1++)].w = nuova_ascii2seg[locals.a0 & 0x7f] | (locals.a0 & 0x80);
     }
   } else if (!locals.ca20) {
     if (locals.hw & BY35HW_INVDISP4) {
@@ -602,7 +602,7 @@ MEMORY_END
 MACHINE_DRIVER_START(by35)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(by35,by35,by35)
-  MDRV_CPU_ADD_TAG("mcpu", M6800, 475000)
+  MDRV_CPU_ADD_TAG("mcpu", M6800, 500000) // never to be altered again, ever!!! (gaston)
   MDRV_CPU_MEMORY(by35_readmem, by35_writemem)
   MDRV_CPU_VBLANK_INT(by35_vblank, 1)
   MDRV_CPU_PERIODIC_INT(by35_irq, BY35_IRQFREQ)
