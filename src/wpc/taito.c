@@ -17,14 +17,13 @@
 //			      7-12 are automatically activated by sol 17
 //				  flip sols as usual: right 45-46, left 47-48, active if sol 18 is on
 //
-// Many thanks to Aleandre Souza and Newton Pessoa
+// Many thanks to Alexandre Souza and Newton Pessoa
 
-#define TAITO_VBLANKFREQ     60  // VBLANK frequency
-#define TAITO_IRQFREQ        0.2
+#define TAITO_IRQFREQ        0.53 // NE555 astable, C=3.3u, R1=820k, R2=2.2k, tOn=1880ms, tOff=5ms
 
 #define TAITO_SOLSMOOTH      2 // Smooth the sols over this number of VBLANKS
 #define TAITO_DISPLAYSMOOTH  2 // Smooth the display over this number of VBLANKS
-#define TAITO_LAMPSMOOTH	 2 // Smooth the display over this number of VBLANKS
+#define TAITO_LAMPSMOOTH	 2 // Smooth the lamps over this number of VBLANKS
 
 static struct {
   int vblankCount;
@@ -72,13 +71,14 @@ static INTERRUPT_GEN(taito_vblank) {
 
 static SWITCH_UPDATE(taito) {
 	if (inports) {
-		coreGlobals.swMatrix[1] = (inports[TAITO_COMINPORT]&0xff);
-		coreGlobals.swMatrix[8] = (coreGlobals.swMatrix[8]&0xe0) | ((inports[TAITO_COMINPORT]>>8)&0x1f);
+    CORE_SETKEYSW(inports[TAITO_COMINPORT],    0xff, 1);
+    CORE_SETKEYSW(inports[TAITO_COMINPORT]>>8, 0x1f, 8);
 	}
 }
 
 static INTERRUPT_GEN(taito_irq) {
 	// logerror("irq:\n");
+	cpu_set_irq_line(TAITO_CPU, 0, CLEAR_LINE);
 	cpu_set_irq_line(TAITO_CPU, 0, HOLD_LINE);
 }
 
@@ -288,7 +288,7 @@ MACHINE_DRIVER_START(taito)
   MDRV_CORE_INIT_RESET_STOP(taito,NULL,taito)
   MDRV_CPU_ADD_TAG("mcpu", 8080, 1888888) // 17 MHz / 9
   MDRV_CPU_MEMORY(taito_readmem, taito_writemem)
-  MDRV_CPU_VBLANK_INT(taito_vblank, TAITO_VBLANKFREQ)
+  MDRV_CPU_VBLANK_INT(taito_vblank, 1)
   MDRV_NVRAM_HANDLER(taito)
   MDRV_DIPS(8)
   MDRV_SWITCH_UPDATE(taito)
