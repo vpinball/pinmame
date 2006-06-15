@@ -19,27 +19,25 @@
 #include "by35.h"
 #include "by35snd.h"
 
-// For later models, the CMOS is bigger than on normal bally machines,
+// For later models, the CMOS is bigger than on normal Bally machines,
 // and even occupies the same RAM area as the PIAs!
 static UINT8 *nuova_CMOS;
-static NVRAM_HANDLER(nuova) {
-  core_nvram(file, read_or_write, nuova_CMOS, 0x800, 0xff);
-}
+static NVRAM_HANDLER(nuova) { core_nvram(file, read_or_write, nuova_CMOS, 0x800, 0xff); }
 static WRITE_HANDLER(nuova_CMOS_w) { nuova_CMOS[offset] = data | 0x0f; }
 
 static MEMORY_READ_START(nuova_readmem)
-  { 0x0000, 0x007f, MRA_RAM }, /* U7 128 Byte Ram, this needs all 8 bits */
-  { 0x0088, 0x008b, pia_r(0) }, /* U10 PIA: Switchs + Display + Lamps*/
-  { 0x0090, 0x0093, pia_r(1) }, /* U11 PIA: Solenoids/Sounds + Display Strobe */
-  { 0x0000, 0x07ff, MRA_RAM }, /* CMOS Battery Backed, overlaps other areas */
+  { 0x0000, 0x007f, MRA_RAM }, /* Internal 128 Byte Ram, this needs all 8 bits */
+  { 0x0088, 0x008b, pia_r(0) }, /* U9 PIA: Switches + Display + Lamps */
+  { 0x0090, 0x0093, pia_r(1) }, /* U10 PIA: Solenoids/Sounds + Display Strobe */
+  { 0x0000, 0x07ff, MRA_RAM }, /* U6 2K CMOS Battery Backed, overlaps other areas */
   { 0x1000, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(nuova_writemem)
-  { 0x0000, 0x007f, MWA_RAM }, /* U7 128 Byte Ram, this needs all 8 bits*/
-  { 0x0088, 0x008b, pia_w(0) }, /* U10 PIA: Switchs + Display + Lamps*/
-  { 0x0090, 0x0093, pia_w(1) }, /* U11 PIA: Solenoids/Sounds + Display Strobe */
-  { 0x0000, 0x07ff, nuova_CMOS_w, &nuova_CMOS }, /* CMOS Battery Backed, overlaps other areas */
+  { 0x0000, 0x007f, MWA_RAM }, /* Internal 128 Byte Ram, this needs all 8 bits */
+  { 0x0088, 0x008b, pia_w(0) }, /* U9 PIA: Switches + Display + Lamps */
+  { 0x0090, 0x0093, pia_w(1) }, /* U10 PIA: Solenoids/Sounds + Display Strobe */
+  { 0x0000, 0x07ff, nuova_CMOS_w, &nuova_CMOS }, /* U6 2K CMOS Battery Backed, overlaps other areas */
 MEMORY_END
 
 
@@ -48,11 +46,42 @@ MEMORY_END
 static struct {
   struct sndbrdData brdData;
   UINT8 sndCmd;
+  UINT8 pia_a, pia_b;
 } locals;
+
+static READ_HANDLER(nuova_pia_a_r) { return locals.pia_a; }
+
+static WRITE_HANDLER(nuova_pia_a_w) { locals.pia_a = data; }
+
+static WRITE_HANDLER(nuova_pia_b_w) {
+  if (~data & 0x02) // write
+    tms5220_data_w(0, locals.pia_a);
+  if (~data & 0x01) // read
+    locals.pia_a = tms5220_status_r(0);
+  pia_set_input_ca2(2, 1);
+  locals.pia_b = data;
+}
+
+static READ_HANDLER(nuova_pia_ca2_r) { return !tms5220_ready_r(); }
+
+static READ_HANDLER(nuova_pia_cb1_r) { return !tms5220_int_r(); }
+
+static void nuova_irq(int state) {
+  cpu_set_irq_line(locals.brdData.cpuNo, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
+}
+
+static void nuova_5220Irq(int state) { pia_set_input_cb1(2, !state); }
+
+static struct pia6821_interface nuova_pia = {
+  /*i: A/B,CA/B1,CA/B2 */ nuova_pia_a_r, 0, PIA_UNUSED_VAL(1), nuova_pia_cb1_r, nuova_pia_ca2_r, PIA_UNUSED_VAL(0),
+  /*o: A/B,CA/B2       */ nuova_pia_a_w, nuova_pia_b_w, 0, 0,
+  /*irq: A/B           */ nuova_irq, nuova_irq
+};
 
 static void nuova_init(struct sndbrdData *brdData) {
   memset(&locals, 0x00, sizeof(locals));
   locals.brdData = *brdData;
+  pia_config(2, PIA_STANDARD_ORDERING, &nuova_pia);
 }
 
 static void nuova_diag(int button) {
@@ -60,7 +89,11 @@ static void nuova_diag(int button) {
 }
 
 static WRITE_HANDLER(nuova_data_w) {
-  locals.sndCmd = data;
+  locals.sndCmd = (locals.sndCmd & 0xf0) | (data & 0x0f);
+}
+
+static WRITE_HANDLER(nuova_ctrl_w) {
+  locals.sndCmd = (locals.sndCmd & 0x0f) | (data << 4);
 }
 
 static WRITE_HANDLER(dac_w) {
@@ -68,27 +101,28 @@ static WRITE_HANDLER(dac_w) {
 }
 
 static WRITE_HANDLER(bank_w) {
-  data = ~data;
-  logerror("bank_w = %x\n",data);
-  coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 1) | ((data >> 6) & 2);
-  if (data & 0x0f)
-    cpu_setbank(1, memory_region(REGION_SOUND1) + 0x8000 * (data & 0x07));
-  else
-    cpu_setbank(1, memory_region(REGION_SOUND1));
+  int bank = core_BitColToNum(~data & 0x0f);
+  logerror("bank_w = %x:%d\n", data, bank);
+  coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 1) | ((~data >> 6) & 2);
+  cpu_setbank(1, memory_region(REGION_SOUND1) + 0x8000 * bank);
 }
 
 static READ_HANDLER(snd_cmd_r) {
-  return locals.sndCmd;
+  if (locals.sndCmd & 0x10) {
+    return locals.sndCmd ^ 0x1f;
+  }
+  return 0;
 }
 
 static MEMORY_READ_START(snd_readmem)
+  { 0x00ff, 0x00ff, snd_cmd_r },
   { 0x0000, 0x00ff, MRA_RAM },
   { 0x8000, 0xffff, MRA_BANKNO(1) },
 MEMORY_END
 
 static MEMORY_WRITE_START(snd_writemem)
   { 0x0000, 0x00ff, MWA_RAM },
-  { 0xc000, 0xc000, bank_w  },
+  { 0xc000, 0xc000, bank_w },
 MEMORY_END
 
 static PORT_READ_START(snd_readport)
@@ -100,12 +134,13 @@ static PORT_WRITE_START(snd_writeport)
 PORT_END
 
 static struct DACinterface nuova_dacInt = { 1, { 25 }};
+static struct TMS5220interface nuova_tms5220Int = { 640000, 100, nuova_5220Irq };
 
 /*-------------------
 / exported interface
 /--------------------*/
 const struct sndbrdIntf nuovaIntf = {
-  "NUOVA", nuova_init, NULL, nuova_diag, nuova_data_w, nuova_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "NUOVA", nuova_init, NULL, nuova_diag, nuova_data_w, nuova_data_w, NULL, nuova_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
 MACHINE_DRIVER_START(nuova)
@@ -119,6 +154,7 @@ MACHINE_DRIVER_START(nuova)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(snd_readmem, snd_writemem)
   MDRV_CPU_PORTS(snd_readport, snd_writeport)
+  MDRV_SOUND_ADD(TMS5220, nuova_tms5220Int)
   MDRV_SOUND_ADD(DAC, nuova_dacInt)
 MACHINE_DRIVER_END
 
