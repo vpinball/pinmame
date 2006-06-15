@@ -8,7 +8,7 @@
   A few games use alpha displays, this is implemented in by35.c
 
   Issues/Todo:
-  Sound Board with 6803 CPU and speech capabilities (probably TMS5200)
+  Sound Board with 6803 CPU and DAC, Skill Flight probably uses a modified Squalk & Talk board.
 ************************************************************************************************/
 #include "driver.h"
 #include "cpu/m6800/m6800.h"
@@ -46,42 +46,12 @@ MEMORY_END
 static struct {
   struct sndbrdData brdData;
   UINT8 sndCmd;
-  UINT8 pia_a, pia_b;
+  int bank, LED;
 } locals;
-
-static READ_HANDLER(nuova_pia_a_r) { return locals.pia_a; }
-
-static WRITE_HANDLER(nuova_pia_a_w) { locals.pia_a = data; }
-
-static WRITE_HANDLER(nuova_pia_b_w) {
-  if (~data & 0x02) // write
-    tms5220_data_w(0, locals.pia_a);
-  if (~data & 0x01) // read
-    locals.pia_a = tms5220_status_r(0);
-  pia_set_input_ca2(2, 1);
-  locals.pia_b = data;
-}
-
-static READ_HANDLER(nuova_pia_ca2_r) { return !tms5220_ready_r(); }
-
-static READ_HANDLER(nuova_pia_cb1_r) { return !tms5220_int_r(); }
-
-static void nuova_irq(int state) {
-  cpu_set_irq_line(locals.brdData.cpuNo, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
-}
-
-static void nuova_5220Irq(int state) { pia_set_input_cb1(2, !state); }
-
-static struct pia6821_interface nuova_pia = {
-  /*i: A/B,CA/B1,CA/B2 */ nuova_pia_a_r, 0, PIA_UNUSED_VAL(1), nuova_pia_cb1_r, nuova_pia_ca2_r, PIA_UNUSED_VAL(0),
-  /*o: A/B,CA/B2       */ nuova_pia_a_w, nuova_pia_b_w, 0, 0,
-  /*irq: A/B           */ nuova_irq, nuova_irq
-};
 
 static void nuova_init(struct sndbrdData *brdData) {
   memset(&locals, 0x00, sizeof(locals));
   locals.brdData = *brdData;
-  pia_config(2, PIA_STANDARD_ORDERING, &nuova_pia);
 }
 
 static void nuova_diag(int button) {
@@ -96,15 +66,15 @@ static WRITE_HANDLER(nuova_ctrl_w) {
   locals.sndCmd = (locals.sndCmd & 0x0f) | (data << 4);
 }
 
-static WRITE_HANDLER(dac_w) {
-  DAC_0_data_w(0, data);
+static WRITE_HANDLER(nuova_man_w) {
+  locals.sndCmd = data;
 }
 
 static WRITE_HANDLER(bank_w) {
-  int bank = core_BitColToNum(~data & 0x0f);
-  logerror("bank_w = %x:%d\n", data, bank);
-  coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 1) | ((~data >> 6) & 2);
-  cpu_setbank(1, memory_region(REGION_SOUND1) + 0x8000 * bank);
+  locals.bank = core_BitColToNum(~data & 0x0f);
+  locals.LED = ~data >> 7;
+  coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 1) | (locals.LED << 1);
+  cpu_setbank(1, memory_region(REGION_SOUND1) + 0x8000 * locals.bank);
 }
 
 static READ_HANDLER(snd_cmd_r) {
@@ -116,31 +86,23 @@ static READ_HANDLER(snd_cmd_r) {
 
 static MEMORY_READ_START(snd_readmem)
   { 0x00ff, 0x00ff, snd_cmd_r },
-  { 0x0000, 0x00ff, MRA_RAM },
+  { 0x0080, 0x00ff, MRA_RAM },
   { 0x8000, 0xffff, MRA_BANKNO(1) },
 MEMORY_END
 
 static MEMORY_WRITE_START(snd_writemem)
-  { 0x0000, 0x00ff, MWA_RAM },
+  { 0x0002, 0x0002, DAC_0_data_w },
+  { 0x0080, 0x00ff, MWA_RAM },
   { 0xc000, 0xc000, bank_w },
 MEMORY_END
 
-static PORT_READ_START(snd_readport)
-  { M6803_PORT2, M6803_PORT2, snd_cmd_r },
-PORT_END
-
-static PORT_WRITE_START(snd_writeport)
-  { M6803_PORT1, M6803_PORT1, dac_w },
-PORT_END
-
-static struct DACinterface nuova_dacInt = { 1, { 25 }};
-static struct TMS5220interface nuova_tms5220Int = { 640000, 100, nuova_5220Irq };
+static struct DACinterface nuova_dacInt = { 1, { 50 }};
 
 /*-------------------
 / exported interface
 /--------------------*/
 const struct sndbrdIntf nuovaIntf = {
-  "NUOVA", nuova_init, NULL, nuova_diag, nuova_data_w, nuova_data_w, NULL, nuova_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "NUOVA", nuova_init, NULL, nuova_diag, nuova_man_w, nuova_data_w, NULL, nuova_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
 MACHINE_DRIVER_START(nuova)
@@ -150,11 +112,9 @@ MACHINE_DRIVER_START(nuova)
   MDRV_NVRAM_HANDLER(nuova)
   MDRV_DIAGNOSTIC_LEDH(2)
 
-  MDRV_CPU_ADD_TAG("scpu", M6803, 1000000)
+  MDRV_CPU_ADD_TAG("scpu", M6803, 3579545/4)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(snd_readmem, snd_writemem)
-  MDRV_CPU_PORTS(snd_readport, snd_writeport)
-  MDRV_SOUND_ADD(TMS5220, nuova_tms5220Int)
   MDRV_SOUND_ADD(DAC, nuova_dacInt)
 MACHINE_DRIVER_END
 
@@ -232,9 +192,13 @@ ROM_START(futrquen)
 
   NORMALREGION(0x40000, REGION_SOUND1)
     ROM_LOAD("snd_u8.bin", 0x0000, 0x8000, CRC(3d254d89) SHA1(2b4aa3387179e2c0fbf18684128761d3f778dcb2))
-    ROM_LOAD("snd_u9.bin", 0x10000,0x8000, CRC(9560f2c3) SHA1(3de6d074e2a3d3c8377fa330d4562b2d266bbfff))
-    ROM_LOAD("snd_u10.bin",0x20000,0x8000, CRC(70f440bc) SHA1(9fa4d33cc6174ce8f43f030487171bfbacf65537))
-    ROM_LOAD("snd_u11.bin",0x30000,0x8000, CRC(71d98d17) SHA1(9575b80a91a67b1644e909f70d364e0a75f73b02))
+      ROM_RELOAD(0x20000, 0x8000)
+    ROM_LOAD("snd_u9.bin", 0x8000,0x8000, CRC(9560f2c3) SHA1(3de6d074e2a3d3c8377fa330d4562b2d266bbfff))
+      ROM_RELOAD(0x28000, 0x8000)
+    ROM_LOAD("snd_u10.bin",0x10000,0x8000, CRC(70f440bc) SHA1(9fa4d33cc6174ce8f43f030487171bfbacf65537))
+      ROM_RELOAD(0x30000, 0x8000)
+    ROM_LOAD("snd_u11.bin",0x18000,0x8000, CRC(71d98d17) SHA1(9575b80a91a67b1644e909f70d364e0a75f73b02))
+      ROM_RELOAD(0x38000, 0x8000)
   NORMALREGION(0x10000, REGION_CPU2)
   ROM_COPY(REGION_SOUND1, 0x0000, 0x8000,0x8000)
 ROM_END
