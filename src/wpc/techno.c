@@ -16,8 +16,6 @@
   #2) Seems the display might go too fast in places, ie, doesn't scroll enough sometimes
   #3) In relation to #2 - not sure if calculation of the display column is always 100% correct
   #4) Need sound roms to work on sound emulation
-  #5) I think switches need to be flipped around as they don't line up as the manual shows
-  #6) Proper 16 Segment display should be implemented, instead of hacking it to fit the core
 
   NOTE ON TIMING: The manual claims the "Display Message" will appear every 15 seconds
 ************************************************************************************************/
@@ -30,8 +28,8 @@
 //#define TECHNO_CPUFREQ 8000000		//As written in manual
 #define TECHNO_CPUFREQ 4000000			//Seems to work better
 
-//8Mhz Crystal from CPU feeds an LS393 - Q1 (acts as divide by 2) - Feeds 4040 which divides by 128
-#define XFORCE_IRQ_FREQ TIME_IN_HZ((TECHNO_CPUFREQ/2)/128)		//Not 100% sure on this one..
+// Crystal from CPU feeds an LS393 - Q1 (acts as divide by 2) - Feeds 4040 which divides by 128 - Feeds 7474 (divide by 2)
+#define XFORCE_IRQ_FREQ TIME_IN_HZ(TECHNO_CPUFREQ/2/128/2)		//Not 100% sure on this one..
 
 #if 0
 #define LOG(x) printf x
@@ -57,7 +55,7 @@ static struct {
    0x88,0x89,0x8a,0x8b,0x8c,0x8d,0x8e,0x8f,0x98,0x99,0x9a,0x9b,0x9c,0x9d,0x9e,0x9f (and repeat)
 
    The very first time, 0x88 is skipped, since an IRQ is only triggered from a 1->0 transition */
-int xforce_irq_callback(int x)
+static int xforce_irq_callback(int x)
 {
 	int vector_num = 0;
 	if(locals.irq_count < 0x08)
@@ -114,32 +112,38 @@ static MACHINE_INIT(xforce) {
 }
 
 //Input Key - Return Switches (uses Lamp Column Strobe)
-READ16_HANDLER(input_key_r) {
+static READ16_HANDLER(input_key_r) {
 	UINT8 switches = coreGlobals.swMatrix[locals.LampCol+1];	//+1 so we begin by reading column 1 of input matrix instead of 0 which is used for special switches in many drivers
 	return (UINT16)core_revbyte(switches);	//Reverse bits to align with switch matrix from manual
 }
 
 //Return Soudn Status?
-READ16_HANDLER(input_sound_r) {
+static READ16_HANDLER(input_sound_r) {
 	LOG(("input_sound_r\n"));
 	return 0;
 }
 
-//The value here is read, which is tied to a ls74 flip, not sure what it's purpose.
-READ16_HANDLER(rtrg_r) {
+//The value here is read, which is tied to the ls74 flip generating the blanking signal.
+static READ16_HANDLER(rtrg_r) {
 	//LOG(("%08x: rtrg_r\n",activecpu_get_pc()));
+	return 0xffff;
+}
+
+//This value is read but unused according to schematics.
+static READ16_HANDLER(rtrg2_r) {
+	//LOG(("%08x: rtrg2_r\n",activecpu_get_pc()));
 	return 0;
 }
 
 //Lamp Rows (actually columns) 1-8
-WRITE16_HANDLER(lamp1_w) { locals.LampCol = core_BitColToNum(data >> 8); }
+static WRITE16_HANDLER(lamp1_w) { locals.LampCol = core_BitColToNum(data >> 8); }
 //Lamp Cols (actually rows) 1-8
-WRITE16_HANDLER(lamp2_w) { 	coreGlobals.tmpLampMatrix[locals.LampCol] = data>>8; }
+static WRITE16_HANDLER(lamp2_w) { 	coreGlobals.tmpLampMatrix[locals.LampCol] = data>>8; }
 
 //Solenoids 1-16
-WRITE16_HANDLER(sol1_w) { coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFFFF0000) | data; }
+static WRITE16_HANDLER(sol1_w) { coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xFFFF0000) | data; }
 //Solenoids 17-32
-WRITE16_HANDLER(sol2_w) { coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x0000FFFF) | (data<<16); }
+static WRITE16_HANDLER(sol2_w) { coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0x0000FFFF) | (data<<16); }
 
 
 //*****************************
@@ -149,7 +153,7 @@ WRITE16_HANDLER(sol2_w) { coreGlobals.pulsedSolState = (coreGlobals.pulsedSolSta
 //D10     = Display Data Clock
 //D11-D15 = AUX 1-5
 //******************************
-WRITE16_HANDLER(sound_w) {
+static WRITE16_HANDLER(sound_w) {
 	//LOG(("sound_w = %04x\n",data));
 
 	int dclk = (data & 0x400) >> 10;
@@ -186,17 +190,17 @@ WRITE16_HANDLER(sound_w) {
 This is now handled by core.c
 ******************************/
 
-WRITE16_HANDLER(disp1_w) {
+static WRITE16_HANDLER(disp1_w) {
 	//LOG(("%08x: disp1_w = %04x\n",activecpu_get_pc(),data));
     locals.segments[locals.DispCol].w = data;
 }
-WRITE16_HANDLER(disp2_w) {
+static WRITE16_HANDLER(disp2_w) {
 	//LOG(("%08x: disp2_w = %04x\n",activecpu_get_pc(),data));
 	locals.segments[locals.DispCol+16].w = data;
 }
 
 //Like rtrg - setout is connected to the same ls74 flip flop - not sure of it's purpose.
-WRITE16_HANDLER(setout_w) {
+static WRITE16_HANDLER(setout_w) {
 	//LOG(("%08x: setout_w = %04x\n",activecpu_get_pc(),data));
 }
 
@@ -210,10 +214,11 @@ static NVRAM_HANDLER(techno_nvram) {
 static MEMORY_READ16_START(readmem)
   { 0x000000, 0x003fff, MRA16_ROM },
   { 0x004000, 0x005fff, MRA16_RAM },
+  { 0x006000, 0x00ffff, MRA16_ROM },
   { 0x014000, 0x014001, input_key_r },
   { 0x014800, 0x014801, input_sound_r },
   { 0x015000, 0x015001, rtrg_r },
-  { 0x006000, 0x00ffff, MRA16_ROM },
+  { 0x015800, 0x015801, rtrg2_r },
 MEMORY_END
 
 static MEMORY_WRITE16_START(writemem)
@@ -300,8 +305,8 @@ INPUT_PORTS_END
 
 ROM_START(xforce) \
   NORMALREGION(0x1000000, REGION_CPU1) \
-    ROM_LOAD16_BYTE("ic15", 0x000001, 0x8000, CRC(fb8d2853)) \
-    ROM_LOAD16_BYTE("ic17", 0x000000, 0x8000, CRC(122ef649))
+    ROM_LOAD16_BYTE("ic15", 0x000001, 0x8000, CRC(fb8d2853) SHA1(0b0004abfe32edfd3ac15d66f90695d264c97eba)) \
+    ROM_LOAD16_BYTE("ic17", 0x000000, 0x8000, CRC(122ef649) SHA1(0b425f81869bc359841377a91c39f44395502bff))
 ROM_END
 
 CORE_GAMEDEFNV(xforce, "X Force", 1987, "Tecnoplay", xforce, GAME_NO_SOUND)
