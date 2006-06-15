@@ -534,12 +534,11 @@ static struct {
 /  Initialize the game palette
 /-------------------------------*/
 static PALETTE_INIT(core) {
-  int diff;
   const int palSize = sizeof(core_palette)/3;
-  unsigned char tmpPalette[palSize][3];
+  unsigned char tmpPalette[sizeof(core_palette)/3][3];
   int rStart = 0xff, gStart = 0xe0, bStart = 0x20;
   int perc66 = 67, perc33 = 33, perc0  = 20;
-  int ii;
+  int ii, diff;
 
   if ((pmoptions.dmd_red > 0) || (pmoptions.dmd_green > 0) || (pmoptions.dmd_blue > 0)) {
     rStart = pmoptions.dmd_red; gStart = pmoptions.dmd_green; bStart = pmoptions.dmd_blue;
