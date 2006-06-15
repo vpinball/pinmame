@@ -536,7 +536,7 @@ static struct {
 static PALETTE_INIT(core) {
   int diff;
   const int palSize = sizeof(core_palette)/3;
-  unsigned char tmpPalette[sizeof(core_palette)/3][3];
+  unsigned char tmpPalette[palSize][3];
   int rStart = 0xff, gStart = 0xe0, bStart = 0x20;
   int perc66 = 67, perc33 = 33, perc0  = 20;
   int ii;
@@ -569,37 +569,32 @@ static PALETTE_INIT(core) {
   tmpPalette[COL_SEGAAON2][0] = rStart * 33 / 100;
   tmpPalette[COL_SEGAAON2][1] = gStart * 33 / 100;
   tmpPalette[COL_SEGAAON2][2] = bStart * 33 / 100;
-  rStart = tmpPalette[COL_DMDOFF][0];
-  gStart = tmpPalette[COL_DMDOFF][1];
-  bStart = tmpPalette[COL_DMDOFF][2];
-  tmpPalette[COL_SEGAAOFF1][0] = rStart * 72 / 100;
-  tmpPalette[COL_SEGAAOFF1][1] = gStart * 72 / 100;
-  tmpPalette[COL_SEGAAOFF1][2] = bStart * 72 / 100;
-  tmpPalette[COL_SEGAAOFF2][0] = rStart * 33 / 100;
-  tmpPalette[COL_SEGAAOFF2][1] = gStart * 33 / 100;
-  tmpPalette[COL_SEGAAOFF2][2] = bStart * 33 / 100;
+  tmpPalette[COL_SEGAAOFF1][0] = rStart * perc0 * 72 / 10000;
+  tmpPalette[COL_SEGAAOFF1][1] = gStart * perc0 * 72 / 10000;
+  tmpPalette[COL_SEGAAOFF1][2] = bStart * perc0 * 72 / 10000;
+  tmpPalette[COL_SEGAAOFF2][0] = rStart * perc0 * 33 / 10000;
+  tmpPalette[COL_SEGAAOFF2][1] = gStart * perc0 * 33 / 10000;
+  tmpPalette[COL_SEGAAOFF2][2] = bStart * perc0 * 33 / 10000;
 
   /*-- generate 16 shades of the segment color for all antialiased segments --*/
-  diff = 100 - perc0;
+  diff = (100 - perc0) / 15;
   for (ii = 0; ii < 16; ii++) {
-    tmpPalette[palSize-16+ii][0]  = rStart * diff * ii / 300 + tmpPalette[COL_DMDOFF][0];
-    tmpPalette[palSize-16+ii][1]  = gStart * diff * ii / 300 + tmpPalette[COL_DMDOFF][1];
-    tmpPalette[palSize-16+ii][2]  = bStart * diff * ii / 300 + tmpPalette[COL_DMDOFF][2];
-  }
-  diff = 72 - perc0;
-  for (ii = 0; ii < 16; ii++) {
-    tmpPalette[palSize-32+ii][0]  = rStart * diff * ii / 300 + tmpPalette[COL_SEGAAOFF1][0];
-    tmpPalette[palSize-32+ii][1]  = gStart * diff * ii / 300 + tmpPalette[COL_SEGAAOFF1][1];
-    tmpPalette[palSize-32+ii][2]  = bStart * diff * ii / 300 + tmpPalette[COL_SEGAAOFF1][2];
-  }
-  diff = 33 - perc0;
-  for (ii = 0; ii < 16; ii++) {
-    tmpPalette[palSize-48+ii][0]  = rStart * diff * ii / 300 + tmpPalette[COL_SEGAAOFF2][0];
-    tmpPalette[palSize-48+ii][1]  = gStart * diff * ii / 300 + tmpPalette[COL_SEGAAOFF2][1];
-    tmpPalette[palSize-48+ii][2]  = bStart * diff * ii / 300 + tmpPalette[COL_SEGAAOFF2][2];
+    tmpPalette[palSize-16+ii][0]  = rStart * (perc0 + diff * ii) / 100;
+    tmpPalette[palSize-16+ii][1]  = gStart * (perc0 + diff * ii) / 100;
+    tmpPalette[palSize-16+ii][2]  = bStart * (perc0 + diff * ii) / 100;
+    tmpPalette[palSize-32+ii][0]  = rStart * (perc0 + diff * ii) * 72 / 10000;
+    tmpPalette[palSize-32+ii][1]  = gStart * (perc0 + diff * ii) * 72 / 10000;
+    tmpPalette[palSize-32+ii][2]  = bStart * (perc0 + diff * ii) * 72 / 10000;
+    tmpPalette[palSize-48+ii][0]  = rStart * (perc0 + diff * ii) * 33 / 10000;
+    tmpPalette[palSize-48+ii][1]  = gStart * (perc0 + diff * ii) * 33 / 10000;
+    tmpPalette[palSize-48+ii][2]  = bStart * (perc0 + diff * ii) * 33 / 10000;
   }
 
 //for (int i = 0; i < palSize; i++) printf("Col %d: %02x %02x %02x\n", i, tmpPalette[i][0],tmpPalette[i][1],tmpPalette[i][2]);
+
+  rStart = tmpPalette[COL_DMDOFF][0];
+  gStart = tmpPalette[COL_DMDOFF][1];
+  bStart = tmpPalette[COL_DMDOFF][2];
 
   /*-- Autogenerate Dark Playfield Lamp Colors --*/
   for (ii = 0; ii < COL_LAMPCOUNT; ii++) { /* Reduce by 75% */
