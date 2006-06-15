@@ -136,8 +136,8 @@ static core_tLCDLayout dispNB[] = {
 };
 
 static core_tLCDLayout dispAlpha[] = {
-  {0, 0, 0,16,CORE_SEG16},
-  {3, 0,16,16,CORE_SEG16},
+  {0, 0, 0,16,CORE_SEG16S},
+  {4, 0,16,16,CORE_SEG16S},
   {0}
 };
 
