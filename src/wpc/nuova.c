@@ -46,7 +46,7 @@ MEMORY_END
 static struct {
   struct sndbrdData brdData;
   UINT8 sndCmd;
-  int bank, LED;
+  int bank, LED, mute, enable;
 } locals;
 
 static void nuova_init(struct sndbrdData *brdData) {
@@ -70,28 +70,40 @@ static WRITE_HANDLER(nuova_man_w) {
   locals.sndCmd = data;
 }
 
+static WRITE_HANDLER(dac_w) {
+  if (!locals.mute) DAC_0_data_w(0, data);
+}
+
+static WRITE_HANDLER(enable_w) {
+  locals.enable = data & 0x10 ? 0 : 1;
+  logerror("enable:%d\n", locals.enable);
+}
+
 static WRITE_HANDLER(bank_w) {
-  locals.bank = core_BitColToNum(~data & 0x0f);
-  locals.LED = ~data >> 7;
-  coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 1) | (locals.LED << 1);
-  cpu_setbank(1, memory_region(REGION_SOUND1) + 0x8000 * locals.bank);
+  if (locals.enable) {
+    locals.bank = core_BitColToNum(~data & 0x0f);
+    locals.mute = (data >> 6) & 1;
+    locals.LED = ~data >> 7;
+    cpu_setbank(1, memory_region(REGION_SOUND1) + 0x20000 + 0x8000 * locals.bank);
+    cpu_setbank(2, memory_region(REGION_SOUND1) + 0x8000 * locals.bank);
+    coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 1) | (locals.LED << 1);
+  }
 }
 
 static READ_HANDLER(snd_cmd_r) {
-  if (locals.sndCmd & 0x10) {
-    return locals.sndCmd ^ 0x1f;
-  }
-  return 0;
+  return locals.sndCmd ^ 0x1f;
 }
 
 static MEMORY_READ_START(snd_readmem)
   { 0x00ff, 0x00ff, snd_cmd_r },
   { 0x0080, 0x00ff, MRA_RAM },
-  { 0x8000, 0xffff, MRA_BANKNO(1) },
+  { 0x0000, 0x7fff, MRA_BANKNO(1) },
+  { 0x8000, 0xffff, MRA_BANKNO(2) },
 MEMORY_END
 
 static MEMORY_WRITE_START(snd_writemem)
-  { 0x0002, 0x0002, DAC_0_data_w },
+  { 0x0002, 0x0002, dac_w },
+  { 0x0003, 0x0003, enable_w },
   { 0x0080, 0x00ff, MWA_RAM },
   { 0xc000, 0xc000, bank_w },
 MEMORY_END
@@ -111,8 +123,8 @@ MACHINE_DRIVER_START(nuova)
   MDRV_CPU_MEMORY(nuova_readmem, nuova_writemem)
   MDRV_NVRAM_HANDLER(nuova)
   MDRV_DIAGNOSTIC_LEDH(2)
-
-  MDRV_CPU_ADD_TAG("scpu", M6803, 3579545/4)
+  // CPU clock adjusted to fit recorded live sample
+  MDRV_CPU_ADD_TAG("scpu", M6803, 975000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(snd_readmem, snd_writemem)
   MDRV_SOUND_ADD(DAC, nuova_dacInt)
@@ -191,9 +203,9 @@ ROM_START(futrquen)
   ROM_COPY(REGION_CPU1, 0xe800, 0xd000,0x0800)
 
   NORMALREGION(0x40000, REGION_SOUND1)
-    ROM_LOAD("snd_u8.bin", 0x0000, 0x8000, CRC(3d254d89) SHA1(2b4aa3387179e2c0fbf18684128761d3f778dcb2))
+    ROM_LOAD("snd_u8.bin", 0x00000,0x8000, CRC(3d254d89) SHA1(2b4aa3387179e2c0fbf18684128761d3f778dcb2))
       ROM_RELOAD(0x20000, 0x8000)
-    ROM_LOAD("snd_u9.bin", 0x8000,0x8000, CRC(9560f2c3) SHA1(3de6d074e2a3d3c8377fa330d4562b2d266bbfff))
+    ROM_LOAD("snd_u9.bin", 0x08000,0x8000, CRC(9560f2c3) SHA1(3de6d074e2a3d3c8377fa330d4562b2d266bbfff))
       ROM_RELOAD(0x28000, 0x8000)
     ROM_LOAD("snd_u10.bin",0x10000,0x8000, CRC(70f440bc) SHA1(9fa4d33cc6174ce8f43f030487171bfbacf65537))
       ROM_RELOAD(0x30000, 0x8000)
@@ -204,7 +216,7 @@ ROM_START(futrquen)
 ROM_END
 
 INITGAMENB(futrquen,GEN_BY35,dispNB,FLIP_SW(FLIP_L),8,SNDBRD_NUOVA,0)
-BY35_INPUT_PORTS_START(futrquen, 1) BY35_INPUT_PORTS_END
+BY35_INPUT_PORTS_START(futrquen, 2) BY35_INPUT_PORTS_END
 CORE_GAMEDEFNV(futrquen, "Future Queen", 1987, "Nuova Bell Games", nuova, 0)
 
 /*--------------------------------
@@ -239,18 +251,18 @@ ROM_START(f1gp)
   ROM_COPY(REGION_CPU1, 0xe000, 0xb000,0x1000)
 
   NORMALREGION(0x40000, REGION_SOUND1)
-    ROM_LOAD("snd_u8b", 0x0000, 0x8000, CRC(14cddb29) SHA1(667b54174ad5dd8aa45037574916ecb4ee996a94))
-    ROM_LOAD("snd_u8a", 0x8000, 0x8000, CRC(3a2af90b) SHA1(f6eeae74b3bfb1cfd9235c5214f7c029e0ad14d6))
-    ROM_LOAD("snd_u9b", 0x10000,0x8000, CRC(726920b5) SHA1(002e7a072a173836c89746cceca7e5d2ac26356d))
-    ROM_LOAD("snd_u9a", 0x18000,0x8000, CRC(681ee99c) SHA1(955cd782073a1ce0be7a427c236d47fcb9cccd20))
-    ROM_LOAD("snd_u10b",0x20000,0x8000, CRC(9de359fb) SHA1(ce75a78dc4ed747421a386d172fa0f8a1369e860))
-    ROM_LOAD("snd_u10a",0x28000,0x8000, CRC(4d3fc9bb) SHA1(d43cd134f399e128a678b86e57b1917fad70df76))
-    ROM_LOAD("snd_u11b",0x30000,0x8000, CRC(2394b498) SHA1(bf0884a6556a27791e7e801051be5975dd6b95c4))
+    ROM_LOAD("snd_u8a", 0x20000,0x8000, CRC(3a2af90b) SHA1(f6eeae74b3bfb1cfd9235c5214f7c029e0ad14d6))
+    ROM_LOAD("snd_u8b", 0x00000,0x8000, CRC(14cddb29) SHA1(667b54174ad5dd8aa45037574916ecb4ee996a94))
+    ROM_LOAD("snd_u9a", 0x28000,0x8000, CRC(681ee99c) SHA1(955cd782073a1ce0be7a427c236d47fcb9cccd20))
+    ROM_LOAD("snd_u9b", 0x08000,0x8000, CRC(726920b5) SHA1(002e7a072a173836c89746cceca7e5d2ac26356d))
+    ROM_LOAD("snd_u10a",0x30000,0x8000, CRC(4d3fc9bb) SHA1(d43cd134f399e128a678b86e57b1917fad70df76))
+    ROM_LOAD("snd_u10b",0x10000,0x8000, CRC(9de359fb) SHA1(ce75a78dc4ed747421a386d172fa0f8a1369e860))
     ROM_LOAD("snd_u11a",0x38000,0x8000, CRC(884dc754) SHA1(b121476ea621eae7a7ba0b9a1b5e87051e1e9e3d))
+    ROM_LOAD("snd_u11b",0x18000,0x8000, CRC(2394b498) SHA1(bf0884a6556a27791e7e801051be5975dd6b95c4))
   NORMALREGION(0x10000, REGION_CPU2)
   ROM_COPY(REGION_SOUND1, 0x0000, 0x8000,0x8000)
 ROM_END
 
 INITGAMEAL(f1gp,GEN_BY35,dispAlpha,FLIP_SWNO(48,0),8,SNDBRD_NUOVA,0)
-BY35_INPUT_PORTS_START(f1gp, 1) BY35_INPUT_PORTS_END
+BY35_INPUT_PORTS_START(f1gp, 3) BY35_INPUT_PORTS_END
 CORE_GAMEDEFNV(f1gp, "F1 Grand Prix", 1987, "Nuova Bell Games", nuova, 0)
