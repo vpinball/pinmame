@@ -45,7 +45,7 @@ MEMORY_END
 
 static struct {
   struct sndbrdData brdData;
-  UINT8 sndCmd;
+  UINT8 sndCmd, latch;
   int bank, LED, mute, enable;
 } locals;
 
@@ -82,10 +82,10 @@ static WRITE_HANDLER(enable_w) {
 static WRITE_HANDLER(bank_w) {
   if (locals.enable) {
     locals.bank = core_BitColToNum(~data & 0x0f);
+//    logerror("bank: %d\n", locals.bank);
+    cpu_setbank(1, memory_region(REGION_SOUND1) + 0x8000 * locals.bank);
     locals.mute = (data >> 6) & 1;
     locals.LED = ~data >> 7;
-    cpu_setbank(1, memory_region(REGION_SOUND1) + 0x20000 + 0x8000 * locals.bank);
-    cpu_setbank(2, memory_region(REGION_SOUND1) + 0x8000 * locals.bank);
     coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 1) | (locals.LED << 1);
   }
 }
@@ -94,19 +94,37 @@ static READ_HANDLER(snd_cmd_r) {
   return locals.sndCmd ^ 0x1f;
 }
 
+static READ_HANDLER(latch_r) {
+  locals.latch = locals.sndCmd ^ 0x1f;
+  return locals.latch;
+}
+
+static WRITE_HANDLER(latch_w) {
+  locals.latch = data;
+}
+
 static MEMORY_READ_START(snd_readmem)
-  { 0x00ff, 0x00ff, snd_cmd_r },
-  { 0x0080, 0x00ff, MRA_RAM },
-  { 0x0000, 0x7fff, MRA_BANKNO(1) },
-  { 0x8000, 0xffff, MRA_BANKNO(2) },
+  { 0x0000, 0x001f, m6803_internal_registers_r },
+  { 0x0080, 0x00fe, MRA_RAM },
+  { 0x00ff, 0x00ff, latch_r },
+  { 0x8000, 0xffff, MRA_BANKNO(1) },
 MEMORY_END
 
 static MEMORY_WRITE_START(snd_writemem)
-  { 0x0002, 0x0002, dac_w },
-  { 0x0003, 0x0003, enable_w },
-  { 0x0080, 0x00ff, MWA_RAM },
+  { 0x0000, 0x001f, m6803_internal_registers_w },
+  { 0x0080, 0x00fe, MWA_RAM },
+  { 0x00ff, 0x00ff, latch_w },
   { 0xc000, 0xc000, bank_w },
 MEMORY_END
+
+static PORT_READ_START(snd_readport)
+  { M6803_PORT2, M6803_PORT2, snd_cmd_r },
+PORT_END
+
+static PORT_WRITE_START(snd_writeport)
+  { M6803_PORT1, M6803_PORT1, dac_w },
+  { M6803_PORT2, M6803_PORT2, enable_w },
+PORT_END
 
 static struct DACinterface nuova_dacInt = { 1, { 50 }};
 
@@ -127,6 +145,7 @@ MACHINE_DRIVER_START(nuova)
   MDRV_CPU_ADD_TAG("scpu", M6803, 975000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(snd_readmem, snd_writemem)
+  MDRV_CPU_PORTS(snd_readport, snd_writeport)
   MDRV_SOUND_ADD(DAC, nuova_dacInt)
 MACHINE_DRIVER_END
 
