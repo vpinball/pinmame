@@ -1,4 +1,6 @@
 #include "driver.h"
+#include "cpu/m6800/m6800.h"
+#include "sound/ay8910.h"
 #include "core.h"
 #include "ltd.h"
 
@@ -8,30 +10,30 @@
 static struct {
   int vblankCount;
   int diagnosticLed;
-  UINT8 db;
   UINT32 solenoids;
   core_tSeg segments;
-  UINT8 pseg1, pseg2;
-  mame_timer *irqtimer;
-  int irqfreq;
+  int swCol, cycle, solBank;
+  UINT8 port2, dispData[2];
 } locals;
 
 #define LTD_CPUFREQ	3579545/4
 
-#ifdef MAME_DEBUG
-static void adjust_timer(int offset) {
-  static char s[4];
-  locals.irqfreq += offset;
-  if (locals.irqfreq < 1) locals.irqfreq = 1;
-  sprintf(s, "%4d", locals.irqfreq);
-  core_textOut(s, 4, 25, 5, 5);
-  timer_adjust(locals.irqtimer, 1.0/(double)locals.irqfreq, 0, 1.0/(double)locals.irqfreq);
-}
-#endif /* MAME_DEBUG */
+static WRITE_HANDLER(ay8910_0_ctrl_w) { AY8910Write(0,0,data); }
+static WRITE_HANDLER(ay8910_0_data_w) { AY8910Write(0,1,data); }
+static WRITE_HANDLER(ay8910_0_reset)  { AY8910_reset(0); }
+static READ_HANDLER (ay8910_0_r)      { return AY8910Read(0); }
 
-static void timer_callback(int n) {
-  cpu_set_irq_line(0, 0, PULSE_LINE);
-}
+static WRITE_HANDLER(ay8910_1_ctrl_w) { AY8910Write(1,0,data); }
+static WRITE_HANDLER(ay8910_1_data_w) { AY8910Write(1,1,data); }
+static WRITE_HANDLER(ay8910_1_reset)  { AY8910_reset(1); }
+static READ_HANDLER (ay8910_1_r)      { return AY8910Read(1); }
+
+
+struct AY8910interface LTD_ay8910Int = {
+	2,					/* 2 chips */
+	LTD_CPUFREQ,		/* 895 kHz */
+	{ MIXER(30,MIXER_PAN_LEFT), MIXER(30,MIXER_PAN_RIGHT) },	/* Volume */
+};
 
 /*-------------------------------
 /  copy local data to interface
@@ -58,6 +60,13 @@ static INTERRUPT_GEN(LTD_vblank) {
   core_updateSw(core_getSol(17));
 }
 
+
+// System III
+
+static INTERRUPT_GEN(LTD_irq) {
+  cpu_set_irq_line(0, M6800_IRQ_LINE, PULSE_LINE);
+}
+
 static SWITCH_UPDATE(LTD) {
   if (inports) {
     CORE_SETKEYSW(inports[LTD_COMINPORT],    0x01, 0);
@@ -65,16 +74,6 @@ static SWITCH_UPDATE(LTD) {
     CORE_SETKEYSW(inports[LTD_COMINPORT]>>8, 0x20, 4);
   }
   cpu_set_nmi_line(LTD_CPU, coreGlobals.swMatrix[0] & 1);
-#ifdef MAME_DEBUG
-  if      (keyboard_pressed_memory_repeat(KEYCODE_Z, 2))
-    adjust_timer(-10);
-  else if (keyboard_pressed_memory_repeat(KEYCODE_X, 2))
-    adjust_timer(-1);
-  else if (keyboard_pressed_memory_repeat(KEYCODE_C, 2))
-    adjust_timer(1);
-  else if (keyboard_pressed_memory_repeat(KEYCODE_V, 2))
-    adjust_timer(10);
-#endif /* MAME_DEBUG */
 }
 
 /* Activate periphal write:
@@ -103,40 +102,36 @@ static WRITE_HANDLER(peri_w) {
 }
 
 static WRITE_HANDLER(auxlamp1_w) {
-  coreGlobals.tmpLampMatrix[7] = data;
-}
-
-static WRITE_HANDLER(auxlamp2_w) {
   coreGlobals.tmpLampMatrix[8] = data;
 }
 
-static WRITE_HANDLER(auxlamp3_w) {
+static WRITE_HANDLER(auxlamp2_w) {
   coreGlobals.tmpLampMatrix[9] = data;
 }
 
-static WRITE_HANDLER(auxlamp4_w) {
+static WRITE_HANDLER(auxlamp3_w) {
   coreGlobals.tmpLampMatrix[10] = data;
 }
 
-static WRITE_HANDLER(auxlamp5_w) {
+static WRITE_HANDLER(auxlamp4_w) {
   coreGlobals.tmpLampMatrix[11] = data;
 }
 
-static WRITE_HANDLER(auxlamp6_w) {
+static WRITE_HANDLER(auxlamp5_w) {
   coreGlobals.tmpLampMatrix[12] = data;
 }
 
-static WRITE_HANDLER(auxlamp7_w) {
+static WRITE_HANDLER(auxlamp6_w) {
   coreGlobals.tmpLampMatrix[13] = data;
+}
+
+static WRITE_HANDLER(auxlamp7_w) {
+  coreGlobals.tmpLampMatrix[7] = data;
 }
 
 static WRITE_HANDLER(ram_w) {
   generic_nvram[offset] = data;
   if (offset >= 0x60 && offset < 0x78) peri_w(offset-0x60, data);
-}
-
-static READ_HANDLER(ram_r) {
-  return generic_nvram[offset];
 }
 
 static READ_HANDLER(sw_r) {
@@ -145,16 +140,13 @@ static READ_HANDLER(sw_r) {
 
 static MACHINE_INIT(LTD) {
   memset(&locals, 0, sizeof locals);
-  locals.irqtimer = timer_alloc(timer_callback);
-  locals.irqfreq = 200;
-  timer_adjust(locals.irqtimer, 1.0/(double)locals.irqfreq, 0, 1.0/(double)locals.irqfreq);
 }
 
 /*-----------------------------------------
 /  Memory map for system III CPU board
 /------------------------------------------*/
 static MEMORY_READ_START(LTD_readmem)
-  {0x0000,0x007f, ram_r},
+  {0x0000,0x007f, MRA_RAM},
   {0x0080,0x00ff, sw_r},
   {0xc000,0xffff, MRA_ROM},
 MEMORY_END
@@ -162,13 +154,11 @@ MEMORY_END
 static MEMORY_WRITE_START(LTD_writemem)
   {0x0000,0x007f, ram_w, &generic_nvram, &generic_nvram_size},
   {0x0800,0x0800, auxlamp1_w},
-  {0x0c00,0x0c00, auxlamp2_w},
-  {0x1800,0x1800, auxlamp3_w},
-  {0x1c00,0x1c00, auxlamp4_w},
-  {0x2800,0x2800, auxlamp5_w},
+  {0x0c00,0x0c00, auxlamp4_w},
+  {0x1800,0x1800, auxlamp2_w},
+  {0x1c00,0x1c00, auxlamp5_w},
+  {0x2800,0x2800, auxlamp3_w},
   {0x2c00,0x2c00, auxlamp6_w},
-  {0xb000,0xb000, auxlamp7_w},
-  {0xf000,0xffff, MWA_NOP},
 MEMORY_END
 
 MACHINE_DRIVER_START(LTD)
@@ -176,80 +166,110 @@ MACHINE_DRIVER_START(LTD)
   MDRV_CPU_ADD_TAG("mcpu", M6802, LTD_CPUFREQ)
   MDRV_CPU_MEMORY(LTD_readmem, LTD_writemem)
   MDRV_CPU_VBLANK_INT(LTD_vblank, 1)
+  MDRV_CPU_PERIODIC_INT(LTD_irq, 200)
   MDRV_CORE_INIT_RESET_STOP(LTD,NULL,NULL)
   MDRV_NVRAM_HANDLER(generic_1fill)
   MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_SWITCH_UPDATE(LTD)
 MACHINE_DRIVER_END
 
-static WRITE_HANDLER(peri4_w) {
-  if (offset == 4) {
-    locals.solenoids = (locals.solenoids & 0x1ff00) | data;
-  } else if (offset > 4 && offset < 0x17) {
-    locals.segments[offset-5].w = data;
-  } else if (offset == 0x17) {
-    locals.segments[18].w = core_bcd2seg[data >> 4];
-    locals.segments[19].w = core_bcd2seg[data & 0x0f];
-  } else if (offset == 0x18) {
-    locals.segments[20].w = core_bcd2seg[data >> 4];
-    locals.segments[21].w = core_bcd2seg[data & 0x0f];
-  } else if (offset == 0x19) {
-    locals.segments[22].w = core_bcd2seg[data >> 4];
-    locals.segments[23].w = core_bcd2seg[data & 0x0f];
-  } else if (offset >= 0x20 && offset < 0x2c) {
-    coreGlobals.tmpLampMatrix[offset - 0x20] = data;
-    // map flippers enable to sol 17
-    if (offset == 0x10) {
-      locals.solenoids = (locals.solenoids & 0x0ffff) | ((coreGlobals.tmpLampMatrix[0] & 0x40) ? 0 : 0x10000);
-      locals.diagnosticLed = coreGlobals.tmpLampMatrix[0] >> 7;
-    }
+
+// System 4
+
+static SWITCH_UPDATE(LTD4) {
+  if (inports) {
+    CORE_SETKEYSW(inports[LTD_COMINPORT]>>8, 0x01, 6);
+    CORE_SETKEYSW(inports[LTD_COMINPORT],    0x3f, 8);
   }
 }
 
-static READ_HANDLER(sw4_r) {
-  UINT8 sw = coreGlobals.swMatrix[offset + 1];
-  if (offset == 1) sw ^= 0x01;
-  return sw;
+static READ_HANDLER(port1_r) {
+  return (~locals.port2 & 0x10) ? ~coreGlobals.swMatrix[locals.swCol+1] : ~coreGlobals.swMatrix[locals.swCol+9];
 }
 
-static WRITE_HANDLER(ram4_w) {
-  generic_nvram[offset] = data;
-  if (offset >= 0xd0 && offset < 0xfc) peri4_w(offset-0xd0, data);
+static UINT8 convDisp(UINT8 data) {
+  return (data & 0x88) |
+    ((data & 1) << 6) |
+    ((data & 2) << 4) |
+    ((data & 4) << 2) |
+    ((data & 0x10) >> 2) |
+    ((data & 0x20) >> 4) |
+    ((data & 0x40) >> 6);
 }
 
-static MACHINE_INIT(LTD4) {
-  memset(&locals, 0, sizeof locals);
-  locals.irqtimer = timer_alloc(timer_callback);
-  locals.irqfreq = 100;
-  timer_adjust(locals.irqtimer, 1.0/(double)locals.irqfreq, 0, 1.0/(double)locals.irqfreq);
+static WRITE_HANDLER(peri4_w) {
+  if (locals.port2 & 0x10) switch (locals.cycle) {
+    case  0: locals.swCol = (1 + core_BitColToNum(data)) % 8; break;
+    case  1: locals.solBank = core_BitColToNum(data); break;
+    case  2: locals.solenoids |= ((data >> 4) << (locals.solBank * 4)) >> 1; coreGlobals.solenoids = locals.solenoids; break;
+    case  6: locals.segments[31-(data & 0x0f)].w = locals.dispData[0]; locals.segments[15-(data & 0x0f)].w = locals.dispData[1]; break;
+    case  7: locals.dispData[0] = convDisp(data); break;
+    case  8: locals.dispData[1] = convDisp(data); break;
+    case 10: coreGlobals.tmpLampMatrix[locals.swCol] = data; break;
+    default: logerror("peri_%d_w = %02x\n", locals.cycle, data);
+  }
+}
+
+static READ_HANDLER(port2_r) {
+  return locals.port2;
+}
+
+static WRITE_HANDLER(cycle_w) {
+  if (~locals.port2 & data & 0x10) locals.cycle++;
+  locals.port2 = data;
+}
+
+static WRITE_HANDLER(cycle_reset_w) {
+  locals.cycle = 0;
+}
+
+static WRITE_HANDLER(auxlamps_w) {
+  coreGlobals.tmpLampMatrix[(locals.swCol % 2 ? 12 : 8)+locals.swCol/2] = data;
 }
 
 /*-----------------------------------------
 /  Memory map for system 4 CPU board
 /------------------------------------------*/
 static MEMORY_READ_START(LTD_readmem2)
-  {0x0000,0x01f7, ram_r},
-  {0x01f8,0x01ff, sw4_r},
+  {0x0000,0x001f, m6803_internal_registers_r},
+  {0x0080,0x00ff, MRA_RAM},
+  {0x0100,0x01ff, MRA_RAM},
   {0xc000,0xffff, MRA_ROM},
 MEMORY_END
 
 static MEMORY_WRITE_START(LTD_writemem2)
-  {0x0000,0x01ff, ram4_w, &generic_nvram, &generic_nvram_size},
-  {0x0800,0x0800, auxlamp6_w},
-  {0x0c00,0x0c00, auxlamp7_w},
-  {0x1400,0x1400, auxlamp6_w},
-  {0x1800,0x1800, auxlamp7_w},
-  {0x1c00,0x1c00, auxlamp6_w},
-  {0x2800,0x2800, auxlamp7_w},
+  {0x0000,0x001f, m6803_internal_registers_w},
+  {0x0080,0x00ff, MWA_RAM},
+  {0x0100,0x01ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
+  {0x0800,0x0800, cycle_reset_w},
+  {0x2800,0x2800, auxlamps_w},
+  {0x0c00,0x0c00, ay8910_1_reset},
+  {0x1000,0x1000, ay8910_0_ctrl_w},
+  {0x1400,0x1400, ay8910_0_reset},
+  {0x1800,0x1800, ay8910_1_ctrl_w},
+  {0x3000,0x3000, ay8910_0_data_w},
+  {0x3800,0x3800, ay8910_1_data_w},
 MEMORY_END
+
+static PORT_READ_START(LTD_readport)
+  { M6803_PORT1, M6803_PORT1, port1_r },
+  { M6803_PORT2, M6803_PORT2, port2_r },
+PORT_END
+
+static PORT_WRITE_START(LTD_writeport)
+  { M6803_PORT1, M6803_PORT1, peri4_w },
+  { M6803_PORT2, M6803_PORT2, cycle_w },
+PORT_END
 
 MACHINE_DRIVER_START(LTD4)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CPU_ADD_TAG("mcpu", M6803, LTD_CPUFREQ)
   MDRV_CPU_MEMORY(LTD_readmem2, LTD_writemem2)
+  MDRV_CPU_PORTS(LTD_readport, LTD_writeport)
   MDRV_CPU_VBLANK_INT(LTD_vblank, 1)
-  MDRV_CORE_INIT_RESET_STOP(LTD4,NULL,NULL)
+  MDRV_CORE_INIT_RESET_STOP(LTD,NULL,NULL)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_DIAGNOSTIC_LEDH(1)
-  MDRV_SWITCH_UPDATE(LTD)
+  MDRV_SWITCH_UPDATE(LTD4)
+  MDRV_SOUND_ADD(AY8910, LTD_ay8910Int)
 MACHINE_DRIVER_END

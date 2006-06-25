@@ -18,7 +18,30 @@
     /* switch column 1 */ \
     COREPORT_BIT(     0x0100,"Ball Tilt", KEYCODE_INSERT) \
     /* switch column 4 */ \
-    COREPORT_BITDEF(  0x2000, IPT_START1, IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(  0x2000, IPT_START1, IP_KEY_DEFAULT)
+
+/*-- Common Inports for LTD System 4 "pecmen" --*/
+#define LTD4P_COMPORTS \
+  PORT_START /* 0 */ \
+    /* switch column 8 */ \
+    COREPORT_BIT   (  0x0001, "Diagnostics", KEYCODE_7) \
+    COREPORT_BIT   (  0x0002, "Enter",    KEYCODE_8) \
+    COREPORT_BIT   (  0x0004, "Clear",    KEYCODE_9) \
+    COREPORT_BITDEF(  0x0008, IPT_COIN1,  IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(  0x0010, IPT_COIN2,  IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(  0x0020, IPT_START1, IP_KEY_DEFAULT)
+
+/*-- Common Inports for LTD System 4 Games --*/
+#define LTD4_COMPORTS \
+  PORT_START /* 0 */ \
+    /* switch column 6 */ \
+    COREPORT_BITDEF(  0x0100, IPT_START1, IP_KEY_DEFAULT) \
+    /* switch column 8 */ \
+    COREPORT_BIT   (  0x0001, "Diagnostics", KEYCODE_7) \
+    COREPORT_BIT   (  0x0002, "Enter",    KEYCODE_8) \
+    COREPORT_BIT   (  0x0004, "Clear",    KEYCODE_9) \
+    COREPORT_BITDEF(  0x0010, IPT_COIN1,  IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(  0x0020, IPT_COIN2,  IP_KEY_DEFAULT)
 
 /*-- Standard input ports --*/
 #define LTD_INPUT_PORTS_START(name,balls) \
@@ -26,6 +49,18 @@
     CORE_PORTS \
     SIM_PORTS(balls) \
     LTD_COMPORTS
+
+#define LTD4_INPUT_PORTS_START(name,balls) \
+  INPUT_PORTS_START(name) \
+    CORE_PORTS \
+    SIM_PORTS(balls) \
+    LTD4_COMPORTS
+
+#define LTD4P_INPUT_PORTS_START(name,balls) \
+  INPUT_PORTS_START(name) \
+    CORE_PORTS \
+    SIM_PORTS(balls) \
+    LTD4P_COMPORTS
 
 #define LTD_INPUT_PORTS_END INPUT_PORTS_END
 
