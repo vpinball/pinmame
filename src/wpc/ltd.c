@@ -1,3 +1,37 @@
+/************************************************************************************************
+ LTD (Brasil)
+ ------------
+ by Gaston
+
+ Emulating LTD was a wee little difficult as information is relatively sparse.
+
+ There are some very good schematics for system III redrawn by Newton Pessoa (thanks!)
+ but somehow they wouldn't align to what is happening on the CPU side.
+ Still, I somehow came up with a DMA solution for all of the inputs and outputs.
+ Maybe one day I'll find out how they really did it, and rework the driver,
+ but for the moment it's working OK...
+
+ System 4 was hell at first, but some terribly good fun in the end. :)
+ LTD switched over from a simple 6802 CPU to the 6803 MCU, and had me sitting and wondering
+ where all the inputs and outputs were connected, as seemingly NOTHING was going on!
+ Of course I had to hook up the internal register read/write handlers, and voila,
+ CPU ports were suddenly available (imagine me slapping my forehead at that point)! ;)
+
+ I had a manual for system 4 written in Portuguese that was a bit of a help,
+ but I still had to guess most of the data; it seems to work fairly good now,
+ with an occasional flicker in the displays and the solenoids... I still wonder why.
+
+ Fun fact: LTD obviously didn't use any IRQ or NMI timing on system 4 at all!
+ They also drive the flipper coils directly by two pulsed solenoid outputs.
+
+   Hardware:
+   ---------
+		CPU:	 M6802 for system III, M6803 for system 4 with NTSC quartz
+		DISPLAY: 7-segment LED panels, direct segment access on system 4
+		SOUND:	 - discrete (4 tones, like Zaccaria's 1311) on system III, maybe something better on Zephy
+				 - 2 x AY8910 (separated for left & right speaker) for system 4 games
+ ************************************************************************************************/
+
 #include "driver.h"
 #include "cpu/m6800/m6800.h"
 #include "sound/ay8910.h"
@@ -12,7 +46,7 @@ static struct {
   int diagnosticLed;
   UINT32 solenoids;
   core_tSeg segments;
-  int swCol, cycle, solBank;
+  int swCol, lampCol, cycle, solBank;
   UINT8 port2, dispData[2];
 } locals;
 
@@ -28,12 +62,14 @@ static WRITE_HANDLER(ay8910_1_data_w) { AY8910Write(1,1,data); }
 static WRITE_HANDLER(ay8910_1_reset)  { AY8910_reset(1); }
 static READ_HANDLER (ay8910_1_r)      { return AY8910Read(1); }
 
-
 struct AY8910interface LTD_ay8910Int = {
 	2,					/* 2 chips */
 	LTD_CPUFREQ,		/* 895 kHz */
 	{ MIXER(30,MIXER_PAN_LEFT), MIXER(30,MIXER_PAN_RIGHT) },	/* Volume */
 };
+
+
+// System III
 
 /*-------------------------------
 /  copy local data to interface
@@ -59,9 +95,6 @@ static INTERRUPT_GEN(LTD_vblank) {
 
   core_updateSw(core_getSol(17));
 }
-
-
-// System III
 
 static INTERRUPT_GEN(LTD_irq) {
   cpu_set_irq_line(0, M6800_IRQ_LINE, PULSE_LINE);
@@ -176,17 +209,36 @@ MACHINE_DRIVER_END
 
 // System 4
 
+static INTERRUPT_GEN(LTD4_vblank) {
+  locals.vblankCount++;
+  /*-- lamps --*/
+  if ((locals.vblankCount % LTD_LAMPSMOOTH) == 0) {
+    memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
+  }
+  /*-- solenoids --*/
+  if ((locals.vblankCount % LTD4_SOLSMOOTH) == 0) {
+    coreGlobals.solenoids = locals.solenoids;
+    locals.solenoids = 0;
+  }
+  /*-- display --*/
+  if ((locals.vblankCount % LTD_DISPLAYSMOOTH) == 0) {
+    memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
+  }
+
+  core_updateSw(0);
+}
+
 static SWITCH_UPDATE(LTD4) {
   if (inports) {
-    CORE_SETKEYSW(inports[LTD_COMINPORT]>>8, 0x01, 6);
-    CORE_SETKEYSW(inports[LTD_COMINPORT],    0x3f, 8);
+    CORE_SETKEYSW(inports[LTD_COMINPORT], 0x13, 2);
   }
 }
 
-static READ_HANDLER(port1_r) {
-  return (~locals.port2 & 0x10) ? ~coreGlobals.swMatrix[locals.swCol+1] : ~coreGlobals.swMatrix[locals.swCol+9];
+static READ_HANDLER(sw4_r) {
+  return (~locals.port2 & 0x10) ? ~coreGlobals.swMatrix[locals.swCol+1] : 0xff;
 }
 
+/* convert the segments to fit the usual core.c layout */
 static UINT8 convDisp(UINT8 data) {
   return (data & 0x88) |
     ((data & 1) << 6) |
@@ -199,18 +251,21 @@ static UINT8 convDisp(UINT8 data) {
 
 static WRITE_HANDLER(peri4_w) {
   if (locals.port2 & 0x10) switch (locals.cycle) {
-    case  0: locals.swCol = (1 + core_BitColToNum(data)) % 8; break;
+    case  0: locals.lampCol = (1 + core_BitColToNum(data)) % 8; break;
     case  1: locals.solBank = core_BitColToNum(data); break;
-    case  2: locals.solenoids |= ((data >> 4) << (locals.solBank * 4)) >> 1; coreGlobals.solenoids = locals.solenoids; break;
-    case  6: locals.segments[31-(data & 0x0f)].w = locals.dispData[0]; locals.segments[15-(data & 0x0f)].w = locals.dispData[1]; break;
+    case  2: locals.solenoids |= (data >> 4) << (locals.solBank * 4) | (data << 28);
+             coreGlobals.solenoids = locals.solenoids; break;
+    case  6: locals.swCol = data >> 4;
+             locals.segments[31-(data & 0x0f)].w = locals.dispData[0];
+             locals.segments[15-(data & 0x0f)].w = locals.dispData[1]; break;
     case  7: locals.dispData[0] = convDisp(data); break;
     case  8: locals.dispData[1] = convDisp(data); break;
-    case 10: coreGlobals.tmpLampMatrix[locals.swCol] = data; break;
+    case 10: coreGlobals.tmpLampMatrix[locals.lampCol] = data; break;
     default: logerror("peri_%d_w = %02x\n", locals.cycle, data);
   }
 }
 
-static READ_HANDLER(port2_r) {
+static READ_HANDLER(unknown_r) {
   return locals.port2;
 }
 
@@ -224,20 +279,20 @@ static WRITE_HANDLER(cycle_reset_w) {
 }
 
 static WRITE_HANDLER(auxlamps_w) {
-  coreGlobals.tmpLampMatrix[(locals.swCol % 2 ? 12 : 8)+locals.swCol/2] = data;
+  coreGlobals.tmpLampMatrix[(locals.lampCol % 2 ? 12 : 8)+locals.lampCol/2] = data;
 }
 
 /*-----------------------------------------
 /  Memory map for system 4 CPU board
 /------------------------------------------*/
-static MEMORY_READ_START(LTD_readmem2)
+static MEMORY_READ_START(LTD4_readmem)
   {0x0000,0x001f, m6803_internal_registers_r},
   {0x0080,0x00ff, MRA_RAM},
   {0x0100,0x01ff, MRA_RAM},
   {0xc000,0xffff, MRA_ROM},
 MEMORY_END
 
-static MEMORY_WRITE_START(LTD_writemem2)
+static MEMORY_WRITE_START(LTD4_writemem)
   {0x0000,0x001f, m6803_internal_registers_w},
   {0x0080,0x00ff, MWA_RAM},
   {0x0100,0x01ff, MWA_RAM, &generic_nvram, &generic_nvram_size},
@@ -251,12 +306,12 @@ static MEMORY_WRITE_START(LTD_writemem2)
   {0x3800,0x3800, ay8910_1_data_w},
 MEMORY_END
 
-static PORT_READ_START(LTD_readport)
-  { M6803_PORT1, M6803_PORT1, port1_r },
-  { M6803_PORT2, M6803_PORT2, port2_r },
+static PORT_READ_START(LTD4_readport)
+  { M6803_PORT1, M6803_PORT1, sw4_r },
+  { M6803_PORT2, M6803_PORT2, unknown_r },
 PORT_END
 
-static PORT_WRITE_START(LTD_writeport)
+static PORT_WRITE_START(LTD4_writeport)
   { M6803_PORT1, M6803_PORT1, peri4_w },
   { M6803_PORT2, M6803_PORT2, cycle_w },
 PORT_END
@@ -264,12 +319,11 @@ PORT_END
 MACHINE_DRIVER_START(LTD4)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CPU_ADD_TAG("mcpu", M6803, LTD_CPUFREQ)
-  MDRV_CPU_MEMORY(LTD_readmem2, LTD_writemem2)
-  MDRV_CPU_PORTS(LTD_readport, LTD_writeport)
-  MDRV_CPU_VBLANK_INT(LTD_vblank, 1)
+  MDRV_CPU_MEMORY(LTD4_readmem, LTD4_writemem)
+  MDRV_CPU_PORTS(LTD4_readport, LTD4_writeport)
+  MDRV_CPU_VBLANK_INT(LTD4_vblank, 1)
   MDRV_CORE_INIT_RESET_STOP(LTD,NULL,NULL)
   MDRV_NVRAM_HANDLER(generic_0fill)
-  MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_SWITCH_UPDATE(LTD4)
   MDRV_SOUND_ADD(AY8910, LTD_ay8910Int)
 MACHINE_DRIVER_END
