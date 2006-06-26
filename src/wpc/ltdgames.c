@@ -10,7 +10,8 @@
 	}
 
 #define INITGAME4(name, disptype, balls) \
-	static core_tGameData name##GameData = {0,disptype,{FLIP_SW(FLIP_L),0,8}}; \
+	LTD4_INPUT_PORTS_START(name, balls) LTD_INPUT_PORTS_END \
+	static core_tGameData name##GameData = {0,disptype,{FLIP_SWNO(1,2),0,8}}; \
 	static void init_##name(void) { \
 		core_gameData = &name##GameData; \
 	}
@@ -92,11 +93,10 @@ CORE_GAMEDEFNV(zephy,"Zephy",198?,"LTD",gl_mLTD,GAME_NO_SOUND)
 /-------------------------------------------------------------------*/
 core_tLCDLayout cowboy_disp[] = {
   { 0, 0,25,6,CORE_SEG7 }, { 3, 0,17,6,CORE_SEG7 }, { 6, 0, 9,6,CORE_SEG7 }, { 9, 0, 1,6,CORE_SEG7 },
-  {12, 2, 0,1,CORE_SEG7 }, {12, 8,15,1,CORE_SEG7 },
+  {12, 2,15,1,CORE_SEG7 }, {12, 8, 0,1,CORE_SEG7 },
   {0}
 };
 INITGAME4(cowboy, cowboy_disp, 1)
-LTD4_INPUT_PORTS_START(cowboy, 1) LTD_INPUT_PORTS_END
 LTD_44_ROMSTART(cowboy, "cowboy_l.bin", CRC(87befe2a) SHA1(93fdf40b10e53d7d95e5dc72923b6be887411fc0),
                         "cowboy_h.bin", CRC(105e5d7b) SHA1(75edeab8c8ba19f334479133802acbc25f405763))
 LTD_ROMEND
@@ -107,11 +107,10 @@ CORE_GAMEDEFNV(cowboy,"Cowboy Eight Ball",198?,"LTD",gl_mLTD4,0)
 /-------------------------------------------------------------------*/
 core_tLCDLayout pecmen_disp[] = {
   { 0, 0,25,6,CORE_SEG7 }, { 3, 0,17,6,CORE_SEG7 }, { 6, 0, 9,6,CORE_SEG7 }, { 9, 0, 1,6,CORE_SEG7 },
-  {12, 2, 0,1,CORE_SEG7 }, {12, 8,15,1,CORE_SEG7 },
+  {12, 2,15,1,CORE_SEG7 }, {12, 8, 0,1,CORE_SEG7 },
   {0}
 };
 INITGAME4(pecmen, pecmen_disp, 1)
-LTD4P_INPUT_PORTS_START(pecmen, 1) LTD_INPUT_PORTS_END
 LTD_44_ROMSTART(pecmen, "pecmen_l.bin", CRC(f86c724e) SHA1(635ec94a1c6e77800ef9774102cc639be86c4261),
                         "pecmen_h.bin", CRC(013abca0) SHA1(269376af92368d214c3d09ec6d3eb653841666f3))
 LTD_ROMEND
@@ -122,12 +121,11 @@ CORE_GAMEDEFNV(pecmen,"Mr. & Mrs. Pec-Men",198?,"LTD",gl_mLTD4,0)
 /-------------------------------------------------------------------*/
 core_tLCDLayout alcapone_disp[] = {
   { 0, 0,25,6,CORE_SEG7 }, { 3, 0,17,6,CORE_SEG7 }, { 6, 0, 9,6,CORE_SEG7 }, { 9, 0, 1,6,CORE_SEG7 },
-  {12, 2, 7,1,CORE_SEG7 }, {12, 8,15,1,CORE_SEG7 },
+  {12, 2,15,1,CORE_SEG7 }, {12, 8, 7,1,CORE_SEG7 },
   {0}
 };
 INITGAME4(alcapone, alcapone_disp, 1)
-LTD4_INPUT_PORTS_START(alcapone, 1) LTD_INPUT_PORTS_END
 LTD_44_ROMSTART(alcapone, "alcapo_l.bin", CRC(362c7a07) SHA1(4aea7b72db16ef9791444c56f65dcb66b91cdc20),
                           "alcapo_h.bin", CRC(279f766d) SHA1(453c58e44c4ef8f1f9eb752b6163c61ebed70b27))
 LTD_ROMEND
-CORE_GAMEDEFNV(alcapone,"Al Capone",198?,"LTD",gl_mLTD4,0)
+CORE_GAMEDEFNV(alcapone,"Al Capone",198?,"LTD",gl_mLTD4,GAME_NOT_WORKING)
