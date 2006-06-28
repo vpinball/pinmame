@@ -495,7 +495,9 @@ static NVRAM_HANDLER(by35) {
   core_nvram(file, read_or_write, by35_CMOS, 0x100, (core_gameData->gen & (GEN_STMPU100|GEN_STMPU200|GEN_BYPROTO))?0x00:0xff);
 }
 // Bally only uses top 4 bits
-static WRITE_HANDLER(by35_CMOS_w) { by35_CMOS[offset] = data | 0x0f; }
+static WRITE_HANDLER(by35_CMOS_w) {
+  by35_CMOS[offset] = data | ((core_gameData->gen & (GEN_STMPU100|GEN_STMPU200|GEN_ASTRO|GEN_BYPROTO))? 0x00 : 0x0f);
+}
 
 // These games use the A0 memory address for extra sound solenoids only.
 WRITE_HANDLER(extra_sol_w) {
