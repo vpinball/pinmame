@@ -125,7 +125,7 @@ core_tLCDLayout alcapone_disp[] = {
   {0}
 };
 INITGAME4(alcapone, alcapone_disp, 1)
-LTD_44_ROMSTART(alcapone, "alcapo_l.bin", CRC(362c7a07) SHA1(4aea7b72db16ef9791444c56f65dcb66b91cdc20),
+LTD_44_ROMSTART(alcapone, "alcapo_l.bin", CRC(c4270ba8) SHA1(f3d80af9900c94df2d43f2755341a346a0b64c87),
                           "alcapo_h.bin", CRC(279f766d) SHA1(453c58e44c4ef8f1f9eb752b6163c61ebed70b27))
 LTD_ROMEND
-CORE_GAMEDEFNV(alcapone,"Al Capone",198?,"LTD",gl_mLTD4,GAME_NOT_WORKING)
+CORE_GAMEDEFNV(alcapone,"Al Capone",198?,"LTD",gl_mLTD4,0)
