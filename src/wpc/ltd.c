@@ -19,7 +19,8 @@
 
  I had a manual for system 4 written in Portuguese that was a bit of a help,
  but I still had to guess most of the data; it seems to work fairly good now,
- with an occasional flicker in the displays and the solenoids... I still wonder why.
+ only whenever a sound is played, this seems to interfere with the displays, which is
+ odd because they run on completely different outputs!?
 
  Fun fact: LTD obviously didn't use any IRQ or NMI timing on system 4 at all!
  They also drive the flipper coils directly by two pulsed solenoid outputs.
@@ -47,7 +48,7 @@ static struct {
   UINT32 solenoids;
   core_tSeg segments;
   int swCol, lampCol, cycle, solBank;
-  UINT8 port2, dispData[2];
+  UINT8 port2, dispData[2], auxData;
 } locals;
 
 #define LTD_CPUFREQ	3579545/4
@@ -250,18 +251,22 @@ static UINT8 convDisp(UINT8 data) {
 }
 
 static WRITE_HANDLER(peri4_w) {
-  if (locals.port2 & 0x10) switch (locals.cycle) {
-    case  0: locals.lampCol = (1 + core_BitColToNum(data)) % 8; break;
-    case  1: locals.solBank = core_BitColToNum(data); break;
-    case  2: locals.solenoids |= (data >> 4) << (locals.solBank * 4) | (data << 28);
-             coreGlobals.solenoids = locals.solenoids; break;
-    case  6: locals.swCol = data >> 4;
-             locals.segments[31-(data & 0x0f)].w = locals.dispData[0];
-             locals.segments[15-(data & 0x0f)].w = locals.dispData[1]; break;
-    case  7: locals.dispData[0] = convDisp(data); break;
-    case  8: locals.dispData[1] = convDisp(data); break;
-    case 10: coreGlobals.tmpLampMatrix[locals.lampCol] = data; break;
-    default: logerror("peri_%d_w = %02x\n", locals.cycle, data);
+  if (locals.port2 & 0x10) {
+    if (!locals.cycle)
+      locals.lampCol = data == 0xff ? -1 : (1 + core_BitColToNum(data)) % 8;
+    else if (locals.lampCol >= 0) switch (locals.cycle) {
+      case  1: locals.solBank = core_BitColToNum(data); break;
+      case  2: locals.solenoids |= (data >> 4) << (locals.solBank * 4) | (data << 28);
+               coreGlobals.solenoids = locals.solenoids; break;
+      case  6: locals.swCol = data >> 4;
+               locals.segments[31-(data & 0x0f)].w = locals.dispData[0];
+               locals.segments[15-(data & 0x0f)].w = locals.dispData[1]; break;
+      case  7: locals.dispData[0] = convDisp(data); break;
+      case  8: locals.dispData[1] = convDisp(data); break;
+      case 10: coreGlobals.tmpLampMatrix[locals.lampCol] = data;
+               coreGlobals.tmpLampMatrix[(locals.lampCol % 2 ? 8 : 12) + locals.lampCol / 2] = locals.auxData; break;
+      default: logerror("peri_%d_w = %02x\n", locals.cycle, data);
+    }
   }
 }
 
@@ -279,7 +284,7 @@ static WRITE_HANDLER(cycle_reset_w) {
 }
 
 static WRITE_HANDLER(auxlamps_w) {
-  coreGlobals.tmpLampMatrix[(locals.lampCol % 2 ? 12 : 8)+locals.lampCol/2] = data;
+  locals.auxData = data;
 }
 
 /*-----------------------------------------
