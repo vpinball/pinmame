@@ -11,7 +11,7 @@
 
 #define INITGAME4(name, disptype, balls) \
 	LTD4_INPUT_PORTS_START(name, balls) LTD_INPUT_PORTS_END \
-	static core_tGameData name##GameData = {0,disptype,{FLIP_SWNO(1,2),0,8}}; \
+	static core_tGameData name##GameData = {0,disptype,{0x03000102,0,8}}; \
 	static void init_##name(void) { \
 		core_gameData = &name##GameData; \
 	}
