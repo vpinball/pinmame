@@ -46,6 +46,7 @@ static struct {
   int vblankCount;
   int diagnosticLed;
   UINT32 solenoids;
+  UINT16 solenoids2;
   core_tSeg segments;
   int swCol, lampCol, cycle, solBank;
   UINT8 port2, dispData[2], auxData;
@@ -219,7 +220,8 @@ static INTERRUPT_GEN(LTD4_vblank) {
   /*-- solenoids --*/
   if ((locals.vblankCount % LTD4_SOLSMOOTH) == 0) {
     coreGlobals.solenoids = locals.solenoids;
-    locals.solenoids = 0;
+    coreGlobals.solenoids2 = locals.solenoids2;
+    locals.solenoids = locals.solenoids2 = 0;
   }
   /*-- display --*/
   if ((locals.vblankCount % LTD_DISPLAYSMOOTH) == 0) {
@@ -256,8 +258,9 @@ static WRITE_HANDLER(peri4_w) {
       locals.lampCol = data == 0xff ? -1 : (1 + core_BitColToNum(data)) % 8;
     else if (locals.lampCol >= 0) switch (locals.cycle) {
       case  1: locals.solBank = core_BitColToNum(data); break;
-      case  2: locals.solenoids |= (data >> 4) << (locals.solBank * 4) | (data << 28);
-               coreGlobals.solenoids = locals.solenoids; break;
+      case  2: locals.solenoids |= (data >> 4) << (locals.solBank * 4);
+               locals.solenoids2 |= (data & 0x0f) << 4;
+               coreGlobals.solenoids = locals.solenoids; coreGlobals.solenoids2 = locals.solenoids2; break;
       case  6: locals.swCol = data >> 4;
                locals.segments[31-(data & 0x0f)].w = locals.dispData[0];
                locals.segments[15-(data & 0x0f)].w = locals.dispData[1]; break;
