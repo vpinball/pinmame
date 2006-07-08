@@ -103,6 +103,20 @@ LTD_ROMEND
 CORE_GAMEDEFNV(cowboy,"Cowboy Eight Ball",198?,"LTD",gl_mLTD4,0)
 
 /*-------------------------------------------------------------------
+/ Columbia
+/-------------------------------------------------------------------*/
+core_tLCDLayout columbia_disp[] = {
+  { 0, 0,25,6,CORE_SEG7 }, { 3, 0,17,6,CORE_SEG7 }, { 6, 0, 9,6,CORE_SEG7 }, { 9, 0, 1,6,CORE_SEG7 },
+  {12, 2,15,1,CORE_SEG7 }, {12, 8, 0,1,CORE_SEG7 },
+  {0}
+};
+INITGAME4(columbia, columbia_disp, 1)
+LTD_44_ROMSTART(columbia, "columb-d.bin", NO_DUMP,
+                          "columb-e.bin", CRC(013abca0) SHA1(269376af92368d214c3d09ec6d3eb653841666f3))
+LTD_ROMEND
+CORE_GAMEDEFNV(columbia,"Columbia",198?,"LTD",gl_mLTD4,0)
+
+/*-------------------------------------------------------------------
 / Mr. & Mrs. Pec-Men
 /-------------------------------------------------------------------*/
 core_tLCDLayout pecmen_disp[] = {

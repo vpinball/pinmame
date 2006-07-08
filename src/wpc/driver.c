@@ -212,6 +212,7 @@ DRIVERNV(atlantis)      //6803-2006: 03/89 Atlantis
 						//			??/78 The King
 						//BY35      ??/79 Sexy Girl (Bally Playboy clone with image projector)
 						//			??/80 The Hunter
+						//			??/80 White Shark
 						//			??/80 Cosmodrome
 // Bell Games
 						//			01/82 Magic Picture Pin
@@ -228,13 +229,13 @@ DRIVERNV(saturn2)       //BY35      08/85 Saturn 2 (Bally Spy Hunter clone)
 // Nuova Bell Games
 						//BY35      11/85 World Defender
 DRIVERNV(spacehaw)      //BY35      04/86 Space Hawks (Bally Cybernaut clone)
-						//			??/86 Dark Shadow
+						//BY35      ??/86 Dark Shadow
 						//BY35      09/86 Skill Flight
 						//			02/87 Cobra
-DRIVERNV(futrquen)      //BY35      ??/87 Future Queen
-DRIVERNV(f1gp)          //BY35ALPHA ??/87 F1 Grand Prix
-						//			??/88 Top Pin (WMS Pin*Bot conversion)
-						//BY35ALPHA 06/88 U-Boat 65
+DRIVERNV(futrquen)      //BY35      07/87 Future Queen
+DRIVERNV(f1gp)          //BY35ALPHA 12/87 F1 Grand Prix
+						//			01/88 Top Pin (WMS Pin*Bot conversion)
+						//BY35ALPHA 04/88 U-Boat 65
 
 // ----------------
 // CAPCOM GAMES
@@ -534,21 +535,20 @@ DRIVERNV(petaco2 )      //Petaco 2
 // Sistema III
                         //O Gaucho
                         //Samba
-DRIVERNV(atla_ltd)      //Atlantis
-                        //Grand Prix
                         //Amazon
                         //Arizona
-                        //Black Hole
+DRIVERNV(atla_ltd)      //Atlantis
                         //Galaxia
+                        //Grand Prix
                         //Hustler
                         //Martian Queen
-DRIVERNV(bhol_ltd)      //Black Hole (clone of Gottlieb game)
+DRIVERNV(bhol_ltd)      //Black Hole
 DRIVERNV(zephy   )      //Zephy (clone of Bally Xenon)
 // Sistema IV
 DRIVERNV(alcapone)      //Al Capone
                         //Alien Warrior
                         //Carnaval no Rio
-                        //Columbia
+DRIVERNV(columbia)      //Columbia
 DRIVERNV(cowboy  )      //Cowboy Eight Ball (clone of Bally Eight Ball Deluxe)
                         //Cowboy 2
                         //Disco Dancing
@@ -913,6 +913,7 @@ DRIVERNV(taitest )      //??/8? Test Fixture
 
 DRIVERNV(scram_tp)      //03/87 Scramble
 DRIVERNV(xforce)        //??/87 X Force
+						//??/?? Space Team
 
 // ----------------
 // UNITED GAMES
