@@ -253,21 +253,21 @@ static UINT8 convDisp(UINT8 data) {
 }
 
 static WRITE_HANDLER(peri4_w) {
+  static int clear = 0;
   if (locals.port2 & 0x10) {
-    if (!locals.cycle)
-      locals.lampCol = data == 0xff ? -1 : (1 + core_BitColToNum(data)) % 8;
-    else if (locals.lampCol >= 0) switch (locals.cycle) {
+    switch (locals.cycle) {
+      case  0: if (data != 0xff) locals.lampCol = (1 + core_BitColToNum(data)) % 8; clear = (data != 0xff); break;
       case  1: locals.solBank = core_BitColToNum(data); break;
       case  2: locals.solenoids |= (data >> 4) << (locals.solBank * 4);
                locals.solenoids2 |= (data & 0x0f) << 4;
                coreGlobals.solenoids = locals.solenoids; coreGlobals.solenoids2 = locals.solenoids2; break;
-      case  6: locals.swCol = data >> 4;
+      case  6: if (clear) locals.swCol = data >> 4;
                locals.segments[31-(data & 0x0f)].w = locals.dispData[0];
                locals.segments[15-(data & 0x0f)].w = locals.dispData[1]; break;
-      case  7: locals.dispData[0] = convDisp(data); break;
-      case  8: locals.dispData[1] = convDisp(data); break;
-      case 10: coreGlobals.tmpLampMatrix[locals.lampCol] = data;
-               coreGlobals.tmpLampMatrix[(locals.lampCol % 2 ? 8 : 12) + locals.lampCol / 2] = locals.auxData; break;
+      case  7: if (clear) locals.dispData[0] = convDisp(data); break;
+      case  8: if (clear) locals.dispData[1] = convDisp(data); break;
+      case  9: coreGlobals.tmpLampMatrix[(locals.lampCol % 2 ? 8 : 12) + locals.lampCol / 2] = locals.auxData; break;
+      case 10: coreGlobals.tmpLampMatrix[locals.lampCol] = data; break;
       default: logerror("peri_%d_w = %02x\n", locals.cycle, data);
     }
   }
