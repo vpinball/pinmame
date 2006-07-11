@@ -17,20 +17,20 @@ GTS80VID_INPUT_PORTS_START(gts80vid, 1) GTS80_INPUT_PORTS_END
 static core_tLCDLayout dispNumeric1[] = {
   {0, 0, 2, 6,CORE_SEG9}, {0,16, 9, 6,CORE_SEG9},
   {4, 0,22, 6,CORE_SEG9}, {4,16,29, 6,CORE_SEG9},
-  DISP_SEG_CREDIT(40,41,CORE_SEG9), DISP_SEG_BALLS(42,43,CORE_SEG9), {0}
+  DISP_SEG_CREDIT(40,41,CORE_SEG7S), DISP_SEG_BALLS(42,43,CORE_SEG7S), {0}
 };
 /* 5 x 6 BCD + Ball, Credit */
 static core_tLCDLayout dispNumeric2[] = {
   {0, 0, 2, 6,CORE_SEG9}, {0,16, 9, 6,CORE_SEG9},
   {4, 0,22, 6,CORE_SEG9}, {4,16,29, 6,CORE_SEG9},
-  DISP_SEG_CREDIT(40,41,CORE_SEG9), DISP_SEG_BALLS(42,43,CORE_SEG9),
+  DISP_SEG_CREDIT(40,41,CORE_SEG7S), DISP_SEG_BALLS(42,43,CORE_SEG7S),
   {6, 8,50, 6,CORE_SEG9}, {0}
 };
 /* 4 x 7 BCD + Ball,Credit */
 static core_tLCDLayout dispNumeric3[] = {
   {0, 0, 2, 7,CORE_SEG98F}, {0,16, 9, 7,CORE_SEG98F},
   {4, 0,22, 7,CORE_SEG98F}, {4,16,29, 7,CORE_SEG98F},
-  DISP_SEG_CREDIT(40,41,CORE_SEG9), DISP_SEG_BALLS(42,43,CORE_SEG9), {0}
+  DISP_SEG_CREDIT(40,41,CORE_SEG7S), DISP_SEG_BALLS(42,43,CORE_SEG7S), {0}
 };
 
 static core_tLCDLayout dispAlpha[] = {
@@ -431,7 +431,7 @@ CORE_GAMEDEFNV(spirit,"Spirit",1982,"Gottlieb",gl_mGTS80SS,0)
 static core_tLCDLayout dispStriker[] = { /* as displayed on real machine */
   {2, 0, 2, 7,CORE_SEG98F}, {6, 0, 9, 7,CORE_SEG98F},
   {2,16,22, 7,CORE_SEG98F}, {6,16,29, 7,CORE_SEG98F},
-  {0, 2,40, 2,CORE_SEG9},   {0, 8,42, 2,CORE_SEG9}, /* ball/credit */
+  {0, 2,40, 2,CORE_SEG7S},  {0, 8,42, 2,CORE_SEG7S}, /* ball/credit */
   {4, 2,52, 2,CORE_SEG9},   {4, 8,50, 2,CORE_SEG9},
   {4,18,48, 2,CORE_SEG9},   {4,24,46, 2,CORE_SEG9}, {0}
 };
