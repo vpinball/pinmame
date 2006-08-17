@@ -198,6 +198,7 @@ DRIVERNV(dungdrag)      //6803-0H06: 10/87 Dungeons & Dragons
 DRIVERNV(esclwrld)      //6803-0H05: 12/87 Escape from the Lost World
 DRIVERNV(esclwrlg)      //6803-0H05: 12/87 Escape from the Lost World (German)
 DRIVERNV(black100)      //6803-0H07: 03/88 Blackwater 100
+DRIVERNV(black10s)      //6803-0H07: 03/88 Blackwater 100 (Single Ball Play)
                         //??         06/88 Ramp Warrior (Became Truck Stop after Merger)
 //Williams Merger begins here.. but these are still under the Bally name
 DRIVERNV(trucksp2)      //6803-2001: 11/88 Truck Stop (P-2)
