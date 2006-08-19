@@ -1490,10 +1490,10 @@ SE_ROMEND
 CORE_CLONEDEFNV(sopranoi,sopranos,"Sopranos, The (Italy)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ Nascar (4.00)
+/ Nascar (4.50)
 /-------------------------------------------------------------------*/
 INITGAME(nascar,GEN_WS,se_dmd128x32,SE_LED)
-SE128_ROMSTART(nascar, "nascpua.400", CRC(24a72071) SHA1(5bfe473e85e12b30963b15dfc8732f2ef9c299c3))
+SE128_ROMSTART(nascar, "nascpua.450", CRC(da902e01) SHA1(afc6ace2b31c8682fb4d05e1b472c2ec30e7559b))
 DE_DMD32ROM8x(      "nasdspa.400", CRC(364878bf) SHA1(a1fb477a37459a3583d3767386f87aa620e31e34))
 DE3SC_SOUNDROM18888("nassnd.u7",   CRC(3a3c8203) SHA1(c64c424c01ec91e2578fd6ddc5d3596b8a485c22),
                     "nassnd.u17", CRC(4dcf65fa) SHA1(bc745e16f1f4b92b97fd0536bea789909b9c0c67),
@@ -1502,12 +1502,12 @@ DE3SC_SOUNDROM18888("nassnd.u7",   CRC(3a3c8203) SHA1(c64c424c01ec91e2578fd6ddc5
                     "nassnd.u37", CRC(458ba148) SHA1(594fd9b48aa48ab7b3df921e689b1acba2b09d79))
 SE_ROMEND
 #define input_ports_nascar input_ports_se
-CORE_GAMEDEFNV(nascar,"Nascar (4.00)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
+CORE_GAMEDEFNV(nascar,"Nascar (4.50)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Nascar (Spain)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(nascarl, "nascpul.400", CRC(23ca7b4a) SHA1(9ea7afb283157a8e65106dc027cfd45eecc3f86a))
+SE128_ROMSTART(nascarl, "nascpul.450", CRC(3eebae3f) SHA1(654f0e44ce009450e66250423fcf0ff4727e5ee1))
 DE_DMD32ROM8x(      "nasdspl.400", CRC(a4de490f) SHA1(bc1aa9fc0182045f5d10044b3e4fa083572be4ac))
 DE3SC_SOUNDROM18888("nascsp.u7",   CRC(03a34394) SHA1(d1e3a1a8e14525c40e9f8a5441a106df662608f1),
                     "nassndl.u17", CRC(058c67ad) SHA1(70e22d8a1842108309f6c03dcc6ac23a822da3c3),
@@ -1521,10 +1521,10 @@ CORE_CLONEDEFNV(nascarl,nascar,"Nascar (Spain)",2005,"Stern",de_mSES3,GAME_IMPER
 
 
 /*-------------------------------------------------------------------
-/ Grand Prix (4.00)
+/ Grand Prix (4.50)
 /-------------------------------------------------------------------*/
 INITGAME(gprix,GEN_WS,se_dmd128x32,SE_LED)
-SE128_ROMSTART(gprix, "gpcpua.400", CRC(c6042517) SHA1(19729a86a3afafb516f000489c38d00379e4f85c))
+SE128_ROMSTART(gprix, "gpcpua.450", CRC(3e5ae527) SHA1(27d50a0460b1733c6c857968b85da492fa2ad544))
 DE_DMD32ROM8x(      "gpdspa.400", CRC(ce431306) SHA1(2573049b52b928052f196371dbc3a5236ce8cfc3))
 DE3SC_SOUNDROM18888("gpsnda.u7",  CRC(f784634f) SHA1(40847986003b01c9de5d9af4c66a0f1f9fb0cac8),
                     "gpsnda.u17", CRC(43dca7e2) SHA1(30726897950b168ffa5e0e8a4ff12856fd50f132),
@@ -1533,12 +1533,12 @@ DE3SC_SOUNDROM18888("gpsnda.u7",  CRC(f784634f) SHA1(40847986003b01c9de5d9af4c66
                     "gpsnda.u37", CRC(caf4c3f3) SHA1(ebdbaccf951ef6525f0fafa7e23d8140ef6b84e5))
 SE_ROMEND
 #define input_ports_gprix input_ports_se
-CORE_GAMEDEFNV(gprix,"Grand Prix (4.00)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
+CORE_GAMEDEFNV(gprix,"Grand Prix (4.50)",2005,"Stern",de_mSES3,GAME_IMPERFECT_SOUND | GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / Grand Prix (Germany)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(gprixg, "gpcpug.400", CRC(98d69588) SHA1(9d248b00a1aa966e69816cd7aaf869737e7a1ca7))
+SE128_ROMSTART(gprixg, "gpcpug.450", CRC(d803128b) SHA1(f914f75f4ec38dcbd2e40818fe8cb0ad446c59bf))
 DE_DMD32ROM8x(      "gpdspg.400", CRC(b3f64332) SHA1(84e1b094c74b2dfae8e3cd3ce3f1cd20dc400fd7))
 DE3SC_SOUNDROM18888("gpsndg.u7",  CRC(95129e03) SHA1(5fddd9d8213f9f1f68fe9e96c9e78dc6771fab21),
                     "gpsndg.u17", CRC(27ef97ea) SHA1(8ba941d5d4f929b8ec3222f1c91452395e2f690f),
@@ -1553,7 +1553,7 @@ CORE_CLONEDEFNV(gprixg,gprix,"Grand Prix (Germany)",2005,"Stern",de_mSES3,GAME_I
 /*-------------------------------------------------------------------
 / Grand Prix (Spain)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(gprixl, "gpcpul.400", CRC(90f506f0) SHA1(4642fa8bf15955a32b6ae8c6b859d94dcd40c542))
+SE128_ROMSTART(gprixl, "gpcpul.450", CRC(816bf4a4) SHA1(d5cca282e58d493be36400a7cd7dc4321d98f2f8))
 DE_DMD32ROM8x(      "gpdspl.400", CRC(74d9aa40) SHA1(802c6fbe4248a516f18e4b69997254b3dcf27706))
 DE3SC_SOUNDROM18888("gpsndl.u7",  CRC(0640fe8f) SHA1(aa45bf89c4cae5b4c2143656cfe19fe8f1ec30a3),
                     "gpsndl.u17", CRC(2581ef04) SHA1(2d85040e355ed410c7d8348ef64fc2c8e76ec0f0),
@@ -1568,7 +1568,7 @@ CORE_CLONEDEFNV(gprixl,gprix,"Grand Prix (Spain)",2005,"Stern",de_mSES3,GAME_IMP
 /*-------------------------------------------------------------------
 / Grand Prix (France)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(gprixf, "gpcpuf.400", CRC(0e7f8776) SHA1(0731c3a5350445f70dd8bdac68b2554942f12c8d))
+SE128_ROMSTART(gprixf, "gpcpuf.450", CRC(b14f7d20) SHA1(b91097490ee568e00be58f5dac184c8d47196adc))
 DE_DMD32ROM8x(      "gpdspf.400", CRC(f9b1ef9a) SHA1(a7e3c0fc1526cf3632e6b1f22caf7f73749e77a6))
 DE3SC_SOUNDROM18888("gpsndf.u7",  CRC(9b34e55a) SHA1(670fe4e4b62c46266667f37c0341bb4266e55067),
                     "gpsndf.u17", CRC(18beb699) SHA1(a3bbd7c9fc1165da5e502e09f68321bd56992e76),
@@ -1583,7 +1583,7 @@ CORE_CLONEDEFNV(gprixf,gprix,"Grand Prix (France)",2005,"Stern",de_mSES3,GAME_IM
 /*-------------------------------------------------------------------
 / Grand Prix (Italy)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(gprixi, "gpcpui.400", CRC(49e161b7) SHA1(855e35ddedf35055de384bade4b237810bc5ffec))
+SE128_ROMSTART(gprixi, "gpcpui.450", CRC(f18d8375) SHA1(b7e4e311623babc7b3c5d744122c88d45d77a33b))
 DE_DMD32ROM8x(      "gpdspi.400", CRC(88675cdf) SHA1(b305a683350d38b43f2e3c9277af14d5503b3219))
 DE3SC_SOUNDROM18888("gpsndi.u7",  CRC(37d66e66) SHA1(219fd734d3a19407d9d47de198429c770d7d8856),
                     "gpsndi.u17", CRC(868b225d) SHA1(bc169cf5882002a1b58973a22a78d8dd4467bc51),
