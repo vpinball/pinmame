@@ -33,9 +33,9 @@ static void init_##name(void) { core_gameData = &name##GameData; }
 static core_tGameData name##GameData = {0,dispTaito,{FLIP_SW(FLIP_L),0,0,0,sb,0}}; \
 static void init_##name(void) { core_gameData = &name##GameData; }
 
-//??/?? Apache!
-//??/?? Football
-//??/79 Hot Ball (B Eight Ball, 01/77)
+//02/79 Apache!
+//03/79 Football
+//03/79 Hot Ball (B Eight Ball, 01/77)
 
 /*--------------------------------
 / Shock
