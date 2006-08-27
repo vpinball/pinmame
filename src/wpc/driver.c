@@ -38,6 +38,7 @@ DRIVERNV(st_game)       //Unknown game running on old Stern hardware
 DRIVERNV(agsoccer)		//A.G. Soccer (1992)
 //DRIVERNV(agfootbl)	//A.G. Football (1992)
 DRIVERNV(wrldtour)		//Al's Garage Band Goes On A World Tour (1992)
+DRIVERNV(wrldtou2)		//Al's Garage Band Goes On A World Tour R02b (1992)
 //DRIVERNV(usafootb)	//U.S.A. Football (1992)
 DRIVERNV(dinoeggs)		//Dinosaur Eggs (1993)
 //DRIVERNV(dualpool)	//Dual Pool (1993) - 1 Unit
