@@ -1436,6 +1436,10 @@ SOURCE=.\src\wpc\vpintf.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\wico.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\wmssnd.c
 # End Source File
 # Begin Source File
