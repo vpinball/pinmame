@@ -923,6 +923,12 @@ DRIVERNV(xforce)        //??/87 X Force
 DRIVERNV(bbbowlin)      //Big Ball Bowling - using Bally hardware
 
 // -----------------------------------
+// WICO GAMES
+// -----------------------------------
+//                      //Big Top   (11/1977, home model)
+DRIVERNV(aftor)         //Af-Tor    (12/1984)
+
+// -----------------------------------
 // WILLIAMS & WILLIAMS/BALLY GAMES
 // -----------------------------------
 DRIVER(topaz,l1)        //???       Topaz (Shuffle)
