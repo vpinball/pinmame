@@ -86,7 +86,7 @@
 #define BY6803_ZCFREQ        120 /* Zero cross frequency (PHASE A equals this value)*/
 
 #define BY6803_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
-#define BY6803_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
+#define BY6803_LAMPSMOOTH      1 /* Smooth the lamps over this number of VBLANKS */
 #define BY6803_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKS */
 
 //#define mlogerror printf
@@ -108,9 +108,9 @@ static void drawit(int seg) {
 }
 */
 static struct {
-  int p0_a, p1_a, p1_b, p0_ca2, p1_ca2, p0_cb2, p1_cb2;
+  int p0_a, p1_a, p1_b, p0_ca2, p0_cb2, p1_cb2;
   int bcd[6];
-  int lampadr1, lampadr2;
+  int lampadr;
   UINT32 solenoids;
   core_tSeg segments, pseg;
   int dispcol, disprow, commacol;
@@ -237,18 +237,21 @@ static void by6803_dispStrobe2(int mask) {
 	}
 }
 
-static void by6803_lampStrobe(int board, int lampadr) {
-  if (lampadr != 0x0f) {
-    int lampdata = (locals.p0_a>>5)^0x07;
-    UINT8 *matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)+6*board];
+static void by6803_lampStrobe(void) {
+  static int old_lampadr = 0x0f;
+  int lampadr = locals.lampadr;
+  if (lampadr != old_lampadr) {
+    int i, lampdata = (locals.p0_a>>5)^0x07;
+    UINT8 *matrix = &coreGlobals.tmpLampMatrix[(lampadr>>3)+6*(locals.phase_a-1)];
     int bit = 1<<(lampadr & 0x07);
 
     //DBGLOG(("adr=%x data=%x\n",lampadr,lampdata));
-    while (lampdata) {
-      if (lampdata & 0x01) *matrix |= bit;
+    if (bit) for (i=0; i < 3; i++) {
+      if (lampdata & 0x01) *matrix |= bit; else *matrix &= (0xff ^ bit);
       lampdata >>= 1; matrix += 2;
     }
   }
+  old_lampadr = lampadr;
 }
 
 /* PIA0:A-W  Control what is read from PIA0:B
@@ -259,7 +262,7 @@ static void by6803_lampStrobe(int board, int lampadr) {
 static WRITE_HANDLER(pia0a_w) {
   locals.DISPDATA(offset,data);
   locals.p0_a = data;
-  by6803_lampStrobe(locals.phase_a>1,locals.lampadr1);
+  if (locals.lampadr != 0x0f) by6803_lampStrobe();
 }
 
 /* PIA1:A-W  0,2-7 Display handling:
@@ -281,18 +284,16 @@ static READ_HANDLER(pia0b_r) {
   return core_getSwCol((locals.p0_a & 0x1f) | ((locals.p1_b & 0x10)<<1));
 }
 
-/* PIA0:CB2-W Lamp Strobe #1, DIPBank3 STROBE */
+/* PIA0:CB2-W Lamp Strobe, DIPBank3 STROBE */
 static WRITE_HANDLER(pia0cb2_w) {
   //DBGLOG(("PIA0:CB2=%d PC=%4x\n",data,cpu_get_pc()));
-  if (locals.p0_cb2 & ~data) locals.lampadr1 = locals.p0_a & 0x0f;
+  if (locals.p0_cb2 & ~data) locals.lampadr = locals.p0_a & 0x0f;
   locals.p0_cb2 = data;
 }
-/* PIA1:CA2-W Lamp Strobe #2 */
+/* PIA1:CA2-W Diagnostic LED */
 static WRITE_HANDLER(pia1ca2_w) {
   //DBGLOG(("PIA1:CA2=%d\n",data));
-  if (locals.p1_ca2 & ~data) locals.lampadr2 = locals.p0_a & 0x0f;
   locals.diagnosticLed = data;
-  locals.p1_ca2 = data;
 }
 
 /* PIA0:CA2-W Display Blanking/Select */
@@ -329,7 +330,6 @@ static void vblank_all(void) {
   /*-- lamps --*/
   if ((locals.vblankCount % BY6803_LAMPSMOOTH) == 0) {
     memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
-    memset(coreGlobals.tmpLampMatrix, 0, sizeof(coreGlobals.tmpLampMatrix));
   }
 
   /*-- solenoids --*/
