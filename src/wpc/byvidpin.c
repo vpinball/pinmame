@@ -190,11 +190,11 @@ static WRITE_HANDLER(pia2a_w) { locals.p2_a = data; }
 /* PIA2:B Write*/
 //PB0-3: Output to 6803 CPU
 //PB4-7: N/A
-extern void by45_p21_w();
+extern void by45_p21_w(UINT8 data);
 
-static WRITE_HANDLER(pia2b_w) { 
+static WRITE_HANDLER(pia2b_w) {
 	//printf("pb2_w = %x\n",data);
-	locals.p2_b = data & 0x0f; 
+	locals.p2_b = data & 0x0f;
 	by45_p21_w(data & 0x02);
 }
 
@@ -327,8 +327,8 @@ static MACHINE_INIT(byVP) {
   pia_reset();
 }
 
-extern void by45snd_reset();
-void by_vdp_interrupt(int state);
+extern void by45snd_reset(void);
+static void by_vdp_interrupt(int state);
 static MACHINE_RESET(byVP)
 {
 	//printf("reset\n");

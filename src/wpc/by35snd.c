@@ -221,7 +221,7 @@ static void by32_init(struct sndbrdData *brdData) {
     {
     	by32locals.sampleoff	= 18;		// 751-18 game rom detected (star trek,playboy...)
     }
-    else  
+    else
     {
     	by32locals.sampleoff	= 32 + 18;		// 751-51 game rom detected (harlem, dolly...)
     }
@@ -601,7 +601,7 @@ static WRITE_HANDLER(cs_ctrl_w) {
 
 static int p21 = 0;
 
-void by45snd_reset()
+void by45snd_reset(void)
 {
 	p21 = 1;
 }
@@ -611,7 +611,7 @@ void by45_p21_w(int data)
 	p21 = 0;
 }
 
-static READ_HANDLER(cs_port1_r) { 
+static READ_HANDLER(cs_port1_r) {
 	static int last = 0xff;
 	int data = cslocals.ctrl | (cslocals.cmd << 1);
 	if(p21) data |= 0x02;
@@ -620,17 +620,17 @@ static READ_HANDLER(cs_port1_r) {
 		printf("cs_port1_r = %x\n",data);
 #endif
 	last = data;
-	return data; 
+	return data;
 }
 
 static int port2 = 0;
 
-static READ_HANDLER(cs_port2_r) { 
+static READ_HANDLER(cs_port2_r) {
 	int data = port2;
 	printf("reading cs_port2_r data = %x\n",data);
 	return data;
 }
-static WRITE_HANDLER(cs_port2_w) { 
+static WRITE_HANDLER(cs_port2_w) {
 	port2 = data;
 	//printf("MPU: port write = %x\n",data);
 	sndbrd_ctrl_cb(sntlocals.brdData.boardNo,data & 0x01); } // diag led
