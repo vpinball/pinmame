@@ -542,6 +542,7 @@ static void cs_diag(int button);
 static WRITE_HANDLER(cs_cmd_w);
 static WRITE_HANDLER(cs_ctrl_w);
 static READ_HANDLER(cs_port1_r);
+static READ_HANDLER(cs_port2_r);
 static WRITE_HANDLER(cs_port2_w);
 
 const struct sndbrdIntf by45Intf = {
@@ -561,7 +562,9 @@ static MEMORY_WRITE_START(cs_writemem)
   { 0xe000, 0xffff, MWA_ROM },
 MEMORY_END
 static PORT_READ_START(cs_readport)
-  { M6803_PORT2, M6803_PORT2, cs_port1_r },
+{ M6803_PORT2, M6803_PORT2, cs_port1_r },
+  //{ M6803_PORT1, M6803_PORT1, cs_port1_r },
+  //{ M6803_PORT2, M6803_PORT2, cs_port2_r },
 PORT_END
 static PORT_WRITE_START(cs_writeport)
   { M6803_PORT1, M6803_PORT1, DAC_0_data_w },
@@ -595,8 +598,42 @@ static WRITE_HANDLER(cs_ctrl_w) {
   cslocals.ctrl = ((data & 1) == cslocals.brdData.subType);
   cpu_set_irq_line(cslocals.brdData.cpuNo, M6803_TIN_LINE, (data & 1) ? ASSERT_LINE : CLEAR_LINE);
 }
-static READ_HANDLER(cs_port1_r) { return cslocals.ctrl | (cslocals.cmd << 1); }
-static WRITE_HANDLER(cs_port2_w) { sndbrd_ctrl_cb(sntlocals.brdData.boardNo,data & 0x01); } // diag led
+
+static int p21 = 0;
+
+void by45snd_reset()
+{
+	p21 = 1;
+}
+
+void by45_p21_w(int data)
+{
+	p21 = 0;
+}
+
+static READ_HANDLER(cs_port1_r) { 
+	static int last = 0xff;
+	int data = cslocals.ctrl | (cslocals.cmd << 1);
+	if(p21) data |= 0x02;
+#if 0
+	if(last !=data)
+		printf("cs_port1_r = %x\n",data);
+#endif
+	last = data;
+	return data; 
+}
+
+static int port2 = 0;
+
+static READ_HANDLER(cs_port2_r) { 
+	int data = port2;
+	printf("reading cs_port2_r data = %x\n",data);
+	return data;
+}
+static WRITE_HANDLER(cs_port2_w) { 
+	port2 = data;
+	//printf("MPU: port write = %x\n",data);
+	sndbrd_ctrl_cb(sntlocals.brdData.boardNo,data & 0x01); } // diag led
 
 /*----------------------------------------
 /    Turbo Cheap Squalk

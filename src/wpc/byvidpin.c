@@ -63,8 +63,11 @@
 #define BYVP_PIA2 2
 
 #define BYVP_VBLANKFREQ    60 /* VBLANK frequency */
+
 #define BYVP_IRQFREQ       BY35_IRQFREQ /* IRQ (via PIA) frequency*/
-#define BYVP_ZCFREQ        BY35_ZCFREQ  /* Zero cross frequency */
+//#define BYVP_ZCFREQ        BY35_ZCFREQ  /* Zero cross frequency */
+#define BYVP_ZCFREQ        60		/* This is correct based on comparing my real game to the emu SJE 8/23/06 */
+
 
 /*-----------------------------------------------
 / Load/Save static ram
@@ -187,7 +190,13 @@ static WRITE_HANDLER(pia2a_w) { locals.p2_a = data; }
 /* PIA2:B Write*/
 //PB0-3: Output to 6803 CPU
 //PB4-7: N/A
-static WRITE_HANDLER(pia2b_w) { locals.p2_b = data & 0x0f; }
+extern void by45_p21_w();
+
+static WRITE_HANDLER(pia2b_w) { 
+	//printf("pb2_w = %x\n",data);
+	locals.p2_b = data & 0x0f; 
+	by45_p21_w(data & 0x02);
+}
 
 /* PIA2:B Read */
 // Video Switch Returns (Bits 5-7 not connected)
@@ -316,6 +325,19 @@ static MACHINE_INIT(byVP) {
   pia_config(BYVP_PIA1, PIA_STANDARD_ORDERING, &piaIntf[1]);
   pia_config(BYVP_PIA2, PIA_STANDARD_ORDERING, &piaIntf[2]);
   pia_reset();
+}
+
+extern void by45snd_reset();
+void by_vdp_interrupt(int state);
+static MACHINE_RESET(byVP)
+{
+	//printf("reset\n");
+	memset(&locals, 0, sizeof(locals));
+	by45snd_reset();
+	pia_reset();
+	by_vdp_interrupt(0);
+	TMS9928A_reset(0);
+	pia1a_w(0,0);
 }
 static MACHINE_STOP(byVP) { sndbrd_0_exit(); }
 
@@ -465,7 +487,7 @@ MACHINE_DRIVER_START(byVP1)
   MDRV_CPU_MEMORY(byVP_video_readmem, byVP_video_writemem)
   MDRV_INTERLEAVE(100)
   MDRV_TIMER_ADD(byVP_zeroCross, BYVP_ZCFREQ*2)
-  MDRV_CORE_INIT_RESET_STOP(byVP,NULL,byVP)
+  MDRV_CORE_INIT_RESET_STOP(byVP,byVP,byVP)
   MDRV_DIPS(32)
   MDRV_DIAGNOSTIC_LEDV(2)
   MDRV_SWITCH_UPDATE(byVP)
