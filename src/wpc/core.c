@@ -602,8 +602,8 @@ static PALETTE_INIT(core) {
 
   if (pmoptions.dmd_antialias)
   { /*-- Autogenerate antialias colours --*/
-    rStart = gStart = bStart = 0;
     int rStep, gStep, bStep;
+    rStart = gStart = bStart = 0;
 
     rStep = (tmpPalette[COL_DMDON][0] * pmoptions.dmd_antialias / 100 - rStart) / 6;
     gStep = (tmpPalette[COL_DMDON][1] * pmoptions.dmd_antialias / 100 - gStart) / 6;
