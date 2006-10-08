@@ -600,7 +600,9 @@ static PALETTE_INIT(core) {
     tmpPalette[COL_LAMP+COL_LAMPCOUNT+ii][2] = (tmpPalette[COL_LAMP+ii][2] * 25) / 100;
   }
 
+  if (pmoptions.dmd_antialias)
   { /*-- Autogenerate antialias colours --*/
+    rStart = gStart = bStart = 0;
     int rStep, gStep, bStep;
 
     rStep = (tmpPalette[COL_DMDON][0] * pmoptions.dmd_antialias / 100 - rStart) / 6;
@@ -629,6 +631,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
   UINT32 *dmdColor = &CORE_COLOR(COL_DMDOFF);
   UINT32 *aaColor  = &CORE_COLOR(COL_DMDAA);
   BMTYPE **lines = ((BMTYPE **)bitmap->line) + (layout->top*locals.displaySize);
+  int noaa = !pmoptions.dmd_antialias || (layout->type & CORE_DMDNOAA);
   int ii, jj;
 
   memset(&dotCol[layout->start+1][0], 0, sizeof(dotCol[0][0])*layout->length+1);
@@ -640,7 +643,7 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
       for (jj = 0; jj < layout->length; jj++) {
         *line++ = dmdColor[dotCol[ii][jj]];
         if (locals.displaySize > 1)
-          *line++ = (layout->type & CORE_DMDNOAA) ? 0 : aaColor[dotCol[ii][jj] + dotCol[ii][jj+1]];
+          *line++ = noaa ? 0 : aaColor[dotCol[ii][jj] + dotCol[ii][jj+1]];
       }
     }
     if (locals.displaySize > 1) {
@@ -648,8 +651,8 @@ void video_update_core_dmd(struct mame_bitmap *bitmap, const struct rectangle *c
       line = (*lines++) + (layout->left*locals.displaySize);
       for (jj = 0; jj < layout->length; jj++) {
         int col2 = dotCol[ii][jj+1] + dotCol[ii+1][jj+1];
-        *line++ = (layout->type & CORE_DMDNOAA) ? 0 : aaColor[col1];
-        *line++ = (layout->type & CORE_DMDNOAA) ? 0 : aaColor[2*(col1 + col2)/5];
+        *line++ = noaa ? 0 : aaColor[col1];
+        *line++ = noaa ? 0 : aaColor[2*(col1 + col2)/5];
         col1 = col2;
       }
     }
