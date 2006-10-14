@@ -536,7 +536,8 @@ static PALETTE_INIT(core) {
   unsigned char tmpPalette[sizeof(core_palette)/3][3];
   int rStart = 0xff, gStart = 0xe0, bStart = 0x20;
   int perc66 = 67, perc33 = 33, perc0  = 20;
-  int ii, diff;
+  int ii;
+  float diff;
 
   if ((pmoptions.dmd_red > 0) || (pmoptions.dmd_green > 0) || (pmoptions.dmd_blue > 0)) {
     rStart = pmoptions.dmd_red; gStart = pmoptions.dmd_green; bStart = pmoptions.dmd_blue;
@@ -574,7 +575,7 @@ static PALETTE_INIT(core) {
   tmpPalette[COL_SEGAAOFF2][2] = bStart * perc0 * 33 / 10000;
 
   /*-- generate 16 shades of the segment color for all antialiased segments --*/
-  diff = (100 - perc0) / 15;
+  diff = (float)(100 - perc0) / 15.0;
   for (ii = 0; ii < 16; ii++) {
     tmpPalette[palSize-16+ii][0]  = rStart * (perc0 + diff * ii) / 100;
     tmpPalette[palSize-16+ii][1]  = gStart * (perc0 + diff * ii) / 100;
