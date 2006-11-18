@@ -278,9 +278,12 @@ static READ_HANDLER(pia4a_r)  { return core_getSwCol(s7locals.swCol); }
 /  Sound command
 /----------------*/
 static WRITE_HANDLER(pia0a_w) {
-  if (s7locals.rr) // Rat Race needs the leading sound command (0xff) byte filled in
-    sndbrd_0_data_w(0, 0xff);
-  sndbrd_0_data_w(0, data);
+  if (s7locals.rr) { // Rat Race needs the system 9 sound PIA triggered as well
+    sndbrd_0_data_w(0, data & 0x80 ? ~data : data); // just so diag sounds are working too... what the heck! :)
+    pia_set_input_ca1(6, 1);
+    pia_set_input_ca1(6, 0);
+  } else
+    sndbrd_0_data_w(0, data);
 }
 
 static struct pia6821_interface s7_pia[] = {
@@ -510,18 +513,20 @@ static MACHINE_INIT(rr) {
   pia_config(S7_PIA2, PIA_STANDARD_ORDERING, &s7_pia[2]);
   pia_config(S7_PIA3, PIA_STANDARD_ORDERING, &s7_pia[3]);
   pia_config(S7_PIA4, PIA_STANDARD_ORDERING, &s7_pia[4]);
-  sndbrd_0_init(SNDBRD_S67S, 1, NULL, NULL, NULL);
+  sndbrd_0_init(SNDBRD_S9S, 1, NULL, NULL, NULL);
+  MDRV_SOUND_CMD(sndbrd_0_data_w)
   s7locals.ssEn= 1;
   s7locals.rr = 1;
 }
 
 MACHINE_DRIVER_START(s7RR)
-  MDRV_IMPORT_FROM(s7S)
+  MDRV_IMPORT_FROM(s7)
   MDRV_CPU_MODIFY("mcpu")
   MDRV_CPU_MEMORY(rr_readmem, rr_writemem)
   MDRV_CORE_INIT_RESET_STOP(rr,s7,s7)
   MDRV_DIPS(8)
   MDRV_NVRAM_HANDLER(s7)
+  MDRV_IMPORT_FROM(wmssnd_s9s)
 MACHINE_DRIVER_END
 
 /*-----------------------------------------------

@@ -154,9 +154,14 @@ extern MACHINE_DRIVER_EXTERN(wmssnd_s9ps);  /* pennant fever */
 #define S9S_SOUNDROM4(u49,chk49) \
    S9S_STDREG \
      ROM_LOAD(u49, 0xc000, 0x4000, chk49) \
-     ROM_RELOAD(0x8000, 0x4000) \
-     ROM_RELOAD(0x4000, 0x4000) \
-     ROM_RELOAD(0x0000, 0x4000)
+     ROM_RELOAD(0x8000, 0x4000)
+
+#define S9RR_SOUNDROM(u49, chk49) \
+   S9S_STDREG \
+     ROM_LOAD(u49, 0xe000, 0x2000, chk49) \
+     ROM_RELOAD(0xc000, 0x2000) \
+     ROM_RELOAD(0xa000, 0x2000) \
+     ROM_RELOAD(0x8000, 0x2000)
 
 /*-------------------------
 /  Jokerz! sound board
