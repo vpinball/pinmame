@@ -280,7 +280,7 @@ static void init_ratrc(void) { core_gameData = &ratrcGameData; }
 S7_ROMSTART000x(ratrc,l1,"ic14.532",   CRC(c6f4bcf4) SHA1(d71c86299139abe3dd376a324315a039be82875c),
                          "ic17.532",   CRC(0800c214) SHA1(3343c07fd550bb0759032628e01bb750135dab15),
                          "ic20.532",   CRC(0c5c7c09) SHA1(c93b39ba1460feee5850fcd3ca7cacb72c4c8ff3))
-S67S_SOUNDROMS8(         "sound12.716",NO_DUMP)
+S9RR_SOUNDROM(           "b486.bin",   CRC(c54b9402) SHA1(c56fc5f105fc2c1166e3b22bb09b72af79e0aec1))
 S7_ROMEND
 #define input_ports_ratrc input_ports_s7
 CORE_GAMEDEF(ratrc,l1,"Rat Race (L-1)",1983,"Williams",s7_mS7RR,0)
