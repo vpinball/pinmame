@@ -311,11 +311,17 @@ WPCS_SOUNDROM288("dw_u18.l1",CRC(1ca78024) SHA1(e652b07e21b59c8c497a20dfddcb9ddd
                  "dw_u14.l1",CRC(71f7d55b) SHA1(c3a22cfce2d10fe94a9749af7018e17e5e3bf4b3))
 WPC_ROMEND
 
+WPC_ROMSTART(dw,p5,"dw_p5.u6",0x80000,CRC(2756a3ed) SHA1(ffeb2d303804c0a4ca4cbc2eb20b552529b5aabf))
+WPCS_SOUNDROM288("dw_u18.l1",CRC(1ca78024) SHA1(e652b07e21b59c8c497a20dfddcb9ddd8cad228d),
+                 "dw_u15.l1",CRC(9b87ff26) SHA1(483206ca0abdad4557843f83f245a1c20234af64),
+                 "dw_u14.l1",CRC(71f7d55b) SHA1(c3a22cfce2d10fe94a9749af7018e17e5e3bf4b3))
+WPC_ROMEND
 /*--------------
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF(dw,l2,"Dr. Who (L-2)",1992, "Bally",wpc_mFliptronS,0)
 CORE_CLONEDEF(dw,l1,l2,"Dr. Who (L-1)",1992, "Bally",wpc_mFliptronS,0)
+CORE_CLONEDEF(dw,p5,l2,"Dr. Who (P-5)",1992, "Bally",wpc_mFliptronS,0)
 
 /*-----------------------
 / Simulation Definitions
