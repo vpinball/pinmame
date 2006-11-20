@@ -265,7 +265,7 @@ DRIVER(hook,401)        //Data East MPU: 01/92 Hook (4.01)
 DRIVER(hook,404)        //Data East MPU: 01/92 Hook (4.04)
 DRIVER(hook,408)        //Data East MPU: 01/92 Hook (4.08)
 //DMD 128 x 32
-DRIVER(aar,101)			//Aaron Spelling 12/92 (1.01)
+//DRIVER(aar,101)		//Aaron Spelling 12/92 (1.01)
 DRIVER(lw3,200)         //Data East MPU: 06/92 Lethal Weapon (2.00)
 DRIVER(lw3,205)         //Data East MPU: 07/92 Lethal Weapon (2.05)
 DRIVER(lw3,207)         //Data East MPU: 08/92 Lethal Weapon (2.07 Canada)
@@ -799,11 +799,11 @@ DRIVERNV(gprixl)		//Whitestar: 05/05 Grand Prix (Spain)
 DRIVERNV(gprixf)		//Whitestar: 05/05 Grand Prix (France)
 DRIVERNV(gprixi)		//Whitestar: 05/05 Grand Prix (Italy)
 
-DRIVERNV(sam1_flashb_0102)
-DRIVERNV(sam1_flashb_0106)
-DRIVERNV(potc_113as)
-DRIVERNV(scarn)
-DRIVERNV(wpt_111al)
+//DRIVERNV(sam1_flashb_0102)
+//DRIVERNV(sam1_flashb_0106)
+//DRIVERNV(potc_113as)
+//DRIVERNV(scarn)
+//DRIVERNV(wpt_111al)
 
 #endif /* INCLUDE_NEW_STERN */
 
