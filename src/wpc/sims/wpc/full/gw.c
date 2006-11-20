@@ -496,6 +496,9 @@ WPC_ROMSTART(gw,l2,"get_l2.u6",0x80000,CRC(9efc0005) SHA1(037ede538fb2c6f1898048
 WPCS_SOUNDROM8xx("u18snd",CRC(37bbe485) SHA1(e6b7ccef250db0c801e3dd8ebf93522b466ca1ec))
 WPC_ROMEND
 
+WPC_ROMSTART(gw,l3,"get_l3.u6",0x80000,CRC(d10aaa44) SHA1(39ba198f9c4ce2419f8dbb8d90508e1beb524b5d))
+WPCS_SOUNDROM8xx("u18snd",CRC(37bbe485) SHA1(e6b7ccef250db0c801e3dd8ebf93522b466ca1ec))
+WPC_ROMEND
 /*--------------
 /  Game drivers
 /---------------*/
@@ -503,6 +506,7 @@ CORE_GAMEDEF(gw,l5,"The Getaway: High Speed II (L-5)",1992, "Williams",wpc_mFlip
 CORE_CLONEDEF(gw,pc,l5,"The Getaway: High Speed II (P-C)",1992,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(gw,l1,l5,"The Getaway: High Speed II (L-1)",1992,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(gw,l2,l5,"The Getaway: High Speed II (L-2)",1992,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(gw,l3,l5,"The Getaway: High Speed II (L-3)",1992,"Williams",wpc_mFliptronS,0)
 
 /*-----------------------
 / Simulation Definitions
