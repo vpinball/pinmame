@@ -922,6 +922,42 @@ SOURCE=.\src\cpu\cdp1802\cdp1802.c
 SOURCE=.\src\cpu\cdp1802\cdp1802.h
 # End Source File
 # End Group
+# Begin Group "TMS9900"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\cpu\tms9900\9900dasm.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\tms9900\9900stat.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\tms9900\99xxcore.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\tms9900\99xxstat.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\tms9900\tms9900.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\tms9900\tms9900.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\tms9900\tms9980a.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\cpu\tms9900\tms9995.c
+# End Source File
+# End Group
 # End Group
 # Begin Group "Machine"
 
