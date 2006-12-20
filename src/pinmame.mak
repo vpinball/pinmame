@@ -61,6 +61,7 @@ DRVLIBS += $(PINOBJ)/flicker.o
 DRVLIBS += $(PINOBJ)/rotation.o
 DRVLIBS += $(PINOBJ)/rowamet.o
 DRVLIBS += $(PINOBJ)/wico.o
+DRVLIBS += $(PINOBJ)/nsm.o
 #
 # Games
 #

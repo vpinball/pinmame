@@ -4510,6 +4510,10 @@ SOURCE=.\src\wpc\mrgamegames.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\nsm.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\nuova.c
 # End Source File
 # Begin Source File
