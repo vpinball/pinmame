@@ -509,6 +509,20 @@ DE_ROMEND
 CORE_CLONEDEF(lw3,200,208,"Lethal Weapon 3 (2.00)",1992,"Data East",de_mDEDMD32S2A,0)
 
 /*-------------------------------------------------------------
+/ Aaron Spelling - CPU Rev 3 /DMD  Type 2 512K Rom - 64K CPU Rom
+/------------------------------------------------------------*/
+INITGAMES11(aar,GEN_DEDMD32, de_128x32DMD, FLIP1516, SNDBRD_DE2S, SNDBRD_DEDMD32, 0)
+DE_ROMSTARTx0(aar_101,"as512cpu.bin",CRC(03c70e67) SHA1(3093e217943ae80c842a1d893cff5330ac90bc30))
+DE_DMD32ROM44(        "asdspu12.bin",CRC(5dd81be6) SHA1(20e5ec19550e3795670c5ee4e8e92fae0499fdb8),
+                      "asdspu14.bin",NO_DUMP)
+DE2S_SOUNDROM144(     "assndu7.bin" ,CRC(f0414a0d) SHA1(b1f940be05426a39f4e5ea0802fd03a7ce055ebc),
+                      "assndu17.bin",CRC(e151b1fe) SHA1(d7d97499d93885a4f7ebd7bb302731bc5bc456ff),
+                      "assndu21.bin",CRC(7d69e917) SHA1(73e21e65bc194c063933288cb617127b41593466))
+DE_ROMEND
+#define input_ports_aar input_ports_des11
+CORE_GAMEDEF(aar,101,"Aaron Spelling (1.01)",1992,"Data East",de_mDEDMD32S2A,0)
+
+/*-------------------------------------------------------------
 / Star Wars - CPU Rev 3 /DMD  Type 2 512K Rom - 64K CPU Rom
 /------------------------------------------------------------*/
 INITGAMES11(stwr,GEN_DEDMD32, de_128x32DMD, FLIP1516, SNDBRD_DE2S, SNDBRD_DEDMD32, 0)
