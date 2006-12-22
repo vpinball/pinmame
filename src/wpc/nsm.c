@@ -53,18 +53,18 @@ static WRITE_HANDLER(gameData_w) {
   int i;
   HC4094_data_w(0, GET_BIT0);
   for (i=0; i < 9; i++) {
-//    HC4094_strobe_w(i, 1);
+    HC4094_strobe_w(i, 1);
     HC4094_clock_w(i, 1);
     HC4094_clock_w(i, 0);
-//    HC4094_strobe_w(i, 0);
+    HC4094_strobe_w(i, 0);
   }
 }
 
 static WRITE_HANDLER(parallel_0_out) {
-  locals.strobe = data;
+  locals.strobe = core_BitColToNum(data);
 }
 static WRITE_HANDLER(parallel_1_out) {
-  coreGlobals.tmpLampMatrix[core_BitColToNum(locals.strobe)] = data;
+  coreGlobals.tmpLampMatrix[locals.strobe] = data;
 }
 static WRITE_HANDLER(parallel_2_out) {
   locals.solenoids = (locals.solenoids & 0xff00) | data;
@@ -73,24 +73,19 @@ static WRITE_HANDLER(parallel_3_out) {
   locals.solenoids = (locals.solenoids & 0x00ff) | (data << 8);
 }
 static WRITE_HANDLER(parallel_4_out) {
-  locals.segments[core_BitColToNum(locals.strobe)].w = ~data;
-printf("D1:%02x ", data);
+  locals.segments[locals.strobe].w = ~data;
 }
 static WRITE_HANDLER(parallel_5_out) {
-  locals.segments[8+core_BitColToNum(locals.strobe)].w = ~data;
-printf("D2:%02x ", data);
+  locals.segments[8+locals.strobe].w = ~data;
 }
 static WRITE_HANDLER(parallel_6_out) {
-  locals.segments[16+core_BitColToNum(locals.strobe)].w = ~data;
-printf("D3:%02x ", data);
+  locals.segments[16+locals.strobe].w = ~data;
 }
 static WRITE_HANDLER(parallel_7_out) {
-  locals.segments[24+core_BitColToNum(locals.strobe)].w = ~data;
-printf("D4:%02x ", data);
+  locals.segments[24+locals.strobe].w = ~data;
 }
 static WRITE_HANDLER(parallel_8_out) {
-  locals.segments[32+core_BitColToNum(locals.strobe)].w = ~data;
-printf("D5:%02x\n", data);
+  locals.segments[32+locals.strobe].w = ~data;
 }
 static WRITE_HANDLER(qspin_0_out) { HC4094_data_w(1, data); }
 static WRITE_HANDLER(qspin_1_out) { HC4094_data_w(2, data); }
@@ -151,10 +146,7 @@ static READ_HANDLER(read_zc1) {
   return locals.zc ? 0 : 0xff;
 }
 static READ_HANDLER(sw_r) {
-  if (offset)
-    return coreGlobals.swMatrix[0];
-  else
-    return coreGlobals.swMatrix[locals.strobe+1];
+  return coreGlobals.swMatrix[offset ? locals.strobe+1 : 0];
 }
 
 static MEMORY_READ_START(readmem)
