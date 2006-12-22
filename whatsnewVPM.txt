@@ -1,6 +1,10 @@
 What's new in Visual PinMAME:
 -----------------------------
 
+Version 1.54 (December 23rd, 2006)
+----------------------------------
+Nothing new.
+
 Version 1.53, (June 1, 2006)
 ----------------------------
 - added display rotation for the vpm window
@@ -13,7 +17,6 @@ Version 1.53, (June 1, 2006)
   parent window is visible it will be set as the active and foreground window
 - selecting the vpm display and pressing escape will cause an error - known issue
   
-
 Version 1.52 (August 1th, 2005)
 -------------------------------
 - Added an easter egg screen: THANK YOU GUYS!
