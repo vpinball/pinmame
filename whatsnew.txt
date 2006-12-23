@@ -1,3 +1,13 @@
+Version 1.54 (December 23, 2006) - "One DLL to rule them all!"
+------------------------------------------------------------------------------
+Happy birthday Steve!
+It's been a challenging 6 months since the release of 1.53.
+We've added preliminary support for NSM, Wico, and LTD.  LTD is closest to working for these newly supported systems.
+Also, a minor correction for the display properties - the off state can now be set like the other levels.
+Nuova Bell is now playable with sound - needs improvement
+Thanks to Mike McAndrew for providing the correct sound rom for Rat Race.
+
+
 Version 1.53 (June 1, 2006) - "GO FASTER!"
 ------------------------------------------------------------------------------
 It's been 10 months since our last release.  Every time we thought about making
