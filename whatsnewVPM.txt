@@ -4,6 +4,7 @@ What's new in Visual PinMAME:
 Version 1.54 (December 23rd, 2006)
 ----------------------------------
 - Off Level corrected for display brightness dialog
+- Happy 35th birthday Steve!
 
 Version 1.53, (June 1, 2006)
 ----------------------------
