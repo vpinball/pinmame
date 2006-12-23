@@ -3,7 +3,7 @@ What's new in Visual PinMAME:
 
 Version 1.54 (December 23rd, 2006)
 ----------------------------------
-Nothing new.
+- Off Level corrected for display brightness dialog
 
 Version 1.53, (June 1, 2006)
 ----------------------------
