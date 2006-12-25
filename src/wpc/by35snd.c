@@ -734,10 +734,11 @@ static void sd_init(struct sndbrdData *brdData);
 static void sd_diag(int button);
 static WRITE_HANDLER(sd_cmd_w);
 static WRITE_HANDLER(sd_ctrl_w);
+static WRITE_HANDLER(sd_man_w);
 static READ_HANDLER(sd_status_r);
 
 const struct sndbrdIntf bySDIntf = {
-  "BYSD", sd_init, NULL, sd_diag, NULL, sd_cmd_w, sd_status_r, sd_ctrl_w, NULL, 0//SNDBRD_NODATASYNC|SNDBRD_NOCBSYNC
+  "BYSD", sd_init, NULL, sd_diag, sd_man_w, sd_cmd_w, sd_status_r, sd_ctrl_w, NULL, 0//SNDBRD_NODATASYNC|SNDBRD_NOCBSYNC
 };
 static struct DACinterface sd_dacInt = { 1, { 80 }};
 static MEMORY_READ16_START(sd_readmem)
@@ -771,7 +772,7 @@ static struct {
 } sdlocals;
 
 static const struct pia6821_interface sd_pia = {
-  /*i: A/B,CA/B1,CA/B2 */ 0, sd_pia0b_r, 0, 0, 0, 0,
+  /*i: A/B,CA/B1,CA/B2 */ 0, sd_pia0b_r, PIA_UNUSED_VAL(1), 0, 0, 0,
   /*o: A/B,CA/B2       */ sd_pia0a_w, sd_pia0b_w, 0, sd_pia0cb2_w,
   /*irq: A/B           */ sd_pia0irq, sd_pia0irq
 };
@@ -784,6 +785,10 @@ static WRITE_HANDLER(sd_pia0cb2_w) {
 }
 static void sd_diag(int button) {
   cpu_set_irq_line(sdlocals.brdData.cpuNo, MC68000_IRQ_3, button ? ASSERT_LINE : CLEAR_LINE);
+}
+static WRITE_HANDLER(sd_man_w) {
+  sdlocals.irqnext = 1;
+  sd_cmd_w(0, data);
 }
 static WRITE_HANDLER(sd_cmd_w) {
   sdlocals.cmd[sdlocals.cmdsync ^= 1] = data;
