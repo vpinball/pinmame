@@ -28,21 +28,31 @@
 #endif
 
 static struct {
-  struct sndbrdData brdData;
   UINT8 sndCmd;
+  int volume;
 } locals;
 
 static void rowamet_init(struct sndbrdData *brdData) {
   memset(&locals, 0x00, sizeof(locals));
-  locals.brdData = *brdData;
+  locals.volume = 100;
 }
 
-WRITE_HANDLER(rowamet_data_w) {
+static WRITE_HANDLER(rowamet_data_w) {
   locals.sndCmd = data;
+  locals.volume = 100;
+  mixer_set_volume(0, 100);
   cpu_set_nmi_line(1, PULSE_LINE);
+//printf("D:%02x ", locals.sndCmd);
+}
+
+static WRITE_HANDLER(mute_w) {
+//printf("V:%d ", locals.volume);
+  mixer_set_volume(0, locals.volume);
+  locals.volume /= 2;
 }
 
 static READ_HANDLER(snd_data_r) {
+//printf("R ");
   return locals.sndCmd;
 }
 
@@ -62,6 +72,7 @@ static PORT_READ_START(snd_readport)
 PORT_END
 
 static PORT_WRITE_START(snd_writeport)
+  { 0x00, 0x00, mute_w },
   { 0x01, 0x01, DAC_0_data_w },
 PORT_END
 
@@ -72,7 +83,7 @@ const struct sndbrdIntf rowametIntf = {
   "ROWAMET", rowamet_init, NULL, NULL, rowamet_data_w, rowamet_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
-static struct DACinterface rowamet_dac_intf = { 1, { 25 }};
+static struct DACinterface rowamet_dac_intf = { 1, { 50 }};
 
 MACHINE_DRIVER_START(rowamet)
   MDRV_IMPORT_FROM(taito)
@@ -81,6 +92,7 @@ MACHINE_DRIVER_START(rowamet)
   MDRV_CPU_ADD_TAG("scpu", Z80, 1888888)
   MDRV_CPU_MEMORY(snd_readmem, snd_writemem)
   MDRV_CPU_PORTS(snd_readport, snd_writeport)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_SOUND_ADD(DAC, rowamet_dac_intf)
 MACHINE_DRIVER_END
 
