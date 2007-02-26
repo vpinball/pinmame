@@ -222,9 +222,9 @@ DRIVERNV(atlantis)      //6803-2006: 03/89 Atlantis
 						//			02/83 Pinball (Zaccaria Pinball Champ '82 clone)
 						//			??/8? Movie (Zaccaria Pinball Champ clone)
 						//BY35      12/83 Pin Ball Pool (Bally Eight Ball Deluxe clone)
-						//			??/84 Cosmic Flash
 						//BY35      06/84 Super Bowl (Bally X's & O's clone)
 						//BY35      ??/84 Tiger Rag (Bally Kings Of Steel clone)
+DRIVERNV(cosflash)		//			??/85 Cosmic Flash (Bally Flash Gordon clone)
 DRIVERNV(newwave)       //BY35      04/85 New Wave (Bally Black Pyramid clone)
 DRIVERNV(saturn2)       //BY35      08/85 Saturn 2 (Bally Spy Hunter clone)
 						//			??/?? World Cup / World Championship (redemption game)
@@ -1234,9 +1234,10 @@ DRIVER(ts,lx4)          //WPC-532:  02/95 B The Shadow (LX-4)
 DRIVER(ts,lx5)          //WPC-532:  05/95 B The Shadow (LX-5)
 DRIVER(ts,lh6)          //WPC-532:  05/95 B The Shadow (LH-6, Home version)
 DRIVER(dh,lx2)          //WPC-530:  03/95 W Dirty Harry
-DRIVER(tom,13)          //WPC-539:  03/95 B Theatre of Magic
-DRIVER(tom,12)							  // 1.2
-DRIVER(tom,06)							  // 0.6
+DRIVER(tom,06)			//WPC-539:  03/95 B Theatre of Magic (0.6A)
+DRIVER(tom,12)			//WPC-539:  04/95 B Theatre of Magic (1.2X)
+DRIVER(tom,13)          //WPC-539:  08/95 B Theatre of Magic (1.3X)
+DRIVER(tom,14h)         //WPC-539:  10/96 B Theatre of Magic (1.4 Home version)
 DRIVER(nf,23x)          //WPC-525:  05/95 W No Fear: Dangerous Sports
 DRIVER(i500,11r)        //WPC-526:  06/95 B Indianapolis 500
 DRIVER(i500,11b)        //WPC-526:  06/95 B Indianapolis 500 (Belgium)
