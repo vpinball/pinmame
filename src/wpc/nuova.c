@@ -173,6 +173,18 @@ static core_tLCDLayout dispAlpha[] = {
 };
 
 /*--------------------------------
+/ Cosmic Flash (Flash Gordon Clone)
+/-------------------------------*/
+INITGAMENB(cosflash,GEN_BY35,dispNB,FLIP_SW(FLIP_L),8,SNDBRD_BY61,0)
+BY35_ROMSTARTx00(cosflash,"cf2d.532",    CRC(939e941d) SHA1(889862043f351762e8c866aefb36a9ea75cbf828),
+                          "cf6d.532",    CRC(7af93d2f) SHA1(2d939b14f7fe79f836e12926f44b70037630cd3f))
+BY61_SOUNDROM0xx0(        "834-20_2.532",CRC(2f8ced3e) SHA1(ecdeb07c31c22ec313b55774f4358a9923c5e9e7),
+                          "834-18_5.532",CRC(8799e80e) SHA1(f255b4e7964967c82cfc2de20ebe4b8d501e3cb0))
+BY35_ROMEND
+BY35_INPUT_PORTS_START(cosflash, 1) BY35_INPUT_PORTS_END
+CORE_CLONEDEFNV(cosflash,flashgdn,"Cosmic Flash",1985,"Bell Games",by35_mBY35_61S,0)
+
+/*--------------------------------
 / Saturn 2 (Spy Hunter Clone)
 /-------------------------------*/
 INITGAMENB(saturn2,GEN_BY35,dispNB,FLIP_SW(FLIP_L),8,SNDBRD_BY45,0)
