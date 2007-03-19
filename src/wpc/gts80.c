@@ -120,6 +120,8 @@ static SWITCH_UPDATE(GTS80) {
   int invPattern = coreGlobals.invSw[0];
   if (inports) {
     CORE_SETKEYSW(inports[GTS80_COMINPORT], 0x3f, 8);
+    // Sound test
+    CORE_SETKEYSW(inports[GTS80_COMINPORT] >> 8, 0x10, 0);
     // Set slam switch
     CORE_SETKEYSW(((inports[GTS80_COMINPORT] >> 8) & 0x80) ^ invPattern ? 0x80 : 0,0x80,0);
     if (core_gameData->hw.display & GTS80_DISPVIDEO)
@@ -132,6 +134,8 @@ static SWITCH_UPDATE(GTS80) {
   if (core_gameData->hw.display & GTS80_DISPVIDEO) { // Also triggers NMI on video CPU
     cpu_set_irq_line(GTS80_VIDCPU, IRQ_LINE_NMI, isSlammed ? ASSERT_LINE : CLEAR_LINE);
   }
+  // sound test
+  sndbrd_0_diag(coreGlobals.swMatrix[0] & 0x10);
 }
 
 static WRITE_HANDLER(GTS80_sndCmd_w) {

@@ -19,7 +19,8 @@
     COREPORT_BITDEF(  0x0010, IPT_START1,         IP_KEY_DEFAULT) \
     COREPORT_BITDEF(  0x0020, IPT_TILT,           KEYCODE_INSERT) \
     /* These are put in switch column 0 */ \
-    COREPORT_BIT(     0x8000, "Slam Tilt",        KEYCODE_HOME)
+    COREPORT_BIT(     0x8000, "Slam Tilt",        KEYCODE_HOME) \
+    COREPORT_BIT(     0x1000, "Sound Test",       KEYCODE_9)
 
 #define GTS80VID_COMPORTS \
     COREPORT_BIT(     0x0f00, "Video Test",       KEYCODE_7) \

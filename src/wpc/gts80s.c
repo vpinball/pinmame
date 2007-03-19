@@ -198,6 +198,14 @@ void gts80s_exit(int boardNo)
 }
 
 /*--------------
+/  sound diag
+/---------------*/
+// NMI line: test switch S3
+void gts80s_diag(int state) {
+	cpu_set_nmi_line(GTS80S_locals.boardData.cpuNo, state ? ASSERT_LINE : CLEAR_LINE);
+}
+
+/*--------------
 /  sound cmd
 /---------------*/
 
@@ -222,7 +230,7 @@ struct CustomSound_interface GTS80S_customsoundinterface = {
 };
 
 const struct sndbrdIntf gts80sIntf = {
-  "GTS80", gts80s_init, gts80s_exit, NULL, gts80s_data_w, gts80s_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "GTS80", gts80s_init, gts80s_exit, gts80s_diag, gts80s_data_w, gts80s_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
 MACHINE_DRIVER_START(gts80s_s)
@@ -236,13 +244,16 @@ MACHINE_DRIVER_END
 
 
 /*----------------------------------------
-/ Gottlieb Sys 80/80A Sound Board
+/ Gottlieb Sys 80/80A Sound & Speech Board
 /-----------------------------------------*/
 
 #define GTS80SS_BUFFER_SIZE 4096
 
 static struct {
 	struct sndbrdData boardData;
+	int    device;
+	int    diag;
+	UINT8  riot3a;
 
 	int    dips;
 	UINT8* pRIOT6532_3_ram;
@@ -267,76 +278,97 @@ static void GTS80SS_nmi(int state)
 		return;
 
 	// logerror("NMI: %i\n",state);
-	if ( !state )
-		cpu_set_nmi_line(GTS80SS_locals.boardData.cpuNo, PULSE_LINE);
+	cpu_set_nmi_line(GTS80SS_locals.boardData.cpuNo, state ? CLEAR_LINE : ASSERT_LINE);
 }
 
-static WRITE_HANDLER(GTS80SS_riot3a_w) { logerror("riot3a_w: 0x%02x\n", data);}
+static READ_HANDLER(GTS80SS_riot3a_r) {
+	return GTS80SS_locals.riot3a;
+}
 
 /* Switch settings, test switch and NMI */
 READ_HANDLER(GTS80SS_riot3b_r)  {
-	// 0x40: test switch SW1
 	if ( GTS80SS_locals.boardData.subType==0 )
-		return 0x40 | (GTS80SS_locals.dips^0x3f);
+		return (GTS80SS_locals.diag ? 0 : 0x40) | (GTS80SS_locals.dips^0x3f);
 	else
-		return (votraxsc01_status_r(0)?0x80:0x00) | 0x40 | (GTS80SS_locals.dips^0x3f);
+		return (votraxsc01_status_r(0)?0x80:0x00) | (GTS80SS_locals.diag ? 0 : 0x40) | (GTS80SS_locals.dips^0x3f);
 }
 
 static WRITE_HANDLER(GTS80SS_riot3b_w) { logerror("riot3b_w: 0x%02x\n", data);}
 
-/* D/A converters */
+/* D/A converter for volume */
 static WRITE_HANDLER(GTS80SS_da1_latch_w) {
 //	logerror("da1_w: 0x%02x\n", data);
-
 	if ( GTS80SS_locals.buf_pos>=GTS80SS_BUFFER_SIZE )
 		return;
 
 	GTS80SS_locals.clock[GTS80SS_locals.buf_pos] = timer_get_time();
 	GTS80SS_locals.buffer[GTS80SS_locals.buf_pos++] = ((data<<7)-0x4000)*2;
+
+	//mixer_set_volume(GTS80SS_locals.stream, 100 * data / 255);
+	GTS80SS_locals.device = 1;
 }
 
+/* D/A converter for voice clock */
 static WRITE_HANDLER(GTS80SS_da2_latch_w) {
 //	logerror("da2_w: 0x%02x\n", data);
+	if (GTS80SS_locals.boardData.subType)
+		votraxsc01_set_base_frequency(11025+(data*100));
+	GTS80SS_locals.device = 3;
 }
 
 /* expansion board */
 static READ_HANDLER(GTS80SS_ext_board_1_r) {
+	GTS80SS_locals.device = 4;
 	logerror("ext_board_1_r\n");
 	return 0xff;
 }
 
 static WRITE_HANDLER(GTS80SS_ext_board_1_w) {
+	GTS80SS_locals.device = 4;
 	logerror("ext_board_1_w: 0x%02x\n", data);
 }
 
 static READ_HANDLER(GTS80SS_ext_board_2_r) {
+	GTS80SS_locals.device = 5;
 	logerror("ext_board_2_r\n");
 	return 0xff;
 }
 
 static WRITE_HANDLER(GTS80SS_ext_board_2_w) {
+	GTS80SS_locals.device = 5;
 	logerror("ext_board_2_w: 0x%02x\n", data);
 }
 
 static READ_HANDLER(GTS80SS_ext_board_3_r) {
+	GTS80SS_locals.device = 6;
 	logerror("ext_board_3_r\n");
 	return 0xff;
 }
 
 static WRITE_HANDLER(GTS80SS_ext_board_3_w) {
+	GTS80SS_locals.device = 6;
 	logerror("ext_board_3_w: 0x%02x\n", data);
 }
 
 /* voice synt latch */
 static WRITE_HANDLER(GTS80SS_vs_latch_w) {
-	if ( GTS80SS_locals.boardData.subType==1 )
-		votraxsc01_w(0, data^0x3f);
+	logerror("vs_latch: %03x: %02x / %d\n", offset, data, GTS80SS_locals.device);
+	if (GTS80SS_locals.boardData.subType) {
+		if (GTS80SS_locals.device < 7) {
+			mixer_set_volume(0, 100);
+			mixer_set_volume(1, 100);
+			mixer_set_volume(2, 100);
+			mixer_set_volume(3, 100);
+			votraxsc01_w(0, data^0x3f);
+		}
+	}
+//	GTS80SS_locals.device = 2;
 }
 
 static struct riot6532_interface GTS80SS_riot6532_intf = {
  /* 6532RIOT 3: Sound/Speech board Chip U15 */
- /* in  : A/B, */ NULL, GTS80SS_riot3b_r,
- /* out : A/B, */ GTS80SS_riot3a_w, GTS80SS_riot3b_w,
+ /* in  : A/B, */ GTS80SS_riot3a_r, GTS80SS_riot3b_r,
+ /* out : A/B, */ 0, GTS80SS_riot3b_w,
  /* irq :      */ GTS80SS_irq
 };
 
@@ -347,29 +379,60 @@ static WRITE_HANDLER(GTS80SS_riot6532_3_ram_w)
 	pMem[0x0000] = pMem[0x0080] = pMem[0x0100] = pMem[0x0180] = data;
 }
 
+static READ_HANDLER(GTS80SS_riot6532_3_ram_r)
+{
+	return GTS80SS_locals.pRIOT6532_3_ram[offset%0x80];
+}
+
+/* A write here will cause the speech chip to mute */
+static WRITE_HANDLER(empty_w)
+{
+	if (GTS80SS_locals.boardData.subType) {
+		mixer_set_volume(0, 0);
+		mixer_set_volume(1, 0);
+		mixer_set_volume(2, 0);
+		mixer_set_volume(3, 0);
+	}
+	GTS80SS_locals.device = 7;
+}
+
 /*--------------
 /  Memory map
 /---------------*/
 MEMORY_READ_START(GTS80SS_readmem)
-{ 0x0000, 0x01ff, MRA_RAM},
-{ 0x0200, 0x027f, riot6532_3_r},
+{ 0x0000, 0x01ff, GTS80SS_riot6532_3_ram_r},
+{ 0x0200, 0x0fff, riot6532_3_r},
 { 0x4000, 0x4fff, GTS80SS_ext_board_1_r},
 { 0x5000, 0x5fff, GTS80SS_ext_board_2_r},
 { 0x6000, 0x6fff, GTS80SS_ext_board_3_r},
 { 0x7000, 0x7fff, MRA_ROM},
-{ 0x8000, 0xffff, MRA_ROM},
+{ 0x8000, 0x81ff, GTS80SS_riot6532_3_ram_r},
+{ 0x8200, 0x8fff, riot6532_3_r},
+{ 0xc000, 0xcfff, GTS80SS_ext_board_1_r},
+{ 0xd000, 0xdfff, GTS80SS_ext_board_2_r},
+{ 0xe000, 0xefff, GTS80SS_ext_board_3_r},
+{ 0xf000, 0xffff, MRA_ROM},
 MEMORY_END
 
 MEMORY_WRITE_START(GTS80SS_writemem)
 { 0x0000, 0x01ff, GTS80SS_riot6532_3_ram_w},
-{ 0x0200, 0x027f, riot6532_3_w},
+{ 0x0200, 0x0fff, riot6532_3_w},
 { 0x1000, 0x1fff, GTS80SS_da1_latch_w},
 { 0x2000, 0x2fff, GTS80SS_vs_latch_w},
 { 0x3000, 0x3fff, GTS80SS_da2_latch_w},
 { 0x4000, 0x4fff, GTS80SS_ext_board_1_w},
 { 0x5000, 0x5fff, GTS80SS_ext_board_2_w},
 { 0x6000, 0x6fff, GTS80SS_ext_board_3_w},
-{ 0x7000, 0xffff, MWA_NOP}, // the soundboard does fake writes to the ROM area (used for a delay function)
+{ 0x7000, 0x7fff, empty_w}, // the soundboard does fake writes to the ROM area (used for a delay function)
+{ 0x8000, 0x81ff, GTS80SS_riot6532_3_ram_w},
+{ 0x8200, 0x8fff, riot6532_3_w},
+{ 0x9000, 0x9fff, GTS80SS_da1_latch_w},
+{ 0xa000, 0xafff, GTS80SS_vs_latch_w},
+{ 0xb000, 0xbfff, GTS80SS_da2_latch_w},
+{ 0xc000, 0xcfff, GTS80SS_ext_board_1_w},
+{ 0xd000, 0xdfff, GTS80SS_ext_board_2_w},
+{ 0xe000, 0xefff, GTS80SS_ext_board_3_w},
+{ 0xf000, 0xffff, empty_w}, // the soundboard does fake writes to the ROM area (used for a delay function)
 MEMORY_END
 
 static void GTS80_ss_Update(int num, INT16 *buffer, int length)
@@ -462,15 +525,23 @@ void gts80ss_exit(int boardNo)
 }
 
 /*--------------
+/  sound diag
+/---------------*/
+// RRIOT port B 0x40: test switch SW1
+void gts80ss_diag(int state) {
+	GTS80SS_locals.diag = state ? 1 : 0;
+}
+
+/*--------------
 /  sound cmd
 /---------------*/
 
 WRITE_HANDLER(gts80ss_data_w)
 {
-	data = (data&0x3f);
-
+	data &= 0x3f;
+	GTS80SS_locals.riot3a = data | (data & 0x0f ? 0x80 : 0x00); /* | 0x40 */
 	// logerror("sound_latch: 0x%02x\n", data);
-	riot6532_set_input_a(3, (data&0x0f?0x80:0x00) | 0x40 | data);
+	riot6532_set_input_a(3, GTS80SS_locals.riot3a);
 }
 
 /* only in at the moment for the pinmame startup information */
@@ -480,13 +551,13 @@ struct CustomSound_interface GTS80SS_customsoundinterface = {
 
 struct VOTRAXSC01interface GTS80SS_votrax_sc01_interface = {
 	1,						/* 1 chip */
-	{ 50 },					/* master volume */
-	{ 7000 },				/* dynamically changing this is currently not supported */
+	{ 75 },					/* master volume */
+	{ 7000 },				/* initial sampling frequency */
 	{ &GTS80SS_nmi }		/* set NMI when busy signal get's low */
 };
 
 const struct sndbrdIntf gts80ssIntf = {
-  "GTS80SS", gts80ss_init, gts80ss_exit, NULL, gts80ss_data_w, gts80ss_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "GTS80SS", gts80ss_init, gts80ss_exit, gts80ss_diag, gts80ss_data_w, gts80ss_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
 MACHINE_DRIVER_START(gts80s_ss)
