@@ -54,7 +54,7 @@ static struct {
 	int	iRemainingSamples;
 
 	void* timer;
-	
+
 	INT16 *lpBuffer;
 	INT16* pBufferPos;
 
@@ -112,7 +112,7 @@ static const int PhonemeLengths[65] =
 
 
 // int sample_rate[4] = {22050, 22550, 23050, 23550};
-int sample_rate[4] = {22050, 22050, 22050, 22050};
+long sample_rate[4] = {22050, 22050, 22050, 22050};
 
 INLINE int time_to_samples(int ms)
 {
@@ -126,7 +126,7 @@ void PrepareVoiceData(int nextPhoneme, int nextIntonation)
 
 	int iFadeOutSamples;
 	int iFadeOutPos;
-	
+
 	int iFadeInSamples;
 	int iFadeInPos;
 
@@ -136,7 +136,7 @@ void PrepareVoiceData(int nextPhoneme, int nextIntonation)
 
 	INT16 data;
 
-	if ( votraxsc01_locals.lpBuffer ) 
+	if ( votraxsc01_locals.lpBuffer )
 		free(votraxsc01_locals.lpBuffer);
 	votraxsc01_locals.lpBuffer = NULL;
 
@@ -167,7 +167,7 @@ void PrepareVoiceData(int nextPhoneme, int nextIntonation)
 
 	iFadeOutSamples = 0;
 	iFadeOutPos     = 0;
-	
+
 	iFadeInSamples   = 0;
 	iFadeInPos       = 0;
 
@@ -175,7 +175,7 @@ void PrepareVoiceData(int nextPhoneme, int nextIntonation)
 
 	// set up processing
 	if ( PhonemeData[votraxsc01_locals.actPhoneme].sameAs!=PhonemeData[nextPhoneme].sameAs  ) {
-		// do something, if they are the same all FadeIn/Out values are 0, 
+		// do something, if they are the same all FadeIn/Out values are 0,
 		// the buffer is simply filled with the samples of the new phoneme
 
 		switch ( PhonemeData[votraxsc01_locals.actPhoneme].iType ) {
@@ -279,7 +279,7 @@ void PrepareVoiceData(int nextPhoneme, int nextIntonation)
 		data = 0x00;
 
 		// fade out
-		if ( iFadeOutPos<iFadeOutSamples ) 
+		if ( iFadeOutPos<iFadeOutSamples )
 		{
 			double dFadeOut = 1.0;
 
@@ -301,7 +301,7 @@ void PrepareVoiceData(int nextPhoneme, int nextIntonation)
 		if ( iFadeInPos>=0 )
 		{
 			double dFadeIn = 1.0;
-			
+
 			if ( iFadeInPos<iFadeInSamples ) {
 				dFadeIn = sin((1.0*iFadeInPos/iFadeInSamples)*3.1415/2);
 				iFadeInPos++;
@@ -313,7 +313,7 @@ void PrepareVoiceData(int nextPhoneme, int nextIntonation)
 			}
 
 			data += (INT16) (*pNextPos++ * dFadeIn);
-			
+
 			iNextRemainingSamples--;
 		}
 		iFadeInPos++;
@@ -347,8 +347,8 @@ WRITE_HANDLER(votraxsc01_w)
 
 	if ( votraxsc01_locals.actPhoneme==0x3f )
 		votraxsc01_locals.iDelay = time_to_samples(20);
-		
-	if ( !votraxsc01_locals.busy ) 
+
+	if ( !votraxsc01_locals.busy )
 	{
 		votraxsc01_locals.busy = -1;
 		if ( votraxsc01_locals.intf->BusyCallback[0] )
@@ -356,7 +356,7 @@ WRITE_HANDLER(votraxsc01_w)
 	}
 #else
 	DlPortWritePortUshort(_dataOutAdr, data);
-	
+
 	votraxsc01_locals.strobe = 0x00;
 	DlPortWritePortUshort(_ctrlOutAdr, votraxsc01_locals.strobe);
 #endif
@@ -385,10 +385,14 @@ READ_HANDLER(votraxsc01_status_r)
 #endif
 }
 
-void votraxsc01_set_base_freqency(int baseFrequency)
+void votraxsc01_set_base_frequency(int baseFrequency)
 {
+	int i;
 	if ( baseFrequency>=0 )
 		votraxsc01_locals.baseFrequency = baseFrequency;
+	for (i=0; i < 4; i++) {
+		stream_set_sample_rate(votraxsc01_locals.channels[i], baseFrequency);
+	}
 }
 
 static void Votrax_Update(int num, INT16 *buffer, int length)
@@ -506,7 +510,7 @@ int VOTRAXSC01_sh_start(const struct MachineSound *msound)
 		votraxsc01_locals.baseFrequency = 8000;
 
 //	votraxsc01_locals.busy = -1;
-	votraxsc01_locals.baseFrequency = 8000;
+//	votraxsc01_locals.baseFrequency = 8000;
 
 	votraxsc01_locals.actPhoneme = 0x3f;
 #ifndef REAL_DEVICE

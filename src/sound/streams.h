@@ -19,6 +19,10 @@ int stream_init_multi(int channels,const char **names,const int *default_mixing_
 		int param,void (*callback)(int param,INT16 **buffer,int length));
 void stream_update(int channel,int min_interval);	/* min_interval is in usec */
 
+#ifdef PINMAME
+void stream_set_sample_rate(int channel, int sample_rate);
+#endif /* PINMAME */
+
 #ifdef __cplusplus
 }
 #endif
