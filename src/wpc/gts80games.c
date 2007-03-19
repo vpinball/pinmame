@@ -407,7 +407,7 @@ GTS80SS22_ROMSTART(     "672-s1.snd", CRC(10ba523c) SHA1(4289acd1437d7bf69fb4428
                         "672-s2.snd", CRC(5e77117a) SHA1(7836b1ee0b2afe621ae414d5710111b550db0e63))
 GTS80_ROMEND
 #define input_ports_rocky input_ports_gts80
-CORE_GAMEDEFNV(rocky,"Rocky",1982,"Gottlieb",gl_mGTS80SS,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(rocky,"Rocky",1982,"Gottlieb",gl_mGTS80SS,0)
 
 /*-------------------------------------------------------------------
 / Spirit (#673)
@@ -415,7 +415,7 @@ CORE_GAMEDEFNV(rocky,"Rocky",1982,"Gottlieb",gl_mGTS80SS,GAME_IMPERFECT_SOUND)
 static core_tLCDLayout dispSpirit[] = {
   DISP_SEG_IMPORT(dispNumeric3), {6, 9,50,6,CORE_SEG9}, {0}
 };
-INITGAME(spirit, GEN_GTS80A,0, dispSpirit, SNDBRD_GTS80SS_VOTRAX,0,0)
+INITGAME(spirit, GEN_GTS80A,0, dispSpirit, SNDBRD_GTS80SS,0,0)
 GTS80_1_ROMSTART(spirit, "673-2.cpu",  CRC(a7dc2207) SHA1(9098e740639af364a12857f89bdc4e2c7c89ff23),
                          "u2_80a.bin", CRC(241de1d4) SHA1(9d5942704cbdec6565d6335e33e9f7e4c60a41ac),
                          "u3_80a.bin", CRC(2d77ccdc) SHA1(47241ccd365e8d74d5aa5b775acf6445cc95b8a8))
@@ -481,7 +481,7 @@ static core_tLCDLayout dispKrull[] = {
   DISP_SEG_IMPORT(dispNumeric3),
   {6, 8,50,3,CORE_SEG9}, {6,16,53,3,CORE_SEG9}, {0}
 };
-INITGAME(krull, GEN_GTS80A,0, dispKrull, SNDBRD_GTS80SS_VOTRAX,0,0)
+INITGAME(krull, GEN_GTS80A,0, dispKrull, SNDBRD_GTS80SS,0,0)
 GTS80_1_ROMSTART(krull, "676-3.cpu",  CRC(71507430) SHA1(cbd7dd186ec928829585d3166ec10956d708d850),
                         "u2_80a.bin", CRC(241de1d4) SHA1(9d5942704cbdec6565d6335e33e9f7e4c60a41ac),
                         "u3_80a.bin", CRC(2d77ccdc) SHA1(47241ccd365e8d74d5aa5b775acf6445cc95b8a8))
@@ -507,7 +507,7 @@ CORE_GAMEDEFNV(qbquest,"Q*Bert's Quest",1983,"Gottlieb",gl_mGTS80SS,0)
 /*-------------------------------------------------------------------
 / Super Orbit (#680)
 /-------------------------------------------------------------------*/
-INITGAME(sorbit, GEN_GTS80A,0, dispNumeric3, SNDBRD_GTS80SS_VOTRAX,0,0)
+INITGAME(sorbit, GEN_GTS80A,0, dispNumeric3, SNDBRD_GTS80SS,0,0)
 GTS80_1_ROMSTART(sorbit, "680.cpu",    CRC(decf84e6) SHA1(0c6f5e1abac58aede15016b5e30db72d1a3f6c11),
                          "u2_80a.bin", CRC(241de1d4) SHA1(9d5942704cbdec6565d6335e33e9f7e4c60a41ac),
                          "u3_80a.bin", CRC(2d77ccdc) SHA1(47241ccd365e8d74d5aa5b775acf6445cc95b8a8))
@@ -533,7 +533,7 @@ CORE_GAMEDEFNV(rflshdlx,"Royal Flush Deluxe",1983,"Gottlieb",gl_mGTS80SS,0)
 /*-------------------------------------------------------------------
 / Amazon Hunt (#684)
 /-------------------------------------------------------------------*/
-INITGAME(amazonh, GEN_GTS80A,0, dispNumeric3, SNDBRD_GTS80SS_VOTRAX,0,0)
+INITGAME(amazonh, GEN_GTS80A,0, dispNumeric3, SNDBRD_GTS80SS,0,0)
 GTS80_1_ROMSTART(amazonh, "684-2.cpu",  CRC(b0d0c4af) SHA1(e81f568983d95cecb62d34598c40c5a5e6dcb3e2),
                           "u2_80a.bin", CRC(241de1d4) SHA1(9d5942704cbdec6565d6335e33e9f7e4c60a41ac),
                           "u3_80a.bin", CRC(2d77ccdc) SHA1(47241ccd365e8d74d5aa5b775acf6445cc95b8a8))
