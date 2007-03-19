@@ -207,6 +207,18 @@ int stream_init(const char *name,int default_mixing_level,
 	return channel;
 }
 
+#ifdef PINMAME
+void stream_set_sample_rate(int channel, int sample_rate) {
+	stream_sample_rate[channel] = sample_rate;
+	if (sample_rate)
+		stream_sample_length[channel] = 1000000 / sample_rate;
+	else
+		stream_sample_length[channel] = 0;
+ 	if (stream_buffer_pos[channel] >= stream_sample_length[channel]) {
+		stream_buffer_pos[channel] = 0;
+	}
+}
+#endif /* PINMAME */
 
 int stream_init_multi(int channels,const char **names,const int *default_mixing_levels,
 		int sample_rate,
