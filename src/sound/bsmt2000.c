@@ -4,6 +4,17 @@
  *   by Aaron Giles
  *
  *   Modifications for PINMAME by Steve Ellenoff & Martin Adrian	
+ *
+ *   3/11/2007 (Steve Ellenoff)
+ *             - Added Aaron's new ADPCM decompression to current implementation from MAME 0.113
+ *             - The code is a bit of a hack, but it seems to work ok, and was easier than 
+ *               implementing all the major sound core changes from MAME 0.113.
+ *             - TODO: 1)Certain effects are missing (sound played when BSMT DMD animation comes on in stereo games)
+ *             -       2)Volume for compressed data is not understood and is guessed (based on Star Wars).
+ *             -       3)Figure out why setting mode doesn't work for hook & batman
+ *             -       4)Implement mode settings & register adjustments properly (depends on fixing #3 above)
+ *             -       5)Remove DE Rom loading flag & fix in the drivers themselves.
+ *             -       6)Fix bsmt interface to handle reverse left/right stereo channels rather than in emulation here
  **********************************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,6 +31,12 @@
 #define BACKEND_INTERPOLATE		1
 #define LOG_COMMANDS			0
 #define MAKE_WAVS				0
+
+#ifdef PINMAME
+#define DUMP_DECOMP				0
+#define	LOG_COMPRESSED_ONLY		0
+#define DECOMP_SIZE		   400000
+#endif
 
 #if MAKE_WAVS
 #include "wavwrite.h"
@@ -43,7 +60,6 @@
 #define REG_TOTAL				8
 
 #define REG_ALT_RIGHTVOL		8
-
 
 
 /**********************************************************************************************
@@ -77,13 +93,19 @@ struct BSMT2000Chip
 	INT32		last_rsample;			/* last sample output */
 	INT32		curr_lsample;			/* current sample target */
 	INT32		curr_rsample;			/* current sample target */
-#ifdef PINMAME
-    UINT16      voladj;                 /* Adjust Volume Command by this # */
-	int         use_de_rom_banking;     /* Flag to turn on Rom Banking support for Data East Games */
-	int			shift_data;				/* Special flag to determine if ROM data should be shifted for better quality */
-#endif
 	struct BSMT2000Voice *voice;		/* the voices */
  	struct BSMT2000Voice compressed;	/* the compressed voice */
+#ifdef PINMAME
+	int         use_de_rom_banking;     /* Flag to turn on Rom Banking support for Data East Games */
+	int			shift_data;				/* Shift integer to apply to samples for changing volume - this is most likely done external to the bsmt chip in the real hardware */
+	INT32		adpcm_current;			/* current ADPCM sample */
+	INT32		adpcm_delta_n;			/* current ADPCM scale factor */
+	INT16		l_decomp[DECOMP_SIZE];	/* decompressed data for compressed voice */
+	INT16		r_decomp[DECOMP_SIZE];	/* decompressed data for compressed voice */
+	int			decompsamp;				/* # of decompressed samples */
+	int			decomppos;				/* Position of decompressed sample output */
+	int			last_register;			/* remember last register written before rest */
+#endif
 
 #if MAKE_WAVS
 	void *		wavraw;					/* raw waveform */
@@ -130,6 +152,122 @@ static INT32 *scratch;
 #endif
 
 
+#ifdef PINMAME
+
+/************************************************************************************************
+
+     decompress_samples -- decompresses samples for the compressed voice to be output as needed.
+
+*************************************************************************************************/
+static void decompress_samples(struct BSMT2000Chip *chip)
+{
+		struct BSMT2000Voice *voice = &chip->compressed;
+		INT8 *base = &chip->region_base[voice->reg[REG_BANK] * 0x10000];
+		INT32 lvol = voice->reg[REG_LEFTVOL];
+		INT32 rvol = voice->reg[REG_RIGHTVOL];
+		UINT16 pos = voice->position>>16;
+		UINT32 pos1 = voice->position;
+		UINT16 loopend = voice->loop_stop_position>>16;
+		UINT32 frac = 0;
+		int samp=0;
+
+		/* clear out */
+		memset(&chip->l_decomp, 0, DECOMP_SIZE * sizeof(INT16));
+		memset(&chip->r_decomp, 0, DECOMP_SIZE * sizeof(INT16));
+
+		/* loop for the entire rom sample */
+		while(pos < loopend)
+		{
+			/* add samples - but no volume adjustments */
+			chip->l_decomp[samp] = chip->adpcm_current;
+			chip->r_decomp[samp] = chip->adpcm_current;
+			samp++;
+
+			if(samp>DECOMP_SIZE)
+			{
+				samp = DECOMP_SIZE;
+				logerror("exceeded limit\n");
+			}
+
+			/* update position */
+			frac++;
+			if (frac == 6)
+			{
+				pos++;
+				frac = 0;
+			}
+
+			/* every 3 samples, we update the ADPCM state */
+			if (frac == 1 || frac == 4)
+			{
+				static const UINT8 delta_tab[] = { 58,58,58,58,77,102,128,154 };
+				int nibble = base[pos] >> ((frac == 1) ? 4 : 0);
+				int value = (INT8)(nibble << 4) >> 4;
+				int delta;
+
+				/* compute the delta for this sample */
+				delta = chip->adpcm_delta_n * value;
+				if (value > 0)
+					delta += chip->adpcm_delta_n >> 1;
+				else
+					delta -= chip->adpcm_delta_n >> 1;
+
+				/* add and clamp against the sample */
+				chip->adpcm_current += delta;
+				if (chip->adpcm_current >= 32767)
+					chip->adpcm_current = 32767;
+				else if (chip->adpcm_current <= -32768)
+					chip->adpcm_current = -32768;
+
+				/* adjust the delta multiplier */
+				chip->adpcm_delta_n = (chip->adpcm_delta_n * delta_tab[abs(value)]) >> 6;
+				if (chip->adpcm_delta_n > 2000)
+					chip->adpcm_delta_n = 2000;
+				else if (chip->adpcm_delta_n < 1)
+					chip->adpcm_delta_n = 1;
+			}
+		}
+
+		/* set decompress flags */
+		chip->decompsamp = samp;
+		chip->decomppos = 0;
+
+		/* dump decompressed output to file for debugging */
+		#if DUMP_DECOMP
+		{
+			FILE *fp;
+			fp = fopen("decomp.raw","wb");
+			samp = 0;
+			for(samp = 0; samp < chip->decompsamp; samp++)
+				fwrite((void*)&chip->l_decomp[samp],2,1,fp);
+			fclose(fp);
+		}
+		#endif
+}
+
+/***************************************************************************************************
+
+     reset_compression_flags -- reset decompression flags to halt processing of the compressed data
+
+****************************************************************************************************/
+static void reset_compression_flags(struct BSMT2000Chip *chip)
+{
+	struct BSMT2000Voice *voice = &chip->compressed;
+	chip->decompsamp = 0;
+	chip->decomppos = 0;
+	voice->adjusted_rate = 0;
+}
+
+/**************************************************
+    set_mode - set the mode after reset
+***************************************************/
+static void set_mode(struct BSMT2000Chip *chip, int i)
+{
+	logerror("BSMT#%d last reg. prior to reset: %d\n", i, chip->last_register);
+	logerror("BSMT#%d last reg. prior to reset: %d\n", i, chip->last_register);
+}
+
+#endif		//ifdef PINMAME
 
 /**********************************************************************************************
 
@@ -174,12 +312,14 @@ static void generate_samples(struct BSMT2000Chip *chip, INT32 *left, INT32 *righ
 				INT32 val2 = base[(pos >> 16) + 1];
 				pos += rate;
 
-				//Shift ROM data if interface specifies this (Alvin G games)
+				//Shift ROM data if interface specifies this
+				#ifdef PINMAME
 				if(chip->shift_data)
 				{
-					val1 = val1<<2;		//schematics (pistol poker) suggest an 8 bit shift (<<8), but sound is way too loud and clips
-					val2 = val2<<2;		//schematics (pistol poker) suggest an 8 bit shift (<<8), but sound is way too loud and clips
+					val1 = val1<<chip->shift_data;
+					val2 = val2<<chip->shift_data;
 				}
+				#endif
 				
 				/* interpolate */
 				val1 = interpolate(val1, val2, pos);
@@ -198,6 +338,50 @@ static void generate_samples(struct BSMT2000Chip *chip, INT32 *left, INT32 *righ
 		}
 	}
 
+	#ifdef PINMAME
+
+  	/* compressed voice (11-voice model only) */
+  	voice = &chip->compressed;
+	if (chip->voices == 11 && voice->reg[REG_BANK] < chip->total_banks && voice->adjusted_rate == 1)
+  	{
+		int remaining = samples;
+		INT8 *base = &chip->region_base[voice->reg[REG_BANK] * 0x10000];
+  		INT32 *lbuffer = left, *rbuffer = right;
+  		INT32 lvol = voice->reg[REG_LEFTVOL];
+  		INT32 rvol = voice->reg[REG_RIGHTVOL];
+
+		/* adjust volumes to balance better with non-compressed voices - just a guess on this, but seems ok */
+		lvol = lvol>>5;
+		rvol = rvol>>5;
+
+		/* loop while we still have samples to generate & decompressed samples to play */
+		while (remaining-- && chip->decomppos < chip->decompsamp)
+		{
+			INT32 val1 = chip->l_decomp[chip->decomppos];
+			INT32 val2 = chip->r_decomp[chip->decomppos];
+			chip->decomppos++;
+
+			/* interpolate */
+			val1 = interpolate(val1, val2, chip->decomppos);
+			
+			/* apply volumes and add */
+			*lbuffer++ += val1 * lvol;
+  			*rbuffer++ += val2 * rvol;
+		}
+
+		/* if anything left, fill with silence */
+		if(remaining+1)
+		{
+			while (remaining--)
+			{
+				*lbuffer++ += 0;
+				*rbuffer++ += 0;
+			}
+		}
+	}
+
+	#else
+
   	/* compressed voice (11-voice model only) */
   	voice = &chip->compressed;
 	if (chip->voices == 11 && voice->reg[REG_BANK] < chip->total_banks)
@@ -210,8 +394,6 @@ static void generate_samples(struct BSMT2000Chip *chip, INT32 *left, INT32 *righ
   		INT32 rvol = voice->reg[REG_RIGHTVOL];
   		int remaining = samples;
 
-//logerror("pos=%08X stop=%08X remaining=%d\n", pos, voice->loop_stop_position, remaining);
-  
   		/* loop while we still have samples to generate */
   		while (remaining-- && pos < voice->loop_stop_position)
   		{
@@ -230,10 +412,10 @@ static void generate_samples(struct BSMT2000Chip *chip, INT32 *left, INT32 *righ
   
   		/* update the position */
   		voice->position = pos;
-  	}
+	}
+
+	#endif
 }
-
-
 
 /**********************************************************************************************
 
@@ -352,6 +534,10 @@ INLINE void init_voice(struct BSMT2000Voice *voice)
  	voice->adjusted_rate = 0;
  	voice->reg[REG_LEFTVOL] = 0x7fff;
  	voice->reg[REG_RIGHTVOL] = 0x7fff;
+	#ifdef PINMAME
+	voice->loop_start_position = 0;
+	voice->loop_stop_position = 0;
+	#endif
  }
  
  
@@ -363,9 +549,8 @@ INLINE void init_all_voices(struct BSMT2000Chip *chip)
  	for (i = 0; i < chip->voices; i++)
  		init_voice(&chip->voice[i]);
  
- 	/* init the compressed voice (runs at a fixed rate of ~8kHz?) */
+ 	/* init the compressed voice */
  	init_voice(&chip->compressed);
- 	chip->compressed.adjusted_rate = 0x02aa << 4;
  }
  
 int BSMT2000_sh_start(const struct MachineSound *msound)
@@ -394,9 +579,10 @@ int BSMT2000_sh_start(const struct MachineSound *msound)
 
 		/* set the volumes */
 #ifdef PINMAME
+		//Handle Reverse Stereo flag from interface here
 		vol[intf->reverse_stereo] = MIXER(intf->mixing_level[i], MIXER_PAN_LEFT);
 		vol[1 - intf->reverse_stereo] = MIXER(intf->mixing_level[i], MIXER_PAN_RIGHT);
-		bsmt2000[i].voladj = (UINT16)intf->voladj[i];
+		//Capture other interface flags we need later
 		bsmt2000[i].use_de_rom_banking = intf->use_de_rom_banking;
 		bsmt2000[i].shift_data = intf->shift_data;
 #else
@@ -419,6 +605,9 @@ int BSMT2000_sh_start(const struct MachineSound *msound)
 
 		/* init the voices */
 		init_all_voices(&bsmt2000[i]);
+		#ifdef PINMAME
+		reset_compression_flags(&bsmt2000[i]);
+		#endif
 	}
 
 	/* allocate memory */
@@ -479,7 +668,13 @@ void BSMT2000_sh_reset(void)
 {
 	int i;
 	for (i = 0; i < MAX_BSMT2000; i++)
+	{
 		init_all_voices(&bsmt2000[i]);
+		#ifdef PINMAME
+		reset_compression_flags(&bsmt2000[i]);
+		set_mode(&bsmt2000[i],i);
+		#endif
+	}
 }
 
 
@@ -495,9 +690,19 @@ static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_
 	struct BSMT2000Voice *voice = &chip->voice[offset % chip->voices];
 	int regindex = offset / chip->voices;
 
+	#ifdef PINMAME
+	/*store last register written*/
+	chip->last_register = offset;
+	#endif
+
 #if LOG_COMMANDS
 	logerror("BSMT#%d write: V%d R%d = %04X\n", chip - bsmt2000, offset % chip->voices, regindex, data);
-//	printf("BSMT#%d write: V%d R%d = %04X\n", chip - bsmt2000, offset % chip->voices, regindex, data);
+#endif
+	
+//View Compressed Voice Data
+#if LOG_COMPRESSED_ONLY
+	if(offset >= 0x6d)
+		logerror("BSMT#%d write: %02x = %04X\n", chip - bsmt2000, offset, data);
 #endif
 	
 	/* update the register */
@@ -526,28 +731,11 @@ static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_
 			voice->loop_stop_position = voice->reg[REG_LOOPEND] << 16;
 			break;
 
-		#ifdef PINMAME
-		//Adjust the Volume commands as specified by the interface.
-		//(Allows extremely soft hardware such as Apollo13 & GoldenEye to sound louder)
-                case REG_LEFTVOL:
-                case REG_RIGHTVOL:
-                        if(voice->reg[regindex] > 0)
-                           voice->reg[regindex] += chip->voladj;
-                        break;
-
-				case REG_ALT_RIGHTVOL:
-						voice->reg[REG_RIGHTVOL] = data;
-                        if(voice->reg[REG_RIGHTVOL] > 0)
-                           voice->reg[REG_RIGHTVOL] += chip->voladj;
-					break;
-		#else
-		
 		case REG_ALT_RIGHTVOL:
 			COMBINE_DATA(&voice->reg[REG_RIGHTVOL]);
 			break;
 
-		#endif
-
+		//DE GAMES HAVE FUNKY ROM LOADING - SO WE MESS WITH ROM BANK DATA TO MAKE IT WORK OUT
 		#ifdef PINMAME
 		case REG_BANK:
 			if(chip->use_de_rom_banking) {
@@ -566,38 +754,69 @@ static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_
  		voice = &chip->compressed;
  		switch (offset)
  		{
+			//LOOP STOP POSITION
  			case 0x6d:
  				COMBINE_DATA(&voice->reg[REG_LOOPEND]);
  				voice->loop_stop_position = voice->reg[REG_LOOPEND] << 16;
-logerror("REG_LOOPEND=%04X voice->loop_stop_position=%08X\n", voice->reg[REG_LOOPEND], voice->loop_stop_position);
+				logerror("REG_LOOPEND=%04X voice->loop_stop_position=%08X\n", voice->reg[REG_LOOPEND], voice->loop_stop_position);
  				break;
- 				
+
+			#ifdef PINMAME	
+			//STOP PLAYING LEFT/RIGHT CHANNELS?
+			case 0x6e:
+			case 0x70:
+				reset_compression_flags(chip);
+				break;
+			#endif
+
+ 			//ROM BANK	
  			case 0x6f:
  				COMBINE_DATA(&voice->reg[REG_BANK]);
-			#ifdef PINMAME
+				#ifdef PINMAME
 				if(chip->use_de_rom_banking) {
 					int temp = (voice->reg[REG_BANK] & 0x07) | 
 								((voice->reg[REG_BANK] & 0x18)<<1) |
 								((voice->reg[REG_BANK] & 0x20)>>2);
 					voice->reg[REG_BANK] = temp;
 				}
-			#endif
+				#endif
 			break;
  			
- 			case 0x74:
+			//RATE - USED AS A CONTROL TO TELL CHIP READY TO OUTPUT COMPRESSED DATA (VALUE = 1 FOR VALID DATA)
+			case 0x73:
+				COMBINE_DATA(&voice->reg[REG_RATE]);
+				#ifdef PINMAME
+				if(voice->reg[REG_RATE]==1)
+				{
+					voice->adjusted_rate = voice->reg[REG_RATE];
+
+					/* reset adpcm values also */
+					chip->adpcm_current = 0;
+					chip->adpcm_delta_n = 10;
+
+					/* sample ready to be decompressed */
+					decompress_samples(chip);
+				}
+				#endif
+			break;
+
+			//RIGHT CHANNEL VOLUME
+			case 0x74:
  				COMBINE_DATA(&voice->reg[REG_RIGHTVOL]);
-logerror("REG_RIGHTVOL=%04X\n", voice->reg[REG_RIGHTVOL]);
+				logerror("REG_RIGHTVOL=%04X\n", voice->reg[REG_RIGHTVOL]);
  				break;
- 
+			
+			//SAMPLE START POSITION
  			case 0x75:
  				COMBINE_DATA(&voice->reg[REG_CURRPOS]);
  				voice->position = voice->reg[REG_CURRPOS] << 16;
-logerror("REG_CURRPOS=%04X voice->loop_stop_position=%08X\n", voice->reg[REG_CURRPOS], voice->position);
+				logerror("REG_CURRPOS=%04X voice->loop_stop_position=%08X\n", voice->reg[REG_CURRPOS], voice->position);
  				break;
  
+			//LEFT CHANNEL VOLUME
  			case 0x78:
  				COMBINE_DATA(&voice->reg[REG_LEFTVOL]);
-logerror("REG_LEFTVOL=%04X\n", voice->reg[REG_LEFTVOL]);
+				logerror("REG_LEFTVOL=%04X\n", voice->reg[REG_LEFTVOL]);
  				break;
  		}
 	}
