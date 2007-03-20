@@ -219,10 +219,12 @@ static READ_HANDLER(alvgs_ctrl_r);
 
 /*Interfaces*/
 
-/* Newer 12 Voice Style BSMT Chip */
+/* 12 Voice Style BSMT Chip */
+/* Schematics (pistol poker) suggest an 8 bit shift (<<8), but sound is way too loud and clips, so we use 3 */
 static struct BSMT2000interface alvgs_bsmt2000Int = {
-  1, {24000000}, {12}, {ALVGS_ROMREGION}, {100}, {0000}, 0, 1, 1
+  1, {24000000}, {12}, {ALVGS_ROMREGION}, {100}, 0, 3, 1
 };
+
 /* Sound board */
 const struct sndbrdIntf alvgs2Intf = {
    "BSMT", alvgs_init, NULL, NULL, alvg_sndCmd_w, alvgs_data_w, NULL, alvgs_ctrl_w, alvgs_ctrl_r, SNDBRD_NODATASYNC
