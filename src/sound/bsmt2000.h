@@ -19,9 +19,8 @@ struct BSMT2000interface
         int region[MAX_BSMT2000];               /* memory region where the sample ROM lives */
         int mixing_level[MAX_BSMT2000];         /* master volume */
 #ifdef PINMAME
-        int voladj[MAX_BSMT2000];               /* Adjust Volume Commands to create louder output */
         int use_de_rom_banking;                 /* Special flag to use Data East rom bank handling */
-        int shift_data;                         /* Special flag to determine if ROM data should be shifted for better quality */
+        int shift_data;                         /* Shift integer to apply to samples for changing volume - this is most likely done external to the bsmt chip in the real hardware */
         int reverse_stereo;                     /* Special flag to determine if left and right channels should be reversed */
 #endif
 };
