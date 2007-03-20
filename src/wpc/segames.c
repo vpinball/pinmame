@@ -20,7 +20,8 @@ SE_INPUT_PORTS_START(se, 1) SE_INPUT_PORTS_END
 
 /* GAMES APPEAR IN PRODUCTION ORDER (MORE OR LESS) */
 
-//Snd Works but VERY SOFT
+/* Games below support Stereo */
+
 /*-------------------------------------------------------------------
 / Apollo 13
 /-------------------------------------------------------------------*/
@@ -53,6 +54,8 @@ SE_ROMEND
 #define input_ports_gldneye input_ports_se
 CORE_GAMEDEFNV(gldneye,"Goldeneye",1996,"Sega",de_mSES2C,GAME_NOCRC)
 
+/* Stereo? Speaker test shows Left Channel & Both Speaker Test Only */
+
 /*-------------------------------------------------------------------
 / Twister
 /-------------------------------------------------------------------*/
@@ -64,7 +67,7 @@ DE2S_SOUNDROM144("twstsnd.u7" ,CRC(5ccf0798) SHA1(ac591c508de8e9687c20b01c298084
                  "twstsnd.u21",CRC(c3eae590) SHA1(bda3e0a725339069c49c4282676a07b4e0e8d2eb))
 SE_ROMEND
 #define input_ports_twst input_ports_se
-CORE_GAMEDEF(twst,405,"Twister (4.05)",1996,"Sega",de_mSES1,GAME_NOCRC)
+CORE_GAMEDEF(twst,405,"Twister (4.05)",1996,"Sega",de_mSES2C,GAME_NOCRC)
 
 SE128_ROMSTART(twst_404, "twstcpu.404",CRC(43ac7f8b) SHA1(fc087b741c00baa9093dfec009440a7d64f4ca65))
 DE_DMD32ROM8x(   "twstdspa.400",CRC(a6a3d41d) SHA1(ad42b3390ceeeea43c1cd47f300bcd4b4a4d2558))
@@ -72,7 +75,7 @@ DE2S_SOUNDROM144("twstsnd.u7" ,CRC(5ccf0798) SHA1(ac591c508de8e9687c20b01c298084
                  "twstsnd.u17",CRC(0e35d640) SHA1(ce38a03fcc321cd9af07d24bf7aa35f254b629fc),
                  "twstsnd.u21",CRC(c3eae590) SHA1(bda3e0a725339069c49c4282676a07b4e0e8d2eb))
 SE_ROMEND
-CORE_CLONEDEF(twst,404,405,"Twister (4.04)",1996,"Sega",de_mSES1,GAME_NOCRC)
+CORE_CLONEDEF(twst,404,405,"Twister (4.04)",1996,"Sega",de_mSES2C,GAME_NOCRC)
 
 SE128_ROMSTART(twst_300, "twstcpu.300",CRC(5cc057d4) SHA1(9ff4b6951a974e3013edc30ba2310c3bffb224d2))
 DE_DMD32ROM8x(   "twstdspa.301",CRC(78bc45cb) SHA1(d1915fab46f178c9842e44701c91a0db2495e4fd))
@@ -80,7 +83,9 @@ DE2S_SOUNDROM144("twstsnd.u7" ,CRC(5ccf0798) SHA1(ac591c508de8e9687c20b01c298084
                  "twstsnd.u17",CRC(0e35d640) SHA1(ce38a03fcc321cd9af07d24bf7aa35f254b629fc),
                  "twstsnd.u21",CRC(c3eae590) SHA1(bda3e0a725339069c49c4282676a07b4e0e8d2eb))
 SE_ROMEND
-CORE_CLONEDEF(twst,300,405,"Twister (3.00)",1996,"Sega",de_mSES1,GAME_NOCRC)
+CORE_CLONEDEF(twst,300,405,"Twister (3.00)",1996,"Sega",de_mSES2C,GAME_NOCRC)
+
+/* Games below support Mono Only (Externally)! */
 
 /*-------------------------------------------------------------------
 / ID4: Independence Day
