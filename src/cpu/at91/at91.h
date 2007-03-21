@@ -34,9 +34,18 @@
 /****************************************************************************************************
  *	INTERRUPT CONSTANTS
  ***************************************************************************************************/
-
-#define AT91_IRQ_LINE	0
-#define AT91_FIRQ_LINE	1
+#define AT91_FIQ_IRQ	0
+#define AT91_SW_IRQ		1
+#define AT91_UART0_IRQ	2
+#define AT91_UART1_IRQ	3
+#define AT91_TC0_IRQ	4
+#define AT91_TC1_IRQ	5
+#define AT91_TC2_IRQ	6
+#define AT91_WD_IRQ		7
+#define AT91_PIO_IRQ	8
+#define AT91_IRQ0_IRQ	16
+#define AT91_IRQ1_IRQ	17
+#define AT91_IRQ2_IRQ	18
 
 /****************************************************************************************************
  *	PUBLIC GLOBALS

@@ -38,15 +38,20 @@
  *
 *****************************************************************************/
 
+extern unsigned at91_get_reg(int regnum);
+
 /* This implementation uses an improved switch() for hopefully faster opcode fetches compared to my last version
 .. though there's still room for improvement. */
 {
 	data32_t pc;
 	data32_t insn;
 
-	ARM7_ICOUNT = cycles;
+	RESET_ICOUNT
 	do
 	{
+
+		/* Hook for Pre-Opcode Processing */
+		BEFORE_OPCODE_EXEC_HOOK
 
 #ifdef MAME_DEBUG
 		if (mame_debug)
@@ -259,6 +264,13 @@
 		}
 		/* All instructions remove 3 cycles.. Others taking less / more will have adjusted this # prior to here */
 		ARM7_ICOUNT -= 3;
+
+		/* Hook for capturing previous cycles */
+		CAPTURE_NUM_CYCLES
+
+		/* Hook for Post-Opcode Processing */
+		AFTER_OPCODE_EXEC_HOOK
+
 	} while( ARM7_ICOUNT > 0 );
 
 	return cycles - ARM7_ICOUNT;

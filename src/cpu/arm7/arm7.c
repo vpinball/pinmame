@@ -71,6 +71,10 @@ char *Spec_DO( char *pBuf, data32_t opcode, char *pConditionCode, char *pBuf0);
 #define ARMREG(reg)			arm7.sArmRegister[reg]
 #define ARM7				arm7
 #define ARM7_ICOUNT			arm7_ICount
+#define RESET_ICOUNT		ARM7_ICOUNT = cycles;
+#define CAPTURE_NUM_CYCLES
+#define BEFORE_OPCODE_EXEC_HOOK
+#define AFTER_OPCODE_EXEC_HOOK
 
 /* CPU Registers */
 typedef struct
