@@ -3,11 +3,11 @@
  *   Data East BSMT2000 driver
  *   by Aaron Giles
  *
- *   Modifications for PINMAME by Steve Ellenoff & Martin Adrian	
+ *   Modifications for PINMAME by Steve Ellenoff & Martin Adrian
  *
  *   3/11/2007 (Steve Ellenoff)
  *             - Added Aaron's new ADPCM decompression to current implementation from MAME 0.113
- *             - The code is a bit of a hack, but it seems to work ok, and was easier than 
+ *             - The code is a bit of a hack, but it seems to work ok, and was easier than
  *               implementing all the major sound core changes from MAME 0.113.
  *             - TODO: 1)Certain effects are missing (sound played when BSMT DMD animation comes on in stereo games)
  *             -       2)Volume for compressed data is not understood and is guessed (based on Star Wars).
@@ -141,7 +141,7 @@ static INT32 *scratch;
 #define interpolate2(sample1, sample2, accum)										\
  		(sample1 * (INT32)(0x8000 - (accum & 0x7fff)) + 							\
   		 sample2 * (INT32)(accum & 0x7fff)) >> 15;
- 
+
 
 #if BACKEND_INTERPOLATE
 #define backend_interpolate(sample1, sample2, position)								\
@@ -163,10 +163,10 @@ static void decompress_samples(struct BSMT2000Chip *chip)
 {
 		struct BSMT2000Voice *voice = &chip->compressed;
 		INT8 *base = &chip->region_base[voice->reg[REG_BANK] * 0x10000];
-		INT32 lvol = voice->reg[REG_LEFTVOL];
-		INT32 rvol = voice->reg[REG_RIGHTVOL];
+//		INT32 lvol = voice->reg[REG_LEFTVOL];
+//		INT32 rvol = voice->reg[REG_RIGHTVOL];
 		UINT16 pos = voice->position>>16;
-		UINT32 pos1 = voice->position;
+//		UINT32 pos1 = voice->position;
 		UINT16 loopend = voice->loop_stop_position>>16;
 		UINT32 frac = 0;
 		int samp=0;
@@ -292,7 +292,7 @@ static void generate_samples(struct BSMT2000Chip *chip, INT32 *left, INT32 *righ
 	for (v = 0; v < chip->voices; v++)
 	{
 		voice = &chip->voice[v];
-		
+
 		/* compute the region base */
 		if (voice->reg[REG_BANK] < chip->total_banks)
 		{
@@ -320,7 +320,7 @@ static void generate_samples(struct BSMT2000Chip *chip, INT32 *left, INT32 *righ
 					val2 = val2<<chip->shift_data;
 				}
 				#endif
-				
+
 				/* interpolate */
 				val1 = interpolate(val1, val2, pos);
 
@@ -345,7 +345,7 @@ static void generate_samples(struct BSMT2000Chip *chip, INT32 *left, INT32 *righ
 	if (chip->voices == 11 && voice->reg[REG_BANK] < chip->total_banks && voice->adjusted_rate == 1)
   	{
 		int remaining = samples;
-		INT8 *base = &chip->region_base[voice->reg[REG_BANK] * 0x10000];
+//		INT8 *base = &chip->region_base[voice->reg[REG_BANK] * 0x10000];
   		INT32 *lbuffer = left, *rbuffer = right;
   		INT32 lvol = voice->reg[REG_LEFTVOL];
   		INT32 rvol = voice->reg[REG_RIGHTVOL];
@@ -363,7 +363,7 @@ static void generate_samples(struct BSMT2000Chip *chip, INT32 *left, INT32 *righ
 
 			/* interpolate */
 			val1 = interpolate(val1, val2, chip->decomppos);
-			
+
 			/* apply volumes and add */
 			*lbuffer++ += val1 * lvol;
   			*rbuffer++ += val2 * rvol;
@@ -401,15 +401,15 @@ static void generate_samples(struct BSMT2000Chip *chip, INT32 *left, INT32 *righ
   			INT32 val1 = (INT8)((base[pos >> 16] << ((pos >> 13) & 4)) & 0xf0);
   			INT32 val2 = (INT8)((base[(pos + 0x8000) >> 16] << (((pos + 0x8000) >> 13) & 4)) & 0xf0);
   			pos += rate;
-  
+
   			/* interpolate */
   			val1 = interpolate2(val1, val2, pos);
-  
+
   			/* apply volumes and add */
   			*lbuffer++ += val1 * lvol;
   			*rbuffer++ += val1 * rvol;
   		}
-  
+
   		/* update the position */
   		voice->position = pos;
 	}
@@ -539,20 +539,20 @@ INLINE void init_voice(struct BSMT2000Voice *voice)
 	voice->loop_stop_position = 0;
 	#endif
  }
- 
- 
+
+
 INLINE void init_all_voices(struct BSMT2000Chip *chip)
  {
  	int i;
- 
+
  	/* init the voices */
  	for (i = 0; i < chip->voices; i++)
  		init_voice(&chip->voice[i]);
- 
+
  	/* init the compressed voice */
  	init_voice(&chip->compressed);
  }
- 
+
 int BSMT2000_sh_start(const struct MachineSound *msound)
 {
 	const struct BSMT2000interface *intf = msound->sound_interface;
@@ -560,7 +560,7 @@ int BSMT2000_sh_start(const struct MachineSound *msound)
 	const char *stream_name_ptrs[2];
 	int vol[2];
 	int i;
-	
+
 	/* initialize the chips */
 	memset(&bsmt2000, 0, sizeof(bsmt2000));
 	for (i = 0; i < intf->num; i++)
@@ -646,7 +646,7 @@ void BSMT2000_sh_stop(void)
 		if (bsmt2000[i].voice)
 			free(bsmt2000[i].voice);
 		bsmt2000[i].voice = NULL;
-		
+
 #if MAKE_WAVS
 		if (bsmt2000[i].wavraw)
 			wav_close(bsmt2000[i].wavraw);
@@ -698,31 +698,31 @@ static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_
 #if LOG_COMMANDS
 	logerror("BSMT#%d write: V%d R%d = %04X\n", chip - bsmt2000, offset % chip->voices, regindex, data);
 #endif
-	
+
 //View Compressed Voice Data
 #if LOG_COMPRESSED_ONLY
 	if(offset >= 0x6d)
 		logerror("BSMT#%d write: %02x = %04X\n", chip - bsmt2000, offset, data);
 #endif
-	
+
 	/* update the register */
 	if (regindex < REG_TOTAL)
 		COMBINE_DATA(&voice->reg[regindex]);
 
 	/* force an update */
 	stream_update(chip->stream, 0);
-	
+
 	/* update parameters for standard voices */
 	switch (regindex)
 	{
 		case REG_CURRPOS:
 			voice->position = voice->reg[REG_CURRPOS] << 16;
 			break;
-		
+
 		case REG_RATE:
 			voice->adjusted_rate = voice->reg[REG_RATE] << 5;
 			break;
-		
+
 		case REG_LOOPSTART:
 			voice->loop_start_position = voice->reg[REG_LOOPSTART] << 16;
 			break;
@@ -739,7 +739,7 @@ static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_
 		#ifdef PINMAME
 		case REG_BANK:
 			if(chip->use_de_rom_banking) {
-				int temp = (voice->reg[REG_BANK] & 0x07) | 
+				int temp = (voice->reg[REG_BANK] & 0x07) |
 					       ((voice->reg[REG_BANK] & 0x18)<<1) |
 						   ((voice->reg[REG_BANK] & 0x20)>>2);
 				voice->reg[REG_BANK] = temp;
@@ -761,7 +761,7 @@ static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_
 				logerror("REG_LOOPEND=%04X voice->loop_stop_position=%08X\n", voice->reg[REG_LOOPEND], voice->loop_stop_position);
  				break;
 
-			#ifdef PINMAME	
+			#ifdef PINMAME
 			//STOP PLAYING LEFT/RIGHT CHANNELS?
 			case 0x6e:
 			case 0x70:
@@ -769,19 +769,19 @@ static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_
 				break;
 			#endif
 
- 			//ROM BANK	
+ 			//ROM BANK
  			case 0x6f:
  				COMBINE_DATA(&voice->reg[REG_BANK]);
 				#ifdef PINMAME
 				if(chip->use_de_rom_banking) {
-					int temp = (voice->reg[REG_BANK] & 0x07) | 
+					int temp = (voice->reg[REG_BANK] & 0x07) |
 								((voice->reg[REG_BANK] & 0x18)<<1) |
 								((voice->reg[REG_BANK] & 0x20)>>2);
 					voice->reg[REG_BANK] = temp;
 				}
 				#endif
 			break;
- 			
+
 			//RATE - USED AS A CONTROL TO TELL CHIP READY TO OUTPUT COMPRESSED DATA (VALUE = 1 FOR VALID DATA)
 			case 0x73:
 				COMBINE_DATA(&voice->reg[REG_RATE]);
@@ -805,14 +805,14 @@ static void bsmt2000_reg_write(struct BSMT2000Chip *chip, offs_t offset, data16_
  				COMBINE_DATA(&voice->reg[REG_RIGHTVOL]);
 				logerror("REG_RIGHTVOL=%04X\n", voice->reg[REG_RIGHTVOL]);
  				break;
-			
+
 			//SAMPLE START POSITION
  			case 0x75:
  				COMBINE_DATA(&voice->reg[REG_CURRPOS]);
  				voice->position = voice->reg[REG_CURRPOS] << 16;
 				logerror("REG_CURRPOS=%04X voice->loop_stop_position=%08X\n", voice->reg[REG_CURRPOS], voice->position);
  				break;
- 
+
 			//LEFT CHANNEL VOLUME
  			case 0x78:
  				COMBINE_DATA(&voice->reg[REG_LEFTVOL]);
