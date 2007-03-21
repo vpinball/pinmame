@@ -116,18 +116,18 @@ static void timer_trigger_event(int timer_num);
 
 #if !USE_MAME_TIMERS
 	#define BEFORE_OPCODE_EXEC_HOOK	BeforeOpCodeHook();
-	#define AFTER_OPCODE_EXEC_HOOK	
+	#define AFTER_OPCODE_EXEC_HOOK
 #else
 	#define BEFORE_OPCODE_EXEC_HOOK
-	#define AFTER_OPCODE_EXEC_HOOK	
+	#define AFTER_OPCODE_EXEC_HOOK
 #endif
 
 //Define # of integrated timers
 #define MAX_TIMER 3
 
 //Helper macros
-#define CLEAR_BITS(x,y)		((x) &= ((y)^0xffffffff));		
-#define SET_BITS(x,y)		((x) |= (y));		
+#define CLEAR_BITS(x,y)		((x) &= ((y)^0xffffffff));
+#define SET_BITS(x,y)		((x) |= (y));
 
 //Timer macros
 #define PS_TIMER_CLOCK_ENABLED(x)	(at91.power_status & (0x10<<(x)))				//Power Enabled for Clock: TC0 = bit 4, TC1 = bit 5, TC2 = bit 6
@@ -358,7 +358,6 @@ INLINE void internal_write (int addr, data32_t data)
 	{
 		//EBI OR SPECIAL FUNCTION
 		case 0:
-		{
 			//Special Function
 			if(addr & 0x100000)
 			{
@@ -367,7 +366,7 @@ INLINE void internal_write (int addr, data32_t data)
 			//EBI - External Bus Interface
 			else
 			{
-				switch(addr) 
+				switch(addr)
 				{
 					//EBI_CSR0 - EBI_CSR7
 					case 0xffe00000:
@@ -427,66 +426,67 @@ INLINE void internal_write (int addr, data32_t data)
 						else
 							LOG(("%08x: AT91-EBI_RCR = 0 (no effect)!\n",activecpu_get_pc()));
 						break;
+
 					case 0xffe00024:
 					{
-							int drp = (data & 0x10)>>4;
-							int ale = data & 7;
-							char tmp[50],tmp1[50];
-							if(drp)
-								sprintf(tmp1,"EBI_DRP_EARLY");
-							else
-								sprintf(tmp1,"EBI_DRP_STANDARD");
-							switch(ale)
-							{
-								case 0:
-								case 1:
-								case 2:
-								case 3:
-									sprintf(tmp,"EBI_ALE_16M - A20-A23, No CS!");
-									break;
-								case 4:
-									sprintf(tmp,"EBI_ALE_8M - A20-A22, CS4!");
-									break;
-								case 5:
-									sprintf(tmp,"EBI_ALE_4M - A20-A21 CS4-CS5!");
-									break;
-								case 6:
-									sprintf(tmp,"EBI_ALE_2M - A20, CS4-CS6!");
-									break;
-								case 7:
-									sprintf(tmp,"EBI_ALE_1M - No A20-A23, CS4-CS7!");
-									break;
-							}
-							LOG(("%08x: AT91-EBI_MCR = %x (%s)(%s)\n",activecpu_get_pc(),data,tmp,tmp1));
+						int drp = (data & 0x10)>>4;
+						int ale = data & 7;
+						char tmp[50],tmp1[50];
+						if(drp)
+							sprintf(tmp1,"EBI_DRP_EARLY");
+						else
+							sprintf(tmp1,"EBI_DRP_STANDARD");
+						switch(ale)
+						{
+							case 0:
+							case 1:
+							case 2:
+							case 3:
+								sprintf(tmp,"EBI_ALE_16M - A20-A23, No CS!");
+								break;
+							case 4:
+								sprintf(tmp,"EBI_ALE_8M - A20-A22, CS4!");
+								break;
+							case 5:
+								sprintf(tmp,"EBI_ALE_4M - A20-A21 CS4-CS5!");
+								break;
+							case 6:
+								sprintf(tmp,"EBI_ALE_2M - A20, CS4-CS6!");
+								break;
+							case 7:
+								sprintf(tmp,"EBI_ALE_1M - No A20-A23, CS4-CS7!");
+								break;
+						}
+						LOG(("%08x: AT91-EBI_MCR = %x (%s)(%s)\n",activecpu_get_pc(),data,tmp,tmp1));
 						break;
+					}
+
 					default:
 						LOG(("%08x: AT91-EBI WRITE: %08x = %08x\n",activecpu_get_pc(),addr,data));
-					}
 				}
 			}
-		}
-		break;
+			break;
 
 		//USART1
-		case 0xcc: 
+		case 0xcc:
 			LOG(("%08x: AT91-USART1 WRITE: %s (%08x) = %08x\n",activecpu_get_pc(),GetUARTOffset(addr),addr,data));
 			break;
- 
+
 		//USART2
 		case 0xd0:
 			LOG(("%08x: AT91-USART2 WRITE: %s (%08x) = %08x\n",activecpu_get_pc(),GetUARTOffset(addr),addr,data));
 			break;
- 
+
 		//TC - Timer Counter
 		case 0xe0:
 		{
-			int offset = addr & 0xff;
-			int toffset = offset;
-			int timer_num = (offset & 0xc0)/0x40;	//keep bits 6,7
+			int offset2 = addr & 0xff;
+			int toffset = offset2;
+			int timer_num = (offset2 & 0xc0)/0x40;	//keep bits 6,7
 			int logit = LOG_TIMERS;
 
 			//One of the Timer registers?
-			if(offset < 0xc0)
+			if(offset2 < 0xc0)
 			{
 				//Adjust register offset for given clock
 				toffset -= (0x40 * timer_num);
@@ -510,7 +510,7 @@ INLINE void internal_write (int addr, data32_t data)
 							logit = LOG_TIMER_ENABLE;
 							SET_BITS(at91.tc_clock[timer_num].tc_status,0x10000);		//Set Enabled status
 							//?Does this really happen on an enable?
-							at91.tc_clock[timer_num].started = 0;				
+							at91.tc_clock[timer_num].started = 0;
 						}
 
 						//Disable Clock
@@ -545,9 +545,9 @@ INLINE void internal_write (int addr, data32_t data)
 									//Account for clock divisor & Register C value
 									freq /= at91.tc_clock[timer_num].tc_cycle_div;
 									freq /= at91.tc_clock[timer_num].tc_regc;
-									
+
 									if(logit) LOG(("Timer TC%d starting up for RC Compare @ Freq: %d\n",timer_num,freq));
-									
+
 									//Start up the timer
 									if(at91rs.timer[timer_num])
 										timer_adjust(at91rs.timer[timer_num],TIME_IN_HZ(freq),timer_num,TIME_IN_HZ(freq));
@@ -557,14 +557,14 @@ INLINE void internal_write (int addr, data32_t data)
 								#endif
 							}
 						}
-					break;
+						break;
 					}
 
 					//Channel Mode
 					case 0x04:
 					{
 						//see page 135 of AT91 Datasheet
-						const int div[]={2,8,32,128,1024,0,0,0};
+						const int divs[]={2,8,32,128,1024,0,0,0};
 						logit = LOG_TIMERS;		//disable the one later on..
 
 						//store data
@@ -572,10 +572,10 @@ INLINE void internal_write (int addr, data32_t data)
 
 						//log the raw data
 						if(logit)	LOG(("%08x: AT91-TIMER WRITE (TC%d): %s (%08x) = %08x\n",activecpu_get_pc(),timer_num,GetTimerOffset(addr),addr,data));
-						
+
 						//Wave Mode
 						if(TC_WAVEMODE(timer_num))
-						{	
+						{
 							char tmp[1000];
 							int clk, clki, burst, cpcstop, cpcdis, eevtedg, eevt, enetrg, cpctrg, wave,
 								acpa, acpc, aeevt, aswtrg, bcpb, bcpc, beevt, bswtrg;
@@ -600,7 +600,7 @@ INLINE void internal_write (int addr, data32_t data)
 							bswtrg = (data & 0xc0000000)>>30;
 
 							//Convert Clock Value to Divisor Value
-							divr = div[clk];
+							divr = divs[clk];
 							at91.tc_clock[timer_num].tc_cycle_div = divr;
 
 							sprintf(tmp,"clk=%d (mclk/%d),clki=%d,burst=%d,cpcstop=%d,cpcdis=%d,eevtedg=%d,eevt=%d,enetrg=%d,cpctrg=%d,wave=%d,acpa=%d, acpc=%d, aeevt=%d, aswtrg=%d, bcpb=%d, bcpc=%d, beevt=%d, bswtrg=%d \n",
@@ -629,7 +629,7 @@ INLINE void internal_write (int addr, data32_t data)
 							ldra = (data & 0x30000)>>16;
 							ldrb = (data & 0x60000)>>18;
 							//Convert Clock Value to Divisor Value
-							divr = div[clk];
+							divr = divs[clk];
 							at91.tc_clock[timer_num].tc_cycle_div = divr;
 
 							sprintf(tmp,"clk=%d (mclk/%d),clki=%d,burst=%d,ldbstop=%d,ldbdis=%d,etrgedge=%d,abetrg=%d,cpctrg=%d,wave=%d,ldra=%d,ldrb=%d \n",
@@ -675,28 +675,25 @@ INLINE void internal_write (int addr, data32_t data)
 						break;
 				}
 				if(logit)	LOG(("%08x: AT91-TIMER WRITE (TC%d): %s (%08x) = %08x\n",activecpu_get_pc(),timer_num,GetTimerOffset(addr),addr,data));
-			}
-			else
-			if(offset == 0xc0)
+			} else
+			if (offset2 == 0xc0) {
 				if(logit)	LOG(("%08x: AT91-TIMER WRITE (TC BLOCK CONTROL REGISTER): %08x = %08x\n",activecpu_get_pc(),addr,data));
-			else
-			if(offset == 0xc4)
-			{
+			} else
+			if (offset2 == 0xc4) {
 				at91.tc_block_mode = data;
 				if(logit)	LOG(("%08x: AT91-TIMER WRITE (TC BLOCK MODE REGISTER): %08x = %08x\n",activecpu_get_pc(),addr,data));
 			}
 			else
 				if(logit)	LOG(("%08x: AT91-TIMER WRITE: %08x = %08x\n",activecpu_get_pc(),addr,data));
+			break;
 		}
-		break;
-  
 		//PIO - Parallel I/O Controller
 		case 0xf0:
 		{
-			int offset = addr & 0xff;
+			int offset2 = addr & 0xff;
 			int logit = LOG_PIO;
 			if(logit) LOG(("%08x: AT91-PIO WRITE: %s (%08x) = %08x\n",activecpu_get_pc(),GetPIOOffset(addr),addr,data));
-			switch(offset)
+			switch(offset2)
 			{
 				//PIO Enable Register
 				case 0x00:
@@ -724,7 +721,7 @@ INLINE void internal_write (int addr, data32_t data)
 				//PIO Set Output Data Register
 				case 0x30:
 					logit = LOG_PIO_WRITE;
-					//disregard (mask) any pins not set as outputs 
+					//disregard (mask) any pins not set as outputs
 					data &= at91.pio_output_status;
 					//disregard (mask) any pins not controlled by the PIO
 					data &= at91.pio_enabled_status;
@@ -733,7 +730,7 @@ INLINE void internal_write (int addr, data32_t data)
 					//if pins are still available, we can now post that they be set.
 					if(data)
 					{
-						//add newly set bits from the old status 
+						//add newly set bits from the old status
 						int newdata = at91.pio_data_status | data;
 						//post data to machine port handler (but only bits set as output)
 						cpu_writeport32ledw_dword(0,newdata & at91.pio_output_status);
@@ -744,7 +741,7 @@ INLINE void internal_write (int addr, data32_t data)
 				//PIO Clear Output Data Register
 				case 0x34:
 					logit = LOG_PIO_WRITE;
-					//disregard (mask) any pins not set as outputs 
+					//disregard (mask) any pins not set as outputs
 					data &= at91.pio_output_status;
 					//disregard (mask) any pins not controlled by the PIO
 					data &= at91.pio_enabled_status;
@@ -753,7 +750,7 @@ INLINE void internal_write (int addr, data32_t data)
 					//if pins are still available, we can now post that they be cleared.
 					if(data)
 					{
-						//mask off newly cleared bits from the old status 
+						//mask off newly cleared bits from the old status
 						int newdata = at91.pio_data_status & ~data;
 						//post data to machine port handler (but only bits set as output)
 						cpu_writeport32ledw_dword(0,newdata & at91.pio_output_status);
@@ -768,13 +765,12 @@ INLINE void internal_write (int addr, data32_t data)
 				//PIO Interrupt Disable Register
 				case 0x44:
 					CLEAR_BITS(at91.pio_irq_mask,data);
-					break;			
+					break;
 			}
 	//		if(logit) LOG(("%08x: AT91-PIO WRITE: %s (%08x) = %08x\n",activecpu_get_pc(),GetPIOOffset(addr),addr,data));
-
 			break;
 		}
- 
+
  		//PS - Power Saving
 		case 0xf4:
 		{
@@ -806,18 +802,18 @@ INLINE void internal_write (int addr, data32_t data)
 			if(logit) LOG(("%08x: AT91-POWER WRITE: %s (%08x) = %08x\n",activecpu_get_pc(),GetPSOffset(addr),addr,data));
 			break;
 		}
- 
+
 		//WD - Watchdog Timer
 		case 0xf8:
  			LOG(("%08x: AT91-WATCHDOG WRITE: %08x = %08x\n",activecpu_get_pc(),addr,data));
 			break;
- 
+
 		//AIC - Advanced Interrupt Controller
 		case 0xff:
 		{
 			int logit = LOG_AIC;
-			int offset = addr & 0x1ff;
-			switch(offset)
+			int offset2 = addr & 0x1ff;
+			switch(offset2)
 			{
 				//AIC Interrupt Vector Register - Based on current IRQ source 0-31, returns value of Source Vector
 				case 0x80:
@@ -878,6 +874,7 @@ INLINE void internal_write (int addr, data32_t data)
 			if(logit) LOG(("%08x: AT91-AIC WRITE: %s (%08x) = %08x\n",activecpu_get_pc(),GetAICOffset(addr),addr,data));
 			break;
 		}
+
  		default:
 			LOG(("%08x: AT91-OCP WRITE: %08x = %08x\n",activecpu_get_pc(),addr,data));
 	}
@@ -887,14 +884,13 @@ INLINE void internal_write (int addr, data32_t data)
 INLINE data32_t internal_read (int addr)
 {
 	data32_t data = 0;
-	int offset = (addr & 0xFF000) >> 12;
+	int offset2 = (addr & 0xFF000) >> 12;
 
 	//EBI - External Bus Interface
-	switch(offset)
+	switch(offset2)
 	{
 		//EBI OR SPECIAL FUNCTION
 		case 0:
-		{
 			//Special Function
 			if(addr & 0x100000)
 			{
@@ -905,13 +901,13 @@ INLINE data32_t internal_read (int addr)
 			{
 				LOG(("%08x: AT91-EBI READ: %08x = %08x\n",activecpu_get_pc(),addr,data));
 			}
-		}
-		break;
+			break;
 
 		//USART1
 		case 0xcc:
 			LOG(("%08x: AT91-USART1 READ: %s (%08x) = %08x\n",activecpu_get_pc(),GetUARTOffset(addr),addr,data));
 			break;
+
 		//USART2
 		case 0xd0:
 			LOG(("%08x: AT91-USART2 READ: %s (%08x) = %08x\n",activecpu_get_pc(),GetUARTOffset(addr),addr,data));
@@ -920,13 +916,13 @@ INLINE data32_t internal_read (int addr)
 		//TC - Timer Counter
 		case 0xe0:
 		{
-			int offset = addr & 0xff;
-			int toffset = offset;
-			int timer_num = (offset & 0xc0)/0x40;	//keep bits 6,7
+			int offset3 = addr & 0xff;
+			int toffset = offset3;
+			int timer_num = (offset3 & 0xc0)/0x40;	//keep bits 6,7
 			int logit = LOG_TIMERS;
 
 			//One of the Timer registers?
-			if(offset < 0xc0)
+			if(offset3 < 0xc0)
 			{
 				//Adjust register offset
 				toffset -= (0x40 * timer_num);
@@ -975,31 +971,28 @@ INLINE data32_t internal_read (int addr)
 						break;
 				}
 				if(logit)	LOG(("%08x: AT91-TIMER READ (TC%d): %s (%08x) = %08x\n",activecpu_get_pc(),timer_num,GetTimerOffset(addr),addr,data));
-			}
-			else
-			//Timer Block Control
-			if(offset == 0xc0)
+			} else
+			if (offset3 == 0xc0) {
+				//Timer Block Control
 				if(logit)	LOG(("%08x: AT91-TIMER READ (TC BLOCK CONTROL REGISTER): %08x = %08x\n",activecpu_get_pc(),addr,data));
-			else
-			//Timer Block Mode
-			if(offset == 0xc4)
-			{
+			} else
+			if (offset3 == 0xc4) {
+				//Timer Block Mode
 				data = at91.tc_block_mode;
 				if(logit)	LOG(("%08x: AT91-TIMER READ (TC BLOCK MODE REGISTER): %08x = %08x\n",activecpu_get_pc(),addr,data));
-			}
-			//??
-			else
+			} else
+				//??
 				LOG(("%08x: AT91-TIMER READ: %08x = %08x\n",activecpu_get_pc(),addr,data));
+			break;
 		}
-		break;
 
 		//PIO - Parallel I/O Controller
 		case 0xf0:
 		{
-			int offset = addr & 0xff;
+			int offset3 = addr & 0xff;
 			int logit = LOG_PIO;
 
-			switch(offset)
+			switch(offset3)
 			{
 				//PIO (Enabled) Status Register
 				case 0x08:
@@ -1021,7 +1014,7 @@ INLINE data32_t internal_read (int addr)
 					logit = LOG_PIO_READ;
 					//pull data from machine port handler
 					data = cpu_readport32ledw_dword(0);
-					//disregard (mask) any pins not set as inputs 
+					//disregard (mask) any pins not set as inputs
 					data &= (at91.pio_output_status ^ 0xffffffff);
 					//disregard (mask) any pins not controlled by the PIO
 					data &= at91.pio_enabled_status;
@@ -1043,22 +1036,22 @@ INLINE data32_t internal_read (int addr)
 			}
 			//must come last, otherwise, logged data read is not yet set.
 			if(logit) LOG(("%08x: AT91-PIO READ: %s (%08x) = %08x\n",activecpu_get_pc(),GetPIOOffset(addr),addr,data));
+			break;
 		}
-		break;
 
 		//PS - Power Saving
 		case 0xf4:
 		{
 			int logit = LOG_POWER;
-			
+
 			//Peripheral Clock Status
 			if(addr == 0xffff400c)
 				data = at91.power_status;
 
 			if(logit) LOG(("%08x: AT91-POWER READ: %s (%08x) = %08x\n",activecpu_get_pc(),GetPSOffset(addr),addr,data));
+			break;
 		}
-		break;
-	
+
 		//WD - Watchdog Timer
 		case 0xf8:
 			LOG(("%08x: AT91-WATCHDOG READ: %08x = %08x\n",activecpu_get_pc(),addr,data));
@@ -1067,10 +1060,10 @@ INLINE data32_t internal_read (int addr)
 		//AIC - Advanced Interrupt Controller
 		case 0xff:
 		{
-			int offset = addr & 0xfff;
+			int offset3 = addr & 0xfff;
 			int logit = LOG_AIC;
 
-			switch(offset)
+			switch(offset3)
 			{
 				//IRQ Based on current IRQ source 0-31, returns value of Source Vector
 				case 0x100:
@@ -1100,11 +1093,11 @@ INLINE data32_t internal_read (int addr)
 					break;
 			}
 			if(logit)	LOG(("%08x: AT91-AIC READ: %s (%08x) = %08x\n",activecpu_get_pc(),GetAICOffset(addr),addr,data));
+			break;
 		}
-		break;
-	
-	default:
-		LOG(("%08x: AT91-OCP READ: %08x = %08x\n",activecpu_get_pc(),addr,data));
+
+		default:
+			LOG(("%08x: AT91-OCP READ: %08x = %08x\n",activecpu_get_pc(),addr,data));
 	}
 	return data;
 }
@@ -1178,7 +1171,7 @@ INLINE void at91_cpu_write8( int addr, data8_t data )
 		at91rs.cs_w_callback(addr,data,0x000000ff);
 		return;
 	}
-#endif	
+#endif
 
 	//Call normal 8 bit handler ( for 32 bit cpu )
 	cpu_writemem32ledw(addr,data);
@@ -1423,7 +1416,7 @@ void at91_set_reg(int regnum, unsigned val)
 	case ARM732_UR14: ARMREG(eR14_UND) = val; break;
 	case ARM732_USPSR: ARMREG(eSPSR_UND) = val; break;
 	}
-} 
+}
 
 void at91_set_nmi_line(int state)
 {
@@ -1431,7 +1424,7 @@ void at91_set_nmi_line(int state)
 
 void at91_set_irq_line(int irqline, int state)
 {
-	//todo - store pending? 
+	//todo - store pending?
 
 	//If attempting to set an Interrupt
 	if( state )
@@ -1445,7 +1438,7 @@ void at91_set_irq_line(int irqline, int state)
 	at91.aic_irqstatus = irqline;
 
 	//for debugging only - so I can put a breakpoint when an int is started (and avoid when it clears)
-	#if MAME_DEBUG
+	#ifdef MAME_DEBUG
 	if(state)
 	{
 		state = state;
@@ -1613,7 +1606,7 @@ void at91_init(void)
 	arm7_core_init("at91");
 
 	//allocate timers
-	for(i=0;i<MAX_TIMER;i++) 
+	for(i=0;i<MAX_TIMER;i++)
 	{
 		at91rs.timer[i] = timer_alloc(timer_trigger_event);
 	}
@@ -1699,6 +1692,6 @@ INLINE BeforeOpCodeHook(void)
 }
 INLINE AfterOpCodeHook(void)
 {
-	
+
 }
 #endif
