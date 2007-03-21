@@ -21,15 +21,6 @@ const struct GameDriver *test_drivers[] = { 0 };
 #endif
 #else /* DRIVER_RECURSIVE */
 
-//Include New Stern Game Support if not running VPM or if Test New Stern Game flag found
-#ifdef VPINMAME
-	#ifdef TEST_NEW_STERN
-		#define INCLUDE_NEW_STERN 1
-	#endif
-#else
-	#define INCLUDE_NEW_STERN 1
-#endif
-
 DRIVERNV(st_game)       //Unknown game running on old Stern hardware
 
 // --------------------
@@ -869,11 +860,20 @@ DRIVERNV(gprixl)		//Whitestar: 05/05 Grand Prix (Spain)
 DRIVERNV(gprixf)		//Whitestar: 05/05 Grand Prix (France)
 DRIVERNV(gprixi)		//Whitestar: 05/05 Grand Prix (Italy)
 
-//DRIVERNV(sam1_flashb_0102)
-//DRIVERNV(sam1_flashb_0106)
-//DRIVERNV(potc_113as)
-//DRIVERNV(scarn)
-//DRIVERNV(wpt_111al)
+// Stern S.A.M System
+#ifdef INCLUDE_STERN_SAM
+DRIVERNV(sam1_flashb_0102)	//S.A.M: ??/?? SAM System Flash Boot V1.02
+DRIVERNV(sam1_flashb_0106)	//S.A.M: ??/?? SAM System Flash Boot V1.06
+DRIVERNV(wpt_109a)			//S.A.M: ??/?? World Poker Tour (WPT) -  V1.09A (English)
+DRIVERNV(wpt_111al)			//S.A.M: ??/?? World Poker Tour (WPT) -  V1.11AL (English, Spanish)
+DRIVERNV(wpt_112al)			//S.A.M: ??/?? World Poker Tour (WPT) -  V1.12AL (English, Spanish)
+DRIVERNV(potc_113as)		//S.A.M: ??/?? Pirates of the Caribbean V1.13AS (English & Spanish)
+DRIVERNV(potc_115as)		//S.A.M: ??/?? Pirates of the Caribbean V1.15AS (English & Spanish)
+DRIVERNV(scarn)				//S.A.M: ??/?? Simpsons Kooky Carnival Redemption V1.05 (English)
+DRIVERNV(fguy_200a) 		//S.A.M: ??/?? Family Guy -  V2.00a (English)
+DRIVERNV(fguy_300ai)		//S.A.M: ??/?? Family Guy -  V3.00AI (English, Italian)
+DRIVERNV(fguy_800al)		//S.A.M: ??/?? Family Guy -  V8.00AL (English, Spanish)
+#endif
 
 #endif /* INCLUDE_NEW_STERN */
 
