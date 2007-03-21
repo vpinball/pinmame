@@ -5,7 +5,7 @@
   Additional work by Martin Adrian, Gerrit Volkenborn, Tom Behrens
 ************************************************************************************************
 
-Hardware from 1994-present
+Hardware from 1994-2006
 
   CPU Boards: Whitestar System
 
@@ -17,6 +17,8 @@ Hardware from 1994-present
 
     11/2003 -New CPU/Sound board (520-5300-00) with an Atmel AT91 (ARM7DMI Variant) CPU for sound & Xilinx FPGA
              emulating the BSMT2000 as well as added 16 bit sample playback and ADPCM compression.
+
+    07/2006 -New hardware system - S.A.M. (see sam.c for details)
 
 Issues:
 DMD Timing is still wrong.. FIRQ rate is variable, and it's not fully understood.
@@ -31,10 +33,11 @@ DMD Timing is still wrong.. FIRQ rate is variable, and it's not fully understood
 #include "se.h"
 #include "desound.h"
 #include "cpu/at91/at91.h"
+#include "cpu/arm7/arm7core.h"
 #include "sound/wavwrite.h"
 
 #define SE_VBLANKFREQ      60 /* VBLANK frequency */
-#define SE_IRQFREQ        976 /* FIRQ Frequency according to Theory of Operation */
+#define SE_FIRQFREQ       976 /* FIRQ Frequency according to Theory of Operation */
 #define SE_ROMBANK0         1
 
 #define SE_SOLSMOOTH       4 /* Smooth the Solenoids over this numer of VBLANKS */
@@ -58,7 +61,8 @@ struct {
   int    diagnosticLed;
   int    swCol;
   int	 flipsol, flipsolPulse;
-  int    dmdStatus;
+  int    sst0;			//SST0 bit from sound section
+  int	 plin;			//Plasma In (not connected prior to LOTR Hardware)
   UINT8 *ram8000;
   int    auxdata;
   /* Mini DMD stuff */
@@ -144,12 +148,12 @@ static MACHINE_STOP(se) {
 /*-- Main CPU Bank Switch --*/
 // D0-D5 Bank Address
 // D6    Unused
-// D7    Diagnostic LED
+// D7    Diagnostic LED (0 = ON; 1 = OFF)
 static WRITE_HANDLER(mcpu_bank_w) {
   selocals.curBank = data;   /* keep track of current bank select for trace ram */
   // Should be 0x3f but memreg is only 512K */
   cpu_setbank(SE_ROMBANK0, memory_region(SE_ROMREGION) + (data & 0x1f)* 0x4000);
-  selocals.diagnosticLed = data>>7;
+  selocals.diagnosticLed = (data>>7)?0:1;
 }
 
 // Ram 0x0000-0x1FFF Read Handler
@@ -245,16 +249,42 @@ static WRITE_HANDLER(dmdlatch_w) {
 static WRITE_HANDLER(dmdreset_w) {
   sndbrd_0_ctrl_w(0,data?0x02:0x00);
 }
+
+/* Handler called by the Sound System to set the various data needed by the main cpu */
+void set_at91_data(int plin, int sst0, int led)
+{
+	selocals.sst0 = sst0;
+	selocals.plin = plin;
+	selocals.diagnosticLed &= 2;
+	selocals.diagnosticLed |= (led<<1);
+}
+
+/*U202 - HC245
+  D0 = BUSY   -> SOUND BUSY?
+  D1 = SSTO   -> SOUND RELATED
+  D2 = MPIN   -> ??
+  D3 = CN8-22 -> DMD STAT0
+  D4 = CN8-23 -> DMD STAT1
+  D5 = CN8-24 -> DMD STAT2
+  D6 = CN8-25 -> DMD STAT3
+  D7 = CN8-26 -> DMD BUSY
+*/
 static READ_HANDLER(dmdstatus_r) {
-  return (sndbrd_0_data_r(0) ? 0x80 : 0x00) | (sndbrd_0_ctrl_r(0)<<3);
+  int data = (sndbrd_0_data_r(0) ? 0x80 : 0x00) | (sndbrd_0_ctrl_r(0)<<3) | (selocals.sst0<<1);
+  return data;
 }
 
-static READ_HANDLER(dmdie_r) { /*What is this for?*/
-//DBGLOG(("DMD Input Enable Read PC=%x\n",activecpu_get_previouspc()));
-  return 0x00;
+/* PLIN - Plasma? In Data Latch
+   Not connected prior to LOTR Hardare
+   U404 - HC245 of 520-5300-00(ATMEL 91)
+   Ironically not used for Plasma info, but Sound Info, but probably called that when designed way back
+   in the initial Whitestar system design
+*/
+static READ_HANDLER(dmdie_r) {
+	return selocals.plin;
 }
 
-/* U203 - HC245 - Read Data from J3 (Aux In) - Pins 1-7 (D0-D6) - D7 from LST (Lamp Strobe?) Line) 
+/* U203 - HC245 - Read Data from J3 (Aux In) - Pins 1-7 (D0-D6) - D7 from LST (Lamp Strobe?) Line)
 
    So far, it seems this port is only used when combined with the TOPS system for reading status
    of the DUART found on the TSIB board.
@@ -262,7 +292,7 @@ static READ_HANDLER(dmdie_r) { /*What is this for?*/
    Bit 1 = Byte received from TSIB DUART
    Bit 6 = DUART Transmit Empty & Ready for Transmission
 */
-static READ_HANDLER(auxboard_r) { 
+static READ_HANDLER(auxboard_r) {
 	int data = selocals.auxdata;
 	// Did D Strobe just go low? If so, TSIB board wants to read DUART status.
 	if((selocals.lastgiaux & 0x20) == 0) {
@@ -288,9 +318,9 @@ static WRITE_HANDLER(auxboard_w) { selocals.auxdata = data; }
 static WRITE_HANDLER(giaux_w) {
 
   /*     When Tournament Serial Board Interface connected -
-		 BSTB is the address data strobe of the TSIB: 
+		 BSTB is the address data strobe of the TSIB:
 		 Aux. Data previously written is as follows:
-		 
+
 		 Bit 0 - 2: Address of DUART Registers
 		 Bit 4 - 5: Address mapping (see below)
 		 Bit 7    : Reset of DUART (active low)
@@ -581,7 +611,7 @@ static MACHINE_DRIVER_START(se)
   MDRV_CORE_INIT_RESET_STOP(se,NULL,se)
   MDRV_CPU_MEMORY(se_readmem, se_writemem)
   MDRV_CPU_VBLANK_INT(se_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(irq1_line_pulse, SE_IRQFREQ)
+  MDRV_CPU_PERIODIC_INT(irq1_line_pulse, SE_FIRQFREQ)
   MDRV_NVRAM_HANDLER(se)
   MDRV_DIPS(8)
   MDRV_SWITCH_UPDATE(se)
@@ -619,11 +649,11 @@ MACHINE_DRIVER_START(se3aS)
   MDRV_CORE_INIT_RESET_STOP(se3,NULL,se)
   MDRV_CPU_MEMORY(se_readmem, se_writemem)
   MDRV_CPU_VBLANK_INT(se_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(irq1_line_pulse, SE_IRQFREQ)
+  MDRV_CPU_PERIODIC_INT(irq1_line_pulse, SE_FIRQFREQ)
   MDRV_NVRAM_HANDLER(se)
   MDRV_DIPS(8)
   MDRV_SWITCH_UPDATE(se)
-  MDRV_DIAGNOSTIC_LEDH(1)
+  MDRV_DIAGNOSTIC_LEDH(2)
 //
   MDRV_IMPORT_FROM(de3as)
   MDRV_IMPORT_FROM(de_dmd32)
@@ -638,3 +668,8 @@ MACHINE_DRIVER_END
 static NVRAM_HANDLER(se) {
   core_nvram(file, read_or_write, memory_region(SE_CPUREGION), 0x2000, 0xff);
 }
+
+//Stern S.A.M Hardware support
+#ifdef INCLUDE_STERN_SAM
+#include "sam.c"
+#endif
