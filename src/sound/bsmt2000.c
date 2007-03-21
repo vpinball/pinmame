@@ -163,10 +163,7 @@ static void decompress_samples(struct BSMT2000Chip *chip)
 {
 		struct BSMT2000Voice *voice = &chip->compressed;
 		INT8 *base = &chip->region_base[voice->reg[REG_BANK] * 0x10000];
-//		INT32 lvol = voice->reg[REG_LEFTVOL];
-//		INT32 rvol = voice->reg[REG_RIGHTVOL];
 		UINT16 pos = voice->position>>16;
-//		UINT32 pos1 = voice->position;
 		UINT16 loopend = voice->loop_stop_position>>16;
 		UINT32 frac = 0;
 		int samp=0;
@@ -345,7 +342,6 @@ static void generate_samples(struct BSMT2000Chip *chip, INT32 *left, INT32 *righ
 	if (chip->voices == 11 && voice->reg[REG_BANK] < chip->total_banks && voice->adjusted_rate == 1)
   	{
 		int remaining = samples;
-//		INT8 *base = &chip->region_base[voice->reg[REG_BANK] * 0x10000];
   		INT32 *lbuffer = left, *rbuffer = right;
   		INT32 lvol = voice->reg[REG_LEFTVOL];
   		INT32 rvol = voice->reg[REG_RIGHTVOL];
