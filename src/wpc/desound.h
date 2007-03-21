@@ -5,8 +5,6 @@
 #define DE1S_CPUREGION (REGION_CPU1+DE1S_CPUNO)
 #define DE1S_ROMREGION (REGION_SOUND1)
 
-extern MACHINE_DRIVER_EXTERN(de1s);
-
 /*-- Sound rom macros --*/
 /*-- 32K Sound CPU Rom, 2 X 64K Voice Roms --*/
 #define DE1S_SOUNDROM244(n1,chk1,n2,chk2,n3,chk3) \
@@ -30,7 +28,9 @@ extern MACHINE_DRIVER_EXTERN(de1s);
 #define DE2S_CPUREGION (REGION_CPU1+DE2S_CPUNO)
 #define DE2S_ROMREGION (REGION_SOUND1)
 
+extern MACHINE_DRIVER_EXTERN(de1s);
 extern MACHINE_DRIVER_EXTERN(de2as);
+extern MACHINE_DRIVER_EXTERN(de2aas);
 extern MACHINE_DRIVER_EXTERN(de2bs);
 extern MACHINE_DRIVER_EXTERN(de2cs);
 extern MACHINE_DRIVER_EXTERN(de3as);
