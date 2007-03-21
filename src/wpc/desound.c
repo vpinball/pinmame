@@ -224,18 +224,29 @@ const struct sndbrdIntf de2sIntf = {
   "BSMT", de2s_init, NULL, NULL, soundlatch_w, soundlatch_w, NULL, NULL, NULL, SNDBRD_NODATASYNC
 };
 
-/* Older 11 Voice Style BSMT Chip */
-//NOTE: Do not put a volume adjustment here, otherwise 128x16 games have audible junk played at the beggining
+/* ---------------------------------------------------------------------------------------------------------------*/
+/* The ONLY differences in the different BSMT interfaces here are for adjusting volume & # of voices used         */
+/* The # of voices should really be handled by the reset lines and the bsmt emulation, but for now it's hardcoded */
+/* ---------------------------------------------------------------------------------------------------------------*/
+
+/* 11 Voice Style BSMT Chip used with Data East (Hook/Batman/Star Wars, etc..) */
+static struct BSMT2000interface de2s_bsmt2000aaInt = {
+  1, {24000000}, {11}, {DE2S_ROMREGION}, {100}, 1, 1, 0
+};
+
+/* 11 Voice Style BSMT Chip used with Sega/Stern (ID4,Godzilla,Monopoly,RCTYCN)*/
 static struct BSMT2000interface de2s_bsmt2000aInt = {
-  1, {24000000}, {11}, {DE2S_ROMREGION}, {100}, {0000}, 1, 0, 0
+  1, {24000000}, {11}, {DE2S_ROMREGION}, {100}, 1, 4, 0
 };
-/* Newer 12 Voice Style BSMT Chip */
+
+/* 12 Voice Style BSMT Chip used with later model Stern (Austin Powers and forward) */
 static struct BSMT2000interface de2s_bsmt2000bInt = {
-  1, {24000000}, {12}, {DE2S_ROMREGION}, {100}, {2000}, 1, 0, 0
+  1, {24000000}, {12}, {DE2S_ROMREGION}, {100}, 1, 4, 0
 };
-/* Older 11 Voice Style BSMT Chip but needs large volume adjustment */
+
+/* 11 Voice Style BSMT Chip used with early Sega (Apollo13, Goldeneye, Twister) */
 static struct BSMT2000interface de2s_bsmt2000cInt = {
-  1, {24000000}, {11}, {DE2S_ROMREGION}, {100}, {4000}, 1, 0, 0
+  1, {24000000}, {11}, {DE2S_ROMREGION}, {100}, 1, 8, 0
 };
 
 static MEMORY_READ_START(de2s_readmem)
@@ -263,6 +274,11 @@ MACHINE_DRIVER_START(de2as)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD_TAG("bsmt", BSMT2000, de2s_bsmt2000aInt)
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(de2aas)
+  MDRV_IMPORT_FROM(de2as)
+  MDRV_SOUND_REPLACE("bsmt", BSMT2000, de2s_bsmt2000aaInt)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(de2bs)
@@ -350,7 +366,16 @@ static WRITE_HANDLER(de2s_bsmtcmdLo_w)
 }
 
 static READ_HANDLER(de2s_bsmtready_r) { return 0x80; } // BSMT is always ready
-static WRITE_HANDLER(de2s_bsmtreset_w) { /* Writing 0x80 here resets BSMT ?*/ }
+/* Writing 0x80 here resets BSMT ?*/
+static WRITE_HANDLER(de2s_bsmtreset_w) { 
+	static int last_data = 0;
+	//Watch for 0->1 transition in 8th bit to force a reset
+	if(data & 0x80 && (last_data & 0x80) == 0)
+	{
+		BSMT2000_sh_reset();
+	}
+	last_data = data;
+}
 
 static INTERRUPT_GEN(de2s_firq) {
   //NOTE: Odd that it will NOT WORK without HOLD_LINE - although we don't clear it anywaywhere!
@@ -362,6 +387,9 @@ static INTERRUPT_GEN(de2s_firq) {
 /* GENERATION 3 Sound Hardware - AT91 Based CPU */
 /************************************************/
 /* by Steve Ellenoff ( 10/11/2004 - 10/28/2004 )
+
+   Hardware: CPU/Sound Bd. II w/ ATMEL Processor
+			 SPI Part Nº: 520-5300-00
 
    Uses an Atmel AT9140008 CPU (ARM7TDMI Core) and Xilinx FPGA for sound.
    Board is 100% compatible with previous generation hardware (all games using 8Mb roms)
@@ -382,12 +410,19 @@ static INTERRUPT_GEN(de2s_firq) {
    certain register write occurs, and the boot code is also swapped, I needed to provide the
    AT91 code pointers to the memory region data so it could perform the swap.
 
-   The bios code will setup a simple overflow counter to trigger an IRQ at 1/2 the CPU freq. Ideally this should
-   be handled by the CPU core itself, but for now, I'm doing it this way because it's much quicker to implement.
+   Internally the code sets up a timer interrupt @ 24,242Hz (40Mhz/2/0x339).
+   
+   -10/13/2006
+    Removed external irq call and silly irq ready hacks
+	Implemented AT91 port handling
+	Implemented SST0 & PLIN data writes (used by Elvis and later gen. games)
+	Added Sound LED (though it's not getting displayed to screen as much as it should oddly)
 */
 
 #define USE_ACTUAL_FREQ 1
-#define REMOVE_LED_CODE 1
+#define REMOVE_LED_CODE 0
+
+extern void set_at91_data(int plin, int sst0, int led);
 
 void *		wavraw;					/* raw waveform */
 
@@ -410,7 +445,6 @@ static READ_HANDLER(scmd_r);
 
 static data32_t *de3as_reset_ram;
 static data32_t *de3as_page0_ram;
-static int arm_ready_irq = 0;
 static int sndcmdbuf[ARMSNDBUFSIZE];
 static int sbuf=0;
 static int spos=0;
@@ -418,23 +452,11 @@ static int spos=0;
 static int sampout = 0;
 static int sampnum = 0;
 
-
-static INTERRUPT_GEN(arm_irq)
-{
-	if(arm_ready_irq)
-	{
-		cpu_set_irq_line(de2slocals.brdData.cpuNo, AT91_IRQ_LINE, PULSE_LINE);
-	}
-}
-
-static WRITE32_HANDLER(arm_irq_ready)
-{
-	arm_ready_irq = data;
-}
-
 static const int rommap[4] = {4,2,3,1};
 
 #define READWRITE_METHOD 3
+#define LOG_U7 0
+#define LOG_U17U37 1
 
 #if READWRITE_METHOD == 1
 //This approach uses if/else/if and is not optimized but here for comparisons to the other ways
@@ -475,7 +497,9 @@ static READ32_HANDLER(arm_cs_r)
 			romaddr = (romaddr&0xFFDFFFFF)>>1;
 
 			data = (data8_t)*((memory_region(REGION_SOUND2) + romaddr + ((romchip-1) * 0x100000)));
+			#if LOG_U17U37
 			LOG(("%08x: reading from U%d: %08x = %08x (%08x)\n",activecpu_get_pc(),romchip,romaddr,data,offset));
+			#endif
 		}
 	}
 	else
@@ -490,7 +514,9 @@ static READ32_HANDLER(arm_cs_r)
 	{
 		offset &= 0xffffff;	//strip off top 8 bits
 		data = (data32_t)*(memory_region(REGION_SOUND1) + offset);
+		#if LOG_U7
 		LOG(("%08x: reading from u7: %08x = %08x\n",activecpu_get_pc(),offset,data));
+		#endif
 	}
 	else
 	{
@@ -593,7 +619,9 @@ static READ32_HANDLER(arm_cs_r)
 				romaddr = (romaddr&0xFFDFFFFF)>>1;
 
 				data = (data8_t)*((memory_region(REGION_SOUND2) + romaddr + ((romchip-1) * 0x100000)));
+				#if LOG_U17U37
 				LOG(("%08x: reading from U%d: %08x = %08x (%08x)\n",activecpu_get_pc(),romchip,romaddr,data,offset));
+				#endif
 			}
 			break;
 		//CSR 3 Mapped to 0x30000000 - U412 (Not Used)
@@ -604,7 +632,9 @@ static READ32_HANDLER(arm_cs_r)
 		case 4:
 			offset &= 0xffffff;	//strip off top 8 bits
 			data = (data32_t)*(memory_region(REGION_SOUND1) + offset);
+			#if LOG_U7
 			LOG(("%08x: reading from u7: %08x = %08x\n",activecpu_get_pc(),offset,data));
+			#endif
 			break;
 		default:
 			LOG(("%08x: reading from: %08x = %08x\n",activecpu_get_pc(),offset,data));
@@ -698,7 +728,9 @@ static READ32_HANDLER(arm_cs_r)
 			romaddr = (romaddr&0xFFDFFFFF)>>1;
 
 			data = (data8_t)*((memory_region(REGION_SOUND2) + romaddr + ((romchip-1) * 0x100000)));
+			#if LOG_U17U37
 			LOG(("%08x: reading from U%d: %08x = %08x (%08x)\n",activecpu_get_pc(),romchip,romaddr,data,offset));
+			#endif
 		}
 	}
 	else
@@ -707,7 +739,9 @@ static READ32_HANDLER(arm_cs_r)
 	{
 		offset &= 0xffffff;	//strip off top 8 bits
 		data = (data32_t)*(memory_region(REGION_SOUND1) + offset);
+		#if LOG_U7
 		LOG(("%08x: reading from u7: %08x = %08x\n",activecpu_get_pc(),offset,data));
+		#endif
 	}
 	else
 	{
@@ -820,15 +854,11 @@ static void remove_led_code(void)
 
 static void setup_at91(void)
 {
+  //because the boot rom code gets written to ram, and then remapped to page 0, we need an interface to handle this.
+  at91_set_ram_pointers(de3as_reset_ram,de3as_page0_ram);
   //this crap is needed because for some reason installing memory handlers fails to work properly
   at91_cs_callback_r(0x00400000,0x8fffffff,arm_cs_r);
   at91_cs_callback_w(0x00400000,0x8fffffff,arm_cs_w);
-
-  //because the boot rom code gets written to ram, and then remapped to page 0, we need an interface to handle this.
-  at91_set_ram_pointers(de3as_reset_ram,de3as_page0_ram);
-
-  //crappy hack to know when IRQ can be fired
-  at91_ready_irq_callback_w(arm_irq_ready);
 }
 
 static void de3s_init(struct sndbrdData *brdData) {
@@ -928,7 +958,52 @@ static struct CustomSound_interface at91CustIntf =
 	0,
 };
 
-//Memory Map for Main CPU
+/*********************/
+/* Port I/O Section  */
+/*********************/
+READ32_HANDLER(arm_port_r)
+{
+	data32_t data;
+	int logit = 1;
+	data = 0;
+	if(logit)	LOG(("%08x: Read port - Data = %08x\n",activecpu_get_pc(),data));
+	return data;
+}
+
+//P16,17,18,19,20,23,24,25 Connected to U404 (Read via PLIN -> DMD Input Enable)
+//P4 Connected to SST0 line -> bit 6 of U202 (Read via STATUS -> DMD Status)
+//P8 Connected to LED
+static WRITE32_HANDLER(arm_port_w)
+{
+	int sst0, plin, led;
+
+//for debugging
+#if 0
+	char bitstr[33];
+	int logit = 0;
+	int i;
+	for(i = 31; i >= 0; i--)
+	{
+		if( (data>>i) & 1 )
+			bitstr[31-i]='1';
+		else
+			bitstr[31-i]='0';
+	}
+	bitstr[32]='\0';
+	if(logit)	LOG(("%08x: Write port - Data = %08x  (%s)\n",activecpu_get_pc(),data,bitstr));
+#endif
+
+	plin = ((data & 0x1F0000) >> 16) | ((data & 0x3800000) >> 18);
+	sst0 = (data & 0x10)>>4;
+	led = (data & 0x100)>>8;
+	set_at91_data(plin,sst0,led);
+}
+
+/******************************/
+/*  Memory map for Sound CPU  */
+/******************************/
+//NOTE: Thse aren't really used much as AT91 callback handlers are used instead.
+//      See notes above for reasons why.
 static MEMORY_READ32_START(arm_readmem)
 {0x00000000,0x000FFFFF,MRA32_RAM},
 {0x00300000,0x003FFFFF,MRA32_RAM},
@@ -939,11 +1014,26 @@ static MEMORY_WRITE32_START(arm_writemem)
 {0x00300000,0x003FFFFF,MWA32_RAM,&de3as_reset_ram},
 MEMORY_END
 
+/******************************/
+/*  Port map for Sound CPU    */
+/******************************/
+//AT91 has only 1 port address it writes to - all 32 ports are send via each bit of a 32 bit double word.
+//However, if I didn't use 0-0xFF as a range it crashed for some reason.
+static PORT_READ32_START( arm_readport )
+	{ 0x00,0xFF, arm_port_r },
+PORT_END
+static PORT_WRITE32_START( arm_writeport )
+	{ 0x00,0xFF, arm_port_w },
+PORT_END
+
+/*************************************************/
+/* AT91 Sound Generation #3 - Machine Definition */
+/*************************************************/
 MACHINE_DRIVER_START(de3as)
   MDRV_CPU_ADD(AT91, ARMCPU_FREQ)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(arm_readmem, arm_writemem)
-  MDRV_CPU_PERIODIC_INT(arm_irq, ARMIRQ_FREQ)
+  MDRV_CPU_PORTS(arm_readport, arm_writeport)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(CUSTOM,  at91CustIntf)
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
@@ -971,7 +1061,6 @@ MACHINE_DRIVER_START(lotrsnd)
   MDRV_CORE_INIT_RESET_STOP(lotrsnd, NULL, NULL)
   MDRV_CPU_ADD(AT91, ARMCPU_FREQ)
   MDRV_CPU_MEMORY(arm_readmem, arm_writemem)
-  MDRV_CPU_PERIODIC_INT(arm_irq, ARMIRQ_FREQ)
   MDRV_SOUND_ADD(CUSTOM,  at91CustIntf)
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
 MACHINE_DRIVER_END
@@ -1113,7 +1202,37 @@ static MACHINE_INIT(seflashb) {
     at91_cs_callback_r(0x00400000,0x8fffffff,flashb_cs_r);
     at91_cs_callback_w(0x00400000,0x8fffffff,flashb_cs_w);
 	//Patch out the LED flashing routine
+#if 0
+	//Sound OS Version 5
 	de3as_page0_ram[0x1170/4] = (UINT32)0xE12FFF1E;	//BX R14
+#else
+	//Sound OS Version 8
+	de3as_page0_ram[0x11c0/4] = (UINT32)0xE12FFF1E;	//BX R14
+#endif
+}
+
+static MACHINE_STOP(seflashb) {
+	UINT8 data = 0;
+	int offset = 0;
+	FILE *rom = NULL;
+
+	//Create output file
+	rom = fopen("biosv8.u8","wb");
+	if(rom == NULL)
+	{
+		printf("failed to create new bios file!\n");
+		return;
+	}
+
+	//Copy U8 memory region to file
+	for(offset = 0; offset < FLASHU8_SIZE; offset++)
+	{
+		data = *(memory_region(REGION_CPU1) + offset + FLASHU8_ADDRESS);
+		fwrite((void*)&data,1,1,rom);
+	}
+
+	//Close it
+	if(rom) fclose(rom);
 }
 
 static core_tGameData seflashbGameData = {0, 0};
@@ -1123,10 +1242,9 @@ static void init_seflashb(void) {
 
 MACHINE_DRIVER_START(seflashb)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CORE_INIT_RESET_STOP(seflashb, NULL, NULL)
+  MDRV_CORE_INIT_RESET_STOP(seflashb, NULL, seflashb)
   MDRV_CPU_ADD(AT91, ARMCPU_FREQ)
   MDRV_CPU_MEMORY(arm_readmem, arm_writemem)
-  MDRV_CPU_PERIODIC_INT(arm_irq, ARMIRQ_FREQ)
   MDRV_SOUND_ADD(CUSTOM,  at91CustIntf)
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
 MACHINE_DRIVER_END
@@ -1134,10 +1252,19 @@ MACHINE_DRIVER_END
 INPUT_PORTS_START(seflashb)
 INPUT_PORTS_END
 
+//Sound OS Version 5
+#if 0
 ROM_START(seflashb) \
     ROM_REGION32_LE(0x600000, REGION_CPU1, ROMREGION_ERASEMASK) \
-    ROM_LOAD("flashv5.bin", 0, 0x10000, CRC(ad93688f))\
+    ROM_LOAD("flashv5.bin", 0, 0x10000, CRC(ad93688f) SHA1(b18e077af247bcb139377b3fa877e0c3906cb136))\
 ROM_END
+#else
+//Sound OS Version 8
+ROM_START(seflashb) \
+    ROM_REGION32_LE(0x600000, REGION_CPU1, ROMREGION_ERASEMASK) \
+    ROM_LOAD("flashv8.bin", 0, 0x10000, CRC(53f53672) SHA1(f7211857988f99429ecbd232e5833741dd1693ee))\
+ROM_END
+#endif
 
 CORE_GAMEDEFNV(seflashb, "Stern Sound OS Flash Update", 2004, "Stern", seflashb, 0)
 
