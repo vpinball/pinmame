@@ -1201,9 +1201,11 @@ DRIVER(sttng,p5)        //WPC-523:  11/93 W Star Trek: The Next Generation (P-5)
 DRIVER(sttng,l7)        //WPC-523:  02/94 W Star Trek: The Next Generation (LX-7)
 DRIVER(sttng,x7)        //WPC-523:  02/94 W Star Trek: The Next Generation (LX-7 Special)
 DRIVER(sttng,s7)        //WPC-523:  02/94 W Star Trek: The Next Generation (LX-7) SP1
-DRIVER(dm,lx4)          //WPC-528:  02/94 W Demolition Man (LX-4)
-DRIVER(dm,pa2)          //WPC-528:  02/94 W Demolition Man (PA-2)
-DRIVER(dm,px5)          //WPC-528:  02/94 W Demolition Man (PX-5)
+DRIVER(dm,pa2)          //WPC-528:  03/94 W Demolition Man (PA-2)
+DRIVER(dm,px5)          //WPC-528:  04/94 W Demolition Man (PX-5)
+DRIVER(dm,lx3)          //WPC-528:  04/94 W Demolition Man (LX-3)
+DRIVER(dm,lx4)          //WPC-528:  05/94 W Demolition Man (LX-4)
+DRIVER(dm,h5)           //WPC-528:  02/95 W Demolition Man (H-5) with rude speech
 DRIVER(pop,lx5)         //WPC:      02/94 B Popeye Saves the Earth
 DRIVER(wcs,l2)          //WPC-531:  02/94 B World Cup Soccer (Lx-2)
 DRIVER(wcs,p2)                            // (Pa-2)
