@@ -12,7 +12,7 @@ static const core_tLCDLayout dispst6[] = {
 static const core_tLCDLayout dispst7[] = {
   {0, 0, 1,7,CORE_SEG87F},{0,16, 9,7,CORE_SEG87F},
   {2, 0,17,7,CORE_SEG87F},{2,16,25,7,CORE_SEG87F},
-  {4, 4,35,2,CORE_SEG87}, {4,10,38,2,CORE_SEG87}, {0}
+  {4, 4,35,2,CORE_SEG7}, {4,10,38,2,CORE_SEG7},{0}
 };
 
 BY35_INPUT_PORTS_START(st,1) BY35_INPUT_PORTS_END
@@ -350,7 +350,7 @@ ROM_START(ninebalb)
     ROM_RELOAD(0x8000, 0x8000)
 ST200_ROMEND
 #define input_ports_ninebalb input_ports_st
-CORE_CLONEDEFNV(ninebalb,nineball,"Nine Ball (mdified rules rev. 85)",2007,"Stern / Oliver",by35_mST200,0)
+CORE_CLONEDEFNV(ninebalb,nineball,"Nine Ball (modified rules rev. 85)",2007,"Stern / Oliver",by35_mST200,0)
 
 /*--------------------------------
 / Free Fall
@@ -372,7 +372,7 @@ CORE_GAMEDEFNV(freefall,"Free Fall",1981,"Stern",by35_mST200fal,0)
 static core_tLCDLayout dispLightnin[] = {
   {0, 0, 1,7,CORE_SEG87F},{0,16, 9,7,CORE_SEG87F},
   {2, 0,17,7,CORE_SEG87F},{2,16,25,7,CORE_SEG87F},
-  {4, 4,34,2,CORE_SEG87}, {4,10,38,2,CORE_SEG87}, {4,20,36,2,CORE_SEG87},{0}
+  {4, 4,34,2,CORE_SEG7}, {4,10,38,2,CORE_SEG7}, {4,20,36,2,CORE_SEG7},{0}
 };
 INITGAME(lightnin,GEN_STMPU200,dispLightnin,FLIP_SW(FLIP_L),0,SNDBRD_ST300V,0)
 ST200_ROMSTART8888(lightnin,"cpu_u1.716",CRC(d3469d0a) SHA1(18565f5c85694da8eaf850146d3d9a90a17b7816),
@@ -443,7 +443,7 @@ CORE_GAMEDEFNV(viper,"Viper",1981,"Stern",by35_mST200,0)
 static core_tLCDLayout dispDragfist[] = {
   {0, 0, 1,7,CORE_SEG87F},{0,16, 9,7,CORE_SEG87F},
   {2, 0,17,7,CORE_SEG87F},{2,16,25,7,CORE_SEG87F},
-  {4, 4,36,2,CORE_SEG87}, {4,10,38,2,CORE_SEG87}, {4,20,34,2,CORE_SEG87},{0}
+  {4, 4,36,2,CORE_SEG7}, {4,10,38,2,CORE_SEG7}, {4,20,34,2,CORE_SEG7},{0}
 };
 INITGAME(dragfist,GEN_STMPU200,dispDragfist,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
 ST200_ROMSTART8888(dragfist,"cpu_u1.716",CRC(4cbd1a38) SHA1(73b7291f38cd0a3300107605db26d474ecfc3101),
@@ -460,7 +460,7 @@ CORE_GAMEDEFNV(dragfist,"Dragonfist",1982,"Stern",by35_mST200,0)
 static core_tLCDLayout dispOrbitor[] = {
   {0, 0, 1,7,CORE_SEG87F},{0,16, 9,7,CORE_SEG87F},
   {2, 0,17,7,CORE_SEG87F},{2,16,25,7,CORE_SEG87F},
-  {4, 4,36,2,CORE_SEG87}, {4,10,38,2,CORE_SEG87}, {4,20,33,3,CORE_SEG87},{0}
+  {4, 4,36,2,CORE_SEG7}, {4,10,38,2,CORE_SEG7}, {4,20,33,3,CORE_SEG7},{0}
 };
 INITGAME(orbitor1,GEN_STMPU200,dispOrbitor,FLIP_SW(FLIP_L),0,SNDBRD_ST300V,0)
 ST200_ROMSTART8888(orbitor1,"cpu_u1.716",CRC(575520e3) SHA1(9d52b065a14d4f95cebd48f60f628f2c246385fa),
