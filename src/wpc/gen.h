@@ -56,11 +56,13 @@
 #define GEN_ZAC1        U64(0x40000000000)
 #define GEN_ZAC2        U64(0x80000000000)
 
+#define GEN_SAM         U64(0x100000000000) /* Stern SAM */
+
 #define GEN_ALLWPC      U64(0x000000000ff)
 #define GEN_ALLS11      U64(0x0008000ff00)
 #define GEN_ALLBY35     U64(0x00047e00000)
 #define GEN_ALLS80      U64(0x00600000000)
-
+#define GEN_ALLWS       U64(0x1c000000000)
 
 #endif /* INC_GEN */
 
