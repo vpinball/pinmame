@@ -740,6 +740,7 @@ DRIVERNV(seawitch)      //MPU-200: 05/80 Seawitch
 DRIVERNV(cheetah)       //MPU-200: 06/80 Cheetah
 DRIVERNV(quicksil)      //MPU-200: 06/80 Quicksilver
 DRIVERNV(nineball)      //MPU-200: 12/80 Nineball
+DRIVERNV(ninebalb)      //MPU-200: 01/07 Nineball (moified rules rev. 85)
 DRIVERNV(freefall)      //MPU-200: 01/81 Free Fall
 DRIVERNV(splitsec)      //MPU-200: 08/81 Split Second
 DRIVERNV(catacomb)      //MPU-200: 10/81 Catacomb
@@ -807,11 +808,17 @@ DRIVER  (harl,f18)      //Whitestar: 07/03 Harley Davidson (1.08 France)
 DRIVER  (harl,g18)      //Whitestar: 07/03 Harley Davidson (1.08 Germany)
 DRIVER  (harl,i18)      //Whitestar: 07/03 Harley Davidson (1.08 Italy)
 DRIVER  (harl,l18)      //Whitestar: 07/03 Harley Davidson (1.08 Spain)
+// New CPU/Sound Board with ARM7 CPU + Xilinx FPGA controlling sound
 DRIVERNV(lotr)          //Whitestar: 11/03 Lord Of The Rings
 DRIVERNV(lotr_gr)       //Whitestar: 11/03 Lord Of The Rings (Germany)
 DRIVERNV(lotr_sp)       //Whitestar: 11/03 Lord Of The Rings (Spain)
 DRIVERNV(lotr_fr)       //Whitestar: 11/03 Lord Of The Rings (France)
 DRIVERNV(lotr_it)       //Whitestar: 11/03 Lord Of The Rings (Italy)
+DRIVERNV(ripleys)       //Whitestar: 03/04 Ripley's Believe It or Not!
+DRIVERNV(ripleysg)      //Whitestar: 03/04 Ripley's Believe It or Not! (Germany)
+DRIVERNV(ripleysl)      //Whitestar: 03/04 Ripley's Believe It or Not! (Spain)
+DRIVERNV(ripleysf)      //Whitestar: 03/04 Ripley's Believe It or Not! (France)
+DRIVERNV(ripleysi)      //Whitestar: 03/04 Ripley's Believe It or Not! (Italy)
 
 #ifdef INCLUDE_NEW_STERN
 
@@ -831,12 +838,6 @@ DRIVERNV(simpnew)
 DRIVERNV(t3new)
 #endif /* TEST_NEW_SOUND */
 
-// New CPU/Sound Board with ARM7 CPU + Xilinx FPGA controlling sound
-DRIVERNV(ripleys)       //Whitestar: 03/04 Ripley's Believe It or Not!
-DRIVERNV(ripleysg)      //Whitestar: 03/04 Ripley's Believe It or Not! (Germany)
-DRIVERNV(ripleysl)      //Whitestar: 03/04 Ripley's Believe It or Not! (Spain)
-DRIVERNV(ripleysf)      //Whitestar: 03/04 Ripley's Believe It or Not! (France)
-DRIVERNV(ripleysi)      //Whitestar: 03/04 Ripley's Believe It or Not! (Italy)
 DRIVER  (harl,a30)      //Whitestar: 10/04 Harley Davidson (3.00)
 DRIVER  (harl,f30)      //Whitestar: 10/04 Harley Davidson (3.00 France)
 DRIVER  (harl,g30)      //Whitestar: 10/04 Harley Davidson (3.00 Germany)
@@ -987,7 +988,7 @@ DRIVER(algar,l1)        //S6-499:   09/80 W Algar
 DRIVER(alpok,l2)        //S6-501:   10/80 W Alien Poker L-2
 DRIVER(alpok,l6)        //S6-501:   10/80 W Alien Poker L-6
 DRIVER(alpok,f6)        //S6-501:   10/80 W Alien Poker L-6, French speech
-DRIVER(alpok,b6)        //S6-501:   08/04 W Alien Poker Multiball mod
+DRIVER(alpok,b6)        //S6-501:   11/06 W Alien Poker Multiball mod
 //System 7
 DRIVER(frpwr,b7)        //S7:       12/03 W Firepower (Sys.7 7-digit conversion)
 DRIVER(frpwr,c7)        //S7:       12/03 W Firepower (Sys.7 7-digit conversion, rev. 38)
