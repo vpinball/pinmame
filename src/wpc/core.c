@@ -718,9 +718,6 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
             } else
               tmpType = CORE_SEG7;
             break;
-          case CORE_SEG8D:
-            if (tmpSeg) tmpSeg |= 0x80;
-            break;
           case CORE_SEG98: case CORE_SEG98F:
             tmpSeg |= (tmpSeg & 0x100)<<1;
             if ((ii > 0) && (ii % 3 == 0)) { // Handle Comma
