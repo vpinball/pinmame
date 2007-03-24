@@ -165,14 +165,14 @@
 /* The different kind of display units */
 #define CORE_SEG16    0 // 16 segments
 #define CORE_SEG16R   1 // 16 segments with comma and period reversed
-#define CORE_SEG10    2 // 10 segments
-#define CORE_SEG9     3 // 10 segments
-#define CORE_SEG8     4 // 8  segments
-#define CORE_SEG8D    5 // 7  segments, period lights up along with digit
+#define CORE_SEG10    2 // 9  segments and comma
+#define CORE_SEG9     3 // 9  segments
+#define CORE_SEG8     4 // 7  segments and comma
+#define CORE_SEG8D    5 // 7  segments and period
 #define CORE_SEG7     6 // 7  segments
 #define CORE_SEG87    7 // 7  segments, comma every three
 #define CORE_SEG87F   8 // 7  segments, forced comma every three
-#define CORE_SEG87FD  9 // 7  segments, forced dot every three
+#define CORE_SEG87FD  9 // 7  segments, forced period every three
 #define CORE_SEG98   10 // 9  segments, comma every three
 #define CORE_SEG98F  11 // 9  segments, forced comma every three
 #define CORE_SEG7S   12 // 7  segments, small
