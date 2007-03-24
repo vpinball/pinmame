@@ -379,7 +379,7 @@ static struct pia6821_interface by35_pia[] = {{
 /* O:  A/B,CA2/B2        */  pia0a_w,0, pia0ca2_w,pia0cb2_w,
 /* IRQ: A/B              */  piaIrq,piaIrq
 },{
-/* I:  A/B,CA1/B1,CA2/B2 */  0,0, 0,0, 0,0,
+/* I:  A/B,CA1/B1,CA2/B2 */  0,0, PIA_UNUSED_VAL(1),PIA_UNUSED_VAL(1), 0,0,
 /* O:  A/B,CA2/B2        */  pia1a_w,pia1b_w,pia1ca2_w,pia1cb2_w,
 /* IRQ: A/B              */  piaIrq,piaIrq
 }};
@@ -585,17 +585,15 @@ static MACHINE_STOP(by35) {
 	 U6: 0x5800-0x6000
 */
 static MEMORY_READ_START(by35_readmem)
-  { 0x0000, 0x0080, MRA_RAM }, /* U7 128 Byte Ram*/
+  { 0x0000, 0x007f, MRA_RAM }, /* U7 128 Byte Ram*/
   { 0x0088, 0x008b, pia_r(BY35_PIA0) }, /* U10 PIA: Switchs + Display + Lamps*/
   { 0x0090, 0x0093, pia_r(BY35_PIA1) }, /* U11 PIA: Solenoids/Sounds + Display Strobe */
   { 0x0200, 0x02ff, MRA_RAM }, /* CMOS Battery Backed*/
-  { 0x1000, 0x1fff, MRA_ROM },
-  { 0x5000, 0x5fff, MRA_ROM },
-  { 0xf000, 0xffff, MRA_ROM },
+  { 0x1000, 0xffff, MRA_ROM },
 MEMORY_END
 
 static MEMORY_WRITE_START(by35_writemem)
-  { 0x0000, 0x0080, MWA_RAM }, /* U7 128 Byte Ram*/
+  { 0x0000, 0x007f, MWA_RAM }, /* U7 128 Byte Ram*/
   { 0x0088, 0x008b, pia_w(BY35_PIA0) }, /* U10 PIA: Switchs + Display + Lamps*/
   { 0x0090, 0x0093, pia_w(BY35_PIA1) }, /* U11 PIA: Solenoids/Sounds + Display Strobe */
   { 0x0200, 0x02ff, by35_CMOS_w, &by35_CMOS }, /* CMOS Battery Backed*/
