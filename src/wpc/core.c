@@ -1208,7 +1208,7 @@ UINT64 core_getAllSol(void) {
     UINT64 tmp = coreGlobals.solenoids & 0xf0000000;
     sol |= (tmp<<12)|(tmp<<8);
   }
-  if (core_gameData->gen & GEN_ALLS11) // 37-44 S11 extra
+  if (core_gameData->gen & (GEN_ALLS11|GEN_SAM)) // 37-44 S11, SAM extra
     sol |= ((UINT64)(coreGlobals.solenoids2 & 0xff00))<<28;
   { // 33-36, 45-48 flipper solenoids
     UINT8 lFlip = (coreGlobals.solenoids2 & (CORE_LRFLIPSOLBITS|CORE_LLFLIPSOLBITS));
