@@ -311,12 +311,12 @@ CORE_GAMEDEFNV(stargzr,"Stargazer",1980,"Stern",by35_mST200,0)
 /-------------------------------*/
 INITGAME(stargzrb,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
 ST200_ROMSTART8888(stargzrb,"cpu_u1.716",CRC(83606fd4) SHA1(7f6448bc0dabe50de40fd47a7242c1be4a93e84d),
-                           "cpu_u5.716",CRC(29682d85)       SHA1(3f449270cd4098a7ed1ee9c0d801110b1b653913),
-                           "cpu_u2.716",CRC(360427cc) SHA1(ad76124b7fd088a5e2d24cf369c1620cdcc80309),
-                           "cpu_u6.716",CRC(b68b11c5) SHA1(1af6aca8ecf70d2adf588a1e856f753193c05abd))
+                           "cpu_u5b.716",CRC(29682d85) SHA1(3f449270cd4098a7ed1ee9c0d801110b1b653913),
+                           "cpu_u2b.716",CRC(360427cc) SHA1(ad76124b7fd088a5e2d24cf369c1620cdcc80309),
+                           "cpu_u6b.716",CRC(b68b11c5) SHA1(1af6aca8ecf70d2adf588a1e856f753193c05abd))
 BY35_ROMEND
 #define input_ports_stargzrb input_ports_stargzr
-CORE_CLONEDEFNV(stargzrb,stargzr,"Stargazer (modified rules rev.9)",1980,"Stern / Oliver",by35_mST200,0)
+CORE_CLONEDEFNV(stargzrb,stargzr,"Stargazer (modified rules rev.9)",2006,"Stern / Oliver",by35_mST200,0)
 
 /*--------------------------------
 / Flight 2000
@@ -342,6 +342,15 @@ ST200_ROMSTART8888(nineball,"cpu_u1.716",CRC(fcb58f97) SHA1(6510a6d0b466bd27ade5
 BY35_ROMEND
 #define input_ports_nineball input_ports_st
 CORE_GAMEDEFNV(nineball,"Nine Ball",1980,"Stern",by35_mST200,0)
+
+INITGAME(ninebalb,GEN_STMPU200,dispst7,FLIP_SW(FLIP_L),0,SNDBRD_ST300,0)
+ROM_START(ninebalb)
+  NORMALREGION(0x10000, BY35_CPUREGION)
+    ROM_LOAD("nineball.256", 0x0000, 0x8000, CRC(06cb8a63) SHA1(c901bba0b41b45c5cfa6d04181f1e035beab5a08))
+    ROM_RELOAD(0x8000, 0x8000)
+ST200_ROMEND
+#define input_ports_ninebalb input_ports_st
+CORE_CLONEDEFNV(ninebalb,nineball,"Nine Ball (mdified rules rev. 85)",2007,"Stern / Oliver",by35_mST200,0)
 
 /*--------------------------------
 / Free Fall
