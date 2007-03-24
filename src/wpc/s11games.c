@@ -70,7 +70,7 @@ S9S_SOUNDROM41111(     "cpu_u49.128", CRC(a0bae1e4) SHA1(dc5172aa1d59191d4119da2
                        "spch_u7.732", CRC(bba9ed18) SHA1(8e37ba8cb6bbc1e0afeef230088beda4513adddb))
 S9_ROMEND
 #define input_ports_sorcr input_ports_s11
-CORE_GAMEDEF(sorcr, l1, "Sorcerer (L-1)", 1985, "Williams", s9_mS9S,0)
+CORE_CLONEDEF(sorcr,l1,l2, "Sorcerer (L-1)", 1985, "Williams", s9_mS9S,0)
 
 S9_ROMSTART12(sorcr,l2,"cpu_u19.l2", CRC(faf738db) SHA1(a3b3f4160dc837ddf5379e1edb0eafeefcc11e3d),
                        "cpu_u20.l2", CRC(74fc8117) SHA1(c228c76ade670603f77bb324e6794ec6dd358285))
@@ -80,7 +80,7 @@ S9S_SOUNDROM41111(     "cpu_u49.128", CRC(a0bae1e4) SHA1(dc5172aa1d59191d4119da2
                        "spch_u6.732", CRC(a5c54d47) SHA1(4e1206412ecf52ae61c9df2055e0715749a6325d),
                        "spch_u7.732", CRC(bba9ed18) SHA1(8e37ba8cb6bbc1e0afeef230088beda4513adddb))
 S9_ROMEND
-CORE_CLONEDEF(sorcr, l2, l1, "Sorcerer (L-2)", 1985, "Williams", s9_mS9S,0)
+CORE_GAMEDEF(sorcr, l2, "Sorcerer (L-2)", 1985, "Williams", s9_mS9S,0)
 
 /*--------------------
 / Comet (S9) 06/85
@@ -95,7 +95,7 @@ S9S_SOUNDROM41111(     "cpu_u49.128", CRC(f1db0cbe) SHA1(59b7f36fb2003b90b288abe
                        "spch_u7.732", CRC(36545b22) SHA1(f4a026f3fa58dce81b439d76120a6769f4632955))
 S9_ROMEND
 #define input_ports_comet input_ports_s11
-CORE_GAMEDEF(comet, l4, "Comet (L-4)", 1985, "Williams", s9_mS9S,0)
+CORE_CLONEDEF(comet,l4,l5,"Comet (L-4)", 1985, "Williams", s9_mS9S,0)
 
 S9_ROMSTARTx4(comet,l5,"cpu_u20.l5",  CRC(d153d9ab) SHA1(0b97591b8ba35207b1427900486d69078ae122bc))
 S9S_SOUNDROM41111(     "cpu_u49.128", CRC(f1db0cbe) SHA1(59b7f36fb2003b90b288abeff56df62ce50f10c6),
@@ -104,7 +104,7 @@ S9S_SOUNDROM41111(     "cpu_u49.128", CRC(f1db0cbe) SHA1(59b7f36fb2003b90b288abe
                        "spch_u6.732", CRC(6ba2aba6) SHA1(783b4e9b38db8677d91f86cb4805f0fa1ae8f856),
                        "spch_u7.732", CRC(36545b22) SHA1(f4a026f3fa58dce81b439d76120a6769f4632955))
 S9_ROMEND
-CORE_CLONEDEF(comet,l5,l4,"Comet (L-5)", 1985, "Williams", s9_mS9S,0)
+CORE_GAMEDEF(comet, l5, "Comet (L-5)", 1985, "Williams", s9_mS9S,0)
 
 /*--------------------
 / High Speed 01/86
@@ -472,8 +472,8 @@ S11CS_SOUNDROM88(       "u4-p1.rom",   CRC(7219ffc2) SHA1(b8585b7d12f401d8ba4d95
                         "eshk_u19.l1", CRC(e5593075) SHA1(549b03402e5639b449e35325eb52e78f8810b07a))
 S11_ROMEND
 #define input_ports_esha input_ports_s11
-CORE_GAMEDEF(esha, pr4, "Earthshaker (Family version) (PR-4)", 1989, "Williams", s11_mS11BS,0)
-CORE_CLONEDEF(esha, la3, pr4, "Earthshaker (LA-3)", 1988, "Williams", s11_mS11BS,0)
+CORE_GAMEDEF (esha, la3, "Earthshaker (LA-3)", 1988, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(esha, pr4, la3, "Earthshaker (Family version) (PR-4)", 1989, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, lg1, pr4, "Earthshaker (German) (LG-1)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, la1, pr4, "Earthshaker (LA-1)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, pa1, pr4, "Earthshaker (Prototype) (PA-1)", 1988, "Williams", s11_mS11BS,0)
@@ -786,7 +786,7 @@ S11_ROMEND
 
 CORE_GAMEDEF(diner, l4, "Diner (L-4)", 1990, "Williams", s11_mS11CS,0)
 CORE_CLONEDEF(diner,l3,l4, "Diner (L-3)", 1990, "Williams", s11_mS11CS,0)
-CORE_CLONEDEF(diner,l1,l4, "Diner (L-1) European", 1990, "Williams", s11_mS11CS,0)
+CORE_CLONEDEF(diner,l1,l4, "Diner (L-1) Europe", 1990, "Williams", s11_mS11CS,0)
 
 /*--------------------
 / Radical 9/90
