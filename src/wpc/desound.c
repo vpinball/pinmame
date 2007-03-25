@@ -14,12 +14,6 @@
 #include "machine/6821pia.h"
 #include "sndbrd.h"
 
-#define MAKE_WAVS 0
-
-#if MAKE_WAVS
-#include "sound/wavwrite.h"
-#endif
-
 #if 0
 #define LOG(x) printf x
 #else
@@ -400,15 +394,9 @@ static INTERRUPT_GEN(de2s_firq) {
    and most importantly, acts as a simple DSP chip which converts the 16 bit sample data into a serial sound
    stream for output to a DAC. It may have other functionality as well, but not related to sound if so.
 
-   A # of MAME related techincal challenges occurred which required some work arounds.
-   First, I wanted to use the memory map to handle everything, but for some reason when I
-   tried it with the 32 bit sized address like 0x40000000, it took about 30 seconds to load and
-   consumed massive amounts of memory. Second I tried installing memory handlers in the init code
-   to handle it, but for some reason they never returned an offset value > 0. So finally I was stuck
-   to create call backs right from the core, but while speed is fine, it's a yucky hack.
-   Second, because the AT91 core swaps RAM into page 0 memory after a
+   Because the AT91 core swaps RAM into page 0 memory after a
    certain register write occurs, and the boot code is also swapped, I needed to provide the
-   AT91 code pointers to the memory region data so it could perform the swap.
+   AT91 code pointers to the memory region data so it could perform the swap, see init for details.
 
    Internally the code sets up a timer interrupt @ 24,242Hz (40Mhz/2/0x339).
    
@@ -417,385 +405,155 @@ static INTERRUPT_GEN(de2s_firq) {
 	Implemented AT91 port handling
 	Implemented SST0 & PLIN data writes (used by Elvis and later gen. games)
 	Added Sound LED (though it's not getting displayed to screen as much as it should oddly)
+   -03/25/2007
+    Removed all memory callback handling
+	Implemented proper memory mappped handling
+	Simplified memory handlers
+	Added logging flags & cleaned up readability of code a bit.
+	Commented out support for flash bios and test driver as I don't have desire to convert them over to use proper memory handler 
 */
 
-#define USE_ACTUAL_FREQ 1
-#define REMOVE_LED_CODE 0
+//Switches
+#define AT91IMP_REMOVE_LED_CODE			1	// Set to 1 to remove code that flashes the LED at startup.
+#define AT91IMP_MAKE_WAVS				0	// Set to 1 to save sound output as wave file
 
-extern void set_at91_data(int plin, int sst0, int led);
+//Logging Options
+#define AT91IMP_LOG_TO_SCREEN			0	// Set to 1 to print log data to screen instead of logfile
+#define AT91IMP_LOG_ROMS_U17_U37		0	// Set to 1 to log data reads from ROMS U17-U37
+#define AT91IMP_LOG_PORT_WRITE			0	// Set to 1 to log port write access
+#define AT91IMP_LOG_PORT_READ			0	// Set to 1 to log port read access
+#define AT91IMP_LOG_DATA_STREAM			0	// Set to 1 to log sound data stream output
+#define AT91IMP_LOG_SOUND_CMD			0	// Set to 1 to sound command read access
+#define	AT91IMP_LOG_NO_SAMPLES_2PLAY	0	// Set to 1 to log when there are not enough sound samples to play
 
-void *		wavraw;					/* raw waveform */
-
-#if USE_ACTUAL_FREQ
-	#define ARMCPU_FREQ	40000000				//40 MHZ
-	#define ARMIRQ_FREQ ARMCPU_FREQ/2/0x339		//Works out to be 24,242Hz
-    #define WAVE_OUT_RATE ARMIRQ_FREQ			//Output rate is exactly the IRQ frequency
-#else
-//to speed up testing
-	#define ARMCPU_FREQ	4000000		//4 MHZ
-	#define ARMIRQ_FREQ ARMCPU_FREQ/2/0x339
-	#define WAVE_OUT_RATE 40000000/2/0x339		//Accurate sample rate
-#endif
-
+//Definitions
+#define ARMCPU_FREQ	40000000				//40 MHZ
+#define ARMIRQ_FREQ ARMCPU_FREQ/2/0x339		//Works out to be 24,242Hz
+#define WAVE_OUT_RATE ARMIRQ_FREQ			//Output rate is exactly the IRQ frequency
 #define ARMSNDBUFSIZE 400
 #define BUFFSIZE 0x100000
-static INT16 samplebuf[BUFFSIZE];
 
+//Includes
+#if AT91IMP_MAKE_WAVS
+#include "sound/wavwrite.h"
+#endif
+
+//Prototypes
+extern void set_at91_data(int plin, int sst0, int led);
 static READ_HANDLER(scmd_r);
 
+//Variables
 static data32_t *de3as_reset_ram;
 static data32_t *de3as_page0_ram;
+static data32_t *u7_base;
 static int sndcmdbuf[ARMSNDBUFSIZE];
 static int sbuf=0;
 static int spos=0;
-
 static int sampout = 0;
 static int sampnum = 0;
-
 static const int rommap[4] = {4,2,3,1};
+static INT16 samplebuf[BUFFSIZE];
 
-#define READWRITE_METHOD 3
-#define LOG_U7 0
-#define LOG_U17U37 1
+#if AT91IMP_MAKE_WAVS
+static void * wavraw;					/* raw waveform */
+#endif
 
-#if READWRITE_METHOD == 1
-//This approach uses if/else/if and is not optimized but here for comparisons to the other ways
-static READ32_HANDLER(arm_cs_r)
+#ifdef LOG
+#undef LOG
+#endif
+
+#if AT91IMP_LOG_TO_SCREEN
+#define LOG(x) printf x
+#else
+#define LOG(x) logerror x
+#endif
+
+//CSR 2 Mapped to 0x20000000 (Xilinx & U17-U37 ROMS)
+static READ32_HANDLER(xilinx_r)
 {
 	data32_t data = 0;
 
-	//CSR 0 Mapped to 0x10000000 - BIOS ROM U8
-	if(offset < 0x1fffffff)
-	{
-		LOG(("%08x: reading from: %08x = %08x\n",activecpu_get_pc(),offset,data));
-	}
-	else
-	//CSR 2 Mapped to 0x20000000 (Xilinx & U17-U37 ROMS)
-	if(offset < 0x2fffffff)
-	{
-		//Xilinx Provides Sound Command from Main CPU
-		if(offset == 0x20000000)
-		{
-			//static int lastcmd = 0;
-			//data = soundlatch_r(0);
-			data = scmd_r(0);
-			#if 0
-			if(lastcmd != data) {
-				LOG(("%08x: reading from: %08x = %08x\n",activecpu_get_pc(),offset,data));
-				lastcmd = data;
-			}
-			#endif
-		}
-		else
-		//Read from U17-U37 ROMS
-		{
-			//remove a29 & a22
-			int romaddr = offset & 0xDFBFFFFF;
-			//determine which chip (combine A21 & A0 into 2 bit #)
-			int romchip = rommap[(((romaddr& 0x200000)>>20)|(romaddr&1))];
-			//remove a21 and >>1 the address
-			romaddr = (romaddr&0xFFDFFFFF)>>1;
+	//Xilinx Provides Sound Command from Main CPU
+	#if AT91IMP_LOG_SOUND_CMD
+	static int lastcmd = 0;
+	#endif
+	
+	data = scmd_r(0);
 
-			data = (data8_t)*((memory_region(REGION_SOUND2) + romaddr + ((romchip-1) * 0x100000)));
-			#if LOG_U17U37
-			LOG(("%08x: reading from U%d: %08x = %08x (%08x)\n",activecpu_get_pc(),romchip,romaddr,data,offset));
-			#endif
-		}
+	#if AT91IMP_LOG_SOUND_CMD
+	if(lastcmd != data) {
+		LOG(("%08x: SND CMD: reading from: %08x = %08x\n",activecpu_get_pc(),offset,data));
+		lastcmd = data;
 	}
-	else
-	//CSR 3 Mapped to 0x30000000 - U412 (Not Used)
-	if(offset < 0x3fffffff)
+	#endif
+	
+	return data;
+}
+
+//CSR 2 Mapped to 0x20000000 (Xilinx & U17-U37 ROMS)
+static READ32_HANDLER(roms_r)
+{
+	data32_t data = 0;
+	int mask_adjust = 0;
+
+	//Adjust offset due to the way MAME 32Bit handler works
+	offset*=4;
+	switch(mem_mask^0xffffffff)
 	{
-		LOG(("%08x: reading from: %08x = %08x\n",activecpu_get_pc(),offset,data));
+		case 0x000000ff:
+			mask_adjust=0;
+			break;
+		case 0x0000ff00:
+			mask_adjust=1;
+			break;
+		case 0x00ff0000:
+			mask_adjust=2;
+			break;
+		case 0xff000000:
+			mask_adjust=3;
+			break;
 	}
-	else
-	//CSR 1 Mapped to 0x40000000 - U7 ROM
-	if(offset < 0x4fffffff)
+	offset+=mask_adjust;
+	offset+=0x20000004;			//add back base offset
+	//Read from U17-U37 ROMS
 	{
-		offset &= 0xffffff;	//strip off top 8 bits
-		data = (data32_t)*(memory_region(REGION_SOUND1) + offset);
-		#if LOG_U7
-		LOG(("%08x: reading from u7: %08x = %08x\n",activecpu_get_pc(),offset,data));
+		//remove a29 & a22
+		int romaddr = offset & 0xDFBFFFFF;
+		//determine which chip (combine A21 & A0 into 2 bit #)
+		int romchip = rommap[(((romaddr & 0x200000)>>20)|(romaddr&1))];
+		//remove a21 and >>1 the address
+		romaddr = (romaddr&0xFFDFFFFF)>>1;
+
+		data = (data8_t)*((memory_region(REGION_SOUND2) + romaddr + ((romchip-1) * 0x100000)));
+		#if AT91IMP_LOG_ROMS_U17_U37
+		LOG(("%08x: reading from U%d: %08x = %08x (%08x)\n",activecpu_get_pc(),romchip,romaddr,data,offset));
 		#endif
 	}
-	else
-	{
-		LOG(("%08x: reading from: %08x = %08x\n",activecpu_get_pc(),offset,data));
-	}
-	return data & mem_mask;
+	//Adjust for Mask
+	return data << (8*mask_adjust);
 }
 
-static WRITE32_HANDLER(arm_cs_w)
+//CSR 2 Mapped to 0x20000000 (Xilinx) - Sound Data Stream Output
+static WRITE32_HANDLER(xilinx_w)
 {
-	data &= mem_mask;
-	//CSR 0 Mapped to 0x10000000 - BIOS ROM U8
-	if(offset < 0x1fffffff)
-	{
-		LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));
-	}
-	else
-	//CSR 2 Mapped to 0x20000000 (Xilinx & U17-U37 ROMS)
-	if(offset < 0x2fffffff)
-	{
-		//static data32_t last = 0;
+	//Store 16 bit data to our buffer
+	samplebuf[sampnum] = data & 0xffff;
+	sampnum = (sampnum + 1) % BUFFSIZE;
 
-		//Data Stream Output
-		if( (offset == 0x20400000) || (offset == 0x20400002) )
-		{
-			//Store 16 bit data to our buffer
-			samplebuf[sampnum] = data & 0xffff;
-			sampnum = (sampnum + 1) % BUFFSIZE;
+	//Dump to Wave File
+	#if AT91IMP_MAKE_WAVS
+	if(wavraw)
+	{
+		INT16 d;
+		d = (INT16)data;
+		wav_add_data_16(wavraw, &d, 1);
+	}
+	#endif
 
-			//Dump to Wave File
-			#if MAKE_WAVS
-			if(wavraw)
-			{
-				INT16 d;
-				d = (INT16)data;
-				wav_add_data_16(wavraw, &d, 1);
-			}
-			#endif
-
-			#if 0
-			LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));
-			#endif
-		}
-	}
-	else
-	//CSR 3 Mapped to 0x30000000 - U412 (Not Used)
-	if(offset < 0x3fffffff)
-	{
-		LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));
-	}
-	else
-	//CSR 1 Mapped to 0x40000000 - U7 ROM
-	if(offset < 0x4fffffff)
-	{
-		LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));
-	}
-	else
-	{
-		LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));
-	}
+	#if AT91IMP_LOG_DATA_STREAM
+	LOG(("%08x: DATA STREAM: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));
+	#endif
 }
-#endif
-
-#if READWRITE_METHOD == 2
-//This approach attempts to use switch for optimization
-static READ32_HANDLER(arm_cs_r)
-{
-	data32_t data = 0;
-
-	switch( (offset & 0xF0000000) >> 28 )
-	{
-		case 0:
-		//CSR 0 Mapped to 0x10000000 - BIOS ROM U8
-		case 1:
-			LOG(("%08x: reading from: %08x = %08x\n",activecpu_get_pc(),offset,data));
-			break;
-		//CSR 2 Mapped to 0x20000000 (Xilinx & U17-U37 ROMS)
-		case 2:
-			//Xilinx Provides Sound Command from Main CPU
-			if(offset == 0x20000000)
-			{
-				//static int lastcmd = 0;
-				//data = soundlatch_r(0);
-				data = scmd_r(0);
-				#if 0
-				if(lastcmd != data) {
-					LOG(("%08x: reading from: %08x = %08x\n",activecpu_get_pc(),offset,data));
-					lastcmd = data;
-				}
-				#endif
-			}
-			else
-			//Read from U17-U37 ROMS
-			{
-				//remove a29 & a22
-				int romaddr = offset & 0xDFBFFFFF;
-				//determine which chip (combine A21 & A0 into 2 bit #)
-				int romchip = rommap[(((romaddr& 0x200000)>>20)|(romaddr&1))];
-				//remove a21 and >>1 the address
-				romaddr = (romaddr&0xFFDFFFFF)>>1;
-
-				data = (data8_t)*((memory_region(REGION_SOUND2) + romaddr + ((romchip-1) * 0x100000)));
-				#if LOG_U17U37
-				LOG(("%08x: reading from U%d: %08x = %08x (%08x)\n",activecpu_get_pc(),romchip,romaddr,data,offset));
-				#endif
-			}
-			break;
-		//CSR 3 Mapped to 0x30000000 - U412 (Not Used)
-		case 3:
-			LOG(("%08x: reading from: %08x = %08x\n",activecpu_get_pc(),offset,data));
-			break;
-		//CSR 1 Mapped to 0x40000000 - U7 ROM
-		case 4:
-			offset &= 0xffffff;	//strip off top 8 bits
-			data = (data32_t)*(memory_region(REGION_SOUND1) + offset);
-			#if LOG_U7
-			LOG(("%08x: reading from u7: %08x = %08x\n",activecpu_get_pc(),offset,data));
-			#endif
-			break;
-		default:
-			LOG(("%08x: reading from: %08x = %08x\n",activecpu_get_pc(),offset,data));
-	}
-	return data & mem_mask;
-}
-
-
-static WRITE32_HANDLER(arm_cs_w)
-{
-	data &= mem_mask;
-
-	switch( (offset & 0xF0000000) >> 28 )
-	{
-		case 0:
-			LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));
-			break;
-		//CSR 0 Mapped to 0x10000000 - BIOS ROM U8
-		case 1:
-			LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));
-			break;
-		//CSR 2 Mapped to 0x20000000 (Xilinx & U17-U37 ROMS)
-		case 2:
-			//Data Stream Output
-			//if( (offset == 0x20400000) || (offset == 0x20400002) )
-			{
-				//Store 16 bit data to our buffer
-				samplebuf[sampnum] = data & 0xffff;
-				sampnum = (sampnum + 1) % BUFFSIZE;
-
-				//Dump to Wave File
-				#if MAKE_WAVS
-				if(wavraw)
-				{
-					INT16 d;
-					d = (INT16)data;
-					wav_add_data_16(wavraw, &d, 1);
-				}
-				#endif
-
-				#if 0
-				LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));
-				#endif
-			}
-			break;
-		//CSR 3 Mapped to 0x30000000 - U412 (Not Used)
-		case 3:
-			LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));
-			break;
-		//CSR 1 Mapped to 0x40000000 - U7 ROM
-		case 4:
-			LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));
-			break;
-		default:
-			LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));
-	}
-}
-#endif
-
-#if READWRITE_METHOD == 3
-//This approach attempts to use optimized if/else structure
-static READ32_HANDLER(arm_cs_r)
-{
-	data32_t data = 0;
-	data32_t offcheck = (offset & 0xF0000000);
-
-	//CSR 2 Mapped to 0x20000000 (Xilinx & U17-U37 ROMS)
-	if(offcheck == 0x20000000)
-	{
-		//Xilinx Provides Sound Command from Main CPU
-		if(offset == 0x20000000)
-		{
-			//static int lastcmd = 0;
-			//data = soundlatch_r(0);
-			data = scmd_r(0);
-			#if 0
-			if(lastcmd != data) {
-				LOG(("%08x: reading from: %08x = %08x\n",activecpu_get_pc(),offset,data));
-				lastcmd = data;
-			}
-			#endif
-		}
-		else
-		//Read from U17-U37 ROMS
-		{
-			//remove a29 & a22
-			int romaddr = offset & 0xDFBFFFFF;
-			//determine which chip (combine A21 & A0 into 2 bit #)
-			int romchip = rommap[(((romaddr & 0x200000)>>20)|(romaddr&1))];
-			//remove a21 and >>1 the address
-			romaddr = (romaddr&0xFFDFFFFF)>>1;
-
-			data = (data8_t)*((memory_region(REGION_SOUND2) + romaddr + ((romchip-1) * 0x100000)));
-			#if LOG_U17U37
-			LOG(("%08x: reading from U%d: %08x = %08x (%08x)\n",activecpu_get_pc(),romchip,romaddr,data,offset));
-			#endif
-		}
-	}
-	else
-	//CSR 1 Mapped to 0x40000000 - U7 ROM
-	if(offcheck == 0x40000000)
-	{
-		offset &= 0xffffff;	//strip off top 8 bits
-		data = (data32_t)*(memory_region(REGION_SOUND1) + offset);
-		#if LOG_U7
-		LOG(("%08x: reading from u7: %08x = %08x\n",activecpu_get_pc(),offset,data));
-		#endif
-	}
-	else
-	{
-		//CSR 0 Mapped to 0x10000000 - BIOS ROM U8
-		//OR
-		//CSR 3 Mapped to 0x30000000 - U412 (Not Used)
-		//OR
-		//Whatever else..
-		LOG(("%08x: reading from: %08x = %08x\n",activecpu_get_pc(),offset,data));
-	}
-	return data & mem_mask;
-}
-
-static WRITE32_HANDLER(arm_cs_w)
-{
-	data32_t offcheck = (offset & 0xF0000000);
-	data &= mem_mask;
-
-	//CSR 2 Mapped to 0x20000000 (Xilinx & U17-U37 ROMS)
-	if(offcheck == 0x20000000)
-	{
-		//Data Stream Output
-		//if( (offset == 0x20400000) || (offset == 0x20400002) )
-		{
-			//Store 16 bit data to our buffer
-			samplebuf[sampnum] = data & 0xffff;
-			sampnum = (sampnum + 1) % BUFFSIZE;
-
-			//Dump to Wave File
-			#if MAKE_WAVS
-			if(wavraw)
-			{
-				INT16 d;
-				d = (INT16)data;
-				wav_add_data_16(wavraw, &d, 1);
-			}
-			#endif
-
-			#if 0
-			LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));
-			#endif
-		}
-	}
-	else
-	{	//CSR 0 Mapped to 0x10000000 - BIOS ROM U8
-		//OR
-		//CSR 3 Mapped to 0x30000000 - U412 (Not Used)
-		//OR
-		//CSR 1 Mapped to 0x40000000 - U7 ROM
-		//Whatever else..
-		LOG(("%08x: writing to: %08x = %08x\n",activecpu_get_pc(),offset,data));
-	}
-}
-#endif
 
 //Remove Delay from LED Flashing code to speed up the boot time of the cpu
 static void remove_led_code(void)
@@ -856,9 +614,8 @@ static void setup_at91(void)
 {
   //because the boot rom code gets written to ram, and then remapped to page 0, we need an interface to handle this.
   at91_set_ram_pointers(de3as_reset_ram,de3as_page0_ram);
-  //this crap is needed because for some reason installing memory handlers fails to work properly
-  at91_cs_callback_r(0x00400000,0x8fffffff,arm_cs_r);
-  at91_cs_callback_w(0x00400000,0x8fffffff,arm_cs_w);
+  //Copy U7 ROM into correct location (ie, starting at 0x40000000 where it is mapped)
+  memcpy(u7_base, memory_region(REGION_SOUND1), memory_region_length(REGION_SOUND1));
 }
 
 static void de3s_init(struct sndbrdData *brdData) {
@@ -866,11 +623,11 @@ static void de3s_init(struct sndbrdData *brdData) {
   de2slocals.brdData = *brdData;
   setup_at91();
 
-  #if MAKE_WAVS
+  #if AT91IMP_MAKE_WAVS
 	wavraw = wav_open("raw.wav", WAVE_OUT_RATE, 2);
   #endif
 
-  #if REMOVE_LED_CODE
+  #if AT91IMP_REMOVE_LED_CODE
 	remove_led_code();
   #endif
 }
@@ -892,8 +649,6 @@ static READ_HANDLER(scmd_r)
 		spos = sbuf = 0;
 		sndcmdbuf[0] = data;
 	}
-	//if(sbuf>0)
-	//printf("sbuf[%d]=%x\n",sbuf,sndcmdbuf[sbuf]);
 	return data;
 }
 
@@ -908,7 +663,7 @@ static void at91_sh_update(int num, INT16 *buffer, int length)
  /* fill in with samples until we hit the end or run out */
  for (ii = 0; ii < length; ii++) {
 	if(sampout == sampnum || sampnum < 500) {
-		#ifdef MAME_DEBUG
+		#if AT91IMP_LOG_NO_SAMPLES_2PLAY
 		LOG(("not enough samples to play\n"));
 		#endif
 		break;	//drop out of loop
@@ -964,7 +719,7 @@ static struct CustomSound_interface at91CustIntf =
 READ32_HANDLER(arm_port_r)
 {
 	data32_t data;
-	int logit = 1;
+	int logit = AT91IMP_LOG_PORT_READ;
 	data = 0;
 	if(logit)	LOG(("%08x: Read port - Data = %08x\n",activecpu_get_pc(),data));
 	return data;
@@ -978,9 +733,9 @@ static WRITE32_HANDLER(arm_port_w)
 	int sst0, plin, led;
 
 //for debugging
-#if 0
+#if AT91IMP_LOG_PORT_WRITE
 	char bitstr[33];
-	int logit = 0;
+	int logit = 1;
 	int i;
 	for(i = 31; i >= 0; i--)
 	{
@@ -1002,16 +757,32 @@ static WRITE32_HANDLER(arm_port_w)
 /******************************/
 /*  Memory map for Sound CPU  */
 /******************************/
-//NOTE: Thse aren't really used much as AT91 callback handlers are used instead.
-//      See notes above for reasons why.
+//READ
+//CSR 0 Mapped to 0x10000000 - BIOS ROM U8 (2MB)
+//CSR 2 Mapped to 0x20000000 (Xilinx & U17-U37 ROMS) - ROMS (4MB FOR ALL)
+//	Xilinx Provides Sound Command from Main CPU
+//	Read from U17-U37 ROMS
+//CSR 3 Mapped to 0x30000000 - U412 (Not Used)
+//CSR 1 Mapped to 0x40000000 - U7 ROM (64K)
 static MEMORY_READ32_START(arm_readmem)
-{0x00000000,0x000FFFFF,MRA32_RAM},
-{0x00300000,0x003FFFFF,MRA32_RAM},
+{0x00000000,0x000FFFFF,MRA32_RAM},						//Boot RAM
+{0x00300000,0x003FFFFF,MRA32_RAM},						//Swapped RAM
+{0x00400000,0x005FFFFF,MRA32_RAM},						//Mirrored BIOS @ Boot Time
+{0x20000000,0x20000003,xilinx_r},						//Xilinx Sound Command Input
+{0x20000004,0x207FFFFF,roms_r},							//U17-U37 ROMS (4MB FOR ALL)
+{0x40000000,0x4000FFFF,MRA32_ROM},						//U7 ROM (64K)
 MEMORY_END
 
+//WRITE
+//CSR 2 Mapped to 0x20000000 (Xilinx & U17-U37 ROMS)
+//	Data Stream Output
 static MEMORY_WRITE32_START(arm_writemem)
-{0x00000000,0x000FFFFF,MWA32_RAM,&de3as_page0_ram},
-{0x00300000,0x003FFFFF,MWA32_RAM,&de3as_reset_ram},
+{0x00000000,0x000FFFFF,MWA32_RAM,&de3as_page0_ram},		//Boot RAM
+{0x00300000,0x003FFFFF,MWA32_RAM,&de3as_reset_ram},		//Swapped RAM
+{0x00400000,0x005FFFFF,MWA32_RAM},						//Mirrored BIOS @ Boot Time
+{0x20400000,0x20400003,xilinx_w},						//Xilinx Sound Output
+{0x20400004,0x207FFFFF,MWA32_ROM},						//U17-U37 ROMS (4MB FOR ALL)
+{0x40000000,0x4000FFFF,MWA32_ROM,&u7_base},				//U7 ROM (64K)
 MEMORY_END
 
 /******************************/
@@ -1039,6 +810,15 @@ MACHINE_DRIVER_START(de3as)
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
 MACHINE_DRIVER_END
 
+
+
+
+
+
+
+
+//No longer supported, code needs to be rewritten to do memory handlers properly now that support removed from AT91 core
+#if 0
 
 // Test Driver for AT91 CPU
 #ifdef TEST_NEW_SOUND
@@ -1269,3 +1049,4 @@ ROM_END
 CORE_GAMEDEFNV(seflashb, "Stern Sound OS Flash Update", 2004, "Stern", seflashb, 0)
 
 #endif	//TEST_NEW_SOUND
+#endif	//0
