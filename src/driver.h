@@ -127,7 +127,7 @@ extern void machine_add_timer(struct InternalMachineDriver *machine, void (*func
 #define MDRV_LAMP_CONV(toMatrix,fromMatrix) \
   machine->pinmame.lamp2m = toMatrix; \
   machine->pinmame.m2lamp = fromMatrix;
-#define MDRV_SOUND_CMD(name) 
+#define MDRV_SOUND_CMD(name)
 #define MDRV_SOUND_CMDHEADING(str)
 #define MDRV_TIMER_ADD(func, rate) \
   machine_add_timer(machine, func, rate);
@@ -618,11 +618,11 @@ extern const struct GameDriver *test_drivers[];
 #ifdef VPINMAME
 	#ifdef TEST_NEW_STERN
 		#define INCLUDE_NEW_STERN 1
-		#define INCLUDE_STERN_SAM 1
+//		#define INCLUDE_STERN_SAM 1
 	#endif
 #else
 	#define INCLUDE_NEW_STERN 1
-	#define INCLUDE_STERN_SAM 1	
+//	#define INCLUDE_STERN_SAM 1
 #endif
 #endif
 #endif
