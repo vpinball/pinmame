@@ -474,9 +474,9 @@ S11_ROMEND
 #define input_ports_esha input_ports_s11
 CORE_GAMEDEF (esha, la3, "Earthshaker (LA-3)", 1988, "Williams", s11_mS11BS,0)
 CORE_CLONEDEF(esha, pr4, la3, "Earthshaker (Family version) (PR-4)", 1989, "Williams", s11_mS11BS,0)
-CORE_CLONEDEF(esha, lg1, pr4, "Earthshaker (German) (LG-1)", 1988, "Williams", s11_mS11BS,0)
-CORE_CLONEDEF(esha, la1, pr4, "Earthshaker (LA-1)", 1988, "Williams", s11_mS11BS,0)
-CORE_CLONEDEF(esha, pa1, pr4, "Earthshaker (Prototype) (PA-1)", 1988, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(esha, lg1, la3, "Earthshaker (German) (LG-1)", 1988, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(esha, la1, la3, "Earthshaker (LA-1)", 1988, "Williams", s11_mS11BS,0)
+CORE_CLONEDEF(esha, pa1, la3, "Earthshaker (Prototype) (PA-1)", 1988, "Williams", s11_mS11BS,0)
 
 /*-----------------------
 / Black Knight 2000 6/89
