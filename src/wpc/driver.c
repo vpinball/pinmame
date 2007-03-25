@@ -824,8 +824,8 @@ DRIVERNV(ripleysi)      //Whitestar: 03/04 Ripley's Believe It or Not! (Italy)
 
 //The following are all Stern Whitestar games using 8MB Roms running on the new ARM7 sound board for testing the ARM7
 #ifdef TEST_NEW_SOUND
-DRIVERNV(lotrsnd)		//Test ARM7 cpu/sound core
-DRIVERNV(seflashb)		//Sound OS Flash Upgrade
+//DRIVERNV(lotrsnd)		//Test ARM7 cpu/sound core
+//DRIVERNV(seflashb)	//Sound OS Flash Upgrade
 //
 DRIVERNV(strknew)
 DRIVERNV(shrknew)
