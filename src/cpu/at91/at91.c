@@ -39,7 +39,6 @@
 	-Watch Dog Circuit Handling
 	-Special Function Handling
 	-Find a way to avoid all the nested if/else for memory mapping
-	-Remove the callback handler hacks for memory mapping (might be tough for LOTR)
 *****************************************************************************/
 
 #include <stdio.h>
@@ -53,7 +52,6 @@ extern int activecpu;
 
 //Flags
 #define	USE_MAME_TIMERS	1			//Set to 1 for performance but possibly less accurate timing, to 0 for more accuracy but huge performance penalty
-#define CALLBACK_HANDLERS 1			//Set to 1 to allow custom memory handler callbacks (ideal to eventually remove this)
 
 //Flags for Logging
 #define LOG_AT91 1					//Turn on/off logging of all AT91 debugging info
@@ -180,11 +178,8 @@ typedef struct
 typedef struct
 {
 	int cpu_freq;								//CPU Clock Frequency (as specified by the Machine Driver)
-	data32_t *page0_ram_ptr;					//holder for the pointer set by the driver to ram
-	data32_t *reset_ram_ptr;					//""
-	READ32_HANDLER((*cs_r_callback));			//holder for the cs_r callback
-	WRITE32_HANDLER((*cs_w_callback));			//holder for the cs_w callback
-	offs_t cs_r_start, cs_r_end, cs_w_start, cs_w_end;
+	data32_t *page0_ram_ptr;					//holder for the pointer set by the driver to ram @ page 0.
+	data32_t *reset_ram_ptr;					//holder for the pointer set by the driver to ram swap location.
 	data32_t page0[0x100000];					//Hold copy of original boot rom data @ page 0.
 	#if USE_MAME_TIMERS
 	mame_timer* timer[MAX_TIMER];				//handle to mame timer for each clock
@@ -215,20 +210,6 @@ void at91_set_ram_pointers(data32_t *reset_ram_ptr, data32_t *page0_ram_ptr)
 {
 	at91rs.page0_ram_ptr = page0_ram_ptr;
 	at91rs.reset_ram_ptr = reset_ram_ptr;
-}
-
-/* for multi chip support - at cpu reset - these handlers should be copied to the appropriate place */
-void at91_cs_callback_r(offs_t start, offs_t end, READ32_HANDLER((*callback)))
-{
-	at91rs.cs_r_callback = callback;
-	at91rs.cs_r_start = start;
-	at91rs.cs_r_end = end;
-}
-void at91_cs_callback_w(offs_t start, offs_t end, WRITE32_HANDLER((*callback)))
-{
-	at91rs.cs_w_callback = callback;
-	at91rs.cs_w_start = start;
-	at91rs.cs_w_end = end;
 }
 
 //used for debugging
@@ -1113,15 +1094,6 @@ INLINE void at91_cpu_write32( int addr, data32_t data )
 		return;
 	}
 
-#if CALLBACK_HANDLERS
-	//If callback defined and remap has occurred - call it!
-	if(at91rs.cs_w_callback && at91.remap && addr >= at91rs.cs_w_start && addr <= at91rs.cs_w_end)
-	{
-		at91rs.cs_w_callback(addr,data,0xffffffff);
-		return;
-	}
-#endif
-
 	//Call normal 32 bit handler
 	cpu_writemem32ledw_dword(addr,data);
 
@@ -1142,15 +1114,6 @@ INLINE void at91_cpu_write16( int addr, data16_t data )
 		return;
 	}
 
-#if CALLBACK_HANDLERS
-	//If callback defined and remap has occurred - call it!
-	if(at91rs.cs_w_callback && at91.remap && addr >= at91rs.cs_w_start && addr <= at91rs.cs_w_end)
-	{
-		at91rs.cs_w_callback(addr,data,0x0000ffff);
-		return;
-	}
-#endif
-
 	//Call normal 16 bit handler ( for 32 bit cpu )
 	cpu_writemem32ledw_word(addr,data);
 }
@@ -1164,15 +1127,6 @@ INLINE void at91_cpu_write8( int addr, data8_t data )
 		return;
 	}
 
-#if CALLBACK_HANDLERS
-	//If callback defined and remap has occurred - call it!
-	if(at91rs.cs_w_callback && at91.remap && addr >= at91rs.cs_w_start && addr <= at91rs.cs_w_end)
-	{
-		at91rs.cs_w_callback(addr,data,0x000000ff);
-		return;
-	}
-#endif
-
 	//Call normal 8 bit handler ( for 32 bit cpu )
 	cpu_writemem32ledw(addr,data);
 }
@@ -1185,12 +1139,7 @@ INLINE data32_t at91_cpu_read32( int addr )
 	if(addr >= 0xFFC00000)
 		result = internal_read(addr);
 	else
-#if CALLBACK_HANDLERS
-	//If callback defined and remap has occurred - call it!
-	if(at91rs.cs_r_callback && at91.remap && addr >= at91rs.cs_r_start && addr <= at91rs.cs_r_end)
-		result = at91rs.cs_r_callback(addr,0xffffffff);
-	else
-#endif
+
 	//Handle through normal 32 bit handler
 	result = cpu_readmem32ledw_dword(addr);
 
@@ -1217,12 +1166,6 @@ INLINE data16_t at91_cpu_read16( int addr )
 	if(addr >= 0xFFC00000)
 		return (data16_t)internal_read(addr);
 
-#if CALLBACK_HANDLERS
-	//If callback defined and remap has occurred - call it!
-	if(at91rs.cs_r_callback && at91.remap && addr >= at91rs.cs_r_start && addr <= at91rs.cs_r_end)
-		return at91rs.cs_r_callback(addr,0x0000ffff);
-#endif
-
 	if(addr&3)
 	{
 		int val = addr & 3;
@@ -1239,12 +1182,6 @@ INLINE data8_t at91_cpu_read8( offs_t addr )
 	//Atmel AT91 CPU On Chip Periperhals Mapped here
 	if(addr >= 0xFFC00000)
 		return (data8_t)internal_read(addr);
-
-#if CALLBACK_HANDLERS
-	//If callback defined and remap has occurred - call it!
-	if(at91rs.cs_r_callback && at91.remap && addr >= at91rs.cs_r_start && addr <= at91rs.cs_r_end)
-		return at91rs.cs_r_callback(addr,0x000000ff);
-#endif
 
 	//Handle through normal 8 bit handler ( for 32 bit cpu )
 	return cpu_readmem32ledw(addr);
