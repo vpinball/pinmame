@@ -59,7 +59,7 @@ static WRITE_HANDLER(snd300_wex) {
 #define BY35HW_SCTRL     0x20 // uses lamp2 as sound ctrl (HNK)
 
 static struct {
-  int a0, a1, b1, ca20, ca21, cb20, cb21;
+  int a0, a1, b1, ca11, ca20, ca21, cb20, cb21;
   int bcd[7], lastbcd;
   const int *bcd2seg;
   int lampadr1, lampadr2;
@@ -266,6 +266,11 @@ static WRITE_HANDLER(pia1b_w) {
   locals.solenoids |= (data & 0xf0)<<12;
 }
 
+/* PIA1:CA1-R IRQ state */
+static READ_HANDLER(pia1ca1_r) {
+  return locals.ca11;
+}
+
 /* PIA1:CB2-W Solenoid/Sound select */
 static WRITE_HANDLER(pia1cb2_w) {
   int sb = core_gameData->hw.soundBoard;		// ok
@@ -379,13 +384,13 @@ static struct pia6821_interface by35_pia[] = {{
 /* O:  A/B,CA2/B2        */  pia0a_w,0, pia0ca2_w,pia0cb2_w,
 /* IRQ: A/B              */  piaIrq,piaIrq
 },{
-/* I:  A/B,CA1/B1,CA2/B2 */  0,0, PIA_UNUSED_VAL(1),PIA_UNUSED_VAL(1), 0,0,
+/* I:  A/B,CA1/B1,CA2/B2 */  0,0, pia1ca1_r, PIA_UNUSED_VAL(1), 0,0,
 /* O:  A/B,CA2/B2        */  pia1a_w,pia1b_w,pia1ca2_w,pia1cb2_w,
 /* IRQ: A/B              */  piaIrq,piaIrq
 }};
 
 static INTERRUPT_GEN(by35_irq) {
-  static int last = 0; pia_set_input_ca1(BY35_PIA1, last = !last);
+    pia_set_input_ca1(BY35_PIA1, locals.ca11 = !locals.ca11);
 }
 
 static void by35_zeroCross(int data) {
@@ -519,6 +524,8 @@ static MACHINE_INIT(by35) {
 
   pia_config(BY35_PIA0, PIA_STANDARD_ORDERING, &by35_pia[0]);
   pia_config(BY35_PIA1, PIA_STANDARD_ORDERING, &by35_pia[1]);
+  pia_set_input_ca1(BY35_PIA1, 1);
+
 //   if ((sb & 0xff00) != SNDBRD_ST300)		// ok
   sndbrd_0_init(sb, 1, memory_region(REGION_SOUND1), NULL, NULL);
 // do the voice boards...
@@ -605,7 +612,7 @@ MACHINE_DRIVER_START(by35)
   MDRV_CPU_ADD_TAG("mcpu", M6800, 500000) // never to be altered again, ever!!! (gaston)
   MDRV_CPU_MEMORY(by35_readmem, by35_writemem)
   MDRV_CPU_VBLANK_INT(by35_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(by35_irq, BY35_IRQFREQ)
+  MDRV_CPU_PERIODIC_INT(by35_irq, BY35_IRQFREQ*2)
   MDRV_NVRAM_HANDLER(by35)
   MDRV_DIPS(32)
   MDRV_SWITCH_UPDATE(by35)
@@ -661,7 +668,7 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(by6802_61S)
   MDRV_IMPORT_FROM(by35)
   MDRV_CPU_REPLACE("mcpu",M6802, 375000)
-  MDRV_CPU_PERIODIC_INT(by35_irq, BY35_6802IRQFREQ)
+  MDRV_CPU_PERIODIC_INT(by35_irq, BY35_6802IRQFREQ*2)
   MDRV_IMPORT_FROM(by61)
 MACHINE_DRIVER_END
 #endif
@@ -669,7 +676,7 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(by6802_45S)
   MDRV_IMPORT_FROM(by35)
   MDRV_CPU_REPLACE("mcpu",M6802, 375000)
-  MDRV_CPU_PERIODIC_INT(by35_irq, BY35_6802IRQFREQ)
+  MDRV_CPU_PERIODIC_INT(by35_irq, BY35_6802IRQFREQ*2)
   MDRV_IMPORT_FROM(by45)
 MACHINE_DRIVER_END
 
