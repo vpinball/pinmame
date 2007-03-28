@@ -59,7 +59,7 @@ static WRITE_HANDLER(snd300_wex) {
 #define BY35HW_SCTRL     0x20 // uses lamp2 as sound ctrl (HNK)
 
 static struct {
-  int a0, a1, b1, ca11, ca20, ca21, cb20, cb21;
+  int a0, a1, b1, ca11, ca20, ca21, cb10, cb20, cb21;
   int bcd[7], lastbcd;
   const int *bcd2seg;
   int lampadr1, lampadr2;
@@ -68,7 +68,6 @@ static struct {
   int diagnosticLed;
   int vblankCount;
   int hw;
-  int phaseA;
 } locals;
 
 static void piaIrq(int state) {
@@ -125,7 +124,7 @@ static WRITE_HANDLER(pia0a_w) {
   }
   locals.a0 = data;
   if (core_gameData->hw.gameSpecific1 & BY35GD_PHASE)
-    by35_lampStrobe(locals.phaseA, locals.lampadr1);
+    by35_lampStrobe(locals.cb10, locals.lampadr1);
   else {
     by35_lampStrobe(0, locals.lampadr1);
     if (core_gameData->hw.lampCol > 0) by35_lampStrobe(1,locals.lampadr2);
@@ -212,6 +211,11 @@ static READ_HANDLER(pia0b_r) {
     sw = core_getSwCol(col);
     return (locals.hw & BY35HW_REVSW) ? core_revbyte(sw) : sw;
   }
+}
+
+/* PIA0:CB1-R ZC state */
+static READ_HANDLER(pia0cb1_r) {
+  return locals.cb10;
 }
 
 /* PIA0:CB2-W Lamp Strobe #1, DIPBank3 STROBE */
@@ -380,7 +384,7 @@ CB1:   ?
 CB2:   (o) Solenoid/Sound Bank Select
 */
 static struct pia6821_interface by35_pia[] = {{
-/* I:  A/B,CA1/B1,CA2/B2 */  0, pia0b_r, PIA_UNUSED_VAL(1),PIA_UNUSED_VAL(1), 0,0,
+/* I:  A/B,CA1/B1,CA2/B2 */  0, pia0b_r, PIA_UNUSED_VAL(1), pia0cb1_r, 0,0,
 /* O:  A/B,CA2/B2        */  pia0a_w,0, pia0ca2_w,pia0cb2_w,
 /* IRQ: A/B              */  piaIrq,piaIrq
 },{
@@ -394,7 +398,7 @@ static INTERRUPT_GEN(by35_irq) {
 }
 
 static void by35_zeroCross(int data) {
-    pia_set_input_cb1(BY35_PIA0, locals.phaseA = !locals.phaseA);
+    pia_set_input_cb1(BY35_PIA0, locals.cb10 = !locals.cb10);
 }
 
 
@@ -524,6 +528,7 @@ static MACHINE_INIT(by35) {
 
   pia_config(BY35_PIA0, PIA_STANDARD_ORDERING, &by35_pia[0]);
   pia_config(BY35_PIA1, PIA_STANDARD_ORDERING, &by35_pia[1]);
+  pia_set_input_cb1(BY35_PIA0, 1);
   pia_set_input_ca1(BY35_PIA1, 1);
 
 //   if ((sb & 0xff00) != SNDBRD_ST300)		// ok
@@ -609,7 +614,7 @@ MEMORY_END
 MACHINE_DRIVER_START(by35)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(by35,by35,by35)
-  MDRV_CPU_ADD_TAG("mcpu", M6800, 500000) // never to be altered again, ever!!! (gaston)
+  MDRV_CPU_ADD_TAG("mcpu", M6800, 500000)
   MDRV_CPU_MEMORY(by35_readmem, by35_writemem)
   MDRV_CPU_VBLANK_INT(by35_vblank, 1)
   MDRV_CPU_PERIODIC_INT(by35_irq, BY35_IRQFREQ*2)
@@ -656,6 +661,7 @@ MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(by35_61S)
   MDRV_IMPORT_FROM(by35)
+  MDRV_CPU_REPLACE("mcpu", M6800, 525000)
   MDRV_IMPORT_FROM(by61)
 MACHINE_DRIVER_END
 
