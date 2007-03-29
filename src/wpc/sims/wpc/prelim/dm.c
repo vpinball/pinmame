@@ -272,7 +272,17 @@ WPC_ROMSTART(dm,la1,"dman_la1.rom",0x80000,CRC(be7c1965) SHA1(ed3b1016febc819b8c
 WPC_ROMSTART(dm,lx3,"dman_lx3.rom",0x80000,CRC(5aa57674) SHA1(e02d91a705799866bd741b998d93413ec5bced25)) DM_SOUND_L2 WPC_ROMEND
 WPC_ROMSTART(dm,lx4,"dman_lx4.rom",0x80000,CRC(c2d0f493) SHA1(26ee970827dd96f3b3c56aa548cf7629ed6a16c1)) DM_SOUND_L2 WPC_ROMEND
 WPC_ROMSTART(dm,h5, "dman_h5.rom", 0x80000,CRC(bdcc62f7) SHA1(d6f3181970f3f71a876e9a2166156eb8fc405af0))
+DCS_SOUNDROM8x("dm.2",CRC(03dae358) SHA1(e6ab35a0c530eda90bd2d65af7bff82af08c39f3),
+               "dm.3",CRC(3b924d3f) SHA1(5bd6126cc6a6c662de0bc311c047441bc29919b2),
+               "dm.4",CRC(ff8985da) SHA1(b382c301744ce208f4710b3dd2342457d02f0ce9),
+               "dm.5",CRC(76f09bd0) SHA1(1e4861ddc12069733f7e1d25192df97b0d9b09ee),
+               "dm.6",CRC(2897aca8) SHA1(d910289e10422e22b4a3e1e296a4a167da1eaa5b),
+               "dm.7",CRC(6b1b9137) SHA1(4064f4fc230ba17b68819ff889335d9b6d9bba3e),
+               "dm.8",CRC(5b333818) SHA1(007b8c117516b6023b376f95ff13831111f4dc20),
+               "dm.9",CRC(4c1a34e8) SHA1(3eacc3c63b2d9db57fc86447f1408635b987ef69))
+WPC_ROMEND
 
+WPC_ROMSTART(dm,h6, "dman_h6.rom", 0x80000,CRC(3a079b80) SHA1(94a7ee94819ec878ced5e07745bf52b6c65e06c9))
 DCS_SOUNDROM8x("dm.2",CRC(03dae358) SHA1(e6ab35a0c530eda90bd2d65af7bff82af08c39f3),
                "dm.3",CRC(3b924d3f) SHA1(5bd6126cc6a6c662de0bc311c047441bc29919b2),
                "dm.4",CRC(ff8985da) SHA1(b382c301744ce208f4710b3dd2342457d02f0ce9),
@@ -292,6 +302,7 @@ CORE_CLONEDEF(dm,px5,lx4,"Demolition Man (PX-5)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,la1,lx4,"Demolition Man (LA-1)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,lx3,lx4,"Demolition Man (LX-3)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(dm,h5,lx4, "Demolition Man (H-5)", 1995,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(dm,h6,lx4, "Demolition Man (H-6)", 1995,"Williams",wpc_mDCSS,0)
 
 /*-----------------------
 / Simulation Definitions

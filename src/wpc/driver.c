@@ -1208,6 +1208,7 @@ DRIVER(dm,la1)          //WPC-528:  04/94 W Demolition Man (LA-1)
 DRIVER(dm,lx3)          //WPC-528:  04/94 W Demolition Man (LX-3)
 DRIVER(dm,lx4)          //WPC-528:  05/94 W Demolition Man (LX-4)
 DRIVER(dm,h5)           //WPC-528:  02/95 W Demolition Man (H-5) with rude speech
+DRIVER(dm,h6)           //WPC-528:  02/95 W Demolition Man (H-6) with rude speech
 DRIVER(pop,lx5)         //WPC:      02/94 B Popeye Saves the Earth
 DRIVER(wcs,l2)          //WPC-531:  02/94 B World Cup Soccer (Lx-2)
 DRIVER(wcs,p2)                            // (Pa-2)
