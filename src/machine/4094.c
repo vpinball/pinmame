@@ -163,6 +163,10 @@ WRITE_HANDLER( HC4094_oe_w )
 		return;
 	}
 
+ 	//If Output Enable goes high - move storage register to parallel output pins
+	if (!hc4094[chipnum].oe && data)
+		send_data_to_parallel_output(chipnum);
+
 	//Store to output enable pin
 	hc4094[chipnum].oe = data ? 1 : 0;
 }
