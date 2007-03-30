@@ -9,7 +9,8 @@
 #include "core.h"
 #include "wpc.h"
 
-#define PRINT_GI_DATA	   0 /* printf the GI Data for debugging purposes */
+#define PRINT_GI_DATA	   0 /* printf the GI Data for debugging purposes   */
+#define DEBUG_GI		   0 /* debug GI code - more printf stuff basically */
 
 #define WPC_VBLANKDIV      4 /* How often to check the DMD FIRQ interrupt */
 /*-- no of DMD frames to add together to create shades --*/
@@ -388,6 +389,10 @@ READ_HANDLER(wpc_r) {
 			int i;
 			for(i=0;i<CORE_MAXGI;i++)
 				wpclocals.gi_irqcnt[i] = 0;
+			
+			#if DEBUG_GI
+			printf("Zero Cross!\n");
+			#endif
 		}
 
 		//Reset flag now that it's been read.
@@ -452,6 +457,10 @@ WRITE_HANDLER(wpc_w) {
       break;
     case WPC_GILAMPS: {
       int ii, tmp, gi_dimlevel;
+
+	  #if DEBUG_GI
+	  printf("%8x: GI_W: %x\n",activecpu_get_pc(),data);
+	  #endif
   
 	  //WPC95 only controls 3 of the 5 Triacs, the other 2 are ALWAYS ON (power wired directly)
 	  //  We simulate this here by forcing the bits on
@@ -468,12 +477,20 @@ WRITE_HANDLER(wpc_w) {
 			wpclocals.gi_irqcnt[ii] = 8;
 		//Calc & Store the dim level
 		gi_dimlevel = wpclocals.gi_irqcnt[ii]==8?8:7-wpclocals.gi_irqcnt[ii];
+
+		#if DEBUG_GI
+		if(gi_bit)
+			printf("GI[%d]: IRQ Count = %d, DIM = %d\n",ii,wpclocals.gi_irqcnt[ii],wpclocals.gi_irqcnt[ii]==8?8:7-wpclocals.gi_irqcnt[ii]);
+		#endif
+
 		//Update the GI Dim Level but only if it's on!
 		if(gi_bit)
 			coreGlobals.gi[ii] = gi_dimlevel;
+
 		//Reset count if the Triac was on, and is now off!
 		if(wpclocals.gi_prev[ii] && !gi_bit)
 			wpclocals.gi_irqcnt[ii]=0;
+
 		//Store current Triac setting for next time comparison.
 		wpclocals.gi_prev[ii] = gi_bit;
 	  }
@@ -535,15 +552,19 @@ WRITE_HANDLER(wpc_w) {
         { sndbrd_0_data_w(0,data); sndbrd_0_ctrl_w(0,1); }
       else sndbrd_0_ctrl_w(0,data);
       break;
-    case WPC_WATCHDOG: {
+    case WPC_WATCHDOG: 
 	    //Increment irq count - This is the best way to know an IRQ was serviced as this register is written immediately during the IRQ code.
-		int i;
-		for(i=0;i<CORE_MAXGI;i++)
-			wpclocals.gi_irqcnt[i]++;
-	  }
-	  //Clear the IRQ now
-	  cpu_set_irq_line(WPC_CPUNO, M6809_IRQ_LINE, CLEAR_LINE);
-      break; /* Just ignore for now */
+	    //Only do this if bit 8 is set, as WW_L5 sometimes writes 0x06 here during the interrupt code.
+		if(data & 0x80)
+		{
+			int i;
+			for(i=0;i<CORE_MAXGI;i++)
+				wpclocals.gi_irqcnt[i]++;
+	
+			//Clear the IRQ now
+		  cpu_set_irq_line(WPC_CPUNO, M6809_IRQ_LINE, CLEAR_LINE);
+		}
+      break;
     case WPC_FIRQSRC:
       /* CPU writes here after a non-dmd firq. Don't know what happens */
       break;
