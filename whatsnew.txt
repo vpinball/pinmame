@@ -1,3 +1,24 @@
+Version 1.55 (March 30, 2007) - "Tyrannosaur cries"
+------------------------------------------------------------------------------
+Happy 6th birthday to Visual PinMAME! :)
+
+In the wake of celebrating this joyous event we bring you our latest efforts.
+Because of the never-ceasing endurance of Aaron Giles we are able to include
+full BSMT2000 sound support now - playing back the compressed samples as they
+are most likely supposed to sound in real life.
+
+There's also a little enhancement to the Votrax SC01 speech chip output,
+enabling the chip to alter its sample rate at runtime which improves sound
+on many if not all games that used it - dear Gottlieb System80 and Taito lovers,
+this is for you.
+
+A special last-minute treat by PinMAME's co-founder and "not so gone" developer
+Steve Ellenoff: GI circuit brightness support for WPC games is here!
+Special thanks to Steve for this tremendous addition, which would have been the
+number one event for him this month - if it wasn't the impending birth of his
+third child! :)
+
+
 Version 1.54 (December 23, 2006) - "One DLL to rule them all!"
 ------------------------------------------------------------------------------
 Happy birthday Steve!

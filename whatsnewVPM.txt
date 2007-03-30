@@ -1,5 +1,8 @@
 What's new in Visual PinMAME:
 -----------------------------
+Version 1.55 (March 30th, 2007)
+-------------------------------
+- Added GI brightness support for WPC
 
 Version 1.54 (December 23rd, 2006)
 ----------------------------------
