@@ -1,4 +1,4 @@
-******  As of Version 1.53 (June 1, 2006) ******
+******  As of Version 1.55 (March 30, 2007) ******
 
 Bugs in Pinmame that we are aware of:
 -------------------------------------
@@ -24,12 +24,9 @@ Bugs in Pinmame that we are aware of:
 
  #7) Data East/Sega/Stern DMD timing is not 100% accurate.
 
- #8) Volume issues with BSMT games; most of them are too low.
+ #8) Gottlieb System 3 percussive sounds might still have some timing issues
 
- #9) Extremely poor performance on multiprocessor systems.
+ #9) Sound gets cut off in Alvin G games sometimes, and some weird notes in World Tour occasionally
 
-#10) Gottlieb System 3 percussive sounds might still have some timing issues
-
-#11) Sound gets cut off in Alvin G games sometimes, and some weird notes in World Tour occasionally
-
-#12) Slugfest will work with "pinmame -cheat sf_l1". Alternately, check the "skip pinball startup test" in vpm.
+#10) Slugfest will work with "pinmame -cheat sf_l1". Same goes for Theatre Of Magic home version (tom_14h).
+     Alternately, check the "skip pinball startup test" in vpm.
