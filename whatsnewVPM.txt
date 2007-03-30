@@ -1,8 +1,11 @@
 What's new in Visual PinMAME:
 -----------------------------
+
 Version 1.55 (March 30th, 2007)
 -------------------------------
-- Added GI brightness support for WPC
+- ChgGI(x, 1) now returns different values for WPC GI string dimming (Steve Ellenoff)
+- Added support for "Ripley's Believe It Or Not!"
+- Happy 6th anniversary VPinMAME!
 
 Version 1.54 (December 23rd, 2006)
 ----------------------------------
