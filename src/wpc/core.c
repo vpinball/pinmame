@@ -1061,7 +1061,12 @@ static VIDEO_UPDATE(core_status) {
     if (startRow + 2 >= locals.maxSimRows) { startRow = 0; thisCol = nextCol + 5; }
 
     for (ii = 0; ii < CORE_MAXGI; ii++)
-      lines[locals.firstSimRow + startRow][thisCol + ii*2] = dotColor[coreGlobals.gi[ii]>0];
+	{
+	  if(coreGlobals.gi[ii]==8)
+		lines[locals.firstSimRow + startRow][thisCol + ii*2] = dotColor[1];
+	  else
+		lines[locals.firstSimRow + startRow][thisCol + ii*2] = 64+(coreGlobals.gi[ii]<<1);
+	}
     osd_mark_dirty(thisCol, locals.firstSimRow + startRow, thisCol + ii*2, locals.firstSimRow + startRow + 1);
   }
   if (coreGlobals.simAvail) sim_draw(locals.firstSimRow);

@@ -9,6 +9,8 @@
 #include "core.h"
 #include "wpc.h"
 
+#define PRINT_GI_DATA	   0 /* printf the GI Data for debugging purposes */
+
 #define WPC_VBLANKDIV      4 /* How often to check the DMD FIRQ interrupt */
 /*-- no of DMD frames to add together to create shades --*/
 /*-- (hardcoded, do not change)                        --*/
@@ -95,6 +97,9 @@ static struct {
   int pageMask;            /* page handling */
   int firqSrc;             /* source of last firq */
   int diagnostic;
+  int zc;						/* zero cross flag */
+  int gi_prev[CORE_MAXGI];	    /* track previous data written to triac latch */
+  int gi_irqcnt[CORE_MAXGI];    /* Count IRQ occurrences for GI Dimming */
 } wpclocals;
 
 static struct {
@@ -143,6 +148,11 @@ MEMORY_END
 static int wpc_sw2m(int no) { return (no/10)*8+(no%10-1); }
 static int wpc_m2sw(int col, int row) { return col*10+row+1; }
 
+//Set Zero Cross flag (it's reset when read)
+static void wpc_zc(int data) {
+	wpclocals.zc = 1;
+}
+
 /*-----------------
 /  Machine drivers
 /------------------*/
@@ -159,6 +169,7 @@ static MACHINE_DRIVER_START(wpc)
   MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_SWITCH_CONV(wpc_sw2m,wpc_m2sw)
   MDRV_LAMP_CONV(wpc_sw2m,wpc_m2sw)
+  MDRV_TIMER_ADD(wpc_zc,120)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(wpc_alpha)
@@ -276,6 +287,16 @@ static INTERRUPT_GEN(wpc_vblank) {
     }
     coreGlobals.diagnosticLed = wpclocals.diagnostic;
     wpclocals.diagnostic = 0;
+
+	//Display status of GI strings
+	#if PRINT_GI_DATA
+	{
+		int i;
+		for(i=0;i<CORE_MAXGI;i++)
+			printf("GI[%d]=%d ",i,coreGlobals.gi[i]);
+		printf("\n");
+	}
+	#endif
   }
 
   /*------------------------------
@@ -358,6 +379,19 @@ READ_HANDLER(wpc_r) {
       return (systime->tm_min);
     }
     case WPC_WATCHDOG:
+		//Zero cross detection flag is read from Bit 8.
+		wpc_data[offset] = (wpclocals.zc<<7) | (wpc_data[offset] & 0x7f);
+
+		//Track when Zero Cross occurred and reset gi irq counting
+		if(wpclocals.zc)
+		{
+			int i;
+			for(i=0;i<CORE_MAXGI;i++)
+				wpclocals.gi_irqcnt[i] = 0;
+		}
+
+		//Reset flag now that it's been read.
+		wpclocals.zc = 0;
       break;
     case WPC_SOUNDIF:
       return sndbrd_0_data_r(0);
@@ -416,10 +450,33 @@ WRITE_HANDLER(wpc_w) {
       if (core_gameData->gen & GENWPC_HASPIC)
         wpc_pic_w(data);
       break;
-    case WPC_GILAMPS: { /* For now, we simply catch if GI String is on or off*/
-      int ii, tmp = data;
-      for (ii = 0; ii < CORE_MAXGI; ii++, tmp >>= 1)
-        coreGlobals.gi[ii] = (tmp & 0x01);
+    case WPC_GILAMPS: {
+      int ii, tmp, gi_dimlevel;
+  
+	  //WPC95 only controls 3 of the 5 Triacs, the other 2 are ALWAYS ON (power wired directly)
+	  //  We simulate this here by forcing the bits on
+	  if (core_gameData->gen & GENWPC_HASWPC95)
+		  data = (data & 0xe7) | 0x18;
+
+	  //Loop over each GI Triac Bit
+      for (ii = 0,tmp=data; ii < CORE_MAXGI; ii++, tmp >>= 1)
+	  {
+		//If Bit is set, Triac is turned on.
+	    int gi_bit = tmp & 0x01;
+		//Was Triac on last time also? If so, assume it's full briteness.
+		if(gi_bit && wpclocals.gi_prev[ii])
+			wpclocals.gi_irqcnt[ii] = 8;
+		//Calc & Store the dim level
+		gi_dimlevel = wpclocals.gi_irqcnt[ii]==8?8:7-wpclocals.gi_irqcnt[ii];
+		//Update the GI Dim Level but only if it's on!
+		if(gi_bit)
+			coreGlobals.gi[ii] = gi_dimlevel;
+		//Reset count if the Triac was on, and is now off!
+		if(wpclocals.gi_prev[ii] && !gi_bit)
+			wpclocals.gi_irqcnt[ii]=0;
+		//Store current Triac setting for next time comparison.
+		wpclocals.gi_prev[ii] = gi_bit;
+	  }
       break;
     }
     case WPC_EXTBOARD1: /* WPC_ALPHAPOS */
@@ -478,13 +535,20 @@ WRITE_HANDLER(wpc_w) {
         { sndbrd_0_data_w(0,data); sndbrd_0_ctrl_w(0,1); }
       else sndbrd_0_ctrl_w(0,data);
       break;
-    case WPC_WATCHDOG:
+    case WPC_WATCHDOG: {
+	    //Increment irq count - This is the best way to know an IRQ was serviced as this register is written immediately during the IRQ code.
+		int i;
+		for(i=0;i<CORE_MAXGI;i++)
+			wpclocals.gi_irqcnt[i]++;
+	  }
+	  //Clear the IRQ now
+	  cpu_set_irq_line(WPC_CPUNO, M6809_IRQ_LINE, CLEAR_LINE);
       break; /* Just ignore for now */
     case WPC_FIRQSRC:
       /* CPU writes here after a non-dmd firq. Don't know what happens */
       break;
     case WPC_IRQACK:
-      cpu_set_irq_line(WPC_CPUNO, M6809_IRQ_LINE, CLEAR_LINE);
+		DBGLOG(("WPC_IRQACK. PC=%04x d=%02x\n",activecpu_get_pc(), data));
       break;
     case DMD_PAGE3000: /* set the page that is visible at 0x3000 */
       cpu_setbank(4, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
@@ -641,10 +705,16 @@ static MACHINE_INIT(wpc) {
     case GEN_WPCDCS:
     case GEN_WPCSECURITY:
     case GEN_WPC95DCS:
-      sndbrd_0_init(SNDBRD_DCS, 1, memory_region(DCS_ROMREGION),NULL,NULL);
-      break;
     case GEN_WPC95:
-      sndbrd_0_init(SNDBRD_DCS95, 1, memory_region(DCS_ROMREGION),NULL,NULL);
+	  //WPC95 only controls 3 of the 5 Triacs, the other 2 are ALWAYS ON (power wired directly)
+	  //  We simulate this here by setting the bits to simulate full intensity immediately at power up.
+	  coreGlobals.gi[CORE_MAXGI-2] = 8;
+	  coreGlobals.gi[CORE_MAXGI-1] = 8;
+	  //Sound board initialization
+	  if(core_gameData->gen == GEN_WPC95DCS)
+		sndbrd_0_init(SNDBRD_DCS, 1, memory_region(DCS_ROMREGION),NULL,NULL);
+	  else
+		sndbrd_0_init(SNDBRD_DCS95, 1, memory_region(DCS_ROMREGION),NULL,NULL);
       break;
   }
 
