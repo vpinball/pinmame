@@ -248,7 +248,7 @@ ROM_END
 
 INITGAMENB(futrquen,GEN_BY35,dispNB,FLIP_SW(FLIP_L),8,SNDBRD_NUOVA,0)
 BY35_INPUT_PORTS_START(futrquen, 2) BY35_INPUT_PORTS_END
-CORE_GAMEDEFNV(futrquen, "Future Queen", 1987, "Nuova Bell Games", nuova, 0)
+CORE_GAMEDEFNV(futrquen, "Future Queen", 1987, "Nuova Bell Games", nuova, GAME_IMPERFECT_SOUND)
 
 /*--------------------------------
 / F1 Grand Prix
@@ -296,4 +296,4 @@ ROM_END
 
 INITGAMEAL(f1gp,GEN_BY35,dispAlpha,FLIP_SWNO(48,0),8,SNDBRD_NUOVA,0)
 BY35_INPUT_PORTS_START(f1gp, 3) BY35_INPUT_PORTS_END
-CORE_GAMEDEFNV(f1gp, "F1 Grand Prix", 1987, "Nuova Bell Games", nuova, 0)
+CORE_GAMEDEFNV(f1gp, "F1 Grand Prix", 1987, "Nuova Bell Games", nuova, GAME_IMPERFECT_SOUND)
