@@ -1,22 +1,47 @@
-Version 1.55 (March 30, 2007) - "Tyrannosaur cries"
+Version 1.55 (March 30, 2007) - "Let there be Light"
 ------------------------------------------------------------------------------
-Happy 6th birthday to Visual PinMAME! :)
+Happy 6th Birthday to PinMAME & Visual PinMAME! :)
 
-In the wake of celebrating this joyous event we bring you our latest efforts.
-Because of the never-ceasing endurance of Aaron Giles we are able to include
-full BSMT2000 sound support now - playing back the compressed samples as they
-are most likely supposed to sound in real life.
+After all these years, we're finally seeing the light on two of our longest 
+standing missing features! In honor of the 6th year since our first release
+we bring you our latest efforts.
 
-There's also a little enhancement to the Votrax SC01 speech chip output,
+Thanks to Aaron Giles for once again blowing us away with his
+BSMT2K emulation improvements. Full support for the 'mysterious' compressed
+samples is now a reality. Despite the numerous rewrites Steve had to do to
+convert the code from the latest MAME core into our older core, it's working
+great!
+
+There's also a small enhancement to the Votrax SC01 speech chip output,
 enabling the chip to alter its sample rate at runtime which improves sound
-on many if not all games that used it - dear Gottlieb System80 and Taito lovers,
-this is for you.
+on many if not all games that used it!
+To all Gottlieb System80 and Taito lovers, this is for you!
 
-A special last-minute treat by PinMAME's co-founder and "not so gone" developer
-Steve Ellenoff: GI circuit brightness support for WPC games is here!
+A special last-minute treat by PinMAME's founder and "not so retired" developer
+Steve Ellenoff: GI circuit brightness support for WPC games is finally here!
+
 Special thanks to Steve for this tremendous addition, which would have been the
 number one event for him this month - if it wasn't the impending birth of his
-third child! :)
+third child expected to arrive any day! :)
+
+1.54 changes:
+
+*** SOUND ***
+Improved BSMT2000 support (Steve Ellenoff - thanks Aaron)
+Improved Votrax SC01 support (Gerrit Volkenborn)
+Correct sound support for Elvis (Steve Ellenoff)
+
+*** CORE/CPU ***
+Improved (and faster) AT91 emulation (Steve Ellenoff)
+
+*** ROM SUPPORT ***
+Updated Alien Poker multiball (Oliver Kaegi)
+Updated Eight Ball Deluxe clone (Oliver Kaegi)
+Added Bell Cosmic Flash (Oliver Kaegi)
+Added Nineball clone (Oliver Kaegi)
+Added Demolition Man home roms (Brian Smith/Gerrit Volkenborn)
+Added Theatre Of Magic home roms (Gerrit Volkenborn - needs to have cheats enabled to work)
+...and some other updates we just don't remember right now. :)
 
 
 Version 1.54 (December 23, 2006) - "One DLL to rule them all!"
