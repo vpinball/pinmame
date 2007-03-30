@@ -37,19 +37,20 @@ static INTERRUPT_GEN(vblank) {
   core_updateSw(0);
 }
 
-//Generate the IRQ
-static INTERRUPT_GEN(irq) {
-  logerror("%04x: IRQ\n",activecpu_get_previouspc());
-  cpu_set_irq_line(0, 0, PULSE_LINE);
-}
-static void nsm_zeroCross(int data) {
+static void nsm_zc(int data) {
   locals.zc = !locals.zc;
+  cpu_set_irq_line(0, 0, locals.zc ? ASSERT_LINE : CLEAR_LINE);
 }
 
-static WRITE_HANDLER(m7fd0_w) {
+static WRITE_HANDLER(oe_w) {
+  int i;
+  for (i=0; i < 9; i++) {
+    HC4094_oe_w(i, 1);
+    HC4094_oe_w(i, 0);
+  }
 }
 
-static WRITE_HANDLER(gameData_w) {
+static WRITE_HANDLER(data_w) {
   int i;
   HC4094_data_w(0, GET_BIT0);
   for (i=0; i < 9; i++) {
@@ -64,7 +65,7 @@ static WRITE_HANDLER(parallel_0_out) {
   locals.strobe = core_BitColToNum(data);
 }
 static WRITE_HANDLER(parallel_1_out) {
-  coreGlobals.tmpLampMatrix[locals.strobe] = data;
+  coreGlobals.tmpLampMatrix[locals.strobe] = ~data;
 }
 static WRITE_HANDLER(parallel_2_out) {
   locals.solenoids = (locals.solenoids & 0xff00) | data;
@@ -130,23 +131,48 @@ static struct AY8910interface nsm_ay8912Int = {
   { 30, 30 },	/* Volume */
   { 0 }, { 0 },
   { ay8912_0_port_w },
-  { ay8912_0_port_w },
+  { ay8912_1_port_w },
 };
 
+extern unsigned char AYReadReg(int n, int r);
+static READ_HANDLER(read_snd) {
+  return !AYReadReg(1, 7);
+}
 static READ_HANDLER(read_0) {
   return 0;
 }
 static READ_HANDLER(read_1) {
-  return 0xff;
+  return 1;
+}
+static READ_HANDLER(read_toggle) {
+  static int toggle = 1;
+  toggle = !toggle;
+  return toggle;
 }
 static READ_HANDLER(read_zc) {
-  return locals.zc ? 0xff : 0;
+  return locals.zc ? 1 : 0;
 }
-static READ_HANDLER(read_zc1) {
-  return locals.zc ? 0 : 0xff;
-}
+
 static READ_HANDLER(sw_r) {
-  return coreGlobals.swMatrix[offset ? locals.strobe+1 : 0];
+  static int read16;
+  UINT8 retVal = 0;
+  if (offset == 2) read16 = 1;
+  if (read16) {
+    if (!offset) retVal = coreGlobals.swMatrix[0];
+    if (offset == 1) retVal = coreGlobals.swMatrix[9];
+  } else {
+    if (!offset) retVal = coreGlobals.swMatrix[locals.strobe+1];
+  }
+//  logerror("Read %x: %02x\n", offset, retVal);
+  if (!offset) read16 = 0;
+  return ~retVal;
+}
+
+static READ_HANDLER(sw2_r) {
+  UINT8 retVal = 0;
+  if (!offset) retVal = coreGlobals.swMatrix[0];
+  if (offset == 1) retVal = coreGlobals.swMatrix[9];
+  return ~retVal;
 }
 
 static MEMORY_READ_START(readmem)
@@ -164,37 +190,32 @@ static MEMORY_WRITE_START(writemem)
 MEMORY_END
 
 static PORT_WRITE_START( writeport )
-  { 0x7fb0, 0x7fbf, gameData_w },
-  { 0x7fd0, 0x7fd0, m7fd0_w },
+  { 0x7fb0, 0x7fbf, data_w },
+  { 0x7fd0, 0x7fd0, oe_w },
 PORT_END
 
 static PORT_READ_START( readport )
-  { 0x00,  0x01,  read_zc1 },
-  { 0x10,  0x11,  read_0 },
-  { 0x30,  0x31,  read_zc },
-  { 0x50,  0x51,  read_0 },
-  { 0x60,  0x61,  read_1 },
-  { 0xffe, 0xfff, sw_r },
+  { 0x00,  0x01,  read_1 },		// undervolt perc.
+  { 0x10,  0x11,  read_zc },	// antenna
+  { 0x30,  0x31,  read_1 },		// J702 pin 7 (unknown service, default hi)
+  { 0x40,  0x41,  read_1 },		// J702 pin 11 (unknown service, default hi)
+  { 0x50,  0x51,  read_1 },		// batt. test
+  { 0x60,  0x61,  read_snd },	// J703 pin 13 (sound chip #2 analog output, default hi)
+  { 0xff0, 0xff1, read_0 },		// ???
+  { 0xff2, 0xff3, read_0 },		// ???
+  { 0xff4, 0xff6, sw_r },		// switches most likely
+  { 0xffe, 0xfff, sw2_r },		// ???
 PORT_END
 
 static MACHINE_INIT(nsm) {
   memset(&locals, 0, sizeof(locals));
   HC4094_init(&hc4094nsm);
-  HC4094_oe_w(0, 1);
-  HC4094_oe_w(1, 1);
-  HC4094_oe_w(2, 1);
-  HC4094_oe_w(3, 1);
-  HC4094_oe_w(4, 1);
-  HC4094_oe_w(5, 1);
-  HC4094_oe_w(6, 1);
-  HC4094_oe_w(7, 1);
-  HC4094_oe_w(8, 1);
 }
 
 static core_tLCDLayout dispNsm[] = {
-  {0, 0, 0,8,CORE_SEG8}, {0,18, 8,8,CORE_SEG8},
-  {3, 0,16,8,CORE_SEG7}, {3,18,24,8,CORE_SEG8},
-  {6, 9,32,8,CORE_SEG7}, {0}
+  {0, 0, 0,8,CORE_SEG8D}, {0,18, 8,8,CORE_SEG8D},
+  {3, 0,16,8,CORE_SEG8D}, {3,18,24,8,CORE_SEG8D},
+  {6, 9,32,8,CORE_SEG8D}, {0}
 };
 static core_tGameData nsmGameData = {GEN_ZAC1,dispNsm};
 static void init_nsm(void) {
@@ -202,8 +223,11 @@ static void init_nsm(void) {
 }
 
 static SWITCH_UPDATE(nsm) {
-  if (inports)
-    CORE_SETKEYSW(inports[CORE_COREINPORT], 0xff, 0);
+  if (inports) {
+    CORE_SETKEYSW(inports[CORE_COREINPORT]&0xff, 0xff, 0);
+    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 8, 0xff, 9);
+  }
+  if (keyboard_pressed_memory_repeat(KEYCODE_M, 1)) cpu_set_irq_line(0, 1, PULSE_LINE);
 }
 
 MACHINE_DRIVER_START(nsm)
@@ -212,12 +236,11 @@ MACHINE_DRIVER_START(nsm)
   MDRV_CPU_ADD_TAG("mcpu", TMS9995, 11052000)
   MDRV_CPU_MEMORY(readmem, writemem)
   MDRV_CPU_PORTS(readport, writeport)
-//  MDRV_CPU_PERIODIC_INT(irq, 150)
   MDRV_CPU_VBLANK_INT(vblank, 1)
   MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_SWITCH_UPDATE(nsm)
   MDRV_NVRAM_HANDLER(generic_0fill)
-  MDRV_TIMER_ADD(nsm_zeroCross, 100)
+  MDRV_TIMER_ADD(nsm_zc, 100)
 
   MDRV_SOUND_ADD(AY8910, nsm_ay8912Int)
 MACHINE_DRIVER_END
@@ -241,6 +264,14 @@ INPUT_PORTS_START(firebird) \
     COREPORT_BITTOG(  0x0020, "Key 6",	KEYCODE_6)  \
     COREPORT_BITINV(  0x0040, "Key 7",	KEYCODE_7)  \
     COREPORT_BITTOG(  0x0080, "Key 8",	KEYCODE_8)  \
+    COREPORT_BITTOG(  0x0100, "Key 9",	KEYCODE_9)  \
+    COREPORT_BITTOG(  0x0200, "Key 0",	KEYCODE_0)  \
+    COREPORT_BITTOG(  0x0400, "Key Z",	KEYCODE_Z)  \
+    COREPORT_BITTOG(  0x0800, "Key X",	KEYCODE_X)  \
+    COREPORT_BITTOG(  0x1000, "Key C",	KEYCODE_C)  \
+    COREPORT_BITTOG(  0x2000, "Key V",	KEYCODE_V)  \
+    COREPORT_BITTOG(  0x4000, "Key B",	KEYCODE_B)  \
+    COREPORT_BITTOG(  0x8000, "Key N",	KEYCODE_N)  \
 INPUT_PORTS_END
 
 ROM_START(firebird) \
