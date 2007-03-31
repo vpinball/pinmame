@@ -490,7 +490,7 @@ static tSegData segData[2][16] = {{
   {20,15,&segSize1C[4][0]},/* SEG87FD */
   {20,15,&segSize1C[2][0]},/* SEG98 */
   {20,15,&segSize1C[2][0]},/* SEG98F */
-  {12, 9,&segSize2[1][0]}, /* SEG7S */
+  {12,11,&segSize2C[1][0]},/* SEG7S */
   {20,15,&segSize1S[0][0]},/* SEG16S */
   { 2, 2,NULL},            /* DMD */
   { 1, 1,NULL}             /* VIDEO */
@@ -507,7 +507,7 @@ static tSegData segData[2][16] = {{
   {12,11,&segSize2C[4][0]},/* SEG87FD */
   {12,11,&segSize2C[2][0]},/* SEG98 */
   {12,11,&segSize2C[2][0]},/* SEG98F */
-  { 8, 5,&segSize3[1][0]}, /* SEG7S */
+  { 8, 7,&segSize3[1][0]}, /* SEG7S */
   {12,11,&segSize2S[0][0]},/* SEG16S */
   { 1, 1,NULL},            /* DMD */
   { 1, 1,NULL}             /* VIDEO */
