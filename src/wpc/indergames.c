@@ -30,8 +30,8 @@ static core_tLCDLayout inderDisp7[] = {
 static core_tLCDLayout inderDisp7a[] = {
   {0, 0, 1,7,CORE_SEG7}, {0,22, 9,7,CORE_SEG7},
   {3, 0,17,7,CORE_SEG7}, {3,22,25,7,CORE_SEG7},
-  {1,24,34,2,CORE_SEG7S},{1,29,38,2,CORE_SEG7S},
-  {4,24,41,1,CORE_SEG7S},
+  {1,20,34,2,CORE_SEG7S},{1,25,38,2,CORE_SEG7S},
+  {4,20,41,1,CORE_SEG7S},
   {0}
 };
 
