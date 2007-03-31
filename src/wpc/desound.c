@@ -228,7 +228,7 @@ static struct BSMT2000interface de2s_bsmt2000aaInt = {
   1, {24000000}, {11}, {DE2S_ROMREGION}, {100}, 1, 1, 0
 };
 
-/* 11 Voice Style BSMT Chip used with Sega/Stern (ID4,Godzilla,Monopoly,RCTYCN)*/
+/* 11 Voice Style BSMT Chip used with Sega/Stern (Apollo13,ID4,Godzilla,Monopoly,RCTYCN)*/
 static struct BSMT2000interface de2s_bsmt2000aInt = {
   1, {24000000}, {11}, {DE2S_ROMREGION}, {100}, 1, 4, 0
 };
@@ -236,11 +236,6 @@ static struct BSMT2000interface de2s_bsmt2000aInt = {
 /* 12 Voice Style BSMT Chip used with later model Stern (Austin Powers and forward) */
 static struct BSMT2000interface de2s_bsmt2000bInt = {
   1, {24000000}, {12}, {DE2S_ROMREGION}, {100}, 1, 4, 0
-};
-
-/* 11 Voice Style BSMT Chip used with early Sega (Apollo13, Goldeneye, Twister) */
-static struct BSMT2000interface de2s_bsmt2000cInt = {
-  1, {24000000}, {11}, {DE2S_ROMREGION}, {100}, 1, 8, 0
 };
 
 static MEMORY_READ_START(de2s_readmem)
@@ -278,11 +273,6 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(de2bs)
   MDRV_IMPORT_FROM(de2as)
   MDRV_SOUND_REPLACE("bsmt", BSMT2000, de2s_bsmt2000bInt)
-MACHINE_DRIVER_END
-
-MACHINE_DRIVER_START(de2cs)
-  MDRV_IMPORT_FROM(de2as)
-  MDRV_SOUND_REPLACE("bsmt", BSMT2000, de2s_bsmt2000cInt)
 MACHINE_DRIVER_END
 
 /*-- local data --*/
@@ -361,7 +351,7 @@ static WRITE_HANDLER(de2s_bsmtcmdLo_w)
 
 static READ_HANDLER(de2s_bsmtready_r) { return 0x80; } // BSMT is always ready
 /* Writing 0x80 here resets BSMT ?*/
-static WRITE_HANDLER(de2s_bsmtreset_w) { 
+static WRITE_HANDLER(de2s_bsmtreset_w) {
 	static int last_data = 0;
 	//Watch for 0->1 transition in 8th bit to force a reset
 	if(data & 0x80 && (last_data & 0x80) == 0)
@@ -399,7 +389,7 @@ static INTERRUPT_GEN(de2s_firq) {
    AT91 code pointers to the memory region data so it could perform the swap, see init for details.
 
    Internally the code sets up a timer interrupt @ 24,242Hz (40Mhz/2/0x339).
-   
+
    -10/13/2006
     Removed external irq call and silly irq ready hacks
 	Implemented AT91 port handling
@@ -410,7 +400,7 @@ static INTERRUPT_GEN(de2s_firq) {
 	Implemented proper memory mappped handling
 	Simplified memory handlers
 	Added logging flags & cleaned up readability of code a bit.
-	Commented out support for flash bios and test driver as I don't have desire to convert them over to use proper memory handler 
+	Commented out support for flash bios and test driver as I don't have desire to convert them over to use proper memory handler
 */
 
 //Switches
@@ -477,7 +467,7 @@ static READ32_HANDLER(xilinx_r)
 	#if AT91IMP_LOG_SOUND_CMD
 	static int lastcmd = 0;
 	#endif
-	
+
 	data = scmd_r(0);
 
 	#if AT91IMP_LOG_SOUND_CMD
@@ -486,7 +476,7 @@ static READ32_HANDLER(xilinx_r)
 		lastcmd = data;
 	}
 	#endif
-	
+
 	return data;
 }
 
