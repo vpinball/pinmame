@@ -389,7 +389,7 @@ READ_HANDLER(wpc_r) {
 			int i;
 			for(i=0;i<CORE_MAXGI;i++)
 				wpclocals.gi_irqcnt[i] = 0;
-			
+
 			#if DEBUG_GI
 			printf("Zero Cross!\n");
 			#endif
@@ -461,7 +461,7 @@ WRITE_HANDLER(wpc_w) {
 	  #if DEBUG_GI
 	  printf("%8x: GI_W: %x\n",activecpu_get_pc(),data);
 	  #endif
-  
+
 	  //WPC95 only controls 3 of the 5 Triacs, the other 2 are ALWAYS ON (power wired directly)
 	  //  We simulate this here by forcing the bits on
 	  if (core_gameData->gen & GENWPC_HASWPC95)
@@ -552,7 +552,7 @@ WRITE_HANDLER(wpc_w) {
         { sndbrd_0_data_w(0,data); sndbrd_0_ctrl_w(0,1); }
       else sndbrd_0_ctrl_w(0,data);
       break;
-    case WPC_WATCHDOG: 
+    case WPC_WATCHDOG:
 	    //Increment irq count - This is the best way to know an IRQ was serviced as this register is written immediately during the IRQ code.
 	    //Only do this if bit 8 is set, as WW_L5 sometimes writes 0x06 here during the interrupt code.
 		if(data & 0x80)
@@ -560,7 +560,7 @@ WRITE_HANDLER(wpc_w) {
 			int i;
 			for(i=0;i<CORE_MAXGI;i++)
 				wpclocals.gi_irqcnt[i]++;
-	
+
 			//Clear the IRQ now
 		  cpu_set_irq_line(WPC_CPUNO, M6809_IRQ_LINE, CLEAR_LINE);
 		}
@@ -569,7 +569,8 @@ WRITE_HANDLER(wpc_w) {
       /* CPU writes here after a non-dmd firq. Don't know what happens */
       break;
     case WPC_IRQACK:
-		DBGLOG(("WPC_IRQACK. PC=%04x d=%02x\n",activecpu_get_pc(), data));
+//      cpu_set_irq_line(WPC_CPUNO, M6809_IRQ_LINE, CLEAR_LINE);
+      DBGLOG(("WPC_IRQACK. PC=%04x d=%02x\n",activecpu_get_pc(), data));
       break;
     case DMD_PAGE3000: /* set the page that is visible at 0x3000 */
       cpu_setbank(4, memory_region(WPC_DMDREGION) + (data & 0x0f) * 0x200); break;
@@ -726,17 +727,15 @@ static MACHINE_INIT(wpc) {
     case GEN_WPCDCS:
     case GEN_WPCSECURITY:
     case GEN_WPC95DCS:
-    case GEN_WPC95:
 	  //WPC95 only controls 3 of the 5 Triacs, the other 2 are ALWAYS ON (power wired directly)
 	  //  We simulate this here by setting the bits to simulate full intensity immediately at power up.
 	  coreGlobals.gi[CORE_MAXGI-2] = 8;
 	  coreGlobals.gi[CORE_MAXGI-1] = 8;
-	  //Sound board initialization
-	  if(core_gameData->gen == GEN_WPC95DCS)
-		sndbrd_0_init(SNDBRD_DCS, 1, memory_region(DCS_ROMREGION),NULL,NULL);
-	  else
-		sndbrd_0_init(SNDBRD_DCS95, 1, memory_region(DCS_ROMREGION),NULL,NULL);
+      sndbrd_0_init(SNDBRD_DCS, 1, memory_region(DCS_ROMREGION),NULL,NULL);
       break;
+    case GEN_WPC95:
+	  //Sound board initialization
+      sndbrd_0_init(SNDBRD_DCS95, 1, memory_region(DCS_ROMREGION),NULL,NULL);
   }
 
   wpclocals.pageMask = romLengthMask[((romLength>>17)-1)&0x07];
