@@ -92,7 +92,6 @@
 
 extern MACHINE_DRIVER_EXTERN(se2aS);
 extern MACHINE_DRIVER_EXTERN(se2bS);
-extern MACHINE_DRIVER_EXTERN(se2cS);
 extern MACHINE_DRIVER_EXTERN(se3aS);
 extern PINMAME_VIDEO_UPDATE(seminidmd1_update);
 extern PINMAME_VIDEO_UPDATE(seminidmd1a_update);
@@ -103,7 +102,6 @@ extern PINMAME_VIDEO_UPDATE(seminidmd3_update);
 extern PINMAME_VIDEO_UPDATE(seminidmd4_update);
 #define de_mSES1 se2aS
 #define de_mSES2 se2bS
-#define de_mSES2C se2cS
 #define de_mSES3 se3aS
 
 /* Hardware variants */
