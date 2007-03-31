@@ -55,7 +55,7 @@ static core_tLCDLayout dispGP_BDU1[] = {
 static core_tLCDLayout dispGP_BDU2[] = {
  {0, 0, 0,7,CORE_SEG7}, {0,22, 8,7,CORE_SEG7},
  {3, 0,16,7,CORE_SEG7}, {3,22,24,7,CORE_SEG7},
- {5,24,33,2,CORE_SEG7S},{5,30,37,2,CORE_SEG7S},{0}
+ {5,19,33,2,CORE_SEG7S},{5,25,37,2,CORE_SEG7S},{0}
 };
 
 #define INITGAME(name, gen, disp, flip, sb, lamps) \

@@ -106,7 +106,7 @@ MEMORY_END
 static core_tLCDLayout disp[] = {
   {0, 0, 4, 7,CORE_SEG87FD},
   {3, 2, 0, 2,CORE_SEG7S},
-  {3,16, 2, 2,CORE_SEG7S},
+  {3,13, 2, 2,CORE_SEG7S},
   {0}
 };
 static core_tGameData strikeGameData = {GEN_ZAC1,disp};
