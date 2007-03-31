@@ -731,9 +731,12 @@ static MACHINE_INIT(wpc) {
 	  //  We simulate this here by setting the bits to simulate full intensity immediately at power up.
 	  coreGlobals.gi[CORE_MAXGI-2] = 8;
 	  coreGlobals.gi[CORE_MAXGI-1] = 8;
+	  //Sound board initialization
       sndbrd_0_init(SNDBRD_DCS, 1, memory_region(DCS_ROMREGION),NULL,NULL);
       break;
     case GEN_WPC95:
+	  coreGlobals.gi[CORE_MAXGI-2] = 8;
+	  coreGlobals.gi[CORE_MAXGI-1] = 8;
 	  //Sound board initialization
       sndbrd_0_init(SNDBRD_DCS95, 1, memory_region(DCS_ROMREGION),NULL,NULL);
   }
