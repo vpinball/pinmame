@@ -682,17 +682,16 @@ static void updateDisplay(struct mame_bitmap *bitmap, const struct rectangle *cl
     if (layout->ptr)
       if (((ptPinMAMEvidUpdate)(layout->ptr))(bitmap,cliprect,layout) == 0) continue;
     {
-      int zeros = layout->type/32; // dummy zeros
       int left  = layout->left * (locals.segData[layout->type & CORE_SEGMASK].cols+1) / 2;
       int top   = layout->top  * (locals.segData[0].rows + 1) / 2;
-      int ii    = layout->length + zeros;
+      int ii    = layout->length;
       UINT16 *seg     = &coreGlobals.segments[layout->start].w;
       UINT16 *lastSeg = &locals.lastSeg[layout->start].w;
       int step     = (layout->type & CORE_SEGREV) ? -1 : 1;
 
       if (step < 0) { seg += ii-1; lastSeg += ii-1; }
       while (ii--) {
-        UINT16 tmpSeg = (ii < zeros) ? ((core_bcd2seg7[0]<<8) | (core_bcd2seg7[0])) : *seg;
+        UINT16 tmpSeg = *seg;
         int tmpType = layout->type & CORE_SEGMASK;
 
 #ifdef VPINMAME
