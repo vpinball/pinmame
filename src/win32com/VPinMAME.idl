@@ -196,7 +196,7 @@ import "ocidl.idl";
 /* ! */	[id(25), helpstring("method CheckROMS")] HRESULT CheckROMS([in,defaultvalue(0)] int nShowOptions, [in,defaultvalue(0)] long hParentWnd, [out, retval] VARIANT_BOOL *pVal);
 		[propget, id(26), helpstring("property HandleMechanics")] HRESULT HandleMechanics([out, retval] int *pVal);
 		[propput, id(26), helpstring("property HandleMechanics")] HRESULT HandleMechanics([in] int newVal);
-		[propget, id(27), helpstring("property GIString")] HRESULT GIString(int nString, [out, retval] VARIANT_BOOL *pVal);
+		[propget, id(27), helpstring("property GIString")] HRESULT GIString(int nString, [out, retval] int *pVal);
 		[propget, id(28), helpstring("property ChangedGIStrings")] HRESULT ChangedGIStrings([out, retval] VARIANT *pVal);
 /* ! */	[propget, id(29), helpstring("property ShowDMDOnly")] HRESULT ShowDMDOnly([out, retval] VARIANT_BOOL *pVal);
 /* ! */	[propput, id(29), helpstring("property ShowDMDOnly")] HRESULT ShowDMDOnly([in] VARIANT_BOOL newVal);
