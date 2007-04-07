@@ -101,6 +101,7 @@ static struct {
   int zc;						/* zero cross flag */
   int gi_prev[CORE_MAXGI];	    /* track previous data written to triac latch */
   int gi_irqcnt[CORE_MAXGI];    /* Count IRQ occurrences for GI Dimming */
+  int gi_active[CORE_MAXGI];    /* Used to check if GI string is accessed at all */
 } wpclocals;
 
 static struct {
@@ -473,18 +474,20 @@ WRITE_HANDLER(wpc_w) {
 		//If Bit is set, Triac is turned on.
 	    int gi_bit = tmp & 0x01;
 		//Was Triac on last time also? If so, assume it's full briteness.
+		if (gi_bit) wpclocals.gi_active[ii] = 16; else { if (wpclocals.gi_active[ii]) wpclocals.gi_active[ii]--; }
 		if(gi_bit && wpclocals.gi_prev[ii])
 			wpclocals.gi_irqcnt[ii] = 8;
 		//Calc & Store the dim level
-		gi_dimlevel = wpclocals.gi_irqcnt[ii]==8?8:7-wpclocals.gi_irqcnt[ii];
-
+		gi_dimlevel = wpclocals.gi_irqcnt[ii]>7?8:7-wpclocals.gi_irqcnt[ii];
 		#if DEBUG_GI
 		if(gi_bit)
-			printf("GI[%d]: IRQ Count = %d, DIM = %d\n",ii,wpclocals.gi_irqcnt[ii],wpclocals.gi_irqcnt[ii]==8?8:7-wpclocals.gi_irqcnt[ii]);
+			printf("GI[%d]: IRQ Count = %d, DIM = %d\n",ii,wpclocals.gi_irqcnt[ii],wpclocals.gi_irqcnt[ii]>7?8:7-wpclocals.gi_irqcnt[ii]);
 		#endif
 
 		//Update the GI Dim Level but only if it's on!
-		if(gi_bit)
+		if (!wpclocals.gi_active[ii])
+			coreGlobals.gi[ii] = 0;
+		else if(gi_bit)
 			coreGlobals.gi[ii] = gi_dimlevel;
 
 		//Reset count if the Triac was on, and is now off!
@@ -726,19 +729,16 @@ static MACHINE_INIT(wpc) {
       break;
     case GEN_WPCDCS:
     case GEN_WPCSECURITY:
+      sndbrd_0_init(SNDBRD_DCS, 1, memory_region(DCS_ROMREGION),NULL,NULL);
+      break;
+    case GEN_WPC95:
     case GEN_WPC95DCS:
 	  //WPC95 only controls 3 of the 5 Triacs, the other 2 are ALWAYS ON (power wired directly)
 	  //  We simulate this here by setting the bits to simulate full intensity immediately at power up.
 	  coreGlobals.gi[CORE_MAXGI-2] = 8;
 	  coreGlobals.gi[CORE_MAXGI-1] = 8;
 	  //Sound board initialization
-      sndbrd_0_init(SNDBRD_DCS, 1, memory_region(DCS_ROMREGION),NULL,NULL);
-      break;
-    case GEN_WPC95:
-	  coreGlobals.gi[CORE_MAXGI-2] = 8;
-	  coreGlobals.gi[CORE_MAXGI-1] = 8;
-	  //Sound board initialization
-      sndbrd_0_init(SNDBRD_DCS95, 1, memory_region(DCS_ROMREGION),NULL,NULL);
+      sndbrd_0_init(core_gameData->gen == GEN_WPC95DCS ? SNDBRD_DCS : SNDBRD_DCS95, 1, memory_region(DCS_ROMREGION),NULL,NULL);
   }
 
   wpclocals.pageMask = romLengthMask[((romLength>>17)-1)&0x07];
