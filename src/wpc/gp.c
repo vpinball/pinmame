@@ -55,7 +55,7 @@ static void GP_dispStrobe(int mask) {
 //  logerror("mask = %x, digit = %x (%x,%x,%x,%x,%x)\n",mask, digit,locals.bcd[0],locals.bcd[1],locals.bcd[2],locals.bcd[3],locals.bcd[4]);
   ii = (digit < 7)? digit : 0;
   jj = mask;
-  locals.segments[jj*8+ii].w |= locals.pseg[jj*8+ii].w = core_bcd2seg[locals.bcd[jj]];
+  locals.segments[jj*8+ii].w |= locals.pseg[jj*8+ii].w = core_bcd2seg7a[locals.bcd[jj]];
 }
 
 static void GP_lampStrobe1(int lampadr, int lampdata) {

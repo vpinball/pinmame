@@ -67,6 +67,9 @@ static WRITE_HANDLER(disp_w) {
   locals.segments[8-offset*2].w = core_bcd2seg7e[data >> 4];
   // fake single 0 digit
   locals.segments[10].w = locals.segments[9].w ? core_bcd2seg7e[0] : 0;
+  // turn on periods
+  if (locals.segments[4].w) locals.segments[4].w |= 0x80;
+  if (locals.segments[7].w) locals.segments[7].w |= 0x80;
 }
 
 static WRITE_HANDLER(sol_w) {
@@ -104,7 +107,7 @@ static MEMORY_WRITE_START(writemem)
 MEMORY_END
 
 static core_tLCDLayout disp[] = {
-  {0, 0, 4, 7,CORE_SEG87FD},
+  {0, 0, 4, 1,CORE_SEG8D},{0, 2, 5, 2,CORE_SEG7},{0, 6, 7, 1,CORE_SEG8D},{0, 8, 8, 3,CORE_SEG7},
   {3, 2, 0, 2,CORE_SEG7S},
   {3,13, 2, 2,CORE_SEG7S},
   {0}
