@@ -172,10 +172,10 @@
 #define CORE_SEG7     6 // 7  segments
 #define CORE_SEG87    7 // 7  segments, comma every three
 #define CORE_SEG87F   8 // 7  segments, forced comma every three
-#define CORE_SEG87FD  9 // 7  segments, forced period every three
-#define CORE_SEG98   10 // 9  segments, comma every three
-#define CORE_SEG98F  11 // 9  segments, forced comma every three
-#define CORE_SEG7S   12 // 7  segments, small
+#define CORE_SEG98    9 // 9  segments, comma every three
+#define CORE_SEG98F  10 // 9  segments, forced comma every three
+#define CORE_SEG7S   11 // 7  segments, small
+#define CORE_SEG7SC  12 // 7  segments, small, with comma
 #define CORE_SEG16S  13 // 16 segments with split top and bottom line
 #define CORE_DMD     14 // DMD Display
 #define CORE_VIDEO   15 // VIDEO Display
@@ -191,6 +191,7 @@
 #define CORE_SEG87H   (CORE_SEG87 | CORE_SEGHIBIT)
 #define CORE_SEG87FH  (CORE_SEG87F| CORE_SEGHIBIT)
 #define CORE_SEG7SH   (CORE_SEG7S | CORE_SEGHIBIT)
+#define CORE_SEG7SCH  (CORE_SEG7SC| CORE_SEGHIBIT)
 
 #define DMD_MAXX 256
 #define DMD_MAXY 64

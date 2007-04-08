@@ -378,7 +378,7 @@ CORE_GAMEDEF(swrds, l2, "Swords of Fury (L-2)", 1988, "Williams", s11_mS11BS, 0)
 /--------------------*/
 static core_tLCDLayout dispTaxi[] = { \
   DISP_SEG_16(0,CORE_SEG16),DISP_SEG_16(1,CORE_SEG8),\
-  { 2, 0,21,7,CORE_SEG7SH},{0}
+  { 2, 0,21,7,CORE_SEG7SCH},{0}
 };
 
 INITGAME(taxi, GEN_S11B,dispTaxi,12, FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
