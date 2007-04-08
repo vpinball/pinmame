@@ -24,7 +24,7 @@ Special thanks to Steve for this tremendous addition, which would have been the
 number one event for him this month - if it wasn't the impending birth of his
 third child expected to arrive any day! :)
 
-1.54 changes:
+Changes:
 
 *** SOUND ***
 Improved BSMT2000 support (Steve Ellenoff - thanks Aaron)
@@ -33,6 +33,7 @@ Correct sound support for Elvis (Steve Ellenoff)
 
 *** CORE/CPU ***
 Improved (and faster) AT91 emulation (Steve Ellenoff)
+Added GI dimming support for WPC games (Steve Ellenoff)
 
 *** ROM SUPPORT ***
 Updated Alien Poker multiball (Oliver Kaegi)
@@ -61,7 +62,7 @@ this available, a new issue cropped up that we couldn't resist.  Just one more
 challenge around the corner to overcome.  I'd like to think this version has had
 the most testing ever, but if you do find a bug, please let us know.
 
-1.53 changes:
+Changes:
 
 *** SOUND ***
 Improved Inder Sound (Gerrit Volkenborn)
