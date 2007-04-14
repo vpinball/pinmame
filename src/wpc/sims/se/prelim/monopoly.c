@@ -402,7 +402,7 @@ static WRITE_HANDLER(monopoly_w) {
     if (locals.flipperPos < 0) locals.flipperPos += 5000;
     if (locals.flipperPos > 4999) locals.flipperPos -= 5000;
 #ifndef VPINMAME // must be disabled, as the switch is set by script in VPM
-    core_setSw(30, locals.flipperPos < 33);
+    core_setSw(30, locals.flipperPos < 100 || locals.flipperPos > 4900);
 #endif
   }
 }
@@ -417,16 +417,24 @@ static void init_monopoly(void) {
 
 static void monopoly_drawMech(BMTYPE **line) {
   core_textOutf(30,  0,BLACK,"WaterWorks Flipper");
-  core_textOutf(30, 10,BLACK,"pos:%4d, speed:%2d", monopoly_getMech(0), monopoly_getMech(1));
+  core_textOutf(30, 10,BLACK,"pos:%4d, speed:%4d", monopoly_getMech(0), monopoly_getMech(1));
 }
 
 static void monopoly_handleMech(int mech) {
 }
 
 static int monopoly_getMech(int mechNo){
+  static int oldFlipperPos;
+  int dist;
   switch (mechNo) {
     case 0: return locals.flipperPos /5;
-    case 1: return locals.flipperDir * locals.flipperSpeed;
+    case 1:
+      dist = locals.flipperPos - oldFlipperPos;
+      if (dist < 0) dist = - dist;
+      if (dist > 2500) dist -= 5000;
+      if (dist < 0) dist = - dist;
+      oldFlipperPos = locals.flipperPos;
+      return locals.flipperDir * dist;
   }
   return 0;
 }
