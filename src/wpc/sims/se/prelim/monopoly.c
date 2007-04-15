@@ -438,7 +438,7 @@ static int monopoly_getMech(int mechNo){
       oldFlipperPos = locals.flipperPos;
       oldSpeed[speedCnt = (speedCnt + 1) % 8] = locals.flipperDir * dist;
       speed = (oldSpeed[0] + oldSpeed[1] + oldSpeed[2] + oldSpeed[3] + oldSpeed[4] + oldSpeed[5] + oldSpeed[6] + oldSpeed[7]) / 8;
-      return speed / 4;
+      return speed / 3;
   }
   return 0;
 }
