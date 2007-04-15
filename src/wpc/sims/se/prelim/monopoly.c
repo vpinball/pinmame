@@ -424,8 +424,10 @@ static void monopoly_handleMech(int mech) {
 }
 
 static int monopoly_getMech(int mechNo){
+  static int speedCnt;
+  static int oldSpeed[8];
   static int oldFlipperPos;
-  int dist;
+  int speed, dist;
   switch (mechNo) {
     case 0: return locals.flipperPos /5;
     case 1:
@@ -434,7 +436,9 @@ static int monopoly_getMech(int mechNo){
       if (dist > 2500) dist -= 5000;
       if (dist < 0) dist = - dist;
       oldFlipperPos = locals.flipperPos;
-      return locals.flipperDir * dist;
+      oldSpeed[speedCnt = (speedCnt + 1) % 8] = locals.flipperDir * dist;
+      speed = (oldSpeed[0] + oldSpeed[1] + oldSpeed[2] + oldSpeed[3] + oldSpeed[4] + oldSpeed[5] + oldSpeed[6] + oldSpeed[7]) / 8;
+      return speed / 4;
   }
   return 0;
 }
