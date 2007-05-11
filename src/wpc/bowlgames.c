@@ -190,13 +190,14 @@ CORE_CLONEDEF(szone,l2,l5,"Strike Zone (Shuffle) (L-2)", 1984, "Williams", s9_mS
 /*--------------------
 / Alley Cat (#918)
 /--------------------*/
-INITGAME_S10(alcat, GEN_S9, dispS10, 0, FLIP_SW(FLIP_L), S11_BCDDIAG|S11_BCDDISP, 0)
+INITGAME_S10(alcat, GEN_S11, dispS10, 0, FLIP_SW(FLIP_L), S11_BCDDIAG|S11_BCDDISP, 0)
 S9_ROMSTART12(alcat,l7,"u26_rev7.rom", CRC(4d274dd3) SHA1(80d72bd0f85ce2cac04f6d9f59dc1fcccc86d402),
                        "u27_rev7.rom", CRC(9c7faf8a) SHA1(dc1a561948b9a303f7924d7bebcd972db766827b))
-S9S_SOUNDROM4("alct_u49.128", NO_DUMP)
-S9_ROMEND
+S11S_SOUNDROM88(       "acs_u21.bin",CRC(c54cd329) SHA1(4b86b10e60a30c4de5d97129074f5657447be676),
+                       "acs_u22.bin",CRC(56c1011a) SHA1(c817a3410c643617f3643897b8f529ae78546b0d))
+S11_ROMEND
 S11_INPUT_PORTS_START(alcat, 1) S11_INPUT_PORTS_END
-CORE_GAMEDEF(alcat, l7, "Alley Cat (Shuffle) (L-7)", 1986, "Williams", s11_s9S,0)
+CORE_GAMEDEF(alcat, l7, "Alley Cat (Shuffle) (L-7)", 1986, "Williams", s11_mS11S,0)
 
 /*--------------------
 / Gold Mine (#920)
