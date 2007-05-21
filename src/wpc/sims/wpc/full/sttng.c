@@ -567,15 +567,16 @@ static void sttng_drawStatic(BMTYPE **line) {
 /*-----------------
 /  ROM definitions
 /------------------*/
-WPC_ROMSTART(sttng,l7,"trek_lx7.rom",0x80000,CRC(d439fdbb) SHA1(12d1c72cd6cc18db53e51ebb4c1e55ca9bcf9908))
-DCS_SOUNDROM7x("ng_u2_s.l1",CRC(c3bd7bf5) SHA1(2476ff90232a52d667a407fac81ee4db028b94e5),
-               "ng_u3_s.l1",CRC(9456cac7) SHA1(83e415e0f21bb5418f3677dbc13433e056c523ab),
-               "ng_u4_s.l1",CRC(179d22a4) SHA1(456b7189e23d4e2bd7e2a6249fa2a73bf0e12194),
-               "ng_u5_s.l1",CRC(231a3e72) SHA1(081b1a042e62ccb723788059d6c1e00b9b32c778),
-               "ng_u6_s.l1",CRC(bb21377d) SHA1(229fb42a1f8b22727a809e5d63f26f045a2adda5),
-               "ng_u7_s.l1",CRC(d81b39f0) SHA1(3443e7327c755b85a5b390f7fcd0e9923890425a),
+#define ST_SND \
+DCS_SOUNDROM7x("ng_u2_s.l1",CRC(c3bd7bf5) SHA1(2476ff90232a52d667a407fac81ee4db028b94e5), \
+               "ng_u3_s.l1",CRC(9456cac7) SHA1(83e415e0f21bb5418f3677dbc13433e056c523ab), \
+               "ng_u4_s.l1",CRC(179d22a4) SHA1(456b7189e23d4e2bd7e2a6249fa2a73bf0e12194), \
+               "ng_u5_s.l1",CRC(231a3e72) SHA1(081b1a042e62ccb723788059d6c1e00b9b32c778), \
+               "ng_u6_s.l1",CRC(bb21377d) SHA1(229fb42a1f8b22727a809e5d63f26f045a2adda5), \
+               "ng_u7_s.l1",CRC(d81b39f0) SHA1(3443e7327c755b85a5b390f7fcd0e9923890425a), \
                "ng_u8_s.l1",CRC(c9fb065e) SHA1(c148178ee0ea787acc88078db01d17073e75fdc7))
-WPC_ROMEND
+
+WPC_ROMSTART(sttng,l7,"trek_lx7.rom",0x80000,CRC(d439fdbb) SHA1(12d1c72cd6cc18db53e51ebb4c1e55ca9bcf9908)) ST_SND WPC_ROMEND
 
 WPC_ROMSTART(sttng,x7,"trek_x7.rom",0x80000,CRC(4e71c9c7) SHA1(8a7ec42dfb4a6902ba745548b40e84de5305c295))
 DCS_SOUNDROM7x("ngs_u2.rom",CRC(e9fe68fe) SHA1(3d7631aa5ddd52f7c3c00cd091e212430faea249),
@@ -597,23 +598,21 @@ DCS_SOUNDROM7x("su2-sp1.rom",CRC(bdef8b2c) SHA1(188d8d2a652844e9885bd9e9ad414392
                "ng_u8_s.l1",CRC(c9fb065e) SHA1(c148178ee0ea787acc88078db01d17073e75fdc7))
 WPC_ROMEND
 
-WPC_ROMSTART(sttng,p5,"sttng_p5.u6",0x80000,CRC(c1b80a8e) SHA1(90dd99efd41ec5405c631ad374a369f9fcb7217e))
-DCS_SOUNDROM7x("ng_u2_s.l1",CRC(c3bd7bf5) SHA1(2476ff90232a52d667a407fac81ee4db028b94e5),
-               "ng_u3_s.l1",CRC(9456cac7) SHA1(83e415e0f21bb5418f3677dbc13433e056c523ab),
-               "ng_u4_s.l1",CRC(179d22a4) SHA1(456b7189e23d4e2bd7e2a6249fa2a73bf0e12194),
-               "ng_u5_s.l1",CRC(231a3e72) SHA1(081b1a042e62ccb723788059d6c1e00b9b32c778),
-               "ng_u6_s.l1",CRC(bb21377d) SHA1(229fb42a1f8b22727a809e5d63f26f045a2adda5),
-               "ng_u7_s.l1",CRC(d81b39f0) SHA1(3443e7327c755b85a5b390f7fcd0e9923890425a),
-               "ng_u8_s.l1",CRC(c9fb065e) SHA1(c148178ee0ea787acc88078db01d17073e75fdc7))
-WPC_ROMEND
+WPC_ROMSTART(sttng,p5,"sttng_p5.u6",0x80000,CRC(c1b80a8e) SHA1(90dd99efd41ec5405c631ad374a369f9fcb7217e)) ST_SND WPC_ROMEND
+WPC_ROMSTART(sttng,g7,"trek_lg7.rom",0x80000,CRC(e723b8a1) SHA1(77c3f8ea378772ce45bb8de818069fc08cbc4574)) ST_SND WPC_ROMEND
+WPC_ROMSTART(sttng,l1,"trek_lx1.rom",0x80000,CRC(390befc0) SHA1(2059891e3fc3034d600274c3915371123c964d28)) ST_SND WPC_ROMEND
+WPC_ROMSTART(sttng,l2,"trek_lx2.rom",0x80000,CRC(e2557554) SHA1(7d8502ab9df340d60fd72e6964740bc7a2da2065)) ST_SND WPC_ROMEND
 
 /*--------------
 /  Game drivers
 /---------------*/
-CORE_GAMEDEF(sttng,l7,"Star Trek: The Next Generation (LX-7)",1993,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(sttng,x7,l7,"Star Trek: The Next Generation (LX-7 Special)",1993,"Williams",wpc_mDCSS,0)
+CORE_GAMEDEF(sttng,l7,"Star Trek: The Next Generation (LX-7)",1994,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(sttng,x7,l7,"Star Trek: The Next Generation (LX-7 Special)",1994,"Williams",wpc_mDCSS,0)
 CORE_CLONEDEF(sttng,p5,l7,"Star Trek: The Next Generation (P-5)",1993,"Williams",wpc_mDCSS,0)
-CORE_CLONEDEF(sttng,s7,l7,"Star Trek: The Next Generation (LX-7) SP1",1993,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(sttng,s7,l7,"Star Trek: The Next Generation (LX-7) SP1",1994,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(sttng,g7,l7,"Star Trek: The Next Generation (LG-7)",1994,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(sttng,l1,l7,"Star Trek: The Next Generation (LX-1)",1993,"Williams",wpc_mDCSS,0)
+CORE_CLONEDEF(sttng,l2,l7,"Star Trek: The Next Generation (LX-2)",1993,"Williams",wpc_mDCSS,0)
 
 /*-----------------------
 / Simulation Definitions
