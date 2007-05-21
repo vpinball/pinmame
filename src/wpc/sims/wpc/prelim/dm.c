@@ -250,13 +250,13 @@ static sim_tInportData dm_inportData[] = {
 /*-----------------
 /  ROM definitions
 /------------------*/
-#define DM_SOUND_L1 \
-DCS_SOUNDROM6x("dm_u2_s.l1",CRC(f72dc72e) SHA1(a1267c32f70b4bfe6058d7e28d82006541fe3d6c), \
-               "dm_u3_s.l2",CRC(2b65a66e) SHA1(7796082ecd7af29a240190aff654320375502a8b), \
-               "dm_u4_s.l2",CRC(9d6815fe) SHA1(fb4be63dee54a883884f1600565011cb9740a866), \
-               "dm_u5_s.l2",CRC(9f614c27) SHA1(f8f2f083b644517582a748bda0a3f69c14583f13), \
-               "dm_u6_s.l2",CRC(3efc2c0e) SHA1(bc4efdee44ff635771629a2bde79e230b7643f31), \
-               "dm_u7_s.l2",CRC(75066af1) SHA1(4d70bce8a96343afcf02c89240b11faf19e11f02))
+#define DM_SOUND_P4 \
+DCS_SOUNDROM6x("dmsndp4.u2",CRC(8581116b) SHA1(ab24fa4aadf27761c9013adb84cfef9bfda27d44), \
+               "dmsndp4.u3",CRC(fe79fc89) SHA1(4ef1ef0d66d43fa66af1ecb17c14141760859084), \
+               "dmsndp4.u4",CRC(18407309) SHA1(499d62e4b434d48870fe532bb85106868df17c9b), \
+               "dmsndp4.u5",CRC(f2006c93) SHA1(16656ae6ff18aad0965c5a14882138508925313a), \
+               "dmsndp4.u6",CRC(bc17ba11) SHA1(a794599bc334762ddb79e1d0219ad20383139728), \
+               "dmsndp4.u7",CRC(8760ed90) SHA1(cf8808f7cd347c47fa12e73a6bb5a54303fb7c49))
 
 #define DM_SOUND_L2 \
 DCS_SOUNDROM6x("dm_u2_s.l2",CRC(85fb8bce) SHA1(f2e912113d08b230e32aeeb4143485f266574fa2), \
@@ -264,34 +264,32 @@ DCS_SOUNDROM6x("dm_u2_s.l2",CRC(85fb8bce) SHA1(f2e912113d08b230e32aeeb4143485f26
                "dm_u4_s.l2",CRC(9d6815fe) SHA1(fb4be63dee54a883884f1600565011cb9740a866), \
                "dm_u5_s.l2",CRC(9f614c27) SHA1(f8f2f083b644517582a748bda0a3f69c14583f13), \
                "dm_u6_s.l2",CRC(3efc2c0e) SHA1(bc4efdee44ff635771629a2bde79e230b7643f31), \
-               "dm_u7_s.l2",CRC(75066af1) SHA1(4d70bce8a96343afcf02c89240b11faf19e11f02)) \
+               "dm_u7_s.l2",CRC(75066af1) SHA1(4d70bce8a96343afcf02c89240b11faf19e11f02))
 
-WPC_ROMSTART(dm,pa2,"u6-pa2.rom",  0x80000,CRC(862be56a) SHA1(95e1f899963762cb1a9de4eb5d6d57183ed1da38)) DM_SOUND_L1 WPC_ROMEND
-WPC_ROMSTART(dm,px5,"dman_px5.rom",0x80000,CRC(42673371) SHA1(77570902c1ca13956fa65214184bce79bcc67173)) DM_SOUND_L1 WPC_ROMEND
-WPC_ROMSTART(dm,la1,"dman_la1.rom",0x80000,CRC(be7c1965) SHA1(ed3b1016febc819b8c9f34953067bf0cdf3f33e6)) DM_SOUND_L1 WPC_ROMEND
+#define DM_SOUND_H1 \
+DCS_SOUNDROM8x("dm.2",CRC(03dae358) SHA1(e6ab35a0c530eda90bd2d65af7bff82af08c39f3), \
+               "dm.3",CRC(3b924d3f) SHA1(5bd6126cc6a6c662de0bc311c047441bc29919b2), \
+               "dm.4",CRC(ff8985da) SHA1(b382c301744ce208f4710b3dd2342457d02f0ce9), \
+               "dm.5",CRC(76f09bd0) SHA1(1e4861ddc12069733f7e1d25192df97b0d9b09ee), \
+               "dm.6",CRC(2897aca8) SHA1(d910289e10422e22b4a3e1e296a4a167da1eaa5b), \
+               "dm.7",CRC(6b1b9137) SHA1(4064f4fc230ba17b68819ff889335d9b6d9bba3e), \
+               "dm.8",CRC(5b333818) SHA1(007b8c117516b6023b376f95ff13831111f4dc20), \
+               "dm.9",CRC(4c1a34e8) SHA1(3eacc3c63b2d9db57fc86447f1408635b987ef69))
+
+WPC_ROMSTART(dm,pa2,"u6-pa2.rom",  0x80000,CRC(862be56a) SHA1(95e1f899963762cb1a9de4eb5d6d57183ed1da38)) DM_SOUND_P4 WPC_ROMEND
+WPC_ROMSTART(dm,px5,"dman_px5.rom",0x80000,CRC(42673371) SHA1(77570902c1ca13956fa65214184bce79bcc67173)) DM_SOUND_P4 WPC_ROMEND
+WPC_ROMSTART(dm,la1,"dman_la1.rom",0x80000,CRC(be7c1965) SHA1(ed3b1016febc819b8c9f34953067bf0cdf3f33e6))
+DCS_SOUNDROM6x("dm_u2_s.l1",CRC(f72dc72e) SHA1(a1267c32f70b4bfe6058d7e28d82006541fe3d6c),
+               "dm_u3_s.l2",CRC(2b65a66e) SHA1(7796082ecd7af29a240190aff654320375502a8b),
+               "dm_u4_s.l2",CRC(9d6815fe) SHA1(fb4be63dee54a883884f1600565011cb9740a866),
+               "dm_u5_s.l2",CRC(9f614c27) SHA1(f8f2f083b644517582a748bda0a3f69c14583f13),
+               "dm_u6_s.l2",CRC(3efc2c0e) SHA1(bc4efdee44ff635771629a2bde79e230b7643f31),
+               "dm_u7_s.l2",CRC(75066af1) SHA1(4d70bce8a96343afcf02c89240b11faf19e11f02))
+WPC_ROMEND
 WPC_ROMSTART(dm,lx3,"dman_lx3.rom",0x80000,CRC(5aa57674) SHA1(e02d91a705799866bd741b998d93413ec5bced25)) DM_SOUND_L2 WPC_ROMEND
 WPC_ROMSTART(dm,lx4,"dman_lx4.rom",0x80000,CRC(c2d0f493) SHA1(26ee970827dd96f3b3c56aa548cf7629ed6a16c1)) DM_SOUND_L2 WPC_ROMEND
-WPC_ROMSTART(dm,h5, "dman_h5.rom", 0x80000,CRC(bdcc62f7) SHA1(d6f3181970f3f71a876e9a2166156eb8fc405af0))
-DCS_SOUNDROM8x("dm.2",CRC(03dae358) SHA1(e6ab35a0c530eda90bd2d65af7bff82af08c39f3),
-               "dm.3",CRC(3b924d3f) SHA1(5bd6126cc6a6c662de0bc311c047441bc29919b2),
-               "dm.4",CRC(ff8985da) SHA1(b382c301744ce208f4710b3dd2342457d02f0ce9),
-               "dm.5",CRC(76f09bd0) SHA1(1e4861ddc12069733f7e1d25192df97b0d9b09ee),
-               "dm.6",CRC(2897aca8) SHA1(d910289e10422e22b4a3e1e296a4a167da1eaa5b),
-               "dm.7",CRC(6b1b9137) SHA1(4064f4fc230ba17b68819ff889335d9b6d9bba3e),
-               "dm.8",CRC(5b333818) SHA1(007b8c117516b6023b376f95ff13831111f4dc20),
-               "dm.9",CRC(4c1a34e8) SHA1(3eacc3c63b2d9db57fc86447f1408635b987ef69))
-WPC_ROMEND
-
-WPC_ROMSTART(dm,h6, "dman_h6.rom", 0x80000,CRC(3a079b80) SHA1(94a7ee94819ec878ced5e07745bf52b6c65e06c9))
-DCS_SOUNDROM8x("dm.2",CRC(03dae358) SHA1(e6ab35a0c530eda90bd2d65af7bff82af08c39f3),
-               "dm.3",CRC(3b924d3f) SHA1(5bd6126cc6a6c662de0bc311c047441bc29919b2),
-               "dm.4",CRC(ff8985da) SHA1(b382c301744ce208f4710b3dd2342457d02f0ce9),
-               "dm.5",CRC(76f09bd0) SHA1(1e4861ddc12069733f7e1d25192df97b0d9b09ee),
-               "dm.6",CRC(2897aca8) SHA1(d910289e10422e22b4a3e1e296a4a167da1eaa5b),
-               "dm.7",CRC(6b1b9137) SHA1(4064f4fc230ba17b68819ff889335d9b6d9bba3e),
-               "dm.8",CRC(5b333818) SHA1(007b8c117516b6023b376f95ff13831111f4dc20),
-               "dm.9",CRC(4c1a34e8) SHA1(3eacc3c63b2d9db57fc86447f1408635b987ef69))
-WPC_ROMEND
+WPC_ROMSTART(dm,h5, "dman_h5.rom", 0x80000,CRC(bdcc62f7) SHA1(d6f3181970f3f71a876e9a2166156eb8fc405af0)) DM_SOUND_H1 WPC_ROMEND
+WPC_ROMSTART(dm,h6, "dman_h6.rom", 0x80000,CRC(3a079b80) SHA1(94a7ee94819ec878ced5e07745bf52b6c65e06c9)) DM_SOUND_H1 WPC_ROMEND
 
 /*--------------
 /  Game drivers
