@@ -69,9 +69,7 @@ DRIVERNV(roadrunr)      //Road Runner (Prototype, 1979)
 // ---------------
 // BALLY GAMES
 // ---------------
-#ifdef MAME_DEBUG
-DRIVERNV(bingo)         //10/80 Continental Bingo
-#endif
+DRIVERNV(cntinntl)      //          10/80 Continental (Bingo)
 
 //MPU-17
 DRIVERNV(bowarrow)      //BY17-720: 08/76 Bow & Arrow (Prototype)
@@ -711,6 +709,11 @@ DRIVERNV(mach2)			//1995 - Mach 2
 DRIVERNV(jolypark)      //1996 - Jolly Park
 DRIVERNV(vrnwrld)		//1996 - Verne's World
 
+// ---------------
+// SPLIN BINGO
+// ---------------
+DRIVERNV(goldgame)      //19?? - Golden Game
+DRIVERNV(goldgam2)      //19?? - Golden Game Stake 6/10
 
 // ---------------
 // STERN GAMES
