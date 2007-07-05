@@ -32,6 +32,7 @@ extern MACHINE_DRIVER_EXTERN(de1s);
 extern MACHINE_DRIVER_EXTERN(de2as);
 extern MACHINE_DRIVER_EXTERN(de2aas);
 extern MACHINE_DRIVER_EXTERN(de2bs);
+extern MACHINE_DRIVER_EXTERN(de2ts);
 extern MACHINE_DRIVER_EXTERN(de3as);
 
 /*-- Sound rom macros --*/

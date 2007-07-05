@@ -103,6 +103,13 @@ static INTERRUPT_GEN(se_vblank) {
 
 static SWITCH_UPDATE(se) {
   if (inports) {
+   if (core_gameData->hw.display & SE_LED2) {
+    /*Switch Col 6 = Dedicated Switches */
+    CORE_SETKEYSW(core_revbyte(inports[SE_COMINPORT])<<1, 0xe0, 7);
+    /*Switch Col 12 = Dedicated Switches - Coin Door */
+    CORE_SETKEYSW(core_revbyte(inports[SE_COMINPORT]>>8)>>4, 0x0e, 11);
+    CORE_SETKEYSW(inports[SE_COMINPORT], 0x70, 11);
+   } else {
     /*Switch Col 0 = Dedicated Switches - Coin Door Only - Begin at 6th Spot*/
     CORE_SETKEYSW(inports[SE_COMINPORT]<<4, 0xe0, 0);
     /*Switch Col 1 = Coin Switches - (Switches begin at 4th Spot)*/
@@ -110,6 +117,7 @@ static SWITCH_UPDATE(se) {
     /*Copy Start, Tilt, and Slam Tilt to proper position in Matrix: Switches 54,55,56*/
     /*Clear bits 6,7,8 first*/
     CORE_SETKEYSW(inports[SE_COMINPORT]<<1, 0xe0, 7);
+   }
   }
 }
 
@@ -128,7 +136,7 @@ static MACHINE_INIT(se) {
                        install_mem_read_handler (0,0x8000,0x81ff,mcpu_ram8000_r);
   }
   selocals.miniidx = selocals.lastgiaux = 0;
-
+  if (core_gameData->hw.display & SE_LED2) selocals.miniidx = 1;
 #if SUPPORT_TRACERAM
   selocals.traceRam = 0;
   if (core_gameData->gen & GEN_WS_1) {
@@ -395,6 +403,13 @@ static WRITE_HANDLER(giaux_w) {
     } else if (data == 0xbe)
       coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | (selocals.auxdata << 4);
     selocals.lastgiaux = selocals.auxdata;
+  }
+  else if (core_gameData->hw.display & SE_LED2) { // a whole lotta extra lamps...
+    if (data & ~selocals.lastgiaux & 0x80) { /* clock in data to minidmd */
+      selocals.miniidx = (selocals.miniidx + 1) % 32;
+      coreGlobals.tmpLampMatrix[selocals.miniidx+10] = selocals.auxdata;
+    }
+    selocals.lastgiaux = data;
   } else if (core_gameData->hw.display & SE_DIGIT) {
     coreGlobals.solenoids2 = (coreGlobals.solenoids2 & 0xff0f) | (core_revbyte(selocals.auxdata & 0xf0) << 2);
     coreGlobals.segments[0].w = core_bcd2seg7[selocals.auxdata & 0x0f];
@@ -621,6 +636,14 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(se2aS)
   MDRV_IMPORT_FROM(se)
   MDRV_IMPORT_FROM(de2as)
+  MDRV_IMPORT_FROM(de_dmd32)
+  MDRV_SOUND_CMD(sndbrd_1_data_w)
+  MDRV_SOUND_CMDHEADING("se")
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(se2tS)
+  MDRV_IMPORT_FROM(se)
+  MDRV_IMPORT_FROM(de2ts)
   MDRV_IMPORT_FROM(de_dmd32)
   MDRV_SOUND_CMD(sndbrd_1_data_w)
   MDRV_SOUND_CMDHEADING("se")
