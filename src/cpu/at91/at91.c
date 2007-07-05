@@ -1539,6 +1539,11 @@ void at91_init(void)
 {
 	int i;
 
+	//clear out static data - since for VPM this code can be re-run with values from last game run which causes issues
+	memset(&at91, 0, sizeof(at91));
+	memset(&at91rs, 0, sizeof(at91rs));
+	at91_ICount = 0;
+
 	//must call core...
 	arm7_core_init("at91");
 
