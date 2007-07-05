@@ -788,6 +788,7 @@ DRIVERNV(monopoll)      //Whitestar: 09/01 Monopoly (Spanish display)
 DRIVERNV(monopolf)      //Whitestar: 09/01 Monopoly (French display)
 DRIVERNV(monopoli)      //Whitestar: 09/01 Monopoly (Italian display)
 DRIVERNV(nfl)			//Whitestar: 11/01 NFL
+DRIVERNV(monopred)      //Whitestar: ??/02 Monopoly Redemption (Coin dropper)
 DRIVERNV(playboys)      //Whitestar: 02/02 Playboy
 DRIVERNV(playboyg)      //Whitestar: 02/02 Playboy (German display)
 DRIVERNV(playboyl)      //Whitestar: 02/02 Playboy (Spanish display)

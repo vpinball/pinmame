@@ -13,6 +13,10 @@
 #include "s4.h"
 #include "gts3.h"
 #include "gts80s.h"
+#include "dedmd.h"
+#include "desound.h"
+#include "se.h"
+#include "vpintf.h"
 
 #define INITGAME(name, gen, disp) \
 static core_tGameData name##GameData = { gen, disp }; \
@@ -44,6 +48,10 @@ static const core_tLCDLayout dispBowl[] = {
   { 2, 0,20, 4, CORE_SEG7 }, { 2,12,28, 4, CORE_SEG7 },
   { 4, 0,36, 4, CORE_SEG7 }, { 4,12,44, 4, CORE_SEG7 },
   { 6, 4,54, 2, CORE_SEG7 }, { 6,12,52, 2, CORE_SEG7 }, {0}
+};
+
+static struct core_dispLayout se_dmd128x32[] = {
+  {0,0, 32,128, CORE_DMD, (void *)dedmd32_update}, {0}
 };
 
 /*----------------------------
@@ -326,3 +334,31 @@ WPCS_SOUNDROM222("lc_u18.l1",CRC(beb84fd9) SHA1(b1d5472af5e3c0f5c67e7d636122eb79
 WPC_ROMEND
 WPC_INPUT_PORTS_START(lc, 0) WPC_INPUT_PORTS_END
 CORE_GAMEDEF(lc,11,"League Champ (1.1)",1996,"Bally",wpc_mFliptronS,0)
+
+/*-------------------------------------------------------------------
+/ Titanic (Coin dropper)
+/-------------------------------------------------------------------*/
+static core_tGameData coinGameData = {
+  GEN_WS, se_dmd128x32, {FLIP_SWNO(81,88), 0, 34, 0, 0, SE_LED2}
+};
+static void init_titanic(void) { core_gameData = &coinGameData; }
+SE128_ROMSTART(titanic, "titacpu.101",CRC(4217becf) SHA1(8b7aacbe75717f13623f6ceaa4ba2de61b1b732a))
+DE_DMD32ROM8x(   "titadspa.101",CRC(5b4300b6) SHA1(c2b2de20f6c74b71d2a9ac43c17694eadd795586))
+DE2S_SOUNDROM144("titau7.101" ,CRC(544fe1ac) SHA1(5c62eef6a42660b13e626d1a6bb8cd09b77b0cc1),
+                 "titau17.100",CRC(ab919e99) SHA1(8735b632a62d9cd3db26b3c832785c48552ba231),
+                 "titau21.100",CRC(76ca05f8) SHA1(3e1c56fe37393c345111665fd8ab730d53cb6970))
+SE_ROMEND
+SE_INPUT_PORTS_START(titanic, 1) SE_INPUT_PORTS_END
+CORE_GAMEDEFNV(titanic,"Titanic (Coin dropper)",1998,"Sega",de_mSES2T,GAME_NOCRC)
+
+/*-------------------------------------------------------------------
+/ Monopoly (Coin dropper)
+/-------------------------------------------------------------------*/
+static void init_monopred(void) { core_gameData = &coinGameData; }
+SE128_ROMSTART(monopred, "monopcpu.401",CRC(2d0ff130) SHA1(c0b7baa6973db8743186a950b0a1ad3383db5c98))
+DE_DMD32ROM8x(  "monopdsp.400",CRC(0105572b) SHA1(fd9e1dfa4f396b953f82ccde11b54ee638382bee))
+DE2S_SOUNDROM18("monopred.u7" ,CRC(1ca0cf63) SHA1(c4ce78718e3e3f1a8451b134f2869dd6410fee30),
+                "monopred.u17",CRC(467dca62) SHA1(c727748b6b0b39ead19ce98bddd89fd05fb62d00))
+SE_ROMEND
+SE_INPUT_PORTS_START(monopred, 1) SE_INPUT_PORTS_END
+CORE_GAMEDEFNV(monopred,"Monopoly (Coin dropper)",2002,"Stern",de_mSES1,GAME_NOCRC)
