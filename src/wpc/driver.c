@@ -165,6 +165,7 @@ DRIVERNV(xsandos )      //BY35-1391:12/83 X's & O's
 DRIVERNV(granny )       //BY35-1369:01/84 Granny and the Gators
 DRIVERNV(kosteel )      //BY35-1390:05/84 Kings of Steel
 DRIVERNV(blakpyra)      //BY35-0A44 04/84 Black Pyramid
+                        //          05/84 Midnight Marauders (gun game)
 DRIVERNV(spyhuntr)      //BY35-0A17:07/84 Spy Hunter
                         //??        ??/85 Hot Shotz
 DRIVERNV(fbclass )      //BY35-0A40 10/84 Fireball Classic
@@ -672,6 +673,7 @@ DRIVERNV(viprsega)      //Whitestar: 02/98 Viper Night Drivin'
 DRIVERNV(lostspc)       //Whitestar: 06/98 Lost in Space
 DRIVERNV(goldcue)       //Whitestar: 06/98 Golden Cue
 DRIVERNV(godzilla)      //Whitestar: 09/98 Godzilla
+DRIVERNV(titanic)       //Whitestar: ??/98 Titanic Redemption (Coin dropper)
 DRIVER  (sprk,090)      //Whitestar: 01/99 South Park (0.90)
 DRIVER  (sprk,103)      //Whitestar: 01/99 South Park (1.03)
 DRIVER  (harl,a10)      //Whitestar: 09/99 Harley Davidson (1.03, Display 1.00)

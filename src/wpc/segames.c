@@ -299,6 +299,22 @@ SE_ROMEND
 #define input_ports_godzilla input_ports_se
 CORE_GAMEDEFNV(godzilla,"Godzilla",1998,"Sega",de_mSES1,GAME_NOCRC)
 
+/*-------------------------------------------------------------------
+/ Titanic (Redemption)
+/-------------------------------------------------------------------*/
+static core_tGameData titGameData = {
+  GEN_WS, se_dmd128x32, {FLIP_SWNO(81,88), 0, 34, 0, 0, SE_LED2}
+};
+static void init_titanic(void) { core_gameData = &titGameData; }
+SE128_ROMSTART(titanic, "titacpu.101",CRC(4217becf) SHA1(8b7aacbe75717f13623f6ceaa4ba2de61b1b732a))
+DE_DMD32ROM8x(   "titadspa.101",CRC(5b4300b6) SHA1(c2b2de20f6c74b71d2a9ac43c17694eadd795586))
+DE2S_SOUNDROM144("titau7.101" ,CRC(544fe1ac) SHA1(5c62eef6a42660b13e626d1a6bb8cd09b77b0cc1),
+                 "titau17.100",CRC(ab919e99) SHA1(8735b632a62d9cd3db26b3c832785c48552ba231),
+                 "titau21.100",CRC(76ca05f8) SHA1(3e1c56fe37393c345111665fd8ab730d53cb6970))
+SE_ROMEND
+#define input_ports_titanic input_ports_se
+CORE_GAMEDEFNV(titanic,"Titanic (Coin dropper)",1998,"Sega",de_mSES2T,GAME_NOCRC)
+
 /********************* SEGA GAMES DISTRIBUTED BY STERN  **********************/
 
 /*-------------------------------------------------------------------

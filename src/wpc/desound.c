@@ -238,6 +238,11 @@ static struct BSMT2000interface de2s_bsmt2000bInt = {
   1, {24000000}, {12}, {DE2S_ROMREGION}, {100}, 1, 4, 0
 };
 
+/* 11 Voice Style BSMT Chip used on Titanic */
+static struct BSMT2000interface de2s_bsmt2000tInt = {
+  1, {28000000}, {11}, {DE2S_ROMREGION}, {100}, 1, 4, 0
+};
+
 static MEMORY_READ_START(de2s_readmem)
   { 0x0000, 0x1fff, MRA_RAM },
   { 0x2002, 0x2003, soundlatch_r },
@@ -273,6 +278,11 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(de2bs)
   MDRV_IMPORT_FROM(de2as)
   MDRV_SOUND_REPLACE("bsmt", BSMT2000, de2s_bsmt2000bInt)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(de2ts)
+  MDRV_IMPORT_FROM(de2as)
+  MDRV_SOUND_REPLACE("bsmt", BSMT2000, de2s_bsmt2000tInt)
 MACHINE_DRIVER_END
 
 /*-- local data --*/

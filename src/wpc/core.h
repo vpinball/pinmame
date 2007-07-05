@@ -286,7 +286,7 @@ extern void video_update_core_dmd(struct mame_bitmap *bitmap, const struct recta
 #define CORE_MAXSWCOL       16   /* switch columns (0-9=sw matrix, 10=coin door, 11=cabinet/flippers) */
 #define CORE_FLIPPERSWCOL   11   /* internal array number */
 #define CORE_CUSTSWCOL     CORE_STDSWCOLS  /* first custom (game specific) switch column */
-#define CORE_MAXLAMPCOL     20   /* lamp column (0-7=std lamp matrix 8- custom) */
+#define CORE_MAXLAMPCOL     42   /* lamp column (0-7=std lamp matrix 8- custom) */
 #define CORE_CUSTLAMPCOL   CORE_STDLAMPCOLS  /* first custom lamp column */
 #define CORE_MAXPORTS        8   /* Maximum input ports */
 #define CORE_MAXGI           5   /* Maximum GI strings */
