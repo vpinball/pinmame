@@ -65,62 +65,45 @@ static void init_##name(void) { \
 } \
 GP_INPUT_PORTS_START(name, 1) GP_INPUT_PORTS_END
 
+#define INIT_110(name) \
+INITGAME(name, 0,dispGP_DDU1,FLIP_SW(FLIP_L),0,-2) \
+GP_ROMSTART88(name, "a-110.u12", CRC(ed0d518b) SHA1(8f3ca8792ad907c660d9149a1aa3a3528c7573e3), \
+                    "b1-110.u13",CRC(a223f2e8) SHA1(767e15e19e11399935c890c1d1034dccf1ad7f92)) \
+GP_ROMEND
+
+INIT_110(gp_110) GAMEX(1978,gp_110,0,GP1,gp_110,gp_110,ROT0,"Game Plan","Model 110",NOT_A_DRIVER)
 
 //Games in rough production order
 
 /*-------------------------------------------------------------------
 / Foxy Lady (May 1978) - Model: Cocktail #110
 /-------------------------------------------------------------------*/
-INITGAME(foxylady, 0,dispGP_DDU1,FLIP_SW(FLIP_L),0,-2)
-GP_ROMSTART88(foxylady,	"a-110.u12",CRC(ed0d518b) SHA1(8f3ca8792ad907c660d9149a1aa3a3528c7573e3),
-						"b1-110.u13",CRC(a223f2e8) SHA1(767e15e19e11399935c890c1d1034dccf1ad7f92))
-GP_ROMEND
-CORE_GAMEDEFNV(foxylady,"Foxy Lady",1978,"Game Plan",mGP1,GAME_USES_CHIMES)
+INIT_110(foxylady) CORE_CLONEDEFNV(foxylady,gp_110,"Foxy Lady",1978,"Game Plan",mGP1,GAME_USES_CHIMES)
 
 /*-------------------------------------------------------------------
 / Black Velvet (May 1978) - Model: Cocktail #110
 /-------------------------------------------------------------------*/
-INITGAME(blvelvet, 0,dispGP_DDU1,FLIP_SW(FLIP_L),0,-2)
-GP_ROMSTART88(blvelvet,	"a-110.u12",CRC(ed0d518b) SHA1(8f3ca8792ad907c660d9149a1aa3a3528c7573e3),
-						"b1-110.u13",CRC(a223f2e8) SHA1(767e15e19e11399935c890c1d1034dccf1ad7f92))
-GP_ROMEND
-CORE_GAMEDEFNV(blvelvet,"Black Velvet",1978,"Game Plan",mGP1,GAME_USES_CHIMES)
+INIT_110(blvelvet) CORE_CLONEDEFNV(blvelvet,gp_110,"Black Velvet",1978,"Game Plan",mGP1,GAME_USES_CHIMES)
 
 /*-------------------------------------------------------------------
 / Camel Lights (May 1978) - Model: Cocktail #110
 /-------------------------------------------------------------------*/
-INITGAME(camlight, 0,dispGP_DDU1,FLIP_SW(FLIP_L),0,-2)
-GP_ROMSTART88(camlight,	"a-110.u12",CRC(ed0d518b) SHA1(8f3ca8792ad907c660d9149a1aa3a3528c7573e3),
-						"b1-110.u13",CRC(a223f2e8) SHA1(767e15e19e11399935c890c1d1034dccf1ad7f92))
-GP_ROMEND
-CORE_GAMEDEFNV(camlight,"Camel Lights",1978,"Game Plan",mGP1,GAME_USES_CHIMES)
+INIT_110(camlight) CORE_CLONEDEFNV(camlight,gp_110,"Camel Lights",1978,"Game Plan",mGP1,GAME_USES_CHIMES)
 
 /*-------------------------------------------------------------------
-/ Real (to Real) (May 1978) - Model: Cocktail #110
+/ Real (May 1978) - Model: Cocktail #110
 /-------------------------------------------------------------------*/
-INITGAME(real, 0,dispGP_DDU1,FLIP_SW(FLIP_L),0,-2)
-GP_ROMSTART88(real,	"a-110.u12",CRC(ed0d518b) SHA1(8f3ca8792ad907c660d9149a1aa3a3528c7573e3),
-					"b1-110.u13",CRC(a223f2e8) SHA1(767e15e19e11399935c890c1d1034dccf1ad7f92))
-GP_ROMEND
-CORE_GAMEDEFNV(real,"Real (to Real)",1978,"Game Plan",mGP1,GAME_USES_CHIMES)
+INIT_110(real)     CORE_CLONEDEFNV(real,gp_110,"Real",1978,"Game Plan",mGP1,GAME_USES_CHIMES)
 
 /*-------------------------------------------------------------------
 / Rio (May 1978) - Model: Cocktail #110
 /-------------------------------------------------------------------*/
-INITGAME(rio, 0,dispGP_DDU1,FLIP_SW(FLIP_L),0,-2)
-GP_ROMSTART88(rio,	"a-110.u12",CRC(ed0d518b) SHA1(8f3ca8792ad907c660d9149a1aa3a3528c7573e3),
-					"b1-110.u13",CRC(a223f2e8) SHA1(767e15e19e11399935c890c1d1034dccf1ad7f92))
-GP_ROMEND
-CORE_GAMEDEFNV(rio,"Rio",1978,"Game Plan",mGP1,GAME_USES_CHIMES)
+INIT_110(rio)      CORE_CLONEDEFNV(rio,gp_110,"Rio",1978,"Game Plan",mGP1,GAME_USES_CHIMES)
 
 /*-------------------------------------------------------------------
-/Chuck-A-Luck (October 1978)
+/ Chuck-A-Luck (October 1978) - Model: Cocktail #110
 /-------------------------------------------------------------------*/
-INITGAME(chucklck, 0,dispGP_DDU1,FLIP_SW(FLIP_L),0,-2)
-GP_ROMSTART88(chucklck,	"a-110.u12",CRC(ed0d518b) SHA1(8f3ca8792ad907c660d9149a1aa3a3528c7573e3),
-					"b1-110.u13",CRC(a223f2e8) SHA1(767e15e19e11399935c890c1d1034dccf1ad7f92))
-GP_ROMEND
-CORE_GAMEDEFNV(chucklck,"Chuck-A-Luck",1978,"Game Plan",mGP1,GAME_USES_CHIMES)
+INIT_110(chucklck) CORE_CLONEDEFNV(chucklck,gp_110,"Chuck-A-Luck",1978,"Game Plan",mGP1,GAME_USES_CHIMES)
 
 /*-------------------------------------------------------------------
 / Star Trip (April 1979) - Model: Cocktail #120
