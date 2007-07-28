@@ -42,23 +42,23 @@ static void piaIrq(int state) {
 
 static SWITCH_UPDATE(allied) {
   if (inports) {
-    CORE_SETKEYSW(inports[CORE_COREINPORT] & 0xfe, 0xfe, 0);
-    CORE_SETKEYSW((inports[CORE_COREINPORT] & 0x01) << 7, 0x80, 4);
+    CORE_SETKEYSW(inports[CORE_COREINPORT] & 0x80, 0x80, 4);
+    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 8,   0x1f, 5);
   }
-  locals.test = (coreGlobals.swMatrix[0] & 0x40) ? 0 : 1;
+  locals.test = (coreGlobals.swMatrix[5] & 0x10) ? 0 : 1;
   // J2-W (credit)
   pia_set_input_cb1(2, (coreGlobals.swMatrix[4] & 0x80) ? 0 : 1);
   // J2-20/X (coin 3)
-  locals.coin[0] = (coreGlobals.swMatrix[0] & 0x04) ? 0 : 1;
+  locals.coin[0] = (coreGlobals.swMatrix[5] & 0x02) ? 0 : 1;
   pia_set_input_ca1(4, locals.coin[0]);
   // J2-21/Y (coin 2)
-  locals.coin[1] = (coreGlobals.swMatrix[0] & 0x08) ? 0 : 1;
+  locals.coin[1] = (coreGlobals.swMatrix[5] & 0x04) ? 0 : 1;
   pia_set_input_cb1(4, locals.coin[1]);
   // J2-22/Z (coin 1)
-  locals.coin[2] = (coreGlobals.swMatrix[0] & 0x10) ? 0 : 1;
+  locals.coin[2] = (coreGlobals.swMatrix[5] & 0x08) ? 0 : 1;
   pia_set_input_ca2(4, locals.coin[2]);
   // J1-16 / J2-b (slam)
-  locals.slam = (coreGlobals.swMatrix[0] & 0x80) ? 0 : 1;
+  locals.slam = (coreGlobals.swMatrix[5] & 0x01) ? 0 : 1;
   pia_set_input_cb1(3, locals.slam);
   pia_set_input_cb2(4, locals.slam);
 }
@@ -249,39 +249,50 @@ static READ_HANDLER(ic4_ca1_r) {
 */
 static WRITE_HANDLER(ic7_b_w) {
 //  logerror("IC#7 B w: %02x\n", data);
-  if ((data & 0x0f) < 10) {
-    locals.dipSel = data & 0x0f;
-    if (((core_getDip(0) & 0x02) ? 4 : 2) == locals.dipSel) pia_set_input_ca1(3, 1); pia_set_input_ca1(3, 0);
-    locals.mode = ((core_getDip(0) & 0x04) ? 1 : 0) == locals.dipSel;
-    locals.match = ((core_getDip(0) & 0x08) ? 1 : 0) == locals.dipSel;
-    if ((core_getDip(0) >> 4) == locals.dipSel) pia_set_input_cb1(0, 1); pia_set_input_cb1(0, 0);
-    if ((core_getDip(1) & 0x0f) == locals.dipSel) pia_set_input_cb1(1, 1); pia_set_input_cb1(1, 0);
-    if ((core_getDip(1) >> 4) == locals.dipSel) pia_set_input_ca1(1, 1); pia_set_input_ca1(1, 0);
-    if ((core_getDip(2) & 0x0f) == locals.dipSel) pia_set_input_ca1(2, 1); pia_set_input_ca2(1, 0);
-    locals.cred2 = (core_getDip(2) >> 4) == locals.dipSel;
-    locals.cred3 = (core_getDip(3) & 0x0f) == locals.dipSel;
-    locals.credOp = (core_getDip(3) >> 4) == locals.dipSel;
-    locals.repl1[0] = (core_getDip(4) & 0x0f) == locals.dipSel;
-    locals.repl1[1] = (core_getDip(4) >> 4) == locals.dipSel;
-    locals.repl1[2] = (core_getDip(5) & 0x0f) == locals.dipSel;
-    locals.repl2[0] = (core_getDip(5) >> 4) == locals.dipSel;
-    locals.repl2[1] = (core_getDip(6) & 0x0f) == locals.dipSel;
-    locals.repl2[2] = (core_getDip(6) >> 4) == locals.dipSel;
-    locals.repl3[0] = (core_getDip(7) & 0x0f) == locals.dipSel;
-    locals.repl3[1] = (core_getDip(7) >> 4) == locals.dipSel;
-    if ((core_getDip(8) & 0x0f) == locals.dipSel) pia_set_input_ca1(0, 1); pia_set_input_ca1(0, 0);
+  locals.dipSel = data & 0x0f;
+  if (((core_getDip(0) & 0x02) ? 4 : 2) == locals.dipSel) pia_set_input_ca1(3, 1); pia_set_input_ca1(3, 0);
+  locals.mode = ((core_getDip(0) & 0x04) ? 1 : 0) == locals.dipSel;
+  locals.match = ((core_getDip(0) & 0x08) ? 1 : 0) == locals.dipSel;
+  if ((core_getDip(0) >> 4) == locals.dipSel) pia_set_input_cb1(0, 1); pia_set_input_cb1(0, 0);
+  if ((core_getDip(1) & 0x0f) == locals.dipSel) pia_set_input_cb1(1, 1); pia_set_input_cb1(1, 0);
+  if ((core_getDip(1) >> 4) == locals.dipSel) pia_set_input_ca1(1, 1); pia_set_input_ca1(1, 0);
+  if ((core_getDip(2) & 0x0f) == locals.dipSel) pia_set_input_ca1(2, 1); pia_set_input_ca2(1, 0);
+  locals.cred2 = (core_getDip(2) >> 4) == locals.dipSel;
+  locals.cred3 = (core_getDip(3) & 0x0f) == locals.dipSel;
+  locals.credOp = (core_getDip(3) >> 4) == locals.dipSel;
+  locals.repl1[0] = (core_getDip(4) & 0x0f) == locals.dipSel;
+  locals.repl1[1] = (core_getDip(4) >> 4) == locals.dipSel;
+  locals.repl1[2] = (core_getDip(5) & 0x0f) == locals.dipSel;
+  locals.repl2[0] = (core_getDip(5) >> 4) == locals.dipSel;
+  locals.repl2[1] = (core_getDip(6) & 0x0f) == locals.dipSel;
+  locals.repl2[2] = (core_getDip(6) >> 4) == locals.dipSel;
+  locals.repl3[0] = (core_getDip(7) & 0x0f) == locals.dipSel;
+  locals.repl3[1] = (core_getDip(7) >> 4) == locals.dipSel;
+  if ((core_getDip(8) & 0x0f) == locals.dipSel) pia_set_input_ca1(0, 1); pia_set_input_ca1(0, 0);
+
+  if ((data & 0xf0) == 0x60 || (!(data & 0xf0) && locals.dipSel)) {
+    if (locals.dipSel < 8) {
+      coreGlobals.tmpLampMatrix[0] = 1 << locals.dipSel;
+      coreGlobals.tmpLampMatrix[1] &= 0xfc;
+    } else if (locals.dipSel < 10) {
+      coreGlobals.tmpLampMatrix[0] = 0;
+      coreGlobals.tmpLampMatrix[1] = (coreGlobals.tmpLampMatrix[1] & 0xfc) | (1 << (locals.dipSel - 8));
+    }
   }
-  if (locals.dipSel < 8) {
-    coreGlobals.tmpLampMatrix[0] = 1 << locals.dipSel;
-    coreGlobals.tmpLampMatrix[1] &= 0xfc;
+
+  locals.dispSel = data >> 4;
+  if ((data & 0x0f) == 0x0f) {
+    data >>= 4;
+    switch (data) {
+      case 0:  coreGlobals.tmpLampMatrix[1] = (coreGlobals.tmpLampMatrix[1] & 0x87) | 0x10; break;
+      case 6:  coreGlobals.tmpLampMatrix[1] = (coreGlobals.tmpLampMatrix[1] & 0x87) | 0x40; break;
+      case 7:  coreGlobals.tmpLampMatrix[1] = (coreGlobals.tmpLampMatrix[1] & 0x87) | 0x20; break;
+      case 8: case 9: case 0x0a: case 0x0b: case 0x0c: case 0x0d: case 0x0e:
+               coreGlobals.tmpLampMatrix[1] = (coreGlobals.tmpLampMatrix[1] & 0x87) | 0x08; break;
+    }
   } else {
-    coreGlobals.tmpLampMatrix[0] = 0;
-    coreGlobals.tmpLampMatrix[1] = (coreGlobals.tmpLampMatrix[1] & 0xfc) | (1 << (locals.dipSel - 8));
+    coreGlobals.tmpLampMatrix[1] &= 0x87;
   }
-  if ((data & 0x70) <= 0x50) {
-    locals.dispSel = (data & 0x70) >> 4;
-  }
-  coreGlobals.tmpLampMatrix[1] = (coreGlobals.tmpLampMatrix[1] & 0xf7) | ((data & 0x80) >> 4);
 }
 
 /* to J4-2 */
@@ -493,12 +504,12 @@ static HC4094interface allied_74164 = {
 };
 
 static MEMORY_READ_START(readmem)
+  { 0x0000, 0x003f, MRA_RAM },
   { 0x0048, 0x004b, pia_r(0) }, /* IC1 PIA */
   { 0x0044, 0x0047, pia_r(1) }, /* IC2 PIA */
   { 0x0060, 0x0063, pia_r(2) }, /* IC4 PIA */
   { 0x0050, 0x0053, pia_r(3) }, /* IC7 PIA */
   { 0x00c0, 0x00c3, pia_r(4) }, /* IC8 PIA */
-  { 0x0000, 0x003f, MRA_RAM },
   { 0x0040, 0x00ff, riot6530_1_r},
   { 0x0100, 0x013f, MRA_RAM },
   { 0x0840, 0x08ff, riot6530_2_r},
@@ -506,12 +517,12 @@ static MEMORY_READ_START(readmem)
 MEMORY_END
 
 static MEMORY_WRITE_START(writemem)
+  { 0x0000, 0x003f,	MWA_RAM, &generic_nvram, &generic_nvram_size},	/* fake NVRAM */
   { 0x0048, 0x004b, pia_w(0) }, /* IC1 PIA */
   { 0x0044, 0x0047, pia_w(1) }, /* IC2 PIA */
   { 0x0060, 0x0063, pia_w(2) }, /* IC4 PIA */
   { 0x0050, 0x0053, pia_w(3) }, /* IC7 PIA */
   { 0x00c0, 0x00c3, pia_w(4) }, /* IC8 PIA */
-  { 0x0000, 0x003f, MWA_RAM },
   { 0x0040, 0x00ff, riot6530_1_w},
   { 0x0100, 0x013f, MWA_RAM },
   { 0x0840, 0x08ff, riot6530_2_w},
@@ -551,6 +562,7 @@ static MACHINE_DRIVER_START(allied)
   MDRV_DIPS(72)
   MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_SWITCH_UPDATE(allied)
+  MDRV_NVRAM_HANDLER(generic_0fill)
 MACHINE_DRIVER_END
 
 static core_tLCDLayout dispAllied[] = {
@@ -569,12 +581,12 @@ INPUT_PORTS_START(name) \
   CORE_PORTS \
   SIM_PORTS(1) \
   PORT_START /* 0 */ \
-    COREPORT_BIT(   0x0001, "Credit",		KEYCODE_1)  \
-    COREPORT_BIT(   0x0004, "Coin 1",		KEYCODE_3)  \
-    COREPORT_BIT(   0x0008, "Coin 2",		KEYCODE_4)  \
-    COREPORT_BIT(   0x0010, "Coin 3",		KEYCODE_5)  \
-    COREPORT_BIT(   0x0040, "Diagnostic",	KEYCODE_7)  \
-    COREPORT_BIT(   0x0080, "Slam Tilt",	KEYCODE_HOME)  \
+    COREPORT_BIT(   0x0080, "Credit",		KEYCODE_1)  \
+    COREPORT_BIT(   0x0100, "Slam Tilt",	KEYCODE_HOME)  \
+    COREPORT_BIT(   0x0200, "Coin 1",		KEYCODE_3)  \
+    COREPORT_BIT(   0x0400, "Coin 2",		KEYCODE_4)  \
+    COREPORT_BIT(   0x0800, "Coin 3",		KEYCODE_5)  \
+    COREPORT_BIT(   0x1000, "Diagnostic",	KEYCODE_7)  \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0002, 0x0000, "Number of players") \
       COREPORT_DIPSET(0x0000, "2 players" ) \
