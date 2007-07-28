@@ -10,7 +10,7 @@
 #ifndef HC4094_H
 #define HC4094_H
 
-#define MAX_HC4094         10
+#define MAX_HC4094         16
 #define MAX_CASCADE_HC4094 4	// 4 chips cascaded = 32 bit number
 
 typedef struct
