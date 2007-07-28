@@ -292,3 +292,107 @@ ROM_END
 
 CORE_GAMEDEFNV (goldgame,           "Golden Game (Bingo)",            19??, "Splin (Belgium)", splin, GAME_NOT_WORKING)
 CORE_CLONEDEFNV(goldgam2, goldgame, "Golden Game Stake 6/10 (Bingo)", 19??, "Splin (Belgium)", splin, GAME_NOT_WORKING)
+
+
+// Seeben / Sirmo (Belgium)
+
+static MACHINE_INIT(seeben) {
+  memset(&locals, 0, sizeof(locals));
+}
+
+static SWITCH_UPDATE(seeben) {
+  if (keyboard_pressed_memory_repeat(KEYCODE_0, 0)) {
+    cpu_set_nmi_line(0, HOLD_LINE);
+  } else {
+    cpu_set_nmi_line(0, CLEAR_LINE);
+  }
+  if (inports) {
+    CORE_SETKEYSW(inports[CORE_COREINPORT], 0xff, 0);
+  }
+}
+
+static MEMORY_READ_START(readmems)
+MEMORY_END
+
+static MEMORY_WRITE_START(writemems)
+MEMORY_END
+
+static core_tLCDLayout dispSeeben[] = {
+  {0, 0, 0,16,CORE_SEG7},
+  {2, 0,16,16,CORE_SEG7},
+  {0}
+};
+static core_tGameData seebenGameData = {GEN_ZAC1,dispSeeben};
+static void init_seeben(void) {
+  core_gameData = &seebenGameData;
+}
+
+MACHINE_DRIVER_START(seeben)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CORE_INIT_RESET_STOP(seeben,NULL,NULL)
+  MDRV_CPU_ADD_TAG("mcpu", 8085A, 1000000)
+  MDRV_CPU_MEMORY(readmems, writemems)
+  MDRV_CPU_VBLANK_INT(vblank, 1)
+  MDRV_SWITCH_UPDATE(seeben)
+  MDRV_DIAGNOSTIC_LEDH(1)
+MACHINE_DRIVER_END
+
+INPUT_PORTS_START(seeben) \
+  CORE_PORTS \
+  SIM_PORTS(5) \
+  PORT_START /* 0 */ \
+  PORT_START /* 1 */ \
+    COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0001, "1" ) \
+    COREPORT_DIPNAME( 0x0002, 0x0000, "S2") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0002, "1" ) \
+    COREPORT_DIPNAME( 0x0004, 0x0000, "S3") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0004, "1" ) \
+    COREPORT_DIPNAME( 0x0008, 0x0000, "S4") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0008, "1" ) \
+    COREPORT_DIPNAME( 0x0010, 0x0000, "S5") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0010, "1" ) \
+    COREPORT_DIPNAME( 0x0020, 0x0000, "S6") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0020, "1" ) \
+    COREPORT_DIPNAME( 0x0040, 0x0000, "S7") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0040, "1" ) \
+    COREPORT_DIPNAME( 0x0080, 0x0000, "S8") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0080, "1" )
+INPUT_PORTS_END
+
+ROM_START(penalty) \
+  NORMALREGION(0x10000, REGION_CPU1) \
+    ROM_LOAD("13006-1.epr", 0x8000, 0x8000, CRC(93cfbec9) SHA1(c245604ac42c88c647950db4497a6f9dd3504955)) \
+    ROM_LOAD("13006-2.epr", 0x0000, 0x4000, CRC(41470cc1) SHA1(7050df563fddbe8216317d96664d12567b618645)) \
+ROM_END
+#define input_ports_penalty input_ports_seeben
+#define init_penalty init_seeben
+
+ROM_START(brooklyn) \
+  NORMALREGION(0x10000, REGION_CPU1) \
+    ROM_LOAD("n10207-1.epr", 0x8000, 0x8000, CRC(7851f870) SHA1(8da400108a352954ced8fc942663c0635bec4d1c)) \
+    ROM_LOAD("n10207-2.epr", 0x0000, 0x4000, CRC(861dae09) SHA1(d808fbbf6b50e1482a512b9bd1b18a023694adb2)) \
+ROM_END
+#define input_ports_brooklyn input_ports_seeben
+#define init_brooklyn init_seeben
+
+ROM_START(newdixie) \
+  NORMALREGION(0x10000, REGION_CPU1) \
+    ROM_LOAD("10307-1.epr", 0x8000, 0x8000, CRC(7b6b2e9c) SHA1(149c9e1d2a3e7db735835c6fa795e41b2eb45175)) \
+    ROM_LOAD("10307-2.epr", 0x0000, 0x4000, CRC(d99a7866) SHA1(659a0107bc970d2578dcfd7cdd43661da778fd5c)) \
+ROM_END
+#define input_ports_newdixie input_ports_seeben
+#define init_newdixie init_seeben
+
+CORE_GAMEDEFNV (penalty,  "Penalty (Bingo)",  19??, "Seeben (Belgium)", seeben, GAME_NOT_WORKING)
+CORE_GAMEDEFNV (brooklyn, "Brooklyn (Bingo)", 19??, "Seeben (Belgium)", seeben, GAME_NOT_WORKING)
+
+CORE_GAMEDEFNV (newdixie, "New Dixieland (Bingo)", 19??, "Sirmo (Belgium)", seeben, GAME_NOT_WORKING)
