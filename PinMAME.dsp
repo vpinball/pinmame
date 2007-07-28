@@ -3847,6 +3847,10 @@ SOURCE=.\src\wpc\sims\se\prelim\monopoly.c
 # End Group
 # Begin Source File
 
+SOURCE=.\src\wpc\allied.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\alvg.c
 # End Source File
 # Begin Source File
