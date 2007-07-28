@@ -62,6 +62,7 @@ DRVLIBS += $(PINOBJ)/rotation.o
 DRVLIBS += $(PINOBJ)/rowamet.o
 DRVLIBS += $(PINOBJ)/wico.o
 DRVLIBS += $(PINOBJ)/nsm.o
+DRVLIBS += $(PINOBJ)/allied.o
 #
 # Games
 #
@@ -165,6 +166,7 @@ CPUS += M68000@
 CPUS += M68306@
 CPUS += S2650@
 CPUS += 8080@
+CPUS += 8085A@
 CPUS += I8035@
 CPUS += I8039@
 CPUS += I86@

@@ -24,6 +24,18 @@ const struct GameDriver *test_drivers[] = { 0 };
 DRIVERNV(st_game)       //Unknown game running on old Stern hardware
 
 // --------------------
+// ALLIED LEISURE INC.
+// --------------------
+DRIVERNV(suprpick)      // 01/77 Super Picker
+DRIVERNV(thndbolt)      // 11/77 Thunderbolt
+DRIVERNV(hoedown)       // 03/78 Hoe Down
+DRIVERNV(takefive)      // 04/78 Take Five
+DRIVERNV(heartspd)      // 12/78 Hearts & Spades
+DRIVERNV(foathens)      // 12/78 Flame of Athens
+DRIVERNV(disco79)       // 06/79 Disco '79
+DRIVERNV(starshot)      // 12/79 Star Shooter
+
+// --------------------
 // ALVIN G. AND CO.
 // --------------------
 DRIVERNV(agsoccer)		//A.G. Soccer (1992)
@@ -318,6 +330,13 @@ DRIVER(gnr,300)         //Data East MPU: 07/94 Guns N Roses
 //MISC
 DRIVERNV(detest)        //Data East MPU: ??/?? DE Test Chip
 
+// --------------------
+// FASCINATION INTERNATIONAL, INC.
+// --------------------
+DRIVERNV(royclark)      // 09/77 Roy Clark - The Entertainer
+DRIVERNV(circa33)       // 02/79 Circa 1933
+DRIVERNV(erosone)       // 03/79 Eros One
+
 // ---------------
 // GAMATRON GAMES
 // ---------------
@@ -330,7 +349,7 @@ DRIVERNV(gamatron)      //Pinstar Gamatron (December 85)
 DRIVERNV(foxylady)      //Foxy Lady (May 1978)
 DRIVERNV(blvelvet)      //Black Velvet (May 1978)
 DRIVERNV(camlight)      //Camel Lights (May 1978)
-DRIVERNV(real)          //Real (to Real) (May 1978)
+DRIVERNV(real)          //Real (May 1978)
 DRIVERNV(rio)           //Rio (?? / 1978)
 DRIVERNV(chucklck)      //Chuck-A-Luck (October 1978)
 /*Games below are Cocktail #120 Model*/
