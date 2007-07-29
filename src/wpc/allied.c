@@ -19,12 +19,22 @@
 #include "machine/4094.h"
 #include "core.h"
 
+#define ALI_IC1 0
+#define ALI_IC2 1
+#define ALI_IC4 2
+#define ALI_IC7 3
+#define ALI_IC8 4
+
+#define ALI_IC3 0
+#define ALI_IC5 1
+#define ALI_IC6 2
+
 static struct {
   core_tSeg segments;
   UINT32 solenoids;
   int dipSel;
   int dispSel;
-  int coin[3], test, slam, mode, match, cred2, cred3, credOp;
+  int coin[3], players, balls, test, slam, mode, match, credunit, credtens, cred1, cred2, cred3, credOp;
   int repl1[3], repl2[3], repl3[3];
 } locals;
 
@@ -47,20 +57,20 @@ static SWITCH_UPDATE(allied) {
   }
   locals.test = (coreGlobals.swMatrix[5] & 0x10) ? 0 : 1;
   // J2-W (credit)
-  pia_set_input_cb1(2, (coreGlobals.swMatrix[4] & 0x80) ? 0 : 1);
+  pia_set_input_cb1(ALI_IC4, (coreGlobals.swMatrix[4] & 0x80) ? 0 : 1);
   // J2-20/X (coin 3)
   locals.coin[0] = (coreGlobals.swMatrix[5] & 0x02) ? 0 : 1;
-  pia_set_input_ca1(4, locals.coin[0]);
+  pia_set_input_ca1(ALI_IC8, locals.coin[0]);
   // J2-21/Y (coin 2)
   locals.coin[1] = (coreGlobals.swMatrix[5] & 0x04) ? 0 : 1;
-  pia_set_input_cb1(4, locals.coin[1]);
+  pia_set_input_cb1(ALI_IC8, locals.coin[1]);
   // J2-22/Z (coin 1)
   locals.coin[2] = (coreGlobals.swMatrix[5] & 0x08) ? 0 : 1;
-  pia_set_input_ca2(4, locals.coin[2]);
+  pia_set_input_ca2(ALI_IC8, locals.coin[2]);
   // J1-16 / J2-b (slam)
   locals.slam = (coreGlobals.swMatrix[5] & 0x01) ? 0 : 1;
-  pia_set_input_cb1(3, locals.slam);
-  pia_set_input_cb2(4, locals.slam);
+  pia_set_input_cb1(ALI_IC7, locals.slam);
+  pia_set_input_cb2(ALI_IC8, locals.slam);
 }
 
 /* PB0: to J2-8 (left 1,000 pts)
@@ -102,13 +112,13 @@ static READ_HANDLER(ic1_a_r) {
 /* 3rd 100,000 replay (strobed) */
 static READ_HANDLER(ic1_ca1_r) {
 //  logerror("IC#1 CA1 r\n");
-  return (core_getDip(8) & 0x0f) == locals.dipSel;
+  return locals.repl3[2];
 }
 
 /* Number of balls (strobed) */
 static READ_HANDLER(ic1_cb1_r) {
 //  logerror("IC#1 CB1 r\n");
-  return (core_getDip(0) >> 4) == locals.dipSel;
+  return locals.balls;
 }
 
 /* PB0: to J2-13 (right 1,000 pts)
@@ -167,13 +177,13 @@ static READ_HANDLER(ic2_a_r) {
 /* Max. credits tens (strobed) */
 static READ_HANDLER(ic2_ca1_r) {
 //  logerror("IC#2 CA1 r\n");
-  return (core_getDip(1) >> 4) == locals.dipSel;
+  return locals.credtens;
 }
 
 /* Max. credits units (strobed) */
 static READ_HANDLER(ic2_cb1_r) {
 //  logerror("IC#2 CB1 r\n");
-  return (core_getDip(1) & 0x0f) == locals.dipSel;
+  return locals.credunit;
 }
 
 /* PB0: to J2-6 (player #1 LED)
@@ -238,7 +248,7 @@ static READ_HANDLER(ic4_a_r) {
 /* Credit 1 prog. (strobed) */
 static READ_HANDLER(ic4_ca1_r) {
 //  logerror("IC#4 CA1 r\n");
-  return (core_getDip(2) & 0x0f) == locals.dipSel;
+  return locals.cred1;
 }
 
 /* PB0-PB3: dip strobe, also
@@ -250,25 +260,50 @@ static READ_HANDLER(ic4_ca1_r) {
 static WRITE_HANDLER(ic7_b_w) {
 //  logerror("IC#7 B w: %02x\n", data);
   locals.dipSel = data & 0x0f;
-  if (((core_getDip(0) & 0x02) ? 4 : 2) == locals.dipSel) pia_set_input_ca1(3, 1); pia_set_input_ca1(3, 0);
-  locals.mode = ((core_getDip(0) & 0x04) ? 1 : 0) == locals.dipSel;
-  locals.match = ((core_getDip(0) & 0x08) ? 1 : 0) == locals.dipSel;
-  if ((core_getDip(0) >> 4) == locals.dipSel) pia_set_input_cb1(0, 1); pia_set_input_cb1(0, 0);
-  if ((core_getDip(1) & 0x0f) == locals.dipSel) pia_set_input_cb1(1, 1); pia_set_input_cb1(1, 0);
-  if ((core_getDip(1) >> 4) == locals.dipSel) pia_set_input_ca1(1, 1); pia_set_input_ca1(1, 0);
-  if ((core_getDip(2) & 0x0f) == locals.dipSel) pia_set_input_ca1(2, 1); pia_set_input_ca2(1, 0);
-  locals.cred2 = (core_getDip(2) >> 4) == locals.dipSel;
-  locals.cred3 = (core_getDip(3) & 0x0f) == locals.dipSel;
-  locals.credOp = (core_getDip(3) >> 4) == locals.dipSel;
-  locals.repl1[0] = (core_getDip(4) & 0x0f) == locals.dipSel;
-  locals.repl1[1] = (core_getDip(4) >> 4) == locals.dipSel;
-  locals.repl1[2] = (core_getDip(5) & 0x0f) == locals.dipSel;
-  locals.repl2[0] = (core_getDip(5) >> 4) == locals.dipSel;
-  locals.repl2[1] = (core_getDip(6) & 0x0f) == locals.dipSel;
-  locals.repl2[2] = (core_getDip(6) >> 4) == locals.dipSel;
-  locals.repl3[0] = (core_getDip(7) & 0x0f) == locals.dipSel;
-  locals.repl3[1] = (core_getDip(7) >> 4) == locals.dipSel;
-  if ((core_getDip(8) & 0x0f) == locals.dipSel) pia_set_input_ca1(0, 1); pia_set_input_ca1(0, 0);
+  // IC#7 CA1 = 2/4 Players
+  locals.players = !(((core_getDip(0) & 0x02) ? 4 : 2) == locals.dipSel);
+  pia_set_input_ca1(ALI_IC7, locals.players);
+  // IC#6 PA2 = Replay / Add-a-ball
+  locals.mode = (core_getDip(0) & 0x04) ? 0 : 1;
+  // IC#6 PA3 = Match inhibit
+  locals.match = (core_getDip(0) & 0x08) ? 0 : 1;
+  // IC#1 CB1 = Number of balls
+  locals.balls = !((core_getDip(0) >> 4) == locals.dipSel);
+  pia_set_input_cb1(ALI_IC1, locals.balls);
+  // IC#2 CA1 = Max. credit tens
+  locals.credtens = !((core_getDip(1) & 0x0f) == locals.dipSel);
+  pia_set_input_ca1(ALI_IC2, locals.credtens);
+  // IC#2 CB1 = Max. credit units
+  locals.credunit = !((core_getDip(1) >> 4) == locals.dipSel);
+  pia_set_input_cb1(ALI_IC2, locals.credunit);
+  // IC#4 CA1 = Credit 1 prog.
+  locals.cred1 = !((core_getDip(2) & 0x0f) == locals.dipSel);
+  pia_set_input_ca1(ALI_IC4, locals.cred1);
+  // IC#6 PA1 = Credit 2 prog.
+  locals.cred2 = !((core_getDip(2) >> 4) == locals.dipSel);
+  // IC#6 PB4 = Credit 3 prog.
+  locals.cred3 = !((core_getDip(3) & 0x0f) == locals.dipSel);
+  // IC#6 PA0 = Credit options
+  locals.credOp = !((core_getDip(3) >> 4) == locals.dipSel);
+  // IC#5 PA0 = 1st 1,000 replay
+  locals.repl1[0] = !((core_getDip(4) & 0x0f) == locals.dipSel);
+  // IC#5 PA1 = 1st 10,000 replay
+  locals.repl1[1] = !((core_getDip(4) >> 4) == locals.dipSel);
+  // IC#5 PA2 = 1st 100,000 replay
+  locals.repl1[2] = !((core_getDip(5) & 0x0f) == locals.dipSel);
+  // IC#5 PA3 = 2nd 1,000 replay
+  locals.repl2[0] = !((core_getDip(5) >> 4) == locals.dipSel);
+  // IC#5 PA4 = 2nd 10,000 replay
+  locals.repl2[1] = !((core_getDip(6) & 0x0f) == locals.dipSel);
+  // IC#5 PA5 = 2nd 100,000 replay
+  locals.repl2[2] = !((core_getDip(6) >> 4) == locals.dipSel);
+  // IC#5 PA6 = 3rd 1,000 replay
+  locals.repl3[0] = !((core_getDip(7) & 0x0f) == locals.dipSel);
+  // IC#5 PA7 = 3rd 10,000 replay
+  locals.repl3[1] = !((core_getDip(7) >> 4) == locals.dipSel);
+  // IC#1 CA1 = 3rd 100,000 replay
+  locals.repl3[2] = !((core_getDip(8) & 0x0f) == locals.dipSel);
+  pia_set_input_ca1(ALI_IC1, locals.repl3[2]);
 
   if ((data & 0xf0) == 0x60 || (!(data & 0xf0) && locals.dipSel)) {
     if (locals.dipSel < 8) {
@@ -324,7 +359,7 @@ static READ_HANDLER(ic7_a_r) {
 /* from J1-T (2/4 player select) */
 static READ_HANDLER(ic7_ca1_r) {
 //  logerror("IC#7 CA1 r\n");
-  return (core_getDip(0) & 0x02) ? 1 : 0;
+  return locals.players;
 }
 
 /* PA0: to J5-3 (left thumper bumper)
@@ -405,10 +440,18 @@ static WRITE_HANDLER(ic5_b_w) {
    PA7: 3rd 10,000 replay (strobed)
 */
 static READ_HANDLER(ic5_a_r) {
-  logerror("IC#5 A r\n");
-  return locals.repl1[0] | (locals.repl1[1] << 1) | (locals.repl1[2] << 2) |
+  UINT8 data = locals.repl1[0] | (locals.repl1[1] << 1) | (locals.repl1[2] << 2) |
         (locals.repl2[0] << 3) | (locals.repl2[1] << 4) | (locals.repl2[2] << 5) |
         (locals.repl3[0] << 6) | (locals.repl3[1] << 7);
+  logerror("IC#5 A r = %02x\n", data);
+  return data;
+}
+
+/* PB6: Chip select (not needed) */
+static READ_HANDLER(ic5_b_r) {
+  UINT8 data = 0xff;
+  logerror("IC#5 B r = %02x\n", data);
+  return data;
 }
 
 /* PB0: to J5-9 (drop target a)
@@ -432,9 +475,10 @@ static WRITE_HANDLER(ic6_b_w) {
    PA7: from J1-16 / J2-b (slam)
 */
 static READ_HANDLER(ic6_a_r) {
-  logerror("IC#6 A r\n");
-  return locals.credOp | (locals.cred2 << 1) | (locals.mode << 2) | (locals.match << 3) |
+  UINT8 data = locals.credOp | (locals.cred2 << 1) | (locals.mode << 2) | (locals.match << 3) |
     (locals.coin[2] << 4) | (locals.coin[1] << 5) | (locals.coin[0] << 6) | (locals.slam << 7);
+  logerror("IC#6 A r = %02x\n", data);
+  return data;
 }
 
 /* PB4: Credit 3 prog. (strobed)
@@ -442,8 +486,9 @@ static READ_HANDLER(ic6_a_r) {
    PB6: Chip select (not needed)
 */
 static READ_HANDLER(ic6_b_r) {
-  logerror("IC#6 B r\n");
-  return (locals.cred3 << 4) | (locals.test << 5);
+  UINT8 data = 0xcf | (locals.cred3 << 4) | (locals.test << 5);
+  logerror("IC#6 B r = %02x\n", data);
+  return data;
 }
 
 static struct riot6530_interface allied_riot[] = {{
@@ -453,7 +498,7 @@ static struct riot6530_interface allied_riot[] = {{
  /* irq:     */ piaIrq
 },{
  /* 6530 RIOT 1 Chip IC5 */
- /* in:  A/B */ ic5_a_r, 0,
+ /* in:  A/B */ ic5_a_r, ic5_b_r,
  /* out: A/B */ 0, ic5_b_w,
  /* irq:     */ piaIrq
 },{
@@ -505,12 +550,12 @@ static HC4094interface allied_74164 = {
 
 static MEMORY_READ_START(readmem)
   { 0x0000, 0x003f, MRA_RAM },
-  { 0x0048, 0x004b, pia_r(0) }, /* IC1 PIA */
-  { 0x0044, 0x0047, pia_r(1) }, /* IC2 PIA */
-  { 0x0060, 0x0063, pia_r(2) }, /* IC4 PIA */
-  { 0x0050, 0x0053, pia_r(3) }, /* IC7 PIA */
+  { 0x0044, 0x0047, pia_r(ALI_IC2) },
+  { 0x0048, 0x004b, pia_r(ALI_IC1) },
+  { 0x0050, 0x0053, pia_r(ALI_IC7) },
+  { 0x0060, 0x0063, pia_r(ALI_IC4) },
   { 0x0080, 0x008f, riot6530_1_r},
-  { 0x00c0, 0x00c3, pia_r(4) }, /* IC8 PIA */
+  { 0x00c0, 0x00c3, pia_r(ALI_IC8) },
   { 0x0100, 0x013f, MRA_RAM },
   { 0x0840, 0x084f, riot6530_2_r},
   { 0xf400, 0xffff, MRA_ROM },
@@ -518,12 +563,12 @@ MEMORY_END
 
 static MEMORY_WRITE_START(writemem)
   { 0x0000, 0x003f,	MWA_RAM, &generic_nvram, &generic_nvram_size},	/* fake NVRAM */
-  { 0x0048, 0x004b, pia_w(0) }, /* IC1 PIA */
-  { 0x0044, 0x0047, pia_w(1) }, /* IC2 PIA */
-  { 0x0060, 0x0063, pia_w(2) }, /* IC4 PIA */
-  { 0x0050, 0x0053, pia_w(3) }, /* IC7 PIA */
+  { 0x0044, 0x0047, pia_w(ALI_IC2) },
+  { 0x0048, 0x004b, pia_w(ALI_IC1) },
+  { 0x0050, 0x0053, pia_w(ALI_IC7) },
+  { 0x0060, 0x0063, pia_w(ALI_IC4) },
   { 0x0080, 0x008f, riot6530_1_w},
-  { 0x00c0, 0x00c3, pia_w(4) }, /* IC8 PIA */
+  { 0x00c0, 0x00c3, pia_w(ALI_IC8) },
   { 0x0100, 0x013f, MWA_RAM },
   { 0x0840, 0x084f, riot6530_2_w},
 MEMORY_END
@@ -531,18 +576,18 @@ MEMORY_END
 static MACHINE_INIT(allied) {
   memset(&locals, 0, sizeof(locals));
 
-  pia_config(0, PIA_STANDARD_ORDERING, &allied_pia[0]);
-  pia_config(1, PIA_STANDARD_ORDERING, &allied_pia[1]);
-  pia_config(2, PIA_STANDARD_ORDERING, &allied_pia[2]);
-  pia_config(3, PIA_STANDARD_ORDERING, &allied_pia[3]);
-  pia_config(4, PIA_STANDARD_ORDERING, &allied_pia[4]);
+  pia_config(ALI_IC1, PIA_STANDARD_ORDERING, &allied_pia[0]);
+  pia_config(ALI_IC2, PIA_STANDARD_ORDERING, &allied_pia[1]);
+  pia_config(ALI_IC4, PIA_STANDARD_ORDERING, &allied_pia[2]);
+  pia_config(ALI_IC7, PIA_STANDARD_ORDERING, &allied_pia[3]);
+  pia_config(ALI_IC8, PIA_STANDARD_ORDERING, &allied_pia[4]);
 
-  riot6530_config(0, &allied_riot[0]);
-  riot6530_set_clock(0, Machine->drv->cpu[0].cpu_clock);
-  riot6530_config(1, &allied_riot[1]);
-  riot6530_set_clock(1, Machine->drv->cpu[0].cpu_clock);
-  riot6530_config(2, &allied_riot[2]);
-  riot6530_set_clock(2, Machine->drv->cpu[0].cpu_clock);
+  riot6530_config(ALI_IC3, &allied_riot[0]);
+  riot6530_set_clock(ALI_IC3, Machine->drv->cpu[0].cpu_clock);
+  riot6530_config(ALI_IC5, &allied_riot[1]);
+  riot6530_set_clock(ALI_IC5, Machine->drv->cpu[0].cpu_clock);
+  riot6530_config(ALI_IC6, &allied_riot[2]);
+  riot6530_set_clock(ALI_IC6, Machine->drv->cpu[0].cpu_clock);
   riot6530_reset();
 
   HC4094_init(&allied_74164);
@@ -559,7 +604,7 @@ static MACHINE_DRIVER_START(allied)
   MDRV_CPU_ADD_TAG("mcpu", M6502, 3572549/4)
   MDRV_CPU_MEMORY(readmem, writemem)
   MDRV_CPU_VBLANK_INT(vblank, 1)
-  MDRV_DIPS(72)
+  MDRV_DIPS(68)
   MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_SWITCH_UPDATE(allied)
   MDRV_NVRAM_HANDLER(generic_0fill)
@@ -588,6 +633,7 @@ INPUT_PORTS_START(name) \
     COREPORT_BIT(   0x0800, "Coin 3",		KEYCODE_5)  \
     COREPORT_BIT(   0x1000, "Diagnostic",	KEYCODE_7)  \
   PORT_START /* 1 */ \
+/* DIP 0 */ \
     COREPORT_DIPNAME( 0x0002, 0x0000, "Number of players") \
       COREPORT_DIPSET(0x0000, "2 players" ) \
       COREPORT_DIPSET(0x0002, "4 players" ) \
@@ -603,29 +649,31 @@ INPUT_PORTS_START(name) \
       COREPORT_DIPSET(0x0030, "3" ) \
       COREPORT_DIPSET(0x0040, "4" ) \
       COREPORT_DIPSET(0x0050, "5" ) \
-    COREPORT_DIPNAME( 0x0f00, 0x0000, "Max. credits x1") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0100, "1" ) \
-      COREPORT_DIPSET(0x0200, "2" ) \
-      COREPORT_DIPSET(0x0300, "3" ) \
-      COREPORT_DIPSET(0x0400, "4" ) \
-      COREPORT_DIPSET(0x0500, "5" ) \
-      COREPORT_DIPSET(0x0600, "6" ) \
-      COREPORT_DIPSET(0x0700, "7" ) \
-      COREPORT_DIPSET(0x0800, "8" ) \
-      COREPORT_DIPSET(0x0900, "9" ) \
-    COREPORT_DIPNAME( 0xf000, 0x1000, "Max. credits x10") \
+/* DIP 1 */ \
+    COREPORT_DIPNAME( 0x0f00, 0x0100, "Max. credits x10") \
       COREPORT_DIPSET(0x0000, "00" ) \
-      COREPORT_DIPSET(0x1000, "10" ) \
-      COREPORT_DIPSET(0x2000, "20" ) \
-      COREPORT_DIPSET(0x3000, "30" ) \
-      COREPORT_DIPSET(0x4000, "40" ) \
-      COREPORT_DIPSET(0x5000, "50" ) \
-      COREPORT_DIPSET(0x6000, "60" ) \
-      COREPORT_DIPSET(0x7000, "70" ) \
-      COREPORT_DIPSET(0x8000, "80" ) \
-      COREPORT_DIPSET(0x9000, "90" ) \
+      COREPORT_DIPSET(0x0100, "10" ) \
+      COREPORT_DIPSET(0x0200, "20" ) \
+      COREPORT_DIPSET(0x0300, "30" ) \
+      COREPORT_DIPSET(0x0400, "40" ) \
+      COREPORT_DIPSET(0x0500, "50" ) \
+      COREPORT_DIPSET(0x0600, "60" ) \
+      COREPORT_DIPSET(0x0700, "70" ) \
+      COREPORT_DIPSET(0x0800, "80" ) \
+      COREPORT_DIPSET(0x0900, "90" ) \
+    COREPORT_DIPNAME( 0xf000, 0x0000, "Max. credits x1") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x1000, "1" ) \
+      COREPORT_DIPSET(0x2000, "2" ) \
+      COREPORT_DIPSET(0x3000, "3" ) \
+      COREPORT_DIPSET(0x4000, "4" ) \
+      COREPORT_DIPSET(0x5000, "5" ) \
+      COREPORT_DIPSET(0x6000, "6" ) \
+      COREPORT_DIPSET(0x7000, "7" ) \
+      COREPORT_DIPSET(0x8000, "8" ) \
+      COREPORT_DIPSET(0x9000, "9" ) \
   PORT_START /* 2 */ \
+/* DIP 2 */ \
     COREPORT_DIPNAME( 0x000f, 0x0001, "Credit #1 program") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0001, "1" ) \
@@ -648,7 +696,8 @@ INPUT_PORTS_START(name) \
       COREPORT_DIPSET(0x0070, "7" ) \
       COREPORT_DIPSET(0x0080, "8" ) \
       COREPORT_DIPSET(0x0090, "9" ) \
-    COREPORT_DIPNAME( 0x0f00, 0x0100, "Credit #3 program") \
+/* DIP 3 */ \
+    COREPORT_DIPNAME( 0x0f00, 0x0200, "Credit #3 program") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0100, "1" ) \
       COREPORT_DIPSET(0x0200, "2" ) \
@@ -659,7 +708,7 @@ INPUT_PORTS_START(name) \
       COREPORT_DIPSET(0x0700, "7" ) \
       COREPORT_DIPSET(0x0800, "8" ) \
       COREPORT_DIPSET(0x0900, "9" ) \
-    COREPORT_DIPNAME( 0xf000, 0x1000, "Credit option") \
+    COREPORT_DIPNAME( 0xf000, 0x4000, "Credit option") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x1000, "1" ) \
       COREPORT_DIPSET(0x2000, "2" ) \
@@ -671,6 +720,7 @@ INPUT_PORTS_START(name) \
       COREPORT_DIPSET(0x8000, "8" ) \
       COREPORT_DIPSET(0x9000, "9" ) \
   PORT_START /* 3 */ \
+/* DIP 4 */ \
     COREPORT_DIPNAME( 0x000f, 0x0009, "Replay #1 x1K") \
       COREPORT_DIPSET(0x0000, "0,000" ) \
       COREPORT_DIPSET(0x0001, "1,000" ) \
@@ -693,6 +743,7 @@ INPUT_PORTS_START(name) \
       COREPORT_DIPSET(0x0070, "70,000" ) \
       COREPORT_DIPSET(0x0080, "80,000" ) \
       COREPORT_DIPSET(0x0090, "90,000" ) \
+/* DIP 5 */ \
     COREPORT_DIPNAME( 0x0f00, 0x0100, "Replay #1 x100K") \
       COREPORT_DIPSET(0x0000, "000,000" ) \
       COREPORT_DIPSET(0x0100, "100,000" ) \
@@ -716,6 +767,7 @@ INPUT_PORTS_START(name) \
       COREPORT_DIPSET(0x8000, "8,000" ) \
       COREPORT_DIPSET(0x9000, "9,000" ) \
   PORT_START /* 4 */ \
+/* DIP 6 */ \
     COREPORT_DIPNAME( 0x000f, 0x0006, "Replay #2 x10K") \
       COREPORT_DIPSET(0x0000, "00,000" ) \
       COREPORT_DIPSET(0x0001, "10,000" ) \
@@ -738,6 +790,7 @@ INPUT_PORTS_START(name) \
       COREPORT_DIPSET(0x0070, "700,000" ) \
       COREPORT_DIPSET(0x0080, "800,000" ) \
       COREPORT_DIPSET(0x0090, "900,000" ) \
+/* DIP 7 */ \
     COREPORT_DIPNAME( 0x0f00, 0x0400, "Replay #3 x1K") \
       COREPORT_DIPSET(0x0000, "0,000" ) \
       COREPORT_DIPSET(0x0100, "1,000" ) \
@@ -761,6 +814,7 @@ INPUT_PORTS_START(name) \
       COREPORT_DIPSET(0x8000, "80,000" ) \
       COREPORT_DIPSET(0x9000, "90,000" ) \
   PORT_START /* 5 */ \
+/* DIP 8 */ \
     COREPORT_DIPNAME( 0x000f, 0x0001, "Replay #3 x100K") \
       COREPORT_DIPSET(0x0000, "000,000" ) \
       COREPORT_DIPSET(0x0001, "100,000" ) \
