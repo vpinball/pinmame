@@ -138,14 +138,14 @@ static WRITE_HANDLER(ic2_b_w) {
 /* 4th bit of extra BCD strobe (display clock input) */
 static WRITE_HANDLER(ic2_cb2_w) {
 //  logerror("IC#2 CB2 w: %02x\n", data);
-  if (locals.dispSel > 0) {
+  if (locals.dispSel > 0 && locals.dispSel < 6) {
     HC4094_clock_w((locals.dispSel-1) * 3, data);
     if (locals.dispSel < 5) {
       HC4094_clock_w((locals.dispSel-1) * 3 + 1, data);
       HC4094_clock_w((locals.dispSel-1) * 3 + 2, data);
     }
     coreGlobals.diagnosticLed = 0;
-  } else {
+  } else if (!locals.dispSel) {
     coreGlobals.diagnosticLed = 1;
   }
 }
@@ -509,10 +509,10 @@ static MEMORY_READ_START(readmem)
   { 0x0044, 0x0047, pia_r(1) }, /* IC2 PIA */
   { 0x0060, 0x0063, pia_r(2) }, /* IC4 PIA */
   { 0x0050, 0x0053, pia_r(3) }, /* IC7 PIA */
+  { 0x0080, 0x008f, riot6530_1_r},
   { 0x00c0, 0x00c3, pia_r(4) }, /* IC8 PIA */
-  { 0x0040, 0x00ff, riot6530_1_r},
   { 0x0100, 0x013f, MRA_RAM },
-  { 0x0840, 0x08ff, riot6530_2_r},
+  { 0x0840, 0x084f, riot6530_2_r},
   { 0xf400, 0xffff, MRA_ROM },
 MEMORY_END
 
@@ -522,10 +522,10 @@ static MEMORY_WRITE_START(writemem)
   { 0x0044, 0x0047, pia_w(1) }, /* IC2 PIA */
   { 0x0060, 0x0063, pia_w(2) }, /* IC4 PIA */
   { 0x0050, 0x0053, pia_w(3) }, /* IC7 PIA */
+  { 0x0080, 0x008f, riot6530_1_w},
   { 0x00c0, 0x00c3, pia_w(4) }, /* IC8 PIA */
-  { 0x0040, 0x00ff, riot6530_1_w},
   { 0x0100, 0x013f, MWA_RAM },
-  { 0x0840, 0x08ff, riot6530_2_w},
+  { 0x0840, 0x084f, riot6530_2_w},
 MEMORY_END
 
 static MACHINE_INIT(allied) {
