@@ -305,14 +305,15 @@ static WRITE_HANDLER(ic7_b_w) {
   locals.repl3[2] = !((core_getDip(8) & 0x0f) == locals.dipSel);
   pia_set_input_ca1(ALI_IC1, locals.repl3[2]);
 
-  if ((data & 0xf0) == 0x60 || (!(data & 0xf0) && locals.dipSel)) {
-    if (locals.dipSel < 8) {
-      coreGlobals.tmpLampMatrix[0] = 1 << locals.dipSel;
-      coreGlobals.tmpLampMatrix[1] &= 0xfc;
-    } else if (locals.dipSel < 10) {
-      coreGlobals.tmpLampMatrix[0] = 0;
-      coreGlobals.tmpLampMatrix[1] = (coreGlobals.tmpLampMatrix[1] & 0xfc) | (1 << (locals.dipSel - 8));
-    }
+  if (locals.dipSel < 8) {
+    coreGlobals.tmpLampMatrix[0] = 1 << locals.dipSel;
+    coreGlobals.tmpLampMatrix[1] &= 0xfc;
+  } else if (locals.dipSel < 10) {
+    coreGlobals.tmpLampMatrix[0] = 0;
+    coreGlobals.tmpLampMatrix[1] = (coreGlobals.tmpLampMatrix[1] & 0xfc) | (1 << (locals.dipSel - 8));
+  } else {
+    coreGlobals.tmpLampMatrix[0] = 0;
+    coreGlobals.tmpLampMatrix[1] &= 0xfc;
   }
 
   locals.dispSel = data >> 4;
