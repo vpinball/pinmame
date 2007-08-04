@@ -29,6 +29,10 @@
 #define ALI_IC5 1
 #define ALI_IC6 2
 
+static int bitToNum(UINT8 tmp) {
+  return (tmp & 0x10) ? 5 : (tmp & 0x08) ? 4 : (tmp & 0x04) ? 3 : (tmp & 0x02) ? 2 : (tmp & 0x01) ? 1 : 0;
+}
+
 static struct {
   core_tSeg segments;
   UINT32 solenoids;
@@ -152,15 +156,15 @@ static WRITE_HANDLER(ic2_b_w) {
 static WRITE_HANDLER(ic2_cb2_w) {
 //  logerror("IC#2 CB2 w: %02x\n", data);
   if (locals.dispSel > 0 && locals.dispSel < 6) {
-    HC4094_clock_w((locals.dispSel-1) * 3, data);
+    HC4094_clock_w((locals.dispSel-1) * 3, !data);
     if (locals.dispSel < 5) {
-      HC4094_clock_w((locals.dispSel-1) * 3 + 1, data);
-      HC4094_clock_w((locals.dispSel-1) * 3 + 2, data);
+      HC4094_clock_w((locals.dispSel-1) * 3 + 1, !data);
+      HC4094_clock_w((locals.dispSel-1) * 3 + 2, !data);
     }
   } else if (!locals.dispSel) {
-    HC4094_clock_w(13, data);
-    HC4094_clock_w(14, data);
-    HC4094_clock_w(15, data);
+    HC4094_clock_w(13, !data);
+    HC4094_clock_w(14, !data);
+    HC4094_clock_w(15, !data);
   }
   coreGlobals.diagnosticLed = (coreGlobals.diagnosticLed & 0x0e) | !locals.dispSel;
 }
@@ -228,6 +232,7 @@ static WRITE_HANDLER(ic4_b_w) {
     HC4094_oe_w(9, 0); HC4094_oe_w(10, 0); HC4094_oe_w(11, 0);
     HC4094_oe_w(9, 1); HC4094_oe_w(10, 1); HC4094_oe_w(11, 1);
   }
+  locals.segments[26].w = core_bcd2seg7e[bitToNum(data & 0x0f)];
 }
 
 /* to J6-15 (slingshot DC lights) */
@@ -394,6 +399,7 @@ static WRITE_HANDLER(ic8_a_w) {
 static WRITE_HANDLER(ic8_b_w) {
 //  logerror("IC#8 B w: %02x\n", data);
   coreGlobals.tmpLampMatrix[4] = data;
+  locals.segments[27].w = core_bcd2seg7e[bitToNum(data & 0x1f)];
 }
 
 static struct pia6821_interface allied_pia[] = {{
@@ -551,7 +557,7 @@ static WRITE_HANDLER(disp_12_out) { data ^= 0xff; locals.segments[25].w = core_b
 static WRITE_HANDLER(disp_13_out) { coreGlobals.tmpLampMatrix[7] = core_revbyte(data); }
 static WRITE_HANDLER(qs_13_out) { HC4094_data_w(14, data); HC4094_strobe_w(14, 1); }
 
-static WRITE_HANDLER(disp_14_out) { coreGlobals.tmpLampMatrix[6] = core_revbyte(data);; }
+static WRITE_HANDLER(disp_14_out) { coreGlobals.tmpLampMatrix[6] = core_revbyte(data); }
 static WRITE_HANDLER(qs_14_out) { HC4094_data_w(15, data); HC4094_strobe_w(15, 1); }
 
 static WRITE_HANDLER(disp_15_out) { coreGlobals.tmpLampMatrix[5] = (coreGlobals.tmpLampMatrix[5] & 0x0f) | (core_revbyte(data) & 0xf0); }
@@ -639,6 +645,13 @@ static core_tLCDLayout dispAllied6[] = {
  {0, 0, 0, 6,CORE_SEG7}, {0,14, 6, 6,CORE_SEG7},
  {3, 0,12, 6,CORE_SEG7}, {3,14,18, 6,CORE_SEG7},
  {6,11,24, 2,CORE_SEG7},
+ {0}
+};
+
+static core_tLCDLayout dispAllied6a[] = {
+ {0, 0, 0, 6,CORE_SEG7}, {0,14, 6, 6,CORE_SEG7},
+ {3, 0,12, 6,CORE_SEG7}, {3,14,18, 6,CORE_SEG7},
+ {6, 8,24, 2,CORE_SEG7}, {6,14,26, 1,CORE_SEG7}, {6,18,27, 1,CORE_SEG7},
  {0}
 };
 
@@ -863,14 +876,14 @@ INITGAME(allied, dispAllied5) GAMEX(1977, allied, 0, allied, allied, allied, ROT
 
 // games below
 
-INITGAME(suprpick, dispAllied5) CORE_CLONEDEFNV(suprpick,allied,"Super Picker",1977,"Allied Leisure",allied,GAME_USES_CHIMES)
-INITGAME(royclark, dispAllied6) CORE_CLONEDEFNV(royclark,allied,"Roy Clark - The Entertainer",1977,"Fascination Int.",allied,GAME_USES_CHIMES)
-INITGAME(thndbolt, dispAllied5) CORE_CLONEDEFNV(thndbolt,allied,"Thunderbolt",1977,"Allied Leisure",allied,GAME_USES_CHIMES)
+INITGAME(suprpick,dispAllied5)  CORE_CLONEDEFNV(suprpick,allied,"Super Picker",1977,"Allied Leisure",allied,GAME_USES_CHIMES)
+INITGAME(royclark,dispAllied6)  CORE_CLONEDEFNV(royclark,allied,"Roy Clark - The Entertainer",1977,"Fascination Int.",allied,GAME_USES_CHIMES)
+INITGAME(thndbolt,dispAllied5)  CORE_CLONEDEFNV(thndbolt,allied,"Thunderbolt",1977,"Allied Leisure",allied,GAME_USES_CHIMES)
 INITGAME(hoedown, dispAllied5)  CORE_CLONEDEFNV(hoedown, allied,"Hoe Down",1978,"Allied Leisure",allied,GAME_USES_CHIMES)
-INITGAME(takefive, dispAllied6) CORE_CLONEDEFNV(takefive,allied,"Take Five",1978,"Allied Leisure",allied,GAME_USES_CHIMES)
-INITGAME(heartspd, dispAllied6) CORE_CLONEDEFNV(heartspd,allied,"Hearts & Spades",1978,"Allied Leisure",allied,GAME_USES_CHIMES)
-INITGAME(foathens, dispAllied6) CORE_CLONEDEFNV(foathens,allied,"Flame of Athens",1978,"Allied Leisure",allied,GAME_USES_CHIMES)
-INITGAME(disco79, dispAllied6)  CORE_CLONEDEFNV(disco79, allied,"Disco '79",1979,"Allied Leisure",allied,GAME_USES_CHIMES)
+INITGAME(takefive,dispAllied6)  CORE_CLONEDEFNV(takefive,allied,"Take Five",1978,"Allied Leisure",allied,GAME_USES_CHIMES)
+INITGAME(heartspd,dispAllied6)  CORE_CLONEDEFNV(heartspd,allied,"Hearts & Spades",1978,"Allied Leisure",allied,GAME_USES_CHIMES)
+INITGAME(foathens,dispAllied6)  CORE_CLONEDEFNV(foathens,allied,"Flame of Athens",1978,"Allied Leisure",allied,GAME_USES_CHIMES)
+INITGAME(disco79, dispAllied6a) CORE_CLONEDEFNV(disco79, allied,"Disco '79",1979,"Allied Leisure",allied,GAME_USES_CHIMES)
 INITGAME(erosone, dispAllied6)  CORE_CLONEDEFNV(erosone, allied,"Eros One",1979,"Fascination Int.",allied,GAME_USES_CHIMES)
 INITGAME(circa33, dispAllied6)  CORE_CLONEDEFNV(circa33, allied,"Circa 1933",1979,"Fascination Int.",allied,GAME_USES_CHIMES)
-INITGAME(starshot, dispAllied6) CORE_CLONEDEFNV(starshot,allied,"Star Shooter",1979,"Allied Leisure",allied,GAME_USES_CHIMES)
+INITGAME(starshot,dispAllied6a) CORE_CLONEDEFNV(starshot,allied,"Star Shooter",1979,"Allied Leisure",allied,GAME_USES_CHIMES)
