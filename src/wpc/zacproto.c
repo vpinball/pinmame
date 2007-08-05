@@ -227,3 +227,15 @@ ROM_START(strike) \
 ROM_END
 
 CORE_GAMEDEFNV(strike, "Strike", 1978, "Zaccaria", zacProto, GAME_NO_SOUND)
+
+ROM_START(spacecty) \
+  NORMALREGION(0x8000, REGION_CPU1) \
+    ROM_LOAD("zsc1.dat", 0x0000, 0x0400, CRC(4405368f) SHA1(037ad7e7158424bb714b28e4effa2c96c8736ce4)) \
+    ROM_LOAD("zsc2.dat", 0x0400, 0x0400, CRC(a6c41475) SHA1(7d7d851efb2db7d9a1988265cdff676260d753c3)) \
+    ROM_LOAD("zsc3.dat", 0x0800, 0x0400, CRC(e6a2dcee) SHA1(d2dfff896ae90208c28179f9bbe43f93d7f2131c)) \
+    ROM_LOAD("zsc4.dat", 0x1400, 0x0400, CRC(69e0bb95) SHA1(d9a1d0159bf49445b0ece0f9d7806ed80657c2b2))
+ROM_END
+#define init_spacecty init_strike
+#define input_ports_spacecty input_ports_strike
+
+CORE_GAMEDEFNV(spacecty,"Space City", 1979, "Zaccaria", zacProto, GAME_NO_SOUND)

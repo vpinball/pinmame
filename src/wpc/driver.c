@@ -1352,7 +1352,7 @@ DRIVERNV(strike)        //09/78 Strike
 DRIVERNV(futurwld)      //10/78 Future World
 DRIVERNV(strapids)      //04/79 Shooting the Rapids
 DRIVERNV(hotwheel)      //09/79 Hot Wheels
-                        //09/79 Space City
+DRIVERNV(spacecty)      //09/79 Space City
 DRIVERNV(firemntn)      //01/80 Fire Mountain
 DRIVERNV(stargod)       //05/80 Star God
 DRIVERNV(stargoda)      //05/80 Star God (alternate sound)
