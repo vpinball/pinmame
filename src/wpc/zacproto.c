@@ -61,12 +61,19 @@ static READ_HANDLER(dip_r) {
   return core_getDip(offset);
 }
 
+static int bcd2seg7f[16] = {
+/* 0    1    2    3    4    5    6    7    8    9  */
+  0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f,
+/* A    B    C    D    E    F */
+  0x77,0x7c,0x39,0x5e,0x79,0x71
+};
+
 static WRITE_HANDLER(disp_w) {
   locals.dispCount = 0;
-  locals.segments[9-offset*2].w = core_bcd2seg7e[data & 0x0f];
-  locals.segments[8-offset*2].w = core_bcd2seg7e[data >> 4];
+  locals.segments[9-offset*2].w = bcd2seg7f[data & 0x0f];
+  locals.segments[8-offset*2].w = bcd2seg7f[data >> 4];
   // fake single 0 digit
-  locals.segments[10].w = locals.segments[9].w ? core_bcd2seg7e[0] : 0;
+  locals.segments[10].w = locals.segments[9].w ? bcd2seg7f[0] : 0;
   // turn on periods
   if (locals.segments[4].w) locals.segments[4].w |= 0x80;
   if (locals.segments[7].w) locals.segments[7].w |= 0x80;
@@ -125,6 +132,7 @@ MACHINE_DRIVER_START(zacProto)
   MDRV_CPU_MEMORY(readmem, writemem)
   MDRV_CPU_VBLANK_INT(vblank, 1)
   MDRV_NVRAM_HANDLER(generic_0fill)
+  MDRV_DIPS(24)
 MACHINE_DRIVER_END
 
 INPUT_PORTS_START(strike) \
@@ -155,7 +163,7 @@ INPUT_PORTS_START(strike) \
       COREPORT_DIPSET(0x000d, "6 1/2" ) \
       COREPORT_DIPSET(0x000e, "7" ) \
       COREPORT_DIPSET(0x000f, "7 1/2" ) \
-    COREPORT_DIPNAME( 0x00f0, 0x0040, "Coin slot #1 plays") \
+    COREPORT_DIPNAME( 0x00f0, 0x0040, "Coin slot #2 plays") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0010, "1/2" ) \
       COREPORT_DIPSET(0x0020, "1" ) \
@@ -228,6 +236,96 @@ ROM_END
 
 CORE_GAMEDEFNV(strike, "Strike", 1978, "Zaccaria", zacProto, GAME_NO_SOUND)
 
+INPUT_PORTS_START(spacecty) \
+  CORE_PORTS \
+  SIM_PORTS(1) \
+  PORT_START /* 0 */ \
+    COREPORT_BIT   (0x0400, "Start Button",  KEYCODE_1) \
+    COREPORT_BIT   (0x0100, "Coin Slot #1",  KEYCODE_3) \
+    COREPORT_BIT   (0x0200, "Coin Slot #2",  KEYCODE_5) \
+    COREPORT_BITTOG(0x0002, "Coin Door",     KEYCODE_END) \
+    COREPORT_BIT   (0x0800, "Tilt/Advance",  KEYCODE_INSERT) \
+    COREPORT_BITTOG(0x0001, "Sense Input A", KEYCODE_PGDN) \
+  PORT_START /* 1 */ \
+    COREPORT_DIPNAME( 0x000f, 0x0002, "Coin slot #1 plays") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0001, "1/2" ) \
+      COREPORT_DIPSET(0x0002, "1" ) \
+      COREPORT_DIPSET(0x0003, "1 1/2" ) \
+      COREPORT_DIPSET(0x0004, "2" ) \
+      COREPORT_DIPSET(0x0005, "2 1/2" ) \
+      COREPORT_DIPSET(0x0006, "3" ) \
+      COREPORT_DIPSET(0x0007, "3 1/2" ) \
+      COREPORT_DIPSET(0x0008, "4" ) \
+      COREPORT_DIPSET(0x0009, "4 1/2" ) \
+      COREPORT_DIPSET(0x000a, "5" ) \
+      COREPORT_DIPSET(0x000b, "5 1/2" ) \
+      COREPORT_DIPSET(0x000c, "6" ) \
+      COREPORT_DIPSET(0x000d, "6 1/2" ) \
+      COREPORT_DIPSET(0x000e, "7" ) \
+      COREPORT_DIPSET(0x000f, "7 1/2" ) \
+    COREPORT_DIPNAME( 0x00f0, 0x0040, "Coin slot #2 plays") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0010, "1/2" ) \
+      COREPORT_DIPSET(0x0020, "1" ) \
+      COREPORT_DIPSET(0x0030, "1 1/2" ) \
+      COREPORT_DIPSET(0x0040, "2" ) \
+      COREPORT_DIPSET(0x0050, "2 1/2" ) \
+      COREPORT_DIPSET(0x0060, "3" ) \
+      COREPORT_DIPSET(0x0070, "3 1/2" ) \
+      COREPORT_DIPSET(0x0080, "4" ) \
+      COREPORT_DIPSET(0x0090, "4 1/2" ) \
+      COREPORT_DIPSET(0x00a0, "5" ) \
+      COREPORT_DIPSET(0x00b0, "5 1/2" ) \
+      COREPORT_DIPSET(0x00c0, "6" ) \
+      COREPORT_DIPSET(0x00d0, "6 1/2" ) \
+      COREPORT_DIPSET(0x00e0, "7" ) \
+      COREPORT_DIPSET(0x00f0, "7 1/2" ) \
+    COREPORT_DIPNAME( 0x0300, 0x0200, "Special award") \
+      COREPORT_DIPSET(0x0000, "500,000 Pts" ) \
+      COREPORT_DIPSET(0x0100, "Extra Ball" ) \
+      COREPORT_DIPSET(0x0200, "Replay" ) \
+      COREPORT_DIPSET(0x0300, "Super Bonus" ) \
+    COREPORT_DIPNAME( 0x0c00, 0x0800, "Score award") \
+      COREPORT_DIPSET(0x0000, "500,000 Pts" ) \
+      COREPORT_DIPSET(0x0400, "Extra Ball" ) \
+      COREPORT_DIPSET(0x0800, "Replay" ) \
+      COREPORT_DIPSET(0x0c00, "Super Bonus" ) \
+    COREPORT_DIPNAME( 0x3000, 0x2000, "Type of Random number") \
+      COREPORT_DIPSET(0x0000, " off" ) \
+      COREPORT_DIPSET(0x1000, "Low" ) \
+      COREPORT_DIPSET(0x2000, "Random" ) \
+      COREPORT_DIPSET(0x3000, "High" ) \
+    COREPORT_DIPNAME( 0x4000, 0x0000, "Random award") \
+      COREPORT_DIPSET(0x0000, "Replay" ) \
+      COREPORT_DIPSET(0x4000, "Super Bonus" ) \
+    COREPORT_DIPNAME( 0x8000, 0x8000, "Extra ball award") \
+      COREPORT_DIPSET(0x0000, "200,000 Pts" ) \
+      COREPORT_DIPSET(0x8000, "Extra Ball" ) \
+  PORT_START /* 2 */ \
+    COREPORT_DIPNAME( 0x0001, 0x0000, "HSTD award") \
+      COREPORT_DIPSET(0x0000, "Replay" ) \
+      COREPORT_DIPSET(0x0001, "Super Bonus" ) \
+    COREPORT_DIPNAME( 0x0002, 0x0002, "Match feature") \
+      COREPORT_DIPSET(0x0000, " off" ) \
+      COREPORT_DIPSET(0x0002, " on" ) \
+    COREPORT_DIPNAME( 0x0004, 0x0000, "Match award") \
+      COREPORT_DIPSET(0x0000, "Replay" ) \
+      COREPORT_DIPSET(0x0004, "Super Bonus" ) \
+    COREPORT_DIPNAME( 0x0018, 0x0008, "Balls per game") \
+      COREPORT_DIPSET(0x0000, "1" ) \
+      COREPORT_DIPSET(0x0008, "3" ) \
+      COREPORT_DIPSET(0x0010, "5" ) \
+      COREPORT_DIPSET(0x0018, "7" ) \
+    COREPORT_DIPNAME( 0x0060, 0x0000, "Pre-light lamps") \
+      COREPORT_DIPSET(0x0000, " off" ) \
+      COREPORT_DIPSET(0x0020, "1st row" )
+      COREPORT_DIPSET(0x0040, "2nd row" ) \
+    COREPORT_DIPNAME( 0x0080, 0x0000, "Unlimited Specials") \
+      COREPORT_DIPSET(0x0000, " off" ) \
+      COREPORT_DIPSET(0x0080, " on" ) \
+INPUT_PORTS_END
+
 ROM_START(spacecty) \
   NORMALREGION(0x8000, REGION_CPU1) \
     ROM_LOAD("zsc1.dat", 0x0000, 0x0400, CRC(4405368f) SHA1(037ad7e7158424bb714b28e4effa2c96c8736ce4)) \
@@ -236,6 +334,5 @@ ROM_START(spacecty) \
     ROM_LOAD("zsc4.dat", 0x1400, 0x0400, CRC(69e0bb95) SHA1(d9a1d0159bf49445b0ece0f9d7806ed80657c2b2))
 ROM_END
 #define init_spacecty init_strike
-#define input_ports_spacecty input_ports_strike
 
 CORE_GAMEDEFNV(spacecty,"Space City", 1979, "Zaccaria", zacProto, GAME_NO_SOUND)
