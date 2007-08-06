@@ -662,6 +662,7 @@ static WRITE_HANDLER(alpha_display){
 		switch ( offset ) {
 		case 0:
 			GTS3locals.segments[20+GTS3locals.acol].b.lo |= GTS3locals.pseg[20+GTS3locals.acol].b.lo = data;
+/*          // commented out segments dimming as it needs more work
 			if (GTS3locals.pseg[20+GTS3locals.acol].w) {
 				coreGlobals.segDim[20+GTS3locals.acol] /=2;
 			} else {
@@ -671,6 +672,7 @@ static WRITE_HANDLER(alpha_display){
 				  GTS3locals.segments[20+GTS3locals.acol].w = 0;
 				GTS3locals.pseg[20+GTS3locals.acol].w = GTS3locals.segments[20+GTS3locals.acol].w;
 			}
+*/
 			break;
 
 		case 1:
@@ -679,6 +681,7 @@ static WRITE_HANDLER(alpha_display){
 
 		case 2:
 			GTS3locals.segments[GTS3locals.acol].b.lo |= GTS3locals.pseg[GTS3locals.acol].b.lo = data;
+/*          // commented out segments dimming as it needs more work
 			if (GTS3locals.pseg[GTS3locals.acol].w) {
 				coreGlobals.segDim[GTS3locals.acol] /=2;
 			} else {
@@ -688,6 +691,7 @@ static WRITE_HANDLER(alpha_display){
 				  GTS3locals.segments[GTS3locals.acol].w = 0;
 				GTS3locals.pseg[GTS3locals.acol].w = GTS3locals.segments[GTS3locals.acol].w;
 			}
+*/
 			break;
 
 		case 3:
