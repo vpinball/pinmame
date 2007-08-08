@@ -26,6 +26,7 @@ DRIVERNV(st_game)       //Unknown game running on old Stern hardware
 // --------------------
 // ALLIED LEISURE INC.
 // --------------------
+// early Allied solid-state games don't use a CPU!
 DRIVERNV(suprpick)      // 01/77 Super Picker
 DRIVERNV(thndbolt)      // 11/77 Thunderbolt
 DRIVERNV(hoedown)       // 03/78 Hoe Down
@@ -413,15 +414,16 @@ DRIVERNV(vlcno_1a)      //                Volcano (Sound Only, alternate version
 DRIVERNV(blckhole)      //S80-668:  10/81 Black Hole (Sound & Speech, Rev 4)
 DRIVERNV(blkhole2)      //                Black Hole (Sound & Speech, Rev 2)
 DRIVERNV(blkholea)      //                Black Hole (Sound Only)
+                        //          ??/81 Night Hawk (never produced, by Premier, before the merger)
 DRIVERNV(eclipse)       //S80-671:  ??/82 Eclipse
 DRIVERNV(hh)            //S80-669:  06/82 Haunted House (Rev 2)
 DRIVERNV(hh_1)          //                Haunted House (Rev 1)
 DRIVERNV(s80tst)        //S80: Text Fixture
 //System 80a
-DRIVERNV(dvlsdre)       //S80a-670: 08/82 Devils Dare (Sound & Speech)
-DRIVERNV(dvlsdre2)      //                Devils Dare (Sound Only)
+DRIVERNV(dvlsdre)       //S80a-670: 08/82 Devil's Dare (Sound & Speech)
+DRIVERNV(dvlsdre2)      //                Devil's Dare (Sound Only)
 DRIVERNV(caveman)       //S80a-PV810:09/82 Caveman
-DRIVERNV(cavemana)      //S80a-PV810:09/82 Caveman (set 2)
+DRIVERNV(cavemana)      //                Caveman (set 2)
 DRIVERNV(rocky)         //S80a-672: 09/82 Rocky
 DRIVERNV(spirit)        //S80a-673: 11/82 Spirit
 DRIVERNV(striker)       //S80a-675: 11/82 Striker
@@ -444,8 +446,9 @@ DRIVERNV(icefever)      //S80a-695: 02/85 Ice Fever
 DRIVERNV(triplay)       //S80b-696: 05/85 Chicago Cubs Triple Play
 DRIVERNV(bountyh)       //S80b-694: 07/85 Bounty Hunter
 DRIVERNV(tagteam)       //S80b-698: 09/85 Tag Team Wrestling
-DRIVERNV(tagteam2)      //S80b-698: 09/85 Tag Team Wrestling (rev.2)
+DRIVERNV(tagteam2)      //                Tag Team Wrestling (rev.2)
 DRIVERNV(rock)          //S80b-697: 10/85 Rock
+                        //S80b-700: ??/85 Ace High (never produced, playable whitewood exists)
 DRIVERNV(raven)         //S80b-702: 03/86 Raven
                         //S80b-704: 04/86 Rock Encore
 DRIVERNV(hlywoodh)      //S80b-703: 06/86 Hollywood Heat
@@ -468,7 +471,7 @@ DRIVERNV(bonebstr)      //S80b-719: 08/89 Bone Busters Inc
 DRIVERNV(ccruise)       //C-102:    ??/89 Caribbean Cruise (for International Concepts)
 DRIVERNV(nmoves)        //C-103?    ??/89 Night Moves (for International Concepts)
 DRIVERNV(lca)           //S3-720:   11/89 Lights, Camera, Action
-DRIVERNV(lca2)          //S3-720:   11/89 Lights, Camera, Action (rev.2)
+DRIVERNV(lca2)          //                Lights, Camera, Action (rev.2)
 DRIVERNV(silvslug)      //S3-722:   02/90 Silver Slugger
 DRIVERNV(vegas)         //S3-723:   07/90 Vegas
 DRIVERNV(deadweap)      //S3-724:   09/90 Deadly Weapon
@@ -484,24 +487,24 @@ DRIVERNV(surfnsaf)      //S3-731:   11/91 Surf'n Safari
 DRIVERNV(opthund)       //S3-732:   02/92 Operation: Thunder
 //System 3 128x32 DMD
 DRIVERNV(smb)           //S3-733:   04/92 Super Mario Bros.
-DRIVERNV(smb1)          //S3-733:   04/92 Super Mario Bros. (rev.1)
-DRIVERNV(smb2)          //S3-733:   04/92 Super Mario Bros. (rev.2)
-DRIVERNV(smb3)          //S3-733:   04/92 Super Mario Bros. (rev.3)
+DRIVERNV(smb1)          //                Super Mario Bros. (rev.1)
+DRIVERNV(smb2)          //                Super Mario Bros. (rev.2)
+DRIVERNV(smb3)          //                Super Mario Bros. (rev.3)
 DRIVERNV(smbmush)       //S3-N105:  06/92 Super Mario Bros. Mushroom World
 DRIVERNV(cueball)       //S3-734:   10/92 Cue Ball Wizard
 DRIVERNV(sfight2)       //S3-735:   03/93 Street Fighter II
 DRIVERNV(sfight2a)      //                Street Fighter II (rev.1)
 DRIVERNV(sfight2b)      //                Street Fighter II (rev.2)
 DRIVERNV(teedoff)       //S3-736:   05/93 Tee'd Off
-DRIVERNV(teedoff1)      //S3-736:   05/93 Tee'd Off (rev.1)
-DRIVERNV(teedoff3)      //S3-736:   05/93 Tee'd Off (rev.3)
+DRIVERNV(teedoff1)      //                Tee'd Off (rev.1)
+DRIVERNV(teedoff3)      //                Tee'd Off (rev.3)
 DRIVERNV(wipeout)       //S3-738:   10/93 Wipe Out
 DRIVERNV(gladiatr)      //S3-737:   11/93 Gladiators
 DRIVERNV(wcsoccer)      //S3-741:   02/94 World Challenge Soccer
 DRIVERNV(rescu911)      //S3-740:   05/94 Rescue 911
 DRIVERNV(freddy)        //S3-744:   10/94 Freddy: A Nightmare on Elm Street
 DRIVERNV(shaqattq)      //S3-743:   02/95 Shaq Attaq (rev.5)
-DRIVERNV(shaqatt2)      //S3-743:   02/95 Shaq Attaq (rev.2)
+DRIVERNV(shaqatt2)      //                Shaq Attaq (rev.2)
 DRIVERNV(stargate)      //S3-742:   03/95 Stargate
 DRIVERNV(stargat1)      //                Stargate (rev.1)
 DRIVERNV(stargat2)      //                Stargate (rev.2)
@@ -510,7 +513,7 @@ DRIVERNV(stargat4)      //                Stargate (rev.4)
 DRIVERNV(bighurt)       //S3-743:   06/95 Big Hurt
 DRIVERNV(snspares)      //S3-N111:  10/95 Strikes 'N Spares
 DRIVERNV(waterwld)      //S3-746:   10/95 Waterworld (rev.3)
-DRIVERNV(waterwl2)      //S3-746:   10/95 Waterworld (rev.2)
+DRIVERNV(waterwl2)      //                Waterworld (rev.2)
 DRIVERNV(andretti)      //S3-747:   12/95 Mario Andretti
 DRIVERNV(barbwire)      //S3-748:   04/96 Barb Wire
 DRIVERNV(brooks)        //S3-749:   08/96 Brooks & Dunn (never produced)
@@ -1343,8 +1346,7 @@ DRIVER(tf95,12)         //WPC-648:          Test fixture WPC95
 // ------------------
 // ZACCARIA GAMES
 // ------------------
-//Other games created earlier by Zaccaria are EM
-                        //10/77 Combat
+                        //10/77 Combat (in all probability never produced in a SS version)
 DRIVERNV(wsports)       //01/78 Winter Sports
 DRIVERNV(hod)           //07/78 House of Diamonds
 DRIVERNV(strike)        //09/78 Strike
@@ -1355,37 +1357,37 @@ DRIVERNV(hotwheel)      //09/79 Hot Wheels
 DRIVERNV(spacecty)      //09/79 Space City
 DRIVERNV(firemntn)      //01/80 Fire Mountain
 DRIVERNV(stargod)       //05/80 Star God
-DRIVERNV(stargoda)      //05/80 Star God (alternate sound)
+DRIVERNV(stargoda)      //      Star God (alternate sound)
 DRIVERNV(sshtlzac)      //09/80 Space Shuttle
 DRIVERNV(ewf)           //04/81 Earth, Wind & Fire
 DRIVERNV(locomotn)      //09/81 Locomotion
-                        //04/82 Pinball Champ '82 (is this really different from the '83?)
+                        //04/82 Pinball Champ '82 (using the same roms as the '83 version)
 DRIVERNV(socrking)      //09/82 Soccer Kings
-DRIVERNV(socrkngg)      //09/82 Soccer Kings (German speech)
+DRIVERNV(socrkngg)      //      Soccer Kings (German speech)
 DRIVERNV(pinchamp)      //04/83 Pinball Champ
-DRIVERNV(pinchamg)      //04/83 Pinball Champ (German speech)
-DRIVERNV(pinchami)      //04/83 Pinball Champ (Italian speech)
-DRIVERNV(pincham7)      //04/83 Pinball Champ (7 digits)
-DRIVERNV(pincha7g)      //04/83 Pinball Champ (7 digits, German speech)
-DRIVERNV(pincha7i)      //04/83 Pinball Champ (7 digits, Italian speech)
+DRIVERNV(pinchamg)      //      Pinball Champ (German speech)
+DRIVERNV(pinchami)      //      Pinball Champ (Italian speech)
+DRIVERNV(pincham7)      //      Pinball Champ (7 digits)
+DRIVERNV(pincha7g)      //      Pinball Champ (7 digits, German speech)
+DRIVERNV(pincha7i)      //      Pinball Champ (7 digits, Italian speech)
 DRIVERNV(tmachzac)      //04/83 Time Machine
 DRIVERNV(farfalla)      //09/83 Farfalla
-DRIVERNV(farfalli)      //09/83 Farfalla (Italian speech)
+DRIVERNV(farfalli)      //      Farfalla (Italian speech)
 DRIVERNV(dvlrider)      //04/84 Devil Riders
-DRIVERNV(dvlrideg)      //04/84 Devil Riders (German speech)
+DRIVERNV(dvlrideg)      //      Devil Riders (German speech)
 DRIVERNV(mcastle)       //09/84 Magic Castle
-DRIVERNV(mcastleg)      //09/84 Magic Castle (German speech)
-DRIVERNV(myststar)      //??/84 Mystic Star
+DRIVERNV(mcastleg)      //      Magic Castle (German speech)
 DRIVERNV(robot)         //01/85 Robot
-DRIVERNV(robotg)        //01/85 Robot (German speech)
+DRIVERNV(robotg)        //      Robot (German speech)
 DRIVERNV(clown)         //07/85 Clown
 DRIVERNV(poolcham)      //12/85 Pool Champion
-DRIVERNV(poolchap)      //12/85 Pool Champion (alternate sound)
-DRIVERNV(bbeltzac)      //??/86 Blackbelt
-DRIVERNV(mexico)        //??/86 Mexico '86
-DRIVERNV(zankor)        //??/86 Zankor
-DRIVERNV(spooky)        //??/87 Spooky
-DRIVERNV(strsphnx)      //??/87 Star's Phoenix
-                        //??/86 New Star's Phoenix
+DRIVERNV(poolchap)      //      Pool Champion (alternate sound)
+DRIVERNV(myststar)      //??/86 Mystic Star
+DRIVERNV(bbeltzac)      //03/86 Blackbelt
+DRIVERNV(mexico)        //07/86 Mexico '86
+DRIVERNV(zankor)        //12/86 Zankor
+DRIVERNV(spooky)        //04/87 Spooky
+DRIVERNV(strsphnx)      //07/87 Star's Phoenix
+DRIVERNV(nstrphnx)      //08/87 New Star's Phoenix (same roms as strsphnx)
 
 #endif /* DRIVER_RECURSIVE */
