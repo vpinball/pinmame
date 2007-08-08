@@ -53,7 +53,7 @@ ZAC_INPUT_PORTS_START(name, 1) ZAC_INPUT_PORTS_END
 
 // Generation 1 games below
 
-//10/77 Combat (might use the SC/MP hardware)
+//10/77 Combat (might use the SC/MP hardware, or not exist at all)
 
 /*--------------------------------
 / Winter Sports (01/78)
@@ -117,8 +117,6 @@ ZAC_ROMSTART84444(hotwheel,	"zac_boot.lgc",CRC(62a3da59) SHA1(db571139aff61757f6
 							"htwhls_5.lgc",CRC(e28f3c60) SHA1(eb780be60b41017d105288cef71906d15474b8fa))
 ZAC_ROMEND
 CORE_GAMEDEFNV(hotwheel,"Hot Wheels",1979,"Zaccaria",mZAC1125,SOUNDFLAG)
-
-//09/79 Space City
 
 /*--------------------------------
 / Fire Mountain (01/80)
@@ -195,7 +193,7 @@ CORE_GAMEDEFNV(locomotn,"Locomotion",1981,"Zaccaria",mZAC1146,SOUNDFLAG)
 
 // Generation 2 games below
 
-// Pinball Champ '82 (04/82) - still no sight of some ROMs, probably used the same ones as Pinball Champ?
+// Pinball Champ '82 (04/82) - using the same roms as Pinball Champ
 
 /*--------------------------------
 / Soccer Kings (09/82)
@@ -444,8 +442,6 @@ CORE_GAMEDEFNV(mexico,"Mexico '86 (German speech)",1986,"Zaccaria",mZAC2XS,SOUND
 INITGAME(zankor,GEN_ZAC2,dispZAC3,SNDBRD_ZAC11178_13181,366)
 ZAC_ROMSTART1820(zankor,	"zan_ic1.764",CRC(e7ba5acf) SHA1(48b64921dd8a22c2483162db571512cad8cbb072),
 							"zan_ic2.764",CRC(5804ff10) SHA1(fc3c4acb183c5c3e0a6504583c78f25a7a322cce))
-// ZAC_SOUNDROM_e4f4(			"zan_1e.128", CRC(d467000f) SHA1(ee806c485520042755078c49a020b5bc06913fa3),
-//							"zan_1f.128", CRC(74fcadc9) SHA1(efd6fc99d7a3ed8e59fbbafbee161af6fb527028))
 ZAC_SOUNDROM_e2f4(			"1en.64", CRC(abc930cc) SHA1(6c658aae3f26db21df7b74a616cf37307dba63e3),
 							"zan_1f.128", CRC(74fcadc9) SHA1(efd6fc99d7a3ed8e59fbbafbee161af6fb527028))
 
@@ -469,7 +465,7 @@ ZAC_ROMEND
 CORE_GAMEDEFNV(spooky,"Spooky",1987,"Zaccaria",ZAC2XS2A,SOUNDFLAG)
 
 /*--------------------------------
-/ Star's Phoenix (??/87)
+/ Star's Phoenix (07/87)
 /-------------------------------*/
 INITGAME(strsphnx,GEN_ZAC2,dispZAC3,SNDBRD_ZAC13181x3,366)
 ZAC_ROMSTART1820(strsphnx,	"strphnx1.cpu",CRC(2a31b7da) SHA1(05f2173783e686cc8774bed6eb59b41f7af88d11),
@@ -482,7 +478,21 @@ ZAC_SOUNDROM_5x256(			"snd_ic05.bin",CRC(74cc4902) SHA1(e2f46bcf5446f98d098c49f8
 ZAC_ROMEND
 CORE_GAMEDEFNV(strsphnx,"Star's Phoenix (Italian speech)",1987,"Zaccaria",ZAC2XS3,0)
 
-//??/86 New Star's Phoenix
+/*--------------------------------
+/ New Star's Phoenix (08/87)
+/-------------------------------*/
+INITGAME(nstrphnx,GEN_ZAC2,dispZAC3,SNDBRD_ZAC13181x3,366)
+ZAC_ROMSTART1820(nstrphnx,	"strphnx1.cpu",CRC(2a31b7da) SHA1(05f2173783e686cc8774bed6eb59b41f7af88d11),
+							"strphnx2.cpu",CRC(db830505) SHA1(55d6d6e12e2861fec81b46fb90c29aad5ad922aa))
+ZAC_SOUNDROM_5x256(			"snd_ic05.bin",CRC(74cc4902) SHA1(e2f46bcf5446f98d098c49f8c2416292401265b9),
+							"snd_ic06.bin",CRC(a0400411) SHA1(da9de6105639c4f6174f5bc92f44e02c339a2bc3),
+							"snd_ic24.bin",CRC(158d6f83) SHA1(281e1b13be43025be1b33dcd366cec0b36f29e5c),
+							"snd_ic25.bin",CRC(b1c9238e) SHA1(88c9df1fca94d32a0fa5d75312dabff257e867dd),
+							"snd_ic40.bin",CRC(974ceb9c) SHA1(3665af9170a2afbe26f68e8f3cedb0d177f476c4))
+ZAC_ROMEND
+CORE_GAMEDEFNV(nstrphnx,"New Star's Phoenix (Italian speech)",1987,"Zaccaria",ZAC2XS3,0)
+
+// Technoplay games
 
 /*--------------------------------
 / Scramble (Tecnoplay 1987)
