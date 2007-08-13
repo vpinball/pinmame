@@ -616,6 +616,8 @@ static MACHINE_INIT(allied) {
   HC4094_oe_w(13, 1);
   HC4094_oe_w(14, 1);
   HC4094_oe_w(15, 1);
+
+  coreGlobals.tmpLampMatrix[1] |= 0x80;
 }
 
 static MACHINE_STOP(allied) {
