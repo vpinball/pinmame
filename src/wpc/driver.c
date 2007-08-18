@@ -847,6 +847,11 @@ DRIVERNV(ripleysg)      //Whitestar: 03/04 Ripley's Believe It or Not! (Germany)
 DRIVERNV(ripleysl)      //Whitestar: 03/04 Ripley's Believe It or Not! (Spain)
 DRIVERNV(ripleysf)      //Whitestar: 03/04 Ripley's Believe It or Not! (France)
 DRIVERNV(ripleysi)      //Whitestar: 03/04 Ripley's Believe It or Not! (Italy)
+DRIVERNV(elvis)         //Whitestar: 08/04 Elvis
+DRIVERNV(elvisg)        //Whitestar: 08/04 Elvis (Germany)
+DRIVERNV(elvisl)        //Whitestar: 08/04 Elvis (Spain)
+DRIVERNV(elvisf)        //Whitestar: 08/04 Elvis (France)
+DRIVERNV(elvisi)        //Whitestar: 08/04 Elvis (Italy)
 
 #ifdef INCLUDE_NEW_STERN
 
@@ -871,11 +876,6 @@ DRIVER  (harl,f30)      //Whitestar: 10/04 Harley Davidson (3.00 France)
 DRIVER  (harl,g30)      //Whitestar: 10/04 Harley Davidson (3.00 Germany)
 DRIVER  (harl,i30)      //Whitestar: 10/04 Harley Davidson (3.00 Italy)
 DRIVER  (harl,l30)      //Whitestar: 10/04 Harley Davidson (3.00 Spain)
-DRIVERNV(elvis)         //Whitestar: 10/04 Elvis
-DRIVERNV(elvisg)        //Whitestar: 10/04 Elvis (Germany)
-DRIVERNV(elvisl)        //Whitestar: 10/04 Elvis (Spain)
-DRIVERNV(elvisf)        //Whitestar: 10/04 Elvis (France)
-DRIVERNV(elvisi)        //Whitestar: 10/04 Elvis (Italy)
 DRIVERNV(sopranos)      //Whitestar: 02/05 The Sopranos
 DRIVERNV(sopranog)      //Whitestar: 02/05 The Sopranos (Germany)
 DRIVERNV(sopranol)      //Whitestar: 02/05 The Sopranos (Spain)

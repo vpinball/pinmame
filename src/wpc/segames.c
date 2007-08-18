@@ -993,7 +993,7 @@ SE_ROMEND
 CORE_CLONEDEFNV(rctycnl,rctycn,"Roller Coaster Tycoon (Spain)",2002,"Stern",de_mSES1,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
-/ The Simpsons Pinball Party (4.00)
+/ The Simpsons Pinball Party (5.00)
 /-------------------------------------------------------------------*/
 static struct core_dispLayout dispSPP[] = {
   DISP_SEG_IMPORT(se_dmd128x32),
@@ -1002,28 +1002,28 @@ static struct core_dispLayout dispSPP[] = {
 static core_tGameData simpprtyGameData = { \
   GEN_WS, dispSPP, {FLIP_SW(FLIP_L) | FLIP_SOL(FLIP_L), 0, 4, 0, 0, SE_MINIDMD2}}; \
 static void init_simpprty(void) { core_gameData = &simpprtyGameData; }
-SE128_ROMSTART(simpprty, "spp-cpu.400",CRC(530b9782) SHA1(573b20cac205b7989cdefceb2c31cb7d88c2951a))
-DE_DMD32ROM8x(           "sppdspa.400",CRC(cd5eaab7) SHA1(a06bef6fc0e7f3c0616439cb0e0431a3d52cdfa1))
-DE2S_SOUNDROM18888(      "spp101.u7",  CRC(32efcdf6) SHA1(1d437e8649408be91e0dd10598cc67336203077f),
-                         "spp100.u17", CRC(65e9344e) SHA1(fe4797ccb71b31aa39d6a5d373a01fc22f9d055c),
-                         "spp100.u21", CRC(17fee0f9) SHA1(5b5ceb667f3bc9bde4ea08a1ef837e3b56c01977),
-                         "spp100.u36", CRC(ffb957b0) SHA1(d6876ec63525099a7073c196867c17111272c69a),
-                         "spp100.u37", CRC(0738e1fc) SHA1(268462c06e5c1f286e5faaee1c0815448cc2eafa))
+SE128_ROMSTART(simpprty, "spp-cpu.500", CRC(215ce09c) SHA1(f3baaaa1b9f12a98109da55746031eb9f5f8790c))
+DE_DMD32ROM8x(           "sppdispa.500",CRC(c6db83ec) SHA1(6079981e19b4651a074b0005eca85faf0eebcec0))
+DE2S_SOUNDROM18888(      "spp101.u7",   CRC(32efcdf6) SHA1(1d437e8649408be91e0dd10598cc67336203077f),
+                         "spp100.u17",  CRC(65e9344e) SHA1(fe4797ccb71b31aa39d6a5d373a01fc22f9d055c),
+                         "spp100.u21",  CRC(17fee0f9) SHA1(5b5ceb667f3bc9bde4ea08a1ef837e3b56c01977),
+                         "spp100.u36",  CRC(ffb957b0) SHA1(d6876ec63525099a7073c196867c17111272c69a),
+                         "spp100.u37",  CRC(0738e1fc) SHA1(268462c06e5c1f286e5faaee1c0815448cc2eafa))
 SE_ROMEND
 #define input_ports_simpprty input_ports_se
-CORE_GAMEDEFNV(simpprty,"Simpsons Pinball Party, The (4.00)",2003,"Stern",de_mSES2,GAME_NOCRC)
+CORE_GAMEDEFNV(simpprty,"Simpsons Pinball Party, The (5.00)",2003,"Stern",de_mSES2,GAME_NOCRC)
 
 #ifdef TEST_NEW_SOUND
 /*-------------------------------------------------------------------
 / The Simpsons Pinball Party (ARM7 Sound Board)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(simpnew, "spp-cpu.400",CRC(530b9782) SHA1(573b20cac205b7989cdefceb2c31cb7d88c2951a))
-DE_DMD32ROM8x(           "sppdspa.400",CRC(cd5eaab7) SHA1(a06bef6fc0e7f3c0616439cb0e0431a3d52cdfa1))
-DE3S_SOUNDROM18888(      "spp101.u7",  CRC(32efcdf6) SHA1(1d437e8649408be91e0dd10598cc67336203077f),
-                         "spp100.u17", CRC(65e9344e) SHA1(fe4797ccb71b31aa39d6a5d373a01fc22f9d055c),
-                         "spp100.u21", CRC(17fee0f9) SHA1(5b5ceb667f3bc9bde4ea08a1ef837e3b56c01977),
-                         "spp100.u36", CRC(ffb957b0) SHA1(d6876ec63525099a7073c196867c17111272c69a),
-                         "spp100.u37", CRC(0738e1fc) SHA1(268462c06e5c1f286e5faaee1c0815448cc2eafa))
+SE128_ROMSTART(simpnew, "spp-cpu.500", CRC(215ce09c) SHA1(f3baaaa1b9f12a98109da55746031eb9f5f8790c))
+DE_DMD32ROM8x(          "sppdispa.500",CRC(c6db83ec) SHA1(6079981e19b4651a074b0005eca85faf0eebcec0))
+DE3S_SOUNDROM18888(     "spp101.u7",   CRC(32efcdf6) SHA1(1d437e8649408be91e0dd10598cc67336203077f),
+                        "spp100.u17",  CRC(65e9344e) SHA1(fe4797ccb71b31aa39d6a5d373a01fc22f9d055c),
+                        "spp100.u21",  CRC(17fee0f9) SHA1(5b5ceb667f3bc9bde4ea08a1ef837e3b56c01977),
+                        "spp100.u36",  CRC(ffb957b0) SHA1(d6876ec63525099a7073c196867c17111272c69a),
+                        "spp100.u37",  CRC(0738e1fc) SHA1(268462c06e5c1f286e5faaee1c0815448cc2eafa))
 SE_ROMEND
 #define input_ports_simpnew input_ports_se
 #define init_simpnew init_simpprty
@@ -1033,13 +1033,13 @@ CORE_CLONEDEFNV(simpnew,simpprty,"Simpsons Pinball Party, The (ARM7 Sound Board)
 /*-------------------------------------------------------------------
 / The Simpsons Pinball Party (Germany)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(simpprtg, "spp-cpu.400",CRC(530b9782) SHA1(573b20cac205b7989cdefceb2c31cb7d88c2951a))
-DE_DMD32ROM8x(           "sppdspg.400",CRC(3b408fe2) SHA1(ce8d7f0d58b5f8fb4df0b9811449e4dc0e1e6580))
-DE2S_SOUNDROM18888(      "spp101.u7",  CRC(32efcdf6) SHA1(1d437e8649408be91e0dd10598cc67336203077f),
-                         "spp100.u17", CRC(65e9344e) SHA1(fe4797ccb71b31aa39d6a5d373a01fc22f9d055c),
-                         "spp100.u21", CRC(17fee0f9) SHA1(5b5ceb667f3bc9bde4ea08a1ef837e3b56c01977),
-                         "spp100.u36", CRC(ffb957b0) SHA1(d6876ec63525099a7073c196867c17111272c69a),
-                         "spp100.u37", CRC(0738e1fc) SHA1(268462c06e5c1f286e5faaee1c0815448cc2eafa))
+SE128_ROMSTART(simpprtg, "spp-cpu.500", CRC(215ce09c) SHA1(f3baaaa1b9f12a98109da55746031eb9f5f8790c))
+DE_DMD32ROM8x(           "sppdispg.500",CRC(6503bffc) SHA1(717aa8b7a0329c886ddb4b167c022b3a2ee3ab2d))
+DE2S_SOUNDROM18888(      "spp101.u7",   CRC(32efcdf6) SHA1(1d437e8649408be91e0dd10598cc67336203077f),
+                         "spp100.u17",  CRC(65e9344e) SHA1(fe4797ccb71b31aa39d6a5d373a01fc22f9d055c),
+                         "spp100.u21",  CRC(17fee0f9) SHA1(5b5ceb667f3bc9bde4ea08a1ef837e3b56c01977),
+                         "spp100.u36",  CRC(ffb957b0) SHA1(d6876ec63525099a7073c196867c17111272c69a),
+                         "spp100.u37",  CRC(0738e1fc) SHA1(268462c06e5c1f286e5faaee1c0815448cc2eafa))
 SE_ROMEND
 #define input_ports_simpprtg input_ports_se
 #define init_simpprtg init_simpprty
@@ -1048,13 +1048,13 @@ CORE_CLONEDEFNV(simpprtg,simpprty,"Simpsons Pinball Party, The (Germany)",2003,"
 /*-------------------------------------------------------------------
 / The Simpsons Pinball Party (Spain)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(simpprtl, "spp-cpu.400",CRC(530b9782) SHA1(573b20cac205b7989cdefceb2c31cb7d88c2951a))
-DE_DMD32ROM8x(           "sppdspl.400",CRC(a0bf567e) SHA1(ce6eb65da6bff15aeb787fd2cdac7cf6b4300108))
-DE2S_SOUNDROM18888(      "spp101.u7",  CRC(32efcdf6) SHA1(1d437e8649408be91e0dd10598cc67336203077f),
-                         "spp100.u17", CRC(65e9344e) SHA1(fe4797ccb71b31aa39d6a5d373a01fc22f9d055c),
-                         "spp100.u21", CRC(17fee0f9) SHA1(5b5ceb667f3bc9bde4ea08a1ef837e3b56c01977),
-                         "spp100.u36", CRC(ffb957b0) SHA1(d6876ec63525099a7073c196867c17111272c69a),
-                         "spp100.u37", CRC(0738e1fc) SHA1(268462c06e5c1f286e5faaee1c0815448cc2eafa))
+SE128_ROMSTART(simpprtl, "spp-cpu.500", CRC(215ce09c) SHA1(f3baaaa1b9f12a98109da55746031eb9f5f8790c))
+DE_DMD32ROM8x(           "sppdispl.500",CRC(0821f182) SHA1(7998ab29dae59d077b1dedd28a30a3477251d107))
+DE2S_SOUNDROM18888(      "spp101.u7",   CRC(32efcdf6) SHA1(1d437e8649408be91e0dd10598cc67336203077f),
+                         "spp100.u17",  CRC(65e9344e) SHA1(fe4797ccb71b31aa39d6a5d373a01fc22f9d055c),
+                         "spp100.u21",  CRC(17fee0f9) SHA1(5b5ceb667f3bc9bde4ea08a1ef837e3b56c01977),
+                         "spp100.u36",  CRC(ffb957b0) SHA1(d6876ec63525099a7073c196867c17111272c69a),
+                         "spp100.u37",  CRC(0738e1fc) SHA1(268462c06e5c1f286e5faaee1c0815448cc2eafa))
 SE_ROMEND
 #define input_ports_simpprtl input_ports_se
 #define init_simpprtl init_simpprty
@@ -1063,13 +1063,13 @@ CORE_CLONEDEFNV(simpprtl,simpprty,"Simpsons Pinball Party, The (Spain)",2003,"St
 /*-------------------------------------------------------------------
 / The Simpsons Pinball Party (France)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(simpprtf, "spp-cpu.400",CRC(530b9782) SHA1(573b20cac205b7989cdefceb2c31cb7d88c2951a))
-DE_DMD32ROM8x(           "sppdspf.400",CRC(6cc306e2) SHA1(bfe6ef0cd5d0cb5e3b29d85ade1700005e22d81b))
-DE2S_SOUNDROM18888(      "spp101.u7",  CRC(32efcdf6) SHA1(1d437e8649408be91e0dd10598cc67336203077f),
-                         "spp100.u17", CRC(65e9344e) SHA1(fe4797ccb71b31aa39d6a5d373a01fc22f9d055c),
-                         "spp100.u21", CRC(17fee0f9) SHA1(5b5ceb667f3bc9bde4ea08a1ef837e3b56c01977),
-                         "spp100.u36", CRC(ffb957b0) SHA1(d6876ec63525099a7073c196867c17111272c69a),
-                         "spp100.u37", CRC(0738e1fc) SHA1(268462c06e5c1f286e5faaee1c0815448cc2eafa))
+SE128_ROMSTART(simpprtf, "spp-cpu.500", CRC(215ce09c) SHA1(f3baaaa1b9f12a98109da55746031eb9f5f8790c))
+DE_DMD32ROM8x(           "sppdispf.500",CRC(8d3383ed) SHA1(a56b1043fe1b0280d11386981fe9c181c9b6f1b7))
+DE2S_SOUNDROM18888(      "spp101.u7",   CRC(32efcdf6) SHA1(1d437e8649408be91e0dd10598cc67336203077f),
+                         "spp100.u17",  CRC(65e9344e) SHA1(fe4797ccb71b31aa39d6a5d373a01fc22f9d055c),
+                         "spp100.u21",  CRC(17fee0f9) SHA1(5b5ceb667f3bc9bde4ea08a1ef837e3b56c01977),
+                         "spp100.u36",  CRC(ffb957b0) SHA1(d6876ec63525099a7073c196867c17111272c69a),
+                         "spp100.u37",  CRC(0738e1fc) SHA1(268462c06e5c1f286e5faaee1c0815448cc2eafa))
 SE_ROMEND
 #define input_ports_simpprtf input_ports_se
 #define init_simpprtf init_simpprty
@@ -1078,13 +1078,13 @@ CORE_CLONEDEFNV(simpprtf,simpprty,"Simpsons Pinball Party, The (France)",2003,"S
 /*-------------------------------------------------------------------
 / The Simpsons Pinball Party (Italy)
 /-------------------------------------------------------------------*/
-SE128_ROMSTART(simpprti, "spp-cpu.400",CRC(530b9782) SHA1(573b20cac205b7989cdefceb2c31cb7d88c2951a))
-DE_DMD32ROM8x(           "sppdspi.400",CRC(ebe45dee) SHA1(4cdf0f01b1df1fa35df67f19c67b82a39d887be8))
-DE2S_SOUNDROM18888(      "spp101.u7",  CRC(32efcdf6) SHA1(1d437e8649408be91e0dd10598cc67336203077f),
-                         "spp100.u17", CRC(65e9344e) SHA1(fe4797ccb71b31aa39d6a5d373a01fc22f9d055c),
-                         "spp100.u21", CRC(17fee0f9) SHA1(5b5ceb667f3bc9bde4ea08a1ef837e3b56c01977),
-                         "spp100.u36", CRC(ffb957b0) SHA1(d6876ec63525099a7073c196867c17111272c69a),
-                         "spp100.u37", CRC(0738e1fc) SHA1(268462c06e5c1f286e5faaee1c0815448cc2eafa))
+SE128_ROMSTART(simpprti, "spp-cpu.500", CRC(215ce09c) SHA1(f3baaaa1b9f12a98109da55746031eb9f5f8790c))
+DE_DMD32ROM8x(           "sppdispi.500",CRC(eefe84db) SHA1(97c60f9182bdfe346ca4981b844a71f57414d470))
+DE2S_SOUNDROM18888(      "spp101.u7",   CRC(32efcdf6) SHA1(1d437e8649408be91e0dd10598cc67336203077f),
+                         "spp100.u17",  CRC(65e9344e) SHA1(fe4797ccb71b31aa39d6a5d373a01fc22f9d055c),
+                         "spp100.u21",  CRC(17fee0f9) SHA1(5b5ceb667f3bc9bde4ea08a1ef837e3b56c01977),
+                         "spp100.u36",  CRC(ffb957b0) SHA1(d6876ec63525099a7073c196867c17111272c69a),
+                         "spp100.u37",  CRC(0738e1fc) SHA1(268462c06e5c1f286e5faaee1c0815448cc2eafa))
 SE_ROMEND
 #define input_ports_simpprti input_ports_se
 #define init_simpprti init_simpprty
