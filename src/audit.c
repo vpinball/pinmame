@@ -176,7 +176,10 @@ int AuditRomSet (int game, tAuditRecord **audit)
 	if (!mame_faccess (gamedrv->name, FILETYPE_ROM))
 	{
 		/* if the game is a clone, check for parent */
-		if (gamedrv->clone_of == 0 || (gamedrv->clone_of->flags & NOT_A_DRIVER) ||
+		if (gamedrv->clone_of == 0 ||
+#ifndef PINMAME
+          (gamedrv->clone_of->flags & NOT_A_DRIVER) ||
+#endif
 				!mame_faccess(gamedrv->clone_of->name,FILETYPE_ROM))
 			return 0;
 	}
@@ -284,7 +287,7 @@ int AuditRomSet (int game, tAuditRecord **audit)
 					header = *hard_disk_get_header(source);
 
 					hash_data_insert_binary_checksum(aud->hash, HASH_MD5, header.md5);
-					
+
 					if (hash_data_is_equal(aud->exphash, aud->hash, 0))
 					{
 						aud->status = AUD_DISK_GOOD;
@@ -427,7 +430,7 @@ int VerifyRomSet (int game, verify_printf_proc verify_printf)
 #if 0    /* if you want a full accounting of roms */
 				verify_printf ("%-8s: %-12s GOOD\n",
 					drivers[game]->name, aud->rom);
-				VerifyDumpHashData(aud->hash, NULL, verify_printf);				
+				VerifyDumpHashData(aud->hash, NULL, verify_printf);
 #endif
 				break;
 			case AUD_DISK_NOT_FOUND:
