@@ -261,6 +261,19 @@ DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5
                       "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
 SE_ROMEND
 
+/*-------------------------------------------------------------------
+/ Monopoly (3.03)
+/-------------------------------------------------------------------*/
+SE128_ROMSTART(monopole,"moncpu.303",CRC(4a66c9e4) SHA1(a368b0ced32f1017e781a59108670b979b50c9d7))
+DE_DMD32ROM8x(        "mondsp-a.301",CRC(c4e2e032) SHA1(691f7b6ed0616338683f7e3f316d64a70db58dd4))
+DE2S_SOUNDROM1888(     "mnsndu7.100",CRC(400442e7) SHA1(d6c075dc439d5366b7ae71b5a523b86543b1ecd6),
+                      "mnsndu17.100",CRC(f9bc55e8) SHA1(7dc41521305021961927ebde4dcf22611e3d622d),
+                      "mnsndu21.100",CRC(e0727e1f) SHA1(2093dba6e2f59cd1d1fc49c8d995b603ea0913ba),
+                      "mnsndu36.100",CRC(c845aa97) SHA1(2632aa8c5576b7afcb96693fa524c7d0350ac9a8))
+SE_ROMEND
+#define input_ports_monopole input_ports_monopoly
+#define init_monopole init_monopoly
+
 #ifdef TEST_NEW_SOUND
 /*-------------------------------------------------------------------
 / Monopoly (3.20) (ARM7 Sound Board)
@@ -334,6 +347,7 @@ SE_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEFNV(monopoly,"Monopoly (3.20)",2001,"Stern",de_mSES1,GAME_NOCRC)
+CORE_CLONEDEFNV(monopole,monopoly,"Monopoly (3.03)",2002,"Stern",de_mSES1,GAME_NOCRC)
 CORE_CLONEDEFNV(monopolf,monopoly,"Monopoly (France)",2002,"Stern",de_mSES1,GAME_NOCRC)
 CORE_CLONEDEFNV(monopolg,monopoly,"Monopoly (Germany)",2002,"Stern",de_mSES1,GAME_NOCRC)
 CORE_CLONEDEFNV(monopoli,monopoly,"Monopoly (Italy)",2002,"Stern",de_mSES1,GAME_NOCRC)
@@ -402,7 +416,7 @@ static WRITE_HANDLER(monopoly_w) {
     if (locals.flipperPos < 0) locals.flipperPos += 5000;
     if (locals.flipperPos > 4999) locals.flipperPos -= 5000;
 #ifndef VPINMAME // must be disabled, as the switch is set by script in VPM
-    core_setSw(30, locals.flipperPos < 100 || locals.flipperPos > 4900);
+    core_setSw(30, locals.flipperPos < 33);
 #endif
   }
 }
@@ -417,28 +431,16 @@ static void init_monopoly(void) {
 
 static void monopoly_drawMech(BMTYPE **line) {
   core_textOutf(30,  0,BLACK,"WaterWorks Flipper");
-  core_textOutf(30, 10,BLACK,"pos:%4d, speed:%4d", monopoly_getMech(0), monopoly_getMech(1));
+  core_textOutf(30, 10,BLACK,"pos:%4d, speed:%2d", monopoly_getMech(0), monopoly_getMech(1));
 }
 
 static void monopoly_handleMech(int mech) {
 }
 
 static int monopoly_getMech(int mechNo){
-  static int speedCnt;
-  static int oldSpeed[8];
-  static int oldFlipperPos;
-  int speed, dist;
   switch (mechNo) {
     case 0: return locals.flipperPos /5;
-    case 1:
-      dist = locals.flipperPos - oldFlipperPos;
-      if (dist < 0) dist = - dist;
-      if (dist > 2500) dist -= 5000;
-      if (dist < 0) dist = - dist;
-      oldFlipperPos = locals.flipperPos;
-      oldSpeed[speedCnt = (speedCnt + 1) % 8] = locals.flipperDir * dist;
-      speed = (oldSpeed[0] + oldSpeed[1] + oldSpeed[2] + oldSpeed[3] + oldSpeed[4] + oldSpeed[5] + oldSpeed[6] + oldSpeed[7]) / 8;
-      return speed / 3;
+    case 1: return locals.flipperDir * locals.flipperSpeed;
   }
   return 0;
 }
