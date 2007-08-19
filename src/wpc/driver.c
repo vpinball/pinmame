@@ -1013,7 +1013,6 @@ DRIVER(blkou,l1)        //S6-495:   06/80 W Blackout
 DRIVER(blkou,t1)        //S6-495:   06/80 W Blackout /10 Scoring Ted Estes
 DRIVER(scrpn,l1)        //S6-494:   07/80 W Scorpion
 DRIVER(scrpn,t1)        //S6-494:   07/80 W Scorpion /10 Scoring Ted Estes
-DRIVER(mmd,l1)          //S6-494:   07/80 W Midnight Marauders
 DRIVER(algar,l1)        //S6-499:   09/80 W Algar
 DRIVER(alpok,l2)        //S6-501:   10/80 W Alien Poker L-2
 DRIVER(alpok,l6)        //S6-501:   10/80 W Alien Poker L-6
