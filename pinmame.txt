@@ -1,8 +1,8 @@
 **************************************************************************************
                                PinMAME
               (Pinball Multiple Arcade Machine Emulator)
-                             Version 1.55
-                           (March 30, 2007)
+                             Version 1.56
+                           (August 19, 2007)
                         http://www.pinmame.com
 **************************************************************************************
 
@@ -22,7 +22,8 @@ What is it?
   Bally MPU-17 & MPU-35, Bally Video/Pinball, Bally 6803,
   Gottlieb System 80, 80a, 80b, System 3, Hankin, Gameplan MPU-1 & MPU-2, Atari,
   Zaccaria, Taito of Brazil, Midway, Capcom, Alvin G. and Co., Technoplay, Mr.Game, Spinball,
-  (Nuova Bell), Inder, Juegos Populares, LTD, Peyper, Sonic, Sleic, Playmatic, NSM.
+  (Nuova Bell), Inder, Juegos Populares, LTD, Peyper, Sonic, Sleic, Playmatic, NSM,
+  Allied Leisure.
 
   *Note: Emulation is not 100% working on all hardware.
 
@@ -72,7 +73,7 @@ Games supported
   Hankin Pinball: All games from FJ Holden (1978) to Orbit 1 (1981)
   Game Plan Pinball: All games from Rio (1978) to Cyclopes (1985)
   Atari Pinball: All games from Atarians (1976) to Road Runner (1979)
-  Zaccaria Pinball: All games from Winter Sports (1978) to Spooky (1987) that are available.
+  Zaccaria Pinball: All games from Winter Sports (1978) to New Star's Phoenix (1987), except Ski Jump (1978)
   Taito Pinball: All that's available... games between 1980 and 1985.
   Midway Pinball: Rotation VIII (1978).
   Capcom Pinball: All games from Pinball Magic (1995) to Kingpin (1996)
@@ -80,12 +81,14 @@ Games supported
   Technoplay: Scramble (1987)
   Mr. Game: Dakar, Motor Show (1988), World Cup '90 (1990)
   Spinball: Mach 2 (1995), Jolly Park (1996)
-  Nuova Bell: Future Queen (1987), F1 Grand Prix (1987)
+  Nuova Bell: all available Bally clones, also Future Queen (1987), and F1 Grand Prix (1987)
   Inder: Brave Team (1985), Canasta 86 (1986), Clown (1988), Corsario (1989), 250cc (1992), Bushido (1993)
   Juegos Populares: America 1492 (198?)
   LTD: Atlantis, Black Hole, Zephy, Cowboy Eight Ball, Mr. & Mrs. Pec-Men, Al Capone (1980-1983)
   Peyper: Odisea Paris-Dakar (1987)
   Sonic: Odin DeLuxe (1985), Pole Position (1987), Star Wars (1987)
+  Allied Leisure: All games from Super Picker (1977) to Star Shooter (1979)
+  Fascination, Int.: Roy Clark - The Entertainer (1977), Eros One, and Circa 1933 (both 1979)
   Prototype games:
     Dave Nutting's Flicker (Sep 1974),
     Bally's Bow & Arrow (Jan 1976),
@@ -342,9 +345,9 @@ The PinMAME Development Team
 Steve Ellenoff     (sellenoff at hotmail.com)
 Tom Haukap         (Tom.Haukap at t-online.de)
 Martin Adrian      (wpcmame at hotmail.com)
-Gerrit Volkenborn  (gaston at yomail.de)
+Gerrit Volkenborn  (gaston at pinmame.de)
 Brian Smith        (destruk at vpforums.com)
-Thomas Behrens     (behrens at tecs.de)
+Thomas Behrens     (TomB1709 at gmail.com)
 Oliver Kaegi       (okaegi at freesurf.ch)
 
 PinMAME Contributors
@@ -362,6 +365,7 @@ Jim Hernandez      (vidpro1 at netzero.net)
 Douglas Cope       (djcope11 at yahoo.co.uk)
 Silvio Finotti     (silviorf at yahoo.com)
 Yvon Poulin        (darkness21 at globetrotter.net)
+Pascal Janin       (PascalPi1 at aol.com)
 
 Note from the PinMAME Dev. team
 -------------------------------

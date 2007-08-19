@@ -1,7 +1,7 @@
 **************************************************************************************
                     Visual PinMAME
-                     Version 1.55
-                   (March 30, 2007)
+                     Version 1.56
+                   (August 19, 2007)
                 http://www.pinmame.com
 **************************************************************************************
 
@@ -72,7 +72,7 @@ The Visual PinMAME Development Team
 Steve Ellenoff     (sellenoff at hotmail.com)
 Tom Haukap         (Tom.Haukap at t-online.de)
 Martin Adrian      (wpcmame at hotmail.com)
-Gerrit Volkenborn  (gaston at yomail.de)
+Gerrit Volkenborn  (gaston at pinmame.de)
 Brian Smith        (destruk at vpforums.com)
-Thomas Behrens     (behrens at tecs.de)
+Thomas Behrens     (TomB1709 at gmail.com)
 Oliver Kaegi       (okaegi at freesurf.ch)

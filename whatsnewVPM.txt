@@ -1,6 +1,12 @@
 What's new in Visual PinMAME:
 -----------------------------
 
+Version 1.56 (August 19th, 2007)
+--------------------------------
+- "Bios" support for multiple games running the exact same set of code;
+  for now, there's support for "allied" and "gp_110". (Gerrit Volkenborn)
+- Added support for Stern's "Elvis"
+
 Version 1.55 (March 30th, 2007)
 -------------------------------
 - ChgGI(x, 1) now returns different values for WPC GI string dimming (Steve Ellenoff)
@@ -9,7 +15,7 @@ Version 1.55 (March 30th, 2007)
 
 Version 1.54 (December 23rd, 2006)
 ----------------------------------
-- Off Level corrected for display brightness dialog
+- Off-level corrected for display brightness dialog
 - Happy 35th birthday Steve!
 
 Version 1.53, (June 1, 2006)
@@ -17,8 +23,8 @@ Version 1.53, (June 1, 2006)
 - added display rotation for the vpm window
 - added the code from Jarez Bienz which allows you to set the display dd3 surface
 - fixed a bug in the paths dialog (the first three weren't displayed anymore after a game was started)
-- If you execute Controler.Run without a parent window VPM will now search for a running VPPlayer-Window and
-  if it's found it's used
+- If you execute Controller.Run without a parent window,
+  VPM will now search for a running VPPlayer-Window and use that if found
 - just before the VPM window becomes visible it is checked if the parent window is present and visible. If it's
   not visible VPM will wait until it becomse visible (or a timeout of one second times out). Once the
   parent window is visible it will be set as the active and foreground window

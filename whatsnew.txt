@@ -1,3 +1,51 @@
+Version 1.56 (August 19, 2007) - "Allied Leisure"
+------------------------------------------------------------------------------
+This update finally includes support for all the Allied Leisure games
+operating on their 6504 CPU platform. It was quite some struggle to add those,
+we started as far back as 2002 in trying to locate the RRIOT 6530 chips from
+the CPU board in order to get their ROM contents dumped.
+
+We encountered several setbacks. At one point, a guy offered his chips to be
+dumped, but then suddenly vanished, and then famous community people denied
+to help up dump chips, even though they definitely had the capabilities! :(
+
+Just when we thought we'd never make it through this worldwide conspiracy
+preventing Allied Leisure to be emulated at any point, Brian suddenly managed
+to buy an Allied Leisure "Take Five" machine off eBay, and Pascal Janin of
+France was kind enough to dump the chips for us (HUGE Thanks!!!), so now this
+task is finally accomplished, and one of the last remaining well-known
+manufacturers joined our club of pinball emulated. :)
+
+Since all of those Allied Leisure games use the exact same code set, you will
+only need ONE copy of the dumps, packed up as a driver called "allied".
+All eleven games will then run off the same code, without the need to
+duplicate the rom dumps over eleven different drivers!
+
+In the same vein, you can now run all the GamePlan model 110 games (Foxy Lady
+to Chuck-A-Luck) on the same set of roms, as a driver called "gp_110".
+
+This method is based on MAME's "bios" support for some games like NEO-GEO,
+weher each game is using a shared set of boot code. The difference on PinMAME
+is just that there simply aren't any additional roms for the pinball games. ;)
+
+Also thanks to JohnnyPop for providing the Titanic & Monopoly redemption roms.
+
+Changes:
+
+*** CORE/CPU ***
+Added support for Allied Leisure hardware (Brian Smith, Gerrit Volkenborn)
+Enabling "bios" files to prevent rom code duplication (Gerrit Volkenborn)
+Preventing AT91 cpu crash occurring when emulation was restarted (Steve Ellenoff)
+Removed display fading (on Gottlieb) again, as it was faulty. (Gerrit Volkenborn)
+
+*** ROM SUPPORT ***
+Added Sega Titanic / Stern Monopoly redemption games (Gerrit Volkenborn)
+Added Williams STTNG LX1, LX2, LG7 (Brian Smith)
+Added Zacaria Space City / New Star's Phoenix (Gerrit Volkenborn)
+Updated Sega Space Jam / ID4 sound with correct dumps (Steve Ellenoff)
+Updated Stern Simpsons Pinball Party to version 5.00 (Gerrit Volkenborn)
+
+
 Version 1.55 (March 30, 2007) - "Let there be Light"
 ------------------------------------------------------------------------------
 Happy 6th Birthday to PinMAME & Visual PinMAME! :)
