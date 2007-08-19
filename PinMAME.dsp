@@ -3840,6 +3840,10 @@ SOURCE=src\wpc\sims\s7\full\tmfnt.c
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\src\wpc\sims\se\prelim\elvis.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\sims\se\prelim\monopoly.c
 # End Source File
 # End Group

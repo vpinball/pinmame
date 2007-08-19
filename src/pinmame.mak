@@ -102,6 +102,7 @@ PINGAMES += $(PINOBJ)/sims/s11/prelim/eatpm.o
 PINGAMES += $(PINOBJ)/sims/s11/full/milln.o
 PINGAMES += $(PINOBJ)/sims/s11/full/dd.o
 PINGAMES += $(PINOBJ)/sims/se/prelim/monopoly.o
+PINGAMES += $(PINOBJ)/sims/se/prelim/elvis.o
 PINGAMES += $(PINOBJ)/sims/wpc/full/afm.o
 PINGAMES += $(PINOBJ)/sims/wpc/full/bop.o
 PINGAMES += $(PINOBJ)/sims/wpc/full/br.o
