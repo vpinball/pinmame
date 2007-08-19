@@ -320,7 +320,7 @@ STDMETHODIMP CRoms::get_Available(VARIANT_BOOL *pVal)
 	if (!mame_faccess (m_gamedrv->name, FILETYPE_ROM))
 	{
 		/* if the game is a clone, check for parent */
-		if (m_gamedrv->clone_of == 0 || (m_gamedrv->clone_of->flags & NOT_A_DRIVER) ||
+		if (m_gamedrv->clone_of == 0 ||
 				!mame_faccess(m_gamedrv->clone_of->name,FILETYPE_ROM))
 			*pVal = VARIANT_FALSE;
 	}
