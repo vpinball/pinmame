@@ -43,7 +43,7 @@ static void elvis_handleMech(int mech);
  ------------------------*/
 static struct {
   int lastPos;
-  int direction, arms, legs;
+  int direction, position, arms, legs;
 } locals;
 
 // The last used selocals variable is "flipsolPulse", so we can forget about the rest.
@@ -382,12 +382,17 @@ static WRITE_HANDLER(elvis_w) {
     if (pos) {
       if (locals.lastPos != pos) {
         if ((locals.lastPos == 0x0c && pos == 0x06) || (locals.lastPos == 0x06 && pos == 0x03) || (locals.lastPos == 0x03 && pos == 0x09) || (locals.lastPos == 0x09 && pos == 0x0c)) {
+          locals.position++;
 		  locals.direction = 1;
         } else if ((locals.lastPos == 0x06 && pos == 0x0c) || (locals.lastPos == 0x0c && pos == 0x09) || (locals.lastPos == 0x09 && pos == 0x03) || (locals.lastPos == 0x03 && pos == 0x06)) {
           locals.direction = -1;
+          if (locals.position) locals.position--;
         }
         locals.lastPos = pos;
       }
+#ifndef VPINMAME // must be disabled, as the switch is set by script in VPM
+      core_setSw(33, !locals.position);
+#endif
     } else {
       locals.direction = 0;
     }
@@ -405,8 +410,9 @@ static void init_elvis(void) {
 static void elvis_drawMech(BMTYPE **line) {
   core_textOutf(30,  0,BLACK,"Dancing Elvis");
   core_textOutf(30, 10,BLACK,"direction:%3d", elvis_getMech(0));
-  core_textOutf(30, 20,BLACK,"arms:     %3d", elvis_getMech(1));
-  core_textOutf(30, 30,BLACK,"legs:     %3d", elvis_getMech(2));
+  core_textOutf(30, 20,BLACK,"arms:    %s",   elvis_getMech(1) ? "  Up" : "Down");
+  core_textOutf(30, 30,BLACK,"legs:    %s",   elvis_getMech(2) ? "  Up" : "Down");
+  core_textOutf(30, 40,BLACK,"position: %3d", elvis_getMech(3));
 }
 
 static void elvis_handleMech(int mech) {
@@ -416,5 +422,6 @@ static int elvis_getMech(int mechNo){
   if (0 == mechNo) return locals.direction;
   if (1 == mechNo) return locals.arms;
   if (2 == mechNo) return locals.legs;
+  if (3 == mechNo) return locals.position;
   return 0;
 }
