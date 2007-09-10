@@ -470,12 +470,12 @@ WRITE_HANDLER(wpc_w) {
         //If Bit is set, Triac is turned on.
         gi_bit = tmp & 0x01;
         if (gi_bit) {
-          if (wpclocals.gi_active[ii] == 2) { // if the bit was set last time as well, it's driven continuously.
+          if (wpclocals.gi_active[ii] == 2 + core_gameData->hw.gameSpecific1) { // if the bit was set last time as well, it's driven continuously.
             coreGlobals.gi[ii] = 8; // seemingly no way to discern levels 7 & 8???
           } else {
             coreGlobals.gi[ii] = wpclocals.gi_irqcnt > 7 ? 0 : 7 - wpclocals.gi_irqcnt;
           }
-          wpclocals.gi_active[ii] = 2;
+          wpclocals.gi_active[ii] = 2 + core_gameData->hw.gameSpecific1;
         } else {
           if (wpclocals.gi_active[ii]) {
             wpclocals.gi_active[ii]--;

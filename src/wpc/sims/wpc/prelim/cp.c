@@ -282,7 +282,7 @@ static core_tGameData cpGameData = {
   GEN_WPC95, wpc_dispDMD,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
-    0,4,0,0,0,0,0, // 4 extra lamp columns for the LEDs
+    0,4,0,0,0,1,0, // 4 extra lamp columns for the LEDs
   },
   &cpSimData,
   {

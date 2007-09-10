@@ -296,7 +296,8 @@ static sim_tSimData ccSimData = {
 static core_tGameData ccGameData = {
   GEN_WPC95, wpc_dispDMD,
   {
-    FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L)
+    FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
+    0,0,0,0,0,1
   },
   &ccSimData,
   {

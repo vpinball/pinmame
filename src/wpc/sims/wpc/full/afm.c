@@ -382,7 +382,7 @@ static core_tGameData afmGameData = {
   GEN_WPC95, wpc_dispDMD,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
-    0,2,3,0,0,0,0, // 2 extra lamp columns for the LEDs
+    0,2,3,0,0,1,0, // 2 extra lamp columns for the LEDs
     afm_getSol, afm_handleMech, afm_getMech, afm_drawMech,
     NULL, NULL
   },

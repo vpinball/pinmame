@@ -599,7 +599,7 @@ static core_tGameData nggGameData = {
   GEN_WPC95, wpc_dispDMD,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_UR),
-    0,0,8,0,0,0,0,
+    0,0,8,0,0,1,0,
     ngg_getSol, ngg_handleMech, ngg_getMech, ngg_drawMech,
     &ngg_lampPos, NULL
   },

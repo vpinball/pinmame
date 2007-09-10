@@ -308,7 +308,8 @@ static sim_tSimData nbafSimData = {
 static core_tGameData nbafGameData = {
   GEN_WPC95, wpc_dispDMD,
   {
-    FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L)
+    FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
+    0,0,0,0,0,1
   },
   &nbafSimData,
   {
