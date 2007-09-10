@@ -99,7 +99,6 @@ static struct {
   int firqSrc;             /* source of last firq */
   int diagnostic;
   int zc;						/* zero cross flag */
-  int gi_prev[CORE_MAXGI];	    /* track previous data written to triac latch */
   int gi_irqcnt;                /* Count IRQ occurrences for GI Dimming */
   int gi_active[CORE_MAXGI];    /* Used to check if GI string is accessed at all */
 } wpclocals;
@@ -475,14 +474,13 @@ WRITE_HANDLER(wpc_w) {
             coreGlobals.gi[ii] = 8; // seemingly no way to discern levels 7 & 8???
           } else {
             coreGlobals.gi[ii] = wpclocals.gi_irqcnt > 7 ? 0 : 7 - wpclocals.gi_irqcnt;
-            wpclocals.gi_prev[ii] = coreGlobals.gi[ii];
           }
           wpclocals.gi_active[ii] = 3;
         } else {
           if (wpclocals.gi_active[ii]) {
             wpclocals.gi_active[ii]--;
-          } else { // wait two cycles before decreasing brightness for smoothing
-            if (coreGlobals.gi[ii]) coreGlobals.gi[ii]--;
+          } else { // wait two cycles before turning off for smoothing
+            coreGlobals.gi[ii] = 0;
           }
         }
       }
