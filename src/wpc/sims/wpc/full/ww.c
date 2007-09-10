@@ -454,6 +454,22 @@ static core_tGameData wwGameData = {
   GEN_WPCFLIPTRON, wpc_dispDMD,
   {
     FLIP_SW(FLIP_L | FLIP_UR) | FLIP_SOL(FLIP_L | FLIP_UR),
+    0,2,0,0,0,0,0,
+    NULL, ww_handleMech, ww_getMech, ww_drawMech,
+    NULL, ww_samsolmap
+  },
+  &wwSimData,
+  {     /*Coin    1     2     3     4     5     6     7     8     9    10   Cab.  Cust */
+    {0},{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xbf, 0x00, 0x60, 0x00, 0x00, 0x00 },
+    /*Start    Tilt    SlamTilt    CoinDoor    Shooter */
+    { swStart, swTilt, swSlamTilt, swCoinDoor, 0}
+  }
+};
+
+static core_tGameData lh5GameData = {
+  GEN_WPCFLIPTRON, wpc_dispDMD,
+  {
+    FLIP_SW(FLIP_L | FLIP_UR) | FLIP_SOL(FLIP_L | FLIP_UR),
     0,2,0,0,0,1,0,
     NULL, ww_handleMech, ww_getMech, ww_drawMech,
     NULL, ww_samsolmap
@@ -495,7 +511,8 @@ static WRITE_HANDLER(ww_wpc_w) {
 /  Game handling
 /----------------*/
 static void init_ww(void) {
-  core_gameData = &wwGameData;
+  // LH-5 version needs a longer GI smoothing delay, so we just check for years 2000 and up!
+  core_gameData = Machine->gamedrv->year[0] == '2' ? &lh5GameData : &wwGameData;
   install_mem_write_handler(0, 0x3fb0, 0x3fff, ww_wpc_w);
   HC4094_init(&hc4094ww);
   HC4094_oe_w(0, 1);
