@@ -373,7 +373,7 @@ static core_tGameData corvGameData = {
   GEN_WPCSECURITY, wpc_dispDMD,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L | FLIP_UL),
-    0,0,3,0,0,0,0, // 3 extra solenoids
+    0,0,3,0,0,1,0, // 3 extra solenoids
     corv_getSol, corv_handleMech, corv_getMech, corv_drawMech,
     NULL, NULL
   },
