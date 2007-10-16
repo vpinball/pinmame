@@ -56,12 +56,17 @@ CORE_GAMEDEFNV(canasta,"Canasta '86'",1986,"Inder (Spain)",gl_mINDER1,0)
 /*-------------------------------------------------------------------
 / Lap By Lap (1986)
 /-------------------------------------------------------------------*/
-INITGAME(lapbylap, inderDisp7, 1, 0,0,0x0c,0,0)
+static core_tLCDLayout lblDisp[] = {
+  DISP_SEG_IMPORT(inderDisp7),
+  {10,2,48,2,CORE_SEG7}, {10,8,50,2,CORE_SEG7},
+  {0}
+};
+INITGAME(lapbylap, lblDisp, 1, 0,0,0x0c,0,0)
 INDER_ROMSTART(lapbylap,"lblr0.bin", CRC(2970f31a) SHA1(01fb774de19944bb3a19577921f84ab5b6746afb),
 						"lblr1.bin", CRC(94787c10) SHA1(f2a5b07e57222ee811982eb220c239e34a358d6f))
 INDER_SNDROM(			"lblsr0.bin",CRC(cbaddf02) SHA1(8207eebc414d90328bfd521190d508b88bb870a2))
 INDER_ROMEND
-CORE_GAMEDEFNV(lapbylap,"Lap By Lap",1986,"Inder (Spain)",gl_mINDER2,GAME_IMPERFECT_SOUND)
+CORE_GAMEDEFNV(lapbylap,"Lap By Lap",1986,"Inder (Spain)",gl_mINDER2,0)
 
 /*-------------------------------------------------------------------
 / Clown (1988)

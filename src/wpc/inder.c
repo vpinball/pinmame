@@ -112,6 +112,18 @@ static WRITE_HANDLER(disp_w) {
   else for (i=0; i < 5; i++)
     locals.segments[8*i + 7-(data >> 3)].w = locals.dispSeg[i];
 }
+// secondary display (Lap By Lap and Moon Light)
+static WRITE_HANDLER(disp2_w) {
+  if (data & 0xf0) {
+    locals.segments[51 - core_BitColToNum(data >> 4)].w = core_bcd2seg7[data & 0x0f];
+  }
+}
+
+// external sound
+static WRITE_HANDLER(snd2_w) {
+  locals.sndCmd = data;
+  cpu_set_nmi_line(INDER_SND_CPU, PULSE_LINE);
+}
 
 static WRITE_HANDLER(lamp_w) {
   coreGlobals.tmpLampMatrix[offset] = data;
@@ -120,6 +132,10 @@ static WRITE_HANDLER(lamp_w) {
 // It's hard to draw the line between solenoids and lamps, as they share the outputs...
 static WRITE_HANDLER(sol_w) {
   locals.solenoids |= data;
+}
+
+static READ_HANDLER(sndcmd_r) {
+  return locals.sndCmd;
 }
 
 /*-------------------------------------------------------
@@ -145,16 +161,13 @@ static WRITE_HANDLER(ay8910_0_data_w)   { AY8910Write(0,1,data); }
 static READ_HANDLER (ay8910_0_r)        { return AY8910Read(0); }
 
 /*--------------------------------------------------
-/ Lap By Lap: Using two AY8910 chip2s on separate Z80 CPU.
+/ Lap By Lap: Using two AY8910 chips on separate Z80 CPU.
 /---------------------------------------------------*/
-static READ_HANDLER (ay8910_1_portA_r) {
-  return coreGlobals.swMatrix[8];
-}
 struct AY8910interface INDER_ay8910Int2 = {
 	2,			/* 2 chips */
 	2000000,	/* 2 MHz */
-	{ 30, 30 },		/* Volume */
-	{ 0, ay8910_1_portA_r },	/* Input Port A callback (what for? sound settings?) */
+	{ 35, 35 },		/* Volume */
+	{ 0, sndcmd_r },	/* Input Port A callback (sound command) */
 };
 static WRITE_HANDLER(ay8910_1_ctrl_w)   { AY8910Write(1,0,data); }
 static WRITE_HANDLER(ay8910_1_data_w)   { AY8910Write(1,1,data); }
@@ -260,8 +273,8 @@ static WRITE_HANDLER(disp16_w) {
   locals.dispSeg[offset] = data;
 }
 
+// sound
 static WRITE_HANDLER(snd_w) {
-  logerror("SND CMD: %02x\n", data);
   locals.sndCmd = data;
 }
 
@@ -298,29 +311,6 @@ static MEMORY_WRITE_START(INDER_writemem)
 //{0x6ce0,0x6ce0, ?}, // unknown stuff here
 MEMORY_END
 
-static MEMORY_READ_START(INDER1_readmem)
-  {0x0000,0x1fff, MRA_ROM},
-  {0x4000,0x43ff, MRA_RAM},
-  {0x4400,0x44ff, INDER_CMOS_r},
-  {0x4800,0x4802, dip_r},
-  {0x4805,0x4809, sw_r},
-  {0x4b01,0x4b01, ay8910_0_r },
-MEMORY_END
-
-static MEMORY_WRITE_START(INDER1_writemem)
-  {0x2000,0x20ff, disp_w},
-  {0x4000,0x43ff, MWA_RAM},
-  {0x4400,0x44ff, INDER_CMOS_w, &INDER_CMOS},
-//{0x4800,0x4805, ?}, // unknown stuff here
-  {0x4806,0x480a, sw_w},
-  {0x4900,0x4900, sol_w},
-  {0x4901,0x4907, lamp_w},
-  {0x4a00,0x4a00, snd_w},
-//{0x4a01,0x4a01, ?}, // unknown stuff here
-  {0x4b00,0x4b00, ay8910_0_ctrl_w },
-  {0x4b02,0x4b02, ay8910_0_data_w },
-MEMORY_END
-
 static MACHINE_INIT(INDER) {
   memset(&locals, 0, sizeof locals);
 }
@@ -336,52 +326,6 @@ MACHINE_DRIVER_START(INDER)
   MDRV_DIPS(24)
   MDRV_SWITCH_CONV(INDER_sw2m,INDER_m2sw)
   MDRV_SWITCH_UPDATE(INDER)
-MACHINE_DRIVER_END
-
-MACHINE_DRIVER_START(INDER1)
-  MDRV_IMPORT_FROM(INDER)
-  MDRV_CPU_MODIFY("mcpu")
-  MDRV_CPU_MEMORY(INDER1_readmem, INDER1_writemem)
-  MDRV_SOUND_ADD(AY8910, INDER_ay8910Int)
-MACHINE_DRIVER_END
-
-static INTERRUPT_GEN(inder2_snd_irq) {
-  cpu_set_irq_line(INDER_SND_CPU, 0, PULSE_LINE);
-}
-
-static READ_HANDLER(snd_r) {
-  UINT8 cmd = locals.sndCmd;
-  locals.sndCmd = 0;
-  return cmd;
-}
-
-static MEMORY_READ_START(inder2_snd_readmem)
-  {0x0000, 0x1fff, MRA_ROM},
-  {0x8008, 0x8008, snd_r},
-  {0x8000, 0x80ff, MRA_RAM},
-  {0x8300, 0x83ff, MRA_RAM},
-  {0x9001, 0x9001, ay8910_0_r},
-  {0xa001, 0xa001, ay8910_1_r},
-MEMORY_END
-
-static MEMORY_WRITE_START(inder2_snd_writemem)
-  {0x8000,0x80ff, MWA_RAM},
-  {0x8300,0x83ff, MWA_RAM},
-  {0x9000,0x9000, ay8910_0_ctrl_w},
-  {0x9002,0x9002, ay8910_0_data_w},
-  {0xa000,0xa000, ay8910_1_ctrl_w},
-  {0xa002,0xa002, ay8910_1_data_w},
-MEMORY_END
-
-MACHINE_DRIVER_START(INDER2)
-  MDRV_IMPORT_FROM(INDER)
-  MDRV_CPU_MODIFY("mcpu")
-  MDRV_CPU_MEMORY(INDER1_readmem, INDER1_writemem)
-  MDRV_CPU_ADD_TAG("scpu", Z80, INDER_CPUFREQ)
-  MDRV_CPU_PERIODIC_INT(inder2_snd_irq, INDER_IRQFREQ)
-  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
-  MDRV_CPU_MEMORY(inder2_snd_readmem, inder2_snd_writemem)
-  MDRV_SOUND_ADD(AY8910, INDER_ay8910Int2)
 MACHINE_DRIVER_END
 
 static MEMORY_READ_START(INDER0_readmem)
@@ -408,6 +352,76 @@ MACHINE_DRIVER_START(INDER0)
   MDRV_CPU_MODIFY("mcpu")
   MDRV_CPU_MEMORY(INDER0_readmem, INDER0_writemem)
   MDRV_SOUND_ADD(SN76496, INDER_ti76489Int)
+MACHINE_DRIVER_END
+
+static MEMORY_READ_START(INDER1_readmem)
+  {0x0000,0x1fff, MRA_ROM},
+  {0x4000,0x43ff, MRA_RAM},
+  {0x4400,0x44ff, INDER_CMOS_r},
+  {0x4800,0x4802, dip_r},
+  {0x4805,0x4809, sw_r},
+  {0x4b01,0x4b01, ay8910_0_r },
+MEMORY_END
+
+static MEMORY_WRITE_START(INDER1_writemem)
+  {0x2000,0x20ff, disp_w},
+  {0x4000,0x43ff, MWA_RAM},
+  {0x4400,0x44ff, INDER_CMOS_w, &INDER_CMOS},
+//{0x4800,0x4805, ?}, // unknown stuff here
+  {0x4806,0x480a, sw_w},
+  {0x4900,0x4900, sol_w},
+  {0x4901,0x4907, lamp_w},
+  {0x4b00,0x4b00, ay8910_0_ctrl_w },
+  {0x4b02,0x4b02, ay8910_0_data_w },
+MEMORY_END
+
+MACHINE_DRIVER_START(INDER1)
+  MDRV_IMPORT_FROM(INDER)
+  MDRV_CPU_MODIFY("mcpu")
+  MDRV_CPU_MEMORY(INDER1_readmem, INDER1_writemem)
+  MDRV_SOUND_ADD(AY8910, INDER_ay8910Int)
+MACHINE_DRIVER_END
+
+static INTERRUPT_GEN(inder2_snd_irq) {
+  cpu_set_irq_line(INDER_SND_CPU, 0, PULSE_LINE);
+}
+
+static MEMORY_WRITE_START(INDER2_writemem)
+  {0x2000,0x20ff, disp_w},
+  {0x4000,0x43ff, MWA_RAM},
+  {0x4400,0x44ff, INDER_CMOS_w, &INDER_CMOS},
+//{0x4800,0x4805, ?}, // unknown stuff here
+  {0x4806,0x480a, sw_w},
+  {0x4900,0x4900, sol_w},
+  {0x4901,0x4907, lamp_w},
+  {0x4a00,0x4a00, snd2_w},
+  {0x4a01,0x4a01, disp2_w},
+MEMORY_END
+
+static MEMORY_READ_START(inder2_snd_readmem)
+  {0x0000, 0x1fff, MRA_ROM},
+  {0x8000, 0x87ff, MRA_RAM},
+  {0x9001, 0x9001, ay8910_0_r},
+  {0xa001, 0xa001, ay8910_1_r},
+MEMORY_END
+
+static MEMORY_WRITE_START(inder2_snd_writemem)
+  {0x8000,0x87ff, MWA_RAM},
+  {0x9000,0x9000, ay8910_0_ctrl_w},
+  {0x9002,0x9002, ay8910_0_data_w},
+  {0xa000,0xa000, ay8910_1_ctrl_w},
+  {0xa002,0xa002, ay8910_1_data_w},
+MEMORY_END
+
+MACHINE_DRIVER_START(INDER2)
+  MDRV_IMPORT_FROM(INDER)
+  MDRV_CPU_MODIFY("mcpu")
+  MDRV_CPU_MEMORY(INDER0_readmem, INDER2_writemem)
+  MDRV_CPU_ADD_TAG("scpu", Z80, 2000000)
+  MDRV_CPU_PERIODIC_INT(inder2_snd_irq, INDER_IRQFREQ)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(inder2_snd_readmem, inder2_snd_writemem)
+  MDRV_SOUND_ADD(AY8910, INDER_ay8910Int2)
 MACHINE_DRIVER_END
 
 
@@ -462,10 +476,6 @@ static WRITE_HANDLER(snd_portc_w) {
 		sndlocals.PC0 = 1;
 	if (!GET_BIT7)
 		sndlocals.PC0 = 1;
-}
-
-static READ_HANDLER(sndcmd_r) {
-	return locals.sndCmd;
 }
 
 static WRITE_HANDLER(sndctrl_w) {
