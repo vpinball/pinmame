@@ -1274,6 +1274,7 @@ DRIVER(ww,l3)           //WPC-518:  01/93 W White Water (L-3)
 DRIVER(ww,l4)           //WPC-518:  02/93 W White Water (L-4)
 DRIVER(ww,l5)           //WPC-518:  05/93 W White Water (L-5)
 DRIVER(ww,lh5)          //WPC-518:  10/00 W White Water (LH-5)
+DRIVER(ww,lh6)          //WPC-518:  10/00 W White Water (LH-6)
 DRIVER(drac,p11)        //WPC-501:  02/93 W Bram Stoker's Dracula (P-11)
 DRIVER(drac,l1)         //WPC-501:  02/93 W Bram Stoker's Dracula
 DRIVER(tz,pa1)          //WPC-520:  03/93 B Twilight Zone (PA-1)
