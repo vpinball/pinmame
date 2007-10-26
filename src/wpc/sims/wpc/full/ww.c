@@ -405,6 +405,7 @@ WPCS_SOUNDROM248("ww_u18.l1",CRC(6f483215) SHA1(03053a16c106ccc7aa5a1206eb1da3f5
 
 WPC_ROMSTART(ww,l5,"wwatr_l5.rom",0x80000,CRC(4eb1d233) SHA1(b4eda04221e11697a7c5924c37622221fe4a47d0)) WW_SOUND WPC_ROMEND
 WPC_ROMSTART(ww,lh5,"ww_lh5.rom",0x100000,CRC(5e03a182) SHA1(0a988d8e1b2b9ed9d6b012634f2b3eede5673600)) WW_SOUND WPC_ROMEND
+WPC_ROMSTART(ww,lh6,"ww_lh6.rom",0x100000,CRC(bb1465cf) SHA1(2e554b0d3ceca46c6eb8852534c140916a16069d)) WW_SOUND WPC_ROMEND
 WPC_ROMSTART(ww,l4,"u6-l4.rom",   0x80000,CRC(59c2def3) SHA1(99fe53f228d3e4047958ec263e92926891ea7594)) WW_SOUND WPC_ROMEND
 WPC_ROMSTART(ww,l3,"u6-l3.rom",   0x80000,CRC(b8ff04d9) SHA1(a7b16306bf050ee961490abfaf904b1800bfbc3e)) WW_SOUND WPC_ROMEND
 WPC_ROMSTART(ww,l2,"ww_l2.u6",    0x80000,CRC(2738acf8) SHA1(1554dd497d6aae53934e2e4a2e42bda1f87aaa02)) WW_SOUND WPC_ROMEND
@@ -425,6 +426,7 @@ WPC_ROMEND
 /  Game drivers
 /---------------*/
 CORE_GAMEDEF (ww,l5,   "White Water (L-5)",1993,"Williams",wpc_mFliptronS,0)
+CORE_CLONEDEF(ww,lh6,l5,"White Water (LH-6)",2000,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(ww,lh5,l5,"White Water (LH-5)",2000,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(ww,l4,l5,"White Water (L-4)",1993,"Williams",wpc_mFliptronS,0)
 CORE_CLONEDEF(ww,l3,l5,"White Water (L-3)",1993,"Williams",wpc_mFliptronS,0)
