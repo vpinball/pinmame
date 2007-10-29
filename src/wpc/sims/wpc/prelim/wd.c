@@ -318,6 +318,15 @@ DCS_SOUNDROM6x("u2-s031.rom",CRC(a265cd93) SHA1(2cebb00119f8fc2022959be2107669c9
                "u7-s031.rom",CRC(d252f599) SHA1(bdce67187c027b713b6ef88f6cd4f025de469929))
 WPC_ROMEND
 
+WPC_ROMSTART(wd,048r,"wd_048r.rom",0x80000,CRC(45653baa) SHA1(788d5195e61605e151796f5fff9ca8d00820c7a3))
+DCS_SOUNDROM6x("u2-s031.rom",CRC(a265cd93) SHA1(2cebb00119f8fc2022959be2107669c9b4b65bfb),
+               "u3-s031.rom",CRC(16105ac9) SHA1(7b40cc9a30dd4f675fda979f41a22364aa9ea452),
+               "u4-s031.rom",CRC(07d52ef3) SHA1(4bd7dd97316c7244b556b4bd0a8475e282abaa25),
+               "u5-s031.rom",CRC(14fea24c) SHA1(a63e2a7796b89d5a6bca419ceaa14888ae22b7a6),
+               "u6-s031.rom",CRC(d15d073e) SHA1(063412a51de3b6c2bdbde0c3f84132d70c935fb4),
+               "u7-s031.rom",CRC(d252f599) SHA1(bdce67187c027b713b6ef88f6cd4f025de469929))
+WPC_ROMEND
+
 /*--------------
 /  Game drivers
 /---------------*/
@@ -328,6 +337,7 @@ CORE_CLONEDEF(wd,10r,12,"Who Dunnit (1.0 R)",1995,"Bally",wpc_m95DCSS,0)
 CORE_CLONEDEF(wd,10g,12,"Who Dunnit (1.0 Germany)",1995,"Bally",wpc_m95DCSS,0)
 CORE_CLONEDEF(wd,10f,12,"Who Dunnit (1.0 French)",1995,"Bally",wpc_m95DCSS,0)
 CORE_CLONEDEF(wd,03r,12,"Who Dunnit (0.3 R)",1995,"Bally",wpc_m95DCSS,0)
+CORE_CLONEDEF(wd,048r,12,"Who Dunnit (0.48 R)",1995,"Bally",wpc_m95DCSS,0)
 
 /*-----------------------
 / Simulation Definitions
