@@ -127,6 +127,13 @@ DE_ROMEND
 #define input_ports_lwar input_ports_des11
 CORE_GAMEDEF(lwar,a83,"Laser War (8.3)",1987,"Data East",de_mDEAS1,0)
 
+DE_ROMSTARTx8(lwar_e90,"lwar9-0.e5",CRC(b596151f) SHA1(10dade79ded71625770ec7e21ea50b7aa64023d0))
+DE1S_SOUNDROM244(   "lwar_e9.snd",CRC(9a6c834d) SHA1(c6e2c4658db4bd8dfcbb0351793837cdff30ba28),   //F7 on schem (sound)
+                    "lwar_e6.snd",CRC(7307d795) SHA1(5d88b8d883a2f17ca9fa30c7e7ac29c9f236ac4d),   //F6 on schem (voice1)
+                    "lwar_e7.snd",CRC(0285cff9) SHA1(2c5e3de649e419ec7944059f2a226aaf58fe2af5))   //F4 on schem (voice2)
+DE_ROMEND
+CORE_CLONEDEF(lwar,e90,a83,"Laser War (9.0 Europe)",1987,"Data East",de_mDEAS1,0)
+
 /*-------------------------------------------------------------------------
 / Secret Service - CPU Rev 2 /Alpha Type 2 - 32K Roms - 32K/64K Sound Roms
 /-------------------------------------------------------------------------*/
