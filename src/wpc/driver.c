@@ -264,7 +264,8 @@ DRIVERNV(kpv106)        // 12/96    Kingpin
 // DATA EAST GAMES
 // -------------------
 //4 x 2 x 7 (mixed) + credits A/N Display
-DRIVER(lwar,a83)        //Data East MPU: 05/87 Laser War
+DRIVER(lwar,a83)        //Data East MPU: 05/87 Laser War (8.3)
+DRIVER(lwar,e90)        //Data East MPU: 05/87 Laser War (9.0 Europe)
 //4 x 2 x 7 (mixed) A/N Display
 DRIVER(ssvc,a26)        //Data East MPU: 03/88 Secret Service
 DRIVER(torp,e21)        //Data East MPU: 08/88 Torpedo Alley
@@ -1351,6 +1352,7 @@ DRIVER(i500,11r)        //WPC-526:  06/95 B Indianapolis 500
 DRIVER(i500,11b)        //WPC-526:  06/95 B Indianapolis 500 (Belgium)
 DRIVER(jm,12r)          //WPC-542:  08/95 W Johnny Mnemonic
 DRIVER(wd,03r)          //WPC-544: ?09/95 B Who dunnit (0.3 R)
+DRIVER(wd,048r)         //WPC-544: ?09/95 B Who dunnit (0.48 R)
 DRIVER(wd,10r)          //WPC-544: ?11/95 B Who dunnit (1.0 R)
 DRIVER(wd,10g)          //WPC-544: ?11/95 B Who dunnit (1.0 German)
 DRIVER(wd,10f)          //WPC-544: ?11/95 B Who dunnit (1.0 French)
