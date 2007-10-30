@@ -133,9 +133,10 @@ INLINE void execute_one(int opcode)
 			I.AB = I.BX;
 			break;
 		case 0x05: /* RTN */
-			I.PC = I.SA;
+			tmpPair = I.SA;
+			I.PC = tmpPair;
 			I.SA = I.SB;
-			I.SB = I.PC;
+			I.SB = tmpPair;
 			change_pc16(I.PC.d);
 			break;
 		case 0x06: /* XS */
@@ -144,9 +145,10 @@ INLINE void execute_one(int opcode)
 			I.SB = tmpPair;
 			break;
 		case 0x07: /* RTNSK */
-			I.PC = I.SA;
+			tmpPair = I.SA;
+			I.PC = tmpPair;
 			I.SA = I.SB;
-			I.SB = I.PC;
+			I.SB = tmpPair;
 			I.PC.w.l++;
 			change_pc16(I.PC.d);
 			break;
@@ -372,12 +374,10 @@ INLINE void execute_one(int opcode)
 				I.BX.d = (~ARG()) & 0xff;
 				I.AB = I.BX;
 				PPS4_ICount--;
-				I.PC = I.SA;
+				tmpPair = I.SA;
+				I.PC = tmpPair;
 				I.SA = I.SB;
-				I.SB = I.PC;
-			} else {
-				I.PC.w.l++;
-				change_pc16(I.PC.d);
+				I.SB = tmpPair;
 			}
 			wasLB = 2;
 			break;
