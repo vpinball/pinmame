@@ -236,10 +236,10 @@ INLINE void execute_one(int opcode)
 			I.xreg = I.accu;
 			break;
 		case 0x1c: /* IOL */
-			tmp = ARG();
-			I.accu = tmp & 0x0f;
-			M_OUT(0x10, tmp & 0x0f)
-			M_OUT(0x11, tmp >> 4)
+			tmp = RM(0x1000 | I.AB.w.l) & 0x0f;
+			WM(0x1000 | I.AB.w.l, I.accu ^ 0x0f);
+			I.accu = tmp ^ 0x0f;
+			M_OUT(0x10, ARG());
 			break;
 		case 0x1d: /* DOA */
 			M_OUT(0, I.accu)
