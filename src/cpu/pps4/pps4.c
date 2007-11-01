@@ -128,7 +128,7 @@ INLINE void execute_one(int opcode)
 			M_JMP(opcode)
 			break;
 		case 0x04: /* LBUA */
-			I.accu = RM(0x1000 | I.AB.w.l);
+			I.accu = RM(0x1000 | I.AB.w.l) & 0x0f;
 			I.BX.b.h = I.accu;
 			I.AB = I.BX;
 			break;
@@ -179,7 +179,7 @@ INLINE void execute_one(int opcode)
 			I.accu &= RM(0x1000 | I.AB.w.l);
 			break;
 		case 0x0e: /* COMP */
-			I.accu = ~I.accu;
+			I.accu = ~I.accu & 0x0f;
 			break;
 		case 0x0f: /* OR */
 			I.accu |= RM(0x1000 | I.AB.w.l);
@@ -285,7 +285,7 @@ INLINE void execute_one(int opcode)
 		/* EXD */
 		case 0x28: case 0x29: case 0x2a: case 0x2b: case 0x2c: case 0x2d: case 0x2e: case 0x2f:
 			tmp = I.accu;
-			I.accu = RM(0x1000 | I.AB.w.l);
+			I.accu = RM(0x1000 | I.AB.w.l) & 0x0f;
 			WM(0x1000 | I.AB.w.l, tmp);
 			I.BX.w.l = (I.BX.w.l & 0xf8f) | ((I.BX.w.l ^ ((~opcode) << 4)) & 0x070);
 			if (!(I.BX.w.l & 0x0f)) {
@@ -298,14 +298,14 @@ INLINE void execute_one(int opcode)
 
 		/* LD */
 		case 0x30: case 0x31: case 0x32: case 0x33: case 0x34: case 0x35: case 0x36: case 0x37:
-			I.accu = RM(0x1000 | I.AB.w.l);
+			I.accu = RM(0x1000 | I.AB.w.l) & 0x0f;
 			I.BX.w.l = (I.BX.w.l & 0xf8f) | ((I.BX.w.l ^ ((~opcode) << 4)) & 0x070);
 			I.AB = I.BX;
 			break;
 		/* EX */
 		case 0x38: case 0x39: case 0x3a: case 0x3b: case 0x3c: case 0x3d: case 0x3e: case 0x3f:
 			tmp = I.accu;
-			I.accu = RM(0x1000 | I.AB.w.l);
+			I.accu = RM(0x1000 | I.AB.w.l) & 0x0f;
 			WM(0x1000 | I.AB.w.l, tmp);
 			I.BX.w.l = (I.BX.w.l & 0xf8f) | ((I.BX.w.l ^ ((~opcode) << 4)) & 0x070);
 			I.AB = I.BX;
