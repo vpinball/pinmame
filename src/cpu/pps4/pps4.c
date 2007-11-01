@@ -237,8 +237,8 @@ INLINE void execute_one(int opcode)
 			break;
 		case 0x1c: /* IOL */
 			tmp = ARG();
-			M_OUT(tmp, I.accu ^ 0x0f);
-			I.accu = (cpu_readport16(tmp) & 0x0f) ^ 0x0f;
+			M_OUT((tmp & 0xf0) | (I.BX.w.l & 0x0f), (tmp << 4) | I.accu);
+			I.accu = cpu_readport16((tmp & 0xf0) | (I.BX.w.l & 0x0f));
 			break;
 		case 0x1d: /* DOA */
 			M_OUT(0x100, I.accu)
@@ -426,7 +426,6 @@ int PPS4_execute(int cycles)
 void PPS4_init(void)
 {
 	int cpu = cpu_getactivecpu();
-	I.cputype = 1; // we use the PPS-4/2 by default for enhanced I/O capability!
 
 	state_save_register_UINT16("PPS4", cpu, "PC", &I.PC.w.l, 1);
 	state_save_register_UINT16("PPS4", cpu, "SA", &I.SA.w.l, 1);
@@ -447,6 +446,7 @@ void PPS4_init(void)
 void PPS4_reset(void *param)
 {
 	memset(&I, 0, sizeof(PPS4_Regs));
+	I.cputype = 1; // we use the PPS-4/2 by default for enhanced I/O capability!
 	change_pc16(I.PC.d);
 }
 
