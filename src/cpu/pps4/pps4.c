@@ -236,15 +236,14 @@ INLINE void execute_one(int opcode)
 			I.xreg = I.accu;
 			break;
 		case 0x1c: /* IOL */
-			tmp = RM(0x1000 | I.AB.w.l) & 0x0f;
-			WM(0x1000 | I.AB.w.l, I.accu ^ 0x0f);
-			I.accu = tmp ^ 0x0f;
-			M_OUT(0x10, ARG());
+			tmp = ARG();
+			M_OUT(tmp, I.accu ^ 0x0f);
+			I.accu = (cpu_readport16(tmp) & 0x0f) ^ 0x0f;
 			break;
 		case 0x1d: /* DOA */
-			M_OUT(0, I.accu)
+			M_OUT(0x100, I.accu)
 			if (I.cputype)
-				M_OUT(1, I.xreg) // PPS-4/2 only!
+				M_OUT(0x101, I.xreg) // PPS-4/2 only!
 			break;
 		case 0x1e: /* SKZ */
 			I.skip = (!I.accu);
@@ -268,7 +267,7 @@ INLINE void execute_one(int opcode)
 			I.ff1 = 1;
 			break;
 		case 0x23: /* DIB */
-			M_IN(1)
+			M_IN(0x101)
 			break;
 		case 0x24: /* RC */
 			I.carry = 0;
@@ -280,7 +279,7 @@ INLINE void execute_one(int opcode)
 			I.ff1 = 0;
 			break;
 		case 0x27: /* DIA */
-			M_IN(0)
+			M_IN(0x100)
 			break;
 		/* EXD */
 		case 0x28: case 0x29: case 0x2a: case 0x2b: case 0x2c: case 0x2d: case 0x2e: case 0x2f:
