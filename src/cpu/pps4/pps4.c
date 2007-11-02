@@ -123,8 +123,10 @@ INLINE void execute_one(int opcode)
 			break;
 		/* TML */
 		case 0x01: case 0x02: case 0x03:
+			tmpPair = I.PC;
+			tmpPair.w.l++;
 			I.SB = I.SA;
-			I.SA = I.PC;
+			I.SA = tmpPair;
 			M_JMP(opcode)
 			break;
 		case 0x04: /* LBUA */
@@ -237,8 +239,8 @@ INLINE void execute_one(int opcode)
 			break;
 		case 0x1c: /* IOL */
 			tmp = ARG();
-			M_OUT((tmp & 0xf0) | (I.BX.w.l & 0x0f), (tmp << 4) | I.accu);
-			I.accu = cpu_readport16((tmp & 0xf0) | (I.BX.w.l & 0x0f));
+			M_OUT((tmp & 0xf0) | (I.BX.w.l & 0x0f), ((I.BX.w.l & 0xff0) << 4) | ((tmp & 0x0f)<< 4) | I.accu);
+			M_IN((tmp & 0xf0) | (I.BX.w.l & 0x0f));
 			break;
 		case 0x1d: /* DOA */
 			M_OUT(0x100, I.accu)
@@ -286,7 +288,7 @@ INLINE void execute_one(int opcode)
 			tmp = I.accu;
 			I.accu = RM(0x1000 | I.AB.w.l) & 0x0f;
 			WM(0x1000 | I.AB.w.l, tmp);
-			I.BX.w.l = (I.BX.w.l & 0xf8f) | ((I.BX.w.l ^ ((~opcode) << 4)) & 0x070);
+			I.BX.w.l = (I.BX.w.l & 0xf8f) | ((I.BX.w.l ^ (~opcode << 4)) & 0x070);
 			if (!(I.BX.w.l & 0x0f)) {
 				I.BX.w.l |= 0x00f;
 				I.skip = 1;
@@ -298,7 +300,7 @@ INLINE void execute_one(int opcode)
 		/* LD */
 		case 0x30: case 0x31: case 0x32: case 0x33: case 0x34: case 0x35: case 0x36: case 0x37:
 			I.accu = RM(0x1000 | I.AB.w.l) & 0x0f;
-			I.BX.w.l = (I.BX.w.l & 0xf8f) | ((I.BX.w.l ^ ((~opcode) << 4)) & 0x070);
+			I.BX.w.l = (I.BX.w.l & 0xf8f) | ((I.BX.w.l ^ (~opcode << 4)) & 0x070);
 			I.AB = I.BX;
 			break;
 		/* EX */
@@ -306,7 +308,7 @@ INLINE void execute_one(int opcode)
 			tmp = I.accu;
 			I.accu = RM(0x1000 | I.AB.w.l) & 0x0f;
 			WM(0x1000 | I.AB.w.l, tmp);
-			I.BX.w.l = (I.BX.w.l & 0xf8f) | ((I.BX.w.l ^ ((~opcode) << 4)) & 0x070);
+			I.BX.w.l = (I.BX.w.l & 0xf8f) | ((I.BX.w.l ^ (~opcode << 4)) & 0x070);
 			I.AB = I.BX;
 			break;
 
@@ -325,7 +327,7 @@ INLINE void execute_one(int opcode)
 		/* ADI */
 		case 0x60: case 0x61: case 0x62: case 0x63: case 0x64: case 0x66: case 0x67:
 		case 0x68: case 0x69: case 0x6a: case 0x6b: case 0x6c: case 0x6d: case 0x6e:
-			I.accu += (~opcode) & 0x0f;
+			I.accu += ~opcode & 0x0f;
 			I.skip = I.carry = I.accu >> 4;
 			I.accu &= 0x0f;
 			break;
@@ -333,8 +335,8 @@ INLINE void execute_one(int opcode)
 			I.accu = (I.accu + 0x0a) & 0x0f;
 			break;
 		case 0x6f: /* CYS */
-			tmp = ~I.accu;
-			I.accu = (~I.SA.w.l) & 0x0f;
+			tmp = ~I.accu & 0x0f;
+			I.accu = ~I.SA.w.l & 0x0f;
 			I.SA.w.l = (I.SA.w.l >> 4) | (tmp << 8);
 			break;
 
@@ -342,7 +344,7 @@ INLINE void execute_one(int opcode)
 		case 0x70: case 0x71: case 0x72: case 0x73: case 0x74: case 0x75: case 0x76: case 0x77:
 		case 0x78: case 0x79: case 0x7a: case 0x7b: case 0x7c: case 0x7d: case 0x7e: case 0x7f:
 			if (!wasLDI) {
-				I.accu = (~opcode) & 0x0f;
+				I.accu = ~opcode & 0x0f;
 			}
 			wasLDI = 2;
 			break;
@@ -447,6 +449,9 @@ void PPS4_reset(void *param)
 {
 	memset(&I, 0, sizeof(PPS4_Regs));
 	I.cputype = 1; // we use the PPS-4/2 by default for enhanced I/O capability!
+	PPS4_ICount = 0;
+	wasLB = 0;
+	wasLDI = 0;
 	change_pc16(I.PC.d);
 }
 

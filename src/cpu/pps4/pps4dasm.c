@@ -69,13 +69,19 @@ unsigned DasmPPS4(char *buff, unsigned pc)
 		case 0x25: sprintf (buff,"rf2");                             break;
 		case 0x26: sprintf (buff,"rf1");                             break;
 		case 0x27: sprintf (buff,"dia");                             break;
-		case 0x28: case 0x29: case 0x2a: case 0x2b: case 0x2c: case 0x2d: case 0x2e: case 0x2f:
-			sprintf (buff,"exd   #$%x", (~op & 0x07)); break;
+		case 0x28: case 0x29: case 0x2a: case 0x2b: case 0x2c: case 0x2d: case 0x2e:
+			sprintf (buff,"exd   #$%x", (~op & 0x07));
+			break;
+		case 0x2f: sprintf (buff,"exd");                             break;
 
-		case 0x30: case 0x31: case 0x32: case 0x33: case 0x34: case 0x35: case 0x36: case 0x37:
-			sprintf (buff,"ld    #$%x", (~op & 0x07)); break;
-		case 0x38: case 0x39: case 0x3a: case 0x3b: case 0x3c: case 0x3d: case 0x3e: case 0x3f:
-			sprintf (buff,"ex    #$%x", (~op & 0x07)); break;
+		case 0x30: case 0x31: case 0x32: case 0x33: case 0x34: case 0x35: case 0x36:
+			sprintf (buff,"ld    #$%x", (~op & 0x07));
+			break;
+		case 0x37: sprintf (buff,"ld");                              break;
+		case 0x38: case 0x39: case 0x3a: case 0x3b: case 0x3c: case 0x3d: case 0x3e:
+			sprintf (buff,"ex    #$%x", (~op & 0x07));
+			break;
+		case 0x3f: sprintf (buff,"ex");                              break;
 
 		case 0x40: case 0x41: case 0x42: case 0x43: case 0x44: case 0x45: case 0x46: case 0x47:
 		case 0x48: case 0x49: case 0x4a: case 0x4b: case 0x4c: case 0x4d: case 0x4e: case 0x4f:
