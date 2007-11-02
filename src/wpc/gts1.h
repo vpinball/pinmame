@@ -124,10 +124,15 @@
 #define GTS1_CPU	0
 
 /*-- GTS1 CPU regions and ROM --*/
-#define GTS1_1_ROMSTART(name, n1, chk1) \
+#define GTS1_2_ROMSTART(name, n1, chk1, n2, chk2) \
    ROM_START(name) \
      NORMALREGION(0x10000, GTS1_MEMREG_CPU) \
-       ROM_LOAD(n1, 0x0100, 0x0400, chk1)
+       ROM_LOAD(n1, 0x0000, 0x0800, chk1) \
+       ROM_LOAD(n2, 0x0800, 0x0800, chk2)
+
+#define GTS1_1_ROMSTART(name, n1, chk1) \
+     NORMALREGION(0x0400, REGION_USER1) \
+       ROM_LOAD(n1, 0x0000, 0x0400, chk1)
 
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(GTS1);
