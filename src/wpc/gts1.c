@@ -86,11 +86,13 @@ static SWITCH_UPDATE(GTS1) {
 
 static int GTS1_sw2m(int no) {
   if (no < 0) return no + 8;
+  else if (no > 77) return no + 7;
   else { no += 1; return (no%10)*8 + no/10; }
 }
 
 static int GTS1_m2sw(int col, int row) {
   if (col < 1) return -9 + row;
+  else if (col > 8) return col*8 + row-7;
   else return row*10+col-1;
 }
 
