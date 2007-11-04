@@ -13,21 +13,21 @@
 /*-- Common Inports for GTS1 Games --*/
 #define GTS1_COMPORTS \
   PORT_START /* 0 */ \
-    /* switch column 0 */ \
-    COREPORT_BIT(     0x8000, "Sound Diagnostic", KEYCODE_0) \
     /* switch column 4 */ \
-    COREPORT_BITDEF(  0x0008, IPT_START1,         IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(  0x0008, IPT_START1,     IP_KEY_DEFAULT) \
     /* switch column 2 */ \
-    COREPORT_BITDEF(  0x0002, IPT_COIN1,          IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(  0x0002, IPT_COIN1,      IP_KEY_DEFAULT) \
     /* switch column 3 */ \
-    COREPORT_BITDEF(  0x0004, IPT_COIN2,          IP_KEY_DEFAULT) \
+    COREPORT_BITDEF(  0x0004, IPT_COIN2,      IP_KEY_DEFAULT) \
     /* switch column 1 */ \
-    COREPORT_BIT(     0x0001, "Self Test",        KEYCODE_7) \
+    COREPORT_BIT(     0x0001, "Self Test",    KEYCODE_7) \
     /* switch column 5 */ \
-    COREPORT_BIT(     0x0010, "Ball Tilt",        KEYCODE_INSERT) \
+    COREPORT_BIT(     0x0010, "Ball Tilt",    KEYCODE_INSERT) \
     /* switch column 7 */ \
-    COREPORT_BIT(     0x0800, "Slam Tilt",        KEYCODE_HOME) \
-    COREPORT_BIT(     0x0200, "Audits reset",     KEYCODE_9) \
+    COREPORT_BIT(     0x0800, "Slam Tilt",    KEYCODE_HOME) \
+    COREPORT_BIT(     0x0200, "Audits reset", KEYCODE_9) \
+    /* switch column 0 */ \
+    COREPORT_BIT(     0x8000, "Sound Test",   KEYCODE_0) \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0008, 0x0000, "S1") \
       COREPORT_DIPSET(0x0000, "0" ) \
@@ -101,7 +101,13 @@
       COREPORT_DIPSET(0x0040, "1" ) \
     COREPORT_DIPNAME( 0x0080, 0x0000, "S24") \
       COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0080, "1" )
+      COREPORT_DIPSET(0x0080, "1" ) \
+    COREPORT_DIPNAME( 0x1000, 0x0000, "Sound mode") \
+      COREPORT_DIPSET(0x0000, "Sounds" ) \
+      COREPORT_DIPSET(0x1000, "Tones" ) \
+    COREPORT_DIPNAME( 0x8000, 0x0000, "Attract mode tune") \
+      COREPORT_DIPSET(0x0000, " on" ) \
+      COREPORT_DIPSET(0x8000, " off" )
 
 /*-- Standard input ports --*/
 #define GTS1_INPUT_PORTS_START(name,balls) \
@@ -114,14 +120,9 @@
 
 #define GTS1_COMINPORT       CORE_COREINPORT
 
-#define GTS1_SOLSMOOTH       6 /* Smooth the Solenoids over this number of VBLANKS */
+#define GTS1_SOLSMOOTH       4 /* Smooth the Solenoids over this number of VBLANKS */
 #define GTS1_LAMPSMOOTH      1 /* Smooth the lamps over this number of VBLANKS */
 #define GTS1_DISPLAYSMOOTH   1 /* Smooth the display over this number of VBLANKS */
-
-/*-- To access C-side multiplexed solenoid/flasher --*/
-#define GTS1_CSOL(x) ((x)+24)
-
-/*-- GTS1 switch numbers --*/
 
 /*-- Memory regions --*/
 #define GTS1_MEMREG_CPU	REGION_CPU1
@@ -137,8 +138,7 @@
        ROM_LOAD(n2, 0x0800, 0x0800, chk2)
 
 #define GTS1_1_ROMSTART(name, n1, chk1) \
-     NORMALREGION(0x0400, REGION_USER1) \
-       ROM_LOAD(n1, 0x0000, 0x0400, chk1)
+       ROM_LOAD(n1, 0x2000, 0x0400, chk1)
 
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(GTS1);
