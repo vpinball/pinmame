@@ -8,7 +8,7 @@
 static core_tLCDLayout sys1_disp[] = {
   {0, 0,12,6,CORE_SEG9}, {0,16,18,6,CORE_SEG9},
   {2, 0, 0,6,CORE_SEG9}, {2,16, 6,6,CORE_SEG9},
-  {4, 6,30,1,CORE_SEG7}, {4,10,31,1,CORE_SEG7}, {4,16,32,2,CORE_SEG7},
+  {4, 8,40,2,CORE_SEG7}, {4,16,32,2,CORE_SEG7},
   {0}
 };
 
