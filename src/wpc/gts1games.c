@@ -172,7 +172,7 @@ CORE_CLONEDEFNV(roldisco,gts1s,"Roller Disco",1980,"Gottlieb",gl_mGTS1S,0)
 /-------------------------------------------------------------------*/
 static core_tLCDLayout aa_disp[] = {
   {0, 0,12,6,CORE_SEG9},
-  {2, 0,30,1,CORE_SEG7}, {2, 8,32,2,CORE_SEG7},
+  {2, 0,40,2,CORE_SEG7}, {2, 8,32,2,CORE_SEG7},
   {0}
 };
 INIT_S1(astannie, SNDBRD_GTS80S, aa_disp)
