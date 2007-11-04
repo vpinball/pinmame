@@ -32,7 +32,7 @@
 /-----------------*/
 static struct {
 	int    vblankCount;
-	int    solCount;
+	int    solCount, tilt, gameOver;
 	int    strobe, swStrobe, bufferFilled;
 	UINT8  dispBuffer[14];
 	UINT8  accu, lampData, ramE2, ramRW, ramAddr;
@@ -60,14 +60,6 @@ static INTERRUPT_GEN(GTS1_vblank) {
 	}
 
 	core_updateSw(core_getSol(17));
-	// show match or ball in play depending on game over status
-	if (coreGlobals.tmpLampMatrix[0] & 0x01) {
-		coreGlobals.segments[40].w = 0;
-		coreGlobals.segments[41].w = core_bcd2seg7a[locals.dispBuffer[13]];
-	} else {
-		coreGlobals.segments[40].w = core_bcd2seg7a[locals.dispBuffer[12]];
-		coreGlobals.segments[41].w = coreGlobals.segments[40].w ? core_bcd2seg7a[0] : 0;
-	}
 }
 
 static SWITCH_UPDATE(GTS1) {
@@ -106,7 +98,22 @@ static WRITE_HANDLER(lamp_w) {
 		coreGlobals.tmpLampMatrix[offset/2] = (coreGlobals.tmpLampMatrix[offset/2] & 0x0f) | (data << 4);
 	else
 		coreGlobals.tmpLampMatrix[offset/2] = (coreGlobals.tmpLampMatrix[offset/2] & 0xf0) | data;
-	locals.solenoids = (locals.solenoids & 0xffff) | ((coreGlobals.tmpLampMatrix[0] & 0x03) == 0x01 ? 0x10000 : 0);
+	if (!offset) {
+		locals.gameOver = !(data & 0x01);
+		locals.tilt = data & 0x02 >> 1;
+		// set game enable solenoid
+		locals.solenoids = (locals.solenoids & 0xffff) | ((data & 0x03) == 0x01 ? 0x10000 : 0);
+		// show match or ball in play depending on game over status
+		if (data & 0x01) {
+			coreGlobals.segments[40].w = 0;
+			coreGlobals.segments[41].w = core_bcd2seg7a[locals.dispBuffer[13]];
+		} else {
+			coreGlobals.segments[40].w = core_bcd2seg7a[locals.dispBuffer[12]];
+			coreGlobals.segments[41].w = coreGlobals.segments[40].w ? core_bcd2seg7a[0] : 0;
+		}
+		if (core_gameData->hw.soundBoard)
+			sndbrd_0_data_w(0, (locals.gameOver << 6) | (locals.tilt << 3) | core_getDip(3));
+	}
 }
 
 static WRITE_HANDLER(disp_w) {
@@ -159,11 +166,16 @@ static WRITE_HANDLER(port_w) {
 		case 0x04: // U4 RRIO A1753 - Solenoids, NVRAM R/W & enable
 			logerror("%03x: I/O on U4, port %x: %s %x\n", activecpu_get_pc(), ioport, sos ? "SOS" : "SES", enable);
 			if (sos) {
-				if (ioport < 0x0c) {
+				if (ioport > 1 && ioport < 5) { // sound
+					locals.solCount = 0;
+					if (!core_gameData->hw.soundBoard && !enable)
+						discrete_sound_w(1 << (ioport - 2), !enable);
+					else if (core_gameData->hw.soundBoard && !enable)
+						sndbrd_0_data_w(0, (locals.gameOver << 6) | (locals.tilt << 3) | core_getDip(3)
+						  | ((ioport == 2) << 2) | ((ioport == 3) << 1) | (ioport == 4));
+				} else if (ioport < 0x0c) {
 					locals.solCount = 0;
 					locals.solenoids |= enable << ioport;
-					if (!core_gameData->hw.soundBoard && !enable && ioport > 1 && ioport < 5)
-						discrete_sound_w(1 << (ioport - 2), !enable);
 				}
 				if (ioport == 0x0d)
 					locals.ramE2 = enable;
@@ -187,7 +199,7 @@ static WRITE_HANDLER(port_w) {
 			logerror("%03x: I/O on U2: %s %x: %x\n", activecpu_get_pc(), rw ? "SET" : "READ", group, locals.accu);
 			break;
 		case 0x0d: // U6 GPKD 10788 - Display
-			data = PPS4_get_reg(PPS4_AB); // read display address from B register (that's how the real chip does it!)
+			data = PPS4_get_reg(PPS4_AB); // read display address from address bus (that's how the real chip does it!)
 			logerror("%03x: I/O on U6: %04x:%x\n", activecpu_get_pc(), data, locals.accu);
 			switch (data >> 4) {
 				case 0: // switches between buffers
@@ -236,8 +248,8 @@ static WRITE_HANDLER(pgol_w) {
 	else        locals.pgolAddress = (locals.pgolAddress & 0x3f0) | data;
 }
 static READ_HANDLER(pgol_r) {
-	UINT8 code = memory_region(REGION_USER1)[locals.pgolAddress] & 0x0f;
-	logerror("Reading PGOL prom at address %03x: %x\n", locals.pgolAddress, code);
+	UINT8 code = 0x0f & memory_region(GTS1_MEMREG_CPU)[0x2000 + locals.pgolAddress];
+	logerror("Reading PGOL prom @ %03x: %x\n", 0x100 + locals.pgolAddress, code);
 	return code;
 }
 
@@ -304,7 +316,7 @@ static MACHINE_DRIVER_START(GTS1NS)
 	MDRV_CPU_PORTS(GTS1_readport,GTS1_writeport)
 	MDRV_CPU_VBLANK_INT(GTS1_vblank, 1)
 	MDRV_CORE_INIT_RESET_STOP(GTS1,GTS1,GTS1)
-	MDRV_DIPS(24)
+	MDRV_DIPS(28)
 	MDRV_NVRAM_HANDLER(generic_0fill)
 	MDRV_SWITCH_UPDATE(GTS1)
 	MDRV_SWITCH_CONV(GTS1_sw2m,GTS1_m2sw)
