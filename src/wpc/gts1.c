@@ -34,7 +34,7 @@ static struct {
 	int    vblankCount;
 	int    solCount;
 	int    strobe, swStrobe, bufferFilled;
-	UINT8  dispBuffer[12];
+	UINT8  dispBuffer[14];
 	UINT8  accu, lampData, ramE2, ramRW, ramAddr;
 	UINT16 pgolAddress;
 	UINT32 solenoids;
@@ -60,6 +60,14 @@ static INTERRUPT_GEN(GTS1_vblank) {
 	}
 
 	core_updateSw(core_getSol(17));
+	// show match or ball in play depending on game over status
+	if (coreGlobals.tmpLampMatrix[0] & 0x01) {
+		coreGlobals.segments[40].w = 0;
+		coreGlobals.segments[41].w = core_bcd2seg7a[locals.dispBuffer[13]];
+	} else {
+		coreGlobals.segments[40].w = core_bcd2seg7a[locals.dispBuffer[12]];
+		coreGlobals.segments[41].w = coreGlobals.segments[40].w ? core_bcd2seg7a[0] : 0;
+	}
 }
 
 static SWITCH_UPDATE(GTS1) {
@@ -201,6 +209,10 @@ static WRITE_HANDLER(port_w) {
 					break;
 				case 7:
 					disp_w(24 + (data & 0x0f), locals.accu);
+					if ((data & 0x0f) == 4) // save match number
+						locals.dispBuffer[12] = locals.accu;
+					if ((data & 0x0f) == 6) // save ball in play number
+						locals.dispBuffer[13] = locals.accu;
 					break;
 				default:
 					logerror("%03x: Write to unknown display %x: %02x\n", activecpu_get_pc(), data >> 4, locals.accu);
@@ -251,12 +263,14 @@ MEMORY_END
 
 static MACHINE_INIT(GTS1) {
 	memset(&locals, 0, sizeof locals);
+	locals.dispBuffer[12] = locals.dispBuffer[13] = 0x0f;
 	if (core_gameData->hw.soundBoard)
 		sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(GTS80_MEMREG_SCPU1), NULL, NULL);
 }
 
 static MACHINE_RESET(GTS1) {
 	memset(&locals, 0, sizeof locals);
+	locals.dispBuffer[12] = locals.dispBuffer[13] = 0x0f;
 }
 
 static MACHINE_STOP(GTS1) {
