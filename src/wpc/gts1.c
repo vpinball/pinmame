@@ -85,11 +85,13 @@ static SWITCH_UPDATE(GTS1) {
 }
 
 static int GTS1_sw2m(int no) {
-	return no + 8;
+  if (no < 0) return no + 8;
+  else { no += 1; return (no%10)*8 + no/10; }
 }
 
 static int GTS1_m2sw(int col, int row) {
-	return col*8 + row - 8;
+  if (col < 1) return -9 + row;
+  else return row*10+col-1;
 }
 
 static WRITE_HANDLER(led_w) {
@@ -303,6 +305,7 @@ static MACHINE_DRIVER_START(GTS1NS)
 	MDRV_DIPS(24)
 	MDRV_NVRAM_HANDLER(generic_0fill)
 	MDRV_SWITCH_UPDATE(GTS1)
+	MDRV_SWITCH_CONV(GTS1_sw2m,GTS1_m2sw)
 //  MDRV_DIAGNOSTIC_LEDH(4)
 MACHINE_DRIVER_END
 
