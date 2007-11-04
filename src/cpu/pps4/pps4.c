@@ -239,8 +239,8 @@ INLINE void execute_one(int opcode)
 			break;
 		case 0x1c: /* IOL */
 			tmp = ARG();
-			M_OUT((tmp & 0xf0) | (I.BX.w.l & 0x0f), ((I.BX.w.l & 0xff0) << 4) | ((tmp & 0x0f)<< 4) | I.accu);
-			M_IN((tmp & 0xf0) | (I.BX.w.l & 0x0f));
+			M_OUT((tmp & 0xf0) | (I.AB.w.l & 0x0f), ((tmp & 0x0f) << 4) | I.accu);
+			M_IN((tmp & 0xf0) | (I.AB.w.l & 0x0f));
 			break;
 		case 0x1d: /* DOA */
 			M_OUT(0x100, I.accu)
