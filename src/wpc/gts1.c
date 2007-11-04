@@ -33,7 +33,8 @@
 static struct {
 	int    vblankCount;
 	int    solCount;
-	int    strobe, swStrobe;
+	int    strobe, swStrobe, bufferFilled;
+	UINT8  dispBuffer[12];
 	UINT8  accu, lampData, ramE2, ramRW, ramAddr;
 	UINT16 pgolAddress;
 	UINT32 solenoids;
@@ -177,13 +178,29 @@ static WRITE_HANDLER(port_w) {
 			data = PPS4_get_reg(PPS4_AB); // read display address from B register (that's how the real chip does it!)
 			logerror("%03x: I/O on U6: %04x:%x\n", activecpu_get_pc(), data, locals.accu);
 			switch (data >> 4) {
-				case 1: case 2: case 3: case 4:
+				case 0: // switches between buffers
+					if (locals.accu & 0x01)
+						locals.bufferFilled = 0;
+					else {
+						disp_w(12, locals.dispBuffer[locals.bufferFilled ? 6 : 0]);
+						disp_w(13, locals.dispBuffer[locals.bufferFilled ? 7 : 1]);
+						disp_w(14, locals.dispBuffer[locals.bufferFilled ? 8 : 2]);
+						disp_w(15, locals.dispBuffer[locals.bufferFilled ? 9 : 3]);
+						disp_w(16, locals.dispBuffer[locals.bufferFilled ? 10 : 4]);
+						disp_w(17, locals.dispBuffer[locals.bufferFilled ? 11 : 5]);
+					}
+					break;
+				case 3: // store player one score in buffer
+					locals.dispBuffer[data & 0x0f] = locals.accu;
+				case 1: case 2: case 4:
 					disp_w((data >> 4) * 6 - 6 + (data & 0x0f), locals.accu);
+					break;
+				case 5: // store the HSTD value in second buffer
+					locals.dispBuffer[6 + (data & 0x0f)] = locals.accu;
+					locals.bufferFilled = 1;
 					break;
 				case 7:
 					disp_w(24 + (data & 0x0f), locals.accu);
-					break;
-				case 0: // no idea what this does!?
 					break;
 				default:
 					logerror("%03x: Write to unknown display %x: %02x\n", activecpu_get_pc(), data >> 4, locals.accu);
