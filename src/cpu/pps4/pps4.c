@@ -328,7 +328,7 @@ INLINE void execute_one(int opcode)
 		case 0x60: case 0x61: case 0x62: case 0x63: case 0x64: case 0x66: case 0x67:
 		case 0x68: case 0x69: case 0x6a: case 0x6b: case 0x6c: case 0x6d: case 0x6e:
 			I.accu += ~opcode & 0x0f;
-			I.skip = I.carry = I.accu >> 4;
+			I.skip = I.accu >> 4;
 			I.accu &= 0x0f;
 			break;
 		case 0x65: /* DC */
