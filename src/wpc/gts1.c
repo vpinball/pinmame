@@ -32,7 +32,7 @@
 /-----------------*/
 static struct {
 	int    vblankCount;
-	int    solCount, tilt, gameOver;
+	int    tilt, gameOver;
 	int    strobe, swStrobe, bufferFilled;
 	UINT8  dispBuffer[14];
 	UINT8  accu, lampData, ramE2, ramRW, ramAddr;
@@ -50,14 +50,6 @@ static INTERRUPT_GEN(GTS1_vblank) {
 		memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.lampMatrix));
 	/*-- solenoids --*/
 	coreGlobals.solenoids = locals.solenoids;
-	if ((++locals.solCount % 4) == 0) {
-		locals.solenoids &= 0xffff0000;
-		if (!core_gameData->hw.soundBoard) {
-			discrete_sound_w(1, 0);
-			discrete_sound_w(2, 0);
-			discrete_sound_w(4, 0);
-		}
-	}
 
 	core_updateSw(core_getSol(17));
 }
@@ -167,19 +159,16 @@ static WRITE_HANDLER(port_w) {
 			logerror("%03x: I/O on U4, port %x: %s %x\n", activecpu_get_pc(), ioport, sos ? "SOS" : "SES", enable);
 			if (sos) {
 				if (ioport > 1 && ioport < 5) { // sound
-					locals.solCount = 0;
-					if (!core_gameData->hw.soundBoard && !enable)
+					if (!core_gameData->hw.soundBoard)
 						discrete_sound_w(1 << (ioport - 2), !enable);
 					else if (core_gameData->hw.soundBoard && !enable)
 						sndbrd_0_data_w(0, (locals.gameOver << 6) | (locals.tilt << 3) | core_getDip(3)
 						  | ((ioport == 2) << 2) | ((ioport == 3) << 1) | (ioport == 4));
-				} else if (ioport < 0x0c) {
-					locals.solCount = 0;
-					locals.solenoids |= enable << ioport;
-				}
-				if (ioport == 0x0d)
+				} else if (ioport < 0x0c)
+					locals.solenoids = (locals.solenoids & ~(1 << ioport)) | (!enable << ioport);
+				else if (ioport == 0x0d)
 					locals.ramE2 = enable;
-				if (ioport == 0x0e)
+				else if (ioport == 0x0e)
 					locals.ramRW = enable;
 			}
 			break;
@@ -192,7 +181,6 @@ static WRITE_HANDLER(port_w) {
 				if (locals.ramRW && !locals.ramE2 && (group & 4)) // write to nvram
 					memory_region(GTS1_MEMREG_CPU)[0x1100 + locals.ramAddr] = locals.accu;
 			} else {
-				locals.accu = 0;
 				if (group & 1) // read from nvram
 					locals.accu = memory_region(GTS1_MEMREG_CPU)[0x1100 + locals.ramAddr];
 			}
