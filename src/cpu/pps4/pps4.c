@@ -82,20 +82,12 @@ static UINT8 ARG(void)
 
 static UINT8 RM(UINT32 a)
 {
-	return cpu_readmem16(a);
+	return cpu_readmem16(a) & 0x0f;
 }
 
 static void WM(UINT32 a, UINT8 v)
 {
-	cpu_writemem16(a, v);
-}
-
-static void illegal(void)
-{
-#if VERBOSE
-	UINT16 pc = I.PC.w.l - 1;
-	LOG(("PPS-4 illegal instruction %04X $%02X\n", pc, cpu_readop(pc)));
-#endif
+	cpu_writemem16(a, v & 0x0f);
 }
 
 INLINE void execute_one(int opcode)
@@ -112,7 +104,7 @@ INLINE void execute_one(int opcode)
 	{
 		case 0x00: /* LBL */
 			if (!wasLB) {
-				I.BX.d = (~ARG()) & 0xff;
+				I.BX.w.l = ~ARG() & 0xff;
 				I.AB = I.BX;
 				PPS4_ICount--;
 			} else {
@@ -130,8 +122,8 @@ INLINE void execute_one(int opcode)
 			M_JMP(opcode)
 			break;
 		case 0x04: /* LBUA */
-			I.accu = RM(0x1000 | I.AB.w.l) & 0x0f;
 			I.BX.b.h = I.accu;
+			I.accu = RM(0x1000 | I.AB.w.l);
 			I.AB = I.BX;
 			break;
 		case 0x05: /* RTN */
@@ -151,8 +143,8 @@ INLINE void execute_one(int opcode)
 			I.PC = tmpPair;
 			I.SA = I.SB;
 			I.SB = tmpPair;
-			I.PC.w.l++;
-			change_pc16(I.PC.d);
+			change_pc16(I.PC.d); // manual says P = P + 1, but this won't work for TML!
+			I.skip = 1;
 			break;
 		case 0x08: /* ADCSK */
 			I.accu += I.carry + RM(0x1000 | I.AB.w.l);
@@ -181,7 +173,7 @@ INLINE void execute_one(int opcode)
 			I.accu &= RM(0x1000 | I.AB.w.l);
 			break;
 		case 0x0e: /* COMP */
-			I.accu = ~I.accu & 0x0f;
+			I.accu ^= 0x0f;
 			break;
 		case 0x0f: /* OR */
 			I.accu |= RM(0x1000 | I.AB.w.l);
@@ -286,7 +278,7 @@ INLINE void execute_one(int opcode)
 		/* EXD */
 		case 0x28: case 0x29: case 0x2a: case 0x2b: case 0x2c: case 0x2d: case 0x2e: case 0x2f:
 			tmp = I.accu;
-			I.accu = RM(0x1000 | I.AB.w.l) & 0x0f;
+			I.accu = RM(0x1000 | I.AB.w.l);
 			WM(0x1000 | I.AB.w.l, tmp);
 			I.BX.w.l = (I.BX.w.l & 0xf8f) | ((I.BX.w.l ^ (~opcode << 4)) & 0x070);
 			if (!(I.BX.w.l & 0x0f)) {
@@ -299,14 +291,14 @@ INLINE void execute_one(int opcode)
 
 		/* LD */
 		case 0x30: case 0x31: case 0x32: case 0x33: case 0x34: case 0x35: case 0x36: case 0x37:
-			I.accu = RM(0x1000 | I.AB.w.l) & 0x0f;
+			I.accu = RM(0x1000 | I.AB.w.l);
 			I.BX.w.l = (I.BX.w.l & 0xf8f) | ((I.BX.w.l ^ (~opcode << 4)) & 0x070);
 			I.AB = I.BX;
 			break;
 		/* EX */
 		case 0x38: case 0x39: case 0x3a: case 0x3b: case 0x3c: case 0x3d: case 0x3e: case 0x3f:
 			tmp = I.accu;
-			I.accu = RM(0x1000 | I.AB.w.l) & 0x0f;
+			I.accu = RM(0x1000 | I.AB.w.l);
 			WM(0x1000 | I.AB.w.l, tmp);
 			I.BX.w.l = (I.BX.w.l & 0xf8f) | ((I.BX.w.l ^ (~opcode << 4)) & 0x070);
 			I.AB = I.BX;
@@ -372,13 +364,16 @@ INLINE void execute_one(int opcode)
 				I.SB = I.SA;
 				I.SA = I.PC;
 				I.PC.w.l = opcode;
-				I.BX.d = (~ARG()) & 0xff;
+				I.BX.w.l = ~ARG() & 0xff;
 				I.AB = I.BX;
 				PPS4_ICount--;
 				tmpPair = I.SA;
 				I.PC = tmpPair;
 				I.SA = I.SB;
 				I.SB = tmpPair;
+			} else {
+				I.PC.w.l++;
+				change_pc16(I.PC.d);
 			}
 			wasLB = 2;
 			break;
@@ -397,9 +392,6 @@ INLINE void execute_one(int opcode)
 			I.PC.w.l = opcode;
 			M_JMP(0x01)
 			break;
-
-		default:
-			illegal();
 	}
 	if (I.skip) {
 		opcode = ROP();
@@ -543,8 +535,8 @@ void PPS4_set_reg(int regnum, unsigned val)
 				unsigned offset = I.SA.w.l + 2 * (REG_SP_CONTENTS - regnum);
 				if( offset < 0xffff )
 				{
-					WM( offset, val&0xff );
-					WM( offset+1, (val>>8)&0xff );
+					WM( offset, val );
+					WM( offset+1, val>>8 );
 				}
 			}
 	}
