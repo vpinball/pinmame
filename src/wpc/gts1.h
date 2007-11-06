@@ -102,12 +102,12 @@
     COREPORT_DIPNAME( 0x0080, 0x0000, "S24") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0080, "1" ) \
-    COREPORT_DIPNAME( 0x1000, 0x0000, "Sound mode") \
+    COREPORT_DIPNAME( 0x1000, 0x1000, "Attract mode tune") \
+      COREPORT_DIPSET(0x0000, " off" ) \
+      COREPORT_DIPSET(0x1000, " on" ) \
+    COREPORT_DIPNAME( 0x8000, 0x0000, "Sound mode") \
       COREPORT_DIPSET(0x0000, "Sounds" ) \
-      COREPORT_DIPSET(0x1000, "Tones" ) \
-    COREPORT_DIPNAME( 0x8000, 0x0000, "Attract mode tune") \
-      COREPORT_DIPSET(0x0000, " on" ) \
-      COREPORT_DIPSET(0x8000, " off" )
+      COREPORT_DIPSET(0x8000, "Tones" )
 
 /*-- Standard input ports --*/
 #define GTS1_INPUT_PORTS_START(name,balls) \

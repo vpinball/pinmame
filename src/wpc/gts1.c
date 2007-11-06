@@ -32,7 +32,6 @@
 /-----------------*/
 static struct {
 	int    vblankCount;
-	int    tilt, gameOver;
 	int    strobe, swStrobe, bufferFilled;
 	UINT8  dispBuffer[14];
 	UINT8  accu, lampData, ramE2, ramRW, ramAddr;
@@ -49,7 +48,7 @@ static INTERRUPT_GEN(GTS1_vblank) {
 	if ((locals.vblankCount % GTS1_LAMPSMOOTH) == 0)
 		memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.lampMatrix));
 	/*-- solenoids --*/
-	coreGlobals.solenoids = locals.solenoids;
+	coreGlobals.solenoids = locals.solenoids & 0xffffffe3;
 
 	core_updateSw(core_getSol(17));
 }
@@ -84,17 +83,22 @@ static WRITE_HANDLER(led_w) {
 	coreGlobals.diagnosticLed = data;
 }
 
+static WRITE_HANDLER(snd_w) {
+	data = ((coreGlobals.tmpLampMatrix[0] & 0x01) << 6) // game not over
+	  | ((coreGlobals.tmpLampMatrix[0] & 0x02) << 2) // tilt
+	  | (locals.solenoids & 0x04) // 10's chime
+	  | ((locals.solenoids & 0x08) >> 2) // 100's chime
+	  | ((locals.solenoids & 0x10) >> 4) // 1000's chime
+	  | (core_getDip(3) & 0x90); // sound dips
+	sndbrd_0_data_w(0, data);
+}
+
 static WRITE_HANDLER(lamp_w) {
+	int snd = 0;
 	data ^= 0x0f;
-	if (offset % 2)
-		coreGlobals.tmpLampMatrix[offset/2] = (coreGlobals.tmpLampMatrix[offset/2] & 0x0f) | (data << 4);
-	else
-		coreGlobals.tmpLampMatrix[offset/2] = (coreGlobals.tmpLampMatrix[offset/2] & 0xf0) | data;
 	if (!offset) {
-		locals.gameOver = !(data & 0x01);
-		locals.tilt = data & 0x02 >> 1;
 		// set game enable solenoid
-		locals.solenoids = (locals.solenoids & 0xffff) | ((data & 0x03) == 0x01 ? 0x10000 : 0);
+		locals.solenoids = (locals.solenoids & 0xfffeffff) | ((data & 0x03) == 0x01 ? 0x10000 : 0);
 		// show match or ball in play depending on game over status
 		if (data & 0x01) {
 			coreGlobals.segments[40].w = 0;
@@ -103,9 +107,14 @@ static WRITE_HANDLER(lamp_w) {
 			coreGlobals.segments[40].w = core_bcd2seg7a[locals.dispBuffer[12]];
 			coreGlobals.segments[41].w = coreGlobals.segments[40].w ? core_bcd2seg7a[0] : 0;
 		}
-		if (core_gameData->hw.soundBoard)
-			sndbrd_0_data_w(0, (locals.gameOver << 6) | (locals.tilt << 3) | core_getDip(3));
+		if (core_gameData->hw.soundBoard && (coreGlobals.tmpLampMatrix[0] & 0x03) != (data & 0x03))
+			snd = 1;
 	}
+	if (offset % 2)
+		coreGlobals.tmpLampMatrix[offset/2] = (coreGlobals.tmpLampMatrix[offset/2] & 0x0f) | (data << 4);
+	else
+		coreGlobals.tmpLampMatrix[offset/2] = (coreGlobals.tmpLampMatrix[offset/2] & 0xf0) | data;
+	if (snd) snd_w(1, 0);
 }
 
 static WRITE_HANDLER(disp_w) {
@@ -158,15 +167,15 @@ static WRITE_HANDLER(port_w) {
 		case 0x04: // U4 RRIO A1753 - Solenoids, NVRAM R/W & enable
 			logerror("%03x: I/O on U4, port %x: %s %x\n", activecpu_get_pc(), ioport, sos ? "SOS" : "SES", enable);
 			if (sos) {
-				if (ioport > 1 && ioport < 5) { // sound
-					if (!core_gameData->hw.soundBoard)
-						discrete_sound_w(1 << (ioport - 2), !enable);
-					else if (core_gameData->hw.soundBoard && !enable)
-						sndbrd_0_data_w(0, (locals.gameOver << 6) | (locals.tilt << 3) | core_getDip(3)
-						  | ((ioport == 2) << 2) | ((ioport == 3) << 1) | (ioport == 4));
-				} else if (ioport < 0x0c)
+				if (ioport < 0x0c) {
 					locals.solenoids = (locals.solenoids & ~(1 << ioport)) | (!enable << ioport);
-				else if (ioport == 0x0d)
+					if (ioport > 1 && ioport < 5) { // sound
+						if (!core_gameData->hw.soundBoard)
+							discrete_sound_w(1 << (ioport - 2), !enable);
+						else
+							snd_w(0, 0);
+					}
+				} else if (ioport == 0x0d)
 					locals.ramE2 = enable;
 				else if (ioport == 0x0e)
 					locals.ramRW = enable;
