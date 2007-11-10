@@ -33,7 +33,7 @@
 static struct {
 	int    vblankCount;
 	int    strobe, swStrobe, bufferFilled;
-	UINT8  dispBuffer[14];
+	UINT8  dispBuffer[12];
 	UINT8  accu, lampData, ramE2, ramRW, ramAddr;
 	UINT16 pgolAddress;
 	UINT32 solenoids;
@@ -99,14 +99,6 @@ static WRITE_HANDLER(lamp_w) {
 	if (!offset) {
 		// set game enable solenoid
 		locals.solenoids = (locals.solenoids & 0xfffeffff) | ((data & 0x03) == 0x01 ? 0x10000 : 0);
-		// show match or ball in play depending on game over status
-		if (data & 0x01) {
-			coreGlobals.segments[40].w = 0;
-			coreGlobals.segments[41].w = core_bcd2seg7a[locals.dispBuffer[13]];
-		} else {
-			coreGlobals.segments[40].w = core_bcd2seg7a[locals.dispBuffer[12]];
-			coreGlobals.segments[41].w = coreGlobals.segments[40].w ? core_bcd2seg7a[0] : 0;
-		}
 		if (core_gameData->hw.soundBoard && (coreGlobals.tmpLampMatrix[0] & 0x03) != (data & 0x03))
 			snd = 1;
 	}
@@ -132,7 +124,8 @@ static WRITE_HANDLER(port_w) {
 	switch (device) {
 		case 0x02: // U5 RRIO A1752 - Switch matrix
 			logerror("%03x: I/O on U5, port %x: %s %x\n", activecpu_get_pc(), ioport, sos ? "SOS" : "SES", enable);
-			if (ioport < 6)
+			locals.accu = 0x0f;
+			if (ioport < 6 && !enable)
 				locals.swStrobe = ioport + 1;
 			else if (ioport > 7 && locals.swStrobe) {
 				locals.accu &= 0x07;
@@ -180,6 +173,7 @@ static WRITE_HANDLER(port_w) {
 				else if (ioport == 0x0e)
 					locals.ramRW = enable;
 			}
+			locals.accu = 0x0f;
 			break;
 		case 0x06: // U2 GPIO 10696 - NVRAM in / out
 			if (rw) {
@@ -190,6 +184,7 @@ static WRITE_HANDLER(port_w) {
 				if (locals.ramRW && !locals.ramE2 && (group & 4)) // write to nvram
 					memory_region(GTS1_MEMREG_CPU)[0x1100 + locals.ramAddr] = locals.accu;
 			} else {
+				locals.accu = 0x0f;
 				if (group & 1) // read from nvram
 					locals.accu = memory_region(GTS1_MEMREG_CPU)[0x1100 + locals.ramAddr];
 			}
@@ -222,10 +217,10 @@ static WRITE_HANDLER(port_w) {
 					break;
 				case 7:
 					disp_w(24 + (data & 0x0f), locals.accu);
-					if ((data & 0x0f) == 4) // save match number
-						locals.dispBuffer[12] = locals.accu;
-					if ((data & 0x0f) == 6) // save ball in play number
-						locals.dispBuffer[13] = locals.accu;
+					if ((data & 0x0f) == 3 || (data & 0x0f) == 4)
+						disp_w(40, locals.accu);
+					if ((data & 0x0f) == 6 || (data & 0x0f) == 0x0b)
+						disp_w(41, locals.accu);
 					break;
 				default:
 					logerror("%03x: Write to unknown display %x: %02x\n", activecpu_get_pc(), data >> 4, locals.accu);
@@ -276,14 +271,12 @@ MEMORY_END
 
 static MACHINE_INIT(GTS1) {
 	memset(&locals, 0, sizeof locals);
-	locals.dispBuffer[12] = locals.dispBuffer[13] = 0x0f;
 	if (core_gameData->hw.soundBoard)
 		sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(GTS80_MEMREG_SCPU1), NULL, NULL);
 }
 
 static MACHINE_RESET(GTS1) {
 	memset(&locals, 0, sizeof locals);
-	locals.dispBuffer[12] = locals.dispBuffer[13] = 0x0f;
 }
 
 static MACHINE_STOP(GTS1) {
