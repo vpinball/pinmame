@@ -70,9 +70,21 @@ static struct {
   int hw;
 } locals;
 
-static void piaIrq(int state) {
-  cpu_set_irq_line(0, M6800_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
+static void piaIrq(int num, int state) {
+  static int irqstates[4], oldstate;
+  int irqstate;
+  irqstates[num] = state;
+  irqstate = irqstates[0] || irqstates[1] || irqstates[2] || irqstates[3];
+  if (oldstate != irqstate) {
+    cpu_set_irq_line(0, M6800_IRQ_LINE, irqstate ? ASSERT_LINE : CLEAR_LINE);
+  }
+  oldstate = irqstate;
 }
+
+static void piaIrq0(int state) { piaIrq(0, state); }
+static void piaIrq1(int state) { piaIrq(1, state); }
+static void piaIrq2(int state) { piaIrq(2, state); }
+static void piaIrq3(int state) { piaIrq(3, state); }
 
 static void by35_dispStrobe(int mask) {
   int digit = locals.a1 & 0xfe;
@@ -154,7 +166,7 @@ static const UINT16 nuova_ascii2seg[] = {
 /*        W  1     Sound E */
 static WRITE_HANDLER(pia1a_w) {
   static int counter, pos0, pos1;
-  if (locals.hw & BY35HW_SOUNDE) sndbrd_0_ctrl_w(1, (locals.cb21 ? 1 : 0) | (data & 0x02));
+  if (locals.hw & BY35HW_SOUNDE) sndbrd_0_ctrl_w(0, (locals.cb21 ? 1 : 0) | (data & 0x02));
 
   if (core_gameData->hw.gameSpecific1 & BY35GD_ALPHA) {
     if (data & 0x80) { // 1st alphanumeric display strobe
@@ -223,14 +235,14 @@ static WRITE_HANDLER(pia0cb2_w) {
   int sb = core_gameData->hw.soundBoard;		// ok
   if (locals.cb20 & ~data) locals.lampadr1 = locals.a0 & 0x0f;
   locals.cb20 = data;
-//
-
-   if (sb == SNDBRD_ST300V) {
-      if (snddatst300.sampleisplaying) {
-   	  pia_set_input_cb1(BY35_PIA1,0); }
-       else {
-   	  pia_set_input_cb1(BY35_PIA1,data);}
-   }
+// ok
+  if (sb == SNDBRD_ST300V) {
+    if (S14001A_bsy_0_r()) {
+   	  pia_set_input_cb1(BY35_PIA1,0);
+   	} else {
+   	  pia_set_input_cb1(BY35_PIA1,data);
+   	}
+  }
 }
 
 /* PIA1:CA2-W Lamp Strobe #2 */
@@ -242,8 +254,10 @@ static WRITE_HANDLER(pia1ca2_w) {
       { locals.bcd[6] = locals.a0>>4; by35_dispStrobe(0x40); }
   }
   if (locals.hw & BY35HW_SCTRL) sndbrd_0_ctrl_w(0, data);
+//  ok
   if ((sb == SNDBRD_ST300V) && (data)) {
-    sndbrd_1_ctrl_w(0, locals.a0); // ok
+    sndbrd_0_diag(1); // gv - switches over to voice board
+    sndbrd_0_ctrl_w(0, locals.a0);
   }
   locals.ca21 = locals.diagnosticLed = data;
 }
@@ -281,7 +295,7 @@ static WRITE_HANDLER(pia1cb2_w) {
   locals.cb21 = data;
   if (((locals.hw & BY35HW_SCTRL) == 0) && ((sb & 0xff00) != SNDBRD_ST300) && (sb != SNDBRD_ASTRO) && (sb & 0xff00) != SNDBRD_ST100)
    	// ok
-    sndbrd_0_ctrl_w(1, (data ? 1 : 0) | (locals.a1 & 0x02));
+    sndbrd_0_ctrl_w(0, (data ? 1 : 0) | (locals.a1 & 0x02));
 }
 
 static INTERRUPT_GEN(by35_vblank) {
@@ -386,11 +400,11 @@ CB2:   (o) Solenoid/Sound Bank Select
 static struct pia6821_interface by35_pia[] = {{
 /* I:  A/B,CA1/B1,CA2/B2 */  0, pia0b_r, PIA_UNUSED_VAL(1), pia0cb1_r, 0,0,
 /* O:  A/B,CA2/B2        */  pia0a_w,0, pia0ca2_w,pia0cb2_w,
-/* IRQ: A/B              */  piaIrq,piaIrq
+/* IRQ: A/B              */  piaIrq0,piaIrq1
 },{
 /* I:  A/B,CA1/B1,CA2/B2 */  0,0, pia1ca1_r, PIA_UNUSED_VAL(1), 0,0,
 /* O:  A/B,CA2/B2        */  pia1a_w,pia1b_w,pia1ca2_w,pia1cb2_w,
-/* IRQ: A/B              */  piaIrq,piaIrq
+/* IRQ: A/B              */  piaIrq2,piaIrq3
 }};
 
 static INTERRUPT_GEN(by35_irq) {
@@ -479,11 +493,11 @@ static WRITE_HANDLER(piap1cb2_w) {
 static struct pia6821_interface by35Proto_pia[] = {{
 /* I:  A/B,CA1/B1,CA2/B2 */  0, piap0b_r, 0,0, 0,0,
 /* O:  A/B,CA2/B2        */  piap0a_w,0, piap0ca2_w,0,
-/* IRQ: A/B              */  piaIrq,0
+/* IRQ: A/B              */  piaIrq0,0
 },{
 /* I:  A/B,CA1/B1,CA2/B2 */  0, 0, 0,0, 0,0,
 /* O:  A/B,CA2/B2        */  piap1a_w,piap1b_w, piap1ca2_w,piap1cb2_w,
-/* IRQ: A/B              */  piaIrq,0
+/* IRQ: A/B              */  piaIrq1,0
 }};
 
 static INTERRUPT_GEN(byProto_irq) {
@@ -533,9 +547,7 @@ static MACHINE_INIT(by35) {
 
 //   if ((sb & 0xff00) != SNDBRD_ST300)		// ok
   sndbrd_0_init(sb, 1, memory_region(REGION_SOUND1), NULL, NULL);
-// do the voice boards...
-  if (sb == SNDBRD_ST300V)   sndbrd_1_init(sb, 1, memory_region(REGION_SOUND1), NULL, NULL);
-//
+
   locals.vblankCount = 1;
   // set up hardware
   if (core_gameData->gen & (GEN_BY17|GEN_BOWLING)) {
@@ -701,34 +713,9 @@ MACHINE_DRIVER_START(st200s100)
   MDRV_IMPORT_FROM(st100)
 MACHINE_DRIVER_END
 
-MACHINE_DRIVER_START(st200f2k)
+MACHINE_DRIVER_START(st200v)
   MDRV_IMPORT_FROM(st200NS)
-  MDRV_IMPORT_FROM(st300f2k)
-MACHINE_DRIVER_END
-
-MACHINE_DRIVER_START(st200fal)
-  MDRV_IMPORT_FROM(st200NS)
-  MDRV_IMPORT_FROM(st300fal)
-MACHINE_DRIVER_END
-
-MACHINE_DRIVER_START(st200lit)
-  MDRV_IMPORT_FROM(st200NS)
-  MDRV_IMPORT_FROM(st300lit)
-MACHINE_DRIVER_END
-
-MACHINE_DRIVER_START(st200sec)
-  MDRV_IMPORT_FROM(st200NS)
-  MDRV_IMPORT_FROM(st300sec)
-MACHINE_DRIVER_END
-
-MACHINE_DRIVER_START(st200cat)
-  MDRV_IMPORT_FROM(st200NS)
-  MDRV_IMPORT_FROM(st300cat)
-MACHINE_DRIVER_END
-
-MACHINE_DRIVER_START(st200orb)
-  MDRV_IMPORT_FROM(st200NS)
-  MDRV_IMPORT_FROM(st300orb)
+  MDRV_IMPORT_FROM(st300v)
 MACHINE_DRIVER_END
 
 

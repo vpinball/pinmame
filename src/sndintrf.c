@@ -400,6 +400,9 @@ int c6280_num(const struct MachineSound *msound) { return ((struct C6280_interfa
 int TIA_clock(const struct MachineSound *msound) { return ((struct TIAinterface*)msound->sound_interface)->baseclock; }
 #endif
 #ifdef PINMAME
+#if (HAS_S14001A)
+int S14001A_num(const struct MachineSound *msound) { return 1; }
+#endif
 #if (HAS_VOTRAXSC01)
 int VOTRAXSC01_num(const struct MachineSound *msound) { return ((struct VOTRAXSC01interface*)msound->sound_interface)->num; }
 #endif
@@ -1136,6 +1139,18 @@ struct snd_interface sndintf[] =
 	},
 #endif
 #ifdef PINMAME
+#if (HAS_S14001A)
+	{
+		SOUND_S14001A,
+		"S14001A",
+		S14001A_num,
+		0,
+		s14001a_sh_start,
+		s14001a_sh_stop,
+		0,
+		0
+	},
+#endif
 #if (HAS_VOTRAXSC01)
 	{
 		SOUND_VOTRAXSC01,

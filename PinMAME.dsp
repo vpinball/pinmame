@@ -1534,6 +1534,14 @@ SOURCE=src\sound\msm5205.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\sound\s14001a.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sound\s14001a.h
+# End Source File
+# Begin Source File
+
 SOURCE=src\sound\samples.c
 
 !IF  "$(CFG)" == "PinMAME - Win32 Release"

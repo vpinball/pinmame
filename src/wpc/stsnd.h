@@ -5,18 +5,12 @@
 struct sndbrdst300 {
   int c0;
   int ax[9];
-  int axb[9];	
-  int sampleisplaying;	
+  int axb[9];
   UINT16 timer1,timer2,timer3;
 };
 extern MACHINE_DRIVER_EXTERN(st100);
 extern MACHINE_DRIVER_EXTERN(st300);
-extern MACHINE_DRIVER_EXTERN(st300f2k);
-extern MACHINE_DRIVER_EXTERN(st300fal);
-extern MACHINE_DRIVER_EXTERN(st300lit);
-extern MACHINE_DRIVER_EXTERN(st300sec);
-extern MACHINE_DRIVER_EXTERN(st300cat);
-extern MACHINE_DRIVER_EXTERN(st300orb);
+extern MACHINE_DRIVER_EXTERN(st300v);
 
 extern struct sndbrdst300 snddatst300;
 
