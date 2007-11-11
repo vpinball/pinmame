@@ -171,6 +171,9 @@ struct MachineSound
 #include "sound/sp0250.h"
 #endif
 #ifdef PINMAME
+#if (HAS_S14001A)
+#include "sound/s14001a.h"
+#endif
 #if (HAS_VOTRAXSC01)
 #include "sound/votrax.h"
 #endif
@@ -379,6 +382,9 @@ enum
 	SOUND_SP0250,
 #endif
 #ifdef PINMAME
+#if (HAS_S14001A)
+	SOUND_S14001A,
+#endif
 #if (HAS_VOTRAXSC01)
 	SOUND_VOTRAXSC01,
 #endif

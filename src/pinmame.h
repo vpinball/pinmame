@@ -122,8 +122,9 @@
 #define HAS_DISCRETE   1
 #define HAS_SP0250     1
 #define HAS_TMS320AV120 1
-#define HAS_M114S 1
-#define HAS_YM3812 1
+#define HAS_M114S      1
+#define HAS_YM3812     1
+#define HAS_S14001A    1
 #endif /* _MSC_VER */
 
 #ifdef _MSC_VER // Disable some VC++ warnings

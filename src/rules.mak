@@ -1536,6 +1536,14 @@ endif
 #
 # PinMAME
 #
+SOUND=$(strip $(findstring S14001A@,$(SOUNDS)))
+ifneq ($(SOUND),)
+SOUNDDEFS += -DHAS_S14001A=1
+SOUNDOBJS += $(OBJ)/sound/s14001a.o
+else
+SOUNDDEFS += -DHAS_S14001A=0
+endif
+
 SOUND=$(strip $(findstring VOTRAXSC01@,$(SOUNDS)))
 ifneq ($(SOUND),)
 SOUNDDEFS += -DHAS_VOTRAXSC01=1

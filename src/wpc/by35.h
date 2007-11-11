@@ -427,6 +427,15 @@
       ROM_CONTINUE( 0x5800, 0x0800) \
         ROM_RELOAD( 0xf000, 0x1000)
 
+#define BY35_ROMSTARTx80(name,n2,chk2,n3,chk3)\
+  ROM_START(name) \
+    NORMALREGION(0x10000, BY35_CPUREGION) \
+      ROM_LOAD( n2, 0x1000, 0x0800, chk2) \
+        ROM_RELOAD( 0x5000, 0x0800) \
+      ROM_LOAD( n3, 0x1800, 0x0800, chk3) \
+      ROM_CONTINUE( 0x5800, 0x0800) \
+        ROM_RELOAD( 0xf000, 0x1000)
+
 #define ST200_ROMSTART8888(name,n1,chk1,n2,chk2,n3,chk3,n4,chk4)\
   ROM_START(name) \
     NORMALREGION(0x10000, BY35_CPUREGION) \
@@ -468,12 +477,7 @@ extern MACHINE_DRIVER_EXTERN(by6802_45S);
 extern MACHINE_DRIVER_EXTERN(st100s);
 extern MACHINE_DRIVER_EXTERN(st200);
 extern MACHINE_DRIVER_EXTERN(st200s100);
-extern MACHINE_DRIVER_EXTERN(st200f2k);
-extern MACHINE_DRIVER_EXTERN(st200fal);
-extern MACHINE_DRIVER_EXTERN(st200lit);
-extern MACHINE_DRIVER_EXTERN(st200sec);
-extern MACHINE_DRIVER_EXTERN(st200cat);
-extern MACHINE_DRIVER_EXTERN(st200orb);
+extern MACHINE_DRIVER_EXTERN(st200v);
 extern MACHINE_DRIVER_EXTERN(hnk);
 
 #define by35_mBYPROTO   byProto
@@ -495,12 +499,7 @@ extern MACHINE_DRIVER_EXTERN(hnk);
 #define by35_mST100     by35
 #define by35_mST100s    st100s
 #define by35_mST200     st200
-#define by35_mST200f2k	st200f2k
-#define by35_mST200fal	st200fal
-#define by35_mST200lit	st200lit
-#define by35_mST200sec	st200sec
-#define by35_mST200cat	st200cat
-#define by35_mST200orb	st200orb
+#define by35_mST200v	st200v
 
 #ifdef MAME_DEBUG
 extern MACHINE_DRIVER_EXTERN(by6802_61S);

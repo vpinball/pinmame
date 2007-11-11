@@ -329,7 +329,7 @@ ST200_ROMSTART8888(flight2k,"cpu_u1.716",CRC(df9efed9) SHA1(47727664e745e77ca1c2
 VSU100_SOUNDROM_U9(         "snd_u9.716",CRC(d816573c) SHA1(75134a017c34abbb149159ca001d35464a3f5128))
 BY35_ROMEND
 #define input_ports_flight2k input_ports_st
-CORE_GAMEDEFNV(flight2k,"Flight 2000",1980,"Stern",by35_mST200f2k,0)
+CORE_GAMEDEFNV(flight2k,"Flight 2000",1980,"Stern",by35_mST200v,0)
 
 /*--------------------------------
 / Nine Ball
@@ -364,7 +364,7 @@ VSU100_SOUNDROM_U9U10(      "snd_u9.716",CRC(ea8cf062) SHA1(55c840a9bea363fd436c
                            "snd_u10.716",CRC(dd681a79) SHA1(d954cae375fb0145e10536e43d1cb03902de2ea3))
 BY35_ROMEND
 #define input_ports_freefall input_ports_st
-CORE_GAMEDEFNV(freefall,"Free Fall",1981,"Stern",by35_mST200fal,0)
+CORE_GAMEDEFNV(freefall,"Free Fall",1981,"Stern",by35_mST200v,0)
 
 /*--------------------------------
 / Lightning
@@ -383,7 +383,7 @@ VSU100_SOUNDROM_U9U10(      "snd_u9.716",CRC(00ffa77c) SHA1(242efd800731a7f84369
                            "snd_u10.716",CRC(80fe9158) SHA1(20fcdb4c09b25e494f02bbfb20c07ff2870d5798))
 BY35_ROMEND
 #define input_ports_lightnin input_ports_st
-CORE_GAMEDEFNV(lightnin,"Lightning",1981,"Stern",by35_mST200lit,0)
+CORE_GAMEDEFNV(lightnin,"Lightning",1981,"Stern",by35_mST200v,0)
 
 /*--------------------------------
 / Split Second
@@ -397,7 +397,7 @@ VSU100_SOUNDROM_U9U10(      "snd_u9.716",CRC(e6ed5f48) SHA1(ea2bbc607acb2b816667
                            "snd_u10.716",CRC(36e6ee70) SHA1(61bd89d69627bea89b7f31af63ff90ace6db3c85))
 BY35_ROMEND
 #define input_ports_splitsec input_ports_st
-CORE_GAMEDEFNV(splitsec,"Split Second",1981,"Stern",by35_mST200sec,0)
+CORE_GAMEDEFNV(splitsec,"Split Second",1981,"Stern",by35_mST200v,0)
 
 /*--------------------------------
 / Catacomb
@@ -411,7 +411,7 @@ VSU100_SOUNDROM_U9U10(      "snd_u9.716",CRC(a13cb591) SHA1(b64a2dc3429803095dc0
                            "snd_u10.716",CRC(2b31f8be) SHA1(05b394bd8b6c04e34fe2bab19cbd0f06d9e4b90d))
 BY35_ROMEND
 #define input_ports_catacomb input_ports_st
-CORE_GAMEDEFNV(catacomb,"Catacomb",1981,"Stern",by35_mST200cat,0)
+CORE_GAMEDEFNV(catacomb,"Catacomb",1981,"Stern",by35_mST200v,0)
 
 /*--------------------------------
 / Iron Maiden
@@ -471,7 +471,7 @@ VSU100_SOUNDROM_U9U10(      "snd_u9.716",CRC(2ba24569) SHA1(da2f4a4eeed9ae7ff8a3
                            "snd_u10.716",CRC(8e5b4a38) SHA1(de3f59363553f5f0d6098401734436930e64fbbd))
 BY35_ROMEND
 #define input_ports_orbitor1 input_ports_st
-CORE_GAMEDEFNV(orbitor1,"Orbitor 1",1982,"Stern",by35_mST200orb,0)
+CORE_GAMEDEFNV(orbitor1,"Orbitor 1",1982,"Stern",by35_mST200v,0)
 
 /*--------------------------------
 / Cue (Proto - Never released)

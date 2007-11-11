@@ -183,330 +183,13 @@ static WRITE_HANDLER(sts_data_w)
 
 #define ST300_VOL 1 // volume for channels
 
-static const char *f2k_sample_names[] =
-{
-	"f2k00.wav",
-	"f2k01.wav",
-	"f2k02.wav",
-	"f2k03.wav",
-	"f2k04.wav",
-	"f2k05.wav",
-	"f2k06.wav",
-	"f2k07.wav",
-	"f2k08.wav",
-	"f2k09.wav",
-	"f2k10.wav",
-	"f2k11.wav",
-	"f2k12.wav",
-	"f2k13.wav",
-	"f2k14.wav",
-	"f2k15.wav",
-	"f2k16.wav",
-	"f2k17.wav",
-	"f2k18.wav",
-	"f2k19.wav",
-	"f2k20.wav",
-	0   /* end of array */
-};
-
-struct Samplesinterface f2k_samples_interface =
-{
-	1,
-	100,	/* volume */
-	f2k_sample_names,
-	"TSI S14001A"
-};
-
-
-static const char *spl_sample_names[] =
-{
-	"spl00.wav",
-	"spl01.wav",
-	"spl02.wav",
-	"spl03.wav",
-	"spl04.wav",
-	"spl05.wav",
-	"spl06.wav",
-	"spl07.wav",
-	"spl08.wav",
-	"spl09.wav",
-	"spl10.wav",
-	"spl11.wav",
-	"spl12.wav",
-	"spl13.wav",
-	"spl14.wav",
-	"spl15.wav",
-	"spl16.wav",
-	"spl17.wav",
-	"spl18.wav",
-	"spl19.wav",
-	"spl20.wav",
-	"spl21.wav",
-	"spl22.wav",
-	"spl23.wav",
-	"spl24.wav",
-	"spl25.wav",
-	"spl26.wav",
-	"spl27.wav",
-	"spl28.wav",
-	"spl29.wav",
-	"spl30.wav",
-	"spl31.wav",
-	"spl32.wav",
-	"spl33.wav",
-	"spl34.wav",
-	"spl35.wav",
-	"spl36.wav",
-	"spl37.wav",
-	"spl38.wav",
-	"spl39.wav",
-	"spl40.wav",
-	0   /* end of array */
-};
-
-struct Samplesinterface spl_samples_interface =
-{
-	1,
-	100,	/* volume */
-	spl_sample_names,
-	"TSI S14001A"
-};
-
-
-static const char *lig_sample_names[] =
-{
-	"lig00.wav",
-	"lig01.wav",
-	"lig02.wav",
-	"lig03.wav",
-	"lig04.wav",
-	"lig05.wav",
-	"lig06.wav",
-	"lig07.wav",
-	"lig08.wav",
-	"lig09.wav",
-	"lig10.wav",
-	"lig11.wav",
-	"lig12.wav",
-	"lig13.wav",
-	"lig14.wav",
-	"lig15.wav",
-	"lig16.wav",
-	"lig17.wav",
-	"lig18.wav",
-	"lig19.wav",
-	"lig20.wav",
-	"lig21.wav",
-	"lig22.wav",
-	"lig23.wav",
-	"lig24.wav",
-	"lig25.wav",
-	"lig26.wav",
-	"lig27.wav",
-	"lig28.wav",
-	"lig29.wav",
-	"lig30.wav",
-	"lig31.wav",
-	"lig32.wav",
-	"lig33.wav",
-	"lig34.wav",
-	0   /* end of array */
-};
-
-struct Samplesinterface lig_samples_interface =
-{
-	1,
-	100,	/* volume */
-	lig_sample_names,
-	"TSI S14001A"
-};
-
-static const char *orb_sample_names[] =
-{
-	"orb00.wav",
-	"orb01.wav",
-	"orb02.wav",
-	"orb03.wav",
-	"orb04.wav",
-	"orb05.wav",
-	"orb06.wav",
-	"orb07.wav",
-	"orb08.wav",
-	"orb09.wav",
-	"orb10.wav",
-	"orb11.wav",
-	"orb12.wav",
-	"orb13.wav",
-	"orb14.wav",
-	"orb15.wav",
-	"orb16.wav",
-	"orb17.wav",
-	"orb18.wav",
-	"orb19.wav",
-	"orb20.wav",
-	"orb21.wav",
-	"orb22.wav",
-	"orb23.wav",
-	"orb24.wav",
-	"orb25.wav",
-	"orb26.wav",
-	"orb27.wav",
-	"orb28.wav",
-	"orb29.wav",
-	"orb30.wav",
-	"orb31.wav",
-	"orb32.wav",
-	"orb33.wav",
-	"orb34.wav",
-	"orb35.wav",
-	"orb36.wav",
-	"orb37.wav",
-	"orb38.wav",
-	"orb39.wav",
-	"orb40.wav",
-	"orb41.wav",
-	"orb42.wav",
-	"orb43.wav",
-	"orb44.wav",
-	"orb45.wav",
-	"orb46.wav",
-	"orb47.wav",
-	"orb48.wav",
-	"orb49.wav",
-	"orb50.wav",
-	"orb51.wav",
-	"orb52.wav",
-	"orb53.wav",
-	"orb54.wav",
-	"orb55.wav",
-	"orb56.wav",
-	"orb57.wav",
-	"orb58.wav",
-	0   /* end of array */
-};
-
-struct Samplesinterface orb_samples_interface =
-{
-	1,
-	100,	/* volume */
-	orb_sample_names,
-	"TSI S14001A"
-};
-
-
-static const char *cat_sample_names[] =
-{
-	"cat00.wav",
-	"cat01.wav",
-	"cat02.wav",
-	"cat03.wav",
-	"cat04.wav",
-	"cat05.wav",
-	"cat06.wav",
-	"cat07.wav",
-	"cat08.wav",
-	"cat09.wav",
-	"cat10.wav",
-	"cat11.wav",
-	"cat12.wav",
-	"cat13.wav",
-	"cat14.wav",
-	"cat15.wav",
-	"cat16.wav",
-	"cat17.wav",
-	"cat18.wav",
-	"cat19.wav",
-	"cat20.wav",
-	"cat21.wav",
-	"cat22.wav",
-	"cat23.wav",
-	"cat24.wav",
-	"cat25.wav",
-	"cat26.wav",
-	"cat27.wav",
-	"cat28.wav",
-	"cat29.wav",
-	"cat30.wav",
-	"cat31.wav",
-	"cat32.wav",
-	"cat33.wav",
-	"cat34.wav",
-	"cat35.wav",
-	"cat36.wav",
-	"cat37.wav",
-	"cat38.wav",
-	"cat39.wav",
-	0   /* end of array */
-};
-
-struct Samplesinterface cat_samples_interface =
-{
-	1,
-	100,	/* volume */
-	cat_sample_names,
-	"TSI S14001A"
-};
-
-static const char *fff_sample_names[] =
-{
-	"fff00.wav",
-	"fff01.wav",
-	"fff02.wav",
-	"fff03.wav",
-	"fff04.wav",
-	"fff05.wav",
-	"fff06.wav",
-	"fff07.wav",
-	"fff08.wav",
-	"fff09.wav",
-	"fff10.wav",
-	"fff11.wav",
-	"fff12.wav",
-	"fff13.wav",
-	"fff14.wav",
-	"fff15.wav",
-	"fff16.wav",
-	"fff17.wav",
-	"fff18.wav",
-	"fff19.wav",
-	"fff20.wav",
-	"fff21.wav",
-	"fff22.wav",
-	"fff23.wav",
-	"fff24.wav",
-	"fff25.wav",
-	"fff26.wav",
-	"fff27.wav",
-	"fff28.wav",
-	"fff29.wav",
-	"fff30.wav",
-	"fff31.wav",
-	"fff32.wav",
-	"fff33.wav",
-	"fff34.wav",
-	"fff35.wav",
-	"fff36.wav",
-	"fff37.wav",
-	"fff38.wav",
-	0   /* end of array */
-};
-
-struct Samplesinterface fff_samples_interface =
-{
-	1,
-	100,	/* volume */
-	fff_sample_names,
-	"TSI S14001A"
-};
-
 struct sndbrdst300 snddatst300;
 
 static struct {
   UINT16 timlat1,timlat2,timlat3,timer1,timer2,timer3,t4562c;
   UINT16 timlats1,timlats2,timlats3;
   int    cr1,cr2,cr3,channel,timp1,timp2,timp3,tfre1,tfre2,tfre3,noise,conx,altx,dir;
-  int    volnr,reset,extfreq;
-  int    speechsam;
+  int    volnr,reset,extfreq,voiceSw;
 } st300loc;
 
 static  INT16  sineWaveinp[] = {
@@ -633,9 +316,9 @@ static void softreset (int param) {
 	st300loc.timp2 = 0;
 	st300loc.timp2 = 0;
 	mixer_stop_sample(st300loc.channel);
-	logerror ("Playsam Q2 off ");	
+	logerror ("Playsam Q2 off ");
 	mixer_stop_sample(st300loc.channel+1);
-	logerror ("Playsam Q1 off ");	
+	logerror ("Playsam Q1 off ");
   } else {
   }
 }
@@ -692,7 +375,7 @@ static void st300_pulse (int param) {
 			if (setvol(0) == 100) {
 				logerror("playsam Q2/EXT noise volume maximum\n");
 			}
-			
+
 			mixer_set_volume(st300loc.channel,setvol(0)*ST300_VOL);
 			mixer_set_volume(st300loc.channel+2,setvol(0)*ST300_VOL);
     		}
@@ -701,14 +384,12 @@ static void st300_pulse (int param) {
 
 }
 
-static int sound_started;
-static void st300_start_common(void) {
+static int st300_sh_start(const struct MachineSound *msound)  {
   int mixing_levels[3] = {30,30,30};
   int i;
   int s = 0;
 
   memset(&st300loc, 0, sizeof(st300loc));
-  sound_started = 1;
   for (i = 0;i < 9;i++) {
     snddatst300.ax[i] = 0;
     snddatst300.axb[i] = 0;
@@ -723,34 +404,16 @@ static void st300_start_common(void) {
   }
   st300loc.channel = mixer_allocate_channels(3, mixing_levels);
   mixer_set_name  (st300loc.channel, "MC6840 #Q2");   // 6840 Output timer 2 (q2) is easy wave + volume from q3
-  mixer_set_volume(st300loc.channel,0); 
+  mixer_set_volume(st300loc.channel,0);
   mixer_set_name  (st300loc.channel+1, "MC6840 #Q1");  // 6840 Output timer 1 (q1) is easy wave + volume always 100
-  mixer_set_volume(st300loc.channel+1,70*ST300_VOL);  
+  mixer_set_volume(st300loc.channel+1,70*ST300_VOL);
   mixer_set_name  (st300loc.channel+2, "EXT TIM");   // External Timer (U10) is Noise geneartor + volume from q3
-  mixer_set_volume(st300loc.channel+2,0);  
+  mixer_set_volume(st300loc.channel+2,0);
   timer_pulse(TIME_IN_HZ(ST300_INTCLOCK),0x02,st300_pulse); // start internal clock
-}
-
-static int st300_sh_start(const struct MachineSound *msound)  {
-  if (!sound_started) st300_start_common();
-  st300loc.speechsam = 0; // no samples for speech
   return 0;
 }
-
-static void checksam (int param) {
-  if (sample_playing(6) == 0) snddatst300.sampleisplaying = 0;
-}
-
-static int st300sam_sh_start(const struct MachineSound *msound)  {
-  if (!sound_started) st300_start_common();
-  st300loc.speechsam = 1; // samples for speech used
-  timer_pulse(TIME_IN_SEC(0.1),0,checksam); // check if sample is finished
-  return 0;
-}
-
 
 static void st300_sh_stop(void) {
-  sound_started = 0;
   samples_sh_stop();
 }
 
@@ -758,7 +421,7 @@ static void st300_sh_stop(void) {
 
 
 static struct CustomSound_interface st300_custInt = {st300_sh_start, st300_sh_stop};
-static struct CustomSound_interface st300sam_custInt = {st300sam_sh_start, st300_sh_stop};
+static struct CustomSound_interface st300v_custInt = {st300_sh_start, st300_sh_stop};
 static struct CustomSound_interface st100_custInt = {st100_sh_start, st100_sh_stop};
 
 static struct {
@@ -767,13 +430,12 @@ static struct {
 
 
 static WRITE_HANDLER(st300_ctrl_w) {
+  if (!st300loc.voiceSw) {
 // cycles for 4536
 // c0 -> 00 -> 2 clock cycles
 // c0 -> 10 -> 4 clock cycles
 // c0 -> 20 -> 8 clock cycles
-  int wordsam, wordcmd, wordvol, wordspeed, speedcmd;
-  if (offset == 0) {
-     	snddatst300.c0=data;
+  	snddatst300.c0=data;
   	st300loc.extfreq  = ((data & 0xf0) >> 4) + 1;
   	st300loc.noise    =  (data & 0x08) >> 3;
   	st300loc.conx = (data & 0x04) >> 2;
@@ -783,33 +445,29 @@ static WRITE_HANDLER(st300_ctrl_w) {
   	} else {
   		st300loc.dir  = 0;
   	}
-  	logerror("%04x: st300_CTRL_W adress C0 data %02x noise %04x \n", activecpu_get_previouspc(), data,st300loc.noise);
+  	logerror("st300_CTRL_W adress C0 data %02x noise %04x \n", data,st300loc.noise);
   	playsamext(0);
   	playsam3(0);
-  } else {
-	speedcmd = (data & 0x80) >> 7;
-	wordcmd = (data & 0x40) >> 6;
- 	logerror("%04x: st300_CTRL_W xxxx data %02x  \n", activecpu_get_previouspc(), data);
-	if (speedcmd) {
-		wordspeed = data & 0x07;
-		wordvol = (data & 0x38) >> 3;
-  		logerror("%04x: st300_CTRL_W Voicespeed data %02x speed %02x vol %02x  \n", activecpu_get_previouspc(), data,wordspeed,wordvol);
-
+ } else {
+ 	logerror("st300_CTRL_W xxxx data %02x  \n", data);
+	if (data & 0x80) /* VSU-1000 control write */
+	{
+  		logerror("st300_CTRL_W Voicespeed data %02x speed %02x vol %02x  \n", data, data & 0x07, (data & 0x38)>>3);
+		/* volume and frequency control goes here */
+		S14001A_set_volume(7 /*(data & 0x38)>>3*/);
+		S14001A_set_rate(2 /*data & 0x07*/);
 	}
-	if (wordcmd)  {
-		wordsam = data & 0x3f;
-  		logerror("%04x: st300_CTRL_W Voice data %02x sam %02x \n", activecpu_get_previouspc(), data,wordsam);
-		if (st300loc.speechsam)
-	    {
-// all samples were recorded with speed = 2, vol = 5
-			sample_start(6,18 + wordsam,0);
-			snddatst300.sampleisplaying = 1;
-		}
+	else if (data & 0x40)
+	{
+		logerror("st300_CTRL_W Voice data %02x sam %02x \n", data, data & 0x3f);
+		/* write to the register */
+		S14001A_reg_0_w(data & 0x3f);
+		S14001A_rst_0_w(1);
+		S14001A_rst_0_w(0);
 	}
-
   }
+  st300loc.voiceSw = 0;
 }
-
 
 
 static WRITE_HANDLER(st300_data_w) {
@@ -848,7 +506,7 @@ static WRITE_HANDLER(st300_data_w) {
  		playsam2(0);
 	} else {
 //		logerror ("Output OFF   ");
-		logerror ("PlaysamQ2off ");	
+		logerror ("PlaysamQ2off ");
 		mixer_stop_sample(st300loc.channel);
   		st300loc.volnr = 0;
 	}
@@ -960,6 +618,13 @@ static WRITE_HANDLER(sts_ctrl_w)
 	logerror("snd_ctrl_w: %i\n", data);
 }
 
+static void st300_switch_w(int sw) {
+	st300loc.voiceSw = sw;
+}
+
+static WRITE_HANDLER(st300_man_w) {
+	st300_ctrl_w(st300loc.voiceSw, data);
+}
 
 static void sts_init(struct sndbrdData *brdData)
 {
@@ -975,53 +640,29 @@ const struct sndbrdIntf st100Intf = {
 };
 
 const struct sndbrdIntf st300Intf = {
-  "ST300", sts_init, NULL, NULL, st300_data_w, st300_data_w,NULL, st300_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "ST300", sts_init, NULL, st300_switch_w, st300_man_w, st300_data_w,NULL, st300_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
 const struct sndbrdIntf astroIntf = {
   "ASTRO", sts_init, NULL, NULL, st300_data_w, st300_data_w,NULL, st300_ctrl_w, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
+static struct S14001A_interface s14001a_interface = {
+  VSU100_ROMREGION	/* memory region */
+};
+
 MACHINE_DRIVER_START(st100)
   MDRV_SOUND_ADD(CUSTOM, st100_custInt)
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(st300)
   MDRV_SOUND_ADD(CUSTOM, st300_custInt)
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END
 
-MACHINE_DRIVER_START(st300f2k)
-  MDRV_SOUND_ADD(CUSTOM, st300sam_custInt)
+MACHINE_DRIVER_START(st300v)
+  MDRV_SOUND_ADD(CUSTOM, st300v_custInt)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
-  MDRV_SOUND_ADD_TAG("flight2k", SAMPLES, f2k_samples_interface)
-MACHINE_DRIVER_END
-
-MACHINE_DRIVER_START(st300fal)
-  MDRV_SOUND_ADD(CUSTOM, st300sam_custInt)
-  MDRV_SOUND_ADD(SAMPLES, samples_interface)
-  MDRV_SOUND_ADD_TAG("freefall", SAMPLES, fff_samples_interface)
-MACHINE_DRIVER_END
-
-MACHINE_DRIVER_START(st300lit)
-  MDRV_SOUND_ADD(CUSTOM, st300sam_custInt)
-  MDRV_SOUND_ADD(SAMPLES, samples_interface)
-  MDRV_SOUND_ADD_TAG("lightnin", SAMPLES, lig_samples_interface)
-MACHINE_DRIVER_END
-
-MACHINE_DRIVER_START(st300sec)
-  MDRV_SOUND_ADD(CUSTOM, st300sam_custInt)
-  MDRV_SOUND_ADD(SAMPLES, samples_interface)
-  MDRV_SOUND_ADD_TAG("splitsec", SAMPLES, spl_samples_interface)
-MACHINE_DRIVER_END
-
-MACHINE_DRIVER_START(st300cat)
-  MDRV_SOUND_ADD(CUSTOM, st300sam_custInt)
-  MDRV_SOUND_ADD(SAMPLES, samples_interface)
-  MDRV_SOUND_ADD_TAG("catacomb", SAMPLES, cat_samples_interface)
-MACHINE_DRIVER_END
-
-MACHINE_DRIVER_START(st300orb)
-  MDRV_SOUND_ADD(CUSTOM, st300sam_custInt)
-  MDRV_SOUND_ADD(SAMPLES, samples_interface)
-  MDRV_SOUND_ADD_TAG("orbitor1", SAMPLES, orb_samples_interface)
+  MDRV_SOUND_ADD_TAG("S14001A", S14001A, s14001a_interface)
 MACHINE_DRIVER_END
