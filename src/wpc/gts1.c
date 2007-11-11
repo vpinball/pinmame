@@ -191,7 +191,7 @@ static WRITE_HANDLER(port_w) {
 			logerror("%03x: I/O on U2: %s %x: %x\n", activecpu_get_pc(), rw ? "SET" : "READ", group, locals.accu);
 			break;
 		case 0x0d: // U6 GPKD 10788 - Display
-			data = PPS4_get_reg(PPS4_AB); // read display address from address bus (that's how the real chip does it!)
+			data = PPS4_get_reg(PPS4_DB); // read display address from data bus (that's how the real chip does it!)
 			logerror("%03x: I/O on U6: %04x:%x\n", activecpu_get_pc(), data, locals.accu);
 			switch (data >> 4) {
 				case 0: // switches between buffers
