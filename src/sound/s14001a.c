@@ -298,6 +298,7 @@ void s14001a_clock(void) /* called once per clock */
 	if (oddeven == 0) // even clock
         {
 		audioout = audiofilter(); // function to handle output filtering by internal capacitance based on clock speed and such
+		if (!machineState) audioout = SILENCE;
 		shiftIntoFilter(audioout); // shift over all the filter outputs and stick in audioout
 	}
 	else // odd clock
@@ -309,6 +310,7 @@ void s14001a_clock(void) /* called once per clock */
 			OldDelta = 2;
 		}
 		audioout = (GlobalSilenceState || LOCALSILENCESTATE) ? SILENCE : DACOutput; // when either silence state is 1, output silence.
+		if (!machineState) audioout = SILENCE;
 		shiftIntoFilter(audioout); // shift over all the filter outputs and stick in audioout
 		switch(machineState) // HUUUUUGE switch statement
 		{
@@ -434,7 +436,7 @@ static void s14001a_update(int ch, INT16 *buffer, int length)
 		  s14001a_clock();
 		  VSU1000_counter = VSU1000_freq;
 		}
-		buffer[i] = ((((INT16)audioout)-128)*36)*VSU1000_amp;
+		buffer[i] = ((((INT16)audioout)-128)*36)*((7 + 2 * VSU1000_amp) / 3);
 	}
 }
 
