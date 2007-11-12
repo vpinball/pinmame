@@ -138,7 +138,6 @@ int stream;
 
 UINT8 WordInput; // value on word input bus
 UINT8 LatchedWord; // value latched from input bus
-char  wordPending; // if there is a word command still unread (for busy check)
 UINT16 SyllableAddress; // address read from word table
 UINT16 PhoneAddress; // starting/current phone address from syllable table
 UINT8 PlayParams; // playback parameters from syllable table
@@ -458,7 +457,7 @@ int s14001a_sh_start(const struct MachineSound *msound)
 
 	SpeechRom = memory_region(intf->region);
 
-	stream = stream_init("S14001A", 100, 44100, 0, s14001a_update);
+	stream = stream_init("S14001A", 100, 22050, 0, s14001a_update);
 	if (stream == -1)
 		return 1;
 
@@ -484,7 +483,6 @@ void S14001A_reg_0_w(int data)
 	if (stream != -1)
 		stream_update(stream, 0);
 	WordInput = data;
-	wordPending = 1;
 }
 
 void S14001A_rst_0_w(int data)
@@ -498,14 +496,19 @@ void S14001A_rst_0_w(int data)
 
 void S14001A_set_rate(int newrate)
 {
+	static int rates[8] = { 16267, 17419, 18745, 20237, 22050, 24220, 26863, 30155 };
 	if (stream != -1)
 		stream_update(stream, 0);
-    VSU1000_freq = newrate;
+	if (newrate < 0) newrate = 0;
+	else if (newrate > 7) newrate = 7;
+	stream_set_sample_rate(stream, rates[newrate]);
 }
 
 void S14001A_set_volume(int volume)
 {
 	if (stream != -1)
 		stream_update(stream, 0);
+	if (volume < 0) volume = 0;
+	else if (volume > 7) volume = 7;
     VSU1000_amp = volume;
 }

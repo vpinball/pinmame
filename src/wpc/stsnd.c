@@ -454,8 +454,10 @@ static WRITE_HANDLER(st300_ctrl_w) {
 	{
   		logerror("st300_CTRL_W Voicespeed data %02x speed %02x vol %02x  \n", data, data & 0x07, (data & 0x38)>>3);
 		/* volume and frequency control goes here */
-		S14001A_set_volume(7 /*(data & 0x38)>>3*/);
-		S14001A_set_rate(2 /*data & 0x07*/);
+		if (data & 0x38) {
+			S14001A_set_volume((data & 0x38)>>3);
+		}
+		S14001A_set_rate(data & 0x07);
 	}
 	else if (data & 0x40)
 	{
@@ -623,7 +625,8 @@ static void st300_switch_w(int sw) {
 }
 
 static WRITE_HANDLER(st300_man_w) {
-	st300_ctrl_w(st300loc.voiceSw, data);
+	st300loc.voiceSw = 1;
+	st300_ctrl_w(0, data);
 }
 
 static void sts_init(struct sndbrdData *brdData)
