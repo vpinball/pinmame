@@ -436,7 +436,7 @@ static void s14001a_update(int ch, INT16 *buffer, int length)
 		  s14001a_clock();
 		  VSU1000_counter = VSU1000_freq;
 		}
-		buffer[i] = ((((INT16)audioout)-128)*36)*((7 + 2 * VSU1000_amp) / 3);
+		buffer[i] = ((((INT16)audioout)-128)*36)*((21 + 2 * VSU1000_amp) / 5);
 	}
 }
 
@@ -459,7 +459,7 @@ int s14001a_sh_start(const struct MachineSound *msound)
 
 	SpeechRom = memory_region(intf->region);
 
-	stream = stream_init("S14001A", 100, 22050, 0, s14001a_update);
+	stream = stream_init("S14001A", 100, 17500, 0, s14001a_update);
 	if (stream == -1)
 		return 1;
 
@@ -498,7 +498,7 @@ void S14001A_rst_0_w(int data)
 
 void S14001A_set_rate(int newrate)
 {
-	static int rates[8] = { 16267, 17419, 18745, 20237, 22050, 24220, 26863, 30155 };
+	static int rates[8] = { 19000, 20500, 22000, 24500, 27000, 29500, 31000, 33500 };
 	if (stream != -1)
 		stream_update(stream, 0);
 	if (newrate < 0) newrate = 0;
