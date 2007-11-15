@@ -973,6 +973,11 @@ DRIVERNV(sman_170al)		//S.A.M: ??/?? Spiderman - V1.7AL  (English, Spanish)
 DRIVERNV(sman_170af)		//S.A.M: ??/?? Spiderman - V1.7AF  (English, French)
 DRIVERNV(sman_170gf)		//S.A.M: ??/?? Spiderman - V1.7GF  (German, French)
 DRIVERNV(sman_170ai)		//S.A.M: ??/?? Spiderman - V1.7AI  (English, Italian)
+DRIVERNV(sman_190)			//S.A.M: 11/07 Spiderman - V1.90   (English)
+DRIVERNV(sman_190af)		//S.A.M: 11/07 Spiderman - V1.90   (English, French)
+DRIVERNV(sman_190ai)		//S.A.M: 11/07 Spiderman - V1.90   (English, Italian)
+DRIVERNV(sman_190al)		//S.A.M: 11/07 Spiderman - V1.90   (English, Spanish)
+DRIVERNV(sman_190gf)		//S.A.M: 11/07 Spiderman - V1.90   (German, French)
 #endif
 
 #endif /* INCLUDE_NEW_STERN */
