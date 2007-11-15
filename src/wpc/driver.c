@@ -978,6 +978,7 @@ DRIVERNV(sman_190af)		//S.A.M: 11/07 Spiderman - V1.90   (English, French)
 DRIVERNV(sman_190ai)		//S.A.M: 11/07 Spiderman - V1.90   (English, Italian)
 DRIVERNV(sman_190al)		//S.A.M: 11/07 Spiderman - V1.90   (English, Spanish)
 DRIVERNV(sman_190gf)		//S.A.M: 11/07 Spiderman - V1.90   (German, French)
+DRIVERNV(wof_100)   		//S.A.M: 11/07 Wheel of Fortune - V1.00   (English)
 #endif
 
 #endif /* INCLUDE_NEW_STERN */
