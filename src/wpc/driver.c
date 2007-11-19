@@ -1447,6 +1447,7 @@ DRIVERNV(ewf)           //04/81 Earth, Wind & Fire
 DRIVERNV(locomotn)      //09/81 Locomotion
                         //04/82 Pinball Champ '82 (using the same roms as the '83 version)
 DRIVERNV(socrking)      //09/82 Soccer Kings
+DRIVERNV(socrkngi)      //      Soccer Kings (Italian speech)
 DRIVERNV(socrkngg)      //      Soccer Kings (German speech)
 DRIVERNV(pinchamp)      //04/83 Pinball Champ
 DRIVERNV(pinchamg)      //      Pinball Champ (German speech)
@@ -1455,22 +1456,31 @@ DRIVERNV(pincham7)      //      Pinball Champ (7 digits)
 DRIVERNV(pincha7g)      //      Pinball Champ (7 digits, German speech)
 DRIVERNV(pincha7i)      //      Pinball Champ (7 digits, Italian speech)
 DRIVERNV(tmachzac)      //04/83 Time Machine
+DRIVERNV(tmacgzac)      //      Time Machine (German speech)
 DRIVERNV(farfalla)      //09/83 Farfalla
 DRIVERNV(farfalli)      //      Farfalla (Italian speech)
+DRIVERNV(farfallg)      //      Farfalla (German speech)
 DRIVERNV(dvlrider)      //04/84 Devil Riders
+DRIVERNV(dvlridei)      //      Devil Riders (Italian speech)
 DRIVERNV(dvlrideg)      //      Devil Riders (German speech)
 DRIVERNV(mcastle)       //09/84 Magic Castle
+DRIVERNV(mcastlei)      //      Magic Castle (Italian speech)
 DRIVERNV(mcastleg)      //      Magic Castle (German speech)
+DRIVERNV(mcastlef)      //      Magic Castle (French speech)
 DRIVERNV(robot)         //01/85 Robot
+DRIVERNV(roboti)        //      Robot (Italian speech)
 DRIVERNV(robotg)        //      Robot (German speech)
+DRIVERNV(robotf)        //      Robot (French speech)
 DRIVERNV(clown)         //07/85 Clown
 DRIVERNV(poolcham)      //12/85 Pool Champion
+DRIVERNV(poolchai)      //      Pool Champion (Italian speech)
 DRIVERNV(poolchap)      //      Pool Champion (alternate sound)
 DRIVERNV(myststar)      //??/86 Mystic Star
 DRIVERNV(bbeltzac)      //03/86 Blackbelt
 DRIVERNV(mexico)        //07/86 Mexico '86
 DRIVERNV(zankor)        //12/86 Zankor
 DRIVERNV(spooky)        //04/87 Spooky
+DRIVERNV(spookyi)       //      Spooky (Italian speech)
 DRIVERNV(strsphnx)      //07/87 Star's Phoenix
 DRIVERNV(nstrphnx)      //08/87 New Star's Phoenix (same roms as strsphnx)
 
