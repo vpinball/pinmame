@@ -1457,6 +1457,7 @@ DRIVERNV(pincha7g)      //      Pinball Champ (7 digits, German speech)
 DRIVERNV(pincha7i)      //      Pinball Champ (7 digits, Italian speech)
 DRIVERNV(tmachzac)      //04/83 Time Machine
 DRIVERNV(tmacgzac)      //      Time Machine (German speech)
+DRIVERNV(tmacfzac)      //      Time Machine (French speech)
 DRIVERNV(farfalla)      //09/83 Farfalla
 DRIVERNV(farfalli)      //      Farfalla (Italian speech)
 DRIVERNV(farfallg)      //      Farfalla (German speech)

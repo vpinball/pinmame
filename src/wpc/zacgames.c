@@ -322,6 +322,15 @@ ZAC_SOUNDROM_de1g(			"tmach_de.1d", CRC(8e8c27a4) SHA1(2e418e509bc241c193564e926
 ZAC_ROMEND
 CORE_CLONEDEFNV(tmacgzac,tmachzac,"Time Machine (Zaccaria, German speech)",1983,"Zaccaria",mZAC2X,0)
 
+INITGAME(tmacfzac,GEN_ZAC2,dispZAC2,SNDBRD_ZAC13136,366)
+ZAC_ROMSTART1820(tmacfzac,	"timemach.ic1",CRC(d88f424b) SHA1(a0c51f894d604504253f66e49298a9d836e25308),
+							"timemach.ic2",CRC(3c313487) SHA1(17c6c4a0c0c6dd90cf7fd9298b945305f734747d))
+ZAC_SOUNDROM_de1g(			"tmach_fr.1d", CRC(831203a4) SHA1(fc60086c2b9b83a47f30b028e7512090658c5700),
+							"sound2.e",    CRC(41881a1d) SHA1(42f8dd13c38e11c0dd3cf59c64751baaacb00ac1),
+							"tmach_fr.1g", CRC(4fb43fa3) SHA1(35ef929976e16abef9e70e569a6c005fd7995a6b))
+ZAC_ROMEND
+CORE_CLONEDEFNV(tmacfzac,tmachzac,"Time Machine (Zaccaria, French speech)",1983,"Zaccaria",mZAC2X,0)
+
 /*--------------------------------
 / Farfalla (09/83)
 /-------------------------------*/
