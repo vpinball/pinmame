@@ -698,17 +698,12 @@ void tms5220_process(INT16 *buffer, unsigned int size) {
 INT16 clip_and_wrap(INT16 cliptemp)
 {
 #ifdef PINMAME
-	cliptemp <<= 1;
-    /* no wrapping as it causes too much static */
-	if (cliptemp > 2047) cliptemp = 2047;
-	else if (cliptemp < -2048) cliptemp = -2048;
-
-	if (cliptemp > 1023) {
-	    return 32750; }
-	else if (cliptemp < -1024) {
-	    return -32750; }
-	else
-	    return cliptemp << 5;
+	/* A new approach: wrapping applied, then output calculated using logarithm */
+	double factor;
+	if (cliptemp > 2047) cliptemp = 4095-cliptemp;
+	else if (cliptemp < -2048) cliptemp = -4096-cliptemp;
+	factor = 8.0-log(300+abs(cliptemp));
+	return (INT16)((double)cliptemp * factor * 39);
 #else
     /* clipping & wrapping, just like the patent shows */
 
