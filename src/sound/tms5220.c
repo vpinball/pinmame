@@ -697,17 +697,31 @@ void tms5220_process(INT16 *buffer, unsigned int size) {
 
 INT16 clip_and_wrap(INT16 cliptemp)
 {
-        /* clipping & wrapping, just like the patent shows */
+#ifdef PINMAME
+	cliptemp <<= 1;
+    /* no wrapping as it causes too much static */
+	if (cliptemp > 2047) cliptemp = 2047;
+	else if (cliptemp < -2048) cliptemp = -2048;
+
+	if (cliptemp > 1023) {
+	    return 32750; }
+	else if (cliptemp < -1024) {
+	    return -32750; }
+	else
+	    return cliptemp << 5;
+#else
+    /* clipping & wrapping, just like the patent shows */
 
 	if (cliptemp > 2047) cliptemp = -2048 + (cliptemp-2047);
 	else if (cliptemp < -2048) cliptemp = 2047 - (cliptemp+2048);
 
 	if (cliptemp > 511) { logerror("cliptemp > 511\n");
 	    return 127<<8; }
-        else if (cliptemp < -512) { logerror("cliptemp < -512\n");
+	else if (cliptemp < -512) { logerror("cliptemp < -512\n");
 	    return -128<<8; }
-        else
-            return cliptemp << 6;
+	else
+	    return cliptemp << 6;
+#endif /* PINMAME */
 }
 
 
@@ -934,6 +948,9 @@ static int parse_frame(struct tms5220 *tms, int the_first_frame)
 		/*return 1;*/
 	{
 		tms->buffer_empty = 1;
+#ifdef PINMAME
+		tms5220_reset_chip(tms);
+#endif
 		return 1;
 	}
 
@@ -962,6 +979,9 @@ static int parse_frame(struct tms5220 *tms, int the_first_frame)
 			tms->fifo_head = tms->fifo_tail = tms->fifo_count = tms->fifo_bits_taken = 0;
 			tms->speak_external = tms->tms5220_speaking = 0;
 			tms->last_frame = 1;
+#ifdef PINMAME
+			tms5220_reset_chip(tms);
+#endif
 		}
 		goto done;
 	}
@@ -1076,6 +1096,9 @@ ranout:
 
     /* generate an interrupt if necessary */
     set_interrupt_state(tms, 1);
+#ifdef PINMAME
+	tms5220_reset_chip(tms);
+#endif
     return 0;
 }
 
