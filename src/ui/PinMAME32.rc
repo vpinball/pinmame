@@ -257,7 +257,7 @@ BEGIN
             VALUE "FileDescription", "Multiple Pinball Machine Emulator for Win32"
             VALUE "FileVersion", "1, 57, 0, 0"
             VALUE "InternalName", "PinMAME32"
-            VALUE "LegalCopyright", "Copyright 2001-2006 by the PinMAME team"
+            VALUE "LegalCopyright", "Copyright 2001-2007 by the PinMAME team"
             VALUE "OriginalFilename", "PinMAME32.exe"
             VALUE "ProductName", "PinMAME32"
             VALUE "ProductVersion", "1.57"
