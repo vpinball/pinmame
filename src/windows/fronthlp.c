@@ -470,7 +470,7 @@ int frontend_help (const char *gamename)
 		#ifndef MESS
 #ifdef PINMAME
 		printf("PinMAME v%s\n Pinball's Multiple Arcade Machine Emulator\n"
-				"Copyright (C) 2000-2005 by the PinMAME Team\n\n",build_version);
+				"Copyright (C) 2000-2007 by the PinMAME Team\n\n",build_version);
 		showdisclaimer();
 		printf("Usage:  PINMAME gamename [options]\n\n"
 				"        -list         for a brief list of supported games\n"
@@ -481,7 +481,7 @@ int frontend_help (const char *gamename)
 				"See readme.txt for a complete list of options.\n");
 #else /* PINMAME */
 		printf("M.A.M.E. v%s - Multiple Arcade Machine Emulator\n"
-				"Copyright (C) 1997-2005 by Nicola Salmoria and the MAME Team\n\n",build_version);
+				"Copyright (C) 1997-2007 by Nicola Salmoria and the MAME Team\n\n",build_version);
 		showdisclaimer();
 		printf("Usage:  MAME gamename [options]\n\n"
 				"        MAME -list         for a brief list of supported games\n"
