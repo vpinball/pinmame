@@ -327,21 +327,20 @@ static core_tGameData nbafGameData = {
   }
 };
 
-static int count = 20, lastBit7, lastBit6;
+static int count = 24, lastBit7, lastBit6;
 
 static WRITE_HANDLER(nbaf_wpc_w) {
   wpc_w(offset, data);
   if (offset == WPC_SOLENOID1) {
 	if (GET_BIT7 && !lastBit7) {
-	  count--;
-	  if (count < 0) count = 0;
+	  if (count > 0) count--;
 	}
 	if (GET_BIT6) {
 	  coreGlobals.segments[0].w = core_bcd2seg7[count / 10];
 	  coreGlobals.segments[1].w = core_bcd2seg7[count % 10];
 	}
 	if (!(GET_BIT6) && lastBit6) {
-	  count = 20;
+	  count = 24;
 	}
 	if (!(GET_BIT6) && !(GET_BIT7) && !lastBit6 && !lastBit7) {
 	  coreGlobals.segments[0].w = coreGlobals.segments[1].w = 0;
