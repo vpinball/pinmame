@@ -302,11 +302,17 @@ static sim_tSimData nbafSimData = {
   NULL  				/* Custom key conditions? */
 };
 
+extern PINMAME_VIDEO_UPDATE(wpcdmd_update);
+static struct core_dispLayout nbaf_dispDMD[] = {
+  {0,0,32,128,CORE_DMD,(void *)wpcdmd_update},
+  {7,0, 0,  2,CORE_SEG7},
+};
+
 /*----------------------
 / Game Data Information
 /----------------------*/
 static core_tGameData nbafGameData = {
-  GEN_WPC95, wpc_dispDMD,
+  GEN_WPC95, nbaf_dispDMD,
   {
     FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L),
     0,0,0,0,0,1
@@ -321,10 +327,34 @@ static core_tGameData nbafGameData = {
   }
 };
 
+static int count = 20, lastBit7, lastBit6;
+
+static WRITE_HANDLER(nbaf_wpc_w) {
+  wpc_w(offset, data);
+  if (offset == WPC_SOLENOID1) {
+	if (GET_BIT7 && !lastBit7) {
+	  count--;
+	  if (count < 0) count = 0;
+	}
+	if (GET_BIT6) {
+	  coreGlobals.segments[0].w = core_bcd2seg7[count / 10];
+	  coreGlobals.segments[1].w = core_bcd2seg7[count % 10];
+	}
+	if (!(GET_BIT6) && lastBit6) {
+	  count = 20;
+	}
+	if (!(GET_BIT6) && !(GET_BIT7) && !lastBit6 && !lastBit7) {
+	  coreGlobals.segments[0].w = coreGlobals.segments[1].w = 0;
+	}
+	lastBit6 = GET_BIT6;
+	lastBit7 = GET_BIT7;
+  }
+}
+
 /*---------------
 /  Game handling
 /----------------*/
 static void init_nbaf(void) {
   core_gameData = &nbafGameData;
+  install_mem_write_handler(0, 0x3fb0, 0x3fff, nbaf_wpc_w);
 }
-
