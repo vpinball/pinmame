@@ -1,6 +1,13 @@
 What's new in Visual PinMAME:
 -----------------------------
 
+Version 1.57 (December 2nd, 2007)
+--------------------------------
+- Added support for Stern's "Harley Davidson 3rd Edition"
+- Added support for Gottlieb System 1
+- Improved GI Dimming support and NBA Fastbreak Shot Clock
+= Removed need for Early Stern Samples
+
 Version 1.56 (August 19th, 2007)
 --------------------------------
 - "Bios" support for multiple games running the exact same set of code;
