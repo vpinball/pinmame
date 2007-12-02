@@ -1,3 +1,19 @@
+Version 1.57 (December 2, 2007) - "System 1"
+------------------------------------------------------------------------------
+The year is 1987, and NASA launches the last of America's deep space probes.  In a freak mishap, Ranger 3 and its pilot, Captain William "Buck" Rogers are blown out of their trajectory into an orbit which freezes his life support systems and returns Buck Rogers to Earth 500 years later.
+
+We had begun to think it would take 500 years to emulate Gottlieb System 1...but thanks to an anonymous MAACA member, we finally got good reads of the bios chips and they are now emulated.
+Get our your cards and backgammon boards, lucky Buck is back!
+
+1.57 - Changes Twiki says you don't want to know
+Added Stern Harley Davidson (Harley 3.0)
+Added Stern Speech emulation - sample files are no longer necessary
+Added Gottlieb System 1 emulation - still has a bonus count bug
+Improved GI dimming
+Added Inder Lap By Lap
+NBA Fastbreak Clock emulation corrected
+
+
 Version 1.56 (August 19, 2007) - "Allied Leisure"
 ------------------------------------------------------------------------------
 This update finally includes support for all the Allied Leisure games

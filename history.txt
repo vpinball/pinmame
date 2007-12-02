@@ -244,3 +244,6 @@ Emulator Notes:
 		Granny & The Gators Emulation Working
 		Atari Emulation for Superman & Hercules
 		Jokerz! sound board emulated.
+
+Milestone Date 12/2/2007
+Milestone: Added Gottlieb System 1 Support (Working!) - bug in bonus count still exists.
