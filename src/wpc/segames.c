@@ -6,6 +6,9 @@
 #include "vpintf.h"
 
 /* NO OUTPUT */
+static PINMAME_VIDEO_UPDATE(led_update) {
+  return 1;
+}
 
 static struct core_dispLayout se_dmd128x32[] = {
   {0,0, 32,128, CORE_DMD, (void *)dedmd32_update}, {0}
@@ -27,7 +30,7 @@ SE_INPUT_PORTS_START(se, 1) SE_INPUT_PORTS_END
 /-------------------------------------------------------------------*/
 static struct core_dispLayout se_apollo[] = {
   {0,0, 32,128, CORE_DMD, (void *)dedmd32_update},
-  {7,0,  0,  1, CORE_SEG7},
+  {7,0,  0,  1, CORE_SEG7, (void *)led_update},
   {0}
 };
 INITGAME(apollo13,GEN_WS,se_apollo,SE_DIGIT)
