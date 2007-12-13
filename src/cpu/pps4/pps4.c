@@ -290,7 +290,7 @@ INLINE void execute_one(UINT8 opcode)
 			tmp = I.accu;
 			I.accu = RM(0x1000 | I.AB.w.l);
 			WM(0x1000 | I.AB.w.l, tmp);
-			I.BX.b.l = (I.BX.b.l & 0x8f) | ((I.BX.b.l ^ (~opcode << 4)) & 0x70);
+			I.BX.b.l ^= (~opcode << 4) & 0x70;
 			if (!(I.BX.b.l & 0x0f)) {
 				I.BX.b.l |= 0x0f;
 				I.skip = 1;
@@ -303,8 +303,8 @@ INLINE void execute_one(UINT8 opcode)
 		/* LD */
 		case 0x30: case 0x31: case 0x32: case 0x33: case 0x34: case 0x35: case 0x36: case 0x37:
 			I.accu = RM(0x1000 | I.AB.w.l);
+			I.BX.b.l ^= (~opcode << 4) & 0x70;
 			if (opcode != 0x37) { // TODO: HACK to make games continue. Not sure what the real behaviour is!
-				I.BX.b.l = (I.BX.b.l & 0x8f) | ((I.BX.b.l ^ (~opcode << 4)) & 0x70);
 				I.AB = I.BX;
 				I.DB = I.BX.b.l;
 			}
@@ -314,7 +314,7 @@ INLINE void execute_one(UINT8 opcode)
 			tmp = I.accu;
 			I.accu = RM(0x1000 | I.AB.w.l);
 			WM(0x1000 | I.AB.w.l, tmp);
-			I.BX.b.l = (I.BX.b.l & 0x8f) | ((I.BX.b.l ^ (~opcode << 4)) & 0x70);
+			I.BX.b.l ^= (~opcode << 4) & 0x70;
 			I.AB = I.BX;
 			I.DB = I.BX.b.l;
 			break;
