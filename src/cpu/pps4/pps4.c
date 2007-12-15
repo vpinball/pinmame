@@ -100,7 +100,6 @@ INLINE void execute_one(UINT8 opcode)
 	if (wasLB) wasLB--;
 	if (wasLDI) wasLDI--;
 	I.skip = 0;
-	I.DB = I.AB.b.l;
 
 	switch (opcode)
 	{
@@ -304,10 +303,9 @@ INLINE void execute_one(UINT8 opcode)
 		case 0x30: case 0x31: case 0x32: case 0x33: case 0x34: case 0x35: case 0x36: case 0x37:
 			I.accu = RM(0x1000 | I.AB.w.l);
 			I.BX.b.l ^= (~opcode << 4) & 0x70;
-			if (opcode != 0x37) { // TODO: HACK to make games continue. Not sure what the real behaviour is!
+			if (opcode != 0x37) // TODO games will hang on bonus count-down if this is uncommented
 				I.AB = I.BX;
-				I.DB = I.BX.b.l;
-			}
+			I.DB = I.BX.b.l;
 			break;
 		/* EX */
 		case 0x38: case 0x39: case 0x3a: case 0x3b: case 0x3c: case 0x3d: case 0x3e: case 0x3f:
@@ -412,9 +410,8 @@ INLINE void execute_one(UINT8 opcode)
 	}
 	if (I.skip) {
 		opcode = ROP();
-		I.DB = 0;
 		I.PC.w.l += words[opcode] - 1;
-		PPS4_ICount -= words[opcode] + 1;
+		PPS4_ICount -= words[opcode];
 	}
 }
 
