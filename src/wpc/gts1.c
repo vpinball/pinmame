@@ -181,11 +181,11 @@ static WRITE_HANDLER(port_w) {
 					locals.ramAddr = (locals.ramAddr & 0xf0) | locals.accu;
 				if (group & 2) // ram hi address
 					locals.ramAddr = (locals.ramAddr & 0x0f) | (locals.accu << 4);
-				if (locals.ramRW && !locals.ramE2 && (group & 4)) // write to nvram
+				if (!locals.ramE2 && locals.ramRW && (group & 4)) // write to nvram
 					memory_region(GTS1_MEMREG_CPU)[0x1100 + locals.ramAddr] = locals.accu;
 			} else {
 				locals.accu = 0x0f;
-				if (group & 1) // read from nvram
+				if (!locals.ramE2 && (group & 1)) // read from nvram
 					locals.accu = memory_region(GTS1_MEMREG_CPU)[0x1100 + locals.ramAddr];
 			}
 			logerror("%03x: I/O on U2: %s %x: %x\n", activecpu_get_pc(), rw ? "SET" : "READ", group, locals.accu);
@@ -241,7 +241,7 @@ static WRITE_HANDLER(pgol_w) {
 }
 static READ_HANDLER(pgol_r) {
 	UINT8 code = 0x0f & memory_region(GTS1_MEMREG_CPU)[0x2000 + locals.pgolAddress];
-	logerror("Reading PGOL prom @ %03x: %x\n", 0x100 + locals.pgolAddress, code);
+	logerror("%03x: Reading PGOL prom @ %03x: %x\n", activecpu_get_pc(), 0x100 + locals.pgolAddress, code);
 	return code;
 }
 
