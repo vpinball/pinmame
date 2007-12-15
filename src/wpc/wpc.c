@@ -462,7 +462,7 @@ WRITE_HANDLER(wpc_w) {
 
 	  //WPC95 only controls 3 of the 5 Triacs, the other 2 are ALWAYS ON (power wired directly)
 	  //  We simulate this here by forcing the bits on
-	  if (core_gameData->gen & GENWPC_HASWPC95)
+	  if (core_gameData->gen & GEN_WPC95)
 		  data = (data & 0xe7) | 0x18;
 
      //Loop over each GI Triac Bit
@@ -716,11 +716,11 @@ static MACHINE_INIT(wpc) {
       sndbrd_0_init(SNDBRD_DCS, 1, memory_region(DCS_ROMREGION),NULL,NULL);
       break;
     case GEN_WPC95:
-    case GEN_WPC95DCS:
 	  //WPC95 only controls 3 of the 5 Triacs, the other 2 are ALWAYS ON (power wired directly)
 	  //  We simulate this here by setting the bits to simulate full intensity immediately at power up.
 	  coreGlobals.gi[CORE_MAXGI-2] = 8;
 	  coreGlobals.gi[CORE_MAXGI-1] = 8;
+    case GEN_WPC95DCS:
 	  //Sound board initialization
       sndbrd_0_init(core_gameData->gen == GEN_WPC95DCS ? SNDBRD_DCS : SNDBRD_DCS95, 1, memory_region(DCS_ROMREGION),NULL,NULL);
   }
