@@ -96,7 +96,7 @@ INLINE void execute_one(UINT8 opcode)
 	PAIR tmpPair;
 	int tmp;
 
-	PPS4_ICount--;
+	PPS4_ICount -= words[opcode];
 	if (wasLB) wasLB--;
 	if (wasLDI) wasLDI--;
 	I.skip = 0;
@@ -107,9 +107,8 @@ INLINE void execute_one(UINT8 opcode)
 			if (!wasLB) {
 				I.BX.b.h = 0;
 				I.BX.b.l = ~ARG() & 0xff;
-				I.AB = I.BX;
+				I.AB.b.l = I.BX.b.l;
 				I.DB = I.BX.b.l;
-				PPS4_ICount--;
 			} else {
 				I.PC.w.l++;
 				change_pc16(I.PC.d);
@@ -184,7 +183,7 @@ INLINE void execute_one(UINT8 opcode)
 
 		case 0x10: /* LBMX */
 			I.BX.b.l = (I.BX.b.l & 0x0f) | (I.xreg << 4);
-			I.AB = I.BX;
+			I.AB.b.l = (I.AB.b.l & 0x0f) | (I.BX.b.l & 0xf0);
 			I.DB = I.BX.b.l;
 			break;
 		case 0x11: /* LABL */
@@ -212,21 +211,21 @@ INLINE void execute_one(UINT8 opcode)
 				I.skip = 1;
 			} else
 				I.BX.b.l++;
-			I.AB = I.BX;
+			I.AB.b.l = (I.AB.b.l & 0xf0) | (I.BX.b.l & 0x0f);
 			I.DB = I.BX.b.l;
 			break;
 		case 0x18: /* XBMX */
 			tmp = I.xreg;
 			I.xreg = (I.BX.b.l >> 4) & 0x0f;
 			I.BX.b.l = (I.BX.b.l & 0x0f) | (tmp << 4);
-			I.AB = I.BX;
+			I.AB.b.l = (I.AB.b.l & 0x0f) | (I.BX.b.l & 0xf0);
 			I.DB = I.BX.b.l;
 			break;
 		case 0x19: /* XABL */
 			tmp = I.accu;
 			I.accu = I.BX.b.l & 0x0f;
 			I.BX.b.l = (I.BX.b.l & 0xf0) | tmp;
-			I.AB = I.BX;
+			I.AB.b.l = (I.AB.b.l & 0xf0) | (I.BX.b.l & 0x0f);
 			I.DB = I.BX.b.l;
 			break;
 		case 0x1a: /* XAX */
@@ -256,7 +255,7 @@ INLINE void execute_one(UINT8 opcode)
 				I.skip = 1;
 			} else
 				I.BX.b.l--;
-			I.AB = I.BX;
+			I.AB.b.l = (I.AB.b.l & 0xf0) | (I.BX.b.l & 0x0f);
 			I.DB = I.BX.b.l;
 			break;
 
@@ -295,7 +294,7 @@ INLINE void execute_one(UINT8 opcode)
 				I.skip = 1;
 			} else
 				I.BX.b.l--;
-			I.AB = I.BX;
+			I.AB.b.l = (I.AB.b.l & 0x80) | (I.BX.b.l & 0x7f);
 			I.DB = I.BX.b.l;
 			break;
 
@@ -304,7 +303,7 @@ INLINE void execute_one(UINT8 opcode)
 			I.accu = RM(0x1000 | I.AB.w.l);
 			I.BX.b.l ^= (~opcode << 4) & 0x70;
 			if (opcode != 0x37) // TODO games will hang on bonus count-down if this is uncommented
-				I.AB = I.BX;
+				I.AB.b.l = (I.AB.b.l & 0x8f) | (I.BX.b.l & 0x70);
 			I.DB = I.BX.b.l;
 			break;
 		/* EX */
@@ -313,7 +312,7 @@ INLINE void execute_one(UINT8 opcode)
 			I.accu = RM(0x1000 | I.AB.w.l);
 			WM(0x1000 | I.AB.w.l, tmp);
 			I.BX.b.l ^= (~opcode << 4) & 0x70;
-			I.AB = I.BX;
+			I.AB.b.l = (I.AB.b.l & 0x8f) | (I.BX.b.l & 0x70);
 			I.DB = I.BX.b.l;
 			break;
 
@@ -379,9 +378,8 @@ INLINE void execute_one(UINT8 opcode)
 				I.PC.w.l = opcode;
 				I.BX.b.h = 0;
 				I.BX.b.l = ~ARG() & 0xff;
-				I.AB = I.BX;
+				I.AB.b.l = I.BX.b.l;
 				I.DB = I.BX.b.l;
-				PPS4_ICount--;
 				tmpPair = I.SA;
 				I.PC = tmpPair;
 				I.SA = I.SB;
