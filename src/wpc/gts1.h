@@ -238,10 +238,12 @@
        ROM_LOAD(n1, 0x2000, 0x0400, chk1)
 
 /*-- These are only here so the game structure can be in the game file --*/
-extern MACHINE_DRIVER_EXTERN(GTS1);
+extern MACHINE_DRIVER_EXTERN(GTS1C);
+extern MACHINE_DRIVER_EXTERN(GTS1T);
 extern MACHINE_DRIVER_EXTERN(GTS1S80);
 
-#define gl_mGTS1		GTS1
+#define gl_mGTS1C		GTS1C
+#define gl_mGTS1T		GTS1T
 #define gl_mGTS1S		GTS1S80
 
 #endif /* INC_GTS1 */

@@ -37,6 +37,7 @@ static struct {
 	UINT8  accu, lampData, ramE2, ramRW, ramAddr;
 	UINT16 pgolAddress;
 	UINT32 solenoids;
+	int    tones;
 } locals;
 
 /*-------------------------------
@@ -48,7 +49,7 @@ static INTERRUPT_GEN(GTS1_vblank) {
 	if ((locals.vblankCount % GTS1_LAMPSMOOTH) == 0)
 		memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.lampMatrix));
 	/*-- solenoids --*/
-	coreGlobals.solenoids = locals.solenoids & 0xffffffe3;
+	coreGlobals.solenoids = locals.solenoids;
 
 	core_updateSw(core_getSol(17));
 }
@@ -163,7 +164,7 @@ static WRITE_HANDLER(port_w) {
 				if (ioport < 0x0c) {
 					locals.solenoids = (locals.solenoids & ~(1 << ioport)) | (!enable << ioport);
 					if (ioport > 1 && ioport < 5) { // sound
-						if (!core_gameData->hw.soundBoard)
+						if (!core_gameData->hw.soundBoard && locals.tones)
 							discrete_sound_w(1 << (ioport - 2), !enable);
 						else
 							snd_w(0, 0);
@@ -276,8 +277,18 @@ static MACHINE_INIT(GTS1) {
 		sndbrd_0_init(core_gameData->hw.soundBoard, 1, memory_region(GTS80_MEMREG_SCPU1), NULL, NULL);
 }
 
+static MACHINE_INIT(GTS1T) {
+	memset(&locals, 0, sizeof locals);
+	locals.tones = 1;
+}
+
 static MACHINE_RESET(GTS1) {
 	memset(&locals, 0, sizeof locals);
+}
+
+static MACHINE_RESET(GTS1T) {
+	memset(&locals, 0, sizeof locals);
+	locals.tones = 1;
 }
 
 static MACHINE_STOP(GTS1) {
@@ -312,8 +323,15 @@ static MACHINE_DRIVER_START(GTS1NS)
 	MDRV_SWITCH_CONV(GTS1_sw2m,GTS1_m2sw)
 MACHINE_DRIVER_END
 
-MACHINE_DRIVER_START(GTS1)
+MACHINE_DRIVER_START(GTS1C)
 	MDRV_IMPORT_FROM(GTS1NS)
+	MDRV_DIPS(24)
+	MDRV_SOUND_ADD(SAMPLES, samples_interface)
+MACHINE_DRIVER_END
+
+MACHINE_DRIVER_START(GTS1T)
+	MDRV_IMPORT_FROM(GTS1NS)
+	MDRV_CORE_INIT_RESET_STOP(GTS1T,GTS1T,GTS1)
 	MDRV_DIPS(24)
 	MDRV_SOUND_ADD(DISCRETE, b18555_discInt)
 	MDRV_SOUND_ADD(SAMPLES, samples_interface)
