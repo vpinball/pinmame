@@ -88,6 +88,7 @@ static UINT8 RM(UINT32 a)
 
 static void WM(UINT32 a, UINT8 v)
 {
+if (a > 0x10ff) logerror("%03x: Write to memory @%04x:%x\n", activecpu_get_pc(), a, v);
 	cpu_writemem16(a, v & 0x0f);
 }
 
@@ -126,7 +127,7 @@ INLINE void execute_one(UINT8 opcode)
 		case 0x04: /* LBUA */
 			I.BX.b.h = I.accu;
 			I.accu = RM(0x1000 | I.AB.w.l);
-			I.AB.b.h = I.BX.b.h;
+			I.AB = I.BX;
 			break;
 		case 0x05: /* RTN */
 			tmpPair = I.SA;
@@ -152,33 +153,41 @@ INLINE void execute_one(UINT8 opcode)
 			I.accu += I.carry + RM(0x1000 | I.AB.w.l);
 			I.skip = I.carry = I.accu >> 4;
 			I.accu &= 0x0f;
+			I.AB = I.BX;
 			break;
 		case 0x09: /* ADSK */
-			I.accu += RM(0x1000 | I.AB.w.l);
+			I.accu += I.carry + RM(0x1000 | I.AB.w.l); // This is exactly the same as ADCSK, so where's the difference?
+//			I.accu += RM(0x1000 | I.AB.w.l); // This should actually be correct, but apparently it is not!?
 			I.skip = I.carry = I.accu >> 4;
 			I.accu &= 0x0f;
+			I.AB = I.BX;
 			break;
 		case 0x0a: /* ADC */
 			I.accu += I.carry + RM(0x1000 | I.AB.w.l);
 			I.carry = I.accu >> 4;
 			I.accu &= 0x0f;
+			I.AB = I.BX;
 			break;
 		case 0x0b: /* AD */
 			I.accu += RM(0x1000 | I.AB.w.l);
 			I.carry = I.accu >> 4;
 			I.accu &= 0x0f;
+			I.AB = I.BX;
 			break;
 		case 0x0c: /* EOR */
 			I.accu ^= RM(0x1000 | I.AB.w.l);
+			I.AB = I.BX;
 			break;
 		case 0x0d: /* AND */
 			I.accu &= RM(0x1000 | I.AB.w.l);
+			I.AB = I.BX;
 			break;
 		case 0x0e: /* COMP */
 			I.accu ^= 0x0f;
 			break;
 		case 0x0f: /* OR */
 			I.accu |= RM(0x1000 | I.AB.w.l);
+			I.AB = I.BX;
 			break;
 
 		case 0x10: /* LBMX */
@@ -302,8 +311,7 @@ INLINE void execute_one(UINT8 opcode)
 		case 0x30: case 0x31: case 0x32: case 0x33: case 0x34: case 0x35: case 0x36: case 0x37:
 			I.accu = RM(0x1000 | I.AB.w.l);
 			I.BX.b.l ^= (~opcode << 4) & 0x70;
-			if (opcode != 0x37) // TODO games will hang on bonus count-down if this is uncommented
-				I.AB.b.l = (I.AB.b.l & 0x8f) | (I.BX.b.l & 0x70);
+			I.AB.b.l = (I.AB.b.l & 0x8f) | (I.BX.b.l & 0x70);
 			I.DB = I.BX.b.l;
 			break;
 		/* EX */
@@ -406,6 +414,7 @@ INLINE void execute_one(UINT8 opcode)
 			M_JMP(0x01)
 			break;
 	}
+if (I.AB.b.h) printf("%04x ", I.AB.w.l);
 	if (I.skip) {
 		opcode = ROP();
 		I.PC.w.l += words[opcode] - 1;
