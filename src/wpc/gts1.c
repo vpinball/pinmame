@@ -25,8 +25,6 @@
 #define TRACE(x) logerror x
 #endif
 
-#define GTS1_VBLANKFREQ  60 /* VBLANK frequency in HZ*/
-
 /*----------------
 /  Local variables
 /-----------------*/
@@ -80,10 +78,6 @@ static int GTS1_m2sw(int col, int row) {
   else return row*10+col-1;
 }
 
-static WRITE_HANDLER(led_w) {
-	coreGlobals.diagnosticLed = data;
-}
-
 static WRITE_HANDLER(snd_w) {
 	data = ((coreGlobals.tmpLampMatrix[0] & 0x01) << 6) // game not over
 	  | ((coreGlobals.tmpLampMatrix[0] & 0x02) << 2) // tilt
@@ -125,10 +119,9 @@ static WRITE_HANDLER(port_w) {
 	switch (device) {
 		case 0x02: // U5 RRIO A1752 - Switch matrix
 			logerror("%03x: I/O on U5, port %x: %s %x\n", activecpu_get_pc(), ioport, sos ? "SOS" : "SES", enable);
-			locals.accu = 0x0f;
 			if (ioport < 6 && !enable)
 				locals.swStrobe = ioport + 1;
-			else if (ioport > 7 && locals.swStrobe) {
+			else if (!sos && ioport > 7 && locals.swStrobe) {
 				locals.accu &= 0x07;
 				locals.accu |= (coreGlobals.swMatrix[locals.swStrobe] & (1 << (ioport - 8))) ? 0: 0x08;
 			} else
@@ -164,9 +157,9 @@ static WRITE_HANDLER(port_w) {
 				if (ioport < 0x0c) {
 					locals.solenoids = (locals.solenoids & ~(1 << ioport)) | (!enable << ioport);
 					if (ioport > 1 && ioport < 5) { // sound
-						if (!core_gameData->hw.soundBoard && locals.tones)
-							discrete_sound_w(1 << (ioport - 2), !enable);
-						else
+						if (!core_gameData->hw.soundBoard) {
+							if (locals.tones) discrete_sound_w(1 << (ioport - 2), !enable);
+						} else
 							snd_w(0, 0);
 					}
 				} else if (ioport == 0x0d)
@@ -174,7 +167,6 @@ static WRITE_HANDLER(port_w) {
 				else if (ioport == 0x0e)
 					locals.ramRW = enable;
 			}
-			locals.accu = 0x0f;
 			break;
 		case 0x06: // U2 GPIO 10696 - NVRAM in / out
 			if (rw) {
@@ -183,11 +175,13 @@ static WRITE_HANDLER(port_w) {
 				if (group & 2) // ram hi address
 					locals.ramAddr = (locals.ramAddr & 0x0f) | (locals.accu << 4);
 				if (!locals.ramE2 && locals.ramRW && (group & 4)) // write to nvram
-					memory_region(GTS1_MEMREG_CPU)[0x1100 + locals.ramAddr] = locals.accu;
+					cpu_writemem16(0x1800 + locals.ramAddr, locals.accu);
+//					memory_region(GTS1_MEMREG_CPU)[0x1800 + locals.ramAddr] = locals.accu;
 			} else {
 				locals.accu = 0x0f;
 				if (!locals.ramE2 && (group & 1)) // read from nvram
-					locals.accu = memory_region(GTS1_MEMREG_CPU)[0x1100 + locals.ramAddr];
+					locals.accu = cpu_readmem16(0x1800 + locals.ramAddr);
+//					locals.accu = memory_region(GTS1_MEMREG_CPU)[0x1800 + locals.ramAddr];
 			}
 			logerror("%03x: I/O on U2: %s %x: %x\n", activecpu_get_pc(), rw ? "SET" : "READ", group, locals.accu);
 			break;
@@ -241,18 +235,19 @@ static WRITE_HANDLER(pgol_w) {
 	else        locals.pgolAddress = (locals.pgolAddress & 0x3f0) | data;
 }
 static READ_HANDLER(pgol_r) {
-	UINT8 code = 0x0f & memory_region(GTS1_MEMREG_CPU)[0x2000 + locals.pgolAddress];
+	UINT8 code = 0x0f & cpu_readmem16(0x2000 + locals.pgolAddress);
+//	UINT8 code = 0x0f & memory_region(GTS1_MEMREG_CPU)[0x2000 + locals.pgolAddress];
 	logerror("%03x: Reading PGOL prom @ %03x: %x\n", activecpu_get_pc(), 0x100 + locals.pgolAddress, code);
 	return code;
 }
 
 /* port read / write */
-PORT_READ_START( GTS1_readport )
+static PORT_READ_START(GTS1_readport)
 	{0x000,0x0ff,	port_r},
 	{0x100,0x100,	pgol_r},
 PORT_END
 
-PORT_WRITE_START( GTS1_writeport )
+static PORT_WRITE_START(GTS1_writeport)
 	{0x000,0x0ff,	port_w},
 	{0x100,0x101,	pgol_w},
 PORT_END
@@ -263,12 +258,13 @@ PORT_END
 static MEMORY_READ_START(GTS1_readmem)
 	{0x0000,0x0fff,	MRA_ROM},
 	{0x1000,0x10ff,	MRA_RAM},
-	{0x1100,0x11ff,	MRA_RAM},
+	{0x1800,0x18ff,	MRA_RAM},
+	{0x2000,0x23ff,	MRA_ROM},
 MEMORY_END
 
 static MEMORY_WRITE_START(GTS1_writemem)
 	{0x1000,0x10ff,	MWA_RAM},
-	{0x1100,0x11ff,	MWA_RAM, &generic_nvram, &generic_nvram_size},
+	{0x1800,0x18ff,	MWA_RAM, &generic_nvram, &generic_nvram_size},
 MEMORY_END
 
 static MACHINE_INIT(GTS1) {
@@ -297,7 +293,7 @@ static MACHINE_STOP(GTS1) {
 }
 
 static int type[1] = {0};
-DISCRETE_SOUND_START(b18555_discInt)
+static DISCRETE_SOUND_START(b18555_discInt)
 	DISCRETE_INPUT(NODE_01,1,0x0007,0)
 	DISCRETE_INPUT(NODE_02,2,0x0007,0)
 	DISCRETE_INPUT(NODE_03,4,0x0007,0)
