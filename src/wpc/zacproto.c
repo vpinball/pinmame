@@ -236,6 +236,109 @@ ROM_END
 
 CORE_GAMEDEFNV(strike, "Strike", 1978, "Zaccaria", zacProto, GAME_NO_SOUND)
 
+INPUT_PORTS_START(skijump) \
+  CORE_PORTS \
+  SIM_PORTS(1) \
+  PORT_START /* 0 */ \
+    COREPORT_BIT   (0x0400, "Start Button",  KEYCODE_1) \
+    COREPORT_BIT   (0x0100, "Coin Slot #1",  KEYCODE_3) \
+    COREPORT_BIT   (0x0200, "Coin Slot #2",  KEYCODE_5) \
+    COREPORT_BITTOG(0x0002, "Coin Door",     KEYCODE_END) \
+    COREPORT_BIT   (0x0800, "Tilt/Advance",  KEYCODE_INSERT) \
+    COREPORT_BITTOG(0x0001, "Sense Input A", KEYCODE_PGDN) \
+  PORT_START /* 1 */ \
+    COREPORT_DIPNAME( 0x000f, 0x0002, "Coin slot #1 plays") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0001, "1/2" ) \
+      COREPORT_DIPSET(0x0002, "1" ) \
+      COREPORT_DIPSET(0x0003, "1 1/2" ) \
+      COREPORT_DIPSET(0x0004, "2" ) \
+      COREPORT_DIPSET(0x0005, "2 1/2" ) \
+      COREPORT_DIPSET(0x0006, "3" ) \
+      COREPORT_DIPSET(0x0007, "3 1/2" ) \
+      COREPORT_DIPSET(0x0008, "4" ) \
+      COREPORT_DIPSET(0x0009, "4 1/2" ) \
+      COREPORT_DIPSET(0x000a, "5" ) \
+      COREPORT_DIPSET(0x000b, "5 1/2" ) \
+      COREPORT_DIPSET(0x000c, "6" ) \
+      COREPORT_DIPSET(0x000d, "6 1/2" ) \
+      COREPORT_DIPSET(0x000e, "7" ) \
+      COREPORT_DIPSET(0x000f, "7 1/2" ) \
+    COREPORT_DIPNAME( 0x00f0, 0x0040, "Coin slot #2 plays") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0010, "1/2" ) \
+      COREPORT_DIPSET(0x0020, "1" ) \
+      COREPORT_DIPSET(0x0030, "1 1/2" ) \
+      COREPORT_DIPSET(0x0040, "2" ) \
+      COREPORT_DIPSET(0x0050, "2 1/2" ) \
+      COREPORT_DIPSET(0x0060, "3" ) \
+      COREPORT_DIPSET(0x0070, "3 1/2" ) \
+      COREPORT_DIPSET(0x0080, "4" ) \
+      COREPORT_DIPSET(0x0090, "4 1/2" ) \
+      COREPORT_DIPSET(0x00a0, "5" ) \
+      COREPORT_DIPSET(0x00b0, "5 1/2" ) \
+      COREPORT_DIPSET(0x00c0, "6" ) \
+      COREPORT_DIPSET(0x00d0, "6 1/2" ) \
+      COREPORT_DIPSET(0x00e0, "7" ) \
+      COREPORT_DIPSET(0x00f0, "7 1/2" ) \
+    COREPORT_DIPNAME( 0x0300, 0x0200, "Replays for beating HSTD") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0100, "1" ) \
+      COREPORT_DIPSET(0x0200, "2" ) \
+      COREPORT_DIPSET(0x0300, "3" ) \
+    COREPORT_DIPNAME( 0x0400, 0x0000, "HSTD/Match award") \
+      COREPORT_DIPSET(0x0000, "Replay" ) \
+      COREPORT_DIPSET(0x0400, "Super Bonus" ) \
+    COREPORT_DIPNAME( 0x0800, 0x0800, "Match feature") \
+      COREPORT_DIPSET(0x0000, " off" ) \
+      COREPORT_DIPSET(0x0800, " on" ) \
+    COREPORT_DIPNAME( 0x3000, 0x2000, "HSTD/Random award") \
+      COREPORT_DIPSET(0x0000, "500,000 Pts" ) \
+      COREPORT_DIPSET(0x1000, "Extra Ball" ) \
+      COREPORT_DIPSET(0x2000, "Replay" ) \
+      COREPORT_DIPSET(0x3000, "Super Bonus" ) \
+    COREPORT_DIPNAME( 0xc000, 0x8000, "Special award") \
+      COREPORT_DIPSET(0x0000, "500,000 Pts" ) \
+      COREPORT_DIPSET(0x4000, "Extra Ball" ) \
+      COREPORT_DIPSET(0x8000, "Replay" ) \
+      COREPORT_DIPSET(0xc000, "Super Bonus" ) \
+  PORT_START /* 2 */ \
+    COREPORT_DIPNAME( 0x0001, 0x0000, "Random feature") \
+      COREPORT_DIPSET(0x0000, " on" ) \
+      COREPORT_DIPSET(0x0001, " off" ) \
+    COREPORT_DIPNAME( 0x0006, 0x0004, "Balls per game") \
+      COREPORT_DIPSET(0x0000, "1" ) \
+      COREPORT_DIPSET(0x0002, "3" ) \
+      COREPORT_DIPSET(0x0004, "5" ) \
+      COREPORT_DIPSET(0x0006, "7" ) \
+    COREPORT_DIPNAME( 0x0008, 0x0000, "S20") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0008, "1" ) \
+    COREPORT_DIPNAME( 0x0010, 0x0000, "S21") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0010, "1" ) \
+    COREPORT_DIPNAME( 0x0020, 0x0000, "S22") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0020, "1" ) \
+    COREPORT_DIPNAME( 0x0040, 0x0000, "S23") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0040, "1" ) \
+    COREPORT_DIPNAME( 0x0080, 0x0000, "S24") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0080, "1" ) \
+INPUT_PORTS_END
+
+ROM_START(skijump) \
+  NORMALREGION(0x8000, REGION_CPU1) \
+    ROM_LOAD("skijump1.bin", 0x0000, 0x0400, CRC(c0c0e18c) SHA1(d28ec2541f6c2e86e5b5514c7f9e558df68be72a)) \
+    ROM_LOAD("skijump2.bin", 0x0400, 0x0400, CRC(b08aafb5) SHA1(ff6df4efa20a4461d525209a487d04896eeef29e)) \
+    ROM_LOAD("skijump3.bin", 0x0800, 0x0400, CRC(9a8731c0) SHA1(9f7aaa8c6df04b925c8beff8b426c59bc3696f50)) \
+    ROM_LOAD("skijump4.bin", 0x1400, 0x0400, CRC(fa064b51) SHA1(d4d02ca661e4084805f00247f31c0701320ab62d))
+ROM_END
+#define init_skijump init_strike
+
+CORE_GAMEDEFNV(skijump,"Ski Jump", 1978, "Zaccaria", zacProto, GAME_NO_SOUND)
+
 INPUT_PORTS_START(spacecty) \
   CORE_PORTS \
   SIM_PORTS(1) \

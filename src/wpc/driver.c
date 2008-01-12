@@ -1366,14 +1366,14 @@ DRIVER(nf,23x)          //WPC-525:  05/95 W No Fear: Dangerous Sports
 DRIVER(i500,11r)        //WPC-526:  06/95 B Indianapolis 500
 DRIVER(i500,11b)        //WPC-526:  06/95 B Indianapolis 500 (Belgium)
 DRIVER(jm,12r)          //WPC-542:  08/95 W Johnny Mnemonic
-DRIVER(wd,03r)          //WPC-544: ?09/95 B Who dunnit (0.3 R)
-DRIVER(wd,048r)         //WPC-544: ?09/95 B Who dunnit (0.48 R)
-DRIVER(wd,10r)          //WPC-544: ?11/95 B Who dunnit (1.0 R)
-DRIVER(wd,10g)          //WPC-544: ?11/95 B Who dunnit (1.0 German)
-DRIVER(wd,10f)          //WPC-544: ?11/95 B Who dunnit (1.0 French)
-DRIVER(wd,11)           //WPC-544:  04/95 B Who dunnit (1.1)
-DRIVER(wd,12)           //WPC-544:  05/95 B Who dunnit (1.2)
-DRIVER(wd,12g)          //WPC-544:  05/95 B Who dunnit (1.2 German)
+DRIVER(wd,03r)          //WPC-544:  09/95 B Who dunnit (0.3 R)
+DRIVER(wd,048r)         //WPC-544:  10/95 B Who dunnit (0.48 R)
+DRIVER(wd,10r)          //WPC-544:  11/95 B Who dunnit (1.0 R)
+DRIVER(wd,10g)          //WPC-544:  11/95 B Who dunnit (1.0 German)
+DRIVER(wd,10f)          //WPC-544:  11/95 B Who dunnit (1.0 French)
+DRIVER(wd,11)           //WPC-544: ?04/96 B Who dunnit (1.1)
+DRIVER(wd,12)           //WPC-544: ?05/96 B Who dunnit (1.2)
+DRIVER(wd,12g)          //WPC-544: ?05/96 B Who dunnit (1.2 German)
 DRIVER(jb,10r)          //WPC-551:  10/95 W Jack*Bot
 DRIVER(jb,10b)                            // Belgium/Canada
 DRIVER(congo,21)        //WPC-550:  11/95 W Congo (2.1)
@@ -1439,7 +1439,7 @@ DRIVER(tf95,12)         //WPC-648:          Test fixture WPC95
 DRIVERNV(wsports)       //01/78 Winter Sports
 DRIVERNV(hod)           //07/78 House of Diamonds
 DRIVERNV(strike)        //09/78 Strike
-                        //10/78 Ski Jump
+DRIVERNV(skijump)       //10/78 Ski Jump
 DRIVERNV(futurwld)      //10/78 Future World
 DRIVERNV(strapids)      //04/79 Shooting the Rapids
 DRIVERNV(hotwheel)      //09/79 Hot Wheels

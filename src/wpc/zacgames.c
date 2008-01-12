@@ -79,8 +79,6 @@ ZAC_ROMSTART44444(hod,		"hod_1.bin",CRC(b666af0e) SHA1(e6a96ed30733e7b011ba35d1a
 ZAC_ROMEND
 CORE_GAMEDEFNV(hod,"House of Diamonds",1978,"Zaccaria",mZAC1311,0)
 
-//10/78 Ski Jump (might use the SC/MP hardware)
-
 /*--------------------------------
 / Future World (10/78)
 /-------------------------------*/
