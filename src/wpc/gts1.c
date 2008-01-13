@@ -206,9 +206,10 @@ static WRITE_HANDLER(port_w) {
 				case 1: case 2: case 4:
 					disp_w((data >> 4) * 6 - 6 + (data & 0x0f), locals.accu);
 					break;
-				case 5: // store the HSTD value in second buffer
+				case 5: // store the HSTD value in second buffer, and also show it
 					locals.dispBuffer[6 + (data & 0x0f)] = locals.accu;
 					locals.bufferFilled = 1;
+					disp_w(12 + (data & 0x0f), locals.dispBuffer[6 + (data & 0x0f)]);
 					break;
 				case 7:
 					disp_w(24 + (data & 0x0f), locals.accu);
