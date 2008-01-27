@@ -604,7 +604,7 @@ static void speechboard_drq_w(int level)
 
 struct sp0250_interface GTS80BS_sp0250_interface =
 {
-	100,				/*Volume*/
+	75,					/*Volume*/
 	speechboard_drq_w	/*IRQ Callback*/
 };
 
@@ -1545,7 +1545,7 @@ struct DACinterface techno_6502dacInt =
 
 struct sp0250_interface techno_sp0250_interface =
 {
-	100,		/* Volume */
+	50,							/* Volume */
 	techno_speechboard_drq_w	/*IRQ Callback*/
 };
 
