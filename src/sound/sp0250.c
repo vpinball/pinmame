@@ -150,6 +150,9 @@ static void sp0250_update(int num, INT16 *output, int length)
 		}
 
 		// Physical resolution is only 7 bits, but heh
+#ifdef PINMAME
+		z0 <<= 3;
+#endif
 		output[i] = z0;
 
 		sp0250.pcounto++;
