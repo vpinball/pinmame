@@ -839,13 +839,14 @@ WRITE_HANDLER(gts80b_data_w)
 /***************************/
 //Y-CPU
 MEMORY_READ_START( GTS80BS1_readmem )
-	{ 0x0000, 0x03ff, MRA_RAM },
+	{ 0x0000, 0x07ff, MRA_RAM },
 	{ 0x6000, 0x6000, s80bs1_sound_input_r },
 	{ 0xa800, 0xa800, soundlatch_r },
+	{ 0xb000, 0xb000, s80bs_cause_dac_nmi_r }, /*Trigger D-CPU NMI*/
 	{ 0xc000, 0xffff, MRA_ROM },
 MEMORY_END
 MEMORY_WRITE_START( GTS80BS1_writemem )
-	{ 0x0000, 0x03ff, MWA_RAM },
+	{ 0x0000, 0x07ff, MWA_RAM },
 	{ 0x2000, 0x2000, sp0250_latch },	/* speech chip. The game sends strings */
 										/* of 15 bytes (clocked by 4000). The chip also */
 										/* checks a DATA REQUEST bit in 6000. */
@@ -853,18 +854,17 @@ MEMORY_WRITE_START( GTS80BS1_writemem )
 	{ 0x8000, 0x8000, s80bs_ay8910_latch_w },
 	{ 0xa000, 0xa000, s80bs_nmi_rate_w },	   /* set Y-CPU NMI rate */
 	{ 0xb000, 0xb000, s80bs_cause_dac_nmi_w }, /*Trigger D-CPU NMI*/
-	{ 0xc000, 0xffff, MWA_ROM },
 MEMORY_END
 //D-CPU
 MEMORY_READ_START( GTS80BS1_readmem2 )
-	{ 0x0000, 0x03ff, MRA_RAM },
+	{ 0x0000, 0x07ff, MRA_RAM },
 	{ 0x8000, 0x8000, soundlatch_r },
 	{ 0xe000, 0xffff, MRA_ROM },
 MEMORY_END
 MEMORY_WRITE_START( GTS80BS1_writemem2 )
-	{ 0x0000, 0x03ff, MWA_RAM },
-	{ 0x4000, 0x4001, DAC_0_data_w },	/*Not sure if this shouldn't use s80bs_dac_vol_w & s80bs_dac_data_w*/
-	{ 0xe000, 0xffff, MWA_ROM },
+	{ 0x0000, 0x07ff, MWA_RAM },
+	{ 0x4000, 0x4000, s80bs_dac_vol_w },
+	{ 0x4001, 0x4001, s80bs_dac_data_w},
 MEMORY_END
 /***************************/
 /* GENERATION 2 MEMORY MAP */
