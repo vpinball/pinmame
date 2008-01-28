@@ -604,7 +604,7 @@ static void speechboard_drq_w(int level)
 
 struct sp0250_interface GTS80BS_sp0250_interface =
 {
-	75,					/*Volume*/
+	50,					/*Volume*/
 	speechboard_drq_w	/*IRQ Callback*/
 };
 
