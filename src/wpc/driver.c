@@ -399,26 +399,43 @@ DRIVERNV(astannie)      //S1-442    12/80 Asteroid Annie and the Aliens
 DRIVERNV(sys1test)      //S1-T      ??    System1 test prom
 //System 80
 DRIVERNV(spidermn)      //S80-653:  05/80 The Amazing Spider-man
-DRIVERNV(circus)        //S80-654:  06/80 Circus
+DRIVERNV(spiderm7)      //          01/08 The Amazing Spider-man (7-digit conversion)
 DRIVERNV(panthera)      //S80-652:  06/80 Panthera
+DRIVERNV(panther7)      //          01/08 Panthera (7-digit conversion)
+DRIVERNV(circus)        //S80-654:  06/80 Circus
+DRIVERNV(circus7)       //          01/08 Circus (7-digit conversion)
 DRIVERNV(cntforce)      //S80-656:  08/80 Counterforce
+DRIVERNV(cntforc7)      //          01/08 Counterforce (7-digit conversion)
 DRIVERNV(starrace)      //S80-657:  10/80 Star Race
+DRIVERNV(starrac7)      //          01/08 Star Race (7-digit conversion)
 DRIVERNV(jamesb)        //S80-658:  10/80 James Bond (Timed Play)
+DRIVERNV(jamesb7)       //          01/08 James Bond (Timed Play, 7-digit conversion)
 DRIVERNV(jamesb2)       //                James Bond (3/5 Ball)
+DRIVERNV(jamesb7b)      //          01/08 James Bond (3/5 Ball, 7-digit conversion)
 DRIVERNV(timeline)      //S80-659:  10/80 Time Line
+DRIVERNV(timelin7)      //          01/08 Time Line (7-digit conversion)
 DRIVERNV(forceii)       //S80-661:  02/81 Force II
+DRIVERNV(forceii7)      //          01/08 Force II, 7-digit conversion)
 DRIVERNV(pnkpnthr)      //S80-664:  03/81 Pink Panther
+DRIVERNV(pnkpntr7)      //          01/08 Pink Panther, 7-digit conversion)
 DRIVERNV(mars)          //S80-666:  03/81 Mars God of War
+DRIVERNV(mars7)         //          01/08 Mars God of War, 7-digit conversion)
 DRIVERNV(vlcno_ax)      //S80-667:  09/81 Volcano (Sound & Speech)
+DRIVERNV(vlcno_a7)      //          01/08 Volcano (Sound & Speech, 7-digit conversion)
 DRIVERNV(vlcno_1b)      //                Volcano (Sound Only)
+DRIVERNV(vlcno_b7)      //          01/08 Volcano (Sound Only, 7-digit conversion)
 DRIVERNV(vlcno_1a)      //                Volcano (Sound Only, alternate version)
 DRIVERNV(blckhole)      //S80-668:  10/81 Black Hole (Sound & Speech, Rev 4)
+DRIVERNV(blkhole7)      //          01/08 Black Hole (Sound & Speech, Rev 4, 7-digit conversion)
 DRIVERNV(blkhole2)      //                Black Hole (Sound & Speech, Rev 2)
 DRIVERNV(blkholea)      //                Black Hole (Sound Only)
+DRIVERNV(blkhol7s)      //          01/08 Black Hole (Sound Only, 7-digit conversion)
                         //          ??/81 Night Hawk (never produced, by Premier, before the merger)
-DRIVERNV(eclipse)       //S80-671:  ??/82 Eclipse
 DRIVERNV(hh)            //S80-669:  06/82 Haunted House (Rev 2)
+DRIVERNV(hh7)           //          01/08 Haunted House (Rev 2, 7-digit conversion)
 DRIVERNV(hh_1)          //                Haunted House (Rev 1)
+DRIVERNV(eclipse)       //S80-671:  ??/82 Eclipse
+DRIVERNV(eclipse7)      //          01/08 Eclipse (7-digit conversion)
 DRIVERNV(s80tst)        //S80: Text Fixture
 //System 80a
 DRIVERNV(dvlsdre)       //S80a-670: 08/82 Devil's Dare (Sound & Speech)
