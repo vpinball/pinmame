@@ -944,8 +944,8 @@ MEMORY_END
 /-----------------*/
 static struct DACinterface GTS80BS_dacInt =
 {
-  2,			/* 2 Chips - but it seems we only access 1, except for BoneBusters */
- {50,50}		/* Volume */
+	2,			/* 2 Chips - but it seems we only access 1, except for BoneBusters */
+	{50,50}		/* Volume */
 };
 
 static struct AY8910interface GTS80BS_ay8910Int = {
@@ -1551,13 +1551,14 @@ struct sp0250_interface techno_sp0250_interface =
 
 //6502 #1 CPU
 MEMORY_READ_START( m6502_readmem )
-  { 0x0000, 0x03ff, MRA_RAM },
+  { 0x0000, 0x07ff, MRA_RAM },
   { 0x6000, 0x6000, techno_sound_input_r },
   { 0xa800, 0xa800, techno_snd_r },
+  { 0xb000, 0xb000, techno_cause_dac_nmi_r },	/* Trigger D-CPU NMI */
   { 0xe000, 0xffff, MRA_ROM },
 MEMORY_END
 MEMORY_WRITE_START( m6502_writemem )
-  { 0x0000, 0x03ff, MWA_RAM },
+  { 0x0000, 0x07ff, MWA_RAM },
   { 0x2000, 0x2000, techno_sp0250_latch },	/* speech chip. The game sends strings */
 											/* of 15 bytes (clocked by 4000). The chip also */
 											/* checks a DATA REQUEST bit in 6000. */
@@ -1565,20 +1566,18 @@ MEMORY_WRITE_START( m6502_writemem )
   { 0x8000, 0x8000, techno_ay8910_latch_w },
   { 0xa000, 0xa000, techno_nmi_rate_w },	/* set Y-CPU NMI rate */
   { 0xb000, 0xb000, techno_cause_dac_nmi_w },	/* Trigger D-CPU NMI */
-  { 0xe000, 0xffff, MWA_ROM },
 MEMORY_END
 
 //6502 #2 CPU
 MEMORY_READ_START( m6502_b_readmem )
-  { 0x0000, 0x03ff, MRA_RAM },
+  { 0x0000, 0x07ff, MRA_RAM },
   { 0x8000, 0x8000, techno_b_snd_r },
   { 0xe000, 0xffff, MRA_ROM },
 MEMORY_END
 MEMORY_WRITE_START( m6502_b_writemem )
-  { 0x0000, 0x03ff, MWA_RAM },
+  { 0x0000, 0x07ff, MWA_RAM },
   { 0x4000, 0x4000, techno_dac_vol_w},
   { 0x4001, 0x4001, techno_dac_data_w},
-  { 0xe000, 0xffff, MWA_ROM },
 MEMORY_END
 
 //TMS7000 CPU
@@ -1587,7 +1586,6 @@ static MEMORY_READ_START(tms_readmem)
   { 0x8000, 0xffff, MRA_ROM },
 MEMORY_END
 static MEMORY_WRITE_START(tms_writemem)
-  { 0x0000, 0x7fff, MWA_ROM },
   { 0x8000, 0x8000, DAC_TMS_w },		/* DAC */
 MEMORY_END
 
