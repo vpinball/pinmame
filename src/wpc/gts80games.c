@@ -194,7 +194,7 @@ GTS80_ROMEND
 #define input_ports_starrace input_ports_gts80
 CORE_CLONEDEFNV(starrace,gts80s,"Star Race",1980,"Gottlieb",gl_mGTS80S,0)
 
-INIT_S80D7(starrac7, dispNumeric1, SNDBRD_GTS80S)
+INIT_S80D7(starrac7, dispNumeric3, SNDBRD_GTS80S)
 GTS80_2_ROMSTART ("657-1.cpu",    CRC(27081372) SHA1(2d9cd81ffa44c389c4895043fa1e93b899544158),
                   "657-2.cpu",    CRC(c56e31c8) SHA1(1e129fb6309e015a16f2bdb1e389cbc85d1919a7))
 GTS80S1K_ROMSTART("657.snd",      CRC(3a1d3995) SHA1(6f0bdb34c4fa11d5f8ecbb98ae55bafeb5d62c9e),
