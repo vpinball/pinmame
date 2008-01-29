@@ -199,9 +199,7 @@
 #define GTS80_VIDCPU	2
 
 /*-- GTS80/GTS80A Main CPU regions and ROM, 2 game PROM version --*/
-#define GTS80_2_ROMSTART(name, n1, chk1, n2, chk2, n3, chk3, n4, chk4) \
-  ROM_START(name) \
-    NORMALREGION(0x10000, GTS80_MEMREG_CPU) \
+#define GTS80_2_ROMSTART(n1, chk1, n2, chk2) \
       ROM_LOAD(n1, 0x1000, 0x0200, chk1) \
         ROM_RELOAD(0x1400, 0x0200)       \
         ROM_RELOAD(0x5000, 0x0200)       \
@@ -217,32 +215,14 @@
         ROM_RELOAD(0x9000, 0x0200)       \
         ROM_RELOAD(0x9600, 0x0200)       \
         ROM_RELOAD(0xd000, 0x0200)       \
-        ROM_RELOAD(0xd600, 0x0200)       \
-      ROM_LOAD(n3, 0x2000, 0x1000, chk3) \
-        ROM_RELOAD(0x6000, 0x1000)       \
-        ROM_RELOAD(0xa000, 0x1000)       \
-        ROM_RELOAD(0xe000, 0x1000)       \
-      ROM_LOAD(n4, 0x3000, 0x1000, chk4) \
-        ROM_RELOAD(0x7000, 0x1000)       \
-        ROM_RELOAD(0xb000, 0x1000)       \
-        ROM_RELOAD(0xf000, 0x1000)
+        ROM_RELOAD(0xd600, 0x0200)
 
 /*-- GTS80/GTS80A Main CPU regions and ROM, 1 game PROM version --*/
-#define GTS80_1_ROMSTART(name, n1, chk1, n2, chk2, n3, chk3) \
-  ROM_START(name) \
-    NORMALREGION(0x10000, GTS80_MEMREG_CPU) \
+#define GTS80_1_ROMSTART(n1, chk1) \
       ROM_LOAD(n1, 0x1000, 0x0800, chk1) \
         ROM_RELOAD(0x5000, 0x0800)       \
         ROM_RELOAD(0x9000, 0x0800)       \
-        ROM_RELOAD(0xd000, 0x0800)       \
-      ROM_LOAD(n2, 0x2000, 0x1000, chk2) \
-        ROM_RELOAD(0x6000, 0x1000)       \
-        ROM_RELOAD(0xa000, 0x1000)       \
-        ROM_RELOAD(0xe000, 0x1000)       \
-      ROM_LOAD(n3, 0x3000, 0x1000, chk3) \
-        ROM_RELOAD(0x7000, 0x1000)       \
-        ROM_RELOAD(0xb000, 0x1000)       \
-        ROM_RELOAD(0xf000, 0x1000)
+        ROM_RELOAD(0xd000, 0x0800)
 
 /*-- Video roms for Caveman, they are copied to their right place by the driver --*/
 #define VIDEO_ROMSTART(n1,chk1,n2,chk2,n3,chk3,n4,chk4,n5,chk5,n6,chk6,n7,chk7,n8,chk8) \
