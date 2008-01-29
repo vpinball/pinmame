@@ -103,13 +103,12 @@ CORE_CLONEDEFNV(lca2,lca,"Lights, Camera, Action (rev.2)",1989,"Gottlieb",mGTS3S
 /*-------------------------------------------------------------------
 / Bell Ringer
 /-------------------------------------------------------------------*/
-INITGAME(bellring, ALPHA, FLIP_SW(FLIP_L), 1, SNDBRD_GTS3, 4)
-//INITGAME(bellring, ALPHA, FLIP_SW(FLIP_L), 3/*?*/, SNDBRD_NONE, 5)
+INITGAME(bellring, ALPHA, FLIP_SW(FLIP_L), 1, SNDBRD_GTS80B, 4)
 GTS3ROMSTART(bellring,	"br_gprom.bin",CRC(a9a59b36) SHA1(ca6d0e54a5c85ef72485975c632660831a3b8c82))
 GTS3SOUND3232(			"br_yrom1.bin",CRC(d5aab379) SHA1(b3995f8aa2e54f91f2a0fd010c807fbfbf9ae847),
 						"br_drom1.bin",CRC(99f38229) SHA1(f63d743e63e88728e8d53320b21b2fda1b6385f8))
 GTS3_ROMEND
-CORE_GAMEDEFNV(bellring,"Bell Ringer",1990,"Gottlieb",mGTS3S80B,0)
+CORE_GAMEDEFNV(bellring,"Bell Ringer",1990,"Gottlieb",mGTS3S80B3,0)
 
 /*-------------------------------------------------------------------
 / Silver Slugger (#722)
@@ -159,12 +158,12 @@ CORE_GAMEDEFNV(tfight,"Title Fight",1990,"Gottlieb",mGTS3S,0)
 /*-------------------------------------------------------------------
 / Nudge It (N102)
 /-------------------------------------------------------------------*/
-INITGAME(nudgeit, ALPHA, FLIP_SW(FLIP_L), 1, SNDBRD_GTS3, 4)
+INITGAME(nudgeit, ALPHA, FLIP_SW(FLIP_L), 1, SNDBRD_GTS80B, 4)
 GTS3ROMSTART(nudgeit,	"gprom.bin",CRC(3d9e0309) SHA1(caaa28482e7f260668aa05b39b551acb8e4cc41a))
 GTS3SOUND3232(			"yrom1.bin",CRC(65fc2e60) SHA1(6377c220753d9e4b5c76d445056409526d95772f),
 						"drom1.bin",CRC(ae0c4b1d) SHA1(c8aa409c9b54fd8ecf70eb2926f4e98fc5eb11fe))
 GTS3_ROMEND
-CORE_GAMEDEFNV(nudgeit,"Nudge It",1990,"Gottlieb",mGTS3S80B,0)
+CORE_GAMEDEFNV(nudgeit,"Nudge It",1990,"Gottlieb",mGTS3S80B2,0)
 
 /*-------------------------------------------------------------------
 / Car Hop (#725)

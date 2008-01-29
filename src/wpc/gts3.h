@@ -192,7 +192,8 @@ extern PINMAME_VIDEO_UPDATE(gts3_dmd128x32a);
 /*-- These are only here so the game structure can be in the game file --*/
 extern MACHINE_DRIVER_EXTERN(gts3_1a);
 extern MACHINE_DRIVER_EXTERN(gts3_1as);
-extern MACHINE_DRIVER_EXTERN(gts3_1as80b);
+extern MACHINE_DRIVER_EXTERN(gts3_1as80b2);
+extern MACHINE_DRIVER_EXTERN(gts3_1as80b3);
 extern MACHINE_DRIVER_EXTERN(gts3_1b);
 extern MACHINE_DRIVER_EXTERN(gts3_1bs);
 extern MACHINE_DRIVER_EXTERN(gts3_2);
@@ -201,7 +202,8 @@ extern MACHINE_DRIVER_EXTERN(gts3_22);
 
 #define mGTS3         gts3_1a
 #define mGTS3S        gts3_1as
-#define mGTS3S80B     gts3_1as80b
+#define mGTS3S80B2    gts3_1as80b2
+#define mGTS3S80B3    gts3_1as80b3
 #define mGTS3B        gts3_1b
 #define mGTS3BS       gts3_1bs
 #define mGTS3DMDS     gts3_2
