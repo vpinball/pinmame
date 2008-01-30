@@ -800,8 +800,8 @@ static void OKIM6295_data_w(int num, int data)
 		{
 			if (temp & 1)
 			{
-				logerror("OKIM6295:%d mute voice #%x\n", num, i);
 				struct ADPCMVoice *voice = &adpcm[num * OKIM6295_VOICES + i];
+				logerror("OKIM6295:%d mute voice #%x\n", num, i);
 
 				/* update the stream, then turn it off */
 				stream_update(voice->stream, 0);
