@@ -22,6 +22,7 @@ const struct GameDriver *test_drivers[] = { 0 };
 #else /* DRIVER_RECURSIVE */
 
 DRIVERNV(st_game)       //Unknown game running on old Stern hardware
+DRIVERNV(mac_zois)      // 05/03 machinaZOIS Virtual Training Center
 
 // --------------------
 // ALLIED LEISURE INC.
