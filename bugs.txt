@@ -1,4 +1,4 @@
-******  As of Version 1.55 (March 30, 2007) ******
+******  As of Version 1.58 (February 1, 2008) ******
 
 Bugs in Pinmame that we are aware of:
 -------------------------------------
@@ -15,18 +15,14 @@ Bugs in Pinmame that we are aware of:
  #3) The WPC printer function is only tested with default settings.
      The printout will probably not work with other settings.
 
- #4) Some games have no sound emulated, but the core prevents us from using the GAME_NO_SOUND flag.
-
- #5) The name and year for each game were taken from the Internet Pinball Database
+ #4) The name and year for each game were taken from the Internet Pinball Database
      (http://www.lysator.liu.se/pinball/IPD), and may not be 100% accurate!
 
- #6) Occasional pops/clicks on Capcom sound
+ #5) Occasional pops/clicks on Capcom sound
 
- #7) Data East/Sega/Stern DMD timing is not 100% accurate.
+ #6) Data East/Sega/Stern/Gottlieb DMD timing is not 100% accurate.
 
- #8) Gottlieb System 3 percussive sounds might still have some timing issues
+ #7) Sound gets cut off in Alvin G games sometimes, and some weird notes in World Tour occasionally
 
- #9) Sound gets cut off in Alvin G games sometimes, and some weird notes in World Tour occasionally
-
-#10) Slugfest will work with "pinmame -cheat sf_l1". Same goes for Theatre Of Magic home version (tom_14h).
+ #8) Slugfest will work with "pinmame -cheat sf_l1". Same goes for Theatre Of Magic home version (tom_14h).
      Alternately, check the "skip pinball startup test" in vpm.

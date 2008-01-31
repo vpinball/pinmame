@@ -1,8 +1,8 @@
 **************************************************************************************
                                PinMAME
               (Pinball Multiple Arcade Machine Emulator)
-                             Version 1.56
-                           (August 19, 2007)
+                             Version 1.58
+                          (February 1, 2008)
                         http://www.pinmame.com
 **************************************************************************************
 
@@ -20,14 +20,14 @@ What is it?
   Data East AlphaNumeric System, Data East 128x16 DMD, Data East 128x32 DMD,
   Data East/Sega 192x64 DMD, Sega/Stern Whitestar System, Stern MPU-100, Stern MPU-200,
   Bally MPU-17 & MPU-35, Bally Video/Pinball, Bally 6803,
-  Gottlieb System 80, 80a, 80b, System 3, Hankin, Gameplan MPU-1 & MPU-2, Atari,
+  Gottlieb System 1, 80, 80a, 80b, System 3, Hankin, Gameplan MPU-1 & MPU-2, Atari,
   Zaccaria, Taito of Brazil, Midway, Capcom, Alvin G. and Co., Technoplay, Mr.Game, Spinball,
-  (Nuova Bell), Inder, Juegos Populares, LTD, Peyper, Sonic, Sleic, Playmatic, NSM,
-  Allied Leisure.
+  (Nuova Bell), Inder, Juegos Populares, LTD, Peyper, Sonic, Sleic, Playmatic, NSM.
 
   *Note: Emulation is not 100% working on all hardware.
 
   PinMAME is built as an add-on to the MAME 0.76 Source Code.
+  Some of the original code was altered, and fixes from later MAME versions were applied.
 
   All the MAME readme file with all disclaimers, credits and instructions are included for
   info on using MAME related functions.
@@ -66,6 +66,7 @@ Games supported
   Bally MPU-17: All games from Freedom (1977) to Black Jack (1978)
   Bally MPU-35: All games from Lost World (1978) to Cybernaut (1985)
   Bally Video/Pinball: Baby Pacman (1982) and Granny & The Gators (1984)
+  Gottlieb System 1: All games from Cleopatra (1977) to Asteroid Annie and the Aliens (1980)
   Gottlieb System 80: All games from Spiderman (1980) to Haunted House (1982)
   Gottlieb System 80a: All games from Devil's Dare (1982) to Ice Fever (1985)
   Gottlieb System 80b: All games from Triple Play (1985) to BoneBusters (1989)
@@ -73,12 +74,12 @@ Games supported
   Hankin Pinball: All games from FJ Holden (1978) to Orbit 1 (1981)
   Game Plan Pinball: All games from Rio (1978) to Cyclopes (1985)
   Atari Pinball: All games from Atarians (1976) to Road Runner (1979)
-  Zaccaria Pinball: All games from Winter Sports (1978) to New Star's Phoenix (1987), except Ski Jump (1978)
+  Zaccaria Pinball: All games from Winter Sports (1978) to New Star's Phoenix (1987)
   Taito Pinball: All that's available... games between 1980 and 1985.
   Midway Pinball: Rotation VIII (1978).
   Capcom Pinball: All games from Pinball Magic (1995) to Kingpin (1996)
   Alvin G. and Co: All games from World Tour (1992) to Pistol Poker (1993)
-  Technoplay: Scramble (1987)
+  Tecnoplay: Scramble, X-Force (both 1987)
   Mr. Game: Dakar, Motor Show (1988), World Cup '90 (1990)
   Spinball: Mach 2 (1995), Jolly Park (1996)
   Nuova Bell: all available Bally clones, also Future Queen (1987), and F1 Grand Prix (1987)

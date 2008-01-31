@@ -1,8 +1,80 @@
+Version 1.58 (February 1, 2008) - "The complete series"
+------------------------------------------------------------------------------
+This is more of a bugfix release. It does not implement any new features
+besides the inclusion of Zaccaria's "Ski Jump", which makes this series
+complete (with the exception of sound).
+
+The first and probably most important issue is the bug fix for the PPS-4/2
+CPU used on Gottlieb System 1 games. Version 1.57 had a bug left that kept
+the bonus from accumulating properly (or counting down, for that matter),
+and another "bug" that kept the game diagnostics / adjustment menu from
+progressing through its items. Actually if you look at the data sheets for
+the PPS-4, it seems the emulation was *correct* in 1.57 and now we had to
+deliberately introduce a bug so it works!?
+Well, never mind now - as long as it plays fine. :)
+
+Next, we are quite worried by the fact that many Gottlieb / Premier games
+have sounds missing, so some effort was put into getting these to work.
+Most notably, all of the drum sounds were missing from System80B games
+of the first generation. Well, not anymore now! ;)
+Also, the general output volume of the SP0250 sound/speech chip was too low
+so far, making most bass sounds almost inaudible, so we cranked that up!
+Finally, Gerrit turned off the channel suppression feature of the OKI6295
+ADPCM chip, so now essentially every started sound will play until it ends,
+or until it's cut short by another sound playing on the same voice channel.
+This, of course, is a step back in terms of hardware accuracy, so it won't
+last long... it was done as a quick fix to show the hardware is capable of
+producing more sounds than in did in previous releases, and maybe to find
+a way of getting it right someday.
+
+For all 6-digit display haters out there, we added support for Oliver's
+7-digit Gottlieb conversion roms. Doing so, Gerrit also extended the "bios"
+system to these games: you can now keep the System80/A system roms common to
+all of those games in the gts80 / gts80a sets, without the need to copy them
+into each and every Gottlieb rom set. Same goes for the sound PROM used on
+early System80 and late System80A games: these may go into gts80s / gts80as,
+who in turn inherit from gts80 / gts80a.
+Sounds complicated? Well - it's not.
+
+However, as MAME architecture does not support multiple inheritance for games,
+this produces one little problem: some Gottlieb games (using the sound and
+speech board) have sound-only clones with completely different roms.
+These three games (Volcano, Black Hole, and Devil's Dare) need to be split
+into different sets now, as they don't have a single rom file in common.
+Also, the new 7-digit common roms must go into their own sets (eg. spiderm7)
+because those game inherit from their 6-digit parents, and thus can't inherit
+from a common set with support for the 7-digit system roms.
+Sorry for the inconvenience but it's nothing we can help!
+This sounds even more complicated? Well er - maybe a little. ;)
+
+So, have fun now and enjoy the most finite state of PinMAME there ever was.
+
+Changes:
+
+*** CORE/CPU ***
+Fixed two bugs in PPS-4 emulation (corrects Gottlieb System 1 games)
+Enabled missing drum sounds on Gottlieb System 80B games
+Increased general output volume of the SP0250 sound/speech chip
+Disabled muting option for OKI 6295 chip to produce more output in GTS3 games
+Fixed GI support for all five GI strings on Who Dunnit and JackBot
+Enabled sound solenoid outputs on Gottlieb System 1
+Removed tones from Cleopatra, Sinbad, and Joker Poker (those use chimes)
+
+*** ROM SUPPORT ***
+Added Zaccaria Ski Jump
+Added Okaegi's 7-digit conversions of Gottlieb System80 games
+
+
 Version 1.57 (December 2, 2007) - "System 1"
 ------------------------------------------------------------------------------
-The year is 1987, and NASA launches the last of America's deep space probes.  In a freak mishap, Ranger 3 and its pilot, Captain William "Buck" Rogers are blown out of their trajectory into an orbit which freezes his life support systems and returns Buck Rogers to Earth 500 years later.
+The year is 1987, and NASA launches the last of America's deep space probes.
+In a freak mishap, Ranger 3 and its pilot, Captain William "Buck" Rogers
+are blown out of their trajectory into an orbit which freezes his life support
+systems and returns Buck Rogers to Earth 500 years later.
 
-We had begun to think it would take 500 years to emulate Gottlieb System 1...but thanks to an anonymous MAACA member, we finally got good reads of the bios chips and they are now emulated.
+We had begun to think it would take 500 years to emulate Gottlieb System 1...
+but thanks to an anonymous MAACA member, we finally got good reads of the bios
+chips and they are now emulated.
 Get our your cards and backgammon boards, lucky Buck is back!
 
 1.57 - Changes Twiki says you don't want to know
@@ -41,7 +113,7 @@ In the same vein, you can now run all the GamePlan model 110 games (Foxy Lady
 to Chuck-A-Luck) on the same set of roms, as a driver called "gp_110".
 
 This method is based on MAME's "bios" support for some games like NEO-GEO,
-weher each game is using a shared set of boot code. The difference on PinMAME
+where each game is using a shared set of boot code. The difference on PinMAME
 is just that there simply aren't any additional roms for the pinball games. ;)
 
 Also thanks to JohnnyPop for providing the Titanic & Monopoly redemption roms.
@@ -1357,6 +1429,7 @@ New Features
 
 -DCS Sound Speedups for *ALL DCS* Games!!!!
  [WPCMAME Author]
+
 
 -Pulsed Solenoid Support
  [Tom Haukap]
