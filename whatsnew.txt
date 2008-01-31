@@ -42,10 +42,9 @@ speech board) have sound-only clones with completely different roms.
 These three games (Volcano, Black Hole, and Devil's Dare) need to be split
 into different sets now, as they don't have a single rom file in common.
 Also, the new 7-digit common roms must go into their own sets (eg. spiderm7)
-because those game inherit from their 6-digit parents, and thus can't inherit
-from a common set with support for the 7-digit system roms.
-Sorry for the inconvenience but it's nothing we can help!
-This sounds even more complicated? Well er - maybe a little. ;)
+because those games already inherit from their 6-digit parents, and thus can't
+inherit from a common set with support for the 7-digit system roms anymore.
+This sounds even more complicated? Erm - well, maybe a little. ;)
 
 So, have fun now and enjoy the most finite state of PinMAME there ever was.
 
@@ -63,6 +62,7 @@ Removed tones from Cleopatra, Sinbad, and Joker Poker (those use chimes)
 *** ROM SUPPORT ***
 Added Zaccaria Ski Jump
 Added Okaegi's 7-digit conversions of Gottlieb System80 games
+Added the "machinaZOIS" clone of ShaqAttaq, created by a Czech programmer team
 
 
 Version 1.57 (December 2, 2007) - "System 1"

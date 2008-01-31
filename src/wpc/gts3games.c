@@ -610,3 +610,18 @@ GTS3SOUNDX(				"yrom1.bin",NO_DUMP,
 						"arom2.bin",NO_DUMP)
 GTS3_ROMEND
 CORE_GAMEDEFNV(brooks,"Brooks & Dunn (Prototype)",1996,"Gottlieb",mGTS3DMDSA, GAME_NO_SOUND)
+
+// other manufacturers
+
+/*-------------------------------------------------------------------
+/ machinaZOIS by www.aksioma.org (Shaq Attaq conversion)
+/-------------------------------------------------------------------*/
+INITGAME2(mac_zois, dispShaq, FLIP8182, 4, SNDBRD_GTS3, 4)
+GTS3ROMSTART(mac_zois,	"gprom.bin", CRC(7a967fd1) SHA1(c06e2aad9452150d92cfd3ba37b8e4a932cf4324))
+GTS3_DMD512_ROMSTART(	"dsprom.bin",CRC(3b63f9c6) SHA1(b06ea3b8f7d3c4b22a8bbc687698654366c35f22))
+GTS3SOUND32512256(		"yrom1.bin",CRC(e81e2928) SHA1(4bfe57efa99bb762e4de6c7e88e79b8c5ff57626),
+						"drom1.bin",CRC(16a03261) SHA1(25f5a3d32d2ec80766381106445fd624360fea78),
+						"arom1.bin",CRC(68ceeb43) SHA1(debe5a0683b1806c9813ba89a6438afb3eecb188),
+						"arom2.bin",CRC(7dabc8ca) SHA1(ca6dc59891222f8534b0a2de8cd29c52e5b33efc))
+GTS3_ROMEND
+CORE_CLONEDEFNV(mac_zois,shaqattq,"machinaZOIS Virtual Training Center",2003,"Aksioma",mGTS3DMDS, 0)
