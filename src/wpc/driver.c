@@ -877,6 +877,11 @@ DRIVER  (harl,f30)      //Whitestar: 10/04 Harley Davidson (3.00 France)
 DRIVER  (harl,g30)      //Whitestar: 10/04 Harley Davidson (3.00 Germany)
 DRIVER  (harl,i30)      //Whitestar: 10/04 Harley Davidson (3.00 Italy)
 DRIVER  (harl,l30)      //Whitestar: 10/04 Harley Davidson (3.00 Spain)
+DRIVERNV(sopranos)      //Whitestar: 02/05 The Sopranos
+DRIVERNV(sopranog)      //Whitestar: 02/05 The Sopranos (Germany)
+DRIVERNV(sopranol)      //Whitestar: 02/05 The Sopranos (Spain)
+DRIVERNV(sopranof)      //Whitestar: 02/05 The Sopranos (France)
+DRIVERNV(sopranoi)      //Whitestar: 02/05 The Sopranos (Italy)
 
 #ifdef INCLUDE_NEW_STERN
 
@@ -896,11 +901,6 @@ DRIVERNV(simpnew)
 DRIVERNV(t3new)
 #endif /* TEST_NEW_SOUND */
 
-DRIVERNV(sopranos)      //Whitestar: 02/05 The Sopranos
-DRIVERNV(sopranog)      //Whitestar: 02/05 The Sopranos (Germany)
-DRIVERNV(sopranol)      //Whitestar: 02/05 The Sopranos (Spain)
-DRIVERNV(sopranof)      //Whitestar: 02/05 The Sopranos (France)
-DRIVERNV(sopranoi)      //Whitestar: 02/05 The Sopranos (Italy)
 DRIVERNV(nascar)		//Whitestar: 05/05 Nascar
 DRIVERNV(nascarl)		//Whitestar: 05/05 Nascar (Spain)
 DRIVERNV(gprix)			//Whitestar: 05/05 Grand Prix
