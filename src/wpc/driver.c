@@ -1005,6 +1005,11 @@ DRIVERNV(wof_300f)   		//S.A.M: 11/07 Wheel of Fortune - V3.00   (French)
 DRIVERNV(wof_300g)   		//S.A.M: 11/07 Wheel of Fortune - V3.00   (German)
 DRIVERNV(wof_300i)   		//S.A.M: 11/07 Wheel of Fortune - V3.00   (Italian)
 DRIVERNV(wof_300l)   		//S.A.M: 11/07 Wheel of Fortune - V3.00   (Spanish)
+DRIVERNV(wof_400)   		//S.A.M: 11/07 Wheel of Fortune - V4.00   (English)
+DRIVERNV(wof_400f)   		//S.A.M: 11/07 Wheel of Fortune - V4.00   (French)
+DRIVERNV(wof_400g)   		//S.A.M: 11/07 Wheel of Fortune - V4.00   (German)
+DRIVERNV(wof_400i)   		//S.A.M: 11/07 Wheel of Fortune - V4.00   (Italian)
+DRIVERNV(wof_400l)   		//S.A.M: 11/07 Wheel of Fortune - V4.00   (Spanish)
 #endif
 
 #endif /* INCLUDE_NEW_STERN */
