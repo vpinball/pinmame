@@ -1096,8 +1096,8 @@ static WRITE_HANDLER(sound_control_w)
 		OKIM6295_set_bank_base(0, GTS80BS_locals.rom_cs*0x80000);
 		logerror("Setting to rom #%x\n",GTS80BS_locals.rom_cs);
 
-		//D4 = 6295 - SS (Data = 1 = 8Khz; Data = 0 = 6.4Khz frequency)
-		OKIM6295_set_frequency(0,((GTS80BS_locals.u2_latch>>4)&1)?8000:6400);
+		//D4 = 6295 - SS (Data = 1 = 8Khz; Data = 0 = 6 kHz (not 6.4Khz as stated in datasheet!)
+		OKIM6295_set_frequency(0,((GTS80BS_locals.u2_latch>>4)&1)?8000:6000);
 
 		//D5 = LED (Active low?)
 		UpdateSoundLEDS(1,~(GTS80BS_locals.u2_latch>>5)&1);
