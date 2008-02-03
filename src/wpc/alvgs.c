@@ -73,7 +73,7 @@ static struct YM3812interface alvgs1_ym3812_intf =
 static struct OKIM6295interface alvgs1_okim6295_intf =
 {
 	1,						/* 1 chip */
-	{ 8000 },				/* 8000Hz playback */
+	{ 7575.76 },			/* sample rate at 1MHz clock */
 	{ ALVGS_ROMREGION },	/* ROM REGION */
 	{ 50 }					/* Volume */
 };
@@ -94,7 +94,7 @@ static WRITE_HANDLER(alvgs1_ctrl_w){
 }
 static READ_HANDLER(alvgs1_ctrl_r){	return alvgslocals.data_to_main_cpu; }
 
-/* Addressing..U26 - 74LS138 
+/* Addressing..U26 - 74LS138
 
 A14 A13 A12 Y0 Y1 Y2 Y3 Y4 Y5 Y6 Y7
   0   0   0  0  1  1  1  1  1  1  1  Y0 = NC?              (<0x1000)
@@ -109,15 +109,15 @@ A14 A13 A12 Y0 Y1 Y2 Y3 Y4 Y5 Y6 Y7
 
 
 //PA0-7: (IN) - Sound Data from Main CPU
-static READ_HANDLER( xvia_2_a_r ) { 
+static READ_HANDLER( xvia_2_a_r ) {
 	int data = soundlatch_r(0);
-	return data; 
+	return data;
 }
 
 //PB0-7: (OUT) - Bit 6 = LED
-static WRITE_HANDLER( xvia_2_b_w ) { 
+static WRITE_HANDLER( xvia_2_b_w ) {
 	alvg_UpdateSoundLEDS(0,(data&0x40)>>6);
-	//LOG(("WARNING: SOUND VIA -Port B Write = %x\n",data)); 
+	//LOG(("WARNING: SOUND VIA -Port B Write = %x\n",data));
 }
 
 //IRQ:  FIRQ to Main CPU
