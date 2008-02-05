@@ -31,7 +31,7 @@
 static struct {
 	int    vblankCount;
 	int    strobe, swStrobe, bufferFilled;
-	UINT8  dispBuffer[12];
+	UINT8  dispBuffer[30];
 	UINT8  accu, lampData, ramE2, ramRW, ramAddr;
 	UINT16 pgolAddress;
 	UINT32 solenoids;
@@ -193,23 +193,32 @@ static WRITE_HANDLER(port_w) {
 					if (locals.accu & 0x01)
 						locals.bufferFilled = 0;
 					else {
-						disp_w(12, locals.dispBuffer[locals.bufferFilled ? 6 : 0]);
-						disp_w(13, locals.dispBuffer[locals.bufferFilled ? 7 : 1]);
-						disp_w(14, locals.dispBuffer[locals.bufferFilled ? 8 : 2]);
-						disp_w(15, locals.dispBuffer[locals.bufferFilled ? 9 : 3]);
-						disp_w(16, locals.dispBuffer[locals.bufferFilled ? 10 : 4]);
-						disp_w(17, locals.dispBuffer[locals.bufferFilled ? 11 : 5]);
+						int i; for (i=0; i < 24; i++) disp_w(i, locals.dispBuffer[locals.bufferFilled ? 24 + (i % 6) : i]);
 					}
 					break;
-				case 3: // store player one score in buffer
+				case 1: // player three score
 					locals.dispBuffer[data & 0x0f] = locals.accu;
-				case 1: case 2: case 4:
-					disp_w((data >> 4) * 6 - 6 + (data & 0x0f), locals.accu);
+					disp_w(data & 0x0f, locals.accu);
+					break;
+				case 2: // player four score
+					locals.dispBuffer[6 + (data & 0x0f)] = locals.accu;
+					disp_w(6 + (data & 0x0f), locals.accu);
+					break;
+				case 3: // player one score
+					locals.dispBuffer[12 + (data & 0x0f)] = locals.accu;
+					disp_w(12 + (data & 0x0f), locals.accu);
+					break;
+				case 4: // player two score
+					locals.dispBuffer[18 + (data & 0x0f)] = locals.accu;
+					disp_w(18 + (data & 0x0f), locals.accu);
 					break;
 				case 5: // store the HSTD value in second buffer, and also show it
-					locals.dispBuffer[6 + (data & 0x0f)] = locals.accu;
+					locals.dispBuffer[24 + (data & 0x0f)] = locals.accu;
 					locals.bufferFilled = 1;
-					disp_w(12 + (data & 0x0f), locals.dispBuffer[6 + (data & 0x0f)]);
+					disp_w(data & 0x0f, locals.accu);
+					disp_w(6 + (data & 0x0f), locals.accu);
+					disp_w(12 + (data & 0x0f), locals.accu);
+					disp_w(18 + (data & 0x0f), locals.accu);
 					break;
 				case 7:
 					disp_w(24 + (data & 0x0f), locals.accu);
