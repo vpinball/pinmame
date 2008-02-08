@@ -11,7 +11,7 @@ static void init_##name(void) { \
 BYVP_INPUT_PORTS_START(name, 1) BYVP_INPUT_PORTS_END
 
 /*-----------------------------------------------------
-/ Baby Pacman (Video/Pinball Combo) (BY133-???:  10/82)
+/ Baby Pacman (Video/Pinball Combo) (BY133-891:  10/82)
 /-----------------------------------------------------*/
 INITGAMEVP(babypac,byVP_dispBabyPac,FLIP_SWNO(0,1),SNDBRD_BY45BP,0)
 BYVP_ROMSTARTx00(babypac, "891-u2.732", CRC(7f7242d1) SHA1(213a697bb7fc69f93ea04621f0fcfdd796f35196),
@@ -23,6 +23,18 @@ BYVP_ROMSTARTx00(babypac, "891-u2.732", CRC(7f7242d1) SHA1(213a697bb7fc69f93ea04
                           "891-u29.764",CRC(0b57fd5d) SHA1(43a03e6d16c87c3305adb04722484f992f23a1bd))
 BYVP_ROMEND
 CORE_GAMEDEFNVR90(babypac,"Baby Pacman (Video/Pinball Combo)",1982,"Bally",byVP_mVP1,0)
+
+BYVP_ROMSTARTx00(babypacn,"pacmann.u2", CRC(734710cb) SHA1(040943be6e1f3a750f3b2c705833699ec5845a80),
+                          "891-u6.732", CRC(6136d636) SHA1(c01a0a2fcad3bdabd649128e012ab558b1c90cd3),
+                          "babyvidn.u9",CRC(e937eb02) SHA1(391c4e2c2cd22bb06e2b4a4cef1ddc08040b8c43),
+                          "891-u10.764",CRC(28f4df8b) SHA1(bd6a3598c2c90b5a3a59327616d2f5b9940d98bc),
+                          "891-u11.764",CRC(0a5967a4) SHA1(26d56ddea3f39d41e382449007bf7ba113c0285f),
+                          "891-u12.764",CRC(58cfe542) SHA1(e024d14019866bd460d1da6b901f9b786a76a181),
+                          "891-u29.764",CRC(0b57fd5d) SHA1(43a03e6d16c87c3305adb04722484f992f23a1bd))
+BYVP_ROMEND
+#define init_babypacn init_babypac
+#define input_ports_babypacn input_ports_babypac
+GAMEX(2008,babypacn,babypac,byVP1,babypac,babypac,ROT90,"Bally / Oliver","Baby Pacman (Video/Pinball Combo, home roms)",0)
 
 /*-----------------------------------------------------------------
 / Granny and the Gators (Video/Pinball Combo) - (BY35-???: 01/84)
