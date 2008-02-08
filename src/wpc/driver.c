@@ -166,6 +166,7 @@ DRIVERNV(rapidfir)      //BY35-869: 06/81 Rapid Fire
 DRIVERNV(m_mpac  )      //BY35-872: 05/82 Mr. & Mrs. Pac-Man
 /*same as eballdlx*/    //BY35      10/82 Eight Ball Deluxe Limited Edition
 DRIVERNV(babypac )      //BY35-891  10/82 Baby Pac-Man
+DRIVERNV(babypacn)      //BY35      01/08 Baby Pac-Man (home roms)
 DRIVERNV(bmx     )      //BY35-888: 11/82 BMX
 DRIVERNV(granslam)      //BY35-1311:01/83 Grand Slam
 DRIVERNV(gransla4)      //BY35-1311:01/83 Grand Slam (4 player)
@@ -469,7 +470,7 @@ DRIVERNV(tagteam2)      //                Tag Team Wrestling (rev.2)
 DRIVERNV(rock)          //S80b-697: 10/85 Rock
                         //S80b-700: ??/85 Ace High (never produced, playable whitewood exists)
 DRIVERNV(raven)         //S80b-702: 03/86 Raven
-                        //S80b-704: 04/86 Rock Encore
+DRIVERNV(rock_enc)      //S80b-704: 04/86 Rock Encore
 DRIVERNV(hlywoodh)      //S80b-703: 06/86 Hollywood Heat
 DRIVERNV(genesis)       //S80b-705: 09/86 Genesis
 DRIVERNV(goldwing)      //S80b-707: 10/86 Gold Wings
@@ -979,21 +980,21 @@ DRIVERNV(potc_400gf)		//S.A.M: ??/?? Pirates of the Caribbean V4.00GF (German & 
 DRIVERNV(scarn9nj)			//S.A.M: ??/?? Simpsons Kooky Carnival Redemption V0.9 New Jersey (English)
 DRIVERNV(scarn103)			//S.A.M: ??/?? Simpsons Kooky Carnival Redemption V1.03 (English)
 DRIVERNV(scarn)				//S.A.M: ??/?? Simpsons Kooky Carnival Redemption V1.05 (English)
-DRIVERNV(fguy_200a) 		//S.A.M: ??/?? Family Guy -  V2.00a (English)
-DRIVERNV(fguy_300ai)		//S.A.M: ??/?? Family Guy -  V3.00AI (English, Italian)
-DRIVERNV(fguy_800al)		//S.A.M: ??/?? Family Guy -  V8.00AL (English, Spanish)
-DRIVERNV(fg1000ag)			//S.A.M: ??/?? Family Guy -  V10.0AG (English, German)
-DRIVERNV(fg1000af)			//S.A.M: ??/?? Family Guy -  V10.0AF (English, French)
-DRIVERNV(fg1000ai)			//S.A.M: ??/?? Family Guy -  V10.0AI (English, Italian)
-DRIVERNV(fg1000al)			//S.A.M: ??/?? Family Guy -  V10.0AL (English, Spanish)
-DRIVERNV(fg1100al)			//S.A.M: ??/?? Family Guy -  V11.0AL (English, Spanish)
-DRIVERNV(fg1100af)			//S.A.M: ??/?? Family Guy -  V11.0AF (English, French)
-DRIVERNV(fg1100ag)			//S.A.M: ??/?? Family Guy -  V11.0AG (English, German)
-DRIVERNV(fg1100ai)			//S.A.M: ??/?? Family Guy -  V11.0AI (English, Italian)
-DRIVERNV(fg1200al)			//S.A.M: ??/?? Family Guy -  V12.0AL (English, Spanish)
-DRIVERNV(fg1200af)			//S.A.M: ??/?? Family Guy -  V12.0AF (English, French)
-DRIVERNV(fg1200ag)			//S.A.M: ??/?? Family Guy -  V12.0AG (English, German)
-DRIVERNV(fg1200ai)			//S.A.M: ??/?? Family Guy -  V12.0AI (English, Italian)
+DRIVERNV(fg_200a) 			//S.A.M: ??/?? Family Guy -  V2.00a (English)
+DRIVERNV(fg_300ai)			//S.A.M: ??/?? Family Guy -  V3.00AI (English, Italian)
+DRIVERNV(fg_800al)			//S.A.M: ??/?? Family Guy -  V8.00AL (English, Spanish)
+DRIVERNV(fg_1000ag)			//S.A.M: ??/?? Family Guy -  V10.0AG (English, German)
+DRIVERNV(fg_1000af)			//S.A.M: ??/?? Family Guy -  V10.0AF (English, French)
+DRIVERNV(fg_1000ai)			//S.A.M: ??/?? Family Guy -  V10.0AI (English, Italian)
+DRIVERNV(fg_1000al)			//S.A.M: ??/?? Family Guy -  V10.0AL (English, Spanish)
+DRIVERNV(fg_1100al)			//S.A.M: ??/?? Family Guy -  V11.0AL (English, Spanish)
+DRIVERNV(fg_1100af)			//S.A.M: ??/?? Family Guy -  V11.0AF (English, French)
+DRIVERNV(fg_1100ag)			//S.A.M: ??/?? Family Guy -  V11.0AG (English, German)
+DRIVERNV(fg_1100ai)			//S.A.M: ??/?? Family Guy -  V11.0AI (English, Italian)
+DRIVERNV(fg_1200al)			//S.A.M: ??/?? Family Guy -  V12.0AL (English, Spanish)
+DRIVERNV(fg_1200af)			//S.A.M: ??/?? Family Guy -  V12.0AF (English, French)
+DRIVERNV(fg_1200ag)			//S.A.M: ??/?? Family Guy -  V12.0AG (English, German)
+DRIVERNV(fg_1200ai)			//S.A.M: ??/?? Family Guy -  V12.0AI (English, Italian)
 DRIVERNV(sman_130al)		//S.A.M: ??/?? Spiderman - V1.30 AL (English, Spanish)
 DRIVERNV(sman_130ai)		//S.A.M: ??/?? Spiderman - V1.30 AI (English, Italian)
 DRIVERNV(sman_130gf)		//S.A.M: ??/?? Spiderman - V1.30 GF (German, French)
@@ -1355,6 +1356,7 @@ DRIVER(ij,lg7)          //WPC-517:  11/93 W Indiana Jones (LG-7)
 DRIVER(jd,l1)           //WPC-220:  10/93 B Judge Dredd (L-1)
 DRIVER(jd,l6)           //WPC-220:  10/93 B Judge Dredd (L-6)
 DRIVER(jd,l7)           //WPC-220:  12/93 B Judge Dredd (L-7)
+DRIVER(afv,l4)          //WPC-622:  ??/93 W Addams Family Values (L-4 Redemption)
 DRIVER(sttng,p5)        //WPC-523:  11/93 W Star Trek: The Next Generation (P-5)
 DRIVER(sttng,l1)        //WPC-523:  11/93 W Star Trek: The Next Generation (LX-1)
 DRIVER(sttng,l2)        //WPC-523:  12/93 W Star Trek: The Next Generation (LX-2)
@@ -1440,6 +1442,7 @@ DRIVER(ss,12)           //WPC-548:  09/96 B Scared Stiff (1.2)
 DRIVER(jy,03)           //WPC-552:  10/96 W Junk Yard (0.3)
 DRIVER(jy,11)           //WPC-552:  01/97 W Junk Yard (1.1)
 DRIVER(jy,12)           //WPC-552:  07/97 W Junk Yard (1.2)
+DRIVER(nbaf,11s)         //WPC-553:  03/97 B NBA Fastbreak (1.1 - S0.4)
 DRIVER(nbaf,11)         //WPC-553:  03/97 B NBA Fastbreak (1.1)
 DRIVER(nbaf,11a)        //WPC-553:  03/97 B NBA Fastbreak (1.1 - S2.0)
 DRIVER(nbaf,115)        //WPC-553:  05/97 B NBA Fastbreak (1.15)

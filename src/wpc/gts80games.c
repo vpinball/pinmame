@@ -831,6 +831,18 @@ GTS80_ROMEND
 CORE_GAMEDEFNV(raven, "Raven",1986,"Gottlieb",gl_mGTS80BS1,0)
 
 /*-------------------------------------------------------------------
+/ Rock Encore (#704)
+/-------------------------------------------------------------------*/
+INITGAME(rock_enc, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)
+GTS80B_8K_ROMSTART(rock_enc, "prom1.cpu",  CRC(1146c1d3) SHA1(1e838756017cdc51239c082f8d491cd2824d273d))
+GTS80BSSOUND888(             "drom1a.snd", CRC(b8aa8912) SHA1(abff690256c0030807b2d4dfa0516496516384e8),
+                             "yrom1a.snd", CRC(a62e3b94) SHA1(59636c2ac7ebbd116a0eb39479c97299ba391906),
+                             "yrom2a.snd", CRC(66645a3f) SHA1(f06261af81e6b1829d639933297d2461a8c993fc))
+GTS80_ROMEND
+#define input_ports_rock_enc input_ports_rock
+CORE_CLONEDEFNV(rock_enc, rock, "Rock Encore",1986,"Gottlieb",gl_mGTS80BS1,0)
+
+/*-------------------------------------------------------------------
 / Hollywood Heat
 /-------------------------------------------------------------------*/
 INITGAME(hlywoodh, GEN_GTS80B, FLIP616, dispAlpha, SNDBRD_GTS80B,GTS80_DISPALPHA,0)

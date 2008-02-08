@@ -295,6 +295,28 @@ WPC_ROMEND
 WPC_INPUT_PORTS_START(hshot, 0) WPC_INPUT_PORTS_END
 CORE_GAMEDEF(hshot,p8,"Hot Shot Basketball (P-8)",1992,"Midway",wpc_mFliptronS,0)
 
+/*-------------
+/ Addams Family Values
+/--------------*/
+static core_tGameData afvGameData = {
+  GEN_WPCDCS, wpc_dispDMD,
+  { FLIP_SW(FLIP_L | FLIP_U) | FLIP_SOL(FLIP_L) },
+  NULL,
+  {
+    "",
+    /*Coin    1     2     3     4     5     6     7     8     9    10   Cab.  Cust */
+    { 0x00, 0x00, 0x00, 0xff, 0xff, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
+    /*Start  Tilt  SlamTilt  CoinDoor  Shooter */
+    { 13,    14,   21 }
+  }
+};
+static void init_afv(void) { core_gameData = &afvGameData; }
+WPC_ROMSTART(afv,l4,"afv_u6.l4",0x80000,CRC(37369339) SHA1(e44a91faca80ffa00d6db78e2df7aa9bf14e957c))
+DCS_SOUNDROM1x("afv_su2.l1",CRC(1aa878fc) SHA1(59a89071001b5da6ab56d691721a015773f5f0b5))
+WPC_ROMEND
+WPC_INPUT_PORTS_START(afv, 0) WPC_INPUT_PORTS_END
+CORE_GAMEDEF(afv,l4,"Addams Family Values (Coin Dropper, L-4)",1993,"Williams",wpc_mDCSS,0)
+
 /*-------------------------------------------------------------------
 / Strikes n' Spares (#N111)
 /-------------------------------------------------------------------*/
