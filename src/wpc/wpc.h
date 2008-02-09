@@ -20,25 +20,33 @@
     COREPORT_BITDEF(  0x0400, IPT_TILT,         KEYCODE_INSERT)  \
     COREPORT_BIT(     0x0800, "Slam Tilt",      KEYCODE_HOME)  \
   PORT_START /* 1 */ \
-    COREPORT_DIPNAME( 0x0004, 0x00, "W20") \
+    COREPORT_DIPNAME( 0x0001, 0x0001, "SW1") \
+      COREPORT_DIPSET(0x0001, "1" ) \
+    COREPORT_DIPNAME( 0x0002, 0x0002, "SW2") \
+      COREPORT_DIPSET(0x0002, "1" ) \
+    COREPORT_DIPNAME( 0x0004, 0x0000, "W20") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0004, "1" ) \
-    COREPORT_DIPNAME( 0x0008, 0x00, "W19") \
+    COREPORT_DIPNAME( 0x0008, 0x0000, "W19") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0008, "1" ) \
-    COREPORT_DIPNAME( 0x00f0, 0x00, "Country") \
-      COREPORT_DIPSET(0x0000, "USA" ) \
+    COREPORT_DIPNAME( 0x00f0, 0x0000, "Country") \
+      COREPORT_DIPSET(0x0000, "USA 1" ) \
       COREPORT_DIPSET(0x0010, "France 1" ) \
       COREPORT_DIPSET(0x0020, "Germany" ) \
       COREPORT_DIPSET(0x0030, "France 2" ) \
-      COREPORT_DIPSET(0x0080, "Export Alt" ) \
+      COREPORT_DIPSET(0x0040, "Unknown 1" ) \
+      COREPORT_DIPSET(0x0050, "Unknown 2" ) \
+      COREPORT_DIPSET(0x0060, "Unknown 3" ) \
+      COREPORT_DIPSET(0x0070, "Unknown 4" ) \
+      COREPORT_DIPSET(0x0080, "Export 1" ) \
       COREPORT_DIPSET(0x0090, "France 3" ) \
-      COREPORT_DIPSET(0x00a0, "Export" ) \
-      COREPORT_DIPSET(0x00b0, "France" ) \
+      COREPORT_DIPSET(0x00a0, "Export 2" ) \
+      COREPORT_DIPSET(0x00b0, "France 4" ) \
       COREPORT_DIPSET(0x00c0, "UK" ) \
       COREPORT_DIPSET(0x00d0, "European" ) \
       COREPORT_DIPSET(0x00e0, "Spain" ) \
-      COREPORT_DIPSET(0x00f0, "USA" )
+      COREPORT_DIPSET(0x00f0, "USA 2" )
 
 /*-- Common keys inport --*/
 #define WPC_COMINPORT      CORE_COREINPORT
