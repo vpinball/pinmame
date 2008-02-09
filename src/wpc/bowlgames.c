@@ -307,14 +307,54 @@ static core_tGameData afvGameData = {
     /*Coin    1     2     3     4     5     6     7     8     9    10   Cab.  Cust */
     { 0x00, 0x00, 0x00, 0xff, 0xff, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
     /*Start  Tilt  SlamTilt  CoinDoor  Shooter */
-    { 13,    14,   21 }
+    { 13,    14,   21,       22 }
   }
 };
 static void init_afv(void) { core_gameData = &afvGameData; }
 WPC_ROMSTART(afv,l4,"afv_u6.l4",0x80000,CRC(37369339) SHA1(e44a91faca80ffa00d6db78e2df7aa9bf14e957c))
 DCS_SOUNDROM1x("afv_su2.l1",CRC(1aa878fc) SHA1(59a89071001b5da6ab56d691721a015773f5f0b5))
 WPC_ROMEND
-WPC_INPUT_PORTS_START(afv, 0) WPC_INPUT_PORTS_END
+INPUT_PORTS_START(afv)
+  CORE_PORTS
+  SIM_PORTS(1)
+  PORT_START /* 0 */ \
+    /* These go into column 0 */ \
+    COREPORT_BIT(     0x0001, "Coin Drop",      KEYCODE_5) \
+    COREPORT_BIT(     0x0010, "Enter",          KEYCODE_7) \
+    COREPORT_BIT(     0x0020, "Up",             KEYCODE_8) \
+    COREPORT_BIT(     0x0040, "Down",           KEYCODE_9) \
+    COREPORT_BIT(     0x0080, "Escape",         KEYCODE_0) \
+    /* Common switches */ \
+    COREPORT_BITTOG(  0x0100, "Coin Door",      KEYCODE_END)  \
+    COREPORT_BIT   (  0x0200, "Punch Button",   KEYCODE_1)  \
+    COREPORT_BITDEF(  0x0400, IPT_TILT,         KEYCODE_INSERT)  \
+    COREPORT_BIT(     0x0800, "Slam Tilt",      KEYCODE_HOME)  \
+  PORT_START /* 1 */ \
+    COREPORT_DIPNAME( 0x0001, 0x0001, "SW1") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0001, "1" ) \
+    COREPORT_DIPNAME( 0x0002, 0x0002, "SW2") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0002, "1" ) \
+    COREPORT_DIPNAME( 0x0004, 0x0004, "SW3") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0004, "1" ) \
+    COREPORT_DIPNAME( 0x0008, 0x0008, "SW4") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0008, "1" ) \
+    COREPORT_DIPNAME( 0x0010, 0x0010, "SW5") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0010, "1" ) \
+    COREPORT_DIPNAME( 0x0020, 0x0020, "SW6") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0020, "1" ) \
+    COREPORT_DIPNAME( 0x0040, 0x0040, "SW7") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0040, "1" ) \
+    COREPORT_DIPNAME( 0x0080, 0x0080, "SW8") \
+      COREPORT_DIPSET(0x0000, "0" ) \
+      COREPORT_DIPSET(0x0080, "1" ) \
+INPUT_PORTS_END
 CORE_GAMEDEF(afv,l4,"Addams Family Values (Coin Dropper, L-4)",1993,"Williams",wpc_mDCSS,0)
 
 /*-------------------------------------------------------------------
