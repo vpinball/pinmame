@@ -14,10 +14,10 @@
 	}
 
 static core_tLCDLayout jpDisp7[] = {
-  {0, 0, 0, 7,CORE_SEG87}, {0,22, 7, 7,CORE_SEG87},
-  {3, 0,14, 7,CORE_SEG87}, {3,22,21, 7,CORE_SEG87},
-  {1,20,28, 2,CORE_SEG7S},{1,25,30, 2,CORE_SEG7S},
-  {3,17,32, 1,CORE_SEG8},
+  {0, 0, 0, 7,CORE_SEG87}, {3, 0, 7, 7,CORE_SEG87},
+  {0,24,14, 7,CORE_SEG87}, {3,24,21, 7,CORE_SEG87},
+  {1,20,28, 2,CORE_SEG7S},{1,26,30, 1,CORE_SEG7S},{1,29,31, 1,CORE_SEG7S},
+  {3,18,32, 1,CORE_SEG8},
   {0}
 };
 
