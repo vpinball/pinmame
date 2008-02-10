@@ -349,7 +349,7 @@ READ_HANDLER(wpc_r) {
       //DBGLOG(("R:FIRQSRC\n"));
       return (wpclocals.firqSrc & WPC_FIRQ_DMD) ? 0x00 : 0x80;
     case WPC_DIPSWITCH:
-      return core_getDip(0) & 0xfc;
+      return core_getDip(0);
     case WPC_RTCHOUR: {
       // Don't know how the clock works.
       // This hack by JD puts right values into the memory locations
