@@ -101,14 +101,14 @@ extern MACHINE_DRIVER_EXTERN(gts80s_b3a);
 /* Load 1Mb Rom(128K) to fit into 4Mb Rom Space */
 #define GTS3S_ROMLOAD1(start, n, chk) \
   ROM_LOAD(n, start,  0x20000, chk) \
-  ROM_RELOAD( start + 0x20000, 0x20000) \
-  ROM_RELOAD( start + 0x40000, 0x20000) \
-  ROM_RELOAD( start + 0x60000, 0x20000)
+  ROM_RELOAD(start+0x40000, 0x20000) \
+  ROM_RELOAD(start+0x80000, 0x20000) \
+  ROM_RELOAD(start+0xc0000, 0x20000)
 
 /* Load 2Mb Rom(256K) to fit into 4Mb Rom Space */
 #define GTS3S_ROMLOAD2(start, n, chk) \
   ROM_LOAD(n, start,  0x40000, chk) \
-  ROM_RELOAD( start + 0x40000, 0x40000)
+  ROM_RELOAD(start+0x40000, 0x40000)
 
 /* Load 4Mb Rom(512K) */
 #define GTS3S_ROMLOAD4(start, n, chk) \
@@ -142,10 +142,8 @@ extern MACHINE_DRIVER_EXTERN(gts80s_b3a);
   SOUNDREGION(0x10000, GTS3_MEMREG_SCPU1) \
     ROM_LOAD(n1, 0x8000,  0x8000, chk1) \
   SOUNDREGION(0x100000, GTS3_MEMREG_SROM1) \
-	ROM_LOAD(n3, 0,  0x20000, chk3) \
-    ROM_RELOAD( 0x80000, 0x20000) \
-	ROM_LOAD(n4, 0x20000,  0x20000, chk4) \
-    ROM_RELOAD( 0x80000+0x20000, 0x20000) \
+	GTS3S_ROMLOAD1(0x00000, n3, chk3) \
+	GTS3S_ROMLOAD1(0x20000, n4, chk4) \
   SOUNDREGION(0x10000, REGION_CPU2) \
 	ROM_LOAD(n2, 0x8000,  0x8000, chk2)
 
@@ -178,6 +176,7 @@ extern MACHINE_DRIVER_EXTERN(gts80s_b3a);
     ROM_LOAD(n1, 0x8000,  0x8000, chk1) \
   SOUNDREGION(0x100000, GTS3_MEMREG_SROM1) \
 	GTS3S_ROMLOAD4(0x00000, n3, chk3) \
+	  ROM_RELOAD(0x80000, 0x80000) \
   SOUNDREGION(0x10000, GTS3_MEMREG_SCPU1) \
 	ROM_LOAD(n2, 0x8000,  0x8000, chk2)
 
