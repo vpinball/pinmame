@@ -1081,7 +1081,7 @@ static WRITE_HANDLER(sound_control_w)
 		D3 = ROM Select (0 = Rom1, 1 = Rom2)
 		D4 = 6295 - SS (Data = 1 = 8Khz; Data = 0 = 6.4Khz frequency)
 		D5 = LED (Active low?)
-		D6 = SRET1 (Where is this connected?)
+		D6 = SRET1 (Where is this connected?), serves as 2nd chip select line
 		D7 = SRET2 (Where is this connected?) + /PGM of roms, with optional jumper to +5 volts
 	*/
 
@@ -1089,12 +1089,10 @@ static WRITE_HANDLER(sound_control_w)
 		GTS80BS_locals.enable_cs = ((~GTS80BS_locals.u2_latch)>>2)&1;
 		//logerror("~cs = %x\n", (GTS80BS_locals.u2_latch>>2)&1);
 
-		//D3 = ROM Select (0 = Rom1, 1 = Rom2)
-		GTS80BS_locals.rom_cs = (GTS80BS_locals.u2_latch>>3)&1;
-
-		//Only swap the rom bank if the value has changed!
-		OKIM6295_set_bank_base(0, GTS80BS_locals.rom_cs*0x80000);
-		logerror("Setting to rom #%x\n",GTS80BS_locals.rom_cs);
+		//D3 = ROM Select (D6 also used on games with more than 2 x 256K rom area
+		GTS80BS_locals.rom_cs = ((GTS80BS_locals.u2_latch>>2)&2) | ((GTS80BS_locals.u2_latch>>6)&1);
+		OKIM6295_set_bank_base(0, GTS80BS_locals.rom_cs*0x40000);
+		logerror("Setting to rom #%d\n", GTS80BS_locals.rom_cs);
 
 		//D4 = 6295 - SS (Data = 1 = 7.575Khz; Data = 0 = 6.06 kHz (at 1MHz oscillation clock!)
 		OKIM6295_set_frequency(0,((GTS80BS_locals.u2_latch>>4)&1)? 7575.76 : 6060.61);
