@@ -756,8 +756,8 @@ static void OKIM6295_data_w(int num, int data)
 				if (start >= stop) {
 					logerror("OKIM6295:%d empty data - ignore\n", num);
 				} else if (start < 0x40000 && stop < 0x40000) {
-//					if (!voice->playing) /* fixes Got-cha and Steel Force */
-//					{
+					if (!voice->playing) /* fixes Got-cha and Steel Force */
+					{
 						voice->playing = 1;
 						voice->base = &voice->region_base[okim6295_base[num][i] + start];
 						voice->sample = 0;
@@ -767,17 +767,17 @@ static void OKIM6295_data_w(int num, int data)
 						voice->signal = -2;
 						voice->step = 0;
 						voice->volume = volume_table[data & 0x0f];
-//					}
-//					else
-//					{
-//						logerror("OKIM6295:%d requested to play sample %02x on non-stopped voice\n",num,okim6295_command[num]);
-//					}
+					}
+					else
+					{
+						logerror("OKIM6295:%d requested to play sample %02x on non-stopped voice\n",num,okim6295_command[num]);
+					}
 				}
 				/* invalid samples go here */
 				else
 				{
 					logerror("OKIM6295:%d requested to play invalid sample %02x\n",num,okim6295_command[num]);
-//					voice->playing = 0;
+					voice->playing = 0;
 				}
 			}
 		}
@@ -792,7 +792,7 @@ static void OKIM6295_data_w(int num, int data)
 		okim6295_command[num] = data & 0x7f;
 	}
 
-	/* otherwise, this is a silence command. We ignore all the single-mute commands for now. */
+	/* otherwise, this is a silence command */
 	else
 	{
 		int temp = data >> 3, i;
@@ -802,11 +802,13 @@ static void OKIM6295_data_w(int num, int data)
 			if (temp & 1)
 			{
 				struct ADPCMVoice *voice = &adpcm[num * OKIM6295_VOICES + i];
-				logerror("OKIM6295:%d mute voice #%x\n", num, i);
+				if (voice->playing) {
+					logerror("OKIM6295:%d mute voice #%x\n", num, i);
 
-				/* update the stream, then turn it off */
-				stream_update(voice->stream, 0);
-				voice->playing = 0;
+					/* update the stream, then turn it off */
+					stream_update(voice->stream, 0);
+					voice->playing = 0;
+				}
 			}
 		}
 	}
