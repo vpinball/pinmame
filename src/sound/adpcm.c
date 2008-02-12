@@ -754,7 +754,7 @@ static void OKIM6295_data_w(int num, int data)
 				logerror("OKIM6295:%d playing sample %02x [%05x:%05x]\n", num, okim6295_command[num], start, stop);
 				/* set up the voice to play this sample */
 				if (start >= stop) {
-					logerror("OKIM6295:%d empty data - ignore\n", num, okim6295_command[num]);
+					logerror("OKIM6295:%d empty data - ignore\n", num);
 				} else if (start < 0x40000 && stop < 0x40000) {
 //					if (!voice->playing) /* fixes Got-cha and Steel Force */
 //					{
