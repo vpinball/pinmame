@@ -78,7 +78,7 @@ GTS3ROMSTART(ccruise,	"gprom.bin",CRC(668b5757) SHA1(8ff955e8598ffdc68eab7fd69c6
 GTS3SOUND3232(			"yrom1.bin",CRC(6e424e53) SHA1(90a9bf5ce84680972f9d12eb386215494c584b9b),
 						"drom1.bin",CRC(4480257e) SHA1(50b93d4496816ef7cdf007ac75c72c6aaa956aba))
 GTS3_ROMEND
-CORE_GAMEDEFNV(ccruise,"Caribbean Cruise",1989,"International Concepts",mGTS3S,0)
+CORE_GAMEDEFNV(ccruise,"Caribbean Cruise",1989,"International Concepts",mGTS3SNO,0)
 
 // Premier games below
 /*-------------------------------------------------------------------
@@ -89,7 +89,7 @@ GTS3ROMSTART32(lca,	"gprom.bin",CRC(52957d70) SHA1(0c24d824b1aa966eb3af3db3ff028
 GTS3SOUND3232(		"yrom1.bin",CRC(20919ebb) SHA1(a2ea79863b41a04aa23ea596932825408cca64e3),
 					"drom1.bin",CRC(a258d72d) SHA1(eeb4768c8b2f57509a088d3ac8d35aa34f2cfc2c))
 GTS3_ROMEND
-CORE_GAMEDEFNV(lca,"Lights, Camera, Action",1989,"Gottlieb",mGTS3S,0)
+CORE_GAMEDEFNV(lca,"Lights, Camera, Action",1989,"Gottlieb",mGTS3SNO,0)
 
 //62c0beda Rev 1?
 
@@ -98,7 +98,7 @@ GTS3ROMSTART32(lca2,"gprom2.bin",CRC(937a8426) SHA1(6bc2d1b0c3dc273577376654ba72
 GTS3SOUND3232(		"yrom1.bin",CRC(20919ebb) SHA1(a2ea79863b41a04aa23ea596932825408cca64e3),
 					"drom1.bin",CRC(a258d72d) SHA1(eeb4768c8b2f57509a088d3ac8d35aa34f2cfc2c))
 GTS3_ROMEND
-CORE_CLONEDEFNV(lca2,lca,"Lights, Camera, Action (rev.2)",1989,"Gottlieb",mGTS3S,0)
+CORE_CLONEDEFNV(lca2,lca,"Lights, Camera, Action (rev.2)",1989,"Gottlieb",mGTS3SNO,0)
 
 /*-------------------------------------------------------------------
 / Bell Ringer
@@ -118,7 +118,7 @@ GTS3ROMSTART(silvslug,	"gprom.bin",CRC(a6c524e2) SHA1(dc12dd8e814a37aada021f84c5
 GTS3SOUND3232(			"yrom1.bin",CRC(20bc9797) SHA1(5d17b5f0423d8854fb7c4816d53a223ecc7c50c6),
 						"drom1.bin",CRC(eac3e1cc) SHA1(2725457231854e4f3d54fbba745b8fc6f55b1688))
 GTS3_ROMEND
-CORE_GAMEDEFNV(silvslug,"Silver Slugger",1990,"Gottlieb",mGTS3S,0)
+CORE_GAMEDEFNV(silvslug,"Silver Slugger",1990,"Gottlieb",mGTS3SNO,0)
 
 /*-------------------------------------------------------------------
 / Vegas (#723)
@@ -133,7 +133,7 @@ GTS3ROMSTART(vegas,	"gprom.bin",CRC(48189981) SHA1(95144af4b222158becd4d5748d15b
 GTS3SOUND3232(		"yrom1.bin",CRC(af1095f1) SHA1(06609085cd74b969e4f2ec962c427c5c42ebc6ff),
 					"drom1.bin",CRC(46eb5755) SHA1(94ec2d0cf41f68a8c3d7505186b11b4abb4803db))
 GTS3_ROMEND
-CORE_GAMEDEFNV(vegas,"Vegas",1990,"Gottlieb",mGTS3S,0)
+CORE_GAMEDEFNV(vegas,"Vegas",1990,"Gottlieb",mGTS3SNO,0)
 
 /*-------------------------------------------------------------------
 / Deadly Weapon (#724)
@@ -143,7 +143,7 @@ GTS3ROMSTART(deadweap,	"gprom.bin",CRC(07d84b32) SHA1(25d8772a5c8655b3406df94563
 GTS3SOUND3232(			"yrom1.bin",CRC(93369ed3) SHA1(3340478ffc00cf9991beabd4f0ecd89d0c88965e),
 						"drom1.bin",CRC(f55dd7ec) SHA1(fe306c40bf3d98e4076d0d8a935c3671469d4cff))
 GTS3_ROMEND
-CORE_GAMEDEFNV(deadweap,"Deadly Weapon",1990,"Gottlieb",mGTS3S,0)
+CORE_GAMEDEFNV(deadweap,"Deadly Weapon",1990,"Gottlieb",mGTS3SNO,0)
 
 /*-------------------------------------------------------------------
 / Title Fight (#726)
@@ -153,7 +153,7 @@ GTS3ROMSTART(tfight,	"gprom.bin",CRC(43b3193a) SHA1(bd185fe67c147a6acca8e78da4b7
 GTS3SOUND3232(			"yrom1.bin",CRC(8591d421) SHA1(74402cf8b419e0cb05069851b0d5616e66b2f0a9),
 						"drom1.bin",CRC(9514739f) SHA1(2794549f549d68e064a9a962a4e91fff7dcf0160))
 GTS3_ROMEND
-CORE_GAMEDEFNV(tfight,"Title Fight",1990,"Gottlieb",mGTS3S,0)
+CORE_GAMEDEFNV(tfight,"Title Fight",1990,"Gottlieb",mGTS3SNO,0)
 
 /*-------------------------------------------------------------------
 / Nudge It (N102)
@@ -173,7 +173,7 @@ GTS3ROMSTART(carhop,	"gprom.bin",CRC(164b2c9c) SHA1(49cf7e3a3acb5de8dbfd2ad22f8b
 GTS3SOUND3232(			"yrom1.bin",CRC(831ee812) SHA1(57056cde36b17cb7d7f34275b1bb5dc3d52bde4e),
 						"drom1.bin",CRC(9dec74e7) SHA1(8234bdca5536d30dc1eabcb3a5505d2fd824ce0f))
 GTS3_ROMEND
-CORE_GAMEDEFNV(carhop,"Car Hop",1991,"Gottlieb",mGTS3S,0)
+CORE_GAMEDEFNV(carhop,"Car Hop",1991,"Gottlieb",mGTS3SNO,0)
 
 /*-------------------------------------------------------------------
 / Hoops (#727)

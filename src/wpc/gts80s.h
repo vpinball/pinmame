@@ -213,5 +213,6 @@ extern MACHINE_DRIVER_EXTERN(gts80s_b3a);
 	ROM_LOAD(n2, 0x8000,  0, chk2)
 
 extern MACHINE_DRIVER_EXTERN(gts80s_s3);
+extern MACHINE_DRIVER_EXTERN(gts80s_s3_no);
 
 #endif /* GTSS80S_H */

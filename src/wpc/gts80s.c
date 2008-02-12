@@ -968,9 +968,8 @@ static struct YM2151interface GTS80BS_ym2151Int =
 
 /* System 3 Sound:
 
-   Far as I know there is only 1 generation.
-
-   Hardware is almost the same as Generation 3 System 80b boards, except for the OKI chip.
+   Hardware is almost the same as Generation 3 System 80b boards,
+   except for an additonal board with an OKI 6295 chip on it.
 
    CPU: 2x(6502): DAC: 1x(AD7528): DSP: 1x(YM2151): OTHER: OKI6295 (Speech)
 */
@@ -1009,11 +1008,11 @@ static struct YM2151interface GTS80BS_ym2151Int =
 
 */
 
-static int last_d7=0;
-
 // Send data to 6295, but only if Chip Selected and Write Enabled!
 static void oki6295_w(void)
 {
+	static int last_d7=0;
+
 	if ( GTS80BS_locals.enable_cs && GTS80BS_locals.enable_w ) {
 		if ( !last_d7 && GTS80BS_locals.u2_latch&0x80  )
 			logerror("START OF SAMPLE!\n");
@@ -1030,7 +1029,7 @@ static void oki6295_w(void)
 static WRITE_HANDLER(u2latch_w)
 {
 	GTS80BS_locals.u2_latch = data;
-	logerror("u2_latch: %x\n", GTS80BS_locals.u2_latch);
+	logerror("u2_latch: %02x\n", GTS80BS_locals.u2_latch);
 }
 
 /*
@@ -1052,7 +1051,7 @@ static WRITE_HANDLER(sound_control_w)
 	hold_u3 = GTS80BS_locals.u3_latch;
 
 	//Process common bits (D0 for NMI, D7 for YM2151)
-	s80bs3_sound_control_w(offset,data);
+	s80bs3_sound_control_w(0, data);
 
 	//D1 = LED
 	UpdateSoundLEDS(0,(data>>1)&1);
@@ -1070,7 +1069,7 @@ static WRITE_HANDLER(sound_control_w)
 	  //logerror("~wr = %x\n", (data>>6)&1);
 
 	//Handle U3 Latch - On Positive Edge
-	if(GTS80BS_locals.u3_latch && !hold_u3 ) {
+	if (offset && GTS80BS_locals.u3_latch && !hold_u3 ) { // OKI chip related
 
 	/*
 		U3 - LS374 (Data is fed from the U2 Latch)
@@ -1079,7 +1078,7 @@ static WRITE_HANDLER(sound_control_w)
 		D1 = VSTEP??    - Connects to optional U12 (volume control?)
 		D2 = 6295 Chip Select (Active Low)
 		D3 = ROM Select (0 = Rom1, 1 = Rom2)
-		D4 = 6295 - SS (Data = 1 = 8Khz; Data = 0 = 6.4Khz frequency)
+		D4 = 6295 - SS (Data = 1: normal sample rate; Data = 0: decreased by 25 percent)
 		D5 = LED (Active low?)
 		D6 = SRET1 (Where is this connected?), serves as 2nd chip select line
 		D7 = SRET2 (Where is this connected?) + /PGM of roms, with optional jumper to +5 volts
@@ -1105,7 +1104,12 @@ static WRITE_HANDLER(sound_control_w)
 	}
 
 	//Trigger Command on Positive Edge
-	if (GTS80BS_locals.enable_w && !hold_enable_w) oki6295_w();
+	if (offset && GTS80BS_locals.enable_w && !hold_enable_w) oki6295_w();
+}
+
+// sound control with OKI chip
+static WRITE_HANDLER(sound_control_oki) {
+	sound_control_w(1, data);
 }
 
 static READ_HANDLER(s3_soundlatch_y)
@@ -1142,6 +1146,16 @@ MEMORY_WRITE_START(GTS3_ywritemem)
 { 0x8000, 0x8000, MWA_NOP },
 { 0xa000, 0xa000, sound_control_w },
 MEMORY_END
+MEMORY_WRITE_START(GTS3_ywritemem_oki)
+{ 0x0000, 0x07ff, MWA_RAM },
+{ 0x4000, 0x4000, s80bs_ym2151_w },
+{ 0x6000, 0x6000, s80bs_nmi_rate_w },
+{ 0x7000, 0x7000, s80bs_cause_dac_nmi_w },
+{ 0x7800, 0x7800, u2latch_w },
+{ 0x8000, 0x8000, MWA_NOP },
+{ 0xa000, 0xa000, sound_control_oki },
+MEMORY_END
+
 /*********/
 /* D-CPU */
 /*********/
@@ -1246,8 +1260,8 @@ MACHINE_DRIVER_START(gts80s_b3a)
   MDRV_CPU_MEMORY(GTS80BS3_dreadmem, GTS80BS3_d2writemem)
 MACHINE_DRIVER_END
 
-//System GTS3 - Gen 1
-MACHINE_DRIVER_START(gts80s_s3)
+//System GTS3 without OKI chip
+MACHINE_DRIVER_START(gts80s_s3_no)
   MDRV_CPU_ADD_TAG("y-cpu", M6502, 2000000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(GTS3_yreadmem, GTS3_ywritemem)
@@ -1259,7 +1273,24 @@ MACHINE_DRIVER_START(gts80s_s3)
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
   MDRV_SOUND_ADD(DAC, GTS3_dacInt)
   MDRV_SOUND_ADD(YM2151,  GTS80BS_ym2151Int)
-  MDRV_SOUND_ADD(OKIM6295,GTS3_okim6295_interface)
+  MDRV_SOUND_ADD(SAMPLES, samples_interface)
+  MDRV_DIAGNOSTIC_LEDH(3)
+MACHINE_DRIVER_END
+
+//System GTS3 with OKI chip
+MACHINE_DRIVER_START(gts80s_s3)
+  MDRV_CPU_ADD_TAG("y-cpu", M6502, 2000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(GTS3_yreadmem, GTS3_ywritemem_oki)
+
+  MDRV_CPU_ADD_TAG("d-cpu", M6502, 2000000)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(GTS3_dreadmem, GTS3_dwritemem)
+
+  MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
+  MDRV_SOUND_ADD(DAC, GTS3_dacInt)
+  MDRV_SOUND_ADD(YM2151,  GTS80BS_ym2151Int)
+  MDRV_SOUND_ADD(OKIM6295, GTS3_okim6295_interface)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END
 
