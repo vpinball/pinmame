@@ -11,7 +11,8 @@ static struct {
   UINT32 solenoids;
   UINT16 sols2;
   int vblankCount;
-  int dispCount;
+  int dispCount, output, enable;
+  UINT8 sndCmd;
 } locals;
 
 static INTERRUPT_GEN(vblank) {
@@ -22,7 +23,7 @@ static INTERRUPT_GEN(vblank) {
   /--------------------------------*/
   memcpy(coreGlobals.lampMatrix, coreGlobals.tmpLampMatrix, sizeof(coreGlobals.tmpLampMatrix));
   memcpy(coreGlobals.segments, locals.segments, sizeof(coreGlobals.segments));
-  if (++locals.dispCount > 11) {
+  if (++locals.dispCount > 15) {
     locals.dispCount = 0;
     memset(locals.segments, 0, sizeof(locals.segments));
   }
@@ -87,23 +88,27 @@ static WRITE_HANDLER(sol_w) {
 }
 
 static WRITE_HANDLER(sound_w) {
-  static UINT8 sndCmd;
-  static int enable, output;
   if (data) {
     if (!offset) {
-      sndCmd = (sndCmd & 0xc0) | (data & 0x3f);
+      locals.sndCmd = (locals.sndCmd & 0x40) | (data & 0x3f);
     } else {
-      sndCmd = (sndCmd & 0x3f) | ((data & 0x01) << 6);
-      enable = (data & 0x02) >> 1;
-      output = (data & 0x1c) >> 2;
+      locals.enable = (data & 0x02) >> 1;
+      locals.sndCmd = (locals.sndCmd & 0x3f) | ((data & 0x01) << 6);
+      if (!locals.enable)
+        locals.output = (data & 0x1c) >> 2;
     }
-    logerror("sound %d: snd data = %02x, enable = %x, output = %x\n", offset, sndCmd, enable, output);
-//  printf("sound %02x\n", ((sndCmd << (7-output)) & 0xff) >> (7-output));
-    discrete_sound_w(1, ((sndCmd << (7-output)) & 0xff) >> (7-output));
+    logerror("sound %d: snd data = %02x, enable = %x, output = %x\n", offset, locals.sndCmd, locals.enable, locals.output);
+    discrete_sound_w(1, ((locals.sndCmd << (7-locals.output)) & 0xff) >> (7-locals.output));
     discrete_sound_w(2, 1);
-  } else {
-    discrete_sound_w(2, 0);
   }
+}
+
+static void zacProto_sndTimer(int data) {
+  if (locals.sndCmd) {
+    locals.sndCmd--;
+    discrete_sound_w(1, ((locals.sndCmd << (7-locals.output)) & 0xff) >> (7-locals.output));
+  } else
+    discrete_sound_w(2, 0);
 }
 
 static WRITE_HANDLER(lamp_w) {
@@ -152,13 +157,14 @@ static void init_strike(void) {
 MACHINE_DRIVER_START(zacProto)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(zacProto,NULL,zacProto)
-  MDRV_CPU_ADD_TAG("mcpu", SCAMP, 1000000)
+  MDRV_CPU_ADD_TAG("mcpu", SCAMP, 750000)
   MDRV_SWITCH_UPDATE(zacProto)
   MDRV_CPU_MEMORY(readmem, writemem)
   MDRV_CPU_VBLANK_INT(vblank, 1)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_DIPS(24)
   MDRV_SOUND_ADD(DISCRETE, zacProto_discInt)
+  MDRV_TIMER_ADD(zacProto_sndTimer, 250)
 MACHINE_DRIVER_END
 
 INPUT_PORTS_START(strike) \
