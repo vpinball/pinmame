@@ -157,7 +157,7 @@ static void init_strike(void) {
 MACHINE_DRIVER_START(zacProto)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CORE_INIT_RESET_STOP(zacProto,NULL,zacProto)
-  MDRV_CPU_ADD_TAG("mcpu", SCAMP, 750000)
+  MDRV_CPU_ADD_TAG("mcpu", SCAMP, 1000000)
   MDRV_SWITCH_UPDATE(zacProto)
   MDRV_CPU_MEMORY(readmem, writemem)
   MDRV_CPU_VBLANK_INT(vblank, 1)
