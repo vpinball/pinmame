@@ -87,7 +87,23 @@ static WRITE_HANDLER(sol_w) {
 }
 
 static WRITE_HANDLER(sound_w) {
-  if (data) logerror("sound byte #%d: %02x, %02x inversed\n", offset, data, data^0xff);
+  static UINT8 sndCmd;
+  static int enable, output;
+  if (data) {
+    if (!offset) {
+      sndCmd = (sndCmd & 0xc0) | (data & 0x3f);
+    } else {
+      sndCmd = (sndCmd & 0x3f) | ((data & 0x01) << 6);
+      enable = (data & 0x02) >> 1;
+      output = (data & 0x1c) >> 2;
+    }
+    logerror("sound %d: snd data = %02x, enable = %x, output = %x\n", offset, sndCmd, enable, output);
+//  printf("sound %02x\n", ((sndCmd << (7-output)) & 0xff) >> (7-output));
+    discrete_sound_w(1, ((sndCmd << (7-output)) & 0xff) >> (7-output));
+    discrete_sound_w(2, 1);
+  } else {
+    discrete_sound_w(2, 0);
+  }
 }
 
 static WRITE_HANDLER(lamp_w) {
@@ -113,6 +129,15 @@ static MEMORY_WRITE_START(writemem)
   { 0x0e09, 0x0e16, lamp_w },
 MEMORY_END
 
+DISCRETE_SOUND_START(zacProto_discInt)
+	DISCRETE_INPUT(NODE_01,1,0x0003,0) // tone
+	DISCRETE_INPUT(NODE_02,2,0x0003,0) // enable
+	DISCRETE_MULTADD(NODE_05,1,NODE_01,2,90)
+	DISCRETE_SINEWAVE(NODE_10,NODE_02,NODE_05,20000,10000,0)
+	DISCRETE_GAIN(NODE_20,NODE_10,12)
+	DISCRETE_OUTPUT(NODE_20, 50)
+DISCRETE_SOUND_END
+
 static core_tLCDLayout disp[] = {
   {0, 0, 4, 1,CORE_SEG8D},{0, 2, 5, 2,CORE_SEG7},{0, 6, 7, 1,CORE_SEG8D},{0, 8, 8, 3,CORE_SEG7},
   {3, 2, 0, 2,CORE_SEG7S},
@@ -133,6 +158,7 @@ MACHINE_DRIVER_START(zacProto)
   MDRV_CPU_VBLANK_INT(vblank, 1)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_DIPS(24)
+  MDRV_SOUND_ADD(DISCRETE, zacProto_discInt)
 MACHINE_DRIVER_END
 
 INPUT_PORTS_START(strike) \
@@ -234,7 +260,7 @@ ROM_START(strike) \
     ROM_LOAD("strike4.bin", 0x1400, 0x0400, CRC(ca0eddd0) SHA1(52f9faf791c56b68b1806e685d0479ea67aba019))
 ROM_END
 
-CORE_GAMEDEFNV(strike, "Strike", 1978, "Zaccaria", zacProto, GAME_NO_SOUND)
+CORE_GAMEDEFNV(strike, "Strike", 1978, "Zaccaria", zacProto, GAME_IMPERFECT_SOUND)
 
 INPUT_PORTS_START(skijump) \
   CORE_PORTS \
@@ -337,7 +363,7 @@ ROM_START(skijump) \
 ROM_END
 #define init_skijump init_strike
 
-CORE_GAMEDEFNV(skijump,"Ski Jump", 1978, "Zaccaria", zacProto, GAME_NO_SOUND)
+CORE_GAMEDEFNV(skijump,"Ski Jump", 1978, "Zaccaria", zacProto, GAME_IMPERFECT_SOUND)
 
 INPUT_PORTS_START(spacecty) \
   CORE_PORTS \
@@ -438,4 +464,4 @@ ROM_START(spacecty) \
 ROM_END
 #define init_spacecty init_strike
 
-CORE_GAMEDEFNV(spacecty,"Space City", 1979, "Zaccaria", zacProto, GAME_NO_SOUND)
+CORE_GAMEDEFNV(spacecty,"Space City", 1979, "Zaccaria", zacProto, GAME_IMPERFECT_SOUND)
