@@ -1,3 +1,34 @@
+Version 1.59 (February 17, 2008) - "The lost sounds"
+------------------------------------------------------------------------------
+And yet another bugfix release - just a little more than two weeks later!
+
+Gottlieb's System 3 has now access to all of the content of the OKI chip's
+speech & sound roms, enabling some long-lost quotes like "Jackpot!" on
+Stargate, or "You need another coin" on Barb Wire.
+At the same time the sampling speed was adjusted, for it was playing too
+fast before, and made some game soundtack sound real bad (eg. Wipeout)!
+
+Some preliminary sound was added for the Zaccaria 1-player games. It probably
+sounds nothing like the original, for lack of comparison sound clips mostly!
+
+A few clones and new games were added, for instance the "Addams Family Values"
+coin dropper, and the newly-found Rock Encore. So nothing spectacular here. ;)
+
+Changes:
+
+*** CORE/CPU ***
+Full OKI 6295 rom support for Gottlieb System 3 games
+Decreased sampling frequency by 5.6% for games using the OKI 6295 chip
+HSTD flashing in all player score panels for Gottlieb System 1 games
+Preliminary sound support for Zaccaria prototype machines
+
+*** ROM SUPPORT ***
+Added Addams Family Values (coin dropping game)
+Added Rock Encore (different sound version for Premier's "Rock")
+Added NBA Fastbreak U2 sound version 0.4 (gives a warning but still plays)
+Added Baby Pacman home roms by Okaegi
+
+
 Version 1.58 (February 1, 2008) - "The complete series"
 ------------------------------------------------------------------------------
 This is more of a bugfix release. It does not implement any new features
@@ -185,8 +216,10 @@ Version 1.54 (December 23, 2006) - "One DLL to rule them all!"
 ------------------------------------------------------------------------------
 Happy birthday Steve!
 It's been a challenging 6 months since the release of 1.53.
-We've added preliminary support for NSM, Wico, and LTD.  LTD is closest to working for these newly supported systems.
-Also, a minor correction for the display properties - the off state can now be set like the other levels.
+We've added preliminary support for NSM, Wico, and LTD.
+LTD is closest to working for these newly supported systems.
+Also, a minor correction for the display properties -
+the off state can now be set like the other levels.
 Nuova Bell is now playable with sound - needs improvement
 Thanks to Mike McAndrew for providing the correct sound rom for Rat Race.
 
