@@ -414,7 +414,6 @@ INLINE void execute_one(UINT8 opcode)
 			M_JMP(0x01)
 			break;
 	}
-if (I.AB.b.h) printf("%04x ", I.AB.w.l);
 	if (I.skip) {
 		opcode = ROP();
 		I.PC.w.l += words[opcode] - 1;
