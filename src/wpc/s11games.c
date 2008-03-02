@@ -826,6 +826,20 @@ S11CS_SOUNDROM008(      "rad_u4.p3",  CRC(d31b7744) SHA1(7ebcc1503fc322909d32c7c
 S11_ROMEND
 CORE_CLONEDEF(radcl,p3,l1, "Radical (P-3)", 1990, "Bally", s11c_one,0)
 
+/*-----------------------
+/ Star Trax 9/90
+/-----------------------*/
+INITGAME(strax,GEN_S11B, s11_dispS11b2, 12, FLIP_SW(FLIP_L),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
+S11_ROMSTART48(strax,p7,"strx_u26.l1", CRC(0d2a401c) SHA1(b0a0899dcde04dc42e4fd5d6baf39bb0e81dbb34),
+                        "strx_u27.l1", CRC(6e9c0632) SHA1(5c0ea2b60dd9001b802d2ecdb5c381ab05f08ec9))
+S11XS_SOUNDROM88(       "strx_u21.l1", CRC(6a323227) SHA1(7c7263754e5672c654a2ee9582f0b278e637a909),
+                        "strx_u22.l1", CRC(58407eb4) SHA1(6bd9b304c88d9470eae5afb6621187f4a8313573))
+S11CS_SOUNDROM88(       "pfrc_u4.l2",  CRC(8f431529) SHA1(0f479990715a31fd860c000a066cffb70da502c2),
+                        "pfrc_u19.l1", CRC(abc4caeb) SHA1(6faef2de9a49a1015b4038ab18849de2f25dbded))
+S11_ROMEND
+#define input_ports_strax input_ports_s11
+CORE_GAMEDEF(strax,p7, "Star Trax (domestic prototype)", 1990, "Williams", s11_mS11BS,0)
+
 /*--------------------
 / Riverboat Gambler 10/90
 /--------------------*/
