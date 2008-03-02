@@ -1262,6 +1262,7 @@ DRIVER(diner,l1)        //S11-571:  09/90 W Diner (L-1)
 DRIVER(radcl,l1)        //S11-1904: 09/90 B Radical!
 DRIVER(radcl,g1)        //S11-1904: 09/90 B Radical! (G-1)
 DRIVER(radcl,p3)        //S11-1904: 09/90 B Radical! (P-3)
+DRIVER(strax,p7)        //S11-???:  09/90 W Star Trax (domestic prototype)
 DRIVER(dd,l2)           //S11-737:  11/90 B Dr. Dude (L-2)
 DRIVER(dd,p6)           //S11-737:  11/90 B Dr. Dude (P-6)
 //WPC
