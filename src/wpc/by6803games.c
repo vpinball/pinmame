@@ -33,7 +33,6 @@ static void init_##name(void) { core_gameData = &name##GameData; }
 /*------------------------------------
 / Eight Ball Champ (6803-0B38: 09/85) - Manual says can work with Cheap Squeek also via operator setting
 /------------------------------------*/
-//CPU Works
 INITGAME6803(eballchp,GEN_BY6803,dispBy7C,FLIP_SWNO(0,26),4,SNDBRD_BY61, BY6803_DISP7SEG)
 BY6803_ROMSTARTx4(eballchp,"u3_cpu.128",CRC(025f3008) SHA1(25d310f169b92ce6b348330816ddc3b5710e57da))
 BY61_SOUNDROMx000(         "u3_snd.532",CRC(4836d70d) SHA1(a4acc64609d91a84ba4c8101186d07397b496600),
@@ -54,7 +53,6 @@ CORE_CLONEDEFNV(eballch2,eballchp,"Eight Ball Champ (Cheap Squeek)",1985,"Bally"
 /*------------------------------------
 / Beat the Clock (6803-0C70: 11/85) - ??
 /------------------------------------*/
-//CPU Works
 INITGAME6803(beatclck,GEN_BY6803,dispBy7C,FLIP_SW(FLIP_L),4,SNDBRD_BY61, BY6803_DISP7SEG)
 BY6803_ROMSTARTx4(beatclck,"btc_u3.cpu",CRC(9ba822ab) SHA1(f28d38411df3978bcaf24177fa1b47037a586cbb))
 BY61_SOUNDROM0000(         "btc_u2.snd",CRC(fd22fd2a) SHA1(efad3b94e91d07930ada5366d389f35377dfbd99),
@@ -68,7 +66,6 @@ CORE_GAMEDEFNV(beatclck,"Beat the Clock",1985,"Bally",by_mBY6803_61S,0)
 /*------------------------------------
 / Lady Luck (6803-0E34: 02/86) - Uses Cheap Squeek (Same as Last MPU-35 Line of games)
 /------------------------------------*/
-//CPU Works
 INITGAME6803(ladyluck,GEN_BY6803,dispBy7C,FLIP_SW(FLIP_L),4,SNDBRD_BY45, BY6803_DISP7SEG)
 BY6803_ROMSTARTx4(ladyluck,"u3.cpu",    CRC(129f41f5) SHA1(0351419814d3f4e98a4572fdec9d53e12fe6b6be))
 BY45_SOUNDROM22(           "u3_snd.532",CRC(1bdd6e2b) SHA1(14fc25b5f8eefe8ffab062f83e06ec19403aa00a),
@@ -82,7 +79,6 @@ CORE_GAMEDEFNV(ladyluck,"Lady Luck",1986,"Bally",by_mBY6803_45S,0)
 /*--------------------------------
 / MotorDome (6803-0E14: 05/86)
 /-------------------------------*/
-//CPU & Sound Works?
 INITGAME6803(motrdome,GEN_BY6803,dispBy104,FLIP6803,4,SNDBRD_BYTCS, BY6803_DISPALPHA)
 BY6803_ROMSTART44(motrdome,"modm_u2.dat",CRC(820ca073) SHA1(0b50712f7d65f629af934deccc52d588f390a05b),
                            "modm_u3.dat",CRC(aae7c418) SHA1(9d3ea83ffff0b9696f5113043475c6e9b9a464ae))
@@ -98,7 +94,6 @@ CORE_GAMEDEFNV(motrdome,"MotorDome",1986,"Bally",by_mBY6803_TCSS,0)
 /*------------------------------------
 / Black Belt (6803-0E52: 07/86)
 /------------------------------------*/
-//CPU & Sound Works?
 INITGAME6803(blackblt,GEN_BY6803,dispBy104,FLIP6803,4,SNDBRD_BYTCS, BY6803_DISPALPHA)
 BY6803_ROMSTART44(blackblt,"u2.cpu",     CRC(7c771910) SHA1(1df8ae478c3626a5200215bfca557ca42e064d2b),
                            "u3.cpu",     CRC(bad0f4c3) SHA1(5e5240fda9f7f7f15f1953f12b132ba1c4fc886e))
@@ -112,7 +107,6 @@ CORE_GAMEDEFNV(blackblt,"Black Belt",1986,"Bally",by_mBY6803_TCSS,0)
 /*------------------------------------
 / Special Force (6803-0E47: 08/86)
 /------------------------------------*/
-//CPU & Sound Works?
 INITGAME6803(specforc,GEN_BY6803,dispBy104,FLIP_SW(FLIP_L),4,SNDBRD_BYSD, BY6803_DISPALPHA)
 BY6803_ROMSTART44(specforc,"u2_revc.128",CRC(d042af04) SHA1(0a73ee6d3ce603899fd89de70f90e9efc58b8b42),
                            "u3_revc.128",CRC(d48a5eaf) SHA1(90a5d5e928abfec699bae9d0087e90316339058f))
@@ -127,7 +121,6 @@ CORE_GAMEDEFNV(specforc,"Special Force",1986,"Bally",by_mBY6803_SDS,0)
 /*------------------------------------
 / Strange Science (6803-0E35: 10/86)
 /------------------------------------*/
-//CPU & Sound Works?
 INITGAME6803(strngsci,GEN_BY6803,dispBy104,FLIP_SW(FLIP_L),4,SNDBRD_BYTCS, BY6803_DISPALPHA)
 BY6803_ROMSTART44(strngsci, "cpu_u2.128",  CRC(2ffcf284) SHA1(27d66806708c983092bab4ed6965c2e91e69acdc),
                             "cpu_u3.128",  CRC(35257931) SHA1(d3d6b84e50677a4c5f9d5c13c9522ad6d3a1358d))
@@ -139,7 +132,6 @@ CORE_GAMEDEFNV(strngsci,"Strange Science",1986,"Bally",by_mBY6803_TCSS,0)
 /*------------------------------------
 / City Slicker (6803-0E79: 03/87)
 /------------------------------------*/
-//CPU & Sound Works?
 INITGAME6803(cityslck,GEN_BY6803,dispBy104,FLIP6803,4,SNDBRD_BYTCS, BY6803_DISPALPHA)
 BY6803_ROMSTART44(cityslck, "u2.128",    CRC(94bcf162) SHA1(1d83592ad2441fc5e4c6fd3ab2373614dfe78b34),
                             "u3.128",    CRC(97cb2bca) SHA1(0cbd49bbce2ce26c720d8a52bd4d1256f0ac61b3))
@@ -151,7 +143,6 @@ CORE_GAMEDEFNV(cityslck,"City Slicker",1987,"Bally",by_mBY6803_TCS2S,0)
 /*------------------------------------
 / Hardbody (6803-0E94: 03/87)
 /------------------------------------*/
-//CPU & Sound Works?
 INITGAME6803(hardbody,GEN_BY6803,dispBy104,FLIP_SW(FLIP_L),4,SNDBRD_BYTCS, BY6803_DISPALPHA)
 BY6803_ROMSTART44(hardbody,"cpu_u2.128",  CRC(c9248b47) SHA1(54239bd7d15574ebbb70ed306a804b7b32ed516a),
                            "cpu_u3.128",  CRC(31c255d0) SHA1(b6ffa2616ae9a4a121585cc402080ec6f26f8472))
@@ -173,7 +164,6 @@ CORE_CLONEDEFNV(hardbdyg,hardbody,"Hardbody (German)",1987,"Bally",by_mBY6803_TC
 /*--------------------------------
 / Party Animal (6803-0H01: 05/87)
 /-------------------------------*/
-//CPU & Sound Works?
 INITGAME6803(prtyanim,GEN_BY6803,dispBy104,FLIP6803,4,SNDBRD_BYSD, BY6803_DISPALPHA)
 BY6803_ROMSTART44(prtyanim,"cpu_u2.128", CRC(abdc0b2d) SHA1(b93c7248ea83461101383023bd4e4a50292d8570),
                            "cpu_u3.128", CRC(e48b2d63) SHA1(190fc5a805bda9617c08a29c0bde4d94a77279e9))
@@ -188,8 +178,6 @@ CORE_GAMEDEFNV(prtyanim,"Party Animal",1987,"Bally",by_mBY6803_SDS,0)
 /*-----------------------------------------
 / Heavy Metal Meltdown (6803-0H03: 08/87)
 /-----------------------------------------*/
-//CPU & Sound Works?
-//
 //3 Different Sources claim that this games only uses U11&U12..
 //Must be correct, as it DOES pass the start up test.
 INITGAME6803(hvymetal,GEN_BY6803,dispBy104,FLIP6803,4,SNDBRD_BYSD, BY6803_DISPALPHA)
@@ -204,7 +192,6 @@ CORE_GAMEDEFNV(hvymetal,"Heavy Metal Meltdown",1987,"Bally",by_mBY6803_SDS,0)
 /*------------------------------------
 / Dungeons & Dragons (6803-0H06: 10/87)
 /------------------------------------*/
-//CPU & Sound Works?
 INITGAME6803(dungdrag,GEN_BY6803,dispBy104,FLIP_SW(FLIP_L),4,SNDBRD_BYSD, BY6803_DISPALPHA)
 BY6803_ROMSTART44(dungdrag,"cpu_u2.128", CRC(cefd4330) SHA1(0bffb2b73229e9908a018e06daeceb736896e5f0),
                            "cpu_u3.128", CRC(4bacc7f5) SHA1(71dd898924e0e968c4f3ba8a261e6b382d8ae0f1))
@@ -220,7 +207,6 @@ CORE_GAMEDEFNV(dungdrag,"Dungeons & Dragons",1987,"Bally",by_mBY6803_SDS,0)
 /*------------------------------------------------
 / Escape from the Lost World (6803-0H05: 12/87)
 /-----------------------------------------------*/
-//CPU & Sound Works?
 INITGAME6803(esclwrld,GEN_BY6803A,dispBy104,FLIP6803,4,SNDBRD_BYSD, BY6803_DISPALPHA)
 BY6803_ROMSTART44(esclwrld,"u2.128", CRC(b11a97ea) SHA1(29339785a67ed7dc9eb39ddc7bb7e6baaf731210),
                            "u3.128", CRC(5385a562) SHA1(a6c39532d01db556e4bdf90020a9d9905238e8ef))
@@ -246,7 +232,6 @@ CORE_CLONEDEFNV(esclwrlg,esclwrld,"Escape from the Lost World (German)",1987,"Ba
 /*------------------------------------
 / Blackwater 100 (6803-0H07: 03/88)
 /------------------------------------*/
-//CPU & Sound Works?
 INITGAME6803(black100,GEN_BY6803A,dispBy104,FLIP6803,4,SNDBRD_BYSD, BY6803_DISPALPHA)
 BY6803_ROMSTART44(black100, "u2.cpu", CRC(411fa773) SHA1(9756c7eee0f78792823a0b0379d2baac28cb03e8),
                             "u3.cpu", CRC(d6f6f890) SHA1(8fe4dae471f4c89f2fd72c6e647ead5206881c63))
@@ -256,7 +241,7 @@ BYSD_SOUNDROM0000(          "u12.bin",CRC(a0ecb282) SHA1(4655e0b85f7e8af8dda8532
                             "u13.bin",CRC(f5890443) SHA1(77cd18cf5541ae9f7e2dd1c060a9bf29b242d05d))
 BY6803_ROMEND
 #define input_ports_black100 input_ports_by6803a
-CORE_GAMEDEFNV(black100,"Blackwater 100",1988,"Bally",by_mBY6803_SDS,0)
+CORE_GAMEDEFNV(black100,"Blackwater 100",1988,"Bally",by_mBY6803_SDS,GAME_IMPERFECT_SOUND)
 
 BY6803_ROMSTART44(black10s, "sb2.cpu", CRC(b6fdbb0f) SHA1(5b36a725db3a1e023bbb54b8f85300fe99174b6e),
                             "sb3.cpu", CRC(ae9930b8) SHA1(1b6c63ce98939ecded300639d872df62548157a4))
@@ -267,13 +252,12 @@ BYSD_SOUNDROM0000(          "u12.bin",CRC(a0ecb282) SHA1(4655e0b85f7e8af8dda8532
 BY6803_ROMEND
 #define init_black10s init_black100
 #define input_ports_black10s input_ports_by6803a
-CORE_CLONEDEFNV(black10s,black100,"Blackwater 100 (Single Ball Play)",1988,"Bally",by_mBY6803_SDS,0)
+CORE_CLONEDEFNV(black10s,black100,"Blackwater 100 (Single Ball Play)",1988,"Bally",by_mBY6803_SDS,GAME_IMPERFECT_SOUND)
 
 //Games below use 6803 MPU & Williams System 11C Sound Hardware
 /*-------------------------------------------------------------
 / Truck Stop (6803-2001: 12/88) - These are ProtoType ROMS?
 /-------------------------------------------------------------*/
-//CPU & Sound Works?
 INITGAME6803(trucksp3,GEN_BY6803A,dispBy104,FLIP6803,4,SNDBRD_S11CS, BY6803_DISPALPHA)
 BY6803_ROMSTART44(trucksp3,"u2_p3.128",   CRC(79b2a5b1) SHA1(d3de91bfadc9684302b2367cfcb30ed0d6faa020),
                            "u3_p3.128",   CRC(2993373c) SHA1(26490f1dd8a5329a88a2ceb1e6044711a29f1445))
@@ -297,7 +281,6 @@ CORE_CLONEDEFNV(trucksp2,trucksp3,"Truck Stop (P-2)",1988,"Bally",by_mBY6803_S11
 /*-----------------------------------------------------------
 / Atlantis (6803-2006: 03/89)
 /-----------------------------------------------------------*/
-//CPU & Sound Works?
 INITGAME6803(atlantis,GEN_BY6803A,dispBy104,FLIP6803,4,SNDBRD_S11CS, BY6803_DISPALPHA)
 BY6803_ROMSTART44(atlantis, "u26_cpu.rom",CRC(b98491e1) SHA1(b867e2b24e93c4ee19169fe93c0ebfe0c1e2fc25),
                             "u27_cpu.rom",CRC(8ea2b4db) SHA1(df55a9fb70d1cabad51dc2b089af7904a823e1d8))
