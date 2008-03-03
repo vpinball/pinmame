@@ -429,6 +429,7 @@ static MEMORY_READ_START(snt_readmem)
   { 0x0000, 0x007f, MRA_RAM },
   { 0x0080, 0x0083, pia_r(SNT_PIA0) },
   { 0x0090, 0x0093, pia_r(SNT_PIA1) },
+  { 0x1000, 0x1000, MRA_NOP },
   { 0xc000, 0xffff, MRA_ROM },
 MEMORY_END
 
@@ -729,7 +730,7 @@ static void tcs_pia0irq(int state) {
 /*----------------------------------------
 /    Sounds Deluxe
 /-----------------------------------------*/
-#define SD_PIA0 5
+#define SD_PIA0 2
 static void sd_init(struct sndbrdData *brdData);
 static void sd_diag(int button);
 static WRITE_HANDLER(sd_cmd_w);
@@ -768,11 +769,12 @@ static void sd_pia0irq(int state);
 
 static struct {
   struct sndbrdData brdData;
-  int cmd[2], dacdata, status, cmdsync, irqnext;
+  UINT16 dacdata;
+  int cmd[2], status, irqnext, cmdsync;
 } sdlocals;
 
 static const struct pia6821_interface sd_pia = {
-  /*i: A/B,CA/B1,CA/B2 */ 0, sd_pia0b_r, PIA_UNUSED_VAL(1), 0, 0, 0,
+  /*i: A/B,CA/B1,CA/B2 */ 0, sd_pia0b_r, PIA_UNUSED_VAL(0), PIA_UNUSED_VAL(1), 0, 0,
   /*o: A/B,CA/B2       */ sd_pia0a_w, sd_pia0b_w, 0, sd_pia0cb2_w,
   /*irq: A/B           */ sd_pia0irq, sd_pia0irq
 };
@@ -787,10 +789,12 @@ static void sd_diag(int button) {
   cpu_set_irq_line(sdlocals.brdData.cpuNo, MC68000_IRQ_3, button ? ASSERT_LINE : CLEAR_LINE);
 }
 static WRITE_HANDLER(sd_man_w) {
-  sdlocals.irqnext = 1;
+  sd_ctrl_w(0, 0);
+  sd_ctrl_w(0, 1);
   sd_cmd_w(0, data);
 }
 static WRITE_HANDLER(sd_cmd_w) {
+printf("%02x ", data);
   sdlocals.cmd[sdlocals.cmdsync ^= 1] = data;
   if (sdlocals.irqnext) {
     pia_set_input_ca1(SD_PIA0,0); pia_set_input_ca1(SD_PIA0,1);
@@ -798,21 +802,21 @@ static WRITE_HANDLER(sd_cmd_w) {
   }
 }
 static WRITE_HANDLER(sd_ctrl_w) {
+printf("%d ", data);
   if (!(data & 0x01)) sdlocals.irqnext = 1;
 }
 static READ_HANDLER(sd_status_r) { return sdlocals.status; }
 
 static READ_HANDLER(sd_pia0b_r) {
-  return sdlocals.cmd[sdlocals.cmdsync ^= 1];
+  return 0x30 | (sdlocals.cmd[sdlocals.cmdsync ^= 1] & 0x0f);
 }
 
 static WRITE_HANDLER(sd_pia0a_w) {
-  sdlocals.dacdata = (sdlocals.dacdata & ~0x3fc) | (((UINT16)data) << 2);
-  DAC_signed_data_16_w(0, sdlocals.dacdata << 6);
+  sdlocals.dacdata = (sdlocals.dacdata & 0x00ff) | (data << 8);
 }
 static WRITE_HANDLER(sd_pia0b_w) {
-  sdlocals.dacdata = (sdlocals.dacdata & ~0x003) | (data >> 6);
-  DAC_signed_data_16_w(0, sdlocals.dacdata << 6);
+  sdlocals.dacdata = (sdlocals.dacdata & 0xff00) | (data & 0xc0);
+  DAC_signed_data_16_w(0, sdlocals.dacdata);
   sdlocals.status = (data>>4) & 0x03;
 }
 static void sd_pia0irq(int state) {

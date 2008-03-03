@@ -461,10 +461,28 @@
       ROM_CONTINUE(  0x5800, 0x0800) \
 	    ROM_RELOAD(  0xe000, 0x2000)
 
+#define BY68701_ROMSTART4(name, n1, chk1, n2, chk2, n3, chk3, n4, chk4) \
+  ROM_START(name) \
+    NORMALREGION(0x10000, BY35_CPUREGION) \
+      ROM_LOAD( n1, 0xf800, 0x0800, chk1) \
+      ROM_LOAD( n2, 0xc000, 0x1000, chk2) \
+      ROM_LOAD( n3, 0xa000, 0x1000, chk3) \
+      ROM_LOAD( n4, 0x8000, 0x1000, chk4)
+
+#define BY68701_ROMSTART5(name, n1, chk1, n2, chk2, n3, chk3, n4, chk4, n5, chk5) \
+  ROM_START(name) \
+    NORMALREGION(0x10000, BY35_CPUREGION) \
+      ROM_LOAD( n1, 0xf800, 0x0800, chk1) \
+      ROM_LOAD( n2, 0xd000, 0x1000, chk2) \
+      ROM_LOAD( n3, 0xc000, 0x1000, chk3) \
+      ROM_LOAD( n4, 0x7000, 0x1000, chk4) \
+      ROM_LOAD( n5, 0xa000, 0x1000, chk5)
+
 #define BY35_ROMEND ROM_END
 #define BY17_ROMEND ROM_END
 #define ST200_ROMEND ROM_END
 #define HNK_ROMEND ROM_END
+#define BY68701_ROMEND ROM_END
 
 extern MACHINE_DRIVER_EXTERN(byProto);
 extern MACHINE_DRIVER_EXTERN(by35);
@@ -474,6 +492,7 @@ extern MACHINE_DRIVER_EXTERN(by35_56S);
 extern MACHINE_DRIVER_EXTERN(by35_61S);
 extern MACHINE_DRIVER_EXTERN(by35_45S);
 extern MACHINE_DRIVER_EXTERN(by6802_45S);
+extern MACHINE_DRIVER_EXTERN(by68701_61S);
 extern MACHINE_DRIVER_EXTERN(st100s);
 extern MACHINE_DRIVER_EXTERN(st200);
 extern MACHINE_DRIVER_EXTERN(st200s100);
@@ -492,6 +511,7 @@ extern MACHINE_DRIVER_EXTERN(hnk);
 #define by35_mBY35_56S  by35_56S // XENON
 #define by35_mBY35_45S  by35_45S
 #define by35_m6802_45S  by6802_45S
+#define by35_m68701_61S by68701_61S
 #define by35_mBowling   st100s
 #define by35_mBowling2  st200s100
 #define by35_mAstro     st200

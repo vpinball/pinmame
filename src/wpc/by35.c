@@ -10,6 +10,31 @@
 #include "hnks.h"
 #include "by35.h"
 
+#define BY35_PIA0 0
+#define BY35_PIA1 1
+
+#define BY35_VBLANKFREQ    60 /* VBLANK frequency */
+
+#define BY35_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
+
+#define BY35_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
+
+#define BY35_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKS */
+
+/*--------------------------------------------------
+/ There are a few variants on the BY35 hardware
+/ PIA1:A1  - SOUNDE (BY35), 7th display digit (Stern)
+/ PIA1:A0  - credit/ball strobe. Positive edge (BY17,Stern), Negative edge (BY35)
+/ PIA1:CA2 - sound control (HNK), lamp strobe 2 (BY17, BY35, stern)
+/ 4th DIP bank (not HNK)
+/ 9 segment display (HNK)
+----------------------------------------------------*/
+#define BY35HW_SOUNDE    0x01 // supports 5th sound line (BY35 only)
+#define BY35HW_INVDISP4  0x02 // inverted strobe to credit/ball (BY17+stern)
+#define BY35HW_DIP4      0x04 // got 4th DIP bank (not HNK)
+#define BY35HW_REVSW     0x08 // reversed switches (HNK only)
+#define BY35HW_SCTRL     0x20 // uses lamp2 as sound ctrl (HNK)
+
 static char debugms[] = "01234567";
 // ok
 static READ_HANDLER(snd300_r) {
@@ -32,31 +57,6 @@ static WRITE_HANDLER(snd300_w) {
 static WRITE_HANDLER(snd300_wex) {
   sndbrd_0_ctrl_w(0,data);
 }
-
-
-#define BY35_PIA0 0
-#define BY35_PIA1 1
-
-#define BY35_VBLANKFREQ    60 /* VBLANK frequency */
-
-#define BY35_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
-
-#define BY35_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
-
-#define BY35_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKS */
-/*--------------------------------------------------
-/ There are a few variants on the BY35 hardware
-/ PIA1:A1  - SOUNDE (BY35), 7th display digit (Stern)
-/ PIA1:A0  - credit/ball strobe. Positive edge (BY17,Stern), Negative edge (BY35)
-/ PIA1:CA2 - sound control (HNK), lamp strobe 2 (BY17, BY35, stern)
-/ 4th DIP bank (not HNK)
-/ 9 segment display (HNK)
-----------------------------------------------------*/
-#define BY35HW_SOUNDE    0x01 // supports 5th sound line (BY35 only)
-#define BY35HW_INVDISP4  0x02 // inverted strobe to credit/ball (BY17+stern)
-#define BY35HW_DIP4      0x04 // got 4th DIP bank (not HNK)
-#define BY35HW_REVSW     0x08 // reversed switches (HNK only)
-#define BY35HW_SCTRL     0x20 // uses lamp2 as sound ctrl (HNK)
 
 static struct {
   int a0, a1, b1, ca11, ca20, ca21, cb10, cb20, cb21;
@@ -325,7 +325,7 @@ static INTERRUPT_GEN(by35_vblank) {
     coreGlobals.diagnosticLed = locals.diagnosticLed;
     locals.diagnosticLed = 0;
   }
-  core_updateSw(core_getSol(core_gameData->gen & GEN_BYPROTO ? 18 : 19));
+  core_updateSw(core_getSol(19));
 }
 
 static SWITCH_UPDATE(by35) {
@@ -345,10 +345,6 @@ static SWITCH_UPDATE(by35) {
       CORE_SETKEYSW(inports[BY35_COMINPORT],   0x06,1);
       CORE_SETKEYSW(inports[BY35_COMINPORT],   0x81,2);
     }
-    else if (core_gameData->gen & GEN_BYPROTO) {
-      CORE_SETKEYSW(inports[BY35_COMINPORT]>>8,0x01,3);
-      CORE_SETKEYSW(inports[BY35_COMINPORT],   0x1f,4);
-    }
     else if (core_gameData->gen & GEN_ASTRO) {
       CORE_SETKEYSW(inports[BY35_COMINPORT],   0x07,0);
       CORE_SETKEYSW(inports[BY35_COMINPORT]>>8,0x03,1);
@@ -361,13 +357,11 @@ static SWITCH_UPDATE(by35) {
       CORE_SETKEYSW(inports[BY35_COMINPORT]>>15,0x01,5);
     }
   }
-  if ((core_gameData->gen & GEN_BYPROTO) == 0) {
-    /*-- Diagnostic buttons on CPU board --*/
-    cpu_set_nmi_line(0, core_getSw(BY35_SWCPUDIAG) ? ASSERT_LINE : CLEAR_LINE);
-    sndbrd_0_diag(core_getSw(BY35_SWSOUNDDIAG));
-    /*-- coin door switches --*/
-    pia_set_input_ca1(BY35_PIA0, !core_getSw(BY35_SWSELFTEST));
-  }
+  /*-- Diagnostic buttons on CPU board --*/
+  cpu_set_nmi_line(0, core_getSw(BY35_SWCPUDIAG) ? ASSERT_LINE : CLEAR_LINE);
+  sndbrd_0_diag(core_getSw(BY35_SWSOUNDDIAG));
+  /*-- coin door switches --*/
+  pia_set_input_ca1(BY35_PIA0, !core_getSw(BY35_SWSELFTEST));
 }
 
 /* PIA 0 (U10)
@@ -415,111 +409,17 @@ static void by35_zeroCross(int data) {
     pia_set_input_cb1(BY35_PIA0, locals.cb10 = !locals.cb10);
 }
 
-
-/* Bally Prototype changes below.
-   Note there is no extra display for ball in play,
-   they just used 5 lights on the backglass.
-   Also the lamps are accessed along with the displays!
-   Since this required a different lamp strobing,
-   I introduced a new way of arranging the lamps which
-   makes it easier to map the lights, and saves a row.
- */
-
-static void by35p_lampStrobe(void) {
-  int strobe = locals.a1 >> 2;
-  int ii,jj;
-  for (ii = 0; strobe; ii++, strobe>>=1) {
-    if (strobe & 0x01)
-      for (jj = 0; jj < 5; jj++) {
-        int lampdata = (locals.bcd[jj]>>4)^0x0f;
-        int lampadr = ii*5 + jj;
-        coreGlobals.tmpLampMatrix[lampadr/2] |= (lampadr%2 ? lampdata << 4 : lampdata);
-      }
-  }
-}
-// buffer lamps & display digits
-static WRITE_HANDLER(piap0a_w) {
-  locals.a0 = data;
-  if (!locals.ca20 && locals.lastbcd)
-    locals.bcd[--locals.lastbcd] = data;
-
-  if (locals.ca21) logerror("%04x: speechboard active ! data  %02x \n", activecpu_get_previouspc(),data);
-
-}
-// switches & dips (inverted)
-static READ_HANDLER(piap0b_r) {
-  UINT8 sw = 0;
-  if (locals.a0 & 0x10) sw = core_getDip(0); // DIP#1 1-8
-  else if (locals.a0 & 0x20) sw = core_getDip(1); // DIP#2 9-16
-  else if (locals.a0 & 0x40) sw = core_getDip(2); // DIP#3 17-24
-  else if (locals.a0 & 0x80) sw = core_getDip(3); // DIP#4 25-32
-  else sw = core_getSwCol(locals.a0 & 0x0f);
-  return core_revbyte(sw);
-}
-// display strobe
-static WRITE_HANDLER(piap0ca2_w) {
-  if (data & ~locals.ca20) {
-    locals.lastbcd = 5;
-  } else if (~data & locals.ca20) {
-    by35_dispStrobe(0x1f);
-    by35p_lampStrobe();
-  }
-  locals.ca20 = data;
-}
-// set display row
-static WRITE_HANDLER(piap1a_w) {
-  locals.a1 = data;
-  if (data & 0x01) logerror("PIA#1 Port A = %02X\n", data);
-}
-// solenoids
-static WRITE_HANDLER(piap1b_w) {
-  locals.b1 = data;
-  coreGlobals.pulsedSolState = 0;
-  if (locals.cb21)
-    locals.solenoids |= coreGlobals.pulsedSolState = (1<<(data & 0x0f)) & 0x7fff;
-  data ^= 0xf0;
-  coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xfff87fff) | ((data & 0xf0)<<11);
-  locals.solenoids |= (data & 0xf0)<<11;
-}
-//diag. LED
-static WRITE_HANDLER(piap1ca2_w) {
-  locals.ca21 = locals.diagnosticLed = data;
-}
-// solenoid control?
-static WRITE_HANDLER(piap1cb2_w) {
-  locals.cb21 = data;
-}
-
-static struct pia6821_interface by35Proto_pia[] = {{
-/* I:  A/B,CA1/B1,CA2/B2 */  0, piap0b_r, 0,0, 0,0,
-/* O:  A/B,CA2/B2        */  piap0a_w,0, piap0ca2_w,0,
-/* IRQ: A/B              */  piaIrq0,0
-},{
-/* I:  A/B,CA1/B1,CA2/B2 */  0, 0, 0,0, 0,0,
-/* O:  A/B,CA2/B2        */  piap1a_w,piap1b_w, piap1ca2_w,piap1cb2_w,
-/* IRQ: A/B              */  piaIrq1,0
-}};
-
-static INTERRUPT_GEN(byProto_irq) {
-  pia_set_input_ca1(BY35_PIA0, 0); pia_set_input_ca1(BY35_PIA0, 1);
-}
-
-static void by35p_zeroCross(int data) {
-  pia_set_input_ca1(BY35_PIA1, 0); pia_set_input_ca1(BY35_PIA1, 1);
-}
-
-
 /*-----------------------------------------------
 / Load/Save static ram
 /-------------------------------------------------*/
 static UINT8 *by35_CMOS;
 
 static NVRAM_HANDLER(by35) {
-  core_nvram(file, read_or_write, by35_CMOS, 0x100, (core_gameData->gen & (GEN_STMPU100|GEN_STMPU200|GEN_BYPROTO))?0x00:0xff);
+  core_nvram(file, read_or_write, by35_CMOS, 0x100, (core_gameData->gen & (GEN_STMPU100|GEN_STMPU200))?0x00:0xff);
 }
 // Bally only uses top 4 bits
 static WRITE_HANDLER(by35_CMOS_w) {
-  by35_CMOS[offset] = data | ((core_gameData->gen & (GEN_STMPU100|GEN_STMPU200|GEN_ASTRO|GEN_BYPROTO))? 0x00 : 0x0f);
+  by35_CMOS[offset] = data | ((core_gameData->gen & (GEN_STMPU100|GEN_STMPU200|GEN_ASTRO))? 0x00 : 0x0f);
 }
 
 // These games use the A0 memory address for extra sound solenoids only.
@@ -581,17 +481,6 @@ static MACHINE_INIT(by35) {
   }
 }
 
-static MACHINE_INIT(by35Proto) {
-  memset(&locals, 0, sizeof(locals));
-
-  pia_config(BY35_PIA0, PIA_STANDARD_ORDERING, &by35Proto_pia[0]);
-  pia_config(BY35_PIA1, PIA_STANDARD_ORDERING, &by35Proto_pia[1]);
-  locals.vblankCount = 1;
-  // set up hardware
-  locals.hw = BY35HW_REVSW|BY35HW_INVDISP4|BY35HW_DIP4;
-  locals.bcd2seg = core_bcd2seg;
-}
-
 static MACHINE_RESET(by35) { pia_reset(); }
 static MACHINE_STOP(by35) {
   if ((core_gameData->hw.soundBoard & 0xff00) != SNDBRD_ST300 && core_gameData->hw.soundBoard != SNDBRD_ASTRO)
@@ -635,20 +524,6 @@ MACHINE_DRIVER_START(by35)
   MDRV_SWITCH_UPDATE(by35)
   MDRV_DIAGNOSTIC_LEDH(1)
   MDRV_TIMER_ADD(by35_zeroCross,BY35_ZCFREQ*2)
-MACHINE_DRIVER_END
-
-MACHINE_DRIVER_START(byProto)
-  MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CORE_INIT_RESET_STOP(by35Proto,by35,NULL)
-  MDRV_CPU_ADD_TAG("mcpu", M6800, 560000)
-  MDRV_CPU_MEMORY(by35_readmem, by35_writemem)
-  MDRV_CPU_VBLANK_INT(by35_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(byProto_irq, BY35_IRQFREQ)
-  MDRV_NVRAM_HANDLER(by35)
-  MDRV_DIPS(32)
-  MDRV_SWITCH_UPDATE(by35)
-  MDRV_DIAGNOSTIC_LEDH(1)
-  MDRV_TIMER_ADD(by35p_zeroCross, 120) // won't work with 100Hz, ie. not in Europe!
 MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(st100s)
@@ -718,11 +593,95 @@ MACHINE_DRIVER_START(st200v)
   MDRV_IMPORT_FROM(st300v)
 MACHINE_DRIVER_END
 
-
 MACHINE_DRIVER_START(hnk)
   MDRV_IMPORT_FROM(by35)
   MDRV_CPU_MODIFY("mcpu")
   MDRV_CPU_PERIODIC_INT(NULL, 0) // no irq
   MDRV_DIPS(24)
   MDRV_IMPORT_FROM(hnks)
+MACHINE_DRIVER_END
+
+
+// 68701 changes below
+
+static WRITE_HANDLER(port1_w) {
+if (data) printf("p1:%02x ", data);
+}
+
+static READ_HANDLER(port2_r) {
+//printf("p2:r ");
+//  return (locals.phase_a && !locals.p21) | 0x18;
+  return 0;
+}
+
+static WRITE_HANDLER(port2_w) {
+if (data & 0xfe) printf("p2:%02x ", data);
+/*
+  locals.diagnosticLed= ((data>>2)&1);
+  sndbrd_0_ctrl_w(0, (data & 0x10) ? 1 : 0);
+  locals.p21 = data & 0x02;
+  cpu_set_irq_line(0, M6800_TIN_LINE, (locals.phase_a<2 && !locals.p21) ? ASSERT_LINE : CLEAR_LINE);
+*/
+}
+
+static READ_HANDLER(pia1a_r) {
+printf("pia1a_r ");
+  return 0xff;
+}
+
+static struct pia6821_interface by68701_pia[] = {{
+/* I:  A/B,CA1/B1,CA2/B2 */  pia1a_r,0, pia1ca1_r, PIA_UNUSED_VAL(1), 0,0,
+/* O:  A/B,CA2/B2        */  pia1a_w,pia1b_w,pia1ca2_w,pia1cb2_w,
+/* IRQ: A/B              */  piaIrq2,piaIrq3
+}};
+
+static MACHINE_INIT(by68701) {
+  int sb = core_gameData->hw.soundBoard;
+  memset(&locals, 0, sizeof(locals));
+
+  pia_config(BY35_PIA0, PIA_STANDARD_ORDERING, &by35_pia[0]);
+  pia_config(BY35_PIA1, PIA_STANDARD_ORDERING, &by68701_pia[0]);
+
+  sndbrd_0_init(sb, 1, memory_region(REGION_SOUND1), NULL, NULL);
+
+  locals.vblankCount = 1;
+  // set up hardware
+  locals.hw = BY35HW_DIP4;
+  locals.bcd2seg = core_bcd2seg;
+}
+
+static PORT_READ_START( by68701_readport )
+  { M6803_PORT2, M6803_PORT2, port2_r },
+PORT_END
+
+static PORT_WRITE_START( by68701_writeport )
+  { M6803_PORT1, M6803_PORT1, port1_w },
+  { M6803_PORT2, M6803_PORT2, port2_w },
+PORT_END
+
+static MEMORY_READ_START(by68701_readmem)
+  { 0x0000, 0x001f, m6803_internal_registers_r },
+  { 0x0020, 0x0023, pia_r(BY35_PIA0) },
+  { 0x0040, 0x0043, pia_r(BY35_PIA1) },
+  { 0x0080, 0x00ff, MRA_RAM },	/*Internal 128B RAM*/
+  { 0x0400, 0x07ff, MRA_RAM },	/*External RAM*/
+  { 0x7000, 0xffff, MRA_ROM },	/*ROM */
+MEMORY_END
+
+static MEMORY_WRITE_START(by68701_writemem)
+  { 0x0000, 0x001f, m6803_internal_registers_w },
+  { 0x0020, 0x0023, pia_w(BY35_PIA0) },
+  { 0x0040, 0x0043, pia_w(BY35_PIA1) },
+  { 0x0080, 0x00ff, MWA_RAM },	/*Internal 128B RAM*/
+  { 0x0400, 0x07ff, MWA_RAM, &generic_nvram, &generic_nvram_size },	/*External RAM*/
+MEMORY_END
+
+MACHINE_DRIVER_START(by68701_61S)
+  MDRV_IMPORT_FROM(by35)
+  MDRV_CPU_REPLACE("mcpu", M6803, 3580000/4)
+  MDRV_CPU_MEMORY(by68701_readmem, by68701_writemem)
+  MDRV_CPU_PORTS(by68701_readport, by68701_writeport)
+  MDRV_CORE_INIT_RESET_STOP(by68701,by35,by35)
+  MDRV_NVRAM_HANDLER(generic_0fill)
+  MDRV_IMPORT_FROM(by61)
 MACHINE_DRIVER_END

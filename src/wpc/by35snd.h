@@ -72,6 +72,13 @@ extern MACHINE_DRIVER_EXTERN(by61);
     ROM_LOAD(u5, 0xf000, 0x0800, chk5) \
       ROM_RELOAD(0xf800, 0x0800)
 
+#define BY61_SOUNDROMx8x8(u3,chk3,u5,chk5) \
+  SOUNDREGION(0x10000, BY61_CPUREGION) \
+    ROM_LOAD(u3, 0xd000, 0x0800, chk3) \
+      ROM_RELOAD(0xd800, 0x0800) \
+    ROM_LOAD(u5, 0xf000, 0x0800, chk5) \
+      ROM_RELOAD(0xf800, 0x0800)
+
 #define BY61_SOUNDROMx000(u3,chk3,u4,chk4,u5,chk5) \
   SOUNDREGION(0x10000, BY61_CPUREGION) \
     ROM_LOAD(u3, 0xd000, 0x1000, chk3) \
