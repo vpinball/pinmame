@@ -104,8 +104,12 @@ typedef struct
 	/* internal registers */
 	UINT8	port1_ddr;
 	UINT8	port2_ddr;
+	UINT8	port3_ddr;
+	UINT8	port4_ddr;
 	UINT8	port1_data;
 	UINT8	port2_data;
+	UINT8	port3_data;
+	UINT8	port4_data;
 	UINT8	tcsr;			/* Timer Control and Status Register */
 	UINT8	pending_tcsr;	/* pending IRQ flag for clear IRQflag process */
 	UINT8	irq2;			/* IRQ2 flags */
@@ -2379,7 +2383,9 @@ READ_HANDLER( m6803_internal_registers_r )
 			return (cpu_readport16(M6803_PORT2) & (m6800.port2_ddr ^ 0xff))
 					| (m6800.port2_data & m6800.port2_ddr);
 		case 0x04:
+			return m6800.port3_ddr;
 		case 0x05:
+			return m6800.port4_ddr;
 		case 0x06:
 		case 0x07:
 			logerror("CPU #%d PC %04x: warning - read from unsupported internal register %02x\n",cpu_getactivecpu(),activecpu_get_pc(),offset);
@@ -2493,7 +2499,7 @@ WRITE_HANDLER( m6803_internal_registers_w )
 			break;
 		case 0x03:
 #ifdef PINMAME
-			m6800.port2_data = (m6800.port2_data            & m6800.port2_ddr  & 0x02) | 
+			m6800.port2_data = (m6800.port2_data            & m6800.port2_ddr  & 0x02) |
 							   (data                        & m6800.port2_ddr  & 0x1d) |
 							   (cpu_readport16(M6803_PORT2) & ~m6800.port2_ddr & 0x1d);
 				m6800.port2_data &= 0x1d;
@@ -2509,7 +2515,27 @@ WRITE_HANDLER( m6803_internal_registers_w )
 #endif /* PINMAME */
 					break;
 		case 0x04:
+			if (m6800.port3_ddr != data)
+			{
+				m6800.port3_ddr = data;
+				if(m6800.port3_ddr == 0xff)
+					cpu_writeport16(M6803_PORT3,m6800.port3_data);
+				else
+					cpu_writeport16(M6803_PORT3,(m6800.port3_data & m6800.port3_ddr)
+						| (cpu_readport16(M6803_PORT3) & (m6800.port3_ddr ^ 0xff)));
+			}
+			break;
 		case 0x05:
+			if (m6800.port4_ddr != data)
+			{
+				m6800.port4_ddr = data;
+				if(m6800.port4_ddr == 0xff)
+					cpu_writeport16(M6803_PORT4,m6800.port4_data);
+				else
+					cpu_writeport16(M6803_PORT4,(m6800.port4_data & m6800.port4_ddr)
+						| (cpu_readport16(M6803_PORT4) & (m6800.port4_ddr ^ 0xff)));
+			}
+			break;
 		case 0x06:
 		case 0x07:
 			logerror("CPU #%d PC %04x: warning - write %02x to unsupported internal register %02x\n",cpu_getactivecpu(),activecpu_get_pc(),data,offset);
