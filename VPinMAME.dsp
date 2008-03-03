@@ -1000,6 +1000,10 @@ SOURCE=.\src\wpc\bingo.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\bowarrow.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\bowlgames.c
 # End Source File
 # Begin Source File

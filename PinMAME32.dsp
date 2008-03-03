@@ -113,9 +113,11 @@ SOURCE=.\src\cpu\adsp2100\2100dasm.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -131,9 +133,11 @@ SOURCE=.\src\cpu\adsp2100\adsp2100.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -144,9 +148,11 @@ SOURCE=.\src\cpu\adsp2100\adsp2100.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -161,9 +167,11 @@ SOURCE=.\src\cpu\m6809\6809dasm.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -184,9 +192,11 @@ SOURCE=.\src\cpu\m6809\m6809.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -197,9 +207,11 @@ SOURCE=.\src\cpu\m6809\m6809.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -214,9 +226,11 @@ SOURCE=.\src\cpu\m6800\6800dasm.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -237,9 +251,11 @@ SOURCE=.\src\cpu\m6800\m6800.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -250,9 +266,11 @@ SOURCE=.\src\cpu\m6800\m6800.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -267,9 +285,11 @@ SOURCE=.\src\cpu\z80\z80.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -280,9 +300,11 @@ SOURCE=.\src\cpu\z80\z80.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -293,9 +315,11 @@ SOURCE=.\src\cpu\z80\z80daa.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -306,9 +330,11 @@ SOURCE=.\src\cpu\z80\z80dasm.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -319,9 +345,11 @@ SOURCE=.\src\cpu\z80\z80dasm.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -336,9 +364,11 @@ SOURCE=.\src\cpu\m6502\6502dasm.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -349,9 +379,11 @@ SOURCE=.\src\cpu\m6502\ill02.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -362,9 +394,11 @@ SOURCE=.\src\cpu\m6502\m6502.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -375,9 +409,11 @@ SOURCE=.\src\cpu\m6502\m6502.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -392,9 +428,11 @@ SOURCE=.\src\cpu\m6502\ops02.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -405,9 +443,11 @@ SOURCE=.\src\cpu\m6502\opsc02.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -436,9 +476,11 @@ SOURCE=.\src\cpu\m68000\cpudefs.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -449,9 +491,11 @@ SOURCE=.\src\cpu\m68000\m68000.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -462,9 +506,11 @@ SOURCE=.\src\cpu\m68000\m68k.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -475,9 +521,11 @@ SOURCE=.\src\cpu\m68000\m68kconf.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -488,9 +536,11 @@ SOURCE=.\src\cpu\m68000\m68kcpu.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -501,9 +551,11 @@ SOURCE=.\src\cpu\m68000\m68kcpu.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -514,9 +566,11 @@ SOURCE=.\src\cpu\m68000\m68kdasm.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -527,11 +581,12 @@ SOURCE=.\src\cpu\m68000\m68kmake.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 # PROP Exclude_From_Build 1
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
 
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 # PROP Exclude_From_Build 1
 
 !ENDIF 
@@ -543,9 +598,11 @@ SOURCE=.\src\cpu\m68000\m68kmame.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -556,9 +613,11 @@ SOURCE=.\src\cpu\m68000\m68kmame.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -569,9 +628,11 @@ SOURCE=.\src\cpu\m68000\m68kopac.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -582,9 +643,11 @@ SOURCE=.\src\cpu\m68000\m68kopdm.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -595,9 +658,11 @@ SOURCE=.\src\cpu\m68000\m68kopnz.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -608,9 +673,11 @@ SOURCE=.\src\cpu\m68000\m68kops.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -629,9 +696,11 @@ SOURCE=.\src\cpu\s2650\2650dasm.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -642,9 +711,11 @@ SOURCE=.\src\cpu\s2650\s2650.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -655,9 +726,11 @@ SOURCE=.\src\cpu\s2650\s2650.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -668,9 +741,11 @@ SOURCE=.\src\cpu\s2650\s2650cpu.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -976,9 +1051,11 @@ SOURCE=.\src\machine\6522via.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -989,9 +1066,11 @@ SOURCE=.\src\machine\6522via.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1002,9 +1081,11 @@ SOURCE=.\src\machine\6530riot.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1015,9 +1096,11 @@ SOURCE=.\src\machine\6530riot.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1028,9 +1111,11 @@ SOURCE=.\src\machine\6532riot.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1041,9 +1126,11 @@ SOURCE=.\src\machine\6532riot.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1054,9 +1141,11 @@ SOURCE=.\src\machine\6821pia.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1067,9 +1156,11 @@ SOURCE=.\src\machine\6821pia.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1080,9 +1171,11 @@ SOURCE=.\src\machine\8255ppi.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1093,9 +1186,11 @@ SOURCE=.\src\machine\8255ppi.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1106,9 +1201,11 @@ SOURCE=.\src\machine\eeprom.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1119,9 +1216,11 @@ SOURCE=.\src\machine\eeprom.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1132,9 +1231,11 @@ SOURCE=.\src\machine\mathbox.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1145,9 +1246,11 @@ SOURCE=.\src\machine\mathbox.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1166,9 +1269,11 @@ SOURCE=.\src\machine\ticket.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1179,9 +1284,11 @@ SOURCE=.\src\machine\ticket.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1192,9 +1299,11 @@ SOURCE=.\src\machine\z80fmly.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1205,9 +1314,11 @@ SOURCE=.\src\machine\z80fmly.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1222,9 +1333,11 @@ SOURCE=.\src\sound\2151intf.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1235,9 +1348,11 @@ SOURCE=.\src\sound\2151intf.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1256,9 +1371,11 @@ SOURCE=.\src\sound\5220intf.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1269,9 +1386,11 @@ SOURCE=.\src\sound\5220intf.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1282,9 +1401,11 @@ SOURCE=.\src\sound\adpcm.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1295,9 +1416,11 @@ SOURCE=.\src\sound\adpcm.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1308,9 +1431,11 @@ SOURCE=.\src\sound\ay8910.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1321,9 +1446,11 @@ SOURCE=.\src\sound\ay8910.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1334,9 +1461,11 @@ SOURCE=.\src\sound\bsmt2000.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1347,9 +1476,11 @@ SOURCE=.\src\sound\bsmt2000.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1360,9 +1491,11 @@ SOURCE=.\src\sound\dac.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1373,9 +1506,11 @@ SOURCE=.\src\sound\dac.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1440,9 +1575,11 @@ SOURCE=.\src\sound\hc55516.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1453,9 +1590,11 @@ SOURCE=.\src\sound\hc55516.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1474,9 +1613,11 @@ SOURCE=.\src\sound\mixer.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1487,9 +1628,11 @@ SOURCE=.\src\sound\mixer.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1500,9 +1643,11 @@ SOURCE=.\src\sound\msm5205.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1513,9 +1658,11 @@ SOURCE=.\src\sound\msm5205.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1534,9 +1681,11 @@ SOURCE=.\src\sound\samples.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1547,9 +1696,11 @@ SOURCE=.\src\sound\samples.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1584,9 +1735,11 @@ SOURCE=.\src\sound\streams.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1597,9 +1750,11 @@ SOURCE=.\src\sound\streams.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1618,9 +1773,11 @@ SOURCE=.\src\sound\tms5220.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1631,9 +1788,11 @@ SOURCE=.\src\sound\tms5220.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1649,9 +1808,11 @@ SOURCE=.\src\sound\votrax.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1662,9 +1823,11 @@ SOURCE=.\src\sound\votrax.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1679,9 +1842,11 @@ SOURCE=.\src\sound\ym2151.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1692,9 +1857,11 @@ SOURCE=.\src\sound\ym2151.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1709,9 +1876,11 @@ SOURCE=.\src\vidhrdw\avgdvg.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1722,9 +1891,11 @@ SOURCE=.\src\vidhrdw\avgdvg.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1735,9 +1906,11 @@ SOURCE=.\src\vidhrdw\crtc6845.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1748,9 +1921,11 @@ SOURCE=.\src\vidhrdw\crtc6845.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1761,9 +1936,11 @@ SOURCE=.\src\vidhrdw\generic.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1774,9 +1951,11 @@ SOURCE=.\src\vidhrdw\generic.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1787,9 +1966,11 @@ SOURCE=.\src\vidhrdw\tms9928a.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1800,9 +1981,11 @@ SOURCE=.\src\vidhrdw\tms9928a.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1813,9 +1996,11 @@ SOURCE=.\src\vidhrdw\vector.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1826,9 +2011,11 @@ SOURCE=.\src\vidhrdw\vector.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1840,9 +2027,11 @@ SOURCE=.\src\artwork.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1853,9 +2042,11 @@ SOURCE=.\src\artwork.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1866,9 +2057,11 @@ SOURCE=.\src\audit.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1879,9 +2072,11 @@ SOURCE=.\src\audit.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1892,9 +2087,11 @@ SOURCE=.\src\cheat.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1905,9 +2102,11 @@ SOURCE=.\src\cheat.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1918,9 +2117,11 @@ SOURCE=.\src\common.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1931,9 +2132,11 @@ SOURCE=.\src\common.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1968,9 +2171,11 @@ SOURCE=.\src\cpuintrf.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1981,9 +2186,11 @@ SOURCE=.\src\cpuintrf.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -1994,9 +2201,11 @@ SOURCE=.\src\datafile.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2007,9 +2216,11 @@ SOURCE=.\src\datafile.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2020,9 +2231,11 @@ SOURCE=.\src\drawgfx.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2033,9 +2246,11 @@ SOURCE=.\src\drawgfx.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2046,9 +2261,11 @@ SOURCE=.\src\driver.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2067,9 +2284,11 @@ SOURCE=.\src\sound\filter.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2080,9 +2299,11 @@ SOURCE=.\src\sound\filter.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2093,9 +2314,11 @@ SOURCE=.\src\gfxobj.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2122,9 +2345,11 @@ SOURCE=.\src\hiscore.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2135,9 +2360,11 @@ SOURCE=.\src\hiscore.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2148,9 +2375,11 @@ SOURCE=.\src\info.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2161,9 +2390,11 @@ SOURCE=.\src\info.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2174,9 +2405,11 @@ SOURCE=.\src\inptport.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2187,9 +2420,11 @@ SOURCE=.\src\inptport.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2200,9 +2435,11 @@ SOURCE=.\src\input.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2213,9 +2450,11 @@ SOURCE=.\src\input.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2226,9 +2465,11 @@ SOURCE=.\src\legacy.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2239,9 +2480,11 @@ SOURCE=.\src\mame.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2252,9 +2495,11 @@ SOURCE=.\src\mame.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2265,9 +2510,11 @@ SOURCE=.\src\mamedbg.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2278,9 +2525,11 @@ SOURCE=.\src\mamedbg.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2299,9 +2548,11 @@ SOURCE=.\src\memory.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2312,9 +2563,11 @@ SOURCE=.\src\memory.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2325,9 +2578,11 @@ SOURCE=.\src\osdepend.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2338,9 +2593,11 @@ SOURCE=.\src\palette.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2351,9 +2608,11 @@ SOURCE=.\src\palette.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2364,9 +2623,11 @@ SOURCE=.\src\png.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2377,9 +2638,11 @@ SOURCE=.\src\png.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2390,9 +2653,11 @@ SOURCE=.\src\profiler.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2403,9 +2668,11 @@ SOURCE=.\src\profiler.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2424,9 +2691,11 @@ SOURCE=.\src\sndintrf.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2437,9 +2706,11 @@ SOURCE=.\src\sndintrf.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2450,9 +2721,11 @@ SOURCE=.\src\sprite.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2463,9 +2736,11 @@ SOURCE=.\src\state.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2476,9 +2751,11 @@ SOURCE=.\src\state.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2489,9 +2766,11 @@ SOURCE=.\src\tilemap.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2502,9 +2781,11 @@ SOURCE=.\src\tilemap.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2515,9 +2796,11 @@ SOURCE=.\src\timer.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2528,9 +2811,11 @@ SOURCE=.\src\timer.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2541,9 +2826,11 @@ SOURCE=.\src\ui_text.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2554,9 +2841,11 @@ SOURCE=.\src\ui_text.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2567,9 +2856,11 @@ SOURCE=.\src\unzip.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2580,9 +2871,11 @@ SOURCE=.\src\unzip.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2593,9 +2886,11 @@ SOURCE=.\src\usrintrf.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2606,9 +2901,11 @@ SOURCE=.\src\usrintrf.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2619,9 +2916,11 @@ SOURCE=.\src\version.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2632,9 +2931,11 @@ SOURCE=.\src\window.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -2645,9 +2946,11 @@ SOURCE=.\src\window.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3188,9 +3491,11 @@ SOURCE=.\src\zlib\zconf.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3201,9 +3506,11 @@ SOURCE=.\src\zlib\zlib.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3227,9 +3534,11 @@ SOURCE=.\src\wpc\sims\s11\full\dd.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3240,9 +3549,11 @@ SOURCE=.\src\wpc\sims\s11\full\milln.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3257,9 +3568,11 @@ SOURCE=.\src\wpc\sims\s11\prelim\eatpm.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3278,9 +3591,11 @@ SOURCE=.\src\wpc\sims\wpc\full\afm.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3291,9 +3606,11 @@ SOURCE=.\src\wpc\sims\wpc\full\bop.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3304,9 +3621,11 @@ SOURCE=.\src\wpc\sims\wpc\full\br.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3317,9 +3636,11 @@ SOURCE=.\src\wpc\sims\wpc\full\cftbl.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3330,9 +3651,11 @@ SOURCE=.\src\wpc\sims\wpc\full\dd_wpc.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3343,9 +3666,11 @@ SOURCE=.\src\wpc\sims\wpc\full\drac.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3356,9 +3681,11 @@ SOURCE=.\src\wpc\sims\wpc\full\fh.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3369,9 +3696,11 @@ SOURCE=.\src\wpc\sims\wpc\full\ft.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3382,9 +3711,11 @@ SOURCE=.\src\wpc\sims\wpc\full\gi.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3395,9 +3726,11 @@ SOURCE=.\src\wpc\sims\wpc\full\gw.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3408,9 +3741,11 @@ SOURCE=.\src\wpc\sims\wpc\full\hd.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3421,9 +3756,11 @@ SOURCE=.\src\wpc\sims\wpc\full\hurr.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3434,9 +3771,11 @@ SOURCE=.\src\wpc\sims\wpc\full\ij.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3447,9 +3786,11 @@ SOURCE=.\src\wpc\sims\wpc\full\jd.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3460,9 +3801,11 @@ SOURCE=.\src\wpc\sims\wpc\full\mm.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3473,9 +3816,11 @@ SOURCE=.\src\wpc\sims\wpc\full\ngg.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3486,9 +3831,11 @@ SOURCE=.\src\wpc\sims\wpc\full\pz.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3499,9 +3846,11 @@ SOURCE=.\src\wpc\sims\wpc\full\rs.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3512,9 +3861,11 @@ SOURCE=.\src\wpc\sims\wpc\full\ss.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3525,9 +3876,11 @@ SOURCE=.\src\wpc\sims\wpc\full\sttng.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3538,9 +3891,11 @@ SOURCE=.\src\wpc\sims\wpc\full\t2.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3551,9 +3906,11 @@ SOURCE=.\src\wpc\sims\wpc\full\taf.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3564,9 +3921,11 @@ SOURCE=.\src\wpc\sims\wpc\full\tom.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3577,9 +3936,11 @@ SOURCE=.\src\wpc\sims\wpc\full\tz.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3590,9 +3951,11 @@ SOURCE=.\src\wpc\sims\wpc\full\wcs.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3603,9 +3966,11 @@ SOURCE=.\src\wpc\sims\wpc\full\ww.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3620,9 +3985,11 @@ SOURCE=.\src\wpc\sims\wpc\prelim\cc.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3633,9 +4000,11 @@ SOURCE=.\src\wpc\sims\wpc\prelim\congo.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3646,9 +4015,11 @@ SOURCE=.\src\wpc\sims\wpc\prelim\corv.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3659,9 +4030,11 @@ SOURCE=.\src\wpc\sims\wpc\prelim\cp.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3672,9 +4045,11 @@ SOURCE=.\src\wpc\sims\wpc\prelim\cv.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3685,9 +4060,11 @@ SOURCE=.\src\wpc\sims\wpc\prelim\dh.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3698,9 +4075,11 @@ SOURCE=.\src\wpc\sims\wpc\prelim\dm.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3711,9 +4090,11 @@ SOURCE=.\src\wpc\sims\wpc\prelim\dw.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3724,9 +4105,11 @@ SOURCE=.\src\wpc\sims\wpc\prelim\fs.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3737,9 +4120,11 @@ SOURCE=.\src\wpc\sims\wpc\prelim\i500.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3750,9 +4135,11 @@ SOURCE=.\src\wpc\sims\wpc\prelim\jb.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3763,9 +4150,11 @@ SOURCE=.\src\wpc\sims\wpc\prelim\jm.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3776,9 +4165,11 @@ SOURCE=.\src\wpc\sims\wpc\prelim\jy.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3789,9 +4180,11 @@ SOURCE=.\src\wpc\sims\wpc\prelim\mb.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3802,9 +4195,11 @@ SOURCE=.\src\wpc\sims\wpc\prelim\nbaf.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3815,9 +4210,11 @@ SOURCE=.\src\wpc\sims\wpc\prelim\nf.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3828,9 +4225,11 @@ SOURCE=.\src\wpc\sims\wpc\prelim\pop.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3841,9 +4240,11 @@ SOURCE=.\src\wpc\sims\wpc\prelim\sc.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3854,9 +4255,11 @@ SOURCE=.\src\wpc\sims\wpc\prelim\totan.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3867,9 +4270,11 @@ SOURCE=.\src\wpc\sims\wpc\prelim\ts.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3880,9 +4285,11 @@ SOURCE=.\src\wpc\sims\wpc\prelim\wd.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3905,9 +4312,11 @@ SOURCE=.\src\wpc\sims\s7\full\tmfnt.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -3989,6 +4398,10 @@ SOURCE=.\src\wpc\bingo.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\bowarrow.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\bowlgames.c
 # End Source File
 # Begin Source File
@@ -3997,9 +4410,11 @@ SOURCE=.\src\wpc\by35.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4010,9 +4425,11 @@ SOURCE=.\src\wpc\by35.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4023,9 +4440,11 @@ SOURCE=.\src\wpc\by35games.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4036,9 +4455,11 @@ SOURCE=.\src\wpc\by35snd.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4049,9 +4470,11 @@ SOURCE=.\src\wpc\by35snd.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4062,9 +4485,11 @@ SOURCE=.\src\wpc\by6803.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4075,9 +4500,11 @@ SOURCE=.\src\wpc\by6803.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4124,9 +4551,11 @@ SOURCE=.\src\wpc\core.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4137,9 +4566,11 @@ SOURCE=.\src\wpc\core.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4150,9 +4581,11 @@ SOURCE=.\src\wpc\dedmd.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4163,9 +4596,11 @@ SOURCE=.\src\wpc\dedmd.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4176,9 +4611,11 @@ SOURCE=.\src\wpc\degames.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4189,9 +4626,11 @@ SOURCE=.\src\wpc\desound.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4202,9 +4641,11 @@ SOURCE=.\src\wpc\desound.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4215,9 +4656,11 @@ SOURCE=.\src\wpc\driver.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4232,9 +4675,11 @@ SOURCE=.\src\wpc\gen.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4277,9 +4722,11 @@ SOURCE=.\src\wpc\gts3.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4290,9 +4737,11 @@ SOURCE=.\src\wpc\gts3.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 # PROP Exclude_From_Build 1
 
@@ -4305,9 +4754,11 @@ SOURCE=.\src\wpc\gts3dmd.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4318,9 +4769,11 @@ SOURCE=.\src\wpc\gts3dmd.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 # PROP Exclude_From_Build 1
 
@@ -4333,9 +4786,11 @@ SOURCE=.\src\wpc\gts3games.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4346,9 +4801,11 @@ SOURCE=.\src\wpc\gts80.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4359,9 +4816,11 @@ SOURCE=.\src\wpc\gts80.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 # PROP Exclude_From_Build 1
 
@@ -4374,9 +4833,11 @@ SOURCE=.\src\wpc\gts80games.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4387,9 +4848,11 @@ SOURCE=.\src\wpc\gts80s.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4400,9 +4863,11 @@ SOURCE=.\src\wpc\gts80s.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 # PROP Exclude_From_Build 1
 
@@ -4415,9 +4880,11 @@ SOURCE=.\src\wpc\hnkgames.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4428,9 +4895,11 @@ SOURCE=.\src\wpc\hnks.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4441,9 +4910,11 @@ SOURCE=.\src\wpc\hnks.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 # PROP Exclude_From_Build 1
 
@@ -4492,9 +4963,11 @@ SOURCE=.\src\wpc\mech.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4505,9 +4978,11 @@ SOURCE=.\src\wpc\mech.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4550,9 +5025,11 @@ SOURCE=.\src\pinmame.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4583,9 +5060,11 @@ SOURCE=.\src\wpc\s11.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4596,9 +5075,11 @@ SOURCE=.\src\wpc\s11.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4609,9 +5090,11 @@ SOURCE=.\src\wpc\s11games.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4622,9 +5105,11 @@ SOURCE=.\src\wpc\s3games.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4635,9 +5120,11 @@ SOURCE=.\src\wpc\s4.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4648,9 +5135,11 @@ SOURCE=.\src\wpc\s4.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4661,9 +5150,11 @@ SOURCE=.\src\wpc\s4games.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4674,9 +5165,11 @@ SOURCE=.\src\wpc\s6.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4687,9 +5180,11 @@ SOURCE=.\src\wpc\s6.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4700,9 +5195,11 @@ SOURCE=.\src\wpc\s6games.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4713,9 +5210,11 @@ SOURCE=.\src\wpc\s7.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4726,9 +5225,11 @@ SOURCE=.\src\wpc\s7.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4739,9 +5240,11 @@ SOURCE=.\src\wpc\s7games.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4752,9 +5255,11 @@ SOURCE=.\src\wpc\se.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4765,9 +5270,11 @@ SOURCE=.\src\wpc\se.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4778,9 +5285,11 @@ SOURCE=.\src\wpc\segames.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4791,9 +5300,11 @@ SOURCE=.\src\wpc\sim.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4804,9 +5315,11 @@ SOURCE=.\src\wpc\sim.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4829,9 +5342,11 @@ SOURCE=.\src\wpc\snd_cmd.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4842,9 +5357,11 @@ SOURCE=.\src\wpc\snd_cmd.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4855,9 +5372,11 @@ SOURCE=.\src\wpc\sndbrd.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4868,9 +5387,11 @@ SOURCE=.\src\wpc\sndbrd.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4929,9 +5450,11 @@ SOURCE=.\src\wpc\vpintf.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4942,9 +5465,11 @@ SOURCE=.\src\wpc\vpintf.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4959,9 +5484,11 @@ SOURCE=.\src\wpc\wmssnd.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4972,9 +5499,11 @@ SOURCE=.\src\wpc\wmssnd.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4985,9 +5514,11 @@ SOURCE=.\src\wpc\wpc.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -4998,9 +5529,11 @@ SOURCE=.\src\wpc\wpc.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -5011,9 +5544,11 @@ SOURCE=.\src\wpc\wpcgames.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -5024,9 +5559,11 @@ SOURCE=.\src\wpc\wpcsam.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -5037,9 +5574,11 @@ SOURCE=.\src\wpc\wpcsam.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -5078,9 +5617,11 @@ SOURCE=.\src\vc\dirent.c
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -5091,9 +5632,11 @@ SOURCE=.\src\vc\dirent.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
@@ -5104,9 +5647,11 @@ SOURCE=.\src\vc\unistd.h
 
 !IF  "$(CFG)" == "PinMAME32 - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Intermediate_Dir "obj/PinMAME32/Release"
 
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
+
+# PROP Intermediate_Dir "obj/PinMAME32/Debug"
 
 !ENDIF 
 
