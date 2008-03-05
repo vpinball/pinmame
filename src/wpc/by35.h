@@ -79,7 +79,7 @@
     COREPORT_DIPNAME( 0x0008, 0x0008, "S20") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0008, "1" ) \
-    COREPORT_DIPNAME( 0x0010, 0x0000, "S21") \
+    COREPORT_DIPNAME( 0x0010, 0x0010, "S21") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0010, "1" ) \
     COREPORT_DIPNAME( 0x0020, 0x0000, "S22") \
@@ -113,121 +113,6 @@
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x4000, "1" ) \
     COREPORT_DIPNAME( 0x8000, 0x0000, "S32") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x8000, "1" )
-
-#define BY35PROTO_COMPORTS \
-  PORT_START /* 0 */ \
-    /* Switch Column 3 */ \
-    COREPORT_BIT(     0x0100, "Ball Tilt",        KEYCODE_INSERT) \
-    /* Switch Column 4 */ \
-    COREPORT_BITDEF(  0x0001, IPT_START1,         IP_KEY_DEFAULT)  \
-    COREPORT_BIT(     0x0002, "Self Test",        KEYCODE_7) \
-    COREPORT_BITDEF(  0x0004, IPT_COIN1,          IP_KEY_DEFAULT) \
-    COREPORT_BITDEF(  0x0008, IPT_COIN2,          IP_KEY_DEFAULT) \
-    COREPORT_BIT(     0x0010, "Slam Tilt",        KEYCODE_HOME)  \
-  PORT_START /* 1 */ \
-    COREPORT_DIPNAME( 0x0003, 0x0000, "Chute #1 Coins") \
-      COREPORT_DIPSET(0x0000, "1" ) \
-      COREPORT_DIPSET(0x0002, "2" ) \
-      COREPORT_DIPSET(0x0001, "3" ) \
-      COREPORT_DIPSET(0x0003, "4" ) \
-    COREPORT_DIPNAME( 0x000c, 0x0000, "Chute #1 Credits") \
-      COREPORT_DIPSET(0x0000, "1" ) \
-      COREPORT_DIPSET(0x0008, "2" ) \
-      COREPORT_DIPSET(0x0004, "3" ) \
-      COREPORT_DIPSET(0x000c, "4" ) \
-    COREPORT_DIPNAME( 0x00f0, 0x00f0, "Replay #2/#1+") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0080, "4k" ) \
-      COREPORT_DIPSET(0x0040, "8k" ) \
-      COREPORT_DIPSET(0x00c0, "12k" ) \
-      COREPORT_DIPSET(0x0020, "16k" ) \
-      COREPORT_DIPSET(0x00a0, "20k" ) \
-      COREPORT_DIPSET(0x0060, "24k" ) \
-      COREPORT_DIPSET(0x00e0, "28k" ) \
-      COREPORT_DIPSET(0x0010, "32k" ) \
-      COREPORT_DIPSET(0x0090, "36k" ) \
-      COREPORT_DIPSET(0x0050, "40k" ) \
-      COREPORT_DIPSET(0x00d0, "44k" ) \
-      COREPORT_DIPSET(0x0030, "48k" ) \
-      COREPORT_DIPSET(0x00b0, "52k" ) \
-      COREPORT_DIPSET(0x0070, "56k" ) \
-      COREPORT_DIPSET(0x00f0, "60k" ) \
-    COREPORT_DIPNAME( 0x0300, 0x0000, "Chute #2 Coins") \
-      COREPORT_DIPSET(0x0000, "1" ) \
-      COREPORT_DIPSET(0x0200, "2" ) \
-      COREPORT_DIPSET(0x0100, "3" ) \
-      COREPORT_DIPSET(0x0300, "4" ) \
-    COREPORT_DIPNAME( 0x0c00, 0x0000, "Chute #2 Credits") \
-      COREPORT_DIPSET(0x0000, "1" ) \
-      COREPORT_DIPSET(0x0800, "2" ) \
-      COREPORT_DIPSET(0x0400, "3" ) \
-      COREPORT_DIPSET(0x0c00, "4" ) \
-    COREPORT_DIPNAME( 0xf000, 0xf000, "Replay #3/#2+") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x8000, "4k" ) \
-      COREPORT_DIPSET(0x4000, "8k" ) \
-      COREPORT_DIPSET(0xc000, "12k" ) \
-      COREPORT_DIPSET(0x2000, "16k" ) \
-      COREPORT_DIPSET(0xa000, "20k" ) \
-      COREPORT_DIPSET(0x6000, "24k" ) \
-      COREPORT_DIPSET(0xe000, "28k" ) \
-      COREPORT_DIPSET(0x1000, "32k" ) \
-      COREPORT_DIPSET(0x9000, "36k" ) \
-      COREPORT_DIPSET(0x5000, "40k" ) \
-      COREPORT_DIPSET(0xd000, "44k" ) \
-      COREPORT_DIPSET(0x3000, "48k" ) \
-      COREPORT_DIPSET(0xb000, "52k" ) \
-      COREPORT_DIPSET(0x7000, "56k" ) \
-      COREPORT_DIPSET(0xf000, "60k" ) \
-  PORT_START /* 2 */ \
-    COREPORT_DIPNAME( 0x0001, 0x0000, "Blink display") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0001, "1" ) \
-    COREPORT_DIPNAME( 0x0002, 0x0002, "Melody") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0002, "1" ) \
-    COREPORT_DIPNAME( 0x0004, 0x0004, "Incentive") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0004, "1" ) \
-    COREPORT_DIPNAME( 0x0008, 0x0008, "Score award") \
-      COREPORT_DIPSET(0x0000, "Extra Ball" ) \
-      COREPORT_DIPSET(0x0008, "Credit" ) \
-    COREPORT_DIPNAME( 0x0010, 0x0010, "Special award") \
-      COREPORT_DIPSET(0x0000, "Extra Ball" ) \
-      COREPORT_DIPSET(0x0010, "Credit" ) \
-    COREPORT_DIPNAME( 0x00e0, 0x0020, "Balls per game") \
-      COREPORT_DIPSET(0x0000, "1" ) \
-      COREPORT_DIPSET(0x0080, "2" ) \
-      COREPORT_DIPSET(0x0040, "3" ) \
-      COREPORT_DIPSET(0x00c0, "4" ) \
-      COREPORT_DIPSET(0x0020, "5" ) \
-      COREPORT_DIPSET(0x00a0, "6" ) \
-      COREPORT_DIPSET(0x0060, "7" ) \
-      COREPORT_DIPSET(0x00e0, "8" ) \
-    COREPORT_DIPNAME( 0x0100, 0x0100, "Match feature") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0100, "1" ) \
-    COREPORT_DIPNAME( 0x0200, 0x0200, "Replay #1+128k") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0200, "1" ) \
-    COREPORT_DIPNAME( 0x0400, 0x0000, "Replay #1+64k") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0400, "1" ) \
-    COREPORT_DIPNAME( 0x0800, 0x0000, "Replay #1+32k") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x0800, "1" ) \
-    COREPORT_DIPNAME( 0x1000, 0x0000, "Replay #1+16k") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x1000, "1" ) \
-    COREPORT_DIPNAME( 0x2000, 0x0000, "Replay #1+8k") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x2000, "1" ) \
-    COREPORT_DIPNAME( 0x4000, 0x0000, "Replay #1+4k") \
-      COREPORT_DIPSET(0x0000, "0" ) \
-      COREPORT_DIPSET(0x4000, "1" ) \
-    COREPORT_DIPNAME( 0x8000, 0x8000, "Replay #1+2k") \
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x8000, "1" )
 
@@ -324,12 +209,6 @@
     SIM_PORTS(balls) \
     BY35_COMPORTS
 
-#define BY35PROTO_INPUT_PORTS_START(name,balls) \
-  INPUT_PORTS_START(name) \
-    CORE_PORTS \
-    SIM_PORTS(balls) \
-    BY35PROTO_COMPORTS
-
 #define HNK_INPUT_PORTS_START(name,balls) \
   INPUT_PORTS_START(name) \
     CORE_PORTS \
@@ -367,17 +246,6 @@
       ROM_LOAD( n2, 0x1800, 0x0800, chk2) \
         ROM_RELOAD( 0x5800, 0x0800) \
         ROM_RELOAD( 0xf800, 0x0800) \
-
-#define BYPROTO_ROMSTART(name,n1,chk1,n2,chk2,n3,chk3,n4,chk4,n5,chk5,n6,chk6) \
-  ROM_START(name) \
-    NORMALREGION(0x10000, BY35_CPUREGION) \
-      ROM_LOAD( n1, 0x1400, 0x0200, chk1) \
-      ROM_LOAD( n2, 0x1600, 0x0200, chk2) \
-      ROM_LOAD( n3, 0x1800, 0x0200, chk3) \
-      ROM_LOAD( n4, 0x1a00, 0x0200, chk4) \
-      ROM_LOAD( n5, 0x1c00, 0x0200, chk5) \
-      ROM_LOAD( n6, 0x1e00, 0x0200, chk6) \
-        ROM_RELOAD( 0xfe00, 0x0200)
 
 #define BY17_ROMSTART228(name,n1,chk1,n2,chk2,n3,chk3) \
   ROM_START(name) \
@@ -484,7 +352,6 @@
 #define HNK_ROMEND ROM_END
 #define BY68701_ROMEND ROM_END
 
-extern MACHINE_DRIVER_EXTERN(byProto);
 extern MACHINE_DRIVER_EXTERN(by35);
 extern MACHINE_DRIVER_EXTERN(by35_32S);
 extern MACHINE_DRIVER_EXTERN(by35_51S);
@@ -499,7 +366,6 @@ extern MACHINE_DRIVER_EXTERN(st200s100);
 extern MACHINE_DRIVER_EXTERN(st200v);
 extern MACHINE_DRIVER_EXTERN(hnk);
 
-#define by35_mBYPROTO   byProto
 #define by35_mBY17      by35
 #define by35_mBY17S     by35
 #define by35_mBY35_32S  by35_32S
