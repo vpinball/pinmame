@@ -11,6 +11,11 @@ struct hc55516_interface
 
 int hc55516_sh_start(const struct MachineSound *msound);
 
+#ifdef PINMAME
+/* sets the gain (10000 is normal) */
+void hc55516_set_gain(int num, double gain);
+#endif
+
 /* sets the databit (0 or 1) */
 void hc55516_digit_w(int num, int data);
 

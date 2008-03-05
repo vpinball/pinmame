@@ -24,6 +24,7 @@ struct hc55516_data
 
 	double 	filter;
 	double	integrator;
+	double  gain;
 };
 
 
@@ -57,7 +58,7 @@ int hc55516_sh_start(const struct MachineSound *msound)
 		/* create the stream */
 		sprintf(name, "HC55516 #%d", i);
 		chip->channel = stream_init(name, intf->volume[i] & 0xff, Machine->sample_rate, i, hc55516_update);
-
+		chip->gain = SAMPLE_GAIN;
 		/* bail on fail */
 		if (chip->channel == -1)
 			return 1;
@@ -146,7 +147,7 @@ void hc55516_clock_w(int num, int state)
 		}
 
 		/* compute the sample as a 32-bit word */
-		temp = integrator * SAMPLE_GAIN;
+		temp = integrator * chip->gain;
 		chip->integrator = integrator;
 
 		/* compress the sample range to fit better in a 16-bit word */
@@ -160,6 +161,12 @@ void hc55516_clock_w(int num, int state)
 	}
 }
 
+#ifdef PINMAME
+void hc55516_set_gain(int num, double gain)
+{
+	hc55516[num].gain = gain;
+}
+#endif
 
 void hc55516_digit_w(int num, int data)
 {
