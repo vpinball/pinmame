@@ -142,11 +142,12 @@ DRIVERNV(frontier)      //BY35-819: 05/80 Frontier
 DRIVERNV(flashgdn)      //BY35-834: 05/80 Flash Gordon
 DRIVERNV(flashgdv)      //BY35      05/80 Flash Gordon (Vocalizer sound)
 DRIVERNV(flashgdf)      //BY35      05/80 Flash Gordon (French)
-DRIVERNV(flashgdp)      //BY35      ??/8? Flash Gordon (68701 hardware)
+DRIVERNV(flashgdp)      //BY35      ??/8? Flash Gordon (68701 hardware prototype)
 DRIVERNV(eballdlx)      //BY35-838: 09/80 Eight Ball Deluxe
 DRIVERNV(eballdlb)      //BY35      02/05 Eight Ball Deluxe custom rom rev.29
-DRIVERNV(eballdlp)      //BY35      ??/8? Eight Ball Deluxe (68701 hardware)
-DRIVERNV(eballdlq)      //BY35      ??/8? Eight Ball Deluxe (68701 hardware, version 2)
+DRIVERNV(eballdp1)      //BY35      ??/83 Eight Ball Deluxe (68701 hardware prototype, rev. 1)
+DRIVERNV(eballdp2)      //BY35      ??/83 Eight Ball Deluxe (68701 hardware prototype, rev. 2)
+DRIVERNV(eballdp3)      //BY35      ??/83 Eight Ball Deluxe (68701 hardware prototype, rev. 3)
 DRIVERNV(fball_ii)      //BY35-839: 09/80 Fireball II
 DRIVERNV(embryon )      //BY35-841: 09/80 Embryon
 DRIVERNV(embryonb)      //BY35      10/02 Embryon (7-digit conversion rev.1)
@@ -170,7 +171,7 @@ DRIVERNV(rapidfir)      //BY35-869: 06/81 Rapid Fire
 DRIVERNV(m_mpac  )      //BY35-872: 05/82 Mr. & Mrs. Pac-Man
 /*same as eballdlx*/    //BY35      10/82 Eight Ball Deluxe Limited Edition
 DRIVERNV(babypac )      //BY35-891  10/82 Baby Pac-Man
-DRIVERNV(babypacn)      //BY35      01/08 Baby Pac-Man (home roms)
+DRIVERNV(babypacn)      //BY35      06/06 Baby Pac-Man (home roms)
 DRIVERNV(bmx     )      //BY35-888: 11/82 BMX
 DRIVERNV(granslam)      //BY35-1311:01/83 Grand Slam
 DRIVERNV(gransla4)      //BY35      01/83 Grand Slam (4 player)

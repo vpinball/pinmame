@@ -26,7 +26,6 @@ static core_tLCDLayout dispBy7[] = {
 #endif /* DISPLAYALL */
 
 BY35_INPUT_PORTS_START(by35,1)        BY35_INPUT_PORTS_END
-BY35PROTO_INPUT_PORTS_START(by35p,1)  BY35_INPUT_PORTS_END
 
 #define INITGAME(name, gen, disp, flip, lamps, sb, db) \
 static core_tGameData name##GameData = {gen,disp,{flip,0,lamps,0,sb,db}}; \
@@ -47,25 +46,6 @@ static void init_##name(void) { core_gameData = &name##GameData; }
 /* -------------------------------------------------------------*/
 /* All games below use CHIMES for sound - ie, no sound hardware */
 /* -------------------------------------------------------------*/
-
-/*--------------------------------
-/ Bow & Arrow (Prototype game)
-/-------------------------------*/
-static const core_tLCDLayout dispBA[] = {
-  {0, 0, 2,6,CORE_SEG7}, {0,14,10,6,CORE_SEG7},
-  {2, 0,18,6,CORE_SEG7}, {2,14,26,6,CORE_SEG7},
-  {4, 2,34,2,CORE_SEG7}, {4, 8,38,2,CORE_SEG7},{0}
-};
-INITGAME(bowarrow,GEN_BYPROTO,dispBA,FLIP_SW(FLIP_L),7,0,0)
-BYPROTO_ROMSTART(bowarrow,"b14.bin",CRC(d4d0f92a) SHA1(b996cbe9762fafd64115dc78e24626cf08f8abf7),
-                          "b16.bin",CRC(ad2102e7) SHA1(86887beea5e03e80f60c947d6d71431e5eab3d1b),
-                          "b18.bin",CRC(5d84656b) SHA1(d17350f5a0cc0cd00b60df4903034489dce7ade5),
-                          "b1a.bin",CRC(6f083ce6) SHA1(624b00e72e223c6b9fbf38b831200c9a7aa0d8f7),
-                          "b1c.bin",CRC(6ed4d39e) SHA1(1f6c57c7274c76246dd2f0b70ec459857a5cf1eb),
-                          "b1e.bin",CRC(ff2f97de) SHA1(28a8fdeccb1382d3a1153c97466426459c9fa075))
-BY17_ROMEND
-#define input_ports_bowarrow input_ports_by35p
-CORE_GAMEDEFNV(bowarrow,"Bow & Arrow (Prototype)",1976,"Bally",by35_mBYPROTO,GAME_USES_CHIMES)
 
 /*--------------------------------
 / Freedom
@@ -660,9 +640,9 @@ CORE_CLONEDEFNV(eballdlb,eballdlx,"Eight Ball Deluxe (modified rules rev.29)",20
 /*------------------------------------
 / Eight Ball Deluxe (68701 prototype)
 /------------------------------------*/
-#define init_eballdlp init_eballdlx
-#define input_ports_eballdlp input_ports_eballdlx
-BY68701_ROMSTART5(eballdlp,"ebd68701.1",CRC(2c693091) SHA1(93ae424d6a43424e8ea023ef555f6a4fcd06b32f),
+#define init_eballdp1 init_eballdlx
+#define input_ports_eballdp1 input_ports_eballdlx
+BY68701_ROMSTART5(eballdp1,"ebd68701.1",CRC(2c693091) SHA1(93ae424d6a43424e8ea023ef555f6a4fcd06b32f),
                            "720-61.u10",CRC(ac646e58) SHA1(85694264a739118ed249d97c04fe8e9f6edfdd33),
                            "720-62.u14",CRC(b6476a9b) SHA1(1dc92125422908e829ce17aaed5ad49b0dbda0e5),
                            "720-63.u13",CRC(f5d751fd) SHA1(4ab5975d52cdde0e05f2bbea7dcd732882fb1dd5),
@@ -671,11 +651,25 @@ BY61_SOUNDROMx080(       "838-08_3.532",CRC(c39478d7) SHA1(8148aca7c4113921ab882
                          "838-09_4.716",CRC(518ea89e) SHA1(a387274ef530bb57f31819733b35615a39260126),
                          "838-16_5.532",CRC(63d92025) SHA1(2f8e8435326a39064b99b9971b0d8944586571fb))
 BY68701_ROMEND
-CORE_CLONEDEFNV(eballdlp,eballdlx,"Eight Ball Deluxe (prototype rev. 18)",198?,"Bally",by35_m68701_61S,GAME_NOT_WORKING)
+CORE_CLONEDEFNV(eballdp1,eballdlx,"Eight Ball Deluxe (prototype rev. 1)",1983,"Bally",by35_m68701_61S,GAME_NOT_WORKING)
 
-#define init_eballdlq init_eballdlx
-#define input_ports_eballdlq input_ports_eballdlx
-BY68701_ROMSTART5(eballdlq,"ebd68701.2",CRC(cb90f453) SHA1(e3165b2be8f297ce0e18c5b6261b79b56d514fc0),
+#define init_eballdp2 init_eballdlx
+#define input_ports_eballdp2 input_ports_eballdlx
+BY68701_ROMSTART5(eballdp2,"ebd68701.2",CRC(cb90f453) SHA1(e3165b2be8f297ce0e18c5b6261b79b56d514fc0),
+                           "720-56.u10",CRC(65a3a02b) SHA1(6fa8667509d314f521dce63d9f1b7fc132d85a1f),
+                           "720-57.u14",CRC(a7d96074) SHA1(04726af863a2c7589308725f3183112b5e1f84ac),
+                           "720-58.u13",CRC(c9585f1f) SHA1(a38b059bb7ef15fccb54bec58d88dd15182b66a6),
+                           "838-18.u12",CRC(fd7615da) SHA1(f3c73f055c3f403da68b7981feb9b87beb82a168))
+// different rev. 18 dump! "838-18.u12",CRC(20fa35e5) SHA1(d8808aa357d2a20fc235da7c80f78c8e5d805ac3))
+BY61_SOUNDROMx080(       "838-08_3.532",CRC(c39478d7) SHA1(8148aca7c4113921ab882da32d6d88e66abb22cc),
+                         "838-09_4.716",CRC(518ea89e) SHA1(a387274ef530bb57f31819733b35615a39260126),
+                         "838-16_5.532",CRC(63d92025) SHA1(2f8e8435326a39064b99b9971b0d8944586571fb))
+BY68701_ROMEND
+CORE_CLONEDEFNV(eballdp2,eballdlx,"Eight Ball Deluxe (prototype rev. 2)",1983,"Bally",by35_m68701_61S,GAME_NOT_WORKING)
+
+#define init_eballdp3 init_eballdlx
+#define input_ports_eballdp3 input_ports_eballdlx
+BY68701_ROMSTART5(eballdp3,"ebd68701.2",CRC(cb90f453) SHA1(e3165b2be8f297ce0e18c5b6261b79b56d514fc0),
                            "720-xx.u10",CRC(6da34581) SHA1(6e005ceda9a4a23603d5243dfca85ccd3f0e425a),
                            "720-xx.u14",CRC(7079648a) SHA1(9d91cd18fb68f165498de8ac51c1bc2a35bd9468),
                            "xxx-xx.u13",CRC(bda2c78b) SHA1(d5e7d0dd3d44d63b9d4b43bf5f63917b80a7ce23),
@@ -684,7 +678,7 @@ BY61_SOUNDROMx080(       "838-08_3.532",CRC(c39478d7) SHA1(8148aca7c4113921ab882
                          "838-09_4.716",CRC(518ea89e) SHA1(a387274ef530bb57f31819733b35615a39260126),
                          "838-16_5.532",CRC(63d92025) SHA1(2f8e8435326a39064b99b9971b0d8944586571fb))
 BY68701_ROMEND
-CORE_CLONEDEFNV(eballdlq,eballdlx,"Eight Ball Deluxe (prototype rev. 19)",198?,"Bally",by35_m68701_61S,GAME_NOT_WORKING)
+CORE_CLONEDEFNV(eballdp3,eballdlx,"Eight Ball Deluxe (prototype rev. 3)",1983,"Bally",by35_m68701_61S,GAME_NOT_WORKING)
 
 /*--------------------------------
 / Fireball II
@@ -983,19 +977,6 @@ BY51_SOUNDROM0(           "gb_u4.532",  CRC(2dcb0315) SHA1(8cb9c9f627f0c8420d3b3
 BY35_ROMEND
 #define input_ports_goldbaln input_ports_goldball
 CORE_CLONEDEFNV(goldbaln,goldball ,"Gold Ball (alternate set)",1983,"Bally",by35_mBY35_51S,0)
-
-/*----------------------------------------------------------
-/ Midnight Marauders (BY35-???: 05/84) - Uses AS2518-61 Sound Board
-/----------------------------------------------------------*/
-INITGAME3(mdntmrdr,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),0,SNDBRD_BY61,0)
-BY35_ROMSTARTx00(mdntmrdr,"u2.bin",CRC(b8dc0429) SHA1(826bafaf03a8a358388c8b5c41dc6171f277524e),
-                          "u6.bin",CRC(ff55fb57) SHA1(4a44fc8732c8cbce38c9605c7958b02a6bc95da1))
-BY61_SOUNDROMx8x8(        "u5.bin",CRC(906021d1) SHA1(ec45fdf0c034847611865c9f35558bd54475bb97),
-                          "u3.bin",CRC(831f3808) SHA1(0a2a7882fc2c9a1906f0eca7b52a2c61e997c8c0))
-BY35_ROMEND
-#define input_ports_mdntmrdr input_ports_by35
-CORE_GAMEDEFNV(mdntmrdr,"Midnight Marauders",1984,"Bally Midway",by35_mBY35_61S,0)
-
 
 /********************************************************/
 /******* Games Below use Cheap Squeak Sound Board *******/
