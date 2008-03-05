@@ -271,8 +271,8 @@ const struct sndbrdIntf by51Intf = {
   "BY51", sp_init, NULL, sp_diag, sp51_manCmd_w, sp51_data_w, NULL, sp51_ctrl_w, NULL,
 };
 
-static struct AY8910interface   sp_ay8910Int  = { 1, 3580000/4, {20}, {sp_8910a_r} };
-static struct hc55516_interface sp_hc55516Int = { 1, {100}};
+static struct AY8910interface   sp_ay8910Int  = { 1, 3579545/4, {20}, {sp_8910a_r} };
+static struct hc55516_interface sp_hc55516Int = { 1, {75}};
 static MEMORY_READ_START(sp51_readmem)
   { 0x0000, 0x007f, MRA_RAM },
   { 0x0080, 0x00ff, pia_r(SP_PIA0) },
@@ -294,7 +294,7 @@ static MEMORY_WRITE_START(sp_writemem)
 MEMORY_END
 
 MACHINE_DRIVER_START(by51)
-  MDRV_CPU_ADD_TAG("scpu", M6802, 3580000/4)
+  MDRV_CPU_ADD_TAG("scpu", M6802, 3579545/4)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(sp51_readmem, sp_writemem)
   MDRV_INTERLEAVE(500)
@@ -329,6 +329,9 @@ static void sp_init(struct sndbrdData *brdData) {
   splocals.brdData = *brdData;
   pia_config(SP_PIA0, PIA_STANDARD_ORDERING, &sp_pia);
   splocals.cmdin = splocals.cmdout = 2;
+  if (splocals.brdData.subType == 1) { // -56 board
+    hc55516_set_gain(0, 40000);
+  }
 }
 static void sp_diag(int button) {
   cpu_set_nmi_line(splocals.brdData.cpuNo, button ? ASSERT_LINE : CLEAR_LINE);
@@ -423,7 +426,7 @@ const struct sndbrdIntf by61Intf = {
 };
 static struct TMS5220interface snt_tms5220Int = { 640000, 100, snt_5220Irq };
 static struct DACinterface     snt_dacInt = { 1, { 20 }};
-static struct AY8910interface  snt_ay8910Int = { 1, 3580000/4, {25}, {snt_8910a_r}};
+static struct AY8910interface  snt_ay8910Int = { 1, 3579545/4, {25}, {snt_8910a_r}};
 
 static MEMORY_READ_START(snt_readmem)
   { 0x0000, 0x007f, MRA_RAM },
@@ -442,7 +445,7 @@ static MEMORY_WRITE_START(snt_writemem)
 MEMORY_END
 
 MACHINE_DRIVER_START(by61)
-  MDRV_CPU_ADD(M6802, 3580000/4)
+  MDRV_CPU_ADD(M6802, 3579545/4)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(snt_readmem, snt_writemem)
   MDRV_INTERLEAVE(500)
@@ -536,7 +539,7 @@ static void snt_irq(int state) {
 static void snt_5220Irq(int state) { pia_set_input_cb1(SNT_PIA1, !state); }
 
 /*----------------------------------------
-/    Cheap Squalk  -45
+/    Cheap Squeak  -45
 /-----------------------------------------*/
 static void cs_init(struct sndbrdData *brdData);
 static void cs_diag(int button);
@@ -573,7 +576,7 @@ static PORT_WRITE_START(cs_writeport)
 PORT_END
 
 MACHINE_DRIVER_START(by45)
-  MDRV_CPU_ADD(M6803, 3580000/4)
+  MDRV_CPU_ADD(M6803, 3579545/4)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(cs_readmem, cs_writemem)
   MDRV_CPU_PORTS(cs_readport, cs_writeport)
@@ -637,9 +640,9 @@ static WRITE_HANDLER(cs_port2_w) {
 	sndbrd_ctrl_cb(sntlocals.brdData.boardNo,data & 0x01); } // diag led
 
 /*----------------------------------------
-/    Turbo Cheap Squalk
+/    Turbo Cheap Squeak
 /-----------------------------------------*/
-#define TCS_PIA0  4
+#define TCS_PIA0  2
 static void tcs_init(struct sndbrdData *brdData);
 static void tcs_diag(int button);
 static WRITE_HANDLER(tcs_cmd_w);
@@ -794,7 +797,7 @@ static WRITE_HANDLER(sd_man_w) {
   sd_cmd_w(0, data);
 }
 static WRITE_HANDLER(sd_cmd_w) {
-printf("%02x ", data);
+//printf("%02x ", data);
   sdlocals.cmd[sdlocals.cmdsync ^= 1] = data;
   if (sdlocals.irqnext) {
     pia_set_input_ca1(SD_PIA0,0); pia_set_input_ca1(SD_PIA0,1);
@@ -802,7 +805,7 @@ printf("%02x ", data);
   }
 }
 static WRITE_HANDLER(sd_ctrl_w) {
-printf("%d ", data);
+//printf("%d ", data);
   if (!(data & 0x01)) sdlocals.irqnext = 1;
 }
 static READ_HANDLER(sd_status_r) { return sdlocals.status; }
