@@ -549,7 +549,7 @@ MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(by35_61S)
   MDRV_IMPORT_FROM(by35)
-  MDRV_CPU_REPLACE("mcpu", M6800, 525000)
+//  MDRV_CPU_REPLACE("mcpu", M6800, 500000)
   MDRV_IMPORT_FROM(by61)
 MACHINE_DRIVER_END
 
@@ -610,7 +610,6 @@ static WRITE_HANDLER(port1_w) {
 }
 static WRITE_HANDLER(port2_w) {
   logerror("%04x: p2 write:%02x\n", activecpu_get_previouspc(), data);
-  locals.diagnosticLed = (data & 0x08) >> 3; // maybe
 }
 static WRITE_HANDLER(port3_w) {
   logerror("%04x: p3 write:%02x\n", activecpu_get_previouspc(), data);
@@ -630,54 +629,54 @@ static READ_HANDLER(port2_r) {
 
 static WRITE_HANDLER(pp0_a_w) {
   logerror("%04x: PIA 0 A WRITE = %02x\n", activecpu_get_previouspc(), data);
-  locals.a0 = data;
+}
+static WRITE_HANDLER(pp0_b_w) {
+  logerror("%04x: PIA 0 B WRITE = %02x\n", activecpu_get_previouspc(), data);
 }
 static WRITE_HANDLER(pp0_ca2_w) {
   logerror("%04x: PIA 0 CA2 WRITE = %x\n", activecpu_get_previouspc(), data);
-  locals.ca20 = data;
 }
 static WRITE_HANDLER(pp0_cb2_w) {
   logerror("%04x: PIA 0 CB2 WRITE = %x\n", activecpu_get_previouspc(), data);
-  locals.cb20 = data;
 }
 
+static WRITE_HANDLER(pp1_a_w) {
+  logerror("%04x: PIA 1 A WRITE = %02x\n", activecpu_get_previouspc(), data);
+}
 static WRITE_HANDLER(pp1_b_w) {
   logerror("%04x: PIA 1 B WRITE = %02x\n", activecpu_get_previouspc(), data);
-  locals.b1 = data;
+  pia0a_w(0, data); // confirmed: lamp data
 }
 static WRITE_HANDLER(pp1_ca2_w) {
   logerror("%04x: PIA 1 CA2 WRITE = %x\n", activecpu_get_previouspc(), data);
-  locals.ca21 = data;
 }
 static WRITE_HANDLER(pp1_cb2_w) {
   logerror("%04x: PIA 1 CB2 WRITE = %x\n", activecpu_get_previouspc(), data);
-  locals.cb21 = data;
+  pia0cb2_w(0, data); // confirmed: lamp strobe
 }
 
 static READ_HANDLER(pp0_b_r) {
   logerror("%04x: PIA 0 B READ\n", activecpu_get_previouspc());
-  return locals.b0;
+  return 0;
 }
 static READ_HANDLER(pp0_ca1_r) {
   logerror("%04x: PIA 0 CA1 READ\n", activecpu_get_previouspc());
-  return locals.ca10;
+  return 0;
 }
 static READ_HANDLER(pp0_cb1_r) {
-  logerror("%04x: PIA 0 CB1 READ\n", activecpu_get_previouspc());
-  return locals.cb10;
+  return locals.cb10; // confirmed: irq
 }
 
 static READ_HANDLER(pp1_a_r) {
   logerror("%04x: PIA 1 A READ\n", activecpu_get_previouspc());
-  return locals.a1;
+  return 0;
 }
 static READ_HANDLER(pp1_ca1_r) {
-  logerror("%04x: PIA 1 CA1 READ\n", activecpu_get_previouspc());
-  return locals.ca11;
+  return locals.ca11; // confirmed: zero cross
 }
 static READ_HANDLER(pp1_cb1_r) {
   logerror("%04x: PIA 1 CB1 READ\n", activecpu_get_previouspc());
-  return locals.cb11;
+  return 0;
 }
 
 static void pp0_irq_a(int state) {
@@ -698,19 +697,19 @@ static void pp1_irq_b(int state) {
 }
 
 static INTERRUPT_GEN(by68701_irq) {
-  pia_set_input_ca1(BY35_PIA1, locals.ca11 = !locals.ca11);
+  pia_set_input_cb1(BY35_PIA0, locals.cb10 = !locals.cb10);
 }
 static void by68701_zeroCross(int data) {
-  pia_set_input_cb1(BY35_PIA0, locals.cb10 = !locals.cb10);
+  pia_set_input_ca1(BY35_PIA1, locals.ca11 = !locals.ca11);
 }
 
 static struct pia6821_interface by68701_pia[] = {{
 /* I:  A/B,CA1/B1,CA2/B2 */  0,pp0_b_r, pp0_ca1_r,pp0_cb1_r, 0,0,
-/* O:  A/B,CA2/B2        */  pp0_a_w,0, pp0_ca2_w,pp0_cb2_w,
+/* O:  A/B,CA2/B2        */  pp0_a_w,pp0_b_w, pp0_ca2_w,pp0_cb2_w,
 /* IRQ: A/B              */  pp0_irq_a,pp0_irq_b
 },{
 /* I:  A/B,CA1/B1,CA2/B2 */  pp1_a_r,0, pp1_ca1_r,pp1_cb1_r, 0,0,
-/* O:  A/B,CA2/B2        */  0,pp1_b_w, pp1_ca2_w,pp1_cb2_w,
+/* O:  A/B,CA2/B2        */  pp1_a_w,pp1_b_w, pp1_ca2_w,pp1_cb2_w,
 /* IRQ: A/B              */  pp1_irq_a,pp1_irq_b
 }};
 
@@ -727,6 +726,14 @@ static MACHINE_INIT(by68701) {
   // set up hardware
   locals.hw = BY35HW_DIP4;
   locals.bcd2seg = core_bcd2seg;
+}
+
+static WRITE_HANDLER(by68701_m0800_w) {
+  logerror("%04x: m8%02x write:%02x\n", activecpu_get_previouspc(), offset, data);
+}
+static READ_HANDLER(by68701_m3000_r) {
+  logerror("%04x: m3%03x read\n", activecpu_get_previouspc(), offset);
+  return 0;
 }
 
 static PORT_READ_START( by68701_readport )
@@ -747,6 +754,7 @@ static MEMORY_READ_START(by68701_readmem)
   { 0x0040, 0x0043, pia_r(BY35_PIA1) },
   { 0x0080, 0x00ff, MRA_RAM },	/*Internal 128B RAM*/
   { 0x0400, 0x07ff, MRA_RAM },	/*External RAM*/
+  { 0x3000, 0x301f, by68701_m3000_r },
   { 0x7000, 0xffff, MRA_ROM },	/*ROM */
 MEMORY_END
 
@@ -756,7 +764,7 @@ static MEMORY_WRITE_START(by68701_writemem)
   { 0x0040, 0x0043, pia_w(BY35_PIA1) },
   { 0x0080, 0x00ff, MWA_RAM },	/*Internal 128B RAM*/
   { 0x0400, 0x07ff, MWA_RAM, &generic_nvram, &generic_nvram_size },	/*External RAM*/
-  { 0x0800, 0x080f, MWA_NOP },
+  { 0x0800, 0x080f, by68701_m0800_w },
 MEMORY_END
 
 MACHINE_DRIVER_START(by68701_61S)
@@ -766,8 +774,8 @@ MACHINE_DRIVER_START(by68701_61S)
   MDRV_CPU_MEMORY(by68701_readmem, by68701_writemem)
   MDRV_CPU_PORTS(by68701_readport, by68701_writeport)
   MDRV_CPU_VBLANK_INT(by35_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(by68701_irq, BY35_IRQFREQ*2)
-  MDRV_TIMER_ADD(by68701_zeroCross,BY35_ZCFREQ*2)
+  MDRV_CPU_PERIODIC_INT(by68701_irq, 775)
+  MDRV_TIMER_ADD(by68701_zeroCross, 240)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_SWITCH_UPDATE(by35)
   MDRV_DIPS(32)
