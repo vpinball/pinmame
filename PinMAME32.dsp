@@ -4515,6 +4515,10 @@ SOURCE=.\src\wpc\by6803games.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wpc\by68701.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\wpc\byvidgames.c
 # End Source File
 # Begin Source File
@@ -4742,7 +4746,6 @@ SOURCE=.\src\wpc\gts3.h
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
 
 # PROP Intermediate_Dir "obj/PinMAME32/Debug"
-
 # PROP Exclude_From_Build 1
 
 !ENDIF 
@@ -4774,7 +4777,6 @@ SOURCE=.\src\wpc\gts3dmd.h
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
 
 # PROP Intermediate_Dir "obj/PinMAME32/Debug"
-
 # PROP Exclude_From_Build 1
 
 !ENDIF 
@@ -4821,7 +4823,6 @@ SOURCE=.\src\wpc\gts80.h
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
 
 # PROP Intermediate_Dir "obj/PinMAME32/Debug"
-
 # PROP Exclude_From_Build 1
 
 !ENDIF 
@@ -4868,7 +4869,6 @@ SOURCE=.\src\wpc\gts80s.h
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
 
 # PROP Intermediate_Dir "obj/PinMAME32/Debug"
-
 # PROP Exclude_From_Build 1
 
 !ENDIF 
@@ -4915,7 +4915,6 @@ SOURCE=.\src\wpc\hnks.h
 !ELSEIF  "$(CFG)" == "PinMAME32 - Win32 Debug"
 
 # PROP Intermediate_Dir "obj/PinMAME32/Debug"
-
 # PROP Exclude_From_Build 1
 
 !ENDIF 

@@ -601,19 +601,6 @@ BY61_SOUNDROM0xx0(        "834-35_2.532",CRC(dff3f711) SHA1(254a5670775ecb6c347f
                           "834-36_5.532",CRC(18691897) SHA1(3b445e0756c07d80f14c01af5a7f87744474ae15))
 BY35_ROMEND
 CORE_CLONEDEFNV(flashgdf,flashgdn,"Flash Gordon (French)",1981,"Bally",by35_mBY35_61S,0)
-/*------------------------------------
-/ Flash Gordon (68701 prototype)
-/------------------------------------*/
-#define input_ports_flashgdp input_ports_flashgdn
-#define init_flashgdp        init_flashgdn
-BY68701_ROMSTART4(flashgdp,"fg68701.bin",CRC(e52da294) SHA1(0191ae821fbeae40192d858ca7f2dccda84de73f),
-                            "xxx-xx.u10",NO_DUMP,
-                            "xxx-xx.u11",CRC(8b0ae6d8) SHA1(2380bd6d354c204153fd44534d617f7be000e46f),
-                            "xxx-xx.u12",CRC(57406a1f) SHA1(01986e8d879071374d6f94ae6fce5832eb89f160))
-BY61_SOUNDROM0xx0(        "834-20_2.532",CRC(2f8ced3e) SHA1(ecdeb07c31c22ec313b55774f4358a9923c5e9e7),
-                          "834-18_5.532",CRC(8799e80e) SHA1(f255b4e7964967c82cfc2de20ebe4b8d501e3cb0))
-BY68701_ROMEND
-CORE_CLONEDEFNV(flashgdp,flashgdn,"Flash Gordon (prototype)",1981,"Bally",by35_m68701_61S,0)
 
 /*--------------------------------
 / Eight Ball Deluxe
@@ -637,47 +624,6 @@ BY61_SOUNDROMx080(        "838-08_3.532",CRC(c39478d7) SHA1(8148aca7c4113921ab88
 BY35_ROMEND
 #define input_ports_eballdlb input_ports_by35
 CORE_CLONEDEFNV(eballdlb,eballdlx,"Eight Ball Deluxe (modified rules rev.29)",2007,"Bally / Oliver",by35_mBY35_61S,0)
-/*------------------------------------
-/ Eight Ball Deluxe (68701 prototype)
-/------------------------------------*/
-#define init_eballdp1 init_eballdlx
-#define input_ports_eballdp1 input_ports_eballdlx
-BY68701_ROMSTART5(eballdp1,"ebd68701.1",CRC(2c693091) SHA1(93ae424d6a43424e8ea023ef555f6a4fcd06b32f),
-                           "720-61.u10",CRC(ac646e58) SHA1(85694264a739118ed249d97c04fe8e9f6edfdd33),
-                           "720-62.u14",CRC(b6476a9b) SHA1(1dc92125422908e829ce17aaed5ad49b0dbda0e5),
-                           "720-63.u13",CRC(f5d751fd) SHA1(4ab5975d52cdde0e05f2bbea7dcd732882fb1dd5),
-                           "838-19.u12",CRC(dfba8976) SHA1(70c19237842ee73cfc8e9607df79a59424d90d99))
-BY61_SOUNDROMx080(       "838-08_3.532",CRC(c39478d7) SHA1(8148aca7c4113921ab882da32d6d88e66abb22cc),
-                         "838-09_4.716",CRC(518ea89e) SHA1(a387274ef530bb57f31819733b35615a39260126),
-                         "838-16_5.532",CRC(63d92025) SHA1(2f8e8435326a39064b99b9971b0d8944586571fb))
-BY68701_ROMEND
-CORE_CLONEDEFNV(eballdp1,eballdlx,"Eight Ball Deluxe (prototype rev. 1)",1981,"Bally",by35_m68701_61S,0)
-
-#define init_eballdp2 init_eballdlx
-#define input_ports_eballdp2 input_ports_eballdlx
-BY68701_ROMSTART5(eballdp2,"ebd68701.2",CRC(cb90f453) SHA1(e3165b2be8f297ce0e18c5b6261b79b56d514fc0),
-                           "720-56.u10",CRC(65a3a02b) SHA1(6fa8667509d314f521dce63d9f1b7fc132d85a1f),
-                           "720-57.u14",CRC(a7d96074) SHA1(04726af863a2c7589308725f3183112b5e1f84ac),
-                           "720-58.u13",CRC(c9585f1f) SHA1(a38b059bb7ef15fccb54bec58d88dd15182b66a6),
-                           "838-18.u12",CRC(20fa35e5) SHA1(d8808aa357d2a20fc235da7c80f78c8e5d805ac3))
-BY61_SOUNDROMx080(       "838-08_3.532",CRC(c39478d7) SHA1(8148aca7c4113921ab882da32d6d88e66abb22cc),
-                         "838-09_4.716",CRC(518ea89e) SHA1(a387274ef530bb57f31819733b35615a39260126),
-                         "838-16_5.532",CRC(63d92025) SHA1(2f8e8435326a39064b99b9971b0d8944586571fb))
-BY68701_ROMEND
-CORE_CLONEDEFNV(eballdp2,eballdlx,"Eight Ball Deluxe (prototype rev. 2)",1981,"Bally",by35_m68701_61S,0)
-
-#define init_eballdp3 init_eballdlx
-#define input_ports_eballdp3 input_ports_eballdlx
-BY68701_ROMSTART5(eballdp3,"ebd68701.2",CRC(cb90f453) SHA1(e3165b2be8f297ce0e18c5b6261b79b56d514fc0),
-                           "720-xx.u10",CRC(6da34581) SHA1(6e005ceda9a4a23603d5243dfca85ccd3f0e425a),
-                           "720-xx.u14",CRC(7079648a) SHA1(9d91cd18fb68f165498de8ac51c1bc2a35bd9468),
-                           "xxx-xx.u13",CRC(bda2c78b) SHA1(d5e7d0dd3d44d63b9d4b43bf5f63917b80a7ce23),
-                           "838-13.u12",CRC(fd7615da) SHA1(f3c73f055c3f403da68b7981feb9b87beb82a168))
-BY61_SOUNDROMx080(       "838-08_3.532",CRC(c39478d7) SHA1(8148aca7c4113921ab882da32d6d88e66abb22cc),
-                         "838-09_4.716",CRC(518ea89e) SHA1(a387274ef530bb57f31819733b35615a39260126),
-                         "838-16_5.532",CRC(63d92025) SHA1(2f8e8435326a39064b99b9971b0d8944586571fb))
-BY68701_ROMEND
-CORE_CLONEDEFNV(eballdp3,eballdlx,"Eight Ball Deluxe (prototype rev. 3)",1981,"Bally",by35_m68701_61S,0)
 
 /*--------------------------------
 / Fireball II

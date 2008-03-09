@@ -13,12 +13,8 @@
 #define BY35_PIA0 0
 #define BY35_PIA1 1
 
-#define BY35_VBLANKFREQ    60 /* VBLANK frequency */
-
 #define BY35_SOLSMOOTH       2 /* Smooth the Solenoids over this numer of VBLANKS */
-
 #define BY35_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
-
 #define BY35_DISPLAYSMOOTH   4 /* Smooth the display over this number of VBLANKS */
 
 /*--------------------------------------------------
@@ -60,6 +56,7 @@ static WRITE_HANDLER(snd300_wex) {
 
 static struct {
   int a0, a1, b0, b1, ca10, ca11, ca20, ca21, cb10, cb11, cb20, cb21;
+  int swData;
   int bcd[7], lastbcd;
   const int *bcd2seg;
   int lampadr1, lampadr2;
@@ -68,13 +65,14 @@ static struct {
   int diagnosticLed;
   int vblankCount;
   int hw;
+  int irqstates[4];
 } locals;
 
 static void piaIrq(int num, int state) {
-  static int irqstates[4], oldstate;
+  static int oldstate;
   int irqstate;
-  irqstates[num] = state;
-  irqstate = irqstates[0] || irqstates[1] || irqstates[2] || irqstates[3];
+  locals.irqstates[num] = state;
+  irqstate = locals.irqstates[0] || locals.irqstates[1] || locals.irqstates[2] || locals.irqstates[3];
   if (oldstate != irqstate) {
     logerror("IRQ state: %d\n", irqstate);
     cpu_set_irq_line(0, M6800_IRQ_LINE, irqstate ? ASSERT_LINE : CLEAR_LINE);
@@ -549,7 +547,7 @@ MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(by35_61S)
   MDRV_IMPORT_FROM(by35)
-//  MDRV_CPU_REPLACE("mcpu", M6800, 500000)
+//  MDRV_CPU_REPLACE("mcpu", M6800, 525000)
   MDRV_IMPORT_FROM(by61)
 MACHINE_DRIVER_END
 
@@ -600,185 +598,4 @@ MACHINE_DRIVER_START(hnk)
   MDRV_CPU_PERIODIC_INT(NULL, 0) // no irq
   MDRV_DIPS(24)
   MDRV_IMPORT_FROM(hnks)
-MACHINE_DRIVER_END
-
-
-// 68701 changes below
-
-static WRITE_HANDLER(port1_w) {
-  logerror("%04x: p1 write:%02x\n", activecpu_get_previouspc(), data);
-}
-static WRITE_HANDLER(port2_w) {
-  logerror("%04x: p2 write:%02x\n", activecpu_get_previouspc(), data);
-}
-static WRITE_HANDLER(port3_w) {
-  logerror("%04x: p3 write:%02x\n", activecpu_get_previouspc(), data);
-}
-static WRITE_HANDLER(port4_w) {
-  logerror("%04x: p4 write:%02x\n", activecpu_get_previouspc(), data);
-}
-
-static READ_HANDLER(port1_r) {
-  logerror("%04x: p1 read\n", activecpu_get_previouspc());
-  return 0;
-}
-static READ_HANDLER(port2_r) {
-  logerror("%04x: p2 read\n", activecpu_get_previouspc());
-  return 0;
-}
-
-static WRITE_HANDLER(pp0_a_w) {
-  logerror("%04x: PIA 0 A WRITE = %02x\n", activecpu_get_previouspc(), data);
-}
-static WRITE_HANDLER(pp0_b_w) {
-  logerror("%04x: PIA 0 B WRITE = %02x\n", activecpu_get_previouspc(), data);
-}
-static WRITE_HANDLER(pp0_ca2_w) {
-  logerror("%04x: PIA 0 CA2 WRITE = %x\n", activecpu_get_previouspc(), data);
-}
-static WRITE_HANDLER(pp0_cb2_w) {
-  logerror("%04x: PIA 0 CB2 WRITE = %x\n", activecpu_get_previouspc(), data);
-}
-
-static WRITE_HANDLER(pp1_a_w) {
-  logerror("%04x: PIA 1 A WRITE = %02x\n", activecpu_get_previouspc(), data);
-}
-static WRITE_HANDLER(pp1_b_w) {
-  logerror("%04x: PIA 1 B WRITE = %02x\n", activecpu_get_previouspc(), data);
-  pia0a_w(0, data); // confirmed: lamp data
-}
-static WRITE_HANDLER(pp1_ca2_w) {
-  logerror("%04x: PIA 1 CA2 WRITE = %x\n", activecpu_get_previouspc(), data);
-}
-static WRITE_HANDLER(pp1_cb2_w) {
-  logerror("%04x: PIA 1 CB2 WRITE = %x\n", activecpu_get_previouspc(), data);
-  pia0cb2_w(0, data); // confirmed: lamp strobe
-}
-
-static READ_HANDLER(pp0_b_r) {
-  logerror("%04x: PIA 0 B READ\n", activecpu_get_previouspc());
-  return 0;
-}
-static READ_HANDLER(pp0_ca1_r) {
-  logerror("%04x: PIA 0 CA1 READ\n", activecpu_get_previouspc());
-  return 0;
-}
-static READ_HANDLER(pp0_cb1_r) {
-  return locals.cb10; // confirmed: irq
-}
-
-static READ_HANDLER(pp1_a_r) {
-  logerror("%04x: PIA 1 A READ\n", activecpu_get_previouspc());
-  return 0;
-}
-static READ_HANDLER(pp1_ca1_r) {
-  return locals.ca11; // confirmed: zero cross
-}
-static READ_HANDLER(pp1_cb1_r) {
-  logerror("%04x: PIA 1 CB1 READ\n", activecpu_get_previouspc());
-  return 0;
-}
-
-static void pp0_irq_a(int state) {
-  logerror("PIA 0 IRQ A:%x\n", state);
-  piaIrq(0, state);
-}
-static void pp0_irq_b(int state) {
-  logerror("PIA 0 IRQ B:%x\n", state);
-  piaIrq(1, state);
-}
-static void pp1_irq_a(int state) {
-  logerror("PIA 1 IRQ A:%x\n", state);
-  piaIrq(2, state);
-}
-static void pp1_irq_b(int state) {
-  logerror("PIA 1 IRQ B:%x\n", state);
-  piaIrq(3, state);
-}
-
-static INTERRUPT_GEN(by68701_irq) {
-  pia_set_input_cb1(BY35_PIA0, locals.cb10 = !locals.cb10);
-}
-static void by68701_zeroCross(int data) {
-  pia_set_input_ca1(BY35_PIA1, locals.ca11 = !locals.ca11);
-}
-
-static struct pia6821_interface by68701_pia[] = {{
-/* I:  A/B,CA1/B1,CA2/B2 */  0,pp0_b_r, pp0_ca1_r,pp0_cb1_r, 0,0,
-/* O:  A/B,CA2/B2        */  pp0_a_w,pp0_b_w, pp0_ca2_w,pp0_cb2_w,
-/* IRQ: A/B              */  pp0_irq_a,pp0_irq_b
-},{
-/* I:  A/B,CA1/B1,CA2/B2 */  pp1_a_r,0, pp1_ca1_r,pp1_cb1_r, 0,0,
-/* O:  A/B,CA2/B2        */  pp1_a_w,pp1_b_w, pp1_ca2_w,pp1_cb2_w,
-/* IRQ: A/B              */  pp1_irq_a,pp1_irq_b
-}};
-
-static MACHINE_INIT(by68701) {
-  int sb = core_gameData->hw.soundBoard;
-  memset(&locals, 0, sizeof(locals));
-
-  pia_config(BY35_PIA0, PIA_STANDARD_ORDERING, &by68701_pia[0]);
-  pia_config(BY35_PIA1, PIA_STANDARD_ORDERING, &by68701_pia[1]);
-
-  sndbrd_0_init(sb, 1, memory_region(REGION_SOUND1), NULL, NULL);
-
-  locals.vblankCount = 1;
-  // set up hardware
-  locals.hw = BY35HW_DIP4;
-  locals.bcd2seg = core_bcd2seg;
-}
-
-static WRITE_HANDLER(by68701_m0800_w) {
-  logerror("%04x: m8%02x write:%02x\n", activecpu_get_previouspc(), offset, data);
-}
-static READ_HANDLER(by68701_m3000_r) {
-  logerror("%04x: m3%03x read\n", activecpu_get_previouspc(), offset);
-  return 0;
-}
-
-static PORT_READ_START( by68701_readport )
-  { M6803_PORT1, M6803_PORT1, port1_r },
-  { M6803_PORT2, M6803_PORT2, port2_r },
-PORT_END
-
-static PORT_WRITE_START( by68701_writeport )
-  { M6803_PORT1, M6803_PORT1, port1_w },
-  { M6803_PORT2, M6803_PORT2, port2_w },
-  { M6803_PORT3, M6803_PORT3, port3_w },
-  { M6803_PORT4, M6803_PORT4, port4_w },
-PORT_END
-
-static MEMORY_READ_START(by68701_readmem)
-  { 0x0000, 0x001f, m6803_internal_registers_r },
-  { 0x0020, 0x0023, pia_r(BY35_PIA0) },
-  { 0x0040, 0x0043, pia_r(BY35_PIA1) },
-  { 0x0080, 0x00ff, MRA_RAM },	/*Internal 128B RAM*/
-  { 0x0400, 0x07ff, MRA_RAM },	/*External RAM*/
-  { 0x3000, 0x301f, by68701_m3000_r },
-  { 0x7000, 0xffff, MRA_ROM },	/*ROM */
-MEMORY_END
-
-static MEMORY_WRITE_START(by68701_writemem)
-  { 0x0000, 0x001f, m6803_internal_registers_w },
-  { 0x0020, 0x0023, pia_w(BY35_PIA0) },
-  { 0x0040, 0x0043, pia_w(BY35_PIA1) },
-  { 0x0080, 0x00ff, MWA_RAM },	/*Internal 128B RAM*/
-  { 0x0400, 0x07ff, MWA_RAM, &generic_nvram, &generic_nvram_size },	/*External RAM*/
-  { 0x0800, 0x080f, by68701_m0800_w },
-MEMORY_END
-
-MACHINE_DRIVER_START(by68701_61S)
-  MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CORE_INIT_RESET_STOP(by68701,by35,by35)
-  MDRV_CPU_ADD_TAG("mcpu", M6803, 3579545/4)
-  MDRV_CPU_MEMORY(by68701_readmem, by68701_writemem)
-  MDRV_CPU_PORTS(by68701_readport, by68701_writeport)
-  MDRV_CPU_VBLANK_INT(by35_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(by68701_irq, 775)
-  MDRV_TIMER_ADD(by68701_zeroCross, 240)
-  MDRV_NVRAM_HANDLER(generic_0fill)
-  MDRV_SWITCH_UPDATE(by35)
-  MDRV_DIPS(32)
-  MDRV_DIAGNOSTIC_LEDH(1)
-  MDRV_IMPORT_FROM(by61)
 MACHINE_DRIVER_END
