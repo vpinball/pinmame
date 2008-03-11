@@ -145,9 +145,10 @@ DRIVERNV(flashgdf)      //BY35      05/80 Flash Gordon (French)
 DRIVERNV(flashgdp)      //BY35      ??/8? Flash Gordon (68701 hardware prototype)
 DRIVERNV(eballdlx)      //BY35-838: 09/80 Eight Ball Deluxe
 DRIVERNV(eballdlb)      //BY35      02/05 Eight Ball Deluxe custom rom rev.29
-DRIVERNV(eballdp1)      //BY35      ??/83 Eight Ball Deluxe (68701 hardware prototype, rev. 1)
-DRIVERNV(eballdp2)      //BY35      ??/83 Eight Ball Deluxe (68701 hardware prototype, rev. 2)
-DRIVERNV(eballdp3)      //BY35      ??/83 Eight Ball Deluxe (68701 hardware prototype, rev. 3)
+DRIVERNV(eballdp1)      //BY35      ??/81 Eight Ball Deluxe (68701 hardware prototype, rev. 1)
+DRIVERNV(eballdp2)      //BY35      ??/81 Eight Ball Deluxe (68701 hardware prototype, rev. 2)
+DRIVERNV(eballdp3)      //BY35      ??/81 Eight Ball Deluxe (68701 hardware prototype, rev. 3)
+DRIVERNV(eballdp4)      //BY35      ??/81 Eight Ball Deluxe (68701 hardware prototype, rev. 4)
 DRIVERNV(fball_ii)      //BY35-839: 09/80 Fireball II
 DRIVERNV(embryon )      //BY35-841: 09/80 Embryon
 DRIVERNV(embryonb)      //BY35      10/02 Embryon (7-digit conversion rev.1)
