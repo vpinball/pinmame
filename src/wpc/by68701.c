@@ -54,7 +54,7 @@ static INTERRUPT_GEN(by68701_vblank) {
   }
 
   coreGlobals.diagnosticLed = locals.diagnosticLed;
-  core_updateSw(TRUE);
+  core_updateSw(core_getSol(12));
 }
 
 static SWITCH_UPDATE(by68701) {
@@ -86,6 +86,7 @@ static WRITE_HANDLER(port4_w) {
 static WRITE_HANDLER(pp0_a_w) { // solenoids 12 & 13
   static int order[4] = { 0, 2, 1, 3 };
   locals.solenoids = (locals.solenoids & 0xffffe7ff) | (order[data & 0x03] << 11);
+  coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffffe7ff) | (order[data & 0x03] << 11);
 }
 static WRITE_HANDLER(pp0_ca2_w) {
   logerror("%04x: PIA 0 CA2 WRITE = %x\n", activecpu_get_previouspc(), data);
@@ -102,7 +103,7 @@ static WRITE_HANDLER(pp1_b_w) { // lamp data
   if (locals.lampCol != 0x0f) {
     UINT8 lampdata = ((locals.lampData2 & 0xf0) ^ 0xf0) | ((data >> 4) ^ 0x0f);
     coreGlobals.tmpLampMatrix[lampRows[locals.lampCol]] |= lampdata;
-  } else logerror("%04x: PIA 1 B WRITE = %02x\n", activecpu_get_previouspc(), data);
+  } // else logerror("%04x: PIA 1 B WRITE = %02x\n", activecpu_get_previouspc(), data);
 }
 static WRITE_HANDLER(pp1_ca2_w) { // enable comma segments
   locals.commas = data;
@@ -170,6 +171,7 @@ static MACHINE_STOP(by68701) {
 
 // displays, solenoids, lamp and switch strobe
 static WRITE_HANDLER(by68701_m0800_w) {
+  static int reorder[16] = { 0, 4, 8, 12, 2, 6, 10, 14, 1, 5, 9, 13, 3, 7, 11, 15 };
   static int digit;
   if (offset == 1 && (data & 0xf0) == 0xf0) {
     if (data & 0x08) digit = (1 + (data & 0x07)) % 8;
@@ -185,7 +187,10 @@ static WRITE_HANDLER(by68701_m0800_w) {
     coreGlobals.segments[32 + 7 - digit].w = (data & 0x7f) | ((data & 0x80) << 1) | ((data & 0x80) << 2);
   }
   else if (offset == 2) {
-    if (data != 0xff && data != 0xf0) locals.solenoids = (locals.solenoids & 0xfffffff0) | ((data >> 4) ^ 0x0f);
+  	if (data != 0xff) {
+      UINT32 solData = reorder[(data >> 4) ^ 0x0f] << (locals.solCol*4);
+      locals.solenoids = (locals.solenoids & 0xfffff800) | (solData & 0x7ff);
+    }
   }
   else if (offset == 3 && data != 0x05) {
     sndbrd_0_ctrl_w(0, 0); sndbrd_0_ctrl_w(0, 1); sndbrd_0_data_w(0, data & 0x0f);
@@ -264,7 +269,7 @@ MACHINE_DRIVER_END
     COREPORT_BIT(   0x0002, "KP: 0",        KEYCODE_0_PAD) \
   PORT_START /* 3 */ \
     /* Switch Column 5 */ \
-    COREPORT_BIT(   0x0004, "KP: 1",        KEYCODE_1_PAD) \
+    COREPORT_BIT(   0x0004, "KP: 1 / Initial", KEYCODE_1_PAD) \
     COREPORT_BIT(   0x0002, "KP: 2",        KEYCODE_2_PAD) \
     COREPORT_BIT(   0x0001, "KP: 3",        KEYCODE_3_PAD) \
     COREPORT_BIT(   0x0008, "KP: A",        KEYCODE_V) \
@@ -274,9 +279,9 @@ MACHINE_DRIVER_END
     COREPORT_BIT(   0x0010, "KP: 6",        KEYCODE_6_PAD) \
     COREPORT_BIT(   0x0080, "KP: B",        KEYCODE_B) \
     /* Switch Column 7 */ \
-    COREPORT_BIT(   0x0400, "KP: 7 / Tilt",   KEYCODE_INSERT) \
+    COREPORT_BIT(   0x0400, "KP: 7 / Tilt", KEYCODE_INSERT) \
     COREPORT_BIT(   0x0200, "KP: 8 / Credit", KEYCODE_1) \
-    COREPORT_BIT(   0x0100, "KP: 9 / Slam",   KEYCODE_HOME) \
+    COREPORT_BIT(   0x0100, "KP: 9 / Slam", KEYCODE_HOME) \
     COREPORT_BIT(   0x0800, "KP: C",        KEYCODE_C) \
     /* Switch Column 8 */ \
     COREPORT_BIT(   0x8000, "KP: D",        KEYCODE_X) \
@@ -343,7 +348,8 @@ CORE_CLONEDEFNV(flashgdp,flashgdn,"Flash Gordon (prototype)",1981,"Bally",by6870
 / Eight Ball Deluxe
 /------------------*/
 INITGAMEP(eballdp1,GEN_BY35,dispBy7p,FLIP_SW(FLIP_L),7,SNDBRD_BY61)
-BY68701_ROMSTART_DC7A(eballdp1,"ebd68701.1",CRC(2c693091) SHA1(93ae424d6a43424e8ea023ef555f6a4fcd06b32f),
+//BY68701_ROMSTART_DC7A(eballdp1,"ebd68701.1",CRC(2c693091) SHA1(93ae424d6a43424e8ea023ef555f6a4fcd06b32f),
+BY68701_ROMSTART_DC7A(eballdp1,"ebd68701.2",CRC(cb90f453) SHA1(e3165b2be8f297ce0e18c5b6261b79b56d514fc0),
                            "720-61.u10",CRC(ac646e58) SHA1(85694264a739118ed249d97c04fe8e9f6edfdd33),
                            "720-62.u14",CRC(b6476a9b) SHA1(1dc92125422908e829ce17aaed5ad49b0dbda0e5),
                            "720-63.u13",CRC(f5d751fd) SHA1(4ab5975d52cdde0e05f2bbea7dcd732882fb1dd5),
