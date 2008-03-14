@@ -7,19 +7,47 @@
 #include "sndbrd.h"
 #include "by35snd.h"
 
+/*
+   Bally prototype machines (by gaston, 03/2008)
+   ------------------------
+   CPU: 68701 (6803 compatible with internal RAM and ROM)
+   I/O: 2 x 6821 PIA
+        CPU ports, maybe DMA as well?
+   Sound: Bally's regular external sound boards, like S&T (-61)
+
+   In 1981 Bally designed a successor for the BY-35 series of games
+   with 9-segment display digits and direct segment access to allow
+   for alphanumeric data. They also expanded the switch matrix to
+   64 switches, and introduced a diagnostic keypad.
+
+   This setup created the following new features:
+   - No more dip switches
+   - Support for 120 lamps on-board (sparing an auxiliary lamps board)
+   - Easy access to any game setting by using 2-digit codes
+   - Displaying  all the game settings in human-readble form
+   - Top five players list with entered initials
+
+   Yet all of this was discarded again and kept in storage until 1985
+   when the 6803 series emerged, who used the keypad again. In 1986,
+   Bally finally chose to use the 9-segment displays as well.
+
+   Just imagine the impact this very technology would have had
+   on the pinball playing world back in 1982!
+ */
+
 #define BY68701_PIA0 0
 #define BY68701_PIA1 1
 
 #define BY68701_SOLSMOOTH       4 /* Smooth the solenoids over this number of VBLANKS */
-#define BY68701_LAMPSMOOTH      1 /* Smooth the lamps over this number of VBLANKS */
+#define BY68701_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
 
 static struct {
-  int a0, a1, b0, b1, ca10, ca11, ca20, ca21, cb10, cb11, cb20, cb21;
-  UINT8 swCol, lampCol, solCol, lampData2, commas;
+  UINT8 swCol, lampCol, solCol, commas;
   UINT32 solenoids;
   core_tSeg segments;
   int diagnosticLed;
-  int vblankCount;
+  int vblankCount, zc, irq;
+  int startup; // TODO lose the startup hack
   int irqstates[4];
 } locals;
 
@@ -55,6 +83,8 @@ static INTERRUPT_GEN(by68701_vblank) {
 
   coreGlobals.diagnosticLed = locals.diagnosticLed;
   core_updateSw(core_getSol(12));
+
+  if (!locals.startup && locals.vblankCount > 200) locals.startup = 1; // TODO lose the startup hack
 }
 
 static SWITCH_UPDATE(by68701) {
@@ -68,8 +98,8 @@ static SWITCH_UPDATE(by68701) {
   }
   /*-- Diagnostic button on sound board --*/
   sndbrd_0_diag(core_getSw(-6));
-  /*-- CPU test switch (apparently unused but must be changed at least once, or game will not run!) --*/
-  pia_set_input_ca1(BY68701_PIA0, !core_getSw(-7));
+
+  if (!locals.startup) pia_set_input_ca1(BY68701_PIA0, 1); // TODO lose the startup hack
 }
 
 static WRITE_HANDLER(port1_w) { // solenoids 14 - 21
@@ -89,10 +119,10 @@ static WRITE_HANDLER(pp0_a_w) { // solenoids 12 & 13
   coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffffe7ff) | (order[data & 0x03] << 11);
 }
 static WRITE_HANDLER(pp0_ca2_w) {
-  logerror("%04x: PIA 0 CA2 WRITE = %x\n", activecpu_get_previouspc(), data);
+//  logerror("%04x: PIA 0 CA2 WRITE = %x\n", activecpu_get_previouspc(), data);
 }
 static WRITE_HANDLER(pp0_cb2_w) {
-  logerror("%04x: PIA 0 CB2 WRITE = %x\n", activecpu_get_previouspc(), data);
+//  logerror("%04x: PIA 0 CB2 WRITE = %x\n", activecpu_get_previouspc(), data);
 }
 
 static WRITE_HANDLER(pp1_a_w) {
@@ -101,32 +131,35 @@ static WRITE_HANDLER(pp1_a_w) {
 static WRITE_HANDLER(pp1_b_w) { // lamp data
   static int lampRows[15] = { 4, 8, 9, 10, 11, 12, 13, 14, 5, 0, 6, 7, 1, 2, 3 };
   if (locals.lampCol != 0x0f) {
-    UINT8 lampdata = ((locals.lampData2 & 0xf0) ^ 0xf0) | ((data >> 4) ^ 0x0f);
+    UINT8 lampdata = locals.zc ? (data & 0xf0) ^ 0xf0 : (data >> 4) ^ 0x0f;
     coreGlobals.tmpLampMatrix[lampRows[locals.lampCol]] |= lampdata;
-  } // else logerror("%04x: PIA 1 B WRITE = %02x\n", activecpu_get_previouspc(), data);
+  } else logerror("%04x: PIA 1 B WRITE = %02x\n", activecpu_get_previouspc(), data);
 }
 static WRITE_HANDLER(pp1_ca2_w) { // enable comma segments
   locals.commas = data;
 }
 static WRITE_HANDLER(pp1_cb2_w) {
-  logerror("%04x: PIA 1 CB2 WRITE = %x\n", activecpu_get_previouspc(), data);
+//  logerror("%04x: PIA 1 CB2 WRITE = %x\n", activecpu_get_previouspc(), data);
 }
 
 static READ_HANDLER(pp0_b_r) {
   return coreGlobals.swMatrix[1+locals.swCol]; // switch returns
 }
-static READ_HANDLER(pp0_ca1_r) { // CPU test switch; PIA_UNUSED_VAL(1) does not seem to work!?
-  return core_getSw(-7);
+static READ_HANDLER(pp0_ca1_r) { // reads (inverted?) zc state for 2nd lamp strobe
+  if (!locals.startup) return 0; else return !locals.zc; // TODO lose the startup hack
 }
 static READ_HANDLER(pp0_cb1_r) { // irq read
-  return locals.cb10;
+  return locals.irq;
 }
 
-static READ_HANDLER(pp1_ca1_r) { // zc read
-  return locals.ca11;
+static READ_HANDLER(pp1_a_r) { // will kill lamps on eballdlp1 when set
+  return core_getSw(-7);
+}
+static READ_HANDLER(pp1_ca1_r) { // reads zc state for 1st lamp strobe
+  return locals.zc;
 }
 static READ_HANDLER(pp1_cb1_r) {
-  logerror("%04x: PIA 1 CB1 READ\n", activecpu_get_previouspc());
+//  logerror("%04x: PIA 1 CB1 READ\n", activecpu_get_previouspc());
   return 0;
 }
 
@@ -136,10 +169,12 @@ static void pp1_irq_a(int state) { piaIrq(2, state); }
 static void pp1_irq_b(int state) { piaIrq(3, state); }
 
 static INTERRUPT_GEN(by68701_irq) {
-  pia_set_input_cb1(BY68701_PIA0, locals.cb10 = !locals.cb10);
+  pia_set_input_cb1(BY68701_PIA0, locals.irq = !locals.irq);
 }
 static void by68701_zeroCross(int data) {
-  pia_set_input_ca1(BY68701_PIA1, locals.ca11 = !locals.ca11);
+  locals.zc = !locals.zc;
+  pia_set_input_ca1(BY68701_PIA1, locals.zc);
+  if (locals.startup) pia_set_input_ca1(BY68701_PIA0, !locals.zc); // TODO lose the startup hack
 }
 
 static struct pia6821_interface by68701_pia[] = {{ // PIA0: U20
@@ -147,7 +182,7 @@ static struct pia6821_interface by68701_pia[] = {{ // PIA0: U20
 /* O:  A/B,CA2/B2        */  pp0_a_w,0, pp0_ca2_w,pp0_cb2_w,
 /* IRQ: A/B              */  pp0_irq_a,pp0_irq_b
 },{ // PIA1: U35
-/* I:  A/B,CA1/B1,CA2/B2 */  PIA_UNUSED_VAL(0),0, pp1_ca1_r,pp1_cb1_r, 0,0,
+/* I:  A/B,CA1/B1,CA2/B2 */  pp1_a_r,0, pp1_ca1_r,pp1_cb1_r, 0,0,
 /* O:  A/B,CA2/B2        */  pp1_a_w,pp1_b_w, pp1_ca2_w,pp1_cb2_w,
 /* IRQ: A/B              */  pp1_irq_a,pp1_irq_b
 }};
@@ -180,7 +215,6 @@ static WRITE_HANDLER(by68701_m0800_w) {
   else if (offset > 3 && offset < 8) {
     int num = (offset-4)*8 + 7 - digit;
     coreGlobals.segments[num].w = (data & 0x7f) | ((data & 0x80) << 1) | ((data & 0x80) << 2);
-    // commas are not connected on the prototype games, but they have been programmed!
     if (locals.commas && coreGlobals.segments[num].w && (num % 8 == 1 || num % 8 == 4)) coreGlobals.segments[num].w |= 0x80;
   }
   else if (offset == 10) {
@@ -348,8 +382,8 @@ CORE_CLONEDEFNV(flashgdp,flashgdn,"Flash Gordon (prototype)",1981,"Bally",by6870
 / Eight Ball Deluxe
 /------------------*/
 INITGAMEP(eballdp1,GEN_BY35,dispBy7p,FLIP_SW(FLIP_L),7,SNDBRD_BY61)
-//BY68701_ROMSTART_DC7A(eballdp1,"ebd68701.1",CRC(2c693091) SHA1(93ae424d6a43424e8ea023ef555f6a4fcd06b32f),
-BY68701_ROMSTART_DC7A(eballdp1,"ebd68701.2",CRC(cb90f453) SHA1(e3165b2be8f297ce0e18c5b6261b79b56d514fc0),
+BY68701_ROMSTART_DC7A(eballdp1,"ebd68701.1",CRC(2c693091) SHA1(93ae424d6a43424e8ea023ef555f6a4fcd06b32f),
+//BY68701_ROMSTART_DC7A(eballdp1,"ebd68701.2",CRC(cb90f453) SHA1(e3165b2be8f297ce0e18c5b6261b79b56d514fc0),
                            "720-61.u10",CRC(ac646e58) SHA1(85694264a739118ed249d97c04fe8e9f6edfdd33),
                            "720-62.u14",CRC(b6476a9b) SHA1(1dc92125422908e829ce17aaed5ad49b0dbda0e5),
                            "720-63.u13",CRC(f5d751fd) SHA1(4ab5975d52cdde0e05f2bbea7dcd732882fb1dd5),
