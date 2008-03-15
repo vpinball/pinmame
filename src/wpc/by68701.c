@@ -23,6 +23,7 @@
    This setup created the following new features:
    - No more dip switches
    - Support for 120 lamps on-board (sparing an auxiliary lamps board)
+   - A total of 26 solenoids as opposed to BY-35's 18
    - Easy access to any game setting by using 2-digit codes
    - Displaying  all the game settings in human-readble form
    - Top five players list with entered initials
@@ -48,19 +49,18 @@ static struct {
   int diagnosticLed;
   int vblankCount, zc, irq;
   int startup; // TODO lose the startup hack
-  int irqstates[4];
+  int irqstate, irqstates[4];
 } locals;
 
 static void piaIrq(int num, int state) {
   static int oldstate;
-  int irqstate;
   locals.irqstates[num] = state;
-  irqstate = locals.irqstates[0] || locals.irqstates[1] || locals.irqstates[2] || locals.irqstates[3];
-  if (oldstate != irqstate) {
-    logerror("IRQ state: %d\n", irqstate);
-    cpu_set_irq_line(0, M6800_IRQ_LINE, irqstate ? ASSERT_LINE : CLEAR_LINE);
+  locals.irqstate = locals.irqstates[0] || locals.irqstates[1] || locals.irqstates[2] || locals.irqstates[3];
+  if (oldstate != locals.irqstate) {
+    logerror("IRQ state: %d\n", locals.irqstate);
+    cpu_set_irq_line(0, M6800_IRQ_LINE, locals.irqstate ? ASSERT_LINE : CLEAR_LINE);
   }
-  oldstate = irqstate;
+  oldstate = locals.irqstate;
 }
 
 static INTERRUPT_GEN(by68701_vblank) {
@@ -84,7 +84,7 @@ static INTERRUPT_GEN(by68701_vblank) {
   coreGlobals.diagnosticLed = locals.diagnosticLed;
   core_updateSw(core_getSol(12));
 
-  if (!locals.startup && locals.vblankCount > 200) locals.startup = 1; // TODO lose the startup hack
+  if (!locals.startup && locals.vblankCount > 100) locals.startup = 1; // TODO lose the startup hack
 }
 
 static SWITCH_UPDATE(by68701) {
@@ -114,9 +114,10 @@ static WRITE_HANDLER(port4_w) {
 }
 
 static WRITE_HANDLER(pp0_a_w) { // solenoids 12 & 13
-  static int order[4] = { 0, 2, 1, 3 };
-  locals.solenoids = (locals.solenoids & 0xffffe7ff) | (order[data & 0x03] << 11);
-  coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffffe7ff) | (order[data & 0x03] << 11);
+  if (data < 0x04) {
+    locals.solenoids = (locals.solenoids & 0xffffe7ff) | ((data & 0x01) << 12) | ((data & 0x02) << 10);
+    coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffffe7ff) | ((data & 0x01) << 12) | ((data & 0x02) << 10);
+  } else logerror("%04x: PIA 0 A WRITE = %02x\n", activecpu_get_previouspc(), data);
 }
 static WRITE_HANDLER(pp0_ca2_w) {
 //  logerror("%04x: PIA 0 CA2 WRITE = %x\n", activecpu_get_previouspc(), data);
@@ -220,14 +221,14 @@ static WRITE_HANDLER(by68701_m0800_w) {
   else if (offset == 10) {
     coreGlobals.segments[32 + 7 - digit].w = (data & 0x7f) | ((data & 0x80) << 1) | ((data & 0x80) << 2);
   }
-  else if (offset == 2) {
-  	if (data != 0xff) {
+  else if (offset == 2) { // TODO find the solenoid column
+    if (data != 0xff && !locals.irqstate) {
       UINT32 solData = reorder[(data >> 4) ^ 0x0f] << (locals.solCol*4);
       locals.solenoids = (locals.solenoids & 0xfffff800) | (solData & 0x7ff);
     }
   }
-  else if (offset == 3 && data != 0x05) {
-    sndbrd_0_ctrl_w(0, 0); sndbrd_0_ctrl_w(0, 1); sndbrd_0_data_w(0, data & 0x0f);
+  else if (offset == 3 && data != 0x05) { // TODO find the correct sound byte
+    sndbrd_0_ctrl_w(0, 0); sndbrd_0_ctrl_w(0, 1); sndbrd_0_data_w(0, data);
   }
   else if (!offset && (data & 0xf0) == 0xf0) locals.lampCol = data & 0x0f;
   else logerror("%04x: m08%02x write: %02x\n", activecpu_get_previouspc(), offset, data);
@@ -281,7 +282,7 @@ MACHINE_DRIVER_START(by68701_61S)
   MDRV_CPU_PORTS(by68701_readport, by68701_writeport)
   MDRV_CPU_VBLANK_INT(by68701_vblank, 1)
   MDRV_CPU_PERIODIC_INT(by68701_irq, 2000)
-  MDRV_TIMER_ADD(by68701_zeroCross, 200)
+  MDRV_TIMER_ADD(by68701_zeroCross, 120)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_SWITCH_UPDATE(by68701)
   MDRV_DIPS(1) // needed for extra inports
@@ -294,34 +295,36 @@ MACHINE_DRIVER_END
     CORE_PORTS \
     SIM_PORTS(1) \
   PORT_START /* 2 */ \
+    /* Switch Column 0 */ \
+    COREPORT_BIT(   0x0010, "CPU diagnostics", KEYCODE_9) \
+    COREPORT_BIT(   0x0020, "Sound diagnostics", KEYCODE_0) \
     /* Switch Column 4 */ \
     COREPORT_BIT(   0x0008, "KP: Game",     KEYCODE_6) \
     COREPORT_BIT(   0x0001, "KP: Enter",    KEYCODE_7) \
     COREPORT_BIT(   0x0004, "KP: Clear",    KEYCODE_8) \
-    COREPORT_BIT(   0x0010, "CPU diagnostics", KEYCODE_9) \
-    COREPORT_BIT(   0x0020, "Sound diagnostics", KEYCODE_0) \
     COREPORT_BIT(   0x0002, "KP: 0",        KEYCODE_0_PAD) \
   PORT_START /* 3 */ \
-    /* Switch Column 5 */ \
-    COREPORT_BIT(   0x0004, "KP: 1 / Initial", KEYCODE_1_PAD) \
+    /* Switch Columns 5 to 8 */ \
+    COREPORT_BIT(   0x0004, "KP: 1",        KEYCODE_1_PAD) \
     COREPORT_BIT(   0x0002, "KP: 2",        KEYCODE_2_PAD) \
     COREPORT_BIT(   0x0001, "KP: 3",        KEYCODE_3_PAD) \
-    COREPORT_BIT(   0x0008, "KP: A",        KEYCODE_V) \
-    /* Switch Column 6 */ \
     COREPORT_BIT(   0x0040, "KP: 4",        KEYCODE_4_PAD) \
     COREPORT_BIT(   0x0020, "KP: 5",        KEYCODE_5_PAD) \
     COREPORT_BIT(   0x0010, "KP: 6",        KEYCODE_6_PAD) \
+    COREPORT_BIT(   0x0400, "KP: 7",        KEYCODE_7_PAD) \
+    COREPORT_BIT(   0x0200, "KP: 8",        KEYCODE_8_PAD) \
+    COREPORT_BIT(   0x0100, "KP: 9",        KEYCODE_9_PAD) \
+    COREPORT_BIT(   0x0008, "KP: A",        KEYCODE_V) \
     COREPORT_BIT(   0x0080, "KP: B",        KEYCODE_B) \
-    /* Switch Column 7 */ \
-    COREPORT_BIT(   0x0400, "KP: 7 / Tilt", KEYCODE_INSERT) \
-    COREPORT_BIT(   0x0200, "KP: 8 / Credit", KEYCODE_1) \
-    COREPORT_BIT(   0x0100, "KP: 9 / Slam", KEYCODE_HOME) \
     COREPORT_BIT(   0x0800, "KP: C",        KEYCODE_C) \
-    /* Switch Column 8 */ \
     COREPORT_BIT(   0x8000, "KP: D",        KEYCODE_X) \
     COREPORT_BIT(   0x4000, "KP: E / Coin 1", KEYCODE_3) \
     COREPORT_BIT(   0x2000, "KP: F / Coin 2", KEYCODE_4) \
     COREPORT_BIT(   0x1000, "KP: G / Coin 3", KEYCODE_5) \
+    COREPORT_BITDEF(0x0200, IPT_START1,     IP_KEY_DEFAULT)  \
+    COREPORT_BIT(   0x0004, "Advance Initial", KEYCODE_2) \
+    COREPORT_BIT(   0x0400, "Tilt",         KEYCODE_INSERT) \
+    COREPORT_BIT(   0x0100, "Slam Tilt",    KEYCODE_HOME) \
   INPUT_PORTS_END
 
 static const core_tLCDLayout dispBy7p[] = {
