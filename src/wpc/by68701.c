@@ -43,7 +43,7 @@
 #define BY68701_LAMPSMOOTH      2 /* Smooth the lamps over this number of VBLANKS */
 
 static struct {
-  UINT8 swCol, lampCol, solCol, commas;
+  int swCol, lampCol, solCol, strobe, commas;
   UINT32 solenoids;
   core_tSeg segments;
   int diagnosticLed;
@@ -119,10 +119,11 @@ static WRITE_HANDLER(pp0_a_w) { // solenoids 12 & 13
     coreGlobals.pulsedSolState = (coreGlobals.pulsedSolState & 0xffffe7ff) | ((data & 0x01) << 12) | ((data & 0x02) << 10);
   } else logerror("%04x: PIA 0 A WRITE = %02x\n", activecpu_get_previouspc(), data);
 }
-static WRITE_HANDLER(pp0_ca2_w) {
+static WRITE_HANDLER(pp0_ca2_w) { // goes lo then hi with every zc transition
+  if (data) locals.strobe = 0;
 //  logerror("%04x: PIA 0 CA2 WRITE = %x\n", activecpu_get_previouspc(), data);
 }
-static WRITE_HANDLER(pp0_cb2_w) {
+static WRITE_HANDLER(pp0_cb2_w) { // alternates with every irq pulse
 //  logerror("%04x: PIA 0 CB2 WRITE = %x\n", activecpu_get_previouspc(), data);
 }
 
@@ -131,15 +132,26 @@ static WRITE_HANDLER(pp1_a_w) {
 }
 static WRITE_HANDLER(pp1_b_w) { // lamp data
   static int lampRows[15] = { 4, 8, 9, 10, 11, 12, 13, 14, 5, 0, 6, 7, 1, 2, 3 };
+  static int lastStrobe;
   if (locals.lampCol != 0x0f) {
     UINT8 lampdata = locals.zc ? (data & 0xf0) ^ 0xf0 : (data >> 4) ^ 0x0f;
     coreGlobals.tmpLampMatrix[lampRows[locals.lampCol]] |= lampdata;
-  } else logerror("%04x: PIA 1 B WRITE = %02x\n", activecpu_get_previouspc(), data);
+  } else { // TODO solenoid column - this is a total hack but it seems to work for now. :)
+    if ((data >> 4) == 0x07 || (data >> 4) == 0x0b || (data >> 4) == 0x0d || (data >> 4) == 0x0e) {
+      if (locals.strobe == lastStrobe + 1) locals.solCol = data;
+      lastStrobe = locals.strobe;
+    }
+    else if (data && !(data >> 4) && data != 0x07) { // TODO find correct sound byte
+      sndbrd_0_ctrl_w(0, 0); sndbrd_0_ctrl_w(0, 1); sndbrd_0_data_w(0, data);
+    }
+    logerror("%04x: PIA 1 B WRITE = %02x\n", activecpu_get_previouspc(), data);
+  }
 }
 static WRITE_HANDLER(pp1_ca2_w) { // enable comma segments
   locals.commas = data;
 }
-static WRITE_HANDLER(pp1_cb2_w) {
+static WRITE_HANDLER(pp1_cb2_w) { // goes lo then hi after every PIA1 port B write
+  if (data) locals.strobe++;
 //  logerror("%04x: PIA 1 CB2 WRITE = %x\n", activecpu_get_previouspc(), data);
 }
 
@@ -158,10 +170,6 @@ static READ_HANDLER(pp1_a_r) { // will kill lamps on eballdlp1 when set
 }
 static READ_HANDLER(pp1_ca1_r) { // reads zc state for 1st lamp strobe
   return locals.zc;
-}
-static READ_HANDLER(pp1_cb1_r) {
-//  logerror("%04x: PIA 1 CB1 READ\n", activecpu_get_previouspc());
-  return 0;
 }
 
 static void pp0_irq_a(int state) { piaIrq(0, state); }
@@ -183,7 +191,7 @@ static struct pia6821_interface by68701_pia[] = {{ // PIA0: U20
 /* O:  A/B,CA2/B2        */  pp0_a_w,0, pp0_ca2_w,pp0_cb2_w,
 /* IRQ: A/B              */  pp0_irq_a,pp0_irq_b
 },{ // PIA1: U35
-/* I:  A/B,CA1/B1,CA2/B2 */  pp1_a_r,0, pp1_ca1_r,pp1_cb1_r, 0,0,
+/* I:  A/B,CA1/B1,CA2/B2 */  pp1_a_r,0, pp1_ca1_r,0, 0,0,
 /* O:  A/B,CA2/B2        */  pp1_a_w,pp1_b_w, pp1_ca2_w,pp1_cb2_w,
 /* IRQ: A/B              */  pp1_irq_a,pp1_irq_b
 }};
@@ -207,7 +215,12 @@ static MACHINE_STOP(by68701) {
 
 // displays, solenoids, lamp and switch strobe
 static WRITE_HANDLER(by68701_m0800_w) {
-  static int reorder[16] = { 0, 4, 8, 12, 2, 6, 10, 14, 1, 5, 9, 13, 3, 7, 11, 15 };
+  static int reorder[4][4] = {
+    { 3, 4, 5, 6 },
+    { 9,10, 2, 1 },
+    {11, 0, 7, 8 },
+    { 0, 0, 0, 0 },
+  };
   static int digit;
   if (offset == 1 && (data & 0xf0) == 0xf0) {
     if (data & 0x08) digit = (1 + (data & 0x07)) % 8;
@@ -221,14 +234,11 @@ static WRITE_HANDLER(by68701_m0800_w) {
   else if (offset == 10) {
     coreGlobals.segments[32 + 7 - digit].w = (data & 0x7f) | ((data & 0x80) << 1) | ((data & 0x80) << 2);
   }
-  else if (offset == 2) { // TODO find the solenoid column
-    if (data != 0xff && !locals.irqstate) {
-      UINT32 solData = reorder[(data >> 4) ^ 0x0f] << (locals.solCol*4);
-      locals.solenoids = (locals.solenoids & 0xfffff800) | (solData & 0x7ff);
+  else if (offset == 2) {
+    if (data != 0xff && (data >> 4) == (locals.solCol >> 4)) {
+      int solNum = reorder[core_BitColToNum((locals.solCol & 0x0f) ^ 0x0f)][core_BitColToNum((data >> 4) ^ 0x0f)];
+      if (solNum) locals.solenoids = (locals.solenoids & 0xfffff800) | (1 << (solNum-1));
     }
-  }
-  else if (offset == 3 && data != 0x05) { // TODO find the correct sound byte
-    sndbrd_0_ctrl_w(0, 0); sndbrd_0_ctrl_w(0, 1); sndbrd_0_data_w(0, data);
   }
   else if (!offset && (data & 0xf0) == 0xf0) locals.lampCol = data & 0x0f;
   else logerror("%04x: m08%02x write: %02x\n", activecpu_get_previouspc(), offset, data);
@@ -257,7 +267,9 @@ static MEMORY_READ_START(by68701_readmem)
   { 0x0020, 0x0023, pia_r(BY68701_PIA0) },
   { 0x0040, 0x0043, pia_r(BY68701_PIA1) },
   { 0x0080, 0x00ff, MRA_RAM },  /*Internal 128B RAM*/
-  { 0x0400, 0x07ff, MRA_RAM },  /*External RAM*/
+  { 0x0400, 0x04ff, MRA_RAM },  /*NVRAM*/
+  { 0x0500, 0x05ff, MRA_RAM },  /*External RAM*/
+  { 0x0780, 0x07ff, MRA_RAM },  /*External RAM*/
   { 0x3000, 0x301f, by68701_m3000_r },
   { 0x7000, 0xffff, MRA_ROM },  /*ROM */
 MEMORY_END
@@ -270,7 +282,9 @@ static MEMORY_WRITE_START(by68701_writemem)
   { 0x0020, 0x0023, pia_w(BY68701_PIA0) },
   { 0x0040, 0x0043, pia_w(BY68701_PIA1) },
   { 0x0080, 0x00ff, MWA_RAM },  /*Internal 128B RAM*/
-  { 0x0400, 0x07ff, MWA_RAM, &generic_nvram, &generic_nvram_size }, /*External RAM*/
+  { 0x0400, 0x04ff, MWA_RAM, &generic_nvram, &generic_nvram_size }, /*NVRAM*/
+  { 0x0500, 0x05ff, MWA_RAM },  /*External RAM*/
+  { 0x0780, 0x07ff, MWA_RAM },  /*External RAM*/
   { 0x0800, 0x080f, by68701_m0800_w },
 MEMORY_END
 
@@ -281,7 +295,7 @@ MACHINE_DRIVER_START(by68701_61S)
   MDRV_CPU_MEMORY(by68701_readmem, by68701_writemem)
   MDRV_CPU_PORTS(by68701_readport, by68701_writeport)
   MDRV_CPU_VBLANK_INT(by68701_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(by68701_irq, 2000)
+  MDRV_CPU_PERIODIC_INT(by68701_irq, 3000)
   MDRV_TIMER_ADD(by68701_zeroCross, 120)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_SWITCH_UPDATE(by68701)
@@ -333,8 +347,8 @@ static const core_tLCDLayout dispBy7p[] = {
   {3,20,35,2,CORE_SEG9}, {3,26,38,2,CORE_SEG9}, {0}
 };
 
-#define INITGAMEP(name, gen, disp, flip, lamps, sb) \
-static core_tGameData name##GameData = {gen,disp,{flip,0,lamps,0,sb}}; \
+#define INITGAMEP(name, flip, sb) \
+static core_tGameData name##GameData = {GEN_BYPROTO,dispBy7p,{flip,0,7,0,sb}}; \
 static void init_##name(void) { core_gameData = &name##GameData; } \
 BY68701_INPUT_PORTS_START(name)
 
@@ -371,7 +385,7 @@ BY68701_INPUT_PORTS_START(name)
 /*------------------
 / Flash Gordon
 /------------------*/
-INITGAMEP(flashgdp,GEN_BY35,dispBy7p,FLIP_SW(FLIP_L),7,SNDBRD_BY61)
+INITGAMEP(flashgdp,FLIP_SW(FLIP_L),SNDBRD_BY61)
 BY68701_ROMSTART_CA8(flashgdp,"fg68701.bin",CRC(e52da294) SHA1(0191ae821fbeae40192d858ca7f2dccda84de73f),
                             "xxx-xx.u10",NO_DUMP,
                             "xxx-xx.u11",CRC(8b0ae6d8) SHA1(2380bd6d354c204153fd44534d617f7be000e46f),
@@ -384,7 +398,7 @@ CORE_CLONEDEFNV(flashgdp,flashgdn,"Flash Gordon (prototype)",1981,"Bally",by6870
 /*------------------
 / Eight Ball Deluxe
 /------------------*/
-INITGAMEP(eballdp1,GEN_BY35,dispBy7p,FLIP_SW(FLIP_L),7,SNDBRD_BY61)
+INITGAMEP(eballdp1,FLIP_SW(FLIP_L),SNDBRD_BY61)
 BY68701_ROMSTART_DC7A(eballdp1,"ebd68701.1",CRC(2c693091) SHA1(93ae424d6a43424e8ea023ef555f6a4fcd06b32f),
 //BY68701_ROMSTART_DC7A(eballdp1,"ebd68701.2",CRC(cb90f453) SHA1(e3165b2be8f297ce0e18c5b6261b79b56d514fc0),
                            "720-61.u10",CRC(ac646e58) SHA1(85694264a739118ed249d97c04fe8e9f6edfdd33),
