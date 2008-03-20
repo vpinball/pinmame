@@ -618,6 +618,7 @@ static MEMORY_WRITE_START(se_writemem)
   { 0x3600, 0x3600, dmdlatch_w },
   { 0x3601, 0x3601, dmdreset_w },
   { 0x3800, 0x3800, sndbrd_1_data_w },
+  { 0x4000, 0xffff, MWA_NOP },
 MEMORY_END
 
 static MACHINE_DRIVER_START(se)
