@@ -44,12 +44,10 @@ MEMORY_END
 static MEMORY_WRITE_START(s67s_writemem )
   { 0x0000, 0x007f, MWA_RAM },
   { 0x0400, 0x0403, pia_w(S67S_PIA0) },
-  { 0x3000, 0x7fff, MWA_ROM },
   { 0x8400, 0x8403, pia_w(S67S_PIA0) },
-  { 0xb000, 0xffff, MWA_ROM },
 MEMORY_END
 static struct DACinterface      s67s_dacInt     = { 1, { 50 }};
-static struct hc55516_interface s67s_hc55516Int = { 1, { 80 }};
+static struct hc55516_interface s67s_hc55516Int = { 1, { 100 }};
 
 MACHINE_DRIVER_START(wmssnd_s67s)
   MDRV_CPU_ADD(M6808, 3579000/4)
@@ -82,6 +80,7 @@ static struct {
 static void s67s_init(struct sndbrdData *brdData) {
   s67slocals.brdData = *brdData;
   pia_config(S67S_PIA0, PIA_STANDARD_ORDERING, &s67s_pia);
+  hc55516_set_gain(0, 6500);
 }
 
 static WRITE_HANDLER(s67s_cmd_w) {
@@ -129,11 +128,10 @@ MEMORY_END
 static MEMORY_WRITE_START(s9s_writemem)
   { 0x0000, 0x0fff, MWA_RAM },
   { 0x2000, 0x2003, pia_w(S11S_PIA0)},
-  { 0x8000, 0xffff, MWA_ROM}, /* U22 */
 MEMORY_END
 
 static struct DACinterface      s9s_dacInt     = { 1, { 50 }};
-static struct hc55516_interface s9s_hc55516Int = { 1, { 80 }};
+static struct hc55516_interface s9s_hc55516Int = { 1, { 100 }};
 
 MACHINE_DRIVER_START(wmssnd_s9s)
   MDRV_CPU_ADD(M6808, 1000000)
@@ -155,7 +153,6 @@ static MEMORY_WRITE_START(s11s_writemem)
   { 0x0000, 0x0fff, MWA_RAM },
   { 0x1000, 0x1000, s11s_bankSelect},
   { 0x2000, 0x2003, pia_w(S11S_PIA0)},
-  { 0x8000, 0xffff, MWA_ROM},
 MEMORY_END
 
 static void s11cs_ym2151IRQ(int state);
@@ -227,17 +224,22 @@ static struct {
 } s11slocals;
 
 static void s11s_init(struct sndbrdData *brdData) {
+  int i;
   s11slocals.brdData = *brdData;
   pia_config(S11S_PIA0, PIA_STANDARD_ORDERING, &s11s_pia[s11slocals.brdData.subType & 3]);
   if (s11slocals.brdData.subType) {
     cpu_setbank(S11S_BANK0, s11slocals.brdData.romRegion+0xc000);
     cpu_setbank(S11S_BANK1, s11slocals.brdData.romRegion+0x4000);
   }
+  hc55516_set_gain(0, 3250);
+/*
   if (core_gameData->hw.gameSpecific1 & S9_SOUNDHACK) {
     // Give Space Shuttle a nonzero random seed so soundcommand #3F will be audible
     logerror("wmssnd.c: applying space shuttle specific ram init\n");
     memory_region(S9S_CPUREGION)[0x61] = 0xFF;
   }
+*/
+  for (i=0; i < 0x1000; i++) memory_region(S9S_CPUREGION)[i] = 0xff;
 }
 static WRITE_HANDLER(s11s_manCmd_w) {
   soundlatch_w(0, data); pia_set_input_ca1(S11S_PIA0, 1); pia_set_input_ca1(S11S_PIA0, 0);
@@ -350,6 +352,9 @@ static MEMORY_READ_START(s11cs_readmem)
   { 0x8000, 0xffff, MRA_BANKNO(S11CS_BANK0) },
 MEMORY_END
 
+static WRITE_HANDLER(odd_w) {
+  logerror("Star Trax sound write: %02x:%02x\n", offset, data);
+}
 static MEMORY_WRITE_START(s11cs_writemem)
   { 0x0000, 0x1fff, MWA_RAM },
   { 0x2000, 0x2000, YM2151_register_port_0_w },     /* 2000-2ffe even */
@@ -358,11 +363,11 @@ static MEMORY_WRITE_START(s11cs_writemem)
   { 0x6000, 0x6000, hc55516_0_digit_clock_clear_w },/* 6000-67ff */
   { 0x6800, 0x6800, hc55516_0_clock_set_w },        /* 6800-6fff */
   { 0x7800, 0x7800, s11cs_rombank_w },              /* 7800-7fff */
-  { 0x8000, 0xffff, MWA_ROM },
+  { 0x9c00, 0x9cff, odd_w },
 MEMORY_END
 
 static struct DACinterface      s11cs_dacInt      = { 1, { 50 }};
-static struct hc55516_interface s11cs_hc55516Int  = { 1, { 80 }};
+static struct hc55516_interface s11cs_hc55516Int  = { 1, { 100 }};
 
 MACHINE_DRIVER_START(wmssnd_s11cs)
   MDRV_CPU_ADD(M6809, 2000000)
@@ -398,6 +403,8 @@ static void s11cs_init(struct sndbrdData *brdData) {
   s11clocals.brdData = *brdData;
   pia_config(S11CS_PIA0, PIA_STANDARD_ORDERING, &s11cs_pia);
   cpu_setbank(S11CS_BANK0, s11clocals.brdData.romRegion);
+  hc55516_set_gain(0, 6500);
+  hc55516_set_gain(1, 6500);
 }
 static WRITE_HANDLER(s11cs_manCmd_w) {
   soundlatch2_w(0, data); pia_set_input_cb1(S11CS_PIA0, 1); pia_set_input_cb1(S11CS_PIA0, 0);
@@ -450,7 +457,6 @@ static MEMORY_WRITE_START(s11js_writemem)
   { 0x2800, 0x2800, s11js_reply_w },
   { 0x3000, 0x3000, DAC_0_data_w },
   { 0x3800, 0x3800, s11js_rombank_w },
-  { 0x4000, 0xffff, MWA_ROM },
 MEMORY_END
 static struct DACinterface      s11js_dacInt     = { 1, { 50 }};
 static struct YM2151interface   s11js_ym2151Int  = {
@@ -622,11 +628,10 @@ static MEMORY_WRITE_START(wpcs_writemem)
   { 0x3400, 0x3400, hc55516_0_digit_clock_clear_w }, /* 3400-37ff */
   { 0x3800, 0x3800, wpcs_volume_w }, /* 3800-3bff */
   { 0x3c00, 0x3c00, wpcs_latch_w },  /* 3c00-3fff */
-  { 0x4000, 0xffff, MWA_ROM },
 MEMORY_END
 //NOTE: These volume levels sound really good compared to my own Funhouse and T2. (Dac=100%,CVSD=80%,2151=15%)
 static struct DACinterface      wpcs_dacInt     = { 1, { 100 }};
-static struct hc55516_interface wpcs_hc55516Int = { 1, { 80 }};
+static struct hc55516_interface wpcs_hc55516Int = { 1, { 100 }};
 static struct YM2151interface   wpcs_ym2151Int  = {
   1, 3579545, /* Hz */
   { YM3012_VOL(15,MIXER_PAN_CENTER,15,MIXER_PAN_CENTER) },
@@ -672,6 +677,7 @@ static void wpcs_init(struct sndbrdData *brdData) {
   /* the non-paged ROM is at the end of the image. move it to its correct place */
   memcpy(memory_region(REGION_CPU1+locals.brdData.cpuNo) + 0x00c000, locals.brdData.romRegion + 0x07c000, 0x4000);
   wpcs_rombank_w(0,0);
+  hc55516_set_gain(0, 3750);
 }
 
 /*--------------------
