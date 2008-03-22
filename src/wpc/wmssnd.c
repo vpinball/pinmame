@@ -677,7 +677,7 @@ static void wpcs_init(struct sndbrdData *brdData) {
   /* the non-paged ROM is at the end of the image. move it to its correct place */
   memcpy(memory_region(REGION_CPU1+locals.brdData.cpuNo) + 0x00c000, locals.brdData.romRegion + 0x07c000, 0x4000);
   wpcs_rombank_w(0,0);
-  hc55516_set_gain(0, 4750);
+  hc55516_set_gain(0, 4500);
 }
 
 /*--------------------
