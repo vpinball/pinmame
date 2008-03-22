@@ -240,6 +240,11 @@ static WRITE_HANDLER(by68701_m0800_w) {
       if (solNum) locals.solenoids = (locals.solenoids & 0xfffff800) | (1 << (solNum-1));
     }
   }
+  else if (offset == 3) { // TODO find correct sound byte
+    if (!data || data == 0x07) {
+      sndbrd_0_ctrl_w(0, 0); sndbrd_0_ctrl_w(0, 1); sndbrd_0_data_w(0, data);
+    }
+  }
   else if (!offset && (data & 0xf0) == 0xf0) locals.lampCol = data & 0x0f;
   else logerror("%04x: m08%02x write: %02x\n", activecpu_get_previouspc(), offset, data);
 }
