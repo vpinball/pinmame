@@ -150,12 +150,18 @@ void hc55516_clock_w(int num, int state)
 		temp = integrator * chip->gain;
 		chip->integrator = integrator;
 
+#ifdef PINMAME
+		/* Just wrap to prevent clipping */
+		if (temp < -32768) chip->next_value = (INT16)(-65536 - temp);
+		else if (temp > 32767) chip->next_value = (INT16)(65535 - temp);
+		else chip->next_value = (INT16)temp;
+#else
 		/* compress the sample range to fit better in a 16-bit word */
 		if (temp < 0)
 			chip->next_value = (int)(temp / (-temp * (1.0 / 32768.0) + 1.0));
 		else
 			chip->next_value = (int)(temp / (temp * (1.0 / 32768.0) + 1.0));
-
+#endif
 		/* update the output buffer before changing the registers */
 		stream_update(chip->channel, 0);
 	}
