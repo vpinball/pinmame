@@ -47,7 +47,7 @@ static MEMORY_WRITE_START(s67s_writemem )
   { 0x8400, 0x8403, pia_w(S67S_PIA0) },
 MEMORY_END
 static struct DACinterface      s67s_dacInt     = { 1, { 50 }};
-static struct hc55516_interface s67s_hc55516Int = { 1, { 80 }};
+static struct hc55516_interface s67s_hc55516Int = { 1, { 100 }};
 
 MACHINE_DRIVER_START(wmssnd_s67s)
   MDRV_CPU_ADD(M6808, 3579000/4)
