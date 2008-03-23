@@ -47,7 +47,7 @@ static MEMORY_WRITE_START(s67s_writemem )
   { 0x8400, 0x8403, pia_w(S67S_PIA0) },
 MEMORY_END
 static struct DACinterface      s67s_dacInt     = { 1, { 50 }};
-static struct hc55516_interface s67s_hc55516Int = { 1, { 100 }};
+static struct hc55516_interface s67s_hc55516Int = { 1, { 80 }};
 
 MACHINE_DRIVER_START(wmssnd_s67s)
   MDRV_CPU_ADD(M6808, 3579000/4)
@@ -231,7 +231,7 @@ static void s11s_init(struct sndbrdData *brdData) {
     cpu_setbank(S11S_BANK0, s11slocals.brdData.romRegion+0xc000);
     cpu_setbank(S11S_BANK1, s11slocals.brdData.romRegion+0x4000);
   }
-  hc55516_set_gain(0, 3250);
+  hc55516_set_gain(0, 3750);
 /*
   if (core_gameData->hw.gameSpecific1 & S9_SOUNDHACK) {
     // Give Space Shuttle a nonzero random seed so soundcommand #3F will be audible
