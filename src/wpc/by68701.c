@@ -142,7 +142,10 @@ static WRITE_HANDLER(pp1_b_w) { // lamp data
       lastStrobe = locals.strobe;
     }
     else if (data && !(data >> 4) && data != 0x07) { // TODO find correct sound byte
-      sndbrd_0_ctrl_w(0, 0); sndbrd_0_ctrl_w(0, 1); sndbrd_0_data_w(0, data);
+      if (data != 0x05) {
+        sndbrd_0_ctrl_w(0, 0); sndbrd_0_ctrl_w(0, 1);
+      }
+      sndbrd_0_data_w(0, data);
     }
     logerror("%04x: PIA 1 B WRITE = %02x\n", activecpu_get_previouspc(), data);
   }
@@ -300,7 +303,7 @@ MACHINE_DRIVER_START(by68701_61S)
   MDRV_CPU_MEMORY(by68701_readmem, by68701_writemem)
   MDRV_CPU_PORTS(by68701_readport, by68701_writeport)
   MDRV_CPU_VBLANK_INT(by68701_vblank, 1)
-  MDRV_CPU_PERIODIC_INT(by68701_irq, 3000)
+  MDRV_CPU_PERIODIC_INT(by68701_irq, 3800)
   MDRV_TIMER_ADD(by68701_zeroCross, 120)
   MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_SWITCH_UPDATE(by68701)
@@ -382,10 +385,51 @@ BY68701_INPUT_PORTS_START(name)
       ROM_LOAD( n3, 0xc000, 0x1000, chk3) \
       ROM_LOAD( n4, 0xa000, 0x1000, chk4)
 
-#define BY68701_ROMEND ROM_END
+
+// Kiss prototype section (draft)
+
+static INTERRUPT_GEN(by8035_irq) {
+  cpu_set_irq_line(0, 0, locals.irqstate ? ASSERT_LINE : CLEAR_LINE);
+}
+
+static MEMORY_READ_START(by8035_readmem)
+MEMORY_END
+
+static MEMORY_WRITE_START(by8035_writemem)
+MEMORY_END
+
+MACHINE_DRIVER_START(by8035_50S)
+  MDRV_IMPORT_FROM(PinMAME)
+  MDRV_CPU_ADD_TAG("mcpu", I8035, 1000000)
+  MDRV_CPU_MEMORY(by8035_readmem, by8035_writemem)
+  MDRV_CPU_VBLANK_INT(by68701_vblank, 1)
+  MDRV_CPU_PERIODIC_INT(by8035_irq, 250)
+  MDRV_DIPS(1) // needed for extra inports
+  MDRV_IMPORT_FROM(by32)
+MACHINE_DRIVER_END
+
+#define BY8035_ROMSTART(name, n1, chk1, n2, chk2, n3, chk3, n4, chk4) \
+  ROM_START(name) \
+    NORMALREGION(0x10000, REGION_CPU1) \
+      ROM_LOAD( n1, 0x0000, 0x0400, chk1) \
+      ROM_LOAD( n2, 0x1000, 0x1000, chk2) \
+      ROM_LOAD( n3, 0x2000, 0x1000, chk3) \
+      ROM_LOAD( n4, 0x3000, 0x0800, chk4)
 
 
 // games below
+
+/*------------------
+/ Kiss
+/------------------*/
+INITGAMEP(kissp,FLIP_SW(FLIP_L),SNDBRD_BY50)
+BY8035_ROMSTART(kissp,"kiss8755.bin", NO_DUMP,
+                      "kissprot.u5",CRC(38a2ef5a) SHA1(4ffdb2e9aa30417d506af3bc4b6835ba1dc80e4f),
+                      "kissprot.u6",CRC(bcdfaf1d) SHA1(d21bebbf702b400eb71f8c88be50a180a5ac260a),
+                      "kissprot.u7",CRC(d97da1d3) SHA1(da771a08969a12105c7adc9f9e3cbd1677971e79))
+BY50_SOUNDROM(       "729-18_3.123",CRC(7b6b7d45) SHA1(22f791bac0baab71754b2f6c00c217a342c92df5))
+ROM_END
+CORE_CLONEDEFNV(kissp,kiss,"Kiss (prototype)",19??,"Bally",by8035_50S,GAME_NOT_WORKING)
 
 /*------------------
 / Flash Gordon
@@ -397,7 +441,7 @@ BY68701_ROMSTART_CA8(flashgdp,"fg68701.bin",CRC(e52da294) SHA1(0191ae821fbeae401
                             "xxx-xx.u12",CRC(57406a1f) SHA1(01986e8d879071374d6f94ae6fce5832eb89f160))
 BY61_SOUNDROM0xx0(        "834-20_2.532",CRC(2f8ced3e) SHA1(ecdeb07c31c22ec313b55774f4358a9923c5e9e7),
                           "834-18_5.532",CRC(8799e80e) SHA1(f255b4e7964967c82cfc2de20ebe4b8d501e3cb0))
-BY68701_ROMEND
+ROM_END
 CORE_CLONEDEFNV(flashgdp,flashgdn,"Flash Gordon (prototype)",1981,"Bally",by68701_61S,0)
 
 /*------------------
@@ -413,7 +457,7 @@ BY68701_ROMSTART_DC7A(eballdp1,"ebd68701.1",CRC(2c693091) SHA1(93ae424d6a43424e8
 BY61_SOUNDROMx080(       "838-08_3.532",CRC(c39478d7) SHA1(8148aca7c4113921ab882da32d6d88e66abb22cc),
                          "838-09_4.716",CRC(518ea89e) SHA1(a387274ef530bb57f31819733b35615a39260126),
                          "838-16_5.532",CRC(63d92025) SHA1(2f8e8435326a39064b99b9971b0d8944586571fb))
-BY68701_ROMEND
+ROM_END
 CORE_CLONEDEFNV(eballdp1,eballdlx,"Eight Ball Deluxe (prototype rev. 1)",1981,"Bally",by68701_61S,0)
 
 #define init_eballdp2 init_eballdp1
@@ -426,7 +470,7 @@ BY68701_ROMSTART_DC7A(eballdp2,"ebd68701.2",CRC(cb90f453) SHA1(e3165b2be8f297ce0
 BY61_SOUNDROMx080(       "838-08_3.532",CRC(c39478d7) SHA1(8148aca7c4113921ab882da32d6d88e66abb22cc),
                          "838-09_4.716",CRC(518ea89e) SHA1(a387274ef530bb57f31819733b35615a39260126),
                          "838-16_5.532",CRC(63d92025) SHA1(2f8e8435326a39064b99b9971b0d8944586571fb))
-BY68701_ROMEND
+ROM_END
 CORE_CLONEDEFNV(eballdp2,eballdlx,"Eight Ball Deluxe (prototype rev. 2)",1981,"Bally",by68701_61S,0)
 
 #define init_eballdp3 init_eballdp1
@@ -439,7 +483,7 @@ BY68701_ROMSTART_DC7A(eballdp3,"ebd68701.2",CRC(cb90f453) SHA1(e3165b2be8f297ce0
 BY61_SOUNDROMx080(       "838-08_3.532",CRC(c39478d7) SHA1(8148aca7c4113921ab882da32d6d88e66abb22cc),
                          "838-09_4.716",CRC(518ea89e) SHA1(a387274ef530bb57f31819733b35615a39260126),
                          "838-16_5.532",CRC(63d92025) SHA1(2f8e8435326a39064b99b9971b0d8944586571fb))
-BY68701_ROMEND
+ROM_END
 CORE_CLONEDEFNV(eballdp3,eballdlx,"Eight Ball Deluxe (prototype rev. 3)",1981,"Bally",by68701_61S,0)
 
 #define init_eballdp4 init_eballdp1
@@ -451,5 +495,5 @@ BY68701_ROMSTART_DCA(eballdp4,"ebd68701.2",CRC(cb90f453) SHA1(e3165b2be8f297ce0e
 BY61_SOUNDROMx080(       "838-08_3.532",CRC(c39478d7) SHA1(8148aca7c4113921ab882da32d6d88e66abb22cc),
                          "838-09_4.716",CRC(518ea89e) SHA1(a387274ef530bb57f31819733b35615a39260126),
                          "838-16_5.532",CRC(63d92025) SHA1(2f8e8435326a39064b99b9971b0d8944586571fb))
-BY68701_ROMEND
+ROM_END
 CORE_CLONEDEFNV(eballdp4,eballdlx,"Eight Ball Deluxe (prototype rev. 4)",1981,"Bally",by68701_61S,0)

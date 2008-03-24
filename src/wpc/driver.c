@@ -112,6 +112,7 @@ DRIVERNV(startreb)      //BY35      05/05 Star Trek
                         //??        02/78 Skateball (Prototype)
 DRIVERNV(kiss    )      //BY35-746: 04/78 Kiss
 DRIVERNV(kissb   )      //BY35      05/05 Kiss (7-digit conversion)
+DRIVERNV(kissp   )      //BY35      ??/?? Kiss (prototype)
 DRIVERNV(ngndshkr)      //BY35-776: 05/78 Nitro Ground Shaker
 DRIVERNV(ngndshkb)      //BY35      11/02 Nitro Ground Shaker (7-digit conversion)
 DRIVERNV(slbmania)      //BY35-786: 06/78 Silverball Mania
