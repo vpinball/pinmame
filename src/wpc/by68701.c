@@ -28,8 +28,8 @@
    - Displaying  all the game settings in human-readble form
    - Top five players list with entered initials
 
-   Yet all of this was discarded again and kept in storage until 1985
-   when the 6803 series emerged, who used the keypad again. In 1986,
+   Yet all of this was discarded again and kept in storage until 1985,
+   when the 6803 series emerged that used the keypad again. In 1986,
    Bally finally chose to use the 9-segment displays as well.
 
    Just imagine the impact this very technology would have had
@@ -142,10 +142,7 @@ static WRITE_HANDLER(pp1_b_w) { // lamp data
       lastStrobe = locals.strobe;
     }
     else if (data && !(data >> 4) && data != 0x07) { // TODO find correct sound byte
-      if (data != 0x05) {
-        sndbrd_0_ctrl_w(0, 0); sndbrd_0_ctrl_w(0, 1);
-      }
-      sndbrd_0_data_w(0, data);
+      sndbrd_0_ctrl_w(0, 0); sndbrd_0_ctrl_w(0, 1); sndbrd_0_data_w(0, data);
     }
     logerror("%04x: PIA 1 B WRITE = %02x\n", activecpu_get_previouspc(), data);
   }
