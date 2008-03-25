@@ -231,14 +231,7 @@ static void s11s_init(struct sndbrdData *brdData) {
     cpu_setbank(S11S_BANK0, s11slocals.brdData.romRegion+0xc000);
     cpu_setbank(S11S_BANK1, s11slocals.brdData.romRegion+0x4000);
   }
-  hc55516_set_gain(0, 3750);
-/*
-  if (core_gameData->hw.gameSpecific1 & S9_SOUNDHACK) {
-    // Give Space Shuttle a nonzero random seed so soundcommand #3F will be audible
-    logerror("wmssnd.c: applying space shuttle specific ram init\n");
-    memory_region(S9S_CPUREGION)[0x61] = 0xFF;
-  }
-*/
+  hc55516_set_gain(0, 4000);
   for (i=0; i < 0x1000; i++) memory_region(S9S_CPUREGION)[i] = 0xff;
 }
 static WRITE_HANDLER(s11s_manCmd_w) {
