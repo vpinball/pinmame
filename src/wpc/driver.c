@@ -891,6 +891,7 @@ DRIVERNV(sopranog)      //Whitestar: 02/05 The Sopranos (Germany)
 DRIVERNV(sopranol)      //Whitestar: 02/05 The Sopranos (Spain)
 DRIVERNV(sopranof)      //Whitestar: 02/05 The Sopranos (France)
 DRIVERNV(sopranoi)      //Whitestar: 02/05 The Sopranos (Italy)
+DRIVERNV(soprano3)      //Whitestar: 02/05 The Sopranos (v3.00)
 
 #ifdef INCLUDE_NEW_STERN
 

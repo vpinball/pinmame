@@ -1348,6 +1348,20 @@ SE_ROMEND
 CORE_CLONEDEFNV(ripleysl,ripleys,"Ripley's Believe It or Not! (Spain)",2004,"Stern",de_mSES3,GAME_NOCRC)
 
 // Elvis moved to its own sim file (gv)
+/*-------------------------------------------------------------------
+/ The Sopranos (3.00)
+/-------------------------------------------------------------------*/
+INITGAME(soprano3,GEN_WS,se_dmd128x32,SE_LED)
+SE128_ROMSTART(soprano3, "sopcpua.300", CRC(cca0e551) SHA1(ef109b871605879b55abb966d6736d7deeca404f))
+DE_DMD32ROM8x(      "sopdspa.300", CRC(aa6306ac) SHA1(80737bd2b93bfc64490d07d2cd482350ed3303b3))
+DE3SC_SOUNDROM18888("sopsnda.u7",  CRC(b22ba5aa) SHA1(8f69932e3b115ae7a6bcb9a15a8b5bf6579e94e0),
+                    "sopsnda.u17", CRC(21e0cfd2) SHA1(d2ff1242f1f4a206e0b2884c079ef2be5df143ac),
+                    "sopsnda.u21", CRC(257ab09d) SHA1(1d18e279139b1658ce02160d9a37b4bf043393f0),
+                    "sopsnda.u36", CRC(db33b45c) SHA1(d3285008a3c770371389be470c1ec5ca49c1e568),
+                    "sopsnda.u37", CRC(06a2a6e1) SHA1(fdbe622223724ac2b4c5183c43d3e635654864bf))
+SE_ROMEND
+#define input_ports_soprano3 input_ports_se
+CORE_GAMEDEFNV(soprano3,"Sopranos, The (3.00)",2005,"Stern",de_mSES3,GAME_NOCRC)
 
 /*-------------------------------------------------------------------
 / The Sopranos (5.00)
