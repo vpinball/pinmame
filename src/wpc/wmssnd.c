@@ -80,7 +80,6 @@ static struct {
 static void s67s_init(struct sndbrdData *brdData) {
   s67slocals.brdData = *brdData;
   pia_config(S67S_PIA0, PIA_STANDARD_ORDERING, &s67s_pia);
-  hc55516_set_gain(0, 6500);
 }
 
 static WRITE_HANDLER(s67s_cmd_w) {
@@ -190,8 +189,8 @@ MACHINE_DRIVER_START(wmssnd_s11b2s)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(s11s_readmem, s11s_writemem)
   MDRV_INTERLEAVE(50)
-  MDRV_SOUND_REPLACE("dac",  DAC,    s11xs_dacInt2)
-  MDRV_SOUND_ADD(            HC55516,s11xs_hc55516Int2)
+  MDRV_SOUND_ADD_TAG("dac", DAC,    s11xs_dacInt2)
+  MDRV_SOUND_ADD(           HC55516,s11xs_hc55516Int2)
 MACHINE_DRIVER_END
 
 static void s11s_piaIrq(int state);
@@ -231,8 +230,10 @@ static void s11s_init(struct sndbrdData *brdData) {
     cpu_setbank(S11S_BANK0, s11slocals.brdData.romRegion+0xc000);
     cpu_setbank(S11S_BANK1, s11slocals.brdData.romRegion+0x4000);
   }
-  hc55516_set_gain(0, 4000);
   for (i=0; i < 0x1000; i++) memory_region(S9S_CPUREGION)[i] = 0xff;
+  if (core_gameData->hw.gameSpecific2) {
+    hc55516_set_gain(0, core_gameData->hw.gameSpecific2);
+  }
 }
 static WRITE_HANDLER(s11s_manCmd_w) {
   soundlatch_w(0, data); pia_set_input_ca1(S11S_PIA0, 1); pia_set_input_ca1(S11S_PIA0, 0);
@@ -396,8 +397,6 @@ static void s11cs_init(struct sndbrdData *brdData) {
   s11clocals.brdData = *brdData;
   pia_config(S11CS_PIA0, PIA_STANDARD_ORDERING, &s11cs_pia);
   cpu_setbank(S11CS_BANK0, s11clocals.brdData.romRegion);
-  hc55516_set_gain(0, 6500);
-  hc55516_set_gain(1, 6500);
 }
 static WRITE_HANDLER(s11cs_manCmd_w) {
   soundlatch2_w(0, data); pia_set_input_cb1(S11CS_PIA0, 1); pia_set_input_cb1(S11CS_PIA0, 0);
@@ -435,6 +434,13 @@ static struct {
   struct sndbrdData brdData;
 } s11jlocals;
 
+static WRITE_HANDLER(s11js_odd_w) {
+  logerror("%04x: Jokerz ROM write to 0xf8%02x = %02x\n", activecpu_get_previouspc(), offset, data);
+}
+static WRITE_HANDLER(dac_w) {
+  logerror("%04x: Jokerz DAC write = %02x\n", activecpu_get_previouspc(), data);
+}
+
 static MEMORY_READ_START(s11js_readmem)
   { 0x0000, 0x1fff, MRA_RAM },
   { 0x2001, 0x2001, YM2151_status_port_0_r }, /* 2001-2fff odd */
@@ -448,10 +454,11 @@ static MEMORY_WRITE_START(s11js_writemem)
   { 0x2000, 0x2000, YM2151_register_port_0_w },     /* 2000-2ffe even */
   { 0x2001, 0x2001, YM2151_data_port_0_w },         /* 2001-2fff odd */
   { 0x2800, 0x2800, s11js_reply_w },
-  { 0x3000, 0x3000, DAC_0_data_w },
+  { 0x3000, 0x3000, dac_w },
   { 0x3800, 0x3800, s11js_rombank_w },
+  { 0xf800, 0xf8ff, s11js_odd_w },
 MEMORY_END
-static struct DACinterface      s11js_dacInt     = { 1, { 50 }};
+
 static struct YM2151interface   s11js_ym2151Int  = {
   1, 3579545, /* Hz */
   { YM3012_VOL(30,MIXER_PAN_LEFT,30,MIXER_PAN_RIGHT) },
@@ -465,7 +472,6 @@ MACHINE_DRIVER_START(wmssnd_s11js)
   MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
   MDRV_INTERLEAVE(50)
   MDRV_SOUND_ADD(           YM2151, s11js_ym2151Int)
-  MDRV_SOUND_ADD_TAG("dac", DAC,    s11js_dacInt)
   MDRV_SOUND_ADD(SAMPLES, samples_interface)
 MACHINE_DRIVER_END
 
