@@ -7,8 +7,11 @@
 #define	FILTER_CHARGE_TC		0.004
 #define	FILTER_MIN				0.0416
 #define	FILTER_MAX				1.0954
+#ifdef PINMAME
+#define	SAMPLE_GAIN				6500.0
+#else
 #define	SAMPLE_GAIN				10000.0
-
+#endif
 
 struct hc55516_data
 {
