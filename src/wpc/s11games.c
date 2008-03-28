@@ -5,7 +5,8 @@
 
 /*
 Issues:
-Pool: Sound loops on startup
+Pool: Sound loops on startup, stops after one minute?
+Jokerz: Startup sound does not stop
 */
 #define INITGAME(name, gen, disp, mux, flip, db, gs1) \
 static core_tGameData name##GameData = { \
@@ -248,7 +249,7 @@ CORE_GAMEDEF(fire, l3, "Fire! (L-3)", 1987, "Williams", s11_mS11AS,0)
 /*--------------------
 / Big Guns 10/87
 /--------------------*/
-INITGAME(bguns, GEN_S11A,s11_dispS11a,12, FLIP_SW(FLIP_L),0,0)
+INITGAME(bguns, GEN_S11A,s11_dispS11a,12, FLIP_SWNO(52,53) ,0,0)
 S11_ROMSTART48(bguns,l8,"guns_u26.l8", CRC(792dc1e8) SHA1(34586585bbaf579cb522569238e24d9ab891b471),
                         "guns_u27.l8", CRC(ac4a1a51) SHA1(d48b5e5b550107df8c6edc2d5f78777d7d408959))
 S11XS_SOUNDROM88(        "guns_u21.l1", CRC(35c6bfe4) SHA1(83dbd10311add75f56046de58d315f8a87389703),
@@ -303,7 +304,7 @@ CORE_GAMEDEF(spstn, l5, "Space Station (L-5)", 1988, "Williams", s11_mS11BS,0)
 /*--------------------
 / Cyclone 2/88
 /--------------------*/
-INITGAME(cycln, GEN_S11B,s11_dispS11b1, 12, FLIP_SW(FLIP_L),0,0)
+INITGAME(cycln, GEN_S11B,s11_dispS11b1, 12, FLIP_SWNO(57,58), 0,0)
 S11_ROMSTART48(cycln,l5,"cycl_u26.l5", CRC(9ab15e12) SHA1(406f3212269dc42de1f3fabcf179958adbd4b5e8),
                         "cycl_u27.l5", CRC(c4b6aac0) SHA1(9058e450dbf9d198b1746c258b0e437d7ee844e9))
 S11XS_SOUNDROM88(       "cycl_u21.l1", CRC(d4f69a7c) SHA1(da0ce27d92b22583be54a41fc8083cee803c987a),
@@ -536,7 +537,7 @@ static core_tLCDLayout dispPolic[] = {
   { 2,0, 0,16,CORE_SEG16 },
   { 4,0,20,16,CORE_SEG8},{0}
 };
-INITGAME(polic,GEN_S11B, dispPolic, 12, FLIP_SW(FLIP_L),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
+INITGAME(polic,GEN_S11B, dispPolic, 12, FLIP_SWNO(58,57), S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
 S11_ROMSTART48(polic,l4,"pfrc_u26.l4", CRC(1a1409e9) SHA1(775d35a22483bcf8c4b03841e0aca22b6504a48f),
                         "pfrc_u27.l4", CRC(641ed5d4) SHA1(f98b8bb64184aba062715555bd1de679d6382ac3))
 S11XS_SOUNDROM88(       "pfrc_u21.l1", CRC(7729afd3) SHA1(9cd2898a7a4203cf3b2dcd203e25cde5dd582ee7),
@@ -584,7 +585,7 @@ CORE_GAMEDEF(tsptr,l3, "Transporter the Rescue (L-3)", 1989, "Bally", s11a_one,0
 /*-----------------------
 / Bad Cats 12/89
 /-----------------------*/
-INITGAME(bcats,GEN_S11B,s11_dispS11b2,12,FLIP_SWNO(57,58),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
+INITGAME(bcats,GEN_S11B,s11_dispS11b2,12,FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
 S11_ROMSTART48(bcats,l5,"cats_u26.l5", CRC(32246d12) SHA1(b8aa89d197a6b992501904f5072a10ab1a31db87),
                         "cats_u27.l5", CRC(ef842bbf) SHA1(854860db428795d5de5c075aa78496f0c18a380f))
 S11XS_SOUNDROM88(       "cats_u21.l1", CRC(04110d08) SHA1(4b44b26983cb5d14a93c16a19dc2bdbaa665dc69),
@@ -800,7 +801,7 @@ CORE_CLONEDEF(diner,l1,l4, "Diner (L-1) Europe", 1990, "Williams", s11_mS11CS,0)
 /*--------------------
 / Radical 9/90
 /--------------------*/
-INITGAME(radcl,GEN_S11C,disp16oneline,12,FLIP_SW(FLIP_L),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
+INITGAME(radcl,GEN_S11C,disp16oneline,12,FLIP_SWNO(58,57),S11_LOWALPHA|S11_DISPINV,S11_MUXSW2)
 S11_ROMSTART48(radcl,l1,"rad_u26.l1", CRC(84b1a125) SHA1(dd01fb9189acd2620c57149921aadb051f7a2412),
                         "rad_u27.l1", CRC(6f6ca382) SHA1(a61055aab97d3fe2ecd0ed4281a9681b1d910269))
 S11CS_SOUNDROM008(      "rad_u4.l1",  CRC(5aafc09c) SHA1(27984bbc91dc7593e6a5b42f74dd6ddf58189bec),
