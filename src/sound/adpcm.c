@@ -751,7 +751,7 @@ static void OKIM6295_data_w(int num, int data)
 	  				start = (base[0] << 16) + (base[1] << 8) + base[2];
   					stop = (base[3] << 16) + (base[4] << 8) + base[5];
 				}
-				logerror("OKIM6295:%d playing sample %02x [%05x:%05x]\n", num, okim6295_command[num], start, stop);
+				logerror("OKIM6295:%d playing sample %02x [%05x:%05x] on voice #%x\n", num, okim6295_command[num], start, stop, i+1);
 				/* set up the voice to play this sample */
 				if (start >= stop) {
 					logerror("OKIM6295:%d empty data - ignore\n", num);
@@ -770,13 +770,13 @@ static void OKIM6295_data_w(int num, int data)
 					}
 					else
 					{
-						logerror("OKIM6295:%d requested to play sample %02x on non-stopped voice\n",num,okim6295_command[num]);
+						logerror("OKIM6295:%d requested to play sample %02x on non-stopped voice #%x\n",num,okim6295_command[num],i+1);
 					}
 				}
 				/* invalid samples go here */
 				else
 				{
-					logerror("OKIM6295:%d requested to play invalid sample %02x\n",num,okim6295_command[num]);
+					logerror("OKIM6295:%d requested to play invalid sample %02x on voice #%x\n",num,okim6295_command[num],i+1);
 					voice->playing = 0;
 				}
 			}
@@ -796,20 +796,25 @@ static void OKIM6295_data_w(int num, int data)
 	else
 	{
 		int temp = data >> 3, i;
-		/* determine which voice(s) (voice is set by a 1 bit in bits 3-6 of the command */
-		for (i = 0; i < 4; i++, temp >>= 1)
-		{
-			if (temp & 1)
+		// TODO either mute all channels or only one - fixes some sound in GTS3 games!?
+		if (temp == 0x0f || temp == 0x08 || temp == 0x04 || temp == 0x02 || temp == 0x01) {
+			/* determine which voice(s) (voice is set by a 1 bit in bits 3-6 of the command */
+			for (i = 0; i < 4; i++, temp >>= 1)
 			{
-				struct ADPCMVoice *voice = &adpcm[num * OKIM6295_VOICES + i];
-				if (voice->playing) {
-					logerror("OKIM6295:%d mute voice #%x\n", num, i);
+				if (temp & 1)
+				{
+					struct ADPCMVoice *voice = &adpcm[num * OKIM6295_VOICES + i];
+					logerror("OKIM6295:%d mute voice #%x\n", num, i+1);
+					if (voice->playing) {
 
-					/* update the stream, then turn it off */
-					stream_update(voice->stream, 0);
-					voice->playing = 0;
+						/* update the stream, then turn it off */
+						stream_update(voice->stream, 0);
+						voice->playing = 0;
+					}
 				}
 			}
+		} else {
+			logerror("OKIM6295:%d ignoring mute command 0x%02x\n", num, data);
 		}
 	}
 }
