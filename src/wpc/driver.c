@@ -1038,6 +1038,7 @@ DRIVERNV(wof_500f)   		//S.A.M: 11/07 Wheel of Fortune - V5.00   (French)
 DRIVERNV(wof_500g)   		//S.A.M: 11/07 Wheel of Fortune - V5.00   (German)
 DRIVERNV(wof_500i)   		//S.A.M: 11/07 Wheel of Fortune - V5.00   (Italian)
 DRIVERNV(wof_500l)   		//S.A.M: 11/07 Wheel of Fortune - V5.00   (Spanish)
+DRIVERNV(shr_130)			//S.A.M: 04/08 Shrek - v1.30 (English)
 #endif
 
 #endif /* INCLUDE_NEW_STERN */
