@@ -187,7 +187,7 @@ DRIVERNV(xsandos )      //BY35-1391:12/83 X's & O's
 DRIVERNV(granny )       //BY35-1369:01/84 Granny and the Gators
 DRIVERNV(kosteel )      //BY35-1390:05/84 Kings of Steel
 DRIVERNV(blakpyra)      //BY35-0A44 04/84 Black Pyramid
-                        //          05/84 Midnight Marauders (gun game)
+DRIVERNV(mdntmrdr)      //          05/84 Midnight Marauders (gun game)
 DRIVERNV(spyhuntr)      //BY35-0A17:07/84 Spy Hunter
                         //??        ??/85 Hot Shotz
 DRIVERNV(fbclass )      //BY35-0A40 10/84 Fireball Classic
@@ -614,7 +614,7 @@ DRIVERNV(rotation)      //Rotation VIII (September 1978)
 // ----------------
 // MONROE BOWLING CO.
 // ----------------
-DRIVERNV(monrobwl)      //Stars & Strikes (1980??)
+DRIVERNV(monrobwl)      //Stars & Strikes (1979?)
 
 // ----------------
 // MR. GAME
@@ -794,23 +794,22 @@ DRIVERNV(biggame)       //MPU-200: 03/80 Big Game
 DRIVERNV(seawitch)      //MPU-200: 05/80 Seawitch
 DRIVERNV(cheetah)       //MPU-200: 06/80 Cheetah
 DRIVERNV(quicksil)      //MPU-200: 06/80 Quicksilver
-DRIVERNV(nineball)      //MPU-200: 12/80 Nineball
-DRIVERNV(ninebalb)      //MPU-200: 01/07 Nineball (moified rules rev. 85)
-DRIVERNV(freefall)      //MPU-200: 01/81 Free Fall
+DRIVERNV(stargzr)       //MPU-200: 08/80 Star Gazer
+DRIVERNV(stargzrb)      //MPU-200: 03/06 Star Gazer (modified rules rev.9)
+DRIVERNV(flight2k)      //MPU-200: 10/80 Flight 2000
+DRIVERNV(nineball)      //MPU-200: 12/80 Nine Ball
+DRIVERNV(ninebalb)      //MPU-200: 01/07 Nine Ball (modified rules rev. 85)
+DRIVERNV(freefall)      //MPU-200: 01/81 Freefall
+DRIVERNV(lightnin)      //MPU-200: 03/81 Lightning
 DRIVERNV(splitsec)      //MPU-200: 08/81 Split Second
 DRIVERNV(catacomb)      //MPU-200: 10/81 Catacomb
 DRIVERNV(ironmaid)      //MPU-200: 10/81 Iron Maiden
 DRIVERNV(viper)         //MPU-200: 12/81 Viper
 DRIVERNV(dragfist)      //MPU-200: 01/82 Dragonfist
-// MPU-200 - Sound Board: SB-300, VS-100
-DRIVERNV(flight2k)      //MPU-200: 08/80 Flight 2000
-DRIVERNV(stargzr)       //MPU-200: 08/80 Stargazer
-DRIVERNV(stargzrb)      //MPU-200: 03/06 Stargazer (modified rules rev.9)
-DRIVERNV(lightnin)      //MPU-200: 03/81 Lightning
 DRIVERNV(orbitor1)      //MPU-200: 04/82 Orbitor One
 DRIVERNV(cue)           //MPU-200: ??/82 Cue            (Proto - Never released)
+DRIVERNV(blbeauty)      //MPU-200: 09/84 Black Beauty (Shuffle)
 DRIVERNV(lazrlord)      //MPU-200: 10/84 Lazer Lord     (Proto - Never released)
-DRIVERNV(blbeauty)      //MPU-200: ??/84 Black Beauty (Bowler)
 // Whitestar System
 DRIVERNV(strikext)      //Whitestar: 03/00 Striker Extreme
 DRIVERNV(strxt_uk)      //Whitestar: 03/00 Striker Extreme (UK)
@@ -1111,14 +1110,10 @@ DRIVERNV(aftor)         //Af-Tor    (12/1984)
 // -----------------------------------
 // WILLIAMS & WILLIAMS/BALLY GAMES
 // -----------------------------------
-DRIVER(topaz,l1)        //???       Topaz (Shuffle)
-DRIVER(taurs,l1)        //???       Taurus (Shuffle)
-DRIVER(omni,l1)         //???       Omni (Shuffle)
-DRIVER(bstrk,l1)        //???       Big Strike (Bowler)
-DRIVER(tstrk,l1)        //???       Triple Strike (Bowler)
-
-                        //??-466:   06/76 W Aztec
-                        //??-470:   10/77 W Wild Card
+//System 1
+                        //S1-468:   12/76 W Grand Prix
+//System 2
+                        //S2-466:   07/76 W Aztec
 //System 3
 DRIVER(httip,l1)        //S3-477:   11/77 W Hot Tip
 DRIVER(lucky,l1)        //S3-480:   03/78 W Lucky Seven
@@ -1126,12 +1121,14 @@ DRIVER(cntct,l1)        //S3-482:   05/78 W Contact
 DRIVER(wldcp,l1)        //S3-481:   05/78 W World Cup
 DRIVER(disco,l1)        //S3-483:   08/78 W Disco Fever
 //System 4
+DRIVER(topaz,l1)        //          ??/78 W Topaz (Shuffle)
 DRIVER(pkrno,l1)        //S4-488:   10/78 W Pokerino
 DRIVER(phnix,l1)        //S4-485:   11/78 W Phoenix
 DRIVER(flash,l1)        //S4-486:   01/79 W Flash
 DRIVER(flash,t1)        //S4-486:   01/79 W Flash /10 Scoring Ted Estes
 DRIVER(stlwr,l2)        //S4-490:   03/79 W Stellar Wars
                         //S?-491:   06/79 W Rock'N Roll
+DRIVER(taurs,l1)        //          ??/79 W Taurus (Shuffle)
 //System 6
 DRIVER(trizn,l1)        //S6-487:   07/79 W TriZone
 DRIVER(trizn,t1)        //S6-487:   07/79 W TriZone /10 Scoring Ted Estes
@@ -1145,6 +1142,7 @@ DRIVER(frpwr,l2)        //S6-497:   02/80 W Firepower (L-2)
 DRIVER(frpwr,l6)        //S6-497:   02/80 W Firepower (L-6)
 DRIVER(frpwr,t6)        //S6-497:   02/80 W Firepower (L-6) /10 Scoring Ted Estes
 DRIVER(frpwr,b6)        //S6:       12/03 W Firepower (Sys.6 7-digit conversion)
+DRIVER(omni,l1)         //          04/80 W Omni (Shuffle)
 DRIVER(blkou,l1)        //S6-495:   06/80 W Blackout
 DRIVER(blkou,t1)        //S6-495:   06/80 W Blackout /10 Scoring Ted Estes
 DRIVER(scrpn,l1)        //S6-494:   07/80 W Scorpion
@@ -1175,6 +1173,8 @@ DRIVER(ratrc,l1)        //S7-5??:   01/83 W Rat Race (never produced)
 DRIVER(tmfnt,l5)        //S7-515:   03/83 W Time Fantasy
 DRIVER(jst,l2)          //S7-519:   04/83 W Joust
 DRIVER(fpwr2,l2)        //S7-521:   08/83 W Firepower II
+DRIVER(bstrk,l1)        //          ??/83 W Big Strike (Bowler)
+DRIVER(tstrk,l1)        //          ??/83 W Triple Strike (Bowler)
 DRIVER(lsrcu,l2)        //S7-520:   02/84 W Laser Cue
 DRIVER(strlt,l1)        //S7-530:   06/84 W Star Light (Came out after System 9 produced)
 //System 9
@@ -1189,9 +1189,9 @@ DRIVER(sorcr,l2)        //S9-532:   03/85 W Sorcerer (L-2)
 DRIVER(comet,l4)        //S9-540:   06/85 W Comet (L-4)
 DRIVER(comet,l5)        //S9-540:   06/85 W Comet (L-5)
 //System 11
+DRIVER(alcat,l7)        //S11-918:  ??/85 W Alley Cats (Shuffle)
 DRIVER(hs,l3)           //S11-541:  01/86 W High Speed (L-3)
 DRIVER(hs,l4)           //S11-541:  01/86 W High Speed (L-4)
-DRIVER(alcat,l7)        //S11:      02/86 W Alley Cats (Bowler)
 DRIVER(grand,l4)        //S11-523:  04/86 W Grand Lizard
 DRIVER(rdkng,l1)        //S11-542:  07/86 W Road Kings (L-1)
 DRIVER(rdkng,l2)        //S11-542:  07/86 W Road Kings (L-2)
@@ -1209,8 +1209,9 @@ DRIVER(bguns,la)        //S11-557:  10/87 W Big Guns (L-A)
 DRIVER(bguns,l7)        //S11-557:  10/87 W Big Guns (L-7)
 DRIVER(bguns,l8)        //S11-557:  10/87 W Big Guns (L-8)
 DRIVER(spstn,l5)        //S11-552:  12/87 W Space Station
-DRIVER(gmine,l2)        //S11-920:  ??/88 W Gold Mine (Bowler)
-DRIVER(tdawg,l1)        //S11-921:  ??/88 W Top Dawg (Bowler)
+DRIVER(gmine,l2)        //S11-920:  ??/87 W Gold Mine (Shuffle)
+DRIVER(tdawg,l1)        //S11-921:  ??/87 W Top Dawg (Shuffle)
+DRIVER(shfin,l1)        //S11-922:  ??/87 W Shuffle Inn (Shuffle)
 DRIVER(cycln,l4)        //S11-564:  02/88 W Cyclone (L-4)
 DRIVER(cycln,l5)        //S11-564:  02/88 W Cyclone (L-5)
 DRIVER(bnzai,l3)        //S11-566:  05/88 W Banzai Run (L-3)
