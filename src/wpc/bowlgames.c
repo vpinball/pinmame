@@ -149,7 +149,7 @@ SOUNDREGION(0x10000, REGION_CPU2)
   ROM_LOAD("u5.bin", 0xf000, 0x1000, NO_DUMP)
 BY35_ROMEND
 BY35_INPUT_PORTS_START(mdntmrdr,1) BY35_INPUT_PORTS_END
-CORE_GAMEDEFNV(mdntmrdr,"Midnight Marauders (Gun game)",1984,"Bally Midway",by35_mBY35_61S,0)
+CORE_GAMEDEFNV(mdntmrdr,"Midnight Marauders (Gun game)",1984,"Bally Midway",by35_mBY35_61S,GAME_NOT_WORKING)
 
 /*----------------------------
 / Black Beauty
@@ -213,6 +213,12 @@ CORE_CLONEDEF(szone,l2,l5,"Strike Zone (Shuffle) (L-2)", 1984, "Williams", s9_mS
 /*--------------------
 / Alley Cats (#918)
 /--------------------*/
+// Alley Cats is really S9 (uses a BCD digit for diagnostics) but with S11 sound board
+MACHINE_DRIVER_START(s9_mS11S)
+  MDRV_IMPORT_FROM(s11_s11S)
+  MDRV_DIAGNOSTIC_LED7
+MACHINE_DRIVER_END
+
 INITGAME_S10(alcat, GEN_S11, dispS10, 0, FLIP_SW(FLIP_L), S11_BCDDIAG|S11_BCDDISP, 0)
 S9_ROMSTART12(alcat,l7,"u26_rev7.rom", CRC(4d274dd3) SHA1(80d72bd0f85ce2cac04f6d9f59dc1fcccc86d402),
                        "u27_rev7.rom", CRC(9c7faf8a) SHA1(dc1a561948b9a303f7924d7bebcd972db766827b))
@@ -220,7 +226,7 @@ S11S_SOUNDROM88(       "acs_u21.bin",CRC(c54cd329) SHA1(4b86b10e60a30c4de5d97129
                        "acs_u22.bin",CRC(56c1011a) SHA1(c817a3410c643617f3643897b8f529ae78546b0d))
 S11_ROMEND
 S11_INPUT_PORTS_START(alcat, 1) S11_INPUT_PORTS_END
-CORE_GAMEDEF(alcat, l7, "Alley Cats (Shuffle) (L-7)", 1985, "Williams", s11_mS11S,0)
+CORE_GAMEDEF(alcat, l7, "Alley Cats (Shuffle) (L-7)", 1985, "Williams", s9_mS11S,0)
 
 /*--------------------
 / Gold Mine (#920)
@@ -247,7 +253,7 @@ CORE_GAMEDEF(tdawg, l1, "Top Dawg (Shuffle) (L-1)", 1987, "Williams", s11_mS11S,
 /*--------------------
 / Shuffle Inn (#922)
 /--------------------*/
-INITGAME_S10(shfin, GEN_S11, dispS10, 0, FLIP_SW(FLIP_L), S11_BCDDIAG|S11_BCDDISP, 0)
+INITGAME_S10(shfin, GEN_S11, dispS10, 0, FLIP_SW(FLIP_L), S11_BCDDISP, 0)
 S9_ROMSTARTx4(shfin,l1,"u27rom-1.rv1",CRC(40cfb74a) SHA1(8cee4212ea8bb6b360060391df3208e1e129d7e5))
 S11S_SOUNDROM88(       "u21snd-2.rv1",NO_DUMP,
                        "u22snd-2.rv1",CRC(6894abaf) SHA1(2d661765fbfce33a73a20778c41233c0bd9933e9))
