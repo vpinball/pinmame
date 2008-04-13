@@ -99,7 +99,7 @@ BY17_ROMSTARTx88(bbbowlin,"cpu_u2.716",CRC(179e0c69) SHA1(7921839d2014a00b99ce7c
                           "cpu_u6.716",CRC(7b48e45b) SHA1(ac32292ef593bf8350e8bbc41113b6c1cb78a79e))
 BY35_ROMEND
 BY35_INPUT_PORTS_START(bbbowlin,1) BY35_INPUT_PORTS_END
-CORE_GAMEDEFNV(bbbowlin,"Big Ball Bowling",19??,"United(?)",by35_mBowling,0)
+CORE_GAMEDEFNV(bbbowlin,"Big Ball Bowling (Bowler)",19??,"United(?)",by35_mBowling,0)
 
 /*----------------------------
 / Stars & Strikes
@@ -112,7 +112,44 @@ ST200_ROMSTART8888(monrobwl,"cpu_u1.716",CRC(42592cc9) SHA1(22452072199c4b82a413
                             "cpu_u6.716",CRC(ad77d719) SHA1(f8f8d0d183d639d19fea552d35a7be3aa7f07c17))
 BY35_ROMEND
 BY35_INPUT_PORTS_START(monrobwl, 1) BY35_INPUT_PORTS_END
-CORE_GAMEDEFNV(monrobwl,"Stars & Strikes (Bowler)",198?,"Monroe Bowling Co.",by35_mBowling2,0)
+CORE_GAMEDEFNV(monrobwl,"Stars & Strikes (Bowler)",19??,"Monroe Bowling Co.",by35_mBowling2,0)
+
+/*----------------------------
+/ Big Strike
+/----------------------------*/
+INITGAME(bstrk, GEN_S4, dispS5)
+S4_ROMSTART(bstrk,l1,"gamerom.716",CRC(323dbcde) SHA1(a75cbb5de97cb9afc1d36e9b6ff593bb482fcf8b),
+                     "b_ic20.716", CRC(c6f8e3b1) SHA1(cb78d42e1265162132a1ab2320148b6857106b0e),
+                     "b_ic17.716", CRC(cfc2518a) SHA1(5e99e40dcb7e178137db8d7d7d6da82ba87130fa))
+S4_ROMEND
+#define input_ports_bstrk input_ports_bowl
+CORE_GAMEDEF(bstrk,l1,"Big Strike (Shuffle) (L-1)",1983,"Williams",s4_mS4,GAME_USES_CHIMES)
+
+/*----------------------------
+/ Triple Strike
+/----------------------------*/
+INITGAME(tstrk, GEN_S4, dispS5)
+S4_ROMSTART(tstrk,l1,"gamerom.716",CRC(b034c059) SHA1(76b3926b87b3c137fcaf33021a586827e3c030af),
+                     "ic20.716",   CRC(f163fc88) SHA1(988b60626f3d4dc8f4a1dbd0c99282418bc53aae),
+                     "b_ic17.716", CRC(cfc2518a) SHA1(5e99e40dcb7e178137db8d7d7d6da82ba87130fa))
+S4_ROMEND
+#define input_ports_tstrk input_ports_bowl
+CORE_GAMEDEF(tstrk,l1,"Triple Strike (Shuffle) (L-1)",1983,"Williams",s4_mS4,GAME_USES_CHIMES)
+
+/*------------------------------------------------
+/ Midnight Marauders (BY35-???: 05/84) - Gun game
+/-------------------------------------------------*/
+static const core_tLCDLayout dispMM[] = {{ 0,0,0,16,CORE_SEG7 }, {0}};
+static core_tGameData mdntmrdrGameData = {GEN_BY35,dispMM,{FLIP_SW(FLIP_L),0,8,0,SNDBRD_BY61,0,BY35GD_PHASE}};
+static void init_mdntmrdr(void) { core_gameData = &mdntmrdrGameData; }
+BY35_ROMSTARTx00(mdntmrdr,"u2.bin",NO_DUMP,
+                          "u6.bin",CRC(ff55fb57) SHA1(4a44fc8732c8cbce38c9605c7958b02a6bc95da1))
+SOUNDREGION(0x10000, REGION_CPU2)
+  ROM_LOAD("u3.bin", 0xd000, 0x1000, NO_DUMP)
+  ROM_LOAD("u5.bin", 0xf000, 0x1000, NO_DUMP)
+BY35_ROMEND
+BY35_INPUT_PORTS_START(mdntmrdr,1) BY35_INPUT_PORTS_END
+CORE_GAMEDEFNV(mdntmrdr,"Midnight Marauders (Gun game)",1984,"Bally Midway",by35_mBY35_61S,0)
 
 /*----------------------------
 / Black Beauty
@@ -125,29 +162,7 @@ ST200_ROMSTART8888(blbeauty,"cpu_u1.716",CRC(e2550957) SHA1(e445548b650fec5d593c
                             "cpu_u6.716",CRC(842cd307) SHA1(8429d84e8bc4343b437801d0236150e04de79b75))
 BY35_ROMEND
 BY35_INPUT_PORTS_START(blbeauty, 1) BY35_INPUT_PORTS_END
-CORE_GAMEDEFNV(blbeauty,"Black Beauty (Bowler)",198?,"Stern",by35_mBowling2,0)
-
-/*----------------------------
-/ Big Strike
-/----------------------------*/
-INITGAME(bstrk, GEN_S4, dispS5)
-S4_ROMSTART(bstrk,l1,"gamerom.716",CRC(323dbcde) SHA1(a75cbb5de97cb9afc1d36e9b6ff593bb482fcf8b),
-                     "b_ic20.716", CRC(c6f8e3b1) SHA1(cb78d42e1265162132a1ab2320148b6857106b0e),
-                     "b_ic17.716", CRC(cfc2518a) SHA1(5e99e40dcb7e178137db8d7d7d6da82ba87130fa))
-S4_ROMEND
-#define input_ports_bstrk input_ports_bowl
-CORE_GAMEDEF(bstrk,l1,"Big Strike (Bowler) (L-1)",1983,"Williams",s4_mS4,GAME_USES_CHIMES)
-
-/*----------------------------
-/ Triple Strike
-/----------------------------*/
-INITGAME(tstrk, GEN_S4, dispS5)
-S4_ROMSTART(tstrk,l1,"gamerom.716",CRC(b034c059) SHA1(76b3926b87b3c137fcaf33021a586827e3c030af),
-                     "ic20.716",   CRC(f163fc88) SHA1(988b60626f3d4dc8f4a1dbd0c99282418bc53aae),
-                     "b_ic17.716", CRC(cfc2518a) SHA1(5e99e40dcb7e178137db8d7d7d6da82ba87130fa))
-S4_ROMEND
-#define input_ports_tstrk input_ports_bowl
-CORE_GAMEDEF(tstrk,l1,"Triple Strike (Bowler) (L-1)",1983,"Williams",s4_mS4,GAME_USES_CHIMES)
+CORE_GAMEDEFNV(blbeauty,"Black Beauty (Shuffle)",1984,"Stern",by35_mBowling2,0)
 
 /*--------------------
 / Pennant Fever (#526)
@@ -196,7 +211,7 @@ S9_ROMEND
 CORE_CLONEDEF(szone,l2,l5,"Strike Zone (Shuffle) (L-2)", 1984, "Williams", s9_mS9S,0)
 
 /*--------------------
-/ Alley Cat (#918)
+/ Alley Cats (#918)
 /--------------------*/
 INITGAME_S10(alcat, GEN_S11, dispS10, 0, FLIP_SW(FLIP_L), S11_BCDDIAG|S11_BCDDISP, 0)
 S9_ROMSTART12(alcat,l7,"u26_rev7.rom", CRC(4d274dd3) SHA1(80d72bd0f85ce2cac04f6d9f59dc1fcccc86d402),
@@ -205,7 +220,7 @@ S11S_SOUNDROM88(       "acs_u21.bin",CRC(c54cd329) SHA1(4b86b10e60a30c4de5d97129
                        "acs_u22.bin",CRC(56c1011a) SHA1(c817a3410c643617f3643897b8f529ae78546b0d))
 S11_ROMEND
 S11_INPUT_PORTS_START(alcat, 1) S11_INPUT_PORTS_END
-CORE_GAMEDEF(alcat, l7, "Alley Cat (Shuffle) (L-7)", 1986, "Williams", s11_mS11S,0)
+CORE_GAMEDEF(alcat, l7, "Alley Cats (Shuffle) (L-7)", 1985, "Williams", s11_mS11S,0)
 
 /*--------------------
 / Gold Mine (#920)
@@ -216,7 +231,7 @@ S11S_SOUNDROM88(       "u21.256",CRC(3b801570) SHA1(50b50ff826dcb031a30940fa3099
                        "u22.256",CRC(08352101) SHA1(a7437847a71cf037a80686292f9616b1e08922df))
 S11_ROMEND
 S11_INPUT_PORTS_START(gmine, 1) S11_INPUT_PORTS_END
-CORE_GAMEDEF(gmine, l2, "Gold Mine (L-2)", 1988, "Williams", s11_mS11S,0)
+CORE_GAMEDEF(gmine, l2, "Gold Mine (Shuffle) (L-2)", 1987, "Williams", s11_mS11S,0)
 
 /*--------------------
 / Top Dawg (#921)
@@ -227,7 +242,18 @@ S11S_SOUNDROM88(      "tdsu21r1.256",CRC(6a323227) SHA1(7c7263754e5672c654a2ee95
                       "tdsu22r1.256",CRC(58407eb4) SHA1(6bd9b304c88d9470eae5afb6621187f4a8313573))
 S11_ROMEND
 S11_INPUT_PORTS_START(tdawg, 1) S11_INPUT_PORTS_END
-CORE_GAMEDEF(tdawg, l1, "Top Dawg (L-1)", 1988, "Williams", s11_mS11S,0)
+CORE_GAMEDEF(tdawg, l1, "Top Dawg (Shuffle) (L-1)", 1987, "Williams", s11_mS11S,0)
+
+/*--------------------
+/ Shuffle Inn (#922)
+/--------------------*/
+INITGAME_S10(shfin, GEN_S11, dispS10, 0, FLIP_SW(FLIP_L), S11_BCDDIAG|S11_BCDDISP, 0)
+S9_ROMSTARTx4(shfin,l1,"u27rom-1.rv1",CRC(40cfb74a) SHA1(8cee4212ea8bb6b360060391df3208e1e129d7e5))
+S11S_SOUNDROM88(       "u21snd-2.rv1",NO_DUMP,
+                       "u22snd-2.rv1",CRC(6894abaf) SHA1(2d661765fbfce33a73a20778c41233c0bd9933e9))
+S11_ROMEND
+S11_INPUT_PORTS_START(shfin, 1) S11_INPUT_PORTS_END
+CORE_GAMEDEF(shfin, l1, "Shuffle Inn (Shuffle) (L-1)", 1987, "Williams", s11_mS11S,0)
 
 /*--------------------
 / Slugfest baseball
