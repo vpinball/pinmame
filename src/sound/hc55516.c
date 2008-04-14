@@ -154,6 +154,9 @@ void hc55516_clock_w(int num, int state)
 		chip->integrator = integrator;
 
 #ifdef PINMAME
+		/* Cut off extreme peaks produced by bad speech data (eg. Pharaoh) */
+		if (temp < -80000) temp = -80000;
+		else if (temp > 80000) temp = 80000;
 		/* Just wrap to prevent clipping */
 		if (temp < -32768) chip->next_value = (INT16)(-65536 - temp);
 		else if (temp > 32767) chip->next_value = (INT16)(65535 - temp);
