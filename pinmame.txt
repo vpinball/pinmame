@@ -1,8 +1,8 @@
 **************************************************************************************
                                PinMAME
               (Pinball Multiple Arcade Machine Emulator)
-                             Version 1.59
-                          (February 17, 2008)
+                             Version 1.60
+                           (April 18, 2008)
                         http://www.pinmame.com
 **************************************************************************************
 
@@ -367,6 +367,8 @@ Douglas Cope       (djcope11 at yahoo.co.uk)
 Silvio Finotti     (silviorf at yahoo.com)
 Yvon Poulin        (darkness21 at globetrotter.net)
 Pascal Janin       (PascalPi1 at aol.com)
+Daniel Dietrich    (3d at data-east.de)
+Kelley             (pinballjail at charter.net)
 
 Note from the PinMAME Dev. team
 -------------------------------
