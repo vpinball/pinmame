@@ -1,6 +1,10 @@
 What's new in Visual PinMAME:
 -----------------------------
 
+Version 1.60 (April 18th, 2008)
+-------------------------------
+- No interface changes, refer to whatsnew.txt for PinMAME changes
+
 Version 1.59 (February 17th, 2008)
 ----------------------------------
 - HSTD displayed in all player panels for GTS1 games
