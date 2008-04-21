@@ -77,6 +77,16 @@ ALVG_ROMEND
 CORE_CLONEDEFNV(wrldtou2,wrldtour,"Al's Garage Band Goes On A World Tour R02b",1992,"Alvin G",mALVGS2DMD,0)
 
 /*-------------------------------------------------------------------
+/ U.S.A. Football
+/-------------------------------------------------------------------*/
+INITGAME(usafootb, alvg_alpha, FLIP78, 3/*?*/, SNDBRD_ALVGS1, 0, 0)
+ALVGROMSTART(usafootb,	"usa_cpu.bin", CRC(53b00873) SHA1(96812c4722026554a830c62eca64f09d25a0de82))
+ALVGS_SOUNDROM11(		"usa_snd.bin", CRC(9d509cbc) SHA1(0be629945b5102adf75e88661e0f956e32ca77da),
+						"usa_vox.bin", CRC(baae0aa3) SHA1(7933bffcf1509ceeea58a4449268c10c9fac554c))
+ALVG_ROMEND
+CORE_GAMEDEFNV(usafootb,"U.S.A. Football",1993,"Alvin G",mALVGS1,0)
+
+/*-------------------------------------------------------------------
 / Mystery Castle
 /-------------------------------------------------------------------*/
 INITGAME(mystcast, DMD, FLIP78, 3/*?*/, SNDBRD_ALVGS2, SNDBRD_ALVGDMD, 0)
