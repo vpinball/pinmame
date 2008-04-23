@@ -569,7 +569,7 @@ BY57_SOUNDROM(            "834-03_1.532",CRC(88bef6f4) SHA1(561e0bde04661b700552
                           "834-05_3.532",CRC(1a4dbd99) SHA1(fa9ae0bde118a40ba9a0e9a085b30298cac0ea93),
                           "834-06_4.532",CRC(983c9e9d) SHA1(aae323a39b0ec987e6b9b98e5d9b2c58b1eea1a4),
                           "834-07_5.532",CRC(697f5333) SHA1(39bbff8790e394a20ef5ba3239fb1d9359be0fe5),
-                          "834-08_6.532",CRC(684452c9) SHA1(95bb5f6a004f52f0842dfb7266efdf43563b8b7d),
+                          "834-08_6.532",NO_DUMP,
                           "834-09_7.532",CRC(19ceabd1) SHA1(37e7780f2ba3e06462e775547278dcba1b6d2ac8))
 BY35_ROMEND
 #define input_ports_flashgdv input_ports_by35
