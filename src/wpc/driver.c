@@ -984,7 +984,7 @@ DRIVERNV(potc_400af)		//S.A.M: ??/?? Pirates of the Caribbean V4.00AF (English &
 DRIVERNV(potc_400ai)		//S.A.M: ??/?? Pirates of the Caribbean V4.00AI (English & Italian)
 DRIVERNV(potc_400al)		//S.A.M: ??/?? Pirates of the Caribbean V4.00AL (English & Spanish)
 DRIVERNV(potc_400gf)		//S.A.M: ??/?? Pirates of the Caribbean V4.00GF (German & French)
-DRIVERNV(potc_600)			//S.A.M: ??/?? Pirates of the Caribbean V6.00 (English)
+DRIVERNV(potc_600as)		//S.A.M: ??/?? Pirates of the Caribbean V6.00AS (English & Spanish)
 DRIVERNV(scarn9nj)			//S.A.M: ??/?? Simpsons Kooky Carnival Redemption V0.9 New Jersey (English)
 DRIVERNV(scarn103)			//S.A.M: ??/?? Simpsons Kooky Carnival Redemption V1.03 (English)
 DRIVERNV(scarn)				//S.A.M: ??/?? Simpsons Kooky Carnival Redemption V1.05 (English)
