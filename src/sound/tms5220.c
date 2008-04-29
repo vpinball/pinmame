@@ -626,23 +626,28 @@ tryagain:
             }
         }
 
-        if (tms->old_energy == 0)
-        {
-            /* generate silent samples here */
-			tms->excitation_data = 0x00; /* I'm not sure if this is actually RIGHT, the current_energy may be forced to zero when we've just passed a zero energy frame. However, this does work too. May be removed later. */
-        }
-        else if (tms->old_pitch == 0)
+//      if (tms->old_energy == 0)
+//      {
+//        /* generate silent samples here */
+//        tms->excitation_data = 0x00; /* I'm not sure if this is actually RIGHT, the current_energy may be forced to zero when we've just passed a zero energy frame. However, this does work too. May be removed later. */
+//      }
+//      else
+        if (tms->old_pitch == 0)
         {
             /* generate unvoiced samples here */
 			if (tms->RNG & 1)
-				tms->excitation_data = -0x40; /* according to the patent it is (either + or -) half of the maximum value in the chirp table, so +-64 */
+				tms->excitation_data = -0x60; /* according to the patent it is (either + or -) half of the maximum value in the chirp table, so +-64 */
 			else
-				tms->excitation_data = 0x40;
+				tms->excitation_data = 0x60;
         }
         else
         {
             /* generate voiced samples here */
-			tms->excitation_data = chirptable[tms->pitch_count%sizeof(chirptable)];
+			tms->excitation_data = 0x20 + tms->pitch_count;
+			if (tms->pitch_count < sizeof(chirptable))
+				tms->excitation_data = chirptable[tms->pitch_count % sizeof(chirptable)];
+//			else
+//				tms->excitation_data = 0x00;
         }
 
         /* Update LFSR every clock, like patent shows */
