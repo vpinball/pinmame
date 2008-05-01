@@ -636,18 +636,17 @@ tryagain:
         {
             /* generate unvoiced samples here */
 			if (tms->RNG & 1)
-				tms->excitation_data = -0x40; /* according to the patent it is (either + or -) half of the maximum value in the chirp table, so +-64 */
+				tms->excitation_data = -0x60; /* according to the patent it is (either + or -) half of the maximum value in the chirp table, so +-64 */
 			else
-				tms->excitation_data = 0x40;
+				tms->excitation_data = 0x60;
         }
         else
         {
             /* generate voiced samples here */
-            int val = 16 * tms->pitch_count;
+            tms->excitation_data = tms->pitch_count - 0x80;
 			if (tms->pitch_count < sizeof(chirptable)) {
-				val += (int)chirptable[tms->pitch_count];
+				tms->excitation_data += chirptable[tms->pitch_count];
 			}
-			tms->excitation_data = (char)(val/8 - 0x80);
         }
 
         /* Update LFSR every clock, like patent shows */
@@ -747,7 +746,7 @@ INT16 lattice_filter(void *chip)
            Kn = tms->current_k[n-1]
            bn = tms->x[n-1]
     */
-        tms->u[10] = (tms->excitation_data * tms->previous_energy) / 4096 ; /* Y(11) */
+        tms->u[10] = (tms->excitation_data * tms->previous_energy) >> 12 ; /* Y(11) */
         tms->u[9] = tms->u[10] - ((tms->current_k[9] * tms->x[9]) / 32768);
         tms->u[8] = tms->u[9] - ((tms->current_k[8] * tms->x[8]) / 32768);
         tms->x[9] = tms->x[8] + ((tms->current_k[8] * tms->u[8]) / 32768);
