@@ -552,10 +552,10 @@ tryagain:
             }
 
             /* is this a stop frame? */
-            else if (tms->current_energy == (energytable[15] >> 6))
+            else if (tms->current_energy == energytable[15])
             {
                 /*mame_printf_debug("processing frame: stop frame\n");*/
-                tms->current_energy = energytable[0] >> 6;
+                tms->current_energy = energytable[0];
                 tms->target_energy = tms->current_energy;
 				/*tms->interp_count = tms->sample_count =*/ tms->pitch_count = 0;
 				tms->last_frame = 0;
@@ -577,7 +577,7 @@ tryagain:
             else
             {
                 /* is this the ramp down frame? */
-                if (tms->new_energy == (energytable[15] >> 6))
+                if (tms->new_energy == energytable[15])
                 {
                     /*mame_printf_debug("processing frame: ramp down\n");*/
                     tms->target_energy = 0;
@@ -636,18 +636,18 @@ tryagain:
         {
             /* generate unvoiced samples here */
 			if (tms->RNG & 1)
-				tms->excitation_data = -0x60; /* according to the patent it is (either + or -) half of the maximum value in the chirp table, so +-64 */
+				tms->excitation_data = -0x40; /* according to the patent it is (either + or -) half of the maximum value in the chirp table, so +-64 */
 			else
-				tms->excitation_data = 0x60;
+				tms->excitation_data = 0x40;
         }
         else
         {
             /* generate voiced samples here */
-			tms->excitation_data = 0x20 + tms->pitch_count;
-			if (tms->pitch_count < sizeof(chirptable))
-				tms->excitation_data = chirptable[tms->pitch_count % sizeof(chirptable)];
-//			else
-//				tms->excitation_data = 0x00;
+            int val = 16 * tms->pitch_count;
+			if (tms->pitch_count < sizeof(chirptable)) {
+				val += (int)chirptable[tms->pitch_count];
+			}
+			tms->excitation_data = (char)(val/8 - 0x80);
         }
 
         /* Update LFSR every clock, like patent shows */
@@ -747,7 +747,7 @@ INT16 lattice_filter(void *chip)
            Kn = tms->current_k[n-1]
            bn = tms->x[n-1]
     */
-        tms->u[10] = (tms->excitation_data * tms->previous_energy) >> 8; /* Y(11) */
+        tms->u[10] = (tms->excitation_data * tms->previous_energy) / 4096 ; /* Y(11) */
         tms->u[9] = tms->u[10] - ((tms->current_k[9] * tms->x[9]) / 32768);
         tms->u[8] = tms->u[9] - ((tms->current_k[8] * tms->x[8]) / 32768);
         tms->x[9] = tms->x[8] + ((tms->current_k[8] * tms->u[8]) / 32768);
@@ -944,7 +944,7 @@ static int parse_frame(struct tms5220 *tms, int the_first_frame)
         tms->new_k[i] = 0;
 
     /* if the previous frame was a stop frame, don't do anything */
-	if ((! the_first_frame) && (tms->old_energy == (energytable[15] >> 6)))
+	if ((! the_first_frame) && (tms->old_energy == energytable[15]))
 		/*return 1;*/
 	{
 		tms->buffer_empty = 1;
@@ -966,7 +966,7 @@ static int parse_frame(struct tms5220 *tms, int the_first_frame)
         goto ranout;
 	}
     indx = extract_bits(tms, 4);
-    tms->new_energy = energytable[indx] >> 6;
+    tms->new_energy = energytable[indx];
 
 	/* if the index is 0 or 15, we're done */
 	if (indx == 0 || indx == 15)
@@ -1003,7 +1003,7 @@ static int parse_frame(struct tms5220 *tms, int the_first_frame)
         goto ranout;
 	}
     indx = extract_bits(tms, 6);
-    tms->new_pitch = pitchtable[indx] / 256;
+    tms->new_pitch = pitchtable[indx] >> 8;
 
     /* if this is a repeat frame, just copy the k's */
     if (rep_flag)
