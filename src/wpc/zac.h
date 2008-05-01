@@ -118,22 +118,22 @@
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0008, "1" ) \
     COREPORT_DIPNAME( 0x00f0, 0x0060, "Speech clock speed") \
-      COREPORT_DIPSET(0x0000, "640 kHz" ) \
-      COREPORT_DIPSET(0x0010, "646 kHz" ) \
-      COREPORT_DIPSET(0x0020, "654 kHz" ) \
-      COREPORT_DIPSET(0x0030, "660 kHz" ) \
-      COREPORT_DIPSET(0x0040, "666 kHz" ) \
-      COREPORT_DIPSET(0x0050, "674 kHz" ) \
-      COREPORT_DIPSET(0x0060, "680 kHz" ) \
-      COREPORT_DIPSET(0x0070, "686 kHz" ) \
-      COREPORT_DIPSET(0x0080, "694 kHz" ) \
-      COREPORT_DIPSET(0x0090, "700 kHz" ) \
-      COREPORT_DIPSET(0x00a0, "706 kHz" ) \
-      COREPORT_DIPSET(0x00b0, "714 kHz" ) \
-      COREPORT_DIPSET(0x00c0, "720 kHz" ) \
-      COREPORT_DIPSET(0x00d0, "726 kHz" ) \
-      COREPORT_DIPSET(0x00e0, "734 kHz" ) \
-      COREPORT_DIPSET(0x00f0, "740 kHz" )
+      COREPORT_DIPSET(0x0000, "620 kHz" ) \
+      COREPORT_DIPSET(0x0010, "626 kHz" ) \
+      COREPORT_DIPSET(0x0020, "634 kHz" ) \
+      COREPORT_DIPSET(0x0030, "640 kHz" ) \
+      COREPORT_DIPSET(0x0040, "646 kHz" ) \
+      COREPORT_DIPSET(0x0050, "654 kHz" ) \
+      COREPORT_DIPSET(0x0060, "660 kHz" ) \
+      COREPORT_DIPSET(0x0070, "666 kHz" ) \
+      COREPORT_DIPSET(0x0080, "674 kHz" ) \
+      COREPORT_DIPSET(0x0090, "680 kHz" ) \
+      COREPORT_DIPSET(0x00a0, "686 kHz" ) \
+      COREPORT_DIPSET(0x00b0, "694 kHz" ) \
+      COREPORT_DIPSET(0x00c0, "700 kHz" ) \
+      COREPORT_DIPSET(0x00d0, "706 kHz" ) \
+      COREPORT_DIPSET(0x00e0, "714 kHz" ) \
+      COREPORT_DIPSET(0x00f0, "720 kHz" )
 
 /*-- Standard input ports --*/
 #define ZACOLD_INPUT_PORTS_START(name,balls) \
