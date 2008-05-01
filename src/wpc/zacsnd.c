@@ -348,7 +348,7 @@ const struct sndbrdIntf zac13136Intf = {
 const struct sndbrdIntf zac11178Intf = {
   "ZAC11178", sns_init, NULL, sns_diag, sns_data_w, sns_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
-static struct TMS5220interface sns_tms5220Int = { 680000, 90, sns_5220Irq }; // the frequency may vary by up to 30 percent!!!
+static struct TMS5220interface sns_tms5220Int = { 660000, 80, sns_5220Irq }; // the frequency may vary by up to 30 percent!!!
 static struct DACinterface     sns_dacInt = { 1, { 20 }};
 static struct DACinterface     sns2_dacInt = { 2, { 20, 20 }};
 static struct AY8910interface  sns_ay8910Int = { 1, 3579500/4, {25}, {sns_8910a_r}, {0}, {0}, {sns_8910b_w}};
@@ -803,8 +803,8 @@ static void sns_irq1b(int state) {
 }
 
 static void sns_5220Irq(int state) {
-  static int oldSpeed = 6;  // default voice clock set to 680 kHz
-  if ((core_getDip(0) >> 4) != oldSpeed) tms5220_set_frequency((96 + (oldSpeed = (core_getDip(0) >> 4))) * 6666.66);
+  static int oldSpeed = 6;  // default voice clock set to 660 kHz
+  if ((core_getDip(0) >> 4) != oldSpeed) tms5220_set_frequency((93 + (oldSpeed = (core_getDip(0) >> 4))) * 6666.666);
   if (core_gameData->hw.soundBoard == SNDBRD_ZAC1370 || core_gameData->hw.soundBoard == SNDBRD_ZAC13136)
     pia_set_input_cb1(SNS_PIA1, !state);
   logerror("sns_5220Irq: state=%x\n",state);
