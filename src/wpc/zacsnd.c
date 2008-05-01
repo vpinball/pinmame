@@ -5,6 +5,7 @@
 #include "cpu/i8039/i8039.h"
 #include "sound/discrete.h"
 #include "sound/sn76477.h"
+#include "sound/tms5220.h"
 #include "core.h"
 #include "sndbrd.h"
 #include "zacsnd.h"
@@ -585,6 +586,7 @@ static void sns_init(struct sndbrdData *brdData) {
     mixer_set_volume(snslocals.channel+3,0);
 // reset tms5220
     tms5220_reset();
+    tms5220_set_variant(variant_tms0285);
   }
 }
 
