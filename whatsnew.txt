@@ -1,4 +1,4 @@
-Version 1.60 (February 18, 2008) - "For Tanja"
+Version 1.60 (April 18, 2008) - "For Tanja"
 ------------------------------------------------------------------------------
 This latest release took a little longer as originally expected because
 a good friend of Gerrit, Tanja, suddenly died at at the age of 29 years.
@@ -8,7 +8,7 @@ This release sees an update to the HC55516 sound chip used for speech/FX on
 all WMS games from Gorgar up to Twilight Zone. Static noise and distortion
 levels are reduced, and generally sound reproduction is clearer than before.
 At the same time, Bally's "Xenon" and "Flash Gordon" using the vocalizer
-sound board was increased in speech volume.
+sound board were increased in speech volume.
 
 A fix was added for "The Sopranos" so the game will not crash any longer
 after starting the "Bing!" mode, or the Boss mode.
