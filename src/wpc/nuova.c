@@ -137,7 +137,7 @@ const struct sndbrdIntf nuovaIntf = {
 
 MACHINE_DRIVER_START(nuova)
   MDRV_IMPORT_FROM(by35)
-  MDRV_CPU_MODIFY("mcpu")
+  MDRV_CPU_REPLACE("mcpu", M6800, 530000)
   MDRV_CPU_MEMORY(nuova_readmem, nuova_writemem)
   MDRV_NVRAM_HANDLER(nuova)
   MDRV_DIAGNOSTIC_LEDH(2)
@@ -152,6 +152,10 @@ MACHINE_DRIVER_END
 
 // games below
 
+#define INITGAME(name, gen, disp, flip, lamps, sb, db) \
+static core_tGameData name##GameData = {gen,disp,{flip,0,lamps,0,sb,db,BY35GD_NOSOUNDE}}; \
+static void init_##name(void) { core_gameData = &name##GameData; }
+
 #define INITGAMENB(name, gen, disp, flip, lamps, sb, db) \
 static core_tGameData name##GameData = {gen,disp,{flip,0,lamps,0,sb,db,BY35GD_FAKEZERO}}; \
 static void init_##name(void) { core_gameData = &name##GameData; }
@@ -165,12 +169,33 @@ static core_tLCDLayout dispNB[] = {
   {2, 0,18,7,CORE_SEG87F}, {2,16,26,7,CORE_SEG87F},
   {4, 4,35,2,CORE_SEG7},   {4,10,38,2,CORE_SEG7},{0}
 };
-
+static core_tLCDLayout dispBy7[] = {
+  {0, 0, 1,7,CORE_SEG87F}, {0,16, 9,7,CORE_SEG87F},
+  {2, 0,17,7,CORE_SEG87F}, {2,16,25,7,CORE_SEG87F},
+  {4, 4,35,2,CORE_SEG7},   {4,10,38,2,CORE_SEG7},{0}
+};
 static core_tLCDLayout dispAlpha[] = {
   {0, 0, 0,16,CORE_SEG16S},
   {4, 0,16,16,CORE_SEG16S},
   {0}
 };
+
+/*--------------------------------
+/ Tiger Rag (Kings Of Steel Clone)
+/-------------------------------*/
+ROM_START(tigerrag)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("tigerrag.mpu", 0xe000, 0x2000, CRC(3eb389ba) SHA1(bdfdcf00f4a2200d39d7e469fe633e0b7b8f1676))
+    ROM_COPY(REGION_CPU1, 0xe000, 0x1000,0x0800)
+    ROM_COPY(REGION_CPU1, 0xe800, 0x5000,0x0800)
+    ROM_COPY(REGION_CPU1, 0xf000, 0x1800,0x0800)
+    ROM_COPY(REGION_CPU1, 0xf800, 0x5800,0x0800)
+BY45_SOUNDROM11("kngsu3.snd", CRC(11b02dca) SHA1(464eee1aa1fd9b6e26d4ba635777fffad0222106),
+                "kngsu4.snd", CRC(f3e4d2f6) SHA1(93f4e9e1348b1225bc02db38c994e3338afb175c))
+ROM_END
+INITGAMENB(tigerrag,GEN_BY35,dispNB,FLIP_SW(FLIP_L),8,SNDBRD_BY45,0)
+BY35_INPUT_PORTS_START(tigerrag, 1) BY35_INPUT_PORTS_END
+CORE_CLONEDEFNV(tigerrag,kosteel,"Tiger Rag",1984,"Bell Games",by35_mBY35_45S,0)
 
 /*--------------------------------
 / Cosmic Flash (Flash Gordon Clone)
@@ -209,6 +234,22 @@ BY35_INPUT_PORTS_START(newwave, 1) BY35_INPUT_PORTS_END
 CORE_CLONEDEFNV(newwave,blakpyra,"New Wave",1985,"Bell Games",by35_mBY35_45S,0)
 
 /*--------------------------------
+/ World Defender
+/-------------------------------*/
+ROM_START(worlddef)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("worlddef.764", 0xe000, 0x2000, CRC(ad1a7ba3) SHA1(d799b6d1cd252cd6d9fb72586099c43de7c22a00))
+    ROM_COPY(REGION_CPU1, 0xe000, 0x1000,0x0800)
+    ROM_COPY(REGION_CPU1, 0xe800, 0x5000,0x0800)
+    ROM_COPY(REGION_CPU1, 0xf000, 0x1800,0x0800)
+    ROM_COPY(REGION_CPU1, 0xf800, 0x5800,0x0800)
+BY45_SOUNDROMx2("wodefsnd.764", CRC(b8d4dc20) SHA1(5aecac4a2deb7ea8e0ff0600ea459ef272dcd5f0))
+ROM_END
+INITGAMENB(worlddef,GEN_BY35,dispNB,FLIP_SW(FLIP_L),0,SNDBRD_BY45,0)
+BY35_INPUT_PORTS_START(worlddef, 1) BY35_INPUT_PORTS_END
+CORE_GAMEDEFNV(worlddef,"World Defender",1985,"Bell Games",by35_mBY35_45S,0)
+
+/*--------------------------------
 / Space Hawks (Cybernaut Clone)
 /-------------------------------*/
 INITGAMENB(spacehaw,GEN_BY35,dispNB,FLIP_SW(FLIP_L),8,SNDBRD_BY45,0)
@@ -218,6 +259,62 @@ BY45_SOUNDROMx2(          "cybu3.snd",  CRC(a3c1f6e7) SHA1(35a5e828a6f2dd9009e16
 BY35_ROMEND
 BY35_INPUT_PORTS_START(spacehaw, 1) BY35_INPUT_PORTS_END
 CORE_CLONEDEFNV(spacehaw,cybrnaut,"Space Hawks",1986,"Nuova Bell Games",by35_mBY35_45S,0)
+
+/*--------------------------------
+/ Skill Flight
+/-------------------------------*/
+ROM_START(skflight)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("game_u7.64", 0xe000, 0x2000, CRC(fe5001eb) SHA1(f7d56d484141ba8ec82664b6aebbf3a683547d20))
+    ROM_LOAD("game_u8.64", 0xc000, 0x2000, CRC(58f259fe) SHA1(505f3996f66dbb4027bd47f6b7ba9e4baaeb6e51))
+    ROM_COPY(REGION_CPU1, 0xc000, 0x9000,0x1000)
+    ROM_COPY(REGION_CPU1, 0xe000, 0x1000,0x1000)
+    ROM_COPY(REGION_CPU1, 0xf000, 0x5000,0x1000)
+
+  NORMALREGION(0x40000, REGION_SOUND1)
+    ROM_LOAD("snd_u3.256", 0x0000, 0x8000, CRC(43424fb1) SHA1(428d2f7444cd71b6c49c04749b42263e3c185856))
+      ROM_RELOAD(0x10000, 0x8000)
+      ROM_RELOAD(0x20000, 0x8000)
+      ROM_RELOAD(0x30000, 0x8000)
+    ROM_LOAD("snd_u4.256", 0x8000, 0x8000, CRC(10378feb) SHA1(5da2b9c530167c80b9d411da159e4b6e95b76647))
+      ROM_RELOAD(0x18000, 0x8000)
+      ROM_RELOAD(0x28000, 0x8000)
+      ROM_RELOAD(0x38000, 0x8000)
+  NORMALREGION(0x10000, REGION_CPU2)
+  ROM_COPY(REGION_SOUND1, 0x0000, 0x8000,0x8000)
+ROM_END
+
+INITGAME(skflight,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_NUOVA,0)
+BY35_INPUT_PORTS_START(skflight, 3) BY35_INPUT_PORTS_END
+CORE_GAMEDEFNV(skflight, "Skill Flight", 1986, "Nuova Bell Games", nuova, GAME_IMPERFECT_SOUND)
+
+/*--------------------------------
+/ Cobra
+/-------------------------------*/
+ROM_START(cobra)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("cpu_u7.256", 0xc000, 0x4000, CRC(c0f89577) SHA1(16d351f2bf642bf886e808b58173b3e699a44fd6))
+    ROM_COPY(REGION_CPU1, 0xc000, 0x1000,0x1000)
+    ROM_COPY(REGION_CPU1, 0xd000, 0x5000,0x1000)
+    ROM_COPY(REGION_CPU1, 0xe000, 0x9000,0x1000)
+    ROM_COPY(REGION_CPU1, 0xf000, 0xd000,0x1000)
+
+  NORMALREGION(0x40000, REGION_SOUND1)
+    ROM_LOAD("snd_u8.256", 0x00000,0x8000, CRC(cdf2a28d) SHA1(d4969370109b4c7f31f48a3ebd8925268caf9c44))
+      ROM_RELOAD(0x20000, 0x8000)
+    ROM_LOAD("snd_u9.256", 0x08000,0x8000, CRC(08bd0db9) SHA1(af851b8c993649b61645a414459000c206516bec))
+      ROM_RELOAD(0x28000, 0x8000)
+    ROM_LOAD("snd_u10.256",0x10000,0x8000, CRC(634bc64c) SHA1(8389fda08ee7bf0e5002153cec22e219bf786993))
+      ROM_RELOAD(0x30000, 0x8000)
+    ROM_LOAD("snd_u11.256",0x18000,0x8000, CRC(d4da383c) SHA1(032a4a425936d5c822fba6e46483f03a87c1a6ec))
+      ROM_RELOAD(0x38000, 0x8000)
+  NORMALREGION(0x10000, REGION_CPU2)
+  ROM_COPY(REGION_SOUND1, 0x0000, 0x8000,0x8000)
+ROM_END
+
+INITGAME(cobra,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_NUOVA,0)
+BY35_INPUT_PORTS_START(cobra, 3) BY35_INPUT_PORTS_END
+CORE_GAMEDEFNV(cobra, "Cobra", 1987, "Nuova Bell Games", nuova, GAME_IMPERFECT_SOUND)
 
 /*--------------------------------
 / Future Queen
@@ -232,6 +329,7 @@ ROM_START(futrquen)
   ROM_COPY(REGION_CPU1, 0xe000, 0x9000,0x0800)
   ROM_COPY(REGION_CPU1, 0xf000, 0x9800,0x0800)
   ROM_COPY(REGION_CPU1, 0xe800, 0xd000,0x0800)
+  ROM_COPY(REGION_CPU1, 0xf800, 0xd800,0x0800)
 
   NORMALREGION(0x40000, REGION_SOUND1)
     ROM_LOAD("snd_u8.bin", 0x00000,0x8000, CRC(3d254d89) SHA1(2b4aa3387179e2c0fbf18684128761d3f778dcb2))
@@ -297,3 +395,65 @@ ROM_END
 INITGAMEAL(f1gp,GEN_BY35,dispAlpha,FLIP_SWNO(48,0),8,SNDBRD_NUOVA,0)
 BY35_INPUT_PORTS_START(f1gp, 3) BY35_INPUT_PORTS_END
 CORE_GAMEDEFNV(f1gp, "F1 Grand Prix", 1987, "Nuova Bell Games", nuova, GAME_IMPERFECT_SOUND)
+
+/*--------------------------------
+/ Top Pin
+/-------------------------------*/
+ROM_START(toppin)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("cpu_256.bin", 0xc000, 0x4000, CRC(3aa32c96) SHA1(989fdc642efe6fa41319d7ccae6681ab4d76feb4))
+  ROM_COPY(REGION_CPU1, 0xc000, 0x1000,0x0800)
+  ROM_COPY(REGION_CPU1, 0xd000, 0x1800,0x0800)
+  ROM_COPY(REGION_CPU1, 0xc800, 0x5000,0x0800)
+  ROM_COPY(REGION_CPU1, 0xd800, 0x5800,0x0800)
+  ROM_COPY(REGION_CPU1, 0xe000, 0x9000,0x0800)
+  ROM_COPY(REGION_CPU1, 0xf000, 0x9800,0x0800)
+  ROM_COPY(REGION_CPU1, 0xe800, 0xd000,0x0800)
+  ROM_COPY(REGION_CPU1, 0xf800, 0xd800,0x0800)
+
+  NORMALREGION(0x40000, REGION_SOUND1)
+    ROM_LOAD("snd_u8.bin", 0x00000,0x8000, CRC(2cb9c931) SHA1(2537976c890ceff857b9aaf204c48ab014aad94e))
+      ROM_RELOAD(0x20000, 0x8000)
+    ROM_LOAD("snd_u9.bin", 0x08000,0x8000, CRC(72690344) SHA1(c2a13aa59f0c605eb616256cd288b79cceca003b))
+      ROM_RELOAD(0x28000, 0x8000)
+    ROM_LOAD("snd_u10.bin",0x10000,0x8000, CRC(bca9a805) SHA1(0deb3172b5c8fc91c4b02b21b1e3794ed7adef13))
+      ROM_RELOAD(0x30000, 0x8000)
+    ROM_LOAD("snd_u11.bin",0x18000,0x8000, CRC(1814a50d) SHA1(6fe22e774fa90725d0db9f1020bad88bae0ef85c))
+      ROM_RELOAD(0x38000, 0x8000)
+  NORMALREGION(0x10000, REGION_CPU2)
+  ROM_COPY(REGION_SOUND1, 0x0000, 0x8000,0x8000)
+ROM_END
+
+INITGAMENB(toppin,GEN_BY35,dispNB,FLIP_SW(FLIP_L),0,SNDBRD_NUOVA,0)
+BY35_INPUT_PORTS_START(toppin, 3) BY35_INPUT_PORTS_END
+CORE_GAMEDEFNV(toppin, "Top Pin", 1988, "Nuova Bell Games", nuova, GAME_IMPERFECT_SOUND)
+
+/*--------------------------------
+/ U-boat 65
+/-------------------------------*/
+ROM_START(uboat65)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("cpu_u7.256", 0x8000, 0x8000, CRC(f0fa1cbc) SHA1(4373bb37927dde01f5a4da5ef6094424909e9bc6))
+  ROM_COPY(REGION_CPU1, 0x8000, 0x1000,0x1000)
+  ROM_COPY(REGION_CPU1, 0x9000, 0x5000,0x1000)
+  ROM_COPY(REGION_CPU1, 0xd000, 0x7000,0x1000)
+  ROM_COPY(REGION_CPU1, 0xa000, 0x9000,0x1000)
+  ROM_COPY(REGION_CPU1, 0xb000, 0xd000,0x1000)
+  ROM_COPY(REGION_CPU1, 0xe000, 0xb000,0x1000)
+
+  NORMALREGION(0x40000, REGION_SOUND1)
+    ROM_LOAD("snd_ic5.256", 0x0000, 0x8000, CRC(bc35e5cf) SHA1(a809b0056c576416aa76ead0437e036c2cdbd1ef))
+      ROM_RELOAD(0x10000, 0x8000)
+      ROM_RELOAD(0x20000, 0x8000)
+      ROM_RELOAD(0x30000, 0x8000)
+    ROM_LOAD("snd_ic3.256", 0x8000, 0x8000, CRC(c7811983) SHA1(7924248dcc08b05c34d3ddf2e488b778215bc7ea))
+      ROM_RELOAD(0x18000, 0x8000)
+      ROM_RELOAD(0x28000, 0x8000)
+      ROM_RELOAD(0x38000, 0x8000)
+  NORMALREGION(0x10000, REGION_CPU2)
+  ROM_COPY(REGION_SOUND1, 0x0000, 0x8000,0x8000)
+ROM_END
+
+INITGAMEAL(uboat65,GEN_BY35,dispAlpha,FLIP_SWNO(12,5),0,SNDBRD_NUOVA,0)
+BY35_INPUT_PORTS_START(uboat65, 3) BY35_INPUT_PORTS_END
+CORE_GAMEDEFNV(uboat65, "U-boat 65", 1988, "Nuova Bell Games", nuova, GAME_IMPERFECT_SOUND)
