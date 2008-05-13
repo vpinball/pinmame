@@ -235,21 +235,21 @@ DRIVERNV(atlantis)      //6803-2006:03/89 Atlantis
 						//			??/8? Movie (Zaccaria Pinball Champ clone)
 						//BY35      12/83 Pin Ball Pool (Bally Eight Ball Deluxe clone)
 						//BY35      06/84 Super Bowl (Bally X's & O's clone)
-						//BY35      ??/84 Tiger Rag (Bally Kings Of Steel clone)
+DRIVERNV(tigerrag)		//BY35      ??/84 Tiger Rag (Bally Kings Of Steel clone)
 DRIVERNV(cosflash)		//			??/85 Cosmic Flash (Bally Flash Gordon clone)
 DRIVERNV(newwave)       //BY35      04/85 New Wave (Bally Black Pyramid clone)
 DRIVERNV(saturn2)       //BY35      08/85 Saturn 2 (Bally Spy Hunter clone)
 						//			??/?? World Cup / World Championship (redemption game)
 // Nuova Bell Games
-						//BY35      11/85 World Defender
+DRIVERNV(worlddef)		//BY35      11/85 World Defender
 DRIVERNV(spacehaw)      //BY35      04/86 Space Hawks (Bally Cybernaut clone)
 						//BY35      ??/86 Dark Shadow
-						//BY35      09/86 Skill Flight
-						//			02/87 Cobra
+DRIVERNV(skflight)		//BY35      09/86 Skill Flight
+DRIVERNV(cobra)			//BY35		02/87 Cobra
 DRIVERNV(futrquen)      //BY35      07/87 Future Queen
 DRIVERNV(f1gp)          //BY35ALPHA 12/87 F1 Grand Prix
-						//			01/88 Top Pin (WMS Pin*Bot conversion)
-						//BY35ALPHA 04/88 U-Boat 65
+DRIVERNV(toppin)		//BY35		01/88 Top Pin (WMS Pin*Bot conversion)
+DRIVERNV(uboat65)		//BY35ALPHA 04/88 U-Boat 65
 
 // ----------------
 // CAPCOM GAMES
