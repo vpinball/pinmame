@@ -261,6 +261,24 @@ BY35_INPUT_PORTS_START(spacehaw, 1) BY35_INPUT_PORTS_END
 CORE_CLONEDEFNV(spacehaw,cybrnaut,"Space Hawks",1986,"Nuova Bell Games",by35_mBY35_45S,0)
 
 /*--------------------------------
+/ Dark Shadow (Spy Hunter Clone)
+/-------------------------------*/
+ROM_START(darkshad)
+  NORMALREGION(0x10000, REGION_CPU1)
+    ROM_LOAD("cpu_u7.bin", 0xe000, 0x2000, CRC(8d04c546) SHA1(951e75d9867b85a0bf9f04fe9aa647a53b6830bc))
+    ROM_COPY(REGION_CPU1, 0xe000, 0x1000,0x0800)
+    ROM_COPY(REGION_CPU1, 0xe800, 0x1800,0x0800)
+    ROM_COPY(REGION_CPU1, 0xf000, 0x5000,0x0800)
+    ROM_COPY(REGION_CPU1, 0xf800, 0x5800,0x0800)
+BY45_SOUNDROM11(         "spy_u3.532", CRC(95ffc1b8) SHA1(28f058f74abbbee120dca06f7321bcb588bef3c6),
+                         "spy_u4.532", CRC(a43887d0) SHA1(6bbc55943fa9f0cd97f946767f21652e19d85265))
+// there is an extra U2 sound rom in the set, only where does it go???
+ROM_END
+INITGAME(darkshad,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY45,0)
+BY35_INPUT_PORTS_START(darkshad, 1) BY35_INPUT_PORTS_END
+CORE_CLONEDEFNV(darkshad,spyhuntr,"Dark Shadow",1986,"Nuova Bell Games",by35_mBY35_45S,0)
+
+/*--------------------------------
 / Skill Flight
 /-------------------------------*/
 ROM_START(skflight)
@@ -442,14 +460,14 @@ ROM_START(uboat65)
   ROM_COPY(REGION_CPU1, 0xe000, 0xb000,0x1000)
 
   NORMALREGION(0x40000, REGION_SOUND1)
-    ROM_LOAD("snd_ic5.256", 0x0000, 0x8000, CRC(bc35e5cf) SHA1(a809b0056c576416aa76ead0437e036c2cdbd1ef))
-      ROM_RELOAD(0x10000, 0x8000)
-      ROM_RELOAD(0x20000, 0x8000)
-      ROM_RELOAD(0x30000, 0x8000)
-    ROM_LOAD("snd_ic3.256", 0x8000, 0x8000, CRC(c7811983) SHA1(7924248dcc08b05c34d3ddf2e488b778215bc7ea))
+    ROM_LOAD("snd_ic3.256", 0x0000, 0x8000, CRC(c7811983) SHA1(7924248dcc08b05c34d3ddf2e488b778215bc7ea))
       ROM_RELOAD(0x18000, 0x8000)
       ROM_RELOAD(0x28000, 0x8000)
       ROM_RELOAD(0x38000, 0x8000)
+    ROM_LOAD("snd_ic5.256", 0x8000, 0x8000, CRC(bc35e5cf) SHA1(a809b0056c576416aa76ead0437e036c2cdbd1ef))
+      ROM_RELOAD(0x10000, 0x8000)
+      ROM_RELOAD(0x20000, 0x8000)
+      ROM_RELOAD(0x30000, 0x8000)
   NORMALREGION(0x10000, REGION_CPU2)
   ROM_COPY(REGION_SOUND1, 0x0000, 0x8000,0x8000)
 ROM_END
