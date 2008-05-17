@@ -243,7 +243,7 @@ DRIVERNV(saturn2)       //BY35      08/85 Saturn 2 (Bally Spy Hunter clone)
 // Nuova Bell Games
 DRIVERNV(worlddef)		//BY35      11/85 World Defender
 DRIVERNV(spacehaw)      //BY35      04/86 Space Hawks (Bally Cybernaut clone)
-						//BY35      ??/86 Dark Shadow
+DRIVERNV(darkshad)		//BY35      ??/86 Dark Shadow
 DRIVERNV(skflight)		//BY35      09/86 Skill Flight
 DRIVERNV(cobra)			//BY35		02/87 Cobra
 DRIVERNV(futrquen)      //BY35      07/87 Future Queen
