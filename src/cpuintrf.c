@@ -574,7 +574,7 @@ const struct cpu_interface cpuintrf[] =
 	CPU0(HD6309,   hd6309,	 2,  0,1.00, 8, 16,	  0,16,BE,1, 4	),
 #endif
 #if (HAS_M6809)
-	CPU0(M6809,    m6809,	 2,  0,1.00, 8, 16,	  0,16,BE,1, 4	),
+	CPU0(M6809,    m6809,	 2,  0,1.00, 8, 16,	  0,16,BE,1, 5	),
 #endif
 #if (HAS_KONAMI)
 	CPU0(KONAMI,   konami,	 2,  0,1.00, 8, 16,	  0,16,BE,1, 4	),

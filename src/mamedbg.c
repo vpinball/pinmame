@@ -1282,7 +1282,7 @@ const char *set_ea_info( int what, unsigned value, int size, int access )
 				sign = "+";
 				result = (unsigned) size;
 			}
-			sprintf( buffer[which], "$%s%u", sign, result );
+			sprintf( buffer[which], "%s%u", sign, result );
 			return buffer[which];
 		}
 		/* fall through */
@@ -4082,6 +4082,7 @@ static void cmd_dasm_to_file( void )
 			}
 			break;
 		}
+		fprintf( file, " ");	// extra space for better separation of opcodes and disassembly
 		}
 
 		fprintf( file, "%s\n", buffer );
