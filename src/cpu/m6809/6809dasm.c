@@ -481,14 +481,14 @@ unsigned Dasm6809 (char *buffer, unsigned pc)
 		buffer += sprintf (buffer, "%s", sym1);
 		break;
 
-	case IND:	  /* indirect- many flavors */
+	case IND:	  /* indexed- many flavors, see 6809 Programming Manual, table F-2 */
 		pb = operandarray[0];
 		reg = (pb >> 5) & 3;
 		pb2 = pb & 0x8f;
 		if( pb2 == 0x88 || pb2 == 0x8c )
 		{	/* 8-bit offset */
 
-			/* KW 11/05/98 Fix of indirect opcodes		*/
+			/* KW 11/05/98 Fix of indexed opcodes */
 			offset = (INT8)cpu_readop_arg(pc);
 			p++;
 			if( pb == 0x8c ) reg = 4;
@@ -512,7 +512,7 @@ unsigned Dasm6809 (char *buffer, unsigned pc)
 		if( pb2 == 0x89 || pb2 == 0x8d || pb2 == 0x8f )
 		{	/* 16-bit */
 
-			/* KW 11/05/98 Fix of indirect opcodes		*/
+			/* KW 11/05/98 Fix of indexed opcodes */
 
 			offset = (INT16)( (cpu_readop_arg(pc) << 8) + cpu_readop_arg(pc+1) );
 			p += 2;
@@ -529,7 +529,7 @@ unsigned Dasm6809 (char *buffer, unsigned pc)
 			else
 			if( pb2 == 0x8f )
 			{
-				sym1 = set_ea_info(1, offset, EA_INT16, EA_VALUE);
+				sym1 = set_ea_info(1, offset, EA_UINT16, EA_VALUE);
 				ea = offset;
                 buffer += sprintf (buffer, "%s", sym1);
 			}
