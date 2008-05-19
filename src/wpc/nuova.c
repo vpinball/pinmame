@@ -1,4 +1,4 @@
-/************************************************************************************************
+/******************************************************************************************
   Nuova Bell Games
   ----------------
   by Steve Ellenoff and Gerrit Volkenborn
@@ -8,8 +8,8 @@
   A few games use alpha displays, this is implemented in by35.c
 
   Issues/Todo:
-  Sound Board with 6803 CPU and DAC, Skill Flight probably uses a modified Squalk & Talk board.
-************************************************************************************************/
+  Sound Board with 6803 CPU and DAC, some games also use an additional TMS5220 speech chip.
+*******************************************************************************************/
 #include "driver.h"
 #include "cpu/m6800/m6800.h"
 #include "machine/6821pia.h"
@@ -45,13 +45,42 @@ MEMORY_END
 
 static struct {
   struct sndbrdData brdData;
-  UINT8 sndCmd, latch;
+  UINT8 sndCmd, latch[2];
+  UINT8 pia_a, pia_b;
   int bank, LED, mute, enable;
 } locals;
+
+static READ_HANDLER(nuova_pia_a_r) { return locals.pia_a; }
+static WRITE_HANDLER(nuova_pia_a_w) { locals.pia_a = data; }
+static WRITE_HANDLER(nuova_pia_b_w) {
+  if (~data & 0x02) // write
+    tms5220_data_w(0, locals.pia_a);
+  if (~data & 0x01) // read
+    locals.pia_a = tms5220_status_r(0);
+  pia_set_input_ca2(2, 1);
+  locals.pia_b = data;
+}
+static READ_HANDLER(nuova_pia_cb1_r) {
+  return !tms5220_int_r();
+}
+static READ_HANDLER(nuova_pia_ca2_r) {
+  return !tms5220_ready_r();
+}
+static void nuova_irq(int state) {
+  cpu_set_irq_line(1, M6802_IRQ_LINE, state ? ASSERT_LINE : CLEAR_LINE);
+}
+static void nuova_5220Irq(int state) { pia_set_input_cb1(2, !state); }
+
+static const struct pia6821_interface nuova_pia[] = {{
+  /*i: A/B,CA/B1,CA/B2 */ nuova_pia_a_r, 0, PIA_UNUSED_VAL(1), nuova_pia_cb1_r, nuova_pia_ca2_r, PIA_UNUSED_VAL(0),
+  /*o: A/B,CA/B2       */ nuova_pia_a_w, nuova_pia_b_w, 0, 0,
+  /*irq: A/B           */ nuova_irq, nuova_irq
+}};
 
 static void nuova_init(struct sndbrdData *brdData) {
   memset(&locals, 0x00, sizeof(locals));
   locals.brdData = *brdData;
+  pia_config(2, PIA_STANDARD_ORDERING, &nuova_pia[0]);
 }
 
 static void nuova_diag(int button) {
@@ -81,8 +110,8 @@ static WRITE_HANDLER(enable_w) {
 
 static WRITE_HANDLER(bank_w) {
   if (locals.enable) {
-    locals.bank = core_BitColToNum(~data & 0x0f);
-//    logerror("bank: %d\n", locals.bank);
+    locals.bank = core_BitColToNum((~data & 0x0f) ^ 0x01);
+//  logerror("bank: %d\n", locals.bank);
     cpu_setbank(1, memory_region(REGION_SOUND1) + 0x8000 * locals.bank);
     locals.mute = (data >> 6) & 1;
     locals.LED = ~data >> 7;
@@ -91,29 +120,34 @@ static WRITE_HANDLER(bank_w) {
 }
 
 static READ_HANDLER(snd_cmd_r) {
+//printf("snd_cmd_r: %02x\n", locals.sndCmd);
   return locals.sndCmd ^ 0x1f;
 }
 
 static READ_HANDLER(latch_r) {
-  locals.latch = locals.sndCmd ^ 0x1f;
-  return locals.latch;
+  UINT8 latch = locals.latch[offset];
+  if (offset) locals.latch[1] = snd_cmd_r(0);
+  return latch;
 }
 
 static WRITE_HANDLER(latch_w) {
-  locals.latch = data;
+//printf("latch_w[%d]: %02x\n", offset, data);
+  locals.latch[offset] = data;
 }
 
 static MEMORY_READ_START(snd_readmem)
   { 0x0000, 0x001f, m6803_internal_registers_r },
   { 0x0080, 0x00fe, MRA_RAM },
-  { 0x00ff, 0x00ff, latch_r },
+  { 0x00fe, 0x00ff, latch_r },
+  { 0x4000, 0x4003, pia_r(2) },
   { 0x8000, 0xffff, MRA_BANKNO(1) },
 MEMORY_END
 
 static MEMORY_WRITE_START(snd_writemem)
   { 0x0000, 0x001f, m6803_internal_registers_w },
   { 0x0080, 0x00fe, MWA_RAM },
-  { 0x00ff, 0x00ff, latch_w },
+  { 0x00fe, 0x00ff, latch_w },
+  { 0x4000, 0x4003, pia_w(2) },
   { 0xc000, 0xc000, bank_w },
 MEMORY_END
 
@@ -127,6 +161,7 @@ static PORT_WRITE_START(snd_writeport)
 PORT_END
 
 static struct DACinterface nuova_dacInt = { 1, { 50 }};
+static struct TMS5220interface nuova_tms5220Int = { 660000, 80, nuova_5220Irq };
 
 /*-------------------
 / exported interface
@@ -147,6 +182,7 @@ MACHINE_DRIVER_START(nuova)
   MDRV_CPU_MEMORY(snd_readmem, snd_writemem)
   MDRV_CPU_PORTS(snd_readport, snd_writeport)
   MDRV_SOUND_ADD(DAC, nuova_dacInt)
+  MDRV_SOUND_ADD(TMS5220, nuova_tms5220Int)
 MACHINE_DRIVER_END
 
 
