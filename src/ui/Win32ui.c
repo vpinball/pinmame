@@ -87,7 +87,7 @@
 #undef ListView_GetHeader
 #define ListView_GetHeader(w) (HWND)(LRESULT)(int)SNDMSG((w),LVM_GETHEADER,0,0)
 
-#define HDM_SETIMAGELIST        (HDM_FIRST + 8)
+#undef Header_SetImageList
 #define Header_SetImageList(h,i) (HIMAGELIST)(LRESULT)(int)SNDMSG((h), HDM_SETIMAGELIST, 0, (LPARAM)i)
 
 
