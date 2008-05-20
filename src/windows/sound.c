@@ -11,9 +11,7 @@
 
 // undef WINNT for dsound.h to prevent duplicate definition
 #undef WINNT
-#define LPCWAVEFORMATEX _LPCWAVEFORMATEX
 #include <dsound.h>
-#undef LPWAVEFORMATEX
 
 // MAME headers
 #include "driver.h"
