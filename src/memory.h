@@ -70,7 +70,7 @@ extern "C" {
 #endif
 
 
-	
+
 /***************************************************************************
 
 	Basic type definitions
@@ -863,6 +863,12 @@ extern UINT8 *			cpu_bankbase[];		/* array of bank bases */
 extern UINT8 *			readmem_lookup;		/* pointer to the readmem lookup table */
 extern offs_t			mem_amask;			/* memory address mask */
 extern struct ExtMemory	ext_memory[];		/* externally-allocated memory */
+
+#ifdef PINMAME
+/* Bank support for CODELIST */
+#define FAKE_BANKID		-1
+extern UINT32			cpu_bankid[];		/* array of bank ids */
+#endif /* PINMAME */
 
 
 

@@ -359,11 +359,19 @@ static void cmd_search_memory( void );
 static void bpr_set(void);
 void edit_cmds_reset( void );
 #endif /* DBG_BPR */
+
 #ifdef PINMAME
 static void cmd_jumpover( void );
 static void cmd_sound_enable( void );
 static void cmd_sound_disable( void );
-#endif
+
+/* CODELIST */
+static void cmd_codelist_to_file( void );
+static void codelist_init( const char *filename );
+static void codelist_done( void );
+static void codelist_select( void );
+#endif /* PINMAME */
+
 /****************************************************************************
  * Generic structure for saving points in the 'follow history'
  ****************************************************************************/
@@ -454,12 +462,41 @@ typedef struct {
 /****************************************************************************
  * Tracing structure
  ****************************************************************************/
+#ifdef PINMAME
+/* CODELIST */
+struct s_codeblock {
+	/* address data */
+	UINT32	startAddr;
+	UINT32	afterAddr;
+
+	/* linkage */
+	struct s_codeblock	*next;
+};
+
+struct s_codelist {
+	/* code data */
+	UINT32	bankid;
+	struct s_codeblock	*blocks;
+
+	/* linkage */
+	struct s_codelist	*next;
+};
+#endif /* PINMAME */
+
 typedef struct {
 	UINT32	last_pc[MAX_LOOPS];
 	UINT8	regs[MAX_REGS];
 	FILE	*file;
 	INT32	iters;
 	INT32	loops;
+
+#ifdef PINMAME
+/* CODELIST */
+	FILE	*codelistfile;
+	struct s_codelist	*codelist;
+	unsigned addr_width;
+	unsigned addr_mask;
+#endif /* PINMAME */
 }	s_trace;
 
 /****************************************************************************
@@ -749,6 +786,11 @@ static int readkey(void)
 static int tracecpu = 0;
 static int trace_on = 0;
 
+#ifdef PINMAME
+/* CODELIST */
+static int codelist_on = 0;
+#endif /* PINMAME */
+
 /****************************************************************************
  * Commands structure
  ****************************************************************************/
@@ -866,6 +908,14 @@ static s_command commands[] = {
 	"{<filename> [<reg1> [<reg2>...]]}|OFF",
 	"Trace to <filename> [dumping <reg1> [<reg2>...]] | OFF to stop tracing.",
 	cmd_trace_to_file },
+#ifdef PINMAME
+/* CODELIST */
+{	(1<<EDIT_CMDS),
+	"CODELIST",      0,          CODE_NONE,
+	"<filename>|OFF",
+	"Collect code addresses during execution and condense them to blocks.\nCode blocks data is written to <filename> when switched off",
+	cmd_codelist_to_file },
+#endif /* PINMAME */
 {	(1<<EDIT_CMDS),
 	"SAVE",         0,          CODE_NONE,
 	"<filename> <start> <end> [OPCODES|DATA]",
@@ -5464,6 +5514,10 @@ void mame_debug_init(void)
  **************************************************************************/
 void mame_debug_exit(void)
 {
+#ifdef PINMAME
+/* CODELIST */
+	codelist_done();
+#endif /* PINMAME */
 	dbg_close_windows();
 	mame_debug_reset_statics();
 }
@@ -5502,6 +5556,14 @@ void MAME_Debug(void)
 		trace_select();
 		trace_output();
 	}
+
+#ifdef PINMAME
+/* CODELIST */
+	if( codelist_on )
+	{
+		codelist_select();
+	}
+#endif /* PINMAME */
 
 	if( DBG.prev_sp )
 	{
@@ -5654,5 +5716,247 @@ void MAME_Debug(void)
 	}
 }
 
-#endif
+#ifdef PINMAME
+/* CODELIST */
+/**************************************************************************
+ * cmd_codelist_to_file
+ * Turn codelist to file on or off
+ * If it is to be turned on, expect filename
+ **************************************************************************/
+static void cmd_codelist_to_file( void )
+{
+	char *cmd = CMD;
+	const char *filename;
+	int length;
 
+	filename = get_file_name( &cmd, &length );
+
+	if( !my_stricmp( filename, "OFF" ) )
+	{
+		codelist_done();
+	}
+	else
+	{
+		codelist_init( filename );
+	}
+
+	edit_cmds_reset();
+}
+
+/**************************************************************************
+ * codelist_init
+ * Creates codelist output files for all CPUs
+ **************************************************************************/
+static void codelist_init( const char *filename )
+{
+	extern int activecpu;	// needed for ABITS and AMASK
+	int prevcpu;
+
+	char name[100];
+
+	if( codelist_on )
+		return;
+
+	prevcpu = activecpu;
+	for( tracecpu = 0; tracecpu < total_cpu; tracecpu++ )
+	{
+		sprintf( name, "%s.codelist.%d", filename, tracecpu );
+		TRACE.codelistfile = fopen(name,"w");
+		TRACE.codelist = NULL;
+
+		activecpu = tracecpu;	// needed for ABITS and AMASK
+		TRACE.addr_width = (ABITS + 3) / 4;
+		TRACE.addr_mask = AMASK;
+	}
+	activecpu = prevcpu;
+
+	tracecpu = active_cpu;
+	codelist_on = 1;
+}
+
+/**************************************************************************
+ * codelist_done
+ * Closes the codelist output files
+ **************************************************************************/
+void codelist_done(void)
+{
+	struct s_codelist	*codelist, *prevlist;
+	struct s_codeblock	*codeblock, *prevblock;
+	static char buffer[127+1];
+	char *dst, *dst2;
+	UINT32	start, end, size;
+
+	if( !codelist_on )
+		return;
+
+	for( tracecpu = 0; tracecpu < total_cpu; tracecpu++ )
+	{
+		if( TRACE.codelistfile )
+		{
+			codelist = TRACE.codelist;
+			while ( codelist )
+			{
+				dst = buffer;
+				if ( codelist->bankid != FAKE_BANKID )
+				{
+					dst += sprintf( dst, "0x%02X", codelist->bankid );
+				}
+				else
+				{
+					dst += sprintf( dst, "STATIC" );
+				}
+				dst += sprintf( dst, ": code\t0x" );
+
+				codeblock = codelist->blocks;
+				while ( codeblock )
+				{
+					start = codeblock->startAddr & TRACE.addr_mask;
+					end = ( codeblock->afterAddr - 1 ) & TRACE.addr_mask;
+					size = codeblock->afterAddr - codeblock->startAddr;
+
+					dst2 = dst;
+					dst2 += sprintf( dst2, "%0*X", TRACE.addr_width, start );
+					dst2 += sprintf( dst2, "\t\t; up to 0x%0*X", TRACE.addr_width, end );
+					dst2 += sprintf( dst2, ", size 0x%0*X\n", TRACE.addr_width, size );
+					fprintf( TRACE.codelistfile, "%s", buffer );
+
+					prevblock = codeblock;
+					codeblock = codeblock->next;
+					free ( prevblock );
+				}
+
+				prevlist = codelist;
+				codelist = codelist->next;
+				free ( prevlist );
+			}
+			TRACE.codelist = NULL;
+
+			fclose( TRACE.codelistfile );
+			TRACE.codelistfile = NULL;
+		}
+	}
+
+	tracecpu = active_cpu;
+	codelist_on = 0;
+}
+
+/**************************************************************************
+ * codelist_select
+ * Codelist collecting
+ **************************************************************************/
+static void codelist_select( void )
+{
+	static char buffer[127+1];
+
+	if( active_cpu < total_cpu )
+		tracecpu = active_cpu;
+
+	if( codelist_on && TRACE.codelistfile )
+	{
+		UINT32 pc;
+		UINT32 bankid;
+		struct s_codelist	*codelist, *prevlist;
+		struct s_codeblock	*codeblock, *prevblock;
+
+		pc = activecpu_get_pc();
+
+		bankid = FAKE_BANKID;
+		if (opcode_entry >= STATIC_BANK1 && opcode_entry <= STATIC_BANKMAX)
+		{
+			bankid = cpu_bankid[opcode_entry];
+		}
+
+		// Find a matching codelist for the bank id
+		prevlist = NULL;
+		codelist = TRACE.codelist;
+		while ( codelist )
+		{
+			if ( codelist->bankid == bankid )	// found match
+			{
+				break;
+			}
+			if ( codelist->bankid > bankid )	// not found in sorted list
+			{
+				codelist = NULL;
+				break;
+			}
+
+			prevlist = codelist;
+			codelist = codelist->next;
+		}
+		if ( !codelist )	// not found, create new one
+		{
+			codelist = malloc ( sizeof (struct s_codelist) );
+
+			if ( prevlist )
+			{
+				codelist->next = prevlist->next;
+				prevlist->next = codelist;
+			}
+			else
+			{
+				codelist->next = TRACE.codelist;
+				TRACE.codelist = codelist;
+			}
+
+			codelist->bankid = bankid;
+			codelist->blocks = NULL;
+		}
+
+		// Find a matching codeblock for the PC
+		prevblock = NULL;
+		codeblock = codelist->blocks;
+		while ( codeblock )
+		{
+			if ( codeblock->startAddr <= pc && codeblock->afterAddr >= pc )	// found match/extendable
+			{
+				break;
+			}
+			if ( codeblock->startAddr > pc )	// not found in sorted list
+			{
+				codeblock = NULL;
+				break;
+			}
+
+			prevblock = codeblock;
+			codeblock = codeblock->next;
+		}
+		if ( !codeblock )	// not found, create new one
+		{
+			codeblock = malloc ( sizeof (struct s_codeblock) );
+
+			if ( prevblock )
+			{
+				codeblock->next = prevblock->next;
+				prevblock->next = codeblock;
+			}
+			else
+			{
+				codeblock->next = codelist->blocks;
+				codelist->blocks = codeblock;
+			}
+
+			codeblock->startAddr = pc;
+			codeblock->afterAddr = pc + activecpu_dasm( buffer, pc );
+		}
+		else if ( codeblock->afterAddr == pc )	// found extendable codeblock
+		{
+			struct s_codeblock	*nextblock;
+
+			codeblock->afterAddr = pc + activecpu_dasm( buffer, pc );
+
+			// check if codeblock can be merged with next one
+			nextblock = codeblock->next;
+			if ( nextblock && nextblock->startAddr == codeblock->afterAddr )
+			{
+				codeblock->afterAddr = nextblock->afterAddr;
+				codeblock->next = nextblock->next;
+
+				free ( nextblock );
+			}
+		}
+	}
+}
+#endif /* PINMAME */
+
+#endif

@@ -157,6 +157,10 @@ offs_t						mem_amask;						/* memory address mask */
 static offs_t				port_amask;						/* port address mask */
 
 UINT8 *						cpu_bankbase[STATIC_COUNT];		/* array of bank bases */
+#ifdef PINMAME
+/* Bank support for CODELIST */
+UINT32						cpu_bankid[STATIC_COUNT];		/* array of bank ids */
+#endif /* PINMAME */
 int ext_entries = 0;										/* number of entries ext_memory[] entries used */
 struct ExtMemory			ext_memory[MAX_EXT_MEMORY];		/* externally-allocated memory */
 
@@ -1018,7 +1022,13 @@ void install_mem_handler(struct memport_data *memport, int iswrite, offs_t start
 
 	/* if this is a bank, set the bankbase as well */
 	if (HANDLER_IS_BANK(handler))
+	{
 		cpu_bankbase[HANDLER_TO_BANK(handler)] = memory_find_base(memport->cpunum, start);
+#ifdef PINMAME
+/* Bank support for CODELIST */
+		cpu_bankid[HANDLER_TO_BANK(handler)] = FAKE_BANKID;
+#endif /* PINMAME */
+	}
 }
 
 
