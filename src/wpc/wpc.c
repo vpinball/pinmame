@@ -427,6 +427,10 @@ WRITE_HANDLER(wpc_w) {
     case WPC_ROMBANK: { /* change rom bank */
       int bank = data & wpclocals.pageMask;
       cpu_setbank(1, memory_region(WPC_ROMREGION)+ bank * 0x4000);
+#ifdef PINMAME
+/* Bank support for CODELIST */
+      cpu_bankid[1] = bank + ( 0x3F ^ wpclocals.pageMask );
+#endif /* PINMAME */
       break;
     }
     case WPC_FLIPPERS: /* Flipper coils */
