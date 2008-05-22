@@ -1,0 +1,147 @@
+How to setup MinGW to compile PinMAME/32
+========================================
+
+-----
+Notes
+-----
+The file "src\windows\setup.txt" was the original text delivered by MAME and is
+out of date. Please ignore it.
+
+PinMAME is build on MAME version 0.76 and with MinGW 2.0 / GCC 3.2.
+It has been maintained to compile with more recent MinGW packages too, but
+GCC 3.2 is still mandatory.
+
+This guide will show you how to setup MinGW in version 2.0 and a setup with more
+recent MinGW packages, so you can compile PinMAME and PinMAME32.
+
+
+----------
+Info links
+----------
+The MAME development homepage is available at http://www.mamedev.org/
+The MinGW homepage is available at http://www.mingw.org/
+The Allegro homepage is available at http://alleg.sourceforge.net/
+The ZLib homepage is available at http://www.zlib.net/
+The NASM homepage is available at http://nasm.sourceforge.net/
+
+
+-----------------
+Step 1: Downloads
+-----------------
+- Create a directory to hold all your downloads; for example, c:\mingw-setup
+
+- Decide if you want to use a MinGW 2.0 setup or a more recent one:
+  a) MinGW 2.0
+     Download MinGW-2.0.0-3.exe to your c:\mingw-setup directory.
+     Unfortunately it is not available at the official project homepage anymore.
+     Get it from http://www.pinmame.com/downloads.html
+     or from http://ftp.maddes.net/pinball/
+
+  b) More recent MinGW setup
+     Download the following binary packages to your c:\mingw-setup directory.
+     The packages carry the version numbers as of May 2008, but newer packages
+     should work too:
+     * mingw-runtime-3.14
+     * binutils-2.17.50-20060824-1
+     * mingw32-make-3.81-20080326-2
+     * w32api-3.11
+     Get them from http://sourceforge.net/project/showfiles.php?group_id=2435
+
+- Download the latest version of GCC 3.2 for MinGW to your c:\mingw-setup directory.
+  Binary package:
+  * gcc-3.2.3-20030504-1
+  Get it from http://sourceforge.net/project/showfiles.php?group_id=2435&package_id=82722&release_id=158810
+  Warning: GCC 3.4 works too, but due to stricter checks more warnings are
+           found, so PinMAME only compiles if you remove "-Werror" from the
+           makefile. Removing "-Werror" is not recommended!!!
+
+- Download the latest version of Allegro's DirectX includes for MinGW to your c:\mingw-setup directory.
+  Package:
+  * dx70_mgw.zip
+  Get it from http://alleg.sourceforge.net/
+  Note: Newer versions of Allegro's DirectX includes work too (currently dx80_mgw.zip).
+
+- Download the latest version of the library ZLib to your c:\mingw-setup directory.
+  Package:
+  * zlib-1.1.4-1-lib.zip
+  Get it from http://sourceforge.net/project/showfiles.php?group_id=23617&package_id=16861
+  Note: Newer versions of ZLib work too (currently 1.2.3).
+
+- Download some GNU tools for MAME to your c:\mingw-setup directory.
+  Binary package:
+  * mame-gnulike.exe
+  Get it from http://www.mamedev.org/tools/#hard
+
+- Download the assembler compiler NASM to your c:\mingw-setup directory.
+  Binary package:
+  * NASM 0.98.39 (Win32)
+  Get it from http://sourceforge.net/project/showfiles.php?group_id=6208&package_id=47034
+  Note: Newer Win32 packages of NASM work too, but you have to rename the
+        executable to "nasmw.exe".
+
+
+-------------
+Step 2: Setup
+-------------
+- Attention!!! Whenever you extract a .tar.gz or .zip file then always extract
+               it including its directory structure, otherwise it won't work.
+
+- Depending if you want to use a MinGW 2.0 setup or a more recent one:
+  a) MinGW 2.0
+     Run the MinGW installer; install to a logical path, for example c:\mingw
+
+  b) More recent MinGW setup
+     Create a directory to hold your MinGW installation; for example, c:\mingw
+     Extract all binary packages of MinGW to your c:\mingw directory.
+     * mingw-runtime-3.14
+     * binutils-2.17.50-20060824-1
+     * mingw32-make-3.81-20080326-2
+     * w32api-3.11
+
+- Extract the GCC 3.2 binary package to your to c:\mingw directory.
+  Some files must be overwritten (e.g. "bin\c++filt.exe")
+
+- Extract Allegro's DirectX includes to your to c:\mingw directory.
+
+- Extract the ZLib library to your to c:\mingw directory.
+
+- Run the MAME GNU tools installer; install to the bin folder of your c:\mingw directory, e.g. c:\mingw\bin
+
+- Extract NASM into a temporary directory, for example c:\mingw-setup\nasm
+  Copy these files into your c:\mingw\bin directory:
+    - c:\mingw-setup\nasm\nasmw.exe
+    - c:\mingw-setup\nasm\ndisasmw.exe
+  Note: Another way is to use a separate folder for NASM and add it as a path, e.g. c:\nasm
+
+- Change your environment variables to add c:\mingw\bin as a path
+  If you used a separate folder for NASM, then also add it as a path.
+
+  Note: If you want to use different MinGW versions, then it is recommended to
+        use batch files to set the pathes instead of changing the environment
+        variables permanently.
+        Example "mingw2.bat":
+          - path c:\mingw2\bin;%path%
+        Example "mingw_gcc32.bat":
+          - path c:\mingw_gcc32\bin;%path%
+        Call the batch files depending on the MinGW version you want to use.
+
+
+-------------------
+Step 3: Compilation
+-------------------
+- Change to the PinMAME source directory
+- To compile PinMAME type "mingw32-make"
+- To compile PinMAME32 type "mingw32-make WINUI=1 SUFFIX=32"
+- To compile a debug build, which also includes the MAME debugger, add "DEBUG=1"
+
+
+-----------------
+Step 4: Libraries
+-----------------
+- You can also compile ZLib for yourself if you want, but it is not necessary.
+  Download and extract its source code into separate directories.
+  Change to the ZLib source directory and type "mingw32-make -f nt\makefile.gcc"
+  Copy the resulting libz.a to the lib directory in your c:\mingw directory
+  Copy zlib.h and zconf.h to the include directory in your c:\mingw directory
+  Note: For ZLib 1.2.3 the makefile is "win32\makefile.gcc" and also copy
+        libzdll.a to MinGW's lib directory.
