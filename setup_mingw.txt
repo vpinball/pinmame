@@ -4,7 +4,7 @@ How to setup MinGW to compile PinMAME/32
 -----
 Notes
 -----
-The file "src\windows\setup.txt" was the original text delivered by MAME and is
+The file "src\windows\setup.txt" is the original text delivered by MAME and is
 out of date. Please ignore it.
 
 PinMAME is build on MAME version 0.76 and with MinGW 2.0 / GCC 3.2.
@@ -61,12 +61,6 @@ Step 1: Downloads
   Get it from http://alleg.sourceforge.net/
   Note: Newer versions of Allegro's DirectX includes work too (currently dx80_mgw.zip).
 
-- Download the latest version of the library ZLib to your c:\mingw-setup directory.
-  Package:
-  * zlib-1.1.4-1-lib.zip
-  Get it from http://sourceforge.net/project/showfiles.php?group_id=23617&package_id=16861
-  Note: Newer versions of ZLib work too (currently 1.2.3).
-
 - Download some GNU tools for MAME to your c:\mingw-setup directory.
   Binary package:
   * mame-gnulike.exe
@@ -78,6 +72,12 @@ Step 1: Downloads
   Get it from http://sourceforge.net/project/showfiles.php?group_id=6208&package_id=47034
   Note: Newer Win32 packages of NASM work too, but you have to rename the
         executable to "nasmw.exe".
+
+- Download the source code of the library ZLib to your c:\mingw-setup directory.
+  Package:
+  * zlib-1.1.4.tar.gz
+  Get it from http://sourceforge.net/project/showfiles.php?group_id=5624&package_id=14274
+  Note: Newer versions of ZLib work too (currently 1.2.3).
 
 
 -------------
@@ -103,8 +103,6 @@ Step 2: Setup
 
 - Extract Allegro's DirectX includes to your to c:\mingw directory.
 
-- Extract the ZLib library to your to c:\mingw directory.
-
 - Run the MAME GNU tools installer; install to the bin folder of your c:\mingw directory, e.g. c:\mingw\bin
 
 - Extract NASM into a temporary directory, for example c:\mingw-setup\nasm
@@ -112,6 +110,9 @@ Step 2: Setup
     - c:\mingw-setup\nasm\nasmw.exe
     - c:\mingw-setup\nasm\ndisasmw.exe
   Note: Another way is to use a separate folder for NASM and add it as a path, e.g. c:\nasm
+
+  Note: If you use a newer Win32 packages, then you have to rename the
+        executables to "n[dis]asmw.exe".
 
 - Change your environment variables to add c:\mingw\bin as a path
   If you used a separate folder for NASM, then also add it as a path.
@@ -126,22 +127,27 @@ Step 2: Setup
         Call the batch files depending on the MinGW version you want to use.
 
 
+-----------------
+Step 3: Libraries
+-----------------
+- Extract the ZLib source into a temporary directory.
+  Change to the ZLib source directory and type "mingw32-make -f nt\makefile.gcc"
+  Type "mingw32-make test -f win32\Makefile.gcc" to check its functionality.
+  Copy the resulting libz.a to the lib directory in your c:\mingw directory
+  Copy zlib.h and zconf.h to the include directory in your c:\mingw directory
+
+  Notes for ZLib 1.2.3:
+  - The makefile is "win32\makefile.gcc"
+  - The test may fail due to normal slashes in the makefile.
+    Just replace "./" with ".\" in it and it will work.
+  - Copy libzdll.a to MinGW's lib directory too.
+    (not necessary for PinMAME, but for the sake of completeness)
+
+
 -------------------
-Step 3: Compilation
+Step 4: Compilation
 -------------------
 - Change to the PinMAME source directory
 - To compile PinMAME type "mingw32-make"
 - To compile PinMAME32 type "mingw32-make WINUI=1 SUFFIX=32"
 - To compile a debug build, which also includes the MAME debugger, add "DEBUG=1"
-
-
------------------
-Step 4: Libraries
------------------
-- You can also compile ZLib for yourself if you want, but it is not necessary.
-  Download and extract its source code into separate directories.
-  Change to the ZLib source directory and type "mingw32-make -f nt\makefile.gcc"
-  Copy the resulting libz.a to the lib directory in your c:\mingw directory
-  Copy zlib.h and zconf.h to the include directory in your c:\mingw directory
-  Note: For ZLib 1.2.3 the makefile is "win32\makefile.gcc" and also copy
-        libzdll.a to MinGW's lib directory.
