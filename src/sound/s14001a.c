@@ -293,12 +293,14 @@ void s14001a_clock(void) /* called once per clock */
 	UINT8 CurDelta; // Current delta
 
 	/* on even clocks, audio output is floating, /romen is low so rom data bus is driven, input is latched?
-     * on odd clocks, audio output is driven, /romen is high, state machine 2 is clocked*/
+	 * on odd clocks, audio output is driven, /romen is high, state machine 2 is clocked */
 	oddeven = !(oddeven); // invert the clock
 	if (oddeven == 0) // even clock
         {
 		audioout = audiofilter(); // function to handle output filtering by internal capacitance based on clock speed and such
+#ifdef PINMAME
 		if (!machineState) audioout = SILENCE;
+#endif
 		shiftIntoFilter(audioout); // shift over all the filter outputs and stick in audioout
 	}
 	else // odd clock
@@ -310,7 +312,9 @@ void s14001a_clock(void) /* called once per clock */
 			OldDelta = 2;
 		}
 		audioout = (GlobalSilenceState || LOCALSILENCESTATE) ? SILENCE : DACOutput; // when either silence state is 1, output silence.
+#ifdef PINMAME
 		if (!machineState) audioout = SILENCE;
+#endif
 		shiftIntoFilter(audioout); // shift over all the filter outputs and stick in audioout
 		switch(machineState) // HUUUUUGE switch statement
 		{
@@ -436,7 +440,11 @@ static void s14001a_update(int ch, INT16 *buffer, int length)
 		  s14001a_clock();
 		  VSU1000_counter = VSU1000_freq;
 		}
+#ifdef PINMAME
 		buffer[i] = ((((INT16)audioout)-128)*36)*((21 + 2 * VSU1000_amp) / 5);
+#else
+		buffer[i] = ((((INT16)audioout)-128)*36)*VSU1000_amp;
+#endif
 	}
 }
 
@@ -459,7 +467,11 @@ int s14001a_sh_start(const struct MachineSound *msound)
 
 	SpeechRom = memory_region(intf->region);
 
-	stream = stream_init("S14001A", 100, 17500, 0, s14001a_update);
+#ifdef PINMAME
+	stream = stream_init("S14001A", 100, 19000, 0, s14001a_update);
+#else
+	stream = stream_init("S14001A", 100, 44100, 0, s14001a_update);
+#endif
 	if (stream == -1)
 		return 1;
 
@@ -498,19 +510,27 @@ void S14001A_rst_0_w(int data)
 
 void S14001A_set_rate(int newrate)
 {
+#ifdef PINMAME
 	static int rates[8] = { 19000, 20500, 22000, 24500, 27000, 29500, 31000, 33500 };
+#endif
 	if (stream != -1)
 		stream_update(stream, 0);
+#ifdef PINMAME
 	if (newrate < 0) newrate = 0;
 	else if (newrate > 7) newrate = 7;
 	stream_set_sample_rate(stream, rates[newrate]);
+#else
+	VSU1000_freq = newrate;
+#endif
 }
 
 void S14001A_set_volume(int volume)
 {
 	if (stream != -1)
 		stream_update(stream, 0);
+#ifdef PINMAME
 	if (volume < 0) volume = 0;
 	else if (volume > 7) volume = 7;
+#endif
     VSU1000_amp = volume;
 }
