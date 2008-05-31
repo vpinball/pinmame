@@ -1058,21 +1058,22 @@ static void grand_init(struct sndbrdData *brdData) {
   gplocals.brdData = *brdData;
   pia_config(2, PIA_STANDARD_ORDERING, &grand_pia[0]);
 }
-
 static void grand_diag(int button) {
   cpu_set_nmi_line(gplocals.brdData.cpuNo, button ? ASSERT_LINE : CLEAR_LINE);
 }
-
-static WRITE_HANDLER(grand_data_w) {
-  gplocals.sndCmd = data | (core_getDip(4) ? 0x80 : 0x00);
+static WRITE_HANDLER(grand_man_w) {
+  gplocals.sndCmd = data;
   cpu_set_irq_line(1, 0, ASSERT_LINE);
+}
+static WRITE_HANDLER(grand_data_w) {
+  grand_man_w(0, data | (core_getDip(4) ? 0x80 : 0x00));
 }
 
 /*-------------------
 / exported interface
 /--------------------*/
 const struct sndbrdIntf grandIntf = {
-  "GRAND", grand_init, NULL, grand_diag, grand_data_w, grand_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+  "GRAND", grand_init, NULL, grand_diag, grand_man_w, grand_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
 
 INITGAME(bullseye,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),8,SNDBRD_GRAND,0)
