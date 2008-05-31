@@ -274,7 +274,7 @@ static WRITE_HANDLER(pia1b_w) {
   if (~locals.b1 & data & core_gameData->hw.display & 0xf0)
     { locals.bcd[5] = locals.a0>>4; by35_dispStrobe(0x20); }
   locals.b1 = data;
-  if ((sb & 0xff00) != SNDBRD_ST300 && sb != SNDBRD_ASTRO && (sb & 0xff00) != SNDBRD_ST100)  sndbrd_0_data_w(0, data & 0x0f); 	// ok
+  if ((sb & 0xff00) != SNDBRD_ST300 && sb != SNDBRD_ASTRO && (sb & 0xff00) != SNDBRD_ST100 && sb != SNDBRD_GRAND) sndbrd_0_data_w(0, data & 0x0f); 	// ok
   coreGlobals.pulsedSolState = 0;
   if (!locals.cb21)
     locals.solenoids |= coreGlobals.pulsedSolState = (1<<(data & 0x0f)) & 0x7fff;
@@ -500,21 +500,15 @@ static MACHINE_STOP(by35) {
 */
 static MEMORY_READ_START(by35_readmem)
   { 0x0000, 0x007f, MRA_RAM }, /* U7 128 Byte Ram*/
-  { 0x0088, 0x008b, pia_r(BY35_PIA0) }, /* U10 PIA: Switchs + Display + Lamps*/
+  { 0x0088, 0x008b, pia_r(BY35_PIA0) }, /* U10 PIA: Switches + Display + Lamps*/
   { 0x0090, 0x0093, pia_r(BY35_PIA1) }, /* U11 PIA: Solenoids/Sounds + Display Strobe */
   { 0x0200, 0x02ff, MRA_RAM }, /* CMOS Battery Backed*/
   { 0x1000, 0xffff, MRA_ROM },
 MEMORY_END
 
-static WRITE_HANDLER(gp_snd_w) {
-printf("%02x ", data);
-  sndbrd_0_data_w(0, data);
-}
-
 static MEMORY_WRITE_START(by35_writemem)
   { 0x0000, 0x007f, MWA_RAM }, /* U7 128 Byte Ram*/
-  { 0x0080, 0x0080, gp_snd_w },
-  { 0x0088, 0x008b, pia_w(BY35_PIA0) }, /* U10 PIA: Switchs + Display + Lamps*/
+  { 0x0088, 0x008b, pia_w(BY35_PIA0) }, /* U10 PIA: Switches + Display + Lamps*/
   { 0x0090, 0x0093, pia_w(BY35_PIA1) }, /* U11 PIA: Solenoids/Sounds + Display Strobe */
   { 0x0200, 0x02ff, by35_CMOS_w, &by35_CMOS }, /* CMOS Battery Backed*/
 MEMORY_END

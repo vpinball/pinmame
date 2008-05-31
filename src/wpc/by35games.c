@@ -1064,10 +1064,8 @@ static void grand_diag(int button) {
 }
 
 static WRITE_HANDLER(grand_data_w) {
-  if (data != 0x0f) {
-    gplocals.sndCmd = data | (core_getDip(4) ? 0x80 : 0x00);
-    cpu_set_irq_line(1, 0, ASSERT_LINE);
-  }
+  gplocals.sndCmd = data | (core_getDip(4) ? 0x80 : 0x00);
+  cpu_set_irq_line(1, 0, ASSERT_LINE);
 }
 
 /*-------------------
