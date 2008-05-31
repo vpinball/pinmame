@@ -4,6 +4,7 @@
 #include "by35snd.h"
 #include "wmssnd.h"
 #include "by35.h"
+#include "machine/6821pia.h"
 
 //#define DISPLAYALL
 #ifdef DISPLAYALL
@@ -1011,3 +1012,88 @@ BY50_SOUNDROM(            "snd.123", NO_DUMP)
 BY35_ROMEND
 #define input_ports_myststar input_ports_by35
 CORE_GAMEDEFNV(myststar,"Mystic Star",1984,"Zaccaria",by35_mBY35_50S,0)
+
+/*------------------------------------
+/ 301/Bullseye (Grand Products, 1986)
+/------------------------------------*/
+static MEMORY_READ_START(gpsnd_readmem)
+  { 0x0000, 0x007f, MRA_RAM },
+  { 0x6000, 0x6003, pia_r(2) },
+  { 0x8000, 0x8fff, MRA_ROM },
+  { 0xfff0, 0xffff, MRA_ROM },
+MEMORY_END
+
+static MEMORY_WRITE_START(gpsnd_writemem)
+  { 0x0000, 0x007f, MWA_RAM },
+  { 0x6000, 0x6003, pia_w(2) },
+MEMORY_END
+
+static struct DACinterface grand_dacInt = { 1, { 50 }};
+
+MACHINE_DRIVER_START(by35_GP)
+  MDRV_IMPORT_FROM(by35)
+  MDRV_DIPS(33)
+  MDRV_CPU_ADD_TAG("scpu", M6802, 3579545/4)
+  MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
+  MDRV_CPU_MEMORY(gpsnd_readmem, gpsnd_writemem)
+  MDRV_SOUND_ADD(DAC, grand_dacInt)
+MACHINE_DRIVER_END
+
+static struct {
+  struct sndbrdData brdData;
+  UINT8 sndCmd;
+} gplocals;
+
+static READ_HANDLER(pia_a_r) { return gplocals.sndCmd; }
+static READ_HANDLER(pia_b_r) { cpu_set_irq_line(1, 0, CLEAR_LINE); return gplocals.sndCmd; }
+
+static const struct pia6821_interface grand_pia[] = {{
+  /*i: A/B,CA/B1,CA/B2 */ pia_a_r,pia_b_r, 0,0, 0,0,
+  /*o: A/B,CA/B2       */ DAC_0_data_w,0, 0,0,
+  /*irq: A/B           */ 0, 0
+}};
+
+static void grand_init(struct sndbrdData *brdData) {
+  memset(&gplocals, 0x00, sizeof(gplocals));
+  gplocals.brdData = *brdData;
+  pia_config(2, PIA_STANDARD_ORDERING, &grand_pia[0]);
+}
+
+static void grand_diag(int button) {
+  cpu_set_nmi_line(gplocals.brdData.cpuNo, button ? ASSERT_LINE : CLEAR_LINE);
+}
+
+static WRITE_HANDLER(grand_data_w) {
+  if (data != 0x0f) {
+    gplocals.sndCmd = data | (core_getDip(4) ? 0x80 : 0x00);
+    cpu_set_irq_line(1, 0, ASSERT_LINE);
+  }
+}
+
+/*-------------------
+/ exported interface
+/--------------------*/
+const struct sndbrdIntf grandIntf = {
+  "GRAND", grand_init, NULL, grand_diag, grand_data_w, grand_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
+};
+
+INITGAME(bullseye,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),8,SNDBRD_GRAND,0)
+ROM_START(bullseye) \
+  NORMALREGION(0x10000, BY35_CPUREGION) \
+    ROM_LOAD("bull.u2", 0x2000, 0x0800, CRC(a2951aa2) SHA1(f9c0826c5d1d6d904286678ed90de3850a13b5f4)) \
+    ROM_CONTINUE( 0x2800, 0x0800) \
+    ROM_LOAD("bull.u6", 0x3000, 0x0800, CRC(64d4b9c4) SHA1(bf4d0671372fd3a445c4c7330b9849171ca8048c)) \
+    ROM_CONTINUE( 0x3800, 0x0800) \
+    ROM_RELOAD( 0xf000, 0x1000)
+  SOUNDREGION(0x10000, BY51_CPUREGION) \
+    ROM_LOAD("bull.snd", 0x8000, 0x0800, CRC(c0482a2f) SHA1(a6aa698ad517cdc078129d702ee936af576260ed)) \
+      ROM_RELOAD(0x8800, 0x0800) \
+      ROM_RELOAD(0xf800, 0x0800)
+BY35_ROMEND
+BY35_INPUT_PORTS_START(bullseye,1) \
+  PORT_START /* 3 */ \
+    COREPORT_DIPNAME( 0x0001, 0x0001, "Sound mode") \
+      COREPORT_DIPSET(0x0000, "chimes" ) \
+      COREPORT_DIPSET(0x0001, "effects" ) \
+INPUT_PORTS_END
+CORE_GAMEDEFNV(bullseye,"301/Bullseye",1986,"Grand Products Inc.",by35_GP,0)

@@ -545,6 +545,11 @@ DRIVERNV(andretti)      //S3-747:   12/95 Mario Andretti
 DRIVERNV(barbwire)      //S3-748:   04/96 Barb Wire
 DRIVERNV(brooks)        //S3-749:   08/96 Brooks & Dunn (never produced)
 
+// --------------------
+// GRAND PRODUCTS, INC.
+// --------------------
+DRIVERNV(bullseye)      //BY35:     04/86 301/Bullseye
+
 // ----------------
 // HANKIN GAMES
 // ----------------
