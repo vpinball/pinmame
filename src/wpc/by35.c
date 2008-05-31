@@ -477,6 +477,8 @@ static MACHINE_INIT(by35) {
     install_mem_write_handler(0,0x00c0, 0x00c0, stern100_sol_w); // chimes on (DIP 23 = 0)
   } else if (sb == SNDBRD_ST100B) {
     install_mem_write_handler(0,0x00a0, 0x00a0, extra_sol_w);
+  } else if (sb == SNDBRD_GRAND) {
+    install_mem_write_handler(0,0x0080, 0x0080, sndbrd_0_data_w);
   }
 }
 
@@ -504,8 +506,14 @@ static MEMORY_READ_START(by35_readmem)
   { 0x1000, 0xffff, MRA_ROM },
 MEMORY_END
 
+static WRITE_HANDLER(gp_snd_w) {
+printf("%02x ", data);
+  sndbrd_0_data_w(0, data);
+}
+
 static MEMORY_WRITE_START(by35_writemem)
   { 0x0000, 0x007f, MWA_RAM }, /* U7 128 Byte Ram*/
+  { 0x0080, 0x0080, gp_snd_w },
   { 0x0088, 0x008b, pia_w(BY35_PIA0) }, /* U10 PIA: Switchs + Display + Lamps*/
   { 0x0090, 0x0093, pia_w(BY35_PIA1) }, /* U11 PIA: Solenoids/Sounds + Display Strobe */
   { 0x0200, 0x02ff, by35_CMOS_w, &by35_CMOS }, /* CMOS Battery Backed*/
