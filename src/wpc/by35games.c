@@ -68,7 +68,7 @@ BY17_ROMEND
 #define input_ports_nightrdr input_ports_by35
 CORE_GAMEDEFNV(nightrdr,"Night Rider",1977,"Bally",by35_mBY17,GAME_USES_CHIMES)
 /*--------------------------------
-/ EVEL KNIEVEL
+/ Evel Knievel
 /-------------------------------*/
 INITGAME(evelknie,GEN_BY17,dispBy6,FLIP_SW(FLIP_L),0,0,0)
 BY17_ROMSTARTx88(evelknie,"722-17_2.716",CRC(b6d9a3fa) SHA1(1939e13f73a324e3d2fd269a54446f48cf530f50),
@@ -144,7 +144,7 @@ BY35_ROMEND
 #define input_ports_lostwrld input_ports_by35
 CORE_GAMEDEFNV(lostwrld,"Lost World",1978,"Bally",by35_mBY35_32S,0)
 /*--------------------------------
-/ 6million$man
+/ Six Million Dollar Man
 /-------------------------------*/
 static core_tLCDLayout smmanDisp[] = {
   {0, 0, 2,6,CORE_SEG7}, {0,14,10,6,CORE_SEG7},
@@ -350,7 +350,7 @@ BY35_ROMEND
 #define input_ports_futurspb input_ports_futurspa
 CORE_CLONEDEFNV(futurspb,futurspa,"Future Spa (7-digit conversion)",2002,"Bally / Oliver",by35_mBY35_51S,0)
 /*--------------------------------
-/ Space invaders
+/ Space Invaders
 /-------------------------------*/
 INITGAME(spaceinv,GEN_BY35,dispBy6,FLIP_SW(FLIP_L),8,SNDBRD_BY51,0)
 BY35_ROMSTART888(spaceinv,"792-10_1.716",CRC(075eba5a) SHA1(7147c2dfb6af1c39bbfb9e98f409baae10d09628),
@@ -802,7 +802,7 @@ BY35_ROMEND
 CORE_CLONEDEFNV(spectru4,spectrum,"Spectrum (Ver. 4)",1982,"Bally",by35_mBY35_61BS,0)
 
 /*--------------------------------------------------
-/ Speak Easy 2 Player - Uses AS2518-51 Sound Board
+/ Speakeasy 2 Player - Uses AS2518-51 Sound Board
 /--------------------------------------------------*/
 INITGAME2(speakesy,GEN_BY35,dispBy7,FLIP_SW(FLIP_L),8,SNDBRD_BY51,0)
 BY35_ROMSTARTx00(speakesy,"877-03_2.732",CRC(34b28bbc) SHA1(c649a04664e694cfbd6b4d496bf76f5e802d492a),
@@ -813,7 +813,7 @@ BY35_ROMEND
 CORE_GAMEDEFNV(speakesy,"Speakeasy",1982,"Bally",by35_mBY35_51S,0)
 
 /*-------------------------------------------------
-/ Speak Easy 4 Player - Uses AS2518-51 Sound Board
+/ Speakeasy 4 Player - Uses AS2518-51 Sound Board
 /-------------------------------------------------*/
 #define input_ports_speakes4 input_ports_speakesy
 #define init_speakes4        init_speakesy
@@ -1044,34 +1044,30 @@ static struct {
   UINT8 sndCmd;
 } gplocals;
 
-static READ_HANDLER(pia_a_r) { return gplocals.sndCmd; }
-static READ_HANDLER(pia_b_r) { cpu_set_irq_line(1, 0, CLEAR_LINE); return gplocals.sndCmd; }
+static READ_HANDLER(pia_b_r) { cpu_set_irq_line(gplocals.brdData.cpuNo, 0, CLEAR_LINE); return gplocals.sndCmd; }
 
-static const struct pia6821_interface grand_pia[] = {{
-  /*i: A/B,CA/B1,CA/B2 */ pia_a_r,pia_b_r, 0,0, 0,0,
+static const struct pia6821_interface grand_pia = {
+  /*i: A/B,CA/B1,CA/B2 */ 0,pia_b_r, 0,0, 0,0,
   /*o: A/B,CA/B2       */ DAC_0_data_w,0, 0,0,
   /*irq: A/B           */ 0, 0
-}};
+};
 
 static void grand_init(struct sndbrdData *brdData) {
   memset(&gplocals, 0x00, sizeof(gplocals));
   gplocals.brdData = *brdData;
-  pia_config(2, PIA_STANDARD_ORDERING, &grand_pia[0]);
+  pia_config(2, PIA_STANDARD_ORDERING, &grand_pia);
 }
 static void grand_diag(int button) {
   cpu_set_nmi_line(gplocals.brdData.cpuNo, button ? ASSERT_LINE : CLEAR_LINE);
 }
 static WRITE_HANDLER(grand_man_w) {
   gplocals.sndCmd = data;
-  cpu_set_irq_line(1, 0, ASSERT_LINE);
+  cpu_set_irq_line(gplocals.brdData.cpuNo, 0, ASSERT_LINE);
 }
 static WRITE_HANDLER(grand_data_w) {
   grand_man_w(0, data | (core_getDip(4) ? 0x80 : 0x00));
 }
 
-/*-------------------
-/ exported interface
-/--------------------*/
 const struct sndbrdIntf grandIntf = {
   "GRAND", grand_init, NULL, grand_diag, grand_man_w, grand_data_w, NULL, NULL, NULL, SNDBRD_NODATASYNC|SNDBRD_NOCTRLSYNC
 };
