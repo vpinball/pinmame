@@ -1,0 +1,157 @@
+How to setup Visual C++ to compile PinMAME (all flavours)
+=========================================================
+
+----------
+Info links
+----------
+The MAME development homepage is available at http://www.mamedev.org/
+The Visual C++ homepage is available at http://msdn.microsoft.com/visualc/
+  Old versions are listed at http://msdn.microsoft.com/visualc/aa336447.aspx
+  Information about the VC++ macro _MSC_VER is available at
+    http://support.microsoft.com/kb/65472
+    http://msdn2.microsoft.com/library/b0084kay(VS.71).aspx
+The NASM homepage is available at http://nasm.sourceforge.net/
+The ZLib homepage is available at http://www.zlib.net/
+
+
+-------
+General
+-------
+To use a Visual C++ version for compiling the following is necessary:
+- Latest service pack for Visual Studio or Visual C++
+- Compatible Windows Platform SDK
+- Compatible DirectX SDK (with DirectInput 7)
+- Optionally a compatible MSDN Library
+
+Additionally the following is necessary:
+- NASM compiler for the assembler parts
+  a) Download the assembler compiler NASM to a download directory.
+     Binary package:
+     * NASM 0.98.39 (Win32)
+     Get it from http://sourceforge.net/project/showfiles.php?group_id=6208&package_id=47034
+     Note: Newer Win32 packages of NASM work too, but the executable has to be
+           renamed to "nasmw.exe".
+  b) Extract NASM into a separate directory, for example c:\nasm
+     Add this directory to the bin directories of Visual C++.
+
+
+--------------
+Visual C++ 6.0 (1998, _MSC_VER = 1200)
+--------------
+- Microsoft Java Virtual Machine
+  For installing Visual Studio 6.0 and its service packs the Microsoft Java
+  Virtual Machine (MSJVM) is needed. It is recommended to install one of the
+  latest versions (3809 or 3810) first to avoid computer restarts while
+  installing the service packs.
+  As the Microsoft Java Virtual Machine is outdated and insecure it is also
+  recommended to deinstall it after installation of all service packs. For this
+  Microsoft provided the tool UNMSJVM.EXE.
+  Unfortunately the files are nomore available at Microsoft's homepage, but they
+  are all available for download at MDGx homepage:
+    http://www.mdgx.com/add.htm#JVM
+  More information about MSJVM is available at Mark Salloway's Windows Resource
+  Center and Virtualmachine:
+    http://www.mvps.org/marksxp/WindowsXP/java.php
+    http://www.xs4all.nl/~smuller/VMSite2/
+- Service Packs & Processor Pack
+  Service Pack 5 is needed to update all components of Visual Studio 6.0, the
+  Processor Pack for getting MASM and Service Pack 6 for the latest updates of
+  Visual C++ and Visual Basic.
+  a) Download SP5, the Processor Pack and SP6
+     Update Homepage: http://msdn.microsoft.com/visualc/aa336441.aspx
+     6.0 SP5: http://www.microsoft.com/downloads/details.aspx?FamilyID=e9411283-c8ad-4283-8d74-3d6efd917644
+     6.0 PP: http://msdn.microsoft.com/en-us/vstudio/aa718349.aspx
+             http://www.infinitefactors.org/jonk/pctools.html
+     6.0 SP6: http://www.microsoft.com/downloads/details.aspx?FamilyID=a8494edb-2e89-4676-a16a-5c5477cb9713
+  b) Install SP5, then the Processor Pack and at last SP6
+     The Processor Pack only installs on SP5, so it is recommended to apply SP5
+     first, then the Processor Pack and finally SP6:
+       http://support.microsoft.com/kb/872907
+     If SP6 is already installed, but you forgot to apply SP5 before and use
+     several other components of Visual Studio too, then it is recommended to do
+     a re-installation of Visual Studio.
+- Windows Platform SDK August 2004 Edition
+  (folders: bin\winnt, bin, include, lib)
+  http://www.microsoft.com/msdownload/platformsdk/sdkupdate/XPSP2FULLInstall.htm
+- DirectX SDK Summer/August 2004 Edition
+  (folders: utilities, include, lib)
+  http://www.microsoft.com/downloads/details.aspx?familyid=fd044a42-9912-42a3-9a9e-d857199f888e
+- Last MSDN Library with Visual Studio 6.0 information/integration was October 2001.
+
+
+---------------
+Visual C++ 2002 (7.0, _MSC_VER = 1300, ".NET")
+Visual C++ 2003 (7.1, _MSC_VER = 1310)
+---------------
+- Service Packs
+  2002 SP1: http://www.microsoft.com/downloads/results.aspx?categoryid=10&freetext=visual+studio+2002+SP&sortCriteria=date
+  2003 SP1: http://www.microsoft.com/downloads/results.aspx?categoryid=10&freetext=visual+studio+2003+SP&sortCriteria=date
+- Windows Platform SDK for Windows Server 2003 R2 from March 2006
+  (folders: bin\winnt, bin, include, lib)
+  http://www.microsoft.com/downloads/details.aspx?familyid=E15438AC-60BE-41BD-AA14-7F1E0F19CA0D
+- Last DirectX SDK with DirectInput 7, and therefore working with the PinMAME
+  source code, is August 2007.
+  (folders: $(DXSDK_DIR)utilities\bin\x86, $(DXSDK_DIR)include, $(DXSDK_DIR)lib\x86)
+  http://www.microsoft.com/downloads/details.aspx?familyid=529f03be-1339-48c4-bd5a-8506e5acf571
+- Last MSDN Library with Visual Studio 2002 information/integration was
+  January 2003, but January 2006 should work too.
+- Last MSDN Library with Visual Studio 2003 information/integration was
+  January 2006.
+
+
+---------------
+Visual C++ 2005 (8.0, _MSC_VER = 1400)
+Visual C++ 2008 (9.0, _MSC_VER = 1500)
+---------------
+- Service Packs
+  2005 SP1: http://www.microsoft.com/downloads/results.aspx?categoryid=10&freetext=visual+studio+2005+SP&sortCriteria=date
+- Windows Platform SDK for Windows Server 2008 and .NET Framework 3.5 from March 2008
+  (folders: bin, include, include\gl, lib)
+  http://www.microsoft.com/downloads/details.aspx?familyid=f26b1aa4-741a-433a-9be5-fa919850bdbf
+- Last DirectX SDK with DirectInput 7, and therefore working with the PinMAME
+  source code, is August 2007.
+  (folders: $(DXSDK_DIR)utilities\bin\x86, $(DXSDK_DIR)include, $(DXSDK_DIR)lib\x86)
+  http://www.microsoft.com/downloads/details.aspx?familyid=529f03be-1339-48c4-bd5a-8506e5acf571
+- Current MSDN Library works with both versions.
+  First MSDN Library with Visual Studio 2005 information/integration was April 2006.
+
+
+-----------
+Compilation
+-----------
+- Directly load a project file (*.dsp or .vcproj), choose between Release or
+  Debug build and then compile.
+- Another way is to use a workspace (*.dsw or .sln), which is a bracket that
+  holds all separate projects together.
+  Unfortunately Visual C++ 6.0 and 2002 have the annoying behaviour to *always*
+  change the workspace file when it is loaded (changing internal comments to the
+  language of your Visual C++ installation, etc.), which creates too many
+  unnecessary "changes" in the CVS repository.
+  Therefore for these versions a template workspace file (*.tmpl) is included.
+  Just make a duplicate of it, remove the .tmpl suffix and use it with Visual C++.
+- Note: Project files for Visual C++ 2002-2008 are comming later, in the
+        meantime contact Maddes at http://www.maddes.net/ .
+
+
+-------------------
+Addendum: Libraries
+-------------------
+- The ZLib library for Visual C++ 6.0 is already included in the CVS repository.
+  If you want to compile it yourself then get the following package:
+  a) ZLib source code
+     * zlib-1.1.4.tar.gz
+     Get it from http://sourceforge.net/project/showfiles.php?group_id=5624&package_id=14274
+     Note: Newer versions of ZLib work too (currently 1.2.3).
+  b) If you want to test the assembler optimised version you also need MASM from
+     Microsoft. You can use it for free, but not for commercial use.
+     Get the Processor Pack for Visual C++ 6.0:
+     * http://msdn.microsoft.com/en-us/vstudio/aa718349.aspx
+     * http://www.infinitefactors.org/jonk/pctools.html
+     Extract it to a temporary directory, for example c:\masm, copy the
+     following files into a separate directory and it to the bin directories of
+     Visual C++:
+     * H2INC.ERR
+     * H2INC.EXE
+     * ML.ERR
+     * ML.EXE
+     * MASMREF.DOC
