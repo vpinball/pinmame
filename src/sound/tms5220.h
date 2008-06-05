@@ -22,7 +22,7 @@ void tms5220_set_read_and_branch(void (*func)(void));
 typedef enum
 {
 	variant_tms5220,
-	variant_tms0285
+	variant_tmc0285
 } tms5220_variant;
 
 void tms5220_set_variant(tms5220_variant new_variant);

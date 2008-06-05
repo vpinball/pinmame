@@ -1,6 +1,6 @@
 /**********************************************************************************************
 
-     TMS5220 simulator
+     TMS5200/5220 simulator
 
      Written for MAME by Frank Palazzolo
      With help from Neill Corlett
@@ -10,6 +10,12 @@
      Chirp/excitation table fixes by Lord Nightmare
      Various fixes by Lord Nightmare
      Modularization by Lord Nightmare
+     Sub-interpolation-cycle parameter updating added by Lord Nightmare
+
+     Much information regarding these lpc encoding comes from US patent 4,209,844
+     US patent 4,331,836 describes the complete 51xx chip
+     US patent 4,335,277 describes the complete 52xx chip
+     Special Thanks to Larry Brantingham for answering questions regarding the chip details
 
 ***********************************************************************************************/
 
@@ -31,7 +37,6 @@
    * modified code so that the beast only start speaking at the start of next frame, like the data
      sheet says
 */
-#define USE_OBSOLETE_HACK 0
 
 
 #ifndef TRUE
@@ -63,9 +68,6 @@ struct tms5220
     */
 	UINT8 tms5220_speaking;	/* Speak or Speak External command in progress */
 	UINT8 speak_external;	/* Speak External command in progress */
-	#if USE_OBSOLETE_HACK
-	UINT8 speak_delay_frames;
-	#endif
 	UINT8 talk_status; 		/* tms5220 is really currently speaking */
 	UINT8 first_frame;		/* we have just started speaking, and we are to parse the first frame */
 	UINT8 last_frame;		/* we are doing the frame of sound */
@@ -97,9 +99,9 @@ struct tms5220
 
 	UINT16 previous_energy;         /* needed for lattice filter to match patent */
 
-	UINT8 interp_count;		/* number of interp periods (0-7) */
-	UINT8 sample_count;		/* sample number within interp (0-24) */
-	UINT16 pitch_count;
+	UINT8 interp_count;		/* number of samples within each sub-interpolation period, ranges from 0-24 */
+	UINT8 sample_count;		/* number of samples within the ENTIRE interpolation period, ranges from 0-199 */
+	UINT16 pitch_count;		/* pitch counter; provides chirp rom address */
 
 	INT32 u[11];
 	INT32 x[10];
@@ -117,26 +119,27 @@ struct tms5220
 	UINT8 data_register;				/* data register, used by read command */
 	UINT8 RDB_flag;					/* whether we should read data register or status register */
 
-	/* flag for variant tms0285/tms5200 emulation */
-	/* The TMC0285 AKA TMS5200 is an early variant of the TMS5220 used in
+	/* flag for variant tmc0285/tms5200 emulation */
+	/* The TMC0285 AKA TMS5200 is an earlier variant of the TMS5220 used in
        the early releases of the Speech Module for the TI-99/4(a) computer,
        in Zaccaria's 'Money Money', and in a few other places.
-       The TMS5200 has a bug in its state machine PLA which causes it to
-       incorrectly use the LPC K3 parameter table for both K3 and K4.
-       (the chip has the unused K4 parameter in its internal ROM, but it is
-       never accessed due to the PLA bug)
-       The bug was fixed in the quickly-released TMS5220.
-       TI may have sold the remaining stocks of TMS5200s at a discount, and
-       apparently provided a special encoder to work around the bug.
-       Other than the bug, the two chips are identical.
-       Another variant of the TMS5220 is the TMS5220C/TSP5220C, which adds
-       an additional opcode (to select the data rate).
+       The TMS5200 has a different set of LPC coefficients, and a different
+       chirp table than the 5220 (which is not yet dumped)
+       Due to the vast superiority of the quality of the TMS5220, TI may have
+       sold the remaining stocks of TMS5200s at a discount, and provided a
+       special encoder to use the older tables.
+       Other than those differences, the two chips are identical.
+       Another variant of the TMS5220 is the TMS5220C/TSP5220C, which replaces
+       the X0X0 'NOP' opcode with an opcode to select the number of
+       interpolations per frame to either be defined at each frame, or be fixed
+       at either 8, 6, 4, or 2. The TMS5200/5220 is always fixed at 8.
      */
 	tms5220_variant variant;
     /* The TMS52xx has two different ways of providing output data: the
        analog speaker pin (which was usually used) and the Digital I/O pin.
-       The internal DAC used to feed the analog pin is only 8 bits, while the
-       digital pin gives full 12? bit resolution to the output data.
+       The internal DAC used to feed the analog pin is only 8 bits, and has the
+       funny clipping/clamping logic, while the digital pin gives full 12? bit
+       resolution of the output data.
      */
     UINT8 digital_select;
 };
@@ -148,6 +151,8 @@ static int extract_bits(struct tms5220 *tms, int count);
 static int parse_frame(struct tms5220 *tms, int the_first_frame);
 static void check_buffer_low(struct tms5220 *tms);
 static void set_interrupt_state(struct tms5220 *tms, int state);
+INT16 lattice_filter(void *chip);
+INT16 clip_and_wrap(INT16 cliptemp);
 
 
 #define DEBUG_5220	0
@@ -170,9 +175,6 @@ void tms5220_reset_chip(void *chip)
 	/* initialize the chip state */
 	/* Note that we do not actually clear IRQ on start-up : IRQ is even raised if tms->buffer_empty or tms->buffer_low are 0 */
 	tms->tms5220_speaking = tms->speak_external = tms->talk_status = tms->first_frame = tms->last_frame = tms->irq_pin = 0;
-#if USE_OBSOLETE_HACK
-	tms->speak_delay_frames = 0;
-#endif
 	if (tms->irq_func) tms->irq_func(0);
 	tms->buffer_empty = tms->buffer_low = 1;
 
@@ -273,7 +275,7 @@ void tms5220_set_read_and_branch(void (*func)(void)) {
 
 /**********************************************************************************************
 
-     tms5220_set_variant -- sets the tms5220 core to emulate its buggy forerunner, the tms0285
+     tms5220_set_variant -- sets the tms5220 core to emulate its buggy forerunner, the tmc0285
 
 ***********************************************************************************************/
 
@@ -334,17 +336,17 @@ void tms5220_data_write(int data) {
      tms5220_status_read -- read status or data from the TMS5220
 
       From the data sheet:
-        bit 0 = TS - Talk Status is active (high) when the VSP is processing speech data.
+        bit D0(bit 7) = TS - Talk Status is active (high) when the VSP is processing speech data.
                 Talk Status goes active at the initiation of a Speak command or after nine
                 bytes of data are loaded into the FIFO following a Speak External command. It
                 goes inactive (low) when the stop code (Energy=1111) is processed, or
                 immediately by a buffer empty condition or a reset command.
-        bit 1 = BL - Buffer Low is active (high) when the FIFO buffer is more than half empty.
+        bit D1(bit 6) = BL - Buffer Low is active (high) when the FIFO buffer is more than half empty.
                 Buffer Low is set when the "Last-In" byte is shifted down past the half-full
                 boundary of the stack. Buffer Low is cleared when data is loaded to the stack
                 so that the "Last-In" byte lies above the half-full boundary and becomes the
                 ninth data byte of the stack.
-        bit 2 = BE - Buffer Empty is active (high) when the FIFO buffer has run out of data
+        bit D2(bit 5) = BE - Buffer Empty is active (high) when the FIFO buffer has run out of data
                 while executing a Speak External command. Buffer Empty is set when the last bit
                 of the "Last-In" byte is shifted out to the Synthesis Section. This causes
                 Talk Status to be cleared. Speed is terminated at some abnormal point and the
@@ -397,7 +399,7 @@ int tms5220_ready_read(void) {
 
 /**********************************************************************************************
 
-     tms5220_cycles_to_ready -- returns the number of cycles until ready is asserted
+     tms5220_ready_read -- returns the number of cycles until ready is asserted
 
 ***********************************************************************************************/
 
@@ -491,38 +493,6 @@ tryagain:
 		tms->buffer_empty = 0;
 	}
 
-#if 0
-	/* we are to speak, yet we fill with 0s until start of next frame */
-	if (tms->first_frame)
-	{
-		while ((size > 0) && ((tms->sample_count != 0) || (tms->interp_count != 0)))
-		{
-			tms->sample_count = (tms->sample_count + 1) % 200;
-			tms->interp_count = (tms->interp_count + 1) % 25;
-			buffer[buf_count] = 0x00;	/* should be (-1 << 8) ??? (cf note in data sheet, p 10, table 4) */
-			buf_count++;
-			size--;
-		}
-	}
-#endif
-
-#if USE_OBSOLETE_HACK
-    /* apply some delay before we actually consume data; Victory requires this */
-    if (tms->speak_delay_frames)
-    {
-    	if (size <= tms->speak_delay_frames)
-    	{
-    		tms->speak_delay_frames -= size;
-    		size = 0;
-    	}
-    	else
-    	{
-    		size -= tms->speak_delay_frames;
-    		tms->speak_delay_frames = 0;
-    	}
-    }
-#endif
-
     /* loop until the buffer is full or we've stopped speaking */
 	while ((size > 0) && tms->talk_status)
     {
@@ -608,54 +578,120 @@ tryagain:
                 }
             }
         }
-        else if (tms->interp_count == 0)
+        else
         {
-            /* Update values based on step values */
-            /*mame_printf_debug("\n");*/
-
             interp_period = tms->sample_count / 25;
-            tms->current_energy += ((tms->target_energy - tms->current_energy) >> interp_coeff[interp_period]);
-            if (tms->old_pitch != 0)
-                tms->current_pitch += ((tms->target_pitch - tms->current_pitch) >> interp_coeff[interp_period]);
-
-            /*mame_printf_debug("*** Energy = %d\n",tms->current_energy);*/
-
-            for (i = 0; i < 10; i++)
-            {
-                tms->current_k[i] += ((tms->target_k[i] - tms->current_k[i]) >> interp_coeff[interp_period]);
-            }
+	    switch(tms->interp_count)
+	    {
+                /*         PC=X  X cycle, rendering change (change for next cycle which chip is actually doing) */
+		case 0: /* PC=0, A cycle, nothing happens (calc energy) */
+                  break;
+		case 1: /* PC=0, B cycle, nothing happens (update energy) */
+		  break;
+		case 2: /* PC=1, A cycle, update energy (calc pitch) */
+		  tms->current_energy += ((tms->target_energy - tms->current_energy) >> interp_coeff[interp_period]);
+            	  break;
+                case 3: /* PC=1, B cycle, nothing happens (update pitch) */
+		  break;
+                case 4: /* PC=2, A cycle, update pitch (calc K1) */
+            	  if (tms->old_pitch != 0)
+                  tms->current_pitch += ((tms->target_pitch - tms->current_pitch) >> interp_coeff[interp_period]);
+		  break;
+                case 5: /* PC=2, B cycle, nothing happens (update K1) */
+		  break;
+		case 6: /* PC=3, A cycle, update K1 (calc K2) */
+		  tms->current_k[0] += ((tms->target_k[0] - tms->current_k[0]) >> interp_coeff[interp_period]);
+            	  break;
+                case 7: /* PC=3, B cycle, nothing happens (update K2) */
+		  break;
+		case 8: /* PC=4, A cycle, update K2 (calc K3) */
+		  tms->current_k[1] += ((tms->target_k[1] - tms->current_k[1]) >> interp_coeff[interp_period]);
+            	  break;
+                case 9: /* PC=4, B cycle, nothing happens (update K3) */
+		  break;
+		case 10: /* PC=5, A cycle, update K3 (calc K4) */
+		  tms->current_k[2] += ((tms->target_k[2] - tms->current_k[2]) >> interp_coeff[interp_period]);
+            	  break;
+                case 11: /* PC=5, B cycle, nothing happens (update K4) */
+		  break;
+		case 12: /* PC=6, A cycle, update K4 (calc K5) */
+		  tms->current_k[3] += ((tms->target_k[3] - tms->current_k[3]) >> interp_coeff[interp_period]);
+            	  break;
+                case 13: /* PC=6, B cycle, nothing happens (update K5) */
+		  break;
+		case 14: /* PC=7, A cycle, update K5 (calc K6) */
+		  tms->current_k[4] += ((tms->target_k[4] - tms->current_k[4]) >> interp_coeff[interp_period]);
+            	  break;
+                case 15: /* PC=7, B cycle, nothing happens (update K6) */
+		  break;
+		case 16: /* PC=8, A cycle, update K6 (calc K7) */
+		  tms->current_k[5] += ((tms->target_k[5] - tms->current_k[5]) >> interp_coeff[interp_period]);
+            	  break;
+                case 17: /* PC=8, B cycle, nothing happens (update K7) */
+		  break;
+		case 18: /* PC=9, A cycle, update K7 (calc K8) */
+		  tms->current_k[6] += ((tms->target_k[6] - tms->current_k[6]) >> interp_coeff[interp_period]);
+            	  break;
+                case 19: /* PC=9, B cycle, nothing happens (update K8) */
+		  break;
+		case 20: /* PC=10, A cycle, update K8 (calc K9) */
+		  tms->current_k[7] += ((tms->target_k[7] - tms->current_k[7]) >> interp_coeff[interp_period]);
+            	  break;
+                case 21: /* PC=10, B cycle, nothing happens (update K9) */
+		  break;
+		case 22: /* PC=11, A cycle, update K9 (calc K10) */
+		  tms->current_k[8] += ((tms->target_k[8] - tms->current_k[8]) >> interp_coeff[interp_period]);
+            	  break;
+                case 23: /* PC=11, B cycle, nothing happens (update K10) */
+		  break;
+		case 24: /* PC=12, A cycle, update K10 (do nothing) */
+		  tms->current_k[9] += ((tms->target_k[9] - tms->current_k[9]) >> interp_coeff[interp_period]);
+            	  break;
+	    }
         }
 
 //      if (tms->old_energy == 0)
 //      {
 //        /* generate silent samples here */
-//        tms->excitation_data = 0x00; /* I'm not sure if this is actually RIGHT, the current_energy may be forced to zero when we've just passed a zero energy frame. However, this does work too. May be removed later. */
+//        tms->excitation_data = 0x00; /* This is NOT correct, the current_energy is forced to zero when we
+//                                        just passed a zero energy frame because thats what the tables hold for that value.
+//                                        However, this code does no harm. Will be removed later. */
 //      }
 //      else
         if (tms->old_pitch == 0)
         {
             /* generate unvoiced samples here */
 			if (tms->RNG & 1)
-				tms->excitation_data = -0x60; /* according to the patent it is (either + or -) half of the maximum value in the chirp table, so +-64 */
+				tms->excitation_data = -0x40; /* according to the patent it is (either + or -) half of the maximum value in the chirp table, so +-64 */
 			else
-				tms->excitation_data = 0x60;
+				tms->excitation_data = 0x40;
         }
         else
         {
             /* generate voiced samples here */
-            tms->excitation_data = tms->pitch_count - 0x80;
-			if (tms->pitch_count < sizeof(chirptable)) {
-				tms->excitation_data += chirptable[tms->pitch_count];
-			}
+            /* US patent 4331836 Figure 14B shows, and logic would hold, that a pitch based chirp
+             * function has a chirp/peak and then a long chain of zeroes.
+             * The last entry of the chirp rom is at address 0b110011 (50d), the 51st sample,
+             * and if the address reaches that point the ADDRESS incrementer is
+             * disabled, forcing all samples beyond 50d to be == 50d
+             * (address 50d holds zeroes)
+             */
+          if (tms->pitch_count > 50)
+              tms->excitation_data = chirptable[50];
+          else /*tms->pitch_count <= 50*/
+              tms->excitation_data = chirptable[tms->pitch_count];
         }
 
-        /* Update LFSR every clock, like patent shows */
-        bitout = ((tms->RNG >> 12) & 1) ^
-                 ((tms->RNG >> 10) & 1) ^
-                 ((tms->RNG >>  9) & 1) ^
-                 ((tms->RNG >>  0) & 1);
-        tms->RNG >>= 1;
-        tms->RNG |= bitout << 12;
+        /* Update LFSR *20* times every sample, like patent shows */
+	for (i=0; i<20; i++)
+	{
+            bitout = ((tms->RNG >> 12) & 1) ^
+                     ((tms->RNG >> 10) & 1) ^
+                     ((tms->RNG >>  9) & 1) ^
+                     ((tms->RNG >>  0) & 1);
+            tms->RNG >>= 1;
+            tms->RNG |= bitout << 12;
+	}
 
 		buffer[buf_count] = clip_and_wrap(lattice_filter(tms)); /* execute lattice filter and clipping/wrapping */
 
@@ -701,15 +737,7 @@ void tms5220_process(INT16 *buffer, unsigned int size) {
 
 INT16 clip_and_wrap(INT16 cliptemp)
 {
-#ifdef PINMAME
-	/* A new approach: wrapping applied, then output calculated using logarithm */
-	double factor;
-	if (cliptemp > 2047) cliptemp = 4095-cliptemp;
-	else if (cliptemp < -2048) cliptemp = -4096-cliptemp;
-	factor = 8.0-log(300+abs(cliptemp));
-	return (INT16)((double)cliptemp * factor * 39);
-#else
-    /* clipping & wrapping, just like the patent shows */
+        /* clipping & wrapping, just like the patent shows */
 
 	if (cliptemp > 2047) cliptemp = -2048 + (cliptemp-2047);
 	else if (cliptemp < -2048) cliptemp = 2047 - (cliptemp+2048);
@@ -718,9 +746,8 @@ INT16 clip_and_wrap(INT16 cliptemp)
 	    return 127<<8; }
 	else if (cliptemp < -512) { logerror("cliptemp < -512\n");
 	    return -128<<8; }
-	else
-	    return cliptemp << 6;
-#endif /* PINMAME */
+        else
+            return cliptemp << 6;
 }
 
 
@@ -746,7 +773,11 @@ INT16 lattice_filter(void *chip)
            Kn = tms->current_k[n-1]
            bn = tms->x[n-1]
     */
-        tms->u[10] = (tms->excitation_data * tms->previous_energy) >> 12 ; /* Y(11) */
+#ifdef PINMAME
+        tms->u[10] = (tms->excitation_data * tms->previous_energy) >> 12; /* Y(11) */
+#else
+        tms->u[10] = (tms->excitation_data * tms->previous_energy) >> 8; /* Y(11) */
+#endif
         tms->u[9] = tms->u[10] - ((tms->current_k[9] * tms->x[9]) / 32768);
         tms->u[8] = tms->u[9] - ((tms->current_k[8] * tms->x[8]) / 32768);
         tms->x[9] = tms->x[8] + ((tms->current_k[8] * tms->u[8]) / 32768);
@@ -845,10 +876,6 @@ static void process_command(struct tms5220 *tms)
 
 		case 0x60 : /* speak external */
 			tms->tms5220_speaking = tms->speak_external = 1;
-#if USE_OBSOLETE_HACK
-            tms->speak_delay_frames = 10;
-#endif
-
 			tms->RDB_flag = FALSE;
 
             /* according to the datasheet, this will cause an interrupt due to a BE condition */
@@ -944,14 +971,15 @@ static int parse_frame(struct tms5220 *tms, int the_first_frame)
 
     /* if the previous frame was a stop frame, don't do anything */
 	if ((! the_first_frame) && (tms->old_energy == energytable[15]))
-		/*return 1;*/
-	{
-		tms->buffer_empty = 1;
-#ifdef PINMAME
-		tms5220_reset_chip(tms);
-#endif
 		return 1;
-	}
+//  WARNING: This code below breaks Victory's power-on test! If you change it
+//  make sure you test Victory.
+//  {
+//      if (DEBUG_5220) logerror("Buffer Empty set - Last frame stop frame\n");
+
+//      tms->buffer_empty = 1;
+//      return 1;
+//  }
 
 	if (tms->speak_external)
     	/* count the total number of bits available */
@@ -1027,7 +1055,7 @@ static int parse_frame(struct tms5220 *tms, int the_first_frame)
         tms->new_k[0] = k1table[extract_bits(tms, 5)];
         tms->new_k[1] = k2table[extract_bits(tms, 5)];
         tms->new_k[2] = k3table[extract_bits(tms, 4)];
-		if (tms->variant == variant_tms0285)
+		if (tms->variant == variant_tmc0285)
 			tms->new_k[3] = k3table[extract_bits(tms, 4)];	/* ??? */
 		else
 			tms->new_k[3] = k4table[extract_bits(tms, 4)];
@@ -1047,7 +1075,7 @@ static int parse_frame(struct tms5220 *tms, int the_first_frame)
     tms->new_k[0] = k1table[extract_bits(tms, 5)];
     tms->new_k[1] = k2table[extract_bits(tms, 5)];
     tms->new_k[2] = k3table[extract_bits(tms, 4)];
-	if (tms->variant == variant_tms0285)
+	if (tms->variant == variant_tmc0285)
 		tms->new_k[3] = k3table[extract_bits(tms, 4)];	/* ??? */
 	else
 		tms->new_k[3] = k4table[extract_bits(tms, 4)];
