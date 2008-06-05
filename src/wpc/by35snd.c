@@ -485,7 +485,8 @@ static void snt_init(struct sndbrdData *brdData) {
   pia_config(SNT_PIA0, PIA_STANDARD_ORDERING, &snt_pia[0]);
   pia_config(SNT_PIA1, PIA_STANDARD_ORDERING, &snt_pia[1]);
   sntlocals.cmdin = sntlocals.cmdout = 2;
-  tms5220_set_variant(variant_tms0285);
+  tms5220_reset();
+  tms5220_set_variant(variant_tmc0285);
 }
 static void snt_diag(int button) {
   cpu_set_nmi_line(sntlocals.brdData.cpuNo, button ? ASSERT_LINE : CLEAR_LINE);

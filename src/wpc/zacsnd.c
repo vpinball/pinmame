@@ -586,7 +586,7 @@ static void sns_init(struct sndbrdData *brdData) {
     mixer_set_volume(snslocals.channel+3,0);
 // reset tms5220
     tms5220_reset();
-    tms5220_set_variant(variant_tms0285);
+    tms5220_set_variant(variant_tmc0285);
   }
 }
 
