@@ -149,5 +149,8 @@ Step 4: Compilation
 -------------------
 - Change to the PinMAME source directory
 - To compile PinMAME type "mingw32-make"
+  Add "MAME_DEBUG=1 SUFFIX=md" to include the MAME debugger
 - To compile PinMAME32 type "mingw32-make WINUI=1 SUFFIX=32"
-- To compile a debug build, which also includes the MAME debugger, add "DEBUG=1"
+  Add "MAME_DEBUG=1" and use "SUFFIX=32md" instead to include the MAME debugger
+- To compile a debug build, which also always includes the MAME debugger, only
+  add "DEBUG=1"
