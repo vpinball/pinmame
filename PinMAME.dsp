@@ -19,6 +19,7 @@ CFG=PinMAME - Win32 Debug
 !MESSAGE 
 !MESSAGE "PinMAME - Win32 Release" (based on "Win32 (x86) Console Application")
 !MESSAGE "PinMAME - Win32 Debug" (based on "Win32 (x86) Console Application")
+!MESSAGE "PinMAME - Win32 Release with MAME Debugger" (based on "Win32 (x86) Console Application")
 !MESSAGE 
 
 # Begin Project
@@ -32,13 +33,13 @@ RSC=rc.exe
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "Release"
-# PROP BASE Intermediate_Dir "Release"
+# PROP BASE Output_Dir "obj\VC60\PinMAME\Win32\Release"
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "obj/PinMAME/Release"
-# PROP Intermediate_Dir "obj/PinMAME/Release"
+# PROP Output_Dir "obj\VC60\PinMAME\Win32\Release"
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
@@ -51,30 +52,37 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
-# ADD LINK32 zlibstatmt.lib kernel32.lib user32.lib gdi32.lib shell32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib /nologo /subsystem:console /machine:I386 /out:"obj/PinMAME/Release/PinMAMEVC.exe" /pdbtype:sept /libpath:"zlib"
-# Begin Custom Build - Copying...
+# ADD LINK32 zlibstatmt.lib kernel32.lib user32.lib gdi32.lib shell32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib /nologo /subsystem:console /machine:I386 /out:"obj\VC60\PinMAME\Win32\Release\PinMAME_VC60.exe" /pdbtype:sept /libpath:"zlib"
+# Begin Custom Build - Copying to root and generating gamelist.txt...
 ProjDir=.
-TargetPath=.\obj\PinMAME\Release\PinMAMEVC.exe
-TargetName=PinMAMEVC
-InputPath=.\obj\PinMAME\Release\PinMAMEVC.exe
+TargetPath=.\obj\VC60\PinMAME\Win32\Release\PinMAME_VC60.exe
+TargetName=PinMAME_VC60
+InputPath=.\obj\VC60\PinMAME\Win32\Release\PinMAME_VC60.exe
 SOURCE="$(InputPath)"
 
-"$(ProjDir)\$(TargetName).exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	copy "$(TargetPath)" "$(ProjDir)\$(TargetName).exe"
+BuildCmds= \
+	copy "$(TargetPath)" "$(ProjDir)" \
+	"$(ProjDir)\$(TargetName).exe" -gamelist -noclones -sortname >"$(ProjDir)\$(TargetName)_gamelist.txt" \
+	
 
+"$(ProjDir)\$(TargetName).exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+
+"$(ProjDir)\$(TargetName)_gamelist.txt" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "Debug"
-# PROP BASE Intermediate_Dir "Debug"
+# PROP BASE Output_Dir "obj\VC60\PinMAME\Win32\Debug"
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "obj/PinMAME/Debug"
-# PROP Intermediate_Dir "obj/PinMAME/Debug"
+# PROP Output_Dir "obj\VC60\PinMAME\Win32\Debug"
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
@@ -87,17 +95,61 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 zlibstatmtd.lib kernel32.lib user32.lib gdi32.lib shell32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib /nologo /subsystem:console /debug /machine:I386 /out:"obj/PinMAME/Debug/PinMAMEVCd.exe" /pdbtype:sept /libpath:"zlib"
+# ADD LINK32 zlibstatmtd.lib kernel32.lib user32.lib gdi32.lib shell32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib /nologo /subsystem:console /debug /machine:I386 /out:"obj\VC60\PinMAME\Win32\Debug\PinMAME_VC60d.exe" /pdbtype:sept /libpath:"zlib"
 # SUBTRACT LINK32 /map
-# Begin Custom Build - Copying...
+# Begin Custom Build - Copying to root...
 ProjDir=.
-TargetPath=.\obj\PinMAME\Debug\PinMAMEVCd.exe
-TargetName=PinMAMEVCd
-InputPath=.\obj\PinMAME\Debug\PinMAMEVCd.exe
+TargetDir=.\obj\VC60\PinMAME\Win32\Debug
+TargetPath=.\obj\VC60\PinMAME\Win32\Debug\PinMAME_VC60d.exe
+TargetName=PinMAME_VC60d
+InputPath=.\obj\VC60\PinMAME\Win32\Debug\PinMAME_VC60d.exe
+SOURCE="$(InputPath)"
+
+BuildCmds= \
+	copy "$(TargetPath)" "$(ProjDir)" \
+	copy "$(TargetDir)\$(TargetName).pdb" "$(ProjDir)" \
+	
+
+"$(ProjDir)\$(TargetName).exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+
+"$(ProjDir)\$(TargetName).pdb" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "PinMAME - Win32 Release with MAME Debugger"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "obj\VC60\PinMAME\Win32\ReleaseMD"
+# PROP BASE Intermediate_Dir "$(OUTDIR)\Intermediate"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "obj\VC60\PinMAME\Win32\ReleaseMD"
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
+# ADD CPP /nologo /MT /W3 /O2 /I "src" /I "src\wpc" /I "src\zlib" /I "src\vc" /I "src\windows" /D "NDEBUG" /D "MAME_DEBUG" /D "_MBCS" /D "WIN32" /D "_CONSOLE" /D LSB_FIRST=1 /D CLIB_DECL=__cdecl /D DECL_SPEC=__cdecl /D inline=__inline /D __inline__=__inline /D INLINE=__inline /D DIRECTINPUT_VERSION=0x0500 /D DIRECTDRAW_VERSION=0x0300 /D "NONAMELESSUNION" /D "_WINDOWS" /D "ZLIB_DLL" /D MAMEVER=7300 /D "PINMAME" /FD /c
+# SUBTRACT CPP /YX
+# ADD BASE RSC /l 0x41d /d "NDEBUG"
+# ADD RSC /l 0x409 /d "NDEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
+# ADD LINK32 zlibstatmt.lib kernel32.lib user32.lib gdi32.lib shell32.lib winmm.lib dxguid.lib ddraw.lib dinput.lib dsound.lib /nologo /subsystem:console /machine:I386 /out:"obj\VC60\PinMAME\Win32\ReleaseMD\PinMAME_VC60md.exe" /pdbtype:sept /libpath:"zlib"
+# Begin Custom Build - Copying to root...
+ProjDir=.
+TargetPath=.\obj\VC60\PinMAME\Win32\ReleaseMD\PinMAME_VC60md.exe
+TargetName=PinMAME_VC60md
+InputPath=.\obj\VC60\PinMAME\Win32\ReleaseMD\PinMAME_VC60md.exe
 SOURCE="$(InputPath)"
 
 "$(ProjDir)\$(TargetName).exe" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	copy "$(TargetPath)" "$(ProjDir)\$(TargetName).exe"
+	copy "$(TargetPath)" "$(ProjDir)"
 
 # End Custom Build
 
@@ -107,6 +159,7 @@ SOURCE="$(InputPath)"
 
 # Name "PinMAME - Win32 Release"
 # Name "PinMAME - Win32 Debug"
+# Name "PinMAME - Win32 Release with MAME Debugger"
 # Begin Group "Source Files"
 
 # PROP Default_Filter ""
@@ -122,46 +175,19 @@ SOURCE="$(InputPath)"
 # Begin Source File
 
 SOURCE=src\cpu\adsp2100\2100dasm.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\adsp2100\2100ops.c
+SOURCE=src\cpu\adsp2100\2100ops.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
 SOURCE=src\cpu\adsp2100\adsp2100.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\cpu\adsp2100\adsp2100.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # End Group
 # Begin Group "M6809"
@@ -170,51 +196,24 @@ SOURCE=src\cpu\adsp2100\adsp2100.h
 # Begin Source File
 
 SOURCE=src\cpu\m6809\6809dasm.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\m6809\6809ops.c
+SOURCE=src\cpu\m6809\6809ops.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\m6809\6809tbl.c
+SOURCE=src\cpu\m6809\6809tbl.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
 SOURCE=src\cpu\m6809\m6809.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\cpu\m6809\m6809.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # End Group
 # Begin Group "M6800"
@@ -223,51 +222,24 @@ SOURCE=src\cpu\m6809\m6809.h
 # Begin Source File
 
 SOURCE=src\cpu\m6800\6800dasm.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\m6800\6800ops.c
+SOURCE=src\cpu\m6800\6800ops.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\m6800\6800tbl.c
+SOURCE=src\cpu\m6800\6800tbl.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
 SOURCE=src\cpu\m6800\m6800.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\cpu\m6800\m6800.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # End Group
 # Begin Group "Z80"
@@ -276,67 +248,22 @@ SOURCE=src\cpu\m6800\m6800.h
 # Begin Source File
 
 SOURCE=src\cpu\z80\z80.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\cpu\z80\z80.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\cpu\z80\z80daa.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\cpu\z80\z80dasm.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\cpu\z80\z80dasm.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # End Group
 # Begin Group "M6502"
@@ -345,97 +272,43 @@ SOURCE=src\cpu\z80\z80dasm.h
 # Begin Source File
 
 SOURCE=src\cpu\m6502\6502dasm.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\cpu\m6502\ill02.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\cpu\m6502\m6502.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\cpu\m6502\m6502.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\m6502\m65ce02.h
+SOURCE=src\cpu\m6502\m65ce02.h
 # End Source File
 # Begin Source File
 
 SOURCE=src\cpu\m6502\ops02.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\cpu\m6502\opsc02.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\m6502\opsn2a03.h
+SOURCE=src\cpu\m6502\opsn2a03.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\m6502\t6502.c
+SOURCE=src\cpu\m6502\t6502.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\m6502\t65c02.c
+SOURCE=src\cpu\m6502\t65c02.c
 # PROP Exclude_From_Build 1
 # End Source File
 # End Group
@@ -445,191 +318,63 @@ SOURCE=.\src\cpu\m6502\t65c02.c
 # Begin Source File
 
 SOURCE=src\cpu\m68000\cpudefs.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\cpu\m68000\m68000.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\cpu\m68000\m68k.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\cpu\m68000\m68kconf.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\cpu\m68000\m68kcpu.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\cpu\m68000\m68kcpu.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\cpu\m68000\m68kdasm.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\cpu\m68000\m68kmake.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
 # PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Exclude_From_Build 1
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\cpu\m68000\m68kmame.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\cpu\m68000\m68kmame.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\cpu\m68000\m68kopac.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\cpu\m68000\m68kopdm.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\cpu\m68000\m68kopnz.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\cpu\m68000\m68kops.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\m68000\m68kops.h
+SOURCE=src\cpu\m68000\m68kops.h
 # End Source File
 # End Group
 # Begin Group "S2650"
@@ -637,55 +382,19 @@ SOURCE=.\src\cpu\m68000\m68kops.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\src\cpu\s2650\2650dasm.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
+SOURCE=src\cpu\s2650\2650dasm.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\s2650\s2650.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
+SOURCE=src\cpu\s2650\s2650.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\s2650\s2650.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
+SOURCE=src\cpu\s2650\s2650.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\s2650\s2650cpu.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
+SOURCE=src\cpu\s2650\s2650cpu.h
 # End Source File
 # End Group
 # Begin Group "I8085"
@@ -693,23 +402,23 @@ SOURCE=.\src\cpu\s2650\s2650cpu.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\src\cpu\i8085\8085dasm.c
+SOURCE=src\cpu\i8085\8085dasm.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\i8085\i8085.c
+SOURCE=src\cpu\i8085\i8085.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\i8085\i8085.h
+SOURCE=src\cpu\i8085\i8085.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\i8085\i8085cpu.h
+SOURCE=src\cpu\i8085\i8085cpu.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\i8085\i8085daa.h
+SOURCE=src\cpu\i8085\i8085daa.h
 # End Source File
 # End Group
 # Begin Group "I8039"
@@ -717,15 +426,15 @@ SOURCE=.\src\cpu\i8085\i8085daa.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\src\cpu\i8039\8039dasm.c
+SOURCE=src\cpu\i8039\8039dasm.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\i8039\i8039.c
+SOURCE=src\cpu\i8039\i8039.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\i8039\i8039.h
+SOURCE=src\cpu\i8039\i8039.h
 # End Source File
 # End Group
 # Begin Group "I86"
@@ -733,65 +442,65 @@ SOURCE=.\src\cpu\i8039\i8039.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\src\cpu\i86\ea.h
+SOURCE=src\cpu\i86\ea.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\i86\host.h
+SOURCE=src\cpu\i86\host.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\i86\i186intf.h
+SOURCE=src\cpu\i86\i186intf.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\i86\i188intf.h
+SOURCE=src\cpu\i86\i188intf.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\i86\i86.c
+SOURCE=src\cpu\i86\i86.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\i86\i86.h
+SOURCE=src\cpu\i86\i86.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\i86\i86dasm.c
+SOURCE=src\cpu\i86\i86dasm.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\i86\i86intf.h
+SOURCE=src\cpu\i86\i86intf.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\i86\i86time.c
+SOURCE=src\cpu\i86\i86time.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\i86\instr186.h
+SOURCE=src\cpu\i86\instr186.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\i86\instr86.c
+SOURCE=src\cpu\i86\instr86.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\i86\instr86.h
+SOURCE=src\cpu\i86\instr86.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\i86\modrm.h
+SOURCE=src\cpu\i86\modrm.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\i86\table186.h
+SOURCE=src\cpu\i86\table186.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\i86\table86.h
+SOURCE=src\cpu\i86\table86.h
 # End Source File
 # End Group
 # Begin Group "I4004"
@@ -799,23 +508,23 @@ SOURCE=.\src\cpu\i86\table86.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\src\cpu\i4004\4004dasm.c
+SOURCE=src\cpu\i4004\4004dasm.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\i4004\i4004.c
+SOURCE=src\cpu\i4004\i4004.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\i4004\i4004.h
+SOURCE=src\cpu\i4004\i4004.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\i4004\i4004cpu.h
+SOURCE=src\cpu\i4004\i4004cpu.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\i4004\i4004daa.h
+SOURCE=src\cpu\i4004\i4004daa.h
 # End Source File
 # End Group
 # Begin Group "PPS4"
@@ -823,19 +532,19 @@ SOURCE=.\src\cpu\i4004\i4004daa.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\src\cpu\pps4\pps4.c
+SOURCE=src\cpu\pps4\pps4.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\pps4\pps4.h
+SOURCE=src\cpu\pps4\pps4.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\pps4\pps4cpu.h
+SOURCE=src\cpu\pps4\pps4cpu.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\pps4\pps4dasm.c
+SOURCE=src\cpu\pps4\pps4dasm.c
 # End Source File
 # End Group
 # Begin Group "SCAMP"
@@ -843,15 +552,15 @@ SOURCE=.\src\cpu\pps4\pps4dasm.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\src\cpu\scamp\scamp.c
+SOURCE=src\cpu\scamp\scamp.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\scamp\scamp.h
+SOURCE=src\cpu\scamp\scamp.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\scamp\scampdsm.c
+SOURCE=src\cpu\scamp\scampdsm.c
 # End Source File
 # End Group
 # Begin Group "I8051"
@@ -859,15 +568,15 @@ SOURCE=.\src\cpu\scamp\scampdsm.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\src\cpu\i8051\8051dasm.c
+SOURCE=src\cpu\i8051\8051dasm.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\i8051\i8051.c
+SOURCE=src\cpu\i8051\i8051.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\i8051\i8051.h
+SOURCE=src\cpu\i8051\i8051.h
 # End Source File
 # End Group
 # Begin Group "TMS7000"
@@ -875,15 +584,15 @@ SOURCE=.\src\cpu\i8051\i8051.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\src\cpu\tms7000\7000dasm.c
+SOURCE=src\cpu\tms7000\7000dasm.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\tms7000\tms7000.c
+SOURCE=src\cpu\tms7000\tms7000.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\tms7000\tms7000.h
+SOURCE=src\cpu\tms7000\tms7000.h
 # End Source File
 # End Group
 # Begin Group "AT91"
@@ -891,15 +600,15 @@ SOURCE=.\src\cpu\tms7000\tms7000.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\src\cpu\at91\at91.c
+SOURCE=src\cpu\at91\at91.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\at91\at91.h
+SOURCE=src\cpu\at91\at91.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\at91\at91dasm.c
+SOURCE=src\cpu\at91\at91dasm.c
 # End Source File
 # End Group
 # Begin Group "ARM7"
@@ -907,15 +616,15 @@ SOURCE=.\src\cpu\at91\at91dasm.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\src\cpu\arm7\arm7.c
+SOURCE=src\cpu\arm7\arm7.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\arm7\arm7.h
+SOURCE=src\cpu\arm7\arm7.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\arm7\arm7dasm.c
+SOURCE=src\cpu\arm7\arm7dasm.c
 # End Source File
 # End Group
 # Begin Group "CDP1802"
@@ -923,15 +632,15 @@ SOURCE=.\src\cpu\arm7\arm7dasm.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\src\cpu\cdp1802\1802dasm.c
+SOURCE=src\cpu\cdp1802\1802dasm.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\cdp1802\cdp1802.c
+SOURCE=src\cpu\cdp1802\cdp1802.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\cdp1802\cdp1802.h
+SOURCE=src\cpu\cdp1802\cdp1802.h
 # End Source File
 # End Group
 # Begin Group "TMS9900"
@@ -939,35 +648,35 @@ SOURCE=.\src\cpu\cdp1802\cdp1802.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\src\cpu\tms9900\9900dasm.c
+SOURCE=src\cpu\tms9900\9900dasm.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\tms9900\9900stat.h
+SOURCE=src\cpu\tms9900\9900stat.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\tms9900\99xxcore.h
+SOURCE=src\cpu\tms9900\99xxcore.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\tms9900\99xxstat.h
+SOURCE=src\cpu\tms9900\99xxstat.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\tms9900\tms9900.c
+SOURCE=src\cpu\tms9900\tms9900.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\tms9900\tms9900.h
+SOURCE=src\cpu\tms9900\tms9900.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\tms9900\tms9980a.c
+SOURCE=src\cpu\tms9900\tms9980a.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpu\tms9900\tms9995.c
+SOURCE=src\cpu\tms9900\tms9995.c
 # End Source File
 # End Group
 # End Group
@@ -976,253 +685,91 @@ SOURCE=.\src\cpu\tms9900\tms9995.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\src\machine\4094.c
+SOURCE=src\machine\4094.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\machine\4094.h
+SOURCE=src\machine\4094.h
 # End Source File
 # Begin Source File
 
 SOURCE=src\machine\6522via.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\machine\6522via.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\machine\6530riot.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
+SOURCE=src\machine\6530riot.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\machine\6530riot.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
+SOURCE=src\machine\6530riot.h
 # End Source File
 # Begin Source File
 
 SOURCE=src\machine\6532riot.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\machine\6532riot.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\machine\6821pia.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\machine\6821pia.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\machine\8255ppi.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\machine\8255ppi.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\machine\eeprom.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\machine\eeprom.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\machine\mathbox.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\machine\mathbox.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\machine\pic8259.c
+SOURCE=src\machine\pic8259.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\machine\pic8259.h
+SOURCE=src\machine\pic8259.h
 # End Source File
 # Begin Source File
 
 SOURCE=src\machine\ticket.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\machine\ticket.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\machine\z80fmly.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\machine\z80fmly.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # End Group
 # Begin Group "Sound"
@@ -1231,485 +778,233 @@ SOURCE=src\machine\z80fmly.h
 # Begin Source File
 
 SOURCE=src\sound\2151intf.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\sound\2151intf.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\3812intf.c
+SOURCE=src\sound\3812intf.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\3812intf.h
+SOURCE=src\sound\3812intf.h
 # End Source File
 # Begin Source File
 
 SOURCE=src\sound\5220intf.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\sound\5220intf.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\sound\adpcm.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\sound\adpcm.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\sound\ay8910.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\sound\ay8910.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\sound\bsmt2000.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\sound\bsmt2000.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\sound\dac.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\sound\dac.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\disc_dev.c
+SOURCE=src\sound\disc_dev.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\disc_flt.c
+SOURCE=src\sound\disc_flt.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\disc_inp.c
+SOURCE=src\sound\disc_inp.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\disc_mth.c
+SOURCE=src\sound\disc_mth.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\disc_out.c
+SOURCE=src\sound\disc_out.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\disc_wav.c
+SOURCE=src\sound\disc_wav.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\discrete.c
+SOURCE=src\sound\discrete.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\discrete.h
+SOURCE=src\sound\discrete.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\fm.c
+SOURCE=src\sound\fm.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\fm.h
+SOURCE=src\sound\fm.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\fmopl.c
+SOURCE=src\sound\fmopl.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\fmopl.h
+SOURCE=src\sound\fmopl.h
 # End Source File
 # Begin Source File
 
 SOURCE=src\sound\hc55516.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\sound\hc55516.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\m114s.c
+SOURCE=src\sound\m114s.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\m114s.h
+SOURCE=src\sound\m114s.h
 # End Source File
 # Begin Source File
 
 SOURCE=src\sound\mixer.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\sound\mixer.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\sound\msm5205.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\sound\msm5205.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\s14001a.c
+SOURCE=src\sound\s14001a.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\s14001a.h
+SOURCE=src\sound\s14001a.h
 # End Source File
 # Begin Source File
 
 SOURCE=src\sound\samples.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\sound\samples.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\sn76477.c
+SOURCE=src\sound\sn76477.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\sn76477.h
+SOURCE=src\sound\sn76477.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\sn76496.c
+SOURCE=src\sound\sn76496.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\sn76496.h
+SOURCE=src\sound\sn76496.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\sp0250.c
+SOURCE=src\sound\sp0250.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\sp0250.h
+SOURCE=src\sound\sp0250.h
 # End Source File
 # Begin Source File
 
 SOURCE=src\sound\streams.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\sound\streams.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\tms320av120.c
+SOURCE=src\sound\tms320av120.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\tms320av120.h
+SOURCE=src\sound\tms320av120.h
 # End Source File
 # Begin Source File
 
 SOURCE=src\sound\tms5220.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\sound\tms5220.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\tms5220r.c
+SOURCE=src\sound\tms5220r.c
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
 SOURCE=src\sound\votrax.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\votrax.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
+SOURCE=src\sound\votrax.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sound\vtxsmpls.inc
+SOURCE=src\sound\vtxsmpls.inc
 # End Source File
 # Begin Source File
 
 SOURCE=src\sound\ym2151.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\sound\ym2151.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # End Group
 # Begin Group "VidHrdw"
@@ -1718,951 +1013,339 @@ SOURCE=src\sound\ym2151.h
 # Begin Source File
 
 SOURCE=src\vidhrdw\avgdvg.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\vidhrdw\avgdvg.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\vidhrdw\crtc6845.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\vidhrdw\crtc6845.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\vidhrdw\generic.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\vidhrdw\generic.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\vidhrdw\tms9928a.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\vidhrdw\tms9928a.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\vidhrdw\vector.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\vidhrdw\vector.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # End Group
 # Begin Source File
 
 SOURCE=src\artwork.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\artwork.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\audit.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\audit.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\cheat.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\cheat.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\common.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\common.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\config.c
+SOURCE=src\config.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\config.h
+SOURCE=src\config.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpuexec.c
+SOURCE=src\cpuexec.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpuexec.h
+SOURCE=src\cpuexec.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpuint.c
+SOURCE=src\cpuint.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\cpuint.h
+SOURCE=src\cpuint.h
 # End Source File
 # Begin Source File
 
 SOURCE=src\cpuintrf.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\cpuintrf.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\datafile.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\datafile.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\drawgfx.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\drawgfx.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\driver.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\fileio.c
+SOURCE=src\fileio.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\fileio.h
+SOURCE=src\fileio.h
 # End Source File
 # Begin Source File
 
 SOURCE=src\sound\filter.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\sound\filter.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\gfxobj.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\harddisk.c
+SOURCE=src\harddisk.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\harddisk.h
+SOURCE=src\harddisk.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\hash.c
+SOURCE=src\hash.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\hash.h
+SOURCE=src\hash.h
 # End Source File
 # Begin Source File
 
 SOURCE=src\hiscore.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\hiscore.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\info.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\info.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\inptport.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\inptport.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\input.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\input.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\legacy.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\mame.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\mame.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\mamedbg.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\mamedbg.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\md5.c
+SOURCE=src\md5.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\md5.h
+SOURCE=src\md5.h
 # End Source File
 # Begin Source File
 
 SOURCE=src\memory.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\memory.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\osdepend.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\palette.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\palette.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\png.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\png.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\profiler.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\profiler.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sha1.c
+SOURCE=src\sha1.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\sha1.h
+SOURCE=src\sha1.h
 # End Source File
 # Begin Source File
 
 SOURCE=src\sndintrf.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\sndintrf.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\sprite.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\state.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\state.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\tilemap.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\tilemap.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\timer.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\timer.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\ui_text.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\ui_text.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\unzip.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\unzip.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\usrintrf.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\usrintrf.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\version.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\window.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\window.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # End Group
 # Begin Group "Windows"
@@ -2670,15 +1353,15 @@ SOURCE=src\window.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\src\windows\asmblit.asm
+SOURCE=src\windows\asmblit.asm
 
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
 
-# PROP Intermediate_Dir "obj/PinMAME/Release/Windows"
+# PROP Intermediate_Dir "obj\VC60\PinMAME\Win32\Release\Intermediate\Windows"
 # PROP Ignore_Default_Tool 1
 # Begin Custom Build
-IntDir=.\obj/PinMAME/Release/Windows
-InputPath=.\src\windows\asmblit.asm
+IntDir=.\obj\VC60\PinMAME\Win32\ReleaseMD\Intermediate\Windows
+InputPath=src\windows\asmblit.asm
 InputName=asmblit
 
 "$(IntDir)\$(InputName).obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -2688,11 +1371,25 @@ InputName=asmblit
 
 !ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
 
-# PROP Intermediate_Dir "obj/PinMAME/Debug/Windows"
+# PROP Intermediate_Dir "obj\VC60\PinMAME\Win32\Debug\Intermediate\Windows"
 # PROP Ignore_Default_Tool 1
 # Begin Custom Build
-IntDir=.\obj/PinMAME/Debug/Windows
-InputPath=.\src\windows\asmblit.asm
+IntDir=.\obj\VC60\PinMAME\Win32\Debug\Intermediate\Windows
+InputPath=src\windows\asmblit.asm
+InputName=asmblit
+
+"$(IntDir)\$(InputName).obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	nasmw -f coff -o "$(IntDir)\$(InputName).obj" "$(InputPath)"
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "PinMAME - Win32 Release with MAME Debugger"
+
+# PROP Intermediate_Dir "obj\VC60\PinMAME\Win32\ReleaseMD\Intermediate\Windows"
+# PROP Ignore_Default_Tool 1
+# Begin Custom Build
+IntDir=.\obj\VC60\PinMAME\Win32\ReleaseMD\Intermediate\Windows
+InputPath=src\windows\asmblit.asm
 InputName=asmblit
 
 "$(IntDir)\$(InputName).obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -2705,14 +1402,15 @@ InputName=asmblit
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\windows\asmtile.asm
+SOURCE=src\windows\asmtile.asm
 
 !IF  "$(CFG)" == "PinMAME - Win32 Release"
 
+# PROP Intermediate_Dir "obj\VC60\PinMAME\Win32\Release\Intermediate\Windows"
 # PROP Ignore_Default_Tool 1
 # Begin Custom Build
-IntDir=.\obj/PinMAME/Release
-InputPath=.\src\windows\asmtile.asm
+IntDir=.\obj\VC60\PinMAME\Win32\Release\Intermediate\Windows
+InputPath=src\windows\asmtile.asm
 InputName=asmtile
 
 "$(IntDir)\$(InputName).obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -2722,10 +1420,25 @@ InputName=asmtile
 
 !ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
 
+# PROP Intermediate_Dir "obj\VC60\PinMAME\Win32\Debug\Intermediate\Windows"
 # PROP Ignore_Default_Tool 1
 # Begin Custom Build
-IntDir=.\obj/PinMAME/Debug
-InputPath=.\src\windows\asmtile.asm
+IntDir=.\obj\VC60\PinMAME\Win32\Debug\Intermediate\Windows
+InputPath=src\windows\asmtile.asm
+InputName=asmtile
+
+"$(IntDir)\$(InputName).obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	nasmw -f coff -o "$(IntDir)\$(InputName).obj" "$(InputPath)"
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "PinMAME - Win32 Release with MAME Debugger"
+
+# PROP Intermediate_Dir "obj\VC60\PinMAME\Win32\ReleaseMD\Intermediate\Windows"
+# PROP Ignore_Default_Tool 1
+# Begin Custom Build
+IntDir=.\obj\VC60\PinMAME\Win32\ReleaseMD\Intermediate\Windows
+InputPath=src\windows\asmtile.asm
 InputName=asmtile
 
 "$(IntDir)\$(InputName).obj" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -2739,366 +1452,153 @@ InputName=asmtile
 # Begin Source File
 
 SOURCE=src\windows\blit.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release/Windows"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/PinMAME/Debug/Windows"
-
-!ENDIF 
-
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=src\windows\blit.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release/Windows"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/PinMAME/Debug/Windows"
-
-!ENDIF 
-
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=src\windows\config.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release/Windows"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/PinMAME/Debug/Windows"
-
-!ENDIF 
-
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\windows\d3d_extra.h
+SOURCE=src\windows\d3d_extra.h
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=src\windows\dirty.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release/Windows"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/PinMAME/Debug/Windows"
-
-!ENDIF 
-
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=src\windows\fileio.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release/Windows"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/PinMAME/Debug/Windows"
-
-!ENDIF 
-
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=src\windows\fronthlp.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release/Windows"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/PinMAME/Debug/Windows"
-
-!ENDIF 
-
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=src\windows\input.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release/Windows"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/PinMAME/Debug/Windows"
-
-!ENDIF 
-
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=src\windows\misc.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release/Windows"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/PinMAME/Debug/Windows"
-
-!ENDIF 
-
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=src\windows\misc.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release/Windows"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/PinMAME/Debug/Windows"
-
-!ENDIF 
-
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=src\windows\osd_cpu.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release/Windows"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/PinMAME/Debug/Windows"
-
-!ENDIF 
-
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=src\windows\osinline.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release/Windows"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/PinMAME/Debug/Windows"
-
-!ENDIF 
-
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\windows\pattern.h
+SOURCE=src\windows\pattern.h
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=src\windows\rc.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release/Windows"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/PinMAME/Debug/Windows"
-
-!ENDIF 
-
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=src\windows\rc.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release/Windows"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/PinMAME/Debug/Windows"
-
-!ENDIF 
-
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=src\windows\snprintf.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release/Windows"
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/PinMAME/Debug/Windows"
-# PROP Exclude_From_Build 1
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\windows\sound.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release/Windows"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/PinMAME/Debug/Windows"
-
-!ENDIF 
-
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=src\windows\ticker.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release/Windows"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/PinMAME/Debug/Windows"
-
-!ENDIF 
-
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=src\windows\video.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release/Windows"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/PinMAME/Debug/Windows"
-
-!ENDIF 
-
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=src\windows\video.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release/Windows"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/PinMAME/Debug/Windows"
-
-!ENDIF 
-
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\windows\wind3d.c
+SOURCE=src\windows\wind3d.c
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\windows\wind3d.h
+SOURCE=src\windows\wind3d.h
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\windows\wind3dfx.c
+SOURCE=src\windows\wind3dfx.c
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\windows\wind3dfx.h
+SOURCE=src\windows\wind3dfx.h
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\windows\winddraw.c
+SOURCE=src\windows\winddraw.c
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\windows\winddraw.h
+SOURCE=src\windows\winddraw.h
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=src\windows\window.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release/Windows"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/PinMAME/Debug/Windows"
-
-!ENDIF 
-
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=src\windows\window.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release/Windows"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/PinMAME/Debug/Windows"
-
-!ENDIF 
-
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=src\windows\winmain.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release/Windows"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/PinMAME/Debug/Windows"
-
-!ENDIF 
-
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # Begin Source File
 
 SOURCE=src\windows\winprefix.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release/Windows"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Intermediate_Dir "obj/PinMAME/Debug/Windows"
-
-!ENDIF 
-
+# PROP Intermediate_Dir "$(OUTDIR)\Intermediate\Windows"
 # End Source File
 # End Group
 # Begin Group "zlib"
@@ -3107,28 +1607,10 @@ SOURCE=src\windows\winprefix.h
 # Begin Source File
 
 SOURCE=src\zlib\zconf.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\zlib\zlib.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # End Group
 # Begin Group "PinMAME"
@@ -3146,28 +1628,10 @@ SOURCE=src\zlib\zlib.h
 # Begin Source File
 
 SOURCE=src\wpc\sims\s11\full\dd.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\s11\full\milln.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # End Group
 # Begin Group "prelim_s11"
@@ -3176,15 +1640,6 @@ SOURCE=src\wpc\sims\s11\full\milln.c
 # Begin Source File
 
 SOURCE=src\wpc\sims\s11\prelim\eatpm.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # End Group
 # End Group
@@ -3197,340 +1652,106 @@ SOURCE=src\wpc\sims\s11\prelim\eatpm.c
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\full\afm.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\full\bop.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\full\br.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\full\cftbl.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\full\dd_wpc.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\full\drac.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\full\fh.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\full\ft.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\full\gi.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\full\gw.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\full\hd.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\full\hurr.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\full\ij.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\full\jd.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\full\mm.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\full\ngg.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\full\pz.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\full\rs.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\full\ss.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\full\sttng.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\full\t2.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\full\taf.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\full\tom.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\full\tz.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\full\wcs.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\full\ww.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # End Group
 # Begin Group "prelim_wpc"
@@ -3539,275 +1760,86 @@ SOURCE=src\wpc\sims\wpc\full\ww.c
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\prelim\cc.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\prelim\congo.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\prelim\corv.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\prelim\cp.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\prelim\cv.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\prelim\dh.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\prelim\dm.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\prelim\dw.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\prelim\fs.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\prelim\i500.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\prelim\jb.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\prelim\jm.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\prelim\jy.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\prelim\mb.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\prelim\nbaf.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\prelim\nf.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\prelim\pop.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\prelim\sc.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\prelim\totan.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\prelim\ts.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\wpc\prelim\wd.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # End Group
 # End Group
@@ -3819,20 +1851,11 @@ SOURCE=src\wpc\sims\wpc\prelim\wd.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\src\wpc\sims\s7\full\bk.c
+SOURCE=src\wpc\sims\s7\full\bk.c
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sims\s7\full\tmfnt.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # End Group
 # Begin Group "prelim_s7"
@@ -3848,1155 +1871,578 @@ SOURCE=src\wpc\sims\s7\full\tmfnt.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\src\wpc\sims\se\prelim\elvis.c
+SOURCE=src\wpc\sims\se\prelim\elvis.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\sims\se\prelim\monopoly.c
+SOURCE=src\wpc\sims\se\prelim\monopoly.c
 # End Source File
 # End Group
 # End Group
 # End Group
 # Begin Source File
 
-SOURCE=.\src\wpc\allied.c
+SOURCE=src\wpc\allied.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\alvg.c
+SOURCE=src\wpc\alvg.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\alvg.h
+SOURCE=src\wpc\alvg.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\alvgdmd.c
+SOURCE=src\wpc\alvgdmd.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\alvgdmd.h
+SOURCE=src\wpc\alvgdmd.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\alvggames.c
+SOURCE=src\wpc\alvggames.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\alvgs.c
+SOURCE=src\wpc\alvgs.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\alvgs.h
+SOURCE=src\wpc\alvgs.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\atari.c
+SOURCE=src\wpc\atari.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\atari.h
+SOURCE=src\wpc\atari.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\atarigames.c
+SOURCE=src\wpc\atarigames.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\atarisnd.c
+SOURCE=src\wpc\atarisnd.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\bingo.c
+SOURCE=src\wpc\bingo.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\bowarrow.c
+SOURCE=src\wpc\bowarrow.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\bowlgames.c
+SOURCE=src\wpc\bowlgames.c
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\by35.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\by35.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\by35games.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\by35snd.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\by35snd.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\by6803.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
+SOURCE=src\wpc\by6803.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\by6803.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
+SOURCE=src\wpc\by6803.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\by6803games.c
+SOURCE=src\wpc\by6803games.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\by68701.c
+SOURCE=src\wpc\by68701.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\byvidgames.c
+SOURCE=src\wpc\byvidgames.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\byvidpin.c
+SOURCE=src\wpc\byvidpin.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\byvidpin.h
+SOURCE=src\wpc\byvidpin.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\capcom.c
+SOURCE=src\wpc\capcom.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\capcom.h
+SOURCE=src\wpc\capcom.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\capcoms.c
+SOURCE=src\wpc\capcoms.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\capcoms.h
+SOURCE=src\wpc\capcoms.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\capgames.c
+SOURCE=src\wpc\capgames.c
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\core.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\core.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\dedmd.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\dedmd.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\degames.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\desound.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
+SOURCE=src\wpc\desound.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\desound.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
+SOURCE=src\wpc\desound.h
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\driver.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\flicker.c
+SOURCE=src\wpc\flicker.c
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\gen.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\gp.c
+SOURCE=src\wpc\gp.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\gp.h
+SOURCE=src\wpc\gp.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\gpgames.c
+SOURCE=src\wpc\gpgames.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\gpsnd.c
+SOURCE=src\wpc\gpsnd.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\gpsnd.h
+SOURCE=src\wpc\gpsnd.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\gts1.c
+SOURCE=src\wpc\gts1.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\gts1.h
+SOURCE=src\wpc\gts1.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\gts1games.c
+SOURCE=src\wpc\gts1games.c
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\gts3.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\gts3.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Exclude_From_Build 1
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\gts3dmd.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\gts3dmd.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Exclude_From_Build 1
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\gts3games.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\gts80.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
+SOURCE=src\wpc\gts80.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\gts80.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Exclude_From_Build 1
-
-!ENDIF 
-
+SOURCE=src\wpc\gts80.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\gts80games.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
+SOURCE=src\wpc\gts80games.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\gts80s.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
+SOURCE=src\wpc\gts80s.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\gts80s.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Exclude_From_Build 1
-
-!ENDIF 
-
+SOURCE=src\wpc\gts80s.h
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\hnkgames.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\hnks.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
+SOURCE=src\wpc\hnks.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\hnks.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-# PROP Exclude_From_Build 1
-
-!ENDIF 
-
+SOURCE=src\wpc\hnks.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\inder.c
+SOURCE=src\wpc\inder.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\inder.h
+SOURCE=src\wpc\inder.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\indergames.c
+SOURCE=src\wpc\indergames.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\jp.c
+SOURCE=src\wpc\jp.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\jp.h
+SOURCE=src\wpc\jp.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\jpgames.c
+SOURCE=src\wpc\jpgames.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\ltd.c
+SOURCE=src\wpc\ltd.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\ltd.h
+SOURCE=src\wpc\ltd.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\ltdgames.c
+SOURCE=src\wpc\ltdgames.c
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\mech.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\mech.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\mrgame.c
+SOURCE=src\wpc\mrgame.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\mrgame.h
+SOURCE=src\wpc\mrgame.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\mrgamegames.c
+SOURCE=src\wpc\mrgamegames.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\nsm.c
+SOURCE=src\wpc\nsm.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\nuova.c
+SOURCE=src\wpc\nuova.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\peyper.c
+SOURCE=src\wpc\peyper.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\peyper.h
+SOURCE=src\wpc\peyper.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\peypergames.c
+SOURCE=src\wpc\peypergames.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\pinmame.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
+SOURCE=src\pinmame.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\play.c
+SOURCE=src\wpc\play.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\play.h
+SOURCE=src\wpc\play.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\playgames.c
+SOURCE=src\wpc\playgames.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\rotation.c
+SOURCE=src\wpc\rotation.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\rowamet.c
+SOURCE=src\wpc\rowamet.c
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\s11.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\s11.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\s11games.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\s3games.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\s4.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\s4.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\s4games.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\s6.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\s6.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\s6games.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\s7.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\s7.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\s7games.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\se.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\se.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\segames.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sim.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\sim.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\sleic.c
+SOURCE=src\wpc\sleic.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\sleic.h
+SOURCE=src\wpc\sleic.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\sleicgames.c
+SOURCE=src\wpc\sleicgames.c
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\snd_cmd.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\snd_cmd.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\sndbrd.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
+SOURCE=src\wpc\sndbrd.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\sndbrd.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
+SOURCE=src\wpc\sndbrd.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\spinb.c
+SOURCE=src\wpc\spinb.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\spinb.h
+SOURCE=src\wpc\spinb.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\spinbgames.c
+SOURCE=src\wpc\spinbgames.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\stgames.c
+SOURCE=src\wpc\stgames.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\stsnd.c
+SOURCE=src\wpc\stsnd.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\stsnd.h
+SOURCE=src\wpc\stsnd.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\taito.c
+SOURCE=src\wpc\taito.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\taito.h
+SOURCE=src\wpc\taito.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\taitogames.c
+SOURCE=src\wpc\taitogames.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\taitos.c
+SOURCE=src\wpc\taitos.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\taitos.h
+SOURCE=src\wpc\taitos.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\techno.c
+SOURCE=src\wpc\techno.c
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\vpintf.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\vpintf.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\wico.c
+SOURCE=src\wpc\wico.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\wmssnd.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
+SOURCE=src\wpc\wmssnd.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\wmssnd.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
+SOURCE=src\wpc\wmssnd.h
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\wpc.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\wpc.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\wpcgames.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\wpcsam.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=src\wpc\wpcsam.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\zac.c
+SOURCE=src\wpc\zac.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\zac.h
+SOURCE=src\wpc\zac.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\zacgames.c
+SOURCE=src\wpc\zacgames.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\zacproto.c
+SOURCE=src\wpc\zacproto.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\zacsnd.c
+SOURCE=src\wpc\zacsnd.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\wpc\zacsnd.h
+SOURCE=src\wpc\zacsnd.h
 # End Source File
 # End Group
 # Begin Group "VC"
@@ -5004,42 +2450,15 @@ SOURCE=.\src\wpc\zacsnd.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\src\vc\dirent.c
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
+SOURCE=src\vc\dirent.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\vc\dirent.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
+SOURCE=src\vc\dirent.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\vc\unistd.h
-
-!IF  "$(CFG)" == "PinMAME - Win32 Release"
-
-# PROP Intermediate_Dir "obj/PinMAME/Release"
-
-!ELSEIF  "$(CFG)" == "PinMAME - Win32 Debug"
-
-!ENDIF 
-
+SOURCE=src\vc\unistd.h
 # End Source File
 # End Group
 # End Group
