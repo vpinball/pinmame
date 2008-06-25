@@ -59,10 +59,10 @@ Visual C++ 6.0 (1998, _MSC_VER = 1200)
   Visual C++ and Visual Basic.
   a) Download SP5, the Processor Pack and SP6
      Update Homepage: http://msdn.microsoft.com/visualc/aa336441.aspx
-     6.0 SP5: http://www.microsoft.com/downloads/details.aspx?FamilyID=e9411283-c8ad-4283-8d74-3d6efd917644
+     6.0 SP5: http://www.microsoft.com/downloads/details.aspx?familyid=e9411283-c8ad-4283-8d74-3d6efd917644
      6.0 PP: http://msdn.microsoft.com/en-us/vstudio/aa718349.aspx
              http://www.infinitefactors.org/jonk/pctools.html
-     6.0 SP6: http://www.microsoft.com/downloads/details.aspx?FamilyID=a8494edb-2e89-4676-a16a-5c5477cb9713
+     6.0 SP6: http://www.microsoft.com/downloads/details.aspx?familyid=a8494edb-2e89-4676-a16a-5c5477cb9713
   b) Install SP5, then the Processor Pack and at last SP6
      The Processor Pack only installs on SP5, so it is recommended to apply SP5
      first, then the Processor Pack and finally SP6:
@@ -70,12 +70,12 @@ Visual C++ 6.0 (1998, _MSC_VER = 1200)
      If SP6 is already installed, but you forgot to apply SP5 before and use
      several other components of Visual Studio too, then it is recommended to do
      a re-installation of Visual Studio.
-- Windows Platform SDK August 2004 Edition
-  (folders: bin\winnt, bin, include, lib)
-  http://www.microsoft.com/msdownload/platformsdk/sdkupdate/XPSP2FULLInstall.htm
-- DirectX SDK Summer/August 2004 Edition
+- Windows Platform SDK
+  For PinMAME use the SDK coming with Visual C++ 6.0, due to the following ATL
+  issue with newer versions: http://support.microsoft.com/kb/243298/en-us
+- DirectX SDK Summer 2003 Edition
   (folders: utilities, include, lib)
-  http://www.microsoft.com/downloads/details.aspx?familyid=fd044a42-9912-42a3-9a9e-d857199f888e
+  http://www.microsoft.com/downloads/details.aspx?familyid=9216652f-51e0-402e-b7b5-feb68d00f298
 - Last MSDN Library with Visual Studio 6.0 information/integration was October 2001.
 
 
