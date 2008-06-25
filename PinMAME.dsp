@@ -1360,7 +1360,7 @@ SOURCE=src\windows\asmblit.asm
 # PROP Intermediate_Dir "obj\VC60\PinMAME\Win32\Release\Intermediate\Windows"
 # PROP Ignore_Default_Tool 1
 # Begin Custom Build
-IntDir=.\obj\VC60\PinMAME\Win32\ReleaseMD\Intermediate\Windows
+IntDir=.\obj\VC60\PinMAME\Win32\Release\Intermediate\Windows
 InputPath=src\windows\asmblit.asm
 InputName=asmblit
 
