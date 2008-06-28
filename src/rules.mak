@@ -1632,7 +1632,7 @@ OBJDIRS += $(OBJ)/cpu/cdp1802
 CPUDEFS += -DHAS_CDP1802=1
 CPUOBJS += $(OBJ)/cpu/cdp1802/cdp1802.o
 DBGOBJS += $(OBJ)/cpu/cdp1802/1802dasm.o
-$(OBJ)/cpu/cdp1802/cdp1802.o: 1802tbl.c
+$(OBJ)/cpu/cdp1802/cdp1802.o: cdp1802.c
 else
 CPUDEFS += -DHAS_CDP1802=0
 endif
