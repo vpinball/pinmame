@@ -1,59 +1,10 @@
-/*****************************************************************************
- *
- *	 cdp1802.h
- *	 portable cosmac cdp1802 emulator interface
- *
- *	 Copyright (c) 2000 Peter Trauner, all rights reserved.
- *
- *	 - This source code is released as freeware for non-commercial purposes.
- *	 - You are free to use and redistribute this code in modified or
- *	   unmodified form, provided you list me in the credits.
- *	 - If you modify this source code, you must add a notice to each modified
- *	   source file that it has been changed.  If you're a nice person, you
- *	   will clearly mark each change too.  :)
- *	 - If you wish to use this for commercial purposes, please contact me at
- *	   peter.trauner@jk.uni-linz.ac.at
- *	 - The author of this copywritten work reserves the right to change the
- *	   terms of its usage and license at any time, including retroactively
- *	 - This entire notice must remain in the source code.
- *
- *****************************************************************************/
 #ifndef _CDP1802_H
 #define _CDP1802_H
 
-/* missing mark */
-
-/* processor takes 8 external clocks to do something
-   so specify /8 in mame's  machine structure */
+#include "mame.h"
 #include "cpuintrf.h"
-#include "osd_cpu.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#ifdef RUNTIME_LOADER
-	extern void cdp1802_runtime_loader_init(void);
-#endif
-
-
-typedef struct {
-	/* called after execution of an instruction with cycles,
-	   return cycles taken by dma hardware */
-	void (*dma)(int cycles);
-	void (*out_n)(int data, int n);
-	int (*in_n)(int n);
-	void (*out_q)(int level);
-	int (*in_ef)(void);
-} CDP1802_CONFIG;
-
-void cdp1802_dma_write(UINT8 data);
-int cdp1802_dma_read(void);
-
-#define CDP1802_INT_NONE 0
-#define CDP1802_IRQ 1
-
-extern int cdp1802_icount;				/* cycle count */
+extern int cdp1802_icount;
 
 extern void cdp1802_init(void);
 extern void cdp1802_reset(void *param);
@@ -63,16 +14,85 @@ extern unsigned cdp1802_get_context(void *dst);
 extern void cdp1802_set_context(void *src);
 extern unsigned cdp1802_get_reg(int regnum);
 extern void cdp1802_set_reg(int regnum, unsigned val);
-extern void cdp1802_set_nmi_line(int state);
+extern const char *cdp1802_info(void *context, int regnum);
 extern void cdp1802_set_irq_line(int irqline, int state);
 extern void cdp1802_set_irq_callback(int (*callback)(int irqline));
-extern void cdp1802_state_save(void *file);
-extern void cdp1802_state_load(void *file);
-extern const char *cdp1802_info(void *context, int regnum);
-extern unsigned cdp1802_dasm(char *buffer, unsigned pc);
 
-#ifdef __cplusplus
-}
+#ifdef	MAME_DEBUG
+extern unsigned cdp1802_dasm(char *buffer, unsigned pc);
 #endif
+
+enum {
+	CDP1802_INPUT_LINE_INT = 0,
+	CDP1802_INPUT_LINE_DMAIN,
+	CDP1802_INPUT_LINE_DMAOUT
+};
+
+enum {
+	EF1 = 0x01,
+	EF2 = 0x02,
+	EF3 = 0x04,
+	EF4 = 0x08
+};
+
+enum _cdp1802_control_mode {
+	CDP1802_MODE_LOAD = 0,
+	CDP1802_MODE_RESET,
+	CDP1802_MODE_PAUSE,
+	CDP1802_MODE_RUN
+};
+
+typedef enum _cdp1802_control_mode cdp1802_control_mode;
+
+enum _cdp1802_state {
+	CDP1802_STATE_CODE_S0_FETCH = 0,
+	CDP1802_STATE_CODE_S1_EXECUTE,
+	CDP1802_STATE_CODE_S2_DMA,
+	CDP1802_STATE_CODE_S3_INTERRUPT
+};
+typedef enum _cdp1802_state cdp1802_state;
+
+// CDP1802 Registers
+
+enum {
+	CDP1802_P = 1,	// Designates which register is Program Counter
+	CDP1802_X,		// Designates which register is Data Pointer
+	CDP1802_D,		// Data Register (Accumulator)
+	CDP1802_B,		// Auxiliary Holding Register
+	CDP1802_T,		// Holds old X, P after Interrupt (X is high nibble)
+
+	CDP1802_R0,		// 1 of 16 Scratchpad Registers
+	CDP1802_R1,
+	CDP1802_R2,
+	CDP1802_R3,
+	CDP1802_R4,
+	CDP1802_R5,
+	CDP1802_R6,
+	CDP1802_R7,
+	CDP1802_R8,
+	CDP1802_R9,
+	CDP1802_Ra,
+	CDP1802_Rb,
+	CDP1802_Rc,
+	CDP1802_Rd,
+	CDP1802_Re,
+	CDP1802_Rf,
+
+	CDP1802_DF,		// Data Flag (ALU Carry)
+	CDP1802_IE,		// Interrupt Enable
+	CDP1802_Q,		// Output Flip-Flop
+	CDP1802_N,		// Holds Low-Order Instruction Digit
+	CDP1802_I,		// Holds High-Order Instruction Digit
+};
+
+typedef struct
+{
+	UINT8 (*mode_r)(void);
+	UINT8 (*ef_r)(void);
+	void (*sc_w)(int state);
+	void (*q_w)(int level);
+	UINT8 (*dma_r)(int offset);
+	void (*dma_w)(int offset, UINT8 data);
+} CDP1802_CONFIG;
 
 #endif
