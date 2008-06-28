@@ -122,15 +122,9 @@ static int bitColToNum(int tmp)
 	return data;
 }
 
-static void dma(int cycles) { /* not used */ }
-static void out_n(int data, int n) {
-  static int outports[4][8] =
-    {{ COLUMN, DISPLAY, SOUND, SWITCH, DIAG, SOL, LAMP, UNKNOWN },
-     { COLUMN, DISPLAY, SOUND, SWITCH, DIAG, SOL, LAMP, UNKNOWN },
-     { COLUMN, SOL, LAMP, SWITCH, DIAG, DISPLAY, SOUND, UNKNOWN },
-     { COLUMN, SOL, LAMP, SWITCH, DIAG, DISPLAY, SOUND, UNKNOWN }};
-  const int out = outports[locals.cpuType][n-1];
-  switch (out) {
+static WRITE_HANDLER(out_n) {
+  logerror("out: %d:%02x\n", offset, data);
+  switch (offset) {
     case COLUMN:
       if (!(data & 0x7f))
         locals.panelSel = 0;
@@ -167,31 +161,45 @@ static void out_n(int data, int n) {
       }
       break;
   }
-  logerror("out_n %d:%02x\n", n, data);
+  logerror("out_n %d:%02x\n", offset, data);
 }
-static int in_n(int n) {
-  switch (n) {
+
+static READ_HANDLER(in_n) {
+  logerror("in: %d\n", offset);
+  switch (offset) {
     case SWITCH:
-//printf(" 4%d:%02x  ", locals.digitSel, memory_region(PLAYMATIC_MEMREG_CPU)[cdp1802_get_reg(8)+1]);
+printf(" 4%d:%02x  ", locals.digitSel, memory_region(PLAYMATIC_MEMREG_CPU)[cdp1802_get_reg(CDP1802_Rf)+1]);
 //      if (!locals.q)
 //        return coreGlobals.swMatrix[locals.digitSel+1];
 //      else
-        return coreGlobals.swMatrix[locals.digitSel+1] ^ memory_region(PLAYMATIC_MEMREG_CPU)[cdp1802_get_reg(8)+1];
+        return coreGlobals.swMatrix[locals.digitSel+1] ^ memory_region(PLAYMATIC_MEMREG_CPU)[cdp1802_get_reg(CDP1802_Rf)+1];
       break;
     case DIAG:
-//printf(" 5%d:%02x  ", locals.digitSel, memory_region(PLAYMATIC_MEMREG_CPU)[cdp1802_get_reg(8)+1]);
+printf(" 5%d:%02x  ", locals.digitSel, memory_region(PLAYMATIC_MEMREG_CPU)[cdp1802_get_reg(CDP1802_Rf)+1]);
 //      if (!locals.q)
 //        return locals.digitSel < 3 ? coreGlobals.swMatrix[locals.digitSel ? locals.digitSel+6 : 0] : core_getDip(locals.digitSel-3);
 //      else
-        return coreGlobals.swMatrix[locals.digitSel ? locals.digitSel+6 : 0] ^ memory_region(PLAYMATIC_MEMREG_CPU)[cdp1802_get_reg(8)+1];
+        return coreGlobals.swMatrix[locals.digitSel ? locals.digitSel+6 : 0] ^ memory_region(PLAYMATIC_MEMREG_CPU)[cdp1802_get_reg(CDP1802_Rf)+1];
       break;
   }
   return 0;
 }
-static void out_q(int level) { locals.q = level; /* connected to RST1 pin of flip flop U2 */ }
-static int in_ef(void) { return locals.ef[1] | (locals.ef[2] << 1) | (locals.ef[3] << 2) | (locals.ef[4] << 3); }
 
-static CDP1802_CONFIG play1802_config= { dma, out_n, in_n, out_q, in_ef };
+static UINT8 in_mode(void) { return CDP1802_MODE_RUN; }
+
+static void out_q(int level) { locals.q = level; /* connected to RST1 pin of flip flop U2 */ }
+
+static UINT8 in_ef(void) { return locals.ef[1] | (locals.ef[2] << 1) | (locals.ef[3] << 2) | (locals.ef[4] << 3); }
+
+static CDP1802_CONFIG play1802_config =
+{
+	in_mode,	// MODE
+	in_ef,		// EF
+	NULL,				// SC
+	out_q,		// Q
+	NULL,				// DMA read
+	NULL				// DMA write
+};
 
 static MACHINE_INIT(PLAYMATIC) {
   memset(&locals, 0, sizeof locals);
@@ -212,9 +220,14 @@ static MACHINE_INIT(PLAYMATIC4) {
   locals.cpuType = 3;
 }
 
-/*-----------------------------------------------
-/ Load/Save static ram
-/-------------------------------------------------*/
+static PORT_READ_START(PLAYMATIC_readport)
+  {0x00,0x07, in_n},
+MEMORY_END
+
+static PORT_WRITE_START(PLAYMATIC_writeport)
+  {0x00,0x07, out_n},
+MEMORY_END
+
 static MEMORY_READ_START(PLAYMATIC_readmem)
   {0x0000,0x07ff, MRA_ROM},
   {0x0800,0x0fff, MRA_RAM},
@@ -265,6 +278,7 @@ MACHINE_DRIVER_START(PLAYMATIC)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CPU_ADD_TAG("mcpu", CDP1802, 50000)
   MDRV_CPU_MEMORY(PLAYMATIC_readmem, PLAYMATIC_writemem)
+  MDRV_CPU_PORTS(PLAYMATIC_readport, PLAYMATIC_writeport)
   MDRV_CPU_CONFIG(play1802_config)
   MDRV_CPU_PERIODIC_INT(PLAYMATIC_irq, 100)
   MDRV_CPU_VBLANK_INT(PLAYMATIC_vblank, 1)
@@ -281,6 +295,7 @@ MACHINE_DRIVER_START(PLAYMATIC2)
   MDRV_IMPORT_FROM(PinMAME)
   MDRV_CPU_ADD_TAG("mcpu", CDP1802, 2950000.0/8.0)
   MDRV_CPU_MEMORY(PLAYMATIC_readmem2, PLAYMATIC_writemem2)
+  MDRV_CPU_PORTS(PLAYMATIC_readport, PLAYMATIC_writeport)
   MDRV_CPU_CONFIG(play1802_config)
   MDRV_CPU_PERIODIC_INT(PLAYMATIC_irq2, 2950000.0/8192.0)
   MDRV_TIMER_ADD(PLAYMATIC_zeroCross2, 100)
