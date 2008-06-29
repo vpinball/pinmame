@@ -49,12 +49,16 @@ static struct {
 } locals;
 
 static INTERRUPT_GEN(PLAYMATIC_irq) {
-  cpu_set_irq_line(PLAYMATIC_CPU, 0, PULSE_LINE);
-  locals.ef[1] = !locals.ef[1];
+  static int irqLine = 0;
+  irqLine = !irqLine;
+  cpu_set_irq_line(PLAYMATIC_CPU, CDP1802_INPUT_LINE_INT, irqLine ? ASSERT_LINE : CLEAR_LINE);
+  locals.ef[1] = !irqLine;
 }
 
 static INTERRUPT_GEN(PLAYMATIC_irq2) {
-  cpu_set_irq_line(PLAYMATIC_CPU, 0, PULSE_LINE);
+  static int irqLine = 0;
+  irqLine = !irqLine;
+  cpu_set_irq_line(PLAYMATIC_CPU, CDP1802_INPUT_LINE_INT, irqLine ? ASSERT_LINE : CLEAR_LINE);
 }
 
 static void PLAYMATIC_zeroCross2(int data) {
@@ -123,8 +127,14 @@ static int bitColToNum(int tmp)
 }
 
 static WRITE_HANDLER(out_n) {
-  logerror("out: %d:%02x\n", offset, data);
-  switch (offset) {
+  static int outports[4][8] =
+    {{ COLUMN, DISPLAY, SOUND, SWITCH, DIAG, SOL, LAMP, UNKNOWN },
+     { COLUMN, DISPLAY, SOUND, SWITCH, DIAG, SOL, LAMP, UNKNOWN },
+     { COLUMN, SOL, LAMP, SWITCH, DIAG, DISPLAY, SOUND, UNKNOWN },
+     { COLUMN, SOL, LAMP, SWITCH, DIAG, DISPLAY, SOUND, UNKNOWN }};
+  const int out = outports[locals.cpuType][offset-1];
+  logerror("out: %d:%02x\n", out, data);
+  switch (out) {
     case COLUMN:
       if (!(data & 0x7f))
         locals.panelSel = 0;
@@ -161,25 +171,16 @@ static WRITE_HANDLER(out_n) {
       }
       break;
   }
-  logerror("out_n %d:%02x\n", offset, data);
 }
 
 static READ_HANDLER(in_n) {
   logerror("in: %d\n", offset);
   switch (offset) {
     case SWITCH:
-printf(" 4%d:%02x  ", locals.digitSel, memory_region(PLAYMATIC_MEMREG_CPU)[cdp1802_get_reg(CDP1802_Rf)+1]);
-//      if (!locals.q)
-//        return coreGlobals.swMatrix[locals.digitSel+1];
-//      else
-        return coreGlobals.swMatrix[locals.digitSel+1] ^ memory_region(PLAYMATIC_MEMREG_CPU)[cdp1802_get_reg(CDP1802_Rf)+1];
+      return coreGlobals.swMatrix[locals.digitSel+1];
       break;
     case DIAG:
-printf(" 5%d:%02x  ", locals.digitSel, memory_region(PLAYMATIC_MEMREG_CPU)[cdp1802_get_reg(CDP1802_Rf)+1]);
-//      if (!locals.q)
-//        return locals.digitSel < 3 ? coreGlobals.swMatrix[locals.digitSel ? locals.digitSel+6 : 0] : core_getDip(locals.digitSel-3);
-//      else
-        return coreGlobals.swMatrix[locals.digitSel ? locals.digitSel+6 : 0] ^ memory_region(PLAYMATIC_MEMREG_CPU)[cdp1802_get_reg(CDP1802_Rf)+1];
+      return coreGlobals.swMatrix[locals.digitSel ? locals.digitSel+6 : 0];
       break;
   }
   return 0;
@@ -276,7 +277,7 @@ DISCRETE_SOUND_END
 
 MACHINE_DRIVER_START(PLAYMATIC)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CPU_ADD_TAG("mcpu", CDP1802, 50000)
+  MDRV_CPU_ADD_TAG("mcpu", CDP1802, 400000)
   MDRV_CPU_MEMORY(PLAYMATIC_readmem, PLAYMATIC_writemem)
   MDRV_CPU_PORTS(PLAYMATIC_readport, PLAYMATIC_writeport)
   MDRV_CPU_CONFIG(play1802_config)
@@ -293,7 +294,7 @@ MACHINE_DRIVER_END
 
 MACHINE_DRIVER_START(PLAYMATIC2)
   MDRV_IMPORT_FROM(PinMAME)
-  MDRV_CPU_ADD_TAG("mcpu", CDP1802, 2950000.0/8.0)
+  MDRV_CPU_ADD_TAG("mcpu", CDP1802, 2950000.0)
   MDRV_CPU_MEMORY(PLAYMATIC_readmem2, PLAYMATIC_writemem2)
   MDRV_CPU_PORTS(PLAYMATIC_readport, PLAYMATIC_writeport)
   MDRV_CPU_CONFIG(play1802_config)
@@ -346,7 +347,7 @@ MEMORY_END
 MACHINE_DRIVER_START(PLAYMATIC2S)
   MDRV_IMPORT_FROM(PLAYMATIC2)
 
-  MDRV_CPU_ADD_TAG("scpu", CDP1802, 2950000.0/8.0)
+  MDRV_CPU_ADD_TAG("scpu", CDP1802, 2950000)
   MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
   MDRV_CPU_MEMORY(playsound_readmem, playsound_writemem)
   MDRV_SOUND_ADD(AY8910, play_ay8910)
@@ -362,8 +363,8 @@ MACHINE_DRIVER_END
 MACHINE_DRIVER_START(PLAYMATIC4S)
   MDRV_IMPORT_FROM(PLAYMATIC3S)
   MDRV_CORE_INIT_RESET_STOP(PLAYMATIC4,NULL,NULL)
-  MDRV_CPU_REPLACE("mcpu", CDP1802, NTSC_QUARTZ/8.0)
+  MDRV_CPU_REPLACE("mcpu", CDP1802, NTSC_QUARTZ)
   MDRV_CPU_PERIODIC_INT(PLAYMATIC_irq, NTSC_QUARTZ/8192.0)
 
-  MDRV_CPU_REPLACE("scpu", CDP1802, NTSC_QUARTZ/8.0)
+  MDRV_CPU_REPLACE("scpu", CDP1802, NTSC_QUARTZ)
 MACHINE_DRIVER_END
