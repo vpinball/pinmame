@@ -13,15 +13,14 @@
 /*-- Common Inports for PLAYMATIC Games --*/
 #define PLAYMATIC_COMPORTS \
   PORT_START /* 0 */ \
-    /* Switch Column 1 */ \
-    COREPORT_BITTOG(  0x0001, "Key 1", KEYCODE_1) \
-    COREPORT_BITTOG(  0x0002, "Key 2", KEYCODE_2) \
-    COREPORT_BITTOG(  0x0004, "Key 3", KEYCODE_3) \
-    COREPORT_BITTOG(  0x0008, "Key 4", KEYCODE_4) \
-    COREPORT_BITTOG(  0x0010, "Key 5", KEYCODE_5) \
-    COREPORT_BITTOG(  0x0020, "Key 6", KEYCODE_6) \
-    COREPORT_BITTOG(  0x0040, "Key 7", KEYCODE_7) \
-    COREPORT_BITTOG(  0x0080, "Key 8", KEYCODE_8) \
+    /* Switch Column 7 */ \
+    COREPORT_BIT(   0x0001, "Coin 1",      KEYCODE_3) \
+    COREPORT_BIT(   0x0002, "Coin 2",      KEYCODE_4) \
+    COREPORT_BIT(   0x0004, "Coin 3",      KEYCODE_5) \
+    COREPORT_BITDEF(0x0008, IPT_START1,    IP_KEY_DEFAULT)  \
+    COREPORT_BIT(   0x0020, "Advance",     KEYCODE_7) \
+    COREPORT_BIT(   0x0040, "Ball Tilt",   KEYCODE_INSERT) \
+    COREPORT_BIT(   0x0080, "Diagnostics", KEYCODE_8) \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
       COREPORT_DIPSET(0x0000, "0" ) \
