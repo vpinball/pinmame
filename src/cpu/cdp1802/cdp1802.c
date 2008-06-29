@@ -245,7 +245,7 @@ INLINE void cdp1802_short_branch(int taken)
 {
 	if (taken)
 	{
-		R[P] = (R[P] & 0xff00) | cpu_readop(R[P]);
+		R[P] = ((R[P] + 1) & 0xff00) | cpu_readop(R[P]);
 	}
 	else
 	{
@@ -997,7 +997,6 @@ int cdp1802_execute(int cycles)
 			}
 			break;
 		}
-		change_pc16(R[P]);
 	}
 	while (cdp1802_icount > 0);
 
