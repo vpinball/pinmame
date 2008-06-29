@@ -90,11 +90,10 @@ static INTERRUPT_GEN(PLAYMATIC_vblank) {
 }
 
 static SWITCH_UPDATE(PLAYMATIC) {
-  int reset = keyboard_pressed_memory_repeat(KEYCODE_9, 0);
   if (inports) {
-    CORE_SETKEYSW(inports[CORE_COREINPORT], 0xff, 0);
+    CORE_SETKEYSW(inports[CORE_COREINPORT], 0xef, 7);
   }
-  locals.ef[4] = !reset;
+  locals.ef[4] = !keyboard_pressed_memory_repeat(KEYCODE_9, 0);
 }
 
 static READ_HANDLER(sw_r) {
@@ -141,6 +140,7 @@ static WRITE_HANDLER(out_n) {
       else
         locals.digitSel = bitColToNum(data & 0x7f);
       coreGlobals.diagnosticLed = data >> 7;
+if (data & 0x80) printf(".");
       break;
     case DISPLAY:
       disp_w(8 * (locals.panelSel++) + locals.digitSel, data);
@@ -167,7 +167,7 @@ static WRITE_HANDLER(out_n) {
           if (data & 0x08) coreGlobals.tmpLampMatrix[2] |= 1 << (data & 0x07); else coreGlobals.tmpLampMatrix[2] &= 0xff ^ (1 << (data & 0x07));
         }
       } else {
-        coreGlobals.tmpLampMatrix[locals.lampCol] = data;
+        coreGlobals.tmpLampMatrix[locals.lampCol] = ~data;
       }
       break;
   }
@@ -177,10 +177,13 @@ static READ_HANDLER(in_n) {
   logerror("in: %d\n", offset);
   switch (offset) {
     case SWITCH:
-      return coreGlobals.swMatrix[locals.digitSel+1];
+      if (locals.digitSel < 6)
+        return coreGlobals.swMatrix[locals.digitSel+1];
+      else
+        printf("digitSel = %d!\n", locals.digitSel);
       break;
     case DIAG:
-      return coreGlobals.swMatrix[locals.digitSel ? locals.digitSel+6 : 0];
+      return coreGlobals.swMatrix[7] ^ (locals.cpuType < 2 ? 0xff : 0);
       break;
   }
   return 0;
@@ -305,7 +308,7 @@ MACHINE_DRIVER_START(PLAYMATIC2)
   MDRV_SWITCH_UPDATE(PLAYMATIC)
   MDRV_DIPS(24)
   MDRV_DIAGNOSTIC_LEDH(1)
-  MDRV_NVRAM_HANDLER(generic_0fill)
+  MDRV_NVRAM_HANDLER(generic_1fill)
 
   MDRV_SOUND_ADD(DISCRETE, play_tones)
 MACHINE_DRIVER_END
@@ -357,6 +360,7 @@ MACHINE_DRIVER_START(PLAYMATIC3S)
   MDRV_IMPORT_FROM(PLAYMATIC2S)
   MDRV_CORE_INIT_RESET_STOP(PLAYMATIC3,NULL,NULL)
   MDRV_CPU_MODIFY("mcpu");
+  MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_CPU_MEMORY(PLAYMATIC_readmem3, PLAYMATIC_writemem3)
 MACHINE_DRIVER_END
 
@@ -364,6 +368,7 @@ MACHINE_DRIVER_START(PLAYMATIC4S)
   MDRV_IMPORT_FROM(PLAYMATIC3S)
   MDRV_CORE_INIT_RESET_STOP(PLAYMATIC4,NULL,NULL)
   MDRV_CPU_REPLACE("mcpu", CDP1802, NTSC_QUARTZ)
+  MDRV_NVRAM_HANDLER(generic_0fill)
   MDRV_CPU_PERIODIC_INT(PLAYMATIC_irq, NTSC_QUARTZ/8192.0)
 
   MDRV_CPU_REPLACE("scpu", CDP1802, NTSC_QUARTZ)
