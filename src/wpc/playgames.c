@@ -18,6 +18,20 @@
 		core_gameData = &name##GameData; \
 	}
 
+#define INITGAME3(name, disptype, balls) \
+	PLAYMATIC3_INPUT_PORTS_START(name, balls) PLAYMATIC_INPUT_PORTS_END \
+	static core_tGameData name##GameData = {GEN_PLAYMATIC,disptype,{FLIP_SW(FLIP_L)}}; \
+	static void init_##name(void) { \
+		core_gameData = &name##GameData; \
+	}
+
+#define INITGAME4(name, disptype, balls) \
+	PLAYMATIC4_INPUT_PORTS_START(name, balls) PLAYMATIC_INPUT_PORTS_END \
+	static core_tGameData name##GameData = {GEN_PLAYMATIC,disptype,{FLIP_SW(FLIP_L)}}; \
+	static void init_##name(void) { \
+		core_gameData = &name##GameData; \
+	}
+
 core_tLCDLayout play_disp6[] = {
   { 0, 0,37,1,CORE_SEG7 }, { 0, 2,32,5,CORE_SEG7 },
   { 3, 0,29,1,CORE_SEG7 }, { 3, 2,24,5,CORE_SEG7 },
@@ -82,7 +96,7 @@ CORE_GAMEDEFNV(madrace,"Mad Race",1982,"Playmatic",gl_mPLAYMATIC2S,GAME_STATUS)
 /*-------------------------------------------------------------------
 / Meg-Aaton (1983)
 /-------------------------------------------------------------------*/
-INITGAME(megaaton, play_disp6a, 1)
+INITGAME3(megaaton, play_disp6a, 1)
 PLAYMATIC_ROMSTART64(megaaton,	"cpumegat.bin", CRC(7e7a4ede) SHA1(3194b367cbbf6e0cb2629cd5d82ddee6fe36985a))
 PLAYMATIC_SOUNDROM6432(	"smogot.bin", CRC(92fa0742) SHA1(ef3100a53323fd67e23b47fc3e72fdb4671e9b0a),
 						"smegat.bin", CRC(910ab7fe) SHA1(0ddfd15c9c25f43b8fcfc4e11bc8ea180f6bd761))
@@ -92,7 +106,7 @@ CORE_GAMEDEFNV(megaaton,"Meg-Aaton",1983,"Playmatic",gl_mPLAYMATIC3S,GAME_STATUS
 /*-------------------------------------------------------------------
 / KZ-26 (1984)
 /-------------------------------------------------------------------*/
-INITGAME(kz26, play_disp6a, 1)
+INITGAME4(kz26, play_disp6a, 1)
 PLAYMATIC_ROMSTART64(kz26,	"kz26.cpu", CRC(8030a699) SHA1(4f86b325801d8ce16011f7b6ba2f3633e2f2af35))
 PLAYMATIC_SOUNDROM6432(	"sound1.su3", CRC(f9550ab4) SHA1(7186158f515fd9fbe5a7a09c6b7d2e8dfc3b4bb2),
 						"sound2.su4", CRC(b66100d3) SHA1(85f5a319715f99d1b7afeca0d01c81aa615d416a))
