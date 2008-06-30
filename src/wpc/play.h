@@ -10,7 +10,7 @@
 /--------------------------*/
 #define PLAYMATIC_ROMEND    ROM_END
 
-/*-- Common Inports for PLAYMATIC Games --*/
+/*-- Inports for early games --*/
 #define PLAYMATIC_COMPORTS \
   PORT_START /* 0 */ \
     /* Switch Column 7 */ \
@@ -96,12 +96,55 @@
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0080, "1" )
 
+#define COREPORT_BITINV(mask, name, key) \
+   PORT_BITX(mask,IP_ACTIVE_LOW,IPT_BUTTON1,name,key,IP_JOY_NONE)
+
+/*-- Inports for series III games --*/
+#define PLAYMATIC3_COMPORTS \
+  PORT_START /* 0 */ \
+    /* Switch Column 7 */ \
+    COREPORT_BIT(   0x0040, "Start / Toggle Digit", KEYCODE_1) \
+    COREPORT_BIT(   0x0020, "Advance Digit", KEYCODE_2) \
+    COREPORT_BITINV(0x0001, "Coin 1",      KEYCODE_3) \
+    COREPORT_BITINV(0x0002, "Coin 2",      KEYCODE_4) \
+    COREPORT_BITINV(0x0004, "Coin 3",      KEYCODE_5) \
+    COREPORT_BIT(   0x0010, "Ball Tilt / Diagnostics", KEYCODE_7) \
+    COREPORT_BIT(   0x0080, "Advance Step", KEYCODE_8) \
+    COREPORT_BIT(   0x0008, "0008",       KEYCODE_9) \
+    COREPORT_BIT(   0x0100, "Reset",       KEYCODE_0)
+
+/*-- Inports for series IV games --*/
+#define PLAYMATIC4_COMPORTS \
+  PORT_START /* 0 */ \
+    /* Switch Column 7 */ \
+    COREPORT_BIT(   0x0040, "Start / Toggle Digit", KEYCODE_1) \
+    COREPORT_BIT(   0x0080, "Advance Digit", KEYCODE_2) \
+    COREPORT_BITINV(0x0001, "Coin 1",      KEYCODE_3) \
+    COREPORT_BITINV(0x0002, "Coin 2",      KEYCODE_4) \
+    COREPORT_BITINV(0x0004, "Coin 3",      KEYCODE_5) \
+    COREPORT_BITINV(0x0008, "Key 6",       KEYCODE_6) \
+    COREPORT_BIT(   0x0010, "Key 7",       KEYCODE_7) \
+    COREPORT_BIT(   0x0020, "Key 8",       KEYCODE_8) \
+    COREPORT_BIT(   0x0100, "Reset",       KEYCODE_0)
+
 /*-- Standard input ports --*/
 #define PLAYMATIC_INPUT_PORTS_START(name,balls) \
   INPUT_PORTS_START(name) \
     CORE_PORTS \
     SIM_PORTS(balls) \
     PLAYMATIC_COMPORTS
+
+#define PLAYMATIC3_INPUT_PORTS_START(name,balls) \
+  INPUT_PORTS_START(name) \
+    CORE_PORTS \
+    SIM_PORTS(balls) \
+    PLAYMATIC3_COMPORTS
+
+#define PLAYMATIC4_INPUT_PORTS_START(name,balls) \
+  INPUT_PORTS_START(name) \
+    CORE_PORTS \
+    SIM_PORTS(balls) \
+    PLAYMATIC4_COMPORTS
 
 #define PLAYMATIC_INPUT_PORTS_END INPUT_PORTS_END
 
