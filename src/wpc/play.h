@@ -18,9 +18,9 @@
     COREPORT_BIT(   0x0002, "Coin 2",      KEYCODE_4) \
     COREPORT_BIT(   0x0004, "Coin 3",      KEYCODE_5) \
     COREPORT_BITDEF(0x0008, IPT_START1,    IP_KEY_DEFAULT)  \
-    COREPORT_BIT(   0x0020, "Advance",     KEYCODE_7) \
+    COREPORT_BIT(   0x0020, "Diagnostics", KEYCODE_7) \
+    COREPORT_BIT(   0x0080, "Reset",       KEYCODE_8) \
     COREPORT_BIT(   0x0040, "Ball Tilt",   KEYCODE_INSERT) \
-    COREPORT_BIT(   0x0080, "Diagnostics", KEYCODE_8) \
   PORT_START /* 1 */ \
     COREPORT_DIPNAME( 0x0001, 0x0000, "S1") \
       COREPORT_DIPSET(0x0000, "0" ) \
@@ -96,33 +96,28 @@
       COREPORT_DIPSET(0x0000, "0" ) \
       COREPORT_DIPSET(0x0080, "1" )
 
-#define COREPORT_BITINV(mask, name, key) \
-   PORT_BITX(mask,IP_ACTIVE_LOW,IPT_BUTTON1,name,key,IP_JOY_NONE)
-
 /*-- Inports for series III games --*/
 #define PLAYMATIC3_COMPORTS \
   PORT_START /* 0 */ \
     /* Switch Column 7 */ \
-    COREPORT_BIT(   0x0040, "Start / Toggle Digit", KEYCODE_1) \
+    COREPORT_BITDEF(0x0040, IPT_START1,    IP_KEY_DEFAULT)  \
     COREPORT_BIT(   0x0020, "Advance Digit", KEYCODE_2) \
-    COREPORT_BITINV(0x0001, "Coin 1",      KEYCODE_3) \
-    COREPORT_BITINV(0x0002, "Coin 2",      KEYCODE_4) \
-    COREPORT_BITINV(0x0004, "Coin 3",      KEYCODE_5) \
+    COREPORT_BIT(   0x0001, "Coin 1",      KEYCODE_3) \
+    COREPORT_BIT(   0x0002, "Coin 2",      KEYCODE_4) \
+    COREPORT_BIT(   0x0004, "Coin 3",      KEYCODE_5) \
     COREPORT_BIT(   0x0010, "Ball Tilt / Diagnostics", KEYCODE_7) \
     COREPORT_BIT(   0x0080, "Advance Step", KEYCODE_8) \
-    COREPORT_BIT(   0x0008, "0008",       KEYCODE_9) \
     COREPORT_BIT(   0x0100, "Reset",       KEYCODE_0)
 
 /*-- Inports for series IV games --*/
 #define PLAYMATIC4_COMPORTS \
   PORT_START /* 0 */ \
     /* Switch Column 7 */ \
-    COREPORT_BIT(   0x0040, "Start / Toggle Digit", KEYCODE_1) \
+    COREPORT_BITDEF(0x0040, IPT_START1,    IP_KEY_DEFAULT)  \
     COREPORT_BIT(   0x0080, "Advance Digit", KEYCODE_2) \
-    COREPORT_BITINV(0x0001, "Coin 1",      KEYCODE_3) \
-    COREPORT_BITINV(0x0002, "Coin 2",      KEYCODE_4) \
-    COREPORT_BITINV(0x0004, "Coin 3",      KEYCODE_5) \
-    COREPORT_BITINV(0x0008, "Key 6",       KEYCODE_6) \
+    COREPORT_BIT(   0x0001, "Coin 1",      KEYCODE_3) \
+    COREPORT_BIT(   0x0002, "Coin 2",      KEYCODE_4) \
+    COREPORT_BIT(   0x0004, "Coin 3",      KEYCODE_5) \
     COREPORT_BIT(   0x0010, "Key 7",       KEYCODE_7) \
     COREPORT_BIT(   0x0020, "Key 8",       KEYCODE_8) \
     COREPORT_BIT(   0x0100, "Reset",       KEYCODE_0)

@@ -37,7 +37,7 @@ core_tLCDLayout play_disp6[] = {
   { 3, 0,29,1,CORE_SEG7 }, { 3, 2,24,5,CORE_SEG7 },
   { 6, 0,21,1,CORE_SEG7 }, { 6, 2,16,5,CORE_SEG7 },
   { 9, 0,13,1,CORE_SEG7 }, { 9, 2, 8,5,CORE_SEG7 },
-  {12, 0, 5,1,CORE_SEG7 }, {12, 2, 0,5,CORE_SEG7 },
+  {12, 0, 5,1,CORE_SEG7 }, {12, 2, 0,2,CORE_SEG7 }, {12, 8, 3,2,CORE_SEG7 },
   {0}
 };
 
@@ -46,7 +46,16 @@ core_tLCDLayout play_disp6a[] = {
   { 6, 0,29,1,CORE_SEG7 }, { 6, 2,24,5,CORE_SEG7 },
   { 0,20,21,1,CORE_SEG7 }, { 0,22,16,5,CORE_SEG7 },
   { 6,20,13,1,CORE_SEG7 }, { 6,22, 8,5,CORE_SEG7 },
-  { 3,10, 5,1,CORE_SEG7 }, { 3,12, 0,5,CORE_SEG7 },
+  { 3,10, 5,1,CORE_SEG7 }, { 3,12, 0,2,CORE_SEG7 }, { 3,18, 3,2,CORE_SEG7 },
+  {0}
+};
+
+core_tLCDLayout play_disp7[] = {
+  { 0, 0,37,1,CORE_SEG7 }, { 0, 2,32,5,CORE_SEG7 }, { 0,12,52,1,CORE_SEG7 },
+  { 6, 0,29,1,CORE_SEG7 }, { 6, 2,24,5,CORE_SEG7 }, { 6,12,51,1,CORE_SEG7 },
+  { 0,20,21,1,CORE_SEG7 }, { 0,22,16,5,CORE_SEG7 }, { 0,32,50,1,CORE_SEG7 },
+  { 6,20,13,1,CORE_SEG7 }, { 6,22, 8,5,CORE_SEG7 }, { 6,32,49,1,CORE_SEG7 },
+  { 3,10, 5,1,CORE_SEG7 }, { 3,12, 0,1,CORE_SEG7 }, { 3,16, 2,1,CORE_SEG7 }, { 3,20, 4,1,CORE_SEG7 }, { 3,22,48,1,CORE_SEG7 },
   {0}
 };
 
@@ -96,7 +105,7 @@ CORE_GAMEDEFNV(madrace,"Mad Race",1982,"Playmatic",gl_mPLAYMATIC2S,GAME_STATUS)
 /*-------------------------------------------------------------------
 / Meg-Aaton (1983)
 /-------------------------------------------------------------------*/
-INITGAME3(megaaton, play_disp6a, 1)
+INITGAME3(megaaton, play_disp7, 1)
 PLAYMATIC_ROMSTART64(megaaton,	"cpumegat.bin", CRC(7e7a4ede) SHA1(3194b367cbbf6e0cb2629cd5d82ddee6fe36985a))
 PLAYMATIC_SOUNDROM6432(	"smogot.bin", CRC(92fa0742) SHA1(ef3100a53323fd67e23b47fc3e72fdb4671e9b0a),
 						"smegat.bin", CRC(910ab7fe) SHA1(0ddfd15c9c25f43b8fcfc4e11bc8ea180f6bd761))
@@ -106,7 +115,7 @@ CORE_GAMEDEFNV(megaaton,"Meg-Aaton",1983,"Playmatic",gl_mPLAYMATIC3S,GAME_STATUS
 /*-------------------------------------------------------------------
 / KZ-26 (1984)
 /-------------------------------------------------------------------*/
-INITGAME4(kz26, play_disp6a, 1)
+INITGAME4(kz26, play_disp7, 1)
 PLAYMATIC_ROMSTART64(kz26,	"kz26.cpu", CRC(8030a699) SHA1(4f86b325801d8ce16011f7b6ba2f3633e2f2af35))
 PLAYMATIC_SOUNDROM6432(	"sound1.su3", CRC(f9550ab4) SHA1(7186158f515fd9fbe5a7a09c6b7d2e8dfc3b4bb2),
 						"sound2.su4", CRC(b66100d3) SHA1(85f5a319715f99d1b7afeca0d01c81aa615d416a))

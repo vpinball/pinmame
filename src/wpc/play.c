@@ -91,8 +91,8 @@ static INTERRUPT_GEN(PLAYMATIC_vblank) {
 
 static SWITCH_UPDATE(PLAYMATIC) {
   if (inports) {
-    CORE_SETKEYSW(inports[CORE_COREINPORT], 0xff, 7);
-    CORE_SETKEYSW(inports[CORE_COREINPORT]>>8, 1, 8);
+    CORE_SETKEYSW(inports[CORE_COREINPORT], locals.cpuType < 2 ? 0xef : 0xf7, 7);
+    CORE_SETKEYSW(inports[CORE_COREINPORT] >> 8, 0x01, 8);
   }
   locals.ef[4] = !(coreGlobals.swMatrix[8] & 1);
 }
@@ -106,7 +106,8 @@ static WRITE_HANDLER(lamp_w) {
 }
 
 static WRITE_HANDLER(disp_w) {
-  coreGlobals.segments[offset].w = data;
+  coreGlobals.segments[offset].w = data & 0x7f;
+  coreGlobals.segments[48 + offset / 8].w = data & 0x80 ? core_bcd2seg7[0] : 0;
 }
 
 static WRITE_HANDLER(sol_w) {
@@ -185,7 +186,7 @@ static READ_HANDLER(in_n) {
       break;
     case DIAG:
       if (diag) return 0;
-      return coreGlobals.swMatrix[7] ^ (locals.cpuType < 2 ? 0xff : 0);
+      return coreGlobals.swMatrix[7] ^ (locals.cpuType < 2 ? 0xff : 0x0f);
       break;
   }
   return 0;
